@@ -18,6 +18,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import matplotlib.ticker as mticker
 from scipy.interpolate import CubicSpline
 import os
 
@@ -181,36 +182,36 @@ def plot_spectrum_vs_time(df, ycol, distance_m=distance_m, flash_time_s=None, bl
     t_smooth = np.logspace(np.log10(t.min()), np.log10(t.max()), 2000)
     y_smooth = np.exp(cs(np.log(t_smooth)))
 
-    plt.figure(figsize=(10, 6))
+    fig, ax = plt.subplots(figsize=(10, 6))
 
     # --- Plot raw points with horizontal error bars (exact bin widths) ---
     xerr = np.array([t - t_low, t_up - t])  # asymmetric error bars
-    plt.errorbar(
+    ax.errorbar(
         t * 1e6, y, xerr=xerr * 1e6, fmt="o", markersize=6, capsize=3,
         label="data bins", color="C0"
     )
 
     # --- Plot the interpolated faint smooth line ---
-    plt.plot(
+    ax.plot(
         t_smooth * 1e6, y_smooth,
         linewidth=1.2, alpha=0.35, color="C0",
         label="interpolation"
     )
-    plt.axhline(0, color="gray", linestyle="-", zorder=0)
+    ax.axhline(0, color="gray", linestyle="-", zorder=0)
 
     # --- Plot vertical lines for flash, blind, readout times if provided ---
     annote_str = ''
     if flash_time_s is not None:
-        plt.axvline(flash_time_s * 1e6, color='red', ls='--', label=f'Gamma Flash Time: {flash_time_s*1e6:.2f} µs')
+        ax.axvline(flash_time_s * 1e6, color='red', ls='--', label=f'Gamma Flash Time: {flash_time_s*1e6:.2f} µs')
     if blind_time_s is not None:
-        plt.axvline((flash_time_s + blind_time_s) * 1e6, color='orange', ls='--', label=f'End of Blind Time: {(flash_time_s + blind_time_s)*1e6:.2f} µs')
+        ax.axvline((flash_time_s + blind_time_s) * 1e6, color='orange', ls='--', label=f'End of Blind Time: {(flash_time_s + blind_time_s)*1e6:.2f} µs')
         annote_str += f'Blind Time: {blind_time_s*1e6:.1f} µs\n'
     if readout_time_s is not None:
-        # plt.axvline((flash_time_s + blind_time_s + readout_time_s) * 1e6, color='green', ls='--', label=f'End of Readout Time: {(flash_time_s + blind_time_s + readout_time_s)*1e6:.2f} µs')
+        # ax.axvline((flash_time_s + blind_time_s + readout_time_s) * 1e6, color='green', ls='--', label=f'End of Readout Time: {(flash_time_s + blind_time_s + readout_time_s)*1e6:.2f} µs')
         annote_str += f'Readout Time: {readout_time_s*1e6:.1f} µs'
     if dead_time_s is not None:
         annote_str += f'\nDead Time: {dead_time_s*1e6:.1f} µs'
-        # plt.axvline((flash_time_s + blind_time_s + readout_time_s + dead_time_s) * 1e6, color='purple', ls='--',
+        # ax.axvline((flash_time_s + blind_time_s + readout_time_s + dead_time_s) * 1e6, color='purple', ls='--',
         #             label=f'End of Dead Time: {(flash_time_s + blind_time_s + readout_time_s + dead_time_s)*1e6:.2f} µs')
 
     # --- Alternating readout/dead-time bands ---
@@ -232,33 +233,54 @@ def plot_spectrum_vs_time(df, ycol, distance_m=distance_m, flash_time_s=None, bl
             r1 = current_start + readout_time_s
             if r0 < t_max:
                 if i == 0:
-                    plt.axvline(r0 * 1e6, color='green', ls='--', label='Trigger')
+                    pass
+                elif i == 1:
+                    ax.axvline(r0 * 1e6, color='green', ls='--', lw=2, label='Trigger')
                 else:
-                    plt.axvline(r0 * 1e6, color='green', ls='--', lw=2)
-                plt.axvspan(r0 * 1e6, r1 * 1e6, color='green', alpha=0.10)
+                    ax.axvline(r0 * 1e6, color='green', ls='--', lw=2)
+                ax.axvspan(r0 * 1e6, r1 * 1e6, color='green', alpha=0.05)
 
             # Dead time band (red)
             d0 = r1
             d1 = r1 + dead_time_s
             if d0 < t_max:
                 if i == 0:
-                    plt.axvspan(d0 * 1e6, d1 * 1e6, color='red', alpha=0.10, label='Dead Time')
+                    ax.axvspan(d0 * 1e6, d1 * 1e6, color='red', alpha=0.10, label='Dead Time')
                 else:
-                    plt.axvspan(d0 * 1e6, d1 * 1e6, color='red', alpha=0.10)
+                    ax.axvspan(d0 * 1e6, d1 * 1e6, color='red', alpha=0.1)
 
             current_start += period
 
     if annote_str:
-        plt.annotate(annote_str, xy=(0.45, 0.5), xycoords='axes fraction', fontsize=14,
+        ax.annotate(annote_str, xy=(0.45, 0.5), xycoords='axes fraction', fontsize=14,
                      bbox=dict(boxstyle="round,pad=0.3", fc="yellow", alpha=0.3))
 
     # --- Axis formatting ---
-    plt.xscale("log")
-    plt.xlabel(f"Neutron flight time [µs] over {distance_m:.2f} m")
-    plt.ylabel(ycol)
-    plt.title(f"{ycol} vs neutron flight time")
-    plt.legend()
-    plt.tight_layout()
+    ax.set_xscale("log")
+    ax.set_xlabel(f"Neutron flight time [µs] over {distance_m:.2f} m")
+    ax.set_ylabel(ycol)
+    ax.set_title(f"{ycol} vs neutron flight time")
+    ax.legend()
+
+    # # --- Secondary x-axis: energy (eV) ---
+    # # Primary x is time in microseconds. Provide forward and inverse mappings.
+    # def time_us_to_energy_eV(time_us):
+    #     # time_us -> seconds -> energy_eV
+    #     t_s = np.asarray(time_us) * 1e-6
+    #     # If less than 10^-1, return NaN to avoid unphysical energies
+    #     # t_s = np.where(t_s < 1e-7, 1e-7, t_s)
+    #     return time_s_to_energy_eV(t_s, distance=distance_m)
+    #
+    # def energy_eV_to_time_us(energy_eV):
+    #     # energy_eV -> time_s -> microseconds
+    #     t_s = energy_eV_to_time_s(np.asarray(energy_eV), distance=distance_m)
+    #     return t_s * 1e6
+    #
+    # secax = ax.secondary_xaxis('top', functions=(time_us_to_energy_eV, energy_eV_to_time_us))
+    # # secax.set_xscale('log')
+    # secax.set_xlabel('Neutron energy [eV]')
+
+    fig.tight_layout()
 
 
 
