@@ -46,6 +46,7 @@ def main():
 
     # readout_time = 3000e-9  # 3000 ns --> 3 us
     readout_time = 10000e-9  # 6000 ns --> 6 us
+    dead_time = 1.4e-3  # 1.4 ms
     readout_low_energy = time_s_to_energy_eV(readout_time + blind_time + flash_time)
     print(f'Readout low energy for {readout_time*1e9:.0f} ns after blind over {distance_m} m: {readout_low_energy/1e3:.2f} keV')
 
@@ -98,7 +99,8 @@ def main():
 
     plot_spectrum_vs_energy(df, 'X17 [1/day]')
     plot_spectrum_vs_time(df, 'X17 [1/day]', distance_m=distance_m,
-                          flash_time_s=flash_time, blind_time_s=blind_time, readout_time_s=readout_time)
+                          flash_time_s=flash_time, blind_time_s=blind_time, readout_time_s=readout_time,
+                          dead_time_s=dead_time)
 
     plt.show()
 
@@ -145,7 +147,8 @@ def plot_spectrum_vs_energy(df, ycol):
     plt.tight_layout()
 
 
-def plot_spectrum_vs_time(df, ycol, distance_m=distance_m, flash_time_s=None, blind_time_s=None, readout_time_s=None):
+def plot_spectrum_vs_time(df, ycol, distance_m=distance_m, flash_time_s=None, blind_time_s=None, readout_time_s=None,
+                          dead_time_s=None):
     """
     Plot spectrum data vs neutron flight time instead of energy.
     :param df: DataFrame with elow [eV], eup [eV], and ycol columns
@@ -154,6 +157,7 @@ def plot_spectrum_vs_time(df, ycol, distance_m=distance_m, flash_time_s=None, bl
     :param flash_time_s: Optional flash time in seconds to mark on plot
     :param blind_time_s: Optional blind time in seconds to mark on plot
     :param readout_time_s: Optional readout time in seconds to mark on plot
+    :param dead_time_s: Optional dead time in seconds (not used in plot)
     """
     # Convert energy bins to time bins
     E_low = df["elow [eV]"].values
@@ -202,10 +206,50 @@ def plot_spectrum_vs_time(df, ycol, distance_m=distance_m, flash_time_s=None, bl
         plt.axvline((flash_time_s + blind_time_s) * 1e6, color='orange', ls='--', label=f'End of Blind Time: {(flash_time_s + blind_time_s)*1e6:.2f} µs')
         annote_str += f'Blind Time: {blind_time_s*1e6:.1f} µs\n'
     if readout_time_s is not None:
-        plt.axvline((flash_time_s + blind_time_s + readout_time_s) * 1e6, color='green', ls='--', label=f'End of Readout Time: {(flash_time_s + blind_time_s + readout_time_s)*1e6:.2f} µs')
+        # plt.axvline((flash_time_s + blind_time_s + readout_time_s) * 1e6, color='green', ls='--', label=f'End of Readout Time: {(flash_time_s + blind_time_s + readout_time_s)*1e6:.2f} µs')
         annote_str += f'Readout Time: {readout_time_s*1e6:.1f} µs'
+    if dead_time_s is not None:
+        annote_str += f'\nDead Time: {dead_time_s*1e6:.1f} µs'
+        # plt.axvline((flash_time_s + blind_time_s + readout_time_s + dead_time_s) * 1e6, color='purple', ls='--',
+        #             label=f'End of Dead Time: {(flash_time_s + blind_time_s + readout_time_s + dead_time_s)*1e6:.2f} µs')
+
+    # --- Alternating readout/dead-time bands ---
+    if readout_time_s is not None and dead_time_s is not None:
+        t_min = t_smooth.min()
+        # t_max = t_smooth.max()
+        t_max = 20e-3  # Last thermal neutrons around 20 ms
+
+        period = readout_time_s + dead_time_s
+        start = flash_time_s + blind_time_s  # beginning of first cycle
+        n_cycles = int(np.ceil((t_max - start) / period))
+        annote_str += f'\nN Triggers: {n_cycles}'
+
+        current_start = start
+
+        for i in range(n_cycles):
+            # Readout band (green)
+            r0 = current_start
+            r1 = current_start + readout_time_s
+            if r0 < t_max:
+                if i == 0:
+                    plt.axvline(r0 * 1e6, color='green', ls='--', label='Trigger')
+                else:
+                    plt.axvline(r0 * 1e6, color='green', ls='--', lw=2)
+                plt.axvspan(r0 * 1e6, r1 * 1e6, color='green', alpha=0.10)
+
+            # Dead time band (red)
+            d0 = r1
+            d1 = r1 + dead_time_s
+            if d0 < t_max:
+                if i == 0:
+                    plt.axvspan(d0 * 1e6, d1 * 1e6, color='red', alpha=0.10, label='Dead Time')
+                else:
+                    plt.axvspan(d0 * 1e6, d1 * 1e6, color='red', alpha=0.10)
+
+            current_start += period
+
     if annote_str:
-        plt.annotate(annote_str, xy=(0.65, 0.55), xycoords='axes fraction', fontsize=14,
+        plt.annotate(annote_str, xy=(0.45, 0.5), xycoords='axes fraction', fontsize=14,
                      bbox=dict(boxstyle="round,pad=0.3", fc="yellow", alpha=0.3))
 
     # --- Axis formatting ---
