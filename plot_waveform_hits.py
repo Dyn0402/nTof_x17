@@ -13,9 +13,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 def main():
-    hits_file = '/local/home/dn277127/CLionProjects/mm_strip_reconstruction/build/waveform_analysis/hits.root'
-    waveform_file = "/local/home/dn277127/x17/decoder_test/ftest.root"
-    event_id = 20
+    # hits_file = '/local/home/dn277127/CLionProjects/mm_strip_reconstruction/build/waveform_analysis/hits.root'
+    # waveform_file = "/local/home/dn277127/x17/decoder_test/ftest.root"
+    hits_file = '/home/dylan/CLionProjects/mm_strip_reconstruction/test/run_81/hits.root'
+    waveform_file = "/home/dylan/CLionProjects/mm_strip_reconstruction/test/run_81/Mx17_run_datrun_251204_18H17_000_05.root"
+    event_id = 22
     channel_id = 28
 
     # channel_id = 29
@@ -87,13 +89,17 @@ def plot_waveform_and_hits(waveform_file, hits_file, event_id, channel_id):
     # ---------------------------
     plt.figure(figsize=(10,6))
 
-    plt.plot(waveform_sample_idx, waveform_amp, label="Waveform", linewidth=1)
+    plt.plot(waveform_sample_idx, waveform_amp, label="Waveform", marker='.', linewidth=1)
+    # Get minimum value of y axis of plot
+    y_min = np.min(waveform_amp)
 
     # Overlay hits as vertical lines
     for hs, ha in zip(hit_sample_positions, hit_amplitudes):
         plt.axvline(hs, color="red", linestyle="--", alpha=0.7)
-        plt.text(hs, ha, f"{ha:.1f}", color="red", fontsize=9, rotation=90,
-                 verticalalignment="bottom")
+        plt.annotate(f"{hs:.1f}", xy=(hs, y_min), xytext=(0, +8), textcoords='offset points',
+                     color="red", fontsize=11, rotation=90, va='top', ha='center')
+        # plt.text(hs, np.min(waveform_amp), f"{ha:.1f}", color="blue", fontsize=11, rotation=90,
+        #          verticalalignment="bottom", horizontalalignment="left")
 
     plt.title(f"Event {event_id}, Channel {channel_id}")
     plt.xlabel("Sample index")
