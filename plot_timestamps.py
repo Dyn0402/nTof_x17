@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 import uproot
 import vector
 
-from plot_waveforms import read_det_data_vars
+from plot_waveforms_array import read_det_data_vars
 
 
 def main():

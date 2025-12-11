@@ -27,8 +27,6 @@ def main():
     print('donzo')
 
 
-
-
 def plot_waveform_and_hits(waveform_file, hits_file, event_id, channel_id):
     """
     waveform_file : str   path to ROOT file with the 'nt' tree (raw waveforms)
@@ -96,8 +94,8 @@ def plot_waveform_and_hits(waveform_file, hits_file, event_id, channel_id):
     # Overlay hits as vertical lines
     for hs, ha in zip(hit_sample_positions, hit_amplitudes):
         plt.axvline(hs, color="red", linestyle="--", alpha=0.7)
-        plt.annotate(f"{hs:.1f}", xy=(hs, y_min), xytext=(0, +8), textcoords='offset points',
-                     color="red", fontsize=11, rotation=90, va='top', ha='center')
+        plt.annotate(f"{hs:.1f}", xy=(hs, y_min), xytext=(-4, 0), textcoords='offset pixels',
+                     color="red", fontsize=11, rotation=90, va='center', ha='right')
         # plt.text(hs, np.min(waveform_amp), f"{ha:.1f}", color="blue", fontsize=11, rotation=90,
         #          verticalalignment="bottom", horizontalalignment="left")
 
@@ -108,8 +106,6 @@ def plot_waveform_and_hits(waveform_file, hits_file, event_id, channel_id):
     plt.grid(alpha=0.3)
     plt.tight_layout()
     plt.show()
-
-
 
 
 if __name__ == '__main__':
