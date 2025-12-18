@@ -34,6 +34,9 @@ rest_energy_eV = rest_energy_J / eV_to_J
 # Distance (EAR2 example)
 distance_m = 19.5
 
+# calculation_tables_dir = f'/local/home/dn277127/x17/calculation_tables/'
+calculation_tables_dir = f'/media/dylan/data/x17/calculation_tables/'
+
 
 def main():
     # plot_flight_time_vs_energy()
@@ -54,7 +57,6 @@ def main():
     print(f'For {readout_time*1e6:.1f} µs readout after {blind_time*1e6:.1f} µs of blindness, neutron energies '
           f'from {readout_low_energy/1e6:.2f} - {blind_energy/1e6:.2f} MeV are recorded.')
 
-    calculation_tables_dir = f'/local/home/dn277127/x17/calculation_tables/'
     file_name = 'results_3He'
     parser = X17CalculationParser(calculation_tables_dir + file_name)
     df = parser.get_dataframe()
