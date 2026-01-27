@@ -22,7 +22,7 @@ def main():
     # runs_base = '/media/dylan/data/x17/nov_25_beam_test/dream_run/'
 
     run = 'raw_daq_data'
-    feu = 2
+    feu = 1
     file_num = 0
     # runs_base = '/media/dylan/data/sps_beam_test_25/run_54/rotation_30_test_0/'
     runs_base = '/media/dylan/data/sps_beam_test_25/run_67/rotation_-60_banco_scan_0/'
@@ -43,7 +43,8 @@ def main():
     # channel_ids = np.arange(0, 256)
 
     # event_id = 1546
-    event_id = 41835
+    # event_id = 41835
+    event_id = 16325
     channel_ids = np.arange(0, 512)
 
     plot_waveform_and_hits(waveform_file, hits_file, event_id, channel_ids, min_amp=300)
@@ -116,6 +117,7 @@ def plot_waveform_and_hits(waveform_file, hits_file, event_id, channel_ids, min_
         hit_left  = hits["left_sample"].array(library="np")
         hit_right = hits["right_sample"].array(library="np")
         hit_base  = hits["local_baseline"].array(library="np")
+        hit_tot   = hits["time_over_threshold"].array(library="np")
 
         if 'pedestals' in f:
             pedestals_exist = True
@@ -123,7 +125,7 @@ def plot_waveform_and_hits(waveform_file, hits_file, event_id, channel_ids, min_
             ped_ch = peds["channel"].array(library="np")
             ped_base = peds["mean"].array(library="np")
 
-    channels, time_samples, max_samples, amplitudes, samples, waveforms = [], [], [], [], [], []
+    channels, time_samples, max_samples, amplitudes, samples, waveforms, tots = [], [], [], [], [], [], []
     for channel_id in channel_ids:
         # Select waveform entries where channel == channel_id
         mask = (evt_channels == channel_id)
@@ -149,6 +151,7 @@ def plot_waveform_and_hits(waveform_file, hits_file, event_id, channel_ids, min_
         hit_lefts = hit_left[hit_mask]
         hit_rights = hit_right[hit_mask]
         hit_bases = hit_base[hit_mask]
+        hit_tots = hit_tot[hit_mask]
 
         # Get pedestal for this channel
         if pedestals_exist:
@@ -170,7 +173,7 @@ def plot_waveform_and_hits(waveform_file, hits_file, event_id, channel_ids, min_
         y_min = np.min(waveform_amp)
 
         # Overlay hits as vertical lines
-        for hs, ha, hi, hl, hr, hb in zip(hit_sample_positions, hit_amplitudes, hit_i_maxes, hit_lefts, hit_rights, hit_bases):
+        for hs, ha, hi, hl, hr, hb, ht in zip(hit_sample_positions, hit_amplitudes, hit_i_maxes, hit_lefts, hit_rights, hit_bases, hit_tots):
             print(f'Hit at sample {hs}: amplitude={ha}, i_max={hi}, left={hl}, right={hr}, base={hb}')
             plt.axvline(hs, color="red", linestyle="--", alpha=0.7, zorder=2)
             plt.axvspan(hl, hr, color="gray", alpha=0.1)
@@ -188,26 +191,27 @@ def plot_waveform_and_hits(waveform_file, hits_file, event_id, channel_ids, min_
             time_samples.append(hs)
             amplitudes.append(ha)
             max_samples.append(hi)
+            tots.append(ht)
         samples.append(waveform_sample_idx)
         waveforms.append(waveform_amp)
 
         # If channel is 94, do a fit
-        if channel_id == 94:
-            print(f'Waveform samples: {waveform_sample_idx}')
-            print(f'Waveform amplitudes: {waveform_amp}')
-            # Fit a parabola to three points.
-            fit_indices = np.array([2, 3, 7, 8])
-            x_fit = waveform_sample_idx[fit_indices]
-            y_fit = waveform_amp[fit_indices]
-            try:
-                popt, pcov = cf(parabola, x_fit, y_fit)
-                a, b, c = popt
-                print(f'Parabola fit parameters: a={a}, b={b}, c={c}')
-                x_fine = np.linspace(np.min(x_fit)-2, np.max(x_fit)+2, 100)
-                y_fine = parabola(x_fine, a, b, c)
-                plt.plot(x_fine, y_fine, color="orange", linestyle="-", linewidth=2, alpha=0.7, label="Parabola Fit")
-            except Exception as e:
-                print(f'Parabola fit failed: {e}')
+        # if channel_id == 94:
+        #     print(f'Waveform samples: {waveform_sample_idx}')
+        #     print(f'Waveform amplitudes: {waveform_amp}')
+        #     # Fit a parabola to three points.
+        #     fit_indices = np.array([2, 3, 7, 8])
+        #     x_fit = waveform_sample_idx[fit_indices]
+        #     y_fit = waveform_amp[fit_indices]
+        #     try:
+        #         popt, pcov = cf(parabola, x_fit, y_fit)
+        #         a, b, c = popt
+        #         print(f'Parabola fit parameters: a={a}, b={b}, c={c}')
+        #         x_fine = np.linspace(np.min(x_fit)-2, np.max(x_fit)+2, 100)
+        #         y_fine = parabola(x_fine, a, b, c)
+        #         plt.plot(x_fine, y_fine, color="orange", linestyle="-", linewidth=2, alpha=0.7, label="Parabola Fit")
+        #     except Exception as e:
+        #         print(f'Parabola fit failed: {e}')
 
         plt.title(f"Event {event_id}, Channel {channel_id}")
         plt.xlabel("Sample index")
@@ -232,8 +236,9 @@ def plot_waveform_and_hits(waveform_file, hits_file, event_id, channel_ids, min_
 
         print(f'Identified channel clusters: {clusters}')
 
-    # For each cluster, fit a line to time_samples vs channels. Save slope and intercept
+        # For each cluster, fit a line to time_samples vs channels. Save slope and intercept
         slopes, intercepts, left_ch, right_ch = [], [], [], []
+        parab_a, parab_b, parab_c = [], [], []
         for cluster in clusters:
             cluster_indices = [i for i, ch in enumerate(channels) if ch in cluster]
             cluster_channels = np.array(channels)[cluster_indices]
@@ -262,6 +267,19 @@ def plot_waveform_and_hits(waveform_file, hits_file, event_id, channel_ids, min_
             left_ch.append(np.min(cluster_channels))
             right_ch.append(np.max(cluster_channels))
 
+            # Now also fit a parabola to the same points
+            try:
+                popt_parab, pcov_parab = cf(parabola, cluster_channels, cluster_time_samples, sigma=sigma, absolute_sigma=False)
+                a, b, c = popt_parab
+                parab_a.append(a)
+                parab_b.append(b)
+                parab_c.append(c)
+            except Exception as e:
+                print(f'Parabola fit failed for cluster {cluster}: {e}. Skipping parabola fit.')
+                parab_a.append(0)
+                parab_b.append(0)
+                parab_c.append(0)
+
 
     # Plot time samples of hits vs channel
     plt.figure(figsize=(10,6))
@@ -281,6 +299,14 @@ def plot_waveform_and_hits(waveform_file, hits_file, event_id, channel_ids, min_
         slope_ns_per_ch = m * sample_period
         plt.text((lch + rch) / 2, line((lch + rch) / 2, m, b), f"slope = {m:.2f}, {slope_ns_per_ch:.1f}ns / strip",
                  color='green', fontsize=10, ha='center', va='bottom', rotation=45)
+
+    # Plot fitted parabolas
+    for a, b, c, lch, rch in zip(parab_a, parab_b, parab_c, left_ch, right_ch):
+        x_fit = np.linspace(lch, rch, 100)
+        y_fit = parabola(x_fit, a, b, c)
+        plt.plot(x_fit, y_fit, color='orange', linestyle='--', linewidth=2, alpha=0.7)
+        plt.text((lch + rch) / 2, parabola((lch + rch) / 2, a, b, c), f"parabola fit",
+                 color='orange', fontsize=10, ha='center', va='bottom', rotation=45)
 
     plt.title(f"Hit Sample Positions for Event {event_id}")
     plt.xlabel("Channel ID")
