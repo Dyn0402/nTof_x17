@@ -17,8 +17,8 @@ m_e = 0.000511  # electron mass
 
 
 def main():
-    m = 0.017  # parent mass (GeV), e.g. X17
-    E = 0.4  # parent energy (GeV)
+    m = 0.0168  # parent mass (GeV), e.g. X17
+    E = 0.02  # parent energy (GeV)
 
     angles = np.array([simulate_decay(m, E) for _ in range(10000)])
 
@@ -26,6 +26,7 @@ def main():
     angles_deg = np.degrees(angles)
 
     print("Mean opening angle (deg):", angles_deg.mean())
+    print("Min opening angle (deg):", angles_deg.min())
 
     fig, ax = plt.subplots(figsize=(8, 6))
     ax.hist(angles_deg, bins=100, histtype='stepfilled', alpha=0.7, color='k', zorder=10)

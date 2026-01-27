@@ -14,15 +14,15 @@ import matplotlib.pyplot as plt
 
 def main():
     m = 0.511e-3  # electron mass in GeV
-    E_parent = 0.02  # GeV
+    E_parent = 0.021  # GeV
     M_parent = 0.017  # GeV, e.g. X17 mass
     # theta_plane = np.pi / 4  # 45 degrees
-    theta_plane = np.deg2rad(0)  # 45 degrees
+    theta_plane = np.deg2rad(90)  # 45 degrees
 
     p4_1, p4_2, opening_angle = simulate_decay(m, E_parent, M_parent, theta_plane)
 
-    print("Particle 1 (E, px, py, pz):", p4_1)
-    print("Particle 2 (E, px, py, pz):", p4_2)
+    print("Particle 1 (E, px, py, pz):", p4_1, "Mass: ", np.sqrt(p4_1[0]**2 - np.sum(p4_1[1:]**2)))
+    print("Particle 2 (E, px, py, pz):", p4_2, "Mass: ", np.sqrt(p4_2[0]**2 - np.sum(p4_2[1:]**2)))
     print("Opening angle in lab (deg):", np.degrees(opening_angle))
 
     # Make a plot of opening angle vs theta_plane
@@ -35,13 +35,13 @@ def main():
 
     fig, ax = plt.subplots(figsize=(8,6))
     ax.plot(np.degrees(theta_planes), opening_angles, label='Opening Angle vs Decay Plane Angle')
-    ax.plot(np.degrees(theta_planes), np.acos(np.cos(theta_planes) + 0.01) / (1 + 0.01 * np.cos(theta_planes)), 'r--', label='Cosine Approximation')
     ax.set_xlabel('Decay Plane Angle θ_plane (degrees)')
     ax.set_ylabel('Opening Angle (degrees)')
     ax.set_title('Opening Angle between e+ and e- vs Decay Plane Angle')
     ax.grid(True)
     ax.legend()
     plt.tight_layout()
+
     plt.show()
 
     print('donzo')

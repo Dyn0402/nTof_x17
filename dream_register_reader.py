@@ -7,6 +7,8 @@ Created as nTof_x17/dream_register_reader
 
 @author: Dylan Neff, dn277127
 """
+
+
 def decode_register1(reg_hex):
     """Decode the 32-bit Register 1 based on DREAM User Manual."""
     # Accept hex string or int
@@ -175,7 +177,8 @@ def decode_register1(reg_hex):
 
 # Example
 if __name__ == "__main__":
-    test = "0x881FD003"
+    test = "0x081FD023"
+    # test = "0x881FD003"
     # test = "0x091FD023"
     from pprint import pprint
     pprint(decode_register1(test))
