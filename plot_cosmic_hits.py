@@ -13,14 +13,19 @@ import re
 from typing import Tuple, Optional
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.colors import LogNorm
 import uproot
 
 
 def main():
-    base_path = '/media/dylan/data/x17/cosmic_bench/det_1/mx17_1-27-26/'
-    run = 'mx17_det1_1-27-26'
-    sub_run = 'resist_scan_480V'
-    feus = {1: 'm3', 6: 'MX17'}
+    # base_path = '/media/dylan/data/x17/cosmic_bench/det_1/mx17_1-27-26/'
+    base_path = '/mnt/data/x17/cosmic_bench/det_1/'
+    run = 'mx17_det1_overnight_run_1-27-26'
+    sub_run = 'overnight_run'
+    # run = 'mx17_det1_1-27-26'
+    # sub_run = 'resist_scan_480V'
+    feus = {1: 'm3', 4: 'MX17 X Strips', 6: 'MX17 Y Strips'}
+    file_nums = [3]
 
     hits_dir = f'{base_path}{run}/{sub_run}/hits_root/'
     hit_files = [f for f in os.listdir(hits_dir) if f.endswith('.root') and '_datrun_' in f]
@@ -30,7 +35,9 @@ def main():
         file_path = os.path.join(hits_dir, hit_file)
         print(hit_file)
         file_num, feu_num = extract_file_numbers_tuple(hit_file)
-        print(file_num, feu_num)
+        if file_num not in file_nums:
+            continue
+        print('File num:', file_num, 'FEU num:', feu_num)
         print(f'Processing {file_path}...')
         with uproot.open(file_path) as f:
             print(f.keys())
@@ -48,15 +55,14 @@ def main():
             plt.grid(True)
             plt.tight_layout()
 
-            from matplotlib.colors import LogNorm
-
             # Make 2D histogram of channel vs amplitude with log color scale, zeros white, cmap 'jet'
             plt.figure(figsize=(10, 6))
             x_bins = np.arange(channels.min(), channels.max() + 2) - 0.5
             y_bins = np.linspace(400, 4100, 100)
             H, x_edges, y_edges = np.histogram2d(channels, amps, bins=[x_bins, y_bins])
             H_masked = np.ma.masked_where(H == 0, H)
-            cmap = plt.cm.get_cmap('jet')
+            # cmap = plt.cm.get_cmap('jet')
+            cmap = plt.colormaps['jet']
             cmap.set_bad('white')
             mesh = plt.pcolormesh(x_edges, y_edges, H_masked.T, cmap=cmap, norm=LogNorm())
             plt.colorbar(mesh, label='Counts')
