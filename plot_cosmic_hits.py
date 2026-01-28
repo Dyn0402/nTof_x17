@@ -18,14 +18,15 @@ import uproot
 
 
 def main():
-    # base_path = '/media/dylan/data/x17/cosmic_bench/det_1/mx17_1-27-26/'
-    base_path = '/mnt/data/x17/cosmic_bench/det_1/'
-    run = 'mx17_det1_overnight_run_1-27-26'
-    sub_run = 'overnight_run'
-    # run = 'mx17_det1_1-27-26'
-    # sub_run = 'resist_scan_480V'
-    feus = {1: 'm3', 4: 'MX17 X Strips', 6: 'MX17 Y Strips'}
-    file_nums = [3]
+    base_path = '/media/dylan/data/x17/cosmic_bench/det_1/mx17_1-27-26/'
+    run = 'mx17_det1_1-27-26'
+    sub_run = 'resist_scan_480V'
+    feus = {1: 'm3',6: 'MX17'}
+    # base_path = '/mnt/data/x17/cosmic_bench/det_1/'
+    # run = 'mx17_det1_overnight_run_1-27-26'
+    # sub_run = 'overnight_run'
+    # feus = {1: 'm3', 4: 'MX17 X Strips', 6: 'MX17 Y Strips'}
+    file_nums = [0]
 
     hits_dir = f'{base_path}{run}/{sub_run}/hits_root/'
     hit_files = [f for f in os.listdir(hits_dir) if f.endswith('.root') and '_datrun_' in f]
