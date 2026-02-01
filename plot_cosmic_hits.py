@@ -11,93 +11,83 @@ Created as nTof_x17/plot_cosmic_hits.py
 import os
 import re
 from typing import Tuple, Optional
+import json
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
 import uproot
 
+from Mx17StripMap import Mx17StripMap, RunConfig
+
 
 def main():
-    base_path = '/media/dylan/data/x17/cosmic_bench/det_1/mx17_1-27-26/'
-    run = 'mx17_det1_1-27-26'
-    sub_run = 'resist_scan_480V'
-    feus = {1: 'm3',6: 'MX17'}
+    # base_path = '/media/dylan/data/x17/cosmic_bench/det_1/mx17_1-27-26/'
+    base_path = '/media/dylan/data/x17/cosmic_bench/det_1/'
+    run = 'mx17_det1_daytime_run_1-28-26'
+    sub_run = 'overnight_run'
+    feus = {1: 'm3', 6: 'MX17'}
     # base_path = '/mnt/data/x17/cosmic_bench/det_1/'
     # run = 'mx17_det1_overnight_run_1-27-26'
     # sub_run = 'overnight_run'
     # feus = {1: 'm3', 4: 'MX17 X Strips', 6: 'MX17 Y Strips'}
     file_nums = [0]
 
-    hits_dir = f'{base_path}{run}/{sub_run}/hits_root/'
+    run_config_path = f'{base_path}{run}/run_config.json'
+    map_csv_path = './mx17_m4_map.csv'
+
+    rc = RunConfig(run_config_path, map_csv_path)
+
+    det = rc.get_detector('mx17_1')
+
+    # Example hit
+    feu = 4
+    channel = 123
+
+    pos = det.map_hit(feu, channel)
+    if pos is not None:
+        x_mm, y_mm = pos
+        print(f"Hit at x={x_mm}, y={y_mm}")
+
+    hits_dir = f'{base_path}{run}/{sub_run}/combined_hits_root/'
     hit_files = [f for f in os.listdir(hits_dir) if f.endswith('.root') and '_datrun_' in f]
 
-    print(hit_files)
-    for hit_file in hit_files:
-        file_path = os.path.join(hits_dir, hit_file)
-        print(hit_file)
-        file_num, feu_num = extract_file_numbers_tuple(hit_file)
-        if file_num not in file_nums:
-            continue
-        print('File num:', file_num, 'FEU num:', feu_num)
-        print(f'Processing {file_path}...')
-        with uproot.open(file_path) as f:
-            print(f.keys())
-            tree = f['hits']
-            hits_data = tree.arrays(library='np')
-            channels = hits_data['channel']
-            amps = hits_data['amplitude']
+    file_sources = [f'{hits_dir}{hf}:hits' for hf in hit_files]
+    arrays = uproot.concatenate(file_sources, expressions=['feu', 'channel'], library='np')
+    feus_array = arrays['feu']
+    channels_array = arrays['channel']
+    # for hit_file in hit_files:
+    #     with uproot.open(f'{hits_dir}{hit_file}') as f:
+    #         tree = f['hits']
+    #         feus_array = tree['feu'].array(library='np')
+    #         channels_array = tree['channel'].array(library='np')
 
-            # Histogram of hits per channel
-            plt.figure(figsize=(10, 6))
-            plt.hist(channels, bins=np.arange(channels.min(), channels.max()+2)-0.5, histtype='stepfilled', alpha=0.7, color='blue')
-            plt.xlabel('Channel Number')
-            plt.ylabel('Number of Hits')
-            plt.title(f'Hit Distribution per Channel for {feus.get(feu_num, "Unknown FEU")}')
-            plt.grid(True)
-            plt.tight_layout()
+    x_positions = []
+    y_positions = []
 
-            # Make 2D histogram of channel vs amplitude with log color scale, zeros white, cmap 'jet'
-            plt.figure(figsize=(10, 6))
-            x_bins = np.arange(channels.min(), channels.max() + 2) - 0.5
-            y_bins = np.linspace(400, 4100, 100)
-            H, x_edges, y_edges = np.histogram2d(channels, amps, bins=[x_bins, y_bins])
-            H_masked = np.ma.masked_where(H == 0, H)
-            # cmap = plt.cm.get_cmap('jet')
-            cmap = plt.colormaps['jet']
-            cmap.set_bad('white')
-            mesh = plt.pcolormesh(x_edges, y_edges, H_masked.T, cmap=cmap, norm=LogNorm())
-            plt.colorbar(mesh, label='Counts')
-            plt.xlabel('Channel Number')
-            plt.ylabel('Amplitude')
-            plt.title(f'Channel vs Amplitude for {feus.get(feu_num, "Unknown FEU")}')
-            plt.tight_layout()
+    for feu, channel in zip(feus_array, channels_array):
+        pos = det.map_hit(feu, channel)
+        if pos is not None:
+            x_mm, y_mm = pos
+            if x_mm is not None:
+                x_positions.append(x_mm)
+            if y_mm is not None:
+                y_positions.append(y_mm)
 
-            # Plot mean amplitude vs channel as line plot and std deviation as a shaded area
-            mean_amps = []
-            std_amps = []
-            min_amp = 500
-            channel_centers = (x_edges[:-1] + x_edges[1:]) / 2
-            for i in range(len(x_edges) - 1):
-                bin_mask = (channels >= x_edges[i]) & (channels < x_edges[i + 1]) & (amps >= min_amp)
-                bin_amps = amps[bin_mask]
-                if len(bin_amps) > 0:
-                    mean_amps.append(np.mean(bin_amps))
-                    std_amps.append(np.std(bin_amps))
-                else:
-                    mean_amps.append(0)
-                    std_amps.append(0)
-            mean_amps = np.array(mean_amps)
-            std_amps = np.array(std_amps)
-            plt.figure(figsize=(10, 6))
-            plt.plot(channel_centers, mean_amps, label='Mean Amplitude', color='red')
-            plt.fill_between(channel_centers, mean_amps - std_amps, mean_amps + std_amps, color='red', alpha=0.3, label='Std Deviation')
-            plt.xlabel('Channel Number')
-            plt.ylabel('Amplitude')
-            plt.title(f'Mean Amplitude vs Channel for {feus.get(feu_num, "Unknown FEU")}')
-            plt.legend()
-            plt.tight_layout()
+    # Plot 1D arrays for x and y positions
+    pitch = 0.78
+    bins = np.arange(-pitch / 2, 512 * pitch + pitch / 2, pitch)
+    fig, axs = plt.subplots(nrows=2, ncols=1)
+    axs[0].hist(x_positions, bins=bins, color='blue', alpha=0.7)
+    axs[0].set_title('X Positions Histogram')
+    axs[0].set_xlabel('X Position (mm)')
+    axs[0].set_ylabel('Counts')
+    axs[1].hist(y_positions, bins=bins, color='green', alpha=0.7)
+    axs[1].set_title('Y Positions Histogram')
+    axs[1].set_xlabel('Y Position (mm)')
+    axs[1].set_ylabel('Counts')
+    plt.tight_layout()
     plt.show()
-    print('donzo')
+
 
 
 def extract_file_numbers_tuple(filename: str) -> Optional[Tuple[int, int]]:
