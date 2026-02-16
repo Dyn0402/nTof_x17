@@ -152,9 +152,9 @@ class Detector:
 
             px, py = pos
             if axis == "x":
-                x = px
-            else:
                 y = py
+            else:
+                x = px
 
         if x is None and y is None:
             return None

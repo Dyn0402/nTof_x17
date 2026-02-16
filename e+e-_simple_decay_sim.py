@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 
 def main():
     m = 0.511e-3  # electron mass in GeV
-    E_parent = 0.021  # GeV
+    E_parent = 0.02058  # GeV
     M_parent = 0.017  # GeV, e.g. X17 mass
     # theta_plane = np.pi / 4  # 45 degrees
     theta_plane = np.deg2rad(90)  # 45 degrees

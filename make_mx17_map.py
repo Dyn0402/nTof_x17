@@ -33,30 +33,31 @@ def make_m4_mapping():
     y_connectors = 8
 
     # Make csv file with mapping. Connector number, channel number, x pos mm, y pos mm
+    # X strips go along x, give the y position
     mapping_rows = []
     for conn_x in range(x_connectors):
         for chan_x in range(channels_per_connector):
             channel_num = conn_x * channels_per_connector + chan_x
-            x_pos = round(x0 + (conn_x * channels_per_connector + chan_x) * x_pitch_mm, 4)
+            y_pos = round(y0 + (conn_x * channels_per_connector + chan_x) * y_pitch_mm, 4)
             mapping_rows.append({
                 'connector': conn_x + 1,
                 'channel': chan_x,
                 'axis': 'x',
                 'channel_num': channel_num,
-                'x_position_mm': x_pos,
-                'y_position_mm': y0
+                'x_position_mm': x0,
+                'y_position_mm': y_pos
             })
     for conn_y in range(y_connectors):
         for chan_y in range(channels_per_connector):
             channel_num = conn_y * channels_per_connector + chan_y
-            y_pos = round(y0 + (conn_y * channels_per_connector + chan_y) * y_pitch_mm, 4)
+            x_pos = round(y0 + (conn_y * channels_per_connector + chan_y) * x_pitch_mm, 4)
             mapping_rows.append({
                 'connector': conn_y + 1,
                 'channel': chan_y,
                 'axis': 'y',
                 'channel_num': channel_num,
-                'x_position_mm': x0,
-                'y_position_mm': y_pos
+                'x_position_mm': x_pos,
+                'y_position_mm': y0
             })
     mapping_df = pd.DataFrame(mapping_rows)
     mapping_df.to_csv(out_csv_name, index=False)
