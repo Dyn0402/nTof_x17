@@ -11,58 +11,64 @@ Created as nTof_x17/check_timestamps
 import os
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.colors as mcolors
+import matplotlib.cm as cm
+import pandas as pd
 import uproot
 import vector
 
 
 def main():
-    run_dir = '/media/dylan/data/x17/nov_25_beam_test/dream_run/'
-    run = 'run_69'
-    feu_num = 5
+    # run_dir = '/media/dylan/data/x17/nov_25_beam_test/dream_run/'
+    # run_dir = '/media/dylan/data/x17/feb_beam/dream_run/'
+    # run_dir = '/media/dylan/data/x17/cosmic_bench/det_1/'
+    # run = 'mx17_det1_daytime_run_1-28-26'
+    # subrun = 'overnight_run'
+    # feu_nums = {4: 'x', 6: 'y'}
+    run_dir = '/media/dylan/data/x17/feb_beam/runs/'
+    run = 'run_34'
+    subrun = 'resist_475V_drift_600V'
+    # subrun = 'final_resist_440V_drift_600V'
+    # subrun = 'resist_440V_drift_600V'
+    # run = 'run_19'
+    # subrun = 'resist_440V_drift_600V'
+    # subrun = 'resist_0V_drift_0V'
+    # subrun = 'run'
+    feu_nums = {4: 'y', 5: 'x'}  # 4 goes in x and gives y position
     file_num = 0
-    event = 8
-    detector = 'plein'  # 'strip' or 'plein'
-    min_sample = 80
-    max_sample = 110
+    # event = 10
+    # event = 275
+    event = 16
+    # min_sample = 75
+    # max_sample = 270
+    min_sample = 0
+    max_sample = 80
 
-    xy_map = {
-        'strip': {
-            'x': [1, 2],
-            'y': [3, 4],
-        },
-        'plein': {
-            'x': [5],
-            'y': [6, 7],
-        }
-    }
+    decoded_dir = 'decoded_root'
 
-    run_dir = os.path.join(run_dir, run)
+    run_dir = os.path.join(run_dir, run, subrun, decoded_dir)
 
-    # Find all _array.root files in the run directory
-    array_files = [f for f in os.listdir(run_dir) if f.endswith('.root')]
+    samples_all, channels_all, amplitudes_all = load_decoded_waveforms(run_dir, feu_nums, file_num)
+    evt_ids, timestamps = load_evtids_timestamps(run_dir, list(feu_nums.keys())[0], file_num)
 
-    # Get feu_num padded to two digits and file_num padded to two digits
-    feu_num_str = f'_{feu_num:02d}'
-    file_num_str = f'_{file_num:03d}_'
-    # Find the file that matches the feu_num and file_num
-    file = None
-    for f in array_files:
-        if feu_num_str in f and file_num_str in f:
-            file = f
-            break
+    fig, ax = plt.subplots()
+    ax.scatter(timestamps * 10 / 1e9, evt_ids)
+    ax.set_xlabel('Timestamp (s)')
+    ax.set_ylabel('Event ID')
+    ax.set_title(f'Event IDs for Run {run}, Subrun {subrun}')
+    fig.tight_layout()
 
-    file_path = os.path.join(run_dir, file)
+    evt_index = np.where(evt_ids == event)[0][0]
 
-    # plot_waveforms(file_path, event)
-    # plt.show()
+    plot_flash_xy_waveforms_new(channels_all['x'][evt_index], samples_all['x'][evt_index], amplitudes_all['x'][evt_index],
+                                channels_all['y'][evt_index], samples_all['y'][evt_index], amplitudes_all['y'][evt_index],
+                                min_sample=min_sample, max_sample=max_sample,
+                                event_id=event, run=run, subrun=subrun)
 
-    with uproot.open(file_path) as f:
-        tree = f['nt']
-        # Read all branches as NumPy arrays
-        evt_ids = tree["eventId"].array(library="np")
-        samples = tree["sample"].array(library="np")  # Jagged array
-        channels = tree["channel"].array(library="np")  # Jagged array
-        amplitudes = tree["amplitude"].array(library="np")
+    plot_flash_xy_map_new(channels_all['x'][evt_index], samples_all['x'][evt_index], amplitudes_all['x'][evt_index],
+                                channels_all['y'][evt_index], samples_all['y'][evt_index], amplitudes_all['y'][evt_index],
+                                min_sample=min_sample, max_sample=max_sample, event_id=event, run=run, subrun=subrun)
+    plt.show()
 
         # timestamps = tree["timestamp"].array(library="np")
         # check_timestamps(timestamps)
@@ -79,12 +85,12 @@ def main():
         #     ax.set_ylabel('Amplitude')
         #     ax.set_title(f'All Channel Waveforms for Run {run}, Event {event}')
 
-        plot_flash_xy_waveforms(channels[event], samples[event], amplitudes[event], xy_map, detector, run=run,
-                                min_sample=min_sample, max_sample=max_sample)
+        # plot_flash_xy_waveforms(channels[event], samples[event], amplitudes[event], xy_map, detector, run=run,
+        #                         min_sample=min_sample, max_sample=max_sample)
 
-        plot_flash_xy_map(channels[event], samples[event], amplitudes[event], xy_map, detector, min_sample, max_sample)
+        # plot_flash_xy_map(channels[event], samples[event], amplitudes[event], xy_map, detector, min_sample, max_sample)
 
-        plt.show()
+        # plt.show()
         # for event in events:
         #     event_amplitudes = amplitudes[event]
         #     print(f'Event {event} amplitudes shape: {event_amplitudes.shape}')
@@ -95,6 +101,77 @@ def main():
 
 
     print('donzo')
+
+
+def load_decoded_waveforms(run_dir, feu_nums, file_num):
+    """
+
+    """
+    # Find all _array.root files in the run directory
+    array_files = [f for f in os.listdir(run_dir) if f.endswith('.root')]
+
+    samples_all = {}
+    channels_all = {}
+    amplitudes_all = {}
+
+    for feu_num, axis in feu_nums.items():
+        # Get feu_num padded to two digits and file_num padded to two digits
+        feu_num_str = f'_{feu_num:02d}.'
+        file_num_str = f'_{file_num:03d}_'
+        # Find the file that matches the feu_num and file_num
+        file = None
+        for f in array_files:
+            if feu_num_str in f and file_num_str in f:
+                file = f
+                break
+
+        file_path = os.path.join(run_dir, file)
+
+        print(file_path)
+        with uproot.open(file_path) as f:
+            tree = f['nt']
+            # Read all branches as NumPy arrays
+            samples = tree["sample"].array(library="np")  # Jagged array
+            channels = tree["channel"].array(library="np")  # Jagged array
+            amplitudes = tree["amplitude"].array(library="np")
+            samples_all.update({axis: samples})
+            channels_all.update({axis: channels})
+            amplitudes_all.update({axis: amplitudes})
+
+    return samples_all, channels_all, amplitudes_all
+
+
+def load_evtids_timestamps(run_dir, feu_num, file_num):
+    """
+
+    """
+    # Find all _array.root files in the run directory
+    array_files = [f for f in os.listdir(run_dir) if f.endswith('.root')]
+
+    # Get feu_num padded to two digits and file_num padded to two digits
+    feu_num_str = f'_{feu_num:02d}.'
+    file_num_str = f'_{file_num:03d}_'
+    # Find the file that matches the feu_num and file_num
+    file = None
+    for f in array_files:
+        print(f'Checking file: {f} for feu_num {feu_num_str} and file_num {file_num_str}')
+        if feu_num_str in f and file_num_str in f:
+            print(f'Found file: {f}')
+            file = f
+            break
+
+    file_path = os.path.join(run_dir, file)
+
+    with uproot.open(file_path) as f:
+        tree = f['nt']
+        # Read all branches as NumPy arrays
+        evt_ids = tree["eventId"].array(library="np")
+        timestamps = tree["timestamp"].array(library="np")
+        # print(f'Timestamp of event 9: {timestamps[event - 1] * 10 / 1e9} s')
+        # print(f'Timestamp of event 10: {timestamps[event] * 10 / 1e9} s')
+        # print(f'Time difference from event 9 to event 10: {(timestamps[event] - timestamps[event-1]) * 10 / 1e9} s')
+
+    return evt_ids, timestamps
 
 
 def build_waveform_matrix(amp, chan, samp, n_channels=4096, n_samples=2000):
@@ -157,6 +234,12 @@ def plot_flash_xy_map(evt_channels, evt_samples, evt_amplitudes,
     x_max_amps = max_per_strip(evt_channels, evt_amplitudes, x_channels)
     y_max_amps = max_per_strip(evt_channels, evt_amplitudes, y_channels)
 
+    def flip_64_chunks(arr):
+        return arr.reshape(-1, 64)[:, ::-1].reshape(-1)
+
+    x_max_amps = flip_64_chunks(x_max_amps)
+    y_max_amps = flip_64_chunks(y_max_amps)
+
     # 1D plots
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10,6), sharex=True)
     ax1.plot(x_max_amps); ax1.set_ylabel("X Max Amp")
@@ -167,6 +250,67 @@ def plot_flash_xy_map(evt_channels, evt_samples, evt_amplitudes,
     plot_flash_xy_grid(x_max_amps, y_max_amps, detector)
     plt.show()
 
+
+def plot_flash_xy_map_new(evt_channels_x, evt_samples_x, evt_amplitudes_x,
+                        evt_channels_y, evt_samples_y, evt_amplitudes_y,
+                      min_sample=None, max_sample=None, event_id=None, run=None, subrun=None):
+    """
+    evt_channels, evt_samples, evt_amplitudes come from the jagged event.
+    """
+
+    # Sample window cut
+    if min_sample is not None:
+        mask_x = evt_samples_x >= min_sample
+        evt_channels_x = evt_channels_x[mask_x]
+        evt_samples_x  = evt_samples_x[mask_x]
+        evt_amplitudes_x = evt_amplitudes_x[mask_x]
+        mask_y = evt_samples_y >= min_sample
+        evt_channels_y = evt_channels_y[mask_y]
+        evt_samples_y  = evt_samples_y[mask_y]
+        evt_amplitudes_y = evt_amplitudes_y[mask_y]
+    if max_sample is not None:
+        mask_x = evt_samples_x < max_sample
+        evt_channels_x = evt_channels_x[mask_x]
+        evt_samples_x  = evt_samples_x[mask_x]
+        evt_amplitudes_x = evt_amplitudes_x[mask_x]
+        mask_y = evt_samples_y < max_sample
+        evt_channels_y = evt_channels_y[mask_y]
+        evt_samples_y  = evt_samples_y[mask_y]
+        evt_amplitudes_y = evt_amplitudes_y[mask_y]
+
+    # Max amplitude PER STRIP (64 per connector)
+    def max_per_strip(channels, amps, target_ch_list):
+        out = []
+        for ch in target_ch_list:
+            hit_mask = channels == ch
+            if np.any(hit_mask):
+                out.append(np.max(amps[hit_mask]))
+            else:
+                out.append(0)
+        return np.array(out)
+
+    x_max_amps = max_per_strip(evt_channels_x, evt_amplitudes_x, np.unique(evt_channels_x))
+    y_max_amps = max_per_strip(evt_channels_y, evt_amplitudes_y, np.unique(evt_channels_y))
+
+    def flip_64_chunks(arr):
+        return arr.reshape(-1, 64)[:, ::-1].reshape(-1)
+
+    x_max_amps = flip_64_chunks(x_max_amps)
+    y_max_amps = flip_64_chunks(y_max_amps)
+
+    strip_pos_x = np.arange(len(x_max_amps)) * 0.78  # mm
+    strip_pos_y = np.arange(len(y_max_amps)) * 0.78  # mm
+
+    # 1D plots
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10,6), sharex=True)
+    ax1.plot(strip_pos_x, x_max_amps); ax1.set_ylabel("X Max Amp")
+    ax2.plot(strip_pos_y, y_max_amps); ax2.set_ylabel("Y Max Amp"); ax2.set_xlabel("Strip Position (mm)")
+    fig.suptitle(f'Flash Map — Event {event_id} — {run} — {subrun}')
+    plt.tight_layout()
+
+    # 2D grid of X+Y
+    plot_flash_xy_grid(x_max_amps, y_max_amps, f'Event {event_id} — {run} — {subrun}')
+    plt.show()
 
 
 def plot_waveforms(waveform_file, event_id):
@@ -205,11 +349,14 @@ def plot_waveforms(waveform_file, event_id):
     # ---------------------------
     plt.figure(figsize=(10,6))
 
-    # Plot waveform for each channel
+    # Plot waveform for each channel with gradient color by channel number
     unique_channels = np.unique(evt_channels)
+    cmap = cm.get_cmap("coolwarm")
+    norm = mcolors.Normalize(vmin=unique_channels.min(), vmax=unique_channels.max())
     for ch in unique_channels:
         ch_mask = (evt_channels == ch)
-        plt.plot(waveform_sample_idx[ch_mask], waveform_amp[ch_mask], lw=0.7)
+        plt.plot(waveform_sample_idx[ch_mask], waveform_amp[ch_mask], lw=0.7,
+                 color=cmap(norm(ch)))
 
 
     plt.xlabel("Sample index")
@@ -221,12 +368,24 @@ def plot_waveforms(waveform_file, event_id):
 def plot_flash_xy_grid(x_max_amps, y_max_amps, detector='strip'):
     xy_grid = x_max_amps[:, None] + y_max_amps[None, :]
 
+    nx = x_max_amps.size
+    ny = y_max_amps.size
+    mm_per_bin = 0.78
+    extent = [0, nx * mm_per_bin, 0, ny * mm_per_bin]  # [x_min, x_max, y_min, y_max] in mm
+
     fig, ax = plt.subplots(figsize=(8,6))
-    im = ax.imshow(xy_grid.T, origin='lower', aspect='auto', cmap='jet', vmin=1)
+    im = ax.imshow(xy_grid.T, origin='lower', aspect='auto', cmap='jet', vmin=1,
+                   extent=extent, interpolation='nearest')
     plt.colorbar(im, ax=ax).set_label("X + Y Max Amplitude")
-    ax.set_xlabel("X Strip")
-    ax.set_ylabel("Y Strip")
+    ax.set_xlabel("X position (mm)")
+    ax.set_ylabel("Y position (mm)")
     ax.set_title(f"2D Flash Map ({detector})")
+
+    # tidy ticks: a few tick marks in mm
+    max_ticks = 8
+    ax.set_xticks(np.arange(0, 450, 50))
+    ax.set_yticks(np.arange(0, 450, 50))
+
     plt.tight_layout()
 
 
@@ -240,8 +399,6 @@ def get_thresh_sample(evt_channels, evt_samples, evt_amplitudes, threshold):
         return -1
 
     return int(np.min(evt_samples[mask]))
-
-
 
 
 def plot_flash_xy_waveforms(evt_channels, evt_samples, evt_amplitudes,
@@ -271,16 +428,22 @@ def plot_flash_xy_waveforms(evt_channels, evt_samples, evt_amplitudes,
 
     # --- PLOT X WAVEFORMS ---
     unique_x = np.unique(evt_channels[x_mask])
+    cmap_x = cm.get_cmap("viridis")
+    norm_x = mcolors.Normalize(vmin=unique_x.min(), vmax=unique_x.max())
     for ch in unique_x:
         m = (evt_channels == ch)
-        ax_x.plot(evt_samples[m], evt_amplitudes[m], lw=0.7)
+        ax_x.plot(evt_samples[m], evt_amplitudes[m], lw=0.7,
+                  color=cmap_x(norm_x(ch)))
     ax_x.set_ylabel("X Amplitude")
 
     # --- PLOT Y WAVEFORMS ---
     unique_y = np.unique(evt_channels[y_mask])
+    cmap_y = cm.get_cmap("viridis")
+    norm_y = mcolors.Normalize(vmin=unique_y.min(), vmax=unique_y.max())
     for ch in unique_y:
         m = (evt_channels == ch)
-        ax_y.plot(evt_samples[m], evt_amplitudes[m], lw=0.7)
+        ax_y.plot(evt_samples[m], evt_amplitudes[m], lw=0.7,
+                  color=cmap_y(norm_y(ch)))
     ax_y.set_ylabel("Y Amplitude")
     ax_y.set_xlabel("Sample")
 
@@ -298,6 +461,136 @@ def plot_flash_xy_waveforms(evt_channels, evt_samples, evt_amplitudes,
 
     plt.tight_layout()
     plt.subplots_adjust(hspace=0.0)
+
+
+def plot_flash_xy_waveforms_new(evt_channels_x, evt_samples_x, evt_amplitudes_x,
+                                evt_channels_y, evt_samples_y, evt_amplitudes_y,
+                            min_sample=None, max_sample=None,
+                            event_id=None, run=None, subrun=None):
+    """
+    Plot waveforms for X- and Y-side strips based on flat jagged input data.
+    """
+
+    fig, (ax_x, ax_y) = plt.subplots(2, 1, figsize=(10,6), sharex=True)
+
+    # --- PLOT X WAVEFORMS ---
+    unique_x = np.unique(evt_channels_x)
+    cmap_x = plt.get_cmap("coolwarm")
+    norm_x = mcolors.Normalize(vmin=unique_x.min(), vmax=unique_x.max())
+    for ch in unique_x:
+        m = (evt_channels_x == ch)
+        ax_x.plot(evt_samples_x[m], evt_amplitudes_x[m], lw=0.7,
+                  color=cmap_x(norm_x(ch)))
+    ax_x.set_ylabel("X Amplitude")
+
+    # --- PLOT Y WAVEFORMS ---
+    unique_y = np.unique(evt_channels_y)
+    cmap_y = plt.get_cmap("coolwarm")
+    norm_y = mcolors.Normalize(vmin=unique_y.min(), vmax=unique_y.max())
+    for ch in unique_y:
+        m = (evt_channels_y == ch)
+        ax_y.plot(evt_samples_y[m], evt_amplitudes_y[m], lw=0.7,
+                  color=cmap_y(norm_y(ch)))
+    ax_y.set_ylabel("Y Amplitude")
+    ax_y.set_xlabel("Sample")
+
+    if min_sample is not None:
+        ax_x.axvline(min_sample, color='red', ls='-')
+        ax_y.axvline(min_sample, color='red', ls='-')
+    if max_sample is not None:
+        ax_x.axvline(max_sample, color='red', ls='-')
+        ax_y.axvline(max_sample, color='red', ls='-')
+
+    title = f"Flash Waveforms (XY)"
+    if event_id is not None: title += f" — Event {event_id}"
+    if run is not None: title += f" — {run}"
+    if subrun is not None: title += f' - {subrun}'
+    fig.suptitle(title)
+
+    plt.tight_layout()
+    plt.subplots_adjust(hspace=0.0)
+
+    # Plot specific channels
+    # antenna_channels_left = np.array([0, 1, 2, 3, 4, 5])
+    # antenna_channels_right = np.array([506, 507, 508, 509, 510, 511])
+    # 
+    # fig, (ax_x, ax_y) = plt.subplots(2, 1, figsize=(10, 6), sharex=True)
+    # 
+    # # --- PLOT X WAVEFORMS ---
+    # for ch in antenna_channels_left:
+    #     m = (evt_channels_x == ch)
+    #     ax_x.plot(evt_samples_x[m], evt_amplitudes_x[m], lw=0.7,
+    #               color=cmap_x(norm_x(ch)))
+    # for ch in antenna_channels_right:
+    #     m = (evt_channels_x == ch)
+    #     ax_x.plot(evt_samples_x[m], evt_amplitudes_x[m], lw=0.7,
+    #               color=cmap_x(norm_x(ch)))
+    # ax_x.set_ylabel("X Amplitude")
+    # 
+    # # --- PLOT Y WAVEFORMS ---
+    # for ch in antenna_channels_left:
+    #     m = (evt_channels_y == ch)
+    #     ax_y.plot(evt_samples_y[m], evt_amplitudes_y[m], lw=0.7,
+    #               color=cmap_y(norm_y(ch)))
+    # for ch in antenna_channels_right:
+    #     m = (evt_channels_y == ch)
+    #     ax_y.plot(evt_samples_y[m], evt_amplitudes_y[m], lw=0.7,
+    #               color=cmap_y(norm_y(ch)))
+    # ax_y.set_ylabel("Y Amplitude")
+    # ax_y.set_xlabel("Sample")
+    # 
+    # if min_sample is not None:
+    #     ax_x.axvline(min_sample, color='red', ls='-')
+    #     ax_y.axvline(min_sample, color='red', ls='-')
+    # if max_sample is not None:
+    #     ax_x.axvline(max_sample, color='red', ls='-')
+    #     ax_y.axvline(max_sample, color='red', ls='-')
+    # 
+    # title = f"Flash Waveforms (XY)"
+    # if event_id is not None: title += f" — Event {event_id}"
+    # if run is not None: title += f" — {run}"
+    # if subrun is not None: title += f' - {subrun}'
+    # fig.suptitle(title)
+    # 
+    # plt.tight_layout()
+    # plt.subplots_adjust(hspace=0.0)
+    # 
+    # # Apply common noise subtraction in chunks of 64.
+    # connector_channels = [np.arange(i * 64, (i + 1) * 64) for i in range(8)]
+    # 
+    # df_x = pd.DataFrame({
+    #     "channel": evt_channels_x,
+    #     "sample": evt_samples_x,
+    #     "amplitude": evt_amplitudes_x.astype(float),
+    # })
+    # 
+    # unique_samples = np.unique(evt_samples_x)
+    # for connector_num in range(8):
+    #     ch_mask = df_x["channel"].isin(connector_channels[connector_num])
+    #     for sample in unique_samples:
+    #         mask = (df_x["sample"] == sample) & ch_mask
+    #         df_x.loc[mask, "amplitude"] -= df_x.loc[mask, "amplitude"].median()
+    # 
+    # df_y = pd.DataFrame({
+    #     "channel": evt_channels_y,
+    #     "sample": evt_samples_y,
+    #     "amplitude": evt_amplitudes_y.astype(float),
+    # })
+    # 
+    # unique_samples = np.unique(evt_samples_y)
+    # for connector_num in range(8):
+    #     ch_mask = df_y["channel"].isin(connector_channels[connector_num])
+    #     for sample in unique_samples:
+    #         mask = (df_y["sample"] == sample) & ch_mask
+    #         df_y.loc[mask, "amplitude"] -= df_y.loc[mask, "amplitude"].median()
+    # 
+    # # Plot new x waveforms
+    # fig, (ax_x, ax_y) = plt.subplots(2, 1, figsize=(10, 6), sharex=True)
+    # for ch in df_x['channel'].unique():
+    #     m = (df_x['channel'] == ch)
+    #     ax_x.plot(df_x['sample'][m], df_x['amplitude'][m], lw=0.7,
+    #               color=cmap_x(norm_x(ch)))
+
 
 
 def read_det_data_vars(file_path, variables, tree_name='nt', event_range=None):

@@ -12,11 +12,16 @@ import subprocess
 import os
 
 # --- CONFIGURATION ---
-PI_HOST = "pi@10.42.0.159"
-JUMP_HOST = "ntofall@128.141.177.225"
+# PI_HOST = "pi@10.42.0.159"
+# JUMP_HOST = "ntofall@128.141.177.225"
+# PI_BASE_DIR = "/home/pi/x17/dream_run"
+# LOCAL_BASE_DIR = "/local/home/dn277127/x17/dream_run"
 
-PI_BASE_DIR = "/home/pi/x17/dream_run"
-LOCAL_BASE_DIR = "/local/home/dn277127/x17/dream_run"
+HOST = 'daq'
+# DAQ_BASE_DIR = "/home/mx17/feb_beam/dream_run"
+# LOCAL_BASE_DIR = "/media/dylan/data/x17/feb_beam/dream_run"
+DAQ_BASE_DIR = "/home/mx17/feb_beam/runs"
+LOCAL_BASE_DIR = "/media/dylan/data/x17/feb_beam/runs"
 
 # rsync options:
 # -a : archive mode preserves permissions and timestamps
@@ -24,38 +29,51 @@ LOCAL_BASE_DIR = "/local/home/dn277127/x17/dream_run"
 # -u : skip files newer on receiver
 # --progress : display file transfer progress
 RSYNC_OPTS = "-avu --progress"
+FDF_ONLY = False
+EXCLUDE_FDF = True
 
 
 def main():
-    print("Checking runs on Pi...")
-    runs = get_pi_runs()
-    print(f'Pi runs found: {runs}')
+    print("Checking runs on DAQ...")
+    # runs = get_pi_runs()
+    runs = get_daq_runs()
+    print(f'DAQ runs found: {runs}')
 
-    min_run = 20  # only sync runs >= this number
-    runs = [run for run in runs if run.startswith("run_") and int(run.split("_")[1]) >= min_run]
+    min_run = 48  # only sync runs >= this number
+    max_run = 55
+    runs = [run for run in runs if run.startswith("run_") and max_run >= int(run.split("_")[1]) >= min_run]
     print(f'Filtering to runs >= {min_run}: {runs}')
 
     for run in runs:
-        # if not run.startswith("run"):  # optional sanity filter
-        #     continue
-        run_path = os.path.join(LOCAL_BASE_DIR, run)
-        sync_run(run)
+        sync_run(run, FDF_ONLY, EXCLUDE_FDF)
 
     print("Sync complete.")
     print('donzo')
 
 
-def get_pi_runs():
+def get_daq_runs():
     """Return a list of run directories on the Raspberry Pi."""
     cmd = [
         "ssh",
-        "-J", f"{JUMP_HOST}",
-        f"{PI_HOST}",
-        f"ls -1 {PI_BASE_DIR}"
+        f"{HOST}",
+        f"ls -1 {DAQ_BASE_DIR}"
     ]
     result = subprocess.run(cmd, capture_output=True, text=True)
     runs = result.stdout.split()
     return runs
+
+
+# def get_pi_runs():
+#     """Return a list of run directories on the Raspberry Pi."""
+#     cmd = [
+#         "ssh",
+#         "-J", f"{JUMP_HOST}",
+#         f"{PI_HOST}",
+#         f"ls -1 {PI_BASE_DIR}"
+#     ]
+#     result = subprocess.run(cmd, capture_output=True, text=True)
+#     runs = result.stdout.split()
+#     return runs
 
 
 def ensure_local_dir(path):
@@ -65,26 +83,31 @@ def ensure_local_dir(path):
         os.makedirs(path, exist_ok=True)
 
 
-def sync_run(run_name):
+def sync_run(run_name, fdf_only=True, exclude_fdf=False):
     """Sync .fdf files for a single run using rsync."""
-    pi_dir = f"{PI_HOST}:{PI_BASE_DIR}/{run_name}/"
+    # pi_dir = f"{PI_HOST}:{PI_BASE_DIR}/{run_name}/"
+    daq_dir = f"{HOST}:{DAQ_BASE_DIR}/{run_name}/"
     local_dir = f"{LOCAL_BASE_DIR}/{run_name}/"
 
     ensure_local_dir(local_dir)
 
     rsync_patterns = [
         "--include=*/",        # keep directory structure
-        "--include=*.fdf",     # include only .fdf files
-        "--exclude=*",         # exclude everything else
         "--prune-empty-dirs",
     ]
+    if fdf_only:
+        rsync_patterns.append("--include=*.fdf") # include only .fdf files
+        rsync_patterns.append("--exclude=*")  # exclude everything else
+    elif exclude_fdf:
+        rsync_patterns.append("--exclude=*.fdf")
 
     cmd = [
         "rsync",
         *RSYNC_OPTS.split(),
         *rsync_patterns,
-        "-e", f"ssh -J {JUMP_HOST}",
-        pi_dir,
+        # "-e", f"ssh -J {JUMP_HOST}",
+        "-e", f"ssh",
+        daq_dir,
         local_dir,
     ]
 

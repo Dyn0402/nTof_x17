@@ -18,7 +18,7 @@ m_e = 0.000511  # electron mass
 
 def main():
     m = 0.0168  # parent mass (GeV), e.g. X17
-    E = 0.02  # parent energy (GeV)
+    E = 0.02058  # parent energy (GeV)
 
     angles = np.array([simulate_decay(m, E) for _ in range(10000)])
 
