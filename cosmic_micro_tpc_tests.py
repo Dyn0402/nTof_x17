@@ -21,6 +21,7 @@ from scipy.optimize import curve_fit as cf
 
 from Mx17StripMap import RunConfig
 from M3RefTracking import M3RefTracking, get_xy_angles, get_xy_positions
+from Measure import Measure
 
 
 def main():
@@ -88,6 +89,8 @@ def main():
     rays = M3RefTracking(rays_dir, chi2_cut=20)
     x_angles, y_angles, ray_event_nums = get_xy_angles(rays.ray_data)
     x_positions, y_positions, ray_pos_event_nums = get_xy_positions(rays.ray_data, 250)
+    x_positions = -np.array(x_positions)
+    x_angles = -np.array(x_angles)
 
     fig, ax = plt.subplots()
     ax.scatter(np.rad2deg(x_angles), np.rad2deg(y_angles), alpha=0.5, color='red')
@@ -98,17 +101,52 @@ def main():
 
     # Correlate tan(theta) with angles.
     x_slopes, y_slopes, x_pos, y_pos = [], [], [], []
-    for event_num in ray_event_nums:
+    eff_hits = []  # 1 if hit found, 0 otherwise
+    dx_list = []  # x residual
+    dy_list = []  # y residual
+    dr_list = []  # radial residual
+    ref_x_list = []  # x position of reference track
+    ref_y_list = []  # y position of reference track
+    # for event_num in ray_event_nums:
+    for i, event_num in enumerate(ray_pos_event_nums):
         print(f'\nEvent {event_num}:')
-        if event_num > 83000:
-            plot = True
-        else:
-            plot = False
-        x_slope, y_slope, x, y = line_fit_test(df, event_number=event_num, plot=plot)
-        x_slopes.append(1 / -x_slope)
+        # if event_num > 86000:
+        #     plot = True
+        # else:
+        #     plot = False
+        plot = False
+        x_slope, y_slope, det_x, det_y = line_fit_test(df, event_number=event_num, plot=plot)
+        x_slopes.append(1 / x_slope)
         y_slopes.append(1 / y_slope)
-        x_pos.append(-x)
-        y_pos.append(y)
+        x_pos.append(det_x)
+        y_pos.append(det_y)
+        # Get reference track position at detector Z
+        ref_x = x_positions[i]
+        ref_y = y_positions[i]
+
+        # Check if a valid hit exists (assuming line_fit_test returns NaN if no hit)
+        has_hit = not (np.isnan(det_x) or np.isnan(det_y))
+
+        eff_hits.append(1 if has_hit else 0)
+        ref_x_list.append(ref_x)
+        ref_y_list.append(ref_y)
+
+        if has_hit:
+            # Note: adjust signs based on your coordinate system (ref - det)
+            dx = ref_x - det_x  # Using -det_x as per your correlation plot logic
+            dy = ref_y - det_y
+            dx_list.append(dx)
+            dy_list.append(dy)
+            dr_list.append(np.sqrt(dx ** 2 + dy ** 2))
+        else:
+            dx_list.append(np.nan)
+            dy_list.append(np.nan)
+            dr_list.append(np.nan)
+
+    # Convert to numpy arrays for the circle scan
+    eff_hits = np.array(eff_hits)
+    ref_x_arr = np.array(ref_x_list)
+    ref_y_arr = np.array(ref_y_list)
 
     # Plot correlation between slopes and tangent of angles
     fig, ax = plt.subplots()
@@ -137,10 +175,56 @@ def main():
     ax.set_ylabel('Y Position Rays (mm)')
     fig.tight_layout()
 
+    # 1. Define your grid parameters
+    # Adjust these based on your detector size (e.g., -50 to 50 mm)
+    bins = 100
+    range_x = [min(x_positions), max(x_positions)]
+    range_y = [min(y_positions), max(y_positions)]
+
+    # 2. Identify successes (hits) vs trials (reference tracks)
+    # We assume a hit is 'found' if the detector position (x_pos) isn't NaN or 0
+    # Adjust 'is_hit' logic based on how your line_fit_test returns nulls
+    is_hit = ~np.isnan(x_pos)
+
+    # 3. Create 2D Histograms
+    # Histogram of all reference tracks (The Denominator)
+    ref_counts, x_edges, y_edges = np.histogram2d(
+        x_positions, y_positions, bins=bins, range=[range_x, range_y]
+    )
+
+    # Histogram of tracks that actually had a corresponding hit (The Numerator)
+    hit_counts, _, _ = np.histogram2d(
+        np.array(x_positions)[is_hit],
+        np.array(y_positions)[is_hit],
+        bins=bins, range=[range_x, range_y]
+    )
+
+    # 4. Calculate Efficiency (Numerator / Denominator)
+    # Use np.divide to handle division by zero (empty bins)
+    with np.errstate(divide='ignore', invalid='ignore'):
+        efficiency = hit_counts / ref_counts
+        efficiency = np.nan_to_num(efficiency)  # Replace NaNs with 0
+
+    # 5. Plotting
+    fig, ax = plt.subplots(figsize=(8, 7))
+    im = ax.imshow(
+        efficiency.T,  # Transpose to match (x,y) axes
+        origin='lower',
+        extent=[x_edges[0], x_edges[-1], y_edges[0], y_edges[-1]],
+        cmap='viridis',
+        vmin=0, vmax=1
+    )
+
+    cbar = plt.colorbar(im, ax=ax)
+    cbar.set_label('Efficiency (Hits / Tracks)')
+    ax.set_xlabel('Reference X Position [mm]')
+    ax.set_ylabel('Reference Y Position [mm]')
+    ax.set_title('Detector Efficiency Map')
+
     plt.show()
 
 
-def line_fit_test(df, event_number, plot=True):
+def line_fit_test(df, event_number, plot=True, return_extra=False):
     df = df[df['eventId'] == event_number]
 
     # df_x = df[df['x_position_mm'].notna()]
@@ -152,18 +236,40 @@ def line_fit_test(df, event_number, plot=True):
 
     # print(f'dfx:\n{df_x}\ndfy:\n{df_y}\n')
 
-    gap_threshold = 3  # mm
+    # gap_threshold = 12  # mm
+    #
+    # df_x = df[df["x_position_mm"].notna()].sort_values("x_position_mm").reset_index(drop=True)
+    # df_y = df[df["y_position_mm"].notna()].sort_values("y_position_mm").reset_index(drop=True)
+    # if df_x.empty or df_y.empty:
+    #     print(f'Empty axis: df_x len = {len(df_x)}, df_y len = {len(df_y)}')
+    #     return np.nan, np.nan, np.nan, np.nan
+    #
+    # df_x["cluster"] = (df_x["x_position_mm"].diff().gt(gap_threshold).fillna(False)).cumsum()
+    # df_y["cluster"] = (df_y["y_position_mm"].diff().gt(gap_threshold).fillna(False)).cumsum()
+
+    gap_threshold = 12  # mm
+    time_threshold = 200  # ns
 
     df_x = df[df["x_position_mm"].notna()].sort_values("x_position_mm").reset_index(drop=True)
+    df_x["cluster"] = (
+            (df_x["x_position_mm"].diff().gt(gap_threshold))
+            # | (df_x["time"].diff().gt(time_threshold))
+    ).fillna(False).cumsum()
+
     df_y = df[df["y_position_mm"].notna()].sort_values("y_position_mm").reset_index(drop=True)
+    df_y["cluster"] = (
+            (df_y["y_position_mm"].diff().gt(gap_threshold))
+            # | (df_y["time"].diff().gt(time_threshold))
+    ).fillna(False).cumsum()
 
-    df_x["cluster"] = (df_x["x_position_mm"].diff().gt(gap_threshold).fillna(False)).cumsum()
-    df_y["cluster"] = (df_y["y_position_mm"].diff().gt(gap_threshold).fillna(False)).cumsum()
-
-    # print(f'dfx cluster:\n{df_x["cluster"]}\ndfy cluster:\n{df_y["cluster"]}\n')
 
     # If no clusters, return nans
-    if df_x.empty or df_y.empty or not (df_x["cluster"].any() and df_y["cluster"].any()):
+    # Check if df_x is empty or df_y is empty
+    if df_x["cluster"].empty or df_y["cluster"].empty:
+        print(f'No clusters found x: {df_x["cluster"].any()} y: {df_y["cluster"].any()}')
+        print(f'df_x:\n{df_x[['time', 'x_position_mm', 'cluster']]}\ndf_y:\n{df_y[['time', 'y_position_mm', 'cluster']]}')
+        if return_extra:
+            return np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan
         return np.nan, np.nan, np.nan, np.nan
 
     # Get the largest cluster number
@@ -187,6 +293,9 @@ def line_fit_test(df, event_number, plot=True):
     x_pos_earliest_time = df_x[df_x['time'] == x_earliest_time]['x_position_mm'].values[0]
     y_earliest_time = df_y['time'].min()
     y_pos_earliest_time = df_y[df_y['time'] == y_earliest_time]['y_position_mm'].values[0]
+
+    x_pos_latest_time = df_x['time'].max()
+    y_pos_latest_time = df_y['time'].max()
 
     eps = 1e-9  # avoid divide-by-zero
 
@@ -253,7 +362,34 @@ def line_fit_test(df, event_number, plot=True):
 
         fig.tight_layout()
 
-    return popt_x[0], popt_y[0], x_pos_earliest_time, y_pos_earliest_time
+    if return_extra:
+        cluster_time = max(x_pos_latest_time, y_pos_latest_time) - min(x_pos_earliest_time, y_pos_earliest_time)
+        # 1. Get the predicted time values from your model using the fitted slope (popt)
+        # The lambda mimics your line_fixed_point function
+        x_pred = line_fixed_point(df_x["x_position_mm"].to_numpy(), *popt_x, x_pos_earliest_time, x_earliest_time)
+        y_pred = line_fixed_point(df_y["y_position_mm"].to_numpy(), *popt_y, y_pos_earliest_time, y_earliest_time)
+
+        # 2. Calculate Chi-Squared
+        # We use the same sigma_x/sigma_y you passed into curve_fit
+        chi2_x = np.sum(((df_x["time"] - x_pred) / sigma_x) ** 2)
+        chi2_y = np.sum(((df_y["time"] - y_pred) / sigma_y) ** 2)
+
+        # 3. Calculate Reduced Chi-Squared (chi2 / degrees of freedom)
+        # dof = number of points - number of parameters (you only fit 1 parameter: m)
+        dof_x = len(df_x) - 1
+        dof_y = len(df_y) - 1
+
+        red_chi2_x = chi2_x / dof_x if dof_x > 0 else np.nan
+        red_chi2_y = chi2_y / dof_y if dof_y > 0 else np.nan
+
+        # print(f"X Fit: chi2 = {chi2_x:.2f}, reduced chi2 = {red_chi2_x:.2f}")
+        # print(f"Y Fit: chi2 = {chi2_y:.2f}, reduced chi2 = {red_chi2_y:.2f}")
+        return popt_x[0], popt_y[0], x_pos_earliest_time, y_pos_earliest_time, cluster_time, red_chi2_x, red_chi2_y
+    else:
+        return popt_x[0], popt_y[0], x_pos_earliest_time, y_pos_earliest_time
+
+
+
 
     # min_amp = 200
     # df = df[df['amplitude'] >= min_amp]
@@ -290,6 +426,232 @@ def extract_file_numbers_tuple(filename: str) -> Optional[Tuple[int, int]]:
         return (int(file_num_str), int(feu_num_str))
     else:
         return None
+
+
+def fit_time_diffs(time_diffs, n_bins=100, min_events=100, nsigma_filter=None, return_hist=False):
+    time_diffs = np.array(time_diffs)
+    time_diffs = time_diffs[~np.isnan(time_diffs)]
+
+    if nsigma_filter is not None:
+        median = np.median(time_diffs)
+        std = np.std(time_diffs)
+        mask = (time_diffs > median - nsigma_filter * std) & (time_diffs < median + nsigma_filter * std)
+        time_diffs = time_diffs[mask]
+
+    meases = [Measure(np.nan, np.nan) for _ in range(3)]
+
+    n_events = time_diffs.size
+    if n_events < min_events:
+        if return_hist:
+            return meases, None, None, None
+        return meases
+
+    hist, bin_edges = np.histogram(time_diffs, bins=n_bins)
+    bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2
+
+    hist_err = np.where(hist > 0, np.sqrt(hist), 1)  # Assume not negative!
+
+    try:
+        p0 = [np.max(hist), np.mean(time_diffs), np.std(time_diffs)]
+        popt, pcov = cf(gaus, bin_centers, hist, p0=p0, sigma=hist_err, absolute_sigma=True)
+        popt[2] = abs(popt[2])  # Ensure sigma is positive
+
+        if nsigma_filter is not None:  # Refit after filtering on nsigma
+            mask = (time_diffs > popt[1] - nsigma_filter * popt[2]) & (time_diffs < popt[1] + nsigma_filter * popt[2])
+            time_diffs = time_diffs[mask]
+            hist, bin_edges = np.histogram(time_diffs, bins=n_bins)
+            bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2
+
+            hist_err = np.where(hist > 0, np.sqrt(hist), 1)  # Assume not negative!
+            p0 = [np.max(hist), np.mean(time_diffs), np.std(time_diffs)]
+            popt, pcov = cf(gaus, bin_centers, hist, p0=p0, sigma=hist_err, absolute_sigma=True)
+
+        popt[2] = abs(popt[2])  # Ensure sigma is positive
+        perr = np.sqrt(np.diag(pcov))
+        meases = [Measure(val, err) for val, err in zip(popt, perr)]
+
+        if return_hist:
+            return meases, hist, bin_centers, hist_err
+        return meases
+    except RuntimeError:
+        if return_hist:
+            return meases, hist, bin_centers, hist_err
+        return meases
+
+
+def make_percentile_cuts(data, percentile_cuts=(None,None), return_what='data'):
+    if len(data) == 0:
+        return data
+
+    if percentile_cuts[0] is not None and percentile_cuts[1] is not None:
+        low_percentile = np.nanpercentile(data, percentile_cuts[0])
+        high_percentile = np.nanpercentile(data, percentile_cuts[1])
+        percentile_filter = (data > low_percentile) & (data < high_percentile)
+    elif percentile_cuts[0] is not None:
+        low_percentile = np.nanpercentile(data, percentile_cuts[0])
+        percentile_filter = data > low_percentile
+    elif percentile_cuts[1] is not None:
+        high_percentile = np.nanpercentile(data, percentile_cuts[1])
+        percentile_filter = data < high_percentile
+    else:
+        return data
+
+    if return_what == 'filter':
+        return percentile_filter
+    else:
+        return data[percentile_filter]
+
+
+def get_circle_scan(resids, xs, ys, xy_pairs, radius=1, resid_lims=None, min_events=100, nbins=100,
+                    percentile_cuts=(None, None), nsigma_filter=None, shape='circle', gaus_fit=True, plot=False):
+    if resid_lims is not None:
+        resids[(resids < resid_lims[0]) | (resids > resid_lims[1])] = np.nan
+
+    resolutions, means, events = [], [], []
+    for x, y in xy_pairs:
+        # print(f'Circle Scan: ({x}, {y})')
+        if shape == 'circle':
+            rs = np.sqrt((xs - x) ** 2 + (ys - y) ** 2)
+            mask = rs < radius
+        elif shape == 'square':
+            mask = (xs > x - radius) & (xs < x + radius) & (ys > y - radius) & (ys < y + radius)
+        else:
+            print(f"Invalid shape: {shape}")
+            return
+        time_diffs_bin = resids[mask]
+        time_diffs_bin = np.array(time_diffs_bin[~np.isnan(time_diffs_bin)])
+
+        time_diffs_bin = make_percentile_cuts(time_diffs_bin, percentile_cuts)
+
+        n_events = time_diffs_bin.size
+
+        if not gaus_fit:
+            if n_events < min_events:
+                resolutions.append(Measure(np.nan, np.nan))
+                means.append(Measure(np.nan, np.nan))
+                events.append(n_events)
+            else:
+                resolutions.append(Measure(np.nansum(time_diffs_bin), 0))
+                means.append(Measure(np.nanmean(time_diffs_bin), 0))
+                events.append(n_events)
+            if plot:
+                print(f'Skipping Gaussian fit for ({x}, {y}) due to gaus_fit=False')
+            continue
+        fit_meases, hist_bin, bin_centers, hist_err = fit_time_diffs(time_diffs_bin, n_bins=nbins, min_events=min_events,
+                                                                     nsigma_filter=nsigma_filter, return_hist=True)
+
+        resolutions.append(fit_meases[2])
+        means.append(fit_meases[1])
+        events.append(n_events)
+
+        # hist_bin, bin_edges = np.histogram(time_diffs_bin, bins=100)
+        # bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2
+
+        if plot:
+            fig, ax = plt.subplots()
+            # ax.bar(bin_centers, hist_bin, width=bin_edges[1] - bin_edges[0], align='center', alpha=0.5)
+            # hist_err = np.where(hist_bin > 0, np.sqrt(hist_bin), 1)
+            ax.errorbar(bin_centers, hist_bin, yerr=hist_err, fmt='o', color='black', ls='none', zorder=2)
+            x_plt = np.linspace(bin_centers[0], bin_centers[-1], 200)
+            ax.plot(x_plt, gaus(x_plt, *[par.val for par in fit_meases]), color='red', zorder=4)
+            ax.axhline(0, color='black', alpha=0.5, zorder=0)
+            ax.set_title(f'x={x} mm, y={y}, radius={radius} mm')
+            ax.set_xlabel('SAT [ps]')
+            ax.set_ylabel('Events')
+            time_unit = 'ps'
+            fit_str = f'Events={n_events}\nA={fit_meases[0]}\nμ={fit_meases[1]} {time_unit}\nσ={fit_meases[2]} {time_unit}'
+            ax.annotate(fit_str, xy=(0.05, 0.95), xycoords='axes fraction', ha='left', va='top',
+                        bbox=dict(boxstyle='round,pad=0.5', edgecolor='black', facecolor='lightyellow'))
+            fig.tight_layout()
+
+    return resolutions, means, events
+
+
+def plot_2D_circle_scan(scan_resolutions, scan_means, xs, ys, scan_events=None, radius=None, percentile_filter=(0, 100),
+                        plot='both', conversion_factor=1, unit_str='mm',
+                        res_title='Spatial Resolution', mean_title='Mean Residual',
+                        res_range=None, mean_range=None):
+    radius_str = f' radius={radius:.1f} mm' if radius is not None else ''
+
+    scan_resolution_vals = [res.val for res in scan_resolutions]
+    scan_mean_val = [mean.val for mean in scan_means]
+
+    scan_resolution_vals = [res * conversion_factor for res in scan_resolution_vals]
+    scan_mean_val = [mean * conversion_factor for mean in scan_mean_val]  # Convert to micron
+
+    x_mesh, y_mesh = np.meshgrid(xs, ys)
+
+    # Convert to 2D arrays
+    scan_resolutions_2d = np.array(scan_resolution_vals).reshape(len(ys), len(xs))
+    scan_means_2d = np.array(scan_mean_val).reshape(len(ys), len(xs))
+    print(f'scan_res min: {np.nanmin(scan_resolution_vals)}, max: {np.nanmax(scan_resolution_vals)}')
+    res_vmin, res_vmax = np.nanmin(scan_resolution_vals), np.nanpercentile(scan_resolution_vals, percentile_filter[1])
+    print(f'res_vmax: {res_vmax}')
+    mean_vmin, mean_vmax = np.nanpercentile(scan_mean_val, 100 - percentile_filter[1]), np.nanpercentile(scan_mean_val, 100 - percentile_filter[0])
+    print(f'mean_vmin: {mean_vmin}, mean_vmax: {mean_vmax}')
+
+    if res_range is not None:
+        res_vmin, res_vmax = res_range
+    if mean_range is not None:
+        mean_vmin, mean_vmax = mean_range
+
+    # Plot results
+    if plot == 'both' or 'resolution' in plot:
+        fig, ax = plt.subplots(figsize=(8, 6))
+        c = ax.imshow(scan_resolutions_2d, extent=[xs.min(), xs.max(), ys.min(), ys.max()], origin="lower", aspect="auto",
+                      cmap="jet", vmin=res_vmin, vmax=res_vmax)
+        plt.colorbar(c, label=f"{res_title} [{unit_str}]")
+        ax.set_xlabel("X Position [mm]")
+        ax.set_ylabel("Y Position [mm]")
+        ax.set_title(f"{res_title} Heatmap{radius_str}")
+
+        # Create the contour plot
+        fig, ax = plt.subplots(figsize=(8, 6))
+        levels = np.linspace(res_vmin, res_vmax, 50)
+        contour = ax.contourf(x_mesh, y_mesh, scan_resolutions_2d, levels=levels, cmap="jet")
+
+        # Add color bar
+        cbar = plt.colorbar(contour)
+        cbar.set_label(f"{res_title} [{unit_str}]")
+
+        # Labels and title
+        ax.set_xlabel("X Position [mm]")
+        ax.set_ylabel("Y Position [mm]")
+        ax.set_title(f"{res_title} Contour Plot{radius_str}")
+
+    if plot == 'both' or 'mean' in plot:
+        fig, ax = plt.subplots(figsize=(8, 6))
+        c = ax.imshow(scan_means_2d, extent=[xs.min(), xs.max(), ys.min(), ys.max()], origin="lower", aspect="auto",
+                      cmap="jet", vmin=mean_vmin, vmax=mean_vmax)
+        plt.colorbar(c, label=f"{mean_title} [{unit_str}]")
+        ax.set_xlabel("X Position [mm]")
+        ax.set_ylabel("Y Position [mm]")
+        ax.set_title(f"{mean_title} Heatmap{radius_str}")
+
+        # Create the contour plot
+        fig, ax = plt.subplots(figsize=(8, 6))
+        levels = np.linspace(mean_vmin, mean_vmax, 50)
+        contour = ax.contourf(x_mesh, y_mesh, scan_means_2d, levels=levels, cmap="jet")
+
+        # Add color bar
+        cbar = plt.colorbar(contour)
+        cbar.set_label(f"{mean_title} [{unit_str}]")
+
+        # Labels and title
+        ax.set_xlabel("X Position [mm]")
+        ax.set_ylabel("Y Position [mm]")
+        ax.set_title(f"{mean_title} Contour Plot{radius_str}")
+
+    if scan_events is not None:
+        scan_events_2d = np.array(scan_events).reshape(len(ys), len(xs))
+        masked_scan_events_2d = np.ma.masked_equal(scan_events_2d, 0)
+        fig, ax = plt.subplots(figsize=(8, 6))
+        c = ax.imshow(masked_scan_events_2d, extent=[xs.min(), xs.max(), ys.min(), ys.max()], origin="lower",
+                      aspect="auto", cmap="jet")
+        plt.colorbar(c, label="Number of Events")
+        ax.set_xlabel("X Position [mm]")
+        ax.set_ylabel("Y Position [mm]")
+        ax.set_title(f"Event Statistics Heatmap{radius_str}")
 
 
 def line_fixed_point(x, m, x0, y0):

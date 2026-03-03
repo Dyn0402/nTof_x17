@@ -22,21 +22,52 @@ def main():
     # run = 'run_49'
     # subrun = 'resist_510V_drift_600V'
     # subrun = 'drift_600V_6'
-    run = 'run_52'
-    subrun = 'initial_resist_610V_drift_600V'
+    # run = 'run_18'
+    # subrun = 'resist_440V_drift_600V'
+    # run = 'run_34'
+    # subrun = 'resist_425V_drift_600V'
+    # run = 'run_60'
+    # subrun = 'resist_580V_drift_600V'
+    # run = 'run_88'
+    # subrun = 'resist_500V_drift_1000V'
+    # run = 'run_88'
+    # subrun = 'resist_530V_drift_1000V'
+    # run = 'run_26'
+    # subrun = 'resist_410V_drift_600V'
+    # run = 'run_103'
+    # subrun = 'resist_540V_drift_1000V'
+    # run = 'run_71'
+    # run = 'run_88'
+    # subrun = 'resist_690V_drift_1000V'
+    # run = 'run_124'
+    # subrun = 'resist_710V_drift_1000V'
+    # run = 'run_137'
+    # subrun = 'resist_0V_drift_0V'
+    # subrun = 'resist_530V_drift_1000V'
+    # subrun = 'initial_resist_550V_drift_1000V'
+    run = 'run_140'
+    subrun = 'resist_0V_drift_0V'
 
 
     feu_nums = {4: 'y', 5: 'x'}  # 4 goes in x and gives y position
     # feu_nums = {4: 'y', 6: 'x'}  # 4 goes in x and gives y position
-    file_num = 19
-    event = 8334
+    file_num = 0
+    event = 6
     channels = None  # To select specific channels to plot
     # channels = np.array([103, 104, 105])  # To select specific channels to plot
+    # channels = np.array([4, 5, 6]) + 64  # To select specific channels to plot
+    # channels = np.array([8, 9, 10]) + 64  # To select specific channels to plot
+    # channels = np.array([17, 18, 19]) + 64  # To select specific channels to plot
+    # channels = np.array([-30, 4, 5, 6, 16, 17, 18, 19, 8, 9, 10]) + 64  # To select specific channels to plot
+    # channels = np.array([5, 18, 9]) + 64  # To select specific channels to plot
+    # channels = np.array([16, 4]) + 64  # To select specific channels to plot
+    # channels = np.arange(1 * 64, 2 * 64)  # To select specific channels to plot
 
     decoded_dir = 'decoded_root'
 
     plot_waveform_hits_figure(base_path, run, subrun, decoded_dir, feu_nums, file_num, event, channels=channels)
-    plot_waveform_hits_figure_single_feu(base_path, run, subrun, decoded_dir, 6, file_num, event, channels=channels)
+    # plot_waveform_hits_figure_att_test(base_path, run, subrun, decoded_dir, feu_nums, file_num, event, channels=channels)
+    # plot_waveform_hits_figure_single_feu(base_path, run, subrun, decoded_dir, 6, file_num, event, channels=channels)
     plt.show()
 
     print('donzo')
@@ -46,8 +77,8 @@ def plot_waveform_hits_figure(base_path, run, subrun, decoded_dir, feu_nums, fil
     """
     Plot combination waveform and hits figure. Waveforms on the top of the figure and hits on the bottom.
     """
-    min_hit_amp = 50
-    # min_hit_amp = 400
+    # min_hit_amp = 50
+    min_hit_amp = 200
     ns_per_sample = 20
 
     fig, axs = plt.subplots(4, 1, sharex=True, figsize=(12, 8))
@@ -115,6 +146,55 @@ def plot_waveform_hits_figure(base_path, run, subrun, decoded_dir, feu_nums, fil
     axs[3].scatter(df_y['time'] / 3 / 1000, df_y['y_position_mm'], c=df_y['local_max'], cmap='jet')
     axs[3].set_ylabel('Y Hit Position (mm)')
     axs[3].set_xlabel('Time (μs)')
+    fig.tight_layout()
+
+    plt.subplots_adjust(hspace=0.0)
+
+
+def plot_waveform_hits_figure_att_test(base_path, run, subrun, decoded_dir, feu_nums, file_num, event, channels=None):
+    """
+    Plot combination waveform and hits figure. Waveforms on the top of the figure and hits on the bottom.
+    """
+    # min_hit_amp = 50
+    min_hit_amp = 200
+    ns_per_sample = 20
+    ch_map = {4: 'x2', 5: 'x2', 6: 'x2', 8: 'x5', 9: 'x5', 10: 'x5', 17: 'x10', 18: 'x10', 19: 'x10'}
+    color_map = {'x2': 'blue', 'x5': 'green', 'x10': 'red', 'x0': 'black'}
+
+    fig, ax = plt.subplots(1, 1, sharex=True, figsize=(10, 5))
+
+    decoded_dir = os.path.join(base_path, run, subrun, decoded_dir)
+    evt_samples, evt_channels, evt_amplitudes = load_decoded_waveforms(decoded_dir, feu_nums, file_num)
+    evt_ids, timestamps = load_evtids_timestamps(decoded_dir, list(feu_nums.keys())[0], file_num)
+    evt_index = np.where(evt_ids == event)[0][0]
+    evt_channels_x, evt_amplitudes_x = evt_channels['x'][evt_index], evt_amplitudes['x'][evt_index]
+    evt_channels_y, evt_amplitudes_y = evt_channels['y'][evt_index], evt_amplitudes['y'][evt_index]
+    evt_times_x = evt_samples['x'][evt_index] * ns_per_sample / 1000  # Convert from samples to microseconds
+    evt_times_y = evt_samples['y'][evt_index] * ns_per_sample / 1000
+
+    # --- PLOT X WAVEFORMS ---
+    unique_x = np.unique(evt_channels_x)
+    for ch in unique_x:
+        if channels is not None and ch not in channels: continue
+        ch -= 1
+        m = (evt_channels_x == ch)
+        ch_n = ch - 64 + 1
+        ch_att = ch_map.get(ch_n, 'x0')
+        ax.plot(evt_times_x[m], evt_amplitudes_x[m], lw=1.5, color=color_map[ch_att], label=f'Channel {ch_n} - {ch_att}')
+        # Superimpose derivative
+        # d_evt_amplitudes_x = evt_amplitudes_x[m].astype(float)
+        # evt_times_x_avg = (evt_times_x[m][:-1] + evt_times_x[m][1:]) / 2
+        # axs[0].plot(evt_times_x_avg, d_evt_amplitudes_x[1:] - d_evt_amplitudes_x[:-1], lw=0.7, color='red')
+    ax.set_ylabel("X Amplitude")
+    ax.legend()
+
+    title = f"Event Waveforms and Hits"
+    if event is not None: title += f" — Event {event}"
+    if run is not None: title += f" — {run}"
+    if subrun is not None: title += f' - {subrun}'
+    fig.suptitle(title)
+
+    ax.set_xlabel('Time (μs)')
     fig.tight_layout()
 
     plt.subplots_adjust(hspace=0.0)

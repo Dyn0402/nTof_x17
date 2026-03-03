@@ -22,32 +22,131 @@ from Mx17StripMap import Mx17StripMap, RunConfig
 
 
 def main():
-    # base_path = '/media/dylan/data/x17/cosmic_bench/det_1/mx17_1-27-26/'
+    # base_path = '/media/dylan/data/x17/cosmic_bench/det_1/'
     base_path = '/media/dylan/data/x17/feb_beam/runs/'
-    run = 'run_18'
-    sub_run = 'resist_450V_drift_600V'
+    # run = 'run_63'
+    # sub_run = 'resist_440V_drift_600V'
+    # run = 'run_34'
+    # sub_run = 'resist_425V_drift_600V'
+    # run = 'run_60'
+    # sub_run = 'resist_580V_drift_600V'
+    # run = 'run_114'
+    # sub_run = 'resist_665V_drift_1000V'
     # base_path = '/mnt/data/x17/cosmic_bench/det_1/'
     # run = 'mx17_det1_overnight_run_1-27-26'
+    # run = 'mx17_det1_daytime_run_1-28-26'
     # sub_run = 'overnight_run'
     # feus = {1: 'm3', 4: 'MX17 X Strips', 6: 'MX17 Y Strips'}
-    feus = [4, 5]
-
-
+    feus_map = {4: 'y', 5: 'x'}  # Which positions they give
+    # feus_map = {4: 'y', 6: 'x'}  # Which positions they give
+    feus = list(feus_map.keys())
 
     # hvs = [400, 425, 450, 475]
     # hvs = [300, 400, 430, 450, 480]
-    hvs = list(np.arange(0, 520, 10))
+    hvs = list(np.arange(300, 820, 5))
     # runs = ['run_26', 'run_27', 'run_30', 'run_31']
-    runs = {'run_18': 'Ar - Timepix - No Shielding',
-            'run_26': 'He - Empty - No Shielding',
-            'run_27': 'He - Lead - No Shielding',
-            'run_30': 'He - B4C - No Shielding',
-            'run_32': 'He - Empty - Shielding'}
-    # plot_times_with_hv(base_path, run, sub_run, feus, hvs)
+    # runs = {
+    #     'run_18': 'Ar/CF4/Iso 88/10/2 - Timepix - No Shielding',
+    #     'run_35': 'Ar/CF4/Iso 88/10/2 - Carbon - Shielding'
+    # }
+
+    # runs = {
+    #         'run_26': 'He - Empty - No Shielding',
+    #         'run_27': 'He - Lead - No Shielding',
+    #         'run_30': 'He - B4C - No Shielding',
+    #         'run_32': 'He - Empty - Shielding',
+    #         'run_33': 'He - Carbon - Shielding'
+    # }
+    #
+    # runs = {
+    #     'run_57': 'Ar/CF4 90/10 - Beam Cap - Shielding',
+    #     'run_59': 'Ar/CF4 90/10 - B4C - Shielding'
+    # }
+    #
+    # runs = {
+    #     'run_43': 'Ar/CF4/CO2 45/40/15 - Carbon - Shielding',
+    #     # 'run_47': 'Ar/CF4/CO2 45/40/15 - Carbon - Shielding SELF',
+    # }
+
+    # runs = {
+    #     'run_18': 'Ar/CF4/Iso 88/10/2 - Timepix - No Shielding',
+    #     'run_35': 'Ar/CF4/Iso 88/10/2 - Carbon - Shielding',
+    #     'run_26': 'He - Empty - No Shielding',
+    #     'run_27': 'He - Lead - No Shielding',
+    #     'run_30': 'He - B4C - No Shielding',
+    #     'run_32': 'He - Empty - Shielding',
+    #     'run_33': 'He - Carbon - Shielding',
+    #     'run_57': 'Ar/CF4 90/10 - Beam Cap - Shielding',
+    #     'run_59': 'Ar/CF4 90/10 - B4C - Shielding',
+    #     'run_43': 'Ar/CF4/CO2 45/40/15 - Carbon - Shielding',
+    #     # 'run_47': 'Ar/CF4/CO2 45/40/15 - Carbon - Shielding SELF',
+    # }
+
+    # runs = {
+    #     'run_88_D500V': 'He/Ethane 96.5/3.5 - B4C - Drift 500V',
+    #     'run_88_D1000V': 'He/Ethane 96.5/3.5 - B4C - Drift 1000V',
+    #     'run_88_D1500V': 'He/Ethane 96.5/3.5 - B4C - Drift 1500V',
+    # }
+    # sub_run = 'resist_540V_drift_1000V'
+
+    # runs = {
+    #     'run_114_D500V': 'Ar/CO2 70/30 - B4C - Carbon Frame - Drift 500V',
+    #     'run_114_D1000V': 'Ar/CO2 70/30 - B4C - Carbon Frame - Drift 1000V',
+    #     'run_114_D1500V': 'Ar/CO2 70/30 - B4C - Carbon Frame - Drift 1500V',
+    #     'run_71_D500V': 'Ar/CO2 70/30 - B4C - Aluminum Frame - Drift 500V',
+    #     'run_71_D1000V': 'Ar/CO2 70/30 - B4C - Aluminum Frame - Drift 1000V',
+    #     'run_74_D1000V': 'Ar/CO2 70/30 - Empty - Aluminum Frame - Drift 1000V',
+    # }
+    # sub_run = 'resist_540V_drift_1000V'
+    #
+    runs = {
+        'run_30_D600V': 'He - B4C - Al Frame - 30mm Drift at -600V',
+        # 'run_88_D500V': 'He/Ethane 96.5/3.5 - B4C - Aluminum Frame - Drift 500V',
+
+        'run_88_D1000V': 'He - B4C - Al Frame - 6mm Drift at -1000V',
+        # 'run_88_D1500V': 'He/Ethane 96.5/3.5 - B4C - Aluminum Frame - Drift 1500V',
+        # 'run_126_D500V': 'He/Ethane 96.5/3.5 - Lead - Carbon Frame - 55 cm - Drift 500V',
+        # 'run_126_D1000V': 'He/Ethane 96.5/3.5 - Lead - Carbon Frame - 55cm  - Drift 1000V',
+        # 'run_126_D1500V': 'He/Ethane 96.5/3.5 - Lead - Carbon Frame - 55cm  - Drift 1500V',
+        # 'run_131_D500V': 'He/Ethane 96.5/3.5 - B4C - Carbon Frame - Drift 500V',
+
+        'run_131_D1000V': 'He - B4C - Carbon Frame - 6mm Drift at -1000V',
+        # 'run_131_D1500V': 'He/Ethane 96.5/3.5 - B4C - Carbon Frame - Drift 1500V',
+    }
+    sub_run = 'resist_510V_drift_1000V'
+
     # plot_amps_with_hv(base_path, run, sub_run, feus, hvs)
     # plot_hits_vs_hv(base_path, run, sub_run, feus, hvs)
-    # plot_hits_vs_hv_runs(base_path, list(runs.keys()), sub_run, feus, hvs, runs)
-    # plot_hits_vs_time(base_path, list(runs.keys()), sub_run, feus, runs)
+    plot_hits_vs_hv_runs(base_path, list(runs.keys()), sub_run, feus, hvs, runs)
+    plt.show()
+
+    # runs = {
+    #     'run_88': 'He/Ethane 96.5/3.5 - B4C - Resist 540V - Drift 1000V',
+    # }
+    # runs = {
+    #     'run_114': 'Ar/CO2 70/30 - B4C - Carbon Frame - Resist 690V Drift 1000V',
+    #     'run_71': 'Ar/CO2 70/30 - B4C - Aluminum Frame - Resist 690V Drift 1000V',
+    #     'run_74': 'Ar/CO2 70/30 - Empty - Aluminum Frame - Resist 690V Drift 1000V',
+    # }
+    # sub_run = 'resist_690V_drift_1000V'
+
+    # runs = {
+    #     'run_30_D600V': 'He - B4C - Aluminum Frame - 30mm Drift - Drift 600V',
+    #     'run_88_D1000V': 'He/Ethane 96.5/3.5 - B4C - Aluminum Frame - Drift 1000V',
+    #     'run_131_D1000V': 'He/Ethane 96.5/3.5 - B4C - Carbon Frame - Drift 1000V',
+    # }
+    runs = {
+        'run_30_D600V': 'He - B4C - Aluminum Frame - 30mm Drift - Drift 600V',
+    }
+    sub_run = 'resist_510V_drift_1000V'
+
+    plot_hits_vs_time(base_path, list(runs.keys()), sub_run, feus, runs, save_csv_path='/home/dylan/Downloads/hists.csv')
+    #
+    # run_hits = 'run_88'
+    # hvs = [540, 530, 520, 510, 500, 490]
+    # plot_hits_vs_time_hvs(base_path, run_hits, sub_run, feus, hvs)
+    #
+    plt.show()
 
     # event = 6
     # run = 'run_33'
@@ -59,17 +158,17 @@ def main():
     # # sub_run = 'final_resist_440V_drift_600V'
     # sub_run = 'resist_475V_drift_600V'
     event = 16
-    run = 'run_52'
+    # run = 'run_52'
     # sub_run = 'final_resist_440V_drift_600V'
     # sub_run = 'resist_485V_drift_600V'
-    sub_run = 'initial_resist_610V_drift_600V'
+    # sub_run = 'initial_resist_610V_drift_600V'
     # sub_run = 'drift_600V_6'
 
-    # plot_hits_per_event(base_path, run, sub_run, feus)
+    plot_hits_per_event(base_path, run, sub_run, feus)
     # plot_hits_xy_vs_time(base_path, run, sub_run, feus, event)
 
     # plot_general_metrics(base_path, run, sub_run, feus)
-    plot_general_metrics_fast(base_path, run, sub_run, feus)
+    # plot_general_metrics_fast(base_path, run, sub_run, feus, feus_map)
 
     plt.show()
 
@@ -142,7 +241,7 @@ def plot_hits_vs_hv_runs(base_path, runs, sub_run, feus, hvs, run_name_map=None)
     """
     Plot number of hits per event vs HV in several time of arrival bins.
     """
-    min_amp = 300
+    min_amp = 800
     # time_bins = [[0, 1000], [1000, 3000], [3000, 10000]]
     time_bins = [[0, 75 * 20], [75 * 20, 270 * 20], [270 * 20, 10000]]
 
@@ -152,22 +251,44 @@ def plot_hits_vs_hv_runs(base_path, runs, sub_run, feus, hvs, run_name_map=None)
     for hv in hvs:
         print(f'Processing HV {hv}V')
         for run in runs:
-            sub_run_parts = sub_run.split('_')
-            sub_run_parts[1] = f'{hv}V'
-            if run == 'run_17':
-                hv_sub_run = f'resist_hv_{hv}V'
+            if len(run.split('_')) == 3:  # Drift at end
+                drift = run.split('_')[-1].strip('D')
+                run_dir_name = '_'.join(run.split('_')[:-1])
             else:
-                hv_sub_run = '_'.join(sub_run_parts)
+                drift = None
+                run_dir_name = run
+            run_dir = os.path.join(base_path, run_dir_name)
+            hv_sub_run = None
+            for sub_run_dir in os.listdir(run_dir):
+                if not os.path.isdir(os.path.join(run_dir, sub_run_dir)):
+                    continue
+                if f'resist_{hv}V_' in sub_run_dir:
+                    if drift is not None and f'_drift_{drift}' not in sub_run_dir:
+                        continue
+                    hv_sub_run = sub_run_dir
+                    break
+            # sub_run_parts = sub_run.split('_')
+            # sub_run_parts[1] = f'{hv}V'
+            # if run == 'run_17':
+            #     hv_sub_run = f'resist_hv_{hv}V'
+            # else:
+            #     hv_sub_run = '_'.join(sub_run_parts)
+            if hv_sub_run is None:
+                print(f'No data found for HV {hv}V in {run_dir_name}!\n')
+                continue
             try:
-                df, det = load_subrun(base_path, run, hv_sub_run, feus)
+                df, det = load_subrun(base_path, run_dir_name, hv_sub_run, feus)
             except FileNotFoundError:
-                print(f'No data found for HV {hv}V in {run}, {hv_sub_run}!\n')
+                print(f'No data found for HV {hv}V in {run_dir_name}, {hv_sub_run}!\n')
                 continue
             if not isinstance(df, pd.DataFrame) or df.empty:
                 print(f'No data found for HV {hv}V!\n')
                 continue
             df = df[df['amplitude'] >= min_amp]
             n_events = df['eventId'].nunique()
+            if n_events == 0:
+                continue
+
             for i in enumerate(time_bins):
                 df_time_bin = df[(df['time'] / 3 >= i[1][0]) & (df['time'] / 3 < i[1][1])]
                 n_hits = df_time_bin.shape[0]
@@ -191,34 +312,100 @@ def plot_hits_vs_hv_runs(base_path, runs, sub_run, feus, hvs, run_name_map=None)
             #     hits_per_event_std[i][run].append(std_hits)
             #     hvs_plot[i][run].append(hv)
 
+    fig, axs = plt.subplots(ncols=len(time_bins), figsize=(19.5, 5), sharey=False)
+
     for i in range(len(time_bins)):
-        fig, ax = plt.subplots()
         for run in runs:
             label = run_name_map[run] if run_name_map is not None else run
-            ax.plot(hvs_plot[i][run], hits_per_event[i][run], marker='o', label=label)
+            axs[i].plot(hvs_plot[i][run], hits_per_event[i][run], marker='o', label=label)
             # ax.errorbar(hvs_plot[i][run], hits_per_event[i][run], hits_per_event_std[i][run], marker='o', label=label)
         # ax.set_yscale('log')
-        ax.axhline(0, color='gray', zorder=0)
-        ax.annotate(f'Minimum Amplitude: {min_amp} ADC', xy=(0.05, 0.6), xycoords='axes fraction')
-        ax.set_title(f'Hits per Event vs HV for {time_bins[i][0]/1000} μs - {time_bins[i][1]/1000} μs')
-        ax.set_xlabel('HV (V)')
-        ax.set_ylabel('Hits per Event')
-        ax.legend()
-        fig.tight_layout()
+        axs[i].axhline(0, color='gray', zorder=0)
+        axs[i].set_title(f'Hits per Event vs HV for {time_bins[i][0]/1000} μs - {time_bins[i][1]/1000} μs')
+        axs[i].set_xlabel('HV (V)')
+    axs[0].annotate(f'Minimum Amplitude: {min_amp} ADC', xy=(0.05, 0.6), xycoords='axes fraction')
+    axs[0].set_ylabel('Hits per Event')
+    axs[0].legend(loc='upper left')
+    fig.tight_layout()
+    fig.subplots_adjust(wspace=0.08)
 
 
-def plot_hits_vs_time(base_path, runs, sub_run, feus, run_name_map=None):
+def plot_hits_vs_time(base_path, runs, sub_run, feus, run_name_map=None, save_csv_path=None):
+    """
+    Plots hits vs time and optionally saves the binned data to a CSV.
+    """
+    min_amp = 1000
+    time_bins = np.arange(0, 10000, 100)
+    time_bin_mids = (time_bins[:-1] + time_bins[1:]) / 2
+
+    # Dictionary to store data for CSV export
+    csv_data = {"time_bin_mid_us": time_bin_mids / 1000}
+
+    fig, ax = plt.subplots(figsize=(9, 4))
+
+    for run in runs:
+        if len(run.split('_')) == 3:  # Drift at end
+            drift = run.split('_')[-1].strip('D')
+            run_dir_name = '_'.join(run.split('_')[:-1])
+        else:
+            drift = None
+            run_dir_name = run
+        sub_run_parts = sub_run.split('_')
+        sub_run_parts[-1] = f'{drift}' if drift is not None else sub_run_parts[-1]
+        sub_run_i = '_'.join(sub_run_parts)
+        df, det = load_subrun(base_path, run_dir_name, sub_run_i, feus)
+        df = df[df['amplitude'] >= min_amp]
+        n_events = df['eventId'].nunique()
+
+        # Binning logic
+        bins = pd.cut(df["time"] / 3, bins=time_bins)
+        hits_per_event_series = (
+                df["time"]
+                .groupby(bins, observed=False)
+                .count()
+                .reindex(bins.cat.categories, fill_value=0)
+                / n_events
+        )
+
+        label = run_name_map[run] if run_name_map is not None else run
+        ax.plot(time_bin_mids / 1000, hits_per_event_series.values, label=label)
+
+        # Store results for CSV
+        csv_data[label] = hits_per_event_series.values
+
+    # Plot formatting
+    ax.axhline(0, color='gray', zorder=0)
+    ax.annotate(f'Minimum Amplitude: {min_amp} ADC', xy=(0.5, 0.6), xycoords='axes fraction', ha='center')
+    ax.set_title(f'Hits per Event vs Time for {sub_run}')
+    ax.set_xlabel('Time (μs)')
+    ax.set_ylabel('Hits per Event')
+    ax.set_ylim(bottom=1e-3)
+    ax.legend()
+    fig.tight_layout()
+
+    # Export to CSV if a path is provided
+    if save_csv_path:
+        pd.DataFrame(csv_data).to_csv(save_csv_path, index=False)
+        print(f"Binned data saved to: {save_csv_path}")
+
+    return fig, ax
+
+
+def plot_hits_vs_time_hvs(base_path, run, sub_run, feus, hvs):
     """
     Pass
     """
-    min_amp = 300
+    min_amp = 1000
     # time_bins = [[0, 1000], [1000, 3000], [3000, 10000]]
-    time_bins = np.arange(0, 10000, 50)
+    time_bins = np.arange(0, 10000, 100)
     time_bin_mids = (time_bins[:-1] + time_bins[1:]) / 2
 
-    fig, ax = plt.subplots()
-    for run in runs:
-        df, det = load_subrun(base_path, run, sub_run, feus)
+    fig, ax = plt.subplots(figsize=(9, 4))
+    for hv in hvs:
+        sub_run_parts = sub_run.split('_')
+        sub_run_parts[1] = f'{hv}V'
+        sub_run_i = '_'.join(sub_run_parts)
+        df, det = load_subrun(base_path, run, sub_run_i, feus)
         df = df[df['amplitude'] >= min_amp]
         n_events = df['eventId'].nunique()
         # Count the number of entries with 'time' within each time_bin
@@ -231,7 +418,7 @@ def plot_hits_vs_time(base_path, runs, sub_run, feus, run_name_map=None):
                 .reindex(bins.cat.categories, fill_value=0)
                 / n_events
         )
-        label = run_name_map[run] if run_name_map is not None else run
+        label = f'{hv}V'
         ax.plot(time_bin_mids / 1000, hits_per_event_series.values, label=label)
     ax.axhline(0, color='gray', zorder=0)
     ax.annotate(f'Minimum Amplitude: {min_amp} ADC', xy=(0.5, 0.9), xycoords='axes fraction',
@@ -239,6 +426,8 @@ def plot_hits_vs_time(base_path, runs, sub_run, feus, run_name_map=None):
     ax.set_title(f'Hits per Event vs Time for {sub_run}')
     ax.set_xlabel('Time (μs)')
     ax.set_ylabel('Hits per Event')
+    # ax.set_yscale('log')
+    ax.set_ylim(bottom=1e-3)
     ax.legend()
     fig.tight_layout()
 
@@ -694,13 +883,19 @@ def get_run_time(base_path, run, sub_run):
     return run_time
 
 
-def plot_general_metrics_fast(base_path, run, sub_run, feus):
+def get_run_json(base_path, run):
+    run_json_file = f'{base_path}{run}/run_config.json'
+    with open(run_json_file, 'r') as f:
+        run_json = json.load(f)
+    return run_json
+
+
+def plot_general_metrics_fast(base_path, run, sub_run, feus, feus_map):
     """
     Plot general metrics for full subrun.
     """
     run_time = get_run_time(base_path, run, sub_run)
     df, det = load_subrun(base_path, run, sub_run, feus)
-    feus_map = {4: 'y', 5: 'x'}  # Which positions they give
     pitch = 0.78
     df['axis'] = df['feu'].map(feus_map)
     df['channel_flipped'] = (df['channel'] // 64) * 64 + (63 - (df['channel'] % 64))
@@ -712,7 +907,7 @@ def plot_general_metrics_fast(base_path, run, sub_run, feus):
     # Create y_pos: if axis is 'y', use position, else None
     df['y_position_mm'] = np.where(df['axis'] == 'y', df['position'], float('nan'))
 
-    min_amp = 200
+    min_amp = 400
     df = df[df['amplitude'] >= min_amp]
 
     amplitudes_array = df['amplitude'].to_numpy()
@@ -728,14 +923,14 @@ def plot_general_metrics_fast(base_path, run, sub_run, feus):
     ax.legend()
     plt.tight_layout()
 
-    # Get amplitude sums for each event.
+    # # Get amplitude sums for each event.
     event_sums = df.groupby('eventId')['amplitude'].sum().reset_index()
-    fig, ax = plt.subplots()
-    ax.hist(event_sums['amplitude'], bins=100, color='purple', alpha=0.7)
-    ax.set_title('Event Amplitude Sums Histogram')
-    ax.set_xlabel('Event Amplitude Sum')
-    ax.set_ylabel('Hits')
-    plt.tight_layout()
+    # fig, ax = plt.subplots()
+    # ax.hist(event_sums['amplitude'], bins=100, color='purple', alpha=0.7)
+    # ax.set_title('Event Amplitude Sums Histogram')
+    # ax.set_xlabel('Event Amplitude Sum')
+    # ax.set_ylabel('Hits')
+    # plt.tight_layout()
 
     fig, ax = plt.subplots()
     ax.scatter(local_max_array, amplitudes_array, alpha=0.5)
@@ -744,6 +939,16 @@ def plot_general_metrics_fast(base_path, run, sub_run, feus):
     plt.tight_layout()
 
     times_array = df['time'].to_numpy() / 3
+
+    # Plot 1D arrays for channel hits
+    fig, axs = plt.subplots(nrows=2, ncols=1)
+    for i, feu in enumerate(feus):
+        df_feu = df[df['feu'] == feu]
+        axs[i].hist(df_feu['channel'], bins=np.arange(-0.5, 512.5, 1), alpha=0.7)
+        axs[i].set_title(f'Feu {feu} Histogram')
+        axs[i].set_xlabel('Channel')
+        axs[i].set_ylabel('Hits')
+    fig.tight_layout()
 
     fig, ax = plt.subplots()
     ax.hist(times_array, bins=100, color='orange', alpha=0.7)
@@ -790,6 +995,27 @@ def plot_general_metrics_fast(base_path, run, sub_run, feus):
     # Optional: Clean up by dropping the helper column
     df.drop(columns=['event_hit_count'], inplace=True)
 
+    # Get amplitude sums for each event.
+    event_sums_post = df.groupby('eventId')['amplitude'].sum().reset_index()
+    fig, ax = plt.subplots()
+    hist = ax.hist(event_sums['amplitude'], bins=100, color='purple', alpha=0.7, label='Before NHits Cut')
+    ax.hist(event_sums_post['amplitude'], bins=hist[1], color='green', alpha=0.7, label='After NHits Cuts')
+    ax.legend()
+    ax.set_title('Event Amplitude Sums Histogram')
+    ax.set_xlabel('Event Amplitude Sum')
+    ax.set_ylabel('Hits')
+    plt.tight_layout()
+
+    # Get plot cut sums by themselves
+    event_sums_post = df.groupby('eventId')['amplitude'].sum().reset_index()
+    fig, ax = plt.subplots()
+    ax.hist(event_sums_post['amplitude'], bins=100, color='green', alpha=0.7, label='After NHits Cuts')
+    ax.legend()
+    ax.set_title('Event Amplitude Sums Histogram')
+    ax.set_xlabel('Event Amplitude Sum')
+    ax.set_ylabel('Hits')
+    plt.tight_layout()
+
     # Plot 1D arrays for x and y positions
     x_positions = df['x_position_mm'].dropna().to_numpy()
     y_positions = df['y_position_mm'].dropna().to_numpy()
@@ -810,8 +1036,9 @@ def plot_general_metrics_fast(base_path, run, sub_run, feus):
     avg_y_positions = grouped['y_position_mm'].mean().to_numpy()
     event_ids = grouped['eventId'].first().to_numpy()
 
-    bad_xs = (240, 255)
-    bad_ys = (375, 390)
+    bad_xs = (230, 270)
+    # bad_ys = (370, 390)
+    bad_ys = (230, 390)
 
     # 1. Identify events that ARE valid AND fall in the 'bad' spatial box
     # Remove the ~ (not) from valid_indices
@@ -824,8 +1051,91 @@ def plot_general_metrics_fast(base_path, run, sub_run, feus):
     bad_events = event_ids[bad_mask]
 
     # 3. Filter the original dataframe
-    df = df[~df['eventId'].isin(bad_events)]
+    df_filter = df[~df['eventId'].isin(bad_events)]
 
+    times_array = df_filter['time'].to_numpy() / 3
+    times_array = times_array[times_array > -500]
+
+    fig, ax = plt.subplots()
+    ax.hist(times_array, bins=100, color='orange', alpha=0.7)
+    ax.set_title('Time of Arrival Histogram')
+    ax.set_xlabel('Time of Arrival (ns)')
+    ax.set_ylabel('Hits')
+    plt.tight_layout()
+
+    plot_2ds(df, pitch, run_time)
+    plot_2ds(df_filter, pitch, run_time)
+
+    # # Plot 1D arrays for x and y positions
+    # x_positions = df_filter['x_position_mm'].dropna().to_numpy()
+    # y_positions = df_filter['y_position_mm'].dropna().to_numpy()
+    # bins = np.arange(-pitch / 2, 512 * pitch + pitch / 2, pitch)
+    # fig, axs = plt.subplots(nrows=2, ncols=1)
+    # axs[0].hist(x_positions, bins=bins, color='blue', alpha=0.7)
+    # axs[0].set_title('X Positions Histogram')
+    # axs[0].set_xlabel('X Position (mm)')
+    # axs[0].set_ylabel('Counts')
+    # axs[1].hist(y_positions, bins=bins, color='green', alpha=0.7)
+    # axs[1].set_title('Y Positions Histogram')
+    # axs[1].set_xlabel('Y Position (mm)')
+    # axs[1].set_ylabel('Counts')
+    # plt.tight_layout()
+    #
+    # grouped = df_filter.groupby('eventId')
+    # avg_x_positions = grouped['x_position_mm'].mean().to_numpy()
+    # avg_y_positions = grouped['y_position_mm'].mean().to_numpy()
+    # hits_per_event = grouped['eventId'].count().to_numpy()
+    #
+    # valid_indices = ~np.isnan(avg_x_positions) & ~np.isnan(avg_y_positions)
+    # avg_x_positions = avg_x_positions[valid_indices]
+    # avg_y_positions = avg_y_positions[valid_indices]
+    # hits_per_event = hits_per_event[valid_indices]
+    # event_nums = grouped.groups.keys()
+    # print(f'Remaining event numbers: {", ".join(map(str, event_nums))}.')
+    # print(f'Number of events remaining: {len(event_nums)}.')
+    # print(f'Run time: {run_time:.2f} s.')
+    # print(f'Rate: {len(event_nums) / run_time:.2f} Hz.')
+    #
+    # # Calculate the percentage drop due to NaN values
+    # total_events = len(grouped)
+    # valid_events = len(avg_x_positions)
+    # if total_events == 0:
+    #     drop_percentage = np.nan
+    # else:
+    #     drop_percentage = (total_events - valid_events) / total_events * 100
+    # print(f'Dropped {drop_percentage:.2f}% of events due to NaN average positions.')
+    #
+    # try:
+    #     # 2D histogram of average x and y positions
+    #     fig, ax = plt.subplots()
+    #     h = ax.hist2d(avg_x_positions, avg_y_positions, bins=100, norm=LogNorm(), cmap='jet')
+    #     ax.set_title('2D Histogram of Average X and Y Positions per Event')
+    #     ax.set_xlabel('Average X Position (mm)')
+    #     ax.set_ylabel('Average Y Position (mm)')
+    #     plt.colorbar(h[3], ax=ax, label='Counts')
+    #     plt.tight_layout()
+    #
+    #     # Scatter plot of average x and y positions
+    #     fig, ax = plt.subplots()
+    #     sc = ax.scatter(avg_x_positions, avg_y_positions, alpha=0.3, c=hits_per_event, cmap='jet', s=1.5)
+    #     ax.set_title('Scatter Plot of Average X and Y Positions per Event')
+    #     ax.set_xlabel('Average X Position (mm)')
+    #     ax.set_ylabel('Average Y Position (mm)')
+    #     plt.colorbar(sc, ax=ax, label='N Hits')
+    #     plt.tight_layout()
+    #
+    #     # Scatter plot of average x and y positions converted to strip number
+    #     fig, ax = plt.subplots()
+    #     ax.scatter(avg_x_positions / pitch, avg_y_positions / pitch, alpha=0.3, color='green', s=1)
+    #     ax.set_title('Scatter Plot of Average X and Y Positions per Event')
+    #     ax.set_xlabel('Average X Position (Strip Number)')
+    #     ax.set_ylabel('Average Y Position (Strip Number)')
+    #     plt.tight_layout()
+    # except Exception as e:
+    #     print(f'Error plotting positions: {e}')
+
+
+def plot_2ds(df, pitch, run_time):
     # Plot 1D arrays for x and y positions
     x_positions = df['x_position_mm'].dropna().to_numpy()
     y_positions = df['y_position_mm'].dropna().to_numpy()
@@ -852,6 +1162,7 @@ def plot_general_metrics_fast(base_path, run, sub_run, feus):
     hits_per_event = hits_per_event[valid_indices]
     event_nums = grouped.groups.keys()
     print(f'Remaining event numbers: {", ".join(map(str, event_nums))}.')
+    print(f'Remaining hits per event: {", ".join(map(str, hits_per_event))}.')
     print(f'Number of events remaining: {len(event_nums)}.')
     print(f'Run time: {run_time:.2f} s.')
     print(f'Rate: {len(event_nums) / run_time:.2f} Hz.')
@@ -859,34 +1170,40 @@ def plot_general_metrics_fast(base_path, run, sub_run, feus):
     # Calculate the percentage drop due to NaN values
     total_events = len(grouped)
     valid_events = len(avg_x_positions)
-    drop_percentage = (total_events - valid_events) / total_events * 100
+    if total_events == 0:
+        drop_percentage = np.nan
+    else:
+        drop_percentage = (total_events - valid_events) / total_events * 100
     print(f'Dropped {drop_percentage:.2f}% of events due to NaN average positions.')
 
-    # 2D histogram of average x and y positions
-    fig, ax = plt.subplots()
-    h = ax.hist2d(avg_x_positions, avg_y_positions, bins=100, norm=LogNorm(), cmap='jet')
-    ax.set_title('2D Histogram of Average X and Y Positions per Event')
-    ax.set_xlabel('Average X Position (mm)')
-    ax.set_ylabel('Average Y Position (mm)')
-    plt.colorbar(h[3], ax=ax, label='Counts')
-    plt.tight_layout()
+    try:
+        # 2D histogram of average x and y positions
+        fig, ax = plt.subplots()
+        h = ax.hist2d(avg_x_positions, avg_y_positions, bins=100, norm=LogNorm(), cmap='jet')
+        ax.set_title('2D Histogram of Average X and Y Positions per Event')
+        ax.set_xlabel('Average X Position (mm)')
+        ax.set_ylabel('Average Y Position (mm)')
+        plt.colorbar(h[3], ax=ax, label='Counts')
+        plt.tight_layout()
 
-    # Scatter plot of average x and y positions
-    fig, ax = plt.subplots()
-    sc = ax.scatter(avg_x_positions, avg_y_positions, alpha=0.3, c=hits_per_event, cmap='jet', s=1.5)
-    ax.set_title('Scatter Plot of Average X and Y Positions per Event')
-    ax.set_xlabel('Average X Position (mm)')
-    ax.set_ylabel('Average Y Position (mm)')
-    plt.colorbar(sc, ax=ax, label='N Hits')
-    plt.tight_layout()
+        # Scatter plot of average x and y positions
+        fig, ax = plt.subplots()
+        sc = ax.scatter(avg_x_positions, avg_y_positions, alpha=0.3, c=hits_per_event, cmap='jet', s=1.5)
+        ax.set_title('Scatter Plot of Average X and Y Positions per Event')
+        ax.set_xlabel('Average X Position (mm)')
+        ax.set_ylabel('Average Y Position (mm)')
+        plt.colorbar(sc, ax=ax, label='N Hits')
+        plt.tight_layout()
 
-    # Scatter plot of average x and y positions converted to strip number
-    fig, ax = plt.subplots()
-    ax.scatter(avg_x_positions / pitch, avg_y_positions / pitch, alpha=0.3, color='green', s=1)
-    ax.set_title('Scatter Plot of Average X and Y Positions per Event')
-    ax.set_xlabel('Average X Position (Strip Number)')
-    ax.set_ylabel('Average Y Position (Strip Number)')
-    plt.tight_layout()
+        # Scatter plot of average x and y positions converted to strip number
+        fig, ax = plt.subplots()
+        ax.scatter(avg_x_positions / pitch, avg_y_positions / pitch, alpha=0.3, color='green', s=1)
+        ax.set_title('Scatter Plot of Average X and Y Positions per Event')
+        ax.set_xlabel('Average X Position (Strip Number)')
+        ax.set_ylabel('Average Y Position (Strip Number)')
+        plt.tight_layout()
+    except Exception as e:
+        print(f'Error plotting positions: {e}')
 
 
 
