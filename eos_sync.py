@@ -8,26 +8,22 @@ Created as nTof_x17/eos_sync.py
 @author: Dylan Neff, dylan
 
 
-eos_sync.py — Synchronize DAQ run data to EOS via xrdcp.
+eos_sync.py — Synchronize DAQ run data to EOS via rsync over SSH to lxplus.
 
-Recursively walks each run directory and syncs every file found,
-preserving the directory structure on EOS. New file types or subdirectory
-layouts are handled automatically.
+Runs on the DAQ machine. For each complete run, calls:
 
-Run structure (flexible — any layout under runs/ is handled):
-    runs/
-      run_1/
-        run_config.json
-        sub_run_1/
-          raw_data/
-            file_1.fdf
-        ...
+    rsync -av --checksum-choice=md5 --size-only \
+        /media/dylan/data/x17/feb_beam/runs/run_N/ \
+        lxplus.cern.ch:/eos/experiment/ntof/data/x17/feb_beam/runs/run_N/
 
-A run is COMPLETE (safe to sync) when no file inside it has been modified
-for --idle-seconds (default: 60s).
+EOS is POSIX-mounted on lxplus at /eos/..., so no xrdcp or xrdfs needed.
+rsync handles skip logic, directory creation, and partial transfers natively.
 
-On failure: the file is logged and skipped. Already-transferred files
-(size-matched on EOS) are skipped on retry, so only failures are re-sent.
+A run is COMPLETE when no file inside it has been modified for
+--idle-seconds (default: 60s).
+
+On failure: logged and skipped, retried on next invocation. Already-synced
+files are skipped automatically by rsync's --size-only check.
 
 Usage:
     python eos_sync.py                        # sync all complete runs
@@ -52,22 +48,39 @@ from typing import Optional
 # ---------------------------------------------------------------------------
 
 LOCAL_RUNS_DIR = Path("/mnt/data/x17/beam_feb/runs")
-# EOS_REDIRECTOR = "eosntof.cern.ch"
-EOS_REDIRECTOR = "eosuser.cern.ch"
-EOS_RUNS_PATH  = "/eos/experiment/ntof/data/x17/feb_beam/runs"
-EOS_RUNS_DIR   = f"root://{EOS_REDIRECTOR}/{EOS_RUNS_PATH}"
 
-# A run idle for this many seconds with no file modifications is complete
+# LXPLUS_HOST     = "lxplus.cern.ch"
+# LXPLUS_USER     = "dneff"                          # your CERN username
+LXPLUS_ALIAS    = "eos_user"  # From ssh config file
+EOS_RUNS_PATH   = "/eos/experiment/ntof/data/x17/feb_beam/runs"
+
+# rsync flags:
+#   -a  archive: preserves permissions, timestamps, recursive
+#   -v  verbose: one line per file transferred
+#   --size-only      skip files where local and remote size match
+#   --partial        keep partially transferred files for resume
+#   --progress       per-file progress (only useful interactively)
+RSYNC_FLAGS = ["-av", "--size-only", "--partial"]
+
+# SSH options: authenticate via Kerberos/GSSAPI (kinit must be valid)
+#   GSSAPIAuthentication=yes      use the local Kerberos ticket
+#   GSSAPIDelegateCredentials=yes forward the ticket to lxplus (needed for EOS access)
+#   BatchMode=yes                 fail immediately if GSSAPI auth fails, no password prompt
+SSH_OPTS = (
+    "ssh -o GSSAPIAuthentication=yes "
+    "-o GSSAPIDelegateCredentials=yes "
+    "-o BatchMode=yes "
+    "-o ConnectTimeout=15"
+)
+
+# Temp/partial extensions written by DAQ — exclude from sync
+SKIP_EXTENSIONS = {".tmp", ".part", ".swp"}
+
+# Seconds of no file modification before a run is considered complete
 IDLE_SECONDS = 60
 
-# How long between watch-mode polling cycles
-WATCH_INTERVAL = 30  # seconds
-
-# xrdcp flags: -f force overwrite, -N no progress bar, -S parallel streams
-XRDCP_FLAGS = ["-f", "-N", "-S", "4"]
-
-# Temp/partial extensions written by DAQ — skip these
-SKIP_EXTENSIONS = {".tmp", ".part", ".swp"}
+# Seconds between watch-mode polling cycles
+WATCH_INTERVAL = 30
 
 # ---------------------------------------------------------------------------
 # Logging
@@ -79,7 +92,7 @@ logging.basicConfig(
     datefmt="%Y-%m-%d %H:%M:%S",
     handlers=[
         logging.StreamHandler(sys.stdout),
-        logging.FileHandler("logs/eos_sync.log"),
+        logging.FileHandler("eos_sync.log"),
     ],
 )
 log = logging.getLogger("eos_sync")
@@ -92,15 +105,10 @@ log = logging.getLogger("eos_sync")
 @dataclass
 class RunResult:
     run_name: str
+    success: bool = False
     files_transferred: int = 0
-    files_skipped: int = 0
-    files_failed: int = 0
     bytes_transferred: int = 0
-    errors: list[str] = field(default_factory=list)
-
-    @property
-    def success(self) -> bool:
-        return self.files_failed == 0
+    error: str = ""
 
 
 # ---------------------------------------------------------------------------
@@ -108,7 +116,6 @@ class RunResult:
 # ---------------------------------------------------------------------------
 
 def discover_runs(runs_dir: Path) -> list[Path]:
-    """Return sorted list of run subdirectories."""
     if not runs_dir.exists():
         log.error(f"Local runs directory does not exist: {runs_dir}")
         sys.exit(1)
@@ -116,11 +123,10 @@ def discover_runs(runs_dir: Path) -> list[Path]:
 
 
 def latest_mtime(run_dir: Path) -> float:
-    """Most recent modification time of any file in the run tree."""
     try:
         return max(p.stat().st_mtime for p in run_dir.rglob("*") if p.is_file())
     except ValueError:
-        return 0.0  # empty directory
+        return 0.0
 
 
 def is_run_complete(run_dir: Path, idle_seconds: int) -> bool:
@@ -134,137 +140,67 @@ def seconds_idle(run_dir: Path) -> float:
 
 
 # ---------------------------------------------------------------------------
-# EOS helpers
+# Sync
 # ---------------------------------------------------------------------------
 
-def to_eos_url(local_path: Path, local_base: Path, eos_base: str) -> str:
-    """Map any local path to its corresponding EOS xroot URL."""
-    return f"{eos_base}/{local_path.relative_to(local_base)}"
+def build_exclude_args() -> list[str]:
+    return [arg for ext in SKIP_EXTENSIONS for arg in ("--exclude", f"*{ext}")]
 
 
-def split_eos_url(eos_url: str) -> tuple[str, str]:
-    """Split 'root://host/path' into (host, '/path')."""
-    without_scheme = eos_url[len("root://"):]
-    host, _, fpath = without_scheme.partition("/")
-    return host, ("/" + fpath.lstrip("/"))
-
-
-def eos_file_size(host: str, fpath: str) -> Optional[int]:
-    """Return size of a file on EOS, or None if it doesn't exist."""
-    try:
-        result = subprocess.run(
-            ["xrdfs", f"root://{host}", "stat", fpath],
-            capture_output=True, text=True, timeout=30
-        )
-        if result.returncode != 0:
-            return None
-        for line in result.stdout.splitlines():
-            if "Size:" in line:
-                return int(line.split("Size:")[1].split()[0])
-    except Exception:
-        pass
-    return None
-
-
-def make_eos_dir(host: str, fpath: str) -> None:
-    """Create a directory (and parents) on EOS. Logs a warning on failure."""
-    result = subprocess.run(
-        ["xrdfs", f"root://{host}", "mkdir", "-p", fpath],
-        capture_output=True, text=True, timeout=30
-    )
-    if result.returncode != 0:
-        log.warning(f"mkdir failed for {fpath}: {result.stderr.strip()}")
-
-
-# ---------------------------------------------------------------------------
-# Transfer
-# ---------------------------------------------------------------------------
-
-def transfer_file(
-    local_file: Path,
-    eos_url: str,
-    dry_run: bool = False,
-) -> tuple[bool, str]:
+def sync_run(run_dir: Path, dry_run: bool = False) -> RunResult:
     """
-    Copy one file to EOS via xrdcp.
-    Skips if the remote already has the same size.
-    Returns (success, reason).
-    """
-    local_size = local_file.stat().st_size
-    host, fpath = split_eos_url(eos_url)
-
-    if eos_file_size(host, fpath) == local_size:
-        return True, f"skipped ({local_size:,} bytes already on EOS)"
-
-    if dry_run:
-        return True, f"dry-run: would copy ({local_size:,} bytes)"
-
-    try:
-        result = subprocess.run(
-            ["xrdcp"] + XRDCP_FLAGS + [str(local_file), eos_url],
-            capture_output=True, text=True, timeout=600
-        )
-    except subprocess.TimeoutExpired:
-        return False, "timed out after 600s"
-
-    if result.returncode == 0:
-        return True, f"transferred ({local_size:,} bytes)"
-
-    err = result.stderr.strip() or result.stdout.strip() or "unknown error"
-    return False, f"xrdcp failed: {err}"
-
-
-# ---------------------------------------------------------------------------
-# Run sync — the core logic
-# ---------------------------------------------------------------------------
-
-def sync_run(
-    run_dir: Path,
-    local_base: Path,
-    eos_base: str,
-    dry_run: bool = False,
-) -> RunResult:
-    """
-    Recursively walk a run directory and sync every file to EOS,
-    mirroring the directory structure exactly.
+    Sync one run directory to EOS via rsync over SSH to lxplus.
+    rsync trailing slash on source means: sync contents into the destination dir.
     """
     result = RunResult(run_name=run_dir.name)
-    host, _ = split_eos_url(eos_base)
 
-    # Collect all transferable files
-    files = sorted(
-        p for p in run_dir.rglob("*")
-        if p.is_file() and p.suffix not in SKIP_EXTENSIONS
+    # remote = f"{LXPLUS_USER}@{LXPLUS_HOST}:{EOS_RUNS_PATH}/{run_dir.name}/"
+    remote = f"{LXPLUS_ALIAS}:{EOS_RUNS_PATH}/{run_dir.name}/"
+    source = str(run_dir) + "/"   # trailing slash = sync contents, not the dir itself
+
+    cmd = (
+        ["rsync"]
+        + RSYNC_FLAGS
+        + (["-n"] if dry_run else [])          # -n = dry run in rsync
+        + ["--stats"]                           # summary stats at the end
+        + ["-e", SSH_OPTS]
+        + build_exclude_args()
+        + [source, remote]
     )
 
-    if not files:
-        log.info(f"[{run_dir.name}] No files found.")
+    log.debug(f"  $ {' '.join(cmd)}")
+
+    try:
+        proc = subprocess.run(cmd, capture_output=True, text=True, timeout=3600)
+    except subprocess.TimeoutExpired:
+        result.error = "timed out after 1h"
         return result
 
-    # Pre-create all required remote directories in one pass
-    if not dry_run:
-        remote_dirs = sorted({split_eos_url(to_eos_url(f.parent, local_base, eos_base))[1] for f in files})
-        for fpath in remote_dirs:
-            make_eos_dir(host, fpath)
+    # Log rsync's per-file output at debug level, summary at info level
+    for line in proc.stdout.splitlines():
+        if line.startswith("Number of") or line.startswith("Total"):
+            log.info(f"  [{run_dir.name}] {line}")
+        elif line and not line.startswith("sending") and not line.startswith("sent"):
+            log.debug(f"  [{run_dir.name}] {line}")
 
-    # Transfer files
-    for local_file in files:
-        eos_url = to_eos_url(local_file, local_base, eos_base)
-        rel = local_file.relative_to(run_dir)
-        success, reason = transfer_file(local_file, eos_url, dry_run=dry_run)
+    if proc.returncode != 0:
+        err = proc.stderr.strip() or proc.stdout.strip() or "unknown error"
+        result.error = f"rsync failed (exit {proc.returncode}): {err}"
+        return result
 
-        if "skipped" in reason or "dry-run" in reason:
-            result.files_skipped += 1
-            log.info(f"[{run_dir.name}] SKIP  {rel}  ({reason})")
-        elif success:
-            result.files_transferred += 1
-            result.bytes_transferred += local_file.stat().st_size
-            log.info(f"[{run_dir.name}] OK    {rel}  ({reason})")
-        else:
-            result.files_failed += 1
-            result.errors.append(f"{rel}: {reason}")
-            log.error(f"[{run_dir.name}] FAIL  {rel}  ({reason})")
+    # Parse stats from rsync --stats output
+    for line in proc.stdout.splitlines():
+        if "Number of regular files transferred:" in line:
+            result.files_transferred = int(line.split(":")[-1].strip().replace(",", ""))
+        if "Total transferred file size:" in line:
+            # "Total transferred file size: 1,234,567 bytes"
+            parts = line.split(":")[-1].strip().split()
+            try:
+                result.bytes_transferred = int(parts[0].replace(",", ""))
+            except (ValueError, IndexError):
+                pass
 
+    result.success = True
     return result
 
 
@@ -300,13 +236,16 @@ def run_sync(
 
         status = "complete" if complete else "in-progress (forced)"
         log.info(f"Syncing: {run_dir.name}  [{status}]")
-        result = sync_run(run_dir, LOCAL_RUNS_DIR, EOS_RUNS_DIR, dry_run=dry_run)
+        result = sync_run(run_dir, dry_run=dry_run)
         results.append(result)
 
         if result.success:
-            log.info(f"  → {result.files_transferred} transferred, {result.files_skipped} skipped.")
+            log.info(
+                f"  → {result.files_transferred} transferred  "
+                f"({result.bytes_transferred / 1e6:.1f} MB)"
+            )
         else:
-            log.warning(f"  → {result.files_failed} failure(s) — will retry on next sync.")
+            log.warning(f"  → FAILED: {result.error}  (will retry on next sync)")
 
     if skipped:
         log.info(f"Skipped {skipped} in-progress run(s).  Use --all to force.")
@@ -316,18 +255,17 @@ def run_sync(
 
 def print_summary(results: list[RunResult]):
     sep = "─" * 56
-    log.info(sep)
-    log.info(f"  Runs      : {len(results)}")
-    log.info(f"  OK        : {sum(r.files_transferred for r in results)} files  "
-             f"({sum(r.bytes_transferred for r in results) / 1e6:.1f} MB)")
-    log.info(f"  Skipped   : {sum(r.files_skipped for r in results)} files  (already on EOS)")
-    log.info(f"  Failed    : {sum(r.files_failed for r in results)} files")
     failed = [r for r in results if not r.success]
+    log.info(sep)
+    log.info(f"  Runs processed : {len(results)}")
+    log.info(f"  Runs OK        : {len(results) - len(failed)}")
+    log.info(f"  Files synced   : {sum(r.files_transferred for r in results)}")
+    log.info(f"  Data sent      : {sum(r.bytes_transferred for r in results) / 1e6:.1f} MB")
+    log.info(f"  Runs FAILED    : {len(failed)}")
     if failed:
         log.warning("Failures (will retry on next sync):")
         for r in failed:
-            for err in r.errors:
-                log.warning(f"  {r.run_name} / {err}")
+            log.warning(f"  {r.run_name}: {r.error}")
     log.info(sep)
 
 
@@ -337,9 +275,9 @@ def print_summary(results: list[RunResult]):
 
 def watch_mode(dry_run: bool = False, idle_seconds: int = IDLE_SECONDS):
     """
-    Continuously poll and sync completed runs. Fully synced runs are
-    remembered for the lifetime of the process. Failed runs are retried
-    each cycle. Intended to run inside a k5reauth + tmux session.
+    Continuously poll for completed runs and sync them.
+    Fully synced runs are remembered for the lifetime of the process.
+    Failed runs are retried each cycle.
     """
     fully_synced: set[str] = set()
     log.info(f"Watch mode — polling every {WATCH_INTERVAL}s.  Ctrl-C to stop.")
@@ -352,11 +290,12 @@ def watch_mode(dry_run: bool = False, idle_seconds: int = IDLE_SECONDS):
                 if not is_run_complete(run_dir, idle_seconds):
                     continue
                 log.info(f"New complete run: {run_dir.name}")
-                result = sync_run(run_dir, LOCAL_RUNS_DIR, EOS_RUNS_DIR, dry_run=dry_run)
+                result = sync_run(run_dir, dry_run=dry_run)
                 if result.success:
                     fully_synced.add(run_dir.name)
+                    log.info(f"Run {run_dir.name} fully synced.")
                 else:
-                    log.warning(f"Run {run_dir.name} has failures — retrying next cycle.")
+                    log.warning(f"Run {run_dir.name} failed — retrying next cycle.")
         except KeyboardInterrupt:
             log.info("Watch mode stopped.")
             break
@@ -372,7 +311,7 @@ def watch_mode(dry_run: bool = False, idle_seconds: int = IDLE_SECONDS):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Sync DAQ runs to EOS via xrdcp (recursive, structure-agnostic).",
+        description="Sync DAQ runs to EOS via rsync over SSH to lxplus.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 examples:
