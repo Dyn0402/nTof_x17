@@ -78,7 +78,7 @@ logging.basicConfig(
     datefmt="%Y-%m-%d %H:%M:%S",
     handlers=[
         logging.StreamHandler(sys.stdout),
-        logging.FileHandler("eos_sync.log"),
+        logging.FileHandler("logs/eos_sync.log"),
     ],
 )
 log = logging.getLogger("eos_sync")
