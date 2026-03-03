@@ -51,7 +51,7 @@ from typing import Optional
 # Configuration
 # ---------------------------------------------------------------------------
 
-LOCAL_RUNS_DIR = Path("/media/dylan/data/x17/feb_beam/runs")
+LOCAL_RUNS_DIR = Path("/mnt/data/x17/beam_feb/runs")
 EOS_REDIRECTOR = "eosntof.cern.ch"
 EOS_RUNS_PATH  = "/eos/experiment/ntof/data/x17/feb_beam/runs"
 EOS_RUNS_DIR   = f"root://{EOS_REDIRECTOR}/{EOS_RUNS_PATH}"
