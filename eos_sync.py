@@ -51,7 +51,7 @@ LOCAL_RUNS_DIR = Path("/mnt/data/x17/beam_feb/runs")
 
 # LXPLUS_HOST     = "lxplus.cern.ch"
 # LXPLUS_USER     = "dneff"                          # your CERN username
-LXPLUS_ALIAS    = "eos_user"  # From ssh config file
+LXPLUS_ALIAS    = "lxplus_kerb"  # From ssh config file
 EOS_RUNS_PATH   = "/eos/experiment/ntof/data/x17/feb_beam/runs"
 
 # rsync flags:
