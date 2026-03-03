@@ -39,8 +39,8 @@ def main():
     runs = get_daq_runs()
     print(f'DAQ runs found: {runs}')
 
-    min_run = 48  # only sync runs >= this number
-    max_run = 55
+    min_run = 140  # only sync runs >= this number
+    max_run = 140
     runs = [run for run in runs if run.startswith("run_") and max_run >= int(run.split("_")[1]) >= min_run]
     print(f'Filtering to runs >= {min_run}: {runs}')
 
