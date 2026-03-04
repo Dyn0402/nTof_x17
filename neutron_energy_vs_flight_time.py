@@ -44,7 +44,7 @@ def main():
     print(f'Gamma flash time for 1000 GeV neutron over {distance_m} m: {flash_time*1e9:.2f} ns')
 
     # blind_time = 1000e-9  # 1000 ns --> 1 us
-    blind_time = 700e-9  # 1000 ns --> 1 us
+    blind_time = 1000e-9  # 1000 ns --> 1 us
     blind_energy = time_s_to_energy_eV(blind_time + flash_time)
     print(f'Blind energy for {blind_time*1e9:.0f} ns after flash over {distance_m} m: {blind_energy/1e6:.2f} MeV')
 
@@ -263,6 +263,50 @@ def plot_spectrum_vs_time(df, ycol, distance_m=distance_m, flash_time_s=None, bl
     ax.set_ylabel(ycol)
     ax.set_title(f"{ycol} vs neutron flight time")
     ax.legend()
+
+    # ---------------------------
+    # Secondary x-axis: Energy
+    # ---------------------------
+    print(f'At time 2us, energy = {time_s_to_energy_eV(2e-6, distance=distance_m)}')
+
+    energy_ticks_eV = np.array([1e-2, 1e-1, 1e0, 1e1, 1e2, 1e3, 1e4, 1e5, 1e6, 1e7, 1e8, 1e9])
+
+    t_ticks_s = energy_eV_to_time_s(energy_ticks_eV, distance=distance_m)
+    t_ticks_us = t_ticks_s * 1e6
+
+    print(f't_tick_s = {t_ticks_s}')
+    print(f't_tick_us = {t_ticks_us}')
+
+    tmin, tmax = ax.get_xlim()
+
+    mask = (t_ticks_us >= tmin) & (t_ticks_us <= tmax)
+    t_ticks_us = t_ticks_us[mask]
+    energy_ticks_eV = energy_ticks_eV[mask]
+
+    fig.canvas.draw()  # force layout computation
+    tmin, tmax = ax.get_xlim()
+
+    ax_top = ax.twiny()
+    ax_top.set_xscale("log")
+    ax_top.set_xlim(tmin, tmax)
+
+    # ✅ Match the scale and limits explicitly
+    # ax_top.set_xscale("log")
+    # ax_top.set_xlim(t.min() * 1e6, 20e3)  # same µs range as your bottom axis
+
+    ax_top.set_xticks(t_ticks_us)
+    ax_top.xaxis.set_major_formatter(plt.NullFormatter())  # suppress auto-labels
+    ax_top.xaxis.set_minor_formatter(plt.NullFormatter())
+
+    ax_top.set_xticks(t_ticks_us)
+    ax_top.set_xticklabels([
+        f"$10^{{{int(np.log10(E))}}}$" if E >= 1 else f"{E:g}"
+        for E in energy_ticks_eV
+    ])
+
+    ax_top.set_xlabel("Neutron Energy (eV)")
+    ax_top.tick_params(axis='x', which='major', length=6)
+    ax_top.tick_params(axis='x', which='minor', length=0)
 
     # # --- Secondary x-axis: energy (eV) ---
     # # Primary x is time in microseconds. Provide forward and inverse mappings.
