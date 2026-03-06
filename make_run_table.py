@@ -13,12 +13,27 @@ import json
 import pandas as pd
 from plot_beam_hits import get_run_time
 
+import gspread
+from gspread_dataframe import set_with_dataframe
+from google.oauth2.service_account import Credentials
+
 
 def main():
     # run_dir = '/media/dylan/data/x17/feb_beam/runs/'
     run_dir = '/eos/experiment/ntof/data/x17/feb_beam/runs/'
     run_cfg_name = 'run_config.json'
     csv_out_path = f'{run_dir}run_table.csv'
+    cred_file = '~/creds/ntof-x17-776cc528cb62.json'
+    sheet_name = "ntof_x17_feb_test_summary"
+    tab_name = "Json_Run_Summary"
+
+    creds = Credentials.from_service_account_file(cred_file, scopes=[
+        'https://spreadsheets.google.com/feeds',
+        'https://www.googleapis.com/auth/drive'
+    ])
+
+    gc = gspread.authorize(creds)
+    sh = gc.open(sheet_name).worksheet(tab_name)
 
     trigger_types = {
         'Tcm_Mx17_Feb_test.cfg': 'PS',
@@ -116,6 +131,7 @@ def main():
     print(df)
 
     df.to_csv(csv_out_path, index=False)
+    set_with_dataframe(sh, df)  # df is your pandas DataFrame
 
     print('donzo')
 
