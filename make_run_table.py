@@ -37,11 +37,6 @@ def main():
     print(sh.title)
     sh = sh.worksheet(tab_name)
 
-    trigger_types = {
-        'Tcm_Mx17_Feb_test.cfg': 'PS',
-        'Self_Tcm_MM_Mx17_Feb_test.cfg': 'Self'
-    }
-
     df = []
     for run in os.listdir(run_dir):
         if not os.path.isdir(os.path.join(run_dir, run)):
@@ -54,20 +49,19 @@ def main():
             print(f'Run name in {run_cfg_name} does not match directory name: {run_config["run_name"]} != {run}')
 
         trig_type = os.path.basename(run_config['dream_daq_info']['daq_config_template_path'])
-        trig_type = trigger_types.get(trig_type)
-        if trig_type is None:
-            trig_type = 'Unknown'
 
         trig_type_map = {
-            'Tcm_Mx17_Feb_test.cfg': 'PS Trigger',
-            'Self_Tcm_MM_Mx17_Feb_test.cfg': 'Self Trigger',
-            'Tcm_Mx17_SiPM_trig.cfg': 'Scint Trigger',
+            'Tcm_Mx17_Feb_test.cfg': 'PS',
+            'Self_Tcm_MM_Mx17_Feb_test.cfg': 'Self',
+            'Tcm_Mx17_SiPM_trig.cfg': 'Scintillator',
         }
 
         trig_type = trig_type_map.get(trig_type, 'Other')
 
         det = run_config['detectors'][0]
         drift_gap = det.get('drift_gap', 30)  # mm
+        if ' mm' in drift_gap:
+            drift_gap = int(drift_gap.split(' ')[0])
         frame_type = det.get('frame_type', 'aluminum')
         distance_from_target = det.get('distance_from_target', 20)
 
@@ -117,13 +111,13 @@ def main():
             'beam_type': run_config['beam_type'],
             'target_type': run_config['target_type'],
             'trigger_type': trig_type,
-            'drift_gap': drift_gap,
+            'drift_gap (mm)': drift_gap,
             'frame_type': frame_type,
-            'distance_from_target': distance_from_target,
-            'average_subrun_time': average_subrun_time,
-            'total_run_time': total_run_time,
-            'resist_hv_range': resist_hv_range,
-            'drift_hv_range': drift_hvs,
+            'distance_from_target (cm)': distance_from_target,
+            'average_subrun_time (min)': average_subrun_time / 60,
+            'total_run_time (h)': total_run_time / 3600,
+            'resist_hv_range (V)': resist_hv_range,
+            'drift_hv_range (V)': drift_hvs,
         }
 
         df.append(run_row)
