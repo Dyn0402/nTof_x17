@@ -60,7 +60,7 @@ def main():
 
         det = run_config['detectors'][0]
         drift_gap = det.get('drift_gap', 30)  # mm
-        if ' mm' in drift_gap:
+        if isinstance(drift_gap, str) and ' mm' in drift_gap:
             drift_gap = int(drift_gap.split(' ')[0])
         frame_type = det.get('frame_type', 'aluminum')
         distance_from_target = det.get('distance_from_target', 20)
