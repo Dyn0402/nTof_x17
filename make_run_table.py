@@ -24,7 +24,7 @@ def main():
     run_cfg_name = 'run_config.json'
     csv_out_path = f'{run_dir}run_table.csv'
     cred_file = '/afs/cern.ch/user/d/dneff/creds/ntof-x17-776cc528cb62.json'
-    sheet_name = "ntof_x17_feb_test_summary"
+    sheet_name = "ntof_x17_feb_test_summary.xlsx"
     tab_name = "Json_Run_Summary"
 
     creds = Credentials.from_service_account_file(cred_file, scopes=[
