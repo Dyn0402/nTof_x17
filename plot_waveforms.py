@@ -26,8 +26,10 @@ def main():
     # subrun = 'overnight_run'
     # feu_nums = {4: 'x', 6: 'y'}
     run_dir = '/media/dylan/data/x17/feb_beam/runs/'
-    run = 'run_34'
-    subrun = 'resist_475V_drift_600V'
+    # run = 'run_18'
+    # subrun = 'resist_hv_490V'
+    run = 'run_18'
+    subrun = 'resist_480V_drift_600V'
     # subrun = 'final_resist_440V_drift_600V'
     # subrun = 'resist_440V_drift_600V'
     # run = 'run_19'
@@ -38,11 +40,13 @@ def main():
     file_num = 0
     # event = 10
     # event = 275
-    event = 16
+    event = 2
     # min_sample = 75
     # max_sample = 270
-    min_sample = 0
-    max_sample = 80
+    # min_sample = 0
+    # max_sample = 80
+    min_sample = None
+    max_sample = None
 
     decoded_dir = 'decoded_root'
 

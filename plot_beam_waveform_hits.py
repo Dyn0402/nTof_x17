@@ -24,8 +24,8 @@ def main():
     # subrun = 'drift_600V_6'
     # run = 'run_18'
     # subrun = 'resist_440V_drift_600V'
-    # run = 'run_34'
-    # subrun = 'resist_425V_drift_600V'
+    run = 'run_34'
+    subrun = 'resist_425V_drift_600V'
     # run = 'run_60'
     # subrun = 'resist_580V_drift_600V'
     # run = 'run_88'
@@ -45,14 +45,15 @@ def main():
     # subrun = 'resist_0V_drift_0V'
     # subrun = 'resist_530V_drift_1000V'
     # subrun = 'initial_resist_550V_drift_1000V'
-    run = 'run_140'
-    subrun = 'resist_0V_drift_0V'
+    # run = 'run_140'
+    # subrun = 'resist_0V_drift_0V'
 
 
     feu_nums = {4: 'y', 5: 'x'}  # 4 goes in x and gives y position
     # feu_nums = {4: 'y', 6: 'x'}  # 4 goes in x and gives y position
-    file_num = 0
-    event = 6
+    file_num = 4
+    # event = 6
+    event = 1811
     channels = None  # To select specific channels to plot
     # channels = np.array([103, 104, 105])  # To select specific channels to plot
     # channels = np.array([4, 5, 6]) + 64  # To select specific channels to plot
@@ -78,7 +79,7 @@ def plot_waveform_hits_figure(base_path, run, subrun, decoded_dir, feu_nums, fil
     Plot combination waveform and hits figure. Waveforms on the top of the figure and hits on the bottom.
     """
     # min_hit_amp = 50
-    min_hit_amp = 200
+    min_hit_amp = 400
     ns_per_sample = 20
 
     fig, axs = plt.subplots(4, 1, sharex=True, figsize=(12, 8))
