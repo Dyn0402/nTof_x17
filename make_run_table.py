@@ -23,7 +23,7 @@ def main():
     run_dir = '/eos/experiment/ntof/data/x17/feb_beam/runs/'
     run_cfg_name = 'run_config.json'
     csv_out_path = f'{run_dir}run_table.csv'
-    cred_file = '~/creds/ntof-x17-776cc528cb62.json'
+    cred_file = '/afs/cern.ch/user/d/dneff/creds/ntof-x17-776cc528cb62.json'
     sheet_name = "ntof_x17_feb_test_summary"
     tab_name = "Json_Run_Summary"
 
