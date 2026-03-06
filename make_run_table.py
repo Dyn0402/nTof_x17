@@ -24,7 +24,7 @@ def main():
     run_cfg_name = 'run_config.json'
     csv_out_path = f'{run_dir}run_table.csv'
     cred_file = '/afs/cern.ch/user/d/dneff/creds/ntof-x17-776cc528cb62.json'
-    sheet_id = "1YGOsxWJ4xaqU8YSr-17SluhPxHsLE2jhn6QnOk59WCE"
+    sheet_id = "10wyBo0X1NHgaT1eFw8WhN5VEAtIhZlUT-AbBVSVW6Uk"
     tab_name = "Json_Run_Summary"
 
     creds = Credentials.from_service_account_file(cred_file, scopes=[
@@ -68,7 +68,7 @@ def main():
         sub_run_dirs = [x for x in os.listdir(os.path.join(run_dir, run))]
 
         sub_runs = run_config['sub_runs']
-        n_runs = len(sub_runs)
+        n_subruns = len(sub_runs)
         total_run_time, resist_hvs, drift_hvs = 0, [], []
         resist_hv_channel, drift_hv_channel = ['2', '0'], ['5', '0']
         for sub_run in sub_runs:
@@ -91,7 +91,7 @@ def main():
             except KeyError:
                 pass
 
-        average_subrun_time = total_run_time / n_runs
+        average_subrun_time = total_run_time / n_subruns
         if len(resist_hvs) == 0:
             resist_hv_range = [None, None]
         elif max(resist_hvs) == 0:
@@ -114,6 +114,7 @@ def main():
             'drift_gap (mm)': drift_gap,
             'frame_type': frame_type,
             'distance_from_target (cm)': distance_from_target,
+            'number of subruns': n_subruns,
             'average_subrun_time (min)': average_subrun_time / 60,
             'total_run_time (h)': total_run_time / 3600,
             'resist_hv_range (V)': resist_hv_range,
@@ -123,7 +124,7 @@ def main():
         df.append(run_row)
     df = pd.DataFrame(df)
     # Sort by run number
-    df = df.sort_values(by='run')
+    df = df.sort_values(by='run').reset_index(drop=True)
     print(df)
 
     df.to_csv(csv_out_path, index=False)
