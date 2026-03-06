@@ -29,6 +29,7 @@ def main():
     for run in os.listdir(run_dir):
         if not os.path.isdir(os.path.join(run_dir, run)):
             continue
+        print(f'\nProcessing run {run}')
         run_config_path = os.path.join(run_dir, run, run_cfg_name)
         with open(run_config_path, 'r') as f:
             run_config = json.load(f)
@@ -65,7 +66,7 @@ def main():
                 continue
             try:
                 sub_run_time = get_run_time(run_dir, run, sub_run_name)
-            except FileNotFoundError:
+            except Exception:
                 continue
             total_run_time += sub_run_time
             try:
