@@ -445,7 +445,7 @@ def plot_hits_xy_vs_time(base_path, run, sub_run, feus, event):
     df_x = df[df['x_position_mm'].notna()]
     df_y = df[df['y_position_mm'].notna()]
 
-    print(f'df_x:\n{df_x[['amplitude', 'x_position_mm']]}\n\ndf_y:\n{df_y[['amplitude', 'y_position_mm']]}\n')
+    print(f"df_x:\n{df_x[['amplitude', 'x_position_mm']]}\n\ndf_y:\n{df_y[['amplitude', 'y_position_mm']]}\n")
 
     # For x and y separately, plot scatter of hit position on the y axis vs time on the x axis
     fig, ax = plt.subplots()
