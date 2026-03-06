@@ -24,7 +24,8 @@ def main():
     run_cfg_name = 'run_config.json'
     csv_out_path = f'{run_dir}run_table.csv'
     cred_file = '/afs/cern.ch/user/d/dneff/creds/ntof-x17-776cc528cb62.json'
-    sheet_name = "ntof_x17_feb_test_summary.xlsx"
+    # sheet_name = "ntof_x17_feb_test_summary.xlsx"
+    sheet_id = "1GjFKdf2T9LU4XUE8K-BrjgaXsWN5_4t2"
     tab_name = "Json_Run_Summary"
 
     creds = Credentials.from_service_account_file(cred_file, scopes=[
@@ -33,7 +34,10 @@ def main():
     ])
 
     gc = gspread.authorize(creds)
-    sh = gc.open(sheet_name).worksheet(tab_name)
+    # sh = gc.open(sheet_name).worksheet(tab_name)
+    sh = gc.open_by_key(sheet_id)
+    print(sh.title)
+    sh = sh.worksheet(tab_name)
 
     trigger_types = {
         'Tcm_Mx17_Feb_test.cfg': 'PS',
