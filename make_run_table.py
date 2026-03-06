@@ -11,13 +11,14 @@ Created as nTof_x17/make_run_table.py
 import os
 import json
 import pandas as pd
+from plot_beam_hits import get_run_time
 
 
 def main():
     # run_dir = '/media/dylan/data/x17/feb_beam/runs/'
-    run_dir = '/media/dylan/data/x17/feb_beam/runs/'
+    run_dir = '/eos/experiment/ntof/data/x17/feb_beam/runs/'
     run_cfg_name = 'run_config.json'
-    eos_site_dir = '/eos/user/d/dneff/www/'
+    csv_out_path = f'{run_dir}run_table.csv'
 
     trigger_types = {
         'Tcm_Mx17_Feb_test.cfg': 'PS',
@@ -26,6 +27,8 @@ def main():
 
     df = []
     for run in os.listdir(run_dir):
+        if not os.path.isdir(os.path.join(run_dir, run)):
+            continue
         run_config_path = os.path.join(run_dir, run, run_cfg_name)
         with open(run_config_path, 'r') as f:
             run_config = json.load(f)
@@ -37,10 +40,57 @@ def main():
         if trig_type is None:
             trig_type = 'Unknown'
 
+        trig_type_map = {
+            'Tcm_Mx17_Feb_test.cfg': 'PS Trigger',
+            'Self_Tcm_MM_Mx17_Feb_test.cfg': 'Self Trigger',
+            'Tcm_Mx17_SiPM_trig.cfg': 'Scint Trigger',
+        }
+
+        trig_type = trig_type_map.get(trig_type, 'Other')
+
+        det = run_config['detectors'][0]
+        drift_gap = det.get('drift_gap', 30)  # mm
+        frame_type = det.get('frame_type', 'aluminum')
+        distance_from_target = det.get('distance_from_target', 20)
+
         sub_run_dirs = [x for x in os.listdir(os.path.join(run_dir, run))]
 
         sub_runs = run_config['sub_runs']
+        n_runs = len(sub_runs)
+        total_run_time, resist_hvs, drift_hvs = 0, [], []
+        resist_hv_channel, drift_hv_channel = ['2', '0'], ['5', '0']
+        for sub_run in sub_runs:
+            sub_run_name = sub_run['sub_run_name']
+            if sub_run_name not in sub_run_dirs:
+                continue
+            try:
+                sub_run_time = get_run_time(run_dir, run, sub_run_name)
+            except FileNotFoundError:
+                continue
+            total_run_time += sub_run_time
+            try:
+                resist_hv = sub_run['hvs'][resist_hv_channel[0]][resist_hv_channel[1]]
+                resist_hvs.append(resist_hv)
+            except KeyError:
+                print(f'No resist HV found for run {run} subrun {sub_run}')
+            try:
+                drift_hv = -sub_run['hvs'][drift_hv_channel[0]][drift_hv_channel[1]]
+                drift_hvs.append(drift_hv)
+            except KeyError:
+                pass
 
+        average_subrun_time = total_run_time / n_runs
+        if len(resist_hvs) == 0:
+            resist_hv_range = [None, None]
+        elif max(resist_hvs) == 0:
+            resist_hv_range = [0, 0]
+        else:
+            resist_hvs = [hv for hv in resist_hvs if hv > 0]  # Remove all 0s
+            resist_hv_range = [min(resist_hvs), max(resist_hvs)]
+
+        # Get unique drift hvs and sort from lowest to highest
+        drift_hvs = sorted(drift_hvs, key=lambda x: abs(x))
+        drift_hvs = list(set(drift_hvs))
 
         run_row = {
             'run': int(run_config['run_name'].split('_')[-1]),
@@ -48,99 +98,26 @@ def main():
             'gas': run_config['gas'],
             'beam_type': run_config['beam_type'],
             'target_type': run_config['target_type'],
-            'trigger_type': trig_type
+            'trigger_type': trig_type,
+            'drift_gap': drift_gap,
+            'frame_type': frame_type,
+            'distance_from_target': distance_from_target,
+            'average_subrun_time': average_subrun_time,
+            'total_run_time': total_run_time,
+            'resist_hv_range': resist_hv_range,
+            'drift_hv_range': drift_hvs,
         }
 
         df.append(run_row)
     df = pd.DataFrame(df)
+    # Sort by run number
+    df = df.sort_values(by='run')
+    print(df)
 
-    gen_site(df, eos_site_dir)
+    df.to_csv(csv_out_path, index=False)
 
     print('donzo')
 
-
-def gen_site(df, site_dir):
-    """
-    Generate site on eos
-    """
-    os.makedirs(site_dir, exist_ok=True)
-
-    # --- 2. Shared HTML Components ---
-    # Using Simple.css for instant styling
-    HTML_HEAD = """<head>
-        <meta charset="UTF-8">
-        <title>CERN Beam Data</title>
-        <link rel="stylesheet" href="https://cdn.simplecss.org/simple.min.css">
-    </head>"""
-
-    # --- 3. Generate Index Page (The Table) ---
-    index_content = f"""
-    <html>
-    {HTML_HEAD}
-    <body>
-        <header><h1>Beam Run Registry</h1></header>
-        <main>
-        <table>
-            <thead>
-                <tr>
-                    <th>Run #</th>
-                    <th>Start Time</th>
-                    <th>Beam</th>
-                    <th>Target</th>
-                </tr>
-            </thead>
-            <tbody>
-    """
-
-    for run in df.to_dict(orient='records'):
-        # Add row to index table
-        index_content += f"""
-            <tr>
-                <td><a href="run_{run['run']}.html"><b>{run['run']}</b></a></td>
-                <td>{run['start_time']}</td>
-                <td>{run['beam_type']}</td>
-                <td>{run['target_type']}</td>
-            </tr>
-        """
-
-        # --- 4. Generate Detail Page for this run ---
-        detail_content = f"""
-        <html>
-        {HTML_HEAD}
-        <body>
-            <header>
-                <nav><a href="index.html">← Back to List</a></nav>
-                <h1>Run {run['run']}</h1>
-            </header>
-            <main>
-                <article>
-                    <h3>Configuration Details</h3>
-                    <ul>
-                        <li><strong>Start Time:</strong> {run['start_time']}</li>
-                        <li><strong>Gas Mixture:</strong> {run['gas']}</li>
-                        <li><strong>Beam Type:</strong> {run['beam_type']}</li>
-                        <li><strong>Target:</strong> {run['target_type']}</li>
-                        <li><strong>Trigger:</strong> {run['trigger_type']}</li>
-                    </ul>
-                </article>
-                <section>
-                    <h4>Plots & Analysis</h4>
-                    <p><i>If you have run_{run['run']}.png in this folder, it would show up here:</i></p>
-                    <img src="plots/run_{run['run']}.png" alt="Run plot" style="max-width:100%; border:1px solid #ccc;">
-                </section>
-            </main>
-        </body>
-        </html>
-        """
-
-        with open(f"{site_dir}/run_{run['run']}.html", "w") as f:
-            f.write(detail_content)
-
-    index_content += "</tbody></table></body></html>"
-    with open(f"{site_dir}/index.html", "w") as f:
-        f.write(index_content)
-
-    print(f"Site generated in {site_dir}/")
 
 
 if __name__ == '__main__':
