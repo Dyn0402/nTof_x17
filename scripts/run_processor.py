@@ -28,7 +28,8 @@ def main():
 
     runs = [17, 18, 19, 25, 26, 27, 29, 30, 31, 32, 33, 35, 38, 39, 49, 50, 52, 55, 57, 59, 63, 64, 67, 71, 74, 76, 80,
             84, 85, 86, 88, 94, 97, 107, 114, 118, 126, 128, 130, 131, 136, 138, 139, 141, 142, 143]
-    runs_to_process = [f'run_{run_num}' for run_num in runs]
+    # runs_to_process = [f'run_{run_num}' for run_num in runs]
+    runs_to_process = [run for run in runs_to_process if int(run.split('_')[1]) not in runs]
 
     write_run_list_to_file(runs_to_process, run_list_path)
 
