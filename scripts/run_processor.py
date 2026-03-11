@@ -26,7 +26,9 @@ def main():
 
     run_list_path = '/eos/experiment/ntof/data/x17/feb_beam/runs_to_process.txt'
 
-    runs_to_process = ['run_88']
+    runs = [17, 18, 19, 25, 26, 27, 29, 30, 31, 32, 33, 35, 38, 39, 49, 50, 52, 55, 57, 59, 63, 64, 67, 71, 74, 76, 80,
+            84, 85, 86, 88, 94, 97, 107, 114, 118, 126, 128, 130, 131, 136, 138, 139, 141, 142, 143]
+    runs_to_process = [f'run_{run_num}' for run_num in runs]
 
     write_run_list_to_file(runs_to_process, run_list_path)
 
@@ -34,7 +36,9 @@ def main():
     processor_script_name = 'process_run.py'
     log_dir = '/afs/cern.ch/work/d/dneff/condor/run_processor/logs'
 
-    submit_condor_jobs(run_list_path, processor_script_dir, processor_script_name, log_dir)
+    # espresso=20m, microcentury=1h, longlunch=2h, workday=8h, tomorrow=1d, testmatch=3d, nextweek=1w
+    job_flavour = 'tomorrow'
+    submit_condor_jobs(run_list_path, processor_script_dir, processor_script_name, log_dir, job_flavour=job_flavour)
 
     print('donzo')
 
@@ -45,6 +49,7 @@ def submit_condor_jobs(
     processor_script_name: str = "process_run.py",
     log_dir: str = "logs",
     extra_jdl_args: dict = None,
+    job_flavour: str = 'espresso',
 ):
     """
     Read run numbers from a file and submit one HTCondor job per run.
@@ -57,6 +62,7 @@ def submit_condor_jobs(
         log_dir:               Directory where Condor log/out/err files are written.
         extra_jdl_args:        Optional dict of extra JDL key-value pairs to add
                                (e.g. {"request_memory": "2 GB", "request_cpus": "2"}).
+        job_flavour:           Condor job flavour to use (e.g. "espresso", "longlunch", "tomorrow").
     """
 
     # ------------------------------------------------------------------ #
@@ -109,7 +115,7 @@ def submit_condor_jobs(
         # --- Resource requests (sensible defaults, override via extra_jdl_args) ---
         f'request_memory = {extra.pop("request_memory", "1 GB")}',
         f'request_cpus   = {extra.pop("request_cpus", "1")}',
-        f'+JobFlavour    = "{extra.pop("+JobFlavour", "espresso")}"',
+        f'+JobFlavour    = "{extra.pop("+JobFlavour", job_flavour)}"',
         "",
     ]
 
