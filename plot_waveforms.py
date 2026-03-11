@@ -29,7 +29,7 @@ def main():
     # run = 'run_18'
     # subrun = 'resist_hv_490V'
     run = 'run_18'
-    subrun = 'resist_480V_drift_600V'
+    subrun = 'resist_460V_drift_600V'
     # subrun = 'final_resist_440V_drift_600V'
     # subrun = 'resist_440V_drift_600V'
     # run = 'run_19'

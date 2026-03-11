@@ -24,8 +24,10 @@ def main():
     # subrun = 'drift_600V_6'
     # run = 'run_18'
     # subrun = 'resist_440V_drift_600V'
-    run = 'run_34'
-    subrun = 'resist_425V_drift_600V'
+    run = 'run_19'
+    subrun = 'resist_440V_drift_600V'
+    # run = 'run_34'
+    # subrun = 'resist_425V_drift_600V'
     # run = 'run_60'
     # subrun = 'resist_580V_drift_600V'
     # run = 'run_88'
@@ -51,9 +53,10 @@ def main():
 
     feu_nums = {4: 'y', 5: 'x'}  # 4 goes in x and gives y position
     # feu_nums = {4: 'y', 6: 'x'}  # 4 goes in x and gives y position
-    file_num = 4
-    # event = 6
-    event = 1811
+    file_num = 0
+    event = 6
+    # file_num = 4
+    # event = 1811
     channels = None  # To select specific channels to plot
     # channels = np.array([103, 104, 105])  # To select specific channels to plot
     # channels = np.array([4, 5, 6]) + 64  # To select specific channels to plot
