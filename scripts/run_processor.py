@@ -26,6 +26,8 @@ def main():
 
     run_list_path = '/eos/experiment/ntof/data/x17/feb_beam/runs_to_process.txt'
 
+    runs_to_process = ['run_88']
+
     write_run_list_to_file(runs_to_process, run_list_path)
 
     processor_script_dir = '/afs/cern.ch/work/d/dneff/git/mm_strip_reconstruction/orchestrator/'
