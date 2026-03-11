@@ -17,10 +17,16 @@ import os
 # PI_BASE_DIR = "/home/pi/x17/dream_run"
 # LOCAL_BASE_DIR = "/local/home/dn277127/x17/dream_run"
 
-HOST = 'daq'
+# HOST = 'daq'
+# # DAQ_BASE_DIR = "/home/mx17/feb_beam/dream_run"
+# # LOCAL_BASE_DIR = "/media/dylan/data/x17/feb_beam/dream_run"
+# DAQ_BASE_DIR = "/home/mx17/feb_beam/runs"
+# LOCAL_BASE_DIR = "/media/dylan/data/x17/feb_beam/runs"
+
+HOST = 'lxplus'
 # DAQ_BASE_DIR = "/home/mx17/feb_beam/dream_run"
 # LOCAL_BASE_DIR = "/media/dylan/data/x17/feb_beam/dream_run"
-DAQ_BASE_DIR = "/home/mx17/feb_beam/runs"
+DAQ_BASE_DIR = "/eos/experiment/ntof/data/x17/feb_beam/runs"
 LOCAL_BASE_DIR = "/media/dylan/data/x17/feb_beam/runs"
 
 # rsync options:
@@ -39,10 +45,14 @@ def main():
     runs = get_daq_runs()
     print(f'DAQ runs found: {runs}')
 
-    min_run = 140  # only sync runs >= this number
-    max_run = 140
-    runs = [run for run in runs if run.startswith("run_") and max_run >= int(run.split("_")[1]) >= min_run]
-    print(f'Filtering to runs >= {min_run}: {runs}')
+    # min_run = 140  # only sync runs >= this number
+    # max_run = 140
+    # runs = [run for run in runs if run.startswith("run_") and max_run >= int(run.split("_")[1]) >= min_run]
+    # print(f'Filtering to runs >= {min_run}: {runs}')
+
+    runs = [17, 18, 19, 25, 26, 27, 29, 30, 31, 32, 33, 35, 38, 39, 49, 50, 52, 55, 57, 59, 63, 64, 67, 71, 74, 76, 80,
+            84, 85, 86, 88, 94, 97, 107, 114, 118, 126, 128, 130, 131, 136, 138, 139, 141, 142, 143]
+    runs = [f'run_{run}' for run in runs]
 
     for run in runs:
         sync_run(run, FDF_ONLY, EXCLUDE_FDF)
