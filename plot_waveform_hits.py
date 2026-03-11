@@ -16,45 +16,49 @@ from scipy.optimize import curve_fit as cf
 
 
 def main():
-    # run = 'run_60'
-    # feu = 5
-    # file_num = 0
-    # runs_base = '/media/dylan/data/x17/nov_25_beam_test/dream_run/'
-
-    run = 'raw_daq_data'
-    feu = 1
+    run = 'run_88_testing'
+    # run = 'run_88'
+    subrun = 'resist_530V_drift_1000V'
+    feu = 5
     file_num = 0
-    # runs_base = '/media/dylan/data/sps_beam_test_25/run_54/rotation_30_test_0/'
-    runs_base = '/media/dylan/data/sps_beam_test_25/run_67/rotation_-60_banco_scan_0/'
+    runs_base = '/media/dylan/data/x17/feb_beam/runs/'
+    waveform_dir = 'decoded_root'
+    hits_dir = 'hits_root'
 
     run_dir = os.path.join(runs_base, run)
+    subrun_dir = os.path.join(run_dir, subrun)
+    waveform_dir_path = os.path.join(subrun_dir, waveform_dir)
+    hits_dir_path = os.path.join(subrun_dir, hits_dir)
 
     # Find waveform file in run dir. Will end with _xxx_yy.root where xxx is file number and yy is feu number
     waveform_file = None
-    for f in os.listdir(run_dir):
+    for f in os.listdir(waveform_dir_path):
         if f.endswith(f'_{file_num:03d}_{feu:02d}.root'):
-            waveform_file = os.path.join(run_dir, f)
+            waveform_file = os.path.join(waveform_dir_path, f)
             break
     if waveform_file is None:
         raise ValueError(f'Waveform file for feu {feu} and file number {file_num} not found in {run_dir}.')
-    hits_file = waveform_file.replace('.root', '_hits.root')
 
-    # event_id = 29  # example event with 60 degree micro TPC track in y (hopefully)
-    # channel_ids = np.arange(0, 256)
+    hits_file = None
+    for f in os.listdir(hits_dir_path):
+        if f.endswith(f'_{file_num:03d}_{feu:02d}_hits.root'):
+            hits_file = os.path.join(hits_dir_path, f)
+            break
+    if hits_file is None:
+        raise ValueError(f'Hits file for feu {feu} and file number {file_num} not found in {run_dir}.')
 
-    # event_id = 1546
-    # event_id = 41835
-    event_id = 16325
-    channel_ids = np.arange(0, 512)
+    event_id = 2
+    # channel_ids = np.arange(0, 512)
+    channel_ids = np.arange(10, 20)
 
-    plot_waveform_and_hits(waveform_file, hits_file, event_id, channel_ids, min_amp=300)
+    plot_waveform_and_hits(waveform_file, hits_file, event_id, channel_ids, min_amp=300, plot_derivative=True)
 
     plt.show()
 
     print('donzo')
 
 
-def plot_waveform_and_hits(waveform_file, hits_file, event_id, channel_ids, min_amp=None):
+def plot_waveform_and_hits(waveform_file, hits_file, event_id, channel_ids, min_amp=None, plot_derivative=False):
     """
     waveform_file : str   path to ROOT file with the 'nt' tree (raw waveforms)
     hits_file     : str   path to ROOT file with the 'hits' tree
@@ -220,111 +224,228 @@ def plot_waveform_and_hits(waveform_file, hits_file, event_id, channel_ids, min_
         plt.grid(alpha=0.3)
         plt.tight_layout()
 
-    #For channels, find clusters based on np.diff of channels. If gap > 2, new cluster
-    clusters = []
-    if len(channels) > 0:
-        sorted_indices = np.argsort(channels)
-        sorted_channels = np.array(channels)[sorted_indices]
-        cluster = [sorted_channels[0]]
-        for i in range(1, len(sorted_channels)):
-            if sorted_channels[i] - sorted_channels[i-1] > 2:
-                clusters.append(cluster)
-                cluster = [sorted_channels[i]]
-            else:
-                cluster.append(sorted_channels[i])
-        clusters.append(cluster)
+        if plot_derivative:
+            fig, ax = plt.subplots(figsize=(10, 6))
+            # ── derivative-trigger parameters (mirror C++ defaults) ──────────────────────
+            DERIV_SMOOTH_HW = 3  # box-car half-width before differencing
+            DERIV_THR_SIGMA = 3.0  # derivative peak threshold  [units: noise_rms / sample]
+            DERIV_MERGE_DIST = 4  # merge seeds closer than this many samples
+            AMP_THR_SIGMA = 5.0  # amplitude threshold for region boundaries [same as thresholdSigma]
+            MIN_WIDTH_SAMPLES = 2  # minimum region width to keep
+            noise_rms = 1.0  # replace with your actual per-channel noise RMS
 
-        print(f'Identified channel clusters: {clusters}')
+            plt.plot(waveform_sample_idx, waveform_amp, label="Waveform", marker='.', linewidth=1)
+            # Get minimum value of y axis of plot
+            y_min = np.min(waveform_amp)
+            N = len(waveform_amp)
+            idx = np.asarray(waveform_sample_idx, dtype=float)
+            amp = np.asarray(waveform_amp, dtype=float)
 
-        # For each cluster, fit a line to time_samples vs channels. Save slope and intercept
-        slopes, intercepts, left_ch, right_ch = [], [], [], []
-        parab_a, parab_b, parab_c = [], [], []
-        for cluster in clusters:
-            cluster_indices = [i for i, ch in enumerate(channels) if ch in cluster]
-            cluster_channels = np.array(channels)[cluster_indices]
-            cluster_time_samples = np.array(time_samples)[cluster_indices]
-            cluster_amplitudes = np.array(amplitudes)[cluster_indices]
+            # ── Step 1: box-car smooth ────────────────────────────────────────────
+            hw = DERIV_SMOOTH_HW
+            smooth = np.convolve(amp, np.ones(2 * hw + 1) / (2 * hw + 1), mode='same')
+            # fix edges that convolve pads with zeros → use edge-aware average instead
+            for i in range(hw):
+                lo = max(0, i - hw);
+                hi = min(N - 1, i + hw)
+                smooth[i] = amp[lo:hi + 1].mean()
+            for i in range(N - hw, N):
+                lo = max(0, i - hw);
+                hi = min(N - 1, i + hw)
+                smooth[i] = amp[lo:hi + 1].mean()
 
-            if len(cluster_channels) < 2:
-                print(f'Not enough points to fit line for cluster {cluster}. Skipping.')
-                continue
+            # ── Step 2: central-difference derivative ─────────────────────────────
+            deriv = np.empty(N)
+            deriv[1:-1] = 0.5 * (smooth[2:] - smooth[:-2])
+            deriv[0] = smooth[1] - smooth[0]
+            deriv[-1] = smooth[-1] - smooth[-2]
 
-            # Prepare weights: use sigma = 1/sqrt(amplitude) so larger amplitudes get larger weight
-            amp_safe = np.maximum(cluster_amplitudes, 1e-6)
-            sigma = 1.0 / np.sqrt(amp_safe)
+            # ── Step 3: local maxima of deriv above threshold ─────────────────────
+            deriv_thr = DERIV_THR_SIGMA * noise_rms
+            amp_thr = AMP_THR_SIGMA * noise_rms
 
-            try:
-                popt, pcov = cf(line, cluster_channels, cluster_time_samples, sigma=sigma, absolute_sigma=False)
-                slope, intercept = popt
-            except Exception as e:
-                print(f'Weighted fit failed for cluster {cluster}: {e}. Falling back to numpy.polyfit with weights.')
-                w = np.sqrt(amp_safe)  # polyfit expects weights proportional to 1/sigma
-                p = np.polyfit(cluster_channels, cluster_time_samples, 1, w=w)
-                slope, intercept = p[0], p[1]
+            is_local_max = (deriv[1:-1] > deriv_thr) & \
+                           (deriv[1:-1] >= deriv[:-2]) & \
+                           (deriv[1:-1] >= deriv[2:])
+            seeds = np.where(is_local_max)[0] + 1  # +1 to correct for sliced index
 
-            slopes.append(slope)
-            intercepts.append(intercept)
-            left_ch.append(np.min(cluster_channels))
-            right_ch.append(np.max(cluster_channels))
+            # ── Step 4: merge seeds within DERIV_MERGE_DIST ───────────────────────
+            merged = []
+            for s in seeds:
+                if merged and (s - merged[-1]) <= DERIV_MERGE_DIST:
+                    merged[-1] = s if deriv[s] > deriv[merged[-1]] else merged[-1]
+                else:
+                    merged.append(s)
 
-            # Now also fit a parabola to the same points
-            try:
-                popt_parab, pcov_parab = cf(parabola, cluster_channels, cluster_time_samples, sigma=sigma, absolute_sigma=False)
-                a, b, c = popt_parab
-                parab_a.append(a)
-                parab_b.append(b)
-                parab_c.append(c)
-            except Exception as e:
-                print(f'Parabola fit failed for cluster {cluster}: {e}. Skipping parabola fit.')
-                parab_a.append(0)
-                parab_b.append(0)
-                parab_c.append(0)
+            # ── Steps 5-6: build pulse regions ────────────────────────────────────
+            pulse_regions = []  # list of (start_idx, end_idx) in sample-index space
+            for k, seed in enumerate(merged):
+                # left boundary: walk left until below amp threshold
+                start = seed
+                while start > 0 and amp[start - 1] > amp_thr:
+                    start -= 1
 
+                # right boundary: walk right until below amp threshold
+                end = seed
+                while end + 1 < N and amp[end + 1] > amp_thr:
+                    end += 1
 
-    # Plot time samples of hits vs channel
-    plt.figure(figsize=(10,6))
-    plt.scatter(channels, time_samples, marker='o', color='blue', s=np.array(amplitudes) / 20, zorder=10)
-    plt.scatter(channels, max_samples, marker='x', color='red', s=np.array(amplitudes) / 20, zorder=10)
-    # Add secondary y-axis for time in ns, just scaling by sample_period
-    ax = plt.gca()
-    secax = ax.secondary_yaxis('right', functions=(lambda x: x * sample_period, lambda x: x / sample_period))
-    secax.set_ylabel("Time (ns)")
+                # pile-up cut: clip at local minimum before next seed if it overlaps
+                if k + 1 < len(merged):
+                    next_seed = merged[k + 1]
+                    next_start = next_seed
+                    while next_start > 0 and amp[next_start - 1] > amp_thr:
+                        next_start -= 1
 
-    # Plot fitted lines
-    for m, b, lch, rch in zip(slopes, intercepts, left_ch, right_ch):
-        x_fit = np.array([lch, rch])
-        y_fit = line(x_fit, m, b)
-        plt.plot(x_fit, y_fit, color='green', linestyle='-', linewidth=2, alpha=0.7)
-        # Convert slope to time (ns) per channel
-        slope_ns_per_ch = m * sample_period
-        plt.text((lch + rch) / 2, line((lch + rch) / 2, m, b), f"slope = {m:.2f}, {slope_ns_per_ch:.1f}ns / strip",
-                 color='green', fontsize=10, ha='center', va='bottom', rotation=45)
+                    if next_start <= end:
+                        split_at = seed + int(np.argmin(amp[seed:next_seed]))
+                        end = split_at
 
-    # Plot fitted parabolas
-    for a, b, c, lch, rch in zip(parab_a, parab_b, parab_c, left_ch, right_ch):
-        x_fit = np.linspace(lch, rch, 100)
-        y_fit = parabola(x_fit, a, b, c)
-        plt.plot(x_fit, y_fit, color='orange', linestyle='--', linewidth=2, alpha=0.7)
-        plt.text((lch + rch) / 2, parabola((lch + rch) / 2, a, b, c), f"parabola fit",
-                 color='orange', fontsize=10, ha='center', va='bottom', rotation=45)
+                if end - start + 1 >= MIN_WIDTH_SAMPLES:
+                    pulse_regions.append((start, end))
 
-    plt.title(f"Hit Sample Positions for Event {event_id}")
-    plt.xlabel("Channel ID")
-    plt.ylabel("Sample Index")
-    plt.grid(alpha=0.3)
-    plt.tight_layout()
+            # ── Plot derivative (scaled to waveform y-range for overlay) ──────────
+            deriv_scale = np.ptp(amp) / (np.ptp(deriv) + 1e-9)
+            waveform_amp_deriv = deriv * deriv_scale  # scaled for display
+            deriv_offset = y_min  # anchor baseline to plot bottom
 
-    # Plot waveforms of all channels, stacked vertically
-    plt.figure(figsize=(10,6))
-    offset = 0
-    for ch, samp, wave in zip(channel_ids, samples, waveforms):
-        plt.plot(samp, wave + offset, label=f"Ch {ch}")
-        offset += np.max(wave) + 100  # add space between waveforms
-    plt.title(f"Waveforms for Event {event_id}")
-    plt.xlabel("Sample index")
-    plt.ylabel("Amplitude + offset")
-    plt.grid(alpha=0.3)
-    plt.tight_layout()
+            plt.plot(idx, waveform_amp_deriv + deriv_offset,
+                     label=f"Deriv ×{deriv_scale:.1f} (offset to y_min)",
+                     color='orange', linewidth=1, linestyle='--', alpha=0.75)
+
+            # threshold line in derivative space
+            plt.axhline(deriv_thr * deriv_scale + deriv_offset,
+                        color='orange', linestyle=':', linewidth=0.8,
+                        label=f"Deriv thr ({DERIV_THR_SIGMA}σ)")
+
+            # ── Mark seeds and region boundaries ──────────────────────────────────
+            if len(merged) > 0:
+                plt.scatter(idx[merged], amp[merged],
+                            marker='^', s=80, color='red', zorder=5,
+                            label="Rising-edge seeds")
+
+            for i, (start, end) in enumerate(pulse_regions):
+                label_start = "Pulse region start" if i == 0 else None
+                label_end = "Pulse region end" if i == 0 else None
+                plt.axvline(idx[start], color='green', linestyle='--',
+                            linewidth=1.0, alpha=0.8, label=label_start)
+                plt.axvline(idx[end], color='purple', linestyle='--',
+                            linewidth=1.0, alpha=0.8, label=label_end)
+                # shade the pulse region
+                # plt.axvspan(idx[start], idx[end], alpha=0.08, color='blue')
+
+            plt.title(f"Event {event_id}, Channel {channel_id}")
+            plt.xlabel("Sample index")
+            plt.ylabel("Amplitude")
+            plt.legend()
+            plt.grid(alpha=0.3)
+            plt.tight_layout()
+
+    # #For channels, find clusters based on np.diff of channels. If gap > 2, new cluster
+    # clusters = []
+    # if len(channels) > 0:
+    #     sorted_indices = np.argsort(channels)
+    #     sorted_channels = np.array(channels)[sorted_indices]
+    #     cluster = [sorted_channels[0]]
+    #     for i in range(1, len(sorted_channels)):
+    #         if sorted_channels[i] - sorted_channels[i-1] > 2:
+    #             clusters.append(cluster)
+    #             cluster = [sorted_channels[i]]
+    #         else:
+    #             cluster.append(sorted_channels[i])
+    #     clusters.append(cluster)
+    #
+    #     print(f'Identified channel clusters: {clusters}')
+    #
+    #     # For each cluster, fit a line to time_samples vs channels. Save slope and intercept
+    #     slopes, intercepts, left_ch, right_ch = [], [], [], []
+    #     parab_a, parab_b, parab_c = [], [], []
+    #     for cluster in clusters:
+    #         cluster_indices = [i for i, ch in enumerate(channels) if ch in cluster]
+    #         cluster_channels = np.array(channels)[cluster_indices]
+    #         cluster_time_samples = np.array(time_samples)[cluster_indices]
+    #         cluster_amplitudes = np.array(amplitudes)[cluster_indices]
+    #
+    #         if len(cluster_channels) < 2:
+    #             print(f'Not enough points to fit line for cluster {cluster}. Skipping.')
+    #             continue
+    #
+    #         # Prepare weights: use sigma = 1/sqrt(amplitude) so larger amplitudes get larger weight
+    #         amp_safe = np.maximum(cluster_amplitudes, 1e-6)
+    #         sigma = 1.0 / np.sqrt(amp_safe)
+    #
+    #         try:
+    #             popt, pcov = cf(line, cluster_channels, cluster_time_samples, sigma=sigma, absolute_sigma=False)
+    #             slope, intercept = popt
+    #         except Exception as e:
+    #             print(f'Weighted fit failed for cluster {cluster}: {e}. Falling back to numpy.polyfit with weights.')
+    #             w = np.sqrt(amp_safe)  # polyfit expects weights proportional to 1/sigma
+    #             p = np.polyfit(cluster_channels, cluster_time_samples, 1, w=w)
+    #             slope, intercept = p[0], p[1]
+    #
+    #         slopes.append(slope)
+    #         intercepts.append(intercept)
+    #         left_ch.append(np.min(cluster_channels))
+    #         right_ch.append(np.max(cluster_channels))
+    #
+    #         # Now also fit a parabola to the same points
+    #         try:
+    #             popt_parab, pcov_parab = cf(parabola, cluster_channels, cluster_time_samples, sigma=sigma, absolute_sigma=False)
+    #             a, b, c = popt_parab
+    #             parab_a.append(a)
+    #             parab_b.append(b)
+    #             parab_c.append(c)
+    #         except Exception as e:
+    #             print(f'Parabola fit failed for cluster {cluster}: {e}. Skipping parabola fit.')
+    #             parab_a.append(0)
+    #             parab_b.append(0)
+    #             parab_c.append(0)
+    #
+    #
+    # # Plot time samples of hits vs channel
+    # plt.figure(figsize=(10,6))
+    # plt.scatter(channels, time_samples, marker='o', color='blue', s=np.array(amplitudes) / 20, zorder=10)
+    # plt.scatter(channels, max_samples, marker='x', color='red', s=np.array(amplitudes) / 20, zorder=10)
+    # # Add secondary y-axis for time in ns, just scaling by sample_period
+    # ax = plt.gca()
+    # secax = ax.secondary_yaxis('right', functions=(lambda x: x * sample_period, lambda x: x / sample_period))
+    # secax.set_ylabel("Time (ns)")
+    #
+    # # Plot fitted lines
+    # for m, b, lch, rch in zip(slopes, intercepts, left_ch, right_ch):
+    #     x_fit = np.array([lch, rch])
+    #     y_fit = line(x_fit, m, b)
+    #     plt.plot(x_fit, y_fit, color='green', linestyle='-', linewidth=2, alpha=0.7)
+    #     # Convert slope to time (ns) per channel
+    #     slope_ns_per_ch = m * sample_period
+    #     plt.text((lch + rch) / 2, line((lch + rch) / 2, m, b), f"slope = {m:.2f}, {slope_ns_per_ch:.1f}ns / strip",
+    #              color='green', fontsize=10, ha='center', va='bottom', rotation=45)
+    #
+    # # Plot fitted parabolas
+    # for a, b, c, lch, rch in zip(parab_a, parab_b, parab_c, left_ch, right_ch):
+    #     x_fit = np.linspace(lch, rch, 100)
+    #     y_fit = parabola(x_fit, a, b, c)
+    #     plt.plot(x_fit, y_fit, color='orange', linestyle='--', linewidth=2, alpha=0.7)
+    #     plt.text((lch + rch) / 2, parabola((lch + rch) / 2, a, b, c), f"parabola fit",
+    #              color='orange', fontsize=10, ha='center', va='bottom', rotation=45)
+    #
+    # plt.title(f"Hit Sample Positions for Event {event_id}")
+    # plt.xlabel("Channel ID")
+    # plt.ylabel("Sample Index")
+    # plt.grid(alpha=0.3)
+    # plt.tight_layout()
+    #
+    # # Plot waveforms of all channels, stacked vertically
+    # plt.figure(figsize=(10,6))
+    # offset = 0
+    # for ch, samp, wave in zip(channel_ids, samples, waveforms):
+    #     plt.plot(samp, wave + offset, label=f"Ch {ch}")
+    #     offset += np.max(wave) + 100  # add space between waveforms
+    # plt.title(f"Waveforms for Event {event_id}")
+    # plt.xlabel("Sample index")
+    # plt.ylabel("Amplitude + offset")
+    # plt.grid(alpha=0.3)
+    # plt.tight_layout()
 
 
 def line(x, m, b):
