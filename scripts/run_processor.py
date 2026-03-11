@@ -84,7 +84,7 @@ def submit_condor_jobs(
     # ------------------------------------------------------------------ #
     # 3. Build a single JDL file with one Queue entry per run             #
     # ------------------------------------------------------------------ #
-    jdl_path = "submit_jobs.jdl"
+    jdl_path = f"{log_dir}submit_jobs.jdl"
 
     extra = extra_jdl_args or {}
 
