@@ -17,7 +17,8 @@ from plot_beam_hits import load_subrun, get_run_time, get_run_json
 
 def main():
     base_path = '/media/dylan/data/x17/feb_beam/runs/'
-    run = 'run_72'
+    # run = 'run_72'
+    run = 'run_63'
     # feus = {1: 'm3', 4: 'MX17 X Strips', 6: 'MX17 Y Strips'}
     # feus = [4, 5]
     feus = [4, 6]
@@ -53,15 +54,19 @@ def main():
         n_events_filter = df['eventId'].nunique()
         filtered_rates.append(n_events_filter / run_time)
 
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(10, 5))
     ax.plot(hvs, rates, marker='o', label='All Events')
     ax.plot(hvs, filtered_rates, marker='o', label='Max Hits = 400')
     ax.legend()
     ax.axhline(0, color='gray', zorder=0)
+    ax.xaxis.set_minor_locator(plt.MultipleLocator(10))
+    ax.grid(axis='x', which='minor', linestyle='-', linewidth=0.4, alpha=0.7, zorder=0)
+    ax.grid(axis='x', which='major', linestyle='-', linewidth=0.8, alpha=0.8, zorder=0)
     ax.set_xlabel('HV (V)')
     ax.set_ylabel('Event Rate (Hz)')
     fig.suptitle(f'Event Rate for Cs-137 HV Scan -- {run}')
     fig.tight_layout()
+    fig.subplots_adjust(top=0.94, left=0.055, right=0.995, bottom=0.1)
     plt.show()
 
     print('donzo')

@@ -43,7 +43,7 @@ def main():
 
     # hvs = [400, 425, 450, 475]
     # hvs = [300, 400, 430, 450, 480]
-    hvs = list(np.arange(300, 820, 5))
+    hvs = list(np.arange(360, 820, 5))
     # runs = ['run_26', 'run_27', 'run_30', 'run_31']
     # runs = {
     #     'run_18': 'Ar/CF4/Iso 88/10/2 - Timepix - No Shielding',
@@ -68,6 +68,40 @@ def main():
     #     # 'run_47': 'Ar/CF4/CO2 45/40/15 - Carbon - Shielding SELF',
     # }
 
+    # title = 'Ar/CF4/Iso 88/10/2 with 30 mm Drift Gap'
+    # runs = {
+    #     'run_18': 'run_18 - Timepix - Feb 3',
+    #     'run_35': 'run_35 - Carbon - Feb 7 (Still flushing Helium)',
+    # }
+
+    # title = 'Helium/Ethane 96.5/3.5 with 30 mm Drift Gap'
+    # runs = {
+    #     'run_26': 'run_26 - Empty - No Shielding',
+    #     'run_27': 'run_27 - Lead - No Shielding',
+    #     # 'run_29': 'run_29 - B4C - No Shielding (Quick)',
+    #     'run_30': 'run_30 - B4C - No Shielding',
+    #     'run_32': 'run_32 - Empty - Shielding',
+    #     'run_33': 'run_33 - Carbon - Shielding',
+    # }
+
+    # title = 'Argon/CF4/CO2 45/40/15 with 30 mm Drift Gap'
+    # runs = {
+    #     'run_43': 'run_43 - Carbon - No Shielding',
+    # }
+
+    # title = 'Argon/CF4 90/10 with 30 mm Drift Gap'
+    # runs = {
+    #     'run_50': 'run_50 - Carbon',
+    #     'run_57': 'run_57 - Beam Cap',
+    #     'run_59': 'run_59 - B4C',
+    # }
+
+    title = 'Argon/CO2 70/30 with 30 mm Drift Gap'
+    runs = {
+        'run_64': 'run_64 - B4C',
+        'run_67': 'run_67 - None',
+    }
+
     # runs = {
     #     'run_18': 'Ar/CF4/Iso 88/10/2 - Timepix - No Shielding',
     #     'run_35': 'Ar/CF4/Iso 88/10/2 - Carbon - Shielding',
@@ -76,9 +110,9 @@ def main():
     #     'run_30': 'He - B4C - No Shielding',
     #     'run_32': 'He - Empty - Shielding',
     #     'run_33': 'He - Carbon - Shielding',
-    #     'run_57': 'Ar/CF4 90/10 - Beam Cap - Shielding',
-    #     'run_59': 'Ar/CF4 90/10 - B4C - Shielding',
-    #     'run_43': 'Ar/CF4/CO2 45/40/15 - Carbon - Shielding',
+    #     # 'run_57': 'Ar/CF4 90/10 - Beam Cap - Shielding',
+    #     # 'run_59': 'Ar/CF4 90/10 - B4C - Shielding',
+    #     # 'run_43': 'Ar/CF4/CO2 45/40/15 - Carbon - Shielding',
     #     # 'run_47': 'Ar/CF4/CO2 45/40/15 - Carbon - Shielding SELF',
     # }
 
@@ -99,25 +133,30 @@ def main():
     # }
     # sub_run = 'resist_540V_drift_1000V'
     #
-    runs = {
-        'run_30_D600V': 'He - B4C - Al Frame - 30mm Drift at -600V',
-        # 'run_88_D500V': 'He/Ethane 96.5/3.5 - B4C - Aluminum Frame - Drift 500V',
+    # runs = {
+    #     'run_30_D600V': 'He - B4C - Al Frame - 30mm Drift at -600V',
+    #     # 'run_88_D500V': 'He/Ethane 96.5/3.5 - B4C - Aluminum Frame - Drift 500V',
+    #
+    #     'run_88_D1000V': 'He - B4C - Al Frame - 6mm Drift at -1000V',
+    #     # 'run_88_D1500V': 'He/Ethane 96.5/3.5 - B4C - Aluminum Frame - Drift 1500V',
+    #     # 'run_126_D500V': 'He/Ethane 96.5/3.5 - Lead - Carbon Frame - 55 cm - Drift 500V',
+    #     # 'run_126_D1000V': 'He/Ethane 96.5/3.5 - Lead - Carbon Frame - 55cm  - Drift 1000V',
+    #     # 'run_126_D1500V': 'He/Ethane 96.5/3.5 - Lead - Carbon Frame - 55cm  - Drift 1500V',
+    #     # 'run_131_D500V': 'He/Ethane 96.5/3.5 - B4C - Carbon Frame - Drift 500V',
+    #
+    #     'run_131_D1000V': 'He - B4C - Carbon Frame - 6mm Drift at -1000V',
+    #     # 'run_131_D1500V': 'He/Ethane 96.5/3.5 - B4C - Carbon Frame - Drift 1500V',
+    # }
+    # sub_run = 'resist_510V_drift_1000V'
 
-        'run_88_D1000V': 'He - B4C - Al Frame - 6mm Drift at -1000V',
-        # 'run_88_D1500V': 'He/Ethane 96.5/3.5 - B4C - Aluminum Frame - Drift 1500V',
-        # 'run_126_D500V': 'He/Ethane 96.5/3.5 - Lead - Carbon Frame - 55 cm - Drift 500V',
-        # 'run_126_D1000V': 'He/Ethane 96.5/3.5 - Lead - Carbon Frame - 55cm  - Drift 1000V',
-        # 'run_126_D1500V': 'He/Ethane 96.5/3.5 - Lead - Carbon Frame - 55cm  - Drift 1500V',
-        # 'run_131_D500V': 'He/Ethane 96.5/3.5 - B4C - Carbon Frame - Drift 500V',
-
-        'run_131_D1000V': 'He - B4C - Carbon Frame - 6mm Drift at -1000V',
-        # 'run_131_D1500V': 'He/Ethane 96.5/3.5 - B4C - Carbon Frame - Drift 1500V',
-    }
-    sub_run = 'resist_510V_drift_1000V'
+    # csv_out_dir = f'/media/dylan/data/x17/feb_beam/Analysis/hits_vs_time_csvs'
+    # export_hits_vs_time_csvs_wrapper(base_path, hvs, csv_out_dir, feus)
+    # input('Enter to continue...')
 
     # plot_amps_with_hv(base_path, run, sub_run, feus, hvs)
     # plot_hits_vs_hv(base_path, run, sub_run, feus, hvs)
-    plot_hits_vs_hv_runs(base_path, list(runs.keys()), sub_run, feus, hvs, runs)
+    # plot_hits_vs_hv_runs(base_path, list(runs.keys()), feus, hvs, runs)
+    plot_hits_vs_hv_runs_vertical(base_path, list(runs.keys()), feus, hvs, runs, title)
     plt.show()
 
     # runs = {
@@ -237,7 +276,7 @@ def plot_hits_vs_hv(base_path, run, sub_run, feus, hvs):
     fig.tight_layout()
 
 
-def plot_hits_vs_hv_runs(base_path, runs, sub_run, feus, hvs, run_name_map=None):
+def plot_hits_vs_hv_runs(base_path, runs, feus, hvs, run_name_map=None):
     """
     Plot number of hits per event vs HV in several time of arrival bins.
     """
@@ -330,6 +369,97 @@ def plot_hits_vs_hv_runs(base_path, runs, sub_run, feus, hvs, run_name_map=None)
     fig.subplots_adjust(wspace=0.08)
 
 
+def plot_hits_vs_hv_runs_vertical(base_path, runs, feus, hvs, run_name_map=None, title=None):
+    """
+    Plot number of hits per event vs HV in several time of arrival bins.
+    Panels are stacked vertically with a shared x-axis.
+    """
+    min_amp = 800
+    time_bins = [[0, 75 * 20], [75 * 20, 270 * 20], [270 * 20, 10000]]
+
+    hits_per_event = [{run: [] for run in runs} for _ in time_bins]
+    hvs_plot = [{run: [] for run in runs} for _ in time_bins]
+
+    for hv in hvs:
+        print(f'Processing HV {hv}V')
+        for run in runs:
+            if len(run.split('_')) == 3:  # Drift at end
+                drift = run.split('_')[-1].strip('D')
+                run_dir_name = '_'.join(run.split('_')[:-1])
+            else:
+                drift = None
+                run_dir_name = run
+
+            run_dir = os.path.join(base_path, run_dir_name)
+            hv_sub_run = None
+            for sub_run_dir in os.listdir(run_dir):
+                if run == 'run_32' and hv > 470:
+                    continue
+                if not os.path.isdir(os.path.join(run_dir, sub_run_dir)):
+                    continue
+                if f'resist_{hv}V_' in sub_run_dir:
+                    if drift is not None and f'_drift_{drift}' not in sub_run_dir:
+                        continue
+                    hv_sub_run = sub_run_dir
+                    break
+
+            if hv_sub_run is None:
+                print(f'No data found for HV {hv}V in {run_dir_name}!\n')
+                continue
+            try:
+                df, det = load_subrun(base_path, run_dir_name, hv_sub_run, feus)
+            except FileNotFoundError:
+                print(f'No data found for HV {hv}V in {run_dir_name}, {hv_sub_run}!\n')
+                continue
+            if not isinstance(df, pd.DataFrame) or df.empty:
+                print(f'No data found for HV {hv}V!\n')
+                continue
+
+            df = df[df['amplitude'] >= min_amp]
+            n_events = df['eventId'].nunique()
+            if n_events == 0:
+                continue
+
+            for i, (t0, t1) in enumerate(time_bins):
+                df_time_bin = df[(df['time'] / 3 >= t0) & (df['time'] / 3 < t1)]
+                hits_per_event[i][run].append(df_time_bin.shape[0] / n_events)
+                hvs_plot[i][run].append(hv)
+
+    n_bins = len(time_bins)
+    fig, axs = plt.subplots(nrows=n_bins, ncols=1, figsize=(12, 2 * n_bins), sharex=True)
+
+    for i, ax in enumerate(axs):
+        t0_us = time_bins[i][0] / 1000
+        t1_us = time_bins[i][1] / 1000
+        time_window_label = f'{t0_us:.2f}–{t1_us:.2f} μs'
+
+        for run in runs:
+            label = run_name_map[run] if run_name_map is not None else run
+            ax.plot(hvs_plot[i][run], hits_per_event[i][run], marker='o', label=label)
+
+        ax.axhline(0, color='gray', linewidth=0.8, zorder=0)
+        ax.xaxis.set_minor_locator(plt.MultipleLocator(10))  # minor ticks every 5 V
+        ax.grid(axis='x', which='minor', linestyle='-', linewidth=0.4, alpha=0.7, zorder=0)
+        ax.grid(axis='x', which='major', linestyle='-', linewidth=0.8, alpha=0.8, zorder=0)
+        ax.set_ylabel('Hits per Event')
+        ax.text(0.02, 0.3, time_window_label, transform=ax.transAxes,
+                fontsize=14, verticalalignment='top',
+                bbox=dict(boxstyle='round,pad=0.4', facecolor='wheat', alpha=1.0, edgecolor='black'))
+
+        if i == 2:
+            ax.annotate(f'Min. Amplitude: {min_amp} ADC', xy=(0.05, 0.8),
+                        xycoords='axes fraction', ha='left', va='top', fontsize=10,
+                        bbox=dict(boxstyle='round,pad=0.3', facecolor='white', alpha=1.0, edgecolor='none'))
+        if i == 0:
+            ax.legend(loc='upper left', bbox_to_anchor=(0.01, 0.99))
+
+    axs[-1].set_xlabel('HV (V)')
+    if title:
+        fig.suptitle(title, fontsize=14, y=0.98)
+    fig.tight_layout()
+    fig.subplots_adjust(top=0.94, bottom=0.075, left=0.06, right=0.995, hspace=0)
+
+
 def plot_hits_vs_time(base_path, runs, sub_run, feus, run_name_map=None, save_csv_path=None):
     """
     Plots hits vs time and optionally saves the binned data to a CSV.
@@ -389,6 +519,331 @@ def plot_hits_vs_time(base_path, runs, sub_run, feus, run_name_map=None, save_cs
         print(f"Binned data saved to: {save_csv_path}")
 
     return fig, ax
+
+
+def export_hits_vs_time_csvs_wrapper(base_path, hvs, output_dir, feus):
+    """
+    Wrap the export_hits_vs_time_csvs function and put all run info and metadata here.
+    """
+    # ── run_name_map ──────────────────────────────────────────────────────────────
+    # Maps run id → human-readable label (used as the CSV column header / filename)
+
+    run_name_map = {
+        # Ar:CF4:Iso 88/10/2, 30 mm drift
+        'run_18': 'run_18 - Timepix - Feb 3',
+        'run_35': 'run_35 - Carbon - Feb 7 (Still flushing Helium)',
+
+        # He:Ethane 96.5/3.5, 30 mm drift
+        'run_26': 'run_26 - Empty - No Shielding',
+        'run_27': 'run_27 - Lead - No Shielding',
+        'run_29': 'run_29 - B4C - No Shielding (Quick)',
+        'run_30': 'run_30 - B4C - No Shielding',
+        'run_32': 'run_32 - Empty - Shielding',
+        'run_33': 'run_33 - Carbon - Shielding',
+
+        # Ar:CF4:CO2 45/40/15, 30 mm drift
+        'run_43': 'run_43 - Carbon - No Shielding',
+
+        # Ar:CF4 90/10, 30 mm drift
+        'run_50': 'run_50 - Carbon',
+        'run_57': 'run_57 - Beam Cap',
+        'run_59': 'run_59 - B4C',
+
+        # Ar:CO2 70/30, 30 mm drift
+        'run_64': 'run_64 - B4C',
+        'run_67': 'run_67 - None',
+    }
+
+    # ── run_metadata ──────────────────────────────────────────────────────────────
+    # Maps run id → dict of descriptive fields written into the CSV header block
+
+    run_metadata = {
+        'run_18': {
+            'gas': 'Ar:CF4:Iso 88/10/2',
+            'target': 'Timepix',
+            'drift_gap_mm': 30,
+            'frame': 'Al',
+            'dist_cm': '~20',
+            'trigger': 'PS',
+            'resist_hv_V': '10 / 520',
+            'drift_hv_V': '-600 / -300 / 0',
+            'date': '2026-02-03',
+            'notes': 'HV scan; first 2 subruns 0V/0V and 0V/300V',
+        },
+        'run_35': {
+            'gas': 'Ar:CF4:Iso 88/10/2',
+            'target': 'Carbon',
+            'drift_gap_mm': 30,
+            'frame': 'Al',
+            'dist_cm': '~20',
+            'trigger': 'PS',
+            'resist_hv_V': '20 / 510',
+            'drift_hv_V': '-600 / -300 / 0',
+            'date': '2026-02-07',
+            'notes': 'Gas swap He→Ar; flushing; 9.4 µs delay',
+        },
+
+        'run_26': {
+            'gas': 'He:Ethane 96.5/3.5',
+            'target': 'None',
+            'drift_gap_mm': 30,
+            'frame': 'Al',
+            'dist_cm': '~20',
+            'trigger': 'PS',
+            'resist_hv_V': '10 / 510',
+            'drift_hv_V': '-600 / -300 / 0',
+            'date': '2026-02-04',
+            'notes': 'Overnight HV scan; no target',
+        },
+        'run_27': {
+            'gas': 'He:Ethane 96.5/3.5',
+            'target': 'Lead',
+            'drift_gap_mm': 30,
+            'frame': 'Al',
+            'dist_cm': '~20',
+            'trigger': 'PS',
+            'resist_hv_V': '20 / 510',
+            'drift_hv_V': '-600 / -300 / 0',
+            'date': '2026-02-05',
+            'notes': 'Lead target; step scan then stats run',
+        },
+        'run_29': {
+            'gas': 'He:Ethane 96.5/3.5',
+            'target': 'B4C',
+            'drift_gap_mm': 30,
+            'frame': 'Al',
+            'dist_cm': '~20',
+            'trigger': 'PS',
+            'resist_hv_V': '400 / 475',
+            'drift_hv_V': '-600',
+            'date': '2026-02-05',
+            'notes': 'B4C target; back to 600 fC; quick scan',
+        },
+        'run_30': {
+            'gas': 'He:Ethane 96.5/3.5',
+            'target': 'B4C',
+            'drift_gap_mm': 30,
+            'frame': 'Al',
+            'dist_cm': '~20',
+            'trigger': 'PS',
+            'resist_hv_V': '20 / 510',
+            'drift_hv_V': '-600 / -300 / 0',
+            'date': '2026-02-05',
+            'notes': 'Overnight HV scan',
+        },
+        'run_32': {
+            'gas': 'He:Ethane 96.5/3.5',
+            'target': 'None + PE+Pb shield',
+            'drift_gap_mm': 30,
+            'frame': 'Al',
+            'dist_cm': '~20',
+            'trigger': 'PS',
+            'resist_hv_V': '20 / 510',
+            'drift_hv_V': '-600 / -300 / 0',
+            'date': '2026-02-06',
+            'notes': 'Long HV scan; new noise possibly introduced; capped at 470V',
+        },
+        'run_33': {
+            'gas': 'He:Ethane 96.5/3.5',
+            'target': 'Carbon',
+            'drift_gap_mm': 30,
+            'frame': 'Al',
+            'dist_cm': '~20',
+            'trigger': 'PS',
+            'resist_hv_V': '20 / 510',
+            'drift_hv_V': '-600 / -300 / 0',
+            'date': '2026-02-06',
+            'notes': 'Overnight HV scan with carbon target',
+        },
+
+        'run_43': {
+            'gas': 'Ar:CF4:CO2 45/40/15',
+            'target': 'Carbon',
+            'drift_gap_mm': 30,
+            'frame': 'Al',
+            'dist_cm': '~20',
+            'trigger': 'PS',
+            'resist_hv_V': '560 / 700',
+            'drift_hv_V': '-600 / 0',
+            'date': '2026-02-09',
+            'notes': 'Flush run; 2 hr',
+        },
+
+        'run_50': {
+            'gas': 'Ar:CF4 90/10',
+            'target': 'Carbon',
+            'drift_gap_mm': 30,
+            'frame': 'Al',
+            'dist_cm': '~20',
+            'trigger': 'PS',
+            'resist_hv_V': '350 / 620',
+            'drift_hv_V': '-600',
+            'date': '2026-02-10',
+            'notes': 'Beam+carbon; overnight HV scan after flush',
+        },
+        'run_57': {
+            'gas': 'Ar:CF4 90/10',
+            'target': 'None (cap on beam!)',
+            'drift_gap_mm': 30,
+            'frame': 'Al',
+            'dist_cm': '~20',
+            'trigger': 'PS',
+            'resist_hv_V': '405 / 620',
+            'drift_hv_V': '-600 / 0',
+            'date': '2026-02-13',
+            'notes': 'Cap left on beam pipe!',
+        },
+        'run_59': {
+            'gas': 'Ar:CF4 90/10',
+            'target': 'B4C 2mm',
+            'drift_gap_mm': 30,
+            'frame': 'Al',
+            'dist_cm': '~20',
+            'trigger': 'PS',
+            'resist_hv_V': '405 / 620',
+            'drift_hv_V': '-600 / 0',
+            'date': '2026-02-13',
+            'notes': 'Cap removed; B4C installed; overnight',
+        },
+
+        'run_64': {
+            'gas': 'Ar:CO2 70/30',
+            'target': 'B4C 2mm',
+            'drift_gap_mm': 30,
+            'frame': 'Al',
+            'dist_cm': '~20',
+            'trigger': 'PS',
+            'resist_hv_V': '440 / 770',
+            'drift_hv_V': '-600 / 0',
+            'date': '2026-02-16',
+            'notes': 'Beam returning; still flushing',
+        },
+        'run_67': {
+            'gas': 'Ar:CO2 70/30',
+            'target': 'None (holder only)',
+            'drift_gap_mm': 30,
+            'frame': 'Al',
+            'dist_cm': '~20',
+            'trigger': 'PS',
+            'resist_hv_V': '520 / 730',
+            'drift_hv_V': '-600 / 0',
+            'date': '2026-02-17',
+            'notes': 'No target HV scan',
+        },
+    }
+
+    # ── Call site ─────────────────────────────────────────────────────────────────
+
+    export_hits_vs_time_csvs(base_path, list(run_name_map.keys()), hvs, feus, output_dir,
+                             run_name_map=run_name_map, run_metadata=run_metadata)
+
+
+def export_hits_vs_time_csvs(base_path, runs, hvs, feus, output_dir,
+                              run_name_map=None, run_metadata=None):
+    """
+    For each (run, HV) combination, bins hits/event vs time and saves a CSV.
+
+    Parameters
+    ----------
+    base_path    : str  - root directory containing run folders
+    runs         : list of str - run identifiers (e.g. ['run_32', 'run_33_5D'])
+    hvs          : list of int - HV values to process
+    feus         : list - FEU identifiers passed to load_subrun
+    output_dir   : str  - directory where CSVs will be saved
+    run_name_map : dict, optional - maps run id -> human-readable label
+    run_metadata : dict, optional - maps run id -> dict of metadata fields
+                   e.g. {'run_32': {'gas': 'Ar/CO2 70/30', 'drift_gap_mm': 10}}
+    """
+    min_amp = 800
+    time_bins = np.arange(0, 10000, 10)
+    time_bin_mids = (time_bins[:-1] + time_bins[1:]) / 2
+
+    os.makedirs(output_dir, exist_ok=True)
+
+    for run in runs:
+        # Parse drift suffix (e.g. 'run_32_5D' -> drift='5', run_dir='run_32')
+        parts = run.split('_')
+        if len(parts) == 3:
+            drift = parts[-1].strip('D')
+            run_dir_name = '_'.join(parts[:-1])
+        else:
+            drift = None
+            run_dir_name = run
+
+        label = run_name_map[run] if run_name_map else run
+        meta = run_metadata[run] if run_metadata else {}
+
+        for hv in hvs:
+            print(f'Processing {run}, HV={hv}V')
+
+            # Locate the matching sub-run directory
+            run_dir = os.path.join(base_path, run_dir_name)
+            hv_sub_run = None
+            for sub_run_dir in os.listdir(run_dir):
+                if run == 'run_32' and hv > 470:
+                    continue
+                if not os.path.isdir(os.path.join(run_dir, sub_run_dir)):
+                    continue
+                if f'resist_{hv}V_' in sub_run_dir:
+                    if drift is not None and f'_drift_{drift}' not in sub_run_dir:
+                        continue
+                    hv_sub_run = sub_run_dir
+                    break
+
+            if hv_sub_run is None:
+                print(f'  No sub-run found for HV={hv}V — skipping.')
+                continue
+
+            try:
+                df, det = load_subrun(base_path, run_dir_name, hv_sub_run, feus)
+            except FileNotFoundError:
+                print(f'  File not found for HV={hv}V, sub-run={hv_sub_run} — skipping.')
+                continue
+
+            if not isinstance(df, pd.DataFrame) or df.empty:
+                print(f'  Empty dataframe for HV={hv}V — skipping.')
+                continue
+
+            df = df[df['amplitude'] >= min_amp]
+            n_events = df['eventId'].nunique()
+            if n_events == 0:
+                print(f'  No events after amplitude cut for HV={hv}V — skipping.')
+                continue
+
+            # Bin hits/event vs time
+            bins_cut = pd.cut(df['time'] / 3, bins=time_bins)
+            hits_per_event = (
+                df['time']
+                .groupby(bins_cut, observed=False)
+                .count()
+                .reindex(bins_cut.cat.categories, fill_value=0)
+                / n_events
+            )
+
+            # Build CSV with a metadata header
+            fname = f'{run}_R{hv}V.csv'
+            fpath = os.path.join(output_dir, fname)
+
+            with open(fpath, 'w') as f:
+                # --- Header block ---
+                f.write(f'# Run:          {label}\n')
+                f.write(f'# Run ID:        {run}\n')
+                f.write(f'# HV (V):        {hv}\n')
+                f.write(f'# Sub-run dir:   {hv_sub_run}\n')
+                f.write(f'# Drift gap:     {drift + " mm" if drift else "N/A"}\n')
+                f.write(f'# Min amplitude: {min_amp} ADC\n')
+                f.write(f'# N events:      {n_events}\n')
+                for key, val in meta.items():
+                    f.write(f'# {key:<14} {val}\n')
+                f.write('#\n')
+
+                # --- Data ---
+                pd.DataFrame({
+                    'time_bin_mid_us': time_bin_mids / 1000,
+                    'hits_per_event':  hits_per_event.values,
+                }).to_csv(f, index=False)
+
+            print(f'  Saved: {fpath}')
 
 
 def plot_hits_vs_time_hvs(base_path, run, sub_run, feus, hvs):
