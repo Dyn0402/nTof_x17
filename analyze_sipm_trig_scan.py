@@ -11,6 +11,7 @@ Created as nTof_x17/analyze_sipm_trig_scan.py
 import os
 import numpy as np
 import matplotlib.pyplot as plt
+import pandas as pd
 from plot_beam_hits import load_subrun, get_run_time, plot_2ds
 
 
@@ -24,6 +25,8 @@ def main():
     # get_true_hits(base_path, run, sub_run, feus, feus_map, plot=False)
 
     run = 'run_94'
+    out_csv_path = f'/media/dylan/data/x17/feb_beam/Analysis/Plot_Data/sipm_trig_calibration_{run}.csv'
+    # out_csv_path = None
     run_dir = os.path.join(base_path, run)
     hvs, rates, all_rates = [], [], []
     for subrun in os.listdir(run_dir):
@@ -37,15 +40,24 @@ def main():
         rates.append(rate)
         all_rates.append(all_rate)
 
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(10, 5))
     ax.plot(hvs, rates, marker='o', label='Filtered Rate')
     ax.plot(hvs, all_rates, marker='o', linestyle='--', label='All Event Rate')
     ax.axhline(0, color='gray', zorder=0)
+    ax.xaxis.set_minor_locator(plt.MultipleLocator(10))  # minor ticks every 10 V
+    ax.xaxis.set_major_locator(plt.MultipleLocator(20))  # major ticks every 20 V
+    ax.grid(axis='x', which='minor', linestyle='-', linewidth=0.4, alpha=0.7, zorder=0)
+    ax.grid(axis='x', which='major', linestyle='-', linewidth=0.8, alpha=0.8, zorder=0)
     ax.set_ylabel('Rate (Hz)')
     ax.set_xlabel('Resist HV (V)')
-    fig.suptitle(f'Event Rate for SiPM HV Scan -- {run}')
+    fig.suptitle(f'Event Rate for Beam Scintillator Trigger HV Scan -- {run}')
     ax.legend()
     fig.tight_layout()
+    fig.subplots_adjust(top=0.94, left=0.055, right=0.995, bottom=0.09)
+
+    if out_csv_path is not None:
+        df = pd.DataFrame({'HV': hvs, 'Rate': rates, 'All Rate': all_rates})
+        df.to_csv(out_csv_path, index=False)
 
     plt.show()
     print('donzo')
@@ -161,6 +173,7 @@ def get_true_hits(base_path, run, sub_run, feus, feus_map, plot=False):
         plot_2ds(df_filter, pitch, run_time)
 
         print(df['eventId'].unique())
+        plt.show()
 
     rate = df_filter['eventId'].nunique() / run_time
     print(f'Rate: {rate:.2f} events/s')

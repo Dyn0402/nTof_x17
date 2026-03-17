@@ -96,11 +96,11 @@ def main():
     #     'run_59': 'run_59 - B4C',
     # }
 
-    title = 'Argon/CO2 70/30 with 30 mm Drift Gap'
-    runs = {
-        'run_64': 'run_64 - B4C',
-        'run_67': 'run_67 - None',
-    }
+    # title = 'Argon/CO2 70/30 with 30 mm Drift Gap'
+    # runs = {
+    #     'run_64': 'run_64 - B4C',
+    #     'run_67': 'run_67 - None',
+    # }
 
     # runs = {
     #     'run_18': 'Ar/CF4/Iso 88/10/2 - Timepix - No Shielding',
@@ -149,14 +149,67 @@ def main():
     # }
     # sub_run = 'resist_510V_drift_1000V'
 
+    # title = 'Argon/CO2 70/30 with 6 mm Drift Gap @ -1000V'
+    # runs = {
+    #     'run_74_D1000V': 'run_74 - None',
+    #     'run_76_D1000V': 'run_76 - Lead',
+    #     'run_80_D1000V': 'run_80 - Carbon',
+    # }
+
+    # title = 'Helium/Ethane 96.5/3.5 with 6 mm Drift Gap @ -1000V'
+    # runs = {
+    #     'run_84_D1000V': 'run_84 - Carbon',
+    #     'run_86_D1000V': 'run_86 - Lead',
+    #     'run_88_D1000V': 'run_88 - B4C',
+    # }
+
+    # title = 'Argon/CO2 70/30 with Carbon Frame and 6 mm Drift Gap @ -1000V'
+    # runs = {
+    #     'run_114_D1000V': 'run_114 - B4C',
+    # }
+
+    # title = 'Argon/CO2 70/30 with Carbon Frame at 55 cm and 6 mm Drift Gap @ -1000V'
+    # runs = {
+    #     'run_124_D1000V': 'run_124 - Lead',
+    # }
+
+    # title = 'Helium/Ethane 96.5/3.5 with Carbon Frame at 55 cm and 6 mm Drift Gap @ -1000V'
+    # runs = {
+    #     'run_126_D1000V': 'run_126 - Lead',
+    #     'run_128_D1000V': 'run_128 - B4C',
+    # }
+
+    # title = 'Helium/Ethane 96.5/3.5 with Carbon Frame at 20 cm and 6 mm Drift Gap @ -1000V'
+    # runs = {
+    #     'run_131_D1000V': 'run_131 - B4C',
+    #     'run_136_D1000V': 'run_136 - Lead',
+    #     'run_138_D1000V': 'run_138 - Empty',
+    #     'run_139_D1000V': 'run_139 - Carbon',
+    # }
+
+    # title = 'Helium/Ethane 96.5/3.5 with Carbon Frame at 20 cm and 11 mm Drift Gap @ -800V'
+    # runs = {
+    #     'run_141_D800V': 'run_141 - Carbon',
+    #     'run_143_D800V': 'run_143 - Carbon (Stats)',
+    # }
+
+    title = 'Helium/Ethane 96.5/3.5 Carbon Target at 20 cm Drift Gap Comparisons'
+    runs = {
+        'run_33_D600V': 'run_33 - 30mm - Aluminum Frame',
+        'run_141_D800V': 'run_141 - 11mm - Carbon Frame',
+        'run_84_D1000V': 'run_84 - 6mm - Aluminum Frame',
+        'run_139_D1000V': 'run_139 - 6mm - Carbon Frame',
+    }
+
     # csv_out_dir = f'/media/dylan/data/x17/feb_beam/Analysis/hits_vs_time_csvs'
     # export_hits_vs_time_csvs_wrapper(base_path, hvs, csv_out_dir, feus)
     # input('Enter to continue...')
 
+    csv_out_path = '/media/dylan/data/x17/feb_beam/Analysis/Plot_Data/beam_turn_off_helium_comparison.csv'
     # plot_amps_with_hv(base_path, run, sub_run, feus, hvs)
     # plot_hits_vs_hv(base_path, run, sub_run, feus, hvs)
     # plot_hits_vs_hv_runs(base_path, list(runs.keys()), feus, hvs, runs)
-    plot_hits_vs_hv_runs_vertical(base_path, list(runs.keys()), feus, hvs, runs, title)
+    plot_hits_vs_hv_runs_vertical(base_path, list(runs.keys()), feus, hvs, runs, title, csv_out_path)
     plt.show()
 
     # runs = {
@@ -174,18 +227,18 @@ def main():
     #     'run_88_D1000V': 'He/Ethane 96.5/3.5 - B4C - Aluminum Frame - Drift 1000V',
     #     'run_131_D1000V': 'He/Ethane 96.5/3.5 - B4C - Carbon Frame - Drift 1000V',
     # }
-    runs = {
-        'run_30_D600V': 'He - B4C - Aluminum Frame - 30mm Drift - Drift 600V',
-    }
-    sub_run = 'resist_510V_drift_1000V'
-
-    plot_hits_vs_time(base_path, list(runs.keys()), sub_run, feus, runs, save_csv_path='/home/dylan/Downloads/hists.csv')
+    # runs = {
+    #     'run_30_D600V': 'He - B4C - Aluminum Frame - 30mm Drift - Drift 600V',
+    # }
+    # sub_run = 'resist_510V_drift_1000V'
     #
-    # run_hits = 'run_88'
-    # hvs = [540, 530, 520, 510, 500, 490]
-    # plot_hits_vs_time_hvs(base_path, run_hits, sub_run, feus, hvs)
-    #
-    plt.show()
+    # plot_hits_vs_time(base_path, list(runs.keys()), sub_run, feus, runs, save_csv_path='/home/dylan/Downloads/hists.csv')
+    # #
+    # # run_hits = 'run_88'
+    # # hvs = [540, 530, 520, 510, 500, 490]
+    # # plot_hits_vs_time_hvs(base_path, run_hits, sub_run, feus, hvs)
+    # #
+    # plt.show()
 
     # event = 6
     # run = 'run_33'
@@ -202,12 +255,14 @@ def main():
     # sub_run = 'resist_485V_drift_600V'
     # sub_run = 'initial_resist_610V_drift_600V'
     # sub_run = 'drift_600V_6'
+    run = 'run_98'
+    sub_run = 'resist_530V_drift_1000V'
 
     plot_hits_per_event(base_path, run, sub_run, feus)
     # plot_hits_xy_vs_time(base_path, run, sub_run, feus, event)
 
     # plot_general_metrics(base_path, run, sub_run, feus)
-    # plot_general_metrics_fast(base_path, run, sub_run, feus, feus_map)
+    plot_general_metrics_fast(base_path, run, sub_run, feus, feus_map)
 
     plt.show()
 
@@ -369,12 +424,12 @@ def plot_hits_vs_hv_runs(base_path, runs, feus, hvs, run_name_map=None):
     fig.subplots_adjust(wspace=0.08)
 
 
-def plot_hits_vs_hv_runs_vertical(base_path, runs, feus, hvs, run_name_map=None, title=None):
+def plot_hits_vs_hv_runs_vertical(base_path, runs, feus, hvs, run_name_map=None, title=None, out_csv_path=None):
     """
     Plot number of hits per event vs HV in several time of arrival bins.
     Panels are stacked vertically with a shared x-axis.
     """
-    min_amp = 800
+    min_amp = 1500
     time_bins = [[0, 75 * 20], [75 * 20, 270 * 20], [270 * 20, 10000]]
 
     hits_per_event = [{run: [] for run in runs} for _ in time_bins]
@@ -394,6 +449,10 @@ def plot_hits_vs_hv_runs_vertical(base_path, runs, feus, hvs, run_name_map=None,
             hv_sub_run = None
             for sub_run_dir in os.listdir(run_dir):
                 if run == 'run_32' and hv > 470:
+                    continue
+                if run == 'run_74_D1000V' and hv in [650, 670]:
+                    continue
+                if run == 'run_76_D1000V' and hv in [690, 700]:
                     continue
                 if not os.path.isdir(os.path.join(run_dir, sub_run_dir)):
                     continue
@@ -438,7 +497,8 @@ def plot_hits_vs_hv_runs_vertical(base_path, runs, feus, hvs, run_name_map=None,
             ax.plot(hvs_plot[i][run], hits_per_event[i][run], marker='o', label=label)
 
         ax.axhline(0, color='gray', linewidth=0.8, zorder=0)
-        ax.xaxis.set_minor_locator(plt.MultipleLocator(10))  # minor ticks every 5 V
+        ax.xaxis.set_minor_locator(plt.MultipleLocator(10))  # minor ticks every 10 V
+        ax.xaxis.set_major_locator(plt.MultipleLocator(20))  # major ticks every 20 V
         ax.grid(axis='x', which='minor', linestyle='-', linewidth=0.4, alpha=0.7, zorder=0)
         ax.grid(axis='x', which='major', linestyle='-', linewidth=0.8, alpha=0.8, zorder=0)
         ax.set_ylabel('Hits per Event')
@@ -458,6 +518,25 @@ def plot_hits_vs_hv_runs_vertical(base_path, runs, feus, hvs, run_name_map=None,
         fig.suptitle(title, fontsize=14, y=0.98)
     fig.tight_layout()
     fig.subplots_adjust(top=0.94, bottom=0.075, left=0.06, right=0.995, hspace=0)
+
+    if out_csv_path:
+        os.makedirs(out_csv_path, exist_ok=True)
+        for run in runs:
+            label = run_name_map[run] if run_name_map is not None else run
+            # Build a dict keyed by HV, with one column per time bin
+            rows = {}
+            for i, (t0, t1) in enumerate(time_bins):
+                t0_us = t0 / 1000
+                t1_us = t1 / 1000
+                col = f'hits_per_event_{t0_us:.2f}_{t1_us:.2f}us'
+                for hv, hpe in zip(hvs_plot[i][run], hits_per_event[i][run]):
+                    if hv not in rows:
+                        rows[hv] = {'hv': hv}
+                    rows[hv][col] = hpe
+
+            df_out = pd.DataFrame(sorted(rows.values(), key=lambda r: r['hv']))
+            safe_label = label.replace(' ', '_').replace('/', '-')
+            df_out.to_csv(os.path.join(out_csv_path, f'{safe_label}.csv'), index=False)
 
 
 def plot_hits_vs_time(base_path, runs, sub_run, feus, run_name_map=None, save_csv_path=None):
