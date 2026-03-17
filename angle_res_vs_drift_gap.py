@@ -38,7 +38,7 @@ def main():
     drift_range = np.linspace(1, 40, 1000)
 
     # Specific points of interest (Drift Gaps to highlight)
-    targets = [6, 12, 15, 30]
+    targets = [3, 6, 11, 15, 30]
 
     fig, ax = plt.subplots(figsize=(10, 6))
 
@@ -56,7 +56,7 @@ def main():
 
     # Formatting
     ax.set_xlabel('Drift Gap (mm)')
-    ax.set_ylabel('Angle Resolution (deg)')
+    ax.set_ylabel('Minimum Angle That Can Be Resolved (deg)')
     ax.set_title('Angular Resolution vs. Drift Gap')
     ax.set_xlim(left=0)
     ax.set_ylim(bottom=0)
