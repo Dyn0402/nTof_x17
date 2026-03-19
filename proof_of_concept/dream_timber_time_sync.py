@@ -23,12 +23,12 @@ def main():
     runs_path = '/media/dylan/data/x17/feb_beam/runs/'
     beam_data_dir = '/media/dylan/data/x17/feb_beam/ntof_bunch_intensities/'
     feus = [4, 5]
-    offset_range = np.array([0, 5])  # Seconds
+    offset_range = np.array([0, 10])  # Seconds
     min_intensity = 0.1  # Minimum intensity in beam data for matching
 
     # process_all_runs(runs_path, beam_data_dir, feus, offset_range, min_intensity)
 
-    run = 'run_138'
+    run = 'run_86'
     plot_outliers_range = (1.5, 2.5)
     plot_single_run(runs_path, beam_data_dir, feus, offset_range, min_intensity, run, plot_outliers_range)
 
@@ -53,8 +53,7 @@ def plot_single_run(runs_path, beam_data_dir, feus, offset_range, min_intensity,
     plt.show()
 
 
-
-def process_all_runs(runs_path, beam_data_dir, feus, offset_range, min_intensity):
+def process_all_runs(runs_path, beam_data_dir, feus, offset_range, min_intensity, min_events_for_fit=10):
     """
     Do matching between DREAM and PS timestamps for all runs.
     """
@@ -94,6 +93,7 @@ def process_all_runs(runs_path, beam_data_dir, feus, offset_range, min_intensity
             min_intensity=min_intensity,
             plot=False,
             write_csv=True,
+            min_events_for_fit=min_events_for_fit,
         )
         all_results.extend(run_results)
 
@@ -114,12 +114,19 @@ def process_run(
         plot: bool = False,
         write_csv: bool = False,
         plot_outliers_range: tuple = None,
+        min_events_for_fit: int = 5,
 ) -> list[dict]:
     """
     Process all subruns in a single run: load beam data once, iterate subruns.
 
+    For subruns with fewer than min_events_for_fit triggers the offset is
+    interpolated from the mean of the two nearest (in time) subruns that do
+    have a fitted offset, rather than attempting a minimization. The interpolated
+    offset is flagged with 'offset_interpolated': True in the result dict.
+
     Returns a list of result dicts (one per successfully processed subrun),
-    each augmented with 'run', 'sub_run', and 'run_start' keys.
+    each augmented with 'run', 'sub_run', 'run_start', and
+    'offset_interpolated' keys.
     """
     run_dir = os.path.join(runs_path, run)
     sub_runs = sorted([d for d in os.listdir(run_dir) if os.path.isdir(os.path.join(run_dir, d))])
@@ -158,10 +165,10 @@ def process_run(
     print(f'  Loaded {len(beam_df)} beam rows spanning '
           f'{beam_df["time_s"].min():.2f} - {beam_df["time_s"].max():.2f} s\n')
 
+    # --- First pass: fit offset for every subrun that has enough events ---
     results = []
     for sub_run, run_start, run_duration in zip(sub_runs, run_starts, run_durations):
         print(f'  --- {sub_run} ---')
-
         result = get_subrun_offset(
             runs_path=runs_path,
             run=run,
@@ -170,18 +177,61 @@ def process_run(
             feus=feus,
             coarse_range=tuple(offset_range * 1e6),
             min_intensity=min_intensity,
+            min_events_for_fit=min_events_for_fit,
             plot=plot,
             plot_outliers_range=plot_outliers_range,
-            write_csv=write_csv,
+            write_csv=False,  # hold off until offsets are finalised
         )
         if result is not None:
-            results.append({'run': run, 'sub_run': sub_run, 'run_start': run_start, 'run_duration': run_duration,
-                            **result})
+            results.append({'run': run, 'sub_run': sub_run, 'run_start': run_start,
+                            'run_duration': run_duration, 'offset_interpolated': False, **result})
             print(f"    offset={result['offset']/1e6:.4f} s  "
                   f"mean_residual={result['mean_residual']:.1f} us  "
-                  f"matched={result['n_matched']}/{result['n_total']}")
+                  f"matched={result['n_matched']}/{result['n_total']}"
+                  + ("  [too few events — will interpolate]"
+                     if result.get('too_few_events') else ""))
         else:
             print(f'    Skipped (no triggers or error).')
+
+    # --- Second pass: replace offsets for sparse subruns via neighbour mean ---
+    fitted_indices  = [i for i, r in enumerate(results) if not r.get('too_few_events')]
+    fitted_starts   = np.array([results[i]['run_start'] for i in fitted_indices])
+    fitted_offsets  = np.array([results[i]['offset']    for i in fitted_indices])
+
+    for i, r in enumerate(results):
+        if not r.get('too_few_events'):
+            continue
+        if len(fitted_indices) == 0:
+            print(f"  Warning: no fitted subruns available to interpolate {r['sub_run']}, skipping.")
+            continue
+
+        t = r['run_start']
+        diffs = np.abs(fitted_starts - t)
+        order = np.argsort(diffs)
+        # Use up to two nearest fitted neighbours
+        neighbours = order[:2]
+        interp_offset = float(np.mean(fitted_offsets[neighbours]))
+        results[i]['offset'] = interp_offset
+        results[i]['offset_interpolated'] = True
+        print(f"  Interpolated offset for {r['sub_run']}: {interp_offset/1e6:.4f} s "
+              f"(mean of {len(neighbours)} neighbour(s))")
+
+    # --- Third pass: write CSVs with finalised offsets ---
+    if write_csv:
+        for r in results:
+            get_subrun_offset(
+                runs_path=runs_path,
+                run=run,
+                sub_run=r['sub_run'],
+                beam_df=beam_df,
+                feus=feus,
+                coarse_range=tuple(offset_range * 1e6),
+                min_intensity=min_intensity,
+                min_events_for_fit=min_events_for_fit,
+                plot=False,
+                write_csv=True,
+                forced_offset=r['offset'],
+            )
 
     return results
 
@@ -196,15 +246,23 @@ def get_subrun_offset(
         coarse_steps: int = 2000,
         max_match_distance: float = 600_000,
         min_intensity: float = 0,
+        min_events_for_fit: int = 5,
         plot: bool = False,
         plot_outliers_range: tuple = None,
         write_csv: bool = False,
+        forced_offset: float = None,
 ) -> dict | None:
     """
     Compute the DREAM->beam timestamp offset for a single subrun.
 
     Loads the subrun, extracts trigger timestamps, filters beam data to the
     subrun window, runs find_timestamp_offset, and optionally plots diagnostics.
+
+    If the number of trigger events is below min_events_for_fit the
+    minimization is skipped and the result is flagged with
+    'too_few_events': True so the caller can substitute an interpolated offset.
+    If forced_offset is provided it is used directly (skipping minimization),
+    which is how process_run writes CSVs for interpolated subruns.
 
     Parameters
     ----------
@@ -217,14 +275,18 @@ def get_subrun_offset(
     coarse_steps        : number of points in coarse grid
     max_match_distance  : match threshold in us (half the ~1.2 s n_TOF cycle)
     min_intensity       : Minimum intensity in beam data to include in matching
+    min_events_for_fit  : minimum number of trigger events required to attempt
+                          offset minimization; fewer events sets too_few_events flag
     plot                : if True, show diagnostic plots for this subrun
-    plot_outliers_range : if not None, range of best offest outside of which to plot.
+    plot_outliers_range : if not None, range of best offset outside of which to plot.
     write_csv           : if True, write per-event beam intensity to
                           {runs_path}/{run}/{sub_run}/beam_intensity.csv
+    forced_offset       : if provided, skip minimization and use this offset (us)
 
     Returns
     -------
     dict from find_timestamp_offset, or None if the subrun cannot be processed.
+    The dict may contain 'too_few_events': True if minimization was skipped.
     """
     try:
         run_start = get_run_start(base_path=runs_path, run=run, sub_run=sub_run)
@@ -274,13 +336,41 @@ def get_subrun_offset(
         print(f'  No beam pulses found in subrun window.')
         return None
 
-    result = find_timestamp_offset(
-        ts_A=trigger_timestamps,
-        ts_B=beam_timestamps,
-        coarse_range=coarse_range,
-        coarse_steps=coarse_steps,
-        max_match_distance=max_match_distance,
-    )
+    n_events = len(trigger_timestamps)
+    too_few  = n_events < min_events_for_fit
+
+    if forced_offset is not None:
+        # Caller supplies the offset directly (e.g. interpolated from neighbours)
+        result = {
+            'offset':         forced_offset,
+            'mean_residual':  np.nan,
+            'n_matched':      0,
+            'n_total':        n_events,
+            'coarse_offsets': np.array([]),
+            'coarse_costs':   np.array([]),
+            'too_few_events': False,
+        }
+    elif too_few:
+        print(f'    Only {n_events} events (< {min_events_for_fit}), skipping minimization.')
+        result = {
+            'offset':         np.nan,
+            'mean_residual':  np.nan,
+            'n_matched':      0,
+            'n_total':        n_events,
+            'coarse_offsets': np.array([]),
+            'coarse_costs':   np.array([]),
+            'too_few_events': True,
+        }
+        return result  # nothing more to do until caller provides an offset
+    else:
+        result = find_timestamp_offset(
+            ts_A=trigger_timestamps,
+            ts_B=beam_timestamps,
+            coarse_range=coarse_range,
+            coarse_steps=coarse_steps,
+            max_match_distance=max_match_distance,
+        )
+        result['too_few_events'] = False
 
     # --- Match each trigger to its nearest beam pulse at best offset ---
     shifted = trigger_timestamps + result['offset']  # us, same order as event_map
@@ -305,9 +395,9 @@ def get_subrun_offset(
     if plot:
         fig, ax = plt.subplots()
         ax2 = ax.twinx()
-        ax.plot(trigger_timestamps_df.index, trigger_timestamps_df.values,
+        ax.plot(trigger_timestamps_df.index, trigger_timestamps_df.values, ls='none',
                 marker='.', lw=0.6, label='Dream', color='blue')
-        ax2.plot(beam_window['time_s'], beam_window['intensity'],
+        ax2.plot(beam_window['time_s'], beam_window['intensity'], ls='none',
                  marker='.', lw=0.6, label='PS', color='orange')
         ax.legend(loc='upper left')
         ax2.legend(loc='upper right')
@@ -318,20 +408,20 @@ def get_subrun_offset(
         ax_ylim = ax.get_ylim()
         ax.set_ylim(top=ax_ylim[1] + (ax_ylim[1] - ax_ylim[0]) * 0.1)
         ax2_ylim = ax2.get_ylim()
-        ax2.set_ylim(top=ax2_ylim[1] + ax2_ylim[0] * 0.1)
+        ax2.set_ylim(top=ax2_ylim[1] + (ax2_ylim[1] - ax2_ylim[0]) * 0.1)
         fig.tight_layout()
         aligned_times_s = trigger_timestamps_df.index + result['offset'] / 1e6
         hits_per_event  = trigger_timestamps_df.values
 
         fig, ax = plt.subplots()
         ax2 = ax.twinx()
-        ax.plot(aligned_times_s, hits_per_event,
+        ax.plot(aligned_times_s, hits_per_event, ls='none',
                 marker='.', lw=0.6, label='Dream (matched)', color='blue')
         if (~matched_mask).any():
             ax.scatter(aligned_times_s[~matched_mask], hits_per_event[~matched_mask],
                        marker='x', s=80, color='red', zorder=5,
                        label=f'Dream (unmatched, n={(~matched_mask).sum()})')
-        ax2.plot(beam_window['time_s'], beam_window['intensity'],
+        ax2.plot(beam_window['time_s'], beam_window['intensity'], ls='none',
                  marker='.', lw=0.6, label='PS', color='orange')
         ax.legend(loc='upper left')
         ax2.legend(loc='upper right')
@@ -342,7 +432,7 @@ def get_subrun_offset(
         ax_ylim = ax.get_ylim()
         ax.set_ylim(top=ax_ylim[1] + (ax_ylim[1] - ax_ylim[0]) * 0.15)
         ax2_ylim = ax2.get_ylim()
-        ax2.set_ylim(top=ax2_ylim[1] + ax2_ylim[0] * 0.15)
+        ax2.set_ylim(top=ax2_ylim[1] + (ax2_ylim[1] - ax2_ylim[0]) * 0.1)
         fig.tight_layout()
 
         fig, ax = plt.subplots()
@@ -353,7 +443,7 @@ def get_subrun_offset(
         ax.axvline(result['offset'] / 1e6, color='r', linestyle='--',
                    label=f"Best: {result['offset'] / 1e6:.3f} s")
         ax.legend()
-        plt.tight_layout()
+        fig.tight_layout()
 
     if write_csv:
         out_df = pd.DataFrame({

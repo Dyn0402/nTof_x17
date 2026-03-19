@@ -193,19 +193,34 @@ def main():
     #     'run_143_D800V': 'run_143 - Carbon (Stats)',
     # }
 
-    title = 'Helium/Ethane 96.5/3.5 Carbon Target at 20 cm Drift Gap Comparisons'
+    # title = 'Helium/Ethane 96.5/3.5 Carbon Target at 20 cm Drift Gap Comparisons'
+    # runs = {
+    #     'run_33_D600V': 'run_33 - 30mm - Aluminum Frame',
+    #     'run_141_D800V': 'run_141 - 11mm - Carbon Frame',
+    #     'run_84_D1000V': 'run_84 - 6mm - Aluminum Frame',
+    #     'run_139_D1000V': 'run_139 - 6mm - Carbon Frame',
+    # }
+
+    title = 'Helium/Ethane 96.5/3.5 Carbon Target at 20 cm Bunch Intensity Comparison'
     runs = {
-        'run_33_D600V': 'run_33 - 30mm - Aluminum Frame',
-        'run_141_D800V': 'run_141 - 11mm - Carbon Frame',
-        'run_84_D1000V': 'run_84 - 6mm - Aluminum Frame',
-        'run_139_D1000V': 'run_139 - 6mm - Carbon Frame',
+        # 'run_33_D600V_I800': 'run_33 - 30mm - Aluminum Frame - Dedicated',
+        # 'run_33_D600V_I600': 'run_33 - 30mm - Aluminum Frame - Parasitic',
+        # 'run_33_D600V_I400': 'run_33 - 30mm - Aluminum Frame - Low Parasitic',
+        # 'run_141_D800V_I800': 'run_141 - 11mm - Carbon Frame - Dedicated',
+        # 'run_141_D800V_I600': 'run_141 - 11mm - Carbon Frame - Parasitic',
+        'run_84_D1000V_I800': 'run_84 - 6mm - Aluminum Frame - Dedicated',
+        'run_84_D1000V_I600': 'run_84 - 6mm - Aluminum Frame - Parasitic',
+        'run_84_D1000V_I400': 'run_84 - 6mm - Aluminum Frame - Low Parasitic',
+        # 'run_139_D1000V_I800': 'run_139 - 6mm - Carbon Frame - Dedicated',
+        # 'run_139_D1000V_I600': 'run_139 - 6mm - Carbon Frame - Parasitic',
     }
 
     # csv_out_dir = f'/media/dylan/data/x17/feb_beam/Analysis/hits_vs_time_csvs'
     # export_hits_vs_time_csvs_wrapper(base_path, hvs, csv_out_dir, feus)
     # input('Enter to continue...')
 
-    csv_out_path = '/media/dylan/data/x17/feb_beam/Analysis/Plot_Data/beam_turn_off_helium_comparison.csv'
+    # csv_out_path = '/media/dylan/data/x17/feb_beam/Analysis/Plot_Data/beam_turn_off_helium_comparison.csv'
+    csv_out_path = '/media/dylan/data/x17/feb_beam/Analysis/Plot_Data/beam_turn_off_helium_comparison_intensity_test.csv'
     # plot_amps_with_hv(base_path, run, sub_run, feus, hvs)
     # plot_hits_vs_hv(base_path, run, sub_run, feus, hvs)
     # plot_hits_vs_hv_runs(base_path, list(runs.keys()), feus, hvs, runs)
@@ -441,8 +456,14 @@ def plot_hits_vs_hv_runs_vertical(base_path, runs, feus, hvs, run_name_map=None,
             if len(run.split('_')) == 3:  # Drift at end
                 drift = run.split('_')[-1].strip('D')
                 run_dir_name = '_'.join(run.split('_')[:-1])
+                intensity = None
+            elif len(run.split('_')) == 4:  # Drift and Intensity
+                drift = run.split('_')[2].strip('D')
+                intensity = run.split('_')[3].strip('I')
+                run_dir_name = '_'.join(run.split('_')[:2])
             else:
                 drift = None
+                intensity = None
                 run_dir_name = run
 
             run_dir = os.path.join(base_path, run_dir_name)
@@ -450,9 +471,9 @@ def plot_hits_vs_hv_runs_vertical(base_path, runs, feus, hvs, run_name_map=None,
             for sub_run_dir in os.listdir(run_dir):
                 if run == 'run_32' and hv > 470:
                     continue
-                if run == 'run_74_D1000V' and hv in [650, 670]:
+                if run.startswith('run_74_D1000V') and hv in [650, 670]:
                     continue
-                if run == 'run_76_D1000V' and hv in [690, 700]:
+                if run.startswith('run_76_D1000V') and hv in [690, 700]:
                     continue
                 if not os.path.isdir(os.path.join(run_dir, sub_run_dir)):
                     continue
@@ -470,9 +491,30 @@ def plot_hits_vs_hv_runs_vertical(base_path, runs, feus, hvs, run_name_map=None,
             except FileNotFoundError:
                 print(f'No data found for HV {hv}V in {run_dir_name}, {hv_sub_run}!\n')
                 continue
+
             if not isinstance(df, pd.DataFrame) or df.empty:
                 print(f'No data found for HV {hv}V!\n')
                 continue
+
+            if intensity:
+                intensity_map = {
+                    '800': [700, 1000],
+                    '600': [500, 700],
+                    '400': [100, 500],
+                }
+
+                try:
+                    df_intensity = load_beam_intensity(base_path, run_dir_name, hv_sub_run)
+                except FileNotFoundError:
+                    print(f'No beam intensity data found for HV {hv}V in {run_dir_name}!\n')
+                    df_intensity = None
+
+                if df_intensity is not None:
+                    intensity_range = intensity_map[intensity]
+                    df_intensity = df_intensity[(df_intensity['beam_intensity'] >= intensity_range[0]) &
+                                                (df_intensity['beam_intensity'] < intensity_range[1])]
+                    intensity_event_ids = df_intensity['eventId']
+                    df = df[df['eventId'].isin(intensity_event_ids)]
 
             df = df[df['amplitude'] >= min_amp]
             n_events = df['eventId'].nunique()
@@ -1227,6 +1269,23 @@ def load_subrun(base_path, run, sub_run, feus, map_csv_path='./mx17_m4_map.csv')
         df = df[df['feu'].isin(feus)]
 
     return df, det
+
+
+def load_beam_intensity(base_path, run, sub_run):
+    """
+    Load beam bunch intensities from the corresponding CSV file.
+    """
+    csv_path = f'{base_path}{run}/{sub_run}/beam_intensity.csv'
+    if not os.path.exists(csv_path):
+        print(f'Beam intensity file not found: {csv_path}')
+        return None
+
+    try:
+        df = pd.read_csv(csv_path)
+        return df
+    except Exception as e:
+        print(f'Error loading bunch intensities from {csv_path}: {e}')
+        return None
 
 
 def add_xy_pos(df, det):
