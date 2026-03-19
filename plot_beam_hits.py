@@ -1206,13 +1206,12 @@ def plot_amps_with_hv(base_path, run, sub_run, feus, hvs):
     fig.tight_layout()
 
 
-def load_subrun(base_path, run, sub_run, feus):
+def load_subrun(base_path, run, sub_run, feus, map_csv_path='./mx17_m4_map.csv'):
     """
     Load subrun
     """
 
     run_config_path = f'{base_path}{run}/run_config.json'
-    map_csv_path = './mx17_m4_map.csv'
 
     rc = RunConfig(run_config_path, map_csv_path)
 
@@ -1415,6 +1414,14 @@ def get_run_time(base_path, run, sub_run):
         lines = f.readlines()
         run_time = float(lines[0].replace('Run Time: ', '').replace(' seconds', ''))
     return run_time
+
+
+def get_run_start(base_path, run, sub_run):
+    run_time_file = f'{base_path}{run}/{sub_run}/raw_daq_data/run_time.txt'
+    with open(run_time_file, 'r') as f:
+        lines = f.readlines()
+        run_start = float(lines[1].replace('Run Start Time: ', '').strip())
+    return run_start
 
 
 def get_run_json(base_path, run):
