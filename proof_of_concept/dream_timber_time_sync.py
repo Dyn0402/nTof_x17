@@ -14,6 +14,7 @@ from datetime import datetime, timezone
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
+from matplotlib.ticker import PercentFormatter
 from scipy.optimize import minimize_scalar
 from plot_beam_hits import get_run_start, get_run_time, load_subrun, get_run_json
 
@@ -25,11 +26,11 @@ def main():
     offset_range = np.array([0, 5])  # Seconds
     min_intensity = 0.1  # Minimum intensity in beam data for matching
 
-    process_all_runs(runs_path, beam_data_dir, feus, offset_range, min_intensity)
+    # process_all_runs(runs_path, beam_data_dir, feus, offset_range, min_intensity)
 
-    # run = 'run_30'
-    # plot_outliers_range = (1.5, 2.5)
-    # plot_single_run(runs_path, beam_data_dir, feus, offset_range, min_intensity, run, plot_outliers_range)
+    run = 'run_138'
+    plot_outliers_range = (1.5, 2.5)
+    plot_single_run(runs_path, beam_data_dir, feus, offset_range, min_intensity, run, plot_outliers_range)
 
     print('\ndonzo')
 
@@ -97,7 +98,10 @@ def process_all_runs(runs_path, beam_data_dir, feus, offset_range, min_intensity
         all_results.extend(run_results)
 
     if all_results:
+        all_results.sort(key=lambda r: r['run_start'])
         plot_offsets(all_results)
+        plot_offsets_timeline(all_results)
+        plt.show()
 
 
 def process_run(
@@ -321,7 +325,7 @@ def get_subrun_offset(
 
         fig, ax = plt.subplots()
         ax2 = ax.twinx()
-        ax.plot(aligned_times_s[matched_mask], hits_per_event[matched_mask],
+        ax.plot(aligned_times_s, hits_per_event,
                 marker='.', lw=0.6, label='Dream (matched)', color='blue')
         if (~matched_mask).any():
             ax.scatter(aligned_times_s[~matched_mask], hits_per_event[~matched_mask],
@@ -370,65 +374,8 @@ def get_subrun_offset(
     return result
 
 
-def plot_offsets(results: list[dict]):
-    """
-    Plot best-fit offset and match fraction for all subruns across all runs.
-
-    X-axis is the subrun start timestamp (unix seconds). Points are coloured
-    by run — one colour per run, no individual legend entry per run. Run
-    boundaries are marked with vertical dashed lines, and a compact legend
-    spans the full width above the top axis.
-
-    Parameters
-    ----------
-    results : list of dicts from process_run, each containing 'run',
-              'sub_run', 'run_start', 'offset', 'n_matched', 'n_total'
-    """
-    unique_runs = sorted(set(r['run'] for r in results),
-                         key=lambda x: int(x.split('_')[1]))
-    cmap = cm.get_cmap('tab20', len(unique_runs))
-    run_color = {run: cmap(i) for i, run in enumerate(unique_runs)}
-
-    offsets_s  = np.array([r['offset'] / 1e6 for r in results])
-    match_frac = np.array([r['n_matched'] / r['n_total'] if r['n_total'] > 0 else 0
-                           for r in results])
-    colors     = [run_color[r['run']] for r in results]
-    timestamps = [r['run_start'] for r in results]
-
-    dt_labels = [datetime.fromtimestamp(t, tz=timezone.utc).strftime('%m-%d %H:%M')
-                 for t in timestamps]
-
-    x = np.arange(len(results))
-
-    fig, axes = plt.subplots(2, 1, figsize=(14, 8), sharex=True)
-
-    for ax, values, ylabel in zip(
-        axes,
-        [offsets_s, match_frac],
-        ['Best offset (s)', 'Match fraction'],
-    ):
-        ax.scatter(x, values, c=colors, s=30, zorder=3)
-        ax.set_ylabel(ylabel)
-        ax.grid(axis='y', alpha=0.3)
-
-    axes[1].set_ylim(0, 1.05)
-
-    # X-axis: thinned datetime labels so they don't overlap
-    n = len(results)
-    step = max(1, n // 40)
-    tick_positions = list(range(0, n, step))
-    axes[1].set_xticks(tick_positions)
-    axes[1].set_xticklabels([dt_labels[i] for i in tick_positions],
-                             rotation=45, ha='right', fontsize=7)
-    axes[1].set_xlabel('Subrun start time (UTC)')
-
-    # Vertical dashed lines at run boundaries
-    for i in range(1, len(results)):
-        if results[i]['run'] != results[i - 1]['run']:
-            for ax in axes:
-                ax.axvline(i - 0.5, color='gray', lw=0.8, linestyle='--', alpha=0.5)
-
-    # Legend spanning full width above the top axis
+def _make_run_legend(fig, axes, unique_runs, run_color):
+    """Add a full-width legend above axes[0], one entry per run."""
     handles = [
         plt.Line2D([0], [0], marker='o', color='w', markerfacecolor=run_color[r],
                    markersize=6, label=r)
@@ -446,14 +393,124 @@ def plot_offsets(results: list[dict]):
         borderaxespad=0,
         framealpha=0.7,
     )
+    axes[0].set_title('DREAM->beam time offset across all runs', pad=80)
+    return legend
 
-    # Title above the legend box, not competing with it
-    axes[0].set_title('DREAM->beam time offset across all runs',
-                      pad=legend.get_window_extent().height)
 
+def plot_offsets(results: list[dict]):
+    """
+    Scatter plot of best-fit offset and match fraction, one point per subrun.
+
+    Results must be pre-sorted by run_start. X-axis is a sequential integer
+    index with datetime tick labels. Points are coloured by run, with vertical
+    dashed lines at run boundaries and a full-width legend above the top axis.
+
+    Parameters
+    ----------
+    results : list of dicts from process_run, sorted by 'run_start', each
+              containing 'run', 'sub_run', 'run_start', 'offset',
+              'n_matched', 'n_total'
+    """
+    unique_runs = sorted(set(r['run'] for r in results),
+                         key=lambda x: int(x.split('_')[1]))
+    cmap = cm.get_cmap('tab20', len(unique_runs))
+    run_color = {run: cmap(i) for i, run in enumerate(unique_runs)}
+
+    offsets_s  = np.array([r['offset'] / 1e6 for r in results])
+    match_frac = np.array([r['n_matched'] / r['n_total'] if r['n_total'] > 0 else 0
+                           for r in results])
+    colors     = [run_color[r['run']] for r in results]
+
+    dt_labels = [datetime.fromtimestamp(r['run_start'], tz=timezone.utc).strftime('%m-%d %H:%M')
+                 for r in results]
+
+    x = np.arange(len(results))
+
+    fig, axes = plt.subplots(2, 1, figsize=(14, 8), sharex=True)
+
+    for ax, values, ylabel in zip(axes, [offsets_s, match_frac],
+                                   ['Best offset (s)', 'Match fraction']):
+        ax.scatter(x, values, c=colors, s=30, zorder=3)
+        ax.set_ylabel(ylabel)
+        ax.grid(axis='y', alpha=0.3)
+
+    axes[1].set_ylim(0, 1.05)
+
+    # X-axis: thinned datetime labels so they don't overlap
+    n = len(results)
+    step = max(1, n // 40)
+    tick_positions = list(range(0, n, step))
+    axes[1].set_xticks(tick_positions)
+    axes[1].set_xticklabels([dt_labels[i] for i in tick_positions],
+                             rotation=45, ha='right', fontsize=7)
+    axes[1].set_xlabel('Subrun start time (UTC)')
+    axes[1].yaxis.set_major_formatter(PercentFormatter(xmax=1))
+    axes[1].set_ylim(0, 1.05)
+
+    # Vertical dashed lines at run boundaries
+    for i in range(1, len(results)):
+        if results[i]['run'] != results[i - 1]['run']:
+            for ax in axes:
+                ax.axvline(i - 0.5, color='gray', lw=0.8, linestyle='--', alpha=0.5)
+
+    _make_run_legend(fig, axes, unique_runs, run_color)
     plt.tight_layout()
-    fig.subplots_adjust(hspace=0.05)
-    plt.show()
+    fig.subplots_adjust(hspace=0.05, top=0.84, left=0.052, right=0.995)
+
+
+def plot_offsets_timeline(results: list[dict]):
+    """
+    Timeline view of best-fit offset and match fraction, one horizontal bar
+    per subrun spanning its actual duration on a real datetime x-axis.
+
+    Results must be pre-sorted by run_start. Points are coloured by run with
+    a full-width legend above the top axis.
+
+    Parameters
+    ----------
+    results : list of dicts from process_run, sorted by 'run_start', each
+              containing 'run', 'run_start', 'run_duration', 'offset',
+              'n_matched', 'n_total'
+    """
+    unique_runs = sorted(set(r['run'] for r in results),
+                         key=lambda x: int(x.split('_')[1]))
+    cmap = cm.get_cmap('tab20', len(unique_runs))
+    run_color = {run: cmap(i) for i, run in enumerate(unique_runs)}
+
+    fig, axes = plt.subplots(2, 1, figsize=(14, 8), sharex=True)
+
+    import matplotlib.dates as mdates
+
+    def to_dt(unix_s):
+        return datetime.fromtimestamp(unix_s, tz=timezone.utc)
+
+    for r in results:
+        t_start    = to_dt(r['run_start'])
+        t_end      = to_dt(r['run_start'] + r['run_duration'])
+        offset_s   = r['offset'] / 1e6
+        match_frac = r['n_matched'] / r['n_total'] if r['n_total'] > 0 else 0
+        color      = run_color[r['run']]
+
+        for ax, value in zip(axes, [offset_s, match_frac]):
+            ax.hlines(value, t_start, t_end, colors=color, linewidths=5, alpha=1.0)
+
+    for ax, ylabel in zip(axes, ['Best offset (s)', 'Match fraction']):
+        ax.set_ylabel(ylabel)
+        ax.grid(axis='y', alpha=0.3)
+
+    axes[1].yaxis.set_major_formatter(PercentFormatter(xmax=1))
+    axes[1].set_ylim(0, 1.05)
+
+    # Format x-axis as human-readable UTC datetimes
+    for ax in axes:
+        ax.xaxis.set_major_formatter(mdates.DateFormatter('%m-%d %H:%M', tz=timezone.utc))
+        ax.xaxis.set_major_locator(mdates.AutoDateLocator())
+    plt.setp(axes[1].xaxis.get_majorticklabels(), rotation=45, ha='right', fontsize=7)
+    axes[1].set_xlabel('Time (UTC)')
+
+    _make_run_legend(fig, axes, unique_runs, run_color)
+    plt.tight_layout()
+    fig.subplots_adjust(hspace=0.05, top=0.84, left=0.052, right=0.995)
 
 
 def get_bracketing_csv_files(beam_data_dir, run_start_unix, run_duration):
