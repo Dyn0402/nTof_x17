@@ -19,7 +19,7 @@ Directory structure:
 Filters:
   • Runs below MIN_RUN always excluded
   • EXCLUDE_RUNS: manually excluded run numbers
-  • hits_root/ and combined_hits_root/ skipped globally (all runs)
+  • hits_root/ skipped globally (all runs)
   • decoded_root/ skipped only for runs in SKIP_DECODED_RUNS
   • .fdf files skipped globally if SKIP_FDF = True
 """
@@ -129,7 +129,6 @@ def effective_size(info: dict, skip_hits: bool, skip_decoded: bool,
     size = info["total"]
     if skip_hits:
         size -= info["hits"]
-        size -= info["combined_hits"]
     if skip_decoded:
         size -= info["decoded"]
     if skip_fdf:
@@ -323,7 +322,6 @@ def main():
 
     # hits_root and combined_hits_root — excluded at any depth
     filter_flags += ["--exclude", "hits_root/"]
-    filter_flags += ["--exclude", "combined_hits_root/"]
 
     # decoded_root — excluded only for specific runs: run_N/*/decoded_root/
     for run in sorted(skip_decoded_runs):
