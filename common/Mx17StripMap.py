@@ -91,13 +91,20 @@ class Detector:
 
     def _build_feu_map(self) -> None:
         """
-        dream_feus example:
-          'x_1': (4, 1)
+        Build a lookup from FEU ID → list of (axis, feu_connector, det_key).
+
+        dream_feus entry format:  "<axis>_<det_connector>": [feu_id, feu_connector]
+          e.g.  "x_5": [6, 1]  means detector-side connector 5 on the X axis
+                               is plugged into FEU 6 at FEU connector 1.
+
+        feu_connector is the electronics-side index used to match raw channel
+        numbers.  det_key (the full config key, e.g. "x_5") is the
+        detector-side label used for orientation lookups.
         """
-        for key, (feu_id, connector) in self.dream_feus.items():
-            axis = key[0]  # 'x' or 'y'
+        for det_key, (feu_id, feu_connector) in self.dream_feus.items():
+            axis = det_key[0]  # 'x' or 'y'
             self.feu_map.setdefault(feu_id, []).append(
-                (axis, connector)
+                (axis, feu_connector, det_key)
             )
 
     @staticmethod
@@ -110,6 +117,8 @@ class Detector:
             return local_channel
         elif orientation == "inverted":
             return (n_channels - 1) - local_channel
+        # elif orientation == "flipped":
+        #     return
         else:
             raise ValueError(f"Unsupported orientation: {orientation}")
 
@@ -127,14 +136,14 @@ class Detector:
 
         x = y = None
 
-        for axis, det_connector in self.feu_map[feu_id]:
+        for axis, feu_connector, det_key in self.feu_map[feu_id]:
 
-            if det_connector != hit_connector:
+            if feu_connector != hit_connector:
                 continue
 
-            # Look up orientation using key like 'x_1'
-            key = f"{axis}_{det_connector}"
-            orientation = self.feu_orientation.get(key, "normal")
+            # det_key (e.g. "x_5") is the detector-side label; use it for
+            # orientation so it matches dream_feu_orientation in the config.
+            orientation = self.feu_orientation.get(det_key, "normal")
 
             oriented_channel = self.apply_orientation(
                 local_channel,
@@ -144,13 +153,16 @@ class Detector:
 
             pos = self.strip_map.lookup(
                 axis,
-                det_connector,
+                feu_connector,
                 oriented_channel,
             )
             if pos is None:
                 continue
 
             px, py = pos
+            # X-going strips run along X and localise the hit in Y (and vice
+            # versa), so an 'x' strip contributes the y_position_mm and a 'y'
+            # strip contributes the x_position_mm.
             if axis == "x":
                 y = py
             else:
