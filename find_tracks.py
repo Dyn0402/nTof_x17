@@ -11,7 +11,7 @@ Created as nTof_x17/find_tracks.py
 import numpy as np
 import matplotlib.pyplot as plt
 from plot_beam_hits import load_subrun, get_run_time
-from cosmic_micro_tpc_tests import line_fit_test
+from cosmic_bench_analysis.cosmic_micro_tpc_tests import line_fit_test
 
 
 def main():

@@ -11,17 +11,14 @@ Created as nTof_x17/plot_cosmic_hits.py
 import os
 import re
 from typing import Tuple, Optional
-import json
 import numpy as np
 import matplotlib.pyplot as plt
-import pandas as pd
-from matplotlib.colors import LogNorm
 import uproot
 from scipy.optimize import curve_fit as cf
 
-from Mx17StripMap import RunConfig
+from common.Mx17StripMap import RunConfig
 from M3RefTracking import M3RefTracking, get_xy_angles, get_xy_positions
-from Measure import Measure
+from common.Measure import Measure
 
 
 def main():
@@ -36,7 +33,7 @@ def main():
     file_nums = [0]
 
     run_config_path = f'{base_path}{run}/run_config.json'
-    map_csv_path = './mx17_m4_map.csv'
+    map_csv_path = '../mx17_m4_map.csv'
 
     rc = RunConfig(run_config_path, map_csv_path)
 
@@ -143,11 +140,6 @@ def main():
             dy_list.append(np.nan)
             dr_list.append(np.nan)
 
-    # Convert to numpy arrays for the circle scan
-    eff_hits = np.array(eff_hits)
-    ref_x_arr = np.array(ref_x_list)
-    ref_y_arr = np.array(ref_y_list)
-
     # Plot correlation between slopes and tangent of angles
     fig, ax = plt.subplots()
     ax.scatter(x_slopes, np.tan(x_angles), alpha=0.5, color='red')
@@ -227,26 +219,6 @@ def main():
 def line_fit_test(df, event_number, plot=True, return_extra=False):
     df = df[df['eventId'] == event_number]
 
-    # df_x = df[df['x_position_mm'].notna()]
-    # df_y = df[df['y_position_mm'].notna()]
-
-    # Clustering
-    # df_x = df_x.sort_values('x_position_mm').reset_index(drop=True)
-    # df_y = df_y.sort_values('y_position_mm').reset_index(drop=True)
-
-    # print(f'dfx:\n{df_x}\ndfy:\n{df_y}\n')
-
-    # gap_threshold = 12  # mm
-    #
-    # df_x = df[df["x_position_mm"].notna()].sort_values("x_position_mm").reset_index(drop=True)
-    # df_y = df[df["y_position_mm"].notna()].sort_values("y_position_mm").reset_index(drop=True)
-    # if df_x.empty or df_y.empty:
-    #     print(f'Empty axis: df_x len = {len(df_x)}, df_y len = {len(df_y)}')
-    #     return np.nan, np.nan, np.nan, np.nan
-    #
-    # df_x["cluster"] = (df_x["x_position_mm"].diff().gt(gap_threshold).fillna(False)).cumsum()
-    # df_y["cluster"] = (df_y["y_position_mm"].diff().gt(gap_threshold).fillna(False)).cumsum()
-
     gap_threshold = 12  # mm
     time_threshold = 200  # ns
 
@@ -267,7 +239,7 @@ def line_fit_test(df, event_number, plot=True, return_extra=False):
     # Check if df_x is empty or df_y is empty
     if df_x["cluster"].empty or df_y["cluster"].empty:
         print(f'No clusters found x: {df_x["cluster"].any()} y: {df_y["cluster"].any()}')
-        print(f'df_x:\n{df_x[['time', 'x_position_mm', 'cluster']]}\ndf_y:\n{df_y[['time', 'y_position_mm', 'cluster']]}')
+        print(f"df_x:\n{df_x[['time', 'x_position_mm', 'cluster']]}\ndf_y:\n{df_y[['time', 'y_position_mm', 'cluster']]}")
         if return_extra:
             return np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan
         return np.nan, np.nan, np.nan, np.nan
@@ -318,11 +290,6 @@ def line_fit_test(df, event_number, plot=True, return_extra=False):
         sigma=sigma_y,
         absolute_sigma=False,
     )
-
-    if event_number == 84806:
-        print(f'popt_x: {popt_x}\npopt_y: {popt_y}')
-        print(f'Fit data:\nx: {df_x["x_position_mm"].to_numpy()}\nx_time= {df_x["time"].to_numpy()}'
-              f'\ny: {df_y["y_position_mm"].to_numpy()}\ny_time= {df_y["time"].to_numpy()}')
 
     if plot:
         # Plot x position vs time. Do the same for y position.
@@ -387,13 +354,6 @@ def line_fit_test(df, event_number, plot=True, return_extra=False):
         return popt_x[0], popt_y[0], x_pos_earliest_time, y_pos_earliest_time, cluster_time, red_chi2_x, red_chi2_y
     else:
         return popt_x[0], popt_y[0], x_pos_earliest_time, y_pos_earliest_time
-
-
-
-
-    # min_amp = 200
-    # df = df[df['amplitude'] >= min_amp]
-
 
 
 def extract_file_numbers_tuple(filename: str) -> Optional[Tuple[int, int]]:
@@ -659,6 +619,10 @@ def line_fixed_point(x, m, x0, y0):
     Line but with one point fixed
     """
     return m * (x - x0) + y0
+
+
+def gaus(x, A, mu, sigma):
+    return A * np.exp(-(x - mu) ** 2 / (2 * sigma ** 2))
 
 
 if __name__ == '__main__':
