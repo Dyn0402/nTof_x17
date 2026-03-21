@@ -18,7 +18,7 @@ from matplotlib.colors import LogNorm
 import uproot
 import pandas as pd
 
-from Mx17StripMap import Mx17StripMap, RunConfig
+from common.Mx17StripMap import RunConfig
 
 
 def main():

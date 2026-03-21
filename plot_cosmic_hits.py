@@ -11,13 +11,12 @@ Created as nTof_x17/plot_cosmic_hits.py
 import os
 import re
 from typing import Tuple, Optional
-import json
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
 import uproot
 
-from Mx17StripMap import RunConfig
+from common.Mx17StripMap import RunConfig
 
 
 def main():
