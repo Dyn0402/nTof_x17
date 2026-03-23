@@ -53,6 +53,7 @@ from typing import Optional, Tuple, List
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D  # noqa: F401 — registers '3d' projection
 import uproot
 from scipy.optimize import curve_fit as cf, OptimizeWarning
 
@@ -199,6 +200,32 @@ def main():
     v_avg = float(np.nanmean([v_drift_x, v_drift_y]))
     if np.isfinite(v_avg):
         print(f'Average drift velocity:  {v_avg:.1f} µm/ns')
+    # ---- 3-D event display ----
+    # x_max_mm restricts to the left (working) side of the detector.
+    # Tune this and the other cuts based on the efficiency map and residual plots.
+    if np.isfinite(v_avg):
+        display_event_id = select_display_event(
+            results,
+            v_drift_um_per_ns=v_avg,
+            max_spatial_residual_mm=3.0,
+            max_angle_residual=0.1,
+            max_red_chi2=None,
+            min_strips=8,
+            x_max_mm=150.0,   # left (working) side of detector — adjust as needed
+        )
+        if display_event_id is not None:
+            df_display = df[df['eventId'] == display_event_id].copy()
+            display_result = next(r for r in results if r.event_id == display_event_id)
+            plot_event_display_3d(df_display, display_result, best_params,
+                                  v_drift_um_per_ns=v_avg, event_id=display_event_id)
+            gif_out = f'{analysis_out_dir}event_{display_event_id}_3d.gif'
+            plot_event_display_3d_rotating(df_display, display_result, best_params,
+                                           v_drift_um_per_ns=v_avg,
+                                           event_id=display_event_id,
+                                           drift_window_mm=30.0,
+                                           gif_path=gif_out)
+            _plot_event(df_display, display_result, display_event_id)
+
     plt.show()
     plot_position_correlation(results)
     fit_x, fit_y = plot_residuals(results)
@@ -313,6 +340,11 @@ class EventResult:
     ref_y_mm: float = np.nan
     ref_tan_theta_x: float = np.nan
     ref_tan_theta_y: float = np.nan
+
+    # Reference track mesh position in raw detector coordinates (inverse-alignment
+    # of ref_x_mm / ref_y_mm); used for the reference track anchor in 3-D displays.
+    ref_mesh_x_mm: float = np.nan
+    ref_mesh_y_mm: float = np.nan
 
     @property
     def has_x(self) -> bool:
@@ -1268,6 +1300,21 @@ def attach_reference_positions(
             r.ref_tan_theta_x = float(np.tan(angle_by_id[r.event_id][0]))
             r.ref_tan_theta_y = float(np.tan(angle_by_id[r.event_id][1]))
 
+        # Compute reference track mesh position in raw detector coordinates by
+        # applying the inverse of the alignment transform to (ref_x_mm, ref_y_mm).
+        #   Forward:  x' = cos(θ)·(x−cx) − sin(θ)·(y−cy) + cx + dx
+        #             y' = sin(θ)·(x−cx) + cos(θ)·(y−cy) + cy + dy
+        #   Inverse:  x  = cx + cos(θ)·(x'−cx−dx) + sin(θ)·(y'−cy−dy)
+        #             y  = cy − sin(θ)·(x'−cx−dx) + cos(θ)·(y'−cy−dy)
+        if not (np.isnan(r.ref_x_mm) or np.isnan(r.ref_y_mm)):
+            theta = np.deg2rad(params.theta_deg)
+            cos_t, sin_t = np.cos(theta), np.sin(theta)
+            cx, cy = params.centre_x, params.centre_y
+            u = r.ref_x_mm - cx - params.x_offset
+            v = r.ref_y_mm - cy - params.y_offset
+            r.ref_mesh_x_mm = float(cx + cos_t * u + sin_t * v)
+            r.ref_mesh_y_mm = float(cy - sin_t * u + cos_t * v)
+
 
 # ---------------------------------------------------------------------------
 # 2D map helpers
@@ -1426,6 +1473,17 @@ def plot_efficiency_map(
         f'Total M3 tracks: {len(ref_x_all):,}'
     )
 
+    # Shrink axes to the bounding box of non-masked bins
+    valid_xi, valid_yi = np.where(total >= min_tracks_per_bin)
+    if len(valid_xi) > 0:
+        x_lo = x_edges[valid_xi.min()]
+        x_hi = x_edges[valid_xi.max() + 1]
+        y_lo = y_edges[valid_yi.min()]
+        y_hi = y_edges[valid_yi.max() + 1]
+        for ax in axes:
+            ax.set_xlim(x_lo, x_hi)
+            ax.set_ylim(y_lo, y_hi)
+
     fig.tight_layout()
 
 
@@ -1560,6 +1618,17 @@ def plot_resolution_map(
     axes[2].set_xlabel('Reference X [mm]')
     axes[2].set_ylabel('Reference Y [mm]')
     axes[2].set_title(f'Hit statistics per bin\n(grey = < {min_hits_per_bin} hits)')
+
+    # Shrink axes to the bounding box of non-masked bins
+    valid_xi, valid_yi = np.where(count_map >= min_hits_per_bin)
+    if len(valid_xi) > 0:
+        x_lo = x_edges[valid_xi.min()]
+        x_hi = x_edges[valid_xi.max() + 1]
+        y_lo = y_edges[valid_yi.min()]
+        y_hi = y_edges[valid_yi.max() + 1]
+        for ax in axes:
+            ax.set_xlim(x_lo, x_hi)
+            ax.set_ylim(y_lo, y_hi)
 
     fig.tight_layout()
 
@@ -1696,6 +1765,19 @@ def plot_resolution_map_sliding(
     axes[2].set_xlabel('Reference X [mm]')
     axes[2].set_ylabel('Reference Y [mm]')
     axes[2].set_title(f'Events per kernel\n(grey = < {min_hits})')
+
+    # Shrink axes to the bounding box of non-masked grid points
+    valid_xi, valid_yi = np.where(count_map >= min_hits)
+    if len(valid_xi) > 0:
+        dx_half = (x_grid[1] - x_grid[0]) / 2 if len(x_grid) > 1 else 0
+        dy_half = (y_grid[1] - y_grid[0]) / 2 if len(y_grid) > 1 else 0
+        x_lo = x_grid[valid_xi.min()] - dx_half
+        x_hi = x_grid[valid_xi.max()] + dx_half
+        y_lo = y_grid[valid_yi.min()] - dy_half
+        y_hi = y_grid[valid_yi.max()] + dy_half
+        for ax in axes:
+            ax.set_xlim(x_lo, x_hi)
+            ax.set_ylim(y_lo, y_hi)
 
     fig.tight_layout()
 
@@ -1839,14 +1921,16 @@ def plot_angular_resolution(
     lim: float,
     color: str,
     proj: str,
-    n_bins: int = 20,
+    n_bins: int = 40,
     min_events: int = 15,
+    ax: Optional[plt.Axes] = None,
 ) -> None:
     """
     Plot angular resolution (σ of Gaussian fit to Δθ slices) vs. reference angle.
 
     deg_ref   : reference angle for each event [deg]
     deg_resid : rotated residual Δθ = θ_ref − slope·θ_det [deg]
+    ax        : if provided, draw into this axes instead of creating a new figure
     """
     bin_edges   = np.linspace(-lim, lim, n_bins + 1)
     bin_centres = 0.5 * (bin_edges[:-1] + bin_edges[1:])
@@ -1863,17 +1947,22 @@ def plot_angular_resolution(
             sigma_errs.append(fit.resolution_err)
             centres_used.append(cen)
 
-    fig, ax = plt.subplots(figsize=(7, 4))
+    standalone = ax is None
+    if standalone:
+        fig, ax = plt.subplots(figsize=(7, 4))
     if sigmas:
         ax.errorbar(centres_used, sigmas, yerr=sigma_errs,
-                    fmt='o-', color=color, capsize=4, lw=1.5, ms=6)
-    ax.set_xlabel(f'θ_{proj.lower()} reference [deg]')
+                    fmt='o-', color=color, capsize=4, lw=1.5, ms=6,
+                    label=proj)
+    ax.set_xlabel('θ reference [deg]')
     ax.set_ylabel('Angular resolution σ [deg]')
-    ax.set_title(f'{proj} angular resolution vs. track angle')
-    ax.set_xlim(-lim, lim)
     ax.set_ylim(0, None)
     ax.grid(True, alpha=0.3)
-    fig.tight_layout()
+    if standalone:
+        ax.set_xlabel(f'θ_{proj.lower()} reference [deg]')
+        ax.set_title(f'{proj} angular resolution vs. track angle')
+        ax.set_xlim(-lim, lim)
+        fig.tight_layout()
 
 
 def _fit_diagonal_peak(d: np.ndarray) -> Tuple[float, float]:
@@ -1882,10 +1971,10 @@ def _fit_diagonal_peak(d: np.ndarray) -> Tuple[float, float]:
     iterative windowed fitter.  Returns (sigma, sigma_err) or (nan, nan).
     """
     result = fit_residual_peak(d[np.isfinite(d)], min_counts_in_window=20)
-    fig, ax = plt.subplots(ncols=1, nrows=1, figsize=(5, 5))
-    ax.hist(d[np.isfinite(d)], bins=200)
-    ax.set_xlabel('Residuals')
-    fig.tight_layout()
+    # fig, ax = plt.subplots(ncols=1, nrows=1, figsize=(5, 5))
+    # ax.hist(d[np.isfinite(d)], bins=200)
+    # ax.set_xlabel('Residuals')
+    # fig.tight_layout()
     if result is not None:
         return result.resolution, result.resolution_err
     return np.nan, np.nan
@@ -2040,6 +2129,7 @@ def plot_angle_correlation(
     deg_det_x_corr = _deg_from_slope(sl_x_q, v_avg)
     deg_det_y_corr = _deg_from_slope(sl_y_q, v_avg)
 
+    ang_res_data = []
     fig3, axes3 = plt.subplots(1, 2, figsize=(13, 5))
     for ax, deg_ref, deg_det_c, lim, color, proj in [
         (axes3[0], ref_x_q, deg_det_x_corr, lim_x, 'red',  'X'),
@@ -2060,9 +2150,19 @@ def plot_angle_correlation(
                      f'(r < {residual_cut_mm:.0f} mm,  {int(iv.sum()):,} events)')
         ax.legend(fontsize=8)
 
-        # Angular resolution
+        # Collect data for combined angular resolution plot
         deg_resid = deg_ref[iv] - deg_det_c[iv]   # d = 0 for perfect correlation
-        plot_angular_resolution(deg_ref[iv], deg_resid, lim, color, proj)
+        ang_res_data.append((deg_ref[iv], deg_resid, lim, color, proj))
+
+    # Angular resolution: both X and Y on one plot
+    fig4, ax4 = plt.subplots(figsize=(8, 4))
+    lim_combined = max(d[2] for d in ang_res_data) if ang_res_data else 40
+    for deg_ref_i, deg_resid_i, lim_i, color_i, proj_i in ang_res_data:
+        plot_angular_resolution(deg_ref_i, deg_resid_i, lim_i, color_i, proj_i, ax=ax4)
+    ax4.set_xlim(-lim_combined, lim_combined)
+    ax4.set_title('Angular resolution vs. track angle')
+    ax4.legend()
+    fig4.tight_layout()
 
     fig3.tight_layout()
     return v_drift_x, v_drift_y
@@ -2485,6 +2585,382 @@ def _plot_event(df_event: pd.DataFrame, result: EventResult, event_id: int) -> N
         ax.set_title(f'Event {event_id} – {label} strips')
 
     fig.tight_layout()
+
+
+def plot_event_display_3d(
+    df_event: pd.DataFrame,
+    result: EventResult,
+    params: AlignmentParams,
+    v_drift_um_per_ns: float,
+    event_id: int,
+) -> None:
+    """
+    3-D event display for a single cosmic muon event.
+
+    Coordinate system (detector local)
+    -----------------------------------
+    x  — strip position from X strips [mm]
+    y  — strip position from Y strips [mm]
+    z  — drift distance from the mesh [mm]
+         z = (t - t0) * v_drift_um_per_ns / 1000
+         where t0 is the earliest hit time across both axes.
+
+    Hit reconstruction
+    ------------------
+    Because a single straight track produces one cluster on X strips and one
+    on Y strips, we pair them using the fitted line from the complementary axis:
+
+    • X-strip hits → x is directly measured; y is predicted from the Y fit at
+      the same drift time → 3-D point: (x_measured, y_predicted, z).
+    • Y-strip hits → y is directly measured; x is predicted from the X fit at
+      the same drift time → 3-D point: (x_predicted, y_measured, z).
+
+    This avoids nearest-neighbour matching and is exact for a straight track.
+
+    Reference track
+    ---------------
+    Drawn in the same local frame using the M3 angles stored in EventResult:
+        x_track(z) = ref_mesh_x_mm + z * ref_tan_theta_x
+        y_track(z) = ref_mesh_y_mm + z * ref_tan_theta_y
+    where ref_mesh_x_mm / ref_mesh_y_mm are the reference track positions at
+    the mesh in raw detector coordinates (inverse-alignment of ref_x_mm /
+    ref_y_mm).
+
+    Parameters
+    ----------
+    df_event          : DataFrame of hits for this event (all strips, both axes)
+    result            : EventResult with valid x_fit, y_fit and ref angles
+    params            : AlignmentParams (z_x, z_y used in subtitle)
+    v_drift_um_per_ns : calibrated drift velocity [µm/ns]
+    event_id          : event number (for the plot title)
+    """
+    if not result.has_both:
+        print(f'Event {event_id}: missing X or Y fit — cannot make 3-D display.')
+        return
+
+    x_fit = result.x_fit
+    y_fit = result.y_fit
+
+    # ---- Time → drift-distance conversion ----
+    t0 = min(x_fit.earliest_time_ns, y_fit.earliest_time_ns)
+
+    def _z(t_ns: np.ndarray) -> np.ndarray:
+        return (np.asarray(t_ns, dtype=float) - t0) * v_drift_um_per_ns / 1000.0
+
+    # ---- Split hits by axis ----
+    df_x = df_event[df_event['x_position_mm'].notna()].copy()
+    df_y = df_event[df_event['y_position_mm'].notna()].copy()
+
+    x_meas = df_x['x_position_mm'].values
+    t_x    = df_x['time'].values
+    amp_x  = df_x['amplitude'].values
+    z_x    = _z(t_x)
+
+    y_meas = df_y['y_position_mm'].values
+    t_y    = df_y['time'].values
+    amp_y  = df_y['amplitude'].values
+    z_y    = _z(t_y)
+
+    # ---- Predict complementary coordinate from the fitted line ----
+    # Y fit: t = slope_ns_per_mm * (y - y_anchor) + t_y_anchor
+    # → y(t) = y_anchor + (t - t_y_anchor) * slope_mm_per_ns
+    y_pred_at_x = (y_fit.mesh_position_mm
+                   + (t_x - y_fit.earliest_time_ns) * y_fit.slope_mm_per_ns)
+    x_pred_at_y = (x_fit.mesh_position_mm
+                   + (t_y - x_fit.earliest_time_ns) * x_fit.slope_mm_per_ns)
+
+    # ---- Reference track in detector-local coordinates ----
+    z_max_track = max(x_fit.cluster_duration_ns, y_fit.cluster_duration_ns) * v_drift_um_per_ns / 1000.0
+    z_track = np.linspace(0.0, z_max_track, 200)
+    x_track = result.ref_mesh_x_mm + z_track * result.ref_tan_theta_x
+    y_track = result.ref_mesh_y_mm + z_track * result.ref_tan_theta_y
+
+    # ---- Plot ----
+    fig = plt.figure(figsize=(10, 8))
+    ax = fig.add_subplot(111, projection='3d')
+
+    # X-strip hits: x measured, y predicted
+    sc_x = ax.scatter(x_meas, y_pred_at_x, z_x,
+                      c=amp_x, cmap='Reds', s=50, alpha=0.85, zorder=4,
+                      label='X strips (x meas., y pred.)')
+
+    # Y-strip hits: x predicted, y measured
+    sc_y = ax.scatter(x_pred_at_y, y_meas, z_y,
+                      c=amp_y, cmap='Blues', s=50, alpha=0.85, zorder=4,
+                      label='Y strips (x pred., y meas.)')
+
+    # Reference track
+    ax.plot(x_track, y_track, z_track,
+            color='green', lw=2.5, zorder=5, label='Reference track (M3)')
+
+    # Colorbars
+    plt.colorbar(sc_x, ax=ax, label='Amplitude (X strips)', shrink=0.5, pad=0.1)
+
+    ax.set_xlabel('X [mm]')
+    ax.set_ylabel('Y [mm]')
+    ax.set_zlabel('Drift distance [mm]')
+    ax.set_title(
+        f'Event {event_id} — 3-D display\n'
+        f'v_drift = {v_drift_um_per_ns:.1f} µm/ns  |  '
+        f'z_x = {params.z_x:.0f} mm,  z_y = {params.z_y:.0f} mm'
+    )
+    ax.legend(loc='upper left', fontsize=9)
+    fig.tight_layout()
+
+
+def plot_event_display_3d_rotating(
+    df_event: pd.DataFrame,
+    result: EventResult,
+    params: AlignmentParams,
+    v_drift_um_per_ns: float,
+    event_id: int,
+    drift_window_mm: float = 30.0,
+    gif_path: Optional[str] = None,
+    gif_fps: int = 20,
+    gif_frames: int = 180,
+) -> None:
+    """
+    Clean 3-D event display with amplitude-scaled point sizes, horizontal
+    planes marking the mesh (z = 0) and drift window (z = drift_window_mm),
+    no grid, and an optional rotating GIF output.
+
+    Points are coloured by axis (X = crimson, Y = steelblue) with size
+    proportional to strip amplitude.  No colourbar is shown.
+
+    Parameters
+    ----------
+    df_event          : DataFrame of hits for this event
+    result            : EventResult with valid x_fit, y_fit and ref angles
+    params            : AlignmentParams (used in subtitle)
+    v_drift_um_per_ns : calibrated drift velocity [µm/ns]
+    event_id          : event number (for the plot title)
+    drift_window_mm   : z position of the top horizontal plane [mm]
+    gif_path          : if given, save a rotating GIF to this path
+    gif_fps           : frames per second for the GIF
+    gif_frames        : number of frames (360 / gif_frames degrees per frame)
+    """
+    from matplotlib.animation import FuncAnimation
+
+    if not result.has_both:
+        print(f'Event {event_id}: missing X or Y fit — cannot make 3-D display.')
+        return
+
+    x_fit = result.x_fit
+    y_fit = result.y_fit
+
+    # ---- Time → drift-distance conversion ----
+    t0 = min(x_fit.earliest_time_ns, y_fit.earliest_time_ns)
+
+    def _z(t_ns: np.ndarray) -> np.ndarray:
+        return (np.asarray(t_ns, dtype=float) - t0) * v_drift_um_per_ns / 1000.0
+
+    # ---- Split hits by axis ----
+    df_x = df_event[df_event['x_position_mm'].notna()].copy()
+    df_y = df_event[df_event['y_position_mm'].notna()].copy()
+
+    x_meas = df_x['x_position_mm'].values
+    t_x    = df_x['time'].values
+    amp_x  = df_x['amplitude'].values
+    z_x    = _z(t_x)
+
+    y_meas = df_y['y_position_mm'].values
+    t_y    = df_y['time'].values
+    amp_y  = df_y['amplitude'].values
+    z_y    = _z(t_y)
+
+    y_pred_at_x = (y_fit.mesh_position_mm
+                   + (t_x - y_fit.earliest_time_ns) * y_fit.slope_mm_per_ns)
+    x_pred_at_y = (x_fit.mesh_position_mm
+                   + (t_y - x_fit.earliest_time_ns) * x_fit.slope_mm_per_ns)
+
+    # ---- Reference track ----
+    z_max_track = max(x_fit.cluster_duration_ns, y_fit.cluster_duration_ns) * v_drift_um_per_ns / 1000.0
+    z_track = np.linspace(0.0, z_max_track, 200)
+    x_track = result.ref_mesh_x_mm + z_track * result.ref_tan_theta_x
+    y_track = result.ref_mesh_y_mm + z_track * result.ref_tan_theta_y
+
+    # ---- Amplitude → point size (20–200 range) ----
+    all_amp = np.concatenate([amp_x, amp_y])
+    a_min, a_max = all_amp.min(), all_amp.max()
+    def _size(amp):
+        if a_max == a_min:
+            return np.full_like(amp, 80.0, dtype=float)
+        return 20.0 + 180.0 * (amp - a_min) / (a_max - a_min)
+
+    # ---- Horizontal plane extent (padded by 10 mm each side) ----
+    all_x = np.concatenate([x_meas, x_pred_at_y, x_track])
+    all_y = np.concatenate([y_pred_at_x, y_meas, y_track])
+    pad = 10.0
+    xlo, xhi = all_x.min() - pad, all_x.max() + pad
+    ylo, yhi = all_y.min() - pad, all_y.max() + pad
+    xx_p, yy_p = np.meshgrid([xlo, xhi], [ylo, yhi])
+
+    # ---- Figure ----
+    fig = plt.figure(figsize=(10, 8))
+    ax = fig.add_subplot(111, projection='3d')
+
+    # Mesh plane at z = 0
+    ax.plot_surface(xx_p, yy_p, np.zeros_like(xx_p),
+                    alpha=0.18, color='silver', zorder=1, linewidth=0)
+    ax.text(xhi, yhi, 0.0, 'Mesh (z = 0)', fontsize=7, color='grey')
+
+    # Drift window plane at z = drift_window_mm
+    ax.plot_surface(xx_p, yy_p, np.full_like(xx_p, drift_window_mm),
+                    alpha=0.12, color='lightsteelblue', zorder=1, linewidth=0)
+    ax.text(xhi, yhi, drift_window_mm,
+            f'Drift window ({drift_window_mm:.0f} mm)', fontsize=7, color='steelblue')
+
+    # X-strip hits: crimson, amplitude-sized
+    ax.scatter(x_meas, y_pred_at_x, z_x,
+               color='crimson', s=_size(amp_x), alpha=0.85, zorder=4,
+               label='X strips (x meas., y pred.)', edgecolors='none')
+
+    # Y-strip hits: steelblue, amplitude-sized
+    ax.scatter(x_pred_at_y, y_meas, z_y,
+               color='steelblue', s=_size(amp_y), alpha=0.85, zorder=4,
+               label='Y strips (x pred., y meas.)', edgecolors='none')
+
+    # Reference track
+    ax.plot(x_track, y_track, z_track,
+            color='limegreen', lw=2.5, zorder=5, label='Reference track (M3)')
+
+    # ---- Clean up panes and grid ----
+    ax.grid(False)
+    for pane in (ax.xaxis.pane, ax.yaxis.pane, ax.zaxis.pane):
+        pane.fill = False
+        pane.set_edgecolor('lightgrey')
+
+    ax.set_xlabel('X [mm]')
+    ax.set_ylabel('Y [mm]')
+    ax.set_zlabel('Drift distance [mm]')
+    ax.set_zlim(0, max(drift_window_mm, z_max_track * 1.05))
+    ax.set_title(
+        f'Event {event_id}  |  v_drift = {v_drift_um_per_ns:.1f} µm/ns',
+        fontsize=11,
+    )
+    ax.legend(loc='upper left', fontsize=9)
+
+    # ---- Static view ----
+    ax.view_init(elev=20, azim=45)
+    fig.tight_layout()
+
+    # ---- Rotating GIF ----
+    if gif_path is not None:
+        def _animate(frame):
+            ax.view_init(elev=20, azim=frame * (360.0 / gif_frames))
+            return []
+
+        anim = FuncAnimation(fig, _animate, frames=gif_frames,
+                             interval=1000 // gif_fps, blit=False)
+        try:
+            anim.save(gif_path, writer='pillow', fps=gif_fps)
+            print(f'Rotating GIF saved → {gif_path}')
+        except Exception as exc:
+            print(f'Could not save GIF ({exc}). Is Pillow installed?')
+
+
+def select_display_event(
+    results: List[EventResult],
+    v_drift_um_per_ns: float,
+    max_spatial_residual_mm: float = 3.0,
+    max_angle_residual: float = 0.05,
+    max_red_chi2: float = 3.0,
+    min_strips: int = 4,
+    x_max_mm: Optional[float] = None,
+    x_min_mm: Optional[float] = None,
+    y_max_mm: Optional[float] = None,
+    y_min_mm: Optional[float] = None,
+) -> Optional[int]:
+    """
+    Select the best event for a 3-D event display from a list of EventResults.
+
+    "Best" means lowest combined score on four quality metrics, all evaluated
+    with the calibrated drift velocity:
+
+    1. Spatial X residual   : |ref_x − det_x_aligned|
+    2. Spatial Y residual   : |ref_y − det_y_aligned|
+    3. X angle residual     : |tan(θ_x)_det  − tan(θ_x)_ref|
+    4. Y angle residual     : |tan(θ_y)_det  − tan(θ_y)_ref|
+
+    Events failing the hard cuts (max_spatial_residual_mm, max_angle_residual,
+    max_red_chi2, min_strips, position bounds) are excluded entirely.
+
+    Parameters
+    ----------
+    results                : list of EventResult objects after alignment
+    v_drift_um_per_ns      : calibrated drift velocity [µm/ns]
+    max_spatial_residual_mm: hard cut on |residual_x| and |residual_y| [mm]
+    max_angle_residual     : hard cut on |Δtan(θ)| for both X and Y
+    max_red_chi2           : hard cut on reduced χ² for both fits
+    min_strips             : minimum strips required on each axis
+    x_max_mm               : upper bound on det_x_aligned_mm (left-side cut)
+    x_min_mm               : lower bound on det_x_aligned_mm
+    y_max_mm               : upper bound on det_y_aligned_mm
+    y_min_mm               : lower bound on det_y_aligned_mm
+
+    Returns
+    -------
+    event_id of the best matching event, or None if nothing passes.
+    """
+    candidates = []
+
+    for r in results:
+        # ---- Basic validity ----
+        if not r.has_both:
+            continue
+        if r.x_fit.n_strips < min_strips or r.y_fit.n_strips < min_strips:
+            continue
+        if max_red_chi2 and (r.x_fit.red_chi2 > max_red_chi2 or r.y_fit.red_chi2 > max_red_chi2):
+            continue
+
+        # ---- Spatial residuals ----
+        rx = r.residual_x_mm
+        ry = r.residual_y_mm
+        if np.isnan(rx) or np.isnan(ry):
+            continue
+        if abs(rx) > max_spatial_residual_mm or abs(ry) > max_spatial_residual_mm:
+            continue
+
+        # ---- Angle residuals using calibrated v_drift ----
+        if np.isnan(r.ref_tan_theta_x) or np.isnan(r.ref_tan_theta_y):
+            continue
+        det_tan_x = r.x_fit.slope_mm_per_ns * 1000.0 / v_drift_um_per_ns
+        det_tan_y = r.y_fit.slope_mm_per_ns * 1000.0 / v_drift_um_per_ns
+        dtan_x = det_tan_x - r.ref_tan_theta_x
+        dtan_y = det_tan_y - r.ref_tan_theta_y
+        if abs(dtan_x) > max_angle_residual or abs(dtan_y) > max_angle_residual:
+            continue
+
+        # ---- Position bounds (left/working side of detector) ----
+        x_det = r.det_x_for_residual
+        y_det = r.det_y_for_residual
+        if x_max_mm is not None and x_det > x_max_mm:
+            continue
+        if x_min_mm is not None and x_det < x_min_mm:
+            continue
+        if y_max_mm is not None and y_det > y_max_mm:
+            continue
+        if y_min_mm is not None and y_det < y_min_mm:
+            continue
+
+        # ---- Composite score: sum of normalised squared deviations ----
+        score = (
+            (rx / max_spatial_residual_mm) ** 2
+            + (ry / max_spatial_residual_mm) ** 2
+            + (dtan_x / max_angle_residual) ** 2
+            + (dtan_y / max_angle_residual) ** 2
+        )
+        candidates.append((score, r.event_id))
+
+    if not candidates:
+        print('select_display_event: no events passed all cuts.')
+        return None
+
+    candidates.sort()
+    best_score, best_id = candidates[0]
+    print(f'select_display_event: {len(candidates)} candidates; '
+          f'best event {best_id}  score={best_score:.4f}')
+    return best_id
 
 
 # ---------------------------------------------------------------------------
