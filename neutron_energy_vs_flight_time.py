@@ -101,9 +101,12 @@ def main():
     plt.tight_layout()
 
     plot_spectrum_vs_energy(df, 'X17 [1/day]')
+    ax_full = plot_spectrum_vs_time(df, 'X17 [1/day]', distance_m=distance_m,
+                                    flash_time_s=flash_time, blind_time_s=blind_time, readout_time_s=readout_time,
+                                    dead_time_s=dead_time)
     plot_spectrum_vs_time(df, 'X17 [1/day]', distance_m=distance_m,
-                          flash_time_s=flash_time, blind_time_s=blind_time, readout_time_s=readout_time,
-                          dead_time_s=dead_time)
+                          flash_time_s=flash_time,
+                          xlim=ax_full.get_xlim(), ylim=ax_full.get_ylim())
 
     plt.show()
 
@@ -151,7 +154,7 @@ def plot_spectrum_vs_energy(df, ycol):
 
 
 def plot_spectrum_vs_time(df, ycol, distance_m=distance_m, flash_time_s=None, blind_time_s=None, readout_time_s=None,
-                          dead_time_s=None):
+                          dead_time_s=None, xlim=None, ylim=None):
     """
     Plot spectrum data vs neutron flight time instead of energy.
     :param df: DataFrame with elow [eV], eup [eV], and ycol columns
@@ -161,6 +164,8 @@ def plot_spectrum_vs_time(df, ycol, distance_m=distance_m, flash_time_s=None, bl
     :param blind_time_s: Optional blind time in seconds to mark on plot
     :param readout_time_s: Optional readout time in seconds to mark on plot
     :param dead_time_s: Optional dead time in seconds (not used in plot)
+    :param xlim: Optional (xmin, xmax) to override the x-axis limits
+    :param ylim: Optional (ymin, ymax) to override the y-axis limits
     """
     # Convert energy bins to time bins
     E_low = df["elow [eV]"].values
@@ -308,6 +313,12 @@ def plot_spectrum_vs_time(df, ycol, distance_m=distance_m, flash_time_s=None, bl
     ax_top.tick_params(axis='x', which='major', length=6)
     ax_top.tick_params(axis='x', which='minor', length=0)
 
+    if xlim is not None:
+        ax.set_xlim(xlim)
+        ax_top.set_xlim(xlim)
+    if ylim is not None:
+        ax.set_ylim(ylim)
+
     # # --- Secondary x-axis: energy (eV) ---
     # # Primary x is time in microseconds. Provide forward and inverse mappings.
     # def time_us_to_energy_eV(time_us):
@@ -327,6 +338,7 @@ def plot_spectrum_vs_time(df, ycol, distance_m=distance_m, flash_time_s=None, bl
     # secax.set_xlabel('Neutron energy [eV]')
 
     fig.tight_layout()
+    return ax
 
 
 
