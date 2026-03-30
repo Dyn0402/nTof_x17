@@ -26,8 +26,8 @@ def main():
     # subrun = 'resist_440V_drift_600V'
     # run = 'run_19'
     # subrun = 'resist_440V_drift_600V'
-    run = 'run_34'
-    subrun = 'resist_425V_drift_600V'
+    # run = 'run_34'
+    # subrun = 'resist_425V_drift_600V'
     # run = 'run_60'
     # subrun = 'resist_580V_drift_600V'
     # run = 'run_59'
@@ -61,6 +61,8 @@ def main():
     # subrun = 'resist_680V_drift_1000V'
     # run = 'run_128'
     # subrun = 'resist_530V_drift_1000V'
+    run = 'run_131'
+    subrun = 'resist_490V_drift_1000V'
     # run = 'run_139'
     # subrun = 'resist_490V_drift_1000V'
     # run = 'run_141'
@@ -70,7 +72,7 @@ def main():
     feu_nums = {4: 'y', 5: 'x'}  # 4 goes in x and gives y position
     # feu_nums = {4: 'y', 6: 'x'}  # 4 goes in x and gives y position
     file_num = 0
-    event = 14
+    event = 15
     # file_num = 4
     # event = 1811
     channels = None  # To select specific channels to plot

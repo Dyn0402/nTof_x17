@@ -19,7 +19,8 @@ def main():
     base_path = '/media/dylan/data/x17/feb_beam/runs/'
     # runs = ['run_19', 'run_23', 'run_25', 'run_26', 'run_84', 'run_88']
     # runs = ['run_64', 'run_71']
-    runs = ['run_126']
+    # runs = ['run_126']
+    runs = ['run_131']
     # sub_run = 'resist_720V_drift_600V'
     # base_path = '/media/dylan/data/x17/cosmic_bench/det_1/'
     # run = 'mx17_det1_daytime_run_1-28-26'
@@ -70,7 +71,8 @@ def plot_hv_current_vs_time(base_path, run, sub_run, hv_channel, axs=None):
     sub_run_dir = f'{base_path}{run}/{sub_run}'
     hv_file = f'{sub_run_dir}/hv_monitor.csv'
     hv_df = pd.read_csv(hv_file)
-    hv_df['timestamp'] = pd.to_datetime(hv_df['timestamp'], unit='s', errors='coerce')
+    hv_df['timestamp'] = pd.to_datetime(hv_df['timestamp'])
+    print(hv_df.head())
 
     # Plot hv and current vs time
     if axs is None:
@@ -88,7 +90,7 @@ def plot_current_vs_hv(base_path, run, sub_run, hv_channel, ax=None, color=None,
     sub_run_dir = f'{base_path}{run}/{sub_run}'
     hv_file = f'{sub_run_dir}/hv_monitor.csv'
     hv_df = pd.read_csv(hv_file)
-    hv_df['timestamp'] = pd.to_datetime(hv_df['timestamp'], unit='s', errors='coerce')
+    hv_df['timestamp'] = pd.to_datetime(hv_df['timestamp'])
 
     if skip_ramps:
         # Define a window size (e.g., 5-10 samples) and a threshold
