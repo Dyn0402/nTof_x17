@@ -30,8 +30,8 @@ from matplotlib.gridspec import GridSpec
 
 
 def main():
-    # plot_discharge_times()
-    plot_current()
+    plot_discharge_times()
+    # plot_current()
     print('donzo')
 
 
@@ -54,7 +54,7 @@ def plot_discharge_times():
     # With d=150µm and e.g. 10x10 cm² pad: C ~ 8.85e-12 * 0.01 / 150e-6 ~ 0.59 nF
     # Adjust c_mesh above to match your actual geometry.
     epsilon_0 = 8.854e-12  # F/m
-    A_readout = 10e-2 * 10e-2   # Example: 10x10 cm² readout area (m²)
+    A_readout = 40e-2 * 40e-2   # Example: 40x40 cm² readout area (m²)
     c_mesh_geo = epsilon_0 * A_readout / d_gap
     print(f"Geometric estimate of mesh capacitance: {c_mesh_geo * 1e12:.2f} pF  "
           f"(for {A_readout*1e4:.0f} cm², d={d_gap*1e6:.0f} µm)")
