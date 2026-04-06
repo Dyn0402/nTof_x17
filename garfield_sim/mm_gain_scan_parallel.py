@@ -22,6 +22,9 @@ Parallelism
 With 8 cores and 4 combos × 31 voltage steps = 124 tasks, all 8 cores
 stay busy for the full run. The --workers flag controls pool size directly.
 
+Physics shared with mm_condor_worker.py via mm_sim_core.run_avalanche_batch.
+Stats and result I/O shared via mm_sim_core.recompute_stats / build_result_dict.
+
 Usage
 -----
     python3 mm_gain_scan_parallel.py                      # auto workers
@@ -34,7 +37,6 @@ Usage
 import sys
 import os
 import time
-import json
 import argparse
 import multiprocessing as mp
 from collections import defaultdict
@@ -46,6 +48,7 @@ import mm_config as cfg
 from mm_generate_gas import gas_filename
 
 # ROOT/Garfield imported ONLY inside worker — never in the main process.
+# mm_sim_core is imported inside the worker too (no ROOT at its module level).
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -55,73 +58,22 @@ from mm_generate_gas import gas_filename
 def _worker(task):
     """
     Run n_events avalanches for one (combo, voltage) pair.
-    Each call is a fully independent process with its own ROOT instance.
+    Each call is a fully independent spawned process with its own ROOT instance.
 
     task = (combo_key, gas_file, penning_cfg, voltage, n_events, gap_cm)
     Returns (combo_key, result_dict).
     """
     combo_key, gas_file, penning_cfg, voltage, n_events, gap_cm = task
 
-    import ROOT
-    ROOT.PyConfig.IgnoreCommandLineOptions = True
-    ROOT.gROOT.SetBatch(True)
-    ROOT.gErrorIgnoreLevel = ROOT.kWarning
-    import Garfield
-    import ctypes
+    # Import inside the worker — safe for spawn multiprocessing
+    from mm_sim_core import run_avalanche_batch, recompute_stats
 
-    # ── Load gas ──────────────────────────────────────────────────────────────
-    gas = ROOT.Garfield.MediumMagboltz()
-    gas.LoadGasFile(gas_file)
+    gains, n_attached, wall = run_avalanche_batch(
+        gas_file, penning_cfg, voltage, n_events, gap_cm
+    )
 
-    if penning_cfg["mode"] == "auto":
-        gas.EnablePenningTransfer()
-    else:
-        gas.EnablePenningTransfer(penning_cfg["rP"], 0., penning_cfg["gas"])
-
-    # ── Geometry ──────────────────────────────────────────────────────────────
     e_field = voltage / gap_cm
-
-    cmp = ROOT.Garfield.ComponentConstant()
-    cmp.SetArea(-1., -1., 0., 1., 1., gap_cm)
-    cmp.SetElectricField(0., 0., e_field)
-    cmp.SetMedium(gas)
-
-    sensor = ROOT.Garfield.Sensor()
-    sensor.AddComponent(cmp)
-    sensor.SetArea(-1., -1., 0., 1., 1., gap_cm)
-
-    aval = ROOT.Garfield.AvalancheMicroscopic()
-    aval.SetSensor(sensor)
-
-    # ── Avalanche loop ────────────────────────────────────────────────────────
-    gains      = []
-    n_attached = 0
-    ne_out     = ctypes.c_int(0)
-    ni_out     = ctypes.c_int(0)
-
-    t0 = time.time()
-    for _ in range(n_events):
-        aval.AvalancheElectron(0., 0., gap_cm, 0., 0.)
-        aval.GetAvalancheSize(ne_out, ni_out)
-        ne = int(ne_out.value)
-        if ne == 0:
-            n_attached += 1
-        else:
-            gains.append(ne)
-    wall = time.time() - t0
-
-    # ── Statistics ────────────────────────────────────────────────────────────
-    if gains:
-        arr     = np.array(gains, dtype=float)
-        mean_g  = float(np.mean(arr))
-        med_g   = float(np.median(arr))
-        std_g   = float(np.std(arr))
-        rms_rel = std_g / mean_g if mean_g > 0 else float("nan")
-        surv    = len(gains) / n_events
-    else:
-        mean_g = med_g = std_g = 0.
-        rms_rel = float("nan")
-        surv    = 0.
+    mean_g, med_g, std_g, rms_rel, surv = recompute_stats(gains, n_attached)
 
     return combo_key, {
         "voltage":      voltage,
@@ -138,59 +90,36 @@ def _worker(task):
 
 
 # ──────────────────────────────────────────────────────────────────────────────
-# Result assembly & saving
+# Result assembly & saving  (delegates to mm_sim_core)
 # ──────────────────────────────────────────────────────────────────────────────
 
-def _result_path(gas_label, pressure_label):
-    return os.path.join(cfg.RESULTS_DIR, f"{gas_label}_{pressure_label}.json")
-
-
-def _assemble_and_save(combo_meta, step_results, voltages,
+def _assemble_and_save(combo_meta, step_results,
                        n_events, total_time, partial=False):
+    from mm_sim_core import build_result_dict, save_result
+
     gas_cfg, pressure_label, pressure_torr = combo_meta
-    volt_to_sr = {sr["voltage"]: sr for sr in step_results}
 
-    result = {
-        "gas":             gas_cfg["label"],
-        "pressure_label":  pressure_label,
-        "pressure_torr":   pressure_torr,
-        "gap_cm":          cfg.GAP_CM,
-        "temp_k":          cfg.TEMP_K,
-        "n_events":        n_events,
-        "penning":         gas_cfg["penning"],
-        "voltages":        [],
-        "fields":          [],
-        "gain_mean":       [],
-        "gain_median":     [],
-        "gain_std":        [],
-        "gain_rms_rel":    [],
-        "gain_raw":        [],
-        "survival":        [],
-        "n_attached":      [],
-        "runtime_s":       [],
-        "total_runtime_s": total_time,
-        "partial":         partial,
-    }
+    # Only include voltage steps we have results for
+    have = {sr["voltage"] for sr in step_results}
+    volt_data = [
+        {
+            "voltage":    sr["voltage"],
+            "field":      sr["field"],
+            "gain_raw":   sr["gain_raw"],
+            "n_attached": sr["n_attached"],
+            "runtime_s":  sr["runtime_s"],
+        }
+        for sr in step_results
+        if sr["voltage"] in have
+    ]
 
-    for v in sorted(voltages):
-        sr = volt_to_sr.get(float(v))
-        if sr is None:
-            continue
-        result["voltages"].append(float(v))
-        result["fields"].append(sr["field"])
-        result["gain_mean"].append(sr["gain_mean"])
-        result["gain_median"].append(sr["gain_median"])
-        result["gain_std"].append(sr["gain_std"])
-        result["gain_rms_rel"].append(sr["gain_rms_rel"])
-        result["gain_raw"].append(sr["gain_raw"])
-        result["survival"].append(sr["survival"])
-        result["n_attached"].append(sr["n_attached"])
-        result["runtime_s"].append(sr["runtime_s"])
+    result = build_result_dict(
+        gas_cfg["label"], pressure_label, pressure_torr,
+        cfg.GAP_CM, cfg.TEMP_K, gas_cfg["penning"],
+        n_events, volt_data, total_time, partial
+    )
 
-    out = _result_path(gas_cfg["label"], pressure_label)
-    with open(out, "w") as f:
-        json.dump(result, f, indent=2)
-
+    out = save_result(result, cfg.RESULTS_DIR)
     return result, out
 
 
@@ -356,7 +285,7 @@ def main():
             elapsed_combo = time.time() - combo_start[combo_key]
             _assemble_and_save(
                 combo_meta[combo_key], step_store[combo_key],
-                voltages, args.events, elapsed_combo, partial=True
+                args.events, elapsed_combo, partial=True
             )
 
             # Combo fully complete
@@ -364,7 +293,7 @@ def main():
                 total_combo = time.time() - combo_start[combo_key]
                 result, out = _assemble_and_save(
                     combo_meta[combo_key], step_store[combo_key],
-                    voltages, args.events, total_combo, partial=False
+                    args.events, total_combo, partial=False
                 )
                 all_results.append(result)
                 print(f"\n  ✓ {tag}  complete in {total_combo/60:.1f} min"
