@@ -133,8 +133,6 @@ def build_jdl(jobs, batches_per_point, events_per_batch):
         f"max_retries         = {MAX_RETRIES}",
         f"should_transfer_files = YES",
         f"when_to_transfer_output = ON_EXIT",
-        # Transfer worker + shared physics core alongside the job wrapper
-        f"transfer_input_files = {REPO_DIR}/mm_condor_worker.py,{REPO_DIR}/mm_sim_core.py",
         f"output              = {LOGS_DIR}/$(ClusterId).$(ProcId).out",
         f"error               = {LOGS_DIR}/$(ClusterId).$(ProcId).err",
         f"log                 = {LOGS_DIR}/condor.log",
@@ -150,6 +148,15 @@ def build_jdl(jobs, batches_per_point, events_per_batch):
         gfile = gas_file_path(job["gas_label"], job["pressure_label"])
         ptorr = PRESSURES[job["pressure_label"]]
 
+        # Gas file lands in the job's CWD after transfer — use basename only
+        gfile_basename = os.path.basename(gfile)
+
+        # Transfer worker, physics core, and the gas file for this job
+        lines.append(
+            f"transfer_input_files = {REPO_DIR}/mm_condor_worker.py,"
+            f"{REPO_DIR}/mm_sim_core.py,{gfile}"
+        )
+
         # Build arguments string
         penning_args = f"--penning-mode {job['penning_mode']}"
         if job["penning_mode"] == "manual":
@@ -157,7 +164,7 @@ def build_jdl(jobs, batches_per_point, events_per_batch):
             penning_args += f" --penning-gas {job['penning_gas']}"
 
         args = (
-            f"--gas-file {gfile} "
+            f"--gas-file {gfile_basename} "
             f"--gas-label {job['gas_label']} "
             f"--pressure-label {job['pressure_label']} "
             f"--pressure-torr {ptorr:.4f} "
