@@ -82,8 +82,10 @@ N_FREE_THREADS: int = 2
 V_DRIFT_ESTIMATE: float = 50.0   # µm/ns — adjust after first pass
 
 # Z-alignment scan parameters
-Z_SCAN_MIN: float = 200.0        # [mm]
-Z_SCAN_MAX: float = 300.0        # [mm]
+# Z_SCAN_MIN: float = 200.0        # [mm]
+# Z_SCAN_MAX: float = 300.0        # [mm]
+Z_SCAN_MIN: float = 500.0        # [mm]
+Z_SCAN_MAX: float = 800.0        # [mm]
 Z_SCAN_STEPS: int = 101
 
 # Rotation alignment scan parameters (rotation about detector centre in xy-plane)
@@ -104,9 +106,12 @@ def main():
     # run = 'mx17_det1_1-27-26'
     # sub_run = 'resist_scan_480V'
     # mx17_feus = [6]   # 4 = X strips, 6 = Y strips
-    run = 'mx17_det1_daytime_run_1-28-26'
-    sub_run = 'overnight_run'
-    mx17_feus = [4, 6]   # 4 = X strips, 6 = Y strips
+    # run = 'mx17_det1_daytime_run_1-28-26'
+    # sub_run = 'overnight_run'
+    # mx17_feus = [4, 6]   # 4 = X strips, 6 = Y strips
+    run = 'mx17_det0_He_HV_Scan_4-1-26'
+    sub_run = 'resist_505V_drift_800V'
+    mx17_feus = [3, 4]   # 4 = X strips, 6 = Y strips
 
     run_config_path = f'{base_path}{run}/run_config.json'
     map_csv_path = '../mx17_m4_map.csv'
@@ -226,7 +231,7 @@ def main():
                                            gif_path=gif_out)
             _plot_event(df_display, display_result, display_event_id)
 
-    plt.show()
+    # plt.show()
     plot_position_correlation(results)
     fit_x, fit_y = plot_residuals(results)
     if fit_x:
@@ -234,19 +239,30 @@ def main():
     if fit_y:
         print(f'Y resolution: {fit_y.resolution:.2f} ± {fit_y.resolution_err:.2f} mm')
 
+    # Active detector region in reference frame (for efficiency box + annotation)
+    (det_x_min, det_x_max), (det_y_min, det_y_max) = get_active_det_bounds(det, map_csv_path)
+    corners_x = np.array([det_x_min, det_x_max, det_x_min, det_x_max])
+    corners_y = np.array([det_y_min, det_y_min, det_y_max, det_y_max])
+    ref_cx, ref_cy = _det_to_ref(corners_x, corners_y, best_params)
+    active_region_ref = (float(ref_cx.min()), float(ref_cx.max()),
+                         float(ref_cy.min()), float(ref_cy.max()))
+
     # Efficiency map — no radius cut (any valid hit counts)
     plot_efficiency_map(results, rays, best_params,
-                        bins=100, min_tracks_per_bin=5,
+                        bins=40, min_tracks_per_bin=5,
                         radius_cut_mm=None,
                         title='Detector Efficiency Map (any hit)',
-                        csv_out_path=f'{csv_out_dir}efficiency_no_cut.csv')
+                        csv_out_path=f'{csv_out_dir}efficiency_no_cut.csv',
+                        active_region=active_region_ref)
 
     # Efficiency map — with radius cut (hit must be within 5 mm of reference)
     plot_efficiency_map(results, rays, best_params,
-                        bins=100, min_tracks_per_bin=5,
+                        bins=40, min_tracks_per_bin=5,
                         radius_cut_mm=10.0,
                         title='Detector Efficiency Map',
-                        csv_out_path=f'{csv_out_dir}efficiency_r10mm_cut.csv')
+                        csv_out_path=f'{csv_out_dir}efficiency_r10mm_cut.csv',
+                        active_region=active_region_ref)
+    plt.show()
 
     # Radial residual distribution (debug: check radius cut and M3 matching)
     plot_radial_residuals(results, radius_cut_mm=10.0)
@@ -1376,6 +1392,51 @@ def _build_2d_map_arrays(
     return ref_x_all, ref_y_all, ref_x_hit, ref_y_hit, x_edges, y_edges
 
 
+def _det_to_ref(
+    x_arr: np.ndarray,
+    y_arr: np.ndarray,
+    params: 'AlignmentParams',
+) -> Tuple[np.ndarray, np.ndarray]:
+    """Apply alignment transform (rotate about centre, then translate) to arrays of detector positions."""
+    theta = np.deg2rad(params.theta_deg)
+    cos_t, sin_t = np.cos(theta), np.sin(theta)
+    cx, cy = params.centre_x, params.centre_y
+    dx = np.asarray(x_arr, dtype=float) - cx
+    dy = np.asarray(y_arr, dtype=float) - cy
+    x_ref = cos_t * dx - sin_t * dy + cx + params.x_offset
+    y_ref = sin_t * dx + cos_t * dy + cy + params.y_offset
+    return x_ref, y_ref
+
+
+def get_active_det_bounds(det, strip_map_csv: str) -> Tuple[Tuple[float, float], Tuple[float, float]]:
+    """
+    Bounding box of plugged-in strips in detector local coordinates.
+
+    Returns (x_min, x_max), (y_min, y_max) in mm.
+    X positions come from Y-axis strips; Y positions come from X-axis strips.
+    """
+    from common.Mx17StripMap import Mx17StripMap
+    sm = Mx17StripMap(strip_map_csv)
+    x_positions: List[float] = []
+    y_positions: List[float] = []
+    for det_key, (feu_id, feu_connector) in det.dream_feus.items():
+        axis = det_key[0]
+        for local_ch in range(sm.CHANNELS_PER_CONNECTOR):
+            pos = sm.lookup(axis, feu_connector, local_ch)
+            if pos is None:
+                continue
+            px, py = pos
+            if axis == 'x':
+                y_positions.append(py)
+            else:
+                x_positions.append(px)
+    x_min = float(np.min(x_positions)) if x_positions else 0.0
+    x_max = float(np.max(x_positions)) if x_positions else 0.0
+    y_min = float(np.min(y_positions)) if y_positions else 0.0
+    y_max = float(np.max(y_positions)) if y_positions else 0.0
+    return (x_min, x_max), (y_min, y_max)
+
+
 def plot_efficiency_map(
     results: List[EventResult],
     rays: M3RefTracking,
@@ -1385,6 +1446,7 @@ def plot_efficiency_map(
     radius_cut_mm: Optional[float] = None,
     title: str = 'Detector Efficiency Map',
     csv_out_path: Optional[str] = None,
+    active_region: Optional[Tuple[float, float, float, float]] = None,
 ) -> None:
     """
     Plot a 2-D efficiency map and track density side-by-side.
@@ -1483,6 +1545,37 @@ def plot_efficiency_map(
         for ax in axes:
             ax.set_xlim(x_lo, x_hi)
             ax.set_ylim(y_lo, y_hi)
+
+    # ---- Active region: red box + mean efficiency annotation ----
+    if active_region is not None:
+        from matplotlib.patches import Rectangle
+        ar_x0, ar_x1, ar_y0, ar_y1 = active_region
+        for ax in axes:
+            ax.add_patch(Rectangle(
+                (ar_x0, ar_y0), ar_x1 - ar_x0, ar_y1 - ar_y0,
+                linewidth=1.5, edgecolor='red', facecolor='none', linestyle='--',
+            ))
+
+        # Mean efficiency: integrated hits / tracks over bins inside active region
+        x_centres = 0.5 * (x_edges[:-1] + x_edges[1:])
+        y_centres = 0.5 * (y_edges[:-1] + y_edges[1:])
+        xx, yy = np.meshgrid(x_centres, y_centres, indexing='ij')
+        in_active = (xx >= ar_x0) & (xx <= ar_x1) & (yy >= ar_y0) & (yy <= ar_y1)
+        active_mask = in_active & (total >= min_tracks_per_bin)
+        n_active_tracks = int(total[active_mask].sum())
+        n_active_hits = int(hits[active_mask].sum())
+        if n_active_tracks > 0:
+            mean_eff = n_active_hits / n_active_tracks
+            eff_err = float(np.sqrt(mean_eff * (1.0 - mean_eff) / n_active_tracks))
+            ann_text = f'Active region\neff = {mean_eff:.3f} ± {eff_err:.3f}'
+        else:
+            ann_text = 'Active region\neff = N/A'
+        axes[0].annotate(
+            ann_text,
+            xy=(0.02, 0.03), xycoords='axes fraction',
+            fontsize=9, color='red',
+            bbox=dict(boxstyle='round,pad=0.3', facecolor='white', alpha=0.75, edgecolor='red'),
+        )
 
     fig.tight_layout()
 

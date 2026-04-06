@@ -45,6 +45,7 @@ from cosmic_micro_tpc_analysis import (
     _map_strip_positions,
     _progress,
     _build_2d_map_arrays,
+    load_alignment,
 )
 from common.Mx17StripMap import RunConfig
 from M3RefTracking import M3RefTracking, get_xy_angles
@@ -54,18 +55,23 @@ from M3RefTracking import M3RefTracking, get_xy_angles
 # ---------------------------------------------------------------------------
 
 BASE_PATH = '/media/dylan/data/x17/cosmic_bench/det_1/'
-RUN       = 'mx17_det1_1-27-26'
-MX17_FEUS = [6]   # active FEUs for this run
+RUN       = 'mx17_det0_He_HV_Scan_4-1-26'
+MX17_FEUS = [3, 4]   # active FEUs for this run
 
 RUN_CONFIG_PATH = f'{BASE_PATH}{RUN}/run_config.json'
 MAP_CSV_PATH    = f'{_ROOT}/mx17_m4_map.csv'
 
 CSV_OUT_DIR = f'{BASE_PATH}Analysis/HV_Scan/'
 
-# Fixed alignment parameters — no z or rotation scan for low-stats subruns.
+# Alignment file produced by cosmic_micro_tpc_analysis.py.
+# If this file exists it is used to seed z, theta, and centre for every subrun
+# (translation is still re-run per subrun).  Set to None to skip.
+ALIGNMENT_FILE = f'{BASE_PATH}Alignment/alignment.json'
+
+# Fallback fixed alignment parameters used when no alignment file is found.
 # Only translation is run to centre the detector on the reference frame.
-FIXED_Z         = 251.0   # mm
-FIXED_THETA_DEG = 0.0     # degrees
+FIXED_Z         = 728.0   # mm
+FIXED_THETA_DEG = -0.625     # degrees
 DET_CENTRE_X    = 200.0   # mm (rotation pivot, detector local frame)
 DET_CENTRE_Y    = 200.0   # mm
 
@@ -82,15 +88,15 @@ RADIUS_CUT_MM      = 10.0  # radial residual cut for hit-matching
 # ---------------------------------------------------------------------------
 
 def extract_hv(subrun_name: str) -> Optional[int]:
-    """Extract HV value in volts from a name like 'resist_scan_480V'."""
-    m = re.search(r'(\d+)V$', subrun_name)
+    """Extract resistor HV value in volts from a name like 'resist_450V_drift_800V'."""
+    m = re.search(r'resist_(\d+)V', subrun_name)
     return int(m.group(1)) if m else None
 
 
 def find_subruns(base_path: str, run: str) -> List[Tuple[str, int]]:
     """
     Scan the run directory and return (subrun_name, hv_volts) pairs for all
-    folders matching the 'resist_scan_<NNN>V' pattern, sorted by HV descending.
+    folders matching the 'resist_<NNN>V' pattern, sorted by HV descending.
     """
     run_dir = os.path.join(base_path, run)
     pairs = []
@@ -98,7 +104,7 @@ def find_subruns(base_path: str, run: str) -> List[Tuple[str, int]]:
         if not os.path.isdir(os.path.join(run_dir, name)):
             continue
         hv = extract_hv(name)
-        if hv is not None and name.startswith('resist_scan_'):
+        if hv is not None and name.startswith('resist_'):
             pairs.append((name, hv))
     return sorted(pairs, key=lambda x: x[1], reverse=True)
 
@@ -447,13 +453,28 @@ def main():
     print(f'  X: [{det_x_min:.2f}, {det_x_max:.2f}] mm')
     print(f'  Y: [{det_y_min:.2f}, {det_y_max:.2f}] mm')
 
-    # Fixed alignment: translation only, no z scan or rotation scan
-    fixed_params = AlignmentParams(
-        z_x=FIXED_Z, z_y=FIXED_Z,
-        theta_deg=FIXED_THETA_DEG,
-        centre_x=DET_CENTRE_X,
-        centre_y=DET_CENTRE_Y,
-    )
+    # Seed alignment from file if available; otherwise fall back to hard-coded values.
+    # x_offset / y_offset are always reset to 0 because translation_alignment()
+    # re-derives them fresh for every subrun.
+    if ALIGNMENT_FILE and os.path.exists(ALIGNMENT_FILE):
+        _loaded = load_alignment(ALIGNMENT_FILE)
+        fixed_params = AlignmentParams(
+            z_x=_loaded.z_x,
+            z_y=_loaded.z_y,
+            theta_deg=_loaded.theta_deg,
+            centre_x=_loaded.centre_x,
+            centre_y=_loaded.centre_y,
+        )
+        print(f'Using alignment from file: {fixed_params}')
+    else:
+        if ALIGNMENT_FILE:
+            print(f'Alignment file not found ({ALIGNMENT_FILE}); using hard-coded defaults.')
+        fixed_params = AlignmentParams(
+            z_x=FIXED_Z, z_y=FIXED_Z,
+            theta_deg=FIXED_THETA_DEG,
+            centre_x=DET_CENTRE_X,
+            centre_y=DET_CENTRE_Y,
+        )
 
     # ---- Discover subruns ----
     subruns = find_subruns(BASE_PATH, RUN)
