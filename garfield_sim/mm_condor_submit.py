@@ -33,7 +33,7 @@ from pathlib import Path
 # ── Paths ──────────────────────────────────────────────────────────────────────
 # Adjust REPO_DIR to wherever the garfield_sim repo lives on lxplus/EOS.
 # The EOS path is visible from both lxplus interactive nodes and worker nodes.
-LXPLUS_BASE    = "."
+LXPLUS_BASE    = "/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim"
 REPO_DIR    = LXPLUS_BASE                          # scripts live here too
 GAS_DIR     = f"{LXPLUS_BASE}/gas_tables"
 JOBS_DIR    = f"{LXPLUS_BASE}/jobs"
