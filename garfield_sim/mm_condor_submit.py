@@ -33,7 +33,7 @@ from pathlib import Path
 # ── Paths ──────────────────────────────────────────────────────────────────────
 # Adjust REPO_DIR to wherever the garfield_sim repo lives on lxplus/EOS.
 # The EOS path is visible from both lxplus interactive nodes and worker nodes.
-LXPLUS_BASE    = "work/git/nTof_x17/garfield_sim"
+LXPLUS_BASE    = "."
 REPO_DIR    = LXPLUS_BASE                          # scripts live here too
 GAS_DIR     = f"{LXPLUS_BASE}/gas_tables"
 JOBS_DIR    = f"{LXPLUS_BASE}/jobs"
@@ -89,13 +89,17 @@ MAX_RETRIES    = 2
 
 
 def get_schedd():
-    """Get the custom schedd name via myschedd, fall back to default."""
+    """Get the custom schedd name via 'myschedd show', fall back to default."""
+    import re
     try:
         result = subprocess.run(
-            ["myschedd"], capture_output=True, text=True, timeout=10
+            ["myschedd", "show"], capture_output=True, text=True, timeout=10
         )
-        schedd = result.stdout.strip()
-        if schedd:
+        # myschedd show prints a table; extract the first hostname-like token
+        # e.g. "schedd  bigbird09.cern.ch  ..."
+        match = re.search(r'([\w.-]+\.cern\.ch)', result.stdout)
+        if match:
+            schedd = match.group(1)
             print(f"[submit] Using schedd: {schedd}")
             return schedd
     except (FileNotFoundError, subprocess.TimeoutExpired):
