@@ -33,12 +33,12 @@ from pathlib import Path
 # ── Paths ──────────────────────────────────────────────────────────────────────
 # Adjust REPO_DIR to wherever the garfield_sim repo lives on lxplus/EOS.
 # The EOS path is visible from both lxplus interactive nodes and worker nodes.
-EOS_BASE    = "/eos/user/d/dneff/garfield_sim"
-REPO_DIR    = EOS_BASE                          # scripts live here too
-GAS_DIR     = f"{EOS_BASE}/gas_tables"
-JOBS_DIR    = f"{EOS_BASE}/jobs"
-RESULTS_DIR = f"{EOS_BASE}/results"
-LOGS_DIR    = f"{EOS_BASE}/logs"
+LXPLUS_BASE    = "work/git/nTof_x17/garfield_sim"
+REPO_DIR    = LXPLUS_BASE                          # scripts live here too
+GAS_DIR     = f"{LXPLUS_BASE}/gas_tables"
+JOBS_DIR    = f"{LXPLUS_BASE}/jobs"
+RESULTS_DIR = f"{LXPLUS_BASE}/results"
+LOGS_DIR    = f"{LXPLUS_BASE}/logs"
 
 
 # ── Pressure helper ────────────────────────────────────────────────────────────
@@ -257,7 +257,7 @@ def main():
     print(f"Batches per point : {batches_per_point}")
     print(f"Target per point  : {target_per_point} events")
     print(f"Total events      : {total_events:,}")
-    print(f"EOS base          : {EOS_BASE}")
+    print(f"EOS base          : {LXPLUS_BASE}")
     print()
 
     # Count by gas × pressure
@@ -298,7 +298,7 @@ def main():
         return
 
     # ── Write JDL and submit ───────────────────────────────────────────────────
-    jdl_path = os.path.join(EOS_BASE, "gain_scan.jdl")
+    jdl_path = os.path.join(LXPLUS_BASE, "gain_scan.jdl")
     jdl = build_jdl(jobs, batches_per_point, events_per_batch)
     with open(jdl_path, "w") as f:
         f.write(jdl)
