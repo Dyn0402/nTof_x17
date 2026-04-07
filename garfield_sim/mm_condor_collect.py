@@ -36,7 +36,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from mm_sim_core import recompute_stats, load_existing, build_result_dict, save_result
 
 # ── Paths ──────────────────────────────────────────────────────────────────────
-EOS_BASE    = "/eos/user/d/dneff/garfield_sim"
+EOS_BASE    = "/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim"
 JOBS_DIR    = f"{EOS_BASE}/jobs"
 RESULTS_DIR = f"{EOS_BASE}/results"
 
