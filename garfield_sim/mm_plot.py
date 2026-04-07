@@ -103,6 +103,21 @@ def add_pressure_lines(ax, results_dir):
     pass
 
 
+def fit_exponential(volts, gains):
+    """
+    Fit gain = A * exp(B * V) via log-linear regression.
+    Returns (A, B) or None if fewer than 3 valid points.
+    """
+    mask = gains > 0
+    if mask.sum() < 3:
+        return None
+    try:
+        B, logA = np.polyfit(volts[mask], np.log(gains[mask]), 1)
+        return np.exp(logA), B
+    except Exception:
+        return None
+
+
 # ── Figure 1 & 2: gain vs V and gain vs E (linear + log) ──────────────────────
 
 def plot_gain(results, outdir, fmt):
@@ -110,31 +125,85 @@ def plot_gain(results, outdir, fmt):
     fig_log, ax_log = plt.subplots(figsize=(7, 5))
     fig_e,   ax_e   = plt.subplots(figsize=(7, 5))
 
+    ax_log.set_yscale("log")
+    ax_e.set_yscale("log")
+
+    # Collect per-dataset arrays for two-pass rendering
+    datasets = []
     for res in results:
         gas    = res["gas"]
         plabel = res["pressure_label"]
-        ptorr  = res["pressure_torr"]
         volts  = np.array(res["voltages"])
         fields = np.array(res["fields"])
         mean   = np.array(res["gain_mean"])
         std    = np.array(res["gain_std"])
         surv   = np.array(res["survival"])
 
-        # Mask zero-gain points (all attached)
+        gain_raw = res.get("gain_raw", None)
+        if gain_raw is not None:
+            n = np.array([max(len(g), 1) for g in gain_raw], dtype=float)
+        else:
+            n = np.ones(len(mean))
+        sem = std / np.sqrt(n)
+
         mask = (mean > 0) & (surv > 0.1)
+        sty  = get_style(gas, plabel)
+        datasets.append(dict(
+            volts=volts, fields=fields, mean=mean, std=std, sem=sem,
+            mask=mask, sty=sty, label=pretty_label(gas, plabel),
+            ekw=errorbar_kw(sty), color=sty["color"],
+        ))
 
-        sty   = get_style(gas, plabel)
-        label = pretty_label(gas, plabel)
-        ekw   = errorbar_kw(sty)
+    # Pass 1: errorbars + exponential fit lines — these drive autoscaling
+    all_axes = (ax_lin, ax_log, ax_e)
+    for d in datasets:
+        mask  = d["mask"]
+        x_v   = d["volts"][mask]
+        x_e   = d["fields"][mask] / 1e3
+        m     = d["mean"][mask]
+        se    = d["sem"][mask]
+        color = d["color"]
 
-        ax_lin.errorbar(volts[mask], mean[mask], yerr=std[mask],
-                        label=label, **ekw)
-        ax_log.errorbar(volts[mask], mean[mask], yerr=std[mask],
-                        label=label, **ekw)
-        ax_e.errorbar(fields[mask]/1e3, mean[mask], yerr=std[mask],
-                      label=label, **ekw)
+        for ax, x in [(ax_lin, x_v), (ax_log, x_v), (ax_e, x_e)]:
+            ax.errorbar(x, m, yerr=se, label=d["label"], **d["ekw"])
 
-    for ax in (ax_lin, ax_log, ax_e):
+        fit = fit_exponential(x_v, m)
+        if fit is not None:
+            A, B = fit
+            v_fine = np.linspace(x_v.min(), x_v.max(), 300)
+            e_fine = np.linspace(d["fields"][mask].min(),
+                                 d["fields"][mask].max(), 300) / 1e3
+            g_fine = A * np.exp(B * v_fine)
+            fit_kw = dict(color=color, lw=1.2, alpha=0.65,
+                          linestyle=d["sty"]["ls"], zorder=1.5)
+            ax_lin.plot(v_fine, g_fine, **fit_kw)
+            ax_log.plot(v_fine, g_fine, **fit_kw)
+            ax_e.plot(e_fine, g_fine, **fit_kw)
+
+    # Lock zoom based on errorbars + fits; fill_between must not expand limits
+    for ax in all_axes:
+        ax.relim()
+        ax.autoscale_view()
+    saved_lims = {ax: (ax.get_xlim(), ax.get_ylim()) for ax in all_axes}
+
+    # Pass 2: semi-transparent STD band (drawn behind data)
+    for d in datasets:
+        mask  = d["mask"]
+        x_v   = d["volts"][mask]
+        x_e   = d["fields"][mask] / 1e3
+        m     = d["mean"][mask]
+        s     = d["std"][mask]
+        color = d["color"]
+        for ax, x in [(ax_lin, x_v), (ax_log, x_v), (ax_e, x_e)]:
+            ax.fill_between(x, np.maximum(m - s, 1e-10), m + s,
+                            color=color, alpha=0.15, linewidth=0, zorder=1)
+
+    # Restore limits so the STD band doesn't expand the view
+    for ax, (xlim, ylim) in saved_lims.items():
+        ax.set_xlim(xlim)
+        ax.set_ylim(ylim)
+
+    for ax in all_axes:
         ax.legend(loc="upper left", framealpha=0.85)
         ax.grid(True, which="both", alpha=0.3)
         ax.set_ylabel("Gas Gain")
@@ -143,10 +212,8 @@ def plot_gain(results, outdir, fmt):
     ax_lin.set_title("Micromegas Gain vs Mesh Voltage")
     ax_log.set_xlabel("Mesh Voltage (V)")
     ax_log.set_title("Micromegas Gain vs Mesh Voltage (log scale)")
-    ax_log.set_yscale("log")
     ax_e.set_xlabel("Amplification Field (kV/cm)")
     ax_e.set_title("Micromegas Gain vs Amplification Field")
-    ax_e.set_yscale("log")
 
     for fig, name in [
         (fig_lin, "gain_vs_voltage"),
@@ -203,12 +270,26 @@ def plot_pressure_ratio(results, outdir, fmt):
 
         g_s = np.array(rs["gain_mean"])[idx_s]
         g_c = np.array(rc["gain_mean"])[idx_c]
-        e_s = np.array(rs["gain_std"])[idx_s]
-        e_c = np.array(rc["gain_std"])[idx_c]
+        std_s = np.array(rs["gain_std"])[idx_s]
+        std_c = np.array(rc["gain_std"])[idx_c]
+
+        # Compute SEM from raw counts
+        raw_s = rs.get("gain_raw", None)
+        raw_c = rc.get("gain_raw", None)
+        if raw_s is not None:
+            n_s = np.array([max(len(raw_s[i]), 1) for i in idx_s], dtype=float)
+        else:
+            n_s = np.ones(len(idx_s))
+        if raw_c is not None:
+            n_c = np.array([max(len(raw_c[i]), 1) for i in idx_c], dtype=float)
+        else:
+            n_c = np.ones(len(idx_c))
+        e_s = std_s / np.sqrt(n_s)
+        e_c = std_c / np.sqrt(n_c)
 
         mask = (g_s > 0) & (g_c > 0)
         ratio = g_s[mask] / g_c[mask]
-        # Error propagation for ratio: σ_r/r = sqrt((σ_a/a)² + (σ_b/b)²)
+        # Error propagation for ratio using SEM: σ_r/r = sqrt((sem_a/a)² + (sem_b/b)²)
         ratio_err = ratio * np.sqrt((e_s[mask]/g_s[mask])**2 +
                                     (e_c[mask]/g_c[mask])**2)
 
@@ -296,7 +377,101 @@ def plot_distributions(results, outdir, fmt, n_voltages=4):
         plt.close(fig)
 
 
-# ── Figure 5: overview table ───────────────────────────────────────────────────
+# ── Figure 5: CERN / CEA equivalence ─────────────────────────────────────────
+
+def plot_equivalence(results, outdir, fmt):
+    """
+    For each gas, find the CERN mesh voltage that produces the same gain as a
+    given CEA (Saclay) mesh voltage, using exponential fits to each dataset.
+
+    Left panel : V_CERN vs V_CEA with a 1:1 reference line.
+    Right panel: ΔV = V_CERN − V_CEA vs V_CEA.
+    """
+    gas_labels = sorted({r["gas"] for r in results})
+
+    for gas in gas_labels:
+        res_by_pres = {r["pressure_label"]: r
+                       for r in results if r["gas"] == gas}
+        cea_key  = next((k for k in res_by_pres if "Saclay" in k), None)
+        cern_key = next((k for k in res_by_pres if "CERN"   in k), None)
+        if cea_key is None or cern_key is None:
+            continue
+
+        r_cea  = res_by_pres[cea_key]
+        r_cern = res_by_pres[cern_key]
+
+        v_cea   = np.array(r_cea["voltages"])
+        g_cea   = np.array(r_cea["gain_mean"])
+        sv_cea  = np.array(r_cea["survival"])
+        v_cern  = np.array(r_cern["voltages"])
+        g_cern  = np.array(r_cern["gain_mean"])
+        sv_cern = np.array(r_cern["survival"])
+
+        mask_cea  = (g_cea  > 0) & (sv_cea  > 0.1)
+        mask_cern = (g_cern > 0) & (sv_cern > 0.1)
+
+        fit_cea  = fit_exponential(v_cea[mask_cea],  g_cea[mask_cea])
+        fit_cern = fit_exponential(v_cern[mask_cern], g_cern[mask_cern])
+
+        if fit_cea is None or fit_cern is None:
+            print(f"  Skipping equivalence for {gas}: insufficient data for fit")
+            continue
+
+        A_cea,  B_cea  = fit_cea
+        A_cern, B_cern = fit_cern
+
+        # For G_cern(V_cern) = G_cea(V_cea):
+        #   A_cern * exp(B_cern * V_cern) = A_cea * exp(B_cea * V_cea)
+        #   V_cern = (log(A_cea / A_cern) + B_cea * V_cea) / B_cern
+        v_cea_range  = np.linspace(v_cea[mask_cea].min(),
+                                   v_cea[mask_cea].max(), 300)
+        v_cern_equiv = (np.log(A_cea / A_cern) + B_cea * v_cea_range) / B_cern
+        delta_v      = v_cern_equiv - v_cea_range
+
+        gas_pretty = pretty_label(gas, "").strip()
+        p_cea  = r_cea["pressure_torr"]
+        p_cern = r_cern["pressure_torr"]
+
+        fig, (ax_abs, ax_diff) = plt.subplots(1, 2, figsize=(12, 5))
+
+        # Left: equivalent CERN voltage vs CEA voltage
+        ax_abs.plot(v_cea_range, v_cern_equiv, color="steelblue", lw=2,
+                    label="Equivalent CERN voltage (fit)")
+        diag_lo = min(v_cea_range.min(), v_cern_equiv.min())
+        diag_hi = max(v_cea_range.max(), v_cern_equiv.max())
+        ax_abs.plot([diag_lo, diag_hi], [diag_lo, diag_hi],
+                    color="grey", ls="--", lw=1, label="1:1 reference")
+        ax_abs.set_xlabel("CEA (Saclay) Mesh Voltage (V)")
+        ax_abs.set_ylabel("Equivalent CERN Mesh Voltage (V)")
+        ax_abs.set_title(f"Equivalent CERN Voltage\n{gas_pretty}")
+        ax_abs.legend(framealpha=0.85)
+        ax_abs.grid(True, alpha=0.3)
+        ax_abs.text(
+            0.04, 0.96,
+            f"CEA fit:  G = {A_cea:.2g} · exp({B_cea*1e3:.3f} · V/1000)\n"
+            f"CERN fit: G = {A_cern:.2g} · exp({B_cern*1e3:.3f} · V/1000)\n"
+            f"CEA {p_cea:.1f} Torr  |  CERN {p_cern:.1f} Torr",
+            transform=ax_abs.transAxes, fontsize=8, va="top",
+            bbox=dict(boxstyle="round", alpha=0.1),
+        )
+
+        # Right: ΔV = V_CERN − V_CEA vs V_CEA
+        ax_diff.plot(v_cea_range, delta_v, color="steelblue", lw=2)
+        ax_diff.axhline(0, color="grey", ls="--", lw=1)
+        ax_diff.set_xlabel("CEA (Saclay) Mesh Voltage (V)")
+        ax_diff.set_ylabel(r"$\Delta V = V_\mathrm{CERN} - V_\mathrm{CEA}$ (V)")
+        ax_diff.set_title(f"CERN − CEA Voltage Offset for Equal Gain\n{gas_pretty}")
+        ax_diff.grid(True, alpha=0.3)
+
+        fig.tight_layout()
+        safe_gas = gas.replace("/", "_").replace(" ", "_")
+        path = os.path.join(outdir, f"equivalence_{safe_gas}.{fmt}")
+        fig.savefig(path)
+        print(f"  Saved: {path}")
+        plt.close(fig)
+
+
+# ── Figure 6: overview table ───────────────────────────────────────────────────
 
 def print_summary_table(results):
     print("\nGain Summary (mean ± std)")
@@ -349,6 +524,7 @@ def main():
 
     plot_gain(results, args.outdir, args.format)
     plot_pressure_ratio(results, args.outdir, args.format)
+    plot_equivalence(results, args.outdir, args.format)
     if not args.no_dist:
         plot_distributions(results, args.outdir, args.format)
 
