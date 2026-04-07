@@ -53,6 +53,13 @@ STYLE = {
     ("He_C2H6",  "CERN"):   dict(color="#1f77b4", marker="s", ls="--"),
     ("Ar_iC4H10","Saclay"): dict(color="#d62728", marker="^", ls="-"),
     ("Ar_iC4H10","CERN"):   dict(color="#d62728", marker="v", ls="--"),
+    # Ne/iC4H10 — three shades of green, one per rP value
+    ("rP040",    "Saclay"): dict(color="#006d2c", marker="o", ls="-"),
+    ("rP040",    "CERN"):   dict(color="#006d2c", marker="s", ls="--"),
+    ("rP050",    "Saclay"): dict(color="#31a354", marker="^", ls="-"),
+    ("rP050",    "CERN"):   dict(color="#31a354", marker="v", ls="--"),
+    ("rP060",    "Saclay"): dict(color="#74c476", marker="D", ls="-"),
+    ("rP060",    "CERN"):   dict(color="#74c476", marker="d", ls="--"),
 }
 
 def get_style(gas_label, pressure_label):
@@ -63,8 +70,11 @@ def get_style(gas_label, pressure_label):
 
 def pretty_label(gas_label, pressure_label):
     gas_map = {
-        "He_C2H6_96p5_3p5": "He/C₂H₆ 96.5/3.5%",
-        "Ar_iC4H10_95_5":   "Ar/iC₄H₁₀ 95/5%",
+        "He_C2H6_96p5_3p5":    "He/C₂H₆ 96.5/3.5%",
+        "Ar_iC4H10_95_5":      "Ar/iC₄H₁₀ 95/5%",
+        "Ne_iC4H10_95_5_rP040": "Ne/iC₄H₁₀ 95/5% (rP=0.40)",
+        "Ne_iC4H10_95_5_rP050": "Ne/iC₄H₁₀ 95/5% (rP=0.50)",
+        "Ne_iC4H10_95_5_rP060": "Ne/iC₄H₁₀ 95/5% (rP=0.60)",
     }
     prs_map = {
         "Saclay_160m": "Saclay 160 m",
