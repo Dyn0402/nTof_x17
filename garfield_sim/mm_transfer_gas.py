@@ -42,7 +42,7 @@ import mm_config as cfg
 # ── Defaults ──────────────────────────────────────────────────────────────────
 DEFAULT_HOST       = "lxplus.cern.ch"
 DEFAULT_USER       = "dneff"
-DEFAULT_REMOTE_DIR = "/eos/user/d/dneff/garfield_sim/gas_tables"
+DEFAULT_REMOTE_DIR = "work/git/nTof_x17/garfield_sim/gas_tables"
 
 
 def main():
@@ -94,7 +94,7 @@ def main():
     print()
 
     # ── Build rsync command ────────────────────────────────────────────────────
-    ssh_cmd = "ssh -o StrictHostKeyChecking=accept-new"
+    ssh_cmd = "ssh -o StrictHostKeyChecking=accept-new -o GSSAPIAuthentication=yes -o GSSAPIDelegateCredentials=yes"
     if args.ssh_key:
         ssh_cmd += f" -i {args.ssh_key}"
     if args.port:
