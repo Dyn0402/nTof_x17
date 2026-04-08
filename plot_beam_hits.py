@@ -201,18 +201,25 @@ def main():
     #     'run_139_D1000V': 'run_139 - 6mm - Carbon Frame',
     # }
 
-    title = 'Helium/Ethane 96.5/3.5 Carbon Target at 20 cm Bunch Intensity Comparison'
+    # title = 'Helium/Ethane 96.5/3.5 Carbon Target at 20 cm Bunch Intensity Comparison'
+    # runs = {
+    #     # 'run_33_D600V_I800': 'run_33 - 30mm - Aluminum Frame - Dedicated',
+    #     # 'run_33_D600V_I600': 'run_33 - 30mm - Aluminum Frame - Parasitic',
+    #     # 'run_33_D600V_I400': 'run_33 - 30mm - Aluminum Frame - Low Parasitic',
+    #     # 'run_141_D800V_I800': 'run_141 - 11mm - Carbon Frame - Dedicated',
+    #     # 'run_141_D800V_I600': 'run_141 - 11mm - Carbon Frame - Parasitic',
+    #     'run_84_D1000V_I800': 'run_84 - 6mm - Aluminum Frame - Dedicated',
+    #     'run_84_D1000V_I600': 'run_84 - 6mm - Aluminum Frame - Parasitic',
+    #     'run_84_D1000V_I400': 'run_84 - 6mm - Aluminum Frame - Low Parasitic',
+    #     # 'run_139_D1000V_I800': 'run_139 - 6mm - Carbon Frame - Dedicated',
+    #     # 'run_139_D1000V_I600': 'run_139 - 6mm - Carbon Frame - Parasitic',
+    # }
+
+    title = '30 mm Drift Gap with B4C Comparisons'
     runs = {
-        # 'run_33_D600V_I800': 'run_33 - 30mm - Aluminum Frame - Dedicated',
-        # 'run_33_D600V_I600': 'run_33 - 30mm - Aluminum Frame - Parasitic',
-        # 'run_33_D600V_I400': 'run_33 - 30mm - Aluminum Frame - Low Parasitic',
-        # 'run_141_D800V_I800': 'run_141 - 11mm - Carbon Frame - Dedicated',
-        # 'run_141_D800V_I600': 'run_141 - 11mm - Carbon Frame - Parasitic',
-        'run_84_D1000V_I800': 'run_84 - 6mm - Aluminum Frame - Dedicated',
-        'run_84_D1000V_I600': 'run_84 - 6mm - Aluminum Frame - Parasitic',
-        'run_84_D1000V_I400': 'run_84 - 6mm - Aluminum Frame - Low Parasitic',
-        # 'run_139_D1000V_I800': 'run_139 - 6mm - Carbon Frame - Dedicated',
-        # 'run_139_D1000V_I600': 'run_139 - 6mm - Carbon Frame - Parasitic',
+        'run_30_D600V': 'run_30 - He/Eth 96.5/3.5',
+        'run_59_D600V': 'run_59 - Ar/CF4 90/10',
+        'run_64_D600V': 'run_64 - Ar/CO2 70/30',
     }
 
     # csv_out_dir = f'/media/dylan/data/x17/feb_beam/Analysis/hits_vs_time_csvs'
@@ -220,7 +227,8 @@ def main():
     # input('Enter to continue...')
 
     # csv_out_path = '/media/dylan/data/x17/feb_beam/Analysis/Plot_Data/beam_turn_off_helium_comparison.csv'
-    csv_out_path = '/media/dylan/data/x17/feb_beam/Analysis/Plot_Data/beam_turn_off_helium_comparison_intensity_test.csv'
+    # csv_out_path = '/media/dylan/data/x17/feb_beam/Analysis/Plot_Data/beam_turn_off_helium_comparison_intensity_test.csv'
+    csv_out_path = None
     # plot_amps_with_hv(base_path, run, sub_run, feus, hvs)
     # plot_hits_vs_hv(base_path, run, sub_run, feus, hvs)
     # plot_hits_vs_hv_runs(base_path, list(runs.keys()), feus, hvs, runs)

@@ -39,9 +39,13 @@ from plot_beam_hits import load_subrun, add_xy_pos
 BASE_PATH = '/media/dylan/data/x17/feb_beam/runs/'
 # RUN = 'run_34'
 # SUBRUN = 'resist_425V_drift_600V'
-RUN = 'run_131'
-SUBRUN = 'resist_500V_drift_1000V'
-EVENT = 16
+# RUN = 'run_131'
+# SUBRUN = 'resist_500V_drift_1000V'
+# RUN = 'run_64'
+# SUBRUN = 'resist_650V_drift_600V'
+RUN = 'run_80'
+SUBRUN = 'resist_640V_drift_1000V'
+EVENT = 17
 MIN_HIT_AMP = 200
 FEU_NUMS = {4: 'y', 5: 'x'}
 
