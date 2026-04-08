@@ -88,33 +88,33 @@ RUN_CONFIG = [
         "penning_gas":     "",
     },
     # Ne/iC4H10 — three rP values to bracket Penning uncertainty (no measured rP in literature)
-    {
-        "gas_label":       "Ne_iC4H10_95_5_rP040",
-        "pressures":       ["Saclay_160m", "CERN_450m"],
-        "voltages":        list(range(400, 531, 10)),   # 400..530 step 10 (range TBD)
-        "gap_cm":          0.015,
-        "penning_mode":    "manual",
-        "penning_rP":      0.40,
-        "penning_gas":     "ne",
-    },
-    {
-        "gas_label":       "Ne_iC4H10_95_5_rP050",
-        "pressures":       ["Saclay_160m", "CERN_450m"],
-        "voltages":        list(range(400, 531, 10)),   # 400..530 step 10 (range TBD)
-        "gap_cm":          0.015,
-        "penning_mode":    "manual",
-        "penning_rP":      0.50,
-        "penning_gas":     "ne",
-    },
-    {
-        "gas_label":       "Ne_iC4H10_95_5_rP060",
-        "pressures":       ["Saclay_160m", "CERN_450m"],
-        "voltages":        list(range(400, 531, 10)),   # 400..530 step 10 (range TBD)
-        "gap_cm":          0.015,
-        "penning_mode":    "manual",
-        "penning_rP":      0.60,
-        "penning_gas":     "ne",
-    },
+    # {
+    #     "gas_label":       "Ne_iC4H10_95_5_rP040",
+    #     "pressures":       ["Saclay_160m", "CERN_450m"],
+    #     "voltages":        list(range(400, 531, 10)),   # 400..530 step 10 (range TBD)
+    #     "gap_cm":          0.015,
+    #     "penning_mode":    "manual",
+    #     "penning_rP":      0.40,
+    #     "penning_gas":     "ne",
+    # },
+    # {
+    #     "gas_label":       "Ne_iC4H10_95_5_rP050",
+    #     "pressures":       ["Saclay_160m", "CERN_450m"],
+    #     "voltages":        list(range(400, 531, 10)),   # 400..530 step 10 (range TBD)
+    #     "gap_cm":          0.015,
+    #     "penning_mode":    "manual",
+    #     "penning_rP":      0.50,
+    #     "penning_gas":     "ne",
+    # },
+    # {
+    #     "gas_label":       "Ne_iC4H10_95_5_rP060",
+    #     "pressures":       ["Saclay_160m", "CERN_450m"],
+    #     "voltages":        list(range(400, 531, 10)),   # 400..530 step 10 (range TBD)
+    #     "gap_cm":          0.015,
+    #     "penning_mode":    "manual",
+    #     "penning_rP":      0.60,
+    #     "penning_gas":     "ne",
+    # },
 ]
 
 
