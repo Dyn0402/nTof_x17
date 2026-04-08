@@ -55,8 +55,9 @@ PRESSURES = {
 }
 
 GAS_PENNING = {
-    "He_C2H6_96p5_3p5":    {"mode": "manual", "rP": 0.40, "gas": "he"},
-    "Ar_iC4H10_95_5":      {"mode": "auto"},
+    "He_C2H6_96p5_3p5":     {"mode": "manual", "rP": 0.40, "gas": "he"},
+    "Ar_iC4H10_95_5":       {"mode": "auto"},
+    "Ar_CO2_70_30":          {"mode": "auto"},   # no Penning: Ar metastables < CO2 IP
     "Ne_iC4H10_95_5_rP040": {"mode": "manual", "rP": 0.40, "gas": "ne"},
     "Ne_iC4H10_95_5_rP050": {"mode": "manual", "rP": 0.50, "gas": "ne"},
     "Ne_iC4H10_95_5_rP060": {"mode": "manual", "rP": 0.60, "gas": "ne"},

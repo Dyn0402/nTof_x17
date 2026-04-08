@@ -77,6 +77,16 @@ RUN_CONFIG = [
     #     "penning_rP":      0.0,
     #     "penning_gas":     "",
     # },
+    # Ar/CO2 70/30 — no Penning (Ar metastables below CO2 IP), standard mode=auto
+    {
+        "gas_label":       "Ar_CO2_70_30",
+        "pressures":       ["Saclay_160m", "CERN_450m"],
+        "voltages":        list(range(400, 531, 10)),   # 400..530 step 10 (range TBD)
+        "gap_cm":          0.015,
+        "penning_mode":    "auto",
+        "penning_rP":      0.0,
+        "penning_gas":     "",
+    },
     # Ne/iC4H10 — three rP values to bracket Penning uncertainty (no measured rP in literature)
     {
         "gas_label":       "Ne_iC4H10_95_5_rP040",
