@@ -109,6 +109,13 @@ GAS_MIXTURES = [
         # uncertainty until validated against measured gain data.
         "penning":    {"mode": "manual", "rP": 0.50, "gas": "ne"},
     },
+    {
+        "label":      "Ar_CO2_70_30",
+        "components": [("ar", 70.0), ("co2", 30.0)],
+        # No Penning transfer: Ar metastables (11.55 eV) < CO2 IP (13.78 eV).
+        # Energetics forbid ionisation of CO2 by Ar*, so rP = 0.
+        "penning":    {"mode": "auto"},
+    },
 ]
 
 # ── Voltage scan ──────────────────────────────────────────────────────────────
