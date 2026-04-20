@@ -57,6 +57,9 @@ def date_to_x(d, start):
     return x
 
 
+_PACK_GAP = timedelta(seconds=int(0.15 * 86400 * 0))  # slightly > 2 × FancyBboxPatch pad=0.07 days
+
+
 def assign_sub_rows(bands):
     """Greedy interval packing to avoid visual overlaps."""
     bands.sort(key=lambda b: _to_dt(b["start"]))
@@ -64,7 +67,7 @@ def assign_sub_rows(bands):
     for b in bands:
         placed = False
         for i, end in enumerate(sub_row_ends):
-            if _to_dt(b["start"]) > _to_dt(end):
+            if _to_dt(b["start"]) >= _to_dt(end) + _PACK_GAP:
                 b["sub_row"] = i
                 sub_row_ends[i] = b["end"]
                 placed = True
@@ -87,7 +90,8 @@ def add_bar(ax, x0, x1, y_top, bar_h, color, tc,
     if opt or pattern == "dashed":
         rect = FancyBboxPatch(
             (x0, y_top), width, bar_h,
-            boxstyle="round,pad=0.07",
+            # boxstyle="round,pad=0.07",
+            boxstyle="round,pad=0.0",
             facecolor=(*rgb, 0.22),
             edgecolor=(*rgb, 0.85),
             linestyle="--", linewidth=1.4, zorder=3)
@@ -96,14 +100,16 @@ def add_bar(ax, x0, x1, y_top, bar_h, color, tc,
     elif pattern == "stripe":
         rect = FancyBboxPatch(
             (x0, y_top), width, bar_h,
-            boxstyle="round,pad=0.07",
+            # boxstyle="round,pad=0.07",
+            boxstyle="round,pad=0.0",
             facecolor=(*rgb, 0.55),
             edgecolor=(*rgb, 0.9),
             linewidth=0.9, zorder=3)
         ax.add_patch(rect)
         hrect = FancyBboxPatch(
             (x0, y_top), width, bar_h,
-            boxstyle="round,pad=0.07",
+            # boxstyle="round,pad=0.07",
+            boxstyle="round,pad=0.0",
             facecolor="none",
             edgecolor=(*mcolors.to_rgb(tc), 0.22),
             hatch="////", linewidth=0, zorder=4)
@@ -112,7 +118,8 @@ def add_bar(ax, x0, x1, y_top, bar_h, color, tc,
     else:
         rect = FancyBboxPatch(
             (x0, y_top), width, bar_h,
-            boxstyle="round,pad=0.07",
+            # boxstyle="round,pad=0.07",
+            boxstyle="round,pad=0.0",
             facecolor=(*rgb, 1.0),
             edgecolor=(*rgb, 1.0),
             linewidth=0.6, zorder=3)
@@ -138,7 +145,11 @@ def add_bar(ax, x0, x1, y_top, bar_h, color, tc,
 def draw_timeline(title, subtitle, start_date, end_date,
                   bands, milestones, out_png, out_pdf=None):
 
-    total_days = (end_date - start_date).days + 1
+    total_days = (_to_dt(end_date) - _to_dt(start_date)).days + 1
+
+    # Normalise to date for grid calculations so integer day positions are preserved
+    _start = _to_dt(start_date).date()
+    _end   = _to_dt(end_date).date()
 
     # Filter suppressed
     active = [b for b in bands if not b.get("suppress", False)]
@@ -171,18 +182,18 @@ def draw_timeline(title, subtitle, start_date, end_date,
     ax.set_ylim(total_height, -0.15)
 
     # ── Weekend shading ───────────────────────────────────────
-    d = start_date
-    while d <= end_date:
+    d = _start
+    while d <= _end:
         if d.weekday() >= 5:
-            x = date_to_x(d, start_date)
+            x = date_to_x(d, _start)
             ax.axvspan(x - 0.5, x + 0.5,
                        facecolor=WEEKEND, alpha=1.0, zorder=0, lw=0)
         d += timedelta(days=1)
 
     # ── Day grid lines ────────────────────────────────────────
-    d = start_date
-    while d <= end_date:
-        x = date_to_x(d, start_date)
+    d = _start
+    while d <= _end:
+        x = date_to_x(d, _start)
         ax.axvline(x - 0.5, color=GRID_COL, lw=0.8, alpha=0.9, zorder=1)
         d += timedelta(days=1)
 
@@ -229,8 +240,8 @@ def draw_timeline(title, subtitle, start_date, end_date,
 
     # ── Milestones ────────────────────────────────────────────
     visible_ms = [m for m in milestones
-                  if start_date <= m["date"] <= end_date]
-    visible_ms.sort(key=lambda m: m["date"])
+                  if _start <= _to_dt(m["date"]).date() <= _end]
+    visible_ms.sort(key=lambda m: _to_dt(m["date"]))
 
     DIAM_Y = events_y_base + 0.30
 
@@ -239,7 +250,7 @@ def draw_timeline(title, subtitle, start_date, end_date,
     MIN_GAP        = 4.5
 
     for m in visible_ms:
-        x   = date_to_x(m["date"], start_date)
+        x   = date_to_x(m["date"], _start)
         rgb = mcolors.to_rgb(m["color"])
 
         ax.plot(x, DIAM_Y, marker="D", markersize=8,
@@ -277,9 +288,9 @@ def draw_timeline(title, subtitle, start_date, end_date,
     # ── Day-of-month numbers (just below bottom spine) ───────
     DOW   = "MTWTFSS"
     trans = ax.get_xaxis_transform()   # x: data coords, y: axes fraction
-    d = start_date
-    while d <= end_date:
-        x          = date_to_x(d, start_date)
+    d = _start
+    while d <= _end:
+        x          = date_to_x(d, _start)
         is_weekend = d.weekday() >= 5
         col = GRID_COL if is_weekend else MUTED
         ax.text(x, 1.01, DOW[d.weekday()],
@@ -293,12 +304,12 @@ def draw_timeline(title, subtitle, start_date, end_date,
         d += timedelta(days=1)
 
     # ── Month labels centered on visible days of each month ──
-    m = start_date.replace(day=1)
-    while m <= end_date:
+    m = _start.replace(day=1)
+    while m <= _end:
         m_end = (m.replace(day=28) + timedelta(days=4)).replace(day=1) - timedelta(days=1)
-        vis_start = max(m, start_date)
-        vis_end   = min(m_end, end_date)
-        x_center  = (date_to_x(vis_start, start_date) + date_to_x(vis_end, start_date)) / 2
+        vis_start = max(m, _start)
+        vis_end   = min(m_end, _end)
+        x_center  = (date_to_x(vis_start, _start) + date_to_x(vis_end, _start)) / 2
         ax.text(x_center, -0.05, m.strftime("%B"),
                 ha="center", va="top",
                 color=ACCENT, fontsize=11, fontfamily="monospace",
@@ -323,7 +334,7 @@ def draw_timeline(title, subtitle, start_date, end_date,
                  color=MUTED, fontsize=17, fontfamily="monospace")
 
     fig.text(0.012, 0.94,
-             subtitle + f"   ·   Generated {date.today():%Y-%m-%d}",
+             subtitle + f"   ·   Generated {datetime.now():%Y-%m-%d %H:%M}",
              ha="left", va="top",
              color=MUTED, fontsize=9.5, fontfamily="monospace")
 
