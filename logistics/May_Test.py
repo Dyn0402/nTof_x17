@@ -9,7 +9,7 @@ Run:
     python May_Test.py
 """
 
-from datetime import date, datetime
+from datetime import datetime
 from timeline_generator import draw_timeline
 
 # ══════════════════════════════════════════════════════════════
@@ -19,49 +19,51 @@ from timeline_generator import draw_timeline
 TITLE    = "n_TOF X17 · EAR2 Beam Test"
 SUBTITLE = "CERN Campaign — May 2026"
 
-START_DATE = date(2026, 5, 7)
-END_DATE   = date(2026, 5, 18)
+START_DATE = datetime(2026, 5, 8)
+END_DATE   = datetime(2026, 5, 18)
 
 MILESTONES = [
-    {"date": date(2026, 5, 7),  "label": "Travel day",               "color": "#94a3b8"},
-    {"date": date(2026, 5, 8),  "label": "Arrive CERN\nSetup begins","color": "#22d3ee"},
+    {"date": datetime(2026, 5, 8, 12),  "label": "Travel day",               "color": "#94a3b8"},
+    {"date": datetime(2026, 5, 8, 17),  "label": "Arrive CERN\nSetup begins","color": "#22d3ee"},
 ]
 
 BANDS = [
+    # ── n_TOF Campaign ────────────────────────────────────────
+    {
+        "label":        "EAR2 Beam time",
+        "start":        datetime(2026, 5, 11, 8),
+        "end":          datetime(2026, 5, 18, 8),
+        "color":        "#15803d",
+        "text_color":   "#bbf7d0",
+        "pattern":      "solid",
+        "legend_label": "n_TOF campaign",
+    },
+
     # ── Travel & Logistics ────────────────────────────────────
     {
         "label":        "Travel",
-        "start":        date(2026, 5, 7),
-        "end":          date(2026, 5, 7),
+        "start":        datetime(2026, 5, 8, 10),
+        "end":          datetime(2026, 5, 8, 17),
         "color":        "#94a3b8",
         "text_color":   "#0f172a",
         "pattern":      "solid",
         "legend_label": "Travel",
     },
 
-    # ── n_TOF Campaign ────────────────────────────────────────
+    # ── n_TOF Campaign Planning ────────────────────────────────
     {
         "label":        "CERN setup",
-        "start":        date(2026, 5, 8),
-        "end":          date(2026, 5, 10),
+        "start":        datetime(2026, 5, 8, 17),
+        "end":          datetime(2026, 5, 11, 12),
         "color":        "#065f46",
         "text_color":   "#a7f3d0",
         "pattern":      "solid",
         "legend_label": "n_TOF campaign",
     },
     {
-        "label":        "EAR2 Beam time",
-        "start":        date(2026, 5, 11),
-        "end":          date(2026, 5, 18),
-        "color":        "#15803d",
-        "text_color":   "#bbf7d0",
-        "pattern":      "solid",
-        "legend_label": "n_TOF campaign",
-    },
-    {
         "label":        "Cosmics at CERN\n(if ready)",
-        "start":        date(2026, 5, 8),
-        "end":          date(2026, 5, 10),
+        "start":        datetime(2026, 5, 8, 20),
+        "end":          datetime(2026, 5, 11, 8),
         "color":        "#0e7490",
         "text_color":   "#cffafe",
         "pattern":      "dashed",
