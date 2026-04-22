@@ -95,7 +95,8 @@ def _split_to_days(band, t_start, t_end):
 # ══════════════════════════════════════════════════════════════
 
 def draw_week_timeline(title, subtitle, start_date, end_date,
-                       bands, out_png, out_pdf=None):
+                       bands, out_png, out_pdf=None,
+                       day_width=1.55, fig_height=9.0):
 
     t_start = _to_dt(start_date).replace(hour=0, minute=0, second=0, microsecond=0)
     t_end   = _to_dt(end_date).replace(  hour=0, minute=0, second=0, microsecond=0) \
@@ -124,12 +125,7 @@ def draw_week_timeline(title, subtitle, start_date, end_date,
             seg["n_sub_cols"] = n_sc
 
     # ── Figure ────────────────────────────────────────────────
-    # COL_W = max(1.4, 14.0 / n_days)   # inches per day column
-    # fig_w = n_days * COL_W + 1.8
-    fig_w = 17
-    fig_h = 9.0
-
-    fig, ax = plt.subplots(figsize=(fig_w, fig_h))
+    fig, ax = plt.subplots(figsize=(n_days * day_width, fig_height))
     fig.patch.set_facecolor(BG)
     ax.set_facecolor(SURFACE)
 
@@ -237,13 +233,15 @@ def draw_week_timeline(title, subtitle, start_date, end_date,
         spine.set_visible(False)
 
     # ── Title block ───────────────────────────────────────────
+    # char_frac: fraction of figure width per monospace char at fontsize 17
+    char_frac = 0.142 / fig.get_figwidth()
     parts = [p.strip() for p in title.split("·", 1)]
     fig.text(0.012, 0.985, parts[0] + (" ·" if len(parts) > 1 else ""),
              ha="left", va="top",
              color=TEXT_COL, fontsize=17, fontfamily="monospace",
              fontweight="bold")
     if len(parts) > 1:
-        offset = 0.02 + len(parts[0]) * 0.0068 + 0.026
+        offset = 0.012 + (len(parts[0]) + 2) * char_frac
         fig.text(offset, 0.985, parts[1],
                  ha="left", va="top",
                  color=MUTED, fontsize=17, fontfamily="monospace")
@@ -257,7 +255,7 @@ def draw_week_timeline(title, subtitle, start_date, end_date,
     seen = {}
     for b in active:
         lbl = b.get("legend_label")
-        if lbl and lbl not in seen:
+        if lbl and lbl not in seen and _to_dt(b["end"]) > t_start and _to_dt(b["start"]) < t_end:
             seen[lbl] = b
 
     legend_items = []

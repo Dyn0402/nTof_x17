@@ -19,6 +19,9 @@ SUBTITLE = "CERN Campaign — May 2026 · Hour-by-Hour Schedule"
 OUTPUT_PNG = "May_Test_Week.png"
 OUTPUT_PDF = "May_Test_Week.pdf"   # set to None to skip
 
+DAY_WIDTH  = 1.55   # inches per day column
+FIG_HEIGHT = 9.0
+
 # ── Per-category visual styles ────────────────────────────────
 # Edit here to restyle an entire category at once.
 STYLES = {
@@ -121,13 +124,17 @@ BANDS = [
     {"label": "Carbon to B4C",                 "legend_label": "Sample Switch",
      "start": datetime(2026, 5, 16, 21, 0),    "end": datetime(2026, 5, 16, 21, 30)},
     {"label": "Resist HV Scan\nNeon Isobutane\n30mm Drift\nB4C", "legend_label": "Measurement",
-     "start": datetime(2026, 5, 16, 21, 45),   "end": datetime(2026, 5, 17, 10, 0)},
+     "start": datetime(2026, 5, 16, 21, 45),   "end": datetime(2026, 5, 17, 9, 0)},
+    {"label": "Flush\nPure Argon",         "legend_label": "Flush",
+     "start": datetime(2026, 5, 17, 9, 15),    "end": datetime(2026, 5, 17, 10, 30)},
     {"label": "Drift Switch (?)\n30mm to 15mm",     "legend_label": "Drift Switch", "optional": True,
-     "start": datetime(2026, 5, 17, 10, 30),    "end": datetime(2026, 5, 17, 13, 30)},
+     "start": datetime(2026, 5, 17, 10, 45),    "end": datetime(2026, 5, 17, 13, 30)},
+    {"label": "Flush\nPure Argon",         "legend_label": "Flush",
+     "start": datetime(2026, 5, 17, 13, 45),    "end": datetime(2026, 5, 17, 15, 30)},
     {"label": "Flush (?)\nNeon Isobutane",         "legend_label": "Flush", "optional": True,
-     "start": datetime(2026, 5, 17, 14, 0),    "end": datetime(2026, 5, 17, 17, 0)},
+     "start": datetime(2026, 5, 17, 15,  45),    "end": datetime(2026, 5, 17, 18, 0)},
     {"label": "Resist HV Scan (?)\nNeon Isobutane\n15mm Drift\nCarbon Capsule", "legend_label": "Measurement", "optional": True,
-     "start": datetime(2026, 5, 17, 17, 30),   "end": datetime(2026, 5, 18, 6, 0)},
+     "start": datetime(2026, 5, 17, 18, 30),   "end": datetime(2026, 5, 18, 6, 0)},
     {"label": "Flush\nPure Argon",         "legend_label": "Flush",
      "start": datetime(2026, 5, 18, 6, 30),    "end": datetime(2026, 5, 18, 8, 15)},
     {"label": "Setup\nDismount\nEAR2", "legend_label": "Setup",
@@ -148,4 +155,6 @@ if __name__ == "__main__":
         bands=BANDS,
         out_png=OUTPUT_PNG,
         out_pdf=OUTPUT_PDF,
+        day_width=DAY_WIDTH,
+        fig_height=FIG_HEIGHT,
     )
