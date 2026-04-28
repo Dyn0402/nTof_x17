@@ -84,13 +84,17 @@ V_DRIFT_ESTIMATE: float = 50.0   # µm/ns — adjust after first pass
 # Z-alignment scan parameters
 # Z_SCAN_MIN: float = 200.0        # [mm]
 # Z_SCAN_MAX: float = 300.0        # [mm]
-Z_SCAN_MIN: float = 500.0        # [mm]
-Z_SCAN_MAX: float = 800.0        # [mm]
+# Z_SCAN_MIN: float = 500.0        # [mm]
+# Z_SCAN_MAX: float = 800.0        # [mm]
+Z_SCAN_MIN: float = 235.0        # [mm]
+Z_SCAN_MAX: float = 240.0        # [mm]
 Z_SCAN_STEPS: int = 101
 
 # Rotation alignment scan parameters (rotation about detector centre in xy-plane)
-ROT_SCAN_MIN_DEG: float = -5.0  # [deg]
-ROT_SCAN_MAX_DEG: float = 5.0   # [deg]
+# ROT_SCAN_MIN_DEG: float = -5.0  # [deg]
+# ROT_SCAN_MAX_DEG: float = 5.0   # [deg]
+ROT_SCAN_MIN_DEG: float = -1.0  # [deg]
+ROT_SCAN_MAX_DEG: float = 1.0   # [deg]
 ROT_SCAN_STEPS: int = 81
 
 # Iterative alignment: number of z → rotation → z → ... cycles
@@ -109,8 +113,10 @@ def main():
     # run = 'mx17_det1_daytime_run_1-28-26'
     # sub_run = 'overnight_run'
     # mx17_feus = [4, 6]   # 4 = X strips, 6 = Y strips
-    run = 'mx17_det0_He_HV_Scan_4-1-26'
-    sub_run = 'resist_505V_drift_800V'
+    # run = 'mx17_det0_He_HV_Scan_4-1-26'
+    # sub_run = 'resist_505V_drift_800V'
+    run = 'mx17_det1_Ar_CF4_HV_Scan_4-25-26'
+    sub_run = 'resist_550V_drift_1000V'
     mx17_feus = [3, 4]   # 4 = X strips, 6 = Y strips
 
     run_config_path = f'{base_path}{run}/run_config.json'
