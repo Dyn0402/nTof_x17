@@ -87,6 +87,53 @@ RUN_CONFIG = [
         "penning_rP":      0.0,
         "penning_gas":     "",
     },
+    # ── New gases (uncomment when gas tables have been generated) ──────────────
+    # {
+    #     "gas_label":       "Ar_CF4_90_10",
+    #     "pressures":       ["Saclay_160m", "CERN_450m"],
+    #     "voltages":        list(range(400, 531, 10)),
+    #     "gap_cm":          0.015,
+    #     "penning_mode":    "auto",
+    #     "penning_rP":      0.0,
+    #     "penning_gas":     "",
+    # },
+    # {
+    #     "gas_label":       "Ar_CF4_iC4H10_88_10_2",
+    #     "pressures":       ["Saclay_160m", "CERN_450m"],
+    #     "voltages":        list(range(400, 531, 10)),
+    #     "gap_cm":          0.015,
+    #     "penning_mode":    "auto",
+    #     "penning_rP":      0.0,
+    #     "penning_gas":     "",
+    # },
+    # Ne/CF4 — strong Penning; consider scanning rP=0.30/0.40/0.50 like Ne/iC4H10
+    # {
+    #     "gas_label":       "Ne_CF4_90_10",
+    #     "pressures":       ["Saclay_160m", "CERN_450m"],
+    #     "voltages":        list(range(400, 531, 10)),
+    #     "gap_cm":          0.015,
+    #     "penning_mode":    "manual",
+    #     "penning_rP":      0.40,
+    #     "penning_gas":     "ne",
+    # },
+    # {
+    #     "gas_label":       "Ar_CF4_CO2_45_40_15",
+    #     "pressures":       ["Saclay_160m", "CERN_450m"],
+    #     "voltages":        list(range(400, 531, 10)),
+    #     "gap_cm":          0.015,
+    #     "penning_mode":    "auto",
+    #     "penning_rP":      0.0,
+    #     "penning_gas":     "",
+    # },
+    # {
+    #     "gas_label":       "CF4_100",
+    #     "pressures":       ["Saclay_160m", "CERN_450m"],
+    #     "voltages":        list(range(400, 531, 10)),
+    #     "gap_cm":          0.015,
+    #     "penning_mode":    "auto",
+    #     "penning_rP":      0.0,
+    #     "penning_gas":     "",
+    # },
     # Ne/iC4H10 — three rP values to bracket Penning uncertainty (no measured rP in literature)
     # {
     #     "gas_label":       "Ne_iC4H10_95_5_rP040",

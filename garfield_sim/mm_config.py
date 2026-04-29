@@ -116,6 +116,52 @@ GAS_MIXTURES = [
         # Energetics forbid ionisation of CO2 by Ar*, so rP = 0.
         "penning":    {"mode": "auto"},
     },
+
+    # ── New gases ────────────────────────────────────────────────────────────────
+
+    {
+        "label":      "Ar_CF4_90_10",
+        "components": [("ar", 90.0), ("cf4", 10.0)],
+        # Ar metastables: 11.55 eV (3P2), 11.72 eV (3P0).
+        # CF4 IP (NIST adiabatic): ~15.9 eV — above Ar*, so direct Penning channel
+        # is energetically forbidden. Garfield++ auto applies built-in table if one
+        # exists; otherwise no Penning is applied (conservative).
+        "penning":    {"mode": "auto"},
+    },
+    {
+        "label":      "Ar_CF4_iC4H10_88_10_2",
+        "components": [("ar", 88.0), ("cf4", 10.0), ("ic4h10", 2.0)],
+        # Dominant Penning channel: Ar* (11.55 eV) → iC4H10 (IP 10.67 eV).
+        # Garfield++ has a built-in parameterisation for Ar/iC4H10 (Sahin et al.,
+        # JINST 5 2010); auto mode uses this for the Ar–iC4H10 sub-system.
+        "penning":    {"mode": "auto"},
+    },
+    {
+        "label":      "Ne_CF4_90_10",
+        "components": [("ne", 90.0), ("cf4", 10.0)],
+        # Ne metastables: 16.619 eV (3P2), 16.715 eV (3P0).
+        # Ne* has ample energy to ionise CF4 (effective threshold accessible at these
+        # energies); published MPGD measurements on Ne/CF4 show significant Penning
+        # enhancement. Not in Garfield++ built-in table — use manual rP.
+        # rP = 0.40 is a conservative starting estimate; run multiple rP values
+        # (e.g. 0.30, 0.40, 0.50) to bracket uncertainty until validated against
+        # measured gain curves.
+        "penning":    {"mode": "manual", "rP": 0.40, "gas": "ne"},
+    },
+    {
+        "label":      "Ar_CF4_CO2_45_40_15",
+        "components": [("ar", 45.0), ("cf4", 40.0), ("co2", 15.0)],
+        # Ar metastables (11.55 eV) < CO2 IP (13.78 eV) → no Penning to CO2.
+        # No established dominant Penning channel. Garfield++ auto applies built-in
+        # table if available; otherwise no Penning.
+        "penning":    {"mode": "auto"},
+    },
+    {
+        "label":      "CF4_100",
+        "components": [("cf4", 100.0)],
+        # Pure CF4 — single component, no Penning transfer possible.
+        "penning":    {"mode": "auto"},
+    },
 ]
 
 # ── Voltage scan ──────────────────────────────────────────────────────────────
