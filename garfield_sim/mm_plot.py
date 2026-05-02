@@ -49,20 +49,28 @@ plt.rcParams.update({
 # Colour + marker scheme: one per (gas, pressure) combination
 # Keys: (gas_label_substring, pressure_label_substring) → (colour, marker)
 STYLE = {
-    ("He_C2H6",  "Saclay"): dict(color="#1f77b4", marker="o", ls="-"),
-    ("He_C2H6",  "CERN"):   dict(color="#1f77b4", marker="s", ls="--"),
-    ("Ar_iC4H10","Saclay"): dict(color="#d62728", marker="^", ls="-"),
-    ("Ar_iC4H10","CERN"):   dict(color="#d62728", marker="v", ls="--"),
-    # Ar/CO2 — orange
-    ("Ar_CO2",   "Saclay"): dict(color="#ff7f0e", marker="o", ls="-"),
-    ("Ar_CO2",   "CERN"):   dict(color="#ff7f0e", marker="s", ls="--"),
-    # Ne/iC4H10 — three shades of green, one per rP value
-    ("rP040",    "Saclay"): dict(color="#006d2c", marker="o", ls="-"),
-    ("rP040",    "CERN"):   dict(color="#006d2c", marker="s", ls="--"),
-    ("rP050",    "Saclay"): dict(color="#31a354", marker="^", ls="-"),
-    ("rP050",    "CERN"):   dict(color="#31a354", marker="v", ls="--"),
-    ("rP060",    "Saclay"): dict(color="#74c476", marker="D", ls="-"),
-    ("rP060",    "CERN"):   dict(color="#74c476", marker="d", ls="--"),
+    ("He_C2H6",        "Saclay"): dict(color="#1f77b4", marker="o", ls="-"),
+    ("He_C2H6",        "CERN"):   dict(color="#1f77b4", marker="s", ls="--"),
+    ("Ar_iC4H10",      "Saclay"): dict(color="#d62728", marker="^", ls="-"),
+    ("Ar_iC4H10",      "CERN"):   dict(color="#d62728", marker="v", ls="--"),
+    ("Ar_CO2",         "Saclay"): dict(color="#ff7f0e", marker="o", ls="-"),
+    ("Ar_CO2",         "CERN"):   dict(color="#ff7f0e", marker="s", ls="--"),
+    ("Ar_CF4_iC4H10",  "Saclay"): dict(color="#e377c2", marker="P", ls="-"),
+    ("Ar_CF4_iC4H10",  "CERN"):   dict(color="#e377c2", marker="X", ls="--"),
+    ("Ar_CF4_CO2",     "Saclay"): dict(color="#8c564b", marker="o", ls="-"),
+    ("Ar_CF4_CO2",     "CERN"):   dict(color="#8c564b", marker="s", ls="--"),
+    ("Ar_CF4",         "Saclay"): dict(color="#9467bd", marker="^", ls="-"),
+    ("Ar_CF4",         "CERN"):   dict(color="#9467bd", marker="v", ls="--"),
+    ("CF4_100",        "Saclay"): dict(color="#7f7f7f", marker="D", ls="-"),
+    ("CF4_100",        "CERN"):   dict(color="#7f7f7f", marker="d", ls="--"),
+    ("Ne_CF4",         "Saclay"): dict(color="#17becf", marker="o", ls="-"),
+    ("Ne_CF4",         "CERN"):   dict(color="#17becf", marker="s", ls="--"),
+    ("rP040",          "Saclay"): dict(color="#006d2c", marker="o", ls="-"),
+    ("rP040",          "CERN"):   dict(color="#006d2c", marker="s", ls="--"),
+    ("rP050",          "Saclay"): dict(color="#31a354", marker="^", ls="-"),
+    ("rP050",          "CERN"):   dict(color="#31a354", marker="v", ls="--"),
+    ("rP060",          "Saclay"): dict(color="#74c476", marker="D", ls="-"),
+    ("rP060",          "CERN"):   dict(color="#74c476", marker="d", ls="--"),
 }
 
 def get_style(gas_label, pressure_label):
@@ -71,22 +79,48 @@ def get_style(gas_label, pressure_label):
             return sty
     return dict(color="grey", marker="o", ls="-")
 
+GAS_PRETTY = {
+    "He_C2H6_96p5_3p5":        "He/C₂H₆ 96.5/3.5%",
+    "Ar_iC4H10_95_5":           "Ar/iC₄H₁₀ 95/5%",
+    "Ar_CO2_70_30":             "Ar/CO₂ 70/30%",
+    "Ar_CF4_90_10":             "Ar/CF₄ 90/10%",
+    "Ar_CF4_CO2_45_40_15":      "Ar/CF₄/CO₂ 45/40/15%",
+    "Ar_CF4_iC4H10_88_10_2":    "Ar/CF₄/iC₄H₁₀ 88/10/2%",
+    "CF4_100":                  "CF₄ 100%",
+    "Ne_CF4_90_10":             "Ne/CF₄ 90/10%",
+    "Ne_iC4H10_95_5_rP040":     "Ne/iC₄H₁₀ 95/5% rP=0.40",
+    "Ne_iC4H10_95_5_rP050":     "Ne/iC₄H₁₀ 95/5% rP=0.50",
+    "Ne_iC4H10_95_5_rP060":     "Ne/iC₄H₁₀ 95/5% rP=0.60",
+}
+
+GAS_SHORT = {
+    "He_C2H6_96p5_3p5":        "He/C₂H₆\n96.5/3.5%",
+    "Ar_iC4H10_95_5":           "Ar/iC₄H₁₀\n95/5%",
+    "Ar_CO2_70_30":             "Ar/CO₂\n70/30%",
+    "Ar_CF4_90_10":             "Ar/CF₄\n90/10%",
+    "Ar_CF4_CO2_45_40_15":      "Ar/CF₄/CO₂\n45/40/15%",
+    "Ar_CF4_iC4H10_88_10_2":    "Ar/CF₄/iC₄H₁₀\n88/10/2%",
+    "CF4_100":                  "CF₄\n100%",
+    "Ne_CF4_90_10":             "Ne/CF₄\n90/10%",
+    "Ne_iC4H10_95_5_rP040":     "Ne/iC₄H₁₀\nrP=0.40",
+    "Ne_iC4H10_95_5_rP050":     "Ne/iC₄H₁₀\nrP=0.50",
+    "Ne_iC4H10_95_5_rP060":     "Ne/iC₄H₁₀\nrP=0.60",
+}
+
+PRS_PRETTY = {
+    "Saclay_160m": "Saclay 160 m",
+    "CERN_450m":   "CERN 450 m",
+}
+
 def pretty_label(gas_label, pressure_label):
-    gas_map = {
-        "He_C2H6_96p5_3p5":     "He/C₂H₆ 96.5/3.5%",
-        "Ar_iC4H10_95_5":       "Ar/iC₄H₁₀ 95/5%",
-        "Ar_CO2_70_30":          "Ar/CO₂ 70/30%",
-        "Ne_iC4H10_95_5_rP040": "Ne/iC₄H₁₀ 95/5% (rP=0.40)",
-        "Ne_iC4H10_95_5_rP050": "Ne/iC₄H₁₀ 95/5% (rP=0.50)",
-        "Ne_iC4H10_95_5_rP060": "Ne/iC₄H₁₀ 95/5% (rP=0.60)",
-    }
-    prs_map = {
-        "Saclay_160m": "Saclay 160 m",
-        "CERN_450m":   "CERN 450 m",
-    }
-    g = gas_map.get(gas_label, gas_label)
-    p = prs_map.get(pressure_label, pressure_label)
-    return f"{g}  [{p}]"
+    g = GAS_PRETTY.get(gas_label, gas_label)
+    p = PRS_PRETTY.get(pressure_label, pressure_label)
+    if p:
+        return f"{g}  [{p}]"
+    return g
+
+def short_label(gas_label):
+    return GAS_SHORT.get(gas_label, gas_label)
 
 
 # ── Load results ───────────────────────────────────────────────────────────────
@@ -135,9 +169,9 @@ def fit_exponential(volts, gains):
 # ── Figure 1 & 2: gain vs V and gain vs E (linear + log) ──────────────────────
 
 def plot_gain(results, outdir, fmt):
-    fig_lin, ax_lin = plt.subplots(figsize=(7, 5))
-    fig_log, ax_log = plt.subplots(figsize=(7, 5))
-    fig_e,   ax_e   = plt.subplots(figsize=(7, 5))
+    fig_lin, ax_lin = plt.subplots(figsize=(11, 6))
+    fig_log, ax_log = plt.subplots(figsize=(11, 6))
+    fig_e,   ax_e   = plt.subplots(figsize=(11, 6))
 
     ax_log.set_yscale("log")
     ax_e.set_yscale("log")
@@ -218,7 +252,13 @@ def plot_gain(results, outdir, fmt):
         ax.set_ylim(ylim)
 
     for ax in all_axes:
-        ax.legend(loc="upper left", framealpha=0.85)
+        ax.legend(
+            loc="upper left",
+            bbox_to_anchor=(1.01, 1),
+            borderaxespad=0,
+            fontsize=8,
+            framealpha=0.9,
+        )
         ax.grid(True, which="both", alpha=0.3)
         ax.set_ylabel("Gas Gain")
 
@@ -235,8 +275,9 @@ def plot_gain(results, outdir, fmt):
         (fig_e,   "gain_vs_field_log"),
     ]:
         fig.tight_layout()
+        fig.subplots_adjust(right=0.72)
         path = os.path.join(outdir, f"{name}.{fmt}")
-        fig.savefig(path)
+        fig.savefig(path, bbox_inches="tight")
         print(f"  Saved: {path}")
         plt.close(fig)
 
@@ -485,7 +526,146 @@ def plot_equivalence(results, outdir, fmt):
         plt.close(fig)
 
 
-# ── Figure 6: overview table ───────────────────────────────────────────────────
+# ── Figure 6: operating gain / operating voltage ──────────────────────────────
+
+def plot_operating_gain(results, outdir, fmt):
+    """
+    Reference: Ar/iC4H10 95/5% at 490 V (both pressure conditions).
+
+    Plot A — Gain at 490 V for every gas (interpolated/extrapolated via
+              exponential fit).  A horizontal band marks the reference gain.
+
+    Plot B — Operating voltage V* at which each gas reaches the reference gain.
+              V* = log(G_ref / A) / B  from  G = A·exp(B·V).
+              A horizontal line at 490 V shows the reference.
+    """
+    REF_GAS  = "Ar_iC4H10_95_5"
+    REF_VOLT = 490.0
+    PKEYS    = ["Saclay", "CERN"]
+    PCOLORS  = {"Saclay": "#1a6faf", "CERN": "#b22222"}
+    PALPHA   = 0.85
+
+    # ── fit all datasets ──────────────────────────────────────────────────────
+    fits = {}
+    for res in results:
+        gas  = res["gas"]
+        pkey = "CERN" if "CERN" in res["pressure_label"] else "Saclay"
+        volts = np.array(res["voltages"])
+        gains = np.array(res["gain_mean"])
+        surv  = np.array(res["survival"])
+        mask  = (gains > 0) & (surv > 0.1)
+        fit   = fit_exponential(volts[mask], gains[mask])
+        if fit is not None:
+            fits[(gas, pkey)] = fit  # (A, B)
+
+    # reference gains at 490 V (use actual data point if available)
+    ref_gains = {}
+    for res in results:
+        if res["gas"] != REF_GAS:
+            continue
+        pkey = "CERN" if "CERN" in res["pressure_label"] else "Saclay"
+        volts = np.array(res["voltages"])
+        gains = np.array(res["gain_mean"])
+        if REF_VOLT in volts:
+            idx = int(np.where(volts == REF_VOLT)[0][0])
+            ref_gains[pkey] = gains[idx]
+        elif (REF_GAS, pkey) in fits:
+            A, B = fits[(REF_GAS, pkey)]
+            ref_gains[pkey] = A * np.exp(B * REF_VOLT)
+
+    # all unique gas labels in a fixed order
+    all_gases = sorted({r["gas"] for r in results})
+
+    # gain at 490 V and operating voltage for every (gas, pkey)
+    gain_490   = {}
+    op_voltage = {}
+    for gas in all_gases:
+        for pkey in PKEYS:
+            key = (gas, pkey)
+            if key not in fits:
+                continue
+            A, B = fits[key]
+            gain_490[key] = A * np.exp(B * REF_VOLT)
+            ref_g = ref_gains.get(pkey)
+            if ref_g is not None and ref_g > 0 and A > 0 and B != 0:
+                op_voltage[key] = np.log(ref_g / A) / B
+
+    # ── Plot A: gain at 490 V ─────────────────────────────────────────────────
+    fig_a, ax_a = plt.subplots(figsize=(13, 5))
+    ax_a.set_yscale("log")
+
+    x_ticks = []
+    x_labels = []
+    bar_width = 0.35
+    for i, gas in enumerate(all_gases):
+        x_center = i
+        for j, pkey in enumerate(PKEYS):
+            key = (gas, pkey)
+            if key not in gain_490:
+                continue
+            x = x_center + (j - 0.5) * bar_width
+            ax_a.bar(x, gain_490[key], width=bar_width * 0.9,
+                     color=PCOLORS[pkey], alpha=PALPHA,
+                     label=pkey if i == 0 else "_nolegend_")
+        x_ticks.append(x_center)
+        x_labels.append(short_label(gas))
+
+    # reference band
+    for pkey, ref_g in ref_gains.items():
+        ax_a.axhline(ref_g, color=PCOLORS[pkey], ls="--", lw=1.5, alpha=0.7,
+                     label=f"Ref ({pkey}): {ref_g:.0f}")
+
+    ax_a.set_xticks(x_ticks)
+    ax_a.set_xticklabels(x_labels, fontsize=8)
+    ax_a.set_ylabel("Gas Gain at 490 V (extrapolated)")
+    ax_a.set_title(
+        f"Gain at V = {REF_VOLT:.0f} V — reference: Ar/iC₄H₁₀ 95/5%  [{', '.join(f'{p}: {ref_gains[p]:.0f}' for p in PKEYS if p in ref_gains)}]"
+    )
+    ax_a.legend(fontsize=9, framealpha=0.9)
+    ax_a.grid(True, axis="y", which="both", alpha=0.3)
+    fig_a.tight_layout()
+    path_a = os.path.join(outdir, f"gain_at_490v.{fmt}")
+    fig_a.savefig(path_a, bbox_inches="tight")
+    print(f"  Saved: {path_a}")
+    plt.close(fig_a)
+
+    # ── Plot B: operating voltage ─────────────────────────────────────────────
+    fig_b, ax_b = plt.subplots(figsize=(13, 5))
+
+    x_ticks = []
+    x_labels = []
+    for i, gas in enumerate(all_gases):
+        x_center = i
+        for j, pkey in enumerate(PKEYS):
+            key = (gas, pkey)
+            if key not in op_voltage:
+                continue
+            x = x_center + (j - 0.5) * bar_width
+            ax_b.bar(x, op_voltage[key], width=bar_width * 0.9,
+                     color=PCOLORS[pkey], alpha=PALPHA,
+                     label=pkey if i == 0 else "_nolegend_")
+        x_ticks.append(x_center)
+        x_labels.append(short_label(gas))
+
+    ax_b.axhline(REF_VOLT, color="black", ls="--", lw=1.5,
+                 label=f"Reference voltage {REF_VOLT:.0f} V")
+
+    ax_b.set_xticks(x_ticks)
+    ax_b.set_xticklabels(x_labels, fontsize=8)
+    ax_b.set_ylabel("Operating Voltage (V)")
+    ax_b.set_title(
+        "Operating Voltage to Match Ar/iC₄H₁₀ 95/5% Gain at 490 V"
+    )
+    ax_b.legend(fontsize=9, framealpha=0.9)
+    ax_b.grid(True, axis="y", alpha=0.3)
+    fig_b.tight_layout()
+    path_b = os.path.join(outdir, f"operating_voltage.{fmt}")
+    fig_b.savefig(path_b, bbox_inches="tight")
+    print(f"  Saved: {path_b}")
+    plt.close(fig_b)
+
+
+# ── Figure 7: overview table ───────────────────────────────────────────────────
 
 def print_summary_table(results):
     print("\nGain Summary (mean ± std)")
@@ -539,6 +719,7 @@ def main():
     plot_gain(results, args.outdir, args.format)
     plot_pressure_ratio(results, args.outdir, args.format)
     plot_equivalence(results, args.outdir, args.format)
+    plot_operating_gain(results, args.outdir, args.format)
     if not args.no_dist:
         plot_distributions(results, args.outdir, args.format)
 
