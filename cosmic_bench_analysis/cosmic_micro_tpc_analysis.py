@@ -87,14 +87,14 @@ V_DRIFT_ESTIMATE: float = 50.0   # µm/ns — adjust after first pass
 # Z_SCAN_MIN: float = 500.0        # [mm]
 # Z_SCAN_MAX: float = 800.0        # [mm]
 Z_SCAN_MIN: float = 235.0        # [mm]
-Z_SCAN_MAX: float = 240.0        # [mm]
+Z_SCAN_MAX: float = 270.0        # [mm]
 Z_SCAN_STEPS: int = 101
 
 # Rotation alignment scan parameters (rotation about detector centre in xy-plane)
 # ROT_SCAN_MIN_DEG: float = -5.0  # [deg]
 # ROT_SCAN_MAX_DEG: float = 5.0   # [deg]
-ROT_SCAN_MIN_DEG: float = -1.0  # [deg]
-ROT_SCAN_MAX_DEG: float = 1.0   # [deg]
+ROT_SCAN_MIN_DEG: float = -2.0  # [deg]
+ROT_SCAN_MAX_DEG: float = 2.0   # [deg]
 ROT_SCAN_STEPS: int = 81
 
 # Iterative alignment: number of z → rotation → z → ... cycles
@@ -106,7 +106,8 @@ ALIGNMENT_ITERATIONS: int = 2
 # ---------------------------------------------------------------------------
 
 def main():
-    base_path = '/media/dylan/data/x17/cosmic_bench/det_1/'
+    # base_path = '/media/dylan/data/x17/cosmic_bench/det_1/'
+    base_path = '/media/dylan/data/x17/cosmic_bench/det_3/'
     # run = 'mx17_det1_1-27-26'
     # sub_run = 'resist_scan_480V'
     # mx17_feus = [6]   # 4 = X strips, 6 = Y strips
@@ -115,8 +116,12 @@ def main():
     # mx17_feus = [4, 6]   # 4 = X strips, 6 = Y strips
     # run = 'mx17_det0_He_HV_Scan_4-1-26'
     # sub_run = 'resist_505V_drift_800V'
-    run = 'mx17_det1_Ar_CF4_HV_Scan_4-25-26'
-    sub_run = 'resist_550V_drift_1000V'
+    # run = 'mx17_det1_Ar_CF4_HV_Scan_4-25-26'
+    # sub_run = 'resist_550V_drift_1000V'
+    # run = 'mx17_daq_det3_quick_test_5-5-26'
+    # sub_run = 'quick_test'
+    run = 'mx17_det3_HV_Scan_5-5-26'
+    sub_run = 'resist_510V_drift_900V'
     mx17_feus = [3, 4]   # 4 = X strips, 6 = Y strips
 
     run_config_path = f'{base_path}{run}/run_config.json'
@@ -124,7 +129,7 @@ def main():
 
     alignment_dir = f'{base_path}Alignment/'
     alignment_file = f'{alignment_dir}alignment.json'
-    realign = False   # set True to re-run alignment and overwrite the saved file
+    realign = True   # set True to re-run alignment and overwrite the saved file
 
     analysis_out_dir = f'{base_path}Analysis/'
     csv_out_dir = f'{analysis_out_dir}Plot_Data/'
