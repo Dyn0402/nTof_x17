@@ -120,8 +120,10 @@ def main():
     # sub_run = 'resist_550V_drift_1000V'
     # run = 'mx17_daq_det3_quick_test_5-5-26'
     # sub_run = 'quick_test'
-    run = 'mx17_det3_HV_Scan_5-5-26'
-    sub_run = 'resist_510V_drift_900V'
+    # run = 'mx17_det3_HV_Scan_5-5-26'
+    # sub_run = 'resist_510V_drift_900V'
+    run = 'mx17_det3_long_run_5-6-26'
+    sub_run = 'long_run'
     mx17_feus = [3, 4]   # 4 = X strips, 6 = Y strips
 
     run_config_path = f'{base_path}{run}/run_config.json'
