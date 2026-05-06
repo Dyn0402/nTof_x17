@@ -54,8 +54,10 @@ from M3RefTracking import M3RefTracking, get_xy_angles
 # Configuration
 # ---------------------------------------------------------------------------
 
-BASE_PATH = '/media/dylan/data/x17/cosmic_bench/det_1/'
-RUN       = 'mx17_det0_He_HV_Scan_4-1-26'
+# BASE_PATH = '/media/dylan/data/x17/cosmic_bench/det_1/'
+# RUN       = 'mx17_det0_He_HV_Scan_4-1-26'
+BASE_PATH = '/media/dylan/data/x17/cosmic_bench/det_3/'
+RUN       = 'mx17_det3_HV_Scan_5-5-26'
 MX17_FEUS = [3, 4]   # active FEUs for this run
 
 RUN_CONFIG_PATH = f'{BASE_PATH}{RUN}/run_config.json'
