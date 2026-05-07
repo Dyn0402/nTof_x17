@@ -452,7 +452,8 @@ def plot_hits_vs_hv_runs_vertical(base_path, runs, feus, hvs, run_name_map=None,
     Plot number of hits per event vs HV in several time of arrival bins.
     Panels are stacked vertically with a shared x-axis.
     """
-    min_amp = 1500
+    # min_amp = 1500
+    min_amp = 500
     time_bins = [[0, 75 * 20], [75 * 20, 270 * 20], [270 * 20, 10000]]
 
     hits_per_event = [{run: [] for run in runs} for _ in time_bins]

@@ -19,7 +19,7 @@ SUBTITLE = "CERN Campaign — May 2026 · Hour-by-Hour Schedule"
 OUTPUT_PNG = "May_Test_Week.png"
 OUTPUT_PDF = "May_Test_Week.pdf"   # set to None to skip
 
-DAY_WIDTH  = 1.55   # inches per day column
+DAY_WIDTH  = 1.7   # inches per day column
 FIG_HEIGHT = 9.0
 
 # ── Per-category visual styles ────────────────────────────────
@@ -40,22 +40,26 @@ STYLES = {
 BANDS = [
     # ── Travel & Logistics ────────────────────────────────────
     {"label": "Travel\nCEA to CERN",           "legend_label": "Travel",
-     "start": datetime(2026, 5, 8, 10),        "end": datetime(2026, 5, 8, 17)},
+     "start": datetime(2026, 5, 8, 9),        "end": datetime(2026, 5, 8, 14, 30)},
 
     # ── Rack room prep ────────────────────────────────────────
     {"label": "Setup\nRack Room\nFor Cosmics\n30mm Drift",  "legend_label": "Setup",
-     "start": datetime(2026, 5, 8, 17, 30),    "end": datetime(2026, 5, 8, 20)},
+     "start": datetime(2026, 5, 8, 15, 0),    "end": datetime(2026, 5, 8, 18)},
     {"label": "Flush\nArgon CO2",              "legend_label": "Flush",
-     "start": datetime(2026, 5, 8, 20, 30),    "end": datetime(2026, 5, 9, 8)},
-    {"label": "Finish\nCosmic\nSetup",          "legend_label": "Setup",
-     "start": datetime(2026, 5, 9, 8, 30),    "end": datetime(2026, 5, 9, 13, 30)},
+     "start": datetime(2026, 5, 8, 18, 15),    "end": datetime(2026, 5, 9, 3)},
+    # {"label": "Finish\nCosmic\nSetup",          "legend_label": "Setup",
+    #  "start": datetime(2026, 5, 9, 8, 30),    "end": datetime(2026, 5, 9, 13, 30)},
     {"label": "Cosmics\nResist HV Scan\nRack Room\nArgon CO2", "legend_label": "Cosmics", "optional": False,
-     "start": datetime(2026, 5, 9, 14, 0),     "end": datetime(2026, 5, 9, 16)},
+     "start": datetime(2026, 5, 9, 3, 30),     "end": datetime(2026, 5, 9, 13)},
+    {"label": "Gas Switch\nAr/CO2 to He/Eth",     "legend_label": "Gas Switch", "optional": True,
+     "start": datetime(2026, 5, 9, 13, 15),    "end": datetime(2026, 5, 9, 14, 15)},
+    {"label": "Flush\nHelium Ethane",              "legend_label": "Flush", "optional": True,
+     "start": datetime(2026, 5, 9, 14, 30),    "end": datetime(2026, 5, 9, 16)},
     {"label": "Test\nScintillator\nMechanics",          "legend_label": "Setup",
      "start": datetime(2026, 5, 9, 16, 15),    "end": datetime(2026, 5, 9, 19, 45)},
-    {"label": "Cosmics\nResist HV Scan\nRack Room\nArgon CO2", "legend_label": "Cosmics", "optional": False,
+    {"label": "Cosmics\nResist HV Scan\nRack Room\nHelium Ethane", "legend_label": "Cosmics", "optional": True,
      "start": datetime(2026, 5, 9, 20, 0),     "end": datetime(2026, 5, 10, 8)},
-    {"label": "Gas Switch\nAr/CO2 to Ar/CF4",     "legend_label": "Gas Switch",
+    {"label": "Gas Switch\nHe/Eth to Ar/CF4",     "legend_label": "Gas Switch",
      "start": datetime(2026, 5, 10, 8, 30),    "end": datetime(2026, 5, 10, 9, 30)},
     {"label": "Flush\nArgon CF4",          "legend_label": "Flush",
      "start": datetime(2026, 5, 10, 10, 0),    "end": datetime(2026, 5, 10, 14, 0)},
@@ -67,21 +71,24 @@ BANDS = [
      "start": datetime(2026, 5, 10, 19, 0),    "end": datetime(2026, 5, 11, 8)},
 
     # ── EAR2 setup & commissioning ────────────────────────────
+    {"label": "Prep for\nEAR2 Setup",       "legend_label": "Setup",
+     "start": datetime(2026, 5, 11, 8, 15),    "end": datetime(2026, 5, 11, 13, 15)},
     {"label": "Setup\nEAR2\n30mm Drift",       "legend_label": "Setup",
-     "start": datetime(2026, 5, 11, 8, 30),    "end": datetime(2026, 5, 11, 13)},
+     "start": datetime(2026, 5, 11, 13, 30),    "end": datetime(2026, 5, 11, 15)},
     {"label": "Flush\nArgon CF4",          "legend_label": "Flush",
-     "start": datetime(2026, 5, 11, 13, 15),   "end": datetime(2026, 5, 11, 14, 45)},
-
+     "start": datetime(2026, 5, 11, 15, 15),   "end": datetime(2026, 5, 11, 16, 0)},
 
     # ── Measurements ──────────────────────────────────────────
-    {"label": "Mesh Switch Testing\nArgon CF4\n30mm Drift\nCarbon Capsule", "legend_label": "Testing",
-     "start": datetime(2026, 5, 11, 15, 0),   "end": datetime(2026, 5, 11, 17)},
+    # {"label": "Mesh Switch Testing\nArgon CF4\n30mm Drift\nCarbon Capsule", "legend_label": "Testing",
+    #  "start": datetime(2026, 5, 11, 15, 0),   "end": datetime(2026, 5, 11, 17)},
+    {"label": "Mesh Switch Testing", "legend_label": "Testing",
+     "start": datetime(2026, 5, 11, 16, 15),   "end": datetime(2026, 5, 11, 17, 15)},
     {"label": "Resist HV Scan\nArgon CF4\n30mm Drift\nCarbon Capsule", "legend_label": "Measurement",
-     "start": datetime(2026, 5, 11, 17, 30),   "end": datetime(2026, 5, 11, 19, 30)},
+     "start": datetime(2026, 5, 11, 17, 30),   "end": datetime(2026, 5, 11, 20, 45)},
     {"label": "Install Aluminum\nShielding",          "legend_label": "Setup",
-     "start": datetime(2026, 5, 11, 19, 45),    "end": datetime(2026, 5, 11, 20, 45)},
+     "start": datetime(2026, 5, 11, 21, 0),    "end": datetime(2026, 5, 11, 21, 45)},
     {"label": "Resist HV Scan\nArgon CF4\n30mm Drift\nCarbon Capsule\nAluminum Shielding", "legend_label": "Measurement",
-     "start": datetime(2026, 5, 11, 21, 0),   "end": datetime(2026, 5, 12, 8, 30)},
+     "start": datetime(2026, 5, 11, 22, 0),   "end": datetime(2026, 5, 12, 8, 30)},
     {"label": "Remove Aluminum\nShielding",          "legend_label": "Setup",
      "start": datetime(2026, 5, 12, 8, 45),    "end": datetime(2026, 5, 12, 9, 45)},
     {"label": "Drift Switch\n30mm to 3mm",     "legend_label": "Drift Switch",
@@ -93,18 +100,20 @@ BANDS = [
     {"label": "B4C to Carbon",                 "legend_label": "Sample Switch",
      "start": datetime(2026, 5, 12, 21, 0),    "end": datetime(2026, 5, 12, 21, 30)},
     {"label": "Resist HV Scan\nArgon CF4\n3mm Drift\nCarbon Capsule", "legend_label": "Measurement",
-     "start": datetime(2026, 5, 12, 21, 45),   "end": datetime(2026, 5, 13, 8, 0)},
+     "start": datetime(2026, 5, 12, 21, 45),   "end": datetime(2026, 5, 13, 7, 45)},
     {"label": "Gas Switch\nAr/CF4 to Ar/CO2",     "legend_label": "Gas Switch",
-     "start": datetime(2026, 5, 13, 8, 30),    "end": datetime(2026, 5, 13, 9, 30)},
+     "start": datetime(2026, 5, 13, 8, 0),    "end": datetime(2026, 5, 13, 8, 45)},
+    {"label": "Flammable Sensor Check",          "legend_label": "Setup",
+     "start": datetime(2026, 5, 13, 9, 0),    "end": datetime(2026, 5, 13, 9, 45)},
     {"label": "Stephan Leaves",                "legend_label": "Event",
-     "start": datetime(2026, 5, 13, 9, 45),    "end": datetime(2026, 5, 13, 10, 45)},
+     "start": datetime(2026, 5, 13, 10, 0),    "end": datetime(2026, 5, 13, 10, 45)},
     {"label": "Flush\nArgon CO2",              "legend_label": "Flush",
      "start": datetime(2026, 5, 13, 11, 0),    "end": datetime(2026, 5, 13, 12, 0)},
     {"label": "Trigger/Scint Testing\nCarbon Capsule", "legend_label": "Testing",
      "start": datetime(2026, 5, 13, 12, 15),   "end": datetime(2026, 5, 13, 13, 45)},
     {"label": "Flush\nArgon CO2",              "legend_label": "Flush",
      "start": datetime(2026, 5, 13, 14, 0),    "end": datetime(2026, 5, 13, 15, 0)},
-    {"label": "Ne/Iso and He/Ethane\nGas Arrives",                "legend_label": "Event",
+    {"label": "Neon Isobutane\nGas Arrives",                "legend_label": "Event",
      "start": datetime(2026, 5, 13, 15, 15),    "end": datetime(2026, 5, 13, 16, 15)},
     {"label": "Resist HV Scan\nArgon CO2\n3mm Drift\nB4C", "legend_label": "Measurement",
      "start": datetime(2026, 5, 13, 16, 30),   "end": datetime(2026, 5, 13, 20, 45)},
