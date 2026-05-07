@@ -15,6 +15,7 @@ Quick QA plots for a single detector run/subrun:
 
 import os
 import sys
+from typing import Optional
 
 import numpy as np
 import pandas as pd
@@ -44,6 +45,19 @@ MAP_CSV_PATH    = f'{_ROOT}/mx17_m4_map.csv'
 
 STRIP_PITCH_MM = 0.78   # nominal strip pitch for position histogram bins
 AMP_MAP_BINS   = 25     # bins per axis for 2D amplitude maps
+
+OUT_DIR = f'{BASE_PATH}Analysis/QA/{RUN}/{SUB_RUN}/'
+
+
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+
+def _save_fig(fig, out_dir: Optional[str], name: str, dpi: int = 150) -> None:
+    if out_dir is None:
+        return
+    os.makedirs(out_dir, exist_ok=True)
+    fig.savefig(os.path.join(out_dir, name), dpi=dpi, bbox_inches='tight')
 
 
 # ---------------------------------------------------------------------------
@@ -150,6 +164,8 @@ def _plot_amplitude_map(
     amp: np.ndarray,
     title: str,
     n_bins: int = AMP_MAP_BINS,
+    out_dir: Optional[str] = None,
+    fig_name: str = 'amplitude_map.png',
 ) -> None:
     """Bin (x, y) positions and show mean amplitude per bin as a 2D heatmap."""
     mean_amp, xedges, yedges, _ = binned_statistic_2d(
@@ -172,13 +188,14 @@ def _plot_amplitude_map(
     ax.set_ylabel('Y [mm]')
     ax.set_title(title)
     fig.tight_layout()
+    _save_fig(fig, out_dir, fig_name)
 
 
 # ---------------------------------------------------------------------------
 # Plots
 # ---------------------------------------------------------------------------
 
-def plot_hits_vs_channel(df: pd.DataFrame) -> None:
+def plot_hits_vs_channel(df: pd.DataFrame, out_dir: Optional[str] = None) -> None:
     """Hits per FEU channel (0–511), one subplot per active FEU."""
     feus = sorted(df['feu'].unique())
     n = len(feus)
@@ -197,9 +214,10 @@ def plot_hits_vs_channel(df: pd.DataFrame) -> None:
 
     fig.suptitle(f'Strip occupancy — {RUN} / {SUB_RUN}', fontsize=11)
     fig.tight_layout()
+    _save_fig(fig, out_dir, 'hits_vs_channel.png')
 
 
-def plot_hits_vs_position(df: pd.DataFrame) -> None:
+def plot_hits_vs_position(df: pd.DataFrame, out_dir: Optional[str] = None) -> None:
     """Hits vs physical strip position in X and Y [mm]."""
     df_x = df[df['x_position_mm'].notna()]['x_position_mm']
     df_y = df[df['y_position_mm'].notna()]['y_position_mm']
@@ -223,9 +241,10 @@ def plot_hits_vs_position(df: pd.DataFrame) -> None:
 
     fig.suptitle(f'{RUN} / {SUB_RUN}', fontsize=11)
     fig.tight_layout()
+    _save_fig(fig, out_dir, 'hits_vs_position.png')
 
 
-def plot_hits_vs_time(df: pd.DataFrame) -> None:
+def plot_hits_vs_time(df: pd.DataFrame, out_dir: Optional[str] = None) -> None:
     """Event rate vs time, derived from trigger_timestamp_ns."""
     if 'trigger_timestamp_ns' not in df.columns:
         print('trigger_timestamp_ns not in data — skipping time plot')
@@ -242,9 +261,10 @@ def plot_hits_vs_time(df: pd.DataFrame) -> None:
     ax.set_title(f'Event rate vs time — {RUN} / {SUB_RUN}')
     ax.grid(True, axis='y', alpha=0.3)
     fig.tight_layout()
+    _save_fig(fig, out_dir, 'hits_vs_time.png')
 
 
-def plot_hit_position_scatter(pos_df: pd.DataFrame) -> None:
+def plot_hit_position_scatter(pos_df: pd.DataFrame, out_dir: Optional[str] = None) -> None:
     """Semi-transparent scatter of reconstructed (earliest-arrival) hit positions."""
     if pos_df.empty:
         print('No reconstructed positions to scatter-plot.')
@@ -264,9 +284,10 @@ def plot_hit_position_scatter(pos_df: pd.DataFrame) -> None:
     )
     ax.grid(True, alpha=0.2)
     fig.tight_layout()
+    _save_fig(fig, out_dir, 'hit_position_scatter.png')
 
 
-def plot_amplitude_vs_time(df: pd.DataFrame, n_bins: int = 50) -> None:
+def plot_amplitude_vs_time(df: pd.DataFrame, n_bins: int = 50, out_dir: Optional[str] = None) -> None:
     """
     Mean hit amplitude per time bin over the run.
     Computes mean amplitude per event first, then bins those by trigger time.
@@ -297,9 +318,10 @@ def plot_amplitude_vs_time(df: pd.DataFrame, n_bins: int = 50) -> None:
     ax.set_title(f'Average amplitude vs time — {RUN} / {SUB_RUN}')
     ax.grid(True, alpha=0.3)
     fig.tight_layout()
+    _save_fig(fig, out_dir, 'amplitude_vs_time.png')
 
 
-def plot_amplitude_map_earliest(pos_df: pd.DataFrame) -> None:
+def plot_amplitude_map_earliest(pos_df: pd.DataFrame, out_dir: Optional[str] = None) -> None:
     """2D amplitude map using the earliest-arrival X+Y pair per event."""
     if pos_df.empty:
         return
@@ -308,10 +330,12 @@ def plot_amplitude_map_earliest(pos_df: pd.DataFrame) -> None:
         pos_df['y_mm'].values,
         pos_df['amplitude'].values,
         title=f'Mean amplitude — earliest hit pair\n{RUN} / {SUB_RUN}',
+        out_dir=out_dir,
+        fig_name='amplitude_map_earliest.png',
     )
 
 
-def plot_amplitude_map_time_paired(paired_df: pd.DataFrame) -> None:
+def plot_amplitude_map_time_paired(paired_df: pd.DataFrame, out_dir: Optional[str] = None) -> None:
     """2D amplitude map using all within-event X+Y pairs matched by nearest time."""
     if paired_df.empty:
         return
@@ -321,6 +345,8 @@ def plot_amplitude_map_time_paired(paired_df: pd.DataFrame) -> None:
         paired_df['amplitude'].values,
         title=f'Mean amplitude — time-paired hits\n{RUN} / {SUB_RUN}',
         n_bins=AMP_MAP_BINS,
+        out_dir=out_dir,
+        fig_name='amplitude_map_time_paired.png',
     )
 
 
@@ -329,23 +355,25 @@ def plot_amplitude_map_time_paired(paired_df: pd.DataFrame) -> None:
 # ---------------------------------------------------------------------------
 
 def main():
+    os.makedirs(OUT_DIR, exist_ok=True)
+
     df = load_hits(BASE_PATH, RUN, SUB_RUN, MX17_FEUS,
                    RUN_CONFIG_PATH, MAP_CSV_PATH)
 
-    plot_hits_vs_channel(df)
-    plot_hits_vs_position(df)
-    plot_hits_vs_time(df)
-    plot_amplitude_vs_time(df)
+    plot_hits_vs_channel(df, out_dir=OUT_DIR)
+    plot_hits_vs_position(df, out_dir=OUT_DIR)
+    plot_hits_vs_time(df, out_dir=OUT_DIR)
+    plot_amplitude_vs_time(df, out_dir=OUT_DIR)
 
     pos_df = get_hit_positions(df)
     print(f'Reconstructed {len(pos_df):,} events with both X and Y hits')
-    plot_hit_position_scatter(pos_df)
-    plot_amplitude_map_earliest(pos_df)
+    plot_hit_position_scatter(pos_df, out_dir=OUT_DIR)
+    plot_amplitude_map_earliest(pos_df, out_dir=OUT_DIR)
 
     print('Building time-paired hit positions ...')
     paired_df = get_hit_positions_time_paired(df)
     print(f'  {len(paired_df):,} time-paired (x, y) points from {paired_df["event_id"].nunique():,} events')
-    plot_amplitude_map_time_paired(paired_df)
+    plot_amplitude_map_time_paired(paired_df, out_dir=OUT_DIR)
 
     plt.show()
 

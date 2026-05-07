@@ -133,8 +133,9 @@ def main():
     alignment_file = f'{alignment_dir}alignment.json'
     realign = True   # set True to re-run alignment and overwrite the saved file
 
-    analysis_out_dir = f'{base_path}Analysis/'
+    analysis_out_dir = f'{base_path}Analysis/{run}/{sub_run}/'
     csv_out_dir = f'{analysis_out_dir}Plot_Data/'
+    os.makedirs(analysis_out_dir, exist_ok=True)
 
     # ---- Load detector configuration ----
     rc = RunConfig(run_config_path, map_csv_path)
@@ -190,6 +191,7 @@ def main():
             plot_final=True,
             mask_to_active_region=False,
             active_region_margin_mm=10.0,
+            out_dir=analysis_out_dir,
         )
         save_alignment(best_params, alignment_file)
 
@@ -198,9 +200,9 @@ def main():
                                x_ref_angles, angle_event_nums)
 
     # ---- Plots ----
-    plot_ref_angle_distributions(x_ref_angles, y_ref_angles)
+    plot_ref_angle_distributions(x_ref_angles, y_ref_angles, out_dir=analysis_out_dir)
     # Radial residual distribution (debug: check radius cut and M3 matching)
-    plot_radial_residuals(results, radius_cut_mm=10.0)
+    plot_radial_residuals(results, radius_cut_mm=10.0, out_dir=analysis_out_dir)
     v_drift_x, v_drift_y = plot_angle_correlation(
         results,
         residual_cut_mm=10.0,
@@ -210,6 +212,7 @@ def main():
         v_scan_min=30.0,
         v_scan_max=50.0,
         v_scan_steps=41,
+        out_dir=analysis_out_dir,
     )
     if not np.isnan(v_drift_x):
         print(f'Fitted drift velocity X: {v_drift_x:.1f} µm/ns')
@@ -235,18 +238,19 @@ def main():
             df_display = df[df['eventId'] == display_event_id].copy()
             display_result = next(r for r in results if r.event_id == display_event_id)
             plot_event_display_3d(df_display, display_result, best_params,
-                                  v_drift_um_per_ns=v_avg, event_id=display_event_id)
+                                  v_drift_um_per_ns=v_avg, event_id=display_event_id,
+                                  out_dir=analysis_out_dir)
             gif_out = f'{analysis_out_dir}event_{display_event_id}_3d.gif'
             plot_event_display_3d_rotating(df_display, display_result, best_params,
                                            v_drift_um_per_ns=v_avg,
                                            event_id=display_event_id,
                                            drift_window_mm=30.0,
                                            gif_path=gif_out)
-            _plot_event(df_display, display_result, display_event_id)
+            _plot_event(df_display, display_result, display_event_id, out_dir=analysis_out_dir)
 
     # plt.show()
-    plot_position_correlation(results)
-    fit_x, fit_y = plot_residuals(results)
+    plot_position_correlation(results, out_dir=analysis_out_dir)
+    fit_x, fit_y = plot_residuals(results, out_dir=analysis_out_dir)
     if fit_x:
         print(f'X resolution: {fit_x.resolution:.2f} ± {fit_x.resolution_err:.2f} mm')
     if fit_y:
@@ -266,7 +270,8 @@ def main():
                         radius_cut_mm=None,
                         title='Detector Efficiency Map (any hit)',
                         csv_out_path=f'{csv_out_dir}efficiency_no_cut.csv',
-                        active_region=active_region_ref)
+                        active_region=active_region_ref,
+                        out_dir=analysis_out_dir)
 
     # Efficiency map — with radius cut (hit must be within 5 mm of reference)
     plot_efficiency_map(results, rays, best_params,
@@ -274,27 +279,31 @@ def main():
                         radius_cut_mm=10.0,
                         title='Detector Efficiency Map',
                         csv_out_path=f'{csv_out_dir}efficiency_r10mm_cut.csv',
-                        active_region=active_region_ref)
+                        active_region=active_region_ref,
+                        out_dir=analysis_out_dir)
     plt.show()
 
     # Radial residual distribution (debug: check radius cut and M3 matching)
-    plot_radial_residuals(results, radius_cut_mm=10.0)
+    plot_radial_residuals(results, radius_cut_mm=10.0, out_dir=analysis_out_dir)
 
     # Spatial resolution map (coarse, non-overlapping bins)
     plot_resolution_map(results, rays, best_params,
                         bins=20, min_hits_per_bin=20,
-                        radius_cut_mm=None)
+                        radius_cut_mm=None,
+                        out_dir=analysis_out_dir)
 
     # Smooth sliding-window resolution map
     plot_resolution_map_sliding(results,
                                 grid_points=100,
                                 kernel_radius_mm=50.0,
-                                min_hits=50)
+                                min_hits=50,
+                                out_dir=analysis_out_dir)
 
     plot_resolution_map_sliding(results,
                                 grid_points=100,
                                 kernel_radius_mm=25.0,
-                                min_hits=50)
+                                min_hits=50,
+                                out_dir=analysis_out_dir)
 
     # ---- Export to DataFrame ----
     summary_df = pd.DataFrame([r.to_dict() for r in results])
@@ -813,6 +822,7 @@ def z_alignment_scan(
     z_values: Optional[np.ndarray] = None,
     plot: bool = False,
     label: str = '',
+    out_dir: Optional[str] = None,
 ) -> AlignmentParams:
     """
     Scan over candidate z positions and find the z_x and z_y that minimise
@@ -889,6 +899,8 @@ def z_alignment_scan(
         axes[1].set_title(f'Y: residual σ vs. z{title_sfx}')
         axes[1].legend()
         fig.tight_layout()
+        lbl_sfx = f'_{label.replace(" ", "_")}' if label else ''
+        _save_fig(fig, out_dir, f'z_alignment_scan{lbl_sfx}.png')
 
     return AlignmentParams(
         z_x=best_z_x, z_y=best_z_y,
@@ -909,6 +921,7 @@ def rotation_alignment_scan(
     theta_values: Optional[np.ndarray] = None,
     plot: bool = False,
     label: str = '',
+    out_dir: Optional[str] = None,
 ) -> AlignmentParams:
     """
     Scan over candidate rotation angles about the detector centre and find
@@ -1000,6 +1013,8 @@ def rotation_alignment_scan(
         ax.set_title(f'Rotation alignment scan{title_sfx}')
         ax.legend()
         fig.tight_layout()
+        lbl_sfx = f'_{label.replace(" ", "_")}' if label else ''
+        _save_fig(fig, out_dir, f'rotation_alignment_scan{lbl_sfx}.png')
 
     return AlignmentParams(
         z_x=params.z_x, z_y=params.z_y,
@@ -1132,6 +1147,7 @@ def run_alignment(
     plot_final: bool = True,
     mask_to_active_region: bool = False,
     active_region_margin_mm: float = 10.0,
+    out_dir: Optional[str] = None,
 ) -> AlignmentParams:
     """
     Iteratively refine z-position, in-plane rotation, and translation alignment.
@@ -1186,13 +1202,13 @@ def run_alignment(
         # Step 1: z scan
         params = z_alignment_scan(
             active_results, rays, params,
-            z_values=z_values, plot=do_plot, label=lbl,
+            z_values=z_values, plot=do_plot, label=lbl, out_dir=out_dir,
         )
 
         # Step 2: rotation scan
         params = rotation_alignment_scan(
             active_results, rays, params,
-            theta_values=theta_values, plot=do_plot, label=lbl,
+            theta_values=theta_values, plot=do_plot, label=lbl, out_dir=out_dir,
         )
 
         # Step 3: translation (median residual → offset correction)
@@ -1460,6 +1476,7 @@ def plot_efficiency_map(
     title: str = 'Detector Efficiency Map',
     csv_out_path: Optional[str] = None,
     active_region: Optional[Tuple[float, float, float, float]] = None,
+    out_dir: Optional[str] = None,
 ) -> None:
     """
     Plot a 2-D efficiency map and track density side-by-side.
@@ -1591,6 +1608,8 @@ def plot_efficiency_map(
         )
 
     fig.tight_layout()
+    fname = re.sub(r'[^\w]+', '_', title).strip('_').lower() + '.png'
+    _save_fig(fig, out_dir, fname)
 
 
 # ---------------------------------------------------------------------------
@@ -1605,6 +1624,7 @@ def plot_resolution_map(
     min_hits_per_bin: int = 20,
     radius_cut_mm: Optional[float] = None,
     title: str = '2D Spatial Resolution Map',
+    out_dir: Optional[str] = None,
 ) -> None:
     """
     Plot a 2-D map of the spatial resolution (Gaussian σ of the residual
@@ -1737,6 +1757,7 @@ def plot_resolution_map(
             ax.set_ylim(y_lo, y_hi)
 
     fig.tight_layout()
+    _save_fig(fig, out_dir, 'resolution_map.png')
 
 
 # ---------------------------------------------------------------------------
@@ -1749,6 +1770,7 @@ def plot_resolution_map_sliding(
     kernel_radius_mm: float = 5.0,
     min_hits: int = 50,
     title: str = '2D Sliding-Window Resolution Map',
+    out_dir: Optional[str] = None,
 ) -> None:
     """
     Compute a smooth 2-D spatial resolution map using a sliding radial kernel.
@@ -1886,6 +1908,7 @@ def plot_resolution_map_sliding(
             ax.set_ylim(y_lo, y_hi)
 
     fig.tight_layout()
+    _save_fig(fig, out_dir, f'resolution_map_sliding_r{kernel_radius_mm:.0f}mm.png')
 
 
 # ---------------------------------------------------------------------------
@@ -1896,6 +1919,7 @@ def plot_ref_angle_distributions(
     x_ref_angles: np.ndarray,
     y_ref_angles: np.ndarray,
     n_bins: int = 80,
+    out_dir: Optional[str] = None,
 ) -> None:
     """
     Plot histograms of the raw M3 reference track angles (in radians and in
@@ -1923,6 +1947,7 @@ def plot_ref_angle_distributions(
 
     fig.suptitle('M3 reference track angle distributions', fontsize=12)
     fig.tight_layout()
+    _save_fig(fig, out_dir, 'ref_angle_distributions.png')
 
 
 def _deming_fit_sigma_clip(
@@ -2094,6 +2119,7 @@ def plot_angle_correlation(
     v_scan_min: float = 30.0,
     v_scan_max: float = 50.0,
     v_scan_steps: int = 41,
+    out_dir: Optional[str] = None,
 ) -> Tuple[float, float]:
     """
     Plot angle_ref vs. angle_det (in degrees) and extract the drift velocity
@@ -2171,6 +2197,7 @@ def plot_angle_correlation(
         ax.set_title(f'{proj.upper()} angle correlation — all, n_strips ≥ {min_strips}')
         ax.legend(fontsize=8)
     fig1.tight_layout()
+    _save_fig(fig1, out_dir, 'angle_correlation_raw.png')
 
     v_drift_x = v_drift_y = np.nan
     if residual_cut_mm is None:
@@ -2226,6 +2253,7 @@ def plot_angle_correlation(
                      f'(r < {residual_cut_mm:.0f} mm, {int(qmask_x.sum() if proj=="X" else qmask_y.sum()):,} events)')
         ax.grid(True, alpha=0.3)
     fig2.tight_layout()
+    _save_fig(fig2, out_dir, 'v_drift_scan.png')
 
     # ---- Figure 3 + 4: corrected correlation and angular resolution ----
     v_avg = float(np.nanmean([v_drift_x, v_drift_y]))
@@ -2271,10 +2299,12 @@ def plot_angle_correlation(
     fig4.tight_layout()
 
     fig3.tight_layout()
+    _save_fig(fig3, out_dir, 'angle_correlation_corrected.png')
+    _save_fig(fig4, out_dir, 'angular_resolution.png')
     return v_drift_x, v_drift_y
 
 
-def plot_position_correlation(results: List[EventResult]) -> None:
+def plot_position_correlation(results: List[EventResult], out_dir: Optional[str] = None) -> None:
     det_x = np.array([r.det_x_for_residual for r in results])
     det_y = np.array([r.det_y_for_residual for r in results])
     ref_x = np.array([r.ref_x_mm for r in results])
@@ -2294,6 +2324,7 @@ def plot_position_correlation(results: List[EventResult]) -> None:
     _add_diagonal(axes[1])
 
     fig.tight_layout()
+    _save_fig(fig, out_dir, 'position_correlation.png')
 
 
 def fit_residual_peak(
@@ -2437,6 +2468,7 @@ def plot_residuals(
     window_nsigma: float = 2.5,
     overview_nsigma: float = 6.0,
     plot_full_range: bool = True,
+    out_dir: Optional[str] = None,
 ) -> Tuple[Optional[GaussFitResult], Optional[GaussFitResult]]:
     """
     Fit and plot the residual distributions for X and Y.
@@ -2552,6 +2584,7 @@ def plot_residuals(
 
     fig.suptitle('Residual distributions — robust Gaussian peak fit', fontsize=13)
     fig.tight_layout()
+    _save_fig(fig, out_dir, 'residuals.png')
     return fits.get('X'), fits.get('Y')
 
 
@@ -2563,6 +2596,7 @@ def plot_radial_residuals(
     results: List[EventResult],
     radius_cut_mm: float = 5.0,
     n_bins: int = 100,
+    out_dir: Optional[str] = None,
 ) -> None:
     """
     Plot the distribution of radial residuals and print matching statistics.
@@ -2624,11 +2658,19 @@ def plot_radial_residuals(
     axes[1].legend()
 
     fig.tight_layout()
+    _save_fig(fig, out_dir, 'radial_residuals.png')
 
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
+def _save_fig(fig, out_dir: Optional[str], name: str, dpi: int = 150) -> None:
+    if out_dir is None:
+        return
+    os.makedirs(out_dir, exist_ok=True)
+    fig.savefig(os.path.join(out_dir, name), dpi=dpi, bbox_inches='tight')
+
 
 def _map_strip_positions(df: pd.DataFrame, det) -> pd.DataFrame:
     """Add x_position_mm and y_position_mm columns by mapping (feu, channel)."""
@@ -2664,7 +2706,7 @@ def _add_diagonal(ax):
     ax.legend(fontsize=8)
 
 
-def _plot_event(df_event: pd.DataFrame, result: EventResult, event_id: int) -> None:
+def _plot_event(df_event: pd.DataFrame, result: EventResult, event_id: int, out_dir: Optional[str] = None) -> None:
     """Diagnostic plot: strip position vs. hit time for one event."""
     fig, axes = plt.subplots(1, 2, figsize=(12, 5), sharey=True)
 
@@ -2691,6 +2733,7 @@ def _plot_event(df_event: pd.DataFrame, result: EventResult, event_id: int) -> N
         ax.set_title(f'Event {event_id} – {label} strips')
 
     fig.tight_layout()
+    _save_fig(fig, out_dir, f'event_{event_id}_strips.png')
 
 
 def plot_event_display_3d(
@@ -2699,6 +2742,7 @@ def plot_event_display_3d(
     params: AlignmentParams,
     v_drift_um_per_ns: float,
     event_id: int,
+    out_dir: Optional[str] = None,
 ) -> None:
     """
     3-D event display for a single cosmic muon event.
@@ -2812,6 +2856,7 @@ def plot_event_display_3d(
     )
     ax.legend(loc='upper left', fontsize=9)
     fig.tight_layout()
+    _save_fig(fig, out_dir, f'event_{event_id}_3d_display.png')
 
 
 def plot_event_display_3d_rotating(

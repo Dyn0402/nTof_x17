@@ -57,13 +57,15 @@ from M3RefTracking import M3RefTracking, get_xy_angles
 # BASE_PATH = '/media/dylan/data/x17/cosmic_bench/det_1/'
 # RUN       = 'mx17_det0_He_HV_Scan_4-1-26'
 BASE_PATH = '/media/dylan/data/x17/cosmic_bench/det_3/'
-RUN       = 'mx17_det3_HV_Scan_5-5-26'
+# RUN       = 'mx17_det3_HV_Scan_5-5-26'
+RUN       = 'mx17_det3_ArCF4_HV_Scan_5-6-26'
 MX17_FEUS = [3, 4]   # active FEUs for this run
 
 RUN_CONFIG_PATH = f'{BASE_PATH}{RUN}/run_config.json'
 MAP_CSV_PATH    = f'{_ROOT}/mx17_m4_map.csv'
 
 CSV_OUT_DIR = f'{BASE_PATH}Analysis/HV_Scan/'
+FIG_OUT_DIR = f'{BASE_PATH}Analysis/HV_Scan/{RUN}/'
 
 # Alignment file produced by cosmic_micro_tpc_analysis.py.
 # If this file exists it is used to seed z, theta, and centre for every subrun
@@ -88,6 +90,13 @@ RADIUS_CUT_MM      = 10.0  # radial residual cut for hit-matching
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
+def _save_fig(fig, out_dir: Optional[str], name: str, dpi: int = 150) -> None:
+    if out_dir is None:
+        return
+    os.makedirs(out_dir, exist_ok=True)
+    fig.savefig(os.path.join(out_dir, name), dpi=dpi, bbox_inches='tight')
+
 
 def extract_hv(subrun_name: str) -> Optional[int]:
     """Extract resistor HV value in volts from a name like 'resist_450V_drift_800V'."""
@@ -318,7 +327,7 @@ def _compute_efficiency(
 # Plotting
 # ---------------------------------------------------------------------------
 
-def plot_efficiency_map(result: dict, hv: int) -> None:
+def plot_efficiency_map(result: dict, hv: int, out_dir: Optional[str] = None) -> None:
     """Plot 2-D efficiency map and reference track density for one subrun."""
     total   = result['total_map']
     hits    = result['hits_map']
@@ -360,12 +369,14 @@ def plot_efficiency_map(result: dict, hv: int) -> None:
 
     fig.suptitle(result['subrun'], fontsize=11)
     fig.tight_layout()
+    _save_fig(fig, out_dir, f'efficiency_map_{hv}V.png')
 
 
 def plot_efficiency_vs_hv(
     hv_values: List[int],
     efficiencies: List[float],
     eff_errors: List[float],
+    out_dir: Optional[str] = None,
 ) -> None:
     """Plot surface-averaged efficiency vs. HV with error bars."""
     fig, ax = plt.subplots(figsize=(8, 5))
@@ -380,6 +391,7 @@ def plot_efficiency_vs_hv(
     ax.set_ylim(0, 1.05)
     ax.grid(True, alpha=0.3)
     fig.tight_layout()
+    _save_fig(fig, out_dir, 'efficiency_vs_hv.png')
 
 
 # ---------------------------------------------------------------------------
@@ -508,8 +520,10 @@ def main():
               f'({result["n_hits"]}/{result["n_tracks"]} hits/tracks, '
               f'{result["n_bins"]} active bins)')
 
-        # Radial residual diagnostic
-        plot_radial_residuals(result['results'], radius_cut_mm=RADIUS_CUT_MM)
+        # Radial residual diagnostic (saved to per-subrun subdirectory)
+        subrun_out = os.path.join(FIG_OUT_DIR, subrun)
+        plot_radial_residuals(result['results'], radius_cut_mm=RADIUS_CUT_MM,
+                              out_dir=subrun_out)
 
         hv_values.append(hv)
         efficiencies.append(eff)
@@ -517,7 +531,7 @@ def main():
         n_tracks_list.append(result['n_tracks'])
         n_hits_list.append(result['n_hits'])
 
-        plot_efficiency_map(result, hv)
+        plot_efficiency_map(result, hv, out_dir=FIG_OUT_DIR)
         save_efficiency_map_csv(result, hv, CSV_OUT_DIR)
 
     if not hv_values:
@@ -531,7 +545,7 @@ def main():
                                      n_tracks_list, n_hits_list):
         print(f'{hv:>8}  {eff:>12.4f}  {err:>8.4f}  {nt:>8}  {nh:>8}')
 
-    plot_efficiency_vs_hv(hv_values, efficiencies, eff_errors)
+    plot_efficiency_vs_hv(hv_values, efficiencies, eff_errors, out_dir=FIG_OUT_DIR)
     save_summary_csv(hv_values, efficiencies, eff_errors,
                      n_tracks_list, n_hits_list, CSV_OUT_DIR)
 
