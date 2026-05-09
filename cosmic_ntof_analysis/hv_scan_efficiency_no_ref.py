@@ -9,8 +9,11 @@ For each subrun the script:
   1. Loads hits from combined_hits_root for the FEUs belonging to each detector.
   2. Counts hits per event above AMP_THRESHOLD, per detector.
   3. Labels an event as a "track" if hit count falls in (MIN_HITS_TRACK, MAX_HITS_TRACK).
-  4. Computes efficiency = n_track_events / n_events_with_hits, per detector.
-  5. Plots efficiency vs. resist HV, one curve per detector.
+  4. Computes efficiency = n_track_events / n_total_events, per detector.
+  5. Plots efficiency and mean amplitude vs. resist HV, one curve per detector.
+
+Multiple runs can be combined by listing them in RUNS — their subruns are pooled
+and treated as a single scan (no distinction between runs in the output).
 
 A diagnostic hits-per-event distribution and strip occupancy plot are produced
 for one subrun (DIAGNOSTIC_SUBRUN) to help tune MIN_HITS_TRACK / MAX_HITS_TRACK.
@@ -39,24 +42,29 @@ from common.Mx17StripMap import Detector, Mx17StripMap
 # Configuration
 # ---------------------------------------------------------------------------
 BASE_PATH = '/mnt/data/x17/beam_may/runs/'
-RUN       = 'run_3'
+
+# List of runs to combine into a single scan.  Set to a single entry for one run.
+RUNS = ['run_3', 'run_4']
+
+# Label used for output directory and plot titles.
+RUN_LABEL = RUNS[0] if len(RUNS) == 1 else f'{RUNS[0]}+{RUNS[-1]}'
 
 # Detector names to analyse — FEU IDs are read from run_config.json automatically.
 MX17_DETECTORS = ['mx17_3', 'mx17_4']
 
 MAP_CSV_PATH = f'{_ROOT}/mx17_m4_map.csv'
 
-FIG_OUT_DIR = f'{BASE_PATH}Analysis/HV_Scan_NoRef/{RUN}/'
+FIG_OUT_DIR = f'{BASE_PATH}Analysis/HV_Scan_NoRef/{RUN_LABEL}/'
 CSV_OUT_DIR = f'{BASE_PATH}Analysis/HV_Scan_NoRef/'
 
-# Subrun used for the diagnostic plots.
-# Set to None to use the first subrun in config order.
-DIAGNOSTIC_SUBRUN: Optional[str] = None
+# Subrun used for the diagnostic plots, as a (run, subrun_name) tuple.
+# Set to None to use the first subrun found.
+DIAGNOSTIC_SUBRUN: Optional[Tuple[str, str]] = None
 
 # Hit selection
-AMP_THRESHOLD  = 200     # ADC counts; hits below this value are ignored
+AMP_THRESHOLD  = 200   # ADC counts; hits below this value are ignored
 MIN_HITS_TRACK = 1     # exclusive lower bound — event must have MORE than this many hits
-MAX_HITS_TRACK = 200    # exclusive upper bound — event must have FEWER than this many hits
+MAX_HITS_TRACK = 200   # exclusive upper bound — event must have FEWER than this many hits
 
 
 # ---------------------------------------------------------------------------
@@ -71,7 +79,7 @@ def load_config(base_path: str, run: str) -> dict:
 def build_detector_feu_map(cfg: dict) -> Dict[str, List[int]]:
     """
     Use Detector from Mx17StripMap to look up the FEU IDs for each name in
-    MX17_DETECTORS. Returns {det_name: sorted list of FEU IDs}.
+    MX17_DETECTORS.  Returns {det_name: sorted list of FEU IDs}.
     Detectors not found in the config are silently skipped.
     """
     strip_map = Mx17StripMap(MAP_CSV_PATH)
@@ -82,20 +90,19 @@ def build_detector_feu_map(cfg: dict) -> Dict[str, List[int]]:
             continue
         det = Detector(name=name, det_cfg=det_cfg, strip_map=strip_map)
         result[name] = sorted(det.feu_map.keys())
-    # preserve MX17_DETECTORS order, skip any not found
     return {name: result[name] for name in MX17_DETECTORS if name in result}
 
 
-def build_hv_maps(cfg: dict) -> Dict[str, Dict[str, int]]:
+def build_hv_maps(cfgs: Dict[str, dict]) -> Dict[str, Dict[Tuple[str, str], int]]:
     """
-    For each detector in MX17_DETECTORS, build a {subrun_name: resist_hv} map
-    by reading hv_channels.resist from the detector config and looking it up in
-    each subrun's hvs dict.
-    Returns {det_name: {subrun_name: hv}}.
+    Build {det_name: {(run, subrun_name): resist_hv}} by reading hv_channels.resist
+    from each detector config and looking it up in every subrun's hvs dict, across
+    all runs.  cfgs is {run_name: cfg_dict}.
     """
-    # Collect resist (card, channel) per detector
+    # Use first run's config to find resist channels (assumed same hardware across runs)
+    first_cfg = next(iter(cfgs.values()))
     resist_channels: Dict[str, Tuple[int, int]] = {}
-    for det_cfg in cfg.get('detectors', []):
+    for det_cfg in first_cfg.get('detectors', []):
         name = det_cfg['name']
         if name not in MX17_DETECTORS:
             continue
@@ -103,44 +110,51 @@ def build_hv_maps(cfg: dict) -> Dict[str, Dict[str, int]]:
         if resist is not None:
             resist_channels[name] = (int(resist[0]), int(resist[1]))
 
-    hv_maps: Dict[str, Dict[str, int]] = {name: {} for name in MX17_DETECTORS}
-    for sub in cfg.get('sub_runs', []):
-        subrun_name = sub['sub_run_name']
-        hvs = sub.get('hvs', {})
-        for det_name, (card, ch) in resist_channels.items():
-            hv = hvs.get(str(card), {}).get(str(ch))
-            if hv is not None:
-                hv_maps[det_name][subrun_name] = int(hv)
+    hv_maps: Dict[str, Dict[Tuple[str, str], int]] = {n: {} for n in MX17_DETECTORS}
+    for run, cfg in cfgs.items():
+        for sub in cfg.get('sub_runs', []):
+            subrun_name = sub['sub_run_name']
+            hvs = sub.get('hvs', {})
+            for det_name, (card, ch) in resist_channels.items():
+                hv = hvs.get(str(card), {}).get(str(ch))
+                if hv is not None:
+                    hv_maps[det_name][(run, subrun_name)] = int(hv)
     return hv_maps
 
 
-def find_subruns(base_path: str, run: str, cfg: dict) -> List[str]:
+def find_subruns(base_path: str, cfgs: Dict[str, dict]) -> List[Tuple[str, str]]:
     """
-    Return subrun names that exist on disk, preserving config order.
+    Return (run, subrun_name) pairs that exist on disk, in config order across
+    all runs.
     """
-    run_dir = os.path.join(base_path, run)
-    on_disk = {name for name in os.listdir(run_dir)
-               if os.path.isdir(os.path.join(run_dir, name))}
-    return [sub['sub_run_name'] for sub in cfg.get('sub_runs', [])
-            if sub['sub_run_name'] in on_disk]
+    result = []
+    for run, cfg in cfgs.items():
+        run_dir = os.path.join(base_path, run)
+        on_disk = {name for name in os.listdir(run_dir)
+                   if os.path.isdir(os.path.join(run_dir, name))}
+        for sub in cfg.get('sub_runs', []):
+            name = sub['sub_run_name']
+            if name in on_disk:
+                result.append((run, name))
+    return result
 
 
 # ---------------------------------------------------------------------------
 # Data loading
 # ---------------------------------------------------------------------------
 
-def load_hits(subrun: str, feu_ids: List[int]) -> Optional[pd.DataFrame]:
+def load_hits(run: str, subrun: str, feu_ids: List[int]) -> Optional[pd.DataFrame]:
     """Load hits for one subrun and filter to the given FEU IDs."""
-    hits_dir = f'{BASE_PATH}{RUN}/{subrun}/combined_hits_root/'
+    hits_dir = os.path.join(BASE_PATH, run, subrun, 'combined_hits_root')
     if not os.path.isdir(hits_dir):
-        print(f'  [SKIP] {subrun}: no combined_hits_root directory')
+        print(f'  [SKIP] {run}/{subrun}: no combined_hits_root directory')
         return None
     hit_files = sorted(f for f in os.listdir(hits_dir)
                        if f.endswith('.root') and '_datrun_' in f)
     if not hit_files:
-        print(f'  [SKIP] {subrun}: no hit files found')
+        print(f'  [SKIP] {run}/{subrun}: no hit files found')
         return None
-    file_sources = [f'{hits_dir}{hf}:hits' for hf in hit_files]
+    file_sources = [f'{hits_dir}/{hf}:hits' for hf in hit_files]
     df = uproot.concatenate(file_sources, library='pd')
     df = df[df['feu'].isin(feu_ids)].copy()
     print(f'  Loaded {len(df):,} hits over {df["eventId"].nunique():,} events '
@@ -148,13 +162,13 @@ def load_hits(subrun: str, feu_ids: List[int]) -> Optional[pd.DataFrame]:
     return df
 
 
-def get_total_events(subrun: str) -> Optional[int]:
+def get_total_events(run: str, subrun: str) -> Optional[int]:
     """
-    Return the total number of triggered events in a subrun by finding the
-    maximum eventId across all decoded ROOT files (tree 'nt').
+    Return the total number of triggered events by finding the maximum eventId
+    across all decoded ROOT files (tree 'nt') for this subrun.
     Returns None if no decoded files are found.
     """
-    decoded_dir = f'{BASE_PATH}{RUN}/{subrun}/decoded_root/'
+    decoded_dir = os.path.join(BASE_PATH, run, subrun, 'decoded_root')
     if not os.path.isdir(decoded_dir):
         return None
     root_files = sorted(f for f in os.listdir(decoded_dir) if f.endswith('.root'))
@@ -179,8 +193,7 @@ def get_total_events(subrun: str) -> Optional[int]:
 def hits_per_event(df: pd.DataFrame) -> pd.Series:
     """
     Count hits per event above AMP_THRESHOLD.
-    Returns a Series indexed by eventId. Events with zero qualifying hits are
-    absent (they don't appear in the ROOT data after FEU filtering).
+    Returns a Series indexed by eventId.
     """
     if AMP_THRESHOLD > 0:
         df = df[df['amplitude'] >= AMP_THRESHOLD]
@@ -198,6 +211,7 @@ def is_track(counts: pd.Series) -> pd.Series:
 
 def plot_hits_per_event_dist(
     counts_per_det: Dict[str, pd.Series],
+    run: str,
     subrun: str,
     hv_per_det: Dict[str, Optional[int]],
     out_dir: Optional[str] = None,
@@ -230,13 +244,14 @@ def plot_hits_per_event_dist(
         ax.legend()
         ax.grid(True, axis='y', alpha=0.3)
 
-    fig.suptitle(f'Hits per event distribution  —  {subrun}', fontsize=11)
+    fig.suptitle(f'Hits per event distribution  —  {run}/{subrun}', fontsize=11)
     fig.tight_layout()
-    _save_fig(fig, out_dir, f'hits_per_event_{subrun}.png')
+    _save_fig(fig, out_dir, f'hits_per_event_{run}_{subrun}.png')
 
 
 def plot_strip_occupancy(
     df_per_det: Dict[str, pd.DataFrame],
+    run: str,
     subrun: str,
     out_dir: Optional[str] = None,
 ) -> None:
@@ -248,12 +263,8 @@ def plot_strip_occupancy(
     fig, axes = plt.subplots(1, n, figsize=(6 * n, 4), squeeze=False)
     axes = axes[0]
 
-    # label each FEU with its detector name
-    feu_to_det = {}
-    for det_name, df in df_per_det.items():
-        for feu in df['feu'].unique():
-            feu_to_det[feu] = det_name
-
+    feu_to_det = {feu: det_name for det_name, df in df_per_det.items()
+                  for feu in df['feu'].unique()}
     df_all = pd.concat(df_per_det.values(), ignore_index=True)
     for ax, feu in zip(axes, all_feus):
         channels = df_all.loc[df_all['feu'] == feu, 'channel'].values
@@ -265,13 +276,14 @@ def plot_strip_occupancy(
         ax.set_title(f'FEU {feu}  ({feu_to_det.get(feu, "?")})')
         ax.grid(True, axis='y', alpha=0.3)
 
-    fig.suptitle(f'Strip occupancy  —  {subrun}', fontsize=11)
+    fig.suptitle(f'Strip occupancy  —  {run}/{subrun}', fontsize=11)
     fig.tight_layout()
-    _save_fig(fig, out_dir, f'strip_occupancy_{subrun}.png')
+    _save_fig(fig, out_dir, f'strip_occupancy_{run}_{subrun}.png')
 
 
 def plot_efficiency_vs_hv(
     det_results: Dict[str, dict],
+    gas: str = '',
     out_dir: Optional[str] = None,
 ) -> None:
     """Track-finding efficiency vs. resist HV, one curve per detector."""
@@ -293,8 +305,9 @@ def plot_efficiency_vs_hv(
 
     ax.set_xlabel('Resist HV [V]')
     ax.set_ylabel('Track efficiency  (tracks / triggered events)')
+    gas_str = f'  —  {gas}' if gas else ''
     ax.set_title(
-        f'Track efficiency vs. HV  —  {RUN}\n'
+        f'Track efficiency vs. HV  —  {RUN_LABEL}{gas_str}\n'
         f'hit window: ({MIN_HITS_TRACK}, {MAX_HITS_TRACK}),  amp ≥ {AMP_THRESHOLD}'
     )
     all_effs = [e for res in det_results.values() for e in res['efficiencies']]
@@ -308,6 +321,7 @@ def plot_efficiency_vs_hv(
 
 def plot_amplitude_vs_hv(
     det_results: Dict[str, dict],
+    gas: str = '',
     out_dir: Optional[str] = None,
 ) -> None:
     """Mean hit amplitude vs. resist HV, one curve per detector."""
@@ -325,8 +339,9 @@ def plot_amplitude_vs_hv(
 
     ax.set_xlabel('Resist HV [V]')
     ax.set_ylabel('Mean hit amplitude [ADC]')
+    gas_str = f'  —  {gas}' if gas else ''
     ax.set_title(
-        f'Mean hit amplitude vs. HV  —  {RUN}\n'
+        f'Mean hit amplitude vs. HV  —  {RUN_LABEL}{gas_str}\n'
         f'amp ≥ {AMP_THRESHOLD}'
     )
     ax.legend()
@@ -350,7 +365,7 @@ def save_summary_csv(det_results: Dict[str, dict], out_dir: str) -> None:
             'n_events':   res['n_events'],
             'mean_amp':   res['mean_amp'],
         })
-        path = os.path.join(out_dir, f'efficiency_vs_hv_{det_name}.csv')
+        path = os.path.join(out_dir, f'efficiency_vs_hv_{RUN_LABEL}_{det_name}.csv')
         df.to_csv(path, index=False)
         print(f'  Saved → {path}')
 
@@ -371,10 +386,15 @@ def _save_fig(fig, out_dir: Optional[str], name: str, dpi: int = 150) -> None:
 # ---------------------------------------------------------------------------
 
 def main():
-    cfg      = load_config(BASE_PATH, RUN)
-    det_feus = build_detector_feu_map(cfg)
-    hv_maps  = build_hv_maps(cfg)
-    subruns  = find_subruns(BASE_PATH, RUN, cfg)
+    # Load all configs
+    cfgs = {run: load_config(BASE_PATH, run) for run in RUNS}
+
+    # Use first run's config for gas label and detector FEU mapping
+    first_cfg = next(iter(cfgs.values()))
+    gas      = first_cfg.get('gas', '')
+    det_feus = build_detector_feu_map(first_cfg)
+    hv_maps  = build_hv_maps(cfgs)
+    subruns  = find_subruns(BASE_PATH, cfgs)
 
     if not det_feus:
         print(f'No detectors found in config for {MX17_DETECTORS}')
@@ -384,30 +404,31 @@ def main():
         print(f'  {det_name}: FEUs {feus}')
 
     if not subruns:
-        print(f'No subruns found on disk in {BASE_PATH}{RUN}/')
+        print(f'No subruns found on disk in {BASE_PATH} for runs {RUNS}')
         return
-    print(f'\nFound {len(subruns)} subruns')
+    print(f'\nFound {len(subruns)} subruns across {len(RUNS)} run(s)')
 
     all_feus = sorted({feu for feus in det_feus.values() for feu in feus})
 
     # ---- Diagnostic ----
-    diag_name = DIAGNOSTIC_SUBRUN if DIAGNOSTIC_SUBRUN in subruns else subruns[0]
+    diag = DIAGNOSTIC_SUBRUN if DIAGNOSTIC_SUBRUN in subruns else subruns[0]
+    diag_run, diag_subrun = diag
     print(f'\n{"="*60}')
-    print(f'Diagnostic subrun: {diag_name}')
+    print(f'Diagnostic: {diag_run}/{diag_subrun}')
     print(f'{"="*60}')
-    diag_df = load_hits(diag_name, all_feus)
+    diag_df = load_hits(diag_run, diag_subrun, all_feus)
     if diag_df is not None:
         counts_per_det = {
             det_name: hits_per_event(diag_df[diag_df['feu'].isin(feus)])
             for det_name, feus in det_feus.items()
         }
-        hv_per_det = {det_name: hv_maps[det_name].get(diag_name)
+        hv_per_det = {det_name: hv_maps[det_name].get(diag)
                       for det_name in det_feus}
-        plot_hits_per_event_dist(counts_per_det, diag_name, hv_per_det, out_dir=FIG_OUT_DIR)
-
+        plot_hits_per_event_dist(counts_per_det, diag_run, diag_subrun,
+                                 hv_per_det, out_dir=FIG_OUT_DIR)
         df_per_det = {det_name: diag_df[diag_df['feu'].isin(feus)]
                       for det_name, feus in det_feus.items()}
-        plot_strip_occupancy(df_per_det, diag_name, out_dir=FIG_OUT_DIR)
+        plot_strip_occupancy(df_per_det, diag_run, diag_subrun, out_dir=FIG_OUT_DIR)
 
     # ---- Full HV scan ----
     det_results = {
@@ -416,24 +437,24 @@ def main():
         for name in det_feus
     }
 
-    for subrun in subruns:
+    for run, subrun in subruns:
         print(f'\n{"="*60}')
-        print(f'Subrun: {subrun}')
+        print(f'Subrun: {run}/{subrun}')
         print(f'{"="*60}')
 
-        df_all = load_hits(subrun, all_feus)
+        df_all = load_hits(run, subrun, all_feus)
         if df_all is None:
             continue
 
-        n_total = get_total_events(subrun)
+        n_total = get_total_events(run, subrun)
         if n_total is None:
             print('  [WARN] No decoded ROOT files found; falling back to hit-event count')
 
         for det_name, feus in det_feus.items():
-            hv = hv_maps[det_name].get(subrun)
+            hv = hv_maps[det_name].get((run, subrun))
             df  = df_all[df_all['feu'].isin(feus)]
             counts   = hits_per_event(df)
-            df_amp = df[df['amplitude'] >= AMP_THRESHOLD] if AMP_THRESHOLD > 0 else df
+            df_amp   = df[df['amplitude'] >= AMP_THRESHOLD] if AMP_THRESHOLD > 0 else df
             mean_amp = float(df_amp['amplitude'].mean()) if not df_amp.empty else np.nan
             n_events = n_total if n_total is not None else len(counts)
             n_tracks = int(is_track(counts).sum())
@@ -461,8 +482,8 @@ def main():
                                         res['n_events']):
             print(f'  {str(hv):>8}  {eff:>12.4f}  {err:>8.4f}  {nt:>8}  {ne:>8}')
 
-    plot_efficiency_vs_hv(det_results, out_dir=FIG_OUT_DIR)
-    plot_amplitude_vs_hv(det_results, out_dir=FIG_OUT_DIR)
+    plot_efficiency_vs_hv(det_results, gas=gas, out_dir=FIG_OUT_DIR)
+    plot_amplitude_vs_hv(det_results, gas=gas, out_dir=FIG_OUT_DIR)
     print('\nSaving CSVs:')
     save_summary_csv(det_results, CSV_OUT_DIR)
 
