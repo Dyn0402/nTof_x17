@@ -65,9 +65,14 @@ def _save_fig(fig, out_dir: Optional[str], name: str, dpi: int = 150) -> None:
 
 
 def _resist_hv_channel(cfg: dict) -> Optional[Tuple[int, int]]:
-    """Return (card, channel) for the resist HV of mx17_1, or None if not found."""
+    """Return (card, channel) for the resist HV of the active mx17 detector."""
+    included = set(cfg.get('included_detectors', []))
     for det in cfg.get('detectors', []):
-        if det['name'] == 'mx17_1':
+        if included and det['name'] not in included:
+            continue
+        if det.get('det_type') != 'mx17':
+            continue
+        if 'resist' in det.get('hv_channels', {}):
             card, ch = det['hv_channels']['resist']
             return int(card), int(ch)
     return None
