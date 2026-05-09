@@ -281,27 +281,57 @@ def plot_strip_occupancy(
     _save_fig(fig, out_dir, f'strip_occupancy_{run}_{subrun}.png')
 
 
+_MARKERS = ['o', 's', '^', 'D', 'v', 'p', 'h', '*']
+
+
+def _run_marker_map() -> Dict[str, str]:
+    return {run: _MARKERS[i % len(_MARKERS)] for i, run in enumerate(RUNS)}
+
+
+def _build_legend(ax, det_results: Dict[str, dict], colors: list) -> None:
+    """Two-section legend: detector colours on the left, run markers on the right."""
+    from matplotlib.lines import Line2D
+    run_marker = _run_marker_map()
+    active_runs = sorted({r for res in det_results.values() for r in res['runs']},
+                         key=RUNS.index)
+
+    det_handles = [Line2D([0], [0], color=c, lw=2, label=name)
+                   for (name, _), c in zip(det_results.items(), colors)
+                   if det_results[name]['hv_values']]
+    run_handles = [Line2D([0], [0], marker=run_marker[r], color='k',
+                          lw=0, ms=8, label=r)
+                   for r in active_runs]
+    ax.legend(handles=det_handles + run_handles)
+
+
 def plot_efficiency_vs_hv(
     det_results: Dict[str, dict],
     gas: str = '',
     out_dir: Optional[str] = None,
 ) -> None:
-    """Track-finding efficiency vs. resist HV, one curve per detector."""
-    colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
-    fig, ax = plt.subplots(figsize=(9, 5))
+    """Track-finding efficiency vs. resist HV. Color = detector, marker = run."""
+    colors     = plt.rcParams['axes.prop_cycle'].by_key()['color']
+    run_marker = _run_marker_map()
+    fig, ax    = plt.subplots(figsize=(9, 5))
 
     for (det_name, res), color in zip(det_results.items(), colors):
-        hv_vals = res['hv_values']
-        effs    = res['efficiencies']
-        errs    = res['eff_errors']
-        if not hv_vals:
+        hv_arr  = np.array(res['hv_values'])
+        eff_arr = np.array(res['efficiencies'])
+        err_arr = np.array(res['eff_errors'])
+        run_arr = np.array(res['runs'])
+        if len(hv_arr) == 0:
             continue
-        order = np.argsort(hv_vals)
-        ax.errorbar(
-            np.array(hv_vals)[order], np.array(effs)[order],
-            yerr=np.array(errs)[order],
-            fmt='o-', color=color, capsize=5, lw=2, ms=8, label=det_name,
-        )
+        # connecting line across all points
+        order = np.argsort(hv_arr)
+        ax.plot(hv_arr[order], eff_arr[order], '-', color=color, lw=1.5, zorder=1)
+        # markers per run
+        for run in RUNS:
+            mask = run_arr == run
+            if not mask.any():
+                continue
+            ax.errorbar(hv_arr[mask], eff_arr[mask], yerr=err_arr[mask],
+                        fmt=run_marker[run], color=color,
+                        capsize=4, ms=8, elinewidth=1.5, lw=0, zorder=2)
 
     ax.set_xlabel('Resist HV [V]')
     ax.set_ylabel('Track efficiency  (tracks / triggered events)')
@@ -313,7 +343,7 @@ def plot_efficiency_vs_hv(
     all_effs = [e for res in det_results.values() for e in res['efficiencies']]
     ymax = max(all_effs) * 1.25 if all_effs and max(all_effs) > 0 else 1.05
     ax.set_ylim(0, min(1.05, ymax))
-    ax.legend()
+    _build_legend(ax, det_results, colors)
     ax.grid(True, alpha=0.3)
     fig.tight_layout()
     _save_fig(fig, out_dir, 'efficiency_vs_hv.png')
@@ -324,18 +354,25 @@ def plot_amplitude_vs_hv(
     gas: str = '',
     out_dir: Optional[str] = None,
 ) -> None:
-    """Mean hit amplitude vs. resist HV, one curve per detector."""
-    colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
-    fig, ax = plt.subplots(figsize=(9, 5))
+    """Mean hit amplitude vs. resist HV. Color = detector, marker = run."""
+    colors     = plt.rcParams['axes.prop_cycle'].by_key()['color']
+    run_marker = _run_marker_map()
+    fig, ax    = plt.subplots(figsize=(9, 5))
 
     for (det_name, res), color in zip(det_results.items(), colors):
-        hv_vals  = res['hv_values']
-        amp_vals = res['mean_amp']
-        if not hv_vals:
+        hv_arr  = np.array(res['hv_values'])
+        amp_arr = np.array(res['mean_amp'])
+        run_arr = np.array(res['runs'])
+        if len(hv_arr) == 0:
             continue
-        order = np.argsort(hv_vals)
-        ax.plot(np.array(hv_vals)[order], np.array(amp_vals)[order],
-                'o-', color=color, lw=2, ms=8, label=det_name)
+        order = np.argsort(hv_arr)
+        ax.plot(hv_arr[order], amp_arr[order], '-', color=color, lw=1.5, zorder=1)
+        for run in RUNS:
+            mask = run_arr == run
+            if not mask.any():
+                continue
+            ax.plot(hv_arr[mask], amp_arr[mask],
+                    run_marker[run], color=color, ms=8, zorder=2)
 
     ax.set_xlabel('Resist HV [V]')
     ax.set_ylabel('Mean hit amplitude [ADC]')
@@ -344,7 +381,7 @@ def plot_amplitude_vs_hv(
         f'Mean hit amplitude vs. HV  —  {RUN_LABEL}{gas_str}\n'
         f'amp ≥ {AMP_THRESHOLD}'
     )
-    ax.legend()
+    _build_legend(ax, det_results, colors)
     ax.grid(True, alpha=0.3)
     fig.tight_layout()
     _save_fig(fig, out_dir, 'amplitude_vs_hv.png')
@@ -433,7 +470,7 @@ def main():
     # ---- Full HV scan ----
     det_results = {
         name: {'hv_values': [], 'efficiencies': [], 'eff_errors': [],
-               'n_tracks': [], 'n_events': [], 'mean_amp': []}
+               'n_tracks': [], 'n_events': [], 'mean_amp': [], 'runs': []}
         for name in det_feus
     }
 
@@ -469,6 +506,7 @@ def main():
             det_results[det_name]['n_tracks'].append(n_tracks)
             det_results[det_name]['n_events'].append(n_events)
             det_results[det_name]['mean_amp'].append(mean_amp)
+            det_results[det_name]['runs'].append(run)
 
     # ---- Summary ----
     for det_name, res in det_results.items():
