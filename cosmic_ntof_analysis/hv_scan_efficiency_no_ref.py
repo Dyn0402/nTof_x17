@@ -6,11 +6,11 @@ hv_scan_efficiency_no_ref.py
 HV-scan efficiency analysis without M3 reference tracks.
 
 For each subrun the script:
-  1. Loads MX17 detector hits from combined_hits_root.
-  2. Counts hits per event above AMP_THRESHOLD.
+  1. Loads hits from combined_hits_root for the FEUs belonging to each detector.
+  2. Counts hits per event above AMP_THRESHOLD, per detector.
   3. Labels an event as a "track" if hit count falls in (MIN_HITS_TRACK, MAX_HITS_TRACK).
-  4. Computes efficiency = n_track_events / n_events_with_hits.
-  5. Plots efficiency vs. resist HV.
+  4. Computes efficiency = n_track_events / n_events_with_hits, per detector.
+  5. Plots efficiency vs. resist HV, one curve per detector.
 
 A diagnostic hits-per-event distribution and strip occupancy plot are produced
 for one subrun (DIAGNOSTIC_SUBRUN) to help tune MIN_HITS_TRACK / MAX_HITS_TRACK.
@@ -33,91 +33,104 @@ _HERE = os.path.dirname(os.path.abspath(__file__))
 _ROOT = os.path.dirname(_HERE)
 sys.path.insert(0, _ROOT)
 
+from common.Mx17StripMap import Detector, Mx17StripMap
+
 # ---------------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------------
 BASE_PATH = '/mnt/data/x17/beam_may/runs/'
-RUN       = 'run_1'
-MX17_FEUS = [3]
+RUN       = 'run_3'
+
+# Detector names to analyse — FEU IDs are read from run_config.json automatically.
+MX17_DETECTORS = ['mx17_3', 'mx17_4']
+
+MAP_CSV_PATH = f'{_ROOT}/mx17_m4_map.csv'
 
 FIG_OUT_DIR = f'{BASE_PATH}Analysis/HV_Scan_NoRef/{RUN}/'
 CSV_OUT_DIR = f'{BASE_PATH}Analysis/HV_Scan_NoRef/'
 
 # Subrun used for the diagnostic plots.
-# Set to None to use the highest-HV subrun (first in sorted order).
+# Set to None to use the first subrun in config order.
 DIAGNOSTIC_SUBRUN: Optional[str] = None
 
 # Hit selection
-AMP_THRESHOLD  = 0     # ADC counts; hits below this value are ignored
-MIN_HITS_TRACK = 2     # exclusive lower bound — event must have MORE than this many hits
-MAX_HITS_TRACK = 50    # exclusive upper bound — event must have FEWER than this many hits
+AMP_THRESHOLD  = 500     # ADC counts; hits below this value are ignored
+MIN_HITS_TRACK = 1     # exclusive lower bound — event must have MORE than this many hits
+MAX_HITS_TRACK = 400    # exclusive upper bound — event must have FEWER than this many hits
 
 
 # ---------------------------------------------------------------------------
-# Helpers
+# Config helpers
 # ---------------------------------------------------------------------------
 
-def _save_fig(fig, out_dir: Optional[str], name: str, dpi: int = 150) -> None:
-    if out_dir is None:
-        return
-    os.makedirs(out_dir, exist_ok=True)
-    fig.savefig(os.path.join(out_dir, name), dpi=dpi, bbox_inches='tight')
+def load_config(base_path: str, run: str) -> dict:
+    with open(os.path.join(base_path, run, 'run_config.json')) as f:
+        return json.load(f)
 
 
-def _resist_hv_channel(cfg: dict) -> Optional[Tuple[int, int]]:
-    """Return (card, channel) for the resist HV of the active mx17 detector."""
-    included = set(cfg.get('included_detectors', []))
-    for det in cfg.get('detectors', []):
-        if included and det['name'] not in included:
-            continue
-        if det.get('det_type') != 'mx17':
-            continue
-        if 'resist' in det.get('hv_channels', {}):
-            card, ch = det['hv_channels']['resist']
-            return int(card), int(ch)
-    return None
-
-
-def _build_hv_map(cfg: dict) -> Dict[str, int]:
-    """Map subrun name → resist HV voltage from run_config sub_runs list."""
-    resist = _resist_hv_channel(cfg)
-    if resist is None:
-        return {}
-    card, ch = resist
-    hv_map: Dict[str, int] = {}
-    for sub in cfg.get('sub_runs', []):
-        name = sub['sub_run_name']
-        hv = sub.get('hvs', {}).get(str(card), {}).get(str(ch))
-        if hv is not None:
-            hv_map[name] = int(hv)
-    return hv_map
-
-
-def find_subruns(base_path: str, run: str) -> List[Tuple[str, int]]:
+def build_detector_feu_map(cfg: dict) -> Dict[str, List[int]]:
     """
-    Read run_config.json and return (subrun_name, resist_hv_volts) pairs for
-    all subruns that have an on-disk directory, sorted by HV descending.
+    Use Detector from Mx17StripMap to look up the FEU IDs for each name in
+    MX17_DETECTORS. Returns {det_name: sorted list of FEU IDs}.
+    Detectors not found in the config are silently skipped.
+    """
+    strip_map = Mx17StripMap(MAP_CSV_PATH)
+    result: Dict[str, List[int]] = {}
+    for det_cfg in cfg.get('detectors', []):
+        name = det_cfg['name']
+        if name not in MX17_DETECTORS:
+            continue
+        det = Detector(name=name, det_cfg=det_cfg, strip_map=strip_map)
+        result[name] = sorted(det.feu_map.keys())
+    # preserve MX17_DETECTORS order, skip any not found
+    return {name: result[name] for name in MX17_DETECTORS if name in result}
+
+
+def build_hv_maps(cfg: dict) -> Dict[str, Dict[str, int]]:
+    """
+    For each detector in MX17_DETECTORS, build a {subrun_name: resist_hv} map
+    by reading hv_channels.resist from the detector config and looking it up in
+    each subrun's hvs dict.
+    Returns {det_name: {subrun_name: hv}}.
+    """
+    # Collect resist (card, channel) per detector
+    resist_channels: Dict[str, Tuple[int, int]] = {}
+    for det_cfg in cfg.get('detectors', []):
+        name = det_cfg['name']
+        if name not in MX17_DETECTORS:
+            continue
+        resist = det_cfg.get('hv_channels', {}).get('resist')
+        if resist is not None:
+            resist_channels[name] = (int(resist[0]), int(resist[1]))
+
+    hv_maps: Dict[str, Dict[str, int]] = {name: {} for name in MX17_DETECTORS}
+    for sub in cfg.get('sub_runs', []):
+        subrun_name = sub['sub_run_name']
+        hvs = sub.get('hvs', {})
+        for det_name, (card, ch) in resist_channels.items():
+            hv = hvs.get(str(card), {}).get(str(ch))
+            if hv is not None:
+                hv_maps[det_name][subrun_name] = int(hv)
+    return hv_maps
+
+
+def find_subruns(base_path: str, run: str, cfg: dict) -> List[str]:
+    """
+    Return subrun names that exist on disk, preserving config order.
     """
     run_dir = os.path.join(base_path, run)
-    with open(os.path.join(run_dir, 'run_config.json')) as f:
-        cfg = json.load(f)
-
-    hv_map = _build_hv_map(cfg)
-    pairs = []
-    for name in sorted(os.listdir(run_dir)):
-        if not os.path.isdir(os.path.join(run_dir, name)):
-            continue
-        if name in hv_map:
-            pairs.append((name, hv_map[name]))
-    return sorted(pairs, key=lambda x: x[1], reverse=True)
+    on_disk = {name for name in os.listdir(run_dir)
+               if os.path.isdir(os.path.join(run_dir, name))}
+    return [sub['sub_run_name'] for sub in cfg.get('sub_runs', [])
+            if sub['sub_run_name'] in on_disk]
 
 
 # ---------------------------------------------------------------------------
 # Data loading
 # ---------------------------------------------------------------------------
 
-def load_hits(subrun: str) -> Optional[pd.DataFrame]:
-    """Load hits for one subrun and filter to MX17 FEUs."""
+def load_hits(subrun: str, feu_ids: List[int]) -> Optional[pd.DataFrame]:
+    """Load hits for one subrun and filter to the given FEU IDs."""
     hits_dir = f'{BASE_PATH}{RUN}/{subrun}/combined_hits_root/'
     if not os.path.isdir(hits_dir):
         print(f'  [SKIP] {subrun}: no combined_hits_root directory')
@@ -129,8 +142,9 @@ def load_hits(subrun: str) -> Optional[pd.DataFrame]:
         return None
     file_sources = [f'{hits_dir}{hf}:hits' for hf in hit_files]
     df = uproot.concatenate(file_sources, library='pd')
-    df = df[df['feu'].isin(MX17_FEUS)].copy()
-    print(f'  Loaded {len(df):,} hits over {df["eventId"].nunique():,} events')
+    df = df[df['feu'].isin(feu_ids)].copy()
+    print(f'  Loaded {len(df):,} hits over {df["eventId"].nunique():,} events '
+          f'(FEUs {feu_ids})')
     return df
 
 
@@ -159,87 +173,110 @@ def is_track(counts: pd.Series) -> pd.Series:
 # ---------------------------------------------------------------------------
 
 def plot_hits_per_event_dist(
-    counts: pd.Series,
+    counts_per_det: Dict[str, pd.Series],
     subrun: str,
-    hv: int,
+    hv_per_det: Dict[str, Optional[int]],
     out_dir: Optional[str] = None,
 ) -> None:
-    """Histogram of hits per event with the track window shaded."""
-    max_count = int(counts.max())
-    bins = np.arange(0.5, max_count + 1.5, 1)
+    """Histogram of hits per event for each detector, with the track window shaded."""
+    n = len(counts_per_det)
+    fig, axes = plt.subplots(1, n, figsize=(8 * n, 5), squeeze=False)
+    axes = axes[0]
 
-    n_tracks = int(is_track(counts).sum())
-    n_total  = len(counts)
+    for ax, (det_name, counts) in zip(axes, counts_per_det.items()):
+        if counts.empty:
+            ax.set_visible(False)
+            continue
+        max_count = int(counts.max())
+        bins = np.arange(0.5, max_count + 1.5, 1)
+        n_tracks = int(is_track(counts).sum())
+        n_total  = len(counts)
+        hv_label = f'{hv_per_det.get(det_name)} V' if hv_per_det.get(det_name) else '?'
 
-    fig, ax = plt.subplots(figsize=(9, 5))
-    ax.hist(counts, bins=bins, color='steelblue', edgecolor='none', log=True)
-    ax.axvspan(MIN_HITS_TRACK + 0.5, MAX_HITS_TRACK - 0.5,
-               alpha=0.18, color='green',
-               label=f'Track window ({MIN_HITS_TRACK+1}–{MAX_HITS_TRACK-1} hits)  '
-                     f'→  {n_tracks}/{n_total} events  ({100*n_tracks/n_total:.1f}%)')
-    ax.axvline(MIN_HITS_TRACK + 0.5, color='green', lw=1.2, ls='--')
-    ax.axvline(MAX_HITS_TRACK - 0.5, color='green', lw=1.2, ls='--')
-    ax.set_xlabel('Hits per event')
-    ax.set_ylabel('Events')
-    ax.set_title(
-        f'Hits per event distribution  —  {subrun}\n'
-        f'HV = {hv} V,  amp ≥ {AMP_THRESHOLD}'
-    )
-    ax.legend()
-    ax.grid(True, axis='y', alpha=0.3)
+        ax.hist(counts, bins=bins, color='steelblue', edgecolor='none', log=True)
+        ax.axvspan(MIN_HITS_TRACK + 0.5, MAX_HITS_TRACK - 0.5,
+                   alpha=0.18, color='green',
+                   label=f'Track window ({MIN_HITS_TRACK+1}–{MAX_HITS_TRACK-1})  '
+                         f'→  {n_tracks}/{n_total}  ({100*n_tracks/n_total:.1f}%)')
+        ax.axvline(MIN_HITS_TRACK + 0.5, color='green', lw=1.2, ls='--')
+        ax.axvline(MAX_HITS_TRACK - 0.5, color='green', lw=1.2, ls='--')
+        ax.set_xlabel('Hits per event')
+        ax.set_ylabel('Events')
+        ax.set_title(f'{det_name}  —  HV = {hv_label},  amp ≥ {AMP_THRESHOLD}')
+        ax.legend()
+        ax.grid(True, axis='y', alpha=0.3)
+
+    fig.suptitle(f'Hits per event distribution  —  {subrun}', fontsize=11)
     fig.tight_layout()
-    _save_fig(fig, out_dir, f'hits_per_event_{hv}V.png')
+    _save_fig(fig, out_dir, f'hits_per_event_{subrun}.png')
 
 
 def plot_strip_occupancy(
-    df: pd.DataFrame,
+    df_per_det: Dict[str, pd.DataFrame],
     subrun: str,
-    hv: int,
     out_dir: Optional[str] = None,
 ) -> None:
-    """Strip occupancy: hits per channel number, one subplot per FEU."""
-    feus = sorted(df['feu'].unique())
-    n = len(feus)
+    """Strip occupancy: hits per channel number, one subplot per FEU across all detectors."""
+    all_feus = sorted({feu for df in df_per_det.values() for feu in df['feu'].unique()})
+    n = len(all_feus)
+    if n == 0:
+        return
     fig, axes = plt.subplots(1, n, figsize=(6 * n, 4), squeeze=False)
     axes = axes[0]
 
-    for ax, feu in zip(axes, feus):
-        channels = df.loc[df['feu'] == feu, 'channel'].values
+    # label each FEU with its detector name
+    feu_to_det = {}
+    for det_name, df in df_per_det.items():
+        for feu in df['feu'].unique():
+            feu_to_det[feu] = det_name
+
+    df_all = pd.concat(df_per_det.values(), ignore_index=True)
+    for ax, feu in zip(axes, all_feus):
+        channels = df_all.loc[df_all['feu'] == feu, 'channel'].values
         lo, hi = int(channels.min()), int(channels.max())
         ax.hist(channels, bins=hi - lo + 1, range=(lo - 0.5, hi + 0.5),
                 color='steelblue', edgecolor='none')
         ax.set_xlabel('Channel number')
         ax.set_ylabel('Hits')
-        ax.set_title(f'FEU {feu}')
+        ax.set_title(f'FEU {feu}  ({feu_to_det.get(feu, "?")})')
         ax.grid(True, axis='y', alpha=0.3)
 
-    fig.suptitle(
-        f'Strip occupancy  —  {subrun}  (HV = {hv} V)',
-        fontsize=11,
-    )
+    fig.suptitle(f'Strip occupancy  —  {subrun}', fontsize=11)
     fig.tight_layout()
-    _save_fig(fig, out_dir, f'strip_occupancy_{hv}V.png')
+    _save_fig(fig, out_dir, f'strip_occupancy_{subrun}.png')
 
 
 def plot_efficiency_vs_hv(
-    hv_values: List[int],
-    efficiencies: List[float],
-    eff_errors: List[float],
+    det_results: Dict[str, dict],
     out_dir: Optional[str] = None,
 ) -> None:
-    """Track-finding efficiency vs. resist HV with binomial error bars."""
-    fig, ax = plt.subplots(figsize=(8, 5))
-    ax.errorbar(hv_values, efficiencies, yerr=eff_errors,
-                fmt='o-', color='steelblue', capsize=5, lw=2, ms=8)
+    """Track-finding efficiency vs. resist HV, one curve per detector."""
+    colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
+    fig, ax = plt.subplots(figsize=(9, 5))
+
+    for (det_name, res), color in zip(det_results.items(), colors):
+        hv_vals = res['hv_values']
+        effs    = res['efficiencies']
+        errs    = res['eff_errors']
+        if not hv_vals:
+            continue
+        order = np.argsort(hv_vals)
+        ax.errorbar(
+            np.array(hv_vals)[order], np.array(effs)[order],
+            yerr=np.array(errs)[order],
+            fmt='o-', color=color, capsize=5, lw=2, ms=8, label=det_name,
+        )
+
     ax.set_xlabel('Resist HV [V]')
     ax.set_ylabel('Track efficiency  (tracks / triggered events)')
     ax.set_title(
         f'Track efficiency vs. HV  —  {RUN}\n'
-        f'hit window: ({MIN_HITS_TRACK}, {MAX_HITS_TRACK}),  '
-        f'amp ≥ {AMP_THRESHOLD}'
+        f'hit window: ({MIN_HITS_TRACK}, {MAX_HITS_TRACK}),  amp ≥ {AMP_THRESHOLD}'
     )
-    ymax = max(efficiencies) * 1.25 if efficiencies and max(efficiencies) > 0 else 1.05
+    all_effs = [e for res in det_results.values() for e in res['efficiencies']]
+    ymax = max(all_effs) * 1.25 if all_effs and max(all_effs) > 0 else 1.05
     ax.set_ylim(0, min(1.05, ymax))
+    ax.legend()
     ax.grid(True, alpha=0.3)
     fig.tight_layout()
     _save_fig(fig, out_dir, 'efficiency_vs_hv.png')
@@ -249,25 +286,30 @@ def plot_efficiency_vs_hv(
 # CSV export
 # ---------------------------------------------------------------------------
 
-def save_summary_csv(
-    hv_values: List[int],
-    efficiencies: List[float],
-    eff_errors: List[float],
-    n_tracks_list: List[int],
-    n_events_list: List[int],
-    out_dir: str,
-) -> None:
-    df = pd.DataFrame({
-        'hv_v':       hv_values,
-        'efficiency': efficiencies,
-        'eff_err':    eff_errors,
-        'n_tracks':   n_tracks_list,
-        'n_events':   n_events_list,
-    })
+def save_summary_csv(det_results: Dict[str, dict], out_dir: str) -> None:
     os.makedirs(out_dir, exist_ok=True)
-    path = os.path.join(out_dir, 'efficiency_vs_hv.csv')
-    df.to_csv(path, index=False)
-    print(f'\nSummary saved → {path}')
+    for det_name, res in det_results.items():
+        df = pd.DataFrame({
+            'hv_v':       res['hv_values'],
+            'efficiency': res['efficiencies'],
+            'eff_err':    res['eff_errors'],
+            'n_tracks':   res['n_tracks'],
+            'n_events':   res['n_events'],
+        })
+        path = os.path.join(out_dir, f'efficiency_vs_hv_{det_name}.csv')
+        df.to_csv(path, index=False)
+        print(f'  Saved → {path}')
+
+
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+
+def _save_fig(fig, out_dir: Optional[str], name: str, dpi: int = 150) -> None:
+    if out_dir is None:
+        return
+    os.makedirs(out_dir, exist_ok=True)
+    fig.savefig(os.path.join(out_dir, name), dpi=dpi, bbox_inches='tight')
 
 
 # ---------------------------------------------------------------------------
@@ -275,70 +317,91 @@ def save_summary_csv(
 # ---------------------------------------------------------------------------
 
 def main():
-    subruns = find_subruns(BASE_PATH, RUN)
-    if not subruns:
-        print(f'No HV-scan subruns found in {BASE_PATH}{RUN}/')
-        return
-    print(f'Found {len(subruns)} subruns:')
-    for name, hv in subruns:
-        print(f'  {name}  ({hv} V)')
+    cfg      = load_config(BASE_PATH, RUN)
+    det_feus = build_detector_feu_map(cfg)
+    hv_maps  = build_hv_maps(cfg)
+    subruns  = find_subruns(BASE_PATH, RUN, cfg)
 
-    # ---- Diagnostic: hits-per-event distribution and occupancy for one subrun ----
-    diag_name, diag_hv = next(
-        ((n, hv) for n, hv in subruns if n == DIAGNOSTIC_SUBRUN),
-        subruns[0],
-    ) if DIAGNOSTIC_SUBRUN else subruns[0]
+    if not det_feus:
+        print(f'No detectors found in config for {MX17_DETECTORS}')
+        return
+    print('Detector → FEU mapping:')
+    for det_name, feus in det_feus.items():
+        print(f'  {det_name}: FEUs {feus}')
+
+    if not subruns:
+        print(f'No subruns found on disk in {BASE_PATH}{RUN}/')
+        return
+    print(f'\nFound {len(subruns)} subruns')
+
+    all_feus = sorted({feu for feus in det_feus.values() for feu in feus})
+
+    # ---- Diagnostic ----
+    diag_name = DIAGNOSTIC_SUBRUN if DIAGNOSTIC_SUBRUN in subruns else subruns[0]
     print(f'\n{"="*60}')
-    print(f'Diagnostic subrun: {diag_name}  (HV = {diag_hv} V)')
+    print(f'Diagnostic subrun: {diag_name}')
     print(f'{"="*60}')
-    diag_df = load_hits(diag_name)
+    diag_df = load_hits(diag_name, all_feus)
     if diag_df is not None:
-        diag_counts = hits_per_event(diag_df)
-        plot_hits_per_event_dist(diag_counts, diag_name, diag_hv, out_dir=FIG_OUT_DIR)
-        plot_strip_occupancy(diag_df, diag_name, diag_hv, out_dir=FIG_OUT_DIR)
+        counts_per_det = {
+            det_name: hits_per_event(diag_df[diag_df['feu'].isin(feus)])
+            for det_name, feus in det_feus.items()
+        }
+        hv_per_det = {det_name: hv_maps[det_name].get(diag_name)
+                      for det_name in det_feus}
+        plot_hits_per_event_dist(counts_per_det, diag_name, hv_per_det, out_dir=FIG_OUT_DIR)
+
+        df_per_det = {det_name: diag_df[diag_df['feu'].isin(feus)]
+                      for det_name, feus in det_feus.items()}
+        plot_strip_occupancy(df_per_det, diag_name, out_dir=FIG_OUT_DIR)
 
     # ---- Full HV scan ----
-    hv_values, efficiencies, eff_errors = [], [], []
-    n_tracks_list, n_events_list = [], []
+    det_results = {
+        name: {'hv_values': [], 'efficiencies': [], 'eff_errors': [],
+               'n_tracks': [], 'n_events': []}
+        for name in det_feus
+    }
 
-    for subrun, hv in subruns:
+    for subrun in subruns:
         print(f'\n{"="*60}')
-        print(f'Subrun: {subrun}  (HV = {hv} V)')
+        print(f'Subrun: {subrun}')
         print(f'{"="*60}')
 
-        df = load_hits(subrun)
-        if df is None:
+        df_all = load_hits(subrun, all_feus)
+        if df_all is None:
             continue
 
-        counts   = hits_per_event(df)
-        n_events = len(counts)
-        n_tracks = int(is_track(counts).sum())
-        eff = n_tracks / n_events if n_events > 0 else np.nan
-        err = float(np.sqrt(eff * (1 - eff) / n_events)) if n_events > 0 else np.nan
+        for det_name, feus in det_feus.items():
+            hv = hv_maps[det_name].get(subrun)
+            df  = df_all[df_all['feu'].isin(feus)]
+            counts   = hits_per_event(df)
+            n_events = len(counts)
+            n_tracks = int(is_track(counts).sum())
+            eff = n_tracks / n_events if n_events > 0 else np.nan
+            err = float(np.sqrt(eff * (1 - eff) / n_events)) if n_events > 0 else np.nan
+            print(f'  {det_name}  HV={hv} V  n_events={n_events:,}  '
+                  f'n_tracks={n_tracks:,}  eff={eff:.4f} ± {err:.4f}')
+            det_results[det_name]['hv_values'].append(hv)
+            det_results[det_name]['efficiencies'].append(eff)
+            det_results[det_name]['eff_errors'].append(err)
+            det_results[det_name]['n_tracks'].append(n_tracks)
+            det_results[det_name]['n_events'].append(n_events)
 
-        print(f'  n_events={n_events:,}  n_tracks={n_tracks:,}  '
-              f'efficiency={eff:.4f} ± {err:.4f}')
+    # ---- Summary ----
+    for det_name, res in det_results.items():
+        if not res['hv_values']:
+            continue
+        print(f'\n{det_name}:')
+        print(f'  {"HV [V]":>8}  {"Efficiency":>12}  {"± Err":>8}  '
+              f'{"Tracks":>8}  {"Events":>8}')
+        for hv, eff, err, nt, ne in zip(res['hv_values'], res['efficiencies'],
+                                        res['eff_errors'], res['n_tracks'],
+                                        res['n_events']):
+            print(f'  {str(hv):>8}  {eff:>12.4f}  {err:>8.4f}  {nt:>8}  {ne:>8}')
 
-        hv_values.append(hv)
-        efficiencies.append(eff)
-        eff_errors.append(err)
-        n_tracks_list.append(n_tracks)
-        n_events_list.append(n_events)
-
-    if not hv_values:
-        print('\nNo valid subruns processed.')
-        return
-
-    # ---- Summary table ----
-    print(f'\n{"HV [V]":>8}  {"Efficiency":>12}  {"± Err":>8}  '
-          f'{"Tracks":>8}  {"Events":>8}')
-    for hv, eff, err, nt, ne in zip(hv_values, efficiencies, eff_errors,
-                                    n_tracks_list, n_events_list):
-        print(f'{hv:>8}  {eff:>12.4f}  {err:>8.4f}  {nt:>8}  {ne:>8}')
-
-    plot_efficiency_vs_hv(hv_values, efficiencies, eff_errors, out_dir=FIG_OUT_DIR)
-    save_summary_csv(hv_values, efficiencies, eff_errors,
-                     n_tracks_list, n_events_list, CSV_OUT_DIR)
+    plot_efficiency_vs_hv(det_results, out_dir=FIG_OUT_DIR)
+    print('\nSaving CSVs:')
+    save_summary_csv(det_results, CSV_OUT_DIR)
 
     plt.show()
 
