@@ -35,9 +35,9 @@ from common.Mx17StripMap import RunConfig
 # Configuration
 # ---------------------------------------------------------------------------
 
-BASE_PATH = '/media/dylan/data/x17/cosmic_bench/det_3/'
-RUN       = 'mx17_det3_HV_Scan_5-5-26'
-SUB_RUN   = 'resist_520V_drift_900V'
+BASE_PATH = '/media/dylan/data/x17/cosmic_bench/det_4/'
+RUN       = 'mx17_det4_ArIso_HV_Scan_5-7-26'
+SUB_RUN   = 'resist_530V_drift_900V'
 MX17_FEUS = [3, 4]
 
 RUN_CONFIG_PATH = f'{BASE_PATH}{RUN}/run_config.json'
