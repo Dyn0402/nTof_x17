@@ -16,10 +16,10 @@ A diagnostic hits-per-event distribution and strip occupancy plot are produced
 for one subrun (DIAGNOSTIC_SUBRUN) to help tune MIN_HITS_TRACK / MAX_HITS_TRACK.
 """
 
+import json
 import os
-import re
 import sys
-from typing import List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 import pandas as pd
@@ -39,8 +39,6 @@ sys.path.insert(0, _ROOT)
 BASE_PATH = '/mnt/data/x17/beam_may/runs/'
 RUN       = 'run_1'
 MX17_FEUS = [3]
-
-RUN_CONFIG_PATH = f'{BASE_PATH}{RUN}/run_config.json'
 
 FIG_OUT_DIR = f'{BASE_PATH}Analysis/HV_Scan_NoRef/{RUN}/'
 CSV_OUT_DIR = f'{BASE_PATH}Analysis/HV_Scan_NoRef/'
@@ -66,25 +64,46 @@ def _save_fig(fig, out_dir: Optional[str], name: str, dpi: int = 150) -> None:
     fig.savefig(os.path.join(out_dir, name), dpi=dpi, bbox_inches='tight')
 
 
-def extract_hv(subrun_name: str) -> Optional[int]:
-    """Extract resistor HV value in volts from a name like 'resist_450V_drift_800V'."""
-    m = re.search(r'resist_(\d+)V', subrun_name)
-    return int(m.group(1)) if m else None
+def _resist_hv_channel(cfg: dict) -> Optional[Tuple[int, int]]:
+    """Return (card, channel) for the resist HV of mx17_1, or None if not found."""
+    for det in cfg.get('detectors', []):
+        if det['name'] == 'mx17_1':
+            card, ch = det['hv_channels']['resist']
+            return int(card), int(ch)
+    return None
+
+
+def _build_hv_map(cfg: dict) -> Dict[str, int]:
+    """Map subrun name → resist HV voltage from run_config sub_runs list."""
+    resist = _resist_hv_channel(cfg)
+    if resist is None:
+        return {}
+    card, ch = resist
+    hv_map: Dict[str, int] = {}
+    for sub in cfg.get('sub_runs', []):
+        name = sub['sub_run_name']
+        hv = sub.get('hvs', {}).get(str(card), {}).get(str(ch))
+        if hv is not None:
+            hv_map[name] = int(hv)
+    return hv_map
 
 
 def find_subruns(base_path: str, run: str) -> List[Tuple[str, int]]:
     """
-    Scan the run directory and return (subrun_name, hv_volts) pairs for all
-    folders matching the 'resist_<NNN>V' pattern, sorted by HV descending.
+    Read run_config.json and return (subrun_name, resist_hv_volts) pairs for
+    all subruns that have an on-disk directory, sorted by HV descending.
     """
     run_dir = os.path.join(base_path, run)
+    with open(os.path.join(run_dir, 'run_config.json')) as f:
+        cfg = json.load(f)
+
+    hv_map = _build_hv_map(cfg)
     pairs = []
     for name in sorted(os.listdir(run_dir)):
         if not os.path.isdir(os.path.join(run_dir, name)):
             continue
-        hv = extract_hv(name)
-        if hv is not None and name.startswith('resist_'):
-            pairs.append((name, hv))
+        if name in hv_map:
+            pairs.append((name, hv_map[name]))
     return sorted(pairs, key=lambda x: x[1], reverse=True)
 
 
@@ -260,8 +279,10 @@ def main():
         print(f'  {name}  ({hv} V)')
 
     # ---- Diagnostic: hits-per-event distribution and occupancy for one subrun ----
-    diag_name = DIAGNOSTIC_SUBRUN or subruns[0][0]
-    diag_hv   = extract_hv(diag_name)
+    diag_name, diag_hv = next(
+        ((n, hv) for n, hv in subruns if n == DIAGNOSTIC_SUBRUN),
+        subruns[0],
+    ) if DIAGNOSTIC_SUBRUN else subruns[0]
     print(f'\n{"="*60}')
     print(f'Diagnostic subrun: {diag_name}  (HV = {diag_hv} V)')
     print(f'{"="*60}')
