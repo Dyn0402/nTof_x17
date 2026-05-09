@@ -148,6 +148,30 @@ def load_hits(subrun: str, feu_ids: List[int]) -> Optional[pd.DataFrame]:
     return df
 
 
+def get_total_events(subrun: str) -> Optional[int]:
+    """
+    Return the total number of triggered events in a subrun by finding the
+    maximum eventId across all decoded ROOT files (tree 'nt').
+    Returns None if no decoded files are found.
+    """
+    decoded_dir = f'{BASE_PATH}{RUN}/{subrun}/decoded_root/'
+    if not os.path.isdir(decoded_dir):
+        return None
+    root_files = sorted(f for f in os.listdir(decoded_dir) if f.endswith('.root'))
+    if not root_files:
+        return None
+
+    max_id = 0
+    for fname in root_files:
+        with uproot.open(os.path.join(decoded_dir, fname)) as f:
+            if 'nt' not in f:
+                continue
+            evt_ids = f['nt']['eventId'].array(library='np')
+            if len(evt_ids) > 0:
+                max_id = max(max_id, int(evt_ids.max()))
+    return max_id
+
+
 # ---------------------------------------------------------------------------
 # Hit counting and track definition
 # ---------------------------------------------------------------------------
@@ -371,15 +395,19 @@ def main():
         if df_all is None:
             continue
 
+        n_total = get_total_events(subrun)
+        if n_total is None:
+            print('  [WARN] No decoded ROOT files found; falling back to hit-event count')
+
         for det_name, feus in det_feus.items():
             hv = hv_maps[det_name].get(subrun)
             df  = df_all[df_all['feu'].isin(feus)]
             counts   = hits_per_event(df)
-            n_events = len(counts)
+            n_events = n_total if n_total is not None else len(counts)
             n_tracks = int(is_track(counts).sum())
             eff = n_tracks / n_events if n_events > 0 else np.nan
             err = float(np.sqrt(eff * (1 - eff) / n_events)) if n_events > 0 else np.nan
-            print(f'  {det_name}  HV={hv} V  n_events={n_events:,}  '
+            print(f'  {det_name}  HV={hv} V  n_total={n_events:,}  '
                   f'n_tracks={n_tracks:,}  eff={eff:.4f} ± {err:.4f}')
             det_results[det_name]['hv_values'].append(hv)
             det_results[det_name]['efficiencies'].append(eff)
