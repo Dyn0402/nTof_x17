@@ -54,9 +54,9 @@ CSV_OUT_DIR = f'{BASE_PATH}Analysis/HV_Scan_NoRef/'
 DIAGNOSTIC_SUBRUN: Optional[str] = None
 
 # Hit selection
-AMP_THRESHOLD  = 500     # ADC counts; hits below this value are ignored
+AMP_THRESHOLD  = 200     # ADC counts; hits below this value are ignored
 MIN_HITS_TRACK = 1     # exclusive lower bound — event must have MORE than this many hits
-MAX_HITS_TRACK = 400    # exclusive upper bound — event must have FEWER than this many hits
+MAX_HITS_TRACK = 200    # exclusive upper bound — event must have FEWER than this many hits
 
 
 # ---------------------------------------------------------------------------
@@ -306,6 +306,35 @@ def plot_efficiency_vs_hv(
     _save_fig(fig, out_dir, 'efficiency_vs_hv.png')
 
 
+def plot_amplitude_vs_hv(
+    det_results: Dict[str, dict],
+    out_dir: Optional[str] = None,
+) -> None:
+    """Mean hit amplitude vs. resist HV, one curve per detector."""
+    colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
+    fig, ax = plt.subplots(figsize=(9, 5))
+
+    for (det_name, res), color in zip(det_results.items(), colors):
+        hv_vals  = res['hv_values']
+        amp_vals = res['mean_amp']
+        if not hv_vals:
+            continue
+        order = np.argsort(hv_vals)
+        ax.plot(np.array(hv_vals)[order], np.array(amp_vals)[order],
+                'o-', color=color, lw=2, ms=8, label=det_name)
+
+    ax.set_xlabel('Resist HV [V]')
+    ax.set_ylabel('Mean hit amplitude [ADC]')
+    ax.set_title(
+        f'Mean hit amplitude vs. HV  —  {RUN}\n'
+        f'amp ≥ {AMP_THRESHOLD}'
+    )
+    ax.legend()
+    ax.grid(True, alpha=0.3)
+    fig.tight_layout()
+    _save_fig(fig, out_dir, 'amplitude_vs_hv.png')
+
+
 # ---------------------------------------------------------------------------
 # CSV export
 # ---------------------------------------------------------------------------
@@ -319,6 +348,7 @@ def save_summary_csv(det_results: Dict[str, dict], out_dir: str) -> None:
             'eff_err':    res['eff_errors'],
             'n_tracks':   res['n_tracks'],
             'n_events':   res['n_events'],
+            'mean_amp':   res['mean_amp'],
         })
         path = os.path.join(out_dir, f'efficiency_vs_hv_{det_name}.csv')
         df.to_csv(path, index=False)
@@ -382,7 +412,7 @@ def main():
     # ---- Full HV scan ----
     det_results = {
         name: {'hv_values': [], 'efficiencies': [], 'eff_errors': [],
-               'n_tracks': [], 'n_events': []}
+               'n_tracks': [], 'n_events': [], 'mean_amp': []}
         for name in det_feus
     }
 
@@ -403,17 +433,21 @@ def main():
             hv = hv_maps[det_name].get(subrun)
             df  = df_all[df_all['feu'].isin(feus)]
             counts   = hits_per_event(df)
+            df_amp = df[df['amplitude'] >= AMP_THRESHOLD] if AMP_THRESHOLD > 0 else df
+            mean_amp = float(df_amp['amplitude'].mean()) if not df_amp.empty else np.nan
             n_events = n_total if n_total is not None else len(counts)
             n_tracks = int(is_track(counts).sum())
             eff = n_tracks / n_events if n_events > 0 else np.nan
             err = float(np.sqrt(eff * (1 - eff) / n_events)) if n_events > 0 else np.nan
             print(f'  {det_name}  HV={hv} V  n_total={n_events:,}  '
-                  f'n_tracks={n_tracks:,}  eff={eff:.4f} ± {err:.4f}')
+                  f'n_tracks={n_tracks:,}  eff={eff:.4f} ± {err:.4f}  '
+                  f'mean_amp={mean_amp:.1f}')
             det_results[det_name]['hv_values'].append(hv)
             det_results[det_name]['efficiencies'].append(eff)
             det_results[det_name]['eff_errors'].append(err)
             det_results[det_name]['n_tracks'].append(n_tracks)
             det_results[det_name]['n_events'].append(n_events)
+            det_results[det_name]['mean_amp'].append(mean_amp)
 
     # ---- Summary ----
     for det_name, res in det_results.items():
@@ -428,6 +462,7 @@ def main():
             print(f'  {str(hv):>8}  {eff:>12.4f}  {err:>8.4f}  {nt:>8}  {ne:>8}')
 
     plot_efficiency_vs_hv(det_results, out_dir=FIG_OUT_DIR)
+    plot_amplitude_vs_hv(det_results, out_dir=FIG_OUT_DIR)
     print('\nSaving CSVs:')
     save_summary_csv(det_results, CSV_OUT_DIR)
 
