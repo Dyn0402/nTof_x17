@@ -424,8 +424,15 @@ def _save_fig(fig, out_dir: Optional[str], name: str, dpi: int = 150) -> None:
 # ---------------------------------------------------------------------------
 
 def main():
-    # Load all configs
-    cfgs = {run: load_config(BASE_PATH, run) for run in RUNS}
+    # Load all configs — skip runs that don't exist on disk
+    missing_runs: List[str] = []
+    cfgs: Dict[str, dict] = {}
+    for run in RUNS:
+        try:
+            cfgs[run] = load_config(BASE_PATH, run)
+        except (FileNotFoundError, OSError):
+            missing_runs.append(run)
+            print(f'[WARN] Run not found, skipping: {run}')
 
     # Use first run's config for gas label and detector FEU mapping
     first_cfg = next(iter(cfgs.values()))
@@ -433,6 +440,10 @@ def main():
     det_feus = build_detector_feu_map(first_cfg)
     hv_maps  = build_hv_maps(cfgs)
     subruns  = find_subruns(BASE_PATH, cfgs)
+
+    if not cfgs:
+        print(f'ERROR: None of the requested runs exist: {RUNS}')
+        return
 
     if not det_feus:
         print(f'No detectors found in config for {MX17_DETECTORS}')
@@ -525,6 +536,13 @@ def main():
     plot_amplitude_vs_hv(det_results, gas=gas, out_dir=FIG_OUT_DIR)
     print('\nSaving CSVs:')
     save_summary_csv(det_results, CSV_OUT_DIR)
+
+    if missing_runs:
+        print('\n' + '=' * 60)
+        print('ERROR: The following runs were not found and were skipped:')
+        for r in missing_runs:
+            print(f'  {r}  (expected: {os.path.join(BASE_PATH, r, "run_config.json")})')
+        print('=' * 60)
 
     plt.show()
 
