@@ -62,7 +62,7 @@ RUN       = 'mx17_det3_ArCF4_HV_Scan_5-6-26'
 MX17_FEUS = [3, 4]   # active FEUs for this run
 
 RUN_CONFIG_PATH = f'{BASE_PATH}{RUN}/run_config.json'
-MAP_CSV_PATH    = f'{_ROOT}/mx17_m4_map.csv'
+MAP_CSV_PATH    = f'{_ROOT}/mx17_m1_map.csv'
 
 CSV_OUT_DIR = f'{BASE_PATH}Analysis/HV_Scan/'
 FIG_OUT_DIR = f'{BASE_PATH}Analysis/HV_Scan/{RUN}/'

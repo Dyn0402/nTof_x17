@@ -41,7 +41,7 @@ SUB_RUN   = 'resist_530V_drift_900V'
 MX17_FEUS = [3, 4]
 
 RUN_CONFIG_PATH = f'{BASE_PATH}{RUN}/run_config.json'
-MAP_CSV_PATH    = f'{_ROOT}/mx17_m4_map.csv'
+MAP_CSV_PATH    = f'{_ROOT}/mx17_m1_map.csv'
 
 STRIP_PITCH_MM = 0.78   # nominal strip pitch for position histogram bins
 AMP_MAP_BINS   = 25     # bins per axis for 2D amplitude maps

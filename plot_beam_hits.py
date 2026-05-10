@@ -1257,7 +1257,7 @@ def plot_amps_with_hv(base_path, run, sub_run, feus, hvs):
     fig.tight_layout()
 
 
-def load_subrun(base_path, run, sub_run, feus, map_csv_path='./mx17_m4_map.csv'):
+def load_subrun(base_path, run, sub_run, feus, map_csv_path='./mx17_m1_map.csv'):
     """
     Load subrun
     """

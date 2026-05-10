@@ -33,7 +33,7 @@ def main():
     file_nums = [0]
 
     run_config_path = f'{base_path}{run}/run_config.json'
-    map_csv_path = '../mx17_m4_map.csv'
+    map_csv_path = '../mx17_m1_map.csv'
 
     rc = RunConfig(run_config_path, map_csv_path)
 
