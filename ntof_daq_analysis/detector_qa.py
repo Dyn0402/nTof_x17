@@ -41,7 +41,7 @@ _HERE          = Path(__file__).parent
 _NTOF_X17_ROOT = _HERE.parent
 sys.path.insert(0, str(_NTOF_X17_ROOT))
 
-from common.Mx17StripMap import RunConfig
+from common.Mx17StripMap import Mx17StripMap, Detector as Mx17Detector
 
 MAP_CSV        = _NTOF_X17_ROOT / 'mx17_m1_map.csv'
 COMBINED_INNER = 'combined_hits_root'
@@ -92,7 +92,8 @@ def run_qa(subrun_dir: Path, run_config_path: Path, mode: str = 'all', file_num:
             continue  # Skip scintillators and non-strip detectors
 
         feu_ids     = {v[0] for v in det_cfg['dream_feus'].values()}
-        has_mapping = 'M1' in det_cfg.get('mx_cards', '')
+        is_mx17     = 'mx17' in det_cfg.get('det_type', '')
+        has_mapping = is_mx17 and 'M1' in det_cfg.get('mx_cards', '')
 
         df = _load_hits(combined_dir, feu_ids, mode, file_num)
         if df is None or df.empty:
@@ -108,9 +109,9 @@ def run_qa(subrun_dir: Path, run_config_path: Path, mode: str = 'all', file_num:
                 has_mapping = False
             else:
                 try:
-                    rc  = RunConfig(str(run_config_path), str(MAP_CSV))
-                    det = rc.get_detector(name)
-                    df  = _map_strip_positions(df, det)
+                    strip_map = Mx17StripMap(str(MAP_CSV))
+                    det       = Mx17Detector(name=name, det_cfg=det_cfg, strip_map=strip_map)
+                    df        = _map_strip_positions(df, det)
                 except Exception as e:
                     print(f'[qa] {name} — strip mapping failed: {e}')
                     has_mapping = False
