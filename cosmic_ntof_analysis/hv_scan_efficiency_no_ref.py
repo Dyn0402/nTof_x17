@@ -45,7 +45,7 @@ BASE_PATH = '/mnt/data/x17/beam_may/runs/'
 
 # List of runs to combine into a single scan.  Set to a single entry for one run.
 # RUNS = ['run_3', 'run_4']
-RUNS = ['run_5', 'run_6']
+RUNS = ['run_5', 'run_6', 'run_7']
 
 # Label used for output directory and plot titles.
 RUN_LABEL = RUNS[0] if len(RUNS) == 1 else f'{RUNS[0]}+{RUNS[-1]}'
