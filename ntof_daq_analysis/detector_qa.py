@@ -43,10 +43,12 @@ sys.path.insert(0, str(_NTOF_X17_ROOT))
 
 from common.Mx17StripMap import Mx17StripMap, Detector as Mx17Detector
 
-MAP_CSV        = _NTOF_X17_ROOT / 'mx17_m1_map.csv'
-COMBINED_INNER = 'combined_hits_root'
-STRIP_PITCH_MM = 0.78
-AMP_MAP_BINS   = 25
+MAP_CSV           = _NTOF_X17_ROOT / 'mx17_m1_map.csv'
+COMBINED_INNER    = 'combined_hits_root'
+STRIP_PITCH_MM    = 0.78
+AMP_MAP_BINS      = 25
+HITS_AMP_THRESHOLD  = 200   # ADC — used for hits-above-threshold scatter and hits/event plots
+HITS_PER_EVENT_ZOOM = 50    # upper x-limit for the zoomed hits/event panels
 
 
 # ---------------------------------------------------------------------------
@@ -125,6 +127,11 @@ def run_qa(subrun_dir: Path, run_config_path: Path, mode: str = 'all', file_num:
         _plot_hits_vs_channel(df, title, out_dir)
         _plot_event_rate(df, title, out_dir)
         _plot_amplitude_vs_time(df, title, out_dir)
+        _plot_hits_above_threshold_vs_time(df, title, out_dir)
+        _plot_hit_time_dist(df, title, out_dir)
+        _plot_amplitude_distribution(df, title, out_dir)
+        _plot_hits_per_event(df, title, out_dir)
+        _plot_time_vs_channel(df, title, out_dir)
 
         # --- Position plots for M1 detectors only ---
         if has_mapping:
@@ -323,6 +330,157 @@ def _plot_amplitude_map(x: np.ndarray, y: np.ndarray, amp: np.ndarray,
     ax.set_title(f'Amplitude map — {title}')
     fig.tight_layout()
     _save(fig, out_dir, 'amplitude_map.png')
+
+
+def _plot_hits_above_threshold_vs_time(df: pd.DataFrame, title: str, out_dir: Path):
+    """Scatter: hits above HITS_AMP_THRESHOLD per event vs time since run start."""
+    if 'trigger_timestamp_ns' not in df.columns:
+        return
+    ts = df.groupby('eventId')['trigger_timestamp_ns'].first()
+    t_sec = (ts - ts.min()) / 1e9
+
+    counts = (df[df['amplitude'] >= HITS_AMP_THRESHOLD]
+              .groupby('eventId').size()
+              .reindex(ts.index, fill_value=0))
+
+    fig, ax = plt.subplots(figsize=(10, 4))
+    ax.scatter(t_sec.values, counts.values, s=2, alpha=0.3,
+               color='steelblue', linewidths=0)
+    ax.set_xlabel('Time since run start [s]')
+    ax.set_ylabel(f'Hits ≥ {HITS_AMP_THRESHOLD} ADC per event')
+    ax.set_title(f'Hits above threshold vs time — {title}')
+    ax.grid(True, alpha=0.3)
+    fig.tight_layout()
+    _save(fig, out_dir, 'hits_above_threshold_vs_time.png')
+
+
+def _plot_hit_time_dist(df: pd.DataFrame, title: str, out_dir: Path):
+    """Hit time histogram: full range (log y) + auto-zoomed to 1st–99th percentile."""
+    times = df['time'].values
+    p_lo  = np.percentile(times, 1)
+    p_hi  = np.percentile(times, 99)
+    pad   = max((p_hi - p_lo) * 0.05, 1.0)
+
+    fig, (ax_full, ax_zoom) = plt.subplots(1, 2, figsize=(12, 4))
+
+    ax_full.hist(times, bins=200, color='steelblue', edgecolor='none', log=True)
+    ax_full.axvspan(p_lo, p_hi, alpha=0.12, color='green',
+                    label=f'1–99th pct  [{p_lo:.0f}, {p_hi:.0f}] ns')
+    ax_full.set_xlabel('Hit time [ns]')
+    ax_full.set_ylabel('Hits')
+    ax_full.set_title('Full range (log y)')
+    ax_full.legend(fontsize=8)
+    ax_full.grid(True, axis='y', alpha=0.3)
+
+    zoom_mask = (times >= p_lo - pad) & (times <= p_hi + pad)
+    ax_zoom.hist(times[zoom_mask], bins=200, color='steelblue', edgecolor='none')
+    ax_zoom.set_xlabel('Hit time [ns]')
+    ax_zoom.set_ylabel('Hits')
+    ax_zoom.set_title(f'Zoomed: 1–99th pct  [{p_lo:.0f}, {p_hi:.0f}] ns')
+    ax_zoom.grid(True, axis='y', alpha=0.3)
+
+    fig.suptitle(f'Hit time distribution — {title}', fontsize=10)
+    fig.tight_layout()
+    _save(fig, out_dir, 'hit_time_dist.png')
+
+
+def _plot_amplitude_distribution(df: pd.DataFrame, title: str, out_dir: Path):
+    """Amplitude histogram (log y) with threshold line."""
+    fig, ax = plt.subplots(figsize=(9, 4))
+    ax.hist(df['amplitude'].values, bins=200, color='steelblue',
+            edgecolor='none', log=True)
+    ax.axvline(HITS_AMP_THRESHOLD, color='red', lw=1.5, ls='--',
+               label=f'Threshold = {HITS_AMP_THRESHOLD}')
+    ax.set_xlabel('Amplitude [ADC]')
+    ax.set_ylabel('Hits')
+    ax.set_title(f'Amplitude distribution — {title}')
+    ax.legend(fontsize=8)
+    ax.grid(True, axis='y', alpha=0.3)
+    fig.tight_layout()
+    _save(fig, out_dir, 'amplitude_distribution.png')
+
+
+def _plot_hits_per_event(df: pd.DataFrame, title: str, out_dir: Path):
+    """
+    Hits per event: 2×2 grid.
+    Rows: all hits | hits above threshold.
+    Columns: zoomed to HITS_PER_EVENT_ZOOM (linear y) | full range (log y).
+    """
+    counts_all = df.groupby('eventId').size()
+    counts_thr = (df[df['amplitude'] >= HITS_AMP_THRESHOLD]
+                  .groupby('eventId').size())
+
+    fig, axes = plt.subplots(2, 2, figsize=(13, 8))
+
+    rows = [
+        (counts_all, 'All hits'),
+        (counts_thr, f'Amp ≥ {HITS_AMP_THRESHOLD}'),
+    ]
+
+    for row_idx, (counts, row_label) in enumerate(rows):
+        if counts.empty:
+            for ax in axes[row_idx]:
+                ax.set_visible(False)
+            continue
+
+        hi        = int(counts.max())
+        bins_full = np.arange(0.5, hi + 1.5, 1)
+        bins_zoom = np.arange(0.5, HITS_PER_EVENT_ZOOM + 1.5, 1)
+
+        # Zoomed panel
+        ax_z = axes[row_idx, 0]
+        ax_z.hist(counts.clip(upper=HITS_PER_EVENT_ZOOM), bins=bins_zoom,
+                  color='steelblue', edgecolor='none')
+        ax_z.set_xlabel('Hits per event')
+        ax_z.set_ylabel('Events')
+        ax_z.set_title(f'{row_label}  —  0–{HITS_PER_EVENT_ZOOM} (linear)')
+        ax_z.grid(True, axis='y', alpha=0.3)
+
+        # Full range panel
+        ax_f = axes[row_idx, 1]
+        ax_f.hist(counts, bins=min(hi, 300), color='steelblue',
+                  edgecolor='none', log=True)
+        ax_f.set_xlabel('Hits per event')
+        ax_f.set_ylabel('Events')
+        ax_f.set_title(f'{row_label}  —  full range (log y)')
+        ax_f.grid(True, axis='y', alpha=0.3)
+
+    fig.suptitle(f'Hits per event — {title}', fontsize=10)
+    fig.tight_layout()
+    _save(fig, out_dir, 'hits_per_event.png')
+
+
+def _plot_time_vs_channel(df: pd.DataFrame, title: str, out_dir: Path):
+    """2D histogram of hit time vs channel per FEU (time auto-zoomed to 1–99th pct)."""
+    times = df['time'].values
+    t_lo  = np.percentile(times, 1)
+    t_hi  = np.percentile(times, 99)
+
+    feus = sorted(df['feu'].unique())
+    n    = len(feus)
+    fig, axes = plt.subplots(1, n, figsize=(7 * n, 5), squeeze=False)
+    axes = axes[0]
+
+    cmap = plt.get_cmap('viridis').copy()
+    cmap.set_bad('white')
+
+    for ax, feu in zip(axes, feus):
+        df_feu = df[(df['feu'] == feu) & (df['time'] >= t_lo) & (df['time'] <= t_hi)]
+        if df_feu.empty:
+            ax.set_title(f'FEU {feu}  (no data)')
+            continue
+        h, xedges, yedges = np.histogram2d(
+            df_feu['channel'].values, df_feu['time'].values, bins=(128, 100))
+        im = ax.imshow(np.where(h > 0, h, np.nan).T, origin='lower', aspect='auto',
+                       extent=[xedges[0], xedges[-1], yedges[0], yedges[-1]], cmap=cmap)
+        plt.colorbar(im, ax=ax, label='Hits')
+        ax.set_xlabel('Channel')
+        ax.set_ylabel('Hit time [ns]')
+        ax.set_title(f'FEU {feu}')
+
+    fig.suptitle(f'Hit time vs channel — {title}', fontsize=10)
+    fig.tight_layout()
+    _save(fig, out_dir, 'time_vs_channel.png')
 
 
 if __name__ == '__main__':
