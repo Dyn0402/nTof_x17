@@ -13,17 +13,17 @@ import pandas as pd
 
 
 def main():
-    make_m4_mapping()
+    make_m1_mapping()
     print('donzo')
 
 
-def make_m4_mapping():
+def make_m1_mapping():
     """
-    Make mapping csv for the M4 connectors on the MX17 40x40 detectors.
+    Make mapping csv for the M1 connectors on the MX17 40x40 detectors.
     Returns:
 
     """
-    out_csv_name = 'mx17_m4_map.csv'
+    out_csv_name = 'mx17_m1_map.csv'
     channels_per_connector = 64
     x0 = 0  # mm
     y0 = 0  # mm

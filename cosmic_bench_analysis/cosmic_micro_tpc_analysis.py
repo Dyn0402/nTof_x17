@@ -127,7 +127,7 @@ def main():
     mx17_feus = [3, 4]   # 4 = X strips, 6 = Y strips
 
     run_config_path = f'{base_path}{run}/run_config.json'
-    map_csv_path = '../mx17_m4_map.csv'
+    map_csv_path = '../mx17_m1_map.csv'
 
     alignment_dir = f'{base_path}Alignment/'
     alignment_file = f'{alignment_dir}alignment.json'

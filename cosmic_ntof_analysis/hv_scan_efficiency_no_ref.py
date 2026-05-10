@@ -53,7 +53,7 @@ RUN_LABEL = RUNS[0] if len(RUNS) == 1 else f'{RUNS[0]}+{RUNS[-1]}'
 # Detector names to analyse — FEU IDs are read from run_config.json automatically.
 MX17_DETECTORS = ['mx17_3', 'mx17_4']
 
-MAP_CSV_PATH = f'{_ROOT}/mx17_m4_map.csv'
+MAP_CSV_PATH = f'{_ROOT}/mx17_m1_map.csv'
 
 FIG_OUT_DIR = f'{BASE_PATH}Analysis/HV_Scan_NoRef/{RUN_LABEL}/'
 CSV_OUT_DIR = f'{BASE_PATH}Analysis/HV_Scan_NoRef/'

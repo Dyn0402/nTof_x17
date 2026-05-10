@@ -295,7 +295,7 @@ def get_subrun_offset(
         return None
 
     try:
-        df, det = load_subrun(runs_path, run, sub_run, feus=feus, map_csv_path='../mx17_m4_map.csv')
+        df, det = load_subrun(runs_path, run, sub_run, feus=feus, map_csv_path='../mx17_m1_map.csv')
     except Exception as e:
         print(f'  Could not load subrun: {e}')
         return None
