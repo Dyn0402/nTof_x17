@@ -107,7 +107,8 @@ ALIGNMENT_ITERATIONS: int = 2
 
 def main():
     # base_path = '/media/dylan/data/x17/cosmic_bench/det_1/'
-    base_path = '/media/dylan/data/x17/cosmic_bench/det_3/'
+    # base_path = '/media/dylan/data/x17/cosmic_bench/det_3/'
+    base_path = '/media/dylan/data/x17/cosmic_bench/det_4/'
     # run = 'mx17_det1_1-27-26'
     # sub_run = 'resist_scan_480V'
     # mx17_feus = [6]   # 4 = X strips, 6 = Y strips
@@ -122,8 +123,10 @@ def main():
     # sub_run = 'quick_test'
     # run = 'mx17_det3_HV_Scan_5-5-26'
     # sub_run = 'resist_510V_drift_900V'
-    run = 'mx17_det3_long_run_5-6-26'
-    sub_run = 'long_run'
+    # run = 'mx17_det3_long_run_5-6-26'
+    # sub_run = 'long_run'
+    run = 'mx17_det4_ArIso_HV_Scan_5-7-26'
+    sub_run = 'resist_510V_drift_900V'
     mx17_feus = [3, 4]   # 4 = X strips, 6 = Y strips
 
     run_config_path = f'{base_path}{run}/run_config.json'
