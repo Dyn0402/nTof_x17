@@ -42,13 +42,18 @@ _NTOF_X17_ROOT = _HERE.parent
 sys.path.insert(0, str(_NTOF_X17_ROOT))
 
 from common.Mx17StripMap import Mx17StripMap, Detector as Mx17Detector
+from common.DreamConfig import find_dream_config
 
-MAP_CSV           = _NTOF_X17_ROOT / 'mx17_m1_map.csv'
-COMBINED_INNER    = 'combined_hits_root'
-STRIP_PITCH_MM    = 0.78
-AMP_MAP_BINS      = 25
-HITS_AMP_THRESHOLD  = 200   # ADC — used for hits-above-threshold scatter and hits/event plots
-HITS_PER_EVENT_ZOOM = 50    # upper x-limit for the zoomed hits/event panels
+MAP_CSV              = _NTOF_X17_ROOT / 'mx17_m1_map.csv'
+COMBINED_INNER       = 'combined_hits_root'
+DECODED_ROOT_DIR     = 'decoded_root'
+STRIP_PITCH_MM       = 0.78
+AMP_MAP_BINS         = 25
+HITS_AMP_THRESHOLD   = 200   # ADC — used for hits-above-threshold scatter and hits/event plots
+HITS_PER_EVENT_ZOOM  = 50    # upper x-limit for the zoomed hits/event panels
+WF_NS_PER_SAMPLE     = 20.0  # default waveform sample period [ns]; overridden by DreamConfig
+WF_N_FIRST           = 10    # number of first events to plot
+WF_N_RANDOM          = 20    # number of additional random events to plot
 
 
 # ---------------------------------------------------------------------------
@@ -141,6 +146,10 @@ def run_qa(subrun_dir: Path, run_config_path: Path, mode: str = 'all', file_num:
                 _plot_position_scatter(pos_df, title, out_dir)
                 _plot_amplitude_map(pos_df['x_mm'].values, pos_df['y_mm'].values,
                                     pos_df['amplitude'].values, title, out_dir)
+
+        # --- Neutron beam: waveform + hits per event ---
+        if run_cfg.get('beam_type') == 'neutrons':
+            _plot_neutron_waveforms(subrun_dir, df, feu_ids, title, out_dir)
 
         plt.close('all')
         print(f'[qa] {name} — saved to {out_dir}')
@@ -481,6 +490,156 @@ def _plot_time_vs_channel(df: pd.DataFrame, title: str, out_dir: Path):
     fig.suptitle(f'Hit time vs channel — {title}', fontsize=10)
     fig.tight_layout()
     _save(fig, out_dir, 'time_vs_channel.png')
+
+
+# ---------------------------------------------------------------------------
+# Neutron beam — waveform + hits per event
+# ---------------------------------------------------------------------------
+
+def _load_wf_for_events(decoded_dir: Path, feu_ids, event_ids) -> dict:
+    """
+    Load raw waveforms from decoded_root for the given event IDs.
+
+    Returns {feu_id: {event_id: (samples_arr, channels_arr, amplitudes_arr)}}.
+    """
+    target    = set(int(e) for e in event_ids)
+    result    = {feu: {} for feu in feu_ids}
+    all_files = sorted(decoded_dir.iterdir(), key=lambda p: p.name)
+
+    for feu in feu_ids:
+        feu_str   = f'_{feu:02d}.'
+        feu_files = [f for f in all_files if f.suffix == '.root' and feu_str in f.name]
+        for fpath in feu_files:
+            try:
+                with uproot.open(fpath) as uf:
+                    if 'nt' not in uf:
+                        continue
+                    tree        = uf['nt']
+                    evt_ids_arr = tree['eventId'].array(library='np')
+                    samples     = tree['sample'].array(library='np')
+                    channels    = tree['channel'].array(library='np')
+                    amps        = tree['amplitude'].array(library='np')
+            except Exception as e:
+                print(f'[qa/wf] Error reading {fpath.name}: {e}')
+                continue
+            for i, eid in enumerate(evt_ids_arr):
+                if int(eid) in target:
+                    result[feu][int(eid)] = (
+                        np.asarray(samples[i]),
+                        np.asarray(channels[i]),
+                        np.asarray(amps[i]),
+                    )
+    return result
+
+
+def _plot_waveform_hits_event(waveforms: dict, df_all: pd.DataFrame, evt_id: int,
+                               feu_ids, title: str, out_dir: Path,
+                               ns_per_sample: float) -> None:
+    """
+    Two rows per FEU (waveform + hits scatter) for a single event, shared time axis.
+    Saves to out_dir/waveform_event_<evt_id>.png.
+    """
+    present = [feu for feu in sorted(feu_ids) if evt_id in waveforms.get(feu, {})]
+    if not present:
+        return
+
+    n_feus = len(present)
+    fig, axes = plt.subplots(n_feus * 2, 1, figsize=(12, 3.5 * n_feus),
+                              sharex=True, squeeze=False)
+    axes = axes[:, 0]
+
+    fig.suptitle(f'{title}\nEvent {evt_id} — waveforms + hits', fontsize=10)
+
+    df_evt = df_all[df_all['eventId'] == evt_id]
+
+    for i, feu in enumerate(present):
+        ax_wf = axes[i * 2]
+        ax_ht = axes[i * 2 + 1]
+
+        # Waveforms — channels coloured by channel number
+        samples, channels, amplitudes = waveforms[feu][evt_id]
+        t_us      = samples.astype(float) * ns_per_sample / 1000
+        unique_ch = np.unique(channels)
+        cmap      = plt.get_cmap('coolwarm')
+        norm      = plt.Normalize(vmin=unique_ch.min(), vmax=unique_ch.max())
+        for ch in unique_ch:
+            mask = channels == ch
+            ax_wf.plot(t_us[mask], amplitudes[mask], lw=0.7, color=cmap(norm(ch)), alpha=0.8)
+        sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
+        sm.set_array([])
+        plt.colorbar(sm, ax=ax_wf, label='Channel')
+        ax_wf.axhline(HITS_AMP_THRESHOLD, color='red', lw=1, ls='--',
+                      label=f'thr={HITS_AMP_THRESHOLD}', zorder=0)
+        ax_wf.set_ylabel('Amplitude [ADC]')
+        ax_wf.set_title(f'FEU {feu}  ({len(unique_ch)} channels fired)', fontsize=9)
+        ax_wf.legend(fontsize=7)
+        ax_wf.grid(True, alpha=0.2)
+
+        # Hits scatter — time vs channel, colour = amplitude
+        df_feu = df_evt[df_evt['feu'] == feu]
+        if not df_feu.empty:
+            t_hit_us = df_feu['time'].values / 3 / 1000  # 1/3 ns units → μs
+            sc = ax_ht.scatter(t_hit_us, df_feu['channel'].values,
+                               c=df_feu['amplitude'].values, cmap='plasma',
+                               s=20, linewidths=0)
+            plt.colorbar(sc, ax=ax_ht, label='Amplitude [ADC]')
+        ax_ht.set_ylabel('Channel')
+        ax_ht.set_title(f'FEU {feu} hits', fontsize=9)
+        ax_ht.grid(True, alpha=0.2)
+
+    axes[-1].set_xlabel('Time [μs]')
+    fig.tight_layout()
+    plt.subplots_adjust(hspace=0.05)
+    _save(fig, out_dir, f'waveform_event_{evt_id:06d}.png')
+
+
+def _plot_neutron_waveforms(subrun_dir: Path, df: pd.DataFrame, feu_ids,
+                             title: str, out_dir: Path) -> None:
+    """
+    Plot waveform + hits for the first WF_N_FIRST events and WF_N_RANDOM random
+    events from the subrun.  Figures are saved to out_dir/waveforms/.
+    """
+    decoded_dir = subrun_dir / DECODED_ROOT_DIR
+    if not decoded_dir.exists():
+        print(f'[qa/wf] No {DECODED_ROOT_DIR}/ in {subrun_dir}, skipping waveform plots')
+        return
+
+    if not feu_ids:
+        return
+
+    dream_cfg     = find_dream_config(subrun_dir)
+    ns_per_sample = (dream_cfg.ns_per_sample
+                     if dream_cfg and dream_cfg.ns_per_sample is not None
+                     else WF_NS_PER_SAMPLE)
+
+    all_event_ids = sorted(df['eventId'].unique())
+    n_total       = len(all_event_ids)
+    first_n       = min(WF_N_FIRST, n_total)
+    first_events  = all_event_ids[:first_n]
+
+    remaining     = all_event_ids[first_n:]
+    n_random      = min(WF_N_RANDOM, len(remaining))
+    rng           = np.random.default_rng(42)
+    random_events = (sorted(rng.choice(remaining, size=n_random, replace=False).tolist())
+                     if n_random > 0 else [])
+
+    selected = list(first_events) + random_events
+    if not selected:
+        return
+
+    print(f'[qa/wf] Loading waveforms for {len(selected)} events '
+          f'({first_n} first + {len(random_events)} random)')
+    waveforms = _load_wf_for_events(decoded_dir, sorted(feu_ids), selected)
+
+    wf_dir = out_dir / 'waveforms'
+    wf_dir.mkdir(exist_ok=True)
+
+    for evt_id in selected:
+        _plot_waveform_hits_event(waveforms, df, evt_id, feu_ids,
+                                   title, wf_dir, ns_per_sample)
+        plt.close('all')
+
+    print(f'[qa/wf] Saved {len(selected)} waveform figures → {wf_dir}')
 
 
 if __name__ == '__main__':
