@@ -593,11 +593,156 @@ def _plot_waveform_hits_event(waveforms: dict, df_all: pd.DataFrame, evt_id: int
     _save(fig, out_dir, f'waveform_event_{evt_id:06d}.png')
 
 
+def _load_wf_stats_from_decoded(decoded_dir: Path, feu_ids) -> dict:
+    """
+    Stream all decoded root files and compute per-(channel, sample) mean and
+    population-std (RMS) amplitude across all events.
+    Returns {feu: DataFrame(channel, sample, mean, rms)}.
+    """
+    result    = {}
+    all_files = sorted(decoded_dir.iterdir(), key=lambda p: p.name)
+
+    for feu in sorted(feu_ids):
+        feu_str   = f'_{feu:02d}.'
+        feu_files = [f for f in all_files if f.suffix == '.root' and feu_str in f.name]
+        chunks    = []
+        for fpath in feu_files:
+            try:
+                with uproot.open(fpath) as uf:
+                    if 'nt' not in uf:
+                        continue
+                    tree         = uf['nt']
+                    samples_arr  = tree['sample'].array(library='np')
+                    channels_arr = tree['channel'].array(library='np')
+                    amps_arr     = tree['amplitude'].array(library='np')
+            except Exception as e:
+                print(f'[qa/wf] Error reading {fpath.name}: {e}')
+                continue
+            if len(samples_arr) == 0:
+                continue
+            flat_s = np.concatenate([np.asarray(x) for x in samples_arr])
+            flat_c = np.concatenate([np.asarray(x) for x in channels_arr])
+            flat_a = np.concatenate([np.asarray(x) for x in amps_arr]).astype(float)
+            chunks.append(pd.DataFrame({'channel':   flat_c.astype(np.int32),
+                                        'sample':    flat_s.astype(np.int32),
+                                        'amplitude': flat_a}))
+        if not chunks:
+            continue
+
+        df_wf  = pd.concat(chunks, ignore_index=True)
+        g      = df_wf.groupby(['channel', 'sample'])['amplitude']
+        stats  = pd.DataFrame({'mean': g.mean(),
+                                'rms':  g.std(ddof=0).fillna(0.0)}).reset_index()
+        result[feu] = stats
+
+    return result
+
+
+def _plot_wf_mean_rms(stats: dict, feu_ids, title: str, out_dir: Path,
+                       ns_per_sample: float) -> None:
+    """
+    2D color maps of mean and RMS amplitude per strip vs sample time.
+    One figure per FEU (two panels: mean | RMS).  Saved to out_dir directly.
+    """
+    cmap = plt.get_cmap('viridis').copy()
+    cmap.set_bad('lightgrey')
+
+    for feu in sorted(feu_ids):
+        if feu not in stats or stats[feu].empty:
+            continue
+        df = stats[feu]
+
+        ch_min  = int(df['channel'].min())
+        ch_max  = int(df['channel'].max())
+        smp_min = int(df['sample'].min())
+        smp_max = int(df['sample'].max())
+        n_ch    = ch_max - ch_min + 1
+        n_smp   = smp_max - smp_min + 1
+
+        mean_img = np.full((n_ch, n_smp), np.nan)
+        rms_img  = np.full((n_ch, n_smp), np.nan)
+        ci = df['channel'].values.astype(int) - ch_min
+        si = df['sample'].values.astype(int)  - smp_min
+        mean_img[ci, si] = df['mean'].values
+        rms_img[ci, si]  = df['rms'].values
+
+        t0     = smp_min * ns_per_sample / 1000
+        t1     = (smp_max + 1) * ns_per_sample / 1000
+        extent = [t0, t1, ch_min - 0.5, ch_max + 0.5]
+
+        fig_h = max(4.0, n_ch * 0.08 + 2.0)
+        fig, (ax_m, ax_r) = plt.subplots(1, 2, figsize=(14, fig_h))
+
+        im_m = ax_m.imshow(mean_img, origin='lower', aspect='auto',
+                            extent=extent, cmap=cmap)
+        plt.colorbar(im_m, ax=ax_m, label='Mean amplitude [ADC]')
+        ax_m.set_xlabel('Time [μs]')
+        ax_m.set_ylabel('Channel')
+        ax_m.set_title(f'FEU {feu} — mean')
+
+        im_r = ax_r.imshow(rms_img, origin='lower', aspect='auto',
+                            extent=extent, cmap=cmap)
+        plt.colorbar(im_r, ax=ax_r, label='RMS amplitude [ADC]')
+        ax_r.set_xlabel('Time [μs]')
+        ax_r.set_ylabel('Channel')
+        ax_r.set_title(f'FEU {feu} — RMS')
+
+        fig.suptitle(f'{title}\nWaveform mean & RMS — all events', fontsize=10)
+        fig.tight_layout()
+        _save(fig, out_dir, f'waveform_mean_rms_feu{feu:02d}.png')
+
+
+def _plot_wf_mean_rms_per_strip(stats: dict, feu_ids, title: str, out_dir: Path) -> None:
+    """
+    Per-strip summary: mean and RMS amplitude integrated over all samples.
+    Top panel = mean, bottom panel = RMS.  One figure per FEU, saved to out_dir.
+    """
+    for feu in sorted(feu_ids):
+        if feu not in stats or stats[feu].empty:
+            continue
+        df = stats[feu]
+
+        per_ch = df.groupby('channel').agg(
+            mean=('mean', 'mean'),
+            rms=('rms',  'mean'),
+        ).reset_index().sort_values('channel')
+
+        channels = per_ch['channel'].values
+        means    = per_ch['mean'].values
+        rms_vals = per_ch['rms'].values
+        ch_max   = int(channels.max())
+        ch_min   = int(channels.min())
+        xticks   = [t for t in [0] + list(range(63, ch_max + 1, 64)) if ch_min <= t <= ch_max]
+
+        fig, (ax_m, ax_r) = plt.subplots(2, 1, figsize=(10, 6), sharex=True)
+
+        ax_m.bar(channels, means, width=1.0, color='steelblue', edgecolor='none')
+        ax_m.axhline(4096, color='red', lw=1.2, ls='--', label='4096')
+        ax_m.set_ylabel('Mean amplitude [ADC]')
+        ax_m.set_title(f'FEU {feu} — mean amplitude per strip (time-integrated)')
+        ax_m.legend(fontsize=8)
+        ax_m.grid(True, axis='y', alpha=0.3)
+
+        ax_r.bar(channels, rms_vals, width=1.0, color='steelblue', edgecolor='none')
+        ax_r.axhline(4096, color='red', lw=1.2, ls='--', label='4096')
+        ax_r.set_ylabel('RMS amplitude [ADC]')
+        ax_r.set_title(f'FEU {feu} — RMS amplitude per strip (time-integrated)')
+        ax_r.legend(fontsize=8)
+        ax_r.set_xlabel('Channel')
+        ax_r.set_xticks(xticks)
+        ax_r.grid(True, axis='y', alpha=0.3)
+
+        fig.suptitle(f'{title}\nWaveform mean & RMS per strip — all events', fontsize=10)
+        fig.tight_layout()
+        _save(fig, out_dir, f'waveform_strip_mean_rms_feu{feu:02d}.png')
+
+
 def _plot_neutron_waveforms(subrun_dir: Path, df: pd.DataFrame, feu_ids,
                              title: str, out_dir: Path) -> None:
     """
     Plot waveform + hits for the first WF_N_FIRST events and WF_N_RANDOM random
     events from the subrun.  Figures are saved to out_dir/waveforms/.
+    Also produces mean/RMS companion plots saved directly to out_dir.
     """
     decoded_dir = subrun_dir / DECODED_ROOT_DIR
     if not decoded_dir.exists():
@@ -640,6 +785,13 @@ def _plot_neutron_waveforms(subrun_dir: Path, df: pd.DataFrame, feu_ids,
         plt.close('all')
 
     print(f'[qa/wf] Saved {len(selected)} waveform figures → {wf_dir}')
+
+    print(f'[qa/wf] Computing per-strip mean/RMS across all decoded files ...')
+    wf_stats = _load_wf_stats_from_decoded(decoded_dir, sorted(feu_ids))
+    if wf_stats:
+        _plot_wf_mean_rms(wf_stats, sorted(feu_ids), title, out_dir, ns_per_sample)
+        _plot_wf_mean_rms_per_strip(wf_stats, sorted(feu_ids), title, out_dir)
+        print(f'[qa/wf] Saved waveform mean/RMS plots → {out_dir}')
 
 
 if __name__ == '__main__':
