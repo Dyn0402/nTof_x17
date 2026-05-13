@@ -727,6 +727,7 @@ def _plot_wf_mean_rms_per_strip(stats: dict, feu_ids, title: str, out_dir: Path)
         ax_m.grid(True, axis='y', alpha=0.3)
 
         ax_r.bar(channels, rms_vals, width=1.0, color='steelblue', edgecolor='none')
+        ax_r.axhline(4096, color='red', lw=1.2, ls='--', label='4096')
         ax_r.set_ylabel('RMS amplitude [ADC]')
         ax_r.set_title(f'FEU {feu} — RMS amplitude per strip (time-integrated)')
         ax_r.legend(fontsize=8)
