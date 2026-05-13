@@ -148,7 +148,7 @@ def run_qa(subrun_dir: Path, run_config_path: Path, mode: str = 'all', file_num:
                                     pos_df['amplitude'].values, title, out_dir)
 
         # --- Neutron beam: waveform + hits per event ---
-        if run_cfg.get('beam_type') == 'neutrons':
+        if run_cfg.get('beam_type') == 'neutrons' or run_cfg.get('beam_type') == 'noise-generator':
             _plot_neutron_waveforms(subrun_dir, df, feu_ids, title, out_dir)
 
         plt.close('all')
