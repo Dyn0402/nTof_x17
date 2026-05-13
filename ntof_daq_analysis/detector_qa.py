@@ -147,8 +147,11 @@ def run_qa(subrun_dir: Path, run_config_path: Path, mode: str = 'all', file_num:
                 _plot_amplitude_map(pos_df['x_mm'].values, pos_df['y_mm'].values,
                                     pos_df['amplitude'].values, title, out_dir)
 
-        # --- Neutron beam: waveform + hits per event ---
-        if run_cfg.get('beam_type') == 'neutrons':
+        # --- Waveform mean/RMS stats (all runs) ---
+        _plot_wf_stats(subrun_dir, feu_ids, title, out_dir)
+
+        # --- Neutron beam: per-event waveform plots ---
+        if run_cfg.get('beam_type') == 'neutrons' or run_cfg.get('beam_type') == 'noise-generator':
             _plot_neutron_waveforms(subrun_dir, df, feu_ids, title, out_dir)
 
         plt.close('all')
@@ -724,7 +727,6 @@ def _plot_wf_mean_rms_per_strip(stats: dict, feu_ids, title: str, out_dir: Path)
         ax_m.grid(True, axis='y', alpha=0.3)
 
         ax_r.bar(channels, rms_vals, width=1.0, color='steelblue', edgecolor='none')
-        ax_r.axhline(4096, color='red', lw=1.2, ls='--', label='4096')
         ax_r.set_ylabel('RMS amplitude [ADC]')
         ax_r.set_title(f'FEU {feu} — RMS amplitude per strip (time-integrated)')
         ax_r.legend(fontsize=8)
@@ -737,12 +739,30 @@ def _plot_wf_mean_rms_per_strip(stats: dict, feu_ids, title: str, out_dir: Path)
         _save(fig, out_dir, f'waveform_strip_mean_rms_feu{feu:02d}.png')
 
 
+def _plot_wf_stats(subrun_dir: Path, feu_ids, title: str, out_dir: Path) -> None:
+    """Compute and save per-strip waveform mean/RMS plots for any run type."""
+    decoded_dir = subrun_dir / DECODED_ROOT_DIR
+    if not decoded_dir.exists() or not feu_ids:
+        return
+
+    dream_cfg     = find_dream_config(subrun_dir)
+    ns_per_sample = (dream_cfg.ns_per_sample
+                     if dream_cfg and dream_cfg.ns_per_sample is not None
+                     else WF_NS_PER_SAMPLE)
+
+    print(f'[qa/wf] Computing per-strip mean/RMS across all decoded files ...')
+    wf_stats = _load_wf_stats_from_decoded(decoded_dir, sorted(feu_ids))
+    if wf_stats:
+        _plot_wf_mean_rms(wf_stats, sorted(feu_ids), title, out_dir, ns_per_sample)
+        _plot_wf_mean_rms_per_strip(wf_stats, sorted(feu_ids), title, out_dir)
+        print(f'[qa/wf] Saved waveform mean/RMS plots → {out_dir}')
+
+
 def _plot_neutron_waveforms(subrun_dir: Path, df: pd.DataFrame, feu_ids,
                              title: str, out_dir: Path) -> None:
     """
     Plot waveform + hits for the first WF_N_FIRST events and WF_N_RANDOM random
     events from the subrun.  Figures are saved to out_dir/waveforms/.
-    Also produces mean/RMS companion plots saved directly to out_dir.
     """
     decoded_dir = subrun_dir / DECODED_ROOT_DIR
     if not decoded_dir.exists():
@@ -785,13 +805,6 @@ def _plot_neutron_waveforms(subrun_dir: Path, df: pd.DataFrame, feu_ids,
         plt.close('all')
 
     print(f'[qa/wf] Saved {len(selected)} waveform figures → {wf_dir}')
-
-    print(f'[qa/wf] Computing per-strip mean/RMS across all decoded files ...')
-    wf_stats = _load_wf_stats_from_decoded(decoded_dir, sorted(feu_ids))
-    if wf_stats:
-        _plot_wf_mean_rms(wf_stats, sorted(feu_ids), title, out_dir, ns_per_sample)
-        _plot_wf_mean_rms_per_strip(wf_stats, sorted(feu_ids), title, out_dir)
-        print(f'[qa/wf] Saved waveform mean/RMS plots → {out_dir}')
 
 
 if __name__ == '__main__':
