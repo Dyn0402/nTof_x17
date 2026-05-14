@@ -52,8 +52,7 @@ AMP_MAP_BINS         = 25
 HITS_AMP_THRESHOLD   = 200   # ADC — used for hits-above-threshold scatter and hits/event plots
 HITS_PER_EVENT_ZOOM  = 50    # upper x-limit for the zoomed hits/event panels
 WF_NS_PER_SAMPLE     = 20.0  # default waveform sample period [ns]; overridden by DreamConfig
-WF_N_FIRST           = 10    # number of first events to plot
-WF_N_RANDOM          = 20    # number of additional random events to plot
+WF_N_EVENTS          = 30    # number of evenly-spaced events to plot
 
 
 # ---------------------------------------------------------------------------
@@ -581,7 +580,7 @@ def _plot_waveform_hits_event(waveforms: dict, df_all: pd.DataFrame, evt_id: int
         # Hits scatter — time vs channel, colour = amplitude
         df_feu = df_evt[df_evt['feu'] == feu]
         if not df_feu.empty:
-            t_hit_us = df_feu['time'].values / 3 / 1000  # 1/3 ns units → μs
+            t_hit_us = df_feu['time'].values / 1000  # ns → μs
             sc = ax_ht.scatter(t_hit_us, df_feu['channel'].values,
                                c=df_feu['amplitude'].values, cmap='plasma',
                                s=20, linewidths=0)
@@ -779,21 +778,13 @@ def _plot_neutron_waveforms(subrun_dir: Path, df: pd.DataFrame, feu_ids,
 
     all_event_ids = sorted(df['eventId'].unique())
     n_total       = len(all_event_ids)
-    first_n       = min(WF_N_FIRST, n_total)
-    first_events  = all_event_ids[:first_n]
-
-    remaining     = all_event_ids[first_n:]
-    n_random      = min(WF_N_RANDOM, len(remaining))
-    rng           = np.random.default_rng(42)
-    random_events = (sorted(rng.choice(remaining, size=n_random, replace=False).tolist())
-                     if n_random > 0 else [])
-
-    selected = list(first_events) + random_events
+    n_select      = min(WF_N_EVENTS, n_total)
+    indices       = np.linspace(0, n_total - 1, n_select).round().astype(int)
+    selected      = [all_event_ids[i] for i in indices]
     if not selected:
         return
 
-    print(f'[qa/wf] Loading waveforms for {len(selected)} events '
-          f'({first_n} first + {len(random_events)} random)')
+    print(f'[qa/wf] Loading waveforms for {len(selected)} evenly-spaced events')
     waveforms = _load_wf_for_events(decoded_dir, sorted(feu_ids), selected)
 
     wf_dir = out_dir / 'waveforms'
