@@ -9,8 +9,13 @@ Particle types:
   - Correlated background: coincident pairs with angular distribution from a background spectrum
   - Signal: coincident e+/e- pairs with angular separation ~120° (Gaussian)
 
+All particles originate at the target (origin). Each travels in a straight line
+and registers at most one hit (the geometry ensures this when detector_distance
+>= detector_size / 2).
+
 Reconstruction: hits are smeared in space and time to emulate detector resolution.
-Analysis: builds mock angular separation distributions for time-coincident hits.
+Analysis: builds mock angular separation distributions for time-coincident hits
+          under two trigger scenarios — any detector hit, or two adjacent detectors hit.
 """
 
 import numpy as np
@@ -29,11 +34,11 @@ import warnings
 class Particle:
     """A single simulated particle."""
     pid: str            # 'electron', 'positron', 'photon', 'proton'
-    origin: np.ndarray  # 3D origin (should be [0,0,0] for target)
+    origin: np.ndarray  # 3D origin
     direction: np.ndarray  # unit 3-vector
     t0: float           # true emission time [ns]
     event_id: int = -1
-    particle_id: int = -1   # unique per particle; hits from same particle share this
+    particle_id: int = -1
     pair_id: int = -1        # shared by both particles in a correlated pair (-1 if unpaired)
     source: str = 'random'  # 'random', 'background_pair', 'signal'
 
@@ -80,42 +85,28 @@ class Detector:
     SIDE_NAMES = {0: '+X', 1: '-X', 2: '+Y', 3: '-Y'}
 
     def __init__(self, side: int, distance: float, size: float = 40.0):
-        """
-        Parameters
-        ----------
-        side     : int, 0-3, which face of the square
-        distance : float, center-to-detector distance [cm]
-        size     : float, detector active area side length [cm]
-        """
         self.side = side
         self.distance = distance
         self.size = size
         self.normal = self.SIDE_NORMALS[side]
         self.name = self.SIDE_NAMES[side]
-
-        # Center position of the detector panel
-        self.center = -self.normal * distance  # e.g. side 0 normal=-X, center at +X
+        self.center = -self.normal * distance
 
     def intersect(self, origin: np.ndarray, direction: np.ndarray):
         """
         Find where a ray (origin + t*direction) hits this detector plane.
-
         Returns (hit_3d, local_2d) or (None, None) if no valid intersection.
-        local_2d is the 2D coordinate within the detector face [-size/2, size/2]^2.
         """
         denom = np.dot(self.normal, direction)
         if abs(denom) < 1e-9:
-            return None, None  # parallel to panel
+            return None, None
 
-        # Plane equation: normal · (p - center) = 0  =>  t = normal·(center-origin) / normal·direction
         t = np.dot(self.normal, self.center - origin) / denom
         if t <= 0:
-            return None, None  # behind origin
+            return None, None
 
         hit_3d = origin + t * direction
 
-        # Project onto detector local 2D coordinates
-        # Build two orthogonal axes in the plane
         local_u, local_v = self._local_axes()
         delta = hit_3d - self.center
         u = np.dot(delta, local_u)
@@ -123,13 +114,11 @@ class Detector:
 
         half = self.size / 2.0
         if abs(u) > half or abs(v) > half:
-            return None, None  # outside active area
+            return None, None
 
         return hit_3d, np.array([u, v])
 
     def _local_axes(self):
-        """Return two orthogonal unit vectors spanning the detector face."""
-        # Choose a consistent up vector
         if abs(self.normal[0]) < 0.9:
             up = np.array([1.0, 0.0, 0.0])
         else:
@@ -165,7 +154,7 @@ class GaussianSpectrum(AngularSpectrum):
 
 
 class FlatSpectrum(AngularSpectrum):
-    """Flat (uniform) distribution over [min, max] degrees — simple background."""
+    """Flat (uniform) distribution over [min, max] degrees."""
     def __init__(self, min_deg: float = 0.0, max_deg: float = 180.0):
         self.min = min_deg
         self.max = max_deg
@@ -176,12 +165,10 @@ class FlatSpectrum(AngularSpectrum):
 
 class IsotropicSpectrum(AngularSpectrum):
     """
-    Background angular separation for isotropic pairs.
-    Two isotropic particles: the angular separation distribution
-    goes as sin(theta), peaking near 90 degrees.
+    Angular separation for isotropic pairs: p(theta) ~ sin(theta),
+    peaking near 90 degrees.
     """
     def sample(self, n: int) -> np.ndarray:
-        # Sample via rejection: p(theta) ~ sin(theta)
         samples = []
         while len(samples) < n:
             theta = np.random.uniform(0, 180, n * 2)
@@ -192,7 +179,7 @@ class IsotropicSpectrum(AngularSpectrum):
 
 
 class HistogramSpectrum(AngularSpectrum):
-    """User-defined spectrum from histogram bins. Easy to swap in later."""
+    """User-defined spectrum from histogram bins."""
     def __init__(self, bin_edges: np.ndarray, counts: np.ndarray):
         self.bin_edges = bin_edges
         probs = counts / counts.sum()
@@ -211,45 +198,6 @@ class ExponentialSpectrum(AngularSpectrum):
     """
     Falling exponential background: p(theta) ~ exp(-theta / scale_deg),
     sampled over [min_deg, max_deg] via inverse-CDF.
-
-    Parameters
-    ----------
-    scale_deg : float
-        Decay constant in degrees. Smaller = steeper fall. Default 40°.
-    min_deg   : float
-        Lower bound of the distribution. Default 0°.
-    max_deg   : float
-        Upper bound of the distribution. Default 180°.
-    """
-    def __init__(self, scale_deg: float = 40.0,
-                 min_deg: float = 0.0, max_deg: float = 180.0):
-        self.scale = scale_deg
-        self.min = min_deg
-        self.max = max_deg
-        # Normalisation constants for inverse-CDF on truncated exponential
-        self._lo = np.exp(-min_deg / scale_deg)
-        self._hi = np.exp(-max_deg / scale_deg)
-
-    def sample(self, n: int) -> np.ndarray:
-        # Inverse-CDF of truncated exponential
-        u = np.random.uniform(0, 1, n)
-        return -self.scale * np.log(self._lo - u * (self._lo - self._hi))
-
-
-
-class ExponentialSpectrum(AngularSpectrum):
-    """
-    Falling exponential background: p(theta) ~ exp(-theta / scale_deg),
-    sampled over [min_deg, max_deg] via inverse-CDF.
-
-    Parameters
-    ----------
-    scale_deg : float
-        Decay constant in degrees. Smaller = steeper fall. Default 40 deg.
-    min_deg   : float
-        Lower bound of the distribution. Default 0 deg.
-    max_deg   : float
-        Upper bound of the distribution. Default 180 deg.
     """
     def __init__(self, scale_deg: float = 40.0,
                  min_deg: float = 0.0, max_deg: float = 180.0):
@@ -281,21 +229,21 @@ class SimConfig:
 
     # Timing
     coincidence_window: float = 20.0    # ns, window to call hits coincident
-    time_spread: float = 200.0          # ns, duration of a single readout event [ns]
+    time_spread: float = 200.0          # ns, duration of a single readout event
 
     # Event structure — counts are Poisson means *per event*
-    n_events: int = 100                 # number of readout events to simulate
-    n_random: float = 50.0             # mean random single-particle background per event
+    n_events: int = 100
+    n_random: float = 5.0              # mean random single-particle background per event
     n_background_pairs: float = 10.0   # mean correlated background pairs per event
     n_signal: float = 2.0              # mean signal e+/e- pairs per event
 
     # Pairing
-    allow_same_detector_pairs: bool = True  # Allow pairs from the same detector
+    allow_same_detector_pairs: bool = True
 
-    # Hit merging: two hits on the same detector are merged if closer than these thresholds
+    # Hit merging
     merge_hits: bool = True
-    merge_spatial_threshold: float = 1.0   # cm — merge if distance < this
-    merge_time_threshold: float = 10.0     # ns — merge if |dt| < this
+    merge_spatial_threshold: float = 1.0   # cm
+    merge_time_threshold: float = 10.0     # ns
 
     # Spectra
     signal_spectrum: AngularSpectrum = field(
@@ -313,7 +261,6 @@ class SimConfig:
         'proton': 0.1,
     })
 
-    # Seed
     seed: Optional[int] = None
 
 
@@ -332,13 +279,8 @@ def _random_direction() -> np.ndarray:
 
 
 def _direction_at_angle(reference: np.ndarray, angle_deg: float) -> np.ndarray:
-    """
-    Return a direction that makes a given angle with `reference`,
-    with a random azimuth around reference.
-    """
+    """Return a direction making a given angle with `reference`, random azimuth."""
     angle_rad = np.radians(angle_deg)
-
-    # Build orthonormal basis around reference
     ref = reference / np.linalg.norm(reference)
     perp = np.array([1.0, 0.0, 0.0])
     if abs(np.dot(ref, perp)) > 0.9:
@@ -346,7 +288,6 @@ def _direction_at_angle(reference: np.ndarray, angle_deg: float) -> np.ndarray:
     perp -= np.dot(perp, ref) * ref
     perp /= np.linalg.norm(perp)
     perp2 = np.cross(ref, perp)
-
     phi = np.random.uniform(0, 2 * np.pi)
     d = (np.cos(angle_rad) * ref
          + np.sin(angle_rad) * (np.cos(phi) * perp + np.sin(phi) * perp2))
@@ -359,6 +300,9 @@ class ParticleGenerator:
         self._event_counter = 0
         self._particle_counter = 0
         self._pair_counter = 0
+        # Accumulate true generated angular separations for all events
+        self.true_signal_angles: list[float] = []
+        self.true_bg_angles: list[float] = []
 
     def _next_event_id(self):
         eid = self._event_counter
@@ -377,35 +321,22 @@ class ParticleGenerator:
 
     def _random_pid(self):
         pids = list(self.cfg.random_pid_weights.keys())
-        weights = list(self.cfg.random_pid_weights.values())
-        weights = np.array(weights) / sum(weights)
+        weights = np.array(list(self.cfg.random_pid_weights.values()))
+        weights /= weights.sum()
         return np.random.choice(pids, p=weights)
 
     def generate_event(self, event_t0: float = 0.0) -> list[Particle]:
-        """
-        Generate all particles for a single readout event.
-
-        Particle counts are drawn from Poisson distributions using the
-        configured means. event_t0 offsets all times so events don't overlap.
-        Each particle gets a unique particle_id so hits from the same particle
-        can always be identified and excluded from pairing.
-
-        Parameters
-        ----------
-        event_t0 : float
-            Absolute time offset for this event [ns].
-        """
+        """Generate all particles for a single readout event."""
         particles = []
 
-        # --- Random single-particle background ---
+        # --- Random single-particle background (uncorrelated) ---
         n_rand = np.random.poisson(self.cfg.n_random)
         for _ in range(n_rand):
             eid = self._next_event_id()
             ptid = self._next_particle_id()
-            pid = self._random_pid()
             t0 = event_t0 + np.random.uniform(0, self.cfg.time_spread)
             particles.append(Particle(
-                pid=pid,
+                pid=self._random_pid(),
                 origin=np.zeros(3),
                 direction=_random_direction(),
                 t0=t0,
@@ -419,6 +350,7 @@ class ParticleGenerator:
         n_bg = np.random.poisson(self.cfg.n_background_pairs)
         if n_bg > 0:
             angles = self.cfg.background_spectrum.sample(n_bg)
+            self.true_bg_angles.extend(angles.tolist())
             for angle in angles:
                 eid = self._next_event_id()
                 t0 = event_t0 + np.random.uniform(0, self.cfg.time_spread)
@@ -434,6 +366,7 @@ class ParticleGenerator:
         n_sig = np.random.poisson(self.cfg.n_signal)
         if n_sig > 0:
             angles = self.cfg.signal_spectrum.sample(n_sig)
+            self.true_signal_angles.extend(angles.tolist())
             for angle in angles:
                 eid = self._next_event_id()
                 t0 = event_t0 + np.random.uniform(0, self.cfg.time_spread)
@@ -448,10 +381,9 @@ class ParticleGenerator:
         return particles
 
     def generate_all(self) -> list[Particle]:
-        """Generate particles across all events."""
         all_particles = []
         for i in range(self.cfg.n_events):
-            event_t0 = i * self.cfg.time_spread  # non-overlapping event windows
+            event_t0 = i * self.cfg.time_spread
             all_particles.extend(self.generate_event(event_t0))
         return all_particles
 
@@ -463,78 +395,106 @@ class ParticleGenerator:
 class Propagator:
     """
     Propagates particles to detectors and applies smearing.
-    Uses a simple straight-line track model (no magnetic field).
+    Straight-line track model (no magnetic field).
     """
 
     def __init__(self, detectors: list[Detector], cfg: SimConfig):
         self.detectors = detectors
         self.cfg = cfg
 
-    def propagate(self, particle: Particle) -> list[Hit]:
-        """Try to intersect a particle with all detectors. Return hits."""
-        hits = []
+    def _collect_intersections(self, particle: Particle):
+        """Find all detector intersections, sorted by distance from origin."""
+        results = []
         for det in self.detectors:
             hit_3d, local_2d = det.intersect(particle.origin, particle.direction)
             if local_2d is None:
                 continue
+            t = np.linalg.norm(hit_3d - particle.origin)
+            results.append((t, det, hit_3d, local_2d))
+        results.sort(key=lambda x: x[0])
+        return results
 
-            # Compute travel distance → time (assume relativistic, v~c)
-            # c ≈ 30 cm/ns
-            travel_dist = np.linalg.norm(hit_3d - particle.origin)
-            true_time = particle.t0 + travel_dist / 30.0
+    def _build_hit(self, particle: Particle, det: Detector,
+                   hit_3d: np.ndarray, local_2d: np.ndarray) -> Hit:
+        travel_dist = np.linalg.norm(hit_3d - particle.origin)
+        true_time = particle.t0 + travel_dist / 30.0  # c ≈ 30 cm/ns
+        reco_pos = local_2d + np.random.normal(0, self.cfg.spatial_resolution, 2)
+        reco_time = true_time + np.random.normal(0, self.cfg.time_resolution)
+        return Hit(
+            detector_id=det.side,
+            true_pos=local_2d,
+            reco_pos=reco_pos,
+            true_time=true_time,
+            reco_time=reco_time,
+            direction=particle.direction.copy(),
+            pid=particle.pid,
+            event_id=particle.event_id,
+            particle_id=particle.particle_id,
+            pair_id=particle.pair_id,
+            source=particle.source,
+        )
 
-            # Smear position and time
-            smear_pos = np.random.normal(0, self.cfg.spatial_resolution, 2)
-            smear_t = np.random.normal(0, self.cfg.time_resolution)
-            reco_pos = local_2d + smear_pos
-            reco_time = true_time + smear_t
-
-            hits.append(Hit(
-                detector_id=det.side,
-                true_pos=local_2d,
-                reco_pos=reco_pos,
-                true_time=true_time,
-                reco_time=reco_time,
-                direction=particle.direction.copy(),
-                pid=particle.pid,
-                event_id=particle.event_id,
-                particle_id=particle.particle_id,
-                pair_id=particle.pair_id,
-                source=particle.source,
-            ))
-        return hits
+    def propagate(self, particle: Particle) -> list[Hit]:
+        """Propagate from origin — record all detector intersections."""
+        return [self._build_hit(particle, det, hit_3d, local_2d)
+                for _, det, hit_3d, local_2d in self._collect_intersections(particle)]
 
 
 # ---------------------------------------------------------------------------
-# Analysis: Coincidence & Angular Separation
+# Analysis: Coincidence, Triggers & Angular Separation
 # ---------------------------------------------------------------------------
+
+# Adjacent detector pairs in the square geometry (non-opposite sides).
+# Opposite pairs (0↔1 = +X↔-X, 2↔3 = +Y↔-Y) are NOT adjacent.
+ADJACENT_DETECTOR_PAIRS = frozenset([
+    frozenset([0, 2]),  # +X and +Y
+    frozenset([0, 3]),  # +X and -Y
+    frozenset([1, 2]),  # -X and +Y
+    frozenset([1, 3]),  # -X and -Y
+])
+
+
+def event_passes_single_trigger(hits: list[Hit]) -> bool:
+    """Return True if hits exist on exactly one detector (no inter-detector coincidence)."""
+    return len({h.detector_id for h in hits}) == 1
+
+
+def event_passes_adjacent_trigger(hits: list[Hit]) -> bool:
+    """Return True if at least one pair of adjacent detectors both have hits."""
+    hit_det_ids = {h.detector_id for h in hits}
+    return any(pair.issubset(hit_det_ids) for pair in ADJACENT_DETECTOR_PAIRS)
+
+
+def _classify_pair_source(ha: Hit, hb: Hit) -> str:
+    """
+    Label a coincident pair by its truth source.
+    Correlated pairs (signal / background_pair) require the same pair_id so that
+    hits from two *different* background pairs in the same event are not
+    misclassified as a correlated pair — they are combinatorial background.
+    """
+    if (ha.source == 'signal' and hb.source == 'signal'
+            and ha.pair_id == hb.pair_id and ha.pair_id != -1):
+        return 'signal'
+    if (ha.source == 'background_pair' and hb.source == 'background_pair'
+            and ha.pair_id == hb.pair_id and ha.pair_id != -1):
+        return 'background_pair'
+    return 'random'
+
 
 def find_coincident_pairs(hits: list[Hit], cfg: SimConfig) -> list[tuple[Hit, Hit]]:
     """
     Find all pairs of hits within the coincidence window.
-
-    Same-particle pairs (hits sharing a particle_id) are always excluded —
-    these are just one particle crossing two detector panels and would
-    produce spurious 0° entries.
-
-    By default only pairs hits on *different* detectors. Set
-    cfg.allow_same_detector_pairs = True to also include pairs where both
-    hits landed on the same panel (useful for studying in-detector
-    conversions or delta rays).
-
-    Returns list of (hit_a, hit_b) tuples.
+    Same-particle hits are always excluded (they'd give spurious 0° entries).
     """
     pairs = []
     for i in range(len(hits)):
         for j in range(i + 1, len(hits)):
             ha, hb = hits[i], hits[j]
-            # Always reject hits from the same particle (would give 0°)
             if ha.particle_id == hb.particle_id:
                 continue
             if not cfg.allow_same_detector_pairs and ha.detector_id == hb.detector_id:
                 continue
-            dt = abs(ha.reco_time - hb.reco_time)
-            if dt <= cfg.coincidence_window:
+            if abs(ha.reco_time - hb.reco_time) <= cfg.coincidence_window:
                 pairs.append((ha, hb))
     return pairs
 
@@ -542,33 +502,11 @@ def find_coincident_pairs(hits: list[Hit], cfg: SimConfig) -> list[tuple[Hit, Hi
 def merge_hits(hits: list[Hit], cfg: SimConfig) -> list[Hit]:
     """
     Merge hits that are too close together on the same detector in both
-    space and time — emulating the finite spatial and temporal resolution
-    of the readout strips/pads.
-
-    Algorithm: greedy single-pass clustering.
-      - Sort hits by detector then reco_time.
-      - For each unmerged hit, collect all subsequent hits on the same
-        detector within (merge_time_threshold, merge_spatial_threshold).
-      - Replace the cluster with one merged hit whose reco_pos and
-        reco_time are the centroid of the cluster.
-      - The merged hit inherits source/pid from the earliest hit.
-        If any constituent is 'signal', the merged hit is labelled 'signal'.
-
-    Parameters
-    ----------
-    hits : list[Hit]
-        Reconstructed hits from the propagator (already smeared).
-    cfg  : SimConfig
-        Must have merge_spatial_threshold [cm] and merge_time_threshold [ns].
-
-    Returns
-    -------
-    list[Hit] with merged hits removed / replaced.
+    space and time (greedy single-pass clustering).
     """
     if not hits:
         return hits
 
-    # Group by detector
     by_det: dict[int, list[Hit]] = {}
     for h in hits:
         by_det.setdefault(h.detector_id, []).append(h)
@@ -576,7 +514,6 @@ def merge_hits(hits: list[Hit], cfg: SimConfig) -> list[Hit]:
     merged_hits: list[Hit] = []
 
     for det_id, det_hits in by_det.items():
-        # Sort by reco_time for efficient time-windowed clustering
         det_hits.sort(key=lambda h: h.reco_time)
         used = [False] * len(det_hits)
 
@@ -590,23 +527,17 @@ def merge_hits(hits: list[Hit], cfg: SimConfig) -> list[Hit]:
                 if used[j]:
                     continue
                 other = det_hits[j]
-                # Early exit: hits are time-sorted, so once dt exceeds threshold
-                # no further hits in this detector can be in the cluster
                 if other.reco_time - seed.reco_time > cfg.merge_time_threshold:
                     break
-                spatial_dist = np.linalg.norm(other.reco_pos - seed.reco_pos)
-                if spatial_dist < cfg.merge_spatial_threshold:
+                if np.linalg.norm(other.reco_pos - seed.reco_pos) < cfg.merge_spatial_threshold:
                     cluster.append(other)
                     used[j] = True
 
             if len(cluster) == 1:
                 merged_hits.append(seed)
             else:
-                # Build merged hit: centroid position and time
                 merged_pos  = np.mean([h.reco_pos  for h in cluster], axis=0)
                 merged_time = np.mean([h.reco_time for h in cluster])
-                # Truth position/time: keep earliest (seed, already time-sorted)
-                # Source: promote to most specific
                 source_priority = {'signal': 0, 'background_pair': 1, 'random': 2}
                 best = min(cluster, key=lambda h: source_priority[h.source])
                 merged_hits.append(Hit(
@@ -627,11 +558,7 @@ def merge_hits(hits: list[Hit], cfg: SimConfig) -> list[Hit]:
 
 
 def angular_separation_from_hits(ha: Hit, hb: Hit) -> float:
-    """
-    Compute angular separation between two hits using their 3D directions.
-    For a more realistic reconstruction you'd use hit positions on detectors;
-    here we use the true direction smeared implicitly by spatial resolution.
-    """
+    """Compute angular separation between two hits using their 3D directions."""
     cos_angle = np.clip(np.dot(ha.direction, hb.direction), -1, 1)
     return np.degrees(np.arccos(cos_angle))
 
@@ -644,12 +571,20 @@ class MicromegasSimulation:
     """
     Top-level simulation object. Build, run, and analyse in one place.
 
-    Example
-    -------
-    >>> cfg = SimConfig(detector_distance=15.0, n_signal=500)
-    >>> sim = MicromegasSimulation(cfg)
-    >>> sim.run()
-    >>> sim.plot_angular_separation()
+    After run(), results are available under two trigger scenarios:
+      - 'any'  : all events with at least one detector hit
+      - 'adj'  : events where at least one pair of adjacent detectors both fire
+
+    Attributes (per trigger)
+    ------------------------
+    angular_separations_any / _single / _adj : np.ndarray of angular separations [deg]
+    pair_sources_any / _single / _adj        : list of truth labels per pair
+    coincident_pairs_any / _single / _adj    : list of (Hit, Hit) tuples
+
+    True generated spectra (before detector acceptance)
+    ---------------------------------------------------
+    true_signal_angles : np.ndarray of generated signal pair opening angles
+    true_bg_angles     : np.ndarray of generated background pair opening angles
     """
 
     def __init__(self, cfg: SimConfig = None):
@@ -663,9 +598,35 @@ class MicromegasSimulation:
 
         self.particles: list[Particle] = []
         self.hits: list[Hit] = []
-        self.coincident_pairs: list[tuple[Hit, Hit]] = []
-        self.angular_separations: np.ndarray = np.array([])
-        self.pair_sources: list[str] = []
+        self.hits_premerge: list[Hit] = []
+
+        # Per-trigger result storage
+        self.coincident_pairs_any: list[tuple[Hit, Hit]] = []
+        self.coincident_pairs_single: list[tuple[Hit, Hit]] = []
+        self.coincident_pairs_adj: list[tuple[Hit, Hit]] = []
+        self.angular_separations_any: np.ndarray = np.array([])
+        self.angular_separations_single: np.ndarray = np.array([])
+        self.angular_separations_adj: np.ndarray = np.array([])
+        self.pair_sources_any: list[str] = []
+        self.pair_sources_single: list[str] = []
+        self.pair_sources_adj: list[str] = []
+
+        # True generated spectra
+        self.true_signal_angles: np.ndarray = np.array([])
+        self.true_bg_angles: np.ndarray = np.array([])
+
+    # Backward-compat aliases (point to 'any' trigger results)
+    @property
+    def coincident_pairs(self):
+        return self.coincident_pairs_any
+
+    @property
+    def angular_separations(self):
+        return self.angular_separations_any
+
+    @property
+    def pair_sources(self):
+        return self.pair_sources_any
 
     def _build_detectors(self):
         return [
@@ -676,134 +637,194 @@ class MicromegasSimulation:
         ]
 
     def update_distance(self, new_distance: float):
-        """Move all detectors closer/further from the target."""
         self.cfg.detector_distance = new_distance
         self.detectors = self._build_detectors()
         self.propagator = Propagator(self.detectors, self.cfg)
 
     def update_resolution(self, spatial_cm: float = None, time_ns: float = None):
-        """Update detector resolutions."""
         if spatial_cm is not None:
             self.cfg.spatial_resolution = spatial_cm
         if time_ns is not None:
             self.cfg.time_resolution = time_ns
         self.propagator = Propagator(self.detectors, self.cfg)
 
-    def run(self):
+    def run(self, n_workers: int = 1):
         """
-        Simulate n_events readout windows. For each event:
-          1. Generate particles (Poisson-sampled counts).
-          2. Propagate to detectors and smear hits.
-          3. Optionally merge nearby hits on the same detector.
-          4. Find time-coincident pairs within the event.
-          5. Compute angular separations.
-        Results are accumulated across all events.
+        Simulate n_events readout windows.
+
+        Parameters
+        ----------
+        n_workers : int
+            Number of parallel worker processes (default 1 = serial).
+            Parallel mode skips storing per-event Hit/Particle objects
+            (self.hits and self.particles will be empty) to avoid pickling
+            overhead across processes.
         """
-        print(f"[Sim] Running {self.cfg.n_events} events...")
-        self.particles = []
-        self.hits = []
-        self.hits_premerge = []   # for diagnostics
-        self.coincident_pairs = []
-        all_angles = []
-        all_sources = []
+        try:
+            from tqdm import tqdm as _tqdm
+        except ImportError:
+            _tqdm = None
 
-        n_merged_total = 0
+        n = self.cfg.n_events
+        mode = 'serial' if n_workers == 1 else f'{n_workers} workers'
+        print(f"[Sim] Running {n} events ({mode})...")
 
-        # Pair-detection counters: how many correlated pairs were produced,
-        # and how many had *both* particles register at least one hit.
-        n_signal_pairs_produced = 0
-        n_signal_pairs_detected = 0
-        n_bg_pairs_produced = 0
-        n_bg_pairs_detected = 0
+        self.particles     = []
+        self.hits          = []
+        self.hits_premerge = []
 
-        for i_evt in range(self.cfg.n_events):
-            print(f'Event {i_evt+1}/{self.cfg.n_events}')
-            event_t0 = i_evt * self.cfg.time_spread
+        # ------------------------------------------------------------------
+        # Serial path — stores Hit/Particle objects, event-level progress bar
+        # ------------------------------------------------------------------
+        if n_workers == 1:
+            angles_any,    sources_any,    cpairs_any    = [], [], []
+            angles_single, sources_single, cpairs_single = [], [], []
+            angles_adj,    sources_adj,    cpairs_adj    = [], [], []
+            n_hits_raw = n_hits_away = n_hits_final = 0
+            n_sig_prod = n_sig_det = n_bg_prod = n_bg_det = 0
 
-            # 1. Generate
-            evt_particles = self.generator.generate_event(event_t0)
-            self.particles.extend(evt_particles)
+            iterator = range(n)
+            if _tqdm is not None:
+                iterator = _tqdm(iterator, desc='Simulating', unit='evt',
+                                 dynamic_ncols=True)
 
-            # 2. Propagate
-            evt_hits = []
-            for p in evt_particles:
-                evt_hits.extend(self.propagator.propagate(p))
-            self.hits_premerge.extend(evt_hits)
+            for i_evt in iterator:
+                event_t0      = i_evt * self.cfg.time_spread
+                evt_particles = self.generator.generate_event(event_t0)
+                self.particles.extend(evt_particles)
 
-            # 3. Merge
-            if self.cfg.merge_hits:
-                evt_hits_merged = merge_hits(evt_hits, self.cfg)
-                n_merged_total += len(evt_hits) - len(evt_hits_merged)
-            else:
-                evt_hits_merged = evt_hits
-            self.hits.extend(evt_hits_merged)
+                evt_hits = [h for p in evt_particles
+                            for h in self.propagator.propagate(p)]
+                self.hits_premerge.extend(evt_hits)
+                n_hits_raw += len(evt_hits)
 
-            # 4. Coincident pairs — scoped to this event's hits only
-            evt_pairs = find_coincident_pairs(evt_hits_merged, self.cfg)
-            self.coincident_pairs.extend(evt_pairs)
-
-            # 5. Angular separations
-            for ha, hb in evt_pairs:
-                all_angles.append(angular_separation_from_hits(ha, hb))
-                if ha.source == 'signal' and hb.source == 'signal':
-                    all_sources.append('signal')
-                elif ha.source == 'background_pair' and hb.source == 'background_pair':
-                    all_sources.append('background_pair')
+                if self.cfg.merge_hits:
+                    evt_merged   = merge_hits(evt_hits, self.cfg)
+                    n_hits_away += len(evt_hits) - len(evt_merged)
                 else:
-                    all_sources.append('random')
+                    evt_merged = evt_hits
+                self.hits.extend(evt_merged)
+                n_hits_final += len(evt_merged)
 
-            # 6. Count produced and detected pairs for signal and background.
-            #    A pair is "detected" if both of its particles left at least one
-            #    hit after merging (identified via particle_id -> pair_id mapping).
-            detected_particle_ids = {h.particle_id for h in evt_hits_merged}
+                evt_pairs  = find_coincident_pairs(evt_merged, self.cfg)
+                evt_angles = [angular_separation_from_hits(a, b) for a, b in evt_pairs]
+                evt_src    = [_classify_pair_source(a, b)        for a, b in evt_pairs]
 
-            # Build a map: pair_id -> set of particle_ids in that pair
-            pair_to_particles: dict[int, set] = {}
-            for p in evt_particles:
-                if p.pair_id == -1:
-                    continue
-                pair_to_particles.setdefault(p.pair_id, set()).add(p.particle_id)
+                if evt_merged:
+                    cpairs_any.extend(evt_pairs)
+                    angles_any.extend(evt_angles); sources_any.extend(evt_src)
+                if event_passes_single_trigger(evt_merged):
+                    cpairs_single.extend(evt_pairs)
+                    angles_single.extend(evt_angles); sources_single.extend(evt_src)
+                if event_passes_adjacent_trigger(evt_merged):
+                    cpairs_adj.extend(evt_pairs)
+                    angles_adj.extend(evt_angles); sources_adj.extend(evt_src)
 
-            for pair_id, ptids in pair_to_particles.items():
-                # Determine source from any particle in the pair
-                src = next(p.source for p in evt_particles if p.pair_id == pair_id)
-                both_detected = ptids.issubset(detected_particle_ids)
-                if src == 'signal':
-                    n_signal_pairs_produced += 1
-                    if both_detected:
-                        n_signal_pairs_detected += 1
-                elif src == 'background_pair':
-                    n_bg_pairs_produced += 1
-                    if both_detected:
-                        n_bg_pairs_detected += 1
+                detected = {h.particle_id for h in evt_merged}
+                ptmap: dict[int, set] = {}
+                for p in evt_particles:
+                    if p.pair_id != -1:
+                        ptmap.setdefault(p.pair_id, set()).add(p.particle_id)
+                for pid, ptids in ptmap.items():
+                    src  = next(p.source for p in evt_particles if p.pair_id == pid)
+                    both = ptids.issubset(detected)
+                    if src == 'signal':
+                        n_sig_prod += 1; n_sig_det += int(both)
+                    elif src == 'background_pair':
+                        n_bg_prod  += 1; n_bg_det  += int(both)
 
-            # Print some stats per event
-            print(f"   Event Particles: {len(evt_particles)}")
-            print(f"   Event Hits: {len(evt_hits)}")
-            print(f"   Event Coincident Pairs: {len(evt_pairs)}")
+            self.coincident_pairs_any    = cpairs_any
+            self.coincident_pairs_single = cpairs_single
+            self.coincident_pairs_adj    = cpairs_adj
+            self.true_signal_angles = np.array(self.generator.true_signal_angles)
+            self.true_bg_angles     = np.array(self.generator.true_bg_angles)
+            results = [dict(
+                angles_any=angles_any,       sources_any=sources_any,
+                angles_single=angles_single, sources_single=sources_single,
+                angles_adj=angles_adj,       sources_adj=sources_adj,
+                n_hits_raw=n_hits_raw, n_hits_away=n_hits_away,
+                n_hits_final=n_hits_final,
+                n_sig_prod=n_sig_prod, n_sig_det=n_sig_det,
+                n_bg_prod=n_bg_prod,   n_bg_det=n_bg_det,
+            )]
 
-        self.angular_separations = np.array(all_angles)
-        self.pair_sources = all_sources
+        # ------------------------------------------------------------------
+        # Parallel path — chunk events across workers, chunk-level progress
+        # ------------------------------------------------------------------
+        else:
+            import concurrent.futures
+            from concurrent.futures import as_completed
 
-        # Store pair detection summary for use in summary_stats / external access
+            # Aim for ~20 chunks per worker for reasonable progress granularity
+            chunk_size = max(1, n // (n_workers * 20))
+            chunks, offset, chunk_idx = [], 0, 0
+            main_seed = self.cfg.seed
+            while offset < n:
+                size = min(chunk_size, n - offset)
+                seed = ((main_seed + chunk_idx * 7919) % (2**31)
+                        if main_seed is not None else None)
+                chunks.append((self.cfg, size, offset, seed))
+                offset    += size
+                chunk_idx += 1
+
+            results = []
+            with concurrent.futures.ProcessPoolExecutor(max_workers=n_workers) as pool:
+                futures = {pool.submit(_run_event_batch, c): c for c in chunks}
+                if _tqdm is not None:
+                    it = _tqdm(as_completed(futures), total=len(futures),
+                               desc='Simulating', unit='chunk', dynamic_ncols=True)
+                else:
+                    it = as_completed(futures)
+                for fut in it:
+                    results.append(fut.result())
+
+            # Parallel mode: hits/particles not stored
+            self.coincident_pairs_any    = []
+            self.coincident_pairs_single = []
+            self.coincident_pairs_adj    = []
+            self.true_signal_angles = np.array(
+                sum((r['true_signal_angles'] for r in results), []))
+            self.true_bg_angles = np.array(
+                sum((r['true_bg_angles']     for r in results), []))
+
+        # ------------------------------------------------------------------
+        # Merge and store analysis results (common to both paths)
+        # ------------------------------------------------------------------
+        def _cat(key):
+            return sum((r[key] for r in results), [])
+
+        self.angular_separations_any    = np.array(_cat('angles_any'))
+        self.pair_sources_any           = _cat('sources_any')
+        self.angular_separations_single = np.array(_cat('angles_single'))
+        self.pair_sources_single        = _cat('sources_single')
+        self.angular_separations_adj    = np.array(_cat('angles_adj'))
+        self.pair_sources_adj           = _cat('sources_adj')
+
+        n_hits_raw   = sum(r['n_hits_raw']   for r in results)
+        n_hits_away  = sum(r['n_hits_away']  for r in results)
+        n_hits_final = sum(r['n_hits_final'] for r in results)
+        n_sig_prod   = sum(r['n_sig_prod']   for r in results)
+        n_sig_det    = sum(r['n_sig_det']    for r in results)
+        n_bg_prod    = sum(r['n_bg_prod']    for r in results)
+        n_bg_det     = sum(r['n_bg_det']     for r in results)
+
         self.pair_stats = {
-            'signal_produced':    n_signal_pairs_produced,
-            'signal_detected':    n_signal_pairs_detected,
-            'signal_efficiency':  n_signal_pairs_detected / n_signal_pairs_produced
-                                   if n_signal_pairs_produced else 0.0,
-            'bg_produced':        n_bg_pairs_produced,
-            'bg_detected':        n_bg_pairs_detected,
-            'bg_efficiency':      n_bg_pairs_detected / n_bg_pairs_produced
-                                   if n_bg_pairs_produced else 0.0,
+            'signal_produced':   n_sig_prod,
+            'signal_detected':   n_sig_det,
+            'signal_efficiency': n_sig_det / n_sig_prod if n_sig_prod else 0.0,
+            'bg_produced':       n_bg_prod,
+            'bg_detected':       n_bg_det,
+            'bg_efficiency':     n_bg_det / n_bg_prod   if n_bg_prod  else 0.0,
         }
 
-        print(f"  Total particles      : {len(self.particles)}")
-        print(f"  Total hits (raw)     : {len(self.hits_premerge)}")
+        print(f"  Hits (raw)             : {n_hits_raw}")
         if self.cfg.merge_hits:
-            print(f"  Hits merged away     : {n_merged_total}")
-        print(f"  Total hits (final)   : {len(self.hits)}")
-        print(f"  Coincident pairs     : {len(self.coincident_pairs)}")
-        print(f"[Sim] Done.")
+            print(f"  Hits merged away       : {n_hits_away}")
+        print(f"  Hits (final)           : {n_hits_final}")
+        print(f"  Pairs (any trigger)    : {len(self.angular_separations_any)}")
+        print(f"  Pairs (single trigger) : {len(self.angular_separations_single)}")
+        print(f"  Pairs (adj trigger)    : {len(self.angular_separations_adj)}")
+        print("[Sim] Done.")
 
     # -----------------------------------------------------------------------
     # Plotting
@@ -819,16 +840,15 @@ class MicromegasSimulation:
 
         colors = ['steelblue', 'tomato', 'seagreen', 'goldenrod']
         positions = [
-            ([d, d], [-s, s]),             # +X: vertical line at x=d
-            ([-d, -d], [-s, s]),           # -X
-            ([-s, s], [d, d]),             # +Y
-            ([-s, s], [-d, -d]),           # -Y
+            ([d, d], [-s, s]),
+            ([-d, -d], [-s, s]),
+            ([-s, s], [d, d]),
+            ([-s, s], [-d, -d]),
         ]
         names = ['+X panel', '-X panel', '+Y panel', '-Y panel']
 
         for i, ((x0, x1), (y0, y1)) in enumerate(positions):
             ax.plot([x0, x1], [y0, y1], lw=4, color=colors[i], label=names[i])
-
 
         ax.plot(0, 0, 'k*', ms=12, label='Target')
         ax.set_xlim(-d * 1.5, d * 1.5)
@@ -858,7 +878,11 @@ class MicromegasSimulation:
         else:
             axes = ax
 
-        source_colors = {'random': 'gray', 'background_pair': 'steelblue', 'signal': 'red'}
+        source_colors = {
+            'random': 'gray',
+            'background_pair': 'steelblue',
+            'signal': 'red',
+        }
         det_names = ['+X', '-X', '+Y', '-Y']
 
         for det_id in range(4):
@@ -889,12 +913,35 @@ class MicromegasSimulation:
         plt.tight_layout()
         return axes
 
-    def plot_angular_separation(self, bins=36, ax=None, show_components=True):
+    def plot_angular_separation(self, bins=36, ax=None, show_components=True,
+                                trigger='any'):
         """
-        Plot the reconstructed angular separation distribution for
-        time-coincident pairs, optionally broken down by truth source.
+        Plot reconstructed angular separation for time-coincident pairs.
+
+        Parameters
+        ----------
+        trigger : 'any', 'single', or 'adj'
+            Which trigger scenario to display.
         """
-        if len(self.angular_separations) == 0:
+        _angles_map = {
+            'any':    self.angular_separations_any,
+            'single': self.angular_separations_single,
+            'adj':    self.angular_separations_adj,
+        }
+        _sources_map = {
+            'any':    self.pair_sources_any,
+            'single': self.pair_sources_single,
+            'adj':    self.pair_sources_adj,
+        }
+        _label_map = {
+            'any':    'Any Detector Hit',
+            'single': 'Single Detector Hit',
+            'adj':    'Two Adjacent Detectors Hit',
+        }
+        angles = _angles_map[trigger]
+        sources = _sources_map[trigger]
+
+        if len(angles) == 0:
             warnings.warn("No angular separations. Run sim.run() first.")
             return
 
@@ -902,15 +949,16 @@ class MicromegasSimulation:
             fig, ax = plt.subplots(figsize=(8, 5))
 
         bin_edges = np.linspace(0, 180, bins + 1)
+        trigger_label = _label_map[trigger]
 
         if show_components:
             source_styles = {
-                'random':           ('gray',       'Random background'),
+                'random':           ('gray',      'Random combinatorial'),
                 'background_pair':  ('steelblue', 'Correlated background'),
                 'signal':           ('red',       'Signal (e+e- ~120°)'),
             }
-            angs = np.array(self.angular_separations)
-            srcs = np.array(self.pair_sources)
+            angs = np.array(angles)
+            srcs = np.array(sources)
             bottom = np.zeros(bins)
             for src, (col, label) in source_styles.items():
                 mask = srcs == src
@@ -921,18 +969,95 @@ class MicromegasSimulation:
                            align='edge')
                     bottom += counts
         else:
-            ax.hist(self.angular_separations, bins=bin_edges, color='steelblue',
+            ax.hist(angles, bins=bin_edges, color='steelblue',
                     alpha=0.7, label='All coincident pairs')
 
         ax.axvline(120, color='red', ls='--', lw=1.5, label='120° signal')
         ax.set_xlabel('Angular separation [°]')
         ax.set_ylabel('Pairs / bin')
-        ax.set_title('Reconstructed Angular Separation (coincident pairs)')
-        ax.legend()
+        ax.set_title(f'Reconstructed Angular Separation\n(Trigger: {trigger_label})')
+        ax.legend(fontsize=8)
         ax.grid(True, alpha=0.3)
         return ax
 
-    def plot_summary(self):
+    def plot_trigger_comparison(self, bins=36):
+        """Side-by-side comparison of all three trigger scenarios."""
+        fig, axes = plt.subplots(1, 3, figsize=(19, 5))
+        self.plot_angular_separation(bins=bins, ax=axes[0], trigger='any')
+        self.plot_angular_separation(bins=bins, ax=axes[1], trigger='single')
+        self.plot_angular_separation(bins=bins, ax=axes[2], trigger='adj')
+        fig.suptitle('Trigger Scenario Comparison', fontsize=12)
+        plt.tight_layout()
+        return fig
+
+    def plot_true_vs_reconstructed(self, bins=36, normalized=False):
+        """
+        Compare true generated angular distributions (before detector acceptance)
+        against reconstructed distributions from detector hits, for both signal
+        and background, under both trigger scenarios.
+
+        Parameters
+        ----------
+        normalized : bool
+            If True, normalize all histograms to unit area so shape differences
+            are visible independently of overall count differences.
+        """
+        fig, axes = plt.subplots(1, 2, figsize=(14, 5))
+        bin_edges = np.linspace(0, 180, bins + 1)
+        bin_width = bin_edges[1] - bin_edges[0]
+
+        panel_cfg = [
+            ('Signal', self.true_signal_angles, 'red', 'signal'),
+            ('Correlated Background', self.true_bg_angles, 'steelblue', 'background_pair'),
+        ]
+
+        ylabel = 'Probability density' if normalized else 'Count'
+
+        for ax, (title, true_angles, color, src_key) in zip(axes, panel_cfg):
+            # True generated spectrum
+            if len(true_angles):
+                true_counts, _ = np.histogram(true_angles, bins=bin_edges)
+                if normalized and true_counts.sum() > 0:
+                    true_vals = true_counts / (true_counts.sum() * bin_width)
+                else:
+                    true_vals = true_counts.astype(float)
+                ax.bar(bin_edges[:-1], true_vals, width=bin_width,
+                       color=color, alpha=0.35, align='edge',
+                       label=f'True generated  (N={len(true_angles)})')
+
+            # Reconstructed under each trigger
+            trig_cfgs = [
+                ('any',    self.angular_separations_any,    self.pair_sources_any,    '-',  2.0, 'any-hit'),
+                ('single', self.angular_separations_single, self.pair_sources_single, ':',  2.0, 'single'),
+                ('adj',    self.angular_separations_adj,    self.pair_sources_adj,    '--', 2.0, 'adjacent'),
+            ]
+            for trigger, angles, sources, ls, lw, trig_name in trig_cfgs:
+                reco = np.array([a for a, s in zip(angles, sources) if s == src_key])
+                label = f'Reco, {trig_name} trigger  (N={len(reco)})'
+                if len(reco):
+                    reco_counts, _ = np.histogram(reco, bins=bin_edges)
+                    if normalized and reco_counts.sum() > 0:
+                        reco_vals = reco_counts / (reco_counts.sum() * bin_width)
+                    else:
+                        reco_vals = reco_counts.astype(float)
+                    ax.step(bin_edges[:-1], reco_vals, where='post',
+                            color=color, lw=lw, ls=ls, label=label)
+
+            if src_key == 'signal':
+                ax.axvline(120, color='black', ls=':', lw=1, alpha=0.5)
+            ax.set_title(f'{title}: True vs Reconstructed')
+            ax.set_xlabel('Angular separation [°]')
+            ax.set_ylabel(ylabel)
+            ax.legend(fontsize=8)
+            ax.grid(True, alpha=0.3)
+
+        norm_tag = ' (shape normalized)' if normalized else ''
+        fig.suptitle(f'True Generated vs Reconstructed Angular Distributions{norm_tag}',
+                     fontsize=12)
+        plt.tight_layout()
+        return fig
+
+    def plot_summary(self, trigger='any'):
         """4-panel summary figure."""
         fig = plt.figure(figsize=(14, 10))
         ax_geo = fig.add_subplot(2, 2, 1)
@@ -940,7 +1065,7 @@ class MicromegasSimulation:
         ax_hits_row = [fig.add_subplot(2, 4, 5 + i) for i in range(4)]
 
         self.plot_geometry(ax=ax_geo)
-        self.plot_angular_separation(ax=ax_ang)
+        self.plot_angular_separation(ax=ax_ang, trigger=trigger)
         self.plot_hits(ax=ax_hits_row)
 
         fig.suptitle(
@@ -955,65 +1080,124 @@ class MicromegasSimulation:
         return fig
 
     def summary_stats(self):
-        """Print a text summary."""
-        total = len(self.coincident_pairs)
-        srcs = np.array(self.pair_sources)
-        n_raw  = len(self.hits_premerge) if hasattr(self, 'hits_premerge') else '?'
+        """Print a text summary including both trigger scenarios."""
+        n_raw = len(self.hits_premerge) if hasattr(self, 'hits_premerge') else '?'
         n_merged = n_raw - len(self.hits) if isinstance(n_raw, int) else '?'
         ps = getattr(self, 'pair_stats', None)
-        print("=" * 55)
+
+        print("=" * 60)
         print("Simulation Summary")
-        print("=" * 55)
+        print("=" * 60)
         print(f"  Events simulated    : {self.cfg.n_events}")
         print(f"  Particles generated : {len(self.particles)}")
         print(f"  Hits (raw)          : {n_raw}")
         if self.cfg.merge_hits:
             print(f"  Hits merged away    : {n_merged}")
         print(f"  Hits (final)        : {len(self.hits)}")
-        print(f"  Coincident pairs    : {total}")
-        for src in ['signal', 'background_pair', 'random']:
-            n = (srcs == src).sum()
-            pct = 100 * n / total if total else 0
-            print(f"    {src:<20s}: {n:5d}  ({pct:.1f}%)")
-        print(f"  Signal/Background   : "
-              f"{(srcs=='signal').sum()} / {(srcs!='signal').sum()}")
+        print(f"  True signal angles  : {len(self.true_signal_angles)}")
+        print(f"  True bg angles      : {len(self.true_bg_angles)}")
+
+        for label, angles, sources in [
+            ('Any-hit trigger',    self.angular_separations_any,    self.pair_sources_any),
+            ('Single-det trigger', self.angular_separations_single, self.pair_sources_single),
+            ('Adjacent trigger',   self.angular_separations_adj,    self.pair_sources_adj),
+        ]:
+            total = len(angles)
+            srcs = np.array(sources) if total else np.array([])
+            print(f"\n  --- {label} ---")
+            print(f"  Coincident pairs    : {total}")
+            for src in ['signal', 'background_pair', 'random']:
+                n = int((srcs == src).sum()) if total else 0
+                pct = 100 * n / total if total else 0
+                if n > 0:
+                    print(f"    {src:<22s}: {n:5d}  ({pct:.1f}%)")
+            n_sig = int((srcs == 'signal').sum()) if total else 0
+            print(f"  Signal / Background : {n_sig} / {total - n_sig}")
+
         if ps:
-            print("-" * 55)
-            print("  Pair detection efficiency (both particles hit a detector)")
-            print(f"  Signal     : {ps['signal_detected']:4d} / {ps['signal_produced']:4d} produced"
+            print("-" * 60)
+            print("  Pair detection efficiency (any-hit trigger)")
+            print(f"  Signal     : {ps['signal_detected']:4d}/{ps['signal_produced']:4d}"
                   f"  →  {ps['signal_efficiency']*100:.1f}%")
-            print(f"  Background : {ps['bg_detected']:4d} / {ps['bg_produced']:4d} produced"
+            print(f"  Background : {ps['bg_detected']:4d}/{ps['bg_produced']:4d}"
                   f"  →  {ps['bg_efficiency']*100:.1f}%")
-        print("=" * 55)
+        print("=" * 60)
+
+
+def _run_event_batch(args) -> dict:
+    """
+    Module-level worker for multiprocessing.
+    Runs a batch of events and returns summary results — no Hit or Particle
+    objects are returned so inter-process data transfer stays fast.
+    """
+    cfg, n_batch, event_offset, seed = args
+    if seed is not None:
+        np.random.seed(seed)
+
+    detectors = [Detector(side=i, distance=cfg.detector_distance, size=cfg.detector_size)
+                 for i in range(4)]
+    propagator = Propagator(detectors, cfg)
+    generator  = ParticleGenerator(cfg)
+
+    angles_any,    sources_any    = [], []
+    angles_single, sources_single = [], []
+    angles_adj,    sources_adj    = [], []
+    n_hits_raw = n_hits_away = n_hits_final = 0
+    n_sig_prod = n_sig_det = n_bg_prod = n_bg_det = 0
+
+    for i in range(n_batch):
+        event_t0     = (event_offset + i) * cfg.time_spread
+        evt_particles = generator.generate_event(event_t0)
+        evt_hits      = [h for p in evt_particles for h in propagator.propagate(p)]
+        n_hits_raw   += len(evt_hits)
+
+        if cfg.merge_hits:
+            evt_merged   = merge_hits(evt_hits, cfg)
+            n_hits_away += len(evt_hits) - len(evt_merged)
+        else:
+            evt_merged = evt_hits
+        n_hits_final += len(evt_merged)
+
+        evt_pairs  = find_coincident_pairs(evt_merged, cfg)
+        evt_angles = [angular_separation_from_hits(a, b) for a, b in evt_pairs]
+        evt_src    = [_classify_pair_source(a, b)        for a, b in evt_pairs]
+
+        if evt_merged:
+            angles_any.extend(evt_angles);    sources_any.extend(evt_src)
+        if event_passes_single_trigger(evt_merged):
+            angles_single.extend(evt_angles); sources_single.extend(evt_src)
+        if event_passes_adjacent_trigger(evt_merged):
+            angles_adj.extend(evt_angles);    sources_adj.extend(evt_src)
+
+        detected = {h.particle_id for h in evt_merged}
+        ptmap: dict[int, set] = {}
+        for p in evt_particles:
+            if p.pair_id != -1:
+                ptmap.setdefault(p.pair_id, set()).add(p.particle_id)
+        for pid, ptids in ptmap.items():
+            src  = next(p.source for p in evt_particles if p.pair_id == pid)
+            both = ptids.issubset(detected)
+            if src == 'signal':
+                n_sig_prod += 1; n_sig_det += int(both)
+            elif src == 'background_pair':
+                n_bg_prod  += 1; n_bg_det  += int(both)
+
+    return dict(
+        angles_any=angles_any,       sources_any=sources_any,
+        angles_single=angles_single, sources_single=sources_single,
+        angles_adj=angles_adj,       sources_adj=sources_adj,
+        true_signal_angles=generator.true_signal_angles,
+        true_bg_angles=generator.true_bg_angles,
+        n_hits_raw=n_hits_raw, n_hits_away=n_hits_away, n_hits_final=n_hits_final,
+        n_sig_prod=n_sig_prod, n_sig_det=n_sig_det,
+        n_bg_prod=n_bg_prod,   n_bg_det=n_bg_det,
+    )
 
 
 def calculate_solid_angle_coverage(detectors: list[Detector], n_samples: int = 1_000_000) -> float:
     """
     Estimate the fraction of the full solid angle (4π sr) covered by the
-    detector array, as seen from the origin (target position).
-
-    Uses Monte Carlo sampling: throw random directions uniformly over the
-    sphere and count what fraction hits at least one detector's active area.
-
-    Parameters
-    ----------
-    detectors : list[Detector]
-        The detector panels to test against.
-    n_samples : int
-        Number of random directions to sample. 1M gives ~0.1% statistical
-        precision. Increase for higher accuracy.
-
-    Returns
-    -------
-    float
-        Fractional solid angle coverage in [0, 1].
-        Multiply by 4π to get coverage in steradians.
-
-    Example
-    -------
-    >>> sim = MicromegasSimulation(cfg)
-    >>> frac = calculate_solid_angle_coverage(sim.detectors)
-    >>> print(f"Coverage: {frac*100:.2f}%  ({frac*4*np.pi:.4f} sr)")
+    detector array via Monte Carlo sampling.
     """
     origin = np.zeros(3)
     hits = 0
@@ -1023,5 +1207,5 @@ def calculate_solid_angle_coverage(detectors: list[Detector], n_samples: int = 1
             _, local_2d = det.intersect(origin, direction)
             if local_2d is not None:
                 hits += 1
-                break  # count direction once even if it hits multiple panels
+                break
     return hits / n_samples
