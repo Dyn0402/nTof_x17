@@ -16,26 +16,26 @@ import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 from matplotlib.ticker import PercentFormatter
 from scipy.optimize import minimize_scalar
-from plot_beam_hits import get_run_start, get_run_time, load_subrun, get_run_json
+import uproot
+from plot_beam_hits import get_run_start, get_run_time, get_run_json
 
 
 def main():
-    runs_path = '/media/dylan/data/x17/feb_beam/runs/'
-    beam_data_dir = '/media/dylan/data/x17/feb_beam/ntof_bunch_intensities/'
-    feus = [4, 5]
+    runs_path = '/home/dylan/x17/may_beam/runs/'
+    beam_data_dir = '/home/dylan/x17/may_beam/ntof_bunch_intensities/'
     offset_range = np.array([0, 10])  # Seconds
     min_intensity = 0.1  # Minimum intensity in beam data for matching
 
-    # process_all_runs(runs_path, beam_data_dir, feus, offset_range, min_intensity)
+    # process_all_runs(runs_path, beam_data_dir, offset_range, min_intensity)
 
-    run = 'run_86'
+    run = 'run_70'
     plot_outliers_range = (1.5, 2.5)
-    plot_single_run(runs_path, beam_data_dir, feus, offset_range, min_intensity, run, plot_outliers_range)
+    plot_single_run(runs_path, beam_data_dir, offset_range, min_intensity, run, plot_outliers_range)
 
     print('\ndonzo')
 
 
-def plot_single_run(runs_path, beam_data_dir, feus, offset_range, min_intensity, run, plot_outliers_range=None):
+def plot_single_run(runs_path, beam_data_dir, offset_range, min_intensity, run, plot_outliers_range=None):
     """
     Plot a single run
     """
@@ -43,17 +43,16 @@ def plot_single_run(runs_path, beam_data_dir, feus, offset_range, min_intensity,
         runs_path=runs_path,
         beam_data_dir=beam_data_dir,
         run=run,
-        feus=feus,
         offset_range=offset_range,
         min_intensity=min_intensity,
-        plot=False,
+        plot=True,
         plot_outliers_range=plot_outliers_range,
         write_csv=False,
     )
     plt.show()
 
 
-def process_all_runs(runs_path, beam_data_dir, feus, offset_range, min_intensity, min_events_for_fit=10):
+def process_all_runs(runs_path, beam_data_dir, offset_range, min_intensity, min_events_for_fit=10):
     """
     Do matching between DREAM and PS timestamps for all runs.
     """
@@ -88,7 +87,6 @@ def process_all_runs(runs_path, beam_data_dir, feus, offset_range, min_intensity
             runs_path=runs_path,
             beam_data_dir=beam_data_dir,
             run=run,
-            feus=feus,
             offset_range=offset_range,
             min_intensity=min_intensity,
             plot=False,
@@ -108,7 +106,6 @@ def process_run(
         runs_path: str,
         beam_data_dir: str,
         run: str,
-        feus: list,
         offset_range: np.ndarray,
         min_intensity: float = 0.1,
         plot: bool = False,
@@ -128,6 +125,9 @@ def process_run(
     each augmented with 'run', 'sub_run', 'run_start', and
     'offset_interpolated' keys.
     """
+    feus = get_feus_from_run_config(runs_path, run)
+    print(f'  FEUs from config: {feus}')
+
     run_dir = os.path.join(runs_path, run)
     sub_runs = sorted([d for d in os.listdir(run_dir) if os.path.isdir(os.path.join(run_dir, d))])
     print(f'  Found {len(sub_runs)} subruns: {sub_runs}')
@@ -295,12 +295,12 @@ def get_subrun_offset(
         return None
 
     try:
-        df, det = load_subrun(runs_path, run, sub_run, feus=feus, map_csv_path='../mx17_m1_map.csv')
+        df = _load_hits_df(runs_path, run, sub_run, feus)
     except Exception as e:
         print(f'  Could not load subrun: {e}')
         return None
 
-    if df.empty or 'trigger_timestamp_ns' not in df.columns:
+    if df is None or df.empty or 'trigger_timestamp_ns' not in df.columns:
         print(f'  No trigger data found.')
         return None
 
@@ -601,6 +601,35 @@ def plot_offsets_timeline(results: list[dict]):
     _make_run_legend(fig, axes, unique_runs, run_color)
     plt.tight_layout()
     fig.subplots_adjust(hspace=0.05, top=0.84, left=0.052, right=0.995)
+
+
+def get_feus_from_run_config(runs_path, run):
+    """Return sorted list of FEU IDs from all included strip detectors in the run config."""
+    cfg = get_run_json(runs_path, run)
+    included = set(cfg.get('included_detectors') or [])
+    feu_ids = set()
+    for det_cfg in cfg.get('detectors', []):
+        name = det_cfg['name']
+        if included and name not in included:
+            continue
+        if 'dream_feus' not in det_cfg:
+            continue
+        for v in det_cfg['dream_feus'].values():
+            feu_ids.add(v[0])
+    return sorted(feu_ids)
+
+
+def _load_hits_df(runs_path, run, sub_run, feus):
+    """Load combined hits ROOT files for a subrun, filtered to the given FEU IDs."""
+    hits_dir = os.path.join(runs_path, run, sub_run, 'combined_hits_root')
+    hit_files = [f for f in os.listdir(hits_dir) if f.endswith('.root') and '_datrun_' in f]
+    if not hit_files:
+        return pd.DataFrame()
+    file_sources = [os.path.join(hits_dir, hf) + ':hits' for hf in hit_files]
+    df = uproot.concatenate(file_sources, library='pd')
+    if not df.empty:
+        df = df[df['feu'].isin(feus)]
+    return df
 
 
 def get_bracketing_csv_files(beam_data_dir, run_start_unix, run_duration):
