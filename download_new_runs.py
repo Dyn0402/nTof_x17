@@ -6,6 +6,7 @@ Created in PyCharm
 Created as nTof_x17/download_new_runs
 
 @author: Dylan Neff, dn277127
+Need to be kinit into CERN!
 """
 
 import subprocess
@@ -26,8 +27,10 @@ import os
 HOST = 'lxplus'
 # DAQ_BASE_DIR = "/home/mx17/feb_beam/dream_run"
 # LOCAL_BASE_DIR = "/media/dylan/data/x17/feb_beam/dream_run"
-DAQ_BASE_DIR = "/eos/experiment/ntof/data/x17/feb_beam/runs"
-LOCAL_BASE_DIR = "/media/dylan/data/x17/feb_beam/runs"
+# DAQ_BASE_DIR = "/eos/experiment/ntof/data/x17/feb_beam/runs"
+# LOCAL_BASE_DIR = "/media/dylan/data/x17/feb_beam/runs"
+DAQ_BASE_DIR = "/eos/experiment/ntof/data/x17/may_beam/runs"
+LOCAL_BASE_DIR = "/media/dylan/data/x17/may_beam/runs"
 
 # rsync options:
 # -a : archive mode preserves permissions and timestamps
@@ -52,7 +55,7 @@ def main():
 
     # runs = [17, 18, 19, 25, 26, 27, 29, 30, 31, 32, 33, 35, 38, 39, 49, 50, 52, 55, 57, 59, 63, 64, 67, 71, 74, 76, 80,
     #         84, 85, 86, 88, 94, 97, 107, 114, 118, 126, 128, 130, 131, 136, 138, 139, 141, 142, 143]
-    runs = [98]
+    runs = [70]
     runs = [f'run_{run}' for run in runs]
 
     for run in runs:
