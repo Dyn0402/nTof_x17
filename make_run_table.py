@@ -71,7 +71,7 @@ def main():
             det_name = det_cfg['name']
             drift_gap = det_cfg.get('drift_gap', 30)
             if isinstance(drift_gap, str) and ' mm' in drift_gap:
-                drift_gap = int(drift_gap.split(' ')[0])
+                drift_gap = float(drift_gap.split(' ')[0])
             hv_channels = det_cfg.get('hv_channels', {})
             detectors[det_name] = {
                 'drift_gap': drift_gap,
