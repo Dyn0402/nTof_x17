@@ -63,19 +63,31 @@ def main():
 
         trig_type = trig_type_map.get(trig_type, 'Other')
 
-        det = run_config['detectors'][0]
-        drift_gap = det.get('drift_gap', 30)  # mm
-        if isinstance(drift_gap, str) and ' mm' in drift_gap:
-            drift_gap = int(drift_gap.split(' ')[0])
-        frame_type = det.get('frame_type', 'aluminum')
-        distance_from_target = det.get('distance_from_target', 20)
+        # Build per-detector info from config, reading HV channels dynamically
+        detectors = {}
+        for det_cfg in run_config.get('detectors', []):
+            if det_cfg.get('det_type') != 'mx17':
+                continue
+            det_name = det_cfg['name']
+            drift_gap = det_cfg.get('drift_gap', 30)
+            if isinstance(drift_gap, str) and ' mm' in drift_gap:
+                drift_gap = int(drift_gap.split(' ')[0])
+            hv_channels = det_cfg.get('hv_channels', {})
+            detectors[det_name] = {
+                'drift_gap': drift_gap,
+                'frame_type': det_cfg.get('frame_type', 'aluminum'),
+                'distance_from_target': det_cfg.get('distance_from_target', 20),
+                'resist_ch': hv_channels.get('resist'),  # e.g. [card, channel]
+                'drift_ch': hv_channels.get('drift'),
+                'resist_hvs': [],
+                'drift_hvs': [],
+            }
 
         sub_run_dirs = [x for x in os.listdir(os.path.join(run_dir, run))]
 
         sub_runs = run_config['sub_runs']
         n_subruns = len(sub_runs)
-        total_run_time, resist_hvs, drift_hvs = 0, [], []
-        resist_hv_channel, drift_hv_channel = ['2', '0'], ['5', '0']
+        total_run_time = 0
         for sub_run in sub_runs:
             sub_run_name = sub_run['sub_run_name']
             if sub_run_name not in sub_run_dirs:
@@ -85,29 +97,20 @@ def main():
             except Exception:
                 continue
             total_run_time += sub_run_time
-            try:
-                resist_hv = sub_run['hvs'][resist_hv_channel[0]][resist_hv_channel[1]]
-                resist_hvs.append(resist_hv)
-            except KeyError:
-                print(f'No resist HV found for run {run} subrun {sub_run}')
-            try:
-                drift_hv = -sub_run['hvs'][drift_hv_channel[0]][drift_hv_channel[1]]
-                drift_hvs.append(drift_hv)
-            except KeyError:
-                pass
-
-        average_subrun_time = total_run_time / n_subruns
-        if len(resist_hvs) == 0:
-            resist_hv_range = [None, None]
-        elif max(resist_hvs) == 0:
-            resist_hv_range = [0, 0]
-        else:
-            resist_hvs = [hv for hv in resist_hvs if hv > 0]  # Remove all 0s
-            resist_hv_range = [min(resist_hvs), max(resist_hvs)]
-
-        # Get unique drift hvs and sort from lowest to highest
-        drift_hvs = sorted(drift_hvs, key=lambda x: abs(x))
-        drift_hvs = list(set(drift_hvs))
+            hvs = sub_run.get('hvs', {})
+            for det_name, det_info in detectors.items():
+                if det_info['resist_ch']:
+                    card, ch = det_info['resist_ch']
+                    hv = hvs.get(str(card), {}).get(str(ch))
+                    if hv is not None:
+                        det_info['resist_hvs'].append(hv)
+                    else:
+                        print(f'No resist HV found for {det_name} in run {run} subrun {sub_run_name}')
+                if det_info['drift_ch']:
+                    card, ch = det_info['drift_ch']
+                    hv = hvs.get(str(card), {}).get(str(ch))
+                    if hv is not None:
+                        det_info['drift_hvs'].append(-hv)
 
         run_row = {
             'run': int(run_config['run_name'].split('_')[-1]),
@@ -116,15 +119,30 @@ def main():
             'beam_type': run_config['beam_type'],
             'target_type': run_config['target_type'],
             'trigger_type': trig_type,
-            'drift_gap (mm)': drift_gap,
-            'frame_type': frame_type,
-            'distance_from_target (cm)': distance_from_target,
             'number of subruns': n_subruns,
-            'average_subrun_time (min)': average_subrun_time / 60,
+            'average_subrun_time (min)': total_run_time / n_subruns / 60,
             'total_run_time (h)': total_run_time / 3600,
-            'resist_hv_range (V)': resist_hv_range,
-            'drift_hv_range (V)': drift_hvs,
         }
+
+        for det_name, det_info in detectors.items():
+            resist_hvs = det_info['resist_hvs']
+            drift_hvs = det_info['drift_hvs']
+
+            if len(resist_hvs) == 0:
+                resist_hv_range = [None, None]
+            elif max(resist_hvs) == 0:
+                resist_hv_range = [0, 0]
+            else:
+                resist_hvs = [hv for hv in resist_hvs if hv > 0]
+                resist_hv_range = [min(resist_hvs), max(resist_hvs)]
+
+            drift_hvs = sorted(set(drift_hvs), key=lambda x: abs(x))
+
+            run_row[f'{det_name} drift_gap (mm)'] = det_info['drift_gap']
+            run_row[f'{det_name} frame_type'] = det_info['frame_type']
+            run_row[f'{det_name} distance_from_target (cm)'] = det_info['distance_from_target']
+            run_row[f'{det_name} resist_hv_range (V)'] = resist_hv_range
+            run_row[f'{det_name} drift_hv_range (V)'] = drift_hvs
 
         df.append(run_row)
     df = pd.DataFrame(df)
