@@ -544,7 +544,7 @@ def _draw_xy_scatter(ax, r: EventResult):
     ax.legend(fontsize=8, loc='upper right')
 
 
-def _draw_waveform(ax, wf_data: dict, feu: int, r: EventResult):
+def _draw_waveform(ax, wf_data: dict, feu: int, r: EventResult, cax=None):
     """
     Per-channel waveform traces (amplitude vs time) from decoded_root.
     Each unique channel is drawn as a line, coloured by channel number.
@@ -579,7 +579,7 @@ def _draw_waveform(ax, wf_data: dict, feu: int, r: EventResult):
 
     sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
     sm.set_array([])
-    plt.colorbar(sm, ax=ax, label='Channel', pad=0.01)
+    plt.colorbar(sm, cax=cax, label='Channel') if cax is not None else None
 
     # Threshold line offset by +250 — raw waveform ADC is not directly comparable
     # to combined_hits amplitude (different baseline subtraction); this is approximate.
@@ -669,11 +669,6 @@ def draw_event(fig, gs_axes: dict, r: EventResult,
                dead2: Optional[np.ndarray] = None,
                strip_pitch: float = 0.78):
     """Redraw all panels for one event."""
-    # Remove colorbar axes created by previous draw (plt.colorbar adds new axes to fig)
-    main_axes = set(gs_axes.values())
-    for ax in list(fig.axes):
-        if ax not in main_axes:
-            ax.remove()
     for ax in gs_axes.values():
         ax.cla()
 
@@ -684,8 +679,8 @@ def draw_event(fig, gs_axes: dict, r: EventResult,
     _draw_projection(gs_axes['feu1'], r, feu=1, dead=d1, strip_pitch=strip_pitch)
     _draw_projection(gs_axes['feu2'], r, feu=2, dead=d2, strip_pitch=strip_pitch)
     _draw_xy_scatter(gs_axes['xy'], r)
-    _draw_waveform(gs_axes['wf1'], wf, feu=1, r=r)
-    _draw_waveform(gs_axes['wf2'], wf, feu=2, r=r)
+    _draw_waveform(gs_axes['wf1'], wf, feu=1, r=r, cax=gs_axes['cax_wf1'])
+    _draw_waveform(gs_axes['wf2'], wf, feu=2, r=r, cax=gs_axes['cax_wf2'])
 
     pair_colors = {0: 'grey', 1: 'darkorange', 2: 'green'}
     title_color = pair_colors.get(r.n_pairs, 'red')
@@ -702,19 +697,42 @@ def draw_event(fig, gs_axes: dict, r: EventResult,
 
 
 def _make_figure() -> tuple:
-    """Create figure with 2×6 GridSpec. Returns (fig, axes_dict)."""
+    """
+    Create figure.  Returns (fig, axes_dict).
+
+    The two waveform axes get dedicated colorbar axes created once via
+    make_axes_locatable — their sizes never change across redraws.
+    All axes (including colorbar axes) are included in the returned dict
+    so draw_event can cla() all of them cleanly without creating new ones.
+    """
+    from mpl_toolkits.axes_grid1 import make_axes_locatable
+
     fig = plt.figure(figsize=FIG_SIZE)
-    fig.subplots_adjust(left=0.05, right=0.97, top=0.88, bottom=0.08,
-                        wspace=0.38, hspace=0.45)
-    gs  = gridspec.GridSpec(2, 6, figure=fig)
-    axes = {
-        'feu1': fig.add_subplot(gs[0, 0:3]),
-        'feu2': fig.add_subplot(gs[0, 3:6]),
-        'xy':   fig.add_subplot(gs[1, 0:2]),
-        'wf1':  fig.add_subplot(gs[1, 2:4]),
-        'wf2':  fig.add_subplot(gs[1, 4:6]),
+    fig.subplots_adjust(left=0.05, right=0.96, top=0.88, bottom=0.08,
+                        wspace=0.42, hspace=0.45)
+    gs = gridspec.GridSpec(2, 6, figure=fig)
+
+    ax_feu1 = fig.add_subplot(gs[0, 0:3])
+    ax_feu2 = fig.add_subplot(gs[0, 3:6])
+    ax_xy   = fig.add_subplot(gs[1, 0:2])
+    ax_wf1  = fig.add_subplot(gs[1, 2:4])
+    ax_wf2  = fig.add_subplot(gs[1, 4:6])
+
+    # Pre-allocate colorbar axes — sizes stay fixed for the figure lifetime
+    div1     = make_axes_locatable(ax_wf1)
+    cax_wf1  = div1.append_axes('right', size='5%', pad=0.06)
+    div2     = make_axes_locatable(ax_wf2)
+    cax_wf2  = div2.append_axes('right', size='5%', pad=0.06)
+
+    return fig, {
+        'feu1':    ax_feu1,
+        'feu2':    ax_feu2,
+        'xy':      ax_xy,
+        'wf1':     ax_wf1,
+        'cax_wf1': cax_wf1,
+        'wf2':     ax_wf2,
+        'cax_wf2': cax_wf2,
     }
-    return fig, axes
 
 
 # ─────────────────────────────────────────────────────────────────────────────
