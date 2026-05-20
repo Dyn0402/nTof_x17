@@ -81,6 +81,8 @@ def main():
                 'drift_ch': hv_channels.get('drift'),
                 'resist_hvs': [],
                 'drift_hvs': [],
+                'resist_imons': [],   # imon (A) from hv_monitor.csv across all subruns
+                'resist_vmons': [],   # stable vmon (V) for HV fallback
             }
 
         sub_run_dirs = [x for x in os.listdir(os.path.join(run_dir, run))]
@@ -112,6 +114,28 @@ def main():
                     if hv is not None:
                         det_info['drift_hvs'].append(-hv)
 
+        # Second pass: read hv_monitor.csv for current stats and HV fallback
+        for sub_run in sub_runs:
+            sub_run_name = sub_run['sub_run_name']
+            hv_file = os.path.join(run_dir, run, sub_run_name, 'hv_monitor.csv')
+            if not os.path.exists(hv_file):
+                continue
+            try:
+                hv_df = pd.read_csv(hv_file)
+            except Exception:
+                continue
+            for det_name, det_info in detectors.items():
+                if not det_info['resist_ch']:
+                    continue
+                card, ch = det_info['resist_ch']
+                col_imon = f'{card}:{ch} imon'
+                col_vmon = f'{card}:{ch} vmon'
+                if col_imon in hv_df.columns:
+                    det_info['resist_imons'].extend(hv_df[col_imon].dropna().tolist())
+                if col_vmon in hv_df.columns:
+                    stable_mask = hv_df[col_vmon].rolling(window=5, center=True).std() < 0.5
+                    det_info['resist_vmons'].extend(hv_df.loc[stable_mask, col_vmon].dropna().tolist())
+
         run_row = {
             'run': int(run_config['run_name'].split('_')[-1]),
             'start_time': run_config['start_time'],
@@ -129,7 +153,12 @@ def main():
             drift_hvs = det_info['drift_hvs']
 
             if len(resist_hvs) == 0:
-                resist_hv_range = [None, None]
+                # Fallback: infer HV range from stable monitoring data
+                stable_hvs = [v for v in det_info['resist_vmons'] if v > 0]
+                if stable_hvs:
+                    resist_hv_range = [min(stable_hvs), max(stable_hvs)]
+                else:
+                    resist_hv_range = [None, None]
             elif max(resist_hvs) == 0:
                 resist_hv_range = [0, 0]
             else:
@@ -138,11 +167,19 @@ def main():
 
             drift_hvs = sorted(set(drift_hvs), key=lambda x: abs(x))
 
+            imons_ua = [x * 1e6 for x in det_info['resist_imons']]
+            current_min = round(min(imons_ua), 3) if imons_ua else None
+            current_avg = round(sum(imons_ua) / len(imons_ua), 3) if imons_ua else None
+            current_max = round(max(imons_ua), 3) if imons_ua else None
+
             run_row[f'{det_name} drift_gap (mm)'] = det_info['drift_gap']
             run_row[f'{det_name} frame_type'] = det_info['frame_type']
             run_row[f'{det_name} distance_from_target (cm)'] = det_info['distance_from_target']
             run_row[f'{det_name} resist_hv_range (V)'] = resist_hv_range
             run_row[f'{det_name} drift_hv_range (V)'] = drift_hvs
+            run_row[f'{det_name} resist_current_min (uA)'] = current_min
+            run_row[f'{det_name} resist_current_avg (uA)'] = current_avg
+            run_row[f'{det_name} resist_current_max (uA)'] = current_max
 
         df.append(run_row)
     df = pd.DataFrame(df)
