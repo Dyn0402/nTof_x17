@@ -167,17 +167,15 @@ def main():
 
             drift_hvs = sorted(set(drift_hvs), key=lambda x: abs(x))
 
-            imons_ua = [x * 1e6 for x in det_info['resist_imons']]
-            current_min = round(min(imons_ua), 3) if imons_ua else None
-            current_avg = round(sum(imons_ua) / len(imons_ua), 3) if imons_ua else None
-            current_max = round(max(imons_ua), 3) if imons_ua else None
+            imons = det_info['resist_imons']
+            current_avg = round(sum(imons) / len(imons), 3) if imons else None
+            current_max = round(max(imons), 3) if imons else None
 
             run_row[f'{det_name} drift_gap (mm)'] = det_info['drift_gap']
             run_row[f'{det_name} frame_type'] = det_info['frame_type']
             run_row[f'{det_name} distance_from_target (cm)'] = det_info['distance_from_target']
             run_row[f'{det_name} resist_hv_range (V)'] = resist_hv_range
             run_row[f'{det_name} drift_hv_range (V)'] = drift_hvs
-            run_row[f'{det_name} resist_current_min (uA)'] = current_min
             run_row[f'{det_name} resist_current_avg (uA)'] = current_avg
             run_row[f'{det_name} resist_current_max (uA)'] = current_max
 
