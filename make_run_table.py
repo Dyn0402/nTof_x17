@@ -20,11 +20,12 @@ from google.oauth2.service_account import Credentials
 
 def main():
     # run_dir = '/media/dylan/data/x17/feb_beam/runs/'
-    run_dir = '/eos/experiment/ntof/data/x17/feb_beam/runs/'
+    run_dir = '/eos/experiment/ntof/data/x17/may_beam/runs/'
     run_cfg_name = 'run_config.json'
     csv_out_path = f'{run_dir}run_table.csv'
     cred_file = '/afs/cern.ch/user/d/dneff/creds/ntof-x17-776cc528cb62.json'
-    sheet_id = "10wyBo0X1NHgaT1eFw8WhN5VEAtIhZlUT-AbBVSVW6Uk"
+    # sheet_id = "10wyBo0X1NHgaT1eFw8WhN5VEAtIhZlUT-AbBVSVW6Uk"  # Feb
+    sheet_id = "15wrV7EEeFTRH8oFbr-_WXRgdZNJfOeitJR4K97UgVaA"  # May
     tab_name = "Json_Run_Summary"
 
     creds = Credentials.from_service_account_file(cred_file, scopes=[
@@ -51,9 +52,11 @@ def main():
         trig_type = os.path.basename(run_config['dream_daq_info']['daq_config_template_path'])
 
         trig_type_map = {
-            'Tcm_Mx17_Feb_test.cfg': 'PS',
-            'Self_Tcm_MM_Mx17_Feb_test.cfg': 'Self',
-            'Tcm_Mx17_SiPM_trig.cfg': 'Scintillator',
+            'Tcm_Mx17_May.cfg': 'PS',
+            'Cosmics_Mx17_May.cfg': 'Cosmics',
+            'Self_Trig_det3_QA.cfg': 'Self',
+            'Self_Trig_QA.cfg': 'Self',
+            'Tcm_Mx17_May_Coinc.cfg': 'Scintillator',
         }
 
         trig_type = trig_type_map.get(trig_type, 'Other')
