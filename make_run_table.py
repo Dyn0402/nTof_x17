@@ -42,6 +42,8 @@ def main():
     for run in os.listdir(run_dir):
         if not os.path.isdir(os.path.join(run_dir, run)):
             continue
+        if not run.startswith('run_'):
+            continue
         print(f'\nProcessing run {run}')
         run_config_path = os.path.join(run_dir, run, run_cfg_name)
         with open(run_config_path, 'r') as f:
