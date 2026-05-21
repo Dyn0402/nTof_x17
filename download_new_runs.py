@@ -6,11 +6,12 @@ Created in PyCharm
 Created as nTof_x17/download_new_runs
 
 @author: Dylan Neff, dn277127
-Need to be kinit into CERN!
+Need to be kinit into CERN! Will then prompt for 2fa.
 """
 
 import subprocess
 import os
+import sys
 
 # --- CONFIGURATION ---
 # PI_HOST = "pi@10.42.0.159"
@@ -41,8 +42,27 @@ RSYNC_OPTS = "-avu --progress"
 FDF_ONLY = False
 EXCLUDE_FDF = True
 
+CONTROL_SOCKET = f"/tmp/ssh_ctl_{HOST.replace('.', '_')}"
+
+
+def ensure_ssh_connection():
+    """Establish SSH ControlMaster if not already connected, prompting for 2FA interactively."""
+    check = subprocess.run(
+        ["ssh", "-S", CONTROL_SOCKET, "-O", "check", HOST],
+        capture_output=True
+    )
+    if check.returncode == 0:
+        return
+    print(f"Establishing SSH connection to {HOST} (may require 2FA)...")
+    subprocess.run(
+        ["ssh", "-M", "-S", CONTROL_SOCKET, "-o", "ControlPersist=1h", "-N", HOST],
+        check=True, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr
+    )
+
 
 def main():
+    ensure_ssh_connection()
+
     print("Checking runs on DAQ...")
     # runs = get_pi_runs()
     runs = get_daq_runs()
@@ -55,7 +75,7 @@ def main():
 
     # runs = [17, 18, 19, 25, 26, 27, 29, 30, 31, 32, 33, 35, 38, 39, 49, 50, 52, 55, 57, 59, 63, 64, 67, 71, 74, 76, 80,
     #         84, 85, 86, 88, 94, 97, 107, 114, 118, 126, 128, 130, 131, 136, 138, 139, 141, 142, 143]
-    runs = [70]
+    runs = [66, 67]
     runs = [f'run_{run}' for run in runs]
 
     for run in runs:
@@ -69,6 +89,7 @@ def get_daq_runs():
     """Return a list of run directories on the Raspberry Pi."""
     cmd = [
         "ssh",
+        "-S", CONTROL_SOCKET,
         f"{HOST}",
         f"ls -1 {DAQ_BASE_DIR}"
     ]
@@ -120,12 +141,14 @@ def sync_run(run_name, fdf_only=True, exclude_fdf=False):
         *RSYNC_OPTS.split(),
         *rsync_patterns,
         # "-e", f"ssh -J {JUMP_HOST}",
-        "-e", f"ssh",
+        "-e", f"ssh -S {CONTROL_SOCKET}",
         daq_dir,
         local_dir,
     ]
 
     print(f"Syncing {run_name}...")
+    # print full commandline string
+    print(" ".join(cmd))
     subprocess.run(cmd, check=True)
 
 
