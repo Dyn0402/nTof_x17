@@ -160,13 +160,13 @@ class Detector:
                 continue
 
             px, py = pos
-            # X-going strips run along X and localise the hit in Y (and vice
-            # versa), so an 'x' strip contributes the y_position_mm and a 'y'
-            # strip contributes the x_position_mm.
+            # axis label = coordinate the strip measures:
+            #   'x' strip (runs in Y) → contributes x_position_mm
+            #   'y' strip (runs in X) → contributes y_position_mm
             if axis == "x":
-                y = py
-            else:
                 x = px
+            else:
+                y = py
 
         if x is None and y is None:
             return None
