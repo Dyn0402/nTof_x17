@@ -48,8 +48,10 @@ import uproot
 # subrun = 'long_run'
 # run = 'run_51'
 # subrun = 'hv_scan_drift_600_resist_510'
-run = 'run_67'
-subrun = 'run_2'
+# run = 'run_67'
+# subrun = 'run_2'
+run = 'run_74'
+subrun = 'run6'
 
 SUBRUN_DIR   = Path(f'/media/dylan/data/x17/may_beam/runs/{run}/{subrun}')
 COMBINED_DIR = SUBRUN_DIR / 'combined_hits_root'

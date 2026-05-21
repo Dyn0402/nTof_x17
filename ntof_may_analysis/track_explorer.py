@@ -57,8 +57,10 @@ from beam_track_finding import (
 # subrun = 'long_run'
 # run = 'run_51'
 # subrun = 'hv_scan_drift_600_resist_530'
-run = 'run_67'
-subrun = 'run_2'
+# run = 'run_67'
+# subrun = 'run_2'
+run = 'run_74'
+subrun = 'run6'
 
 SUBRUN_DIR      = Path(f'/media/dylan/data/x17/may_beam/runs/{run}/{subrun}')
 RUN_CONFIG_PATH = SUBRUN_DIR.parent / 'run_config.json'
@@ -74,7 +76,7 @@ TIME_WIN_MAX         = 1100.0 # ns   — beam drift window upper edge
 GAMMA_FLASH_MAX_HITS = 200    # hits per FEU per event — above this = gamma flash
 GAMMA_FLASH_AMP      = 500    # ADC — amplitude threshold for gamma flash hit counting
 GAMMA_FLASH_TIME_NS  = 1000.0 # ns  — only count hits before this time for gamma flash
-HIGH_AMP_THRESHOLD   = 500   # ADC  — candidate events must have ≥1 hit above this
+HIGH_AMP_THRESHOLD   = 1500   # ADC  — candidate events must have ≥1 hit above this
 
 # ── Drift velocity ────────────────────────────────────────────────────────────
 DRIFT_GAS = 'Ne/iC4H10 95/5'   # gas mixture used in this run
@@ -113,6 +115,7 @@ CROSS_DIM_MISSED_SCALE    = 2   # max_missed multiplier in the cross-dim pass
 
 # ── Browser startup ───────────────────────────────────────────────────────────
 START_EVENT_ID = None  # jump directly to this event ID when the browser opens
+MAX_FILES      = 2  # limit number of combined_hits files loaded (None = all)
 
 # ── Debug flag (set by --debug-event CLI; also toggleable at top) ─────────────
 CROSS_DIM_DEBUG = False  # verbose per-pair output from _cross_dim_merge
@@ -189,11 +192,13 @@ def build_ch_to_pos(det: Detector) -> tuple:
 
 
 def load_and_map(det: Detector) -> pd.DataFrame:
-    """Load all combined_hits (FEU 1+2) and add mm positions."""
+    """Load combined_hits (FEU 1+2) and add mm positions."""
     files = sorted(
         f for f in (SUBRUN_DIR / 'combined_hits_root').iterdir()
         if f.suffix == '.root' and '_datrun_' in f.name and 'feu-combined' in f.name
     )
+    if MAX_FILES is not None:
+        files = files[:MAX_FILES]
     print(f'Loading {len(files)} combined_hits files …')
     df = uproot.concatenate([f'{f}:hits' for f in files], library='pd')
     df = df[df['feu'].isin([1, 2])].copy()
