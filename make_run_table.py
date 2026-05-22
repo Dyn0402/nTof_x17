@@ -12,6 +12,7 @@ import os
 import json
 import pandas as pd
 from plot_beam_hits import get_run_time
+from common.DreamConfig import find_dream_config
 
 import gspread
 from gspread_dataframe import set_with_dataframe
@@ -90,6 +91,11 @@ def main():
         sub_runs = run_config['sub_runs']
         n_subruns = len(sub_runs)
         total_run_time = 0
+        dream_cfg_found = False
+        dream_n_samples = None
+        dream_trig_type = None
+        dream_daq_mode = None
+        dream_ns_per_sample = None
         for sub_run in sub_runs:
             sub_run_name = sub_run['sub_run_name']
             if sub_run_name not in sub_run_dirs:
@@ -99,6 +105,14 @@ def main():
             except Exception:
                 continue
             total_run_time += sub_run_time
+            if not dream_cfg_found:
+                dcfg = find_dream_config(os.path.join(run_dir, run, sub_run_name))
+                if dcfg is not None:
+                    dream_cfg_found = True
+                    dream_n_samples = dcfg.n_samples
+                    dream_trig_type = dcfg.trig_type
+                    dream_daq_mode = dcfg.daq_mode
+                    dream_ns_per_sample = dcfg.ns_per_sample
             hvs = sub_run.get('hvs', {})
             for det_name, det_info in detectors.items():
                 if det_info['resist_ch']:
@@ -146,6 +160,7 @@ def main():
             'number of subruns': n_subruns,
             'average_subrun_time (min)': total_run_time / n_subruns / 60,
             'total_run_time (h)': total_run_time / 3600,
+            'daq_mode': dream_daq_mode,
         }
 
         for det_name, det_info in detectors.items():
@@ -178,6 +193,10 @@ def main():
             run_row[f'{det_name} drift_hv_range (V)'] = drift_hvs
             run_row[f'{det_name} resist_current_avg (uA)'] = current_avg
             run_row[f'{det_name} resist_current_max (uA)'] = current_max
+
+        run_row['n_samples'] = dream_n_samples
+        run_row['trig_type'] = dream_trig_type
+        run_row['ns_per_sample'] = dream_ns_per_sample
 
         df.append(run_row)
     df = pd.DataFrame(df)
