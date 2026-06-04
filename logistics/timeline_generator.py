@@ -82,7 +82,7 @@ def assign_sub_rows(bands):
 
 
 def add_bar(ax, x0, x1, y_top, bar_h, color, tc,
-            pattern, opt, label, clip_width_threshold=1.2):
+            pattern, opt, label, clip_width_threshold=1.2, extends_right=False):
     """Draw a single band rectangle + label."""
     width = x1 - x0
     rgb   = mcolors.to_rgb(color)
@@ -136,6 +136,27 @@ def add_bar(ax, x0, x1, y_top, bar_h, color, tc,
                 clip_on=True, multialignment="center",
                 path_effects=[pe.withStroke(linewidth=1.8,
                                             foreground=(*rgb, 0.35))])
+
+    if extends_right:
+        # Arrow-head triangle that pokes past the right chart boundary
+        aw = 1.5
+        mid_y = y_top + bar_h / 2
+        alpha = 0.22 if (opt or pattern == "dashed") else 1.0
+        tri = mpatches.Polygon(
+            [(x1, y_top), (x1, y_top + bar_h), (x1 + aw, mid_y)],
+            closed=True,
+            facecolor=(*rgb, alpha),
+            edgecolor="none",
+            zorder=4, clip_on=False,
+        )
+        ax.add_patch(tri)
+        # Repeating chevrons to reinforce "continues off scale"
+        for i, cx in enumerate([x1 + aw + 0.25, x1 + aw + 0.65]):
+            ax.text(cx, mid_y, "›",
+                    ha="left", va="center",
+                    color=(*rgb, 0.6 - i * 0.2),
+                    fontsize=11, fontfamily="monospace",
+                    fontweight="bold", zorder=5, clip_on=False)
 
 
 # ══════════════════════════════════════════════════════════════
@@ -235,7 +256,8 @@ def draw_timeline(title, subtitle, start_date, end_date,
                 b["color"], b.get("text_color", "#ffffff"),
                 b.get("pattern", "solid"),
                 b.get("optional", False),
-                b["label"])
+                b["label"],
+                extends_right=b.get("extends_right", False))
 
 
     # ── Milestones ────────────────────────────────────────────
