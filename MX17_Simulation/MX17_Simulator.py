@@ -1,17 +1,20 @@
 """
 Micromegas Detector Simulation with Scintillator Trigger Stack
 ==============================================================
-Simulates a 4-detector Micromegas setup surrounding a central target,
-with a scintillator trigger stack behind each MM panel.
+Simulates the 4-arm MX17 detector geometry (n-TOF X17 experiment).
+Beam axis = +Y. Four identical detector arms at ±X and ±Y (transverse plane).
+He-3 target at origin.
 
-Detector stack per side (from origin outward):
-  MM face at detector_distance, active area detector_size x detector_size
-  Scint wall at detector_distance + mm_drift_gap + gap_mm_to_scint,
-    active area scint_wall_size x scint_wall_size
-  Liquid scintillator 1 at scint_wall + gap_scint_to_liq,
-    active area liq_scint_size x liq_scint_size
+Detector stack per arm (from origin outward):
+  MM window at detector_distance, active area detector_size (38×34 cm)
+  [mm_drift_gap = 3 cm scored gas region]
+  [gap_mm_to_scint ≈ 2.77 cm: PCB + air gap]
+  Trigger scint wall (48×48 cm, 3 mm plastic scint)
+  [gap_scint_to_liq ≈ 3.44 cm: air gap + CFRP/Al liners]
+  Liquid scintillator layer 1 (45×45 cm, 2 cm LAB)
 
-The stack is identical and symmetric for all 4 sides.
+Geometry matches the full Geant4 simulation (MX17_Full_Geant/SimConfig.hh):
+  mm_distance = 22 cm, MM face 38×34 cm, scint wall 48×48 cm, LS 45×45 cm
 
 Trigger logic
 -------------
@@ -80,11 +83,11 @@ class Detector:
     """
     A flat rectangular detector panel.
 
-    Orientation by side index:
-      0: +X face  (normal toward origin = -X)
-      1: -X face
-      2: +Y face
-      3: -Y face
+    Orientation by side index (beam along +Z in Python frame):
+      0: +X arm  (normal toward origin = -X)
+      1: -X arm
+      2: +Y arm
+      3: -Y arm
 
     det_type: 'mm', 'scint_wall', or 'liq_scint_1'
     """
@@ -213,18 +216,20 @@ class ExponentialSpectrum(AngularSpectrum):
 class SimConfig:
     """All tuneable parameters in one place."""
 
-    # MM geometry
-    detector_distance: float = 15.0                  # cm, origin to MM face
-    detector_size: tuple[float, float] = (40.0, 40.0)  # cm, (horiz/u, into-page/v)
+    # MM geometry  (Geant4 SimConfig.hh: mm_distance=22 cm, 38×34 cm face)
+    detector_distance: float = 22.0                  # cm, origin to MM front face
+    detector_size: tuple[float, float] = (38.0, 34.0)  # cm, (horiz/u, along-beam/v)
 
-    # Scintillator trigger stack (behind each MM, same for all 4 sides)
-    mm_drift_gap:         float = 3.0                          # cm, active drift gap depth
-    gap_mm_to_scint:      float = 5.0                          # cm, MM back face to scint wall front
-    scint_wall_size:      tuple[float, float] = (50.0, 50.0)   # cm, (horiz/u, into-page/v)
-    scint_wall_thickness: float = 0.3                          # cm, physical thickness
-    gap_scint_to_liq:     float = 5.0                          # cm, scint wall front to liq scint 1 front
-    liq_scint_size:       tuple[float, float] = (40.0, 40.0)   # cm, (horiz/u, into-page/v)
-    liq_scint_thickness:  float = 1.5                          # cm, physical thickness
+    # Scintillator trigger stack — distances derived from full Geant4 slab layout
+    # PlasticScint centre: 22 + 57.7 mm = 27.77 cm from origin
+    # LS-1 centre:         22 + 92.1 mm = 31.21 cm from origin
+    mm_drift_gap:         float = 3.0                          # cm, active drift gas region (30 mm)
+    gap_mm_to_scint:      float = 2.77                         # cm, drift back → scint centre (PCB + air + tape)
+    scint_wall_size:      tuple[float, float] = (48.0, 48.0)   # cm, (horiz/u, along-beam/v)
+    scint_wall_thickness: float = 0.3                          # cm, plastic scint slab (3 mm PVT)
+    gap_scint_to_liq:     float = 3.44                         # cm, scint centre → LS-1 centre (air + CFRP/Al)
+    liq_scint_size:       tuple[float, float] = (45.0, 45.0)   # cm, (horiz/u, along-beam/v)
+    liq_scint_thickness:  float = 2.0                          # cm, LAB layer (2 cm per layer)
 
     # Resolution (MM only)
     spatial_resolution: float = 0.5   # cm, 1-sigma Gaussian smear per axis
@@ -1227,16 +1232,24 @@ class MicromegasSimulation:
         plt.tight_layout()
         return fig
 
-    def plot_summary(self, trigger='double'):
-        """4-panel summary: geometry, angular separation, MM hit maps."""
-        fig = plt.figure(figsize=(14, 10))
-        ax_geo      = fig.add_subplot(2, 2, 1)
-        ax_ang      = fig.add_subplot(2, 2, 2)
-        ax_hits_row = [fig.add_subplot(2, 4, 5 + i) for i in range(4)]
+    def plot_summary(self):
+        """
+        Summary figure:
+          Top row    : geometry (left) | scint single trigger (right)
+          Bottom row : scint double | MM any | MM double
+        """
+        from matplotlib.gridspec import GridSpec
+        fig = plt.figure(figsize=(18, 10))
+        gs  = GridSpec(2, 6, figure=fig, hspace=0.42, wspace=0.38)
+
+        ax_geo    = fig.add_subplot(gs[0, 0:3])
+        ax_single = fig.add_subplot(gs[0, 3:6])
+        ax_bot    = [fig.add_subplot(gs[1, i*2:(i+1)*2]) for i in range(3)]
 
         self.plot_geometry(ax=ax_geo)
-        self.plot_angular_separation(ax=ax_ang, trigger=trigger)
-        self.plot_hits(ax=ax_hits_row)
+        self.plot_angular_separation(ax=ax_single, trigger='single')
+        for ax, trig in zip(ax_bot, ['double', 'mm_any', 'mm_double']):
+            self.plot_angular_separation(ax=ax, trigger=trig)
 
         fig.suptitle(
             f'Micromegas Simulation Summary\n'
@@ -1246,7 +1259,6 @@ class MicromegasSimulation:
             f'window={self.cfg.coincidence_window} ns',
             fontsize=11,
         )
-        plt.tight_layout()
         return fig
 
     def summary_stats(self):
