@@ -17,13 +17,13 @@ cfg = SimConfig(
     detector_size=(38.0, 34.0),     # cm, (horiz/u, into-page/v)
 
     # Scintillator trigger stack (all four sides, from origin outward)
-    mm_drift_gap=3.0,               # cm, active drift gap
-    gap_mm_to_scint=3.0,            # cm, gap between MM back and scint wall front
-    scint_wall_size=(48.0, 48.0),   # cm, (horiz/u, into-page/v)
-    scint_wall_thickness=0.3,       # cm
-    gap_scint_to_liq=3.0,           # cm, gap between scint wall and liq scint 1 front
-    liq_scint_size=(38.0, 38.0),    # cm, (horiz/u, into-page/v)
-    liq_scint_thickness=1.5,        # cm
+    mm_drift_gap=3.0,               # cm, active drift gap (30 mm)
+    gap_mm_to_scint=2.77,           # cm, drift back → scint centre (PCB + air + tape)
+    scint_wall_size=(48.0, 48.0),   # cm, (horiz/u, along-beam/v)
+    scint_wall_thickness=0.3,       # cm, 3 mm PVT
+    gap_scint_to_liq=3.44,          # cm, scint centre → LS-1 centre (air + CFRP/Al)
+    liq_scint_size=(43.0, 43.0),    # cm, (horiz/u, along-beam/v)
+    liq_scint_thickness=2.0,        # cm, 2 cm LAB layer
 
     # Resolution / timing
     spatial_resolution=0.05,        # cm
@@ -37,7 +37,7 @@ cfg = SimConfig(
     n_background_pairs=1e-2,
     n_signal=2e-4,
 
-    signal_spectrum=GaussianSpectrum(mean_deg=120.0, sigma_deg=5.0),
+    signal_spectrum=GaussianSpectrum(mean_deg=120.0, sigma_deg=15.0),
     background_spectrum=ExponentialSpectrum(scale_deg=40.0),
 
     merge_hits=True,
@@ -57,12 +57,8 @@ print(f"MM coverage: {frac*100:.2f}%  ({frac*4*np.pi:.4f} sr)")
 sim.run(n_workers=4)
 sim.summary_stats()
 
-# Populate self.hits for the MM hit-map panels in plot_summary.
-# A few thousand events is enough to show the hit distributions.
-sim.run_display_sample(n_sample=5_000)
-
-# Figure 1: Summary (default = scint double trigger)
-fig1 = sim.plot_summary(trigger='double')
+# Figure 1: Summary — geometry + scint single (large), double/mm_any/mm_double (bottom)
+fig1 = sim.plot_summary()
 
 # Figure 2: All four trigger scenarios side-by-side
 fig2 = sim.plot_trigger_comparison()
