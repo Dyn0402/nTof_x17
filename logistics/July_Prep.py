@@ -45,27 +45,107 @@ BANDS = [
         "color":        "#7c3aed",
         "text_color":   "#ede9fe",
         "pattern":      "solid",
-        "legend_label": "Detector build",
+        "legend_label": "Serigraphy",
     },
 
     {
         "label":        "Bulk Det 1 + 2",
         "start":        datetime(2026, 6, 10),
         "end":          datetime(2026, 6, 12),
-        "color":        "#7c3aed",
+        "color":        "#8b5cf6",
         "text_color":   "#ede9fe",
         "pattern":      "solid",
-        "legend_label": "Detector build",
+        "legend_label": "Bulk",
     },
 
     {
-        "label":        "Integrate Det 1 + 2",
+        "label":        "Integrate Det 1",
         "start":        datetime(2026, 6, 12),
         "end":          datetime(2026, 6, 13),
-        "color":        "#7c3aed",
+        "color":        "#6d28d9",
         "text_color":   "#ede9fe",
         "pattern":      "solid",
-        "legend_label": "Detector build",
+        "legend_label": "Integrate",
+    },
+
+    {
+        "label":        "Cosmics Det 1",
+        "start":        datetime(2026, 6, 13),
+        "end":          datetime(2026, 6, 15),  # end is exclusive for datetime; covers Jun 27–28
+        "color":        "#0e7490",
+        "text_color":   "#cffafe",
+        "pattern":      "solid",
+        "legend_label": "Detector test",
+    },
+
+    {
+        "label":        "Bulk Det 3 + 4",
+        "start":        datetime(2026, 6, 15),
+        "end":          datetime(2026, 6, 18),
+        "color":        "#8b5cf6",
+        "text_color":   "#ede9fe",
+        "pattern":      "solid",
+        "legend_label": "Bulk",
+    },
+
+    {
+        "label":        "Integrate Det 2",
+        "start":        datetime(2026, 6, 15),
+        "end":          datetime(2026, 6, 16),
+        "color":        "#6d28d9",
+        "text_color":   "#ede9fe",
+        "pattern":      "solid",
+        "legend_label": "Integrate",
+    },
+
+    {
+        "label":        "Cosmics Det 2",
+        "start":        datetime(2026, 6, 16),
+        "end":          datetime(2026, 6, 17),  # end is exclusive for datetime; covers Jun 27–28
+        "color":        "#0e7490",
+        "text_color":   "#cffafe",
+        "pattern":      "solid",
+        "legend_label": "Detector test",
+    },
+
+    {
+        "label":        "Integrate Det 3 + 4",
+        "start":        datetime(2026, 6, 17),
+        "end":          datetime(2026, 6, 20),
+        "color":        "#6d28d9",
+        "text_color":   "#ede9fe",
+        "pattern":      "solid",
+        "legend_label": "Integrate",
+    },
+
+    {
+        "label":        "Cosmics Det 3",
+        "start":        datetime(2026, 6, 18),
+        "end":          datetime(2026, 6, 20),  # end is exclusive for datetime; covers Jun 27–28
+        "color":        "#0e7490",
+        "text_color":   "#cffafe",
+        "pattern":      "solid",
+        "legend_label": "Detector test",
+    },
+
+    {
+        "label":        "Cosmics Det 4",
+        "start":        datetime(2026, 6, 20),
+        "end":          datetime(2026, 6, 22),  # end is exclusive for datetime; covers Jun 27–28
+        "color":        "#0e7490",
+        "text_color":   "#cffafe",
+        "pattern":      "solid",
+        "legend_label": "Detector test",
+    },
+
+    {
+        "label":        "Remake any Detectors Necessary",
+        "start":        datetime(2026, 6, 22),
+        "end":          datetime(2026, 6, 26),
+        "color":        "#a78bfa",
+        "text_color":   "#2e1065",
+        "pattern":      "solid",
+        "legend_label": "Detector rework",
     },
 
     # ── Travel ────────────────────────────────────────────────
