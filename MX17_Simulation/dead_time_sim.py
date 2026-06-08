@@ -35,7 +35,7 @@ FILE_NAME = 'results_3He'
 DISTANCE_M = 19.5          # m, EAR2 flight path
 
 # DAQ
-N_SAMPLES = 50            # ADC samples per readout window
+N_SAMPLES = 200            # ADC samples per readout window
 CLOCK_PERIOD_NS = 40.0     # ns, ADC clock period
 N_READOUT_CHANNELS = 64    # number of channels (sets dead time length)
 
