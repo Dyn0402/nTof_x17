@@ -5,25 +5,36 @@ with scintillator trigger stack.
 
 import numpy as np
 import matplotlib.pyplot as plt
+
+from MX17_Simulation.dead_time_sim import IPC_PER_PULSE
 from MX17_Simulator import (
     MicromegasSimulation, SimConfig,
-    GaussianSpectrum, ExponentialSpectrum, IsotropicSpectrum,
-    FlatSpectrum, HistogramSpectrum, calculate_solid_angle_coverage
+    X17PhysicsSpectrum, IPCPhysicsSpectrum,
+    calculate_solid_angle_coverage, TOTAL_PULSES, X17_PER_PULSE, IPC_PER_PULSE,
 )
 
 cfg = SimConfig(
     # MM geometry
-    detector_distance=22.0,         # cm
+    detector_distance=25.0,         # cm
     detector_size=(38.0, 34.0),     # cm, (horiz/u, into-page/v)
 
     # Scintillator trigger stack (all four sides, from origin outward)
     mm_drift_gap=3.0,               # cm, active drift gap (30 mm)
     gap_mm_to_scint=2.77,           # cm, drift back → scint centre (PCB + air + tape)
-    scint_wall_size=(48.0, 48.0),   # cm, (horiz/u, along-beam/v)
+    scint_wall_size=(50.0, 50.0),   # cm, (horiz/u, along-beam/v)
     scint_wall_thickness=0.3,       # cm, 3 mm PVT
     gap_scint_to_liq=3.44,          # cm, scint centre → LS-1 centre (air + CFRP/Al)
-    liq_scint_size=(43.0, 43.0),    # cm, (horiz/u, along-beam/v)
+    liq_scint_size=(45.0, 45.0),    # cm, (horiz/u, along-beam/v)
     liq_scint_thickness=2.0,        # cm, 2 cm LAB layer
+
+    # He-3 capsule vertex source
+    he_capsule_source=True,
+    he_radius_cm=1.5,               # cm
+    he_half_length_cm=2.5,          # cm
+
+    # Invariant mass parameterisation (Gaussian smearing for back-scint sample)
+    inv_mass_mean=16.8,             # MeV
+    inv_mass_sigma=4.0,             # MeV
 
     # Resolution / timing
     spatial_resolution=0.05,        # cm
@@ -32,13 +43,13 @@ cfg = SimConfig(
     coincidence_window=60.0,        # ns
 
     # Event statistics
-    n_events=1_000_000,
+    n_events=TOTAL_PULSES,
     n_random=1e-2,
-    n_background_pairs=1e-2,
-    n_signal=2e-4,
+    n_background_pairs=IPC_PER_PULSE,  # From Alberto's calculations, scaled back up by his 30% efficiency estimate
+    n_signal=X17_PER_PULSE,  # From Alberto's calculations, scaled back up by his 30% efficiency estimate
 
-    signal_spectrum=GaussianSpectrum(mean_deg=120.0, sigma_deg=15.0),
-    background_spectrum=ExponentialSpectrum(scale_deg=40.0),
+    signal_spectrum=X17PhysicsSpectrum(m_x17_mev=16.8, E_transition_mev=20.58),
+    background_spectrum=IPCPhysicsSpectrum(E_transition_mev=20.58),
 
     merge_hits=True,
     merge_spatial_threshold=0.1,
@@ -74,5 +85,11 @@ fig5 = sim.plot_true_vs_reconstructed(trigger=['double', 'mm_double'])
 
 # Figure 6: Same, shape-normalized
 fig6 = sim.plot_true_vs_reconstructed(trigger=['double', 'mm_double'], normalized=True)
+
+# Figure 7: Invariant mass spectrum (stacked by source) for back-scint coincident pairs
+fig7 = sim.plot_invmass()
+
+# Figure 8: 2D invariant mass vs relative angle (signal vs IPC side-by-side, raw counts)
+fig8 = sim.plot_invmass_vs_angle()
 
 plt.show()
