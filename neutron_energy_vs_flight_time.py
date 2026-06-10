@@ -108,6 +108,14 @@ def main():
                           flash_time_s=flash_time,
                           xlim=ax_full.get_xlim(), ylim=ax_full.get_ylim())
 
+    dream_saturation_time_s = 10e-6   # 100 µs nominal DREAM saturation time
+    dream_saturation_uncertainty_s = 100e-6  # ±100 µs uncertainty on saturation end
+    plot_spectrum_vs_time(df, 'X17 [1/day]', distance_m=distance_m,
+                          flash_time_s=flash_time,
+                          xlim=ax_full.get_xlim(), ylim=ax_full.get_ylim(),
+                          dream_saturation_time_s=dream_saturation_time_s,
+                          dream_saturation_uncertainty_s=dream_saturation_uncertainty_s)
+
     plt.show()
 
     print('donzo')
@@ -154,7 +162,8 @@ def plot_spectrum_vs_energy(df, ycol):
 
 
 def plot_spectrum_vs_time(df, ycol, distance_m=distance_m, flash_time_s=None, blind_time_s=None, readout_time_s=None,
-                          dead_time_s=None, xlim=None, ylim=None):
+                          dead_time_s=None, xlim=None, ylim=None,
+                          dream_saturation_time_s=None, dream_saturation_uncertainty_s=None):
     """
     Plot spectrum data vs neutron flight time instead of energy.
     :param df: DataFrame with elow [eV], eup [eV], and ycol columns
@@ -166,6 +175,8 @@ def plot_spectrum_vs_time(df, ycol, distance_m=distance_m, flash_time_s=None, bl
     :param dead_time_s: Optional dead time in seconds (not used in plot)
     :param xlim: Optional (xmin, xmax) to override the x-axis limits
     :param ylim: Optional (ymin, ymax) to override the y-axis limits
+    :param dream_saturation_time_s: Nominal DREAM saturation dead time after gamma flash (s)
+    :param dream_saturation_uncertainty_s: Uncertainty on saturation end time (s); drawn as dashed band
     """
     # Convert energy bins to time bins
     E_low = df["elow [eV]"].values
@@ -261,6 +272,17 @@ def plot_spectrum_vs_time(df, ycol, distance_m=distance_m, flash_time_s=None, bl
     if annote_str:
         ax.annotate(annote_str, xy=(0.45, 0.5), xycoords='axes fraction', fontsize=14,
                      bbox=dict(boxstyle="round,pad=0.3", fc="yellow", alpha=0.3))
+
+    # --- DREAM saturation dead-time region ---
+    if dream_saturation_time_s is not None and flash_time_s is not None:
+        sat_start_us = flash_time_s * 1e6
+        sat_end_us = (flash_time_s + dream_saturation_time_s) * 1e6
+        ax.axvspan(sat_start_us, sat_end_us, color='red', alpha=0.25,
+                   label=f'DREAM Saturation ({dream_saturation_time_s*1e6:.0f} µs)')
+        if dream_saturation_uncertainty_s is not None:
+            unc_end_us = sat_end_us + dream_saturation_uncertainty_s * 1e6
+            ax.axvspan(sat_end_us, unc_end_us, color='red', alpha=0.10,
+                       hatch='////', label=f'Saturation Uncertainty (+{dream_saturation_uncertainty_s*1e6:.0f} µs)')
 
     # --- Axis formatting ---
     ax.set_xscale("log")
