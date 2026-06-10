@@ -120,12 +120,14 @@ def get_uv(records: list[dict], target: str,
 
 def hit_panel(ax, u: np.ndarray, v: np.ndarray,
               half_u: float, half_v: float, title: str,
-              cmap: str = 'inferno', n_bins: int = 60) -> None:
+              cmap: str = 'inferno', n_bins: int = 60,
+              bar_width_cm: float = None, n_bars: int = None) -> None:
     """
     2D hit density on a detector face with the detector boundary overlaid.
 
     Colour = hit density (normalised). Cyan rectangle = current detector edge.
-    Annotation shows hit count and fraction landing within the boundary.
+    If bar_width_cm and n_bars are given, vertical bar boundaries are drawn
+    so edge bars can be identified for removal.
     """
     margin = 1.2
     lim_u = half_u * margin
@@ -141,6 +143,26 @@ def hit_panel(ax, u: np.ndarray, v: np.ndarray,
                    range=[[-lim_u, lim_u], [-lim_v, lim_v]],
                    cmap=cmap, density=True)
     plt.colorbar(h[3], ax=ax, shrink=0.8, pad=0.02, label='Hit density [a.u.]')
+
+    # Scintillator bar grid (vertical bars along u axis)
+    if bar_width_cm is not None and n_bars is not None:
+        total_u = bar_width_cm * n_bars
+        bar_edges = np.linspace(-total_u / 2, total_u / 2, n_bars + 1)
+        bar_centers = 0.5 * (bar_edges[:-1] + bar_edges[1:])
+        # Shade alternating bars
+        for i, (left, right) in enumerate(zip(bar_edges[:-1], bar_edges[1:])):
+            alpha = 0.10 if i % 2 == 0 else 0.0
+            ax.add_patch(Rectangle((left, -lim_v), bar_width_cm, 2 * lim_v,
+                                    fc='white', ec='none', alpha=alpha, zorder=2))
+        # Bar boundaries
+        for x in bar_edges:
+            ax.axvline(x, color='white', lw=0.8, alpha=0.55, ls='--', zorder=4)
+        # Bar number labels along the top
+        for i, xc in enumerate(bar_centers):
+            if -lim_u <= xc <= lim_u:
+                ax.text(xc, lim_v * 0.93, str(i + 1),
+                        ha='center', va='top', fontsize=5, color='white',
+                        alpha=0.8, zorder=6)
 
     # Current detector boundary
     ax.add_patch(Rectangle((-half_u, -half_v), 2 * half_u, 2 * half_v,
@@ -185,7 +207,8 @@ fig_a.suptitle(
 # Left: all MM-hitting particles → scint wall
 u, v = get_uv(recs_A, 'sw')
 hit_panel(axes_a[0], u, v, sw_hu, sw_hv,
-          'MM tracks → Scint wall\n(all particles reaching MM, showing SW hit position)')
+          'MM tracks → Scint wall\n(all particles reaching MM, showing SW hit position)',
+          bar_width_cm=2.5, n_bars=20)
 
 # Right: particles also reaching LS-1 → scint wall (trigger coincidence region)
 u, v = get_uv(recs_A, 'sw', require_bs=False)
@@ -196,7 +219,8 @@ for r in recs_A:
         us_ls1.append(r['sw'][0])
         vs_ls1.append(r['sw'][1])
 hit_panel(axes_a[1], np.array(us_ls1), np.array(vs_ls1), sw_hu, sw_hv,
-          'LS-1 tracks → Scint wall\n(trigger-coincidence: MM ∩ LS-1, showing SW hit position)')
+          'LS-1 tracks → Scint wall\n(trigger-coincidence: MM ∩ LS-1, showing SW hit position)',
+          bar_width_cm=2.5, n_bars=20)
 
 plt.tight_layout()
 out_a = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'results', 'sizing', 'sizing_config_A.png')
@@ -222,7 +246,8 @@ fig_b.suptitle(
 # Row 1: scint wall coverage
 u, v = get_uv(recs_B, 'sw')
 hit_panel(axes_b[0, 0], u, v, sw_hu_b, sw_hv_b,
-          'MM tracks → Scint wall\n(all particles reaching MM)')
+          'MM tracks → Scint wall\n(all particles reaching MM)',
+          bar_width_cm=2.5, n_bars=20)
 
 u_bs, v_bs = [], []
 for r in recs_B:
@@ -230,7 +255,8 @@ for r in recs_B:
         u_bs.append(r['sw'][0])
         v_bs.append(r['sw'][1])
 hit_panel(axes_b[0, 1], np.array(u_bs), np.array(v_bs), sw_hu_b, sw_hv_b,
-          'Back scint tracks → Scint wall\n(trigger-coincidence: MM ∩ SW ∩ BS)')
+          'Back scint tracks → Scint wall\n(trigger-coincidence: MM ∩ SW ∩ BS)',
+          bar_width_cm=2.5, n_bars=20)
 
 # Row 2: LS-2 coverage
 u, v = get_uv(recs_B, 'ls2')
