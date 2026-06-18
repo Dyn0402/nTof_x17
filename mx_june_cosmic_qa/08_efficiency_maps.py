@@ -33,8 +33,8 @@ from common.Mx17StripMap import RunConfig
 from M3RefTracking import M3RefTracking, get_xy_angles, get_xy_positions
 
 R = next((float(a.split('=')[1]) for a in sys.argv if a.startswith('--r=')), 5.0)
-RECO_CACHE = 'event_results_flipy.pkl'        # no-veto: reco for ALL events incl sparks
-ALIGN_DIR = 'alignment_tpc_veto50_flipy'      # default/best alignment
+RECO_CACHE = 'event_results.pkl'              # no-veto: reco for ALL events incl sparks
+ALIGN_DIR = 'alignment_tpc_veto50'            # default/best alignment
 BINS = 40
 
 
@@ -46,7 +46,7 @@ def main():
 
     res = pickle.load(open(os.path.join(CFG.OUT_BASE, 'cache', RECO_CACHE), 'rb'))
     rays = M3RefTracking(CFG.m3_tracking_dir, chi2_cut=20.0)
-    xa, ya, an = get_xy_angles(rays.ray_data); xa = -np.array(xa)
+    xa, ya, an = get_xy_angles(rays.ray_data); xa = params.ref_x_sign * np.array(xa)
     cm.attach_reference_positions(res, rays, params, xa, an)
 
     # reco aligned position per event (from det1 micro-TPC fit)
@@ -62,7 +62,7 @@ def main():
 
     # projection of every clean M3 ray at the aligned plane (ref frame, code sign convention)
     xr, yr, evn = get_xy_positions(rays.ray_data, params.z_mean)
-    px = -np.array(xr); py = np.array(yr)
+    px = params.ref_x_sign * np.array(xr); py = np.array(yr)
 
     rows = []
     for e, x, y in zip((int(v) for v in evn), px, py):

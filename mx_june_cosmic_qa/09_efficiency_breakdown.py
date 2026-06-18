@@ -45,10 +45,10 @@ def rstd(v, ns=3, it=5):
 
 def main():
     out_dir = CFG.out_dir('efficiency')
-    params = cm.load_alignment(os.path.join(CFG.OUT_BASE, 'alignment_tpc_veto50_flipy', 'alignment.json'))
-    res = pickle.load(open(os.path.join(CFG.OUT_BASE, 'cache', 'event_results_flipy.pkl'), 'rb'))
+    params = cm.load_alignment(os.path.join(CFG.OUT_BASE, 'alignment_tpc_veto50', 'alignment.json'))
+    res = pickle.load(open(os.path.join(CFG.OUT_BASE, 'cache', 'event_results.pkl'), 'rb'))
     rays = M3RefTracking(CFG.m3_tracking_dir, chi2_cut=20.0)
-    xa, ya, an = get_xy_angles(rays.ray_data); xa = -np.array(xa)
+    xa, ya, an = get_xy_angles(rays.ray_data); xa = params.ref_x_sign * np.array(xa)
     cm.attach_reference_positions(res, rays, params, xa, an)
     reco = {r.event_id: (r.det_x_aligned_mm, r.det_y_aligned_mm) for r in res if r.has_both
             and np.isfinite(r.det_x_aligned_mm) and np.isfinite(r.det_y_aligned_mm)}
@@ -59,7 +59,7 @@ def main():
     det1_hit = set(int(e) for e in raw.loc[raw['feu'].isin(CFG.MX17_FEUS), 'eventId'].unique())
 
     xr, yr, evn = get_xy_positions(rays.ray_data, params.z_mean)
-    px = -np.array(xr); py = np.array(yr); evn = [int(v) for v in evn]
+    px = params.ref_x_sign * np.array(xr); py = np.array(yr); evn = [int(v) for v in evn]
 
     recpos = np.array(list(reco.values()))
     ax0, ax1 = np.percentile(recpos[:, 0], [0.5, 99.5]); ay0, ay1 = np.percentile(recpos[:, 1], [0.5, 99.5])

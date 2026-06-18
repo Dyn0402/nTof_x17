@@ -544,6 +544,13 @@ class AlignmentParams:
                 local frame into the reference frame [mm].
                 i.e. corrected_pos = rotated_det_pos + (x_offset, y_offset).
                 Refined automatically by translation_alignment().
+    ref_x_sign : sign applied to the M3 reference X position (and angle).  This
+                accounts for the handedness of the M3 tracking X output relative
+                to the detector frame.  Default -1.0 reproduces the historical
+                "x_ref = -x_ref" convention used by the det_4 / n_TOF analyses.
+                Set +1.0 for the clean convention where the detector rotation is
+                carried entirely by theta_deg (from run_config det_orientation.z),
+                so no compensating y-flip of the detector is needed.
     """
     z_x: float = 250.0
     z_y: float = 250.0
@@ -552,6 +559,7 @@ class AlignmentParams:
     centre_y: float = 0.0
     x_offset: float = 0.0
     y_offset: float = 0.0
+    ref_x_sign: float = -1.0
 
     @property
     def z_mean(self) -> float:
@@ -791,7 +799,7 @@ def _collect_residuals(
     result_by_id = {r.event_id: r for r in results}
 
     x_refs_arr, y_refs_arr, event_nums = get_xy_positions(rays.ray_data, params.z_mean)
-    x_refs_arr = -np.array(x_refs_arr)   # sign convention
+    x_refs_arr = params.ref_x_sign * np.array(x_refs_arr)   # reference X handedness
 
     # We need per-event rotated+translated positions keyed by event_id
     x_rot, y_rot = _rotate_det_positions(
@@ -865,7 +873,7 @@ def z_alignment_scan(
     desc = f'Z-scan{" " + label if label else ""}'
     for i, z in enumerate(_progress(z_values, desc=desc)):
         x_refs, y_refs, event_nums = get_xy_positions(rays.ray_data, z)
-        x_refs = -np.array(x_refs)
+        x_refs = params.ref_x_sign * np.array(x_refs)
 
         dx_vals, dy_vals = [], []
         for j, evn in enumerate(event_nums):
@@ -910,6 +918,7 @@ def z_alignment_scan(
         theta_deg=params.theta_deg,
         centre_x=params.centre_x, centre_y=params.centre_y,
         x_offset=params.x_offset, y_offset=params.y_offset,
+        ref_x_sign=params.ref_x_sign,
     )
 
 
@@ -957,7 +966,7 @@ def rotation_alignment_scan(
     # Reference positions at the current z (held fixed during rotation scan).
     # We evaluate at z_x for the X residuals and z_y for Y residuals.
     x_refs_raw, _, event_nums_x = get_xy_positions(rays.ray_data, params.z_x)
-    x_refs_raw = -np.array(x_refs_raw)
+    x_refs_raw = params.ref_x_sign * np.array(x_refs_raw)
     _, y_refs_raw, event_nums_y = get_xy_positions(rays.ray_data, params.z_y)
 
     # Build per-event ref lookup (use z_mean for combined metric)
@@ -1024,6 +1033,7 @@ def rotation_alignment_scan(
         theta_deg=best_theta,
         centre_x=params.centre_x, centre_y=params.centre_y,
         x_offset=params.x_offset, y_offset=params.y_offset,
+        ref_x_sign=params.ref_x_sign,
     )
 
 
@@ -1132,6 +1142,7 @@ def translation_alignment(
         centre_x=params.centre_x, centre_y=params.centre_y,
         x_offset=params.x_offset + dx_shift,
         y_offset=params.y_offset + dy_shift,
+        ref_x_sign=params.ref_x_sign,
     )
 
 
@@ -1258,6 +1269,7 @@ def save_alignment(params: AlignmentParams, path: str) -> None:
         'centre_y':  params.centre_y,
         'x_offset':  params.x_offset,
         'y_offset':  params.y_offset,
+        'ref_x_sign': params.ref_x_sign,
     }
     with open(path, 'w') as f:
         json.dump(data, f, indent=2)
@@ -1276,6 +1288,7 @@ def load_alignment(path: str) -> AlignmentParams:
         centre_y=data['centre_y'],
         x_offset=data.get('x_offset', 0.0),
         y_offset=data.get('y_offset', 0.0),
+        ref_x_sign=data.get('ref_x_sign', -1.0),
     )
     print(f'Alignment loaded from {path}: {params}')
     return params
@@ -1315,7 +1328,7 @@ def attach_reference_positions(
     # Evaluate reference at axis-specific z values
     x_pos_ref, _, pos_event_nums_x = get_xy_positions(rays.ray_data, params.z_x)
     _, y_pos_ref, pos_event_nums_y = get_xy_positions(rays.ray_data, params.z_y)
-    x_pos_ref = -np.array(x_pos_ref)
+    x_pos_ref = params.ref_x_sign * np.array(x_pos_ref)
 
     x_ref_by_id = {evn: float(x_pos_ref[j]) for j, evn in enumerate(pos_event_nums_x)
                    if evn in result_by_id}
@@ -1398,7 +1411,7 @@ def _build_2d_map_arrays(
     """
     # ---- All reference tracks at alignment z (denominator) ----
     x_refs_raw, y_refs_raw, _ = get_xy_positions(rays.ray_data, params.z_mean)
-    ref_x_all = -np.array(x_refs_raw, dtype=float)  # sign convention
+    ref_x_all = params.ref_x_sign * np.array(x_refs_raw, dtype=float)  # reference X handedness
     ref_y_all  =  np.array(y_refs_raw, dtype=float)
     finite = np.isfinite(ref_x_all) & np.isfinite(ref_y_all)
     ref_x_all = ref_x_all[finite]
@@ -2123,6 +2136,7 @@ def plot_angle_correlation(
     v_scan_max: float = 50.0,
     v_scan_steps: int = 41,
     out_dir: Optional[str] = None,
+    params: Optional['AlignmentParams'] = None,
 ) -> Tuple[float, float]:
     """
     Plot angle_ref vs. angle_det (in degrees) and extract the drift velocity
@@ -2146,33 +2160,52 @@ def plot_angle_correlation(
 
     Returns (v_drift_x, v_drift_y) [µm/ns], or (nan, nan) on failure.
     """
-    # ---- Collect per-event data: store raw slopes to allow v_drift recomputation ----
-    deg_ref_x, slope_x, rad_res_x, rchi2_x = [], [], [], []
-    deg_ref_y, slope_y, rad_res_y, rchi2_y = [], [], [], []
+    # ---- Collect per-event data (events with BOTH axes) ----
+    # We need both detector slopes per event so the detector angle vector can be
+    # rotated into the M3 reference frame by the alignment rotation (see below).
+    slope_x, slope_y = [], []
+    deg_ref_x, deg_ref_y = [], []
+    rad_res, rchi2_x, rchi2_y = [], [], []
 
     for r in results:
-        if (r.has_x
-                and not np.isnan(r.ref_tan_theta_x)
-                and not np.isnan(r.x_fit.slope_mm_per_ns)
-                and r.x_fit.n_strips >= min_strips):
-            deg_ref_x.append(np.degrees(np.arctan(r.ref_tan_theta_x)))
-            slope_x.append(r.x_fit.slope_mm_per_ns)
-            rad_res_x.append(r.radial_residual_mm)
-            rchi2_x.append(r.x_fit.red_chi2)
+        if not (r.has_x and r.has_y):
+            continue
+        if np.isnan(r.ref_tan_theta_x) or np.isnan(r.ref_tan_theta_y):
+            continue
+        if np.isnan(r.x_fit.slope_mm_per_ns) or np.isnan(r.y_fit.slope_mm_per_ns):
+            continue
+        if r.x_fit.n_strips < min_strips or r.y_fit.n_strips < min_strips:
+            continue
+        slope_x.append(r.x_fit.slope_mm_per_ns)
+        slope_y.append(r.y_fit.slope_mm_per_ns)
+        deg_ref_x.append(np.degrees(np.arctan(r.ref_tan_theta_x)))
+        deg_ref_y.append(np.degrees(np.arctan(r.ref_tan_theta_y)))
+        rad_res.append(r.radial_residual_mm)
+        rchi2_x.append(r.x_fit.red_chi2)
+        rchi2_y.append(r.y_fit.red_chi2)
 
-        if (r.has_y
-                and not np.isnan(r.ref_tan_theta_y)
-                and not np.isnan(r.y_fit.slope_mm_per_ns)
-                and r.y_fit.n_strips >= min_strips):
-            deg_ref_y.append(np.degrees(np.arctan(r.ref_tan_theta_y)))
-            slope_y.append(r.y_fit.slope_mm_per_ns)
-            rad_res_y.append(r.radial_residual_mm)
-            rchi2_y.append(r.y_fit.red_chi2)
+    slope_x = np.array(slope_x); slope_y = np.array(slope_y)
+    deg_ref_x = np.array(deg_ref_x); deg_ref_y = np.array(deg_ref_y)
+    rad_res = np.array(rad_res); rchi2_x = np.array(rchi2_x); rchi2_y = np.array(rchi2_y)
 
-    deg_ref_x = np.array(deg_ref_x); slope_x = np.array(slope_x)
-    rad_res_x = np.array(rad_res_x); rchi2_x = np.array(rchi2_x)
-    deg_ref_y = np.array(deg_ref_y); slope_y = np.array(slope_y)
-    rad_res_y = np.array(rad_res_y); rchi2_y = np.array(rchi2_y)
+    # Detector angle in the M3 frame.  The micro-TPC measures tan(θ) per strip
+    # plane as slope[mm/ns]·1000 / v_drift[µm/ns]; this (tanθ_x, tanθ_y) vector is
+    # rotated by the alignment rotation θ (same transform applied to positions) so
+    # it lands in the reference frame before being paired with the M3 angles.  For
+    # the ~90°-rotated mx17 detectors this maps det-X↔ref-Y and det-Y↔ref-X; without
+    # it the plot pairs uncorrelated axes and the v_drift scan has no real minimum.
+    # The M3 reference angles already carry the ref_x_sign handedness (applied by the
+    # caller), matching the position convention.  params=None (legacy callers such as
+    # the det_4 main()/hv_scan, θ≈0) → no rotation, preserving old behaviour.
+    _theta = np.deg2rad(params.theta_deg) if params is not None else 0.0
+    _ct, _st = np.cos(_theta), np.sin(_theta)
+
+    def _det_angles_deg(sx, sy, v):
+        tan_x = sx * 1000.0 / v
+        tan_y = sy * 1000.0 / v
+        tan_x_m3 = _ct * tan_x - _st * tan_y
+        tan_y_m3 = _st * tan_x + _ct * tan_y
+        return np.degrees(np.arctan(tan_x_m3)), np.degrees(np.arctan(tan_y_m3))
 
     lim_deg = 30.0
     lim_x = min(1.5 * float(np.nanpercentile(np.abs(deg_ref_x), 99)), lim_deg * 1.5) \
@@ -2181,8 +2214,7 @@ def plot_angle_correlation(
             if len(deg_ref_y) else lim_deg
 
     # ---- Figure 1: raw correlation with ballpark v_drift ----
-    deg_det_x0 = _deg_from_slope(slope_x, V_DRIFT_ESTIMATE)
-    deg_det_y0 = _deg_from_slope(slope_y, V_DRIFT_ESTIMATE)
+    deg_det_x0, deg_det_y0 = _det_angles_deg(slope_x, slope_y, V_DRIFT_ESTIMATE)
 
     fig1, axes1 = plt.subplots(1, 2, figsize=(13, 5))
     for ax, xd, yd, lim, col, proj in [
@@ -2206,14 +2238,15 @@ def plot_angle_correlation(
     if residual_cut_mm is None:
         return v_drift_x, v_drift_y
 
-    # ---- Quality mask ----
+    # ---- Quality mask (single both-axis mask: the rotation needs both slopes) ----
     chi2_ok_x = np.isfinite(rchi2_x) & ((rchi2_x <= max_red_chi2) if max_red_chi2 else True)
     chi2_ok_y = np.isfinite(rchi2_y) & ((rchi2_y <= max_red_chi2) if max_red_chi2 else True)
-    qmask_x = (rad_res_x < residual_cut_mm) & chi2_ok_x & np.isfinite(deg_ref_x)
-    qmask_y = (rad_res_y < residual_cut_mm) & chi2_ok_y & np.isfinite(deg_ref_y)
+    qmask = ((rad_res < residual_cut_mm) & chi2_ok_x & chi2_ok_y
+             & np.isfinite(deg_ref_x) & np.isfinite(deg_ref_y))
 
-    ref_x_q  = deg_ref_x[qmask_x];  sl_x_q  = slope_x[qmask_x]
-    ref_y_q  = deg_ref_y[qmask_y];  sl_y_q  = slope_y[qmask_y]
+    ref_x_q = deg_ref_x[qmask];  ref_y_q = deg_ref_y[qmask]
+    sl_x_q  = slope_x[qmask];    sl_y_q  = slope_y[qmask]
+    n_q = int(qmask.sum())
 
     # ---- Drift-velocity scan ----
     v_values = np.linspace(v_scan_min, v_scan_max, v_scan_steps)
@@ -2221,8 +2254,9 @@ def plot_angle_correlation(
     sigmas_y = np.full(len(v_values), np.nan)
 
     for i, v in enumerate(v_values):
-        d_x = np.abs(ref_x_q) - np.abs(_deg_from_slope(sl_x_q, v))
-        d_y = np.abs(ref_y_q) - np.abs(_deg_from_slope(sl_y_q, v))
+        ddx, ddy = _det_angles_deg(sl_x_q, sl_y_q, v)
+        d_x = np.abs(ref_x_q) - np.abs(ddx)
+        d_y = np.abs(ref_y_q) - np.abs(ddy)
         sigma_x, _ = _fit_diagonal_peak(d_x)
         sigma_y, _ = _fit_diagonal_peak(d_y)
         sigmas_x[i] = sigma_x
@@ -2253,7 +2287,7 @@ def plot_angle_correlation(
         ax.set_xlabel('Drift velocity [µm/ns]')
         ax.set_ylabel('Gaussian σ of diagonal projection [deg]')
         ax.set_title(f'{proj}: diagonal projection width vs drift velocity\n'
-                     f'(r < {residual_cut_mm:.0f} mm, {int(qmask_x.sum() if proj=="X" else qmask_y.sum()):,} events)')
+                     f'(r < {residual_cut_mm:.0f} mm, {n_q:,} events)')
         ax.grid(True, alpha=0.3)
     fig2.tight_layout()
     _save_fig(fig2, out_dir, 'v_drift_scan.png')
@@ -2263,8 +2297,7 @@ def plot_angle_correlation(
     if not np.isfinite(v_avg):
         return v_drift_x, v_drift_y
 
-    deg_det_x_corr = _deg_from_slope(sl_x_q, v_avg)
-    deg_det_y_corr = _deg_from_slope(sl_y_q, v_avg)
+    deg_det_x_corr, deg_det_y_corr = _det_angles_deg(sl_x_q, sl_y_q, v_avg)
 
     ang_res_data = []
     fig3, axes3 = plt.subplots(1, 2, figsize=(13, 5))

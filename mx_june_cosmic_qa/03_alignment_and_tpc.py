@@ -50,7 +50,11 @@ from M3RefTracking import M3RefTracking, get_xy_angles
 # --- run-specific geometry (from the run registry) ---
 DET_PLANE_Z = CFG.DET_PLANE_Z        # mx17_1 det_center z from run_config.json
 # Fine iterative z and theta scans (defaults tuned for the Saclay cosmic bench).
-Z_SCAN = np.linspace(DET_PLANE_Z - 60.0, DET_PLANE_Z + 60.0, 121)  # 1 mm steps
+# Z-scan window defaults to DET_PLANE_Z +/- 60 mm but can be overridden via the
+# Z_LO / Z_HI environment variables (absolute mm) when the optimum rails the edge.
+_z_lo = float(os.environ.get('Z_LO', DET_PLANE_Z - 60.0))
+_z_hi = float(os.environ.get('Z_HI', DET_PLANE_Z + 60.0))
+Z_SCAN = np.linspace(_z_lo, _z_hi, int(round(_z_hi - _z_lo)) + 1)  # 1 mm steps
 CENTRE_XY = 200.0                    # strip-map centre (active area ~0..400 mm)
 CHI2_CUT = 20.0
 N_ITER = 3                           # iterative z -> rotation -> translation cycles
@@ -61,9 +65,16 @@ N_ITER = 3                           # iterative z -> rotation -> translation cy
 #   * cluster cut : determine the alignment only on events with <= MAXDROP strips
 #                   sitting in competing clusters (n_dropped) — these otherwise
 #                   bias the z scan
-#   * rot0 = 90   : mx17 strip frame is ~90 deg rotated vs M3 (det-X measures M3-Y)
-#   * flipy       : negate y to undo the handedness from the hardcoded x_ref sign,
-#                   so the 90 deg rotation is proper and BOTH axes align
+#   * base rotation: read from run_config det_orientation.z (the detector's
+#                   in-plane mounting rotation vs the M3 reference, ~90 deg for the
+#                   mx17 detectors).  The fine theta scan (+/-2 deg) absorbs the
+#                   small residual misalignment on top of this.  Override with
+#                   --rot0=<deg> if the config field is missing/wrong.
+#   * clean handedness convention (REF_X_SIGN=+1): the raw M3 reference X is used
+#                   directly (no x_ref negation) and the detector is NOT y-flipped;
+#                   the full detector->M3 transform is carried by the base rotation.
+#                   This replaces the old rot0=90 + --flipy + hardcoded x_ref=-x_ref
+#                   recipe (two reflections cancelling) with a single rotation.
 # ---------------------------------------------------------------------------
 FULL = '--full' in sys.argv
 REFIT = '--refit' in sys.argv
@@ -71,8 +82,9 @@ VETO = (None if '--no-veto' in sys.argv
         else next((int(a.split('=')[1]) for a in sys.argv if a.startswith('--veto=')), 50))
 MAXDROP = (None if '--no-clustercut' in sys.argv
            else next((int(a.split('=')[1]) for a in sys.argv if a.startswith('--maxdrop=')), 2))
-ROT0 = next((float(a.split('=')[1]) for a in sys.argv if a.startswith('--rot0=')), 90.0)
-FLIPY = '--no-flipy' not in sys.argv
+# Base rotation: None -> take from run_config det_orientation.z; else --rot0 override.
+ROT0_OVERRIDE = next((float(a.split('=')[1]) for a in sys.argv if a.startswith('--rot0=')), None)
+REF_X_SIGN = +1.0   # clean convention: raw M3 reference X, rotation carries the frame
 
 
 def _load_hits():
@@ -92,9 +104,8 @@ def _load_hits():
         print(f'Spark veto (>{VETO} hits): kept {n_after:,}/{n_before:,} events '
               f'({100*n_after/n_before:.1f}%)')
     df = cm._map_strip_positions(df, det)
-    if FLIPY:
-        df['y_position_mm'] = -df['y_position_mm']
-        print('Applied --flipy: negated y_position_mm (frame handedness fix).')
+    # No y-flip: the clean convention carries the detector->M3 frame entirely in
+    # the base rotation (det_orientation.z) with raw M3 reference (REF_X_SIGN=+1).
     print(f'Loaded {len(df):,} hits over {df["eventId"].nunique():,} events.')
     return df, det, rc
 
@@ -120,7 +131,9 @@ def _analyse_events(df, cache_path):
 
 
 def main():
-    tag = (f'_veto{VETO}' if VETO is not None else '') + ('_flipy' if FLIPY else '')
+    # Cache/out tag keys only on the veto (the per-event fits are rotation- and
+    # handedness-independent; no y-flip is applied anymore).
+    tag = (f'_veto{VETO}' if VETO is not None else '')
     out_dir = CFG.out_dir(f'alignment_tpc{tag}')
     cache_dir = CFG.out_dir('cache')
     cache_path = os.path.join(cache_dir, f'event_results{tag}.pkl')
@@ -130,10 +143,16 @@ def main():
     n_both = sum(r.has_both for r in results)
     print(f'Analysed {len(results):,} events: {n_both:,} with valid X+Y hits.')
 
+    # ---- Base rotation from run_config det_orientation.z (override: --rot0) ----
+    cfg_rot = float(det.orientation.get('z', 0.0) or 0.0)
+    rot0 = ROT0_OVERRIDE if ROT0_OVERRIDE is not None else cfg_rot
+    print(f'Base rotation: {rot0:.2f} deg '
+          f'({"--rot0 override" if ROT0_OVERRIDE is not None else "run_config det_orientation.z"})')
+
     # ---- M3 reference ----
     rays = M3RefTracking(CFG.m3_tracking_dir, chi2_cut=CHI2_CUT)
     x_ref_angles, y_ref_angles, angle_event_nums = get_xy_angles(rays.ray_data)
-    x_ref_angles = -np.array(x_ref_angles)  # sign convention
+    x_ref_angles = REF_X_SIGN * np.array(x_ref_angles)  # reference X handedness
 
     # ---- Cluster-quality subset for ALIGNMENT determination only ----
     # Events with strips in competing clusters (n_dropped) bias the z scan; the
@@ -148,10 +167,11 @@ def main():
     else:
         align_results = results
 
-    # ---- Iterative z + rotation + translation alignment (base rotation ROT0) ----
-    initial = cm.AlignmentParams(z_x=DET_PLANE_Z, z_y=DET_PLANE_Z, theta_deg=ROT0,
-                                 centre_x=CENTRE_XY, centre_y=CENTRE_XY)
-    theta_scan = np.linspace(ROT0 - 2.0, ROT0 + 2.0, 81)  # 0.05 deg steps around the swap
+    # ---- Iterative z + rotation + translation alignment (base rotation rot0) ----
+    initial = cm.AlignmentParams(z_x=DET_PLANE_Z, z_y=DET_PLANE_Z, theta_deg=rot0,
+                                 centre_x=CENTRE_XY, centre_y=CENTRE_XY,
+                                 ref_x_sign=REF_X_SIGN)
+    theta_scan = np.linspace(rot0 - 2.0, rot0 + 2.0, 81)  # 0.05 deg steps around the base
     best = cm.run_alignment(
         align_results, rays,
         initial_params=initial,
@@ -183,7 +203,8 @@ def main():
     # ---- Full micro-TPC physics analysis ----
     v_dx, v_dy = cm.plot_angle_correlation(
         results, residual_cut_mm=10.0, min_strips=4, max_red_chi2=None,
-        v_scan_min=30.0, v_scan_max=50.0, v_scan_steps=41, out_dir=out_dir)
+        v_scan_min=25.0, v_scan_max=50.0, v_scan_steps=51, out_dir=out_dir,
+        params=best)
     v_avg = float(np.nanmean([v_dx, v_dy]))
     print(f'Drift velocity: X={v_dx:.1f}  Y={v_dy:.1f}  avg={v_avg:.1f} um/ns')
 

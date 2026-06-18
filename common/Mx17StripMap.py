@@ -84,6 +84,12 @@ class Detector:
 
         self.dream_feus = det_cfg["dream_feus"]
         self.feu_orientation = det_cfg.get("dream_feu_orientation", {})
+        # Physical detector orientation in the bench/M3 frame (degrees about each
+        # axis). det_orientation.z is the in-plane rotation of the detector vs the
+        # M3 reference; consumed by the alignment as the base rotation so each
+        # detector self-describes its mounting rotation in run_config.json.
+        self.orientation = det_cfg.get("det_orientation", {}) or {}
+        self.det_center_coords = det_cfg.get("det_center_coords", {}) or {}
 
         # feu_id -> list of (axis, connector)
         self.feu_map: Dict[int, list[Tuple[str, int]]] = {}
