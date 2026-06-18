@@ -1,0 +1,4 @@
+# Regenerable analysis products and caches (local-only; data lives under /home/dylan/x17)
+output/
+__pycache__/
+*.log
