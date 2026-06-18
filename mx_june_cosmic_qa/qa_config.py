@@ -90,6 +90,14 @@ RUNS = {
     'ovn_det2':   _Config('ovn_det2', 'mx17_det1_det2_overnight_6-17-26', 'longer_run',
                           feus=[7, 8], det_z=702.0, det_name='mx17_2', zero_suppressed=False,
                           base_path='/home/dylan/x17/cosmic_bench/det1_det2/'),
+    # Daytime det1 single-detector run (1-28-26), NOT zero-suppressed. Subrun overnight_run.
+    # FEU 4=X, 6=Y (non-consecutive). Ar/Iso 95/5. X/Y hits well balanced.
+    # NB: run_config nominal det_center z = 411, but the M3-frame alignment optimum is
+    # ~251 mm (this bench's M3 stations sit at different z than the det_3 runs). Using 251
+    # so the default +/-60 z-scan brackets it; alignment -> sub-mm residual (sigma~0.82 mm).
+    'day_det1':   _Config('day_det1', 'mx17_det1_daytime_run_1-28-26', 'overnight_run',
+                          feus=[4, 6], det_z=251.0, det_name='mx17_1', zero_suppressed=False,
+                          base_path='/home/dylan/x17/cosmic_bench/det_0/'),
 }
 
 

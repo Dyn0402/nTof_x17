@@ -74,8 +74,21 @@ applies `dream_feu_orientation` ("inverted"); verified (forcing it off worsens t
 It is a detector↔M3 *frame* convention (Saclay bench axes ~90° rotated), which is the
 alignment's job, not the strip map's.
 
-Fix (in `03`, default-on for this bench): `rot0=90` base rotation + `--flipy` (negate
-`y_position_mm`) to make the rotation proper so BOTH axes align.
+**UPDATE (standardised convention — replaces the flipy recipe below):** the proper
+description is a single base rotation read from `run_config.json` `det_orientation.z`
+(= **90** for the mx17 detectors) plus the raw M3 reference (no `x_ref` negation).
+`03` now reads `det_orientation.z` as the base rotation, `AlignmentParams.ref_x_sign`
+selects the M3-X handedness (`+1` = clean raw convention, used by the June pipeline;
+default `-1` reproduces the legacy det_4/n_TOF "x_ref=-x_ref" so those runs are
+unchanged), and the per-run `--flipy`/`rot0=90` flags are retired. The fine ±2° scan
+absorbs the small real misalignment (det1 lands at θ=88.75° = 90° − 1.25°), giving the
+same sub-mm residual (σ≈0.82 mm) with **no flags**. (NB a subtle bug had the scan
+helpers drop `ref_x_sign` on their returned params — fixed so it propagates across
+iterations.) `det_orientation.z` must be set in each cosmic run_config.
+
+Legacy (pre-standardisation) fix, for reference: `rot0=90` base rotation + `--flipy`
+(negate `y_position_mm`) to make the rotation proper — two reflections (the `--flipy`
+and the hardcoded `x_ref=-x_ref`) cancelling into a rotation.
 
 ### 3. The two detectors (overnight run)
 - **det1 (mx17_1, z=232, FEU 3/4): noisy.** Fires in 96% of events, ~46 hits/event, flat
@@ -92,7 +105,8 @@ In impact order:
    z-scan find the right z (sparks distort its variance landscape).
 2. **Cluster-quality cut** `--maxdrop 2` for *alignment determination only* (events with strips
    in competing clusters, `n_dropped`, bias the z-scan).
-3. `rot0=90` + `--flipy` (frame fix, section 2).
+3. base rotation from `run_config` `det_orientation.z` (=90) + raw M3 ref
+   (`ref_x_sign=+1`); frame fix, section 2. (Legacy equivalent: `rot0=90` + `--flipy`.)
 4. **Iterative z/θ scan on the clean subset** (3 iterations, z ±60 mm @1 mm, θ ±2° @0.05°).
 
 Result for det1: converges stably z_x=243, z_y=244, θ=90.5°, **residual σ ≈ 0.78 mm both
@@ -100,7 +114,8 @@ axes** (sub-mm), drift velocity X=48.0 / Y=48.5 µm/ns (consistent). NB: `residu
 Gaussian auto-fit diverges on the outlier shoulder — the robust core σ_y is 0.78 mm.
 
 Defaults: `VETO=50` (`--no-veto`/`--veto=N`), `MAXDROP=2` (`--no-clustercut`/`--maxdrop=N`),
-`ROT0=90` (`--rot0=`), `FLIPY=on` (`--no-flipy`). Per-event cache keyed by veto+flipy tag.
+base rotation from `det_orientation.z` (override `--rot0=`), `REF_X_SIGN=+1` (clean raw-M3
+convention). Per-event cache keyed by veto tag only (no y-flip is applied now).
 
 ### 5. Efficiency — ray-based method (`08`, `09`)
 The micromegas DAQ saves only events with a valid hit, so **an M3 track with no DREAM event
