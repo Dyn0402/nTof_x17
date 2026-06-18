@@ -54,8 +54,13 @@ class _Config:
         self.DET_PLANE_Z = det_z                 # mx17_1 det_center z [mm]
         self.ZERO_SUPPRESSED = zero_suppressed
         self.MAP_CSV_PATH = os.path.join(REPO_ROOT, 'mx17_m1_map.csv')
-        # Output keyed by run + detector so multi-detector runs don't collide.
-        self.OUT_BASE = os.path.join(_HERE, 'output', run, det_name)
+        # All QA output goes to a single top-level Analysis/ tree under cosmic_bench
+        # (kept separate from the data, which lives under the per-area dirs), keyed by
+        # run + sub_run + detector so subruns of the same run don't collide.
+        # cosmic_bench root = parent of base_path (e.g. .../cosmic_bench/det1_det2/ ->
+        # .../cosmic_bench).
+        cosmic_bench_root = os.path.dirname(base_path.rstrip('/'))
+        self.OUT_BASE = os.path.join(cosmic_bench_root, 'Analysis', run, sub_run, det_name)
 
     @property
     def run_config_path(self):
@@ -88,6 +93,20 @@ RUNS = {
                           feus=[3, 4], det_z=232.0, det_name='mx17_1', zero_suppressed=False,
                           base_path='/home/dylan/x17/cosmic_bench/det1_det2/'),
     'ovn_det2':   _Config('ovn_det2', 'mx17_det1_det2_overnight_6-17-26', 'longer_run',
+                          feus=[7, 8], det_z=702.0, det_name='mx17_2', zero_suppressed=False,
+                          base_path='/home/dylan/x17/cosmic_bench/det1_det2/'),
+    # Same overnight run, the longer 'long_run' subrun (~10x stats vs longer_run).
+    'long_det1':  _Config('long_det1', 'mx17_det1_det2_overnight_6-17-26', 'long_run',
+                          feus=[3, 4], det_z=232.0, det_name='mx17_1', zero_suppressed=False,
+                          base_path='/home/dylan/x17/cosmic_bench/det1_det2/'),
+    'long_det2':  _Config('long_det2', 'mx17_det1_det2_overnight_6-17-26', 'long_run',
+                          feus=[7, 8], det_z=702.0, det_name='mx17_2', zero_suppressed=False,
+                          base_path='/home/dylan/x17/cosmic_bench/det1_det2/'),
+    # New short run (6-18-26), subrun short_run. Same det layout, Ar/Iso, non-ZS.
+    'short_det1': _Config('short_det1', 'mx17_det1_det2_short_6-18-26', 'short_run',
+                          feus=[3, 4], det_z=232.0, det_name='mx17_1', zero_suppressed=False,
+                          base_path='/home/dylan/x17/cosmic_bench/det1_det2/'),
+    'short_det2': _Config('short_det2', 'mx17_det1_det2_short_6-18-26', 'short_run',
                           feus=[7, 8], det_z=702.0, det_name='mx17_2', zero_suppressed=False,
                           base_path='/home/dylan/x17/cosmic_bench/det1_det2/'),
     # Daytime det1 single-detector run (1-28-26), NOT zero-suppressed. Subrun overnight_run.

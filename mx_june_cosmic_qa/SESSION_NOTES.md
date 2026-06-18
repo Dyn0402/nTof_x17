@@ -1,186 +1,205 @@
 # MX17 June cosmic-bench QA — session handoff
 
 Saclay cosmic-bench QA for the MX17 micro-TPC Micromegas detectors. Pull a run from
-the DAQ PC, QA the detector + M3 reference tracker, align to the reference, and build
-efficiency maps. Code lives here in `mx_june_cosmic_qa/` and **reuses** (does not fork)
+the DAQ PC, QA the detector + M3 reference tracker, align to the reference, build
+efficiency maps. Code here in `mx_june_cosmic_qa/` **reuses** (does not fork)
 `../cosmic_bench_analysis/` (`cosmic_micro_tpc_analysis.py`, `detector_qa.py`,
 `M3RefTracking.py`) and `../common/Mx17StripMap.py`.
 
-Python env: `../.venv` (has uproot/awkward). Run e.g. `../.venv/bin/python 03_alignment_and_tpc.py ovn_det1 --full`.
+**Python env:** `../venv/bin/python` (has uproot/awkward). e.g.
+`../venv/bin/python 03_alignment_and_tpc.py short_det1 --full`.
 
 ---
 
-## Data pull
-- Runs live on `ssh rays_daplxa` under `/mnt/cosmic_data/MX17/Run/<run>/`.
-- Copy to `/home/dylan/x17/cosmic_bench/det_<N>/` (or `det1_det2/` for the 2-det run).
-- Check remote `du -sh` and local `df -h /home/dylan` first. Remote rsync is old (3.0.9):
-  no `--info`, use `--stats`.
-- Only `combined_hits_root/` and `m3_tracking_root/` are needed for analysis; the raw
-  `.fdf` (bulk of a run) are not. Default `rsync -a --exclude='*.fdf'`, or filter to just
-  those two subdirs for a minimal pull.
+## ▶ Analysis flow for a NEW detector/run (quickstart)
+
+1. **Pull the data** (combined_hits + m3_tracking + run_config only; not the raw .fdf):
+   ```
+   ./pull_run.sh <run_name> <sub_run> [area=det1_det2] [host=rays_daplxa]
+   # e.g. ./pull_run.sh mx17_det1_det2_short_6-18-26 short_run det1_det2
+   ```
+   Lands data in `~/x17/cosmic_bench/<area>/<run>/<sub_run>/`. `~/x17` →
+   `/media/dylan/data` (477G). Check the new run_config: `zero_suppress` must be
+   **false** (ZS kills the M3 reference, §1), and `det_orientation.z` must be **90**
+   for the mx17 detectors (§2). If the field is missing/0, set it in run_config.json.
+
+2. **Register in `qa_config.py`** — add a `_Config` per detector to the `RUNS` dict:
+   ```python
+   'short_det1': _Config('short_det1', '<run>', '<sub_run>',
+                         feus=[X_feu, Y_feu], det_z=<det_center_z>, det_name='mx17_1',
+                         zero_suppressed=False, base_path='.../cosmic_bench/det1_det2/'),
+   ```
+   `feus` = the X then Y FEU number (first index of `dream_feus` per axis in
+   run_config). `det_z` = `det_center_coords.z` from run_config. One key PER DETECTOR
+   (a 2-det run needs det1 + det2 keys, different FEUs/z/det_name). Always include the
+   right `sub_run` — output/cache is keyed on it (subruns of one run otherwise collide).
+
+3. **Run the QA pipeline** (every script takes the key as first arg):
+   ```
+   01_raw_detector_qa.py <key>            # occupancy, rates, amplitude maps
+   02_m3_reference_qa.py <key>            # M3 tracker health (want ~54-57% clean tracks)
+   04_detector_deep_qa.py <key>          # pathology: per-strip firing, spark/multiplicity tail
+   03_alignment_and_tpc.py <key> --full  # alignment + micro-TPC + efficiency/resolution maps
+   03_alignment_and_tpc.py <key> --no-veto   # builds the no-veto cache 08/09 need
+   08_efficiency_maps.py <key>           # ray-based efficiency (primary deliverable)
+   09_efficiency_breakdown.py <key>      # breakdown table + spatial plots
+   plot_amplitude_vs_strip.py <key>      # pulse-height (local_max) vs strip position, per plane
+   ```
+   Big runs (≳300 MB combined_hits) are slow on `03`/`08` — run in background. Run
+   detectors SEQUENTIALLY (two concurrent 300 MB loads can OOM).
+
+4. **Read the result** (see §4/§5 for what "good" looks like):
+   - `03`: alignment should converge to **sub-mm residual** (σ≈0.8 mm) at θ≈90°, z near
+     `det_z`. If σ≈15 mm and the z-scan **rails to its window edge**, the z-range is
+     wrong — widen it (`Z_LO=.. Z_HI=.. ../venv/bin/python 03_...`), don't blame the
+     detector. The Y-residual Gaussian often diverges on an outlier shoulder; the robust
+     core (rotation-scan σ) is the real number.
+   - `09`: efficiency breakdown (reco_near = the efficiency; hit_no_reco / no_hit = the
+     loss channels). `04` + `plot_amplitude_vs_strip` diagnose *why* (gain, dead strips,
+     sparking).
+
+**Output** goes to `~/x17/cosmic_bench/Analysis/<run>/<sub_run>/<det_name>/` (a single
+top-level `Analysis/` tree, kept separate from the data). NOT in the git repo. Plots +
+caches regenerate by rerunning; only the inputs under `cosmic_bench/<area>/` are precious.
+
+---
 
 ## Run registry (`qa_config.py`)
-`RUNS` dict keyed by short name; every script takes the key as first CLI arg. Output is
-keyed `output/<run>/<det_name>/` so multi-detector runs don't collide.
+`RUNS` dict keyed by short name. Current entries (all non-ZS, det_orientation.z=90,
+Ar/Iso 95/5 unless noted):
 
-| key | run / subrun | det | FEUs (X,Y) | z [mm] | ZS? |
-|---|---|---|---|---|---|
-| `det3_ariso` | mx17_det3_ArIso_Test_6-16-26 / run | mx17_1 | 7,8 | 702 | **YES (tpc)** |
-| `zs_initial` | zs_compression_scan_4_6-6-26 / initial_run | mx17_1 | 3,4 | 232 | no |
-| `long_run` | mx17_det3_long_run_5-6-26 / long_run | mx17_1 | 3,4 | 232 | no |
-| `ovn_det1` | mx17_det1_det2_overnight_6-17-26 / longer_run | mx17_1 | 3,4 | 232 | no |
-| `ovn_det2` | mx17_det1_det2_overnight_6-17-26 / longer_run | mx17_2 | 7,8 | 702 | no |
+| key | run / subrun | det | FEUs (X,Y) | z [mm] |
+|---|---|---|---|---|
+| `day_det1` | mx17_det1_daytime_run_1-28-26 / overnight_run | mx17_1 | 4,6 | 251* |
+| `ovn_det1` | mx17_det1_det2_overnight_6-17-26 / longer_run | mx17_1 | 3,4 | 232 |
+| `ovn_det2` | mx17_det1_det2_overnight_6-17-26 / longer_run | mx17_2 | 7,8 | 702 |
+| `long_det1` | mx17_det1_det2_overnight_6-17-26 / long_run | mx17_1 | 3,4 | 232 |
+| `long_det2` | mx17_det1_det2_overnight_6-17-26 / long_run | mx17_2 | 7,8 | 702 |
+| `short_det1` | mx17_det1_det2_short_6-18-26 / short_run | mx17_1 | 3,4 | 232 |
+| `short_det2` | mx17_det1_det2_short_6-18-26 / short_run | mx17_2 | 7,8 | 702 |
 
-`feu` column = first index of `dream_feus` in run_config.json.
+\* `day_det1` run_config nominal z is 411, but the M3-frame alignment optimum is ~251
+(this bench's M3 stations sit at different z); det_z is set to 251 so the default ±60
+z-scan brackets it. **Lesson: if the z-scan rails its edge, the nominal z is off — set
+det_z to the optimum or widen with Z_LO/Z_HI.** (Older det_3 runs `det3_ariso`,
+`zs_initial`, `long_run` were removed from the table; data not local.)
 
 ## Scripts
-- `01_raw_detector_qa.py <key>` — occupancy/channel, hits-vs-position, rate-vs-time,
-  amplitude-vs-time, hit scatter, amplitude maps. (Has its own loader using `CFG.DET_NAME`
-  because `detector_qa.load_hits` hardcodes `mx17_1`.)
-- `02_m3_reference_qa.py <key>` — M3 tracker standalone: chi2, multiplicity, angles,
-  beam profile, station hit maps.
-- `03_alignment_and_tpc.py <key> [--full]` — per-event micro-TPC analysis (cached),
-  iterative z/θ/translation alignment, residual/correlation/angle plots; `--full` adds the
-  upstream efficiency/resolution maps. **This is the default alignment pipeline** (see below).
-- `04_detector_deep_qa.py <key>` — noise/pathology: surface hitmap, per-strip firing
-  fraction (always-on strips), event multiplicity (spark tail), multiplicity-vs-time.
-- `05_align_correlation_outliers.py <key> --flipy` — robust correlation-line translation +
-  outlier characterisation.
-- `06_cluster_quality_scan.py <key> --flipy` — trade-off scan of cluster-quality cuts.
-- `07_refit_z_clean.py <key> --flipy` — clean z re-fit demonstration.
+- `pull_run.sh <run> <sub_run> [area] [host]` — rsync the inputs from the DAQ PC.
+- `01_raw_detector_qa.py` — occupancy/channel, hits-vs-position, rate-vs-time,
+  amplitude-vs-time, hit scatter, amplitude maps. (Own loader: `detector_qa.load_hits`
+  hardcodes `mx17_1`, wrong for det2.)
+- `02_m3_reference_qa.py` — M3 tracker standalone: chi2, multiplicity, angles, beam
+  profile, station hit maps.
+- `03_alignment_and_tpc.py <key> [--full] [--no-veto] [--refit] [--rot0=D] [--veto=N]` —
+  per-event micro-TPC analysis (cached), iterative z/θ/translation alignment, residual/
+  correlation/angle plots; `--full` adds efficiency/resolution maps. **Default pipeline.**
+- `04_detector_deep_qa.py` — noise/pathology: surface hitmap, per-strip firing fraction
+  (always-on strips), event multiplicity (spark tail), multiplicity-vs-time.
+- `05/06/07` — specialised one-offs (correlation-outlier translation, cluster-quality
+  scan, clean z-refit). NOT part of the standard set; their old `--flipy` flag is retired.
 - `08_efficiency_maps.py <key> [--r=5]` — **ray-based efficiency** (primary deliverable).
-- `09_efficiency_breakdown.py <key> [--r=5]` — the efficiency breakdown table + spatial plots.
+- `09_efficiency_breakdown.py <key> [--r=5]` — breakdown table + spatial plots (incl.
+  `nonreco_ray_positions_scatter.png`).
+- `plot_amplitude_vs_strip.py <key> [--field=F] [--channel] [--ymax=N]` — 2D hist of
+  pulse height vs strip. Default field `local_max` (baseline-subtracted peak ADC,
+  0–4095). NB `max_sample` is a near-constant small quantity (not pulse height);
+  `amplitude` is the integral.
 
 ---
 
-## Key findings (chronological)
+## Key findings
 
-### 1. Zero suppression destroys the M3 reference tracking
-The first run (`det3_ariso`) had `zero_suppress: true, zs_type: tpc`. The M3 reference
-Micromegas are read out through DREAM FEU 1, so TPC-ZS suppresses their signal → terrible
-tracking: only **4.3%** clean single tracks, broad (absolute, not reduced) chi2.
-Non-ZS runs give **~54–57%** clean tracks with chi2 sharply peaked at 0. **Always run
-non-zero-suppressed (or `zs_type: tracker`) for cosmic alignment.**
+### 1. Zero suppression destroys M3 reference tracking
+ZS (`zs_type: tpc`) suppresses the M3 reference Micromegas (read out via DREAM FEU 1) →
+~4% clean tracks, broad chi2. Non-ZS gives **~54–57%** clean single tracks, chi2 peaked
+at 0. **Always run non-ZS (or `zs_type: tracker`) for cosmic alignment.**
 
-### 2. 90° axis swap + handedness — why alignment "totally failed"
-The mx17 strip-map frame is rotated **~90°** vs the M3 frame: detector-X measures M3-**Y**
-(corr 0.95), detector-Y measures M3-**X** (corr −0.93); the X↔X / Y↔Y combos are ~0. The
-upstream alignment only scans ±2°, so it never absorbed the 90° → residual σ ≈ detector
-width, looking like total failure. (Hidden at first because the ZS run's tracking was random.)
-Second subtlety: the code hardcodes `x_ref = -x_ref` in 3 places, which turns the proper +90°
-rotation into a rotation+reflection (improper) → one axis comes out mirrored (anti-diagonal).
-**This is NOT a strip-map / connector-inversion bug** — `Mx17StripMap.map_hit` correctly
-applies `dream_feu_orientation` ("inverted"); verified (forcing it off worsens the result).
-It is a detector↔M3 *frame* convention (Saclay bench axes ~90° rotated), which is the
-alignment's job, not the strip map's.
+### 2. Detector↔M3 frame = a pure 90° rotation (standardised convention)
+The mx17 detector frame is a proper **+90° rotation** of the M3 frame (det(R)=+1, no
+flip; raw correlations detX↔refY ≈ +0.95, detY↔refX ≈ −0.93, diagonals ~0). This is now
+captured cleanly:
+- **`run_config.json` `det_orientation.z` = 90** for every mx17 detector. `03` reads it
+  as the base rotation; the fine ±2° scan absorbs the small real misalignment (lands at
+  θ≈88.75–90.5°). Set this field on any new run.
+- **`AlignmentParams.ref_x_sign`** carries the M3-X handedness: `+1` = clean raw-M3
+  convention (the June pipeline); default `-1` reproduces the legacy det_4/n_TOF
+  `x_ref = -x_ref`, so those runs are byte-for-byte unchanged.
+- The old per-run `--flipy` + `rot0=90` + hardcoded `x_ref=-x_ref` recipe (two
+  reflections cancelling into a rotation) is **retired**. Result: sub-mm residual with
+  **no flags**. (Fixed a bug where the z/rot/translation scan helpers dropped
+  `ref_x_sign` from returned params → reverted mid-iteration and railed.)
+- **Angle correlation is rotation-aware** (`plot_angle_correlation` takes `params`):
+  it rotates the detector (tanθ_x,tanθ_y) vector into the M3 frame before pairing and the
+  v_drift scan. Without it, det-X-angle was paired with ref-X-angle (uncorrelated for a
+  90° detector) → washed-out plot and a v_drift that railed to the edge. With it: clean
+  y=x, sensible v_drift (~35 µm/ns for day_det1; run-dependent).
 
-**UPDATE (standardised convention — replaces the flipy recipe below):** the proper
-description is a single base rotation read from `run_config.json` `det_orientation.z`
-(= **90** for the mx17 detectors) plus the raw M3 reference (no `x_ref` negation).
-`03` now reads `det_orientation.z` as the base rotation, `AlignmentParams.ref_x_sign`
-selects the M3-X handedness (`+1` = clean raw convention, used by the June pipeline;
-default `-1` reproduces the legacy det_4/n_TOF "x_ref=-x_ref" so those runs are
-unchanged), and the per-run `--flipy`/`rot0=90` flags are retired. The fine ±2° scan
-absorbs the small real misalignment (det1 lands at θ=88.75° = 90° − 1.25°), giving the
-same sub-mm residual (σ≈0.82 mm) with **no flags**. (NB a subtle bug had the scan
-helpers drop `ref_x_sign` on their returned params — fixed so it propagates across
-iterations.) `det_orientation.z` must be set in each cosmic run_config.
-
-Legacy (pre-standardisation) fix, for reference: `rot0=90` base rotation + `--flipy`
-(negate `y_position_mm`) to make the rotation proper — two reflections (the `--flipy`
-and the hardcoded `x_ref=-x_ref`) cancelling into a rotation.
-
-### 3. The two detectors (overnight run)
-- **det1 (mx17_1, z=232, FEU 3/4): noisy.** Fires in 96% of events, ~46 hits/event, flat
-  occupancy. The noise is **spark/discharge events**: bimodal multiplicity (median 4
-  strips/event, tail up to all 1024 strips). Spark events (>50 raw hits) are ~14% of events
-  but carry ~89% of all hits.
-- **det2 (mx17_2, z=702, FEU 7/8): inefficient + half-dead.** Fires in only ~8% of events.
-  FEU 7 (X) reads out only channels 0–255 → **connectors 5–8 dead**, X instrumented only
-  over ~0–200 mm. (det2 correlation with reference is weaker, ~0.46.)
-
-### 4. Default alignment recipe (now baked into `03`)
-In impact order:
-1. **Spark veto** `--veto 50` (drop events > N raw hits). Biggest single cleaner AND lets the
+### 3. Default alignment recipe (baked into `03`)
+1. **Spark veto** `--veto 50` (drop events > N raw hits) — biggest cleaner; also lets the
    z-scan find the right z (sparks distort its variance landscape).
-2. **Cluster-quality cut** `--maxdrop 2` for *alignment determination only* (events with strips
-   in competing clusters, `n_dropped`, bias the z-scan).
-3. base rotation from `run_config` `det_orientation.z` (=90) + raw M3 ref
-   (`ref_x_sign=+1`); frame fix, section 2. (Legacy equivalent: `rot0=90` + `--flipy`.)
-4. **Iterative z/θ scan on the clean subset** (3 iterations, z ±60 mm @1 mm, θ ±2° @0.05°).
+2. **Cluster-quality cut** `--maxdrop 2` for alignment determination only (competing-cluster
+   strips, `n_dropped`, bias the z-scan).
+3. Base rotation from `det_orientation.z`, raw M3 ref (`ref_x_sign=+1`).
+4. **Iterative z/θ/translation** on the clean subset (3 iters, z ±60 mm @1 mm, θ ±2° @0.05°).
+Good detector → z near det_z, θ≈90°, **σ ≈ 0.8 mm both axes**. Cache keyed by veto tag
+only (no y-flip applied). 08/09 use the **no-veto** cache (`event_results.pkl`) so sparks
+stay in the efficiency denominator; build it with `03 <key> --no-veto`.
 
-Result for det1: converges stably z_x=243, z_y=244, θ=90.5°, **residual σ ≈ 0.78 mm both
-axes** (sub-mm), drift velocity X=48.0 / Y=48.5 µm/ns (consistent). NB: `residuals.png` Y
-Gaussian auto-fit diverges on the outlier shoulder — the robust core σ_y is 0.78 mm.
+### 4. Efficiency — ray-based method (`08`, `09`)
+DAQ saves only events with a valid hit, so **an M3 track with no DREAM event is a genuine
+MISS** (keep it in the denominator — do NOT match-filter). Per clean M3 single track:
+project to the aligned plane → (x,y); record `within_range` (det reco within R mm) and
+`has_any` (det fired any strip). Breakdown categories: reco_near (the efficiency),
+reco_far (reco but >R), hit_no_reco (fired, no valid X+Y), no_hit (silent). Active-area
+box is taken empirically from reco positions (`get_active_det_bounds` is degenerate in
+the aligned frame).
 
-Defaults: `VETO=50` (`--no-veto`/`--veto=N`), `MAXDROP=2` (`--no-clustercut`/`--maxdrop=N`),
-base rotation from `det_orientation.z` (override `--rot0=`), `REF_X_SIGN=+1` (clean raw-M3
-convention). Per-event cache keyed by veto tag only (no y-flip is applied now).
+### 5. What we've seen on the detectors
+- **day_det1** (good detector, FEU 4/6): 97.5% both-XY, alignment σ≈0.82 mm, efficiency
+  **65.6%**, reco-at-all 76.5%. This is what a healthy mx17 looks like.
+- **det1 (ovn/long/short, FEU 3/4): rough — global low gain / low multiplicity.** Tracks
+  sub-mm WHEN it reconstructs, but only ~9–16% of muons form a valid X+Y point. Cause:
+  each plane silent ~40% per muon (no_hit ~31–56%); when it fires, only **~1.5–2
+  strips/muon** vs the ≥3 needed to cluster → can't reconstruct (hit_no_reco dominates).
+  Spatially uniform (no dead regions in the efficiency scatter) → a gain/HV/threshold
+  problem, plus ~4–12% spark events. STABLE across subruns. `plot_amplitude_vs_strip`
+  shows a **persistent dead/low-response gap on the Y plane (FEU 4) at ~175–275 mm** —
+  source of the Y-residual outlier shoulder.
+- **det2 (FEU 7/8): half-dead + state-dependent.** FEU 7 (X) connectors 5–8 dead → X only
+  ~0–200 mm. Behaviour varies wildly by subrun/HV: longer_run ~dead (8% occ, 63 tracks),
+  long_run half-functional (98% occ, FEU 8/Y tracks at corr 0.92 but FEU 7/X weak → ~0%
+  clean 2D points), short_run pure massive sparking (median 503 strips/event). Records
+  one coordinate at best; not a working 2D tracker.
 
-### 5. Efficiency — ray-based method (`08`, `09`)
-The micromegas DAQ saves only events with a valid hit, so **an M3 track with no DREAM event
-is a genuine MISS** (keep it in the denominator — do NOT match-filter). Per clean M3 single
-track: project to the aligned plane → (x,y), record `within_range` (det reco hit within R mm)
-and `has_any` (det fired any FEU 3/4 strip). Build a ray hit/miss list → scatter (green/red),
-binned map (self-normalises spatially → ~0 outside active area), integrate inside the active
-area. Sparks need no special handling (garbage position fails `within_range`).
-
-**det1, longer_run, R=5 mm, active area** (`09` breakdown table — enshrined):
-
-| category | meaning | % crossings |
-|---|---|---|
-| reco_near | reconstructed, \|r\|≤5 mm (the efficiency) | **14.8%** |
-| reco_far | reconstructed but \|r\|>5 mm (competing cluster) | 4.0% |
-| hit_no_reco | fired strips, no valid X+Y reco | **50.2%** |
-| no_hit | detector silent (true miss) | 31.0% |
-| has_any | detector responded (any strip) | **69.0%** |
-| reco-at-all | formed a valid X+Y point | 18.8% |
-
-Of reconstructed hits: **78.9% within 5 mm, core σ(\|r\|)=0.63 mm, median 1.22 mm** — i.e.
-when it reconstructs, the residual is tight (like the alignment residual). The low map
-efficiency is a **reconstruction-efficiency** effect (~19% reco-at-all), NOT displaced hits:
-`reco_far` is only 4%. The dominant loss is `hit_no_reco` (50%) — fired strips but never
-formed a reconstructable ≥3-strip X+Y cluster.
-
-Spatial: well-reconstructed detector positions concentrate on the **left half (x≲0)**;
-non-reconstructed muons are spread fairly uniformly.
-
-### Implementation gotchas (bench-specific assumptions in upstream code)
-- `detector_qa.load_hits` hardcodes `get_detector('mx17_1')` → wrong mapping for det2.
-  (`01` works around it.)
-- `get_active_det_bounds` returns degenerate bounds in the flipped frame → define the
-  active-area box empirically from reconstructed hit positions (`08`/`09` do this).
-- The pipeline's efficiency `plot_efficiency_map` denominator uses ALL M3 tracks — fine here
-  (DREAM⊂M3, missing = miss), but worth verifying for other setups.
-- Hardcoded `x_ref = -x_ref` is the handedness culprit (section 2).
-- Big NON-ZS runs OOM the per-event analysis (single uproot.concatenate of ~1 GB
-  combined_hits). Run in background; chunk if needed. (`mx17_det3_long_run_5-6-26` died this
-  way and still needs a chunked re-run.)
+### Implementation gotchas
+- **sub_run isolation is mandatory** in OUT_BASE. A run with multiple subruns (longer_run
+  vs long_run) will share caches if the path omits sub_run → the 2nd run silently reuses
+  the 1st's per-event fits matched against the wrong M3 rays → fake decorrelation
+  (σ~160 mm). Tell-tale: byte-identical numbers across two runs.
+- z-scan **railing** its window edge ⇒ wrong z-range, not a bad detector (widen Z_LO/Z_HI
+  or fix det_z). σ≈15 mm with a railed z is the signature.
+- `detector_qa.load_hits` hardcodes `mx17_1` → wrong for det2 (`01` works around it).
+- Big NON-ZS runs are memory-heavy (single uproot.concatenate of the combined_hits). Run
+  in background, one detector at a time.
 
 ---
 
 ## Status / where to pick up
-**Done:** data pulls (det3_ariso, zs_initial=initial_run, ovn det1/det2; long_run partial);
-full QA + sub-mm alignment + efficiency maps for **det1** (ovn_det1). Default pipeline set.
+**Done:** standardised rotation convention (det_orientation.z) + rotation-aware angle
+correlation; `pull_run.sh`; full QA on day_det1, ovn det1/det2, long det1/det2, short
+det1/det2; det1 root-cause dissection; det2 characterisation; output consolidated to
+`Analysis/`.
 
-**Open / next steps:**
-1. **Dissect `hit_no_reco` (50%)** — the next obvious question. Split into: fired one plane
-   only (X xor Y) / fired both but <3 strips (`MIN_STRIPS`) / enough strips but fit failed.
-   Tells us if reconstruction is limited by a loosenable threshold, a dead plane, or signal
-   quality. (Have per-event fits + raw hits already.)
-2. **`long_run` subrun** of the overnight run: combined_hits present but `m3_tracking_root`
-   was still being produced (empty as of 6-18 ~15:15). Re-pull when the rays files land, then
-   rerun `03 ovn-longrun --full`, `08`, `09` for proper efficiency-map statistics
-   (longer_run is only ~2 h → 973/1600 bins masked).
-3. **Apply the efficiency chain to det2** (`ovn_det2`) — expect poor (half-dead X).
-4. **Per-axis (|Δx|,|Δy|) efficiency** variant of `08` (currently radial only).
-5. **Upstream cleanups** (after confirming with the old n_TOF/det4 runs they don't regress):
-   wire `det_orientation.z` from run_config into the alignment as a base rotation; reconcile
-   the hardcoded `x_ref` sign; fix `get_active_det_bounds` for arbitrary alignment.
+**Open / next:**
+1. **det1 is gain-limited** — the physics ask is HV/threshold/gas to raise gain so
+   clusters reach ≥3 strips. QA side: a per-axis (|Δx|,|Δy|) efficiency variant of `08`
+   (currently radial only) would help.
+2. **det2** needs the FEU 7 dead connectors (5–8) fixed before it can be a 2D tracker.
+3. The HV-scan subruns (`resist_4xx/5xxV_drift_1000V`) on the overnight/short runs are not
+   yet analysed — pull + register if a gain/HV-vs-efficiency curve is wanted.
+4. Upstream `get_active_det_bounds` still degenerate in the aligned frame (worked around).
 
-Auto-memory (outside repo, `~/.claude/.../memory/`): `june-cosmic-qa-procedure`,
-`june-cosmic-qa-alignment-axis-fix`, `june-cosmic-qa-overnight-det1-det2`,
-`june-cosmic-qa-det3-alignment-fail`.
-
-Note: `output/` (plots + caches, ~76 MB) is gitignored and local-only; regenerate by
-rerunning the scripts (needs the data under `/home/dylan/x17/cosmic_bench/`).
+Auto-memory (`~/.claude/.../memory/`): `june-cosmic-qa-day-det1`,
+`june-cosmic-qa-overnight-det1-det2`, `june-cosmic-qa-output-location` (+ older
+`june-cosmic-qa-procedure`, `-alignment-axis-fix`, `-det3-alignment-fail`).

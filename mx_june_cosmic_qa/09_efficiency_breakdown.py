@@ -165,6 +165,18 @@ def main():
     fig.suptitle(f'{CFG.DET_NAME} RAY projections of NON-reconstructed muons — {CFG.RUN}/{CFG.SUB_RUN}')
     fig.tight_layout(); fig.savefig(f'{out_dir}/nonreco_ray_positions.png', dpi=150, bbox_inches='tight')
 
+    # ---- (b') same NON-reconstructed muons as a scatter (copy of (b), per-point) ----
+    fig, axes = plt.subplots(1, 2, figsize=(13, 6))
+    for axx, arr, color, ttl in [(axes[0], hnr, '#d4a017', f'fired strips, no reco  ({len(hnr)})'),
+                                 (axes[1], nh, '#cc2a2a', f'detector silent  ({len(nh)})')]:
+        axx.scatter(arr[:, 0], arr[:, 1], s=6, alpha=0.3, color=color, edgecolors='none')
+        axx.add_patch(plt.Rectangle(**box, fill=False, ec='cyan', lw=1.5))
+        axx.set_xlim(rng[0]); axx.set_ylim(rng[1])
+        axx.set_xlabel('reference X [mm]'); axx.set_ylabel('reference Y [mm]'); axx.set_aspect('equal')
+        axx.set_title(ttl)
+    fig.suptitle(f'{CFG.DET_NAME} RAY projections of NON-reconstructed muons (scatter) — {CFG.RUN}/{CFG.SUB_RUN}')
+    fig.tight_layout(); fig.savefig(f'{out_dir}/nonreco_ray_positions_scatter.png', dpi=150, bbox_inches='tight')
+
     print(f'\nWritten to: {out_dir}')
 
 
