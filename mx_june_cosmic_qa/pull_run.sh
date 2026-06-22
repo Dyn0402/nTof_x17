@@ -12,6 +12,15 @@
 # Defaults: area=det1_det2  host=rays_daplxa
 # Remote layout assumed: <host>:/mnt/cosmic_data/MX17/Run/<run_name>/
 # Local  layout written:  ~/x17/cosmic_bench/<area>/<run_name>/
+#
+# ALT SOURCE: the June runs are also archived on lxplus (Kerberos: kinit first) at
+#   lxplus:/afs/cern.ch/user/d/dneff/x17/cosmic_bench/june_tests/<run_name>/<sub_run>/
+# (same combined_hits_root + m3_tracking_root layout). rays_daplxa may be wiped between
+# beam periods, so if a run is gone there, pull from lxplus with a direct rsync, e.g.:
+#   rsync -a --update -e "ssh -o BatchMode=yes" \
+#     lxplus:.../june_tests/<run>/<sub_run>/{combined_hits_root,m3_tracking_root} \
+#     ~/x17/cosmic_bench/<area>/<run>/<sub_run>/
+# This script's REMOTE_BASE uses the rays /mnt path, NOT the AFS path.
 set -euo pipefail
 
 RUN="${1:?usage: pull_run.sh <run_name> <sub_run> [area] [host]}"

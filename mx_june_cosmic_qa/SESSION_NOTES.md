@@ -19,7 +19,20 @@ efficiency maps. Code here in `mx_june_cosmic_qa/` **reuses** (does not fork)
    # e.g. ./pull_run.sh mx17_det1_det2_short_6-18-26 short_run det1_det2
    ```
    Lands data in `~/x17/cosmic_bench/<area>/<run>/<sub_run>/`. `~/x17` →
-   `/media/dylan/data` (477G). Check the new run_config: `zero_suppress` must be
+   `/media/dylan/data` (477G).
+
+   **Data source(s).** The June runs live in TWO places, so try whichever is up:
+   - **`rays_daplxa`** (the DAQ PC, sedipcaa28 via the `daplxa` jump) under
+     `/mnt/cosmic_data/MX17/Run/<run>/<sub_run>/` — `pull_run.sh`'s default. May be
+     wiped/repurposed between beam periods (e.g. the overnight 6-17-26 run is no longer
+     there).
+   - **`lxplus`** (Kerberos; `kinit dneff@CERN.CH` first if `ssh lxplus` prompts) under
+     `/afs/cern.ch/user/d/dneff/x17/cosmic_bench/june_tests/<run>/<sub_run>/`. The user
+     copied the June runs here for safekeeping; as of 6-19-26 it has all of them
+     (`mx17_det1_det2_overnight_6-17-26`, `..._short_6-18-26`, `mx17_det3_ArIso_Test_6-16-26`,
+     `zs_compression_scan_4_6-6-26`, etc.). Same `<sub_run>/combined_hits_root` +
+     `m3_tracking_root` layout. Pull with a direct `rsync -a --update -e "ssh -o BatchMode=yes"
+     lxplus:<remote> <local>` loop (pull_run.sh's remote path is the rays layout, not AFS). Check the new run_config: `zero_suppress` must be
    **false** (ZS kills the M3 reference, §1), and `det_orientation.z` must be **90**
    for the mx17 detectors (§2). If the field is missing/0, set it in run_config.json.
 
@@ -77,6 +90,13 @@ Ar/Iso 95/5 unless noted):
 | `long_det2` | mx17_det1_det2_overnight_6-17-26 / long_run | mx17_2 | 7,8 | 702 |
 | `short_det1` | mx17_det1_det2_short_6-18-26 / short_run | mx17_1 | 3,4 | 232 |
 | `short_det2` | mx17_det1_det2_short_6-18-26 / short_run | mx17_2 | 7,8 | 702 |
+| `wknd_det2` | mx17_det2_det3_weekend_6-19-26 / short_run | mx17_2 | 3,4 | 232 |
+| `wknd_det3` | mx17_det2_det3_weekend_6-19-26 / short_run | mx17_3 | 7,8 | 702 |
+
+NB the weekend run renames the slots: **mx17_2** = the FEU 3/4 bottom (z=232) detector,
+**mx17_3** = the FEU 7/8 top (z=702) detector (different physical dets than det1/det2).
+Pulled from rays_daplxa. Also has a fine `resist_<NNN>V_drift_1000V` HV scan (450–525 V,
+5 V steps) — feed `wknd_det2` to `10_hv_scan_efficiency.py` if a gain curve is wanted.
 
 \* `day_det1` run_config nominal z is 411, but the M3-frame alignment optimum is ~251
 (this bench's M3 stations sit at different z); det_z is set to 251 so the default ±60
@@ -196,8 +216,13 @@ det1/det2; det1 root-cause dissection; det2 characterisation; output consolidate
    clusters reach ≥3 strips. QA side: a per-axis (|Δx|,|Δy|) efficiency variant of `08`
    (currently radial only) would help.
 2. **det2** needs the FEU 7 dead connectors (5–8) fixed before it can be a 2D tracker.
-3. The HV-scan subruns (`resist_4xx/5xxV_drift_1000V`) on the overnight/short runs are not
-   yet analysed — pull + register if a gain/HV-vs-efficiency curve is wanted.
+3. HV-scan subruns (`resist_<NNN>V_drift_1000V`) — det1 mesh-HV scan inside the overnight
+   run (FEU 3/4 stepped 450→520 V in 10 V steps, drift fixed 1000 V, 30 min each; det2 HV
+   unchanged). Pulled from lxplus on 6-19-26. Analysed by `10_hv_scan_efficiency.py <key>`
+   (reuses the cosmic_micro_tpc building blocks with the **June convention** `ref_x_sign=+1`
+   and θ from the established det1 alignment — NOT the legacy `cosmic_bench_analysis/
+   hv_scan_efficiency.py`, which hardcodes the old det_4 θ≈0/`ref_x_sign=-1` recipe and
+   would mirror the per-event match → bogus-low efficiencies on the 90°-rotated det1).
 4. Upstream `get_active_det_bounds` still degenerate in the aligned frame (worked around).
 
 Auto-memory (`~/.claude/.../memory/`): `june-cosmic-qa-day-det1`,
