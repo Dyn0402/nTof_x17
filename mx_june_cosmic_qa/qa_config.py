@@ -109,6 +109,31 @@ RUNS = {
     'short_det2': _Config('short_det2', 'mx17_det1_det2_short_6-18-26', 'short_run',
                           feus=[7, 8], det_z=702.0, det_name='mx17_2', zero_suppressed=False,
                           base_path='/home/dylan/x17/cosmic_bench/det1_det2/'),
+    # Weekend det2/det3 run (6-19-26), subrun short_run. Ar/Iso 95/5, non-ZS,
+    # det_orientation.z=90. NB detector NAMES are mx17_2 (FEU 3/4, bottom z=232) and
+    # mx17_3 (FEU 7/8, top z=702) -- different physical dets than the det1/det2 runs.
+    # Also has a fine resist_<NNN>V_drift_1000V HV scan (450-525V in 5V steps).
+    'wknd_det2':  _Config('wknd_det2', 'mx17_det2_det3_weekend_6-19-26', 'short_run',
+                          feus=[3, 4], det_z=232.0, det_name='mx17_2', zero_suppressed=False,
+                          base_path='/home/dylan/x17/cosmic_bench/det2_det3/'),
+    'wknd_det3':  _Config('wknd_det3', 'mx17_det2_det3_weekend_6-19-26', 'short_run',
+                          feus=[7, 8], det_z=702.0, det_name='mx17_3', zero_suppressed=False,
+                          base_path='/home/dylan/x17/cosmic_bench/det2_det3/'),
+    # Same weekend run, the longer 'longer_run' subrun (more stats than short_run).
+    'wknd_long_det2': _Config('wknd_long_det2', 'mx17_det2_det3_weekend_6-19-26', 'longer_run',
+                          feus=[3, 4], det_z=232.0, det_name='mx17_2', zero_suppressed=False,
+                          base_path='/home/dylan/x17/cosmic_bench/det2_det3/'),
+    'wknd_long_det3': _Config('wknd_long_det3', 'mx17_det2_det3_weekend_6-19-26', 'longer_run',
+                          feus=[7, 8], det_z=702.0, det_name='mx17_3', zero_suppressed=False,
+                          base_path='/home/dylan/x17/cosmic_bench/det2_det3/'),
+    # Pedestal flat-sigma reprocessing TEST (det2 longer_run file 003 only): nominal vs
+    # flat10 reprocessing, to compare efficiency. See _pedestal_test/README.md.
+    'pedtest_nom':    _Config('pedtest_nom', 'nominal', 'f003',
+                          feus=[3, 4], det_z=232.0, det_name='mx17_2', zero_suppressed=False,
+                          base_path='/home/dylan/x17/cosmic_bench/det2_det3/_pedestal_test/qa/'),
+    'pedtest_flat10': _Config('pedtest_flat10', 'flat10', 'f003',
+                          feus=[3, 4], det_z=232.0, det_name='mx17_2', zero_suppressed=False,
+                          base_path='/home/dylan/x17/cosmic_bench/det2_det3/_pedestal_test/qa/'),
     # Daytime det1 single-detector run (1-28-26), NOT zero-suppressed. Subrun overnight_run.
     # FEU 4=X, 6=Y (non-consecutive). Ar/Iso 95/5. X/Y hits well balanced.
     # NB: run_config nominal det_center z = 411, but the M3-frame alignment optimum is
