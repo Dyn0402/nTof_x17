@@ -92,11 +92,21 @@ Ar/Iso 95/5 unless noted):
 | `short_det2` | mx17_det1_det2_short_6-18-26 / short_run | mx17_2 | 7,8 | 702 |
 | `wknd_det2` | mx17_det2_det3_weekend_6-19-26 / short_run | mx17_2 | 3,4 | 232 |
 | `wknd_det3` | mx17_det2_det3_weekend_6-19-26 / short_run | mx17_3 | 7,8 | 702 |
+| `o22_det3` | mx17_det2_det3_overnight_6-22-26 / short_run | mx17_3 | 3,4 | 232 |
+| `o22_det2` | mx17_det2_det3_overnight_6-22-26 / short_run | mx17_2 | 6,8 | 702 |
+| `o22_long_det3` | mx17_det2_det3_overnight_6-22-26 / longer_run | mx17_3 | 3,4 | 232 |
+| `o22_long_det2` | mx17_det2_det3_overnight_6-22-26 / longer_run | mx17_2 | 6,8 | 702 |
 
 NB the weekend run renames the slots: **mx17_2** = the FEU 3/4 bottom (z=232) detector,
 **mx17_3** = the FEU 7/8 top (z=702) detector (different physical dets than det1/det2).
 Pulled from rays_daplxa. Also has a fine `resist_<NNN>V_drift_1000V` HV scan (450–525 V,
 5 V steps) — feed `wknd_det2` to `10_hv_scan_efficiency.py` if a gain curve is wanted.
+
+**Slots move every run — always re-read run_config `detectors[]`.** The 6-22-26 overnight
+run remaps AGAIN: **mx17_3** = FEU **3/4** bottom (z=232), **mx17_2** = FEU **6/8** top
+(z=702) — note X is FEU **6**, not 7. short_run + longer_run share parameters (combine
+stats). longer_run processed with a backlog (decode/analyze churns one subrun at a time on
+the DAQ PC); pull only file-indices that have BOTH a `combined_hits` and a `rays` file.
 
 \* `day_det1` run_config nominal z is 411, but the M3-frame alignment optimum is ~251
 (this bench's M3 stations sit at different z); det_z is set to 251 so the default ±60

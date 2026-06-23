@@ -126,6 +126,40 @@ RUNS = {
     'wknd_long_det3': _Config('wknd_long_det3', 'mx17_det2_det3_weekend_6-19-26', 'longer_run',
                           feus=[7, 8], det_z=702.0, det_name='mx17_3', zero_suppressed=False,
                           base_path='/home/dylan/x17/cosmic_bench/det2_det3/'),
+    # Overnight det2/det3 run (6-22-26), Ar/Iso 95/5, non-ZS, det_orientation.z=90.
+    # NB the detector slots moved again: mx17_3 = FEU 3(X)/4(Y) bottom (z=232), and
+    # mx17_2 = FEU 6(X)/8(Y) top (z=702) -- X FEU is 6 here (NOT 7 as in the weekend run).
+    # short_run and longer_run share these parameters (combine stats once both processed).
+    # Also a resist_525V_drift_1000V pedthr HV point.
+    'o22_det3':   _Config('o22_det3', 'mx17_det2_det3_overnight_6-22-26', 'short_run',
+                          feus=[3, 4], det_z=232.0, det_name='mx17_3', zero_suppressed=False,
+                          base_path='/home/dylan/x17/cosmic_bench/det2_det3/'),
+    'o22_det2':   _Config('o22_det2', 'mx17_det2_det3_overnight_6-22-26', 'short_run',
+                          feus=[6, 8], det_z=702.0, det_name='mx17_2', zero_suppressed=False,
+                          base_path='/home/dylan/x17/cosmic_bench/det2_det3/'),
+    'o22_long_det3': _Config('o22_long_det3', 'mx17_det2_det3_overnight_6-22-26', 'longer_run',
+                          feus=[3, 4], det_z=232.0, det_name='mx17_3', zero_suppressed=False,
+                          base_path='/home/dylan/x17/cosmic_bench/det2_det3/'),
+    'o22_long_det2': _Config('o22_long_det2', 'mx17_det2_det3_overnight_6-22-26', 'longer_run',
+                          feus=[6, 8], det_z=702.0, det_name='mx17_2', zero_suppressed=False,
+                          base_path='/home/dylan/x17/cosmic_bench/det2_det3/'),
+    # FLAT-THRESHOLD reprocessing of the 6-22 run: hit threshold = 3 × (per-FEU median
+    # pedestal RMS) instead of 5 × per-channel RMS, to recover micro-TPC signal that the
+    # noisy/spark-inflated pedestals were suppressing. Reprocessed locally with the
+    # WFA_THRESHOLD_SIGMA=3 + WFA_FLAT_SIGMA=<median> build; rays reused. Same det layout
+    # as o22_* (mx17_3=FEU3/4 z232, mx17_2=FEU6/8 z702).
+    'f3_det3':      _Config('f3_det3', 'mx17_det2_det3_overnight_6-22-26', 'short_run',
+                          feus=[3, 4], det_z=232.0, det_name='mx17_3', zero_suppressed=False,
+                          base_path='/home/dylan/x17/cosmic_bench/det2_det3/_flat3_reproc/'),
+    'f3_det2':      _Config('f3_det2', 'mx17_det2_det3_overnight_6-22-26', 'short_run',
+                          feus=[6, 8], det_z=702.0, det_name='mx17_2', zero_suppressed=False,
+                          base_path='/home/dylan/x17/cosmic_bench/det2_det3/_flat3_reproc/'),
+    'f3_long_det3': _Config('f3_long_det3', 'mx17_det2_det3_overnight_6-22-26', 'longer_run',
+                          feus=[3, 4], det_z=232.0, det_name='mx17_3', zero_suppressed=False,
+                          base_path='/home/dylan/x17/cosmic_bench/det2_det3/_flat3_reproc/'),
+    'f3_long_det2': _Config('f3_long_det2', 'mx17_det2_det3_overnight_6-22-26', 'longer_run',
+                          feus=[6, 8], det_z=702.0, det_name='mx17_2', zero_suppressed=False,
+                          base_path='/home/dylan/x17/cosmic_bench/det2_det3/_flat3_reproc/'),
     # Pedestal flat-sigma reprocessing TEST (det2 longer_run file 003 only): nominal vs
     # flat10 reprocessing, to compare efficiency. See _pedestal_test/README.md.
     'pedtest_nom':    _Config('pedtest_nom', 'nominal', 'f003',
