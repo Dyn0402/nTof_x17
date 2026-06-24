@@ -176,6 +176,20 @@ RUNS = {
     'day_det1':   _Config('day_det1', 'mx17_det1_daytime_run_1-28-26', 'overnight_run',
                           feus=[4, 6], det_z=251.0, det_name='mx17_1', zero_suppressed=False,
                           base_path='/home/dylan/x17/cosmic_bench/det_0/'),
+
+    # 6-23-26 det3_det4 overnight run (Ar/Iso 95/5, non-ZS, det_orientation.z=90).
+    # Detector slots (re-read from run_config detectors[]):
+    #   mx17_3 = FEU 3/4 (X=3, Y=4) bottom z=232, resist HV 495 V
+    #   mx17_4 = FEU 6/8 (X=6, Y=8) top    z=702, resist HV 455 V
+    # longer_run analysed first (only subrun processed at pull time; indices 000+001,
+    # the pairs with both combined_hits and rays). Has a 465->525 V resist HV scan +
+    # 48 h long_run still in the backlog.
+    'o23_long_det3': _Config('o23_long_det3', 'mx17_det3_det4_overnight_6-23-26', 'longer_run',
+                          feus=[3, 4], det_z=232.0, det_name='mx17_3', zero_suppressed=False,
+                          base_path='/home/dylan/x17/cosmic_bench/det3_det4/'),
+    'o23_long_det4': _Config('o23_long_det4', 'mx17_det3_det4_overnight_6-23-26', 'longer_run',
+                          feus=[6, 8], det_z=702.0, det_name='mx17_4', zero_suppressed=False,
+                          base_path='/home/dylan/x17/cosmic_bench/det3_det4/'),
 }
 
 
