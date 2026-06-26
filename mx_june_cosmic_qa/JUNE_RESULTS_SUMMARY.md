@@ -56,25 +56,28 @@ Alignment converged sub-mm with θ≈90° and z near nominal for every detector 
 Efficiency vs resist HV, integrated over a fixed per-detector active box; alignment
 seeded from each run's long_run subrun and re-translated per HV point.
 
-| Det | Scan (drift) | Peak efficiency | at HV | Behaviour |
+| Det | Scan(s) (drift) | Peak efficiency | at HV | Behaviour |
 |----:|---|---:|---:|---|
 | **2** | 6-22 (1000 V), 450–525 V | 77.8 % | ~490 V | plateau, sparks-off above ~510 V |
 | **3** | 6-22 (1000 V), 450–525 V | 81.1 % | ~485 V | best plateau, σ≈0.7 mm at optimum |
-| **6** | 6-26 (700 V), 505–530 V | 56.7 % | 505 V (lowest) | monotonic falloff → optimum **below** range |
-| **7** | 6-26 (700 V), 480–505 V | 42.6 % | 480 V (lowest) | monotonic falloff → run **lower** |
+| **6** | 6-26 hv_scan 400–500 V + overnight 505–530 V (700 V) | **71.0 %** | **480 V** | full turn-on → plateau → falloff |
+| **7** | 6-26 hv_scan 400–500 V + overnight 480–505 V (700 V) | **54.7 %** | **440 V** | full turn-on → plateau → falloff |
 
-In the 6-22 scan, det2 (resist ch 3:4) and det3 (3:3) were stepped **together**. In the
-6-26 scan det6/det7 were stepped at **different** voltages (encoded in the subrun name).
+In the 6-22 scan det2 (resist ch 3:4) and det3 (3:3) were stepped **together**. det6/det7
+have **two** scans each: the dedicated 6-26 `hv_scan` run (stepped together, 400–500 V)
+and the earlier 6-26 overnight points (higher V); overlaid they give the complete curve.
 
 **Reading:** `any_hit` stays ~flat near 100 % while reco-efficiency falls at high HV →
 the high-voltage losses are sparking-induced reconstruction failures, not the detector
 going silent. Resolution mirrors it: best near the efficiency optimum, degrading into
 the sparking regime.
 
-**Takeaways:**
+**Takeaways (operating points):**
 - det2 / det3 optimum ≈ **485–490 V** (drift 1000 V).
-- det6 / det7 were **scanned too high** — both fall monotonically across their range;
-  they should be re-scanned at lower resist HV to find the plateau.
+- **det6 optimum ≈ 480 V (~71 %)**, det7 ≈ **440 V (~55 %)** (drift 700 V). The earlier
+  overnight scan had started past these optima; the dedicated low-V re-scan recovered the
+  turn-on and plateau. (5 mid-range points 455–490 V were not decoded at analysis time —
+  a small gap; the shape is unaffected.)
 
 ---
 
@@ -102,6 +105,10 @@ the sparking regime.
 
 ## 5. Open follow-ups
 1. **det7 saturation veto** — re-measure efficiency with saturated hits removed.
-2. **Re-scan det6 / det7 at lower resist HV** (next beam session) to bracket their plateau.
-3. **det4 gain** — raise gain (HV / threshold / gas) so clusters reach ≥3 strips.
-4. **6-23 M3 reference** — diagnose the degradation (`TODO_m3_reference_6-23.md`).
+2. **det4 gain** — raise gain (HV / threshold / gas) so clusters reach ≥3 strips.
+3. **6-23 M3 reference** — diagnose the degradation (`TODO_m3_reference_6-23.md`).
+4. **det6/det7 HV gap** — re-run the HV PDF once the 5 stalled mid-range points
+   (455–490 V) of the 6-26 `hv_scan` run finish decoding (cheap rerun).
+
+*Done:* det6/det7 re-scanned at lower resist HV (6-26 `hv_scan` run) → optima
+480 V / 440 V found.

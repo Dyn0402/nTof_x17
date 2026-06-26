@@ -56,8 +56,12 @@ R = next((float(a.split('=')[1]) for a in sys.argv if a.startswith('--r=')), 5.0
 MIN_VALID = next((int(a.split('=')[1]) for a in sys.argv if a.startswith('--minvalid=')), 20)
 M3_CHI2_CUT = 20.0
 
-# Established det1 alignment (seed z/theta/centre/handedness; translation re-run per subrun).
-ALIGN_SEED = os.path.join(
+# Alignment seed (z/theta/centre/handedness; translation re-run per subrun). Defaults to
+# this run's own long_run alignment, but --seed=<alignment.json> overrides it -- needed
+# for dedicated HV-scan runs that have NO long_run subrun (seed from another run of the
+# same detector, e.g. the 6-26 overnight long_run for the 6-26 hv_scan run).
+_seed_override = next((a.split('=', 1)[1] for a in sys.argv if a.startswith('--seed=')), None)
+ALIGN_SEED = _seed_override or os.path.join(
     os.path.dirname(CFG.BASE_PATH.rstrip('/')), 'Analysis', CFG.RUN, 'long_run',
     CFG.DET_NAME, 'alignment_tpc_veto50', 'alignment.json')
 # Fallback if the long_run alignment isn't on disk (from memory: z=243, th=89.5, ref_x_sign=+1).

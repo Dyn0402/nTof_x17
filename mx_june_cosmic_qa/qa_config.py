@@ -235,6 +235,19 @@ RUNS = {
     'g_det7_long': _Config('g_det7_long', 'mx17_det6_det7_overnight_6-26-26', 'long_run',
                           feus=[6, 8], det_z=702.0, det_name='mx17_7', zero_suppressed=False,
                           base_path='/home/dylan/x17/cosmic_bench/det6_det7/'),
+
+    # Dedicated 6-26 det6+det7 resist-HV scan (mx17_det6_det7_hv_scan_6-26-26): det6 AND
+    # det7 stepped TOGETHER at the SAME voltage, 400->500 V in 5 V steps (drift 700 V) --
+    # the lower-range re-scan (the overnight scan started too high). This run has NO
+    # long_run subrun, so 10_hv_scan_efficiency.py must be run with
+    #   --seed=<6-26 OVERNIGHT long_run alignment for the same det>
+    # (same detectors/bench geometry). sub_run is unused by the HV-scan script.
+    'g_det6_hv': _Config('g_det6_hv', 'mx17_det6_det7_hv_scan_6-26-26', 'hv_scan',
+                          feus=[3, 4], det_z=232.0, det_name='mx17_6', zero_suppressed=False,
+                          base_path='/home/dylan/x17/cosmic_bench/det6_det7/'),
+    'g_det7_hv': _Config('g_det7_hv', 'mx17_det6_det7_hv_scan_6-26-26', 'hv_scan',
+                          feus=[6, 8], det_z=702.0, det_name='mx17_7', zero_suppressed=False,
+                          base_path='/home/dylan/x17/cosmic_bench/det6_det7/'),
 }
 
 
