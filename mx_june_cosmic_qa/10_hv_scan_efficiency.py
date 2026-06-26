@@ -74,8 +74,20 @@ def out_dir(*parts):
     return d
 
 
+# Detector number from the qa_config det_name (mx17_6 -> '6'). Used for the
+# per-detector HV naming resist_det6_505V_det7_480V_... (the 6-26 scan steps BOTH
+# detectors at once, at different voltages). The single-value 6-22/6-23 scans use
+# resist_<NNN>V where the one value applies to every stepped detector (in 6-22,
+# channels 3:3=det3 and 3:4=det2 step together).
+_dnm = re.search(r'(\d+)$', CFG.DET_NAME)
+DET_NUM = _dnm.group(1) if _dnm else ''
+
+
 def extract_hv(name):
-    m = re.search(r'resist_(\d+)V', name)
+    m = re.search(rf'det{DET_NUM}_(\d+)V', name)   # per-detector naming first
+    if m:
+        return int(m.group(1))
+    m = re.search(r'resist_(\d+)V', name)          # single-value naming
     return int(m.group(1)) if m else None
 
 
@@ -150,8 +162,15 @@ def analyse_subrun(subrun, det, seed):
     d = pd.DataFrame(rows, columns=['event_id', 'x', 'y', 'within', 'has_any'])
     d = d[np.isfinite(d['x']) & np.isfinite(d['y'])]
 
+    # per-event residuals (aligned det - M3 ref) for the resolution-vs-HV curve
+    resid = pd.DataFrame(
+        [(r.event_id, r.ref_x_mm, r.ref_y_mm, r.residual_x_mm, r.residual_y_mm)
+         for r in results if r.has_both
+         and np.isfinite(r.residual_x_mm) and np.isfinite(r.residual_y_mm)],
+        columns=['event_id', 'x', 'y', 'res_x', 'res_y'])
+
     return {'subrun': subrun, 'rays': d, 'reco': np.array(list(reco.values())),
-            'params': params, 'n_valid': n_valid}
+            'resid': resid, 'params': params, 'n_valid': n_valid}
 
 
 def main():
@@ -203,11 +222,20 @@ def main():
         eff = n_hit / n_tracks if n_tracks else np.nan
         err = np.sqrt(eff * (1 - eff) / n_tracks) if n_tracks else np.nan
         eff_any = n_any / n_tracks if n_tracks else np.nan
+        # core spatial resolution inside the same fixed box
+        rr = a['resid']
+        rbox = ((rr['x'] >= ax0) & (rr['x'] <= ax1) &
+                (rr['y'] >= ay0) & (rr['y'] <= ay1))
+        fx = cm.fit_residual_peak(rr.loc[rbox, 'res_x'].to_numpy())
+        fy = cm.fit_residual_peak(rr.loc[rbox, 'res_y'].to_numpy())
+        sx = fx.resolution if fx is not None else np.nan
+        sy = fy.resolution if fy is not None else np.nan
         rows.append(dict(hv=a['hv'], subrun=a['subrun'], n_valid=a['n_valid'],
                          n_tracks=n_tracks, n_hit=n_hit, n_any=n_any,
-                         eff_reco=eff, eff_reco_err=err, eff_anyhit=eff_any))
+                         eff_reco=eff, eff_reco_err=err, eff_anyhit=eff_any,
+                         sigma_x_mm=sx, sigma_y_mm=sy))
         print(f'  HV={a["hv"]}V  eff(reco<{R:g}mm)={eff:.3f}+-{err:.3f}  '
-              f'eff(any hit)={eff_any:.3f}  ({n_hit}/{n_tracks} in box)')
+              f'eff(any hit)={eff_any:.3f}  sigma=({sx:.2f},{sy:.2f})mm  ({n_hit}/{n_tracks} in box)')
 
     df = pd.DataFrame(rows).sort_values('hv').reset_index(drop=True)
     od = out_dir()
@@ -220,15 +248,31 @@ def main():
                 label=f'reco within {R:g} mm')
     ax.plot(df['hv'], df['eff_anyhit'], 's--', color='darkorange', ms=6, alpha=0.8,
             label='any hit on detector')
-    ax.set_xlabel('Mesh / resistor HV [V]')
+    ax.set_xlabel('Resist HV [V]')
     ax.set_ylabel('Efficiency (fixed active box)')
-    ax.set_title(f'{CFG.DET_NAME} det1 efficiency vs HV — {CFG.RUN}\n'
-                 f'(drift 1000 V; r<{R:g} mm; integrated over fixed active area)')
+    ax.set_title(f'{CFG.DET_NAME} efficiency vs resist HV — {CFG.RUN}\n'
+                 f'(r<{R:g} mm; integrated over fixed active area)')
     ax.set_ylim(0, 1.02)
     ax.grid(True, alpha=0.3)
     ax.legend()
     fig.tight_layout()
-    fig.savefig(os.path.join(od, 'efficiency_vs_hv.png'), dpi=150, bbox_inches='tight')
+    fig.savefig(os.path.join(od, 'efficiency_vs_hv.png'), dpi=200, bbox_inches='tight')
+    plt.close(fig)
+
+    # ---- Resolution vs HV ----
+    fig2, ax2 = plt.subplots(figsize=(8, 5))
+    ax2.plot(df['hv'], df['sigma_x_mm'], 'o-', color='steelblue', lw=2, ms=7, label='σ_x')
+    ax2.plot(df['hv'], df['sigma_y_mm'], 's--', color='darkorange', lw=2, ms=6, label='σ_y')
+    ax2.set_xlabel('Resist HV [V]')
+    ax2.set_ylabel('Core spatial resolution σ [mm]')
+    ax2.set_title(f'{CFG.DET_NAME} resolution vs resist HV — {CFG.RUN}\n'
+                  f'(Gaussian core of in-box residuals)')
+    ax2.set_ylim(0, None)
+    ax2.grid(True, alpha=0.3)
+    ax2.legend()
+    fig2.tight_layout()
+    fig2.savefig(os.path.join(od, 'resolution_vs_hv.png'), dpi=200, bbox_inches='tight')
+    plt.close(fig2)
 
     print(f'\n{"HV[V]":>6}  {"eff_reco":>9}  {"+-err":>6}  {"eff_any":>8}  '
           f'{"tracks":>7}  {"valid":>6}')
