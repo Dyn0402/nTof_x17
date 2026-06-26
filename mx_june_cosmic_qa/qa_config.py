@@ -190,6 +190,51 @@ RUNS = {
     'o23_long_det4': _Config('o23_long_det4', 'mx17_det3_det4_overnight_6-23-26', 'longer_run',
                           feus=[6, 8], det_z=702.0, det_name='mx17_4', zero_suppressed=False,
                           base_path='/home/dylan/x17/cosmic_bench/det3_det4/'),
+
+    # --- GRAND JUNE COMPILATION (6-26 session) -------------------------------
+    # One best high-stats decoded subrun per physical detector (2,3,4,6,7; no 5),
+    # for the final per-detector overview PDF. Slot mapping is consistent across all
+    # June runs: bottom = FEU 3(X)/4(Y) z=232, top = FEU 6(X)/8(Y) z=702.
+    #
+    # det2 & det3 share the 6-22 overnight 'long_run' (16 file-pairs, ~53 GB, most
+    # stats; M3 reference healthy on this run -- the short/longer subruns gave clean
+    # ~42% efficiency). One pull of long_run feeds BOTH detectors.
+    'g_det2': _Config('g_det2', 'mx17_det2_det3_overnight_6-22-26', 'long_run',
+                          feus=[6, 8], det_z=702.0, det_name='mx17_2', zero_suppressed=False,
+                          base_path='/home/dylan/x17/cosmic_bench/det2_det3/'),
+    'g_det3': _Config('g_det3', 'mx17_det2_det3_overnight_6-22-26', 'long_run',
+                          feus=[3, 4], det_z=232.0, det_name='mx17_3', zero_suppressed=False,
+                          base_path='/home/dylan/x17/cosmic_bench/det2_det3/'),
+    # det4: dedicated 6-24 daytime run 'long_run' (8 file-pairs, ~26 GB). Avoids the
+    # 6-23 det3_det4 run whose M3 reference is degraded (~4% clean tracks).
+    'g_det4': _Config('g_det4', 'mx17_det4_day_6-24-26', 'long_run',
+                          feus=[6, 8], det_z=702.0, det_name='mx17_4', zero_suppressed=False,
+                          base_path='/home/dylan/x17/cosmic_bench/det4_day/'),
+    # det6 & det7: 6-26 overnight run. NOT decoded at session start (raw_daq_data only);
+    # the orchestrator polls rays for combined_hits_root/m3_tracking_root and processes
+    # once decoding lands. short_run is the subrun being recorded; larger subruns, if
+    # they appear, can be swapped in.
+    'g_det6': _Config('g_det6', 'mx17_det6_det7_overnight_6-26-26', 'short_run',
+                          feus=[3, 4], det_z=232.0, det_name='mx17_6', zero_suppressed=False,
+                          base_path='/home/dylan/x17/cosmic_bench/det6_det7/'),
+    'g_det7': _Config('g_det7', 'mx17_det6_det7_overnight_6-26-26', 'short_run',
+                          feus=[6, 8], det_z=702.0, det_name='mx17_7', zero_suppressed=False,
+                          base_path='/home/dylan/x17/cosmic_bench/det6_det7/'),
+    # det6/det7 additional subruns of the same 6-26 run, analysed as each one finishes
+    # decoding overnight. Same slot map. The PDF auto-picks the best-stats subrun per
+    # detector, so all of these can be fed to build_final_pdf.py together.
+    'g_det6_longer': _Config('g_det6_longer', 'mx17_det6_det7_overnight_6-26-26', 'longer_run',
+                          feus=[3, 4], det_z=232.0, det_name='mx17_6', zero_suppressed=False,
+                          base_path='/home/dylan/x17/cosmic_bench/det6_det7/'),
+    'g_det7_longer': _Config('g_det7_longer', 'mx17_det6_det7_overnight_6-26-26', 'longer_run',
+                          feus=[6, 8], det_z=702.0, det_name='mx17_7', zero_suppressed=False,
+                          base_path='/home/dylan/x17/cosmic_bench/det6_det7/'),
+    'g_det6_long': _Config('g_det6_long', 'mx17_det6_det7_overnight_6-26-26', 'long_run',
+                          feus=[3, 4], det_z=232.0, det_name='mx17_6', zero_suppressed=False,
+                          base_path='/home/dylan/x17/cosmic_bench/det6_det7/'),
+    'g_det7_long': _Config('g_det7_long', 'mx17_det6_det7_overnight_6-26-26', 'long_run',
+                          feus=[6, 8], det_z=702.0, det_name='mx17_7', zero_suppressed=False,
+                          base_path='/home/dylan/x17/cosmic_bench/det6_det7/'),
 }
 
 
