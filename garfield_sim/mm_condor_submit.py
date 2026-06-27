@@ -71,7 +71,56 @@ RUN_CONFIG = [
     {
         "gas_label":       "Ar_iC4H10_95_5",
         "pressures":       ["Saclay_160m", "CERN_450m"],
-        "voltages":        list(range(400, 491, 10)),   # 400..490 step 10
+        "voltages":        list(range(400, 601, 10)),   # 400..600 step 10 (extended for quencher scan)
+        "gap_cm":          0.015,
+        "penning_mode":    "auto",
+        "penning_rP":      0.0,
+        "penning_gas":     "",
+    },
+    # ── Ar/iC4H10 quencher scan: 98/2, 90/10, 85/15, 80/20, 75/25 ──────────────
+    # Relative-gain study referenced to Ar/iC4H10 95/5 at 490 V. More isobutane
+    # lowers gain at fixed V, so the full 400..600 V range gives the high-quencher
+    # mixtures room to reach the reference gain. Penning auto (Sahin Ar/iC4H10).
+    {
+        "gas_label":       "Ar_iC4H10_98_2",
+        "pressures":       ["Saclay_160m", "CERN_450m"],
+        "voltages":        list(range(400, 601, 10)),
+        "gap_cm":          0.015,
+        "penning_mode":    "auto",
+        "penning_rP":      0.0,
+        "penning_gas":     "",
+    },
+    {
+        "gas_label":       "Ar_iC4H10_90_10",
+        "pressures":       ["Saclay_160m", "CERN_450m"],
+        "voltages":        list(range(400, 601, 10)),
+        "gap_cm":          0.015,
+        "penning_mode":    "auto",
+        "penning_rP":      0.0,
+        "penning_gas":     "",
+    },
+    {
+        "gas_label":       "Ar_iC4H10_85_15",
+        "pressures":       ["Saclay_160m", "CERN_450m"],
+        "voltages":        list(range(400, 601, 10)),
+        "gap_cm":          0.015,
+        "penning_mode":    "auto",
+        "penning_rP":      0.0,
+        "penning_gas":     "",
+    },
+    {
+        "gas_label":       "Ar_iC4H10_80_20",
+        "pressures":       ["Saclay_160m", "CERN_450m"],
+        "voltages":        list(range(400, 601, 10)),
+        "gap_cm":          0.015,
+        "penning_mode":    "auto",
+        "penning_rP":      0.0,
+        "penning_gas":     "",
+    },
+    {
+        "gas_label":       "Ar_iC4H10_75_25",
+        "pressures":       ["Saclay_160m", "CERN_450m"],
+        "voltages":        list(range(400, 601, 10)),
         "gap_cm":          0.015,
         "penning_mode":    "auto",
         "penning_rP":      0.0,

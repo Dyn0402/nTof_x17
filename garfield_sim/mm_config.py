@@ -101,6 +101,39 @@ GAS_MIXTURES = [
         "components": [("ar", 95.0), ("ic4h10", 5.0)],
         "penning":    {"mode": "auto"},
     },
+
+    # ── Ar/iC4H10 quencher scan ───────────────────────────────────────────────
+    # Family of Ar/isobutane mixtures (98/2 → 75/25) for the relative-gain study.
+    # All use the Garfield++ built-in Ar/iC4H10 Penning parameterisation
+    # (Sahin et al., JINST 5 2010), same as the 95/5 reference above.
+    # More isobutane → stronger quenching → lower gain at a given voltage, so the
+    # high-quencher mixtures need higher mesh voltage to reach the reference gain.
+    {
+        "label":      "Ar_iC4H10_98_2",
+        "components": [("ar", 98.0), ("ic4h10", 2.0)],
+        "penning":    {"mode": "auto"},
+    },
+    {
+        "label":      "Ar_iC4H10_90_10",
+        "components": [("ar", 90.0), ("ic4h10", 10.0)],
+        "penning":    {"mode": "auto"},
+    },
+    {
+        "label":      "Ar_iC4H10_85_15",
+        "components": [("ar", 85.0), ("ic4h10", 15.0)],
+        "penning":    {"mode": "auto"},
+    },
+    {
+        "label":      "Ar_iC4H10_80_20",
+        "components": [("ar", 80.0), ("ic4h10", 20.0)],
+        "penning":    {"mode": "auto"},
+    },
+    {
+        "label":      "Ar_iC4H10_75_25",
+        "components": [("ar", 75.0), ("ic4h10", 25.0)],
+        "penning":    {"mode": "auto"},
+    },
+
     {
         "label":      "Ne_iC4H10_95_5",
         "components": [("ne", 95.0), ("ic4h10", 5.0)],
