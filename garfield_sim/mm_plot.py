@@ -81,7 +81,12 @@ def get_style(gas_label, pressure_label):
 
 GAS_PRETTY = {
     "He_C2H6_96p5_3p5":        "He/C₂H₆ 96.5/3.5%",
+    "Ar_iC4H10_98_2":           "Ar/iC₄H₁₀ 98/2%",
     "Ar_iC4H10_95_5":           "Ar/iC₄H₁₀ 95/5%",
+    "Ar_iC4H10_90_10":          "Ar/iC₄H₁₀ 90/10%",
+    "Ar_iC4H10_85_15":          "Ar/iC₄H₁₀ 85/15%",
+    "Ar_iC4H10_80_20":          "Ar/iC₄H₁₀ 80/20%",
+    "Ar_iC4H10_75_25":          "Ar/iC₄H₁₀ 75/25%",
     "Ar_CO2_70_30":             "Ar/CO₂ 70/30%",
     "Ar_CF4_90_10":             "Ar/CF₄ 90/10%",
     "Ar_CF4_CO2_45_40_15":      "Ar/CF₄/CO₂ 45/40/15%",
@@ -95,7 +100,12 @@ GAS_PRETTY = {
 
 GAS_SHORT = {
     "He_C2H6_96p5_3p5":        "He/C₂H₆\n96.5/3.5%",
+    "Ar_iC4H10_98_2":           "Ar/iC₄H₁₀\n98/2%",
     "Ar_iC4H10_95_5":           "Ar/iC₄H₁₀\n95/5%",
+    "Ar_iC4H10_90_10":          "Ar/iC₄H₁₀\n90/10%",
+    "Ar_iC4H10_85_15":          "Ar/iC₄H₁₀\n85/15%",
+    "Ar_iC4H10_80_20":          "Ar/iC₄H₁₀\n80/20%",
+    "Ar_iC4H10_75_25":          "Ar/iC₄H₁₀\n75/25%",
     "Ar_CO2_70_30":             "Ar/CO₂\n70/30%",
     "Ar_CF4_90_10":             "Ar/CF₄\n90/10%",
     "Ar_CF4_CO2_45_40_15":      "Ar/CF₄/CO₂\n45/40/15%",
@@ -665,6 +675,254 @@ def plot_operating_gain(results, outdir, fmt):
     plt.close(fig_b)
 
 
+# ── Figure 7b: Ar/iC4H10 quencher scan — relative gain ────────────────────────
+
+def plot_relative_gain_ar_isobutane(results, outdir, fmt):
+    """
+    Ar/isobutane quencher scan: relative gain vs mesh voltage for the binary
+    family Ar/iC4H10 98/2 … 75/25, each curve divided by a single reference
+    number — the gain of Ar/iC4H10 95/5 at 490 V (computed per pressure).
+
+        relative_gain(mix, V) = G(mix, V) / G(Ar/iC4H10 95/5, 490 V)
+
+    By construction the 95/5 curve passes through (490 V, 1.0). One subplot per
+    pressure condition (Saclay, CERN).
+    """
+    REF_GAS  = "Ar_iC4H10_95_5"
+    REF_VOLT = 490.0
+
+    # Binary Ar/iC4H10 family only (excludes the Ar/CF4/iC4H10 ternary and Ne/…)
+    def is_family(gas):
+        return gas.startswith("Ar_iC4H10_")
+
+    # Order by isobutane fraction parsed from label "Ar_iC4H10_<ar>_<ic4>"
+    def ic4_frac(gas):
+        try:
+            return float(gas.split("_")[-1])
+        except Exception:
+            return 0.0
+
+    fam_gases = sorted({r["gas"] for r in results if is_family(r["gas"])},
+                       key=ic4_frac)
+    if not fam_gases:
+        print("  No Ar/iC4H10 family results — skipping relative-gain plot")
+        return
+
+    # Colour per mixture (viridis ordered by quencher fraction)
+    cmap = plt.get_cmap("viridis")
+    n = max(len(fam_gases) - 1, 1)
+    colours = {g: cmap(i / n) for i, g in enumerate(fam_gases)}
+
+    pkeys = [("Saclay", "Saclay 160 m"), ("CERN", "CERN 450 m")]
+    fig, axes = plt.subplots(1, 2, figsize=(14, 6), sharey=True)
+
+    for ax, (pkey, ptitle) in zip(axes, pkeys):
+        # reference gain at 490 V for this pressure (data point if present, else fit)
+        ref_g = None
+        for res in results:
+            if res["gas"] != REF_GAS or pkey not in res["pressure_label"]:
+                continue
+            volts = np.array(res["voltages"])
+            gains = np.array(res["gain_mean"])
+            surv  = np.array(res["survival"])
+            if REF_VOLT in volts:
+                ref_g = float(gains[np.where(volts == REF_VOLT)[0][0]])
+            else:
+                mask = (gains > 0) & (surv > 0.1)
+                fit = fit_exponential(volts[mask], gains[mask])
+                if fit is not None:
+                    A, B = fit
+                    ref_g = float(A * np.exp(B * REF_VOLT))
+
+        if ref_g is None or ref_g <= 0:
+            ax.text(0.5, 0.5, "No 95/5 reference", transform=ax.transAxes,
+                    ha="center")
+            continue
+
+        for gas in fam_gases:
+            res = next((r for r in results
+                        if r["gas"] == gas and pkey in r["pressure_label"]), None)
+            if res is None:
+                continue
+            volts = np.array(res["voltages"])
+            gains = np.array(res["gain_mean"])
+            std   = np.array(res["gain_std"])
+            surv  = np.array(res["survival"])
+            raw   = res.get("gain_raw", None)
+            if raw is not None:
+                ncnt = np.array([max(len(g), 1) for g in raw], dtype=float)
+            else:
+                ncnt = np.ones(len(gains))
+            sem = std / np.sqrt(ncnt)
+
+            mask = (gains > 0) & (surv > 0.1)
+            ax.errorbar(volts[mask], gains[mask] / ref_g,
+                        yerr=sem[mask] / ref_g,
+                        color=colours[gas], marker="o", ls="-",
+                        elinewidth=1.0, capsize=3,
+                        label=GAS_PRETTY.get(gas, gas))
+
+        # reference crosshair at (490 V, 1.0)
+        ax.axhline(1.0, color="grey", ls=":", lw=1)
+        ax.axvline(REF_VOLT, color="grey", ls=":", lw=1)
+        ax.plot([REF_VOLT], [1.0], marker="*", color="black", ms=14, zorder=5,
+                label="95/5 ref @ 490 V")
+
+        ax.set_yscale("log")
+        ax.set_xlabel("Mesh Voltage (V)")
+        ax.set_title(f"{ptitle}   (ref gain @490 V = {ref_g:.0f})")
+        ax.grid(True, which="both", alpha=0.3)
+
+    axes[0].set_ylabel("Relative gain  G / G(Ar/iC₄H₁₀ 95/5 @ 490 V)")
+    axes[1].legend(loc="upper left", bbox_to_anchor=(1.01, 1),
+                   borderaxespad=0, fontsize=8, framealpha=0.9)
+
+    fig.suptitle("Ar/iC₄H₁₀ Quencher Scan — Relative Gain "
+                 "(normalised to 95/5 at 490 V)", fontsize=13)
+    fig.tight_layout()
+    fig.subplots_adjust(right=0.84, top=0.92)
+    path = os.path.join(outdir, f"relative_gain_ar_isobutane.{fmt}")
+    fig.savefig(path, bbox_inches="tight")
+    print(f"  Saved: {path}")
+    plt.close(fig)
+
+
+# ── Figure 7c: required voltage vs isobutane fraction ─────────────────────────
+
+def plot_operating_voltage_vs_quencher(results, outdir, fmt,
+                                       ref_volts=(480.0, 490.0)):
+    """
+    For the Ar/iC4H10 family, find the mesh voltage V* at which each mixture
+    reaches a fixed reference gain, then plot V* vs isobutane fraction.
+
+    The reference gain is the gain of Ar/iC4H10 95/5 at each voltage in
+    `ref_volts` (default 480 and 490 V), computed per pressure condition.
+
+    Each mixture's gain is modelled as G = A·exp(B·V) (log-linear fit over its
+    measured points); inverting gives V* = ln(G_ref / A) / B. Points whose V*
+    lies outside the mixture's measured voltage range are extrapolations and are
+    drawn with hollow markers.
+
+    A printed table of (isobutane %, V*) accompanies each figure.
+    """
+    REF_GAS = "Ar_iC4H10_95_5"
+
+    def is_family(gas):
+        return gas.startswith("Ar_iC4H10_")
+
+    def ic4_frac(gas):
+        try:
+            return float(gas.split("_")[-1])
+        except Exception:
+            return 0.0
+
+    fam_gases = sorted({r["gas"] for r in results if is_family(r["gas"])},
+                       key=ic4_frac)
+    if not fam_gases:
+        print("  No Ar/iC4H10 family results — skipping operating-voltage plot")
+        return
+
+    pkeys = [("Saclay", "Saclay 160 m"), ("CERN", "CERN 450 m")]
+    ref_colors = plt.get_cmap("plasma")(np.linspace(0.15, 0.7, len(ref_volts)))
+
+    fig, axes = plt.subplots(1, 2, figsize=(14, 6), sharey=True)
+
+    print("\nRequired voltage to match Ar/iC₄H₁₀ 95/5 reference gain")
+    print("=" * 70)
+
+    for ax, (pkey, ptitle) in zip(axes, pkeys):
+        # exponential fit (A, B) and measured voltage span per mixture
+        fits, vspan = {}, {}
+        for gas in fam_gases:
+            res = next((r for r in results
+                        if r["gas"] == gas and pkey in r["pressure_label"]),
+                       None)
+            if res is None:
+                continue
+            volts = np.array(res["voltages"])
+            gains = np.array(res["gain_mean"])
+            surv  = np.array(res["survival"])
+            mask  = (gains > 0) & (surv > 0.1)
+            fit   = fit_exponential(volts[mask], gains[mask])
+            if fit is not None:
+                fits[gas]  = fit
+                vspan[gas] = (volts[mask].min(), volts[mask].max())
+
+        # reference gains from 95/5 at each ref voltage
+        ref_res = next((r for r in results
+                        if r["gas"] == REF_GAS and pkey in r["pressure_label"]),
+                       None)
+
+        def ref_gain_at(vref):
+            if ref_res is not None:
+                rv = np.array(ref_res["voltages"])
+                rg = np.array(ref_res["gain_mean"])
+                if vref in rv:
+                    return float(rg[np.where(rv == vref)[0][0]])
+            if REF_GAS in fits:
+                A, B = fits[REF_GAS]
+                return float(A * np.exp(B * vref))
+            return None
+
+        print(f"\n{ptitle}")
+        for vref, col in zip(ref_volts, ref_colors):
+            g_ref = ref_gain_at(vref)
+            if g_ref is None or g_ref <= 0:
+                continue
+
+            xs, ys, extrap = [], [], []
+            for gas in fam_gases:
+                if gas not in fits:
+                    continue
+                A, B = fits[gas]
+                if A <= 0 or B == 0:
+                    continue
+                vstar = np.log(g_ref / A) / B
+                frac  = ic4_frac(gas)
+                vmin, vmax = vspan[gas]
+                xs.append(frac)
+                ys.append(vstar)
+                extrap.append(vstar < vmin - 1 or vstar > vmax + 1)
+
+            order = np.argsort(xs)
+            xs = np.array(xs)[order]
+            ys = np.array(ys)[order]
+            extrap = np.array(extrap)[order]
+
+            ax.plot(xs, ys, "-", color=col, lw=1.8, zorder=2,
+                    label=f"match 95/5 @ {vref:.0f} V  (G={g_ref:.0f})")
+            # solid markers = interpolated, hollow = extrapolated
+            ax.scatter(xs[~extrap], ys[~extrap], s=55, color=col,
+                       edgecolor="k", linewidth=0.6, zorder=3)
+            ax.scatter(xs[extrap], ys[extrap], s=55, facecolor="white",
+                       edgecolor=col, linewidth=1.5, zorder=3)
+
+            print(f"  ref 95/5 @ {vref:.0f} V  (G_ref = {g_ref:.0f}):")
+            for f, v, ex in zip(xs, ys, extrap):
+                tag = "  [extrap]" if ex else ""
+                print(f"     iC4H10 {f:>4.0f}%  →  V* = {v:6.1f} V{tag}")
+
+        ax.set_xlabel("Isobutane fraction (%)")
+        ax.set_title(ptitle)
+        ax.grid(True, alpha=0.3)
+        ax.legend(fontsize=9, framealpha=0.9, loc="upper left")
+
+    axes[0].set_ylabel("Required mesh voltage V* (V)")
+    fig.suptitle("Ar/iC₄H₁₀ — Mesh Voltage to Match 95/5 Reference Gain "
+                 "vs Isobutane Fraction", fontsize=13)
+    # caption for marker convention
+    fig.text(0.5, 0.005,
+             "solid = interpolated within measured range   |   "
+             "hollow = extrapolated beyond measured range",
+             ha="center", fontsize=8, style="italic")
+    fig.tight_layout()
+    fig.subplots_adjust(top=0.91, bottom=0.12)
+    path = os.path.join(outdir, f"operating_voltage_vs_quencher.{fmt}")
+    fig.savefig(path, bbox_inches="tight")
+    print(f"\n  Saved: {path}")
+    plt.close(fig)
+
+
 # ── Figure 7: overview table ───────────────────────────────────────────────────
 
 def print_summary_table(results):
@@ -720,6 +978,8 @@ def main():
     plot_pressure_ratio(results, args.outdir, args.format)
     plot_equivalence(results, args.outdir, args.format)
     plot_operating_gain(results, args.outdir, args.format)
+    plot_relative_gain_ar_isobutane(results, args.outdir, args.format)
+    plot_operating_voltage_vs_quencher(results, args.outdir, args.format)
     if not args.no_dist:
         plot_distributions(results, args.outdir, args.format)
 
