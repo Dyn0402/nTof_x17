@@ -2300,10 +2300,11 @@ def plot_angle_correlation(
     deg_det_x_corr, deg_det_y_corr = _det_angles_deg(sl_x_q, sl_y_q, v_avg)
 
     ang_res_data = []
-    fig3, axes3 = plt.subplots(1, 2, figsize=(13, 5))
-    for ax, deg_ref, deg_det_c, lim, color, proj in [
-        (axes3[0], ref_x_q, deg_det_x_corr, lim_x, 'red',  'X'),
-        (axes3[1], ref_y_q, deg_det_y_corr, lim_y, 'blue', 'Y'),
+    # Top row: corrected scatter (as before). Bottom row: log-density 2-D histogram.
+    fig3, axes3 = plt.subplots(2, 2, figsize=(13, 11))
+    for ax, ax_d, deg_ref, deg_det_c, lim, color, proj in [
+        (axes3[0, 0], axes3[1, 0], ref_x_q, deg_det_x_corr, lim_x, 'red',  'X'),
+        (axes3[0, 1], axes3[1, 1], ref_y_q, deg_det_y_corr, lim_y, 'blue', 'Y'),
     ]:
         iv = (np.abs(deg_det_c) <= lim) & (np.abs(deg_ref) <= lim) \
              & np.isfinite(deg_det_c) & np.isfinite(deg_ref)
@@ -2319,6 +2320,11 @@ def plot_angle_correlation(
         ax.set_title(f'{proj} corrected correlation  v_drift={v_avg:.1f} µm/ns\n'
                      f'(r < {residual_cut_mm:.0f} mm,  {int(iv.sum()):,} events)')
         ax.legend(fontsize=8)
+
+        _density_hist2d(ax_d, deg_det_c[iv], deg_ref[iv], (-lim, lim), (-lim, lim),
+                        f'θ_{proj.lower()} detector [deg]',
+                        f'θ_{proj.lower()} reference [deg]',
+                        f'{proj} corrected density  v_drift={v_avg:.1f} µm/ns')
 
         # Collect data for combined angular resolution plot
         deg_resid = deg_ref[iv] - deg_det_c[iv]   # d = 0 for perfect correlation
@@ -2346,18 +2352,27 @@ def plot_position_correlation(results: List[EventResult], out_dir: Optional[str]
     ref_x = np.array([r.ref_x_mm for r in results])
     ref_y = np.array([r.ref_y_mm for r in results])
 
-    fig, axes = plt.subplots(1, 2, figsize=(12, 5))
-    axes[0].scatter(det_x, ref_x, alpha=0.4, s=6, color='red')
-    axes[0].set_xlabel('Detector X [mm]')
-    axes[0].set_ylabel('Reference X [mm]')
-    axes[0].set_title('X position correlation')
-    _add_diagonal(axes[0])
+    # Top row: scatter (as before). Bottom row: log-density 2-D histogram sharing
+    # the scatter's (squared) limits, to show where events concentrate.
+    fig, axes = plt.subplots(2, 2, figsize=(12, 11))
+    axes[0, 0].scatter(det_x, ref_x, alpha=0.4, s=6, color='red')
+    axes[0, 0].set_xlabel('Detector X [mm]')
+    axes[0, 0].set_ylabel('Reference X [mm]')
+    axes[0, 0].set_title('X position correlation')
+    _add_diagonal(axes[0, 0])
 
-    axes[1].scatter(det_y, ref_y, alpha=0.4, s=6, color='blue')
-    axes[1].set_xlabel('Detector Y [mm]')
-    axes[1].set_ylabel('Reference Y [mm]')
-    axes[1].set_title('Y position correlation')
-    _add_diagonal(axes[1])
+    axes[0, 1].scatter(det_y, ref_y, alpha=0.4, s=6, color='blue')
+    axes[0, 1].set_xlabel('Detector Y [mm]')
+    axes[0, 1].set_ylabel('Reference Y [mm]')
+    axes[0, 1].set_title('Y position correlation')
+    _add_diagonal(axes[0, 1])
+
+    _density_hist2d(axes[1, 0], det_x, ref_x,
+                    axes[0, 0].get_xlim(), axes[0, 0].get_ylim(),
+                    'Detector X [mm]', 'Reference X [mm]', 'X position density')
+    _density_hist2d(axes[1, 1], det_y, ref_y,
+                    axes[0, 1].get_xlim(), axes[0, 1].get_ylim(),
+                    'Detector Y [mm]', 'Reference Y [mm]', 'Y position density')
 
     fig.tight_layout()
     _save_fig(fig, out_dir, 'position_correlation.png')
@@ -2740,6 +2755,39 @@ def _add_diagonal(ax):
     ax.set_xlim(lims)
     ax.set_ylim(lims)
     ax.legend(fontsize=8)
+
+
+def _density_hist2d(ax, x, y, xlim, ylim, xlabel, ylabel, title,
+                    bins=120, diagonal=True):
+    """Log-density 2-D histogram companion to a correlation scatter.
+
+    Shares the scatter's axis limits (``xlim``/``ylim``) so the density and
+    scatter views line up. Empty bins are left blank (cmin=1) and the colour
+    scale is logarithmic to cope with the large dynamic range between the dense
+    diagonal core and sparse outliers.
+    """
+    from matplotlib.colors import LogNorm
+    x = np.asarray(x, dtype=float)
+    y = np.asarray(y, dtype=float)
+    m = np.isfinite(x) & np.isfinite(y)
+    x, y = x[m], y[m]
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
+    ax.set_title(title)
+    if x.size < 2:
+        ax.text(0.5, 0.5, 'no data', ha='center', va='center', transform=ax.transAxes)
+        return
+    cmap = plt.get_cmap('viridis').copy()
+    h = ax.hist2d(x, y, bins=bins, range=[list(xlim), list(ylim)],
+                  cmap=cmap, norm=LogNorm(), cmin=1)
+    ax.figure.colorbar(h[3], ax=ax, fraction=0.046, pad=0.04, label='events / bin')
+    ax.set_xlim(xlim)
+    ax.set_ylim(ylim)
+    if diagonal:
+        lo = max(xlim[0], ylim[0])
+        hi = min(xlim[1], ylim[1])
+        ax.plot([lo, hi], [lo, hi], 'k--', alpha=0.5, lw=1, label='y = x')
+        ax.legend(fontsize=8)
 
 
 def _plot_event(df_event: pd.DataFrame, result: EventResult, event_id: int, out_dir: Optional[str] = None) -> None:
