@@ -135,6 +135,22 @@ def main():
     ax.set_ylabel('% of crossing muons'); ax.set_title(f'{CFG.DET_NAME} where do the muons go? (active area, R={R:g}mm)')
     fig.tight_layout(); fig.savefig(f'{out_dir}/efficiency_breakdown.png', dpi=150, bbox_inches='tight')
 
+    # ---- wide-and-short horizontal variant (for the summary-page bottom row) ----
+    labels = {'reco_near': f'reco_near  (≤{R:g}mm)', 'reco_far': 'reco_far  (>%gmm)' % R,
+              'hit_no_reco': 'hit_no_reco', 'no_hit': 'no_hit (silent)'}
+    figw, axw = plt.subplots(figsize=(11, 2.5))
+    ypos = np.arange(len(ks))[::-1]        # reco_near at top
+    axw.barh(ypos, [pct[k] for k in ks], color=cols, height=0.7)
+    for y, k in zip(ypos, ks):
+        axw.text(pct[k] + 0.8, y, f'{pct[k]:.1f}%', va='center', fontsize=9)
+    axw.set_yticks(ypos); axw.set_yticklabels([labels[k] for k in ks], fontsize=9)
+    axw.set_xlim(0, max(pct.values()) * 1.15); axw.set_xlabel('% of crossing muons in active area')
+    axw.set_title(f'{CFG.DET_NAME} efficiency breakdown — where do the crossing muons go?  '
+                  f'(R={R:g} mm)', fontsize=10)
+    axw.grid(axis='x', alpha=0.3)
+    figw.tight_layout(); figw.savefig(f'{out_dir}/efficiency_breakdown_wide.png', dpi=150, bbox_inches='tight')
+    plt.close(figw)
+
     # ---- |r| residual of reconstructed hits ----
     fig, axes = plt.subplots(1, 2, figsize=(13, 5))
     axes[0].hist(rlist, bins=np.linspace(0, 50, 100), color='steelblue')

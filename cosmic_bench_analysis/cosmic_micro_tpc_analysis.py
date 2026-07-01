@@ -2307,6 +2307,7 @@ def plot_angle_correlation(
     deg_det_x_corr, deg_det_y_corr = _det_angles_deg(sl_x_q, sl_y_q, v_avg)
 
     ang_res_data = []
+    dens_data = []   # (deg_det_c[iv], deg_ref[iv], lim, proj) for the hist-only copy
     # Top row: corrected scatter (as before). Bottom row: log-density 2-D histogram.
     fig3, axes3 = plt.subplots(2, 2, figsize=(13, 11))
     for ax, ax_d, deg_ref, deg_det_c, lim, color, proj in [
@@ -2315,6 +2316,7 @@ def plot_angle_correlation(
     ]:
         iv = (np.abs(deg_det_c) <= lim) & (np.abs(deg_ref) <= lim) \
              & np.isfinite(deg_det_c) & np.isfinite(deg_ref)
+        dens_data.append((deg_det_c[iv], deg_ref[iv], lim, proj))
         ax.scatter(deg_det_c[iv], deg_ref[iv], alpha=0.3, s=4, color=color)
 
         xs = np.array([-lim, lim])
@@ -2350,6 +2352,17 @@ def plot_angle_correlation(
     fig3.tight_layout()
     _save_fig(fig3, out_dir, 'angle_correlation_corrected.png')
     _save_fig(fig4, out_dir, 'angular_resolution.png')
+
+    # Compact hist-only copy (density panels only, 1x2) for the summary page.
+    figh, axh = plt.subplots(1, 2, figsize=(12, 5.2))
+    for axd, (ddet, dref, lim, proj) in zip(axh, dens_data):
+        _density_hist2d(axd, ddet, dref, (-lim, lim), (-lim, lim),
+                        f'θ_{proj.lower()} detector [deg]',
+                        f'θ_{proj.lower()} reference [deg]',
+                        f'{proj} corrected angle density  v_drift={v_avg:.1f} µm/ns')
+    figh.tight_layout()
+    _save_fig(figh, out_dir, 'angle_correlation_corrected_hist.png')
+    plt.close(figh)
     return v_drift_x, v_drift_y
 
 
@@ -2383,6 +2396,18 @@ def plot_position_correlation(results: List[EventResult], out_dir: Optional[str]
 
     fig.tight_layout()
     _save_fig(fig, out_dir, 'position_correlation.png')
+
+    # Compact hist-only copy (density panels only, 1x2) — saves vertical space on the
+    # summary page where the scatter row is redundant with the density row.
+    figh, axh = plt.subplots(1, 2, figsize=(12, 5.2))
+    _density_hist2d(axh[0], det_x, ref_x, axes[0, 0].get_xlim(), axes[0, 0].get_ylim(),
+                    'Detector X [mm]', 'Reference X [mm]', 'X position density')
+    _density_hist2d(axh[1], det_y, ref_y, axes[0, 1].get_xlim(), axes[0, 1].get_ylim(),
+                    'Detector Y [mm]', 'Reference Y [mm]', 'Y position density')
+    figh.tight_layout()
+    _save_fig(figh, out_dir, 'position_correlation_hist.png')
+    plt.close(figh)
+    plt.close(fig)
 
 
 def fit_residual_peak(
