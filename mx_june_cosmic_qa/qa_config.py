@@ -205,6 +205,14 @@ RUNS = {
     'g_det3': _Config('g_det3', 'mx17_det2_det3_overnight_6-22-26', 'long_run',
                           feus=[3, 4], det_z=232.0, det_name='mx17_3', zero_suppressed=False,
                           base_path='/home/dylan/x17/cosmic_bench/det2_det3/'),
+    # Weekend det3 (6-28) — highest-stats / best det3 (top slot, FEU7/8, z702), pulled from
+    # lxplus. Lives in mx17_det3_p2_det1_overnight_6-27-26 next to a non-mx17 "P2_1" detector
+    # (ignored). Same DET_NAME (mx17_3) as g_det3, so build_final_pdf.select_keys picks the
+    # one with more rays -> this weekend run (52,995 rays) wins the Detector-3 page.
+    'g_det3_wknd': _Config('g_det3_wknd', 'mx17_det3_p2_det1_overnight_6-27-26',
+                          'long_run_p2_det1_sanity_check',
+                          feus=[7, 8], det_z=702.0, det_name='mx17_3', zero_suppressed=False,
+                          base_path='/home/dylan/x17/cosmic_bench/det3/'),
     # det4: dedicated 6-24 daytime run 'long_run' (8 file-pairs, ~26 GB). Avoids the
     # 6-23 det3_det4 run whose M3 reference is degraded (~4% clean tracks).
     'g_det4': _Config('g_det4', 'mx17_det4_day_6-24-26', 'long_run',

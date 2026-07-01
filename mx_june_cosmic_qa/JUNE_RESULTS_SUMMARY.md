@@ -23,23 +23,25 @@ Two compiled PDFs (under `~/x17/cosmic_bench/Analysis/`):
 | Det | Run / subrun used | Clean M3 rays | Efficiency (≤5 mm) | Fired any strip | Core σ | Verdict |
 |----:|---|---:|---:|---:|---:|---|
 | **2** | 6-22 overnight / long_run | 34.9k | **76.4 %** | 99.7 % | 0.84 mm | Healthy |
-| **3** | 6-22 overnight / long_run | 31.1k | **80.7 %** | 98.1 % | 0.69 mm | Best performer |
+| **3** | **6-28 weekend / long_run_p2 (top slot)** | 53.0k | **79.7 %** | 97.6 % | 0.80 mm | Best performer |
 | **4** | 6-24 daytime / long_run | 39.6k | **8.4 %** | 50.6 % | 1.24 mm | Gain-limited |
-| **6** | 6-26 overnight / long_run (2 files) | 9.7k | **63.8 %** | 93.7 % | 0.69 mm | Healthy |
-| **7** | 6-26 overnight / long_run (2 files) | 10.6k | **41.1 %** | 93.9 % | 1.30 mm | Saturation tail |
+| **6** | 6-26 overnight / long_run (7 files) | 32.3k | **55.4 %** | 94.1 % | 0.72 mm | Healthy |
+| **7** | 6-26 overnight / long_run (7 files) | 35.5k | **36.8 %** | 84.1 % | 1.36 mm | Saturation tail |
 
 Alignment converged sub-mm with θ≈90° and z near nominal for every detector above
 (seeded per run from the long_run subrun).
 
 ### Notes per detector
 - **det2 / det3** — healthy detectors: high, spatially-uniform efficiency at sub-mm
-  resolution. det3 is the best of the batch.
+  resolution. det3 is the best of the batch. The headline det3 is now the **6-28 weekend
+  run** (top slot, FEU7/8, z702; 53.0k rays, 79.7 %, silent only 2.4 %); the earlier 6-22
+  det3 (bottom slot) gave a consistent **80.7 %** — det3 is reliably ~80 % in either slot.
 - **det4** — gain-limited. Fires on ~51 % of muons but the loss is dominated by
   `hit_no_reco` (38.8 %) + silent (49.4 %): clusters rarely reach the ≥3 strips needed
   to reconstruct. Same pathology the old det1 had → an HV/threshold/gas (gain) issue,
   not a dead detector.
-- **det6** — healthy (63.8 %, 0.69 mm). NB its `short_run` gave a misleading 9.7 %
-  (low-stats / unsettled); the long_run is the real picture. Always prefer long_run here.
+- **det6** — healthy (55.4 %, 0.72 mm) on the full 7-file long_run. NB the short_run is
+  low-stats / unsettled; always prefer long_run here.
 - **det7** — reconstructs with a good core (σ≈0.9–1.1 mm per axis) but has a heavy
   **outlier tail**: median radial residual 1.84 mm vs **mean 23.9 mm**, `reco_far` ≈40 %.
   Alignment is healthy (z=714 mid-window, θ=90.1°) — the tail is a *reconstruction*
@@ -69,8 +71,10 @@ and the earlier 6-26 overnight points (higher V); overlaid they give the complet
 
 **Reading:** `any_hit` stays ~flat near 100 % while reco-efficiency falls at high HV →
 the high-voltage losses are sparking-induced reconstruction failures, not the detector
-going silent. Resolution mirrors it: best near the efficiency optimum, degrading into
-the sparking regime.
+going silent. This is now shown directly: each HV-scan page overlays a **spark fraction**
+(events with >50 strips firing, right axis) — it stays <10 % through the plateau then
+climbs steeply (to 40–57 %) exactly where efficiency rolls off. Resolution mirrors it:
+best near the efficiency optimum, degrading into the sparking regime.
 
 **Takeaways (operating points):**
 - det2 / det3 optimum ≈ **485–490 V** (drift 1000 V).
@@ -89,13 +93,16 @@ the sparking regime.
   See `TODO_m3_reference_6-23.md`. det3 and det4 are characterised instead from the
   6-22 and 6-24 runs respectively.
 - **6-25 det3 long-run** and other raw-only subruns were not decoded at analysis time.
+  The **6-27/6-28 weekend det3** runs (top slot) HAVE since been analysed and are now the
+  headline det3 (79.7 %, above); the 6-27 saturday + 6-28 p2 long runs pool to 76.1 %.
 
 ---
 
 ## 4. Provenance & reproduction
 
-- Run registry: `qa_config.py` keys `g_det2 g_det3 g_det4 g_det6_long g_det7_long`
-  (+ `g_det6 g_det7` short_run, and per-subrun variants).
+- Run registry: `qa_config.py` keys `g_det2 g_det3 g_det3_wknd g_det4 g_det6_long g_det7_long`
+  (+ `g_det6 g_det7` short_run, and per-subrun variants). `g_det3_wknd` = the 6-28 weekend
+  det3 (wins the det3 page by ray count).
 - Per-detector overview: `run_full_june_qa.sh` (orchestrator) → `build_final_pdf.py`.
   Regenerate just the PDF: `../venv/bin/python build_final_pdf.py`.
 - HV scans: `run_hv_scans.sh` → `10_hv_scan_efficiency.py` (per detector) →

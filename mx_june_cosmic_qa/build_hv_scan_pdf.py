@@ -160,8 +160,10 @@ def detector_page(pdf, detnum, det_scans):
              color='#333333',
              bbox=dict(boxstyle='round,pad=0.4', fc='#f4f4f4', ec='#bbbbbb', lw=0.6))
 
-    # efficiency vs HV (overlay all scans of this detector)
+    # efficiency vs HV (overlay all scans of this detector); spark rate on twin axis
     axe = fig.add_subplot(gs[1])
+    axe_s = axe.twinx()
+    have_spark = False
     for i, s in enumerate(det_scans):
         c = SCAN_COLORS[i % len(SCAN_COLORS)]
         d = s['df']
@@ -170,9 +172,21 @@ def detector_page(pdf, detnum, det_scans):
                      label=f"{s['tag']} (reco ≤5 mm)")
         axe.plot(d['hv'], d['eff_anyhit'], 's--', color=c, ms=5, alpha=0.5,
                  label=f"{s['tag']} (any hit)")
+        if 'spark_frac' in d and d['spark_frac'].notna().any():
+            axe_s.plot(d['hv'], d['spark_frac'] * 100, 'x:', color=c, ms=7, lw=1.3,
+                       label=f"{s['tag']} (spark %)")
+            have_spark = True
     axe.set_xlabel('Resist HV [V]'); axe.set_ylabel('Efficiency (fixed active box)')
-    axe.set_ylim(0, 1.02); axe.grid(True, alpha=0.3); axe.legend(fontsize=8)
-    axe.set_title('Efficiency vs resist HV', fontsize=11)
+    axe.set_ylim(0, 1.02); axe.grid(True, alpha=0.3)
+    axe.set_title('Efficiency (left) + spark rate (right) vs resist HV', fontsize=11)
+    if have_spark:
+        axe_s.set_ylabel('Spark fraction [%]', color='crimson')
+        axe_s.tick_params(axis='y', labelcolor='crimson')
+        axe_s.set_ylim(0, None)
+        h1, l1 = axe.get_legend_handles_labels(); h2, l2 = axe_s.get_legend_handles_labels()
+        axe.legend(h1 + h2, l1 + l2, fontsize=7, loc='upper left')
+    else:
+        axe_s.set_yticks([]); axe.legend(fontsize=8)
 
     # resolution vs HV
     axr = fig.add_subplot(gs[2])

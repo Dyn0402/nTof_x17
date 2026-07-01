@@ -54,6 +54,7 @@ CFG = config_from_argv()
 
 R = next((float(a.split('=')[1]) for a in sys.argv if a.startswith('--r=')), 5.0)
 MIN_VALID = next((int(a.split('=')[1]) for a in sys.argv if a.startswith('--minvalid=')), 20)
+SPARK_THRESH = next((int(a.split('=')[1]) for a in sys.argv if a.startswith('--spark=')), 50)
 M3_CHI2_CUT = 20.0
 
 # Alignment seed (z/theta/centre/handedness; translation re-run per subrun). Defaults to
@@ -152,8 +153,13 @@ def analyse_subrun(subrun, det, seed):
     # raw "any hit on det FEUs" event set (sparks included)
     raw = uproot.concatenate([f'{hits_dir}{f}:hits' for f in hit_files],
                              expressions=['eventId', 'feu'], library='pd')
-    has_any = set(int(e) for e in
-                  raw.loc[raw['feu'].isin(CFG.MX17_FEUS), 'eventId'].unique())
+    det_raw = raw[raw['feu'].isin(CFG.MX17_FEUS)]
+    has_any = set(int(e) for e in det_raw['eventId'].unique())
+    # spark metric: # strips fired per detector-firing event (one row per hit); an event
+    # is a spark/discharge if multiplicity > SPARK_THRESH (same threshold as the veto).
+    mult = det_raw.groupby('eventId').size()
+    n_firing = int(len(mult))
+    n_spark = int((mult > SPARK_THRESH).sum())
 
     xr, yr, evn = get_xy_positions(rays.ray_data, params.z_mean)
     px = seed.ref_x_sign * np.array(xr)
@@ -174,7 +180,8 @@ def analyse_subrun(subrun, det, seed):
         columns=['event_id', 'x', 'y', 'res_x', 'res_y'])
 
     return {'subrun': subrun, 'rays': d, 'reco': np.array(list(reco.values())),
-            'resid': resid, 'params': params, 'n_valid': n_valid}
+            'resid': resid, 'params': params, 'n_valid': n_valid,
+            'n_spark': n_spark, 'n_firing': n_firing}
 
 
 def main():
@@ -234,12 +241,15 @@ def main():
         fy = cm.fit_residual_peak(rr.loc[rbox, 'res_y'].to_numpy())
         sx = fx.resolution if fx is not None else np.nan
         sy = fy.resolution if fy is not None else np.nan
+        spark_frac = a['n_spark'] / a['n_firing'] if a['n_firing'] else np.nan
         rows.append(dict(hv=a['hv'], subrun=a['subrun'], n_valid=a['n_valid'],
                          n_tracks=n_tracks, n_hit=n_hit, n_any=n_any,
                          eff_reco=eff, eff_reco_err=err, eff_anyhit=eff_any,
-                         sigma_x_mm=sx, sigma_y_mm=sy))
+                         sigma_x_mm=sx, sigma_y_mm=sy,
+                         n_spark=a['n_spark'], n_firing=a['n_firing'], spark_frac=spark_frac))
         print(f'  HV={a["hv"]}V  eff(reco<{R:g}mm)={eff:.3f}+-{err:.3f}  '
-              f'eff(any hit)={eff_any:.3f}  sigma=({sx:.2f},{sy:.2f})mm  ({n_hit}/{n_tracks} in box)')
+              f'eff(any hit)={eff_any:.3f}  sigma=({sx:.2f},{sy:.2f})mm  '
+              f'spark={spark_frac*100:.1f}%  ({n_hit}/{n_tracks} in box)')
 
     df = pd.DataFrame(rows).sort_values('hv').reset_index(drop=True)
     od = out_dir()
@@ -254,11 +264,20 @@ def main():
             label='any hit on detector')
     ax.set_xlabel('Resist HV [V]')
     ax.set_ylabel('Efficiency (fixed active box)')
-    ax.set_title(f'{CFG.DET_NAME} efficiency vs resist HV — {CFG.RUN}\n'
+    ax.set_title(f'{CFG.DET_NAME} efficiency + spark rate vs resist HV — {CFG.RUN}\n'
                  f'(r<{R:g} mm; integrated over fixed active area)')
     ax.set_ylim(0, 1.02)
     ax.grid(True, alpha=0.3)
-    ax.legend()
+    # spark fraction on a twin axis (the high-HV roll-off mechanism)
+    axs = ax.twinx()
+    axs.plot(df['hv'], df['spark_frac'], 'x:', color='crimson', ms=8, lw=1.5,
+             label=f'spark fraction (mult>{SPARK_THRESH})')
+    axs.set_ylabel('Spark fraction of firing events', color='crimson')
+    axs.tick_params(axis='y', labelcolor='crimson')
+    _smax = float(np.nanmax(df['spark_frac'])) if len(df) else 0.0
+    axs.set_ylim(0, max(0.05, _smax * 1.25))
+    h1, l1 = ax.get_legend_handles_labels(); h2, l2 = axs.get_legend_handles_labels()
+    ax.legend(h1 + h2, l1 + l2, loc='upper left', fontsize=8)
     fig.tight_layout()
     fig.savefig(os.path.join(od, 'efficiency_vs_hv.png'), dpi=200, bbox_inches='tight')
     plt.close(fig)
