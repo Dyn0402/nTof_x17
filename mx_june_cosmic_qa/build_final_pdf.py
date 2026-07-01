@@ -30,6 +30,34 @@ from matplotlib.gridspec import GridSpec
 
 from qa_config import get_config, setup_paths
 setup_paths()
+import json as _json
+
+
+def hv_settings(cfg):
+    """(resist_V, drift_V) for this detector/subrun from run_config: each detector's
+    hv_channels {'resist':[mod,ch], 'drift':[mod,ch]} indexed into the matching
+    sub_run's hvs {mod: {ch: volts}}. Falls back to the first sub_run. Returns
+    (None, None) if unavailable."""
+    try:
+        d = _json.load(open(cfg.run_config_path))
+    except Exception:
+        return None, None
+    det = next((x for x in d.get('detectors', [])
+                if (x.get('det_name') or x.get('name')) == cfg.DET_NAME), None)
+    ch = (det or {}).get('hv_channels', {})
+    subs = d.get('sub_runs', []) or []
+    sr = next((s for s in subs if s.get('sub_run_name') == cfg.SUB_RUN),
+              subs[0] if subs else {})
+    hvs = sr.get('hvs', {})
+
+    def look(name):
+        if name not in ch:
+            return None
+        m, c = ch[name]
+        v = hvs.get(str(m), {}).get(str(c))
+        return int(v) if isinstance(v, (int, float)) else None
+    return look('resist'), look('drift')
+
 
 DEFAULT_KEYS = ['g_det2', 'g_det3', 'g_det4',
                 'g_det6', 'g_det6_longer', 'g_det6_long',
@@ -99,8 +127,8 @@ def detector_page(pdf, key):
         sld = json.load(open(sp))
 
     fig = plt.figure(figsize=(8.27, 11.69))  # A4 portrait
-    gs = GridSpec(6, 2, figure=fig, height_ratios=[0.9, 1.5, 1.2, 1.2, 1.2, 1.1],
-                  hspace=0.34, wspace=0.06, left=0.04, right=0.96, top=0.97, bottom=0.03)
+    gs = GridSpec(6, 2, figure=fig, height_ratios=[0.85, 1.55, 0.95, 1.3, 1.3, 0.7],
+                  hspace=0.36, wspace=0.06, left=0.04, right=0.96, top=0.97, bottom=0.03)
 
     detnum = cfg.DET_NAME.split('_')[-1]
     eff = bd.get('within_pct', '—')
@@ -111,6 +139,14 @@ def detector_page(pdf, key):
     hax.set_xlim(0, 1); hax.set_ylim(0, 1)
 
     hax.text(0.0, 0.97, f'Detector {detnum}', fontsize=26, fontweight='bold', va='top')
+
+    # HV operating point, on the title line to the right of the detector number (the only
+    # clear band — below it are the stat cards, top-right is the reference box). HV is on
+    # the resistive layer (not the mesh).
+    rv, dv = hv_settings(cfg)
+    hv_str = (f'Resist {rv if rv is not None else "—"} V     '
+              f'Drift {dv if dv is not None else "—"} V')
+    hax.text(0.28, 0.80, hv_str, fontsize=13, fontweight='bold', color='#1f3a5f', va='center')
 
     # efficiency colour cue
     try:
@@ -156,15 +192,20 @@ def detector_page(pdf, key):
           'Sliding-window efficiency map  (reco within 5 mm | has_any | rays/kernel)')
 
     # ---- supporting plots ----
-    # position + angular detector-vs-M3 correlations (replaces the binned eff map)
+    # position + angular detector-vs-M3 correlations (density-only copies to save space;
+    # fall back to the full quad plots if the hist-only copies aren't present yet)
     place(fig.add_subplot(gs[2, 0]),
-          _find(base, 'alignment_tpc_veto50/position_correlation.png',
+          _find(base, 'alignment_tpc_veto50/position_correlation_hist.png',
+                'alignment_tpc/position_correlation_hist.png',
+                'alignment_tpc_veto50/position_correlation.png',
                 'alignment_tpc/position_correlation.png'),
-          'Position correlation (detector vs M3)')
+          'Position correlation density (detector vs M3)')
     place(fig.add_subplot(gs[2, 1]),
-          _find(base, 'alignment_tpc_veto50/angle_correlation_corrected.png',
+          _find(base, 'alignment_tpc_veto50/angle_correlation_corrected_hist.png',
+                'alignment_tpc/angle_correlation_corrected_hist.png',
+                'alignment_tpc_veto50/angle_correlation_corrected.png',
                 'alignment_tpc/angle_correlation_corrected.png'),
-          'Angular correlation (detector vs M3)')
+          'Angular correlation density (detector vs M3)')
 
     place(fig.add_subplot(gs[3, 0]),
           _find(base, 'alignment_tpc_veto50/resolution_map_sliding_r50mm.png',
@@ -182,9 +223,10 @@ def detector_page(pdf, key):
           _find(base, 'efficiency/scatter_within_5mm.png'),
           'Hit/miss scatter (within 5 mm)')
 
-    # ---- efficiency breakdown moved to a full-width bottom row ----
+    # ---- efficiency breakdown moved to a full-width bottom row (wide-short variant) ----
     place(fig.add_subplot(gs[5, :]),
-          _find(base, 'efficiency/efficiency_breakdown.png'),
+          _find(base, 'efficiency/efficiency_breakdown_wide.png',
+                'efficiency/efficiency_breakdown.png'),
           'Efficiency breakdown (where do the crossing muons go?)')
 
     fig.text(0.96, 0.005, datetime.date.today().isoformat(), ha='right', fontsize=6, color='grey')
