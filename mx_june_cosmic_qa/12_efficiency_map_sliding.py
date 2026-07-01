@@ -50,6 +50,13 @@ GRID = int(_argf('--grid=', 120))   # grid points per axis
 MIN_RAYS = int(_argf('--min=', 30))  # min rays in kernel to colour a grid point
 R = _argf('--r=', 5.0)              # label only (match radius baked into 'within')
 
+# Auto-kernel: pick the SMALLEST fixed kernel whose EDGE points still capture ~EDGE_HITS
+# rays (the finest map the local statistics allow), floored at KMIN mm. Set --edge-hits=10
+# for ~10 hits/kernel at the active-area edge; the kernel is derived per detector from the
+# ray density (higher-stats detectors -> smaller kernel -> finer efficiency structure).
+EDGE_HITS = int(_argf('--edge-hits=', 0))
+KMIN = _argf('--kmin=', 2.5)        # kernel radius floor [mm]
+
 # Adaptive (k-nearest-neighbour) kernel: instead of a fixed radius, each grid point
 # uses the SMALLEST radius that captures TARGET rays -> the finest resolution the local
 # statistics allow, with a constant per-point error (binomial with N=TARGET). The kernel
@@ -180,8 +187,9 @@ def main():
     y = d['y'].to_numpy(float)
     within = d['within'].to_numpy(float)
     has_any = d['has_any'].to_numpy(float)
+    _kdesc = f'auto (~{EDGE_HITS} edge hits, floor {KMIN:g} mm)' if EDGE_HITS > 0 else f'r={KERNEL:.0f} mm'
     print(f'{CFG.DET_NAME} {CFG.RUN}/{CFG.SUB_RUN}: {len(d)} clean M3 rays, '
-          f'kernel r={KERNEL:.0f} mm, {GRID}x{GRID} grid', flush=True)
+          f'kernel {_kdesc}, {GRID}x{GRID} grid', flush=True)
 
     # Active-area box from the reco'd (within) ray footprint — same idea as 08.
     hit = d[d['within']]
@@ -198,12 +206,24 @@ def main():
                       (ax0, ax1, ay0, ay1), inact, integ_within, integ_hasany)
         return
 
-    pad = KERNEL
+    kernel, min_rays = KERNEL, MIN_RAYS
+    if EDGE_HITS > 0:
+        area = (ax1 - ax0) * (ay1 - ay0)
+        dens = inact.sum() / area if area > 0 else 0.0        # rays / mm^2 in active area
+        # a straight-edge grid point sees ~half a kernel disk of active area:
+        #   EDGE_HITS ~= dens * (pi k^2 / 2)  ->  k = sqrt(2 EDGE_HITS / (pi dens))
+        kernel = float(np.sqrt(2 * EDGE_HITS / (np.pi * dens))) if dens > 0 else KERNEL
+        kernel = max(KMIN, kernel)
+        min_rays = max(5, EDGE_HITS // 2)                     # don't mask the very edge
+        print(f'  auto-kernel for ~{EDGE_HITS} rays at the edge: density={dens:.3f}/mm^2 '
+              f'-> kernel={kernel:.1f} mm (floor {KMIN:g}), min_rays={min_rays}')
+
+    pad = kernel
     x_grid = np.linspace(ax0 - pad, ax1 + pad, GRID)
     y_grid = np.linspace(ay0 - pad, ay1 + pad, GRID)
 
-    eff_w, cnt = sliding_map(x, y, within, x_grid, y_grid, KERNEL, MIN_RAYS)
-    eff_a, _ = sliding_map(x, y, has_any, x_grid, y_grid, KERNEL, MIN_RAYS)
+    eff_w, cnt = sliding_map(x, y, within, x_grid, y_grid, kernel, min_rays)
+    eff_a, _ = sliding_map(x, y, has_any, x_grid, y_grid, kernel, min_rays)
     n_fit = int(np.sum(~np.isnan(eff_w)))
     print(f'  fitted {n_fit}/{GRID**2} grid points; '
           f'integrated within{R:g}mm={integ_within*100:.1f}%  has_any={integ_hasany*100:.1f}%')
@@ -224,14 +244,14 @@ def main():
         plt.colorbar(im, ax=ax, fraction=0.046, pad=0.04, label=label)
         ax.add_patch(plt.Rectangle(**box, fill=False, ec='red', lw=1.3))
         ax.set_xlabel('reference X [mm]'); ax.set_ylabel('reference Y [mm]')
-        ax.set_title(f'{CFG.DET_NAME}  {label}\nsliding kernel r={KERNEL:.0f} mm')
+        ax.set_title(f'{CFG.DET_NAME}  {label}\nsliding kernel r={kernel:.1f} mm')
 
-    cnt_m = np.where(cnt >= MIN_RAYS, cnt, np.nan)
+    cnt_m = np.where(cnt >= min_rays, cnt, np.nan)
     im3 = axes[2].imshow(cnt_m.T, origin='lower', extent=extent, aspect='equal', cmap=cmap_c)
     plt.colorbar(im3, ax=axes[2], fraction=0.046, pad=0.04, label='rays in kernel')
     axes[2].add_patch(plt.Rectangle(**box, fill=False, ec='red', lw=1.3))
     axes[2].set_xlabel('reference X [mm]'); ax = axes[2]; ax.set_ylabel('reference Y [mm]')
-    axes[2].set_title(f'rays per kernel\n(grey < {MIN_RAYS})')
+    axes[2].set_title(f'rays per kernel\n(grey < {min_rays})')
 
     fig.suptitle(f'{CFG.DET_NAME} sliding-window efficiency — {CFG.RUN}/{CFG.SUB_RUN}',
                  y=1.02, fontsize=13)
@@ -243,7 +263,7 @@ def main():
     summary = dict(
         det=CFG.DET_NAME, run=CFG.RUN, sub_run=CFG.SUB_RUN,
         feus=CFG.MX17_FEUS, det_z=CFG.DET_PLANE_Z,
-        r_mm=R, kernel_mm=KERNEL, grid=GRID,
+        r_mm=R, kernel_mm=kernel, min_rays=min_rays, edge_hits=EDGE_HITS, grid=GRID,
         n_rays=int(len(d)), n_rays_active=int(inact.sum()),
         integrated_within=integ_within, integrated_has_any=integ_hasany,
         active_box=dict(x0=float(ax0), x1=float(ax1), y0=float(ay0), y1=float(ay1)),

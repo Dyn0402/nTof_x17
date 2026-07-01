@@ -226,7 +226,7 @@ def main():
     cm.plot_resolution_map(results, rays, best, bins=20, min_hits_per_bin=20,
                            radius_cut_mm=None, out_dir=out_dir)
     cm.plot_resolution_map_sliding(results, grid_points=100, kernel_radius_mm=50.0,
-                                   min_hits=50, out_dir=out_dir)
+                                   min_hits=50, out_dir=out_dir, sigma_vmax=1.0)
     print(f'\nFull micro-TPC analysis done. Plots in {out_dir}')
 
 

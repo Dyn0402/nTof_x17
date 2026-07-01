@@ -1787,9 +1787,14 @@ def plot_resolution_map_sliding(
     min_hits: int = 50,
     title: str = '2D Sliding-Window Resolution Map',
     out_dir: Optional[str] = None,
+    sigma_vmax: Optional[float] = None,
 ) -> None:
     """
     Compute a smooth 2-D spatial resolution map using a sliding radial kernel.
+
+    `sigma_vmax` (mm), if given, caps the σ colour scale (e.g. 1.0 mm) so the true
+    surface variation is visible instead of being washed out by large edge values;
+    default None keeps the auto 95th-percentile scaling.
 
     For each point on a regular (grid_points × grid_points) grid, all matched
     events whose reference track is within `kernel_radius_mm` of that grid
@@ -1878,6 +1883,8 @@ def plot_resolution_map_sliding(
         vmax = float(np.nanpercentile(all_sigma, 95))
     else:
         vmin, vmax = 0.0, 1.0
+    if sigma_vmax is not None:
+        vmax = float(sigma_vmax)   # fixed cap so surface variation is visible
 
     extent = [x_grid[0], x_grid[-1], y_grid[0], y_grid[-1]]
     cmap_res = plt.get_cmap('jet').copy()
