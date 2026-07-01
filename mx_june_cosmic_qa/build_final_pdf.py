@@ -62,6 +62,7 @@ def parse_breakdown(path):
         ('reco_at_all_pct', r'reco-at-all=([\d.]+)%'),
         ('core_sigma_mm', r'core sigma\([^)]*\)=([\d.]+)\s*mm'),
         ('median_r_mm', r'median \|r\|=([\d.]+)\s*mm'),
+        ('spark_frac_pct', r'spark_frac=([\d.]+)%'),
     ]:
         mm = re.search(pat, txt)
         if mm:
@@ -98,8 +99,8 @@ def detector_page(pdf, key):
         sld = json.load(open(sp))
 
     fig = plt.figure(figsize=(8.27, 11.69))  # A4 portrait
-    gs = GridSpec(5, 2, figure=fig, height_ratios=[1.05, 1.5, 1.2, 1.2, 1.2],
-                  hspace=0.33, wspace=0.06, left=0.04, right=0.96, top=0.96, bottom=0.03)
+    gs = GridSpec(6, 2, figure=fig, height_ratios=[0.9, 1.5, 1.2, 1.2, 1.2, 1.1],
+                  hspace=0.34, wspace=0.06, left=0.04, right=0.96, top=0.97, bottom=0.03)
 
     detnum = cfg.DET_NAME.split('_')[-1]
     eff = bd.get('within_pct', '—')
@@ -120,13 +121,20 @@ def detector_page(pdf, key):
     def stat_card(x, value, unit, label, color='black'):
         sep = '' if unit == '%' else ' '
         val = f'{value}{sep}{unit}' if unit else f'{value}'
-        hax.text(x, 0.44, val, fontsize=22, fontweight='bold', color=color, va='center', ha='left')
-        hax.text(x, 0.08, label, fontsize=9, color='dimgrey', va='center', ha='left')
+        hax.text(x, 0.44, val, fontsize=20, fontweight='bold', color=color, va='center', ha='left')
+        hax.text(x, 0.08, label, fontsize=8.5, color='dimgrey', va='center', ha='left')
 
+    # spark-rate colour cue (high spark = bad)
+    spk = bd.get('spark_frac_pct', '—')
+    try:
+        sv = float(spk); scol = '#b3261e' if sv >= 20 else '#b26a00' if sv >= 8 else '#1a7f37'
+    except (TypeError, ValueError):
+        scol = 'black'
     stat_card(0.00, f'{eff}', '%', 'Efficiency (≤5 mm)', ecol)
-    stat_card(0.26, f'{sigma}', 'mm', 'Resolution (core σ)')
-    stat_card(0.50, f"{bd.get('has_any_pct','—')}", '%', 'Fired any strip')
-    stat_card(0.71, f"{bd.get('reco_at_all_pct','—')}", '%', 'Reconstructed')
+    stat_card(0.20, f'{sigma}', 'mm', 'Resolution (core σ)')
+    stat_card(0.40, f"{bd.get('has_any_pct','—')}", '%', 'Fired any strip')
+    stat_card(0.60, f"{bd.get('reco_at_all_pct','—')}", '%', 'Reconstructed')
+    stat_card(0.80, f'{spk}', '%', 'Spark rate (>50 strips)', scol)
 
     # reference details — small boxed text, top-right (for reference, not headline)
     ref = '\n'.join([
@@ -148,17 +156,20 @@ def detector_page(pdf, key):
           'Sliding-window efficiency map  (reco within 5 mm | has_any | rays/kernel)')
 
     # ---- supporting plots ----
+    # position + angular detector-vs-M3 correlations (replaces the binned eff map)
     place(fig.add_subplot(gs[2, 0]),
-          _find(base, 'efficiency/map_within_5mm.png'),
-          'Binned efficiency map (within 5 mm)')
+          _find(base, 'alignment_tpc_veto50/position_correlation.png',
+                'alignment_tpc/position_correlation.png'),
+          'Position correlation (detector vs M3)')
     place(fig.add_subplot(gs[2, 1]),
-          _find(base, 'efficiency/efficiency_breakdown.png'),
-          'Efficiency breakdown')
+          _find(base, 'alignment_tpc_veto50/angle_correlation_corrected.png',
+                'alignment_tpc/angle_correlation_corrected.png'),
+          'Angular correlation (detector vs M3)')
 
     place(fig.add_subplot(gs[3, 0]),
           _find(base, 'alignment_tpc_veto50/resolution_map_sliding_r50mm.png',
                 'alignment_tpc/resolution_map_sliding_r50mm.png'),
-          'Sliding-window spatial resolution map')
+          'Sliding-window spatial resolution map (σ ≤ 1 mm)')
     place(fig.add_subplot(gs[3, 1]),
           _find(base, 'alignment_tpc_veto50/radial_residuals.png',
                 'alignment_tpc_veto50/residuals.png'),
@@ -170,6 +181,11 @@ def detector_page(pdf, key):
     place(fig.add_subplot(gs[4, 1]),
           _find(base, 'efficiency/scatter_within_5mm.png'),
           'Hit/miss scatter (within 5 mm)')
+
+    # ---- efficiency breakdown moved to a full-width bottom row ----
+    place(fig.add_subplot(gs[5, :]),
+          _find(base, 'efficiency/efficiency_breakdown.png'),
+          'Efficiency breakdown (where do the crossing muons go?)')
 
     fig.text(0.96, 0.005, datetime.date.today().isoformat(), ha='right', fontsize=6, color='grey')
     pdf.savefig(fig, dpi=300); plt.close(fig)

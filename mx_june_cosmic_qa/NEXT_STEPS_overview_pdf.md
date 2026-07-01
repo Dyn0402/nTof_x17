@@ -31,24 +31,27 @@ det7 55 %@440 V. Spark = fraction of firing events with >50 strips; <10 % throug
 plateau, climbs to 40–57 % where efficiency rolls off. Built by `build_hv_scan_pdf.py`;
 metric added in `10_hv_scan_efficiency.py` (`spark_frac` column, `--spark=N`).
 
-## Next time (improvements to `build_final_pdf.py` / `12_efficiency_map_sliding.py` / `03`)
+## Overview-page improvements — DONE 2026-07-01
 
-1. **Spark rate as a per-detector stat card** on the overview page — add a 5th header card
-   to the RIGHT of "Reconstructed". Needs the long-run spark fraction surfaced first:
-   compute it in `09_efficiency_breakdown.py` (or 08) and write it into
-   `efficiency_breakdown.txt`, then read it in `build_final_pdf.parse_breakdown` + add the card.
-2. **Sliding-efficiency plots for the detectors that lack them** — verify every page has
-   `efficiency/efficiency_map_sliding.png`; run `12_efficiency_map_sliding.py <key>` for any
-   missing (check det2 `g_det2`, det4 `g_det4` in particular).
-3. **Shrink the sliding kernel radius to ~2.5 mm** (currently `--kernel=25`). Target as small
-   a kernel as possible that still gives ~10 hits/kernel at the *edges* — likely per-detector
-   (tune `--kernel` per key; low-efficiency dets like det4 need a bigger kernel for the same
-   edge count). `12_efficiency_map_sliding.py` `--kernel=` (+ maybe raise `--grid`).
-4. **Resolution map colour scale: fix vmax = 1 mm** so the true surface variation is visible
-   and not washed out by the large edge values. In the sliding resolution map plotting
-   (`plot_resolution_map_sliding` in `cosmic_micro_tpc_analysis`, called from `03 --full`) set
-   `vmax=1.0` (expose as an arg rather than autoscale).
-5. **Overview page layout (`detector_page`)**: replace the *binned efficiency map* (gs[2,0])
-   with the **position-correlation and angular-correlation 2D hists**; **move the efficiency
-   breakdown down to the bottom row** to make room. (Position corr = `alignment_tpc_veto50/
-   position_correlation.png`; angle corr = the `plot_angle_correlation` output from `03 --full`.)
+All five implemented and the overview PDF regenerated for det2/3/4/6/7:
+
+1. **Spark-rate stat card** ✅ — `09_efficiency_breakdown.py --spark=N` (default 50) writes
+   `spark_frac=<x>%` into `efficiency_breakdown.txt`; `build_final_pdf.parse_breakdown` reads
+   it and adds a 5th header card right of "Reconstructed" (green<8% / amber<20% / red≥20%).
+   Measured: det2 7.4%, det3 9.1%, det4 5.6%, det6 27.3%, det7 38.9%.
+2. **Sliding-efficiency maps for all detectors** ✅ — regenerated for every key.
+3. **Fine per-detector kernel** ✅ — `12_efficiency_map_sliding.py --edge-hits=10` derives the
+   SMALLEST fixed kernel giving ~10 rays at the active-area edge (from ray density), floored at
+   `--kmin` (2.5 mm). Landed 4.1–5.5 mm per detector (was 25 mm), grid 140. The old fixed
+   `--kernel=` / `--adaptive` k-NN modes still work.
+4. **Resolution map vmax = 1 mm** ✅ — `plot_resolution_map_sliding(..., sigma_vmax=1.0)` (new
+   optional arg; default None = old autoscale) wired from `03 --full`. Surface structure now
+   visible (esp. det7, where the σ map shows the saturated-Y-plane bands).
+5. **Overview layout** ✅ — `detector_page` now shows position + angular correlation 2D hists
+   (`position_correlation.png`, `angle_correlation_corrected.png`) in the gs[2] row, and the
+   efficiency breakdown moved to a full-width bottom row (gs 6×2).
+
+### Possible follow-ups
+- The correlation quad-plots + resolution 3-panel are dense at A4; could split to 2 pages/detector.
+- det7 saturation veto (`local_max ≳ 3900`) to recover its true efficiency — still open (see
+  JUNE_RESULTS_SUMMARY §5).

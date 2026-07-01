@@ -32,6 +32,7 @@ from common.Mx17StripMap import RunConfig
 from M3RefTracking import M3RefTracking, get_xy_angles, get_xy_positions
 
 R = next((float(a.split('=')[1]) for a in sys.argv if a.startswith('--r=')), 5.0)
+SPARK_THRESH = next((int(a.split('=')[1]) for a in sys.argv if a.startswith('--spark=')), 50)
 
 
 def rstd(v, ns=3, it=5):
@@ -56,7 +57,13 @@ def main():
     fs = sorted(f for f in os.listdir(CFG.combined_hits_dir) if f.endswith('.root') and '_datrun_' in f)
     raw = uproot.concatenate([f'{CFG.combined_hits_dir}{f}:hits' for f in fs],
                              expressions=['eventId', 'feu'], library='pd')
-    det1_hit = set(int(e) for e in raw.loc[raw['feu'].isin(CFG.MX17_FEUS), 'eventId'].unique())
+    det_raw = raw[raw['feu'].isin(CFG.MX17_FEUS)]
+    det1_hit = set(int(e) for e in det_raw['eventId'].unique())
+    # spark rate: fraction of detector-firing events with > SPARK_THRESH strips (one row
+    # per hit) firing at once (a full-detector discharge; same threshold as the align veto)
+    _mult = det_raw.groupby('eventId').size()
+    n_firing = int(len(_mult)); n_spark = int((_mult > SPARK_THRESH).sum())
+    spark_frac = 100.0 * n_spark / n_firing if n_firing else float('nan')
 
     xr, yr, evn = get_xy_positions(rays.ray_data, params.z_mean)
     px = params.ref_x_sign * np.array(xr); py = np.array(yr); evn = [int(v) for v in evn]
@@ -94,7 +101,8 @@ def main():
     for k in ('reco_near', 'reco_far', 'hit_no_reco', 'no_hit'):
         lines.append(f'  {k:12s}: {len(cat[k]):5d}  ({pct[k]:5.1f}%)')
     lines += [f'  has_any={has_any:.1f}%  within{R:g}mm={pct["reco_near"]:.1f}%  reco-at-all={reco_all:.1f}%',
-              f'  of reconstructed: {frac_in:.1f}% within {R:g}mm, core sigma(|r|<15)={sig:.2f} mm, median |r|={med:.2f} mm']
+              f'  of reconstructed: {frac_in:.1f}% within {R:g}mm, core sigma(|r|<15)={sig:.2f} mm, median |r|={med:.2f} mm',
+              f'  spark_frac={spark_frac:.1f}%  (>{SPARK_THRESH} strips: {n_spark}/{n_firing} firing events)']
     txt = '\n'.join(lines); print(txt)
     open(f'{out_dir}/efficiency_breakdown.txt', 'w').write(txt + '\n')
 
