@@ -599,6 +599,14 @@ def _load_wf_stats_from_decoded(decoded_dir: Path, feu_ids) -> dict:
     """
     Stream all decoded root files and compute per-(channel, sample) mean and
     population-std (RMS) amplitude across all events.
+
+    Files are read in bounded event-batches, and each batch is reduced to
+    per-(channel, sample) count / sum / sum-of-squares and accumulated into
+    running totals.  Only one batch of waveforms is ever held in memory, so peak
+    memory stays low and roughly flat regardless of how large the subrun is — the
+    previous version concatenated every event of every file into one frame and
+    could exhaust RAM on large subruns.  The mean/RMS returned are exact (all
+    events), identical to a single groupby over the whole subrun.
     Returns {feu: DataFrame(channel, sample, mean, rms)}.
     """
     result    = {}
@@ -607,34 +615,51 @@ def _load_wf_stats_from_decoded(decoded_dir: Path, feu_ids) -> dict:
     for feu in sorted(feu_ids):
         feu_str   = f'_{feu:02d}.'
         feu_files = [f for f in all_files if f.suffix == '.root' and feu_str in f.name]
-        chunks    = []
+
+        # Running per-(channel, sample) totals, indexed by a (channel, sample)
+        # MultiIndex.  None until the first non-empty batch is accumulated.
+        cnt = tot = sq = None
         for fpath in feu_files:
             try:
-                with uproot.open(fpath) as uf:
-                    if 'nt' not in uf:
+                batches = uproot.iterate(
+                    f'{fpath}:nt', ['sample', 'channel', 'amplitude'],
+                    step_size=200, library='np')
+                for batch in batches:
+                    samples_arr, channels_arr, amps_arr = (
+                        batch['sample'], batch['channel'], batch['amplitude'])
+                    if len(samples_arr) == 0:
                         continue
-                    tree         = uf['nt']
-                    samples_arr  = tree['sample'].array(library='np')
-                    channels_arr = tree['channel'].array(library='np')
-                    amps_arr     = tree['amplitude'].array(library='np')
+                    flat_s = np.concatenate([np.asarray(x) for x in samples_arr])
+                    flat_c = np.concatenate([np.asarray(x) for x in channels_arr])
+                    flat_a = np.concatenate([np.asarray(x) for x in amps_arr]).astype(float)
+
+                    # Reduce this batch alone, then release its per-sample rows.
+                    df_b = pd.DataFrame({'channel':   flat_c.astype(np.int32),
+                                         'sample':    flat_s.astype(np.int32),
+                                         'amplitude': flat_a,
+                                         'sq':        flat_a * flat_a})
+                    g     = df_b.groupby(['channel', 'sample'])
+                    b_cnt = g['amplitude'].size()
+                    b_tot = g['amplitude'].sum()
+                    b_sq  = g['sq'].sum()
+                    del df_b, flat_s, flat_c, flat_a
+
+                    if cnt is None:
+                        cnt, tot, sq = b_cnt, b_tot, b_sq
+                    else:
+                        cnt = cnt.add(b_cnt, fill_value=0)
+                        tot = tot.add(b_tot, fill_value=0)
+                        sq  = sq.add(b_sq,  fill_value=0)
             except Exception as e:
                 print(f'[qa/wf] Error reading {fpath.name}: {e}')
                 continue
-            if len(samples_arr) == 0:
-                continue
-            flat_s = np.concatenate([np.asarray(x) for x in samples_arr])
-            flat_c = np.concatenate([np.asarray(x) for x in channels_arr])
-            flat_a = np.concatenate([np.asarray(x) for x in amps_arr]).astype(float)
-            chunks.append(pd.DataFrame({'channel':   flat_c.astype(np.int32),
-                                        'sample':    flat_s.astype(np.int32),
-                                        'amplitude': flat_a}))
-        if not chunks:
+
+        if cnt is None:
             continue
 
-        df_wf  = pd.concat(chunks, ignore_index=True)
-        g      = df_wf.groupby(['channel', 'sample'])['amplitude']
-        stats  = pd.DataFrame({'mean': g.mean(),
-                                'rms':  g.std(ddof=0).fillna(0.0)}).reset_index()
+        mean = tot / cnt
+        rms  = np.sqrt(np.maximum(sq / cnt - mean * mean, 0.0))
+        stats = pd.DataFrame({'mean': mean, 'rms': rms}).reset_index()
         result[feu] = stats
 
     return result
