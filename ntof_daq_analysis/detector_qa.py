@@ -171,6 +171,7 @@ def _load_hits(combined_dir: Path, feu_ids: set, mode: str,
     all_files = sorted(
         f for f in combined_dir.iterdir()
         if f.suffix == '.root' and '_datrun_' in f.name and 'feu-combined' in f.name
+        and 'pedestal' not in f.name.lower()   # skip pedestal reference files (32-sample)
     )
     if not all_files:
         return None
@@ -510,7 +511,8 @@ def _load_wf_for_events(decoded_dir: Path, feu_ids, event_ids) -> dict:
 
     for feu in feu_ids:
         feu_str   = f'_{feu:02d}.'
-        feu_files = [f for f in all_files if f.suffix == '.root' and feu_str in f.name]
+        feu_files = [f for f in all_files if f.suffix == '.root' and feu_str in f.name
+                     and 'pedestal' not in f.name.lower()]  # skip 32-sample pedestal files
         for fpath in feu_files:
             try:
                 with uproot.open(fpath) as uf:
@@ -614,7 +616,8 @@ def _load_wf_stats_from_decoded(decoded_dir: Path, feu_ids) -> dict:
 
     for feu in sorted(feu_ids):
         feu_str   = f'_{feu:02d}.'
-        feu_files = [f for f in all_files if f.suffix == '.root' and feu_str in f.name]
+        feu_files = [f for f in all_files if f.suffix == '.root' and feu_str in f.name
+                     and 'pedestal' not in f.name.lower()]  # skip 32-sample pedestal files
 
         # Running per-(channel, sample) totals, indexed by a (channel, sample)
         # MultiIndex.  None until the first non-empty batch is accumulated.
