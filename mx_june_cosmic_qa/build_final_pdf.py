@@ -128,7 +128,7 @@ def detector_page(pdf, key):
         sld = json.load(open(sp))
 
     fig = plt.figure(figsize=(8.27, 11.69))  # A4 portrait
-    gs = GridSpec(6, 2, figure=fig, height_ratios=[0.85, 1.55, 0.95, 1.3, 1.3, 0.7],
+    gs = GridSpec(6, 2, figure=fig, height_ratios=[1.15, 1.45, 0.9, 1.25, 1.25, 0.62],
                   hspace=0.36, wspace=0.06, left=0.04, right=0.96, top=0.97, bottom=0.03)
 
     detnum = cfg.DET_NAME.split('_')[-1]
@@ -145,9 +145,9 @@ def detector_page(pdf, key):
     # clear band — below it are the stat cards, top-right is the reference box). HV is on
     # the resistive layer (not the mesh).
     rv, dv = hv_settings(cfg)
-    hv_str = (f'Resist {rv if rv is not None else "—"} V     '
+    hv_str = (f'Resist {rv if rv is not None else "—"} V   '
               f'Drift {dv if dv is not None else "—"} V')
-    hax.text(0.28, 0.80, hv_str, fontsize=13, fontweight='bold', color='#1f3a5f', va='center')
+    hax.text(0.42, 0.70, hv_str, fontsize=11.5, fontweight='bold', color='#1f3a5f', va='center')
 
     # efficiency colour cue
     try:
@@ -158,8 +158,8 @@ def detector_page(pdf, key):
     def stat_card(x, value, unit, label, color='black'):
         sep = '' if unit == '%' else ' '
         val = f'{value}{sep}{unit}' if unit else f'{value}'
-        hax.text(x, 0.44, val, fontsize=20, fontweight='bold', color=color, va='center', ha='left')
-        hax.text(x, 0.08, label, fontsize=8.5, color='dimgrey', va='center', ha='left')
+        hax.text(x, 0.33, val, fontsize=20, fontweight='bold', color=color, va='center', ha='left')
+        hax.text(x, 0.02, label, fontsize=8.5, color='dimgrey', va='center', ha='left')
 
     # spark-rate colour cue (high spark = bad)
     spk = bd.get('spark_frac_pct', '—')
@@ -184,7 +184,7 @@ def detector_page(pdf, key):
         f"median |r|: {bd.get('median_r_mm','—')} mm",
         f"loss: hit-no-reco {bd.get('hit_no_reco_pct','—')}%  silent {bd.get('no_hit_pct','—')}%",
     ])
-    fig.text(0.965, 0.992, ref, fontsize=6.4, va='top', ha='right', family='monospace',
+    fig.text(0.965, 0.992, ref, fontsize=6.0, va='top', ha='right', family='monospace',
              color='#333333',
              bbox=dict(boxstyle='round,pad=0.4', fc='#f4f4f4', ec='#bbbbbb', lw=0.6))
 
