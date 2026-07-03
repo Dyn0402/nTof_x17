@@ -31,6 +31,7 @@ from matplotlib.gridspec import GridSpec
 from qa_config import get_config, setup_paths
 setup_paths()
 import json as _json
+from det_labels import det_letter, order_key
 
 
 def hv_settings(cfg):
@@ -138,7 +139,7 @@ def detector_page(pdf, key):
     hax = fig.add_subplot(gs[0, :]); hax.axis('off')
     hax.set_xlim(0, 1); hax.set_ylim(0, 1)
 
-    hax.text(0.0, 0.97, f'Detector {detnum}', fontsize=26, fontweight='bold', va='top')
+    hax.text(0.0, 0.97, f'Detector {det_letter(detnum)}', fontsize=26, fontweight='bold', va='top')
 
     # HV operating point, on the title line to the right of the detector number (the only
     # clear band — below it are the stat cards, top-right is the reference box). HV is on
@@ -174,6 +175,7 @@ def detector_page(pdf, key):
 
     # reference details — small boxed text, top-right (for reference, not headline)
     ref = '\n'.join([
+        f"Detector {det_letter(detnum)}  ({cfg.DET_NAME})",
         f"{cfg.RUN}",
         f"subrun: {cfg.SUB_RUN}",
         f"FEU X/Y: {cfg.MX17_FEUS[0]}/{cfg.MX17_FEUS[1]}    z: {cfg.DET_PLANE_Z:.0f} mm",
@@ -257,13 +259,8 @@ def select_keys(keys):
         cand = (nrays, 1 if analysed else 0, k)
         if cur is None or cand[:2] > cur[:2]:
             best[det] = cand
-    # detector number for stable ordering
-    def detnum(d):
-        try:
-            return int(d.split('_')[-1])
-        except ValueError:
-            return 999
-    return [best[d][2] for d in sorted(order, key=detnum)]
+    # order by experiment letter (A,B,C,D,E = det 3,2,6,7,4)
+    return [best[d][2] for d in sorted(order, key=lambda d: order_key(d.split('_')[-1]))]
 
 
 def main():

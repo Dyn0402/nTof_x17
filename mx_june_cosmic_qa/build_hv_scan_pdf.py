@@ -35,6 +35,7 @@ from matplotlib.gridspec import GridSpec
 
 from qa_config import get_config, setup_paths
 setup_paths()
+from det_labels import det_letter, order_key
 
 DEFAULT_KEYS = ['g_det2', 'g_det3',
                 'g_det6_hv', 'g_det6_long',
@@ -82,8 +83,8 @@ def summary_page(pdf, scans):
                  fontsize=17, fontweight='bold', x=0.10, ha='left', y=0.955)
     fig.text(0.10, 0.925,
              'Efficiency = reco within 5 mm of the M3 track, in a fixed per-detector active box.\n'
-             '6-22: det2+det3 resist stepped together (drift 1000 V).   '
-             '6-26: det6/det7 stepped together (drift 700 V).',
+             '6-22: Det B+A (det2+det3) resist stepped together (drift 1000 V).   '
+             '6-26: Det C+D (det6+det7) stepped together (drift 700 V).',
              fontsize=8, color='#444444', va='top')
 
     markers = {}
@@ -95,7 +96,7 @@ def summary_page(pdf, scans):
         d = s['df']
         ax.errorbar(d['hv'], d['eff_reco'], yerr=d['eff_reco_err'], fmt=f'{mk}-',
                     color=c, capsize=3, lw=1.8, ms=6,
-                    label=f"Detector {s['detnum']} · {s['tag']} (drift {s['drift']})")
+                    label=f"Detector {det_letter(s['detnum'])} · {s['tag']} (drift {s['drift']})")
     ax.set_xlabel('Resist HV [V]'); ax.set_ylabel('Efficiency (reco ≤5 mm)')
     ax.set_ylim(0, 1.02); ax.grid(True, alpha=0.3); ax.legend(fontsize=8)
     ax.set_title('Efficiency vs resist HV', fontsize=11)
@@ -109,7 +110,7 @@ def summary_page(pdf, scans):
         d = s['df']
         if 'sigma_x_mm' in d:
             ax2.plot(d['hv'], d['sigma_x_mm'], f'{mk}-', color=c, lw=1.7, ms=5,
-                     label=f"Det {s['detnum']} · {s['tag']} σ_x")
+                     label=f"Det {det_letter(s['detnum'])} · {s['tag']} σ_x")
     ax2.set_xlabel('Resist HV [V]'); ax2.set_ylabel('Core resolution σ_x [mm]')
     ax2.set_ylim(0, None); ax2.grid(True, alpha=0.3); ax2.legend(fontsize=7, ncol=2)
     ax2.set_title('Spatial resolution vs resist HV', fontsize=11)
@@ -137,8 +138,8 @@ def detector_page(pdf, detnum, det_scans):
                   hspace=0.30, left=0.11, right=0.93, top=0.95, bottom=0.06)
 
     hax = fig.add_subplot(gs[0]); hax.axis('off'); hax.set_xlim(0, 1); hax.set_ylim(0, 1)
-    hax.text(0.0, 0.95, f'Detector {detnum}', fontsize=24, fontweight='bold', va='top')
-    hax.text(0.0, 0.62, 'resist HV scan', fontsize=12, color='dimgrey', va='top')
+    hax.text(0.0, 0.95, f'Detector {det_letter(detnum)}', fontsize=24, fontweight='bold', va='top')
+    hax.text(0.0, 0.62, f'resist HV scan   (mx17_{detnum})', fontsize=12, color='dimgrey', va='top')
 
     def card(x, value, unit, label):
         sep = '' if unit == '%' else ' '
@@ -228,7 +229,7 @@ def main():
         groups.setdefault(s['detnum'], []).append(s)
     for g in groups.values():
         g.sort(key=lambda s: s['hv_lo'])
-    order = sorted(groups, key=lambda d: int(d) if d.isdigit() else 999)
+    order = sorted(groups, key=order_key)   # A,B,C,D order (det 3,2,6,7)
 
     with PdfPages(out) as pdf:
         summary_page(pdf, scans)
