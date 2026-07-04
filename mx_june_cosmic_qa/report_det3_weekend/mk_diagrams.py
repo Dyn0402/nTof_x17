@@ -17,9 +17,9 @@ HERE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'figures')
 os.makedirs(HERE, exist_ok=True)
 
 GAP = 30.0          # mm, mechanical drift gap (cathode to mesh)
-ZVIS = 19.4         # mm, visible drift column (signal above threshold)
+ZVIS = 23.5         # mm, recorded drift column (attachment + threshold)
 PITCH = 0.78        # mm
-V = 28.1            # um/ns
+V = 34.0            # um/ns (geometry estimator)
 
 
 def draw_detector(ax, x0=0.0, x1=26.0, show_zvis=True):
@@ -151,7 +151,96 @@ def fig_offset_mechanism():
     plt.close(fig)
 
 
+def _pulse(t, t0, amp, tau=70.0):
+    x = np.maximum(t - t0, 0.0) / tau
+    return amp * (x ** 2) * np.exp(2.0 - x) / 4.0
+
+
+def fig_sharing_mechanism():
+    fig, axes = plt.subplots(1, 3, figsize=(15.5, 5.2),
+                             gridspec_kw={'width_ratios': [1, 1.2, 1.1]})
+
+    # --- (a) charge sharing between strips ---
+    ax = axes[0]
+    for k, x in enumerate(np.arange(5) * 1.0):
+        ax.add_patch(Rectangle((x, 0), 0.72, 0.28, fc='goldenrod', ec='k'))
+        ax.text(x + 0.36, -0.18, f'$j{k-2:+d}$' if k != 2 else '$j$',
+                ha='center', fontsize=11)
+    ax.annotate('', xy=(2.36, 0.4), xytext=(2.36, 2.1),
+                arrowprops=dict(arrowstyle='-|>', color='royalblue', lw=2.5))
+    ax.text(2.5, 1.3, 'avalanche\ncharge', color='royalblue', fontsize=10)
+    for dx, c, lab in [(-1, 'crimson', '$c_1\\approx0.5$'),
+                       (1, 'crimson', '$c_1$'),
+                       (-2, 'darkorange', '$c_2\\approx0.05$–$0.15$'),
+                       (2, 'darkorange', '$c_2$')]:
+        ax.annotate('', xy=(2.36 + dx, 0.45), xytext=(2.36, 0.75),
+                    arrowprops=dict(arrowstyle='-|>', color=c, lw=1.6,
+                                    connectionstyle=f'arc3,rad={0.35*np.sign(dx)}'))
+        if dx in (-1, -2):
+            ax.text(2.36 + dx - 0.15, 0.95 + 0.35 * (abs(dx) - 1), lab,
+                    color=c, fontsize=9.5, ha='right')
+    ax.text(2.36, 2.45, '(a) half the charge appears on the\nneighbouring strips '
+            '(+ one-sample delay)', ha='center', fontsize=10.5)
+    ax.set_xlim(-0.7, 5.4); ax.set_ylim(-0.6, 2.9); ax.axis('off')
+
+    # --- (b) waveform superposition on a weak deep-end strip ---
+    ax = axes[1]
+    t = np.linspace(0, 1200, 500)
+    direct = _pulse(t, 700, 300)              # weak direct charge, late (deep)
+    shared = _pulse(t, 480 + 60, 0.5 * 900)   # copy of earlier neighbour
+    ax.plot(t, _pulse(t, 480, 900), ':', color='gray', lw=1.5,
+            label='neighbour $j-1$ (earlier, big)')
+    ax.plot(t, shared, '--', color='crimson', lw=1.8,
+            label='shared onto $j$: $c_1\\times$(neighbour, delayed)')
+    ax.plot(t, direct, '--', color='royalblue', lw=1.8,
+            label='direct charge of $j$ (deep → weak, late)')
+    ax.plot(t, direct + shared, '-', color='k', lw=2.4,
+            label='measured waveform of $j$ (sum)')
+    tsum = direct + shared
+    icfd = int(np.argmax(tsum >= 0.5 * tsum.max()))
+    ax.axvline(t[icfd], color='k', lw=1, ls='-.')
+    ax.annotate('measured start:\npulled to the\nneighbour’s time',
+                (t[icfd] - 30, 430), ha='right', fontsize=9.5)
+    ax.axvline(700, color='royalblue', lw=1, ls='-.')
+    ax.annotate('true arrival\nof $j$’s charge', (715, 520), fontsize=9.5,
+                color='royalblue')
+    ax.set_xlabel('time [ns]'); ax.set_ylabel('ADC')
+    ax.set_title('(b) why the deep-end strip fires early', fontsize=11)
+    ax.legend(fontsize=8, loc='upper left'); ax.grid(alpha=0.25)
+
+    # --- (c) the distorted ladder ---
+    ax = axes[2]
+    xs = np.arange(10) * PITCH
+    t_true = 150 + xs * 1000.0 / (V * 0.4)          # v=34, tan=0.4
+    t_meas = t_true.copy()
+    t_meas[0] += 130          # mesh-end skirt late
+    t_meas[1] += 40
+    t_meas[-1] -= 170         # deep-end early (shared-dominated)
+    t_meas[-2] -= 90
+    t_meas[-3] -= 30
+    ax.plot(xs, t_true, 'o--', color='gray', mfc='none', ms=8,
+            label='true arrival times (slope $=1/(v_d\\tan\\theta)$)')
+    ax.plot(xs, t_meas, 'o', color='crimson', ms=7,
+            label='measured times (S-shaped)')
+    p = np.polyfit(xs, t_meas, 1)
+    ax.plot(xs, np.polyval(p, xs), '-', color='crimson', lw=1.6,
+            label='straight-line fit → steeper ns/mm\n→ velocity too LOW')
+    ax.annotate('skirt late', (xs[0] + 0.15, t_meas[0] + 10), fontsize=9.5)
+    ax.annotate('deep end early\n(shared-dominated)',
+                (xs[-4], t_meas[-1] - 10), fontsize=9.5)
+    ax.set_xlabel('strip position [mm]'); ax.set_ylabel('strip time [ns]')
+    ax.set_title('(c) the time–position ladder distortion', fontsize=11)
+    ax.legend(fontsize=8, loc='upper left'); ax.grid(alpha=0.25)
+
+    fig.suptitle('Charge sharing on resistive strips: mechanism of the '
+                 'time-fit velocity bias', fontsize=12.5)
+    fig.tight_layout(rect=[0, 0, 1, 0.93])
+    fig.savefig(os.path.join(HERE, 'diagram_sharing.png'), dpi=180)
+    plt.close(fig)
+
+
 if __name__ == '__main__':
     fig_principle()
     fig_offset_mechanism()
+    fig_sharing_mechanism()
     print('diagrams written to', HERE)
