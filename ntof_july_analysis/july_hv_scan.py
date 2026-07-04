@@ -83,6 +83,12 @@ FLASH_DETECT_WINDOW_NS = 2000  # ns
 GAMMA_STRIP_FRACTION   = 0.40  # fraction-of-strips threshold
 FLASH_PROMPT_BIN_NS    = (0, 2000)  # window for the reported flash hits/event
 
+# Coarse time-of-arrival windows (ns) for the per-window multi-panel plots.
+# Edges match plot_hits_vs_time_hv_scan.py: [0, 800, 1150, 3500, 7000, 10000].
+# Each (lo, hi) becomes one coloured line (hits/event, mean amp) vs resist HV.
+TIME_WINDOW_EDGES_NS = [0, 800, 1150, 3500, 7000, 10000]
+TIME_WINDOWS = list(zip(TIME_WINDOW_EDGES_NS[:-1], TIME_WINDOW_EDGES_NS[1:]))
+
 # Subrun-name parser for the 2-D scan grid.
 SUBRUN_RE = re.compile(r'scan_drift(\d+)_resistdrop(\d+)')
 
@@ -265,6 +271,19 @@ def detector_metrics(df: pd.DataFrame, feu_ids: List[int], n_total: int,
     }
 
 
+def detector_window_metrics(df: pd.DataFrame, feu_ids: List[int],
+                            n_total: int) -> Dict[str, List[float]]:
+    """hits/event and mean amplitude for this detector in each TIME_WINDOWS bin."""
+    n_total = max(n_total, 1)
+    sel = df[df['feu'].isin(feu_ids) & (df['amplitude'] >= AMP_THRESHOLD)]
+    hpe, amp = [], []
+    for lo, hi in TIME_WINDOWS:
+        w = sel[sel['time'].between(lo, hi, inclusive='left')]
+        hpe.append(len(w) / n_total)
+        amp.append(float(w['amplitude'].mean()) if not w.empty else np.nan)
+    return {'hits_per_event': hpe, 'mean_amplitude': amp}
+
+
 # ---------------------------------------------------------------------------
 # Plotting
 # ---------------------------------------------------------------------------
@@ -357,6 +376,110 @@ def plot_lines(grid: Dict[str, np.ndarray], drifts: List[int], drops: List[int],
         _save(fig, out_dir, f'lines_{key}.png')
 
 
+WINDOW_METRICS = {
+    'hits_per_event': 'Hits / event',
+    'mean_amplitude': 'Mean hit amplitude [ADC]',
+}
+
+
+def plot_time_windows(wgrid: Dict[str, Dict[str, np.ndarray]], drifts: List[int],
+                      drops: List[int], det_names: List[str],
+                      resist_hv_by_det: Dict[str, List[Optional[int]]],
+                      run: str, gas: str, out_dir: str) -> None:
+    """
+    Per-metric multi-panel figure: metric vs resist HV with one coloured line
+    per coarse time window (TIME_WINDOWS).  Grid = drift rows x detector cols,
+    so single-drift runs give a 1 x n_det strip.  wgrid[metric][det] has shape
+    [n_drift, n_drop, n_window].
+    """
+    cmap = plt.get_cmap('viridis')
+    nw = len(TIME_WINDOWS)
+    wlabels = [f'{lo/1000:g}-{hi/1000:g} us' for lo, hi in TIME_WINDOWS]
+    for key, label in WINDOW_METRICS.items():
+        nrow, ncol = len(drifts), len(det_names)
+        fig, axes = plt.subplots(nrow, ncol, figsize=(4.6 * ncol, 3.6 * nrow),
+                                 squeeze=False, sharex=True, sharey='row')
+        for di, drift in enumerate(drifts):
+            for ci, det in enumerate(det_names):
+                ax = axes[di][ci]
+                cube = wgrid[key][det]                 # [n_drift, n_drop, n_window]
+                x = np.array([h if h is not None else np.nan
+                              for h in resist_hv_by_det[det]], dtype=float)
+                order = np.argsort(x)
+                for wi in range(nw):
+                    y = cube[di, :, wi]
+                    good = np.isfinite(x) & np.isfinite(y)
+                    if not good.any():
+                        continue
+                    col = cmap(wi / max(nw - 1, 1))
+                    ax.plot(x[order], y[order], '-o', ms=3.5, lw=1.3, color=col,
+                            label=wlabels[wi])
+                ax.grid(True, alpha=0.3)
+                if di == 0:
+                    ax.set_title(det, fontsize=10)
+                if di == nrow - 1:
+                    ax.set_xlabel('Resist HV [V]')
+                if ci == 0:
+                    ylab = f'{label}\n(drift {drift} V)' if nrow > 1 else label
+                    ax.set_ylabel(ylab)
+        axes[0][-1].legend(title='Time window', fontsize=7, title_fontsize=8)
+        gas_s = f'  —  {gas}' if gas else ''
+        fig.suptitle(f'{label}   vs   resist HV, per time window  —  {run}{gas_s}\n'
+                     f'amp >= {AMP_THRESHOLD} ADC', fontsize=11)
+        fig.tight_layout(rect=(0, 0, 1, 0.93 if nrow == 1 else 0.96))
+        _save(fig, out_dir, f'timewin_{key}.png')
+
+
+def plot_time_windows_grid(wgrid: Dict[str, Dict[str, np.ndarray]], drifts: List[int],
+                           drops: List[int], det_names: List[str],
+                           resist_hv_by_det: Dict[str, List[Optional[int]]],
+                           run: str, gas: str, out_dir: str) -> None:
+    """
+    Per-metric grid with **time windows stacked vertically**: rows = time
+    windows, cols = detectors.  Every panel autoscales its own y-axis (windows
+    span very different absolute levels) so the eye reads the *relative*
+    variation with resist HV.  Multiple drifts are overlaid as coloured lines
+    within each panel.
+    """
+    dcmap = plt.get_cmap('plasma')
+    dnorm = Normalize(vmin=min(drifts), vmax=max(drifts))
+    nw = len(TIME_WINDOWS)
+    for key, label in WINDOW_METRICS.items():
+        nrow, ncol = nw, len(det_names)
+        fig, axes = plt.subplots(nrow, ncol, figsize=(3.6 * ncol, 2.2 * nrow),
+                                 squeeze=False, sharex=True)  # independent y per panel
+        for wi, (lo, hi) in enumerate(TIME_WINDOWS):
+            for ci, det in enumerate(det_names):
+                ax = axes[wi][ci]
+                cube = wgrid[key][det]                 # [n_drift, n_drop, n_window]
+                x = np.array([h if h is not None else np.nan
+                              for h in resist_hv_by_det[det]], dtype=float)
+                order = np.argsort(x)
+                for di, drift in enumerate(drifts):
+                    y = cube[di, :, wi]
+                    good = np.isfinite(x) & np.isfinite(y)
+                    if not good.any():
+                        continue
+                    col = dcmap(dnorm(drift)) if len(drifts) > 1 else 'C0'
+                    ax.plot(x[order], y[order], '-o', ms=3, lw=1.2, color=col,
+                            label=f'{drift} V')
+                ax.grid(True, alpha=0.3)
+                ax.tick_params(labelsize=7)
+                if wi == 0:
+                    ax.set_title(det, fontsize=10)
+                if wi == nrow - 1:
+                    ax.set_xlabel('Resist HV [V]', fontsize=8)
+                if ci == 0:
+                    ax.set_ylabel(f'{lo/1000:g}-{hi/1000:g} us', fontsize=8)
+        if len(drifts) > 1:
+            axes[0][-1].legend(title='Drift HV', fontsize=6, title_fontsize=7)
+        gas_s = f'  —  {gas}' if gas else ''
+        fig.suptitle(f'{label}   vs   resist HV  (rows = time window, indep. y)  '
+                     f'—  {run}{gas_s}\namp >= {AMP_THRESHOLD} ADC', fontsize=11)
+        fig.tight_layout(rect=(0, 0, 1, 0.95))
+        _save(fig, out_dir, f'timewin_grid_{key}.png')
+
+
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
@@ -406,6 +529,9 @@ def main():
     # Result grids: metric -> det -> [n_drift, n_drop].
     grid = {key: {det: np.full((len(drifts), len(drops)), np.nan)
                   for det in det_names} for key in METRICS}
+    # Per-time-window cubes: metric -> det -> [n_drift, n_drop, n_window].
+    wgrid = {key: {det: np.full((len(drifts), len(drops), len(TIME_WINDOWS)), np.nan)
+                   for det in det_names} for key in WINDOW_METRICS}
 
     total_strips: Optional[int] = None
     n_done, n_skip = 0, 0
@@ -426,9 +552,13 @@ def main():
 
         i, j = drifts.index(rec['drift']), drops.index(rec['drop'])
         for det in det_names:
-            m = detector_metrics(df, det_info[det]['feus'], n_total, flash_ids)
+            feus = det_info[det]['feus']
+            m = detector_metrics(df, feus, n_total, flash_ids)
             for key in METRICS:
                 grid[key][det][i, j] = m[key]
+            wm = detector_window_metrics(df, feus, n_total)
+            for key in WINDOW_METRICS:
+                wgrid[key][det][i, j, :] = wm[key]
         n_done += 1
         print(f'  {sub}: drift={rec["drift"]} drop={rec["drop"]} '
               f'nev={n_total} nflash={len(flash_ids)}')
@@ -441,6 +571,8 @@ def main():
 
     plot_heatmaps(grid, drifts, drops, det_names, resist_hv_by_det, run, gas, out_dir)
     plot_lines(grid, drifts, drops, det_names, resist_hv_by_det, run, gas, out_dir)
+    plot_time_windows(wgrid, drifts, drops, det_names, resist_hv_by_det, run, gas, out_dir)
+    plot_time_windows_grid(wgrid, drifts, drops, det_names, resist_hv_by_det, run, gas, out_dir)
     print(f'\nFigures written to: {out_dir}')
 
 
