@@ -213,6 +213,13 @@ RUNS = {
                           'long_run_p2_det1_sanity_check',
                           feus=[7, 8], det_z=702.0, det_name='mx17_3', zero_suppressed=False,
                           base_path='/home/dylan/x17/cosmic_bench/det3/'),
+    # Saturday det3 scan run (6-27): ~7 h long run at operating point (resist 490 V /
+    # drift 1000 V) + drift scan (100-1100 V, 15 min each) + two resist scans. det3 in
+    # the TOP slot, FEU 7(X)/8(Y), z=702. The long run seeds the alignment for the scans.
+    'sat_det3': _Config('sat_det3', 'mx17_det3_saturday_scan_6-27-26',
+                          'long_run_resist_490V_drift_1000V',
+                          feus=[7, 8], det_z=702.0, det_name='mx17_3', zero_suppressed=False,
+                          base_path='/home/dylan/x17/cosmic_bench/det3/'),
     # det4: dedicated 6-24 daytime run 'long_run' (8 file-pairs, ~26 GB). Avoids the
     # 6-23 det3_det4 run whose M3 reference is degraded (~4% clean tracks).
     'g_det4': _Config('g_det4', 'mx17_det4_day_6-24-26', 'long_run',
