@@ -1,0 +1,998 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[margin=2.4cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{siunitx}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{xcolor}
+\usepackage[colorlinks=true,linkcolor=blue!60!black,urlcolor=blue!60!black,citecolor=blue!60!black]{hyperref}
+
+\graphicspath{{figures/}}
+\captionsetup{font=small,labelfont=bf,width=0.92\textwidth}
+\sisetup{per-mode=symbol,range-phrase=--,range-units=single}
+
+\newcommand{\vd}{v_{\mathrm{d}}}
+\newcommand{\thref}{\theta_{\mathrm{ref}}}
+\newcommand{\thdet}{\theta_{\mathrm{det}}}
+\newcommand{\Tsat}{T_{\mathrm{sat}}}
+\newcommand{\umns}{\micro\meter\per\nano\second}
+
+\title{\textbf{MX17 Detector~3 --- June 2026 Cosmic-Bench Deep Dive:}\\[2mm]
+       micro-TPC angle correlation, drift-velocity measurement,\\
+       drift-gap determination, and gas diagnosis}
+\author{Cosmic-bench analysis, Saclay\\[1mm]
+        \small runs \texttt{mx17\_det3\_saturday\_scan\_6-27-26} and
+        \texttt{mx17\_det3\_p2\_det1\_overnight\_6-27-26}}
+\date{2 July 2026 --- rev.\ 3 July 2026 (drift gap \& gas sections)}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\noindent
+We analyse the final det3 weekend campaign: a \SI{2.4}{h} run at the
+operating point (resist \SI{490}{V}, drift \SI{1000}{V}; configured for
+\SI{12}{h} but stopped early for the overnight p2 run), a six-point drift-HV
+scan (\SIrange{100}{1100}{V}), and two resist-HV scans.  Four results:
+(i)~the universally observed \emph{off-diagonal} micro-TPC angle correlation is
+quantitatively explained as an additive charge-spreading bias,
+\(\tan\thdet \simeq \tan\thref \pm w/z_{\mathrm{vis}}\) with
+\(w/z_{\mathrm{vis}} = 0.115\) --- a detector constant, not a rotation and not
+an analysis bug;
+(ii)~exploiting this understanding, a bias-free \emph{ridge-fit} estimator
+measures the electron drift velocity to \SIrange{1}{3}{\percent} statistical
+precision per 15-minute scan point, giving
+\(\vd(\SI{1000}{V}) = \SI{28.1 \pm 0.7}{\umns}\) and the full \(\vd(E)\) curve;
+(iii)~the drift gap is mechanically \(\approx\SI{30}{mm}\), but only the
+\SI{19.4}{mm} of drift column closest to the mesh produces recorded signal:
+the strip arrival-time distribution carries an exponential tail beyond the
+apparent edge that terminates at the \SI{30}{mm} drift time, and the strip
+amplitude decays with drift \emph{depth} --- electrons from the far third of
+the gap are lost to \textbf{attachment} in the contaminated gas;
+(iv)~the measured \(\vd(E)\) is far below the Magboltz prediction for clean
+Ar/iC\(_4\)H\(_{10}\) 95/5; with the \SI{30}{mm} field scale it is reproduced
+by Ar/iso 95/5 with \SIrange{1}{1.5}{\percent} water, and the measured
+attachment length matches \SIrange{0.2}{0.4}{\percent} O\(_2\) --- one
+air/moisture contamination explains both anomalies.  A wrong bottle of
+Ar/CO\(_2\) 90/10, though matching \(\vd(E)\) closely, is excluded by the
+amplification (\(+\SI{50}{V}\) at iso-gain) and by its zero attachment.
+\end{abstract}
+
+\tableofcontents
+
+%=====================================================================
+\section{Datasets, alignment and headline performance}
+%=====================================================================
+
+\subsection{Runs analysed}
+
+All data were taken with det3 (\texttt{mx17\_3}, bulked June~15) in the
+\emph{top} bench slot: FEU~7 = X strips, FEU~8 = Y strips, nominal
+\(z=\SI{702}{mm}\), strip pitch \SI{0.78}{mm}, gas nominally
+Ar/iC\(_4\)H\(_{10}\) 95/5 at atmospheric pressure
+(Saclay, \(\approx\)\SI{745.8}{Torr}), non-zero-suppressed DREAM readout
+(32~samples \(\times\) \SI{60}{ns} = \SI{1.92}{\micro s} window).
+
+\begin{table}[H]
+\centering\footnotesize
+\setlength{\tabcolsep}{4pt}%
+\begin{tabular}{llll}
+\toprule
+subrun & purpose & dur. & decoded statistics \\
+\midrule
+\texttt{long\_run\_resist\_490V\_drift\_1000V} & operating point & \SI{141}{min}
+    & complete (4 files): 29k events, 47k M3 tracks \\
+\texttt{drift\_scan\_...\_drift\_\{100..1100\}V} & drift scan, 6 pts & \SI{15}{min}
+    & $\sim$5k M3 tracks / point \\
+\texttt{hv\_scan\_resist\_\{425..525\}V} & resist scan 1, 11 pts & \SI{15}{min}
+    & $\sim$2k clean rays / point \\
+\texttt{hv\_scan2\_resist\_\{460..520\}V} & resist scan 2, 7 pts & \SI{15}{min}
+    & $\sim$2k clean rays / point \\
+\midrule
+\texttt{long\_run\_p2\_det1\_sanity\_check} & overnight (p2 run) & ---
+    & 53k rays; current headline det3 \\
+\bottomrule
+\end{tabular}
+\caption{Weekend det3 datasets. The Saturday long run was configured for
+\SI{720}{min} but was stopped after \SI{141}{min} (trigger-timestamp span;
+the p2 overnight run started at 01:33 on the same bench) --- its 4 file pairs
+are the complete dataset.}
+\label{tab:datasets}
+\end{table}
+
+\subsection{Alignment}
+
+The long run is aligned to the M3 reference tracker with the standard
+iterative $z$/rotation/translation procedure (spark veto at 50 strips,
+clean-cluster subset for the geometry fit).  Both weekend runs converge to the
+\emph{same} geometry --- $z = \SI{714}{mm}$, $\theta = \SI{89.45}{\degree}$,
+translation offsets agreeing to \SI{10}{\micro m} --- confirming the detector
+did not move between runs.  The long-run alignment is therefore used as the
+seed for every scan point, with only a translation refit per point (observed
+shifts $<\SI{0.1}{mm}$).
+
+\subsection{Headline performance}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{residuals.png}
+\caption{Saturday long run: residuals between the aligned detector hit and
+the projected M3 track.  The Gaussian core gives
+$\sigma_x = \SI{0.83}{mm}$, $\sigma_y = \SI{0.92}{mm}$.}
+\label{fig:residuals}
+\end{figure}
+
+From the efficiency breakdown of the Saturday long run (fixed active box,
+clean M3 single tracks, $R=\SI{5}{mm}$ matching): the detector fires on
+\SI{97.6}{\percent} of through-going muons, reconstructs an X+Y point for
+\SI{80.2}{\percent}, and \SI{65.8}{\percent} land within \SI{5}{mm} of the
+track (a \SI{14.4}{\percent} \emph{reco-far} tail).  The higher-statistics p2
+overnight run gives the June-headline \SI{79.7}{\percent} within \SI{5}{mm}
+with a much smaller tail; the difference (larger far tail in the Saturday
+run) correlates with the higher spark fraction at resist \SI{490}{V}
+(Sec.~\ref{sec:hvscans}) and can be probed further with the p2 dataset.
+Either way det3 remains the best detector of the June batch, at
+sub-mm core resolution in both slots and both weekends.
+
+%=====================================================================
+\section{The micro-TPC measurement}
+%=====================================================================
+\label{sec:utpc}
+
+\subsection{Principle}
+
+A single conversion/drift gap of depth $g$ sits above the micromesh; the
+avalanche charge is read out on strips of pitch $p=\SI{0.78}{mm}$
+(Fig.~\ref{fig:principle}).  A muon crossing at angle $\theta$ (measured from
+the detector normal, i.e.\ from the drift direction) leaves an ionisation
+trail spanning the \emph{full} gap in $z$ and $g\tan\theta$ in $x$.  (In this
+detector, as Sec.~\ref{sec:gap} shows, only the fraction of the column within
+$z_{\mathrm{vis}}\approx\SI{19.4}{mm}$ of the mesh survives the drift with
+enough charge to be recorded --- everywhere below, ``the gap'' as seen by the
+strips means this \emph{visible column} $z_{\mathrm{vis}}$, not the
+\SI{30}{mm} electrode spacing.)  Electrons
+drift to the mesh at velocity $\vd$, so the strip at horizontal distance
+$\Delta x$ from the track's mesh-crossing point receives its charge later by
+\begin{equation}
+  \Delta t \;=\; \frac{\Delta z}{\vd} \;=\; \frac{\Delta x}{\vd\tan\theta}.
+  \label{eq:utpc}
+\end{equation}
+Fitting strip signal time versus strip position (amplitude-weighted straight
+line, anchored at the earliest hit) yields a slope whose inverse is
+\begin{equation}
+  \frac{\mathrm{d}x}{\mathrm{d}t} \;=\; \vd\tan\theta
+  \qquad\Longrightarrow\qquad
+  \tan\thdet \;=\; \frac{1}{\vd}\,\frac{\mathrm{d}x}{\mathrm{d}t}.
+  \label{eq:angle}
+\end{equation}
+Equation~\eqref{eq:angle} is the micro-TPC angle estimator: it needs the
+drift velocity $\vd$ as an external input, and conversely, once an external
+reference ($\thref$ from M3) is available, the \emph{correlation between
+$\thdet$ and $\thref$ measures $\vd$}.  That is the core idea exploited
+throughout this note.  In the analysis code the raw fit slope is
+$s \equiv \mathrm{d}x/\mathrm{d}t$ in \si{\umns}; the detector-frame slope
+vector $(s_x, s_y)$ is rotated by the alignment angle
+($\theta_{\mathrm{align}} \approx \SI{90}{\degree}$) into the M3 frame before
+any comparison, so det-X pairs with ref-Y and vice versa.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{diagram_principle.png}
+\caption{Micro-TPC principle. Left: an inclined muon (red) ionises the gas
+along the full \SI{30}{mm} drift gap; electrons (blue) drift down at $\vd$
+and arrive at the mesh with delays proportional to their production height.
+Charge from above $z_{\mathrm{vis}}\approx\SI{19.4}{mm}$ (pink band) is lost
+to attachment during the drift (Sec.~\ref{sec:gap}). Right: the per-event fit
+of strip time vs.\ strip position over the recorded strips; the inverse slope
+is $\vd\tan\theta$.}
+\label{fig:principle}
+\end{figure}
+
+\subsection{Why the micro-TPC mode matters here}
+
+Position resolution (Fig.~\ref{fig:residuals}) uses only the charge centroid
+and is insensitive to everything discussed below.  The micro-TPC \emph{slope},
+however, is the detector's unique selling point --- per-plane track angles
+from a single thin detector --- and it is exactly this quantity that shows the
+systematic effects analysed next.
+
+%=====================================================================
+\section{Why the angle correlation is always off-diagonal}
+%=====================================================================
+\label{sec:offdiag}
+
+\subsection{The observation}
+
+Figure~\ref{fig:anglecorr} shows the production angle-correlation plot for the
+Saturday long run: reference angle $\thref$ (M3) versus detector angle
+$\thdet$ (Eq.~\ref{eq:angle}, with $\vd$ set by the production
+diagonal-projection scan).  The correlation is strong --- the micro-TPC works
+--- but three features stand out, and they appear \emph{identically in every
+detector of the June campaign} (det2 shown for comparison in
+Fig.~\ref{fig:det2corr}):
+
+\begin{enumerate}
+  \item the dense ridge runs \emph{parallel} to the $y=x$ diagonal but is
+        displaced \emph{outward}: $|\thdet| > |\thref|$ by
+        $\sim$\SIrange{5}{6}{\degree};
+  \item there are essentially \emph{no} events with
+        $|\thdet| \lesssim \SI{5}{\degree}$ --- an exclusion gap around the
+        vertical;
+  \item events with $\thref \approx 0$ form \emph{horizontal arms} extending
+        to large $|\thdet|$ of either sign.
+\end{enumerate}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.94\textwidth]{angle_correlation_corrected.png}
+\caption{Saturday long run, production angle correlation (top: scatter;
+bottom: log-density) for the X (left) and Y (right) projections, using the
+$\vd$ from the production $\sigma$-scan. The ridge is parallel to, but
+displaced outward from, the dashed $y=x$ diagonal; note the empty band
+$|\thdet|\lesssim\SI{5}{\degree}$ and the horizontal arms at
+$\thref\approx 0$.}
+\label{fig:anglecorr}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.94\textwidth]{det2_angle_correlation_corrected.png}
+\caption{Same plot for \emph{det2} (6-22 overnight run). The off-diagonal
+structure is identical --- this is a property of the detector family, not of
+one chamber.}
+\label{fig:det2corr}
+\end{figure}
+
+\subsection{Why it is \emph{not} a rotation or misalignment}
+
+A residual in-plane rotation is absorbed by the alignment (the rotation scan
+converges to \SI{0.05}{\degree} steps and the slope vector is rotated
+accordingly).  More fundamentally, \emph{any} rotation or constant angular
+offset would shift the correlation in \emph{one} direction --- up or down ---
+whereas the observed displacement \textbf{flips sign with the track
+direction}: tracks leaning one way reconstruct too steep in that direction,
+tracks leaning the other way too steep in the other.  The offset is odd in
+$\theta$, i.e.\ it behaves like $\;\mathrm{sign}(\theta)\cdot\mathrm{const}$,
+which no rigid-body transformation produces.  An out-of-plane tilt of the
+detector would also be a one-directional shift, and is excluded for the same
+reason.
+
+\subsection{The mechanism: fixed time span, inflated cluster width}
+\label{sec:mechanism}
+
+The key geometric fact (Fig.~\ref{fig:offsetdiagram}): \textbf{every cosmic
+crosses the full drift gap}, so the recorded cluster always spans the entire
+\emph{visible} column depth $z_{\mathrm{vis}}$ in $z$ (the fixed depth at
+which drifting charge drops below threshold; Sec.~\ref{sec:gap}).
+Consequently the \emph{time} extent of every cluster is the same,
+\begin{equation}
+  \Delta t_{\mathrm{cluster}} \;\approx\; \Tsat = z_{\mathrm{vis}}/\vd,
+  \qquad \text{independent of } \theta,
+\end{equation}
+while the \emph{spatial} extent is
+\begin{equation}
+  \Delta x_{\mathrm{cluster}} \;\approx\;
+  \underbrace{z_{\mathrm{vis}}\tan\theta}_{\text{geometric}}
+  \;+\; \underbrace{w}_{\text{non-geometric}},
+\end{equation}
+where $w$ collects everything that widens the charge footprint on the strips
+without carrying drift-time information: charge spreading across the
+resistive layer, transverse diffusion, capacitive coupling to neighbours, and
+$\delta$-electrons.  The fitted slope is then, schematically (writing
+$z_{\mathrm{v}} \equiv z_{\mathrm{vis}}$),
+\begin{equation}
+  \frac{\mathrm{d}x}{\mathrm{d}t}
+    \;\approx\; \frac{z_{\mathrm{v}}\tan\theta + w\,\mathrm{sign}(\theta)}{z_{\mathrm{v}}/\vd}
+    \;=\; \vd\left(\tan\theta \pm \frac{w}{z_{\mathrm{v}}}\right)
+  \qquad\Longrightarrow\qquad
+  \boxed{\;\tan\thdet \;\approx\; \tan\thref \pm \frac{w}{z_{\mathrm{vis}}}\;}
+  \label{eq:offset}
+\end{equation}
+an \textbf{additive, angle-independent excess in tan-space} whose sign
+follows the track sign.  (The sign attaches to $w$ because the fit interprets
+the extra width as extra track length in the direction the track already
+leans; for a perfectly vertical track the sign is random --- hence the
+horizontal arms.)
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{diagram_offset.png}
+\caption{The off-diagonal mechanism. Left: a vertical track --- the time span
+still covers the full visible column ($z_{\mathrm{vis}}/\vd$), but the
+cluster width is pure spreading, $w\approx\SI{2}{mm}$; the fit converts $w$
+into a fake angle $\arctan(w/z_{\mathrm{vis}})\approx\SI{6.5}{\degree}$ of
+random sign. Right: an inclined track --- the width gains the geometric part
+$z_{\mathrm{vis}}\tan\theta$, but $w$ still adds on top, always
+\emph{increasing} $|\thdet|$.}
+\label{fig:offsetdiagram}
+\end{figure}
+
+This single mechanism explains all three observations at once:
+\begin{itemize}
+  \item \textbf{parallel outward ridge}: Eq.~\eqref{eq:offset} is a constant
+        displacement $w/z_{\mathrm{vis}}$ in tan-space; converted to degrees
+        it is a nearly constant $\sim\arctan(w/z_{\mathrm{vis}})$ shift over
+        the populated range;
+  \item \textbf{exclusion gap}: no cluster can fit a slope smaller than
+        $\sim w/z_{\mathrm{vis}}$, because even a vertical track's cluster is
+        $w$ wide over a full-column time span ---
+        $|\thdet| \gtrsim \arctan(w/z_{\mathrm{vis}})$ always;
+  \item \textbf{horizontal arms}: for $\thref\approx 0$ the geometric width
+        vanishes, the sign of the fitted slope is set by noise, and the
+        magnitude is again $\sim w/z_{\mathrm{vis}}$ or larger (the events
+        that pass the $\geq 4$-strip cut at small angle are precisely those
+        with the largest spreading).
+\end{itemize}
+And because $w$ (a resistive-layer/diffusion property) and $z_{\mathrm{vis}}$
+(set by the shared gas supply and thresholds, Sec.~\ref{sec:gap}) are common
+to the whole detector family, \textbf{every chamber shows the same
+off-diagonal pattern} --- exactly what is observed.
+
+\subsection{Quantitative verification}
+
+All of this is testable in the data of the 2.4\,h run
+(\texttt{13\_tpc\_angle\_bias.py}); Figs.~\ref{fig:biasprofiles} and
+\ref{fig:clustergeom}:
+
+\begin{itemize}
+  \item \textbf{the excess is flat in tan-space}: the median of
+        $|\tan\thdet| - |\tan\thref|$ is constant at $w/z_{\mathrm{vis}} = 0.115$ for
+        $|\thref| \gtrsim \SI{6}{\degree}$, in both planes
+        (Fig.~\ref{fig:biasprofiles}, bottom row).
+        $\arctan(0.115) = \SI{6.6}{\degree}$ --- the observed ridge
+        displacement;
+  \item \textbf{wider clusters carry more bias}: splitting by cluster size
+        (\numrange{4}{6} / \numrange{7}{9} / $\geq$10 strips) orders the
+        excess exactly as the spreading picture predicts;
+  \item \textbf{the time span saturates}: the median cluster time span rises
+        to a plateau $\Tsat \approx \SI{690}{ns}$ for
+        $|\thref| > \SI{10}{\degree}$ --- the full-gap drift time
+        (Fig.~\ref{fig:clustergeom}, top row).  (Its decrease towards
+        $\theta=0$ is a per-strip integration effect: a vertical track's
+        charge lands on few strips whose fitted times average over the
+        column, shrinking the strip-to-strip span.);
+  \item \textbf{the spatial width has a floor}: the median cluster extent at
+        $\thref\approx 0$ is \SIrange{3}{5}{mm} where geometry predicts
+        $\approx 0$; at larger angles it grows parallel to the geometric
+        expectation $z_{\mathrm{vis}}\tan\theta$, offset by the same floor
+        (Fig.~\ref{fig:clustergeom}, bottom row).
+\end{itemize}
+
+The ridge-fit intercepts (Sec.~\ref{sec:vdrift}) give the same number from a
+completely different projection of the data:
+$|b|/v = w/z_{\mathrm{vis}} = 0.115$, i.e.\
+$w = \SI{2.2}{mm}$ ($\approx$3 strips) for $z_{\mathrm{vis}}=\SI{19.4}{mm}$.  Finally,
+overlaying the parameter-free prediction of Eq.~\eqref{eq:offset} on the
+measured density (Fig.~\ref{fig:withprediction}) tracks the ridge in both
+planes.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{bias_profiles.png}
+\caption{Bias study on the 2.4\,h run. Top: median $\thdet$ vs $\thref$ ---
+parallel to the diagonal, displaced outward, with the sign flip through zero.
+Bottom: the additive tan-space excess $|\tan\thdet|-|\tan\thref|$ vs
+$|\thref|$, split by cluster size; it is flat at $w/z_{\mathrm{vis}}=0.115$ (dotted) above
+$\sim\SI{6}{\degree}$ and grows for wide clusters. The rise at small angles is
+the $\geq4$-strip selection (only heavily-spread clusters survive).}
+\label{fig:biasprofiles}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{cluster_geometry.png}
+\caption{Cluster geometry vs track angle (2.4\,h run). Top: cluster \emph{time}
+span --- saturates at $\Tsat\approx\SI{690}{ns}$ (the drift time across the
+visible column) for inclined tracks. Bottom: cluster \emph{spatial} extent ---
+a \SIrange{3}{5}{mm} non-geometric floor at $\theta=0$, then growth parallel
+to the geometric $z_{\mathrm{vis}}\tan\theta$ (white dashed).}
+\label{fig:clustergeom}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.94\textwidth]{correlation_with_prediction.png}
+\caption{Measured correlation density with the parameter-free prediction of
+Eq.~\eqref{eq:offset}, $\tan\thdet = \tan\thref \pm w/z_{\mathrm{vis}}$ (white
+dotted), using the independently fitted $w/z_{\mathrm{vis}}=0.115$. The red
+dashed line is $y=x$.}
+\label{fig:withprediction}
+\end{figure}
+
+\subsection{Consequences}
+
+\begin{enumerate}
+  \item \textbf{The production $\sigma$-scan drift velocity is biased.}
+        The production estimator (Fig.~\ref{fig:sigscan}) scans $\vd$ and
+        minimises the width of $|\thref| - |\thdet|$; the additive offset
+        pulls its minimum high ($\vd = 30.5/34.0$~\si{\umns} for X/Y on this run
+        versus the unbiased \SI{28.1}{\umns} of Sec.~\ref{sec:vdrift}).
+        Its $|\cdot|$-folding also mixes the sign-following offset into the
+        width.  Use the ridge fit instead.
+  \item \textbf{A first-order angle correction exists}: subtract
+        $\mathrm{sign}(\thdet)\, w/z_{\mathrm{vis}}$ in tan-space.  It sharpens inclined
+        tracks but cannot recover $|\theta|\lesssim\SI{5}{\degree}$, where the
+        angular information is genuinely destroyed by spreading.
+  \item \textbf{Angular resolution} (after slicing in $\thref$, i.e.\ with
+        the local bias absorbed): $\sigma_\theta \approx
+        \SIrange{1.5}{2}{\degree}$ per plane for
+        $|\theta|\gtrsim\SI{5}{\degree}$, degrading to $\sim\SI{6}{\degree}$
+        near normal incidence (Fig.~\ref{fig:angres}).
+\end{enumerate}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{v_drift_scan.png}
+\caption{Production diagonal-projection $\sigma$-scan on the Saturday run.
+The minima (X: 30.5, Y: 34.0~\si{\umns}) are biased high by the additive offset;
+kept here for reference only.}
+\label{fig:sigscan}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.78\textwidth]{angular_resolution.png}
+\caption{Micro-TPC angular resolution vs track angle (2.4\,h run):
+$\sigma_\theta\approx\SIrange{1.5}{2}{\degree}$ per plane for inclined
+tracks; the method collapses below $\sim\SI{5}{\degree}$ as predicted by the
+spreading mechanism.}
+\label{fig:angres}
+\end{figure}
+
+%=====================================================================
+\section{Drift-velocity measurement from the drift scan}
+%=====================================================================
+\label{sec:vdrift}
+
+\subsection{A bias-free estimator: the ridge fit}
+
+Rewriting Eq.~\eqref{eq:offset} in terms of the \emph{raw fitted slope}
+$S \equiv \vd \tan\thdet$ (in \si{\umns}, after rotation to the M3 frame):
+\begin{equation}
+  S \;=\; \vd\,\tan\thref \;\pm\; \vd\,\frac{w}{z_{\mathrm{vis}}}.
+  \label{eq:ridge}
+\end{equation}
+This is a straight line in the $(\tan\thref, S)$ plane whose \textbf{slope is
+the drift velocity} and whose intercept absorbs the entire spreading offset.
+A per-track-sign straight-line fit (iteratively $3\sigma$-clipped, fit window
+$0.06<|\tan\thref|<0.55$) therefore measures $\vd$ \emph{without} the bias
+that afflicts the $\sigma$-scan --- no assumption about $w$, no folding of
+signs, and no drift-velocity prior.  Four independent fits (X/Y plane
+$\times$ track sign) are combined by weighted mean; their spread is the
+quoted fit systematic.  The M3 angular resolution
+($\sim\SI{0.05}{\degree}$) is negligible, so there is no regression dilution.
+
+Two robustness checks: the result is insensitive to the minimum cluster size
+(4/5/6 strips give identical $\vd$), and moving the fit window shifts $\vd$ by
+up to $\pm$\SI{10}{\percent} (the ridge has a slight curvature --- the
+additive model is not perfect at that level).  The default window is anchored
+by the independent time-span cross-check below agreeing to \SI{1}{\percent};
+we assign $\sim$\SI{5}{\percent} to the absolute scale, while the
+\emph{shape} of $\vd$(HV), taken with a fixed window, is much tighter.
+
+\subsection{Cross-check: the visible-column drift time}
+
+The time-span plateau $\Tsat$ (Fig.~\ref{fig:clustergeom}) is an independent
+$1/\vd$ observable: $\Tsat = z_{\mathrm{vis}}/\vd$ with the \emph{same}
+$z_{\mathrm{vis}}$ at every HV (the visible column is a fixed depth,
+Sec.~\ref{sec:gap}).  It shares no systematics with the ridge fit except the
+time calibration, but note it is not fully independent as a \emph{velocity}
+scale: $z_{\mathrm{vis}}$ itself is calibrated from $\vd\cdot\Tsat$ of the
+long run.  What it does test, powerfully, is that
+$\vd(\mathrm{HV})\cdot\Tsat(\mathrm{HV})$ is one constant across the scan.
+Table~\ref{tab:vdrift} and Fig.~\ref{fig:vdriftscan} show both quantities.
+
+\subsection{Results}
+
+\begin{table}[H]
+\centering
+\small\setlength{\tabcolsep}{4.5pt}%
+\begin{tabular}{S[table-format=4.0] S[table-format=2.2] @{${}\pm{}$} S[table-format=1.2]
+                S[table-format=4.0] S[table-format=2.1] l}
+\toprule
+{drift HV [\si{V}]} & \multicolumn{2}{c}{$\vd$ ridge [\si{\umns}]} &
+{$\Tsat$ [\si{ns}]} & {$z_{\mathrm{vis}}/\Tsat$ [\si{\umns}]} & note \\
+\midrule
+ 100 & \multicolumn{2}{c}{---} & {---} & {---} & invalid: drift time $\gg$ readout window \\
+ 300 &  5.70 & 0.54 & {(1198)} & {---} & window truncation marginal \\
+ 500 & 12.77 & 0.43 & {(1361)} & {---} & $\Tsat$ truncated; ridge OK \\
+ 700 & 19.45 & 0.53 &  992 & 19.6 & \\
+ 900 & 26.17 & 0.84 &  754 & 25.7 & \\
+1000 & 28.12 & 0.65 &  690 & 28.1 & \textbf{2.4\,h long run} \\
+1100 & 29.44 & 0.47 &  661 & 29.4 & \\
+\bottomrule
+\end{tabular}
+\caption{Drift-velocity measurements (\texttt{14\_drift\_velocity\_scan.py}).
+Errors combine statistics and the 4-fit spread.  $z_{\mathrm{vis}}/\Tsat$
+uses the fixed $z_{\mathrm{vis}}=\SI{19.4}{mm}$ determined from the long run;
+its agreement with the ridge fit at every valid point is the statement that
+$\vd\cdot\Tsat$ is the same constant at all fields.}
+\label{tab:vdrift}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{drift_velocity_scan.png}
+\caption{Left: $\vd$ vs drift HV from the ridge fit; the 2.4\,h run (star)
+falls exactly on the 15-minute scan curve, and the dashed line is the
+Magboltz prediction for \emph{clean} gas (see Sec.~\ref{sec:gas}).
+Middle: the time-span plateau $\Tsat$ (orange) and the derived
+$z_{\mathrm{vis}}/\Tsat$ (green) --- at \SIrange{300}{500}{V} the span rails
+against the readout window instead of following $1/\vd$.  Right: the
+ridge-fit intercept $w/z_{\mathrm{vis}}$ --- constant at $0.115$ for
+$\geq\SI{500}{V}$: the spreading is a detector property, independent of
+drift field.}
+\label{fig:vdriftscan}
+\end{figure}
+
+Key points:
+\begin{itemize}
+  \item \textbf{Statistics are not a limitation.}  You were right that the
+        correlation measures $\vd$ --- and even the 15-minute points give
+        \SIrange{1}{3}{\percent} statistical errors, because the ridge fit
+        uses every inclined track, not just the width of a projection.
+  \item \textbf{Internal consistency} is excellent: $\vd\cdot\Tsat$ is one
+        constant wherever the span is not window-limited; the 2.4\,h point
+        sits on the scan curve; $w/z_{\mathrm{vis}}$ is field-independent.
+  \item \textbf{The low-HV points die by window truncation}, not detector
+        effects: at \SI{100}{V} the full-gap drift time
+        ($\gtrsim\SI{10}{\micro s}$ for \SI{30}{mm}) vastly exceeds the
+        \SI{1.92}{\micro s} DREAM window --- most charge simply arrives after
+        the readout closes.  The same truncation (compounded at low field by
+        stronger attachment losses, Sec.~\ref{sec:gap}) explains the efficiency
+        turn-on of the drift scan (Fig.~\ref{fig:driftscaneff}): \SI{44}{\percent}
+        at \SI{100}{V} rising to a \SI{83}{\percent} plateau at
+        $\geq\SI{700}{V}$.  This is the quantitative version of the June
+        observation ``det3 needs drift $\geq\SI{700}{V}$''.
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.62\textwidth]{efficiency_vs_drift_scan.png}
+\caption{Reconstruction efficiency vs drift HV (drift scan, fixed active
+box).  The turn-on tracks the fraction of the drift column whose charge
+arrives inside the readout window (and survives attachment); the plateau
+begins once the surviving column's drift time fits in the window.}
+\label{fig:driftscaneff}
+\end{figure}
+
+%=====================================================================
+\section{The drift gap: \SI{30}{mm} mechanical, \SI{19.4}{mm} visible}
+%=====================================================================
+\label{sec:gap}
+
+The middle panel of Fig.~\ref{fig:vdriftscan} shows the quantity
+$\vd\cdot\Tsat$: it is one constant, $\SI{19.4\pm0.2}{mm}$, across a
+$1.6\times$ range of drift field.  A first reading of that number took it to
+be the drift gap itself --- \SI{10.6}{mm} short of the \SI{30}{mm} design.
+The mechanical gap, however, is known to be close to \SI{30}{mm}
+(certainly $>\SI{27}{mm}$), and a dedicated test
+(\texttt{17\_gap\_attachment\_test.py}, Fig.~\ref{fig:gaptest}) resolves the
+conflict cleanly: \textbf{the gap is \SI{30}{mm}; \SI{19.4}{mm} is the depth
+of drift column whose signal survives above threshold}.  Electrons produced
+higher up \emph{do} arrive --- with exponentially attenuated amplitude ---
+because they are progressively captured (attachment) in the contaminated gas
+of Sec.~\ref{sec:gas}.
+
+\subsection{What $\vd\cdot\Tsat$ actually measures}
+
+$\Tsat$ is the plateau of the \emph{cluster} time span, and a cluster only
+contains strips above threshold.  The product $\vd\cdot\Tsat$ is therefore
+the depth of the \emph{visible} column, $z_{\mathrm{vis}}$: the height at
+which the per-strip amplitude falls below the hit threshold.  Its constancy
+with drift field says that this threshold contour sits at a fixed
+\emph{depth} --- which is exactly what a depth-dependent survival probability
+(attachment over a fixed length scale) produces.  Two properties of the
+product remain valuable: it is immune to time-calibration errors (velocity
+$\propto 1/k$, span $\propto k$ under any time rescaling $k$), and it is the
+correct normalisation for the micro-TPC geometry of
+Secs.~\ref{sec:offdiag}--\ref{sec:vdrift}, which live entirely inside the
+visible column.
+
+\subsection{The discriminating test}
+
+If the column geometrically ended at \SI{19.4}{mm} there would be
+\emph{nothing but noise floor} beyond $\Tsat$ in the strip arrival-time
+distribution.  If instead the gap is \SI{30}{mm} with progressive charge
+loss, the distribution must carry a suppressed tail that terminates at the
+\SI{30}{mm} drift time, and the strip \emph{amplitude} must decay with drift
+depth.  Figure~\ref{fig:gaptest} tests this per drift-scan point, with all
+times converted to depth via $z=\vd\,t$:
+
+\begin{itemize}
+  \item \textbf{the tails do not end at \SI{19.4}{mm}} (top left): every HV
+        point shows the same shape --- flat plateau to \SI{19.4}{mm}, then an
+        exponential shoulder falling $\sim$2 orders of magnitude and
+        terminating at \SIrange{28}{29}{mm} where the readout window permits
+        (\SIrange{900}{1100}{V}; the \SI{700}{V} endpoint at \SI{25.7}{mm}
+        and the \SI{500}{V} one at \SI{20}{mm} are window-truncated lower
+        bounds).  The tail endpoint sits at a fixed \emph{depth}, i.e.\ it
+        scales as $1/\vd$ in time (bottom row) --- a geometric edge at
+        $\approx\SI{30}{mm}$, softened by the threshold;
+  \item \textbf{the amplitude decays with depth, identically at every field}
+        (Fig.~\ref{fig:ampattach} and top right of
+        Fig.~\ref{fig:gaptest}): versus drift \emph{time} the decay
+        timescale changes with HV, but versus drift \emph{distance} the
+        \SIrange{700}{1100}{V} curves collapse onto one exponential ---
+        $\lambda \approx \SI{10}{mm}$ fitted over \SIrange{8}{24}{mm},
+        \SIrange{13}{15}{mm} inside the visible column --- declining by an
+        order of magnitude between mid-column and \SI{30}{mm}.  Signal loss
+        is a function of \emph{how far the charge drifts}, not of time or
+        field --- the fingerprint of capture on electronegative impurities
+        (O$_2$), with transverse diffusion contributing a milder per-strip
+        dilution on top;
+  \item \textbf{the ``cliff'' is a threshold crossing}: the arrival-time
+        distribution stays flat while the amplitude distribution clears the
+        hit threshold, then falls over a few bins as the median approaches
+        it --- steeper than the amplitude decay itself because the occupancy
+        integrates the amplitude distribution above a cut.  The earlier
+        reading of this edge as a hard geometric boundary
+        (Fig.~\ref{fig:ampvstime}) missed that the exponential tail beyond it
+        ends precisely at the \SI{30}{mm} drift time (dotted line in the
+        right panel).
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{amplitude_attachment.png}
+\caption{The attachment signature in one plot
+(\texttt{19\_amplitude\_attachment\_plot.py}).  Median strip amplitude for
+inclined tracks, per drift HV.  Left: versus drift \emph{time} --- the decay
+timescale changes with drift field (\SI{1100}{V} dies by \SI{800}{ns} while
+\SI{500}{V} is still flat at \SI{1400}{ns}), so it is not an electronics
+timescale (ion tail, shaping, undershoot would be identical curves).  Right:
+the same data versus drift \emph{distance} $z=\vd t$ --- the
+\SIrange{700}{1100}{V} curves collapse onto a single exponential,
+$\lambda \approx \SI{10}{mm}$ over \SIrange{8}{24}{mm}
+(\SIrange{13}{15}{mm} when fitted inside the visible column only), matching
+the Magboltz O$_2$-attachment band for \SIrange{1}{2}{\percent} air (red
+dotted).  Loss per millimetre drifted is electron capture.}
+\label{fig:ampattach}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{gap_attachment_test.png}
+\caption{Gap discrimination (\texttt{17\_gap\_attachment\_test.py}).
+Top left: strip arrival-\emph{depth} distributions ($z=\vd t$,
+plateau-normalised, log scale) per drift HV; all curves share the plateau end
+at \SI{19.4}{mm} (dashed) \emph{and} a suppressed tail reaching
+$\approx\SI{30}{mm}$ (solid) where the readout window allows.  Top right:
+median strip amplitude vs depth --- one universal decay curve for all fields.
+Bottom: the time-span plateau $\Tsat$ and the tail endpoint versus HV, in
+time (left) and depth (right); the endpoint tracks the \SI{30}{mm}/$\vd$
+expectation while $\Tsat$ tracks \SI{19.4}{mm}/$\vd$.}
+\label{fig:gaptest}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.94\textwidth]{amplitude_vs_drifttime.png}
+\caption{Inclined tracks, 2.4\,h run (the plot that, on closer reading,
+decides the question). Left: strip amplitude vs arrival time; the median
+(red) decays steadily with drift time.  Right: the arrival-time distribution
+--- flat to $\Tsat=\SI{690}{ns}$ (dashed), then an \emph{exponential} fall
+that terminates at the \SI{30}{mm} drift time of \SI{1067}{ns} (dotted)
+before flattening into the noise floor.}
+\label{fig:ampvstime}
+\end{figure}
+
+\subsection{Consistency of the other observables}
+
+The single-strip pulse widths (Fig.~\ref{fig:pulsewidth}) measure the
+duration over which a vertical track's lead strip stays above threshold ---
+i.e.\ the \emph{surviving} column's drift time.  Their $\sim\SI{700}{ns}$
+scale is consistent with the attachment picture and carries no independent
+information about the mechanical gap; it is no longer evidence for a
+\SI{19.4}{mm} electrode spacing.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.94\textwidth]{pulse_width_gap.png}
+\caption{Single-strip pulse width for vertical ($|\theta|<\SI{3}{\degree}$,
+red) versus inclined ($|\theta|>\SI{15}{\degree}$, blue) tracks; the
+vertical-track widths reflect the drift time of the \emph{visible} column
+($\approx\SI{700}{ns}$ at \SI{1000}{V}), as the attachment picture predicts.}
+\label{fig:pulsewidth}
+\end{figure}
+
+\subsection{Interpretation and consequences}
+
+\begin{itemize}
+  \item \textbf{Field scale}: with $g=\SI{30}{mm}$ the drift field is
+        $E = V_{\mathrm{drift}}/\SI{3.0}{cm}$ (\SI{1000}{V} $\to$
+        \SI{333}{\volt\per\centi\meter}); Sec.~\ref{sec:gas} uses this
+        throughout.  The ridge-fit velocities are unaffected --- the fitted
+        slope is a local $\mathrm{d}x/\mathrm{d}t$ inside the visible column.
+  \item \textbf{$z_{\mathrm{vis}}$ is a gas-quality number, not a
+        detector constant}: it is where the survival probability
+        $\exp(-z/\lambda_{\mathrm{att}})$ meets the threshold.  Cleaning the
+        gas should push the visible column towards the full \SI{30}{mm} ---
+        lengthening $\Tsat$ (mind the \SI{1.92}{\micro s} window:
+        \SI{30}{mm} at \SI{28}{\umns} is \SI{1067}{ns}, still comfortable),
+        increasing the collected charge, and shrinking the off-diagonal
+        offset $w/z_{\mathrm{vis}}$ of Sec.~\ref{sec:offdiag}.
+  \item \textbf{Charge budget}: roughly a third of each track's ionisation is
+        currently lost in transit, and what survives from mid-column is
+        attenuated --- a direct efficiency and signal-to-noise cost on top of
+        the drift-speed problem.
+  \item The \SI{60}{ns} DREAM sampling period assumption still deserves a
+        one-line confirmation; it rescales $\vd$ and all times together but
+        no conclusion here depends on it.
+\end{itemize}
+
+%=====================================================================
+\section{Gas diagnosis: air/moisture contamination of the Ar/iso 95/5}
+%=====================================================================
+\label{sec:gas}
+
+\subsection{The discrepancy}
+
+With the \SI{30}{mm} gap of Sec.~\ref{sec:gap} the field scale is
+$E = V_{\mathrm{drift}}/\SI{3.0}{cm}$ (\SI{1000}{V} $\to$
+\SI{333}{\volt\per\centi\meter}), and the measured $\vd(E)$ can be confronted
+with Magboltz (Garfield++ \texttt{MediumMagboltz}, Saclay pressure
+\SI{745.8}{Torr}, \SI{293}{K}).  For \emph{clean} Ar/iC$_4$H$_{10}$ 95/5 the
+prediction peaks at \SI{41}{\umns} near \SI{210}{\volt\per\centi\meter} and
+\emph{decreases} slowly above; the measurement instead rises monotonically
+over the whole scan, is a factor $\sim$3 low at
+\SI{167}{\volt\per\centi\meter} (\SI{12.8} vs $\sim$\SI{40}{\umns}), and
+reaches only \SI{28}{\umns} at the operating field where clean gas predicts
+\SI{39}{\umns}.  The shape disagreement is the crucial part: no rescaling of
+times, fields or gap can turn a curve that peaks at
+\SI{210}{\volt\per\centi\meter} into one still rising at
+\SI{370}{\volt\per\centi\meter}.  This is a \emph{gas property}.
+
+\subsection{Candidate hypotheses: velocity alone is ambiguous}
+
+{\sloppy Magboltz was run for a set of candidate gases over the drift-field
+range (scripts \texttt{mm\_drift\_velocity\_candidates.py},
+\texttt{mm\_attachment\_\{table,air\_candidates\}.py} in
+\texttt{garfield\_sim/}); Fig.~\ref{fig:magboltz} and
+Table~\ref{tab:candidates}:\par}
+
+\begin{table}[H]
+\centering\small
+\begin{tabular}{l S[table-format=2.1] l}
+\toprule
+hypothesis & {RMS dev.\ [\si{\umns}]} & verdict \\
+\midrule
+Ar/CO$_2$ 90/10 (wrong bottle)           & 1.8 & best $\vd(E)$ --- \emph{excluded} by gain \& attachment \\
+Ar/iso 95/5 + \SI{1}{\percent} H$_2$O    & 4.4 & \textbf{consistent} (best fit $\approx$\SIrange{1}{1.5}{\percent}) \\
+Ar/iso 95/5 + \SI{2}{\percent} H$_2$O    & 8.5 & too much suppression \\
+Ar/iso 95/5 + \SIrange{2.5}{3}{\percent} H$_2$O & {12--14} & excluded \\
+Ar/iso 95/5 + \SIrange{1}{2}{\percent} dry air  & {17--19} & no $\vd$ suppression (N$_2$/O$_2$ too dilute) \\
+Ar/iso 95/5 (nominal, clean)             & 20.2 & excluded \\
+Ar/iso 90/10, 85/15, 80/20               & {12--20} & iso-rich gas stays \emph{fast}: excluded \\
+\bottomrule
+\end{tabular}
+\caption{RMS deviation between each Magboltz candidate and the measured
+points, with the \SI{30}{mm} field scale.  (Under the superseded
+\SI{19.4}{mm} scale the ranking had favoured
+\SIrange{2}{2.5}{\percent} H$_2$O; the gap revision moves the
+best fit to $\approx$\SIrange{1}{1.5}{\percent} H$_2$O.)}
+\label{tab:candidates}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{drift_velocity_vs_magboltz.png}
+\caption{Measured $\vd(E)$ (black; star = 2.4\,h run) against Magboltz
+predictions, $E = V/\SI{3.0}{cm}$.  Clean Ar/iso 95/5 (blue) is excluded in
+shape and magnitude; iso-rich mixtures (dash-dotted) remain fast; dry air
+(brown dotted) barely changes $\vd$; the data run between the
+1--2\,\% H$_2$O curves and, coincidentally, along Ar/CO$_2$ 90/10 (grey
+dotted) --- the velocity alone cannot separate the last two.}
+\label{fig:magboltz}
+\end{figure}
+
+The velocity curve leaves \emph{two} viable candidates --- a wrong bottle of
+Ar/CO$_2$ 90/10, or water contamination at the
+\SIrange{1}{1.5}{\percent} level --- and they are separated by the two other
+observables in hand:
+
+\paragraph{Amplification.}  A Magboltz Townsend-coefficient comparison over
+the \SI{150}{\micro\meter} amplification gap
+(\texttt{mm\_townsend\_compare.py}) puts every iso-gain point of
+Ar/CO$_2$ 90/10 about \SI{50}{V} \emph{above} Ar/iso 95/5 (gain $10^2$:
+\SI{528}{V} vs \SI{475}{V}; gain $10^3$: \SI{631}{V} vs \SI{587}{V}).  The
+observed turn-on at \SI{425}{V} with full plateau by \SI{455}{V}
+(Sec.~\ref{sec:hvscans}) matches the Ar/iso expectation; with Ar/CO$_2$ the
+whole efficiency curve would sit $\sim$\SI{50}{V} higher.  Percent-level
+H$_2$O/air, by contrast, leaves the gain curve essentially untouched.
+
+\paragraph{Attachment.}  Clean Ar/CO$_2$ does not attach electrons at drift
+fields ($\eta = 0$ in Magboltz) --- it cannot produce the amplitude decay of
+Fig.~\ref{fig:gaptest}.  Neither, notably, can water alone: Magboltz gives
+$\eta = 0$ for all Ar/iso + H$_2$O mixtures at these fields (water's
+dissociative-attachment threshold, $\sim$\SI{5}{eV}, is far above drift
+energies).  The measured decay needs \textbf{oxygen}.
+
+\subsection{The attachment cross-check closes on O$_2$}
+
+Figure~\ref{fig:attclose} compares the measured amplitude-decay length from
+the drift scan with the Magboltz attachment length $1/\eta(E)$ for
+air-doped mixtures.  The measured mid-column
+$\lambda \approx \SIrange{13}{15}{mm}$ at \SIrange{230}{370}{\volt\per\centi\meter}
+falls between the \SI{1}{\percent}-air (\SI{0.21}{\percent} O$_2$,
+$\lambda\approx\SIrange{16}{21}{mm}$) and \SI{2}{\percent}-air
+(\SI{0.42}{\percent} O$_2$, $\lambda\approx\SI{10}{mm}$) predictions:
+\textbf{an O$_2$ fraction of $\sim$\SIrange{0.2}{0.4}{\percent} reproduces
+the observed signal loss}.  (The measured $\lambda$ also absorbs some
+per-strip dilution from transverse diffusion, so the true attachment length
+is slightly longer and the implied O$_2$ correspondingly at the lower end.)
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{attachment_vs_magboltz.png}
+\caption{Measured signal-decay length vs drift field (black: mid-column;
+grey: beyond $\Tsat$, steepened by the threshold), compared with Magboltz
+attachment lengths $1/\eta$ for O$_2$-doped Ar/iso 95/5.  Mixtures without
+O$_2$ (clean Ar/CO$_2$, Ar/iso + H$_2$O only) predict no attachment at all.}
+\label{fig:attclose}
+\end{figure}
+
+\subsection{Interpretation: one contamination, both anomalies}
+
+Everything points at a single cause --- \textbf{air and moisture in the
+drift gas} at the percent level:
+\begin{itemize}
+  \item $\sim$\SIrange{1}{1.5}{\percent} H$_2$O reproduces the slow,
+        monotonically rising $\vd(E)$ (water's huge dipole cross-section
+        thermalises the electrons at low field).  That is
+        $\sim$\SIrange{40}{70}{\percent} relative humidity worth of water ---
+        ordinary damp-air/outgassing levels, not a flooded line;
+  \item $\sim$\SIrange{0.2}{0.4}{\percent} O$_2$ (i.e.\
+        $\sim$\SIrange{1}{2}{\percent} air-equivalent) reproduces the
+        attachment that truncates the visible drift column at
+        \SI{19.4}{mm} (Sec.~\ref{sec:gap});
+  \item the amplification is insensitive to impurities at this level ---
+        consistent with the resist-HV scans matching clean-gas gain;
+  \item water in excess of the O$_2$-implied air fraction is expected:
+        H$_2$O permeates plastics and outgasses from glued structures far
+        faster than O$_2$ enters, the classic signature of an unflushed or
+        under-flushed detector volume.
+\end{itemize}
+
+Likely entry points: an unflushed detector volume, permeable or long tubing,
+very low flow rate, or a leaky fitting.  Decisive follow-ups:
+\begin{itemize}
+  \item \textbf{fresh-gas re-scan} of one detector after a long flush: at
+        \SI{1000}{V} the velocity should rise from 28 towards
+        $\sim$\SI{39}{\umns}, \emph{and} the visible column should extend
+        from \SI{19.4}{mm} towards the full \SI{30}{mm} (with the amplitude
+        decay flattening) --- a one-hour measurement with the ridge fit plus
+        the Fig.~\ref{fig:gaptest} analysis;
+  \item humidity \emph{and} O$_2$ probes on the gas exhaust; a flow/leak
+        check of the line.
+\end{itemize}
+
+Beyond drift speed, the contamination costs signal: a third of each track's
+charge is captured before reaching the mesh, and the enhanced transverse
+diffusion feeds the charge-spreading width $w$ of Sec.~\ref{sec:offdiag}.
+Cleaning the gas should improve efficiency, signal-to-noise, micro-TPC angle
+quality, and the small-angle exclusion gap simultaneously.
+
+%=====================================================================
+\section{Resist-HV scans}
+%=====================================================================
+\label{sec:hvscans}
+
+Two resist scans bracket the operating point at drift \SI{1000}{V}
+(Fig.~\ref{fig:hvscans}): a wide scan (\SIrange{425}{525}{V}, 11 points) and
+a fine repeat (\SIrange{460}{520}{V}).  Both use the long-run alignment with
+a translation refit per point; efficiency is counted in a fixed active box
+with the standard $R=\SI{5}{mm}$ matching, and the spark fraction (events
+with $>50$ strips firing) is overlaid.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.495\textwidth]{efficiency_vs_hv_scan.png}
+\includegraphics[width=0.495\textwidth]{efficiency_vs_hv_scan2.png}
+\caption{Resist-HV scans (left: \SIrange{425}{525}{V}; right: fine repeat
+\SIrange{460}{520}{V}).  Efficiency (blue), any-hit response (orange), spark
+fraction (red crosses, right axis).}
+\label{fig:hvscans}
+\end{figure}
+
+\begin{itemize}
+  \item \textbf{Turn-on} at \SI{425}{V} (\SI{49}{\percent}) is complete by
+        $\sim$\SI{455}{V};
+  \item \textbf{plateau} \SIrange{455}{490}{V} at \SIrange{80}{83}{\percent}
+        (best point \SI{83.2}{\percent} at \SI{470}{V} in the fine scan);
+  \item \textbf{roll-off} above $\sim$\SI{505}{V} is driven entirely by
+        sparking: the spark fraction climbs from \SI{4}{\percent} at
+        \SI{470}{V} to \SI{56}{\percent} at \SI{525}{V} while the any-hit
+        response stays $\approx\SI{98}{\percent}$ --- the detector is not
+        going silent, its events are being destroyed by discharges;
+  \item the \SI{490}{V} operating point of the long run sits on the plateau
+        but already carries $\sim$\SI{9}{\percent} spark fraction;
+        \SIrange{470}{480}{V} gives the same efficiency at half the spark
+        rate and is the recommended setting.
+\end{itemize}
+
+%=====================================================================
+\section{Summary and follow-ups}
+%=====================================================================
+
+\subsection{Summary}
+
+\begin{enumerate}
+  \item \textbf{Off-diagonal angle correlation --- solved.}  It is the
+        additive charge-spreading bias
+        $\tan\thdet = \tan\thref \pm w/z_{\mathrm{vis}}$,
+        $w/z_{\mathrm{vis}} = 0.115$
+        ($w\approx\SI{2.2}{mm}$): a detector-family constant.  Not a
+        rotation; not a bug.  It also explains the
+        $|\thdet|\gtrsim\SI{5}{\degree}$ exclusion gap and the horizontal
+        arms at $\thref\approx0$.
+  \item \textbf{Drift velocity --- measured.}  The ridge fit turns the angle
+        correlation into a precision $\vd$ measurement:
+        $\vd(\SI{1000}{V}) = \SI{28.1\pm0.7}{\umns}$, full curve in
+        Table~\ref{tab:vdrift}, \SIrange{1}{3}{\percent} per 15-minute point.
+  \item \textbf{Drift gap --- \SI{30}{mm} mechanical, \SI{19.4}{mm}
+        visible.}  The clock-immune product $\vd\Tsat = \SI{19.4\pm0.2}{mm}$
+        is the depth at which drifting charge falls below threshold, not the
+        electrode spacing: the arrival-time tail continues (exponentially
+        suppressed) out to the \SI{30}{mm} drift time at every field, and
+        the strip amplitude decays with drift \emph{depth}
+        ($\lambda\approx\SIrange{13}{15}{mm}$, one universal curve for all
+        fields) --- charge from the far third of the gap is lost to
+        attachment in the contaminated gas.
+  \item \textbf{Gas --- contaminated with an electronegative polar impurity.}
+        With the \SI{30}{mm} field scale ($E=V/\SI{3.0}{cm}$) the measured
+        $\vd(E)$ and the attachment losses point together at air/moisture
+        ingress into the Ar/iso 95/5 (Sec.~\ref{sec:gas}); clean nominal gas
+        and iso-rich mixing errors are excluded, and the gain behaviour rules
+        out a wrong-bottle quencher swap.
+  \item \textbf{Operating point.}  det3: resist \SIrange{470}{480}{V}
+        (same efficiency as \SI{490}{V}, half the sparks), drift
+        $\geq\SI{700}{V}$ (readout-window constraint), \SI{80}{\percent}
+        reconstruction efficiency, \SI{0.83}{}/\SI{0.92}{mm} core
+        resolution, \SIrange{1.5}{2}{\degree} micro-TPC angular resolution
+        for inclined tracks.
+\end{enumerate}
+
+\subsection{Follow-ups}
+
+\begin{enumerate}
+  \item The Saturday long run is \emph{complete} at \SI{141}{min} (it was
+        stopped early when the p2 overnight run started at 01:33) --- for
+        more det3 statistics use the p2 run (53k rays) or take a new
+        dedicated long run; the \emph{reco-far} tail difference vs the p2
+        run can be probed with the existing data.
+  \item Gas system: fresh-gas re-scan after a long flush (one hour decides
+        the contamination hypothesis --- the velocity at fixed HV should
+        jump \emph{and} the visible column should extend towards
+        \SI{30}{mm}); humidity/O$_2$ probe on the exhaust; review flush time,
+        flow rate and tubing permeability.
+  \item Mechanics: confirm the \SI{30}{mm} drift-gap drawing (the tail
+        endpoint gives \SIrange{28}{29}{mm} from data); confirm the DREAM
+        sampling period (\SI{60}{ns}) to fix the absolute time scale.
+  \item Analysis: wire the ridge-fit $\vd$ and the $w/g$ angle correction
+        into the production pipeline (\texttt{03\_alignment\_and\_tpc.py});
+        revisit micro-TPC angular resolution after gas drying.
+  \item Longer readout window (or slower drift-field points avoided) if
+        low-field drift data are wanted in the future.
+\end{enumerate}
+
+\vspace{4mm}
+{\sloppy
+\noindent\textbf{Reproducibility.}  Run key \texttt{sat\_det3} in
+\texttt{mx\_june\_cosmic\_qa/qa\_config.py}.  Scripts:
+\texttt{13\_tpc\_angle\_bias.py} (bias study),
+\texttt{14\_drift\_velocity\_scan.py} (ridge fit vs HV),
+\texttt{15\_drift\_velocity\_vs\_magboltz.py} (gas comparison),
+\texttt{16\_gap\_from\_pulse\_width.py} and
+\texttt{17\_gap\_attachment\_test.py} (gap tests), and
+\texttt{mm\_drift\_velocity\_\{table,candidates\}.py},
+\texttt{mm\_attachment\_\{table,air\_candidates\}.py},
+\texttt{mm\_townsend\_compare.py} in
+\texttt{garfield\_sim/} (Magboltz).  Outputs live under
+\texttt{Analysis/mx17\_det3\_saturday\_scan\_6-27-26/} in the cosmic-bench
+data tree.\par}
+
+\end{document}

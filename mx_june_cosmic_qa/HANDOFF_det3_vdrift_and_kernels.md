@@ -3,7 +3,20 @@
 Context for a fresh session. Two threads: (A) an UNRESOLVED det3 angular-correlation /
 v_drift problem the user wants followed up, and (B) new plotting features added this session.
 
----
+> **UPDATE 2026-07-01 — RESOLVED.** The universal off-diagonal angle correlation is
+> explained and the drift velocity is now measured properly. See
+> `DET3_WEEKEND_ANALYSIS.md` (same dir) for the full story. Short version:
+> every muon crosses the full ~19 mm drift gap so the cluster TIME span is fixed
+> (~gap/v), while the cluster SPATIAL width has a ~2 mm non-geometric floor from
+> resistive charge spreading → the strip-fit slope is inflated additively:
+> tanθ_det ≈ tanθ_ref ± w/gap  (w/gap ≈ 0.115, i.e. the ridge sits ~5-6° outside
+> the diagonal, sign-following, angle-independent, identical in every detector).
+> The σ-scan v_drift (30-36 µm/ns) is biased by this; the bias-free estimator is a
+> straight-line fit of the (rotated) strip slope vs tanθ_ref per track sign
+> (slope = v_drift, intercept = ±v·w/gap): `13_tpc_angle_bias.py` (diagnosis) and
+> `14_drift_velocity_scan.py` (v vs drift HV from the 6-27 saturday drift scan).
+> v_drift(1000 V) = 28.1 ± 0.7 µm/ns; the 6-27 drift scan maps the full v(E) curve
+> with 1-3 % errors per 15-min point.
 
 ## A. det3 v_drift / angle correlation — OPEN, "something still wrong"
 
