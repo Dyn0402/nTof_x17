@@ -25,7 +25,7 @@ HV, one coloured line per drift value):
                                  mean hits/event of flash events in the prompt
                                  flash window is reported.
 
-Output PNGs -> {BASE_PATH}Analysis/July_HV_Scan/{RUN}/  (the flask "Analysis" tab).
+Output PNGs -> {ANALYSIS_DIR}July_HV_Scan/{RUN}/  (the flask "Analysis" tab).
 
 IMPORTANT: only the real per-subrun scan data is used.  Each subrun's
 combined_hits_root also contains a copy of the shared pedestal acquisition
@@ -58,6 +58,10 @@ from common.Mx17StripMap import Detector, Mx17StripMap
 # Configuration — tune per campaign
 # ---------------------------------------------------------------------------
 BASE_PATH = '/mnt/data/x17/beam_july/runs/'
+
+# Where plots are written — the flask "Analysis" tab browses this directory
+# ({BASE_DATA_DIR}analysis in flask_app/app.py), NOT runs/.
+ANALYSIS_DIR = '/mnt/data/x17/beam_july/analysis/'
 
 # Run to analyse.  None -> newest run_<N> directory found in BASE_PATH.
 RUN: Optional[str] = None
@@ -181,7 +185,18 @@ def load_hits(base_path: str, run: str, subrun: str,
     sources = _real_files(hits_dir, '.root')
     if not sources:
         return None
-    df = uproot.concatenate([f'{s}:hits' for s in sources],
+    # A file may be truncated / still being written (no 'hits' tree yet); skip it.
+    good = []
+    for s in sources:
+        try:
+            with uproot.open(s) as f:
+                if 'hits' in f:
+                    good.append(s)
+        except Exception:
+            continue
+    if not good:
+        return None
+    df = uproot.concatenate([f'{s}:hits' for s in good],
                             ['eventId', 'feu', 'channel', 'time', 'amplitude'],
                             library='pd')
     return df[df['feu'].isin(feu_ids)].copy()
@@ -347,7 +362,12 @@ def plot_lines(grid: Dict[str, np.ndarray], drifts: List[int], drops: List[int],
 # ---------------------------------------------------------------------------
 
 def main():
-    run = RUN or discover_run(BASE_PATH)
+    # Optional CLI: `july_hv_scan.py [run]` where run is e.g. "run_6" or "6".
+    run = RUN
+    if len(sys.argv) > 1:
+        arg = sys.argv[1]
+        run = arg if arg.startswith('run_') else f'run_{arg}'
+    run = run or discover_run(BASE_PATH)
     if run is None:
         print(f'ERROR: no run_<N> with a config found under {BASE_PATH}')
         return
@@ -367,7 +387,7 @@ def main():
 
     drifts = sorted({r['drift'] for r in records})
     drops = sorted({r['drop'] for r in records})
-    out_dir = os.path.join(BASE_PATH, 'Analysis', 'July_HV_Scan', run)
+    out_dir = os.path.join(ANALYSIS_DIR, 'July_HV_Scan', run)
 
     print(f'Run {run}  ({gas})')
     print(f'Detectors: {det_names}   FEUs: {all_feus}')
