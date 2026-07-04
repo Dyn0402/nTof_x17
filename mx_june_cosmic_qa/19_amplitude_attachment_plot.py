@@ -103,6 +103,12 @@ def median_amp_curve(cfg, ids):
 def main():
     seed = cm.load_alignment(ALIGN_SEED)
     vd = pd.read_csv(VD_CSV)
+    geom_csv = os.path.join(OUT, 'geometry_vdrift_scan.csv')
+    if os.path.exists(geom_csv):
+        gv = pd.read_csv(geom_csv)[['drift_hv', 'v_geom']]
+        vd = vd.merge(gv, on='drift_hv', how='left')
+        vd['v_ridge'] = vd['v_geom'].fillna(vd['v_ridge'])
+        print('using v_geom for the depth scale')
     vd = vd[vd['drift_hv'] >= 500].sort_values('drift_hv')
 
     curves = []
