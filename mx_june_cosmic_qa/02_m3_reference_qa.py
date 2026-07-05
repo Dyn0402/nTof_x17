@@ -31,7 +31,7 @@ CFG = config_from_argv()
 import awkward as ak
 from M3RefTracking import M3RefTracking, get_ray_data, get_xy_angles
 
-CHI2_CUT = 20.0  # matches the value used in the micro-TPC analysis main()
+CHI2_CUT = 5.0  # M3 v2 recipe (chi2<5 & NClus>=3, the latter automatic in M3RefTracking)  # matches the value used in the micro-TPC analysis main()
 
 
 def _det_plane_z() -> float:

@@ -21,6 +21,8 @@ import sys
 import json
 import datetime
 
+import numpy as np
+import pandas as pd
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
@@ -32,6 +34,11 @@ from qa_config import get_config, setup_paths
 setup_paths()
 import json as _json
 from det_labels import det_letter, order_key
+
+# consistent per-detector colour (keyed by experiment letter A..E = det 3,2,6,7,4)
+DET_COLOR = {'A': '#1f77b4', 'B': '#ff7f0e', 'C': '#2ca02c', 'D': '#d62728', 'E': '#9467bd'}
+# HV-scan keys grouped by detector (det6/7 = dedicated low-V scan + overnight high-V)
+HV_KEYS = ['g_det2', 'g_det3', 'g_det6_hv', 'g_det6_long', 'g_det7_hv', 'g_det7_long']
 
 
 def hv_settings(cfg):
@@ -263,6 +270,159 @@ def select_keys(keys):
     return [best[d][2] for d in sorted(order, key=lambda d: order_key(d.split('_')[-1]))]
 
 
+def _hv_csv_path(cfg):
+    return os.path.join(os.path.dirname(cfg.BASE_PATH.rstrip('/')), 'Analysis',
+                        cfg.RUN, 'hv_scan', cfg.DET_NAME, 'efficiency_vs_hv.csv')
+
+
+def collect_fleet_stats(keys):
+    """Per-detector summary numbers for the top page, keyed by experiment letter."""
+    def _f(v):
+        try:
+            return float(v)
+        except (TypeError, ValueError):
+            return np.nan
+    stats = {}
+    for k in keys:
+        try:
+            cfg = get_config(k)
+        except KeyError:
+            continue
+        num = cfg.DET_NAME.split('_')[-1]
+        L = det_letter(num)
+        bd = parse_breakdown(_find(cfg.OUT_BASE, 'efficiency/efficiency_breakdown.txt'))
+        ar = {}
+        arp = _find(cfg.OUT_BASE, 'alignment_tpc_veto50/angular_resolution.json',
+                    'alignment_tpc/angular_resolution.json')
+        if arp:
+            try:
+                ar = _json.load(open(arp))
+            except Exception:
+                ar = {}
+        sx, sy = ar.get('sigma_theta_x_deg'), ar.get('sigma_theta_y_deg')
+        ang = np.nanmean([v for v in (sx, sy) if isinstance(v, (int, float))]) \
+            if any(isinstance(v, (int, float)) for v in (sx, sy)) else np.nan
+        stats[L] = dict(letter=L, num=num, key=k,
+                        eff=_f(bd.get('within_pct')), sigma=_f(bd.get('core_sigma_mm')),
+                        spark=_f(bd.get('spark_frac_pct')), ang=ang)
+    return stats
+
+
+def collect_hv_curves():
+    """det-letter -> merged (hv, eff_reco) DataFrame across that detector's scans."""
+    curves = {}
+    for k in HV_KEYS:
+        try:
+            cfg = get_config(k)
+        except KeyError:
+            continue
+        p = _hv_csv_path(cfg)
+        if not os.path.isfile(p):
+            continue
+        try:
+            df = pd.read_csv(p)
+        except Exception:
+            continue
+        if 'hv' not in df or 'eff_reco' not in df:
+            continue
+        L = det_letter(cfg.DET_NAME.split('_')[-1])
+        curves.setdefault(L, []).append(df[['hv', 'eff_reco']])
+    return {L: pd.concat(v).drop_duplicates('hv').sort_values('hv')
+            for L, v in curves.items() if v}
+
+
+def _bar(ax, stats, field, title, unit, fmt='{:.1f}', pct=False, lower_better=False):
+    letters = sorted(stats, key=lambda L: order_key(stats[L]['num']))
+    vals = [stats[L][field] * (100 if False else 1) for L in letters]
+    labels = [f"{stats[L]['letter']} (det{stats[L]['num']})" for L in letters]
+    colors = [DET_COLOR.get(L, 'grey') for L in letters]
+    bars = ax.bar(range(len(letters)), [0 if np.isnan(v) else v for v in vals], color=colors)
+    ax.set_xticks(range(len(letters)))
+    ax.set_xticklabels(labels, fontsize=7, rotation=0)
+    ax.set_title(title, fontsize=9, fontweight='bold')
+    ax.set_ylabel(unit, fontsize=8)
+    ax.grid(axis='y', alpha=0.3)
+    vmax = max([v for v in vals if not np.isnan(v)], default=1)
+    for i, v in enumerate(vals):
+        if np.isnan(v):
+            ax.text(i, 0.02 * vmax, 'n/a', ha='center', va='bottom', fontsize=7, color='grey')
+        else:
+            ax.text(i, v + 0.02 * vmax, fmt.format(v), ha='center', va='bottom', fontsize=7)
+    ax.set_ylim(0, 1.18 * vmax if vmax > 0 else 1)
+
+
+def fleet_summary_page(pdf, keys):
+    """First page: fleet-wide bar plots + efficiency-vs-HV, over all detectors."""
+    stats = collect_fleet_stats(keys)
+    if not stats:
+        return False
+    hv = collect_hv_curves()
+    fig = plt.figure(figsize=(8.27, 11.69))
+    fig.suptitle('MX17 June 2026 cosmic-bench — fleet summary\n'
+                 'M3 v2 reference tracking (NClus≥3 & χ²<5); best long run per detector',
+                 fontsize=13, fontweight='bold', y=0.985)
+    gs = GridSpec(3, 2, figure=fig, top=0.92, bottom=0.06, hspace=0.42, wspace=0.28,
+                  left=0.10, right=0.96)
+
+    _bar(fig.add_subplot(gs[0, 0]), stats, 'eff',
+         'Best-run efficiency (within 5 mm)', '%', fmt='{:.1f}')
+    _bar(fig.add_subplot(gs[0, 1]), stats, 'sigma',
+         'Spatial resolution (core σ)', 'mm', fmt='{:.2f}')
+    _bar(fig.add_subplot(gs[1, 0]), stats, 'ang',
+         'micro-TPC angular resolution', 'deg', fmt='{:.2f}')
+    _bar(fig.add_subplot(gs[1, 1]), stats, 'spark',
+         'Spark rate (>50 strips)', '%', fmt='{:.1f}')
+
+    # efficiency vs HV
+    axh = fig.add_subplot(gs[2, 0])
+    if hv:
+        for L in sorted(hv, key=lambda L: order_key(stats.get(L, {}).get('num', L))):
+            df = hv[L]
+            num = next((s['num'] for s in stats.values() if s['letter'] == L), L)
+            axh.plot(df['hv'], 100 * df['eff_reco'], 'o-', ms=4, color=DET_COLOR.get(L, 'grey'),
+                     label=f'{L} (det{num})')
+        axh.set_xlabel('resist HV [V]', fontsize=8)
+        axh.set_ylabel('efficiency [%]', fontsize=8)
+        axh.set_title('Efficiency vs resist HV', fontsize=9, fontweight='bold')
+        axh.grid(alpha=0.3)
+        axh.legend(fontsize=7, ncol=2)
+    else:
+        axh.axis('off')
+        axh.text(0.5, 0.5, 'HV scans not available', ha='center', va='center',
+                 transform=axh.transAxes, color='grey')
+
+    # summary table
+    axt = fig.add_subplot(gs[2, 1])
+    axt.axis('off')
+    letters = sorted(stats, key=lambda L: order_key(stats[L]['num']))
+    cell = [['Det', 'Eff %', 'σ mm', 'θ°', 'Spark %']]
+    for L in letters:
+        s = stats[L]
+        cell.append([f"{L} (det{s['num']})",
+                     '—' if np.isnan(s['eff']) else f"{s['eff']:.1f}",
+                     '—' if np.isnan(s['sigma']) else f"{s['sigma']:.2f}",
+                     '—' if np.isnan(s['ang']) else f"{s['ang']:.2f}",
+                     '—' if np.isnan(s['spark']) else f"{s['spark']:.1f}"])
+    tb = axt.table(cellText=cell, loc='center', cellLoc='center')
+    tb.auto_set_font_size(False)
+    tb.set_fontsize(7.5)
+    tb.scale(1, 1.4)
+    for j in range(len(cell[0])):
+        tb[0, j].set_facecolor('#e6e6e6')
+        tb[0, j].set_text_props(fontweight='bold')
+    for i, L in enumerate(letters, start=1):
+        tb[i, 0].set_facecolor(DET_COLOR.get(L, 'white'))
+        tb[i, 0].set_alpha(0.35)
+    axt.set_title('Fleet summary', fontsize=9, fontweight='bold', y=0.88)
+
+    fig.text(0.5, 0.02, f'Generated {datetime.date.today().isoformat()} · '
+             'efficiency & σ & spark from efficiency_breakdown; θ-resolution from micro-TPC angle scan',
+             ha='center', fontsize=7, color='grey')
+    pdf.savefig(fig, dpi=200)
+    plt.close(fig)
+    return True
+
+
 def main():
     args = [a for a in sys.argv[1:] if not a.startswith('-')]
     keys = select_keys(args if args else DEFAULT_KEYS)
@@ -272,6 +432,11 @@ def main():
 
     n = 0
     with PdfPages(out) as pdf:
+        try:
+            if fleet_summary_page(pdf, keys):
+                print('  wrote fleet summary page')
+        except Exception as e:
+            print(f'  [error] fleet summary page: {e}')
         for k in keys:
             try:
                 if detector_page(pdf, k):

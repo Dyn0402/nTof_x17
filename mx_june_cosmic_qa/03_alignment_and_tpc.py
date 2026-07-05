@@ -56,7 +56,7 @@ _z_lo = float(os.environ.get('Z_LO', DET_PLANE_Z - 60.0))
 _z_hi = float(os.environ.get('Z_HI', DET_PLANE_Z + 60.0))
 Z_SCAN = np.linspace(_z_lo, _z_hi, int(round(_z_hi - _z_lo)) + 1)  # 1 mm steps
 CENTRE_XY = 200.0                    # strip-map centre (active area ~0..400 mm)
-CHI2_CUT = 20.0
+CHI2_CUT = 5.0  # M3 v2 recipe (chi2<5 & NClus>=3, the latter automatic in M3RefTracking)
 N_ITER = 3                           # iterative z -> rotation -> translation cycles
 
 # ---------------------------------------------------------------------------

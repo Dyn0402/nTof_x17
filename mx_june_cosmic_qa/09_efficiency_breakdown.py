@@ -48,7 +48,7 @@ def main():
     out_dir = CFG.out_dir('efficiency')
     params = cm.load_alignment(os.path.join(CFG.OUT_BASE, 'alignment_tpc_veto50', 'alignment.json'))
     res = pickle.load(open(os.path.join(CFG.OUT_BASE, 'cache', 'event_results.pkl'), 'rb'))
-    rays = M3RefTracking(CFG.m3_tracking_dir, chi2_cut=20.0)
+    rays = M3RefTracking(CFG.m3_tracking_dir, chi2_cut=5.0)
     xa, ya, an = get_xy_angles(rays.ray_data); xa = params.ref_x_sign * np.array(xa)
     cm.attach_reference_positions(res, rays, params, xa, an)
     reco = {r.event_id: (r.det_x_aligned_mm, r.det_y_aligned_mm) for r in res if r.has_both

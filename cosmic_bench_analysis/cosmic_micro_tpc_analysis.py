@@ -2279,6 +2279,19 @@ def plot_angle_correlation(
     v_drift_x = _best_v(sigmas_x)
     v_drift_y = _best_v(sigmas_y)
 
+    # micro-TPC angular resolution = sigma of (|θ_ref|-|θ_det|) at the best v_drift
+    sig_theta_x = float(np.nanmin(sigmas_x)) if np.isfinite(sigmas_x).any() else float('nan')
+    sig_theta_y = float(np.nanmin(sigmas_y)) if np.isfinite(sigmas_y).any() else float('nan')
+    if out_dir is not None:
+        try:
+            import json as _json_ar
+            with open(os.path.join(out_dir, 'angular_resolution.json'), 'w') as _f_ar:
+                _json_ar.dump({'v_drift_x_um_ns': v_drift_x, 'v_drift_y_um_ns': v_drift_y,
+                               'sigma_theta_x_deg': sig_theta_x, 'sigma_theta_y_deg': sig_theta_y,
+                               'n_events': n_q}, _f_ar, indent=2)
+        except Exception as _e_ar:
+            print(f'  [angular_resolution.json not written: {_e_ar}]')
+
     # ---- Figure 2: sigma vs v_drift scan ----
     fig2, axes2 = plt.subplots(1, 2, figsize=(13, 5))
     for ax, sigmas, v_best, color, proj in [
