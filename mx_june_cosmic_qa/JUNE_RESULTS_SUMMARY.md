@@ -16,20 +16,32 @@ Two compiled PDFs (under `~/x17/cosmic_bench/Analysis/`):
 - **`june_hv_scans.pdf`** — resist-HV scans: summary overlay + per-detector
   efficiency-vs-HV and resolution-vs-HV.
 
+**Spark separation (2026-07-05).** The efficiency breakdown (bottom bar of every
+overview page) now counts **`spark`** (event fires >50 strips = a full-detector
+discharge) as its own category, pulled out *before* the reco/hit split. Previously
+sparks still yielded a centroid and masqueraded as `reco_far`/`reco_near`/`hit_no_reco`,
+inflating the tail. Separating them mainly deflates the `reco_far` tail on the
+spark-rich detectors (det7 `reco_far` 40 %→11 % with 31 % now labelled spark; det6
+likewise) and slightly lowers the headline efficiency (sparks that had landed <5 mm are
+no longer counted as good). Efficiency numbers in the table below are the
+**spark-separated** values.
+
 ---
 
 ## 1. Per-detector overview (best high-stats subrun)
 
-| Det | Run / subrun used | Clean M3 rays | Efficiency (≤5 mm) | Fired any strip | Core σ | Verdict |
-|----:|---|---:|---:|---:|---:|---|
-| **2** | 6-22 overnight / long_run | 34.9k | **76.4 %** | 99.7 % | 0.84 mm | Healthy |
-| **3** | **6-28 weekend / long_run_p2 (top slot)** | 53.0k | **79.7 %** | 97.6 % | 0.80 mm | Best performer |
-| **4** | 6-24 daytime / long_run | 39.6k | **8.4 %** | 50.6 % | 1.24 mm | Gain-limited |
-| **6** | 6-26 overnight / long_run (7 files) | 32.3k | **55.4 %** | 94.1 % | 0.72 mm | Healthy |
-| **7** | 6-26 overnight / long_run (7 files) | 35.5k | **36.8 %** | 84.1 % | 1.36 mm | Saturation tail |
+| Det | Run / subrun used | Clean M3 rays | Efficiency (≤5 mm) | Fired any strip | Spark | reco_far | Core σ | Verdict |
+|----:|---|---:|---:|---:|---:|---:|---:|---|
+| **2** | 6-22 overnight / long_run | 34.9k | **75.4 %** | 99.7 % | 5.7 % | 16.2 % | 0.83 mm | Healthy |
+| **3** | **6-28 weekend / long_run_p2 (top slot)** | 53.0k | **78.8 %** | 97.6 % | 4.9 % | 13.7 % | 0.79 mm | Best performer |
+| **4** | 6-24 daytime / long_run | 39.6k | **8.2 %** | 50.6 % | 2.3 % | 2.5 % | 1.20 mm | Gain-limited |
+| **6** | 6-26 overnight / long_run (7 files) | 32.3k | **51.2 %** | 94.1 % | 23.7 % | 7.5 % | 0.68 mm | Spark-limited |
+| **7** | 6-26 overnight / long_run (7 files) | 35.5k | **31.9 %** | 84.1 % | 31.0 % | 11.2 % | 1.18 mm | Spark-limited |
 
-Alignment converged sub-mm with θ≈90° and z near nominal for every detector above
-(seeded per run from the long_run subrun).
+Efficiency, spark and reco_far are % of active-area crossings, **spark-separated** (see
+above); efficiency dropped 1–5 pts vs the pre-separation numbers and the core σ tightened
+(sparks no longer pollute the residual). Alignment converged sub-mm with θ≈90° and z near
+nominal for every detector above (seeded per run from the long_run subrun).
 
 ### Notes per detector
 - **det2 / det3** — healthy detectors: high, spatially-uniform efficiency at sub-mm
@@ -40,16 +52,34 @@ Alignment converged sub-mm with θ≈90° and z near nominal for every detector 
   `hit_no_reco` (38.8 %) + silent (49.4 %): clusters rarely reach the ≥3 strips needed
   to reconstruct. Same pathology the old det1 had → an HV/threshold/gas (gain) issue,
   not a dead detector.
-- **det6** — healthy (55.4 %, 0.72 mm) on the full 7-file long_run. NB the short_run is
-  low-stats / unsettled; always prefer long_run here.
-- **det7** — reconstructs with a good core (σ≈0.9–1.1 mm per axis) but has a heavy
-  **outlier tail**: median radial residual 1.84 mm vs **mean 23.9 mm**, `reco_far` ≈40 %.
-  Alignment is healthy (z=714 mid-window, θ=90.1°) — the tail is a *reconstruction*
-  problem concentrated in the **Y plane (FEU 8)**: a band of **saturated hits (~4000 ADC,
-  near the 4095 ceiling) across all strips** forms fake clusters the micro-TPC fit
-  sometimes selects. This is a detector/readout condition (HV / sparking / common-mode),
-  not an analysis bug. A saturation veto (`local_max ≳ 3900`) should recover a truer,
-  higher efficiency. **Open follow-up.**
+- **det6** — good core (0.68 mm) but **spark-limited**: 23.7 % of crossings are
+  full-detector discharges (drift 700 V, resist likely past optimum). With sparks removed
+  the reco_far tail is small (7.5 %); efficiency 51.2 %. Prefer long_run (short_run is
+  low-stats / unsettled).
+- **det7** — reconstructs with a good core (σ≈0.9–1.1 mm per axis) but is the most
+  **spark-limited** of the batch: **31 %** of crossings are discharges. Once sparks are
+  separated the outlier `reco_far` tail collapses from ≈40 % to **11.2 %** — i.e. the tail
+  reported earlier was *mostly sparks*, not a distinct saturation pathology. The residual
+  Y-plane (FEU 8) saturation band still contributes to the remaining tail. A tighter
+  discharge/saturation veto should recover a truer efficiency. **Open follow-up.**
+
+### What is the reco_far tail? (det3 deep-dive)
+
+Full characterisation in `det3_recofar_analysis/main.pdf` (run `g_det3_wknd`, 7271
+reco_far events). The tail is **two overlapping populations**, not one thing:
+- **~40 % near-miss shoulder** (5–10 mm, just past the cut) — the ordinary
+  resolution/angle tail; widening the cut to ~7 mm absorbs it.
+- **~38 % genuine mis-reco** (>20 mm; 23 % land >50 mm) driven by **elevated-multiplicity
+  "sub-veto" discharge activity** (median 20 strips vs 16 for good events, extending up to
+  the 50-strip veto; long multi-pulse cluster tails), spatially **concentrated on the
+  low-X / left edge** of the chamber (reco_far rate ~10 % in the bulk, 25–70 % on the left
+  edge; bad reco points pile up at low X).
+
+Cleanly **ruled out**: multi-ray / ray-mismatch (0.00 % of reco_far have >1 M3 ray) and a
+single-plane readout fault (X-only 36 %, Y-only 24 %, both-planes-wrong 41 %). Conclusion:
+reco_far is a localised detector/HV (edge sparking) + competing-cluster-selection effect,
+not a tracking artefact. Follow-ups: tighten the discharge veto toward ~30–40 strips (or
+add a duration/multi-pulse veto); inspect the low-X edge strips.
 
 ---
 
