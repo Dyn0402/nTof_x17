@@ -1,0 +1,3 @@
+# regenerable extraction caches
+events.npz
+spark_hits.npz
