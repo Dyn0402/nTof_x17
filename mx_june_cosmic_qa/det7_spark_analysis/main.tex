@@ -87,11 +87,27 @@ detector-frame centroid is the clean spatial measure. The ``no clean track'' pop
 persists (47\,\% of sparks vs 35\,\% baseline; same 1.3$\times$ over-representation and
 same discharge size), the DAQ common-mode cross-talk flagged for det3.
 
+\paragraph{Shower hypothesis ruled out (as in det3).} If the no-track sparks were
+multi-particle showers they would leave M3 with $\ge2$ track candidates; instead only
+\textbf{0.5\,\%} of det7 no-track sparks do (they are $62\,\%$ M3-blank, $38\,\%$ single
+degraded track), and their discharge morphology is \emph{identical} to muon-tracked sparks
+(median 122 vs 125 strips, span 389 vs 392~mm, spread 335 vs 333~ns; Fig.~\ref{fig:shower}).
+A spark nearly doubles M3's no-track rate ($18\to29\,\%$ blank) --- cross-talk, not showers.
+This reproduces the det3 result on a $2.5\times$ larger spark sample.
+
 \begin{figure}[h]\centering
 \includegraphics[width=\textwidth]{fig_muon.png}
 \caption{det7 muon dependence: (a) crossing muons spark $5.9\times$ more than missing
 ones; (b) M3 crossing positions; (c) central discharge centroid.}
 \label{fig:muon}
+\end{figure}
+
+\begin{figure}[h]\centering
+\includegraphics[width=0.86\textwidth]{fig_shower_test.png}
+\caption{det7 shower test: (a) M3 candidate-track count by spark class; (b) the
+$\ge2$-track shower fraction stays at the $\sim$0.5\,\% level; (c) no-track and
+muon-tracked sparks have identical discharge size --- showers ruled out.}
+\label{fig:shower}
 \end{figure}
 
 \section{Q3 --- Same places: edges and hot strips}
