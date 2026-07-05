@@ -64,6 +64,7 @@ def main():
     _mult = det_raw.groupby('eventId').size()
     n_firing = int(len(_mult)); n_spark = int((_mult > SPARK_THRESH).sum())
     spark_frac = 100.0 * n_spark / n_firing if n_firing else float('nan')
+    mult_by_ev = _mult.to_dict()   # eventId -> strips fired (for per-ray spark tagging)
 
     xr, yr, evn = get_xy_positions(rays.ray_data, params.z_mean)
     px = params.ref_x_sign * np.array(xr); py = np.array(yr); evn = [int(v) for v in evn]
@@ -72,12 +73,19 @@ def main():
     ax0, ax1 = np.percentile(recpos[:, 0], [0.5, 99.5]); ay0, ay1 = np.percentile(recpos[:, 1], [0.5, 99.5])
     box = dict(xy=(ax0, ay0), width=ax1 - ax0, height=ay1 - ay0)
 
-    # categorise; keep ray positions per category + detector positions for reco
-    cat = {k: [] for k in ('no_hit', 'hit_no_reco', 'reco_far', 'reco_near')}   # -> ray (x,y)
+    # categorise; keep ray positions per category + detector positions for reco.
+    # A spark (> SPARK_THRESH strips firing at once) is a full-detector discharge, NOT a
+    # muon measurement: it fires strips and often yields a (meaningless) centroid, so left
+    # un-tagged it masquerades as reco_far / reco_near / hit_no_reco and inflates the tail.
+    # Pull sparks into their own category BEFORE reco/hit classification (see HANDOFF
+    # thread A) so the reco_near efficiency and the |r| residual are spark-free.
+    cat = {k: [] for k in ('no_hit', 'hit_no_reco', 'spark', 'reco_far', 'reco_near')}   # -> ray (x,y)
     reco_near_det, reco_far_det, rlist = [], [], []
     for e, x, y in zip(evn, px, py):
         if not (np.isfinite(x) and np.isfinite(y) and ax0 <= x <= ax1 and ay0 <= y <= ay1):
             continue
+        if mult_by_ev.get(e, 0) > SPARK_THRESH:
+            cat['spark'].append((x, y)); continue
         if e in reco:
             r = float(np.hypot(x - reco[e][0], y - reco[e][1])); rlist.append(r)
             if r <= R:
@@ -98,11 +106,12 @@ def main():
 
     lines = [f'Efficiency breakdown — {CFG.DET_NAME}  {CFG.RUN}/{CFG.SUB_RUN}  (R={R:g} mm)',
              f'active-area clean M3 rays: {n}']
-    for k in ('reco_near', 'reco_far', 'hit_no_reco', 'no_hit'):
+    for k in ('reco_near', 'reco_far', 'spark', 'hit_no_reco', 'no_hit'):
         lines.append(f'  {k:12s}: {len(cat[k]):5d}  ({pct[k]:5.1f}%)')
     lines += [f'  has_any={has_any:.1f}%  within{R:g}mm={pct["reco_near"]:.1f}%  reco-at-all={reco_all:.1f}%',
               f'  of reconstructed: {frac_in:.1f}% within {R:g}mm, core sigma(|r|<15)={sig:.2f} mm, median |r|={med:.2f} mm',
-              f'  spark_frac={spark_frac:.1f}%  (>{SPARK_THRESH} strips: {n_spark}/{n_firing} firing events)']
+              f'  spark_frac={spark_frac:.1f}%  (>{SPARK_THRESH} strips: {n_spark}/{n_firing} firing events); '
+              f'sparks in active area={pct["spark"]:.1f}% of crossings']
     txt = '\n'.join(lines); print(txt)
     open(f'{out_dir}/efficiency_breakdown.txt', 'w').write(txt + '\n')
 
@@ -110,12 +119,13 @@ def main():
     fig, ax = plt.subplots(figsize=(8.5, 3.4)); ax.axis('off')
     rows = [['reco_near', 'reconstructed, |r|<=%gmm  (the efficiency)' % R, f'{len(cat["reco_near"])}', f'{pct["reco_near"]:.1f}%'],
             ['reco_far', 'reconstructed but |r|>%gmm  (competing cluster)' % R, f'{len(cat["reco_far"])}', f'{pct["reco_far"]:.1f}%'],
+            ['spark', 'full-detector discharge (>%d strips)' % SPARK_THRESH, f'{len(cat["spark"])}', f'{pct["spark"]:.1f}%'],
             ['hit_no_reco', 'fired strips, no valid X+Y reco', f'{len(cat["hit_no_reco"])}', f'{pct["hit_no_reco"]:.1f}%'],
             ['no_hit', 'detector silent (true miss)', f'{len(cat["no_hit"])}', f'{pct["no_hit"]:.1f}%'],
             ['', 'TOTAL crossings in active area', f'{n}', '100%'],
             ['has_any', 'detector responded (any strip)', '', f'{has_any:.1f}%'],
-            ['reco-at-all', 'formed a valid X+Y point', '', f'{reco_all:.1f}%']]
-    colcol = ['green', 'orange', 'gold', 'red', 'white', 'lightsteelblue', 'lightsteelblue']
+            ['reco-at-all', 'formed a valid X+Y point (non-spark)', '', f'{reco_all:.1f}%']]
+    colcol = ['green', 'orange', 'purple', 'gold', 'red', 'white', 'lightsteelblue', 'lightsteelblue']
     t = ax.table(cellText=rows, colLabels=['category', 'meaning', 'N', '% crossings'],
                  colWidths=[0.18, 0.5, 0.12, 0.16], loc='center', cellLoc='left')
     t.auto_set_font_size(False); t.set_fontsize(9); t.scale(1, 1.5)
@@ -128,7 +138,8 @@ def main():
 
     # ---- bar chart ----
     fig, ax = plt.subplots(figsize=(6, 5))
-    ks = ['reco_near', 'reco_far', 'hit_no_reco', 'no_hit']; cols = ['green', 'orange', 'gold', 'red']
+    ks = ['reco_near', 'reco_far', 'spark', 'hit_no_reco', 'no_hit']
+    cols = ['green', 'orange', 'purple', 'gold', 'red']
     ax.bar(ks, [pct[k] for k in ks], color=cols)
     for i, k in enumerate(ks):
         ax.text(i, pct[k] + 1, f'{pct[k]:.0f}%', ha='center')
@@ -137,6 +148,7 @@ def main():
 
     # ---- wide-and-short horizontal variant (for the summary-page bottom row) ----
     labels = {'reco_near': f'reco_near  (≤{R:g}mm)', 'reco_far': 'reco_far  (>%gmm)' % R,
+              'spark': f'spark  (>{SPARK_THRESH} strips)',
               'hit_no_reco': 'hit_no_reco', 'no_hit': 'no_hit (silent)'}
     figw, axw = plt.subplots(figsize=(11, 2.5))
     ypos = np.arange(len(ks))[::-1]        # reco_near at top
