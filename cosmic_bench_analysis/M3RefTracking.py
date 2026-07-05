@@ -77,7 +77,9 @@ class M3RefTracking:
         x_min, x_max, y_min, y_max = self.detector_xy_extent_cuts['x'] + self.detector_xy_extent_cuts['y']
         mask = ((x_min < x_up) & (x_up < x_max) & (x_min < x_down) & (x_down < x_max) &
                 (y_min < y_up) & (y_up < y_max) & (y_min < y_down) & (y_down < y_max))
-        print(f'Cutting on detector size: {np.sum(mask)} / {len(mask)} tracks remain, {np.sum(mask) / len(mask) * 100:.2f}%')
+        n_tracks = int(ak.sum(ak.num(mask, axis=1)))  # len(mask) is the EVENT count, not the track count
+        print(f'Cutting on detector size: {np.sum(mask)} / {n_tracks} tracks remain, '
+              f'{np.sum(mask) / n_tracks * 100:.2f}% (over {len(mask)} events)')
         for var in ['X_Up', 'Y_Up', 'X_Down', 'Y_Down', 'Chi2X', 'Chi2Y']:
             self.ray_data[var] = self.ray_data[var][mask]
 
