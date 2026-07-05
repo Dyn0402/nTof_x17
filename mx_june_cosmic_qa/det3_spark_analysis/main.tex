@@ -140,10 +140,8 @@ signature. \textbf{The shower hypothesis is ruled out.}
 
 What the split \emph{does} show is that a spark nearly \textbf{doubles} the chance that M3
 returns no track at all ($17.5\to34\,\%$ blank): the discharge suppresses M3
-reconstruction (the DAQ common-mode cross-talk), on top of a genuinely muon-free
-spontaneous component. Cleanly separating those two would need the M3 \emph{raw hits}
-(not stored in the ray files) or a spark$\leftrightarrow$M3-noise timing coincidence ---
-a further step --- but showers are not the answer.
+reconstruction, on top of a genuinely muon-free spontaneous component. Q2c pins this down
+directly from the M3 raw data.
 
 \begin{figure}[h]\centering
 \includegraphics[width=\textwidth]{fig_shower_test.png}
@@ -152,6 +150,42 @@ sparks are $\text{ncand}=0/1$, not $\ge2$; (b) the $\ge2$-track shower fraction 
 meaningfully enriched in sparks; (c) muon-tracked and no-track sparks have identical
 discharge size (and span/duration/edge --- see text).}
 \label{fig:shower}
+\end{figure}
+
+\section{Q2c --- Direct FEU1 (M3) cross-talk test}
+To test the cross-talk directly, we decoded the raw M3 data (FEU1) for this run --- the
+\texttt{.fdf} pulled from lxplus and processed with the cosmic-bench producer
+(\texttt{DataReader \dots analyse}) --- giving, per event and per M3 layer, the cluster
+count, the producer's own spark flag, and cluster amplitudes. Joined on \texttt{evn} to
+our FEU7/8 sparks (matching verified at 100\,\% in the overlap window, 20\,827 events,
+1\,568 sparks), the result (Fig.~\ref{fig:crosstalk}):
+%
+\begin{itemize}\setlength\itemsep{0.1em}
+  \item \textbf{M3 is not knocked out.} It \emph{never} fires its own spark
+        (\texttt{MGv2\_Spark}$=0$ in all 38\,934 decoded events) and it drops \emph{no}
+        triggers on our sparks (100\,\% of our spark events are present in the FEU1 tree).
+        So the M3 readout does not black out or discharge in sympathy.
+  \item \textbf{But there is a real coincident excess.} When our detector sparks, M3
+        records \textbf{+54\,\%} more clusters ($14.9$ vs $9.7$ per event, $\sim$5 extra),
+        and those extra clusters are \textbf{lower-amplitude and smaller} (median amplitude
+        521 vs 607, size 4 vs 5 strips) --- the signature of low-level \textbf{noise pickup}
+        in the shared readout, not real extra particle tracks.
+\end{itemize}
+%
+So the cross-talk is \textbf{confirmed but mild}: a spark injects a handful of spurious
+low-amplitude clusters into M3, enough to spoil the straight-line track fit (extra hits
+worsen $\chi^2\to$ track rejected, i.e.\ the $17.5\to34\,\%$ blank excess), but far from a
+readout blackout. In the noisier ZS runs the same coupling instead shows up as
+spark-correlated \emph{dropped} triggers ($25$--$45\,\%$; audit note); this clean non-ZS
+run shows only the mild cluster contamination. Together with the muon-free spontaneous
+component, this fully accounts for the no-track sparks --- no showers, no mystery.
+
+\begin{figure}[h]\centering
+\includegraphics[width=\textwidth]{fig_crosstalk.png}
+\caption{\textbf{FEU1/M3 cross-talk.} (a) M3 never drops a trigger nor fires its own spark
+on our sparks (both 0\,\%); (b) yet it records $+54\,\%$ more clusters when we spark;
+(c) the excess clusters are low-amplitude --- noise pickup, not tracks.}
+\label{fig:crosstalk}
 \end{figure}
 
 \section{Q3 --- Are there particular places that spark?  Yes: the edges}
@@ -249,13 +283,16 @@ with timing independent of position --- not a wave sweeping across the strips.
         $\sim$1~\textmu s) discharge with afterpulsing --- no propagating ``walk''.
   \item \textbf{Not showers:} the ``no-track'' sparks are not multi-particle showers ---
         only $1.3\,\%$ carry $\ge2$ M3 tracks and their discharge morphology is identical
-        to muon-tracked sparks (Q2b). The lost M3 track is DAQ cross-talk $+$ spontaneous
-        muon-free sparks, not a physics shower.
+        to muon-tracked sparks (Q2b).
+  \item \textbf{Cross-talk confirmed (mild), from the M3 raw data (Q2c):} a spark injects
+        $\sim$5 extra low-amplitude clusters into the shared FEU1 readout ($+54\,\%$), enough
+        to spoil the M3 track fit ($17.5\to34\,\%$ blank), but M3 never sparks or drops a
+        trigger. So the no-track sparks are cross-talk-degraded tracks $+$ muon-free
+        spontaneous sparks --- fully explained, no showers.
   \item \textbf{Follow-ups:} (1) inspect the edge / guard-ring field and the Y/FEU8 hot
-        strips (mask or lower gain); (2) confirm and mitigate the \textbf{DAQ common-mode
-        cross-talk} by which a det3 spark spoils M3 tracking (a spark doubles M3's
-        no-track rate, $17.5\to34\,\%$) --- next step is M3 raw hits or a spark--M3-noise
-        timing coincidence; (3) an offline spark tag (multiplicity $+$ the $\sim$1~\textmu s
+        strips (mask or lower gain); (2) mitigate the cross-talk (grounding/shielding of the
+        shared DAQ) --- it is worse in ZS runs (spark-correlated dropped triggers
+        $25$--$45\,\%$); (3) an offline spark tag (multiplicity $+$ the $\sim$1~\textmu s
         duration signature) would clean the reco\_far tail (companion note
         \texttt{det3\_recofar\_analysis}).
 \end{itemize}
