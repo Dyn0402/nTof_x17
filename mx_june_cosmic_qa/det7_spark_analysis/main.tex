@@ -1,0 +1,151 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{xcolor}
+\usepackage[hidelinks]{hyperref}
+\usepackage{caption}
+\captionsetup{font=small}
+
+\title{\vspace{-2.5em}Sparks in detector~7, and how they compare to detector~3\\
+\large (June cosmic bench --- \texttt{g\_det7\_long})}
+\author{MX17 cosmic-bench QA}
+\date{\today}
+
+\begin{document}
+\maketitle
+\vspace{-1.5em}
+
+\section{Purpose}
+The det3 spark study (companion note \texttt{det3\_spark\_analysis}) found sparks that are
+Poisson in time, predominantly muon-induced, edge-localised, and neither a single flash
+nor a propagating discharge. det7 is the most spark-prone detector of the June fleet
+(38.9\,\% of firing events spark, vs 9.1\,\% for det3) and runs at a different operating
+point (drift 700~V, resist past optimum). We repeat the identical analysis on
+\texttt{mx17\_det6\_det7\_overnight\_6-26-26 / long\_run} (det7 $=$ FEU6/8, 3.84~h,
+\textbf{22\,247 sparks}) to ask: is it the \emph{same} phenomenon, just more of it?
+
+\section{Answer: yes --- the same story, amplified}
+Every det3 conclusion reproduces in det7, scaled up by the higher operating gain
+(Table~\ref{tab:cmp}). Sparks are muon-seeded avalanche breakdowns whose probability and
+spatial/temporal extent grow as the detector is pushed closer to breakdown, initiated at
+the same edge / hot-strip weak spots, developing as a spatially-extended,
+temporally-spread event with no propagating front.
+
+\begin{table}[h]\centering\small
+\begin{tabular}{lccl}
+\toprule
+ & \textbf{det3} (\texttt{g\_det3\_wknd}) & \textbf{det7} (\texttt{g\_det7\_long}) & reading\\
+\midrule
+spark rate (of firing events) & 9.1\,\% & 38.9\,\% & det7 deep in sparking regime\\
+mean rate & 0.33~Hz & 1.61~Hz & higher Poisson mean\\
+random in time? & Poisson & Poisson & neither bursts (no HV instab.)\\[2pt]
+spark rate, muon \emph{crosses} det & 4.9\,\% & 31.0\,\% & muon-induced\\
+spark rate, muon \emph{misses} ($>$30mm) & 1.2\,\% & 5.3\,\% & (stronger in det7)\\
+\textbf{crossing/miss enhancement} & \textbf{4.1$\times$} & \textbf{5.9$\times$} & muon-dominated in both\\
+spontaneous floor (miss rate) & 1.2\,\% & 5.3\,\% & floor rises with gain\\
+sparks with no clean M3 track & 60\,\% & 47\,\% & DAQ cross-talk in both\\[2pt]
+strips/spark (X, Y) & 40, 53 & 64, 76 & bigger discharges; Y$>$X in both\\
+spatial span (median) & $\sim$200~mm (half) & $\sim$360~mm (whole) & det7 fills the plane\\
+occupancy peaks at & edges $+$ hot strips & edges $+$ hot strips & same weak spots\\[2pt]
+hit-time spread (median) & 253~ns & 334~ns & longer in det7\\
+fraction $\sigma_t>300$~ns & 24\,\% & 66\,\% & det7 rings longer\\
+position--time corr $|r|$ & 0.12 & 0.15 & no ``walk'' in either\\
+\bottomrule
+\end{tabular}
+\caption{det3 vs det7 --- identical phenomenology, det7 simply further into breakdown.}
+\label{tab:cmp}
+\end{table}
+
+\section{Q1 --- Time: Poisson, faster}
+det7 sparks at a flat $1.61$~Hz with no bursts; inter-spark intervals are exponential and
+counts-per-bin have $\mathrm{std}=\sqrt{\mathrm{mean}}$ (Fig.~\ref{fig:time}) --- Poisson,
+exactly as det3, just a $5\times$ higher mean. The elevated rate is therefore \emph{not} a
+new instability; it is the same random process with more muons reaching breakdown. (Mild
+consecutive-event clustering, $P(\text{spark}\,|\,\text{prev spark})=39\,\%$ vs $32\,\%$
+baseline, matches det3's small excess.)
+
+\begin{figure}[h]\centering
+\includegraphics[width=\textwidth]{fig_time.png}
+\caption{det7 time structure: flat rate (a), exponential intervals (b), Poisson
+counts/bin (c).}
+\label{fig:time}
+\end{figure}
+
+\section{Q2 --- Muon-induced, even more so}
+Conditioning on a clean single M3 muon, a track crossing det7 sparks at \textbf{31.0\,\%}
+versus \textbf{5.3\,\%} for one that clearly misses --- a \textbf{5.9$\times$} enhancement
+(Fig.~\ref{fig:muon}a), stronger than det3's 4.1$\times$. So $\sim$83\,\% of in-detector
+sparks are muon-induced. The spontaneous floor is higher than det3 (5.3\,\% vs 1.2\,\%),
+consistent with running closer to breakdown where even a stray electron can trigger a
+discharge. The discharge centroid is again central and compact (Fig.~\ref{fig:muon}c). The
+M3 crossing map (Fig.~\ref{fig:muon}b) shows more structure than det3's --- but this tracks
+the overall M3 track density / telescope acceptance, not a det7 hot-spot; the
+detector-frame centroid is the clean spatial measure. The ``no clean track'' population
+persists (47\,\% of sparks vs 35\,\% baseline; same 1.3$\times$ over-representation and
+same discharge size), the DAQ common-mode cross-talk flagged for det3.
+
+\begin{figure}[h]\centering
+\includegraphics[width=\textwidth]{fig_muon.png}
+\caption{det7 muon dependence: (a) crossing muons spark $5.9\times$ more than missing
+ones; (b) M3 crossing positions; (c) central discharge centroid.}
+\label{fig:muon}
+\end{figure}
+
+\section{Q3 --- Same places: edges and hot strips}
+det7 strip occupancy peaks at the plane \textbf{edges} (both planes; strongest at low-$X$
+and high-$Y$) and on a few \textbf{hot strips} --- most dramatically an X/FEU6 channel near
+$45$~mm that fires in a large fraction of all sparks (Fig.~\ref{fig:places}a), plus fixed
+Y/FEU8 spikes (Fig.~\ref{fig:places}b). This is the same edge$+$hot-strip signature as det3,
+more pronounced. Discharges are larger (median 64 X / 76 Y strips) and now span essentially
+the \emph{whole} plane ($\sim$360~mm of 399~mm), versus half the plane in det3 --- the
+higher gain lets a discharge propagate across the full active area. The Y/FEU8 plane again
+discharges harder than X, consistent with det7's known FEU8 saturation band. Only 14\,\% of
+spark hits saturate the ADC.
+
+\begin{figure}[h]\centering
+\includegraphics[width=\textwidth]{fig_places.png}
+\caption{det7 locations: (a,b) edge peaks $+$ hot strips in X and Y; (c) discharge size ---
+larger than det3, Y harder than X.}
+\label{fig:places}
+\end{figure}
+
+\section{Q4 --- Still no ``walk'', but longer-lived}
+det7 sparks are, like det3, neither simultaneous ($0.8\,\%$ within 100~ns) nor propagating:
+the position--time correlation is $|r|\approx0.15$ and the spark-centred
+$\Delta\text{pos}$--$\Delta\text{time}$ map (Fig.~\ref{fig:walk}b) is again a cross with no
+tilt. The difference is duration: the median per-spark time spread is $334$~ns (vs det3's
+253~ns) and \textbf{66\,\%} of det7 sparks spread beyond $300$~ns (vs 24\,\% for det3) ---
+the discharge rings/afterpulses for longer, filling much of the readout window
+(Fig.~\ref{fig:walk}a,c). Same mechanism (extended discharge $+$ afterpulsing, timing
+independent of position), longer tail.
+
+\begin{figure}[h]\centering
+\includegraphics[width=\textwidth]{fig_walk.png}
+\caption{det7 time structure: (a) longer per-spark spread than det3; (b) no tilt (no
+propagating front); (c) example sparks across the whole plane, spread in time.}
+\label{fig:walk}
+\end{figure}
+
+\section{Takeaways}
+\begin{itemize}\setlength\itemsep{0.15em}
+  \item det7 and det3 spark by the \textbf{same mechanism}; det7 is simply operated further
+        into breakdown, which raises the rate (0.33$\to$1.61~Hz), the muon enhancement
+        (4.1$\to$5.9$\times$), the spontaneous floor (1.2$\to$5.3\,\%), the discharge size
+        (half$\to$whole plane) and its duration (253$\to$334~ns).
+  \item The lever is the \textbf{operating gain}: det7 needs a lower resist HV
+        (the HV-scan optimum was $\sim$440~V; this run sat above it). Lowering it cuts the
+        rate but not the muon-seeded nature.
+  \item The \textbf{edge / hot-strip} weak spots and the \textbf{DAQ common-mode cross-talk}
+        (spark $\to$ M3 track lost) reproduce on a second detector, so both are systemic,
+        not det3 quirks --- worth fixing at the detector-edge/guard-ring and DAQ level.
+\end{itemize}
+
+\vspace{0.4em}
+\footnotesize\noindent\textit{Reproduce:} \texttt{extract\_sparks.py g\_det7\_long} then
+\texttt{make\_plots.py g\_det7\_long}; numbers in \texttt{spark\_meta.json}. Identical
+pipeline to \texttt{det3\_spark\_analysis}.
+
+\end{document}
