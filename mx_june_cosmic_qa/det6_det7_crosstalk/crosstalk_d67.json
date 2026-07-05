@@ -1,0 +1,35 @@
+{
+  "evn_window": [
+    1,
+    51916
+  ],
+  "n_in_window": 43136,
+  "neither": {
+    "n": 24849,
+    "nclus_mean": 8.765141454384482,
+    "selfspark_pct": 0.0,
+    "dropped_pct": 0.0
+  },
+  "either": {
+    "n": 18287,
+    "nclus_mean": 11.067096844753104,
+    "selfspark_pct": 0.0,
+    "dropped_pct": 0.0
+  },
+  "det6_only": {
+    "n": 3633,
+    "nclus_mean": 10.214973850812001,
+    "selfspark_pct": 0.0
+  },
+  "det7_only": {
+    "n": 8446,
+    "nclus_mean": 10.092233009708737,
+    "selfspark_pct": 0.0
+  },
+  "both": {
+    "n": 6208,
+    "nclus_mean": 12.892074742268042,
+    "selfspark_pct": 0.0
+  },
+  "excess_pct": 26.262615410697588
+}

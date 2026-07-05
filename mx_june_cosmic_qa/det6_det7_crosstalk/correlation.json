@@ -1,0 +1,20 @@
+{
+  "N": 71705,
+  "det6_rate_pct": 23.994142667875323,
+  "det7_rate_pct": 31.025730423261976,
+  "contingency": {
+    "both": 9669,
+    "det6_only": 7536,
+    "det7_only": 12578,
+    "neither": 41922
+  },
+  "P_det7_given_det6": 56.19877942458588,
+  "P_det7_given_not_det6": 23.078899082568807,
+  "P_det6_given_det7": 43.46203982559446,
+  "P_det6_given_not_det7": 15.237170932912775,
+  "odds_ratio": 4.276328639227526,
+  "phi": 0.3057456917758184,
+  "both_observed": 9669,
+  "both_expected_indep": 5337.976919322223,
+  "coincidence_factor": 1.8113603985435927
+}
