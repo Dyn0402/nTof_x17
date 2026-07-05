@@ -58,5 +58,46 @@
     "frac_simultaneous_lt100": 0.01240814359715697,
     "frac_spread_gt300": 0.23864594627153354,
     "postime_corr_med": 0.11720504873279912
+  },
+  "shower_test": {
+    "ncand": {
+      "all non-spark": {
+        "0": 17.539513692575216,
+        "1": 82.30796879705457,
+        "ge2": 0.15251751037021927
+      },
+      "all sparks": {
+        "0": 34.06050379655297,
+        "1": 64.91502952874532,
+        "ge2": 1.0244666747016995
+      },
+      "no-track sparks": {
+        "0": 56.53130626125225,
+        "1": 42.208441688337665,
+        "ge2": 1.260252050410082
+      }
+    },
+    "n_shower_like_notrk": 63,
+    "max_shower_frac_pct": 1.260252050410082,
+    "n_multi_total": 242,
+    "multi_total_pct": 0.21755546765435652,
+    "morphology": {
+      "tracked spark": {
+        "n": 3298,
+        "strips_med": 91.0,
+        "span_med": 371.67,
+        "tstd_med": 257.43177167911483,
+        "satfrac_med": 0.10420688545688546,
+        "edgefrac_med": 0.3160580021482277
+      },
+      "no-track spark": {
+        "n": 5003,
+        "strips_med": 88.0,
+        "span_med": 304.2,
+        "tstd_med": 250.86092436968087,
+        "satfrac_med": 0.09411764705882353,
+        "edgefrac_med": 0.2037037037037037
+      }
+    }
   }
 }

@@ -105,6 +105,55 @@ sparking muons (roughly uniform); (c) discharge centroid in the detector frame
 \label{fig:muon}
 \end{figure}
 
+\section{Q2b --- Are the ``no-track'' sparks really particle showers?  No}
+A natural competing explanation for the no-track population is a \textbf{shower}: a burst
+of several particles that crosses both M3 (leaving a mess that fails to fit a single
+track) and our detector (firing many strips, read as a spark). This is directly testable,
+because a shower of several charged particles leaves M3 with \emph{multiple straight-track
+candidates} ($\text{ncand}\ge2$), whereas a corrupted or particle-free event leaves
+$\text{ncand}=0$ (M3 blank) or a single degraded candidate ($\text{ncand}=1$). We count
+raw M3 track candidates per event (before quality cuts) and split by spark class
+(Fig.~\ref{fig:shower}):
+%
+\begin{table}[h]\centering\small
+\begin{tabular}{lccc}
+\toprule
+event class & ncand $=0$ (blank) & ncand $=1$ (single) & ncand $\ge2$ (\textbf{shower})\\
+\midrule
+non-spark        & 17.5\,\% & 82.3\,\% & 0.15\,\%\\
+all sparks       & 34.1\,\% & 64.9\,\% & 1.02\,\%\\
+\textbf{no-track sparks} & 56.5\,\% & 42.2\,\% & \textbf{1.26\,\%}\\
+\bottomrule
+\end{tabular}
+\end{table}
+%
+The shower signature is essentially absent: only \textbf{1.3\,\%} of no-track sparks have
+$\ge2$ M3 tracks (det7: 0.5\,\%), and the M3 tracker never returns more than three
+candidates --- multi-track events are $0.2\,\%$ of the entire run, far too rare to
+account for the thousands of no-track sparks. Instead the no-track sparks are M3-blank
+(57\,\%) or a single track that failed the quality cut (42\,\%). Second, the
+\textbf{discharge morphology is identical} for muon-tracked and no-track sparks (median
+88 vs 91 strips, span 304 vs 372~mm, time spread 251 vs 257~ns, edge and saturation
+fractions equal; Fig.~\ref{fig:shower}c) --- the no-track sparks are the \emph{same
+physical discharge} as the muon-induced ones, not a distinct multi-cluster shower
+signature. \textbf{The shower hypothesis is ruled out.}
+
+What the split \emph{does} show is that a spark nearly \textbf{doubles} the chance that M3
+returns no track at all ($17.5\to34\,\%$ blank): the discharge suppresses M3
+reconstruction (the DAQ common-mode cross-talk), on top of a genuinely muon-free
+spontaneous component. Cleanly separating those two would need the M3 \emph{raw hits}
+(not stored in the ray files) or a spark$\leftrightarrow$M3-noise timing coincidence ---
+a further step --- but showers are not the answer.
+
+\begin{figure}[h]\centering
+\includegraphics[width=\textwidth]{fig_shower_test.png}
+\caption{\textbf{Shower test.} (a) M3 candidate-track count by spark class --- no-track
+sparks are $\text{ncand}=0/1$, not $\ge2$; (b) the $\ge2$-track shower fraction is not
+meaningfully enriched in sparks; (c) muon-tracked and no-track sparks have identical
+discharge size (and span/duration/edge --- see text).}
+\label{fig:shower}
+\end{figure}
+
 \section{Q3 --- Are there particular places that spark?  Yes: the edges}
 Strip occupancy in sparks is strongly non-uniform (Fig.~\ref{fig:places}a,b). Both planes
 show large peaks at the detector \textbf{edges} ($0$ and $\sim$$399$~mm; strongest at
@@ -162,11 +211,16 @@ with timing independent of position --- not a wave sweeping across the strips.
         discharges span $\sim$half the plane, centred centrally; Y sparks harder than X.
   \item \textbf{Structure:} a spatially-extended, temporally-spread ($\sim$250~ns, tail to
         $\sim$1~\textmu s) discharge with afterpulsing --- no propagating ``walk''.
+  \item \textbf{Not showers:} the ``no-track'' sparks are not multi-particle showers ---
+        only $1.3\,\%$ carry $\ge2$ M3 tracks and their discharge morphology is identical
+        to muon-tracked sparks (Q2b). The lost M3 track is DAQ cross-talk $+$ spontaneous
+        muon-free sparks, not a physics shower.
   \item \textbf{Follow-ups:} (1) inspect the edge / guard-ring field and the Y/FEU8 hot
         strips (mask or lower gain); (2) confirm and mitigate the \textbf{DAQ common-mode
-        cross-talk} by which a det3 spark spoils M3 tracking (60\,\% of sparks lose the M3
-        track); (3) an offline spark tag (multiplicity $+$ the $\sim$1~\textmu s duration
-        signature) would clean the reco\_far tail (companion note
+        cross-talk} by which a det3 spark spoils M3 tracking (a spark doubles M3's
+        no-track rate, $17.5\to34\,\%$) --- next step is M3 raw hits or a spark--M3-noise
+        timing coincidence; (3) an offline spark tag (multiplicity $+$ the $\sim$1~\textmu s
+        duration signature) would clean the reco\_far tail (companion note
         \texttt{det3\_recofar\_analysis}).
 \end{itemize}
 
