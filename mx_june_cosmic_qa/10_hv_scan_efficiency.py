@@ -55,7 +55,7 @@ CFG = config_from_argv()
 R = next((float(a.split('=')[1]) for a in sys.argv if a.startswith('--r=')), 5.0)
 MIN_VALID = next((int(a.split('=')[1]) for a in sys.argv if a.startswith('--minvalid=')), 20)
 SPARK_THRESH = next((int(a.split('=')[1]) for a in sys.argv if a.startswith('--spark=')), 50)
-M3_CHI2_CUT = 20.0
+M3_CHI2_CUT = 5.0  # M3 v2 recipe
 
 # Alignment seed (z/theta/centre/handedness; translation re-run per subrun). Defaults to
 # this run's own long_run alignment, but --seed=<alignment.json> overrides it -- needed
