@@ -19,26 +19,58 @@ import awkward as ak
 
 
 class M3RefTracking:
-    def __init__(self, ray_dir, file_nums='all', variables=None, single_track=True, trigger_list=None, chi2_cut=1.5):
+    def __init__(self, ray_dir, file_nums='all', variables=None, single_track=True, trigger_list=None, chi2_cut=5.0,
+                 min_nclus=3):
+        """
+        :param chi2_cut: per-coordinate cut on Chi2X and Chi2Y (unweighted sum of squared
+            residuals in mm^2). Recommended M3 v2 value: 5.0.
+        :param min_nclus: minimum clusters per coordinate (NClusX, NClusY) for a track to
+            count as good. Recommended M3 v2 value: 3 (requires a genuine 3-4 layer fit and
+            drops 2-point-per-coordinate fits, which are only ~38% within 5 mm of the DUT vs
+            ~85% for full fits). Set to 0 or None to disable. Only applied when the rays were
+            produced by tracking v2 (older files have no NClusX/NClusY branches).
+        """
         self.ray_dir = ray_dir
         self.file_nums = file_nums
         self.single_track = single_track
         self.trigger_list = trigger_list
 
         self.chi2_cut = chi2_cut
+        self.min_nclus = min_nclus
         # self.detector_xy_extent_cuts = {'x': [-250, 250], 'y': [-250, 250]}
         self.detector_xy_extent_cuts = {'x': [-500, 500], 'y': [-500, 500]}
         if variables is None:
             self.variables = ['evn', 'evttime', 'rayN', 'Z_Up', 'X_Up', 'Y_Up', 'Z_Down', 'X_Down', 'Y_Down', 'Chi2X',
-                              'Chi2Y']
+                              'Chi2Y', 'NClusX', 'NClusY']
         else:
             self.variables = variables
 
-        self.ray_data = get_ray_data(ray_dir, file_nums, variables)
+        self.ray_data = get_ray_data(ray_dir, file_nums, self.variables)
+        # NClusX/NClusY exist only in v2-reprocessed rays; older files silently lack them, so
+        # keep self.variables to what was actually loaded and gate the NClus cut on presence.
+        self.variables = list(ak.fields(self.ray_data))
+        self.has_nclus = 'NClusX' in self.variables and 'NClusY' in self.variables
+        if self.min_nclus and not self.has_nclus:
+            print(f'M3RefTracking: NClusX/NClusY absent (pre-v2 rays in {ray_dir}); skipping the '
+                  f'NClus>={self.min_nclus} cut -- reprocess with tracking v2 to enable it.')
+
         if self.trigger_list is not None:
             self.filter_on_trigger_list()
         if single_track:
             self.get_single_track_events()
+
+    @property
+    def track_vars(self):
+        """Per-track (jagged) branches present in the loaded data -- masked together to stay aligned."""
+        return [v for v in ('X_Up', 'Y_Up', 'X_Down', 'Y_Down', 'Chi2X', 'Chi2Y', 'NClusX', 'NClusY')
+                if v in self.variables]
+
+    def good_track_mask(self):
+        """Per-track boolean: passes the recommended chi2 (+ NClus, when available) recipe."""
+        mask = (self.ray_data['Chi2X'] < self.chi2_cut) & (self.ray_data['Chi2Y'] < self.chi2_cut)
+        if self.has_nclus and self.min_nclus:
+            mask = mask & (self.ray_data['NClusX'] >= self.min_nclus) & (self.ray_data['NClusY'] >= self.min_nclus)
+        return mask
 
     def get_xy_positions(self, z, event_list=None, multi_track_events=False, one_track=True):
         if multi_track_events:
@@ -69,7 +101,9 @@ class M3RefTracking:
     def cut_on_chi2(self, chi2_cut):
         chi2_x, chi2_y = self.ray_data['Chi2X'], self.ray_data['Chi2Y']
         mask = (chi2_x < chi2_cut) & (chi2_y < chi2_cut)
-        for var in ['X_Up', 'Y_Up', 'X_Down', 'Y_Down', 'Chi2X', 'Chi2Y']:
+        if self.has_nclus and self.min_nclus:
+            mask = mask & (self.ray_data['NClusX'] >= self.min_nclus) & (self.ray_data['NClusY'] >= self.min_nclus)
+        for var in self.track_vars:
             self.ray_data[var] = self.ray_data[var][mask]
 
     def cut_on_det_size(self):
@@ -80,37 +114,36 @@ class M3RefTracking:
         n_tracks = int(ak.sum(ak.num(mask, axis=1)))  # len(mask) is the EVENT count, not the track count
         print(f'Cutting on detector size: {np.sum(mask)} / {n_tracks} tracks remain, '
               f'{np.sum(mask) / n_tracks * 100:.2f}% (over {len(mask)} events)')
-        for var in ['X_Up', 'Y_Up', 'X_Down', 'Y_Down', 'Chi2X', 'Chi2Y']:
+        for var in self.track_vars:
             self.ray_data[var] = self.ray_data[var][mask]
 
     def get_single_track_events(self):
         """
-        Find events with only one track with both chi2_x and chi2_y less than chi2_cut and within detector areas.
-        :return:
+        Keep events with exactly one good track (recommended recipe: both chi2 < chi2_cut and,
+        for v2 rays, NClusX/NClusY >= min_nclus) inside the detector area, and flatten to that
+        one track per event.
         """
         self.cut_on_det_size()
-        chi2_x, chi2_y = self.ray_data['Chi2X'], self.ray_data['Chi2Y']
+        recipe = f'chi2<{self.chi2_cut:g}' + (f' & NClus>={self.min_nclus}' if self.has_nclus and self.min_nclus
+                                              else '')
         num_zero = np.sum(ak.num(self.ray_data['Chi2X'], axis=1) == 0)
         num_multi = np.sum(ak.num(self.ray_data['Chi2X'], axis=1) > 1)
-        print(f'Pre-chi2 cut, Found {num_zero} events with 0 good tracks ({num_zero / len(self.ray_data["Chi2X"]) * 100:.2f}%), '
-              f'{num_multi} events with >1 good tracks ({num_multi / len(self.ray_data["Chi2X"]) * 100:.2f}%)')
-        num_good_tracks = ak.sum((chi2_x < self.chi2_cut) & (chi2_y < self.chi2_cut), axis=1)
+        print(f'Pre-cut, Found {num_zero} events with 0 tracks ({num_zero / len(self.ray_data["Chi2X"]) * 100:.2f}%), '
+              f'{num_multi} events with >1 tracks ({num_multi / len(self.ray_data["Chi2X"]) * 100:.2f}%)')
+        good = self.good_track_mask()
+        num_good_tracks = ak.sum(good, axis=1)
         num_zero = np.sum(num_good_tracks == 0)
         num_multi = np.sum(num_good_tracks > 1)
-        print(f'Found {num_zero} events with 0 good tracks ({num_zero / len(num_good_tracks) * 100:.2f}%), '
+        print(f'Recipe [{recipe}]: {num_zero} events with 0 good tracks ({num_zero / len(num_good_tracks) * 100:.2f}%), '
               f'{num_multi} events with >1 good tracks ({num_multi / len(num_good_tracks) * 100:.2f}%)')
-        mask = num_good_tracks == 1
-        self.ray_data = self.ray_data[mask]
+        event_mask = num_good_tracks == 1
+        self.ray_data = self.ray_data[event_mask]
+        good = good[event_mask]
 
-        # Flatten from here, picking track with min chi2_x + chi2_y
-        chi2_x, chi2_y = self.ray_data['Chi2X'], self.ray_data['Chi2Y']
-        chi2_sum = chi2_x + chi2_y
-        min_chi2 = ak.min(chi2_sum, axis=1)
-        mask = chi2_sum == min_chi2
-
-        for var in ['X_Up', 'Y_Up', 'X_Down', 'Y_Down', 'Chi2X', 'Chi2Y']:
-            if self.variables is None or var in self.variables:
-                self.ray_data[var] = ak.ravel(self.ray_data[var][mask])
+        # Exactly one good track per kept event: select it directly. (Cannot pick the global
+        # min-chi2 track -- a 2-point fit has chi2~0 but fails the NClus cut.)
+        for var in self.track_vars:
+            self.ray_data[var] = ak.ravel(self.ray_data[var][good])
 
     def filter_on_trigger_list(self):
         """
@@ -172,7 +205,8 @@ class M3RefTracking:
 
 def get_ray_data(ray_dir, file_nums='all', variables=None):
     if variables is None:
-        variables = ['evn', 'evttime', 'rayN', 'Z_Up', 'X_Up', 'Y_Up', 'Z_Down', 'X_Down', 'Y_Down', 'Chi2X', 'Chi2Y']
+        variables = ['evn', 'evttime', 'rayN', 'Z_Up', 'X_Up', 'Y_Up', 'Z_Down', 'X_Down', 'Y_Down', 'Chi2X', 'Chi2Y',
+                     'NClusX', 'NClusY']
 
     def read_file(file_name):
         if not file_name.endswith('_rays.root'):
@@ -186,7 +220,10 @@ def get_ray_data(ray_dir, file_nums='all', variables=None):
         with uproot.open(f'{ray_dir}{file_name}') as file:
             tree_name = f"{file.keys()[0].split(';')[0]};{max([int(key.split(';')[-1]) for key in file.keys()])}"
             tree = file[tree_name]  # Get tree with max ;# at end
-            new_data = tree.arrays(variables, library='ak')
+            # NClusX/NClusY exist only in v2-reprocessed rays; read only branches present so
+            # older files still load (all files in one ray_dir have the same schema).
+            avail = [v for v in variables if v in tree.keys()]
+            new_data = tree.arrays(avail, library='ak')
             return new_data
 
     # List of ROOT files in the directory
