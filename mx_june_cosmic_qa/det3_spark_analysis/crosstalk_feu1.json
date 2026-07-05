@@ -1,0 +1,24 @@
+{
+  "evn_window": [
+    1,
+    39035
+  ],
+  "n_our_in_window": 20827,
+  "n_matched_spark": 1568,
+  "n_matched_nonspark": 19259,
+  "dropped": {
+    "spark_present_pct": 100.0,
+    "nonspark_present_pct": 100.0,
+    "spark_dropped_pct": 0.0,
+    "nonspark_dropped_pct": 0.0
+  },
+  "m3_selfspark_when_we_spark_pct": 0.0,
+  "m3_selfspark_when_not_pct": 0.0,
+  "m3_clusters_per_event_spark": 14.881377551020408,
+  "m3_clusters_per_event_nonspark": 9.688197725738616,
+  "m3_excess_clusters": 5.193179825281792,
+  "m3_cluster_ampl_med_spark": 521.1700134277344,
+  "m3_cluster_ampl_med_nonspark": 607.0409851074219,
+  "m3_cluster_size_med_spark": 4.0,
+  "m3_cluster_size_med_nonspark": 5.0
+}
