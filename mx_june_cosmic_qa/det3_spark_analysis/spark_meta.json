@@ -99,5 +99,13 @@
         "edgefrac_med": 0.2037037037037037
       }
     }
+  },
+  "hitmap": {
+    "centroid_x_med": 212.6209090909091,
+    "centroid_y_med": 201.106953125,
+    "fill_med": 0.1935483870967742,
+    "nclust_med": 4.0,
+    "widest_cluster_mm_med": 19.482421875,
+    "frac_single_cluster": 0.0594614133381529
   }
 }
