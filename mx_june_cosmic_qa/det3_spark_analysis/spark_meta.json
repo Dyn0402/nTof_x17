@@ -1,0 +1,62 @@
+{
+  "key": "g_det3_wknd",
+  "det": "mx17_3",
+  "feu_x": 7,
+  "feu_y": 8,
+  "run": "mx17_det3_p2_det1_overnight_6-27-26",
+  "subrun": "long_run_p2_det1_sanity_check",
+  "spark_thresh": 50,
+  "box": [
+    -214.54134005433664,
+    144.43602562378118,
+    -207.80461611869953,
+    188.71441501848858
+  ],
+  "n_events_union": 111286,
+  "n_firing": 90914,
+  "n_spark": 8301,
+  "n_ray_events": 74677,
+  "tspread_norm_median_ns": 192.56666564941406,
+  "run_duration_s": 24862.56013252,
+  "q2": {
+    "muon crosses det (in box)": {
+      "N": 52995,
+      "sparks": 2600,
+      "rate_pct": 4.9061232191716195
+    },
+    "muon at edge (<30mm)": {
+      "N": 9824,
+      "sparks": 557,
+      "rate_pct": 5.6697882736156355
+    },
+    "muon misses (>30mm)": {
+      "N": 11858,
+      "sparks": 141,
+      "rate_pct": 1.18907066959015
+    },
+    "no clean M3 track": {
+      "N": 36609,
+      "sparks": 5003,
+      "rate_pct": 13.666038405856483
+    },
+    "enhancement_in_vs_miss": 4.126014832123197,
+    "noray_frac_of_sparks_pct": 60.26984700638477,
+    "noray_frac_baseline_pct": 32.89632119044624
+  },
+  "q3": {
+    "x_strips_med": 40.0,
+    "y_strips_med": 53.0,
+    "x_span_med_mm": 203.57999999999998,
+    "y_span_med_mm": 234.78000000000003,
+    "frac_sat": 0.10267869455750417,
+    "x_hot_edge_share": 18.22900124336768,
+    "y_hot_edge_share": 13.787413326853201
+  },
+  "q4": {
+    "tstd_med_ns": 253.13719778013115,
+    "tstd_norm_ns": 192.56666564941406,
+    "frac_simultaneous_lt100": 0.01240814359715697,
+    "frac_spread_gt300": 0.23864594627153354,
+    "postime_corr_med": 0.11720504873279912
+  }
+}
