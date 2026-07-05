@@ -127,6 +127,14 @@ def _colors(n):
     return [cmap(i % 10) for i in range(n)]
 
 
+def _series_style(si: int, base_ms: float) -> dict:
+    """Series 0 (usually the fresh/live run) is drawn larger and on top; all
+    series get some opacity so overlapping points show through each other."""
+    if si == 0:
+        return dict(ms=base_ms + 2.5, lw=1.6, alpha=0.9, zorder=5)
+    return dict(ms=base_ms, lw=1.3, alpha=0.7, zorder=2)
+
+
 def plot_grid(series, det_names, gas, out_dir, metric):
     """rows = time window, cols = detector, one line per series, indep. y."""
     label = WINDOW_METRICS[metric]
@@ -145,8 +153,8 @@ def plot_grid(series, det_names, gas, out_dir, metric):
                 good = np.isfinite(s['hv']) & np.isfinite(y)
                 if not good.any():
                     continue
-                ax.plot(s['hv'][good], y[good], '-o', ms=3.5, lw=1.3,
-                        color=cols[si], label=slabel)
+                ax.plot(s['hv'][good], y[good], '-o', color=cols[si],
+                        label=slabel, **_series_style(si, 3.5))
             ax.grid(True, alpha=0.3)
             ax.tick_params(labelsize=7)
             if (lo, hi) == MID_WINDOW:
@@ -186,8 +194,8 @@ def plot_midwindow(series, det_names, gas, out_dir):
             good = np.isfinite(s['hv']) & np.isfinite(y)
             if not good.any():
                 continue
-            ax.plot(s['hv'][good], y[good], '-o', ms=4, lw=1.6,
-                    color=cols[si], label=slabel)
+            ax.plot(s['hv'][good], y[good], '-o', color=cols[si],
+                    label=slabel, **_series_style(si, 4))
         ax.grid(True, alpha=0.3)
         ax.set_title(det, fontsize=10)
         ax.set_xlabel('Resist HV [V]')
