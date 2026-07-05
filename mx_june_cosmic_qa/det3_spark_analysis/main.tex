@@ -177,6 +177,42 @@ per spark --- Y discharges are larger than X.}
 \label{fig:places}
 \end{figure}
 
+\section{Spark hitmaps --- and a second, detector-side shower check}
+Fig.~\ref{fig:hitmap} maps where sparks live in the detector plane. The discharge
+\emph{centre} (mean of a spark's fired strips) is a central blob (a), but the
+\emph{footprint} hitmap (b) --- the fraction of sparks with coincident X\,\&\,Y activity
+in each cell --- is a striking fixed \textbf{grid}: bright bands along all four edges plus
+a few fixed hot strips, the same cells lighting up spark after spark, over a dark
+($\sim$5\,\%) interior. This fixed footprint is itself a shower veto: a shower would land
+where the muon flux does (uniformly, as in Fig.~\ref{fig:muon}b), \emph{not} repeatedly on
+the same edges and hot channels. The edges/hot-strips are a detector property.
+
+The fired-strip micro-structure (Fig.~\ref{fig:clusters}) says the same thing from the
+mx17 side, addressing the concern that a \emph{tight} shower (which M3 could not resolve)
+might mimic a spark. A spark is a few broad blobs (median 4 contiguous clusters per plane,
+patchy fill $\sim$0.19) spread over $\sim$half the plane --- but the crucial number is the
+\textbf{widest contiguous cluster: median 19~mm} (Fig.~\ref{fig:clusters}c), with no
+population at the $\sim$5--8~mm width of a single-particle track. Real particle tracks, however
+tightly bunched, would show up as $\sim$mm-wide clusters; the spark blobs are $2$--$4\times$
+wider and sit at fixed positions. So even a collimated shower is excluded: the detector
+sees discharge blobs, not tracks.
+
+\begin{figure}[h]\centering
+\includegraphics[width=\textwidth]{fig_hitmap.png}
+\caption{\textbf{Spark hitmaps} (detector strip frame). (a) discharge centre (mean of
+fired strips per spark); (b) footprint --- \% of sparks with X\,\&\,Y activity per cell,
+a fixed edge$+$hot-strip grid; (c) per-plane occupancy, edges over-weighted.}
+\label{fig:hitmap}
+\end{figure}
+
+\begin{figure}[h]\centering
+\includegraphics[width=\textwidth]{fig_clusters.png}
+\caption{\textbf{Detector-side shower check.} (a) contiguous clusters per spark; (b) fill
+fraction; (c) widest contiguous cluster --- median 19~mm, far wider than a $\sim$mm
+particle track, so the fired strips are discharge blobs, not tight tracks.}
+\label{fig:clusters}
+\end{figure}
+
 \section{Q4 --- All strips at once, or does the discharge ``walk''?  Neither}
 The discharge is \emph{not} a single simultaneous flash: only $1.2\,\%$ of sparks have all
 their hits within 100~ns; the per-spark hit-time spread is $\sigma\approx253$~ns median
