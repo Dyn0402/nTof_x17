@@ -21,6 +21,7 @@ evening after the M3 v2 re-verification (see Sec. 0b).*
 | edge / fringe field | distortion < 25–40 mm from edge: inward δ≈−0.06 tan, T_sat +10–19 %, eff turn-on 0→96 % over 0–25 mm; core uniform | 32 |
 | dead-tail guard | sat-run FEU 8 has no file-003 data (eid > 38,926) — ALL whole-run efficiency quotes need the per-FEU live-range guard | 31/32 (`vetoed_event_ids`) |
 | head-on tagging | angle estimators CANNOT tag θ<5° tracks (production AUC 0.46 = anti-correlated, sharing pushes vertical to ±5–7°); waveform signature LDA AUC 0.92, purity 81 %@20 % eff (prevalence 12 %) | 33 |
+| hybrid tracking | \|θ\|<5° band: σ68 = 1.75° at 97 % coverage (production 14.9°; track-only 5.3° @ 51 %); plateau 1.86° @ 98 % — uniform ~1.8° tracking at all angles | 34 |
 
 ## 0b. M3 tracking-v2 re-verification (7-06) — all conclusions HOLD
 
@@ -125,6 +126,7 @@ between runs, never assume.
 | 31 | `31_microtpc_metrics.py` | decoded_root + cache | **micro-TPC scoreboard**: segment-efficiency ladder (honest ray denominator), angular bias/σ68, |Δθ|<3/5° fractions, 3D opening angle; caches `microtpc_segments.csv` for 32 |
 | 32 | `32_edge_fringe_field.py` | cache (+31's CSV if present) | edge/fringe study: outward angle residual, T-span, column proxy, efficiency vs edge distance; zone table (edge/mid/core) |
 | 33 | `33_headon_tracks.py` | decoded_root + cache | head-on tagger: waveform signature (lead ToT, lead-charge fraction, n_strips…) Fisher-LDA, AUC 0.92 vs 0.46 for the production angle; caches `headon_features.csv` |
+| 34 | `34_hybrid_tracking.py` | 31's + 33's CSVs (no waveform pass) | **hybrid tracking**: signature-regressed \|tanθ\| + asymmetry sign below ~5°, unshared time fit above → σ68 ≈ 1.8° at ALL angles, 97–99 % coverage (holdout-validated) |
 
 Typical invocation: `../.venv/bin/python 21_geometry_vdrift_scan.py sat_det3 --veto=50`.
 Runtimes: hits-level scripts ~1–5 min; waveform scripts (24/26/27/28) ~5–15 min
