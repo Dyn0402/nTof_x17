@@ -344,6 +344,44 @@ eff 20 % → 81 % (7× enrichment). Use for selecting head-on samples;
 conversely the tag can VETO tracks where the micro-TPC angle is
 untrustworthy.
 
+## 10. Hybrid tracking — angles at ALL angles (7-07, `34_hybrid_tracking.py`)
+
+The head-on signature features are CONTINUOUS in |θ| (footprint, lead ToT,
+lead-charge fraction = a per-event geometry estimator), so instead of a
+binary tag we REGRESS |tanθ| from them (per plane; linear fit on
+standardized features + monotonic binned-median calibration; trained on
+even eids, everything below = odd-eid holdout). Sign at low angle from the
+signed L/R asymmetries (shallow-side neighbour has more charge, fires
+earlier): 92 % correct at 3°, ≥94 % beyond 5° (74 % at 1°, where sign is
+irrelevant). Hybrid rule per plane: if the regressor says inclined
+(|tan_reg| > 0.09 ≈ 5°) and a segment exists → unshared+calibrated time
+fit; otherwise → signed regression. NB the switch must be decided by the
+REGRESSOR — switching on the segment angle mis-assigns true low-angle
+tracks whose time fit fluctuated high (1.75° → 2.34° in the <5° band).
+
+| \|θ_ref\| < 5° band | coverage | bias | σ68 |
+|---|---:|---:|---:|
+| production time-fit (current algo) | 94 % | −3.4° | **14.9°** |
+| unshared+cal time-fit (track-only) | 51 % | −0.2° | 5.3° |
+| signature regression only | 97 % | −0.1° | 1.81° |
+| **HYBRID** | **97 %** | **−0.1°** | **1.75°** |
+
+Plateau (|θ|>8°): hybrid 1.86° at 98 % coverage (track-only 1.72° at
+85 %). → **uniform ~1.8° angular resolution at ALL angles with 97–99 %
+coverage**; the correlation plot is a continuous diagonal through zero
+(exclusion gap gone). Surprise: regression ALONE gives 2.1° on the
+plateau — the features carry nearly the full angular information; the
+time fit only refines the plateau by ~0.3°.
+
+Caveats / next: (1) the regression is trained on this run's cosmics —
+constants are per-detector/per-gas-era like the sharing constants; test
+transfer on det2 (o22_long_det2 has decoded waveforms + features
+pipeline). (2) Below ~1.5° the response flattens (|θ|-folding + feature
+floor). (3) Regression-only drifts at |θ|>15° (feature saturation) —
+the hybrid switch handles it. (4) Features need decoded waveforms; a
+production integration would compute them in mm_processor alongside the
+unsharing pre-filter.
+
 ## Open follow-ups
 1. Implement + validate the unsharing time estimator; wire geometry v and
    corrected micro-TPC into `03_alignment_and_tpc.py`.
