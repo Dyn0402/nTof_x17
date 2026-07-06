@@ -4,6 +4,18 @@
 geometry estimator supersedes all time-based fits). Scripts:
 `13_tpc_angle_bias.py` … `25_signal_formation_toy.py`; run key `sat_det3`.*
 
+> **7-06 UPDATE — re-verified on M3 tracking v2.** The full chain was re-run
+> on the v2-reprocessed reference rays (recipe chi2<5 & NClus≥3; alignment
+> identical, match quality 85.6→95.6 % within 10 mm, σ_x/σ_y 0.83/0.92 →
+> 0.76/0.83 mm). **Every physics conclusion below holds**: v_geom(1000 V)
+> = 33.90 ± 0.25 µm/ns, recorded column 23.4 mm, T_sat 691 ns, λ_att
+> 15.4 mm, gas ranking unchanged, sharing constants identical, unshared
+> time-fit converges (34.2/32.9 x/y). Only the 700 V drift point moved
+> (21.6 → 23.3 µm/ns, ~2σ). Comparison table: `MICROTPC_RUNBOOK.md` §0b.
+> New in this pass: `31_microtpc_metrics.py` (micro-TPC-mode performance
+> scoreboard) and `32_edge_fringe_field.py` (degrader fringe-field study)
+> — results in §7–8 below.
+
 > **Full LaTeX write-up: `report_det3_weekend/main.pdf`** (rev 7-04, 22 pp).
 >
 > **Headline (7-04): v_drift(1000 V) = 34 ± 1.5 µm/ns.** Every TIME-based
@@ -202,6 +214,82 @@ amplitude-vs-depth curve. Also NB det2's pre-correction bias differs from
 det3's (before: 33.5/30.3 vs 30.8/29.0) — the time-fit bias is
 condition-dependent (det2 ran resist 525 V), so the unsharing correction
 (not a fixed scale factor) is the right production fix.
+
+## 7. Micro-TPC-mode performance metrics (7-06, `31_microtpc_metrics.py`)
+
+The hit-mode-analogous scoreboard for the DIRECTIONAL measurement, on the
+final chain (unsharing α=0.5 + tan calibration, M3 v2 rays). Denominator =
+good single v2 rays traversing the fiducial active area (5 mm margin),
+spark-vetoed events and the dead file-003 tail removed (see below).
+
+| metric | value |
+|---|---|
+| hit-mode efficiency (X+Y cluster, r<10 mm) | **92.8 ± 0.2 %** |
+| micro-TPC segment efficiency (X+Y unshared fit, ≥3 strips) | 50.8 ± 0.4 % (54.7 % given hit) |
+| direction-agreement efficiency (both planes \|Δθ\|<5°) | 37.9 ± 0.4 % |
+| plateau (\|θ\|>8°) angular bias / σ68 | **−0.16° / 1.75°** |
+| fraction of segments \|Δθ\| < 3° / 5° | 76 % / 84 % |
+| Pearson r(tanθ_det, tanθ_ref) | 0.70 all / 0.89 plateau (\|θ\|>8°) |
+| 3D opening angle ψ median / 68 % | **2.4° / 3.9°** |
+| fraction ψ < 5° / 10° | 73 % / 81 % |
+
+The 93 → 51 % step is the strict waveform-segment requirement (unshared
+THR 150 ADC, ≥3 core strips with valid CFD): near-vertical tracks shrink to
+2–3 direct strips after unsharing. The directional measurement is premium —
+available for half the tracks, and when available it points to the ray
+within 5° for ~84 % (per plane) / ψ<5° for 73 % (3D).
+
+**DEAD-TAIL FINDING (important for ALL sat-run efficiency quotes):** FEU 8
+(y-plane) has NO data for datrun file 003 (eid > 38,926; the file was never
+written — same reason decoded 003_08 doesn't exist). Hit-mode efficiency
+is flat at 88–89.5 % (no veto removal) for eid < 36 k, then 45 % → 0 %.
+Any efficiency computed over the whole run without a per-FEU live-range
+guard is diluted by ~15 % — the earlier "~76–80 %" numbers for this run
+understate the detector. Same bug class as the p2-run unreconstructed-file
+guard (commit 0dfa1ec). `31/32` now derive the live range from per-FEU
+combined_hits coverage.
+
+## 8. Edge / fringe-field study (7-06, `32_edge_fringe_field.py`)
+
+det3's drift gap is graded by a 3-step copper-ring degrader at the
+perimeter; distortion is still expected near the edges. Method: whole-
+detector (core-only) median response baseline(tanθ_ref) subtracted per
+plane (removes the sharing bias, which is angle-sign-following), then the
+residual δ profiled vs distance-to-edge with an OUTWARD sign convention;
+positions = ray in raw detector frame. Zone systematics floor ±0.007 tan
+(cosmic position–angle acceptance correlation).
+
+| zone (dist to edge) | v_geom x/y [µm/ns] | T_sat x/y [ns] | outward δtanθ x/y |
+|---|---|---|---|
+| edge 0–25 mm | 22.1 / 28.7 | 745 / 834 | **−0.055** / −0.002 |
+| mid 25–60 mm | 34.2 / 27.7 | 670 / 723 | +0.003 / +0.007 |
+| core > 60 mm | 34.5 / 30.4 | 678 / 702 | +0.006 / +0.006 |
+
+(δ shown for the unshared angle source; the production-fit source gives the
+same picture — edge δx −0.056 — so the finding is estimator-independent.
+The x-plane profile crosses zero at ~30–35 mm; the y-plane zone median is
+diluted by its larger extent floor, but its per-side profile shows the same
+−0.06 inward dip below 25 mm.)
+
+Findings:
+1. **Distortion is confined to ≲25–40 mm from the edge.** Beyond 40 mm the
+   detector is uniform (angle maps flat, T_sat flat, v_geom stable).
+2. **Inward apparent-angle tilt at the edge** (δ ≈ −0.06 tan ≈ −3° at
+   <25 mm), same sign on BOTH sides of BOTH planes = radial signature —
+   drift lines bow inward near the rings, exactly a fringe-field shape (a
+   rotation or shear would be antisymmetric).
+3. **Drift slows near the edge**: T_sat rises 678→745 ns (x) / 702→834 ns
+   (y) while the recorded column proxy rises — consistent with tilted,
+   longer drift paths in a weaker/distorted edge field.
+4. **Efficiency turn-on over the first ~25 mm** (0→80 % over 0–25 mm from
+   the edge, hit-mode and micro-TPC alike) — the edge band, not the core,
+   holds much of the naive full-area inefficiency.
+5. **Position residuals stay flat to the edge** — the cluster anchor
+   (earliest strip, mesh end) is where the drift lines are least distorted,
+   so hit-mode POSITION is robust even where angles distort.
+
+Practical: fiducialise micro-TPC ANGLE analyses to >25 mm (ideally 40 mm)
+from the edge; hit-mode positions need no extra fiducial.
 
 ## Open follow-ups
 1. Implement + validate the unsharing time estimator; wire geometry v and

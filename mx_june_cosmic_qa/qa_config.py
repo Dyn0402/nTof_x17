@@ -72,6 +72,12 @@ class _Config:
 
     @property
     def m3_tracking_dir(self):
+        # Prefer the tracking-v2 reprocessing (NClusX/Y branches, layer-drop
+        # rescue, June offsets) when it has been pulled for this subrun; the
+        # original m3_tracking_root/ is kept untouched as the pre-v2 reference.
+        v2 = f'{self.BASE_PATH}{self.RUN}/{self.SUB_RUN}/m3_tracking_root_v2/'
+        if os.path.isdir(v2) and any(f.endswith('.root') for f in os.listdir(v2)):
+            return v2
         return f'{self.BASE_PATH}{self.RUN}/{self.SUB_RUN}/m3_tracking_root/'
 
     def out_dir(self, *parts):

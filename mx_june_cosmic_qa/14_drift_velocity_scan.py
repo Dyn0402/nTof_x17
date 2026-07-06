@@ -51,7 +51,7 @@ VETO = next((int(a.split('=')[1]) for a in sys.argv if a.startswith('--veto=')),
 REFIT = '--refit' in sys.argv
 MIN_STRIPS = 4
 RES_CUT_MM = 10.0
-CHI2_CUT = 20.0
+CHI2_CUT = 5.0   # M3 v2 recipe (chi2<5; NClus>=3 automatic in M3RefTracking); was 20 pre-v2
 TAN_FIT_MIN, TAN_FIT_MAX = 0.06, 0.55   # |tanθ_ref| window for the ridge fit
 SAT_DEG = 10.0                           # |θ_ref| above which time span saturates
 MAGBOLTZ_JSON = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
