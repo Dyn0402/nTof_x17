@@ -249,6 +249,18 @@ understate the detector. Same bug class as the p2-run unreconstructed-file
 guard (commit 0dfa1ec). `31/32` now derive the live range from per-FEU
 combined_hits coverage.
 
+### 7b. Reading the direction metrics (`microtpc_direction_explainer.png`)
+
+- **|Δθ|<5° per plane** compares each plane's 2D projected angle to the
+  ray's projection; the "direction agrees" tier requires BOTH planes.
+- **ψ** combines tanθx+tanθy into one 3D unit vector and takes the opening
+  angle to the ray — a single "how well does it point" number.
+- Both look low ONLY because cosmics peak near θ=0 where a drift TPC has no
+  time-position lever arm: restricted to θ>10°, the ladder reads 94 % hit /
+  60 % segment / 49 % agree, and agreement GIVEN a segment reaches 80–95 %.
+  Median ψ falls from ~11° (θ<5°) to ~2° (θ>10°): at θ_ref = 2° even a
+  perfect 2°-resolution device gives ψ ≈ 2–3° (relative error is O(1)).
+
 ## 8. Edge / fringe-field study (7-06, `32_edge_fringe_field.py`)
 
 det3's drift gap is graded by a 3-step copper-ring degrader at the
@@ -290,6 +302,34 @@ Findings:
 
 Practical: fiducialise micro-TPC ANGLE analyses to >25 mm (ideally 40 mm)
 from the edge; hit-mode positions need no extra fiducial.
+
+## 9. Head-on track tagging (7-06, `33_headon_tracks.py`)
+
+Truth = v2 ray θ<5° (prevalence 11.9 %). The production time-fit angle is
+ANTI-correlated with head-on-ness (AUC 0.457): charge sharing pushes truly
+vertical tracks to ±5–7° measured (the exclusion-gap mechanism), so a
+"small measured angle" sample peaks at θ_ref = 10–15° (10 % purity). The
+waveform signature carries the real information:
+
+| classifier | AUC | coverage |
+|---|---|---|
+| production \|tanθ\| (current algo) | 0.457 | 100 % |
+| unshared+calibrated \|tanθ\| | 0.512 | 55 % |
+| neighbour time symmetry t_asym | 0.412 | 100 % |
+| lead-charge fraction q_frac | 0.803 | 100 % |
+| lead time-over-threshold tot_lead | 0.866 | 100 % |
+| n_strips X+Y (cheap baseline) | 0.841 | 100 % |
+| **signature Fisher LDA (6 features)** | **0.918** | 100 % (holdout identical) |
+
+Physics: a head-on track drops its whole 23 mm column on 1–2 direct strips
+→ long lead ToT + high lead-charge fraction + narrow footprint. The
+LEFT/RIGHT TIME symmetry hypothesis does NOT discriminate: RC-fed
+neighbour pulses are small (≈0.45×lead) and their CFD times are
+noise-dominated at 60 ns sampling — amplitude/charge topology beats
+timing. Working points (LDA): eff 80 % → purity 48 %, eff 50 % → 68 %,
+eff 20 % → 81 % (7× enrichment). Use for selecting head-on samples;
+conversely the tag can VETO tracks where the micro-TPC angle is
+untrustworthy.
 
 ## Open follow-ups
 1. Implement + validate the unsharing time estimator; wire geometry v and

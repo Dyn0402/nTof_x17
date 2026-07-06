@@ -569,6 +569,132 @@ def main():
                  f'(unshared + calibrated, M3 v2 rays)', fontsize=13)
     fig.tight_layout(rect=[0, 0, 1, 0.95])
     fig.savefig(os.path.join(OUT, 'microtpc_metrics.png'), dpi=160)
+
+    # ================= EXPLAINER FIGURE =================
+    # What "direction agrees" and psi mean, and WHY they look low: both are
+    # dominated by near-vertical tracks, where (a) the unshared cluster
+    # shrinks below the 3-strip segment minimum (segment-efficiency loss)
+    # and (b) a fixed ~2 deg per-plane angular error is a large RELATIVE
+    # direction error, so psi and |dth| cuts bite hardest at small theta.
+    th_sp_seg = np.degrees(np.arctan(np.hypot(txr, tyr)))   # ray space angle, dual-plane segs
+    fig2, ax2 = plt.subplots(2, 3, figsize=(18, 10))
+
+    ax = ax2[0, 0]   # schematic of the two metrics
+    ax.axis('off')
+    ax.set_xlim(0, 10); ax.set_ylim(0, 10)
+    # drift gap sketch: ray and TPC segment through the gap
+    ax.plot([2, 4.0], [2, 8], '-', color='tab:green', lw=3)
+    ax.plot([2, 4.8], [2, 8], '--', color='tab:blue', lw=3)
+    ax.annotate('M3 ray\n(reference direction)', xy=(3.1, 5.5), xytext=(0.7, 6.8),
+                color='tab:green', fontsize=10,
+                arrowprops=dict(arrowstyle='->', color='tab:green'))
+    ax.annotate('micro-TPC segment\n(measured direction)', xy=(4.0, 6.6),
+                xytext=(5.6, 7.6), color='tab:blue', fontsize=10,
+                arrowprops=dict(arrowstyle='->', color='tab:blue'))
+    ax.annotate('', xy=(4.55, 7.5), xytext=(3.85, 7.5),
+                arrowprops=dict(arrowstyle='<->', color='crimson', lw=1.6))
+    ax.text(4.2, 7.75, 'ψ', color='crimson', fontsize=14, ha='center')
+    ax.plot([1, 9], [2, 2], '-', color='k', lw=1)
+    ax.text(9, 1.6, 'mesh', fontsize=9, ha='right')
+    txt = ('METRIC DEFINITIONS\n\n'
+           '|Δθ| < 5°  (per plane):\n'
+           '  the 2D projected angle measured by ONE\n'
+           '  strip plane is within 5° of the ray\'s\n'
+           '  projection.  "Direction agrees" tier =\n'
+           '  BOTH planes pass simultaneously.\n\n'
+           'ψ (3D opening angle):\n'
+           '  combine tanθx + tanθy into one 3D unit\n'
+           '  vector; ψ = angle between it and the\n'
+           '  ray direction.  One number for "how well\n'
+           '  does the TPC point", both planes at once.')
+    ax.text(0.3, 0.02, txt, transform=ax.transAxes, fontsize=9.5,
+            family='monospace', va='bottom')
+
+    ax = ax2[0, 1]   # psi vs space angle
+    hb = ax.hist2d(th_sp_seg, np.clip(psi, 0, 20), bins=[36, 40],
+                   range=[[0, 30], [0, 20]], norm=LogNorm(), cmap='viridis')
+    ctr_p, med_p, err_p = profile(th_sp_seg, psi, np.arange(0, 30, 2.5), 60, 'med')
+    ax.errorbar(ctr_p, med_p, yerr=err_p, fmt='o-', color='crimson', ms=5,
+                label='median ψ')
+    ax.axhline(5, color='w', ls='--', lw=1)
+    ax.set_xlabel('ray space angle θ [deg]'); ax.set_ylabel('ψ [deg]')
+    ax.set_title('ψ vs track angle — small-θ tracks dominate the tail')
+    ax.legend(fontsize=9)
+
+    ax = ax2[0, 2]   # agreement fraction vs angle, conditional on segment
+    both_ok = (np.abs(np.degrees(np.arctan(txd)) - np.degrees(np.arctan(txr))) < AGREE_DEG[1]) \
+        & (np.abs(np.degrees(np.arctan(tyd)) - np.degrees(np.arctan(tyr))) < AGREE_DEG[1])
+    for arr, lab, c in [(both_ok.astype(float), f'both planes |Δθ|<{AGREE_DEG[1]:g}°', 'crimson'),
+                        ((psi < 5).astype(float), 'ψ < 5°', 'tab:blue'),
+                        ((psi < 10).astype(float), 'ψ < 10°', 'tab:cyan')]:
+        c1_, v1, e1 = profile(th_sp_seg, arr, np.arange(0, 30, 2.5), 60)
+        ax.errorbar(c1_, 100 * v1, yerr=100 * e1, fmt='o-', ms=4, color=c, label=lab)
+    ax.set_xlabel('ray space angle θ [deg]')
+    ax.set_ylabel('fraction of dual-plane segments [%]')
+    ax.set_title('agreement GIVEN a segment, vs angle')
+    ax.set_ylim(0, 100); ax.grid(alpha=0.3); ax.legend(fontsize=9, loc='lower right')
+
+    ax = ax2[1, 0]   # ladder waterfall
+    vals = [100.0, 100 * ladder[tiers[0][0]][0], 100 * ladder[tiers[1][0]][0],
+            100 * ladder[tiers[2][0]][0]]
+    labs = ['good rays\nin fiducial', 'hit-mode\n(X+Y, r<10mm)',
+            'micro-TPC\nsegment', f'direction\nagrees (<{AGREE_DEG[1]:g}°)']
+    cols = ['gray', 'tab:green', 'tab:blue', 'crimson']
+    bars = ax.bar(labs, vals, color=cols, alpha=0.8)
+    for b, v in zip(bars, vals):
+        ax.text(b.get_x() + b.get_width() / 2, v + 1.5, f'{v:.1f}%', ha='center',
+                fontsize=11)
+    ax.annotate('mostly near-vertical tracks:\nunshared cluster < 3 strips\n(no lever arm in time)',
+                xy=(2, vals[2] + 3), xytext=(1.15, 72), fontsize=9,
+                arrowprops=dict(arrowstyle='->'))
+    ax.annotate('mostly the |θ|<5°\ntransition region',
+                xy=(3, vals[3] + 3), xytext=(3.0, 62), fontsize=9, ha='center',
+                arrowprops=dict(arrowstyle='->'))
+    ax.set_ylabel('efficiency [%]'); ax.set_ylim(0, 112)
+    ax.set_title('the ladder, factorised')
+
+    ax = ax2[1, 1]   # same ladder, restricted to inclined tracks
+    m_i = mfin & (th_space > 10)
+    rows_tbl = []
+    for name, m in tiers:
+        rows_tbl.append((name.split(' (')[0], 100 * m[m_i].mean()))
+    seg_i = np.array([e in seg_x and e in seg_y for e in denom_eids])[m_i]
+    ax.axis('off')
+    t2 = ['SAME LADDER, INCLINED TRACKS ONLY (θ > 10°):', '']
+    for nm, v in rows_tbl:
+        t2.append(f'  {nm:28s} {v:5.1f} %')
+    n_seg_i = seg_i.sum()
+    t2 += ['',
+           f'  (n = {m_i.sum():,} rays, {n_seg_i:,} with segments)',
+           '',
+           'Read: for tracks with real inclination the',
+           'micro-TPC works most of the time; the global',
+           f'{100*ladder[tiers[1][0]][0]:.0f}% / {100*ladder[tiers[2][0]][0]:.0f}% '
+           'numbers are dominated by the',
+           'cosmic angular distribution peaking near 0°,',
+           'where a drift TPC fundamentally has no',
+           'time-position lever arm (2-3 direct strips).',
+           '',
+           'ψ median 2.4° BUT at θ_ref=2° even a perfect',
+           '2°-resolution detector gives ψ ~ 2-3°: the',
+           'RELATIVE direction error at small θ is O(1).']
+    ax.text(0.02, 0.98, '\n'.join(t2), transform=ax.transAxes, va='top',
+            fontsize=10.5, family='monospace')
+
+    ax = ax2[1, 2]   # per-plane dth distribution, inclined vs vertical
+    dth_x = np.degrees(np.arctan(txd)) - np.degrees(np.arctan(txr))
+    for m_band, lab, c in [(th_sp_seg < 5, 'θ_ray < 5°', 'tab:orange'),
+                           (th_sp_seg > 10, 'θ_ray > 10°', 'tab:blue')]:
+        ax.hist(np.clip(dth_x[m_band], -14.8, 14.8), bins=np.arange(-15, 15.2, 0.5),
+                histtype='step', lw=2, density=True, color=c, label=lab)
+    ax.axvline(-AGREE_DEG[1], color='k', ls=':'); ax.axvline(AGREE_DEG[1], color='k', ls=':')
+    ax.set_xlabel('Δθ_x (TPC − ray) [deg]'); ax.set_ylabel('normalised')
+    ax.set_title('x-plane Δθ: vertical vs inclined tracks')
+    ax.legend(fontsize=9); ax.grid(alpha=0.3)
+
+    fig2.suptitle(f'{CFG.RUN} — direction metrics, explained', fontsize=13.5)
+    fig2.tight_layout(rect=[0, 0, 1, 0.95])
+    fig2.savefig(os.path.join(OUT, 'microtpc_direction_explainer.png'), dpi=155)
     print(f'\nOutputs in {OUT}')
 
 
