@@ -39,6 +39,11 @@ from det_labels import det_letter, order_key
 DET_COLOR = {'A': '#1f77b4', 'B': '#ff7f0e', 'C': '#2ca02c', 'D': '#d62728', 'E': '#9467bd'}
 # HV-scan keys grouped by detector (det6/7 = dedicated low-V scan + overnight high-V)
 HV_KEYS = ['g_det2', 'g_det3', 'g_det6_hv', 'g_det6_long', 'g_det7_hv', 'g_det7_long']
+# MX17 Micromegas top-down layout diagram (from the Geant repo; local copy is the fallback)
+LAYOUT_DIAGRAM = next((p for p in [
+    '/home/dylan/CLionProjects/MX17_Full_Geant/scripts/mx17_mm_layout_topdown.png',
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), 'mx17_mm_layout_topdown.png'),
+] if os.path.isfile(p)), None)
 
 
 def hv_settings(cfg):
@@ -373,8 +378,9 @@ def collect_hv_curves():
             continue
         if 'hv' not in df or 'eff_reco' not in df:
             continue
+        cols = ['hv', 'eff_reco'] + (['spark_frac'] if 'spark_frac' in df else [])
         L = det_letter(cfg.DET_NAME.split('_')[-1])
-        curves.setdefault(L, []).append(df[['hv', 'eff_reco']])
+        curves.setdefault(L, []).append(df[cols])
     return {L: pd.concat(v).drop_duplicates('hv').sort_values('hv')
             for L, v in curves.items() if v}
 
@@ -400,17 +406,21 @@ def _bar(ax, stats, field, title, unit, fmt='{:.1f}', pct=False, lower_better=Fa
 
 
 def fleet_summary_page(pdf, keys, all_keys=None):
-    """First page: fleet-wide bar plots + efficiency-vs-HV, over all detectors."""
+    """First page: fleet-wide bars, efficiency + spark vs HV, the MM layout diagram
+    and a summary table."""
     stats = collect_fleet_stats(keys, all_keys)
     if not stats:
         return False
     hv = collect_hv_curves()
+    order = lambda L: order_key(stats.get(L, {}).get('num', L))
     fig = plt.figure(figsize=(8.27, 11.69))
     fig.suptitle('MX17 June 2026 cosmic-bench — fleet summary\n'
                  'M3 v2 reference tracking (NClus≥3 & χ²<5); best long run per detector',
-                 fontsize=13, fontweight='bold', y=0.985)
-    gs = GridSpec(3, 2, figure=fig, top=0.92, bottom=0.06, hspace=0.42, wspace=0.28,
-                  left=0.10, right=0.96)
+                 fontsize=13, fontweight='bold', y=0.988)
+    # 4 rows: bars / bars / (eff-vs-HV, spark-vs-HV) / (layout diagram, table).
+    # Shorter bar + HV rows to make room for the diagram row.
+    gs = GridSpec(4, 2, figure=fig, top=0.93, bottom=0.045, hspace=0.55, wspace=0.26,
+                  left=0.09, right=0.97, height_ratios=[0.85, 0.85, 0.9, 1.15])
 
     _bar(fig.add_subplot(gs[0, 0]), stats, 'eff',
          'Best-run efficiency (within 5 mm)', '%', fmt='{:.1f}')
@@ -421,26 +431,45 @@ def fleet_summary_page(pdf, keys, all_keys=None):
     _bar(fig.add_subplot(gs[1, 1]), stats, 'spark',
          'Spark rate (>50 strips)', '%', fmt='{:.1f}')
 
-    # efficiency vs HV
+    # efficiency vs HV (left) + spark-fraction vs HV (right)
     axh = fig.add_subplot(gs[2, 0])
+    axs = fig.add_subplot(gs[2, 1])
     if hv:
-        for L in sorted(hv, key=lambda L: order_key(stats.get(L, {}).get('num', L))):
+        for L in sorted(hv, key=order):
             df = hv[L]
             num = next((s['num'] for s in stats.values() if s['letter'] == L), L)
-            axh.plot(df['hv'], 100 * df['eff_reco'], 'o-', ms=4, color=DET_COLOR.get(L, 'grey'),
-                     label=f'{L} (det{num})')
-        axh.set_xlabel('resist HV [V]', fontsize=8)
-        axh.set_ylabel('efficiency [%]', fontsize=8)
-        axh.set_title('Efficiency vs resist HV', fontsize=9, fontweight='bold')
-        axh.grid(alpha=0.3)
-        axh.legend(fontsize=7, ncol=2)
+            col = DET_COLOR.get(L, 'grey')
+            axh.plot(df['hv'], 100 * df['eff_reco'], 'o-', ms=3.5, color=col, label=f'{L} (det{num})')
+            if 'spark_frac' in df:
+                axs.plot(df['hv'], 100 * df['spark_frac'], 'o-', ms=3.5, color=col, label=f'{L} (det{num})')
+        for ax, ttl, yl in [(axh, 'Efficiency vs resist HV', 'efficiency [%]'),
+                            (axs, 'Spark rate vs resist HV', 'spark fraction [%]')]:
+            ax.set_xlabel('resist HV [V]', fontsize=8)
+            ax.set_ylabel(yl, fontsize=8)
+            ax.set_title(ttl, fontsize=9, fontweight='bold')
+            ax.grid(alpha=0.3)
+            ax.tick_params(labelsize=7)
+            ax.legend(fontsize=6.5, ncol=2)
+        axs.text(0.98, 0.02, 'firing-event basis', transform=axs.transAxes, ha='right',
+                 va='bottom', fontsize=6, color='grey')
     else:
-        axh.axis('off')
-        axh.text(0.5, 0.5, 'HV scans not available', ha='center', va='center',
-                 transform=axh.transAxes, color='grey')
+        for ax in (axh, axs):
+            ax.axis('off')
+            ax.text(0.5, 0.5, 'HV scans not available', ha='center', va='center',
+                    transform=ax.transAxes, color='grey')
 
-    # summary table
-    axt = fig.add_subplot(gs[2, 1])
+    # MM layout diagram (left)
+    axd = fig.add_subplot(gs[3, 0])
+    axd.axis('off')
+    if LAYOUT_DIAGRAM:
+        axd.imshow(mpimg.imread(LAYOUT_DIAGRAM))
+    else:
+        axd.text(0.5, 0.5, '(MM layout diagram missing)', ha='center', va='center',
+                 transform=axd.transAxes, color='grey', fontsize=8)
+    axd.set_title('MX17 Micromegas layout (top-down)', fontsize=9, fontweight='bold', pad=2)
+
+    # summary table (right)
+    axt = fig.add_subplot(gs[3, 1])
     axt.axis('off')
     letters = sorted(stats, key=lambda L: order_key(stats[L]['num']))
     cell = [['Det', 'Eff %', 'σ mm', 'θ°', 'Spark %']]
@@ -454,24 +483,22 @@ def fleet_summary_page(pdf, keys, all_keys=None):
     tb = axt.table(cellText=cell, loc='center', cellLoc='center')
     tb.auto_set_font_size(False)
     tb.set_fontsize(7.5)
-    tb.scale(1, 1.4)
+    tb.scale(1, 1.5)
     for j in range(len(cell[0])):
         tb[0, j].set_facecolor('#e6e6e6')
         tb[0, j].set_text_props(fontweight='bold')
     for i, L in enumerate(letters, start=1):
         tb[i, 0].set_facecolor(DET_COLOR.get(L, 'white'))
         tb[i, 0].set_alpha(0.35)
-    axt.set_title('Fleet summary', fontsize=9, fontweight='bold', y=0.88)
+    axt.set_title('Fleet summary', fontsize=9, fontweight='bold', y=0.86)
 
-    # note if any detector's angular resolution comes from a different run than its
-    # efficiency headline (best clean micro-TPC angle vs best-stats efficiency run)
     mixed = [f"det{s['num']}" for s in stats.values()
              if s.get('ang_key') and s['ang_key'] != s['key']]
     ang_note = ('θ-res = best reliable micro-TPC run'
                 + (f" (≠ eff run for {', '.join(sorted(mixed))})" if mixed else ''))
-    fig.text(0.5, 0.02, f'Generated {datetime.date.today().isoformat()} · '
-             f'eff/σ/spark from best-stats run per detector · {ang_note}',
-             ha='center', fontsize=7, color='grey')
+    fig.text(0.5, 0.014, f'Generated {datetime.date.today().isoformat()} · '
+             f'eff/σ/spark(bars) = best-stats run per detector, crossing-based spark · {ang_note}',
+             ha='center', fontsize=6.5, color='grey')
     pdf.savefig(fig, dpi=200)
     plt.close(fig)
     return True
