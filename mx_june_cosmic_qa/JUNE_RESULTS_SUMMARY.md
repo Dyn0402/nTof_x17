@@ -159,14 +159,19 @@ best near the efficiency optimum, degrading into the sparking regime.
 - **6-25 det3 long-run** and other raw-only subruns were not decoded at analysis time.
   The **6-27/6-28 weekend det3** runs (top slot) HAVE since been analysed and are now the
   headline det3 (79.7 %, above); the 6-27 saturday + 6-28 p2 long runs pool to 76.1 %.
-  **CAVEAT (7-06): the 6-27 saturday long-run numbers are diluted by a dead y-plane
-  tail** — FEU 8 has no data for datrun file 003 (eid > 38,926; file never written),
-  so ~18 % of its rays can never match. With a per-FEU live-range guard the saturday
-  run measures **92.8 % in a 5 mm fiducial, ~96 % in the core (>25 mm from the edge)**;
-  the 0–25 mm degrader edge band has a 0→96 % turn-on and holds most of the remaining
+  **RESOLVED (7-06 evening): the 6-27 saturday "dead y-plane tail" was a decode
+  interruption, not a DAQ failure — and it has been recovered.** The raw
+  `..._003_08.fdf` exists on EOS (byte-identical size to its FEU 1/7 siblings; the DAQ
+  log confirms 47,452 events in all 3 FEUs) — only the online decode was killed after
+  003_07 when the run ended. File 003 was re-decoded + re-combined with both FEUs
+  (`process_run.py`, same recipe as the p2 file-000 recovery) and synced back to EOS;
+  the FEU7-only combined file is parked in `_backup_feu7only_003/`. On complete
+  statistics the saturday run measures **92.9 ± 0.2 % in a 5 mm fiducial** (16.3k rays,
+  live-range guard now a no-op) **and ~96 % in the core (>25 mm from the edge)**; the
+  0–25 mm degrader edge band has a 0→96 % turn-on and holds most of the remaining
   inefficiency (see `32_edge_fringe_field.py` + `DET3_WEEKEND_ANALYSIS.md` §7–8).
-  The pooled 76.1 % and, to a lesser degree, the 79.7 % full-area numbers understate
-  the detector for the same two reasons (dead tail + edge band inside the denominator).
+  The earlier pooled 76.1 % and 79.7 % full-area numbers predate the recovery and
+  understate the detector (dead tail + edge band inside the denominator).
 
 ---
 
