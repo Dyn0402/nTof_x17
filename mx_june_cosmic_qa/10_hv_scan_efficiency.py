@@ -170,7 +170,9 @@ def analyse_subrun(subrun, det, seed):
         within = e in reco and np.hypot(x - reco[e][0], y - reco[e][1]) <= R
         rows.append((e, x, y, bool(within), e in has_any))
     d = pd.DataFrame(rows, columns=['event_id', 'x', 'y', 'within', 'has_any'])
-    d = d[np.isfinite(d['x']) & np.isfinite(d['y'])]
+    # a subrun with no good single-track rays (tighter v2 recipe on a low-stats HV
+    # point) yields an empty, object-dtype frame -> coerce so np.isfinite is safe
+    d = d[np.isfinite(d['x'].to_numpy(dtype=float)) & np.isfinite(d['y'].to_numpy(dtype=float))]
 
     # per-event residuals (aligned det - M3 ref) for the resolution-vs-HV curve
     resid = pd.DataFrame(
