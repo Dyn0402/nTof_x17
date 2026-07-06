@@ -20,6 +20,7 @@ evening after the M3 v2 re-verification (see Sec. 0b).*
 | micro-TPC scoreboard (sat run) | hit-mode 92.8 % (5 mm fid; ~96 % core), segment 50.8 %, plateau bias −0.16° / σ68 1.75°, ψ3D median 2.4° | 31 |
 | edge / fringe field | distortion < 25–40 mm from edge: inward δ≈−0.06 tan, T_sat +10–19 %, eff turn-on 0→96 % over 0–25 mm; core uniform | 32 |
 | dead-tail guard | sat-run FEU 8 has no file-003 data (eid > 38,926) — ALL whole-run efficiency quotes need the per-FEU live-range guard | 31/32 (`vetoed_event_ids`) |
+| head-on tagging | angle estimators CANNOT tag θ<5° tracks (production AUC 0.46 = anti-correlated, sharing pushes vertical to ±5–7°); waveform signature LDA AUC 0.92, purity 81 %@20 % eff (prevalence 12 %) | 33 |
 
 ## 0b. M3 tracking-v2 re-verification (7-06) — all conclusions HOLD
 
@@ -123,6 +124,7 @@ between runs, never assume.
 | 30 | `30_fleet_gas_survey.py` | all cached runs | v_geom + λ_att + implied H2O % per detector per date |
 | 31 | `31_microtpc_metrics.py` | decoded_root + cache | **micro-TPC scoreboard**: segment-efficiency ladder (honest ray denominator), angular bias/σ68, |Δθ|<3/5° fractions, 3D opening angle; caches `microtpc_segments.csv` for 32 |
 | 32 | `32_edge_fringe_field.py` | cache (+31's CSV if present) | edge/fringe study: outward angle residual, T-span, column proxy, efficiency vs edge distance; zone table (edge/mid/core) |
+| 33 | `33_headon_tracks.py` | decoded_root + cache | head-on tagger: waveform signature (lead ToT, lead-charge fraction, n_strips…) Fisher-LDA, AUC 0.92 vs 0.46 for the production angle; caches `headon_features.csv` |
 
 Typical invocation: `../.venv/bin/python 21_geometry_vdrift_scan.py sat_det3 --veto=50`.
 Runtimes: hits-level scripts ~1–5 min; waveform scripts (24/26/27/28) ~5–15 min
