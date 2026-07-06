@@ -22,6 +22,7 @@ evening after the M3 v2 re-verification (see Sec. 0b).*
 | dead-tail guard | sat-run FEU 8 has no file-003 data (eid > 38,926) — ALL whole-run efficiency quotes need the per-FEU live-range guard | 31/32 (`vetoed_event_ids`) |
 | head-on tagging | angle estimators CANNOT tag θ<5° tracks (production AUC 0.46 = anti-correlated, sharing pushes vertical to ±5–7°); waveform signature LDA AUC 0.92, purity 81 %@20 % eff (prevalence 12 %) | 33 |
 | hybrid tracking | \|θ\|<5° band: σ68 = 1.75° at 97 % coverage (production 14.9°; track-only 5.3° @ 51 %); plateau 1.86° @ 98 % — uniform ~1.8° tracking at all angles | 34 |
+| hybrid transfer (overfit check) | frozen det3 model on det2: 2.85° vs 2.47° self-trained (−15 %), weights ≈ identical across detectors — design property, NOT overfit | 34 `--model=` |
 
 ## 0b. M3 tracking-v2 re-verification (7-06) — all conclusions HOLD
 

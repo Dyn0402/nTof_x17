@@ -373,14 +373,43 @@ coverage**; the correlation plot is a continuous diagonal through zero
 plateau — the features carry nearly the full angular information; the
 time fit only refines the plateau by ~0.3°.
 
-Caveats / next: (1) the regression is trained on this run's cosmics —
-constants are per-detector/per-gas-era like the sharing constants; test
-transfer on det2 (o22_long_det2 has decoded waveforms + features
-pipeline). (2) Below ~1.5° the response flattens (|θ|-folding + feature
-floor). (3) Regression-only drifts at |θ|>15° (feature saturation) —
-the hybrid switch handles it. (4) Features need decoded waveforms; a
-production integration would compute them in mm_processor alongside the
-unsharing pre-filter.
+### 10b. Overfitting check — det2 transfer validation (7-07)
+
+Full chain run on det2 (`o22_long_det2`, v2 rays pulled, alignment refit:
+θ=89.20°, σ 0.77/0.79 mm, 10.7k matched). det2 differs in gain (resist
+525 V), attachment (λ≈40 vs 17 mm), FEUs (6/8) — if the det3 regression
+had learned amplitude artifacts it would fail here. |θ|<5° band, odd-eid
+holdout:
+
+| hybrid variant | coverage | σ68 |
+|---|---:|---:|
+| det3, self-trained | 97 % | 1.75° |
+| det2, self-trained | 96 % | 2.47° |
+| **det2, FROZEN det3 model (zero det2 training)** | **96 %** | **2.85°** |
+| det2 track-only (unshared time fit) | 57 % | 7.91° |
+| det2 production time-fit | 94 % | 14.6° |
+
+Verdict: **not overfit** — (a) within-run holdout identical; (b) the
+learned weights transfer nearly unchanged (x: det3 [−.036,…,+.048] vs
+det2 [−.033,…,+.041] — a design property, like the sharing constants);
+(c) the frozen model costs only ~15 % resolution on a different
+detector, attributable to real physics (det2's weaker attachment
+changes the ToT/amplitude-vs-depth mapping). det2 is intrinsically a bit
+worse at low angle even self-trained (2.47° vs 1.75°; its head-on
+signature is softer: LDA AUC 0.881 vs 0.918, λ_att 40 mm → less
+depth-contrast). Recommended production scheme: per-detector training
+where reference tracks exist, det3 constants as the fleet default.
+
+Other caveats: (1) below ~1.5° the response flattens (|θ|-folding +
+feature floor). (2) Regression-only drifts at |θ|>15° (feature
+saturation) — the hybrid switch handles it. (3) Features need decoded
+waveforms; a production integration would compute them in mm_processor
+alongside the unsharing pre-filter.
+
+det2 side-results from this pass (31/33 on `o22_long_det2`): scoreboard
+hit-mode 90.6 %, segment 60.9 % (67 % given hit — more strips survive
+with λ=40 mm), plateau bias −0.36° / σ68 2.01°, ψ median 3.7°; head-on
+LDA AUC 0.881 (holdout 0.883), production-angle AUC 0.51 (again ~random).
 
 ## Open follow-ups
 1. Implement + validate the unsharing time estimator; wire geometry v and

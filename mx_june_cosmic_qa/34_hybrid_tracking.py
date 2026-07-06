@@ -41,11 +41,19 @@ Inputs (all cached, no waveform pass):
     event cache + alignment + v2 rays
 
 Usage: ../.venv/bin/python 34_hybrid_tracking.py sat_det3 [--veto=50]
+       [--save-model]          write hybrid_model.json (regression + sign
+                               weights, standardization, calibration curve)
+       [--model=<path>]        TRANSFER mode: apply a frozen model trained
+                               on another detector/run (no local training;
+                               only the physical calibrations v_prod/v_seg/b
+                               are remeasured locally). The honest
+                               cross-detector overfitting test.
 Output: <alignment_tpc_vetoN>/hybrid/ hybrid_tracking.png,
         hybrid_summary.csv + stdout tables
 """
 import os
 import sys
+import json
 import pickle
 
 import matplotlib
@@ -68,6 +76,9 @@ TAN_SWITCH = 0.09          # ~5 deg: below this the time fit has no lever arm
 PLATEAU_TAN = (0.12, 0.55)
 MAX_TAN = 0.7
 FEATS = ['tot_lead', 'q_frac', 'n_u', 'n_raw', 'a_asym', 'a_lead', 't_delay']
+
+SAVE_MODEL = '--save-model' in sys.argv
+MODEL_IN = next((a.split('=', 1)[1] for a in sys.argv if a.startswith('--model=')), None)
 
 tag = f'_veto{VETO}'
 OUT = CFG.out_dir(f'alignment_tpc{tag}', 'hybrid')
@@ -183,38 +194,51 @@ def main():
         b = float(np.median(np.abs(tan_det[m_pl]) - np.abs(T[m_pl])))
         d['tan_seg'] = tan_det - np.sign(tan_det) * b
 
-        # (3) |tan| regression from features (train on even eids only)
+        # (3) |tan| regression from features: train on even eids, OR apply a
+        #     frozen model from another detector (--model=, transfer test)
         F = d[FEATS].to_numpy()
         ok = np.isfinite(F).all(axis=1)
-        mu, sd = np.nanmean(F[ok & train], axis=0), np.nanstd(F[ok & train], axis=0)
-        Z = (F - mu) / sd
         y = np.abs(d['tan_ref'].to_numpy())
-        A = np.c_[Z[ok & train], np.ones((ok & train).sum())]
-        w, *_ = np.linalg.lstsq(A, y[ok & train], rcond=None)
+        if MODEL_IN:
+            mm = json.load(open(MODEL_IN))[p]
+            assert mm['feats'] == FEATS, 'feature list mismatch with model'
+            mu, sd = np.array(mm['mu']), np.array(mm['sd'])
+            w = np.array(mm['w'])
+            ctr_s, med_t = np.array(mm['calib_s']), np.array(mm['calib_t'])
+            wg = np.array(mm['wg'])
+        else:
+            mu, sd = np.nanmean(F[ok & train], axis=0), np.nanstd(F[ok & train], axis=0)
+        Z = (F - mu) / sd
+        if not MODEL_IN:
+            A = np.c_[Z[ok & train], np.ones((ok & train).sum())]
+            w, *_ = np.linalg.lstsq(A, y[ok & train], rcond=None)
         s_lin = np.full(len(d), np.nan)
         s_lin[ok] = Z[ok] @ w[:-1] + w[-1]
-        # monotonic binned-median calibration on the training half
-        qs = np.nanquantile(s_lin[ok & train], np.linspace(0.02, 0.98, 25))
-        ctr_s, med_t = [], []
-        for lo_, hi_ in zip(qs[:-1], qs[1:]):
-            m = ok & train & (s_lin >= lo_) & (s_lin < hi_)
-            if m.sum() > 50:
-                ctr_s.append(np.median(s_lin[m])); med_t.append(np.median(y[m]))
-        ctr_s, med_t = np.array(ctr_s), np.maximum.accumulate(np.array(med_t))
+        if not MODEL_IN:
+            # monotonic binned-median calibration on the training half
+            qs = np.nanquantile(s_lin[ok & train], np.linspace(0.02, 0.98, 25))
+            ctr_s, med_t = [], []
+            for lo_, hi_ in zip(qs[:-1], qs[1:]):
+                m = ok & train & (s_lin >= lo_) & (s_lin < hi_)
+                if m.sum() > 50:
+                    ctr_s.append(np.median(s_lin[m])); med_t.append(np.median(y[m]))
+            ctr_s, med_t = np.array(ctr_s), np.maximum.accumulate(np.array(med_t))
         tan_reg_abs = np.full(len(d), np.nan)
         tan_reg_abs[ok] = np.interp(s_lin[ok], ctr_s, med_t)
 
         # (4) sign at low angle: Fisher on signed asymmetries, trained on
-        #     2-10 deg tracks (even eids); fallback sign = production slope
+        #     2-10 deg tracks (even eids) unless transferred; fallback sign =
+        #     production slope
         G = d[['a_asym_sgn', 't_asym_sgn']].to_numpy()
         okg = np.isfinite(G).all(axis=1)
         band = (np.abs(y) > np.tan(np.radians(2))) & (np.abs(y) < np.tan(np.radians(10)))
         sgn_true = np.sign(d['tan_ref'].to_numpy())
-        mtr = okg & train & band
-        mu1 = G[mtr & (sgn_true > 0)].mean(axis=0)
-        mu0 = G[mtr & (sgn_true < 0)].mean(axis=0)
-        Sw = np.cov(G[mtr & (sgn_true > 0)].T) + np.cov(G[mtr & (sgn_true < 0)].T)
-        wg = np.linalg.solve(Sw, mu1 - mu0)
+        if not MODEL_IN:
+            mtr = okg & train & band
+            mu1 = G[mtr & (sgn_true > 0)].mean(axis=0)
+            mu0 = G[mtr & (sgn_true < 0)].mean(axis=0)
+            Sw = np.cov(G[mtr & (sgn_true > 0)].T) + np.cov(G[mtr & (sgn_true < 0)].T)
+            wg = np.linalg.solve(Sw, mu1 - mu0)
         g = np.full(len(d), np.nan)
         g[okg] = G[okg] @ wg
         sign_feat = np.sign(g)
@@ -238,11 +262,25 @@ def main():
         d['tan_hyb'] = np.where(use_seg, d['tan_seg'], d['tan_reg'])
 
         consts[p] = dict(v_prod=v_prod, v_seg=v_seg, b=b, w=w, wg=wg,
+                         mu=mu, sd=sd, calib_s=ctr_s, calib_t=med_t,
                          sign_acc=(acc_ctr, acc_val))
         est[p] = d
+        src = f'FROZEN model {os.path.basename(MODEL_IN)}' if MODEL_IN else \
+            f'trained on {int((ok & train).sum()):,} local events'
         print(f'plane {p}: v_prod={v_prod:.1f} v_seg={v_seg:.1f} b={b:+.4f}  '
-              f'regression trained on {int((ok & train).sum()):,} events '
-              f'(feature weights {np.round(w[:-1], 3)})')
+              f'regression {src} (feature weights {np.round(w[:-1], 3)})')
+
+    if SAVE_MODEL and not MODEL_IN:
+        model = {p: dict(feats=FEATS,
+                         mu=consts[p]['mu'].tolist(), sd=consts[p]['sd'].tolist(),
+                         w=consts[p]['w'].tolist(),
+                         calib_s=consts[p]['calib_s'].tolist(),
+                         calib_t=consts[p]['calib_t'].tolist(),
+                         wg=consts[p]['wg'].tolist(),
+                         run=CFG.RUN, det=CFG.DET_NAME) for p in est}
+        mpath = os.path.join(OUT, 'hybrid_model.json')
+        json.dump(model, open(mpath, 'w'), indent=1)
+        print(f'model saved: {mpath}')
 
     # ---- evaluation (ODD eids only — honest holdout) ----
     def collect(col):
@@ -294,7 +332,9 @@ def main():
         summary.append(dict(estimator=name, band='gt8',
                             coverage=cv[np.abs(cth) > 8].mean(),
                             bias_deg=qp[1], s68_deg=0.5 * (qp[2] - qp[0])))
-    pd.DataFrame(summary).to_csv(os.path.join(OUT, 'hybrid_summary.csv'), index=False)
+    sfx = '_transfer' if MODEL_IN else ''
+    pd.DataFrame(summary).to_csv(os.path.join(OUT, f'hybrid_summary{sfx}.csv'),
+                                 index=False)
 
     # ---- figure ----
     fig, axes = plt.subplots(2, 3, figsize=(18.5, 10.5))
@@ -376,11 +416,13 @@ def main():
     ax.text(0.02, 0.98, '\n'.join(lines), transform=ax.transAxes, va='top',
             fontsize=10.5, family='monospace')
 
-    fig.suptitle(f'{CFG.RUN} — hybrid micro-TPC tracking '
-                 f'(time fit + head-on signature regression), M3 v2 truth',
-                 fontsize=13.5)
-    fig.tight_layout(rect=[0, 0, 1, 0.95])
-    fig.savefig(os.path.join(OUT, 'hybrid_tracking.png'), dpi=155)
+    ttl = f'{CFG.RUN} — hybrid micro-TPC tracking ' \
+          f'(time fit + head-on signature regression), M3 v2 truth'
+    if MODEL_IN:
+        ttl += f'\nTRANSFER: frozen model from {os.path.basename(os.path.dirname(os.path.dirname(MODEL_IN)))or MODEL_IN}'
+    fig.suptitle(ttl, fontsize=12.5)
+    fig.tight_layout(rect=[0, 0, 1, 0.94])
+    fig.savefig(os.path.join(OUT, f'hybrid_tracking{sfx}.png'), dpi=155)
     print(f'\nOutputs in {OUT}')
 
 
