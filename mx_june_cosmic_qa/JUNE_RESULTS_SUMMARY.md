@@ -42,7 +42,7 @@ number, `spark_frac` = discharges / firing events, is ~2–3× larger and still 
 
 | Det | Run / subrun used | Clean M3 rays | Efficiency (≤5 mm) | Core σ | Angular σ | Spark | Verdict |
 |----:|---|---:|---:|---:|---:|---:|---|
-| **3 (A)** | 6-27/28 weekend / long_run_p2 (top slot) | 47.6k | **88.8 %** | **0.63 mm** | **2.04°** | 4.4 % | Best performer |
+| **3 (A)** | 6-27/28 weekend / long_run_p2 (top slot) | 52.0k | **88.8 %** | **0.63 mm** | **2.04°** | 4.4 % | Best performer |
 | **2 (B)** | 6-22 overnight / long_run | 52.9k | **87.0 %** | **0.64 mm** | **2.15°** | 5.5 % | Healthy |
 | **6 (C)** | 6-26 overnight / long_run | 15.1k | **55.7 %** | **0.59 mm** | **3.15°** | 24.0 % | Spark-limited |
 | **7 (D)** | 6-26 overnight / long_run | 20.5k | **36.4 %** | **0.86 mm** | **2.50°** | 31.9 % | Spark-limited |
@@ -58,14 +58,16 @@ converged sub-mm with θ≈89.3–89.8° and z≈710–714 mm for every detector
   µm/ns, σ≈2°) — the best of the fleet. NB the subrun is labelled `p2_det1_sanity_check`,
   but that sanity check was for the *other* (P2/det1) detectors; det3 is a full data run.
   An earlier pass read only **80.6 %** here because det3's `combined_hits` was **missing
-  its file 000** (never reconstructed): M3 tracking covers eventId 2–153405 but det3's
-  hits start at ~12976, so ~5.8k rays from the unreconstructed first file were miscounted
-  as "silent" (9.4 % → 0.2 % once excluded, see below). The 6-22 bottom-slot run reaches
-  87.2 % but its micro-TPC angle is unusable (r≈0.62), so the weekend run is the headline
-  on every metric.
-- **Detector-data range guard** (`08`/`09`): efficiency now counts only M3 rays whose
-  eventId falls within the detector's `combined_hits` span, so an unreconstructed raw file
-  can no longer masquerade as detector inefficiency. No-op for runs with complete hits.
+  its file 000** (never reconstructed): M3 covers eventId 1–153405 but det3's hits started
+  at ~12976, so events from the first file were miscounted as "silent" (9.4 %). **Fixed by
+  reconstructing that file** (`process_run.py` on the raw FEU 7/8 fdf) → complete hits,
+  52.0k rays, 0.2 % silent, on both local and EOS. A stray `01H29` false-start (1277
+  events, colliding eventIds) was moved to `_false_start_01H29/`. The 6-22 bottom-slot run
+  reaches 87.2 % but its micro-TPC angle is unusable (r≈0.62), so the weekend run is the
+  headline on every metric.
+- **Detector-data range guard** (`08`/`09`): efficiency counts only M3 rays whose eventId
+  falls within the detector's `combined_hits` span, so an unreconstructed raw file cannot
+  masquerade as detector inefficiency. No-op now that the June dataset's hits are complete.
 - v2 vs pre-v2 (same runs): efficiency up (**det2 75.4→87.0 %**, det6 51.2→55.7 %, det7
   31.9→36.4 %, det4 8.2→10.3 %) and core σ tighter (det2 0.83→0.64, det7 1.18→0.86 mm) —
   the cleaner v2 reference removes spurious "misses" and sharpens the alignment.
