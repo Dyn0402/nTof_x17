@@ -275,15 +275,44 @@ def _hv_csv_path(cfg):
                         cfg.RUN, 'hv_scan', cfg.DET_NAME, 'efficiency_vs_hv.csv')
 
 
-def collect_fleet_stats(keys):
-    """Per-detector summary numbers for the top page, keyed by experiment letter."""
+def _load_angres(cfg):
+    """(sigma_theta_deg, n_events, reliable) for a key, or (nan, 0, False)."""
+    arp = _find(cfg.OUT_BASE, 'alignment_tpc_veto50/angular_resolution.json',
+                'alignment_tpc/angular_resolution.json')
+    if not arp:
+        return np.nan, 0, False
+    try:
+        ar = _json.load(open(arp))
+    except Exception:
+        return np.nan, 0, False
+    sx, sy = ar.get('sigma_theta_x_deg'), ar.get('sigma_theta_y_deg')
+    vals = [v for v in (sx, sy) if isinstance(v, (int, float)) and np.isfinite(v)]
+    sig = float(np.mean(vals)) if vals else np.nan
+    # legacy files without 'reliable': infer from v_drift being interior to the scan
+    rel = ar.get('reliable')
+    if rel is None:
+        lo, hi = ar.get('v_scan_range', [25.0, 50.0])
+        vx, vy = ar.get('v_drift_x_um_ns'), ar.get('v_drift_y_um_ns')
+        m = 0.15 * (hi - lo)   # minimum within 15% of a boundary = effectively railed
+        rel = all(isinstance(v, (int, float)) and (lo + m) <= v <= (hi - m) for v in (vx, vy))
+    return sig, int(ar.get('n_events', 0) or 0), bool(rel)
+
+
+def collect_fleet_stats(winner_keys, all_keys=None):
+    """Per-detector summary numbers, keyed by experiment letter.
+
+    Efficiency / spatial σ / spark come from the winner (most-rays) run per
+    detector. Angular resolution is the best *reliable* micro-TPC measurement
+    across ALL that detector's candidate runs (a railed v_drift fit -- e.g. the
+    6-22 bottom-slot det3 -- carries no angle information and is skipped), which
+    can be a different run than the efficiency headline."""
     def _f(v):
         try:
             return float(v)
         except (TypeError, ValueError):
             return np.nan
     stats = {}
-    for k in keys:
+    for k in winner_keys:
         try:
             cfg = get_config(k)
         except KeyError:
@@ -291,20 +320,28 @@ def collect_fleet_stats(keys):
         num = cfg.DET_NAME.split('_')[-1]
         L = det_letter(num)
         bd = parse_breakdown(_find(cfg.OUT_BASE, 'efficiency/efficiency_breakdown.txt'))
-        ar = {}
-        arp = _find(cfg.OUT_BASE, 'alignment_tpc_veto50/angular_resolution.json',
-                    'alignment_tpc/angular_resolution.json')
-        if arp:
-            try:
-                ar = _json.load(open(arp))
-            except Exception:
-                ar = {}
-        sx, sy = ar.get('sigma_theta_x_deg'), ar.get('sigma_theta_y_deg')
-        ang = np.nanmean([v for v in (sx, sy) if isinstance(v, (int, float))]) \
-            if any(isinstance(v, (int, float)) for v in (sx, sy)) else np.nan
         stats[L] = dict(letter=L, num=num, key=k,
                         eff=_f(bd.get('within_pct')), sigma=_f(bd.get('core_sigma_mm')),
-                        spark=_f(bd.get('spark_frac_pct')), ang=ang)
+                        spark=_f(bd.get('spark_frac_pct')), ang=np.nan, ang_key=None)
+
+    # angular: best reliable across every candidate run for each detector
+    best_ang = {}   # letter -> (n_events, sigma, key)
+    for k in (all_keys or winner_keys):
+        try:
+            cfg = get_config(k)
+        except KeyError:
+            continue
+        L = det_letter(cfg.DET_NAME.split('_')[-1])
+        if L not in stats:
+            continue
+        sig, n, rel = _load_angres(cfg)
+        if not (rel and np.isfinite(sig)):
+            continue
+        if L not in best_ang or n > best_ang[L][0]:
+            best_ang[L] = (n, sig, k)
+    for L, (_, sig, k) in best_ang.items():
+        stats[L]['ang'] = sig
+        stats[L]['ang_key'] = k
     return stats
 
 
@@ -351,9 +388,9 @@ def _bar(ax, stats, field, title, unit, fmt='{:.1f}', pct=False, lower_better=Fa
     ax.set_ylim(0, 1.18 * vmax if vmax > 0 else 1)
 
 
-def fleet_summary_page(pdf, keys):
+def fleet_summary_page(pdf, keys, all_keys=None):
     """First page: fleet-wide bar plots + efficiency-vs-HV, over all detectors."""
-    stats = collect_fleet_stats(keys)
+    stats = collect_fleet_stats(keys, all_keys)
     if not stats:
         return False
     hv = collect_hv_curves()
@@ -415,8 +452,14 @@ def fleet_summary_page(pdf, keys):
         tb[i, 0].set_alpha(0.35)
     axt.set_title('Fleet summary', fontsize=9, fontweight='bold', y=0.88)
 
+    # note if any detector's angular resolution comes from a different run than its
+    # efficiency headline (best clean micro-TPC angle vs best-stats efficiency run)
+    mixed = [f"det{s['num']}" for s in stats.values()
+             if s.get('ang_key') and s['ang_key'] != s['key']]
+    ang_note = ('θ-res = best reliable micro-TPC run'
+                + (f" (≠ eff run for {', '.join(sorted(mixed))})" if mixed else ''))
     fig.text(0.5, 0.02, f'Generated {datetime.date.today().isoformat()} · '
-             'efficiency & σ & spark from efficiency_breakdown; θ-resolution from micro-TPC angle scan',
+             f'eff/σ/spark from best-stats run per detector · {ang_note}',
              ha='center', fontsize=7, color='grey')
     pdf.savefig(fig, dpi=200)
     plt.close(fig)
@@ -430,10 +473,11 @@ def main():
     os.makedirs(os.path.dirname(out), exist_ok=True)
     print(f'PDF keys (best per detector): {keys}')
 
+    all_candidates = args if args else DEFAULT_KEYS
     n = 0
     with PdfPages(out) as pdf:
         try:
-            if fleet_summary_page(pdf, keys):
+            if fleet_summary_page(pdf, keys, all_candidates):
                 print('  wrote fleet summary page')
         except Exception as e:
             print(f'  [error] fleet summary page: {e}')
