@@ -1,9 +1,10 @@
-# Micro-TPC analysis runbook (scripts 13–30)
+# Micro-TPC analysis runbook (scripts 13–32)
 
 *Operational guide: everything needed to re-run, extend, or audit the
 micro-TPC / drift-velocity / gas / unsharing chain without reading the
 history. Physics narrative: `report_det3_weekend/main.pdf` (rev 4).
-Results digest: `DET3_WEEKEND_ANALYSIS.md`. Written 7-06.*
+Results digest: `DET3_WEEKEND_ANALYSIS.md`. Written 7-06; updated 7-06
+evening after the M3 v2 re-verification (see Sec. 0b).*
 
 ## 0. TL;DR of what this chain established
 
@@ -16,6 +17,35 @@ Results digest: `DET3_WEEKEND_ANALYSIS.md`. Written 7-06.*
 | gap / recorded column | 30 mm mechanical; ~23 mm recorded (attachment+threshold) | 17, 21 |
 | gas | Ar/iso 95/5 + ~1 % H2O + ~1 % air; det3 was >3 % H2O before 6-24 (dried) | 15, 30 + `garfield_sim/` tables |
 | field conversion | E = HV / 3.0 cm; drift HV varies per run/slot — decode from hv_monitor.csv | 30 (`DRIFT_HV` map) |
+| micro-TPC scoreboard (sat run) | hit-mode 92.8 % (5 mm fid; ~96 % core), segment 50.8 %, plateau bias −0.16° / σ68 1.75°, ψ3D median 2.4° | 31 |
+| edge / fringe field | distortion < 25–40 mm from edge: inward δ≈−0.06 tan, T_sat +10–19 %, eff turn-on 0→96 % over 0–25 mm; core uniform | 32 |
+| dead-tail guard | sat-run FEU 8 has no file-003 data (eid > 38,926) — ALL whole-run efficiency quotes need the per-FEU live-range guard | 31/32 (`vetoed_event_ids`) |
+
+## 0b. M3 tracking-v2 re-verification (7-06) — all conclusions HOLD
+
+The whole chain was re-run on the v2-reprocessed M3 rays (NClus branches,
+layer-drop rescue; recipe chi2<5 & NClus>=3). Infrastructure changes:
+`qa_config._Config.m3_tracking_dir` now PREFERS `m3_tracking_root_v2/`
+when pulled (all Saturday-scan subruns are local), and scripts 13–30 use
+`CHI2_CUT = 5.0` (was 20). Old outputs backed up as
+`*_prev2_backup` under the Analysis tree.
+
+| quantity | pre-v2 | v2 | verdict |
+|---|---|---|---|
+| alignment (z, θ, offsets) | 714 mm / 89.45° | identical (<0.01 mm) | ✓ |
+| position resolution σx/σy | 0.83 / 0.92 mm | **0.76 / 0.83 mm** | improved (cleaner rays) |
+| within-10 mm match | 85.6 % | **95.6 %** | improved |
+| v_geom(1000 V) | 33.91 ± 0.25 | 33.90 ± 0.25 | ✓ unchanged |
+| recorded column | 23.3/23.4 mm (x/y) | 23.35/23.36 mm | ✓ |
+| T_sat(1000 V) | 690 ns | 691 ns | ✓ |
+| v_ridge(1000 V) (biased) | 28.12 | 28.23 | ✓ (bias documented) |
+| λ_att(1000 V) | 15–18 mm | 15.4 mm | ✓ |
+| gas ranking | Ar/iso+1 % H2O best | same (RMS 1.08) | ✓ |
+| sharing c1/c2 (x) | 0.449/0.052 | 0.448/0.052 | ✓ design property |
+| sharing c1/c2 (y) | 0.516/0.151 | 0.516/0.152 | ✓ |
+| v unshared time-fit (x/y) | 33.8 / 32.9 | 34.2 / 32.9 | ✓ converges w/ v_geom |
+
+Only the 700 V drift point moved noticeably (21.6 → 23.3 µm/ns, ~2σ).
 
 **Data is frozen** (campaign over, no re-runs, no dry-gas scan). Decoded
 waveforms exist locally for det3 6-27 long run and det2 6-22 longer_run;
@@ -91,6 +121,8 @@ between runs, never assume.
 | 28 | `28_angle_calibration.py` | decoded_root + cache | additive tan-space calibration constants b per plane → final angles |
 | 29 | `29_det2_validation.py` | det2 decoded+cache | the whole chain on another detector (template for any detector) |
 | 30 | `30_fleet_gas_survey.py` | all cached runs | v_geom + λ_att + implied H2O % per detector per date |
+| 31 | `31_microtpc_metrics.py` | decoded_root + cache | **micro-TPC scoreboard**: segment-efficiency ladder (honest ray denominator), angular bias/σ68, |Δθ|<3/5° fractions, 3D opening angle; caches `microtpc_segments.csv` for 32 |
+| 32 | `32_edge_fringe_field.py` | cache (+31's CSV if present) | edge/fringe study: outward angle residual, T-span, column proxy, efficiency vs edge distance; zone table (edge/mid/core) |
 
 Typical invocation: `../.venv/bin/python 21_geometry_vdrift_scan.py sat_det3 --veto=50`.
 Runtimes: hits-level scripts ~1–5 min; waveform scripts (24/26/27/28) ~5–15 min

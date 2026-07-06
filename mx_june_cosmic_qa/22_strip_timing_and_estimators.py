@@ -51,7 +51,7 @@ VETO = next((int(a.split('=')[1]) for a in sys.argv if a.startswith('--veto=')),
 SAMPLE_NS = 60.0
 MIN_STRIPS = 4
 RES_CUT_MM = 10.0
-CHI2_CUT = 20.0
+CHI2_CUT = 5.0   # M3 v2 recipe (chi2<5; NClus>=3 automatic in M3RefTracking); was 20 pre-v2
 GAP_MM_CLUSTER = getattr(cm, 'GAP_THRESHOLD_MM', 2.0)
 CORE_FRAC = 0.30
 V_GEOM = 33.9   # from 21_geometry_vdrift_scan.py (long run, weighted planes)

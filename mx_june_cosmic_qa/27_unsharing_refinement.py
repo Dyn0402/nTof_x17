@@ -48,7 +48,7 @@ SAMPLE_NS = 60.0
 MIN_STRIPS_AFTER = 3
 MIN_STRIPS_BEFORE = 4
 RES_CUT_MM = 10.0
-CHI2_CUT = 20.0
+CHI2_CUT = 5.0   # M3 v2 recipe (chi2<5; NClus>=3 automatic in M3RefTracking); was 20 pre-v2
 PITCH_MM = 0.78
 THR_HIT = 100.0
 THR_WF = 150.0

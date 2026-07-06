@@ -37,7 +37,7 @@ VETO = next((int(a.split('=')[1]) for a in sys.argv if a.startswith('--veto=')),
 SAMPLE_NS = 60.0
 INCL_DEG = 12.0
 RES_CUT_MM = 10.0
-CHI2_CUT = 20.0
+CHI2_CUT = 5.0   # M3 v2 recipe (chi2<5; NClus>=3 automatic in M3RefTracking); was 20 pre-v2
 MIN_HITS_PER_BIN = 30
 FIT_Z_MM = (8.0, 24.0)          # fit window: past the spreading pile-up rise
 GAP_CM = 3.0

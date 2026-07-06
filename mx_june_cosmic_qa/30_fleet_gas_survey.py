@@ -41,7 +41,7 @@ VETO = 50
 SAMPLE_NS = 60.0
 MIN_STRIPS = 4
 RES_CUT_MM = 10.0
-CHI2_CUT = 20.0
+CHI2_CUT = 5.0   # M3 v2 recipe (chi2<5; NClus>=3 automatic in M3RefTracking); was 20 pre-v2
 PITCH_MM = 0.78
 SAT_DEG = 10.0
 TAN_LO, TAN_HI, TAN_STEP = 0.06, 0.44, 0.04
