@@ -58,7 +58,11 @@ def main():
     fs = sorted(f for f in os.listdir(CFG.combined_hits_dir) if f.endswith('.root') and '_datrun_' in f)
     raw = uproot.concatenate([f'{CFG.combined_hits_dir}{f}:hits' for f in fs],
                              expressions=['eventId', 'feu'], library='pd')
-    det1_hit_events = set(int(e) for e in raw.loc[raw['feu'].isin(CFG.MX17_FEUS), 'eventId'].unique())
+    det_feu_rows = raw.loc[raw['feu'].isin(CFG.MX17_FEUS), 'eventId']
+    det1_hit_events = set(int(e) for e in det_feu_rows.unique())
+    # only rays where the detector was digitising (see 09): an unreconstructed raw file
+    # (e.g. det3 file 000 in the p2 6-27 run) otherwise counts as spurious misses.
+    det_lo = int(det_feu_rows.min()); det_hi = int(det_feu_rows.max())
 
     # projection of every clean M3 ray at the aligned plane (ref frame, code sign convention)
     xr, yr, evn = get_xy_positions(rays.ray_data, params.z_mean)
@@ -66,6 +70,8 @@ def main():
 
     rows = []
     for e, x, y in zip((int(v) for v in evn), px, py):
+        if e < det_lo or e > det_hi:
+            continue
         within = False
         if e in reco:
             within = (np.hypot(x - reco[e][0], y - reco[e][1]) <= R)

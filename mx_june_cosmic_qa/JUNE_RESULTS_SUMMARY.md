@@ -42,7 +42,7 @@ number, `spark_frac` = discharges / firing events, is ~2–3× larger and still 
 
 | Det | Run / subrun used | Clean M3 rays | Efficiency (≤5 mm) | Core σ | Angular σ | Spark | Verdict |
 |----:|---|---:|---:|---:|---:|---:|---|
-| **3 (A)** | 6-27 weekend / long_run_p2 (top slot) | 52.4k | **80.6 %** | **0.63 mm** | **2.04°** | 4.0 % | Best performer |
+| **3 (A)** | 6-27/28 weekend / long_run_p2 (top slot) | 47.6k | **88.8 %** | **0.63 mm** | **2.04°** | 4.4 % | Best performer |
 | **2 (B)** | 6-22 overnight / long_run | 52.9k | **87.0 %** | **0.64 mm** | **2.15°** | 5.5 % | Healthy |
 | **6 (C)** | 6-26 overnight / long_run | 15.1k | **55.7 %** | **0.59 mm** | **3.15°** | 24.0 % | Spark-limited |
 | **7 (D)** | 6-26 overnight / long_run | 20.5k | **36.4 %** | **0.86 mm** | **2.50°** | 31.9 % | Spark-limited |
@@ -53,11 +53,19 @@ core; angular σ is the micro-TPC θ resolution (reported where r ≥ 0.7). Alig
 converged sub-mm with θ≈89.3–89.8° and z≈710–714 mm for every detector.
 
 **Notes on run choice / v2 vs pre-v2:**
-- **det3 (A)** headlines the **6-27 weekend** run (top slot, FEU 7/8): a clean, linear
-  micro-TPC angle (v_drift≈33 µm/ns, σ≈2°) and 80.6 % efficiency. The near-tied 6-22
-  bottom-slot det3 run actually reaches **87.2 %** efficiency and 0.57 mm σ under v2, but
-  its micro-TPC angle correlation is unusable (r≈0.62, no v_drift minimum), so it is not
-  the headline. det3 is the best-characterised detector either way.
+- **det3 (A)** headlines the **6-27/28 weekend** run (top slot, FEU 7/8, started Sun
+  06-28 01:33): **88.8 %** efficiency with a clean, linear micro-TPC angle (v_drift≈33
+  µm/ns, σ≈2°) — the best of the fleet. NB the subrun is labelled `p2_det1_sanity_check`,
+  but that sanity check was for the *other* (P2/det1) detectors; det3 is a full data run.
+  An earlier pass read only **80.6 %** here because det3's `combined_hits` was **missing
+  its file 000** (never reconstructed): M3 tracking covers eventId 2–153405 but det3's
+  hits start at ~12976, so ~5.8k rays from the unreconstructed first file were miscounted
+  as "silent" (9.4 % → 0.2 % once excluded, see below). The 6-22 bottom-slot run reaches
+  87.2 % but its micro-TPC angle is unusable (r≈0.62), so the weekend run is the headline
+  on every metric.
+- **Detector-data range guard** (`08`/`09`): efficiency now counts only M3 rays whose
+  eventId falls within the detector's `combined_hits` span, so an unreconstructed raw file
+  can no longer masquerade as detector inefficiency. No-op for runs with complete hits.
 - v2 vs pre-v2 (same runs): efficiency up (**det2 75.4→87.0 %**, det6 51.2→55.7 %, det7
   31.9→36.4 %, det4 8.2→10.3 %) and core σ tighter (det2 0.83→0.64, det7 1.18→0.86 mm) —
   the cleaner v2 reference removes spurious "misses" and sharpens the alignment.

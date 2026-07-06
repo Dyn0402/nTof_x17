@@ -59,6 +59,12 @@ def main():
                              expressions=['eventId', 'feu'], library='pd')
     det_raw = raw[raw['feu'].isin(CFG.MX17_FEUS)]
     det1_hit = set(int(e) for e in det_raw['eventId'].unique())
+    # Only count M3 rays where the detector was actually digitising, i.e. within the
+    # eventId span of its combined_hits. If a raw file was never reconstructed (e.g. the
+    # p2 6-27 run is missing det3's file 000, so combined_hits starts ~13k events in),
+    # M3 rays from that gap have no detector event and would be miscounted as silent
+    # 'no_hit'. Complete runs have det_lo≈M3 min, so this is a no-op there.
+    det_lo = int(det_raw['eventId'].min()); det_hi = int(det_raw['eventId'].max())
     # spark rate: fraction of detector-firing events with > SPARK_THRESH strips (one row
     # per hit) firing at once (a full-detector discharge; same threshold as the align veto)
     _mult = det_raw.groupby('eventId').size()
@@ -81,7 +87,13 @@ def main():
     # thread A) so the reco_near efficiency and the |r| residual are spark-free.
     cat = {k: [] for k in ('no_hit', 'hit_no_reco', 'spark', 'reco_far', 'reco_near')}   # -> ray (x,y)
     reco_near_det, reco_far_det, rlist = [], [], []
+    n_outside = sum(1 for e in evn if e < det_lo or e > det_hi)
+    if n_outside:
+        print(f'  excluding {n_outside} M3 rays outside detector data range '
+              f'[{det_lo},{det_hi}] (unreconstructed raw files)')
     for e, x, y in zip(evn, px, py):
+        if e < det_lo or e > det_hi:   # detector wasn't digitising -> not in denominator
+            continue
         if not (np.isfinite(x) and np.isfinite(y) and ax0 <= x <= ax1 and ay0 <= y <= ay1):
             continue
         if mult_by_ev.get(e, 0) > SPARK_THRESH:
