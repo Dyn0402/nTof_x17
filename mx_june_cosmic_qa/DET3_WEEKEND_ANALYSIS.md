@@ -220,18 +220,20 @@ condition-dependent (det2 ran resist 525 V), so the unsharing correction
 The hit-mode-analogous scoreboard for the DIRECTIONAL measurement, on the
 final chain (unsharing α=0.5 + tan calibration, M3 v2 rays). Denominator =
 good single v2 rays traversing the fiducial active area (5 mm margin),
-spark-vetoed events and the dead file-003 tail removed (see below).
+spark-vetoed events removed. Numbers below = FULL statistics after the
+file-003 recovery (16.3k rays, 22.1k segments); the pre-recovery pass
+(13.4k rays) gave the same values within 0.1–0.2.
 
 | metric | value |
 |---|---|
-| hit-mode efficiency (X+Y cluster, r<10 mm) | **92.8 ± 0.2 %** |
-| micro-TPC segment efficiency (X+Y unshared fit, ≥3 strips) | 50.8 ± 0.4 % (54.7 % given hit) |
-| direction-agreement efficiency (both planes \|Δθ\|<5°) | 37.9 ± 0.4 % |
-| plateau (\|θ\|>8°) angular bias / σ68 | **−0.16° / 1.75°** |
+| hit-mode efficiency (X+Y cluster, r<10 mm) | **92.9 ± 0.2 %** |
+| micro-TPC segment efficiency (X+Y unshared fit, ≥3 strips) | 50.7 ± 0.4 % (54.6 % given hit) |
+| direction-agreement efficiency (both planes \|Δθ\|<5°) | 37.8 ± 0.4 % |
+| plateau (\|θ\|>8°) angular bias / σ68 | **−0.17° / 1.75°** |
 | fraction of segments \|Δθ\| < 3° / 5° | 76 % / 84 % |
 | Pearson r(tanθ_det, tanθ_ref) | 0.70 all / 0.89 plateau (\|θ\|>8°) |
 | 3D opening angle ψ median / 68 % | **2.4° / 3.9°** |
-| fraction ψ < 5° / 10° | 73 % / 81 % |
+| fraction ψ < 5° / 10° | 72 % / 81 % |
 
 The 93 → 51 % step is the strict waveform-segment requirement (unshared
 THR 150 ADC, ≥3 core strips with valid CFD): near-vertical tracks shrink to
@@ -239,15 +241,26 @@ THR 150 ADC, ≥3 core strips with valid CFD): near-vertical tracks shrink to
 available for half the tracks, and when available it points to the ray
 within 5° for ~84 % (per plane) / ψ<5° for 73 % (3D).
 
-**DEAD-TAIL FINDING (important for ALL sat-run efficiency quotes):** FEU 8
-(y-plane) has NO data for datrun file 003 (eid > 38,926; the file was never
-written — same reason decoded 003_08 doesn't exist). Hit-mode efficiency
-is flat at 88–89.5 % (no veto removal) for eid < 36 k, then 45 % → 0 %.
-Any efficiency computed over the whole run without a per-FEU live-range
-guard is diluted by ~15 % — the earlier "~76–80 %" numbers for this run
-understate the detector. Same bug class as the p2-run unreconstructed-file
-guard (commit 0dfa1ec). `31/32` now derive the live range from per-FEU
-combined_hits coverage.
+**DEAD-TAIL FINDING — RESOLVED (7-06 evening):** FEU 8 (y-plane) had no
+*decoded* data for datrun file 003 (eid > 38,926). The original diagnosis
+("file never written") was wrong: the raw `..._003_08.fdf` exists on EOS
+with a byte-identical size to its FEU 1/7 siblings, and the DAQ log shows
+47,452 events in all 3 FEUs — the *online decode* was interrupted after
+003_07 when the run ended (last decode 01:15, run end 01:10). File 003 was
+re-decoded and re-combined with both FEUs via `process_run.py` (p2 file-000
+recipe) and synced back to EOS. Re-running `03 --refit` + `31 --rebuild` +
+`32` on complete statistics reproduces the guarded numbers exactly:
+hit-mode 92.9 ± 0.2 % over the full eid range (denominator 16.3k rays,
+live-range guard now a no-op), segments 18,164 → 22,081, all angular and
+edge-zone metrics unchanged, and the long-run drift point moves
+v_geom(1000 V) 33.90 ± 0.25 → **34.30 ± 0.28 µm/ns** (15.2k quality
+events; within the 34 ± 1.5 headline). Head-on tagger on full stats:
+LDA AUC 0.918 (holdout 0.920), 20 % eff → 82 % purity — identical
+conclusions. The per-FEU live-range guard in `31/32` stays
+as a defensive measure. NOTE: after any such recovery the
+`cache/event_results_veto50.pkl` per-event cache must be rebuilt
+(`03 --refit`), or the recovered range contributes denominator rays but no
+matches.
 
 ### 7b. Reading the direction metrics (`microtpc_direction_explainer.png`)
 
