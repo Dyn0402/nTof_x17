@@ -1,11 +1,22 @@
 # June 2026 cosmic-bench QA — combined results
 
+> **Updated 2026-07-06 — reprocessed on M3 v2 reference tracking.** All numbers below
+> are recomputed with the v2 M3 tracker (layer-drop rescue, per-plane cluster-count
+> `NClus` branches, charge-weighted centroid, refreshed 2026 plane offsets) and the
+> recommended reference-track recipe **`NClusX≥3 & NClusY≥3 & χ²<5`** (was `χ²<20` with
+> no NClus cut). The cleaner reference lifts efficiency several points and tightens the
+> spatial resolution across the fleet; a new **micro-TPC angular resolution** row is
+> added. Spark rate is now quoted as the **crossing-based** fraction (the efficiency-
+> breakdown `spark` category), so headline and breakdown-bar agree.
+
 Saclay cosmic-bench characterisation of the MX17 micro-TPC Micromegas detectors
 (**2, 3, 4, 6, 7**; no 5), June 2026. Efficiency is measured against M3 reference
-tracks: for every clean M3 single muon track, project to the aligned detector plane
-and ask whether the detector has a reconstructed X+Y hit within **5 mm** (a track with
-no DREAM readout is a genuine miss, kept in the denominator). Resolution is the
-Gaussian core of the residual distribution. All runs Ar/Iso 95/5, non-zero-suppressed,
+tracks: for every clean M3 single muon track (v2 recipe above), project to the aligned
+detector plane and ask whether the detector has a reconstructed X+Y hit within **5 mm**
+(a track with no DREAM readout is a genuine miss, kept in the denominator). Resolution
+is the Gaussian core of the residual distribution. The micro-TPC angular resolution is
+the σ of (θ_ref − θ_det) at the best drift velocity, reported only where the θ_det–θ_ref
+correlation is strong (r ≥ 0.7). All runs Ar/Iso 95/5, non-zero-suppressed,
 `det_orientation.z = 90`; slot map bottom = FEU 3(X)/4(Y) z≈232 mm, top = FEU 6(X)/8(Y)
 z≈702 mm.
 
@@ -16,32 +27,43 @@ Two compiled PDFs (under `~/x17/cosmic_bench/Analysis/`):
 - **`june_hv_scans.pdf`** — resist-HV scans: summary overlay + per-detector
   efficiency-vs-HV and resolution-vs-HV.
 
-**Spark separation (2026-07-05).** The efficiency breakdown (bottom bar of every
-overview page) now counts **`spark`** (event fires >50 strips = a full-detector
-discharge) as its own category, pulled out *before* the reco/hit split. Previously
-sparks still yielded a centroid and masqueraded as `reco_far`/`reco_near`/`hit_no_reco`,
-inflating the tail. Separating them mainly deflates the `reco_far` tail on the
-spark-rich detectors (det7 `reco_far` 40 %→11 % with 31 % now labelled spark; det6
-likewise) and slightly lowers the headline efficiency (sparks that had landed <5 mm are
-no longer counted as good). Efficiency numbers in the table below are the
-**spark-separated** values.
+**Spark separation.** The efficiency breakdown (bottom bar of every overview page) counts
+**`spark`** (event fires >50 strips = a full-detector discharge) as its own category,
+pulled out *before* the reco/hit split, so sparks no longer masquerade as
+`reco_far`/`reco_near`. The **spark rate quoted here and on the overview headline is the
+crossing-based fraction** — sparks as a % of active-area M3 crossings (the breakdown-bar
+`spark` category), the same denominator as efficiency. (A second, firing-event–based
+number, `spark_frac` = discharges / firing events, is ~2–3× larger and still printed in
+`efficiency_breakdown.txt`; it is *not* the headline value.)
 
 ---
 
-## 1. Per-detector overview (best high-stats subrun)
+## 1. Per-detector overview (best high-stats subrun, M3 v2)
 
-| Det | Run / subrun used | Clean M3 rays | Efficiency (≤5 mm) | Fired any strip | Spark | reco_far | Core σ | Verdict |
-|----:|---|---:|---:|---:|---:|---:|---:|---|
-| **2** | 6-22 overnight / long_run | 34.9k | **75.4 %** | 99.7 % | 5.7 % | 16.2 % | 0.83 mm | Healthy |
-| **3** | **6-28 weekend / long_run_p2 (top slot)** | 53.0k | **78.8 %** | 97.6 % | 4.9 % | 13.7 % | 0.79 mm | Best performer |
-| **4** | 6-24 daytime / long_run | 39.6k | **8.2 %** | 50.6 % | 2.3 % | 2.5 % | 1.20 mm | Gain-limited |
-| **6** | 6-26 overnight / long_run (7 files) | 32.3k | **51.2 %** | 94.1 % | 23.7 % | 7.5 % | 0.68 mm | Spark-limited |
-| **7** | 6-26 overnight / long_run (7 files) | 35.5k | **31.9 %** | 84.1 % | 31.0 % | 11.2 % | 1.18 mm | Spark-limited |
+| Det | Run / subrun used | Clean M3 rays | Efficiency (≤5 mm) | Core σ | Angular σ | Spark | Verdict |
+|----:|---|---:|---:|---:|---:|---:|---|
+| **3 (A)** | 6-27 weekend / long_run_p2 (top slot) | 52.4k | **80.6 %** | **0.63 mm** | **2.04°** | 4.0 % | Best performer |
+| **2 (B)** | 6-22 overnight / long_run | 52.9k | **87.0 %** | **0.64 mm** | **2.15°** | 5.5 % | Healthy |
+| **6 (C)** | 6-26 overnight / long_run | 15.1k | **55.7 %** | **0.59 mm** | **3.15°** | 24.0 % | Spark-limited |
+| **7 (D)** | 6-26 overnight / long_run | 20.5k | **36.4 %** | **0.86 mm** | **2.50°** | 31.9 % | Spark-limited |
+| **4 (E)** | 6-24 daytime / long_run | 2.8k | **10.3 %** | **0.91 mm** | **2.49°** | 2.6 % | Gain-limited |
 
-Efficiency, spark and reco_far are % of active-area crossings, **spark-separated** (see
-above); efficiency dropped 1–5 pts vs the pre-separation numbers and the core σ tightened
-(sparks no longer pollute the residual). Alignment converged sub-mm with θ≈90° and z near
-nominal for every detector above (seeded per run from the long_run subrun).
+Efficiency and spark are % of active-area crossings; core σ is the residual Gaussian
+core; angular σ is the micro-TPC θ resolution (reported where r ≥ 0.7). Alignment
+converged sub-mm with θ≈89.3–89.8° and z≈710–714 mm for every detector.
+
+**Notes on run choice / v2 vs pre-v2:**
+- **det3 (A)** headlines the **6-27 weekend** run (top slot, FEU 7/8): a clean, linear
+  micro-TPC angle (v_drift≈33 µm/ns, σ≈2°) and 80.6 % efficiency. The near-tied 6-22
+  bottom-slot det3 run actually reaches **87.2 %** efficiency and 0.57 mm σ under v2, but
+  its micro-TPC angle correlation is unusable (r≈0.62, no v_drift minimum), so it is not
+  the headline. det3 is the best-characterised detector either way.
+- v2 vs pre-v2 (same runs): efficiency up (**det2 75.4→87.0 %**, det6 51.2→55.7 %, det7
+  31.9→36.4 %, det4 8.2→10.3 %) and core σ tighter (det2 0.83→0.64, det7 1.18→0.86 mm) —
+  the cleaner v2 reference removes spurious "misses" and sharpens the alignment.
+- **det6 (C) angular resolution** (3.15°) is now measurable: its θ_det–θ_ref correlation
+  is real (r≈0.86), even though the micro-TPC time-fit v_drift rails low (~25 µm/ns, the
+  known ~20 % low bias of the time estimator); the resolution σ is unaffected by that bias.
 
 ### Notes per detector
 - **det2 / det3** — healthy detectors: high, spatially-uniform efficiency at sub-mm
@@ -90,10 +112,12 @@ seeded from each run's long_run subrun and re-translated per HV point.
 
 | Det | Scan(s) (drift) | Peak efficiency | at HV | Behaviour |
 |----:|---|---:|---:|---|
-| **2** | 6-22 (1000 V), 450–525 V | 77.8 % | ~490 V | plateau, sparks-off above ~510 V |
-| **3** | 6-22 (1000 V), 450–525 V | 81.1 % | ~485 V | best plateau, σ≈0.7 mm at optimum |
-| **6** | 6-26 hv_scan 400–500 V + overnight 505–530 V (700 V) | **71.0 %** | **480 V** | full turn-on → plateau → falloff |
-| **7** | 6-26 hv_scan 400–500 V + overnight 480–505 V (700 V) | **54.7 %** | **440 V** | full turn-on → plateau → falloff |
+| **2** | 6-22 (1000 V), 450–525 V | **89.9 %** | **480 V** | plateau, sparks-off above ~510 V |
+| **3** | 6-22 (1000 V), 450–525 V | **90.8 %** | **480 V** | best plateau, σ≈0.7 mm at optimum |
+| **6** | 6-26 hv_scan 400–500 V + overnight 505–530 V (700 V) | **76.2 %** | **480 V** | full turn-on → plateau → falloff |
+| **7** | 6-26 hv_scan 400–500 V + overnight 480–505 V (700 V) | **63.1 %** | **440 V** | full turn-on → plateau → falloff |
+
+(v2 peaks; pre-v2 were det2 77.8 %, det3 81.1 %, det6 71.0 %, det7 54.7 %.)
 
 In the 6-22 scan det2 (resist ch 3:4) and det3 (3:3) were stepped **together**. det6/det7
 have **two** scans each: the dedicated 6-26 `hv_scan` run (stepped together, 400–500 V)
@@ -130,13 +154,16 @@ best near the efficiency optimum, degrading into the sparking regime.
 
 ## 4. Provenance & reproduction
 
-- Run registry: `qa_config.py` keys `g_det2 g_det3 g_det3_wknd g_det4 g_det6_long g_det7_long`
-  (+ `g_det6 g_det7` short_run, and per-subrun variants). `g_det3_wknd` = the 6-28 weekend
-  det3 (wins the det3 page by ray count).
-- Per-detector overview: `run_full_june_qa.sh` (orchestrator) → `build_final_pdf.py`.
-  Regenerate just the PDF: `../venv/bin/python build_final_pdf.py`.
-- HV scans: `run_hv_scans.sh` → `10_hv_scan_efficiency.py` (per detector) →
-  `build_hv_scan_pdf.py`.
+- Run registry: `qa_config.py` keys `g_det2 g_det3_wknd g_det4 g_det6_long g_det7_long`
+  (+ `g_det3` = 6-22 det3, `g_det6 g_det7` short_run, and per-subrun variants).
+  `g_det3_wknd` (6-27 weekend, top slot) is the det3 headline — clean micro-TPC angle.
+- v2 rerun (per key): `03_alignment_and_tpc.py --full` (alignment refit + maps +
+  micro-TPC angle → `angular_resolution.json`), then `08`, `09`, `12`; all M3 loads use
+  `chi2_cut=5` (NClus≥3 is the M3RefTracking default). Caches (`event_results*.pkl`) are
+  det-hit-only and reused. venv is **`.venv`** (repo root).
+- Per-detector overview: `.venv/bin/python build_final_pdf.py` (default keys headline the
+  weekend det3; page 1 is the fleet summary). HV scans: `10_hv_scan_efficiency.py` per
+  detector → `build_hv_scan_pdf.py g_det2 g_det3 g_det6_hv g_det6_long g_det7_hv g_det7_long`.
 - Analysis outputs live under `~/x17/cosmic_bench/Analysis/<run>/...` (not in the repo);
   logs under `Analysis/_grand_logs/`.
 

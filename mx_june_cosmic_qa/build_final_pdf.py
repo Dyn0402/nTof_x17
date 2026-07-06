@@ -67,7 +67,11 @@ def hv_settings(cfg):
     return look('resist'), look('drift')
 
 
-DEFAULT_KEYS = ['g_det2', 'g_det3', 'g_det4',
+# det3 headline = the 6-27 weekend run (g_det3_wknd): its micro-TPC angle is clean
+# (v≈33 µm/ns, linear, σ≈2°), unlike the near-tied 6-22 bottom-slot run whose angle
+# correlation is unusable. (The 6-22 run reaches a higher 87% efficiency; add g_det3
+# back to the arg list to headline that instead.)
+DEFAULT_KEYS = ['g_det2', 'g_det3_wknd', 'g_det4',
                 'g_det6', 'g_det6_longer', 'g_det6_long',
                 'g_det7', 'g_det7_longer', 'g_det7_long']
 OUT_DEFAULT = '/home/dylan/x17/cosmic_bench/Analysis/june_grand_qa.pdf'
@@ -99,6 +103,10 @@ def parse_breakdown(path):
         ('core_sigma_mm', r'core sigma\([^)]*\)=([\d.]+)\s*mm'),
         ('median_r_mm', r'median \|r\|=([\d.]+)\s*mm'),
         ('spark_frac_pct', r'spark_frac=([\d.]+)%'),
+        # crossing-based spark fraction (the 'spark' breakdown category) -- same
+        # denominator (active-area crossings) as reco_near etc., so it matches the
+        # efficiency-breakdown bar. Preferred for the headline/summary.
+        ('spark_pct', r'spark\s*:\s*\d+\s*\(\s*([\d.]+)%'),
     ]:
         mm = re.search(pat, txt)
         if mm:
@@ -169,7 +177,7 @@ def detector_page(pdf, key):
         hax.text(x, 0.02, label, fontsize=8.5, color='dimgrey', va='center', ha='left')
 
     # spark-rate colour cue (high spark = bad)
-    spk = bd.get('spark_frac_pct', '—')
+    spk = bd.get('spark_pct', '—')
     try:
         sv = float(spk); scol = '#b3261e' if sv >= 20 else '#b26a00' if sv >= 8 else '#1a7f37'
     except (TypeError, ValueError):
@@ -288,13 +296,16 @@ def _load_angres(cfg):
     sx, sy = ar.get('sigma_theta_x_deg'), ar.get('sigma_theta_y_deg')
     vals = [v for v in (sx, sy) if isinstance(v, (int, float)) and np.isfinite(v)]
     sig = float(np.mean(vals)) if vals else np.nan
-    # legacy files without 'reliable': infer from v_drift being interior to the scan
+    # 'reliable' is set from the correlation strength (a railed v_drift alone does NOT
+    # mean unusable -- the micro-TPC v is biased ~20% low). Legacy files: fall back to
+    # the saved correlations, else treat as reliable if a sigma exists.
     rel = ar.get('reliable')
     if rel is None:
-        lo, hi = ar.get('v_scan_range', [25.0, 50.0])
-        vx, vy = ar.get('v_drift_x_um_ns'), ar.get('v_drift_y_um_ns')
-        m = 0.15 * (hi - lo)   # minimum within 15% of a boundary = effectively railed
-        rel = all(isinstance(v, (int, float)) and (lo + m) <= v <= (hi - m) for v in (vx, vy))
+        cx, cy = ar.get('corr_x'), ar.get('corr_y')
+        if isinstance(cx, (int, float)) and isinstance(cy, (int, float)):
+            rel = (cx >= 0.70 and cy >= 0.70)
+        else:
+            rel = np.isfinite(sig)
     return sig, int(ar.get('n_events', 0) or 0), bool(rel)
 
 
@@ -322,7 +333,7 @@ def collect_fleet_stats(winner_keys, all_keys=None):
         bd = parse_breakdown(_find(cfg.OUT_BASE, 'efficiency/efficiency_breakdown.txt'))
         stats[L] = dict(letter=L, num=num, key=k,
                         eff=_f(bd.get('within_pct')), sigma=_f(bd.get('core_sigma_mm')),
-                        spark=_f(bd.get('spark_frac_pct')), ang=np.nan, ang_key=None)
+                        spark=_f(bd.get('spark_pct')), ang=np.nan, ang_key=None)
 
     # angular: best reliable across every candidate run for each detector
     best_ang = {}   # letter -> (n_events, sigma, key)
