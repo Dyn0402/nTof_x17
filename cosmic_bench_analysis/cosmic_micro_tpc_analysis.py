@@ -2280,23 +2280,37 @@ def plot_angle_correlation(
     v_drift_y = _best_v(sigmas_y)
 
     # micro-TPC angular resolution = sigma of (|θ_ref|-|θ_det|) at the best v_drift.
-    # A best v_drift railed to the scan boundary means the sigma-vs-v curve has no real
-    # minimum (no usable micro-TPC angle information) -> flag as unreliable.
     sig_theta_x = float(np.nanmin(sigmas_x)) if np.isfinite(sigmas_x).any() else float('nan')
     sig_theta_y = float(np.nanmin(sigmas_y)) if np.isfinite(sigmas_y).any() else float('nan')
-    _vlo, _vhi = v_values[0], v_values[-1]
-    _margin = 0.15 * (_vhi - _vlo)   # a minimum within 15% of a boundary = effectively railed
-    def _interior(v):
-        return bool(np.isfinite(v) and (_vlo + _margin) <= v <= (_vhi - _margin))
-    reliable = _interior(v_drift_x) and _interior(v_drift_y)
+    # Reliability is judged by the STRENGTH of the θ_det–θ_ref correlation, not by
+    # where v_drift lands: the micro-TPC time-fit v is known to be biased ~20% low
+    # (charge sharing), so a good detector can still rail its v to the scan edge while
+    # carrying real angle information (e.g. det6). Conversely a run with a genuinely
+    # weak correlation (e.g. the 6-22 bottom-slot det3, r≈0.65) has no usable angle
+    # regardless of v. Correlate at the best v (fall back to a physical 35 µm/ns).
+    def _corr(det_deg, ref_deg):
+        g = np.isfinite(det_deg) & np.isfinite(ref_deg) & (np.abs(ref_deg) < 25) & (np.abs(det_deg) < 25)
+        if g.sum() < 20:
+            return float('nan')
+        return float(np.corrcoef(det_deg[g], ref_deg[g])[0, 1])
+    _vx = v_drift_x if np.isfinite(v_drift_x) else 35.0
+    _vy = v_drift_y if np.isfinite(v_drift_y) else 35.0
+    _ddx, _ = _det_angles_deg(sl_x_q, sl_y_q, _vx)
+    _, _ddy = _det_angles_deg(sl_x_q, sl_y_q, _vy)
+    corr_x = _corr(_ddx, ref_x_q)
+    corr_y = _corr(_ddy, ref_y_q)
+    reliable = bool(np.isfinite(corr_x) and np.isfinite(corr_y)
+                    and corr_x >= 0.70 and corr_y >= 0.70)
     if out_dir is not None:
         try:
             import json as _json_ar
             with open(os.path.join(out_dir, 'angular_resolution.json'), 'w') as _f_ar:
                 _json_ar.dump({'v_drift_x_um_ns': v_drift_x, 'v_drift_y_um_ns': v_drift_y,
                                'sigma_theta_x_deg': sig_theta_x, 'sigma_theta_y_deg': sig_theta_y,
-                               'n_events': n_q, 'reliable': reliable,
-                               'v_scan_range': [float(_vlo), float(_vhi)]}, _f_ar, indent=2)
+                               'corr_x': corr_x, 'corr_y': corr_y, 'n_events': n_q,
+                               'reliable': reliable,
+                               'v_scan_range': [float(v_values[0]), float(v_values[-1])]},
+                              _f_ar, indent=2)
         except Exception as _e_ar:
             print(f'  [angular_resolution.json not written: {_e_ar}]')
 
