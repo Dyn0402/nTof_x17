@@ -23,6 +23,8 @@ evening after the M3 v2 re-verification (see Sec. 0b).*
 | head-on tagging | angle estimators CANNOT tag θ<5° tracks (production AUC 0.46 = anti-correlated, sharing pushes vertical to ±5–7°); waveform signature LDA AUC 0.92, purity 81 %@20 % eff (prevalence 12 %) | 33 |
 | hybrid tracking | \|θ\|<5° band: σ68 = 1.75° at 97 % coverage (production 14.9°; track-only 5.3° @ 51 %); plateau 1.86° @ 98 % — uniform ~1.8° tracking at all angles | 34 |
 | hybrid transfer (overfit check) | frozen det3 model on det2: 2.85° vs 2.47° self-trained (−15 %), weights ≈ identical across detectors — design property, NOT overfit | 34 `--model=` |
+| hybrid drift scan | signature-regressed angles (hit-level features, per-point trained, odd-eid holdout) reproduce v_geom(E) at 700–1100 V within +1–3 % (34.30±0.28 vs 35.24±0.58 @1000 V); reg σ68 1.7–2.2° at every field; 500 V window-truncated (+19 %), ≤300 V untrainable | 35 |
+| hit-mode position | track-pointing = parity (86 % cov); full centroid measures a plane ~14 mm deeper (z-scan); **early-charge centroid** (first 2 samples, raw — sharing acts as interpolator) wins at θ<5°: 0.73/0.94 → 0.61/0.72 mm; **COMBO** (early if n≤9 else prod) = recommended | 36 |
 
 ## 0b. M3 tracking-v2 re-verification (7-06) — all conclusions HOLD
 
@@ -128,6 +130,8 @@ between runs, never assume.
 | 32 | `32_edge_fringe_field.py` | cache (+31's CSV if present) | edge/fringe study: outward angle residual, T-span, column proxy, efficiency vs edge distance; zone table (edge/mid/core) |
 | 33 | `33_headon_tracks.py` | decoded_root + cache | head-on tagger: waveform signature (lead ToT, lead-charge fraction, n_strips…) Fisher-LDA, AUC 0.92 vs 0.46 for the production angle; caches `headon_features.csv` |
 | 34 | `34_hybrid_tracking.py` | 31's + 33's CSVs (no waveform pass) | **hybrid tracking**: signature-regressed \|tanθ\| + asymmetry sign below ~5°, unshared time fit above → σ68 ≈ 1.8° at ALL angles, 97–99 % coverage (holdout-validated) |
+| 35 | `35_hybrid_drift_scan.py` | per-point cache + combined_hits_root (NO decoded_root needed) | **hybrid drift scan**: hit-level signature features (33's set minus n_u — ToT/amp/time are in the hits tree) → per-point |tanθ| regression → v = extent-slope/T_sat vs the REGRESSED angle (odd-eid holdout, fit band ≤ tan 0.27 to dodge feature saturation); v_geom reproduced alongside; caches `hybrid_vdrift_scan.csv` |
+| 36 | `36_position_estimators.py` | decoded_root + cache | **hit-mode position benchmark**: earliest-strip vs centroids vs early-charge centroid vs track-fit impact point vs COMBO; z-scan locates each estimator's effective plane; caches `position_estimates.csv` |
 
 Typical invocation: `../.venv/bin/python 21_geometry_vdrift_scan.py sat_det3 --veto=50`.
 Runtimes: hits-level scripts ~1–5 min; waveform scripts (24/26/27/28) ~5–15 min
