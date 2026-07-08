@@ -411,6 +411,95 @@ hit-mode 90.6 %, segment 60.9 % (67 % given hit — more strips survive
 with λ=40 mm), plateau bias −0.36° / σ68 2.01°, ψ median 3.7°; head-on
 LDA AUC 0.881 (holdout 0.883), production-angle AUC 0.51 (again ~random).
 
+## 11. Hybrid drift-velocity scan (7-08, `35_hybrid_drift_scan.py`)
+
+The drift-HV scan re-measured with the hybrid machinery: the scan subruns
+have NO decoded_root, but combined_hits_root already carries per-hit
+time_over_threshold / amplitude / time — enough for 33's feature set minus
+n_u. Per point: hit-level features → 34-style |tanθ| regression (trained on
+even eids vs M3, everything below = odd-eid holdout) → v = extent-slope /
+T_sat with the REGRESSED angle on the x-axis (inclined selection also from
+the regressed angle, so the velocity measurement itself never touches the
+telescope). v_geom (21's estimator) recomputed alongside on the same
+selection.
+
+| HV | E [V/cm] | v_geom (M3) | v_sig (signature) | Δ | reg σ68 x/y |
+|---:|---:|---|---|---:|---|
+| 500 | 167 | 12.22 ± 0.38 | 14.51 ± 0.51 | +2.3 | 2.2°/2.2° |
+| 700 | 233 | 23.31 ± 0.52 | 24.00 ± 0.65 | +0.7 | 1.8°/2.0° |
+| 900 | 300 | 29.67 ± 0.64 | 30.42 ± 0.96 | +0.8 | 1.8°/1.9° |
+| 1000 | 333 | 34.30 ± 0.28 | 35.24 ± 0.58 | +0.9 | 1.7°/1.8° |
+| 1100 | 367 | 35.53 ± 0.90 | 35.96 ± 1.37 | +0.4 | 1.9°/1.8° |
+
+Findings:
+1. **The signature regression works at every drift field** — holdout σ68
+   1.7–2.2° per plane from hit-level features alone (no waveforms, no n_u),
+   at 500–1100 V. Per-point training is required and expected (tot_lead /
+   t_delay rescale with the drift time); the point is that the *method*
+   transfers, not frozen weights across HV.
+2. **v_sig reproduces v_geom within +1–3 % at 700–1100 V** (+0.4 to
+   +0.9 µm/ns, ~1σ each). T_sat agrees within ~1 % between the variants, so
+   the residual +2–3 % lives in the extent slope — consistent with mild
+   feature saturation leaking steep tracks into the fit band. Fit band
+   capped at tan 0.27 (≈15°, 34's known saturation caveat); a λ response
+   correction and a per-track ext/tanθ ratio were tried and REJECTED (the
+   binned-median calibration already makes E[tan_true|tan_reg] ≈ tan_reg,
+   and the ratio doesn't cancel the ~2–5 mm extent floor that the slope fit
+   removes).
+3. **500 V is window-truncated** (T_sat ≈ 1353 ns vs the 1.92 µs window
+   minus jitter): features distorted, v_sig +19 %. ≤300 V untrainable
+   (regression needs an inclined lever arm the truncated column doesn't
+   give) — same points where v_geom itself is unphysical.
+4. Practical: a per-detector signature model trained where reference tracks
+   exist gives an M3-free in-situ velocity/gas monitor from hits-level data
+   only — directly usable at n_TOF where there is no telescope (train on
+   cosmics between spills / bench constants, monitor v via the scan-band
+   slope).
+
+Output: `Analysis/.../drift_velocity/mx17_3/hybrid_vdrift_scan.csv/.png`.
+
+## 12. Hit-mode position estimators (7-08, `36_position_estimators.py`)
+
+Can we beat the production earliest-hit-strip anchor (one strip, pitch-
+quantised, timing-selected)? Seven estimators benchmarked identically
+(joint plane rotation, per-estimator offset removal, σ68 vs the v2 ray at
+the alignment plane; 15.3k matched events):
+
+| estimator | cov | all | θ<5° | 5–15° | θ>15° |
+|---|---:|---:|---:|---:|---:|
+| production earliest strip | 100 % | 0.85/0.91 | 0.73/0.94 | 0.83/0.89 | 0.99/0.97 |
+| earliest strip (unshared) | 99 % | 0.87/0.94 | 0.72/0.87 | 0.84/0.91 | 1.02/1.06 |
+| cluster centroid (raw / unshared) | 98 % | 2.2–2.4 | ~1.0 | 2.0–2.4 | 3.3–3.9 |
+| **early-charge centroid** (raw, 2 samp) | 99 % | 0.86/0.98 | **0.61/0.72** | 0.84/0.93 | 1.07/1.24 |
+| track-fit impact point pos(t)@t0 | 86 % | 0.87/0.94 | 0.70/0.79 | 0.84/0.89 | 1.03/1.13 |
+| **COMBO** (early if n≤9, else prod) | 99 % | **0.84/0.91** | **0.62/0.72** | 0.82/0.90 | 0.98/1.00 |
+
+(σ68 x/y in mm.) Findings:
+1. **Track-pointing (fit intercept at cluster start) gives parity, not
+   improvement** — the slope-extrapolation noise cancels the anchor gain,
+   and coverage drops to 86 %. The earliest-hit anchor is a better idea
+   than it looks: it is already mesh-anchored and slope-free.
+2. **The full-cluster centroid is NOT broken — it measures a different
+   plane**: its z-scan minimises ~14 mm deeper than the mesh (≈ the
+   charge-weighted column depth) where it reaches σ≈0.93 mm. Used against
+   the mesh plane it is slant-smeared (3.5–3.9 mm at θ>15°). All
+   mesh-anchored estimators z-scan to the alignment plane — a nice
+   internal consistency check of z=714.
+3. **Early-charge centroid** (charge in the first 2 samples after cluster
+   start, RAW waveform) is the real gain: the earliest charge is all from
+   near the mesh, and the resistive sharing spreads it over neighbours =
+   a built-in sub-pitch interpolator. σ(θ<5°): 0.73/0.94 → **0.61/0.72 mm**
+   (−16 %/−23 %). Notably raw beats unshared here — sharing HELPS
+   interpolation (the one place it does).
+4. **COMBO** (early-charge centroid when the raw footprint ≤ 9 strips
+   ≈ θ<10°, production anchor beyond; per-branch offset alignment) keeps
+   the low-angle gain at parity elsewhere: the recommended hit-mode
+   position. Most cosmics are near-vertical, so the θ<5° gain covers the
+   bulk of the sample.
+
+Output: `<alignment_tpc_veto50>/position/` (`position_benchmark.png`,
+`position_summary.csv`, per-event `position_estimates.csv`).
+
 ## Open follow-ups
 1. Implement + validate the unsharing time estimator; wire geometry v and
    corrected micro-TPC into `03_alignment_and_tpc.py`.
@@ -420,3 +509,6 @@ LDA AUC 0.881 (holdout 0.883), production-angle AUC 0.51 (again ~random).
 4. For more det3 stats use the p2 run (53k rays); Saturday run complete at
    141 min.
 5. Longer readout window for future low-drift-field points.
+6. Hybrid drift scan (§11): understand the residual +2–3 % v_sig excess
+   (saturation model or T_sat selection); pull decoded_root for the scan
+   points from lxplus to add n_u + waveform re-timing; det2 repeat.
