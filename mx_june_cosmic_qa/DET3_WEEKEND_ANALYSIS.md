@@ -501,6 +501,47 @@ Output: `<alignment_tpc_veto50>/position/` (`position_benchmark.png`,
 `position_summary.csv`, per-event `position_estimates.csv`).
 
 ## Open follow-ups
+-3. **DONE (7-12, `40_spark_waveforms.py sat_det3`; `SPARK_WAVEFORM_FINDINGS.md`):**
+   waveform-level spark anatomy (what the detector does DURING a discharge). Raw
+   DREAM waveforms (decoded_root, CM intact) of 2878 sparks vs normal muons. A spark
+   is a fast GLOBAL common-mode step (whole FEU baseline rises together, 31/23 %
+   X/Y to saturation) that recovers within the 1.92 µs window (94 %) → the
+   waveform cause of the no-dead-time result. NOT a propagating streamer: high-ADC
+   onset flat across all 512 ch to ~1–2 samples (103 ns). The "50+ strips" is
+   inflated by common mode — genuine (CNS) charge is ~half (raw 93 → gen 40/56)
+   and edge-seeded (|corr(pos,onset)| 0.21, spread ≈ drift window). Resistive-MM
+   self-quenching/non-propagating signature in the raw data. Ran on sat_det3 (the
+   p2 spark run has no local decoded waveforms over its spark region).
+-2. **DONE (7-11, PLAN_42 + LaTeX report):** time resolution (topic 10) —
+   `42_time_resolution.py sat_det3 | o22_long_det2`; write-up in
+   `report_time_resolution/main.pdf`. The earlier "not feasible" call was WRONG:
+   the bench has a scintillator-coincidence trigger (absolute t≈0) and the DREAM
+   fine timestamp `ftst` IS applied (WaveformAnalyzer.cpp:390-392; verified — hit
+   `time` flat vs ftst). So per-strip `time` is an absolute leading-edge time.
+   **Detector σ_t = 33.1 ns (1.13 mm drift)** from the two orthogonal layers timing
+   the same drift electrons (telescope+geometry-free; walk-corr floor 29.0 ns),
+   **absolute event-time σ68 = 37.7 ns** (UL, detector-dominated: det 33 ⊕ scint 5 ⊕
+   ftst-q 2.9 ⊕ geom 17 ns), inter-plane bias **−1.3 ns (≈0)**; single-strip σ_t =
+   38.9 ns. det2 replicates ~10 % (36.8/34.0 ns). ≈1 mm drift ↔ transverse σ (topic 9).
+   Per-strip walk negligible (+3 ns/rel-amp, 30 % const-fraction removes it) →
+   unsharing is the dominant TPC-timing correction, not walk.
+-1. **DONE (7-11, PLAN_39):** spark dead time → efficiency ceiling —
+   `39_spark_deadtime.py g_det3_wknd | g_det7_long`. **No measurable post-spark
+   dead time on either detector.** DAQ next-event gap after a spark = after a
+   normal event (det3 192 vs 186 ms, det7 168 vs 167 ms; median eventId skip 1
+   both). Efficiency is FLAT vs time-since-spark (det3 92.9 %, χ²/ndf 13/12; det7
+   63.2 %, χ²/ndf 17/9) — the transient deficit at Δt≈64 ms is +0.6 ± 1.3 %
+   (det3) and −5.2 ± 1.8 % (det7, i.e. a small EXCESS), 95 % UL ≤2.7 / 3.0 pts.
+   No gain sag (first-bin amplitude within −3 %). Discharges are localised and
+   non-propagating; the ONLY spark-induced loss is the in-spark crossing
+   coincidence (f_inspark 4.4 % det3 → operational eff 88.8 %; 35.7 % det7 →
+   40.7 %). Completes paper topic 6.
+0. **DONE (7-11, PLAN_38):** X/Y charge balance through the pixel top layer —
+   `38_xy_charge_balance.py`. f = q_X/(q_X+q_Y) median **0.487** (det3) / 0.531
+   (det2), σ68 0.07, flat in position (real map std ~0.02 ≈ 2 %) and angle;
+   3 charge proxies (amplitude / integral / segment amp_sum) agree; r(q_X,q_Y)
+   0.88. Pixel layer routes charge evenly to both strip layers; ~0.04 chamber
+   offset = per-assembly. Fills the last unmeasured paper topic.
 1. Implement + validate the unsharing time estimator; wire geometry v and
    corrected micro-TPC into `03_alignment_and_tpc.py`.
 2. Gas: long flush + re-scan (one hour decides); humidity/O2 probe; flow &
