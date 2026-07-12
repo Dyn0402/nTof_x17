@@ -46,7 +46,7 @@ number, `spark_frac` = discharges / firing events, is ~2–3× larger and still 
 | **2 (B)** | 6-22 overnight / long_run | 52.9k | **87.0 %** | **0.64 mm** | **2.15°** | 5.5 % | Healthy |
 | **6 (C)** | 6-26 overnight / long_run | 15.1k | **55.7 %** | **0.59 mm** | **3.15°** | 24.0 % | Spark-limited |
 | **7 (D)** | 6-26 overnight / long_run | 20.5k | **36.4 %** | **0.86 mm** | **2.50°** | 31.9 % | Spark-limited |
-| **4 (E)** | 6-24 daytime / long_run | 2.8k | **10.3 %** | **0.91 mm** | **2.49°** | 2.6 % | Gain-limited |
+| **4 (E)** | 6-24 daytime / long_run | 30.0k | **20.0 %** | **0.89 mm** | **2.49°** | 3.4 % | Gain-limited |
 
 Efficiency and spark are % of active-area crossings; core σ is the residual Gaussian
 core; angular σ is the micro-TPC θ resolution (reported where r ≥ 0.7). Alignment
@@ -68,6 +68,16 @@ converged sub-mm with θ≈89.3–89.8° and z≈710–714 mm for every detector
 - **Detector-data range guard** (`08`/`09`): efficiency counts only M3 rays whose eventId
   falls within the detector's `combined_hits` span, so an unreconstructed raw file cannot
   masquerade as detector inefficiency. No-op now that the June dataset's hits are complete.
+- **det4 (E) recovered (7-06 evening)** — the 6-24 run had the same decode-interruption
+  bug as the saturday det3 run: combined file 000 was missing FEU 8 (det4's y-plane) and
+  combined file 007 was **empty** (built from FEU 03 alone, which had no hits). The raw
+  fdfs were intact on EOS; files 000/007 were re-decoded + re-combined (all FEUs) and
+  synced back. Full chain re-run (`03 --refit`, `03 --no-veto --refit`, `08/09/12`):
+  det4 measures **20.0 % within 5 mm on 30.0k active-area rays** (has_any 69.7 %,
+  reco-at-all 23.7 %, core σ 0.89 mm, 84.3 % of reconstructed within 5 mm) — roughly
+  double the pre-recovery 10.3 % / 2.8k-ray quote (that tiny denominator was itself a
+  symptom of the broken files). Still gain-limited (hit_no_reco 42.6 %, silent 30.3 %),
+  but meaningfully better than previously reported.
 - v2 vs pre-v2 (same runs): efficiency up (**det2 75.4→87.0 %**, det6 51.2→55.7 %, det7
   31.9→36.4 %, det4 8.2→10.3 %) and core σ tighter (det2 0.83→0.64, det7 1.18→0.86 mm) —
   the cleaner v2 reference removes spurious "misses" and sharpens the alignment.
@@ -80,10 +90,11 @@ converged sub-mm with θ≈89.3–89.8° and z≈710–714 mm for every detector
   resolution. det3 is the best of the batch. The headline det3 is now the **6-28 weekend
   run** (top slot, FEU7/8, z702; 53.0k rays, 79.7 %, silent only 2.4 %); the earlier 6-22
   det3 (bottom slot) gave a consistent **80.7 %** — det3 is reliably ~80 % in either slot.
-- **det4** — gain-limited. Fires on ~51 % of muons but the loss is dominated by
-  `hit_no_reco` (38.8 %) + silent (49.4 %): clusters rarely reach the ≥3 strips needed
-  to reconstruct. Same pathology the old det1 had → an HV/threshold/gas (gain) issue,
-  not a dead detector.
+- **det4** — gain-limited (numbers post-recovery, see note above). Fires on ~70 % of
+  muons; the loss is dominated by `hit_no_reco` (42.6 %) + silent (30.3 %): clusters
+  rarely reach the ≥3 strips needed to reconstruct. The pre-recovery "silent 49.4 % /
+  fires on 51 %" figure was inflated by the missing y-plane files. Same pathology the
+  old det1 had → an HV/threshold/gas (gain) issue, not a dead detector.
 - **det6** — good core (0.68 mm) but **spark-limited**: 23.7 % of crossings are
   full-detector discharges (drift 700 V, resist likely past optimum). With sparks removed
   the reco_far tail is small (7.5 %); efficiency 51.2 %. Prefer long_run (short_run is
