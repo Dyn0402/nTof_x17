@@ -108,8 +108,8 @@ def main():
                           flash_time_s=flash_time,
                           xlim=ax_full.get_xlim(), ylim=ax_full.get_ylim())
 
-    dream_saturation_time_s = 10e-6   # 100 µs nominal DREAM saturation time
-    dream_saturation_uncertainty_s = 100e-6  # ±100 µs uncertainty on saturation end
+    dream_saturation_time_s = 3e-3   # 100 µs nominal DREAM saturation time
+    dream_saturation_uncertainty_s = 10e-3  # ±100 µs uncertainty on saturation end
     plot_spectrum_vs_time(df, 'X17 [1/day]', distance_m=distance_m,
                           flash_time_s=flash_time,
                           xlim=ax_full.get_xlim(), ylim=ax_full.get_ylim(),
