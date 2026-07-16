@@ -1,0 +1,10 @@
+report/*.aux
+report/*.log
+report/*.out
+slides/*.aux
+slides/*.log
+slides/*.out
+slides/*.nav
+slides/*.snm
+slides/*.toc
+__pycache__/

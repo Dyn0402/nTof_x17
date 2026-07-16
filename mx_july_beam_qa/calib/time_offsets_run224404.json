@@ -1,0 +1,335 @@
+{
+  "run": "run224404",
+  "definition": "dt = t_wall - t_pss, subtract offset_ns so calibrated pairs peak at 0",
+  "sample": "tof-tflash > 100000 ns, post-recovery bunches",
+  "stations": {
+    "A": {
+      "WALA1_PSSA1": {
+        "offset_ns": -14.55,
+        "rms_ns": 2.86,
+        "n_excess": 31100
+      },
+      "WALA1_PSSA2": {
+        "offset_ns": -19.86,
+        "rms_ns": 2.76,
+        "n_excess": 13914
+      },
+      "WALA2_PSSA1": {
+        "offset_ns": -6.11,
+        "rms_ns": 3.14,
+        "n_excess": 33507
+      },
+      "WALA2_PSSA2": {
+        "offset_ns": -11.39,
+        "rms_ns": 2.88,
+        "n_excess": 14389
+      },
+      "WALA3_PSSA1": {
+        "offset_ns": -10.0,
+        "rms_ns": 2.8,
+        "n_excess": 27475
+      },
+      "WALA3_PSSA2": {
+        "offset_ns": -15.14,
+        "rms_ns": 2.58,
+        "n_excess": 17879
+      },
+      "WALA4_PSSA1": {
+        "offset_ns": -6.28,
+        "rms_ns": 3.22,
+        "n_excess": 33895
+      },
+      "WALA4_PSSA2": {
+        "offset_ns": -11.39,
+        "rms_ns": 2.96,
+        "n_excess": 22188
+      },
+      "WALA5_PSSA1": {
+        "offset_ns": -13.46,
+        "rms_ns": 2.9,
+        "n_excess": 26864
+      },
+      "WALA5_PSSA2": {
+        "offset_ns": -18.54,
+        "rms_ns": 2.64,
+        "n_excess": 36036
+      },
+      "WALA6_PSSA1": {
+        "offset_ns": -5.3,
+        "rms_ns": 3.17,
+        "n_excess": 26225
+      },
+      "WALA6_PSSA2": {
+        "offset_ns": -10.32,
+        "rms_ns": 3.06,
+        "n_excess": 33716
+      },
+      "WALA7_PSSA1": {
+        "offset_ns": -13.94,
+        "rms_ns": 3.04,
+        "n_excess": 19338
+      },
+      "WALA7_PSSA2": {
+        "offset_ns": -18.74,
+        "rms_ns": 2.72,
+        "n_excess": 43618
+      },
+      "WALA8_PSSA1": {
+        "offset_ns": -5.54,
+        "rms_ns": 3.46,
+        "n_excess": 19116
+      },
+      "WALA8_PSSA2": {
+        "offset_ns": -10.42,
+        "rms_ns": 3.03,
+        "n_excess": 44869
+      }
+    },
+    "B": {
+      "WALB1_PSSB1": {
+        "offset_ns": -10.35,
+        "rms_ns": 1.62,
+        "n_excess": 170612
+      },
+      "WALB1_PSSB2": {
+        "offset_ns": -10.92,
+        "rms_ns": 2.14,
+        "n_excess": 31667
+      },
+      "WALB2_PSSB1": {
+        "offset_ns": -11.06,
+        "rms_ns": 1.89,
+        "n_excess": 173569
+      },
+      "WALB2_PSSB2": {
+        "offset_ns": -11.46,
+        "rms_ns": 2.34,
+        "n_excess": 32616
+      },
+      "WALB3_PSSB1": {
+        "offset_ns": -14.49,
+        "rms_ns": 1.64,
+        "n_excess": 195793
+      },
+      "WALB3_PSSB2": {
+        "offset_ns": -14.86,
+        "rms_ns": 1.87,
+        "n_excess": 73790
+      },
+      "WALB4_PSSB1": {
+        "offset_ns": -6.05,
+        "rms_ns": 1.88,
+        "n_excess": 197610
+      },
+      "WALB4_PSSB2": {
+        "offset_ns": -6.46,
+        "rms_ns": 2.08,
+        "n_excess": 74391
+      },
+      "WALB5_PSSB1": {
+        "offset_ns": -9.5,
+        "rms_ns": 1.83,
+        "n_excess": 111861
+      },
+      "WALB5_PSSB2": {
+        "offset_ns": -9.76,
+        "rms_ns": 1.58,
+        "n_excess": 182038
+      },
+      "WALB6_PSSB1": {
+        "offset_ns": -12.0,
+        "rms_ns": 2.08,
+        "n_excess": 112106
+      },
+      "WALB6_PSSB2": {
+        "offset_ns": -12.29,
+        "rms_ns": 1.94,
+        "n_excess": 183672
+      },
+      "WALB7_PSSB1": {
+        "offset_ns": -9.18,
+        "rms_ns": 2.1,
+        "n_excess": 41796
+      },
+      "WALB7_PSSB2": {
+        "offset_ns": -9.28,
+        "rms_ns": 1.46,
+        "n_excess": 223169
+      },
+      "WALB8_PSSB1": {
+        "offset_ns": -9.71,
+        "rms_ns": 2.11,
+        "n_excess": 39660
+      },
+      "WALB8_PSSB2": {
+        "offset_ns": -9.84,
+        "rms_ns": 1.83,
+        "n_excess": 216731
+      }
+    },
+    "C": {
+      "WALC1_PSSC1": {
+        "offset_ns": -13.98,
+        "rms_ns": 1.82,
+        "n_excess": 216468
+      },
+      "WALC1_PSSC2": {
+        "offset_ns": -17.44,
+        "rms_ns": 2.44,
+        "n_excess": 38016
+      },
+      "WALC2_PSSC1": {
+        "offset_ns": -14.09,
+        "rms_ns": 1.84,
+        "n_excess": 202789
+      },
+      "WALC2_PSSC2": {
+        "offset_ns": -17.52,
+        "rms_ns": 2.38,
+        "n_excess": 34064
+      },
+      "WALC3_PSSC1": {
+        "offset_ns": -9.07,
+        "rms_ns": 1.76,
+        "n_excess": 235769
+      },
+      "WALC3_PSSC2": {
+        "offset_ns": -12.37,
+        "rms_ns": 2.17,
+        "n_excess": 85401
+      },
+      "WALC4_PSSC1": {
+        "offset_ns": -13.53,
+        "rms_ns": 1.84,
+        "n_excess": 230562
+      },
+      "WALC4_PSSC2": {
+        "offset_ns": -16.84,
+        "rms_ns": 2.02,
+        "n_excess": 82955
+      },
+      "WALC5_PSSC1": {
+        "offset_ns": -9.75,
+        "rms_ns": 1.96,
+        "n_excess": 132554
+      },
+      "WALC5_PSSC2": {
+        "offset_ns": -12.87,
+        "rms_ns": 1.75,
+        "n_excess": 205537
+      },
+      "WALC6_PSSC1": {
+        "offset_ns": -13.88,
+        "rms_ns": 2.16,
+        "n_excess": 135580
+      },
+      "WALC6_PSSC2": {
+        "offset_ns": -17.09,
+        "rms_ns": 1.93,
+        "n_excess": 207502
+      },
+      "WALC7_PSSC1": {
+        "offset_ns": -14.51,
+        "rms_ns": 2.39,
+        "n_excess": 61764
+      },
+      "WALC7_PSSC2": {
+        "offset_ns": -17.51,
+        "rms_ns": 1.58,
+        "n_excess": 275141
+      },
+      "WALC8_PSSC1": {
+        "offset_ns": -15.37,
+        "rms_ns": 2.3,
+        "n_excess": 59675
+      },
+      "WALC8_PSSC2": {
+        "offset_ns": -18.43,
+        "rms_ns": 1.76,
+        "n_excess": 271431
+      }
+    },
+    "D": {
+      "WALD1_PSSD1": {
+        "offset_ns": -10.04,
+        "rms_ns": 2.64,
+        "n_excess": 28962
+      },
+      "WALD1_PSSD2": {
+        "offset_ns": -11.2,
+        "rms_ns": 3.07,
+        "n_excess": 9031
+      },
+      "WALD2_PSSD1": {
+        "offset_ns": -10.82,
+        "rms_ns": 2.53,
+        "n_excess": 30525
+      },
+      "WALD2_PSSD2": {
+        "offset_ns": -11.96,
+        "rms_ns": 2.78,
+        "n_excess": 9638
+      },
+      "WALD3_PSSD1": {
+        "offset_ns": -12.73,
+        "rms_ns": 2.82,
+        "n_excess": 29184
+      },
+      "WALD3_PSSD2": {
+        "offset_ns": -13.8,
+        "rms_ns": 3.0,
+        "n_excess": 13768
+      },
+      "WALD4_PSSD1": {
+        "offset_ns": -13.89,
+        "rms_ns": 2.58,
+        "n_excess": 33016
+      },
+      "WALD4_PSSD2": {
+        "offset_ns": -14.98,
+        "rms_ns": 3.39,
+        "n_excess": 15431
+      },
+      "WALD5_PSSD1": {
+        "offset_ns": -9.63,
+        "rms_ns": 2.75,
+        "n_excess": 24430
+      },
+      "WALD5_PSSD2": {
+        "offset_ns": -10.88,
+        "rms_ns": 2.8,
+        "n_excess": 22205
+      },
+      "WALD6_PSSD1": {
+        "offset_ns": -13.95,
+        "rms_ns": 2.7,
+        "n_excess": 23059
+      },
+      "WALD6_PSSD2": {
+        "offset_ns": -14.91,
+        "rms_ns": 2.64,
+        "n_excess": 19862
+      },
+      "WALD7_PSSD1": {
+        "offset_ns": -10.19,
+        "rms_ns": 2.97,
+        "n_excess": 15880
+      },
+      "WALD7_PSSD2": {
+        "offset_ns": -11.3,
+        "rms_ns": 2.75,
+        "n_excess": 22756
+      },
+      "WALD8_PSSD1": {
+        "offset_ns": -10.52,
+        "rms_ns": 2.91,
+        "n_excess": 14580
+      },
+      "WALD8_PSSD2": {
+        "offset_ns": -11.49,
+        "rms_ns": 2.58,
+        "n_excess": 22505
+      }
+    }
+  }
+}
