@@ -51,7 +51,7 @@ VETO = next((int(a.split('=')[1]) for a in sys.argv if a.startswith('--veto=')),
 SAMPLE_NS = 60.0
 MIN_STRIPS = 4
 RES_CUT_MM = 10.0
-CHI2_CUT = 5.0   # M3 v2 recipe (chi2<5; NClus>=3 automatic in M3RefTracking); was 20 pre-v2
+from qa_config import M3_CHI2_CUT as CHI2_CUT, M3_MIN_NCLUS  # centralized M3 recipe (see qa_config.py)
 GAP_MM_CLUSTER = getattr(cm, 'GAP_THRESHOLD_MM', 2.0)
 CORE_FRAC = 0.30
 V_GEOM = 33.9   # from 21_geometry_vdrift_scan.py (long run, weighted planes)
@@ -145,7 +145,7 @@ def main():
     align_json = os.path.join(CFG.OUT_BASE, f'alignment_tpc{tag}', 'alignment.json')
     results = pickle.load(open(cache, 'rb'))
     best = cm.load_alignment(align_json)
-    rays = M3RefTracking(CFG.m3_tracking_dir, chi2_cut=CHI2_CUT)
+    rays = M3RefTracking(CFG.m3_tracking_dir, chi2_cut=CHI2_CUT, min_nclus=M3_MIN_NCLUS)
     xang, _, anum = get_xy_angles(rays.ray_data)
     xang = best.ref_x_sign * np.array(xang)
     cm.attach_reference_positions(results, rays, best, xang, anum)

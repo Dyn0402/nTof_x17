@@ -16,6 +16,8 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.dirname(os.path.dirname(HERE)))  # repo root, for common/
+from common.mx17_active_area import draw_outlines
 KEY = next((a for a in sys.argv[1:] if not a.startswith('-')), 'g_det3_wknd')
 h = np.load(os.path.join(HERE, 'spark_hits.npz'))
 e = np.load(os.path.join(HERE, 'events.npz'))
@@ -75,6 +77,8 @@ axc.set_xlabel('strip position [mm]'); axc.set_ylabel('% of sparks firing this r
 axc.legend(); axc.set_title('(c) per-plane occupancy\nedges over-weighted')
 for a in (axes[0], axes[1]):
     a.set_xlabel('X strip pos [mm]'); a.set_ylabel('Y strip pos [mm]')
+    draw_outlines(a, det_name=meta['det'])  # detector-local strip frame, no transform needed
+axes[0].legend(loc='upper right', framealpha=0.9, fontsize=7)
 save(fig, 'fig_hitmap.png')
 
 # ============================================================ FIG 2: shower check on mx17 side

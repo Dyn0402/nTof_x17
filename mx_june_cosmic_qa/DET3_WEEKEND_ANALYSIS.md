@@ -4,6 +4,13 @@
 geometry estimator supersedes all time-based fits). Scripts:
 `13_tpc_angle_bias.py` … `25_signal_formation_toy.py`; run key `sat_det3`.*
 
+> **2026-07-14 UPDATE — M3 recipe changed to chi2<1.0 & NClus=4** (was chi2<5 &
+> NClus≥3, as this doc still describes below). The physics conclusions here (drift
+> velocity, gap, gas, sharing constants) are expected to be robust to the recipe change
+> per `det3_recofar_analysis/M3_CUT_AND_ACTIVE_AREA_NOTE.md`, but this doc has not
+> itself been re-run/re-verified on the new recipe yet — treat σ_x/σ_y and match-quality
+> numbers below as superseded (see `JUNE_RESULTS_SUMMARY.md` for the current core σ).
+
 > **7-06 UPDATE — re-verified on M3 tracking v2.** The full chain was re-run
 > on the v2-reprocessed reference rays (recipe chi2<5 & NClus≥3; alignment
 > identical, match quality 85.6→95.6 % within 10 mm, σ_x/σ_y 0.83/0.92 →

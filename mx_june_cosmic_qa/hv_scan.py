@@ -31,6 +31,8 @@ import cosmic_micro_tpc_analysis as cm
 from common.Mx17StripMap import RunConfig
 from M3RefTracking import M3RefTracking, get_xy_angles, get_xy_positions
 
+# pre-v2/veto50-era script, superseded by 10_hv_scan_efficiency.py (the golden HV-scan
+# chain); CHI2_CUT intentionally NOT bumped to the qa_config.M3_CHI2_CUT recipe here.
 SPARK_MAX = 50; MAXDROP = 2; R = 5.0; CHI2_CUT = 20.0; CENTRE_XY = 200.0
 N_ITER = 3; REF_X_SIGN = +1.0
 

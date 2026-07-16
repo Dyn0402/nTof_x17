@@ -44,6 +44,9 @@ def main():
 
     params = cm.load_alignment(os.path.join(CFG.OUT_BASE, 'alignment_tpc_veto50', 'alignment.json'))
     res = pickle.load(open(os.path.join(CFG.OUT_BASE, 'cache', 'event_results.pkl'), 'rb'))
+    # intentionally loose (not qa_config.M3_CHI2_CUT): needs to see bad-M3-quality tracks
+    # too, to characterise how much of reco_far is reference-tracker-limited (see
+    # edge_chi2_extract.py / M3_CUT_AND_ACTIVE_AREA_NOTE.md).
     rays = M3RefTracking(CFG.m3_tracking_dir, chi2_cut=20.0)
     xa, ya, an = get_xy_angles(rays.ray_data); xa = params.ref_x_sign * np.array(xa)
     cm.attach_reference_positions(res, rays, params, xa, an)

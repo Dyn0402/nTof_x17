@@ -55,7 +55,7 @@ CFG = config_from_argv()
 R = next((float(a.split('=')[1]) for a in sys.argv if a.startswith('--r=')), 5.0)
 MIN_VALID = next((int(a.split('=')[1]) for a in sys.argv if a.startswith('--minvalid=')), 20)
 SPARK_THRESH = next((int(a.split('=')[1]) for a in sys.argv if a.startswith('--spark=')), 50)
-M3_CHI2_CUT = 5.0  # M3 v2 recipe
+from qa_config import M3_CHI2_CUT, M3_MIN_NCLUS  # centralized M3 recipe (see qa_config.py)
 
 # Alignment seed (z/theta/centre/handedness; translation re-run per subrun). Defaults to
 # this run's own long_run alignment, but --seed=<alignment.json> overrides it -- needed
@@ -129,7 +129,7 @@ def analyse_subrun(subrun, det, seed):
     df = df[df['feu'].isin(CFG.MX17_FEUS)].copy()
     df = cm._map_strip_positions(df, det)
 
-    rays = M3RefTracking(rays_dir, chi2_cut=M3_CHI2_CUT)
+    rays = M3RefTracking(rays_dir, chi2_cut=M3_CHI2_CUT, min_nclus=M3_MIN_NCLUS)
     xa, _ya, an = get_xy_angles(rays.ray_data)
     xa = seed.ref_x_sign * np.array(xa)
 

@@ -29,9 +29,11 @@ before writing any code.
 - **New scripts** continue the numbered series (37, 38, 39, 40) in `mx_june_cosmic_qa/`,
   same style as 31–36: docstring header stating purpose + inputs + outputs, `qa_config`
   for paths, matplotlib figures saved at dpi≥150, plus a small CSV/JSON of the numbers.
-- **M3 rays**: load via `cosmic_bench_analysis/M3RefTracking.py`
-  (`M3RefTracking(CFG.m3_tracking_dir, chi2_cut=5.0)`; NClus≥3 is the default). The v2
-  recipe (chi2<5 & NClus≥3) is the standard everywhere.
+- **M3 rays**: load via `cosmic_bench_analysis/M3RefTracking.py`, passing
+  `chi2_cut=qa_config.M3_CHI2_CUT, min_nclus=qa_config.M3_MIN_NCLUS` explicitly (do not
+  rely on the class defaults, which are historical/pre-June and shared with other
+  packages). The recipe (chi2<1.0 & NClus=4, since 2026-07-14) is the standard everywhere
+  -- see `../det3_recofar_analysis/M3_CUT_AND_ACTIVE_AREA_NOTE.md`.
 - **Spark veto**: analyses use the veto50 cache (`cache/event_results_veto50.pkl`) or
   a >50-strips/event multiplicity veto. Sub-veto discharges (30–50 strips) survive it.
 - **Never assume the FEU↔plane map** — read it from `qa_config.py` per run.

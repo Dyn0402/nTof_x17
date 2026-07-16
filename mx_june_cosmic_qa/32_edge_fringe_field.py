@@ -50,11 +50,12 @@ from qa_config import config_from_argv, setup_paths
 setup_paths()
 import uproot
 import cosmic_micro_tpc_analysis as cm
+from common.mx17_active_area import draw_outlines
 from M3RefTracking import M3RefTracking, get_xy_angles
 
 CFG = config_from_argv()
 VETO = next((int(a.split('=')[1]) for a in sys.argv if a.startswith('--veto=')), 50)
-CHI2_CUT = 5.0   # M3 v2 recipe
+from qa_config import M3_CHI2_CUT as CHI2_CUT, M3_MIN_NCLUS  # centralized M3 recipe (see qa_config.py)
 RES_CUT_MM = 10.0
 MIN_STRIPS = 4
 PITCH_MM = 0.78
@@ -165,7 +166,7 @@ def main():
     align_json = os.path.join(CFG.OUT_BASE, f'alignment_tpc{tag}', 'alignment.json')
     results = pickle.load(open(cache_res, 'rb'))
     best = cm.load_alignment(align_json)
-    rays = M3RefTracking(CFG.m3_tracking_dir, chi2_cut=CHI2_CUT)
+    rays = M3RefTracking(CFG.m3_tracking_dir, chi2_cut=CHI2_CUT, min_nclus=M3_MIN_NCLUS)
     xang, _, anum = get_xy_angles(rays.ray_data)
     xang = best.ref_x_sign * np.array(xang)
     cm.attach_reference_positions(results, rays, best, xang, anum)
@@ -265,8 +266,10 @@ def main():
         im = ax.imshow(num.T, origin='lower', extent=[xmn, xmx, ymn, ymx],
                        cmap='RdBu_r', vmin=-0.06, vmax=0.06, aspect='auto')
         plt.colorbar(im, ax=ax, label=f'median δtanθ_{p}')
+        draw_outlines(ax, det_name=CFG.DET_NAME)  # ref_mesh_x/y_mm is detector-local strip frame, no transform needed
         ax.set_xlabel('x [mm]'); ax.set_ylabel('y [mm]')
         ax.set_title(f'δ{p} = Δtanθ_{p} − baseline(tanθ_ref): map')
+    axes[0, 0].legend(loc='upper right', framealpha=0.9, fontsize=7)
 
     # ---- (0,2): hit + TPC efficiency vs edge distance ----
     x_ref, _, evx = rays.get_xy_positions(best.z_x)

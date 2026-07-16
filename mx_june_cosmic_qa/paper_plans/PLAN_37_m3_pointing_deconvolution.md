@@ -3,6 +3,15 @@
 **Paper point 9 (spatial resolution). Priority 1 — every spatial σ quoted in the paper
 is currently the convolution detector ⊕ telescope; this plan separates them.**
 
+> **2026-07-14: the production M3 recipe changed to χ²<1.0 & NClus=4** (was χ²<5 &
+> NClus≥3) — see `../det3_recofar_analysis/M3_CUT_AND_ACTIVE_AREA_NOTE.md`. This plan's
+> "load rays WITHOUT the chi2 cut" step is unaffected (it needs the untruncated
+> distribution regardless of what the production cut is), but every reference below to
+> "the production chi2<5 cut" and the fleet core-σ table now means chi2<1.0 / the
+> 2026-07-14 numbers — updated below. Deconvolving against a tighter production cut
+> should find a SMALLER telescope-pointing contribution to subtract (less truncation to
+> begin with), not a larger one.
+
 ## Goal
 
 Compute the M3 reference telescope's pointing resolution at the detector plane
@@ -41,16 +50,20 @@ M3 contribution to the ANGULAR resolution is negligible.
 - Benchmark to correct: `.../alignment_tpc_veto50/position/position_summary.csv`
   (columns: estimator, coverage, σ68 per axis per angle band) and
   `position_estimates.csv` (per-event: `eid,plane,n_strips,cog_raw,cog_u,lead_u,early_raw,early_u,fit_t0`).
-- Fleet core-σ values to correct (from `JUNE_RESULTS_SUMMARY.md` §1): det3 0.63,
-  det2 0.64, det6 0.59, det7 0.86, det4 0.89 mm (these are 5 mm-fid core Gaussians —
-  correct them with each run's own z_det; slot z from `qa_config.py`).
+- Fleet core-σ values to correct (from `JUNE_RESULTS_SUMMARY.md` §1, 2026-07-14
+  changelog, chi2<1.0 & NClus=4 recipe): det3 0.47, det2 0.46, det3(6-22) 0.46, det6 0.45,
+  det7 0.59, det4 0.67 mm (these are 5 mm-fid core Gaussians — correct them with each
+  run's own z_det; slot z from `qa_config.py`). Superseded chi2<5 values: det3 0.63,
+  det2 0.64, det6 0.59, det7 0.86, det4 0.89 mm — do not use.
 
 ## Method
 
 1. **Load rays WITHOUT the chi2 cut** for the σ_st measurement:
-   `M3RefTracking(dir, chi2_cut=1e9, min_nclus=3)`. The production chi2<5 cut truncates
-   the Chi2 distribution and would bias σ_st low — measure on the (nearly) untruncated
-   sample, then note what fraction the recipe cut removes.
+   `M3RefTracking(dir, chi2_cut=1e9, min_nclus=3)`. The production chi2<1.0 cut (since
+   2026-07-14; was chi2<5) truncates the Chi2 distribution and would bias σ_st low —
+   measure on the (nearly) untruncated sample, then note what fraction the recipe cut
+   removes (a much larger fraction now than at chi2<5 — expect a bigger reported "removed"
+   number, that is not a red flag).
 2. **Split by NClus** (3 vs 4) and by coordinate (X, Y). For each subset compute
    Chi2/(N−2) per track. Estimate σ_st² two ways and require agreement:
    (a) robust location of Chi2/(N−2) — for a scaled χ²₍N−2₎ distribution the MEDIAN of
@@ -105,9 +118,9 @@ M3 contribution to the ANGULAR resolution is negligible.
 
 ## Gotchas
 
-- Do NOT measure σ_st with the chi2<5 cut applied (truncation bias) — but DO apply the
-  standard recipe when selecting the matched events whose residuals you correct
-  (consistency with every other quoted number).
+- Do NOT measure σ_st with the chi2<1.0 cut applied (truncation bias) — but DO apply the
+  standard recipe (chi2<1.0 & NClus=4) when selecting the matched events whose residuals
+  you correct (consistency with every other quoted number).
 - `ref_x_sign` is applied to M3 x on load in the analysis scripts — irrelevant for
   Chi2 work, but if you recompute residuals from scratch follow the pattern in
   `09_efficiency_breakdown.py` lines ~50–75 (attach_reference_positions).

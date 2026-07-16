@@ -47,7 +47,7 @@ VETO = next((int(a.split('=')[1]) for a in sys.argv if a.startswith('--veto=')),
 SAMPLE_NS = 60.0
 INCL_DEG = 12.0
 RES_CUT_MM = 10.0
-CHI2_CUT = 5.0   # M3 v2 recipe (chi2<5; NClus>=3 automatic in M3RefTracking); was 20 pre-v2
+from qa_config import M3_CHI2_CUT as CHI2_CUT, M3_MIN_NCLUS  # centralized M3 recipe (see qa_config.py)
 GAP_CANDIDATES_MM = (19.4, 30.0)
 MIN_HITS_PER_BIN = 30
 
@@ -69,7 +69,7 @@ def inclined_events(cfg, seed):
     if not os.path.exists(cache):
         return None
     results = pickle.load(open(cache, 'rb'))
-    rays = M3RefTracking(cfg.m3_tracking_dir, chi2_cut=CHI2_CUT)
+    rays = M3RefTracking(cfg.m3_tracking_dir, chi2_cut=CHI2_CUT, min_nclus=M3_MIN_NCLUS)
     xang, _, anum = get_xy_angles(rays.ray_data)
     xang = seed.ref_x_sign * np.array(xang)
     params = cm.translation_alignment(results, rays, seed)

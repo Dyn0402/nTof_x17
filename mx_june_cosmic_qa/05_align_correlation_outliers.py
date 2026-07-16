@@ -72,6 +72,8 @@ def main():
     results = pickle.load(open(cache_path, 'rb'))
     params = cm.load_alignment(os.path.join(align_dir, 'alignment.json'))
 
+    # intentionally loose (not qa_config.M3_CHI2_CUT): this script characterises bad-chi2
+    # outliers themselves, so it must not pre-cut them away.
     rays = M3RefTracking(CFG.m3_tracking_dir, chi2_cut=20.0)
     from M3RefTracking import get_xy_angles
     xang, yang, anum = get_xy_angles(rays.ray_data); xang = -np.array(xang)

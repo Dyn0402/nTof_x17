@@ -32,6 +32,20 @@ CBA_DIR = os.path.join(REPO_ROOT, 'cosmic_bench_analysis')
 
 DEFAULT_RUN = 'det3_ariso'
 
+# M3 reference-track recipe (golden chain). Updated 2026-07-13 per
+# det3_recofar_analysis/M3_CUT_AND_ACTIVE_AREA_NOTE.md: the position residual is
+# reference-limited on the old chi2<5 & NClus>=3 recipe (core sigma keeps falling with
+# no plateau inside chi2<5). New recipe: chi2<1.0 on both planes AND NClus=4 on both
+# planes (core sigma 0.63->0.47 mm, reco_far 6.5->3.3%, headline efficiency 88.8->91.5%,
+# stats kept 43%). Pass M3_MIN_NCLUS explicitly to every M3RefTracking(...) call --
+# the class default (min_nclus=3) is shared with other packages and must not be
+# assumed. Detectors with weak M3 yield (det4/6/7) may need the NClus>=3 fallback
+# (M3_MIN_NCLUS_FALLBACK) if per-detector stats are too tight at NClus=4 -- see the
+# note's Job 1 caveats before using the fallback.
+M3_CHI2_CUT = 1.0
+M3_MIN_NCLUS = 4
+M3_MIN_NCLUS_FALLBACK = 3
+
 
 def setup_paths() -> None:
     """Put the repo root and cosmic_bench_analysis/ on sys.path for imports."""

@@ -52,7 +52,7 @@ VETO = next((int(a.split('=')[1]) for a in sys.argv if a.startswith('--veto=')),
 MIN_STRIPS = 4
 RES_CUT_MM = 10.0
 PITCH_MM = 0.78
-CHI2_CUT = 5.0   # M3 v2 recipe (chi2<5; NClus>=3 automatic in M3RefTracking); was 20 pre-v2
+from qa_config import M3_CHI2_CUT as CHI2_CUT, M3_MIN_NCLUS  # centralized M3 recipe (see qa_config.py)
 
 
 def robust_line(x, y, n_iter=4, clip=3.0):
@@ -85,7 +85,7 @@ def main():
     best = cm.load_alignment(align_json)
     print(f'{len(results):,} cached events; alignment {best}')
 
-    rays = M3RefTracking(CFG.m3_tracking_dir, chi2_cut=CHI2_CUT)
+    rays = M3RefTracking(CFG.m3_tracking_dir, chi2_cut=CHI2_CUT, min_nclus=M3_MIN_NCLUS)
     xang, yang, anum = get_xy_angles(rays.ray_data)
     xang = best.ref_x_sign * np.array(xang)
     cm.attach_reference_positions(results, rays, best, xang, anum)

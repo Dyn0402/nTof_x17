@@ -23,12 +23,18 @@ class M3RefTracking:
                  min_nclus=3):
         """
         :param chi2_cut: per-coordinate cut on Chi2X and Chi2Y (unweighted sum of squared
-            residuals in mm^2). Recommended M3 v2 value: 5.0.
+            residuals in mm^2). These defaults (5.0 / 3) are historical and kept for
+            backward compatibility with non-June callers -- the June cosmic QA golden-chain
+            recipe is chi2_cut=1.0 (see qa_config.M3_CHI2_CUT), found to be reference-limited
+            up to chi2<5 with no plateau (mx_june_cosmic_qa/det3_recofar_analysis/
+            M3_CUT_AND_ACTIVE_AREA_NOTE.md). Golden-chain callers must pass chi2_cut and
+            min_nclus explicitly from qa_config rather than relying on these defaults.
         :param min_nclus: minimum clusters per coordinate (NClusX, NClusY) for a track to
-            count as good. Recommended M3 v2 value: 3 (requires a genuine 3-4 layer fit and
+            count as good. Historical default 3 (requires a genuine 3-4 layer fit and
             drops 2-point-per-coordinate fits, which are only ~38% within 5 mm of the DUT vs
-            ~85% for full fits). Set to 0 or None to disable. Only applied when the rays were
-            produced by tracking v2 (older files have no NClusX/NClusY branches).
+            ~85% for full fits); June cosmic QA golden-chain recipe is min_nclus=4 (see
+            qa_config.M3_MIN_NCLUS). Set to 0 or None to disable. Only applied when the rays
+            were produced by tracking v2 (older files have no NClusX/NClusY branches).
         """
         self.ray_dir = ray_dir
         self.file_nums = file_nums

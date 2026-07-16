@@ -36,6 +36,7 @@ import uproot
 import detector_qa as dq
 import cosmic_micro_tpc_analysis as cm
 from common.Mx17StripMap import RunConfig
+from common.mx17_active_area import draw_outlines
 
 SPARK_FRAC = 0.20   # an event is "spark-like" if >this fraction of either plane's
                     # instrumented strips fire (also report absolute thresholds)
@@ -64,8 +65,10 @@ def plot_surface_hitmap(df, out_dir):
         h = ax.hist2d(x, y, bins=120, range=[[0, 400], [0, 400]],
                       cmap='inferno', norm=norm)
         fig.colorbar(h[3], ax=ax, label=f'paired hits ({tag})')
+        draw_outlines(ax, det_name=CFG.DET_NAME)  # detector-local strip frame, no transform needed
         ax.set_xlabel('X [mm]'); ax.set_ylabel('Y [mm]'); ax.set_aspect('equal')
         ax.set_title(f'Surface hitmap ({tag})')
+    axes[0].legend(loc='upper right', framealpha=0.9, fontsize=7)
     fig.suptitle(f'{CFG.DET_NAME} surface hitmap (time-paired) — {CFG.RUN}/{CFG.SUB_RUN}\n'
                  f'{len(paired):,} pairs from {paired["event_id"].nunique():,} events')
     fig.tight_layout()

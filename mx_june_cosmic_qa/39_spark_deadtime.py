@@ -34,7 +34,7 @@ Method
      normal event. A DAQ that goes busy after a discharge would show a larger
      next-event gap / eventId skip -- dead time the efficiency curve can never see.
   3. Efficiency recovery. Denominator = clean M3 crossings inside the active area
-     (same construction as 09_efficiency_breakdown, chi2<5). A crossing is
+     (same construction as 09_efficiency_breakdown, qa_config.M3_CHI2_CUT recipe). A crossing is
      "efficient" if a reco X+Y exists within R mm of the ray. Non-spark crossings
      are binned by dt since the previous spark epoch (log bins); the curve is fit
      with eff(dt)=eff_inf*(1-A*exp(-dt/tau)) over the OBSERVABLE window (tau bounded
@@ -66,7 +66,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
 
-from qa_config import config_from_argv, setup_paths
+from qa_config import config_from_argv, setup_paths, M3_CHI2_CUT, M3_MIN_NCLUS
 setup_paths()
 CFG = config_from_argv()
 import uproot
@@ -152,7 +152,7 @@ def main():
     # ---------- efficiency recovery: reco vs M3 crossings (09-style denominator) ----------
     params = cm.load_alignment(os.path.join(CFG.OUT_BASE, 'alignment_tpc_veto50', 'alignment.json'))
     res = pickle.load(open(os.path.join(CFG.OUT_BASE, 'cache', 'event_results.pkl'), 'rb'))
-    rays = M3RefTracking(CFG.m3_tracking_dir, chi2_cut=5.0)
+    rays = M3RefTracking(CFG.m3_tracking_dir, chi2_cut=M3_CHI2_CUT, min_nclus=M3_MIN_NCLUS)
     xa, ya, an = get_xy_angles(rays.ray_data)
     xa = params.ref_x_sign * np.array(xa)
     cm.attach_reference_positions(res, rays, params, xa, an)

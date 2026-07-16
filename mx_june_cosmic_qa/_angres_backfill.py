@@ -6,7 +6,7 @@ micro-TPC angle correlation, which now writes the JSON. Usage: _angres_backfill.
 import os, sys, pickle
 import numpy as np
 sys.argv = ['x', sys.argv[1]]
-from qa_config import config_from_argv, setup_paths
+from qa_config import config_from_argv, setup_paths, M3_CHI2_CUT, M3_MIN_NCLUS
 setup_paths()
 CFG = config_from_argv()
 import cosmic_micro_tpc_analysis as cm
@@ -16,7 +16,7 @@ out_dir = CFG.out_dir('alignment_tpc_veto50')
 cache = os.path.join(CFG.out_dir('cache'), 'event_results_veto50.pkl')
 results = pickle.load(open(cache, 'rb'))
 best = cm.load_alignment(os.path.join(out_dir, 'alignment.json'))
-rays = M3RefTracking(CFG.m3_tracking_dir, chi2_cut=5.0)
+rays = M3RefTracking(CFG.m3_tracking_dir, chi2_cut=M3_CHI2_CUT, min_nclus=M3_MIN_NCLUS)
 xa, ya, evn = get_xy_angles(rays.ray_data)
 xa = best.ref_x_sign * np.array(xa)
 cm.attach_reference_positions(results, rays, best, xa, evn)

@@ -1,2 +1,3 @@
 # regenerable extraction cache
 recofar_data.npz
+edge_chi2_data_*.npz

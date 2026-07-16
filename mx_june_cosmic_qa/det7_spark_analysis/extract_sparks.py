@@ -75,6 +75,8 @@ def main():
     # ---- M3 rays: aligned projection onto the detector plane (same frame as 09) ----
     params = cm.load_alignment(os.path.join(CFG.OUT_BASE, 'alignment_tpc_veto50', 'alignment.json'))
     res = pickle.load(open(os.path.join(CFG.OUT_BASE, 'cache', 'event_results.pkl'), 'rb'))
+    # intentionally loose (not qa_config.M3_CHI2_CUT): needs the full M3 crossing
+    # population to classify spark events, not a precision-position subsample.
     rays = M3RefTracking(CFG.m3_tracking_dir, chi2_cut=20.0)
     xa, ya, an = get_xy_angles(rays.ray_data); xa = params.ref_x_sign * np.array(xa)
     cm.attach_reference_positions(res, rays, params, xa, an)
@@ -135,6 +137,10 @@ def main():
         n_ray_events=int(e_hasray.sum()),
         tspread_norm_median_ns=float(np.median(tspread_norm)),
         run_duration_s=float((e_ts[e_ts > 0].max() - e_ts[e_ts > 0].min()) / 1e9),
+        # detector-local -> aligned/ref frame map (see common/mx17_active_area.alignment_transform),
+        # so make_plots.py can draw the active-area outline without re-loading qa_config/CFG.
+        alignment=dict(theta_deg=params.theta_deg, centre_x=params.centre_x, centre_y=params.centre_y,
+                      x_offset=params.x_offset, y_offset=params.y_offset),
     )
     json.dump(meta, open(os.path.join(HERE, 'spark_meta.json'), 'w'), indent=2)
     print(json.dumps(meta, indent=2))

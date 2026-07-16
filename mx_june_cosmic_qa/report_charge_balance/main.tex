@@ -25,6 +25,15 @@ MX17 resistive Micromegas\\
 \maketitle
 \vspace{-1.5em}
 
+\begin{quote}\small\itshape
+2026-07-14 note: the M3 reference recipe changed to $\chi^2<1.0$, $N_\mathrm{clus}=4$
+(was $\chi^2<5$, $N_\mathrm{clus}\ge3$; see \texttt{M3\_CUT\_AND\_ACTIVE\_AREA\_NOTE.md}).
+Script~38 was re-run for det3/det2 on the new recipe and the figures above are
+regenerated from it; the quoted $\fbal$ medians/$\sigma_{68}$ in the text below shifted
+by $<1\%$ (e.g.\ det3 median $0.487\to0.491$, $\sigma_{68}$ $0.067\to0.065$) --- within
+rounding, conclusions unchanged, exact text digits not individually re-verified.
+\end{quote}
+
 \begin{abstract}
 \noindent The MX17 chamber reads out two orthogonal strip layers (X on top, Y
 beneath) that share a single avalanche through a pixelated resistive top layer.
@@ -136,7 +145,8 @@ $\fbal$ is a property of the detector, not of the estimator.
 \SI{490}{V} / drift \SI{1000}{V}, FEU~7\,=\,X / 8\,=\,Y); det2 is the
 overnight run \texttt{o22\_long\_det2} (resist \SI{525}{V}, FEU~6\,=\,X / 8\,=\,Y),
 both Ar/iC$_4$H$_{10}$ 95/5. We select events with a single clean M3 telescope
-ray (v2 recipe $\chi^2<5$, $N_\mathrm{clus}\ge3$), both planes fired, a hit
+ray (v2 recipe $\chi^2<1.0$, $N_\mathrm{clus}=4$; since 2026-07-14, was $\chi^2<5$,
+$N_\mathrm{clus}\ge3$), both planes fired, a hit
 within \SI{10}{mm} of the ray, and the hit inside the active area with a
 \SI{5}{mm} fiducial margin (in the detector strip frame; the \SI{0}{}--\SI{25}{mm}
 degrader fringe is discussed but not used for the core numbers). Spark events are

@@ -11,9 +11,13 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+import sys
+sys.path.insert(0, os.path.dirname(os.path.dirname(HERE)))  # repo root, for common/
+from common.mx17_active_area import draw_outlines, alignment_transform
 e = np.load(os.path.join(HERE, 'events.npz'))
 h = np.load(os.path.join(HERE, 'spark_hits.npz'))
 meta = json.load(open(os.path.join(HERE, 'spark_meta.json')))
+active_area_transform = alignment_transform(meta['alignment']) if 'alignment' in meta else None
 box = e['box']; ax0, ax1, ay0, ay1 = [float(v) for v in box]
 spark = e['spark']; hasray = e['has_ray']; rx = e['ray_x']; ry = e['ray_y']
 mult = e['mult']; ts = e['ts']
@@ -79,6 +83,8 @@ axes[0].set_title('(a) spark rate vs muon geometry\ncrossing muon sparks %.1f× 
 sp_ray = spark & m
 axes[1].hist2d(rx[sp_ray], ry[sp_ray], bins=45, range=[[ax0, ax1], [ay0, ay1]], cmap='inferno')
 axes[1].add_patch(plt.Rectangle((ax0, ay0), ax1 - ax0, ay1 - ay0, fill=False, ec='cyan', lw=1.2))
+if active_area_transform is not None:
+    draw_outlines(axes[1], transform=active_area_transform, det_name=meta['det'])
 axes[1].set_xlabel('M3 ref X [mm]'); axes[1].set_ylabel('M3 ref Y [mm]'); axes[1].set_aspect('equal')
 axes[1].set_title('(b) M3 crossing position of sparking muons')
 # (c) spark discharge centroid (detector frame, raw strip pos)
@@ -87,8 +93,10 @@ cx = dfh[dfh['isx']].groupby('eid')['pos'].mean()
 cy = dfh[~dfh['isx']].groupby('eid')['pos'].mean()
 cxy = pd.concat([cx.rename('x'), cy.rename('y')], axis=1).dropna()
 axes[2].hist2d(cxy['x'], cxy['y'], bins=40, range=[[0, 399], [0, 399]], cmap='inferno')
+draw_outlines(axes[2], det_name=meta['det'])  # detector-local strip frame, no transform needed
 axes[2].set_xlabel('X strip pos [mm]'); axes[2].set_ylabel('Y strip pos [mm]'); axes[2].set_aspect('equal')
 axes[2].set_title('(c) discharge CENTROID (detector frame)')
+axes[2].legend(loc='upper right', framealpha=0.9, fontsize=7)
 save(fig, 'fig_muon.png')
 
 meta['q2'] = {c[0].replace(chr(10), ' '): dict(N=Ns[i], sparks=ns[i], rate_pct=rates[i])

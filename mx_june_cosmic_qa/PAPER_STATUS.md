@@ -1,5 +1,18 @@
 # June cosmic det3 micro-TPC paper — readiness audit (2026-07-10)
 
+> **2026-07-14 addendum:** the M3 reference recipe changed to χ²<1.0 & NClus=4 (was χ²<5 &
+> NClus≥3) — the old recipe was reference-limited, inflating every quoted position residual
+> (det3 core σ 0.63→0.47 mm on the new recipe; fleet numbers in `JUNE_RESULTS_SUMMARY.md`).
+> This makes the topic-9 M3-deconvolution gap (below) smaller but does not close it. The
+> waveform chain (26–42) HAS since been re-run fleet-wide on the new recipe (same day,
+> second pass) — topic 9's det3 early-charge-centroid number is now **0.47/0.54 mm**
+> (θ<5°, COMBO estimator) on the new recipe, down from 0.61/0.72 mm on χ²<5 (36_position_
+> estimators.py, `sat_det3`); det2/4/6/7 also re-run but not yet transcribed into the
+> topic-9 table below — pull from `alignment_tpc_veto50/position/position_summary.csv`
+> per detector before quoting the full fleet. Hybrid angular σ68 (topic 3) also re-run and
+> barely moved (≤0.28° fleet-wide) — see `REPROCESSING_CONSTANTS.md` 2026-07-14 section.
+> See `det3_recofar_analysis/M3_CUT_AND_ACTIVE_AREA_NOTE.md`.
+
 *Full audit of the 10 planned paper topics against everything on disk (scripts 01–36,
 `DET3_WEEKEND_ANALYSIS.md`, `MICROTPC_RUNBOOK.md`, `JUNE_RESULTS_SUMMARY.md`, the spark /
 reco_far LaTeX notes, and the Analysis output tree). Execution plans for the missing
@@ -23,7 +36,7 @@ hold most of the paper's best material). The markdown digests are the source of 
 |---|---|---|---|---|
 | 1 | Head-on charge spreading X vs Y | ✅ measured | c1/c2: x 0.45/0.05, y 0.52/0.15; extent floor y 4.7 vs x 3.1 mm | dedicated X-vs-Y figure → PLAN_41 |
 | 2 | Unsharing correction | ✅ done + benchmarked | time-fit v converges to v_geom; final 0.19° bias / 1.9° | persist before/after table → PLAN_41 |
-| 3 | Hybrid tracking | ✅ done + validated | ~1.8° at ALL angles, 97–99 % cov; det2 transfer OK | systematics + pub figures → PLAN_41 |
+| 3 | Hybrid tracking | ✅ done + validated, **FLEET-WIDE** | det3 1.75°/det2 2.47°/det4 2.70°/det7 3.64°/det6 4.14° (lt5 σ68); det6 plateau broken (X-plane); transfer OK | systematics + pub figures → PLAN_41 |
 | 4 | X/Y charge balance (pixel layer) | ✅ measured (7-11) | f=q_X/(q_X+q_Y) med 0.487(det3)/0.531(det2), σ68 0.07, flat in pos+angle; 3 charge proxies agree | done → PLAN_38 results |
 | 5 | Fringe field / edge | ✅ done (det3) | reach ≲25–40 mm; −3° tilt; eff 0→96 % over 0–25 mm; position robust, angle not | standalone turn-on fig → PLAN_41 |
 | 6 | HV scans + sparks | ✅ done (richest) | optima 480/480/440 V; sparks Poisson, muon-induced 4–6×, edge-dominated; **no post-spark dead time** (PLAN_39) | ~~dead-time per spark~~ **DONE (PLAN_39)** |
@@ -57,15 +70,26 @@ the hybrid table (34): production 14.9° → unshared 5.3 (51 % cov) → hybrid 
 Gaps: before/after numbers are stdout-only (persist to CSV); offline-only (fine if framed
 as offline correction).
 
-### 3. Hybrid tracking — done, validated three ways
-θ<5° band: production 14.9° σ68 → **hybrid 1.75° @ 97 % coverage**; plateau 1.86° @
+### 3. Hybrid tracking — done, validated three ways, now FLEET-WIDE (2026-07-12)
+θ<5° band (det3): production 14.9° σ68 → **hybrid 1.75° @ 97 % coverage**; plateau 1.86° @
 98 % coverage → uniform ~1.8° everywhere, exclusion gap gone. Validated: odd-eid holdout; det2
 transfer with FROZEN det3 model (2.85° vs 2.47° self-trained, weights near-identical →
 not overfit); drift scan (35) reproduces v_geom(E) within +1–3 % at 700–1100 V from
 hit-level features only → M3-free in-situ gas monitor claim for n_TOF.
+
+**Fleet extension (all five detectors on the golden hybrid chain).** lt5 σ68 / plateau σ68,
+self-trained, odd-eid holdout: **det3 1.75°/1.86° @97 %, det2 2.47°/2.17° @96 %,
+det4 2.70°/4.09° @81 %, det7 3.64°/4.90° @85–90 %, det6 4.14°/— @98 %.** det3-frozen transfer
+reproduces each within the overfit bound (det2 2.85, det4 2.19, det7 4.88, det6 3.54).
+Two physics findings: (a) **det6's X-plane (FEU 3) is dead for micro-TPC** — no drift-time
+development (unshared v→119 µm/ns, plateau σ68≈16°, ψ median 83°); only its signature-regression
+low-angle band survives (board-C mesh defect). (b) det6 & det7 share X-plane c1≈0.25 (~½ det3),
+a consistent board-C/D property; det4 (board C batch) is gain-limited in efficiency but has the
+cleanest micro-TPC angles of the three new detectors. The old script-03 fleet angles
+(det6 3.15°, det7 2.50°, det4 2.49°) were pre-hybrid and are superseded/dropped.
 Gaps: all errors statistical-only (no systematics statement); figures are 6-panel QA
 dashboards; needs clean σ68-vs-θ standalone, method schematic, consolidated
-4-estimator × 2-detector table.
+4-estimator × 2-detector table; det6 plateau needs a per-plane (Y-only) quote if wanted.
 
 ### 4. X/Y charge balance via the pixelated top layer — MEASURED (7-11, PLAN_38)
 `38_xy_charge_balance.py`. f = q_X/(q_X+q_Y) is narrow (σ68 ≈ 0.07) and essentially

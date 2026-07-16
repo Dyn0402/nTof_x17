@@ -31,7 +31,7 @@ CFG = config_from_argv()
 import awkward as ak
 from M3RefTracking import M3RefTracking, get_ray_data, get_xy_angles
 
-CHI2_CUT = 5.0  # M3 v2 recipe (chi2<5 & NClus>=3, the latter automatic in M3RefTracking)  # matches the value used in the micro-TPC analysis main()
+from qa_config import M3_CHI2_CUT as CHI2_CUT, M3_MIN_NCLUS  # centralized M3 recipe (see qa_config.py)
 
 
 def _det_plane_z() -> float:
@@ -80,7 +80,7 @@ def plot_chi2(out_dir):
 
 
 def plot_angles_and_positions(out_dir, det_z):
-    rays = M3RefTracking(CFG.m3_tracking_dir, chi2_cut=CHI2_CUT)
+    rays = M3RefTracking(CFG.m3_tracking_dir, chi2_cut=CHI2_CUT, min_nclus=M3_MIN_NCLUS)
     n_clean = len(ak.to_numpy(rays.ray_data['X_Up']))
 
     # Angles
