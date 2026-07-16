@@ -21,7 +21,8 @@ import sys
 from pathlib import Path
 
 import numpy as np
-import uproot
+
+import hitcache
 
 BASE = Path(__file__).parent
 spec = importlib.util.spec_from_file_location('coinc', BASE / '02_coincidence_scan.py')
@@ -40,39 +41,19 @@ AMP_EDGES = np.geomspace(40, 8e4, 301)
 AMP2D_EDGES = np.geomspace(40, 8e4, 81)
 
 
-def load_arm(f, st, good_bunches):
-    dat = {}
-    for tree, branches in ((f'WAL{st}', ['BunchNumber', 'tof', 'detn', 'amp']),
-                           (f'PSS{st}', ['BunchNumber', 'tof', 'detn', 'amp', 'tflash'])):
-        out = {k: [] for k in branches}
-        for chunk in f[tree].iterate(branches, library='np', step_size='300 MB'):
-            keep = np.isin(chunk['BunchNumber'], good_bunches)
-            if 'tflash' in branches:
-                keep &= (chunk['tof'] - chunk['tflash']) > LATE_TOF
-            for k in branches:
-                out[k].append(chunk[k][keep])
-        arrs = {k: np.concatenate(v) for k, v in out.items()}
-        order = np.lexsort((arrs['tof'], arrs['BunchNumber']))
-        dat[tree[:3]] = {k: v[order] for k, v in arrs.items()}
-    return dat['WAL'], dat['PSS']
-
-
-def pair_idx(t_ref, t_other):
-    lo = np.searchsorted(t_other, t_ref - DT_MAX)
-    hi = np.searchsorted(t_other, t_ref + DT_MAX)
-    counts = hi - lo
-    tot = int(counts.sum())
-    if tot == 0:
-        return (np.empty(0, np.int64),) * 2
-    ref_idx = np.repeat(np.arange(len(t_ref)), counts)
-    within = np.arange(tot) - np.repeat(np.cumsum(counts) - counts, counts)
-    return ref_idx, np.repeat(lo, counts) + within
+def load_arm(run_file, st, good_bunches):
+    wal = hitcache.load(run_file, f'WAL{st}', ['BunchNumber', 'tof', 'detn', 'amp'],
+                        good_bunches=good_bunches)
+    pss = hitcache.load(run_file, f'PSS{st}',
+                        ['BunchNumber', 'tof', 'detn', 'amp', 'tflash'],
+                        good_bunches=good_bunches)
+    late = (pss['tof'] - pss['tflash']) > LATE_TOF
+    pss = {k: v[late] for k, v in pss.items()}
+    return wal, pss
 
 
 def main():
-    f = uproot.open(RUN_FILE)
-    idx = f['index'].arrays(['BunchNumber', 'PulseIntensity'], library='np')
-    intensity = idx['PulseIntensity'][np.argsort(idx['BunchNumber'])]
+    intensity = coinc.bunch_intensity(RUN_FILE)
     good_bunches = coinc.select_bunches(RUN_FILE.stem, intensity)
     offs_json = json.loads((BASE / 'calib' / f'time_offsets_{RUN_FILE.stem}.json').read_text())
     print(f'{len(good_bunches)} good bunches; window +-{W_SIG} ns, '
@@ -85,41 +66,39 @@ def main():
         for wc in range(8):
             for pc in range(2):
                 off[wc, pc] = offs_json['stations'][st][f'WAL{st}{wc + 1}_PSS{st}{pc + 1}']['offset_ns']
-        wal, pss = load_arm(f, st, good_bunches)
+        wal, pss = load_arm(RUN_FILE, st, good_bunches)
         print(f'arm {st}: {len(wal["tof"]):,} wall / {len(pss["tof"]):,} late pss hits',
               flush=True)
 
+        t_p, t_w = pss['tof'], wal['tof']
+        det_p = pss['detn'].astype(np.int64)
+        det_w = wal['detn'].astype(np.int64)
+        key_p = hitcache.bunch_key(pss['BunchNumber'], t_p)
+        key_w = hitcache.bunch_key(wal['BunchNumber'], t_w)
+        nb2 = len(AMP2D_EDGES) - 1
         h_wal = np.zeros((2, 8, nb))     # (sig/side, wall ch, amp)
         h_pss = np.zeros((2, 2, nb))     # (sig/side, bar, amp)
-        h_2d = np.zeros((2, len(AMP2D_EDGES) - 1, len(AMP2D_EDGES) - 1))
-        for bn in good_bunches:
-            bn = int(bn)
-            pa, pb = np.searchsorted(pss['BunchNumber'], [bn, bn + 1])
-            wa, wb = np.searchsorted(wal['BunchNumber'], [bn, bn + 1])
-            if pa == pb or wa == wb:
-                continue
-            t_p = pss['tof'][pa:pb]
-            ri, oi = pair_idx(t_p, wal['tof'][wa:wb])
-            if len(ri) == 0:
-                continue
-            ch_p = pss['detn'][pa:pb][ri] - 1
-            ch_w = wal['detn'][wa:wb][oi] - 1
-            dt_cal = (wal['tof'][wa:wb][oi] - t_p[ri]) - off[ch_w, ch_p]
-            a_w = wal['amp'][wa:wb][oi]
-            a_p = pss['amp'][pa:pb][ri]
+        h_2d = np.zeros((2, nb2, nb2))
+        for ri, oi in hitcache.iter_pairs(key_p, key_w, -DT_MAX, DT_MAX, t_p, t_w):
+            ch_p = det_p[ri] - 1
+            ch_w = det_w[oi] - 1
+            dt_cal = (t_w[oi] - t_p[ri]) - off[ch_w, ch_p]
+            a_w = wal['amp'][oi]
+            a_p = pss['amp'][ri]
             for j, mask in enumerate((np.abs(dt_cal) <= W_SIG,
                                       (dt_cal >= SB_LO) & (dt_cal <= SB_HI))):
                 if not mask.any():
                     continue
                 aw = np.clip(np.digitize(a_w[mask], AMP_EDGES) - 1, 0, nb - 1)
                 ap = np.clip(np.digitize(a_p[mask], AMP_EDGES) - 1, 0, nb - 1)
-                np.add.at(h_wal, (j, ch_w[mask], aw), 1)
-                np.add.at(h_pss, (j, ch_p[mask], ap), 1)
-                aw2 = np.clip(np.digitize(a_w[mask], AMP2D_EDGES) - 1, 0,
-                              len(AMP2D_EDGES) - 2)
-                ap2 = np.clip(np.digitize(a_p[mask], AMP2D_EDGES) - 1, 0,
-                              len(AMP2D_EDGES) - 2)
-                np.add.at(h_2d, (j, aw2, ap2), 1)
+                h_wal[j] += np.bincount(ch_w[mask] * nb + aw,
+                                        minlength=8 * nb).reshape(8, nb)
+                h_pss[j] += np.bincount(ch_p[mask] * nb + ap,
+                                        minlength=2 * nb).reshape(2, nb)
+                aw2 = np.clip(np.digitize(a_w[mask], AMP2D_EDGES) - 1, 0, nb2 - 1)
+                ap2 = np.clip(np.digitize(a_p[mask], AMP2D_EDGES) - 1, 0, nb2 - 1)
+                h_2d[j] += np.bincount(aw2 * nb2 + ap2,
+                                       minlength=nb2 * nb2).reshape(nb2, nb2)
         results[f'{st}_wal'] = h_wal
         results[f'{st}_pss'] = h_pss
         results[f'{st}_2d'] = h_2d

@@ -6,8 +6,10 @@ Per channel: amplitude/area spectra, signal-width (fwhm) spectra, time-of-flight
 distributions (full 20 ms window + gamma-flash zoom), hits per bunch split by
 dedicated/parasitic pulse intensity, saturation and pileup fractions.
 
-Histograms are accumulated in a single chunked pass per tree and cached to npz so
-plots can be re-styled without re-reading the 13 GB file.
+Histograms are accumulated in a single pass per tree and cached to npz so
+plots can be re-styled without re-reading the 13 GB file. Hit data come from
+the binary hit cache when present (see hitcache.py / fastread/), else from a
+chunked uproot read of the root file.
 
 Usage: python 01_signal_qa.py [run_file]
 """
@@ -16,7 +18,8 @@ import sys
 from pathlib import Path
 
 import numpy as np
-import uproot
+
+import hitcache
 
 RUN_FILE = Path(sys.argv[1]) if len(sys.argv) > 1 else Path.home() / 'x17/beam_july/data/run224404.root'
 OUT_DIR = Path(__file__).parent / 'figures' / '01_signal_qa'
@@ -45,55 +48,42 @@ def channel_hist(detn, values, n_ch, edges):
     return h
 
 
-def process_tree(f, tree_name, bunch_intensity):
+def process_tree(run_file, tree_name, bunch_intensity):
     n_ch = N_CH[tree_name]
-    tree = f[tree_name]
+    d = hitcache.load(run_file, tree_name, HIT_BRANCHES)
+    detn = d['detn'].astype(np.int64)
+    tof, amp = d['tof'], d['amp']
     h = {
-        'amp': np.zeros((n_ch, len(AMP_EDGES) - 1)),
-        'area': np.zeros((n_ch, len(AREA_EDGES) - 1)),
-        'fwhm': np.zeros((n_ch, len(FWHM_EDGES) - 1)),
-        'tof': np.zeros((n_ch, len(TOF_EDGES) - 1)),
-        'flash': np.zeros((n_ch, len(FLASH_EDGES) - 1)),
-        'amp_vs_tof': np.zeros((len(TOF_EDGES) - 1, len(AMP_EDGES) - 1)),
+        'amp': channel_hist(detn, amp, n_ch, AMP_EDGES),
+        'area': channel_hist(detn, d['area'], n_ch, AREA_EDGES),
+        'fwhm': channel_hist(detn, d['fwhm'], n_ch, FWHM_EDGES),
+        'tof': channel_hist(detn, tof, n_ch, TOF_EDGES),
+        'flash': channel_hist(detn, tof, n_ch, FLASH_EDGES),
+        'amp_vs_tof': np.histogram2d(tof, amp, bins=[TOF_EDGES, AMP_EDGES])[0],
     }
     n_bunches = len(bunch_intensity)
-    hits_per_bunch = np.zeros((n_ch, n_bunches + 1))
-    n_satu = np.zeros(n_ch)
-    n_pileup = np.zeros(n_ch)
-    n_tot = np.zeros(n_ch)
-
-    for chunk in tree.iterate(HIT_BRANCHES, library='np', step_size='200 MB'):
-        detn, tof, amp = chunk['detn'], chunk['tof'], chunk['amp']
-        h['amp'] += channel_hist(detn, amp, n_ch, AMP_EDGES)
-        h['area'] += channel_hist(detn, chunk['area'], n_ch, AREA_EDGES)
-        h['fwhm'] += channel_hist(detn, chunk['fwhm'], n_ch, FWHM_EDGES)
-        h['tof'] += channel_hist(detn, tof, n_ch, TOF_EDGES)
-        h['flash'] += channel_hist(detn, tof, n_ch, FLASH_EDGES)
-        h['amp_vs_tof'] += np.histogram2d(tof, amp, bins=[TOF_EDGES, AMP_EDGES])[0]
-        np.add.at(hits_per_bunch, (detn - 1, chunk['BunchNumber']), 1)
-        n_satu += np.bincount(detn - 1, weights=chunk['satuflag'] != 0, minlength=n_ch)
-        n_pileup += np.bincount(detn - 1, weights=chunk['pileup1'] != 0, minlength=n_ch)
-        n_tot += np.bincount(detn - 1, minlength=n_ch)
-
-    h['hits_per_bunch'] = hits_per_bunch[:, 1:]  # BunchNumber is 1-based
-    h['n_satu'], h['n_pileup'], h['n_tot'] = n_satu, n_pileup, n_tot
+    hits_per_bunch = np.bincount(
+        (detn - 1) * (n_bunches + 1) + d['BunchNumber'],
+        minlength=n_ch * (n_bunches + 1)).reshape(n_ch, n_bunches + 1)
+    h['hits_per_bunch'] = hits_per_bunch[:, 1:].astype(float)  # BunchNumber is 1-based
+    h['n_satu'] = np.bincount(detn - 1, weights=d['satuflag'].astype(float), minlength=n_ch)
+    h['n_pileup'] = np.bincount(detn - 1, weights=d['pileup1'].astype(float), minlength=n_ch)
+    h['n_tot'] = np.bincount(detn - 1, minlength=n_ch).astype(float)
     return h
 
 
 def main():
-    print(f'Reading {RUN_FILE}')
-    f = uproot.open(RUN_FILE)
-    idx = f['index'].arrays(['BunchNumber', 'PulseIntensity'], library='np')
-    order = np.argsort(idx['BunchNumber'])
-    bunch_intensity = idx['PulseIntensity'][order]
+    print(f'Reading {RUN_FILE}'
+          + (' (hit cache)' if hitcache.cache_dir(RUN_FILE) else ' (uproot)'))
+    bunch_intensity = hitcache.bunch_intensity(RUN_FILE)
     print(f'{len(bunch_intensity)} bunches, '
           f'{np.sum(bunch_intensity > DEDICATED_THRESH)} dedicated / '
           f'{np.sum(bunch_intensity <= DEDICATED_THRESH)} parasitic')
 
     results = {'bunch_intensity': bunch_intensity}
     for tn in WALL_TREES + PSS_TREES:
-        print(f'  processing {tn} ({f[tn].num_entries:,} hits)...', flush=True)
-        h = process_tree(f, tn, bunch_intensity)
+        print(f'  processing {tn}...', flush=True)
+        h = process_tree(RUN_FILE, tn, bunch_intensity)
         for k, v in h.items():
             results[f'{tn}_{k}'] = v
 

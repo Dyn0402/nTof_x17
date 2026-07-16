@@ -19,7 +19,8 @@ import time
 from pathlib import Path
 
 import numpy as np
-import uproot
+
+import hitcache
 
 RUN_FILE = Path(sys.argv[1]) if len(sys.argv) > 1 else Path.home() / 'x17/beam_july/data/run224404.root'
 BASE = Path(__file__).parent
@@ -34,39 +35,42 @@ DT_MAX = DT_EDGES[-1]
 REGION_EDGES = np.array([-np.inf, 0, 1e3, 1e4, 1e5, 1e6, np.inf])
 REGION_LABELS = ['pre-flash', '0-1us', '1-10us', '10-100us', '0.1-1ms', '>1ms']
 DEDICATED_THRESH = 6e12
-WALL_RECOVERY_BUNCH = 2212
+# hard bunch masks for known per-run DAQ outages (README flag); default 0 = no mask
+WALL_RECOVERY_BUNCH_BY_RUN = {'run224404': 2212}
+WALL_RECOVERY_BUNCH = WALL_RECOVERY_BUNCH_BY_RUN.get(
+    (Path(sys.argv[1]).stem if len(sys.argv) > 1 else 'run224404'), 0)  # legacy alias
+
+
+def bunch_intensity(run_file):
+    """Per-bunch PulseIntensity sorted by bunch number (index tree; PKUP
+    fallback for an empty index, as in run224460). Thin hitcache wrapper,
+    kept here because downstream scripts import it from this module."""
+    return hitcache.bunch_intensity(run_file)
 
 
 def select_bunches(run_stem, bunch_intensity):
+    recovery = WALL_RECOVERY_BUNCH_BY_RUN.get(run_stem, 0)
     qa = np.load(CACHE / f'01_qa_{run_stem}.npz')
     wall = sum(qa[f'{t}_hits_per_bunch'].sum(axis=0) for t in WALL_TREES)
     pss = sum(qa[f'{t}_hits_per_bunch'].sum(axis=0) for t in PSS_TREES)
     bunch_no = np.arange(1, len(wall) + 1)
     good = (pss > 0.5 * np.median(pss[pss > 1000])) & \
            (wall > 0.5 * np.median(wall[wall > 1000])) & \
-           (bunch_no > WALL_RECOVERY_BUNCH)
+           (bunch_no > recovery)
     return bunch_no[good]
 
 
-def load_tree(f, tree_name, good_bunches, need_tflash):
+def load_tree(run_file, tree_name, good_bunches, need_tflash):
     """Return (bunch, tof) sorted by (bunch, tof), restricted to good bunches,
-    plus {bunch: tflash} if requested."""
-    good = set(good_bunches.tolist())
+    plus the first tflash per bunch (array indexed by bunch number, nan when
+    the bunch has no hits) if requested."""
     branches = ['BunchNumber', 'tof'] + (['tflash'] if need_tflash else [])
-    bunches, tofs, tflash_map = [], [], {}
-    for chunk in f[tree_name].iterate(branches, library='np', step_size='300 MB'):
-        b, t = chunk['BunchNumber'], chunk['tof']
-        if need_tflash:
-            first = np.unique(b, return_index=True)
-            for bn, fi in zip(*first):
-                tflash_map.setdefault(int(bn), float(chunk['tflash'][fi]))
-        keep = np.isin(b, good_bunches)
-        bunches.append(b[keep])
-        tofs.append(t[keep])
-    b = np.concatenate(bunches)
-    t = np.concatenate(tofs)
-    order = np.lexsort((t, b))
-    return b[order], t[order], tflash_map
+    d = hitcache.load(run_file, tree_name, branches, good_bunches=good_bunches)
+    tflash = None
+    if need_tflash:
+        n_bunches = int(good_bunches.max()) if len(good_bunches) else 0
+        tflash = hitcache.first_by_bunch(d['BunchNumber'], d['tflash'], n_bunches)
+    return d['BunchNumber'], d['tof'], tflash
 
 
 def pair_dts(t_ref, t_other):
@@ -85,54 +89,45 @@ def pair_dts(t_ref, t_other):
 
 def main():
     t0 = time.time()
-    f = uproot.open(RUN_FILE)
-    idx = f['index'].arrays(['BunchNumber', 'PulseIntensity'], library='np')
-    order = np.argsort(idx['BunchNumber'])
-    intensity = idx['PulseIntensity'][order]
+    intensity = bunch_intensity(RUN_FILE)
     good_bunches = select_bunches(RUN_FILE.stem, intensity)
-    is_ded = {int(bn): intensity[bn - 1] > DEDICATED_THRESH for bn in good_bunches}
+    ded_by_bunch = np.zeros(int(good_bunches.max()) + 1 if len(good_bunches) else 1,
+                            dtype=np.int64)
+    ded_by_bunch[good_bunches] = intensity[good_bunches - 1] > DEDICATED_THRESH
+    n_ded = int(ded_by_bunch[good_bunches].sum())
     print(f'{len(good_bunches)} good bunches (beam-on, walls active, bunch>{WALL_RECOVERY_BUNCH}); '
-          f'{sum(is_ded.values())} dedicated')
-
-    data = {}
-    for tn in WALL_TREES + PSS_TREES:
-        data[tn] = load_tree(f, tn, good_bunches, need_tflash=tn in PSS_TREES)
-        print(f'  loaded {tn}: {len(data[tn][0]):,} hits in good bunches '
-              f'({time.time() - t0:.0f}s)', flush=True)
+          f'{n_ded} dedicated')
 
     n_reg, n_dt = len(REGION_LABELS), len(DT_EDGES) - 1
-    h = {(w, p): np.zeros((2, n_reg, n_dt)) for w in WALL_TREES for p in PSS_TREES}
-    n_pss_hits = {p: np.zeros((2, n_reg)) for p in PSS_TREES}   # for normalization
+    h = {}
+    n_pss_hits = {}   # for normalization
 
-    # per-tree bunch slice bounds
-    slices = {tn: {int(bn): (int(a), int(b_)) for bn, a, b_ in zip(
-        good_bunches,
-        np.searchsorted(data[tn][0], good_bunches, side='left'),
-        np.searchsorted(data[tn][0], good_bunches, side='right'))}
-        for tn in WALL_TREES + PSS_TREES}
-
-    for i, bn in enumerate(good_bunches):
-        bn = int(bn)
-        ded = int(is_ded[bn])
-        for p in PSS_TREES:
-            a, b_ = slices[p][bn]
-            if a == b_:
-                continue
-            t_pss = data[p][1][a:b_]
-            tflash = data[p][2].get(bn, np.nan)
-            region = np.digitize(t_pss - tflash, REGION_EDGES) - 1
-            n_pss_hits[p][ded] += np.bincount(region, minlength=n_reg)
-            for w in WALL_TREES:
-                aw, bw = slices[w][bn]
-                if aw == bw:
-                    continue
-                dt, ref_idx = pair_dts(t_pss, data[w][1][aw:bw])
-                if len(dt) == 0:
-                    continue
-                h[(w, p)][ded] += np.histogram2d(
-                    region[ref_idx], dt, bins=[np.arange(-0.5, n_reg), DT_EDGES])[0]
-        if i % 200 == 0:
-            print(f'  bunch {i}/{len(good_bunches)} ({time.time() - t0:.0f}s)', flush=True)
+    for p in PSS_TREES:
+        b_p, t_p, tflash = load_tree(RUN_FILE, p, good_bunches, need_tflash=True)
+        # region/dedicated tag per pss hit; pad one region slot for out-of-range
+        region = np.digitize(t_p - tflash[b_p], REGION_EDGES) - 1
+        region = np.clip(region, 0, n_reg)          # nan tflash -> pad slot n_reg
+        ded = ded_by_bunch[b_p]
+        n_pss_hits[p] = np.bincount(ded * (n_reg + 1) + region,
+                                    minlength=2 * (n_reg + 1)
+                                    ).reshape(2, n_reg + 1)[:, :n_reg].astype(float)
+        key_p = hitcache.bunch_key(b_p, t_p)
+        print(f'  loaded {p}: {len(b_p):,} hits in good bunches '
+              f'({time.time() - t0:.0f}s)', flush=True)
+        for w in WALL_TREES:
+            b_w, t_w, _ = load_tree(RUN_FILE, w, good_bunches, need_tflash=False)
+            key_w = hitcache.bunch_key(b_w, t_w)
+            acc = np.zeros(2 * n_reg * n_dt, dtype=np.int64)
+            for ri, oi in hitcache.iter_pairs(key_p, key_w, -DT_MAX, DT_MAX,
+                                              t_p, t_w):
+                dt = t_w[oi] - t_p[ri]
+                dtb = np.digitize(dt, DT_EDGES) - 1
+                ok = (dtb >= 0) & (dtb < n_dt) & (region[ri] < n_reg)
+                idx = (ded[ri[ok]] * n_reg + region[ri[ok]]) * n_dt + dtb[ok]
+                acc += np.bincount(idx, minlength=len(acc))
+            h[(w, p)] = acc.reshape(2, n_reg, n_dt).astype(float)
+            print(f'  {w}x{p}: {int(h[(w, p)].sum()):,} pairs '
+                  f'({time.time() - t0:.0f}s)', flush=True)
 
     out = {f'{w}_{p}': h[(w, p)] for w in WALL_TREES for p in PSS_TREES}
     out.update({f'npss_{p}': n_pss_hits[p] for p in PSS_TREES})
@@ -140,8 +135,8 @@ def main():
                         dt_edges=DT_EDGES, region_edges=REGION_EDGES,
                         region_labels=np.array(REGION_LABELS),
                         good_bunches=good_bunches,
-                        n_dedicated=sum(is_ded.values()),
-                        n_parasitic=len(good_bunches) - sum(is_ded.values()),
+                        n_dedicated=n_ded,
+                        n_parasitic=len(good_bunches) - n_ded,
                         **out)
     print(f'Cached -> {CACHE / f"02_coinc_{RUN_FILE.stem}.npz"} ({time.time() - t0:.0f}s)')
 

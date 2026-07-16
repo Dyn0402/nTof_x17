@@ -18,7 +18,8 @@ import sys
 from pathlib import Path
 
 import numpy as np
-import uproot
+
+import hitcache
 
 BASE = Path(__file__).parent
 spec = importlib.util.spec_from_file_location('coinc', BASE / '02_coincidence_scan.py')
@@ -52,22 +53,8 @@ def group_dt_peaks(run_stem):
     return mu
 
 
-def pair_idx(t_ref, t_other):
-    lo = np.searchsorted(t_other, t_ref - DT_MAX)
-    hi = np.searchsorted(t_other, t_ref + DT_MAX)
-    counts = hi - lo
-    tot = int(counts.sum())
-    if tot == 0:
-        return (np.empty(0, np.int64),) * 2
-    ref_idx = np.repeat(np.arange(len(t_ref)), counts)
-    within = np.arange(tot) - np.repeat(np.cumsum(counts) - counts, counts)
-    return ref_idx, np.repeat(lo, counts) + within
-
-
 def main():
-    f = uproot.open(RUN_FILE)
-    idx = f['index'].arrays(['BunchNumber', 'PulseIntensity'], library='np')
-    intensity = idx['PulseIntensity'][np.argsort(idx['BunchNumber'])]
+    intensity = coinc.bunch_intensity(RUN_FILE)
     good_bunches = coinc.select_bunches(RUN_FILE.stem, intensity)
     mu = group_dt_peaks(RUN_FILE.stem)
     print(f'{len(good_bunches)} good bunches, tof-tflash > {LATE_TOF:.0f} ns')
@@ -77,16 +64,11 @@ def main():
     for tree in ['WALA', 'WALB', 'WALC', 'WALD', 'PSSA', 'PSSB', 'PSSC', 'PSSD']:
         n_ch = 8 if tree.startswith('WAL') else 2
         st = tree[3]
-        dat = {k: [] for k in ('BunchNumber', 'tof', 'detn', 'amp')}
-        for chunk in f[tree].iterate(list(dat) + ['tflash'], library='np',
-                                     step_size='300 MB'):
-            keep = np.isin(chunk['BunchNumber'], good_bunches) & \
-                   ((chunk['tof'] - chunk['tflash']) > LATE_TOF)
-            for k in dat:
-                dat[k].append(chunk[k][keep])
-        arrs = {k: np.concatenate(v) for k, v in dat.items()}
-        order = np.lexsort((arrs['tof'], arrs['BunchNumber']))
-        arrs = {k: v[order] for k, v in arrs.items()}
+        arrs = hitcache.load(RUN_FILE, tree,
+                             ['BunchNumber', 'tof', 'detn', 'amp', 'tflash'],
+                             good_bunches=good_bunches)
+        late = (arrs['tof'] - arrs['tflash']) > LATE_TOF
+        arrs = {k: v[late] for k, v in arrs.items() if k != 'tflash'}
 
         # 1. inclusive late spectra
         h_inc = np.histogram2d(arrs['detn'], arrs['amp'],
@@ -102,23 +84,18 @@ def main():
                 m_bot = arrs['detn'] == 2 * g + 2
                 bt, tt, at_ = arrs['BunchNumber'][m_top], arrs['tof'][m_top], arrs['amp'][m_top]
                 bb, tb, ab = arrs['BunchNumber'][m_bot], arrs['tof'][m_bot], arrs['amp'][m_bot]
-                for bn in good_bunches:
-                    bn = int(bn)
-                    ta1, ta2 = np.searchsorted(bt, [bn, bn + 1])
-                    tb1, tb2 = np.searchsorted(bb, [bn, bn + 1])
-                    if ta1 == ta2 or tb1 == tb2:
-                        continue
-                    ri, oi = pair_idx(tt[ta1:ta2], tb[tb1:tb2])
-                    if len(ri) == 0:
-                        continue
-                    dtc = (tb[tb1:tb2][oi] - tt[ta1:ta2][ri]) - mu[(st, g)]
+                key_t = hitcache.bunch_key(bt, tt)
+                key_b = hitcache.bunch_key(bb, tb)
+                for ri, oi in hitcache.iter_pairs(key_t, key_b, -DT_MAX, DT_MAX,
+                                                  tt, tb):
+                    dtc = (tb[oi] - tt[ri]) - mu[(st, g)]
                     for j, mask in enumerate((np.abs(dtc) <= W_SIG,
                                               (np.abs(dtc) >= SB_LO) & (np.abs(dtc) <= SB_HI))):
                         if not mask.any():
                             continue
-                        for k, amps in enumerate((at_[ta1:ta2][ri], ab[tb1:tb2][oi])):
+                        for k, amps in enumerate((at_[ri], ab[oi])):
                             ai = np.clip(np.digitize(amps[mask], AMP_EDGES) - 1, 0, nb - 1)
-                            np.add.at(h_tb, (g, k, j, ai), 1)
+                            h_tb[g, k, j] += np.bincount(ai, minlength=nb)
                 results[f'{tree}_topbot'] = h_tb
             print(f'  {tree} top-bottom pairs done', flush=True)
 
