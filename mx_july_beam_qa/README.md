@@ -86,6 +86,10 @@ walls (WAL) and back plastic scintillators (PSS) to MIPs using coincidences.
 | 10 | `10_pmt_gain.py` | plastic PMT raw-vs-coinc overlays, relative gains, HV suggestions |
 | 11 | `11_concept_diagrams.py` | top-down concept sketches (current selection; with LIQ readout) |
 
+The read pass (01/02/03/06/07/09, all pure-read) can run on lxplus/HTCondor next to the
+EOS data instead of pulling the 13-18 GB file local — see `lxplus/README.md` (benchmarked
+on run224461: ~89 min/run, only ~2.4 MB of caches come back, plotting stays local).
+
 Shared helpers: `adc_mv.py` (ADC->mV factors). Scripts 03/06/07/09 import
 `02_coincidence_scan.py` via importlib for `select_bunches`/`pair_dts`.
 Selection everywhere: beam-on & wall-active bunches (>2212) and tof-tflash > 0.1 ms.
