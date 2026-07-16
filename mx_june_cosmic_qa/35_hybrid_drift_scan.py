@@ -51,7 +51,7 @@ CFG = config_from_argv()
 VETO = next((int(a.split('=')[1]) for a in sys.argv if a.startswith('--veto=')), 50)
 MIN_BIN = next((int(a.split('=')[1]) for a in sys.argv if a.startswith('--min-bin=')), 25)
 TAN_HI_SIG = next((float(a.split('=')[1]) for a in sys.argv if a.startswith('--tan-hi-sig=')), 0.27)
-CHI2_CUT = 5.0
+from qa_config import M3_CHI2_CUT as CHI2_CUT, M3_MIN_NCLUS  # centralized M3 recipe (see qa_config.py)
 RES_CUT_MM = 10.0
 MIN_STRIPS = 4          # as 21: production-cluster quality for the extent
 PITCH_MM = 0.78
@@ -243,7 +243,7 @@ def measure_point(subrun, seed, det):
         print(f'  [SKIP] {subrun}: no cache')
         return None
     results = pickle.load(open(cache, 'rb'))
-    rays = M3RefTracking(cfg.m3_tracking_dir, chi2_cut=CHI2_CUT)
+    rays = M3RefTracking(cfg.m3_tracking_dir, chi2_cut=CHI2_CUT, min_nclus=M3_MIN_NCLUS)
     xang, _, anum = get_xy_angles(rays.ray_data)
     xang = seed.ref_x_sign * np.array(xang)
     params = cm.translation_alignment(results, rays, seed)

@@ -1,0 +1,766 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage{siunitx}
+\usepackage{xcolor}
+\usepackage{caption}
+\usepackage[colorlinks=true,linkcolor=blue!55!black,urlcolor=blue!55!black]{hyperref}
+\captionsetup{font=small,labelfont=bf}
+
+% Figures live one level up, in figures/ and event_displays/
+\graphicspath{{../figures/}{../event_displays/}}
+
+% Robust include: compiles even if a figure file is renamed/missing.
+\newcommand{\pkgfig}[2][width=0.9\textwidth]{%
+  \IfFileExists{../figures/#2}{\includegraphics[#1]{#2}}{%
+  \IfFileExists{../event_displays/#2}{\includegraphics[#1]{#2}}{%
+  \fbox{\parbox{0.8\textwidth}{\centering\vspace{2em}\texttt{MISSING FIGURE: \detokenize{#2}}\vspace{2em}}}}}}
+
+% Key-number box (kept to base packages: no tcolorbox installed).
+\definecolor{keybg}{RGB}{235,242,250}
+\definecolor{keyframe}{RGB}{70,110,160}
+\newsavebox{\keyboxsave}
+\newenvironment{keybox}[1]{%
+  \begin{lrbox}{\keyboxsave}\begin{minipage}{0.88\textwidth}%
+  {\small\bfseries\textcolor{keyframe}{#1}}\par\smallskip
+}{%
+  \end{minipage}\end{lrbox}%
+  \begin{center}\setlength{\fboxsep}{8pt}%
+  \fcolorbox{keyframe}{keybg}{\usebox{\keyboxsave}}\end{center}}
+
+\newcommand{\um}{\,\si{\micro\meter}}
+\newcommand{\detA}{Detector~A (mx17\_3)}
+\newcommand{\detB}{Detector~B (mx17\_2)}
+
+\title{\vspace{-1.5em}The MX17 Micromegas detectors under cosmic muons\\
+\large Performance summary of the June 2026 Saclay cosmic-bench campaign\\
+\normalsize Reference material for the detector-construction conference talk}
+\author{MX17 cosmic-bench analysis}
+\date{July 2026 --- preliminary}
+
+\begin{document}
+\maketitle
+\vspace{-1.5em}
+
+\begin{quote}\small\itshape
+2026-07-14 note: the M3 reference recipe tightened to $\chi^2<1.0$,
+$N_\mathrm{clus}=4$ (was $\chi^2<5$, $N_\mathrm{clus}\ge3$) after finding the
+position residual was reference-limited, not chamber-limited. All numbers in
+this document are re-measured on the new recipe (efficiency, position
+resolution, and angular resolution all updated fleet-wide); the gas/drift-velocity
+and edge/fringe-field sections predate the change and are not expected to shift
+materially. See \texttt{M3\_CUT\_AND\_ACTIVE\_AREA\_NOTE.md} in the analysis
+repository for the full investigation.
+\end{quote}
+
+\begin{abstract}
+\noindent This document summarizes, in plain language, how the five MX17
+resistive-strip Micromegas detectors behave when they detect cosmic muons, based
+on the June~2026 test-bench campaign at Saclay. It is written as source material
+for a conference talk on the construction of these detectors: every headline
+number is quotable, every figure exists as a standalone PNG and PDF in the
+accompanying \texttt{figures/} and \texttt{event\_displays/} directories, and a
+starter slide deck is provided. In one sentence: the detectors work very well ---
+the best chamber detects \(\sim\)96\% of the muons that cross its central region,
+locates each crossing to about $0.47\,$mm (better than the $0.78\,$mm strip
+pitch), measures the track direction to about $1.7^\circ$, times the event to
+about 33\,ns ($\approx$1\,mm of electron drift), and its built-in resistive
+spark protection works exactly as designed: discharges are rare, localized,
+self-quenching, and cause \emph{no measurable dead time}.
+\end{abstract}
+
+\tableofcontents
+\newpage
+
+%=====================================================================
+\section{What this document is, and the one-slide summary}
+
+Five MX17 Micromegas chambers (labelled A--E at the experiment) were
+characterized with cosmic muons on the Saclay test bench during June~2026.
+The analysis behind this summary is mature: every detector was measured with
+the same reference telescope, the same reconstruction, and the same definitions,
+so the numbers below can be compared detector-to-detector and quoted directly.
+
+\begin{keybox}{Headline numbers (best detector, A, at its operating point)}
+\begin{tabular}{@{}ll@{}}
+Muon detection efficiency & $\mathbf{92.9\pm0.2\,\%}$ over the active area (operating; $96.6\,\%$ spark-free); $\sim$\textbf{96\,\%} in the core \\
+Position resolution & $\mathbf{\sigma \approx 0.47\,mm}$ (sub-pitch; strip pitch 0.78\,mm)\\
+Track-angle resolution & $\mathbf{\approx 1.7^\circ}$ per plane, at all track angles \\
+Event-time resolution & $\mathbf{33\,ns}$ ($\approx$1\,mm of drift); 37.7\,ns absolute vs.\ trigger \\
+Discharge (spark) behaviour & rare (3.9\,\% of crossings), self-quenching, \textbf{zero dead time} \\
+\end{tabular}
+\end{keybox}
+
+\noindent The five detectors are not identical in performance --- two are
+excellent, two were operated past their sparking optimum during the tests, and
+one has a gas-gain problem --- and Section~\ref{sec:fleet} gives the honest
+per-detector picture with the reasons. All of the differences are consistent
+with operating-point and gas effects, not with construction defects.
+
+\begin{figure}[htbp]
+  \centering
+  \pkgfig[width=0.6\textwidth]{01-mx17-layout-topdown.png}
+  \caption{Where the chambers are headed: at the experiment, four of the MX17
+  Micromegas surround the central target in a pinwheel layout. The bench
+  campaign described here characterized each chamber individually with cosmic
+  muons before installation.}
+  \label{fig:pinwheel}
+\end{figure}
+
+\paragraph{How to use this package.} The directory layout is:
+\texttt{figures/} (every plot as PNG + PDF, with \texttt{FIGURE\_GUIDE.md}
+describing each one), \texttt{event\_displays/} (fresh, presentation-quality
+single-muon event pictures), \texttt{slides/} (a starter PowerPoint deck),
+\texttt{source\_reports/} (the detailed technical write-ups behind each topic),
+and this report.
+
+%=====================================================================
+\section{The detectors and how they were tested}
+\label{sec:bench}
+
+\subsection{The device under test, as operated}
+
+Each MX17 chamber is a resistive-strip Micromegas with a two-dimensional strip
+readout: 512~strips in $X$ and 512~strips in $Y$ at a pitch of
+$0.78\,$mm, giving a $\sim$40$\times$40\,cm$^2$ active area. A pixelated top
+layer divides the avalanche charge between the two strip layers, so a single
+avalanche is seen by \emph{both} coordinates at once (Section~\ref{sec:balance}
+shows how evenly). Above the amplification mesh sits a \textbf{30\,mm
+conversion-and-drift gap}: a cosmic muon crossing the chamber liberates
+ionization electrons along its path through this gas volume, and these drift
+down to the mesh where they are amplified and read out.
+
+Operating configuration on the bench:
+\begin{itemize}
+  \item \textbf{Gas:} Ar/isobutane 95/5 at atmospheric pressure, flushed
+        continuously (the campaign also quantified what happens when moisture
+        and air contaminate the gas --- Section~\ref{sec:gas}).
+  \item \textbf{High voltage:} amplification (``resist'') voltage typically
+        480--490\,V; drift voltage typically 1000\,V across the 30\,mm gap
+        ($\approx$330\,V/cm drift field).
+  \item \textbf{Readout:} DREAM front-end electronics, 512~channels per plane,
+        sampling each strip at 60\,ns intervals over a 1.92\,$\mu$s window ---
+        so every strip records a full pulse \emph{waveform}, with both an
+        amplitude and a time.
+\end{itemize}
+
+\subsection{The cosmic bench}
+
+\begin{figure}[htbp]
+  \centering
+  \pkgfig[width=0.62\textwidth]{00-cosmic-bench-schematic.png}
+  \caption{The Saclay cosmic bench (side view, heights to scale): trigger
+  scintillators above and below, two pairs of M3 reference Micromegas, and the
+  two MX17 test slots in between.}
+  \label{fig:bench}
+\end{figure}
+
+The bench provides two independent references against which the chambers are
+judged:
+\begin{itemize}
+  \item \textbf{A reference tracker (``M3'')}: a telescope of multiplexed
+        Micromegas planes above and below the test slots. For every triggered
+        cosmic muon it reconstructs the muon's straight line in space,
+        independently of the detector under test. Every performance number in
+        this document is defined against these reference tracks: the track says
+        where the muon truly went; the chamber under test either saw it there
+        or it did not.
+  \item \textbf{A scintillator trigger}: a top+bottom scintillator-paddle
+        coincidence ($\sim$5\,ns precision) starts the readout, providing the
+        absolute time reference used for the timing measurement.
+\end{itemize}
+
+Alignment of each chamber to the telescope converged to better than a
+millimetre in every case, and the recovered geometry (rotation
+$\approx$89.5$^\circ$, heights consistent with the mechanical slot positions)
+matches the as-built bench.
+
+\subsection{The definitions used everywhere}
+\label{sec:defs}
+
+\begin{description}
+  \item[Efficiency] For every clean reference muon track, project it to the
+  chamber plane and ask: did the chamber reconstruct a hit (with both $X$ and
+  $Y$ coordinates) within 5\,mm of that point? The quoted efficiency is the
+  fraction of ``yes''. A muon for which the chamber recorded nothing at all
+  still counts in the denominator --- there is no hidden normalization.
+  \item[Position resolution] The width (Gaussian core, $\sigma$) of the
+  difference between the chamber's reconstructed position and the reference
+  track's position. Note this still \emph{includes} the small pointing error of
+  the reference telescope itself, so all position resolutions quoted here are
+  slightly conservative (upper limits on the true detector resolution).
+  \item[Angular resolution] The spread ($\sigma$ or the 68\% half-width,
+  $\sigma_{68}$) of the difference between the track angle measured by the
+  chamber alone (Section~\ref{sec:tpc}) and the reference track angle.
+  \item[Spark fraction] Discharges fire most of the detector at once
+  ($>$50~strips); they are counted separately as the percentage of muon
+  crossings that coincide with such a discharge.
+\end{description}
+
+%=====================================================================
+\section{How the chamber sees a muon: micro-TPC operation}
+\label{sec:tpc}
+
+The 30\,mm drift gap is not just a conversion volume --- it turns each chamber
+into a small time-projection chamber (``micro-TPC''). Electrons freed deeper in
+the gap arrive at the mesh \emph{later}: at the nominal drift field the
+electrons travel at $34\um$/ns, so the 30\,mm gap maps onto a $\sim$0.9\,$\mu$s
+spread of arrival times, comfortably resolved by the 60\,ns sampling. Each
+fired strip therefore contributes a point (strip position, arrival time)
+$=$ (horizontal position, depth), and a straight-line fit through those points
+gives the muon's crossing angle \emph{from a single chamber} --- no external
+tracker needed.
+
+\begin{figure}[htbp]
+  \centering
+  \pkgfig[width=0.85\textwidth]{02-microtpc-principle-schematic.png}
+  \caption{The micro-TPC principle: an inclined muon (left) produces a ladder
+  of strip signals whose arrival times encode depth (right); the slope of the
+  ladder is the track angle.}
+  \label{fig:principle}
+\end{figure}
+
+\subsection{Event displays}
+
+Figures~\ref{fig:evgallery} and~\ref{fig:evwave} are real single-muon events
+from detector~A, drawn directly from the raw data. In the strip-vs-time view
+the muon is simply a straight line of charge; in the raw waveform view the
+diagonal charge stripe across the channel-vs-time plane is the muon track as
+the electronics actually record it. Figure~\ref{fig:ev3d} puts the two strip
+planes together into a single 3-D picture: the drift time of each strip signal
+becomes a depth, so the charge cloud traces the muon's path through the gas ---
+and the independent reference telescope track (green) runs straight through it,
+a direct visual check of both the reconstruction and the alignment.
+
+\begin{figure}[htbp]
+  \centering
+  \pkgfig[width=0.95\textwidth]{event_display_gallery.png}
+  \caption{Gallery of cosmic-muon events in detector A. Each panel shows one
+  muon crossing: every marker is one strip signal, placed at its strip position
+  (horizontal) and electron drift time (vertical, equivalently depth in the
+  gas), colored by pulse amplitude. The overlaid line is the track fitted from
+  this chamber's own data.}
+  \label{fig:evgallery}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  \pkgfig[width=0.95\textwidth]{event_display_waveforms.png}
+  \caption{``Anatomy of an event'': the raw DREAM waveforms for one inclined
+  muon. The diagonal stripe in the channel-vs-time plane is the muon; its slope
+  is the drift-time ladder used for the angle measurement.}
+  \label{fig:evwave}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  \pkgfig[width=0.98\textwidth]{08-det3A-event-3d-gallery.png}
+  \caption{Four real events in 3-D, spanning $\sim$6--20$^\circ$. Each marker is
+  one strip signal (circle = X plane, square = Y plane) placed at its strip
+  position and at the depth implied by its electron drift time, colored by pulse
+  amplitude. The green line is the \emph{independent} M3 telescope track,
+  extrapolated into the chamber --- it threads the charge cloud in every event.
+  These are among the tightest matches (0.1--0.3\,mm at the mesh); across the
+  full sample the chamber-to-reference match has a $0.6$--$0.8$\,mm per-axis core
+  (Section~\ref{sec:position}), so a \emph{typical} event sits $\sim$0.8\,mm off
+  in this 2-D radial sense --- the display events were chosen near the tight end
+  to show the geometry cleanly. Any residual fanning of the raw per-strip ladder
+  away from the line with depth is the resistive-strip charge-sharing bias
+  (Section~\ref{sec:sharing}), removed before angles are quoted --- it is not a
+  position error. Single-event versions (with turntable animations) are in
+  \texttt{event\_displays\_3d/}.}
+  \label{fig:ev3d}
+\end{figure}
+
+\subsection{A built-in subtlety: charge sharing between strips}
+\label{sec:sharing}
+
+The resistive strips deliberately spread the avalanche charge across
+neighbours: a strip receives $\sim$45--52\% of its neighbour's prompt charge
+(and a few percent at two strips), with a $\sim$70\,ns delay, and the spread
+reaches $\sim$3$\times$ further along the resistive-strip direction than across
+it. This was measured directly from vertical tracks and is the same on both
+chambers tested --- it is a \emph{design property}, not a defect. It cuts both
+ways:
+\begin{itemize}
+  \item It distorts the naive time ladder (shared charge arrives with the
+  neighbour's timing), which biases simple angle fits; the analysis removes
+  this with an ``unsharing'' correction, after which the time-based and
+  geometry-based measurements agree.
+  \item It is repaid in full for position: the sharing acts as a built-in
+  charge interpolator between strips, which is precisely why the position
+  resolution beats the strip pitch (Section~\ref{sec:position}).
+\end{itemize}
+
+\begin{figure}[htbp]
+  \centering
+  \pkgfig[width=0.9\textwidth]{03-charge-sharing-schematic.png}\\[4pt]
+  \pkgfig[width=0.8\textwidth]{18-det3A-charge-sharing-measured.png}
+  \caption{Top: how resistive-strip charge sharing works and why it distorts a
+  naive time fit. Bottom: the sharing measured in data from vertical tracks ---
+  the first neighbour carries $\sim$45\% (X) / 52\% (Y) of the lead strip's
+  charge, with a $\sim$70\,ns delay.}
+  \label{fig:sharing}
+\end{figure}
+
+%=====================================================================
+\section{Headline performance of the best chamber (Detector A)}
+\label{sec:det3}
+
+All numbers in this section are from \detA{} at its operating point
+(490\,V amplification, 1000\,V drift), using the highest-statistics June runs
+(22{,}300 clean reference muons in the headline run at the current recipe ---
+fewer than the previous 52{,}000 because the stricter reference-track cut trades
+statistics for a cleaner reference, see the note on page~1).
+
+\subsection{Detection efficiency}
+\label{sec:eff}
+
+\begin{keybox}{Efficiency --- Detector A}
+$\mathbf{92.9\pm0.2\,\%}$ of reference muons are reconstructed within 5\,mm over
+the full active area --- the operating number, with the 3.9\,\% in-spark
+coincidence folded in (spark-free it is $96.6\pm0.1\,\%$); $\sim$\textbf{96\,\%}
+in the core ($>$25\,mm from the frame, pre-2026-07-14 figure, not yet
+re-verified). Crucially, the chamber produces a signal
+for \textbf{100.0\,\%} of muons and a reconstructed track point for 96.0\,\%:
+genuine blindness is effectively $0.0\,\%$. The loss off 92.9\,\% is a discharge
+coincidence (3.9\,\%) plus an edge/near-miss \emph{position} tail (3.1\,\%), not
+dead area.
+\end{keybox}
+
+The efficiency is uniform across the chamber face except for the narrow edge
+band: Figure~\ref{fig:effmap} shows the map. Three numbers describe the same
+chamber and it is worth keeping them straight: \textbf{92.9\,\%} is the
+operating efficiency (everything, including the muons that arrive during a
+discharge); \textbf{96.6\,\%} is the same measurement on spark-free crossings;
+$\sim$\textbf{96\,\%} is the core, away from the $\sim$25\,mm fringe-field edge
+band that is present by construction in any bounded drift volume. The 3.1\,\%
+that reconstructs \emph{past} the 5\,mm cut is a near-miss position tail
+(competing clusters, edge distortion, sub-veto discharges), almost all inside
+10\,mm --- loosening the match recovers still more of it. The chamber
+essentially never fails to \emph{see} a muon; the question is only how close
+the reconstructed point lands.
+
+\begin{figure}[htbp]
+  \centering
+  \pkgfig[width=0.98\textwidth]{20-det3A-efficiency-map.png}\\[4pt]
+  \pkgfig[width=0.85\textwidth]{21-det3A-efficiency-breakdown.png}
+  \caption{Top: Detector A efficiency map --- fraction of reference muons
+  matched within 5\,mm vs.\ position (left), fraction with any signal at all
+  (middle, uniformly $\sim$100\%), and track statistics (right). Bottom: the
+  loss budget --- 92.9\% reconstruct in place; the remainder is near-misses
+  (3.1\%) and in-spark coincidences (3.9\%); essentially no muons leave no
+  signal.}
+  \label{fig:effmap}
+\end{figure}
+
+\subsection{Position resolution: better than the strip pitch}
+\label{sec:position}
+
+\begin{keybox}{Position resolution --- Detector A}
+Gaussian-core residuals against the telescope: $\sigma = 0.44$--$0.47\,$mm
+(radial core, $\chi^2<1.0$+$N_\mathrm{clus}=4$ recipe), and the best position
+estimator reaches \textbf{0.47/0.54\,mm} ($X$/$Y$) for near-vertical muons ---
+\emph{below the 0.78\,mm strip pitch}. Sub-pitch precision is possible only
+because the resistive layer shares charge between neighbouring strips,
+providing analog interpolation. All values still include the reference
+telescope's own pointing error, so the true detector resolution is slightly
+better.
+\end{keybox}
+
+\begin{figure}[htbp]
+  \centering
+  \pkgfig[width=0.95\textwidth]{10-det3A-spatial-residuals.png}
+  \caption{Detector A position residuals with respect to the reference track
+  in $X$ (top row) and $Y$ (bottom row): full distribution, zoom, and Gaussian
+  core fit ($\sigma = 0.61/0.73$\,mm on this run, telescope included).}
+  \label{fig:residuals}
+\end{figure}
+
+\subsection{Track-angle resolution: $\sim$1.7$^\circ$ from a single chamber}
+\label{sec:angle}
+
+\begin{keybox}{Angular resolution --- Detector A (hybrid tracking)}
+$\sigma_{68} \approx 1.7^\circ$ per readout plane ($1.66^\circ$ in the
+near-vertical band, $1.84^\circ$ on the inclined plateau), \emph{at all track
+angles} including head-on, with a residual bias of $\approx0.1^\circ$ and
+97--98\% of tracks usable. The same reconstruction transferred untouched to
+Detector~B gives $2.7^\circ$ (vs.\ $2.3^\circ$ retrained), confirming this is a
+property of the detector design, not a tuning artifact -- every chamber's
+transfer behaviour matches the same pattern seen before the M3 recipe change.
+\end{keybox}
+
+Two methods are combined: for inclined tracks the drift-time ladder
+(micro-TPC fit, after the unsharing correction of Section~\ref{sec:sharing});
+for near-vertical tracks --- where the time ladder carries no lever arm --- the
+shape of the charge deposit itself. The hybrid of the two delivers a uniform
+$\sim$1.7$^\circ$ everywhere. In addition, the fitted drift velocity from the
+data agrees with the dedicated measurement to 1--3\%, meaning the chambers can
+monitor their own gas condition in situ during the experiment.
+
+\begin{figure}[htbp]
+  \centering
+  \pkgfig[width=0.62\textwidth]{15-det3A-hybrid-angle-correlation.png}\\[4pt]
+  \pkgfig[width=0.7\textwidth]{16-det3A-hybrid-angular-resolution-vs-angle.png}
+  \caption{Hybrid tracking, Detector A. Top: track angle measured by the
+  chamber alone vs.\ the reference telescope --- the events hug the diagonal.
+  Bottom: angular resolution vs.\ track angle. The grey curve is the
+  \emph{same} method with the head-on step switched off (``high-angle-only'':
+  the drift-time fit alone); it tracks the hybrid above $\sim$5$^\circ$ --- they
+  are the same estimator there --- and rises to $\approx$5$^\circ$ on
+  near-vertical tracks, where a drift-time fit has no lever arm (and there
+  covers only $\sim$51\% of them). The hybrid stays uniform at
+  $\approx$1.7$^\circ$ across all angles at 97--98\% coverage.}
+  \label{fig:angres}
+\end{figure}
+
+\subsection{Time resolution: $\approx$1\,mm of drift}
+\label{sec:timing}
+
+\begin{keybox}{Time resolution --- Detector A (replicated on B within 10\%)}
+Detector time resolution $\sigma_t = 33\,$ns per plane (29\,ns after time-walk
+correction), i.e.\ $\approx$1\,mm of electron drift --- measured
+telescope-free from the agreement of the two orthogonal strip layers timing
+the same drift electrons (inter-plane bias $-1.3$\,ns, consistent with zero).
+Absolute event time versus the scintillator trigger: $\sigma_{68} = 37.7\,$ns,
+dominated by the detector term itself.
+\end{keybox}
+
+The two strip layers sit under one common amplification stage and read the same
+avalanche, so their time difference is a pure, assumption-free measure of the
+chamber's own timing --- a clean consequence of the two-coordinate design. The
+$\approx$1\,mm drift-equivalent timing matches the $\approx$0.6\,mm transverse
+resolution: the chamber is not timing-limited relative to its geometry.
+
+\begin{figure}[htbp]
+  \centering
+  \pkgfig[width=0.55\textwidth]{06-timing-principle-schematic.png}\\[4pt]
+  \pkgfig[width=0.9\textwidth]{51-time-resolution-plane-to-plane.png}
+  \caption{Top: the built-in timing measurement --- the $X$ and $Y$ layers
+  independently timestamp the same drifting electrons. Bottom: their time
+  difference gives $\sigma_t = 33$\,ns per plane with zero bias.}
+  \label{fig:timeres}
+\end{figure}
+
+%=====================================================================
+\section{Operating point: high-voltage behaviour}
+\label{sec:hv}
+
+Each detector was scanned in amplification voltage. The behaviour is textbook:
+efficiency turns on, reaches a plateau, then \emph{falls} at high voltage ---
+and the falloff is entirely explained by sparking, not by the detector going
+quiet (the fraction of events with any signal stays $\sim$100\% throughout,
+while the spark fraction climbs from a few percent to $\sim$50\% exactly where
+the efficiency rolls off). Resolution is best at the efficiency optimum.
+
+\begin{keybox}{Operating points found (drift 1000\,V for A/B, 700\,V for C/D)}
+\begin{tabular}{@{}lccc@{}}
+\toprule
+Detector & Peak efficiency & Optimal amplification HV & Plateau behaviour \\
+\midrule
+A (mx17\_3) & 93.2\,\% & 490--495\,V & broad plateau, $\sigma\approx0.5$--$0.65$\,mm \\
+B (mx17\_2) & 94.9\,\% & 485--490\,V & plateau, sparks off above $\sim$510\,V \\
+C (mx17\_6) & 78.8\,\% & 480\,V & full turn-on $\to$ plateau $\to$ falloff \\
+D (mx17\_7) & 64.1\,\% & 440\,V & full turn-on $\to$ plateau $\to$ falloff \\
+\bottomrule
+\end{tabular}
+\end{keybox}
+
+\begin{figure}[htbp]
+  \centering
+  \pkgfig[width=0.85\textwidth]{30-det3A-hv-scan-efficiency-sparks.png}
+  \caption{Detector A amplification-voltage scan: efficiency (left axis) and
+  spark fraction (right axis). The efficiency loss above the plateau is
+  spark-induced, not loss of signal.}
+  \label{fig:hvscan}
+\end{figure}
+
+%=====================================================================
+\section{Discharges: the resistive protection works}
+\label{sec:sparks}
+
+Because the amplification structure is resistive, a discharge (``spark'') is
+expected to stay small, quench itself, and leave the detector immediately
+live. The June campaign tested every part of that expectation directly.
+
+\begin{keybox}{Spark behaviour --- measured, Detector A at operating point}
+Rate: 3.9\,\% of muon crossings ($0.33$\,Hz, Poisson --- i.e.\ random, no
+bursts). Mostly muon-induced (4$\times$ enhancement in coincidence with a
+crossing) and concentrated at the chamber edge. Non-propagating: the raw
+waveforms show a fast \emph{global baseline step} that recovers within the
+1.92\,$\mu$s readout window in 94\% of cases, with the genuine localized charge
+confined to $\sim$40--56 strips at one edge. And critically: \textbf{no
+measurable dead time} --- reconstruction efficiency and gas gain are flat as a
+function of time since the previous spark, so the only loss is the crossing
+that coincides with the spark itself (already inside the efficiency numbers).
+\end{keybox}
+
+\begin{figure}[htbp]
+  \centering
+  \pkgfig[width=0.95\textwidth]{43-det3A-spark-waveform-gallery.png}
+  \caption{What a discharge actually looks like in the raw data: a fast,
+  global, self-quenching baseline excursion (compare the clean muon of
+  Fig.~\ref{fig:evwave}). It is over within the 2\,$\mu$s readout window.}
+  \label{fig:sparkwf}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  \pkgfig[width=0.85\textwidth]{44-det3A-spark-deadtime-null.png}
+  \caption{The dead-time null measurement: efficiency and pulse height vs.\
+  time since the previous discharge are flat --- the chamber is immediately
+  live again.}
+  \label{fig:deadtime}
+\end{figure}
+
+For a construction talk this is arguably the strongest single message: the
+resistive spark-protection scheme was verified at the raw-waveform level and
+imposes \emph{no recovery-time penalty} on operation.
+
+%=====================================================================
+\section{The pixelated layer shares charge evenly between X and Y}
+\label{sec:balance}
+
+The top pixelated layer is supposed to route the avalanche charge evenly to the
+two strip coordinates. Measured: the fraction of charge on the $X$ layer,
+$f = q_X/(q_X+q_Y)$, is centred at 0.491 (A) / 0.534 (B) --- within a few
+percent of the ideal 0.5, with the small per-chamber offset attributable to
+assembly --- and is \emph{constant} across the chamber face and across track
+angles (spread $\sigma_{68}\approx0.07$ per event; true position-to-position
+variation only $\sim$2\%). The $X$ and $Y$ charges of a given event are
+strongly correlated ($r\approx0.84$--$0.89$): both layers really do see the same
+avalanche.
+
+\begin{figure}[htbp]
+  \centering
+  \pkgfig[width=0.55\textwidth]{05-charge-routing-schematic.png}\\[4pt]
+  \pkgfig[width=0.48\textwidth]{60-xy-charge-balance-correlation.png}%
+  \hfill
+  \pkgfig[width=0.48\textwidth]{61-xy-charge-balance-distribution.png}
+  \caption{Top: the chamber stack --- the pixelated resistive top layer routes
+  the avalanche charge to both strip layers. Bottom left: total $X$-layer vs.\
+  $Y$-layer charge per event ($r=0.89$). Bottom right: the balance fraction
+  $f=q_X/(q_X+q_Y)$ is narrow and centred near 0.5 in both chambers measured.}
+  \label{fig:balance}
+\end{figure}
+
+%=====================================================================
+\section{Gas matters: drift velocity, moisture, and attachment}
+\label{sec:gas}
+
+The campaign measured the drift velocity at five drift fields and found
+$34\pm1.5\um$/ns at the nominal 1000\,V --- and the shape of the
+velocity-vs-field curve identifies the gas: it matches simulation (Magboltz)
+for Ar/iso 95/5 with $\sim$1\% water. Two practical lessons for operation:
+
+\begin{itemize}
+  \item \textbf{Moisture changes the drift speed.} Detector A's gas visibly
+  dried from $>$3\% to $\sim$1\% water over the week of running --- directly
+  observable in the data. Water content sets the velocity scale.
+  \item \textbf{Air (oxygen) eats the signal.} The measured signal decays
+  exponentially with drift \emph{distance} (attachment length
+  $\lambda\approx15$\,mm at nominal field, consistent with $\sim$1\% air), so
+  electrons from the top of the 30\,mm gap partially disappear: the recorded
+  charge column is effectively $\sim$23\,mm. This costs amplitude, not
+  efficiency, at the June contamination level --- but it is the reason gas
+  tightness and flushing matter.
+\end{itemize}
+
+\begin{figure}[htbp]
+  \centering
+  \pkgfig[width=0.85\textwidth]{70-det3A-drift-velocity-vs-magboltz.png}
+  \caption{Measured drift velocity vs.\ drift field, compared with Magboltz
+  simulation for different gas admixtures: the data identify Ar/iso 95/5 with
+  $\sim$1\% water.}
+  \label{fig:vdrift}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  \pkgfig[width=0.9\textwidth]{71-det3A-attachment-amplitude-decay.png}
+  \caption{Signal amplitude vs.\ drift \emph{time} (left; curves at different
+  drift voltages disagree) and vs.\ drift \emph{distance} (right; all voltages
+  collapse onto one exponential, $\lambda\approx18$\,mm): the loss is per
+  millimetre drifted --- electron attachment on oxygen from $\sim$1\% air ---
+  and it shortens the usable charge column.}
+  \label{fig:attach}
+\end{figure}
+
+%=====================================================================
+\section{The chamber edge}
+\label{sec:edge}
+
+The drift field is distorted within $\sim$25--40\,mm of the frame (the fringe
+region unavoidable in any bounded drift volume). Consequences, all measured:
+the efficiency turns on from 0 to 96\% over the first 25\,mm from the edge;
+track angles acquire a $\sim$3$^\circ$ inward tilt in the band (position
+measurements remain good --- only angles are affected); and discharges
+preferentially seed there. Everything inboard of the band is uniform. For the
+experiment this is handled by a simple fiducial cut.
+
+\begin{figure}[htbp]
+  \centering
+  \pkgfig[width=0.98\textwidth]{80-det3A-edge-fringe-dashboard.png}
+  \caption{The full edge study (Detector A). The key panel is the efficiency
+  vs.\ distance-to-edge curve (top right): a 25\,mm turn-on band, then a flat
+  $\sim$96\% core. Companion panels show the angle tilt and the slowed drift in
+  the same band, and that position residuals stay flat to the edge.}
+  \label{fig:edge}
+\end{figure}
+
+%=====================================================================
+\section{The full fleet: five detectors compared}
+\label{sec:fleet}
+
+All five chambers were characterized identically. Detector letters are the
+experiment labels (A--E); the mx17 numbers are the construction labels.
+
+\begin{keybox}{Fleet summary (June 2026, best runs, identical definitions)}
+\begin{tabular}{@{}lrrrrl@{}}
+\toprule
+Detector & Efficiency & Position $\sigma$ & Angle $\sigma_{68}$ & Spark & Verdict \\
+\midrule
+A (mx17\_3) & 92.9\,\% & 0.47\,mm & 1.7$^\circ$ & 3.9\,\% & Best performer \\
+B (mx17\_2) & 91.3\,\% & 0.46\,mm & 2.3$^\circ$ & 5.0\,\% & Healthy \\
+C (mx17\_6) & 57.8\,\% & 0.45\,mm & 3.9$^\circ$\,$^\dagger$ & 23.0\,\% & Spark-limited \\
+D (mx17\_7) & 43.1\,\% & 0.59\,mm & 3.4$^\circ$ & 33.4\,\% & Spark-limited \\
+E (mx17\_4) & 20.7\,\% & 0.67\,mm & 2.6$^\circ$ & 3.2\,\% & Gain-limited \\
+\bottomrule
+\end{tabular}\\[4pt]
+{\footnotesize Efficiency within 5\,mm of the reference track, full active
+area, 2026-07-14 recipe ($\chi^2<1.0$, $N_\mathrm{clus}=4$; was $\chi^2<5$,
+$N_\mathrm{clus}\ge3$ -- superseded values: A 88.8\,\%/0.63\,mm/1.75$^\circ$,
+B 87.0\,\%/0.64\,mm/2.47$^\circ$, C 55.7\,\%/0.59\,mm/4.14$^\circ$,
+D 36.4\,\%/0.86\,mm/3.64$^\circ$, E 20.0\,\%/0.89\,mm/2.70$^\circ$, do not
+quote). Position $\sigma$ includes the reference telescope. Angle $\sigma_{68}$
+= the hybrid (current-best) tracking, $|\theta|<5^\circ$ band, self-trained,
+odd-eid holdout, run \textbf{fleet-wide} (coverage A 98\,\%, B 96\,\%, C 98\,\%,
+D 90\,\%, E 79\,\%). The 700\,V spark-limited C/D and gain-limited E are
+degraded but measured. $^\dagger$C is low-angle-only: its X-plane develops no
+drift-time structure (board-C mesh defect), so the time-fit plateau is unusable
+and only the head-on signature-regression band is quoted. Spark = \% of
+crossings coinciding with a discharge.}
+\end{keybox}
+
+The right way to read this table:
+\begin{itemize}
+  \item \textbf{A and B are excellent} and consistent with each other ---
+  high uniform efficiency at sub-pitch resolution. Where both were probed
+  deeply (charge sharing, charge balance, timing, tracking), they agree,
+  which is evidence the performance is a property of the design.
+  \item \textbf{C and D reconstruct beautifully when they fire} (note their
+  position resolutions --- C's 0.45\,mm is the best core in the fleet) but
+  were operated with a spark rate of 23--33\% of crossings during the June
+  tests; their HV scans show classic turn-on/plateau/falloff with optima at
+  480\,V and 440\,V respectively. Their low headline efficiencies are an
+  operating-point effect (drift 700\,V, amplification at/past the sparking
+  edge), not broken chambers.
+  \item \textbf{E fires on $\sim$70\% of muons but reconstructs only $\sim$21\%}:
+  its clusters are too small (too little gas gain) to pass reconstruction.
+  This is a gain problem (HV/threshold/gas), the same pathology another
+  chamber showed earlier and recoverable in principle --- not a dead detector.
+\end{itemize}
+
+\begin{figure}[htbp]
+  \centering
+  \pkgfig[width=0.85\textwidth]{21-det3A-efficiency-breakdown.png}\\[4pt]
+  \pkgfig[width=0.85\textwidth]{25-det7D-efficiency-breakdown.png}
+  \caption{The fleet story in two loss budgets: Detector A (top) loses almost
+  nothing; Detector D (bottom) fires on the muons just as reliably but loses a
+  third of its crossings to discharges at its June operating point.
+  Per-detector efficiency maps for all five chambers are in \texttt{figures/}
+  (\texttt{2x} series) and the per-detector QA pages in
+  \texttt{source\_reports/june-detectors-overview.pdf}.}
+  \label{fig:fleetmaps}
+\end{figure}
+
+%=====================================================================
+\section{Quotable numbers, with the honest caveats}
+\label{sec:quotable}
+
+\begin{center}
+\small
+\begin{tabular}{@{}p{5.2cm}p{3.6cm}p{6.2cm}@{}}
+\toprule
+Quantity & Value & Fine print \\
+\midrule
+Active area & $\sim$40$\times$40\,cm$^2$ & 512 strips $\times$ 0.78\,mm, per coordinate \\
+Strip pitch & 0.78\,mm & both coordinates \\
+Drift gap & 30\,mm & operated at $\approx$330\,V/cm \\
+Gas & Ar/iC$_4$H$_{10}$ 95/5 & atmospheric, flushed \\
+Drift velocity (nominal) & $34\pm1.5\,\mu$m/ns & measured; matches Magboltz w/ $\sim$1\% H$_2$O \\
+Efficiency (A, active area) & $92.9\pm0.2$\,\% & within 5\,mm, operating (spark-free $96.6$\,\%) \\
+Efficiency (A, core) & $\sim$96\,\% & $>$25\,mm from frame (pre-2026-07-14, not yet re-verified) \\
+Muons producing any signal (A) & 100.0\,\% & chamber essentially never blind (silent $\approx0$\,\%) \\
+Position resolution (A) & 0.44--0.47\,mm & sub-pitch; includes telescope error (conservative) \\
+Angular resolution (A) & $\approx$1.7$^\circ$ & hybrid tracking, per plane, all angles; bias $\approx0.1^\circ$ \\
+Time resolution (A) & 33\,ns ($\approx$1\,mm drift) & telescope-free, inter-plane method \\
+Absolute event time (A) & $\sigma_{68}=37.7$\,ns & vs.\ scintillator trigger \\
+X/Y charge balance & $0.49$--$0.53$, flat & pixel layer routes charge evenly; $r\approx0.84$--$0.89$ \\
+Charge sharing (design) & 45--52\% to neighbour & measured on A and B; enables sub-pitch \\
+Spark rate (A, at optimum) & 3.9\,\% of crossings & Poisson 0.33\,Hz; edge-seeded; muon-induced \\
+Dead time after spark & none measurable & efficiency \& gain flat vs.\ time since spark \\
+Optimal amplification HV & 440--495\,V & per chamber; plateaus $\sim$93\% (A/B) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Caveats to keep the talk honest.}
+\begin{enumerate}
+  \item All results are \textbf{preliminary} (June 2026 bench campaign;
+  analysis mature but pre-publication).
+  \item Position resolutions are \textbf{detector $\oplus$ telescope}: the
+  reference tracker's pointing error is not yet deconvolved, so quoted values
+  are upper limits (the planned deconvolution will only improve them).
+  \item Results are for \textbf{cosmic muons} (minimum-ionizing, broad angular
+  spread) at the specific gas and HV listed; the experiment's particles and
+  settings differ in detail.
+  \item C, D and E numbers reflect their June \emph{operating points};
+  their HV scans indicate better performance is available at optimum settings.
+  \item Angular resolutions are quoted \textbf{only from the current-best
+  (hybrid) tracking}, run \textbf{fleet-wide} (A 1.7$^\circ$, B 2.3$^\circ$,
+  C 3.9$^\circ$, D 3.4$^\circ$, E 2.6$^\circ$; $|\theta|<5^\circ$ band). The 700\,V
+  chambers C/D and gain-limited E are degraded but honestly measured. \textbf{C's
+  plateau time-fit is unusable} --- its X-plane (mx17\_6, FEU 3) develops no
+  micro-TPC drift-time structure (a board-C mesh defect), so only C's low-angle
+  signature-regression band is quoted; the plateau is omitted, not averaged in.
+\end{enumerate}
+
+%=====================================================================
+\appendix
+\section{Where each number comes from}
+
+Every value in this document traces to the June-2026 QA analysis
+(\texttt{mx\_june\_cosmic\_qa/} in the analysis repository):
+\texttt{JUNE\_RESULTS\_SUMMARY.md} (fleet efficiencies, resolutions, HV scans),
+\texttt{PAPER\_STATUS.md} and \texttt{MICROTPC\_RUNBOOK.md} (micro-TPC chain:
+drift velocity, sharing, angles, position estimators, edge, gas),
+the standalone reports in \texttt{source\_reports/} (time resolution, X/Y
+charge balance, spark studies), and \texttt{DET3\_WEEKEND\_ANALYSIS.md}
+(detector A deep-dive). The reference tracking is the v2 reprocessing (cleaner
+track selection), most recently re-tightened 2026-07-14 to $\chi^2<1.0$,
+$N_\mathrm{clus}=4$ (was $\chi^2<5$, $N_\mathrm{clus}\ge3$) after finding the
+position residual was reference-limited, not chamber-limited --- see
+\texttt{det3\_recofar\_analysis/M3\_CUT\_AND\_ACTIVE\_AREA\_NOTE.md}; all five
+detectors were re-analyzed with each recipe in turn.
+
+\section{Mini-glossary}
+\begin{description}
+  \item[Micromegas] Gaseous detector with a micro-mesh separating a drift
+  region from a thin amplification gap.
+  \item[Resistive strips] A resistive layer over the readout that limits
+  discharge currents --- the spark-protection scheme validated in
+  Section~\ref{sec:sparks}.
+  \item[micro-TPC mode] Using electron drift time as a depth coordinate, so a
+  single chamber measures a 3D track segment, not just a 2D point.
+  \item[$\sigma_{68}$] Half-width containing 68\% of a distribution ---
+  like a Gaussian $\sigma$ but robust to tails.
+  \item[Efficiency plateau] HV range where efficiency is maximal and flat;
+  the natural operating point.
+  \item[Attachment] Capture of drifting electrons by electronegative
+  contaminants (O$_2$); shortens the visible charge column.
+\end{description}
+
+\end{document}

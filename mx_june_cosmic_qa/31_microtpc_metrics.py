@@ -59,7 +59,7 @@ REBUILD = '--rebuild' in sys.argv
 SAMPLE_NS = 60.0
 MIN_STRIPS_AFTER = 3
 RES_CUT_MM = 10.0
-CHI2_CUT = 5.0   # M3 v2 recipe (chi2<5; NClus>=3 automatic in M3RefTracking)
+from qa_config import M3_CHI2_CUT as CHI2_CUT, M3_MIN_NCLUS  # centralized M3 recipe (see qa_config.py)
 PITCH_MM = 0.78
 THR_HIT = 100.0
 THR_WF = 150.0
@@ -77,8 +77,10 @@ OUT = CFG.out_dir(f'alignment_tpc{tag}', 'microtpc_metrics')
 DEC_DIR = os.path.join(CFG.BASE_PATH, CFG.RUN, CFG.SUB_RUN, 'decoded_root')
 SEG_CSV = os.path.join(OUT, 'microtpc_segments.csv')
 # measured in 26_unsharing_analysis.py (design property; det2 validated within a few %)
-CSHARE = {7: (0.449, 0.052), 8: (0.516, 0.151), 6: (0.449, 0.052),
-          3: (0.449, 0.052), 4: (0.516, 0.151)}
+CSHARE = {7: (0.449, 0.052),                      # det3 X (design)
+          8: (0.432, 0.112),                      # det4 Y measured (det7 Y was 0.513/0.220)
+          6: (0.370, 0.047),                      # det4 X measured 2026-07-12 (det7 X was 0.263/0.058)
+          3: (0.250, 0.048), 4: (0.451, 0.204)}   # det6 X/Y measured 2026-07-12
 
 
 def robust_line(x, y, n_iter=4, clip=3.0):
@@ -167,7 +169,8 @@ def build_segment_table(ref, det):
             t = uproot.open(fn)['nt']
             eids_all = t.arrays(['eventId'], library='np')['eventId']
             a0 = t.arrays(['amplitude'], entry_stop=N_PED_EVENTS, library='np')['amplitude']
-            ped = np.median(np.stack([a.reshape(32, 512) for a in a0]), axis=(0, 1))
+            ped = np.median(np.stack([a.reshape(32, 512) for a in a0
+                                      if a.size == 32 * 512]), axis=(0, 1))
             for lo in range(0, t.num_entries, CHUNK):
                 hi = min(lo + CHUNK, t.num_entries)
                 want = [i for i in range(lo, hi) if int(eids_all[i]) in ref]
@@ -178,6 +181,8 @@ def build_segment_table(ref, det):
                 for i in want:
                     j = i - lo
                     eid = int(arr['eventId'][j])
+                    if arr['amplitude'][j].size != 32 * 512:
+                        continue                         # malformed multi-frame event
                     wfm = arr['amplitude'][j].reshape(32, 512).astype(np.float32) - ped
                     cms = np.median(wfm.reshape(32, 8, 64), axis=2)
                     wfm -= np.repeat(cms, 64, axis=1)
@@ -297,7 +302,7 @@ def main():
     align_json = os.path.join(CFG.OUT_BASE, f'alignment_tpc{tag}', 'alignment.json')
     results = pickle.load(open(cache_res, 'rb'))
     best = cm.load_alignment(align_json)
-    rays = M3RefTracking(CFG.m3_tracking_dir, chi2_cut=CHI2_CUT)
+    rays = M3RefTracking(CFG.m3_tracking_dir, chi2_cut=CHI2_CUT, min_nclus=M3_MIN_NCLUS)
     xang, _, anum = get_xy_angles(rays.ray_data)
     xang = best.ref_x_sign * np.array(xang)
     cm.attach_reference_positions(results, rays, best, xang, anum)

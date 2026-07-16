@@ -24,6 +24,7 @@ The 6-23 scan is excluded (degraded M3 reference).
 import os
 import re
 import sys
+import shutil
 
 import matplotlib
 matplotlib.use('Agg')
@@ -41,6 +42,23 @@ DEFAULT_KEYS = ['g_det2', 'g_det3',
                 'g_det6_hv', 'g_det6_long',
                 'g_det7_hv', 'g_det7_long']
 OUT_DEFAULT = '/home/dylan/x17/cosmic_bench/Analysis/june_hv_scans.pdf'
+# also drop a copy into the engineer conference package (skip with --no-package)
+PKG_COPY_NAME = 'june-hv-scans.pdf'
+
+
+def mirror_to_package(out, pkg_name):
+    """Copy the freshly-built PDF into engineer_package/source_reports/ so the
+    conference compilation always tracks the latest analysis. No-op if the
+    package dir is absent or --no-package is passed."""
+    if '--no-package' in sys.argv:
+        return
+    pkg_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                           'engineer_package', 'source_reports')
+    if not os.path.isdir(pkg_dir):
+        return
+    dst = os.path.join(pkg_dir, pkg_name)
+    shutil.copy2(out, dst)
+    print(f'  mirrored -> {dst}')
 DET_COLOR = {'2': '#1f77b4', '3': '#2ca02c', '4': '#9467bd', '6': '#d62728', '7': '#ff7f0e'}
 SCAN_COLORS = ['#1f77b4', '#d62728', '#2ca02c', '#9467bd']  # per-scan, on a detector page
 
@@ -236,6 +254,7 @@ def main():
         for detnum in order:
             detector_page(pdf, detnum, groups[detnum])
     print(f'Wrote {1 + len(order)} pages -> {out}')
+    mirror_to_package(out, PKG_COPY_NAME)
 
 
 if __name__ == '__main__':

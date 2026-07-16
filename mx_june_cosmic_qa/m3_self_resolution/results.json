@@ -1,0 +1,141 @@
+{
+  "run": "MX17 det3 weekend saturday long (490V/1000V), files 0-3",
+  "z_layers": [
+    1302.0,
+    1185.0,
+    144.0,
+    24.0
+  ],
+  "coords": {
+    "X": {
+      "n_tracks": 19335,
+      "layers": [
+        {
+          "layer": 0,
+          "z": 1302.0,
+          "s_incl_um": 278.33757853801967,
+          "s_excl_um": 618.3434940704458,
+          "sigma_geomean_um": 414.8592904158062
+        },
+        {
+          "layer": 1,
+          "z": 1185.0,
+          "s_incl_um": 304.30816626396836,
+          "s_excl_um": 553.2909906687802,
+          "sigma_geomean_um": 410.33031423572754
+        },
+        {
+          "layer": 2,
+          "z": 144.0,
+          "s_incl_um": 303.9910986009995,
+          "s_excl_um": 551.5617869416444,
+          "sigma_geomean_um": 409.47511958447603
+        },
+        {
+          "layer": 3,
+          "z": 24.0,
+          "s_incl_um": 275.13770729805776,
+          "s_excl_um": 613.1569826190735,
+          "sigma_geomean_um": 410.7342284392755
+        }
+      ],
+      "sigma_mean_um": 411.3497381688213,
+      "sigma_equal_global_um": 411.20956560324663,
+      "simsolve_cond": 2.0569125000171164e+16
+    },
+    "Y": {
+      "n_tracks": 23648,
+      "layers": [
+        {
+          "layer": 0,
+          "z": 1302.0,
+          "s_incl_um": 342.8776363931188,
+          "s_excl_um": 761.7230732535705,
+          "sigma_geomean_um": 511.05558107048074
+        },
+        {
+          "layer": 1,
+          "z": 1185.0,
+          "s_incl_um": 373.37030371482126,
+          "s_excl_um": 678.8592884802152,
+          "sigma_geomean_um": 503.4539688188836
+        },
+        {
+          "layer": 2,
+          "z": 144.0,
+          "s_incl_um": 330.65322212635,
+          "s_excl_um": 599.9375734794037,
+          "sigma_geomean_um": 445.38892189369585
+        },
+        {
+          "layer": 3,
+          "z": 24.0,
+          "s_incl_um": 306.58000027878523,
+          "s_excl_um": 683.2275726520309,
+          "sigma_geomean_um": 457.67227293570386
+        }
+      ],
+      "sigma_mean_um": 479.392686179691,
+      "sigma_equal_global_um": 479.73602486581456,
+      "simsolve_cond": 2.0569125000171164e+16
+    }
+  },
+  "ms": {
+    "x_over_X0_estimate": 0.02320118343195266,
+    "theta0_mrad_at_1GeV": 1.775281428909864,
+    "theta0_mrad_at_3GeV": 0.5917604763032878,
+    "kink": {
+      "X": {
+        "s_dslope_mrad": 7.423312132732274,
+        "res_only_mrad": 6.944902214481596,
+        "theta_ms_mrad": 2.6218116353504137,
+        "theta_ms_ul_mrad": 2.726861416051218
+      },
+      "Y": {
+        "s_dslope_mrad": 9.516995661679863,
+        "res_only_mrad": 8.118947534202704,
+        "theta_ms_mrad": 4.965470507544794,
+        "theta_ms_ul_mrad": 5.048837460679081
+      }
+    }
+  },
+  "pointing": {
+    "X": {
+      "at_DUT": {
+        "232 (bottom slot)": 255.2485371505261,
+        "702 (mid-gap)": 206.2072998575791
+      }
+    },
+    "Y": {
+      "at_DUT": {
+        "232 (bottom slot)": 282.1771524575167,
+        "702 (mid-gap)": 242.4315529907893
+      }
+    }
+  },
+  "deconvolution": {
+    "232 (bottom slot)": {
+      "P_M3_core_um": 268.71284480402136,
+      "dut_resid_core_um": 470.0,
+      "sigma_DUT_um": 385.60784099565444,
+      "reference_fraction_of_var": 0.3268745720356273
+    },
+    "702 (mid-gap)": {
+      "P_M3_core_um": 224.3194264241842,
+      "dut_resid_core_um": 470.0,
+      "sigma_DUT_um": 413.01427932787624,
+      "reference_fraction_of_var": 0.22779178393515162
+    }
+  },
+  "sigma_DUT_intrinsic_um": 399.31106016176534,
+  "crossover": {
+    "X": {
+      "z_up_mm": 1629.446736684171,
+      "z_down_mm": -309.6399099774943
+    },
+    "Y": {
+      "z_up_mm": 1372.979182295574,
+      "z_down_mm": -178.70030007501873
+    }
+  }
+}

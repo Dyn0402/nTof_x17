@@ -48,8 +48,10 @@ Usage: ../.venv/bin/python 34_hybrid_tracking.py sat_det3 [--veto=50]
                                only the physical calibrations v_prod/v_seg/b
                                are remeasured locally). The honest
                                cross-detector overfitting test.
+       [--dump-events]         also write hybrid_events.csv: per-event, per-plane
+                               ref + every estimator + odd-eid holdout flag.
 Output: <alignment_tpc_vetoN>/hybrid/ hybrid_tracking.png,
-        hybrid_summary.csv + stdout tables
+        hybrid_summary.csv (+ hybrid_events.csv with --dump-events) + stdout tables
 """
 import os
 import sys
@@ -70,7 +72,7 @@ from M3RefTracking import M3RefTracking, get_xy_angles
 
 CFG = config_from_argv()
 VETO = next((int(a.split('=')[1]) for a in sys.argv if a.startswith('--veto=')), 50)
-CHI2_CUT = 5.0
+from qa_config import M3_CHI2_CUT as CHI2_CUT, M3_MIN_NCLUS  # centralized M3 recipe (see qa_config.py)
 RES_CUT_MM = 10.0
 TAN_SWITCH = 0.09          # ~5 deg: below this the time fit has no lever arm
 PLATEAU_TAN = (0.12, 0.55)
@@ -79,6 +81,7 @@ FEATS = ['tot_lead', 'q_frac', 'n_u', 'n_raw', 'a_asym', 'a_lead', 't_delay']
 
 SAVE_MODEL = '--save-model' in sys.argv
 MODEL_IN = next((a.split('=', 1)[1] for a in sys.argv if a.startswith('--model=')), None)
+DUMP_EVENTS = '--dump-events' in sys.argv   # persist per-event hybrid predictions
 
 tag = f'_veto{VETO}'
 OUT = CFG.out_dir(f'alignment_tpc{tag}', 'hybrid')
@@ -129,7 +132,7 @@ def main():
     align_json = os.path.join(CFG.OUT_BASE, f'alignment_tpc{tag}', 'alignment.json')
     results = pickle.load(open(cache_res, 'rb'))
     best = cm.load_alignment(align_json)
-    rays = M3RefTracking(CFG.m3_tracking_dir, chi2_cut=CHI2_CUT)
+    rays = M3RefTracking(CFG.m3_tracking_dir, chi2_cut=CHI2_CUT, min_nclus=M3_MIN_NCLUS)
     xang, _, anum = get_xy_angles(rays.ray_data)
     xang = best.ref_x_sign * np.array(xang)
     cm.attach_reference_positions(results, rays, best, xang, anum)
@@ -215,16 +218,27 @@ def main():
         s_lin = np.full(len(d), np.nan)
         s_lin[ok] = Z[ok] @ w[:-1] + w[-1]
         if not MODEL_IN:
-            # monotonic binned-median calibration on the training half
+            # monotonic binned-median calibration on the training half. min-per-bin
+            # scales down for low-stats detectors (e.g. gain-limited det4 under the
+            # stricter M3 cut) rather than silently producing an empty calibration.
+            n_train_ok = int((ok & train).sum())
+            min_per_bin = 50 if n_train_ok >= 2500 else max(10, n_train_ok // 50)
             qs = np.nanquantile(s_lin[ok & train], np.linspace(0.02, 0.98, 25))
             ctr_s, med_t = [], []
             for lo_, hi_ in zip(qs[:-1], qs[1:]):
                 m = ok & train & (s_lin >= lo_) & (s_lin < hi_)
-                if m.sum() > 50:
+                if m.sum() > min_per_bin:
                     ctr_s.append(np.median(s_lin[m])); med_t.append(np.median(y[m]))
             ctr_s, med_t = np.array(ctr_s), np.maximum.accumulate(np.array(med_t))
         tan_reg_abs = np.full(len(d), np.nan)
-        tan_reg_abs[ok] = np.interp(s_lin[ok], ctr_s, med_t)
+        if len(ctr_s) >= 2:
+            tan_reg_abs[ok] = np.interp(s_lin[ok], ctr_s, med_t)
+        else:
+            # too few training events for even a relaxed monotonic calibration --
+            # fall back to the raw linear regression score (uncalibrated magnitude).
+            print(f'  plane {p}: WARNING -- only {len(ctr_s)} calibration bin(s) '
+                  f'({n_train_ok} training events); using uncalibrated |tan| regression score')
+            tan_reg_abs[ok] = np.clip(s_lin[ok], 0, None)
 
         # (4) sign at low angle: Fisher on signed asymmetries, trained on
         #     2-10 deg tracks (even eids) unless transferred; fallback sign =
@@ -335,6 +349,24 @@ def main():
     sfx = '_transfer' if MODEL_IN else ''
     pd.DataFrame(summary).to_csv(os.path.join(OUT, f'hybrid_summary{sfx}.csv'),
                                  index=False)
+
+    # ---- optional per-event hybrid prediction dump (--dump-events) ----
+    # Backward-compatible: nothing changes unless the flag is given. Persists the
+    # per-plane estimator table (ref + every estimator) with a holdout flag so
+    # downstream studies use the frozen predictions instead of recomputing.
+    if DUMP_EVENTS:
+        cols = ['tan_ref', 'S_prod', 'S_seg', 'tan_prod', 'tan_seg',
+                'tan_reg', 'tan_hyb']
+        parts = []
+        for p, d in est.items():
+            sub = d[[c for c in cols if c in d.columns]].copy()
+            sub.insert(0, 'plane', p)
+            sub['holdout'] = (sub.index.values % 2 == 1)   # odd eids = evaluated
+            parts.append(sub)
+        dump = pd.concat(parts).reset_index().rename(columns={'index': 'eid'})
+        dpath = os.path.join(OUT, f'hybrid_events{sfx}.csv')
+        dump.to_csv(dpath, index=False)
+        print(f'per-event predictions dumped: {dpath} ({len(dump):,} plane-rows)')
 
     # ---- figure ----
     fig, axes = plt.subplots(2, 3, figsize=(18.5, 10.5))

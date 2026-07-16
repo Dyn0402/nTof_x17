@@ -1493,6 +1493,7 @@ def plot_efficiency_map(
     csv_out_path: Optional[str] = None,
     active_region: Optional[Tuple[float, float, float, float]] = None,
     out_dir: Optional[str] = None,
+    det_name: Optional[str] = None,
 ) -> None:
     """
     Plot a 2-D efficiency map and track density side-by-side.
@@ -1592,6 +1593,17 @@ def plot_efficiency_map(
             ax.set_xlim(x_lo, x_hi)
             ax.set_ylim(y_lo, y_hi)
 
+    # ---- MX17 nominal 40x40 cm / measured true active-area outlines ----
+    has_area_outlines = False
+    try:
+        from common.mx17_active_area import draw_outlines, alignment_transform
+        area_transform = alignment_transform(params)
+        for ax in axes:
+            draw_outlines(ax, transform=area_transform, det_name=det_name)
+        has_area_outlines = True
+    except ImportError:
+        pass  # common/ not on sys.path in this caller's context -- skip the overlay
+
     # ---- Active region: red box + mean efficiency annotation ----
     if active_region is not None:
         from matplotlib.patches import Rectangle
@@ -1599,7 +1611,8 @@ def plot_efficiency_map(
         for ax in axes:
             ax.add_patch(Rectangle(
                 (ar_x0, ar_y0), ar_x1 - ar_x0, ar_y1 - ar_y0,
-                linewidth=1.5, edgecolor='red', facecolor='none', linestyle='--',
+                linewidth=1.5, edgecolor='orange', facecolor='none', linestyle='--',
+                label='empirical footprint' if ax is axes[0] else None,
             ))
 
         # Mean efficiency: integrated hits / tracks over bins inside active region
@@ -1623,6 +1636,9 @@ def plot_efficiency_map(
             bbox=dict(boxstyle='round,pad=0.3', facecolor='white', alpha=0.75, edgecolor='red'),
         )
 
+    if has_area_outlines or active_region is not None:
+        axes[0].legend(loc='upper right', framealpha=0.9, fontsize=7)
+
     fig.tight_layout()
     fname = re.sub(r'[^\w]+', '_', title).strip('_').lower() + '.png'
     _save_fig(fig, out_dir, fname)
@@ -1641,6 +1657,7 @@ def plot_resolution_map(
     radius_cut_mm: Optional[float] = None,
     title: str = '2D Spatial Resolution Map',
     out_dir: Optional[str] = None,
+    det_name: Optional[str] = None,
 ) -> None:
     """
     Plot a 2-D map of the spatial resolution (Gaussian σ of the residual
@@ -1761,6 +1778,16 @@ def plot_resolution_map(
     axes[2].set_ylabel('Reference Y [mm]')
     axes[2].set_title(f'Hit statistics per bin\n(grey = < {min_hits_per_bin} hits)')
 
+    # ---- MX17 nominal 40x40 cm / measured true active-area outlines ----
+    try:
+        from common.mx17_active_area import draw_outlines, alignment_transform
+        area_transform = alignment_transform(params)
+        for ax in axes:
+            draw_outlines(ax, transform=area_transform, det_name=det_name)
+        axes[0].legend(loc='upper right', framealpha=0.9, fontsize=7)
+    except ImportError:
+        pass  # common/ not on sys.path in this caller's context -- skip the overlay
+
     # Shrink axes to the bounding box of non-masked bins
     valid_xi, valid_yi = np.where(count_map >= min_hits_per_bin)
     if len(valid_xi) > 0:
@@ -1788,6 +1815,8 @@ def plot_resolution_map_sliding(
     title: str = '2D Sliding-Window Resolution Map',
     out_dir: Optional[str] = None,
     sigma_vmax: Optional[float] = None,
+    params: Optional['AlignmentParams'] = None,
+    det_name: Optional[str] = None,
 ) -> None:
     """
     Compute a smooth 2-D spatial resolution map using a sliding radial kernel.
@@ -1813,6 +1842,8 @@ def plot_resolution_map_sliding(
     kernel_radius_mm : radius of the collection kernel [mm] (default 5.0)
     min_hits         : minimum events in kernel to attempt a Gaussian fit
     title            : plot title
+    params           : optional AlignmentParams; if given, draws the MX17 nominal
+                       40x40 cm / measured true active-area outlines on each panel
     """
     # ---- Collect valid (ref_x, ref_y, dx, dy) arrays ----
     ref_x_pts, ref_y_pts, dx_pts, dy_pts = [], [], [], []
@@ -1916,6 +1947,17 @@ def plot_resolution_map_sliding(
     axes[2].set_xlabel('Reference X [mm]')
     axes[2].set_ylabel('Reference Y [mm]')
     axes[2].set_title(f'Events per kernel\n(grey = < {min_hits})')
+
+    # ---- MX17 nominal 40x40 cm / measured true active-area outlines ----
+    if params is not None:
+        try:
+            from common.mx17_active_area import draw_outlines, alignment_transform
+            area_transform = alignment_transform(params)
+            for ax in axes:
+                draw_outlines(ax, transform=area_transform, det_name=det_name)
+            axes[0].legend(loc='upper right', framealpha=0.9, fontsize=7)
+        except ImportError:
+            pass  # common/ not on sys.path in this caller's context -- skip the overlay
 
     # Shrink axes to the bounding box of non-masked grid points
     valid_xi, valid_yi = np.where(count_map >= min_hits)
@@ -2887,6 +2929,74 @@ def _plot_event(df_event: pd.DataFrame, result: EventResult, event_id: int, out_
     _save_fig(fig, out_dir, f'event_{event_id}_strips.png')
 
 
+def _rotate_ref_tangents(result: EventResult, params: AlignmentParams):
+    """Rotate the reference-track tangents from the aligned/M3 frame into the
+    raw strip frame, using the same rotation that maps aligned positions back to
+    raw coordinates (see attach_reference_positions).  Direction vectors are
+    unaffected by the translation/centre, so only the rotation matrix applies:
+
+        tan_x_raw =  cosθ · tan_x + sinθ · tan_y
+        tan_y_raw = -sinθ · tan_x + cosθ · tan_y
+
+    This is a no-op for θ≈0 but essential for detectors whose strip map is
+    rotated ~90° relative to M3 (e.g. det3, θ≈89°), where leaving the tangents
+    unrotated makes the drawn line fan away from the charge cloud.
+    """
+    theta = np.deg2rad(params.theta_deg)
+    cos_t, sin_t = np.cos(theta), np.sin(theta)
+    tan_x = cos_t * result.ref_tan_theta_x + sin_t * result.ref_tan_theta_y
+    tan_y = -sin_t * result.ref_tan_theta_x + cos_t * result.ref_tan_theta_y
+    return tan_x, tan_y
+
+
+def ref_sigma_raw_frame(
+    params: AlignmentParams,
+    sigma_ref_x_mm: float,
+    sigma_ref_y_mm: float,
+) -> Tuple[float, float]:
+    """
+    Rotate the per-axis M3 pointing resolution (given in the aligned/M3 frame)
+    into the raw strip frame used by the 3-D displays.  The pointing errors on
+    the two M3 axes are independent, so the covariance rotates as
+        σx_raw² = cos²θ·σX² + sin²θ·σY²
+        σy_raw² = sin²θ·σX² + cos²θ·σY²
+    (for det3's θ≈89.45° this effectively swaps the axes).
+    """
+    theta = np.deg2rad(params.theta_deg)
+    c2, s2 = np.cos(theta) ** 2, np.sin(theta) ** 2
+    sx = np.sqrt(c2 * sigma_ref_x_mm ** 2 + s2 * sigma_ref_y_mm ** 2)
+    sy = np.sqrt(s2 * sigma_ref_x_mm ** 2 + c2 * sigma_ref_y_mm ** 2)
+    return float(sx), float(sy)
+
+
+def _draw_ref_uncertainty_tube(
+    ax,
+    x_track: np.ndarray,
+    y_track: np.ndarray,
+    z_track: np.ndarray,
+    sigma_x_mm: float,
+    sigma_y_mm: float,
+    color: str = 'limegreen',
+    n_sigmas=(1.0, 2.0),
+    alphas=(0.35, 0.15),
+) -> None:
+    """
+    Draw the M3 reference track's pointing uncertainty as translucent
+    elliptical tubes around the line: cross-section semi-axes k·σx / k·σy in
+    the x-y plane at each depth (the pointing errors live in x and y at fixed
+    z).  The M3 angular error adds <~15 µm over the 30 mm gap, so a
+    constant-width tube is accurate at the µm level.
+    """
+    phi = np.linspace(0.0, 2.0 * np.pi, 36)
+    cos_p, sin_p = np.cos(phi)[None, :], np.sin(phi)[None, :]
+    zz = np.repeat(z_track[:, None], phi.size, axis=1)
+    for k, a in zip(n_sigmas, alphas):
+        xx = x_track[:, None] + k * sigma_x_mm * cos_p
+        yy = y_track[:, None] + k * sigma_y_mm * sin_p
+        ax.plot_surface(xx, yy, zz, color=color, alpha=a, linewidth=0,
+                        antialiased=False, shade=False, zorder=3)
+
+
 def plot_event_display_3d(
     df_event: pd.DataFrame,
     result: EventResult,
@@ -2894,6 +3004,8 @@ def plot_event_display_3d(
     v_drift_um_per_ns: float,
     event_id: int,
     out_dir: Optional[str] = None,
+    ref_sigma_x_mm: Optional[float] = None,
+    ref_sigma_y_mm: Optional[float] = None,
 ) -> None:
     """
     3-D event display for a single cosmic muon event.
@@ -2934,6 +3046,11 @@ def plot_event_display_3d(
     params            : AlignmentParams (z_x, z_y used in subtitle)
     v_drift_um_per_ns : calibrated drift velocity [µm/ns]
     event_id          : event number (for the plot title)
+    ref_sigma_x_mm    : per-axis 1σ M3 pointing resolution at the DUT plane,
+    ref_sigma_y_mm      in the RAW strip frame (use ref_sigma_raw_frame to
+                        rotate the aligned-frame values).  If given, the
+                        reference line is drawn with translucent ±1σ/±2σ
+                        elliptical tubes so its own uncertainty is visible.
     """
     if not result.has_both:
         print(f'Event {event_id}: missing X or Y fit — cannot make 3-D display.')
@@ -2971,10 +3088,15 @@ def plot_event_display_3d(
                    + (t_y - x_fit.earliest_time_ns) * x_fit.slope_mm_per_ns)
 
     # ---- Reference track in detector-local coordinates ----
+    # ref_mesh_x/y_mm are already in the raw strip frame (inverse-aligned), but
+    # ref_tan_theta_x/y are still in the aligned/M3 frame — rotate the tangents
+    # by the same alignment rotation so the line's slope matches the hits.
+    # (No-op when params.theta_deg≈0; essential when it is large, as for det3.)
+    _tx, _ty = _rotate_ref_tangents(result, params)
     z_max_track = max(x_fit.cluster_duration_ns, y_fit.cluster_duration_ns) * v_drift_um_per_ns / 1000.0
     z_track = np.linspace(0.0, z_max_track, 200)
-    x_track = result.ref_mesh_x_mm + z_track * result.ref_tan_theta_x
-    y_track = result.ref_mesh_y_mm + z_track * result.ref_tan_theta_y
+    x_track = result.ref_mesh_x_mm + z_track * _tx
+    y_track = result.ref_mesh_y_mm + z_track * _ty
 
     # ---- Plot ----
     fig = plt.figure(figsize=(10, 8))
@@ -2990,9 +3112,16 @@ def plot_event_display_3d(
                       c=amp_y, cmap='Blues', s=50, alpha=0.85, zorder=4,
                       label='Y strips (x pred., y meas.)')
 
-    # Reference track
+    # Reference track (with its own pointing uncertainty, if provided)
+    ref_label = 'Reference track (M3)'
+    if ref_sigma_x_mm is not None and ref_sigma_y_mm is not None:
+        _draw_ref_uncertainty_tube(ax, x_track, y_track, z_track,
+                                   ref_sigma_x_mm, ref_sigma_y_mm,
+                                   color='green')
+        ref_label += (f'  ±1σ/2σ pointing '
+                      f'(σ={ref_sigma_x_mm*1e3:.0f}/{ref_sigma_y_mm*1e3:.0f} µm)')
     ax.plot(x_track, y_track, z_track,
-            color='green', lw=2.5, zorder=5, label='Reference track (M3)')
+            color='green', lw=2.5, zorder=5, label=ref_label)
 
     # Colorbars
     plt.colorbar(sc_x, ax=ax, label='Amplitude (X strips)', shrink=0.5, pad=0.1)
@@ -3020,6 +3149,8 @@ def plot_event_display_3d_rotating(
     gif_path: Optional[str] = None,
     gif_fps: int = 20,
     gif_frames: int = 180,
+    ref_sigma_x_mm: Optional[float] = None,
+    ref_sigma_y_mm: Optional[float] = None,
 ) -> None:
     """
     Clean 3-D event display with amplitude-scaled point sizes, horizontal
@@ -3076,10 +3207,13 @@ def plot_event_display_3d_rotating(
                    + (t_y - x_fit.earliest_time_ns) * x_fit.slope_mm_per_ns)
 
     # ---- Reference track ----
+    # rotate the aligned-frame tangents into the raw strip frame (see
+    # plot_event_display_3d); the mesh anchor is already in raw coordinates.
+    _tx, _ty = _rotate_ref_tangents(result, params)
     z_max_track = max(x_fit.cluster_duration_ns, y_fit.cluster_duration_ns) * v_drift_um_per_ns / 1000.0
     z_track = np.linspace(0.0, z_max_track, 200)
-    x_track = result.ref_mesh_x_mm + z_track * result.ref_tan_theta_x
-    y_track = result.ref_mesh_y_mm + z_track * result.ref_tan_theta_y
+    x_track = result.ref_mesh_x_mm + z_track * _tx
+    y_track = result.ref_mesh_y_mm + z_track * _ty
 
     # ---- Amplitude → point size (20–200 range) ----
     all_amp = np.concatenate([amp_x, amp_y])
@@ -3122,9 +3256,16 @@ def plot_event_display_3d_rotating(
                color='steelblue', s=_size(amp_y), alpha=0.85, zorder=4,
                label='Y strips (x pred., y meas.)', edgecolors='none')
 
-    # Reference track
+    # Reference track (with its own pointing uncertainty, if provided)
+    ref_label = 'Reference track (M3)'
+    if ref_sigma_x_mm is not None and ref_sigma_y_mm is not None:
+        _draw_ref_uncertainty_tube(ax, x_track, y_track, z_track,
+                                   ref_sigma_x_mm, ref_sigma_y_mm,
+                                   color='limegreen')
+        ref_label += (f'  ±1σ/2σ pointing '
+                      f'(σ={ref_sigma_x_mm*1e3:.0f}/{ref_sigma_y_mm*1e3:.0f} µm)')
     ax.plot(x_track, y_track, z_track,
-            color='limegreen', lw=2.5, zorder=5, label='Reference track (M3)')
+            color='limegreen', lw=2.5, zorder=5, label=ref_label)
 
     # ---- Clean up panes and grid ----
     ax.grid(False)

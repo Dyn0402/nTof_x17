@@ -39,6 +39,8 @@ import matplotlib.pyplot as plt
 from qa_config import config_from_argv, setup_paths
 setup_paths()
 CFG = config_from_argv()
+import cosmic_micro_tpc_analysis as cm
+from common.mx17_active_area import draw_outlines, alignment_transform
 
 
 def _argf(flag, default):
@@ -105,7 +107,8 @@ def sliding_map(x, y, val, x_grid, y_grid, kernel, min_n):
     return eff, cnt
 
 
-def adaptive_main(eff_dir, d, x, y, within, has_any, box4, inact, integ_within, integ_hasany):
+def adaptive_main(eff_dir, d, x, y, within, has_any, box4, inact, integ_within, integ_hasany,
+                  active_area_transform):
     ax0, ax1, ay0, ay1 = box4
     grid_n = max(GRID, 200)                       # adaptive deserves a fine grid
     x_grid = np.linspace(ax0, ax1, grid_n)
@@ -140,7 +143,8 @@ def adaptive_main(eff_dir, d, x, y, within, has_any, box4, inact, integ_within, 
         im = ax.imshow(data.T, origin='lower', extent=extent, aspect='equal',
                        cmap=cmap, vmin=0, vmax=1)
         plt.colorbar(im, ax=ax, fraction=0.046, pad=0.04, label=label)
-        ax.add_patch(plt.Rectangle(**box, fill=False, ec='red', lw=1.3))
+        ax.add_patch(plt.Rectangle(**box, fill=False, ec='black', lw=1.3, label='empirical footprint'))
+        draw_outlines(ax, transform=active_area_transform, det_name=CFG.DET_NAME)
         ax.set_xlabel('reference X [mm]'); ax.set_ylabel('reference Y [mm]')
         ax.set_title(f'{CFG.DET_NAME}  {label}\nadaptive k-NN, {TARGET} rays/kernel')
 
@@ -148,7 +152,8 @@ def adaptive_main(eff_dir, d, x, y, within, has_any, box4, inact, integ_within, 
                          cmap=cmap_r, vmin=0, vmax=MAXKERNEL)
     plt.colorbar(im3, ax=axes[2], fraction=0.046, pad=0.04,
                  label='kernel radius [mm]  (= local resolution)')
-    axes[2].add_patch(plt.Rectangle(**box, fill=False, ec='red', lw=1.3))
+    axes[2].add_patch(plt.Rectangle(**box, fill=False, ec='black', lw=1.3))
+    draw_outlines(axes[2], transform=active_area_transform, det_name=CFG.DET_NAME)
     axes[2].set_xlabel('reference X [mm]'); axes[2].set_ylabel('reference Y [mm]')
     axes[2].set_title(f'local kernel radius\n(smaller = finer; median {med:.1f} mm)')
 
@@ -179,6 +184,9 @@ def main():
         print(f'ERROR: {csv} not found — run 08_efficiency_maps.py first.')
         sys.exit(1)
 
+    params = cm.load_alignment(os.path.join(CFG.OUT_BASE, 'alignment_tpc_veto50', 'alignment.json'))
+    active_area_transform = alignment_transform(params)  # detector-local mm -> this script's aligned/ref frame
+
     d = pd.read_csv(csv)
     d = d[np.isfinite(d['x']) & np.isfinite(d['y'])].copy()
     for c in ('within', 'has_any'):
@@ -203,7 +211,8 @@ def main():
 
     if ADAPTIVE:
         adaptive_main(eff_dir, d, x, y, within, has_any,
-                      (ax0, ax1, ay0, ay1), inact, integ_within, integ_hasany)
+                      (ax0, ax1, ay0, ay1), inact, integ_within, integ_hasany,
+                      active_area_transform)
         return
 
     kernel, min_rays = KERNEL, MIN_RAYS
@@ -242,14 +251,16 @@ def main():
         im = ax.imshow(data.T, origin='lower', extent=extent, aspect='equal',
                        cmap=cm_, vmin=vmin, vmax=vmax)
         plt.colorbar(im, ax=ax, fraction=0.046, pad=0.04, label=label)
-        ax.add_patch(plt.Rectangle(**box, fill=False, ec='red', lw=1.3))
+        ax.add_patch(plt.Rectangle(**box, fill=False, ec='black', lw=1.3, label='empirical footprint'))
+        draw_outlines(ax, transform=active_area_transform, det_name=CFG.DET_NAME)
         ax.set_xlabel('reference X [mm]'); ax.set_ylabel('reference Y [mm]')
         ax.set_title(f'{CFG.DET_NAME}  {label}\nsliding kernel r={kernel:.1f} mm')
 
     cnt_m = np.where(cnt >= min_rays, cnt, np.nan)
     im3 = axes[2].imshow(cnt_m.T, origin='lower', extent=extent, aspect='equal', cmap=cmap_c)
     plt.colorbar(im3, ax=axes[2], fraction=0.046, pad=0.04, label='rays in kernel')
-    axes[2].add_patch(plt.Rectangle(**box, fill=False, ec='red', lw=1.3))
+    axes[2].add_patch(plt.Rectangle(**box, fill=False, ec='black', lw=1.3))
+    draw_outlines(axes[2], transform=active_area_transform, det_name=CFG.DET_NAME)
     axes[2].set_xlabel('reference X [mm]'); ax = axes[2]; ax.set_ylabel('reference Y [mm]')
     axes[2].set_title(f'rays per kernel\n(grey < {min_rays})')
 

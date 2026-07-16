@@ -48,7 +48,7 @@ SAMPLE_NS = 60.0
 MIN_STRIPS_AFTER = 3
 MIN_STRIPS_BEFORE = 4
 RES_CUT_MM = 10.0
-CHI2_CUT = 5.0   # M3 v2 recipe (chi2<5; NClus>=3 automatic in M3RefTracking); was 20 pre-v2
+from qa_config import M3_CHI2_CUT as CHI2_CUT, M3_MIN_NCLUS  # centralized M3 recipe (see qa_config.py)
 PITCH_MM = 0.78
 THR_HIT = 100.0
 THR_WF = 150.0
@@ -61,7 +61,11 @@ ALPHAS = (1.0, 0.5, 0.0)
 tag = f'_veto{VETO}'
 OUT = CFG.out_dir(f'alignment_tpc{tag}', 'bias_study')
 DEC_DIR = os.path.join(CFG.BASE_PATH, CFG.RUN, CFG.SUB_RUN, 'decoded_root')
-CSHARE = {7: (0.449, 0.052), 8: (0.516, 0.151)}   # measured in 26_*.py
+# NB: FEU numbers are REUSED across detectors/runs (e.g. FEU 8 = det3's Y in some runs,
+# det7's Y, AND det4's Y) -- this dict must hold ONLY the CURRENT detector's own FEUs,
+# freshly measured by 26_unsharing_analysis.py for THAT run, edited immediately before
+# each detector's 27/28 pass. Do not carry stale entries from a previous detector.
+CSHARE = {6: (0.247, 0.057), 8: (0.514, 0.232)}   # det7 (g_det7_long), measured 2026-07-14 (chi2<1+NClus4)
 
 
 def robust_line(x, y, n_iter=4, clip=3.0):
@@ -149,7 +153,8 @@ def load_events(ref, det):
             t = uproot.open(fn)['nt']
             eids_all = t.arrays(['eventId'], library='np')['eventId']
             a0 = t.arrays(['amplitude'], entry_stop=N_PED_EVENTS, library='np')['amplitude']
-            ped = np.median(np.stack([a.reshape(32, 512) for a in a0]), axis=(0, 1))
+            ped = np.median(np.stack([a.reshape(32, 512) for a in a0
+                                      if a.size == 32 * 512]), axis=(0, 1))
             for lo in range(0, t.num_entries, CHUNK):
                 hi = min(lo + CHUNK, t.num_entries)
                 want = [i for i in range(lo, hi) if int(eids_all[i]) in ref]
@@ -160,6 +165,8 @@ def load_events(ref, det):
                 for i in want:
                     j = i - lo
                     eid = int(arr['eventId'][j])
+                    if arr['amplitude'][j].size != 32 * 512:
+                        continue                         # malformed multi-frame event
                     wfm = arr['amplitude'][j].reshape(32, 512).astype(np.float32) - ped
                     cms = np.median(wfm.reshape(32, 8, 64), axis=2)
                     wfm -= np.repeat(cms, 64, axis=1)
@@ -233,7 +240,7 @@ def main():
     align_json = os.path.join(CFG.OUT_BASE, f'alignment_tpc{tag}', 'alignment.json')
     results = pickle.load(open(cache_res, 'rb'))
     best = cm.load_alignment(align_json)
-    rays = M3RefTracking(CFG.m3_tracking_dir, chi2_cut=CHI2_CUT)
+    rays = M3RefTracking(CFG.m3_tracking_dir, chi2_cut=CHI2_CUT, min_nclus=M3_MIN_NCLUS)
     xang, _, anum = get_xy_angles(rays.ray_data)
     xang = best.ref_x_sign * np.array(xang)
     cm.attach_reference_positions(results, rays, best, xang, anum)
@@ -260,13 +267,14 @@ def main():
     results_by_mode = {}
     outB, vrB = process(rows, blocks, pos_of, 'before')
     results_by_mode['before'] = outB
-    print(f'{"before":>12} {np.median(vrB[7]):10.3f} {np.median(vrB[8]):10.3f} '
-          f'{ridge_v(outB[7]):7.2f} {ridge_v(outB[8]):7.2f}')
+    fx, fy = CFG.MX17_FEU_X, CFG.MX17_FEU_Y
+    print(f'{"before":>12} {np.median(vrB[fx]):10.3f} {np.median(vrB[fy]):10.3f} '
+          f'{ridge_v(outB[fx]):7.2f} {ridge_v(outB[fy]):7.2f}')
     best_alpha, best_score = None, 1e9
     for a in ALPHAS:
         outA, vrA = process(rows, blocks, pos_of, 'after', alpha=a)
-        r1x, r1y = np.median(vrA[7]), np.median(vrA[8])
-        vx, vy = ridge_v(outA[7]), ridge_v(outA[8])
+        r1x, r1y = np.median(vrA[fx]), np.median(vrA[fy])
+        vx, vy = ridge_v(outA[fx]), ridge_v(outA[fy])
         results_by_mode[f'after a={a:.1f}'] = outA
         score = abs(r1x) + abs(r1y)
         if score < best_score:

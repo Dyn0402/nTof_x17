@@ -68,11 +68,12 @@ from qa_config import config_from_argv, get_config, setup_paths
 setup_paths()
 import uproot
 import cosmic_micro_tpc_analysis as cm
+from common.mx17_active_area import draw_outlines
 from M3RefTracking import M3RefTracking, get_xy_angles
 
 CFG = config_from_argv()
 VETO = next((int(a.split('=')[1]) for a in sys.argv if a.startswith('--veto=')), 50)
-CHI2_CUT = 5.0                 # M3 v2 recipe
+from qa_config import M3_CHI2_CUT as CHI2_CUT, M3_MIN_NCLUS  # centralized M3 recipe (see qa_config.py)
 RES_CUT_MM = 10.0              # clean single-track match
 FID_MARGIN_MM = 5.0            # fiducial inset from the active-area edges
 THR_HIT = 100.0                # per-strip amplitude floor [ADC]
@@ -183,7 +184,7 @@ def main():
     align_json = os.path.join(CFG.OUT_BASE, f'alignment_tpc{tag}', 'alignment.json')
     results = pickle.load(open(cache_res, 'rb'))
     best = cm.load_alignment(align_json)
-    rays = M3RefTracking(CFG.m3_tracking_dir, chi2_cut=CHI2_CUT)
+    rays = M3RefTracking(CFG.m3_tracking_dir, chi2_cut=CHI2_CUT, min_nclus=M3_MIN_NCLUS)
     xang, _, anum = get_xy_angles(rays.ray_data)
     xang = best.ref_x_sign * np.array(xang)
     cm.attach_reference_positions(results, rays, best, xang, anum)
@@ -397,6 +398,8 @@ def main():
     ax = axes[1, 0]
     im = ax.imshow(fmap, origin='lower', extent=[xmn, xmx, ymn, ymx],
                    aspect='auto', cmap='RdBu_r', vmin=fmed - 0.1, vmax=fmed + 0.1)
+    draw_outlines(ax, det_name=CFG.DET_NAME)  # detector-local strip frame, no transform needed
+    ax.legend(loc='upper right', framealpha=0.9, fontsize=7)
     ax.set_xlabel('detector x [mm]'); ax.set_ylabel('detector y [mm]')
     ax.set_title(f'median-f map (inner std {dstd:.3f}, stat {exp_std:.3f})')
     fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04, label='median f')

@@ -41,9 +41,12 @@ from M3RefTracking import M3RefTracking, get_xy_angles
 CFG = config_from_argv()
 VETO = next((int(a.split('=')[1]) for a in sys.argv if a.startswith('--veto=')), 50)
 MIN_STRIPS = 4
-RES_CUT_MM = 10.0
+# tightened track-to-reference match (was 10.0) + degrader-edge fiducial;
+# both CLI-overridable so the systematic can be scanned (--rescut=, --edge=)
+RES_CUT_MM = next((float(a.split('=')[1]) for a in sys.argv if a.startswith('--rescut=')), 2.0)
+EDGE_FID_MM = next((float(a.split('=')[1]) for a in sys.argv if a.startswith('--edge=')), 25.0)
 PITCH_MM = 0.78
-CHI2_CUT = 5.0   # M3 v2 recipe (chi2<5; NClus>=3 automatic in M3RefTracking); was 20 pre-v2
+from qa_config import M3_CHI2_CUT as CHI2_CUT, M3_MIN_NCLUS  # centralized M3 recipe (see qa_config.py)
 SAT_DEG = 10.0
 TAN_LO, TAN_HI, TAN_STEP = 0.06, 0.44, 0.04
 GAP_CM = 3.0
@@ -61,23 +64,48 @@ def cfg_for(subrun):
                    base_path=CFG.BASE_PATH, zero_suppressed=CFG.ZERO_SUPPRESSED)
 
 
-def measure_point(subrun, seed):
+def active_bounds(det):
+    """Active-area bounding box from the strip map (same as 32_edge_fringe_field)."""
+    lims = {}
+    for feu, axis in ((CFG.MX17_FEU_X, 0), (CFG.MX17_FEU_Y, 1)):
+        pos = np.array([(det.map_hit(feu, ch) or (np.nan, np.nan))[axis]
+                        for ch in range(512)], dtype=float)
+        pos = pos[np.isfinite(pos)]
+        lims[axis] = (float(pos.min()), float(pos.max()))
+    return lims[0], lims[1]
+
+
+def edge_dist(r, bounds):
+    """Distance [mm] from the reference impact point to the nearest active edge."""
+    (xmn, xmx), (ymn, ymx) = bounds
+    if not (np.isfinite(r.ref_mesh_x_mm) and np.isfinite(r.ref_mesh_y_mm)):
+        return np.nan
+    return min(r.ref_mesh_x_mm - xmn, xmx - r.ref_mesh_x_mm,
+               r.ref_mesh_y_mm - ymn, ymx - r.ref_mesh_y_mm)
+
+
+def measure_point(subrun, seed, bounds):
     cfg = cfg_for(subrun)
     cache = os.path.join(cfg.out_dir('cache'), f'event_results_veto{VETO}.pkl')
     if not os.path.exists(cache):
         print(f'  [SKIP] {subrun}: no cache')
         return None
     results = pickle.load(open(cache, 'rb'))
-    rays = M3RefTracking(cfg.m3_tracking_dir, chi2_cut=CHI2_CUT)
+    rays = M3RefTracking(cfg.m3_tracking_dir, chi2_cut=CHI2_CUT, min_nclus=M3_MIN_NCLUS)
     xang, _, anum = get_xy_angles(rays.ray_data)
     xang = seed.ref_x_sign * np.array(xang)
     params = cm.translation_alignment(results, rays, seed)
     cm.attach_reference_positions(results, rays, params, xang, anum)
 
-    sel = [r for r in results if r.has_x and r.has_y
-           and np.isfinite(r.ref_tan_theta_x) and np.isfinite(r.ref_tan_theta_y)
-           and r.x_fit.n_strips >= MIN_STRIPS and r.y_fit.n_strips >= MIN_STRIPS
-           and np.isfinite(r.radial_residual_mm) and r.radial_residual_mm < RES_CUT_MM]
+    base = [r for r in results if r.has_x and r.has_y
+            and np.isfinite(r.ref_tan_theta_x) and np.isfinite(r.ref_tan_theta_y)
+            and r.x_fit.n_strips >= MIN_STRIPS and r.y_fit.n_strips >= MIN_STRIPS
+            and np.isfinite(r.radial_residual_mm)]
+    n_match = sum(1 for r in base if r.radial_residual_mm < 10.0)   # old loose match
+    sel = [r for r in base if r.radial_residual_mm < RES_CUT_MM
+           and (EDGE_FID_MM <= 0 or edge_dist(r, bounds) > EDGE_FID_MM)]
+    print(f'    cuts: {n_match} (res<10) -> {len(sel)} (res<{RES_CUT_MM:g} & '
+          f'edge>{EDGE_FID_MM:g}mm)  [{100.0*len(sel)/max(n_match,1):.0f}% kept]')
     if len(sel) < 200:
         print(f'  [SKIP] {subrun}: only {len(sel)} events')
         return None
@@ -143,6 +171,13 @@ def measure_point(subrun, seed):
 
 def main():
     seed = cm.load_alignment(ALIGN_SEED)
+    from common.Mx17StripMap import RunConfig
+    rc = RunConfig(CFG.run_config_path, CFG.MAP_CSV_PATH)
+    det = rc.get_detector(CFG.DET_NAME)
+    bounds = active_bounds(det)
+    (xmn, xmx), (ymn, ymx) = bounds
+    print(f'active area: x [{xmn:.0f}, {xmx:.0f}]  y [{ymn:.0f}, {ymx:.0f}] mm   '
+          f'cuts: res<{RES_CUT_MM:g}mm, edge>{EDGE_FID_MM:g}mm')
     run_dir = os.path.join(CFG.BASE_PATH, CFG.RUN)
     points = []
     for name in sorted(os.listdir(run_dir)):
@@ -157,7 +192,7 @@ def main():
     rows = []
     for hv, subrun in points:
         print(f'=== drift {hv} V — {subrun} ===')
-        r = measure_point(subrun, seed)
+        r = measure_point(subrun, seed, bounds)
         if r is not None:
             r['drift_hv'] = hv
             r['is_long_run'] = (subrun == CFG.SUB_RUN)

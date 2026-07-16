@@ -19,6 +19,7 @@ import os
 import re
 import sys
 import json
+import shutil
 import datetime
 
 import numpy as np
@@ -78,8 +79,28 @@ def hv_settings(cfg):
 # back to the arg list to headline that instead.)
 DEFAULT_KEYS = ['g_det2', 'g_det3_wknd', 'g_det4',
                 'g_det6', 'g_det6_longer', 'g_det6_long',
-                'g_det7', 'g_det7_longer', 'g_det7_long']
+                'g_det7', 'g_det7_longer', 'g_det7_long',
+                # hybrid-angle runs: not the efficiency-page winners (fewer rays), but
+                # they carry the hybrid_summary.csv the angular column now reads.
+                'sat_det3', 'o22_long_det2']
 OUT_DEFAULT = '/home/dylan/x17/cosmic_bench/Analysis/june_grand_qa.pdf'
+# also drop a copy into the engineer conference package (skip with --no-package)
+PKG_COPY_NAME = 'june-detectors-overview.pdf'
+
+
+def mirror_to_package(out, pkg_name):
+    """Copy the freshly-built PDF into engineer_package/source_reports/ so the
+    conference compilation always tracks the latest analysis. No-op if the
+    package dir is absent or --no-package is passed."""
+    if '--no-package' in sys.argv:
+        return
+    pkg_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                           'engineer_package', 'source_reports')
+    if not os.path.isdir(pkg_dir):
+        return
+    dst = os.path.join(pkg_dir, pkg_name)
+    shutil.copy2(out, dst)
+    print(f'  mirrored -> {dst}')
 
 
 def _find(base, *cands):
@@ -289,29 +310,35 @@ def _hv_csv_path(cfg):
 
 
 def _load_angres(cfg):
-    """(sigma_theta_deg, n_events, reliable) for a key, or (nan, 0, False)."""
-    arp = _find(cfg.OUT_BASE, 'alignment_tpc_veto50/angular_resolution.json',
-                'alignment_tpc/angular_resolution.json')
-    if not arp:
+    """(sigma68_deg, n_events, reliable) from the GOLDEN hybrid chain (34) -- the
+    |theta_ref|<5 deg band self-trained sigma68 -- or (nan, 0, False).
+
+    Supersedes the old script-03 angular_resolution.json (production time-fit, no
+    unsharing): that estimator is alignment-QA-only now. The hybrid is the quoted
+    micro-TPC angular resolution; a detector with no hybrid_summary.csv (or a
+    non-finite / near-zero-coverage band) reports '--'.
+    """
+    hp = _find(cfg.OUT_BASE, 'alignment_tpc_veto50/hybrid/hybrid_summary.csv')
+    if not hp:
         return np.nan, 0, False
     try:
-        ar = _json.load(open(arp))
+        import csv as _csv
+        rows = list(_csv.DictReader(open(hp)))
     except Exception:
         return np.nan, 0, False
-    sx, sy = ar.get('sigma_theta_x_deg'), ar.get('sigma_theta_y_deg')
-    vals = [v for v in (sx, sy) if isinstance(v, (int, float)) and np.isfinite(v)]
-    sig = float(np.mean(vals)) if vals else np.nan
-    # 'reliable' is set from the correlation strength (a railed v_drift alone does NOT
-    # mean unusable -- the micro-TPC v is biased ~20% low). Legacy files: fall back to
-    # the saved correlations, else treat as reliable if a sigma exists.
-    rel = ar.get('reliable')
-    if rel is None:
-        cx, cy = ar.get('corr_x'), ar.get('corr_y')
-        if isinstance(cx, (int, float)) and isinstance(cy, (int, float)):
-            rel = (cx >= 0.70 and cy >= 0.70)
-        else:
-            rel = np.isfinite(sig)
-    return sig, int(ar.get('n_events', 0) or 0), bool(rel)
+    hyb = [r for r in rows if r.get('estimator', '').startswith('HYBRID')
+           and r.get('band') == 'lt5']
+    if not hyb:
+        return np.nan, 0, False
+    try:
+        s68 = float(hyb[0]['s68_deg'])
+        cov = float(hyb[0]['coverage'])
+    except (KeyError, ValueError, TypeError):
+        return np.nan, 0, False
+    # reliable = a real hybrid measurement: finite, covered, and a sane angular
+    # resolution (a broken plane rails sigma68 to tens of degrees).
+    rel = bool(np.isfinite(s68) and cov >= 0.5 and s68 < 8.0)
+    return s68, 0, rel
 
 
 def collect_fleet_stats(winner_keys, all_keys=None):
@@ -415,7 +442,7 @@ def fleet_summary_page(pdf, keys, all_keys=None):
     order = lambda L: order_key(stats.get(L, {}).get('num', L))
     fig = plt.figure(figsize=(8.27, 11.69))
     fig.suptitle('MX17 June 2026 cosmic-bench — fleet summary\n'
-                 'M3 v2 reference tracking (NClus≥3 & χ²<5); best long run per detector',
+                 'M3 v2 reference tracking (NClus=4 & χ²<1.0); best long run per detector',
                  fontsize=13, fontweight='bold', y=0.988)
     # 4 rows: bars / bars / (eff-vs-HV, spark-vs-HV) / (layout diagram, table).
     # Shorter bar + HV rows to make room for the diagram row.
@@ -427,7 +454,7 @@ def fleet_summary_page(pdf, keys, all_keys=None):
     _bar(fig.add_subplot(gs[0, 1]), stats, 'sigma',
          'Spatial resolution (core σ)', 'mm', fmt='{:.2f}')
     _bar(fig.add_subplot(gs[1, 0]), stats, 'ang',
-         'micro-TPC angular resolution', 'deg', fmt='{:.2f}')
+         'micro-TPC angular resolution (hybrid, |θ|<5° σ68)', 'deg', fmt='{:.2f}')
     _bar(fig.add_subplot(gs[1, 1]), stats, 'spark',
          'Spark rate (>50 strips)', '%', fmt='{:.1f}')
 
@@ -494,7 +521,7 @@ def fleet_summary_page(pdf, keys, all_keys=None):
 
     mixed = [f"det{s['num']}" for s in stats.values()
              if s.get('ang_key') and s['ang_key'] != s['key']]
-    ang_note = ('θ-res = best reliable micro-TPC run'
+    ang_note = ('θ-res = hybrid σ68 |θ|<5° (script 34, holdout)'
                 + (f" (≠ eff run for {', '.join(sorted(mixed))})" if mixed else ''))
     fig.text(0.5, 0.014, f'Generated {datetime.date.today().isoformat()} · '
              f'eff/σ/spark(bars) = best-stats run per detector, crossing-based spark · {ang_note}',
@@ -531,6 +558,7 @@ def main():
             fig.text(0.5, 0.5, 'No detector pages available yet.', ha='center')
             pdf.savefig(fig); plt.close(fig)
     print(f'Wrote {n} detector page(s) -> {out}')
+    mirror_to_package(out, PKG_COPY_NAME)
 
 
 if __name__ == '__main__':

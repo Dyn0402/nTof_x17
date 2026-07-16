@@ -51,7 +51,7 @@ VETO = next((int(a.split('=')[1]) for a in sys.argv if a.startswith('--veto=')),
 REFIT = '--refit' in sys.argv
 MIN_STRIPS = 4
 RES_CUT_MM = 10.0
-CHI2_CUT = 5.0   # M3 v2 recipe (chi2<5; NClus>=3 automatic in M3RefTracking); was 20 pre-v2
+from qa_config import M3_CHI2_CUT as CHI2_CUT, M3_MIN_NCLUS  # centralized M3 recipe (see qa_config.py)
 TAN_FIT_MIN, TAN_FIT_MAX = 0.06, 0.55   # |tanθ_ref| window for the ridge fit
 SAT_DEG = 10.0                           # |θ_ref| above which time span saturates
 MAGBOLTZ_JSON = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
@@ -118,7 +118,7 @@ def measure_point(subrun, det, seed):
         print(f'  [SKIP] {subrun}: missing data dirs')
         return None
     results = analyse(cfg, det)
-    rays = M3RefTracking(cfg.m3_tracking_dir, chi2_cut=CHI2_CUT)
+    rays = M3RefTracking(cfg.m3_tracking_dir, chi2_cut=CHI2_CUT, min_nclus=M3_MIN_NCLUS)
     xang, _, anum = get_xy_angles(rays.ray_data)
     xang = seed.ref_x_sign * np.array(xang)
     params = cm.translation_alignment(results, rays, seed)

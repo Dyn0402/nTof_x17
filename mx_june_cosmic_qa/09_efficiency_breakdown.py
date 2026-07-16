@@ -23,12 +23,13 @@ Usage: python 09_efficiency_breakdown.py ovn_det1 [--r=5]
 import os, sys, pickle
 import matplotlib; matplotlib.use('Agg')
 import numpy as np, matplotlib.pyplot as plt
-from qa_config import config_from_argv, setup_paths
+from qa_config import config_from_argv, setup_paths, M3_CHI2_CUT, M3_MIN_NCLUS
 setup_paths()
 CFG = config_from_argv()
 import uproot
 import cosmic_micro_tpc_analysis as cm
 from common.Mx17StripMap import RunConfig
+from common.mx17_active_area import draw_outlines, alignment_transform
 from M3RefTracking import M3RefTracking, get_xy_angles, get_xy_positions
 
 R = next((float(a.split('=')[1]) for a in sys.argv if a.startswith('--r=')), 5.0)
@@ -47,8 +48,9 @@ def rstd(v, ns=3, it=5):
 def main():
     out_dir = CFG.out_dir('efficiency')
     params = cm.load_alignment(os.path.join(CFG.OUT_BASE, 'alignment_tpc_veto50', 'alignment.json'))
+    active_area_transform = alignment_transform(params)  # detector-local mm -> this script's aligned/ref frame
     res = pickle.load(open(os.path.join(CFG.OUT_BASE, 'cache', 'event_results.pkl'), 'rb'))
-    rays = M3RefTracking(CFG.m3_tracking_dir, chi2_cut=5.0)
+    rays = M3RefTracking(CFG.m3_tracking_dir, chi2_cut=M3_CHI2_CUT, min_nclus=M3_MIN_NCLUS)
     xa, ya, an = get_xy_angles(rays.ray_data); xa = params.ref_x_sign * np.array(xa)
     cm.attach_reference_positions(res, rays, params, xa, an)
     reco = {r.event_id: (r.det_x_aligned_mm, r.det_y_aligned_mm) for r in res if r.has_both
@@ -193,21 +195,26 @@ def main():
     fig, ax = plt.subplots(figsize=(7, 6))
     h = ax.hist2d(rn[:, 0], rn[:, 1], bins=50, range=rng, cmap='viridis')
     plt.colorbar(h[3], ax=ax, label='well-reconstructed hits')
-    ax.add_patch(plt.Rectangle(**box, fill=False, ec='red', lw=1.5, label='active area'))
+    ax.add_patch(plt.Rectangle(**box, fill=False, ec='black', lw=1.5, label='empirical footprint'))
+    draw_outlines(ax, transform=active_area_transform, det_name=CFG.DET_NAME)
     ax.set_xlabel('detector X (aligned) [mm]'); ax.set_ylabel('detector Y (aligned) [mm]'); ax.set_aspect('equal')
-    ax.legend(loc='upper right')
+    ax.legend(loc='upper right', fontsize=7)
     ax.set_title(f'{CFG.DET_NAME} DETECTOR positions of well-reconstructed tracks (|r|<={R:g}mm)\n'
                  f'{len(rn)} hits — {CFG.RUN}/{CFG.SUB_RUN}')
     fig.tight_layout(); fig.savefig(f'{out_dir}/reco_positions_detector.png', dpi=150, bbox_inches='tight')
 
     # ---- (b) RAY projections of NON-reconstructed muons (fired-no-reco vs silent) ----
-    hnr = np.array(cat['hit_no_reco']); nh = np.array(cat['no_hit'])
+    # reshape(-1, 2): a stricter M3 cut can drive a category to exactly zero rays
+    # (e.g. no_hit=0), and np.array([]) on an empty list gives shape (0,) not (0,2).
+    hnr = np.array(cat['hit_no_reco']).reshape(-1, 2)
+    nh = np.array(cat['no_hit']).reshape(-1, 2)
     fig, axes = plt.subplots(1, 2, figsize=(13, 6))
     for axx, arr, ttl in [(axes[0], hnr, f'fired strips, no reco  ({len(hnr)})'),
                           (axes[1], nh, f'detector silent  ({len(nh)})')]:
         h = axx.hist2d(arr[:, 0], arr[:, 1], bins=50, range=rng, cmap='inferno')
         plt.colorbar(h[3], ax=axx, label='rays')
         axx.add_patch(plt.Rectangle(**box, fill=False, ec='cyan', lw=1.5))
+        draw_outlines(axx, transform=active_area_transform, det_name=CFG.DET_NAME)
         axx.set_xlabel('reference X [mm]'); axx.set_ylabel('reference Y [mm]'); axx.set_aspect('equal')
         axx.set_title(ttl)
     fig.suptitle(f'{CFG.DET_NAME} RAY projections of NON-reconstructed muons — {CFG.RUN}/{CFG.SUB_RUN}')
@@ -219,6 +226,7 @@ def main():
                                  (axes[1], nh, '#cc2a2a', f'detector silent  ({len(nh)})')]:
         axx.scatter(arr[:, 0], arr[:, 1], s=6, alpha=0.3, color=color, edgecolors='none')
         axx.add_patch(plt.Rectangle(**box, fill=False, ec='cyan', lw=1.5))
+        draw_outlines(axx, transform=active_area_transform, det_name=CFG.DET_NAME)
         axx.set_xlim(rng[0]); axx.set_ylim(rng[1])
         axx.set_xlabel('reference X [mm]'); axx.set_ylabel('reference Y [mm]'); axx.set_aspect('equal')
         axx.set_title(ttl)

@@ -56,7 +56,7 @@ _z_lo = float(os.environ.get('Z_LO', DET_PLANE_Z - 60.0))
 _z_hi = float(os.environ.get('Z_HI', DET_PLANE_Z + 60.0))
 Z_SCAN = np.linspace(_z_lo, _z_hi, int(round(_z_hi - _z_lo)) + 1)  # 1 mm steps
 CENTRE_XY = 200.0                    # strip-map centre (active area ~0..400 mm)
-CHI2_CUT = 5.0  # M3 v2 recipe (chi2<5 & NClus>=3, the latter automatic in M3RefTracking)
+from qa_config import M3_CHI2_CUT as CHI2_CUT, M3_MIN_NCLUS  # centralized M3 recipe (see qa_config.py)
 N_ITER = 3                           # iterative z -> rotation -> translation cycles
 
 # ---------------------------------------------------------------------------
@@ -150,7 +150,7 @@ def main():
           f'({"--rot0 override" if ROT0_OVERRIDE is not None else "run_config det_orientation.z"})')
 
     # ---- M3 reference ----
-    rays = M3RefTracking(CFG.m3_tracking_dir, chi2_cut=CHI2_CUT)
+    rays = M3RefTracking(CFG.m3_tracking_dir, chi2_cut=CHI2_CUT, min_nclus=M3_MIN_NCLUS)
     x_ref_angles, y_ref_angles, angle_event_nums = get_xy_angles(rays.ray_data)
     x_ref_angles = REF_X_SIGN * np.array(x_ref_angles)  # reference X handedness
 
@@ -221,12 +221,14 @@ def main():
         cm.plot_efficiency_map(results, rays, best, bins=40, min_tracks_per_bin=5,
                                radius_cut_mm=rc_cut, title=title,
                                csv_out_path=os.path.join(csv_dir, name),
-                               active_region=active, out_dir=out_dir)
+                               active_region=active, out_dir=out_dir,
+                               det_name=CFG.DET_NAME)
 
     cm.plot_resolution_map(results, rays, best, bins=20, min_hits_per_bin=20,
-                           radius_cut_mm=None, out_dir=out_dir)
+                           radius_cut_mm=None, out_dir=out_dir, det_name=CFG.DET_NAME)
     cm.plot_resolution_map_sliding(results, grid_points=100, kernel_radius_mm=50.0,
-                                   min_hits=50, out_dir=out_dir, sigma_vmax=1.0)
+                                   min_hits=50, out_dir=out_dir, sigma_vmax=1.0,
+                                   params=best, det_name=CFG.DET_NAME)
     print(f'\nFull micro-TPC analysis done. Plots in {out_dir}')
 
 

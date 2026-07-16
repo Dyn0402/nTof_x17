@@ -24,12 +24,13 @@ import os, sys, pickle
 import matplotlib; matplotlib.use('Agg')
 import numpy as np, pandas as pd, matplotlib.pyplot as plt
 
-from qa_config import config_from_argv, setup_paths
+from qa_config import config_from_argv, setup_paths, M3_CHI2_CUT, M3_MIN_NCLUS
 setup_paths()
 CFG = config_from_argv()
 import uproot
 import cosmic_micro_tpc_analysis as cm
 from common.Mx17StripMap import RunConfig
+from common.mx17_active_area import draw_outlines, alignment_transform
 from M3RefTracking import M3RefTracking, get_xy_angles, get_xy_positions
 
 R = next((float(a.split('=')[1]) for a in sys.argv if a.startswith('--r=')), 5.0)
@@ -43,9 +44,10 @@ def main():
     rc = RunConfig(CFG.run_config_path, CFG.MAP_CSV_PATH)
     det = rc.get_detector(CFG.DET_NAME)
     params = cm.load_alignment(os.path.join(CFG.OUT_BASE, ALIGN_DIR, 'alignment.json'))
+    active_area_transform = alignment_transform(params)  # detector-local mm -> this script's aligned/ref frame
 
     res = pickle.load(open(os.path.join(CFG.OUT_BASE, 'cache', RECO_CACHE), 'rb'))
-    rays = M3RefTracking(CFG.m3_tracking_dir, chi2_cut=5.0)
+    rays = M3RefTracking(CFG.m3_tracking_dir, chi2_cut=M3_CHI2_CUT, min_nclus=M3_MIN_NCLUS)
     xa, ya, an = get_xy_angles(rays.ray_data); xa = params.ref_x_sign * np.array(xa)
     cm.attach_reference_positions(res, rays, params, xa, an)
 
@@ -101,7 +103,8 @@ def main():
         miss = d[~d[col]]; hit = d[d[col]]
         ax.scatter(miss['x'], miss['y'], s=6, c='red', alpha=0.12, linewidths=0, label=f'miss ({len(miss)})')
         ax.scatter(hit['x'], hit['y'], s=6, c='green', alpha=0.12, linewidths=0, label=f'hit ({len(hit)})')
-        ax.add_patch(plt.Rectangle(**box, fill=False, ec='black', lw=1.5, label='active area'))
+        ax.add_patch(plt.Rectangle(**box, fill=False, ec='black', lw=1.5, label='empirical footprint'))
+        draw_outlines(ax, transform=active_area_transform, det_name=CFG.DET_NAME)
         ax.set_xlabel('reference X [mm]'); ax.set_ylabel('reference Y [mm]'); ax.set_aspect('equal')
         ax.set_title(f'{CFG.DET_NAME} efficiency scatter — {ttl}\n{CFG.RUN}/{CFG.SUB_RUN}')
         lg = ax.legend(loc='upper right', framealpha=0.9)
@@ -121,7 +124,9 @@ def main():
         im = ax.imshow(eff.T, origin='lower', extent=[xe[0], xe[-1], ye[0], ye[-1]],
                        vmin=0, vmax=1, cmap=cmap, aspect='equal')
         plt.colorbar(im, ax=ax, label='efficiency')
-        ax.add_patch(plt.Rectangle(**box, fill=False, ec='red', lw=1.5))
+        ax.add_patch(plt.Rectangle(**box, fill=False, ec='black', lw=1.5, label='empirical footprint'))
+        draw_outlines(ax, transform=active_area_transform, det_name=CFG.DET_NAME)
+        ax.legend(loc='upper right', framealpha=0.9, fontsize=7)
         ax.set_xlabel('reference X [mm]'); ax.set_ylabel('reference Y [mm]')
         ax.set_title(f'{CFG.DET_NAME} efficiency map — {ttl}  (>=5 rays/bin)\n{CFG.RUN}/{CFG.SUB_RUN}')
         fig.tight_layout(); fig.savefig(f'{out_dir}/map_{name}.png', dpi=150, bbox_inches='tight')

@@ -50,6 +50,8 @@ align_json = os.path.join(CFG.OUT_BASE, f'alignment_tpc{tag}', 'alignment.json')
 
 results = pickle.load(open(cache, 'rb'))
 best = cm.load_alignment(align_json)
+# intentionally loose (not qa_config.M3_CHI2_CUT): only used to classify events by
+# incidence angle (vertical vs inclined), not for a precision position/residual quote.
 rays = M3RefTracking(CFG.m3_tracking_dir, chi2_cut=20.0)
 xang, yang, anum = get_xy_angles(rays.ray_data)
 cm.attach_reference_positions(results, rays, best, np.array(xang), anum)

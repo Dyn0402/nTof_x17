@@ -63,6 +63,8 @@ def main():
     out_dir = CFG.out_dir('cluster_quality')
     res = pickle.load(open(os.path.join(CFG.OUT_BASE, 'cache', f'event_results{tag}.pkl'), 'rb'))
     params = cm.load_alignment(os.path.join(CFG.OUT_BASE, f'alignment_tpc{tag}', 'alignment.json'))
+    # intentionally loose (not qa_config.M3_CHI2_CUT): this script scans cluster-quality
+    # cuts against the M3 reference itself, so the reference must not be pre-cut.
     rays = M3RefTracking(CFG.m3_tracking_dir, chi2_cut=20)
     xa, ya, an = get_xy_angles(rays.ray_data); xa = -np.array(xa)
     cm.attach_reference_positions(res, rays, params, xa, an)

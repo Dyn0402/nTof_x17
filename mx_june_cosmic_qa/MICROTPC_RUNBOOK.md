@@ -1,5 +1,20 @@
 # Micro-TPC analysis runbook (scripts 13–32)
 
+> **2026-07-14 addendum:** M3 reference recipe is now χ²<1.0 & NClus=4 (`qa_config.py`,
+> was χ²<5 & NClus≥3) — reference-limited residual, see
+> `det3_recofar_analysis/M3_CUT_AND_ACTIVE_AREA_NOTE.md`. Efficiency/core-σ rows below
+> (hit-mode %, core σ) predate this change; fresh fleet numbers are in
+> `JUNE_RESULTS_SUMMARY.md`'s 2026-07-14 changelog (det3 sat run: 92.8→93.4 %, core σ
+> confirmed 0.47–0.48 mm). The drift-velocity/sharing/angle rows (13–32, waveform-based)
+> HAVE since been re-run fleet-wide (same day, second pass) — sat run micro-TPC scoreboard
+> is now **hit-mode 94.2 % (r<10mm fid), segment 48.7 %, plateau bias −0.21° / σ68 1.71°,
+> ψ3D median 2.51°** (was hit-mode 92.8 %/5mm-fid, segment 50.8 %, bias −0.16°/σ68 1.75°,
+> ψ 2.4°) — consistent, not a regression (different R annotation between the two hit-mode
+> quotes, so not a strict apples-to-apples on that one number). Drift velocity / sharing
+> constants unchanged within statistics (fleet table: `REPROCESSING_CONSTANTS.md`
+> 2026-07-14 section). HV scans re-run for det2/det3 (peak +2.4/+5.0 pts, same optimum
+> HV shifted +10–15 V); det6/det7 HV scans not re-run (time cost).
+
 *Operational guide: everything needed to re-run, extend, or audit the
 micro-TPC / drift-velocity / gas / unsharing chain without reading the
 history. Physics narrative: `report_det3_weekend/main.pdf` (rev 4).
@@ -21,8 +36,9 @@ evening after the M3 v2 re-verification (see Sec. 0b).*
 | edge / fringe field | distortion < 25–40 mm from edge: inward δ≈−0.06 tan, T_sat +10–19 %, eff turn-on 0→96 % over 0–25 mm; core uniform | 32 |
 | dead-tail guard | sat-run FEU 8 has no file-003 data (eid > 38,926) — ALL whole-run efficiency quotes need the per-FEU live-range guard | 31/32 (`vetoed_event_ids`) |
 | head-on tagging | angle estimators CANNOT tag θ<5° tracks (production AUC 0.46 = anti-correlated, sharing pushes vertical to ±5–7°); waveform signature LDA AUC 0.92, purity 81 %@20 % eff (prevalence 12 %) | 33 |
-| hybrid tracking | \|θ\|<5° band: σ68 = 1.75° at 97 % coverage (production 14.9°; track-only 5.3° @ 51 %); plateau 1.86° @ 98 % — uniform ~1.8° tracking at all angles | 34 |
-| hybrid transfer (overfit check) | frozen det3 model on det2: 2.85° vs 2.47° self-trained (−15 %), weights ≈ identical across detectors — design property, NOT overfit | 34 `--model=` |
+| hybrid tracking (det3) | \|θ\|<5° band: σ68 = 1.75° at 97 % coverage (production 14.9°; track-only 5.3° @ 51 %); plateau 1.86° @ 98 % — uniform ~1.8° tracking at all angles | 34 |
+| **hybrid tracking (FLEET, 2026-07-12)** | lt5 σ68 / plateau σ68 (self-trained, holdout): **det3 1.75°/1.86°, det2 2.47°/2.17°, det4 2.70°/4.09°, det7 3.64°/4.90°, det6 4.14°/BROKEN**. det6 plateau time-fit fails (X-plane FEU3 no drift structure, v→119, ψ 83°); its lt5 band survives via signature regression. det4 gain-limited (81 % cov) but cleanest new-det tracking. This is the QUOTED angle; script-03 `angular_resolution.json` is alignment-QA-only. | 34 |
+| hybrid transfer (overfit check) | frozen det3 model on other dets (lt5 σ68): det2 2.85° (vs 2.47° self), det4 2.19°, det7 4.88°, det6 3.54° — weights ≈ identical across detectors, design property, NOT overfit | 34 `--model=` |
 | hybrid drift scan | signature-regressed angles (hit-level features, per-point trained, odd-eid holdout) reproduce v_geom(E) at 700–1100 V within +1–3 % (34.30±0.28 vs 35.24±0.58 @1000 V); reg σ68 1.7–2.2° at every field; 500 V window-truncated (+19 %), ≤300 V untrainable | 35 |
 | hit-mode position | track-pointing = parity (86 % cov); full centroid measures a plane ~14 mm deeper (z-scan); **early-charge centroid** (first 2 samples, raw — sharing acts as interpolator) wins at θ<5°: 0.73/0.94 → 0.61/0.72 mm; **COMBO** (early if n≤9 else prod) = recommended | 36 |
 
