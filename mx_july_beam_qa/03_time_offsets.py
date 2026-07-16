@@ -18,7 +18,8 @@ import sys
 from pathlib import Path
 
 import numpy as np
-import uproot
+
+import hitcache
 
 BASE = Path(__file__).parent
 spec = importlib.util.spec_from_file_location('coinc', BASE / '02_coincidence_scan.py')
@@ -36,17 +37,10 @@ DT_CEN = 0.5 * (DT_EDGES[:-1] + DT_EDGES[1:])
 SIDE = np.abs(DT_CEN) > 100
 
 
-def load_station_tree(f, tree_name, good_bunches):
-    good = np.asarray(good_bunches)
-    out = {k: [] for k in ('BunchNumber', 'tof', 'detn', 'tflash')}
-    branches = list(out) if tree_name.startswith('PSS') else ['BunchNumber', 'tof', 'detn']
-    for chunk in f[tree_name].iterate(branches, library='np', step_size='300 MB'):
-        keep = np.isin(chunk['BunchNumber'], good)
-        for k in branches:
-            out[k].append(chunk[k][keep])
-    arrs = {k: np.concatenate(v) for k, v in out.items() if v}
-    order = np.lexsort((arrs['tof'], arrs['BunchNumber']))
-    return {k: v[order] for k, v in arrs.items()}
+def load_station_tree(run_file, tree_name, good_bunches):
+    branches = (['BunchNumber', 'tof', 'detn', 'tflash']
+                if tree_name.startswith('PSS') else ['BunchNumber', 'tof', 'detn'])
+    return hitcache.load(run_file, tree_name, branches, good_bunches=good_bunches)
 
 
 def peak_centroid(hh):
@@ -65,43 +59,34 @@ def peak_centroid(hh):
 
 
 def main():
-    f = uproot.open(RUN_FILE)
-    idx = f['index'].arrays(['BunchNumber', 'PulseIntensity'], library='np')
-    intensity = idx['PulseIntensity'][np.argsort(idx['BunchNumber'])]
+    intensity = coinc.bunch_intensity(RUN_FILE)
     good_bunches = coinc.select_bunches(RUN_FILE.stem, intensity)
     print(f'{len(good_bunches)} good bunches')
 
     offsets = {}
     hists = {}
+    n_dt = len(DT_CEN)
     for st in STATIONS:
-        wal = load_station_tree(f, f'WAL{st}', good_bunches)
-        pss = load_station_tree(f, f'PSS{st}', good_bunches)
+        wal = load_station_tree(RUN_FILE, f'WAL{st}', good_bunches)
+        pss = load_station_tree(RUN_FILE, f'PSS{st}', good_bunches)
         print(f'station {st}: {len(wal["tof"]):,} wall / {len(pss["tof"]):,} pss hits', flush=True)
 
         late = (pss['tof'] - pss['tflash']) > LATE_TOF
-        h = np.zeros((8, 2, len(DT_CEN)))
-        for bn in good_bunches:
-            bn = int(bn)
-            pa, pb = np.searchsorted(pss['BunchNumber'], [bn, bn + 1])
-            wa, wb = np.searchsorted(wal['BunchNumber'], [bn, bn + 1])
-            if pa == pb or wa == wb:
-                continue
-            sel = late[pa:pb]
-            t_pss = pss['tof'][pa:pb][sel]
-            ch_pss = pss['detn'][pa:pb][sel]
-            t_wal, ch_wal = wal['tof'][wa:wb], wal['detn'][wa:wb]
-            dt, ref_idx = coinc.pair_dts(t_pss, t_wal)
-            if len(dt) == 0:
-                continue
-            # recover wall indices from dt and ref: pair_dts returns other-idx implicitly;
-            # recompute here for channel tags
-            lo = np.searchsorted(t_wal, t_pss - coinc.DT_MAX)
-            hi = np.searchsorted(t_wal, t_pss + coinc.DT_MAX)
-            counts = hi - lo
-            within = np.arange(counts.sum()) - np.repeat(np.cumsum(counts) - counts, counts)
-            wal_idx = np.repeat(lo, counts) + within
-            np.add.at(h, (ch_wal[wal_idx] - 1, ch_pss[ref_idx] - 1,
-                          np.clip(np.digitize(dt, DT_EDGES) - 1, 0, len(DT_CEN) - 1)), 1)
+        t_pss = pss['tof'][late]
+        ch_pss = pss['detn'][late].astype(np.int64)
+        key_p = hitcache.bunch_key(pss['BunchNumber'][late], t_pss)
+        t_wal = wal['tof']
+        ch_wal = wal['detn'].astype(np.int64)
+        key_w = hitcache.bunch_key(wal['BunchNumber'], t_wal)
+
+        acc = np.zeros(8 * 2 * n_dt, dtype=np.int64)
+        for ri, oi in hitcache.iter_pairs(key_p, key_w, -coinc.DT_MAX, coinc.DT_MAX,
+                                          t_pss, t_wal):
+            dt = t_wal[oi] - t_pss[ri]
+            dtb = np.clip(np.digitize(dt, DT_EDGES) - 1, 0, n_dt - 1)
+            idx = ((ch_wal[oi] - 1) * 2 + (ch_pss[ri] - 1)) * n_dt + dtb
+            acc += np.bincount(idx, minlength=len(acc))
+        h = acc.reshape(8, 2, n_dt).astype(float)
 
         hists[st] = h
         offsets[st] = {}

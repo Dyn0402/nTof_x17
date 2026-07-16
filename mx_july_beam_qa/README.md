@@ -53,6 +53,31 @@ walls (WAL) and back plastic scintillators (PSS) to MIPs using coincidences.
 6. **Plastic PMT relative gains** within +-30% (AL lowest 0.74, DL highest 1.26); HV
    equalization table in 10 output (G ~ V^7 assumed — needs a 2-point HV scan).
 
+## Key results (plastic HV scan, run224466, 2026-07-16)
+
+Scan log + handoff doc: `~/beam_july/scint_hv_scan/2026-07-16_13-32-34_plastic_scan_1/`
+(pulled from the DAQ machine). 9 steps x ~10 min, all 8 plastic PMTs at a common HV
+(pass 1: 1600->1200 V, SiPM flash-gating OFF; pass 2: 1550->1250 V, gating ON), plus
+two free reference windows in the same run: pre-scan (all at 1500 V) and post-scan
+(per-channel nominal). Bunches assigned to steps by PKUP `psTime` (ns UTC; local =
+UTC+2). Analysis: `12_plastic_hv_scan.py` (+`12b` figures in `figures/12_hv_scan/`).
+
+1. **Wall MIP peaks are immune to the plastic HV** (the question that motivated the
+   scan): ch-summed sideband-subtracted wall MIP peak stays within +-1 amplitude bin
+   (+-2.6%) on all 4 arms across 1200-1600 V — a 3x change in tag rate — and across
+   the gating boundary. The B/C MIP calibration transfers unchanged.
+2. **Per-PMT gain power laws measured**: coincident (wall-tagged, sideband-subtracted)
+   plastic median ~ V^n with n = 4.8-6.9 per PMT, passes consistent, pre-scan 1500 V
+   point reproduces step 2 exactly. (Inclusive-spectrum medians are NOT a gain proxy —
+   threshold bias flattens them; use the coincident spectra.)
+3. **HV equalization table** (12b output, targets fleet geo-mean coincident median):
+   AL -22, AR -33, BL +51, BR -21, CL -120, CR +7, DL +3, DR +117 V. Spread at current
+   nominals is 2.8x (CL highest, DR lowest) — supersedes the G~V^7 guess in 10.
+4. **No rate plateau up to 1600 V** (threshold sits inside the spectrum) and the
+   late-tof (>0.1 ms) rates are unaffected by the flash gating; flash-window wall
+   occupancy drops only ~4-6% with gating ON (weaker effect than expected — check
+   what M6.C actually blanks).
+
 ## OPEN FLAGS / questions for the collaboration
 
 - **[ ] SiPM wall outage, run 224404**: all 32 WAL channels dead for bunches ~643-2212
@@ -70,6 +95,35 @@ walls (WAL) and back plastic scintillators (PSS) to MIPs using coincidences.
 - **[ ] dt satellite bump at ~-60 ns** (WALB-PSSB, WALC-PSSC, late tof): afterpulse or
   reflection? Excluded from signal window and sidebands.
 
+## Fast read pass (2026-07-16): C++ hit cache + vectorized pairing
+
+The read pass used to take ~89 min/run (six scripts each re-reading the 10-18 GB
+root file with uproot, then per-bunch python pairing loops). It now runs in ~10 min
+total on the laptop:
+
+1. **Extract once** (C++, ~2-4 min/run): `fastread/extract_hits` reads the 9 needed
+   branches of every hit tree in parallel threads, sorts by (bunch, tof), and dumps
+   flat `.npy` arrays to `<data_dir>/hitcache/<run_stem>/` (~8 GB/run, memmapped by
+   the scripts). Build with `make` in `fastread/` (needs `root-config` in PATH;
+   local ROOT 6.36.06 works). `satuflag`/`pileup1` are stored as uint8 (!=0).
+2. **Analyze** (~seconds-minutes/script): all six read-pass scripts load via
+   `hitcache.py`, which memmaps the cache when present and falls back to the old
+   chunked-uproot read when it isn't (so the lxplus/condor path still works
+   unchanged, minus the speedup). The per-bunch pairing loops are replaced by one
+   global sorted-key search (`hitcache.iter_pairs`; key = bunch*1e9 + tof ns),
+   yielding the exact same pair windows as the old code.
+
+Validated on run224404 against the pre-existing caches: 01/03/06/07/09 and the
+offsets JSON are bit-identical. 02 is bit-identical after summing over tof-regions;
+the region split itself moves ~0.002% of hits between adjacent decade regions from
+one benign convention change — the per-bunch `tflash` is now the earliest-tof hit's
+tflash instead of the first hit in file order (tflash is per-hit and varies ~µs
+within a bunch, so both picks are arbitrary; the new one is deterministic).
+
+Timing on the laptop (8 cores, run224404 = 299M hits): extract 225 s, then
+01: 146 s, 02: 146 s, 03: 29 s, 06: 54 s, 07: 36 s, 09: 46 s (~11 min total
+including extraction, vs ~89 min for the old read pass on lxplus).
+
 ## Pipeline (scripts, in order; all cache to `cache/*.npz`, figures to `figures/`)
 
 | # | script | what it does |
@@ -85,19 +139,26 @@ walls (WAL) and back plastic scintillators (PSS) to MIPs using coincidences.
 | 09 | `09_late_inclusive.py` | late-tof inclusive spectra + wall-only top-bottom pair spectra |
 | 10 | `10_pmt_gain.py` | plastic PMT raw-vs-coinc overlays, relative gains, HV suggestions |
 | 11 | `11_concept_diagrams.py` | top-down concept sketches (current selection; with LIQ readout) |
+| 12 | `12_plastic_hv_scan.py` (+`12b`) | plastic HV scan (run224466 x CAEN log): per-step spectra/rates, wall-MIP stability, gain power laws, HV equalization |
 
-The read pass (01/02/03/06/07/09, all pure-read) can run on lxplus/HTCondor next to the
+The whole read pass now also runs locally in ~10 min via `./run_readpass.sh <run.root>` (C++ hit-cache extraction + vectorized pairing, see "Fast read pass" above). It can still run on lxplus/HTCondor next to the
 EOS data instead of pulling the 13-18 GB file local — see `lxplus/README.md` (benchmarked
 on run224461: ~89 min/run, only ~2.4 MB of caches come back, plotting stays local).
 
-Shared helpers: `adc_mv.py` (ADC->mV factors). Scripts 03/06/07/09 import
-`02_coincidence_scan.py` via importlib for `select_bunches`/`pair_dts`.
+Shared helpers: `adc_mv.py` (ADC->mV factors), `hitcache.py` (binary hit cache /
+uproot fallback + global pair finder; see "Fast read pass" above). Scripts
+03/06/07/09 import `02_coincidence_scan.py` via importlib for `select_bunches`
+and friends.
 Selection everywhere: beam-on & wall-active bunches (>2212) and tof-tflash > 0.1 ms.
 Python: repo venv `.venv` (numpy 1.x: use `np.trapz`; uproot; python-pptx; PIL).
 
 ## Deliverables
 
 - `report/mip_report.pdf` — 5-page LaTeX writeup (rebuild: `pdflatex mip_report.tex` in `report/`).
+- `report/hv_scan_report.pdf` — 8-page LaTeX writeup of the run-224466 plastic HV
+  scan (scan timeline, gain power laws with linear+log spectra in mV, HV
+  equalization table + construction diagram, target-choice rationale, wall-MIP
+  stability, gating check, first trigger-threshold recommendation 4-5 mV).
 - `slides/mip_slides.pdf` — 16-frame beamer deck for 7/17 (rebuild in `slides/`).
 - `slides/mip_slides.pptx` — same content in Dylan's usual Google-Slides-derived
   template (regenerate: `python slides/build_pptx.py`; template read from

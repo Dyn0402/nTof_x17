@@ -20,7 +20,8 @@ import sys
 from pathlib import Path
 
 import numpy as np
-import uproot
+
+import hitcache
 
 BASE = Path(__file__).parent
 spec = importlib.util.spec_from_file_location('coinc', BASE / '02_coincidence_scan.py')
@@ -35,72 +36,46 @@ DT_MAX = DT_EDGES[-1]
 LATE_TOF = 1.2e4 + 1e5   # ns since acq start: flash ~11.7us + 0.1ms
 
 
-def load_wall(f, tree_name, good_bunches):
-    out = {k: [] for k in ('BunchNumber', 'tof', 'detn')}
-    for chunk in f[tree_name].iterate(list(out), library='np', step_size='300 MB'):
-        keep = np.isin(chunk['BunchNumber'], good_bunches) & (chunk['tof'] > LATE_TOF)
-        for k in out:
-            out[k].append(chunk[k][keep])
-    arrs = {k: np.concatenate(v) for k, v in out.items()}
-    order = np.lexsort((arrs['tof'], arrs['BunchNumber']))
-    return {k: v[order] for k, v in arrs.items()}
+def load_wall(run_file, tree_name, good_bunches):
+    d = hitcache.load(run_file, tree_name, ['BunchNumber', 'tof', 'detn'],
+                      good_bunches=good_bunches)
+    late = d['tof'] > LATE_TOF
+    return {k: v[late] for k, v in d.items()}
 
 
-def pair_idx(t_ref, t_other):
-    lo = np.searchsorted(t_other, t_ref - DT_MAX)
-    hi = np.searchsorted(t_other, t_ref + DT_MAX)
-    counts = hi - lo
-    tot = int(counts.sum())
-    if tot == 0:
-        return (np.empty(0, np.int64),) * 2
-    ref_idx = np.repeat(np.arange(len(t_ref)), counts)
-    within = np.arange(tot) - np.repeat(np.cumsum(counts) - counts, counts)
-    return ref_idx, np.repeat(lo, counts) + within
-
-
-def hist_pairs(dat_a, dat_b, good_bunches, n_a=8, n_b=8, same=False):
+def hist_pairs(dat_a, dat_b, n_a=8, n_b=8, same=False):
     """(n_a, n_b, ndt) dt histograms; same=True excludes self-pairs."""
-    h = np.zeros((n_a, n_b, len(DT_EDGES) - 1))
-    for bn in good_bunches:
-        bn = int(bn)
-        aa, ab = np.searchsorted(dat_a['BunchNumber'], [bn, bn + 1])
-        if same:
-            ba, bb = aa, ab
-        else:
-            ba, bb = np.searchsorted(dat_b['BunchNumber'], [bn, bn + 1])
-        if aa == ab or ba == bb:
-            continue
-        ta, tb = dat_a['tof'][aa:ab], dat_b['tof'][ba:bb]
-        ri, oi = pair_idx(ta, tb)
-        if len(ri) == 0:
-            continue
+    n_dt = len(DT_EDGES) - 1
+    ta, tb = dat_a['tof'], dat_b['tof']
+    cha = dat_a['detn'].astype(np.int64) - 1
+    chb = dat_b['detn'].astype(np.int64) - 1
+    key_a = hitcache.bunch_key(dat_a['BunchNumber'], ta)
+    key_b = hitcache.bunch_key(dat_b['BunchNumber'], tb)
+    acc = np.zeros(n_a * n_b * n_dt, dtype=np.int64)
+    for ri, oi in hitcache.iter_pairs(key_a, key_b, -DT_MAX, DT_MAX, ta, tb):
         if same:
             keep = ri != oi
             ri, oi = ri[keep], oi[keep]
         dt = tb[oi] - ta[ri]
-        cha = dat_a['detn'][aa:ab][ri] - 1
-        chb = dat_b['detn'][ba:bb][oi] - 1
-        np.add.at(h, (cha, chb, np.clip(np.digitize(dt, DT_EDGES) - 1, 0,
-                                        len(DT_EDGES) - 2)), 1)
-    return h
+        dtb = np.clip(np.digitize(dt, DT_EDGES) - 1, 0, n_dt - 1)
+        acc += np.bincount((cha[ri] * n_b + chb[oi]) * n_dt + dtb,
+                           minlength=len(acc))
+    return acc.reshape(n_a, n_b, n_dt).astype(float)
 
 
 def main():
-    f = uproot.open(RUN_FILE)
-    idx = f['index'].arrays(['BunchNumber', 'PulseIntensity'], library='np')
-    intensity = idx['PulseIntensity'][np.argsort(idx['BunchNumber'])]
+    intensity = coinc.bunch_intensity(RUN_FILE)
     good_bunches = coinc.select_bunches(RUN_FILE.stem, intensity)
     print(f'{len(good_bunches)} good bunches, late-TOF wall hits only')
 
     results = {}
     for pair in [('A', 'D'), ('B', 'C')]:
-        dat = {st: load_wall(f, f'WAL{st}', good_bunches) for st in pair}
+        dat = {st: load_wall(RUN_FILE, f'WAL{st}', good_bunches) for st in pair}
         for st in pair:
             print(f'  WAL{st}: {len(dat[st]["tof"]):,} late hits', flush=True)
-            results[f'intra_{st}'] = hist_pairs(dat[st], dat[st], good_bunches, same=True)
+            results[f'intra_{st}'] = hist_pairs(dat[st], dat[st], same=True)
             print(f'  intra-{st} done', flush=True)
-        results[f'cross_{pair[0]}{pair[1]}'] = hist_pairs(dat[pair[0]], dat[pair[1]],
-                                                          good_bunches)
+        results[f'cross_{pair[0]}{pair[1]}'] = hist_pairs(dat[pair[0]], dat[pair[1]])
         print(f'  cross {pair[0]}-{pair[1]} done', flush=True)
 
     np.savez_compressed(CACHE / f'06_wallgeom_{RUN_FILE.stem}.npz',
