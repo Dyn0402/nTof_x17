@@ -1,0 +1,35 @@
+# Condor submit for the July-beam read pass. Run the whole read pass next to the EOS
+# data and get ~2.4 MB of caches back. Submit with the run number as a variable:
+#
+#   ssh lxplus            # (user dneff, GSSAPI/Kerberos; klist must be valid)
+#   cd ~/x17qa            # working dir holding the 0X.py scripts + these two files
+#   myschedd bump         # pick a schedd (prints e.g. bigbird25.cern.ch)
+#   condor_submit readpass.sub run=224461
+#   condor_q <id> -name bigbird25.cern.ch          # status (re-pass -name each session)
+#   condor_tail <id> -name bigbird25.cern.ch       # live stdout of a running job
+#
+# On completion condor drops cache/ and calib/ into ~/x17qa; rsync them local:
+#   rsync -av -e 'ssh -o ControlPath=none' lxplus:x17qa/cache/*runNNN* ./cache/
+#   rsync -av -e 'ssh -o ControlPath=none' lxplus:x17qa/calib/*runNNN* ./calib/
+#
+# NOTE: pull the scripts fresh into ~/x17qa before submitting (rsync the repo *.py):
+#   rsync -av -e 'ssh -o ControlPath=none' mx_july_beam_qa/*.py lxplus:x17qa/
+#   rsync -av -e 'ssh -o ControlPath=none' mx_july_beam_qa/lxplus/ lxplus:x17qa/
+
+universe                = vanilla
+executable              = readpass_wrapper.sh
+arguments               = $(run)
+transfer_input_files    = 01_signal_qa.py,02_coincidence_scan.py,03_time_offsets.py,06_wall_geometry_test.py,07_mip_amplitude.py,09_late_inclusive.py,adc_mv.py
+should_transfer_files   = YES
+when_to_transfer_output = ON_EXIT
+transfer_output_files   = cache,calib
+output                  = job_$(ClusterId).out
+error                   = job_$(ClusterId).err
+log                     = job_$(ClusterId).log
+
+request_cpus            = 1
+request_memory          = 16 GB          # peak RSS ~15.9 GB on run224461 (02/03/07/09)
+request_disk            = 25 GB          # 18 GB raw copy in node-local scratch
++JobFlavour             = "longlunch"    # 2 h; full pass ~89 min on run224461
+
+queue
