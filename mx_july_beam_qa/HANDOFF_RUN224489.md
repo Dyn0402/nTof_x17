@@ -77,27 +77,42 @@ These change the interpretation of EVERYTHING downstream — read carefully.
    flipped mid-run), no gating boundary to handle — but flash-window wall
    occupancy is not comparable to 224466 pass-1 steps.
 
-## 3. The HV scan log (REQUIRED before the scan analysis)
+## 3. The HV scan log — pull it yourself, no Dylan needed
 
-The per-step HV/beam log is written by the scan tool on the DAQ machine and
-must be pulled, same as last time. For 224466 it landed at
-`~/beam_july/scint_hv_scan/2026-07-16_13-32-34_plastic_scan_1/` with:
-- `hv_beam_monitor.csv` — 5 s rows: `timestamp, step_label, target_v`,
-  per-PMT `vmon/imon`, beam state (`beam_last_pulse_time`, e10 charge).
-- `RUN_NOTES.md`, `ANALYSIS_REPORT.md` — step grid, gating state, gotchas.
+The desktop has passwordless ssh to BOTH machines: `ssh lxplus` (data) and
+`ssh daq_lxplus` (DAQ machine, host mx17-daq, user mx17). Verified working
+2026-07-17. Pull the scan log with:
 
-Look for a `2026-07-17_*` sibling directory (may already be pulled to
-`~/beam_july/scint_hv_scan/` on the desktop; otherwise scp from the DAQ
-machine — Dylan can say where, likely the same location the 07-16 one came
-from). Bunches are assigned to steps by matching PKUP `psTime` (ns, UTC;
-local = UTC+2) against the CSV timestamps (local) — the exact machinery is in
-`12_plastic_hv_scan.py`.
+```
+mkdir -p ~/beam_july/scint_hv_scan
+scp -r daq_lxplus:beam_july/scint_hv_scan/2026-07-17_17-41-11_plastic_scan_2 \
+    ~/beam_july/scint_hv_scan/
+```
 
-**Per Dylan: the scan stepped the PLASTICS ONLY — liquid HVs were fixed
-throughout**, so the LIQ tasks (T5/T6) can integrate over the whole run
-(subject to the plastic-HV step splitting for anything involving plastic
-amplitudes). The log is pulled the same way as last time, same tool, into
-`~/beam_july/scint_hv_scan/` — look for the `2026-07-17_*` directory.
+Contents (already read on 2026-07-17): `hv_beam_monitor.csv` (947 rows, 5 s
+cadence: `timestamp, step_label, target_v`, per-PMT vmon/imon, beam state)
+and `RUN_NOTES.md`. Key facts from the notes so you can plan without it:
+
+- **Same 9-step ladder as the 07-16 scan**: pass 1 = 1600, 1500, 1400, 1300,
+  1200 V (steps 1–5); pass 2 = 1550, 1450, 1350, 1250 V (steps 6–9); merged
+  = uniform 50 V grid 1200–1600 V. ~100k e10 protons per step.
+- Step start times (LOCAL = UTC+2): 1(1600) 17:41 · 2(1500) 17:50 ·
+  3(1400) 18:00 · 4(1300) 18:09 · 5(1200) 18:19 · 6(1550) 18:28 ·
+  7(1450) 18:38 · 8(1350) 18:47 · 9(1250) 18:56. Scan done 19:05:29.
+- **SiPM gating ON the entire run** — single condition, no boundary
+  (matches Dylan; RUN_NOTES confirms).
+- No HV trips; imon steady 160–175 µA; END_ACTION='nominal' ramped back to
+  per-channel 1275–1325 V at 19:05.
+- **Post-scan reference window**: 19:05–19:17 local (run's last PKUP pulse
+  19:17:04 local) at per-channel nominal HV — ~12 min, use like 224466's
+  post-scan window. A PRE-scan window is short or absent (first raw file
+  closed 17:40, scan started 17:41) — check in the data, don't assume one.
+- **Plastics only were stepped — liquid HVs fixed throughout** (Dylan), so
+  the LIQ tasks (T5/T6) can integrate over the whole run (subject to
+  plastic-HV step splitting for anything involving plastic amplitudes).
+
+Bunch→step assignment: match PKUP `psTime` (ns, UTC) against the CSV
+timestamps (LOCAL, UTC+2) — machinery in `12_plastic_hv_scan.py`.
 
 ## 4. Task list (ordered; each builds on the previous)
 
@@ -217,13 +232,15 @@ with the actual PMT location from the Geant geometry.
 - lxplus condor fallback for the read pass exists (`lxplus/README.md`) if
   the desktop is busy: ~89 min/run, ~2.4 MB of caches come back.
 
-## 7. Already answered by Dylan (2026-07-17, on the train)
+## 7. Already answered — nothing blocks on Dylan
 
-1. Scan log: pulled the same way as the 07-16 one, same tool → expect a
-   `2026-07-17_*` dir in `~/beam_july/scint_hv_scan/`. If it isn't there
-   yet, ask Dylan to pull it from the DAQ machine.
+1. Scan log: pull it yourself from the DAQ machine (§3, exact scp command).
 2. Scan scope: **plastics only**; liquid HVs fixed the whole run.
-3. SiPM gating: **ON the whole run**.
+3. SiPM gating: **ON the whole run** (Dylan + RUN_NOTES agree).
+4. Step grid, timings, reference windows: all in §3.
+5. Nominal (non-scan) plastic HVs: per-channel 1275–1325 V (restored at
+   19:05; exact per-channel values in the CSV `end_state` row and in
+   README.md §"Detector naming": AL 1325, AR 1275, BL 1325, rest 1300).
 
-Still open: the exact step grid / charge per step / whether pre/post-scan
-reference windows exist — read RUN_NOTES.md in the scan-log dir.
+You have ssh to `lxplus` (EOS data, condor) and `daq_lxplus` (scan logs,
+DAQ config) — if something is missing, go look for it there before asking.
