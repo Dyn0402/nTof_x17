@@ -205,3 +205,7 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# Local IDE config and derived analysis output (not tracked)
+.idea/
+ntof_may_analysis/output/
