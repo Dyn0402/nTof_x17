@@ -28,9 +28,13 @@ CACHE = BASE / 'cache'
 
 WALL_TREES = ['WALA', 'WALB', 'WALC', 'WALD']
 PSS_TREES = ['PSSA', 'PSSB', 'PSSC', 'PSSD']
+LIQ_TREES = ['LIQA', 'LIQB', 'LIQC', 'LIQD']    # liquids, from run224489 on
 
 DT_EDGES = np.arange(-150.0, 150.0 + 0.5, 1.0)          # ns, 1 ns bins
 DT_MAX = DT_EDGES[-1]
+# LIQ never timed in: scan generously to even find the peak (same-arm pairs only)
+DT_EDGES_LIQ = np.arange(-400.0, 400.0 + 0.5, 1.0)
+DT_MAX_LIQ = DT_EDGES_LIQ[-1]
 # time since gamma flash (pss hit), ns: pre-flash, <1us, 1-10us, 10-100us, 0.1-1ms, >1ms
 REGION_EDGES = np.array([-np.inf, 0, 1e3, 1e4, 1e5, 1e6, np.inf])
 REGION_LABELS = ['pre-flash', '0-1us', '1-10us', '10-100us', '0.1-1ms', '>1ms']
@@ -129,8 +133,45 @@ def main():
             print(f'  {w}x{p}: {int(h[(w, p)].sum()):,} pairs '
                   f'({time.time() - t0:.0f}s)', flush=True)
 
+    # --- same-arm LIQ pairings (wide window; LIQ trees exist from run224489 on)
+    d = hitcache.cache_dir(RUN_FILE)
+    liq_avail = [t for t in LIQ_TREES
+                 if d is not None and (d / f'{t}_bunch.npy').exists()]
+    n_dt_liq = len(DT_EDGES_LIQ) - 1
+    h_liq, n_liq_hits = {}, {}
+    for lq in liq_avail:
+        arm = lq[-1]
+        b_l, t_l, tflash_l = load_tree(RUN_FILE, lq, good_bunches, need_tflash=True)
+        region_l = np.digitize(t_l - tflash_l[b_l], REGION_EDGES) - 1
+        region_l = np.clip(region_l, 0, n_reg)
+        ded_l = ded_by_bunch[b_l]
+        n_liq_hits[lq] = np.bincount(ded_l * (n_reg + 1) + region_l,
+                                     minlength=2 * (n_reg + 1)
+                                     ).reshape(2, n_reg + 1)[:, :n_reg].astype(float)
+        key_l = hitcache.bunch_key(b_l, t_l)
+        print(f'  loaded {lq}: {len(b_l):,} hits in good bunches '
+              f'({time.time() - t0:.0f}s)', flush=True)
+        for other in (f'WAL{arm}', f'PSS{arm}'):
+            b_o, t_o, _ = load_tree(RUN_FILE, other, good_bunches, need_tflash=False)
+            key_o = hitcache.bunch_key(b_o, t_o)
+            acc = np.zeros(2 * n_reg * n_dt_liq, dtype=np.int64)
+            for ri, oi in hitcache.iter_pairs(key_l, key_o, -DT_MAX_LIQ, DT_MAX_LIQ,
+                                              t_l, t_o):
+                dt = t_o[oi] - t_l[ri]
+                dtb = np.digitize(dt, DT_EDGES_LIQ) - 1
+                ok = (dtb >= 0) & (dtb < n_dt_liq) & (region_l[ri] < n_reg)
+                idx = (ded_l[ri[ok]] * n_reg + region_l[ri[ok]]) * n_dt_liq + dtb[ok]
+                acc += np.bincount(idx, minlength=len(acc))
+            h_liq[(other, lq)] = acc.reshape(2, n_reg, n_dt_liq).astype(float)
+            print(f'  {other}x{lq}: {int(h_liq[(other, lq)].sum()):,} pairs '
+                  f'({time.time() - t0:.0f}s)', flush=True)
+
     out = {f'{w}_{p}': h[(w, p)] for w in WALL_TREES for p in PSS_TREES}
     out.update({f'npss_{p}': n_pss_hits[p] for p in PSS_TREES})
+    out.update({f'{o}_{lq}': v for (o, lq), v in h_liq.items()})
+    out.update({f'nliq_{lq}': n_liq_hits[lq] for lq in liq_avail})
+    if liq_avail:
+        out['dt_edges_liq'] = DT_EDGES_LIQ
     np.savez_compressed(CACHE / f'02_coinc_{RUN_FILE.stem}.npz',
                         dt_edges=DT_EDGES, region_edges=REGION_EDGES,
                         region_labels=np.array(REGION_LABELS),
@@ -154,6 +195,16 @@ def main():
             n_in, n_exp = hh[win].sum(), base * win.sum()
             print(f'{w}-{p:6s} {cen[imax]:8.1f} {n_in:10.0f} {n_exp:10.0f} '
                   f'{n_in - n_exp:10.0f}')
+    for (o, lq), v in h_liq.items():
+        hh = v.sum(axis=(0, 1))
+        cen = 0.5 * (DT_EDGES_LIQ[:-1] + DT_EDGES_LIQ[1:])
+        side = (np.abs(cen) > 350)
+        base = hh[side].mean()
+        imax = np.argmax(hh - base)
+        win = np.abs(cen - cen[imax]) <= 10
+        n_in, n_exp = hh[win].sum(), base * win.sum()
+        print(f'{o}-{lq:6s} {cen[imax]:8.1f} {n_in:10.0f} {n_exp:10.0f} '
+              f'{n_in - n_exp:10.0f}')
 
 
 if __name__ == '__main__':

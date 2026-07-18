@@ -1,0 +1,215 @@
+{
+  "run": "run224489",
+  "definition": "dt = t_det - t_liq; subtract offset_ns to center at 0",
+  "sample": "late (tof - tflash > 0.1 ms) LIQ hits, good bunches, no third-detector requirement",
+  "stations": {
+    "A": {
+      "WALA1_LIQA1": {
+        "offset_ns": -7.07,
+        "rms_ns": 4.49,
+        "n_excess": 8061
+      },
+      "WALA2_LIQA1": {
+        "offset_ns": 1.77,
+        "rms_ns": 4.1,
+        "n_excess": 8161
+      },
+      "WALA3_LIQA1": {
+        "offset_ns": -2.02,
+        "rms_ns": 4.29,
+        "n_excess": 9776
+      },
+      "WALA4_LIQA1": {
+        "offset_ns": 2.25,
+        "rms_ns": 4.19,
+        "n_excess": 10854
+      },
+      "WALA5_LIQA1": {
+        "offset_ns": -4.7,
+        "rms_ns": 3.88,
+        "n_excess": 13915
+      },
+      "WALA6_LIQA1": {
+        "offset_ns": 2.63,
+        "rms_ns": 4.13,
+        "n_excess": 14469
+      },
+      "WALA7_LIQA1": {
+        "offset_ns": -3.66,
+        "rms_ns": 3.46,
+        "n_excess": 26415
+      },
+      "WALA8_LIQA1": {
+        "offset_ns": 4.4,
+        "rms_ns": 3.55,
+        "n_excess": 29336
+      },
+      "PSSA1_LIQA1": {
+        "offset_ns": 27.97,
+        "rms_ns": 4.16,
+        "n_excess": 124567
+      },
+      "PSSA2_LIQA1": {
+        "offset_ns": 34.18,
+        "rms_ns": 3.77,
+        "n_excess": 243217
+      }
+    },
+    "B": {
+      "WALB1_LIQB1": {
+        "offset_ns": -1.51,
+        "rms_ns": 3.69,
+        "n_excess": 19257
+      },
+      "WALB2_LIQB1": {
+        "offset_ns": -1.75,
+        "rms_ns": 3.76,
+        "n_excess": 19568
+      },
+      "WALB3_LIQB1": {
+        "offset_ns": -5.4,
+        "rms_ns": 3.69,
+        "n_excess": 27667
+      },
+      "WALB4_LIQB1": {
+        "offset_ns": 4.37,
+        "rms_ns": 3.54,
+        "n_excess": 26028
+      },
+      "WALB5_LIQB1": {
+        "offset_ns": -0.4,
+        "rms_ns": 3.66,
+        "n_excess": 31484
+      },
+      "WALB6_LIQB1": {
+        "offset_ns": -1.5,
+        "rms_ns": 3.53,
+        "n_excess": 29071
+      },
+      "WALB7_LIQB1": {
+        "offset_ns": -0.17,
+        "rms_ns": 3.71,
+        "n_excess": 20077
+      },
+      "WALB8_LIQB1": {
+        "offset_ns": -0.16,
+        "rms_ns": 3.66,
+        "n_excess": 17662
+      },
+      "PSSB1_LIQB1": {
+        "offset_ns": 29.44,
+        "rms_ns": 3.97,
+        "n_excess": 286645
+      },
+      "PSSB2_LIQB1": {
+        "offset_ns": 30.19,
+        "rms_ns": 4.02,
+        "n_excess": 331217
+      }
+    },
+    "C": {
+      "WALC1_LIQC1": {
+        "offset_ns": -6.25,
+        "rms_ns": 4.15,
+        "n_excess": 3018
+      },
+      "WALC2_LIQC1": {
+        "offset_ns": -4.63,
+        "rms_ns": 4.24,
+        "n_excess": 2664
+      },
+      "WALC3_LIQC1": {
+        "offset_ns": -0.69,
+        "rms_ns": 3.94,
+        "n_excess": 4976
+      },
+      "WALC4_LIQC1": {
+        "offset_ns": -3.29,
+        "rms_ns": 3.84,
+        "n_excess": 4702
+      },
+      "WALC5_LIQC1": {
+        "offset_ns": -1.51,
+        "rms_ns": 3.67,
+        "n_excess": 5985
+      },
+      "WALC6_LIQC1": {
+        "offset_ns": -3.69,
+        "rms_ns": 3.5,
+        "n_excess": 5654
+      },
+      "WALC7_LIQC1": {
+        "offset_ns": -5.96,
+        "rms_ns": 4.48,
+        "n_excess": 2942
+      },
+      "WALC8_LIQC1": {
+        "offset_ns": -5.65,
+        "rms_ns": 4.43,
+        "n_excess": 2703
+      },
+      "PSSC1_LIQC1": {
+        "offset_ns": 28.89,
+        "rms_ns": 3.41,
+        "n_excess": 30430
+      },
+      "PSSC2_LIQC1": {
+        "offset_ns": 32.24,
+        "rms_ns": 3.99,
+        "n_excess": 39207
+      }
+    },
+    "D": {
+      "WALD1_LIQD1": {
+        "offset_ns": -1.56,
+        "rms_ns": 4.11,
+        "n_excess": 6313
+      },
+      "WALD2_LIQD1": {
+        "offset_ns": -1.23,
+        "rms_ns": 3.9,
+        "n_excess": 5773
+      },
+      "WALD3_LIQD1": {
+        "offset_ns": -3.55,
+        "rms_ns": 3.98,
+        "n_excess": 7511
+      },
+      "WALD4_LIQD1": {
+        "offset_ns": -4.38,
+        "rms_ns": 3.82,
+        "n_excess": 7277
+      },
+      "WALD5_LIQD1": {
+        "offset_ns": -0.37,
+        "rms_ns": 3.8,
+        "n_excess": 10713
+      },
+      "WALD6_LIQD1": {
+        "offset_ns": -4.2,
+        "rms_ns": 3.81,
+        "n_excess": 10995
+      },
+      "WALD7_LIQD1": {
+        "offset_ns": 0.5,
+        "rms_ns": 3.26,
+        "n_excess": 21011
+      },
+      "WALD8_LIQD1": {
+        "offset_ns": 0.6,
+        "rms_ns": 3.24,
+        "n_excess": 22340
+      },
+      "PSSD1_LIQD1": {
+        "offset_ns": 28.83,
+        "rms_ns": 3.72,
+        "n_excess": 85901
+      },
+      "PSSD2_LIQD1": {
+        "offset_ns": 31.21,
+        "rms_ns": 3.92,
+        "n_excess": 169739
+      }
+    }
+  }
+}

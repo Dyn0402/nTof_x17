@@ -1,0 +1,64 @@
+{
+  "run": "run224489",
+  "method": "WALxPSSxLIQ triple-tagged plastic MIP modes at V>=1400V, transported to nominal V with the coincident-median power-law n (12 cache); dE assumes normal incidence through 2.5 cm PVT",
+  "dE_MeV": 5.046,
+  "caveat": "path-length spread from incidence angle not corrected (~+10-20% mean); PSSC1 spread inflated by one outlier step",
+  "pmts": {
+    "PSSA1": {
+      "V_nominal": 1325,
+      "mip_mv": 11.5,
+      "mv_per_mev": 2.279,
+      "log_spread": 0.2,
+      "n_powerlaw": 6.94
+    },
+    "PSSA2": {
+      "V_nominal": 1275,
+      "mip_mv": 8.9,
+      "mv_per_mev": 1.764,
+      "log_spread": 0.1,
+      "n_powerlaw": 5.08
+    },
+    "PSSB1": {
+      "V_nominal": 1325,
+      "mip_mv": 4.5,
+      "mv_per_mev": 0.892,
+      "log_spread": 0.19,
+      "n_powerlaw": 5.19
+    },
+    "PSSB2": {
+      "V_nominal": 1300,
+      "mip_mv": 8.4,
+      "mv_per_mev": 1.665,
+      "log_spread": 0.24,
+      "n_powerlaw": 7.1
+    },
+    "PSSC1": {
+      "V_nominal": 1300,
+      "mip_mv": 14.3,
+      "mv_per_mev": 2.834,
+      "log_spread": 0.78,
+      "n_powerlaw": 3.8
+    },
+    "PSSC2": {
+      "V_nominal": 1300,
+      "mip_mv": 8.0,
+      "mv_per_mev": 1.585,
+      "log_spread": 0.22,
+      "n_powerlaw": 6.64
+    },
+    "PSSD1": {
+      "V_nominal": 1300,
+      "mip_mv": 5.2,
+      "mv_per_mev": 1.03,
+      "log_spread": 0.21,
+      "n_powerlaw": 5.77
+    },
+    "PSSD2": {
+      "V_nominal": 1300,
+      "mip_mv": 3.7,
+      "mv_per_mev": 0.733,
+      "log_spread": 0.15,
+      "n_powerlaw": 6.39
+    }
+  }
+}

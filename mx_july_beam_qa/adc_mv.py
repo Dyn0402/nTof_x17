@@ -27,7 +27,7 @@ def mv_factors(run_file=DEFAULT_RUN):
         for name, detn, fs, rng in zip(t['detectorName'], t['detectorNumber'],
                                        t['fullScalemV'], t['ADCrange']):
             name = str(name)
-            if name.startswith(('WAL', 'PSS')):
+            if name.startswith(('WAL', 'PSS', 'LIQ')):
                 out.setdefault(name, {})[int(detn)] = fs / rng
         cal.parent.mkdir(exist_ok=True)
         cal.write_text(json.dumps({'run': Path(run_file).stem,

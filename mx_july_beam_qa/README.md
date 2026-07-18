@@ -78,6 +78,57 @@ UTC+2). Analysis: `12_plastic_hv_scan.py` (+`12b` figures in `figures/12_hv_scan
    occupancy drops only ~4-6% with gating ON (weaker effect than expected — check
    what M6.C actually blanks).
 
+## Key results (run 224489, 2026-07-17: HV scan 2, FIFO path, first LIQ)
+
+Second plastic HV scan (same 9-step ladder, SiPM gating ON throughout, scan log
+`~/beam_july/scint_hv_scan/2026-07-17_17-41-11_plastic_scan_2/`), first run with
+the liquid scintillators (LIQA-D, 1 ch each), plastics on the new linear
+fan-in/fan-out (FIFO) instead of the BNC-T split, +~16 ns cable delay, cabling
+fix after the A/D cross-wiring. Full task list + context: `HANDOFF_RUN224489.md`.
+New scripts: `19_liq_triples.py` (+`19b`); 01/02/adc_mv extended to LIQ; 12
+step tables now per-run (`SCANS`). No wall outage this run (0/1750 bunches).
+
+1. **Cross-wiring fix CONFIRMED, A/D deficit explained** (17 on 224489): the
+   equal-amplitude ±4 ns same-side duplication band on A/D is gone (flagged
+   fractions ≤4%, B-control level, vs 23–31% on the crossed channels in
+   224460), and all four arms now show equal wall-plastic excess (~1.7–1.8 M)
+   and clean A/D wall MIP bumps with NO veto. The standing A/D question is
+   closed: it was the cabling.
+2. **Plastic MIP found — first plastic calibration** (19: WAL×PSS×LIQ triples,
+   double sideband subtraction in wall-plastic dt AND LIQ dt): clear MIP humps
+   that march with HV; modes at V≥1400 V transported to nominal V with the
+   coincident-median n give MIP = AL 11.5, AR 8.9, BL 4.5, BR 8.4, CL 14.3
+   (±78%, one outlier step), CR 8.0, DL 5.2, DR 3.7 mV (±10–25%).
+   **DR/BL MIPs sit at/below the 4.9 mV trigger threshold** — equalize first.
+   Absolute: 2.5 cm PVT ⇒ 5.05 MeV ⇒ 0.73–2.83 mV/MeV per PMT
+   (`calib/pss_mip_calib_run224489.json`; normal-incidence, no path-length corr).
+3. **FIFO gain ratio is NOT 2×**: same-HV coincident medians give fleet
+   geo-mean ×1.40, strongly per-PMT (DL 1.13 … AL 1.65), ~flat vs HV.
+4. **New HV equalization** (12b, target 64.2 mV fleet geo-mean): AL −54,
+   AR −64, BL +84, BR −38, CL −142, CR −7, DL +68, DR +133 V (supersedes the
+   224466 table; exported to the DAQ repo via 12c). Wall MIP again immune to
+   plastic HV (±1 bin, all arms; arm A now measurable too). Coincident-median
+   power laws n = 3.8–7.1 (PSSB1/PSSD2 inclusive-median anomalies are pure
+   threshold bias — coincident fits are clean).
+5. **LIQ timed in** (02 wide scan + 19 per-channel): LIQ leads the plastic by
+   ~30 ns, |t_wall − t_liq| ≤ 7 ns everywhere; per-channel offsets (rms
+   3.2–4.5 ns) in `calib/liq_offsets_run224489.json` (new file, wall-plastic
+   offsets JSON untouched).
+6. **LIQ gain-vs-position gradient CONFIRMED** (19 position map, triple-tagged):
+   ~1.5–2× median-amplitude variation along the vessel axis, higher near the
+   PMT, and the gradient axis flips with the surveyed orientation — horizontal
+   (toward wall group 4 = +u) on A/D, vertical (toward top) on B/C. Matches the
+   Geant as-built geometry (vessels vertical PMT-up on B/C, horizontal PMT+u
+   on A/D).
+7. **Wall-plastic offsets shifted by a single common −22.27 ns (rms 0.22 ns,
+   64/64 channels)** — the new plastic path is a clean common delay; new
+   offsets in `calib/time_offsets_run224489.json`.
+8. **−60 ns satellite: NOT a plastic-cable reflection.** Its absolute dt
+   position stayed at −60…−68 ns while the main peak moved −22 ns, so it is
+   injected downstream of the FIFO (digitizer side); it GREW to 19–34% of the
+   main peak (was 6–9%) — worth a scope look. It stays outside signal and
+   sideband windows.
+
 ## OPEN FLAGS / questions for the collaboration
 
 - **[ ] SiPM wall outage, run 224404**: all 32 WAL channels dead for bunches ~643-2212
@@ -88,12 +139,12 @@ UTC+2). Analysis: `12_plastic_hv_scan.py` (+`12b` figures in `figures/12_hv_scan
 - **[ ] Which 4 of 20 wall bars are unread** (assumed 2 per edge) + physical positions
   of arms A-D + per-arm stack order (standard vs back-first) — needed to settle the A/D
   question.
-- **[ ] A/D coincidence deficit unattributed**: plastic response vs absorption between
-  wall and plastic vs flux composition. Discriminators: pre-flash cosmic wall-plastic
-  coincidences on A/D (gray curves in `dt_by_region.png` show they exist — quantify!),
-  LIQ readout, plastic HV scan.
-- **[ ] dt satellite bump at ~-60 ns** (WALB-PSSB, WALC-PSSC, late tof): afterpulse or
-  reflection? Excluded from signal window and sidebands.
+- **[x] A/D coincidence deficit — RESOLVED (run 224489)**: it was the crossed cabling;
+  after the fix all four arms show equal excess and clean MIP bumps (see 224489 §1).
+- **[ ] dt satellite bump at ~-60 ns** (WALB-PSSB, WALC-PSSC, late tof): NOT a
+  plastic-cable reflection (didn't move with the −22 ns path change in 224489, and grew
+  to 19–34% of the main peak) — likely injected at/after the FIFO; scope check wanted.
+  Excluded from signal window and sidebands.
 
 ## Fast read pass (2026-07-16): C++ hit cache + vectorized pairing
 

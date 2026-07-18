@@ -29,7 +29,9 @@ CACHE.mkdir(exist_ok=True)
 
 WALL_TREES = ['WALA', 'WALB', 'WALC', 'WALD']
 PSS_TREES = ['PSSA', 'PSSB', 'PSSC', 'PSSD']
-N_CH = {**{t: 8 for t in WALL_TREES}, **{t: 2 for t in PSS_TREES}}
+LIQ_TREES = ['LIQA', 'LIQB', 'LIQC', 'LIQD']    # liquid scintillators (from run224489)
+N_CH = {**{t: 8 for t in WALL_TREES}, **{t: 2 for t in PSS_TREES},
+        **{t: 1 for t in LIQ_TREES}}
 
 HIT_BRANCHES = ['detn', 'tof', 'amp', 'area', 'fwhm', 'BunchNumber', 'satuflag', 'pileup1']
 
@@ -80,8 +82,17 @@ def main():
           f'{np.sum(bunch_intensity > DEDICATED_THRESH)} dedicated / '
           f'{np.sum(bunch_intensity <= DEDICATED_THRESH)} parasitic')
 
+    # LIQ trees only exist from run224489 on — process them when present
+    d = hitcache.cache_dir(RUN_FILE)
+    if d is not None:
+        liq = [t for t in LIQ_TREES if (d / f'{t}_bunch.npy').exists()]
+    else:
+        import uproot
+        keys = set(k.split(';')[0] for k in uproot.open(RUN_FILE).keys())
+        liq = [t for t in LIQ_TREES if t in keys]
+
     results = {'bunch_intensity': bunch_intensity}
-    for tn in WALL_TREES + PSS_TREES:
+    for tn in WALL_TREES + PSS_TREES + liq:
         print(f'  processing {tn}...', flush=True)
         h = process_tree(RUN_FILE, tn, bunch_intensity)
         for k, v in h.items():
@@ -97,7 +108,7 @@ def main():
           f'{"satu%":>7s} {"pileup%":>8s}')
     ded = bunch_intensity > DEDICATED_THRESH
     amp_centers = np.sqrt(AMP_EDGES[:-1] * AMP_EDGES[1:])
-    for tn in WALL_TREES + PSS_TREES:
+    for tn in WALL_TREES + PSS_TREES + liq:
         for ch in range(N_CH[tn]):
             n = results[f'{tn}_n_tot'][ch]
             cum = np.cumsum(results[f'{tn}_amp'][ch])
