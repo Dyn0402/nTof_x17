@@ -26,7 +26,6 @@
 
 #include <TFile.h>
 #include <TTree.h>
-#include <ROOT/TThreadExecutor.hxx>
 #include <TROOT.h>
 
 #include <algorithm>
@@ -42,7 +41,8 @@
 #include <vector>
 
 static const std::vector<std::string> HIT_TREES = {
-    "WALA", "WALB", "WALC", "WALD", "PSSA", "PSSB", "PSSC", "PSSD"};
+    "WALA", "WALB", "WALC", "WALD", "PSSA", "PSSB", "PSSC", "PSSD",
+    "LIQA", "LIQB", "LIQC", "LIQD"};
 // at most this many trees in flight: full-tree buffers are ~1.5-2.5 GB each
 static const int MAX_WORKERS = 4;
 

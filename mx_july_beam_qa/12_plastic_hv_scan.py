@@ -42,7 +42,7 @@ spec.loader.exec_module(coinc)
 RUN_FILE = Path(sys.argv[1]) if len(sys.argv) > 1 else Path.home() / 'x17/beam_july/data/run224466.root'
 CACHE = BASE / 'cache'
 
-LOCAL_UTC_OFFSET = timedelta(hours=2)          # CEST (2026-07-16)
+LOCAL_UTC_OFFSET = timedelta(hours=2)          # CEST
 LATE_TOF = 1e5                                 # ns after tflash, as in 07/09
 W_SIG = 8.0
 SB_LO, SB_HI = 20.0, 120.0
@@ -51,23 +51,49 @@ DT_MAX = SB_HI + 25
 AMP_EDGES = np.geomspace(40, 8e4, 301)
 FLASH_EDGES = np.linspace(9e3, 16e3, 701)      # same zoom as 01
 
-# (label, V or None for per-channel nominal, pass, gating ON?, start, end) local time
-STEPS = [
-    ('pre_1500V',   1500, 0, False, '13:04:33', '13:32:30'),
-    ('s1_1600V',    1600, 1, False, '13:32:34', '13:42:00'),
-    ('s2_1500V',    1500, 1, False, '13:42:05', '13:51:41'),
-    ('s3_1400V',    1400, 1, False, '13:51:46', '14:01:47'),
-    ('s4_1300V',    1300, 1, False, '14:01:52', '14:11:28'),
-    ('s5_1200V',    1200, 1, False, '14:11:33', '14:21:34'),
-    ('s6_1550V',    1550, 2, True,  '14:21:39', '14:31:45'),
-    ('s7_1450V',    1450, 2, True,  '14:31:50', '14:40:20'),
-    ('s8_1350V',    1350, 2, True,  '14:40:25', '14:49:56'),
-    ('s9_1250V',    1250, 2, True,  '14:50:01', '14:59:37'),
-    ('end_nominal', None, 3, True,  '15:01:00', '15:19:30'),   # AL1325 AR1275 BL1325 rest 1300
-]
+# Per-run scan config: (label, V or None for per-channel nominal, pass,
+# gating ON?, start, end) in LOCAL time. Step windows from the CAEN log CSV
+# (first/last row per step_label), start trimmed for the HV ramp when needed.
+SCANS = {
+    # ~/beam_july/scint_hv_scan/2026-07-16_13-32-34_plastic_scan_1/
+    'run224466': ('2026-07-16', [
+        ('pre_1500V',   1500, 0, False, '13:04:33', '13:32:30'),
+        ('s1_1600V',    1600, 1, False, '13:32:34', '13:42:00'),
+        ('s2_1500V',    1500, 1, False, '13:42:05', '13:51:41'),
+        ('s3_1400V',    1400, 1, False, '13:51:46', '14:01:47'),
+        ('s4_1300V',    1300, 1, False, '14:01:52', '14:11:28'),
+        ('s5_1200V',    1200, 1, False, '14:11:33', '14:21:34'),
+        ('s6_1550V',    1550, 2, True,  '14:21:39', '14:31:45'),
+        ('s7_1450V',    1450, 2, True,  '14:31:50', '14:40:20'),
+        ('s8_1350V',    1350, 2, True,  '14:40:25', '14:49:56'),
+        ('s9_1250V',    1250, 2, True,  '14:50:01', '14:59:37'),
+        ('end_nominal', None, 3, True,  '15:01:00', '15:19:30'),   # AL1325 AR1275 BL1325 rest 1300
+    ]),
+    # ~/beam_july/scint_hv_scan/2026-07-17_17-41-11_plastic_scan_2/
+    # FIFO signal path, SiPM gating ON throughout; no usable pre-scan window
+    # (first raw file closed 17:40, scan started 17:41). Step 1 start trimmed
+    # +20 s for the ~1300->1600 V ramp (~36 V/s); ~3 s inter-step ramps are
+    # covered by the 5 s CSV cadence gaps.
+    'run224489': ('2026-07-17', [
+        ('s1_1600V',    1600, 1, True, '17:41:30', '17:50:27'),
+        ('s2_1500V',    1500, 1, True, '17:50:32', '18:00:03'),
+        ('s3_1400V',    1400, 1, True, '18:00:08', '18:09:08'),
+        ('s4_1300V',    1300, 1, True, '18:09:13', '18:18:49'),
+        ('s5_1200V',    1200, 1, True, '18:18:54', '18:27:55'),
+        ('s6_1550V',    1550, 2, True, '18:28:00', '18:37:31'),
+        ('s7_1450V',    1450, 2, True, '18:37:36', '18:46:37'),
+        ('s8_1350V',    1350, 2, True, '18:46:42', '18:55:43'),
+        ('s9_1250V',    1250, 2, True, '18:55:48', '19:05:24'),
+        # ramp back to nominal done in seconds; last PKUP psTime 19:17:04
+        ('end_nominal', None, 3, True, '19:05:45', '19:17:30'),
+    ]),
+}
+_stem = (Path(sys.argv[1]).stem if len(sys.argv) > 1 else 'run224466')
+if _stem not in SCANS:
+    sys.exit(f'no scan config for {_stem} — add it to SCANS in 12_plastic_hv_scan.py')
+DAY, STEPS = SCANS[_stem]
 NOMINAL_V = {('A', 0): 1325, ('A', 1): 1275, ('B', 0): 1325, ('B', 1): 1300,
              ('C', 0): 1300, ('C', 1): 1300, ('D', 0): 1300, ('D', 1): 1300}
-DAY = '2026-07-16'
 
 
 def local_to_epoch_ns(hms):

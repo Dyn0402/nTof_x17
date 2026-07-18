@@ -82,9 +82,10 @@ def gain_curves():
                 ii = np.where(PASS == pas)[0]
                 ax.plot(VOLTS[ii], MED[ai, b, ii] * f_mv, mk, ms=7, color=ARM_COLORS[st],
                         mfc=fill, label=f'pass {pas} (gating {"ON" if pas == 2 else "OFF"})')
-            i_pre = LABELS.index('pre_1500V')
-            ax.plot(1500, MED[ai, b, i_pre] * f_mv, 'x', ms=9, color='gray',
-                    label='pre-scan 1500 V')
+            if 'pre_1500V' in LABELS:       # run224489 has no pre-scan window
+                i_pre = LABELS.index('pre_1500V')
+                ax.plot(1500, MED[ai, b, i_pre] * f_mv, 'x', ms=9, color='gray',
+                        label='pre-scan 1500 V')
             i_end = LABELS.index('end_nominal')
             vn = NOMINAL_V[(st, b)]
             ax.plot(vn, MED[ai, b, i_end] * f_mv, '*', ms=13, color='crimson',
