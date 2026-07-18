@@ -221,9 +221,15 @@ for ai, st in enumerate('ABCD'):
                     color=plt.cm.viridis((v - 1250) / 400), label=f'{v} V')
         ax.plot(CEN_RB * f_mv, rebin(total) / 3, lw=2.4, color='crimson',
                 label='sum / 3')
-        mip, spr = mip_nominal[pmt]
+        # dashed marker: the adopted linear-space MPV from 19d when available
+        # (the log-binned mode plotted here sits above the linear MPV — see 19d)
+        cal_p = BASE / 'calib' / f'pss_mip_calib_{RUN_STEM}.json'
+        try:
+            mip = json.loads(cal_p.read_text())['pmts'][pmt]['mip_mv'] / f_mv
+        except (FileNotFoundError, KeyError):
+            mip = mip_nominal[pmt][0]
         ax.axvline(mip * f_mv, color='k', lw=1.2, ls='--',
-                   label=f'MIP {mip * f_mv:.1f} mV')
+                   label=f'MIP (MPV) {mip * f_mv:.1f} mV')
         ax.set_xscale('log')
         ax.set_title(f'{pmt}  (n = {n_g:.2f})')
         ax.grid(alpha=0.3, which='both')

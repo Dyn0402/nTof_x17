@@ -133,15 +133,34 @@ through-goers $\Rightarrow$ plastic spectrum in triples = plastic MIP
 candidates. Double sideband subtraction in both dt's.}
 \end{frame}
 
-\begin{frame}{Result 4 --- the plastic MIP, found (gain-aligned stack)}
+\begin{frame}{Result 4 --- the plastic MIP, found (PSSB2, one HV step per panel)}
+\centering
+\includegraphics[width=\textwidth,height=.72\textheight,keepaspectratio]{19_triples/steps_linear/mip_steps_PSSB2.png}
+
+{\small Linear amplitude axis, coarse bins, propagated Poisson errors. A
+single significant peak tracks the power-law expectation (dashed) panel after
+panel while the acquisition threshold (gray) stays put --- a threshold
+artifact cannot do this. Orange: per-step fitted MPV. All 8 PMTs in
+\texttt{figures/19\_triples/steps\_linear/}.}
+\end{frame}
+
+\begin{frame}{Weakest PMT (PSSD2): clear at high V, rides threshold at nominal}
+\centering
+\includegraphics[width=\textwidth,height=.72\textheight,keepaspectratio]{19_triples/steps_linear/mip_steps_PSSD2.png}
+
+{\small Peak clear of threshold only for $V\geq1400$ V $\Rightarrow$ only
+those steps enter the fit; at nominal HV the DR MIP rides the threshold ---
+this arm cannot trigger on plastic MIPs until equalized.}
+\end{frame}
+
+\begin{frame}{Cross-check: gain-aligned stack}
 \centering
 \includegraphics[width=\textwidth,height=.72\textheight,keepaspectratio]{19_triples/pss_mip_aligned.png}
 
 {\small Each step's spectrum scaled to its nominal-V equivalent
-($\times(V_{\rm nom}/V)^{n}$ = translation in log amp): a \emph{physical} peak
-must align across steps, the fixed-ADC threshold edge must move. The summed
-spectrum (red) peaks at the adopted MIP (dashed) on every PMT. Net triples
-9.2 k (CL) -- 49.5 k (BR); per-step spectra in backup.}
+($\times(V_{\rm nom}/V)^{n}$ = translation in log amp): the steps pile up at a
+common peak and the sum (red) peaks at the adopted MPV (dashed) on every PMT.
+(Log-amp representation --- peak positions here sit above the linear MPV.)}
 \end{frame}
 
 \begin{frame}{Plastic MIP vs HV $\to$ calibration at nominal}
@@ -149,34 +168,38 @@ spectrum (red) peaks at the adopted MIP (dashed) on every PMT. Net triples
 \includegraphics[width=\textwidth,height=.78\textheight,keepaspectratio]{19_triples/pss_mip_vs_v.png}
 \end{frame}
 
-\begin{frame}{First plastic-MIP calibration table}
+\begin{frame}{First plastic-MIP calibration table (linear-space MPV)}
 \begin{columns}
 \column{.52\textwidth}
 \centering\small
 \begin{tabular}{lrrrr}
 \toprule
-PMT & MIP [mV] & spread & mV/MeV\\
+PMT & MPV [mV] & spread & mV/MeV\\
 \midrule
-AL & 11.5 & 20\% & 2.28\\
-AR &  8.9 & 10\% & 1.76\\
-BL &  \alert{4.5} & 19\% & 0.89\\
-BR &  8.4 & 24\% & 1.66\\
-CL & 14.3 & 78\%$^{*}$ & 2.83\\
-CR &  8.0 & 22\% & 1.59\\
-DL &  5.2 & 21\% & 1.03\\
-DR &  \alert{3.7} & 15\% & 0.73\\
+AL &  9.9 & 11\% & 1.96\\
+AR &  6.6 & 31\%$^{*}$ & 1.31\\
+BL &  \alert{4.4} &  7\% & 0.87\\
+BR &  6.9 & 12\% & 1.37\\
+CL & 10.3 & 26\% & 2.04\\
+CR &  6.2 & 22\% & 1.23\\
+DL &  5.4 &  8\% & 1.07\\
+DR &  \alert{3.5} &  6\% & 0.69\\
 \bottomrule
 \end{tabular}
 
-{\scriptsize $^{*}$one outlier step. Energy scale: 5.05 MeV in 2.5 cm PVT
-(normal incidence).}
+{\scriptsize $^{*}$AR's steps split into two groups --- flagged. Energy
+scale: 5.05 MeV in 2.5 cm PVT (normal incidence).}
 \column{.45\textwidth}
 \begin{itemize}
-\item High-V ($\geq$1400 V) modes transported to nominal V with each PMT's
+\item Error-weighted MPV fits on the linear per-step spectra
+      ($V\geq$1400 V), transported to nominal V with each PMT's
       coincident-median $n$.
-\item MIP-based inter-PMT ratios agree with the equalization table to
-      $\sim$15\% --- independent cross-check.
-\item \alert{DR (3.7 mV) and BL (4.5 mV) MIPs sit at/below the 4.9 mV
+\item First-pass log-binned modes were 15--35\% high (mode of
+      $dN/d\log A$ $\neq$ MPV of $dN/dA$) --- corrected; spreads improved
+      to 6--12\% for five PMTs.
+\item MIP-based inter-PMT ratios agree with the equalization table ---
+      independent cross-check.
+\item \alert{DR (3.5 mV) and BL (4.4 mV) MPVs sit at/below the 4.9 mV
       trigger threshold} $\Rightarrow$ equalize before trusting plastic
       triggers on those arms.
 \end{itemize}
@@ -214,7 +237,7 @@ recommended.} (Outside all analysis windows.)}
 \begin{enumerate}
 \item \textbf{A/D cross-wiring fixed and confirmed} --- the old A/D deficit is
       fully explained; wall MIP calibration now covers all four arms.
-\item \textbf{First plastic MIP calibration}: 0.73--2.83 mV/MeV at nominal HV
+\item \textbf{First plastic MIP calibration}: 0.69--2.04 mV/MeV at nominal HV
       via WAL$\times$PSS$\times$LIQ triples.
 \item \textbf{FIFO ratio measured}: $\times$1.40 fleet (1.13--1.65 per PMT),
       not $\times$2.
