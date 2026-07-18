@@ -8,14 +8,47 @@ different — this is a SOURCE run analysis, not a beam analysis.
 
 ## 0. What this is
 
-An explicit Y-88 source scan of each detector: dedicated runs with the ⁸⁸Y
-gamma source placed at/near one detector at a time. Dylan will provide the
-run list. **First action: fill in this table with Dylan's input, then keep it
-updated in this file:**
+An explicit Y-88 source scan of each detector arm: dedicated ~13-min runs
+with ONE ⁸⁸Y source placed **between the two plastic scintillator bars of the
+arm, near the middle** (so both bars are illuminated ~symmetrically, and the
+same arm's wall (in front) and LIQ vessel (behind) also see the source).
+Run list (from Dylan, DAQ page; campaign `X17_measurement`):
 
-| run | detector(s) / tree | source position | HV [V] | notes |
-|-----|--------------------|-----------------|--------|-------|
-| (fill in) | | | | |
+| run | arm | title | start–end (local, 2026-07-17) | triggers |
+|--------|---|-------------------------|---------------------|------|
+| 224476 | A | PLASTIC CALIBRATION A | 10:25:57–10:38:55 | 1507 |
+| 224477 | B | PLASTIC CALIBRATION B | 10:46:45–10:59:41 | 1502 |
+| 224478 | C | PLASTIC CALIBRATION C | 11:12:43–11:26:38 | 1501 |
+| 224479 | D | PLASTIC CALIBRATION D | 11:29:19–11:42:16 | 1503 |
+
+Facts and immediate implications:
+
+- **Beam-off** (protons column 0; ~1500 triggers in ~13 min ≈ 1.9 Hz timer
+  trigger, 20 ms windows ⇒ ~30 s of live time per run). The §2/§3 source-run
+  gotchas (empty index/PKUP, no bunch selection, no tflash) fully apply.
+- Taken the **morning of 2026-07-17** — after HV scan 1 (07-16) and ~6 h
+  BEFORE run 224489 (17:39). Plastic HVs presumably the per-channel nominals
+  (AL 1325, AR 1275, BL 1325, rest 1300 V) — **confirm with Dylan** (§6).
+- **Unknown hardware state — ask (§6)**: were the FIFO signal path and the
+  A/D cabling fix already in place at 10:30–11:45 that morning, or did that
+  work happen between these runs and 224489? This changes the expected
+  amplitude scale by the per-PMT FIFO ratio (×1.13–1.65) and whether the A/D
+  channel mapping matches 224489. If unclear from Dylan, the data itself can
+  tell: the A/D duplication signature (`17_duplication_veto.py` logic) is a
+  cabling fingerprint.
+- Check whether official processed files exist for these runs and **whether
+  they contain the LIQ trees** — the official PSA of that morning may
+  predate R. Mucciola's LIQ UserInput (224489 had to be processed privately
+  in Dylan's user EOS for that reason). If LIQ trees are absent and LIQ
+  edges are wanted, the runs need a reprocessing pass like 224489's.
+- Source between the bars near the middle ⇒ ONE LIQ position only — the
+  edge-vs-position gradient measurement (§5 T3.3) is not available from
+  these runs; instead compare the single-position LIQ edge against the
+  triples position map (19 cache `liq_pos`) at the source's location
+  (mid-vessel, i.e. mid-gradient).
+- ~30 s effective live time per run at source rates: statistics will be
+  modest — check raw hit counts per tree right after extraction before
+  planning fits.
 
 ⁸⁸Y emits two gammas: **898.04 keV** and **1836.06 keV**. In organic
 scintillators (PVT plastic, LAB liquid, the SiPM-wall bars) there is no
@@ -121,8 +154,9 @@ the per-run JSON automatically; LIQ included).
 
 ## 5. Task list
 
-- **T0** — Fill the run table (§0) from Dylan; pull runs; extract hit caches
-  (patch `write_index` if needed, §2).
+- **T0** — Locate runs 224476–79 on EOS (official first, then user area);
+  pull to `~/x17/beam_july/data/`; extract hit caches (patch `write_index`
+  if needed, §2); report per-tree hit counts + whether LIQ trees exist.
 - **T1** — `21_y88_spectra.py`: per-channel linear+log amplitude spectra per
   run, mV-calibrated; overview figure per run (all channels of the source's
   detector + a far detector as background reference).
@@ -144,15 +178,17 @@ the per-run JSON automatically; LIQ included).
 
 ## 6. Open questions for Dylan (ask before deep work)
 
-1. Run numbers ↔ detector/position/HV mapping (the §0 table).
-2. Official or user-EOS processing? Which PSA UserInput?
-3. Trigger config for the source runs (self-trigger threshold? which
-   channels triggered the readout?) — determines threshold bias on spectra.
-4. Was a background (no-source) run taken?
-5. For LIQ: source positions along the vessel (the gradient question)?
-6. Plastics at nominal HV won't show edges (§1) — were raised-HV steps
-   taken? If not, flag to Dylan that a raised-HV Y88 run would complete the
-   plastic absolute calibration.
+1. Plastic (and LIQ) HVs during runs 224476–79 — the nominal set, or raised
+   for the calibration?
+2. Hardware state that morning: FIFO installed? A/D cabling already fixed?
+   (See §0 — the duplication fingerprint can also answer this from data.)
+3. Official or user-EOS processing? Do the official files include LIQ trees
+   (pre- or post-Mucciola-UserInput)?
+4. Was a background (no-source) run taken nearby in time?
+5. If the plastic edges turn out to be threshold-buried at nominal HV (§1
+   expectation: 699 keV edge at 0.45–1.4 mV vs ~1.5 mV threshold), flag to
+   Dylan that a raised-HV Y88 repeat would complete the plastic absolute
+   calibration — the per-PMT power laws can transport it back to nominal.
 
 ## 7. Environment quick facts (desktop)
 
