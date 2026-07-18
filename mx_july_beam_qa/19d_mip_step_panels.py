@@ -84,7 +84,35 @@ def fit_mpv(cen, net, sig, lo_adc):
     return float(v) if x[0] <= v <= x[-1] else float(cen[ipk])
 
 
+# pair-coincident medians (12 cache): the high-statistics, NO-MIP-selection
+# gain proxy to validate the low-statistics triple-MPV extraction against
+d12 = np.load(BASE / 'cache' / f'12_hvscan_{RUN_STEM}.npz')
+CEN12 = np.sqrt(d12['amp_edges'][:-1] * d12['amp_edges'][1:])
+SB12 = float(d12['sb_scale'])
+L12 = list(d12['step_labels'])
+V12 = d12['step_volts']
+
+
+def pair_medians(ai, b):
+    """[(V, median ADC)] of the wall-tagged (pair) coincident plastic
+    spectrum per scan step, plus the end_nominal point as (None, med)."""
+    out, nom = [], np.nan
+    for i, l in enumerate(L12):
+        sub = np.clip(d12['pss_mip'][i, ai, 0, b]
+                      - SB12 * d12['pss_mip'][i, ai, 1, b], 0, None)
+        c = np.cumsum(sub)
+        if c[-1] <= 200:
+            continue
+        med = CEN12[np.searchsorted(c, c[-1] / 2)]
+        if V12[i] > 0:
+            out.append((float(V12[i]), float(med)))
+        elif l == 'end_nominal':
+            nom = float(med)
+    return out, nom
+
+
 new_cal = {}
+step_mpvs = {}                          # pmt -> [(V, MPV ADC)]
 print(f'{"PMT":7s} {"per-step MPV@nom [ADC]":>36s} {"MPV[ADC]":>9s} '
       f'{"MPV[mV]":>8s} {"spread":>7s} {"logmode[mV]":>11s}')
 for ai, st in enumerate('ABCD'):
@@ -93,31 +121,77 @@ for ai, st in enumerate('ABCD'):
         f_mv = FAC[f'PSS{st}'][str(b + 1)]
         n_g = MIPCAL[pmt]['n_powerlaw']
         vn = MIPCAL[pmt]['V_nominal']
-        mip_old = MIPCAL[pmt]['mip_mv'] / f_mv          # ADC, log-mode (range seed)
+        meds, _ = pair_medians(ai, b)
+        med_of_v = dict(meds)
+
+        def smoothed_peak(amp_by_comp, seed, n_boot=200):
+            """Peak of the Gaussian-smoothed (sigma 1.5 bins) linear histogram,
+            40 bins over 0..4*seed, above 1.5x threshold. amp_by_comp: list of
+            (amplitudes, counts-per-fine-bin) per sideband component with its
+            subtraction scale. Error = std of the peak over Poisson bootstraps
+            of the four components — honest estimator instability, no shape
+            assumption. Deterministic (fixed RNG seed)."""
+            edges = np.linspace(0, 4 * seed, 41)
+            cen_c = 0.5 * (edges[:-1] + edges[1:])
+            kern = np.exp(-0.5 * (np.arange(-4, 5) / 1.5) ** 2)
+            kern /= kern.sum()
+            coarse = [(sc, np.histogram(a, bins=edges, weights=w)[0])
+                      for sc, a, w in amp_by_comp]
+
+            def peak(comps):
+                net = sum(sc * c for sc, c in comps)
+                sm = np.convolve(net, kern, mode='same')
+                ok = cen_c > 1.5 * THRESH_ADC
+                return cen_c[ok][np.argmax(sm[ok])] if sm[ok].max() > 0 else np.nan
+
+            mode = peak(coarse)
+            rng = np.random.default_rng(224489)
+            boots = [peak([(sc, rng.poisson(np.clip(c, 0, None)))
+                           for sc, c in coarse]) for _ in range(n_boot)]
+            binw = edges[1] - edges[0]          # argmax is bin-quantized:
+            return float(mode), float(max(np.nanstd(boots), binw / 2))
+
+        # per-step MPVs (scaling check) + gain-aligned summed spectrum (the
+        # calibration fit: one high-statistics spectrum at nominal-V scale)
         trans = []
+        step_mpvs[pmt] = []
+        seed_nom = med_of_v.get(vn, list(med_of_v.values())[0]) / 10.0
+        al_amp, al_w, al_var = [], [], []
         for l in PANELS:
             v = VOLT[l]
             if not v or v < V_MIN_FIT:
                 continue
-            mip_exp = mip_old * (v / vn) ** n_g
-            edges = np.linspace(0, 5 * mip_exp, NBINS + 1)
             h = d['pss_amp'][LABELS.index(l), ai, :, :, b]
-            net, sig = linear_net(h, edges)
-            cen_c = 0.5 * (edges[:-1] + edges[1:])
-            mpv = fit_mpv(cen_c, net, sig, 1.5 * THRESH_ADC)
+            comps = [(1.0, CEN, h[0, 0]), (-SLQ, CEN, h[0, 1]),
+                     (-SWP, CEN, h[1, 0]), (SWP * SLQ, CEN, h[1, 1])]
+            mpv, dmpv = smoothed_peak(comps, med_of_v[v] / 10.0)
             if np.isfinite(mpv):
                 trans.append(mpv * (vn / v) ** n_g)
-        mpv_nom = float(np.exp(np.mean(np.log(trans))))
-        spread = float(np.std(np.log(trans)))
+                step_mpvs[pmt].append((v, mpv, dmpv))
+            scale = (vn / v) ** n_g
+            al_amp.append((scale, h))
+        # aligned-sum peak (primary calibration number): concatenate the
+        # gain-scaled components of every fit step
+        comps = []
+        for i_c, (sc_c) in enumerate([(1.0, 0, 0), (-SLQ, 0, 1),
+                                      (-SWP, 1, 0), (SWP * SLQ, 1, 1)]):
+            sc, iw, il = sc_c
+            comps.append((sc,
+                          np.concatenate([CEN * s for s, _ in al_amp]),
+                          np.concatenate([hh[iw, il] for _, hh in al_amp])))
+        mpv_nom, dmpv_nom = smoothed_peak(comps, seed_nom)
+        spread = float(np.std(np.log(np.array(trans) / mpv_nom)))
         new_cal[pmt] = dict(V_nominal=vn, n_powerlaw=n_g,
                             mip_mv=round(mpv_nom * f_mv, 2),
+                            mip_mv_stat_err=round(dmpv_nom * f_mv, 2),
                             mv_per_mev=round(mpv_nom * f_mv / MIP_MEV, 3),
                             log_spread=round(spread, 3),
-                            mip_mv_logmode=MIPCAL[pmt]['mip_mv'])
+                            mip_mv_logmode=MIPCAL[pmt].get('mip_mv_logmode',
+                                                           MIPCAL[pmt]['mip_mv']))
         print(f'{pmt:7s} '
               + ' '.join(f'{t:7.0f}' for t in trans).rjust(36)
               + f' {mpv_nom:9.0f} {mpv_nom * f_mv:8.1f} {100 * spread:6.0f}%'
-              + f' {MIPCAL[pmt]["mip_mv"]:11.1f}')
+              + f' {new_cal[pmt]["mip_mv_logmode"]:11.1f}')
 
 cal_path = BASE / 'calib' / f'pss_mip_calib_{RUN_STEM}.json'
 cal = json.loads(cal_path.read_text())
@@ -151,10 +225,10 @@ for ai, st in enumerate('ABCD'):
                         elinewidth=0.7, color='steelblue', ecolor='gray')
             ax.axvline(mip_exp * f_mv, color='crimson', lw=1.3, ls='--')
             if VOLT[l] and VOLT[l] >= V_MIN_FIT:
-                mpv = fit_mpv(cen_c / f_mv, net, sig, 1.5 * THRESH_ADC)
-                if np.isfinite(mpv):
-                    ax.plot(mpv * f_mv, 0, marker='^', ms=9, color='darkorange',
-                            clip_on=False, zorder=5)
+                fitted = {x[0]: x[1] for x in step_mpvs[pmt]}
+                if VOLT[l] in fitted:
+                    ax.plot(fitted[VOLT[l]] * f_mv, 0, marker='^', ms=9,
+                            color='darkorange', clip_on=False, zorder=5)
             ax.axvspan(0, THRESH_ADC * f_mv, color='gray', alpha=0.25, lw=0)
             ax.axhline(0, color='k', lw=0.6)
             ax.set_title(f'{v} V' if VOLT[l] else f'nominal ({vn} V)',
@@ -176,3 +250,67 @@ for ai, st in enumerate('ABCD'):
         plt.close(fig)
         print(f'{pmt} done')
 print(f'-> {OUT}')
+
+# ---------------------------------------------------------------------------
+# Trust check: triple-MPV points vs the pair-coincident median (no MIP
+# selection, ~100x statistics) on the same gain axes. If the MIP extraction
+# is real, both must follow the same power law in V (parallel lines in
+# log-log); the absolute offset is physical (the pair-tagged plastic spectrum
+# is dominated by larger deposits than a through-going MIP).
+ARM_COLORS = dict(zip('ABCD', plt.cm.tab10.colors))
+fig, axes = plt.subplots(2, 4, figsize=(17, 8), sharex=True)
+print(f'\n{"PMT":7s} {"n_median":>9s} {"n_MIP":>7s} {"median/MIP@nom":>15s}')
+for ai, st in enumerate('ABCD'):
+    for b in range(2):
+        pmt = f'PSS{st}{b + 1}'
+        f_mv = FAC[f'PSS{st}'][str(b + 1)]
+        vn = new_cal[pmt]['V_nominal']
+        ax = axes[b][ai]
+        meds, med_nom = pair_medians(ai, b)
+        vm = np.array([x[0] for x in meds])
+        mm = np.array([x[1] for x in meds])
+        n_med, c_med = np.polyfit(np.log(vm), np.log(mm), 1)
+        vv = np.geomspace(1180, 1650, 40)
+        ax.plot(vm, mm * f_mv, 's', ms=6, color='gray', mfc='none',
+                label=f'pair coinc. median (n={n_med:.1f})')
+        ax.plot(vv, np.exp(c_med) * vv ** n_med * f_mv, ':', color='gray', lw=1.2)
+        if np.isfinite(med_nom):
+            ax.plot(vn, med_nom * f_mv, 's', ms=7, color='gray')
+        vt = np.array([x[0] for x in step_mpvs[pmt]])
+        mt = np.array([x[1] for x in step_mpvs[pmt]])
+        et = np.array([x[2] for x in step_mpvs[pmt]])
+        ax.errorbar(vt, mt * f_mv, yerr=et * f_mv,
+                    fmt='o', ms=6, color=ARM_COLORS[st], lw=1,
+                    label='triple MIP MPV (smoothed peak)')
+        n_mip = np.nan
+        if len(vt) >= 3:
+            n_mip, c_mip = np.polyfit(np.log(vt), np.log(mt), 1)
+            ax.plot(vv, np.exp(c_mip) * vv ** n_mip * f_mv, '-', lw=1.2,
+                    color=ARM_COLORS[st], alpha=0.8,
+                    label=f'MIP fit (n={n_mip:.1f})')
+        mip_nom = new_cal[pmt]['mip_mv'] / f_mv
+        ax.plot(vn, mip_nom * f_mv, '*', ms=15, color='crimson',
+                label=f'MIP at nominal: {mip_nom * f_mv:.1f} mV')
+        ax.set_xscale('log')
+        ax.set_yscale('log')
+        ax.set_xlim(1150, 1700)
+        ax.set_xticks([1200, 1300, 1400, 1500, 1600])
+        ax.set_xticklabels(['1200', '1300', '1400', '1500', '1600'])
+        ax.set_xticks([], minor=True)
+        ax.set_title(pmt)
+        ax.grid(alpha=0.3, which='both')
+        ax.legend(fontsize=6.5, loc='lower right')
+        if b == 1:
+            ax.set_xlabel('PMT bias [V]')
+        if ai == 0:
+            ax.set_ylabel('amplitude [mV]')
+        print(f'{pmt:7s} {n_med:9.2f} {n_mip:7.2f} '
+              f'{med_nom / mip_nom if np.isfinite(med_nom) else np.nan:15.1f}')
+fig.suptitle(f'{RUN_STEM}: triple-MIP MPV vs the no-MIP-selection pair-'
+             'coincident median — same power law = the MIP extraction scales '
+             'like a gain', y=0.995)
+fig.tight_layout()
+fig.savefig(BASE / 'figures' / '19_triples' / 'mip_vs_v_median_compare.png',
+            dpi=140)
+plt.close(fig)
+print(f"-> {BASE / 'figures' / '19_triples' / 'mip_vs_v_median_compare.png'}")
