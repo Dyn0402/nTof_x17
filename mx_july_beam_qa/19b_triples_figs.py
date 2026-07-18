@@ -48,6 +48,22 @@ NOMINAL_V = {'PSSA1': 1325, 'PSSA2': 1275, 'PSSB1': 1325, 'PSSB2': 1300,
 KERN = np.exp(-0.5 * (np.arange(-8, 9) / 3.0) ** 2)
 KERN /= KERN.sum()
 
+RB = 6                                     # display rebin: 300 -> 50 log bins
+CEN_RB = np.exp(np.log(CEN)[:len(CEN) // RB * RB].reshape(-1, RB).mean(axis=1))
+DLOG = np.log10(AE[-1] / AE[0]) / (len(AE) - 1)   # fine log-bin width [dex]
+
+
+def rebin(spec, rb=RB):
+    n = len(spec) // rb
+    return spec[:n * rb].reshape(n, rb).sum(axis=1)
+
+
+def shift_log(spec, shift_dex):
+    """Translate a counts-per-log-bin spectrum by shift_dex (gain scaling is a
+    pure translation in log amplitude; linear interp on fractional bins)."""
+    x = np.arange(len(spec), dtype=float)
+    return np.interp(x - shift_dex / DLOG, x, spec, left=0, right=0)
+
 
 def dsub(h):
     """(wp, liq, nbins) -> double sideband-subtracted spectrum."""
@@ -77,14 +93,13 @@ for ai, st in enumerate('ABCD'):
             i = LABELS.index(l)
             sub = pss_sub(i, ai, b)
             v = VOLT[l]
-            col = cmap((v - 1150) / 500) if v else 'crimson'
-            sm = np.convolve(sub, KERN, mode='same')
-            ax.plot(CEN * f_mv, sm, color=col, lw=1.4 if v else 2.0,
+            modes[(pmt, l)] = smoothed_mode(sub, CEN)   # numbers: fine hist
+            # display only a readable subset; all steps enter the aligned fig
+            if v is not None and v not in (1600, 1500, 1400, 1300):
+                continue
+            col = cmap((v - 1250) / 400) if v else 'crimson'
+            ax.plot(CEN_RB * f_mv, rebin(sub), color=col, lw=1.4 if v else 2.4,
                     label=(f'{v} V' if v else 'nominal'), alpha=0.9)
-            mode = smoothed_mode(sub, CEN)
-            modes[(pmt, l)] = mode
-            if np.isfinite(mode):
-                ax.axvline(mode * f_mv, color=col, lw=0.6, alpha=0.5)
         ax.set_xscale('log')
         ax.set_title(pmt)
         ax.grid(alpha=0.3, which='both')
@@ -92,10 +107,10 @@ for ai, st in enumerate('ABCD'):
         if b == 1:
             ax.set_xlabel('plastic amplitude [mV]')
         if ai == 0:
-            ax.set_ylabel('triples / bin (dbl sideband-sub, smoothed)')
+            ax.set_ylabel('triples / bin (dbl sideband-sub)')
 axes[0][0].legend(fontsize=7, ncol=2)
-fig.suptitle(f'{RUN_STEM}: triple-tagged (WALxPSSxLIQ) plastic spectra — '
-             'the plastic MIP', y=0.995)
+fig.suptitle(f'{RUN_STEM}: triple-tagged (WALxPSSxLIQ) plastic spectra per HV '
+             'step (rebinned x6)', y=0.995)
 fig.tight_layout()
 fig.savefig(OUT / 'pss_mip_spectra.png', dpi=140)
 plt.close(fig)
@@ -178,6 +193,52 @@ fig.suptitle(f'{RUN_STEM}: plastic MIP mode vs HV (power-law fits, '
              'star = extrapolation to nominal)', y=0.995)
 fig.tight_layout()
 fig.savefig(OUT / 'pss_mip_vs_v.png', dpi=140)
+plt.close(fig)
+
+# ------------------------------------------------- gain-aligned stacked MIP
+# The decisive existence test: scaling each step's spectrum to its
+# nominal-V-equivalent amplitude (translation in log amp by n*log10(Vnom/V))
+# must ALIGN a physical peak across steps while the fixed-ADC threshold edge
+# moves. Summing the aligned steps then gives one high-statistics spectrum.
+fig, axes = plt.subplots(2, 4, figsize=(18, 8), sharex=True)
+for ai, st in enumerate('ABCD'):
+    for b in range(2):
+        pmt = f'PSS{st}{b + 1}'
+        f_mv = FAC[f'PSS{st}'][str(b + 1)]
+        ax = axes[b][ai]
+        if pmt not in fit_n:
+            continue
+        n_g, vn = fit_n[pmt], NOMINAL_V[pmt]
+        total = np.zeros(len(CEN))
+        for l in SCAN_STEPS:
+            v = VOLT[l]
+            if v < 1300:                    # deep-threshold steps add noise only
+                continue
+            sub = pss_sub(LABELS.index(l), ai, b)
+            al = shift_log(sub, n_g * np.log10(vn / v))
+            total += al
+            ax.plot(CEN_RB * f_mv, rebin(al), lw=0.8, alpha=0.65,
+                    color=plt.cm.viridis((v - 1250) / 400), label=f'{v} V')
+        ax.plot(CEN_RB * f_mv, rebin(total) / 3, lw=2.4, color='crimson',
+                label='sum / 3')
+        mip, spr = mip_nominal[pmt]
+        ax.axvline(mip * f_mv, color='k', lw=1.2, ls='--',
+                   label=f'MIP {mip * f_mv:.1f} mV')
+        ax.set_xscale('log')
+        ax.set_title(f'{pmt}  (n = {n_g:.2f})')
+        ax.grid(alpha=0.3, which='both')
+        ax.axhline(0, color='k', lw=0.5)
+        if b == 1:
+            ax.set_xlabel('nominal-V-equivalent amplitude [mV]')
+        if ai == 0:
+            ax.set_ylabel('aligned triples / bin')
+        if ai == 0 and b == 0:
+            ax.legend(fontsize=6, ncol=2)
+fig.suptitle(f'{RUN_STEM}: gain-aligned triple spectra — steps pile up at a '
+             'common peak (dashed: adopted MIP) while the threshold edge moves',
+             y=0.995)
+fig.tight_layout()
+fig.savefig(OUT / 'pss_mip_aligned.png', dpi=140)
 plt.close(fig)
 
 # ------------------------------------------------------- wall MIP in triples
