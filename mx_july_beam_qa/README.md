@@ -98,14 +98,17 @@ step tables now per-run (`SCANS`). No wall outage this run (0/1750 bunches).
    double sideband subtraction in wall-plastic dt AND LIQ dt; per-step linear
    spectra + error bars in 19d, `figures/19_triples/steps_linear/`): a single
    significant peak tracks the gain power law step after step while the fixed
-   acquisition threshold stays put. Calibration = error-weighted linear-space
-   MPV fits (V≥1400 V) transported to nominal V with the coincident-median n:
-   MPV = AL 9.9, AR 6.6 (±31%, steps split in two groups — flagged), BL 4.4,
-   BR 6.9, CL 10.3, CR 6.2, DL 5.4, DR 3.5 mV (±6–26%). NOTE: first-pass
-   log-binned modes were 15–35% high (mode of dN/dlogA ≠ MPV of dN/dA);
-   superseded values kept as `mip_mv_logmode` in the JSON.
-   **DR/BL MPVs sit at/below the 4.9 mV trigger threshold** — equalize first.
-   Absolute: 2.5 cm PVT ⇒ 5.05 MeV ⇒ 0.69–2.04 mV/MeV per PMT
+   acquisition threshold stays put. Calibration = smoothed peak of the
+   gain-aligned summed linear spectrum (V≥1400 V steps), Poisson-bootstrap
+   stat errors, per-step transport scatter as the fuller uncertainty:
+   MPV = AL 10.3±1.5, AR 8.1±1.2 (scatter 42% — flagged), BL 3.7±0.5,
+   BR 5.9±0.5, CL 6.5±1.6 (38%), CR 6.3±0.3, DL 5.0±0.6, DR 3.3±0.3 mV.
+   Validated against the no-MIP-selection pair-coincident median: same power
+   law, factor ~10 below (`figures/19_triples/mip_vs_v_median_compare.png`).
+   NOTE: log-binned modes are 15–35% above the linear MPV (mode of dN/dlogA ≠
+   MPV of dN/dA); superseded values kept as `mip_mv_logmode` in the JSON.
+   **DR/BL MPVs sit below the 4.9 mV trigger threshold** — equalize first.
+   Absolute: 2.5 cm PVT ⇒ 5.05 MeV ⇒ 0.65–2.05 mV/MeV per PMT
    (`calib/pss_mip_calib_run224489.json`; normal-incidence, no path-length corr).
 3. **FIFO gain ratio is NOT 2×**: same-HV coincident medians give fleet
    geo-mean ×1.40, strongly per-PMT (DL 1.13 … AL 1.65), ~flat vs HV.
