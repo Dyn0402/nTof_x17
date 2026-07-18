@@ -95,12 +95,17 @@ step tables now per-run (`SCANS`). No wall outage this run (0/1750 bunches).
    and clean A/D wall MIP bumps with NO veto. The standing A/D question is
    closed: it was the cabling.
 2. **Plastic MIP found — first plastic calibration** (19: WAL×PSS×LIQ triples,
-   double sideband subtraction in wall-plastic dt AND LIQ dt): clear MIP humps
-   that march with HV; modes at V≥1400 V transported to nominal V with the
-   coincident-median n give MIP = AL 11.5, AR 8.9, BL 4.5, BR 8.4, CL 14.3
-   (±78%, one outlier step), CR 8.0, DL 5.2, DR 3.7 mV (±10–25%).
-   **DR/BL MIPs sit at/below the 4.9 mV trigger threshold** — equalize first.
-   Absolute: 2.5 cm PVT ⇒ 5.05 MeV ⇒ 0.73–2.83 mV/MeV per PMT
+   double sideband subtraction in wall-plastic dt AND LIQ dt; per-step linear
+   spectra + error bars in 19d, `figures/19_triples/steps_linear/`): a single
+   significant peak tracks the gain power law step after step while the fixed
+   acquisition threshold stays put. Calibration = error-weighted linear-space
+   MPV fits (V≥1400 V) transported to nominal V with the coincident-median n:
+   MPV = AL 9.9, AR 6.6 (±31%, steps split in two groups — flagged), BL 4.4,
+   BR 6.9, CL 10.3, CR 6.2, DL 5.4, DR 3.5 mV (±6–26%). NOTE: first-pass
+   log-binned modes were 15–35% high (mode of dN/dlogA ≠ MPV of dN/dA);
+   superseded values kept as `mip_mv_logmode` in the JSON.
+   **DR/BL MPVs sit at/below the 4.9 mV trigger threshold** — equalize first.
+   Absolute: 2.5 cm PVT ⇒ 5.05 MeV ⇒ 0.69–2.04 mV/MeV per PMT
    (`calib/pss_mip_calib_run224489.json`; normal-incidence, no path-length corr).
 3. **FIFO gain ratio is NOT 2×**: same-HV coincident medians give fleet
    geo-mean ×1.40, strongly per-PMT (DL 1.13 … AL 1.65), ~flat vs HV.

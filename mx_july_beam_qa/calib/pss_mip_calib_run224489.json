@@ -1,64 +1,72 @@
 {
   "run": "run224489",
-  "method": "WALxPSSxLIQ triple-tagged plastic MIP modes at V>=1400V, transported to nominal V with the coincident-median power-law n (12 cache); dE assumes normal incidence through 2.5 cm PVT",
+  "method": "linear-space MPV (error-weighted parabola through the peak) of WALxPSSxLIQ triple-tagged plastic spectra per HV step (V>=1400), transported to nominal V with the coincident-median power-law n; dE assumes normal incidence through 2.5 cm PVT. mip_mv_logmode preserves the earlier log-binned-mode estimate (biased high, superseded).",
   "dE_MeV": 5.046,
   "caveat": "path-length spread from incidence angle not corrected (~+10-20% mean); PSSC1 spread inflated by one outlier step",
   "pmts": {
     "PSSA1": {
       "V_nominal": 1325,
-      "mip_mv": 11.5,
-      "mv_per_mev": 2.279,
-      "log_spread": 0.2,
-      "n_powerlaw": 6.94
+      "n_powerlaw": 6.94,
+      "mip_mv": 9.95,
+      "mv_per_mev": 1.97,
+      "log_spread": 0.108,
+      "mip_mv_logmode": 11.5
     },
     "PSSA2": {
       "V_nominal": 1275,
-      "mip_mv": 8.9,
-      "mv_per_mev": 1.764,
-      "log_spread": 0.1,
-      "n_powerlaw": 5.08
+      "n_powerlaw": 5.08,
+      "mip_mv": 6.61,
+      "mv_per_mev": 1.308,
+      "log_spread": 0.312,
+      "mip_mv_logmode": 8.9
     },
     "PSSB1": {
       "V_nominal": 1325,
-      "mip_mv": 4.5,
-      "mv_per_mev": 0.892,
-      "log_spread": 0.19,
-      "n_powerlaw": 5.19
+      "n_powerlaw": 5.19,
+      "mip_mv": 4.42,
+      "mv_per_mev": 0.876,
+      "log_spread": 0.073,
+      "mip_mv_logmode": 4.5
     },
     "PSSB2": {
       "V_nominal": 1300,
-      "mip_mv": 8.4,
-      "mv_per_mev": 1.665,
-      "log_spread": 0.24,
-      "n_powerlaw": 7.1
+      "n_powerlaw": 7.1,
+      "mip_mv": 6.92,
+      "mv_per_mev": 1.371,
+      "log_spread": 0.121,
+      "mip_mv_logmode": 8.4
     },
     "PSSC1": {
       "V_nominal": 1300,
-      "mip_mv": 14.3,
-      "mv_per_mev": 2.834,
-      "log_spread": 0.78,
-      "n_powerlaw": 3.8
+      "n_powerlaw": 3.8,
+      "mip_mv": 10.32,
+      "mv_per_mev": 2.044,
+      "log_spread": 0.26,
+      "mip_mv_logmode": 14.3
     },
     "PSSC2": {
       "V_nominal": 1300,
-      "mip_mv": 8.0,
-      "mv_per_mev": 1.585,
-      "log_spread": 0.22,
-      "n_powerlaw": 6.64
+      "n_powerlaw": 6.64,
+      "mip_mv": 6.17,
+      "mv_per_mev": 1.223,
+      "log_spread": 0.221,
+      "mip_mv_logmode": 8.0
     },
     "PSSD1": {
       "V_nominal": 1300,
-      "mip_mv": 5.2,
-      "mv_per_mev": 1.03,
-      "log_spread": 0.21,
-      "n_powerlaw": 5.77
+      "n_powerlaw": 5.77,
+      "mip_mv": 5.38,
+      "mv_per_mev": 1.066,
+      "log_spread": 0.084,
+      "mip_mv_logmode": 5.2
     },
     "PSSD2": {
       "V_nominal": 1300,
-      "mip_mv": 3.7,
-      "mv_per_mev": 0.733,
-      "log_spread": 0.15,
-      "n_powerlaw": 6.39
+      "n_powerlaw": 6.39,
+      "mip_mv": 3.46,
+      "mv_per_mev": 0.684,
+      "log_spread": 0.06,
+      "mip_mv_logmode": 3.7
     }
   }
 }

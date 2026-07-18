@@ -22,10 +22,10 @@ control level, vs.\ 23--31\% before), all four arms now show equal wall--plastic
 coincidence excess, and A/D display clean MIP bumps with no veto --- the
 standing A/D deficit was the cabling. (2)~Triple coincidences
 WAL$\times$PSS$\times$LIQ select through-going particles and yield the
-\emph{first plastic-MIP calibration}: MIP amplitudes at nominal HV span
-3.7\,mV (DR) to 14.3\,mV (CL), i.e.\ 0.73--2.83\,mV/MeV against the expected
-5.05\,MeV deposit in 2.5\,cm of PVT; the DR and BL MIPs sit at or below the
-recommended 4.9\,mV trigger threshold. (3)~The FIFO recovers only
+\emph{first plastic-MIP calibration}: MIP (linear-space MPV) amplitudes at
+nominal HV span 3.5\,mV (DR) to 10.3\,mV (CL), i.e.\ 0.69--2.04\,mV/MeV
+against the expected 5.05\,MeV deposit in 2.5\,cm of PVT; the DR and BL MIPs
+sit at or below the recommended 4.9\,mV trigger threshold. (3)~The FIFO recovers only
 $\times1.40$ (fleet geometric mean; 1.13--1.65 per PMT) rather than the naive
 $\times2$. (4)~The liquids are timed in: every arm shows a sharp LIQ
 coincidence peak, the LIQ pulse leading the plastic by $\sim$30\,ns; and the
@@ -296,12 +296,40 @@ LIQ tag does not move the wall MIP.}
 \label{fig:wallintriples}
 \end{figure}
 
-Per-step MIP modes are noisy ($\sim$2\,k net triples per PMT per step), so the
-modes measured at $V\geq1400$\,V --- where the peak is well separated --- are
-transported to the nominal voltage using each PMT's high-statistics
-coincident-median exponent $n$ (Fig.~\ref{fig:mipvsv},
-Table~\ref{tab:mip}). The internal spread of the transported values is
-10--25\% (CL 78\%, inflated by one outlier step).
+The clearest view is one HV step per panel on a \emph{linear} amplitude axis
+with coarse bins and propagated Poisson errors
+(Figs.~\ref{fig:stepsBR}--\ref{fig:stepsDR}; all eight PMTs in
+\texttt{figures/19\_triples/steps\_linear/}): a single peak, significant
+against its error bars, tracking the power-law expectation panel after panel
+while the fixed acquisition threshold (gray) stays put. These linear spectra
+also exposed a convention bias in the first-pass numbers: the mode of a
+log-binned spectrum ($dN/d\log A = A\,dN/dA$) sits systematically 20--40\%
+above the true linear-space MPV of $dN/dA$, which is the quantity a Landau
+MPV convention means. The calibration therefore uses error-weighted MPV fits
+on the linear per-step spectra at $V\geq1400$\,V --- where the peak is well
+clear of the threshold --- transported to the nominal voltage with each PMT's
+high-statistics coincident-median exponent $n$ (Fig.~\ref{fig:mipvsv} shows
+the log-mode version of the transport; Table~\ref{tab:mip} the adopted MPV
+values). The MPV transport is also markedly more stable: internal spreads of
+6--12\% for five PMTs (largest 31\% on AR, whose steps split into two
+groups --- flagged), vs.\ 10--78\% for the log modes.
+
+\begin{figure}[H]\centering
+\includegraphics[width=\textwidth]{19_triples/steps_linear/mip_steps_PSSB2.png}
+\caption{PSSB2: triple-tagged plastic spectrum, one HV step per panel, linear
+amplitude axis, propagated errors. Dashed: power-law-expected MPV; orange
+triangle: per-step fitted MPV; gray band: acquisition threshold.}
+\label{fig:stepsBR}
+\end{figure}
+
+\begin{figure}[H]\centering
+\includegraphics[width=\textwidth]{19_triples/steps_linear/mip_steps_PSSD2.png}
+\caption{Same for PSSD2, the lowest-gain PMT: the peak is clear at
+$V\geq1400$\,V but rides the threshold at low HV and at nominal --- which is
+why only $V\geq1400$\,V enters the fit, and why this arm cannot trigger on
+plastic MIPs at the current HV.}
+\label{fig:stepsDR}
+\end{figure}
 
 \begin{figure}[H]\centering
 \includegraphics[width=\textwidth]{19_triples/pss_mip_vs_v.png}
@@ -314,30 +342,33 @@ MIP, the gray cross the (threshold-biased) directly measured nominal mode.}
 \begin{table}[H]\centering\small
 \begin{tabular}{lrrrrrr}
 \toprule
-PMT & $V_{\rm nom}$ [V] & $n$ & MIP [ADC] & MIP [mV] & spread & mV/MeV\\
+PMT & $V_{\rm nom}$ [V] & $n$ & MPV [ADC] & MPV [mV] & spread & mV/MeV\\
 \midrule
-PSSA1 (AL) & 1325 & 6.94 & 376 & 11.5 & 20\% & 2.28\\
-PSSA2 (AR) & 1275 & 5.08 & 288 &  8.9 & 10\% & 1.76\\
-PSSB1 (BL) & 1325 & 5.19 & 147 &  4.5 & 19\% & 0.89\\
-PSSB2 (BR) & 1300 & 7.10 & 275 &  8.4 & 24\% & 1.66\\
-PSSC1 (CL) & 1300 & 3.80 & 465 & 14.3 & 78\% & 2.83\\
-PSSC2 (CR) & 1300 & 6.64 & 259 &  8.0 & 22\% & 1.59\\
-PSSD1 (DL) & 1300 & 5.77 & 169 &  5.2 & 21\% & 1.03\\
-PSSD2 (DR) & 1300 & 6.39 & 119 &  3.7 & 15\% & 0.73\\
+PSSA1 (AL) & 1325 & 6.94 & 325 &  9.9 & 11\% & 1.96\\
+PSSA2 (AR) & 1275 & 5.08 & 215 &  6.6 & 31\% & 1.31\\
+PSSB1 (BL) & 1325 & 5.19 & 144 &  4.4 &  7\% & 0.87\\
+PSSB2 (BR) & 1300 & 7.10 & 226 &  6.9 & 12\% & 1.37\\
+PSSC1 (CL) & 1300 & 3.80 & 336 & 10.3 & 26\% & 2.04\\
+PSSC2 (CR) & 1300 & 6.64 & 201 &  6.2 & 22\% & 1.23\\
+PSSD1 (DL) & 1300 & 5.77 & 175 &  5.4 &  8\% & 1.07\\
+PSSD2 (DR) & 1300 & 6.39 & 112 &  3.5 &  6\% & 0.69\\
 \bottomrule
 \end{tabular}
-\caption{Plastic MIP at nominal HV and absolute calibration. The energy scale
-assumes the normal-incidence minimum-ionizing deposit in 2.5\,cm of PVT
+\caption{Plastic MIP (linear-space MPV) at nominal HV and absolute
+calibration. The energy scale assumes the normal-incidence minimum-ionizing
+deposit in 2.5\,cm of PVT
 ($1.956\,\mathrm{MeV\,cm^2/g}\times1.032\,\mathrm{g/cm^3}\times2.5\,\mathrm{cm}
 = 5.05$\,MeV); the incidence-angle path-length spread ($\sim$+10--20\% on the
-mean) is not yet corrected. \texttt{calib/pss\_mip\_calib\_run224489.json}.}
+mean) is not yet corrected. \texttt{calib/pss\_mip\_calib\_run224489.json}
+(the earlier log-binned-mode values, 15--35\% higher, are preserved there as
+\texttt{mip\_mv\_logmode}).}
 \label{tab:mip}
 \end{table}
 
 Two operational consequences. First, the MIP-based inter-PMT gain ratios
 agree with the coincident-median equalization to $\sim$15\%, an independent
 validation of Table~\ref{tab:eq}. Second, and important for the trigger:
-\textbf{at the current HV the DR (3.7\,mV) and BL (4.5\,mV) MIPs are at or
+\textbf{at the current HV the DR (3.5\,mV) and BL (4.4\,mV) MIPs are at or
 below the 4.9\,mV threshold} that the threshold scan recommends --- those arms
 cannot trigger efficiently on plastic MIPs until the equalization
 ($+133$/$+84$\,V) is applied.
@@ -421,7 +452,7 @@ here is affected, but a scope check at the FIFO outputs is recommended.
 \item The A/D cross-wiring is fixed and fully explains the old A/D
       coincidence deficit; the wall MIP calibration now covers all four arms.
 \item The plastic MIP is measured for the first time:
-      0.73--2.83\,mV/MeV at nominal HV. \textbf{Apply the new equalization}
+      0.69--2.04\,mV/MeV at nominal HV. \textbf{Apply the new equalization}
       (Table~\ref{tab:eq}); until then DR and BL cannot trigger on plastic
       MIPs at the recommended 4.9\,mV threshold.
 \item Use the measured per-PMT FIFO ratios ($\times$1.13--1.65), not a
