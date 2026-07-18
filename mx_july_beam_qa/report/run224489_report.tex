@@ -251,18 +251,41 @@ the new offsets; sideband $+20$..$+120$\,ns) matched to LIQ hits near the
 plastic time ($|dt_{\rm LIQ}|\leq10$\,ns around the per-arm peak; double
 sideband $25$--$125$\,ns both sides), and every spectrum is double
 sideband-subtracted in both $dt$'s. Net triple counts per PMT range from
-9.2\,k (CL) to 49.5\,k (BR). The subtracted plastic spectra show a clear hump
-that marches with HV (Fig.~\ref{fig:mipspectra}) --- a real peak, well above
-threshold for $V\geq1400$\,V, sinking into the threshold turn-on at the
-lowest steps. As a systematic check, adding the LIQ tag leaves the \emph{wall}
-spectrum in triples unchanged (Fig.~\ref{fig:wallintriples}): the third tag
-purifies without biasing.
+9.2\,k (CL) to 49.5\,k (BR) --- but split over the HV steps this is only
+$\sim$2--6\,k per PMT per step, so the individual per-step spectra
+(Fig.~\ref{fig:mipspectra}) are statistically noisy; they show the spectral
+hump marching with HV but are not, by themselves, compelling.
+
+The compelling test is gain alignment (Fig.~\ref{fig:mipaligned}): scaling
+each step's spectrum to its nominal-voltage equivalent (a multiplication by
+$(V_{\rm nom}/V)^{n}$, i.e.\ a pure translation in log amplitude) must make a
+\emph{physical} peak coincide across steps, while the fixed-ADC threshold
+edge moves from step to step. That is exactly what the data do: the aligned
+steps pile up at a common position and their sum --- one high-statistics
+spectrum per PMT --- shows a single dominant peak at the adopted MIP value,
+3--6$\times$ above even the worst step's aligned threshold edge. A threshold
+artifact cannot produce this behavior. (The aligned stacks also reveal a
+genuine secondary component at $\sim$100--300\,mV equivalent, most visible on
+AR/BR/DR --- large energy deposits, composition not yet identified.) As a
+further systematic check, adding the LIQ tag leaves the \emph{wall} spectrum
+in triples unchanged (Fig.~\ref{fig:wallintriples}): the third tag purifies
+without biasing.
+
+\begin{figure}[H]\centering
+\includegraphics[width=\textwidth]{19_triples/pss_mip_aligned.png}
+\caption{Gain-aligned triple-tagged plastic spectra: thin curves are
+individual steps ($V\geq1300$\,V) scaled to nominal-V equivalent, the red
+curve is their sum ($/3$), the dashed line the adopted MIP. A physical peak
+aligns; the threshold edge does not.}
+\label{fig:mipaligned}
+\end{figure}
 
 \begin{figure}[H]\centering
 \includegraphics[width=\textwidth]{19_triples/pss_mip_spectra.png}
 \caption{Triple-tagged plastic spectra per HV step (double
-sideband-subtracted, smoothed). The MIP hump moves coherently with HV; the
-red curve is the nominal-HV window.}
+sideband-subtracted, rebinned $\times$6; readable subset of steps shown).
+The MIP hump moves coherently with HV; the red curve is the nominal-HV
+window.}
 \label{fig:mipspectra}
 \end{figure}
 

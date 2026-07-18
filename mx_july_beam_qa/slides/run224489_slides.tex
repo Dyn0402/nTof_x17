@@ -39,7 +39,7 @@
 
 \begin{frame}{Scan timeline: bunches $\to$ HV steps via the CAEN log}
 \centering
-\includegraphics[height=.8\textheight]{12_hv_scan/scan_timeline.png}
+\includegraphics[width=\textwidth,height=.8\textheight,keepaspectratio]{12_hv_scan/scan_timeline.png}
 \end{frame}
 
 \begin{frame}{Result 1 --- the cross-wiring fix is \textbf{confirmed}; A/D closed}
@@ -57,12 +57,12 @@
 
 \begin{frame}{A/D duplication autopsy: before-and-after}
 \centering
-\includegraphics[height=.78\textheight]{run224489/autopsy/dup_veto_spectra.png}
+\includegraphics[width=\textwidth,height=.78\textheight,keepaspectratio]{run224489/autopsy/dup_veto_spectra.png}
 \end{frame}
 
 \begin{frame}{HV scan: wall MIP again immune to plastic HV (now incl.\ arm A)}
 \centering
-\includegraphics[height=.72\textheight]{12_hv_scan/wall_mip_stability.png}
+\includegraphics[width=\textwidth,height=.72\textheight,keepaspectratio]{12_hv_scan/wall_mip_stability.png}
 
 {\small $\pm$1 bin ($\pm$2.6\%) over a $3\times$ tag-rate change $\Rightarrow$
 wall energy scale independent of plastic operating point.}
@@ -70,12 +70,12 @@ wall energy scale independent of plastic operating point.}
 
 \begin{frame}{Per-PMT gain power laws $G\propto V^{n}$, $n=3.8$--$7.1$}
 \centering
-\includegraphics[height=.78\textheight]{12_hv_scan/gain_curves.png}
+\includegraphics[width=\textwidth,height=.78\textheight,keepaspectratio]{12_hv_scan/gain_curves.png}
 \end{frame}
 
 \begin{frame}{Result 2 --- the FIFO gain ratio is \textbf{1.4}, not 2}
 \centering
-\includegraphics[height=.68\textheight]{19_triples/fifo_ratio.png}
+\includegraphics[width=\textwidth,height=.68\textheight,keepaspectratio]{19_triples/fifo_ratio.png}
 
 {\small Same-HV coincident medians, 224489/224466: fleet geo-mean $\times$1.40,
 per-PMT 1.13 (DL) -- 1.65 (AL). Use the measured per-PMT ratios, not a global 2.}
@@ -112,7 +112,7 @@ DR & 34.4 & 1433 & $+133$\\
 
 \begin{frame}{Result 3 --- the liquids are timed in (first time)}
 \centering
-\includegraphics[height=.7\textheight]{19_triples/liq_wide_dt.png}
+\includegraphics[width=\textwidth,height=.7\textheight,keepaspectratio]{19_triples/liq_wide_dt.png}
 
 {\small LIQ leads the plastic by 29.5--32.8 ns, within $\pm$3.3 ns of the wall;
 per-channel offsets (rms 3.2--4.5 ns) $\to$ \texttt{calib/liq\_offsets\_run224489.json}.}
@@ -120,12 +120,12 @@ per-channel offsets (rms 3.2--4.5 ns) $\to$ \texttt{calib/liq\_offsets\_run22448
 
 \begin{frame}{LIQ timing per wall channel / plastic bar}
 \centering
-\includegraphics[height=.8\textheight]{19_triples/liq_timing.png}
+\includegraphics[width=\textwidth,height=.8\textheight,keepaspectratio]{19_triples/liq_timing.png}
 \end{frame}
 
 \begin{frame}{The triple telescope: why LIQ unlocks the \emph{plastic} MIP}
 \centering
-\includegraphics[height=.7\textheight]{11_diagrams/concept_wall_plastic_liq.png}
+\includegraphics[width=\textwidth,height=.7\textheight,keepaspectratio]{11_diagrams/concept_wall_plastic_liq.png}
 
 {\small Stack: MM $\to$ wall $\to$ plastic $\to$ LS. Wall$\times$plastic tags
 wall MIPs only; adding a LIQ hit \emph{behind} the plastic selects
@@ -133,17 +133,20 @@ through-goers $\Rightarrow$ plastic spectrum in triples = plastic MIP
 candidates. Double sideband subtraction in both dt's.}
 \end{frame}
 
-\begin{frame}{Result 4 --- the plastic MIP, found}
+\begin{frame}{Result 4 --- the plastic MIP, found (gain-aligned stack)}
 \centering
-\includegraphics[height=.72\textheight]{19_triples/pss_mip_spectra.png}
+\includegraphics[width=\textwidth,height=.72\textheight,keepaspectratio]{19_triples/pss_mip_aligned.png}
 
-{\small Net triples 9.2 k (CL) -- 49.5 k (BR); the hump marches with HV;
-red = nominal-HV window. Wall spectrum in triples unchanged (backup).}
+{\small Each step's spectrum scaled to its nominal-V equivalent
+($\times(V_{\rm nom}/V)^{n}$ = translation in log amp): a \emph{physical} peak
+must align across steps, the fixed-ADC threshold edge must move. The summed
+spectrum (red) peaks at the adopted MIP (dashed) on every PMT. Net triples
+9.2 k (CL) -- 49.5 k (BR); per-step spectra in backup.}
 \end{frame}
 
 \begin{frame}{Plastic MIP vs HV $\to$ calibration at nominal}
 \centering
-\includegraphics[height=.78\textheight]{19_triples/pss_mip_vs_v.png}
+\includegraphics[width=\textwidth,height=.78\textheight,keepaspectratio]{19_triples/pss_mip_vs_v.png}
 \end{frame}
 
 \begin{frame}{First plastic-MIP calibration table}
@@ -182,7 +185,7 @@ DR &  \alert{3.7} & 15\% & 0.73\\
 
 \begin{frame}{Result 5 --- LIQ gain-vs-position gradient is \textbf{real}}
 \centering
-\includegraphics[height=.62\textheight]{19_triples/liq_position_map.png}
+\includegraphics[width=\textwidth,height=.62\textheight,keepaspectratio]{19_triples/liq_position_map.png}
 
 {\small Triple-tagged track position: horizontal = wall group $\times$ bar,
 vertical = wall top/bottom asymmetry. 1.5--2$\times$ gradient toward the PMT;
@@ -193,12 +196,12 @@ vertical on B/C (PMT up) --- matches the as-built Geant geometry.}
 \begin{frame}{Timing: one clean common delay; the satellite misbehaves}
 \begin{columns}
 \column{.52\textwidth}
-\includegraphics[width=\textwidth]{19_triples/offset_shift.png}
+\includegraphics[width=\textwidth,height=.62\textheight,keepaspectratio]{19_triples/offset_shift.png}
 
 {\small All 64 wall--plastic offsets shifted by a \textbf{common
 $-22.27$ ns (rms 0.22 ns)}.}
 \column{.46\textwidth}
-\includegraphics[width=\textwidth]{19_triples/satellite.png}
+\includegraphics[width=\textwidth,height=.62\textheight,keepaspectratio]{19_triples/satellite.png}
 
 {\small The $-60$ ns satellite kept its \emph{absolute} position (main peak
 moved $-22$ ns) and grew to 19--34\% of the peak $\Rightarrow$ not a
@@ -223,26 +226,35 @@ recommended.} (Outside all analysis windows.)}
 \end{enumerate}
 \end{frame}
 
+\begin{frame}{Backup: per-step triple spectra (low stats per step)}
+\centering
+\includegraphics[width=\textwidth,height=.72\textheight,keepaspectratio]{19_triples/pss_mip_spectra.png}
+
+{\small $\sim$2--6 k net triples per PMT per step after double sideband
+subtraction --- individually noisy; the gain-aligned stack is the evidence
+plot, these show the raw marching with HV.}
+\end{frame}
+
 \begin{frame}{Backup: wall spectrum unchanged by the LIQ tag}
 \centering
-\includegraphics[height=.78\textheight]{19_triples/wall_in_triples.png}
+\includegraphics[width=\textwidth,height=.78\textheight,keepaspectratio]{19_triples/wall_in_triples.png}
 \end{frame}
 
 \begin{frame}{Backup: triple-tagged LIQ spectra (C/D low)}
 \centering
-\includegraphics[height=.7\textheight]{19_triples/liq_spectra.png}
+\includegraphics[width=\textwidth,height=.7\textheight,keepaspectratio]{19_triples/liq_spectra.png}
 
 {\small Inclusive LIQ medians: A 7.5, B 10.4, C 4.7, D 5.3 mV.}
 \end{frame}
 
 \begin{frame}{Backup: coincident spectra per step (linear mV)}
 \centering
-\includegraphics[height=.78\textheight]{12_hv_scan/coinc_spectra_linear.png}
+\includegraphics[width=\textwidth,height=.78\textheight,keepaspectratio]{12_hv_scan/coinc_spectra_linear.png}
 \end{frame}
 
 \begin{frame}{Backup: trigger threshold scan at equalized gains}
 \centering
-\includegraphics[height=.78\textheight]{12_hv_scan/threshold_scan.png}
+\includegraphics[width=\textwidth,height=.78\textheight,keepaspectratio]{12_hv_scan/threshold_scan.png}
 \end{frame}
 
 \end{document}
