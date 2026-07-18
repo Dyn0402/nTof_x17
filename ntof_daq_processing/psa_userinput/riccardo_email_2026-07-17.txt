@@ -1,0 +1,14 @@
+
+
+Hi Dylan,
+
+I think I can say I am "happy" with this UserInput. I updated all the detectors and added the liquids. The liquids are still kinda bad, but we should recognize the majority of the pileup and the biggest signal without too many problems. The plastic were adjusted with previous runs with the T-BNC so I was recognizing a lot of after-pulses, hopefully now is a bit better. 
+
+The instructions to process a set of run can be found here https://twiki.cern.ch/twiki/bin/view/NTOF/Lxplus (section 3). 
+
+Together with the UserInput you can find some signals shapes I used for the WALL and LIQS to better reconstruct the signals. Put them in the same location of the UserInput! 
+
+Let me know if you manage to process the file with the voltage scan, if not I can do that tomorrow!
+
+Have a nice weekend,
+Riccardo
