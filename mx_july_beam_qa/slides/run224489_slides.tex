@@ -1,0 +1,248 @@
+\documentclass[aspectratio=169,10pt]{beamer}
+\usetheme{default}
+\usecolortheme{seahorse}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{footline}[frame number]
+\usepackage{graphicx, booktabs}
+\graphicspath{{../figures/}}
+\title{Run 224489: Wiring Fix Confirmed, First Plastic-MIP Calibration\\
+       from LIQ Triples, and HV Scan 2}
+\subtitle{n\_TOF EAR2 X17 --- first run with the liquid scintillators (July 17, 2026)}
+\author{Dylan Neff \\[0.5ex] {\small analysis and slides prepared with Claude (Anthropic AI assistant)}}
+\date{July 18, 2026}
+
+\begin{document}
+
+\begin{frame}\titlepage\end{frame}
+
+\begin{frame}{Run 224489: what changed since the last scan (224466)}
+\begin{columns}
+\column{.55\textwidth}
+\begin{itemize}
+\item \textbf{Cabling fix} on the crossed A/D channels.
+\item \textbf{FIFO}: plastics on a linear fan-in/fan-out instead of the
+      BNC-T split ($\sim$16 ns extra delay, naive $2\times$ amplitude).
+\item \textbf{Liquid scintillators} (LIQA--D, 1 ch/arm) in the readout for
+      the first time: 5.3 M (C) -- 21.6 M (B) hits.
+\item SiPM flash gating \textbf{ON all run} (no boundary).
+\item Same 9-step plastic HV ladder, 1200--1600 V in 50 V merged grid,
+      + post-scan nominal-HV window.
+\end{itemize}
+\column{.42\textwidth}
+\begin{itemize}
+\item 1750 bunches (817 dedicated), new PSA with LIQ pulse-shape fitting.
+\item QA clean: \textbf{no wall outage} (0/1750; 224404 lost 46\%),
+      $\gamma$-flash 11.62 $\mu$s on all arms, all 44 channels alive.
+\end{itemize}
+\end{columns}
+\end{frame}
+
+\begin{frame}{Scan timeline: bunches $\to$ HV steps via the CAEN log}
+\centering
+\includegraphics[height=.8\textheight]{12_hv_scan/scan_timeline.png}
+\end{frame}
+
+\begin{frame}{Result 1 --- the cross-wiring fix is \textbf{confirmed}; A/D closed}
+\begin{itemize}
+\item Duplication band ($\pm$4 ns equal-amplitude partner, one group over):
+      flagged fractions were \alert{23--31\%} on the crossed A/D channels in
+      224460 $\to$ now $\leq$4\% everywhere = B-arm control level.
+\item Wall--plastic excess now \textbf{equal on all four arms}
+      (1.71--1.81 M within $\pm$10 ns) --- was 6--8$\times$ deficient on A/D.
+\item A/D coincident wall spectra show clean MIP bumps with \textbf{no veto}.
+\end{itemize}
+\centering
+\alert{The standing A/D coincidence deficit was the cabling. Closed.}
+\end{frame}
+
+\begin{frame}{A/D duplication autopsy: before-and-after}
+\centering
+\includegraphics[height=.78\textheight]{run224489/autopsy/dup_veto_spectra.png}
+\end{frame}
+
+\begin{frame}{HV scan: wall MIP again immune to plastic HV (now incl.\ arm A)}
+\centering
+\includegraphics[height=.72\textheight]{12_hv_scan/wall_mip_stability.png}
+
+{\small $\pm$1 bin ($\pm$2.6\%) over a $3\times$ tag-rate change $\Rightarrow$
+wall energy scale independent of plastic operating point.}
+\end{frame}
+
+\begin{frame}{Per-PMT gain power laws $G\propto V^{n}$, $n=3.8$--$7.1$}
+\centering
+\includegraphics[height=.78\textheight]{12_hv_scan/gain_curves.png}
+\end{frame}
+
+\begin{frame}{Result 2 --- the FIFO gain ratio is \textbf{1.4}, not 2}
+\centering
+\includegraphics[height=.68\textheight]{19_triples/fifo_ratio.png}
+
+{\small Same-HV coincident medians, 224489/224466: fleet geo-mean $\times$1.40,
+per-PMT 1.13 (DL) -- 1.65 (AL). Use the measured per-PMT ratios, not a global 2.}
+\end{frame}
+
+\begin{frame}{New HV equalization (supersedes 224466 table)}
+\begin{columns}
+\column{.5\textwidth}
+\centering\small
+\begin{tabular}{lrrr}
+\toprule
+PMT & med [mV] & $V_{\rm sugg}$ & $\Delta V$\\
+\midrule
+AL & 85.4 & 1271 & $-54$\\
+AR & 83.6 & 1211 & $-64$\\
+BL & 46.7 & 1409 & $+84$\\
+BR & 79.2 & 1262 & $-38$\\
+CL & 99.8 & 1158 & $-142$\\
+CR & 66.5 & 1293 & $-7$\\
+DL & 47.8 & 1368 & $+68$\\
+DR & 34.4 & 1433 & $+133$\\
+\bottomrule
+\end{tabular}
+\column{.47\textwidth}
+\begin{itemize}
+\item Target: fleet geo-mean coincident median (64.2 mV); spread now
+      $2.9\times$.
+\item At equalized gains: common threshold with 99\% tagged efficiency on
+      every PMT down to \textbf{4.9 mV} (95\%: 7.1 mV).
+\item Exported to DAQ repo (\texttt{calibrations/pss/, pss\_trigger/}).
+\end{itemize}
+\end{columns}
+\end{frame}
+
+\begin{frame}{Result 3 --- the liquids are timed in (first time)}
+\centering
+\includegraphics[height=.7\textheight]{19_triples/liq_wide_dt.png}
+
+{\small LIQ leads the plastic by 29.5--32.8 ns, within $\pm$3.3 ns of the wall;
+per-channel offsets (rms 3.2--4.5 ns) $\to$ \texttt{calib/liq\_offsets\_run224489.json}.}
+\end{frame}
+
+\begin{frame}{LIQ timing per wall channel / plastic bar}
+\centering
+\includegraphics[height=.8\textheight]{19_triples/liq_timing.png}
+\end{frame}
+
+\begin{frame}{The triple telescope: why LIQ unlocks the \emph{plastic} MIP}
+\centering
+\includegraphics[height=.7\textheight]{11_diagrams/concept_wall_plastic_liq.png}
+
+{\small Stack: MM $\to$ wall $\to$ plastic $\to$ LS. Wall$\times$plastic tags
+wall MIPs only; adding a LIQ hit \emph{behind} the plastic selects
+through-goers $\Rightarrow$ plastic spectrum in triples = plastic MIP
+candidates. Double sideband subtraction in both dt's.}
+\end{frame}
+
+\begin{frame}{Result 4 --- the plastic MIP, found}
+\centering
+\includegraphics[height=.72\textheight]{19_triples/pss_mip_spectra.png}
+
+{\small Net triples 9.2 k (CL) -- 49.5 k (BR); the hump marches with HV;
+red = nominal-HV window. Wall spectrum in triples unchanged (backup).}
+\end{frame}
+
+\begin{frame}{Plastic MIP vs HV $\to$ calibration at nominal}
+\centering
+\includegraphics[height=.78\textheight]{19_triples/pss_mip_vs_v.png}
+\end{frame}
+
+\begin{frame}{First plastic-MIP calibration table}
+\begin{columns}
+\column{.52\textwidth}
+\centering\small
+\begin{tabular}{lrrrr}
+\toprule
+PMT & MIP [mV] & spread & mV/MeV\\
+\midrule
+AL & 11.5 & 20\% & 2.28\\
+AR &  8.9 & 10\% & 1.76\\
+BL &  \alert{4.5} & 19\% & 0.89\\
+BR &  8.4 & 24\% & 1.66\\
+CL & 14.3 & 78\%$^{*}$ & 2.83\\
+CR &  8.0 & 22\% & 1.59\\
+DL &  5.2 & 21\% & 1.03\\
+DR &  \alert{3.7} & 15\% & 0.73\\
+\bottomrule
+\end{tabular}
+
+{\scriptsize $^{*}$one outlier step. Energy scale: 5.05 MeV in 2.5 cm PVT
+(normal incidence).}
+\column{.45\textwidth}
+\begin{itemize}
+\item High-V ($\geq$1400 V) modes transported to nominal V with each PMT's
+      coincident-median $n$.
+\item MIP-based inter-PMT ratios agree with the equalization table to
+      $\sim$15\% --- independent cross-check.
+\item \alert{DR (3.7 mV) and BL (4.5 mV) MIPs sit at/below the 4.9 mV
+      trigger threshold} $\Rightarrow$ equalize before trusting plastic
+      triggers on those arms.
+\end{itemize}
+\end{columns}
+\end{frame}
+
+\begin{frame}{Result 5 --- LIQ gain-vs-position gradient is \textbf{real}}
+\centering
+\includegraphics[height=.62\textheight]{19_triples/liq_position_map.png}
+
+{\small Triple-tagged track position: horizontal = wall group $\times$ bar,
+vertical = wall top/bottom asymmetry. 1.5--2$\times$ gradient toward the PMT;
+axis flips with surveyed orientation: horizontal on A/D (PMT toward group 4),
+vertical on B/C (PMT up) --- matches the as-built Geant geometry.}
+\end{frame}
+
+\begin{frame}{Timing: one clean common delay; the satellite misbehaves}
+\begin{columns}
+\column{.52\textwidth}
+\includegraphics[width=\textwidth]{19_triples/offset_shift.png}
+
+{\small All 64 wall--plastic offsets shifted by a \textbf{common
+$-22.27$ ns (rms 0.22 ns)}.}
+\column{.46\textwidth}
+\includegraphics[width=\textwidth]{19_triples/satellite.png}
+
+{\small The $-60$ ns satellite kept its \emph{absolute} position (main peak
+moved $-22$ ns) and grew to 19--34\% of the peak $\Rightarrow$ not a
+plastic-cable reflection; injected at/after the FIFO. \alert{Scope check
+recommended.} (Outside all analysis windows.)}
+\end{columns}
+\end{frame}
+
+\begin{frame}{Summary}
+\begin{enumerate}
+\item \textbf{A/D cross-wiring fixed and confirmed} --- the old A/D deficit is
+      fully explained; wall MIP calibration now covers all four arms.
+\item \textbf{First plastic MIP calibration}: 0.73--2.83 mV/MeV at nominal HV
+      via WAL$\times$PSS$\times$LIQ triples.
+\item \textbf{FIFO ratio measured}: $\times$1.40 fleet (1.13--1.65 per PMT),
+      not $\times$2.
+\item \textbf{New HV equalization} ready (DAQ repo); apply it --- DR/BL cannot
+      trigger on plastic MIPs at 4.9 mV until then.
+\item \textbf{Liquids timed in}; LIQ position-gain gradient (1.5--2$\times$)
+      confirmed and mapped; C/D LIQ gains look low --- review LIQ HV.
+\item \textbf{Scope-check the FIFO} for the $-60$ ns satellite.
+\end{enumerate}
+\end{frame}
+
+\begin{frame}{Backup: wall spectrum unchanged by the LIQ tag}
+\centering
+\includegraphics[height=.78\textheight]{19_triples/wall_in_triples.png}
+\end{frame}
+
+\begin{frame}{Backup: triple-tagged LIQ spectra (C/D low)}
+\centering
+\includegraphics[height=.7\textheight]{19_triples/liq_spectra.png}
+
+{\small Inclusive LIQ medians: A 7.5, B 10.4, C 4.7, D 5.3 mV.}
+\end{frame}
+
+\begin{frame}{Backup: coincident spectra per step (linear mV)}
+\centering
+\includegraphics[height=.78\textheight]{12_hv_scan/coinc_spectra_linear.png}
+\end{frame}
+
+\begin{frame}{Backup: trigger threshold scan at equalized gains}
+\centering
+\includegraphics[height=.78\textheight]{12_hv_scan/threshold_scan.png}
+\end{frame}
+
+\end{document}
