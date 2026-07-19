@@ -105,8 +105,24 @@
   \begin{itemize}
     \item First signal above threshold: sample 6--7 (p5); prompt \emph{peak}: 8--9 $\Rightarrow$ peak $\approx$ latency$-$26.
     \item Identical in cosmic-singles and beam Mode-3 triggers, all four detectors --- the suspected per-detector $t_0$ offsets were cluster-geometry artifacts. \textbf{One latency serves both run types.}
-    \item $\Rightarrow$ $\sim$6 dead pre-roll samples reclaimable, but \emph{only} by lowering latency.
+    \item \bad{These are PEAK positions.} The pulse has width --- it rises 4 smp before the peak and falls $+$7 smp after (next slide). The window must hold the rise (with baseline) AND the fall, not just the peaks.
   \end{itemize}
+\end{frame}
+
+\begin{frame}{Pulse footprint --- the window must hold rise + peak + fall}
+  \begin{columns}[T]
+    \column{0.6\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{fig_pulse_shape.pdf}
+    \column{0.38\textwidth}
+    \small Peak-aligned mean pulse (cosmic hit strips, A$_x$ \& C$_x$ identical):
+    \begin{itemize}\small
+      \item rise onset (5\%) at \textbf{peak$-$4}; want $\sim$3 baseline before it.
+      \item fall to 20\% at \textbf{peak$+$5}; to baseline (5\%) at \textbf{peak$+$7}.
+    \end{itemize}
+    \vspace{0.4em}
+    A primary spans \textbf{$\sim$11 smp} (peak$-$4 $\to$ peak$+$7). \bad{The earlier ``+2 fall'' was wrong by $\sim$5 smp} --- that is what moves the trim from n=28 back to n=30.
+  \end{columns}
 \end{frame}
 
 \begin{frame}{Finding 3 --- water: A is dry; B, C, D all breathe ${\sim}0.8$\% H$_2$O}
@@ -137,16 +153,44 @@
   \end{columns}
 \end{frame}
 
-\begin{frame}{Window budget $\Rightarrow$ latency 32, n\_samples 28}
+\begin{frame}{Window budget (measured pulse footprint)}
   \centering
-  \includegraphics[width=0.92\textwidth]{fig_budget.pdf}
-  \vspace{0.2em}
+  \includegraphics[width=0.82\textwidth]{fig_budget.pdf}
+  \vspace{0.1em}
   \begin{itemize}\small
-    \item \textbf{n=28 @ latency 32}: covers today's worst deep edge with $\sim$4 smp margin, survives a wetness excursion to $\sim$1.1\%; saves 12.5\% readout/size. Same config works for cosmics.
-    \item n=26: OK for today's gas, zero excursion headroom --- only with per-run span monitoring.
-    \item \bad{16--20 samples impossible}: the B/C/D drift column alone is $\sim$15 smp at 0.8\% H$_2$O.
-    \item Dry the gas line $\to$ all columns $\sim$12 smp $\to$ n=22--24 would become safe. \textbf{A dryer is worth more than any further trim.}
+    \item A primary spans rise(peak$-$4) $\to$ fall(peak$+$7). Full containment of \emph{every} clean-det primary $\Rightarrow$ latency 34 / n=30 (only 2 smp trim).
+    \item But we don't need every tail: the next slide prices the \emph{loss} of cutting harder.
   \end{itemize}
+\end{frame}
+
+\begin{frame}{How aggressively can we cut? --- quantified loss (clean dets A/C/D)}
+  \begin{columns}[T]
+    \column{0.52\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{fig_loss_curve.pdf}
+    \column{0.46\textwidth}\small
+    Loss = measured pulse shape (charge vs truncation point) folded on the deep-edge
+    distribution, prompt-anchored:
+    \begin{itemize}\small
+      \item \good{0 \% of primaries lost down to n=24} --- peaks are always captured; only the far charge \emph{tail} is clipped.
+      \item mean charge loss \textbf{$<$0.6 \% to n=24}; steep knee below n$\approx$23.
+      \item opening 1 smp before the rise costs a fixed $\sim$1 \% (anomalously early risers, likely not clean tracks).
+    \end{itemize}
+    \begin{center}\scriptsize
+    \begin{tabular}{lccc}
+      \toprule
+      option & lat & n & cut \\\midrule
+      conservative & 34 & 32 & 0 \\
+      \good{balanced (now)} & 32 & 29 & 3 \\
+      aggressive & 31 & 28 & 4 \\
+      \bad{max-trim (B cleared)} & 30 & 24 & \textbf{8} \\
+      \bottomrule
+    \end{tabular}
+    \end{center}
+  \end{columns}
+  \vspace{0.2em}
+  \centering\small
+  \bad{Gate = det B} (piles at smp 31): all but max-trim keep that bin. \textbf{Now: latency 32, n=29 (cut 3, $\sim$0 loss). After clearing B: latency 30, n=24 (cut 25\%, $<$0.6\% charge).}
 \end{frame}
 
 \begin{frame}{Det A: 600 $\to$ 700 V (staged) --- insurance, not speed}
@@ -180,10 +224,28 @@
       \begin{enumerate}
         \item \textbf{spark/current stability at 650/700 = the actual gate} for the HV move;
         \item span(600)/span(700) ratio pins A's water content assumption-free (dry: 1.06, 0.8\%-wet: 1.28 --- cleanly separable);
-        \item confirms the predicted $\sim$sample-20 endpoint before freezing latency 32 / n=28.
+        \item confirms the deep-edge + fall endpoint before freezing latency 34 / n=30.
       \end{enumerate}
     \item Optional, low priority: one B/C/D point at 750 V (wet-gas $v(E)$ slope); costs their margin while running.
   \end{itemize}
+\end{frame}
+
+\begin{frame}{v6 cross-check (done locally) --- A/C/D confirmed, det B flagged}
+  \centering
+  \includegraphics[width=0.86\textwidth]{fig_v6_crosscheck.pdf}
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+    \small\textbf{Prompt-anchored cut} (track cluster must contain a near-mesh strip, earliest $\leq$ smp 12) removes ringing clusters that lack one:
+    \begin{itemize}\small
+      \item \good{A, C, D collapse to 0--2.6\%} --- deep edges at smp 19--24, safely inside n=28. D$_y$'s 8.4\% was ringing, as predicted.
+    \end{itemize}
+    \column{0.5\textwidth}
+    \begin{itemize}\small
+      \item \bad{det B stays 6--9\%} at the smp-31 ceiling even anchored (span $\approx$20 $\to$ $v\approx$25 µm/ns). Small counts, cosmic-only.
+      \item Either real slow drift (B wetter) \emph{or} residual coherent noise --- unresolved.
+      \item \textbf{Impact:} B's fall rides the ceiling; \emph{clear B (noise vs slow-drift) or keep n=32} before the tightest trim.
+    \end{itemize}
+  \end{columns}
 \end{frame}
 
 \begin{frame}{Summary \& open items}
@@ -192,8 +254,8 @@
     \toprule
     \textbf{knob} & \textbf{recommendation} \\
     \midrule
-    latency & $35 \to \mathbf{32}$ (prompt peak $\to$ smp 5--6) \\
-    n\_samples & $32 \to \mathbf{28}$ \;(floor 26 with monitoring; $<$24 needs drier gas) \\
+    latency & $35 \to \mathbf{32}$ now $\to \mathbf{30}$ after clearing B \\
+    n\_samples & $32 \to \mathbf{29}$ now (cut 3, $\sim$0 loss) $\to \mathbf{24}$ after B (cut 25\%, $<$0.6\% charge) \\
     det A drift & $\mathbf{700}$ V, staged 650 $\to$ 700 with HV-monitor soak \\
     B/C/D drift & keep 800 V \\
     beam drift scan & yes --- det A 600/650/700, 30 min each \\
@@ -201,9 +263,10 @@
   \end{tabular}
   \vspace{0.8em}
   \begin{itemize}\small
-    \item Open (non-blocking): v6 prompt-anchored verification pass + run\_53 16-h gas-stability cross-check --- computed, JSONs on \texttt{daq\_lxplus:/tmp/v6\_*.json} (box was off-network); expected to tighten y-plane numbers only.
+    \item Loss priced from the \textbf{measured pulse} (rise $-$4, fall $+$7): 0\% primaries lost, $<$0.6\% charge to n=24 on clean dets. \bad{det B} (piles at smp 31) is the only gate to max-trim.
+    \item v6 cross-check \good{DONE} locally (ROOT off-box; \textbf{never heavy jobs on the DAQ}): A/C/D clean, \bad{det B flagged}.
     \item Electronics follow-up: post-saturation ringing blocks (fixed per-FEU channel ranges); window trim already cuts most of it offline.
-    \item Full writeup: \texttt{mx\_july\_beam\_qa/DRIFT\_WINDOW\_ANALYSIS.md}.
+    \item Full writeup: \texttt{mx\_july\_beam\_qa/DRIFT\_WINDOW\_ANALYSIS.md} (\S6 = DAQ OOM incident).
   \end{itemize}
 \end{frame}
 
