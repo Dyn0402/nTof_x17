@@ -200,6 +200,17 @@ scripts 25/25b (HV scan), 26/26b (ZS sim). Parallel tracking analysis:
 
 ## OPEN FLAGS / questions for the collaboration
 
+- **[ ] ⚠️ Y-88 vs triples-MIP plastic scale disagree ~40×**: the Y-88 699 keVee
+  edge (known line) gives 35-64 mV/MeVee; the 19d triples "MIP" assumed 5.05 MeV
+  and gave 0.65-2.05 mV/MeV — i.e. the triples MIP peak really sits at ~130 keVee.
+  Y-88 (BNC-T, gain-equalized) and the 224489 MIP (FIFO) are otherwise CONSISTENT
+  once the per-PMT FIFO factor (1.13-1.65) and HV are applied. Trust Y-88; recheck
+  the triples MIP with a long run (likely mis-identified / low-stat). See
+  `HV_GAIN_Y88_ANALYSIS.md`.
+- **[ ] SiPM B/C/D gain rose ~40% morning→evening** (23c): Y-88 wall edges are
+  uniform/stable across the 4 morning runs (~28 mV), but the evening beam MIP is
+  ~equal on arm A and ~1.4× higher on B/C/D — a real SiPM gain change (bias/temp?)
+  between the Y-88 morning runs and 224489. Confirm from the SiPM bias records.
 - **[ ] SiPM wall outage, run 224404**: all 32 WAL channels dead for bunches ~643-2212
   (46% of beam-on bunches; WALD ch5 only partial). Present in raw data (EOS reprocess
   checked identical). Ask DAQ/shift crew; check other runs. Analyses mask to bunch>2212.
@@ -261,8 +272,11 @@ including extraction, vs ~89 min for the old read pass on lxplus).
 | 11 | `11_concept_diagrams.py` | top-down concept sketches (current selection; with LIQ readout) |
 | 12 | `12_plastic_hv_scan.py` (+`12b`) | plastic HV scan (run224466 x CAEN log): per-step spectra/rates, wall-MIP stability, gain power laws, HV equalization |
 | 21 | `21_y88_spectra.py` | Y-88 source scan (224476-79): per-channel linear+log mV spectra, source-arm overview figure, `cache/21_y88_<run>.npz` |
-| 22 | `22_y88_edges.py` | Compton-edge fits: PSS double-erfc-step (699+1612 keVee, ratio 2.307), WAL Gaussian bump; bootstrap errors -> `calib/y88_edges_<run>.json` + diagnostic grid |
-| 23 | `23_y88_energy_calib.py` | mV/keVee per channel, plastic linearity, wall edge-vs-224404-MIP cross-check -> `calib/y88_energy_calib.json` |
+| 22 | `22_y88_edges.py` | Compton-edge fits: PSS two independent single-erfc steps (699 & 1612 keVee, measured ratio), WAL/LIQ Gaussian bump; bootstrap errors -> `calib/y88_edges_<run>.json` + diagnostic grid |
+| 23 | `23_y88_energy_calib.py` | mV/keVee per channel (PSS/WAL/LIQ), plastic linearity, per-arm 699 keVee cross-detector compare -> `calib/y88_energy_calib.json` |
+| 23b | `23b_y88_vs_beam_mip.py` | SiPM wall: Y-88 699 keVee edge vs 224489 beam MIP (same PSA/HV) -> `calib/y88_vs_beam_mip.json` |
+| 23c | `23c_wall_edge_stability.py` | wall edge in all 4 runs (source lights all walls) -> morning gain uniform/stable; B/C/D offset = morning→evening gain change |
+| 23d | `23d_hv_gain_absolute.py` | plastic gain curves (224466 BNC-T + 224489 FIFO) anchored to Y-88 absolute scale -> equalization/HV-setting; `calib/plastic_hv_gain_absolute.json`. See **HV_GAIN_Y88_ANALYSIS.md** |
 
 The whole read pass now also runs locally in ~10 min via `./run_readpass.sh <run.root>` (C++ hit-cache extraction + vectorized pairing, see "Fast read pass" above). It can still run on lxplus/HTCondor next to the
 EOS data instead of pulling the 13-18 GB file local — see `lxplus/README.md` (benchmarked

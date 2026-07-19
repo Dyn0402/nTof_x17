@@ -1,0 +1,35 @@
+{
+  "wall_edge_mV_by_run": {
+    "A": {
+      "run224476": 26.2,
+      "run224477": 29.3,
+      "run224478": 29.16,
+      "run224479": 28.085
+    },
+    "B": {
+      "run224476": 27.16,
+      "run224477": 26.77,
+      "run224478": 27.62,
+      "run224479": 29.634999999999998
+    },
+    "C": {
+      "run224476": 28.8,
+      "run224477": 29.27,
+      "run224478": 24.13,
+      "run224479": 29.56
+    },
+    "D": {
+      "run224476": 29.51,
+      "run224477": 29.54,
+      "run224478": 29.29,
+      "run224479": 28.435000000000002
+    }
+  },
+  "beam_mip_mV_224489": {
+    "A": 26.937164107395486,
+    "B": 37.77614476940455,
+    "C": 37.99958815657099,
+    "D": 37.50841103286134
+  },
+  "note": "Rows = wall arm, cols = run. Every wall reads the same 699 keVee edge (~26-30 mV) in all 4 morning runs => morning SiPM gain uniform & stable; the Y-88/MIP offset on B/C/D is a morning->evening gain change."
+}
