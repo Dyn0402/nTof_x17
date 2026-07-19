@@ -1,5 +1,10 @@
 # Drift-voltage & readout-window sizing — HANDOFF
 
+> **ANSWERED 2026-07-19 → see `DRIFT_WINDOW_ANALYSIS.md`.** Headline: latency 32,
+> n_samples 28; det A to 700 V (staged); B/D "lateness" was flash-ringing +
+> spark artifacts, not slow gas; B/C/D breathe ~0.8 % H2O (A dry); small on-beam
+> det-A drift scan recommended as the 700 V spark gate.
+
 ## Task for you (the follow-up model)
 
 Decide, for the MX17 Micromegas stack now running at nTOF EAR2:
