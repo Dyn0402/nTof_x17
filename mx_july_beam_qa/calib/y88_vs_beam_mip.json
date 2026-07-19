@@ -1,0 +1,67 @@
+{
+  "comparison": "Y-88 699 keVee wall Compton edge vs beam (224489) wall MIP peak, same SiPM HV & same PSA \u2014 no transport.",
+  "edge_over_mip_median": 0.747,
+  "implied_E_MIP_MeV_median": 0.935,
+  "channels": {
+    "WALA2": {
+      "y88_edge_mv": 26.2,
+      "beam_mip_mv": 26.64,
+      "edge_over_mip": 0.984
+    },
+    "WALA3": {
+      "y88_edge_mv": 23.45,
+      "beam_mip_mv": 27.25,
+      "edge_over_mip": 0.86
+    },
+    "WALA8": {
+      "y88_edge_mv": 27.05,
+      "beam_mip_mv": 27.36,
+      "edge_over_mip": 0.989
+    },
+    "WALB4": {
+      "y88_edge_mv": 26.57,
+      "beam_mip_mv": 39.97,
+      "edge_over_mip": 0.665
+    },
+    "WALB5": {
+      "y88_edge_mv": 26.97,
+      "beam_mip_mv": 38.73,
+      "edge_over_mip": 0.696
+    },
+    "WALC2": {
+      "y88_edge_mv": 21.57,
+      "beam_mip_mv": 30.9,
+      "edge_over_mip": 0.698
+    },
+    "WALC3": {
+      "y88_edge_mv": 28.7,
+      "beam_mip_mv": 38.08,
+      "edge_over_mip": 0.754
+    },
+    "WALC8": {
+      "y88_edge_mv": 24.13,
+      "beam_mip_mv": 37.92,
+      "edge_over_mip": 0.636
+    },
+    "WALD1": {
+      "y88_edge_mv": 30.37,
+      "beam_mip_mv": 38.98,
+      "edge_over_mip": 0.779
+    },
+    "WALD2": {
+      "y88_edge_mv": 26.5,
+      "beam_mip_mv": 42.09,
+      "edge_over_mip": 0.63
+    },
+    "WALD7": {
+      "y88_edge_mv": 39.46,
+      "beam_mip_mv": 20.09,
+      "edge_over_mip": 1.964
+    },
+    "WALD8": {
+      "y88_edge_mv": 19.78,
+      "beam_mip_mv": 26.7,
+      "edge_over_mip": 0.741
+    }
+  }
+}

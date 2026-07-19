@@ -1,0 +1,221 @@
+{
+  "note": "Y-88 energy calibration (mV per keVee) at the run 224476-79 HV, from the reprocessed (new-PSA) files. Plastic HV was RAISED for these runs; transporting to nominal needs the HV values from Dylan. PSS: two independent Compton edges; WAL/LIQ: the single 699 keVee bump. LIQ slope is the first LIQ absolute energy scale.",
+  "channels": {
+    "PSSA1": {
+      "kind": "PSS",
+      "arm": "A",
+      "run": "run224476",
+      "mv_per_kevee": 0.03342,
+      "mv_per_mevee": 33.424,
+      "edge699_mv": 27.07,
+      "edge1612_mv": 52.27,
+      "ratio_1612_over_699": 1.93,
+      "nonlinearity": 0.836
+    },
+    "PSSA2": {
+      "kind": "PSS",
+      "arm": "A",
+      "run": "run224476",
+      "mv_per_kevee": 0.03586,
+      "mv_per_mevee": 35.865,
+      "edge699_mv": 26.27,
+      "edge1612_mv": 57.29,
+      "ratio_1612_over_699": 2.18,
+      "nonlinearity": 0.945
+    },
+    "LIQA1": {
+      "kind": "LIQ",
+      "arm": "A",
+      "run": "run224476",
+      "mv_per_kevee": 0.03724,
+      "mv_per_mevee": 37.244,
+      "edge699_mv": 26.02
+    },
+    "WALA2": {
+      "kind": "WAL",
+      "arm": "A",
+      "run": "run224476",
+      "mv_per_kevee": 0.0375,
+      "mv_per_mevee": 37.502,
+      "edge699_mv": 26.2
+    },
+    "WALA3": {
+      "kind": "WAL",
+      "arm": "A",
+      "run": "run224476",
+      "mv_per_kevee": 0.03357,
+      "mv_per_mevee": 33.566,
+      "edge699_mv": 23.45
+    },
+    "WALA8": {
+      "kind": "WAL",
+      "arm": "A",
+      "run": "run224476",
+      "mv_per_kevee": 0.03872,
+      "mv_per_mevee": 38.719,
+      "edge699_mv": 27.05
+    },
+    "PSSB1": {
+      "kind": "PSS",
+      "arm": "B",
+      "run": "run224477",
+      "mv_per_kevee": 0.0307,
+      "mv_per_mevee": 30.697,
+      "edge699_mv": 20.05,
+      "edge1612_mv": 50.09,
+      "ratio_1612_over_699": 2.5,
+      "nonlinearity": 1.083
+    },
+    "PSSB2": {
+      "kind": "PSS",
+      "arm": "B",
+      "run": "run224477",
+      "mv_per_kevee": 0.03628,
+      "mv_per_mevee": 36.279,
+      "edge699_mv": 23.28,
+      "edge1612_mv": 59.38,
+      "ratio_1612_over_699": 2.55,
+      "nonlinearity": 1.105
+    },
+    "LIQB1": {
+      "kind": "LIQ",
+      "arm": "B",
+      "run": "run224477",
+      "mv_per_kevee": 0.03239,
+      "mv_per_mevee": 32.392,
+      "edge699_mv": 22.63
+    },
+    "WALB4": {
+      "kind": "WAL",
+      "arm": "B",
+      "run": "run224477",
+      "mv_per_kevee": 0.03803,
+      "mv_per_mevee": 38.032,
+      "edge699_mv": 26.57
+    },
+    "WALB5": {
+      "kind": "WAL",
+      "arm": "B",
+      "run": "run224477",
+      "mv_per_kevee": 0.0386,
+      "mv_per_mevee": 38.604,
+      "edge699_mv": 26.97
+    },
+    "PSSC1": {
+      "kind": "PSS",
+      "arm": "C",
+      "run": "run224478",
+      "mv_per_kevee": 0.03382,
+      "mv_per_mevee": 33.818,
+      "edge699_mv": 22.28,
+      "edge1612_mv": 55.1,
+      "ratio_1612_over_699": 2.47,
+      "nonlinearity": 1.07
+    },
+    "PSSC2": {
+      "kind": "PSS",
+      "arm": "C",
+      "run": "run224478",
+      "mv_per_kevee": 0.02879,
+      "mv_per_mevee": 28.794,
+      "edge699_mv": 19.88,
+      "edge1612_mv": 46.52,
+      "ratio_1612_over_699": 2.34,
+      "nonlinearity": 1.014
+    },
+    "LIQC1": {
+      "kind": "LIQ",
+      "arm": "C",
+      "run": "run224478",
+      "mv_per_kevee": 0.03435,
+      "mv_per_mevee": 34.353,
+      "edge699_mv": 24.0
+    },
+    "WALC2": {
+      "kind": "WAL",
+      "arm": "C",
+      "run": "run224478",
+      "mv_per_kevee": 0.03087,
+      "mv_per_mevee": 30.875,
+      "edge699_mv": 21.57
+    },
+    "WALC3": {
+      "kind": "WAL",
+      "arm": "C",
+      "run": "run224478",
+      "mv_per_kevee": 0.04108,
+      "mv_per_mevee": 41.08,
+      "edge699_mv": 28.7
+    },
+    "WALC8": {
+      "kind": "WAL",
+      "arm": "C",
+      "run": "run224478",
+      "mv_per_kevee": 0.03454,
+      "mv_per_mevee": 34.539,
+      "edge699_mv": 24.13
+    },
+    "PSSD1": {
+      "kind": "PSS",
+      "arm": "D",
+      "run": "run224479",
+      "mv_per_kevee": 0.03885,
+      "mv_per_mevee": 38.85,
+      "edge699_mv": 24.44,
+      "edge1612_mv": 63.8,
+      "ratio_1612_over_699": 2.61,
+      "nonlinearity": 1.131
+    },
+    "PSSD2": {
+      "kind": "PSS",
+      "arm": "D",
+      "run": "run224479",
+      "mv_per_kevee": 0.02391,
+      "mv_per_mevee": 23.909,
+      "edge699_mv": 20.45,
+      "edge1612_mv": 36.92,
+      "ratio_1612_over_699": 1.81,
+      "nonlinearity": 0.784
+    },
+    "LIQD1": {
+      "kind": "LIQ",
+      "arm": "D",
+      "run": "run224479",
+      "mv_per_kevee": 0.0317,
+      "mv_per_mevee": 31.705,
+      "edge699_mv": 22.15
+    },
+    "WALD1": {
+      "kind": "WAL",
+      "arm": "D",
+      "run": "run224479",
+      "mv_per_kevee": 0.04347,
+      "mv_per_mevee": 43.471,
+      "edge699_mv": 30.37
+    },
+    "WALD2": {
+      "kind": "WAL",
+      "arm": "D",
+      "run": "run224479",
+      "mv_per_kevee": 0.03793,
+      "mv_per_mevee": 37.931,
+      "edge699_mv": 26.5
+    },
+    "WALD7": {
+      "kind": "WAL",
+      "arm": "D",
+      "run": "run224479",
+      "mv_per_kevee": 0.05648,
+      "mv_per_mevee": 56.482,
+      "edge699_mv": 39.46
+    },
+    "WALD8": {
+      "kind": "WAL",
+      "arm": "D",
+      "run": "run224479",
+      "mv_per_kevee": 0.02831,
+      "mv_per_mevee": 28.313,
+      "edge699_mv": 19.78
+    }
+  }
+}

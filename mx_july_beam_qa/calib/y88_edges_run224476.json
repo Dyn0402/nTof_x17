@@ -1,0 +1,128 @@
+{
+  "run": "run224476",
+  "source_arm": "A",
+  "convention": "PSS: two INDEPENDENT single-erfc-step fits (no ratio assumption) \u2014 698.63 keVee is the dominant step, 1612.06 keVee the weaker one above it; edge_mv = smeared-step center. edge_ratio_1612_over_699 is a measured cross-check (expect 2.307). WAL/LIQ: Gaussian-bump + linear-bg fit; edge_mv = peak center (698.63 keVee edge). 200 Poisson bootstraps (seed 224488); err floored at half a fine bin (0.1 mV).",
+  "hv_note": "HV during 224476-79 not recorded in DAQsettings \u2014 plastic HV was RAISED (edges ~20x nominal MIP scale); confirm exact values with Dylan before transporting to nominal (T3.2).",
+  "channels": {
+    "PSSA1": {
+      "kind": "PSS",
+      "edges": [
+        {
+          "edge_mv": 27.07,
+          "edge_mv_err": 0.1,
+          "kevee": 698.63,
+          "confidence": "primary"
+        },
+        {
+          "edge_mv": 52.27,
+          "edge_mv_err": 0.25,
+          "kevee": 1612.06,
+          "confidence": "secondary"
+        }
+      ],
+      "edge_ratio_1612_over_699": 1.93,
+      "n_hits": 3067973
+    },
+    "PSSA2": {
+      "kind": "PSS",
+      "edges": [
+        {
+          "edge_mv": 26.27,
+          "edge_mv_err": 0.1,
+          "kevee": 698.63,
+          "confidence": "primary"
+        },
+        {
+          "edge_mv": 57.29,
+          "edge_mv_err": 0.1,
+          "kevee": 1612.06,
+          "confidence": "secondary"
+        }
+      ],
+      "edge_ratio_1612_over_699": 2.18,
+      "n_hits": 3370793
+    },
+    "LIQA1": {
+      "kind": "LIQ",
+      "edges": [
+        {
+          "edge_mv": 26.02,
+          "edge_mv_err": 0.45,
+          "kevee": 698.63,
+          "confidence": "primary"
+        }
+      ],
+      "edge_ratio_1612_over_699": null,
+      "n_hits": 61468
+    },
+    "WALA1": {
+      "kind": "WAL",
+      "edges": [],
+      "edge_ratio_1612_over_699": null,
+      "n_hits": 33433
+    },
+    "WALA2": {
+      "kind": "WAL",
+      "edges": [
+        {
+          "edge_mv": 26.2,
+          "edge_mv_err": 0.1,
+          "kevee": 698.63,
+          "confidence": "primary"
+        }
+      ],
+      "edge_ratio_1612_over_699": null,
+      "n_hits": 54544
+    },
+    "WALA3": {
+      "kind": "WAL",
+      "edges": [
+        {
+          "edge_mv": 23.45,
+          "edge_mv_err": 0.1,
+          "kevee": 698.63,
+          "confidence": "primary"
+        }
+      ],
+      "edge_ratio_1612_over_699": null,
+      "n_hits": 36629
+    },
+    "WALA4": {
+      "kind": "WAL",
+      "edges": [],
+      "edge_ratio_1612_over_699": null,
+      "n_hits": 78490
+    },
+    "WALA5": {
+      "kind": "WAL",
+      "edges": [],
+      "edge_ratio_1612_over_699": null,
+      "n_hits": 49288
+    },
+    "WALA6": {
+      "kind": "WAL",
+      "edges": [],
+      "edge_ratio_1612_over_699": null,
+      "n_hits": 52484
+    },
+    "WALA7": {
+      "kind": "WAL",
+      "edges": [],
+      "edge_ratio_1612_over_699": null,
+      "n_hits": 38366
+    },
+    "WALA8": {
+      "kind": "WAL",
+      "edges": [
+        {
+          "edge_mv": 27.05,
+          "edge_mv_err": 0.1,
+          "kevee": 698.63,
+          "confidence": "primary"
+        }
+      ],
+      "edge_ratio_1612_over_699": null,
+      "n_hits": 42250
+    }
+  }
+}
