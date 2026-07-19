@@ -137,6 +137,67 @@ step tables now per-run (`SCANS`). No wall outage this run (0/1750 bunches).
    main peak (was 6–9%) — worth a scope look. It stays outside signal and
    sideband windows.
 
+## Key results (Y-88 source scan, runs 224476-79, 2026-07-17 AM)
+
+Dedicated ~13-min source runs, one ⁸⁸Y source between the two plastic bars of
+one arm per run (224476=A, 224477=B, 224478=C, 224479=D). Beam-off; the source
+is bright, so the illuminated-arm plastics have >3 M hits — statistics are not
+the limit the handoff feared. The four runs were **reprocessed** with the
+official `RunProcessing.sh` + Mucciola's LIQ PSA UserInput (see
+`../ntof_daq_processing/PROCESSING.md`), which adds the LIQ trees AND cleans the
+wall reconstruction (WALL noise hits drop ~10×). Scripts `21_y88_spectra.py`
+(spectra + cache), `22_y88_edges.py` (edge fits + `calib/y88_edges_<run>.json`),
+`23_y88_energy_calib.py` (`calib/y88_energy_calib.json`); figures in
+`figures/21_y88/`. All numbers below are from the reprocessed (new-PSA) files.
+
+1. **Both Y-88 Compton edges seen on every illuminated plastic** (699 & 1612
+   keVee), fit as TWO INDEPENDENT smeared steps (no ratio imposed). The measured
+   1612/699 ratio (median 2.4, per channel 1.8-2.6) reproduces the expected
+   2.31 — confirms the energy assignment from the data. 699 edge 20-27 mV is the
+   robust primary landmark; response linear to ~10-20%.
+2. **Plastic HV was RAISED for these runs** ("PLASTIC CALIBRATION" titles):
+   24-39 mV/MeVee, ~20-25× the nominal-HV MIP scale (0.65-2.05 mV/MeV, 224489).
+   Exact run HV is NOT in DAQsettings — **needed from Dylan** to transport to
+   nominal and close the plastic absolute calibration.
+3. **First LIQ absolute energy scale**: the 699 keVee edge is a clean bump at
+   22-26 mV on all four liquids (32-37 mV/MeVee), consistent to ~10% arm-to-arm
+   despite modest stats (6-110 k hits). New result, enabled by the reprocessing.
+4. **Wall 699 keVee edge = clean bump at 20-30 mV** on source-facing SiPM
+   channels (walls now noise-suppressed by the new PSA). Across all three
+   detector types the 699 edge lands within 21-27 mV per arm (same source).
+   The 224404 wall-MIP cross-check is retired (224404 = old PSA, mismatched);
+   a same-PSA wall MIP from 224489 would restore it.
+5. Reprocessed files in `~/x17/beam_july/data/` (LIQ trees present);
+   `report/y88_report.pdf` written.
+
+**Still needs Dylan:** exact plastic+wall HV for 224476-79 (not in the data) to
+transport plastics to nominal; optionally a same-PSA (224489) wall MIP for the
+wall cross-check.
+
+## Key results (run_55 DREAM resist-HV scan + ZS optimization, 2026-07-18/19)
+
+DREAM-side (not official-nTOF-files) analysis of the cyclical resist scan
+r560→r520, scint-doubles trigger, 30 ms gate; DAQ machine died mid-run, data
+recovered from EOS (24 subruns). Full stories: `HV_SCAN_RUN55_ANALYSIS.md`,
+`ZS_OPTIMIZATION_RUN55.md`; working context for a follow-up model:
+**`HANDOFF_RUN55_HV_ZS.md`**; slides `slides/hv_scan_run55_slides.pdf`;
+scripts 25/25b (HV scan), 26/26b (ZS sim). Parallel tracking analysis:
+`TRACKING_RUN55_ANALYSIS.md` (27*).
+
+1. **DAQ FIFO comb**: no-ZS events → gate sampled only at 0–0.5 / 8–12 /
+   16–28 ms; 2–6 ms (incl. the 3 ms target) unsampled. MM dead at flash at
+   every HV; recovered by 8 ms at ≤550 V; C/D still sagged at 10 ms at
+   555–560 V (saturation time grows with HV).
+2. **³He capture flood** at thermal times floods det D (≳90 % of windows);
+   at low HV capture blobs shrink into MIP-sized clusters (fake efficiency).
+3. **Operating points for ≥3 ms**: A ≥560 V (no plateau; drift capped
+   600–700, sparks at 800), B 550–555 (ringing unresolved), C 545–550,
+   D 540–550.
+4. **ZS: common-mode correction is mandatory** — in-beam wander 10–20×
+   beam-off σ, coherent per Dream chip; `Feu_RunCtrl_CM=1` + **3.5σ**
+   recommended → ~9 % volume, ~0.2 ms/event (10× readout, closes the comb),
+   strip survival 92–99.7 % (losses = CM signal bias, threshold-independent).
+
 ## OPEN FLAGS / questions for the collaboration
 
 - **[ ] SiPM wall outage, run 224404**: all 32 WAL channels dead for bunches ~643-2212
@@ -199,6 +260,9 @@ including extraction, vs ~89 min for the old read pass on lxplus).
 | 10 | `10_pmt_gain.py` | plastic PMT raw-vs-coinc overlays, relative gains, HV suggestions |
 | 11 | `11_concept_diagrams.py` | top-down concept sketches (current selection; with LIQ readout) |
 | 12 | `12_plastic_hv_scan.py` (+`12b`) | plastic HV scan (run224466 x CAEN log): per-step spectra/rates, wall-MIP stability, gain power laws, HV equalization |
+| 21 | `21_y88_spectra.py` | Y-88 source scan (224476-79): per-channel linear+log mV spectra, source-arm overview figure, `cache/21_y88_<run>.npz` |
+| 22 | `22_y88_edges.py` | Compton-edge fits: PSS double-erfc-step (699+1612 keVee, ratio 2.307), WAL Gaussian bump; bootstrap errors -> `calib/y88_edges_<run>.json` + diagnostic grid |
+| 23 | `23_y88_energy_calib.py` | mV/keVee per channel, plastic linearity, wall edge-vs-224404-MIP cross-check -> `calib/y88_energy_calib.json` |
 
 The whole read pass now also runs locally in ~10 min via `./run_readpass.sh <run.root>` (C++ hit-cache extraction + vectorized pairing, see "Fast read pass" above). It can still run on lxplus/HTCondor next to the
 EOS data instead of pulling the 13-18 GB file local — see `lxplus/README.md` (benchmarked
