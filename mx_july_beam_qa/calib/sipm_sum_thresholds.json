@@ -1,0 +1,85 @@
+{
+  "note": "SiPM top+bottom SUM distributions. y88_edge_mv = 699 keVee Compton edge of the sum; mip_peak_mv = beam MIP bump of the sum (224503); threshold_mv = 0.5 * mip_peak_mv. Groups (1+2)(3+4)(5+6)(7+8) = top+bottom of bar-groups 1-4.",
+  "channels": {
+    "WALA_1+2": {
+      "y88_edge_mv": 40.5,
+      "mip_peak_mv": 45.5,
+      "threshold_mv": 22.8
+    },
+    "WALA_3+4": {
+      "y88_edge_mv": 61.5,
+      "mip_peak_mv": 52.5,
+      "threshold_mv": 26.2
+    },
+    "WALA_5+6": {
+      "y88_edge_mv": 99.5,
+      "mip_peak_mv": 50.5,
+      "threshold_mv": 25.2
+    },
+    "WALA_7+8": {
+      "y88_edge_mv": 38.5,
+      "mip_peak_mv": 49.5,
+      "threshold_mv": 24.8
+    },
+    "WALB_1+2": {
+      "y88_edge_mv": 106.5,
+      "mip_peak_mv": 62.5,
+      "threshold_mv": 31.2
+    },
+    "WALB_3+4": {
+      "y88_edge_mv": 38.5,
+      "mip_peak_mv": 69.5,
+      "threshold_mv": 34.8
+    },
+    "WALB_5+6": {
+      "y88_edge_mv": 90.5,
+      "mip_peak_mv": 71.5,
+      "threshold_mv": 35.8
+    },
+    "WALB_7+8": {
+      "y88_edge_mv": 93.5,
+      "mip_peak_mv": 71.5,
+      "threshold_mv": 35.8
+    },
+    "WALC_1+2": {
+      "y88_edge_mv": 89.5,
+      "mip_peak_mv": 35.5,
+      "threshold_mv": 17.8
+    },
+    "WALC_3+4": {
+      "y88_edge_mv": 90.5,
+      "mip_peak_mv": 68.5,
+      "threshold_mv": 34.2
+    },
+    "WALC_5+6": {
+      "y88_edge_mv": 86.5,
+      "mip_peak_mv": 65.5,
+      "threshold_mv": 32.8
+    },
+    "WALC_7+8": {
+      "y88_edge_mv": 103.5,
+      "mip_peak_mv": 69.5,
+      "threshold_mv": 34.8
+    },
+    "WALD_1+2": {
+      "y88_edge_mv": 97.5,
+      "mip_peak_mv": 74.5,
+      "threshold_mv": 37.2
+    },
+    "WALD_3+4": {
+      "y88_edge_mv": 88.5,
+      "mip_peak_mv": 69.5,
+      "threshold_mv": 34.8
+    },
+    "WALD_5+6": {
+      "y88_edge_mv": 99.5,
+      "mip_peak_mv": 74.5,
+      "threshold_mv": 37.2
+    },
+    "WALD_7+8": {
+      "y88_edge_mv": 61.5,
+      "mip_peak_mv": 46.5,
+      "threshold_mv": 23.2
+    }
+  }
+}

@@ -1,0 +1,136 @@
+{
+  "note": "Plastic PMT gain curves anchored to the Y-88 699 keVee edge, CURRENT (FIFO) readout. eq_bias_for_699_at[T] = per-PMT bias that puts the 698.63 keVee Compton edge at T mV (equalized). Any energy scales linearly: amp_mV(E_keVee, V) = (E_keVee/698.63)*edge699_fifo_mv*(V/V_equalized)^n_fifo.",
+  "threshold_mv": 4.9,
+  "fullscale_mv": 2000.0,
+  "y88_vs_triples_mip": "Y-88 absolute scale => triples MIP (19d, assumed 5.05 MeV) really ~130 keVee; ~40x disagreement, trust Y-88, recheck triples with a long run.",
+  "pmts": {
+    "PSSA1": {
+      "n_fifo": 6.94,
+      "n_bnct": 6.86,
+      "fifo_over_bnct": 1.65,
+      "V_equalized": 1303,
+      "edge699_bnct_mv": 27.07,
+      "edge699_fifo_mv": 44.67,
+      "mv_per_kevee_fifo": 0.0639,
+      "eq_bias_for_699_at": {
+        "30": 1230.0,
+        "40": 1282.0,
+        "50": 1324.0,
+        "60": 1360.0,
+        "70": 1390.0
+      }
+    },
+    "PSSA2": {
+      "n_fifo": 5.08,
+      "n_bnct": 5.39,
+      "fifo_over_bnct": 1.56,
+      "V_equalized": 1242,
+      "edge699_bnct_mv": 26.27,
+      "edge699_fifo_mv": 40.98,
+      "mv_per_kevee_fifo": 0.0587,
+      "eq_bias_for_699_at": {
+        "30": 1168.0,
+        "40": 1236.0,
+        "50": 1292.0,
+        "60": 1339.0,
+        "70": 1380.0
+      }
+    },
+    "PSSB1": {
+      "n_fifo": 5.19,
+      "n_bnct": 5.78,
+      "fifo_over_bnct": 1.23,
+      "V_equalized": 1376,
+      "edge699_bnct_mv": 20.05,
+      "edge699_fifo_mv": 24.66,
+      "mv_per_kevee_fifo": 0.0353,
+      "eq_bias_for_699_at": {
+        "30": 1429.0,
+        "40": 1510.0,
+        "50": 1577.0,
+        "60": 1633.0,
+        "70": 1683.0
+      }
+    },
+    "PSSB2": {
+      "n_fifo": 7.1,
+      "n_bnct": 6.96,
+      "fifo_over_bnct": 1.6,
+      "V_equalized": 1279,
+      "edge699_bnct_mv": 23.28,
+      "edge699_fifo_mv": 37.25,
+      "mv_per_kevee_fifo": 0.0533,
+      "eq_bias_for_699_at": {
+        "30": 1241.0,
+        "40": 1292.0,
+        "50": 1333.0,
+        "60": 1368.0,
+        "70": 1398.0
+      }
+    },
+    "PSSC1": {
+      "n_fifo": 3.8,
+      "n_bnct": 4.85,
+      "fifo_over_bnct": 1.26,
+      "V_equalized": 1180,
+      "edge699_bnct_mv": 22.28,
+      "edge699_fifo_mv": 28.07,
+      "mv_per_kevee_fifo": 0.0402,
+      "eq_bias_for_699_at": {
+        "30": 1201.0,
+        "40": 1295.0,
+        "50": 1374.0,
+        "60": 1441.0,
+        "70": 1501.0
+      }
+    },
+    "PSSC2": {
+      "n_fifo": 6.64,
+      "n_bnct": 6.84,
+      "fifo_over_bnct": 1.53,
+      "V_equalized": 1307,
+      "edge699_bnct_mv": 19.88,
+      "edge699_fifo_mv": 30.42,
+      "mv_per_kevee_fifo": 0.0435,
+      "eq_bias_for_699_at": {
+        "30": 1304.0,
+        "40": 1362.0,
+        "50": 1409.0,
+        "60": 1448.0,
+        "70": 1482.0
+      }
+    },
+    "PSSD1": {
+      "n_fifo": 5.77,
+      "n_bnct": 5.39,
+      "fifo_over_bnct": 1.13,
+      "V_equalized": 1303,
+      "edge699_bnct_mv": 24.44,
+      "edge699_fifo_mv": 27.62,
+      "mv_per_kevee_fifo": 0.0395,
+      "eq_bias_for_699_at": {
+        "30": 1322.0,
+        "40": 1389.0,
+        "50": 1444.0,
+        "60": 1491.0,
+        "70": 1531.0
+      }
+    },
+    "PSSD2": {
+      "n_fifo": 6.39,
+      "n_bnct": 6.59,
+      "fifo_over_bnct": 1.33,
+      "V_equalized": 1417,
+      "edge699_bnct_mv": 20.45,
+      "edge699_fifo_mv": 27.2,
+      "mv_per_kevee_fifo": 0.0389,
+      "eq_bias_for_699_at": {
+        "30": 1439.0,
+        "40": 1505.0,
+        "50": 1559.0,
+        "60": 1604.0,
+        "70": 1643.0
+      }
+    }
+  }
+}

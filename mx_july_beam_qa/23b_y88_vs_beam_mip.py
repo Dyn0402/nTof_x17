@@ -1,4 +1,4 @@
-"""24_y88_vs_beam_mip.py — do the Y-88 Compton-edge calibration and the beam-MIP
+"""23b_y88_vs_beam_mip.py — do the Y-88 Compton-edge calibration and the beam-MIP
 calibration agree?
 
 The SiPM walls are the clean comparison: they are biased all together at one
@@ -26,7 +26,7 @@ What IS shown for the plastics: the per-channel Y-88 699 edges are equal to
 Outputs:
   figures/21_y88/y88_vs_beam_mip.png
   calib/y88_vs_beam_mip.json
-Usage: python 24_y88_vs_beam_mip.py
+Usage: python 23b_y88_vs_beam_mip.py
 """
 
 import json
