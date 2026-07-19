@@ -197,6 +197,33 @@ predicted MIP [mV]        & 217 & 200 & 120 & 181 & 137 & 148 & 134 & 132 \\
 \end{itemize}
 \end{frame}
 
+\begin{frame}{\textbf{Recommended plastic HV: Y-88-edge equalization (FIFO)}}
+Equalize each PMT's \textbf{699 keVee edge} (slid along its own power law) to a
+common target; target chosen to keep the \textbf{fleet-mean HV at 1301 V}
+(overall gain unchanged). Y-88 is BNC-T, so folded in the per-PMT FIFO factor.
+\vspace{1ex}
+\begin{center}\small
+\begin{tabular}{lcccccccc}
+\toprule
+ & AL & AR & BL & BR & CL & CR & DL & DR \\
+CAEN 07.\_ & .000 & .001 & .002 & .003 & .004 & .005 & .006 & .007 \\
+\midrule
+current V     & 1303 & 1242 & 1376 & 1279 & 1180 & 1307 & 1303 & 1417 \\
+\textbf{set V}& \textbf{1237} & \textbf{1177} & \textbf{1440} & \textbf{1248} & \textbf{1214} & \textbf{1312} & \textbf{1331} & \textbf{1448} \\
+change        & $-66$ & $-65$ & $+64$ & $-31$ & $+34$ & $+5$ & $+28$ & $+31$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+\vspace{1ex}
+\begin{itemize}
+\item Arm A comes \emph{down} ($\sim$65 V): it has the highest FIFO factor
+      (1.65/1.56), so it over-gains in FIFO. BL/DL/DR/CL come up.
+\item Range 1177--1448 V (HV scans ran to 1600 V fine).
+\item Machine-readable: \texttt{calib/plastic\_hv\_equalized\_y88.json}.
+      Target is a scale knob --- raise it to shift all gains up together.
+\end{itemize}
+\end{frame}
+
 \begin{frame}{Summary \& follow-ups}
 \textbf{Thresholds to set now:}
 \begin{itemize}

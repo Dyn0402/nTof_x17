@@ -1,0 +1,63 @@
+{
+  "note": "Recommended plastic PMT bias to equalize gains on the Y-88 699 keVee edge in the CURRENT (FIFO) readout. Target = 31.2 mV edge, chosen to keep the fleet-mean HV at 1301 V (overall gain unchanged). Set on CAEN card 07, channels 0-7 = AL AR BL BR CL CR DL DR.",
+  "target_699kevee_mv_fifo": 31.2,
+  "fleet_mean_V": 1301,
+  "voltages": {
+    "PSSA1": {
+      "label": "AL",
+      "caen": "07.000",
+      "current_V": 1303,
+      "set_V": 1237,
+      "change_V": -66
+    },
+    "PSSA2": {
+      "label": "AR",
+      "caen": "07.001",
+      "current_V": 1242,
+      "set_V": 1177,
+      "change_V": -65
+    },
+    "PSSB1": {
+      "label": "BL",
+      "caen": "07.002",
+      "current_V": 1376,
+      "set_V": 1440,
+      "change_V": 64
+    },
+    "PSSB2": {
+      "label": "BR",
+      "caen": "07.003",
+      "current_V": 1279,
+      "set_V": 1248,
+      "change_V": -31
+    },
+    "PSSC1": {
+      "label": "CL",
+      "caen": "07.004",
+      "current_V": 1180,
+      "set_V": 1214,
+      "change_V": 34
+    },
+    "PSSC2": {
+      "label": "CR",
+      "caen": "07.005",
+      "current_V": 1307,
+      "set_V": 1312,
+      "change_V": 5
+    },
+    "PSSD1": {
+      "label": "DL",
+      "caen": "07.006",
+      "current_V": 1303,
+      "set_V": 1331,
+      "change_V": 28
+    },
+    "PSSD2": {
+      "label": "DR",
+      "caen": "07.007",
+      "current_V": 1417,
+      "set_V": 1448,
+      "change_V": 31
+    }
+  }
+}
