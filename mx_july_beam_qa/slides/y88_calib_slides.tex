@@ -224,6 +224,62 @@ change        & $-66$ & $-65$ & $+64$ & $-31$ & $+34$ & $+5$ & $+28$ & $+31$ \\
 \end{itemize}
 \end{frame}
 
+\begin{frame}{The one caveat, explained: response \textbf{nonlinearity}}
+\includegraphics[width=\textwidth]{21_y88/nonlinearity_concept.png}
+\vspace{-0.5ex}
+\begin{itemize}\small
+\item We equalize so every PMT's \textbf{699 keVee edge} reads the same mV.
+\item \textbf{If the response were linear} (signal $\propto$ energy, through the
+      origin): matching at 699 keVee makes the whole response curves identical,
+      so the MIP is \emph{automatically} equal too --- equalize once, done (left).
+\item \textbf{If it is nonlinear} (the curve bends, and by a different amount per
+      PMT): the curves cross at 699 keVee but \emph{diverge} at higher energy, so
+      the MIP is \emph{not} equal even though the edge is (right).
+\item Real scintillator+PMT chains bend a little (light collection, saturation).
+\end{itemize}
+\end{frame}
+
+\begin{frame}{The nonlinearity, in our data}
+\includegraphics[width=\textwidth]{21_y88/nonlinearity_data.png}
+\vspace{-0.5ex}
+\begin{itemize}\small
+\item \textbf{(a) Same-run check:} the two Y-88 edges (699 \& 1612 keVee). If
+      linear, signal(1612)/signal(699) $=$ \textbf{2.307} for \emph{every} PMT;
+      measured 1.8--2.6 (the 1612 edge is the weaker fit, so read the per-PMT
+      values loosely --- but the spread is real).
+\item \textbf{(b) Robust, higher lever:} MIP-scale median $/$ 699 keVee edge.
+      Linear $\Rightarrow$ one constant for all 8 PMTs; measured
+      \textbf{1.70--2.38 ($1.4\times$)}. Arm A / DL sit $\sim$15--20\% low ---
+      those tubes \textbf{compress} more at high energy.
+\item Same story as slide~6 (median vs edge equalizations disagree on DL/CR) and
+      the persistent arm-A-low MIP.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{How to deal with the nonlinearity --- suggestions}
+The effect is \textbf{small ($\sim\pm12\%$ at the MIP)}. Options, in order of
+effort:
+\begin{enumerate}
+\item \textbf{Accept it (recommend now).} Equalize on the Y-88 edge (absolute,
+      known energy). MIP/trigger then uniform to $\sim\pm12\%$. Set a common
+      0.5-MIP threshold $\sim$76 mV; per tube it is 63--88 mV.
+\item \textbf{Per-PMT thresholds} (small bookkeeping): keep the Y-88
+      equalization but set each tube's threshold to its own 0.5-MIP
+      (\textbf{63--88 mV}) $\Rightarrow$ the \emph{trigger point} is uniform even
+      though the gain isn't, exactly.
+\item \textbf{Equalize at the trigger energy} instead of the edge: use the
+      MIP/median scale ($\sim$1.7 MeV, closest to the trigger). Uniform trigger,
+      but you lose the absolute anchor and re-inherit the median's caveats.
+\item \textbf{Characterize \& correct the full curve}: a multi-point calibration
+      (more source lines / a dedicated MIP+edge study) per PMT. Only worth it if
+      a physics analysis needs $<5\%$ linearity everywhere.
+\end{enumerate}
+\vfill
+{\small \textbf{My recommendation:} (1) now --- the $\pm12\%$ is small and keeps
+the absolute scale; add (2) if the trigger uniformity matters more than the
+absolute energy scale. (4) only on physics demand.}
+\end{frame}
+
 \begin{frame}{Summary \& follow-ups}
 \textbf{Thresholds to set now:}
 \begin{itemize}
