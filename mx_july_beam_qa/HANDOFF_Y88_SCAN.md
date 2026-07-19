@@ -1,5 +1,18 @@
 # HANDOFF — Y-88 source scan: amplitude spectrum analysis per detector
 
+> **STATUS 2026-07-18 (updated):** T0-T4 essentially DONE, incl. LIQ. The four
+> runs were REPROCESSED with the LIQ PSA UserInput (official `RunProcessing.sh`;
+> recipe now in `../ntof_daq_processing/PROCESSING.md`) — LIQ trees present, and
+> the new PSA also cleaned the walls (~10× less noise). Analysis re-run on the
+> reprocessed files. Scripts `21/22/23`; `calib/y88_edges_<run>.json`,
+> `calib/y88_energy_calib.json`; figures `figures/21_y88/`; `report/y88_report.pdf`.
+> Findings: both plastic edges seen (699 & 1612 keVee, measured ratio ~2.4,
+> linear ~10-20%); **plastic HV was RAISED** (24-39 mV/MeVee); **first LIQ scale**
+> (699 bump 22-26 mV, 32-37 mV/MeVee, consistent all arms); clean wall 699 bumps
+> 20-30 mV. Only OPEN item for Dylan: exact 224476-79 HV values (not in the data)
+> to transport plastics to nominal; optionally a same-PSA (224489) wall MIP for
+> the wall cross-check.
+
 **Audience: a fresh Claude session on Dylan's desktop, picking this up cold.**
 Read `README.md` in this directory first (machinery + conventions), then this
 file. The infrastructure from the run-224489 analysis (hit cache, adc_mv,

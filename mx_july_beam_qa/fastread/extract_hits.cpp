@@ -79,7 +79,14 @@ static int64_t process_tree(const std::string& file, const std::string& tname,
     auto t0 = std::chrono::steady_clock::now();
     TFile f(file.c_str(), "READ");
     TTree* tree = f.Get<TTree>(tname.c_str());
-    if (!tree) { fprintf(stderr, "FATAL: tree %s not found\n", tname.c_str()); exit(1); }
+    if (!tree) {
+        // Not fatal: some runs legitimately lack a tree (e.g. source runs
+        // processed before the LIQ UserInput have no LIQ* trees). Skip it —
+        // no npy files are written and the tree records 0 hits in meta.json;
+        // downstream load() simply must not request that tree.
+        fprintf(stderr, "  warning: tree %s not found — skipping\n", tname.c_str());
+        return 0;
+    }
     const int64_t n = tree->GetEntries();
 
     tree->SetBranchStatus("*", 0);
