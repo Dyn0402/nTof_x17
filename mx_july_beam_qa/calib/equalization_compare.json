@@ -1,0 +1,45 @@
+{
+  "note": "Per-PMT equalization bias (V), all normalized to fleet-mean 1300 V. med466=BNC-T median (current fixed set), med489=FIFO median, y88edge=699 keVee Compton edge (BNC-T).",
+  "channels": {
+    "PSSA1": {
+      "med466": 1298.0,
+      "med489": 1271.0,
+      "y88edge": 1270.0
+    },
+    "PSSA2": {
+      "med466": 1238.0,
+      "med489": 1206.0,
+      "y88edge": 1209.0
+    },
+    "PSSB1": {
+      "med466": 1377.0,
+      "med489": 1414.0,
+      "y88edge": 1406.0
+    },
+    "PSSB2": {
+      "med466": 1279.0,
+      "med489": 1260.0,
+      "y88edge": 1274.0
+    },
+    "PSSC1": {
+      "med466": 1183.0,
+      "med489": 1166.0,
+      "y88edge": 1184.0
+    },
+    "PSSC2": {
+      "med466": 1307.0,
+      "med489": 1290.0,
+      "y88edge": 1332.0
+    },
+    "PSSD1": {
+      "med466": 1305.0,
+      "med489": 1365.0,
+      "y88edge": 1285.0
+    },
+    "PSSD2": {
+      "med466": 1413.0,
+      "med489": 1428.0,
+      "y88edge": 1439.0
+    }
+  }
+}
