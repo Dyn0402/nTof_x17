@@ -1,0 +1,14 @@
+{
+ "n": 1302,
+ "headon_purity": 0.19696969696969696,
+ "subs": [
+  "scintd_r560_dr800dA600_c00_000",
+  "scintd_r545_dr800dA600_c00_003",
+  "scintd_r530_dr800dA600_c00_006"
+ ],
+ "plateau_med": {
+  "headon": 0.0,
+  "inclined": 0.0,
+  "blob": 0.0
+ }
+}
