@@ -150,6 +150,67 @@ lead strips are flat ±300 ADC noise. **Conclusion: select head-on with
 waveforms only; even then it is a minor sample. The inclined monotonic-trail
 tracks are the reliable basis for physics and alignment.**
 
+## Follow-up part 2 — regression, full waveforms, drift velocity, source location (2026-07-19)
+
+Scripts: `27x_features.py` (bench hits6 features from combined_hits at 100 ADC —
+the low-threshold neighbours the 400-ADC gate cache dropped), `27y_regression_align.py`
+(apply the frozen bench regression restandardized), `27z_waveform_reco.py`
+(decoded-waveform CFD reconstruction of all 2701 inclined tracks). Outputs
+`calib/27_{features,regression,waveform}.npz/json`, `figures/27_tracks/09-13`.
+
+**1. The frozen bench regression does NOT transfer to run_55 (negative result).**
+Restandardized onto the run_55 inclined features, the bench |tan| regressor
+(mx17_3/2/6/7 hits6, bench holdout σ 1.74–1.76°, sign-acc 0.95) collapses:
+source-pointing slope → ~0 (scale 0.03–0.10 vs the raw 0.5–0.6). Cause is the
+README-flagged caveat, now confirmed: the models were trained on COSMICS
+spanning a broad angle range; run_55 source tracks are near-NORMAL incidence
+(small, narrow tan), so restandardization mis-maps the feature scale and the
+monotonic calibration squashes everything to one angle. **Frozen_rs transfer is
+not usable for point-source beam tracks — the angle model must be RE-TRAINED
+in situ (source-truth or an in-beam telescope).**
+
+**2. Full-waveform CFD reconstruction (2701 tracks) — the ~0.6 compression is
+REAL, not a timing artifact.** Reconstructing each strip's 30 %-CFD sub-sample
+leading edge and refitting the trail gives the SAME source-pointing scale as the
+60 ns max_sample fit (CFD 0.53–0.65 vs raw 0.62; B 0.36) and the SAME angular
+resolution (σθ ≈ 11°, unchanged). So the angle compression is genuine
+charge-sharing, and the ~11° single-track resolution is NOT limited by timing
+quantisation — it is set by (a) the extended source's own ~5° spread, (b) the
+small lever arm of near-normal tracks (little position extent), and (c) coherent
+baseline noise corrupting the CFD of low-amplitude trail strips (the same CM
+noise the ZS work flagged — [[july-zs-optimization]]). Sub-sample timing does
+not help here; better S/N (ZS/CM correction) and in-situ angle training would.
+
+**3. Drift velocity, telescope-free and angle-independent.** For a full-gap
+track the drift-time SPAN (latest−earliest arrival) = gap/v regardless of angle.
+From the CFD span (upper-half median, full 24 subruns):
+
+| det | CFD span | v_cfd | garfield | note |
+|---|---|---|---|---|
+| A | 622 ns | **48** | 40.5 | dry gas, 600 V drift |
+| B | 1005 ns | **30** | 44.1 | wide-cluster/ringing pathology — untrusted |
+| C | 710 ns | **42** | 44.1 | **matches garfield** |
+| D | 594 ns | **50** | 44.1 | high |
+
+C sits on garfield (42 vs 44); A/D read ~10 % high and B low. Per-chamber
+scatter is physical (A dry vs B/C/D ~0.8 % H2O, B's pathology, residual
+span-truncation where the far-edge charge dips below threshold) rather than
+method noise. **Net: v_drift ≈ 44 µm/ns (garfield) is consistent for the trusted
+chamber C; a clean per-chamber v needs the in-situ-trained angle to fully
+separate v from the charge-sharing scale.**
+
+**4. Source LOCATION triangulated (and the y offset is PHYSICS).** The fitted
+u0 per plane, minus strip centre, is the effective source position in that
+coordinate, and the chambers agree:
+- transverse: A −9, B −7, C −26, D −12 mm → ~1 cm off-axis, consistent (alignment).
+- **beam/vertical (y): A −21, B −29, C −48 mm → the source is ~3 cm LOW, same in
+  every chamber.** At n_TOF EAR2 the beam is vertical and neutrons enter the ³He
+  capsule from below, so captures pile up at the BOTTOM of the D20×L40 capsule —
+  the effective source really is low in y. The chambers independently
+  triangulating the same ~3 cm offset is a genuine source-position measurement,
+  NOT a y-misalignment to correct. (This resolves the "y-planes 3 cm low" puzzle
+  from part 1.)
+
 ## Numbers to keep
 
 - 24 subruns, 76 214 triggers → 110 115 candidate clusters, 1.06 M strips.
@@ -162,33 +223,36 @@ tracks are the reliable basis for physics and alignment.**
 ## Caveats
 
 - Everything is b1/b2 only (the 3 ms goal is unsampled — see HV-scan doc).
-- The absolute angle SCALE (and hence any absolute v_drift claim) is degenerate
-  with the charge-sharing bias in the raw anchored fit; separating them cleanly
-  needs the bench **regression** angle estimator (restandardized), not done here.
-- The extended source (D20×L40 mm, ±20 mm along beam) adds an irreducible ~5°
-  angular spread that inflates the single-track resolution and softens the y
-  pointing.
-- u0 mechanical expectation uses strip-centre ± the run_config transverse offset
-  with the sign chosen by best agreement; the y expectation assumes the beam
-  axis sits at strip centre — the ~3 cm y residual is exactly the assumption
-  under test.
+- The absolute angle SCALE and v_drift stay partly degenerate: the frozen bench
+  regression that would have separated them does NOT transfer to near-normal
+  point-source tracks (part 2 §1), so v is pinned via the angle-independent CFD
+  drift-span instead (part 2 §3), trustworthy for C.
+- The extended source (D20×L40 mm) adds an irreducible ~5° angular spread that
+  inflates the single-track resolution; the ~3 cm-low y source position it
+  implies is the physics of bottom-of-capsule capture (part 2 §4), not a bias.
+- B is not trustworthy for the angle scale OR v_drift (wide-cluster/ringing
+  pathology, flagged already in the HV-scan doc).
 - B is not trustworthy for the angle scale (wide-cluster/ringing pathology,
   flagged already in the HV-scan doc).
 
 ## Follow-ups
 
-1. **Regression angle estimator** (microtpc_lib `train_tan_regression`, frozen
-   bench models `ntof_tracking/models/mx17_{2,3,6,7}_hits6.json`, restandardized
-   on run_55) to remove the charge-sharing compression → real σθ (~2°?) and a
-   clean v_drift number per chamber; then re-do the source fit for a genuine
-   in-situ drift-velocity measurement.
-2. **Chase the ~3 cm y offset** — beam-spot vs stack survey; check with the
-   plastic/SiPM imaging (the wall geometry work) which also sees y.
-3. Apply the distortion map (or fiducialize) in any track-based alignment /
-   e⁺e⁻ vertexing; the edge fringe field biases angles by ~10°.
-4. Feed the 762-segment table (`calib/27_tracks.npz`) into inter-chamber
-   linking / vertexing (ntof_tracking PLAN_04) — the source is the truth anchor.
-5. B wide-cluster/ringing diagnosis at the waveform level (also open from HV scan).
+1. **RE-TRAIN the angle regressor in situ** — the frozen bench transfer failed
+   (part 2 §1). Train `microtpc_lib.train_tan_regression` on run_55 tracks with
+   SOURCE-truth labels (tanθ = (u−u0)/R), holding out for the residual σθ; that
+   both removes the charge-sharing compression and cleanly separates v_drift.
+   (Partly circular for pointing, but the holdout σ and v are honest.)
+2. **Improve S/N before precision** — the ~11° single-track resolution is
+   coherent-CM-noise-limited on low-amp trail strips ([[july-zs-optimization]]);
+   re-processing with CM correction / ZS should sharpen the trail and v_drift.
+3. The ~3 cm-low y source position is bottom-of-capsule capture PHYSICS —
+   cross-check against the plastic/SiPM imaging (wall geometry) which also sees
+   y, and use it as the true source point in vertexing (don't "correct" it).
+4. Apply the fringe-field distortion map (or fiducialize 70–330 mm) in any
+   track-based alignment / e⁺e⁻ vertexing; edges bias angles ~10°.
+5. Feed the 762-segment table (`calib/27_tracks.npz`) into inter-chamber linking
+   / vertexing (ntof_tracking PLAN_04) — the (low-y) source is the truth anchor.
+6. B wide-cluster/ringing diagnosis at the waveform level (also open from HV scan).
 
 ## Figures (`figures/27_tracks/`)
 
@@ -200,3 +264,7 @@ tracks are the reliable basis for physics and alignment.**
 - `06_summary.png` — angle-scale / v_true / alignment across planes (KEY)
 - `07_headon_waveforms.png` — head-on vs inclined vs blob lead-strip waveforms
 - `08_headon_features.png` — plateau/width; proxy vs true
+- `09_regression.png` — frozen bench regression vs raw angle (transfer FAILS)
+- `10_source_loc.png` — regression scale/σθ/v per plane (part 2 §1)
+- `11_wf_examples.png` — waveform CFD micro-TPC trails + strip waveforms
+- `12_wf_vdrift.png` — CFD drift-span → v_drift per chamber vs garfield (KEY)
