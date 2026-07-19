@@ -207,6 +207,11 @@ class RunConfig:
             if included and name not in included:
                 continue
 
+            # Non-strip detectors (plastics, SiPMs, liquids) carry no DREAM
+            # strip mapping — skip them, this class only serves strip planes.
+            if "dream_feus" not in det_cfg:
+                continue
+
             self.detectors[name] = Detector(
                 name=name,
                 det_cfg=det_cfg,
