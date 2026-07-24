@@ -82,6 +82,12 @@ SUB_PATTERNS = [
     # run_70 style: m141On_mip1p41_006  (plastic threshold only, no HV axis)
     (re.compile(r'^m(\d{3})On_mip(\d)p(\d{2})_(\d{3})$'),
      lambda m: dict(mip=float(f'{m.group(2)}.{m.group(3)}'))),
+    # run_72 style: cosbounce_r560_c00_000  (beam-off COSMICS: resist HV bounce,
+    # drift fixed 600 V, cycle index, seq). No flash / no beam, so the dt-since-flash
+    # and intensity axes are inert here — resist is the only physics axis. See the
+    # cosmics summary script (not plots.py, which assumes flash timing).
+    (re.compile(r'^cosbounce_r(\d{3})_c(\d{2})_(\d{3})$'),
+     lambda m: dict(resist=int(m.group(1)), drift=600, mip=0.5)),
 ]
 AXES = ['mip', 'drift', 'resist', 'resist_idx', 'mesh']
 
