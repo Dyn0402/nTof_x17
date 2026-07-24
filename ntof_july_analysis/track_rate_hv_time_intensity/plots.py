@@ -340,7 +340,7 @@ def table():
                                  err_pct=100 * np.sqrt(max(n, 1)) / den,
                                  clean_pct=100 * nc / den))
     df = pd.DataFrame(rows)
-    df.to_csv(OUT / 'rate_vs_hv_time.csv', index=False)
+    df.to_csv(FIG / 'rate_vs_hv_time.csv', index=False)
     best = (df.sort_values('rate_pct', ascending=False)
               .groupby(['det', 'band']).head(1)
               .sort_values(['det', 'band']))
@@ -358,7 +358,7 @@ def main():
     print(best.to_string(index=False,
                          columns=['det', 'band', 'resist', 'rate_pct', 'err_pct', 'n_2d', 'n_trig'],
                          float_format=lambda x: f'{x:.3f}'))
-    print('\nfull table -> rate_vs_hv_time.csv')
+    print('\nfull table ->', FIG / 'rate_vs_hv_time.csv')
 
 
 if __name__ == '__main__':

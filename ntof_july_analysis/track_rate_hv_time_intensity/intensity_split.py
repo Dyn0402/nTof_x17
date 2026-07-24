@@ -343,7 +343,7 @@ def main():
                                      n_trig=dd, rate_pct=100 * n / dd,
                                      err_pct=100 * np.sqrt(max(n, 1)) / dd))
     df = pd.DataFrame(rows)
-    df.to_csv(OUT / 'intensity_split.csv', index=False)
+    df.to_csv(FIG / 'intensity_split.csv', index=False)
 
     print('\nbest resist HV per detector × band × intensity class:')
     best = (df.sort_values('rate_pct', ascending=False)
@@ -353,7 +353,7 @@ def main():
                          columns=['det', 'band', 'cls', 'resist', 'rate_pct', 'err_pct',
                                   'n_2d', 'n_trig'],
                          float_format=lambda x: f'{x:.3f}'))
-    print('\nfull table -> intensity_split.csv')
+    print('\nfull table ->', FIG / 'intensity_split.csv')
 
 
 if __name__ == '__main__':
