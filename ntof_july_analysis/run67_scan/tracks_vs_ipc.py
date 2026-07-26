@@ -52,10 +52,13 @@ DEFAULT_RESISTS = [550, 540, 530, 520]
 # high resist = hot colour, low resist = cool; distinct from the IPC blue fill
 RCOL = {550: '#d7191c', 545: '#e8613c', 540: '#fdae61', 535: '#c8a415',
         530: '#4d9221', 525: '#3182bd', 520: '#762a83'}
+# a distinct marker per setting as well as colour, so the curves stay separable
+# in greyscale and where they overlap
+RMRK = {550: 'o', 545: 'v', 540: 's', 535: 'P', 530: '^', 525: 'X', 520: 'D'}
 
 
 def track_rate(ev, det, resist, drift, bw, mip=None):
-    """(bin_left, tracks/pulse/ms, err) for one (drift, resist) cell."""
+    """(bin_centre, tracks/pulse/ms, err, n_spill, n_events, raw_counts)."""
     g = ev[(ev.drift == drift) & (ev.resist == resist)]
     if mip is not None:
         g = g[g.mip == mip]
@@ -70,13 +73,15 @@ def track_rate(ev, det, resist, drift, bw, mip=None):
     k, _ = np.histogram(hit.dt_ms.to_numpy(), bins=edges)
     # Poisson counting error on the bin, propagated through the same scaling.
     scale = 1.0 / max(n_spill, 1) / bw
-    return edges[:-1], k * scale, np.sqrt(k) * scale, n_spill, len(g)
+    ctr = edges[:-1] + bw / 2.0
+    return ctr, k * scale, np.sqrt(k) * scale, n_spill, len(g), k
 
 
-def fig_one_det(ev, ipc, det, drift, resists, bw, mip, fname):
+def fig_one_det(ev, ipc, det, drift, resists, bw, mip, fname, tmax=FT.TMAX):
     fig, ax = plt.subplots(figsize=(13.5, 7.0))
     FT._draw_ipc(ax, ipc)
     FT._shade_gate(ax)
+    ax.set_xlim(0, tmax)          # after _draw_ipc, which sets the full gate
     ax2 = ax.twinx()
     top = 0.0
     for r in resists:
@@ -84,14 +89,17 @@ def fig_one_det(ev, ipc, det, drift, resists, bw, mip, fname):
         if out is None:
             print(f'    resist {r} V not present at drift {drift} — skipped')
             continue
-        x, y, e, ns, nev = out
-        ax2.step(x, y, where='post', color=RCOL.get(r, 'k'), lw=1.9,
-                 label=f'resist {r} V   ({nev} triggers, {ns} spills)',
-                 zorder=5)
-        ax2.errorbar(x + bw / 2, y, yerr=e, fmt='none', ecolor=RCOL.get(r, 'k'),
-                     alpha=0.45, lw=0.9, zorder=5)
-        top = max(top, float((y + e).max()))
-    ax2.set_ylim(0, top * 1.25)
+        x, y, e, ns, nev, k = out
+        inx = x <= tmax
+        med = int(np.median(k[inx])) if inx.any() else 0
+        print(f'    resist {r} V: median {med} tracks per {bw:g} ms bin '
+              f'within {tmax:g} ms  (~{100 / np.sqrt(max(med, 1)):.0f} % stat)')
+        ax2.errorbar(x[inx], y[inx], yerr=e[inx], color=RCOL.get(r, 'k'),
+                     marker=RMRK.get(r, 'o'), ms=5.0, lw=1.5, ls='-',
+                     capsize=2.5, elinewidth=1.0, zorder=5,
+                     label=f'resist {r} V   ({nev} triggers, {ns} spills)')
+        top = max(top, float((y[inx] + e[inx]).max()))
+    ax2.set_ylim(0, top * 1.18)
     ax2.set_ylabel(f'reconstructed tracks / pulse / ms   (Det {det})',
                    fontsize=11)
     # one legend for both axes
@@ -113,10 +121,11 @@ def fig_one_det(ev, ipc, det, drift, resists, bw, mip, fname):
     return p
 
 
-def fig_all_dets(ev, ipc, drift, resists, bw, mip, fname):
+def fig_all_dets(ev, ipc, drift, resists, bw, mip, fname, tmax=FT.TMAX):
     fig, axes = plt.subplots(2, 2, figsize=(17, 10))
     for ax, det in zip(axes.ravel(), 'ABCD'):
         FT._draw_ipc(ax, ipc)
+        ax.set_xlim(0, tmax)
         ax.set_title(f'Det {det}' + ('  (clean M1 — reference)' if det == 'A'
                                      else ''), fontsize=11)
         ax2 = ax.twinx()
@@ -125,11 +134,13 @@ def fig_all_dets(ev, ipc, drift, resists, bw, mip, fname):
             out = track_rate(ev, det, r, drift, bw, mip)
             if out is None:
                 continue
-            x, y, e, ns, nev = out
-            ax2.step(x, y, where='post', color=RCOL.get(r, 'k'), lw=1.6,
-                     label=f'{r} V', zorder=5)
-            top = max(top, float(y.max()))
-        ax2.set_ylim(0, max(top, 1e-9) * 1.25)
+            x, y, e, ns, nev, k = out
+            inx = x <= tmax
+            ax2.errorbar(x[inx], y[inx], yerr=e[inx], color=RCOL.get(r, 'k'),
+                         marker=RMRK.get(r, 'o'), ms=4.0, lw=1.3, ls='-',
+                         capsize=2.0, elinewidth=0.9, zorder=5, label=f'{r} V')
+            top = max(top, float((y[inx] + e[inx]).max()))
+        ax2.set_ylim(0, max(top, 1e-9) * 1.18)
         ax2.set_ylabel('tracks / pulse / ms', fontsize=9)
         if det == 'A':
             ax2.legend(fontsize=8, title='resist', title_fontsize=8,
@@ -154,6 +165,8 @@ def main(argv=None):
     ap.add_argument('--bw', type=float, default=2.0, help='bin width [ms]')
     ap.add_argument('--mip', type=int, default=None, choices=[141, 113, 90])
     ap.add_argument('--det', default='A')
+    ap.add_argument('--tmax', type=float, default=FT.TMAX,
+                    help='x-axis upper limit [ms]; 30 gives the IPC-region zoom')
     args = ap.parse_args(argv)
 
     ev, _, _ = L.load_all()
@@ -167,10 +180,13 @@ def main(argv=None):
     print(f'  IPC in-gate: {ipc["ipc_pulse"]:.3g} pairs/pulse')
 
     tag = 'allthr' if args.mip is None else f'm{args.mip}'
+    zoom = f'_0-{args.tmax:g}ms'
     fig_one_det(ev, ipc, args.det, args.drift, args.resists, args.bw, args.mip,
-                f'tracks_vs_ipc_det{args.det}_dr{args.drift}_{args.bw:g}ms_{tag}.png')
+                f'tracks_vs_ipc_det{args.det}_dr{args.drift}_'
+                f'{args.bw:g}ms{zoom}_{tag}.png', tmax=args.tmax)
     fig_all_dets(ev, ipc, args.drift, args.resists, args.bw, args.mip,
-                 f'tracks_vs_ipc_alldets_dr{args.drift}_{args.bw:g}ms_{tag}.png')
+                 f'tracks_vs_ipc_alldets_dr{args.drift}_'
+                 f'{args.bw:g}ms{zoom}_{tag}.png', tmax=args.tmax)
     print('done ->', OUT)
 
 
