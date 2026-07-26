@@ -268,3 +268,110 @@ An independent re-derivation from the cached EventResults (`event_results_veto50
 Figures 07/08 and the per-band statics/GIFs were regenerated with the band; the legend quotes the σ values. Audit scripts: session scratch `audit_threading.py` (signed-slope check, anchor round-trip), `threading_census.py` (full-depth threading fractions).
 
 *Prepared for independent review. The central, deliberately un-sugar-coated claim: we thread the reference at the mesh (position resolution ~0.5–0.8 mm, no misalignment), but we do NOT thread the full-depth charge cloud event-by-event with any current reconstruction — the raw ladder is ~4° too steep (charge sharing), and the hit-level unsharing that fixes this is a statistical/ensemble correction that adds per-event noise. Whether a per-event reconstruction can be built that threads a single muon through the whole gap is the open problem.*
+
+---
+
+## 12. Re-test after the significance-floor reco (2026-07-25) — the central claim is unchanged
+
+Re-run of §3 and §11.5 on the `a1cce79` matched-filter hits with the adaptive
+per-plane significance floor (`DET3_RECO_FIX_2026-07-25.md`), same alignment
+recipe, same anchor, same estimators. 5,949 matched muons.
+
+**Short answer: the full-depth cloud looks materially cleaner, but the threading
+verdict does not move at all — and for a reason worth recording.**
+
+### 12.1 What improved: the drawn cloud
+
+Depth-resolved metric over **all** strip hits (§3's table), three hit generations:
+
+| | peak bias | swing mesh→peak | core σ @ mesh | core σ @ 27.5–30 mm |
+|---|---|---|---|---|
+| pre-rework (§3, 7-15) | +1.275 mm | +1.430 mm | 0.93 mm | 2.98 mm |
+| `a1cce79` raw, no floor | +0.823 mm | +1.185 mm | 1.09 mm | 3.10 mm |
+| **`a1cce79` + floor** | **+0.729 mm** | **+0.815 mm** | **0.80 mm** | **2.19 mm** |
+
+The floored cloud beats the pre-rework report at *every* depth, and the raw
+`a1cce79` cloud is worse than pre-rework at every depth — the matched-filter
+rework added hits that are noise until the floor removes them. Deep coverage is
+nonetheless better than pre-rework in absolute terms (deepest bin 864 hits vs
+684), because the rework added so many.
+
+Figure: `threading_after_floor_2026-07-25.png`.
+
+### 12.2 What did NOT improve: the threading census
+
+§11.5's census — *every* core strip on both planes within T of the reference line
+over the full depth, events with z_max > 15 mm — is unchanged:
+
+| | N | @0.5 mm | @1.0 mm | @1.5 mm | median worst-hit |
+|---|---|---|---|---|---|
+| pre-rework (§11.5) | 5,081 | 0.4 % | 17.7 % | 53.6 % | 1.44 mm |
+| `a1cce79` raw | 4,750 | 0.3 % | 19.6 % | 54.0 % | 1.43 mm |
+| `a1cce79` + floor | 4,750 | 0.3 % | 19.6 % | 54.0 % | **1.43 mm** |
+
+The last two rows are *identical*, and that is not a bug. The census applies
+`_core_filter` (amp ≥ 0.30 × the event/plane max) before measuring, which is a
+**stronger** amplitude-relative cut than the significance floor (sig ≥ 0.10 ×
+plane max). Measured overlap: of 445,648 hits passing the core filter, only
+**2,999 (0.67 %)** fail the floor. The floor therefore removes almost exactly the
+strips the census had already discarded.
+
+### 12.3 Consequence for the argument
+
+**The report's central claim stands, unmodified:** we thread at the mesh and we do
+not thread the full-depth charge cloud event-by-event. The reco fix does not
+change that and could not have — the residual divergence lives on the *core*
+strips, and is charge-sharing slope bias plus deep-hit diffusion, neither of
+which a low-amplitude filter touches.
+
+What the re-test does change is the interpretation of §3's all-hits table. Because
+that metric mixes signal and noise strips, and the three generations contain very
+different noise populations, its bias/σ columns are **not** a clean cross-generation
+estimator — the raw `a1cce79` curve has a *lower* peak bias than pre-rework while
+being *worse* in resolution at every depth. The core-strip census in §11.5 is the
+robust metric for this argument and should be quoted in preference to §3 whenever
+hit generations are being compared.
+
+### 12.4 New systematic introduced by the floor: depth-dependent efficiency
+
+The floor is relative to each plane's strongest strip, and deep hits are
+attenuated, so it thins the top of the drift gap:
+
+| z [mm] | 0–2.5 | 7.5–10 | 15–17.5 | 20–22.5 | 25–27.5 | 27.5–30 |
+|---|---|---|---|---|---|---|
+| hits surviving | 70.4 % | 82.5 % | 77.2 % | 64.6 % | 45.9 % | 41.5 % |
+| median raw significance | 114 | 193 | 151 | 78 | 35 | 25 |
+
+This is harmless for position/efficiency work (it is removing the strips that were
+degrading them) but it is **not** harmless for anything measuring amplitude or hit
+efficiency *as a function of depth* — i.e. the attachment chain, `17`/`18`/`19`.
+Those scripts currently load hits themselves without the floor, so they are
+unaffected today; do not apply the floor there without folding this curve in.
+
+### 12.5 Open item: the displays and the reconstruction now disagree
+
+`engineer_package/make_event_displays.load_hits()` reads the raw hit tree and does
+not request the `significance` branch, so the 3-D displays draw the **unfloored**
+cloud while the reference anchor and the fitted ladder come from the **floored**
+reconstruction. Every display is therefore showing a noisier cloud than the
+reconstruction actually used — cosmetically worse and, more importantly,
+misleading about what the reco sees. Making the display loader take the same floor
+is a small change and would visibly tighten §12.1's cloud.
+
+---
+
+## 13. 2026-07-25 (second session): waveform-first forward fit — per-event threading largely achieved
+
+A from-zero rebuild starting at the decoded waveforms
+(`waveform_first_threading/WAVEFORM_FIRST_THREADING.md`) established that the
+depth divergence is an **estimator-independent aggregate-time artefact**
+(delayed dispersed neighbour charge compresses every per-strip time ladder
+20–30 %), and that a **forward-model waveform fit** (track line + NNLS charge
+profile + measured template + sharing kernel, sharing modelled forward rather
+than deconvolved) recovers per-event angles at σ ≈ 1.0–1.2° vs M3 (bias
+< 0.25°), threads < 1 mm over the full 29 mm depth for ~70 % of medium-angle
+events (vs 16–24 % for the production ladder), and actively rejects the
+production steep ladder at the waveform level (Δχ²/dof +97/+132 vs +16/+25
+for the reference line). §5.2's statement that no per-event reconstruction
+threads the gap is superseded for medium angles; open tensions (calibrated
+v = 36.7 vs 34–35, residual ~1° model noise) are documented there.

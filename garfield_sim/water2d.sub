@@ -1,0 +1,14 @@
+universe                = vanilla
+executable              = water2d_wrap.sh
+arguments               = $(TAG)
+transfer_input_files    = mm_water2d_one.py
+should_transfer_files   = YES
+when_to_transfer_output = ON_EXIT
+transfer_output_files   = water2d_$(TAG).json
+output                  = logs/$(TAG).out
+error                   = logs/$(TAG).err
+log                     = logs/water2d.clog
+request_cpus            = 1
+request_memory          = 2 GB
++MaxRuntime             = 10800
+queue TAG from water2d_points.txt
