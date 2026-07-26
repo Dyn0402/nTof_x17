@@ -2,8 +2,27 @@
 
 **Core stage: turn each track-candidate window into per-plane track segments
 with bench-grade positions and angles. Deliverable: `beam_segments.py`
-producing a per-plane segment table, validated first on the cosmics-at-nTOF
-runs (Jun 27–29) where the bench models should reproduce ~2° out of the box.**
+producing a per-plane segment table.**
+
+> **NO cosmics at nTOF (2026-07-12).** There is no cosmics-at-nTOF dataset to
+> "validate first" against, and no beam-off cosmic run — the bench models cannot
+> be commissioned against a known angular distribution. Validate instead on
+> internal consistency of self-found beam tracks: X-plane vs Y-plane angle
+> agreement on the same event (bench predicts they track), and (post-PLAN_04)
+> micro-TPC segment angle vs inter-chamber link angle. First-look confirmation
+> that this works: `ntof_july_analysis/run30_microtpc.py` finds clean
+> **single-chamber** micro-TPC tracks (evt 1017, 162) whose X and Y *readout
+> planes* — both inside one Micromegas — carry mutually-consistent gradients.
+>
+> **We are looking for ANY track in ANY single detector, NOT chamber pairs
+> (user, 2026-07-12).** "Two-plane" here always means the X-readout plane + the
+> Y-readout plane of ONE Micromegas (each MM has two orthogonal strip planes) —
+> never two Micromegas. A gradient in a SINGLE plane is already a valid track
+> segment and counts as a track; having it in both X and Y merely upgrades it to
+> a full 3-D micro-TPC track within that one chamber. Two-*Micromegas* linking
+> (PLAN_04) is a separate downstream stage that needs a target/vertex — **not
+> expected yet and may never occur (no target installed)**; nothing in PLAN_02
+> should require a chamber pair.
 
 ## The two-layer design
 
@@ -45,13 +64,23 @@ have a DIFFERENT angular distribution, which shifts feature means for
 physical (not instrumental) reasons and can re-bias the calibration.
 Protocol:
 1. Restandardize on a large, taxonomy-clean candidate population per
-   (run, detector, HV setting) — never per event.
-2. Commission on the **cosmics-at-nTOF runs first** (Jun 27–29, and any
-   beam-off cosmic runs): cosmic angular mix ≈ bench, so the frozen_rs
-   numbers must reproduce ~1.7–1.9° (det3/A) — if they don't, the problem is
-   the data interface, not the physics.
+   (run, detector, HV setting) — never per event. **Caveat sharpened by the
+   no-cosmics reality:** the self-found beam-track population is small (~3 % of
+   compact clusters carry a real gradient) and forward/target-biased, so its
+   feature means genuinely differ from the bench cosmic mix. Restandardize on
+   the largest *gradient-bearing* candidate set you can pool (across subruns at
+   the same detector/HV/gas), not on all compact clusters (most are isochronous
+   point deposits that would poison mu/sd).
+2. **There are NO cosmics-at-nTOF and no beam-off cosmic runs** — the frozen
+   models CANNOT be commissioned against a bench-like angular distribution.
+   Substitute internal consistency as the day-1 sanity check: on two-plane
+   tracks the X and Y regressed angles must be mutually consistent, and the raw
+   anchored-time-fit slope must agree in sign/rough-magnitude with the
+   regression. Treat any absolute-angle accuracy as UNVERIFIED until PLAN_04
+   links exist.
 3. In-spill, treat frozen_rs angles as *bootstrap quality* until PLAN_04/05
-   provides inter-chamber truth to re-anchor mu/sd and retrain. Record which
+   provides inter-chamber truth to re-anchor mu/sd and retrain — this is now the
+   ONLY path to calibrated angles (no cosmic shortcut). Record which
    model+standardization produced every segment (provenance columns).
 
 ## Quality flags per segment
@@ -71,8 +100,11 @@ a_lead, tot_lead, red_chi2, flags, model_id, restd_id`
 
 ## Acceptance
 
-- Cosmics-at-nTOF: angle correlation between chambers (after PLAN_04 rough
-  alignment) consistent with two ~2° devices; rate of segments/window sane.
+- (No cosmic sample exists — the original cross-chamber-cosmic acceptance is
+  void.) Self-consistency instead: on two-plane tracks the X vs Y angle
+  distributions are compatible; after PLAN_04 rough alignment, inter-chamber
+  angle correlation for through-goers is consistent with two ~2° devices; rate
+  of segments/window sane.
 - In-spill: hits-per-candidate, segments/window, and angle distributions
   stable across subruns at fixed HV; no pileup of segments at the window
   edges (would indicate truncation mishandling).

@@ -88,8 +88,19 @@ SUB_PATTERNS = [
     # cosmics summary script (not plots.py, which assumes flash timing).
     (re.compile(r'^cosbounce_r(\d{3})_c(\d{2})_(\d{3})$'),
      lambda m: dict(resist=int(m.group(1)), drift=600, mip=0.5)),
+    # run_77 style: stat090_0000  (FIXED-POINT statistics run — NO scan axis at all).
+    # Every sub-run sits at the run_67 optimum: plastic 0.90 MIP, drift 700 V on all
+    # four, resist A540/B540/C525/D520. `resist` is deliberately left NaN because it is
+    # PER-DETECTOR here and a single column cannot represent it — the resist value is a
+    # constant of the run, not an axis. dt_ms (and intensity) are the only live axes.
+    (re.compile(r'^stat090_(\d{4})$'),
+     lambda m: dict(mip=0.90, drift=700)),
+    # run_78 style: stat090_lat033_c0_0000  (LATENCY scan at the fixed run_77 operating
+    # point; latency is the only axis, cycle index is bookkeeping).
+    (re.compile(r'^stat090_lat(\d{3})_c(\d+)_(\d+)$'),
+     lambda m: dict(mip=0.90, drift=700, latency=int(m.group(1)))),
 ]
-AXES = ['mip', 'drift', 'resist', 'resist_idx', 'mesh']
+AXES = ['mip', 'drift', 'resist', 'resist_idx', 'mesh', 'latency']
 
 
 def parse_subrun(sub):

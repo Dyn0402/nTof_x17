@@ -52,7 +52,9 @@ monitor the fraction only as a health metric.
   disagreement = wrong gas assumption or field error — escalate, don't
   average.
 - det6/det7 retrained models reach ≤ their bench self-trained numbers
-  (2.6–2.9°) on cosmic links.
+  (2.6–2.9°) on **beam-track links** (no cosmic links exist — see the
+  no-cosmics correction in the README/PLAN_04; the self-found beam tracks are
+  the only training truth).
 
 ## Gotchas
 

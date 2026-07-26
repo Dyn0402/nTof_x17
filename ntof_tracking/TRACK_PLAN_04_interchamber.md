@@ -22,9 +22,12 @@ beam-spot reconstruction itself).** Record whatever is adopted in
 
 ## 1. Relative alignment from through-going tracks
 
-Sample: cosmics-at-nTOF runs (Jun 27–29) + beam-off cosmics + in-spill
-through-goers (segments in ≥2 chambers, time-coincident within the same
-DREAM window, |Δt0| < 150 ns ≈ 5σ of the bench 33 ns timing).
+Sample: **in-spill through-goers ONLY — there are no cosmics-at-nTOF and no
+beam-off cosmic runs (2026-07-12).** Through-goers = segments in ≥2 chambers,
+time-coincident within the same DREAM window, |Δt0| < 150 ns ≈ 5σ of the bench
+33 ns timing. This is the sole alignment sample; it is rarer and more
+forward-peaked than a cosmic sample would be, so expect to pool many subruns to
+accumulate enough inclined links.
 
 Procedure (mirrors the bench alignment loop, `03_alignment_and_tpc.py`
 pattern — iterate translation → rotation → z):
@@ -33,8 +36,11 @@ pattern — iterate translation → rotation → z):
    combinatorics).
 2. Fit per-pair residuals → per-chamber transverse offsets (median residual),
    in-plane rotation (residual-vs-position slope), then z (residual-vs-angle
-   slope — needs inclined tracks; cosmics provide them, beam tracks are more
-   forward).
+   slope — needs inclined tracks; with NO cosmics these must come from the
+   inclined beam tracks themselves — the run_30 first-look shows ~8–15° tracks
+   exist but are rare, so z will converge slowly and only after pooling many
+   subruns; if inclined statistics are too thin, hold z at the nominal/survey
+   value and align only translation+rotation).
 3. Iterate to convergence (<0.1 mm shifts). Bench experience: converges in
    2–3 iterations; θ lands near 90°±1.
 4. Ship `geometry_july.json` v2 with the fitted constants + residual maps.
@@ -76,9 +82,11 @@ deconvolve it exactly like PAPER PLAN_37 does for M3.
 
 - Alignment residuals: flat maps, widths consistent with quadrature of two
   chambers' position σ (~1.1–1.3 mm per axis for 0.8 mm chambers).
-- Cosmic linked tracks: micro-TPC segment angles vs link angles — per-chamber
-  σ matches the bench numbers (det3 ~1.8°, det2 ~2.4°, det6/7 ~3–4° with
-  frozen models); this closes the loop with PLAN_02's commissioning.
+- Linked beam tracks (no cosmic sample exists): micro-TPC segment angles vs
+  link angles — per-chamber σ can be MEASURED here for the first time (there is
+  no independent cosmic cross-check), and compared to the bench numbers (det3
+  ~1.8°, det2 ~2.4°, det6/7 ~3–4° with frozen models) as a plausibility guide,
+  not a validation. This link residual IS the in-situ resolution.
 - Beam spot at the target position with a width compatible with the beam
   profile + extrapolation error.
 
@@ -88,9 +96,11 @@ deconvolve it exactly like PAPER PLAN_37 does for M3.
   time base (same DREAM event) — verified structure at bench; confirm once at
   beam by histogramming Δt0 between chambers for obvious through-goers
   (should be σ ~ 45 ns, not µs).
-- In-spill through-goers are forward-peaked: z-alignment (needs angles) may
-  only converge on cosmic samples — schedule alignment on cosmics, apply to
-  beam.
-- Arms on opposite sides of the target NEVER share tracks (except cosmics
-  crossing everything — gold for global alignment; select by downward
-  direction + out-of-spill timing).
+- In-spill through-goers are forward-peaked and there is NO cosmic sample to
+  fall back on: z-alignment (needs angles) must come from the inclined beam
+  tracks alone. If it will not converge, freeze z at survey/nominal and align
+  only translation+rotation rather than fitting a poorly-constrained z.
+- Arms on opposite sides of the target NEVER share a track — and with no
+  cosmics crossing everything, there is NO track-based handle for cross-arm
+  global alignment. It must come from survey and/or the reconstructed beam-spot
+  position (each arm extrapolated to the target must agree). Plan for that.

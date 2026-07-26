@@ -272,16 +272,126 @@ def detector_metrics(df: pd.DataFrame, feu_ids: List[int], n_total: int,
 
 
 def detector_window_metrics(df: pd.DataFrame, feu_ids: List[int],
-                            n_total: int) -> Dict[str, List[float]]:
-    """hits/event and mean amplitude for this detector in each TIME_WINDOWS bin."""
+                            n_total: int,
+                            windows: Optional[List[Tuple[float, float]]] = None
+                            ) -> Dict[str, List[float]]:
+    """hits/event and mean amplitude for this detector in each time window.
+
+    ``windows`` defaults to the module-level TIME_WINDOWS; flash-scan callers
+    pass per-run, flash-centred windows from ``flash_scan_windows()``.
+    """
+    if windows is None:
+        windows = TIME_WINDOWS
     n_total = max(n_total, 1)
     sel = df[df['feu'].isin(feu_ids) & (df['amplitude'] >= AMP_THRESHOLD)]
     hpe, amp = [], []
-    for lo, hi in TIME_WINDOWS:
+    for lo, hi in windows:
         w = sel[sel['time'].between(lo, hi, inclusive='left')]
         hpe.append(len(w) / n_total)
         amp.append(float(w['amplitude'].mean()) if not w.empty else np.nan)
     return {'hits_per_event': hpe, 'mean_amplitude': amp}
+
+
+# ---------------------------------------------------------------------------
+# Flash-centred time windows (for the flash-trigger HV scans).
+#
+# The gamma-flash trigger latency drifts run-to-run, so the flash lands at a
+# different time-of-arrival in each run (e.g. ~1.0 us in run_44 but ~1.5 us in
+# run_46).  Rather than hard-code one edge set, measure the flash from the
+# clean reference detector (mx17_A) at the top of the gain range and build the
+# coarse windows around it:
+#
+#     [pre-flash] [flash] [post-flash 1] ... [post-flash n_post]
+#
+# bin 0 is pre-flash baseline, bin 1 fully contains the flash, and the readout
+# tail after the flash is split into n_post equal windows.  The pre-flash start
+# and readout end are fixed (FLASH_T_START / FLASH_T_END) so only the flash
+# boundaries slide with the trigger timing.
+# ---------------------------------------------------------------------------
+
+FLASH_REF_DET = 'mx17_A'       # clean M1 card — trustworthy flash time profile
+FLASH_T_START = -1500.0        # pre-flash baseline window start (ns)
+FLASH_T_END   = 8000.0         # nominal readout end for the post-flash split (ns)
+FLASH_N_TOP   = 3              # pool this many highest-gain subruns to find flash
+FLASH_BIN_NS  = 50.0           # histogram bin for the flash-time profile
+FLASH_EDGE_FRAC = 0.05         # flash extent = contiguous bins >= this * peak
+FLASH_PAD_NS  = 75.0           # pad added on each side of the measured flash
+
+WINDOW_ROLES = ['pre-flash', 'flash', 'post-flash 1', 'post-flash 2',
+                'post-flash 3']
+FLASH_ROLE_IDX = 1             # index of the flash window in the roles/windows
+POST1_ROLE_IDX = 2             # first post-flash (recovery) window
+
+
+def _top_gain_subruns(base_path: str, run: str, n_top: int,
+                      match: str = r'^flash_dr800_') -> List[str]:
+    """Highest-resist-HV flash subruns (A#### token descending)."""
+    run_dir = os.path.join(base_path, run)
+    pat = re.compile(match)
+    subs = [n for n in os.listdir(run_dir)
+            if os.path.isdir(os.path.join(run_dir, n)) and pat.search(n)]
+
+    def _hv(n):
+        m = re.search(r'_A(\d+)', n)
+        return int(m.group(1)) if m else -1
+
+    return sorted(subs, key=_hv, reverse=True)[:n_top]
+
+
+def measure_flash_window(base_path: str, run: str,
+                         ref_det: str = FLASH_REF_DET) -> Tuple[float, float]:
+    """Measured (flash_lo, flash_hi) ns from the reference detector's prompt
+    flash at the top of the gain range.  The flash extent is the contiguous
+    run of >= FLASH_EDGE_FRAC*peak histogram bins around the mode, padded."""
+    cfg = load_config(base_path, run)
+    det_info = build_detector_info(cfg)
+    ref_feus = det_info[ref_det]['feus']
+    all_feus = sorted({f for di in det_info.values() for f in di['feus']})
+
+    times = []
+    for name in _top_gain_subruns(base_path, run, FLASH_N_TOP):
+        df = load_hits(base_path, run, name, all_feus)
+        if df is None or df.empty:
+            continue
+        s = df[df['feu'].isin(ref_feus) & (df['amplitude'] >= AMP_THRESHOLD)]
+        if not s.empty:
+            times.append(s['time'].values)
+    if not times:
+        raise RuntimeError(f'{run}: no reference-detector flash hits found')
+    t = np.concatenate(times)
+
+    edges = np.arange(-2000.0, 4000.0 + FLASH_BIN_NS, FLASH_BIN_NS)
+    h, _ = np.histogram(t, bins=edges)
+    pk = int(np.argmax(h))
+    thr = FLASH_EDGE_FRAC * h[pk]
+    lo = pk
+    while lo > 0 and h[lo - 1] >= thr:
+        lo -= 1
+    hi = pk
+    while hi < len(h) - 1 and h[hi + 1] >= thr:
+        hi += 1
+    return float(edges[lo] - FLASH_PAD_NS), float(edges[hi + 1] + FLASH_PAD_NS)
+
+
+def flash_scan_windows(base_path: str, run: str, n_post: int = 3,
+                       t_start: float = FLASH_T_START,
+                       t_end: float = FLASH_T_END,
+                       ref_det: str = FLASH_REF_DET
+                       ) -> Tuple[List[Tuple[float, float]], dict]:
+    """Per-run flash-centred coarse windows: pre-flash, flash, then ``n_post``
+    equal post-flash windows spanning [flash_hi, t_end].
+
+    Returns (windows, meta) where windows is a list of (lo, hi) ns tuples and
+    meta carries the measured flash edges + peak for labelling/annotation."""
+    flo, fhi = measure_flash_window(base_path, run, ref_det=ref_det)
+    post_edges = np.linspace(fhi, t_end, n_post + 1)
+    windows = [(t_start, flo), (flo, fhi)]
+    windows += [(float(post_edges[i]), float(post_edges[i + 1]))
+                for i in range(n_post)]
+    meta = {'run': run, 'flash_lo': flo, 'flash_hi': fhi,
+            'flash_center': 0.5 * (flo + fhi), 'ref_det': ref_det,
+            't_start': t_start, 't_end': t_end}
+    return windows, meta
 
 
 # ---------------------------------------------------------------------------

@@ -50,12 +50,11 @@ from run9_mesh_scan import subrun_hvs, resist_hv  # noqa: E402
 # What to overlay — edit this.
 # ---------------------------------------------------------------------------
 SERIES = [
-    {'label': 'run_10 (mesh disconnected)', 'run': 'run_10', 'match': r'^dr800_'},
-    {'label': 'run_9 scan01 (mesh off)',    'run': 'run_9',  'match': r'^scan01_'},
-    {'label': 'run_9 scan02 (cfg 2)',       'run': 'run_9',  'match': r'^scan02_'},
-    {'label': 'run_9 scan03 (cfg 3)',       'run': 'run_9',  'match': r'^scan03_'},
+    {'label': 'run_20 (no mesh circuit)',  'run': 'run_20', 'match': r'^dr800_'},
+    {'label': 'run_21 (mesh circuit ON)',  'run': 'run_21', 'match': r'^dr800_'},
+    {'label': 'run_22 (mesh circuit OFF)', 'run': 'run_22', 'match': r'^dr800_'},
 ]
-OUT_LABEL = 'run10_vs_run9'          # output subdir under July_HV_Scan/
+OUT_LABEL = 'run20_21_22_mesh'       # output subdir under July_HV_Scan/
 MID_WINDOW = (1150, 3500)            # the "mid-window turn-off" row (ns)
 
 
