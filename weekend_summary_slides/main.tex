@@ -1,0 +1,616 @@
+% n_TOF EAR2 / MX17 X17 — weekend + Monday progress deck
+% Auto-compiled summary, 2026-07-20. Build: pdflatex main; pdflatex main
+\documentclass[aspectratio=169,10pt]{beamer}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{helvet}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{amsmath,amssymb}
+\usepackage{xcolor}
+
+\graphicspath{{figs/repo/}{figs/artifacts/}}
+
+% ---------- palette (matches the rendered artifacts) ----------
+\definecolor{TealD}{HTML}{0F766E}
+\definecolor{Teal}{HTML}{14B8A6}
+\definecolor{Indigo}{HTML}{4338CA}
+\definecolor{Amber}{HTML}{B45309}
+\definecolor{Slate}{HTML}{334155}
+\definecolor{SlateL}{HTML}{64748B}
+
+% ---------- theme ----------
+\usetheme{default}
+\usecolortheme{default}
+\setbeamercolor{normal text}{fg=Slate}
+\setbeamercolor{frametitle}{fg=TealD}
+\setbeamercolor{title}{fg=TealD}
+\setbeamercolor{structure}{fg=TealD}
+\setbeamercolor{itemize item}{fg=Teal}
+\setbeamercolor{itemize subitem}{fg=SlateL}
+\setbeamerfont{frametitle}{series=\bfseries,size=\large}
+\setbeamerfont{title}{series=\bfseries}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{itemize item}{\small\raise0.3ex\hbox{\textbullet}}
+\setbeamertemplate{itemize subitem}{\scriptsize\raise0.2ex\hbox{--}}
+
+% frametitle with a thin rule underneath
+\setbeamertemplate{frametitle}{%
+  \vspace{0.6ex}\usebeamerfont{frametitle}\usebeamercolor[fg]{frametitle}\insertframetitle\par
+  \vspace{-0.4ex}{\color{Teal}\rule{\textwidth}{1.1pt}}\par\vspace{-0.5ex}}
+
+% footline
+\setbeamertemplate{footline}{%
+  \hbox{\begin{beamercolorbox}[wd=\paperwidth,ht=2.6ex,dp=1.2ex,leftskip=1.2em,rightskip=1.2em]{}%
+    {\color{SlateL}\scriptsize n\_TOF EAR2 $\cdot$ MX17 / X17 progress $\cdot$ 18--20 Jul 2026}\hfill
+    {\color{SlateL}\scriptsize \insertsection\ \ $\vert$\ \ \insertframenumber}%
+  \end{beamercolorbox}}}
+
+% ---------- figure helpers (all width-bound so nothing spills the column) ----------
+% single image, fills its column width, capped in height
+\newcommand{\onefig}[2][0.78\textheight]{\centering\includegraphics[width=\linewidth,height=#1,keepaspectratio]{#2}\par}
+% two images side by side WITHIN the current column (\linewidth = the column width)
+\newcommand{\rowii}[3][0.66\textheight]{%
+  \par\noindent\makebox[\linewidth][c]{%
+    \includegraphics[width=0.485\linewidth,height=#1,keepaspectratio]{#2}\hfill
+    \includegraphics[width=0.485\linewidth,height=#1,keepaspectratio]{#3}}\par}
+\newcommand{\figcap}[1]{\par\vspace{0.3ex}{\color{SlateL}\scriptsize #1}\par}
+\newcommand{\srcart}{\par{\raggedleft\color{Amber}\scriptsize$\bullet$ rendered from Claude artifact\par}}
+\newcommand{\hl}[1]{{\color{TealD}\textbf{#1}}}
+\newcommand{\num}[1]{{\color{Indigo}\textbf{#1}}}
+
+% section divider
+\AtBeginSection[]{%
+  \begin{frame}[plain]
+    \vfill\centering
+    {\color{Teal}\rule{0.14\textwidth}{2pt}}\\[1.2ex]
+    {\usebeamerfont{title}\Large\color{TealD}\insertsectionhead}\\[0.6ex]
+    {\color{SlateL}\small Section \insertsectionnumber\ of 6}
+    \vfill
+  \end{frame}}
+
+\title{\textbf{n\_TOF EAR2 --- MX17 / X17 progress}}
+\subtitle{Beam commissioning, DAQ \& trigger design}
+\date{18--20 July 2026}
+
+\begin{document}
+
+% ===================== TITLE =====================
+{\setbeamertemplate{footline}{}
+\begin{frame}[plain]
+  \vspace{0.6em}
+  {\color{SlateL}\footnotesize N\_TOF EAR2 $\cdot$ $^3$HE(N,F) $\to$ X17 / IPC $\cdot$ THERMAL WINDOW}\\[1.2em]
+  {\Huge\bfseries\color{TealD} MX17 / X17 --- progress summary}\\[0.6em]
+  {\large\color{Slate} Beam commissioning, DAQ, and trigger design}\\[0.3em]
+  {\color{SlateL} Work of the weekend + Monday morning --- 18--20 July 2026}\\[1.6em]
+  {\footnotesize\color{SlateL} Six threads: beam scintillator calibration $\cdot$ Micromegas in beam $\cdot$ DAQ \& trigger
+  $\cdot$ simulation \& trigger design $\cdot$ June cosmic QA $\cdot$ logistics \& outlook}\\[0.8em]
+  {\scriptsize\color{Amber} Plots marked ``rendered from Claude artifact'' were pulled from the interactive artifacts and rendered to image.}
+\end{frame}}
+
+% ===================== OVERVIEW =====================
+\begin{frame}{At a glance --- what moved this weekend}
+\small
+\begin{columns}[T]
+\column{0.5\textwidth}
+\textbf{\color{TealD}Beam commissioning (July EAR2)}
+\begin{itemize}\setlength\itemsep{2pt}
+  \item Long-standing A/D coincidence deficit \hl{traced to cabling and fixed} (run 224489); all 4 arms now equal.
+  \item First-ever \hl{plastic MIP} and \hl{LIQ absolute energy scale} (Y-88 source + LIQ triples).
+  \item Plastic HV \hl{equalized \& absolutely anchored} to the Y-88 699\,keVee edge.
+\end{itemize}
+\vspace{4pt}
+\textbf{\color{TealD}Micromegas in beam}
+\begin{itemize}\setlength\itemsep{2pt}
+  \item Resist-HV operating points from run-55 scan; DAQ ``comb'' characterised.
+  \item Drift window resized; \hl{zero-suppression recipe} fixed (CM subtraction mandatory).
+  \item \hl{762 clean 3-D micro-TPC tracks} point back at the $^3$He source.
+\end{itemize}
+\column{0.5\textwidth}
+\textbf{\color{TealD}DAQ \& trigger (n1081b + DREAM)}
+\begin{itemize}\setlength\itemsep{2pt}
+  \item Timetag ``wedge'' resolved: it is a \hl{per-section rate ceiling}, not a fault.
+  \item \textbf{Today:} full \hl{ZS/DREAM run-config campaign} built; flash ``comb'' explained as fixed TCM deadtime.
+\end{itemize}
+\vspace{4pt}
+\textbf{\color{TealD}Simulation \& trigger design}
+\begin{itemize}\setlength\itemsep{2pt}
+  \item Final surveyed geometry; \hl{thermal-gate trigger fully optimised} (2-arm SiPM$\times$plastic).
+  \item Garfield HV-equivalence maps across gas mixtures.
+\end{itemize}
+\vspace{4pt}
+\textbf{\color{TealD}June cosmic QA} --- detector-performance paper analysis matured (sub-mm resolution, spark physics, in-situ gas).
+\end{columns}
+\end{frame}
+
+% ##################################################################
+\section{Beam commissioning --- scintillator system}
+% ##################################################################
+
+\begin{frame}{Run 224489 --- the A/D deficit was cabling}
+\begin{columns}[T]
+\column{0.54\textwidth}
+\small
+\begin{itemize}\setlength\itemsep{3pt}
+  \item The $\pm4$\,ns equal-amplitude duplication band on arms A/D collapsed from \num{23--34\%} flagged to \hl{$\le4\%$} (B-arm control level).
+  \item All 4 arms now show an equal wall--plastic excess (1.79/1.71/1.81/1.75\,M within $\pm10$\,ns) and clean A/D MIP bumps \hl{with no veto}.
+  \item First run with LIQ in readout; data quality excellent: \num{0/1750} bunch wall outages (vs 46\% in 224404), $\gamma$-flash at 11.62\,$\mu$s.
+  \item The long-standing A/D coincidence deficit is \hl{closed} --- it was the cabling.
+\end{itemize}
+\column{0.46\textwidth}
+\onefig[0.74\textheight]{b_wiring_dupveto.png}
+\figcap{A/D duplication autopsy: as-is vs veto-survivor spectra now identical; every channel has a MIP bump.}
+\end{columns}
+\end{frame}
+
+\begin{frame}{First plastic MIP via LIQ triples}
+\begin{columns}[T]
+\column{0.40\textwidth}
+\footnotesize
+\begin{itemize}\setlength\itemsep{3pt}
+  \item WAL$\times$PSS$\times$LIQ triples select through-going particles $\Rightarrow$ first plastic MIP.
+  \item MPV (linear-space) \num{3.3\,mV (DR) $\to$ 10.3\,mV (AL)}; DR/BL MIPs sit \emph{below} the 4.9\,mV trigger $\Rightarrow$ can't fire until equalised.
+  \item Validated by gain-alignment: scaling each HV step by $(V_{\rm nom}/V)^n$ makes a physical peak coincide while the fixed-ADC threshold edge moves.
+  \item FIFO gain ratio \hl{$\times1.40$} fleet geo-mean --- not the naive $\times2$.
+\end{itemize}
+\column{0.60\textwidth}
+\rowii[0.66\textheight]{b_mip_aligned.png}{b_mip_vs_median.png}
+\figcap{Left: gain-aligned triple-tagged spectra --- MIP peak aligns, threshold edge does not. Right: triple-MIP MPV vs pair-coincident median (same power-law slope).}
+\end{columns}
+\end{frame}
+
+\begin{frame}{Y-88 source calibration --- Compton edges + first LIQ energy scale}
+\begin{columns}[T]
+\column{0.40\textwidth}
+\footnotesize
+\begin{itemize}\setlength\itemsep{3pt}
+  \item 4 dedicated source runs (224476--79), $^{88}$Y between the plastic bars.
+  \item Both Compton edges resolved on \hl{every} channel: 699 \& 1612\,keVee; measured ratio 2.40 vs ideal 2.31 $\Rightarrow$ response linear to \num{$\sim$4\%}.
+  \item \hl{First LIQ absolute energy scale}: 699\,keVee bump on all 4 vessels, \num{32--37\,mV/MeVee}, consistent arm-to-arm to $\sim$10\%.
+  \item All three detector types (wall / plastic / LIQ) land within 21--27\,mV per arm.
+\end{itemize}
+\column{0.60\textwidth}
+\rowii[0.66\textheight]{b_y88_energy_calib.png}{b_y88_spectra.png}
+\figcap{Left: plastic mV/MeVee \& two-edge linearity across all detector types. Right: arm-A spectra --- plastics, first LIQ Y-88 Compton bump ($\sim$26\,mV), source-facing walls.}
+\end{columns}
+\end{frame}
+
+\begin{frame}{Plastic HV equalisation + nonlinearity}
+\begin{columns}[T]
+\column{0.40\textwidth}
+\footnotesize
+\begin{itemize}\setlength\itemsep{3pt}
+  \item New equalisation to fleet geo-mean coincident median (2089\,ADC $=64.2$\,mV), per-PMT $n=3.8$--7.1: $\Delta V$ from $-142$\,V (CL) to $+133$\,V (DR), \num{2.9$\times$} spread.
+  \item Absolute anchor via the Y-88 699\,keVee edge $\Rightarrow$ a scale-together HV table slides the whole fleet to a common edge target.
+  \item Nonlinearity per channel 0.78--1.13 (linear to $\sim$4\%).
+  \item \hl{Wall MIP peak immune to plastic HV} ($\pm2.6\%$, over 1200--1600\,V) --- validates calibration transfer.
+\end{itemize}
+\column{0.60\textwidth}
+\rowii[0.64\textheight]{b_hv_absolute.png}{b_wall_mip_stability.png}
+\figcap{Left: Y-88-anchored absolute plastic gain (mV/MeVee) per PMT. Right: wall MIP peak flat vs plastic HV.}
+\end{columns}
+\end{frame}
+
+\begin{frame}{SiPM wall sum-trigger threshold}
+\begin{columns}[T]
+\column{0.40\textwidth}
+\footnotesize
+\begin{itemize}\setlength\itemsep{3pt}
+  \item Top+bottom SUM coincidence is \hl{$\sim$99.8\% pure MIPs}; MIP sum peaks $\sim$60--80\,mV ($2\times$ single-channel) on all 16 groups.
+  \item \hl{No MIP-vs-background valley} --- the flux is MIP-dominated; amplitude alone can't reject accidentals (tighten \emph{time} coincidence).
+  \item Recommended sum threshold \num{$\sim$8\,mV} ($\ge$99.5\% MIP efficiency).
+  \item Per-wall thresholds (run 224460): WALA 12 / WALB 14 / WALC 12 / WALD 14\,mV.
+\end{itemize}
+\column{0.60\textwidth}
+\rowii[0.66\textheight]{b_sipm_sum_thresh.png}{b_trigsum_spectra.png}
+\figcap{Left: MIP efficiency vs sum threshold / accidental rate. Right: per-group sum spectra with recommended per-wall threshold lines.}
+\end{columns}
+\end{frame}
+
+\begin{frame}{Scintillator calibration --- status \& open flags}
+\small
+\begin{columns}[T]
+\column{0.55\textwidth}
+\textbf{\color{TealD}Frozen \& in use}
+\begin{itemize}\setlength\itemsep{2pt}
+  \item LIQ absolute scale (32--37\,mV/MeVee) --- first time available.
+  \item Plastic HV equalisation table (Y-88-anchored), superseding the 224466 set.
+  \item Wall sum-trigger + per-wall thresholds.
+  \item ADC$\to$mV $\approx 0.0306$; plastic MIP MPV predicted 152\,mV (not yet directly measured).
+\end{itemize}
+\column{0.45\textwidth}
+\textbf{\color{Amber}Open flags}
+\begin{itemize}\setlength\itemsep{2pt}
+  \item \hl{Y-88 (35--64\,mV/MeVee) vs triples-``MIP'' (0.65--2.05\,mV/MeV) disagree $\sim$40$\times$.} Y-88 trusted; the triples ``MIP'' likely sits at $\sim$130\,keVee (mis-ID / low-stat) --- needs a long-run recheck.
+  \item Exact per-run plastic HV not logged in DAQsettings.
+  \item C/D LIQ gains low (4.7 / 5.3 vs 10.4\,mV on B) --- LIQ HV review advised.
+\end{itemize}
+\end{columns}
+\end{frame}
+
+% ##################################################################
+\section{Micromegas in beam}
+% ##################################################################
+
+\begin{frame}{Run-55 resist-HV scan --- the DAQ ``comb'' and operating points}
+\begin{columns}[T]
+\column{0.40\textwidth}
+\footnotesize
+\begin{itemize}\setlength\itemsep{2pt}
+  \item Cyclical resist scan r560$\to$r520, all 4 dets, Ar/iso 90/10, scint-doubles, 30\,ms gate; 76k triggers.
+  \item \hl{DAQ FIFO comb}: gate sampled only 0--0.5, $\sim$8--12, $\sim$16--28\,ms --- the \num{2--6\,ms} physics target is \emph{unsampled}.
+  \item $^3$He capture flood lights det D in $\gtrsim$90\% of late windows.
+  \item Saturation grows with HV; recovered by $\sim$8\,ms at $\le$550\,V.
+\end{itemize}
+\textbf{\color{TealD}\footnotesize Operating points ($\ge$3\,ms):} {\footnotesize A $\ge$560 (try drift 700), B 550--555, C 545--550, D 540--550.}
+\column{0.60\textwidth}
+\rowii[0.64\textheight]{m_hv_eff.png}{m_hv_timestruct.png}
+\figcap{Left: b1 vs b2 MIP-track rate vs HV per det (operating point). Right: trigger comb + track rate vs time-since-flash (the 2--6\,ms gap).}
+\end{columns}
+\end{frame}
+
+\begin{frame}{Drift-window sizing --- latency 32 / n\_samples 28}
+\begin{columns}[T]
+\column{0.40\textwidth}
+\footnotesize
+\begin{itemize}\setlength\itemsep{3pt}
+  \item TL;DR: latency $35\to32$, n\_samples $32\to28$ now; det A drift $600\to700$\,V staged; B/C/D keep 800\,V.
+  \item Earlier ``slow/late B\,\&\,D'' was an artifact of flash/monster events + fixed FEU channel ringing (det D ceiling 8.9\%$\to$1.5\%).
+  \item Pulse footprint: rise onset peak$-4$, fall to baseline peak$+7$ ($\sim$11 samples wide).
+  \item \hl{0\% primaries lost down to n=24}, $<$0.6\% mean charge (clean A/C/D).
+  \item \hl{The one gate is det B} (piles at the sample-31 ceiling; unresolved).
+\end{itemize}
+\column{0.60\textwidth}
+\rowii[0.64\textheight]{m_drift_v6.pdf}{m_drift_loss.pdf}
+\figcap{Left: prompt-anchored deep-edge check --- A/C/D collapse to clean, det B stays high. Right: quantified charge/primary loss vs n\_samples.}
+\end{columns}
+\end{frame}
+
+\begin{frame}{Zero-suppression --- common-mode subtraction is mandatory}
+\begin{columns}[T]
+\column{0.40\textwidth}
+\footnotesize
+\begin{itemize}\setlength\itemsep{3pt}
+  \item In-beam baseline wander is \hl{10--20$\times$ the beam-off $\sigma$} (MAD 37--96 vs 3.4--5.7\,ADC).
+  \item With no CM, even a 5$\sigma$ cut keeps 60--95\% of channels $\Rightarrow$ ZS useless.
+  \item Wander is $>$99\% coherent per Dream chip (64\,ch); per-Dream median subtraction restores residual to \num{4.1\,ADC} $\approx$ beam-off $\sigma$.
+  \item \hl{Recommendation: CM=1 + 3.5$\sigma$} $\Rightarrow$ $\sim$9.4\% sample volume, $\sim10\times$ speedup --- closes the comb gap.
+  \item Strip survival @3.5$\sigma$: A 99.7 / B 92.4 / C 93.6 / D 96.8\%.
+\end{itemize}
+\column{0.60\textwidth}
+\rowii[0.66\textheight]{m_zs_cm.png}{m_zs_survival.png}
+\figcap{Left: channel retention vs time, no-CM vs CM (the headline). Right: strip \& cluster survival vs N-$\sigma$ per det.}
+\end{columns}
+\end{frame}
+
+\begin{frame}{Micro-TPC tracking --- clean 3-D segments point at the source}
+\begin{columns}[T]
+\column{0.40\textwidth}
+\footnotesize
+\begin{itemize}\setlength\itemsep{2pt}
+  \item Stringent realism gate $\Rightarrow$ \hl{762 clean X/Y 3-D segments} (A 308, B 153, C 287, D 14); charge balance $f=0.48$--0.50, far tighter than the shuffled null.
+  \item \hl{Tracks point back at the $^3$He source} in all 8 planes; transverse alignment good to $\sim$1\,cm.
+  \item Beam-axis planes sit $\sim$3\,cm low --- resolved as \emph{physics} (captures pile at the capsule bottom), independently triangulated.
+  \item CFD drift velocities: C \num{42\,$\mu$m/ns} matches Garfield 44; angle compression 0.62 is charge-sharing, not a $v_{\rm drift}$ error.
+\end{itemize}
+\column{0.60\textwidth}
+\rowii[0.66\textheight]{m_trk_align.png}{m_trk_vdrift.png}
+\figcap{Left: $\tan\theta$ vs strip position + source fit, 8 planes. Right: CFD drift-span $\to v_{\rm drift}$ per chamber vs Garfield.}
+\end{columns}
+\end{frame}
+
+% ##################################################################
+\section{DAQ \& trigger system}
+% ##################################################################
+
+\begin{frame}{n1081b --- the trigger chain}
+\begin{columns}[T]
+\column{0.36\textwidth}
+\footnotesize
+\begin{itemize}\setlength\itemsep{2pt}
+  \item Six CAEN N1081B logic boards (M1--M6) on a private DAQ net; WebSocket API.
+  \item Chain: SiPM-wall OR $\to$ plastic-pair OR $\to$ \hl{sector AND (wall$\times$scint)} $\to$ trigger builder (singles / doubles) $\to$ DREAM.
+  \item 20\,ns coincidence window at M3; wall leg $+20$\,ns delay.
+  \item Discriminator hardware floor $|10\,\mathrm{mV}|$ --- at the floor channels retrigger and the rate response inverts.
+  \item Board-wedge root cause found (abandoned libwebsock 1.0.7); all access via a flock'd session wrapper.
+\end{itemize}
+\column{0.64\textwidth}
+\onefig[0.72\textheight]{daq_trigger_chain.png}
+\srcart
+\end{columns}
+\end{frame}
+
+\begin{frame}{Timetag stream \& trigger-rate scans}
+\small
+\begin{columns}[T]
+\column{0.5\textwidth}
+\textbf{\color{TealD}Timetag ``wedge'' disproven}
+\begin{itemize}\setlength\itemsep{2pt}
+  \item A section emits \hl{zero TT tags above a live rate ceiling} ($\sim$50\,Hz streams, $\sim$800\,Hz silent) --- nothing is wedged; FPGA counters count at any rate.
+  \item Consequence: walls (3--6\,kHz) \& liq (19--27\,kHz) logged as counter totals; C/D trigger taps (tens of Hz) stream.
+  \item Watcher \hl{v3} = counters-first + rate gate + zero reconnect budget; offline dry-run passed, auto-start pending a hardware soak.
+\end{itemize}
+\column{0.5\textwidth}
+\textbf{\color{TealD}Post-FIFO recalibration (07-17 night)}
+\begin{itemize}\setlength\itemsep{2pt}
+  \item Plastics moved to linear fan-in/out ($\sim2\times$ amplitude) $\Rightarrow$ all thresholds re-scanned.
+  \item M3 timing plateau $\Rightarrow$ uniform $+20$\,ns wall-leg delay; in-window fraction $0.77\to0.87$.
+  \item \hl{2-D rate scan verdict: Doubles-gated is the trigger.} Singles $\approx$1696/window (70--90$\times$ the DREAM budget); Doubles clean tail $\sim$5.6/window, $\sim$7--8 recorded/window.
+\end{itemize}
+\end{columns}
+\vspace{2pt}
+{\color{SlateL}\scriptsize The 07-15/07-17 threshold \& 2-D rate scans and the flash-comb mechanism live as interactive Claude artifacts (not repo files).}
+\end{frame}
+
+\begin{frame}{Today --- the ZS/DREAM run-config campaign}
+\small
+Stood up a live-beam \hl{zero-suppression} run on DREAM and diagnosed the flash ``comb.''
+\begin{columns}[T]
+\column{0.46\textwidth}
+\textbf{\color{TealD}Flash-comb explained}
+\begin{itemize}\setlength\itemsep{2pt}
+  \item The $\sim$10\,ms comb is a \hl{fixed TCM BUSY$\to$veto deadtime} ($\sim$9.6\,ms at n=32), input-independent.
+  \item TCM \texttt{event rx} 12{,}774 vs \texttt{tx} 1{,}996 $\Rightarrow$ \hl{84.4\% dropped}; only $\sim$34\% live fraction at n32 (68\% at n16, $\sim$100\% at n8).
+  \item \hl{Only NbOfSamples shortens it} ($\sim$0.32\,ms/sample); ZS / IPD / SparseRd / RdClk / 10\,GbE all null.
+\end{itemize}
+\column{0.54\textwidth}
+\textbf{\color{TealD}The config family} (each isolates one variable)
+\begin{itemize}\setlength\itemsep{1pt}
+  \item \texttt{zs\_pulser\_test} --- validated Option B (Pd=0 + offline ped), tracers 100\%.
+  \item \texttt{zs\_kladder} --- live k-$\sigma$ knee: \hl{k8 = 6\% of Raw} = safe point.
+  \item \texttt{zs\_doubles} --- first ZS physics run; \texttt{zs\_singles} --- do findings hold at $\sim$100$\times$ rate.
+  \item \texttt{comb\_study/readout/sparserd/vetolen/latch/control} --- swept, all null except NbOfSamples.
+  \item \texttt{drift\_scan} --- overnight 2-D drift$\times$resist (90$\times$10\,min).
+\end{itemize}
+\end{columns}
+\vspace{2pt}
+\textbf{\color{TealD}Decision:} open at DAQ-safe CM=1 + k8 + IPD=2, step down toward 3.5$\sigma$; write to SSD.
+\end{frame}
+
+% ##################################################################
+\section{Simulation \& trigger design}
+% ##################################################################
+
+\begin{frame}{MX17 Geant4 --- final surveyed geometry}
+\begin{columns}[T]
+\column{0.40\textwidth}
+\footnotesize
+\begin{itemize}\setlength\itemsep{3pt}
+  \item Right-handed frame, beam $=+Y$, origin at the $^3$He target; 4 arms A/D/B/C.
+  \item Flipped stack (2026-07-15): MM $\to$ SiPM wall $\to$ plastics $\to$ single LS layer; MM active 38\,cm, 30\,mm drift gap.
+  \item LS vessel built from the \texttt{LS X17.step} CAD: 45\,cm slab, 6.5\,L LAB, PMT vertical on B/C, horizontal on A/D.
+  \item Pinwheel tangential shifts corrected (earlier values were $2\times$ too large).
+  \item Open item: sim outputs stale --- acceptance must be re-run.
+\end{itemize}
+\column{0.60\textwidth}
+\rowii[0.68\textheight]{s_buildup_full.pdf}{s_mm_layout.pdf}
+\figcap{Left: full detector-stack buildup MM$\to$SiPM$\to$plastics$\to$LS. Right: 4-arm MM layout, top-down.}
+\end{columns}
+\end{frame}
+
+\begin{frame}{Thermal trigger --- the physics sets the window}
+\begin{columns}[T]
+\column{0.38\textwidth}
+\footnotesize
+\begin{itemize}\setlength\itemsep{3pt}
+  \item Below $\sim$2\,eV the pair yield is fixed by the beam's thermal Maxwellian --- you can only decide \hl{how early you dare to read out}.
+  \item A $>$1\,ms readout gate $\Leftrightarrow E_n<1.99$\,eV at 19.5\,m; \hl{44\% of the thermal beam arrives before 1\,ms and is lost} to the flash + readout deadtime.
+  \item 99.9\% of usable arrivals land in the 1--30\,ms window.
+  \item Background-characterisation regime, not discovery --- the physics case still lives at 0.1--10\,MeV.
+\end{itemize}
+\column{0.62\textwidth}
+\onefig[0.20\textheight]{thermal_g1.png}
+\vspace{0.8ex}
+\onefig[0.44\textheight]{thermal_g2.png}
+\srcart
+\end{columns}
+\end{frame}
+
+\begin{frame}{Thermal trigger --- how early to open the gate}
+\begin{columns}[T]
+\column{0.40\textwidth}
+\footnotesize
+\begin{itemize}\setlength\itemsep{3pt}
+  \item The one real lever: cumulative IPC/day collected if the detectors recover by time $T$.
+  \item Current 1\,ms operating point $\to$ \hl{1.22 IPC/day}; 3\,ms drops to $\sim$0.9, 5\,ms to 0.65.
+  \item MIP calibration: \hl{1 MIP $=458$\,keV (SiPM), 4.33\,MeV (plastic)}, validated against the beam Landau $\Rightarrow$ thresholds transfer directly to hardware.
+  \item Folding $\sim$3--5\% double-trigger acceptance $\to$ $\sim$0.05 detected IPC/day ($\sim$1--1.5 per 25-day run).
+\end{itemize}
+\column{0.60\textwidth}
+\onefig[0.42\textheight]{thermal_g3.png}
+\srcart
+\onefig[0.28\textheight]{s_thr_linear.pdf}
+\figcap{Bottom (Geant4): signal + background vs plastic threshold with DAQ ceiling lines.}
+\end{columns}
+\end{frame}
+
+\begin{frame}{Trigger --- single-wall background \& the plastic-threshold lever}
+\begin{columns}[T]
+\column{0.38\textwidth}
+\footnotesize
+\begin{itemize}\setlength\itemsep{3pt}
+  \item Two knobs protect IPC events: \hl{when you read out} and \hl{the plastic threshold}.
+  \item The threshold is the strong lever (rate drops by orders of magnitude). The surviving background is Al-dome 7.72\,MeV $\gamma$ (H-capture), arriving \emph{later} than the signal.
+  \item Key result: \hl{plastic threshold does not bias IPC vs X17} (ratio flat $\sim$0.35) --- a free rate/purity knob costing only total statistics.
+  \item Chosen point: full 2-arm SiPM$\times$plastic, SiPM $\ge$0.5\,MIP, plastic $b\approx2.6$--3.0\,MeV.
+\end{itemize}
+\column{0.62\textwidth}
+\rowii[0.56\textheight]{trigger_g2.png}{trigger_g3.png}
+\srcart
+\figcap{Left: background \& signal vs arrival time. Right: the plastic-threshold frontier (IPC efficiency vs single-wall rate).}
+\end{columns}
+\end{frame}
+
+\begin{frame}{Garfield gas / HV equivalence}
+\begin{columns}[T]
+\column{0.40\textwidth}
+\footnotesize
+\begin{itemize}\setlength\itemsep{3pt}
+  \item Maps every Ar/iC$_4$H$_{10}$ mixture's mesh HV to the 95/5 reference at equal simulated gain (Garfield++/Magboltz).
+  \item Reference 95/5 gain over 400--490\,V rises \hl{$\sim\times17$ per 90\,V}.
+  \item More quencher $\Rightarrow$ higher operating voltage: at the 450\,V (95/5) point, 90/10 needs 525\,V, 85/15 589\,V, 80/20 642\,V, 75/25 691\,V.
+  \item Gain model $\ln G$ quadratic in $V$, $R^2\ge0.997$; two site pressures (Saclay, CERN).
+\end{itemize}
+\column{0.60\textwidth}
+\rowii[0.66\textheight]{s_hv_equiv.png}{s_gain_v.png}
+\figcap{Left: HV-equivalence map across mixtures. Right: simulated gas gain vs mesh voltage.}
+\end{columns}
+\end{frame}
+
+% ##################################################################
+\section{June cosmic QA --- detector-performance paper}
+% ##################################################################
+
+\begin{frame}{Cosmic bench --- the micro-TPC principle}
+\begin{columns}[T]
+\column{0.40\textwidth}
+\footnotesize
+\begin{itemize}\setlength\itemsep{3pt}
+  \item Saclay bench: 5 resistive-strip micro-TPC Micromegas (det 2/3/4/6/7) vs an independent M3 telescope reference.
+  \item 512 X + 512 Y strips, \hl{0.78\,mm pitch}, $\sim$40$\times$40\,cm$^2$; 30\,mm drift gap run as a micro-TPC (drift time $=$ depth).
+  \item One 30\,mm gap is a self-contained 3-D tracker: sub-pitch position, $\sim$1.7$^\circ$ angle, $\sim$1\,mm-equiv timing.
+\end{itemize}
+\column{0.60\textwidth}
+\rowii[0.68\textheight]{j_bench.pdf}{j_microtpc.pdf}
+\figcap{Left: bench --- scintillator trigger + 4 M3 planes sandwiching 2 MX17 slots. Right: micro-TPC principle.}
+\end{columns}
+\end{frame}
+
+\begin{frame}{Fleet efficiency \& the M3 reference recipe}
+\begin{columns}[T]
+\column{0.42\textwidth}
+\footnotesize
+\begin{itemize}\setlength\itemsep{2pt}
+  \item Residuals were \hl{reference-limited, not chamber-limited}: $\sigma$ keeps falling with a tighter M3 $\chi^2$ cut with no plateau.
+  \item Recommended recipe $\chi^2<1.0$ \& NClus$=4$: core $\sigma$ $0.63\to$\hl{0.47\,mm}, efficiency $\to$92.9\% (det3).
+  \item Fleet: det3 92.9\% / det2 91.3\% healthy; det6 57.8\% \& det7 43.1\% spark-limited; det4 20.7\% gain-limited.
+  \item Y-plane passivation common to all 5 (17.9--20.4\,mm) --- a construction feature.
+\end{itemize}
+\column{0.58\textwidth}
+\rowii[0.66\textheight]{j_eff_breakdown.pdf}{j_m3cut_scan.png}
+\figcap{Left: det3 loss budget (92.9\% reco, 3.9\% spark). Right: $\sigma$ / reco-far vs M3 $\chi^2$ cut --- no plateau.}
+\end{columns}
+\end{frame}
+
+\begin{frame}{Resolution \& a 3-D event display}
+\begin{columns}[T]
+\column{0.40\textwidth}
+\footnotesize
+\begin{itemize}\setlength\itemsep{3pt}
+  \item Geometry-free plane-to-plane timing: \hl{33\,ns per plane $\approx$ 1\,mm of drift}.
+  \item Deconvolved DUT intrinsic position $\sigma\approx$0.40\,mm; M3 self-resolution measured directly (X planes 0.41\,mm).
+  \item XY charge balance $f\approx0.5$, position- \& angle-independent (Pearson $r=0.881$) --- the pixel routing works.
+  \item 3-D displays show the \hl{independent M3 track threading the drift charge cloud} (match 0.1--0.3\,mm).
+\end{itemize}
+\column{0.60\textwidth}
+\rowii[0.66\textheight]{j_timeres.pdf}{j_3d_display.pdf}
+\figcap{Left: 33\,ns ($\approx$1\,mm) from two orthogonal planes. Right: one muon in 3-D, reference track through the charge cloud.}
+\end{columns}
+\end{frame}
+
+\begin{frame}{Spark physics \& in-situ gas}
+\begin{columns}[T]
+\column{0.38\textwidth}
+\footnotesize
+\textbf{\color{TealD}Sparks}
+\begin{itemize}\setlength\itemsep{1pt}
+  \item Poisson/random in time (flat 0.33\,Hz), muon-\emph{induced} (4.9\% on a crossing vs 1.2\% on a miss), edge-seeded.
+  \item \hl{No measurable post-spark dead time} --- efficiency \& gain flat vs time-since-spark; resistive self-quenching seen in the raw waveforms.
+\end{itemize}
+\textbf{\color{TealD}Gas, in situ}
+\begin{itemize}\setlength\itemsep{1pt}
+  \item $v_{\rm drift}=34\pm1.5\,\mu$m/ns; tracks the Magboltz ``Ar/iso + $\sim$1\% H$_2$O'' family.
+  \item Amplitude decays with drift \emph{distance} ($\lambda\approx18$\,mm) $\Rightarrow$ O$_2$/H$_2$O attachment.
+\end{itemize}
+\column{0.62\textwidth}
+\rowii[0.32\textheight]{j_spark_deadtime.pdf}{j_attach.pdf}
+\vspace{0.4ex}
+\rowii[0.30\textheight]{j_spark_poisson.pdf}{j_vdrift.pdf}
+\end{columns}
+\end{frame}
+
+% ##################################################################
+\section{Logistics, safety \& outlook}
+% ##################################################################
+
+\begin{frame}{Logistics --- gas budget \& campaign timeline}
+\begin{columns}[T]
+\column{0.40\textwidth}
+\footnotesize
+\begin{itemize}\setlength\itemsep{3pt}
+  \item Gas model: 2150\,L bottle; steady $\sim$3\,L/h $\Rightarrow$ \hl{one bottle $\sim$30 days}, $\sim$3280\,L for the run.
+  \item Swap thresholds: warn at 10\% (215\,L), switch at 5\%; deliveries scheduled.
+  \item July timeline: build 8--26 Jun, EAR2 install 29 Jun, X17 physics from 1 Jul.
+\end{itemize}
+\column{0.60\textwidth}
+\rowii[0.66\textheight]{l_gas.png}{l_julyprep.pdf}
+\figcap{Left: gas consumption / bottle depletion with warning bands. Right: July build + EAR2 campaign timeline.}
+\end{columns}
+\end{frame}
+
+\begin{frame}{DAQ throughput --- the ZS-IPD safety case}
+\small
+\begin{itemize}\setlength\itemsep{3pt}
+  \item Deadtime is set almost entirely by the FEU inter-packet delay ($\tau\approx32\,\mu$s$\times$IPD $+\sim$140\,$\mu$s SCA), \emph{not} the ZS threshold.
+  \item Lowering IPD lifts the ceiling: \hl{18 events/30\,ms window at IPD=100 $\to$ 226 at IPD=1--2} --- but exposes host-buffer overflow, 1\,GbE saturation, and FEU event-size truncation.
+  \item Losses are \hl{never silent} (eventId gaps) + tracer channels (8/FEU) + \texttt{zs\_integrity.py} detect ZS loss.
+  \item Beam-validated: \hl{k8 + IPD=2 records 165 events/window (9.2$\times$ current) at 0.9\% tagged loss}; a $\sim$300\,EUR 10\,GbE upgrade reaches $\sim$220--260/window.
+  \item This defines the ``$\sim$200 events/window'' DAQ ceiling that the thermal trigger budgets against.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Open issues \& next steps}
+\small
+\begin{columns}[T]
+\column{0.5\textwidth}
+\textbf{\color{Amber}Open issues}
+\begin{itemize}\setlength\itemsep{2pt}
+  \item \hl{Y-88 vs triples-``MIP'' $\sim$40$\times$ discrepancy} --- resolve with a long-run recheck; per-run plastic HV not logged.
+  \item \hl{Det B drift} piles at the sample ceiling (real slow drift vs residual coherent noise --- unresolved).
+  \item \hl{2--6\,ms window never sampled} in run-55 --- ZS + shorter n\_samples needed to reach it.
+  \item Sim acceptance stale --- must re-run on the new geometry.
+\end{itemize}
+\column{0.5\textwidth}
+\textbf{\color{TealD}Next steps}
+\begin{itemize}\setlength\itemsep{2pt}
+  \item Launch the ZS/DREAM run (CM=1, k8, IPD=2 $\to$ 3.5$\sigma$); include a no-ZS reference subrun.
+  \item Re-scan the MM operating points with the comb closed (measure 1--8\,ms).
+  \item Soak-test the TT watcher v3, then enable auto-start.
+  \item Apply the Y-88 plastic HV table; measure the plastic MIP directly at nominal.
+  \item Re-run Geant4 acceptance $\to$ finalise the trigger operating point.
+\end{itemize}
+\end{columns}
+\end{frame}
+
+\begin{frame}{Deliverables --- reports, decks \& artifacts}
+\small
+\begin{columns}[T]
+\column{0.5\textwidth}
+\textbf{\color{TealD}Compiled reports \& decks}
+\begin{itemize}\setlength\itemsep{1pt}
+  \item Beam QA: \texttt{run224489}, \texttt{y88}, \texttt{hv\_scan}, \texttt{mip} reports; drift-window deck.
+  \item June cosmic: det3-recofar (\texttt{report\_v2}), M3 self-resolution, engineer package (00--73 figures + event displays).
+  \item Sim: thermal-trigger deck; ZS-IPD DAQ safety report.
+\end{itemize}
+\column{0.5\textwidth}
+\textbf{\color{TealD}Interactive Claude artifacts}
+\begin{itemize}\setlength\itemsep{1pt}
+  \item \emph{Rendered into this deck:} thermal X17/IPC yield; single-wall trigger background; n1081b trigger logic.
+  \item \emph{Available (not on disk):} DREAM flash-comb anatomy; scint recalibration; 07-15/17 threshold \& 2-D rate scans.
+\end{itemize}
+\end{columns}
+\vspace{1.2em}
+\centering{\color{SlateL} Compiled from \texttt{\char`~/PycharmProjects/nTof\_x17\{,\_DAQ\}}, \texttt{CLionProjects/MX17\_Full\_Geant}, and the 18--19 Jul weekend collection.}
+\end{frame}
+
+{\setbeamertemplate{footline}{}
+\begin{frame}[plain]
+  \vfill\centering
+  {\color{Teal}\rule{0.14\textwidth}{2pt}}\\[1.2ex]
+  {\Large\color{TealD}\textbf{Thank you}}\\[0.6ex]
+  {\color{SlateL}\small Questions, and detail on any thread, welcome.}
+  \vfill
+\end{frame}}
+
+\end{document}
