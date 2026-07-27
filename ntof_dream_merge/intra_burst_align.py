@@ -184,12 +184,20 @@ def align(ntof_run: int, events: pd.DataFrame, bunches=None,
     n_sat, acc_sat, exc_sat = band(*SAT_NS)
     core = np.abs(resid) < CORE_NS
 
+    # Two different denominators, easy to confuse: `exc_main` counts PAIRS (one
+    # DREAM event can pair with candidates in several arms, so pairs > events),
+    # while `n_events_matched` counts DISTINCT DREAM events with at least one
+    # candidate in the core window. The efficiency quoted anywhere must be the
+    # latter over n_events.
+    n_events_matched = int(np.unique(EV[core]).size) if core.any() else 0
+
     return dict(k=k, t0=t0, n_events=len(ev), n_bunches=len(bunches),
                 cand_per_bunch=per_arm, ET=ET, DT=DT, resid=resid,
                 eventId=EV, arm=ARM,
                 ped_per_ns=ped_per_ns,
                 main=(n_main, acc_main, exc_main),
                 satellite=(n_sat, acc_sat, exc_sat),
+                n_events_matched=n_events_matched,
                 sigma_ns=float(resid[core].std()) if core.any() else np.nan)
 
 
@@ -212,7 +220,8 @@ if __name__ == '__main__':
     n, a, x = r['main']
     print(f'  main peak |dt| < {CORE_NS:.0f} ns: {n} pairs, {a:.0f} accidental, '
           f'{x:.0f} real ({x/n:.1%} pure), sigma {r["sigma_ns"]:.0f} ns')
-    print(f'    -> {x/r["n_events"]:.1%} of DREAM events matched')
+    print(f'    -> {r["n_events_matched"]:,} distinct DREAM events matched '
+          f'({r["n_events_matched"]/r["n_events"]:.1%} of {r["n_events"]:,})')
     n, a, x = r['satellite']
     print(f'  satellite {SAT_NS[0]:.0f}-{SAT_NS[1]:.0f} ns: {x:.0f} real '
           f'({x/max(r["main"][2],1):.2f} x the main peak)')
