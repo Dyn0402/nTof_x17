@@ -27,6 +27,7 @@ Output: <bias_study>/angle_calibration.png + stdout numbers
 import os
 import sys
 import glob
+import json
 import pickle
 
 import matplotlib
@@ -65,6 +66,14 @@ DEC_DIR = os.path.join(CFG.BASE_PATH, CFG.RUN, CFG.SUB_RUN, 'decoded_root')
 # freshly measured by 26_unsharing_analysis.py for THAT run, edited immediately before
 # each detector's 27/28 pass. Do not carry stale entries from a previous detector.
 CSHARE = {6: (0.247, 0.057), 8: (0.514, 0.232)}   # det7 (g_det7_long), measured 2026-07-14 (chi2<1+NClus4)
+# ...or, preferred, take this run's OWN constants: 26_unsharing_analysis.py's
+# measured medians, written to cache/cshare.json by rerun_june_analysis.sh.
+# Absent the file, the hardcoded dict above is used unchanged.
+_cshare_json = os.path.join(CFG.OUT_BASE, 'cache', 'cshare.json')
+if os.path.exists(_cshare_json):
+    with open(_cshare_json) as _f:
+        CSHARE = {int(k): tuple(v) for k, v in json.load(_f).items()}
+    print(f'CSHARE from {_cshare_json}: {CSHARE}')
 
 
 def robust_line(x, y, n_iter=4, clip=3.0):

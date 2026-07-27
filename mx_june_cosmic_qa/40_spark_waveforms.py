@@ -156,13 +156,16 @@ def build(cache_path, want, pm):
     fx, fy = CFG.MX17_FEUS
     res = {fx: {}, fy: {}}
     pmv = {f: np.array([pm.get((f, c), np.nan) for c in range(NCH)]) for f in (fx, fy)}
+    WFSIZE = NSAMP * NCH
+    n_bad = 0                      # events whose amplitude array is not NSAMP x NCH
     for feu in (fx, fy):
         files = sorted(f for f in os.listdir(DEC_DIR) if f.endswith(f'_{feu:02d}.root'))
         for fn in files:
             t = uproot.open(os.path.join(DEC_DIR, fn))['nt']
             eall = t.arrays(['eventId'], library='np')['eventId']
             a0 = t.arrays(['amplitude'], entry_stop=NPED, library='np')['amplitude']
-            ped = np.median(np.stack([a.reshape(NSAMP, NCH) for a in a0]).astype(np.float32),
+            ped = np.median(np.stack([a.reshape(NSAMP, NCH) for a in a0
+                                      if a.size == WFSIZE]).astype(np.float32),
                             axis=(0, 1))
             for lo in range(0, t.num_entries, CHUNK):
                 hi = min(lo + CHUNK, t.num_entries)
@@ -172,9 +175,19 @@ def build(cache_path, want, pm):
                 arr = t.arrays(['amplitude'], entry_start=lo, entry_stop=hi,
                                library='np')['amplitude']
                 for i in widx:
-                    wf = arr[i - lo].reshape(NSAMP, NCH).astype(np.float32) - ped
+                    a = arr[i - lo]
+                    # rare decoder artifact: a malformed entry (e.g. 31744 = two
+                    # merged events minus a row) would crash the reshape. Skip it
+                    # rather than lose the whole spark-waveform step for the run.
+                    if a.size != WFSIZE:
+                        n_bad += 1
+                        continue
+                    wf = a.reshape(NSAMP, NCH).astype(np.float32) - ped
                     res[feu][int(eall[i])] = event_features(wf, pmv[feu])
         print(f'  FEU{feu}: {len(res[feu])} events')
+    if n_bad:
+        print(f'  WARNING: skipped {n_bad} events with a malformed amplitude '
+              f'array (expected {WFSIZE} = {NSAMP}x{NCH})')
     np.save(cache_path, dict(res=res, ped_note='per-file median of first 300 events'),
             allow_pickle=True)
     return res

@@ -31,6 +31,7 @@ Products (output/<run>/alignment_tpc/):
 
 import os
 import sys
+import json
 import pickle
 import concurrent.futures
 
@@ -84,6 +85,9 @@ MAXDROP = (None if '--no-clustercut' in sys.argv
            else next((int(a.split('=')[1]) for a in sys.argv if a.startswith('--maxdrop=')), 2))
 # Base rotation: None -> take from run_config det_orientation.z; else --rot0 override.
 ROT0_OVERRIDE = next((float(a.split('=')[1]) for a in sys.argv if a.startswith('--rot0=')), None)
+# Adaptive per-plane significance floor (cm.apply_significance_floor); --sigrel=0 disables.
+SIG_REL = next((float(a.split('=')[1]) for a in sys.argv if a.startswith('--sigrel=')),
+               cm.SIG_REL_FLOOR)
 REF_X_SIGN = +1.0   # clean convention: raw M3 reference X, rotation carries the frame
 
 
@@ -96,6 +100,15 @@ def _load_hits():
     sources = [f'{CFG.combined_hits_dir}{f}:hits' for f in hit_files]
     df = uproot.concatenate(sources, library='pd')
     df = df[df['feu'].isin(CFG.MX17_FEUS)].copy()
+    # Adaptive per-plane significance floor. Applied BEFORE the spark veto so the
+    # veto counts the strips the fit actually uses: the matched-filter analyzer
+    # inflates raw multiplicity with coherent noise, which otherwise pushes ordinary
+    # muons over the veto (det3 spark_frac 9.1% -> 17.3% on identical data).
+    if SIG_REL:
+        n0 = len(df)
+        df = cm.apply_significance_floor(df, rel=SIG_REL)
+        print(f'Significance floor (>= {SIG_REL:g} x plane max): kept {len(df):,}/{n0:,} hits '
+              f'({100*len(df)/n0:.1f}%)')
     if VETO is not None:
         hits_per_ev = df.groupby('eventId')['channel'].transform('size')
         n_before = df['eventId'].nunique()
@@ -110,8 +123,27 @@ def _load_hits():
     return df, det, rc
 
 
+def _cache_meta_path(cache_path):
+    return cache_path.replace('.pkl', '.meta.json')
+
+
 def _analyse_events(df, cache_path):
+    # The cache filename is fixed (08/09/12 read it by name), so the hit-selection
+    # parameters that produced it live in a sidecar. A cache built under a different
+    # significance floor is silently wrong, not just stale -> force a refit.
+    meta = {'sigrel': SIG_REL, 'veto': VETO}
+    meta_path = _cache_meta_path(cache_path)
+    stale = False
     if os.path.exists(cache_path) and not REFIT:
+        old = None
+        if os.path.exists(meta_path):
+            with open(meta_path) as f:
+                old = json.load(f)
+        if old != meta:
+            stale = True
+            print(f'Cache {cache_path} was built with {old} but this run wants {meta} '
+                  f'-> refitting.')
+    if os.path.exists(cache_path) and not REFIT and not stale:
         print(f'Loading cached per-event results from {cache_path}')
         with open(cache_path, 'rb') as f:
             return pickle.load(f)
@@ -126,6 +158,8 @@ def _analyse_events(df, cache_path):
                                     total=len(event_args), desc='Analysing events'))
     with open(cache_path, 'wb') as f:
         pickle.dump(results, f)
+    with open(_cache_meta_path(cache_path), 'w') as f:
+        json.dump(meta, f)
     print(f'Cached per-event results to {cache_path}')
     return results
 

@@ -1,0 +1,6 @@
+report.aux
+report.log
+report.out
+report.toc
+# regenerable extraction cache
+sat_perplane_0to3.root

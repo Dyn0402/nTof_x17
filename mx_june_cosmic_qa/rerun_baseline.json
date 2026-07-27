@@ -1,0 +1,306 @@
+{
+ "stamp": "2026-07-25 01:10",
+ "note": "pre-rerun baseline (previous-generation outputs on disk)",
+ "keys": {
+  "sat_det3": {
+   "out_base": "/home/dylan/x17/cosmic_bench/Analysis/mx17_det3_saturday_scan_6-27-26/long_run_resist_490V_drift_1000V/mx17_3",
+   "n_rays": 7130.0,
+   "has_any": 100.0,
+   "within5": 93.4,
+   "reco_at_all": 96.4,
+   "core_sigma_mm": 0.48,
+   "median_r_mm": 0.8,
+   "spark_frac": 9.1,
+   "reco_far": 3.0,
+   "sliding_within": 94.37118956472423,
+   "sliding_has_any": 99.98582163618318,
+   "sliding_n_rays_active": 7053,
+   "sigma_theta_x_deg": 2.417884172795585,
+   "sigma_theta_y_deg": 2.5953399004334794,
+   "v_drift_x_um_ns": 32.5,
+   "v_drift_y_um_ns": 38.0,
+   "n_events": 6306,
+   "reliable": true,
+   "single_strip_sigma_ns": 38.88278034168049,
+   "lead_singleplane_ns": 33.054346525234905,
+   "abs_t0_sigma68_ns": 37.7104211425781,
+   "v_drift_um_ns": 34.3,
+   "n_events_dualplane": 28404,
+   "hybrid": {
+    "gt8": {
+     "best": {
+      "estimator": "unshared+cal time-fit (track-only)",
+      "coverage": 0.853378054623862,
+      "bias_deg": -0.15174581308478707,
+      "s68_deg": 1.7169726558250473
+     },
+     "production": {
+      "estimator": "production time-fit (current)",
+      "coverage": 0.9913751796837565,
+      "bias_deg": 2.3910138659037763,
+      "s68_deg": 7.409932846643928
+     }
+    },
+    "lt5": {
+     "best": {
+      "estimator": "HYBRID [regression <5\u00b0 / segment >5\u00b0]",
+      "coverage": 0.9765844520761786,
+      "bias_deg": -0.07734651504659684,
+      "s68_deg": 1.6649865521420613
+     },
+     "production": {
+      "estimator": "production time-fit (current)",
+      "coverage": 0.9281923197002809,
+      "bias_deg": -3.206823631796298,
+      "s68_deg": 15.647257393348063
+     }
+    }
+   },
+   "hybrid_model_saved": true
+  },
+  "g_det3_wknd": {
+   "out_base": "/home/dylan/x17/cosmic_bench/Analysis/mx17_det3_p2_det1_overnight_6-27-26/long_run_p2_det1_sanity_check/mx17_3",
+   "n_rays": 22270.0,
+   "has_any": 100.0,
+   "within5": 92.9,
+   "reco_at_all": 96.0,
+   "core_sigma_mm": 0.47,
+   "median_r_mm": 0.81,
+   "spark_frac": 9.2,
+   "reco_far": 3.1,
+   "sliding_within": 94.13747551587483,
+   "sliding_has_any": 99.97722406960324,
+   "sliding_n_rays_active": 21953,
+   "sigma_theta_x_deg": 2.122484273326138,
+   "sigma_theta_y_deg": 2.1635140292400727,
+   "v_drift_x_um_ns": 33.5,
+   "v_drift_y_um_ns": 35.5,
+   "n_events": 20891,
+   "reliable": true
+  },
+  "o22_long_det2": {
+   "out_base": "/home/dylan/x17/cosmic_bench/Analysis/mx17_det2_det3_overnight_6-22-26/longer_run/mx17_2",
+   "n_rays": 3728.0,
+   "has_any": 100.0,
+   "within5": 91.1,
+   "reco_at_all": 95.4,
+   "core_sigma_mm": 0.44,
+   "median_r_mm": 0.79,
+   "spark_frac": 6.5,
+   "reco_far": 4.2,
+   "sliding_within": 92.1152800435019,
+   "sliding_has_any": 100.0,
+   "sliding_n_rays_active": 3678,
+   "sigma_theta_x_deg": 2.4717977562175286,
+   "sigma_theta_y_deg": 2.037760312715129,
+   "v_drift_x_um_ns": 40.0,
+   "v_drift_y_um_ns": 39.0,
+   "n_events": 3413,
+   "reliable": true,
+   "single_strip_sigma_ns": 40.54378653122775,
+   "lead_singleplane_ns": 36.80122698313727,
+   "abs_t0_sigma68_ns": 37.60625946044922,
+   "v_drift_um_ns": 34.3,
+   "n_events_dualplane": 23894,
+   "hybrid": {
+    "gt8": {
+     "best": {
+      "estimator": "unshared+cal time-fit (track-only)",
+      "coverage": 0.8844492440604752,
+      "bias_deg": -0.4364197090643369,
+      "s68_deg": 1.9262389171802878
+     },
+     "production": {
+      "estimator": "production time-fit (current)",
+      "coverage": 0.9978401727861771,
+      "bias_deg": -2.644911482419304,
+      "s68_deg": 7.36605580342745
+     }
+    },
+    "lt5": {
+     "best": {
+      "estimator": "HYBRID [regression <5\u00b0 / segment >5\u00b0]",
+      "coverage": 0.9587449157466589,
+      "bias_deg": -0.289284556947049,
+      "s68_deg": 2.341999933066618
+     },
+     "production": {
+      "estimator": "production time-fit (current)",
+      "coverage": 0.9453805926786751,
+      "bias_deg": -4.603049437620992,
+      "s68_deg": 15.493029678257518
+     }
+    }
+   },
+   "hybrid_model_saved": false
+  },
+  "g_det4": {
+   "out_base": "/home/dylan/x17/cosmic_bench/Analysis/mx17_det4_day_6-24-26/long_run/mx17_4",
+   "n_rays": 12318.0,
+   "has_any": 69.6,
+   "within5": 20.7,
+   "reco_at_all": 23.1,
+   "core_sigma_mm": 0.67,
+   "median_r_mm": 1.06,
+   "spark_frac": 6.0,
+   "reco_far": 2.4,
+   "sliding_within": 20.998278829604132,
+   "sliding_has_any": 69.44512744856979,
+   "sliding_n_rays_active": 12201,
+   "sigma_theta_x_deg": 2.5984158813742066,
+   "sigma_theta_y_deg": 2.50416708901699,
+   "v_drift_x_um_ns": 31.5,
+   "v_drift_y_um_ns": 29.5,
+   "n_events": 2201,
+   "reliable": true,
+   "single_strip_sigma_ns": 46.66062908705598,
+   "lead_singleplane_ns": 43.82694872420655,
+   "abs_t0_sigma68_ns": 126.36705688476562,
+   "v_drift_um_ns": 34.3,
+   "n_events_dualplane": 13077,
+   "hybrid": {
+    "gt8": {
+     "best": {
+      "estimator": "unshared+cal time-fit (track-only)",
+      "coverage": 0.5976331360946746,
+      "bias_deg": -0.17184792724985165,
+      "s68_deg": 3.166009519124042
+     },
+     "production": {
+      "estimator": "production time-fit (current)",
+      "coverage": 0.9704142011834319,
+      "bias_deg": -1.1238269167912316,
+      "s68_deg": 9.456549954947157
+     }
+    },
+    "lt5": {
+     "best": {
+      "estimator": "HYBRID [regression <5\u00b0 / segment >5\u00b0]",
+      "coverage": 0.7915194346289752,
+      "bias_deg": -0.010418673702988102,
+      "s68_deg": 2.563541983775056
+     },
+     "production": {
+      "estimator": "production time-fit (current)",
+      "coverage": 0.8648409893992933,
+      "bias_deg": -4.000769160581845,
+      "s68_deg": 19.531987530259265
+     }
+    }
+   },
+   "hybrid_model_saved": false
+  },
+  "g_det6_long": {
+   "out_base": "/home/dylan/x17/cosmic_bench/Analysis/mx17_det6_det7_overnight_6-26-26/long_run/mx17_6",
+   "n_rays": 10383.0,
+   "has_any": 95.8,
+   "within5": 57.8,
+   "reco_at_all": 60.9,
+   "core_sigma_mm": 0.45,
+   "median_r_mm": 0.81,
+   "spark_frac": 27.3,
+   "reco_far": 3.1,
+   "sliding_within": 66.51471197679237,
+   "sliding_has_any": 100.0,
+   "sliding_n_rays_active": 9652,
+   "sigma_theta_x_deg": 3.421153411497428,
+   "sigma_theta_y_deg": 2.579133471794101,
+   "v_drift_x_um_ns": 33.0,
+   "v_drift_y_um_ns": 25.0,
+   "n_events": 5849,
+   "reliable": true,
+   "single_strip_sigma_ns": 67.02298235997759,
+   "lead_singleplane_ns": 47.93758262254752,
+   "abs_t0_sigma68_ns": 54.50678344726563,
+   "v_drift_um_ns": 34.3,
+   "n_events_dualplane": 32330,
+   "hybrid": {
+    "gt8": {
+     "best": {
+      "estimator": "production time-fit (current)",
+      "coverage": 0.9970059880239521,
+      "bias_deg": -0.9444875741813323,
+      "s68_deg": 9.938418661606757
+     },
+     "production": {
+      "estimator": "production time-fit (current)",
+      "coverage": 0.9970059880239521,
+      "bias_deg": -0.9444875741813323,
+      "s68_deg": 9.938418661606757
+     }
+    },
+    "lt5": {
+     "best": {
+      "estimator": "signature regression only",
+      "coverage": 0.9823717948717948,
+      "bias_deg": -0.25664906292492606,
+      "s68_deg": 3.7707637297664265
+     },
+     "production": {
+      "estimator": "production time-fit (current)",
+      "coverage": 0.9224358974358975,
+      "bias_deg": -4.129897995174051,
+      "s68_deg": 18.47698903616788
+     }
+    }
+   },
+   "hybrid_model_saved": false
+  },
+  "g_det7_long": {
+   "out_base": "/home/dylan/x17/cosmic_bench/Analysis/mx17_det6_det7_overnight_6-26-26/long_run/mx17_7",
+   "n_rays": 9557.0,
+   "has_any": 96.1,
+   "within5": 43.1,
+   "reco_at_all": 50.6,
+   "core_sigma_mm": 0.59,
+   "median_r_mm": 1.07,
+   "spark_frac": 38.9,
+   "reco_far": 7.5,
+   "sliding_within": 53.01788805539527,
+   "sliding_has_any": 99.98845931909983,
+   "sliding_n_rays_active": 8665,
+   "sigma_theta_x_deg": 2.823335047765376,
+   "sigma_theta_y_deg": 2.536926224538245,
+   "v_drift_x_um_ns": 36.0,
+   "v_drift_y_um_ns": 35.0,
+   "n_events": 4058,
+   "reliable": true,
+   "single_strip_sigma_ns": 50.63234484909452,
+   "lead_singleplane_ns": 41.94760572459723,
+   "abs_t0_sigma68_ns": 43.870857238769545,
+   "v_drift_um_ns": 34.3,
+   "n_events_dualplane": 24972,
+   "hybrid": {
+    "gt8": {
+     "best": {
+      "estimator": "signature regression only",
+      "coverage": 0.8285939968404423,
+      "bias_deg": -0.22559832493879206,
+      "s68_deg": 4.052934582132018
+     },
+     "production": {
+      "estimator": "production time-fit (current)",
+      "coverage": 0.9368088467614534,
+      "bias_deg": 2.1689171038379467,
+      "s68_deg": 12.054387368317817
+     }
+    },
+    "lt5": {
+     "best": {
+      "estimator": "signature regression only",
+      "coverage": 0.9031499764927128,
+      "bias_deg": -0.2725651557647222,
+      "s68_deg": 3.16559900013564
+     },
+     "production": {
+      "estimator": "production time-fit (current)",
+      "coverage": 0.8570756934649741,
+      "bias_deg": -6.482288570932323,
+      "s68_deg": 22.082582308771258
+     }
+    }
+   },
+   "hybrid_model_saved": false
+  }
+ }
+}

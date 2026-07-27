@@ -75,6 +75,10 @@ GAP_THRESHOLD_MM: float = 12.0   # Max gap within a spatial cluster [mm]
 MIN_STRIPS: int = 3               # Minimum strips for a valid fit
 EPS: float = 1e-9                 # Guard against divide-by-zero
 
+# Adaptive per-plane significance floor applied to the hits before clustering.
+# See apply_significance_floor() for why this exists and why it is relative.
+SIG_REL_FLOOR: float = 0.10
+
 # Parallelism: leave this many CPU cores free; use the rest for event analysis
 N_FREE_THREADS: int = 2
 
@@ -2830,6 +2834,43 @@ def _save_fig(fig, out_dir: Optional[str], name: str, dpi: int = 150) -> None:
         return
     os.makedirs(out_dir, exist_ok=True)
     fig.savefig(os.path.join(out_dir, name), dpi=dpi, bbox_inches='tight')
+
+
+def apply_significance_floor(
+    df: pd.DataFrame,
+    rel: float = SIG_REL_FLOOR,
+    per_plane: bool = True,
+) -> pd.DataFrame:
+    """
+    Drop strips sitting far below their own plane's charge scale in that event.
+
+    The matched-filter analyzer (a1cce79) triggers on low-amplitude pulses, which
+    also lets residual coherent/common-mode activity through the 5σ gate.  Those
+    strips are nearly harmless in the amplitude-weighted time fit (sigma =
+    1/sqrt(amp) already down-weights them) but not in the *position*: the reported
+    mesh position is the single earliest-time strip of the largest cluster
+    (_fit_single_axis), so one early noise strip anywhere inside a GAP_THRESHOLD_MM
+    cluster steals the anchor outright.
+
+    The floor is relative to each plane's own strongest strip rather than an
+    absolute significance, for two reasons: gains differ by ~2x across the fleet
+    (a fixed floor guts the gain-limited detectors the rework was meant to
+    recover), and the X/Y planes of one detector collect different fractions of
+    the avalanche charge (see 26's measured c1), so a per-event maximum over-cuts
+    the weaker plane.  One FEU = one plane on the mx17 detectors.
+
+    Parameters
+    ----------
+    df        : hits DataFrame with columns [eventId, feu, significance]
+    rel       : keep strips with significance >= rel * (plane max in that event).
+                0 disables the filter entirely.
+    per_plane : reference the maximum per (event, FEU) rather than per event.
+    """
+    if not rel:
+        return df
+    keys = ['eventId', 'feu'] if per_plane else ['eventId']
+    thr = df.groupby(keys)['significance'].transform('max') * rel
+    return df[df['significance'] >= thr].copy()
 
 
 def _map_strip_positions(df: pd.DataFrame, det) -> pd.DataFrame:

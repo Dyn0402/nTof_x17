@@ -34,6 +34,9 @@ from M3RefTracking import M3RefTracking, get_xy_angles, get_xy_positions
 
 R = next((float(a.split('=')[1]) for a in sys.argv if a.startswith('--r=')), 5.0)
 SPARK_THRESH = next((int(a.split('=')[1]) for a in sys.argv if a.startswith('--spark=')), 50)
+# Significance floor used for the spark multiplicity; must match 03's --sigrel.
+SIG_REL = next((float(a.split('=')[1]) for a in sys.argv if a.startswith('--sigrel=')),
+               cm.SIG_REL_FLOOR)
 
 
 def rstd(v, ns=3, it=5):
@@ -58,7 +61,7 @@ def main():
 
     fs = sorted(f for f in os.listdir(CFG.combined_hits_dir) if f.endswith('.root') and '_datrun_' in f)
     raw = uproot.concatenate([f'{CFG.combined_hits_dir}{f}:hits' for f in fs],
-                             expressions=['eventId', 'feu'], library='pd')
+                             expressions=['eventId', 'feu', 'significance'], library='pd')
     det_raw = raw[raw['feu'].isin(CFG.MX17_FEUS)]
     det1_hit = set(int(e) for e in det_raw['eventId'].unique())
     # Only count M3 rays where the detector was actually digitising, i.e. within the
@@ -69,7 +72,14 @@ def main():
     det_lo = int(det_raw['eventId'].min()); det_hi = int(det_raw['eventId'].max())
     # spark rate: fraction of detector-firing events with > SPARK_THRESH strips (one row
     # per hit) firing at once (a full-detector discharge; same threshold as the align veto)
-    _mult = det_raw.groupby('eventId').size()
+    # Count the strips the RECONSTRUCTION actually uses, not every strip that passed
+    # the 5-sigma gate. The matched-filter analyzer (a1cce79) admits residual coherent
+    # noise, which inflates raw multiplicity and pushes ordinary muons over a veto
+    # meant for discharges (det3 spark_frac 9.1% -> 17.3% on identical data). Applying
+    # the same floor 03 uses restores it (7.8%) without moving the threshold itself.
+    _mult_raw = det_raw.groupby('eventId').size()
+    _mult = (cm.apply_significance_floor(det_raw, rel=SIG_REL).groupby('eventId').size()
+             .reindex(_mult_raw.index).fillna(0).astype(int))
     n_firing = int(len(_mult)); n_spark = int((_mult > SPARK_THRESH).sum())
     spark_frac = 100.0 * n_spark / n_firing if n_firing else float('nan')
     mult_by_ev = _mult.to_dict()   # eventId -> strips fired (for per-ray spark tagging)
