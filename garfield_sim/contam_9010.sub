@@ -1,0 +1,13 @@
+universe                = vanilla
+executable              = contam_9010_wrap.sh
+transfer_input_files    = mm_drift_9010_contam_cern.py
+should_transfer_files   = YES
+when_to_transfer_output = ON_EXIT
+transfer_output_files   = drift_9010_contam_cern.json
+output                  = contam_9010.out
+error                   = contam_9010.err
+log                     = contam_9010.clog
+request_cpus            = 8
+request_memory          = 8 GB
++JobFlavour             = "longlunch"
+queue

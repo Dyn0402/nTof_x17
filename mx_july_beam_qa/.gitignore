@@ -8,3 +8,11 @@ slides/*.nav
 slides/*.snm
 slides/*.toc
 __pycache__/
+slides_gas_contamination/*.aux
+slides_gas_contamination/*.log
+slides_gas_contamination/*.out
+slides_gas_contamination/*.nav
+slides_gas_contamination/*.snm
+slides_gas_contamination/*.toc
+# 230 MB trigger-emulation cache: rebuild with 30_trigger_emulation.py, too big for git
+cache/30_trigemul_run224524.npz

@@ -1,0 +1,146 @@
+\documentclass[10pt,aspectratio=169]{beamer}
+\usetheme{default}
+\usecolortheme{seagull}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{footline}[frame number]
+\setbeamerfont{frametitle}{series=\bfseries,size=\large}
+\setbeamercolor{frametitle}{fg=black!85}
+\setbeamercolor{structure}{fg=black!70}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\definecolor{okblue}{HTML}{0072B2}
+\definecolor{okorange}{HTML}{E69F00}
+\definecolor{okred}{HTML}{D55E00}
+\definecolor{okgreen}{HTML}{009E73}
+\newcommand{\good}[1]{\textcolor{okgreen}{#1}}
+\newcommand{\bad}[1]{\textcolor{okred}{#1}}
+\newcommand{\wat}[1]{\textcolor{okblue}{#1}}
+
+\title{\textbf{Why is the July-beam drift velocity low?}\\
+\large Ar/iC$_4$H$_{10}$ 90/10 contamination sims vs the run\_58 data}
+\author{Dylan Neff}
+\date{2026-07-20 \quad (run\_58 singles drift scan, nTOF EAR2, Ar/iso 90/10)}
+
+\begin{document}
+
+\begin{frame}
+  \titlepage
+  \vfill
+  \centering\small
+  \textbf{TL;DR:}\; measured $v_\mathrm{drift}$ is \bad{$\sim$12--16\% below} pure 90/10 Magboltz;\;
+  Magboltz says only \wat{$\sim$0.2\% water} explains it;\;
+  \good{air \& O$_2$ are excluded} --- they would attach and kill the cathode-side charge,
+  but the data amplitude is \good{flat over the full 30\,mm}. $\Rightarrow$ \wat{trace water outgassing, not a leak}.
+\end{frame}
+
+\begin{frame}{The question}
+  \begin{columns}[T]
+    \column{0.56\textwidth}
+    \texttt{run58\_scan/analyze\_drift.py} measures, on the clean Det~A (nominal
+    30\,mm gap), from micro-TPC track transit time $T_\mathrm{max}$:
+    \begin{itemize}
+      \item $v_\mathrm{drift}\!=\!35.6\text{--}35.8$\,\textmu m/ns at $E=200\text{--}233$\,V/cm;
+      \item pure 90/10 Magboltz predicts \textbf{40.5\,/\,42.6} $\Rightarrow$ \bad{$-12$ to $-16\%$};
+      \item and the curve \emph{plateaus} where pure keeps climbing.
+    \end{itemize}
+    \vspace{0.4em}
+    Long flush $\Rightarrow$ is the residual \wat{water outgassing}, an \bad{air leak},
+    or \bad{O$_2$ permeation}?
+    \vspace{0.4em}
+
+    {\footnotesize (run\_58 only had a bench \emph{95/5} shape reference baked in ---
+    it flagged the need for a real 90/10 curve. This is it.)}
+
+    \column{0.44\textwidth}
+    \centering
+    \footnotesize
+    \begin{tabular}{rcc}
+      \toprule
+      $E$ [V/cm] & meas. A & pure 90/10 \\
+      \midrule
+      167 & 33.1 & 37.3 \\
+      200 & 35.6 & 40.5 \\
+      233 & 35.8 & 42.6 \\
+      \bottomrule
+    \end{tabular}
+    \\[0.3em]
+    {\scriptsize $v$ in \textmu m/ns, gap $=30$\,mm}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{The sim: 15 contaminated 90/10 mixtures (Magboltz, CERN 720.8 Torr)}
+  \begin{columns}[T]
+    \column{0.62\textwidth}
+    \includegraphics[width=\linewidth]{drift_9010_contam_cern.png}
+    \column{0.38\textwidth}
+    \small
+    Base Ar/iso 90/10 + \wat{H$_2$O} (0.3--3\%), \bad{air} (1--3\%),
+    \bad{O$_2$} (0.5--1\%), N$_2$ (1--5\%). Run as 15 independent HTCondor jobs
+    on lxplus (LCG\_107), each $v(E)+\eta(E)+$diffusion.
+    \vspace{0.5em}
+
+    Det~A (black) sits just below pure. \wat{Water is a \emph{potent}
+    suppressant}: even 0.5\% halves $v$; the \textbf{$\sim$1\% that fit June det3
+    would give $v\!\approx\!16$}, not 35.6.
+    \vspace{0.5em}
+
+    On velocity \emph{alone}, the deficit matches \wat{$\sim$0.2\% H$_2$O}
+    \emph{or} $\sim$3\% N$_2$ \emph{or} $\sim$2--3\% air --- \textbf{degenerate}.
+  \end{columns}
+\end{frame}
+
+\begin{frame}{The discriminator: attachment}
+  \centering
+  Any air/O$_2$ big enough to bend $v$ down also \bad{eats charge} over the drift.
+  \\[0.4em]
+  \small
+  \begin{tabular}{lccc}
+    \toprule
+    hypothesis & fraction to match $v$ & $\eta$@200 [cm$^{-1}$] & \textbf{charge surviving 30\,mm} \\
+    \midrule
+    pure 90/10            & ---            & 0    & 100\% \\
+    \wat{water (outgassing)} & \wat{$\sim$0.2\% H$_2$O} & 0 & \good{100\%} \\
+    N$_2$ (inert)         & $\sim$3\%      & 0    & \good{100\%} \\
+    \bad{air in line}     & $\sim$2--3\%   & 1.9--3.0 & \bad{0.01--0.35\%} \\
+    \bad{O$_2$ permeation}& $\sim$1\%      & 4.2  & \bad{$\sim$0\%} \\
+    \bottomrule
+  \end{tabular}
+  \\[0.6em]
+  \normalsize
+  $\Rightarrow$ velocity is degenerate, but \good{$\eta$ is not}. Two survivors with
+  zero attachment: \wat{trace water} or inert N$_2$ (which has no natural source ---
+  air ingress would drag O$_2$ in too). \textbf{Measure $\eta$ on the data.}
+\end{frame}
+
+\begin{frame}{The data settles it: amplitude vs drift depth (run\_58 Det A)}
+  \centering
+  \includegraphics[width=0.98\linewidth]{attachment_run58.png}
+  \\[0.2em]
+  \footnotesize
+  Mean clean-hit amplitude vs depth (cached \texttt{driftspec}, time$\to$depth via measured $v$).
+  Data (black) is \good{flat --- $A_\mathrm{cathode}/A_\mathrm{anode}\approx1.8$--$2.4$} across the full 30\,mm;
+  \bad{+1\% air} $\to7\%$, \bad{+0.5\% O$_2$} $\to0.2\%$ at the cathode. Data rejects air/O$_2$ by 1--3 orders of magnitude.
+\end{frame}
+
+\begin{frame}{Conclusion}
+  \begin{itemize}
+    \item The $\sim$12\% velocity deficit is \textbf{real} (confirmed vs a proper 90/10 CERN Magboltz curve).
+    \item \good{Air-in-line and O$_2$ are experimentally excluded}: they would attach
+      ($\lambda\!\approx\!2$--5\,mm) and obliterate the cathode-side charge --- but the
+      measured amplitude is \good{flat over the whole gap}.
+    \item $\Rightarrow$ a no-attachment slow-down = \wat{trace water ($\sim$0.2\%,
+      outgassing/permeation)}. \textbf{Exactly the worry, but mild} --- and far drier
+      than June det3 (which showed real attachment, $\lambda\!\sim\!13$--15\,mm).
+  \end{itemize}
+  \vspace{0.3em}
+  \textbf{Caveats / next:}
+  \begin{itemize}
+    \item {\small $v_\mathrm{meas}$ assumes exactly 30\,mm; a smaller effective gap shrinks the deficit and the required water.}
+    \item {\small Fold the 90/10 curve into run\_58's effective-gap fit to pin gap \& water fraction jointly.}
+  \end{itemize}
+  \vspace{0.3em}
+  {\footnotesize Artifacts: \texttt{garfield\_sim/mm\_one\_mixture.py}, \texttt{analyze\_9010\_contam.py},
+  \texttt{results/attachment\_run58.py}, \texttt{CONTAM\_9010\_SUMMARY.md}.}
+\end{frame}
+
+\end{document}
