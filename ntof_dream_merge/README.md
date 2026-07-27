@@ -4,8 +4,11 @@ Joining the **n_TOF facility DAQ** (SiPM wall / plastic / liquid scintillator hi
 hit-level ROOT on EOS) to the **DREAM Micromegas** stream (tracks, on `/mnt/data`), so that one
 merged per-event record carries both — then running it on condor, rolling, as data arrives.
 
-**Read [`PLAN.md`](PLAN.md).** It has the verified clock chain, the reference run pair and why,
-the phase breakdown, and the gotchas. Start there.
+**Start with [`HANDOFF_2026-07-27_dream_ntof_matching.md`](HANDOFF_2026-07-27_dream_ntof_matching.md)**
+— current state, what is closed, what is open, and the bugs to know about.
+[`PLAN.md`](PLAN.md) is the original plan; parts of its §3 and §6 are superseded
+by the handoff (the bunch join is 100 %, not 88 %, and the `psTime` repair is
+different).
 
 ## Quick start
 
