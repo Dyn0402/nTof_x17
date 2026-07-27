@@ -18,9 +18,15 @@ thresholds are the ones that were actually loaded, not a remembered constant):
       SUM of the two bar ends, amp(detn 2g+1) + amp(detn 2g+2) in mV, with the two
       ends required within TB_MAX. Discriminate the SUM -- not the individual
       ends -- at the wall threshold; OR the four segments.
-  M2  per wall: each plastic PMT above its threshold; OR them. Wall D uses PSSD2
-      only, the D-L / PSSD1 input being broken.
+  M2  per wall: each plastic BAR above its threshold; OR them. Which bars are in
+      play is read from the sub-run's lemo_enables, not assumed -- for run_79 all
+      four arms have both.
   M3  wall .AND. plastic within PULSE -> the sector SINGLES that triggered DREAM.
+
+The wall channel layout was verified from the data rather than assumed: an 8x8
+channel coincidence matrix gives strongest partners 1<->2, 3<->4, 5<->6, 7<->8 in
+every wall, so the four top and four bottom channels are INTERLEAVED in detn
+(1,3,5,7 top; 2,4,6,8 bottom) and the (2g+1, 2g+2) segment pairing is right.
 
 THRESHOLDS ACTUALLY LOADED for run_79 (n1081b_config.json, polled 18:07:21 on
 2026-07-26; board .240 = M1 wall OR, .241 = M2 plastic L1, sections A-D = arms):
@@ -45,17 +51,20 @@ so the real wall threshold cuts the early-time false-match rate by 3.4x for ~11 
 of the efficiency. Past 10 ms it is 0.1-4 % false at ~86-89 % efficient.
 
 THE PLASTIC LEG DOES NOT WORK AS A REQUIREMENT. Demanding M2 as the hardware does
-collapses the efficiency to 8.7 %, and the reason is not the threshold: for late
-events, where matches are clean, only 40.2 % of DREAM events have ANY plastic hit
-in the band, above threshold or not (96.5 % have a wall segment sum over
-threshold). When a plastic hit is present it almost always passes -- 36.5 % of
-events, i.e. 91 % of the 40.2 %. So n_TOF simply does not record a plastic pulse
-for ~60 % of the triggers the plastic leg must have fired, and requiring it throws
-those away. Use the wall as the matcher and treat the plastic as a confirming tag.
-Unresolved: whether that is PSA dead time on the highest-rate trees (PSSC alone is
-46 k hits/bunch) or a fan-out/gain difference between the trigger and digitiser
-paths -- the discriminator sees the plastic via a FIFO fan-out, not the digitiser
-split, so the mV scales need not agree.
+gives 12.7 % efficiency against the wall's 88.3 %, and the reason is not the
+threshold: for late events, where matches are clean, only ~52 % of DREAM events
+have ANY plastic hit in the band, above threshold or not, versus 96.5 % with a
+wall segment sum over threshold. When a plastic hit is present it almost always
+passes. Use the wall as the matcher and the plastic as a confirming tag.
+
+Excluded so far (see mapping_and_deadtime.py): tree mismapping (the 4x4 wall x
+plastic coincidence matrix is strongly diagonal), PSA dead time (the plastic PSA
+resolves pulses 5-6 ns apart with no truncation), a too-high PSA amplitude cut
+(real -- the plastic edge is 100 ADC against the walls' 50 -- but it sits at
+~3.1 mV, 40x below the 118-157 mV discriminator), and spurious DREAM triggers
+(fake_trigger_study bounds them at ~2 %). What is left is geometric: the two
+20x30 cm bars cover only 30 cm of the wall's 50 cm in v, so ~60 % of wall-crossing
+particles also cross a plastic, close to the measured ~52 %.
 """
 from __future__ import annotations
 
@@ -73,7 +82,15 @@ from ntof_dream_merge.ntof_io import read_bunches           # noqa: E402
 
 M1_IP, M2_IP = '192.168.10.240', '192.168.10.241'
 ARMS = ('A', 'B', 'C', 'D')
-D_PMTS = {'A': (1, 2), 'B': (1, 2), 'C': (1, 2), 'D': (2,)}   # PSSD1 input broken
+
+# Which plastic bars fed the trigger, per arm. Do NOT hardcode this: the D-L /
+# PSSD1 input was broken in mid-July, which is where 30_trigger_emulation's
+# {'D': (2,)} comes from, but it was repaired before run_79 -- SEC_D reads back
+# lemo 0 AND lemo 1 enabled, and in the data PSSD1 is the STRONGER partner of WALD
+# (coincidence excess 615 vs 133). Read the enables from the sub-run's config.
+# Separately: this only ever governed the TRIGGER. The digitiser records both bars
+# regardless, so hit-level selection should always use both.
+D_PMTS_FALLBACK = {a: (1, 2) for a in ARMS}
 
 # Top/bottom match window for the analog sum. 30_trigger_emulation uses a bare
 # +-15 ns, which is wrong for run224572: the two ends of a bar are NOT simultaneous
@@ -99,12 +116,20 @@ def load_thresholds(run: str, subrun: str) -> dict:
         raise FileNotFoundError(
             f'{p} missing -- rsync it from the DAQ machine; it is per sub-run and '
             'is the only record of what the discriminators were actually set to.')
-    b = json.loads(p.read_text())['boards']
+    cfg = json.loads(p.read_text())
+    b = cfg['boards']
     wall = {a: abs(b[M1_IP]['sections'][f'SEC_{a}']['input_configuration']['data']
                    ['threshold']) for a in ARMS}
     plastic = {a: abs(b[M2_IP]['sections'][f'SEC_{a}']['input_configuration']['data']
                       ['threshold']) for a in ARMS}
-    return dict(wall=wall, plastic=plastic, polled_at=json.loads(p.read_text())['polled_at'])
+    # lemo 0/1 of M2 section <arm> are that arm's two plastic bars -> detn 1/2
+    pmts = {}
+    for a in ARMS:
+        fc = b[M2_IP]['sections'][f'SEC_{a}'].get('function_configuration', {})
+        en = (fc.get('data', fc) or {}).get('lemo_enables')
+        pmts[a] = (tuple(e['lemo'] + 1 for e in en if e['enable'] and e['lemo'] < 2)
+                   if en else D_PMTS_FALLBACK[a])
+    return dict(wall=wall, plastic=plastic, pmts=pmts, polled_at=cfg['polled_at'])
 
 
 def load_adc_mv(path: Path = ADC_MV_DEFAULT) -> dict:
@@ -174,7 +199,7 @@ def singles_candidates(ntof_run: int, bunches, arm: str, thr: dict,
     wt, wb, wd = w['t_since_flash_ns'], w['BunchNumber'], w['detn']
     pt, pb, pd = p['t_since_flash_ns'], p['BunchNumber'], p['detn']
 
-    psel = np.isin(pd, D_PMTS[arm]) & (pmv > thr['plastic'][arm])
+    psel = np.isin(pd, thr.get("pmts", D_PMTS_FALLBACK)[arm]) & (pmv > thr['plastic'][arm])
     pt, pb = pt[psel], pb[psel]
     if tb_off is None:
         tb_off = measure_tb_offsets(ntof_run, bunches, arm)
