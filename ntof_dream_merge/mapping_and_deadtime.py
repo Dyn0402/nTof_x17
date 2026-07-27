@@ -44,15 +44,13 @@ No truncation: the plastic PSA resolves pulses 5-6 ns apart, and the gap
 distribution rises monotonically into the smallest bin rather than being cut off.
 Dead time / double-pulse resolution is therefore NOT why plastic hits are missing.
 
-WHAT IS LEFT. The plastics subtend less of the wall than the wall does: two 20x30
-cm bars cover 40 cm in u but only 30 cm of the wall's 50 cm in v, so a particle
-that crosses the wall has roughly a 60 % chance of also crossing a plastic. The
-measured 52 % sits close to that. If the hardware AND were strictly in force every
-DREAM event would have a plastic pulse by construction, so either the trigger is
-more wall-driven than the module map implies, or n_TOF's plastic efficiency is
-genuinely ~60 % of its wall efficiency. Distinguishing those is the open question;
-the geometric acceptance is the cheapest thing to check next, against the Geant4
-model that already has the real bar dimensions.
+RESOLVED (2026-07-28). Neither geometry nor the trigger: the official PSS tflash
+is wrong in 37-85 % of bunches, shifting t_since_flash of those (tree, bunch)
+combinations by up to 11.6 us and moving the true partner out of the accept
+bands. Repairing the time base (tflash_repair.py, applied by ntof_io by default)
+lifts the plastic partner fraction to 99.7 %. See
+FINDINGS_2026-07-28_pss_tflash.md. The checks in this module remain valid -- they
+were run on nearest-dt peaks, which the sane-tflash bunches dominate.
 """
 from __future__ import annotations
 

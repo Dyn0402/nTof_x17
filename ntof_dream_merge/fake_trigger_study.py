@@ -44,7 +44,7 @@ sys.path.insert(0, str(_HERE.parent))
 from ntof_dream_merge.ntof_io import read_bunches                       # noqa: E402
 from ntof_dream_merge.dream_trigger import (load_thresholds, load_adc_mv,  # noqa: E402
                                             measure_tb_offsets, singles_candidates,
-                                            D_PMTS, ARMS)
+                                            D_PMTS_FALLBACK, ARMS)
 
 K, T0 = 1.089e-4, -197.5
 BANDS = ((-150.0, 150.0), (250.0, 450.0))
@@ -112,7 +112,7 @@ def study(ntof_run: int, ev, bunches, thr, adc):
 
         p = read_bunches(ntof_run, f'PSS{arm}', bunches,
                          branches=('BunchNumber', 'detn', 'amp'))
-        sel = np.isin(p['detn'], D_PMTS[arm])
+        sel = np.isin(p['detn'], D_PMTS_FALLBACK[arm])
         pb, pt = p['BunchNumber'][sel], p['t_since_flash_ns'][sel]
         pa = p['amp'][sel]
         h, a = _match(pb, pt, ev, amps=pa)

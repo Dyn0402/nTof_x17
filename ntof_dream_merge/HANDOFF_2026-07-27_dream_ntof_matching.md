@@ -1,5 +1,13 @@
 # Handoff: DREAM ↔ n_TOF event matching
 
+> **⚠ 2026-07-28: §5 (the missing plastic) is RESOLVED — see
+> `FINDINGS_2026-07-28_pss_tflash.md`.** The official n_TOF PSS `tflash` is
+> wrong in 37–85 % of bunches; with the time base repaired
+> (`tflash_repair.py`, on by default in `ntof_io`) the plastic partner is
+> present for 99.7 % of wall-matched DREAM events and match_window reads
+> 99.9 %. The geometry hypothesis is dead; the trigger AND is real. The PSS
+> *amplitude* remains broken on arms A/C/D in the official file.
+
 **Written 2026-07-27 evening. Audience: someone picking this up cold, overnight.**
 **You do not need to have run anything before.**
 

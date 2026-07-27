@@ -20,6 +20,17 @@ the gamma-flash-referenced time this analysis joins on. `tflash` differs between
 trees (~11.2 us on WALA vs ~13.3 us on PKUP) because each detector has its own
 cable/electronics delay, so subtracting each tree's OWN tflash is what puts them
 on a common t=0 -- do not take tflash from PKUP for a scintillator hit.
+
+TFLASH IS REPAIRED HERE, NOT TRUSTED. The official PSA mis-identifies the gamma
+flash on the PSS trees in 37-85 % of bunches (essentially every parasitic pulse),
+shifting the stored tflash by up to 11.6 us and with it every t_since_flash of
+that (tree, bunch) -- this is what masqueraded as "n_TOF records a plastic for
+only ~52 % of DREAM triggers". `read_bunches` therefore computes
+t_since_flash_ns against tflash_repair.corrected_tflash() (per-tree cable mode +
+bunch-common jitter from the stable trees) instead of the stored value. The raw
+`tflash` branch is still returned untouched when asked for. See
+tflash_repair.py for the measurements. Set repair_tflash=False to get the old
+(broken for PSS) behaviour.
 """
 from __future__ import annotations
 
@@ -76,19 +87,32 @@ def bunch_edges(run: int, tree: str, rebuild: bool = False) -> np.ndarray:
     return edges
 
 
-def read_bunches(run: int, tree: str, bunches, branches=HIT_BRANCHES) -> dict:
+_TFLASH_FIX_CACHE = {}
+
+
+def _tflash_fix(run: int) -> dict:
+    if run not in _TFLASH_FIX_CACHE:
+        from ntof_dream_merge.tflash_repair import corrected_tflash
+        _TFLASH_FIX_CACHE[run] = corrected_tflash(run)
+    return _TFLASH_FIX_CACHE[run]
+
+
+def read_bunches(run: int, tree: str, bunches, branches=HIT_BRANCHES,
+                 repair_tflash: bool = True) -> dict:
     """
     Hits of the given bunches from one tree, as a dict of flat arrays.
 
     Contiguous bunch runs are read as one entry range -- the reference-pair
     bunches are a contiguous block of the run, so this is usually a single read
-    rather than one per bunch. Adds `t_since_flash_ns` = tof - tflash.
+    rather than one per bunch. Adds `t_since_flash_ns` = tof - tflash, where
+    tflash is the REPAIRED per-bunch flash time (see module docstring and
+    tflash_repair.py) unless repair_tflash=False.
     """
     bunches = np.unique(np.asarray(bunches, dtype=np.int64))
     if bunches.size == 0:
         return {b: np.array([]) for b in tuple(branches) + ('t_since_flash_ns',)}
     edges = bunch_edges(run, tree)
-    want = set(branches) | {'tof', 'tflash'}
+    want = set(branches) | {'tof', 'tflash'} | ({'BunchNumber'} if repair_tflash else set())
 
     # group consecutive bunch numbers into blocks -> one entry range per block
     breaks = np.where(np.diff(bunches) > 1)[0] + 1
@@ -104,7 +128,11 @@ def read_bunches(run: int, tree: str, bunches, branches=HIT_BRANCHES) -> dict:
             for k in want:
                 out[k].append(a[k])
     res = {k: (np.concatenate(v) if v else np.array([])) for k, v in out.items()}
-    res['t_since_flash_ns'] = res['tof'] - res['tflash']
+    if repair_tflash and tree in _tflash_fix(run) and res['tof'].size:
+        tf = _tflash_fix(run)[tree][res['BunchNumber'].astype(np.int64)]
+        res['t_since_flash_ns'] = res['tof'] - tf
+    else:
+        res['t_since_flash_ns'] = res['tof'] - res['tflash']
     return {k: v for k, v in res.items()
             if k in branches or k == 't_since_flash_ns'}
 

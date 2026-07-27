@@ -50,21 +50,25 @@ WHAT IT BUYS (100 bunches of run_79/stat090_0000 <-> 224572, accept bands
 so the real wall threshold cuts the early-time false-match rate by 3.4x for ~11 %
 of the efficiency. Past 10 ms it is 0.1-4 % false at ~86-89 % efficient.
 
-THE PLASTIC LEG DOES NOT WORK AS A REQUIREMENT. Demanding M2 as the hardware does
-gives 12.7 % efficiency against the wall's 88.3 %, and the reason is not the
-threshold: for late events, where matches are clean, only ~52 % of DREAM events
-have ANY plastic hit in the band, above threshold or not, versus 96.5 % with a
-wall segment sum over threshold. When a plastic hit is present it almost always
-passes. Use the wall as the matcher and the plastic as a confirming tag.
+THE "MISSING PLASTIC" IS RESOLVED (2026-07-28; FINDINGS_2026-07-28_pss_tflash.md).
+The "~52 % of DREAM events have ANY plastic hit" was an artifact of the official
+PSS tflash being wrong in 37-85 % of bunches: t_since_flash of those (tree, bunch)
+combinations was shifted by up to 11.6 us, moving the true partner out of the
+accept bands. With the time base repaired (ntof_io does this by default now) the
+plastic partner is present for 99.7 % of wall-matched DREAM events, uniformly
+99.4-99.9 % per arm -- the hardware wall AND plastic trigger is fully accounted
+for, and the geometry hypothesis is dead.
 
-Excluded so far (see mapping_and_deadtime.py): tree mismapping (the 4x4 wall x
-plastic coincidence matrix is strongly diagonal), PSA dead time (the plastic PSA
-resolves pulses 5-6 ns apart with no truncation), a too-high PSA amplitude cut
-(real -- the plastic edge is 100 ADC against the walls' 50 -- but it sits at
-~3.1 mV, 40x below the 118-157 mV discriminator), and spurious DREAM triggers
-(fake_trigger_study bounds them at ~2 %). What is left is geometric: the two
-20x30 cm bars cover only 30 cm of the wall's 50 cm in v, so ~60 % of wall-crossing
-particles also cross a plastic, close to the measured ~52 %.
+STILL TRUE AND STILL BITING: the official PSS *amplitude* is broken on arms
+A/C/D -- raw pulses 3.8-12.8k counts deep are recorded as ~130-240 ADC, piled
+just above the 100 ADC PSA cut, with ~+-250 ns time scatter (arm B alone is
+reconstructed correctly: sharp +15 ns peak, trigger-level amplitudes). `area` is
+proportionally broken. So EMULATING the discriminator (this module's
+singles_candidates with require_plastic=True and the mV thresholds) still cannot
+work on A/C/D: the amplitude information simply is not in the official file.
+Use wall SINGLES for the matcher; require plastic PRESENCE in band (no amplitude
+cut) as the AND tag; amplitude thresholds are only meaningful on arm B until the
+n_TOF processing is fixed.
 """
 from __future__ import annotations
 
