@@ -28,14 +28,15 @@ Results are cached in <this dir>/cache_pulse_match/.
 from __future__ import annotations
 import json
 import re
+import sys
 from datetime import datetime
 from pathlib import Path
 
 import numpy as np
 import uproot
 
-RUNS_DIR = Path('/mnt/data/x17/beam_july/runs')
-BEAM_LOG_DIR = Path('/mnt/data/x17/beam_july/slow_control/beam_intensity')
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from common.beam_july_paths import RUNS_DIR, BEAM_LOG_DIR  # noqa: E402
 CACHE = Path(__file__).resolve().parent / 'cache_pulse_match'
 CACHE.mkdir(exist_ok=True)
 

@@ -52,8 +52,8 @@ _tq.tqdm = lambda x=None, **k: x if x is not None else (lambda y: y)
 sys.modules.setdefault('tqdm', _tq)
 import beam_track_finding as bt          # noqa: E402
 from common.Mx17StripMap import RunConfig  # noqa: E402
+from common.beam_july_paths import RUNS_DIR  # noqa: E402
 
-RUNS_DIR = Path('/mnt/data/x17/beam_july/runs')
 MAP = f'{NTOF}/mx17_m1_map.csv'
 OUT = Path(__file__).resolve().parent
 

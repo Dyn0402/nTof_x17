@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import os
 import re
+import sys
 import json
 from typing import Dict, List, Optional
 
@@ -24,8 +25,11 @@ import uproot
 _HERE = os.path.dirname(os.path.abspath(__file__))
 _REPO = os.path.dirname(os.path.dirname(_HERE))
 
-BASE_PATH = '/mnt/data/x17/beam_july/runs/'
-ANALYSIS_DIR = '/mnt/data/x17/beam_july/analysis/'
+sys.path.insert(0, _REPO)
+from common.beam_july_paths import RUNS_DIR as _RUNS, ANALYSIS_DIR as _ANA  # noqa: E402
+
+BASE_PATH = f'{_RUNS}/'
+ANALYSIS_DIR = f'{_ANA}/'
 MAP_CSV_PATH = os.path.join(_REPO, 'mx17_m1_map.csv')
 MX17_DETECTORS = ['mx17_A', 'mx17_B', 'mx17_C', 'mx17_D']
 PEDESTAL_NAME_TOKEN = '_pedestals_'
