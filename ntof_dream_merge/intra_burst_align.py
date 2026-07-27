@@ -32,10 +32,16 @@ the excess into a sharp line:
     satellite   +330 ns,      1133 excess pairs (~1/3 of the main peak)
 
 measured on 100 bunches of run_79/stat090_0000 <-> 224572, all four arms summed.
-The +330 ns satellite is unexplained -- see OPEN QUESTIONS at the bottom.
 
 So per-event alignment IS possible, and to ~30 ns rather than the microseconds
 PLAN.md feared. The tt_dream_match order-based fallback is not needed.
+
+SUPERSEDED FOR EFFICIENCY -- use match_window.py. The "66 % matched" this module
+reported was an artifact of its +-100 ns accept window, which by construction
+threw away the whole +330 ns band. Accepting both bands gives 98.8-99.6 %. The
++330 ns band is also no longer unexplained: it is WALL-ONLY (satellite/main is
+0.00-0.01 in the plastics, 0.68-1.97 in the walls). What remains valid here is the
+clock fit (k, t0) and the peak resolution.
 """
 from __future__ import annotations
 
