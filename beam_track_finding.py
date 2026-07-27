@@ -46,7 +46,14 @@ BASE_PATH = '/media/dylan/data/x17/feb_beam/runs/'
 RUN = 'run_80'
 SUBRUN = 'resist_640V_drift_1000V'
 EVENT = 17
-MIN_HIT_AMP = 200
+# Hit-amplitude threshold for track finding. Lowered 200 -> 50 ADC (2026-07-24): the
+# run_72/73/74 cosmic HV scan showed the 200 cut was dropping the low-amplitude hits of
+# under-amplified (low-gain / low-HV) tracks, so tracks fragmented and efficiency looked
+# HV-limited when it was really threshold-limited. Sweeping the cut recovered those tracks
+# ~5-10x at low HV, and the isolation filter + drift-spread/angle cuts reject the extra
+# noise (no ±90° common-mode spike returns). 50 ADC sits just above the ~25-50 ADC noise
+# pedestal. See run72-track-characterization / July_HV_Scan/run72_cosmics_tracks.
+MIN_HIT_AMP = 50
 FEU_NUMS = {4: 'y', 5: 'x'}
 
 # ─── Physics parameters ───────────────────────────────────────────────────────

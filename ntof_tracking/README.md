@@ -11,7 +11,67 @@ completed transfer validation proving the day-1 strategy on bench data, and
 model from raw beam files to physics-ready track tables. **Read this README
 fully, then execute the plans in order.** Each plan is self-contained.
 
+> **CORRECTION (2026-07-12): there are NO cosmics at nTOF.** The plans as
+> originally written assume a cosmics-at-nTOF commissioning dataset (Jun 27–29)
+> and beam-off cosmic runs. **These do not exist.** The ONLY tracks available at
+> nTOF are the beam tracks we reconstruct ourselves. Consequences, applied
+> throughout PLAN_02/04/05 below:
+> - **No external validation of the frozen bench angle models.** "Commission on
+>   cosmics where the angular mix matches the bench" is impossible. The frozen_rs
+>   angles cannot be checked against a known-good cosmic sample — trust is
+>   established only by internal consistency (X-plane vs Y-plane, micro-TPC
+>   segment angle vs inter-chamber link angle).
+> - **All calibration is bootstrapped from self-found beam tracks.** The
+>   inter-chamber links of PLAN_04 are the sole truth source (replacing both M3
+>   AND the assumed cosmic sample). The loop must converge from beam tracks alone.
+> - **z-alignment cannot lean on cosmics for inclined tracks.** It must use the
+>   inclined beam tracks we find. First real nTOF micro-TPC tracks (run_30
+>   scintOff, detector A) are inclined ~8–15° (evt 1017: θx −7.7°/θy −14.5°;
+>   evt 162: −13.5°/−13.3°), so inclined beam tracks DO exist — but they are rare
+>   (~3 % of compact clusters; most nTOF hits are isochronous point-like deposits,
+>   fundamentally unlike a gap-crossing cosmic — see
+>   `ntof_july_analysis/run30_microtpc.py`).
+> - **Opposite arms never share a track** (no cosmics crossing everything), so
+>   global cross-arm alignment has no track-based handle — it needs survey/beam-spot.
+
 ## What already exists here
+
+### `reco/` — beam reconstruction package (NEW, 2026-07-17, run_48 era)
+
+First working implementation of the PLAN_01/02/03 chain, built against the
+run_48 scint-DOUBLES data (32 smp × 60 ns windows, Ar/iso 95/5, dr800):
+
+| module | what |
+|---|---|
+| `reco/io.py` | full-schema combined_hits loader + vectorized (feu,channel)→(det,plane,pos_mm) mapping (centred local coords) |
+| `reco/noise.py` | residual-noise model: coherent time-band finder (the ~1.3 MHz whole-plane oscillation → 50-400 strips in one ~30 ns slice; amp-rescue for track hits crossing a band), isolated-hit removal, hot-channel list |
+| `reco/segments.py` | per-plane spatio-temporal clustering (Chebyshev link 4 mm/250 ns) + guided fragment merge (union robust-fit must stay track-grade) + robust line fits + cluster taxonomy {track, point, band_fragment, blob} with a strip-occupancy guard |
+| `reco/pairing.py` | X/Y pairing (time IoU + PLAN_38 charge balance via microtpc_lib) → 3D local segments; drift-time → depth via DriftModel |
+| `reco/geometry.py` | global frame from run_config det_center_coords/det_orientation (verified = Geant strip-plane centres incl. pinwheel); ACTIVE volumes only (MM drift gas, 16 instrumented SiPM bars per DetectorConstruction.cc, 2 PVT bars, LS liquid, He-3 gas polycone); local→global transforms; per-volume line-crossing tests (→ trigger-bar predictions); bench drift-velocity curve. NB: Geant `plot_geometry.py` has the SiPM read-out window shift sign FLIPPED (+u, bars 3–18) vs the sim itself (−u toward the MM, bars 1–16, DetectorConstruction.cc:489-500) — sim taken as truth; fix the plot script upstream. |
+| `reco/display.py` | per-plane event displays with reco overlays + 3-view global extrapolation figure (active volumes; measured segment drawn only in its own arm's panels) |
+| `reco/search.py` | event sifting: reconstruction-evidence score (3D pair ≫ 1-plane track ≫ nothing) + physics priors (2026-07-17): beamline-pointing bonus (DCA to Y axis < 400 mm, + He-3-gas crossing bonus), ≥3-chamber pair events down-ranked as pile-up (`multi_det`), burst veto (≥3 dets with >120 clean strips). Priors bias ranking only — odd-angle tracks stay findable. |
+
+Driver: `ntof_july_analysis/run48_tracking.py` (`event N` / `search`).
+First results (run_48 `_00`, 1047 events, 2026-07-17): evt 1107 → clean 3D
+track in mx17_C (x: n=28, r²=0.98; y: n=23, r²=0.98; IoU 0.95), extrapolation
+crosses D's SiPM wall + plastics (= the C×D doubles trigger), dca(origin)
+≈ 250 mm. Full sift: 42 events with a 3D X/Y pair (~4 %), 379 more with a
+single-plane track segment, 104 prompt multi-detector bursts vetoed
+(BUSY_DET_STRIPS=120 clean strips, ≥3 dets); evt 1107 ranks #1.
+Outputs → `analysis/July_HV_Scan/run48_tracking/<subrun>/` (candidates.csv
++ per-event planes/global figures).
+Full-run sift (all 12 subruns, 2026-07-17): 457 3D pairs after the multi-det
+cut; `run48_tracking.py ensemble` pools them, keeps DCA(target/origin)
+< 75 mm → **97 pairs (A 57 / B 11 / C 20 / D 9)** drawn together on the
+3-view global figure and a matplotlib 3D model of the active Geant4 volumes
+(`display.plot_global_ensemble` / `plot_global_3d`) →
+`run48_tracking/ensemble_dca75/`. `beamproj` mode gives the source profile
+along the beamline (median beam_y ≈ −25 mm, σ68 ~ few 100 mm).
+**Open calibrations:** DAQ t0 (≈450 ns first estimate), in-plane strip-axis
+signs/offsets (survey-unverified — pointing conclusions provisional until
+PLAN_04 links pin them).
+
+### bench-transfer layer (June cosmic distillation)
 
 | file | what |
 |---|---|

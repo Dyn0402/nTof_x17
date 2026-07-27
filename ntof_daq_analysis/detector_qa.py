@@ -4,8 +4,8 @@
 On-the-fly QA plots for nTof beam data.
 
 Produces per-detector QA plots from combined_hits ROOT files and writes them
-to <base_out_dir>/analysis/<run_name>/<subrun_name>/<det_name>/, which is
-the directory tree the flask Online QA tab serves.
+to <base_out_dir>/analysis/online_qa/<run_name>/<subrun_name>/<det_name>/, which
+is the directory tree the flask Online QA tab serves.
 
 Usage:
     python detector_qa.py \\
@@ -122,7 +122,7 @@ def run_qa(subrun_dir: Path, run_config_path: Path, mode: str = 'all', file_num:
                     print(f'[qa] {name} — strip mapping failed: {e}')
                     has_mapping = False
 
-        out_dir = base_out / 'analysis' / run_name / subrun_name / name
+        out_dir = base_out / 'analysis' / 'online_qa' / run_name / subrun_name / name
         out_dir.mkdir(parents=True, exist_ok=True)
 
         title = f'{run_name} / {subrun_name} / {name}'
