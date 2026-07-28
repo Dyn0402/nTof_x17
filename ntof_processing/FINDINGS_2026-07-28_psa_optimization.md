@@ -313,10 +313,52 @@ Corrected in `make_pulse_shapes.py`: `SPAN` is now per family and matched to
 the measured tail (WAL 60/800, PSS 20/80, LIQ 20/60), with the reasoning in
 the code so nobody repeats the mistake.
 
-Follow-up variants:
-- **`v4_walshapes`** = v2_elim + the wall templates only (the proven win)
-- **`v5_liqshort`** = v4 + short *averaged* liquid templates (the retry: same
-  length as the shipped ones, but built from hundreds of pulses instead of one)
+### v4 / v5: the walls are settled, the liquids are not template-limited
+
+`compare_fits.py` on the same partial, all three variants (`chi2` p50 / amp p50
+/ hits):
+
+```
+        v2_elim (shipped tpl)   v4_walshapes           v5_liqshort
+WALA    0.896  660  204343      0.851  674  200130     same as v4
+WALB    1.227  894  198685      1.002  923  193299     same as v4
+WALC    1.133  846  218638      1.002  879  212460     same as v4
+WALD    1.184  856  215759      1.062  885  209659     same as v4
+LIQA    2.395  218  293904      same as v2             5.244  156  254388
+LIQB    4.273  311  338151      same as v2             7.209  240  313554
+LIQC    1.795  137   91176      same as v2             5.123  100   63032
+LIQD    1.768  152  203058      same as v2             3.934  114  157609
+```
+
+v4 == v2 on the liquids and v5 == v4 on the walls, exactly as designed -- which
+is a useful self-check that the variants are what they claim to be.
+
+**Verdict: `v4_walshapes` is the winner.** The wall templates improve the fit on
+all four walls; the liquids keep Riccardo's shipped templates.
+
+**The liquid regression is NOT about template length.** The 81 ns retry loses by
+almost exactly as much as the 551 ns attempt did, so the length hypothesis in
+section 2b is dead twice over. Two further checks: **[measured]**
+
+- it is not interpolation smearing -- my LIQA template is FWHM 7 ns, identical
+  to the shipped LIQA's 7 ns (and my WALA is 74 ns vs the raw pulses' 74 ns)
+- the clearest remaining difference is **basis diversity**. The shipped liquid
+  pair is `LIQA_Signal_7` (FWHM 7 ns, width@10 % 21 ns) *and* `LIQB_Signal_0`
+  (**FWHM 1 ns**, width@10 % 8 ns) -- a normal pulse plus a near-delta spike --
+  and the same two files are handed to all four liquids. My three amplitude-bin
+  templates span only FWHM 5-7 ns. A basis without the narrow component cannot
+  represent fast/narrow pulses, which fits the symptom (chi2 up, amplitude
+  down ~30 %, more pileup flags).
+
+  Note this does NOT explain the walls, where my basis (FWHM 74-77 ns) is
+  *less* diverse than the shipped one (67-90 ns) and still wins -- there the
+  gain is template length, since the shipped 314 ns files end while the pulse
+  is still at ~3 % of peak. So: length matters for the walls, basis diversity
+  appears to matter for the liquids. **[inferred for the liquids]**
+
+Next liquid experiment, if anyone wants it: **augment rather than replace** --
+keep the shipped pair and add one averaged shape as a third. Do not simply
+re-average; that has now failed twice.
 
 ## 5. What is NOT addressed here
 
