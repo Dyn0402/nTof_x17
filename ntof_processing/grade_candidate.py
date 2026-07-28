@@ -21,6 +21,11 @@ Checks, on whatever bunches the file happens to contain:
 
 Usage:
     python grade_candidate.py <file.root> [<file.root> ...]
+    python grade_candidate.py v1=a.root,b.root v2=c.root,d.root
+
+The second form pools several partials of the same variant into one sample --
+each partial covers only ~20 bunches, so a few of them are worth having before
+trusting a per-arm offset.
 """
 import sys
 from pathlib import Path
@@ -40,23 +45,36 @@ def mode(v, binw=10.0):
     return float(e[h.argmax()] + binw / 2)
 
 
-def load(path):
-    f = uproot.open(path)
+def load(paths):
+    """Read one file, or concatenate several partials of the same variant."""
+    if isinstance(paths, str):
+        paths = [paths]
     out = {}
-    for t in TREES:
-        if t not in [k.split(';')[0] for k in f.keys()]:
-            continue
-        br = ['BunchNumber', 'tflash', 'tof']
-        if 'amp' in f[t].keys():
-            br.append('amp')
-        out[t] = f[t].arrays(br, library='np')
+    for path in paths:
+        f = uproot.open(path)
+        for t in TREES:
+            if t not in [k.split(';')[0] for k in f.keys()]:
+                continue
+            br = ['BunchNumber', 'tflash', 'tof']
+            if 'amp' in f[t].keys():
+                br.append('amp')
+            a = f[t].arrays(br, library='np')
+            if t in out:
+                out[t] = {k: np.concatenate([out[t][k], a[k]]) for k in a}
+            else:
+                out[t] = a
     return out
 
 
-def grade(path):
-    d = load(path)
-    name = Path(path).name
-    print(f'\n{"=" * 78}\n{name}')
+def grade(spec):
+    """`spec` is a path, or `label=fileA,fileB,...` to pool several partials."""
+    if '=' in spec:
+        name, files = spec.split('=', 1)
+        paths = files.split(',')
+    else:
+        paths, name = [spec], Path(spec).name
+    d = load(paths)
+    print(f'\n{"=" * 78}\n{name}  ({len(paths)} file(s))')
     ref = d.get('WALA', d[list(d)[0]])
     bunches = np.unique(ref['BunchNumber'])
     print(f'  {len(bunches)} bunches: {bunches.min()}-{bunches.max()}')
@@ -139,7 +157,8 @@ def main():
         return 1
     allc = {}
     for p in sys.argv[1:]:
-        allc[Path(p).name] = grade(p)
+        label = p.split('=', 1)[0] if '=' in p else Path(p).name
+        allc[label] = grade(p)
     if len(allc) > 1:
         print(f'\n{"=" * 78}\nhits per bunch, side by side')
         names = list(allc)

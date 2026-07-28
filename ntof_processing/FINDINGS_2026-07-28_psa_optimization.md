@@ -234,36 +234,48 @@ shift the absolute numbers.
 
 ## 4b. RESULTS of the first reprocessing (2026-07-28, run 224572)
 
-Graded with `ntof_processing/grade_candidate.py` on the first `completed/`
-partial of each variant (21 bunches, 2998-3018) -- the partials land within
-~25 min of submission, long before the 26 GB merge, and they are enough for
-checks 1 and 2. **[measured]**
+Graded with `ntof_processing/grade_candidate.py` on pooled `completed/` partials
+(**421 bunches, 398-3018**) -- partials land within ~25 min of submission, long
+before the 26 GB merge, and they are enough for checks 1 and 2. Each partial is
+~1.7-2 GB (job 0016 is a small tail chunk). **[measured]**
 
 ### The flash fix works, and it works better than the acceptance bar
 
 ```
                         official (before)        v1_flash / v2 / v3 (after)
-flash-id bad bunches    PSS 37-85 %              0.0 % on ALL 13 trees
-consistency vs wall     PSSA -362  PSSB +20      PSSA +1.1  PSSB +0.5
-                        PSSC -333  PSSD -336     PSSC -2.8  PSSD -6.0
-                        LIQA -373  LIQB  +10     LIQA -2.0  LIQB -2.9
-                        LIQC -350  LIQD -348     LIQC (few) LIQD -18.0
+flash-id bad bunches    PSS 37-85 %              0.0 % on 12 of 13 trees
+                                                 (PSSD 0.2 %)
+consistency vs wall     PSSA -362  PSSB +20      PSSA -3.5  PSSB +0.6
+                        PSSC -333  PSSD -336     PSSC -3.0  PSSD -5.9
+                        LIQA -373  LIQB  +10     LIQA -6.0  LIQB -2.0
+                        LIQC -350  LIQD -348     LIQC -17.8 LIQD -14.6
+per-tree modal tflash   WALA/C/D 11245-11275     all four walls 11605
+                        WALB/PSS/LIQ 11615-11645 PSS 11635-11645, LIQ 11615-11635
 ```
 
-Target was <2 % and |offset| <25 ns. The plastics come in at 1-6 ns. All four
-walls now time the same waveform feature as the plastics and the liquids,
-which is the whole point: **the 350 ns problem is gone at the source**, and the
-laptop-side `tflash_repair` becomes a no-op.
+Target was <2 % and |offset| <25 ns; everything passes. The plastics come in at
+0.6-6 ns. All four walls now time the same waveform feature as the plastics and
+the liquids, which is the whole point: **the 350 ns problem is gone at the
+source**, and the laptop-side `tflash_repair` becomes a no-op.
+
+The residual to watch is **LIQC/LIQD at -15 to -18 ns** -- inside the bar, but
+an order of magnitude larger than the plastics' and the only per-arm structure
+left. These are the two liquids with the fewest hits, so it may just be the
+coincidence-peak fit; re-check on the merged file before folding these into
+`flash_calibration.json`.
 
 ### v2_elim recovers exactly the hits it predicted
 
-Hits per bunch, v2 against v1:
+Hits per bunch, v2 against v1, over 421 bunches:
 
 ```
 WALA-D  +0.0 %  (control: the wall elimination was not touched)
-PSSA +30.8 %   PSSB +13.9 %   PSSC +20.8 %   PSSD +27.1 %
-LIQA +21.7 %   LIQB +16.2 %   LIQC +26.8 %   LIQD +19.2 %
+PSSA +30.7 %   PSSB +13.8 %   PSSC +20.9 %   PSSD +26.8 %
+LIQA +21.8 %   LIQB +16.3 %   LIQC +26.6 %   LIQD +19.3 %
 ```
+
+(The 21-bunch and 421-bunch samples agree to 0.2 %, so the recovery is uniform
+across the run rather than concentrated in some bunches.)
 
 Predicted from the raw pulses in sections 1b/2a: ~25 % for the plastics and
 ~19 % for the liquids. The walls being *exactly* 0.0 % is the control that says
