@@ -267,3 +267,25 @@ Root: `~/x17/cosmic_bench/Analysis/mx17_det3_saturday_scan_6-27-26/long_run_resi
 4. **PLAN_40** — drift-gap skeptic tests (hardens topic 7).
 5. **PLAN_41** — publication figures + housekeeping (after 37–40 so their outputs are included).
 6. Writing: rev the report / start the paper skeleton from `DET3_WEEKEND_ANALYSIS.md` + `MICROTPC_RUNBOOK.md` §0. Narrative arc: *sharing measured → breaks time-based tracking → unsharing + geometry estimator fix it → hybrid makes it uniform → sharing repaid as sub-pitch position*, plus the gas/attachment leg and the operations leg (HV, sparks, edge).
+
+---
+
+## Waveform-first rebase — measured status (2026-07-29)
+
+The rebase decided on 7-28 (`../RECONSTRUCTION_BASIS.md`) now has det3 numbers
+from the new chain (`../mx_june_wft/`, gate report
+`../mx_june_wft/DET3_GATE_2026-07-29.md`). Both chains scored through identical
+accounting; the fleet is still running, so these are det3 (`sat_det3`) only.
+
+| paper topic | old (hits) | waveform-first | what changes in the paper |
+|---|---|---|---|
+| 3 — tracking / angular resolution | σ_θ 2.42 / 2.60°; hybrid s68 1.66–1.72° with 85–98 % coverage | **σ_θ 1.20 / 1.14°, s68 1.25 / 1.18°, bias −0.04 / −0.29°**, no coverage carve-out | The hybrid was a workaround for a biased estimator. The forward fit beats it *and* applies to every event, so topic 3 becomes one estimator, not a regression+segment split. |
+| 8 — drift velocity | 34.3 ± 1.5 µm/ns (geometry), ladder implies 47–50 | **36.7 ± 0.3 ± 0.9 µm/ns**, Magboltz Ar/iso 95/5 + 0.8 % H₂O | Already settled in the R&D study (§17–18); the paper needs to quote the forward-fit value and explain why the geometry estimator read low (floor-subtraction ambiguity + the 29 mm gap assumption). |
+| 9 — spatial resolution | core σ \|r\| 0.448 mm | **0.472 mm** | Parity, not an improvement — and both are reference-limited (M3 pointing floor ≈ 0.40 mm at the DUT). The honest claim is unchanged; what changes is that it no longer rests on a biased depth model. |
+| implied-v vs angle (new, physicality) | 56 → 39 µm/ns across the angle range | **spread 2.3 / 2.4 µm/ns** | Worth a figure: a reconstruction that reads the same drift velocity at every angle is the direct evidence the compression is gone. |
+| 6 — efficiency, HV, sparks | — | `has_any` and `spark_frac` identical | Unaffected: detection is an analyzer property. No rework needed. |
+
+Still to do before the paper can be re-cut: the fleet (det2/det4/det6/det7),
+the time-resolution port (topic 10), and packaging the v(E) and gap-map scripts.
+Topics 1, 2 and 5 need re-checking because their constants were fitted on
+hits-derived quantities — not yet done.

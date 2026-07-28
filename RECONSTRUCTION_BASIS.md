@@ -91,15 +91,26 @@ if you know which basis produced it.
 | analysis | basis | where |
 |---|---|---|
 | Threading / cluster displays | **waveform** | `waveform_first_threading/37_threading_displays.py` |
-| Per-event tracking (angles, positions) | **waveform** | `wft/` (R&D validated; packaging in progress) |
-| v(E), gas fit | **waveform** | `waveform_first_threading/` scripts 19–21 |
-| Gap / column maps | **waveform** | `waveform_first_threading/` scripts 29–35 |
-| Alignment | hits (port pending) | `mx_june_cosmic_qa/03_alignment_and_tpc.py` |
-| Efficiency maps and breakdown | hits — legitimate (detection is an analyzer property) | `mx_june_cosmic_qa/08`, `09`, `12` |
-| Residuals / resolution maps | hits (port pending) | `mx_june_cosmic_qa/03`, `12` |
-| Angular resolution, hybrid tracking | hits (port pending — **superseded in accuracy**) | `mx_june_cosmic_qa/34`, `36` |
+| Per-event tracking (angles, positions) | **waveform** | `wft/` — packaged, regression-tested against the R&D code |
+| Angular resolution | **waveform** (det3 done, fleet in progress) | `mx_june_wft/03_angles.py` |
+| Alignment | **waveform** (det3 done) | `mx_june_wft/01_alignment.py` |
+| Efficiency breakdown | **waveform** positions, hits detection | `mx_june_wft/02_efficiency.py` |
+| Efficiency / resolution maps | **waveform** (det3 done) | `mx_june_wft/04_maps.py` |
+| v(E), gas fit | **waveform** | `waveform_first_threading/` scripts 19–21 (not yet packaged) |
+| Gap / column maps | **waveform** | `waveform_first_threading/` scripts 29–35 (not yet packaged) |
+| Hybrid tracking | hits — **superseded in accuracy**, do not extend | `mx_june_cosmic_qa/34`, `36` |
 | Time resolution | hits + waveform (port pending) | `mx_june_cosmic_qa/42` |
 | Sparks, charge balance, fringe field | hits — QA-level, unaffected | `mx_june_cosmic_qa/38`–`40` |
+
+**det3 gate result (2026-07-29, `mx_june_wft/DET3_GATE_2026-07-29.md`)**, both
+chains through identical accounting: σ_θ **2.42/2.60° → 1.20/1.14°** with the
+implied-v spread across angle bins falling from ~17 to 2.3 µm/ns (the
+compression signature, essentially gone); position at parity (within 5 mm
+93.13 → 92.15 %, core σ 0.448 → 0.472 mm); detection unchanged (`has_any`,
+`spark_frac` identical). The position gap is multi-cluster seeding — the
+"largest cluster wins" rule picks the wrong charge in ~5 % of events, where the
+reference sits a median 37 mm outside the fit window — and a track-compatibility
+seeder is the open follow-up.
 
 ## Reading order for the evidence
 
