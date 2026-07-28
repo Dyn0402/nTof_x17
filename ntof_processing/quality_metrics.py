@@ -63,25 +63,35 @@ CORE = 300.0
 COINC_NS = 20.0            # prompt window for the MIP tag
 
 
-def peak_width(d, span=CORE, nbins=240):
-    """Centre and sigma of an accidental-subtracted dt peak."""
+def peak_width(d, span=CORE, bin_ns=1.0, fit_ns=25.0):
+    """Centre and sigma of an accidental-subtracted dt peak.
+
+    Sigma is the background-subtracted second moment inside +-fit_ns, NOT
+    FWHM/2.355. FWHM only moves in whole bins, and `tof` is quantised to 1 ns,
+    so an FWHM-based sigma steps in ~1 ns and reads *identical* for variants
+    whose data clearly differ -- which is exactly what it did before this was
+    fixed. The second moment uses every entry and moves continuously.
+    """
     d = d[np.isfinite(d)]
     if d.size < 200:
         return np.nan, np.nan, 0
-    h, e = np.histogram(d, bins=nbins, range=(-span, span))
+    nb = max(8, int(round(2 * span / bin_ns)))
+    h, e = np.histogram(d, bins=nb, range=(-span, span))
     c = 0.5 * (e[1:] + e[:-1])
     # flat accidental level from the outer thirds
     edge = np.abs(c) > 0.66 * span
     bg = np.median(h[edge]) if edge.any() else 0.0
     hs = h.astype(float) - bg
     if hs.max() <= 0:
-        return np.nan, np.nan, int(hs.sum())
-    half = hs.max() / 2
-    above = np.flatnonzero(hs > half)
-    if above.size < 2:
-        return float(c[hs.argmax()]), np.nan, int(hs.sum())
-    fwhm = float(c[above[-1]] - c[above[0]])
-    return float(c[hs.argmax()]), fwhm / 2.355, int(max(hs.sum(), 0))
+        return np.nan, np.nan, 0
+    centre = float(c[hs.argmax()])
+    m = np.abs(c - centre) < fit_ns
+    w = np.clip(hs[m], 0, None)
+    if w.sum() <= 0:
+        return centre, np.nan, 0
+    mu = float((w * c[m]).sum() / w.sum())
+    var = float((w * (c[m] - mu) ** 2).sum() / w.sum())
+    return mu, float(np.sqrt(max(var, 0.0))), int(w.sum())
 
 
 def load(files, tree, branches):
