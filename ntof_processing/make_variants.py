@@ -85,6 +85,40 @@ a regression can be attributed.""",
         shapes={'PSS': ['X17_{tree}_Signal_avg0.txt', 'X17_{tree}_Signal_avg1.txt',
                         'X17_{tree}_Signal_avg2.txt']}),
 
+    'v10_pssfit_step': dict(
+        base='v8_pssfit',
+        why="""Push on the one thing that has actually worked. v8_pssfit won by
++1.2 points overall and +2.1 in the 1-3 ms bin, and the mechanism is now
+measured: it produces FEWER plastic hits at every amplitude cut (0.72-0.99 of
+v4) yet MORE valid wall AND plastic candidates (103,816 vs 101,809). So the
+gain is plastic TIMING in pileup, not plastic yield -- shape fitting merges
+fragments back into one correctly-timed pulse.
+
+The leg diagnostic says that is exactly where the remaining loss is: wall-only
+efficiency is 98.9 % and flat in time, the AND is 96.4 %, so the plastic leg
+costs 2.5 % overall but 3.4-3.7 % at 1-10 ms -- a pileup signature.
+
+v7_step tested a finer STEP SIZE WITHOUT shape fitting and lost. With shape
+fitting the derivative search only has to find candidates for the fit to
+resolve, so a finer step should compound rather than fragment. PSS only; the
+walls were neutral-to-worse in v7 (T1 sigma +2.2 %).""",
+        edits=[('PSS', 'STEP SIZE', '2/3')]),
+
+    'v11_pssfit_width': dict(
+        base='v8_pssfit',
+        why="""The other half of the same idea, and the guide is explicit about
+it: "SIGNAL WIDTH LOW THR. should be adjusted looking at the pulses from
+pileup, since they will be cut short by a following pulse!"
+
+Plastic pulses are 13 ns FWHM. The current SIGNAL WIDTH LOW THR. of 10 ns
+therefore sits right on top of the width of a pileup-truncated plastic pulse,
+so precisely the pulses we are trying to recover are the ones at risk of being
+eliminated before the shape fit ever sees them. Drop it to 4 ns.
+
+Elimination is meant to be loose anyway -- the guide's own advice is that false
+pulses "can and should be eliminated during the later data analysis".""",
+        edits=[('PSS', 'SIGNAL WIDTH LOW', '4')]),
+
     'v9_liqaug': dict(
         base='v4_walshapes',
         why="""The liquid retry, done the other way round. Replacing the shipped

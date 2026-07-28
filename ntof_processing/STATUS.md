@@ -34,17 +34,37 @@ at 1024 MB), hadd over EOS dies and leaves a truncated file that still opens.
 
 ## Variants
 
-| variant | change vs its base | status |
-|---|---|---|
-| v1_flash | G-FLASH THRESHOLD only | done, superseded |
-| v2_elim | + PSS/LIQ AREA/AMP 1..60, PSS amp thr 50 | done, superseded |
-| v3_shapes | + 551 ns WAL and LIQ templates | done, LIQ part rejected |
-| **v4_walshapes** | v2 + WALL templates only | **done -- current production** |
-| v5_liqshort | v4 + 81 ns LIQ templates | done, rejected |
-| v6_lowthr | v4 + PSS/LIQ amp thr 25, PSS AREA/AMP low 0.2 | submitted |
-| v7_step | v4 + STEP SIZE WAL 5/5, PSS 2/3, LIQ 2/3 | submitted |
-| v8_pssfit | v4 + PSS shape fitting, 101 ns templates | submitted |
-| v9_liqaug | v4 + LIQ shipped pair PLUS a measured third shape | submitted |
+| variant | change vs its base | singles eff / false | verdict |
+|---|---|---|---|
+| v1_flash | G-FLASH THRESHOLD only | - | superseded |
+| v2_elim | + PSS/LIQ AREA/AMP 1..60, PSS amp thr 50 | - | superseded |
+| v3_shapes | + 551 ns WAL and LIQ templates | - | LIQ part rejected |
+| v4_walshapes | v2 + WALL templates only | 95.2 / 0.6 | superseded by v8 |
+| v5_liqshort | v4 + 81 ns LIQ templates | - | rejected |
+| v6_lowthr | v4 + PSS/LIQ amp thr 25 | 95.2 / 0.6 | **no effect on the matcher** |
+| v7_step | v4 + STEP SIZE WAL 5/5, PSS 2/3, LIQ 2/3 | 95.1 / 0.6 | neutral/slightly worse |
+| **v8_pssfit** | v4 + PSS shape fitting, 101 ns templates | **96.4 / 0.6** | **production** |
+| v9_liqaug | v4 + LIQ shipped pair + a measured third | 95.2 / 0.6 | neutral |
+| v10_pssfit_step | v8 + PSS STEP SIZE 2/3 | - | submitted |
+| v11_pssfit_width | v8 + PSS SIGNAL WIDTH LOW 4 ns | - | submitted |
+
+### What the second sweep established
+
+- **v8_pssfit wins on the headline**: 95.2 -> 96.4 % efficient at the same
+  0.6 % false, 93.4 -> 95.5 % in the hardest 1-3 ms bin.
+- **and it does so with FEWER plastic hits** -- 0.72-0.99 of v4 at every
+  amplitude cut -- while producing MORE valid candidates (103,816 vs 101,809).
+  The gain is plastic TIMING in pileup, not plastic yield. Hit count and
+  quality point opposite ways here; that is what the scorecard is for.
+- **v6_lowthr changes nothing for the matcher** despite +15-25 % more plastic
+  and +29-47 % more liquid hits: the trigger emulation thresholds the plastic
+  leg in mV at the discriminator, so 25-50 ADC hits never enter it. Those hits
+  are real and remain available for non-trigger analyses, but they do not
+  belong in production.
+- **The plastic leg is still what limits the AND.** Wall-only efficiency is
+  98.9 % and flat in time; the AND is 96.4 %. The plastic costs 2.5 % overall
+  and 3.4-3.7 % at 1-10 ms -- a pileup signature. v10/v11 target exactly that.
+- The liquids have now resisted three template treatments. Stop there.
 
 ## Scorecard, and the v4 baseline to beat
 

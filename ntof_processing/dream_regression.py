@@ -131,27 +131,31 @@ def main() -> int:
                                         repair_tflash=False)  # type: ignore
 
     thr, adc = dt.load_thresholds(dream_run, sub), dt.load_adc_mv()
-    CB, CT = [], []
     offs = {}
-    for arm in dt.ARMS:
-        off = dt.measure_tb_offsets(ntof_run, bunches, arm)
-        offs[arm] = off
-        cb_, ct_ = dt.singles_candidates(ntof_run, bunches, arm, thr, adc,
-                                         tb_off=off, require_plastic=True)
-        CB.append(cb_)
-        CT.append(ct_)
-    cb = np.concatenate(CB)
-    ct = np.concatenate(CT)
-    o = np.lexsort((ct, cb))
-    cb, ct = cb[o], ct[o]
+    legs = {}
+    for req in (True, False):
+        CB, CT = [], []
+        for arm in dt.ARMS:
+            if arm not in offs:
+                offs[arm] = dt.measure_tb_offsets(ntof_run, bunches, arm)
+            cb_, ct_ = dt.singles_candidates(ntof_run, bunches, arm, thr, adc,
+                                             tb_off=offs[arm],
+                                             require_plastic=req)
+            CB.append(cb_)
+            CT.append(ct_)
+        c_b, c_t = np.concatenate(CB), np.concatenate(CT)
+        o = np.lexsort((c_t, c_b))
+        legs[req] = (c_b[o], c_t[o])
+    cb, ct = legs[True]
 
     SHIFT = 100_000.0
 
-    def match(shift):
+    def match(shift, cand=None):
+        c_b, c_t = cand if cand is not None else (cb, ct)
         got = np.zeros(len(sel), bool)
         for b, g in sel.groupby('BunchNumber'):
-            s, e = np.searchsorted(cb, [b, b + 1])
-            tt = ct[s:e]
+            s, e = np.searchsorted(c_b, [b, b + 1])
+            tt = c_t[s:e]
             if tt.size == 0:
                 continue
             et = g['t_since_flash_ns'].to_numpy().astype(float)
@@ -183,6 +187,22 @@ def main() -> int:
           f'(baseline with the laptop repair ON: 93.7 % / 0.5 %)')
     print(f'    measured time-base offsets (should be ~0 on a good file): '
           f'{ {a: round(float(np.median(list(v.values()))), 1) for a, v in offs.items()} }')
+
+    # ---- which leg is the limit? ---------------------------------------------
+    # Same matcher with the plastic requirement dropped. The gap between the two
+    # is what the plastic leg costs; whatever is missing from the wall-only
+    # number is the wall leg's own inefficiency, and that is where the next
+    # UserInput change should go.
+    got_w = match(0.0, legs[False])
+    print(f'\n[3] which leg limits the efficiency')
+    print('      t bin (ms)     wall only   wall AND plastic   plastic leg costs')
+    for lo, hi in ((1, 3), (3, 10), (10, 20), (20, 40), (40, 80)):
+        m = (ets2 >= lo * 1e6) & (ets2 < hi * 1e6)
+        if m.sum():
+            print(f'      {lo:4d}-{hi:<4d} {got_w[m].mean():12.1%} '
+                  f'{got[m].mean():17.1%} {got_w[m].mean() - got[m].mean():18.1%}')
+    print(f'      OVERALL   {got_w.mean():12.1%} {got.mean():17.1%} '
+          f'{got_w.mean() - got.mean():18.1%}')
 
     print(f'\nverdict: match_window {"PASS" if eff >= 0.99 else "BELOW BASELINE"}, '
           f'singles {"PASS" if got.mean() >= 0.90 else "BELOW BASELINE"} '
