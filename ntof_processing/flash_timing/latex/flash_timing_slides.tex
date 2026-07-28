@@ -391,6 +391,84 @@ $\Rightarrow$ take plastic constants \hl{per run}, never per epoch.}
 \end{frame}
 
 % ------------------------------------------------------------------
+\begin{frame}{Update: the plastics are fixed by the reprocessing}
+\begin{columns}[T]
+\begin{column}{0.5\textwidth}
+The parallel UserInput work reprocessed run 224572. Same measurement on
+\texttt{v4\_walshapes}:
+\vspace{0.5em}
+
+\small
+\begin{tabular}{lrr}
+\toprule
+ & official & reprocessed \\
+\midrule
+PSS flash hit found & 42\,\% & \hl{100\,\%} \\
+per-bunch $\sigma$ & 2.5\,ns & 3.0--4.6\,ns \\
+LIQ found & 100\,\% & 100\,\% \\
+\bottomrule
+\end{tabular}
+\vspace{0.8em}
+
+{\footnotesize The single change responsible is the \hl{G-FLASH threshold}
+($50\rightarrow2000/10^4$): \texttt{v1\_flash} alone, elimination untouched,
+already gives 100\,\%.}
+\end{column}
+\begin{column}{0.5\textwidth}
+\begin{block}{So the missing hits were\ldots}
+{\small a \hl{downstream symptom of the flash-finder bug}, not an independent
+plastic defect. With the flash mis-located at ${\sim}130\ns$ (fitting noise),
+the pulse recognition never reconstructs the real pulse at $11.63\,\mu$s.}
+\end{block}
+\vspace{0.5em}
+{\footnotesize Elimination is \emph{not} the gate: widening it
+(\texttt{v2\_elim}) changes the yield not at all, and the surviving flash hits
+have area/amp $\simeq72$--$76$, above even the widened window.}
+\vspace{0.5em}
+
+{\footnotesize $\Rightarrow$ \S\,``plastics unusable'' applies to the
+\emph{official} files only.}
+\end{column}
+\end{columns}
+\end{frame}
+
+% ------------------------------------------------------------------
+\begin{frame}{Independent cross-check: the two routes agree}
+\small
+\begin{columns}[T]
+\begin{column}{0.56\textwidth}
+\begin{tabular}{lrrr}
+\toprule
+tree & reprocessed & this work & diff \\
+\midrule
+WALA & $-1717.82$ & $-1719.46$ & $+1.64$ \\
+WALB & $-1718.07$ & $-1719.69$ & $+1.62$ \\
+WALC & $-1718.05$ & $-1719.23$ & $+1.18$ \\
+WALD & $-1722.29$ & $-1719.01$ & $-3.28$ \\
+\multicolumn{3}{r}{rms} & \hl{2.07} \\
+\midrule
+LIQA & $-1708.38$ & $-1708.22$ & $-0.16$ \\
+LIQB & $-1710.78$ & $-1710.30$ & $-0.48$ \\
+LIQC & $-1695.73$ & $-1695.56$ & $-0.17$ \\
+LIQD & $-1701.27$ & $-1701.56$ & $+0.29$ \\
+\multicolumn{3}{r}{rms} & \hl{0.27} \\
+\bottomrule
+\end{tabular}
+\end{column}
+\begin{column}{0.44\textwidth}
+{\footnotesize
+A \hl{corrected flash finder} run on 224572 --- a \emph{gated} run, ten days
+after the nearest calibration run, where the walls see only the clamped leak.
+\\[0.5em]
+Walls agree to \hl{2.1\,ns} rms, liquids to \hl{0.27\,ns} rms --- two different
+processings of the same run agreeing to a quarter of a nanosecond.
+\\[0.5em]
+The two routes share no assumption beyond the pickup itself.}
+\end{column}
+\end{columns}
+\end{frame}
+
+% ------------------------------------------------------------------
 \begin{frame}{What to do}
 \begin{enumerate}\setlength\itemsep{0.55em}
   \item \textbf{Walls}: per-channel \texttt{C\_2026\_07\_16} for runs
@@ -399,7 +477,9 @@ $\Rightarrow$ take plastic constants \hl{per run}, never per epoch.}
   \item \textbf{Liquids}: per-run value or campaign mean --- they agree to
         ${\sim}1\ns$.
   \item \textbf{Plastics}: per-run value only.
-  \item \hl{Never} use the stored \texttt{tflash} of WAL/PSS/LIQ.
+  \item \hl{Never} use the stored \texttt{tflash} of WAL/PSS/LIQ \emph{from the
+        official files}; in reprocessed files it is sound, but PKUP\,$+\,C$ is
+        still the recommended time base.
   \item If a bunch has no usable pickup pulse (1.6\,\%, all parasitic), drop the
         bunch.
 \end{enumerate}

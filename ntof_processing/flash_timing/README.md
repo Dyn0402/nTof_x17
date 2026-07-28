@@ -31,11 +31,18 @@ C   = cal['WALA']['channels']['3']['C_2026_07_16']      # -1721.79 ns
 t_since_flash = hit_tof - (pkup_tof[hit_bunch] + C)
 ```
 
-**Do not use the PSA's stored `tflash` for the walls, the plastics or the
-liquids.** In gate-on runs the wall flash finder is bistable *within a single
-run* — it tags the divert-gate transient in some bunches and the clamped flash
-leak in others, so no per-run offset can repair it. PKUP's finder never fails
-(§3.2), which is why the whole calibration hangs off it.
+**Do not use the PSA's stored `tflash` from the OFFICIAL files** for the walls,
+the plastics or the liquids. In gate-on runs the wall flash finder is bistable
+*within a single run* — it tags the divert-gate transient in some bunches and the
+clamped flash leak in others, so no per-run offset can repair it. PKUP's finder
+never fails (§3.2), which is why the whole calibration hangs off it.
+
+*(The 2026-07-28 reprocessing — `../userinputs/`, `v4_walshapes` — repairs the
+stored `tflash` itself: see §3.7 and §3.8, where it also reproduces this
+calibration to 2.1 ns on the walls and 0.27 ns on the liquids. Even so, take the
+**time base** from here and the **hit content** from the reprocessing: PKUP + C
+is measured on the undiverted flash, whereas a reprocessed wall `tflash` is still
+timing the clamped leak of a gated signal.)*
 
 Accuracy you can expect:
 
@@ -284,6 +291,31 @@ bunch; σ is for the largest-amplitude hit there.)
    (07-17). *PSSB ch2* is defective throughout (amp 9 778 vs ~30 000) and is
    excluded from the tree constant.
 
+> ### ⚠ All of §3.7 describes the **official** processing, and it is now fixed
+>
+> The parallel UserInput work (`../FINDINGS_2026-07-28_psa_optimization.md`,
+> variants in `../userinputs/`) reprocessed run 224572. Measuring the same
+> quantities on `v4_walshapes` (3 partials, 597 bunches):
+>
+> | | official | reprocessed |
+> |---|---|---|
+> | PSSA…D flash hit found | 42 % | **100 %** |
+> | per-bunch σ | 2.5 ns | **3.0–4.6 ns** |
+> | LIQ found | 100 % | 100 % |
+>
+> **The single change that does it is the G-FLASH threshold** (`50` → `2000/1e4`):
+> the `v1_flash` variant — flash fix only, elimination untouched — already gives
+> 100 %. So the missing plastic flash hits were a *downstream symptom of the
+> flash-finder bug*, not an independent plastic defect: with the flash
+> mis-located at ~130 ns (fitting noise), the pulse recognition for that bunch
+> never reconstructs the real pulse at 11.63 µs.
+>
+> That also retires the mechanism I was reaching for below. The elimination
+> window is *not* the gate: the surviving flash hits have area/amp ≈ 72–76, above
+> even the widened `1..60`, and widening it (`v2_elim`) changes the yield not at
+> all. **Conclusion: use reprocessed files and the plastics are fine for flash
+> ID; the numbers below apply only to the official files.**
+
 **And it is not simply "saturation breaks the PSA".** The liquid scintillators
 are the control: they sit on the same digitiser and the same PSA, and their flash
 hits are **more** saturated than the plastics' (saturation flag on **79–80 %**
@@ -301,6 +333,32 @@ relevant to the reprocessing effort in `../HANDOFF_2026-07-28_ntof_processing.md
 **Take plastic constants per run from `data/plastic_liq_flash_by_run.csv`, never
 from a single epoch.**
 
+### 3.8 Independent cross-check against the reprocessed data
+
+The parallel reprocessing gives a completely independent route to the same
+numbers: a *fixed* flash finder, run on run 224572 — a gated run, ten days after
+the nearest calibration run — where the walls can only see the clamped leak.
+Comparing its stored `tflash` (referenced to PKUP, 8 partials, 1597 bunches)
+against this work:
+
+| tree | reprocessed | this work | diff | this work is from |
+|---|---|---|---|---|
+| WALA | −1717.82 | −1719.46 | **+1.64** | divert-off runs, 07-16 epoch |
+| WALB | −1718.07 | −1719.69 | **+1.62** | divert-off runs, 07-16 epoch |
+| WALC | −1718.05 | −1719.23 | **+1.18** | divert-off runs, 07-16 epoch |
+| WALD | −1722.29 | −1719.01 | **−3.28** | divert-off runs, 07-16 epoch |
+| | | mean **+0.29** | rms **2.07** | |
+| LIQA | −1708.38 | −1708.22 | −0.16 | campaign monitor (official proc.) |
+| LIQB | −1710.78 | −1710.30 | −0.48 | campaign monitor (official proc.) |
+| LIQC | −1695.73 | −1695.56 | −0.17 | campaign monitor (official proc.) |
+| LIQD | −1701.27 | −1701.56 | +0.29 | campaign monitor (official proc.) |
+| | | mean **−0.13** | rms **0.27** | |
+
+The walls agree to **2.1 ns rms** and the liquids to **0.27 ns rms** — the latter
+being two different processings of the same run agreeing at a quarter of a
+nanosecond. Both are consistent with the transport budget in §0, and neither
+route shares an assumption with the other beyond the pickup itself.
+
 ## 4. What to do in practice
 
 1. **Walls** — use `C_2026_07_16` per channel for runs ≥ 224400; `C_2026_07_11`
@@ -309,7 +367,9 @@ from a single epoch.**
 2. **Liquids** — use the per-run value, or the campaign mean; they agree to
    ~1 ns.
 3. **Plastics** — per-run value only.
-4. **Never** use the stored `tflash` of WAL/PSS/LIQ. Use PKUP.
+4. **Never** use the stored `tflash` of WAL/PSS/LIQ from the official files. In
+   reprocessed files it is sound (§3.8) but PKUP + C remains the recommended time
+   base — it is measured on the true flash rather than on the gate leak.
 5. If a run has no usable PKUP pulse for a bunch (1.6 %, all parasitic), drop
    the bunch rather than falling back on `tflash`.
 

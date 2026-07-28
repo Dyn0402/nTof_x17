@@ -301,7 +301,23 @@ $9.2\ns$ worst case on all 32 channels. The gate transient itself sits at
 $-1190\ns$ and $-375\ns$ respectively, reproducing the $+800\ns$ delay change of
 07-22.
 
-\section{Why the plastics cannot be used}
+\section{Why the plastics cannot be used --- in the official processing}
+
+\begin{quote}\small
+\textbf{Note added.} Everything in this section describes the \emph{official}
+processed files. The parallel UserInput work (\texttt{FINDINGS\_2026-07-28\_psa\_optimization.md})
+reprocessed run 224572, and on the \texttt{v4\_walshapes} variant the plastic
+flash hit is found in \textbf{100\,\%} of bunches with $\sigma = 3.0$--$4.6\ns$,
+against 42\,\% and $2.5\ns$ officially. The single change responsible is the
+\textbf{G-FLASH threshold} ($50 \rightarrow 2000/10^4$): the \texttt{v1\_flash}
+variant, with the elimination window untouched, already reaches 100\,\%. The
+missing hits were therefore a downstream symptom of the flash-finder bug --- with
+the flash mis-located at ${\sim}130\ns$ (fitting noise), the pulse recognition
+for that bunch never reconstructs the real pulse at $11.63\,\mu$s. Widening the
+elimination window (\texttt{v2\_elim}) changes the yield not at all, and the
+surviving flash hits have area/amp $\simeq 72$--$76$, above even the widened
+window --- so elimination is not the gate.
+\end{quote}
 
 \begin{figure}[htbp]
 \centering
@@ -389,6 +405,44 @@ readouts in the three reference runs.}
 \label{fig:pchan}
 \end{figure}
 
+\section{Independent cross-check against the reprocessed data}
+
+The reprocessing provides a second, independent route to the same constants: a
+\emph{corrected} flash finder, run on 224572 --- a gated run, ten days after the
+nearest calibration run, in which the walls can only see the clamped leak.
+Table~\ref{tab:xval} compares its stored \texttt{tflash}, referenced to the
+pickup (8 partials, 1597 bunches), against this work.
+
+\begin{table}[htbp]
+\centering
+\small
+\caption{Reprocessed (\texttt{v4\_walshapes}) stored \texttt{tflash} minus the
+pickup, against the constants of this work. All values in ns.}
+\label{tab:xval}
+\begin{tabular}{lrrrl}
+\toprule
+tree & reprocessed & this work & difference & this work is from \\
+\midrule
+WALA & $-1717.82$ & $-1719.46$ & $+1.64$ & divert-off runs, 07-16 epoch \\
+WALB & $-1718.07$ & $-1719.69$ & $+1.62$ & divert-off runs, 07-16 epoch \\
+WALC & $-1718.05$ & $-1719.23$ & $+1.18$ & divert-off runs, 07-16 epoch \\
+WALD & $-1722.29$ & $-1719.01$ & $-3.28$ & divert-off runs, 07-16 epoch \\
+\multicolumn{3}{r}{mean $+0.29$, rms} & \textbf{2.07} & \\
+\midrule
+LIQA & $-1708.38$ & $-1708.22$ & $-0.16$ & campaign monitor (official proc.) \\
+LIQB & $-1710.78$ & $-1710.30$ & $-0.48$ & campaign monitor (official proc.) \\
+LIQC & $-1695.73$ & $-1695.56$ & $-0.17$ & campaign monitor (official proc.) \\
+LIQD & $-1701.27$ & $-1701.56$ & $+0.29$ & campaign monitor (official proc.) \\
+\multicolumn{3}{r}{mean $-0.13$, rms} & \textbf{0.27} & \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The walls agree to $2.1\ns$ rms and the liquids to $0.27\ns$ rms --- the latter
+being two different processings of the same run agreeing to a quarter of a
+nanosecond. Both sit inside the transport budget of Table~\ref{tab:budget}, and
+the two routes share no assumption beyond the pickup itself.
+
 \section{How to apply, and what limits it}
 
 \begin{enumerate}
@@ -398,7 +452,10 @@ type differs from the one the constant was taken on.
 \item \textbf{Liquids}: the per-run value, or the campaign mean; they agree to
 ${\sim}1\ns$.
 \item \textbf{Plastics}: per-run value only.
-\item Never use the stored \texttt{tflash} of WAL/PSS/LIQ.
+\item Never use the stored \texttt{tflash} of WAL/PSS/LIQ \emph{from the
+official files}. In reprocessed files it is sound, but PKUP\,$+\,C$ remains the
+recommended time base: it is measured on the undiverted flash, whereas even a
+reprocessed wall \texttt{tflash} times the clamped leak of a gated signal.
 \item If a bunch has no usable pickup pulse (1.6\,\%, all parasitic), drop the
 bunch rather than falling back on \texttt{tflash}.
 \end{enumerate}

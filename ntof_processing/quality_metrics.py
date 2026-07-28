@@ -21,6 +21,22 @@ AMPLITUDE
       a large plastic hit. The geometric mean of the two ends cancels the
       exponential attenuation along the bar, so it is position-independent.
       Reported as peak position and FWHM/peak -- narrower is better measured.
+  A2  amplitude LINEARITY along the bar. With attenuation length lambda,
+      amp_top = A exp(-x/lambda) and amp_bot = A exp(-(L-x)/lambda), so
+      log(amp_top/amp_bot) is a straight line in the position, and the position
+      is independently given by the top<->bottom dt. Two numbers fall out:
+        - the residual scatter about that line, which is the combined
+          amplitude resolution of the two ends (lower = better), and
+        - the flatness of sqrt(amp_top*amp_bot) across the bar, which should be
+          constant by construction; any slope is a position-dependent bias in
+          the reconstructed amplitude.
+      This is the metric that catches a variant buying hits by mis-measuring
+      them, which neither the MIP width nor the hit count would show.
+
+  T3  TIME WALK: the wall<->plastic offset as a function of wall amplitude. A
+      well-reconstructed leading edge barely walks; a variant whose pileup
+      handling is worse walks more. Quoted as the spread of the T2 centre over
+      amplitude deciles (lower = better).
 
 EVERY number here is ACCIDENTAL-SUBTRACTED. Both detectors run at high rate, so
 "nearest hit within a window" is dominated by chance coincidences: without
@@ -96,6 +112,8 @@ def analyse(label, files):
     res = {}
     tb_all, wp_all = [], []
     mip_on, mip_off = [], []
+    lin_dt, lin_lr, lin_gm = [], [], []          # A2
+    walk_dt, walk_amp = [], []                   # T3
 
     for arm in ARMS:
         w = load(files, f'WAL{arm}',
@@ -130,15 +148,27 @@ def analyse(label, files):
                 sel = np.abs(d) < 20
                 if not sel.any() or tp.size == 0:
                     continue
+                a_t, a_b = at[sel], ab2[j[sel]]
                 tmean = 0.5 * (ot[sel] + ob[j[sel]])
-                gmean = np.sqrt(np.abs(at[sel] * ab2[j[sel]]))
+                gmean = np.sqrt(np.abs(a_t * a_b))
+                dpos = d[sel]                    # top-bottom dt = position proxy
                 o = np.argsort(tmean)
                 tmean, gmean = tmean[o], gmean[o]
+                a_t, a_b, dpos = a_t[o], a_b[o], dpos[o]
                 dp, _ = nearest_dt(tmean, tp)
                 wp_all.append(dp)
-                mip_on.append(gmean[np.abs(dp) < COINC_NS])
+                prompt = np.abs(dp) < COINC_NS
+                mip_on.append(gmean[prompt])
                 off = (np.abs(dp) > SIDE_LO) & (np.abs(dp) < SIDE_LO + 2 * COINC_NS)
                 mip_off.append(gmean[off])
+                # A2 / T3 use only genuine (prompt, MIP-tagged) bar objects
+                ok = prompt & (a_t > 0) & (a_b > 0)
+                if ok.any():
+                    lin_dt.append(dpos[ok])
+                    lin_lr.append(np.log(a_t[ok] / a_b[ok]))
+                    lin_gm.append(gmean[ok])
+                    walk_dt.append(dp[ok])
+                    walk_amp.append(gmean[ok])
 
     tb = np.concatenate(tb_all) if tb_all else np.array([])
     wp = np.concatenate(wp_all) if wp_all else np.array([])
@@ -178,23 +208,75 @@ def analyse(label, files):
               f'accidental {0.5 * off.size:,.0f})')
     else:
         print(f'  A1 MIP: too few coincident bars ({on.size})')
+
+    # ---- A2: amplitude linearity along the bar --------------------------------
+    if lin_dt:
+        dpos = np.concatenate(lin_dt)
+        lr = np.concatenate(lin_lr)
+        gm = np.concatenate(lin_gm)
+        m = np.isfinite(dpos) & np.isfinite(lr) & np.isfinite(gm) & (np.abs(dpos) < 15)
+        dpos, lr, gm = dpos[m], lr[m], gm[m]
+        if dpos.size > 500:
+            k, b = np.polyfit(dpos, lr, 1)
+            resid = lr - (k * dpos + b)
+            rms = float(np.percentile(resid, 84) - np.percentile(resid, 16)) / 2
+            res['A2_logratio_resid'] = rms
+            # flatness of the geometric mean across the bar
+            qs = np.percentile(dpos, [10, 30, 50, 70, 90])
+            meds = [float(np.median(gm[np.abs(dpos - q) < 1.0])) for q in qs]
+            meds = [x for x in meds if np.isfinite(x) and x > 0]
+            flat = (max(meds) / min(meds) - 1) if len(meds) > 1 else np.nan
+            res['A2_gmean_flatness'] = flat
+            print(f'  A2 linearity            : log(top/bot) vs dt slope {k:+6.3f}/ns, '
+                  f'resid {rms:5.3f}  |  sqrt(top*bot) varies {flat:+5.1%} across '
+                  f'the bar  (n={dpos.size:,})')
+
+    # ---- T3: timing walk with amplitude ---------------------------------------
+    if walk_dt:
+        wd = np.concatenate(walk_dt)
+        wa2 = np.concatenate(walk_amp)
+        m = np.isfinite(wd) & np.isfinite(wa2) & (wa2 > 0)
+        wd, wa2 = wd[m], wa2[m]
+        if wd.size > 1000:
+            qs = np.percentile(wa2, np.arange(10, 100, 10))
+            cents = []
+            lo = 0.0
+            for hi_ in list(qs) + [np.inf]:
+                s = (wa2 >= lo) & (wa2 < hi_)
+                if s.sum() > 200:
+                    cents.append(float(np.median(wd[s])))
+                lo = hi_
+            if len(cents) > 2:
+                walk = float(max(cents) - min(cents))
+                res['T3_walk_ns'] = walk
+                print(f'  T3 timing walk          : T2 centre spans {walk:5.2f} ns '
+                      f'across amplitude deciles ({cents[0]:+.2f} -> {cents[-1]:+.2f})')
     return res
 
 
 def main():
-    if len(sys.argv) < 2:
+    args = [a for a in sys.argv[1:] if not a.startswith('--')]
+    jsonout = next((a.split('=', 1)[1] for a in sys.argv[1:]
+                    if a.startswith('--json=')), None)
+    if not args:
         print(__doc__)
         return 1
     out = {}
-    for spec in sys.argv[1:]:
+    for spec in args:
         lab, files = spec.split('=', 1)
         out[lab] = analyse(lab, files.split(','))
+    if jsonout:
+        import json
+        with open(jsonout, 'w') as f:
+            json.dump(out, f, indent=1, default=float)
+        print(f'\nwrote {jsonout}')
     if len(out) > 1:
         labs = list(out)
         print(f'\n{"=" * 76}\nrelative to {labs[0]}')
-        print('  (lower sigma = better timing; lower FWHM/peak = better amplitude)')
-        for k in ('T1_tb_sigma', 'T2_wp_sigma', 'A1_mip_relwidth',
-                  'A1_mip_peak', 'A1_mip_n'):
+        print('  (lower = better for every row except A1_mip_peak / A1_mip_n)')
+        for k in ('T1_tb_sigma', 'T2_wp_sigma', 'T3_walk_ns',
+                  'A2_logratio_resid', 'A2_gmean_flatness',
+                  'A1_mip_relwidth', 'A1_mip_peak', 'A1_mip_n'):
             base = out[labs[0]].get(k)
             if base is None or not np.isfinite(base) or base == 0:
                 continue
