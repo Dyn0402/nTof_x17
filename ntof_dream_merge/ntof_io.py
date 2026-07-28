@@ -57,12 +57,78 @@ HIT_BRANCHES = ('BunchNumber', 'detn', 'tof', 'tflash', 'amp', 'area',
                 'satuflag', 'pileup1')
 
 
-def ntof_path(run: int) -> Path:
+def ntof_paths(run: int) -> list:
+    """Every ROOT file holding this run, in bunch order.
+
+    A run is EITHER a single merged `run<run>.root` OR a directory
+    `run<run>.parts/` of the per-job partials that RunProcessing.sh leaves in
+    `<out>/completed/<run>/`. The partials are preferred when both exist.
+
+    Reading the partials directly is the normal case, not a fallback: the
+    official merge step cannot produce a merged EAR2 run at all (its condor job
+    ships the partials through condor file transfer and dies on
+    `max total download bytes exceeded (max=1024 MB)`), and merging by hand with
+    hadd costs an hour of serial I/O and a second 26 GB copy per run. The
+    partials are already contiguous and bunch-ordered, so chaining them is both
+    cheaper and the only thing that scales to the whole campaign.
+    """
+    parts = NTOF_DATA_DIR / f'run{run}.parts'
+    if parts.is_dir():
+        files = sorted(parts.glob(f'run{run}_[0-9]*.root'),
+                       key=lambda p: int(p.stem.split('_')[-1]))
+        if files:
+            return files
     p = NTOF_DATA_DIR / f'run{run}.root'
-    if not p.exists():
-        raise FileNotFoundError(
-            f'{p} not staged. Get it with ntof_dream_merge/stage_reference_pair.sh ntof')
-    return p
+    if p.exists():
+        return [p]
+    raise FileNotFoundError(
+        f'neither {p} nor {parts}/ is staged. Get it with '
+        'ntof_dream_merge/stage_reference_pair.sh ntof')
+
+
+def ntof_path(run: int) -> Path:
+    """Back-compat: the single file of a merged run. Prefer ntof_paths()."""
+    files = ntof_paths(run)
+    if len(files) != 1:
+        raise ValueError(f'run{run} is stored as {len(files)} partials; '
+                         'use ntof_paths()')
+    return files[0]
+
+
+def _read_range(run: int, tree: str, branches, lo: int = 0, hi: int = None,
+                counts=None) -> dict:
+    """Read a GLOBAL entry range [lo, hi) of `tree`, spanning partials."""
+    files = ntof_paths(run)
+    if counts is None:
+        counts = _tree_counts(run, tree)
+    starts = np.concatenate([[0], np.cumsum(counts)])
+    if hi is None:
+        hi = int(starts[-1])
+    out = {k: [] for k in branches}
+    for path, s, e in zip(files, starts[:-1], starts[1:]):
+        a0, b0 = max(lo, int(s)), min(hi, int(e))
+        if b0 <= a0:
+            continue
+        with uproot.open(path) as f:
+            a = f[tree].arrays(list(branches), entry_start=a0 - int(s),
+                               entry_stop=b0 - int(s), library='np')
+        for k in branches:
+            out[k].append(a[k])
+    return {k: (np.concatenate(v) if v else np.array([])) for k, v in out.items()}
+
+
+def _tree_counts(run: int, tree: str) -> np.ndarray:
+    """Entries per file for `tree` (cached alongside the bunch index)."""
+    cache = CACHE_DIR / f'bunchidx_{run}_{tree}.npz'
+    if cache.exists():
+        z = np.load(cache)
+        if 'counts' in z.files:
+            return z['counts']
+    counts = []
+    for path in ntof_paths(run):
+        with uproot.open(path) as f:
+            counts.append(f[tree].num_entries)
+    return np.asarray(counts, dtype=np.int64)
 
 
 def bunch_edges(run: int, tree: str, rebuild: bool = False) -> np.ndarray:
@@ -70,20 +136,28 @@ def bunch_edges(run: int, tree: str, rebuild: bool = False) -> np.ndarray:
     Entry offsets per bunch: hits of BunchNumber b are entries [e[b-1], e[b]).
 
     Index 0 is bunch 1, so the array has (max_bunch + 1) elements. Bunches with no
-    hits give an empty (equal-valued) range rather than an error.
+    hits give an empty (equal-valued) range rather than an error. Entry numbers
+    are GLOBAL across the run's partials, in the order of ntof_paths().
     """
     cache = CACHE_DIR / f'bunchidx_{run}_{tree}.npz'
     if cache.exists() and not rebuild:
         return np.load(cache)['edges']
 
-    with uproot.open(ntof_path(run)) as f:
-        bn = f[tree]['BunchNumber'].array(library='np')
+    bn, counts = [], []
+    for path in ntof_paths(run):
+        with uproot.open(path) as f:
+            b = f[tree]['BunchNumber'].array(library='np')
+        bn.append(b)
+        counts.append(len(b))
+    bn = np.concatenate(bn) if bn else np.array([], dtype=np.int64)
     if np.any(np.diff(bn) < 0):
         raise ValueError(f'{tree} in run{run}: BunchNumber is not sorted by entry; '
-                         'the searchsorted index is invalid for this file')
+                         'the searchsorted index is invalid for this file set '
+                         '(are the partials in the right order?)')
     edges = np.searchsorted(bn, np.arange(1, int(bn.max()) + 2))
     CACHE_DIR.mkdir(parents=True, exist_ok=True)
-    np.savez_compressed(cache, edges=edges)
+    np.savez_compressed(cache, edges=edges,
+                        counts=np.asarray(counts, dtype=np.int64))
     return edges
 
 
@@ -117,16 +191,14 @@ def read_bunches(run: int, tree: str, bunches, branches=HIT_BRANCHES,
     # group consecutive bunch numbers into blocks -> one entry range per block
     breaks = np.where(np.diff(bunches) > 1)[0] + 1
     out = {k: [] for k in want}
-    with uproot.open(ntof_path(run)) as f:
-        t = f[tree]
-        for grp in np.split(bunches, breaks):
-            lo, hi = edges[grp[0] - 1], edges[grp[-1]]
-            if hi <= lo:
-                continue
-            a = t.arrays(list(want), entry_start=int(lo), entry_stop=int(hi),
-                         library='np')
-            for k in want:
-                out[k].append(a[k])
+    counts = _tree_counts(run, tree)
+    for grp in np.split(bunches, breaks):
+        lo, hi = edges[grp[0] - 1], edges[grp[-1]]
+        if hi <= lo:
+            continue
+        a = _read_range(run, tree, want, int(lo), int(hi), counts)
+        for k in want:
+            out[k].append(a[k])
     res = {k: (np.concatenate(v) if v else np.array([])) for k, v in out.items()}
     if repair_tflash and tree in _tflash_fix(run) and res['tof'].size:
         tf = _tflash_fix(run)[tree][res['BunchNumber'].astype(np.int64)]
@@ -144,8 +216,7 @@ def _index_epoch(run: int) -> tuple[np.ndarray, np.ndarray]:
     local = UTC+2), truncated to the second. Coarse, but -- unlike psTime -- it is
     filled for every bunch, which is what makes the psTime repair below possible.
     """
-    with uproot.open(ntof_path(run)) as f:
-        a = f['index'].arrays(['BunchNumber', 'Date', 'Time'], library='np')
+    a = _read_range(run, 'index', ['BunchNumber', 'Date', 'Time'])
     o = np.argsort(a['BunchNumber'])
     d, t = a['Date'][o], a['Time'][o]
     yy, mm, dd = 2000 + (d // 10000) % 100, (d // 100) % 100, d % 100
@@ -180,9 +251,8 @@ def pkup_bunches(run: int) -> dict:
 
     `pstime_recovered` flags the repaired bunches.
     """
-    with uproot.open(ntof_path(run)) as f:
-        a = f['PKUP'].arrays(['BunchNumber', 'psTime', 'PulseIntensity', 'tflash'],
-                             library='np')
+    a = _read_range(run, 'PKUP',
+                    ['BunchNumber', 'psTime', 'PulseIntensity', 'tflash'])
     o = np.argsort(a['BunchNumber'])
     bn = a['BunchNumber'][o].astype(np.int64)
     ps = a['psTime'][o] / 1e9

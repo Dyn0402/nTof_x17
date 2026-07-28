@@ -66,24 +66,25 @@ MAX_BUNCH = 4000
 def tflash_tables(run: int, rebuild: bool = False) -> dict:
     """Per-bunch stored tflash for every tree: {tree: array[MAX_BUNCH] (ns, NaN
     where the tree has no hits in that bunch)}. Built once per run, cached."""
-    from ntof_dream_merge.ntof_io import ntof_path
+    from ntof_dream_merge.ntof_io import ntof_paths
     cache = CACHE_DIR / f'tflash_table_{run}.npz'
     if cache.exists() and not rebuild:
         with np.load(cache) as z:
             return {t: z[t] for t in z.files}
-    tables = {}
-    with uproot.open(ntof_path(run)) as f:
-        for tree in ALL_TREES:
-            tf = np.full(MAX_BUNCH, np.nan)
-            seen = np.zeros(MAX_BUNCH, bool)
-            for chunk in f[tree].iterate(['BunchNumber', 'tflash'], library='np',
-                                         step_size='200 MB'):
-                bn, fl = chunk['BunchNumber'], chunk['tflash']
-                for b, i in zip(*np.unique(bn, return_index=True)):
-                    if not seen[b]:
-                        tf[b] = fl[i]
-                        seen[b] = True
-            tables[tree] = tf
+    tables = {tree: np.full(MAX_BUNCH, np.nan) for tree in ALL_TREES}
+    seen = {tree: np.zeros(MAX_BUNCH, bool) for tree in ALL_TREES}
+    # a run may be stored as one merged file or as the per-job partials
+    for path in ntof_paths(run):
+        with uproot.open(path) as f:
+            for tree in ALL_TREES:
+                tf, sn = tables[tree], seen[tree]
+                for chunk in f[tree].iterate(['BunchNumber', 'tflash'],
+                                             library='np', step_size='200 MB'):
+                    bn, fl = chunk['BunchNumber'], chunk['tflash']
+                    for b, i in zip(*np.unique(bn, return_index=True)):
+                        if not sn[b]:
+                            tf[b] = fl[i]
+                            sn[b] = True
     CACHE_DIR.mkdir(parents=True, exist_ok=True)
     np.savez_compressed(cache, **tables)
     return tables

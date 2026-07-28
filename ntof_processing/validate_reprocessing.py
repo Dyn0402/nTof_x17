@@ -51,17 +51,33 @@ sys.path.insert(0, str(_HERE.parent))
 
 def main() -> int:
     run = int(sys.argv[1]) if len(sys.argv) > 1 else 224572
-    path = Path(sys.argv[2]).resolve() if len(sys.argv) > 2 else None
+    # accepts a merged run<run>.root, a directory of per-job partials, or a
+    # comma-separated list of partials
+    arg = sys.argv[2] if len(sys.argv) > 2 else None
+    if arg is None:
+        path = None
+    elif ',' in arg:
+        path = [Path(p).resolve() for p in arg.split(',')]
+    elif Path(arg).is_dir():
+        path = sorted(Path(arg).resolve().glob(f'run{run}_[0-9]*.root'),
+                      key=lambda p: int(p.stem.split('_')[-1]))
+        if not path:
+            print(f'no run{run}_NNNN.root partials in {arg}')
+            return 1
+    else:
+        path = [Path(arg).resolve()]
 
     import ntof_dream_merge.ntof_io as ntof_io
     import ntof_dream_merge.tflash_repair as rep
 
     if path is not None:
-        # sandbox: point the reader at the candidate file, caches to a temp dir
+        # sandbox: point the reader at the candidate file(s), caches to a temp dir
         tmp = Path(tempfile.mkdtemp(prefix=f'validate_{run}_'))
-        ntof_io.ntof_path = lambda r: path            # type: ignore
+        ntof_io.ntof_paths = lambda r: path           # type: ignore
+        ntof_io.ntof_path = lambda r: path[0]         # type: ignore
         rep.CACHE_DIR = ntof_io.CACHE_DIR = tmp
-        print(f'validating {path}  (caches in {tmp})')
+        print(f'validating {len(path)} file(s), first = {path[0]}  '
+              f'(caches in {tmp})')
     else:
         print(f'validating staged file for run{run}')
 
