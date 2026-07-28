@@ -608,3 +608,24 @@ operating field) and det4(E) a ±3 mm bow — worth a mechanical flatness check
 whenever a chamber is next open, but the in-situ U50(x, y) map (script 34)
 measures it non-invasively per chamber, and should simply become part of the
 per-detector calibration bundle.
+
+---
+
+# Phase 5 (2026-07-28): the displays — does the M3 track thread the cluster?
+
+Script `37_threading_displays.py`, write-up `THREADING_DISPLAYS_2026-07-28.md`.
+
+The question §0 opened with, answered in picture form and then measured. The
+cluster in the displays is **not** taken from the forward fit (that would be
+circular): it comes from a line-free 2-D charge deconvolution (strip x depth,
+NNLS + Tikhonov) and from a sub-pitch **free ladder** — one free transverse
+position and charge per 60 ns depth bin, no relation imposed between bins. Only
+`t0` is borrowed from the fit, and it shifts both clusters together.
+
+Over 600 events, charge-weighted median |cluster - M3 line|: production
+0.49/0.55 mm (x/y) vs waveform-first **0.44/0.39 mm**, and above 15 mm depth
+0.64/0.70 vs **0.52/0.51 mm**. The depth profile is the point: production walks
+from 0.45 to 0.66 mm across the gap (0.43 -> 1.17 mm in its own t0/v frame,
+which is what the existing 3-D displays draw), the waveform-first cluster stays
+0.39 -> 0.55 mm. The divergence with depth is real and is largely removed; both
+methods agree at the mesh at the M3 pointing floor (~0.4 mm).
