@@ -1,0 +1,43 @@
+{
+  "_schema": {
+    "offsets_ns": "value to ADD to the stored PSA tflash of that tree, so that t_since_flash = tof - (tflash_stored + offset) is measured from the physical gamma-flash arrival at that detector",
+    "reference_tree": "tree defined to have offset 0; everything else is measured against it",
+    "status": "provisional | calibrated",
+    "method": "how the numbers were obtained",
+    "valid_from/valid_to": "inclusive n_TOF run range"
+  },
+
+  "calibrations": [
+    {
+      "name": "224572_coincidence_fit",
+      "status": "provisional",
+      "method": "in-situ prompt wall-plastic/liquid coincidence peak on the OFFICIAL (unfixed) processing of run 224572; equals ntof_dream_merge.tflash_repair._coinc_offsets",
+      "reference_tree": "WAL*",
+      "valid_from": 224264,
+      "valid_to": 224999,
+      "offsets_ns": {
+        "WALA": 0.0, "WALB": 0.0, "WALC": 0.0, "WALD": 0.0,
+        "PSSA": -362.3, "PSSB": 19.6, "PSSC": -333.0, "PSSD": -336.0,
+        "LIQA": -372.6, "LIQB": 9.7, "LIQC": -349.8, "LIQD": -348.0,
+        "PKUP": 0.0
+      },
+      "note": "RELATIVE ONLY, and specific to the broken flash configuration: the walls here are timed on the divert-gate transient (WALA/C/D) or on the flash leak (WALB), which is why the plastics sit ~350 ns away on three arms out of four. Superseded as soon as a run is reprocessed with userinputs/v1_flash or later. Do not use for absolute time of flight."
+    },
+
+    {
+      "name": "TEMPLATE_after_v1_flash_reprocessing",
+      "status": "provisional",
+      "method": "PLACEHOLDER - fill from the reprocessed file: run ntof_processing/validate_reprocessing.py, which measures exactly these per-tree coincidence offsets, then paste them here and set valid_from/valid_to",
+      "reference_tree": "PKUP",
+      "valid_from": 999999999,
+      "valid_to": 999999999,
+      "offsets_ns": {
+        "WALA": 0.0, "WALB": 0.0, "WALC": 0.0, "WALD": 0.0,
+        "PSSA": 0.0, "PSSB": 0.0, "PSSC": 0.0, "PSSD": 0.0,
+        "LIQA": 0.0, "LIQB": 0.0, "LIQC": 0.0, "LIQD": 0.0,
+        "PKUP": 0.0
+      },
+      "note": "After reprocessing with a G-FLASH configuration that times the real flash on every tree, the residual offsets should be tens of ns, not hundreds. The ABSOLUTE part (what the walls' divert path costs relative to the direct path) still needs the dedicated pre-calibration measurement described in FLASH_TIME_BASE.md section 4; until it exists, keep reference_tree = PKUP and treat absolute E_n above ~100 keV as uncalibrated."
+    }
+  ]
+}

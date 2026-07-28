@@ -160,15 +160,25 @@ def _coinc_offsets(run: int) -> dict:
     return out
 
 
-def corrected_tflash(run: int, _with_offsets: bool = True) -> dict:
+def corrected_tflash(run: int, _with_offsets: bool = True,
+                     offsets_source: str = 'fit') -> dict:
     """{tree: array[MAX_BUNCH]} of repaired tflash =
-    mode_tree + jitter(bunch) + coincidence_offset_tree.
+    mode_tree + jitter(bunch) + offset_tree.
 
-    The mode fixes the per-bunch mis-tags; the coincidence offset fixes the
-    ~350 ns per-tree inconsistency in WHICH waveform feature the PSA timed
-    (measured against the same arm's wall, so a true wall/plastic coincidence
-    lands at dt ~ 0). Diagnostics in ['_err_frac'] (fraction of bunches whose
-    STORED tflash deviates >150 ns from mode+jitter), ['_modes'], ['_offsets'].
+    The mode fixes the per-bunch mis-tags; the offset fixes the ~350 ns
+    per-tree inconsistency in WHICH waveform feature the PSA timed.
+
+    `offsets_source` selects where that offset comes from:
+      'fit'   -- measure it per run from prompt wall/plastic coincidences
+                 (default; self-calibrating, relative to the walls)
+      'calib' -- take pre-calibrated constants from
+                 ntof_processing/flash_calibration.json. Use this once the
+                 dedicated flash pre-calibration exists, and for any run whose
+                 statistics are too thin for the in-situ fit.
+      'none'  -- no offset (mode + jitter only)
+
+    Diagnostics in ['_err_frac'] (fraction of bunches whose STORED tflash
+    deviates >150 ns from mode+jitter), ['_modes'], ['_offsets'].
     """
     tab = tflash_tables(run)
     modes = {t: _mode(tab[t]) for t in tab}
@@ -177,7 +187,15 @@ def corrected_tflash(run: int, _with_offsets: bool = True) -> dict:
         warnings.simplefilter('ignore', RuntimeWarning)   # all-NaN = empty bunch
         jitter = np.nanmedian(dev, axis=0)
     jitter[~np.isfinite(jitter)] = 0.0
-    offs = _coinc_offsets(run) if _with_offsets else {}
+    if not _with_offsets or offsets_source == 'none':
+        offs = {}
+    elif offsets_source == 'calib':
+        from ntof_processing.flash_calibration import offsets as _calib
+        offs = _calib(run)
+    elif offsets_source == 'fit':
+        offs = _coinc_offsets(run)
+    else:
+        raise ValueError(f'unknown offsets_source {offsets_source!r}')
     out = {t: modes[t] + jitter + offs.get(t, 0.0) for t in tab}
     out['_err_frac'] = {
         t: float(np.mean(np.abs((tab[t] - modes[t] - jitter)[np.isfinite(tab[t])])
