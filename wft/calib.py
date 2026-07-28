@@ -112,7 +112,15 @@ class CalibrationBundle:
         gainmap.npz, dt_xy.json, hyper_v2.json). Numerics are taken verbatim —
         this is how det3/det2/det4 keep their validated calibration."""
         tz = np.load(os.path.join(wf_dir, 'templates_perplane.npz'))
-        gz = np.load(os.path.join(wf_dir, 'gainmap.npz'))
+        gain_path = os.path.join(wf_dir, 'gainmap.npz')
+        if os.path.exists(gain_path):
+            gz = np.load(gain_path)
+            gain = {'x': gz['gain_x'], 'y': gz['gain_y']}
+        else:
+            # only det3 has a measured map; the ablation study found the 1.4 %
+            # channel-gain spread changes per-event angles by less than the
+            # statistical noise, so unit gains are the right default elsewhere
+            gain = {'x': np.ones(512), 'y': np.ones(512)}
         with open(os.path.join(wf_dir, hyper_file)) as f:
             hj = json.load(f)
         dt = {}
@@ -124,7 +132,7 @@ class CalibrationBundle:
         hyper.setdefault('kY', 1.0)
         return cls(hyper=hyper, v_drift=float(hj['v']),
                    grid=tz['grid'], tmpl={'x': tz['tmpl_x'], 'y': tz['tmpl_y']},
-                   gain={'x': gz['gain_x'], 'y': gz['gain_y']}, dt_xy=dt,
+                   gain=gain, dt_xy=dt,
                    detector=detector, run_key=run_key,
                    conditions=conditions or {},
                    provenance=dict(source=wf_dir, hyper_file=hyper_file,

@@ -49,7 +49,8 @@ def cmd_bundle(args):
     legacy = args.from_legacy or os.path.join(cfg.OUT_BASE, 'waveform_first')
     cal = CalibrationBundle.from_legacy(
         legacy, detector=cfg.DET_NAME, run_key=args.run_key,
-        conditions=dict(run=cfg.RUN, sub_run=cfg.SUB_RUN))
+        conditions=dict(run=cfg.RUN, sub_run=cfg.SUB_RUN),
+        hyper_file=args.hyper_file)
     out = args.out or wft_dir(cfg, 'calib_bundle')
     cal.save(out, note=f'imported from {legacy}')
     print(cal.summary())
@@ -88,6 +89,8 @@ def main(argv=None):
     b = sub.add_parser('bundle', help='make/import a calibration bundle')
     b.add_argument('run_key')
     b.add_argument('--from-legacy', default=None)
+    b.add_argument('--hyper-file', default='hyper_v2.json',
+                   help='hyper json inside the legacy dir (det2: hyper_det2.json)')
     b.add_argument('--out', default=None)
     b.set_defaults(func=cmd_bundle)
 
