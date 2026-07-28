@@ -48,25 +48,35 @@ cd /afs/cern.ch/work/d/dneff/x17_reproc          # must be an /afs path: aux dir
 /eos/experiment/ntof/repositories/processingscripts/RunProcessing.sh \
     -y 2026 -a EAR2 -c X17_measurement -r 224572 \
     -p /afs/cern.ch/work/d/dneff/x17_reproc/userinputs/v1_flash/UserInput.h \
-    -o /afs/cern.ch/work/d/dneff/x17_reproc/out/v1_flash
+    -o /eos/user/d/dneff/x17/reproc/v1_flash
 
 # 3. grade it
 .venv/bin/python ntof_processing/validate_reprocessing.py 224572 <candidate>.root
 ```
 
-### Two logistics facts, learned the hard way
+### Three logistics facts, learned the hard way
 
-- **`/eos/user/d/dneff` is not accessible** ("permission denied" on both `ls`
-  and `eos quota`) -- CERNBox has probably never been activated for this
-  account. Until it is, output has to go to `/afs/cern.ch/work/d/dneff`, which
-  has ~44 GB free -- **one 26 GB run at a time**, so the variants run in
-  sequence, not in parallel. Activating CERNBox at `cernbox.cern.ch` is the
-  one thing that unblocks a parallel batch, and only you can do it.
+- **The output path is whitelisted, and the whitelist is not documented.**
+  `ProcessFileList.sh` (a compiled binary; `strings` it) accepts only
+  **`/eos/user/`** and **`/eos/project-`** prefixes. Anything else -- including
+  `/eos/experiment/ntof/data/...`, which is writable and has petabytes free --
+  makes every job die instantly with
+  `Output path ... is not supported at the moment!`, after which DAGMan retries
+  3x and aborts the whole DAG. Total elapsed time to fail: ~6 minutes, output
+  produced: none. Check `<aux>/224572/*.err.*` first when a DAG dies fast.
+- **`ssh -K` is not optional.** Without delegated credentials you get no AFS
+  token (writes fail, `~/.bashrc` reads "Permission denied") and no condor
+  auth -- and `/eos/user/d/dneff` looks like it does not exist. It does; the
+  quota is 2 TB. Every "permission denied" in this workflow traced back to a
+  missing `-K`.
 - **You do not need the merged 26 GB file to grade a variant.**
   `RunProcessing.sh` writes per-raw-file partials into `<out>/completed/`
   before merging into `<out>/done/`. A handful of those carries the same
   per-bunch flash information at ~1/50 the transfer cost. Use them for the
   iteration loop and only pull the merged file for the final DREAM regression.
+- Job stderr is noisy by design: `Error in <TFile::TFile>: file ... already
+  exists` and `Info in <hadd>: ...` are normal. Real failures show up as
+  `STATUS_ERROR` / `Aborting DAG` in `<aux>/224572/*.dagman.out`.
 
 ### Acceptance (from the handoff, unchanged)
 
