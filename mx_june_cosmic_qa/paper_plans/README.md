@@ -1,5 +1,12 @@
 # Paper plans — execution guide
 
+> **2026-07-28:** the paper is being rebased onto the waveform-first
+> reconstruction (`../../RECONSTRUCTION_BASIS.md`). Any plan step that derives a
+> position, angle or drift depth from `combined_hits` times needs re-writing
+> against `wft/` before execution; steps that use hits for cluster finding,
+> efficiency, amplitudes or QA are unaffected. Check `../PAPER_STATUS.md`'s
+> 7-28 banner for which topics move.
+
 Plans for the analyses still missing for the June det3 micro-TPC paper (see
 `../PAPER_STATUS.md` for the full audit). Each plan is self-contained: exact input
 paths, verified column names, formulas, acceptance checks, and known traps. They are

@@ -1,5 +1,18 @@
 # Micro-TPC analysis runbook (scripts 13–32)
 
+> **2026-07-28 — THE BASIS OF THIS CHAIN HAS CHANGED. Read
+> `../RECONSTRUCTION_BASIS.md` before running any of it.** Positions, angles and
+> drift depths must no longer be built from `combined_hits` times: a per-strip
+> hit time is an aggregate of shared charge, the ladder is compressed 20–30 %
+> (~4° too steep) and the cluster fans away from the true track with depth,
+> for every time estimator. The replacement is the waveform-first forward fit
+> (`waveform_first_threading/WAVEFORM_FIRST_THREADING.md`, being packaged as
+> `wft/`). The recipe in §6 below is the OLD path — it still runs, and hits are
+> still the right thing for cluster finding, efficiency and QA, but do not start
+> new geometric analyses from it. The unsharing steps (26–28) were the partial
+> fix that this supersedes: unsharing works in ensemble, the forward fit works
+> per event.
+>
 > **2026-07-14 addendum:** M3 reference recipe is now χ²<1.0 & NClus=4 (`qa_config.py`,
 > was χ²<5 & NClus≥3) — reference-limited residual, see
 > `det3_recofar_analysis/M3_CUT_AND_ACTIVE_AREA_NOTE.md`. Efficiency/core-σ rows below
@@ -176,6 +189,15 @@ Runtimes: hits-level scripts ~1–5 min; waveform scripts (24/26/27/28) ~5–15 
 
 ## 6. How to run the chain on a NEW run/detector (recipe)
 
+> **Superseded for anything geometric (2026-07-28).** Steps 2 and 5 below
+> extract velocities and angles from strip times and are biased at the 20–30 %
+> level; step 4's unsharing only corrects this in ensemble. On a new
+> run/detector the geometric path is now: calibrate the waveform model for that
+> detector *and run condition* (template → gain map → 8-hyper ref-pinned fit,
+> `waveform_first_threading/` scripts 03/11/12/13, packaged as `wft calibrate`),
+> then reconstruct per event. Steps 0, 1 and 3 (run key, alignment cache, drift
+> HV) are unchanged and still required. See `../RECONSTRUCTION_BASIS.md`.
+
 ```bash
 # 0) key in qa_config.py (or _Config + autodetect_feus, see 30)
 # 1) alignment + veto50 cache
@@ -196,6 +218,9 @@ Runtimes: hits-level scripts ~1–5 min; waveform scripts (24/26/27/28) ~5–15 
 
 - **Charge sharing ~50 %**: never extract velocities/angles from raw strip
   times without unsharing; never interpret cluster width as geometric.
+  *(2026-07-28: unsharing is not enough either — it removes ~80–90 % of the
+  depth-dependent bias over a population but barely moves a single event. Per
+  event, fit the waveforms forward. `../RECONSTRUCTION_BASIS.md`.)*
 - **Common-mode noise**: production hits have NO CNS; FEU 6/8 raw σ~115.
   All waveform work must do pedestal (per channel median over ~300 events)
   + per-chip (64-ch) per-sample median subtraction (pattern in 24).

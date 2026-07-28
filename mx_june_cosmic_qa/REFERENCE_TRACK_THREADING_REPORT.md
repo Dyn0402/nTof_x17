@@ -1,5 +1,15 @@
 # Reference-track threading in the MX17 micro-TPC 3-D displays — a systematics report
 
+> **2026-07-28:** this report diagnosed the problem on the hits-based chain; the
+> question it opened is now answered and the cause is settled. The per-strip
+> aggregate time is the culprit, for every estimator, and the waveform-first
+> forward fit removes the depth divergence
+> (`waveform_first_threading/THREADING_DISPLAYS_2026-07-28.md`, §13 here).
+> Hits are no longer the basis for position/angle/depth — see
+> `../RECONSTRUCTION_BASIS.md`. Read this for the systematics method and the
+> geometry conventions, not for the conclusion that the divergence is
+> irreducible.
+
 **Detector A (mx17_3), Saturday long run `sat_det3` (`long_run_resist_490V_drift_1000V`, 490 V amplification / 1000 V drift), M3 recipe χ²<1 & NClus≥4, spark veto 50.**
 Author: analysis session 2026-07-15. Intended for independent review.
 

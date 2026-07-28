@@ -5,6 +5,25 @@ cosmic_micro_tpc_analysis.py
 
 Refactored cosmic muon analysis for the MX17 micro-TPC Micromegas detector.
 
+!! SUPERSEDED AS A GEOMETRIC RECONSTRUCTION (2026-07-28) !!
+-----------------------------------------------------------
+Everything below that turns *hit times* into a position, an angle or a drift
+depth is biased and is being replaced by the waveform-first reconstruction in
+``wft/``.  On resistive strips a per-strip hit time is an AGGREGATE of that
+strip's own charge and delayed, dispersed copies of its neighbours' (~29 % at
+tau ~ 47 ns to +-1 strip): the ladder is compressed 20-30 %, reads ~4 deg too
+steep, and the cluster fans away from the true track with depth.  It is
+estimator-independent -- rising edge, CFD and matched filter all show it -- so
+do not try to fix it with a different time estimator.  Measured, with displays:
+``RECONSTRUCTION_BASIS.md`` (repo root).
+
+Still valid here and safe to reuse: the M3 reference side, the alignment
+machinery (z / rotation / translation scans, ``attach_reference_positions``,
+``_rotate_ref_tangents``), the efficiency and resolution *maps*, and the
+plotting helpers -- these act on positions, not on hit times.  Efficiency is
+also fine: whether the detector saw the muon is a property of the analyzer's
+trigger, not of the fit.
+
 Pipeline overview
 -----------------
 1. Load detector hits (ROOT → pandas) and map FEU/channel → (x_mm, y_mm).
@@ -625,6 +644,14 @@ def _fit_single_axis(
     """
     Cluster strips along one axis, select the largest cluster, and fit
     strip position vs. hit time to a line anchored at the earliest hit.
+
+    DO NOT COPY THIS AS A RECONSTRUCTION (2026-07-28).  The fitted slope is
+    compressed 20-30 % by resistive charge sharing between strips and reads
+    ~4 deg too steep; the per-strip depths it implies fan away from the true
+    track.  Use ``wft/`` for position/angle/depth.  See ``RECONSTRUCTION_BASIS.md``.
+    The cluster selection itself (significance floor + gap threshold + largest
+    cluster) is still the right way to find WHICH strips carry the track --
+    that part is reused by ``wft/seed.py``.
 
     Parameters
     ----------

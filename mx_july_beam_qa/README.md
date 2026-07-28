@@ -1,5 +1,12 @@
 # mx_july_beam_qa — July 2026 beam: SiPM wall + plastic scintillator analysis
 
+> **2026-07-28 — applies to the micro-TPC tracking work here, not to the
+> scintillator analysis:** angles reconstructed from per-strip hit times are
+> compressed ~20–30 % by resistive charge sharing (`../RECONSTRUCTION_BASIS.md`).
+> `TRACKING_RUN55_ANALYSIS.md`'s "slope = 0.62 × ideal at every HV" is that bias
+> seen in beam data. Geometry from waveforms (`wft/`) from now on; the SiPM
+> wall, plastic, HV, ZS and timing analyses are unaffected.
+
 **Status (2026-07-16): first-run analysis complete; MIP calibration achieved on arms B/C;
 report + slides ready for the 7/17 collaboration presentation. This README is the handover
 document.**

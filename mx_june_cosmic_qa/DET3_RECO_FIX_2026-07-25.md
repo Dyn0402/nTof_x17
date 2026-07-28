@@ -1,5 +1,12 @@
 # det3 reconstruction recovered on the matched-filter hits
 
+> **2026-07-28: this fixed the HITS chain, which is no longer the reconstruction
+> basis.** The significance floor below is real and still applies wherever hits
+> are used (cluster finding, efficiency, spark veto) — keep it. But the
+> positions and angles it recovers are still built from aggregate strip times
+> and remain compressed ~20–30 % in depth. Geometry now comes from the
+> waveform-first fit: `../RECONSTRUCTION_BASIS.md`.
+
 **Answers `HANDOFF_det3_reco_matched_filter_2026-07-25.md`.**
 Written 2026-07-25, same day, on the same `a1cce79` hits — no reprocessing.
 

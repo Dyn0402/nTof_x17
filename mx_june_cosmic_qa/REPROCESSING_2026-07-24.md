@@ -1,5 +1,13 @@
 # Cosmic-bench reprocessing on the 2026-07-24 waveform analyzer
 
+> **2026-07-28:** the reprocessing described here is still the current hit
+> generation on disk and is still worth having (more hits, better low-amplitude
+> recovery, `significance` branch). What changed is what hits are *for*: they
+> are a cluster-finding and QA product, not the basis for position, angle or
+> depth. See `../RECONSTRUCTION_BASIS.md`. The waveform-first chain reads
+> `decoded_root` directly — 145 subruns / 209 GB are local, so no reprocessing
+> is needed to move to it.
+
 > **SUPERSEDED SAME DAY by the matched-filter rework (`a1cce79`).** The
 > `33e132b` (unified-trigger) reprocessing documented below was completed on the
 > whole local set, then the analyzer was reworked again to trigger on

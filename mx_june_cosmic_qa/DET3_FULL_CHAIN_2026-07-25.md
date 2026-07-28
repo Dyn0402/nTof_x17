@@ -1,5 +1,10 @@
 # det3 through the full detailed chain — results and improvement notes
 
+> **2026-07-28: hits-chain results.** The clean separation below between
+> "depends on the hits tree" and "reads waveforms directly" is exactly the split
+> the waveform-first rebuild acts on — the first column is what moves to `wft/`.
+> See `../RECONSTRUCTION_BASIS.md`.
+
 **2026-07-25.** `sat_det3` on the significance-floor reco (`DET3_RECO_FIX_2026-07-25.md`),
 run through the complete per-detector chain plus the det3-specific scans.
 

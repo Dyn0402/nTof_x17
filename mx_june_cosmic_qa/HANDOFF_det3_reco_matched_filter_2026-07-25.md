@@ -1,5 +1,10 @@
 # Handoff: recover det3 reconstruction quality on the matched-filter (a1cce79) hits
 
+> **2026-07-28: closed, and the chain it targeted is no longer the
+> reconstruction basis.** Answered by `DET3_RECO_FIX_2026-07-25.md` (per-plane
+> relative significance floor). Geometry now comes from waveforms —
+> `../RECONSTRUCTION_BASIS.md`.
+
 **Written 2026-07-25 after the full June re-analysis (`RERUN_RESULTS_20260725_011307.md`).**
 **Audience: someone picking this up cold. You do not need to have run anything before.**
 

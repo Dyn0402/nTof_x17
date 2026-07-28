@@ -1,5 +1,18 @@
 # June cosmic det3 micro-TPC paper — readiness audit (2026-07-10)
 
+> **2026-07-28 — the paper is being rebased onto the waveform-first
+> reconstruction** (decision of 7-28; see `../RECONSTRUCTION_BASIS.md`). Any
+> number below that came from `combined_hits` times — position ladders, angles,
+> drift depths — carries a 20–30 % ladder compression (~4° too steep).
+> Specifically: **topic 3 (hybrid tracking), topic 8 (drift velocity) and topic
+> 9 (spatial resolution) change outright**, and topics 1, 2 and 5 need
+> re-checking because their constants were fitted on hits-derived quantities.
+> Topics 4, 6, 7 and 10 are QA-, HV- or waveform-level and are not affected by
+> this. Efficiency numbers stand (detection is an analyzer property, not a fit
+> property). The methods section becomes
+> `waveform_first_threading/WAVEFORM_FIRST_THREADING.md` +
+> `THREADING_DISPLAYS_2026-07-28.md`.
+>
 > **2026-07-14 addendum:** the M3 reference recipe changed to χ²<1.0 & NClus=4 (was χ²<5 &
 > NClus≥3) — the old recipe was reference-limited, inflating every quoted position residual
 > (det3 core σ 0.63→0.47 mm on the new recipe; fleet numbers in `JUNE_RESULTS_SUMMARY.md`).

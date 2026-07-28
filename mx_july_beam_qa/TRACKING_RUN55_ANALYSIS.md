@@ -1,5 +1,17 @@
 # run_55 micro-TPC tracking — stringent true-track selection + source-hypothesis alignment (2026-07-19)
 
+> **2026-07-28: finding 3 below is the beam-side sighting of the bench's
+> aggregate-strip-time bias — and it is now fixed at the source.** The
+> "0.62 × ideal 1/R, same factor at 600 V and 800 V, therefore not v_drift"
+> observation is exactly the resistive-sharing compression of the anchored
+> time-fit, measured on the bench as 20–30 % on the ladder / ~4° on the angle
+> and shown to be estimator-independent (`../RECONSTRUCTION_BASIS.md`). Do not
+> patch it with an empirical 1/0.62 angle scale: reconstruct these tracks with
+> the waveform-first forward fit (`wft/`), calibrated per chamber and run
+> condition. The y-plane 3 cm offset in finding 2 should be re-checked *after*
+> that, since a compressed angle scale feeds straight into the source-hypothesis
+> alignment.
+
 **Goal: take the run_55 data and (1) build a STRINGENT selection that keeps only
 realistic tracks — a particle that crossed the full 30 mm drift gap, matched in
 X and Y — throwing out the ³He-capture blobs / gamma-flash junk / coherent

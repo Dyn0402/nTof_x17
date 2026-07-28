@@ -11,6 +11,19 @@ completed transfer validation proving the day-1 strategy on bench data, and
 model from raw beam files to physics-ready track tables. **Read this README
 fully, then execute the plans in order.** Each plan is self-contained.
 
+> **CORRECTION (2026-07-28): the micro-TPC segment angles here inherit the
+> hits-chain bias.** The frozen bench models and the segment reconstruction in
+> `reco/` build angles and depths from per-strip hit times. On resistive strips
+> that time is an aggregate of shared charge: the ladder is compressed 20–30 %
+> and reads ~4° too steep, for every time estimator — see
+> `../RECONSTRUCTION_BASIS.md`. This matters more here than on the bench,
+> because nTOF has no reference telescope to expose it: the internal-consistency
+> checks this package relies on (X vs Y, segment vs inter-chamber link) are
+> largely *blind* to a bias that hits both planes the same way. Before the frozen
+> angle models are trusted for physics, re-derive them with the waveform-first
+> fit (`wft/`, calibrated per chamber and run condition). The strategy, the
+> inter-chamber link logic and the plans below are unaffected.
+>
 > **CORRECTION (2026-07-12): there are NO cosmics at nTOF.** The plans as
 > originally written assume a cosmics-at-nTOF commissioning dataset (Jun 27–29)
 > and beam-off cosmic runs. **These do not exist.** The ONLY tracks available at
