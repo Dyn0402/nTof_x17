@@ -119,6 +119,48 @@ Elimination is meant to be loose anyway -- the guide's own advice is that false
 pulses "can and should be eliminated during the later data analysis".""",
         edits=[('PSS', 'SIGNAL WIDTH LOW', '4')]),
 
+    'v12_liqpileup': dict(
+        base='v11_pssfit_width',
+        why="""The liquids, attacked at the right target this time.
+
+Three template replacements all failed, and the overnight raw-waveform study
+says why we were aiming at the wrong thing:
+
+ 1. Only 8-24 % of liquid pulses are ISOLATED (LIQA 1014 of 6965 blocks, LIQB
+    812 of 10033, LIQD 1250 of 5175). The liquids are a PILEUP problem, and
+    every template we built was measured on the isolated minority.
+ 2. On those isolated pulses a measured template really is 3-4x better than the
+    shipped pair (reduced chi2 224 -> 71 on LIQA, 81 -> 23 on LIQD, scored on
+    held-out pulses). It still made the PSA output worse -- because a longer,
+    more faithful template overlaps more of its neighbours in a population that
+    is mostly pileup.
+ 3. Single-pulse fit quality is anyway floored by PHOTON STATISTICS: the fit
+    residual scales as sqrt(amplitude), flat to 10 % over a factor 25 in
+    amplitude (LIQD resid/sqrt(A) = 0.61/0.62/0.64/0.65/0.67). The slow
+    component is a countable number of photoelectrons, so it fluctuates
+    irreducibly. No template can fit shot noise, which is why binning the basis
+    by tail fraction bought only ~10 %.
+
+So: keep the shipped templates, and spend the change on pileup separation
+instead.
+
+   STEP SIZE 2/4 -> 1/3   the finest derivative window available, for a 6 ns
+                          FWHM pulse at 1 GS/s. The guide's first practical
+                          advice is that reducing STEP SIZE resolves pileup,
+                          and v7_step (which moved LIQ to 2/3) was the only
+                          change so far that raised liquid yield, +3..+6 %.
+   SIGNAL WIDTH HIGH 5000 -> 5000/30
+                          enables the fast/slow area split. `afast` and `aslow`
+                          are currently 0.0 % filled -- the PSA's pulse-shape
+                          discrimination observable has never been switched on
+                          for these detectors, and PSD is the entire reason one
+                          runs a liquid scintillator. 30 ns is placed just past
+                          the prompt peak (FWHM 6 ns) and inside the slow
+                          component, which the raw pulses show running to
+                          ~150 ns.""",
+        edits=[('LIQ', 'STEP SIZE', '1/3'),
+               ('LIQ', 'SIGNAL WIDTH HIGH', '5000/30')]),
+
     'v9_liqaug': dict(
         base='v4_walshapes',
         why="""The liquid retry, done the other way round. Replacing the shipped
