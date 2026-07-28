@@ -1,0 +1,66 @@
+{
+  "_provenance": "Every number here was measured in this repo and is reproducible from the named tool. Run 224572, DREAM run_79/stat090_0000. 'official' = the n_TOF production processing with UserInput_2026_EAR2_X17.h (Riccardo, 2026-07-17); 'v11' = ntof_processing/userinputs/v11_pssfit_width.",
+
+  "flash_id_bad_bunch_fraction": {
+    "_tool": "grade_candidate.py / validate_reprocessing.py, 421 bunches",
+    "_meaning": "fraction of bunches whose stored tflash deviates >150 ns from that tree's per-run mode",
+    "official": {"WALA": 0.017, "WALB": 0.011, "WALC": 0.003, "WALD": 0.000,
+                 "PSSA": 0.845, "PSSB": 0.654, "PSSC": 0.368, "PSSD": 0.806,
+                 "LIQA": 0.0, "LIQB": 0.0, "LIQC": 0.0, "LIQD": 0.0, "PKUP": 0.0},
+    "v11": {"WALA": 0.0, "WALB": 0.0, "WALC": 0.0, "WALD": 0.0,
+            "PSSA": 0.0, "PSSB": 0.0, "PSSC": 0.0, "PSSD": 0.002,
+            "LIQA": 0.0, "LIQB": 0.0, "LIQC": 0.0, "LIQD": 0.0, "PKUP": 0.0}
+  },
+
+  "coincidence_offset_ns": {
+    "_tool": "grade_candidate.py check 2, prompt wall-plastic/liquid coincidence peak",
+    "_meaning": "ns by which a genuine same-arm coincidence reconstructs away from zero",
+    "official": {"PSSA": -362.3, "PSSB": 19.6, "PSSC": -333.0, "PSSD": -336.0,
+                 "LIQA": -372.6, "LIQB": 9.7, "LIQC": -349.8, "LIQD": -348.0},
+    "v11": {"PSSA": -3.5, "PSSB": 0.6, "PSSC": -3.0, "PSSD": -5.9,
+            "LIQA": -6.0, "LIQB": -2.0, "LIQC": -17.8, "LIQD": -14.6}
+  },
+
+  "singles_matcher": {
+    "_tool": "dream_regression.py, thresholded wall AND plastic singles, repair_tflash=False",
+    "_note": "the 'official' column is the official file WITH the laptop-side tflash repair applied; without it the plastic leg collapses and the matcher is unusable (12.7 % efficient)",
+    "bins_ms": [[1, 3], [3, 10], [10, 20], [20, 40], [40, 80]],
+    "official_eff": [0.899, 0.929, 0.944, 0.950, 0.937],
+    "official_false": [0.013, 0.010, 0.004, 0.000, 0.001],
+    "v11_eff": [0.955, 0.952, 0.963, 0.974, 0.970],
+    "v11_false": [0.026, 0.012, 0.004, 0.000, 0.000],
+    "official_overall": [0.937, 0.005],
+    "v11_overall": [0.964, 0.006],
+    "v11_wall_only": [0.989, 0.989, 0.988, 0.990, 0.987]
+  },
+
+  "hits_per_bunch": {
+    "_tool": "grade_candidate.py check 3, partial 0001",
+    "_note": "official is not directly comparable hit-for-hit because its PSS time base is broken; the v4 column is the same processing as v11 minus the plastic shape fitting and the loosened elimination",
+    "trees": ["WALA", "WALB", "WALC", "WALD", "PSSA", "PSSB", "PSSC", "PSSD",
+              "LIQA", "LIQB", "LIQC", "LIQD"],
+    "v1_flash": [9618, 9365, 10387, 10128, 23131, 32587, 38077, 33546,
+                 11462, 13881, 3407, 8128],
+    "v11": [9618, 9365, 10387, 10128, 40266, 47857, 58935, 54240,
+            14103, 16276, 4374, 9792]
+  },
+
+  "quality": {
+    "_tool": "quality_metrics.py, accidental-subtracted, partial 0001",
+    "T1_wall_topbottom_sigma_ns": {"v4": 6.65, "v11": 6.65},
+    "T2_wall_plastic_sigma_ns": {"v4": 6.46, "v11": 6.41},
+    "T3_walk_ns": {"v4": 1.38, "v11": 1.48},
+    "A1_mip_peak_adc": {"v4": 1080.6, "v11": 1080.3},
+    "A1_mip_fwhm_over_peak": {"v4": 1.22, "v11": 1.22},
+    "A2_logratio_resid": {"v4": 0.362, "v11": 0.362},
+    "A2_gmean_flatness": {"v4": 0.091, "v11": 0.092}
+  },
+
+  "fit_chi2_p50": {
+    "_tool": "compare_fits.py, partial 0001",
+    "_note": "the walls gained from longer measured templates; the plastics gained from having shape fitting at all (they had none)",
+    "walls_shipped_templates": {"WALA": 0.896, "WALB": 1.227, "WALC": 1.133, "WALD": 1.184},
+    "walls_measured_templates": {"WALA": 0.851, "WALB": 1.002, "WALC": 1.002, "WALD": 1.062},
+    "plastics_v11": {"PSSA": 1.283, "PSSB": 1.347, "PSSC": 1.290, "PSSD": 1.203}
+  }
+}
