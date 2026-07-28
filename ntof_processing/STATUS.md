@@ -45,8 +45,38 @@ at 1024 MB), hadd over EOS dies and leaves a truncated file that still opens.
 | v7_step | v4 + STEP SIZE WAL 5/5, PSS 2/3, LIQ 2/3 | 95.1 / 0.6 | neutral/slightly worse |
 | **v8_pssfit** | v4 + PSS shape fitting, 101 ns templates | **96.4 / 0.6** | **production** |
 | v9_liqaug | v4 + LIQ shipped pair + a measured third | 95.2 / 0.6 | neutral |
-| v10_pssfit_step | v8 + PSS STEP SIZE 2/3 | - | submitted |
-| v11_pssfit_width | v8 + PSS SIGNAL WIDTH LOW 4 ns | - | submitted |
+| v10_pssfit_step | v8 + PSS STEP SIZE 2/3 | 96.4 / 0.6 | equal to v8 |
+| **v11_pssfit_width** | v8 + PSS SIGNAL WIDTH LOW 4 ns | **96.4 / 0.6** | **production** |
+
+### The processing has hit its floor at 96.4 %
+
+v8, v10 and v11 give **identical** matcher efficiency (96.4 % / 0.6 %) and
+identical leg breakdowns, despite reconstructing the plastics very differently:
+
+```
+              PSS chi2 p50   PSS amp p50   PSS hits   hits with amp>2000
+  v8            baseline       baseline     baseline        2834 / 4757
+  v10_step      +1.6..+4.0%    +20..+44%    -13..-17%       2822 / 4746
+  v11_width     -2.6..-13.2%   -16..-25%    +28..+34%       2845 / 4767
+```
+
+The last column is why: **above ~2000 ADC the three are identical to <1 %**.
+Once shape fitting is on, the trigger-relevant plastic population is fixed and
+the remaining knobs only shuffle small pulses, which the discriminator never
+sees. Three very different reconstructions giving the same efficiency is strong
+evidence the limit is no longer in the PSA.
+
+So the remaining 2.5 % plastic-leg loss is **not a pulse-recognition problem**.
+If it is worth chasing, it is analysis-side: the per-arm discriminator
+threshold model (`thr['plastic']`), the D_PMTS channel selection, plastic dead
+time, or genuine detector inefficiency. Do not spend more UserInput variants
+on it.
+
+**v11 chosen over v8** on the tiebreakers: same efficiency, same timing and
+amplitude quality (every metric within 0.8 %), same large-pulse yield, but
+3-13 % better plastic fit chi2 and 28-34 % more plastic hits available to
+non-trigger analyses. v8 is the conservative alternative if smaller files
+matter.
 
 ### What the second sweep established
 
