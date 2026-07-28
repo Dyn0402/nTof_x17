@@ -200,7 +200,7 @@ def _candidate_score(P, plane, fit: PlaneFit) -> tuple:
 
 
 def fit_plane_candidates(windows: list, plane: str, cal: CalibrationBundle,
-                         seeds: Optional[list] = None):
+                         seeds: Optional[list] = None, return_all: bool = False):
     """Fit every candidate cluster of one plane and keep the muon's.
 
     'Largest cluster wins' is wrong for ~5 % of events, and when it is wrong the
@@ -220,6 +220,7 @@ def fit_plane_candidates(windows: list, plane: str, cal: CalibrationBundle,
     best = None
     best_key = None
     n_ok = 0
+    ranked = []
     for i, P in enumerate(windows):
         s = (seeds or [None] * len(windows))[i]
         try:
@@ -232,12 +233,55 @@ def fit_plane_candidates(windows: list, plane: str, cal: CalibrationBundle,
             continue
         n_ok += 1
         plausible, dchi2 = _candidate_score(P, plane, fit)
+        fit._plausible, fit._dchi2 = plausible, dchi2
         key = (1 if plausible else 0, dchi2)
+        ranked.append((key, fit))
         if best_key is None or key > best_key:
             best, best_key = fit, key
     if best is not None:
         best.n_candidates = n_ok
-    return best
+    ranked.sort(key=lambda kv: kv[0], reverse=True)
+    for _k, f in ranked:
+        f.n_candidates = n_ok
+    return (best, [f for _k, f in ranked]) if return_all else best
+
+
+DT_XY_TOL_NS = 120.0     # how far t0x - t0y may sit from the measured offset
+
+
+def select_pair(cand_fits: Dict[str, list], ftst_diff: Optional[int],
+                cal: CalibrationBundle) -> Dict[str, Optional[PlaneFit]]:
+    """Choose one cluster per plane using the fact that the muon fired both.
+
+    A muon's X and Y charge arrives at the same time, so ``t0x - t0y`` must sit
+    at the measured FEU offset (``dt_xy``, keyed by the ftst difference).
+    Coherent noise or a stray deposit in one plane has no reason to be
+    time-coincident with the track in the other, which is information that
+    single-plane selection cannot use.
+
+    Falls back to the per-plane rule when a plane has only one candidate.
+    """
+    out = {}
+    for plane in ('x', 'y'):
+        fits = [f for f in cand_fits.get(plane, []) if f is not None]
+        out[plane] = fits[0] if fits else None
+    if not (len(cand_fits.get('x', [])) > 1 or len(cand_fits.get('y', [])) > 1):
+        return out
+    dt = cal.dt_xy.get(int(ftst_diff), -18.8) if ftst_diff is not None else -18.8
+    best, best_key = None, None
+    for fx in cand_fits.get('x', []) or [None]:
+        for fy in cand_fits.get('y', []) or [None]:
+            if fx is None or fy is None:
+                continue
+            coincident = abs((fx.t0 - fy.t0) - dt) <= DT_XY_TOL_NS
+            plaus = int(getattr(fx, '_plausible', True)) + int(getattr(fy, '_plausible', True))
+            key = (int(coincident), plaus,
+                   getattr(fx, '_dchi2', 0.0) + getattr(fy, '_dchi2', 0.0))
+            if best_key is None or key > best_key:
+                best, best_key = (fx, fy), key
+    if best is not None:
+        out['x'], out['y'] = best
+    return out
 
 
 def fit_event(windows: Dict[str, object], cal: CalibrationBundle,
@@ -284,19 +328,29 @@ def _worker_init(bundle_path):
     wm.use_calibration(_CAL)
 
 
+PAIR_SELECT = os.environ.get('WFT_PAIR_SELECT', '0') == '1'
+
+
 def _worker_fit(payload):
-    eid, wins, seeds, n_hits, spark = payload
-    fits = {}
+    eid, wins, seeds, n_hits, spark, ftst_diff = payload
+    fits, all_fits = {}, {}
     for plane in ('x', 'y'):
         cand = wins.get(plane)
         if not cand:
-            fits[plane] = None
+            fits[plane], all_fits[plane] = None, []
             continue
         try:
-            fits[plane] = fit_plane_candidates(cand, plane, _CAL,
-                                               seeds=seeds.get(plane))
+            best, ranked = fit_plane_candidates(cand, plane, _CAL,
+                                                seeds=seeds.get(plane),
+                                                return_all=True)
+            fits[plane], all_fits[plane] = best, ranked
         except Exception:
-            fits[plane] = None
+            fits[plane], all_fits[plane] = None, []
+    if PAIR_SELECT:
+        try:
+            fits = select_pair(all_fits, ftst_diff, _CAL)
+        except Exception:
+            pass
     return row_from_fits(eid, fits, n_hits, spark)
 
 
@@ -428,8 +482,12 @@ def _stream_windows(cfg, pos_maps, seeds, wanted, pad_strips, verbose=True):
                 rec['w'][plane] = wins
                 rec['s'][plane] = used
                 rec['ftst_' + plane] = ftst
-        payloads = [(eid, rec['w'], rec['s'], seeds[eid]['n_hits'],
-                     seeds[eid]['spark']) for eid, rec in buf.items()]
+        payloads = []
+        for eid, rec in buf.items():
+            fd = (rec['ftst_x'] - rec['ftst_y']
+                  if 'ftst_x' in rec and 'ftst_y' in rec else None)
+            payloads.append((eid, rec['w'], rec['s'], seeds[eid]['n_hits'],
+                             seeds[eid]['spark'], fd))
         if verbose:
             print(f'[wft]   {tag}: {len(payloads):,} events windowed', flush=True)
         yield payloads

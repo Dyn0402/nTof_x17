@@ -22,6 +22,18 @@ for KEY in sat_det3 o22_long_det2; do
   .venv/bin/python mx_june_wft/03_angles.py "$KEY"     >> "$LOG/${KEY}_cand.log" 2>&1
   grep -E "within 5|core sigma|^x:|^y:" "$LOG/${KEY}_cand.log" | tail -8
 done
+# The hits caches for det2/det6/det7 predate the 2026-07-25 significance floor
+# (no .meta.json sidecar), so --source hits scores them unfairly. Rebuild them
+# before any position comparison is quoted. Also closes the July-25 open item.
+for KEY in o22_long_det2 g_det6_long g_det7_long; do
+  echo "[$(date +%H:%M:%S)] ===== $KEY: rebuilding the hits cache with the significance floor ====="
+  .venv/bin/python mx_june_cosmic_qa/03_alignment_and_tpc.py "$KEY" --veto=50 --refit \
+      > "$LOG/${KEY}_hits_refit.log" 2>&1 || echo "  (failed, see $LOG/${KEY}_hits_refit.log)"
+  .venv/bin/python mx_june_wft/02_efficiency.py "$KEY" --source hits \
+      >> "$LOG/${KEY}_hits_refit.log" 2>&1 || true
+  grep -E "within 5|core sigma" "$LOG/${KEY}_hits_refit.log" | tail -2
+done
+
 echo "[$(date +%H:%M:%S)] candidate re-runs done"
 .venv/bin/python mx_june_wft/digest.py sat_det3 o22_long_det2 g_det4 g_det6_long g_det7_long \
     --out mx_june_wft/FLEET_DIGEST.md 2>&1 | tail -25
