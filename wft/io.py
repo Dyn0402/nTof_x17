@@ -57,8 +57,13 @@ class FeuReader:
         self.n_entries = self.tree.num_entries
         a0 = self.tree.arrays(['amplitude'], entry_stop=min(n_ped, self.n_entries),
                               library='np')['amplitude']
-        stack = np.stack([a.reshape(-1, 512) for a in a0]).astype(np.float32)
-        self.n_sample = stack.shape[1]
+        # Window length can vary event to event (det4's 6-24 run mixes 32 and 37
+        # samples), so build the pedestal from the modal length only.
+        lens = np.array([len(a) // 512 for a in a0])
+        self.n_sample = int(np.bincount(lens).argmax())
+        stack = np.stack([a.reshape(self.n_sample, 512)
+                          for a, l in zip(a0, lens) if l == self.n_sample]
+                         ).astype(np.float32)
         self.ped = np.median(stack, axis=(0, 1))
         sub = stack - self.ped[None, None, :]
         nblk = 512 // CNS_BLOCK
@@ -82,7 +87,11 @@ class FeuReader:
             for i in block:
                 j = i - base
                 wfm = arr['amplitude'][j].reshape(-1, 512).astype(np.float32) - self.ped
-                cms = np.median(wfm.reshape(self.n_sample, nblk, CNS_BLOCK), axis=2)
+                # the window length is per EVENT, not per file: det4's 6-24 run
+                # mixes 32- and 37-sample events, so taking it from the pedestal
+                # events crashes the common-mode reshape partway through a file
+                ns = wfm.shape[0]
+                cms = np.median(wfm.reshape(ns, nblk, CNS_BLOCK), axis=2)
                 wfm -= np.repeat(cms, CNS_BLOCK, axis=1)
                 yield int(arr['eventId'][j]), int(arr['ftst'][j]), wfm.T
 
