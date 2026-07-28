@@ -64,6 +64,7 @@ class PlaneFit:
     n_dropped: int
     slope_reliable: bool
     quality_ok: bool
+    n_candidates: int = 1        # candidate clusters fitted for this plane
 
 
 def _profile_summary(q: np.ndarray) -> tuple:
@@ -178,6 +179,67 @@ def fit_plane(P, plane: str, cal: CalibrationBundle, hyper: Optional[dict] = Non
         quality_ok=bool(r['chi2'] / max(r['dof'], 1) < CHI2DOF_BAD))
 
 
+# --- candidate-cluster selection -------------------------------------------
+# A track's charge column crosses the drift gap, so it lasts a few hundred ns
+# and its transverse speed is bounded. Coherent noise and stray deposits do not
+# satisfy both. Among candidates that do, take the one whose charge the model
+# explains best (chi2 improvement over "no signal").
+U_MIN_NS = 250.0
+U_MAX_NS = 1100.0
+TAN_MAX = 0.6
+
+
+def _candidate_score(P, plane, fit: PlaneFit) -> tuple:
+    """(plausible, dchi2) for one candidate cluster's fit."""
+    W, noise, pos, sat = wm.prep_plane(P, plane)
+    chi_null = float(((W / noise[:, None]) ** 2)[~sat].sum())
+    u = fit.q_uend
+    plausible = (np.isfinite(u) and U_MIN_NS <= u <= U_MAX_NS
+                 and abs(fit.tan_theta) < TAN_MAX)
+    return bool(plausible), float(chi_null - fit.chi2)
+
+
+def fit_plane_candidates(windows: list, plane: str, cal: CalibrationBundle,
+                         seeds: Optional[list] = None):
+    """Fit every candidate cluster of one plane and keep the muon's.
+
+    'Largest cluster wins' is wrong for ~5 % of events, and when it is wrong the
+    true track is a median 37 mm outside the fit window — so the failures are
+    catastrophic, not marginal. Measured on those failures (det3, 224 events):
+
+        rule                        median |p0 - ref|   within 5 mm
+        most strips (old)                 76.6 mm            19 %
+        most charge                       47.3 mm            32 %
+        best chi2 improvement              3.4 mm            51 %
+        plausible + best improvement       1.6 mm            55 %
+        (best available candidate)         0.4 mm            95 %
+
+    The right cluster is nearly always among the candidates; this rule finds it
+    half the time, which is a large net gain and still leaves headroom.
+    """
+    best = None
+    best_key = None
+    n_ok = 0
+    for i, P in enumerate(windows):
+        s = (seeds or [None] * len(windows))[i]
+        try:
+            fit = fit_plane(P, plane, cal,
+                            n_seed=getattr(s, 'n_strips', 0) if s else 0,
+                            n_dropped=getattr(s, 'n_dropped', 0) if s else 0)
+        except Exception:
+            fit = None
+        if fit is None:
+            continue
+        n_ok += 1
+        plausible, dchi2 = _candidate_score(P, plane, fit)
+        key = (1 if plausible else 0, dchi2)
+        if best_key is None or key > best_key:
+            best, best_key = fit, key
+    if best is not None:
+        best.n_candidates = n_ok
+    return best
+
+
 def fit_event(windows: Dict[str, object], cal: CalibrationBundle,
               seeds: Optional[dict] = None) -> Dict[str, Optional[PlaneFit]]:
     out = {}
@@ -204,7 +266,7 @@ def row_from_fits(event_id: int, fits: Dict[str, Optional[PlaneFit]],
                       'p0_err', 'w_err', 'tan_err', 'q_sum', 'q_u50', 'q_u90',
                       'q_uend'):
                 row[f'{plane}_{k}'] = np.nan
-            for k in ('dof', 'n_strips', 'n_seed', 'n_dropped'):
+            for k in ('dof', 'n_strips', 'n_seed', 'n_dropped', 'n_candidates'):
                 row[f'{plane}_{k}'] = 0
             row[f'{plane}_slope_reliable'] = False
             row[f'{plane}_quality_ok'] = False
@@ -226,13 +288,13 @@ def _worker_fit(payload):
     eid, wins, seeds, n_hits, spark = payload
     fits = {}
     for plane in ('x', 'y'):
-        P = wins.get(plane)
-        if P is None:
+        cand = wins.get(plane)
+        if not cand:
             fits[plane] = None
             continue
         try:
-            fits[plane] = fit_plane(P, plane, _CAL, n_seed=seeds.get(f'{plane}_n', 0),
-                                    n_dropped=seeds.get(f'{plane}_drop', 0))
+            fits[plane] = fit_plane_candidates(cand, plane, _CAL,
+                                               seeds=seeds.get(plane))
         except Exception:
             fits[plane] = None
     return row_from_fits(eid, fits, n_hits, spark)
@@ -347,18 +409,24 @@ def _stream_windows(cfg, pos_maps, seeds, wanted, pad_strips, verbose=True):
         buf = {}
         for plane, rdr, feu in (('x', rx, cfg.MX17_FEU_X), ('y', ry, cfg.MX17_FEU_Y)):
             for eid, ftst, wfm in rdr.iter_events(want):
-                s = seeds[eid][plane]
-                if s is None:
+                cl = seeds[eid][plane]
+                if not cl:
                     continue
-                win = wio.extract_window(wfm, rdr.noise, pos_maps[feu],
-                                         s.channels, pad_strips)
-                if win is None:
+                cl = cl if isinstance(cl, list) else [cl]
+                wins, used = [], []
+                for s in cl:
+                    win = wio.extract_window(wfm, rdr.noise, pos_maps[feu],
+                                             s.channels, pad_strips)
+                    if win is None:
+                        continue
+                    wins.append(dict(W=win.W, pos=win.pos, noise=win.noise,
+                                     ch=win.ch))
+                    used.append(s)
+                if not wins:
                     continue
                 rec = buf.setdefault(eid, {'w': {}, 's': {}})
-                rec['w'][plane] = dict(W=win.W, pos=win.pos, noise=win.noise,
-                                       ch=win.ch)
-                rec['s'][f'{plane}_n'] = s.n_strips
-                rec['s'][f'{plane}_drop'] = s.n_dropped
+                rec['w'][plane] = wins
+                rec['s'][plane] = used
                 rec['ftst_' + plane] = ftst
         payloads = [(eid, rec['w'], rec['s'], seeds[eid]['n_hits'],
                      seeds[eid]['spark']) for eid, rec in buf.items()]
