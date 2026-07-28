@@ -58,9 +58,13 @@ METRICS = [
     ('v_drift um/ns',   'v_drift_um_ns',     'ang',  ('v_cal_um_ns',),   '{:.1f}',  0),
 ]
 
-# gate thresholds for det3 (DET3_RECO_FIX_2026-07-25.md, same events)
+# Gate thresholds, det3 ONLY: they come from DET3_RECO_FIX_2026-07-25.md, which
+# is a det3 result on det3 events. Applying them to the rest of the fleet is
+# meaningless — det4's own hits-chain within-5 mm is 35 %, det7's 17 % — so the
+# other keys get the comparison table and no verdict.
 GATE = {'within_R': ('>=', 93.0), 'core_sigma_mm': ('<=', 0.50),
         'median_r_mm': ('<=', 0.85), 'has_any': ('>=', 99.0)}
+GATE_KEYS = ('sat_det3',)
 
 
 def _dig(d, path):
@@ -76,6 +80,12 @@ def load_wft(cfg):
     p = os.path.join(cfg.OUT_BASE, 'wft', 'efficiency', 'efficiency_breakdown.json')
     if os.path.exists(p):
         out['eff'] = json.load(open(p))
+    p = os.path.join(cfg.OUT_BASE, 'wft', 'efficiency', 'efficiency_breakdown_hits.json')
+    if os.path.exists(p):
+        out['hits'] = json.load(open(p))
+    p = os.path.join(cfg.OUT_BASE, 'wft', 'efficiency', 'efficiency_breakdown_cut.json')
+    if os.path.exists(p):
+        out['cut'] = json.load(open(p))
     p = os.path.join(cfg.OUT_BASE, 'wft', 'angles', 'angular_resolution.json')
     if os.path.exists(p):
         out['ang'] = json.load(open(p))
@@ -117,6 +127,8 @@ def main():
         lines.append(f'| {label} | ' + ' | '.join(cells) + ' |')
 
     for key in args.keys:
+        if key not in GATE_KEYS:
+            continue
         eff = data[key].get('eff', {})
         for gk, (op, thr) in GATE.items():
             v = eff.get(gk)
@@ -126,15 +138,38 @@ def main():
             if not ok:
                 gate_fail.append(f'{key}: {gk} = {v:.3f} fails {op} {thr}')
 
-    txt = '\n'.join(lines)
+    # The '(was ...)' column is the PRE-matched-filter baseline, which for
+    # det2/det6/det7 is not the chain as it stands today. The hits chain scored
+    # through this same accounting is the honest side-by-side.
+    hits_rows = ['', '### The hits chain today, through this same accounting',
+                 '', '| quantity | ' + ' | '.join(args.keys) + ' |',
+                 '|---|' + '---|' * len(args.keys)]
+    for label, key_ in (('within 5 mm %', 'within_R'),
+                        ('reco-at-all %', 'reco_at_all'),
+                        ('core sigma r mm', 'core_sigma_mm'),
+                        ('median r mm', 'median_r_mm')):
+        cells = []
+        for k in args.keys:
+            h = data[k].get('hits')
+            cells.append(f'{h[key_]:.2f}' if h and key_ in h else '—')
+        hits_rows.append(f'| {label} | ' + ' | '.join(cells) + ' |')
+    hits_rows += ['', '(det2/det6/det7 hits caches predate the 2026-07-25 '
+                  'significance floor unless rebuilt — check for a '
+                  '`cache/event_results.meta.json` before trusting their '
+                  'position rows.)']
+
+    txt = '\n'.join(lines + hits_rows)
     print(txt)
     print()
+    scored = [k for k in args.keys if k in GATE_KEYS]
     if gate_fail:
-        print('GATE FAILURES:')
+        print(f'GATE ({", ".join(scored)}) FAILURES:')
         for g in gate_fail:
             print('  ' + g)
+    elif scored:
+        print(f'GATE ({", ".join(scored)}): all thresholds met')
     else:
-        print('GATE: all thresholds met')
+        print('GATE: not applicable to these keys (thresholds are det3-specific)')
     if args.out:
         with open(args.out, 'w') as f:
             f.write('# Waveform-first vs hits-chain digest\n\n' + txt + '\n\n')
