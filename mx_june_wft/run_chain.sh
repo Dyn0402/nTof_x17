@@ -43,7 +43,9 @@ if [ "$SKIP_RECO" = 0 ]; then
 fi
 
 run $PY mx_june_wft/01_alignment.py "$KEY"
-run $PY mx_june_wft/02_efficiency.py "$KEY"
+run $PY mx_june_wft/02_efficiency.py "$KEY" --max-dropped -1     # headline: no cluster cut
+run $PY mx_june_wft/02_efficiency.py "$KEY"                       # variant: n_dropped<=2
+$PY mx_june_wft/02_efficiency.py "$KEY" --source hits || log "hits-source comparison unavailable"
 run $PY mx_june_wft/03_angles.py "$KEY"
 run $PY mx_june_wft/04_maps.py "$KEY" || log "maps stage failed (non-fatal)"
 run $PY mx_june_wft/digest.py "$KEY"

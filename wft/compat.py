@@ -73,7 +73,39 @@ def as_event_results(df: pd.DataFrame, quality_only: bool = False,
     return out
 
 
-def load_table(path: str, quality_only: bool = False) -> pd.DataFrame:
+MAX_DROPPED = 2      # strips allowed in competing clusters, per plane
+
+
+def apply_cluster_quality(df: pd.DataFrame, max_dropped: int = MAX_DROPPED
+                          ) -> pd.DataFrame:
+    """Reject plane-fits whose seed cluster competes with another cluster.
+
+    ``n_dropped`` counts strips in *other* clusters of the same plane. When the
+    muon's cluster is not the largest one, the seed — and therefore the fit
+    window — lands on the wrong charge: measured on det3's failures, the
+    reference sits a median of 37 mm outside the fit window, against 1.9 mm for
+    good fits, and the far events carry a median n_dropped of 4 against 0.
+
+    The forward fit converges on whatever charge it is given, so unlike the hits
+    chain (whose line fit simply failed on junk clusters, quietly removing them)
+    it needs this stated explicitly. The threshold is the one the hits chain
+    already uses for its alignment subset (``--maxdrop`` in
+    03_alignment_and_tpc.py), so the two chains reject the same events.
+
+    An event rejected here is *not* a detection failure: it fired strips, we
+    just decline to trust the point. Efficiency accounting must therefore count
+    it as 'hit, no reco', which is what 02_efficiency.py does.
+    """
+    if max_dropped is None:
+        return df
+    for p in ('x', 'y'):
+        bad = df[f'{p}_ok'] & (df[f'{p}_n_dropped'] > max_dropped)
+        df.loc[bad, f'{p}_ok'] = False
+    return df
+
+
+def load_table(path: str, quality_only: bool = False,
+               max_dropped: int | None = MAX_DROPPED) -> pd.DataFrame:
     """Load a reco table.
 
     ``quality_only`` is OFF by default and should stay off for anything the
@@ -84,6 +116,7 @@ def load_table(path: str, quality_only: bool = False) -> pd.DataFrame:
     multi-track events, not a reconstruction filter.
     """
     df = pd.read_parquet(path)
+    df = apply_cluster_quality(df, max_dropped)
     if quality_only:
         for p in ('x', 'y'):
             bad = df[f'{p}_ok'] & ~df[f'{p}_quality_ok']

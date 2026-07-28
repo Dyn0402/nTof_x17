@@ -62,18 +62,45 @@ def main():
     ap.add_argument('--table', default=None)
     ap.add_argument('--alignment', default=None)
     ap.add_argument('--r', type=float, default=5.0)
+    ap.add_argument('--source', choices=('wft', 'hits'), default='wft',
+                    help='"hits" runs the OLD chain through this exact '
+                         'accounting, which is the only apples-to-apples '
+                         'comparison (the old 09 script uses its own box and '
+                         'event list)')
+    ap.add_argument('--max-dropped', type=int, default=compat.MAX_DROPPED,
+                    help='cluster-quality cut; -1 disables')
     args = ap.parse_args()
 
     cfg = get_config(args.run_key)
     table = args.table or os.path.join(cfg.OUT_BASE, 'wft', 'events.parquet')
-    align_path = args.alignment or os.path.join(cfg.OUT_BASE, 'wft', 'alignment',
-                                                'alignment.json')
     out_dir = cfg.out_dir('wft', 'efficiency')
     R = args.r
 
-    params = cm.load_alignment(align_path)
-    df = compat.load_table(table)
-    results = compat.as_event_results(df)
+    if args.source == 'hits':
+        import pickle
+        align_path = args.alignment or os.path.join(
+            cfg.OUT_BASE, 'alignment_tpc_veto50', 'alignment.json')
+        params = cm.load_alignment(align_path)
+        # 09_efficiency_breakdown.py reads the UN-vetoed cache (sparks are
+        # tagged by multiplicity in the accounting, not removed upstream), so
+        # match that or the hits chain is scored on fewer events than it had.
+        cache_path = os.path.join(cfg.OUT_BASE, 'cache', 'event_results.pkl')
+        if not os.path.exists(cache_path):
+            cache_path = os.path.join(cfg.OUT_BASE, 'cache',
+                                      'event_results_veto50.pkl')
+        results = pickle.load(open(cache_path, 'rb'))
+        # No event-list restriction: each chain reconstructs whatever it can,
+        # and both are scored against the same M3 rays in the same active box.
+        # (Restricting the hits chain to the wft table's events would count its
+        # successes on events wft never attempted as 'hit, no reco' — unfair.)
+        print(f'HITS chain through the wft accounting: {len(results):,} events')
+    else:
+        align_path = args.alignment or os.path.join(cfg.OUT_BASE, 'wft',
+                                                    'alignment', 'alignment.json')
+        params = cm.load_alignment(align_path)
+        md = None if args.max_dropped < 0 else args.max_dropped
+        df = compat.load_table(table, max_dropped=md)
+        results = compat.as_event_results(df)
 
     rays = M3RefTracking(cfg.m3_tracking_dir, chi2_cut=M3_CHI2_CUT,
                          min_nclus=M3_MIN_NCLUS)
@@ -138,15 +165,28 @@ def main():
     core = rstd(rlist[rlist < 15]) if len(rlist) else np.nan
     med = float(np.median(rlist)) if len(rlist) else np.nan
 
-    summary = dict(run_key=args.run_key, n_rays=n, R_mm=R,
+    summary = dict(run_key=args.run_key, source=args.source,
+                   max_dropped=(None if args.source == 'hits' or args.max_dropped < 0
+                                else args.max_dropped),
+                   n_rays=n, R_mm=R,
                    within_R=pct['reco_near'], reco_at_all=reco_all,
                    reco_far=pct['reco_far'], hit_no_reco=pct['hit_no_reco'],
                    no_hit=pct['no_hit'], spark_cat=pct['spark'],
                    has_any=has_any, spark_frac=spark_frac,
                    core_sigma_mm=core, median_r_mm=med,
-                   n_reco=len(reco), basis='waveform-first (wft)',
+                   n_reco=len(reco),
+                   basis=('hits chain, wft accounting' if args.source == 'hits'
+                          else 'waveform-first (wft)'),
                    table=table, alignment=align_path)
-    with open(os.path.join(out_dir, 'efficiency_breakdown.json'), 'w') as f:
+    # headline file (no suffix) = wft with no cluster cut, so the digest and
+    # the hits comparison are both scored without an extra selection
+    if args.source == 'hits':
+        tag = '_hits'
+    elif args.max_dropped is not None and args.max_dropped >= 0:
+        tag = '_cut'
+    else:
+        tag = ''
+    with open(os.path.join(out_dir, f'efficiency_breakdown{tag}.json'), 'w') as f:
         json.dump(summary, f, indent=1)
     lines = [f'{k:12s} {cat[k]:7d}  {pct[k]:6.2f} %' for k in cat]
     lines += [f'{"has_any":12s} {"":7s}  {has_any:6.2f} %',
@@ -155,7 +195,7 @@ def main():
               f'core sigma |r| {core:.3f} mm, median |r| {med:.3f} mm',
               f'spark_frac (all firing events) {spark_frac:.2f} %']
     txt = '\n'.join(lines)
-    with open(os.path.join(out_dir, 'efficiency_breakdown.txt'), 'w') as f:
+    with open(os.path.join(out_dir, f'efficiency_breakdown{tag}.txt'), 'w') as f:
         f.write(txt + '\n')
     print(txt)
 
@@ -171,7 +211,7 @@ def main():
         axs[1].set_xlabel('|r| detector - reference [mm]')
         axs[1].set_title(f'core sigma {core:.2f} mm, median {med:.2f} mm')
     fig.tight_layout()
-    fig.savefig(os.path.join(out_dir, 'efficiency_breakdown.png'), dpi=110)
+    fig.savefig(os.path.join(out_dir, f'efficiency_breakdown{tag}.png'), dpi=110)
     print(f'\nwrote {out_dir}')
 
 
