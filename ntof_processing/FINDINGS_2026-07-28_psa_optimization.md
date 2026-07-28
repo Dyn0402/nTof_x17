@@ -232,6 +232,80 @@ shift the absolute numbers.
 
 ---
 
+## 4b. RESULTS of the first reprocessing (2026-07-28, run 224572)
+
+Graded with `ntof_processing/grade_candidate.py` on the first `completed/`
+partial of each variant (21 bunches, 2998-3018) -- the partials land within
+~25 min of submission, long before the 26 GB merge, and they are enough for
+checks 1 and 2. **[measured]**
+
+### The flash fix works, and it works better than the acceptance bar
+
+```
+                        official (before)        v1_flash / v2 / v3 (after)
+flash-id bad bunches    PSS 37-85 %              0.0 % on ALL 13 trees
+consistency vs wall     PSSA -362  PSSB +20      PSSA +1.1  PSSB +0.5
+                        PSSC -333  PSSD -336     PSSC -2.8  PSSD -6.0
+                        LIQA -373  LIQB  +10     LIQA -2.0  LIQB -2.9
+                        LIQC -350  LIQD -348     LIQC (few) LIQD -18.0
+```
+
+Target was <2 % and |offset| <25 ns. The plastics come in at 1-6 ns. All four
+walls now time the same waveform feature as the plastics and the liquids,
+which is the whole point: **the 350 ns problem is gone at the source**, and the
+laptop-side `tflash_repair` becomes a no-op.
+
+### v2_elim recovers exactly the hits it predicted
+
+Hits per bunch, v2 against v1:
+
+```
+WALA-D  +0.0 %  (control: the wall elimination was not touched)
+PSSA +30.8 %   PSSB +13.9 %   PSSC +20.8 %   PSSD +27.1 %
+LIQA +21.7 %   LIQB +16.2 %   LIQC +26.8 %   LIQD +19.2 %
+```
+
+Predicted from the raw pulses in sections 1b/2a: ~25 % for the plastics and
+~19 % for the liquids. The walls being *exactly* 0.0 % is the control that says
+the change did what it was meant to and nothing else.
+
+### v3_shapes: right for the walls, WRONG for the liquids
+
+Fit chi2 is the honest discriminator here, not the hit count:
+
+```
+        chi2 p50   chi2 p90   amp p50   hits     verdict
+        old  new   old   new  old  new
+WALA   0.90 0.85   4.09  4.05  660  674  -2.1 %  BETTER
+WALB   1.23 1.00   6.70  5.34  894  923  -2.7 %  BETTER
+WALC   1.13 1.00   5.62  5.03  846  879  -2.8 %  BETTER
+WALD   1.18 1.06   5.71  5.43  856  885  -2.8 %  BETTER
+LIQA   2.40 5.49  26.8  31.4   218  155 -15.7 %  WORSE
+LIQB   4.27 7.50  35.2  35.2   311  239  -8.5 %  WORSE
+LIQC   1.80 5.35  16.0  29.3   137  100 -33.5 %  WORSE
+LIQD   1.77 4.04  18.2  20.9   152  114 -23.7 %  WORSE
+```
+
+**The walls behave exactly as argued in 3c**: chi2 falls, amplitudes rise
+slightly (the truncated tail is now accounted for), and 2-3 % fewer hits are
+spurious splits disappearing.
+
+**The liquids do the opposite, and the reasoning in section 2b was wrong.**
+A 551 ns template for a pulse with 6 ns FWHM and a 0.1-0.4 % tail at 200 ns
+means the fit is dominated by ~500 ns of baseline noise: chi2 p50 more than
+doubles, amplitudes are pulled down ~30 %, the pileup flag rate rises and a
+quarter of the hits vanish. Riccardo's 24-59 ns templates were not too short --
+they matched the detector. What they lacked was averaging, not length.
+
+Corrected in `make_pulse_shapes.py`: `SPAN` is now per family and matched to
+the measured tail (WAL 60/800, PSS 20/80, LIQ 20/60), with the reasoning in
+the code so nobody repeats the mistake.
+
+Follow-up variants:
+- **`v4_walshapes`** = v2_elim + the wall templates only (the proven win)
+- **`v5_liqshort`** = v4 + short *averaged* liquid templates (the retry: same
+  length as the shipped ones, but built from hundreds of pulses instead of one)
+
 ## 5. What is NOT addressed here
 
 - The absolute wall time offset (the divert-path delay) -- needs the dedicated
