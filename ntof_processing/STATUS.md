@@ -117,10 +117,29 @@ python ntof_processing/compare_fits.py     a=.. b=.. # fit chi2
 #    (verify per-file sizes BEFORE deleting the source)
 ```
 
+## Which runs to reprocess, and what is actually still on EOS
+
+Measured 2026-07-28 (`scratchpad/eos_inventory.txt`, regenerate with the loop in
+the git log of this file): **156 of the 329 run directories still carry
+stream1**, spanning **2026-07-02 to 07-28**. The missing 181 are scattered
+through the range, not a clean age cutoff -- so retention is NOT the simple
+"~2 weeks" the earlier handoff assumed, and it cannot be predicted per run.
+Check before planning, do not extrapolate.
+
+The two DREAM runs staged locally, and the n_TOF runs that cover them by
+wall-clock:
+
+| DREAM run | window | n_TOF runs | on EOS? |
+|---|---|---|---|
+| run_79 | 07-26 18:07 -> 07-27 10:00 | 224572 (done), 224573-224579, 224580 | all present |
+| run_55 | 07-18 19:11 -> 23:53 | 224498, 224499 | both present, 165 / 156 files |
+
+So **9 runs remain to reprocess** for the two DREAM runs we hold, and all of
+their raw data is still on disk. Several are short (224575 has 17 raw files,
+224579 has 1, 224578 has 71) -- fine, just quick.
+
 ## Next
 
-1. Grade v6-v9 on the scorecard; build a combined variant from what wins.
-2. Reprocess the other DREAM-paired runs with the winner. Runs before ~224520
-   are past the 2-week EOS window and need CTA staging -- that is the clock.
-3. Liquids are not template-limited. If v9 is neutral, stop spending variants
-   on the templates and look elsewhere.
+1. Grade v10/v11 against v8 (needs partial 0002 for the DREAM bunch range).
+2. Reprocess those 9 runs with the winner.
+3. Liquids have resisted three template treatments. Stop there.
