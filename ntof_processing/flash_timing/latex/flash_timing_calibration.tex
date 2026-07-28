@@ -1,0 +1,415 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=2.4cm]{geometry}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{amsmath}
+\usepackage{siunitx}
+\usepackage[table]{xcolor}
+\usepackage[colorlinks=true,linkcolor=black,urlcolor=blue!60!black,citecolor=black]{hyperref}
+\usepackage{caption}
+\captionsetup{font=small,labelfont=bf}
+
+
+
+\graphicspath{{../figures/}}
+\sisetup{detect-all}
+\newcommand{\ns}{\,\mathrm{ns}}
+
+\title{\bfseries The $\gamma$-flash time base of the n\_TOF EAR2 X17 campaign\\
+\large A calibration from the seven runs taken with the SiPM-wall divert disabled}
+\author{n\_TOF X17 / DREAM analysis}
+\date{2026-07-28}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\noindent
+The SiPM walls of the X17 setup are blanked around the $\gamma$-flash, so they
+never record it, and the pulse-shape analysis (PSA) that produces the official
+hit files mis-times the flash on every detector except the beam pickup. We
+identify the seven runs of the 2026 EAR2 campaign in which the blanking gate was
+inadvertently disabled --- the only direct view of the true flash arrival in the
+walls --- and use them to calibrate the flash time of all 32 wall channels
+against the beam pickup~(PKUP):
+\[
+   t_\mathrm{flash}(\text{bunch}) \;=\; t_\mathrm{PKUP}(\text{bunch}) + C ,
+   \qquad C \simeq -1719\ns .
+\]
+The constant reproduces to $0.5\ns$ between runs of one epoch, and the liquid
+scintillators --- which are never gated --- show that the underlying time base
+is stable to $0.68\ns$ rms over the whole campaign. We further show that the
+$5\ns$ shift between parasitic and dedicated proton pulses is an artefact of
+front-end saturation rather than a change of the flash arrival time, and we
+quantify why the plastic scintillators cannot be used for flash timing.
+\end{abstract}
+
+\section{Result}
+
+The calibration is a per-channel constant $C$ referred to the pickup pulse of
+the same bunch:
+\begin{equation}
+   t_\mathrm{flash\ at\ detector}(\text{bunch}) = t_\mathrm{PKUP}(\text{bunch}) + C[\text{channel}] .
+   \label{eq:cal}
+\end{equation}
+Table~\ref{tab:walls} gives the per-wall values; the per-channel numbers are in
+\texttt{data/flash\_timing\_calibration.json}. The recommended set is the
+2026-07-16 epoch, for runs $\geq 224400$.
+
+\begin{table}[htbp]
+\centering
+\small
+\caption{Wall constants $C = t_\mathrm{channel}-t_\mathrm{PKUP}$, in ns.
+``spread'' is the r.m.s.\ over the eight channels of a wall.}
+\label{tab:walls}
+\begin{tabular}{lrrrrrr}
+\toprule
+wall & all 7 runs & 2026-07-11 & \textbf{2026-07-16} & channel spread & per-bunch $\sigma$ & flash amp.\ [ADC] \\
+\midrule
+WALA & $-1717.5$ & $-1716.7$ & $\mathbf{-1719.5}$ & 5.2 & 3.2 & 28613 \\
+WALB & $-1719.3$ & $-1719.1$ & $\mathbf{-1719.7}$ & 3.2 & 3.1 & 28515 \\
+WALC & $-1715.5$ & $-1714.0$ & $\mathbf{-1719.2}$ & 1.9 & 3.6 & 28295 \\
+WALD & $-1714.1$ & $-1712.2$ & $\mathbf{-1719.0}$ & 3.9 & 3.4 & 28246 \\
+\midrule
+all 32 & $-1716.6$ & $-1715.5$ & $\mathbf{-1719.3}$ & 3.4 & 3.5 & 28420 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[htbp]
+\centering
+\small
+\caption{Uncertainty budget.}
+\label{tab:budget}
+\begin{tabular}{lr}
+\toprule
+effect & size [ns] \\
+\midrule
+run-to-run reproducibility within an epoch & 0.5 \\
+time-base stability over the campaign (LIQ common mode, r.m.s.) & 0.68 \\
+transport from the 07-16 epoch to the end of the campaign & 1.2 \\
+$07\text{-}11 \rightarrow 07\text{-}16$ epoch difference (real hardware change) & 3.9 \\
+beam-intensity dependence, parasitic $\rightarrow$ dedicated & 5.0 \\
+\midrule
+single-bunch spread, one channel & 3.5 \\
+single-bunch spread, 32-channel average & 2.5 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Do not use the stored \texttt{tflash}.} In gated runs the PSA flash
+finder is bistable \emph{within a single run}: in some bunches it tags the
+blanking-gate transient, in others the clamped leak at the true flash time. No
+per-run offset can repair that. The pickup finder, by contrast, never fails
+(\S\ref{sec:pkup}).
+
+\section{Why special runs were needed}
+
+The wall signal is diverted around the flash by a ${\sim}1\,\mu$s blanking gate
+(N1081B module~6, section~C). The walls therefore record either the gate
+transient --- $1190\ns$ before the flash in the July-11 configuration, $375\ns$
+after the gate delay was changed from 200 to $1000\ns$ on 2026-07-22 --- or a
+clamped leak at the true flash time.
+
+A scan of every processed run of the campaign (306 runs, 224264--224587)
+identifies exactly seven runs in which the gate was inactive
+(Table~\ref{tab:runs}): all four walls then tag the same time to within $\pm6\ns$
+and the flash peak reaches ${\sim}28\,500$~ADC instead of the ${\sim}850$~ADC
+transient. The 07-11 group corresponds to the switch outage during which the
+N1081B module~6 was offline; the 07-16 pair coincides with the wall/plastic
+recalibration. 145 runs before 224345 have no wall trees in the official
+processing and cannot be checked without a tape reprocessing.
+
+\begin{table}[htbp]
+\centering
+\small
+\caption{The seven divert-off runs.}
+\label{tab:runs}
+\begin{tabular}{lllrl}
+\toprule
+run & date & bunches & \multicolumn{1}{c}{intensity} & all-four-walls agree \\
+\midrule
+224356 & 07-10 21:44 -- 07-11 01:00 & 3412 & dedicated & 85\,\% \\
+\textbf{224357} & 07-11 01:01 -- 03:51 & 3286 & 47\,\% ded.\ / 53\,\% par. & 98\,\% \\
+224358 & 07-11 03:52 -- 06:40 & 3269 & mixed & 93\,\% \\
+224359 & 07-11 06:41 -- 09:40 & 3426 & dedicated & 87\,\% \\
+224360 & 07-11 09:41 -- 10:08 & 549 & dedicated & 91\,\% \\
+224464 & 07-16 09:54 -- 12:56 & 2716 & mostly dedicated & 60\,\% \\
+224466 & 07-16 ${\sim}$13:00 -- 15:19 & 2073 & mostly dedicated & 100\,\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Method}
+
+For every (bunch, channel) we take the largest-amplitude hit within $\pm300\ns$
+of that bunch's flash anchor and subtract the pickup pulse time of the same
+bunch. The quoted constant is the mean over bunches after a $\pm100\ns$ core cut
+that removes PSA mis-tags. Since \texttt{tof} is quantised to 1\,ns, the mean
+over ${\sim}3000$ bunches has a statistical error of $0.06\ns$: every number
+below is limited by systematics, not statistics.
+
+\section{Per-channel constants and resolution}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{01_per_channel_arrival.png}
+\caption{Per-channel flash arrival referred to the pickup, for all seven runs
+(top), and the decomposition of the run-to-run scatter into within-epoch
+reproducibility and the real 07-11$\rightarrow$07-16 hardware shift (bottom).
+Within an epoch every channel reproduces to ${\sim}0.6\ns$; the epoch shift is
+channel-dependent and reaches $9\ns$ on WALD.}
+\label{fig:perchan}
+\end{figure}
+
+On 07-11 the four walls sat $7\ns$ apart; by 07-16 they agree to $0.7\ns$. The
+shift is per-channel (WALB $-0.6\ns$, WALD $-6.9\ns$), i.e.\ a front-end change
+rather than a cable change, consistent with the wall threshold/HV equalisation
+of 07-15/16. The equalised state is the one that held for the rest of the
+campaign, which is why the 07-16 constants are recommended.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{04_distributions.png}
+\caption{Left: single channel against the pickup. Right: the difference of two
+channels of the same wall, in which the pickup and beam jitter cancel.}
+\label{fig:dist}
+\end{figure}
+
+Decomposing the 32-channel matrix bunch by bunch gives, averaged over the seven
+runs: $3.5\ns$ for a single channel against the pickup, of which $2.5\ns$ is
+common to all 32 channels and $2.5\ns$ is independent. The independent part
+averages away over the array; the common part does not, and since the pickup
+itself contributes only ${\sim}1\ns$ (\S\ref{sec:pkup}) it represents a genuine
+bunch-to-bunch variation of the flash arrival. The 07-16 runs are better than
+the 07-11 ones ($2.7$ vs $3.9\ns$ per channel), again following the
+equalisation.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{03_stability.png}
+\caption{Within-run stability: pooling all 32 channels in 40 bins across a full
+three-hour run, the bin-to-bin spread is $0.25$--$0.39\ns$ and the maximum
+excursion $1.4\ns$.}
+\label{fig:stab}
+\end{figure}
+
+\subsection{The reference: the beam pickup}
+\label{sec:pkup}
+
+The pickup is a near-ideal reference: its pulse time has a bunch-to-bunch spread
+of $0.83\ns$ (dedicated) to $1.42\ns$ (parasitic), it is usable in 98.4\,\% of
+bunches --- the 1.6\,\% of failures are all parasitic pulses --- its amplitude
+is strictly linear in protons (ratio $1.97$ for a factor two), and its timing
+moves by only $-0.45\ns$ between the two intensity classes.
+
+\section{Is the intensity dependence real?}
+
+The wall constant differs by $-5.0\ns$ between parasitic ($4.1\times10^{12}$~p)
+and dedicated ($8.5\times10^{12}$~p) pulses. Three independent arguments show
+that this is a property of the measurement, not a change of the flash arrival
+time.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{06_intensity_mechanism.png}
+\caption{(a) The shift is strongly detector-dependent --- $0$ for the pickup,
+$-5\ns$ for the walls, $-3$ to $-6\ns$ for the plastics, $-16\ns$ for the
+silicon monitor. A genuine change of the flash arrival would be common to all.
+(b) Only the pickup is linear in protons; every other detector is saturated, its
+amplitude ratio being $\simeq 1$. (c) The shift follows the change in pulse
+risetime.}
+\label{fig:mech}
+\end{figure}
+
+\begin{enumerate}
+\item \textbf{It is detector-dependent.} The same flash is seen by all
+detectors, so a real change in its arrival time would shift them equally.
+Instead the shift ranges from $0$ (pickup) through $-5\ns$ (walls) to $-16\ns$
+(silicon monitor, which is the most deeply saturated, with the PSA saturation
+flag set on 78\,\% of its flash hits).
+
+\item \textbf{The pickup does not move.} The pickup timestamps the very protons
+that produce the flash, and its amplitude doubles between the two classes while
+its time moves by $-0.45\ns$. The flash cannot precede its own protons.
+
+\item \textbf{Classical amplitude walk is excluded quantitatively.} Within a
+single intensity class the dependence of the hit time on its amplitude is
+measurable; extrapolating it to the observed change of median amplitude between
+classes predicts $+0.3\ns$ for the walls and ${<}0.4\ns$ for the others --- with
+the wrong sign for the walls (Fig.~\ref{fig:pred}). The measured shifts are ten
+to fifty times larger.
+\end{enumerate}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.62\textwidth]{07_intensity_prediction.png}
+\caption{The amplitude dependence measured \emph{within} one intensity class
+cannot account for the shift \emph{between} classes.}
+\label{fig:pred}
+\end{figure}
+
+The mechanism is saturation of the front end. The peak amplitude cannot grow
+with the flash size, so a larger flash instead reaches the clipping level
+earlier and stays there longer: on the walls the reported risetime falls from
+$20.5$ to $15.4\ns$ ($-25\,\%$) while the FWHM grows from ${\sim}700$ to
+${\sim}2000\ns$; on the silicon monitor the risetime falls from $98$ to
+$56\ns$. Any edge-based estimator therefore fires earlier. \emph{Practical
+consequence:} the effect must be carried in the calibration (use the constant
+matching the pulse type, or apply the $-5\ns$ per class), but it must not be
+interpreted as physics.
+
+\section{Stability in time}
+
+Because the walls can only be measured in the seven divert-off runs, the
+stability of the time base is established with the liquid scintillators and the
+plastics, which are never gated and therefore see the flash in every run.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{11_timeseries.png}
+\caption{Flash time relative to the pickup, run by run, with statistical errors;
+bottom panel: the single-bunch spread. The liquids are stable, the plastics are
+not.}
+\label{fig:ts}
+\end{figure}
+
+Over 36--39 runs spanning 224400--224584 (2026-07-13 to 07-28) the four liquid
+cells give
+\[
+ \sigma_\mathrm{run}(\mathrm{LIQA}) = 0.73\ns,\quad
+ \sigma_\mathrm{run}(\mathrm{LIQB}) = 0.73\ns,\quad
+ \sigma_\mathrm{run}(\mathrm{LIQC}) = 0.77\ns,\quad
+ \sigma_\mathrm{run}(\mathrm{LIQD}) = 1.48\ns .
+\]
+The four cells move \emph{together}: the within-run spread of their deviations
+is $0.22\ns$ and the LIQA--LIQC correlation across runs is $+0.92$, so what is
+observed is a common wander of the time base rather than detector noise. Its
+r.m.s.\ is $0.68\ns$ and the largest single-run excursion is $-2.2\ns$
+(run~224531). The two divert-off runs of 07-16 sit $+0.9$ to $+1.2\ns$ from the
+late-campaign mean, which is the figure quoted in Table~\ref{tab:budget} for the
+transport of the wall calibration to the end of the campaign.
+
+\paragraph{Independent check in gated runs.} Where the gate is active the walls
+still emit a clamped leak. Measured against Eq.~\eqref{eq:cal} in runs 224362
+(07-11 era) and 224572 (07-26, fifteen days after the nearest calibration run
+and after the gate-delay change), the leak lands within $6.2\ns$ on average and
+$9.2\ns$ worst case on all 32 channels. The gate transient itself sits at
+$-1190\ns$ and $-375\ns$ respectively, reproducing the $+800\ns$ delay change of
+07-22.
+
+\section{Why the plastics cannot be used}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{08_plastic_anatomy.png}
+\caption{Hit density per bunch in the flash region. The wall produces one clean
+pulse; the plastic response is spread over ${\sim}100\ns$ and accompanied by a
+continuum of fragments. In the post-FIFO run the wall shows both the gate
+transient (${\sim}-2100\ns$) and the leak (${\sim}-1750\ns$).}
+\label{fig:anat}
+\end{figure}
+
+The plastics fail in three distinct ways, all quantified in
+\texttt{data/plastic\_pathology.csv}:
+
+\begin{table}[htbp]
+\centering
+\small
+\caption{Flash-region behaviour by detector family and epoch. ``found'' is the
+fraction of bunches in which the PSA put \emph{any} hit within $60\ns$ of the
+modal flash position; $\sigma$ and the pulse quantities refer to the
+largest-amplitude hit there; ``$n_\mathrm{hit}$'' counts hits per bunch in the
+$\pm1\,\mu$s flash window.}
+\label{tab:path}
+\begin{tabular}{llrrrrrr}
+\toprule
+epoch & family & found & $\sigma$ [ns] & amplitude & sat.\ flag & FWHM [ns] & $n_\mathrm{hit}$/bunch \\
+\midrule
+2026-07-11 & WAL & 100\,\% & 4.1 & 28521 & 0\,\% & 1527 & 12.4 \\
+2026-07-11 & PSS & \textbf{67\,\%} & \textbf{19.1} & 23193 & 0\,\% & 11 & 38.2 \\
+2026-07-16 & WAL & 100\,\% & 2.3 & 28560 & 0\,\% & 2602 & 12.5 \\
+2026-07-16 & PSS & 64\,\% & 5.8 & 34571 & 0\,\% & 43 & 26.0 \\
+2026-07-16 & LIQ & \textbf{100\,\%} & 4.1 & \textbf{63931} & \textbf{80\,\%} & 103 & 43.6 \\
+2026-07-26 & WAL & 100\,\% & 8.3 & 19650 & 6\,\% & 57 & 11.7 \\
+2026-07-26 & PSS & \textbf{42\,\%} & 2.5 & 55114 & 27\,\% & 76 & 24.3 \\
+2026-07-26 & LIQ & \textbf{100\,\%} & 4.5 & \textbf{63921} & \textbf{79\,\%} & 102 & 44.1 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{(i) Yield.} A hit at the flash time is reconstructed in only
+64--67\,\% of bunches, falling to \textbf{42\,\%} after the FIFO fan-in was
+installed on 2026-07-17, when the plastic flash pulse begins to rail the
+digitiser (median amplitude 55\,100, up to 63\,600 of a 65\,536 range). In the
+bunches where it is missing, the PSA reconstructs \emph{no hit at all} before
+${\sim}-1600\ns$; we verified that this is not an artefact of the extraction
+window, which covered the flash region in 100\,\% of those bunches.
+
+\paragraph{The liquids are the control --- and they exclude saturation as the
+cause.} LIQ sits on the same digitiser and the same PSA, and its flash hits are
+\emph{more} saturated than the plastics' (saturation flag on 79--80\,\% against
+27\,\%, amplitude 63\,900 against 55\,100), with the highest hit multiplicity of
+all (44 per bunch). Yet the PSA finds the liquid flash in \textbf{100\,\%} of
+bunches at $\sigma = 4.1$--$4.5\ns$. The plastic drop-out is therefore specific
+to the plastic channel --- its PSA configuration and/or its pulse shape --- and
+not a generic consequence of a railed pulse, which suggests it can be repaired
+in the \texttt{UserInput}.
+
+\paragraph{(ii) Amplitude-dependent bias and spread.} When a hit is found, its
+time depends on its amplitude: in run 224357 the median moves by $17\ns$ between
+the lowest and highest amplitude bins, with a per-bunch $\sigma$ of $7$--$15\ns$
+(Fig.~\ref{fig:pamp}). After the FIFO the precision improves markedly
+($\sigma = 2.4$--$3.4\ns$, bias $4\ns$) but the yield collapses, so the two
+regimes trade against each other.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{09_plastic_vs_amp.png}
+\caption{Plastic timing precision (left) and bias (right) versus the amplitude
+of the flash hit, for the three epochs.}
+\label{fig:pamp}
+\end{figure}
+
+\paragraph{(iii) Instability in time.} The plastic constant moves by tens of
+nanoseconds over the campaign ($\sigma_\mathrm{run} = 17$--$31\ns$,
+Fig.~\ref{fig:ts}) as the plastic HV was equalised (07-16) and the FIFO fan-in
+installed (07-17). Channel PSSB\,ch2 is defective throughout (amplitude 9\,778
+against ${\sim}30\,000$ elsewhere). Plastic constants must therefore be taken
+per run, never per epoch.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{10_plastic_channels.png}
+\caption{Per-channel flash-hit yield and timing spread for the eight plastic
+readouts in the three reference runs.}
+\label{fig:pchan}
+\end{figure}
+
+\section{How to apply, and what limits it}
+
+\begin{enumerate}
+\item \textbf{Walls}: use the per-channel \texttt{C\_2026\_07\_16} for runs
+$\geq 224400$, \texttt{C\_2026\_07\_11} before that. Add $-5\ns$ if the pulse
+type differs from the one the constant was taken on.
+\item \textbf{Liquids}: the per-run value, or the campaign mean; they agree to
+${\sim}1\ns$.
+\item \textbf{Plastics}: per-run value only.
+\item Never use the stored \texttt{tflash} of WAL/PSS/LIQ.
+\item If a bunch has no usable pickup pulse (1.6\,\%, all parasitic), drop the
+bunch rather than falling back on \texttt{tflash}.
+\end{enumerate}
+
+\paragraph{Limitations.} (i) The undiverted flash saturates the wall front end,
+so these runs give timing only --- the energy scale must still come from the
+$^{88}$Y runs 224476--224479. (ii) The $3.9\ns$ shift between 07-11 and 07-16 is
+real and per-channel, so wall front-end timing can move; nothing guarantees that
+it did not move again between 07-16 and 07-28 beyond the liquid-scintillator
+evidence that the shared time base did not. (iii) Runs before 224345 are
+unverified. (iv) The raw data of all seven runs has aged off EOS disk; a
+waveform-level study needs a tape stage.
+
+\end{document}

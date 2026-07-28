@@ -360,6 +360,39 @@ Next liquid experiment, if anyone wants it: **augment rather than replace** --
 keep the shipped pair and add one averaged shape as a third. Do not simply
 re-average; that has now failed twice.
 
+## 4c. DREAM regression on the reprocessed file -- the definition of done
+
+`ntof_processing/dream_regression.py`, run_79/stat090_0000 vs the reprocessed
+224572 (`v4_walshapes`, partials 0001-0002, bunches 146-245), **with
+`repair_tflash=False`** -- i.e. on the file's own stored tflash, no laptop-side
+repair anywhere. That is the handoff's definition of done. **[measured]**
+
+```
+                              official + repair v2      reprocessed, repair OFF
+match_window overall                  99.9 %                    99.9 %
+plastic partner | wall-matched        99.7 %  (48.9 % raw)      99.9 %
+singles matcher overall            93.7 % / 0.5 % false      95.2 % / 0.6 %
+              at 1-3 ms            89.9 % / 1.3 %            93.4 % / 2.6 %
+measured per-arm time-base offset  -362/+20/-333/-336 ns    +1.5/+2.0/+1.0/-2.0 ns
+```
+
+Three things worth reading off this:
+
+- **The time-base offsets the repair existed to apply are now ~0** (1-2 ns).
+  `tflash_repair` is a no-op on this file, exactly as intended.
+- **Efficiency is up, not merely preserved**: +1.5 points overall and +3.5
+  points in the hardest 1-3 ms bin. That is v2_elim's recovered plastic hits
+  showing up where they should -- the AND matcher is plastic-limited.
+- **The false rate at 1-3 ms roughly doubles, 1.3 % -> 2.6 %.** That is the
+  honest cost of the same change: more plastic hits means more candidates
+  (1018/bunch against ~935 before), so more accidentals. Net it is a good
+  trade at every time, but if a future analysis needs purity over efficiency
+  in the early bins, tightening `AREA/AMP HIGH` back up is the knob.
+
+Note on reading `match_window` alone: its `P(false match)` column is ~100 % at
+1-3 ms, so "99.9 % matched" there is not evidence of anything by itself. The
+singles matcher is the test with purity; quote that one.
+
 ## 5. What is NOT addressed here
 
 - The absolute wall time offset (the divert-path delay) -- needs the dedicated

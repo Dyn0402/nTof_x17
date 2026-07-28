@@ -30,7 +30,7 @@ DATA = BASE / 'data'
 FIGS = BASE / 'figures'
 
 WIN = 300.0          # ns half-window around the anchor for the flash hit
-OFF_RUNS = [224356, 224357, 224358, 224359, 224360]
+OFF_RUNS = [224356, 224357, 224358, 224359, 224360, 224464, 224466]
 ON_RUNS = [224362, 224572]
 WALLS = ['WALA', 'WALB', 'WALC', 'WALD']
 PLASTICS = ['PSSA', 'PSSB', 'PSSC', 'PSSD']
@@ -120,7 +120,7 @@ def write_csv(path, rows, cols=None):
         fh.write(','.join(cols) + '\n')
         for r in rows:
             fh.write(','.join('' if r.get(c) is None or (isinstance(r.get(c), float) and not np.isfinite(r[c]))
-                              else (f"{r[c]:.4g}" if isinstance(r[c], float) else str(r[c]))
+                              else (f"{r[c]:.6f}".rstrip('0').rstrip('.') if isinstance(r[c], float) else str(r[c]))
                               for c in cols) + '\n')
 
 

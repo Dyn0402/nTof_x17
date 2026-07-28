@@ -67,7 +67,7 @@ def main():
             # a channel is trustworthy if its per-bunch spread is small AND the
             # flash hit is found in most bunches
             quality = 'good' if (sig < 8 and core > 0.85) else (
-                'usable' if (sig < 25 and core > 0.4) else 'bad')
+                'usable' if (sig < 35 and core > 0.4) else 'bad')
             ch_out[str(ch)] = dict(
                 C_ns=round(m, 2), run_to_run_std_ns=round(s, 2), n_runs=n,
                 per_bunch_sigma_ns=round(sig, 2),
@@ -87,6 +87,28 @@ def main():
             n_channels=len(cvals),
             channels=ch_out,
         )
+
+    # ---- transport evidence: LIQ/PSS flash time vs PKUP, run by run
+    transport = {}
+    mon = DATA / 'plastic_liq_flash_by_run.csv'
+    if mon.exists():
+        mrows = list(csv.DictReader(open(mon)))
+
+        def col(t):
+            v = [(int(r['run']), float(r[t])) for r in mrows if r.get(t) not in (None, '')]
+            return v
+        for t in ('LIQA', 'LIQB', 'LIQC', 'LIQD', 'PSSA', 'PSSB', 'PSSC', 'PSSD'):
+            v = col(t)
+            if len(v) < 5:
+                continue
+            runs_, vals = zip(*v)
+            transport[t] = dict(
+                C_ns=round(float(np.mean(vals)), 2),
+                std_over_runs_ns=round(float(np.std(vals)), 2),
+                n_runs=len(v), first_run=min(runs_), last_run=max(runs_),
+                range_ns=[round(min(vals), 1), round(max(vals), 1)],
+                stable=bool(np.std(vals) < 3),
+            )
 
     out = {
         '_schema': {
@@ -109,6 +131,31 @@ def main():
             'method': 'per (bunch, channel) the largest-amplitude hit within +-300 ns of the '
                       'bunch flash anchor; its `tof` minus the same bunch PKUP `tof`; median '
                       'over bunches after a +-100 ns core cut that removes PSA mis-tags',
+        },
+        'recommended_use': {
+            'walls': 'use the per-channel C of the 2026-07-16 epoch (C_2026_07_16) for every '
+                     'run from 224400 onwards: it is the epoch whose stability to the end of the '
+                     'campaign is demonstrated by LIQ (see transport_monitor). For runs before '
+                     '224400 use C_2026_07_11.',
+            'intensity': 'C shifts by -5.0 ns going from parasitic (4.1e12 p) to dedicated '
+                         '(8.5e12 p) pulses -- a real leading-edge walk on a saturated pulse. '
+                         'Apply per-bunch if you need better than 5 ns.',
+            'plastics': 'do NOT transport the PSS constants: they move by tens of ns across the '
+                        'campaign (HV equalisation 07-16, FIFO fan-in 07-17) and their per-bunch '
+                        'spread is 12-25 ns with the flash hit found in only ~65% of bunches. '
+                        'Take PSS from the per-run monitor table instead.',
+            'accuracy': {'within_epoch_run_to_run_ns': 0.5, 'epoch_07_11_vs_07_16_ns': 3.8,
+                         'transport_to_end_of_campaign_ns': 1.2,
+                         'per_bunch_sigma_ns': 3.2, 'intensity_walk_ns': 5.0},
+        },
+        'transport_monitor': {
+            'what': 'PSS and LIQ are never gated, so they see the true flash in every run. Their '
+                    'run-by-run constant tests whether the PKUP-referenced time base is stable.',
+            'result': 'LIQ is stable to 0.7-1.5 ns std over 36-39 runs spanning 224400-224584 '
+                      '(2026-07-13 to 07-28); the 07-16 divert-off runs sit +0.9..+1.2 ns from the '
+                      'late-campaign mean. PSS is not stable (std 17-31 ns).',
+            'per_tree': transport,
+            'table': 'data/plastic_liq_flash_by_run.csv',
         },
         'constants': cal,
     }

@@ -1,4 +1,11 @@
 {
+  "_SUPERSEDED": {
+    "date": "2026-07-28",
+    "by": "flash_timing/data/flash_timing_calibration.json (report: flash_timing/README.md)",
+    "why": "the entries below are RELATIVE offsets to the PSA's stored tflash, measured on the broken flash configuration. The stored tflash cannot be repaired by a per-run offset at all: the wall flash finder is bistable WITHIN a run. The replacement discards tflash and references the flash to the PKUP pulse instead - t_flash = tof_PKUP + C - with C measured per channel on the seven divert-off runs (224356-360, 224464, 224466), reproducible to 0.5 ns and transported across the campaign to 1.2 ns.",
+    "keep_using_this_file_for": "nothing new; kept for provenance of results produced before 2026-07-28"
+  },
+
   "_schema": {
     "offsets_ns": "value to ADD to the stored PSA tflash of that tree, so that t_since_flash = tof - (tflash_stored + offset) is measured from the physical gamma-flash arrival at that detector",
     "reference_tree": "tree defined to have offset 0; everything else is measured against it",

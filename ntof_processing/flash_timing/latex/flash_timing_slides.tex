@@ -1,0 +1,438 @@
+\documentclass[aspectratio=169,10pt]{beamer}
+\usetheme{default}
+\usecolortheme{seahorse}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{amsmath}
+\usepackage{xcolor}
+
+\graphicspath{{../figures/}}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{footline}[frame number]
+\setbeamerfont{frametitle}{size=\large}
+\setbeamercolor{frametitle}{fg=blue!35!black}
+\setbeamercolor{structure}{fg=blue!35!black}
+\newcommand{\ns}{\,\mathrm{ns}}
+\newcommand{\hl}[1]{\textcolor{orange!75!black}{\textbf{#1}}}
+
+\title[Flash timing]{The $\gamma$-flash time base of the n\_TOF EAR2 X17 campaign}
+\subtitle{Calibration from the seven runs with the SiPM-wall divert disabled}
+\author{n\_TOF X17 / DREAM analysis}
+\date{2026-07-28}
+
+\begin{document}
+
+\begin{frame}[plain]
+  \titlepage
+\end{frame}
+
+% ------------------------------------------------------------------
+\begin{frame}{The problem, in one slide}
+\begin{columns}[T]
+\begin{column}{0.54\textwidth}
+\begin{itemize}\setlength\itemsep{0.5em}
+  \item The SiPM walls are \hl{blanked} around the $\gamma$-flash
+        ($\sim1\,\mu$s gate, N1081B M6 sec.~C).
+  \item So the PSA flash finder tags either
+        \begin{itemize}
+          \item the \textbf{gate transient} ($-1190\ns$ before 07-22,
+                $-375\ns$ after), or
+          \item a \textbf{clamped leak} at the true flash time,
+        \end{itemize}
+        and it \hl{switches between the two from bunch to bunch}.
+  \item $\Rightarrow$ no per-run offset can repair the stored
+        \texttt{tflash}. It has to be replaced.
+\end{itemize}
+\vspace{0.6em}
+\begin{block}{The fix}
+\[
+  t_\mathrm{flash} = t_\mathrm{PKUP} + C,\qquad C\simeq-1719\ns
+\]
+The pickup is never gated and its finder never fails.
+\end{block}
+\end{column}
+\begin{column}{0.44\textwidth}
+  \includegraphics[width=\linewidth]{08_plastic_anatomy.png}\\
+  {\tiny The flash region. Right-hand panel: the wall shows the gate transient
+   at $-2100\ns$ \emph{and} the leak at $-1750\ns$.}
+\end{column}
+\end{columns}
+\end{frame}
+
+% ------------------------------------------------------------------
+\begin{frame}{Finding the runs: a scan of the whole campaign}
+\begin{columns}[T]
+\begin{column}{0.5\textwidth}
+306 processed runs scanned (224264--224587):
+\vspace{0.4em}
+\begin{itemize}
+  \item \hl{7 runs} with the divert OFF
+  \item 154 runs with it ON
+  \item 145 runs with no wall trees at all (before 224345) --- unverifiable
+        without a tape reprocess
+\end{itemize}
+\vspace{0.6em}
+Signature: all four walls tag the same time within $\pm6\ns$, and the flash peak
+is \hl{$\sim$28\,500 ADC} instead of the $\sim$850 ADC gate transient.
+\vspace{0.5em}
+
+Two independent epochs, five days apart --- which is what makes the
+cross-checks possible.
+\end{column}
+\begin{column}{0.5\textwidth}
+\small
+\begin{tabular}{lrl}
+\toprule
+run & bunches & intensity \\
+\midrule
+224356 & 3412 & dedicated \\
+\textbf{224357} & 3286 & 47/53 ded./par. \\
+224358 & 3269 & mixed \\
+224359 & 3426 & dedicated \\
+224360 & 549 & dedicated \\
+\midrule
+224464 & 2716 & mostly ded. \\
+224466 & 2073 & mostly ded. \\
+\bottomrule
+\end{tabular}
+\vspace{0.8em}
+
+{\footnotesize 07-11 group: N1081B M6 offline during the switch outage.\\
+07-16 pair: during the wall/plastic recalibration.}
+\end{column}
+\end{columns}
+\end{frame}
+
+% ------------------------------------------------------------------
+\begin{frame}{Per-channel constants}
+\begin{center}
+\includegraphics[width=0.85\textwidth]{01_per_channel_arrival.png}
+\end{center}
+\vspace{-0.4em}
+{\footnotesize
+Within an epoch every channel reproduces to \hl{$0.6\ns$}. The
+$07\text{-}11\rightarrow07\text{-}16$ shift is \hl{real and per-channel}
+(WALB $-0.6\ns$, WALD $-6.9\ns$): the wall HV/threshold equalisation of 07-15/16.
+After it, the four walls agree to $0.7\ns$ --- and that is the state that held
+for the rest of the campaign.}
+\end{frame}
+
+% ------------------------------------------------------------------
+\begin{frame}{The calibration}
+\begin{columns}[T]
+\begin{column}{0.52\textwidth}
+\small
+\begin{tabular}{lrrr}
+\toprule
+wall & all 7 & 07-11 & \textbf{07-16} \\
+\midrule
+WALA & $-1717.5$ & $-1716.7$ & $\mathbf{-1719.5}$ \\
+WALB & $-1719.3$ & $-1719.1$ & $\mathbf{-1719.7}$ \\
+WALC & $-1715.5$ & $-1714.0$ & $\mathbf{-1719.2}$ \\
+WALD & $-1714.1$ & $-1712.2$ & $\mathbf{-1719.0}$ \\
+\midrule
+all 32 & $-1716.6$ & $-1715.5$ & $\mathbf{-1719.3}$ \\
+\bottomrule
+\end{tabular}
+\vspace{0.8em}
+
+{\footnotesize Recommended: the \textbf{07-16} column, per channel, for runs
+$\ge224400$.}
+\end{column}
+\begin{column}{0.48\textwidth}
+\small
+\begin{tabular}{lr}
+\toprule
+uncertainty & [ns] \\
+\midrule
+run-to-run, within epoch & 0.5 \\
+time base over campaign (rms) & 0.68 \\
+transport to end of campaign & 1.2 \\
+07-11 vs 07-16 epoch & 3.9 \\
+intensity, par.\ $\to$ ded. & 5.0 \\
+\midrule
+single bunch, one channel & 3.5 \\
+single bunch, 32-ch average & 2.5 \\
+\bottomrule
+\end{tabular}
+\end{column}
+\end{columns}
+\end{frame}
+
+% ------------------------------------------------------------------
+\begin{frame}{Timing resolution: what is in the 3.5 ns}
+\begin{center}
+\includegraphics[width=0.78\textwidth]{04_distributions.png}
+\end{center}
+\vspace{-0.3em}
+\begin{columns}[T]
+\begin{column}{0.5\textwidth}
+{\footnotesize
+Decomposing the 32-channel matrix, per bunch:
+\begin{itemize}
+  \item single channel vs pickup: $3.5\ns$
+  \item common to all 32 channels: $2.5\ns$
+  \item independent per channel: $2.5\ns$
+\end{itemize}}
+\end{column}
+\begin{column}{0.5\textwidth}
+{\footnotesize
+The independent part averages away over the array; the common part does not.
+The pickup contributes only ${\sim}1\ns$, so the common $2.5\ns$ is a
+\hl{genuine bunch-to-bunch variation of the flash arrival}.\\[0.3em]
+07-16 runs are better than 07-11 ($2.7$ vs $3.9\ns$) --- again the equalisation.}
+\end{column}
+\end{columns}
+\end{frame}
+
+% ------------------------------------------------------------------
+\begin{frame}{The reference: why the pickup}
+\begin{columns}[T]
+\begin{column}{0.5\textwidth}
+\begin{itemize}\setlength\itemsep{0.45em}
+  \item per-bunch spread \hl{$0.83\ns$} (dedicated), $1.42\ns$ (parasitic)
+  \item usable in \hl{98.4\,\%} of bunches\\
+        {\footnotesize (the 1.6\,\% failures are all parasitic)}
+  \item amplitude strictly \hl{linear in protons}: ratio $1.97$ for a factor 2
+  \item timing moves by only $-0.45\ns$ between intensity classes
+  \item its flash finder \hl{never fails} --- unlike WAL/PSS/LIQ
+\end{itemize}
+\end{column}
+\begin{column}{0.5\textwidth}
+\includegraphics[width=\linewidth]{03_stability.png}\\
+{\footnotesize Within a full three-hour run the flash time is flat to
+$0.25$--$0.39\ns$ bin-to-bin, $1.4\ns$ peak-to-peak.}
+\end{column}
+\end{columns}
+\end{frame}
+
+% ------------------------------------------------------------------
+\begin{frame}{Question 1: is the intensity dependence real?}
+\begin{center}
+\includegraphics[width=0.95\textwidth]{06_intensity_mechanism.png}
+\end{center}
+\vspace{-0.3em}
+{\footnotesize
+The wall constant moves by $-5.0\ns$ from parasitic to dedicated pulses. But:
+\begin{itemize}
+  \item the shift is \hl{detector-dependent} --- $0$ (pickup), $-5$ (walls),
+        $-3\ldots-6$ (plastics), $-16\ns$ (silicon). A real change of the flash
+        arrival would be \emph{common to all}.
+  \item only the pickup is linear in protons; everything else is saturated
+        (amplitude ratio $\simeq1$)
+  \item the shift follows the \hl{risetime change}: walls $20.5\to15.4\ns$,
+        silicon $98\to56\ns$
+\end{itemize}}
+\end{frame}
+
+% ------------------------------------------------------------------
+\begin{frame}{Question 1: and it is not classical amplitude walk}
+\begin{columns}[T]
+\begin{column}{0.5\textwidth}
+\begin{center}
+\includegraphics[width=\linewidth]{07_intensity_prediction.png}
+\end{center}
+\end{column}
+\begin{column}{0.5\textwidth}
+\begin{itemize}\setlength\itemsep{0.5em}
+  \item Measure the amplitude$\to$time slope \emph{within} one intensity class.
+  \item Extrapolate it to the observed amplitude change \emph{between} classes.
+  \item Prediction: $+0.3\ns$ (walls, \hl{wrong sign}), $<0.4\ns$ elsewhere.
+  \item Observed: $-5$ to $-16\ns$.
+\end{itemize}
+\vspace{0.5em}
+\begin{block}{Mechanism}
+{\small The front end saturates: a bigger flash cannot make a taller pulse, so it
+reaches the clipping level \hl{earlier} and stays there longer
+(FWHM $700\to2000\ns$). Any edge estimator fires early.}
+\end{block}
+\vspace{0.3em}
+{\footnotesize $\Rightarrow$ carry it in the calibration; do \emph{not} read it
+as physics.}
+\end{column}
+\end{columns}
+\end{frame}
+
+% ------------------------------------------------------------------
+\begin{frame}{Question 2: is the time base stable across the campaign?}
+\begin{center}
+\includegraphics[width=0.63\textwidth]{11_timeseries.png}
+\end{center}
+\vspace{-0.4em}
+{\footnotesize
+LIQ and PSS are \hl{never gated}, so they see the flash in every run --- the only
+way to test stability where the walls cannot be measured.}
+\end{frame}
+
+% ------------------------------------------------------------------
+\begin{frame}{Question 2: the answer}
+\begin{columns}[T]
+\begin{column}{0.5\textwidth}
+\textbf{Liquids: stable}
+\begin{itemize}
+  \item $\sigma_\mathrm{run} = 0.73,\,0.73,\,0.77,\,1.48\ns$ (A--D) over 36--39
+        runs, 224400--224584
+  \item the four cells \hl{move together}: within-run spread of deviations
+        $0.22\ns$, LIQA--LIQC correlation $+0.92$
+  \item common-mode wander \hl{$0.68\ns$ rms}, worst single run $-2.2\ns$
+        (224531)
+  \item the 07-16 divert-off runs sit $+0.9\ldots+1.2\ns$ from the late-campaign
+        mean $\Rightarrow$ \hl{transport good to $1.2\ns$}
+\end{itemize}
+\end{column}
+\begin{column}{0.5\textwidth}
+\textbf{Independent check in gated runs}
+\begin{itemize}
+  \item the clamped wall leak lands within \hl{$6.2\ns$} of the calibration
+        (worst case $9.2\ns$), on all 32 channels
+  \item in both 224362 (07-11 era) and 224572 (07-26, 15 days later)
+  \item the gate transient sits at $-1190$ and $-375\ns$ --- reproducing the
+        $+800\ns$ delay change of 07-22
+\end{itemize}
+\vspace{0.5em}
+\begin{block}{}
+{\small The wall calibration measured on 07-16 carries to the end of the
+campaign at the ${\sim}1\ns$ level.}
+\end{block}
+\end{column}
+\end{columns}
+\end{frame}
+
+% ------------------------------------------------------------------
+\begin{frame}{Question 3: the plastics --- anatomy}
+\begin{center}
+\includegraphics[width=0.95\textwidth]{08_plastic_anatomy.png}
+\end{center}
+\vspace{-0.2em}
+{\footnotesize
+The wall gives \hl{one clean pulse}. The plastic response is spread over
+${\sim}100\ns$ and sits on a continuum of fragments: \hl{25--30 hits per bunch}
+in the $\pm1\,\mu$s window, against 12 for the walls.}
+\end{frame}
+
+% ------------------------------------------------------------------
+\begin{frame}{Question 3: the plastics --- three failure modes}
+\small
+\begin{tabular}{llrrrrrr}
+\toprule
+epoch & family & found & $\sigma$ [ns] & amplitude & sat.\ flag & FWHM & $n_\mathrm{hit}$/b \\
+\midrule
+2026-07-11 & WAL & 100\,\% & 4.1 & 28521 & 0\,\% & 1527 & 12.4 \\
+2026-07-11 & PSS & \hl{67\,\%} & \hl{19.1} & 23193 & 0\,\% & 11 & 38.2 \\
+2026-07-16 & WAL & 100\,\% & 2.3 & 28560 & 0\,\% & 2602 & 12.5 \\
+2026-07-16 & PSS & 64\,\% & 5.8 & 34571 & 0\,\% & 43 & 26.0 \\
+2026-07-16 & LIQ & \textbf{100\,\%} & 4.1 & \hl{63931} & \hl{80\,\%} & 103 & 43.6 \\
+2026-07-26 & WAL & 100\,\% & 8.3 & 19650 & 6\,\% & 57 & 11.7 \\
+2026-07-26 & PSS & \hl{42\,\%} & 2.5 & \hl{55114} & 27\,\% & 76 & 24.3 \\
+2026-07-26 & LIQ & \textbf{100\,\%} & 4.5 & \hl{63921} & \hl{79\,\%} & 102 & 44.1 \\
+\bottomrule
+\end{tabular}
+\vspace{0.5em}
+
+\begin{enumerate}\setlength\itemsep{0.3em}
+  \item \textbf{Yield.} A flash hit exists in only 64--67\,\% of bunches,
+        \hl{42\,\%} after the FIFO fan-in. In the missing bunches the PSA
+        reconstructs \emph{no hit at all} before ${\sim}-1600\ns$ --- verified
+        not to be a selection artefact.
+  \item \textbf{Amplitude-dependent bias} up to $17\ns$, $\sigma=7$--$15\ns$
+        (pre-FIFO).
+  \item \textbf{Instability}: the constant moves tens of ns across the campaign
+        ($\sigma_\mathrm{run}=17$--$31\ns$).
+\end{enumerate}
+\end{frame}
+
+% ------------------------------------------------------------------
+\begin{frame}{Question 3: it is not ``saturation breaks the PSA''}
+\begin{columns}[T]
+\begin{column}{0.52\textwidth}
+The \hl{liquid scintillators are the control}: same digitiser, same PSA,
+different front end.
+\vspace{0.5em}
+\begin{itemize}\setlength\itemsep{0.4em}
+  \item LIQ flash hits are \hl{more} saturated than the plastics':
+        sat.\ flag \textbf{79--80\,\%} vs 27\,\%, amplitude 63\,900 vs 55\,100
+  \item highest hit multiplicity of all: \textbf{44}/bunch
+  \item and yet the PSA finds the flash in \textbf{100\,\%} of bunches, at
+        $\sigma = 4.1$--$4.5\ns$
+\end{itemize}
+\end{column}
+\begin{column}{0.48\textwidth}
+\begin{block}{So the plastic drop-out is\ldots}
+{\small \hl{specific to the plastic channel} --- its PSA configuration and/or its
+pulse shape (PSS flash FWHM 43--76\,ns and enormous area) --- \textbf{not} a
+generic consequence of a railed pulse.}
+\end{block}
+\vspace{0.6em}
+{\small $\Rightarrow$ plausibly \hl{fixable in the \texttt{UserInput}}, which is
+exactly what the reprocessing effort is for.}
+\end{column}
+\end{columns}
+\end{frame}
+
+% ------------------------------------------------------------------
+\begin{frame}{Question 3: precision vs pulse size, and per channel}
+\begin{columns}[T]
+\begin{column}{0.5\textwidth}
+\includegraphics[width=\linewidth]{09_plastic_vs_amp.png}
+\end{column}
+\begin{column}{0.5\textwidth}
+\includegraphics[width=\linewidth]{10_plastic_channels.png}
+\end{column}
+\end{columns}
+\vspace{0.3em}
+{\footnotesize
+The two regimes trade off: pre-FIFO the hit is usually found but badly timed;
+post-FIFO it is precisely timed ($2.4$--$3.4\ns$) but usually missing.
+PSSB\,ch2 is defective throughout (amplitude 9\,778 vs ${\sim}30\,000$).
+$\Rightarrow$ take plastic constants \hl{per run}, never per epoch.}
+\end{frame}
+
+% ------------------------------------------------------------------
+\begin{frame}{What to do}
+\begin{enumerate}\setlength\itemsep{0.55em}
+  \item \textbf{Walls}: per-channel \texttt{C\_2026\_07\_16} for runs
+        $\ge224400$, \texttt{C\_2026\_07\_11} before. Add $-5\ns$ if the pulse
+        type differs from the calibration one.
+  \item \textbf{Liquids}: per-run value or campaign mean --- they agree to
+        ${\sim}1\ns$.
+  \item \textbf{Plastics}: per-run value only.
+  \item \hl{Never} use the stored \texttt{tflash} of WAL/PSS/LIQ.
+  \item If a bunch has no usable pickup pulse (1.6\,\%, all parasitic), drop the
+        bunch.
+\end{enumerate}
+\vspace{0.8em}
+\begin{block}{Limitations}
+{\small Amplitude is unusable in these runs (front end saturated) --- energy
+scale still from the $^{88}$Y runs 224476--479. The $3.9\ns$ epoch shift shows
+wall timing \emph{can} move; nothing rules out a further move after 07-16 beyond
+the liquid evidence. Runs before 224345 unverified. Raw data of all seven runs
+has aged off EOS disk.}
+\end{block}
+\end{frame}
+
+% ------------------------------------------------------------------
+\begin{frame}{Where everything lives}
+\small
+\begin{tabular}{ll}
+\toprule
+\texttt{data/flash\_timing\_calibration.json} & the calibration, per channel and epoch \\
+\texttt{data/per\_channel\_flash\_timing.csv} & 280 measurements behind it \\
+\texttt{data/divert\_state\_by\_run.csv} & the 306-run divert scan \\
+\texttt{data/plastic\_liq\_flash\_by\_run.csv} & the time-base monitor \\
+\texttt{data/plastic\_pathology.csv} & the plastic study \\
+\texttt{data/resolution\_decomposition.json} & jitter split, per run \\
+\texttt{figures/}, \texttt{scripts/}, \texttt{latex/} & plots, code, this deck \\
+\bottomrule
+\end{tabular}
+\vspace{1.2em}
+
+\begin{center}
+\Large
+$t_\mathrm{flash} = t_\mathrm{PKUP} + C$, \qquad $C \simeq -1719\ns$
+\end{center}
+\end{frame}
+
+\end{document}

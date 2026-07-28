@@ -1,11 +1,21 @@
-# The SiPM-wall divert was OFF in runs 224356–224360
+# The SiPM-wall divert was OFF in runs 224356–224360 and 224464, 224466
 
 **Written 2026-07-28. Answers: "find a run where the γ-flash divert (SiPM
 blanking) was disabled, so the walls record the true flash."**
 
+> **UPDATE, same day.** A scan of *every* processed run in the campaign (306
+> runs) found **two more** divert-off runs beyond the five below: **224464 and
+> 224466**, 2026-07-16 — a second, independent epoch. The complete list is
+> therefore **224356, 224357, 224358, 224359, 224360, 224464, 224466**, and
+> nothing else. Scan output: `flash_timing/data/divert_state_by_run.csv`.
+>
+> **The timing calibration built on these runs now lives in
+> [`flash_timing/`](flash_timing/README.md)** — that directory supersedes §4 of
+> this file, which was a first look.
+
 **Answer: n_TOF runs 224356, 224357, 224358, 224359, 224360** — 2026-07-10
-~21:44 → 2026-07-11 ~10:09. All 32 wall channels see the undiverted γ-flash.
-**Use 224357** (cleanest; see §3).
+~21:44 → 2026-07-11 ~10:09 — **plus 224464 and 224466** on 2026-07-16. All 32
+wall channels see the undiverted γ-flash. **Use 224357** (cleanest; see §3).
 
 ---
 
@@ -102,7 +112,13 @@ intensity, and 224358 as the independent repeat.
 
 ## 4. What these runs give you — and what they do not
 
-### They give the absolute wall flash time  [new result]
+### They give the absolute wall flash time  [superseded by `flash_timing/`]
+
+> The numbers below are the first-look, stored-`tflash` version. The proper
+> measurement — per channel, per epoch, with the timing resolution decomposed
+> and the transport across the campaign verified against the liquid
+> scintillators — is in `flash_timing/README.md`. Its headline is
+> `t_flash = tof_PKUP + C`, `C ≈ −1719 ns` per wall channel.
 
 Referenced to `PKUP` tflash (bunch-matched, median over the run):
 

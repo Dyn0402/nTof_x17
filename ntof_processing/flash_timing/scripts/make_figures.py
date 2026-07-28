@@ -79,18 +79,26 @@ def fig_per_channel(rows):
     axes[0].set_title('1. per-channel γ-flash arrival time, divert-off runs')
     axes[0].legend(ncol=4, fontsize=7.5, loc='lower right')
 
-    # bottom: run-to-run scatter per channel (reproducibility)
-    xs, ys = [], []
+    # bottom: within-epoch reproducibility vs the epoch-to-epoch shift
+    xs, ys, zs = [], [], []
     for i, w in enumerate(walls):
         for ch in range(1, 9):
-            m = [r['dt_mean'] for r in sel(rows, tree=w, ch=float(ch))]
-            if len(m) > 1:
-                xs.append(i * 9 + ch - 1); ys.append(np.std(m))
-    axes[1].bar(xs, ys, color='#7a7a7a', width=0.75)
-    axes[1].set_ylabel('run-to-run\nstd [ns]')
+            m = sel(rows, tree=w, ch=float(ch))
+            e1 = [r['dt_mean'] for r in m if EPOCH.get(int(r['run'])) == '07-11']
+            e2 = [r['dt_mean'] for r in m if EPOCH.get(int(r['run'])) == '07-16']
+            if len(e1) > 1:
+                xs.append(i * 9 + ch - 1)
+                ys.append(np.std(e1))
+                zs.append(np.mean(e2) - np.mean(e1) if e2 else np.nan)
+    axes[1].bar([x - 0.19 for x in xs], ys, color='#4a8a5a', width=0.38,
+                label='within 07-11 epoch (σ over 5 runs)')
+    axes[1].bar([x + 0.19 for x in xs], np.abs(zs), color='#c0632c', width=0.38,
+                label='|07-16 − 07-11| shift')
+    axes[1].legend(fontsize=7.5, ncol=2)
+    axes[1].set_ylabel('[ns]')
     axes[1].set_xticks(x); axes[1].set_xticklabels(labels, fontsize=6.5, rotation=90)
     axes[1].set_xlabel('wall channel')
-    axes[1].set_title('2. reproducibility of each channel constant across runs')
+    axes[1].set_title('2. reproducibility within an epoch, vs the real 07-11→07-16 hardware shift')
     fig.tight_layout()
     fig.savefig(FIGS / '01_per_channel_arrival.png', bbox_inches='tight')
     plt.close(fig)
@@ -217,6 +225,55 @@ def main():
     fig_stability(series)
     fig_distributions(series)
     print('figures written to', FIGS)
+
+
+if __name__ == '__main__':
+    main()
+
+
+def fig_transport():
+    """LIQ / PSS flash constant run by run: does the time base transport?"""
+    import csv
+    p = DATA / 'plastic_liq_flash_by_run.csv'
+    if not p.exists():
+        return
+    rows = list(csv.DictReader(open(p)))
+
+    def col(t):
+        v = [(int(r['run']), float(r[t])) for r in rows if r.get(t) not in (None, '')]
+        return zip(*v) if v else ([], [])
+
+    fig, axes = plt.subplots(1, 2, figsize=(10.5, 3.4), sharex=True)
+    for t, c in zip(('LIQA', 'LIQB', 'LIQC', 'LIQD'),
+                    ('#2f6f9f', '#c0632c', '#4a8a5a', '#8a5a9a')):
+        x, y = col(t)
+        if len(x):
+            axes[0].plot(x, y, 'o-', ms=3, lw=0.8, color=c, label=t)
+    axes[0].set_title('9. liquid scintillators: flash time vs PKUP, run by run')
+    axes[0].set_ylabel('C [ns]'); axes[0].set_xlabel('run')
+    axes[0].legend(ncol=4, fontsize=8)
+    for t, c in zip(('PSSA', 'PSSB', 'PSSC', 'PSSD'),
+                    ('#2f6f9f', '#c0632c', '#4a8a5a', '#8a5a9a')):
+        x, y = col(t)
+        if len(x):
+            axes[1].plot(x, y, 'o-', ms=3, lw=0.8, color=c, label=t)
+    for ax in axes:
+        for r, lab in ((224464, 'divert-off 07-16'),):
+            ax.axvline(r, color='#999999', lw=0.8, ls='--')
+    axes[1].set_title('10. plastics: same measurement — not stable')
+    axes[1].set_xlabel('run'); axes[1].legend(ncol=4, fontsize=8)
+    fig.tight_layout()
+    fig.savefig(FIGS / '05_transport.png', bbox_inches='tight')
+    plt.close(fig)
+
+
+_orig_main = main
+
+
+def main():  # noqa: F811
+    _orig_main()
+    fig_transport()
+    print('transport figure written')
 
 
 if __name__ == '__main__':
