@@ -95,11 +95,80 @@ def _mode(v: np.ndarray) -> float:
     return float(e[h.argmax()] + 5.0)
 
 
-def corrected_tflash(run: int) -> dict:
-    """{tree: array[MAX_BUNCH]} of repaired tflash = mode_tree + jitter(bunch).
+def _coinc_offsets(run: int) -> dict:
+    """Per-tree residual time offset vs the same arm's wall, measured from data.
 
-    Also carries diagnostics in ['_err_frac'][tree]: the fraction of bunches
-    whose STORED tflash deviates >150 ns from the repaired one.
+    The per-tree tflash modes are NOT mutually consistent: the PSA times the
+    flash on a different waveform feature per detector (WALB/PSS/LIQ all sit at
+    ~11.6 us while WALA/C/D sit ~350-400 ns earlier), so after removing each
+    tree's mode a large-amplitude plastic hit still sits at an arm-dependent
+    -375/+25/-325/-325 ns from its wall partner. Measure that peak (amp > 1000
+    ADC, late hits, prompt coincidences) and fold it into the corrected tflash,
+    so that a true coincidence reconstructs at dt ~ 0 in every arm.
+
+    Walls are the per-arm reference (offset 0 by construction); PSS and LIQ get
+    one constant each. Cached per run.
+    """
+    cache = CACHE_DIR / f'tflash_offsets_{run}.npz'
+    if cache.exists():
+        with np.load(cache) as z:
+            return {t: float(z[t]) for t in z.files}
+    from ntof_dream_merge.ntof_io import read_bunches, bunch_edges
+    # calibrate on ~100 bunches with data in every tree
+    nb = np.diff(bunch_edges(run, 'WALA'))
+    good = np.flatnonzero(nb > 0) + 1
+    bl = good[len(good) // 3:len(good) // 3 + 100]
+    base = corrected_tflash(run, _with_offsets=False)
+    out = {}
+    for arm in 'ABCD':
+        w = read_bunches(run, f'WAL{arm}', bl, branches=('BunchNumber', 'tof'),
+                         repair_tflash=False)
+        wt_fix = base[f'WAL{arm}'][w['BunchNumber'].astype(np.int64)]
+        for tree, amp_min in ((f'PSS{arm}', 1000.0), (f'LIQ{arm}', 0.0)):
+            h = read_bunches(run, tree, bl, branches=('BunchNumber', 'tof', 'amp'),
+                             repair_tflash=False)
+            ht_fix = base[tree][h['BunchNumber'].astype(np.int64)]
+            dts = []
+            for b in np.unique(w['BunchNumber']):
+                mw = w['BunchNumber'] == b
+                tw = np.sort(w['tof'][mw] - wt_fix[mw])
+                tw = tw[tw > 20e6]
+                mh = (h['BunchNumber'] == b) & (h['amp'] > amp_min)
+                tp = h['tof'][mh] - ht_fix[mh]
+                tp = tp[tp > 20e6]
+                if tw.size == 0 or tp.size == 0:
+                    continue
+                j = np.searchsorted(tw, tp)
+                j0 = np.clip(j - 1, 0, tw.size - 1)
+                j1 = np.clip(j, 0, tw.size - 1)
+                d0, d1 = tp - tw[j0], tp - tw[j1]
+                dts.append(np.where(np.abs(d0) <= np.abs(d1), d0, d1))
+            d = np.concatenate(dts) if dts else np.array([0.0])
+            d = d[np.abs(d) < 1000]
+            if d.size < 50:
+                out[tree] = 0.0
+                continue
+            hist, e = np.histogram(d, bins=200, range=(-1000, 1000))
+            c = 0.5 * (e[1:] + e[:-1])
+            pk = float(c[hist.argmax()])
+            core = d[np.abs(d - pk) < 30]
+            out[tree] = float(np.median(core))
+        out[f'WAL{arm}'] = 0.0
+    out['PKUP'] = 0.0
+    CACHE_DIR.mkdir(parents=True, exist_ok=True)
+    np.savez(cache, **out)
+    return out
+
+
+def corrected_tflash(run: int, _with_offsets: bool = True) -> dict:
+    """{tree: array[MAX_BUNCH]} of repaired tflash =
+    mode_tree + jitter(bunch) + coincidence_offset_tree.
+
+    The mode fixes the per-bunch mis-tags; the coincidence offset fixes the
+    ~350 ns per-tree inconsistency in WHICH waveform feature the PSA timed
+    (measured against the same arm's wall, so a true wall/plastic coincidence
+    lands at dt ~ 0). Diagnostics in ['_err_frac'] (fraction of bunches whose
+    STORED tflash deviates >150 ns from mode+jitter), ['_modes'], ['_offsets'].
     """
     tab = tflash_tables(run)
     modes = {t: _mode(tab[t]) for t in tab}
@@ -108,11 +177,14 @@ def corrected_tflash(run: int) -> dict:
         warnings.simplefilter('ignore', RuntimeWarning)   # all-NaN = empty bunch
         jitter = np.nanmedian(dev, axis=0)
     jitter[~np.isfinite(jitter)] = 0.0
-    out = {t: modes[t] + jitter for t in tab}
+    offs = _coinc_offsets(run) if _with_offsets else {}
+    out = {t: modes[t] + jitter + offs.get(t, 0.0) for t in tab}
     out['_err_frac'] = {
-        t: float(np.mean(np.abs((tab[t] - out[t])[np.isfinite(tab[t])]) > 150.0))
+        t: float(np.mean(np.abs((tab[t] - modes[t] - jitter)[np.isfinite(tab[t])])
+                         > 150.0))
         for t in tab}
     out['_modes'] = modes
+    out['_offsets'] = offs
     return out
 
 

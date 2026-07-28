@@ -59,16 +59,15 @@ plastic partner is present for 99.7 % of wall-matched DREAM events, uniformly
 99.4-99.9 % per arm -- the hardware wall AND plastic trigger is fully accounted
 for, and the geometry hypothesis is dead.
 
-STILL TRUE AND STILL BITING: the official PSS *amplitude* is broken on arms
-A/C/D -- raw pulses 3.8-12.8k counts deep are recorded as ~130-240 ADC, piled
-just above the 100 ADC PSA cut, with ~+-250 ns time scatter (arm B alone is
-reconstructed correctly: sharp +15 ns peak, trigger-level amplitudes). `area` is
-proportionally broken. So EMULATING the discriminator (this module's
-singles_candidates with require_plastic=True and the mV thresholds) still cannot
-work on A/C/D: the amplitude information simply is not in the official file.
-Use wall SINGLES for the matcher; require plastic PRESENCE in band (no amplitude
-cut) as the AND tag; amplitude thresholds are only meaningful on arm B until the
-n_TOF processing is fixed.
+SECOND CORRECTION, SAME NIGHT: the PSS amplitudes are FINE. The true partners
+(amp > 1000) sit at arm-dependent offsets -375/+25/-325/-325 ns (A/B/C/D)
+because WALA/C/D's tflash times a different flash feature than WALB/PSS/LIQ --
+they were outside the accept bands, and the in-band "partners" were ~200 ADC
+rebound fragments. tflash_repair v2 folds the measured coincidence offsets in,
+after which THIS MODULE'S full threshold emulation works as designed:
+require_plastic=True gives 93.7 % efficiency overall with 0.5 % false (89.9 %
+at 1-3 ms with 1.3 % false) -- use it as the production matcher. See
+FINDINGS_2026-07-28_pss_tflash.md.
 """
 from __future__ import annotations
 

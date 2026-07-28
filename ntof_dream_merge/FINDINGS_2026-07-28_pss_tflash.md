@@ -88,33 +88,80 @@ Validated: stat090_0000 → 99.9 % matched (100.0 % in every bin < 40 ms);
 stat090_0001 → 98.9 % with the sub-run-0000 clock constants (the 40–80 ms bin
 reads 93.7 % — fit (k, t0) per sub-run as already agreed and re-check).
 
-## 5. What is STILL broken in the official PSS reconstruction (report upstream)
+## 5. What is broken in the official PSS reconstruction (report upstream)
 
-1. **tflash mis-identification** (the bug above) — arm-dependent 37–85 % of
-   bunches, ~always on parasitic pulses. The flash rails the ADC and is
-   unmissable in the raw data; this is purely a PSA/flash-finder fault.
-2. **Amplitude reconstruction broken on PSSA/C/D**: raw pulses 3.8–12.8k counts
-   deep are stored as `amp` ≈ 130–240 ADC (~4–7 mV), piled just above the
-   100 ADC PSA cut, and `area` is proportionally wrong. **Arm B alone is
-   correct** (trigger partners: sharp +15 ns dt peak, median 4 445 ADC ≈
-   137 mV). Practical consequence: no amplitude discrimination is available
-   from the official file on A/C/D — discriminator emulation
-   (`singles_candidates(require_plastic=True)`) cannot work there.
-3. **Time resolution degraded on A/C/D**: the wall→plastic dt distribution has
-   no ns-scale peak — partner times scatter over ~±250 ns (still inside the
-   accept bands, which is why presence-matching works at 99.7 %).
+**CORRECTION (later the same night).** An earlier version of this section
+claimed the PSS *amplitudes* were broken on arms A/C/D. **They are not.** The
+big-amplitude partners exist on every arm — they form razor-sharp prompt
+coincidence peaks with the walls — but at arm-dependent offsets of
+**−375 / +25 / −325 / −325 ns (A/B/C/D)** in the mode-repaired time base, i.e.
+*outside* the accept bands on A/C/D, which made them invisible to the earlier
+partner search (the small in-band "partners" were secondary overshoot/rebound
+fragments of the same physical pulses, ~130–240 ADC, trailing the true pulse by
+~350 ns). The real defect list:
+
+1. **tflash mis-identification per bunch** — arm-dependent 37–85 % of bunches,
+   ~always on parasitic pulses. The flash rails the ADC and is unmissable in
+   the raw data; purely a PSA/flash-finder fault (G-FLASH THRESHOLD = 50
+   channels, first-crossing option, no MIN_WIDTH — any early junk pulse wins).
+2. **Per-tree flash-feature inconsistency, ~350 ns** — a *constant*, not
+   per-bunch: WALA/C/D time the flash at mode 11 245–11 275 ns while
+   WALB / PSSA-D / LIQA-D all sit at 11 615–11 645 ns. The PSA is timing a
+   different feature of the (railed, undershooting) flash waveform per
+   detector. Harmless for same-tree relative times, fatal for cross-detector
+   coincidences and for absolute ToF, and it means **the tflash mode alone is
+   not a sufficient repair** — see §5b.
+3. Secondary artifact hits: each real plastic pulse is accompanied by a small
+   (~130–240 ADC) rebound hit ~350 ns later. (The wall +330 ns satellite band
+   of match_window may well be the same phenomenon on the walls — untested.)
 4. (Known, separate) the plastic PSA amplitude cut is 2× the walls' (100 vs
-   50 ADC) and truncates the spectrum in its bulk.
+   50 ADC) and truncates the small-hit spectrum.
+
+## 5b. Repair v2 — coincidence-calibrated offsets
+
+`tflash_repair.corrected_tflash` now adds a per-tree constant measured from
+data: the prompt-coincidence peak of large (amp>1000) PSS hits — and of LIQ
+hits — against the same arm's wall, so a true coincidence reconstructs at
+dt ≈ 0 in every arm. Measured offsets (run224572):
+
+```
+PSSA −362.3   PSSB +19.6   PSSC −333.0   PSSD −336.0
+LIQA −372.6   LIQB  +9.7   LIQC −349.8   LIQD −348.0     (walls = reference)
+```
+
+LIQ agreeing with PSS per arm confirms the inconsistency belongs to the walls'
+flash timing, not to the plastics. Cached in `tflash_offsets_<run>.npz`.
+
+**With v2, the full hardware-threshold trigger emulation finally works.**
+`singles_candidates(require_plastic=True)` + accept bands, 100 bunches of
+stat090_0000, control = +100 µs shifted time:
+
+```
+  t bin (ms)      n    efficiency   control(false)
+     1-3        895       89.9%        1.3%
+     3-10      2365       92.9%        1.0%
+    10-20      2773       94.4%        0.4%
+    20-40      2583       95.0%        0.0%
+    40-80      1805       93.7%        0.1%
+  overall              93.7%        0.5%
+```
+
+Compare the pre-fix state: wall-only 88.3 % efficient with **28.9 %** false at
+1–3 ms; plastic-required 12.7 % efficient. **The early-time purity problem is
+solved** — the AND cuts the candidate rate to ~935/bunch and the 1–3 ms false
+rate drops 28.9 % → 1.3 % while keeping ~90 % efficiency.
 
 ## 6. Matcher recommendation (supersedes HANDOFF §8)
 
-- **Wall SINGLES** for timing (unchanged), with the repaired time base.
-- **Plastic PRESENCE in band** (no amplitude cut) as the AND tag — now carried
-  by 99.7 % of true triggers, so it can be *required* without the 47-point
-  efficiency loss it used to cost. Amplitude thresholds only on arm B.
+- **Thresholded wall∧plastic SINGLES** (dream_trigger with require_plastic=True)
+  on the v2-repaired time base: ~90–95 % efficient, ≤1.3 % false in every bin.
+- Fall back to wall SINGLES + plastic-presence tag only where the plastic
+  amplitude calibration is in doubt.
 - Fit `(k, t0)` per sub-run.
-- Early-time purity is still limited by the plastic accidental rate at 1–10 ms;
-  the tag helps mostly >10 ms until the upstream amplitude bug is fixed.
+- For *absolute* ToF/E_n (Phase 5), anchor the flash on PKUP (stable, 0 %
+  failures) and carry the per-tree offsets explicitly — do not treat any
+  scintillator tflash as the physical flash arrival until the upstream fix
+  lands.
 
 ## 7. Figures
 
