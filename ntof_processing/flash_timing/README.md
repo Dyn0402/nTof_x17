@@ -21,8 +21,22 @@ t_flash_at_detector(bunch)  =  tof_PKUP(bunch)  +  C[detector]
 ```
 
 `tof_PKUP` is the `tof` of that bunch's PKUP hit (equivalently its `tflash` —
-they agree). **`C ≈ −1719 ns` for all 32 wall channels**; per-channel values are
-in Table 1 and in the JSON.
+they agree). **C is per channel — use all 32 numbers, not one per wall.** They
+average −1719 ns, but they scatter 3.4 ns rms with a 13.3 ns full spread, and
+that structure is real (6× its own within-epoch reproducibility of 0.61 ns).
+
+**A per-detector constant buys you nothing over a single global one:**
+
+| scheme | rms residual | max residual |
+|---|---|---|
+| one constant for all 32 channels | 3.43 ns | 7.18 ns |
+| one constant per wall (tree) | **3.42 ns** | **7.07 ns** |
+| **per channel** | **0** | **0** |
+
+After the 07-16 equalisation the four wall means agree to 0.7 ns (−1719.0 …
+−1719.7) while channels *within* a wall differ by up to 13.3 ns — all the
+structure is at channel level (cable + per-SiPM front end), so grouping by
+detector captures none of it. Per-channel values are in Table 1 and in the JSON.
 
 ```python
 import json, numpy as np
@@ -113,6 +127,9 @@ of 0.06 ns — every number below is systematics-limited, not statistics-limited
 
 Full table: Table 1 below / `data/per_channel_flash_timing.csv`. Summary:
 
+*(the per-wall means below are a summary only — the calibration is the
+per-channel table at the end of this file and in the JSON)*
+
 | wall | C, all 7 runs | C, 07-11 | C, **07-16 (recommended)** | channel spread | per-bunch σ | flash amp | risetime |
 |---|---|---|---|---|---|---|---|
 | WALA | −1717.5 | −1716.7 | **−1719.5** | 5.2 ns (range 14.0) | 3.2 | 28 613 | 16.3 ns |
@@ -171,9 +188,12 @@ is the same for every wall.
 **Is the flash actually arriving earlier, or is it our timing metric?** It is the
 metric — three independent arguments (`figures/06`, `07`):
 
-1. **The shift is detector-dependent**: 0 (PKUP), −5.0 (walls), −3…−6 (plastics),
-   **−16 ns (SILI)**. The same flash is seen by all of them, so a genuine change
-   in its arrival time would move them all equally.
+1. **The reference does not move, and one detector moves 3× more.** PKUP: 0.
+   Walls −5.0, plastics −3…−6, liquids **−4.1…−4.9** (measured per run over 47–51
+   runs, `data/flash_time_by_run_intensity_split.csv`), SILI **−16**. The three
+   scintillator families clustering near −5 ns is exactly what "more light →
+   earlier threshold crossing" predicts; SILI, the most deeply saturated, is 3×
+   larger, and the pickup — not a light detector — does not move at all.
 2. **PKUP does not move.** It timestamps the very protons that make the flash,
    its amplitude doubles between the classes (ratio 1.97), and its time moves
    −0.45 ns. The flash cannot precede its own protons.
@@ -235,6 +255,15 @@ not detector noise. Its size:
 | common-mode wander, r.m.s. over the campaign | **0.68 ns** |
 | largest single-run excursion | **−2.23 ns** (run 224531, all four cells) |
 | runs deviating > 1.5 ns | 1 of 39 |
+| at **fixed** beam intensity (dedicated only), σ over runs | **0.41–0.76 ns** (LIQA/B/C) |
+
+Part of that wander is simply the beam-mix: each run averages a different
+proportion of parasitic and dedicated pulses, and the liquids walk by −4.1 to
+−4.9 ns between the two classes (§3.4). Restricting to dedicated pulses alone
+tightens the run-to-run stability to **0.41–0.76 ns** on LIQA/B/C — so the
+underlying time base is stable at the half-nanosecond level and the 0.68 ns is a
+conservative bound. (LIQD does not improve, 1.65 → 2.17 ns; it is the noisiest
+cell throughout.)
 
 That 0.68 ns is the systematic floor of the PKUP-referenced time base, and it is
 smaller than every other term in the budget.
@@ -398,6 +427,7 @@ route shares an assumption with the other beyond the pickup itself.
 | `data/per_channel_flash_timing_gateON.csv` | same for the gate-on cross-check runs |
 | `data/divert_state_by_run.csv` | campaign-wide divert scan, 306 runs |
 | `data/plastic_liq_flash_by_run.csv` | PSS/LIQ flash time vs PKUP, run by run (the transport monitor) |
+| `data/flash_time_by_run_intensity_split.csv` | the same, split by beam-intensity class (120 runs) — separates beam-mix from genuine drift |
 | `data/resolution_decomposition.json` | per-run common-mode / independent jitter split |
 | `data/per_bunch_series.npz` | per-bunch flash times, for re-derivation |
 | `data/flash_run*.npz` | per-hit caches around the flash, ~1.2 GB — **gitignored**, regenerate with `scripts/extract_flash.py <run> <outdir>` on lxplus (LCG_105) |

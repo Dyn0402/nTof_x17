@@ -139,8 +139,24 @@ all 32 & $-1716.6$ & $-1715.5$ & $\mathbf{-1719.3}$ \\
 \end{tabular}
 \vspace{0.8em}
 
-{\footnotesize Recommended: the \textbf{07-16} column, per channel, for runs
-$\ge224400$.}
+{\footnotesize \hl{Per-wall means, for orientation only.} The calibration is
+\textbf{per channel} --- 32 constants, 07-16 epoch, runs $\ge224400$.}
+\vspace{0.4em}
+
+{\footnotesize
+\begin{tabular}{lrr}
+\toprule
+scheme & rms resid. & max \\
+\midrule
+one constant, all 32 & 3.43 & 7.18 \\
+one per wall & 3.42 & 7.07 \\
+\textbf{per channel} & \textbf{0} & \textbf{0} \\
+\bottomrule
+\end{tabular}}
+\vspace{0.3em}
+
+{\footnotesize Wall means agree to $0.7\ns$; channels within a wall differ by up
+to $13.3\ns$ $\Rightarrow$ grouping by detector captures \hl{nothing}.}
 \end{column}
 \begin{column}{0.48\textwidth}
 \small
@@ -218,9 +234,10 @@ $0.25$--$0.39\ns$ bin-to-bin, $1.4\ns$ peak-to-peak.}
 {\footnotesize
 The wall constant moves by $-5.0\ns$ from parasitic to dedicated pulses. But:
 \begin{itemize}
-  \item the shift is \hl{detector-dependent} --- $0$ (pickup), $-5$ (walls),
-        $-3\ldots-6$ (plastics), $-16\ns$ (silicon). A real change of the flash
-        arrival would be \emph{common to all}.
+  \item pickup $0$; walls $-5$; plastics $-3\ldots-6$; \hl{liquids $-4.1\ldots-4.9$};
+        silicon \hl{$-16\ns$}. The scintillators cluster where ``more light
+        $\rightarrow$ earlier crossing'' predicts; a real change of the flash
+        \emph{arrival} would have to move the pickup too.
   \item only the pickup is linear in protons; everything else is saturated
         (amplitude ratio $\simeq1$)
   \item the shift follows the \hl{risetime change}: walls $20.5\to15.4\ns$,
@@ -278,7 +295,8 @@ way to test stability where the walls cannot be measured.}
   \item the four cells \hl{move together}: within-run spread of deviations
         $0.22\ns$, LIQA--LIQC correlation $+0.92$
   \item common-mode wander \hl{$0.68\ns$ rms}, worst single run $-2.2\ns$
-        (224531)
+        (224531); at \emph{fixed} intensity it tightens to
+        \hl{$0.41$--$0.76\ns$} (LIQA/B/C)
   \item the 07-16 divert-off runs sit $+0.9\ldots+1.2\ns$ from the late-campaign
         mean $\Rightarrow$ \hl{transport good to $1.2\ns$}
 \end{itemize}
@@ -471,9 +489,9 @@ The two routes share no assumption beyond the pickup itself.}
 % ------------------------------------------------------------------
 \begin{frame}{What to do}
 \begin{enumerate}\setlength\itemsep{0.55em}
-  \item \textbf{Walls}: per-channel \texttt{C\_2026\_07\_16} for runs
-        $\ge224400$, \texttt{C\_2026\_07\_11} before. Add $-5\ns$ if the pulse
-        type differs from the calibration one.
+  \item \textbf{Walls}: per-channel \texttt{C\_2026\_07\_16} (\hl{all 32}) for
+        runs $\ge224400$, \texttt{C\_2026\_07\_11} before --- never one constant
+        per wall. Add $-5\ns$ if the pulse type differs from the calibration one.
   \item \textbf{Liquids}: per-run value or campaign mean --- they agree to
         ${\sim}1\ns$.
   \item \textbf{Plastics}: per-run value only.

@@ -55,15 +55,40 @@ the same bunch:
    t_\mathrm{flash\ at\ detector}(\text{bunch}) = t_\mathrm{PKUP}(\text{bunch}) + C[\text{channel}] .
    \label{eq:cal}
 \end{equation}
-Table~\ref{tab:walls} gives the per-wall values; the per-channel numbers are in
-\texttt{data/flash\_timing\_calibration.json}. The recommended set is the
-2026-07-16 epoch, for runs $\geq 224400$.
+\textbf{$C$ is a per-channel constant: use all 32, not one per detector.} The
+recommended set is the 2026-07-16 epoch, for runs $\geq 224400$, and it lives in
+\texttt{data/flash\_timing\_calibration.json}. Table~\ref{tab:walls} gives the
+per-wall means for orientation only.
+
+The channel-to-channel structure is $3.43\ns$ r.m.s.\ with a $13.3\ns$ full
+spread, against a within-epoch reproducibility of $0.61\ns$ per channel --- six
+times its own uncertainty, and therefore worth correcting. Crucially, a
+per-detector constant captures none of it:
+
+\begin{center}\small
+\begin{tabular}{lrr}
+\toprule
+scheme & r.m.s.\ residual & max residual \\
+\midrule
+one constant for all 32 channels & $3.43\ns$ & $7.18\ns$ \\
+one constant per wall (tree) & $3.42\ns$ & $7.07\ns$ \\
+\textbf{per channel} & $0$ & $0$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+After the 2026-07-16 equalisation the four wall means agree to $0.7\ns$
+($-1719.0$ to $-1719.7$) while channels \emph{within} a wall differ by up to
+$13.3\ns$: all the remaining structure is at channel level --- cable length and
+per-SiPM front end --- so grouping by detector is no better than a single global
+number.
 
 \begin{table}[htbp]
 \centering
 \small
 \caption{Wall constants $C = t_\mathrm{channel}-t_\mathrm{PKUP}$, in ns.
-``spread'' is the r.m.s.\ over the eight channels of a wall.}
+\emph{Per-wall means, for orientation only --- the calibration itself is per
+channel.} ``channel spread'' is the r.m.s.\ over the eight channels of a wall.}
 \label{tab:walls}
 \begin{tabular}{lrrrrrr}
 \toprule
@@ -226,11 +251,13 @@ risetime.}
 \end{figure}
 
 \begin{enumerate}
-\item \textbf{It is detector-dependent.} The same flash is seen by all
-detectors, so a real change in its arrival time would shift them equally.
-Instead the shift ranges from $0$ (pickup) through $-5\ns$ (walls) to $-16\ns$
-(silicon monitor, which is the most deeply saturated, with the PSA saturation
-flag set on 78\,\% of its flash hits).
+\item \textbf{The reference does not move, and one detector moves three times
+more.} Pickup $0$; walls $-5.0$; plastics $-3\ldots-6$; liquids $-4.1\ldots-4.9$
+(measured run by run over 47--51 runs); silicon monitor $-16\ns$, it being the
+most deeply saturated with the PSA saturation flag set on 78\,\% of its flash
+hits. The three scintillator families clustering near $-5\ns$ is what ``more
+light $\rightarrow$ earlier threshold crossing'' predicts; a genuine change of
+the flash \emph{arrival} would have to move the pickup too.
 
 \item \textbf{The pickup does not move.} The pickup timestamps the very protons
 that produce the flash, and its amplitude doubles between the two classes while
@@ -289,7 +316,10 @@ The four cells move \emph{together}: the within-run spread of their deviations
 is $0.22\ns$ and the LIQA--LIQC correlation across runs is $+0.92$, so what is
 observed is a common wander of the time base rather than detector noise. Its
 r.m.s.\ is $0.68\ns$ and the largest single-run excursion is $-2.2\ns$
-(run~224531). The two divert-off runs of 07-16 sit $+0.9$ to $+1.2\ns$ from the
+(run~224531). Part of even that is the beam mix --- each run averages a different
+proportion of parasitic and dedicated pulses, and the liquids walk by $-4.1$ to
+$-4.9\ns$ between the two classes --- so restricting to dedicated pulses alone
+tightens the run-to-run stability to $0.41$--$0.76\ns$ on LIQA/B/C. The two divert-off runs of 07-16 sit $+0.9$ to $+1.2\ns$ from the
 late-campaign mean, which is the figure quoted in Table~\ref{tab:budget} for the
 transport of the wall calibration to the end of the campaign.
 
@@ -446,9 +476,12 @@ the two routes share no assumption beyond the pickup itself.
 \section{How to apply, and what limits it}
 
 \begin{enumerate}
-\item \textbf{Walls}: use the per-channel \texttt{C\_2026\_07\_16} for runs
-$\geq 224400$, \texttt{C\_2026\_07\_11} before that. Add $-5\ns$ if the pulse
-type differs from the one the constant was taken on.
+\item \textbf{Walls}: use the per-channel \texttt{C\_2026\_07\_16} (32
+constants) for runs $\geq 224400$, \texttt{C\_2026\_07\_11} before that. Do not
+collapse to one constant per wall. Take them per epoch: the
+$07\text{-}11\rightarrow07\text{-}16$ shift is itself per-channel (WALB\,ch3
+$-0.6\ns$, WALD\,ch7 $-6.9\ns$). Add $-5\ns$ if the pulse type differs from the
+one the constant was taken on.
 \item \textbf{Liquids}: the per-run value, or the campaign mean; they agree to
 ${\sim}1\ns$.
 \item \textbf{Plastics}: per-run value only.
