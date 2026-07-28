@@ -58,7 +58,7 @@ def _strip_fit(row, plane, require_slope=False):
         red_chi2=float(row[f'{plane}_chi2'] / max(row[f'{plane}_dof'], 1)))
 
 
-def as_event_results(df: pd.DataFrame, quality_only: bool = True,
+def as_event_results(df: pd.DataFrame, quality_only: bool = False,
                      require_slope: bool = False) -> List[cm.EventResult]:
     """Table -> list of EventResult, for the position-side analysis machinery."""
     out = []
@@ -73,7 +73,16 @@ def as_event_results(df: pd.DataFrame, quality_only: bool = True,
     return out
 
 
-def load_table(path: str, quality_only: bool = True) -> pd.DataFrame:
+def load_table(path: str, quality_only: bool = False) -> pd.DataFrame:
+    """Load a reco table.
+
+    ``quality_only`` is OFF by default and should stay off for anything the
+    hits chain is compared against: the hits chain applies no equivalent cut,
+    and chi2/dof here is large by construction (every sample counts, and the
+    model is imperfect at the percent level -- the median is ~110 on X and
+    ~180 on Y for det3). CHI2DOF_BAD is a flag for finding showers and
+    multi-track events, not a reconstruction filter.
+    """
     df = pd.read_parquet(path)
     if quality_only:
         for p in ('x', 'y'):
