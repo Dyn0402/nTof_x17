@@ -1,6 +1,6 @@
 # Revised PSA UserInput for the X17 EAR2 2026 campaign
 
-**From the X17 / DREAM group (Dylan Neff), 2026-07-28.**
+**From the X17 / DREAM group (Dylan Neff), 2026-07-28, revised 2026-07-29.**
 Proposed replacement for `UserInput_2026_EAR2_X17.h` (R. Mucciola, 2026-07-17).
 
 Contact: dneff@cern.ch. Full analysis, tooling and the comparison report are in
@@ -14,7 +14,11 @@ the group repository under `ntof_processing/`.
 UserInput_2026_EAR2_X17_v12.h     the proposed UserInput
 pulse_shapes/                     every template it references (24 new + 2 shipped)
 comparison_report.pdf             the measurements behind each change
+adc_wrap_examples.png             the ADC under-range wrap of §8b(b), drawn
 ```
+
+The UserInput is the one we ran to produce every number in this document; it is
+byte-identical to the variant our own analysis has now adopted as production.
 
 **Before running**, rewrite the `PULSE SHAPE ADDRESS` column to the absolute
 path of `pulse_shapes/` on your system -- the file ships with bare filenames.
@@ -146,7 +150,9 @@ amplitude cut) but **better-timed** ones, merging pileup fragments back into
 one correctly-timed pulse. Our DREAM coincidence matcher goes from 95.3 % to
 96.3 % efficient at the same 0.5 % false rate, and from 93.5 % to 95.0 % in the
 hardest 1-3 ms bin (252 bunches; an earlier 100-bunch sample gave 95.2 → 96.4
-and 93.4 → 95.5, so the gain is stable).
+and 93.4 → 95.5, so the gain is stable). On the full DREAM reference pair —
+2061 bunches, 213 k events, two disjoint hours — this configuration gives
+**95.7 % / 0.5 %**, see "What we verified" below.
 
 ### 7. `SIGNAL WIDTH LOW THR.` 10 → 4 ns on PSS
 
@@ -268,6 +274,14 @@ containing at least one wrapped sample: liquids 0.10-0.60 %, plastics
 inside the γ-flash**, where saturation is expected; the liquids are the only
 detectors where it happens at physics times.
 
+`adc_wrap_examples.png` in this directory shows six of them, all in the
+1-21 ms physics window: the recorded trace plunges to about −34 000 in
+pulse-height coordinates for **1-2 samples** at the peak (never more than 3),
+and undoing the wrap recovers a pulse of 32 000-37 000 ADC against a ceiling of
+31 200. The excursion above the ceiling is small — 0.4 to 17 % over, median
+6 % — which is why nothing about these pulses looks anomalous except that one
+sample.
+
 **(c) `afast` is not an n/γ discriminant.** Now that the boundary is set,
 `afast` fills for 100 % of hits and `aslow` is **always zero** -- see §8. What
 `afast` does deliver is weaker than we first hoped. On isolated late-time pulses
@@ -292,17 +306,24 @@ shapes -- see §8 for why the liquid templates are best left as shipped.
 
 Everything below is on run 224572 unless stated, with our own laptop-side
 `tflash` repair **disabled**, so it tests the processing alone. The matcher
-numbers are over **252 bunches** of DREAM `run_79 / stat090_0000`; the same
-comparison on the baseline configuration gives 95.3 % / 0.5 %, so the gain is
-+1.0 points at equal false-match rate.
+numbers are now over the **full DREAM reference pair**: both sub-runs of
+`run_79` (`stat090_0000` and `stat090_0001`), 2061 bunches on disjoint ranges
+146-1157 and 1165-2213, 213 k events, two independent hours of data. They agree
+to 0.0 points with each other, so this is not a sample fluctuation. The
+"official" column is the official file **with our laptop-side repair applied**,
+i.e. the best that processing can do; on its own stored `tflash` it gives
+12.2 %.
 
-| | official | this UserInput |
+| | official (+ our repair) | this UserInput |
 |---|---|---|
 | flash mis-identification | PSS 37-85 % | 0.0 % on 12 of 13 trees |
-| per-arm coincidence offset | −362 / +20 / −333 / −336 ns | +1.5 / +2.0 / +1.0 / −2.0 ns |
-| DREAM matcher efficiency | 93.7 % (needs our repair) | **96.3 %** |
+| per-arm coincidence offset, no repair | −362 / +20 / −333 / −336 ns | +2.5 / +1.5 / +0.5 / −3.0 ns |
+| DREAM matcher efficiency | 92.4 % | **95.7 %** |
 | … false-match rate | 0.5 % | 0.5 % |
-| … in the 1-3 ms bin | 89.9 % / 1.3 % | **95.0 %** / 1.9 % |
+| … in the 1-3 ms bin | 89.3 % / 1.3 % | **94.7 %** / 1.6 % |
+| … in the 40-80 ms bin | 87.4 % | **95.2 %** |
+| … wall leg alone | 98.4 % | 98.4 % |
+| … cost of requiring a plastic | 5.9 % | **2.7 %** |
 | wall timing resolution (top↔bottom) | — | 6.65 ns, unchanged |
 | wall↔plastic coincidence width | — | 6.41 ns, unchanged |
 | MIP peak width (FWHM/peak) | — | 1.22, unchanged |
@@ -335,6 +356,45 @@ The false-match rate at 1-3 ms roughly doubles. That is the cost of recovering
 the plastic hits and we accept it deliberately -- the candidate rate rises from
 ~935 to ~1042 per bunch. If a different analysis needs early-time purity
 instead, tightening `AREA/AMP HIGH` back towards 20 trades it back.
+
+## An independent cross-check: the Micromegas and the liquids
+
+Added 2026-07-29. Everything above grades the n_TOF file against itself or
+against DREAM *timing*. This one asks whether the events the matcher selects
+are physically the right ones, using a detector that knows nothing about the
+n_TOF processing: the DREAM Micromegas chambers, one per arm.
+
+On 31 432 non-flash DREAM events, 96.3 % match a thresholded wall+plastic
+single in at least one arm and 95.8 % in exactly one. For the exclusively
+matched events, the fraction with a Micromegas cluster (≥2 strips in both
+planes) per chamber:
+
+```
+  matched to      chA     chB     chC     chD      n
+    arm A only   81.7%   57.4%   26.5%   64.7%   6526
+    arm B only   38.2%   77.5%   33.0%   68.8%   8237
+    arm C only   36.8%   59.8%   76.8%   67.3%   7987
+    arm D only   33.7%   57.6%   28.7%   85.6%   7358
+```
+
+The diagonal is enhanced in every row over chamber-dependent occupancy floors,
+and a large-pulse tier sharpens it further (arm C: 21.6 % on chamber C against
+~4 % off-arm). So the wall+plastic coincidences this processing reports really
+are particles crossing the corresponding arm.
+
+Two things follow that matter for the campaign:
+
+- **The residual inefficiency is ours, not the file's.** Events the matcher
+  misses have a Micromegas cluster 96.4 % of the time against 96.5 % for the
+  events it finds — statistically identical. The misses are not fake DREAM
+  triggers; they are analysis-side, so no further UserInput change is indicated
+  by them.
+- **The liquid time base is externally confirmed.** Repeating the exercise on
+  the `LIQ*` trees, same-arm liquid hits show a 5-7× excess over an accidental
+  floor (a +100 µs shifted control) at a stable **−5 to −25 ns** residual, with
+  every off-arm pair at the floor. The ~350 ns per-tree offsets present in the
+  official file are gone. This is the first end-to-end test of the liquid leg
+  of this configuration against an outside detector, and it passes.
 
 ## One operational note
 
