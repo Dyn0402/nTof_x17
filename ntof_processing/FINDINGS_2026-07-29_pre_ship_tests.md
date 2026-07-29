@@ -124,6 +124,25 @@ As recorded, a wrapped liquid pulse is unmistakable: the trace sits flat at the
 ~31 200 baseline, dives toward 0, and one or two samples appear up at 63-65 000
 before it resumes its normal fall.
 
+Every panel is labelled with its provenance — file segment, bunch and trigger
+number — and the script prints the same for all of them, so any block can be
+pulled up again:
+
+```
+det    seg   bunch      trig   t [ms]  nwrap  true peak
+LIQA    20     398    182348    3.398      1      32414
+LIQA    20     399    182357    1.096      2      32315
+...
+LIQA    40     799    184651    6.248      2      36656
+LIQD    40     800    184654    5.074      1      32474
+```
+
+They are not concentrated in one bad bunch or one bad segment: 21 blocks over
+6 bunches in 2 segments, LIQA 17 / LIQD 3 / LIQB 1, spread across the whole
+time-of-flight window. That is the signature of ordinary large pulses
+occasionally exceeding the range, not of a periodic or bunch-correlated
+artefact.
+
 In pulse-height coordinates (baseline − sample, so pulses point up) the
 recorded trace rises normally, plunges to about −34 000 for **one or two
 samples** at the peak — three at most, never a plateau — and then continues

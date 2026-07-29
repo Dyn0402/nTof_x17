@@ -33,7 +33,7 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 sys.path.insert(0, str(Path.home() / 'PycharmProjects/nTof_x17_DAQ/stream1_monitor'))
-from ntof_raw import iter_banks, parse_acqc  # noqa: E402
+from ntof_raw import iter_banks, parse_acqc, parse_eveh  # noqa: E402
 
 TREES = ('LIQA', 'LIQB', 'LIQC', 'LIQD')
 PAD = 32768              # zero-suppression fill value, not a measurement
@@ -44,11 +44,34 @@ PRE, POST = 60, 260      # ns drawn around the peak
 N_SHOW = 6
 
 
+def segment(path):
+    """File segment number, i.e. the <n> of run<RUN>_<n>_s1.raw.
+
+    Our local chunks are named head_<n>.bin after the segment they were cut
+    from, so the trailing integer of the stem is the segment either way.
+    """
+    digits = ''.join(c for c in Path(path).stem if c.isdigit() or c == '_')
+    tail = digits.rsplit('_', 1)[-1]
+    return int(tail) if tail else -1
+
+
 def collect(paths, want=N_SHOW * 6):
-    """Late-time liquid blocks containing at least one wrapped sample."""
+    """Late-time liquid blocks containing at least one wrapped sample.
+
+    Each record carries where it came from: the file segment, and the bunch and
+    event counters of the EVEH header it sits under, so any block on the figure
+    can be found again in the raw stream.
+    """
     found, n_late = [], 0
     for path in paths:
+        seg, bunch, event = segment(path), -1, -1
         for _o, tag, _v, pay in iter_banks(path):
+            if tag == 'EVEH':
+                h = parse_eveh(pay)
+                # words[1] is the bunch counter the rest of this package keys on
+                # (see raw_pulse_budget.py); words[3] is the event/trigger id
+                bunch, event = int(h['words'][1]), int(h['event'])
+                continue
             if tag != 'ACQC':
                 continue
             det, _chan, blks = parse_acqc(pay, with_samples=True)
@@ -61,7 +84,8 @@ def collect(paths, want=N_SHOW * 6):
                 real = s != PAD
                 hi = (s > HIGH) & real
                 if hi.any():
-                    found.append((det, start, s.astype(np.int64), hi))
+                    found.append(dict(det=det, start=start, s=s.astype(np.int64),
+                                      hi=hi, seg=seg, bunch=bunch, event=event))
             if len(found) >= want:
                 return found, n_late
     return found, n_late
@@ -95,17 +119,20 @@ def main():
 
     # one example per detector first, then the rest, so the figure is not all LIQA
     order, seen = [], set()
-    for k, (det, *_ ) in enumerate(found):
-        if det not in seen:
-            seen.add(det)
+    for k, rec_k in enumerate(found):
+        if rec_k['det'] not in seen:
+            seen.add(rec_k['det'])
             order.append(k)
     order += [k for k in range(len(found)) if k not in order]
     show = order[:N_SHOW]
 
     fig, axes = plt.subplots(2, 3, figsize=(15, 7.5))
     for ax, k in zip(axes.ravel(), show):
-        det, start, s, hi = found[k]
+        b = found[k]
+        det, start, s, hi = b['det'], b['start'], b['s'], b['hi']
         base, rec, true, i = prepare(s, hi)
+        where = (f'seg {b["seg"]}  bunch {b["bunch"]}  trig {b["event"]}'
+                 if b['bunch'] >= 0 else f'seg {b["seg"]}')
         lo, up = max(0, i - PRE), min(len(s), i + POST)
         t = np.arange(lo, up)                    # ns within the block
         if as_rec:
@@ -120,8 +147,9 @@ def main():
                     label='sample above 60 000')
             ax.set_ylim(-2500, WRAP + 2500)
             ax.set_yticks([0, 16384, 32768, 49152, 65535])
-            ax.set_title(f'{det}  t = {(start + i) / 1e6:.2f} ms   '
-                         f'{int(hi.sum())} sample(s) above 60 000', fontsize=9)
+            ax.set_title(f'{det}   {where}\n'
+                         f't = {(start + i) / 1e6:.2f} ms, '
+                         f'{int(hi.sum())} sample(s) above 60 000', fontsize=8)
             ax.set_xlabel('sample within block [ns]')
             ax.set_ylabel('stored sample value [ADC]')
             ax.legend(fontsize=7, loc='center right')
@@ -135,9 +163,10 @@ def main():
                 label='as recorded')
         w = np.flatnonzero(hi[lo:up]) + lo
         ax.plot(w, rec[w], 'x', color='tab:blue', ms=8, mew=2)
-        ax.set_title(f'{det}  t = {(start + i) / 1e6:.2f} ms   '
+        ax.set_title(f'{det}   {where}\n'
+                     f't = {(start + i) / 1e6:.2f} ms, '
                      f'{int(hi.sum())} wrapped sample(s), '
-                     f'true peak {true[i]:.0f} ADC', fontsize=9)
+                     f'true peak {true[i]:.0f} ADC', fontsize=8)
         ax.set_xlabel('sample within block [ns]')
         ax.set_ylabel('pulse height  (baseline - sample) [ADC]')
         ax.legend(fontsize=7, loc='lower right')
@@ -159,16 +188,25 @@ def main():
     p = outdir / ('adc_wrap_as_recorded.png' if as_rec else 'adc_wrap_examples.png')
     fig.savefig(p, dpi=130)
     print('wrote', p)
-    if as_rec:
-        return 0
 
     # what the wrap costs: how far over the ceiling, and how many samples
     over, nwrap = [], []
-    for det, start, s, hi in found:
-        _b, _r, true, i = prepare(s, hi)
+    for b in found:
+        _b, _r, true, i = prepare(b['s'], b['hi'])
         over.append(true[i])
-        nwrap.append(int(hi.sum()))
+        nwrap.append(int(b['hi'].sum()))
     over, nwrap = np.array(over), np.array(nwrap)
+
+    # the provenance of every one of them, so they can be pulled up again
+    print(f'\n{"det":5s} {"seg":>4s} {"bunch":>7s} {"trig":>9s} {"t [ms]":>8s} '
+          f'{"nwrap":>6s} {"true peak":>10s}')
+    for b, o, n in sorted(zip(found, over, nwrap),
+                          key=lambda r: (r[0]['seg'], r[0]['bunch'], r[0]['start'])):
+        i = int(np.argmax(b['hi']))
+        print(f'{b["det"]:5s} {b["seg"]:4d} {b["bunch"]:7d} {b["event"]:9d} '
+              f'{(b["start"] + i) / 1e6:8.3f} {n:6d} {o:10.0f}')
+    if as_rec:
+        return 0
 
     fig, (a1, a2) = plt.subplots(1, 2, figsize=(11, 4))
     a1.hist(over, bins=30, color='tab:orange')
@@ -191,6 +229,7 @@ def main():
           f'max {over.max():.0f} (ceiling is the baseline, ~31 000)')
     print(f'wrapped samples per pulse: {np.bincount(nwrap)[1:].tolist()} '
           f'(1, 2, 3, ... samples)')
+
     return 0
 
 

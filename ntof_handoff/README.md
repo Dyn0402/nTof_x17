@@ -301,7 +301,8 @@ happens at physics times.
 `adc_wrap_as_recorded.png` in this directory shows six liquid ones, all in the
 1-21 ms physics window, as stored: the trace sits at the ~31 200 baseline, dives
 toward 0, and **1-2 samples** (never more than 3) appear up at 63-65 000 before
-it resumes its normal fall. Undoing the wrap recovers a pulse of 31 340-36 656
+it resumes its normal fall. Each panel is labelled with its file segment, bunch
+and trigger number so you can pull the same block up on your side. Undoing the wrap recovers a pulse of 31 340-36 656
 ADC against a 31 200 ceiling — only 0.4 to 17 % over range, median 6 % — which
 is why nothing about these pulses looks anomalous except that one sample.
 
