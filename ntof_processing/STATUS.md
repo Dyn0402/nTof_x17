@@ -13,10 +13,19 @@ Last updated: 2026-07-28, after submitting the second variant sweep.
 
 | | |
 |---|---|
-| processed output | `/eos/experiment/ntof/data/x17/reproc/<variant>/completed/224572/` |
+| variant studies (run 224572) | `/eos/experiment/ntof/data/x17/reproc/<variant>/completed/224572/` |
+| production runs (224573-224579) | `/eos/experiment/ntof/data/x17/reproc/prod_v11/<run>/completed/<run>/` |
 | processing scratch (must be /afs) | `/afs/cern.ch/work/d/dneff/x17_reproc/` |
 | UserInputs, staged | `/afs/cern.ch/work/d/dneff/x17_reproc/userinputs/<variant>/` |
 | UserInputs, source | `ntof_processing/userinputs/<variant>/` |
+| package for n_TOF | `ntof_handoff/` |
+
+Note on 224572: it has no directory under `prod_v11/` because it is the
+reference run every variant was built on -- its production-configuration output
+is `reproc/v12_liqpileup/completed/224572/`. Nothing is missing; the naming just
+differs. The user EOS (`/eos/user/d/dneff/x17/reproc/`) is kept empty: every
+output is copied to the ntof disk and verified file-by-file before the source
+is removed.
 
 `ssh -K` is mandatory. Without delegated credentials there is no AFS token and
 no condor auth, and `/eos/user/d/dneff` looks like it does not exist.
