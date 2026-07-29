@@ -36,6 +36,8 @@ def main():
     ap.add_argument('run_key')
     ap.add_argument('--table', default=None)
     ap.add_argument('--alignment', default=None)
+    ap.add_argument('--grid', type=int, default=60,
+                    help='sliding-map grid points per axis (hits chain used 100)')
     args = ap.parse_args()
 
     cfg = get_config(args.run_key)
@@ -73,7 +75,11 @@ def main():
     cm.plot_resolution_map(results, rays, params, bins=20, min_hits_per_bin=20,
                            radius_cut_mm=None, out_dir=out_dir,
                            det_name=cfg.DET_NAME)
-    cm.plot_resolution_map_sliding(results, grid_points=100,
+    # 60x60 rather than the hits chain's 100x100: this stage is serial and cost
+    # ~20 min per detector at 100, which is most of a fleet chain's wall clock.
+    # The kernel is 50 mm, so a 60-point grid still oversamples it; only the
+    # picture is coarser. Use --grid 100 if you need the old sampling.
+    cm.plot_resolution_map_sliding(results, grid_points=args.grid,
                                    kernel_radius_mm=50.0, min_hits=50,
                                    out_dir=out_dir, sigma_vmax=1.0,
                                    params=params, det_name=cfg.DET_NAME)
