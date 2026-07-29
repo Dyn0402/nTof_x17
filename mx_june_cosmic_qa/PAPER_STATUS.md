@@ -285,7 +285,27 @@ accounting; the fleet is still running, so these are det3 (`sat_det3`) only.
 | implied-v vs angle (new, physicality) | 56 → 39 µm/ns across the angle range | **spread 2.3 / 2.4 µm/ns** | Worth a figure: a reconstruction that reads the same drift velocity at every angle is the direct evidence the compression is gone. |
 | 6 — efficiency, HV, sparks | — | `has_any` and `spark_frac` identical | Unaffected: detection is an analyzer property. No rework needed. |
 
-Still to do before the paper can be re-cut: the fleet (det2/det4/det6/det7),
-the time-resolution port (topic 10), and packaging the v(E) and gap-map scripts.
-Topics 1, 2 and 5 need re-checking because their constants were fitted on
-hits-derived quantities — not yet done.
+**Fleet update (2026-07-29, `../mx_june_wft/FLEET_2026-07-29.md`).** det2, det6
+and det7 are now reconstructed too (det4 in progress). Topic 3 holds up
+fleet-wide: σ_θ roughly halves on every chamber — det3 1.20/1.14°, det2
+1.31/1.56°, det6 2.28/2.52°, det7 1.96/1.71° — with bias consistent with zero
+and the implied-v spread across angle bins down from ~17 to 1.3–6.4 µm/ns.
+Position improves most where the old chain did worst (det6 +17.6, det7 +14.2
+points of within-5 mm against the hits chain at its best).
+
+Two things the paper will have to address, both new tonight:
+
+- **det6's X plane is not dead.** The paper's fleet table (and
+  `JUNE_RESULTS_SUMMARY.md`) records it as unusable for micro-TPC on the
+  strength of a time-fit whose velocity railed to 119 µm/ns. The waveform fit
+  gets σ_θ 2.28° with +0.03° bias from that plane. If the two follow-up checks
+  hold, det6 stops being "low-angle only".
+- **A fitted per-detector v is a nuisance parameter, not a measurement**, unless
+  it is checked against the drift scan — det7's fit slid along the v↔sharing
+  degeneracy to v = 36.68 µm/ns at a 26.4 field while still producing unbiased
+  angles. Topic 8 should quote v from the drift scan, with per-detector fits
+  used only as a consistency check.
+
+Still to do before the paper can be re-cut: det4, the time-resolution port
+(topic 10), and packaging the v(E) and gap-map scripts. Topics 1, 2 and 5 need
+re-checking because their constants were fitted on hits-derived quantities.

@@ -92,15 +92,23 @@ if you know which basis produced it.
 |---|---|---|
 | Threading / cluster displays | **waveform** | `waveform_first_threading/37_threading_displays.py` |
 | Per-event tracking (angles, positions) | **waveform** | `wft/` — packaged, regression-tested against the R&D code |
-| Angular resolution | **waveform** (det3 done, fleet in progress) | `mx_june_wft/03_angles.py` |
-| Alignment | **waveform** (det3 done) | `mx_june_wft/01_alignment.py` |
+| Angular resolution | **waveform** — det3, det2, det6, det7 | `mx_june_wft/03_angles.py` |
+| Alignment | **waveform** — det3, det2, det6, det7 | `mx_june_wft/01_alignment.py` |
 | Efficiency breakdown | **waveform** positions, hits detection | `mx_june_wft/02_efficiency.py` |
-| Efficiency / resolution maps | **waveform** (det3 done) | `mx_june_wft/04_maps.py` |
+| Efficiency / resolution maps | **waveform** — det3, det2, det6, det7 | `mx_june_wft/04_maps.py` |
 | v(E), gas fit | **waveform** | `waveform_first_threading/` scripts 19–21 (not yet packaged) |
 | Gap / column maps | **waveform** | `waveform_first_threading/` scripts 29–35 (not yet packaged) |
 | Hybrid tracking | hits — **superseded in accuracy**, do not extend | `mx_june_cosmic_qa/34`, `36` |
 | Time resolution | hits + waveform (port pending) | `mx_june_cosmic_qa/42` |
 | Sparks, charge balance, fringe field | hits — QA-level, unaffected | `mx_june_cosmic_qa/38`–`40` |
+
+**Fleet result (2026-07-29, `mx_june_wft/FLEET_2026-07-29.md`).** Against the
+hits chain at its best, within 5 mm: det3 −1.3, det2 +0.1, **det6 +17.6,
+det7 +14.2** points; core σ improves on every chamber except det3. σ_θ roughly
+halves everywhere (det3 1.20/1.14°, det2 1.31/1.56°, det6 2.28/2.52°,
+det7 1.96/1.71°) with bias consistent with zero, and the implied-v spread across
+angle bins — the direct compression signature — falls from ~17 to 1.3–6.4 µm/ns.
+det4 is still running.
 
 **det3 gate result (2026-07-29, `mx_june_wft/DET3_GATE_2026-07-29.md`)**, both
 chains through identical accounting: σ_θ **2.42/2.60° → 1.20/1.14°** with the
