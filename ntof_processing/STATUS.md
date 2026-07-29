@@ -7,9 +7,10 @@ run one) and `flash_timing/README.md` (the PKUP-referenced calibration).
 
 Last updated: 2026-07-29. **The pre-ship tests have been run and two of them
 changed the answer** -- see `FINDINGS_2026-07-29_pre_ship_tests.md`. The
-headline is confirmed on a larger sample; the liquid fast/slow boundary should
-be dropped, which needs one more variant; and two output-integrity problems
-(ADC wrap-around, unusable `satuflag`) belong in the handoff regardless.
+headline is confirmed on a larger sample (v12 96.3 % / 0.5 % vs v4 95.3 % / 0.5 %
+over 252 bunches), T2/T3 pass, and **v12 ships as it stands**. Two
+output-integrity problems -- ADC wrap-around and an unusable `satuflag` -- go in
+the handoff, and T4's per-hit liquid check is left open on purpose.
 
 **Auditing this?** Start at `REVIEW.md` -- it maps every claim to the tool that
 produced it, says what is reproducible and what is ephemeral, and lists the
@@ -27,6 +28,8 @@ mistakes I made and corrected so you know where the error modes were.
 | UserInputs, staged | `/afs/cern.ch/work/d/dneff/x17_reproc/userinputs/<variant>/` |
 | UserInputs, source | `ntof_processing/userinputs/<variant>/` |
 | package for n_TOF | `ntof_handoff/` |
+| DREAM-vs-reprocessed entry point | `HANDOFF_2026-07-29_dream_vs_reprocessed.md` |
+| local copy of 224572 v12 | `/media/dylan/data/x17/ntof_reproc/v12_liqpileup/` |
 
 Note on 224572: it has no directory under `prod_v11/` because it is the
 reference run every variant was built on -- its production-configuration output
@@ -76,7 +79,11 @@ at 1024 MB), hadd over EOS dies and leaves a truncated file that still opens.
   uses a 200 ns window, so it measures TAIL overlap -- the fast components are
   mostly resolvable (24-30 ns median gap vs 6 ns FWHM)
 - **photon statistics floor**: fit residual scales as sqrt(A), flat at
-  0.61-0.67 over a factor 25 in amplitude, so no template basis can absorb it
+  0.61-0.67 over a factor 25 in amplitude, so no template basis can absorb it.
+  **07-29: true of LIQA/LIQC/LIQD, NOT of LIQB** (residual/sqrt(A) 0.62 -> 1.59;
+  an amplitude-binned basis cuts it 24 % held-out). And the "saturation breaks
+  the scaling at the rail" line was measuring the ADC wrap -- with wrapped
+  pulses dropped it does not break
 - **not two pulse classes**: tail/total is one band at 0.21 above 3000 ADC
 - **v12 works**: LIQ `STEP SIZE` 2/4 -> 1/3 gives **+14 to +21 % yield**, chi2
   neutral-to-better, pileup flag +50 %, walls and plastics bit-identical
@@ -268,9 +275,13 @@ campaign from our UserInput instead.
      but silent;
    - `satuflag` not being set for the walls at all.
 3. **Optional, if the liquid yield claim has to be airtight:** T4's per-hit
-   question needs the PSA `tof` <-> raw sample alignment understood first (see
-   the findings file). Ask n_TOF what `tof` marks on a fitted pulse -- that one
-   answer probably unblocks it.
+   question needs the raw-vs-reconstructed time alignment understood first. The
+   branch definitions are NOT the problem -- the PSA guide gives `tof` as the
+   30 % constant-fraction arrival and `peak_tof` as the peak moment, and they
+   differ by 1.3 ns in our files as they should. What is unexplained is a
+   per-detector ~20-28 ns offset between `peak_tof` and the raw sample-index
+   peak. Ask n_TOF whether the ACQC block `start` in stream1 shares an origin
+   with the sample index the PSA times against.
 3. If liquid PSD is wanted, request stream1 raw for the runs of interest
    (~2.7 GB per 70 s chunk, ~150 files per run); reader and extraction tooling
    already exist in this repo.

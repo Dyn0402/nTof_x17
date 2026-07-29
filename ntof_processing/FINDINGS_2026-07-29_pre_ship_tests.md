@@ -124,6 +124,32 @@ the PSA and the DAQ, not of our UserInput.
 This blocked the per-hit half of T4 and should be known before anyone else
 tries it.
 
+**Updated later the same day, after actually reading the PSA guide.** The guide
+we already have (`~/x17/ntof_processing/PSA_Guide_20240704.pdf`, "Timing
+properties") defines the branches, and I should have checked it first:
+
+- `tof` is a **30 % constant-fraction arrival time**, not the peak;
+- `peak_tof` is the **peak moment** -- first highest point, parabola vertex, or
+  fitted-Pulse-Shape peak, depending on `AMPLITUDE OPTION`. It exists in the
+  tree and I had not looked;
+- the guide gives the conversion between them, `arrival = peak - dt`.
+
+That is internally consistent with the data: `peak_tof - tof` is **1.3 ns**
+median (p16-p84 0.6-2.6 ns), exactly what a 30 % crossing on a 6 ns FWHM pulse
+should give.
+
+**It does not explain the offset.** The raw pulse peak sits **+26 ns after
+`peak_tof` on LIQA and +19 ns on LIQD** -- the definition accounts for ~1 ns of a
+~20-28 ns discrepancy. So the question is sharper now, not answered: *why does
+the reconstructed time sit ~20-28 ns before the raw sample-index peak, by a
+per-detector constant?* It is not a sampling-rate mismatch (the lag is constant
+across absolute times from 1.7 to 7.0 ms) and there is no per-detector time
+offset in the UserInput. Leading guess: the ACQC block `start` in stream1 and the
+sample origin the PSA uses differ by a per-channel amount.
+
+Also checked: the `waveform` branch exists in every tree but is **empty**
+(length 0 for every hit), so there is no shortcut around stream1.
+
 What is established:
 
 - the bunch identification is certain. Raw bunch 161 scores 20.1 % of its large

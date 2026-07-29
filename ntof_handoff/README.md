@@ -315,12 +315,21 @@ LIQA 31.4 → 25.3, LIQD 21.6 → 16.2 against the official file). What we could
 finish is the per-hit check that each extra hit is a real pulse: **95 % of the
 gain is resolved shoulders on existing pulses** rather than pulses missed
 outright, and verifying those individually needs a raw-waveform comparison we
-could not make trustworthy, because the reported `tof` and the stream1 sample
-index do not line up per hit for us. Counting rather than matching, v12 reports
-0.96 of the pulses the raw data resolves against 0.77 for the baseline, i.e. it
+could not make trustworthy. Counting rather than matching, v12 reports 0.96 of
+the pulses the raw data resolves against 0.77 for the baseline, i.e. it
 approaches that ceiling without crossing it — supportive, not conclusive.
-**If you can tell us what `tof` marks on a fitted pulse, that would probably
-close it.**
+
+**One question would probably close it.** Stacking the stream1 trace on every
+reported hit, the raw pulse peak sits **19–26 ns after `peak_tof`**, by a
+constant that differs per detector (LIQA +26, LIQB +27, LIQD +19 ns). We
+understand the branch definitions — Žugec's guide gives `tof` as the 30 %
+constant-fraction arrival and `peak_tof` as the peak moment, and the two differ
+by 1.3 ns in our files exactly as they should. So this is not a definition
+mismatch. It is not a sampling-rate mismatch either: the lag is constant from
+1.7 to 7.0 ms of time of flight. **Is there a per-channel offset between the
+`start` index of an ACQC block in stream1 and the sample origin the PSA times
+against?** If so, we would like the numbers; if not, we are misreading the raw
+format and would like to know that too.
 
 The false-match rate at 1-3 ms roughly doubles. That is the cost of recovering
 the plastic hits and we accept it deliberately -- the candidate rate rises from
