@@ -29,7 +29,9 @@ sed -i "s#\(X17_[A-Za-z0-9_]*\.txt\)#$PWD/pulse_shapes/\1#g" UserInput_2026_EAR2
 ```
 
 Then check that each detector row still declares as many shapes as it lists
-addresses (LIQC has 2, everything else with fitting has 3).
+addresses: **3 for each wall and each plastic, 2 for each liquid** (the four
+liquids share the two shipped templates between them, so `pulse_shapes/` holds
+26 distinct files for 32 references). `PKUP` and `SILI` fit no shapes.
 
 ---
 
