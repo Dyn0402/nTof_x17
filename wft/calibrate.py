@@ -43,6 +43,7 @@ TEMPLATE_GRID = np.arange(-360, 1400, 10.0)
 TEMPLATE_TAN_MIN = 0.22          # only clearly inclined tracks carry a clean rise
 TEMPLATE_MIN_AMP = 500.0
 HYPER_X0 = np.array([0.306, 0.057, 1.0, 47.0, 87.0, 0.098, 0.0114, 36.65])
+C1_MIN = 0.05                    # physical floor on the sharing kernel
 HYPER_SCALE = np.array([0.05, 0.03, 0.15, 15.0, 20.0, 0.06, 0.005, 2.0])
 FIT_NAMES = list(HYPER_NAMES) + ['v']
 
@@ -214,9 +215,17 @@ def _event_chi2(payload):
 
 
 def fit_hypers(cache_path, bundle_path, train_ids, jobs=12, maxiter=130,
-               x0=None):
+               x0=None, v_fixed=None):
     """8-parameter ref-pinned Nelder-Mead. This is the expensive stage:
-    ~15 s per objective evaluation on 12 cores for 180 events."""
+    ~15 s per objective evaluation on 12 cores for 180 events.
+
+    ``v_fixed`` pins the drift velocity instead of fitting it. Use it on the
+    low-statistics chambers: v is a property of the gas and the field, not of
+    the chamber, so a detector at 700 V can take the value the drift scan
+    measured at 700 V (det6's free fit landed 1.3 % from it, which is the
+    evidence this is safe). Pinning it also breaks the v <-> sharing
+    degeneracy that wrecked det7's free fit.
+    """
     warm = {e: {} for e in train_ids}
     x0 = HYPER_X0 if x0 is None else np.asarray(x0, float)
     neval = [0]
@@ -224,7 +233,7 @@ def fit_hypers(cache_path, bundle_path, train_ids, jobs=12, maxiter=130,
                              initargs=(cache_path, bundle_path)) as pool:
         def total_chi2(hv):
             hyper = dict(zip(HYPER_NAMES, hv[:7]))
-            v = hv[7]
+            v = v_fixed if v_fixed is not None else hv[7]
             c = 0.0
             for eid, tot, t0s in pool.map(
                     _event_chi2, [(e, hyper, v, warm[e]) for e in train_ids],
@@ -241,9 +250,20 @@ def fit_hypers(cache_path, bundle_path, train_ids, jobs=12, maxiter=130,
 
         def obj(x):
             x = np.asarray(x)
+            # c1 has a physical floor: these are resistive strips and the
+            # sharing is a design property, measured at 0.2-0.5 across the
+            # fleet. Without this bound the fit can run to c1 -> 0 and absorb
+            # the missing sharing into a huge sigma_p0 and a wrong v -- exactly
+            # what happened on det7 (c1 = 0.004, kY = 6.6, sigma_p0 = 0.52 mm,
+            # v = 36.7 at a field where 26.4 is measured). The v <-> sharing
+            # degeneracy is documented in WAVEFORM_FIRST_THREADING.md §17.2.
+            if x[0] < C1_MIN:
+                return 2 * c0
             if (x[:3] < 0).any() or x[3] < 0 or x[4] < 0 or x[5] < 0.03 or \
                     x[6] < 0 or not (5 < x[7] < 60):
                 return 2 * c0
+            if v_fixed is not None:
+                x = np.array(list(x[:7]) + [v_fixed])
             c = total_chi2(x)
             print(f'[calib]   eval{neval[0]:3d} {np.round(x, 4)} {c:.5e}', flush=True)
             return c
@@ -289,7 +309,7 @@ def measure_dt_xy(events, bundle_path, hyper, v, sample=200):
 
 # ---------------------------------------------------------------------- main
 def calibrate(cfg, run_key, n_events=400, n_train=180, jobs=12, out=None,
-              seed_bundle=None, maxiter=130):
+              seed_bundle=None, maxiter=130, v_fixed=None):
     out = out or cfg.out_dir('wft', 'calib_bundle')
     work = cfg.out_dir('wft', 'calib_work')
     cache_path = os.path.join(work, 'calib_cache.pkl')
@@ -316,9 +336,14 @@ def calibrate(cfg, run_key, n_events=400, n_train=180, jobs=12, out=None,
 
     train = sorted(events)[:n_train]
     print(f'[calib] fitting hypers on {len(train)} events, {jobs} jobs', flush=True)
+    x0 = None if seed is None else np.array(
+        [seed.hyper[k] for k in HYPER_NAMES] + [seed.v_drift])
+    if v_fixed is not None and x0 is not None:
+        x0[7] = v_fixed
     hj = fit_hypers(cache_path, prov_path, train, jobs=jobs, maxiter=maxiter,
-                    x0=None if seed is None else np.array(
-                        [seed.hyper[k] for k in HYPER_NAMES] + [seed.v_drift]))
+                    x0=x0, v_fixed=v_fixed)
+    if v_fixed is not None:
+        hj['v'] = float(v_fixed)
     cal.hyper = {k: hj[k] for k in HYPER_NAMES}
     cal.v_drift = hj['v']
     cal.provenance.update(n_train=hj['n_train'], chi2=hj['chi2'],
@@ -342,6 +367,10 @@ def main(argv=None):
     ap.add_argument('--train', type=int, default=180)
     ap.add_argument('--jobs', type=int, default=12)
     ap.add_argument('--maxiter', type=int, default=130)
+    ap.add_argument('--fix-v', type=float, default=None,
+                    help='pin the drift velocity (um/ns) instead of fitting it '
+                         '-- use the drift-scan value for this field on the '
+                         'low-statistics chambers')
     ap.add_argument('--seed-bundle', default=None,
                     help='start from another detector\'s kernel (e.g. det3, same batch)')
     ap.add_argument('--out', default=None)
@@ -357,7 +386,7 @@ def main(argv=None):
     cfg = get_config(args.run_key)
     calibrate(cfg, args.run_key, n_events=args.events, n_train=args.train,
               jobs=args.jobs, out=args.out, seed_bundle=args.seed_bundle,
-              maxiter=args.maxiter)
+              maxiter=args.maxiter, v_fixed=args.fix_v)
 
 
 if __name__ == '__main__':
