@@ -5,7 +5,11 @@ lives in `FINDINGS_2026-07-28_psa_optimization.md` (what was measured),
 `FLASH_TIME_BASE.md` (the divert and the flash), `userinputs/README.md` (how to
 run one) and `flash_timing/README.md` (the PKUP-referenced calibration).
 
-Last updated: 2026-07-28, after submitting the second variant sweep.
+Last updated: 2026-07-29, work complete.
+
+**Auditing this?** Start at `REVIEW.md` -- it maps every claim to the tool that
+produced it, says what is reproducible and what is ephemeral, and lists the
+mistakes I made and corrected so you know where the error modes were.
 
 ---
 
