@@ -38,6 +38,19 @@ done
 # 3. floor-corrected hits caches for the three detectors that never got the fix
 for KEY in o22_long_det2 g_det6_long g_det7_long; do
   say "===== $KEY: hits cache rebuild with the significance floor ====="
+  # This regenerates the OLD chain's alignment and cache in place. They are
+  # derived products and the recipe is the documented-correct one, but back them
+  # up first so the pre-refit state stays recoverable.
+  OUT=$($PY -c "
+import sys; sys.path.insert(0,'mx_june_cosmic_qa')
+from qa_config import get_config, setup_paths; setup_paths()
+print(get_config('$KEY').OUT_BASE)")
+  STAMP=$(date +%Y%m%d_%H%M%S)
+  for D in "$OUT/cache" "$OUT/alignment_tpc_veto50"; do
+    if [ -d "$D" ]; then
+      cp -a "$D" "${D}_prefloor_$STAMP" && say "  backed up $(basename "$D") -> $(basename "$D")_prefloor_$STAMP"
+    fi
+  done
   $PY mx_june_cosmic_qa/03_alignment_and_tpc.py "$KEY" --veto=50 --refit \
       > "$LOG/${KEY}_hits_refit.log" 2>&1 || say "  refit failed, see $LOG/${KEY}_hits_refit.log"
   $PY mx_june_wft/02_efficiency.py "$KEY" --source hits >> "$LOG/${KEY}_hits_refit.log" 2>&1 || true
