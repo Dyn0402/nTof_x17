@@ -133,6 +133,12 @@ def main():
     py = np.array(yr)
     evn = [int(v) for v in evn]
 
+    # Active box = 0.5-99.5 percentiles of THIS source's reconstructed
+    # positions, which is what 09_efficiency_breakdown.py does. Note the
+    # consequence when comparing two sources: each gets its own box, so even
+    # has_any can differ slightly between them (det6: 98.0 % vs 98.6 %) purely
+    # from which rays fall inside. It is a second-order effect on the headline
+    # numbers, but do not read a sub-percent has_any difference as physics.
     recpos = np.array(list(reco.values()))
     ax0, ax1 = np.percentile(recpos[:, 0], [0.5, 99.5])
     ay0, ay1 = np.percentile(recpos[:, 1], [0.5, 99.5])
