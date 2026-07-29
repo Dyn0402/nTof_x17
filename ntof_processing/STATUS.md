@@ -46,7 +46,27 @@ at 1024 MB), hadd over EOS dies and leaves a truncated file that still opens.
 | **v8_pssfit** | v4 + PSS shape fitting, 101 ns templates | **96.4 / 0.6** | **production** |
 | v9_liqaug | v4 + LIQ shipped pair + a measured third | 95.2 / 0.6 | neutral |
 | v10_pssfit_step | v8 + PSS STEP SIZE 2/3 | 96.4 / 0.6 | equal to v8 |
-| **v11_pssfit_width** | v8 + PSS SIGNAL WIDTH LOW 4 ns | **96.4 / 0.6** | **production** |
+| v11_pssfit_width | v8 + PSS SIGNAL WIDTH LOW 4 ns | 96.4 / 0.6 | superseded by v12 |
+| **v12_liqpileup** | v11 + LIQ STEP SIZE 1/3, fast/slow boundary | **96.4 / 0.6** | **production, shipped to n_TOF** |
+| v13_liqexpand | v12 + LIQ EXPAND PULSES 1, 150 ns width | - | rejected, -17..-28 % liquid hits |
+
+### The liquids, settled
+
+`liq_study/FINDINGS_liquids.md` has the detail. In short:
+
+- **pileup, not templates**: only **8-24 %** of liquid pulses are isolated, and
+  every template we built was measured on that minority
+- **photon statistics floor**: fit residual scales as sqrt(A), flat at
+  0.61-0.67 over a factor 25 in amplitude, so no template basis can absorb it
+- **not two pulse classes**: tail/total is one band at 0.21 above 3000 ADC
+- **v12 works**: LIQ `STEP SIZE` 2/4 -> 1/3 gives **+14 to +21 % yield**, chi2
+  neutral-to-better, pileup flag +50 %, walls and plastics bit-identical
+- **PSD is not obtainable from the PSA**: `afast`/`aslow` are 0 % filled;
+  setting the boundary fills `afast` but leaves `aslow` at zero because the
+  slow component lies outside the reconstructed pulse boundary, and expansion
+  to reach it costs more than it gains. **The reported liquid `area` has
+  therefore always been missing its slow component** -- in the official
+  processing too. Recovering it needs the raw waveforms.
 
 ### The processing has hit its floor at 96.4 %
 
@@ -168,8 +188,33 @@ So **9 runs remain to reprocess** for the two DREAM runs we hold, and all of
 their raw data is still on disk. Several are short (224575 has 17 raw files,
 224579 has 1, 224578 has 71) -- fine, just quick.
 
+## Production status
+
+run_79's n_TOF coverage is **reprocessed and complete**. Verified that partial
+count equals job-list count for every run, so nothing failed silently:
+
+| run | raw files | job lists | partials |
+|---|---|---|---|
+| 224572 | 152 | 16 | 16 (the reference, many variants) |
+| 224573 | 156 | 16 | 16 |
+| 224574 | 152 | 16 | 16 |
+| 224575 | 17 | 2 | 2 |
+| 224576 | 150 | 15 | 15 |
+| 224577 | 166 | 17 | 17 |
+| 224578 | 71 | 8 | 8 |
+| 224579 | 1 | 1 | 1 |
+
+`RunProcessing.sh` splits by ~10 raw files per job, which is why the short runs
+have few partials -- not a failure. The merge node aborts on every long run
+(the 1024 MB condor transfer cap); that is expected and bypassed by reading
+partials. **run_55 was dropped deliberately** -- n_TOF will reprocess the
+campaign from our UserInput instead.
+
 ## Next
 
-1. Grade v10/v11 against v8 (needs partial 0002 for the DREAM bunch range).
-2. Reprocess those 9 runs with the winner.
-3. Liquids have resisted three template treatments. Stop there.
+1. Send `ntof_handoff/` to n_TOF (UserInput v12, 26 templates, README, report).
+2. Raise the liquid `area` / slow-component issue with them separately -- it
+   affects the official processing, not just ours.
+3. If liquid PSD is wanted, request stream1 raw for the runs of interest
+   (~2.7 GB per 70 s chunk, ~150 files per run); reader and extraction tooling
+   already exist in this repo.
