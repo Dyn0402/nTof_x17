@@ -165,13 +165,25 @@ LIQC 136/1418, LIQD 1250/5175). That is why replacing the templates kept
 failing: a longer, more faithful template overlaps more neighbours in a
 population that is mostly overlapping.
 
-**Single-pulse fit quality is floored by photon statistics.** Fitting one
-measured template to isolated pulses, the residual scales as
-sqrt(amplitude), not amplitude -- LIQD gives residual/sqrt(A) = 0.61, 0.62,
-0.64, 0.65, 0.67 across a factor 25 in amplitude, while residual/peak falls by
-2.3x. The slow component is a countable number of photoelectrons and fluctuates
-irreducibly, so no template basis can absorb it. Binning a basis by tail
-fraction moved chi2 only from 70.8 to 63.1 over 1 → 8 shapes.
+**Single-pulse fit quality is floored by photon statistics -- on three of the
+four.** Fitting one measured template to isolated pulses, the residual scales as
+sqrt(amplitude) rather than amplitude: LIQD gives residual/sqrt(A) = 0.61, 0.62,
+0.64, 0.65, 0.67, 0.70 across a factor 9 in amplitude, LIQA is flat to 41 % and
+LIQC to 14 %, while residual/peak falls 2.8-3.4x. The slow component is a
+countable number of photoelectrons and fluctuates irreducibly, so no template
+basis can absorb it: giving the fit one template per amplitude octile instead of
+one buys 2-3 % on a held-out half.
+
+**LIQB is the exception.** Its residual/sqrt(A) runs 0.62 → 1.59 and
+residual/peak stops falling, which is the systematic-shape signature rather than
+the shot-noise one, and an amplitude-binned basis does cut its residual by 24 %
+held-out (27 % in the top amplitude quartile). Looking at the shapes directly,
+LIQB's *small* pulses are the unusual ones -- narrower and nearly tail-free
+(tail/total 0.136 against 0.188 for LIQD) -- while its large pulses look like
+every other liquid. We have not chased it, because the reason measured templates
+were rejected was never fit quality (a measured template was already 3-4x better
+on isolated pulses and still made the processed output worse). But if you care
+about LIQB specifically, that is where to look.
 
 **What did work**: `STEP SIZE` 2/4 → 1/3, the finest derivative window, for a
 6 ns FWHM pulse at 1 GS/s. Yield **+14 to +21 %** on all four liquids with fit
@@ -209,6 +221,64 @@ waveforms recovers only **0.67x** the PSA's hits, so the recognition is not
 what is limiting the liquids either. This looks like a rate limitation rather
 than a software one.
 
+### 8b. Three warnings about the output, added after a final round of tests
+
+These came out of a pre-ship review on 2026-07-29. The first two are properties
+of the PSA and the DAQ rather than of this UserInput, so **they apply to the
+official processing as well** and you may want them independently of anything
+else here.
+
+**(a) `satuflag` is not a reliable saturation flag.** Counting hits whose `amp`
+exceeds the channel's own baseline -- i.e. physically impossible amplitudes --
+in run 224572:
+
+| tree | hits | baseline | `amp` > baseline | `satuflag` set | largest `amp` |
+|---|---|---|---|---|---|
+| LIQA | 3 369 621 | 31 220 | 2 006 (0.060 %) | 791 | 3 234 415 |
+| LIQD | 2 305 162 | 31 108 | 659 (0.029 %) | 382 | 763 834 |
+| WALB | 1 844 839 | 34 003 | 1 069 (0.058 %) | **0** | 43 427 |
+| WALD | 1 995 146 | 34 492 | 809 (0.041 %) | **0** | 42 773 |
+| PSSA | 5 582 034 | 30 841 | 491 (0.009 %) | 203 | **243 257 568** |
+| PSSC | 9 043 427 | 30 712 | 519 (0.006 %) | 198 | **320 356 608** |
+
+`satuflag` is **never set on any of the four walls**, and on the liquids it
+catches only a third to a half. The affected fraction is tiny, but a single hit
+with `amp` = 2.4e8 will destroy any sum, mean or calibration it enters.
+**Recommend: cut on `amp` above the per-channel baseline** (~31 000 for liquids
+and plastics, ~34 100-34 500 for walls) rather than relying on `satuflag`.
+
+**(b) The ADC wraps under-range; it does not clip.** All these detectors are
+negative-going on a baseline near 31 000 (liquid, plastic) or 34 100-34 500
+(wall), and stream1 samples are unsigned 16-bit, so the largest measurable
+amplitude *is* the baseline. A larger pulse needs a sample below zero and it
+wraps to near 65 535:
+
+```
+LIQA  ... 32767 32767 32767 32768 63712  4641 15598 27611 32160 ...
+                                  ^^^^^ should have been below zero
+```
+
+There is no flat top, so a clipping test does not find it; the reported `amp` is
+whatever the last un-wrapped sample on the rising edge happened to be, so it is
+randomly *under*-reported; and the fitted shape sees a full-scale positive spike
+one sample after the peak. Frequency, as a fraction of zero-suppressed blocks
+containing at least one wrapped sample: liquids 0.10-0.60 %, plastics
+0.03-0.05 %, walls 0.03-0.11 %. **For the walls and plastics every occurrence is
+inside the γ-flash**, where saturation is expected; the liquids are the only
+detectors where it happens at physics times.
+
+**(c) `afast` is not an n/γ discriminant.** Now that the boundary is set,
+`afast` fills for 100 % of hits and `aslow` is **always zero** -- see §8. What
+`afast` does deliver is weaker than we first hoped. On isolated late-time pulses
+above amp 3000, `(area − afast)/area` has a median of 0.055-0.124 against 0.113
+measured on the raw waveforms at the same 30 ns split, so it is roughly right
+*in aggregate*. But its per-hit spread (p16-p84) is 0.14-0.31 against a physical
+band of 0.033-0.044 -- **4 to 9 times too wide** -- and it falls by a factor two
+from small to large pulses, which a real pulse-shape variable does not do. Use
+it in aggregate if at all; do not cut on it per pulse. Independently, the raw
+tail/total distribution is a single band rather than bimodal, so there is no
+n/γ separation to find in this data in the first place.
+
 ### Left alone deliberately
 
 `PKUP` (0 % flash failures -- it is the natural absolute-time anchor), `SILI`,
@@ -220,20 +290,36 @@ shapes -- see §8 for why the liquid templates are best left as shipped.
 ## What we verified
 
 Everything below is on run 224572 unless stated, with our own laptop-side
-`tflash` repair **disabled**, so it tests the processing alone.
+`tflash` repair **disabled**, so it tests the processing alone. The matcher
+numbers are over **252 bunches** of DREAM `run_79 / stat090_0000`; the same
+comparison on the baseline configuration gives 95.3 % / 0.5 %, so the gain is
++1.0 points at equal false-match rate.
 
 | | official | this UserInput |
 |---|---|---|
 | flash mis-identification | PSS 37-85 % | 0.0 % on 12 of 13 trees |
 | per-arm coincidence offset | −362 / +20 / −333 / −336 ns | +1.5 / +2.0 / +1.0 / −2.0 ns |
-| DREAM matcher efficiency | 93.7 % (needs our repair) | **96.4 %** |
-| … false-match rate | 0.5 % | 0.6 % |
-| … in the 1-3 ms bin | 89.9 % / 1.3 % | **95.5 %** / 2.6 % |
+| DREAM matcher efficiency | 93.7 % (needs our repair) | **96.3 %** |
+| … false-match rate | 0.5 % | 0.5 % |
+| … in the 1-3 ms bin | 89.9 % / 1.3 % | **95.0 %** / 1.9 % |
 | wall timing resolution (top↔bottom) | — | 6.65 ns, unchanged |
 | wall↔plastic coincidence width | — | 6.41 ns, unchanged |
 | MIP peak width (FWHM/peak) | — | 1.22, unchanged |
 | liquid yield | — | **+14 to +21 %** |
 | liquid fit chi2 (LIQD) | 1.768 | **1.617** |
+
+**One caveat on the liquid yield.** The +14-21 % is solid as a count, and the
+fit quality moves the right way (chi2 p50 neutral, chi2 p90 clearly better --
+LIQA 31.4 → 25.3, LIQD 21.6 → 16.2 against the official file). What we could not
+finish is the per-hit check that each extra hit is a real pulse: **95 % of the
+gain is resolved shoulders on existing pulses** rather than pulses missed
+outright, and verifying those individually needs a raw-waveform comparison we
+could not make trustworthy, because the reported `tof` and the stream1 sample
+index do not line up per hit for us. Counting rather than matching, v12 reports
+0.96 of the pulses the raw data resolves against 0.77 for the baseline, i.e. it
+approaches that ceiling without crossing it — supportive, not conclusive.
+**If you can tell us what `tof` marks on a fitted pulse, that would probably
+close it.**
 
 The false-match rate at 1-3 ms roughly doubles. That is the cost of recovering
 the plastic hits and we accept it deliberately -- the candidate rate rises from
