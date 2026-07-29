@@ -14,7 +14,8 @@ the group repository under `ntof_processing/`.
 UserInput_2026_EAR2_X17_v12.h     the proposed UserInput
 pulse_shapes/                     every template it references (24 new + 2 shipped)
 comparison_report.pdf             the measurements behind each change
-adc_wrap_examples.png             the ADC under-range wrap of §8b(b), drawn
+adc_wrap_as_recorded.png          the ADC wrap of §8b(b), exactly as stored
+adc_wrap_examples.png             the same pulses with our reconstruction on top
 ```
 
 The UserInput is the one we ran to produce every number in this document; it is
@@ -253,36 +254,56 @@ in run 224572:
 `satuflag` is **never set on any of the four walls**, and on the liquids it
 catches only a third to a half. The affected fraction is tiny, but a single hit
 with `amp` = 2.4e8 will destroy any sum, mean or calibration it enters.
-**Recommend: cut on `amp` above the per-channel baseline** (~31 000 for liquids
-and plastics, ~34 100-34 500 for walls) rather than relying on `satuflag`.
+**Recommend: cut on `amp` above the largest amplitude the range can represent**,
+rather than relying on `satuflag`. That limit is the headroom from the baseline
+to whichever end the pulses run toward — the baseline itself for the
+negative-going plastics and liquids (~30 700-31 200), and `65535 − baseline` for
+the positive-going walls (~31 000-31 800). Conveniently the two come out nearly
+equal, so **~31 000 is a single safe ceiling for every tree**. (The table above
+used the plain baseline as the rail, which is the same number to within 3 % on
+the walls; the counts do not change materially.)
 
-**(b) The ADC wraps under-range; it does not clip.** All these detectors are
-negative-going on a baseline near 31 000 (liquid, plastic) or 34 100-34 500
-(wall), and stream1 samples are unsigned 16-bit, so the largest measurable
-amplitude *is* the baseline. A larger pulse needs a sample below zero and it
-wraps to near 65 535:
+**(b) The ADC wraps at the end of its range; it does not clip.** stream1 samples
+are unsigned 16-bit and every channel sits well inside that range, so the largest
+measurable amplitude is the distance from the baseline to whichever end the
+pulses run toward. A larger pulse wraps modulo 65536 instead of being clamped.
+
+**Which end depends on the polarity, and the two families differ:** the plastics
+and liquids are negative-going on a baseline of 30 700-31 200, so a too-big pulse
+runs below 0 and reappears near 65 535; the walls and PKUP are positive-going on
+a baseline of 33 700-34 500, so theirs runs past 65 535 and reappears near 0.
+(We measured polarity on in-range blocks, 91-100 % consistent per detector, and
+it agrees with the sign of your own shipped templates.)
 
 ```
 LIQA  ... 32767 32767 32767 32768 63712  4641 15598 27611 32160 ...
                                   ^^^^^ should have been below zero
+
+WALA  ... 65243 65336 65428    58   100   229   446 ...
+                             ^^^^ should have been above 65535
 ```
+
+A threshold test therefore cannot identify a wrap on its own — on a wall, a
+sample above 60 000 is an ordinary large pulse. What identifies one either way is
+the **discontinuity**: a step of more than 20 000 ADC between adjacent samples,
+which no real pulse produces at 1 GS/s.
 
 There is no flat top, so a clipping test does not find it; the reported `amp` is
 whatever the last un-wrapped sample on the rising edge happened to be, so it is
 randomly *under*-reported; and the fitted shape sees a full-scale positive spike
 one sample after the peak. Frequency, as a fraction of zero-suppressed blocks
-containing at least one wrapped sample: liquids 0.10-0.60 %, plastics
-0.03-0.05 %, walls 0.03-0.11 %. **For the walls and plastics every occurrence is
-inside the γ-flash**, where saturation is expected; the liquids are the only
-detectors where it happens at physics times.
+containing at least one wrap: liquids 0.09-0.67 %, plastics 0.03-0.04 %, walls
+0.05-0.09 %, SILI 0.84 %. **For the walls and plastics every single occurrence
+is inside the γ-flash** (0 of 178 and 0 of 41 respectively fall outside it),
+where saturation is expected; the liquids are the only detectors where it
+happens at physics times.
 
-`adc_wrap_examples.png` in this directory shows six of them, all in the
-1-21 ms physics window: the recorded trace plunges to about −34 000 in
-pulse-height coordinates for **1-2 samples** at the peak (never more than 3),
-and undoing the wrap recovers a pulse of 32 000-37 000 ADC against a ceiling of
-31 200. The excursion above the ceiling is small — 0.4 to 17 % over, median
-6 % — which is why nothing about these pulses looks anomalous except that one
-sample.
+`adc_wrap_as_recorded.png` in this directory shows six liquid ones, all in the
+1-21 ms physics window, as stored: the trace sits at the ~31 200 baseline, dives
+toward 0, and **1-2 samples** (never more than 3) appear up at 63-65 000 before
+it resumes its normal fall. Undoing the wrap recovers a pulse of 31 340-36 656
+ADC against a 31 200 ceiling — only 0.4 to 17 % over range, median 6 % — which
+is why nothing about these pulses looks anomalous except that one sample.
 
 **(c) `afast` is not an n/γ discriminant.** Now that the boundary is set,
 `afast` fills for 100 % of hits and `aslow` is **always zero** -- see §8. What

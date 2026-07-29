@@ -2,17 +2,27 @@
 """Show what an ADC under-range WRAP looks like, on real late-time liquid pulses.
 
 `adc_range_census.py` counts them; this one draws them, because the failure mode
-is not obvious from a number. Every detector is negative-going on a baseline near
-ADC 31 000 (liquids) and the samples are unsigned 16-bit, so a pulse taller than
-the baseline needs a sample below zero and instead reappears near 65 535. In
+is not obvious from a number. The liquids are NEGATIVE-going on a baseline near
+ADC 31 100, and the samples are unsigned 16-bit, so a pulse taller than the
+baseline needs a sample below zero and instead reappears near 65 535. In
 pulse-height coordinates (baseline - sample) the recorded trace therefore does
 NOT flat-top: it spikes to about -34 000 for one or two samples at the very peak
 and then continues normally.
 
+This is the liquid (and plastic) direction. The walls and PKUP are
+POSITIVE-going on a baseline near 34 000 and wrap the other way, off the TOP of
+the range and back to near 0 -- see the polarity column of the census. This
+script only handles the liquids, so it tests for a sample above 60 000; that
+test would be wrong on a wall, where such a sample is an ordinary large pulse.
+
 Only late-time (post-flash) blocks are used, so these are ordinary physics pulses
 -- not the gamma flash, where wall/plastic saturation is expected and understood.
 
-    python adc_wrap_examples.py <outdir> <raw_head.bin> [...]
+    python adc_wrap_examples.py <outdir> <raw_head.bin> [...] [--as-recorded]
+
+--as-recorded draws only what is in the file: raw ADC samples, no baseline
+subtraction and no wrap undone. That is the view to check the story against,
+since the corrected trace is our interpretation and the raw one is not.
 """
 import sys
 from pathlib import Path
@@ -68,13 +78,15 @@ def prepare(s, hi):
 
 
 def main():
-    if len(sys.argv) < 3:
+    argv = [a for a in sys.argv if a != '--as-recorded']
+    as_rec = len(argv) != len(sys.argv)
+    if len(argv) < 3:
         print(__doc__)
         return 1
-    outdir = Path(sys.argv[1])
+    outdir = Path(argv[1])
     outdir.mkdir(parents=True, exist_ok=True)
 
-    found, n_late = collect(sys.argv[2:])
+    found, n_late = collect(argv[2:])
     if not found:
         print('no late-time wrapped liquid blocks in these chunks')
         return 1
@@ -96,6 +108,24 @@ def main():
         base, rec, true, i = prepare(s, hi)
         lo, up = max(0, i - PRE), min(len(s), i + POST)
         t = np.arange(lo, up)                    # ns within the block
+        if as_rec:
+            # literally the stored samples: unsigned 16-bit, pulses point DOWN
+            ax.axhline(0, color='0.6', lw=1.0)
+            ax.axhline(WRAP - 1, color='0.6', lw=1.0)
+            ax.axhline(base, color='crimson', lw=1.0, ls=':',
+                       label=f'baseline ({base:.0f} ADC)')
+            ax.plot(t, s[lo:up], color='tab:blue', lw=1.2, label='stored samples')
+            w = np.flatnonzero(hi[lo:up]) + lo
+            ax.plot(w, s[w], 'x', color='tab:red', ms=9, mew=2,
+                    label='sample above 60 000')
+            ax.set_ylim(-2500, WRAP + 2500)
+            ax.set_yticks([0, 16384, 32768, 49152, 65535])
+            ax.set_title(f'{det}  t = {(start + i) / 1e6:.2f} ms   '
+                         f'{int(hi.sum())} sample(s) above 60 000', fontsize=9)
+            ax.set_xlabel('sample within block [ns]')
+            ax.set_ylabel('stored sample value [ADC]')
+            ax.legend(fontsize=7, loc='center right')
+            continue
         ax.axhline(0, color='0.8', lw=0.8)
         ax.axhline(base, color='crimson', lw=1.0, ls=':',
                    label=f'wrap ceiling = baseline ({base:.0f} ADC)')
@@ -121,12 +151,16 @@ def main():
         ins.set_ylim(-0.05 * true[i], 1.12 * true[i])
         ins.tick_params(labelsize=6)
         ins.set_title('zoom on the peak', fontsize=6)
-    fig.suptitle('ADC under-range wrap on late-time (physics) liquid pulses, '
-                 'run 224572 stream1', fontsize=12)
+    fig.suptitle(('Late-time liquid blocks with a sample above 60 000, exactly '
+                  'as stored in stream1 (run 224572)' if as_rec else
+                  'ADC under-range wrap on late-time (physics) liquid pulses, '
+                  'run 224572 stream1'), fontsize=12)
     fig.tight_layout()
-    p = outdir / 'adc_wrap_examples.png'
+    p = outdir / ('adc_wrap_as_recorded.png' if as_rec else 'adc_wrap_examples.png')
     fig.savefig(p, dpi=130)
     print('wrote', p)
+    if as_rec:
+        return 0
 
     # what the wrap costs: how far over the ceiling, and how many samples
     over, nwrap = [], []

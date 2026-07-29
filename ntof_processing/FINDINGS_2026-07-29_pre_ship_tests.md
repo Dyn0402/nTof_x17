@@ -21,7 +21,7 @@ This file records what came back, including two things nobody was looking for.
 | T6 photon floor on B/C | holds on A/C/D; **LIQB genuinely violates it** | qualified |
 | T8 saturation census | 0.006-0.06 % of hits above the physical rail, with amplitudes up to 3.2e8 | **`satuflag` is not usable** |
 | walls/plastics v11 vs v12 | hit counts bit-identical in all eight trees | confirmed |
-| NEW | ADC under-range **wrap-around**, not clipping | see below |
+| NEW | ADC **wrap-around** at the end of range, not clipping | see below |
 | NEW | PSA `tof` and raw sample index do not align per hit | see below |
 
 Nothing here changes the wall or plastic configuration, and nothing found is a
@@ -50,17 +50,38 @@ the individual-hit check remains open.
 
 ---
 
-## NEW 1. The ADC wraps under-range; it does not clip
+## NEW 1. The ADC wraps at the end of its range; it does not clip
 
 Found while checking T6. The report says the largest liquid pulses "reach the
 ~31 000 ADC rail". They reach a rail, but what happens there is not clipping,
 and the difference matters.
 
-Every detector is negative-going on a baseline near ADC 31 100 (liquids),
-30 700-31 000 (plastics) or 34 100-34 500 (walls), and the samples are unsigned
-16-bit. The largest measurable amplitude is therefore the baseline itself. A
-pulse bigger than that needs a sample below zero, and it **wraps**: the sample
-reappears near 65 535. From the raw stream:
+The samples are unsigned 16-bit, and every channel sits on a baseline well
+inside that range, so the largest measurable amplitude is the distance from the
+baseline to whichever end the pulses run toward. A pulse bigger than that
+**wraps** modulo 65536 -- it reappears at the opposite end -- rather than being
+clamped.
+
+**Which end depends on the polarity, and it is not the same for all of them.**
+Measured on in-range blocks (`liq_study/adc_range_census.py`, polarity column;
+consistent with §0 of `FINDINGS_2026-07-28_psa_optimization.md` and with the
+sign of the shipped templates):
+
+| | PSS, LIQ | WAL, PKUP |
+|---|---|---|
+| polarity | **negative**-going, 100 % of blocks | **positive**-going, 91-100 % |
+| baseline | 30 700-31 200 | 33 700-38 900 |
+| a too-big pulse runs | below 0 | past 65 535 |
+| and reappears near | 65 535 | 0 |
+
+An earlier version of this section said all of them were negative-going. They
+are not, and it matters twice over: the wall wrap is an *over*-range wrap, and a
+"sample above 60 000" test — which is right for a liquid — flags ordinary large
+pulses on a wall. The polarity-independent test is the **discontinuity**: a step
+of more than 20 000 ADC between adjacent samples, which no real pulse produces
+at 1 GS/s. That is what the census now uses.
+
+For a liquid, from the raw stream:
 
 ```
 LIQA  [ ... 32767 32767 32768 63712  4641 15598 27611 32160 ... ]
@@ -77,13 +98,13 @@ Consequences:
 - the fitted shape sees a full-scale positive spike one or two samples after the
   peak, which no template matches.
 
-Census over two raw chunks (`liq_study/adc_range_census.py`), as a fraction of
-zero-suppressed blocks containing at least one wrapped sample:
+Census over two raw chunks (`liq_study/adc_range_census.py`, step test), as a
+fraction of zero-suppressed blocks containing at least one wrap:
 
-| | LIQA | LIQB | LIQC | LIQD | PSSA-D | WALA-D |
-|---|---|---|---|---|---|---|
-| blocks with a wrap | 0.60 % | 0.10 % | 0.40 % | 0.29 % | 0.03-0.05 % | 0.03-0.11 % |
-| of those, late-time | 20/27 | 1/6 | 0/5 | 4/10 | **0** | **0** |
+| | LIQA | LIQB | LIQC | LIQD | PSSA-D | WALA-D | SILI |
+|---|---|---|---|---|---|---|---|
+| blocks with a wrap | 0.67 % | 0.09 % | 0.39 % | 0.33 % | 0.03-0.04 % | 0.05-0.09 % | 0.84 % |
+| of those, late-time | 27/37 | 1/7 | 0/6 | 7/14 | **0/41** | **0/178** | 1/25 |
 
 **The walls and plastics are affected only during the flash**, where saturation
 is expected and already understood. The liquids are the only detectors where it
@@ -91,11 +112,17 @@ happens at physics times, and even there it is a sub-percent effect.
 
 ### What they look like
 
-`liq_study/adc_wrap_examples.py` draws the late-time ones —
-`liq_study/adc_wrap_examples.png` (six examples) and `adc_wrap_summary.png`
-(the population). Over the same two raw chunks, 21 of 13 165 late-time liquid
-blocks wrap: 17 LIQA, 3 LIQD, 1 LIQB, spread over 1.0-21.1 ms of time of
-flight, i.e. ordinary physics pulses far from the flash.
+`liq_study/adc_wrap_examples.py` draws the late-time ones. Three figures:
+`adc_wrap_as_recorded.png` is the honest one — the stored samples, nothing
+subtracted and nothing undone, on a 0…65 535 axis; `adc_wrap_examples.png`
+overlays our reconstruction of the true pulse; `adc_wrap_summary.png` is the
+population. Over the same two raw chunks, 21 of 13 165 late-time liquid blocks
+wrap: 17 LIQA, 3 LIQD, 1 LIQB, spread over 1.0-21.1 ms of time of flight, i.e.
+ordinary physics pulses far from the flash.
+
+As recorded, a wrapped liquid pulse is unmistakable: the trace sits flat at the
+~31 200 baseline, dives toward 0, and one or two samples appear up at 63-65 000
+before it resumes its normal fall.
 
 In pulse-height coordinates (baseline − sample, so pulses point up) the
 recorded trace rises normally, plunges to about −34 000 for **one or two
@@ -108,11 +135,11 @@ effect is easy to miss: it is one sample in a hundred-nanosecond pulse, on
 0.16 % of late liquid blocks, and it moves `amp` *down* rather than pinning it
 at a rail.
 
-Detection recipe, in order of preference: on the raw samples, any real sample
-above 60 000 in a negative-going detector (equivalently `rows.min() < -0.5` on
-peak-normalised pulses); on the reconstructed output there is no clean
-signature for the under-reported case, only for the fit-corrupted one — see
-NEW 2.
+Detection recipe, in order of preference: on the raw samples, an adjacent-sample
+step above 20 000 ADC — polarity-independent, so it works on walls too. For
+liquids and plastics only, `rows.min() < -0.5` on peak-normalised pulses is
+equivalent and cheaper. On the reconstructed output there is no clean signature
+for the under-reported case, only for the fit-corrupted one — see NEW 2.
 
 ## NEW 2. `satuflag` does not flag saturation (this is T8)
 
