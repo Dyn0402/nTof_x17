@@ -11,7 +11,7 @@ the group repository under `ntof_processing/`.
 ## What is in this directory
 
 ```
-UserInput_2026_EAR2_X17_v11.h     the proposed UserInput
+UserInput_2026_EAR2_X17_v12.h     the proposed UserInput
 pulse_shapes/                     every template it references (24 new + 2 shipped)
 comparison_report.pdf             the measurements behind each change
 ```
@@ -21,7 +21,7 @@ path of `pulse_shapes/` on your system -- the file ships with bare filenames.
 One line does it:
 
 ```bash
-sed -i "s#\(X17_[A-Za-z0-9_]*\.txt\)#$PWD/pulse_shapes/\1#g" UserInput_2026_EAR2_X17_v11.h
+sed -i "s#\(X17_[A-Za-z0-9_]*\.txt\)#$PWD/pulse_shapes/\1#g" UserInput_2026_EAR2_X17_v12.h
 ```
 
 Then check that each detector row still declares as many shapes as it lists
@@ -153,15 +153,58 @@ Plastic pulses are 13 ns FWHM, so a 10 ns floor sits on top of the width of a
 pileup-*truncated* plastic pulse -- exactly the pulses the shape fit should be
 recovering. Improves plastic fit chi2 by 3-13 %.
 
+### 8. The liquids: `STEP SIZE` 2/4 → 1/3, and the fast/slow split enabled
+
+The liquids were the hardest part and we spent a night of raw-waveform work on
+them. Three things came out of it that are worth passing on whatever you make
+of the configuration change.
+
+**They are a pileup problem, not a template problem.** Only **8-24 % of liquid
+pulses are isolated** (LIQA 1014 of 6965 raw blocks, LIQB 812/10033,
+LIQC 136/1418, LIQD 1250/5175). That is why replacing the templates kept
+failing: a longer, more faithful template overlaps more neighbours in a
+population that is mostly overlapping.
+
+**Single-pulse fit quality is floored by photon statistics.** Fitting one
+measured template to isolated pulses, the residual scales as
+sqrt(amplitude), not amplitude -- LIQD gives residual/sqrt(A) = 0.61, 0.62,
+0.64, 0.65, 0.67 across a factor 25 in amplitude, while residual/peak falls by
+2.3x. The slow component is a countable number of photoelectrons and fluctuates
+irreducibly, so no template basis can absorb it. Binning a basis by tail
+fraction moved chi2 only from 70.8 to 63.1 over 1 → 8 shapes.
+
+**What did work**: `STEP SIZE` 2/4 → 1/3, the finest derivative window, for a
+6 ns FWHM pulse at 1 GS/s. Yield **+14 to +21 %** on all four liquids with fit
+quality neutral-to-better (LIQD chi2 −8.5 %), and the pileup flag rate up ~50 %,
+i.e. it is genuinely separating overlapping pulses.
+
+We also set `SIGNAL WIDTH HIGH THR. = 5000/30` to enable the fast/slow area
+split, because **`afast` and `aslow` are 0.0 % filled in the current
+processing** -- the PSA's pulse-shape-discrimination observable has never been
+switched on for these detectors, and PSD is the entire reason one runs a liquid
+scintillator.
+
+**That did not work, and the reason is worth your attention.** With the
+boundary set, `afast` fills for 100 % of hits but `aslow` stays ~0. `aslow` is
+integrated "from the boundary up to the end of the pulse", and with
+`EXPAND PULSES = 0` the liquid pulse boundary closes 20-40 ns after the peak
+while the slow component runs to ~150 ns -- so it falls outside the
+reconstructed pulse. We tried `EXPAND PULSES = 1` with a 150 ns suggested width
+to fix that (variant v13) and it backfired: `aslow` was still 0 at the median,
+and the expansion merged pulses in the pileup-dominated population, costing
+17-28 % of the hits and raising chi2 by 14-47 %. So we reverted it.
+
+**Consequence beyond PSD**: the reported liquid `area` has been missing its slow
+component all along, in this and every previous processing. Anything calibrated
+on liquid `area` is affected. If there is a way to capture the slow component
+pulse-by-pulse that we have not found, we would very much like to know; the
+alternative is that liquid PSD needs the raw waveforms.
+
 ### Left alone deliberately
 
 `PKUP` (0 % flash failures -- it is the natural absolute-time anchor), `SILI`,
 all wall elimination windows, all baseline parameters, and the liquid pulse
-shapes. We tried replacing the liquid templates three times (551 ns, 81 ns,
-per-detector averages) and every attempt was worse: chi2 more than doubled and
-amplitudes fell ~30 %. The shipped liquid pair spans FWHM 1 ns and 7 ns -- a
-near-delta plus a normal pulse -- and we suspect that spread is doing real work
-that a set of similar averaged shapes cannot.
+shapes -- see §8 for why the liquid templates are best left as shipped.
 
 ---
 
@@ -180,6 +223,8 @@ Everything below is on run 224572 unless stated, with our own laptop-side
 | wall timing resolution (top↔bottom) | — | 6.65 ns, unchanged |
 | wall↔plastic coincidence width | — | 6.41 ns, unchanged |
 | MIP peak width (FWHM/peak) | — | 1.22, unchanged |
+| liquid yield | — | **+14 to +21 %** |
+| liquid fit chi2 (LIQD) | 1.768 | **1.617** |
 
 The false-match rate at 1-3 ms roughly doubles. That is the cost of recovering
 the plastic hits and we accept it deliberately -- the candidate rate rises from
