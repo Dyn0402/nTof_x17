@@ -258,8 +258,21 @@ population, costing 17--28\,\% of the hits.
 
 \textbf{Consequence beyond PSD:} the reported liquid \texttt{area} has been
 missing its slow component all along, in this and every previous processing.
-Anything calibrated on liquid \texttt{area} is affected. Recovering the slow
-component pulse-by-pulse appears to need the raw waveforms.
+Anything calibrated on liquid \texttt{area} is affected.
+
+\paragraph{Would custom processing do better? No.} We checked, because
+``pileup-limited'' is not a useful statement without a number. An iterative
+matched-filter deconvolution run on the raw waveforms --- fit the largest
+remaining pulse, subtract, repeat, which is precisely what the PSA does not do
+--- recovers only \textbf{0.67$\times$} the PSA's hits on the same blocks
+(23\,081 against 15\,444). The recognition is not what limits the liquids.
+And the slow component is inaccessible for a physical reason rather than a
+software one: measured hit spacing is 24--30\,ns median against a 6\,ns FWHM
+pulse, so while the fast components are mostly resolvable, \textbf{67--76\,\%
+of pulses have a neighbour inside their own 150\,ns tail}. A custom fitter
+faces the same overlap. If liquid pulse-shape discrimination matters for the
+physics, the lever is upstream --- rate, or a shorter-tail scintillator --- not
+reprocessing.
 
 \section{What the revision achieves, and what it costs}
 
