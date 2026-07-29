@@ -89,6 +89,31 @@ zero-suppressed blocks containing at least one wrapped sample:
 is expected and already understood. The liquids are the only detectors where it
 happens at physics times, and even there it is a sub-percent effect.
 
+### What they look like
+
+`liq_study/adc_wrap_examples.py` draws the late-time ones —
+`liq_study/adc_wrap_examples.png` (six examples) and `adc_wrap_summary.png`
+(the population). Over the same two raw chunks, 21 of 13 165 late-time liquid
+blocks wrap: 17 LIQA, 3 LIQD, 1 LIQB, spread over 1.0-21.1 ms of time of
+flight, i.e. ordinary physics pulses far from the flash.
+
+In pulse-height coordinates (baseline − sample, so pulses point up) the
+recorded trace rises normally, plunges to about −34 000 for **one or two
+samples** at the peak — three at most, never a plateau — and then continues
+down the falling edge as if nothing happened. Undoing the wrap
+(`sample − 65536`) recovers a clean pulse of 31 340-36 656 ADC against a
+ceiling of ~31 200, i.e. these pulses are only **0.4-17 % (median 6 %) too big
+for the range**. Nothing else about them is unusual, which is exactly why the
+effect is easy to miss: it is one sample in a hundred-nanosecond pulse, on
+0.16 % of late liquid blocks, and it moves `amp` *down* rather than pinning it
+at a rail.
+
+Detection recipe, in order of preference: on the raw samples, any real sample
+above 60 000 in a negative-going detector (equivalently `rows.min() < -0.5` on
+peak-normalised pulses); on the reconstructed output there is no clean
+signature for the under-reported case, only for the fit-corrupted one — see
+NEW 2.
+
 ## NEW 2. `satuflag` does not flag saturation (this is T8)
 
 Counting hits whose reported `amp` exceeds the per-channel baseline -- i.e.
