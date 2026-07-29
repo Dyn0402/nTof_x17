@@ -161,6 +161,39 @@ instead.
         edits=[('LIQ', 'STEP SIZE', '1/3'),
                ('LIQ', 'SIGNAL WIDTH HIGH', '5000/30')]),
 
+    'v13_liqexpand': dict(
+        base='v12_liqpileup',
+        why="""v12 enabled the fast/slow split and it came back USELESS:
+`afast` is filled for 100 % of hits but `aslow` is ~0, so
+slow/(fast+slow) = 0.000 on all four liquids.
+
+The reason is in the guide's definition: aslow is integrated "starting from the
+boundary up to the END OF THE PULSE". The liquid row has EXPAND PULSES = 0, so
+the pulse boundary is wherever the derivative-based recognition closes it --
+about 20-40 ns for a 6 ns FWHM pulse. The slow component runs to ~150 ns in the
+raw waveforms, so it lies entirely OUTSIDE the reconstructed pulse and nothing
+is left for aslow to integrate.
+
+That is also why the liquids carry no pulse-shape-discrimination information no
+matter where the boundary is put, and it means the reported liquid `area` has
+been missing its slow component all along.
+
+  EXPAND PULSES 0 -> 1        push the pulse end forward until the signal
+                              returns to baseline, which is what puts the slow
+                              component inside the pulse. Expansion is blocked
+                              by the next pulse in line, so it cannot trample
+                              neighbours -- which matters here, because 76-92 %
+                              of liquid pulses are piled up.
+  SIGNAL WIDTH LOW 1 -> 1/150 add a SUGGESTED WIDTH of 150 ns, matched to the
+                              measured extent of the slow component, so pulses
+                              cut short by a neighbour are still widened before
+                              the area and baseline steps.
+
+If aslow is still empty after this, the slow component cannot be captured
+pulse-by-pulse in this framework and PSD needs the raw waveforms.""",
+        edits=[('LIQ', 'EXPAND PULSES', '1'),
+               ('LIQ', 'SIGNAL WIDTH LOW', '1/150')]),
+
     'v9_liqaug': dict(
         base='v4_walshapes',
         why="""The liquid retry, done the other way round. Replacing the shipped
