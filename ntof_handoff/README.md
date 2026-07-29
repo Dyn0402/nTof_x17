@@ -196,9 +196,18 @@ and the expansion merged pulses in the pileup-dominated population, costing
 
 **Consequence beyond PSD**: the reported liquid `area` has been missing its slow
 component all along, in this and every previous processing. Anything calibrated
-on liquid `area` is affected. If there is a way to capture the slow component
-pulse-by-pulse that we have not found, we would very much like to know; the
-alternative is that liquid PSD needs the raw waveforms.
+on liquid `area` is affected. If there is a way to capture it pulse-by-pulse
+that we have not found, we would very much like to know.
+
+We do not think this is a shortcoming of the PSA. Measured on the raw
+waveforms, **67-76 % of liquid pulses have another pulse inside their own
+150 ns tail** (median hit spacing 24-30 ns against a 6 ns FWHM pulse), so there
+is almost never a clean window in which to integrate one pulse's slow
+component. We also checked whether custom processing would find more pulses
+than the PSA does: an iterative matched-filter deconvolution on the raw
+waveforms recovers only **0.67x** the PSA's hits, so the recognition is not
+what is limiting the liquids either. This looks like a rate limitation rather
+than a software one.
 
 ### Left alone deliberately
 

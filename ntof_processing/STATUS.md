@@ -56,7 +56,7 @@ at 1024 MB), hadd over EOS dies and leaves a truncated file that still opens.
 | v5_liqshort | v4 + 81 ns LIQ templates | - | rejected |
 | v6_lowthr | v4 + PSS/LIQ amp thr 25 | 95.2 / 0.6 | **no effect on the matcher** |
 | v7_step | v4 + STEP SIZE WAL 5/5, PSS 2/3, LIQ 2/3 | 95.1 / 0.6 | neutral/slightly worse |
-| **v8_pssfit** | v4 + PSS shape fitting, 101 ns templates | **96.4 / 0.6** | **production** |
+| v8_pssfit | v4 + PSS shape fitting, 101 ns templates | 96.4 / 0.6 | the big win; superseded by v12 |
 | v9_liqaug | v4 + LIQ shipped pair + a measured third | 95.2 / 0.6 | neutral |
 | v10_pssfit_step | v8 + PSS STEP SIZE 2/3 | 96.4 / 0.6 | equal to v8 |
 | v11_pssfit_width | v8 + PSS SIGNAL WIDTH LOW 4 ns | 96.4 / 0.6 | superseded by v12 |
@@ -67,8 +67,10 @@ at 1024 MB), hadd over EOS dies and leaves a truncated file that still opens.
 
 `liq_study/FINDINGS_liquids.md` has the detail. In short:
 
-- **pileup, not templates**: only **8-24 %** of liquid pulses are isolated, and
-  every template we built was measured on that minority
+- **not templates**: every template we built was measured on the isolated
+  minority of pulses and none transferred. Note the "8-24 % isolated" figure
+  uses a 200 ns window, so it measures TAIL overlap -- the fast components are
+  mostly resolvable (24-30 ns median gap vs 6 ns FWHM)
 - **photon statistics floor**: fit residual scales as sqrt(A), flat at
   0.61-0.67 over a factor 25 in amplitude, so no template basis can absorb it
 - **not two pulse classes**: tail/total is one band at 0.21 above 3000 ADC
@@ -79,7 +81,11 @@ at 1024 MB), hadd over EOS dies and leaves a truncated file that still opens.
   slow component lies outside the reconstructed pulse boundary, and expansion
   to reach it costs more than it gains. **The reported liquid `area` has
   therefore always been missing its slow component** -- in the official
-  processing too. Recovering it needs the raw waveforms.
+  processing too.
+- **raw waveforms would NOT help**: an iterative deconvolution on the raw data
+  finds 0.67x the PSA's hits, not more (`deconv_vs_psa.py`). And 67-76 % of
+  pulses have a neighbour inside their own 150 ns tail, so a custom fitter
+  faces the same overlap. This is a rate limitation, not a software one.
 
 ### The processing has hit its floor at 96.4 %
 
@@ -108,8 +114,8 @@ on it.
 **v11 chosen over v8** on the tiebreakers: same efficiency, same timing and
 amplitude quality (every metric within 0.8 %), same large-pulse yield, but
 3-13 % better plastic fit chi2 and 28-34 % more plastic hits available to
-non-trigger analyses. v8 is the conservative alternative if smaller files
-matter.
+non-trigger analyses. **v12 then adds the liquid fix on top of v11 and is what
+ships**; the plastic and wall configuration is identical between them.
 
 ### What the second sweep established
 
@@ -137,8 +143,8 @@ only if the guards do not degrade.
 ```
 efficiency  dream_regression.py   singles matcher   95.2 % eff / 0.6 % false
                                   (1-3 ms bin)      93.4 % / 2.6 %
-timing      quality_metrics.py    T1 wall top<->bot sigma      3.18 ns
-                                  T2 wall<->plastic sigma      3.18 ns
+timing      quality_metrics.py    T1 wall top<->bot sigma      6.65 ns
+                                  T2 wall<->plastic sigma      6.46 ns
                                   T2 centre (wall vs plastic)  8.75 ns
                                   T3 walk over amp deciles     1.38 ns
 amplitude                         A1 MIP peak                  1081 ADC
@@ -153,11 +159,15 @@ content     grade_candidate.py    flash-id bad bunches         0.0 %
 Two things to remember when reading these:
 
 - **Accidental subtraction is not optional.** Both trees are high-rate; without
-  an off-time sideband subtracted, T2 reads 38.8 ns instead of 3.18 and the MIP
+  an off-time sideband subtracted, T2 reads 38.8 ns instead of 6.46 and the MIP
   peak does not exist. Any coincidence width quoted elsewhere in this project
   without subtraction is inflated.
 - **`match_window`'s efficiency is not evidence at early times** -- its own
   false-match probability is ~100 % at 1-3 ms. Quote the singles matcher.
+- **These sigmas come from a background-subtracted second moment.** An earlier
+  FWHM/2.355 estimator with 2.5 ns bins reported 3.18 ns for every variant and
+  could not discriminate at all -- `tof` is quantised to 1 ns. If you find
+  3.18 ns quoted anywhere, it is the stale estimator.
 
 ## The loop
 
