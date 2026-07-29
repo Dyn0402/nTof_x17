@@ -124,6 +124,37 @@ uncorrected ones are most likely to remain.
   short, shipped 551 ns, it was worse; then 81 ns, also worse. Length was never
   the variable.
 
+Added 2026-07-29, from the pre-ship tests
+(`FINDINGS_2026-07-29_pre_ship_tests.md`):
+
+- **"Saturation at the ~31 000 ADC rail."** The ADC does not clip, it **wraps**
+  -- samples below zero reappear near 65 535, because they are unsigned 16-bit
+  and the baseline IS ~31 000. A flat-top test finds nothing, which is why this
+  was mis-described. With wrapped pulses removed the sqrt(A) scaling does not
+  break at all.
+- **Comparing a 30 ns split against a 12 ns tail fraction.** I first graded
+  `afast` against the 0.21 band from `liq_psd.png`. That 0.21 is the fraction
+  beyond 12 ns; `afast` splits at 30 ns, where the raw fraction is 0.113. The
+  first version of the T5 verdict was twice as harsh as the data supports. If
+  you compare a reconstructed quantity to a raw one, check the two definitions
+  agree before believing the ratio.
+- **Zero-suppressed blocks have no pre-pulse baseline.** `std` of the first 30
+  samples is a signal measurement, not a noise measurement, and over-estimates
+  the noise about tenfold. Use a robust baseline from the high side of the
+  sample distribution and noise from the median absolute first difference.
+- **A fourth alignment problem, still open.** PSA `tof` and the raw sample index
+  do not correspond per hit. The bunch match is certain and there is a stable
+  per-detector lag (+21 to +29 ns), but only ~20 % of large raw pulses have a
+  hit there. Every per-hit raw-vs-PSA conclusion is suspended until this is
+  understood; count-vs-count ones are unaffected. **This is the third alignment
+  bug of the same family in this repo** -- the pattern is now strong enough that
+  any new raw-to-reconstructed comparison should start by *measuring* the
+  alignment on a control population that is known-good.
+- **A control that fails is telling you about the method.** The first two
+  attempts at T4 scored the new hits at 3-13 % "real" -- and scored hits BOTH
+  processings found at 2-4 %. Both times the method was wrong, not the hits.
+  Build the known-good control in from the start.
+
 ## 6. Traps a reviewer will hit
 
 - **`ssh -K` is mandatory** on lxplus. Without delegated credentials there is

@@ -49,6 +49,14 @@ Widths come from the FWHM of the background-subtracted peak (/2.355), which
 needs no fit to converge.
 
     python quality_metrics.py label=a.root,b.root [label2=...]
+                             [--side-lo=300] [--coinc=20] [--late=1e6]
+
+The sideband options exist for the robustness check in PRE_SHIP_TESTS.md T3.
+Every number here is accidental-subtracted, and the subtraction moves T2 from
+38.8 ns to 6.5 ns, so it is doing a lot of work; if the quoted widths depend on
+where the off-time window is placed, they are not measurements. Vary `--side-lo`
+(where the sideband starts) and `--coinc` (which sets both the prompt window and
+the sideband width) and the answers should barely move.
 """
 import sys
 
@@ -265,12 +273,19 @@ def analyse(label, files):
 
 
 def main():
+    global SIDE_LO, COINC_NS, LATE_NS
     args = [a for a in sys.argv[1:] if not a.startswith('--')]
-    jsonout = next((a.split('=', 1)[1] for a in sys.argv[1:]
-                    if a.startswith('--json=')), None)
+    opts = dict(a[2:].split('=', 1) for a in sys.argv[1:]
+                if a.startswith('--') and '=' in a)
+    jsonout = opts.get('json')
+    SIDE_LO = float(opts.get('side-lo', SIDE_LO))
+    COINC_NS = float(opts.get('coinc', COINC_NS))
+    LATE_NS = float(opts.get('late', LATE_NS))
     if not args:
         print(__doc__)
         return 1
+    print(f'sideband starts at {SIDE_LO:.0f} ns, prompt/sideband width '
+          f'{COINC_NS:.0f} ns, late-time cut {LATE_NS:.3g} ns')
     out = {}
     for spec in args:
         lab, files = spec.split('=', 1)

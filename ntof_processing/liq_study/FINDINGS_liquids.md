@@ -1,5 +1,26 @@
 # The liquid scintillators: what is actually wrong, and what can be done
 
+> **WARNING, added 2026-07-29 after the pre-ship tests.** Three statements below
+> are now known to be wrong or incomplete. Read
+> `../FINDINGS_2026-07-29_pre_ship_tests.md` alongside this file.
+>
+> 1. **"Saturation ... at ~31 000 ADC, where the pulse reaches the rail"**
+>    (Section 2). The ADC does not clip there, it **wraps**: samples that would
+>    go below zero reappear near 65 535. With wrapped pulses removed, the
+>    sqrt(A) scaling does *not* break -- `resid/sqrt(A)` in the top bin is 0.95
+>    (LIQA) and 0.70 (LIQD), not 3.11 and 2.18.
+> 2. **The photon-statistics floor does not cover LIQB.** It was only ever
+>    measured on LIQA/LIQD. LIQB's residual scales closer to A than to sqrt(A),
+>    and an amplitude-binned template basis cuts it 24 % on a held-out half. The
+>    shipped configuration does not change, but "no template can help" is a
+>    statement about LIQA/LIQC/LIQD only.
+> 3. **Per-hit matching between PSA hits and raw waveforms is not established.**
+>    The bunch identification and a per-detector `tof` -> peak lag are solid, but
+>    only ~20 % of large raw pulses have a hit at that lag. `deconv_vs_psa.py`'s
+>    0.67 ratio is a count-vs-count comparison and survives; anything that
+>    matches individual hits to individual raw pulses does not.
+
+
 **2026-07-29, overnight.** Follows the three failed attempts to replace the
 liquid pulse-shape templates (v3_shapes, v5_liqshort, v9_liqaug).
 

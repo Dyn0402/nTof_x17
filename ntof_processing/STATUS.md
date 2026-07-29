@@ -5,7 +5,11 @@ lives in `FINDINGS_2026-07-28_psa_optimization.md` (what was measured),
 `FLASH_TIME_BASE.md` (the divert and the flash), `userinputs/README.md` (how to
 run one) and `flash_timing/README.md` (the PKUP-referenced calibration).
 
-Last updated: 2026-07-29, work complete.
+Last updated: 2026-07-29. **The pre-ship tests have been run and two of them
+changed the answer** -- see `FINDINGS_2026-07-29_pre_ship_tests.md`. The
+headline is confirmed on a larger sample; the liquid fast/slow boundary should
+be dropped, which needs one more variant; and two output-integrity problems
+(ADC wrap-around, unusable `satuflag`) belong in the handoff regardless.
 
 **Auditing this?** Start at `REVIEW.md` -- it maps every claim to the tool that
 produced it, says what is reproducible and what is ephemeral, and lists the
@@ -235,9 +239,32 @@ campaign from our UserInput instead.
 
 ## Next
 
-1. Send `ntof_handoff/` to n_TOF (UserInput v12, 26 templates, README, report).
-2. Raise the liquid `area` / slow-component issue with them separately -- it
-   affects the official processing, not just ours.
+0. ~~Run `PRE_SHIP_TESTS.md`~~ -- **done 07-29**, results in
+   `FINDINGS_2026-07-29_pre_ship_tests.md`. T1 green on 2.5x the sample
+   (v12 96.3 % vs v4 95.3 %, gap preserved), T3 green, T5 says keep the
+   boundary but document it hard, T6 holds except on LIQB. **T4 is not closed**
+   -- the per-hit raw classification could not be made trustworthy.
+1. Send `ntof_handoff/` to n_TOF (UserInput v12, 26 templates, README, report),
+   **with three additions to the README** that came out of the tests:
+   - `satuflag` is unreliable -- never set on any wall, and it catches only a
+     third to a half of the over-rail liquid hits. Cut on `amp` above the
+     per-channel baseline instead (~31 000 liquids and plastics, ~34 100-34 500
+     walls). Roughly 0.006-0.06 % of hits, but their `amp` reaches 3.2e8.
+   - `aslow` is always zero and `(area - afast)/area` is **not** an n/gamma
+     discriminant: its per-pulse spread is 4-9x the physical band and it drifts
+     a factor two with amplitude. Usable in aggregate only.
+   - the liquid `area` is missing its slow component (already known).
+2. Raise with n_TOF separately, because these are PSA/DAQ properties and affect
+   the official processing too:
+   - the liquid `area` / slow-component issue;
+   - **ADC under-range wrap-around**: pulses larger than the baseline wrap to
+     ~65 535 instead of clipping, corrupting shape and amplitude. Sub-percent,
+     but silent;
+   - `satuflag` not being set for the walls at all.
+3. **Optional, if the liquid yield claim has to be airtight:** T4's per-hit
+   question needs the PSA `tof` <-> raw sample alignment understood first (see
+   the findings file). Ask n_TOF what `tof` marks on a fitted pulse -- that one
+   answer probably unblocks it.
 3. If liquid PSD is wanted, request stream1 raw for the runs of interest
    (~2.7 GB per 70 s chunk, ~150 files per run); reader and extraction tooling
    already exist in this repo.

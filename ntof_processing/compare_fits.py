@@ -10,7 +10,13 @@ walls (chi2 down, amp up) and hurt the liquids (chi2 doubled, amp down 30 %).
 Runs happily on lxplus against EOS paths -- no need to pull GB of partials home:
 
     source /cvmfs/sft.cern.ch/lcg/views/LCG_105/x86_64-el9-gcc13-opt/setup.sh
-    python3 compare_fits.py old=a.root,b.root new=c.root,d.root
+    python3 compare_fits.py old=a.root,b.root new=c.root,d.root [--max-entries=N]
+
+`--max-entries` caps how many entries are read per tree per file. The official
+merged run224572 is 26 GB and reading three branches of twelve trees from it
+needs more memory than a laptop has; the percentiles this prints are stable on a
+few million entries, so a cap makes the official file usable as the reference
+without changing any conclusion.
 """
 import sys
 
@@ -20,6 +26,7 @@ import uproot
 TREES = ([f'WAL{a}' for a in 'ABCD'] + [f'LIQ{a}' for a in 'ABCD']
          + [f'PSS{a}' for a in 'ABCD'])
 BRANCHES = ['chi2', 'amp', 'pileup1']
+MAX_ENTRIES = None
 
 
 def read(files):
@@ -30,7 +37,9 @@ def read(files):
         for t in TREES:
             if t not in present:
                 continue
-            a = f[t].arrays(BRANCHES, library='np')
+            n = f[t].num_entries
+            stop = min(n, MAX_ENTRIES) if MAX_ENTRIES else n
+            a = f[t].arrays(BRANCHES, entry_stop=stop, library='np')
             for k, v in a.items():
                 acc.setdefault(t, {}).setdefault(k, []).append(v)
     return {t: {k: np.concatenate(v) for k, v in d.items()}
@@ -38,11 +47,18 @@ def read(files):
 
 
 def main():
-    if len(sys.argv) < 2:
+    global MAX_ENTRIES
+    args = [a for a in sys.argv[1:] if not a.startswith('--')]
+    for a in sys.argv[1:]:
+        if a.startswith('--max-entries='):
+            MAX_ENTRIES = int(float(a.split('=', 1)[1]))
+    if not args:
         print(__doc__)
         return 1
+    if MAX_ENTRIES:
+        print(f'reading at most {MAX_ENTRIES:,} entries per tree per file\n')
     res, labs = {}, []
-    for spec in sys.argv[1:]:
+    for spec in args:
         lab, files = spec.split('=', 1)
         labs.append(lab)
         res[lab] = read(files.split(','))
