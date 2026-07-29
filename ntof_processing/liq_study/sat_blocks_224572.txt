@@ -1,0 +1,42 @@
+LIQA       7241     31220     64003       14                 4         17
+LIQB       9688     31156     63933        8                 0          9
+LIQC       2024     31120     63903        8                 0          0
+LIQD       5591     31108     63887        8                 0          1
+LIQA     8     161    180824     0.012     1      34     flash
+LIQB     8     161    180824     0.012     1      36     flash
+LIQC     8     161    180824     0.012     1     104     flash
+LIQD     8     161    180824     0.012     1      96     flash
+LIQA     8     161    180824     7.009     1       4   physics
+LIQA     8     162    180827     0.012     1       4     flash
+LIQB     8     162    180827     0.012     1      10     flash
+LIQC     8     162    180827     0.012     1     121     flash
+LIQD     8     162    180827     0.012     1     100     flash
+LIQA    20     398    182348     0.012     3      81     flash
+LIQB    20     398    182348     0.012     1      19     flash
+LIQC    20     398    182348     0.012     2     107     flash
+LIQD    20     398    182348     0.012     1     106     flash
+LIQA    20     398    182348    48.502     1       2   physics
+LIQA    20     399    182357     0.012     1      10     flash
+LIQB    20     399    182357     0.012     2      74     flash
+LIQC    20     399    182357     0.012     1     129     flash
+LIQD    20     399    182357     0.012     1      88     flash
+LIQA    20     399    182357     0.769     1       4     flash
+LIQA    20     400    182359     0.012     3      72     flash
+LIQB    20     400    182359     0.012     1      12     flash
+LIQC    20     400    182359     0.012     1     122     flash
+LIQD    20     400    182359     0.012     1      94     flash
+LIQA    20     400    182359     0.057     1       3     flash
+LIQA    40     798    184647     0.012     2      86     flash
+LIQB    40     798    184647     0.012     1      13     flash
+LIQC    40     798    184647     0.012     1     122     flash
+LIQD    40     798    184647     0.012     1      97     flash
+LIQA    40     799    184651     0.012     3       5     flash
+LIQB    40     799    184651     0.012     1      14     flash
+LIQC    40     799    184651     0.012     1     118     flash
+LIQD    40     799    184651     0.012     1      88     flash
+LIQA    40     799    184651     5.490     1       4   physics
+LIQA    40     800    184654     0.012     3      32     flash
+LIQB    40     800    184654     0.012     1      23     flash
+LIQC    40     800    184654     0.012     1     110     flash
+LIQD    40     800    184654     0.012     1     109     flash
+LIQA    40     800    184654     1.103     1       4   physics

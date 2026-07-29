@@ -1,5 +1,14 @@
 #!/usr/bin/env python3
-"""Show what an ADC under-range WRAP looks like, on real late-time liquid pulses.
+"""SUPERSEDED 2026-07-29 evening -- kept for the record, do not use.
+
+There is no under-range wrap. The stream1 samples are signed int16, not
+unsigned, so the "wrapped sample near 65 535" drawn here is a perfectly ordinary
+negative sample and the figures built from it (`adc_wrap_examples.png`,
+`adc_wrap_as_recorded.png`, `adc_wrap_summary.png`) describe an artifact of the
+decoding. Replaced by `saturation_examples.py`; see
+`../FINDINGS_2026-07-29_signed_decoding.md`.
+
+Show what an ADC under-range WRAP looks like, on real late-time liquid pulses.
 
 `adc_range_census.py` counts them; this one draws them, because the failure mode
 is not obvious from a number. The liquids are NEGATIVE-going on a baseline near

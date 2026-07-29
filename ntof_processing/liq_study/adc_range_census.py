@@ -1,5 +1,14 @@
 #!/usr/bin/env python3
-"""Census of ADC WRAP-AROUND at the ends of range, in the raw stream1 samples.
+"""SUPERSEDED 2026-07-29 evening -- kept for the record, do not use.
+
+The premise below ("the samples are unsigned 16-bit") is wrong: they are signed
+int16, as ntoflib reads them and as the DAQ settings imply. Decoded correctly
+there is no wrap -- what this script counts as a wrap is a pulse crossing zero,
+and the real amplitude ceiling is ~63 800 ADC rather than the baseline. Use
+`saturation_examples.py` and `saturation_clip_or_wrap.py` instead, and see
+`../FINDINGS_2026-07-29_signed_decoding.md`.
+
+Census of ADC WRAP-AROUND at the ends of range, in the raw stream1 samples.
 
 Found 2026-07-29 while checking the liquid photon-statistics floor (T6). The
 largest liquid pulses were described in the report as "reaching the ~31 000 ADC

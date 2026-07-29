@@ -144,8 +144,14 @@ with the wall threshold/HV equalisation of 07-15/16. The equalised state is the
 one that held for the rest of the campaign, which is the second reason to
 prefer the 07-16 constants.
 
-`satuflag` is 0 on every flash hit: 28 500 of a 65 536 range with a −949 mV
-baseline offset is not ADC clipping (the *front end* saturates — see §5).
+`satuflag` is 0 on every flash hit: the pulse never reaches the ADC rail, so the
+*front end* is what saturates (see §5). **Restated 2026-07-29 evening** — the
+numbers here were written in an unsigned-decode frame; correctly, the wall
+baseline is −31 400 of ±32 768 and the largest wall excursion is ~34 600 counts
+(~1 060 mV of 2 004 mV), i.e. about half of ADC full scale. The conclusion is
+unchanged and in fact sharper. Note the walls *do* clip on the opposite rail
+during flash recovery, and the PSA cannot flag that — see
+`../FINDINGS_2026-07-29_signed_decoding.md` §5.
 
 ### 3.2 The reference: PKUP
 

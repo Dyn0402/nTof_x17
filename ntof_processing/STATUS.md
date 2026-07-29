@@ -16,9 +16,13 @@ base is wall-aligned). **Nothing found motivates another UserInput variant --
 ship the campaign on v12.**
 
 Earlier the same day: the pre-ship tests (`FINDINGS_2026-07-29_pre_ship_tests.md`);
-headline confirmed at 252 bunches, T2/T3 pass. Two output-integrity problems --
-ADC wrap-around and an unusable `satuflag` -- go in the handoff, and T4's
-per-hit liquid check is left open on purpose.
+headline confirmed at 252 bunches, T2/T3 pass. ~~Two output-integrity problems --
+ADC wrap-around and an unusable `satuflag` -- go in the handoff~~ **both
+retracted the same evening**: the raw samples are signed int16 and the tooling
+read them unsigned, so there is no wrap, and `satuflag` is verified good on the
+liquids (119/123 clipped runs matched per pulse). T4's per-hit liquid check is
+no longer blocked either -- the raw-to-`tof` offset is a constant 259 samples.
+See `FINDINGS_2026-07-29_signed_decoding.md`.
 
 **Auditing this?** Start at `REVIEW.md` -- it maps every claim to the tool that
 produced it, says what is reproducible and what is ephemeral, and lists the
@@ -267,10 +271,14 @@ campaign from our UserInput instead.
    -- the per-hit raw classification could not be made trustworthy.
 1. Send `ntof_handoff/` to n_TOF (UserInput v12, 26 templates, README, report),
    **with three additions to the README** that came out of the tests:
-   - `satuflag` is unreliable -- never set on any wall, and it catches only a
-     third to a half of the over-rail liquid hits. Cut on `amp` above the
-     per-channel baseline instead (~31 000 liquids and plastics, ~34 100-34 500
-     walls). Roughly 0.006-0.06 % of hits, but their `amp` reaches 3.2e8.
+   - `satuflag` (**rewritten 2026-07-29 evening**): it is reliable on the
+     liquids -- verified against the raw waveforms on 119 of 123 clipped runs,
+     including every physics-time clip -- and is **never set on the walls**,
+     because wall saturation is an undershoot outside the detected pulse
+     window. A flagged hit must be **cut, not used**: its `amp` is a fit
+     extrapolation (66 k-832 k against a physical ceiling of 63 800). The old
+     advice to cut on `amp` above ~31 000 was based on a decoding error and
+     would throw away ordinary half-scale pulses.
    - `aslow` is always zero and `(area - afast)/area` is **not** an n/gamma
      discriminant: its per-pulse spread is 4-9x the physical band and it drifts
      a factor two with amplitude. Usable in aggregate only.
@@ -278,18 +286,18 @@ campaign from our UserInput instead.
 2. Raise with n_TOF separately, because these are PSA/DAQ properties and affect
    the official processing too:
    - the liquid `area` / slow-component issue;
-   - **ADC under-range wrap-around**: pulses larger than the baseline wrap to
-     ~65 535 instead of clipping, corrupting shape and amplitude. Sub-percent,
-     but silent;
-   - `satuflag` not being set for the walls at all.
+   - ~~ADC under-range wrap-around~~ **withdrawn: there is no wrap** (our
+     decoding error, not a DAQ property);
+   - `satuflag` not being set for the walls at all -- still true, and now
+     understood: wall saturation is a negative undershoot, opposite to the
+     pulse direction, and `AnalyseSaturation` only scans inside found pulses.
 3. **Optional, if the liquid yield claim has to be airtight:** T4's per-hit
-   question needs the raw-vs-reconstructed time alignment understood first. The
-   branch definitions are NOT the problem -- the PSA guide gives `tof` as the
-   30 % constant-fraction arrival and `peak_tof` as the peak moment, and they
-   differ by 1.3 ns in our files as they should. What is unexplained is a
-   per-detector ~20-28 ns offset between `peak_tof` and the raw sample-index
-   peak. Ask n_TOF whether the ACQC block `start` in stream1 shares an origin
-   with the sample index the PSA times against.
+   question needed the raw-vs-reconstructed time alignment, and that is now
+   **solved** (2026-07-29 evening): `tof = start + j - 259` for zero-suppressed
+   blocks, constant to +-0.6 ns over 220 isolated pulses, because the ACQC
+   block `start` is the zero-suppression trigger sample and the payload begins
+   259 pre-samples earlier. The flash block starts at 0 and needs no offset.
+   Nothing to ask n_TOF; T4 can simply be redone.
 3. If liquid PSD is wanted, request stream1 raw for the runs of interest
    (~2.7 GB per 70 s chunk, ~150 files per run); reader and extraction tooling
    already exist in this repo.

@@ -188,11 +188,17 @@ These are properties of the PSA and the DAQ, not of our UserInput, so they apply
 to the official file too. Full numbers in
 `FINDINGS_2026-07-29_pre_ship_tests.md`.
 
-- **`satuflag` is not a saturation flag.** It is **never set on any of the four
-  walls**, and catches a third to a half of over-rail liquid hits. Meanwhile
-  `amp` reaches 3.2e8 (PSSC: 3.2e8; LIQB: 3.6e6). Cut on `amp` above the
-  per-channel baseline instead: ~31 000 for liquids and plastics, ~34 100-34 500
-  for walls. It is 0.006-0.06 % of hits, but one of them in a mean will ruin it.
+- **`satuflag`** (**corrected 2026-07-29 evening** — the paragraph this replaces
+  was based on reading the raw samples as unsigned; see
+  `FINDINGS_2026-07-29_signed_decoding.md`). On the **liquids it is reliable**:
+  matched against the raw waveforms, 119 of 123 clipped runs carry a flagged hit
+  within 100 ns, including every physics-time clip. On the **walls it is never
+  set**, because wall saturation is a negative undershoot, opposite to the pulse
+  direction, and the PSA only tests for rail contact inside a found pulse.
+  **A flagged hit must be cut, not used** — its `amp` is a fit extrapolation
+  (66 k–832 k against a physical ceiling of 63 800). Do **not** cut on `amp`
+  above ~31 000: that was the artifact rail, and it discards ordinary
+  half-scale pulses.
 - **The ADC wraps under-range rather than clipping.** Baselines sit near the top
   of the unsigned-16-bit range, so a pulse bigger than the baseline reappears
   near 65 535 as a full-scale positive spike. No flat top, so a clipping test

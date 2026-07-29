@@ -1,5 +1,13 @@
 # Pre-ship tests: results
 
+> **CORRECTION, 2026-07-29 evening.** Three results below are wrong, all from
+> one cause: the raw samples are **signed** int16, and the tooling read them as
+> unsigned. **NEW 1 (the ADC wrap) does not exist**, **NEW 2 / T8 (`satuflag`
+> unusable) is wrong** — the flag is verified on 119/123 clipped liquid runs —
+> and **NEW 3 (tof vs raw index) is solved**: a constant 259-sample offset.
+> The T1-T6 results and the ship decision are unaffected.
+> See `FINDINGS_2026-07-29_signed_decoding.md` before acting on anything here.
+
 **2026-07-29.** Running `PRE_SHIP_TESTS.md` against the candidate final
 UserInput `v12_liqpileup`, on run 224572 partials 0001+0002 (bunches 1-397) and
 seven raw stream1 chunks.
@@ -19,10 +27,10 @@ This file records what came back, including two things nobody was looking for.
 | T4 new liquid hits real? | proxies ambiguous; population budget favourable but bracket-dependent; **per-hit raw matching could not be established** | **not closed** |
 | T5 does `afast` carry PSD? | median roughly right, but per-hit spread 4-9x the physical band and drifts 2x with amplitude | **keep, document hard** |
 | T6 photon floor on B/C | holds on A/C/D; **LIQB genuinely violates it** | qualified |
-| T8 saturation census | 0.006-0.06 % of hits above the physical rail, with amplitudes up to 3.2e8 | **`satuflag` is not usable** |
+| T8 saturation census | 0.006-0.06 % of hits above what was taken for the rail | ~~`satuflag` is not usable~~ **RETRACTED — wrong rail; flag verified good** |
 | walls/plastics v11 vs v12 | hit counts bit-identical in all eight trees | confirmed |
-| NEW | ADC **wrap-around** at the end of range, not clipping | see below |
-| NEW | PSA `tof` and raw sample index do not align per hit | see below |
+| NEW | ADC **wrap-around** at the end of range, not clipping | **RETRACTED — no wrap exists** |
+| NEW | PSA `tof` and raw sample index do not align per hit | **RESOLVED — constant 259-sample offset** |
 
 Nothing here changes the wall or plastic configuration, and nothing found is a
 reason to hold the UserInput.

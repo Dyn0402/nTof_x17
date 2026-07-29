@@ -127,11 +127,14 @@ uncorrected ones are most likely to remain.
 Added 2026-07-29, from the pre-ship tests
 (`FINDINGS_2026-07-29_pre_ship_tests.md`):
 
-- **"Saturation at the ~31 000 ADC rail."** The ADC does not clip, it **wraps**
-  -- samples below zero reappear near 65 535, because they are unsigned 16-bit
-  and the baseline IS ~31 000. A flat-top test finds nothing, which is why this
-  was mis-described. With wrapped pulses removed the sqrt(A) scaling does not
-  break at all.
+- **"Saturation at the ~31 000 ADC rail."** Mis-described twice. It is not a
+  rail at 31 000, and (correcting the correction, same evening) it does **not**
+  wrap either: the samples are **signed** int16, not unsigned, so a pulse
+  passing 31 000 is simply crossing zero and the real rail is at 63 800. The
+  "wrap" was our decoder reading `<u2`. What survives from the first correction
+  is that removing those pulses restores the sqrt(A) scaling -- they are
+  genuinely different, just not for the stated reason. See
+  `FINDINGS_2026-07-29_signed_decoding.md`.
 - **Comparing a 30 ns split against a 12 ns tail fraction.** I first graded
   `afast` against the 0.21 band from `liq_psd.png`. That 0.21 is the fraction
   beyond 12 ns; `afast` splits at 30 ns, where the raw fraction is 0.113. The

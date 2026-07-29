@@ -5,10 +5,14 @@
 > `../FINDINGS_2026-07-29_pre_ship_tests.md` alongside this file.
 >
 > 1. **"Saturation ... at ~31 000 ADC, where the pulse reaches the rail"**
->    (Section 2). The ADC does not clip there, it **wraps**: samples that would
->    go below zero reappear near 65 535. With wrapped pulses removed, the
->    sqrt(A) scaling does *not* break -- `resid/sqrt(A)` in the top bin is 0.95
->    (LIQA) and 0.70 (LIQD), not 3.11 and 2.18.
+>    (Section 2). There is no rail at 31 000. **Corrected again 2026-07-29
+>    evening:** the samples are **signed** int16, so a pulse passing 31 000 is
+>    crossing zero and the real rail is at −32 768, i.e. ~63 800 counts of
+>    amplitude. The "wrap to 65 535" described here was our decoder reading
+>    `<u2`; it does not happen. What stands is that excluding those pulses
+>    restores the sqrt(A) scaling -- `resid/sqrt(A)` in the top bin 0.95 (LIQA)
+>    and 0.70 (LIQD), not 3.11 and 2.18. See
+>    `../FINDINGS_2026-07-29_signed_decoding.md`.
 > 2. **The photon-statistics floor does not cover LIQB.** It was only ever
 >    measured on LIQA/LIQD. LIQB's residual scales closer to A than to sqrt(A),
 >    and an amplitude-binned template basis cuts it 24 % on a held-out half. The

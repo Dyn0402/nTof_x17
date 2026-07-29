@@ -75,7 +75,7 @@ per `RECONSTRUCTION_BASIS.md`):
 
 ## 3. The liquids see the same events, on the same clock
 
-`liq_coincidence.py` on the 30,108 exclusively-matched events (ADC-wrap hits
+`liq_coincidence.py` on the 30,108 exclusively-matched events (hits with
 `amp > 31 000` dropped; `satuflag` ignored — see pre-ship findings): residual
 t_LIQ − t_wall per (matched arm, liquid), coincident hits per event in
 ±100 ns around the residual peak, vs the same window with the wall time
@@ -108,9 +108,16 @@ shifted +100 µs (accidental floor):
   of the handoff), and the MM comparison independently supports that (misses
   are not fake events, and their MM content is normal).
 - The liquid time base and hit content pass their first external test.
-- The known output caveats (ADC wrap, `satuflag`, missing slow component)
+- The known output caveats (~~ADC wrap~~, `satuflag`, missing slow component)
   are PSA/DAQ properties, already in the n_TOF handoff README list, and none
   of them bit this analysis after the documented cuts.
+  **Corrected 2026-07-29 evening:** there is no ADC wrap (signed-vs-unsigned
+  decoding error), and `satuflag` is good on the liquids — see
+  `FINDINGS_2026-07-29_signed_decoding.md`. The `amp > 31 000` cut above was
+  therefore stricter than needed: it drops legitimate half-scale pulses rather
+  than corrupted ones. It is conservative, so the conclusions here stand, but
+  the cut should be redone at the real ceiling (~63 800) if these numbers are
+  ever quoted per-hit.
 
 Ship the campaign on v12 as staged. (n_TOF call it by its staged UserInput;
 there is no "v14" — v13 was rejected, v12 is the production candidate.)
