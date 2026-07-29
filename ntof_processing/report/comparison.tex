@@ -203,16 +203,63 @@ cut) but \emph{better-timed} ones, merging pileup fragments back into a single
 correctly-timed pulse. The number of valid wall\,$\wedge$\,plastic candidates
 rises even as the number of plastic hits falls.
 
-\subsection{The liquids: three attempts, all worse}
+\subsection{The liquids: the templates were never the problem}
 
 We tried replacing the liquid templates three times --- 551\,ns averages,
 81\,ns averages, per-detector rather than shared --- and every attempt was
 worse, with $\chi^2$ more than doubling and amplitudes falling $\sim$30\,\%.
-The shipped liquid pair spans FWHM 1\,ns and 7\,ns, a near-delta plus a normal
-pulse, and we suspect that spread does real work that a set of similar averaged
-shapes cannot reproduce. \textbf{The shipped liquid templates are kept.} We
-record the failure because it is the kind of change that looks obviously good
-and is not.
+A night on the raw waveforms explains it, and the explanation is not about
+templates at all.
+
+\paragraph{They are a pileup problem.} Only \textbf{8--24\,\% of liquid pulses
+are isolated} (LIQA 1014 of 6965 raw blocks, LIQB 812/10033, LIQC 136/1418,
+LIQD 1250/5175). Every template we built, and every test that said it was good,
+used that isolated minority. A longer, more faithful template overlaps more
+neighbours in a population that is mostly overlapping --- which is exactly the
+15--30\,\% hit loss we measured each time.
+
+\paragraph{Single-pulse fit quality is floored by photon statistics.} Fitting
+one measured template to isolated pulses, the residual scales as
+$\sqrt{A}$, not as $A$:
+
+\begin{center}\small
+\begin{tabular}{lccccc}
+\toprule
+LIQD amplitude & 1\,900 & 3\,700 & 5\,100 & 7\,500 & 14\,000 \\
+\midrule
+residual / peak & 0.0140 & 0.0103 & 0.0090 & 0.0077 & 0.0061 \\
+residual / $\sqrt{A}$ & \textbf{0.61} & \textbf{0.62} & \textbf{0.64} & \textbf{0.65} & \textbf{0.67} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Flat to 10\,\% over a factor 25 in amplitude. The slow component is a countable
+number of photoelectrons and fluctuates irreducibly, so no template basis can
+absorb it --- binning a basis by tail fraction moved $\chi^2$ only from 70.8 to
+63.1 over one to eight shapes. (For completeness: the hypothesis that a liquid
+carries two pulse classes, neutron-like and gamma-like, is \emph{not} supported
+--- above 3000\,ADC the tail/total ratio is a single tight band at 0.21.)
+
+\paragraph{What did work} is \texttt{STEP SIZE} $2/4 \rightarrow 1/3$, the
+finest derivative window, for a 6\,ns FWHM pulse at 1\,GS/s: \textbf{+14 to
++21\,\% yield} on all four liquids with $\chi^2$ neutral-to-better (LIQD
+$-8.5$\,\%), and the pileup flag rate up $\sim$50\,\%.
+
+\paragraph{What did not, and matters anyway.} \texttt{afast} and \texttt{aslow}
+--- the pulse-shape-discrimination observables, and the reason one runs a liquid
+scintillator --- are \textbf{0.0\,\% filled} in the current processing. Setting
+the fast/slow boundary fills \texttt{afast} for 100\,\% of hits but leaves
+\texttt{aslow} at zero, because \texttt{aslow} is integrated ``from the boundary
+up to the end of the pulse'' and with \texttt{EXPAND PULSES = 0} the liquid
+pulse closes 20--40\,ns after the peak while the slow component runs to
+$\sim$150\,ns. Enabling expansion to reach it backfired: \texttt{aslow} stayed
+zero at the median and the expansion merged pulses in the pileup-dominated
+population, costing 17--28\,\% of the hits.
+
+\textbf{Consequence beyond PSD:} the reported liquid \texttt{area} has been
+missing its slow component all along, in this and every previous processing.
+Anything calibrated on liquid \texttt{area} is affected. Recovering the slow
+component pulse-by-pulse appears to need the raw waveforms.
 
 \section{What the revision achieves, and what it costs}
 
