@@ -5,12 +5,20 @@ lives in `FINDINGS_2026-07-28_psa_optimization.md` (what was measured),
 `FLASH_TIME_BASE.md` (the divert and the flash), `userinputs/README.md` (how to
 run one) and `flash_timing/README.md` (the PKUP-referenced calibration).
 
-Last updated: 2026-07-29. **The pre-ship tests have been run and two of them
-changed the answer** -- see `FINDINGS_2026-07-29_pre_ship_tests.md`. The
-headline is confirmed on a larger sample (v12 96.3 % / 0.5 % vs v4 95.3 % / 0.5 %
-over 252 bunches), T2/T3 pass, and **v12 ships as it stands**. Two
-output-integrity problems -- ADC wrap-around and an unusable `satuflag` -- go in
-the handoff, and T4's per-hit liquid check is left open on purpose.
+Last updated: 2026-07-29 (evening). **The DREAM cross-check has now run on the
+FULL reference pair** -- see `FINDINGS_2026-07-29_dream_crosscheck.md`. On all
+2061 bunches / 213k DREAM events of both run_79 sub-runs: **v12 95.7 % / 0.5 %
+on its own tflash**, vs official+repair 92.4 % and official-alone 12.2 %.
+Both sub-runs agree to 0.0 points. First physics through the merge both pass:
+MM chamber activity concentrates in the matched arm, and the liquids show
+5-7x same-arm coincidence excesses at -5..-25 ns offset (the v12 LIQ time
+base is wall-aligned). **Nothing found motivates another UserInput variant --
+ship the campaign on v12.**
+
+Earlier the same day: the pre-ship tests (`FINDINGS_2026-07-29_pre_ship_tests.md`);
+headline confirmed at 252 bunches, T2/T3 pass. Two output-integrity problems --
+ADC wrap-around and an unusable `satuflag` -- go in the handoff, and T4's
+per-hit liquid check is left open on purpose.
 
 **Auditing this?** Start at `REVIEW.md` -- it maps every claim to the tool that
 produced it, says what is reproducible and what is ephemeral, and lists the

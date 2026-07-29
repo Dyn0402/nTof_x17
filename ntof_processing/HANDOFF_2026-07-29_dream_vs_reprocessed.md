@@ -1,5 +1,11 @@
 # Handoff: comparing DREAM against our reprocessed n_TOF data
 
+**STATUS 2026-07-29 (evening): EXECUTED.** Section 9's deliverable and more is
+done -- see `FINDINGS_2026-07-29_dream_crosscheck.md` (full-pair matcher
+numbers, MM-chamber cross-check, liquid coincidences). This file remains the
+how-to; the numbers below marked "252 bunches" are superseded by the full-pair
+ones.
+
 **Written 2026-07-29 for a fresh session, human or model, starting cold.**
 You do not need to have run anything before. Everything here was executed and
 observed in the session that wrote it unless explicitly marked otherwise.

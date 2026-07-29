@@ -18,7 +18,10 @@ only: a reprocessed run224572 read through the normal paths would silently
 reuse the official file's index.
 
 Usage:
-    python dream_regression.py <parts-dir-or-file> [run_79] [stat090_0000] [nb]
+    python dream_regression.py <parts-dir-or-file> [run_79] [stat090_0000] [nb] [--repair]
+
+--repair turns the laptop tflash repair ON (production-baseline mode for the
+official file; NOT a test of the file's own tflash).
 
 Note on the time base: this uses the file's own stored `tflash`
 (repair_tflash=False), which is what tests the reprocessing. For production
@@ -48,10 +51,16 @@ def candidate_files(arg: str, run: int):
 
 
 def main() -> int:
-    arg = sys.argv[1]
-    dream_run = sys.argv[2] if len(sys.argv) > 2 else 'run_79'
-    sub = sys.argv[3] if len(sys.argv) > 3 else 'stat090_0000'
-    nb = int(sys.argv[4]) if len(sys.argv) > 4 else 100
+    # --repair grades the file WITH the laptop-side tflash repair ON. That is
+    # not a test of the file any more -- it is the production baseline for the
+    # official processing, kept here so full-statistics official-vs-candidate
+    # comparisons run through one code path.
+    argv = [a for a in sys.argv if a != '--repair']
+    repair = len(argv) != len(sys.argv)
+    arg = argv[1]
+    dream_run = argv[2] if len(argv) > 2 else 'run_79'
+    sub = argv[3] if len(argv) > 3 else 'stat090_0000'
+    nb = int(argv[4]) if len(argv) > 4 else 100
     ntof_run = 224572
 
     import ntof_dream_merge.ntof_io as ntof_io
@@ -91,7 +100,10 @@ def main() -> int:
     # reprocessing is right, the stored tflash needs no help.
     import functools
     mw.read_bunches = functools.partial(ntof_io.read_bunches,
-                                        repair_tflash=False)  # type: ignore
+                                        repair_tflash=repair)  # type: ignore
+    if repair:
+        print('*** tflash repair ON -- this is the production-baseline mode, '
+              'not a test of the file ***\n')
     K, T0 = 1.089e-4, -197.5          # as in match_window.__main__
     sel = ev[(ev['BunchNumber'].isin(bunches)) & (~ev['is_flash'])]
     eids, ets, best, dens = mw.nearest_residuals(ntof_run, sel, bunches, K, T0)
@@ -128,7 +140,7 @@ def main() -> int:
     # the test that has any purity, and it is the number to compare.
     import ntof_dream_merge.dream_trigger as dt
     dt.read_bunches = functools.partial(ntof_io.read_bunches,
-                                        repair_tflash=False)  # type: ignore
+                                        repair_tflash=repair)  # type: ignore
 
     thr, adc = dt.load_thresholds(dream_run, sub), dt.load_adc_mv()
     offs = {}
@@ -204,9 +216,10 @@ def main() -> int:
     print(f'      OVERALL   {got_w.mean():12.1%} {got.mean():17.1%} '
           f'{got_w.mean() - got.mean():18.1%}')
 
+    mode = ('with repair_tflash ON, i.e. the production baseline' if repair else
+            'with repair_tflash OFF, i.e. on the file\'s own stored tflash')
     print(f'\nverdict: match_window {"PASS" if eff >= 0.99 else "BELOW BASELINE"}, '
-          f'singles {"PASS" if got.mean() >= 0.90 else "BELOW BASELINE"} '
-          f'-- with repair_tflash OFF, i.e. on the file\'s own stored tflash')
+          f'singles {"PASS" if got.mean() >= 0.90 else "BELOW BASELINE"} -- {mode}')
     return 0
 
 
