@@ -142,19 +142,79 @@ The second is worth having regardless of how the first performs: it costs
 nothing and it is the difference between having n/gamma separation in the
 output and not having it.
 
-## 6. If none of that is enough
+## 6. Would raw waveforms actually do better? Measured: no, not for hit yield
 
-The floor established in §2 is physical, so a custom processing would not beat
-the PSA on single-pulse fit quality either. What custom processing *would* buy
-is pileup handling -- simultaneous multi-pulse fitting over a window rather
-than pulse-by-pulse recognition and subtraction. That is a real gain and it is
-not expressible in the UserInput.
+**This section corrects §4.** I described the liquids as "a pileup problem" and
+implied the PSA was leaving pulses on the table. Measured against the PSA on
+the same blocks, that is wrong.
 
-If we want to go that way, the raw waveforms are what we need, and the request
-should be scoped: **stream1 for the runs we care about**, which is ~2.7 GB per
-70 s chunk and ~150 files per run. We already have the reader
-(`nTof_x17_DAQ/stream1_monitor/ntof_raw.py`) and the extraction tooling, so the
-only missing ingredient is access.
+`deconv_vs_psa.py` runs an iterative matched-filter deconvolution on the raw
+waveforms -- repeatedly fit the largest remaining pulse and subtract it, which
+is the standard approach the PSA does *not* take -- and counts what it finds
+against the PSA's hits for the same (tree, bunch, time window). The comparison
+is exact, because zero-suppression means both see identical samples.
 
-Before asking for that, `v12_liqpileup` should be graded -- it costs one
-processing round and tests the actual hypothesis.
+| tree | PSA hits | deconvolution | ratio |
+|---|---|---|---|
+| LIQA | 8 863 | 5 148 | 0.58 |
+| LIQB | 8 424 | 7 706 | 0.92 |
+| LIQD | 5 794 | 2 590 | 0.45 |
+| **total** | **23 081** | **15 444** | **0.67** |
+
+**The PSA finds ~1.5x MORE pulses than a straightforward deconvolution does.**
+There is no large pool of missed pulses to go and get. My deconvolution is a
+simple greedy one and a better algorithm would close some of that gap, but the
+gap runs the wrong way for the "raw waveforms will find more" argument.
+
+*(An earlier version of this table read 0.01 across the board. That was a bug:
+`np.correlate(..., mode='same')` centres the template on the output index,
+while I was offsetting by the template's peak index. Every fit was misplaced by
+~89 samples. The lesson is in the code comment.)*
+
+### What the spacing actually is
+
+Measured from the PSA's own output, late-time liquid hits:
+
+| tree | median gap | p10 | gaps < 20 ns | gaps < 150 ns |
+|---|---|---|---|---|
+| LIQA | 24 ns | 6 ns | 45.8 % | 75.6 % |
+| LIQB | 30 ns | 6 ns | 43.3 % | 66.7 % |
+| LIQC | 28 ns | 7 ns | 42.1 % | 71.9 % |
+| LIQD | 25 ns | 7 ns | 44.9 % | 74.1 % |
+
+Against a 6 ns FWHM pulse and a ~150 ns slow component, that says two different
+things, and conflating them is what my §4 did:
+
+- **The fast components are mostly resolvable.** A 24 ns median gap is four
+  pulse widths. Both the PSA and a deconvolution find them, which is why the
+  yields are within a factor 1.5 of each other.
+- **The slow components essentially always overlap.** 67-76 % of pulses have a
+  neighbour inside 150 ns. There is almost never a clean window in which to
+  integrate one pulse's tail.
+
+So the "8-24 % isolated" figure in §4 is a *tail*-isolation number, and using it
+to describe the pulse-finding problem overstated the case. The fast component
+is fine; it is the tail that is inaccessible.
+
+## 7. So: should we request raw waveforms?
+
+**Not for hit yield.** The measurement above says we would get fewer, not more.
+`v12_liqpileup` (+14-21 %) is the practical gain and it is already in the
+shipped UserInput.
+
+**Not for per-pulse PSD either, and this is the important point.** The reason
+`aslow` is empty is not that the PSA integrates the tail badly -- it is that
+2/3 to 3/4 of liquid pulses have another pulse inside their own 150 ns tail.
+A custom fitter faces exactly the same overlap. Recovering the slow components
+would mean a *joint* fit for N amplitudes and N tail fractions with heavily
+overlapping basis functions at ~24 ns spacing, which is an ill-conditioned
+problem and would need to be shown to work before it is worth anyone's time.
+
+**This is a rate limitation, not a software one.** If liquid pulse-shape
+discrimination matters for the physics, the lever is upstream -- lower
+instantaneous rate, or a scintillator with a shorter slow component -- not
+reprocessing. That is worth knowing before anyone budgets effort for it.
+
+The one thing still worth flagging to n_TOF is that liquid `area` is missing
+its slow component in the official processing too, so any calibration built on
+it is affected.
