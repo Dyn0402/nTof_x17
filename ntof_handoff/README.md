@@ -143,9 +143,10 @@ being the highest-rate tree in the file. Switched to option 2 with measured
 This gave the single largest downstream gain, and by an instructive route: it
 produces **fewer** plastic hits (0.72-0.99 of the previous count at every
 amplitude cut) but **better-timed** ones, merging pileup fragments back into
-one correctly-timed pulse. Our DREAM coincidence matcher goes from 95.2 % to
-96.4 % efficient at the same 0.6 % false rate, and from 93.4 % to 95.5 % in the
-hardest 1-3 ms bin.
+one correctly-timed pulse. Our DREAM coincidence matcher goes from 95.3 % to
+96.3 % efficient at the same 0.5 % false rate, and from 93.5 % to 95.0 % in the
+hardest 1-3 ms bin (252 bunches; an earlier 100-bunch sample gave 95.2 → 96.4
+and 93.4 → 95.5, so the gain is stable).
 
 ### 7. `SIGNAL WIDTH LOW THR.` 10 → 4 ns on PSS
 

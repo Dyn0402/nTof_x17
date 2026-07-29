@@ -93,6 +93,12 @@ at 1024 MB), hadd over EOS dies and leaves a truncated file that still opens.
 
 ### The processing has hit its floor at 96.4 %
 
+**Note (07-29):** every figure in this section is from the original 100-bunch
+grading, which is the sample all the variants were compared on and so remains
+the right basis for comparing them *to each other*. On the larger 252-bunch
+sample the absolute numbers are v12 96.3 % / 0.5 % against v4 95.3 % / 0.5 % --
+same gap, slightly lower false rate. Quote the 252-bunch numbers outwardly.
+
 v8, v10 and v11 give **identical** matcher efficiency (96.4 % / 0.6 %) and
 identical leg breakdowns, despite reconstructing the plastics very differently:
 
