@@ -34,10 +34,23 @@ from M3RefTracking import M3RefTracking, get_xy_angles    # noqa: E402
 from common.Mx17StripMap import RunConfig                 # noqa: E402
 from wft import compat                                    # noqa: E402
 
-Z_SCAN = np.arange(600.0, 820.0, 2.0)
 CENTRE_XY = 200.0
 REF_X_SIGN = +1.0
 N_ITER = 3
+Z_HALF_WINDOW = 60.0     # mm either side of the registry's nominal detector z
+
+
+def z_scan_for(cfg):
+    """1 mm scan around the detector's nominal z, as the hits chain does.
+
+    A fixed window is wrong: the bench has detectors at z ~ 232 (bottom) and
+    ~ 702 (top). A hardcoded 600-820 window silently railed det6's scan at its
+    lower edge (600 instead of 243) and put every reconstructed point ~55 mm
+    from the reference.
+    """
+    lo = float(os.environ.get('Z_LO', cfg.DET_PLANE_Z - Z_HALF_WINDOW))
+    hi = float(os.environ.get('Z_HI', cfg.DET_PLANE_Z + Z_HALF_WINDOW))
+    return np.linspace(lo, hi, int(round(hi - lo)) + 1)
 
 
 def default_table(cfg):
@@ -86,8 +99,11 @@ def main():
     initial = cm.AlignmentParams(z_x=cfg.DET_PLANE_Z, z_y=cfg.DET_PLANE_Z,
                                  theta_deg=rot0, centre_x=CENTRE_XY,
                                  centre_y=CENTRE_XY, ref_x_sign=REF_X_SIGN)
+    z_scan = z_scan_for(cfg)
+    print(f'  z scan {z_scan[0]:.0f}-{z_scan[-1]:.0f} mm '
+          f'(nominal {cfg.DET_PLANE_Z:.0f})')
     best = cm.run_alignment(align, rays, initial_params=initial,
-                            n_iterations=N_ITER, z_values=Z_SCAN,
+                            n_iterations=N_ITER, z_values=z_scan,
                             theta_values=np.linspace(rot0 - 2.0, rot0 + 2.0, 81),
                             plot_each=False, plot_final=True,
                             mask_to_active_region=False, out_dir=out_dir)
