@@ -216,7 +216,10 @@ matched filter buys the most on low-gain/low-field operating points.)
 
 ## Still open (unchanged by this pass)
 1. All `cache/` veto50 pickles are stale; nothing downstream re-run.
-2. lxplus/EOS upload NOT done — parked for an explicit decision (the run→EOS-path
-   mapping is ambiguous: some runs exist under both `det_*_old/` and
-   `june_tests/`).
-3. det4 6-24 stale duplicate trees (`det4/`, `det_4day/`) still present.
+2. det4 6-24 stale duplicate trees (`det4/`, `det_4day/`) still present.
+
+**2026-07-30 update:** the lxplus/EOS upload (previously listed here as open,
+parked pending an explicit decision) is done — see
+`HANDOFF_EOS_HITS_UPLOAD_2026-07-30.md` for the run→EOS-path resolution and
+verification record. All 278 reprocessed directories (1,070 files, 22.38 GB)
+are live on EOS with 0 failures.
