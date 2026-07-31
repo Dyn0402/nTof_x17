@@ -1,0 +1,154 @@
+{
+  "note": "36_srccal_legacy_check.py \u2014 is the fleet actually gain-equalized, and is the\n07-28 scale comparable to the 07-19 equalization? (cross-check, not calibration)\n\nThe question this answers\n------------------------\nOn 2026-07-19 the plastic PMT bias was moved so that EVERY bar's Y-88 699 keVee\nCompton edge would land on a common target of 31.2 mV\n(`nTof_x17_DAQ/calibrations/pss/hv_equalization_y88_fifo.json`), and those\nvoltages are still the standing set. The 07-28 campaign measures that same edge\nat the same operating point, so the target is a hard prediction \u2014 and the\nmeasured edges span 29-65 mV instead. Something moved by up to 2x.\n\nTwo candidate causes, with opposite consequences:\n\n  (A) ANALYSIS. The 07-28 files were reprocessed with our v12_liqpileup\n      UserInput, which added PSS pulse-shape fitting \u2014 a different `amp`\n      definition \u2014 and this analysis fits the edge with a sloped continuum\n      rather than 22's flat one. Then the equalization is fine and only the\n      numbers are on a different footing.\n  (B) HARDWARE. The equalization transported each PMT through a FIFO factor and\n      a gain power law measured in a scan; if that transport is off, the fleet\n      is genuinely not equalized and the trigger point is not uniform.\n\nThe separator: the 07-17 source runs (224476-79) were reprocessed by the SAME\n07-30 official pass. Push them through the SAME chain and compare with the\nedges 22/23 published from them at the time. That difference is (A) alone,\nmeasured. Whatever is left over in the 07-28 comparison is (B).\n\nCaveat kept in view: the 07-17 runs are pre-FIFO (BNC-T readout) and at the old\nflat HV, so their ABSOLUTE scale is not expected to match the 07-28 one. Only\nthe same-run, same-data reprocessing shift is being measured here.",
+  "bars": {
+    "AL": {
+      "ch": "PSSA1",
+      "edge699_0717_published_mv": 27.07,
+      "edge699_0717_reprocessed_mv": 27.39,
+      "reprocessing_shift": 1.012,
+      "edge699_0728_mv": 29.0,
+      "equalization_target_mv": 31.2,
+      "vs_target": 0.929,
+      "hv_v": 1237,
+      "hv_index_n": 6.94,
+      "equalization_residual": 0.918,
+      "hv_for_target_v": 1252,
+      "dv_to_target": 15
+    },
+    "AR": {
+      "ch": "PSSA2",
+      "edge699_0717_published_mv": 26.27,
+      "edge699_0717_reprocessed_mv": 26.98,
+      "reprocessing_shift": 1.027,
+      "edge699_0728_mv": 31.12,
+      "equalization_target_mv": 31.2,
+      "vs_target": 0.998,
+      "hv_v": 1177,
+      "hv_index_n": 5.08,
+      "equalization_residual": 0.972,
+      "hv_for_target_v": 1184,
+      "dv_to_target": 7
+    },
+    "BL": {
+      "ch": "PSSB1",
+      "edge699_0717_published_mv": 20.05,
+      "edge699_0717_reprocessed_mv": 33.61,
+      "reprocessing_shift": 1.676,
+      "edge699_0728_mv": 64.77,
+      "equalization_target_mv": 31.2,
+      "vs_target": 2.076,
+      "hv_v": 1440,
+      "hv_index_n": 5.19,
+      "equalization_residual": 1.239,
+      "hv_for_target_v": 1382,
+      "dv_to_target": -58
+    },
+    "BR": {
+      "ch": "PSSB2",
+      "edge699_0717_published_mv": 23.28,
+      "edge699_0717_reprocessed_mv": 29.79,
+      "reprocessing_shift": 1.28,
+      "edge699_0728_mv": 44.37,
+      "equalization_target_mv": 31.2,
+      "vs_target": 1.422,
+      "hv_v": 1248,
+      "hv_index_n": 7.1,
+      "equalization_residual": 1.111,
+      "hv_for_target_v": 1230,
+      "dv_to_target": -18
+    },
+    "CL": {
+      "ch": "PSSC1",
+      "edge699_0717_published_mv": 22.28,
+      "edge699_0717_reprocessed_mv": 26.2,
+      "reprocessing_shift": 1.176,
+      "edge699_0728_mv": 54.71,
+      "equalization_target_mv": 31.2,
+      "vs_target": 1.754,
+      "hv_v": 1214,
+      "hv_index_n": 3.8,
+      "equalization_residual": 1.491,
+      "hv_for_target_v": 1093,
+      "dv_to_target": -121
+    },
+    "CR": {
+      "ch": "PSSC2",
+      "edge699_0717_published_mv": 19.88,
+      "edge699_0717_reprocessed_mv": 29.41,
+      "reprocessing_shift": 1.479,
+      "edge699_0728_mv": 48.62,
+      "equalization_target_mv": 31.2,
+      "vs_target": 1.558,
+      "hv_v": 1312,
+      "hv_index_n": 6.64,
+      "equalization_residual": 1.053,
+      "hv_for_target_v": 1302,
+      "dv_to_target": -10
+    },
+    "DL": {
+      "ch": "PSSD1",
+      "edge699_0717_published_mv": 24.44,
+      "edge699_0717_reprocessed_mv": 30.82,
+      "reprocessing_shift": 1.261,
+      "edge699_0728_mv": 38.74,
+      "equalization_target_mv": 31.2,
+      "vs_target": 1.242,
+      "hv_v": 1331,
+      "hv_index_n": 5.77,
+      "equalization_residual": 0.985,
+      "hv_for_target_v": 1335,
+      "dv_to_target": 4
+    },
+    "DR": {
+      "ch": "PSSD2",
+      "edge699_0717_published_mv": 20.45,
+      "edge699_0717_reprocessed_mv": 32.93,
+      "reprocessing_shift": 1.61,
+      "edge699_0728_mv": 49.62,
+      "equalization_target_mv": 31.2,
+      "vs_target": 1.59,
+      "hv_v": 1448,
+      "hv_index_n": 6.39,
+      "equalization_residual": 0.988,
+      "hv_for_target_v": 1451,
+      "dv_to_target": 3
+    }
+  },
+  "verdict": {
+    "reprocessing_shift_median": 1.27,
+    "reprocessing_shift_range": [
+      1.012,
+      1.676
+    ],
+    "vs_target_median": 1.49,
+    "vs_target_range": [
+      0.929,
+      2.076
+    ],
+    "raw_spread_across_fleet": 2.23,
+    "residual": {
+      "AL": 0.918,
+      "AR": 0.972,
+      "BL": 1.239,
+      "BR": 1.111,
+      "CL": 1.491,
+      "CR": 1.053,
+      "DL": 0.985,
+      "DR": 0.988
+    },
+    "residual_spread": 1.62,
+    "within_15pct": [
+      "AL",
+      "AR",
+      "BR",
+      "CR",
+      "DL",
+      "DR"
+    ],
+    "outliers": [
+      "BL",
+      "CL"
+    ],
+    "reading": "The same runs, reprocessed and refitted, move by 1.27x (range [1.012, 1.676]) \u2014 the analysis-side effect of the new PSA amplitude definition plus the new fitter, measured rather than assumed. The raw 07-28-vs-target ratios span [0.929, 2.076], and they track that per-bar shift almost one-to-one. Divide it out and the genuine hardware residual is 0.92-1.49: 6 of 8 bars (AL, AR, BR, CR, DL, DR) sit within 15 % of the common target, and the outliers are CL (+49 %), BL (+24 %). So the 07-19 equalization DID largely take; most of the apparent 2.2x fleet spread is our own reprocessing, not the hardware."
+  }
+}

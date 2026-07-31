@@ -1,0 +1,36 @@
+# Condor submit for the 2026-07-28 Y-88 + Cs-137 plastic-calibration read pass.
+# Nine short jobs, one per campaign run, next to the EOS data; each returns a
+# ~1 MB tarball (spectra cache + ADC->mV json). All fitting and plotting is local.
+#
+#   ssh -K lxplus                     # -K: AFS token + condor auth (see README)
+#   cd ~/x17qa
+#   myschedd bump                     # prints the schedd, e.g. bigbird25.cern.ch
+#   condor_submit srccal.sub
+#   condor_q <id> -name <schedd>
+#   for t in srccal_out_*.tgz; do tar xzf "$t"; done
+#
+# Then, from the repo:
+#   rsync -av -e 'ssh -o ControlPath=none' lxplus:x17qa/cache/33_srccal_*.npz ./cache/
+#   rsync -av -e 'ssh -o ControlPath=none' lxplus:x17qa/calib/adc_to_mv_run2245*.json ./calib/
+#   python 34_srccal_edges.py && python 35_srccal_calib.py
+
+universe                = vanilla
+executable              = srccal_wrapper.sh
+arguments               = $(run)
+transfer_input_files    = 33_srccal_spectra.py,srccal_runs.py,adc_mv.py
+should_transfer_files   = YES
+when_to_transfer_output = ON_EXIT
+transfer_output_files   = srccal_out_$(run).tgz
+output                  = srccal_$(run).out
+error                   = srccal_$(run).err
+log                     = srccal.log
+
+# histogram-only pass (peak RSS is one 200 MB chunk); disk holds the 0.3-0.6 GB
+# raw copy in node-local scratch. NB condor chokes on trailing comments after a
+# request_* value — keep these lines bare.
+request_cpus            = 1
+request_memory          = 4 GB
+request_disk            = 3 GB
++JobFlavour             = "microcentury"
+
+queue run in (224588, 224589, 224590, 224591, 224592, 224593, 224594, 224595, 224596)

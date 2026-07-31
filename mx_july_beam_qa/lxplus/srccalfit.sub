@@ -1,0 +1,28 @@
+# Condor submit for the FIT stage of the two-source plastic calibration
+# (34 edges + 35 energy scale). One job; expects the nine 33_srccal caches to be
+# sitting in ~/x17qa/cache (they are, if srccal.sub ran there).
+#
+#   ssh -K lxplus
+#   cd ~/x17qa && condor_submit srccalfit.sub
+#   condor_q <id> -name <schedd>
+#   tar xzf srccalfit_out.tgz          # then rsync calib/ figures/ *.md down
+#
+# Only needed when the local machine is busy — the fit stage is minutes on an
+# idle laptop and reads nothing but the ~1 MB caches.
+
+universe                = vanilla
+executable              = srccalfit_wrapper.sh
+transfer_input_files    = 34_srccal_edges.py,35_srccal_calib.py,edgefit.py,srccal_runs.py,calib/y88_energy_calib.json,cache/33_srccal_run224588.npz,cache/33_srccal_run224589.npz,cache/33_srccal_run224590.npz,cache/33_srccal_run224591.npz,cache/33_srccal_run224592.npz,cache/33_srccal_run224593.npz,cache/33_srccal_run224594.npz,cache/33_srccal_run224595.npz,cache/33_srccal_run224596.npz
+should_transfer_files   = YES
+when_to_transfer_output = ON_EXIT
+transfer_output_files   = srccalfit_out.tgz
+output                  = srccalfit.out
+error                   = srccalfit.err
+log                     = srccalfit.log
+
+request_cpus            = 1
+request_memory          = 4 GB
+request_disk            = 2 GB
++JobFlavour             = "longlunch"
+
+queue

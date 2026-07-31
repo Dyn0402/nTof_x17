@@ -1,0 +1,342 @@
+{
+  "run": "run224596",
+  "n_triggers": 609,
+  "sources": {
+    "Y88": "AR"
+  },
+  "convention": "edge_mv = fitted resolution-smeared step centre (PSS) or bump centre (WAL/LIQ), the same convention as 22_y88_edges.py so the 07-17 and 07-28 campaigns compare directly. edge_mv_halfheight is the model-independent cross-check. The step model carries a sloped continuum under the edge: the 1836 keV Compton continuum runs through the 699 keVee edge, and Y-88's two gammas are a CASCADE, so a source on the bar produces true-coincidence summing that adds counts above every single-gamma edge \u2014 which is why the 1612 keVee edge is marked secondary and the clean single-gamma Cs-137 edge is the better low-energy anchor. Background = same channel summed over the runs with no source on that arm, scaled by trigger count. Primary fit is on the pileup-vetoed spectrum; pileup_shift_mv = (all hits) - (veto). Bootstrap {'PSS': 120, 'WAL': 40, 'LIQ': 40} Poisson resamples of signal AND background, seed 224588; error floored at half a bin (0.1 mV).",
+  "channels": {
+    "PSSA1": {
+      "kind": "PSS",
+      "arm": "A",
+      "source": "Y88",
+      "role": "same_arm",
+      "edges": [
+        {
+          "kevee": 698.63,
+          "edge_mv": 31.43,
+          "edge_mv_err": 0.59,
+          "edge_mv_halfheight": 36.12,
+          "n_boot_ok": 76,
+          "confidence": "primary",
+          "pileup_shift_mv": -1.69
+        },
+        {
+          "kevee": 1612.06,
+          "edge_mv": 59.02,
+          "edge_mv_err": 1.53,
+          "edge_mv_halfheight": 58.88,
+          "n_boot_ok": 76,
+          "confidence": "secondary",
+          "pileup_shift_mv": 8.97
+        }
+      ],
+      "valley_mv": 15.88,
+      "n_excess": 55657.0,
+      "excess_over_bkg": 4.258,
+      "hits_per_trigger": 958.1,
+      "n_hits": 583482,
+      "sat_frac": 1e-05,
+      "satuflag_frac": 0.0,
+      "pileup_frac": 0.2612,
+      "bkg_runs": [
+        "run224590",
+        "run224591",
+        "run224594",
+        "run224595"
+      ],
+      "bkg_scale": 0.2487,
+      "prior_mv": null,
+      "model": "step",
+      "edges_bump_convention": null
+    },
+    "PSSA2": {
+      "kind": "PSS",
+      "arm": "A",
+      "source": "Y88",
+      "role": "source_bar",
+      "edges": [
+        {
+          "kevee": 698.63,
+          "edge_mv": 31.04,
+          "edge_mv_err": 0.12,
+          "edge_mv_halfheight": 34.12,
+          "n_boot_ok": 120,
+          "confidence": "primary",
+          "pileup_shift_mv": -0.8
+        },
+        {
+          "kevee": 1612.06,
+          "edge_mv": 61.06,
+          "edge_mv_err": 0.25,
+          "edge_mv_halfheight": 62.12,
+          "n_boot_ok": 120,
+          "confidence": "secondary",
+          "pileup_shift_mv": 8.6
+        }
+      ],
+      "valley_mv": 15.88,
+      "n_excess": 524140.4,
+      "excess_over_bkg": 37.24,
+      "hits_per_trigger": 5620.3,
+      "n_hits": 3422754,
+      "sat_frac": 0.0,
+      "satuflag_frac": 0.0,
+      "pileup_frac": 0.2658,
+      "bkg_runs": [
+        "run224590",
+        "run224591",
+        "run224594",
+        "run224595"
+      ],
+      "bkg_scale": 0.2487,
+      "prior_mv": 29.27,
+      "model": "step",
+      "edges_bump_convention": null
+    },
+    "LIQA1": {
+      "kind": "LIQ",
+      "arm": "A",
+      "source": "Y88",
+      "role": "same_arm",
+      "edges": [
+        {
+          "kevee": 698.63,
+          "edge_mv": 33.82,
+          "edge_mv_err": 0.22,
+          "edge_mv_halfheight": 33.62,
+          "n_boot_ok": 40,
+          "confidence": "primary",
+          "pileup_shift_mv": -0.17
+        }
+      ],
+      "valley_mv": 15.88,
+      "n_excess": 25660.4,
+      "excess_over_bkg": 8.33,
+      "hits_per_trigger": 739.3,
+      "n_hits": 450250,
+      "sat_frac": 0.00018,
+      "satuflag_frac": 1e-05,
+      "pileup_frac": 0.286,
+      "bkg_runs": [
+        "run224590",
+        "run224591",
+        "run224594",
+        "run224595"
+      ],
+      "bkg_scale": 0.2487,
+      "prior_mv": null,
+      "model": "step",
+      "edges_bump_convention": [
+        {
+          "kevee": 698.63,
+          "edge_mv": 26.74,
+          "edge_mv_err": 0.12,
+          "edge_mv_halfheight": 35.38,
+          "n_boot_ok": 23,
+          "confidence": "primary"
+        }
+      ]
+    },
+    "WALA1": {
+      "kind": "WAL",
+      "arm": "A",
+      "source": "Y88",
+      "role": "same_arm",
+      "edges": [],
+      "valley_mv": 8.0,
+      "n_excess": 1350.7,
+      "excess_over_bkg": 0.321,
+      "hits_per_trigger": 46.5,
+      "n_hits": 28345,
+      "sat_frac": 0.0,
+      "satuflag_frac": 0.0,
+      "pileup_frac": 0.3072,
+      "bkg_runs": [
+        "run224590",
+        "run224591",
+        "run224594",
+        "run224595"
+      ],
+      "bkg_scale": 0.2487,
+      "prior_mv": null,
+      "model": "bump",
+      "edges_bump_convention": null
+    },
+    "WALA2": {
+      "kind": "WAL",
+      "arm": "A",
+      "source": "Y88",
+      "role": "same_arm",
+      "edges": [],
+      "valley_mv": 15.88,
+      "n_excess": 931.1,
+      "excess_over_bkg": 0.516,
+      "hits_per_trigger": 181.9,
+      "n_hits": 110772,
+      "sat_frac": 0.0,
+      "satuflag_frac": 0.0,
+      "pileup_frac": 0.0868,
+      "bkg_runs": [
+        "run224590",
+        "run224591",
+        "run224594",
+        "run224595"
+      ],
+      "bkg_scale": 0.2487,
+      "prior_mv": null,
+      "model": "bump",
+      "edges_bump_convention": null
+    },
+    "WALA3": {
+      "kind": "WAL",
+      "arm": "A",
+      "source": "Y88",
+      "role": "same_arm",
+      "edges": [],
+      "valley_mv": 8.0,
+      "n_excess": 6631.1,
+      "excess_over_bkg": 1.641,
+      "hits_per_trigger": 53.6,
+      "n_hits": 32670,
+      "sat_frac": 0.0,
+      "satuflag_frac": 0.0,
+      "pileup_frac": 0.5316,
+      "bkg_runs": [
+        "run224590",
+        "run224591",
+        "run224594",
+        "run224595"
+      ],
+      "bkg_scale": 0.2487,
+      "prior_mv": null,
+      "model": "bump",
+      "edges_bump_convention": null
+    },
+    "WALA4": {
+      "kind": "WAL",
+      "arm": "A",
+      "source": "Y88",
+      "role": "same_arm",
+      "edges": [],
+      "valley_mv": 8.0,
+      "n_excess": 6676.3,
+      "excess_over_bkg": 1.601,
+      "hits_per_trigger": 196.8,
+      "n_hits": 119834,
+      "sat_frac": 0.0,
+      "satuflag_frac": 0.0,
+      "pileup_frac": 0.1596,
+      "bkg_runs": [
+        "run224590",
+        "run224591",
+        "run224594",
+        "run224595"
+      ],
+      "bkg_scale": 0.2487,
+      "prior_mv": null,
+      "model": "bump",
+      "edges_bump_convention": null
+    },
+    "WALA5": {
+      "kind": "WAL",
+      "arm": "A",
+      "source": "Y88",
+      "role": "same_arm",
+      "edges": [],
+      "valley_mv": 8.0,
+      "n_excess": 16690.5,
+      "excess_over_bkg": 4.249,
+      "hits_per_trigger": 123.2,
+      "n_hits": 75023,
+      "sat_frac": 3e-05,
+      "satuflag_frac": 0.0,
+      "pileup_frac": 0.4706,
+      "bkg_runs": [
+        "run224590",
+        "run224591",
+        "run224594",
+        "run224595"
+      ],
+      "bkg_scale": 0.2487,
+      "prior_mv": null,
+      "model": "bump",
+      "edges_bump_convention": null
+    },
+    "WALA6": {
+      "kind": "WAL",
+      "arm": "A",
+      "source": "Y88",
+      "role": "same_arm",
+      "edges": [],
+      "valley_mv": 8.0,
+      "n_excess": 15338.6,
+      "excess_over_bkg": 4.29,
+      "hits_per_trigger": 144.9,
+      "n_hits": 88249,
+      "sat_frac": 2e-05,
+      "satuflag_frac": 0.0,
+      "pileup_frac": 0.4206,
+      "bkg_runs": [
+        "run224590",
+        "run224591",
+        "run224594",
+        "run224595"
+      ],
+      "bkg_scale": 0.2487,
+      "prior_mv": null,
+      "model": "bump",
+      "edges_bump_convention": null
+    },
+    "WALA7": {
+      "kind": "WAL",
+      "arm": "A",
+      "source": "Y88",
+      "role": "same_arm",
+      "edges": [],
+      "valley_mv": 8.0,
+      "n_excess": 17755.3,
+      "excess_over_bkg": 4.51,
+      "hits_per_trigger": 136.0,
+      "n_hits": 82802,
+      "sat_frac": 0.0,
+      "satuflag_frac": 0.0,
+      "pileup_frac": 0.4376,
+      "bkg_runs": [
+        "run224590",
+        "run224591",
+        "run224594",
+        "run224595"
+      ],
+      "bkg_scale": 0.2487,
+      "prior_mv": null,
+      "model": "bump",
+      "edges_bump_convention": null
+    },
+    "WALA8": {
+      "kind": "WAL",
+      "arm": "A",
+      "source": "Y88",
+      "role": "same_arm",
+      "edges": [],
+      "valley_mv": 8.0,
+      "n_excess": 18025.6,
+      "excess_over_bkg": 4.45,
+      "hits_per_trigger": 205.6,
+      "n_hits": 125196,
+      "sat_frac": 0.0,
+      "satuflag_frac": 0.0,
+      "pileup_frac": 0.3168,
+      "bkg_runs": [
+        "run224590",
+        "run224591",
+        "run224594",
+        "run224595"
+      ],
+      "bkg_scale": 0.2487,
+      "prior_mv": null,
+      "model": "bump",
+      "edges_bump_convention": null
+    }
+  }
+}
