@@ -1,0 +1,36 @@
+{
+ "run_key": "g_det4",
+ "shim_mm": 30.0,
+ "gap_mm": 130.0,
+ "source_maps": [
+  "eff_map_P2_MID_eff_nominal_00_spark_vetoed.csv",
+  "eff_map_P2_MID_eff_nominal_01_spark_vetoed.csv",
+  "eff_map_P2_MID_eff_nominal_02_spark_vetoed.csv",
+  "eff_map_P2_MID_eff_nominal_03_spark_vetoed.csv",
+  "eff_map_P2_MID_eff_nominal_04_spark_vetoed.csv",
+  "eff_map_P2_MID_eff_nominal_05_spark_vetoed.csv",
+  "eff_map_P2_MID_eff_nominal_06_spark_vetoed.csv",
+  "eff_map_P2_MID_eff_nominal_07_spark_vetoed.csv",
+  "eff_map_P2_MID_eff_nominal_08_spark_vetoed.csv",
+  "eff_map_P2_MID_eff_nominal_09_spark_vetoed.csv"
+ ],
+ "beam_centre_local_mm": {
+  "X": 199.93340368026108,
+  "Y": 199.29
+ },
+ "trigger_slab_local_X_mm": [
+  136.2399573491707,
+  260.470818654644
+ ],
+ "live_band_local_X_mm": [
+  177.0,
+  215.0
+ ],
+ "readout_square_local_mm": [
+  149.76,
+  248.82
+ ],
+ "beam_weighted_efficiency_on_band": 0.8309954378095952,
+ "beam_weighted_efficiency_in_square": 0.6150528265286285,
+ "n_tagged_tracks": 15138480.0
+}

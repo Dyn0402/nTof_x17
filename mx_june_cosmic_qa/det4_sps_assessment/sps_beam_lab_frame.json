@@ -1,0 +1,64 @@
+{
+ "assumptions": {
+  "fan_bisector": "vertical, apex up, fan centred on x = 0",
+  "table_gap_mm": 130.0,
+  "view": "from upstream, looking downstream (beam into the page); det4 X connector bank on the right",
+  "p2_mirror": -1,
+  "det4": "bands horizontal; the bare -X PCB edge (local X = -20.32) rests on the table; local Y increases to the right so the +Y mezzanine edge carries the X bank on the right; readout square centred on the beam",
+  "det4_margins_mm": {
+   "bare_edges_-X_-Y": 20.32,
+   "mezzanine_edges_+X_+Y": 50.32
+  },
+  "det4_shim_mm": 30.0
+ },
+ "p2": {
+  "fan_apex_height_mm": 764.9499530023439,
+  "active_radius_mm": [
+   150.72572581551273,
+   634.9499530023439
+  ],
+  "active_phi_deg": [
+   2.2996029802817657,
+   57.84902656944139
+  ],
+  "bisector_deg": 30.07431477486158
+ },
+ "beam_in_lab": {
+  "height_above_table_mm": 250.25340368026102,
+  "horizontal_offset_from_centreline_mm": 6.0349635513996125,
+  "trigger_slab_height_mm": [
+   185.8867022322786,
+   311.1414932731786
+  ],
+  "trigger_slab_thickness_mm": 125.25479104089999,
+  "sigma_vertical_mm_IS_THE_SLAB_NOT_THE_BEAM": 37.80041800459046,
+  "sigma_horizontal_mm": 28.642611764309443,
+  "fwhm_vertical_mm": 113.70541304603381,
+  "fwhm_horizontal_mm": 62.71398451224351,
+  "span_10_90_vertical_mm": 101.88891025930101,
+  "span_10_90_horizontal_mm": 72.96403501359151,
+  "ellipse_major_mm": 37.800475076362204,
+  "ellipse_minor_mm": 28.642536445015548,
+  "ellipse_major_axis_deg_from_horizontal": 89.84742837654697
+ },
+ "det4": {
+  "band_height_mm": [
+   227.32,
+   265.32
+  ],
+  "readout_square_height_mm": [
+   200.07999999999998,
+   299.14
+  ],
+  "readout_square_width_mm": 99.06,
+  "cables": "X4+X5, Y4+Y5",
+  "shim_mm": 30.0,
+  "fraction_on_band_as_mounted": 0.3213914650930954,
+  "fraction_in_square_as_mounted": 0.7099031059648827,
+  "best_extra_shim_mm": 17.0,
+  "best_total_shim_mm": 47.0,
+  "fraction_on_band_best": 0.3414034014947128,
+  "fraction_in_square_best": 0.719767857547356,
+  "fraction_if_band_were_vertical": 0.5056349626599942
+ }
+}

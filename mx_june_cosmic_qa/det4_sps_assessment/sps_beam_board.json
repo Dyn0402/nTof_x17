@@ -1,0 +1,135 @@
+{
+ "source_maps": [
+  "eff_map_P2_MID_eff_nominal_00_spark_vetoed.csv",
+  "eff_map_P2_MID_eff_nominal_01_spark_vetoed.csv",
+  "eff_map_P2_MID_eff_nominal_02_spark_vetoed.csv",
+  "eff_map_P2_MID_eff_nominal_03_spark_vetoed.csv",
+  "eff_map_P2_MID_eff_nominal_04_spark_vetoed.csv",
+  "eff_map_P2_MID_eff_nominal_05_spark_vetoed.csv",
+  "eff_map_P2_MID_eff_nominal_06_spark_vetoed.csv",
+  "eff_map_P2_MID_eff_nominal_07_spark_vetoed.csv",
+  "eff_map_P2_MID_eff_nominal_08_spark_vetoed.csv",
+  "eff_map_P2_MID_eff_nominal_09_spark_vetoed.csv"
+ ],
+ "n_tagged_tracks": 15138480.0,
+ "board": {
+  "n_pads": 1280,
+  "n_instrumented": 512,
+  "instrumented_channels": [
+   384,
+   895
+  ],
+  "fan_apex_pad_mm": [
+   -33.69189587520326,
+   -20.582772080337175
+  ],
+  "radius_range_mm": [
+   150.72572581551273,
+   634.9499530023439
+  ],
+  "phi_range_deg": [
+   2.2996029802817657,
+   57.84902656944139
+  ],
+  "instrumented_radius_range_mm": [
+   153.68246869322618,
+   634.9499530023439
+  ],
+  "instrumented_phi_range_deg": [
+   18.63943745882273,
+   41.52542097444264
+  ]
+ },
+ "spot": {
+  "centre_pad_mm": [
+   414.73848398545294,
+   232.1209142543769
+  ],
+  "radius_mm": 514.7319289388662,
+  "phi_deg": 29.40253623533702,
+  "sigma_major_mm": 37.80047507636221,
+  "sigma_minor_mm": 28.642536445015548,
+  "major_axis_deg": 30.226886398314633,
+  "fwhm_along_mm": 87.7162239601599,
+  "fwhm_across_mm": 64.65320845890207,
+  "core_centre_pad_mm": [
+   407.2808399351436,
+   228.37174811118206
+  ],
+  "core_sigma_major_mm": 34.95349957429748,
+  "core_sigma_minor_mm": 16.500067810070703,
+  "core_axis_deg": 30.137172082666638,
+  "core_fraction": 0.5346974729299111
+ },
+ "distance_to_board_edge": {
+  "to_outer_arc_mm": 120.21802406347774,
+  "to_inner_arc_mm": 364.00620312335343,
+  "to_low_phi_edge_mm": 243.48643535062763,
+  "to_high_phi_edge_mm": 255.55663899940626,
+  "to_instrumented_outer_arc_mm": 120.21802406347774,
+  "to_instrumented_inner_arc_mm": 361.04946024564003,
+  "to_instrumented_low_phi_mm": 96.69317080029919,
+  "to_instrumented_high_phi_mm": 108.909170956276
+ },
+ "band": {
+  "best_normal_deg": 120,
+  "det4_band_mm": 38.0,
+  "det4_fraction": 0.546618550871686,
+  "containment_vs_width": {
+   "25": {
+    "along_beam": 0.41040348832907925,
+    "across_beam": 0.29457019462984396
+   },
+   "38": {
+    "along_beam": 0.546618550871686,
+    "across_beam": 0.40020239812715674
+   },
+   "50": {
+    "along_beam": 0.6662491214441608,
+    "across_beam": 0.49791980436609223
+   },
+   "60": {
+    "along_beam": 0.7574346962178501,
+    "across_beam": 0.5839339220318024
+   },
+   "80": {
+    "along_beam": 0.8494794061226755,
+    "across_beam": 0.6849611717953189
+   },
+   "100": {
+    "along_beam": 0.9062713033276789,
+    "across_beam": 0.8178038349953232
+   }
+  },
+  "centring_offset_mm": {
+   "0": [
+    0.546618550871686,
+    0.546618550871686
+   ],
+   "5": [
+    0.5358138994139438,
+    0.4794001115039291
+   ],
+   "10": [
+    0.4981699615813477,
+    0.461156470134386
+   ],
+   "15": [
+    0.4150759521431478,
+    0.4305243326939032
+   ],
+   "20": [
+    0.35684943270394387,
+    0.4674059086513309
+   ],
+   "25": [
+    0.2996746040553609,
+    0.40446458297002075
+   ],
+   "30": [
+    0.23811862221306235,
+    0.33903535889996883
+   ]
+  }
+ }
+}
