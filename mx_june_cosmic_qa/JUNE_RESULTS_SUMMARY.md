@@ -240,11 +240,16 @@ c1≈0.25 (~half det3's 0.449) — a consistent board-C/D property (measured, no
   resolution. det3 is the best of the batch. The headline det3 is now the **6-28 weekend
   run** (top slot, FEU7/8, z702; 53.0k rays, 79.7 %, silent only 2.4 %); the earlier 6-22
   det3 (bottom slot) gave a consistent **80.7 %** — det3 is reliably ~80 % in either slot.
-- **det4** — gain-limited (numbers post-recovery, see note above). Fires on ~70 % of
-  muons; the loss is dominated by `hit_no_reco` (42.6 %) + silent (30.3 %): clusters
-  rarely reach the ≥3 strips needed to reconstruct. The pre-recovery "silent 49.4 % /
-  fires on 51 %" figure was inflated by the missing y-plane files. Same pathology the
-  old det1 had → an HV/threshold/gas (gain) issue, not a dead detector.
+- **det4** — **NOT uniformly gain-limited: 62 % of the area does not amplify, in fixed
+  stripes** (2026-07-31, `det4_sps_assessment/DET4_SPS_ASSESSMENT.md`). Efficiency
+  swings 0 → 98 % with detector-local X on a ~35 mm pitch, charge contrast 165×, and
+  *both* readout planes lose charge in the same bands — so it is the amplification
+  region, not the readout. Inside the live 38 % it is a normal detector: 77 % within
+  5 mm, core σ 0.59 mm, σ_θ 2.1°/1.9°. The 6-23 resist scan (465–525 V) moves the gain
+  ×1.9 and the live area not at all, so the earlier "raise the HV" reading is wrong.
+  Fires on ~96 % of muons on the reprocessed hits; the loss is `hit_no_reco` (39.5 %),
+  i.e. clusters below the ≥3 strips needed to reconstruct. The pre-recovery
+  "silent 49.4 % / fires on 51 %" figure was inflated by the missing y-plane files.
 - **det6** — good core (0.68 mm) but **spark-limited**: 23.7 % of crossings are
   full-detector discharges (drift 700 V, resist likely past optimum). With sparks removed
   the reco_far tail is small (7.5 %); efficiency 51.2 %. Prefer long_run (short_run is
@@ -370,7 +375,11 @@ best near the efficiency optimum, degrading into the sparking regime.
 
 ## 5. Open follow-ups
 1. **det7 saturation veto** — re-measure efficiency with saturated hits removed.
-2. **det4 gain** — raise gain (HV / threshold / gas) so clusters reach ≥3 strips.
+2. ~~**det4 gain** — raise gain (HV / threshold / gas) so clusters reach ≥3 strips.~~
+   **CLOSED 2026-07-31**: not a gain setting. 62 % of the chamber does not amplify in
+   fixed stripes and the 465–525 V resist scan does not fill them in — see
+   `det4_sps_assessment/DET4_SPS_ASSESSMENT.md`. Remaining action is a bench re-check
+   of the pattern and feeding the failure map back to the bulking, not an HV change.
 3. **6-23 M3 reference** — diagnose the degradation (`TODO_m3_reference_6-23.md`).
 4. **det6/det7 HV gap** — re-run the HV PDF once the 5 stalled mid-range points
    (455–490 V) of the 6-26 `hv_scan` run finish decoding (cheap rerun).

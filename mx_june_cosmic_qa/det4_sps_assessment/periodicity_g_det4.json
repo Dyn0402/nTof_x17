@@ -1,0 +1,10 @@
+{
+ "run_key": "g_det4",
+ "connector_pitch_mm": 49.92,
+ "fold_amplitude_at_connector_pitch": 0.5087658492333862,
+ "best_period_mm": 115.0,
+ "fold_amplitude_at_best": 1.0729043996217695,
+ "null_median_amplitude": 0.5677342388831847,
+ "p_value_random_period_beats_connector": 0.705,
+ "profile_rms_dex": 0.6083257500814674
+}

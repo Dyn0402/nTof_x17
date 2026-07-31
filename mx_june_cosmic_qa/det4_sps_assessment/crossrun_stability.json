@@ -1,0 +1,14 @@
+{
+ "n_strips_common": 384,
+ "n_strips_firing_both": 268,
+ "pearson_log_occ": 0.5701429032165941,
+ "spearman_common": 0.6563767384602225,
+ "live_frac": {
+  "6-24 day run (resist 495 V)": 0.3984375,
+  "6-23 scan point (resist 495 V)": 0.23697916666666666
+ },
+ "n_events": {
+  "6-24 day run (resist 495 V)": 95803,
+  "6-23 scan point (resist 495 V)": 5046
+ }
+}

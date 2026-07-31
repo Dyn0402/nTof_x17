@@ -200,7 +200,8 @@ RUNS = {
     # 6-23-26 det3_det4 overnight run (Ar/Iso 95/5, non-ZS, det_orientation.z=90).
     # Detector slots (re-read from run_config detectors[]):
     #   mx17_3 = FEU 3/4 (X=3, Y=4) bottom z=232, resist HV 495 V
-    #   mx17_4 = FEU 6/8 (X=6, Y=8) top    z=702, resist HV 455 V
+    #   mx17_4 = FEU 6/8 (X=6, Y=8) top    z=702, resist HV 495 V (card 3 ch 4;
+    #            the 455 V channels are the M3 planes, not mx17_4)
     # longer_run analysed first (only subrun processed at pull time; indices 000+001,
     # the pairs with both combined_hits and rays). Has a 465->525 V resist HV scan +
     # 48 h long_run still in the backlog.

@@ -1,0 +1,123 @@
+{
+ "run_key": "g_det4",
+ "T1_do_dead_strips_fire": {
+  "live": {
+   "n_strips": 195,
+   "n_zero_occ": 0,
+   "median_occ": 0.008674049873177249,
+   "median_amp": 356.32672119140625
+  },
+  "dead": {
+   "n_strips": 317,
+   "n_zero_occ": 0,
+   "median_occ": 0.001179503773368266,
+   "median_amp": 114.22793579101562
+  },
+  "dead_strips_total_Xplane": 0,
+  "dead_strips_total_Yplane": 0,
+  "n_events": 95803
+ },
+ "T2_connector_boundaries": {
+  "n_edges": 23,
+  "mean_dist_to_connector_boundary_mm": 11.829565217391306,
+  "expected_if_random_mm": 12.48,
+  "min_dist_mm": 1.8399999999999963,
+  "n_edges_within_3mm": 1,
+  "n_bands_straddling_a_boundary": 5
+ },
+ "T3_per_connector": {
+  "per_connector": {
+   "1": {
+    "x_mm": [
+     0.0,
+     49.14
+    ],
+    "x_occ": 0.07400603321399121,
+    "x_amp": 171.5139617919922,
+    "y_occ": 0.21619364738056218,
+    "y_amp": 629.2611083984375,
+    "frac_strips_in_live_band": 0.125
+   },
+   "2": {
+    "x_mm": [
+     49.92,
+     99.06
+    ],
+    "x_occ": 0.1702034383056898,
+    "x_amp": 140.04602813720703,
+    "y_occ": 0.3145099840297277,
+    "y_amp": 535.0275268554688,
+    "frac_strips_in_live_band": 0.265625
+   },
+   "3": {
+    "x_mm": [
+     99.84,
+     148.98
+    ],
+    "x_occ": 0.2128638977902571,
+    "x_amp": 74.55725860595703,
+    "y_occ": 0.3457094245482918,
+    "y_amp": 463.0401306152344,
+    "frac_strips_in_live_band": 0.28125
+   },
+   "4": {
+    "x_mm": [
+     149.76,
+     198.9
+    ],
+    "x_occ": 0.6616703026001274,
+    "x_amp": 440.55853271484375,
+    "y_occ": 0.4062294500172229,
+    "y_amp": 300.4884490966797,
+    "frac_strips_in_live_band": 0.71875
+   },
+   "5": {
+    "x_mm": [
+     199.68,
+     248.82
+    ],
+    "x_occ": 0.5277809671930942,
+    "x_amp": 718.9358520507812,
+    "y_occ": 0.43767940461154664,
+    "y_amp": 414.00518798828125,
+    "frac_strips_in_live_band": 0.5625
+   },
+   "6": {
+    "x_mm": [
+     249.6,
+     298.74
+    ],
+    "x_occ": 0.16643528908280536,
+    "x_amp": 127.19188690185547,
+    "y_occ": 0.4857676690709059,
+    "y_amp": 1028.0621948242188,
+    "frac_strips_in_live_band": 0.28125
+   },
+   "7": {
+    "x_mm": [
+     299.52,
+     348.66
+    ],
+    "x_occ": 1.0608227299771407,
+    "x_amp": 33.509490966796875,
+    "y_occ": 0.35133555316639353,
+    "y_amp": 851.1963806152344,
+    "frac_strips_in_live_band": 0.09375
+   },
+   "8": {
+    "x_mm": [
+     349.44,
+     398.58
+    ],
+    "x_occ": 1.4062294500172228,
+    "x_amp": 41.58022880554199,
+    "y_occ": 1.161790340594762,
+    "y_amp": 286.31983947753906,
+    "frac_strips_in_live_band": 0.71875
+   }
+  },
+  "corr_Xconn_occ_vs_live_fraction": 0.4861685827692557,
+  "Yplane_connector_occ_spread": 5.373841251448435,
+  "Xplane_connector_occ_spread": 19.001551480959098
+ }
+}
