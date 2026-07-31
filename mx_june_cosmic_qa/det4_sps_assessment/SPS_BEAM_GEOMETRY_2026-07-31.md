@@ -172,41 +172,73 @@ you are slicing a peaked beam.
 As a by-product, the fact that the aperture comes out *horizontal* in this frame
 is an independent confirmation of the stated mounting.
 
-## 3c. det4 on the table
+## 3c. det4 on its 30 mm riser
 
-det4 in the `board_map_g_det4_rot90ccw.png` orientation — 90° CCW so the bands
-run horizontally, local X vertical, local Y horizontal — resting on the bare edge
-of its **PCB** (local X = −20.32 mm), so height = local X + 20.32:
+det4 with the bands horizontal (local X vertical, local Y horizontal), resting on
+the bare **PCB** edge — local X = −20.32 mm, one of the two 20.32 mm margins, not
+a connector edge — on top of the **30 mm riser** available since 2026-07-31. So
+height = local X + 20.32 + 30:
 
 | | height above the table |
 |---|---|
-| det4 PCB | 0 → 470 mm |
-| active area | 20 → 420 mm |
-| **live band** (local X 177–215) | **197 → 235 mm** |
-| readout square (X4+X5, Y4+Y5) | 170 → 269 mm |
+| riser | 0 → 30 mm |
+| det4 PCB | 30 → 500 mm |
+| active area | 50 → 450 mm |
+| **live band** (local X 177–215) | **227 → 265 mm** |
+| readout square (X4+X5, Y4+Y5) | 200 → 299 mm |
 
 The readout square from those **four cables** is 149.76–248.82 mm on both axes:
 **99.06 mm square, 256 channels**, and the live band crosses it horizontally.
 
-**Resting flat on the table, det4 sits low.** The beam axis is 34 mm above the
-band centre, and the band collects **25 %** of triggers (the readout square, being
-99 mm tall, collects 58 %).
+**The riser is what makes this work.** Flat on the table the beam axis was 34 mm
+above the band centre and the band caught a quarter of the triggers; on the riser
+the band centre is at 246 mm and the beam axis at 250 mm — **4 mm apart, i.e.
+centred** — and the readout square lands almost exactly on the trigger slab
+(200–299 mm against 186–311 mm), which is why it jumps to 71 %.
 
 | | on the 38 mm band | in the 99 mm square |
 |---|---|---|
 | flat on the table | 25 % | 58 % |
-| shimmed +47 mm (broad optimum, +35…+55 is within a point) | **34 %** | 72 % |
+| **on the 30 mm riser** | **32 %** | **71 %** |
+| +17 mm more (total 47, the formal optimum) | 34 % | 72 % |
 
-Two things worth deciding before the run:
+Three things worth knowing before the run:
 
-1. **Shim det4 up by ~45 mm.** It is worth ~9 points on the band and 14 on the
-   square, and the optimum is broad enough that the exact packing does not matter.
+1. **The 30 mm is essentially the whole win.** The remaining 17 mm to the formal
+   optimum buys ~2 points on the band and ~1 on the square. The curve is flat
+   enough that anything from about +5 to +30 mm of further shim stays within a
+   point of the peak, so build tolerance is not a concern either — do not spend
+   effort packing det4 higher.
 2. **Horizontal bands cost about a third of the acceptance.** The same 38 mm band
-   turned *vertical* would collect **51 %** instead of 34 %, because vertically it
-   slices a flat 125 mm slab while horizontally it slices a beam with σ = 28.6 mm.
-   Horizontal bands were chosen so a left–right yaw runs the track along a band;
-   that is a real advantage for a micro-TPC angle scan, but it is being paid for
-   in rate, and the trade should be made deliberately.
+   turned *vertical* would collect **51 %** instead of 32 %, because vertically it
+   slices the flat 125 mm trigger slab while horizontally it slices a beam with
+   σ = 28.6 mm. Horizontal bands were chosen so a left–right yaw runs the track
+   along a band; that is a real advantage for a micro-TPC angle scan, but it is
+   being paid for in rate, and the trade should be made deliberately.
+3. **Beam-weighted efficiency is better than the band average**: 83 % on the band
+   (against the 78.5 % band-average of `DET4_SPS_ASSESSMENT.md`), because the beam
+   sits on the band's good middle rather than being spread over its full 360 mm.
+   Across the whole readout square it is 62 % — the square straddles a dead stripe
+   above and below the band. See §3d.
+
+## 3d. The same thing from det4's side — `17_det4_board_with_beam.py`
+
+`det4_board_with_beam.png` is the inverse view: det4's own board map (within-5 mm
+efficiency, 3 mm sliding kernel, the same content as
+`board_map_g_det4_rot90ccw.png`) with the triggered flux contoured on top at
+10 / 50 / 90 %. It runs §3b's transform backwards, so the two figures cannot
+disagree.
+
+With the mounting above and the readout square centred on the beam horizontally,
+the beam centre lands at detector-local **(200, 199) mm** — essentially the board
+centre, inside the live band — and the trigger slab covers local X **136–260 mm**,
+spanning the band with ~40 mm to spare each side.
+
+Note it is drawn in the **beam's-eye view**, the mirror of
+`board_map_g_det4_rot90ccw.png`, with the connector banks on the edges the Gerber
+puts them on. The flux contours are measured through P2's readout aperture
+(±~100 mm horizontally), so the 10 % contour sits near the edge of what was
+measured; 50 % and 90 % are well inside it.
 
 ## 4. Lab orientation — supplied, not measured
 
@@ -257,14 +289,19 @@ Two practical consequences:
   So aim to place the band centre within **~1 cm** of the spot centre; beyond
   ~2 cm you start losing half of what you could have had.
 
-Rate, for planning: at ~1.6 kHz average trigger, a correctly placed 38 mm band
-sees **~880 Hz** (≈ 6 kHz in-spill). Peak flux ≈ 0.23 Hz/mm² averaged, ≈ 1.6
-Hz/mm² in spill.
+Rate, for planning, at the ~1.6 kHz run-averaged trigger and the §3c mounting
+(measured from the illumination map, not from a Gaussian):
+
+| | average | in spill |
+|---|---|---|
+| 38 mm live band, horizontal, on the riser | **520 Hz** | 3.6 kHz |
+| 99 mm readout square | 1.14 kHz | 8.0 kHz |
+| peak areal flux at the spot centre | 0.17 Hz/mm² | 1.2 Hz/mm² |
 
 This does not change the recommendation in `DET4_SPS_ASSESSMENT.md` (det4 is not
 a characterisation target) — it just says that *if* a slot opens, the band can be
-put in the beam and will collect a third (horizontal bands, shimmed) to a half
-(vertical bands) of the triggers.
+put in the beam and will collect a third of the triggers as mounted (half, if the
+bands were turned vertical).
 
 ## 6. Reproduce
 
@@ -274,10 +311,14 @@ The board figure and every number in it:
 .venv/bin/python mx_june_cosmic_qa/det4_sps_assessment/15_sps_beam_board.py
 .venv/bin/python mx_june_cosmic_qa/det4_sps_assessment/16_sps_beam_lab_frame.py
 #   16_ takes --gap <mm> (table to lowest active point) and --shim <mm> (under det4)
+.venv/bin/python mx_june_cosmic_qa/det4_sps_assessment/17_det4_board_with_beam.py
+#   17_ takes the same --gap/--shim, plus --key for the det4 cosmic run
 ```
 
-It reads only `sps_beam_data/`, which holds copies of the P2 group's pad map and
-stage-22 illumination maps. To refresh those from their machine:
+`15_` and `16_` read only `sps_beam_data/`, which holds copies of the P2 group's
+pad map and stage-22 illumination maps, so they re-run offline. `17_` additionally
+needs the det4 cosmic run (`ray_hit_miss_list.csv` + its alignment) for the
+efficiency map. To refresh the P2 inputs from their machine:
 
 ```bash
 ssh banco_cern      # dedippcq196; banco_ext / banco_daplxa are unreachable from here
