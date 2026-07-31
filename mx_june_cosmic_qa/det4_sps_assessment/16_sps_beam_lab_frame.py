@@ -144,14 +144,24 @@ def d4_to_lab(local_x, local_y, x0, shim):
     """det4 detector-local -> lab: bands horizontal, PCB edge on the table.
 
     Local X is vertical (increasing up) and rests on the bare -X edge, so
-    height = local X + 20.32 + shim. Local Y increases to the RIGHT, which is
-    what puts the +Y mezzanine edge — and with it the X connector bank — on the
-    right in the beam's-eye view, with the wide 50.32 mm margin outboard of the
-    active area. (`board_map_g_det4_rot90ccw.png` is the mirror of this: it is
-    drawn from the other side, with local Y increasing left.)
+    height = local X + 20.32 + shim. Local Y increases to the LEFT, which is what
+    a 90 deg counter-clockwise rotation of the bench view does: with the X cards
+    on the bottom and the Y cards on the right, X1 is on the left and Y1 at the
+    bottom (the physical convention), so rotating CCW puts the X bank on the
+    right with X1 at the bottom and the Y bank on top with **Y1 on the right**.
+    This agrees with `board_map_g_det4_rot90ccw.png`; it is not its mirror.
+
+    The board margin and the X bank are drawn mirrored about the active-area
+    centre (`MIRROR_Y`), exactly as `14_board_map.py` does, so that the wide
+    50.32 mm connector margin and the X cards land together on the right.
     """
-    return (x0 + (np.asarray(local_y, float) - np.mean(D4_SQUARE)),
+    return (x0 - (np.asarray(local_y, float) - np.mean(D4_SQUARE)),
             np.asarray(local_x, float) - D4_PCB[0] + shim)
+
+
+def mirror_y(v):
+    """Mirror a detector-local Y about the active-area centre (drawing only)."""
+    return 2.0 * np.mean(D4_SQUARE) - np.asarray(v, float)
 
 
 def main():
@@ -271,8 +281,8 @@ def main():
                       ((D4_ACTIVE[0], D4_ACTIVE[1]),
                        dict(ec='#999999', lw=1.1, ls='--',
                             label='det4 active area'))):
-        (xa, ya), (xb, yb) = (d4_to_lab(lo_hi[0], lo_hi[0], x0, args.shim),
-                              d4_to_lab(lo_hi[1], lo_hi[1], x0, args.shim))
+        (xa, ya), (xb, yb) = (d4_to_lab(lo_hi[0], mirror_y(lo_hi[0]), x0, args.shim),
+                              d4_to_lab(lo_hi[1], mirror_y(lo_hi[1]), x0, args.shim))
         axl.add_patch(Rectangle((min(xa, xb), min(ya, yb)), abs(xb - xa),
                                 abs(yb - ya), fill=False, zorder=7, **kw))
     ax_lo, ax_hi = sorted(d4_to_lab(0.0, np.array(D4_ACTIVE), x0, args.shim)[0])
@@ -286,7 +296,8 @@ def main():
     # det4 connector banks, both in the wide +X / +Y margins (Gerber):
     # X bank on the right edge (it measures the vertical coordinate, so its
     # connectors stack vertically), Y bank along the top edge.
-    bank_x = x0 + (np.array(D4_BANK) - np.mean(D4_SQUARE))
+    bank_x = np.sort(d4_to_lab(0.0, mirror_y(np.array(D4_BANK)),
+                               x0, args.shim)[0])
     bank_y = np.array(D4_BANK) - D4_PCB[0] + args.shim
     for k, lo, hi in D4_CONN:
         on = k in D4_HILITE
@@ -299,7 +310,7 @@ def main():
         axl.add_patch(Rectangle((bank_x[0], y0_), bank_x[1] - bank_x[0],
                                 y1_ - y0_, **kw))
         axl.text(bank_x.mean(), 0.5 * (y0_ + y1_), f'X{k}', rotation=90, **tkw)
-        xa, xb = sorted(x0 + (np.array([lo, hi]) - np.mean(D4_SQUARE)))
+        xa, xb = sorted(d4_to_lab(0.0, np.array([lo, hi]), x0, args.shim)[0])
         axl.add_patch(Rectangle((xa, bank_y[0]), xb - xa,
                                 bank_y[1] - bank_y[0], **kw))
         axl.text(0.5 * (xa + xb), bank_y.mean(), f'Y{k}', **tkw)

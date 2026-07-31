@@ -234,9 +234,16 @@ the beam centre lands at detector-local **(200, 199) mm** — essentially the bo
 centre, inside the live band — and the trigger slab covers local X **136–260 mm**,
 spanning the band with ~40 mm to spare each side.
 
-Note it is drawn in the **beam's-eye view**, the mirror of
-`board_map_g_det4_rot90ccw.png`, with the connector banks on the edges the Gerber
-puts them on. The flux contours are measured through P2's readout aperture
+Note it is drawn in the **beam's-eye view** in the same orientation as
+`board_map_g_det4_rot90ccw.png` — detector-local Y increasing to the LEFT, so
+that with the X cards on the right X1 is at the bottom and with the Y cards on
+top **Y1 is on the right**, which is what a 90 deg CCW rotation of the bench view
+(X cards bottom / X1 left, Y cards right / Y1 bottom) gives. The board margin and
+the X bank are mirrored about the active-area centre so the wide 50.32 mm
+connector margin and the X cards land together on the right, exactly as
+`14_board_map.py` does. (Before 2026-07-31 this figure and
+`det4_board_with_beam.png` had the Y bank numbered the wrong way round.)
+The flux contours are measured through P2's readout aperture
 (±~100 mm horizontally), so the 10 % contour sits near the edge of what was
 measured; 50 % and 90 % are well inside it.
 

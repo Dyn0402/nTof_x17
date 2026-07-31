@@ -8,13 +8,14 @@ frame, this puts the beam into det4's frame. Same content as
 drawing of the MX17 readout board, bands horizontal — with the triggered flux
 measured on the P2 telescope overlaid where it would actually land.
 
-Two differences from `board_map_g_det4_rot90ccw.png`, both deliberate:
-
-  * it is drawn in the **beam's-eye view** (from upstream, beam into the page),
-    which is the mirror of that figure: detector-local Y increases to the RIGHT;
-  * the connector banks are on the edges the Gerber puts them on — both in the
-    wide 50.32 mm margins, i.e. +X (top) and +Y (right). `14_board_map.py` drew
-    them on the narrow-margin edges as an admitted drawing convention.
+One difference from `board_map_g_det4_rot90ccw.png`: it carries the measured
+triggered flux. The orientation is the same — detector-local Y increases to the
+LEFT, so with the X cards on the right X1 is at the bottom and with the Y cards
+on top **Y1 is on the right**, which is what a 90 deg CCW rotation of the bench
+view (X cards bottom / X1 left, Y cards right / Y1 bottom) gives. The board
+margin and the X bank are mirrored about the active-area centre so the wide
+50.32 mm connector margin and the X cards land together on the right, exactly as
+`14_board_map.py` does.
 
 The beam is placed by the mounting of `16_...`: det4 on a 30 mm riser with its
 bare -X PCB edge down, readout square centred on the beam horizontally. Under
@@ -176,8 +177,8 @@ def main():
     cb.ax.tick_params(labelsize=8)
 
     # board outline, active area, the bare edge that sits on the riser
-    ax.add_patch(Rectangle((_lab.D4_PCB[0], _lab.D4_PCB[0]),
-                           _lab.D4_PCB[1] - _lab.D4_PCB[0],
+    pcb_y = sorted(_lab.mirror_y(np.array(_lab.D4_PCB)))
+    ax.add_patch(Rectangle((pcb_y[0], _lab.D4_PCB[0]), pcb_y[1] - pcb_y[0],
                            _lab.D4_PCB[1] - _lab.D4_PCB[0], fill=False,
                            ec='#444444', lw=1.8, zorder=4))
     ax.add_patch(Rectangle((0, 0), 399.36, 399.36, fill=False, ec='#888888',
@@ -191,9 +192,9 @@ def main():
                   alpha=0.85 if on else 0.8, lw=1.4 if on else 0.7, zorder=5)
         tkw = dict(fontsize=7, ha='center', va='center',
                    color='white' if on else '#55606b', zorder=6)
-        ax.add_patch(Rectangle((_lab.D4_BANK[0], lo),
-                               _lab.D4_BANK[1] - _lab.D4_BANK[0], hi - lo, **kw))
-        ax.text(np.mean(_lab.D4_BANK), 0.5 * (lo + hi), f'X{k}', rotation=90,
+        xb0, xb1 = sorted(_lab.mirror_y(np.array(_lab.D4_BANK)))
+        ax.add_patch(Rectangle((xb0, lo), xb1 - xb0, hi - lo, **kw))
+        ax.text(0.5 * (xb0 + xb1), 0.5 * (lo + hi), f'X{k}', rotation=90,
                 **tkw)
         ax.add_patch(Rectangle((lo, _lab.D4_BANK[0]), hi - lo,
                                _lab.D4_BANK[1] - _lab.D4_BANK[0], **kw))
@@ -202,7 +203,7 @@ def main():
     # the live band and the four-cable readout square
     ax.add_patch(Rectangle((0, band[0]), 399.36, band[1] - band[0], fill=False,
                            ec=DET4, lw=1.8, ls=(0, (5, 2.5)), zorder=6))
-    ax.text(6, band[1] + 5, f'live band  X {band[0]:.0f}–{band[1]:.0f} mm',
+    ax.text(392, band[1] + 5, f'live band  X {band[0]:.0f}–{band[1]:.0f} mm',
             fontsize=9, color=DET4, va='bottom', ha='left', zorder=7,
             bbox=dict(boxstyle='round,pad=0.25', fc='white', ec='none',
                       alpha=0.8))
@@ -220,7 +221,7 @@ def main():
     ax.plot([b_locY], [b_locX], '+', color=BEAM, ms=14, mew=2.4, zorder=9)
     for e in slab:
         ax.axhline(e, color=BEAM, lw=1.0, ls=(0, (6, 4)), zorder=8)
-    ax.text(6, slab[1] + 5,
+    ax.text(392, slab[1] + 5,
             f'trigger slab, local X {slab[0]:.0f}–{slab[1]:.0f} mm',
             fontsize=8.5, color=BEAM, ha='left', va='bottom', zorder=9,
             bbox=dict(boxstyle='round,pad=0.25', fc='white', ec='none',
@@ -233,11 +234,11 @@ def main():
                           alpha=0.9, lw=0.8),
                 arrowprops=dict(arrowstyle='-', color=BEAM, lw=0.9))
 
-    ax.set_xlim(_lab.D4_PCB[0] - 12, _lab.D4_PCB[1] + 12)
+    ax.set_xlim(_lab.D4_PCB[1] + 12, min(pcb_y[0], -60) - 12)   # Y increases LEFT
     ax.set_ylim(_lab.D4_PCB[0] - 12, _lab.D4_PCB[1] + 12)
     ax.set_aspect('equal')
-    ax.set_xlabel('detector-local Y [mm], increasing RIGHT   —   '
-                  'beam\'s-eye view (mirror of board_map_..._rot90ccw)')
+    ax.set_xlabel('detector-local Y [mm], increasing LEFT   —   '
+                  'same orientation as board_map_..._rot90ccw')
     ax.set_ylabel('detector-local X [mm]   (the coordinate the bands live in)')
     ax.set_title(f'det4 board map with the H4 beam on it — {args.key}, '
                  f'{args.shim:.0f} mm riser\n'
