@@ -24,7 +24,7 @@ straight line through the origin for photon statistics.
 With no tree arguments every LIQ* family present in the npz is measured. The
 scaling was originally quoted on LIQA/LIQD only; LIQB/LIQC carry fewer isolated
 pulses but enough to check that the floor is a property of the whole family
-(PRE_SHIP_TESTS.md T6).
+(../archive/PRE_SHIP_TESTS.md T6).
 """
 import sys
 

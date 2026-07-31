@@ -4,7 +4,7 @@
 validate_reprocessing.py -- grade a (re)processed n_TOF hit ROOT file.
 
 This is the acceptance test for the UserInput iteration loop described in
-HANDOFF_2026-07-28_ntof_processing.md. Point it at a candidate runXXXXXX.root
+archive/HANDOFF_2026-07-28_ntof_processing.md. Point it at a candidate runXXXXXX.root
 (produced by RunProcessing.sh with a new UserInput) and it prints the three
 detector-timing health checks that the 2026-07-27/28 investigation showed are
 what actually matter, each with a PASS/FAIL against the acceptance target:
@@ -33,14 +33,14 @@ the artifact populations you intend to remove).
 USAGE
     .venv/bin/python ntof_processing/validate_reprocessing.py <run> [path.root]
 
-If a path is given it is validated IN PLACE (bunch-index and tflash caches are
-built in a throwaway temp dir so the official file's caches are not clobbered).
-Without a path the staged file from beam_july_paths is used.
+If a path is given it is validated IN PLACE (bunch-index and tflash caches go to
+a directory private to that variant, so the official file's caches are never
+clobbered -- see ntof_io.variant_cache). Without a path the staged file from
+beam_july_paths is used.
 """
 from __future__ import annotations
 
 import sys
-import tempfile
 from pathlib import Path
 
 import numpy as np
@@ -71,13 +71,16 @@ def main() -> int:
     import ntof_dream_merge.tflash_repair as rep
 
     if path is not None:
-        # sandbox: point the reader at the candidate file(s), caches to a temp dir
-        tmp = Path(tempfile.mkdtemp(prefix=f'validate_{run}_'))
+        # sandbox: point the reader at the candidate file(s), and give it a cache
+        # of its own -- persistent and fingerprinted on the file set, so the
+        # bunch index survives between runs without ever being shared with
+        # another processing (see ntof_io.variant_cache).
         ntof_io.ntof_paths = lambda r: path           # type: ignore
         ntof_io.ntof_path = lambda r: path[0]         # type: ignore
-        rep.CACHE_DIR = ntof_io.CACHE_DIR = tmp
+        cache = ntof_io.variant_cache(Path(arg).resolve(), path)
+        rep.CACHE_DIR = ntof_io.CACHE_DIR = cache
         print(f'validating {len(path)} file(s), first = {path[0]}  '
-              f'(caches in {tmp})')
+              f'(caches in {cache})')
     else:
         print(f'validating staged file for run{run}')
 

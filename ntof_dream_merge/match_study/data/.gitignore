@@ -1,0 +1,4 @@
+# Regenerable caches: the candidate arrays are ~150 MB per sub-run and the scans
+# are rebuilt in seconds from them. Keep the small fitted parameters and
+# summaries (json), which are what the slides and the merge quote.
+*.npz

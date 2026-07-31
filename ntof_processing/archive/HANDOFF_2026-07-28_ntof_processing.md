@@ -1,3 +1,13 @@
+> # ⛔ RETIRED — do not build on this
+>
+> **Superseded by `../STATUS.md`.** Archived 2026-07-30.
+>
+> The work order that started the UserInput iteration. It was executed: the sweep ran, `v12_liqpileup` was chosen and shipped. The proposed fixes marked [inferred] here were decided by the iteration and several were rejected.
+>
+> **Read `../STATUS.md` for the state, `../userinputs/README.md` for the variant table, and `../FINDINGS_2026-07-28_psa_optimization.md` for what was measured.**
+
+---
+
 # Handoff: fix the n_TOF official processing ourselves (UserInput iteration)
 
 **Written 2026-07-28 morning, at the end of the overnight session that solved

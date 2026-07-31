@@ -1,3 +1,17 @@
+> # ⛔ RETIRED — do not build on this
+>
+> **Superseded by `../../ntof_dream_merge/DREAM_NTOF_CALIBRATION.md`.** Archived 2026-07-30.
+>
+> The first full-statistics DREAM cross-check of v12. All three of its sections are superseded:
+>
+> - **§1, the matcher** (95.7 % / 0.5 %) was measured with the old ±150 ns + [250,450] ns window and the official-file `K`, `T0`. The re-derived numbers are 95.84 % at **0.049 %** — same efficiency, 7× less background.
+> - **§2, the MM activity cross-check** used the same window, so its arm assignment carries ~0.5 % accidental contamination and 0.46 % two-arm ambiguity. **It should be re-run at ±25 ns**, where those are 0.049 % and 0.15 %.
+> - **§3, the liquids**, was already superseded on 07-30 by `../FINDINGS_2026-07-30_liquid_leg_fullpair.md` (both sub-runs, correct saturation cut).
+>
+> **Read `../../ntof_dream_merge/DREAM_NTOF_CALIBRATION.md`.**
+
+---
+
 # DREAM cross-check of the v12 reprocessing — full statistics + first physics
 
 **2026-07-29.** This executes Section 9 of

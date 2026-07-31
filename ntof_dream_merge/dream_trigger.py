@@ -50,7 +50,10 @@ WHAT IT BUYS (100 bunches of run_79/stat090_0000 <-> 224572, accept bands
 so the real wall threshold cuts the early-time false-match rate by 3.4x for ~11 %
 of the efficiency. Past 10 ms it is 0.1-4 % false at ~86-89 % efficient.
 
-THE "MISSING PLASTIC" IS RESOLVED (2026-07-28; FINDINGS_2026-07-28_pss_tflash.md).
+THE "MISSING PLASTIC" IS RESOLVED (2026-07-28;
+archive/FINDINGS_2026-07-28_pss_tflash.md -- and note that its tflash repair is
+for the OFFICIAL file only: on a reprocessed file it must be OFF, see
+DREAM_NTOF_CALIBRATION.md).
 The "~52 % of DREAM events have ANY plastic hit" was an artifact of the official
 PSS tflash being wrong in 37-85 % of bunches: t_since_flash of those (tree, bunch)
 combinations was shifted by up to 11.6 us, moving the true partner out of the
@@ -67,7 +70,7 @@ rebound fragments. tflash_repair v2 folds the measured coincidence offsets in,
 after which THIS MODULE'S full threshold emulation works as designed:
 require_plastic=True gives 93.7 % efficiency overall with 0.5 % false (89.9 %
 at 1-3 ms with 1.3 % false) -- use it as the production matcher. See
-FINDINGS_2026-07-28_pss_tflash.md.
+archive/FINDINGS_2026-07-28_pss_tflash.md.
 """
 from __future__ import annotations
 
@@ -105,6 +108,15 @@ D_PMTS_FALLBACK = {a: (1, 2) for a in ARMS}
 #
 # A bare +-15 ns window therefore keeps only 27.6 % of genuine top/bottom pairs and
 # silently guts the wall trigger. Measure the offset, subtract it, then pair.
+#
+# *** 2026-07-30: THE TABLE ABOVE IS OFFICIAL-FILE ONLY, AND IT IS AN ARTIFACT.
+# Measured with the same estimator on the same bunches (1007-1156) of the v12
+# reprocessing, every segment sits within +-5.5 ns -- the tens-of-ns structure was
+# the old flash-finder / leading-edge timing, removed by the wall shape fitting of
+# v4_walshapes. Do NOT reuse these numbers on a reprocessed file: pairing around a
+# 38 ns offset that is no longer there loses most genuine pairs. Always measure
+# (measure_tb_offsets, or fast_singles.measure_tb_offsets which is much faster).
+# See match_study/scripts/tb_offset_compare.py. ***
 TB_MAX_NS = 25.0     # around the MEASURED per-segment offset, not around zero
 PULSE_NS = 20.0      # discriminated logic-pulse width == coincidence window
 TB_LATE_NS = 100_000.0   # sample late hits when measuring the offsets

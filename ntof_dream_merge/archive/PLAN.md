@@ -1,3 +1,13 @@
+> # ⛔ RETIRED — do not build on this
+>
+> **Superseded by `DREAM_NTOF_CALIBRATION.md`.** Archived 2026-07-30.
+>
+> The original plan for the merge, written 2026-07-27. Phases 3 and 4 are closed and their numbers here (88 % bunch join, 37 ns match) are wrong: the join is 100 % and the match resolves to 6 ns. The data-location tables are still broadly right but are duplicated, current, in `../README.md`.
+>
+> **Read `../DREAM_NTOF_CALIBRATION.md` for the matching, and `../README.md` for where things live.**
+
+---
+
 # ntof_dream_merge — joining the n_TOF facility DAQ to the DREAM Micromegas stream
 
 **Goal: one merged per-event record that carries the DREAM Micromegas tracks AND the

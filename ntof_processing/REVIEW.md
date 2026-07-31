@@ -19,12 +19,20 @@ Everything below is on run 224572 unless stated. Repo commits `40fbf64`
 3. `liq_study/FINDINGS_liquids.md` -- the liquids, which are their own story.
 4. `userinputs/README.md` -- the variant table and how to run one.
 5. `report/comparison.tex` -- the outward-facing version.
-6. `HANDOFF_2026-07-28_ntof_processing.md` -- the pre-existing handoff this
-   started from. Some of its assumptions were later disproved; see §5.
+6. `archive/HANDOFF_2026-07-28_ntof_processing.md` -- the pre-existing handoff
+   this started from. Some of its assumptions were later disproved; see §5.
 
 Adjacent and *not* mine: `flash_timing/` is the absolute flash calibration
 (`t_flash = tof_PKUP + C`), done separately. It is the authority on timing;
 this work is the authority on hit content.
+
+Adjacent and downstream: `../ntof_dream_merge/DREAM_NTOF_CALIBRATION.md` is the
+authority on the DREAM<->n_TOF match, and it is the sharpest external check on
+this reprocessing -- it measures the wall/plastic/liquid alignment of a v12 file
+in situ and re-derives the whole time map on it.
+
+`archive/` holds documentation that has been retired. Nothing in it is current;
+each file names its successor. Do not audit against it.
 
 ## 2. Every headline claim, and what produced it
 

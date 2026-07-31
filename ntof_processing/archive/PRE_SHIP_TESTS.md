@@ -1,3 +1,13 @@
+> # ⛔ RETIRED — do not build on this
+>
+> **Superseded by `../FINDINGS_2026-07-29_pre_ship_tests.md`.** Archived 2026-07-30.
+>
+> The work order for the pre-ship tests. It was run on 2026-07-29.
+>
+> **Read `../FINDINGS_2026-07-29_pre_ship_tests.md` for the results**, and note that two of its conclusions were themselves later retracted the same evening (there is no ADC wrap-around, and `satuflag` is good on the liquids) — see `../FINDINGS_2026-07-29_signed_decoding.md` and `../FINDINGS_2026-07-30_saturation_walls_plastics.md`.
+
+---
+
 # Pre-ship tests: what to run before the final UserInput goes to n_TOF
 
 > **RUN 2026-07-29. Results in `FINDINGS_2026-07-29_pre_ship_tests.md`.**

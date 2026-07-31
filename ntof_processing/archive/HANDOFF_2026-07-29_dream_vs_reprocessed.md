@@ -1,3 +1,15 @@
+> # ⛔ RETIRED — do not build on this
+>
+> **Superseded by `../../ntof_dream_merge/DREAM_NTOF_CALIBRATION.md`.** Archived 2026-07-30.
+>
+> The how-to for running the DREAM comparison against our own processing. It was executed, and both its recipe and its numbers are superseded: the pipeline is now `ntof_dream_merge/match_study/`, and its matcher figures (252 bunches, ±150 ns window, old K and T0) do not describe the current calibration.
+>
+> The traps it documented — cache isolation per variant, `repair_tflash` off, never `hadd` a run — are still live and are carried in `../../ntof_dream_merge/DREAM_NTOF_CALIBRATION.md` §6.
+>
+> **Read that file.**
+
+---
+
 # Handoff: comparing DREAM against our reprocessed n_TOF data
 
 **STATUS 2026-07-29 (evening): EXECUTED.** Section 9's deliverable and more is

@@ -3,6 +3,16 @@
 """
 match_window.py -- the DREAM->n_TOF accept window, calibrated against rate.
 
+*** SUPERSEDED FOR REPROCESSED FILES (2026-07-30). Everything below was measured
+on the OFFICIAL processing of run 224572 and does not transfer. On v12:
+    - K and T0 are wrong by 1.35 % and 56 ns -> refit (fit_timebase.py)
+    - the +250..450 ns satellite band carries NO signal; drop it
+    - the accept window should be +-25 ns, not +-150 ns, because the residual
+      band is DREAM clock drift and not resolution -- corrected per bunch it is
+      flat at 6 ns over the whole 80 ms
+See DREAM_NTOF_CALIBRATION.md -- the authoritative document -- and
+match_study/. ***
+
 STRATEGY. The DREAM trigger timestamp is not precise and does not need to be: all
 it has to do is identify WHICH n_TOF coincidence fired the trigger, after which
 the n_TOF time is the time. So the accept window should be as wide as the DREAM

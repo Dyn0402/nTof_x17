@@ -1,6 +1,6 @@
 # PSA optimization for the X17 EAR2 detectors: what the raw waveforms say
 
-**2026-07-28, afternoon session.** Continues `HANDOFF_2026-07-28_ntof_processing.md`.
+**2026-07-28, afternoon session.** Continues `archive/HANDOFF_2026-07-28_ntof_processing.md`.
 Companion document: `FLASH_TIME_BASE.md` (gamma-flash timing and the SiPM
 divert, kept separate because it is a different kind of problem).
 

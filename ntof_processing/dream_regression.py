@@ -12,10 +12,11 @@ stat090_0000):
 
 Everything is sandboxed the way validate_reprocessing.py does it -- the reader
 is pointed at the candidate files and the bunch-index / tflash caches go to a
-throwaway directory -- so the official file's caches are never touched. That
-matters more than usual here, because those caches are keyed by RUN NUMBER
-only: a reprocessed run224572 read through the normal paths would silently
-reuse the official file's index.
+directory private to that variant (ntof_io.variant_cache: persistent, keyed on
+the file set) -- so the official file's caches are never touched. That matters
+more than usual here, because those caches are keyed by RUN NUMBER only: a
+reprocessed run224572 read through the normal paths would silently reuse the
+official file's index.
 
 Usage:
     python dream_regression.py <parts-dir-or-file> [run_79] [stat090_0000] [nb] [--repair]
@@ -30,7 +31,6 @@ analysis prefer the PKUP-referenced calibration in
 against the few-ns spread of any flash-finder output.
 """
 import sys
-import tempfile
 from pathlib import Path
 
 import numpy as np
@@ -75,13 +75,16 @@ def main() -> int:
     ev = dream_event_to_bunch(dream_run, sub, ntof_run)
 
     files = candidate_files(arg, ntof_run)
-    tmp = Path(tempfile.mkdtemp(prefix=f'dreamreg_{ntof_run}_'))
     ntof_io.ntof_paths = lambda r: files          # type: ignore
     ntof_io.ntof_path = lambda r: files[0]        # type: ignore
-    rep.CACHE_DIR = ntof_io.CACHE_DIR = tmp
+    # Persistent, per-variant and fingerprinted: same isolation as the mkdtemp
+    # this replaces, but the bunch index survives between runs (~7 s/tree to
+    # rebuild over 16 partials, so ~30 s for the four LIQ trees).
+    cache = ntof_io.variant_cache(Path(arg).resolve(), files)
+    rep.CACHE_DIR = ntof_io.CACHE_DIR = cache
     ntof_io._TFLASH_FIX_CACHE.clear()
     print(f'candidate: {len(files)} file(s), first = {files[0].name}')
-    print(f'caches sandboxed in {tmp}\n')
+    print(f'caches in {cache}\n')
     have = set()
     for t in ('WALA', 'WALB', 'WALC', 'WALD'):
         e = ntof_io.bunch_edges(ntof_run, t)
@@ -104,6 +107,14 @@ def main() -> int:
     if repair:
         print('*** tflash repair ON -- this is the production-baseline mode, '
               'not a test of the file ***\n')
+    # *** STALE CONSTANTS (2026-07-30). The clock map below was fitted on the
+    # OFFICIAL processing of run 224572 and does not describe the data we
+    # analyse. Current: K = 1.103724e-4, T0 = -253.64 ns, per-arm offsets, a
+    # per-bunch clock term, and a SINGLE +-25 ns band -- from
+    # ntof_dream_merge.calibration.load(). Left inline only so the numbers this
+    # script already published stay reproducible; anything re-run for physics
+    # must take the calibration from that module.
+    # See ntof_dream_merge/DREAM_NTOF_CALIBRATION.md. ***
     K, T0 = 1.089e-4, -197.5          # as in match_window.__main__
     sel = ev[(ev['BunchNumber'].isin(bunches)) & (~ev['is_flash'])]
     eids, ets, best, dens = mw.nearest_residuals(ntof_run, sel, bunches, K, T0)

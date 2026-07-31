@@ -13,7 +13,7 @@ boundary contributes to `area` and to `afast` in unrelated proportions -- so
 this selects late-time hits with no other hit in the same tree within +-`GAP`,
 which is the same isolation the raw-waveform measurement used.
 
-Decision this feeds (PRE_SHIP_TESTS.md T5):
+Decision this feeds (../archive/PRE_SHIP_TESTS.md T5):
   * band reproduced on the isolated subset -> keep the boundary, document that
     `aslow` is empty and `afast` is only meaningful for isolated pulses
   * `afast` degenerate (== area for everything) -> drop the boundary, because a

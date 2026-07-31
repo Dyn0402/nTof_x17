@@ -1,6 +1,6 @@
 # The gamma-flash time base, and how to plug in pre-calibrated numbers
 
-**2026-07-28. Follow-up to `HANDOFF_2026-07-28_ntof_processing.md`.**
+**2026-07-28. Follow-up to `archive/HANDOFF_2026-07-28_ntof_processing.md`.**
 Everything marked **[measured]** was extracted this session from raw stream1
 waveforms of run 224572 (7 chunks spanning the whole run: bunches 161-163,
 398-400, 798-800, 1198-1200, 1598-1600, 1998-2000, 2398-2400; 851 channel-bunch

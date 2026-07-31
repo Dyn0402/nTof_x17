@@ -8,11 +8,11 @@
 > The T1-T6 results and the ship decision are unaffected.
 > See `FINDINGS_2026-07-29_signed_decoding.md` before acting on anything here.
 
-**2026-07-29.** Running `PRE_SHIP_TESTS.md` against the candidate final
+**2026-07-29.** Running `archive/PRE_SHIP_TESTS.md` against the candidate final
 UserInput `v12_liqpileup`, on run 224572 partials 0001+0002 (bunches 1-397) and
 seven raw stream1 chunks.
 
-Read `PRE_SHIP_TESTS.md` first -- it states each test and its decision rule.
+Read `archive/PRE_SHIP_TESTS.md` first -- it states each test and its decision rule.
 This file records what came back, including two things nobody was looking for.
 
 ---

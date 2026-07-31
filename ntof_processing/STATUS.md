@@ -5,8 +5,139 @@ lives in `FINDINGS_2026-07-28_psa_optimization.md` (what was measured),
 `FLASH_TIME_BASE.md` (the divert and the flash), `userinputs/README.md` (how to
 run one) and `flash_timing/README.md` (the PKUP-referenced calibration).
 
-Last updated: 2026-07-29 (evening). **The DREAM cross-check has now run on the
-FULL reference pair** -- see `FINDINGS_2026-07-29_dream_crosscheck.md`. On all
+Last updated: 2026-07-30 (evening). **The n_TOF side is closed; the analysis has
+started, and the DREAM<->n_TOF time calibration is now locked.**
+
+> **The authority on the match is
+> `../ntof_dream_merge/DREAM_NTOF_CALIBRATION.md`.** Constants, the per-run
+> re-derivation recipe, what transfers and what does not. Tooling and slides in
+> `../ntof_dream_merge/match_study/`; machine-readable constants exported to
+> `../../nTof_x17_DAQ/calibrations/dream_ntof/`. Everything earlier is retired
+> into `archive/` (see `archive/README.md`) -- do not build on it.
+
+Headline, on the complete reference pair (2061 bunches, 213 420 triggers):
+
+- **accept window ±25 ns, one band.** 95.84 % efficiency at a **measured**
+  0.049 % accidental rate, two-arm ambiguity 0.15 %. The old
+  ±150 ns + [250,450] ns window bought +0.17 points of efficiency for 7× the
+  background; the satellite band carries no signal on v12 at all.
+- **the window was never a resolution.** The DREAM timestamp clock drifts
+  ~1 ppm bunch to bunch, smearing the residual in proportion to time since flash
+  (9 ns at 1 ms, 37 ns at 40-80 ms). Fitted per bunch and cross-validated the
+  residual is **flat at 6 ns** over the whole 80 ms. This corrects
+  `time_align.py`'s "36 ns of DREAM trigger jitter".
+- **the per-bunch fit was audited for self-fulfilment** and passes five tests:
+  107 triggers per bunch for 2 parameters, split-half rho = +0.996 (0.92 ppm of
+  real drift against 0.06 ppm of fit noise), a 3-5 % in-sample-vs-cross-validated
+  gap, wide-window efficiency **identical to five decimals**, and a wrong-bunch
+  parameter swap that makes things worse. `match_study/scripts/bias_check.py`.
+- **nothing transfers between processings.** K and T0 refit on v12 to
+  1.103724e-4 (+1.35 %) and -253.64 ns, plus per-arm trigger-path offsets
+  A -16.81 / B +7.55 / C +1.62 / D -0.83 ns. The wall top/bottom "cable offsets"
+  are ±32-39 ns on the official file and within ±5.5 ns on v12 -- a flash-finder
+  artifact, not cabling; `dream_trigger.py`'s stored table is flagged.
+- **do NOT run the tflash repair on v12**: it would shift LIQC/D by 15 ns and add
+  25 ns RMS on PSSC, and the stored time base already has the liquids within 1 ns
+  of the walls.
+- **the reprocessing checks out in situ**: the v12 liquid flash times reproduce
+  the divert-off `flash_timing` calibration to 0.1-0.5 ns; walls spread 4.0 ns;
+  per wall channel RMS 2.3 ns; liquid-vs-wall -0.8..+0.2 ns. No internal offsets
+  are needed.
+- coverage (accidental-subtracted): 96.00 % of triggers get a wall AND plastic
+  partner, 98.59 % wall-only -- the plastic leg still costs 2.58 %.
+- new: `ntof_dream_merge/fast_singles.py`, a vectorised `dream_trigger`
+  (validated bit-identical) -- the original is O(N_hits x N_bunches) and cannot
+  run on 2061 bunches.
+
+Earlier the same day: **the handoff package now carries the corrected
+saturation story.** `ntof_handoff/README.md` §8b had been left on the retracted
+ADC-wrap text (its last commit predated the signed-int16 finding): (a) now says
+`satuflag` is reliable on the liquids and structurally absent on the walls, and
+recommends cutting `satuflag` **or** `amp` > ~63 800 -- neither alone is complete
+(satuflag misses ~9 % of over-ceiling hits; the amp cut misses flagged hits whose
+extrapolated amp lands back in range); (b) now says the ADC clips at its rails
+with no wrap, gives the ±950 mV baseline-offset table, and adds that the wall
+**front end** limits at ~34 600 counts (~half of ADC full scale) where no rail
+test can see it. The two `adc_wrap_*.png` figures were withdrawn from the package
+and replaced with `sat_examples_liq.png` / `sat_population_liq.png`. The stale
+question we were about to ask n_TOF about a per-channel `start` offset is
+retracted in the README too -- it was our parser's 259 pre-samples.
+**Do not re-issue the old "cut amp > 31 000" advice**: on LIQA that cut removes
+2 099 hits of which 1 561 (74 %) are ordinary half-scale pulses.
+**New today, and they answer the saturation question end to end** —
+`FINDINGS_2026-07-30_saturation_walls_plastics.md` and
+`FINDINGS_2026-07-30_liquid_leg_fullpair.md`:
+
+- **The walls have a hard ceiling BELOW the readout limit.** Reported `amp`
+  terminates at 43 220-44 915 on all four and never reaches 63 800; the raw
+  excursion limits at 32 888-34 635 counts. So it is analogue, and no rail test
+  can see it — **cut WAL `amp` > 34 600 in post-processing**. Fires only in the
+  flash (physics-time wall amplitudes stop below ~25 000). Now in the handoff.
+- **The plastics are the opposite**: PSSA/B/C do reach the ADC rail, so
+  `satuflag` fires on them. **PSSD does not** — it is analogue-limited at 44 806
+  (70 % of range), which is the real reason it never sets the flag.
+- **`amp > 63 800` on a plastic is a FIT-QUALITY flag, not a saturation flag.**
+  Correcting what this file said earlier: about half the over-ceiling PSSA/PSSC
+  hits are *unflagged because they never clipped* — measured peak 58-62 k against
+  a 63 568 rail — and the fit merely overshoots (1.45x on PSSD up to 22-80x on
+  genuinely clipped hits). `satuflag` is right about both halves.
+- **Flag implemented**: `ntof_io.saturated(tree, amp, satuflag)` +
+  `saturation_ceiling(tree)` — one definition, per-family ceilings (WAL 34 600,
+  LIQ/PSS 63 800, SILI 59 100, PKUP 59 400). `liq_coincidence.py` and
+  `liq_saturated_study.py` now call it.
+- **`area` is proportional to `amp` BY CONSTRUCTION, and the PSA guide says so.**
+  With AMPLITUDE OPTION=2 "both the final amplitude and area will be determined
+  from the fitted pulse", so area = amp x integral(shape): `area/amp` takes
+  exactly one value per `pulseshape`, matching the per-shape counts to the hit.
+  **The measured pair is `amp_0` (pre-fit maximum) and `area_0` (pre-fit
+  integration)** — use those for a real integral or an un-extrapolated amplitude.
+  `amp`/`amp_0` is the best saturation diagnostic in the file: ~1.0 clean,
+  1.24-1.30 wall flash artifacts, 1.45 PSSD overshoot, 22-80 clipped plastics.
+- Figures: `liq_study/pss_over_ceiling_PSSC.png` (the flash plunge to the rail),
+  `liq_study/wal_front_end_WALB.png` (the divert step parked at ADC zero),
+  `liq_study/wal_pss_saturation.png` (spectra + width vs amplitude).
+- **Method** (`liq_study/sat_curve.py`): width-vs-amplitude plateau departure,
+  calibrated on the liquids where `satuflag` is truth. The liquids stay flat to
+  0.1 ns up to the ceiling *even inside the flash*, so a departure below the
+  ceiling is real and not a flash artifact. Do **not** use the automatic
+  "1.2x the plateau" rule — it mis-called both LIQ and PSS; read the table.
+- **A physics-time clipped liquid pulse keeps its time** (`clipped_timing_check.py`):
+  dt to a fixed-depth raw crossing is 3.5-3.8 ns against 3.6-3.7 for unclipped
+  controls, so saturated hits are usable as TIME hits with `amp` as a lower
+  bound of 63 800. The 114-129 ns mistiming tail is entirely flash-region.
+  `area` cannot help recover amplitude — it is exactly proportional to `amp`.
+
+The §8b(a) table is now a real whole-run census (it had been a single partial,
+3.4 M LIQA hits, labelled as the run: the run has 51 M) — reproduce it with
+`liq_study/amp_ceiling_census.py`, output kept as
+`liq_study/amp_ceiling_census_v12_224572.json`.
+`ntof_dream_merge/liq_coincidence.py` carried the same wrong cut and now uses
+`ntof_io.saturated()`. **Re-run on the whole of `stat090_0000`** (1012 bunches,
+100 083 exclusively-matched events, 3.3× the old sample) it reproduces the 07-29
+table cell by cell — same-arm diagonal at −5…−25 ns, excess **3.6-5.9×** over the
+shifted control. **`stat090_0001` replicates it** on a disjoint hour — diagonal
+cells 0.164/0.146/0.016/0.092 against 0000's 0.165/0.151/0.018/0.094, same
+−5…−25 ns offsets. Restate the excess as **2.7-5.9×** over both sub-runs, not the
+"5-7×" from 300 bunches (LIQC is the weak cell, 2.7-3.6×, on a better-measured
+floor with an unchanged signal cell).
+
+**The merge tooling is ~46× faster as of 2026-07-30** and bit-identical: the
+per-bunch/per-event Python double loop in `liq_coincidence.py` is now one
+`window_residuals()` call (bunch and time packed into a sorted float64 key, two
+`searchsorted`, one ragged gather), and `ntof_io.variant_cache()` replaces the
+`tempfile.mkdtemp()` sandbox in all five scripts with a persistent directory
+fingerprinted on the file set — same isolation, but the bunch index is not
+rebuilt every run. **1 h 52 min → 2 min 25 s** cold, **1 min 55 s** warm, with all
+33 residual histograms identical bin-for-bin (363 038 entries both ways).
+
+§3 of `archive/FINDINGS_2026-07-29_dream_crosscheck.md` (300 bunches, wrong cut) is now
+**superseded** by `FINDINGS_2026-07-30_liquid_leg_fullpair.md` — both sub-runs,
+correct cut. Read the 07-30 file for any liquid number.
+
+Earlier, 2026-07-29 (evening): **the DREAM cross-check has run on the
+FULL reference pair** -- see `archive/FINDINGS_2026-07-29_dream_crosscheck.md`
+(retired: its matcher numbers predate the re-derived time map, and its MM
+cross-check needs re-running at ±25 ns). On all
 2061 bunches / 213k DREAM events of both run_79 sub-runs: **v12 95.7 % / 0.5 %
 on its own tflash**, vs official+repair 92.4 % and official-alone 12.2 %.
 Both sub-runs agree to 0.0 points. First physics through the merge both pass:
@@ -24,6 +155,13 @@ liquids (119/123 clipped runs matched per pulse). T4's per-hit liquid check is
 no longer blocked either -- the raw-to-`tof` offset is a constant 259 samples.
 See `FINDINGS_2026-07-29_signed_decoding.md`.
 
+**Open, for a separate session:** the shared raw parser
+`nTof_x17_DAQ/stream1_monitor/ntof_raw.py:163` still decodes samples as `<u2`.
+The full write-up — evidence, the fix, the two operational consumers to re-check
+(`stream1_size_controller.py`, `wall_probe.py`), the `0x8000` fill collision and
+the 259-pre-sample offset — is in that repo as
+`stream1_monitor/SIGNED_DECODE_FIX_NOTE.md`. Nothing there has been changed yet.
+
 **Auditing this?** Start at `REVIEW.md` -- it maps every claim to the tool that
 produced it, says what is reproducible and what is ephemeral, and lists the
 mistakes I made and corrected so you know where the error modes were.
@@ -40,7 +178,8 @@ mistakes I made and corrected so you know where the error modes were.
 | UserInputs, staged | `/afs/cern.ch/work/d/dneff/x17_reproc/userinputs/<variant>/` |
 | UserInputs, source | `ntof_processing/userinputs/<variant>/` |
 | package for n_TOF | `ntof_handoff/` |
-| DREAM-vs-reprocessed entry point | `HANDOFF_2026-07-29_dream_vs_reprocessed.md` |
+| DREAM-vs-reprocessed entry point | `../ntof_dream_merge/DREAM_NTOF_CALIBRATION.md` |
+| retired documentation | `archive/` -- do not build on it |
 | local copy of 224572 v12 | `/media/dylan/data/x17/ntof_reproc/v12_liqpileup/` |
 
 Note on 224572: it has no directory under `prod_v11/` because it is the
@@ -264,7 +403,7 @@ campaign from our UserInput instead.
 
 ## Next
 
-0. ~~Run `PRE_SHIP_TESTS.md`~~ -- **done 07-29**, results in
+0. ~~Run `archive/PRE_SHIP_TESTS.md`~~ -- **done 07-29**, results in
    `FINDINGS_2026-07-29_pre_ship_tests.md`. T1 green on 2.5x the sample
    (v12 96.3 % vs v4 95.3 %, gap preserved), T3 green, T5 says keep the
    boundary but document it hard, T6 holds except on LIQB. **T4 is not closed**

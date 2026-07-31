@@ -363,7 +363,7 @@ configuration and/or its pulse shape (the PSS flash pulse is wide and enormous i
 area, FWHM 43–76 ns against 6 ns for a LIQ pulse of comparable height picked at
 the same instant) — and **not** a generic consequence of a railed pulse.
 **That makes it plausibly fixable in the `UserInput`**, which is directly
-relevant to the reprocessing effort in `../HANDOFF_2026-07-28_ntof_processing.md`.
+relevant to the reprocessing effort in `../archive/HANDOFF_2026-07-28_ntof_processing.md`.
 
 **Take plastic constants per run from `data/plastic_liq_flash_by_run.csv`, never
 from a single epoch.**

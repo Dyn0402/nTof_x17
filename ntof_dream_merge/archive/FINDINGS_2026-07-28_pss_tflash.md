@@ -1,3 +1,15 @@
+> # ⛔ RETIRED — do not build on this
+>
+> **Superseded by `DREAM_NTOF_CALIBRATION.md`.** Archived 2026-07-30.
+>
+> This solved the "missing plastic" on the **official** n_TOF processing, by repairing its broken stored `tflash`. It is still a correct account of that file.
+>
+> **It does not apply to the data we analyse.** We reprocess n_TOF ourselves and the campaign runs on `v12_liqpileup`, whose flash finding is not broken. On a reprocessed file the repair described here is **not a no-op and must be off**: it would shift LIQC/D by 15 ns and add 25 ns RMS on PSSC, while the stored time base already has the liquids within 1 ns of the walls.
+>
+> **Read `../DREAM_NTOF_CALIBRATION.md` §2b.**
+
+---
+
 # RESOLVED: the "missing plastic" was n_TOF's broken PSS time base
 
 **2026-07-28 overnight session, picking up HANDOFF_2026-07-27 §5.**

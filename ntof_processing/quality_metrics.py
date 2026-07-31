@@ -51,7 +51,7 @@ needs no fit to converge.
     python quality_metrics.py label=a.root,b.root [label2=...]
                              [--side-lo=300] [--coinc=20] [--late=1e6]
 
-The sideband options exist for the robustness check in PRE_SHIP_TESTS.md T3.
+The sideband options exist for the robustness check in archive/PRE_SHIP_TESTS.md T3.
 Every number here is accidental-subtracted, and the subtraction moves T2 from
 38.8 ns to 6.5 ns, so it is doing a lot of work; if the quoted widths depend on
 where the off-time window is placed, they are not measurements. Vary `--side-lo`

@@ -174,7 +174,7 @@ def calibrate_lag(blocks, tree, b_psa, t_psa, lags=np.arange(-40, 161)):
 def local_rise(d, rms, t, back=8, fwd=2):
     """How much does the waveform RISE into this hit, in units of baseline noise?
 
-    This is classes (a)/(b) vs (c) of PRE_SHIP_TESTS.md T4 stated as a number,
+    This is classes (a)/(b) vs (c) of ../archive/PRE_SHIP_TESTS.md T4 stated as a number,
     and it is deliberately model-free and LOCAL, because the joint template fit
     that would otherwise answer it is ill-conditioned at 24 ns pulse spacing
     (REVIEW.md Section 7 predicted this; the control below measures it).

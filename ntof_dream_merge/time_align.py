@@ -29,6 +29,16 @@ not detector misalignment. Budget: a wall-plastic pair resolves to sigma 13.5 ns
 so one n_TOF detector is ~9.5 ns, leaving sqrt(37^2 - 9.5^2) ~ 36 ns on the DREAM
 side -- its trigger timestamp is 10 ns granular and its trigger latency jitters.
 Sharpening the match further is a DREAM-side problem, not an n_TOF one.
+
+*** 2026-07-30, CORRECTION TO THE LAST PARAGRAPH. The ~36 ns attributed to DREAM
+trigger jitter is not jitter: it is the DREAM timestamp CLOCK drifting ~1 ppm from
+bunch to bunch, which smears the residual in proportion to the time since the
+flash (9 ns at 1 ms, 37 ns at 40-80 ms -- the quoted number is just the average
+over that range). Fitted per bunch, the DREAM<->n_TOF match residual is flat at a
+68 % half-width of 6 ns across the whole 80 ms. It IS sharpenable, and it was
+sharpened. The n_TOF-side numbers above are unaffected and stand.
+See DREAM_NTOF_CALIBRATION.md and match_study/scripts/fit_perbunch.py.
+***
 """
 from __future__ import annotations
 

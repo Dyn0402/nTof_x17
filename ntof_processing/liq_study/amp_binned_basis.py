@@ -13,7 +13,7 @@ pileup, baseline droop) that no legitimate template should learn. This scores
 the thing itself: fit with one template, then with one template per amplitude
 octile, always on a HELD-OUT half so a richer basis cannot win by memorising.
 
-Decision this feeds (PRE_SHIP_TESTS.md T6): a large held-out gain would reopen
+Decision this feeds (../archive/PRE_SHIP_TESTS.md T6): a large held-out gain would reopen
 the liquid template question for the affected detectors. A small one confirms
 that the floor is real and the shipped templates stay.
 

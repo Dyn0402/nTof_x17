@@ -49,7 +49,7 @@ is wrong in 37-85 % of bunches, shifting t_since_flash of those (tree, bunch)
 combinations by up to 11.6 us and moving the true partner out of the accept
 bands. Repairing the time base (tflash_repair.py, applied by ntof_io by default)
 lifts the plastic partner fraction to 99.7 %. See
-FINDINGS_2026-07-28_pss_tflash.md. The checks in this module remain valid -- they
+archive/FINDINGS_2026-07-28_pss_tflash.md. The checks in this module remain valid -- they
 were run on nearest-dt peaks, which the sane-tflash bunches dominate.
 """
 from __future__ import annotations

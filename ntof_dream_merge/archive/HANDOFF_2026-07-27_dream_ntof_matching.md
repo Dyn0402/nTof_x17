@@ -1,3 +1,13 @@
+> # ⛔ RETIRED — do not build on this
+>
+> **Superseded by `DREAM_NTOF_CALIBRATION.md`.** Archived 2026-07-30.
+>
+> The first handoff for the matching, written 2026-07-27. Every headline number in it has since been superseded: 88.3 % wall-SINGLES efficiency (now 98.6 %), a 37 ns match width (now 6 ns), a 29 % false-match rate at 1-3 ms (now 0.15 %), and the ±150 ns + [250,450] ns accept window (now ±25 ns, one band). Its §5 open question was resolved the next day, and the resolution has itself since been superseded for reprocessed files.
+>
+> **Read `../DREAM_NTOF_CALIBRATION.md`.**
+
+---
+
 # Handoff: DREAM ↔ n_TOF event matching
 
 > **⚠ 2026-07-28: §5 (the missing plastic) is RESOLVED — see

@@ -29,7 +29,6 @@ from __future__ import annotations
 
 import argparse
 import sys
-import tempfile
 from pathlib import Path
 
 import numpy as np
@@ -38,6 +37,14 @@ import pandas as pd
 _HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(_HERE.parent))
 
+# *** STALE CONSTANTS (2026-07-30). The accept bands / clock map below were
+# fitted on the OFFICIAL processing of run 224572 and do not describe the data
+# we analyse. Current: K = 1.103724e-4, T0 = -253.64 ns, per-arm offsets, a
+# per-bunch clock term, and a SINGLE +-25 ns band -- from
+# ntof_dream_merge.calibration.load(). They are left inline here only so the
+# numbers this script already published stay reproducible; anything re-run for
+# physics must take the calibration from that module.
+# See ntof_dream_merge/DREAM_NTOF_CALIBRATION.md. ***
 K, T0 = 1.089e-4, -197.5        # DREAM->n_TOF clock map, as in match_window
 ARMS = ('A', 'B', 'C', 'D')
 
@@ -124,10 +131,12 @@ def main() -> int:
     ev = dream_event_to_bunch(args.run, args.subrun, args.ntof_run)
 
     files = candidate_files(args.target, args.ntof_run)
-    tmp = Path(tempfile.mkdtemp(prefix=f'mmxc_{args.ntof_run}_'))
     ntof_io.ntof_paths = lambda r: files          # type: ignore
     ntof_io.ntof_path = lambda r: files[0]        # type: ignore
-    rep.CACHE_DIR = ntof_io.CACHE_DIR = tmp
+    # Persistent, per-variant and fingerprinted: same isolation as the mkdtemp
+    # this replaces, but the bunch index survives between runs (~7 s/tree to
+    # rebuild over 16 partials, so ~30 s for the four LIQ trees).
+    rep.CACHE_DIR = ntof_io.CACHE_DIR = ntof_io.variant_cache(p, files)
     ntof_io._TFLASH_FIX_CACHE.clear()
     print(f'candidate: {len(files)} file(s), first = {files[0].name}')
 

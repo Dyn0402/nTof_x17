@@ -12,6 +12,14 @@ from ntof_dream_merge.dream_trigger import (load_thresholds, load_adc_mv,
                                             singles_candidates, ARMS)
 
 K, T0 = 1.089e-4, -197.5
+# *** STALE CONSTANTS (2026-07-30). The accept bands / clock map below were
+# fitted on the OFFICIAL processing of run 224572 and do not describe the data
+# we analyse. Current: K = 1.103724e-4, T0 = -253.64 ns, per-arm offsets, a
+# per-bunch clock term, and a SINGLE +-25 ns band -- from
+# ntof_dream_merge.calibration.load(). They are left inline here only so the
+# numbers this script already published stay reproducible; anything re-run for
+# physics must take the calibration from that module.
+# See ntof_dream_merge/DREAM_NTOF_CALIBRATION.md. ***
 BANDS = ((-150.0, 150.0), (250.0, 450.0))
 SHIFT = 100_000.0
 
