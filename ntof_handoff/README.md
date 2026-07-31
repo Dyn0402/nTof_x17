@@ -14,8 +14,8 @@ the group repository under `ntof_processing/`.
 UserInput_2026_EAR2_X17_v12.h     the proposed UserInput
 pulse_shapes/                     every template it references (24 new + 2 shipped)
 comparison_report.pdf             the measurements behind each change
-adc_wrap_as_recorded.png          the ADC wrap of §8b(b), exactly as stored
-adc_wrap_examples.png             the same pulses with our reconstruction on top
+sat_examples_liq.png              clipped liquid pulses of §8b(b), as stored
+sat_population_liq.png            when the liquids clip, and how hard
 ```
 
 The UserInput is the one we ran to produce every number in this document; it is
@@ -231,80 +231,177 @@ waveforms recovers only **0.67x** the PSA's hits, so the recognition is not
 what is limiting the liquids either. This looks like a rate limitation rather
 than a software one.
 
-### 8b. Three warnings about the output, added after a final round of tests
+### 8b. Three notes about the output, added after a final round of tests
 
-These came out of a pre-ship review on 2026-07-29. The first two are properties
-of the PSA and the DAQ rather than of this UserInput, so **they apply to the
+These came out of a pre-ship review on 2026-07-29. All three are properties of
+the PSA and the DAQ rather than of this UserInput, so **they apply to the
 official processing as well** and you may want them independently of anything
 else here.
 
-**(a) `satuflag` is not a reliable saturation flag.** Counting hits whose `amp`
-exceeds the channel's own baseline -- i.e. physically impossible amplitudes --
-in run 224572:
+*Revised 2026-07-30.* An earlier version of this section reported an ADC
+wrap-around and called `satuflag` unreliable. Both were artifacts of our own
+raw-stream parser reading the stream1 samples as `uint16` when they are
+`int16`. There is no wrap, and `satuflag` is sound on the liquids. The two
+figures that illustrated the "wrap" have been withdrawn from this directory.
+What survives the correction is the wall blind spot in (a), which is real and
+structural.
 
-| tree | hits | baseline | `amp` > baseline | `satuflag` set | largest `amp` |
-|---|---|---|---|---|---|
-| LIQA | 3 369 621 | 31 220 | 2 006 (0.060 %) | 791 | 3 234 415 |
-| LIQD | 2 305 162 | 31 108 | 659 (0.029 %) | 382 | 763 834 |
-| WALB | 1 844 839 | 34 003 | 1 069 (0.058 %) | **0** | 43 427 |
-| WALD | 1 995 146 | 34 492 | 809 (0.041 %) | **0** | 42 773 |
-| PSSA | 5 582 034 | 30 841 | 491 (0.009 %) | 203 | **243 257 568** |
-| PSSC | 9 043 427 | 30 712 | 519 (0.006 %) | 198 | **320 356 608** |
+**(a) `satuflag` is reliable on the liquids and never set on the walls.**
+Saturated liquid pulses are flagged per pulse: matching every genuine clipped
+run in seven raw stream1 chunks to the reprocessed trees by
+`segment` + `BunchNumber` + time, **119 of 123 clipped runs carry a flagged hit
+within 100 ns** (median |Δt| 3.2 ns), including 7 of 7 physics-time clips and
+2-sample ones. Chance-match probability at that window is ~4 × 10⁻⁵, so these
+are per-pulse identifications, not a rate coincidence. The 4 misses are
+flash-region runs that merge into one reconstructed flash pulse.
 
-`satuflag` is **never set on any of the four walls**, and on the liquids it
-catches only a third to a half. The affected fraction is tiny, but a single hit
-with `amp` = 2.4e8 will destroy any sum, mean or calibration it enters.
-**Recommend: cut on `amp` above the largest amplitude the range can represent**,
-rather than relying on `satuflag`. That limit is the headroom from the baseline
-to whichever end the pulses run toward — the baseline itself for the
-negative-going plastics and liquids (~30 700-31 200), and `65535 − baseline` for
-the positive-going walls (~31 000-31 800). Conveniently the two come out nearly
-equal, so **~31 000 is a single safe ceiling for every tree**. (The table above
-used the plain baseline as the rail, which is the same number to within 3 % on
-the walls; the counts do not change materially.)
+**A flagged hit must be cut, not corrected.** Its `amp` is a fit extrapolation
+through the excluded samples, so it is not a measurement in either direction:
+flagged hits run from well *below* the ~63 800 ceiling up to 1.7-7.6 × 10⁶ on the
+liquids and 3.9 × 10⁸ on the plastics. The flag is the reliable part, not the
+value.
 
-**(b) The ADC wraps at the end of its range; it does not clip.** stream1 samples
-are unsigned 16-bit and every channel sits well inside that range, so the largest
-measurable amplitude is the distance from the baseline to whichever end the
-pulses run toward. A larger pulse wraps modulo 65536 instead of being clamped.
+**On the four walls `satuflag` is never set, and that is structural, not a
+threshold.** A wall's saturation is a negative *undershoot* during flash
+recovery, opposite to its pulse direction, so it never falls inside a detected
+pulse window — and `AnalyseSaturation` (`PSA_Functions.cc:2793-2806`) only scans
+`[lower[i], upper[i]]` of each found pulse. Concretely, WALA segment 8 bunch
+161: 6 569 hits, 111 in the flash with `amp` up to 25 533 and χ² up to
+1.3 × 10⁵, **zero flagged**, while the raw trace for those same microseconds
+clips at the rail for 21-27 samples at a time. Two related gaps: only the
+clipping pulse is flagged and not the hits riding on its distorted recovery
+(1-5 flagged out of 74-117 hits in those flash windows), and the
+zero-suppression fill value is `0x8000` — bit-identical to the negative rail —
+so fill and clip are distinguishable only by context. None of this has bitten
+us at physics times; it is a flash-region concern.
 
-**Which end depends on the polarity, and the two families differ:** the plastics
-and liquids are negative-going on a baseline of 30 700-31 200, so a too-big pulse
-runs below 0 and reappears near 65 535; the walls and PKUP are positive-going on
-a baseline of 33 700-34 500, so theirs runs past 65 535 and reappears near 0.
-(We measured polarity on in-range blocks, 91-100 % consistent per detector, and
-it agrees with the sign of your own shipped templates.)
+Counting hits whose `amp` exceeds the physical ceiling, over the whole of
+run 224572 (all 16 partials, 3018 bunches):
 
-```
-LIQA  ... 32767 32767 32767 32768 63712  4641 15598 27611 32160 ...
-                                  ^^^^^ should have been below zero
+| tree | hits | `amp` > 63 800 | …of those **unflagged** | `satuflag` set | …flagged, `amp` in range | largest `amp` |
+|---|---|---|---|---|---|---|
+| LIQA | 50 955 430 | 7 844 | 698 (8.9 %) | 12 030 | 4 884 | 7 626 941 |
+| LIQB | 56 453 914 | 3 638 | 449 (12.3 %) | 7 395 | 4 206 | 6 400 278 |
+| LIQC | 14 846 655 | 1 240 | 189 (15.2 %) | 5 000 | 3 949 | 3 028 058 |
+| LIQD | 34 891 436 | 1 708 | 213 (12.5 %) | 5 678 | 4 183 | 1 734 501 |
+| WALA | 28 929 689 | **0** | — | **0** | — | 43 220 |
+| WALB | 28 068 684 | **0** | — | **0** | — | 44 915 |
+| WALC | 30 997 547 | **0** | — | **0** | — | 44 152 |
+| WALD | 30 444 217 | **0** | — | **0** | — | 43 972 |
+| PSSA | 84 146 543 | 5 927 | 3 264 (**55 %**) | 3 077 | 414 | **271 953 312** |
+| PSSB | 113 743 059 | 2 776 | 237 (8.5 %) | 3 066 | 527 | 5 409 754 |
+| PSSC | 136 149 922 | 6 417 | 3 419 (**53 %**) | 3 024 | 26 | **388 519 040** |
+| PSSD | 121 097 426 | 211 | 211 (**100 %**) | **0** | — | 66 301 |
 
-WALA  ... 65243 65336 65428    58   100   229   446 ...
-                             ^^^^ should have been above 65535
-```
+The affected fraction is tiny — below 0.02 % of hits in every tree — but the last
+column is why it still matters: a single hit at `amp` ~ 4 × 10⁸ will destroy any
+sum, mean or calibration it enters.
 
-A threshold test therefore cannot identify a wrap on its own — on a wall, a
-sample above 60 000 is an ordinary large pulse. What identifies one either way is
-the **discontinuity**: a step of more than 20 000 ADC between adjacent samples,
-which no real pulse produces at 1 GS/s.
+Read the two middle columns as the argument for using both tests. `satuflag`
+alone leaves **8.9-15 % of the over-ceiling liquid hits unflagged**, and on the
+plastics anywhere from 8.5 % (PSSB) to 53-55 % (PSSA, PSSC) — on PSSD all 211,
+since like the walls it never sets the flag at all. An `amp` cut alone leaves the
+flagged-but-in-range hits, which are ~4 000 per liquid tree. On the walls neither
+test fires and nothing exceeds
+the ADC ceiling — see the front-end note in (b); their `amp` still reaches
+43 000-45 000, which is above what the front end can physically deliver, so those
+are fit extrapolations too.
 
-There is no flat top, so a clipping test does not find it; the reported `amp` is
-whatever the last un-wrapped sample on the rising edge happened to be, so it is
-randomly *under*-reported; and the fitted shape sees a full-scale positive spike
-one sample after the peak. Frequency, as a fraction of zero-suppressed blocks
-containing at least one wrap: liquids 0.09-0.67 %, plastics 0.03-0.04 %, walls
-0.05-0.09 %, SILI 0.84 %. **For the walls and plastics every single occurrence
-is inside the γ-flash** (0 of 178 and 0 of 41 respectively fall outside it),
-where saturation is expected; the liquids are the only detectors where it
-happens at physics times.
+**Recommend: cut hits with `satuflag` set, and additionally cut `amp` above
+~63 800.** Neither test alone is sufficient, as the table shows.
 
-`adc_wrap_as_recorded.png` in this directory shows six liquid ones, all in the
-1-21 ms physics window, as stored: the trace sits at the ~31 200 baseline, dives
-toward 0, and **1-2 samples** (never more than 3) appear up at 63-65 000 before
-it resumes its normal fall. Each panel is labelled with its file segment, bunch
-and trigger number so you can pull the same block up on your side. Undoing the wrap recovers a pulse of 31 340-36 656
-ADC against a 31 200 ceiling — only 0.4 to 17 % over range, median 6 % — which
-is why nothing about these pulses looks anomalous except that one sample.
+**On the walls, cut `amp` above ~34 600 instead**, as a hygiene cut against
+flash/divert artifacts. `satuflag` can never fire on a wall, and the walls never
+reach their ADC rail either: reported `amp` terminates hard at 43 220 / 44 915 /
+44 152 / 43 972 and the **measured** peak `amp_0` tops out at 30 884-33 570, i.e.
+48-52 % of the ADC range, on all four.
+
+What sets that limit is visible in the raw traces (2026-07-30). During the flash
+and divert the wall trace steps from its ~−31 770 baseline up to **ADC zero** and
+sits there for hundreds of ns; the PSA reconstructs that step as a 129-266 ns
+"pulse" of measured height ~30 200-30 400 and fits it at 38 600-42 400, with χ²
+of 3 × 10⁴ to 8 × 10⁵. Those are the hits above the cut. **At physics times there
+is no wall saturation at all** — over a whole segment the largest physics-time
+`amp_0` is 16 102 / 19 175 / 22 739 / 18 978, `amp` agrees with `amp_0` to better
+than 1 %, and the fits are clean (χ² = 17 on the largest). So the cut removes
+flash artifacts and nothing else; it is worth having only because a 42 000-count
+artifact in a sum is indistinguishable from a real large pulse.
+
+The plastics behave differently again — see the `amp_0` column above: PSSA/B/C do
+reach the rail (63 540-64 062 against a rail at 63 568), which is why `satuflag`
+fires on them, whereas **PSSD is analogue-limited at 44 806 (70 % of range)** and
+therefore never sets the flag, exactly like the walls.
+
+**Do not cut at ~31 000.** A previous revision of this document recommended
+that, on the belief that the baseline was the rail. It is not — it is
+mid-range — and such a cut discards ordinary half-scale pulses: on LIQA it
+removes 30 784 hits of which **22 940 (75 %) are perfectly good**, and on the
+walls it would remove 5 819-25 104 hits, not one of which exceeds the ADC
+ceiling.
+
+**(b) The ADC clips at its rails; it does not wrap, and the usable amplitude is
+~63 800.** stream1 samples are **signed** `int16`. That is how ntoflib reads
+them (`ReaderStructACQC.h:41`, `std::vector<int16_t> data`), and the DAQ
+settings written into the output files agree: ±32 768 codes span ±1002 mV, and
+each channel carries a `baselineOffsetmV` of ±950 mV — i.e. it is deliberately
+offset to ~95 % of the way toward the rail *opposite* its pulse direction:
+
+| detector group | `baselineOffsetmV` | polarity | measured baseline (int16) | swing in the pulse direction |
+|---|---|---|---|---|
+| LIQ, PSS | **+950** | negative-going | LIQA +31 222, PSSA +30 830 | to −32 768, i.e. ~63 600-64 000 |
+| WAL | **−950** | positive-going | WALA −31 407, WALB −31 406 | to +32 767, i.e. ~64 200 |
+| SILI / PKUP | (see note) | negative / positive | +26 346 / −26 664 | ~59 100 / ~59 400 |
+
+The measured baselines agree with ±950 mV to better than 1 % on every LIQ, PSS
+and WAL channel. `SILI` and `PKUP` sit ~26 500 counts from zero rather than
+~31 000, so their front-end range is not the same 2 004 mV — we did not chase
+which of `fullScalemV` or the offset differs, only that their usable swing is
+correspondingly ~59 100 / ~59 400.
+
+So the largest measurable amplitude is **~63 800 counts** on the liquids,
+plastics and walls — not the ~31 000 an unsigned reading suggests — with ~52 mV
+of headroom on the baseline side.
+
+**Saturation is a genuine clip.** Over 123 clipped runs in seven raw chunks,
+saturated samples always sit at *exactly* a rail code; there is no arithmetic
+wrap anywhere. Two features are worth knowing before you look at a raw trace:
+
+- The deepest flash saturations on LIQA (3 of 13 runs) and LIQB (2 of 6) show a
+  **rail-to-rail flip** — the output jumps from −32 768 to exactly +32 767 for
+  3-7 samples and back. It looks like a wrap and is not: a wrap would store
+  arbitrary values below the positive rail and keep descending. Flips occur only
+  in the flash, only on LIQA/LIQB, never at physics time.
+
+  ```
+  LIQB  [-32768, -32768, -32768, -32768, -32768, -32768, 32767, 32767, 32767, -32768, ...]
+  ```
+
+- The **zero-suppression fill value is `0x8000`**, bit-identical to the negative
+  rail (LIQA: 17 fill runs against 14 genuine clips in three chunks). A clip is
+  approached sample by sample; a fill is not. Anything that tests for rail
+  contact has to make that distinction — the PSA does not, which is a latent
+  issue rather than an observed one.
+
+**Where clipping actually happens** (census over three 430 MB chunks, ~640 k
+zero-suppressed blocks): plastics, walls and SILI clip **only inside the γ-flash**
+— 0 physics-time clips on PSSA-D and WALA-D. The liquids are the only detectors
+that clip at physics times, and only LIQA does so with any regularity (4
+physics-time clips against 14 total). Clipped runs are 2-129 samples long with a
+median of 23; the **physics-time** ones are the short end, 2-5 samples.
+`sat_examples_liq.png` and `sat_population_liq.png` in this directory show
+individual clipped pulses (signed, with the rail and baseline drawn) and the
+run-length, timing and flat-top-versus-depth distributions behind this
+paragraph.
+
+**The walls saturate their front end long before the ADC.** Their largest
+excursion anywhere is ~34 600 counts ≈ 1 060 mV of a 2 004 mV range, i.e. about
+half of ADC full scale, so the limit is analogue and no rail test can see it.
+Practical consequence: **a wall `amp` above ~35 000 is not a measurement**
+either, and `satuflag` will not tell you — cut on the amplitude directly. The
+liquids, by contrast, show no front-end compression at all: flat-top width at
+the peak stays 1-3 ns for every pulse depth from 20 000 ADC up to ~64 000 and
+only jumps to 50-130 ns once the rail is reached, so for them a rail test is the
+right instrument.
 
 **(c) `afast` is not an n/γ discriminant.** Now that the boundary is set,
 `afast` fills for 100 % of hits and `aslow` is **always zero** -- see §8. What
@@ -356,25 +453,25 @@ i.e. the best that processing can do; on its own stored `tflash` it gives
 
 **One caveat on the liquid yield.** The +14-21 % is solid as a count, and the
 fit quality moves the right way (chi2 p50 neutral, chi2 p90 clearly better --
-LIQA 31.4 → 25.3, LIQD 21.6 → 16.2 against the official file). What we could not
-finish is the per-hit check that each extra hit is a real pulse: **95 % of the
+LIQA 31.4 → 25.3, LIQD 21.6 → 16.2 against the official file). What we have not
+yet done is the per-hit check that each extra hit is a real pulse: **95 % of the
 gain is resolved shoulders on existing pulses** rather than pulses missed
-outright, and verifying those individually needs a raw-waveform comparison we
-could not make trustworthy. Counting rather than matching, v12 reports 0.96 of
-the pulses the raw data resolves against 0.77 for the baseline, i.e. it
-approaches that ceiling without crossing it — supportive, not conclusive.
+outright. Counting rather than matching, v12 reports 0.96 of the pulses the raw
+data resolves against 0.77 for the baseline, i.e. it approaches that ceiling
+without crossing it — supportive, not conclusive.
 
-**One question would probably close it.** Stacking the stream1 trace on every
-reported hit, the raw pulse peak sits **19–26 ns after `peak_tof`**, by a
-constant that differs per detector (LIQA +26, LIQB +27, LIQD +19 ns). We
-understand the branch definitions — Žugec's guide gives `tof` as the 30 %
-constant-fraction arrival and `peak_tof` as the peak moment, and the two differ
-by 1.3 ns in our files exactly as they should. So this is not a definition
-mismatch. It is not a sampling-rate mismatch either: the lag is constant from
-1.7 to 7.0 ms of time of flight. **Is there a per-channel offset between the
-`start` index of an ACQC block in stream1 and the sample origin the PSA times
-against?** If so, we would like the numbers; if not, we are misreading the raw
-format and would like to know that too.
+*Revised 2026-07-30.* This paragraph previously said the per-hit check could not
+be made trustworthy, and asked you whether there was a per-channel offset
+between the `start` index of an ACQC block in stream1 and the PSA's sample
+origin. **Please disregard that question — it was our bug and it is closed.**
+The block `start` in our parser is the zero-suppression trigger sample, while
+the ACQC payload begins 259 samples earlier with the pre-samples; correcting for
+that, `tof` and the raw sample index agree to **−258.7 ns on LIQA (135/135
+pulses, spread 1.1 ns) and −258.9 ns on LIQD (85/85)** — a constant, not a
+scatter. The flash block starts at 0, carries no pre-samples, and matches with
+no offset. The earlier "19-26 ns per-detector lag" was measured a different way
+and is superseded. Per-hit raw-to-tree matching therefore works, so the check
+above is merely outstanding, not blocked.
 
 The false-match rate at 1-3 ms roughly doubles. That is the cost of recovering
 the plastic hits and we accept it deliberately -- the candidate rate rises from

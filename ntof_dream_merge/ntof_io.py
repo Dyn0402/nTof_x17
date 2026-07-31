@@ -50,11 +50,83 @@ SCINT_TREES = WALL_TREES + PLASTIC_TREES + LIQ_TREES
 
 CACHE_DIR = ANALYSIS_DIR / 'ntof_dream_merge' / 'cache'
 
-# Hit branches worth carrying into the merge. `amp`/`area` are the PSA pulse
-# height/integral, `satuflag` marks a clipped pulse and `pileup1` a pulse the PSA
-# had to disentangle -- both matter when the amplitude is used as a MIP proxy.
+# Hit branches worth carrying into the merge. `satuflag` marks a clipped pulse and
+# `pileup1` a pulse the PSA had to disentangle -- both matter when the amplitude
+# is used as a MIP proxy.
+#
+# `amp` AND `area` BOTH COME FROM THE FITTED TEMPLATE, so `area` carries no
+# information `amp` does not: with AMPLITUDE OPTION=2 "both the final amplitude
+# and area will be determined from the fitted pulse" (PSA guide, "Finding the
+# amplitude and area"), and since a template is only scaled, area = amp x
+# integral(shape). Measured: `area/amp` takes exactly one value per pulse shape
+# (LIQA 2.7543 for pulseshape 1 and 7.5457 for pulseshape 0, matching the
+# per-shape hit counts to the hit).
+#
+# The MEASURED quantities are `amp_0` (pre-fit maximum) and `area_0` (pre-fit
+# integration) -- the guide: "amplitudes and areas are first determined by the
+# simplest procedures -- search for the maximum and integration", and the
+# afast/aslow note confirms "the integrated area, area_0, (not the fitted area,
+# area)". Use those for a real integral or a saturation-independent amplitude:
+# `area_0/amp` has a per-hit spread of ~0.45 where `area/amp` has 0.05, and on
+# WALB `amp_0` tops out at 31 466 against `amp`'s 44 146.
 HIT_BRANCHES = ('BunchNumber', 'detn', 'tof', 'tflash', 'amp', 'area',
                 'satuflag', 'pileup1')
+
+# ---------------------------------------------------------------- saturation --
+# Largest amplitude each detector can actually deliver [ADC counts]. Above it,
+# `amp` is the pulse-shape fit extrapolating through samples it had to exclude,
+# and is not a measurement -- values run to 3.9e8 on the plastics.
+#
+# stream1 samples are SIGNED int16 and each channel is parked ~950 mV toward the
+# rail opposite its pulse direction, so the swing is ~63 800 counts, NOT the
+# ~31 000 baseline an unsigned decode suggests (a cut at 31 000 sits mid-range
+# and throws away 75 % good hits). See FINDINGS_2026-07-29_signed_decoding.md.
+#
+# The WALLS are the exception and the reason this lives in one place: they never
+# reach their ADC rail in the pulse direction, because the front end limits first
+# at ~34 600 counts (~1060 mV of 2004 mV), i.e. 54 % of the ADC ceiling.
+# Measured 2026-07-30: reported `amp` on all four walls terminates at
+# 43 220-44 915 and never once reaches 63 800 in the whole run, while `amp_0`
+# (the PSA's pre-fit maximum) tops out at ~31 500. `satuflag` can never fire on a
+# wall -- the saturation is a negative undershoot, outside any found pulse
+# window -- so this cut is the ONLY way to catch it.
+# See FINDINGS_2026-07-30_saturation_walls_plastics.md.
+ADC_CEILING = 63_800.0          # LIQ, PSS: they do clip at the rail
+WAL_CEILING = 34_600.0          # analogue front-end limit, from the raw traces
+SILI_CEILING = 59_100.0         # baseline sits ~26 350 from zero, not ~31 100
+PKUP_CEILING = 59_400.0
+
+
+def saturation_ceiling(tree: str) -> float:
+    """Largest physically deliverable `amp` for a tree, in ADC counts."""
+    t = tree.upper()
+    if t.startswith('WAL'):
+        return WAL_CEILING
+    if t.startswith('SILI'):
+        return SILI_CEILING
+    if t.startswith('PKUP'):
+        return PKUP_CEILING
+    return ADC_CEILING
+
+
+def saturated(tree: str, amp, satuflag=None) -> np.ndarray:
+    """Hits whose `amp` is not a measurement: over the ceiling, or PSA-flagged.
+
+    Pass `satuflag` whenever you have it. Neither test alone is complete: over
+    the whole of run 224572 the flag misses 8.9-15 % of over-ceiling liquid hits
+    and 8.5-100 % of plastic ones (PSSD never sets it), while the amplitude cut
+    misses the ~4 000 hits per liquid tree that are flagged with an extrapolated
+    `amp` back inside the range. On the walls only the amplitude cut can fire.
+
+    A flagged hit must be CUT, not corrected -- `amp` is an extrapolation and
+    `area` cannot rescue it (see `area` note in the module docstring). At physics
+    times a clipped LIQUID hit does keep its `tof` to <1 ns, so it may be kept as
+    a time-only hit; do not do that in the flash.
+    """
+    m = np.asarray(amp, dtype=float) > saturation_ceiling(tree)
+    if satuflag is not None:
+        m = m | np.asarray(satuflag).astype(bool)
+    return m
 
 
 def ntof_paths(run: int) -> list:
@@ -129,6 +201,41 @@ def _tree_counts(run: int, tree: str) -> np.ndarray:
         with uproot.open(path) as f:
             counts.append(f[tree].num_entries)
     return np.asarray(counts, dtype=np.int64)
+
+
+def variant_cache(target, files=None) -> Path:
+    """A PERSISTENT cache directory private to one processing variant.
+
+    `bunch_edges` reads the whole `BunchNumber` branch of every partial to build
+    its index -- ~30 min for a 4-tree job over 16 partials of run 224572. That
+    index is keyed only on (run, tree), so the official file and each
+    reprocessing MUST NOT share a cache directory; mixing them is exactly the
+    class of bug REVIEW.md §5 is about. Callers used to buy that isolation with
+    `tempfile.mkdtemp()`, which is correct but throws the index away every single
+    run and pays the 30 minutes again.
+
+    This gives the same isolation and pays it once, by keying a stable directory
+    on the variant AND on a fingerprint of the actual file set (names + sizes).
+    A different, added or truncated partial changes the fingerprint and so gets a
+    fresh index rather than silently reusing offsets that no longer apply.
+
+        cache = ntof_io.variant_cache(parts_dir)
+        rep.CACHE_DIR = ntof_io.CACHE_DIR = cache
+    """
+    import hashlib
+
+    target = Path(target)
+    if files is None:
+        files = (sorted(target.glob('run*_[0-9]*.root')) if target.is_dir()
+                 else [target])
+    files = [Path(f) for f in files]
+    fp = hashlib.sha1(
+        '|'.join(f'{f.name}:{f.stat().st_size if f.exists() else 0}'
+                 for f in files).encode()).hexdigest()[:10]
+    slug = target.name.replace('.root', '') or 'unnamed'
+    out = CACHE_DIR / 'variants' / f'{slug}_{fp}'
+    out.mkdir(parents=True, exist_ok=True)
+    return out
 
 
 def bunch_edges(run: int, tree: str, rebuild: bool = False) -> np.ndarray:
