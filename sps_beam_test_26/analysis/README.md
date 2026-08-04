@@ -25,6 +25,7 @@ Two strands, kept separate because they answer different questions:
 | `RAW_RUN71_STATUS.md` | run_71 RAW — the FEU packet loss, its diagnosis, and the decoder fix. |
 | `RAW_RUN71_PHYSICS.md` | run_71 RAW — what it settled, what it retracted, and the wall it hit. **Partially superseded.** |
 | `RAW_RUN71_REANALYSIS_2026-08-04.md` | ground-up rework: the ">3.8 µs tail" was pile-up + two oscillating channels + no baselines; drift is slow (v ≈ 13–15 µm/ns at 233 V/cm, 4× below dry Magboltz — open item) but **fine at the operating point**; kernel drift-invariance passes; charge budget measured. **Current authority for the flat-data conclusions.** |
+| `RERUN_2026-08-04_NEW_MACHINE.md` | the campaign machine is gone: decoder patch recovered & pushed, chain rebuilt from EOS, clean scripts recreated **in the repo** (`robust_waveforms.py`, `kernel_refit_clean.py`, `tilt_clean.py`). Charge budget + invariance reproduce (now across all 3 fields); cascade parameters shift with the lost recipe details and were already ruled non-physical. **Tilt corrected: θ_X ≈ 0.9° — the old 0.2–0.4° was the dry-gas v_drift; the invariant is tan θ_X = −0.015 ± 0.002.** `mapping_urwell.csv` still to reconstruct (blocks `flat_align_eff.py` only). |
 
 > **2026-08-04: the two sections below are superseded by
 > `RAW_RUN71_REANALYSIS_2026-08-04.md`.** The window wall was three
@@ -70,12 +71,15 @@ stability was an artefact of *consistently* truncated tails.
 
 ## Two standing gotchas
 
-- **det4 carries a ~0.2–0.4° tilt in X** (the striped coordinate), measured
-  three times across two gases and a remount. The uRWELL track slopes cannot
-  see it — it is a detector-vs-telescope misalignment, measured from the charge
-  centroid walking as the column drifts in. It contaminates the X view of the
-  kernel and gets *worse* in RAW because the tilt lives in the tail.
-  **Quote the Y view, never X.**
+- **det4 carries a tilt in X** (the striped coordinate), measured from the
+  charge centroid walking as the column drifts in; the uRWELL track slopes
+  cannot see it. It contaminates the X view of the kernel and gets *worse* in
+  RAW because the tilt lives in the tail. **Quote the Y view, never X.**
+  *2026-08-04 correction:* the historical "~0.2–0.4°" divided the walk by the
+  DRY-gas v_drift; with the measured wet-gas v the same walk is **θ_X ≈ 0.9°**
+  (and θ_Y ≈ +0.2–0.3° is not zero). The v-independent invariant is
+  **tan θ_X = −0.015 ± 0.002**, drift-field-invariant across 92–233 V/cm —
+  see `RERUN_2026-08-04_NEW_MACHINE.md` §4.
 - **`run_config.json` is wrong** about gas, mount angle and `start_time` for
   this entire campaign. Authorities are `hv_monitor.csv` for HV, `dream_daq.log`
   for sub-run boundaries, `*_thr.prg` headers for the ZS threshold, the
@@ -107,9 +111,13 @@ run71_raw       flat, Ar/CF4/iso, RAW (no ZS), drift 700 / 450 / 275 V
 python decode_dataset.py    <dataset> [--feus 03,01]   # fdf -> waveforms + hits
 python pair_dataset.py      <dataset>                  # det4 <-> uRWELL by eventId
 python flat_align_eff.py    <dataset>                  # fit z, align, efficiency
-python extract_det4_only.py <dataset>                  # waveforms, det4-only selection
+python extract_det4_only.py <dataset> [--cm masked]    # waveforms, det4-only selection
 python kernel_fit_m70V.py --wf <wf.npz> --plateau <p> [--raw]
 python tilt_m70V.py       --wf <wf.npz> --plateau <p>
+# the clean (artefact-free) RAW chain, recreated in-repo 2026-08-04:
+python robust_waveforms.py   <dataset> --wf <wf.npz>   # clean median/trim library
+python kernel_refit_clean.py <dataset> --lib <lib.npz> # invariance test + budget
+python tilt_clean.py         <dataset> --wf <wf.npz>   # tilt on the clean selection
 ```
 
 `decode_dataset.py` derives every analyzer flag from the dataset record rather

@@ -54,11 +54,25 @@ def main():
     ap.add_argument("--gate", default="600,3600")
     ap.add_argument("--max-events", type=int, default=60000)
     ap.add_argument("--out", default="")
+    ap.add_argument("--cm", default="block", choices=("block", "masked", "none"),
+                    help="common-mode handling for RAW: 'block' subtracts the "
+                         "per-sample median of each 64-ch connector block "
+                         "(biased late in the window, where the dispersed "
+                         "charge spreads across the block and the median "
+                         "rises with it -- the ZS-study CM signal bias); "
+                         "'masked' is the same median but with the strips "
+                         "within +-10 of either view's leading cluster (and "
+                         "the oscillating channels) excluded, so the signal "
+                         "cannot bias it; 'none' leaves CM in entirely -- "
+                         "unusable in beam, the CM wanders WITHIN the window "
+                         "(10-20x the beam-off sigma, ZS study) so no "
+                         "pre-level can absorb it")
     args = ap.parse_args()
     D = datasets.get(args.dataset)
     stage = D["stage"]
     raw = bool(D.get("raw"))
-    out = args.out or stage + f"wf_{args.dataset}_det4only.npz"
+    suff = {"block": "", "masked": "_cmmasked", "none": "_nocm"}[args.cm]
+    out = args.out or stage + f"wf_{args.dataset}_det4only{suff}.npz"
 
     # ---------------------------------------------------- read det4 hits
     ev_off = 0
@@ -187,6 +201,9 @@ def main():
     KEEP = 4          # strips either side of the leading strip, per view
     SIDX = np.round(POSITION_MM / PITCH_MM).astype(int)
 
+    CM_MASK_HALF = 10                 # strips either side of a lead to exclude
+    CM_BAD_CH = (510, 372)            # oscillating channels, never in the CM
+
     def correct_chunk(evs, chs, sms, ams):
         """(n_ev,512,nsamp) pedestal- and common-noise-subtracted, NaN = absent."""
         n = len(evs)
@@ -195,9 +212,22 @@ def main():
             c, sm, am = chs[j], sms[j], ams[j]
             m = (sm >= 0) & (sm < NSMP)
             grid[j, c[m], sm[m]] = am[m] - ped_mean[c[m]]
-        if raw:
+        if raw and args.cm in ("block", "masked"):
             g = grid.reshape(n, NCH // 64, 64, NSMP)
-            med = np.nanmedian(g, axis=2, keepdims=True)
+            if args.cm == "masked":
+                gm = grid.copy()
+                gm[:, list(CM_BAD_CH), :] = np.nan
+                for j, gev in enumerate(evs):
+                    for v in ("x", "y"):
+                        if not np.isfinite(lead[v][gev]):
+                            continue
+                        s0 = int(round(lead[v][gev] / PITCH_MM))
+                        sig = (VIEW == v) & (np.abs(SIDX - s0) <= CM_MASK_HALF)
+                        gm[j, sig, :] = np.nan
+                med = np.nanmedian(gm.reshape(n, NCH // 64, 64, NSMP),
+                                   axis=2, keepdims=True)
+            else:
+                med = np.nanmedian(g, axis=2, keepdims=True)
             g -= np.nan_to_num(med)
             grid = g.reshape(n, NCH, NSMP)
         return grid
