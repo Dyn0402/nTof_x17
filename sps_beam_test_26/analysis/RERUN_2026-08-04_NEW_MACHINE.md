@@ -45,12 +45,23 @@ only on the data disk):
 2. `stripes_g_det4.npz` — rebuilt (bands only) from the committed
    `stripes_g_det4.json`; the c/med profiles need `04_stripe_metrics.py` +
    the June bench hits from EOS if ever wanted again.
-3. `urw_mapping/mapping_urwell.csv` — **still missing, open item.** EOS
-   `config/detectors/` has `strip_map.txt`/`inter_map.txt` and a
-   det4-correlation on the beam data already pins several connector blocks
-   (front ch 64–127 and back ch 256–319 measure det4-Y at +1.00 mm/ch);
-   finishing this reconstruction blocks `flat_align_eff.py`, and nothing
-   else.
+3. `urw_mapping/mapping_urwell.csv` — **recovered later the same evening**:
+   the campaign laptop regenerated it from its analysis code
+   (`record_mapping_alignment.py`) and pushed it to the repo
+   (`analysis/urw_mapping/`, commit 793e541, merged here as 37248a7). The
+   independent det4-correlation done on this machine while it was missing
+   agrees with it wherever the beam gave signal (front ch 64–127 and back
+   ch 256–319: +1.00 mm/ch onto the same det4 coordinate — front-x/back-x
+   in the csv). With it, `pair_dataset.py` and `flat_align_eff.py` run:
+
+   | plateau | clean | \|res\| [mm] | fired | within 5 mm | in-band |
+   |---|---:|---:|---:|---:|---:|
+   | raw700 | 2191 | 0.64 | 68.1 % | 41.5 % | 57.6 % |
+   | raw450 | 2125 | 0.67 | 69.0 % | 39.9 % | 53.9 % |
+   | raw275 | 2193 | 0.73 | 60.1 % | 29.5 % | 42.1 % |
+
+   Alignment roll +89.50°, det(A) +0.9972 — a proper rotation, and the
+   efficiency ladder falls with drift voltage as it must.
 
 ## 3. The clean chain, recreated — what reproduces and what does not
 
