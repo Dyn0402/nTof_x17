@@ -210,3 +210,10 @@ __marimo__/
 .idea/
 ntof_may_analysis/output/
 ntof_processing/flash_timing/data/
+
+# Generated figures, animations and analysis caches. Purged from history
+# 2026-08-04 (they were 250 MB of the 272 MB pack). Regenerate with the
+# analysis scripts; they stay on disk locally but are no longer tracked.
+*.png
+*.gif
+*.npz
