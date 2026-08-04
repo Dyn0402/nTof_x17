@@ -1,0 +1,4470 @@
+{
+ "runs": {
+  "run_22": {
+   "where": [
+    "dream_run"
+   ],
+   "subruns": {
+    "nominal_00": {
+     "feus": {
+      "05": 1,
+      "01": 3,
+      "03": 1,
+      "04": 1
+     },
+     "datrun_stamps": [
+      "2026-07-30T01:51"
+     ],
+     "ped_stamps": [
+      "2026-07-29T10:03"
+     ],
+     "nfdf": 6,
+     "bytes": 1326715026,
+     "hv_monitor": null,
+     "logs": [
+      "RunCtrl_260730_01H51.log"
+     ],
+     "scan_logs": [],
+     "mtime_first": "2026-07-30T01:51:31",
+     "mtime_last": "2026-07-30T02:02:41"
+    }
+   },
+   "loose_files": []
+  },
+  "run_27": {
+   "where": [
+    "dream_run"
+   ],
+   "subruns": {
+    "cfg_gain3.0_peaktime25": {
+     "feus": {
+      "05": 1,
+      "01": 4,
+      "03": 1,
+      "04": 1
+     },
+     "datrun_stamps": [
+      "2026-07-30T18:36"
+     ],
+     "ped_stamps": [
+      "2026-07-29T10:03"
+     ],
+     "nfdf": 7,
+     "bytes": 2295107336,
+     "hv_monitor": null,
+     "logs": [
+      "RunCtrl_260730_18H36.log"
+     ],
+     "scan_logs": [],
+     "mtime_first": "2026-07-30T18:36:02",
+     "mtime_last": "2026-07-30T19:31:23"
+    }
+   },
+   "loose_files": []
+  },
+  "run_28": {
+   "where": [
+    "dream_run"
+   ],
+   "subruns": {
+    "cfg_gain4.5_peaktime25": {
+     "feus": {
+      "05": 1,
+      "01": 3,
+      "03": 1,
+      "04": 1
+     },
+     "datrun_stamps": [
+      "2026-07-30T19:31"
+     ],
+     "ped_stamps": [
+      "2026-07-29T10:03"
+     ],
+     "nfdf": 6,
+     "bytes": 1830012550,
+     "hv_monitor": null,
+     "logs": [
+      "RunCtrl_260730_19H31.log"
+     ],
+     "scan_logs": [],
+     "mtime_first": "2026-07-30T19:31:56",
+     "mtime_last": "2026-07-30T20:27:00"
+    }
+   },
+   "loose_files": []
+  },
+  "run_29": {
+   "where": [
+    "dream_run"
+   ],
+   "subruns": {
+    "trigtest_gain3.0_peaktime200": {
+     "feus": {
+      "05": 1,
+      "03": 1,
+      "01": 2,
+      "04": 1
+     },
+     "datrun_stamps": [
+      "2026-07-30T23:02"
+     ],
+     "ped_stamps": [
+      "2026-07-29T10:03"
+     ],
+     "nfdf": 5,
+     "bytes": 613145224,
+     "hv_monitor": null,
+     "logs": [
+      "RunCtrl_260730_23H02.log"
+     ],
+     "scan_logs": [],
+     "mtime_first": "2026-07-30T23:02:54",
+     "mtime_last": "2026-07-30T23:07:58"
+    }
+   },
+   "loose_files": []
+  },
+  "run_30": {
+   "where": [
+    "dream_run"
+   ],
+   "subruns": {
+    "trigtest_gain3.0_peaktime200": {
+     "feus": {
+      "05": 1,
+      "01": 2,
+      "03": 1,
+      "04": 1
+     },
+     "datrun_stamps": [
+      "2026-07-31T00:49"
+     ],
+     "ped_stamps": [
+      "2026-07-29T10:03"
+     ],
+     "nfdf": 5,
+     "bytes": 237141126,
+     "hv_monitor": null,
+     "logs": [
+      "RunCtrl_260731_00H49.log"
+     ],
+     "scan_logs": [],
+     "mtime_first": "2026-07-31T00:49:51",
+     "mtime_last": "2026-07-31T00:51:17"
+    }
+   },
+   "loose_files": []
+  },
+  "run_31": {
+   "where": [
+    "dream_run"
+   ],
+   "subruns": {
+    "trigtest_gain3.0_peaktime200": {
+     "feus": {
+      "05": 1,
+      "01": 2,
+      "03": 1,
+      "04": 1
+     },
+     "datrun_stamps": [
+      "2026-07-31T12:01"
+     ],
+     "ped_stamps": [
+      "2026-07-29T10:03"
+     ],
+     "nfdf": 5,
+     "bytes": 206292388,
+     "hv_monitor": null,
+     "logs": [
+      "RunCtrl_260731_12H01.log"
+     ],
+     "scan_logs": [],
+     "mtime_first": "2026-07-31T12:01:00",
+     "mtime_last": "2026-07-31T12:02:14"
+    }
+   },
+   "loose_files": []
+  },
+  "run_37": {
+   "where": [
+    "dream_run"
+   ],
+   "subruns": {
+    "cfg_gain3.0_peaktime25": {
+     "feus": {
+      "01": 2,
+      "05": 1,
+      "03": 1,
+      "04": 1
+     },
+     "datrun_stamps": [
+      "2026-07-31T23:21"
+     ],
+     "ped_stamps": [
+      "2026-07-29T10:03"
+     ],
+     "nfdf": 5,
+     "bytes": 369738310,
+     "hv_monitor": null,
+     "logs": [
+      "RunCtrl_260731_23H21.log"
+     ],
+     "scan_logs": [],
+     "mtime_first": "2026-07-31T23:21:52",
+     "mtime_last": "2026-07-31T23:24:39"
+    }
+   },
+   "loose_files": []
+  },
+  "run_38": {
+   "where": [
+    "dream_run"
+   ],
+   "subruns": {
+    "cfg_gain3.0_peaktime100": {
+     "feus": {
+      "05": 1,
+      "01": 5,
+      "03": 1,
+      "04": 1
+     },
+     "datrun_stamps": [
+      "2026-07-31T23:43"
+     ],
+     "ped_stamps": [
+      "2026-07-29T10:03"
+     ],
+     "nfdf": 8,
+     "bytes": 3899833876,
+     "hv_monitor": null,
+     "logs": [
+      "RunCtrl_260731_23H43.log"
+     ],
+     "scan_logs": [],
+     "mtime_first": "2026-07-31T23:43:52",
+     "mtime_last": "2026-08-01T00:19:57"
+    }
+   },
+   "loose_files": []
+  },
+  "run_39": {
+   "where": [
+    "dream_run"
+   ],
+   "subruns": {
+    "cfg_gain3.0_peaktime25": {
+     "feus": {
+      "05": 1,
+      "03": 1,
+      "01": 5,
+      "04": 1
+     },
+     "datrun_stamps": [
+      "2026-08-01T00:23"
+     ],
+     "ped_stamps": [
+      "2026-07-29T10:03"
+     ],
+     "nfdf": 8,
+     "bytes": 3830402594,
+     "hv_monitor": null,
+     "logs": [
+      "RunCtrl_260801_00H23.log"
+     ],
+     "scan_logs": [],
+     "mtime_first": "2026-08-01T00:23:33",
+     "mtime_last": "2026-08-01T00:58:48"
+    }
+   },
+   "loose_files": []
+  },
+  "run_40": {
+   "where": [
+    "dream_run"
+   ],
+   "subruns": {
+    "cfg_gain3.0_peaktime50": {
+     "feus": {
+      "01": 5,
+      "05": 1,
+      "03": 1,
+      "04": 1
+     },
+     "datrun_stamps": [
+      "2026-08-01T01:00"
+     ],
+     "ped_stamps": [
+      "2026-07-29T10:03"
+     ],
+     "nfdf": 8,
+     "bytes": 3804706386,
+     "hv_monitor": null,
+     "logs": [
+      "RunCtrl_260801_01H00.log"
+     ],
+     "scan_logs": [],
+     "mtime_first": "2026-08-01T01:00:15",
+     "mtime_last": "2026-08-01T01:35:19"
+    }
+   },
+   "loose_files": []
+  },
+  "run_41": {
+   "where": [
+    "dream_run"
+   ],
+   "subruns": {
+    "cfg_gain3.0_peaktime200": {
+     "feus": {
+      "05": 1,
+      "01": 5,
+      "03": 1,
+      "04": 1
+     },
+     "datrun_stamps": [
+      "2026-08-01T01:36"
+     ],
+     "ped_stamps": [
+      "2026-07-29T10:03"
+     ],
+     "nfdf": 8,
+     "bytes": 3805000060,
+     "hv_monitor": null,
+     "logs": [
+      "RunCtrl_260801_01H36.log"
+     ],
+     "scan_logs": [],
+     "mtime_first": "2026-08-01T01:36:26",
+     "mtime_last": "2026-08-01T02:11:31"
+    }
+   },
+   "loose_files": []
+  },
+  "run_42": {
+   "where": [
+    "dream_run"
+   ],
+   "subruns": {
+    "cfg_gain3.0_peaktime200_deflt": {
+     "feus": {
+      "05": 1,
+      "03": 1,
+      "01": 5,
+      "04": 1
+     },
+     "datrun_stamps": [
+      "2026-08-01T02:12"
+     ],
+     "ped_stamps": [
+      "2026-07-29T10:03"
+     ],
+     "nfdf": 8,
+     "bytes": 3840250318,
+     "hv_monitor": null,
+     "logs": [
+      "RunCtrl_260801_02H12.log"
+     ],
+     "scan_logs": [],
+     "mtime_first": "2026-08-01T02:12:35",
+     "mtime_last": "2026-08-01T02:47:45"
+    }
+   },
+   "loose_files": []
+  },
+  "run_43": {
+   "where": [
+    "dream_run"
+   ],
+   "subruns": {
+    "cfg_gain3.0_peaktime200_opt": {
+     "feus": {
+      "05": 1,
+      "01": 5,
+      "03": 1,
+      "04": 1
+     },
+     "datrun_stamps": [
+      "2026-08-01T02:48"
+     ],
+     "ped_stamps": [
+      "2026-07-29T10:03"
+     ],
+     "nfdf": 8,
+     "bytes": 3832701656,
+     "hv_monitor": null,
+     "logs": [
+      "RunCtrl_260801_02H48.log"
+     ],
+     "scan_logs": [],
+     "mtime_first": "2026-08-01T02:48:43",
+     "mtime_last": "2026-08-01T03:23:48"
+    }
+   },
+   "loose_files": []
+  },
+  "run_44": {
+   "where": [
+    "dream_run"
+   ],
+   "subruns": {
+    "cfg_gain4.5_peaktime25": {
+     "feus": {
+      "01": 7,
+      "05": 1,
+      "03": 1,
+      "04": 1
+     },
+     "datrun_stamps": [
+      "2026-08-01T03:24",
+      "2026-08-01T04:01"
+     ],
+     "ped_stamps": [
+      "2026-07-29T10:03"
+     ],
+     "nfdf": 10,
+     "bytes": 5464395548,
+     "hv_monitor": null,
+     "logs": [
+      "RunCtrl_260801_03H24.log",
+      "RunCtrl_260801_04H01.log"
+     ],
+     "scan_logs": [],
+     "mtime_first": "2026-08-01T03:24:54",
+     "mtime_last": "2026-08-01T04:16:29"
+    }
+   },
+   "loose_files": []
+  },
+  "run_45": {
+   "where": [
+    "dream_run"
+   ],
+   "subruns": {
+    "cfg_gain4.5_peaktime100": {
+     "feus": {
+      "05": 1,
+      "03": 1,
+      "01": 5,
+      "04": 1
+     },
+     "datrun_stamps": [
+      "2026-08-01T04:17"
+     ],
+     "ped_stamps": [
+      "2026-07-29T10:03"
+     ],
+     "nfdf": 8,
+     "bytes": 3849663438,
+     "hv_monitor": null,
+     "logs": [
+      "RunCtrl_260801_04H17.log"
+     ],
+     "scan_logs": [],
+     "mtime_first": "2026-08-01T04:17:12",
+     "mtime_last": "2026-08-01T04:52:19"
+    }
+   },
+   "loose_files": []
+  },
+  "run_46": {
+   "where": [
+    "dream_run"
+   ],
+   "subruns": {
+    "cfg_gain4.5_peaktime200": {
+     "feus": {
+      "05": 1,
+      "01": 5,
+      "03": 1,
+      "04": 1
+     },
+     "datrun_stamps": [
+      "2026-08-01T04:53"
+     ],
+     "ped_stamps": [
+      "2026-07-29T10:03"
+     ],
+     "nfdf": 8,
+     "bytes": 3851303494,
+     "hv_monitor": null,
+     "logs": [
+      "RunCtrl_260801_04H53.log"
+     ],
+     "scan_logs": [],
+     "mtime_first": "2026-08-01T04:53:39",
+     "mtime_last": "2026-08-01T05:28:48"
+    }
+   },
+   "loose_files": []
+  },
+  "run_47": {
+   "where": [
+    "dream_run"
+   ],
+   "subruns": {
+    "cfg_gain4.5_peaktime200_deflt": {
+     "feus": {
+      "05": 1,
+      "01": 5,
+      "03": 1,
+      "04": 1
+     },
+     "datrun_stamps": [
+      "2026-08-01T05:29"
+     ],
+     "ped_stamps": [
+      "2026-07-29T10:03"
+     ],
+     "nfdf": 8,
+     "bytes": 3848952602,
+     "hv_monitor": null,
+     "logs": [
+      "RunCtrl_260801_05H29.log"
+     ],
+     "scan_logs": [],
+     "mtime_first": "2026-08-01T05:29:39",
+     "mtime_last": "2026-08-01T06:04:48"
+    }
+   },
+   "loose_files": []
+  },
+  "run_48": {
+   "where": [
+    "dream_run"
+   ],
+   "subruns": {
+    "cfg_gain4.5_peaktime200_opt": {
+     "feus": {
+      "05": 1,
+      "01": 5,
+      "03": 1,
+      "04": 1
+     },
+     "datrun_stamps": [
+      "2026-08-01T06:05"
+     ],
+     "ped_stamps": [
+      "2026-07-29T10:03"
+     ],
+     "nfdf": 8,
+     "bytes": 3848231392,
+     "hv_monitor": null,
+     "logs": [
+      "RunCtrl_260801_06H05.log"
+     ],
+     "scan_logs": [],
+     "mtime_first": "2026-08-01T06:05:33",
+     "mtime_last": "2026-08-01T06:40:37"
+    }
+   },
+   "loose_files": []
+  },
+  "run_49": {
+   "where": [
+    "dream_run"
+   ],
+   "subruns": {
+    "cfg_gain4.5_peaktime50": {
+     "feus": {
+      "05": 1,
+      "03": 1,
+      "01": 2,
+      "04": 1
+     },
+     "datrun_stamps": [
+      "2026-08-01T09:42"
+     ],
+     "ped_stamps": [
+      "2026-07-29T10:03"
+     ],
+     "nfdf": 5,
+     "bytes": 497061216,
+     "hv_monitor": null,
+     "logs": [
+      "RunCtrl_260801_09H42.log"
+     ],
+     "scan_logs": [],
+     "mtime_first": "2026-08-01T09:42:34",
+     "mtime_last": "2026-08-01T09:46:31"
+    }
+   },
+   "loose_files": []
+  },
+  "run_50": {
+   "where": [
+    "dream_run"
+   ],
+   "subruns": {
+    "cfg_gain3.0_peaktime200_opt": {
+     "feus": {
+      "05": 1,
+      "01": 4
+     },
+     "datrun_stamps": [
+      "2026-08-01T10:44"
+     ],
+     "ped_stamps": [
+      "2026-08-01T10:31"
+     ],
+     "nfdf": 5,
+     "bytes": 2494575668,
+     "hv_monitor": null,
+     "logs": [
+      "RunCtrl_260801_10H44.log"
+     ],
+     "scan_logs": [],
+     "mtime_first": "2026-08-01T10:44:41",
+     "mtime_last": "2026-08-01T11:07:55"
+    }
+   },
+   "loose_files": []
+  },
+  "run_51": {
+   "where": [
+    "dream_run"
+   ],
+   "subruns": {
+    "cfg_gain3.0_peaktime200_deflt": {
+     "feus": {
+      "05": 1,
+      "01": 4
+     },
+     "datrun_stamps": [
+      "2026-08-01T11:08"
+     ],
+     "ped_stamps": [
+      "2026-08-01T10:31"
+     ],
+     "nfdf": 5,
+     "bytes": 2481041790,
+     "hv_monitor": null,
+     "logs": [
+      "RunCtrl_260801_11H08.log"
+     ],
+     "scan_logs": [],
+     "mtime_first": "2026-08-01T11:08:39",
+     "mtime_last": "2026-08-01T11:31:43"
+    }
+   },
+   "loose_files": []
+  },
+  "run_52": {
+   "where": [
+    "dream_run"
+   ],
+   "subruns": {
+    "cfg_gain4.5_peaktime200_opt": {
+     "feus": {
+      "05": 1,
+      "01": 4
+     },
+     "datrun_stamps": [
+      "2026-08-01T11:32"
+     ],
+     "ped_stamps": [
+      "2026-08-01T10:31"
+     ],
+     "nfdf": 5,
+     "bytes": 2481883012,
+     "hv_monitor": null,
+     "logs": [
+      "RunCtrl_260801_11H32.log"
+     ],
+     "scan_logs": [],
+     "mtime_first": "2026-08-01T11:32:39",
+     "mtime_last": "2026-08-01T11:55:43"
+    }
+   },
+   "loose_files": []
+  },
+  "run_53": {
+   "where": [
+    "dream_run"
+   ],
+   "subruns": {
+    "cfg_gain4.5_peaktime200_deflt": {
+     "feus": {
+      "01": 5,
+      "05": 1,
+      "03": 5
+     },
+     "datrun_stamps": [
+      "2026-08-01T12:59"
+     ],
+     "ped_stamps": [
+      "2026-08-01T12:19"
+     ],
+     "nfdf": 11,
+     "bytes": 6144567266,
+     "hv_monitor": null,
+     "logs": [
+      "RunCtrl_260801_12H59.log"
+     ],
+     "scan_logs": [],
+     "mtime_first": "2026-08-01T12:59:31",
+     "mtime_last": "2026-08-01T13:29:36"
+    }
+   },
+   "loose_files": []
+  },
+  "run_54": {
+   "where": [
+    "dream_run"
+   ],
+   "subruns": {
+    "cfg_gain4.5_peaktime50": {
+     "feus": {
+      "05": 1,
+      "03": 5,
+      "01": 5
+     },
+     "datrun_stamps": [
+      "2026-08-01T13:30"
+     ],
+     "ped_stamps": [
+      "2026-08-01T12:19"
+     ],
+     "nfdf": 11,
+     "bytes": 6131154160,
+     "hv_monitor": null,
+     "logs": [
+      "RunCtrl_260801_13H30.log"
+     ],
+     "scan_logs": [],
+     "mtime_first": "2026-08-01T13:30:27",
+     "mtime_last": "2026-08-01T14:00:32"
+    }
+   },
+   "loose_files": []
+  },
+  "run_59": {
+   "where": [
+    "dream_run",
+    "runs"
+   ],
+   "subruns": {
+    "detE_long_00": {
+     "feus": {
+      "03": 40,
+      "01": 40,
+      "05": 2
+     },
+     "datrun_stamps": [
+      "2026-08-01T20:02"
+     ],
+     "ped_stamps": [
+      "2026-08-01T16:21"
+     ],
+     "nfdf": 82,
+     "bytes": 41029507420,
+     "hv_monitor": "/local/home/banco/P2_data/TB_July2026_H4/runs/run_59/detE_long_00/hv_monitor.csv",
+     "logs": [
+      "RunCtrl_260801_20H02.log"
+     ],
+     "scan_logs": [],
+     "mtime_first": "2026-08-01T20:02:36",
+     "mtime_last": "2026-08-01T20:35:57"
+    },
+    "detE_long_01": {
+     "feus": {
+      "01": 4,
+      "03": 4,
+      "05": 2
+     },
+     "datrun_stamps": [
+      "2026-08-01T20:34"
+     ],
+     "ped_stamps": [
+      "2026-08-01T16:21"
+     ],
+     "nfdf": 10,
+     "bytes": 389205260,
+     "hv_monitor": "/local/home/banco/P2_data/TB_July2026_H4/runs/run_59/detE_long_01/hv_monitor.csv",
+     "logs": [
+      "RunCtrl_260801_20H34.log"
+     ],
+     "scan_logs": [],
+     "mtime_first": "2026-08-01T20:34:39",
+     "mtime_last": "2026-08-01T20:54:55"
+    },
+    "meshscan_m00V": {
+     "feus": {},
+     "datrun_stamps": [],
+     "ped_stamps": [],
+     "nfdf": 0,
+     "bytes": 0,
+     "hv_monitor": "/local/home/banco/P2_data/TB_July2026_H4/runs/run_59/meshscan_m00V/hv_monitor.csv",
+     "logs": [],
+     "scan_logs": [],
+     "mtime_first": "2026-08-02T12:07:42",
+     "mtime_last": "2026-08-02T12:07:42"
+    }
+   },
+   "loose_files": [
+    {
+     "name": "dream_daq.log",
+     "bytes": 462,
+     "mtime": "2026-08-02T12:07:53"
+    },
+    {
+     "name": "run_config.json",
+     "bytes": 24591,
+     "mtime": "2026-08-02T12:06:00"
+    }
+   ]
+  },
+  "run_60": {
+   "where": [
+    "dream_run"
+   ],
+   "subruns": {
+    "overnight_00": {
+     "feus": {
+      "01": 6,
+      "05": 1,
+      "03": 6
+     },
+     "datrun_stamps": [
+      "2026-08-01T21:20"
+     ],
+     "ped_stamps": [
+      "2026-08-01T21:12"
+     ],
+     "nfdf": 13,
+     "bytes": 7873384818,
+     "hv_monitor": null,
+     "logs": [
+      "RunCtrl_260801_21H20.log"
+     ],
+     "scan_logs": [],
+     "mtime_first": "2026-08-01T21:20:04",
+     "mtime_last": "2026-08-01T21:50:19"
+    },
+    "overnight_01": {
+     "feus": {
+      "01": 6,
+      "05": 1,
+      "03": 6
+     },
+     "datrun_stamps": [
+      "2026-08-01T21:50"
+     ],
+     "ped_stamps": [
+      "2026-08-01T21:12"
+     ],
+     "nfdf": 13,
+     "bytes": 7704640782,
+     "hv_monitor": null,
+     "logs": [
+      "RunCtrl_260801_21H50.log"
+     ],
+     "scan_logs": [],
+     "mtime_first": "2026-08-01T21:50:30",
+     "mtime_last": "2026-08-01T22:20:35"
+    },
+    "overnight_02": {
+     "feus": {
+      "01": 7,
+      "05": 1,
+      "03": 7
+     },
+     "datrun_stamps": [
+      "2026-08-01T22:20"
+     ],
+     "ped_stamps": [
+      "2026-08-01T21:12"
+     ],
+     "nfdf": 15,
+     "bytes": 8104313404,
+     "hv_monitor": null,
+     "logs": [
+      "RunCtrl_260801_22H20.log"
+     ],
+     "scan_logs": [],
+     "mtime_first": "2026-08-01T22:20:45",
+     "mtime_last": "2026-08-01T22:50:50"
+    },
+    "overnight_03": {
+     "feus": {
+      "05": 1,
+      "03": 6,
+      "01": 6
+     },
+     "datrun_stamps": [
+      "2026-08-01T22:51"
+     ],
+     "ped_stamps": [
+      "2026-08-01T21:12"
+     ],
+     "nfdf": 13,
+     "bytes": 8022855156,
+     "hv_monitor": null,
+     "logs": [
+      "RunCtrl_260801_22H51.log"
+     ],
+     "scan_logs": [],
+     "mtime_first": "2026-08-01T22:51:00",
+     "mtime_last": "2026-08-01T23:21:06"
+    },
+    "overnight_04": {
+     "feus": {
+      "03": 6,
+      "05": 1,
+      "01": 6
+     },
+     "datrun_stamps": [
+      "2026-08-01T23:21"
+     ],
+     "ped_stamps": [
+      "2026-08-01T21:12"
+     ],
+     "nfdf": 13,
+     "bytes": 7759805346,
+     "hv_monitor": null,
+     "logs": [
+      "RunCtrl_260801_23H21.log"
+     ],
+     "scan_logs": [],
+     "mtime_first": "2026-08-01T23:21:17",
+     "mtime_last": "2026-08-01T23:51:31"
+    },
+    "overnight_05": {
+     "feus": {
+      "01": 6,
+      "05": 1,
+      "03": 6
+     },
+     "datrun_stamps": [
+      "2026-08-01T23:51"
+     ],
+     "ped_stamps": [
+      "2026-08-01T21:12"
+     ],
+     "nfdf": 13,
+     "bytes": 7996117930,
+     "hv_monitor": null,
+     "logs": [
+      "RunCtrl_260801_23H51.log"
+     ],
+     "scan_logs": [],
+     "mtime_first": "2026-08-01T23:51:42",
+     "mtime_last": "2026-08-02T00:21:47"
+    },
+    "overnight_06": {
+     "feus": {
+      "03": 4,
+      "05": 1,
+      "01": 4
+     },
+     "datrun_stamps": [
+      "2026-08-02T00:21"
+     ],
+     "ped_stamps": [
+      "2026-08-01T21:12"
+     ],
+     "nfdf": 9,
+     "bytes": 4262695086,
+     "hv_monitor": null,
+     "logs": [
+      "RunCtrl_260802_00H21.log"
+     ],
+     "scan_logs": [],
+     "mtime_first": "2026-08-02T00:21:57",
+     "mtime_last": "2026-08-02T00:52:02"
+    },
+    "overnight_07": {
+     "feus": {
+      "05": 1,
+      "01": 2,
+      "03": 2
+     },
+     "datrun_stamps": [
+      "2026-08-02T00:52"
+     ],
+     "ped_stamps": [
+      "2026-08-01T21:12"
+     ],
+     "nfdf": 5,
+     "bytes": 587724042,
+     "hv_monitor": null,
+     "logs": [
+      "RunCtrl_260802_00H52.log"
+     ],
+     "scan_logs": [],
+     "mtime_first": "2026-08-02T00:52:13",
+     "mtime_last": "2026-08-02T01:22:18"
+    },
+    "overnight_08": {
+     "feus": {
+      "05": 1,
+      "03": 6,
+      "01": 6
+     },
+     "datrun_stamps": [
+      "2026-08-02T01:22"
+     ],
+     "ped_stamps": [
+      "2026-08-01T21:12"
+     ],
+     "nfdf": 13,
+     "bytes": 7872283190,
+     "hv_monitor": null,
+     "logs": [
+      "RunCtrl_260802_01H22.log"
+     ],
+     "scan_logs": [],
+     "mtime_first": "2026-08-02T01:22:29",
+     "mtime_last": "2026-08-02T01:52:42"
+    },
+    "overnight_09": {
+     "feus": {
+      "01": 7,
+      "05": 1,
+      "03": 7
+     },
+     "datrun_stamps": [
+      "2026-08-02T01:52"
+     ],
+     "ped_stamps": [
+      "2026-08-01T21:12"
+     ],
+     "nfdf": 15,
+     "bytes": 8482114290,
+     "hv_monitor": null,
+     "logs": [
+      "RunCtrl_260802_01H52.log"
+     ],
+     "scan_logs": [],
+     "mtime_first": "2026-08-02T01:52:53",
+     "mtime_last": "2026-08-02T02:22:58"
+    },
+    "overnight_10": {
+     "feus": {
+      "01": 7,
+      "05": 1,
+      "03": 7
+     },
+     "datrun_stamps": [
+      "2026-08-02T02:23"
+     ],
+     "ped_stamps": [
+      "2026-08-01T21:12"
+     ],
+     "nfdf": 15,
+     "bytes": 8036352592,
+     "hv_monitor": null,
+     "logs": [
+      "RunCtrl_260802_02H23.log"
+     ],
+     "scan_logs": [],
+     "mtime_first": "2026-08-02T02:23:08",
+     "mtime_last": "2026-08-02T02:53:13"
+    },
+    "overnight_11": {
+     "feus": {
+      "01": 7,
+      "03": 7,
+      "05": 1
+     },
+     "datrun_stamps": [
+      "2026-08-02T02:53"
+     ],
+     "ped_stamps": [
+      "2026-08-01T21:12"
+     ],
+     "nfdf": 15,
+     "bytes": 8261694132,
+     "hv_monitor": null,
+     "logs": [
+      "RunCtrl_260802_02H53.log"
+     ],
+     "scan_logs": [],
+     "mtime_first": "2026-08-02T02:53:23",
+     "mtime_last": "2026-08-02T03:23:28"
+    },
+    "overnight_12": {
+     "feus": {
+      "03": 7,
+      "01": 7,
+      "05": 1
+     },
+     "datrun_stamps": [
+      "2026-08-02T03:23"
+     ],
+     "ped_stamps": [
+      "2026-08-01T21:12"
+     ],
+     "nfdf": 15,
+     "bytes": 8100478782,
+     "hv_monitor": null,
+     "logs": [
+      "RunCtrl_260802_03H23.log"
+     ],
+     "scan_logs": [],
+     "mtime_first": "2026-08-02T03:23:38",
+     "mtime_last": "2026-08-02T03:53:43"
+    },
+    "overnight_13": {
+     "feus": {
+      "03": 7,
+      "05": 1,
+      "01": 7
+     },
+     "datrun_stamps": [
+      "2026-08-02T03:53"
+     ],
+     "ped_stamps": [
+      "2026-08-01T21:12"
+     ],
+     "nfdf": 15,
+     "bytes": 8066347438,
+     "hv_monitor": null,
+     "logs": [
+      "RunCtrl_260802_03H53.log"
+     ],
+     "scan_logs": [],
+     "mtime_first": "2026-08-02T03:53:53",
+     "mtime_last": "2026-08-02T04:23:58"
+    },
+    "overnight_14": {
+     "feus": {
+      "05": 1,
+      "03": 4,
+      "01": 4
+     },
+     "datrun_stamps": [
+      "2026-08-02T04:24"
+     ],
+     "ped_stamps": [
+      "2026-08-01T21:12"
+     ],
+     "nfdf": 9,
+     "bytes": 4777909578,
+     "hv_monitor": null,
+     "logs": [
+      "RunCtrl_260802_04H24.log"
+     ],
+     "scan_logs": [],
+     "mtime_first": "2026-08-02T04:24:08",
+     "mtime_last": "2026-08-02T04:54:13"
+    },
+    "overnight_15": {
+     "feus": {
+      "05": 1,
+      "01": 2,
+      "03": 2
+     },
+     "datrun_stamps": [
+      "2026-08-02T04:54"
+     ],
+     "ped_stamps": [
+      "2026-08-01T21:12"
+     ],
+     "nfdf": 5,
+     "bytes": 180531628,
+     "hv_monitor": null,
+     "logs": [
+      "RunCtrl_260802_04H54.log"
+     ],
+     "scan_logs": [],
+     "mtime_first": "2026-08-02T04:54:23",
+     "mtime_last": "2026-08-02T05:24:29"
+    },
+    "overnight_16": {
+     "feus": {
+      "01": 2,
+      "05": 1,
+      "03": 2
+     },
+     "datrun_stamps": [
+      "2026-08-02T05:24"
+     ],
+     "ped_stamps": [
+      "2026-08-01T21:12"
+     ],
+     "nfdf": 5,
+     "bytes": 202394394,
+     "hv_monitor": null,
+     "logs": [
+      "RunCtrl_260802_05H24.log"
+     ],
+     "scan_logs": [],
+     "mtime_first": "2026-08-02T05:24:39",
+     "mtime_last": "2026-08-02T05:54:45"
+    },
+    "overnight_17": {
+     "feus": {
+      "05": 1,
+      "01": 2,
+      "03": 2
+     },
+     "datrun_stamps": [
+      "2026-08-02T05:54"
+     ],
+     "ped_stamps": [
+      "2026-08-01T21:12"
+     ],
+     "nfdf": 5,
+     "bytes": 213007904,
+     "hv_monitor": null,
+     "logs": [
+      "RunCtrl_260802_05H54.log"
+     ],
+     "scan_logs": [],
+     "mtime_first": "2026-08-02T05:54:55",
+     "mtime_last": "2026-08-02T06:25:01"
+    },
+    "overnight_18": {
+     "feus": {
+      "01": 2,
+      "05": 1,
+      "03": 2
+     },
+     "datrun_stamps": [
+      "2026-08-02T06:25"
+     ],
+     "ped_stamps": [
+      "2026-08-01T21:12"
+     ],
+     "nfdf": 5,
+     "bytes": 199062696,
+     "hv_monitor": null,
+     "logs": [
+      "RunCtrl_260802_06H25.log"
+     ],
+     "scan_logs": [],
+     "mtime_first": "2026-08-02T06:25:11",
+     "mtime_last": "2026-08-02T06:55:18"
+    },
+    "overnight_19": {
+     "feus": {
+      "05": 1,
+      "01": 2,
+      "03": 2
+     },
+     "datrun_stamps": [
+      "2026-08-02T06:55"
+     ],
+     "ped_stamps": [
+      "2026-08-01T21:12"
+     ],
+     "nfdf": 5,
+     "bytes": 207818042,
+     "hv_monitor": null,
+     "logs": [
+      "RunCtrl_260802_06H55.log"
+     ],
+     "scan_logs": [],
+     "mtime_first": "2026-08-02T06:55:28",
+     "mtime_last": "2026-08-02T07:25:33"
+    },
+    "overnight_20": {
+     "feus": {
+      "01": 2,
+      "05": 1,
+      "03": 2
+     },
+     "datrun_stamps": [
+      "2026-08-02T07:25"
+     ],
+     "ped_stamps": [
+      "2026-08-01T21:12"
+     ],
+     "nfdf": 5,
+     "bytes": 220445676,
+     "hv_monitor": null,
+     "logs": [
+      "RunCtrl_260802_07H25.log"
+     ],
+     "scan_logs": [],
+     "mtime_first": "2026-08-02T07:25:44",
+     "mtime_last": "2026-08-02T07:55:50"
+    },
+    "overnight_21": {
+     "feus": {
+      "05": 1,
+      "01": 2,
+      "03": 2
+     },
+     "datrun_stamps": [
+      "2026-08-02T07:56"
+     ],
+     "ped_stamps": [
+      "2026-08-01T21:12"
+     ],
+     "nfdf": 5,
+     "bytes": 224267198,
+     "hv_monitor": null,
+     "logs": [
+      "RunCtrl_260802_07H56.log"
+     ],
+     "scan_logs": [],
+     "mtime_first": "2026-08-02T07:56:00",
+     "mtime_last": "2026-08-02T08:26:07"
+    },
+    "overnight_22": {
+     "feus": {
+      "05": 1,
+      "01": 2,
+      "03": 2
+     },
+     "datrun_stamps": [
+      "2026-08-02T08:26"
+     ],
+     "ped_stamps": [
+      "2026-08-01T21:12"
+     ],
+     "nfdf": 5,
+     "bytes": 210380310,
+     "hv_monitor": null,
+     "logs": [
+      "RunCtrl_260802_08H26.log"
+     ],
+     "scan_logs": [],
+     "mtime_first": "2026-08-02T08:26:18",
+     "mtime_last": "2026-08-02T08:56:23"
+    },
+    "overnight_23": {
+     "feus": {
+      "05": 1,
+      "01": 2,
+      "03": 2
+     },
+     "datrun_stamps": [
+      "2026-08-02T08:56"
+     ],
+     "ped_stamps": [
+      "2026-08-01T21:12"
+     ],
+     "nfdf": 5,
+     "bytes": 226953012,
+     "hv_monitor": null,
+     "logs": [
+      "RunCtrl_260802_08H56.log"
+     ],
+     "scan_logs": [],
+     "mtime_first": "2026-08-02T08:56:33",
+     "mtime_last": "2026-08-02T09:26:41"
+    }
+   },
+   "loose_files": []
+  },
+  "run_61": {
+   "where": [
+    "dream_run",
+    "runs"
+   ],
+   "subruns": {
+    "meshscan_m00V": {
+     "feus": {
+      "03": 20,
+      "01": 20,
+      "05": 4
+     },
+     "datrun_stamps": [
+      "2026-08-02T12:14",
+      "2026-08-02T15:25",
+      "2026-08-02T15:41"
+     ],
+     "ped_stamps": [
+      "2026-08-01T21:12",
+      "2026-08-02T15:04"
+     ],
+     "nfdf": 44,
+     "bytes": 20963448428,
+     "hv_monitor": "/local/home/banco/P2_data/TB_July2026_H4/runs/run_61/meshscan_m00V/hv_monitor.csv",
+     "logs": [
+      "RunCtrl_260802_12H14.log",
+      "RunCtrl_260802_15H25.log",
+      "RunCtrl_260802_15H41.log"
+     ],
+     "scan_logs": [],
+     "mtime_first": "2026-08-02T12:14:54",
+     "mtime_last": "2026-08-02T15:45:19"
+    },
+    "meshscan_m10V": {
+     "feus": {
+      "01": 20,
+      "03": 20,
+      "05": 2
+     },
+     "datrun_stamps": [
+      "2026-08-02T12:45"
+     ],
+     "ped_stamps": [
+      "2026-08-01T21:12"
+     ],
+     "nfdf": 42,
+     "bytes": 22682175620,
+     "hv_monitor": "/local/home/banco/P2_data/TB_July2026_H4/runs/run_61/meshscan_m10V/hv_monitor.csv",
+     "logs": [
+      "RunCtrl_260802_12H45.log"
+     ],
+     "scan_logs": [],
+     "mtime_first": "2026-08-02T12:45:22",
+     "mtime_last": "2026-08-02T13:18:44"
+    },
+    "meshscan_m20V": {
+     "feus": {
+      "03": 16,
+      "05": 2,
+      "01": 16
+     },
+     "datrun_stamps": [
+      "2026-08-02T13:15"
+     ],
+     "ped_stamps": [
+      "2026-08-01T21:12"
+     ],
+     "nfdf": 34,
+     "bytes": 18671827580,
+     "hv_monitor": "/local/home/banco/P2_data/TB_July2026_H4/runs/run_61/meshscan_m20V/hv_monitor.csv",
+     "logs": [
+      "RunCtrl_260802_13H15.log"
+     ],
+     "scan_logs": [],
+     "mtime_first": "2026-08-02T13:15:52",
+     "mtime_last": "2026-08-02T13:49:05"
+    },
+    "meshscan_m30V": {
+     "feus": {
+      "03": 21,
+      "01": 21,
+      "05": 4
+     },
+     "datrun_stamps": [
+      "2026-08-02T13:46",
+      "2026-08-02T16:08"
+     ],
+     "ped_stamps": [
+      "2026-08-01T21:12",
+      "2026-08-02T15:04"
+     ],
+     "nfdf": 46,
+     "bytes": 23690934430,
+     "hv_monitor": "/local/home/banco/P2_data/TB_July2026_H4/runs/run_61/meshscan_m30V/hv_monitor.csv",
+     "logs": [
+      "RunCtrl_260802_13H46.log",
+      "RunCtrl_260802_16H08.log"
+     ],
+     "scan_logs": [],
+     "mtime_first": "2026-08-02T13:46:19",
+     "mtime_last": "2026-08-02T16:32:00"
+    },
+    "meshscan_m40V": {
+     "feus": {
+      "01": 10,
+      "05": 2,
+      "03": 10
+     },
+     "datrun_stamps": [
+      "2026-08-02T16:29"
+     ],
+     "ped_stamps": [
+      "2026-08-02T15:04"
+     ],
+     "nfdf": 22,
+     "bytes": 10700905612,
+     "hv_monitor": "/local/home/banco/P2_data/TB_July2026_H4/runs/run_61/meshscan_m40V/hv_monitor.csv",
+     "logs": [
+      "RunCtrl_260802_16H29.log"
+     ],
+     "scan_logs": [],
+     "mtime_first": "2026-08-02T16:29:53",
+     "mtime_last": "2026-08-02T16:53:20"
+    },
+    "meshscan_m50V": {
+     "feus": {
+      "03": 8,
+      "01": 8,
+      "05": 2
+     },
+     "datrun_stamps": [
+      "2026-08-02T16:51"
+     ],
+     "ped_stamps": [
+      "2026-08-02T15:04"
+     ],
+     "nfdf": 18,
+     "bytes": 10356526816,
+     "hv_monitor": "/local/home/banco/P2_data/TB_July2026_H4/runs/run_61/meshscan_m50V/hv_monitor.csv",
+     "logs": [
+      "RunCtrl_260802_16H51.log"
+     ],
+     "scan_logs": [],
+     "mtime_first": "2026-08-02T16:51:19",
+     "mtime_last": "2026-08-02T17:14:57"
+    },
+    "meshscan_m60V": {
+     "feus": {
+      "03": 10,
+      "01": 10,
+      "05": 2
+     },
+     "datrun_stamps": [
+      "2026-08-02T17:12"
+     ],
+     "ped_stamps": [
+      "2026-08-02T15:04"
+     ],
+     "nfdf": 22,
+     "bytes": 10938052392,
+     "hv_monitor": "/local/home/banco/P2_data/TB_July2026_H4/runs/run_61/meshscan_m60V/hv_monitor.csv",
+     "logs": [
+      "RunCtrl_260802_17H12.log"
+     ],
+     "scan_logs": [],
+     "mtime_first": "2026-08-02T17:12:50",
+     "mtime_last": "2026-08-02T17:36:32"
+    },
+    "meshscan_m70V": {
+     "feus": {
+      "03": 10,
+      "01": 10,
+      "05": 2
+     },
+     "datrun_stamps": [
+      "2026-08-02T17:34"
+     ],
+     "ped_stamps": [
+      "2026-08-02T15:04"
+     ],
+     "nfdf": 22,
+     "bytes": 11136518776,
+     "hv_monitor": "/local/home/banco/P2_data/TB_July2026_H4/runs/run_61/meshscan_m70V/hv_monitor.csv",
+     "logs": [
+      "RunCtrl_260802_17H34.log"
+     ],
+     "scan_logs": [],
+     "mtime_first": "2026-08-02T17:34:16",
+     "mtime_last": "2026-08-02T17:57:55"
+    },
+    "meshscan_m80V": {
+     "feus": {
+      "03": 10,
+      "01": 10,
+      "05": 2
+     },
+     "datrun_stamps": [
+      "2026-08-02T17:55"
+     ],
+     "ped_stamps": [
+      "2026-08-02T15:04"
+     ],
+     "nfdf": 22,
+     "bytes": 10902426056,
+     "hv_monitor": "/local/home/banco/P2_data/TB_July2026_H4/runs/run_61/meshscan_m80V/hv_monitor.csv",
+     "logs": [
+      "RunCtrl_260802_17H55.log"
+     ],
+     "scan_logs": [],
+     "mtime_first": "2026-08-02T17:55:48",
+     "mtime_last": "2026-08-02T18:19:33"
+    },
+    "meshscan_m90V": {
+     "feus": {
+      "03": 7,
+      "05": 2,
+      "01": 7
+     },
+     "datrun_stamps": [
+      "2026-08-02T18:17"
+     ],
+     "ped_stamps": [
+      "2026-08-02T15:04"
+     ],
+     "nfdf": 16,
+     "bytes": 7483061512,
+     "hv_monitor": "/local/home/banco/P2_data/TB_July2026_H4/runs/run_61/meshscan_m90V/hv_monitor.csv",
+     "logs": [
+      "RunCtrl_260802_18H17.log"
+     ],
+     "scan_logs": [],
+     "mtime_first": "2026-08-02T18:17:13",
+     "mtime_last": "2026-08-02T18:32:56"
+    }
+   },
+   "loose_files": [
+    {
+     "name": "det4_drift_scan.csv",
+     "bytes": 44027,
+     "mtime": "2026-08-02T14:00:46"
+    },
+    {
+     "name": "det4_drift_scan.log",
+     "bytes": 2716,
+     "mtime": "2026-08-02T14:00:46"
+    },
+    {
+     "name": "det4_resist_scan_720_580.csv",
+     "bytes": 36665,
+     "mtime": "2026-08-02T17:14:48"
+    },
+    {
+     "name": "det4_resist_scan_720_580.log",
+     "bytes": 6617,
+     "mtime": "2026-08-02T17:14:48"
+    },
+    {
+     "name": "dream_daq.log",
+     "bytes": 2070,
+     "mtime": "2026-08-02T18:17:13"
+    },
+    {
+     "name": "run_config.json",
+     "bytes": 24590,
+     "mtime": "2026-08-02T16:06:54"
+    }
+   ]
+  }
+ },
+ "analysis": {
+  "run_21": {
+   "nominal_00": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front",
+     "P2_IN",
+     "P2_MID",
+     "P2_OUT"
+    ],
+    "qa_first": "2026-07-30T01:36:40",
+    "qa_last": "2026-07-30T01:37:13"
+   }
+  },
+  "run_24": {
+   "nominal_00": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-07-30T03:08:34",
+    "qa_last": "2026-07-30T03:08:58"
+   },
+   "nominal_01": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-07-30T04:00:46",
+    "qa_last": "2026-07-30T04:01:09"
+   },
+   "nominal_02": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-07-30T04:53:18",
+    "qa_last": "2026-07-30T04:53:42"
+   },
+   "nominal_03": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-07-30T05:45:30",
+    "qa_last": "2026-07-30T05:45:53"
+   },
+   "nominal_04": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-07-30T06:38:01",
+    "qa_last": "2026-07-30T06:38:24"
+   },
+   "nominal_05": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-07-30T07:29:03",
+    "qa_last": "2026-07-30T07:29:26"
+   },
+   "nominal_06": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-07-30T08:22:14",
+    "qa_last": "2026-07-30T08:22:37"
+   },
+   "nominal_07": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-07-30T09:14:02",
+    "qa_last": "2026-07-30T09:14:26"
+   }
+  },
+  "run_25": {
+   "driftscan_gap150V": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-07-30T13:33:54",
+    "qa_last": "2026-07-30T13:34:11"
+   },
+   "driftscan_gap200V": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-07-30T13:46:29",
+    "qa_last": "2026-07-30T13:46:46"
+   },
+   "driftscan_gap250V": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-07-30T13:58:53",
+    "qa_last": "2026-07-30T13:59:11"
+   },
+   "meshscan_m00V": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-07-30T11:16:42",
+    "qa_last": "2026-07-30T11:17:08"
+   },
+   "meshscan_m100V": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-07-30T13:20:40",
+    "qa_last": "2026-07-30T13:20:56"
+   },
+   "meshscan_m10V": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-07-30T11:29:00",
+    "qa_last": "2026-07-30T11:29:24"
+   },
+   "meshscan_m20V": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-07-30T11:40:55",
+    "qa_last": "2026-07-30T11:41:16"
+   },
+   "meshscan_m30V": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-07-30T11:53:26",
+    "qa_last": "2026-07-30T11:53:47"
+   },
+   "meshscan_m40V": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-07-30T12:05:35",
+    "qa_last": "2026-07-30T12:05:53"
+   },
+   "meshscan_m50V": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-07-30T12:17:51",
+    "qa_last": "2026-07-30T12:18:06"
+   },
+   "meshscan_m60V": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-07-30T12:30:24",
+    "qa_last": "2026-07-30T12:30:40"
+   },
+   "meshscan_m70V": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-07-30T12:42:58",
+    "qa_last": "2026-07-30T12:43:14"
+   },
+   "meshscan_m80V": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-07-30T12:55:32",
+    "qa_last": "2026-07-30T12:55:48"
+   },
+   "meshscan_m90V": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-07-30T13:08:06",
+    "qa_last": "2026-07-30T13:08:22"
+   }
+  },
+  "run_26": {
+   "driftscan_gap150V": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-07-30T16:41:52",
+    "qa_last": "2026-07-30T16:42:09"
+   },
+   "driftscan_gap200V": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-07-30T16:54:26",
+    "qa_last": "2026-07-30T16:54:43"
+   },
+   "driftscan_gap250V": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-07-30T17:07:00",
+    "qa_last": "2026-07-30T17:07:17"
+   },
+   "driftscan_gap300V": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-07-30T17:19:02",
+    "qa_last": "2026-07-30T17:19:14"
+   },
+   "driftscan_gap350V": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-07-30T17:33:05",
+    "qa_last": "2026-07-30T17:33:27"
+   },
+   "driftscan_gap400V": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-07-30T17:45:18",
+    "qa_last": "2026-07-30T17:45:40"
+   },
+   "meshscan_m100V": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-07-30T16:28:37",
+    "qa_last": "2026-07-30T16:28:53"
+   }
+  },
+  "run_28": {
+   "cfg_gain4.5_peaktime25": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-07-30T20:30:34",
+    "qa_last": "2026-07-30T20:30:57"
+   }
+  },
+  "run_29": {
+   "trigtest_gain3.0_peaktime200": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-07-30T23:09:56",
+    "qa_last": "2026-07-30T23:10:13"
+   }
+  },
+  "run_31": {
+   "trigtest_gain3.0_peaktime200": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-07-31T12:03:40",
+    "qa_last": "2026-07-31T12:03:52"
+   }
+  },
+  "run_32": {
+   "meshscan_m00V": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-07-31T12:47:56",
+    "qa_last": "2026-07-31T12:48:18"
+   },
+   "meshscan_m10V": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-07-31T13:00:00",
+    "qa_last": "2026-07-31T13:00:22"
+   },
+   "meshscan_m20V": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-07-31T13:12:54",
+    "qa_last": "2026-07-31T13:13:17"
+   },
+   "meshscan_m30V": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-07-31T13:25:08",
+    "qa_last": "2026-07-31T13:25:31"
+   },
+   "meshscan_m40V": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-07-31T13:37:33",
+    "qa_last": "2026-07-31T13:37:55"
+   },
+   "meshscan_m50V": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-07-31T13:49:57",
+    "qa_last": "2026-07-31T13:50:19"
+   },
+   "meshscan_m60V": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-07-31T14:02:30",
+    "qa_last": "2026-07-31T14:02:51"
+   }
+  },
+  "run_33": {
+   "driftscan_gap150V": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-07-31T16:28:06",
+    "qa_last": "2026-07-31T16:28:29"
+   },
+   "driftscan_gap200V": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-07-31T16:40:42",
+    "qa_last": "2026-07-31T16:41:04"
+   },
+   "driftscan_gap250V": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-07-31T16:53:17",
+    "qa_last": "2026-07-31T16:53:39"
+   },
+   "meshscan_m100V": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-07-31T16:15:01",
+    "qa_last": "2026-07-31T16:15:24"
+   },
+   "meshscan_m70V": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-07-31T15:38:08",
+    "qa_last": "2026-07-31T15:38:30"
+   },
+   "meshscan_m80V": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-07-31T15:50:22",
+    "qa_last": "2026-07-31T15:50:45"
+   },
+   "meshscan_m90V": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-07-31T16:02:37",
+    "qa_last": "2026-07-31T16:02:59"
+   }
+  },
+  "run_35": {
+   "driftscan_gap300V": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-07-31T17:53:34",
+    "qa_last": "2026-07-31T17:53:55"
+   },
+   "driftscan_gap350V": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-07-31T18:06:17",
+    "qa_last": "2026-07-31T18:06:40"
+   },
+   "driftscan_gap400V": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-07-31T18:18:12",
+    "qa_last": "2026-07-31T18:18:33"
+   }
+  },
+  "run_36": {
+   "operating_00": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-07-31T19:18:49",
+    "qa_last": "2026-07-31T19:19:12"
+   },
+   "operating_01": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-07-31T20:11:38",
+    "qa_last": "2026-07-31T20:12:01"
+   },
+   "operating_02": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-07-31T21:03:57",
+    "qa_last": "2026-07-31T21:04:20"
+   }
+  },
+  "run_38": {
+   "cfg_gain3.0_peaktime100": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-08-01T00:25:56",
+    "qa_last": "2026-08-01T00:26:18"
+   }
+  },
+  "run_39": {
+   "cfg_gain3.0_peaktime25": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-08-01T01:04:41",
+    "qa_last": "2026-08-01T01:05:03"
+   }
+  },
+  "run_40": {
+   "cfg_gain3.0_peaktime50": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-08-01T01:41:07",
+    "qa_last": "2026-08-01T01:41:28"
+   }
+  },
+  "run_41": {
+   "cfg_gain3.0_peaktime200": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-08-01T02:17:23",
+    "qa_last": "2026-08-01T02:17:44"
+   }
+  },
+  "run_42": {
+   "cfg_gain3.0_peaktime200_deflt": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-08-01T02:53:39",
+    "qa_last": "2026-08-01T02:54:01"
+   }
+  },
+  "run_43": {
+   "cfg_gain3.0_peaktime200_opt": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-08-01T03:29:46",
+    "qa_last": "2026-08-01T03:30:08"
+   }
+  },
+  "run_44": {
+   "cfg_gain4.5_peaktime25": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-08-01T04:13:42",
+    "qa_last": "2026-08-01T04:14:04"
+   }
+  },
+  "run_45": {
+   "cfg_gain4.5_peaktime100": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-08-01T04:58:08",
+    "qa_last": "2026-08-01T04:58:32"
+   }
+  },
+  "run_46": {
+   "cfg_gain4.5_peaktime200": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-08-01T05:34:47",
+    "qa_last": "2026-08-01T05:35:10"
+   }
+  },
+  "run_47": {
+   "cfg_gain4.5_peaktime200_deflt": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-08-01T06:10:45",
+    "qa_last": "2026-08-01T06:11:07"
+   }
+  },
+  "run_48": {
+   "cfg_gain4.5_peaktime200_opt": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-08-01T06:45:23",
+    "qa_last": "2026-08-01T06:45:45"
+   }
+  },
+  "run_50": {
+   "cfg_gain3.0_peaktime200_opt": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-08-01T11:10:36",
+    "qa_last": "2026-08-01T11:10:58"
+   }
+  },
+  "run_51": {
+   "cfg_gain3.0_peaktime200_deflt": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-08-01T11:36:04",
+    "qa_last": "2026-08-01T11:36:26"
+   }
+  },
+  "run_52": {
+   "cfg_gain4.5_peaktime200_opt": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-08-01T12:00:02",
+    "qa_last": "2026-08-01T12:00:27"
+   }
+  },
+  "run_53": {
+   "cfg_gain4.5_peaktime200_deflt": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front",
+     "mx17_E"
+    ],
+    "qa_first": "2026-08-01T13:34:00",
+    "qa_last": "2026-08-01T13:34:27"
+   }
+  },
+  "run_54": {
+   "cfg_gain4.5_peaktime50": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front",
+     "mx17_E"
+    ],
+    "qa_first": "2026-08-01T14:04:50",
+    "qa_last": "2026-08-01T14:05:15"
+   }
+  },
+  "run_55": {
+   "meshscan_m00V": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front",
+     "mx17_E"
+    ],
+    "qa_first": "2026-08-01T14:30:06",
+    "qa_last": "2026-08-01T14:30:26"
+   },
+   "meshscan_m10V": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front",
+     "mx17_E"
+    ],
+    "qa_first": "2026-08-01T14:42:36",
+    "qa_last": "2026-08-01T14:42:58"
+   },
+   "meshscan_m20V": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front",
+     "mx17_E"
+    ],
+    "qa_first": "2026-08-01T14:54:56",
+    "qa_last": "2026-08-01T14:55:17"
+   }
+  },
+  "run_56": {
+   "meshscan_m30V": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front",
+     "mx17_E"
+    ],
+    "qa_first": "2026-08-01T15:11:56",
+    "qa_last": "2026-08-01T15:12:16"
+   },
+   "meshscan_m40V": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front",
+     "mx17_E"
+    ],
+    "qa_first": "2026-08-01T15:24:24",
+    "qa_last": "2026-08-01T15:24:45"
+   },
+   "meshscan_m50V": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-08-01T15:36:33",
+    "qa_last": "2026-08-01T15:36:49"
+   },
+   "meshscan_m60V": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-08-01T15:49:06",
+    "qa_last": "2026-08-01T15:49:21"
+   },
+   "meshscan_m70V": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-08-01T16:01:09",
+    "qa_last": "2026-08-01T16:01:24"
+   }
+  },
+  "run_57": {
+   "driftscan_gap150V": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-08-01T17:28:42",
+    "qa_last": "2026-08-01T17:28:57"
+   },
+   "driftscan_gap200V": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-08-01T17:41:05",
+    "qa_last": "2026-08-01T17:41:20"
+   },
+   "driftscan_gap250V": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-08-01T17:53:37",
+    "qa_last": "2026-08-01T17:53:52"
+   },
+   "driftscan_gap300V": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-08-01T18:05:47",
+    "qa_last": "2026-08-01T18:06:02"
+   },
+   "driftscan_gap350V": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-08-01T18:19:17",
+    "qa_last": "2026-08-01T18:19:28"
+   },
+   "driftscan_gap400V": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-08-01T18:31:42",
+    "qa_last": "2026-08-01T18:31:54"
+   },
+   "meshscan_m100V": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-08-01T17:15:50",
+    "qa_last": "2026-08-01T17:16:05"
+   },
+   "meshscan_m80V": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-08-01T16:50:57",
+    "qa_last": "2026-08-01T16:51:12"
+   },
+   "meshscan_m90V": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-08-01T17:03:29",
+    "qa_last": "2026-08-01T17:03:43"
+   }
+  },
+  "run_58": {
+   "operating_00": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-08-01T19:04:51",
+    "qa_last": "2026-08-01T19:05:03"
+   },
+   "operating_01": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-08-01T19:33:19",
+    "qa_last": "2026-08-01T19:33:30"
+   },
+   "operating_02": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-08-01T20:01:46",
+    "qa_last": "2026-08-01T20:01:57"
+   }
+  },
+  "run_59": {
+   "detE_long_00": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-08-01T20:36:23",
+    "qa_last": "2026-08-01T20:36:35"
+   }
+  },
+  "run_60": {
+   "overnight_00": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-08-01T21:53:24",
+    "qa_last": "2026-08-01T21:53:38"
+   },
+   "overnight_01": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-08-01T22:23:14",
+    "qa_last": "2026-08-01T22:23:27"
+   },
+   "overnight_02": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-08-01T22:53:53",
+    "qa_last": "2026-08-01T22:54:07"
+   },
+   "overnight_03": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-08-01T23:24:13",
+    "qa_last": "2026-08-01T23:24:28"
+   },
+   "overnight_04": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-08-01T23:54:45",
+    "qa_last": "2026-08-01T23:54:59"
+   },
+   "overnight_05": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-08-02T00:24:55",
+    "qa_last": "2026-08-02T00:25:09"
+   },
+   "overnight_06": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-08-02T00:54:16",
+    "qa_last": "2026-08-02T00:54:30"
+   },
+   "overnight_07": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-08-02T01:23:57",
+    "qa_last": "2026-08-02T01:24:11"
+   },
+   "overnight_08": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-08-02T01:55:49",
+    "qa_last": "2026-08-02T01:56:04"
+   },
+   "overnight_09": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-08-02T02:26:10",
+    "qa_last": "2026-08-02T02:26:23"
+   },
+   "overnight_10": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-08-02T02:56:20",
+    "qa_last": "2026-08-02T02:56:34"
+   },
+   "overnight_11": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-08-02T03:26:41",
+    "qa_last": "2026-08-02T03:26:55"
+   },
+   "overnight_12": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-08-02T03:56:53",
+    "qa_last": "2026-08-02T03:57:07"
+   },
+   "overnight_13": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-08-02T04:27:15",
+    "qa_last": "2026-08-02T04:27:29"
+   },
+   "overnight_14": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-08-02T04:56:48",
+    "qa_last": "2026-08-02T04:57:02"
+   },
+   "overnight_15": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-08-02T05:26:01",
+    "qa_last": "2026-08-02T05:26:15"
+   },
+   "overnight_16": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-08-02T05:56:13",
+    "qa_last": "2026-08-02T05:56:27"
+   },
+   "overnight_17": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-08-02T06:26:36",
+    "qa_last": "2026-08-02T06:26:50"
+   },
+   "overnight_18": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-08-02T06:56:48",
+    "qa_last": "2026-08-02T06:57:01"
+   },
+   "overnight_19": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-08-02T07:27:10",
+    "qa_last": "2026-08-02T07:27:23"
+   },
+   "overnight_20": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-08-02T07:57:22",
+    "qa_last": "2026-08-02T07:57:35"
+   },
+   "overnight_21": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-08-02T08:27:44",
+    "qa_last": "2026-08-02T08:27:58"
+   },
+   "overnight_22": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-08-02T08:57:57",
+    "qa_last": "2026-08-02T08:58:11"
+   },
+   "overnight_23": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-08-02T09:28:10",
+    "qa_last": "2026-08-02T09:28:24"
+   }
+  },
+  "run_61": {
+   "meshscan_m00V": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-08-02T12:48:33",
+    "qa_last": "2026-08-02T12:48:48"
+   },
+   "meshscan_m10V": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-08-02T13:19:16",
+    "qa_last": "2026-08-02T13:19:30"
+   },
+   "meshscan_m20V": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-08-02T13:49:39",
+    "qa_last": "2026-08-02T13:49:52"
+   },
+   "meshscan_m30V": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-08-02T16:32:33",
+    "qa_last": "2026-08-02T16:32:49"
+   },
+   "meshscan_m40V": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-08-02T16:53:47",
+    "qa_last": "2026-08-02T16:54:04"
+   },
+   "meshscan_m50V": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-08-02T17:15:32",
+    "qa_last": "2026-08-02T17:15:49"
+   },
+   "meshscan_m60V": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-08-02T17:37:07",
+    "qa_last": "2026-08-02T17:37:24"
+   },
+   "meshscan_m70V": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-08-02T17:58:21",
+    "qa_last": "2026-08-02T17:58:37"
+   },
+   "meshscan_m80V": {
+    "detectors": [
+     "EIC_uRWELL_back",
+     "EIC_uRWELL_front"
+    ],
+    "qa_first": "2026-08-02T18:19:25",
+    "qa_last": "2026-08-02T18:19:41"
+   }
+  }
+ },
+ "run_configs": {
+  "run_59": {
+   "run_name": "run_59",
+   "base_out_dir": "/local/home/banco/P2_data/TB_July2026_H4/",
+   "data_out_dir": "/local/home/banco/P2_data/TB_July2026_H4/runs/",
+   "run_out_dir": "/local/home/banco/P2_data/TB_July2026_H4/runs/run_59/",
+   "raw_daq_inner_dir": "raw_daq_data",
+   "decoded_root_inner_dir": "decoded_root",
+   "detector_info_dir": "/local/home/banco/P2_data/TB_July2026_H4/config/detectors/",
+   "save_fdfs": true,
+   "start_time": "2026-08-02 12:06:00",
+   "process_on_fly": false,
+   "power_off_hv_at_end": true,
+   "resume": false,
+   "write_all_detectors_to_json": true,
+   "gas": "Ar/Iso 95/5",
+   "beam_type": "sps_beam",
+   "target_type": "none",
+   "trigger": "SPS external scintillator coincidence via TCM",
+   "dream_daq_info": {
+    "ip": "192.168.10.8",
+    "port": 1101,
+    "daq_config_template_path": "/local/home/banco/P2_data/TB_July2026_H4/dream_config/P2B_Beam.cfg",
+    "run_directory": "/local/home/banco/P2_data/TB_July2026_H4/dream_run/run_59/",
+    "data_out_dir": "/local/home/banco/P2_data/TB_July2026_H4/runs/run_59/",
+    "raw_daq_inner_dir": "raw_daq_data",
+    "n_samples_per_waveform": 32,
+    "sample_period": 60,
+    "latency": 32,
+    "daq_run_events": 0,
+    "go_timeout": 300,
+    "max_run_time_addition": 300,
+    "copy_on_fly": true,
+    "batch_mode": true,
+    "zero_suppress": true,
+    "pedestals_dir": "/local/home/banco/P2_data/TB_July2026_H4/pedestals/",
+    "pedestals": "latest",
+    "zs_check_sample": 1,
+    "pedestal_subtraction": true,
+    "common_noise_subtraction": true,
+    "zs_type": "tpc",
+    "do_pedestal_threshold_run": false,
+    "do_trigger_threshold_run": false,
+    "do_data_run": true,
+    "self_trigger": false,
+    "trg_mult_more_than": null,
+    "trg_mult_less_than": null,
+    "set_feus_from_detectors": true,
+    "simulate": false,
+    "sim_source_fdf_dir": "/local/home/banco/P2_data/TB_July2026_H4/sim_fdfs/",
+    "sim_chunk_mb": 16,
+    "sim_chunk_interval": 10,
+    "sim_max_mb_per_file": 64,
+    "included_feus": [
+     1,
+     3
+    ],
+    "feu_connectors": {
+     "1": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+     ],
+     "3": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+     ]
+    },
+    "trigger_feu": null
+   },
+   "processor_info": {
+    "ip": "192.168.10.8",
+    "port": 1200,
+    "run_dir": "/local/home/banco/P2_data/TB_July2026_H4/runs/run_59/",
+    "raw_daq_inner_dir": "raw_daq_data",
+    "decoded_root_inner_dir": "decoded_root",
+    "decode_path": "/local/home/banco/mm_strip_reconstruction/cmake-build-release/decoder/decode",
+    "detector_info_dir": "/local/home/banco/P2_data/TB_July2026_H4/config/detectors/",
+    "out_type": "both",
+    "on-the-fly_timeout": 2
+   },
+   "hv_control_info": {
+    "ip": "192.168.10.8",
+    "port": 1100
+   },
+   "hv_info": {
+    "ip": "192.168.10.199",
+    "n_cards": 13,
+    "n_channels_per_card": 12,
+    "run_out_dir": "/local/home/banco/P2_data/TB_July2026_H4/runs/run_59/",
+    "hv_monitoring": true,
+    "monitor_interval": 1,
+    "simulate": false,
+    "username": "admin",
+    "password": "admin"
+   },
+   "sub_runs": [
+    {
+     "sub_run_name": "meshscan_m00V",
+     "run_time": 30,
+     "post_pause_s": 0,
+     "hvs": {
+      "8": {
+       "0": 750,
+       "1": 450,
+       "2": 750,
+       "3": 450,
+       "4": 750,
+       "5": 450,
+       "6": 620,
+       "7": 620,
+       "8": null
+      },
+      "12": {
+       "0": 420,
+       "1": 420,
+       "2": null
+      }
+     }
+    },
+    {
+     "sub_run_name": "meshscan_m10V",
+     "run_time": 30,
+     "post_pause_s": 0,
+     "hvs": {
+      "8": {
+       "0": 740,
+       "1": 440,
+       "2": 740,
+       "3": 440,
+       "4": 740,
+       "5": 440,
+       "6": 620,
+       "7": 620,
+       "8": null
+      },
+      "12": {
+       "0": 420,
+       "1": 420,
+       "2": null
+      }
+     }
+    },
+    {
+     "sub_run_name": "meshscan_m20V",
+     "run_time": 30,
+     "post_pause_s": 0,
+     "hvs": {
+      "8": {
+       "0": 730,
+       "1": 430,
+       "2": 730,
+       "3": 430,
+       "4": 730,
+       "5": 430,
+       "6": 620,
+       "7": 620,
+       "8": null
+      },
+      "12": {
+       "0": 420,
+       "1": 420,
+       "2": null
+      }
+     }
+    },
+    {
+     "sub_run_name": "meshscan_m30V",
+     "run_time": 30,
+     "post_pause_s": 0,
+     "hvs": {
+      "8": {
+       "0": 720,
+       "1": 420,
+       "2": 720,
+       "3": 420,
+       "4": 720,
+       "5": 420,
+       "6": 620,
+       "7": 620,
+       "8": null
+      },
+      "12": {
+       "0": 420,
+       "1": 420,
+       "2": null
+      }
+     }
+    },
+    {
+     "sub_run_name": "meshscan_m40V",
+     "run_time": 30,
+     "post_pause_s": 0,
+     "hvs": {
+      "8": {
+       "0": 710,
+       "1": 410,
+       "2": 710,
+       "3": 410,
+       "4": 710,
+       "5": 410,
+       "6": 620,
+       "7": 620,
+       "8": null
+      },
+      "12": {
+       "0": 420,
+       "1": 420,
+       "2": null
+      }
+     }
+    },
+    {
+     "sub_run_name": "meshscan_m50V",
+     "run_time": 30,
+     "post_pause_s": 0,
+     "hvs": {
+      "8": {
+       "0": 700,
+       "1": 400,
+       "2": 700,
+       "3": 400,
+       "4": 700,
+       "5": 400,
+       "6": 620,
+       "7": 620,
+       "8": null
+      },
+      "12": {
+       "0": 420,
+       "1": 420,
+       "2": null
+      }
+     }
+    },
+    {
+     "sub_run_name": "meshscan_m60V",
+     "run_time": 30,
+     "post_pause_s": 0,
+     "hvs": {
+      "8": {
+       "0": 690,
+       "1": 390,
+       "2": 690,
+       "3": 390,
+       "4": 690,
+       "5": 390,
+       "6": 620,
+       "7": 620,
+       "8": null
+      },
+      "12": {
+       "0": 420,
+       "1": 420,
+       "2": null
+      }
+     }
+    },
+    {
+     "sub_run_name": "meshscan_m70V",
+     "run_time": 30,
+     "post_pause_s": 0,
+     "hvs": {
+      "8": {
+       "0": 680,
+       "1": 380,
+       "2": 680,
+       "3": 380,
+       "4": 680,
+       "5": 380,
+       "6": 620,
+       "7": 620,
+       "8": null
+      },
+      "12": {
+       "0": 420,
+       "1": 420,
+       "2": null
+      }
+     }
+    },
+    {
+     "sub_run_name": "meshscan_m80V",
+     "run_time": 30,
+     "post_pause_s": 0,
+     "hvs": {
+      "8": {
+       "0": 670,
+       "1": 370,
+       "2": 670,
+       "3": 370,
+       "4": 670,
+       "5": 370,
+       "6": 620,
+       "7": 620,
+       "8": null
+      },
+      "12": {
+       "0": 420,
+       "1": 420,
+       "2": null
+      }
+     }
+    },
+    {
+     "sub_run_name": "meshscan_m90V",
+     "run_time": 30,
+     "post_pause_s": 0,
+     "hvs": {
+      "8": {
+       "0": 660,
+       "1": 360,
+       "2": 660,
+       "3": 360,
+       "4": 660,
+       "5": 360,
+       "6": 620,
+       "7": 620,
+       "8": null
+      },
+      "12": {
+       "0": 420,
+       "1": 420,
+       "2": null
+      }
+     }
+    },
+    {
+     "sub_run_name": "meshscan_m100V",
+     "run_time": 30,
+     "post_pause_s": 0,
+     "hvs": {
+      "8": {
+       "0": 650,
+       "1": 350,
+       "2": 650,
+       "3": 350,
+       "4": 650,
+       "5": 350,
+       "6": 620,
+       "7": 620,
+       "8": null
+      },
+      "12": {
+       "0": 420,
+       "1": 420,
+       "2": null
+      }
+     }
+    },
+    {
+     "sub_run_name": "driftscan_gap150V",
+     "run_time": 30,
+     "post_pause_s": 0,
+     "hvs": {
+      "8": {
+       "0": 600,
+       "1": 450,
+       "2": 600,
+       "3": 450,
+       "4": 600,
+       "5": 450,
+       "6": 620,
+       "7": 620,
+       "8": null
+      },
+      "12": {
+       "0": 420,
+       "1": 420,
+       "2": null
+      }
+     }
+    },
+    {
+     "sub_run_name": "driftscan_gap200V",
+     "run_time": 30,
+     "post_pause_s": 0,
+     "hvs": {
+      "8": {
+       "0": 650,
+       "1": 450,
+       "2": 650,
+       "3": 450,
+       "4": 650,
+       "5": 450,
+       "6": 620,
+       "7": 620,
+       "8": null
+      },
+      "12": {
+       "0": 420,
+       "1": 420,
+       "2": null
+      }
+     }
+    },
+    {
+     "sub_run_name": "driftscan_gap250V",
+     "run_time": 30,
+     "post_pause_s": 0,
+     "hvs": {
+      "8": {
+       "0": 700,
+       "1": 450,
+       "2": 700,
+       "3": 450,
+       "4": 700,
+       "5": 450,
+       "6": 620,
+       "7": 620,
+       "8": null
+      },
+      "12": {
+       "0": 420,
+       "1": 420,
+       "2": null
+      }
+     }
+    },
+    {
+     "sub_run_name": "driftscan_gap300V",
+     "run_time": 30,
+     "post_pause_s": 0,
+     "hvs": {
+      "8": {
+       "0": 750,
+       "1": 450,
+       "2": 750,
+       "3": 450,
+       "4": 750,
+       "5": 450,
+       "6": 620,
+       "7": 620,
+       "8": null
+      },
+      "12": {
+       "0": 420,
+       "1": 420,
+       "2": null
+      }
+     }
+    },
+    {
+     "sub_run_name": "driftscan_gap350V",
+     "run_time": 30,
+     "post_pause_s": 0,
+     "hvs": {
+      "8": {
+       "0": 800,
+       "1": 450,
+       "2": 800,
+       "3": 450,
+       "4": 800,
+       "5": 450,
+       "6": 620,
+       "7": 620,
+       "8": null
+      },
+      "12": {
+       "0": 420,
+       "1": 420,
+       "2": null
+      }
+     }
+    },
+    {
+     "sub_run_name": "driftscan_gap400V",
+     "run_time": 30,
+     "post_pause_s": 0,
+     "hvs": {
+      "8": {
+       "0": 850,
+       "1": 450,
+       "2": 850,
+       "3": 450,
+       "4": 850,
+       "5": 450,
+       "6": 620,
+       "7": 620,
+       "8": null
+      },
+      "12": {
+       "0": 420,
+       "1": 420,
+       "2": null
+      }
+     }
+    }
+   ],
+   "bench_geometry": {
+    "board_thickness": 5
+   },
+   "included_detectors": [
+    "EIC_uRWELL_front",
+    "EIC_uRWELL_back",
+    "mx17_E"
+   ],
+   "detectors": [
+    {
+     "name": "EIC_uRWELL_front",
+     "description": "EIC uRWELL front reference (z=0, first the beam sees). FEU Id 68 (cfg Feu 1), Dream conn 1-4: x1/x2=ch1/2, y1/y2=ch3/4.",
+     "det_type": "urw_inter",
+     "resist_type": "resistive",
+     "bulked_from": "",
+     "det_center_coords": {
+      "x": 0,
+      "y": 0,
+      "z": 0.0
+     },
+     "det_orientation": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+     },
+     "hv_channels": {
+      "drift": [
+       8,
+       6
+      ],
+      "resist": [
+       12,
+       0
+      ]
+     },
+     "dream_feus": {
+      "x1": [
+       1,
+       1
+      ],
+      "x2": [
+       1,
+       2
+      ],
+      "y1": [
+       1,
+       3
+      ],
+      "y2": [
+       1,
+       4
+      ]
+     },
+     "dream_feu_orientation": {
+      "x1": "inverted",
+      "x2": "inverted",
+      "y1": "inverted",
+      "y2": "inverted"
+     }
+    },
+    {
+     "name": "P2_IN",
+     "description": "P2 telescope IN, upstream P2 (z=320 mm). det2 in bulking order. FEU Id 101 (cfg Feu 3).",
+     "det_type": "P2",
+     "resist_type": "none",
+     "bulked_from": "Alex+Enzo",
+     "det_center_coords": {
+      "x": 0,
+      "y": 0,
+      "z": 320.0
+     },
+     "det_orientation": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+     },
+     "hv_channels": {
+      "drift": [
+       8,
+       0
+      ],
+      "mesh": [
+       8,
+       1
+      ]
+     },
+     "dream_feus": {
+      "c_4_bot": [
+       3,
+       1
+      ],
+      "c_4_top": [
+       3,
+       2
+      ],
+      "c_5_bot": [
+       3,
+       3
+      ],
+      "c_5_top": [
+       3,
+       4
+      ],
+      "c_6_bot": [
+       3,
+       5
+      ],
+      "c_6_top": [
+       3,
+       6
+      ],
+      "c_7_bot": [
+       3,
+       7
+      ],
+      "c_7_top": [
+       3,
+       8
+      ]
+     },
+     "dream_feu_orientation": {
+      "c_4_bot": "rotated_inverted",
+      "c_4_top": "rotated_inverted",
+      "c_5_bot": "rotated_inverted",
+      "c_5_top": "rotated_inverted",
+      "c_6_bot": "rotated_inverted",
+      "c_6_top": "rotated_inverted",
+      "c_7_bot": "rotated_inverted",
+      "c_7_top": "rotated_inverted"
+     }
+    },
+    {
+     "name": "P2_MID",
+     "description": "P2 telescope MID (z=630 mm). det1 in bulking order. FEU Id 102 (cfg Feu 4).",
+     "det_type": "P2",
+     "resist_type": "none",
+     "bulked_from": "Alex+Enzo",
+     "det_center_coords": {
+      "x": 0,
+      "y": 0,
+      "z": 630.0
+     },
+     "det_orientation": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+     },
+     "hv_channels": {
+      "drift": [
+       8,
+       2
+      ],
+      "mesh": [
+       8,
+       3
+      ]
+     },
+     "dream_feus": {
+      "c_4_bot": [
+       4,
+       1
+      ],
+      "c_4_top": [
+       4,
+       2
+      ],
+      "c_5_bot": [
+       4,
+       3
+      ],
+      "c_5_top": [
+       4,
+       4
+      ],
+      "c_6_bot": [
+       4,
+       5
+      ],
+      "c_6_top": [
+       4,
+       6
+      ],
+      "c_7_bot": [
+       4,
+       7
+      ],
+      "c_7_top": [
+       4,
+       8
+      ]
+     },
+     "dream_feu_orientation": {
+      "c_4_bot": "rotated_inverted",
+      "c_4_top": "rotated_inverted",
+      "c_5_bot": "rotated_inverted",
+      "c_5_top": "rotated_inverted",
+      "c_6_bot": "rotated_inverted",
+      "c_6_top": "rotated_inverted",
+      "c_7_bot": "rotated_inverted",
+      "c_7_top": "rotated_inverted"
+     }
+    },
+    {
+     "name": "P2_OUT",
+     "description": "P2 telescope OUT, downstream P2 (z=940 mm). det3 in bulking order. FEU Id 103 (cfg Feu 5).",
+     "det_type": "P2",
+     "resist_type": "none",
+     "bulked_from": "Alex+Enzo",
+     "det_center_coords": {
+      "x": 0,
+      "y": 0,
+      "z": 940.0
+     },
+     "det_orientation": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+     },
+     "hv_channels": {
+      "drift": [
+       8,
+       4
+      ],
+      "mesh": [
+       8,
+       5
+      ]
+     },
+     "dream_feus": {
+      "c_4_bot": [
+       5,
+       1
+      ],
+      "c_4_top": [
+       5,
+       2
+      ],
+      "c_5_bot": [
+       5,
+       3
+      ],
+      "c_5_top": [
+       5,
+       4
+      ],
+      "c_6_bot": [
+       5,
+       5
+      ],
+      "c_6_top": [
+       5,
+       6
+      ],
+      "c_7_bot": [
+       5,
+       7
+      ],
+      "c_7_top": [
+       5,
+       8
+      ]
+     },
+     "dream_feu_orientation": {
+      "c_4_bot": "rotated_inverted",
+      "c_4_top": "rotated_inverted",
+      "c_5_bot": "rotated_inverted",
+      "c_5_top": "rotated_inverted",
+      "c_6_bot": "rotated_inverted",
+      "c_6_top": "rotated_inverted",
+      "c_7_bot": "rotated_inverted",
+      "c_7_top": "rotated_inverted"
+     }
+    },
+    {
+     "name": "EIC_uRWELL_back",
+     "description": "EIC uRWELL back reference (z=1370 mm, last the beam sees). FEU Id 68 (cfg Feu 1), Dream conn 5-8: x1/x2=ch5/6, y1/y2=ch7/8.",
+     "det_type": "urw_strip",
+     "resist_type": "resistive",
+     "bulked_from": "",
+     "det_center_coords": {
+      "x": 0,
+      "y": 0,
+      "z": 1370.0
+     },
+     "det_orientation": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+     },
+     "hv_channels": {
+      "drift": [
+       8,
+       7
+      ],
+      "resist": [
+       12,
+       1
+      ]
+     },
+     "dream_feus": {
+      "x1": [
+       1,
+       5
+      ],
+      "x2": [
+       1,
+       6
+      ],
+      "y1": [
+       1,
+       7
+      ],
+      "y2": [
+       1,
+       8
+      ]
+     },
+     "dream_feu_orientation": {
+      "x1": "inverted",
+      "x2": "inverted",
+      "y1": "inverted",
+      "y2": "inverted"
+     }
+    },
+    {
+     "name": "mx17_E",
+     "alias": "mx17_4",
+     "description": "MX17 det4 (\"Detector E\"), the n_TOF group's chamber, z=1155 mm (PLACEHOLDER) between P2_OUT and the back uRWELL. FEU Id 101 (cfg Feu 3): X3-X6 = Dream 0-3, Y3-Y6 = Dream 4-7. Instrumented window is detector-local 99.8-298.7 mm in both views.",
+     "det_type": "mx17",
+     "resist_type": "strip",
+     "drift_gap": "30 mm",
+     "frame_type": "aluminum",
+     "bulked_from": "",
+     "det_center_coords": {
+      "x": 0,
+      "y": 0,
+      "z": 1155.0
+     },
+     "det_orientation": {
+      "x": 0,
+      "y": 25.64,
+      "z": 0
+     },
+     "dream_feus": {
+      "x_3": [
+       3,
+       1
+      ],
+      "x_4": [
+       3,
+       2
+      ],
+      "x_5": [
+       3,
+       3
+      ],
+      "x_6": [
+       3,
+       4
+      ],
+      "y_3": [
+       3,
+       5
+      ],
+      "y_4": [
+       3,
+       6
+      ],
+      "y_5": [
+       3,
+       7
+      ],
+      "y_6": [
+       3,
+       8
+      ]
+     },
+     "dream_feu_orientation": {
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted"
+     }
+    }
+   ],
+   "triggered_by": "vmm_daq@128.141.21.163"
+  },
+  "run_61": {
+   "run_name": "run_61",
+   "base_out_dir": "/local/home/banco/P2_data/TB_July2026_H4/",
+   "data_out_dir": "/local/home/banco/P2_data/TB_July2026_H4/runs/",
+   "run_out_dir": "/local/home/banco/P2_data/TB_July2026_H4/runs/run_61/",
+   "raw_daq_inner_dir": "raw_daq_data",
+   "decoded_root_inner_dir": "decoded_root",
+   "detector_info_dir": "/local/home/banco/P2_data/TB_July2026_H4/config/detectors/",
+   "save_fdfs": true,
+   "start_time": "2026-08-02 16:06:54",
+   "process_on_fly": false,
+   "power_off_hv_at_end": true,
+   "resume": true,
+   "write_all_detectors_to_json": true,
+   "gas": "Ar/Iso 95/5",
+   "beam_type": "sps_beam",
+   "target_type": "none",
+   "trigger": "SPS external scintillator coincidence via TCM",
+   "dream_daq_info": {
+    "ip": "192.168.10.8",
+    "port": 1101,
+    "daq_config_template_path": "/local/home/banco/P2_data/TB_July2026_H4/dream_config/P2B_Beam.cfg",
+    "run_directory": "/local/home/banco/P2_data/TB_July2026_H4/dream_run/run_61/",
+    "data_out_dir": "/local/home/banco/P2_data/TB_July2026_H4/runs/run_61/",
+    "raw_daq_inner_dir": "raw_daq_data",
+    "n_samples_per_waveform": 32,
+    "sample_period": 60,
+    "latency": 32,
+    "daq_run_events": 0,
+    "go_timeout": 300,
+    "max_run_time_addition": 300,
+    "copy_on_fly": true,
+    "batch_mode": true,
+    "zero_suppress": true,
+    "pedestals_dir": "/local/home/banco/P2_data/TB_July2026_H4/pedestals/",
+    "pedestals": "latest",
+    "zs_check_sample": 1,
+    "pedestal_subtraction": true,
+    "common_noise_subtraction": true,
+    "zs_type": "tpc",
+    "do_pedestal_threshold_run": false,
+    "do_trigger_threshold_run": false,
+    "do_data_run": true,
+    "self_trigger": false,
+    "trg_mult_more_than": null,
+    "trg_mult_less_than": null,
+    "set_feus_from_detectors": true,
+    "simulate": false,
+    "sim_source_fdf_dir": "/local/home/banco/P2_data/TB_July2026_H4/sim_fdfs/",
+    "sim_chunk_mb": 16,
+    "sim_chunk_interval": 10,
+    "sim_max_mb_per_file": 64,
+    "included_feus": [
+     1,
+     3
+    ],
+    "feu_connectors": {
+     "1": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+     ],
+     "3": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+     ]
+    },
+    "trigger_feu": null
+   },
+   "processor_info": {
+    "ip": "192.168.10.8",
+    "port": 1200,
+    "run_dir": "/local/home/banco/P2_data/TB_July2026_H4/runs/run_61/",
+    "raw_daq_inner_dir": "raw_daq_data",
+    "decoded_root_inner_dir": "decoded_root",
+    "decode_path": "/local/home/banco/mm_strip_reconstruction/cmake-build-release/decoder/decode",
+    "detector_info_dir": "/local/home/banco/P2_data/TB_July2026_H4/config/detectors/",
+    "out_type": "both",
+    "on-the-fly_timeout": 2
+   },
+   "hv_control_info": {
+    "ip": "192.168.10.8",
+    "port": 1100
+   },
+   "hv_info": {
+    "ip": "192.168.10.199",
+    "n_cards": 13,
+    "n_channels_per_card": 12,
+    "run_out_dir": "/local/home/banco/P2_data/TB_July2026_H4/runs/run_61/",
+    "hv_monitoring": true,
+    "monitor_interval": 1,
+    "simulate": false,
+    "username": "admin",
+    "password": "admin"
+   },
+   "sub_runs": [
+    {
+     "sub_run_name": "meshscan_m00V",
+     "run_time": 21,
+     "post_pause_s": 0,
+     "hvs": {
+      "8": {
+       "0": 750,
+       "1": 450,
+       "2": 750,
+       "3": 450,
+       "4": 750,
+       "5": 450,
+       "6": 620,
+       "7": 620,
+       "8": null
+      },
+      "12": {
+       "0": 420,
+       "1": 420,
+       "2": null
+      }
+     }
+    },
+    {
+     "sub_run_name": "meshscan_m10V",
+     "run_time": 21,
+     "post_pause_s": 0,
+     "hvs": {
+      "8": {
+       "0": 740,
+       "1": 440,
+       "2": 740,
+       "3": 440,
+       "4": 740,
+       "5": 440,
+       "6": 620,
+       "7": 620,
+       "8": null
+      },
+      "12": {
+       "0": 420,
+       "1": 420,
+       "2": null
+      }
+     }
+    },
+    {
+     "sub_run_name": "meshscan_m20V",
+     "run_time": 21,
+     "post_pause_s": 0,
+     "hvs": {
+      "8": {
+       "0": 730,
+       "1": 430,
+       "2": 730,
+       "3": 430,
+       "4": 730,
+       "5": 430,
+       "6": 620,
+       "7": 620,
+       "8": null
+      },
+      "12": {
+       "0": 420,
+       "1": 420,
+       "2": null
+      }
+     }
+    },
+    {
+     "sub_run_name": "meshscan_m30V",
+     "run_time": 21,
+     "post_pause_s": 0,
+     "hvs": {
+      "8": {
+       "0": 720,
+       "1": 420,
+       "2": 720,
+       "3": 420,
+       "4": 720,
+       "5": 420,
+       "6": 620,
+       "7": 620,
+       "8": null
+      },
+      "12": {
+       "0": 420,
+       "1": 420,
+       "2": null
+      }
+     }
+    },
+    {
+     "sub_run_name": "meshscan_m40V",
+     "run_time": 21,
+     "post_pause_s": 0,
+     "hvs": {
+      "8": {
+       "0": 710,
+       "1": 410,
+       "2": 710,
+       "3": 410,
+       "4": 710,
+       "5": 410,
+       "6": 620,
+       "7": 620,
+       "8": null
+      },
+      "12": {
+       "0": 420,
+       "1": 420,
+       "2": null
+      }
+     }
+    },
+    {
+     "sub_run_name": "meshscan_m50V",
+     "run_time": 21,
+     "post_pause_s": 0,
+     "hvs": {
+      "8": {
+       "0": 700,
+       "1": 400,
+       "2": 700,
+       "3": 400,
+       "4": 700,
+       "5": 400,
+       "6": 620,
+       "7": 620,
+       "8": null
+      },
+      "12": {
+       "0": 420,
+       "1": 420,
+       "2": null
+      }
+     }
+    },
+    {
+     "sub_run_name": "meshscan_m60V",
+     "run_time": 21,
+     "post_pause_s": 0,
+     "hvs": {
+      "8": {
+       "0": 690,
+       "1": 390,
+       "2": 690,
+       "3": 390,
+       "4": 690,
+       "5": 390,
+       "6": 620,
+       "7": 620,
+       "8": null
+      },
+      "12": {
+       "0": 420,
+       "1": 420,
+       "2": null
+      }
+     }
+    },
+    {
+     "sub_run_name": "meshscan_m70V",
+     "run_time": 21,
+     "post_pause_s": 0,
+     "hvs": {
+      "8": {
+       "0": 680,
+       "1": 380,
+       "2": 680,
+       "3": 380,
+       "4": 680,
+       "5": 380,
+       "6": 620,
+       "7": 620,
+       "8": null
+      },
+      "12": {
+       "0": 420,
+       "1": 420,
+       "2": null
+      }
+     }
+    },
+    {
+     "sub_run_name": "meshscan_m80V",
+     "run_time": 21,
+     "post_pause_s": 0,
+     "hvs": {
+      "8": {
+       "0": 670,
+       "1": 370,
+       "2": 670,
+       "3": 370,
+       "4": 670,
+       "5": 370,
+       "6": 620,
+       "7": 620,
+       "8": null
+      },
+      "12": {
+       "0": 420,
+       "1": 420,
+       "2": null
+      }
+     }
+    },
+    {
+     "sub_run_name": "meshscan_m90V",
+     "run_time": 21,
+     "post_pause_s": 0,
+     "hvs": {
+      "8": {
+       "0": 660,
+       "1": 360,
+       "2": 660,
+       "3": 360,
+       "4": 660,
+       "5": 360,
+       "6": 620,
+       "7": 620,
+       "8": null
+      },
+      "12": {
+       "0": 420,
+       "1": 420,
+       "2": null
+      }
+     }
+    },
+    {
+     "sub_run_name": "meshscan_m100V",
+     "run_time": 21,
+     "post_pause_s": 0,
+     "hvs": {
+      "8": {
+       "0": 650,
+       "1": 350,
+       "2": 650,
+       "3": 350,
+       "4": 650,
+       "5": 350,
+       "6": 620,
+       "7": 620,
+       "8": null
+      },
+      "12": {
+       "0": 420,
+       "1": 420,
+       "2": null
+      }
+     }
+    },
+    {
+     "sub_run_name": "driftscan_gap150V",
+     "run_time": 21,
+     "post_pause_s": 0,
+     "hvs": {
+      "8": {
+       "0": 600,
+       "1": 450,
+       "2": 600,
+       "3": 450,
+       "4": 600,
+       "5": 450,
+       "6": 620,
+       "7": 620,
+       "8": null
+      },
+      "12": {
+       "0": 420,
+       "1": 420,
+       "2": null
+      }
+     }
+    },
+    {
+     "sub_run_name": "driftscan_gap200V",
+     "run_time": 21,
+     "post_pause_s": 0,
+     "hvs": {
+      "8": {
+       "0": 650,
+       "1": 450,
+       "2": 650,
+       "3": 450,
+       "4": 650,
+       "5": 450,
+       "6": 620,
+       "7": 620,
+       "8": null
+      },
+      "12": {
+       "0": 420,
+       "1": 420,
+       "2": null
+      }
+     }
+    },
+    {
+     "sub_run_name": "driftscan_gap250V",
+     "run_time": 21,
+     "post_pause_s": 0,
+     "hvs": {
+      "8": {
+       "0": 700,
+       "1": 450,
+       "2": 700,
+       "3": 450,
+       "4": 700,
+       "5": 450,
+       "6": 620,
+       "7": 620,
+       "8": null
+      },
+      "12": {
+       "0": 420,
+       "1": 420,
+       "2": null
+      }
+     }
+    },
+    {
+     "sub_run_name": "driftscan_gap300V",
+     "run_time": 21,
+     "post_pause_s": 0,
+     "hvs": {
+      "8": {
+       "0": 750,
+       "1": 450,
+       "2": 750,
+       "3": 450,
+       "4": 750,
+       "5": 450,
+       "6": 620,
+       "7": 620,
+       "8": null
+      },
+      "12": {
+       "0": 420,
+       "1": 420,
+       "2": null
+      }
+     }
+    },
+    {
+     "sub_run_name": "driftscan_gap350V",
+     "run_time": 21,
+     "post_pause_s": 0,
+     "hvs": {
+      "8": {
+       "0": 800,
+       "1": 450,
+       "2": 800,
+       "3": 450,
+       "4": 800,
+       "5": 450,
+       "6": 620,
+       "7": 620,
+       "8": null
+      },
+      "12": {
+       "0": 420,
+       "1": 420,
+       "2": null
+      }
+     }
+    },
+    {
+     "sub_run_name": "driftscan_gap400V",
+     "run_time": 21,
+     "post_pause_s": 0,
+     "hvs": {
+      "8": {
+       "0": 850,
+       "1": 450,
+       "2": 850,
+       "3": 450,
+       "4": 850,
+       "5": 450,
+       "6": 620,
+       "7": 620,
+       "8": null
+      },
+      "12": {
+       "0": 420,
+       "1": 420,
+       "2": null
+      }
+     }
+    }
+   ],
+   "bench_geometry": {
+    "board_thickness": 5
+   },
+   "included_detectors": [
+    "EIC_uRWELL_front",
+    "EIC_uRWELL_back",
+    "mx17_E"
+   ],
+   "detectors": [
+    {
+     "name": "EIC_uRWELL_front",
+     "description": "EIC uRWELL front reference (z=0, first the beam sees). FEU Id 68 (cfg Feu 1), Dream conn 1-4: x1/x2=ch1/2, y1/y2=ch3/4.",
+     "det_type": "urw_inter",
+     "resist_type": "resistive",
+     "bulked_from": "",
+     "det_center_coords": {
+      "x": 0,
+      "y": 0,
+      "z": 0.0
+     },
+     "det_orientation": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+     },
+     "hv_channels": {
+      "drift": [
+       8,
+       6
+      ],
+      "resist": [
+       12,
+       0
+      ]
+     },
+     "dream_feus": {
+      "x1": [
+       1,
+       1
+      ],
+      "x2": [
+       1,
+       2
+      ],
+      "y1": [
+       1,
+       3
+      ],
+      "y2": [
+       1,
+       4
+      ]
+     },
+     "dream_feu_orientation": {
+      "x1": "inverted",
+      "x2": "inverted",
+      "y1": "inverted",
+      "y2": "inverted"
+     }
+    },
+    {
+     "name": "P2_IN",
+     "description": "P2 telescope IN, upstream P2 (z=320 mm). det2 in bulking order. FEU Id 101 (cfg Feu 3).",
+     "det_type": "P2",
+     "resist_type": "none",
+     "bulked_from": "Alex+Enzo",
+     "det_center_coords": {
+      "x": 0,
+      "y": 0,
+      "z": 320.0
+     },
+     "det_orientation": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+     },
+     "hv_channels": {
+      "drift": [
+       8,
+       0
+      ],
+      "mesh": [
+       8,
+       1
+      ]
+     },
+     "dream_feus": {
+      "c_4_bot": [
+       3,
+       1
+      ],
+      "c_4_top": [
+       3,
+       2
+      ],
+      "c_5_bot": [
+       3,
+       3
+      ],
+      "c_5_top": [
+       3,
+       4
+      ],
+      "c_6_bot": [
+       3,
+       5
+      ],
+      "c_6_top": [
+       3,
+       6
+      ],
+      "c_7_bot": [
+       3,
+       7
+      ],
+      "c_7_top": [
+       3,
+       8
+      ]
+     },
+     "dream_feu_orientation": {
+      "c_4_bot": "rotated_inverted",
+      "c_4_top": "rotated_inverted",
+      "c_5_bot": "rotated_inverted",
+      "c_5_top": "rotated_inverted",
+      "c_6_bot": "rotated_inverted",
+      "c_6_top": "rotated_inverted",
+      "c_7_bot": "rotated_inverted",
+      "c_7_top": "rotated_inverted"
+     }
+    },
+    {
+     "name": "P2_MID",
+     "description": "P2 telescope MID (z=630 mm). det1 in bulking order. FEU Id 102 (cfg Feu 4).",
+     "det_type": "P2",
+     "resist_type": "none",
+     "bulked_from": "Alex+Enzo",
+     "det_center_coords": {
+      "x": 0,
+      "y": 0,
+      "z": 630.0
+     },
+     "det_orientation": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+     },
+     "hv_channels": {
+      "drift": [
+       8,
+       2
+      ],
+      "mesh": [
+       8,
+       3
+      ]
+     },
+     "dream_feus": {
+      "c_4_bot": [
+       4,
+       1
+      ],
+      "c_4_top": [
+       4,
+       2
+      ],
+      "c_5_bot": [
+       4,
+       3
+      ],
+      "c_5_top": [
+       4,
+       4
+      ],
+      "c_6_bot": [
+       4,
+       5
+      ],
+      "c_6_top": [
+       4,
+       6
+      ],
+      "c_7_bot": [
+       4,
+       7
+      ],
+      "c_7_top": [
+       4,
+       8
+      ]
+     },
+     "dream_feu_orientation": {
+      "c_4_bot": "rotated_inverted",
+      "c_4_top": "rotated_inverted",
+      "c_5_bot": "rotated_inverted",
+      "c_5_top": "rotated_inverted",
+      "c_6_bot": "rotated_inverted",
+      "c_6_top": "rotated_inverted",
+      "c_7_bot": "rotated_inverted",
+      "c_7_top": "rotated_inverted"
+     }
+    },
+    {
+     "name": "P2_OUT",
+     "description": "P2 telescope OUT, downstream P2 (z=940 mm). det3 in bulking order. FEU Id 103 (cfg Feu 5).",
+     "det_type": "P2",
+     "resist_type": "none",
+     "bulked_from": "Alex+Enzo",
+     "det_center_coords": {
+      "x": 0,
+      "y": 0,
+      "z": 940.0
+     },
+     "det_orientation": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+     },
+     "hv_channels": {
+      "drift": [
+       8,
+       4
+      ],
+      "mesh": [
+       8,
+       5
+      ]
+     },
+     "dream_feus": {
+      "c_4_bot": [
+       5,
+       1
+      ],
+      "c_4_top": [
+       5,
+       2
+      ],
+      "c_5_bot": [
+       5,
+       3
+      ],
+      "c_5_top": [
+       5,
+       4
+      ],
+      "c_6_bot": [
+       5,
+       5
+      ],
+      "c_6_top": [
+       5,
+       6
+      ],
+      "c_7_bot": [
+       5,
+       7
+      ],
+      "c_7_top": [
+       5,
+       8
+      ]
+     },
+     "dream_feu_orientation": {
+      "c_4_bot": "rotated_inverted",
+      "c_4_top": "rotated_inverted",
+      "c_5_bot": "rotated_inverted",
+      "c_5_top": "rotated_inverted",
+      "c_6_bot": "rotated_inverted",
+      "c_6_top": "rotated_inverted",
+      "c_7_bot": "rotated_inverted",
+      "c_7_top": "rotated_inverted"
+     }
+    },
+    {
+     "name": "EIC_uRWELL_back",
+     "description": "EIC uRWELL back reference (z=1370 mm, last the beam sees). FEU Id 68 (cfg Feu 1), Dream conn 5-8: x1/x2=ch5/6, y1/y2=ch7/8.",
+     "det_type": "urw_strip",
+     "resist_type": "resistive",
+     "bulked_from": "",
+     "det_center_coords": {
+      "x": 0,
+      "y": 0,
+      "z": 1370.0
+     },
+     "det_orientation": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+     },
+     "hv_channels": {
+      "drift": [
+       8,
+       7
+      ],
+      "resist": [
+       12,
+       1
+      ]
+     },
+     "dream_feus": {
+      "x1": [
+       1,
+       5
+      ],
+      "x2": [
+       1,
+       6
+      ],
+      "y1": [
+       1,
+       7
+      ],
+      "y2": [
+       1,
+       8
+      ]
+     },
+     "dream_feu_orientation": {
+      "x1": "inverted",
+      "x2": "inverted",
+      "y1": "inverted",
+      "y2": "inverted"
+     }
+    },
+    {
+     "name": "mx17_E",
+     "alias": "mx17_4",
+     "description": "MX17 det4 (\"Detector E\"), the n_TOF group's chamber, z=1155 mm (PLACEHOLDER) between P2_OUT and the back uRWELL. FEU Id 101 (cfg Feu 3): X3-X6 = Dream 0-3, Y3-Y6 = Dream 4-7. Instrumented window is detector-local 99.8-298.7 mm in both views.",
+     "det_type": "mx17",
+     "resist_type": "strip",
+     "drift_gap": "30 mm",
+     "frame_type": "aluminum",
+     "bulked_from": "",
+     "det_center_coords": {
+      "x": 0,
+      "y": 0,
+      "z": 1155.0
+     },
+     "det_orientation": {
+      "x": 0,
+      "y": 25.64,
+      "z": 0
+     },
+     "dream_feus": {
+      "x_3": [
+       3,
+       1
+      ],
+      "x_4": [
+       3,
+       2
+      ],
+      "x_5": [
+       3,
+       3
+      ],
+      "x_6": [
+       3,
+       4
+      ],
+      "y_3": [
+       3,
+       5
+      ],
+      "y_4": [
+       3,
+       6
+      ],
+      "y_5": [
+       3,
+       7
+      ],
+      "y_6": [
+       3,
+       8
+      ]
+     },
+     "dream_feu_orientation": {
+      "x_3": "inverted",
+      "x_4": "inverted",
+      "x_5": "inverted",
+      "x_6": "inverted",
+      "y_3": "inverted",
+      "y_4": "inverted",
+      "y_5": "inverted",
+      "y_6": "inverted"
+     }
+    }
+   ],
+   "triggered_by": "vmm_daq@128.141.21.163"
+  }
+ },
+ "_harvested": "2026-08-02T18:33:20",
+ "_host": "banco_cern"
+}

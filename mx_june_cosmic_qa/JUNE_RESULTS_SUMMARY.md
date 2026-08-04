@@ -241,7 +241,7 @@ c1≈0.25 (~half det3's 0.449) — a consistent board-C/D property (measured, no
   run** (top slot, FEU7/8, z702; 53.0k rays, 79.7 %, silent only 2.4 %); the earlier 6-22
   det3 (bottom slot) gave a consistent **80.7 %** — det3 is reliably ~80 % in either slot.
 - **det4** — **NOT uniformly gain-limited: 62 % of the area does not amplify, in fixed
-  stripes** (2026-07-31, `det4_sps_assessment/DET4_SPS_ASSESSMENT.md`). Efficiency
+  stripes** (2026-07-31, `../sps_beam_test_26/det4_sps_assessment/DET4_SPS_ASSESSMENT.md`). Efficiency
   swings 0 → 98 % with detector-local X on a ~35 mm pitch, charge contrast 165×, and
   *both* readout planes lose charge in the same bands — so it is the amplification
   region, not the readout. Inside the live 38 % it is a normal detector: 77 % within
@@ -378,7 +378,7 @@ best near the efficiency optimum, degrading into the sparking regime.
 2. ~~**det4 gain** — raise gain (HV / threshold / gas) so clusters reach ≥3 strips.~~
    **CLOSED 2026-07-31**: not a gain setting. 62 % of the chamber does not amplify in
    fixed stripes and the 465–525 V resist scan does not fill them in — see
-   `det4_sps_assessment/DET4_SPS_ASSESSMENT.md`. Remaining action is a bench re-check
+   `../sps_beam_test_26/det4_sps_assessment/DET4_SPS_ASSESSMENT.md`. Remaining action is a bench re-check
    of the pattern and feeding the failure map back to the bulking, not an HV change.
 3. **6-23 M3 reference** — diagnose the degradation (`TODO_m3_reference_6-23.md`).
 4. **det6/det7 HV gap** — re-run the HV PDF once the 5 stalled mid-range points
