@@ -1,0 +1,222 @@
+{
+  "written": "2026-07-26T16:00:41",
+  "source_run": "highstat_eff_1",
+  "n_sub_runs": 6,
+  "urwell_wiring": {
+    "view_mode": {
+      "EIC_uRWELL_front": {
+        "x": "BA",
+        "y": "AB"
+      },
+      "EIC_uRWELL_back": {
+        "x": "AB_rev",
+        "y": "AB_rev"
+      }
+    },
+    "axis_flip": {
+      "EIC_uRWELL_back": {
+        "x": true,
+        "y": true
+      }
+    },
+    "meaning": {
+      "AB": "map connector 0 -> lower FEU connector, channel order as-is",
+      "BA": "the two connectors of the view interchanged",
+      "AB_rev": "as AB, channel order reversed inside each connector",
+      "BA_rev": "as BA, channel order reversed inside each connector"
+    },
+    "evidence": {
+      "method": "width of (back - front) per candidate wiring, with the front as reference; explore4_back_map.py on highstat_eff_1/beam_commissioning_00",
+      "back_x_mm": {
+        "AB": 45.6,
+        "BA": 5.42,
+        "AB_rev": 0.8,
+        "BA_rev": 47.0
+      },
+      "back_y_mm": {
+        "AB": 35.2,
+        "BA": 6.4,
+        "AB_rev": 0.88,
+        "BA_rev": 38.8
+      },
+      "front_note": "the front's own data cannot separate BA/AB from the mirror partner AB_rev/BA_rev; the choice recorded here is the one that maps the front into the P2 pad frame by a PROPER rotation (det > 0), which a reflection could not do",
+      "supersedes": "CONNECTOR_SWAP_DEFAULT (removed 2026-07-26), which had back x and back y as 'BA' and left the back pointing at 4.4 mm"
+    }
+  },
+  "urwell_front_to_back": {
+    "model": "back = slope * front + offset, per axis, in local mm",
+    "dz_mm": 1370.0,
+    "x": {
+      "slope": 0.9996010584080552,
+      "offset_mm": -0.9584662880558853,
+      "sigma_iqr_mm": 0.76837300114191,
+      "rms_mm": 9.449677246778009,
+      "slope_std": 2.884414218627508e-05
+    },
+    "y": {
+      "slope": 1.0417679522587129,
+      "offset_mm": -4.107225316797881,
+      "sigma_iqr_mm": 0.7209845879062221,
+      "rms_mm": 10.459599745185828,
+      "slope_std": 3.121928473494969e-05
+    }
+  },
+  "urwell_to_p2_frame": {
+    "model": "(X, Y)_P2 = A @ (x, y)_uRWELL_track_at_z + t, both in mm",
+    "note": "A is a free 2x2 fitted per station per sub_run; the values here are the mean and spread over the sub_runs of the source run. The rigid fit (dx, dy, theta) is reported alongside as the check that A stayed orthogonal.",
+    "stations": {
+      "P2_IN": {
+        "z_mm": 320.0,
+        "n_sub_runs": 6,
+        "affine_A_mean": [
+          [
+            0.502642,
+            0.868649
+          ],
+          [
+            -0.861453,
+            0.509847
+          ]
+        ],
+        "affine_A_std": [
+          [
+            0.000142,
+            0.000245
+          ],
+          [
+            0.000151,
+            0.000158
+          ]
+        ],
+        "affine_t_mean_mm": [
+          316.7485,
+          253.9162
+        ],
+        "affine_t_std_mm": [
+          0.0157,
+          0.0196
+        ],
+        "rotation_deg_mean": -59.66300843199411,
+        "rotation_deg_std": 0.006048621383880769,
+        "det_mean": 1.0045707998625515,
+        "stretch_xx_mean": 0.9973712992453033,
+        "stretch_yy_mean": 1.0072201699059364,
+        "stretch_xy_mean": -0.001291668368863189,
+        "rigid_mean": {
+          "dx": 316.90340434066513,
+          "dy": 254.31165546891853,
+          "theta_deg": -59.683061312482415
+        },
+        "rigid_rmse_mm_mean": 4.847129682463719,
+        "residual_rms_x_mm": 3.387410288495614,
+        "residual_rms_y_mm": 3.4620627727225375
+      },
+      "P2_MID": {
+        "z_mm": 630.0,
+        "n_sub_runs": 6,
+        "affine_A_mean": [
+          [
+            0.502477,
+            0.874599
+          ],
+          [
+            -0.863426,
+            0.511836
+          ]
+        ],
+        "affine_A_std": [
+          [
+            0.000154,
+            0.000146
+          ],
+          [
+            0.000175,
+            0.000123
+          ]
+        ],
+        "affine_t_mean_mm": [
+          317.0522,
+          255.426
+        ],
+        "affine_t_std_mm": [
+          0.0108,
+          0.0152
+        ],
+        "rotation_deg_mean": -59.732119906352786,
+        "rotation_deg_std": 0.006123627685325854,
+        "det_mean": 1.01233674972279,
+        "stretch_xx_mean": 0.9989922428315635,
+        "stretch_yy_mean": 1.0133594806422275,
+        "stretch_xy_mean": -0.001225898126972995,
+        "rigid_mean": {
+          "dx": 317.56812332656364,
+          "dy": 255.9220541107659,
+          "theta_deg": -59.7684523705604
+        },
+        "rigid_rmse_mm_mean": 4.829479707246299,
+        "residual_rms_x_mm": 3.3748568242100387,
+        "residual_rms_y_mm": 3.4394586507948173
+      },
+      "P2_OUT": {
+        "z_mm": 940.0,
+        "n_sub_runs": 6,
+        "affine_A_mean": [
+          [
+            0.498937,
+            0.885693
+          ],
+          [
+            -0.865838,
+            0.512333
+          ]
+        ],
+        "affine_A_std": [
+          [
+            0.0002,
+            0.000138
+          ],
+          [
+            0.00026,
+            0.000158
+          ]
+        ],
+        "affine_t_mean_mm": [
+          316.5572,
+          254.9655
+        ],
+        "affine_t_std_mm": [
+          0.0089,
+          0.021
+        ],
+        "rotation_deg_mean": -59.999426588807836,
+        "rotation_deg_std": 0.008025883204303271,
+        "det_mean": 1.0224890493272358,
+        "stretch_xx_mean": 0.999306186123821,
+        "stretch_yy_mean": 1.02319966879775,
+        "stretch_xy_mean": -0.0008368704368202635,
+        "rigid_mean": {
+          "dx": 317.6075064417533,
+          "dy": 255.75339448574573,
+          "theta_deg": -60.06737934300156
+        },
+        "rigid_rmse_mm_mean": 4.869762164709601,
+        "residual_rms_x_mm": 3.390057844437679,
+        "residual_rms_y_mm": 3.4516197591756494
+      }
+    }
+  },
+  "beam_optics": {
+    "model": "stretch_ii(z) = 1 + z / L_i, fitted across the three P2 z",
+    "note": "the departure of A from orthogonality; a divergent beam, not a detector distortion - see explore6_divergence.py",
+    "x": {
+      "d_scale_dz_per_mm": 3.120785287931899e-06,
+      "intercept": 0.996590481335499,
+      "virtual_source_m": 320.43216938602217
+    },
+    "y": {
+      "d_scale_dz_per_mm": 2.5773385309376963e-05,
+      "intercept": 0.9983558737037306,
+      "virtual_source_m": 38.79971482194761
+    }
+  }
+}

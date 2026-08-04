@@ -28,8 +28,11 @@ sys.path.insert(0, "/home/dylan/PycharmProjects/nTof_x17/sps_beam_test_26/"
                    "det4_sps_assessment")
 from det4_sps_map import POSITION_MM, VIEW, PITCH_MM      # noqa: E402
 
-URW_MAP = ("/media/dylan/data/x17/sps_run53_det4_check/"
-           "flat_ArCO2iso_95-3-2__run53-56/urw_mapping/mapping_urwell.csv")
+# The uRWELL channel map is calibration, so it lives in the repo; the copy
+# under flat_ArCO2iso_95-3-2__run53-56/urw_mapping/ on the data disk is the
+# original extraction (see MAPPING_AND_ALIGNMENT.md alongside).
+URW_MAP = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                       "urw_mapping", "mapping_urwell.csv")
 
 
 def urwell_map():
