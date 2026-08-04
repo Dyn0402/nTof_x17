@@ -23,7 +23,16 @@ Two strands, kept separate because they answer different questions:
 | `M70V_FLAT_ANALYSIS.md` | run_56 m70V — flat, Ar/CO₂/iso, the first kernel measurement. |
 | `FLAT_CF4_RUN63.md` | run_63 — flat at the operating point in the new CF₄ gas. |
 | `RAW_RUN71_STATUS.md` | run_71 RAW — the FEU packet loss, its diagnosis, and the decoder fix. |
-| `RAW_RUN71_PHYSICS.md` | run_71 RAW — what it settled, what it retracted, and the wall it hit. |
+| `RAW_RUN71_PHYSICS.md` | run_71 RAW — what it settled, what it retracted, and the wall it hit. **Partially superseded.** |
+| `RAW_RUN71_REANALYSIS_2026-08-04.md` | ground-up rework: the ">3.8 µs tail" was pile-up + two oscillating channels + no baselines; drift is slow (v ≈ 13–15 µm/ns at 233 V/cm, 4× below dry Magboltz — open item) but **fine at the operating point**; kernel drift-invariance passes; charge budget measured. **Current authority for the flat-data conclusions.** |
+
+> **2026-08-04: the two sections below are superseded by
+> `RAW_RUN71_REANALYSIS_2026-08-04.md`.** The window wall was three
+> measurement artefacts; the clean central response is contained in the
+> window; the kernel's drift-invariance test passes; what genuinely runs off
+> the window at 450/275 V is the *drift ladder* (slow gas at deliberately low
+> fields), and the ±2/±3 few-percent surface tails. The paragraphs are left
+> as written so the correction is visible.
 
 ## The conclusion, in one paragraph
 

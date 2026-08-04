@@ -1,5 +1,13 @@
 # run_71 RAW — what it settled, and the new wall it hit
 
+> **⛔ PARTIALLY SUPERSEDED 2026-08-04 — read `RAW_RUN71_REANALYSIS_2026-08-04.md`.**
+> §3's window-wall numbers (t10/t50/t90, "44–52 % at the last sample",
+> ">3.8 µs dispersed tail", "drift-invariance fails") are artefacts of two
+> oscillating channels (ch 510/372), beam pile-up and missing per-event
+> baselines. The clean central response is contained (~2 µs, then a −5 %
+> undershoot) and the drift-invariance test passes. §1, §2, §3b and §4
+> (the ±1 peak shift) stand.
+
 Analysis of the RAW run after the decoder fix. 2026-08-03.
 
 ```bash

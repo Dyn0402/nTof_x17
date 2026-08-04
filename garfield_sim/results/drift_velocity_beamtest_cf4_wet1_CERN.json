@@ -1,0 +1,19 @@
+{
+ "gas": "Ar/CF4/iC4H10 88/10/2 + 1% H2O",
+ "pressure_torr": 720.8,
+ "ncoll": 4,
+ "points": [
+  {
+   "E_Vcm": 91.7,
+   "v_um_per_ns": 6.89
+  },
+  {
+   "E_Vcm": 150.0,
+   "v_um_per_ns": 11.85
+  },
+  {
+   "E_Vcm": 233.0,
+   "v_um_per_ns": 20.05
+  }
+ ]
+}

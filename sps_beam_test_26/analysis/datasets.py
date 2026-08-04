@@ -153,7 +153,10 @@ DATASETS = {
                   # banco's pipeline produced the LAST groups first, so these
                   # are what has uRWELL combined_hits; 000-022 (the bulk of the
                   # 700 V block) are not processed yet.
-                  ["023", "024", "025", "026", "027", "028", "029", "030",
+                  # 002-007 pulled from EOS 2026-08-04: the 700 V drift block
+                  # (05:24-05:29, well inside the raw700 plateau), det4-only.
+                  ["002", "003", "004", "005", "006", "007",
+                   "023", "024", "025", "026", "027", "028", "029", "030",
                    "031", "032", "033", "034", "035"])],
         plateaus=[
             # 700 V: only file 023's leading ~20 s survives in the staged set
