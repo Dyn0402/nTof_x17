@@ -102,6 +102,16 @@ if you know which basis produced it.
 | Time resolution | hits + waveform (port pending) | `mx_june_cosmic_qa/42` |
 | Sparks, charge balance, fringe field | hits — QA-level, unaffected | `mx_june_cosmic_qa/38`–`40` |
 
+**det4 recalibrated beam-anchored (2026-08-05,
+`mx_june_wft/BEAM_CONSTRAINED_CALIB_2026-08-05.md`).** The H4 beam kernel
+observables reproduce on bench cosmics (±1 delay +60 ns, matched-window
+charge budget — the kernel is the layer's, not the gas's), and a calibration
+with the kernel, σ_p0 and v pinned to measured values beats the lost legacy
+bundle: σ_θ 2.63/2.44° (was 2.73/2.58), implied-v spread 4.1/4.5. Same doc:
+the plain-delay kernel shape is now measurably wrong (share_lp port is the
+next structural gain), and the fitted-v-runs-high failure mode is
+demonstrated with the kernel known.
+
 **Fleet result (2026-07-29, `mx_june_wft/FLEET_2026-07-29.md`).** Against the
 hits chain at its best, within 5 mm: det3 −1.3, det2 +0.1, **det6 +17.6,
 det7 +14.2** points; core σ improves on every chamber except det3. σ_θ roughly

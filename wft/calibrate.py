@@ -215,7 +215,7 @@ def _event_chi2(payload):
 
 
 def fit_hypers(cache_path, bundle_path, train_ids, jobs=12, maxiter=130,
-               x0=None, v_fixed=None):
+               x0=None, v_fixed=None, fixed=None):
     """8-parameter ref-pinned Nelder-Mead. This is the expensive stage:
     ~15 s per objective evaluation on 12 cores for 180 events.
 
@@ -225,10 +225,33 @@ def fit_hypers(cache_path, bundle_path, train_ids, jobs=12, maxiter=130,
     measured at 700 V (det6's free fit landed 1.3 % from it, which is the
     evidence this is safe). Pinning it also breaks the v <-> sharing
     degeneracy that wrecked det7's free fit.
+
+    ``fixed`` pins any subset of the seven kernel/geometry hypers by name
+    (e.g. ``{'c1': 0.28, 'tau_s': 60.0}``) and fits only the rest. Use it to
+    impose an externally *measured* kernel — the H4 beam measured det4's
+    sharing directly (c1, the +-1 delay) and showed it is gain- and
+    drift-invariant, which is exactly the constraint the cosmic fit cannot
+    produce on its own (the v <-> sharing degeneracy again).
     """
+    fixed = dict(fixed or {})
+    unknown = set(fixed) - set(HYPER_NAMES)
+    if unknown:
+        raise SystemExit(f'[calib] unknown fixed hyper(s): {sorted(unknown)}')
     warm = {e: {} for e in train_ids}
     x0 = HYPER_X0 if x0 is None else np.asarray(x0, float)
+    x0 = x0.copy()
+    for k, val in fixed.items():
+        x0[HYPER_NAMES.index(k)] = val
+    free = [i for i in range(8)
+            if not (i < 7 and HYPER_NAMES[i] in fixed)
+            and not (i == 7 and v_fixed is not None)]
     neval = [0]
+
+    def expand(xf):
+        x = x0.copy()
+        x[free] = xf
+        return x
+
     with ProcessPoolExecutor(max_workers=jobs, initializer=_init_hyper,
                              initargs=(cache_path, bundle_path)) as pool:
         def total_chi2(hv):
@@ -248,8 +271,8 @@ def fit_hypers(cache_path, bundle_path, train_ids, jobs=12, maxiter=130,
         print(f'[calib] initial chi2 {c0:.4e} ({time.time() - t0:.0f} s/eval)',
               flush=True)
 
-        def obj(x):
-            x = np.asarray(x)
+        def obj(xf):
+            x = expand(np.asarray(xf))
             # c1 has a physical floor: these are resistive strips and the
             # sharing is a design property, measured at 0.2-0.5 across the
             # fleet. Without this bound the fit can run to c1 -> 0 and absorb
@@ -268,15 +291,19 @@ def fit_hypers(cache_path, bundle_path, train_ids, jobs=12, maxiter=130,
             print(f'[calib]   eval{neval[0]:3d} {np.round(x, 4)} {c:.5e}', flush=True)
             return c
 
-        simplex = np.array([x0] + [x0 + np.eye(8)[i] * HYPER_SCALE[i]
-                                   for i in range(8)])
-        res = minimize(obj, x0, method='Nelder-Mead',
+        xf0 = x0[free]
+        simplex = np.array([xf0] + [xf0 + np.eye(len(free))[j] * HYPER_SCALE[free][j]
+                                    for j in range(len(free))])
+        res = minimize(obj, xf0, method='Nelder-Mead',
                        options=dict(initial_simplex=simplex, xatol=1e-3,
                                     fatol=c0 * 1e-4, maxiter=maxiter))
-    out = {k: float(v) for k, v in zip(FIT_NAMES, res.x)}
+    xfull = expand(res.x)
+    out = {k: float(v) for k, v in zip(FIT_NAMES, xfull)}
     out['chi2'] = float(res.fun)
     out['chi2_init'] = float(c0)
     out['n_train'] = len(train_ids)
+    if fixed:
+        out['fixed'] = {k: float(v) for k, v in fixed.items()}
     return out
 
 
@@ -291,6 +318,10 @@ def measure_dt_xy(events, bundle_path, hyper, v, sample=200):
         t0 = {}
         for plane in ('x', 'y'):
             P = ev[plane]
+            # the window length is per event (det4's 6-24 run mixes 32 and 37
+            # samples) -- same guard as _event_chi2, or chi2_plane's mask breaks
+            if np.asarray(P['W']).shape[1] != wm.NSAMP:
+                wm.set_nsamp(np.asarray(P['W']).shape[1])
             g = wm.init_guess(P, plane, ev[f'tan_{plane}'], ev[f'ref_mesh_{plane}'], v)
             r = wm.fit_plane_raw(P, plane, *g, hyper=hyper,
                                  fix_p0w=(ev[f'ref_mesh_{plane}'],
@@ -309,7 +340,7 @@ def measure_dt_xy(events, bundle_path, hyper, v, sample=200):
 
 # ---------------------------------------------------------------------- main
 def calibrate(cfg, run_key, n_events=400, n_train=180, jobs=12, out=None,
-              seed_bundle=None, maxiter=130, v_fixed=None):
+              seed_bundle=None, maxiter=130, v_fixed=None, fix_hyper=None):
     out = out or cfg.out_dir('wft', 'calib_bundle')
     work = cfg.out_dir('wft', 'calib_work')
     cache_path = os.path.join(work, 'calib_cache.pkl')
@@ -341,7 +372,7 @@ def calibrate(cfg, run_key, n_events=400, n_train=180, jobs=12, out=None,
     if v_fixed is not None and x0 is not None:
         x0[7] = v_fixed
     hj = fit_hypers(cache_path, prov_path, train, jobs=jobs, maxiter=maxiter,
-                    x0=x0, v_fixed=v_fixed)
+                    x0=x0, v_fixed=v_fixed, fixed=fix_hyper)
     if v_fixed is not None:
         hj['v'] = float(v_fixed)
     cal.hyper = {k: hj[k] for k in HYPER_NAMES}
@@ -349,6 +380,9 @@ def calibrate(cfg, run_key, n_events=400, n_train=180, jobs=12, out=None,
     cal.provenance.update(n_train=hj['n_train'], chi2=hj['chi2'],
                           chi2_init=hj['chi2_init'],
                           fitted='wft.calibrate', gain_map='unit (not fitted)')
+    if fix_hyper:
+        cal.provenance['fixed_hypers'] = {k: float(v)
+                                          for k, v in fix_hyper.items()}
     cal.save(out, note='hypers fitted ref-pinned')
 
     cal.dt_xy = measure_dt_xy(events, out, cal.hyper, cal.v_drift)
@@ -373,8 +407,15 @@ def main(argv=None):
                          'low-statistics chambers')
     ap.add_argument('--seed-bundle', default=None,
                     help='start from another detector\'s kernel (e.g. det3, same batch)')
+    ap.add_argument('--fix-hyper', default=None,
+                    help='pin hypers to externally measured values, e.g. '
+                         '"c1=0.28,c2=0.11,tau_s=60" (H4 beam kernel)')
     ap.add_argument('--out', default=None)
     args = ap.parse_args(argv)
+    fix_hyper = None
+    if args.fix_hyper:
+        fix_hyper = {k: float(v) for k, v in
+                     (kv.split('=') for kv in args.fix_hyper.split(','))}
 
     repo = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     for p in (repo, os.path.join(repo, 'mx_june_cosmic_qa'),
@@ -386,7 +427,7 @@ def main(argv=None):
     cfg = get_config(args.run_key)
     calibrate(cfg, args.run_key, n_events=args.events, n_train=args.train,
               jobs=args.jobs, out=args.out, seed_bundle=args.seed_bundle,
-              maxiter=args.maxiter, v_fixed=args.fix_v)
+              maxiter=args.maxiter, v_fixed=args.fix_v, fix_hyper=fix_hyper)
 
 
 if __name__ == '__main__':
