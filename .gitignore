@@ -209,3 +209,4 @@ __marimo__/
 # Local IDE config and derived analysis output (not tracked)
 .idea/
 ntof_may_analysis/output/
+ntof_processing/flash_timing/data/
