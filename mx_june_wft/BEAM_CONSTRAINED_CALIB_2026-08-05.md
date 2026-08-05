@@ -1,5 +1,15 @@
 # The H4 beam as a calibration constraint on the June cosmic fleet
 
+> **Update 2026-08-05 (evening)** — the `share_lp` port this document asks
+> for in §3 was done the same day
+> (`sps_beam_test_26/analysis/EXTRACTION_2026-08-05.md`): with the RC-
+> dispersed kernel in `wft/model.py`, the lp-mode recalibration with σ_p0
+> *free* (c1/c2 beam-pinned, v = 34) reaches **σ_θ 2.63°/2.44° → 2.53°/2.22°
+> — beating this document's winning recipe** — and is now the canonical
+> `calib_bundle`. The delay-mode bundle promoted below is archived as
+> `calib_bundle_delay60_archived20260805`. §2's analysis and the fleet
+> lessons stand; only "the winning recipe" is superseded.
+
 **2026-08-05 (overnight).** First re-analysis of the June cosmic data in the
 light of the det4 SPS beam campaign (`sps_beam_test_26/`), on the reprocessed
 (2026-07-24 matched-filter) hits now authoritative on EOS. Three questions:

@@ -56,8 +56,18 @@ resolution. Note σ_p0 = 0.40 mm should now be read as the genuine effective
 width of (initial cloud ⊕ whatever short-range spread the single-τ RC does
 not carry), not necessarily a literal primary-cloud size — det3's 0.098 mm
 came from the delay parameterisation and is not directly comparable.
-**Promotion of arm C to the canonical det4 bundle happens at the end of this
-pass** (after the ladder fit cross-checks σ_p0's field-independence, §4).
+**Arm C is PROMOTED to the canonical det4 bundle** (same evening): the old
+delay-mode products are archived beside it
+(`calib_bundle_delay60_archived20260805`, `events_delay60.parquet`,
+`alignment_delay60/`, `angles_delay60/`, `efficiency_delay60/`).
+Full-chain validation on the promoted bundle: within-5 mm efficiency
+41.93 % (delay: 41.96 % — parity), core |r| 0.678 mm (0.700), σ_θ
+2.53°/2.22° (2.63°/2.44°), digest updated. The reproduce line becomes:
+
+```bash
+python -m wft.calibrate g_det4 --jobs 12 --share-mode lp \
+    --fix-hyper "c1=0.25,c2=0.10" --fix-v 34.0
+```
 
 ## 2. The run_71 library in the wft representation
 
@@ -77,10 +87,18 @@ Two closures fall out:
   (0.53/0.245) reproduces the bench-fitted kY = 2.1–2.2 — independently
   confirming that the ZS-era beam kY = 1.12 was tilt-biased, exactly as
   `BEAM_CONSTRAINED_CALIB` §2.3 suspected.
-- **The X-view ±1 asymmetry is quantified**: β(−1)/β(+1) asymmetry −0.25 →
-  −0.49 growing with drift field (Y view: +0.01–0.03). Field-dependence
-  means it is not pure mount geometry; the wft fit with the tilt in the
-  model (§4) is the closure.
+- **The X-view ±1 asymmetry is quantified — and it is NOT the tilt.**
+  Measured: β(−1)/β(+1) asymmetry −0.25 → −0.49 growing with drift field
+  (Y view: +0.01–0.03). Forward-modelling the measured mount walk
+  (tan θ_X = −0.0157 at wet v = 14 µm/ns) through the lp model predicts a
+  ±1 area asymmetry of only **0.025** — an order of magnitude short. The
+  sharing asymmetry is therefore **detector-internal** (the X strips'
+  coupling under the resistive stack), distinct from the drift-invariant
+  centroid walk (which stays geometric). Three consequences: quote-Y-only
+  is structural, not situational; the walk and the sharing asymmetry must
+  stop being conflated in the record; and det3's same-sign X asymmetry
+  (BEAM_CONSTRAINED §4) says this is a design/stack property, not a det4
+  defect.
 
 ## 3. The gas story (see GAS_FLUSH_TIMELINE.md for the model)
 
@@ -112,13 +130,36 @@ Consequence: residual old-mix was ~2 % by run_61's 15° half and negligible
 from the 25° half on — **the kernel gas-transfer claims stand**, and the
 run_61 15-vs-25° efficiency gap keeps only a ≲2 % gas term.
 
-## 4. The 25.64° drift ladder — the missing σ_p0/Dp lever (pending)
+## 4. The 25.64° drift ladder — the σ_p0/Dp lever
 
-`wft_beam_fit.py` (new): ref-pinned wft forward fit on paired beam events,
-kernel pinned share_lp, fitting (v, σ_p0, Dp) per drift plateau of
-run63_rot25 (675–325 V at resist 769.8 V, CF₄). Expected: v(E) rising, Dp(E)
-falling, σ_p0 field-independent. This is the separation the flat data could
-not do, and the X-view fit carries the tilt in the model.
+Two routes, both new:
+
+**Estimator route (`ladder_span.py`)** — the amp≥150 hit-time span per HV
+plateau, anchored to the run_71 end-lobe (233 V/cm : 14 µm/ns):
+
+| field [V/cm] | 235 | 217 | 200 | 182 | 165 | 148 | 113 |
+|---|---|---|---|---|---|---|---|
+| v (CF₄-mix) [µm/ns] | 14.0 | 13.2 | 12.4 | 11.8 | (11.6) | (11.6) | (11.5) |
+
+The bracketed low-field points are window-truncated (t90 rails at the
+3.84 µs edge) — lower bounds on the span, upper bounds on nothing. The
+first four points are the wet-CF₄ v(E) curve. run_55 (flat CO₂ ladder)
+shows a **non-monotonic** span (2188 → 2564 → 2338 → 2363 ns over 243→139
+V/cm) — the Ar/CO₂ mobility-peak shape — but its plateau windows are still
+approximate (refine against `detE_scan.log` before quoting).
+
+**Forward route (`wft_beam_fit.py`)** — ref-pinned wft fit (kernel pinned
+lp, ZS-censored samples, warm-started t0, span-bounded v) on the rot25
+ladder. Status: machinery works (sign auto-detection is decisive, v lands
+near the span values, e.g. 10.7 µm/ns at 113 V/cm where the span estimator
+is truncation-biased high), BUT within a single plateau σ_p0 and Dp are
+degenerate (σ_p0 0.05/Dp 0.063 and σ_p0 0.57/Dp 0.067 fit equally well),
+and chi2/dof ~125 says the noise model and the thin rot25 alignment
+(det(A) 1.07 vs the true 1.11; the 454k-track run61_op25 alignment does
+NOT transplant — ZS centroids are condition-dependent) are the current
+floor. **The σ_p0/Dp separation needs the joint fit with σ_p0 shared
+across plateaus** — the machinery is committed; that global fit is the
+identified next step, now cheap.
 
 ## 5. New datasets brought into the record
 

@@ -411,10 +411,12 @@ onward.
 | run_61 resist + gain, 15° half | yes | `rot15_ArCF4iso_88-10-2__run61_1214-1400/resist_scan.*`, `gain_scan.*` |
 | run_61 resist + gain, 25° half | yes | `rot25_ArCF4iso_88-10-2__run61_1606on/` |
 | run_61 `m00V` single-point eff map | yes | `rot15_ArCF4iso_88-10-2__run61_1214-1400/effmap_m00v/` |
-| **run_61 `m20V`, `m30V` (both halves)** | **no** | — |
-| **run_61 `m70V`, `m80V`, `m90V`, `m100V`** | **no** | landed after the last pass |
-| **run_58 / run_59 / run_60 det4 side** | **no** | FEU3 data exists; never decoded. run_59 is the long run and run_60 the overnight |
-| Saturday's 25° drift ladder (18:14–19:45, run_57/58) | **no** | 17 points, 700→10 V |
+| run_61 `m20V`, `m30V` (both halves) | staged 2026-08-05, not analysed | the 15° drift-scan sub-runs; m30V holds TWO same-named passes (13H46 = 15°, 16H08 = 25°) — split by datrun stamp |
+| run_61 `m70V`–`m100V` | **yes, 2026-08-05** | NOT scan points — hv_monitor shows drift 700.2/resist 769.8 held ~80 min = the 25.64° **operating block** (`run61_op25` in `datasets.py`): 454k clean tracks, 62.2 % in-band, and the 4th plateau of the wft ladder fit |
+| run_59 det4 side | **yes, 2026-08-05** | `run59_co2`: the last CO₂ dataset (beam dies 20:24:07 — the gas access); resist was 669.8 V; the CO₂ span anchor of the flush fit |
+| run_60 det4 side | **yes, 2026-08-05** | `run60_flush`: THE gas-flush transient — lag 1.72 h, τ 3.49 h, see `GAS_FLUSH_TIMELINE.md` §4a |
+| run_58 det4 side | **no** | not staged (its own sub-runs are the Saturday ladder tail) |
+| Saturday's 25° drift ladder (18:14–19:45, run_57/58) | **no** | 17 points, 700→10 V, ~100 GB — needs a fresh Kerberos ticket; the CF₄ ladder (`run63_rot25` + `ladder_span.py`/`wft_beam_fit.py`) covers the same physics in the other mixture |
 
 Data root on the analysis laptop:
 `/media/dylan/data/x17/sps_run53_det4_check` (mirror `~/x17/…`), with the

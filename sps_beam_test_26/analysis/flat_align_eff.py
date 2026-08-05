@@ -89,6 +89,9 @@ def main():
     ap.add_argument("--gate", default="600,3600")
     ap.add_argument("--grid", type=float, default=3.0)
     ap.add_argument("--max-events", type=int, default=90000)
+    ap.add_argument("--align-from", default="",
+                    help="wf_<dataset>.npz whose alignment (A, z) to borrow "
+                         "instead of fitting -- same-mount-epoch datasets only")
     args = ap.parse_args()
     D = datasets.get(args.dataset)
     stage = D["stage"]
@@ -112,24 +115,33 @@ def main():
     disch = (ncl["x"] + ncl["y"] >= 6) | (nst["x"] > 40) | (nst["y"] > 40)
 
     # ------------------------------------------------------------- fit z
-    print("\nscanning z_det4 for the minimum track residual:")
-    best = None
-    for z in np.arange(1000, 1301, 10.0):
-        f = z / Z_BACK
-        tx = fxp + (bxp - fxp) * f
-        ty = fyp + (byp - fyp) * f
-        keep = clean & reco & ~disch & np.isfinite(tx + ty)
-        A = fit_affine(tx, ty, lead["x"], lead["y"], keep)
-        pred = np.column_stack([tx, ty, np.ones(n_ev)]) @ A
-        r = np.nanmedian(np.hypot(lead["x"][keep] - pred[keep, 0],
-                                  lead["y"][keep] - pred[keep, 1]))
-        if best is None or r < best[1]:
-            best = (z, r, A)
-        if int(z) % 50 == 0:
-            print(f"   z={z:6.0f} mm  median |res| {r:.3f} mm")
-    z, res_med, A = best
-    print(f"  best z = {z:.0f} mm, median |residual| {res_med:.3f} mm "
-          f"(config says {D['z_det4']:.0f})")
+    if args.align_from:
+        # borrow the alignment of a better-conditioned dataset in the SAME
+        # mount epoch (e.g. run61_op25's 454k tracks for run63_rot25's thin
+        # low-field ladder -- no access separates them, TAX record)
+        Zsrc = np.load(args.align_from)
+        A = np.asarray(Zsrc["A"], float)
+        z = float(np.asarray(Zsrc["z_det4"]).ravel()[0])
+        print(f"\nalignment borrowed from {args.align_from}: z = {z:.0f} mm")
+    else:
+        print("\nscanning z_det4 for the minimum track residual:")
+        best = None
+        for z in np.arange(1000, 1301, 10.0):
+            f = z / Z_BACK
+            tx = fxp + (bxp - fxp) * f
+            ty = fyp + (byp - fyp) * f
+            keep = clean & reco & ~disch & np.isfinite(tx + ty)
+            A = fit_affine(tx, ty, lead["x"], lead["y"], keep)
+            pred = np.column_stack([tx, ty, np.ones(n_ev)]) @ A
+            r = np.nanmedian(np.hypot(lead["x"][keep] - pred[keep, 0],
+                                      lead["y"][keep] - pred[keep, 1]))
+            if best is None or r < best[1]:
+                best = (z, r, A)
+            if int(z) % 50 == 0:
+                print(f"   z={z:6.0f} mm  median |res| {r:.3f} mm")
+        z, res_med, A = best
+        print(f"  best z = {z:.0f} mm, median |residual| {res_med:.3f} mm "
+              f"(config says {D['z_det4']:.0f})")
 
     f = z / Z_BACK
     tx = fxp + (bxp - fxp) * f
@@ -232,15 +244,22 @@ def main():
     SIDX_ALL = np.round(POSITION_MM / PITCH_MM).astype(int)
     ped_mean = np.zeros(NCH, np.float32)
     if raw:
+        # per-channel raw baselines from any hits file's 'pedestals' tree
+        # (same source extract_det4_only.py uses)
         import os
-        pf = os.path.join(stage, "ped_03.root")
-        if not os.path.exists(pf):
-            for sub, _s, _t, _i in D["subruns"]:
-                cand = os.path.join(stage, sub, "ped_03.root")
+        pf = None
+        for sub, _s, _t, idxs in D["subruns"]:
+            dd = os.path.join(stage, sub) if os.path.isdir(
+                os.path.join(stage, sub)) else stage
+            for i in idxs:
+                cand = os.path.join(dd, f"hits_{sub}_{i}_03.root")
                 if os.path.exists(cand):
                     pf = cand
                     break
-        Pp = uproot.open(pf)["hits"].arrays(library="np")
+            if pf:
+                break
+        Pp = uproot.open(pf + ":pedestals").arrays(["channel", "mean"],
+                                                   library="np")
         ped_mean[Pp["channel"].astype(int)] = Pp["mean"]
         print(f"RAW baseline correction on: pedestal medians "
               f"{np.median(ped_mean):.0f} ADC + signal-masked block CM")

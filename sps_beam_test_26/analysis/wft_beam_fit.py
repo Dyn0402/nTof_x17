@@ -168,6 +168,10 @@ def main():
     ap.add_argument("--events-per-plateau", type=int, default=120)
     ap.add_argument("--v0", type=float, default=14.0,
                     help="seed v [um/ns]; run_71 end-lobe value at 233 V/cm")
+    ap.add_argument("--span-json", default="",
+                    help="ladder_span_<ds>.json: seed v per plateau from the "
+                         "span estimate and bound it to +-35 % -- turns the "
+                         "multimodal (v, kernel) landscape into a local one")
     args = ap.parse_args()
     D = datasets.get(args.dataset)
     wf = args.wf or D["stage"] + f"wf_{args.dataset}.npz"
@@ -181,6 +185,21 @@ def main():
           f"mount {args.mount_deg} deg")
 
     per = load_events(D, wf, args.view, args.mount_deg)
+    vspan = {}
+    if args.span_json:
+        with open(args.span_json) as f:
+            sj = json.load(f)
+        # convert spans to v with the run_71 end-lobe anchor (233 V/cm : 14)
+        c0 = None
+        for l, x in sj.items():
+            if abs(x["field_Vcm"] - 233.0) < 10:
+                c0 = x["span"] - GAP_MM * 1e3 / 14.0
+        if c0 is not None:
+            for l, x in sj.items():
+                if x["span"] > c0:
+                    vspan[l] = GAP_MM * 1e3 / (x["span"] - c0)
+            print(f"span-seeded v per plateau: "
+                  f"{ {k: round(v, 1) for k, v in vspan.items()} }")
     results = {}
     for lab in sorted(per):
         evs = per[lab][:args.events_per_plateau]
@@ -194,12 +213,15 @@ def main():
                                      / wm.DT), 18, int(D["n_samples"])))
         print(f"\n=== {lab}: {len(evs)} events, drift {drift_v} V "
               f"({field:.0f} V/cm), K={k_bins}")
-        sgn = detect_sign(evs, args.view, args.v0, hyper0, k_bins)
+        v_seed = vspan.get(lab, args.v0)
+        v_lo, v_hi = (0.65 * v_seed, 1.35 * v_seed) if lab in vspan \
+            else (2.0, 45.0)
+        sgn = detect_sign(evs, args.view, v_seed, hyper0, k_bins)
         warm = {}
 
         def obj(x):
             v, sp, dp = x
-            if not (2.0 < v < 45.0) or not (0.02 < sp < 1.2) or \
+            if not (v_lo < v < v_hi) or not (0.02 < sp < 1.2) or \
                     not (0.001 < dp < 0.2):
                 return 1e12
             c, n = plateau_chi2(evs, args.view, v, sp, dp, hyper0, k_bins,
@@ -208,7 +230,7 @@ def main():
                   f"chi2/dof {c / max(n, 1):.3f}", flush=True)
             return c
 
-        x0 = np.array([args.v0, hyper0.get("sigma_p0", 0.1),
+        x0 = np.array([v_seed, hyper0.get("sigma_p0", 0.1),
                        hyper0.get("Dp", 0.02)])
         r = minimize(obj, x0, method="Nelder-Mead",
                      options=dict(xatol=5e-3, fatol=1.0, maxiter=120,
