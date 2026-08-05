@@ -61,7 +61,16 @@ class CleanTraces:
     """
 
 
-def build_clean(wf_path, D, q0lo=400.0, q0hi=3000.0, verbose=True):
+def build_clean(wf_path, D, q0lo=400.0, q0hi=3000.0, verbose=True,
+                referenced=False, win_strips=0):
+    """``referenced=True`` additionally requires the event to carry a uRWELL
+    track prediction (finite ev_pX AND ev_pY), which is what turns this into
+    the cross-check RAW_RUN71_PHYSICS §3b asks for: the det4-only selection
+    picks its own leading strip and could in principle be selecting on the
+    thing being measured, while the referenced one is chosen by an external
+    tracker.  The library is still built about the LEADING strip in both
+    cases -- only the event set changes -- so the two are directly
+    comparable."""
     nsmp = int(D["n_samples"])
     Z = np.load(wf_path)
     ev, ch, samp, amp = Z["ev"], Z["ch"], Z["samp"], Z["amp"]
@@ -123,6 +132,16 @@ def build_clean(wf_path, D, q0lo=400.0, q0hi=3000.0, verbose=True):
         isv = np.flatnonzero(C.t_view == v)
         pk = C.peak_amp[isv].copy()
         pk[~np.isfinite(pk)] = -np.inf
+        if win_strips:
+            # MANDATORY on a full-detector dump.  extract_det4_only stores +-4
+            # strips about the cluster, so "leading trace of the event" there
+            # already means "leading trace near the track".  flat_align_eff
+            # writes ALL 512 channels, and over 512 channels the leading trace
+            # is whichever channel swings hardest -- which on run_71 is ch 510
+            # or 372, the two oscillators (they won 1,859 of 1,943 Y events
+            # before this gate existed).  Restrict the search to the reference
+            # window and the two selections mean the same thing again.
+            pk[np.abs(C.t_d[isv]) > win_strips] = -np.inf
         o = np.lexsort((-pk, C.t_ev[isv]))
         e_s = C.t_ev[isv][o]
         f = np.r_[True, e_s[1:] != e_s[:-1]]
@@ -139,14 +158,20 @@ def build_clean(wf_path, D, q0lo=400.0, q0hi=3000.0, verbose=True):
         cen_q = C.peak_amp[lead_rows]
         cen_qok = (cen_q >= q0lo) & (cen_q <= q0hi)
         good = ~cen_bad & cen_pre_ok & cen_qok & np.isfinite(C.pre[lead_rows])
+        n_unref = 0
+        if referenced:
+            has_ref = np.isfinite(pX) & np.isfinite(pY)
+            n_unref = int((good & ~has_ref[lead_ev]).sum())
+            good &= has_ref[lead_ev]
         cmap = np.full(C.n_ev, -1, np.int64)
         cmap[lead_ev[good]] = lead_rows[good]
         C.cmap[v] = cmap
         if verbose:
+            extra = f", unreferenced {n_unref}" if referenced else ""
             print(f"view {v.upper()}: {len(lead_rows)} leading traces -> "
                   f"{good.sum()} clean "
                   f"(bad-ch {cen_bad.sum()}, pre-gate {(~cen_pre_ok).sum()}, "
-                  f"q0 {(~cen_qok).sum()})")
+                  f"q0 {(~cen_qok).sum()}{extra})")
     return C
 
 
@@ -166,6 +191,18 @@ def main():
     ap.add_argument("--q0", default="400,3000",
                     help="central-strip peak window, ADC (after baseline)")
     ap.add_argument("--out", default="")
+    ap.add_argument("--referenced", action="store_true",
+                    help="keep only events with a uRWELL track prediction "
+                         "(use with the PAIRED wf_<ds>.npz, not the det4-only "
+                         "one) -- the external-selection cross-check")
+    ap.add_argument("--win-strips", type=int, default=0,
+                    help="restrict the leading-strip search to +-N strips of "
+                         "the reference prediction; 4 matches "
+                         "extract_det4_only's window. REQUIRED for a "
+                         "full-detector dump (see build_clean)")
+    ap.add_argument("--tag", default="",
+                    help="suffix for the output library name, so a referenced "
+                         "run does not overwrite the det4-only one")
     args = ap.parse_args()
     D = datasets.get(args.dataset)
     wf = args.wf or D["stage"] + f"wf_{args.dataset}_det4only.npz"
@@ -173,7 +210,8 @@ def main():
     os.makedirs(outdir, exist_ok=True)
     q0lo, q0hi = (float(x) for x in args.q0.split(","))
 
-    C = build_clean(wf, D, q0lo, q0hi)
+    C = build_clean(wf, D, q0lo, q0hi, referenced=args.referenced,
+                    win_strips=args.win_strips)
     nsmp = C.nsmp
 
     # Two aggregations, two uses.  In ABSOLUTE window time (med_/trim_) the
@@ -246,7 +284,8 @@ def main():
             results[f"cpk_{lab}_{v}"] = C.peak_amp[c_idx]
             results[f"cpksmp_{lab}_{v}"] = C.peak_smp[c_idx] * SNS
 
-    out = os.path.join(outdir, f"robust_library_{args.dataset}.npz")
+    tag = args.tag or ("_referenced" if args.referenced else "")
+    out = os.path.join(outdir, f"robust_library_{args.dataset}{tag}.npz")
     np.savez_compressed(out, t=np.arange(nsmp) * SNS,
                         t_rel=(np.arange(2 * NREL + 1) - NREL) * SNS,
                         **{k: np.asarray(vv) for k, vv in results.items()})

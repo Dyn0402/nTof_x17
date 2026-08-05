@@ -26,6 +26,8 @@ Two strands, kept separate because they answer different questions:
 | `RAW_RUN71_PHYSICS.md` | run_71 RAW — what it settled, what it retracted, and the wall it hit. **Partially superseded.** |
 | `RAW_RUN71_REANALYSIS_2026-08-04.md` | ground-up rework: the ">3.8 µs tail" was pile-up + two oscillating channels + no baselines; drift is slow (v ≈ 13–15 µm/ns at 233 V/cm, 4× below dry Magboltz — open item) but **fine at the operating point**; kernel drift-invariance passes; charge budget measured. **Current authority for the flat-data conclusions.** |
 | `RERUN_2026-08-04_NEW_MACHINE.md` | the campaign machine is gone: decoder patch recovered & pushed, chain rebuilt from EOS, clean scripts recreated **in the repo** (`robust_waveforms.py`, `kernel_refit_clean.py`, `tilt_clean.py`). Charge budget + invariance reproduce (now across all 3 fields); cascade parameters shift with the lost recipe details and were already ruled non-physical. **Tilt corrected: θ_X ≈ 0.9° — the old 0.2–0.4° was the dry-gas v_drift; the invariant is tan θ_X = −0.015 ± 0.002.** ~~`mapping_urwell.csv` still to reconstruct~~ — recovered from the campaign laptop the same evening (commit 793e541, in `urw_mapping/`); the paired chain runs end to end. |
+| `EXTRACTION_2026-08-05.md` | the sweep through everything the campaign had not extracted: `share_lp` into the fleet model (arm C promoted to the canonical det4 bundle, σ_θ 2.53°/2.22°), the gas flush measured, the CF₄ drift ladder, five datasets recovered. |
+| `EXTRACTION_2026-08-05b.md` | the follow-ups, once lxplus was back, **and the audit that closed the campaign**. The Saturday CO₂ ladder is measured (v(CF₄)/v(CO₂) = 1.14 vs the flush's 1.17); the shared-σ_p0 joint fit **returns a negative result** (the χ²/dof ≈ 170 floor, not the parameterisation); the referenced RAW cross-check **passes**; det3's lost bundle is **rebuilt** under `share_lp`. Then: **eight runs carrying det4 data were in no analysis table** — run_62 is a second CF₄ ladder that reproduces run_63's v(E) to **0.6 % RMS**, and run_66 measures **kernel gain-invariance to 1–3 % over a 1.34× resist swing**. Report: `~/x17/sps_beam_test_26/extraction_2026-08-05/report.html`. |
 | `GAS_FLUSH_TIMELINE.md` | what was actually *in* the chamber: flow was ~2 ln/h against a ~4.6 L volume (τ ≈ 2.3–4.6 h), so mixture changes take half a day and the ~1 % water floor never flushes at all. TAX-dated gas events; run_60 = the flush transient (beam died 04:50, SPS outage, not the detector); run_59's truncation = the 20:24 gas access. |
 
 > **2026-08-04: the two sections below are superseded by
@@ -100,11 +102,27 @@ copy-pasted scripts that then drifted, and half of each combined curve turned
 out to be at the other angle.
 
 ```
-run56_m70V      flat, Ar/CO2/iso 95/3/2, ZS 5 sigma, resist 590 then 625 V
-run63_rot25     25.64 deg (PRE-access), Ar/CF4/iso, drift ladder at fixed resist
-run63_flat      flat (POST-access), Ar/CF4/iso, 53 min at the operating point
-run71_raw       flat, Ar/CF4/iso, RAW (no ZS), drift 700 / 450 / 275 V
+run56_m70V           flat, Ar/CO2/iso 95/3/2, ZS 5 sigma, resist 590 then 625 V
+run63_rot25          25.64 deg (PRE-access), Ar/CF4/iso, drift ladder at fixed resist
+run63_flat           flat (POST-access), Ar/CF4/iso, 53 min at the operating point
+run71_raw            flat, Ar/CF4/iso, RAW (no ZS), drift 700 / 450 / 275 V
+run61_op25           25.64 deg, Ar/CF4/iso, 80 min at the operating point
+run55_flatdrift      flat, Ar/CO2/iso, drift ladder (windows MEASURED 08-05)
+run59_co2, run60_flush                the last CO2 run, and the flush transient
+run57_rot25_co2      25.64 deg, Ar/CO2/iso, drift ladder -- the CO2 twin of run63_rot25
+run61_rot15_ladder   15.465 deg, Ar/CF4/iso, drift ladder -- 32 SAMPLES, no v(E) in it
+run62_rot25_ladder   25.64 deg, Ar/CF4/iso -- the SECOND CF4 ladder; reproduces
+                     run63_rot25's v(E) to 0.6 % RMS
+run66_flat_resist    flat, Ar/CF4/iso, OUR resist (gain) scan 780->580 V
+run70_flat_drift     flat, Ar/CF4/iso, OUR drift scan 600->100 V -- 32 SAMPLES,
+                     transparency lever only, no v(E)
 ```
+
+> ⚠ Sub-run names of the form `cfg_gain3.0_peaktime200_opt` are **P2's VMM
+> settings, not ours**. det4's Dream config is byte-identical across them and
+> every Dream register is constant campaign-wide. The only det4 settings we
+> ever varied were HV, sample count and the ZS threshold. Never infer
+> `peaking_ns` from a sub-run name — see `datasets.py`'s module docstring.
 
 ### The chain
 

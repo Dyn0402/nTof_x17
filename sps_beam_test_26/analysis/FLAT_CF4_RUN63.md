@@ -134,11 +134,18 @@ per view, both dominated by acceptance, not statistics.
 
 ## 4. What is still missing
 
-- **No drift lever in the flat data.** Every drift scan (passes A–D, drift
+- ~~**No drift lever in the flat data.** Every drift scan (passes A–D, drift
   675→125 V at fixed resist 770 V) ran *before* the access, so the whole
-  diffusion lever sits at 25.64°. Separating `sigma_p0`/`Dp` from `c1`/`c2`
-  needs either a drift scan taken flat, or the full `wft` forward fit applied
-  to the 25.64° ladder.
+  diffusion lever sits at 25.64°.~~ **RETRACTED 2026-08-05 (late).** Two flat
+  CF₄ drift scans ran *after* the access, in runs never listed in any analysis
+  table: **run_68** (`det4_drift_scan_700_100_64smp.csv`, 700→100 V, **64
+  samples**, but only ~40 MB of det4) and **run_70**
+  (`det4_drift_scan_600_100.csv`, 600→100 V, 2.7 GB, 32 samples so
+  window-railed for v(E)). `EXTRACTION_2026-08-05b.md` §8. The follow-on
+  sentence still stands: separating `sigma_p0`/`Dp` from `c1`/`c2` needs a flat
+  drift scan or the forward fit on the 25.64° ladder — and the forward fit was
+  tried and did not resolve it (`EXTRACTION_2026-08-05b.md` §2), which makes
+  run_68/run_70 more interesting than they looked.
 - **The basis truncation is the binding systematic.** A short run with det4 in
   RAW (non-ZS) mode, or at 3σ, would record the central strip's full tail and
   turn `tau_s` and `c2` into real measurements. That is a cheap ask while the

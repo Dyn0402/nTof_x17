@@ -215,6 +215,21 @@ constant, which nobody has measured for this chamber on this line.
 **✓** run_59 ran at 64 samples (`start_detE_long.log`); run_61 runs at 32
 (`run_config.json`). Both match the account.
 
+**✓ That table is the COMPLETE list of what we changed** — HV, sample count,
+ZS threshold. Verified 2026-08-05 against the Dream configs themselves: over
+29 `P2B_Beam.cfg` copies spanning runs 55/57/61/62/63/64/66/68/70, every
+`Feu * Dream * <n>` register has a single value (register 1 = `0x081f 0xd023`
+throughout), and the only lines that ever differ are `Sys NbOfSamples`,
+`Sys PedRun Threshold` and `Sys DaqRun Time`.
+
+> ⚠ **Sub-run names like `cfg_gain3.0_peaktime200_opt` are P2's VMM
+> configuration, not det4's.** banco named their runs after their own scan;
+> our Dream shaping never moved (`diff` of run_64's and run_70's
+> `P2B_Beam.cfg` — labelled `peaktime200` and `peaktime50` — is empty). The
+> same naming appears on Saturday's run_50…run_54 and on Monday's run_64…run_70.
+> `datasets.py`'s uniform `peaking_ns = 180` is right and must not be
+> "corrected" from a sub-run name.
+
 **The rate cost was measured, and it was not only ours.** From `ZS_TIMELINE.md`,
 run_57 per-second data rates:
 
@@ -411,12 +426,15 @@ onward.
 | run_61 resist + gain, 15° half | yes | `rot15_ArCF4iso_88-10-2__run61_1214-1400/resist_scan.*`, `gain_scan.*` |
 | run_61 resist + gain, 25° half | yes | `rot25_ArCF4iso_88-10-2__run61_1606on/` |
 | run_61 `m00V` single-point eff map | yes | `rot15_ArCF4iso_88-10-2__run61_1214-1400/effmap_m00v/` |
-| run_61 `m20V`, `m30V` (both halves) | staged 2026-08-05, not analysed | the 15° drift-scan sub-runs; m30V holds TWO same-named passes (13H46 = 15°, 16H08 = 25°) — split by datrun stamp |
+| run_61 `m20V`, `m30V` 13H46 (the 15° ladder) | **yes, 2026-08-05 (late)** | `run61_rot15_ladder` in `datasets.py`. **No v(E) is obtainable**: run_61 ran at 32 samples (1.92 µs) and the CF₄ drift ladder is 2.0–2.5 µs long, so t90 rails at the window edge at every one of the ten fields — confirmed from the decoded sample index, not the config. The charge lever is clean and is the result: hits/event 8.17 → 4.54 and median amplitude 209 → 153 over 243 → 24 V/cm at flat p90, i.e. the transparency/attachment curve at 15.465°. `EXTRACTION_2026-08-05b.md` §4 |
+| run_61 `m30V` 16H08 | no | the *other* pass of the same sub-run name, at 25.64° with the resist scan creeping under it. Deliberately excluded from `run61_rot15_ladder`; never glob `meshscan_m30V_*` |
 | run_61 `m70V`–`m100V` | **yes, 2026-08-05** | NOT scan points — hv_monitor shows drift 700.2/resist 769.8 held ~80 min = the 25.64° **operating block** (`run61_op25` in `datasets.py`): 454k clean tracks, 62.2 % in-band, and the 4th plateau of the wft ladder fit |
 | run_59 det4 side | **yes, 2026-08-05** | `run59_co2`: the last CO₂ dataset (beam dies 20:24:07 — the gas access); resist was 669.8 V; the CO₂ span anchor of the flush fit |
 | run_60 det4 side | **yes, 2026-08-05** | `run60_flush`: THE gas-flush transient — lag 1.72 h, τ 3.49 h, see `GAS_FLUSH_TIMELINE.md` §4a |
-| run_58 det4 side | **no** | not staged (its own sub-runs are the Saturday ladder tail) |
-| Saturday's 25° drift ladder (18:14–19:45, run_57/58) | **no** | 17 points, 700→10 V, ~100 GB — needs a fresh Kerberos ticket; the CF₄ ladder (`run63_rot25` + `ladder_span.py`/`wft_beam_fit.py`) covers the same physics in the other mixture |
+| run_62 det4 side | **yes, 2026-08-05 (late)** | `run62_rot25_ladder` — a SECOND 25.64° CF₄ drift ladder, conditions identical to run_63's, different drift points. Its v(E) reproduces run_63's to **0.6 % RMS**. Was in the epoch table but in no analysis table. `EXTRACTION_2026-08-05b.md` §9 |
+| **runs 64–70 (Mon 01:56–05:21, flat)** | **NO — and absent from this document until 2026-08-05 (late)** | ~17 GB of det4 in the flat epoch between the 00:40 access and run_71. ⚠ Their sub-run names (`cfg_gain3.0_peaktime200_opt` …) are **P2's VMM settings, not ours** — the Dream config is byte-identical across them and every Dream register is constant campaign-wide, so det4's shaping never changed. What *is* ours: **the flat resist scan 780→400 V (runs 66+67)**, **the flat 64-sample drift scan 700→100 V (runs 68+69)** and **the flat drift scan 600→100 V (run_70)**. §1's narrative stops on Sunday, which is why none of it was noticed. `EXTRACTION_2026-08-05b.md` §8 |
+| run_58 det4 side | **no** | still not staged: 86 GB of FEU03, and its first ladder point (500 V) sits at a resist still recovering from the 18:30 power-off |
+| Saturday's 25° drift ladder (18:04–19:45, run_57/58) | **half, 2026-08-05 (late)** | all 17 points are now dated to the second from the hv_monitor traces (see `datasets.py: run57_rot25_co2`); the **high-field four** (243/226/208/191 V/cm, in run_57 `driftscan_gap350V`/`gap400V`, 29 GB) are pulled and measured. v = 12.33 µm/ns at 243 V/cm gives v(CF₄)/v(CO₂) = **1.14** against the flush transient's independent 1.17. `EXTRACTION_2026-08-05b.md` §1 |
 
 Data root on the analysis laptop:
 `/media/dylan/data/x17/sps_run53_det4_check` (mirror `~/x17/…`), with the
