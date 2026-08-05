@@ -35,6 +35,23 @@ check the migration status table in `RECONSTRUCTION_BASIS.md` first.
   `~/x17/cosmic_bench`); waveforms in `<run>/<subrun>/decoded_root`.
 - venv is `.venv` (`../../.venv/bin/python` from a subdirectory).
 
+## Reporting results — write an HTML report, not just PNGs
+
+Every analysis should ship a `report.html` in its output directory alongside
+the figures. The DAQ web page serves them: its **Analysis tab lists any
+`.html`** in an analysis directory and opens it inline, so results are readable
+from the control-room browser with no file-system access.
+
+- **Generate it, don't hand-write it** — a `make_report.py` in the analysis
+  package that builds the HTML from the tables, so re-running after the
+  analysis updates numbers, charts and verdict text together. Reference model:
+  `ntof_july_analysis/leadshield_compare/make_report.py`.
+- Reference figures with **relative links** (`figures/x.png`) — the DAQ's
+  `/analysis_file/<relpath>` route is path-based, so the same file works from
+  disk, from the web page, or copied elsewhere.
+- Lead with the answer: verdict → headline numbers → what was compared → the
+  tables → figures with captions → **what the result does not rule out**.
+
 ## Conventions
 
 - The M3 reference recipe lives in `qa_config.py` (χ² < 1.0 and NClus = 4) —
