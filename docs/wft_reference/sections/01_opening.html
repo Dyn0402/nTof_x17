@@ -1,0 +1,105 @@
+<p class="eyebrow">MX17 resistive Micromegas · micro-TPC reconstruction · <code>wft/</code></p>
+
+<h1>The waveform-first reconstruction</h1>
+
+<p class="lede">A complete account of how a track's position, angle and depth are
+recovered from raw FEU waveforms — starting from the ADC counts the DAQ writes
+to disk and ending at the numbers that go into a physics result. Every figure
+is generated from real <span class="hy">sat_det3</span> data with the
+calibration that production runs.</p>
+
+<div class="grid2">
+  <div class="card stat x"><span class="v">1.18°</span>
+    <span class="l">angle σ, X plane</span></div>
+  <div class="card stat y"><span class="v">1.14°</span>
+    <span class="l">angle σ, Y plane</span></div>
+  <div class="card stat e"><span class="v">0.46 mm</span>
+    <span class="l">core position σ</span></div>
+  <div class="card stat g"><span class="v">93.4 %</span>
+    <span class="l">within 5 mm of the reference</span></div>
+</div>
+
+<p>Those four numbers are what this document exists to explain. The chain that
+produces them replaced an older one that read tracks from per-strip hit times,
+and it replaced it because the old chain was measurably, structurally wrong
+about geometry — not slightly noisier, but biased in a way no threshold change
+could fix.</p>
+
+<h3 id="how-to-read">How to read this</h3>
+
+<p>The document is linear and cumulative. It starts at the raw ADC and never
+uses a concept before building it. If you want the algorithm in one paragraph,
+read the next section and stop. If you want to be able to modify the code, read
+all of it; Parts&nbsp;III and&nbsp;IV are the ones that matter most, and
+Part&nbsp;IX maps every claim onto a source file.</p>
+
+<p>Four kinds of statement are marked, because in this subject the difference
+matters:</p>
+
+<div class="box rule"><span class="lbl">Rule</span>
+A non-negotiable constraint of the analysis. Breaking one silently produces
+wrong physics rather than an error message.</div>
+
+<div class="box meas"><span class="lbl">Measured</span>
+A number that came out of data, with the dataset it came from. Reproduced
+live for this document wherever the data were still on disk.</div>
+
+<div class="box warn"><span class="lbl">Trap</span>
+Something that has actually gone wrong in this analysis at least once,
+and how it announced itself.</div>
+
+<div class="box open"><span class="lbl">Open</span>
+A known limitation or an unfinished piece. These are not rhetorical — each
+one is a real item someone could pick up.</div>
+
+<h3 id="the-dataset">The dataset behind every figure</h3>
+
+<p>Unless a figure says otherwise, it comes from
+<span class="hy">sat_det3</span>: detector <strong>mx17_3</strong>, the Saturday
+long run of 2026-06-27, resistive 490&nbsp;V / drift 1000&nbsp;V, Ar/isobutane
+95/5 with a few tenths of a percent of water. 512 channels per plane, 32 samples
+of 60&nbsp;ns, FEU&nbsp;7 = X and FEU&nbsp;8 = Y, non-zero-suppressed waveforms.
+This is the run the whole waveform-first study was built on, and its calibration
+bundle, its 400-event calibration cache and its 7,093-event reconstruction are
+all still on disk beside the data, so the figures here are not reproductions of
+old plots — they are the analysis, re-run.</p>
+
+<p>An external <strong>M3 reference telescope</strong> supplies an independent
+track for most events. It is used for calibration, for alignment and for every
+validation number in Part&nbsp;VII, and it is <em>never</em> an input to a
+reconstruction fit. Its own pointing resolution at the detector, ≈0.4&nbsp;mm,
+is the floor under every position comparison in this document.</p>
+
+<h2 id="one-paragraph">The algorithm in one paragraph</h2>
+
+<p>For each event, the detector's own hits say which strips carry charge; a
+window of those strips plus three either side is cut out of the pedestal- and
+common-mode-corrected waveforms. Inside that window the reconstruction assumes a
+straight track, so the charge liberated at drift depth <code>u</code> arrives at
+transverse position <code>p₀ + w·u</code> and at time <code>t₀ + u</code>. The
+drift column is chopped into eighteen 60&nbsp;ns slices; each slice's charge is
+spread over the strips by a geometric integral that includes diffusion, then
+copied onto the neighbouring strips by the detector's measured resistive
+sharing kernel, then folded with the measured amplifier impulse response. That
+generates a complete (strip&nbsp;×&nbsp;sample) picture from three geometric
+numbers and eighteen non-negative charges. The eighteen charges are solved
+exactly by non-negative least squares at every trial geometry, so only
+<code>(p₀, w, t₀)</code> are searched — first by a coarse scan, then by
+Nelder-Mead. The answer is the track's position at the mesh <code>p₀</code>,
+its transverse speed <code>w</code>, and hence its angle
+<code>tan θ = w / v_drift</code>.</p>
+
+<p>The single idea that makes it work: the neighbouring strips' delayed,
+dispersed copies of the charge are <em>part of the model</em>. In the old chain
+they were contamination in every per-strip time measurement, and there was
+nowhere to put them.</p>
+
+<div class="box rule"><span class="lbl">Rule</span>
+<strong>Never reconstruct position, angle or drift depth from
+<code>combined_hits</code> times.</strong> A per-strip hit time is an aggregate
+of that strip's own charge and delayed copies of its neighbours'. It is not a
+drift-time measurement and no threshold, CFD or matched filter makes it one.
+Hits remain correct for two jobs: <em>finding candidates</em> (which events and
+strips to look at) and <em>QA</em> (rates, amplitudes, occupancy, detection
+efficiency). Everything geometric comes from the waveforms. Part&nbsp;II is the
+measurement behind this rule.</div>

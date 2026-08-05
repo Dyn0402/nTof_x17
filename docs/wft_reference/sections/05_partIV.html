@@ -1,0 +1,275 @@
+<section class="part" id="part-4">
+  <span class="partno">Part IV</span>
+  <h2>Fitting one plane</h2>
+  <p class="sub">A linear problem inside a three-dimensional non-linear one.
+  Why it is split that way, how the starting point is found without the
+  reference, and what the reported errors mean.</p>
+</section>
+
+<h2 id="two-level">19 · The two-level structure</h2>
+
+<p>Twenty-one numbers are unknown per plane: three geometric and eighteen
+charges. Searching all twenty-one would be hopeless. But the model is
+<em>linear</em> in the eighteen charges, so for any trial
+<code>(p₀, w, t₀)</code> the best charges can be solved exactly and instantly.
+That reduces the search to three dimensions.</p>
+
+<figure>
+<svg class="diagram" viewBox="0 0 760 250" role="img"
+     aria-label="Outer Nelder-Mead search over three geometric parameters; inner exact NNLS solve for eighteen charges.">
+  <defs>
+    <marker id="ar5" markerWidth="8" markerHeight="8" refX="7" refY="4"
+            orient="auto"><path d="M0,0 L8,4 L0,8 z" style="fill:var(--ember)"/></marker>
+  </defs>
+  <rect x="20" y="18" width="720" height="212" rx="9"
+        style="fill:none;stroke:var(--ember);stroke-width:1.6;stroke-dasharray:6 4"/>
+  <text x="36" y="40" font-size="12" font-weight="700"
+        style="fill:var(--ember-ink)">OUTER — Nelder-Mead over (p₀, w, t₀)</text>
+  <text x="36" y="57" font-size="11" style="fill:var(--ink-3)">three numbers, ~400 evaluations</text>
+
+  <rect x="52" y="76" width="150" height="52" rx="6"
+        style="fill:var(--panel-2);stroke:var(--rule)"/>
+  <text x="127" y="98" text-anchor="middle" font-size="12" style="fill:var(--ink-2)">trial (p₀, w, t₀)</text>
+  <text x="127" y="115" text-anchor="middle" font-size="11" style="fill:var(--ink-3)">from the simplex</text>
+
+  <line x1="208" y1="102" x2="252" y2="102" style="stroke:var(--ember);stroke-width:1.5" marker-end="url(#ar5)"/>
+
+  <rect x="260" y="70" width="420" height="112" rx="7"
+        style="fill:var(--verified-bg);stroke:var(--verified)"/>
+  <text x="276" y="90" font-size="12" font-weight="700" style="fill:var(--verified)">INNER — exact, no search</text>
+  <g font-size="11.5" style="fill:var(--ink-2)">
+    <text x="276" y="112">1 · build M(p₀, w, t₀) — geometry × kernel × template</text>
+    <text x="276" y="132">2 · solve  min | (M q − data)/σ |²  subject to q ≥ 0   (NNLS)</text>
+    <text x="276" y="152">3 · add the saturation penalty</text>
+    <text x="276" y="172">4 · return χ² and the charge profile q</text>
+  </g>
+
+  <path d="M470,188 L470,208 L127,208 L127,134"
+        style="fill:none;stroke:var(--ember);stroke-width:1.4;stroke-dasharray:4 3"
+        marker-end="url(#ar5)"/>
+  <text x="300" y="222" text-anchor="middle" font-size="11" style="fill:var(--ember-ink)">χ² → next simplex step</text>
+</svg>
+<figcaption><span class="fignum">Figure 21.</span> The split. This is a profile
+likelihood: the eighteen charges are nuisance parameters, profiled out exactly
+at every point of the three-dimensional search. Nothing about the charge profile
+is ever guessed.</figcaption>
+</figure>
+
+<h3 id="why-nnls">19.1 Why non-negative least squares</h3>
+
+<p>Charge cannot be negative. Enforcing that is not cosmetic — an unconstrained
+solve will happily put −400 units in one bin and +900 in the next to chase
+noise, and those cancelling excursions leave the χ² almost unchanged while
+making the profile meaningless. NNLS forbids it.</p>
+
+<p>The price is that the solution becomes <strong>sparse</strong>: bins that
+want to go negative are clipped to exactly zero. This surprises people, so it is
+worth showing why it happens.</p>
+
+<figure>
+{{FIG:nnls_profile}}
+<figcaption><span class="fignum">Figure 22.</span> Left: twelve individual
+reference-pinned charge profiles. They are spiky, and only 43 % of bins are
+non-zero. Middle: averaged over 40 events the profile is flat with an edge —
+which is the physical truth, a minimum-ionising track depositing uniformly
+across the gap. Note the per-bin <em>median</em> reads systematically low: with
+half the bins at zero, a median truncates the profile. Right: why. The
+unconstrained solution puts 7 of 18 bins negative; NNLS clips 8 to zero. The
+design matrix is only mildly correlated (condition number 37) — the sparsity is
+the constraint doing its job, not ill-conditioning.
+<span class="src">figsrc/f_fit.py · sat_det3, ref-pinned fits</span>
+</figcaption>
+</figure>
+
+<div class="box warn"><span class="lbl">Trap</span>
+The median-truncation in the middle panel is not academic. It is exactly the
+bias that made the drift column read 24.7&nbsp;mm and launched a hunt for a
+"missing 4 mm of gap". Taking means, trimmed means or rebinned medians instead
+moved the answer to <strong>27.9 mm</strong> and the hardware question
+evaporated. Anything that summarises these profiles must account for their
+sparsity.</div>
+
+<h2 id="chi2-landscape">20 · The χ² landscape</h2>
+
+<p>With the charges profiled out, <code>chi2_plane()</code> is a function of
+three numbers. Here is what it actually looks like for a real event.</p>
+
+<figure>
+{{FIG:chi2_surface}}
+<figcaption><span class="fignum">Figure 23.</span> Left: χ² over
+(<code>p₀</code>, <code>tan θ</code>) at the fitted <code>t₀</code>, with 1–5σ
+contours. The minimum is sharp and the M3 reference sits close to it. Middle:
+χ² over (<code>p₀</code>, <code>t₀</code>) — the long diagonal valley is a real
+degeneracy, because shifting the arrival time and sliding the track along its
+own direction produce nearly the same waveforms. Right: the slope alone is
+well determined, with a clean parabolic minimum.
+<span class="src">figsrc/f_fit.py · sat_det3 event 1663, 6,050 NNLS solves</span>
+</figcaption>
+</figure>
+
+<p>The middle panel is the one to remember. <code>p₀</code> and <code>t₀</code>
+are strongly correlated, which is why <code>t₀</code> must be fitted freely and
+never fixed from an external clock, and why the joint two-plane fit (§22) that
+ties the two planes' <code>t₀</code> together is a real constraint rather than a
+formality.</p>
+
+<h2 id="starting-point">21 · Finding the starting point without the reference</h2>
+
+<p>This is the part of the fit that exists purely because production has no
+reference track. The R&amp;D fits were seeded at the M3 position <em>and</em>
+angle, which is fine for a study and inadmissible in production — seeding from
+the reference and then measuring alignment or efficiency against the reference
+would be circular.</p>
+
+<p>Seeding instead from the brightest strip and a local search lands in the
+wrong basin for about <strong>17 %</strong> of planes, and those failures sit at
+5° error with a <em>higher</em> χ² — they are genuinely missed minima, not
+disagreements. The production hit ladder is no help either: it is compressed by
+15 %, so an inclined track's seed starts outside the basin.</p>
+
+<p>So the code scans. <code>_global_start()</code> runs two nested grids:</p>
+
+<div class="box code"><span class="lbl">wft/reco.py · _global_start</span>
+<pre>stage 1  scan (p₀, t₀) at <span class="n">zero slope</span>     7 × 11 = 77 evaluations
+         p₀ : charge centroid ± 2.5 mm, step 0.5 mm
+         t₀ : half-max seed ± 120 ns, step 40 ns
+stage 2  scan (p₀, w) at the best t₀        11 × 21 = 231 evaluations
+         w  : ±0.021 mm/ns  →  |tan θ| up to 0.57
+<span class="c"># ~310 NNLS-profiled evaluations, ~0.15 s</span></pre></div>
+
+<figure>
+{{FIG:global_start}}
+<figcaption><span class="fignum">Figure 24.</span> The scan on a real event.
+Left: stage 1 — with the slope held at zero, the surface is broad and it mostly
+determines <code>p₀</code>. Middle: stage 2 at the best <code>t₀</code>; the
+star is where Nelder-Mead starts. Right: why the scan has to be wide — the χ²
+basin in slope is narrow, so a local search started at the wrong slope simply
+never sees it.
+<span class="src">figsrc/f_fit.py · sat_det3 event 1663</span></figcaption>
+</figure>
+
+<h3 id="scan-window">21.1 A real limitation of the scan window</h3>
+
+<p>Notice something in the middle panel of Figure 24: the final Nelder-Mead
+result sits <em>below the bottom edge of the scan box</em>. That is not a
+drawing error, and it is worth understanding.</p>
+
+<p>The <code>p₀</code> scan is centred on the window's charge-weighted centroid.
+But <code>p₀</code> is the track's position <em>at the mesh</em>, and on an
+inclined track those two differ by roughly half the transverse span — which for
+|tan θ| = 0.25 over a 29 mm gap is about 3.6 mm, more than the scan's
+±2.5&nbsp;mm half-width.</p>
+
+<figure>
+{{FIG:scan_coverage}}
+<figcaption><span class="fignum">Figure 25.</span> Measured over 160 planes.
+Left: the offset between the true <code>p₀</code> and the scan centre grows
+linearly with track angle, exactly as geometry says it must, and
+<strong>21 % of planes fall outside the scan box</strong>. Middle: Nelder-Mead
+walks out of the box and mostly gets there anyway — median |Δp₀| = 0.47 mm,
+73 % within 1 mm. Right: but the failure tail is 5× heavier for the planes that
+started outside (29 % beyond 2 mm, against 5.6 %).
+<span class="src">figsrc/f_fit.py · sat_det3 · 160 X-plane fits</span>
+</figcaption>
+</figure>
+
+<div class="box open"><span class="lbl">Open</span>
+<strong>This looks like real headroom.</strong> Centring the <code>p₀</code>
+scan on the <em>earliest</em> charge rather than the centroid, or widening
+<code>P0_SCAN_HALF</code> with |w| during stage 2, would put the true value
+inside the box for nearly every plane. The cost is a larger grid in stage 2
+only. It has not been tried, and the numbers above are the case for trying it —
+the affected planes are 21 % of the sample and carry 5× the catastrophic-failure
+rate.</div>
+
+<h3 id="refinement">21.2 Coarse grid, then Nelder-Mead</h3>
+
+<p>From the scan's answer, <code>fit_plane_raw()</code> does one more coarse
+sweep — 7 <code>t₀</code> values × 3 <code>p₀</code> offsets × 5 <code>w</code>
+offsets = 105 evaluations — and then hands the best point to Nelder-Mead with an
+explicit initial simplex sized to the problem (0.4 mm in <code>p₀</code>,
+1.5×10⁻³ mm/ns in <code>w</code>, 20 ns in <code>t₀</code>). The tolerances are
+loose on purpose: <code>xatol = 10⁻³</code>, <code>fatol = 0.3</code>, at most
+140 iterations. Tightening them does not change the answer, because the per-event
+resolution is set by physics (§42), not by convergence.</p>
+
+<div class="box warn"><span class="lbl">Trap</span>
+The explicit <code>initial_simplex</code> matters. Nelder-Mead's default
+simplex is a fixed <em>relative</em> perturbation of each coordinate, which for
+<code>w ≈ 0.008</code> mm/ns is a step of 4×10⁻⁴ — far too small to escape the
+local structure — and for <code>t₀ ≈ 400</code> ns is 20 ns, which is fine.
+Mixing units in a simplex method without setting the scales is a classic silent
+failure.</div>
+
+<h2 id="joint">22 · The joint two-plane fit</h2>
+
+<p>A muon fires both planes at the same instant, so <code>t0x</code> and
+<code>t0y</code> are the same physical time up to a measured electronics offset.
+<code>fit_joint()</code> exploits that: one shared charge profile with a
+per-plane scale factor <code>α</code>, and a single <code>t₀</code> with the Y
+plane offset by <code>dt_xy</code>.</p>
+
+<p>At medium angles this changes nothing — <code>t₀</code> was not the limiting
+parameter. Its value is for <strong>near-vertical planes</strong>, where the
+charge sits on one or two strips and timing carries almost no slope
+information. There the free single-plane slope can wander, and the other plane's
+timing pins it.</p>
+
+<div class="box meas"><span class="lbl">Measured</span>
+Angle σ against |tan θ| for det3 single-plane fits: 1.03–1.10° everywhere above
+|tan θ| = 0.04, degrading to 1.42° (X) and 2.35° (Y) below it. Position is
+<em>better</em> at near-vertical, not worse, because the charge is concentrated.
+Hence the split advice: below <span class="hy">TAN_MIN_SLOPE</span> = 0.08,
+report the position and flag the slope.</div>
+
+<h2 id="errors">23 · Errors, and what they include</h2>
+
+<p>The reported error on each parameter is the χ² curvature, scaled by
+<code>√(χ²/dof)</code> so that model imperfection inflates the error instead of
+being ignored, then <strong>added in quadrature with a measured physics
+floor</strong>.</p>
+
+<dl class="params">
+<dt>FLOOR_TAN = 0.018</dt>
+<dd>≈ 1.0°, the per-event angle resolution the detector physically has, measured
+by toy closure (§42). No fit can do better; quoting a smaller error would be a
+lie.</dd>
+<dt>FLOOR_P0_MM = 0.33</dt>
+<dd>the transverse charge-centroid jitter per 60 ns bin, from the same
+study.</dd>
+</dl>
+
+<figure>
+{{FIG:errors}}
+<figcaption><span class="fignum">Figure 26.</span> Left and middle: the χ²
+parabolas in <code>p₀</code> and slope for one event, with the Δχ² = 1 crossing
+that defines the statistical error. Right: the reported angle errors over the
+whole run, with the physics floor marked — most events sit close to it, which
+is the intended behaviour.
+<span class="src">figsrc/f_fit.py · sat_det3</span></figcaption>
+</figure>
+
+<div class="box meas"><span class="lbl">Measured</span>
+Do the errors mean anything? The pull — (fitted − reference) / reported error —
+has width <strong>1.19 on X and 1.13 on Y</strong> over the full run
+(Figure 38). Slightly optimistic, but within 20 % of honest, which for a
+detector-physics error bar is a good place to be.</div>
+
+<h2 id="outputs">24 · What one plane fit returns</h2>
+
+<div class="box code"><span class="lbl">wft/reco.py · PlaneFit</span>
+<pre>p0, w, t0            <span class="c"># the three fitted geometric numbers</span>
+tan_theta, theta_deg <span class="c"># w / v_drift, and its arctangent</span>
+p0_err, w_err, tan_err
+chi2, dof            <span class="c"># dof = number of unsaturated samples</span>
+q_sum                <span class="c"># total fitted charge</span>
+q_u50, q_u90         <span class="c"># median / 90 % charge arrival time after t0 [ns]</span>
+q_uend               <span class="c"># last depth bin above 5 % of the profile peak</span>
+n_strips, n_seed, n_dropped, n_candidates
+slope_reliable       <span class="c"># |tan| >= 0.08</span>
+quality_ok           <span class="c"># chi2/dof < 300</span></pre></div>
+
+<p>The three <code>q_*</code> quantities are deliberately raw quantiles rather
+than a fitted column length, because — per the trap in §19.1 — the right
+estimator depends on what you are measuring. Part&nbsp;VIII §50 builds the
+cathode map out of them.</p>

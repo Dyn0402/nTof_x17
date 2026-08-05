@@ -1,0 +1,249 @@
+<section class="part" id="part-6">
+  <span class="partno">Part VI</span>
+  <h2>Calibration</h2>
+  <p class="sub">Measuring a detector's impulse response, its sharing kernel and
+  its drift velocity — and the one failure mode that has cost this analysis more
+  time than everything else combined.</p>
+</section>
+
+<h2 id="calib-what">31 · What has to be measured, and why per detector</h2>
+
+<p>The model has seven kernel/geometry hyperparameters, a drift velocity, two
+impulse templates and an inter-FEU timing offset. All of them are properties of
+a specific chamber under specific conditions.</p>
+
+<figure>
+{{FIG:fleet_kernels}}
+<figcaption><span class="fignum">Figure 31.</span> The fleet. Sharing amplitude
+and plane asymmetry differ by a factor of two between chambers from the same
+production batch, and drift velocity is a run condition, not a detector
+property. det7's row is included on purpose: <span class="hy">c1</span> = 0.004
+is <em>physically impossible</em> on resistive strips, and recognising that is
+how a degenerate calibration is caught.
+<span class="src">figsrc/f_calib.py · det3 live bundle; others from the fleet
+reports</span></figcaption>
+</figure>
+
+<h2 id="ref-pinned">32 · The reference-pinned principle</h2>
+
+<p>Calibration is the one part of the chain that is <em>allowed</em> to use the
+M3 reference. The logic: reconstruction asks "where was the track?"; calibration
+asks "given that we know where the track was, what is the detector's response?"
+Pinning the geometry to the reference and fitting only the response is the same
+kind of operation as alignment, and it is legitimate for the same reason.</p>
+
+<div class="box rule"><span class="lbl">Rule</span>
+Calibration may see the reference. <strong>Reconstruction never does.</strong>
+If it did, alignment and efficiency measured against that same reference would
+be circular. <code>wft/reco.py</code> takes the reference only as an optional
+<em>event filter</em> — which events to bother reconstructing — never as a fit
+input.</div>
+
+<p>The obvious worry is that pinning to the reference forces the answer. It was
+tested directly: recalibrating <em>all</em> hyperparameters with the lines
+pinned to the old <em>production ladders</em> instead converges 49 % worse in
+total χ² (7.44×10⁷ against 4.98×10⁷) and picks contorted values —
+τ<sub>s</sub> = 176 ns, σ<sub>s</sub> = 164 ns, D<sub>p</sub> ≈ 0,
+<code>v</code> = 31. No sharing model can make the waveforms look like the steep
+ladders. And free fits run with those production-taught hypers <em>still</em>
+agree better with the reference (σ 3.4°/3.9°) than with production's own slopes
+(σ 4.5°/4.7°).</p>
+
+<h2 id="stage1">33 · Stage 1 — the calibration cache</h2>
+
+<p>For a few hundred reference-matched muons, cut a waveform window along the
+whole reference corridor: every strip the track could have touched between
+z = −3 mm and z = 33 mm, plus 5 mm of pad. This is a wider window than
+reconstruction uses, and deliberately so — the calibration needs to see the
+sharing skirts that the hit finder never fires.</p>
+
+<figure>
+{{FIG:calib_corridor}}
+<figcaption><span class="fignum">Figure 32.</span> One calibration window. The
+dotted lines are where the reference track enters and leaves the gap; the solid
+lines are the ±5 mm pad. Compare with Figure 6 — the reconstruction window is
+cut around a seed cluster, this one around a known trajectory.
+<span class="src">figsrc/f_calib.py · sat_det3 event 1663</span>
+</figcaption>
+</figure>
+
+<p>The cache also stores, per event, the reference mesh anchor and the reference
+tangents rotated into the detector's own strip frame. Those are what "pinned"
+means in the stages below. Building it requires the hits-chain alignment to
+exist first — a genuine dependency, and the reason
+<code>03_alignment_and_tpc.py</code> has to be run before
+<code>wft.calibrate</code> on a new run.</p>
+
+<h2 id="stage2">34 · Stage 2 — the impulse template</h2>
+
+<p>The template is measured, not assumed. Take the brightest unsaturated strips
+of <em>clearly inclined</em> tracks (|tan θ| &gt; 0.22, peak &gt; 500 ADC), align
+each on its own 50 % crossing, normalise to its peak, and take the median.</p>
+
+<p>The inclination requirement is the subtle part: on a steep track a bright
+strip's own charge arrives within about 1.5 samples, so its rising edge is not
+contaminated by a neighbour arriving at a different time. On a vertical track
+every strip's charge spans the whole gap and there is no clean pulse to
+measure.</p>
+
+<figure>
+{{FIG:template_build}}
+<figcaption><span class="fignum">Figure 33.</span> The template, rebuilt from
+the cache for this document. Faint lines are the individual normalised pulses
+(70 on X, 40 on Y); the heavy line is their median; the dashed line is the
+template stored in the bundle. The Y plane's deeper undershoot is visible in the
+raw material, not an artefact of the median.
+<span class="src">figsrc/f_calib.py · sat_det3 calibration cache</span>
+</figcaption>
+</figure>
+
+<div class="box warn"><span class="lbl">Trap</span>
+Low-gain chambers do not produce enough bright inclined strips to build a good
+template, and a thin template poisons everything downstream. This is the
+suspected root cause of det6's and det7's calibration trouble; the fix is to
+loosen the template cuts before touching the kernel, and it has not been
+done.</div>
+
+<h2 id="stage3">35 · Stage 3 — the hyperparameter fit, and the degeneracy</h2>
+
+<p>With the geometry pinned and the template measured, an eight-parameter
+Nelder-Mead minimises the total χ² over ~180 training events: the seven kernel
+and geometry hypers plus <code>v</code>. Each objective evaluation refits
+<code>t₀</code> per event on a warm-started grid and sums the χ². It costs about
+15 seconds per evaluation on twelve cores, and runs for 100–130 iterations.</p>
+
+<p>And here is the problem that dominates this whole subject.</p>
+
+<figure>
+{{FIG:degeneracy}}
+<figcaption><span class="fignum">Figure 34.</span> The reference-pinned
+calibration χ² over (sharing amplitude, drift velocity), computed live on 32
+det3 training events with everything else held at the bundle values. Left: a
+long, shallow, banana-shaped valley. The minimum of this slice sits at
+<span class="hy">c1</span> = 0.215, <code>v</code> = 40.6 — <em>not</em> at the
+bundle's beam-measured 0.306 and drift-measured 36.6. Right: profiled over the
+kernel, moving <code>v</code> by 10 % costs well under 1 % of the total χ².
+<span class="src">figsrc/f_calib.py · sat_det3 · 32 events, both planes</span>
+</figcaption>
+</figure>
+
+<p>Read that again against §29. The calibration χ² has <em>almost no opinion</em>
+about the drift velocity, because a faster <code>v</code> and a weaker kernel
+produce nearly the same waveforms. Left free, the fit drifts up the valley to
+<code>v</code> ≈ 40 and <code>c₁</code> ≈ 0.2. And since <code>tan θ = w/v</code>,
+that 10 % of χ² nobody can see becomes a 10 % error on every angle.</p>
+
+<div class="box meas"><span class="lbl">Measured</span>
+<p>The same pathology, in its severe form, across the fleet:</p>
+<div class="tablewrap"><table>
+<thead><tr><th>chamber</th><th>free-fit kernel</th><th>what it means</th></tr></thead>
+<tbody>
+<tr><td>det7</td><td class="bad">c₁ = 0.004, kY = 6.6, σ<sub>p0</sub> = 0.52 mm, v = 36.7</td>
+    <td>no charge sharing at all — impossible; v pinned by the drift scan at 26.4</td></tr>
+<tr><td>det4</td><td class="bad">c₁ = 0.067, kY = 3.20, σ<sub>p0</sub> = 0.47 mm, v = 39.6</td>
+    <td>the beam <em>measured</em> c₁ ≈ 0.28 on this very detector</td></tr>
+<tr><td>det3</td><td>c₁ = 0.29–0.31, kY = 1.2–1.4, v = 36.6</td>
+    <td>lands in the physical region on its own — which is why it became the reference chamber</td></tr>
+</tbody></table></div>
+<p style="margin-bottom:0">In every case the signature is the same: X-plane
+sharing driven toward zero, <span class="hy">kY</span> blown up to compensate,
+<span class="hy">sigma_p0</span> inflated to absorb the missing charge spread.
+Any two of those three appearing together should stop a calibration from being
+promoted.</p>
+</div>
+
+<h3 id="breaking-degeneracy">35.1 How the degeneracy is broken</h3>
+
+<p>Not by better optimisation — the valley is real, and a better optimiser finds
+the wrong bottom of it faster. It is broken by <strong>pinning parameters to
+external measurements</strong>, which is what <code>--fix-hyper</code> and
+<code>--fix-v</code> exist for. There is a hard floor at
+<span class="hy">c1</span> ≥ 0.05 in the objective as a last-ditch guard.</p>
+
+<div class="box code"><span class="lbl">the validated recipe</span>
+<pre>kernel (c1, c2, tau_s)  &lt;- MEASURED, pinned
+        beam at normal incidence, or the bench estimator on near-normal cosmics
+sigma_p0                &lt;- pinned physical (~0.10 mm) under a delay kernel;
+                           may be freed under an lp kernel (see below)
+v                       &lt;- pinned from the drift scan, the implied-v plateau,
+                           or a Magboltz curve for the known gas and field
+kY, sigma_s, Dp         &lt;- fitted (plane asymmetry, dispersion, diffusion)</pre></div>
+
+<p>The kernel measurement needs no forward model and no <code>v</code>: take
+near-normal tracks, stack the ±1 and ±2 traces against the central strip, and
+read off the delay and the charge budget directly. It runs on decoded waveforms
+plus a handful of reference tracks, which every chamber has.</p>
+
+<div class="box meas"><span class="lbl">Measured</span>
+<p>The lp port, on det4 bench cosmics, all arms with c₁/c₂ beam-pinned and
+<code>v</code> = 34:</p>
+<div class="tablewrap"><table>
+<thead><tr><th>arm</th><th>kernel</th><th>free</th><th class="num">train χ²</th><th class="num">σ<sub>θ</sub> X / Y</th></tr></thead>
+<tbody>
+<tr><td>previous best</td><td>delay</td><td>kY, σ<sub>s</sub>, D<sub>p</sub></td><td class="num">172.0e6</td><td class="num">2.63° / 2.44°</td></tr>
+<tr><td>A</td><td>lp</td><td>+ τ</td><td class="num">171.4e6</td><td class="num">2.60° / 2.46°</td></tr>
+<tr><td>B</td><td>lp</td><td>beam τ, c₁, c₂ transplanted whole</td><td class="num bad">198.4e6</td><td class="num">rejected</td></tr>
+<tr><td><strong>C — promoted</strong></td><td>lp</td><td>+ τ, <strong>+ σ<sub>p0</sub></strong></td><td class="num win">170.1e6</td><td class="num win">2.53° / 2.22°</td></tr>
+</tbody></table></div>
+<p style="margin-bottom:0">The instructive part: under the <em>delay</em> kernel
+a free <span class="hy">sigma_p0</span> was a pathology, degrading
+reconstruction to 4.1°/3.4°. Under the <em>lp</em> kernel the same freedom
+improves every angle metric. When the model shape is right, a parameter stops
+being a place to hide error.</p>
+</div>
+
+<figure>
+{{FIG:share_modes}}
+<figcaption><span class="fignum">Figure 35.</span> The two kernel forms on the
+same det3 events with the same hyperparameters. The lp form fits better on 90 %
+of planes, by 7 % in χ² in the median. (Caveat stated plainly: these
+hyperparameters were fitted <em>for</em> the lp mode, so this measures how much
+the delay form loses when it inherits them, not a from-scratch contest.)
+<span class="src">figsrc/f_calib.py · sat_det3 · 60 planes</span>
+</figcaption>
+</figure>
+
+<h2 id="stage4">36 · Stage 4 — the inter-FEU offset</h2>
+
+<p>With the hypers known, <code>measure_dt_xy()</code> refits <code>t₀</code>
+on both planes of ~200 events with the geometry pinned, and takes the median of
+<code>t0x − t0y</code> grouped by fine-timestamp difference. det3 gives
+−7.6 ns and −16.0 ns for the two ftst classes (Figure 30). The only consumer is
+the joint fit and the pair selector.</p>
+
+<h2 id="bundle">37 · The bundle</h2>
+
+<p>Everything the model needs, in one directory, with the conditions it was
+measured under recorded alongside.</p>
+
+<div class="box code"><span class="lbl">calib_bundle/</span>
+<pre>bundle.json    hypers, v_drift, dt_xy, geometry, share_mode,
+               detector, run_key, conditions, provenance (incl. git commit)
+arrays.npz     grid, tmpl_x, tmpl_y, gain_x, gain_y</pre></div>
+
+<p>det3's live bundle, verbatim:</p>
+
+<div class="box code"><span class="lbl">sat_det3 · calib_bundle_lp_sp0free</span>
+<pre>share_mode  <span class="s">"lp"</span>          v_drift  <span class="n">36.6</span>   (pinned)
+c1  <span class="n">0.306</span>  (pinned, beam)     c2  <span class="n">0.120</span>  (pinned, beam)
+kY  <span class="n">1.2217</span>                     tau_s    <span class="n">126.90</span> ns
+sigma_s  <span class="n">95.62</span> ns              sigma_p0 <span class="n">0.2418</span> mm
+Dp  <span class="n">0.012502</span> mm/&#8730;ns          n_depth_bins  <span class="n">18</span>
+dt_xy  {<span class="n">1</span>: <span class="n">-7.65</span>, <span class="n">-5</span>: <span class="n">-16.01</span>} ns
+gain   unit (not fitted)      pitch <span class="n">0.78</span> mm, sample <span class="n">60</span> ns, sat <span class="n">3550</span> ADC
+train  <span class="n">180</span> events, chi2 <span class="n">1.9981e8</span> &#8594; <span class="n">1.6202e8</span>     commit f70e7e1</pre></div>
+
+<div class="box rule"><span class="lbl">Rule</span>
+<code>conditions</code> is a required field and <code>check_conditions()</code>
+compares it against the run being reconstructed. This exists because a bundle
+used outside its conditions produces no error, no warning and no obviously wrong
+plot — only wrong physics. Treat a conditions mismatch the way you would treat a
+failed assertion.</div>
+
+<div class="box warn"><span class="lbl">Trap</span>
+The fleet's calibration bundles for det2, det6 and det7 were <strong>lost with
+the campaign machine</strong>. det3's and det4's have been rebuilt from EOS data
+on the current machine and are what this document uses. Any det2/6/7 number
+quoted anywhere in the analysis predates that loss and cannot currently be
+regenerated without redoing the calibration — which, per §35.1, should now be
+done with the measured-kernel recipe rather than a free fit.</div>

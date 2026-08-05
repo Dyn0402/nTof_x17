@@ -1,0 +1,228 @@
+<section class="part" id="part-9">
+  <span class="partno">Part IX</span>
+  <h2>Running it, and the map of the code</h2>
+  <p class="sub">Commands, file-by-file responsibilities, the constants that
+  matter, and everything currently known to be unfinished.</p>
+</section>
+
+<h2 id="running">52 · The commands</h2>
+
+<div class="box code"><span class="lbl">a new run, end to end</span>
+<pre><span class="c"># 0. the hits chain first — its alignment and event cache are inputs to</span>
+<span class="c">#    the calibration stage, and its hits are the seeds</span>
+mx_june_cosmic_qa/03_alignment_and_tpc.py &lt;key&gt; --refit --veto=50
+
+<span class="c"># 1. calibrate. Pin what has been measured; fit only the rest (§35.1)</span>
+python -m wft.calibrate &lt;key&gt; --jobs 12 --share-mode lp \
+       --fix-hyper <span class="s">"c1=0.25,c2=0.10"</span> --fix-v 34.0
+
+<span class="c"># 2. reconstruct into a parquet table</span>
+python -m wft.cli reco &lt;key&gt; --matched-only --jobs 12
+
+<span class="c"># 3. downstream</span>
+mx_june_wft/01_alignment.py &lt;key&gt;
+mx_june_wft/02_efficiency.py &lt;key&gt; --max-dropped -1
+mx_june_wft/03_angles.py &lt;key&gt;          <span class="c"># CHECK THE IMPLIED-V SPREAD</span>
+mx_june_wft/04_maps.py &lt;key&gt;
+mx_june_wft/digest.py &lt;key&gt;
+
+<span class="c"># the kernel cross-check — model-free, needs only waveforms</span>
+mx_june_wft/05_beam_kernel_xcheck.py &lt;key&gt; --tan-max 0.06</pre></div>
+
+<div class="box code"><span class="lbl">importing an existing calibration</span>
+<pre>python -m wft.cli bundle &lt;key&gt; --from-legacy &lt;dir&gt; --hyper-file hyper_v2.json
+python -m wft.cli info   &lt;table.parquet&gt;</pre></div>
+
+<h2 id="code-map">53 · File by file</h2>
+
+<div class="tablewrap"><table>
+<thead><tr><th>file</th><th class="num">lines</th><th>responsibility</th></tr></thead>
+<tbody>
+<tr><td><code>wft/model.py</code></td><td class="num">410</td>
+    <td>the forward model. Design matrix, sharing kernels, strip fractions,
+    NNLS χ², the single- and joint-plane raw fits. Calibration is module-global
+    state, installed by <code>use_calibration()</code>.</td></tr>
+<tr><td><code>wft/reco.py</code></td><td class="num">493</td>
+    <td>per-event reconstruction and the batch driver. Global start scan,
+    errors, quality flags, candidate and pair selection, the multiprocess
+    driver and the output table.</td></tr>
+<tr><td><code>wft/calib.py</code></td><td class="num">175</td>
+    <td><code>CalibrationBundle</code>: save/load, legacy import, conditions
+    checking, provenance.</td></tr>
+<tr><td><code>wft/calibrate.py</code></td><td class="num">441</td>
+    <td>the four calibration stages and their CLI.</td></tr>
+<tr><td><code>wft/io.py</code></td><td class="num">138</td>
+    <td>the <em>only</em> place raw waveforms are read. Pedestal, common-mode,
+    noise, strip position map, window extraction.</td></tr>
+<tr><td><code>wft/seed.py</code></td><td class="num">124</td>
+    <td>the <em>only</em> place hits are read. Significance floor, spatial
+    clustering, candidate ranking.</td></tr>
+<tr><td><code>wft/compat.py</code></td><td class="num">133</td>
+    <td>bridge to the position-side analysis machinery; the cluster-quality
+    cut.</td></tr>
+<tr><td><code>wft/cli.py</code></td><td class="num">116</td>
+    <td><code>bundle</code>, <code>reco</code>, <code>info</code>.</td></tr>
+<tr><td><code>wft/tests/</code></td><td class="num">317</td>
+    <td>seeding and selection, model regression, both share modes.</td></tr>
+</tbody></table></div>
+
+<h3 id="constants">53.1 The constants worth knowing</h3>
+
+<div class="tablewrap"><table>
+<thead><tr><th>constant</th><th>where</th><th class="num">value</th><th>meaning</th></tr></thead>
+<tbody>
+<tr><td><code>SIG_REL_FLOOR</code></td><td>seed</td><td class="num">0.10</td><td>relative significance floor</td></tr>
+<tr><td><code>GAP_THRESHOLD_MM</code></td><td>seed</td><td class="num">12.0</td><td>cluster split distance</td></tr>
+<tr><td><code>MIN_STRIPS</code></td><td>seed</td><td class="num">3</td><td>minimum cluster size</td></tr>
+<tr><td><code>SPARK_VETO_HITS</code></td><td>seed</td><td class="num">50</td><td>full-detector discharge</td></tr>
+<tr><td><code>N_CANDIDATES</code></td><td>seed</td><td class="num">3</td><td>clusters offered to the fit</td></tr>
+<tr><td><code>N_PED_EVENTS</code></td><td>io</td><td class="num">300</td><td>events used for pedestal and noise</td></tr>
+<tr><td><code>CNS_BLOCK</code></td><td>io</td><td class="num">64</td><td>common-mode block = one Dream chip</td></tr>
+<tr><td><code>pad_strips</code></td><td>reco</td><td class="num">3</td><td>window pad; must be ≥ 2 (§26)</td></tr>
+<tr><td><code>K</code> / <code>DT</code></td><td>model</td><td class="num">18 / 60 ns</td><td>the depth basis</td></tr>
+<tr><td><code>T0_STEP</code></td><td>model</td><td class="num">5.0 ns</td><td>t₀ cache quantisation</td></tr>
+<tr><td><code>SAT</code></td><td>model</td><td class="num">3550 ADC</td><td>censoring threshold</td></tr>
+<tr><td><code>P0_SCAN_HALF</code></td><td>reco</td><td class="num">2.5 mm</td><td>global scan half-width — <em>see §21.1</em></td></tr>
+<tr><td><code>W_SCAN_HALF</code></td><td>reco</td><td class="num">0.021 mm/ns</td><td>|tan θ| up to 0.57</td></tr>
+<tr><td><code>TAN_MIN_SLOPE</code></td><td>reco</td><td class="num">0.08</td><td><code>slope_reliable</code></td></tr>
+<tr><td><code>FLOOR_TAN</code></td><td>reco</td><td class="num">0.018</td><td>measured physics floor, ≈1.0°</td></tr>
+<tr><td><code>FLOOR_P0_MM</code></td><td>reco</td><td class="num">0.33 mm</td><td>measured centroid jitter</td></tr>
+<tr><td><code>CHI2DOF_BAD</code></td><td>reco</td><td class="num">300</td><td><code>quality_ok</code> flag</td></tr>
+<tr><td><code>MAX_DROPPED</code></td><td>compat</td><td class="num">2</td><td>cluster-quality cut, applied by default</td></tr>
+<tr><td><code>C1_MIN</code></td><td>calibrate</td><td class="num">0.05</td><td>physical floor on the sharing kernel</td></tr>
+<tr><td><code>U_MIN/MAX_NS</code></td><td>reco</td><td class="num">250 / 1100</td><td>candidate plausibility window</td></tr>
+</tbody></table></div>
+
+<h2 id="pitfalls">54 · Pitfalls, collected</h2>
+
+<div class="tablewrap"><table>
+<thead><tr><th>symptom</th><th>likely cause</th><th>where</th></tr></thead>
+<tbody>
+<tr><td>angles biased, everything else fine</td><td>wrong <code>v_drift</code> in the bundle</td><td>§29, §35</td></tr>
+<tr><td>implied-v falls with angle</td><td>compression is back, or the kernel is wrong</td><td>§8.1</td></tr>
+<tr><td>c₁ near zero, kY &gt; 3, σ<sub>p0</sub> &gt; 0.4 mm</td><td>degenerate calibration — do not promote it</td><td>§35</td></tr>
+<tr><td>column reads ~24 mm</td><td>per-bin median over sparse NNLS profiles</td><td>§19.1, §50</td></tr>
+<tr><td>reshape crash partway through a file</td><td>per-event window length</td><td>§2</td></tr>
+<tr><td>huge multiplicity, spark veto firing constantly</td><td>significance floor missing</td><td>§25</td></tr>
+<tr><td>position residual with a 40 mm tail</td><td>wrong seed cluster</td><td>§27, §44.1</td></tr>
+<tr><td>χ²/dof of 150 "looks broken"</td><td>it is normal — every sample counts</td><td>§30</td></tr>
+<tr><td>reconstruction quietly wrong on a new run</td><td>bundle used outside its conditions</td><td>§37</td></tr>
+<tr><td>fit does not move from its start</td><td>Nelder-Mead simplex scales</td><td>§21.2</td></tr>
+</tbody></table></div>
+
+<h2 id="open-items">55 · Open items</h2>
+
+<p>Collected from throughout, roughly in order of expected value.</p>
+
+<div class="box open"><span class="lbl">Open · reconstruction</span>
+<ol style="margin-bottom:0">
+<li><strong>Widen or re-centre the <code>p₀</code> scan</strong> (§21.1).
+21 % of planes start outside the box and carry 5× the catastrophic-failure
+rate. Cheap to try, measurable immediately.</li>
+<li><strong>A scale-free candidate score</strong> (§27). Δχ² per dof, or a
+likelihood ratio on a common window, instead of raw Δχ² across windows of
+different size.</li>
+<li><strong>A track-compatibility seeder.</strong> The right cluster is among
+the candidates 95 % of the time and the current rule finds it 55 % of the
+time.</li>
+<li><strong>Per-plane <code>tau_s</code></strong> (§14.3). det3's Y-view copy
+arrives ~2× later than its X-view copy and an amplitude-only kY cannot express
+that.</li>
+<li><strong>A/B the pair selector</strong> (§28) across the fleet and switch it
+on if it wins.</li>
+<li><strong>Saturation recovery</strong> rather than censoring.</li>
+</ol>
+</div>
+
+<div class="box open"><span class="lbl">Open · calibration</span>
+<ol style="margin-bottom:0">
+<li><strong>Rebuild det2, det6 and det7</strong> with the measured-kernel recipe.
+Their bundles were lost and their old ones were degenerate anyway.</li>
+<li><strong>Loosen the template cuts for low-gain chambers</strong> (§34) before
+touching their kernels again.</li>
+<li><strong>det3 and the rest of the fleet on <code>share_lp</code></strong> —
+only det4 has been recalibrated under the new kernel form.</li>
+<li><strong>An independent humidity handle.</strong> |v| to better than ~1 µm/ns
+is currently degenerate with the water fraction.</li>
+</ol>
+</div>
+
+<div class="box open"><span class="lbl">Open · physics and hardware</span>
+<ol style="margin-bottom:0">
+<li><strong>The X-view sharing asymmetry</strong> (§51.1) — same sign in three
+independent datasets, mechanism unknown, and it contaminates a tilt
+measurement.</li>
+<li><strong>A mechanical flatness check</strong> whenever a chamber is next
+open, to confirm the in-situ column maps.</li>
+<li><strong>Port the remaining v(E) and gap-map scripts</strong> into the
+packaged chain; they still live as R&amp;D scripts.</li>
+<li><strong>Time resolution</strong> is still on the hits basis; the port is
+pending.</li>
+</ol>
+</div>
+
+<h2 id="glossary">56 · Glossary</h2>
+
+<div class="tablewrap"><table>
+<tbody>
+<tr><td><code>p₀</code></td><td>track position at the mesh, mm. The primary position output.</td></tr>
+<tr><td><code>w</code></td><td>transverse speed of the charge column, mm/ns. The primary angle output.</td></tr>
+<tr><td><code>t₀</code></td><td>arrival time of the charge liberated at the mesh, ns.</td></tr>
+<tr><td><code>u</code></td><td>drift time since <code>t₀</code>, ns. The model's depth coordinate.</td></tr>
+<tr><td><code>z</code></td><td>drift depth, mm. <code>z = v·u</code>.</td></tr>
+<tr><td><code>q<sub>k</sub></code></td><td>charge in depth bin <code>k</code>, non-negative, solved by NNLS.</td></tr>
+<tr><td><code>F<sub>ik</sub></code></td><td>fraction of bin <code>k</code>'s charge landing on strip <code>i</code>.</td></tr>
+<tr><td><code>h(t)</code></td><td>measured impulse response of one plane's electronics.</td></tr>
+<tr><td>kernel</td><td>the resistive charge-sharing transfer function: <span class="hy">c1</span>, <span class="hy">c2</span>, <span class="hy">tau_s</span>, <span class="hy">sigma_s</span>, <span class="hy">kY</span>.</td></tr>
+<tr><td>ladder</td><td>the old estimator: one time per strip, a line through (position, time).</td></tr>
+<tr><td>compression</td><td>the ladder reading ~15 % shallower in time and therefore too steep in space.</td></tr>
+<tr><td>implied v</td><td><code>w / tan θ_ref</code>. Must be flat against angle.</td></tr>
+<tr><td>ref-pinned</td><td>a fit with the geometry fixed to the M3 reference and only the response free.</td></tr>
+<tr><td>bundle</td><td>a per-detector, per-condition calibration directory.</td></tr>
+<tr><td>CNS</td><td>common-mode noise subtraction, per 64-channel Dream block.</td></tr>
+<tr><td>M3</td><td>the external reference telescope. Recipe: χ² &lt; 1.0 and NClus = 4.</td></tr>
+<tr><td>ftst</td><td>the FEU fine timestamp, 10 ns units, used to classify the inter-FEU offset.</td></tr>
+<tr><td>NNLS</td><td>non-negative least squares.</td></tr>
+</tbody></table></div>
+
+<h2 id="documents">57 · The source documents</h2>
+
+<p>This reference consolidates and, where the data allowed, re-measures. The
+primary records:</p>
+
+<div class="tablewrap"><table>
+<tbody>
+<tr><td><code>RECONSTRUCTION_BASIS.md</code></td><td>the canonical statement of the rule, and the migration status table</td></tr>
+<tr><td><code>waveform_first_threading/WAVEFORM_FIRST_THREADING.md</code></td><td>the full original study — estimator independence, the physics floor, v(E), the column saga</td></tr>
+<tr><td><code>waveform_first_threading/THREADING_DISPLAYS_2026-07-28.md</code></td><td>the displays and the 600-event census</td></tr>
+<tr><td><code>mx_june_wft/DET3_GATE_2026-07-29.md</code></td><td>both chains through identical accounting on det3</td></tr>
+<tr><td><code>mx_june_wft/FLEET_2026-07-29.md</code></td><td>the fleet run, and the det7 lesson</td></tr>
+<tr><td><code>mx_june_wft/BEAM_CONSTRAINED_CALIB_2026-08-05.md</code></td><td>the beam kernel as a bench constraint</td></tr>
+<tr><td><code>sps_beam_test_26/analysis/M70V_FLAT_ANALYSIS.md</code></td><td>the direct kernel measurement at normal incidence</td></tr>
+<tr><td><code>sps_beam_test_26/analysis/EXTRACTION_2026-08-05.md</code></td><td>the <code>share_lp</code> port and its A/B arms</td></tr>
+</tbody></table></div>
+
+<h2 id="reproducing">58 · Reproducing this document</h2>
+
+<div class="box code"><span class="lbl">docs/wft_reference/</span>
+<pre>figsrc/wftdoc.py     shared setup: paths, palette, event ranking
+figsrc/f_raw.py      Part I    — raw ADC, pedestal, CNS, noise, the window
+figsrc/f_hits.py     Part II   — compression, estimator independence, implied v
+figsrc/f_model.py    Part III  — template, kernels, F_ik, design matrix
+figsrc/f_fit.py      Part IV   — chi2 landscape, global scan, NNLS, errors
+figsrc/f_seed.py     Part V    — seeding, window pad, candidates, dt_xy
+figsrc/f_calib.py    Part VI   — corridor, template build, the degeneracy map
+figsrc/f_valid.py    Part VII  — angles, position, pulls, quality, column
+figsrc/f_gallery.py  Part VII  — the outcome-ordered event gallery
+sections/*.html      the document itself, in order
+build.py             inlines the figures and assembles page.html
+
+<span class="c"># each figure module writes PNGs into the figure directory:</span>
+cd docs/wft_reference/figsrc &amp;&amp; ../../../.venv/bin/python f_model.py
+<span class="c"># then:</span>
+cd .. &amp;&amp; ../../.venv/bin/python build.py</pre></div>
+
+<p>Everything reads the live <span class="hy">sat_det3</span> products beside the
+data: the <code>calib_bundle_lp_sp0free</code> bundle, the 400-event
+<code>calib_work/calib_cache.pkl</code>, <code>events_lp.parquet</code>, and the
+decoded ROOT files. Nothing in this document is a redrawn old plot.</p>

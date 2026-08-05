@@ -1,0 +1,196 @@
+<section class="part" id="part-8">
+  <span class="partno">Part VIII</span>
+  <h2>What the reconstruction is for</h2>
+  <p class="sub">Alignment, efficiency, drift velocity, gas composition and the
+  shape of the cathode — all downstream of the same event table.</p>
+</section>
+
+<h2 id="downstream">46 · The bridge back to the existing analysis</h2>
+
+<p>A large body of analysis machinery already existed for alignment, efficiency
+and resolution maps. It was written for the hits chain, but it acts on
+<em>positions</em> and never on hit times — so reusing it is not reusing the
+hits basis. <code>wft/compat.py</code> builds the objects it expects out of the
+event table.</p>
+
+<div class="tablewrap"><table>
+<thead><tr><th>old field</th><th>now carries</th><th>was</th></tr></thead>
+<tbody>
+<tr><td><code>mesh_position_mm</code></td><td><code>p₀</code>, the fitted position at the mesh</td>
+    <td>the earliest-hit strip, quantised to the pitch and pulled by shared charge</td></tr>
+<tr><td><code>slope_ns_per_mm</code></td><td><code>1/w</code></td>
+    <td>the amplitude-weighted strip-time ladder, compressed 15 %</td></tr>
+<tr><td><code>earliest_time_ns</code></td><td><code>t₀</code></td><td>the earliest hit time</td></tr>
+<tr><td><code>latest_time_ns</code></td><td><code>t₀ + q_uend</code></td><td>the latest hit time</td></tr>
+<tr><td><code>red_chi2</code></td><td>χ²/dof of the waveform fit</td>
+    <td>χ²/dof of a 3-point line fit — a much smaller number</td></tr>
+</tbody></table></div>
+
+<h2 id="alignment">47 · Alignment</h2>
+
+<p>Identical geometry procedure to the hits chain — iterate z, then in-plane
+rotation, then translation, on the clean-cluster subset — with a better input
+position. det3 lands at z = 714 mm, θ = 89.45°, and residual σ of
+0.65/0.60 mm per plane.</p>
+
+<h2 id="efficiency">48 · Efficiency</h2>
+
+<figure>
+{{FIG:efficiency}}
+<figcaption><span class="fignum">Figure 41.</span> The breakdown for det3, over
+7,046 M3 reference tracks. 93.4 % are reconstructed within 5 mm; 3.9 % are
+reconstructed further away (the wrong-cluster tail); 2.4 % are sparks; 0.3 %
+fired strips but produced no valid X+Y reconstruction; none failed to fire at
+all.
+<span class="src">figsrc/f_valid.py · mx_june_wft/02_efficiency.py output</span>
+</figcaption>
+</figure>
+
+<div class="box rule"><span class="lbl">Rule</span>
+<strong>Detection stays hits-defined on purpose.</strong> Whether the detector
+saw the muon is a property of the analyzer's trigger, not of the fit. Keeping
+that decision on hits is what makes this efficiency directly comparable with the
+old chain's. What the waveform fit changes is only <em>where the point goes</em>
+— which moves <code>reco_near</code> against <code>reco_far</code>, never
+<code>has_any</code>. An event rejected by the cluster-quality cut is
+<em>not</em> a detection failure; it is counted as "hit, no reco".</div>
+
+<h2 id="vdrift">49 · Drift velocity and the gas</h2>
+
+<p>Because the fit measures <code>w</code> without needing <code>v</code>, a
+reference-pinned χ²(<code>v</code>) scan measures the drift velocity directly,
+at any field — including fields where the column takes longer than the DAQ
+window and every gap-based estimator breaks.</p>
+
+<div class="tablewrap"><table>
+<caption>det3 drift scan. The forward fit stays on curve where the unshared
+ladder does not.</caption>
+<thead><tr><th>drift HV</th><th class="num">300</th><th class="num">500</th><th class="num">700</th><th class="num">900</th><th class="num">1000</th><th class="num">1100</th></tr></thead>
+<tbody>
+<tr><td>forward fit v [µm/ns]</td><td class="num">12.0</td><td class="num">20.6</td><td class="num">26.4</td><td class="num">35.5</td><td class="num">36.6</td><td class="num">38.8</td></tr>
+<tr><td>unshared hit ladder</td><td class="num bad">3.4</td><td class="num">14.2</td><td class="num">23.3</td><td class="num">30.6</td><td class="num">34.3</td><td class="num">35.3</td></tr>
+</tbody></table></div>
+
+<p>The forward series is smooth and monotonic and lies between the Magboltz
+curves for Ar/isobutane 95/5 with 0.3 % and 1 % water. Fitting the water
+fraction gives <strong>0.80 ± 0.05 %</strong> with an RMS of 0.63 µm/ns — and
+the Saturday run was the driest of that week, on a bottle humidity trajectory
+falling from 3 % to 1 %. Two independent stories agreeing.</p>
+
+<div class="box meas"><span class="lbl">Measured</span>
+<strong>v(1000 V) = 36.7 ± 0.3 (fit) ± 0.9 (model) µm/ns.</strong> The old
+geometry estimate of 34.3 was identified as floor-subtraction-biased; the old
+gap-filling 42 and duration-based 28–30 numbers were already understood. A toy
+study generated with a <em>deliberately different</em> sharing truth at
+v = 34.0 and run through the standard calibration recovered 33.1 — under strong
+model mismatch the calibration <em>deflates</em> v by ~2.6 %. It cannot inflate
+34 into 36.6.</div>
+
+<h2 id="column">50 · The charge column, and the shape of the cathode</h2>
+
+<p>The deconvolved charge profile is an output nobody designed for. Its
+integral says how much charge arrived; its <em>endpoint</em> says how deep the
+gas was still delivering charge — which is a measurement of the drift column at
+that (x, y).</p>
+
+<figure>
+{{FIG:column}}
+<figcaption><span class="fignum">Figure 42.</span> Left and middle: the column
+endpoint and the median charge-arrival time over the whole run. Right: the
+median arrival mapped across the active area. The pattern is smooth and
+monotonic — it is not noise, and it is what the careful version of this
+measurement turns into a cathode-flatness map.
+<span class="src">figsrc/f_valid.py · sat_det3</span></figcaption>
+</figure>
+
+<p>The careful version needs the reference-pinned profiles and a
+sparsity-aware estimator (§19.1's trap), and it produced a small saga worth
+recording, because it is a good example of a measurement correcting itself:</p>
+
+<ol>
+<li>Free-fit profiles with a per-bin median gave a 24.7 mm column against a
+nominal 29 mm gap. A "missing 4–5 mm" became the single dominant unknown, and
+disassembling a chamber was on the table.</li>
+<li>Two stacked estimator biases were found — the median truncating sparse
+profiles, and free fits trading slope against profile support. Fixing both moved
+the answer to <strong>27.9 mm</strong>, stable for basis sizes K = 18…27.</li>
+<li>Closure toys with known step-columns recovered them to ≤5 ns, including toys
+built with a 2× deeper template undershoot. The chain cannot shrink a 29 mm
+column.</li>
+<li>The endpoint varies with position: det3's column runs 26.5–29.5 mm across
+the active area, a ~2.7 mm monotonic tilt along y plus a slight bow in x.</li>
+<li>A third chamber settled it. <strong>det2 reads 30.5 mm and its map is
+flat</strong> (29.9–31.5 mm). The method reads the full mechanical gap on a flat
+chamber.</li>
+</ol>
+
+<div class="box meas"><span class="lbl">Measured</span>
+<div class="tablewrap"><table>
+<thead><tr><th>chamber</th><th class="num">column</th><th>topography</th></tr></thead>
+<tbody>
+<tr><td>det2 (B)</td><td class="num">30.5 mm</td><td>flat, ±0.8 mm</td></tr>
+<tr><td>det3 (A)</td><td class="num">27.9 mm</td><td>~2.7 mm tilt along y, slight x bow (26.5–29.5)</td></tr>
+<tr><td>det4 (E)</td><td class="num">28.8 mm</td><td>±3 mm bow, its own pattern</td></tr>
+</tbody></table></div>
+<p style="margin-bottom:0"><strong>There is no 25 mm gap; do not disassemble.</strong>
+The gap is nominal at the frame on all three chambers. det3 has a cathode-plane
+tilt and det4 a bow, plus a small electrostatic pull scaling as E² at operating field —
+det3's mean column moves 28.4 → 27.9 → 27.8 mm at 900/1000/1100 V. All of it
+measured in situ, without opening anything.</p>
+</div>
+
+<div class="box warn"><span class="lbl">Trap</span>
+Depth-resolved analyses — attachment, efficiency against z — must use the
+<em>local</em> column, not a global 29 mm. Every gap-based velocity estimator
+inherits a −3 to −7 % bias from the same assumption.</div>
+
+<h2 id="beam">51 · The beam campaign, and what transfers</h2>
+
+<p>The H4 beam test put det4 at normal incidence, which removes the degeneracy
+cosmics cannot break, and measured the kernel directly. Three results transfer
+to every chamber:</p>
+
+<ul>
+<li><strong>The kernel is a layer property.</strong> Invariant across a 6 % gain
+step, across drift fields of 92–233 V/cm, across gas (Ar/isobutane on the bench
+against a wet Ar/CF₄/isobutane mix in the beam), and across cosmics versus beam
+delivery. That invariance is the premise every calibration bundle rests on, and
+it now has three independent legs.</li>
+<li><strong>The structure is RC dispersion, not delay</strong> (§14.2) — ported
+into <code>wft/model.py</code> as <code>share_mode='lp'</code> and promoted to
+canonical for det4.</li>
+<li><strong>The measurement recipe is bench-portable.</strong> It needs decoded
+waveforms and a handful of near-normal reference tracks. No beam required. This
+is what breaks the det7-class degeneracy for chambers that will never see
+one.</li>
+</ul>
+
+<div class="box open"><span class="lbl">Open</span>
+<p>What does <em>not</em> transfer:</p>
+<ul style="margin-bottom:0">
+<li><strong>v_drift.</strong> The beam gas was 4–5× slowed by percent-level
+water. <code>v</code> must come from each run's own data.</li>
+<li><strong>The RC time constants</strong>, which are window-dependent (§14.2's
+trap).</li>
+<li><strong>kY.</strong> The beam's det4 value of 1.12 was flagged
+"indicative only" because the X view carried a tilt systematic — and that flag
+was correct. With <span class="hy">sigma_p0</span> pinned physical, the bench
+data demand 2.1–2.2 on its own.</li>
+</ul>
+</div>
+
+<h3 id="x-asym">51.1 An unresolved observation</h3>
+
+<p>The ±1 sharing on the X view is asymmetric — the −1 side is consistently
+stronger — and the effect has the <strong>same sign in three independent
+datasets</strong>: det4 in the H4 beam, det4 on the bench, and det3 on the
+bench. Three different mounts on two continents. A mechanical-tilt explanation
+would require all three mounts to lean the same way.</p>
+
+<div class="box open"><span class="lbl">Open</span>
+Part of the X-view asymmetry is probably <em>internal</em> to the detectors —
+the X strips' position under the resistive stack, or anisotropic coupling in the
+layer. The consequence is concrete: the beam's
+<code>tan θ_X = −0.015 ± 0.002</code> for det4 should not be read as a pure
+mount constant until this is understood, and det3's cathode-tilt story deserves
+the same second look.</div>

@@ -1,0 +1,230 @@
+<section class="part" id="part-5">
+  <span class="partno">Part V</span>
+  <h2>From a plane to an event</h2>
+  <p class="sub">Which strips to look at, how wide a window to cut, which
+  cluster is the muon, and how the two planes help each other decide.</p>
+</section>
+
+<h2 id="seeding">25 · Seeding: the one place hits are allowed in</h2>
+
+<p>The fit needs to be told <em>where to look</em>. That is a detection
+question, and detection is precisely what the analyzer's hit finder is for. So
+<code>wft/seed.py</code> uses hits — and returns nothing but sets of channel
+numbers.</p>
+
+<div class="box rule"><span class="lbl">Rule</span>
+No hit <em>time</em> crosses the boundary into <code>wft</code>. A
+<code>Seed</code> carries channels, a strip count, an amplitude sum and a count
+of strips in competing clusters. Nothing else. If a future change makes a hit
+time useful to the fit, that is the moment to re-read Part&nbsp;II.</div>
+
+<p>The clustering deliberately reproduces the production selection, step for
+step, so that detection semantics — and therefore efficiency — stay comparable
+between the two chains.</p>
+
+<div class="tablewrap"><table>
+<thead><tr><th>step</th><th>rule</th><th>why</th></tr></thead>
+<tbody>
+<tr><td>significance floor</td><td>keep strips with significance ≥ <strong>10 %</strong> of that plane's strongest strip <em>in that event</em></td>
+    <td>a relative floor, not absolute. Coherent noise otherwise inflates multiplicity, steals cluster membership and fakes the spark veto</td></tr>
+<tr><td>spark veto</td><td>drop the event if &gt; <strong>50</strong> strips fire</td>
+    <td>a full-detector discharge is not a muon</td></tr>
+<tr><td>spatial clustering</td><td>split wherever the gap between adjacent strip positions exceeds <strong>12 mm</strong></td>
+    <td>the production gap threshold, unchanged</td></tr>
+<tr><td>minimum size</td><td>≥ <strong>3</strong> strips</td>
+    <td>below that there is no ladder to fit</td></tr>
+<tr><td>candidates</td><td>return the top <strong>3</strong> clusters by strip count</td>
+    <td>the change from production: the fit gets to choose (§27)</td></tr>
+</tbody></table></div>
+
+<figure>
+{{FIG:seeding}}
+<figcaption><span class="fignum">Figure 27.</span> Seeding on a real event.
+Left: 33 hits, of which 15 survive the relative significance floor — the
+discarded ones are an order of magnitude below the leading strip. Middle: the
+survivors, with the 12 mm gaps that split them shaded. Right: the two candidate
+clusters that are handed to the fit.
+<span class="src">figsrc/f_seed.py · sat_det3 event 23, FEU 7</span>
+</figcaption>
+</figure>
+
+<div class="box meas"><span class="lbl">Measured</span>
+The significance floor was added on 2026-07-25 and it is the single largest
+efficiency change in this analysis's history — on the detectors it had never
+been applied to, within-5&nbsp;mm efficiency moved det2 80.9&nbsp;→&nbsp;92.1 %,
+det6 44.5&nbsp;→&nbsp;71.2 %, det7 18.1&nbsp;→&nbsp;52.7 %, with core σ
+improving from 0.63/0.67/2.72 to 0.43/0.38/0.52 mm. It is a hits-chain fix that
+the waveform chain simply inherits.</div>
+
+<h2 id="windowing">26 · Cutting the window</h2>
+
+<p><code>extract_window()</code> takes the seed's channels, converts them to
+<em>position order</em>, and extends <code>pad_strips = 3</code> strips beyond
+the cluster on each side.</p>
+
+<p>The pad is not padding. The sharing kernel reaches ±2 strips, so charge that
+belongs to the track is sitting on strips the hit finder never fired. If the
+window stops at the seed, the model predicts charge on strips that are not in
+the fit, and the only way to reduce that χ² is to distort the geometry.</p>
+
+<figure>
+{{FIG:window_pad}}
+<figcaption><span class="fignum">Figure 28.</span> Left: one event's strips by
+amplitude — blue is the seed cluster, orange are the strips it misses that still
+carry percent-level charge from sharing. Right: the population answer. Refitting
+61 planes at each pad width, the angle resolution improves from
+<strong>1.33° at pad 0 to 1.01° at pad 2</strong> and then flattens — exactly
+where the kernel's reach ends.
+<span class="src">figsrc/f_seed.py · sat_det3</span></figcaption>
+</figure>
+
+<h2 id="candidates">27 · Choosing between candidate clusters</h2>
+
+<p>Production kept the largest cluster. That rule is wrong for about 5 % of
+events, and when it is wrong it is catastrophic rather than marginal: the true
+track sits a median of <strong>37 mm</strong> outside the fit window, so the fit
+converges beautifully onto the wrong charge.</p>
+
+<p>The forward fit can do better, because it can simply <em>try</em> each
+candidate and judge the results. Two criteria:</p>
+
+<dl class="params">
+<dt>plausible</dt>
+<dd>a real track's charge column crosses the whole drift gap, so it must last a
+few hundred nanoseconds and its transverse speed is bounded:
+<code>250 ns ≤ q_uend ≤ 1100 ns</code> and <code>|tan θ| &lt; 0.6</code>.
+Coherent noise and stray deposits rarely satisfy both.</dd>
+<dt>Δχ²</dt>
+<dd>how much better the model explains the window than "no signal at all":
+<code>χ²_null − χ²_fit</code>.</dd>
+</dl>
+
+<div class="tablewrap"><table>
+<caption>Selection rules, measured on the 224 det3 events where the largest
+cluster is <em>not</em> the muon.</caption>
+<thead><tr><th>rule</th><th class="num">median |p₀ − ref|</th><th class="num">within 5 mm</th></tr></thead>
+<tbody>
+<tr><td>most strips (production)</td><td class="num">76.6 mm</td><td class="num">19 %</td></tr>
+<tr><td>most charge</td><td class="num">47.3 mm</td><td class="num">32 %</td></tr>
+<tr><td>best χ² improvement</td><td class="num">3.4 mm</td><td class="num">51 %</td></tr>
+<tr><td><strong>plausible, then best improvement</strong></td><td class="num"><strong>1.6 mm</strong></td><td class="num"><strong>55 %</strong></td></tr>
+<tr><td><em>best available candidate (the ceiling)</em></td><td class="num">0.4 mm</td><td class="num">95 %</td></tr>
+</tbody></table></div>
+
+<p>Read the last row carefully: <strong>the right cluster is nearly always among
+the candidates</strong>. The current rule finds it about half the time. That is
+a large net gain over production and it leaves obvious headroom.</p>
+
+<figure>
+{{FIG:candidates}}
+<figcaption><span class="fignum">Figure 29.</span> A real two-candidate event,
+and an honest one. Candidate 1 is a textbook inclined ladder; candidate 2 is a
+compact bright blob. Both pass the plausibility gate, and the Δχ² rule picks
+candidate 2 because its window contains more total signal. This is the failure
+mode in the 45 %.
+<span class="src">figsrc/f_seed.py · sat_det3 event 23</span></figcaption>
+</figure>
+
+<div class="box open"><span class="lbl">Open</span>
+Figure 29 exposes a structural weakness in the score: <code>Δχ²</code> is
+computed inside each candidate's <em>own</em> window, so a bright compact
+cluster scores higher than a dimmer extended one regardless of which looks like
+a track. A scale-free score — Δχ² per degree of freedom, or a likelihood ratio
+against a track-free model on a common window — would remove that bias. The
+originally identified follow-up was a track-compatibility seeder; this is a
+cheaper piece of the same problem.</div>
+
+<h2 id="pair-select">28 · Using the fact that the muon fired both planes</h2>
+
+<p>Single-plane selection cannot use the strongest piece of evidence available:
+a muon's X and Y charge arrive at the <em>same time</em>. Coherent noise or a
+stray deposit in one plane has no reason to be time-coincident with the track in
+the other.</p>
+
+<p><code>select_pair()</code> therefore scores every (X candidate, Y candidate)
+combination on whether <code>t0x − t0y</code> sits within 120 ns of the measured
+electronics offset, then on plausibility, then on summed Δχ².</p>
+
+<figure>
+{{FIG:dt_xy}}
+<figcaption><span class="fignum">Figure 30.</span> The two FEUs are not
+synchronous. The offset is measured per fine-timestamp difference during
+calibration and stored in the bundle: −7.6 ns when ftst differs by +1, −16.0 ns
+when it wraps to −5. Without this the coincidence test would be meaningless.
+<span class="src">figsrc/f_seed.py · det3 lp bundle dt_xy</span>
+</figcaption>
+</figure>
+
+<div class="box warn"><span class="lbl">Trap</span>
+Pair selection is behind an environment variable — <code>WFT_PAIR_SELECT=1</code>
+— and is <strong>off by default</strong>. Every number in this document was
+produced with it off. It is implemented and tested; it has not been through a
+full-fleet A/B, so it should not be switched on for a result without one.</div>
+
+<h2 id="v-role">29 · Where v_drift enters, and why that is the whole ballgame</h2>
+
+<p>Look back at the model. Nothing in it uses the drift velocity: the geometry
+is <code>p₀ + w·u</code> with <code>u</code> in nanoseconds, and the fit
+measures <code>w</code> in mm/ns. <code>v</code> appears in exactly one line:</p>
+
+<div class="eq"><span class="lhs">tan θ</span> = w · 10³ / v_drift
+<span class="note">&nbsp;&nbsp; wft/reco.py, fit_plane</span></div>
+
+<p>This is a good property and a dangerous one. Good, because the fit itself
+cannot be biased by a wrong <code>v</code> — <code>w</code> is a real
+measurement of the charge column's transverse speed either way. Dangerous,
+because a 20 % error in <code>v</code> becomes a 20 % error in every angle, with
+no other symptom.</p>
+
+<div class="box meas"><span class="lbl">Measured</span>
+On det4, three calibrations differing essentially only in <code>v</code>:
+a free fit at <code>v</code> = 39.6 gave σ<sub>θ</sub> 4.20°/3.36°; the same
+kernel with <code>v</code> pinned to 34.0 gave <strong>2.63°/2.44°</strong>.
+The entire gap was <code>v</code>. Meanwhile the reconstruction's own implied
+velocity read 30–36 µm/ns in every angle bin, for every bundle — the data were
+saying so the whole time.</div>
+
+<div class="box rule"><span class="lbl">Rule</span>
+A fitted per-detector <code>v</code> is a <strong>nuisance parameter</strong>
+unless it has been checked against an independent measurement — a drift scan, a
+Magboltz curve for the known gas and field, or the reconstruction's own
+implied-velocity plateau. §35 shows why the calibration χ² cannot be trusted to
+find it on its own.</div>
+
+<h2 id="output-table">30 · The output table</h2>
+
+<p>One row per event, one block of columns per plane, written to Parquet with a
+sidecar <code>.meta.json</code> recording the calibration bundle, the run, and
+the selection parameters. That provenance is not decoration — a number from this
+chain is only interpretable if you know which bundle produced it.</p>
+
+<div class="tablewrap"><table>
+<thead><tr><th>column</th><th>meaning</th></tr></thead>
+<tbody>
+<tr><td><code>event_id</code>, <code>n_hits</code>, <code>spark</code></td>
+    <td>event identity and the hits-level flags from seeding</td></tr>
+<tr><td><code>{p}_ok</code></td><td>this plane produced a fit at all</td></tr>
+<tr><td><code>{p}_p0</code>, <code>{p}_w</code>, <code>{p}_t0</code></td>
+    <td>the three fitted numbers</td></tr>
+<tr><td><code>{p}_tan_theta</code>, <code>{p}_theta_deg</code></td>
+    <td>the angle, via <code>v_drift</code></td></tr>
+<tr><td><code>{p}_p0_err</code>, <code>{p}_w_err</code>, <code>{p}_tan_err</code></td>
+    <td>curvature and physics floor, in quadrature</td></tr>
+<tr><td><code>{p}_chi2</code>, <code>{p}_dof</code></td>
+    <td>fit quality; dof counts unsaturated samples, so χ²/dof is large by construction</td></tr>
+<tr><td><code>{p}_q_sum</code>, <code>{p}_q_u50</code>, <code>{p}_q_u90</code>, <code>{p}_q_uend</code></td>
+    <td>the charge profile, summarised</td></tr>
+<tr><td><code>{p}_n_strips</code>, <code>{p}_n_seed</code>, <code>{p}_n_dropped</code>, <code>{p}_n_candidates</code></td>
+    <td>window size, seed size, strips in competing clusters, candidates tried</td></tr>
+<tr><td><code>{p}_slope_reliable</code></td><td>|tan θ| ≥ 0.08</td></tr>
+<tr><td><code>{p}_quality_ok</code></td><td>χ²/dof &lt; 300 — a shower/multi-track flag, <em>not</em> a reconstruction filter</td></tr>
+</tbody></table></div>
+
+<div class="box warn"><span class="lbl">Trap</span>
+<code>quality_ok</code> is off by default in <code>compat.load_table()</code>
+and should stay off for anything the hits chain is compared against — the hits
+chain applies no equivalent cut. det3's median χ²/dof is ~156 on X and ~161 on
+Y; that is normal, not broken. What <em>is</em> applied by default is
+<code>n_dropped ≤ 2</code>, the cluster-quality cut, because unlike the hits
+chain's line fit — which simply failed on junk clusters and quietly removed
+them — the forward fit converges happily on whatever charge you give it.</div>

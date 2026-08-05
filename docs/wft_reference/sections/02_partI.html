@@ -1,0 +1,260 @@
+<section class="part" id="part-1">
+  <span class="partno">Part I</span>
+  <h2>The raw material</h2>
+  <p class="sub">What the chamber does, what the DAQ writes down, and the three
+  corrections that turn a block of integers into something a model can be
+  fitted to.</p>
+</section>
+
+<h2 id="chamber">1 · The chamber, and why time means depth</h2>
+
+<p>An MX17 detector is a resistive Micromegas with a drift gap of roughly
+29&nbsp;mm above the mesh. A charged particle crossing the gap ionises the gas
+all along its path. The liberated electrons drift down to the mesh at a
+velocity <span class="hy">v_drift</span> set by the gas and the drift field —
+about 36.6&nbsp;µm/ns for this run — pass through the mesh into a
+150&nbsp;µm amplification gap, avalanche there, and induce signal on a plane of
+strips at 0.78&nbsp;mm pitch. Two orthogonal
+strip planes, X and Y, each read out by their own 512-channel front-end unit,
+give two projections of the same track.</p>
+
+<p>The essential point is the one that gives the micro-TPC its name: because
+the electrons all drift at the same speed, <strong>arrival time is a proxy for
+the depth at which the ionisation happened</strong>. Charge from near the mesh
+arrives first; charge from near the cathode arrives about 800&nbsp;ns later. A
+single detector therefore measures not just where the track crossed, but its
+angle — from one plane, in one event.</p>
+
+<figure>
+<svg class="diagram" viewBox="0 0 760 300" role="img"
+     aria-label="Cross-section of the drift gap: a muon ionises along its path, electrons drift down to the mesh, and later arrival means greater depth.">
+  <defs>
+    <marker id="ar" markerWidth="7" markerHeight="7" refX="6" refY="3.5"
+            orient="auto"><path d="M0,0 L7,3.5 L0,7 z" style="fill:var(--ink-3)"/></marker>
+    <marker id="are" markerWidth="7" markerHeight="7" refX="6" refY="3.5"
+            orient="auto"><path d="M0,0 L7,3.5 L0,7 z" style="fill:var(--ember)"/></marker>
+  </defs>
+
+  <!-- gap -->
+  <rect x="70" y="40" width="420" height="190" rx="2"
+        style="fill:var(--panel-2);stroke:var(--rule)"/>
+  <!-- cathode -->
+  <line x1="70" y1="40" x2="490" y2="40" style="stroke:var(--ink-2);stroke-width:3"/>
+  <text x="62" y="44" text-anchor="end" font-size="12"
+        style="fill:var(--ink-2)">cathode</text>
+  <!-- mesh -->
+  <line x1="70" y1="230" x2="490" y2="230"
+        style="stroke:var(--ink-2);stroke-width:2;stroke-dasharray:5 3"/>
+  <text x="62" y="234" text-anchor="end" font-size="12"
+        style="fill:var(--ink-2)">mesh</text>
+  <!-- strips -->
+  <g style="fill:var(--ember)">
+    <rect x="70" y="248" width="18" height="9" rx="1.5"/>
+    <rect x="94" y="248" width="18" height="9" rx="1.5"/>
+    <rect x="118" y="248" width="18" height="9" rx="1.5"/>
+    <rect x="142" y="248" width="18" height="9" rx="1.5"/>
+    <rect x="166" y="248" width="18" height="9" rx="1.5"/>
+    <rect x="190" y="248" width="18" height="9" rx="1.5"/>
+    <rect x="214" y="248" width="18" height="9" rx="1.5"/>
+    <rect x="238" y="248" width="18" height="9" rx="1.5"/>
+    <rect x="262" y="248" width="18" height="9" rx="1.5"/>
+    <rect x="286" y="248" width="18" height="9" rx="1.5"/>
+    <rect x="310" y="248" width="18" height="9" rx="1.5"/>
+    <rect x="334" y="248" width="18" height="9" rx="1.5"/>
+    <rect x="358" y="248" width="18" height="9" rx="1.5"/>
+    <rect x="382" y="248" width="18" height="9" rx="1.5"/>
+    <rect x="406" y="248" width="18" height="9" rx="1.5"/>
+    <rect x="430" y="248" width="18" height="9" rx="1.5"/>
+    <rect x="454" y="248" width="18" height="9" rx="1.5"/>
+  </g>
+  <text x="62" y="256" text-anchor="end" font-size="12"
+        style="fill:var(--ember-ink)">strips</text>
+  <text x="280" y="278" text-anchor="middle" font-size="11"
+        style="fill:var(--ink-3)">0.78 mm pitch</text>
+
+  <!-- muon track -->
+  <line x1="150" y1="28" x2="330" y2="242"
+        style="stroke:var(--plane-x);stroke-width:2.4"/>
+  <text x="146" y="22" font-size="12" style="fill:var(--plane-x)">muon</text>
+
+  <!-- ionisation points and drift arrows -->
+  <g>
+    <circle cx="176" cy="60" r="3.4" style="fill:var(--ember)"/>
+    <line x1="176" y1="66" x2="176" y2="222" style="stroke:var(--ember);stroke-width:1.3;stroke-dasharray:3 3" marker-end="url(#are)"/>
+    <circle cx="215" cy="106" r="3.4" style="fill:var(--ember)"/>
+    <line x1="215" y1="112" x2="215" y2="222" style="stroke:var(--ember);stroke-width:1.3;stroke-dasharray:3 3" marker-end="url(#are)"/>
+    <circle cx="254" cy="152" r="3.4" style="fill:var(--ember)"/>
+    <line x1="254" y1="158" x2="254" y2="222" style="stroke:var(--ember);stroke-width:1.3;stroke-dasharray:3 3" marker-end="url(#are)"/>
+    <circle cx="293" cy="198" r="3.4" style="fill:var(--ember)"/>
+    <line x1="293" y1="204" x2="293" y2="222" style="stroke:var(--ember);stroke-width:1.3;stroke-dasharray:3 3" marker-end="url(#are)"/>
+  </g>
+
+  <!-- depth axis -->
+  <line x1="510" y1="230" x2="510" y2="40" style="stroke:var(--ink-3);stroke-width:1.2" marker-end="url(#ar)"/>
+  <text x="520" y="46" font-size="12" style="fill:var(--ink-3)">depth z</text>
+  <text x="520" y="62" font-size="11" style="fill:var(--ink-3)">≈ 29 mm</text>
+  <text x="520" y="228" font-size="12" style="fill:var(--ink-3)">z = 0</text>
+
+  <!-- arrival times -->
+  <text x="600" y="40" font-size="11" style="fill:var(--ink-3)">arrives</text>
+  <g font-size="11.5" style="fill:var(--ink-2)" text-anchor="start">
+    <text x="600" y="62">late   ~800 ns</text>
+    <text x="600" y="116">…</text>
+    <text x="600" y="164">…</text>
+    <text x="600" y="212">first   t₀</text>
+  </g>
+  <line x1="592" y1="52" x2="592" y2="218"
+        style="stroke:var(--ember);stroke-width:1.6" marker-start="url(#are)"/>
+</svg>
+<figcaption><span class="fignum">Figure 1.</span> The micro-TPC principle.
+Ionisation deposited high in the gap arrives late; ionisation just above the
+mesh arrives first. One plane of one event therefore contains an angle, not
+just a position. Everything difficult about this reconstruction comes from the
+fact that the strips do not report those arrival times cleanly.</figcaption>
+</figure>
+
+<h2 id="daq">2 · What the DAQ writes down</h2>
+
+<p>Each front-end unit digitises all 512 channels simultaneously on a common
+clock. For every trigger it writes one block: <strong>512 channels ×
+32 samples</strong>, one sample every 60&nbsp;ns, so the window is
+1.92&nbsp;µs long. Each sample is a 12-bit ADC count — full scale 4096 — sitting
+on a large per-channel pedestal, and the model treats anything at 3550 counts
+above pedestal as clipped. The block is stored flat in a ROOT tree branch
+called
+<code>amplitude</code>, together with the event id and a fine timestamp
+<code>ftst</code>.</p>
+
+<div class="box warn"><span class="lbl">Trap</span>
+The window length is a property of the <em>event</em>, not of the file. det4's
+6-24 run mixes 32- and 37-sample events inside a single file. Taking the length
+from the first few events and reshaping the rest crashes partway through — which
+is exactly what happened, and why <code>wft/io.py</code> re-reads
+<code>wfm.shape[0]</code> per event and <code>wft/model.py</code> exposes
+<code>set_nsamp()</code>.</div>
+
+<figure>
+{{FIG:raw_event}}
+<figcaption><span class="fignum">Figure 2.</span> One raw event, straight off
+disk, with nothing subtracted. Left: all 512 channels of FEU&nbsp;7 against
+time. The track is the bright diagonal streak around channel 100 — everything
+else is pedestal. Right: two single channels, one on the track and one far from
+it. The quiet channel is not at zero; it sits on its own pedestal of several
+hundred ADC, and it wanders.
+<span class="src">figsrc/f_raw.py · sat_det3 · FEU 7 · first decoded file</span>
+</figcaption>
+</figure>
+
+<h3 id="pedestal">2.1 Pedestal</h3>
+
+<p>Each channel has its own DC offset. It is stable over a run but differs
+channel to channel by tens of ADC, with visible steps at the boundaries of the
+64-channel Dream chips. The recipe is the simplest robust one: the
+<strong>per-channel median over the first 300 events</strong>. A median rather
+than a mean because those 300 events contain real tracks, and a mean would be
+pulled by them.</p>
+
+<figure>
+{{FIG:pedestal}}
+<figcaption><span class="fignum">Figure 3.</span> The pedestal map. The
+64-channel chip structure is visible as steps — this is one physical reason the
+common-mode correction is done per chip block rather than globally.
+<span class="src">figsrc/f_raw.py · median over 300 events</span></figcaption>
+</figure>
+
+<h3 id="cns">2.2 Common-mode</h3>
+
+<p>After the pedestal is removed, what remains is not independent per channel.
+All 64 channels of a Dream chip move together, sample by sample, by an amount
+that changes from event to event — pickup, supply ripple, and on beam runs the
+beam itself. This is <em>coherent</em> noise, and coherence is what makes it
+dangerous: sixty-four channels stepping up together at the same sample looks
+exactly like a cluster of hits.</p>
+
+<p>The correction is the <strong>per-sample median over each 64-channel
+block</strong>, subtracted from that block. A median again, so that the handful
+of channels carrying a real track do not drag the estimate.</p>
+
+<figure>
+{{FIG:common_mode}}
+<figcaption><span class="fignum">Figure 4.</span> Left: the eight block
+common-mode traces of one event — they wander by ±10 ADC and they wander
+together within a block. Middle: a channel with no signal, before and after;
+the correlated excursions vanish. Right: a channel on the track. The
+correction takes almost nothing off a real 1400-ADC pulse, because one strip in
+sixty-four cannot move a median.
+<span class="src">figsrc/f_raw.py · sat_det3 event 2000</span></figcaption>
+</figure>
+
+<h3 id="noise">2.3 Noise</h3>
+
+<p>What is left is the per-channel noise σ, estimated as
+<strong>1.4826 × MAD</strong> over the pedestal events after common-mode
+subtraction. Every χ² in this document weights each sample by
+<code>1/σ</code> of its strip, and σ is floored at 3&nbsp;ADC so that a
+suspiciously quiet channel cannot acquire infinite weight.</p>
+
+<figure>
+{{FIG:noise}}
+<figcaption><span class="fignum">Figure 5.</span> det3's FEU&nbsp;7 is a quiet
+board and common-mode subtraction buys it little: 8.9 → 7.4 ADC. det4's
+FEU&nbsp;6, right, is the board the recipe was written for:
+<strong>163 → 8.2 ADC</strong>. The correction is not optional and cannot be
+decided per run by eye.
+<span class="src">figsrc/f_raw.py · sat_det3 FEU 7 and g_det4 FEU 6</span>
+</figcaption>
+</figure>
+
+<div class="box meas"><span class="lbl">Measured</span>
+Post-CNS noise, det3: median <strong>7.4 ADC</strong> on FEU 7. A muon's
+brightest strip in this run is typically 600–2500 ADC, so the core of a cluster
+carries a signal-to-noise of order 100:1. The reconstruction is not
+noise-limited, and Part&nbsp;VII §42 shows exactly what it <em>is</em> limited
+by.</div>
+
+<h2 id="strip-map">3 · Channels, strips and positions</h2>
+
+<p>Channel number is not position. The mapping from FEU channel to strip
+position in millimetres is a property of the cabling and the readout board, and
+lives in the run's strip map (<code>common/Mx17StripMap.py</code>, driven by a
+per-campaign CSV). <code>wft.io.strip_position_map()</code> turns it into a
+plain array of 512 positions per FEU, with <code>NaN</code> for channels that
+are not connected to a strip of that plane.</p>
+
+<p>Everything downstream works in <em>position order</em>, not channel order.
+This matters more than it sounds: the resistive sharing kernel couples
+<em>physically adjacent</em> strips, so "the ±1 neighbour" is defined by the
+position map, and a window cut in channel order would scatter the neighbours
+arbitrarily.</p>
+
+<h2 id="the-window">4 · The fit's actual input</h2>
+
+<p>The object the reconstruction consumes is small: a handful of strips, sorted
+by position, each with 32 samples and a noise σ. It is called a
+<code>PlaneWindow</code>, and it is the last point at which anything is
+detector-specific.</p>
+
+<div class="box code"><span class="lbl">wft/io.py</span>
+<pre><span class="c">@dataclass</span>
+<span class="c">class</span> PlaneWindow:
+    ch:    np.ndarray  <span class="c"># channel numbers</span>
+    pos:   np.ndarray  <span class="c"># strip positions [mm], sorted ascending</span>
+    W:     np.ndarray  <span class="c"># (n_strip, n_sample) pedestal + CNS subtracted ADC</span>
+    noise: np.ndarray  <span class="c"># per-strip sigma [ADC]</span></pre></div>
+
+<figure>
+{{FIG:fit_window}}
+<figcaption><span class="fignum">Figure 6.</span> The same event as Figure 2,
+cut down to its window and corrected. Left, as an image: the drift-time ladder
+is directly visible — the charge that lands on high strips arrives early, the
+charge on low strips arrives late, and the streak is the track. Right, the same
+data as a waveform stack, which is how it will be shown for the rest of this
+document. <strong>The whole reconstruction problem is: what line produced
+this?</strong>
+<span class="src">figsrc/f_raw.py · sat_det3 event 2000, FEU 7</span>
+</figcaption>
+</figure>
+
+<p>It is worth staring at the left panel of Figure 6 for a moment, because it
+contains the trap. The streak looks like a clean ladder you could read off with
+a ruler. Part&nbsp;II is about why you cannot.</p>

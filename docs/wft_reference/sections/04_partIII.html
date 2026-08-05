@@ -1,0 +1,389 @@
+<section class="part" id="part-3">
+  <span class="partno">Part III</span>
+  <h2>The forward model</h2>
+  <p class="sub">Every term in the equation, where it comes from, what it is
+  worth, and what it cannot represent. This is <code>wft/model.py</code>.</p>
+</section>
+
+<h2 id="model-overview">10 · The shape of the model</h2>
+
+<p>The model describes <em>one plane of one event</em>. Its job is to turn a
+small number of parameters into a complete predicted
+(strip&nbsp;×&nbsp;sample) array that can be compared with the data.</p>
+
+<div class="eq">
+<span class="lhs">model<sub>i</sub>(t)</span> = Σ<sub>k</sub> q<sub>k</sub> · [
+   F<sub>ik</sub> h(t − t₀ − u<sub>k</sub>)
+ + c₁ (F<sub>i−1,k</sub> + F<sub>i+1,k</sub>) h₁(t − t₀ − u<sub>k</sub>)
+ + c₂ (F<sub>i−2,k</sub> + F<sub>i+2,k</sub>) h₂(t − t₀ − u<sub>k</sub>) ]
+<br><br>
+<span class="note">i = strip index &nbsp;·&nbsp; k = depth bin &nbsp;·&nbsp;
+u<sub>k</sub> = (k + ½)·60 ns &nbsp;·&nbsp; F depends on (p₀, w)</span>
+</div>
+
+<p>Read it from the inside out. The drift column is divided into
+<strong>K = 18 bins of 60 ns</strong>. Bin <code>k</code> holds a charge
+<code>q<sub>k</sub> ≥ 0</code> that was liberated at drift time
+<code>u<sub>k</sub></code> after the mesh charge. Because the track is a
+straight line, that charge sits at transverse position
+<code>p₀ + w·u<sub>k</sub></code>. The factor <code>F<sub>ik</sub></code> says
+what fraction of it lands on strip <code>i</code>. The three terms then place
+that charge on the strip itself, on its ±1 neighbours scaled by
+<code>c₁</code>, and on its ±2 neighbours scaled by <code>c₂</code>, each
+folded with the appropriate impulse response.</p>
+
+<h3 id="params">10.1 The parameter inventory</h3>
+
+<p>Three groups, and keeping them straight is most of understanding the
+system.</p>
+
+<div class="tablewrap"><table>
+<thead><tr><th>symbol</th><th>meaning</th><th>fitted…</th><th class="num">det3 value</th></tr></thead>
+<tbody>
+<tr><td><code>p₀</code></td><td>track position at the mesh [mm]</td>
+    <td>per plane, per event</td><td class="num">—</td></tr>
+<tr><td><code>w</code></td><td>transverse speed [mm/ns]; <code>tan θ = w/v</code></td>
+    <td>per plane, per event</td><td class="num">—</td></tr>
+<tr><td><code>t₀</code></td><td>arrival time of the charge from the mesh [ns]</td>
+    <td>per plane, per event</td><td class="num">—</td></tr>
+<tr><td><code>q₀…q₁₇</code></td><td>charge in each 60 ns depth bin, ≥ 0</td>
+    <td>per plane, per event — <em>solved, not searched</em></td><td class="num">—</td></tr>
+<tr><td><span class="hy">c1</span></td><td>fraction of a strip's charge appearing on each ±1 neighbour</td>
+    <td>calibration</td><td class="num">0.306</td></tr>
+<tr><td><span class="hy">c2</span></td><td>same for ±2</td>
+    <td>calibration</td><td class="num">0.120</td></tr>
+<tr><td><span class="hy">kY</span></td><td>multiplier on c1, c2 for the Y plane only</td>
+    <td>calibration</td><td class="num">1.222</td></tr>
+<tr><td><span class="hy">tau_s</span></td><td>RC dispersion constant of the shared copy [ns]</td>
+    <td>calibration</td><td class="num">126.9</td></tr>
+<tr><td><span class="hy">sigma_s</span></td><td>extra Gaussian smearing of the shared copy [ns]</td>
+    <td>calibration</td><td class="num">95.6</td></tr>
+<tr><td><span class="hy">sigma_p0</span></td><td>initial transverse cloud size [mm]</td>
+    <td>calibration</td><td class="num">0.242</td></tr>
+<tr><td><span class="hy">Dp</span></td><td>transverse diffusion coefficient [mm/√ns]</td>
+    <td>calibration</td><td class="num">0.0125</td></tr>
+<tr><td><span class="hy">v_drift</span></td><td>drift velocity [µm/ns]</td>
+    <td>calibration — <em>and see §29</em></td><td class="num">36.6</td></tr>
+<tr><td><code>h(t)</code></td><td>measured impulse response, per plane</td>
+    <td>calibration</td><td class="num">array</td></tr>
+</tbody></table></div>
+
+<div class="box rule"><span class="lbl">Rule</span>
+Everything in the "calibration" rows is <strong>per detector and per run
+condition</strong>. A bundle used outside the conditions it was fitted for is a
+silent error — it produces plausible numbers that are wrong. det4's
+<span class="hy">kY</span> is 2.1 against det3's 1.22; <span class="hy">v</span>
+moves from 12 to 39 µm/ns across a drift-HV scan. This is why
+<code>CalibrationBundle</code> carries a required <code>conditions</code> field
+and the driver checks it.</div>
+
+<h2 id="track-line">11 · The track line and the depth basis</h2>
+
+<p>Two coordinates run through everything. <code>u</code> is time since the
+mesh charge arrived — the drift time. <code>z = v·u</code> is drift depth. The
+model works in <code>u</code> and never needs <code>v</code>; the conversion to
+an angle is the <em>only</em> place <code>v</code> enters, which is a deliberate
+and important property (§29).</p>
+
+<div class="eq">
+position of the charge liberated at drift time <span class="lhs">u</span>:
+&nbsp; p(u) = p₀ + w·u<br>
+angle: &nbsp; <span class="lhs">tan θ</span> = w / v_drift
+</div>
+
+<p>The 18 bins of 60 ns span <code>u</code> = 0 to 1080 ns, which at 36.6 µm/ns
+is 39.5&nbsp;mm — comfortably past the ~29&nbsp;mm gap. That headroom is
+deliberate: it lets the fit place charge beyond the physical cathode rather than
+piling it up against a wall, which would bias <code>t₀</code>. At low drift
+field the column takes longer than the window and <code>set_depth_bins()</code>
+extends the basis to K = 26.</p>
+
+<figure>
+{{FIG:depth_ladder}}
+<figcaption><span class="fignum">Figure 14.</span> Left: one strip's model,
+decomposed by which depth bin contributed to it. Dark colours are charge from
+near the mesh, light colours from near the cathode; the strip's single pulse is
+the sum of ten or more of them, arriving over hundreds of nanoseconds. Right:
+the same event in the plane the reconstruction actually reports — transverse
+position against drift depth, with the fitted line and the charge sized by
+<code>q<sub>k</sub></code>.
+<span class="src">figsrc/f_model.py · sat_det3 event 1663</span>
+</figcaption>
+</figure>
+
+<h2 id="strip-fractions">12 · Where a depth bin's charge lands: F<sub>ik</sub></h2>
+
+<p><code>strip_fractions()</code> answers a purely geometric question: given
+that bin <code>k</code>'s charge is spread transversely as a Gaussian centred on
+the track line, what fraction falls within strip <code>i</code>'s
+0.78&nbsp;mm pitch?</p>
+
+<p>Three widths add in quadrature:</p>
+
+<dl class="params">
+<dt>sigma_p0</dt>
+<dd>the initial cloud — how wide the ionisation and early avalanche already
+were before drifting anywhere.</dd>
+<dt>Dp · √u</dt>
+<dd>transverse diffusion, growing as the square root of drift time. This is
+what makes deep charge land on more strips than shallow charge.</dd>
+<dt>|p(u<sub>k+1</sub>) − p(u<sub>k</sub>)| / √12</dt>
+<dd>the bin is not a point: over its own 60 ns the track moves sideways. On a
+steep track this term dominates. It enters as the RMS of a uniform segment.</dd>
+</dl>
+
+<div class="eq">
+<span class="lhs">σ<sub>p</sub>(u)²</span> = σ<sub>p0</sub>² + D<sub>p</sub>²·u + (half-span)²/3<br>
+<span class="lhs">F<sub>ik</sub></span> = ½ [ erf( (p<sub>i</sub> + pitch/2 − p<sub>c,k</sub>) / √2 σ<sub>p</sub> )
+                         − erf( (p<sub>i</sub> − pitch/2 − p<sub>c,k</sub>) / √2 σ<sub>p</sub> ) ]
+</div>
+
+<figure>
+{{FIG:strip_fractions}}
+<figcaption><span class="fignum">Figure 15.</span> Left: how the transverse
+spread grows with depth for the det3 bundle, against one strip pitch. Middle:
+the resulting F<sub>ik</sub> matrix for a track at tan θ = 0.28 — the bright
+diagonal is the track walking across strips as it ascends. Right: individual
+bins. A shallow bin puts most of its charge on one strip; a deep bin is spread
+over three.
+<span class="src">figsrc/f_model.py · det3 lp bundle</span></figcaption>
+</figure>
+
+<div class="box warn"><span class="lbl">Trap</span>
+<span class="hy">sigma_p0</span> is the parameter that absorbs model error. If
+the sharing kernel's <em>shape</em> is wrong, the fit can hide the missing
+charge spread by inflating the initial cloud. det4's delay-mode calibrations
+landed at 0.42–0.47&nbsp;mm — half a millimetre of primary cloud, against
+det3's 0.098&nbsp;mm in the same parameterisation. That was the signal that the
+kernel form itself was wrong, which is §14.</div>
+
+<h2 id="impulse">13 · The impulse response h(t)</h2>
+
+<p>The electronics do not report charge, they report a shaped pulse. The
+template <code>h(t)</code> is that shape: the response of one plane's amplifier
+chain to a delta of charge, measured empirically from the data rather than
+assumed. Part&nbsp;VI §34 shows how it is built; here is what it looks like.</p>
+
+<figure>
+{{FIG:template}}
+<figcaption><span class="fignum">Figure 16.</span> The det3 impulse response.
+Both planes rise in 180 ns (10–90 %) and peak 140 ns after their 50 % crossing.
+The difference is in the recovery: <strong>Y undershoots four times deeper than
+X</strong> (−7.9 % against −2.1 %). That matters because deep charge rides on
+the undershoot of earlier shared copies, and it is why the templates are
+per-plane rather than shared.
+<span class="src">figsrc/f_model.py · det3 lp bundle arrays.npz</span>
+</figcaption>
+</figure>
+
+<h2 id="kernel">14 · The sharing kernel — the model's most interesting term</h2>
+
+<p>The neighbour term needs a response <code>h₁(t)</code>: the shape a strip
+sees when its neighbour is hit. Two parameterisations exist in the code, and the
+history of moving from one to the other is instructive.</p>
+
+<h3 id="delay-mode">14.1 <code>share_mode = 'delay'</code> — the original</h3>
+
+<p>The first model said: the neighbour sees a copy of the same pulse, delayed
+by <span class="hy">tau_s</span> and smeared by <span class="hy">sigma_s</span>.
+Simple, and it fitted the det3 cosmic data well enough to produce every result
+in the original study.</p>
+
+<div class="eq">
+<span class="lhs">h₁(t)</span> = h<sub>s</sub>(t − τ<sub>s</sub>) &nbsp;&nbsp;
+<span class="lhs">h₂(t)</span> = h<sub>s</sub>(t − 2τ<sub>s</sub>)
+<span class="note">&nbsp;&nbsp; h<sub>s</sub> = h smeared by σ<sub>s</sub></span>
+</div>
+
+<h3 id="lp-mode">14.2 <code>share_mode = 'lp'</code> — what the beam measured</h3>
+
+<p>The H4 beam test put det4 at normal incidence, where every 60 ns slice of
+drift charge lands at the <em>same</em> transverse position. That removes the
+degeneracy a cosmic fit cannot break, and it showed the delayed-copy picture is
+wrong in a specific way: <strong>the neighbour's pulse peaks essentially
+<em>with</em> the central strip, but carries a long tail the central strip does
+not have.</strong> That is not a delay. It is RC dispersion.</p>
+
+<div class="eq">
+<span class="lhs">h₁</span> = h<sub>s</sub> * K<sub>τ</sub> &nbsp;&nbsp;
+<span class="lhs">h₂</span> = h<sub>s</sub> * K<sub>τ</sub> * K<sub>τ</sub>
+<span class="note">&nbsp;&nbsp; K<sub>τ</sub> = one-pole low pass, constant τ<sub>s</sub>, area-preserving</span>
+</div>
+
+<p>The discrete one-pole is applied on the template's own grid and preserves
+area, so <span class="hy">c1</span> and <span class="hy">c2</span> keep their
+meaning as charge fractions in both modes. The template grid stops at
++1.4&nbsp;µs, but an RC tail with τ of a few hundred nanoseconds is still alive
+there, so <code>_lp_copies()</code> zero-pads to +6&nbsp;µs before
+convolving — omitting that pad quietly loses charge from the model.</p>
+
+<figure>
+{{FIG:kernels}}
+<figcaption><span class="fignum">Figure 17.</span> The two forms, drawn with
+det3's own <span class="hy">tau_s</span> = 127 ns and
+<span class="hy">sigma_s</span> = 96 ns. Left, delay: a copy pushed bodily
+later. Middle, lp: a copy that starts with the central strip and decays slowly.
+Right, peak-normalised: the lp copy peaks +102 ns after the central strip
+against the delay form's +138 ns, and it is the lp shape that reproduces a
+neighbour carrying ~29 % of the charge while peaking only ~60 ns late — which
+is what the beam measured directly.
+<span class="src">figsrc/f_model.py · det3 lp bundle</span></figcaption>
+</figure>
+
+<div class="box meas"><span class="lbl">Measured</span>
+<p>The two independent determinations of det3/det4's sharing agree, from
+completely different data and method:</p>
+<div class="tablewrap"><table>
+<thead><tr><th>quantity</th><th>bench forward fit</th><th>H4 beam, direct</th></tr></thead>
+<tbody>
+<tr><td>c₁ (±1 charge fraction)</td><td>0.306 (det3)</td><td><strong>0.281</strong> (det4, Y view, 625 V)</td></tr>
+<tr><td>c₂ (±2)</td><td>0.120</td><td>0.111</td></tr>
+<tr><td>±1 peak-time shift</td><td>+37 ns (X), +87 ns (Y)</td><td>+29 ns (X), +36 ns (Y)</td></tr>
+<tr><td>gain dependence</td><td>—</td><td>&lt; 2 % over a 6 % gain step</td></tr>
+</tbody></table></div>
+<p style="margin-bottom:0">The beam also showed the kernel is invariant across
+drift field (92–233 V/cm) and gas. <strong>The kernel is a property of the
+resistive layer, not of the operating point</strong> — which is the premise
+that lets one bench calibration serve a detector's whole run range.</p>
+</div>
+
+<div class="box warn"><span class="lbl">Trap</span>
+The RC constants are <em>representation-dependent</em>. The beam's full-window
+fits give τ ≈ 300–800 ns; the bench's 1.92 µs window gives τ ≈ 108–141 ns for
+the same physics, because the bench never sees the far tail. Transplanting the
+beam's τ and its associated amplitudes into a bench bundle was tried
+(arm&nbsp;B of the 2026-08-05 recalibration) and made things distinctly worse —
+<span class="hy">kY</span> collapsed to 0.59 and χ² rose 16 %. Transfer the
+<em>structure</em>, re-fit the <em>constants</em>.</div>
+
+<h3 id="ky">14.3 kY — the plane asymmetry</h3>
+
+<p>The X and Y strips sit at different depths under the resistive layer, so they
+do not couple to it equally. <span class="hy">kY</span> multiplies both
+<code>c₁</code> and <code>c₂</code> on the Y plane only. det3 needs 1.22; det4
+needs about 2.1.</p>
+
+<div class="box open"><span class="lbl">Open</span>
+<span class="hy">kY</span> scales the copy's <em>amplitude</em> but not its
+<em>arrival</em>. det3's direct kernel measurement finds the Y-view copy is both
+stronger <em>and</em> ~2× later (+87 ns against X's +37 ns). A single-τ kernel
+with an amplitude-only kY cannot represent both planes. A per-plane
+<span class="hy">tau_s</span> is the identified next structural improvement and
+has not been done.</div>
+
+<h2 id="design-matrix">15 · Assembling the design matrix</h2>
+
+<p>Everything above is linear in the charges <code>q<sub>k</sub></code>. That is
+the structural fact the whole fit is built on. Collect the model's response to a
+<em>unit</em> charge in each depth bin and you get a matrix
+<code>M</code> with one column per bin and one row per (strip, sample):</p>
+
+<div class="eq">
+<span class="lhs">model</span> = M(p₀, w, t₀) · q
+<span class="note">&nbsp;&nbsp; M is (n_strip · n_sample) × K &nbsp;—&nbsp; here 736 × 18</span>
+</div>
+
+<figure>
+{{FIG:design_matrix}}
+<figcaption><span class="fignum">Figure 18.</span> The design matrix, made
+visible. Top row: four of its eighteen columns, each shown as the
+(strip&nbsp;×&nbsp;sample) picture that one unit of charge at that depth would
+produce. As <code>k</code> increases the blob moves later in time <em>and</em>
+sideways in position — that coupling is the track. Note k = 15 sits at
+z = 34 mm, past the cathode: the basis deliberately overhangs the gap. Bottom
+left: the whole matrix, rows stacked strip by strip. Bottom right: one strip's
+row block — what each depth bin contributes to that single strip.
+<span class="src">figsrc/f_model.py · sat_det3 event 1663</span>
+</figcaption>
+</figure>
+
+<h3 id="caching">15.1 Why t₀ is quantised to 5 ns</h3>
+
+<p>Building <code>M</code> means interpolating the template onto
+<code>(n_sample × K)</code> time offsets, three times over (own, ±1, ±2). That
+is the expensive part, and it depends on <code>t₀</code> but not on
+<code>p₀</code> or <code>w</code>. So <code>_time_tensors()</code> caches the
+three response tensors on a 5&nbsp;ns <code>t₀</code> grid, and
+<code>chi2_plane()</code> snaps <code>t₀</code> to that grid during the coarse
+searches. The final Nelder-Mead runs with <code>snap_t0=False</code> and pays
+the full cost, because by then it is only a few hundred evaluations.</p>
+
+<figure>
+{{FIG:timing}}
+<figcaption><span class="fignum">Figure 19.</span> Where the time goes.
+Building the matrix with warm caches is 0.08 ms; adding the NNLS solve makes it
+0.5 ms; a complete single-plane fit — global scan plus Nelder-Mead, some 700
+evaluations — is about 0.25 s on one core. A 7,000-event run over both planes
+is a few minutes on twelve cores.
+<span class="src">figsrc/f_fit.py · this machine, single core</span>
+</figcaption>
+</figure>
+
+<h2 id="saturation">16 · Saturation, and the one-sided penalty</h2>
+
+<p>Above about 3550 ADC the digitiser clips. A clipped sample carries real
+information — "the true value was at least this" — but not the information a χ²
+term assumes. Treating it as a measurement pulls the fit down; discarding it
+entirely lets the model put arbitrary charge there.</p>
+
+<p>The model does neither. Clipped samples are <strong>censored</strong>:
+excluded from the χ² sum, but penalised if the model falls <em>below</em> the
+clipped value.</p>
+
+<div class="box code"><span class="lbl">wft/model.py · chi2_plane</span>
+<pre>ok  = ~sat.reshape(-1)                      <span class="c"># clipped samples leave the fit</span>
+q, rn = nnls(A[ok], y[ok])
+chi = rn * rn
+<span class="c">if</span> censor <span class="c">and</span> sat.any():
+    model = (M @ q).reshape(W.shape)
+    pen = np.maximum(0.0, W[sat] - model[sat]) / noise[sat]
+    chi += (pen ** 2).sum()                 <span class="c"># only if the model dips below the clip</span></pre></div>
+
+<figure>
+{{FIG:saturation}}
+<figcaption><span class="fignum">Figure 20.</span> A real saturated event. Left:
+the clipped samples, crossed, and the model that is allowed to run above them.
+Right: the censoring mask. Saturation is rare on det3 cosmics — this event has
+10 clipped samples on 2 strips — but Figure 40 shows it is a visible part of the
+failure tail.
+<span class="src">figsrc/f_fit.py · sat_det3 event 4</span></figcaption>
+</figure>
+
+<h2 id="gain">17 · Per-channel gain</h2>
+
+<p>Channels do not all have the same gain. <code>prep_plane()</code> divides
+each strip's waveform and its noise by a per-channel factor before anything else
+happens. In practice the map is nearly always unity:</p>
+
+<div class="box meas"><span class="lbl">Measured</span>
+The measured channel-gain spread on det3 is <strong>1.4–1.5 %</strong> over 452
+channels, and the ablation study found that removing the gain map entirely
+changes per-event angles by less than the statistical noise. Bundles therefore
+ship with unit gains unless a measured map exists. This is a real result, not
+laziness: it says strip-to-strip gain is not a limiting systematic on these
+detectors.</div>
+
+<h2 id="cannot">18 · What the model cannot represent</h2>
+
+<p>Being explicit about this is more useful than any list of features.</p>
+
+<ul>
+<li><strong>Two tracks.</strong> One line, one charge profile. A δ-ray or a
+second particle in the window is fitted as a compromise between them. This is
+the dominant failure mode in the tail (Figure 34).</li>
+<li><strong>Curvature.</strong> The track is straight over the 29 mm gap. For
+cosmic muons and beam particles this is exact to well below the resolution;
+for a low-energy electron spiralling in a field it would not be.</li>
+<li><strong>Attachment or gain varying with depth.</strong> There is no term for
+it — and there does not need to be, because <code>q<sub>k</sub></code> is free
+per bin and absorbs any depth dependence of the collected charge. This is a
+genuine strength: the model measures the depth profile rather than assuming
+one.</li>
+<li><strong>A cathode.</strong> Nothing stops the fit from putting charge past
+the physical gap. The column's endpoint is an <em>output</em>
+(<code>q_uend</code>), and Part&nbsp;VIII §50 uses it to map the cathode.</li>
+<li><strong>Per-plane t₀ coupling.</strong> In the standard single-plane fit,
+X and Y are fitted independently. §22 covers the joint fit that ties them.</li>
+<li><strong>Non-linear electronics.</strong> Below saturation the chain is
+assumed linear. The censoring in §16 is the only concession.</li>
+</ul>

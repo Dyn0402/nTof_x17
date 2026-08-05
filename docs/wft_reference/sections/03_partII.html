@@ -1,0 +1,332 @@
+<section class="part" id="part-2">
+  <span class="partno">Part II</span>
+  <h2>Why a per-strip time is not a drift time</h2>
+  <p class="sub">The measurement that retired the old chain, re-done here from
+  scratch. It is not an argument about estimators; it is a property of what the
+  strips carry.</p>
+</section>
+
+<h2 id="resistive">5 · Resistive strips share charge, late</h2>
+
+<p>The strips are not independent electrodes. A resistive layer sits over them,
+and the charge deposited on it does not stay put — it spreads sideways and
+bleeds onto the neighbouring strips over hundreds of nanoseconds. Each strip's
+waveform is therefore its own charge <em>plus a delayed, dispersed copy of each
+neighbour's</em>.</p>
+
+<p>On det3 the ±1 neighbours each receive about 31&nbsp;% of a strip's charge
+and the ±2 neighbours about 12&nbsp;%. That is not a small correction. It is
+the reason the reconstruction in Part&nbsp;III exists.</p>
+
+<figure>
+<svg class="diagram" viewBox="0 0 760 250" role="img"
+     aria-label="Charge deposited on one strip appears on its neighbours, delayed and dispersed.">
+  <defs>
+    <marker id="ar2" markerWidth="7" markerHeight="7" refX="6" refY="3.5"
+            orient="auto"><path d="M0,0 L7,3.5 L0,7 z" style="fill:var(--ember)"/></marker>
+  </defs>
+  <!-- resistive sheet -->
+  <rect x="60" y="34" width="380" height="16" rx="3"
+        style="fill:var(--ember-soft);stroke:var(--ember);stroke-opacity:.5"/>
+  <text x="450" y="46" font-size="12" style="fill:var(--ember-ink)">resistive layer</text>
+  <!-- strips -->
+  <g style="fill:var(--panel-2);stroke:var(--rule)">
+    <rect x="62"  y="62" width="70" height="14" rx="2"/>
+    <rect x="138" y="62" width="70" height="14" rx="2"/>
+    <rect x="290" y="62" width="70" height="14" rx="2"/>
+    <rect x="366" y="62" width="70" height="14" rx="2"/>
+  </g>
+  <rect x="214" y="62" width="70" height="14" rx="2"
+        style="fill:var(--plane-x)"/>
+  <g font-size="11" text-anchor="middle" style="fill:var(--ink-3)">
+    <text x="97"  y="91">i−2</text>
+    <text x="173" y="91">i−1</text>
+    <text x="249" y="91" style="fill:var(--plane-x)">i</text>
+    <text x="325" y="91">i+1</text>
+    <text x="401" y="91">i+2</text>
+  </g>
+  <!-- avalanche -->
+  <circle cx="249" cy="42" r="6" style="fill:var(--plane-x)"/>
+  <text x="249" y="24" text-anchor="middle" font-size="12"
+        style="fill:var(--plane-x)">avalanche lands here</text>
+  <!-- spreading arrows -->
+  <path d="M240,44 Q200,44 178,58" style="fill:none;stroke:var(--ember);stroke-width:1.6" marker-end="url(#ar2)"/>
+  <path d="M258,44 Q298,44 320,58" style="fill:none;stroke:var(--ember);stroke-width:1.6" marker-end="url(#ar2)"/>
+  <path d="M236,42 Q150,36 102,58" style="fill:none;stroke:var(--ember);stroke-width:1.1;stroke-opacity:.6" marker-end="url(#ar2)"/>
+  <path d="M262,42 Q348,36 396,58" style="fill:none;stroke:var(--ember);stroke-width:1.1;stroke-opacity:.6" marker-end="url(#ar2)"/>
+
+  <!-- resulting waveforms -->
+  <g transform="translate(60,120)">
+    <text x="0" y="0" font-size="11.5" style="fill:var(--ink-3)">what each strip actually reads out</text>
+    <!-- axes -->
+    <line x1="0" y1="96" x2="380" y2="96" style="stroke:var(--rule)"/>
+    <!-- central -->
+    <path d="M20,96 C60,96 66,20 96,20 C126,20 150,90 200,94 L380,96"
+          style="fill:none;stroke:var(--plane-x);stroke-width:2.2"/>
+    <!-- +-1 -->
+    <path d="M20,96 C64,96 74,58 106,54 C150,50 200,80 260,90 L380,95"
+          style="fill:none;stroke:var(--ember);stroke-width:2"/>
+    <!-- +-2 -->
+    <path d="M20,96 C70,96 84,80 120,78 C170,76 230,88 280,93 L380,95.5"
+          style="fill:none;stroke:var(--caution);stroke-width:1.6"/>
+    <text x="106" y="14" font-size="11" style="fill:var(--plane-x)">strip i — its own charge</text>
+    <text x="150" y="44" font-size="11" style="fill:var(--ember-ink)">i ± 1 — a dispersed copy, ~31 %</text>
+    <text x="230" y="72" font-size="11" style="fill:var(--caution)">i ± 2 — ~12 %</text>
+    <text x="330" y="112" font-size="11" style="fill:var(--ink-3)">time</text>
+  </g>
+</svg>
+<figcaption><span class="fignum">Figure 7.</span> The mechanism. The copy that
+lands on a neighbour is not a scaled duplicate of the pulse — it is
+<em>dispersed</em>, so it peaks at roughly the same time but carries a long
+tail. Part&nbsp;III §14 measures that shape; the important consequence is
+below.</figcaption>
+</figure>
+
+<h2 id="mixture">6 · What that does to a hit time</h2>
+
+<p>Now put the two facts together. On an inclined track, neighbouring strips
+carry charge that arrived at <em>different</em> times, and each strip receives
+delayed copies from both sides. So:</p>
+
+<ul>
+<li>A strip near the mesh — its own charge arrives early — also receives late
+copies from the strips further up the gap. Its single reported time is pulled
+<strong>later</strong>.</li>
+<li>A strip near the cathode — its own charge arrives late — receives early
+copies from the strips nearer the mesh. Its time is pulled
+<strong>earlier</strong>.</li>
+</ul>
+
+<p>Both ends squeeze inward. The time ladder is compressed. Read with the
+correct drift velocity, a compressed ladder describes a track that is too
+steep.</p>
+
+<figure>
+{{FIG:sharing_decomposition}}
+<figcaption><span class="fignum">Figure 8.</span> A real det3 event,
+decomposed. Each panel is one strip; the fill shows how much of what that strip
+reads out is its own charge (blue) versus copies from its ±1 (orange) and ±2
+(red) neighbours, using the calibrated kernel. On the outermost strips the
+neighbours' contribution is the <em>majority</em> of the pulse. Whatever time
+estimator you apply to those waveforms, it is not timing that strip's own
+charge.
+<span class="src">figsrc/f_model.py · sat_det3 event 1663, X plane</span>
+</figcaption>
+</figure>
+
+<h2 id="s-curve">7 · The compression, measured</h2>
+
+<p>The claim is testable directly. For every strip of every reference-matched
+event, compute the strip's hit time and compare it with the drift time the M3
+reference line implies for that strip's position, with the event's
+<code>t₀</code> floated away. If the strips reported their own charge honestly,
+the residual would be flat and centred on zero.</p>
+
+<figure>
+{{FIG:compression}}
+<figcaption><span class="fignum">Figure 9.</span> It is not flat. Left: the
+residual against true drift time, for four different time estimators. All four
+lie on the same S: <strong>positive at the mesh, negative at the
+cathode</strong>. Right: the same, per strip, for the matched filter. The
+scatter is large but the trend is unambiguous over ~10,000 strips.
+<span class="src">figsrc/f_hits.py · sat_det3 · 320 calibration-cache events,
+|tan θ| &gt; 0.10</span></figcaption>
+</figure>
+
+<div class="box meas"><span class="lbl">Measured</span>
+<p>The slope of the residual against depth <em>is</em> the compression. Four
+estimators, same events, re-measured for this document:</p>
+<div class="tablewrap"><table>
+<thead><tr><th>time estimator</th><th class="num">residual slope</th>
+<th class="num">ladder / truth</th><th class="num">implied v [µm/ns]</th></tr></thead>
+<tbody>
+<tr><td>leading edge, 20 %</td><td class="num">−0.132</td><td class="num">0.87</td><td class="num">42.2</td></tr>
+<tr><td>CFD, 50 %</td><td class="num">−0.125</td><td class="num">0.88</td><td class="num">41.8</td></tr>
+<tr><td>parabolic peak</td><td class="num">−0.135</td><td class="num">0.87</td><td class="num">42.3</td></tr>
+<tr><td>full matched filter</td><td class="num">−0.145</td><td class="num">0.86</td><td class="num">42.8</td></tr>
+<tr><td colspan="3"><em>true drift velocity for this run</em></td><td class="num"><strong>36.6</strong></td></tr>
+</tbody></table></div>
+<p style="margin-bottom:0">Every estimator compresses the ladder by 13–15&nbsp;%
+and therefore reports a drift velocity 15&nbsp;% too high. The published
+production numbers were worse still (47–50&nbsp;µm/ns) because the production
+hit time is a threshold crossing on a zero-suppressed waveform.</p>
+</div>
+
+<h3 id="estimator-independence">7.1 Why no better estimator helps</h3>
+
+<p>This is the part that took the longest to accept, so it is worth stating
+plainly. The four estimators in Figure&nbsp;9 span the whole space of things
+people try: an early threshold, a fractional threshold, the peak, and the
+statistically optimal linear filter for the known pulse shape. They differ from
+each other by a few nanoseconds. They differ from the truth by the same
+S-curve.</p>
+
+<p>They must, because they are all reading the same mixed waveform. A matched
+filter is optimal for extracting the arrival time <em>of a pulse of the assumed
+shape</em>; when the waveform is a sum of that pulse and two dispersed copies of
+different pulses at different times, the filter returns a weighted mean of the
+arrival times present, which is precisely the biased quantity. <strong>The
+mixing has to be modelled forward or removed, not thresholded away.</strong></p>
+
+<h2 id="consequence">8 · What it costs</h2>
+
+<figure>
+{{FIG:two_ladders}}
+<figcaption><span class="fignum">Figure 10.</span> One event, both ways. Left,
+the per-strip times the ladder is built from. Right, the ladder points placed at
+the depth their times imply (pink), the M3 reference line (green) and the
+forward fit (orange, with its charge profile). This particular event is an
+honest near-tie — per event the effect is buried in noise. The claim lives in
+the population, below.
+<span class="src">figsrc/f_hits.py · sat_det3 event 1663, X plane</span>
+</figcaption>
+</figure>
+
+<figure>
+{{FIG:ladder_population}}
+<figcaption><span class="fignum">Figure 11.</span> The population. Ratio of
+reconstructed to true slope, same 200 planes through both chains. The hits
+ladder reads <strong>15&nbsp;% too steep</strong> in the median and is broad;
+the forward fit sits on 1.02 and is narrow.
+<span class="src">figsrc/f_hits.py · sat_det3</span></figcaption>
+</figure>
+
+<h3 id="implied-v">8.1 The signature that catches it</h3>
+
+<p>There is one diagnostic worth more than all the others, and it should be run
+on any reconstruction of this detector, including future ones. Take the fitted
+transverse speed <code>w</code>, divide by the <em>reference</em> track's
+<code>tan θ</code>, and you get an implied drift velocity for each event. The
+drift velocity is a property of the gas and the field. It cannot depend on how
+steep the muon was.</p>
+
+<figure>
+{{FIG:implied_v}}
+<figcaption><span class="fignum">Figure 12.</span> The implied velocity against
+track angle. The hits ladder falls from 51 to 37&nbsp;µm/ns across the angle
+range — a 13.5&nbsp;µm/ns spread, which is not a measurement of anything. The
+forward fit is flat to 1.1&nbsp;µm/ns. This is the test that catches a chain
+which has quietly reacquired the bias.
+<span class="src">figsrc/f_hits.py · sat_det3 · 380 events</span>
+</figcaption>
+</figure>
+
+<div class="box rule"><span class="lbl">Rule</span>
+Any change to the reconstruction, the calibration or the gas assumptions must
+be checked against implied-velocity flatness before its angles are believed.
+It is cheap, it needs no new data, and it has caught every calibration
+pathology in this analysis so far. <code>mx_june_wft/03_angles.py</code>
+computes it and writes the spread into
+<code>angular_resolution.json</code>.</div>
+
+<h3 id="downstream-damage">8.2 What was contaminated, and what was not</h3>
+
+<div class="tablewrap"><table>
+<caption>Consequences of the compressed ladder, as understood after the
+rebuild.</caption>
+<thead><tr><th>quantity</th><th>affected?</th><th>why</th></tr></thead>
+<tbody>
+<tr><td>Track angle</td><td class="bad">badly</td>
+    <td>reads ~4° too steep; the whole point of the rebuild</td></tr>
+<tr><td>Per-strip depth, 3-D displays</td><td class="bad">badly</td>
+    <td>the cluster fans away from the true track as it ascends the gap</td></tr>
+<tr><td>Drift velocity from the ladder</td><td class="bad">badly</td>
+    <td>47–50 µm/ns against a true 36.6</td></tr>
+<tr><td>Drift velocity from gap-filling</td><td class="bad">yes, differently</td>
+    <td>assumes a 29 mm column where the local column is 26.5–29.5 mm</td></tr>
+<tr><td>Position at the mesh</td><td>mildly</td>
+    <td>the earliest strip is quantised to the pitch and pulled by shared
+        charge, but not systematically walked</td></tr>
+<tr><td>Detection efficiency</td><td class="win">no</td>
+    <td>a property of the analyzer's trigger, not of the fit</td></tr>
+<tr><td>Rates, occupancy, amplitudes, sparks</td><td class="win">no</td>
+    <td>no geometry involved</td></tr>
+</tbody></table></div>
+
+<p>The last two rows are why hits were not thrown away. Part&nbsp;V uses them
+for exactly the job they are good at.</p>
+
+<h2 id="forward-vs-deconv">9 · Forward model, not deconvolution</h2>
+
+<p>Given a known mixing kernel, the obvious move is to invert it — "unshare" the
+waveforms and recover each strip's own charge, then time that. This was tried
+and it works, in ensemble. Per event it does not, and the reason is structural:
+deconvolution amplifies noise at exactly the frequencies where the kernel is
+small, and a 32-sample window of a 17-strip cluster does not contain enough
+information to regularise that stably event by event.</p>
+
+<p>The forward direction has no such problem. Instead of asking "what charge
+distribution, un-mixed, produced these waveforms?", it asks "does <em>this</em>
+track, mixed forward through the known kernel, look like these waveforms?" —
+and answers by generating the prediction and comparing. Generating is always
+well-conditioned. Searching over three geometric parameters is cheap. The
+neighbours' copies stop being contamination the moment they appear on both
+sides of the comparison.</p>
+
+<figure>
+<svg class="diagram" viewBox="0 0 760 210" role="img"
+     aria-label="Two directions: deconvolution inverts the mixing and is unstable; forward modelling generates a prediction and is stable.">
+  <defs>
+    <marker id="ar3" markerWidth="8" markerHeight="8" refX="7" refY="4"
+            orient="auto"><path d="M0,0 L8,4 L0,8 z" style="fill:var(--ink-3)"/></marker>
+    <marker id="ar4" markerWidth="8" markerHeight="8" refX="7" refY="4"
+            orient="auto"><path d="M0,0 L8,4 L0,8 z" style="fill:var(--verified)"/></marker>
+  </defs>
+  <!-- top: deconvolution -->
+  <g>
+    <text x="0" y="14" font-size="11.5" font-weight="700"
+          style="fill:var(--plane-y)">DECONVOLUTION — invert the mixing</text>
+    <rect x="0" y="26" width="150" height="44" rx="5"
+          style="fill:var(--panel-2);stroke:var(--rule)"/>
+    <text x="75" y="52" text-anchor="middle" font-size="12"
+          style="fill:var(--ink-2)">measured waveforms</text>
+    <line x1="156" y1="48" x2="230" y2="48"
+          style="stroke:var(--ink-3);stroke-width:1.5" marker-end="url(#ar3)"/>
+    <text x="193" y="40" text-anchor="middle" font-size="10.5"
+          style="fill:var(--plane-y)">K⁻¹</text>
+    <rect x="238" y="26" width="150" height="44" rx="5"
+          style="fill:var(--panel-2);stroke:var(--rule)"/>
+    <text x="313" y="52" text-anchor="middle" font-size="12"
+          style="fill:var(--ink-2)">own-charge estimate</text>
+    <line x1="394" y1="48" x2="468" y2="48"
+          style="stroke:var(--ink-3);stroke-width:1.5" marker-end="url(#ar3)"/>
+    <rect x="476" y="26" width="120" height="44" rx="5"
+          style="fill:var(--panel-2);stroke:var(--rule)"/>
+    <text x="536" y="52" text-anchor="middle" font-size="12"
+          style="fill:var(--ink-2)">fit a line</text>
+    <text x="612" y="46" font-size="11" style="fill:var(--plane-y)">noise blows up</text>
+    <text x="612" y="61" font-size="11" style="fill:var(--plane-y)">per event</text>
+  </g>
+  <!-- bottom: forward -->
+  <g transform="translate(0,110)">
+    <text x="0" y="14" font-size="11.5" font-weight="700"
+          style="fill:var(--verified)">FORWARD MODEL — generate and compare</text>
+    <rect x="0" y="26" width="150" height="44" rx="5"
+          style="fill:var(--panel-2);stroke:var(--rule)"/>
+    <text x="75" y="46" text-anchor="middle" font-size="12"
+          style="fill:var(--ink-2)">trial track</text>
+    <text x="75" y="60" text-anchor="middle" font-size="10.5"
+          style="fill:var(--ink-3)">(p₀, w, t₀) + charges</text>
+    <line x1="156" y1="48" x2="230" y2="48"
+          style="stroke:var(--verified);stroke-width:1.5" marker-end="url(#ar4)"/>
+    <text x="193" y="40" text-anchor="middle" font-size="10.5"
+          style="fill:var(--verified)">K</text>
+    <rect x="238" y="26" width="150" height="44" rx="5"
+          style="fill:var(--panel-2);stroke:var(--rule)"/>
+    <text x="313" y="52" text-anchor="middle" font-size="12"
+          style="fill:var(--ink-2)">predicted waveforms</text>
+    <line x1="394" y1="48" x2="468" y2="48"
+          style="stroke:var(--verified);stroke-width:1.5" marker-end="url(#ar4)"/>
+    <rect x="476" y="26" width="120" height="44" rx="5"
+          style="fill:var(--verified-bg);stroke:var(--verified)"/>
+    <text x="536" y="52" text-anchor="middle" font-size="12"
+          style="fill:var(--verified)">χ² vs data</text>
+    <path d="M536,74 L536,90 L75,90 L75,76"
+          style="fill:none;stroke:var(--verified);stroke-width:1.3;stroke-dasharray:4 3" marker-end="url(#ar4)"/>
+    <text x="305" y="104" text-anchor="middle" font-size="11"
+          style="fill:var(--verified)">search over three numbers — always well-posed</text>
+  </g>
+</svg>
+<figcaption><span class="fignum">Figure 13.</span> The choice. Both use the same
+measured kernel. Only one of them has to invert it.</figcaption>
+</figure>
