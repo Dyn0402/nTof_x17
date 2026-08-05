@@ -45,6 +45,14 @@ in `extract_det4_only.py` is behaving.
 
 ## 2. The tilt, third independent measurement
 
+> **⛔ Magnitudes superseded 2026-08-04** (`RERUN_2026-08-04_NEW_MACHINE.md`
+> §4): every angle below divides the same centroid walk by the DRY-gas
+> v = 34 µm/ns. With the measured wet-gas velocity (v ≈ 14 µm/ns at
+> 233 V/cm) the walk is **θ_X ≈ 0.9°, θ_Y ≈ +0.2–0.3°**, and the
+> v-independent invariant is **tan θ_X = −0.015 ± 0.002**, drift-field
+> invariant. The *relative* statement (X carries a standing walk, Y is much
+> smaller, stable across runs and gases) stands; the degree values do not.
+
 | | run_56 (CO₂) | run_63 (CF₄, ZS) | **run_71 (CF₄, RAW)** |
 |---|---:|---:|---:|
 | X view | 0.40° | 0.39° | **0.22–0.23°** |

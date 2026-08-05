@@ -16,6 +16,7 @@ Every analyzer setting is derived from the dataset's own record in
 from __future__ import annotations
 
 import argparse
+import glob
 import os
 import subprocess
 import sys
@@ -28,12 +29,15 @@ DECODE = SOFT + "decoder/decode"
 ANALYZE = SOFT + "waveform_analysis/analyze_waveforms"
 
 
-def run(cmd):
+def run(cmd, fatal=True):
     print("  $", " ".join(os.path.basename(c) if "/" in c else c for c in cmd))
     r = subprocess.run(cmd, capture_output=True, text=True)
     if r.returncode != 0:
         print(r.stdout[-2000:], r.stderr[-2000:])
-        raise SystemExit(f"failed: {cmd[0]}")
+        if fatal:
+            raise SystemExit(f"failed: {cmd[0]}")
+        print(f"  !! failed (non-fatal): {' '.join(cmd[:2])}")
+        return r
     # The decoder shouts about dropped FEU packets.  Capturing its output for
     # error handling must not silence that -- a RAW run can lose a quarter of
     # its sample-groups and still exit 0, and nothing downstream can tell that
@@ -76,9 +80,19 @@ def main():
             run([DECODE, ped_fdf, ped_root])
         for i in idxs:
             for feu in args.feus.split(","):
-                fdf = os.path.join(d, f"{stem}{i}_{feu}.fdf")
-                if not os.path.exists(fdf):
-                    print(f"  !! missing {os.path.basename(fdf)}, skipped")
+                # the datrun_ timestamp in the stem is the SUB-RUN start, which
+                # differs per sub-run -- resolve '*' stems by glob
+                cands = []
+                for dd in (d, os.path.join(d, "raw_daq_data")):
+                    pat = os.path.join(dd, f"{stem}{i}_{feu}.fdf")
+                    cands += glob.glob(pat) if "*" in pat else \
+                        ([pat] if os.path.exists(pat) else [])
+                if not cands:
+                    print(f"  !! missing {stem}{i}_{feu}.fdf, skipped")
+                    continue
+                fdf = cands[0]
+                if os.path.getsize(fdf) == 0:
+                    print(f"  !! empty {os.path.basename(fdf)}, skipped")
                     continue
                 pr = ped_root if feu == "03" else os.path.join(d, f"ped_{feu}.root")
                 if feu != "03" and not os.path.exists(pr):
@@ -92,7 +106,12 @@ def main():
         dec = os.path.join(d, f"dec_{sub}_{i}_{feu}.root")
         hit = os.path.join(d, f"hits_{sub}_{i}_{feu}.root")
         if not os.path.exists(dec):
-            run([DECODE, fdf, dec])
+            # per-file failures (truncated/empty fdf) must not kill the batch
+            r = run([DECODE, fdf, dec], fatal=False)
+            if r.returncode != 0:
+                if os.path.exists(dec):
+                    os.remove(dec)
+                return f"{sub}/{i}/FEU{feu} DECODE-FAILED"
         if not os.path.exists(hit):
             # RAW runs carry no zero suppression and had on-FEU pedestal AND
             # common-mode subtraction switched OFF, so the waveforms sit on the

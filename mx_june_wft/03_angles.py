@@ -55,13 +55,16 @@ def main():
     ap.add_argument('run_key')
     ap.add_argument('--table', default=None)
     ap.add_argument('--alignment', default=None)
+    ap.add_argument('--out', default=None,
+                    help='output dir (default: the standard wft/angles)')
     args = ap.parse_args()
 
     cfg = get_config(args.run_key)
     table = args.table or os.path.join(cfg.OUT_BASE, 'wft', 'events.parquet')
     align_path = args.alignment or os.path.join(cfg.OUT_BASE, 'wft', 'alignment',
                                                 'alignment.json')
-    out_dir = cfg.out_dir('wft', 'angles')
+    out_dir = args.out or cfg.out_dir('wft', 'angles')
+    os.makedirs(out_dir, exist_ok=True)
 
     params = cm.load_alignment(align_path)
     df = compat.load_table(table)

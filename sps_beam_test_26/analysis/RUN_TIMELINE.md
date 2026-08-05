@@ -288,8 +288,11 @@ own decodes, so the uRWELL side had to be re-decoded too.
 - **Sunday's ~14:00 rotation back to 25°** is confirmed, and it is what the
   14:00–16:06 alignment jump was.
 - run_61's 14:00 abort: an end-of-run power-off, not a trip.
-- run_60 thinning out after `overnight_14`: to be read against the beam
-  record — but the beam record stops before it (§`HV_AND_BEAM_RECORD.md`).
+- run_60 thinning out after `overnight_14`: **answered 2026-08-05** from the
+  backfilled spill record (`GAS_FLUSH_TIMELINE.md` §1): SPS FTARGET
+  extractions stop at ~04:50 and return only ~08:30 (at near-zero intensity
+  until ~09:30). `overnight_15`–`overnight_23` are beamless. The live record
+  had stopped before it; the NXCALS backfill covers it.
 
 - **The gas tracked P2's own line throughout** — the same mixture, run on our
   own line. Ar/CO₂/iso **95/3/2** from the Friday install to the Saturday
@@ -306,9 +309,12 @@ own decodes, so the uRWELL side had to be re-decoded too.
 1. **Where do 15.465° and 25.64° come from** — measured how, against what
    reference? The precision implies a measurement, not a setting, and the
    cos θ cross-check on the alignment only constrains the *difference*.
-2. **run_59 `detE_long`** was configured for 4×30 min sub-runs; only
+2. ~~**run_59 `detE_long`** was configured for 4×30 min sub-runs; only
    `detE_long_00` (41 GB) and `_01` (0.4 GB) exist, and `_01` is 100× smaller.
-   Beam loss, or was it stopped?
+   Beam loss, or was it stopped?~~ **Answered 2026-08-05** (TAX record,
+   `GAS_FLUSH_TIMELINE.md` §1): the gas-change access blocked H4 at
+   **20:24:07**, 22 min into `detE_long_00`. `_01` started into the access
+   with no beam. Not a DAQ fault.
 3. **The 764.8 V discharge spike** (2.8 %, 47k tracks, in the 15° condition) —
    anything seen at the time?
 4. **run_61 `meshscan_m00V` at 12:14** — was that sub-run's data usable at all?

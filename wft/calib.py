@@ -55,6 +55,10 @@ class CalibrationBundle:
     n_depth_bins: int = 18                  # K: 60 ns charge bins in the fit basis
     sat_adc: float = 3550.0
 
+    # --- sharing-kernel form: 'delay' (legacy) | 'lp' (RC-dispersed copy,
+    # the H4-beam-measured structure; tau_s becomes the RC constant) ---
+    share_mode: str = 'delay'
+
     # --- identity and provenance (recorded, and checked at reco time) ---
     detector: str = ''                      # e.g. 'mx17_3'
     run_key: str = ''                       # qa_config key the fit was done on
@@ -79,6 +83,7 @@ class CalibrationBundle:
                     dt_xy={str(k): float(v) for k, v in self.dt_xy.items()},
                     pitch_mm=self.pitch_mm, sample_ns=self.sample_ns,
                     n_depth_bins=self.n_depth_bins, sat_adc=self.sat_adc,
+                    share_mode=self.share_mode,
                     detector=self.detector, run_key=self.run_key,
                     conditions=self.conditions, provenance=prov)
         with open(os.path.join(path, 'bundle.json'), 'w') as f:
@@ -98,6 +103,7 @@ class CalibrationBundle:
                    sample_ns=m.get('sample_ns', 60.0),
                    n_depth_bins=m.get('n_depth_bins', 18),
                    sat_adc=m.get('sat_adc', 3550.0),
+                   share_mode=m.get('share_mode', 'delay'),
                    detector=m.get('detector', ''), run_key=m.get('run_key', ''),
                    conditions=m.get('conditions', {}),
                    provenance=m.get('provenance', {}))
@@ -161,7 +167,8 @@ class CalibrationBundle:
 
     def summary(self) -> str:
         h = self.hyper
-        return (f"{self.detector or '?'} / {self.run_key or '?'}: "
+        return (f"{self.detector or '?'} / {self.run_key or '?'} "
+                f"[{self.share_mode}]: "
                 f"v={self.v_drift:.2f} um/ns, c1={h['c1']:.3f}, c2={h['c2']:.3f}, "
                 f"kY={h.get('kY', 1.0):.3f}, tau_s={h['tau_s']:.0f} ns, "
                 f"sigma_s={h['sigma_s']:.0f} ns, sigma_p0={h['sigma_p0']:.3f} mm, "

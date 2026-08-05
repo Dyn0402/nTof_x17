@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import glob
 import os
 import sys
 
@@ -97,7 +98,13 @@ def main():
             # exactly the mapping csv -- so a FEU1 hits file needs no combining.
             uf = os.path.join(d, f"hits_{sub}_{i}_01.root")
             if not os.path.exists(uf):
-                uf = os.path.join(d, f"{stem}{i}_feu-combined_hits.root")
+                for dd in (d, os.path.join(d, "combined_hits_root")):
+                    pat = os.path.join(dd, f"{stem}{i}_feu-combined_hits.root")
+                    hitl = glob.glob(pat) if "*" in pat else \
+                        ([pat] if os.path.exists(pat) else [])
+                    if hitl:
+                        uf = hitl[0]
+                        break
             hf = os.path.join(d, f"hits_{sub}_{i}_03.root")
             if not os.path.exists(hf):
                 hf = os.path.join(d, f"hits_{i}_03.root")

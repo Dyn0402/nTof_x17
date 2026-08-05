@@ -220,6 +220,52 @@ def main():
         print(f"  {lab:>8} {len(per[lab]):7d} events")
     idx = np.sort(np.concatenate([v for v in per.values() if len(v)]))
 
+    # RAW runs sit on raw per-channel baselines with the common mode still in;
+    # correct them the way extract_det4_only.py --cm masked does (pedestal
+    # means + per-block per-sample median with the signal strips and the
+    # oscillating channels excluded).  This closes the RAW_RUN71_PHYSICS §3b
+    # open item: the uRWELL-referenced waveform selection now works on RAW.
+    raw = bool(D.get("raw"))
+    NCH, NSMP = 512, int(D["n_samples"])
+    CM_MASK_HALF = 10
+    CM_BAD_CH = (510, 372)
+    SIDX_ALL = np.round(POSITION_MM / PITCH_MM).astype(int)
+    ped_mean = np.zeros(NCH, np.float32)
+    if raw:
+        import os
+        pf = os.path.join(stage, "ped_03.root")
+        if not os.path.exists(pf):
+            for sub, _s, _t, _i in D["subruns"]:
+                cand = os.path.join(stage, sub, "ped_03.root")
+                if os.path.exists(cand):
+                    pf = cand
+                    break
+        Pp = uproot.open(pf)["hits"].arrays(library="np")
+        ped_mean[Pp["channel"].astype(int)] = Pp["mean"]
+        print(f"RAW baseline correction on: pedestal medians "
+              f"{np.median(ped_mean):.0f} ADC + signal-masked block CM")
+
+    def raw_correct(iev, c, sm, am):
+        """pedestal + masked-CM correct one RAW event's sparse samples."""
+        a = am - ped_mean[c]
+        cmok = ~np.isin(c, CM_BAD_CH)
+        for v in ("x", "y"):
+            lv = lead[v][iev]
+            if np.isfinite(lv):
+                s0 = int(round(lv / PITCH_MM))
+                sig = (VIEW[c] == v) & (np.abs(SIDX_ALL[c] - s0) <= CM_MASK_HALF)
+                cmok &= ~sig
+        cm = np.zeros_like(a)
+        blk = c.astype(int) // 64
+        for b in np.unique(blk):
+            ib = blk == b
+            for s in np.unique(sm[ib]):
+                iss = ib & (sm == s)
+                src = iss & cmok
+                if src.sum() >= 8:
+                    cm[iss] = np.median(a[src])
+        return a - cm
+
     recs = {k: [] for k in ("ev", "ch", "samp", "amp")}
     sub_arr, fg_arr, evid = P["subrun"], P["fgroup"], P["ev_id"]
     for sub, stem, _t0, idxs in D["subruns"]:
@@ -257,27 +303,21 @@ def main():
                     c = a["channel"][q]
                     if len(c) == 0:
                         continue
-                    recs["ev"].append(np.full(len(c), pos_of[s + q], np.int64))
+                    iev = pos_of[s + q]
+                    sm_ = a["sample"][q].astype(np.int16)
+                    am_ = a["amplitude"][q].astype(np.float32)
+                    if raw:
+                        am_ = raw_correct(iev, c.astype(int), sm_, am_)
+                    recs["ev"].append(np.full(len(c), iev, np.int64))
                     recs["ch"].append(c.astype(np.int16))
-                    recs["samp"].append(a["sample"][q].astype(np.int16))
-                    recs["amp"].append(a["amplitude"][q].astype(np.float32))
+                    recs["samp"].append(sm_)
+                    recs["amp"].append(am_)
 
     out = {k: np.concatenate(v) for k, v in recs.items()}
-    if D.get("raw"):
-        # RAW runs sit on raw per-channel baselines (median 619 ADC, spread
-        # 344-2947) with the common mode still present; a flat 256 subtraction
-        # is a ZS assumption and leaves the waveforms unusable for any shape
-        # measurement (measured: p50 lands at 243 ADC instead of 0).  Refuse
-        # rather than emit something that looks fine and is not.
-        raise SystemExit(
-            "\nREFUSING to write uncorrected RAW waveforms.\n"
-            "  This dataset has raw=True: the decoded waveforms carry raw\n"
-            "  per-channel pedestals and the common mode, and this script only\n"
-            "  knows the flat-256 ZS baseline.\n"
-            "  The alignment/efficiency printed above ARE valid -- they use the\n"
-            "  hits tree, which the analyzer already corrects.\n"
-            "  For waveforms use:  python extract_det4_only.py " + args.dataset)
-    out["amp"] = out["amp"] - ZS_BASELINE
+    if not raw:
+        out["amp"] = out["amp"] - ZS_BASELINE
+    # (RAW waveforms were pedestal- and masked-CM-corrected per event above;
+    # ZS waveforms sit on the flat on-FEU 256 baseline)
     out["ev_pX"], out["ev_pY"], out["ev_resid"] = pX, pY, resid
     out["ev_plateau"] = plateau
     out["ev_t_wall"] = P["ev_t_wall"]

@@ -340,7 +340,8 @@ def measure_dt_xy(events, bundle_path, hyper, v, sample=200):
 
 # ---------------------------------------------------------------------- main
 def calibrate(cfg, run_key, n_events=400, n_train=180, jobs=12, out=None,
-              seed_bundle=None, maxiter=130, v_fixed=None, fix_hyper=None):
+              seed_bundle=None, maxiter=130, v_fixed=None, fix_hyper=None,
+              share_mode='delay'):
     out = out or cfg.out_dir('wft', 'calib_bundle')
     work = cfg.out_dir('wft', 'calib_work')
     cache_path = os.path.join(work, 'calib_cache.pkl')
@@ -360,6 +361,7 @@ def calibrate(cfg, run_key, n_events=400, n_train=180, jobs=12, out=None,
         v_drift=float(HYPER_X0[7]) if seed is None else seed.v_drift,
         grid=grid, tmpl=tmpl,
         gain={'x': np.ones(512), 'y': np.ones(512)},
+        share_mode=share_mode,
         detector=cfg.DET_NAME, run_key=run_key,
         conditions=dict(run=cfg.RUN, sub_run=cfg.SUB_RUN))
     prov_path = os.path.join(work, 'provisional_bundle')
@@ -410,6 +412,10 @@ def main(argv=None):
     ap.add_argument('--fix-hyper', default=None,
                     help='pin hypers to externally measured values, e.g. '
                          '"c1=0.28,c2=0.11,tau_s=60" (H4 beam kernel)')
+    ap.add_argument('--share-mode', default='delay', choices=('delay', 'lp'),
+                    help='sharing-kernel form: delay = legacy delayed copy; '
+                         'lp = RC-dispersed copy (H4-measured structure, '
+                         'tau_s becomes the RC constant)')
     ap.add_argument('--out', default=None)
     args = ap.parse_args(argv)
     fix_hyper = None
@@ -427,7 +433,8 @@ def main(argv=None):
     cfg = get_config(args.run_key)
     calibrate(cfg, args.run_key, n_events=args.events, n_train=args.train,
               jobs=args.jobs, out=args.out, seed_bundle=args.seed_bundle,
-              maxiter=args.maxiter, v_fixed=args.fix_v, fix_hyper=fix_hyper)
+              maxiter=args.maxiter, v_fixed=args.fix_v, fix_hyper=fix_hyper,
+              share_mode=args.share_mode)
 
 
 if __name__ == '__main__':

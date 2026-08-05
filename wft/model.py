@@ -4,11 +4,26 @@ The forward model.
 For one plane of one event, the model says: charge ``q_k >= 0`` arrives in each
 60 ns slice ``k`` of drift at transverse position ``p0 + w * u_k``; each slice's
 charge is shared onto the strips by the geometric strip integral, then onto
-their neighbours by the resistive kernel (``c1`` at delay ``tau_s`` to +-1
-strip, ``c2`` at ``2 tau_s`` to +-2, scaled by ``kY`` on Y), and finally folded
-with the measured per-plane impulse response. Fitting ``(p0, w, t0)`` with the
-charge profile solved by NNLS at each step gives the track's position at the
-mesh and its transverse speed ``w``; the angle is ``tan(theta) = w / v_drift``.
+their neighbours by the resistive kernel (scaled by ``kY`` on Y), and finally
+folded with the measured per-plane impulse response. Fitting ``(p0, w, t0)``
+with the charge profile solved by NNLS at each step gives the track's position
+at the mesh and its transverse speed ``w``; the angle is
+``tan(theta) = w / v_drift``.
+
+The resistive kernel has two forms (``share_mode`` on the bundle):
+
+``delay``   the original parameterisation: a copy of the impulse response,
+            amplitude ``c1``, delayed by ``tau_s`` to the +-1 strips (``c2``
+            at ``2 tau_s`` to +-2), smeared by ``sigma_s``.
+``lp``      the H4-beam-measured structure (M70V_FLAT_ANALYSIS.md §3,
+            RAW_RUN71_REANALYSIS §4): the neighbour sees an RC-*dispersed*
+            copy — the impulse response convolved with a one-pole low-pass of
+            time constant ``tau_s``, cascaded once more for +-2. The copy
+            peaks essentially WITH the central strip (shifted only by the RC
+            rise, ~+30-60 ns for tau_s of a few hundred ns) and carries the
+            long tail the delayed-copy form cannot represent without an
+            unphysical ``sigma_p0``. ``c1``/``c2`` keep their meaning as the
+            copies' amplitude (area) fractions.
 
 Because the neighbours' delayed copies are *in the model*, they stop being
 contamination — which is exactly what a per-strip hit time cannot do.
@@ -46,15 +61,18 @@ K = 18
 TS = np.arange(NSAMP) * SNS
 UK = (np.arange(K) + 0.5) * DT
 HYPER: dict | None = None
+SHARE_MODE = 'delay'      # 'delay' | 'lp' — see module docstring
 
 _smear_cache: dict = {}
+_lp_cache: dict = {}
 _tt_cache: dict = {}
 T0_STEP = 5.0             # t0 quantisation for the cached time tensors
 
 
 def use_calibration(cal: CalibrationBundle) -> None:
     """Install a calibration bundle as the model's calibration."""
-    global CAL, TGRID, TMPL, GAIN, DT_XY, PITCH, SNS, SAT, DT, K, UK, HYPER
+    global CAL, TGRID, TMPL, GAIN, DT_XY, PITCH, SNS, SAT, DT, K, UK, HYPER, \
+        SHARE_MODE
     CAL = cal
     TGRID = np.asarray(cal.grid, float)
     TMPL = {p: np.asarray(cal.tmpl[p], float) for p in ('x', 'y')}
@@ -68,9 +86,21 @@ def use_calibration(cal: CalibrationBundle) -> None:
     UK = (np.arange(K) + 0.5) * DT
     HYPER = dict(cal.hyper)
     HYPER.setdefault('kY', 1.0)
+    SHARE_MODE = getattr(cal, 'share_mode', 'delay') or 'delay'
     _smear_cache.clear()
+    _lp_cache.clear()
     _tt_cache.clear()
     set_nsamp(NSAMP)
+
+
+def set_share_mode(mode: str) -> None:
+    """Override the sharing-kernel form ('delay' | 'lp')."""
+    global SHARE_MODE
+    if mode not in ('delay', 'lp'):
+        raise ValueError(f'share_mode must be delay|lp, got {mode!r}')
+    SHARE_MODE = mode
+    _lp_cache.clear()
+    _tt_cache.clear()
 
 
 def set_nsamp(ns: int) -> None:
@@ -106,18 +136,64 @@ def _templates(plane: str, sigma_s: float):
     return _smear_cache[key]
 
 
+def _lp_copies(plane: str, sigma_s: float, tau_s: float):
+    """(extended grid, once-, twice-RC-convolved smeared template) for the
+    ``lp`` share mode. The template grid stops at +1.4 us, but an RC tail with
+    tau of a few hundred ns is still alive there, so the template is
+    zero-padded to +6 us before convolving. Discrete one-pole with the grid
+    step preserves the area, so c1/c2 stay area fractions."""
+    key = (plane, round(float(sigma_s), 1), round(float(tau_s), 1))
+    hit = _lp_cache.get(key)
+    if hit is not None:
+        return hit
+    _, sm = _templates(plane, sigma_s)
+    step = float(TGRID[1] - TGRID[0])
+    n_pad = max(0, int(round((6000.0 - TGRID[-1]) / step)))
+    ge = np.concatenate([TGRID, TGRID[-1] + step * (1 + np.arange(n_pad))])
+    x = np.concatenate([sm, np.zeros(n_pad)])
+    a = np.exp(-step / max(float(tau_s), 1.0))
+    l1 = np.empty_like(x)
+    acc = 0.0
+    for i in range(len(x)):
+        acc = acc * a + x[i] * (1.0 - a)
+        l1[i] = acc
+    l2 = np.empty_like(x)
+    acc = 0.0
+    for i in range(len(x)):
+        acc = acc * a + l1[i] * (1.0 - a)
+        l2[i] = acc
+    if len(_lp_cache) > 256:
+        _lp_cache.clear()
+    _lp_cache[key] = (ge, l1, l2)
+    return ge, l1, l2
+
+
+def _copy_responses(plane: str, base: np.ndarray, hyper: dict):
+    """(H1, H2) neighbour-copy responses on the (NSAMP, K) time offsets in
+    ``base``, per the active SHARE_MODE."""
+    tau = hyper['tau_s']
+    if SHARE_MODE == 'lp':
+        ge, l1, l2 = _lp_copies(plane, hyper['sigma_s'], tau)
+        H1 = np.interp(base, ge, l1, left=0, right=0)
+        H2 = np.interp(base, ge, l2, left=0, right=0)
+    else:
+        _, sm = _templates(plane, hyper['sigma_s'])
+        H1 = np.interp(base - tau, TGRID, sm, left=0, right=0)
+        H2 = np.interp(base - 2 * tau, TGRID, sm, left=0, right=0)
+    return H1, H2
+
+
 def _time_tensors(plane: str, t0q: float, hyper: dict):
     """(K, NSAMP) impulse responses of each depth bin, cached on a 5 ns t0 grid."""
-    key = (plane, t0q, hyper['tau_s'], round(hyper['sigma_s'], 1), NSAMP, K)
+    key = (plane, t0q, hyper['tau_s'], round(hyper['sigma_s'], 1), NSAMP, K,
+           SHARE_MODE)
     hit = _tt_cache.get(key)
     if hit is not None:
         return hit
-    tmpl, sm = _templates(plane, hyper['sigma_s'])
-    tau = hyper['tau_s']
+    tmpl, _sm = _templates(plane, hyper['sigma_s'])
     base = TS[:, None] - (t0q + UK[None, :])          # (NSAMP, K)
     H0 = np.interp(base, TGRID, tmpl, left=0, right=0)
-    H1 = np.interp(base - tau, TGRID, sm, left=0, right=0)
-    H2 = np.interp(base - 2 * tau, TGRID, sm, left=0, right=0)
+    H1, H2 = _copy_responses(plane, base, hyper)
     if len(_tt_cache) > 4096:
         _tt_cache.clear()
     _tt_cache[key] = (H0, H1, H2)
@@ -145,12 +221,10 @@ def build_matrix(plane, pos, p0, w, t0, hyper):
     charge in depth bin k, sharing and impulse response included."""
     t0q = round(t0 / T0_STEP) * T0_STEP
     if abs(t0 - t0q) > 1e-9:
-        tmpl, sm = _templates(plane, hyper['sigma_s'])
-        tau = hyper['tau_s']
+        tmpl, _sm = _templates(plane, hyper['sigma_s'])
         base = TS[:, None] - (t0 + UK[None, :])
         H0 = np.interp(base, TGRID, tmpl, left=0, right=0)
-        H1 = np.interp(base - tau, TGRID, sm, left=0, right=0)
-        H2 = np.interp(base - 2 * tau, TGRID, sm, left=0, right=0)
+        H1, H2 = _copy_responses(plane, base, hyper)
     else:
         H0, H1, H2 = _time_tensors(plane, t0q, hyper)
     kY = hyper.get('kY', 1.0) if plane == 'y' else 1.0

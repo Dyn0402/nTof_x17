@@ -161,5 +161,6 @@ staging/run_71/  fdf (FEU1+FEU3) · dec_/hits_ (patched decoder, both FEUs)
 run_63/operating_03/  group 004 + pedestals (ZS decoder-regression pair)
 ```
 
-`pair_dataset.py` runs and pairs once `mapping_urwell.csv` is reconstructed
-(§2.3). Everything else in the read-order list of `README.md` stands.
+`pair_dataset.py` runs and pairs — `mapping_urwell.csv` was recovered the
+same evening (§2.3), and the paired chain results are in §2.3's table.
+Everything else in the read-order list of `README.md` stands.

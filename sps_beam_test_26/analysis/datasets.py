@@ -172,6 +172,129 @@ DATASETS = {
     ),
 }
 
+# ------------------------------------------------------------------ run 60
+# The gas-transition overnight: Ar/CO2/iso -> Ar/CF4/iso switched during the
+# 20:24-21:10 access (TAX-dated, GAS_FLUSH_TIMELINE.md), run started 21:20.
+# At ~2 ln/h into ~4.6 L the mixture exchanges with tau ~ 2.3-4.6 h, so the
+# 24 x 30 min sub-runs ARE the flush transient. SPS FTARGET stopped ~04:50
+# (spill record), so overnight_15..23 are beamless.  HV fixed: drift 700.5 V,
+# resist 649.75 V.  ZS 5 sigma (21H12 prg header), 64 x 60 ns.
+_R60_T0 = {  # sub-run -> start (s since 2026-08-01 midnight), from dream_daq.log
+    i: hms(0, 21, 20, 5) + i * (30 * 60 + 15) for i in range(24)
+}
+DATASETS["run60_flush"] = dict(
+    stage=STAGE_ROOT + "run_60/",
+    base_date="2026-08-01",
+    mount="25.64 deg", gas="Ar/CO2->CF4 TRANSITION (see GAS_FLUSH_TIMELINE)",
+    n_samples=64, sample_ns=60, zs_sigma=5.0, peaking_ns=180,
+    ped="EicP2Bt_pedestals_pedthr_260801_21H12_000_03.fdf",
+    subruns=[(f"overnight_{i:02d}",
+              f"EicP2Bt_overnight_{i:02d}_datrun_*_",   # datrun stamp = SUB-RUN
+              _R60_T0[i],                               # start; decoder globs
+              [f"{j:03d}" for j in range(8)])
+             for i in range(15)],                    # 15..23 beamless, skip
+    plateaus=[(f"ov{i:02d}", _R60_T0[i], _R60_T0[i] + 30 * 60, 700.5, 649.75)
+              for i in range(15)],
+    z_det4=1120.0,
+    note="THE FLUSH TRANSIENT: 0.6-8.1 h after the gas switch, fixed HV, "
+         "fixed mount 25.64 deg. Do not use as either mixture; use to "
+         "measure tau_flush.",
+)
+
+# ------------------------------------------------------------------ run 59
+# The last CO2-mixture dataset: 64 samples, started 20:00:54, beam KILLED at
+# 20:24:07 by the gas-change access (TAX record) -- so ~22 min of beam in
+# detE_long_00 and nothing usable after.  The CO2-side anchor for the flush
+# fit, 40 min before the switch, same 25.64 deg mount as run_60.
+# ZS nominally 3 sigma from 18:12 (ZS_TIMELINE); the prg copy in the run dir
+# is the stale 16H21 5-sigma set -- verify from the data.
+DATASETS["run59_co2"] = dict(
+    stage=STAGE_ROOT + "run_59/",
+    base_date="2026-08-01",
+    mount="25.64 deg", gas="Ar/CO2/iso 95/3/2",
+    # the 18:12 threshold reload reused the 16H21 pedestal data (the
+    # pedestals_08-01-26_18-12-15 dir on EOS contains the 16H21 fdf)
+    n_samples=64, sample_ns=60, zs_sigma=3.0, peaking_ns=180,
+    ped="EicP2Bt_pedestals_pedthr_260801_16H21_000_03.fdf",
+    subruns=[("detE_long_00", "EicP2Bt_detE_long_00_datrun_260801_20H02_",
+              hms(0, 20, 2, 0), [f"{j:03d}" for j in range(20)])],
+    plateaus=[("co2", hms(0, 20, 2, 0), hms(0, 20, 24, 7), 700.5, 649.75)],
+    z_det4=1120.0,
+    note="beam dies 20:24:07; HV assumed same as run_60's (verify from "
+         "hv_monitor.csv before quoting)",
+)
+
+# ------------------------------------------------------------------ run 61
+# The unanalyzed tail of run_61: meshscan_m70V..m100V (17:34-18:57) are NOT
+# scan points -- the resist scan ended 17:14 and the HV then sat at the
+# OPERATING POINT (drift 700.2 V, resist 769.8 V, hv_monitor ptp < 0.2 V
+# after m70V's opening ramp) for ~80 min at 25.64 deg in CF4.  This is the
+# high-statistics inclined operating dataset: the 4th (highest-field) plateau
+# for the wft ladder fit and the X-tilt closure.  m100V loses beam 18:53:21
+# (SPS linac; M100V_PARTIAL.md -- normalise by ~67 %).
+DATASETS["run61_op25"] = dict(
+    stage=STAGE_ROOT + "run_61/",
+    base_date="2026-08-02",
+    mount="25.64 deg", gas="Ar/CF4/iso 88/10/2",
+    n_samples=32, sample_ns=60, zs_sigma=4.0, peaking_ns=180,
+    ped="EicP2Bt_pedestals_pedthr_260802_15H04_000_03.fdf",
+    subruns=[
+        ("meshscan_m70V", "EicP2Bt_meshscan_m70V_datrun_260802_17H34_",
+         hms(0, 17, 34, 16), [f"{j:03d}" for j in range(8)]),
+        ("meshscan_m80V", "EicP2Bt_meshscan_m80V_datrun_260802_17H55_",
+         hms(0, 17, 55, 48), [f"{j:03d}" for j in range(8)]),
+        ("meshscan_m90V", "EicP2Bt_meshscan_m90V_datrun_260802_18H17_",
+         hms(0, 18, 17, 13), [f"{j:03d}" for j in range(8)]),
+        ("meshscan_m100V", "EicP2Bt_meshscan_m100V_datrun_260802_18H38_",
+         hms(0, 18, 38, 48), [f"{j:03d}" for j in range(8)]),
+    ],
+    plateaus=[
+        # one condition; m70V's first ~2 min are the resist ramp 580->770
+        ("op25", hms(0, 17, 36, 30), hms(0, 18, 53, 21), 700.2, 769.8),
+    ],
+    z_det4=1120.0,
+    note="25.64 deg AT the operating point (same HV as run63_flat/run71) -- "
+         "the inclined high-stat block. Beam dies 18:53:21.",
+)
+
+# ------------------------------------------------------------------ run 55
+# The FLAT CO2 drift scan (pre-rotation, Sat 14:25-14:55): drift 700/600/500/
+# 400 V at resist 549.8 V, 600 s/point, killed at the 5th point by the
+# end-of-run power-off.  FLAT_CF4_RUN63.md said "no drift lever in the flat
+# data" -- true of the CF4 era only; THIS is the flat drift lever, in the
+# CO2 mixture.  Plateau windows from the hv_monitor drift trace (the 12-min
+# sub-run boundaries do not line up with the 10-min points).
+DATASETS["run55_flatdrift"] = dict(
+    stage=STAGE_ROOT + "run_55/",
+    base_date="2026-08-01",
+    mount="flat", gas="Ar/CO2/iso 95/3/2",
+    n_samples=64, sample_ns=60, zs_sigma=5.0, peaking_ns=180,
+    ped="EicP2Bt_pedestals_pedthr_260801_12H19_000_03.fdf",
+    subruns=[
+        ("meshscan_m00V", "EicP2Bt_meshscan_m00V_datrun_*_",
+         hms(0, 14, 15, 23), [f"{j:03d}" for j in range(8)]),
+        ("meshscan_m10V", "EicP2Bt_meshscan_m10V_datrun_*_",
+         hms(0, 14, 27, 49), [f"{j:03d}" for j in range(8)]),
+        ("meshscan_m20V", "EicP2Bt_meshscan_m20V_datrun_*_",
+         hms(0, 14, 40, 15), [f"{j:03d}" for j in range(8)]),
+        ("meshscan_m30V", "EicP2Bt_meshscan_m30V_datrun_*_",
+         hms(0, 14, 52, 42), [f"{j:03d}" for j in range(8)]),
+    ],
+    plateaus=[
+        # from detE_scan.log cadence: 600 s/point from 14:25; windows cut
+        # conservatively inside each dwell
+        ("d700", hms(0, 14, 15, 30), hms(0, 14, 26, 30), 700.2, 549.8),
+        ("d600", hms(0, 14, 28, 0), hms(0, 14, 36, 30), 600.2, 549.8),
+        ("d500", hms(0, 14, 37, 0), hms(0, 14, 46, 30), 500.2, 549.8),
+        ("d400", hms(0, 14, 47, 0), hms(0, 14, 55, 6), 400.2, 549.8),
+    ],
+    z_det4=1120.0,
+    note="flat CO2 drift ladder -- prompt-diffusion alpha(E), v(E) in the "
+         "CO2 mixture, and the ZS-era kernel-vs-field cross-check. Plateau "
+         "windows are approximate (verify against hv_monitor before "
+         "quoting); the 400 V point is short.",
+)
+
 #: plateaus of run_63 that live in sub-runs we did NOT stage (operating_00/02)
 UNSTAGED_NOTE = (
     "run_63 drift points 675/575/475/625/525 sit in operating_00 and the "
