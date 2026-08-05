@@ -1,7 +1,15 @@
 # Squeezing the rest of the SPS test — 2026-08-05 extraction pass
 
-**Status: in progress — numbers land as the pipelines finish; sections marked
-(pending) fill in below.**
+**Status: COMPLETE** (evening). Headlines: share_lp is in the fleet model
+and the lp calibration with σ_p0 free is the **new canonical det4 bundle
+(σ_θ 2.53°/2.22°)**; the gas flush is **measured** (lag 1.72 h,
+τ 3.49 h at ~2 ln/h); the X-view sharing asymmetry is proven
+**detector-internal, not the mount tilt**; runs 55/59/60/61(op)/63 are
+decoded, paired and in the record; v(E) ladders exist for both mixtures.
+Remaining (documented per section): the shared-σ_p0 joint ladder fit, the
+robust-library treatment of the referenced RAW selection, run_55's exact
+plateau windows, run_61 m20V/m30V at hit level, the ~100 GB Saturday CO₂
+ladder (fresh kinit + disk), and the det3/fleet lp recalibration.
 
 The 2026-08-05 sweep through everything the campaign had not yet extracted:
 the `share_lp` port into the fleet reconstruction, the gas-flush transient
@@ -160,6 +168,30 @@ NOT transplant — ZS centroids are condition-dependent) are the current
 floor. **The σ_p0/Dp separation needs the joint fit with σ_p0 shared
 across plateaus** — the machinery is committed; that global fit is the
 identified next step, now cheap.
+
+Final per-plateau forward-fit numbers (v bounded to span ± 35 %):
+
+| field [V/cm] | 235 | 217 | 200 | 182 | 165 | 148 | 113 |
+|---|---|---|---|---|---|---|---|
+| v (forward) | 15.5 | 15.2 | 16.5 | 14.2 | 11.7 | 14.9 | 10.7 |
+| σ_p0 [mm] | 0.30 | 0.18 | 0.08 | 0.11 | 0.24 | 0.04 | 0.05 |
+| Dp | 0.022 | 0.013 | 0.033 | 0.133 | 0.076 | 0.018 | 0.063 |
+
+v agrees with the span route to ~±1.5 µm/ns (and corrects the truncated
+low-field points downward, as it should); σ_p0/Dp scatter confirms the
+within-plateau degeneracy. chi2/dof 120–220 → the noise model + rot25
+alignment are the floor, not statistics.
+
+## 4b. The RAW uRWELL-referenced waveform path (RAW_RUN71_PHYSICS §3b) —
+unblocked
+
+`flat_align_eff.py run71_raw` now applies the per-channel pedestal means +
+signal-masked block CM (the extract_det4_only 'masked' treatment) instead
+of refusing: `wf_run71_raw.npz`, 1,943 uRWELL-referenced events. The path
+runs end to end; the *quantitative* det4-only vs referenced kernel
+comparison still needs the robust-library aggregation on this selection
+(the m70V-style estimator is too noisy at ~600 events/plateau — its
+first-look numbers are not quotable). Small follow-up.
 
 ## 5. New datasets brought into the record
 
