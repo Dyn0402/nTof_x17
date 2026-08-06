@@ -20,6 +20,7 @@ If tests 1-4 pass but test 5 hangs, your gas table E-field range probably doesn'
 cover the amplification field — see the note in test 3.
 """
 
+import ctypes
 import sys
 import time
 
@@ -108,14 +109,14 @@ try:
     # ElectronTownsend returns alpha in cm^-1 via output argument (PyROOT style)
     # We check it's non-zero at a high field (should clearly be in gain regime)
     E_test = 50000.   # 50 kV/cm — well into avalanche territory for Ar/CO2
-    alpha = ROOT.Double(0.)
-    eta   = ROOT.Double(0.)
+    alpha = ctypes.c_double(0.)
+    eta   = ctypes.c_double(0.)
     gas.ElectronTownsend(E_test, 0., 0., 0., 0., alpha)
     gas.ElectronAttachment(E_test, 0., 0., 0., 0., eta)
     print(f"      At E = {E_test/1e3:.0f} kV/cm:")
-    print(f"        Townsend α = {float(alpha):.1f} cm⁻¹")
-    print(f"        Attachment η = {float(eta):.4f} cm⁻¹")
-    if float(alpha) > 0:
+    print(f"        Townsend α = {alpha.value:.1f} cm⁻¹")
+    print(f"        Attachment η = {eta.value:.4f} cm⁻¹")
+    if alpha.value > 0:
         print(f"{PASS} Non-zero Townsend coefficient — gas table looks good")
     else:
         print(f"{FAIL} Townsend coefficient is zero — something went wrong with Magboltz")
@@ -169,12 +170,15 @@ try:
     print(f"{PASS} Sensor created and configured")
 
     # Quick sanity check: ask the sensor for the field at the midpoint
-    ex = ROOT.Double(0.); ey = ROOT.Double(0.); ez = ROOT.Double(0.)
+    ex = ctypes.c_double(0.); ey = ctypes.c_double(0.); ez = ctypes.c_double(0.)
     mid = GAP / 2.
-    status = ROOT.Long(0)
-    sensor.ElectricField(0., 0., mid, ex, ey, ez, status)
-    print(f"      Field at gap midpoint: Ez = {float(ez):.0f} V/cm (status={int(status)})")
-    if abs(float(ez) - E_AMP) < 1.0:
+    status = ctypes.c_int(0)
+    # Sensor::ElectricField also takes a Medium*& out-argument; PyROOT needs a
+    # real null pointer object for it, not None.
+    medium = ROOT.MakeNullPointer(ROOT.Garfield.Medium)
+    sensor.ElectricField(0., 0., mid, ex, ey, ez, medium, status)
+    print(f"      Field at gap midpoint: Ez = {ez.value:.0f} V/cm (status={status.value})")
+    if abs(ez.value - E_AMP) < 1.0:
         print(f"{PASS} Field value correct")
     else:
         print(f"{FAIL} Field value unexpected — check ComponentConstant setup")
@@ -207,12 +211,12 @@ try:
     elapsed = time.time() - t0_wall
 
     # GetAvalancheSize: ne = electrons, ni = ions at end
-    ne = ROOT.Long(0)
-    ni = ROOT.Long(0)
+    ne = ctypes.c_int(0)
+    ni = ctypes.c_int(0)
     aval.GetAvalancheSize(ne, ni)
 
-    ne_val = int(ne)
-    ni_val = int(ni)
+    ne_val = ne.value
+    ni_val = ni.value
 
     print(f"      Avalanche size: {ne_val} electrons, {ni_val} ions")
     print(f"      Wall time: {elapsed:.1f} s")
@@ -228,13 +232,13 @@ try:
     # Also check electron endpoint — should be near z=0 (anode)
     npts = aval.GetNumberOfElectronEndpoints()
     if npts > 0:
-        xe = ROOT.Double(0.); ye = ROOT.Double(0.); ze = ROOT.Double(0.)
-        te = ROOT.Double(0.); ee = ROOT.Double(0.)
-        xs = ROOT.Double(0.); ys = ROOT.Double(0.); zs = ROOT.Double(0.)
-        ts = ROOT.Double(0.); es = ROOT.Double(0.)
-        stat = ROOT.Long(0)
+        xe = ctypes.c_double(0.); ye = ctypes.c_double(0.); ze = ctypes.c_double(0.)
+        te = ctypes.c_double(0.); ee = ctypes.c_double(0.)
+        xs = ctypes.c_double(0.); ys = ctypes.c_double(0.); zs = ctypes.c_double(0.)
+        ts = ctypes.c_double(0.); es = ctypes.c_double(0.)
+        stat = ctypes.c_int(0)
         aval.GetElectronEndpoint(0, xs, ys, zs, ts, es, xe, ye, ze, te, ee, stat)
-        print(f"      First endpoint: z_end = {float(ze)*1e4:.1f} µm (should be ~0)")
+        print(f"      First endpoint: z_end = {ze.value*1e4:.1f} µm (should be ~0)")
 
 except Exception as e:
     print(f"{FAIL} AvalancheMicroscopic failed: {e}")
