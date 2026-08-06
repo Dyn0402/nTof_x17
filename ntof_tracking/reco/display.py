@@ -112,7 +112,7 @@ KIND_COLOR = {'mm': '#4a90d9', 'sipm': '#f0c040',
               'plastic': '#e07820', 'ls': '#d9534f'}
 
 
-def _draw_arm_2d(ax, arm, axes_idx, mode: str):
+def _draw_arm_2d(ax, arm, axes_idx, mode: str, highlight=(), dim=1.0):
     """Draw one arm's ACTIVE volumes projected on (axes_idx) screen axes.
 
     mode: 'topdown' — u x w footprint (resolves SiPM/plastic bars);
@@ -121,10 +121,16 @@ def _draw_arm_2d(ax, arm, axes_idx, mode: str):
                       transparent: locates a measured segment drawn in a
                       panel whose projection collapses this arm's drift
                       direction (out-of-plane arm in a side view).
+
+    `highlight` is a collection of element names (as in arm_active_volumes,
+    e.g. 'SiPM bar 13', 'plastic R') to draw opaque with a heavy edge — for an
+    event display, the elements that actually fired. `dim` scales the alpha of
+    everything else, so one arm can be shown against ghosted neighbours.
     """
     for el in geo.arm_active_volumes(arm):
         if mode == 'face' and el['kind'] != 'mm':
             continue
+        hot = el['name'] in highlight
         ff = geo.arm_front_face(arm, el['on'])
         w, u = geo.W_HAT[arm], geo.U_HAT[arm]
         if mode == 'topdown':
@@ -148,8 +154,10 @@ def _draw_arm_2d(ax, arm, axes_idx, mode: str):
         else:
             ax.add_patch(Rectangle((min(x0, x1), min(y0, y1)),
                                    abs(x1 - x0), abs(y1 - y0),
-                                   facecolor=KIND_COLOR[el['kind']], alpha=.6,
-                                   edgecolor='k', lw=.3, zorder=2))
+                                   facecolor=KIND_COLOR[el['kind']],
+                                   alpha=(.95 if hot else .6 * dim),
+                                   edgecolor=('k' if hot else 'k'),
+                                   lw=(1.6 if hot else .3), zorder=3 if hot else 2))
 
 
 def _draw_target(ax, axes_idx):
