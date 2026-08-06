@@ -62,10 +62,28 @@ GAS_PENNING = {
     "Ar_iC4H10_85_15":      {"mode": "auto"},
     "Ar_iC4H10_80_20":      {"mode": "auto"},
     "Ar_iC4H10_75_25":      {"mode": "auto"},
-    "Ar_CO2_70_30":          {"mode": "auto"},   # no Penning: Ar metastables < CO2 IP
+    # auto is NOT "no Penning" here: Garfield++ has a built-in Ar/CO2 curve
+    # and applies rP = 0.547 at 30% CO2 (probed 2026-07-31).
+    "Ar_CO2_70_30":          {"mode": "auto"},
+    # Ar/CO2/iC4H10 93/5/2 — Garfield has no built-in Penning table for this
+    # ternary (auto → rP = 0), so rP is set by hand and bracketed 0.30–0.50.
+    "Ar_CO2_iC4H10_93_5_2_rP030": {"mode": "manual", "rP": 0.30, "gas": "ar"},
+    "Ar_CO2_iC4H10_93_5_2_rP040": {"mode": "manual", "rP": 0.40, "gas": "ar"},
+    "Ar_CO2_iC4H10_93_5_2_rP050": {"mode": "manual", "rP": 0.50, "gas": "ar"},
     "Ne_iC4H10_95_5_rP040": {"mode": "manual", "rP": 0.40, "gas": "ne"},
     "Ne_iC4H10_95_5_rP050": {"mode": "manual", "rP": 0.50, "gas": "ne"},
     "Ne_iC4H10_95_5_rP060": {"mode": "manual", "rP": 0.60, "gas": "ne"},
+    "Ne_CF4_C2H6_80_10_10_rP040": {"mode": "manual", "rP": 0.40, "gas": "ne"},
+    "Ne_CF4_C2H6_80_10_10_rP050": {"mode": "manual", "rP": 0.50, "gas": "ne"},
+    "Ne_CF4_C2H6_80_10_10_rP060": {"mode": "manual", "rP": 0.60, "gas": "ne"},
+    # ── 50 µm uRWELL branch ──────────────────────────────────────────────────
+    # Same gases, same Penning settings, different amplification gap — so they
+    # MUST carry different gas_labels or the collector would merge a 50 µm scan
+    # into the 150 µm results. Gap is read from the fragments; see above.
+    "Ar_CO2_70_30_uRW50":               {"mode": "auto"},
+    "Ne_CF4_C2H6_80_10_10_uRW50_rP040": {"mode": "manual", "rP": 0.40, "gas": "ne"},
+    "Ne_CF4_C2H6_80_10_10_uRW50_rP050": {"mode": "manual", "rP": 0.50, "gas": "ne"},
+    "Ne_CF4_C2H6_80_10_10_uRW50_rP060": {"mode": "manual", "rP": 0.60, "gas": "ne"},
 }
 
 
@@ -139,12 +157,28 @@ def collect(jobs_dir, results_dir, gas_filter, pressure_filter,
         pressure_torr = PRESSURES.get(pressure_label, 0.)
         penning       = GAS_PENNING.get(gas_label, {"mode": "unknown"})
 
+        # Gap comes from the fragments, NOT from the module constant. The worker
+        # is given --gap-cm per run configuration, so a 50 µm uRWELL scan and a
+        # 150 µm Micromegas scan both land here; using GAP_CM would silently
+        # label the uRWELL results 150 µm and record a field 3x too low.
+        gaps = {round(f.get("gap_cm", GAP_CM), 6)
+                for frags in volt_dict.values() for f in frags}
+        if len(gaps) > 1:
+            raise SystemExit(
+                f"[collect] {gas_label} x {pressure_label}: fragments disagree "
+                f"on the amplification gap: {sorted(gaps)} cm. These are "
+                f"different detectors and must not be merged — separate them by "
+                f"gas_label and rerun.")
+        gap_cm = gaps.pop() if gaps else GAP_CM
+        if abs(gap_cm - GAP_CM) > 1e-9:
+            print(f"  [gap] {gap_cm*1e4:.0f} µm (not the {GAP_CM*1e4:.0f} µm default)")
+
         volt_data  = []
         max_events = 0
 
         for voltage in sorted(volt_dict.keys()):
             fragments = volt_dict[voltage]
-            e_field   = voltage / GAP_CM
+            e_field   = voltage / gap_cm
 
             # Merge all fragment gain_raw + n_attached for this voltage
             new_gains    = []
@@ -191,7 +225,7 @@ def collect(jobs_dir, results_dir, gas_filter, pressure_filter,
 
         result = build_result_dict(
             gas_label, pressure_label, pressure_torr,
-            GAP_CM, TEMP_K, penning,
+            gap_cm, TEMP_K, penning,
             max_events, volt_data,
         )
 

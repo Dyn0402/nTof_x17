@@ -145,9 +145,38 @@ GAS_MIXTURES = [
     {
         "label":      "Ar_CO2_70_30",
         "components": [("ar", 70.0), ("co2", 30.0)],
-        # No Penning transfer: Ar metastables (11.55 eV) < CO2 IP (13.78 eV).
-        # Energetics forbid ionisation of CO2 by Ar*, so rP = 0.
+        # NOTE (2026-07-31): the old comment here claimed rP = 0 on energetics
+        # (Ar* 11.55 eV < CO2 IP 13.78 eV). That is NOT what Garfield++ does —
+        # auto mode finds a built-in Ar/CO2 parameterisation and sets
+        # rP = 0.547 at 30% CO2 (concentration dependent, see the ternary note
+        # below). The results in results/Ar_CO2_70_30_*.json therefore include
+        # a substantial Penning contribution.
         "penning":    {"mode": "auto"},
+    },
+
+    # ── Ar/CO2/iC4H10 93/5/2 — the n_TOF operating mixture ───────────────────
+    # Penning MUST be set manually. Probed on lxplus (LCG_108 Garfield++,
+    # 2026-07-31): EnablePenningTransfer() returns *False* for this ternary —
+    # "Penning transfer probability for Ar/CO2/iC4H10 is not implemented" —
+    # i.e. auto mode would silently simulate with rP = 0 while the Ar/iC4H10
+    # 95/5 reference runs at rP = 0.40. That would bias the whole comparison.
+    #
+    # Built-in binary values from the same probe (720.8 Torr, 293 K):
+    #   Ar/CO2     1%: 0.171   3%: 0.266   5%: 0.330   7%: 0.376   10%: 0.424
+    #              15%: 0.476  20%: 0.509  30%: 0.547   (concentration dependent)
+    #   Ar/iC4H10  flat 0.400 at every fraction (Garfield only has the 10%
+    #              measurement of Sahin et al. and applies it everywhere)
+    #
+    # Both quenchers accept the Ar metastable, and rP rises with total quencher
+    # content (more collisions before the metastable is otherwise lost). At 7%
+    # total quencher the CO2 curve gives 0.376, and iC4H10 transfers at least as
+    # efficiently per collision, so the effective ternary value sits just around
+    # 0.40. Central estimate rP = 0.40; bracket 0.30–0.50 (labels ..._rP030 /
+    # _rP040 / _rP050) to propagate the Penning uncertainty into the HV map.
+    {
+        "label":      "Ar_CO2_iC4H10_93_5_2",
+        "components": [("ar", 93.0), ("co2", 5.0), ("ic4h10", 2.0)],
+        "penning":    {"mode": "manual", "rP": 0.40, "gas": "ar"},
     },
 
     # ── New gases ────────────────────────────────────────────────────────────────
@@ -181,6 +210,33 @@ GAS_MIXTURES = [
         # measured gain curves.
         "penning":    {"mode": "manual", "rP": 0.40, "gas": "ne"},
     },
+    # ── Ne/CF4/C2H6 80/10/10 ────────────────────────────────────────────────
+    # Penning MUST be set manually, and here it is the dominant systematic of
+    # the whole comparison. Probed on lxplus (LCG_108 Garfield++, 2026-08-01):
+    # EnablePenningTransfer() returns *False* for this ternary AND for every
+    # Ne binary that composes it —
+    #   "Penning transfer probability for Ne/CF4 is not implemented"
+    #   "Penning transfer probability for Ne/C2H6 is not implemented"
+    # Garfield++ has no Ne parameterisation at all, so auto mode would simulate
+    # this mixture at rP = 0 while the Ar/CO2 70/30 reference it is being
+    # compared against runs on a built-in curve at rP = 0.547. That asymmetry
+    # would put the entire HV map off by tens of volts.
+    #
+    # Energetics: Ne metastables 16.619 eV (3P2) / 16.715 eV (3P0).
+    #   C2H6  IP 11.52 eV — far below Ne*, strongly exothermic, and at 10% it is
+    #                       the channel that matters.
+    #   CF4   IP ~15.9-16.2 eV — marginal, dissociative, inefficient.
+    # So the transfer is essentially Ne* -> C2H6 and should be efficient.
+    # rP = 0.50 central, bracketed 0.40-0.60 (labels ..._rP040 / _rP050 /
+    # _rP060), matching the convention already used for Ne_iC4H10_95_5. The
+    # bracket is an assumption, not a measurement: read the band on the HV map
+    # as the real uncertainty until this is validated against gain data.
+    {
+        "label":      "Ne_CF4_C2H6_80_10_10",
+        "components": [("ne", 80.0), ("cf4", 10.0), ("c2h6", 10.0)],
+        "penning":    {"mode": "manual", "rP": 0.50, "gas": "ne"},
+    },
+
     {
         "label":      "Ar_CF4_CO2_45_40_15",
         "components": [("ar", 45.0), ("cf4", 40.0), ("co2", 15.0)],
