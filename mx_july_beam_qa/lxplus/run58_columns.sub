@@ -1,0 +1,39 @@
+# Condor submit: drift-column statistics for the run_58 2-D drift x resist scan.
+#
+# One job per sub-run. Each copies ~130 MB of combined_hits to node scratch and
+# returns a ~100 kB parquet. 75 sub-runs -> ~10 GB read on the farm, ~8 MB back.
+#
+#   ssh -K lxplus                     # -K is mandatory (AFS token + condor auth)
+#   cd ~/x17run58
+#   myschedd bump                     # prints the chosen schedd
+#   condor_submit run58_columns.sub
+#   condor_q <id> -name <schedd>      # re-pass -name each fresh session
+#   condor_tail <id> -name <schedd>
+#
+# Then pull the parquets down and aggregate locally:
+#   rsync -av -e 'ssh -o ControlPath=none' lxplus:x17run58/out/ ./mx_july_beam_qa/cache/run58_columns/
+#   .venv/bin/python mx_july_beam_qa/run58_column_scan.py
+#
+# The sub-run list is generated on lxplus (EOS is POSIX-mounted there):
+#   ls /eos/experiment/ntof/data/x17/july_beam/runs/run_58 | grep '^sngPS' > subruns.txt
+
+universe                = vanilla
+executable              = run58_columns_wrapper.sh
+arguments               = $(subrun)
+transfer_input_files    = run58_columns.py,run58_stripmap.npz
+should_transfer_files   = YES
+when_to_transfer_output = ON_EXIT
+transfer_output_files   = out
+output                  = logs/col_$(ClusterId)_$(ProcId).out
+error                   = logs/col_$(ClusterId)_$(ProcId).err
+log                     = logs/col_$(ClusterId).log
+
+# NOTE: condor parses the whole RHS of a +Attribute as an expression, so an
+# inline comment there is a parse error. Keep comments on their own lines.
+# Measured on lxplus: 21 s wall, 632 MB peak RSS, 242 kB output per sub-run.
+request_cpus            = 1
+request_memory          = 2 GB
+request_disk            = 2 GB
++JobFlavour             = "espresso"
+
+queue subrun from subruns.txt

@@ -82,3 +82,82 @@ Not built yet — this is the next step.
 
 - `readpass_wrapper.sh` — the condor executable (xrdcp + 6 scripts + adc_to_mv gen).
 - `readpass.sub` — submit description; `condor_submit readpass.sub run=NNN`.
+
+---
+
+# run_58 drift-column scan (2026-07-30)
+
+`run58_columns.py` + `run58_columns_wrapper.sh` + `run58_columns.sub`, staged the
+same way as the read pass above. **One job per sub-run**, 76 of them: each xrdcp's
+that sub-run's ~137 MB of `combined_hits_root` to node scratch and returns a ~240 kB
+parquet of per-cluster drift-column statistics. **21 s wall, 632 MB peak RSS per job**;
+the whole scan is minutes, ~10 GB read on the farm and ~8 MB back.
+
+Why it exists: run_58 sweeps the drift voltage **700 → 200 V in 9 points** with a
+**64-sample (3.84 µs)** window that contains the full column at every point, so it is
+the only July dataset that can test whether a chamber's drift field actually responds
+to its supply. See `../HANDOFF_2026-07-30_readout_window_and_detB.md` §4.4a.
+
+```bash
+# 1. freeze the strip map (local, once) — keeps the worker repo-free
+.venv/bin/python mx_july_beam_qa/lxplus/make_run58_stripmap.py
+
+# 2. stage + list the sub-runs (EOS is POSIX-mounted on lxplus)
+rsync -av -e 'ssh -K -o ControlPath=none' mx_july_beam_qa/lxplus/run58_* lxplus:x17run58/
+ssh -K lxplus 'mkdir -p ~/x17run58/logs ~/x17run58/out &&
+  ls /eos/experiment/ntof/data/x17/july_beam/runs/run_58 | grep "^sngPS" > ~/x17run58/subruns.txt'
+
+# 3. submit
+ssh -K lxplus 'cd ~/x17run58 && myschedd bump && condor_submit run58_columns.sub'
+
+# 4. collect + aggregate locally
+rsync -av -e 'ssh -K -o ControlPath=none' lxplus:x17run58/out/ mx_july_beam_qa/cache/run58_columns/
+.venv/bin/python mx_july_beam_qa/run58_column_scan.py
+```
+
+Gotchas, both hit while building this:
+
+- **`condor_submit` parses the whole RHS of a `+Attribute` as an expression**, so an
+  inline comment on `+JobFlavour = "espresso"   # 20 min` is a *parse error*. Keep
+  comments on their own line. (`readpass.sub` above has the same latent issue.)
+- **run_58 predates the 2026-07-24 analyzer**: no `significance`, `trunc_left` or
+  `trunc_right` branch. The worker therefore selects on an **absolute amplitude cut**
+  (300 ADC) rather than the relative significance floor, so that every sub-run — and
+  every run compared against it — is selected identically. Comparing hit populations
+  across analyzer versions without a common absolute cut is meaningless.
+- The worker is deliberately **standalone** (no repo imports): batch nodes have only
+  the LCG view, so the strip map is shipped as a 17 kB npz built by
+  `make_run58_stripmap.py`.
+
+---
+
+# Two-source plastic calibration, runs 224588-224596 (2026-07-28 data)
+
+`srccal.sub` (read) and `srccalfit.sub` (fit) — the Y-88 + Cs-137 campaign;
+physics and method in `../SRCCAL_2026-07-28.md`.
+
+The **read pass** is nine jobs, one per run, and is genuinely quick: these are
+6-minute source runs, so the official files are only 0.3-0.6 GB and the whole
+set came back in **~3 minutes wall**, ~1 MB of caches total. Nothing about it
+resembles the 89-minute beam read pass above.
+
+```bash
+rsync -av -e 'ssh -o ControlPath=none' \
+      ../33_srccal_spectra.py ../srccal_runs.py ../adc_mv.py srccal.sub \
+      srccal_wrapper.sh lxplus:x17qa/
+ssh -K lxplus 'cd ~/x17qa && chmod +x srccal_wrapper.sh && myschedd bump \
+               && condor_submit srccal.sub'
+ssh -K lxplus 'cd ~/x17qa && for t in srccal_out_*.tgz; do tar xzf "$t"; done'
+rsync -av -e 'ssh -o ControlPath=none' lxplus:x17qa/cache/33_srccal_\*.npz ../cache/
+```
+
+The **fit pass** (`34` + `35`) normally runs on the laptop from those caches, but
+it is a few thousand `curve_fit` calls and `srccalfit.sub` offloads it when the
+local machine is loaded — one job, ~15 min, returns `srccalfit_out.tgz` with the
+calib JSON, the figures and the results markdown. Ship
+`calib/y88_energy_calib.json` along (it is in `transfer_input_files`) or the
+07-17 transport table comes back empty.
+
+Gotcha found here: **condor rejects a trailing comment after a `request_*`
+value** (`request_disk = 3 GB  # ...` is a parse error), even though the same
+form parses elsewhere in a submit file.
