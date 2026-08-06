@@ -1,0 +1,5 @@
+det,a,b,n,d_global,mean_diff,rms_diff,noise_floor,corr,best_orient,corr_flipx,corr_flipy
+det3,det3 6-27 sat (top),det3 6-27 P2 (top),1192,-1.95,-1.95,0.64,0.42,0.9,as-is,0.3,0.3
+det3,det3 6-27 sat (top),det3 6-22 long (bot),1169,15.3,15.16,1.13,0.39,-0.09,flip-xy,-0.16,-0.12
+det3,det3 6-27 P2 (top),det3 6-22 long (bot),1178,17.25,17.1,1.42,0.36,0.02,as-is,-0.09,-0.09
+det2,det2 6-22 longer (top),det2 6-22 long (top),1127,-1.9,-2.03,0.83,0.53,0.62,as-is,0.24,0.35

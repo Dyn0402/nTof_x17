@@ -1,0 +1,57 @@
+{
+ "n_events": 7093,
+ "calibration": "/home/dylan/x17/cosmic_bench/Analysis/mx17_det3_saturday_scan_6-27-26/long_run_resist_490V_drift_1000V/mx17_3/wft/calib_bundle_lp2",
+ "bundle": {
+  "detector": "mx17_3",
+  "run_key": "sat_det3",
+  "v_drift": 36.6,
+  "hyper": {
+   "c1": 0.050869112498533264,
+   "c2": 0.057975190717090536,
+   "kY": 2.875398097008505,
+   "tau_s": 145.52360430581592,
+   "sigma_s": 12.07138484224236,
+   "sigma_p0": 0.40871629542484494,
+   "Dp": 0.013415652753987053,
+   "share_lp": 1.0,
+   "kTauY": 1.78
+  },
+  "conditions": {
+   "run": "mx17_det3_saturday_scan_6-27-26",
+   "sub_run": "long_run_resist_490V_drift_1000V"
+  },
+  "provenance": {
+   "code_commit": "1292d91",
+   "note": "w0/kw measured from events.parquet (sat_det3)",
+   "n_train": 180,
+   "chi2": 106734684.48221907,
+   "chi2_init": 140248343.5200969,
+   "fitted": "wft.calibrate",
+   "gain_map": "unit (not fitted)"
+  }
+ },
+ "run": {
+  "key": "sat_det3",
+  "run": "mx17_det3_saturday_scan_6-27-26",
+  "sub_run": "long_run_resist_490V_drift_1000V",
+  "detector": "mx17_3",
+  "feu_x": 7,
+  "feu_y": 8
+ },
+ "selection": {
+  "sig_rel_floor": 0.1,
+  "gap_mm": 12.0,
+  "spark_veto": 50,
+  "pad_strips": 3,
+  "event_filter": true
+ },
+ "reco_config": {
+  "model_frac": 0.03,
+  "prescan_coarse": true,
+  "chi2dof_bad": 250.0,
+  "w0": {
+   "x": -0.0038760076288477663,
+   "y": -0.16953845072207008
+  }
+ }
+}

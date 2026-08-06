@@ -1,0 +1,31 @@
+# calib.sub — RC-ladder (lp) calibration on condor, one job per detector.
+#
+#   condor_submit calib.sub
+#
+# calib_jobs.txt lines: <cache_basename> <label> <detector> <run_key> <fix_v> <lowgain>
+# Only the 2 MB corridor cache travels; no waveforms are read.
+
+universe                = vanilla
+executable              = run_calib.sh
+arguments               = $(cache) $(label) $(det) $(key) $(fixv) $(lowgain)
+
+should_transfer_files   = YES
+when_to_transfer_output = ON_EXIT
+transfer_input_files    = payload.tar.gz, inputs/$(cache)
+transfer_output_files   = bundle_$(label).tar.gz
+transfer_output_remaps  = "bundle_$(label).tar.gz = out/bundle_$(label).tar.gz"
+
+output                  = log/calib_$(label).out
+error                   = log/calib_$(label).err
+log                     = log/calib.log
+
+request_cpus            = 4
+request_memory          = 4GB
+request_disk            = 2GB
+environment             = "OMP_NUM_THREADS=4"
++JobFlavour             = "workday"
+
+max_retries             = 1
+requirements            = (OpSysAndVer =?= "AlmaLinux9")
+
+queue cache, label, det, key, fixv, lowgain from calib_jobs.txt

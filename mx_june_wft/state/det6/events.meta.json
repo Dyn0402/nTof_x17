@@ -1,0 +1,46 @@
+{
+ "n_events": 8749,
+ "calibration": "/home/dylan/x17/cosmic_bench/Analysis/mx17_det6_det7_overnight_6-26-26/long_run/mx17_6/wft/calib_bundle",
+ "bundle": {
+  "detector": "mx17_6",
+  "run_key": "g_det6_long",
+  "v_drift": 26.742028992033596,
+  "hyper": {
+   "c1": 0.21624905327844468,
+   "c2": 0.08702997322580636,
+   "kY": 1.7452805870316692,
+   "tau_s": 96.906036778251,
+   "sigma_s": 133.6158622572362,
+   "sigma_p0": 0.03015467254872748,
+   "Dp": 0.0007848899522547807
+  },
+  "conditions": {
+   "run": "mx17_det6_det7_overnight_6-26-26",
+   "sub_run": "long_run"
+  },
+  "provenance": {
+   "code_commit": "23c733c",
+   "note": "hypers fitted ref-pinned; dt_xy measured",
+   "n_train": 180,
+   "chi2": 165936991.3667742,
+   "chi2_init": 220878196.70905098,
+   "fitted": "wft.calibrate",
+   "gain_map": "unit (not fitted)"
+  }
+ },
+ "run": {
+  "key": "g_det6_long",
+  "run": "mx17_det6_det7_overnight_6-26-26",
+  "sub_run": "long_run",
+  "detector": "mx17_6",
+  "feu_x": 3,
+  "feu_y": 4
+ },
+ "selection": {
+  "sig_rel_floor": 0.1,
+  "gap_mm": 12.0,
+  "spark_veto": 50,
+  "pad_strips": 3,
+  "event_filter": true
+ }
+}

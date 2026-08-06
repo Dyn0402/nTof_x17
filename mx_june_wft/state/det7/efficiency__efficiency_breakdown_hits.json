@@ -1,0 +1,21 @@
+{
+ "run_key": "g_det7_long",
+ "source": "hits",
+ "max_dropped": null,
+ "n_rays": 10354,
+ "R_mm": 5.0,
+ "within_R": 52.73324319103728,
+ "reco_at_all": 62.874251497005986,
+ "reco_far": 10.141008305968708,
+ "hit_no_reco": 8.808190071469964,
+ "no_hit": 0.5698280857639559,
+ "spark_cat": 27.747730345760093,
+ "has_any": 99.43017191423604,
+ "spark_frac": 37.43889532832737,
+ "core_sigma_mm": 0.5246172609167183,
+ "median_r_mm": 0.9826806194423224,
+ "n_reco": 65535,
+ "basis": "hits chain, wft accounting",
+ "table": "/home/dylan/x17/cosmic_bench/Analysis/mx17_det6_det7_overnight_6-26-26/long_run/mx17_7/wft/events.parquet",
+ "alignment": "/home/dylan/x17/cosmic_bench/Analysis/mx17_det6_det7_overnight_6-26-26/long_run/mx17_7/alignment_tpc_veto50/alignment.json"
+}

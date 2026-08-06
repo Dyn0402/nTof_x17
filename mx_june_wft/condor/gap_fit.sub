@@ -1,0 +1,32 @@
+# gap_fit.sub — one condor job per (dataset x bundle x shard).
+#
+#   condor_submit gap_fit.sub
+#
+# The job list lives in jobs.txt, one line per job:
+#   <cache_basename> <bundle_tgz_basename> <label> <shard_i> <n_shards> <v_override> <k_bins>
+# Build it with make_jobs.py. Inputs are staged in inputs/ next to this file.
+
+universe                = vanilla
+executable              = run_gap_fit.sh
+arguments               = $(cache) $(bundle) $(label) $(shard) $(nshard) $(vovr) $(kbins)
+
+should_transfer_files   = YES
+when_to_transfer_output = ON_EXIT
+transfer_input_files    = payload.tar.gz, inputs/$(cache), inputs/$(bundle)
+transfer_output_files   = result_$(label)_$(shard).tar.gz
+transfer_output_remaps  = "result_$(label)_$(shard).tar.gz = out/result_$(label)_$(shard).tar.gz"
+
+output                  = log/$(label)_$(shard).out
+error                   = log/$(label)_$(shard).err
+log                     = log/gap_fit.log
+
+request_cpus            = 1
+request_memory          = 2500MB
+request_disk             = 4GB
++JobFlavour             = "microcentury"
+
+# retry transient worker failures, but never loop on a real bug
+max_retries             = 2
+requirements            = (OpSysAndVer =?= "AlmaLinux9")
+
+queue cache, bundle, label, shard, nshard, vovr, kbins from jobs.txt

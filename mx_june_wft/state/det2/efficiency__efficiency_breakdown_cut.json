@@ -1,0 +1,21 @@
+{
+ "run_key": "o22_long_det2",
+ "source": "wft",
+ "max_dropped": 2,
+ "n_rays": 3668,
+ "R_mm": 5.0,
+ "within_R": 89.74918211559432,
+ "reco_at_all": 91.57579062159215,
+ "reco_far": 1.826608505997819,
+ "hit_no_reco": 5.0981461286804794,
+ "no_hit": 0.0,
+ "spark_cat": 3.3260632497273717,
+ "has_any": 100.0,
+ "spark_frac": 9.743389806479053,
+ "core_sigma_mm": 0.4299034528975187,
+ "median_r_mm": 0.6690676563509699,
+ "n_reco": 3453,
+ "basis": "waveform-first (wft)",
+ "table": "/home/dylan/x17/cosmic_bench/Analysis/mx17_det2_det3_overnight_6-22-26/longer_run/mx17_2/wft/events.parquet",
+ "alignment": "/home/dylan/x17/cosmic_bench/Analysis/mx17_det2_det3_overnight_6-22-26/longer_run/mx17_2/wft/alignment/alignment.json"
+}

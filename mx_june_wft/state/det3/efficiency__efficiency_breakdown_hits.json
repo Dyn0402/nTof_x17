@@ -1,0 +1,21 @@
+{
+ "run_key": "sat_det3",
+ "source": "hits",
+ "max_dropped": null,
+ "n_rays": 7119,
+ "R_mm": 5.0,
+ "within_R": 93.13105773282764,
+ "reco_at_all": 97.0220536592218,
+ "reco_far": 3.8909959263941567,
+ "hit_no_reco": 0.2949852507374631,
+ "no_hit": 0.014046916701783959,
+ "spark_cat": 2.668914173338952,
+ "has_any": 99.98595308329821,
+ "spark_frac": 8.221266733754154,
+ "core_sigma_mm": 0.44768709626900577,
+ "median_r_mm": 0.7644744301432336,
+ "n_reco": 32036,
+ "basis": "hits chain, wft accounting",
+ "table": "/home/dylan/x17/cosmic_bench/Analysis/mx17_det3_saturday_scan_6-27-26/long_run_resist_490V_drift_1000V/mx17_3/wft/events.parquet",
+ "alignment": "/home/dylan/x17/cosmic_bench/Analysis/mx17_det3_saturday_scan_6-27-26/long_run_resist_490V_drift_1000V/mx17_3/alignment_tpc_veto50/alignment.json"
+}
