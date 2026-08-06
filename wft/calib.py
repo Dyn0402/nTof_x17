@@ -48,6 +48,16 @@ class CalibrationBundle:
     tmpl: Dict[str, np.ndarray]             # per-plane impulse response
     gain: Dict[str, np.ndarray]             # per-channel gain (512), 1.0 = unmeasured
     dt_xy: Dict[int, float] = field(default_factory=dict)   # t0x - t0y by ftst diff
+    # Per-plane additive transverse-speed offset [um/ns]: the fitted w of
+    # reference-vertical tracks. Physically an apparent transverse drift (field
+    # tilt) or an asymmetric true sharing kernel — either way a detector
+    # constant. Angles are tan = (w*1e3 - w0) / (kw * v_drift). Measured on
+    # det3-Y at -0.18 um/ns (-0.3 deg if uncorrected); X consistent with zero.
+    w0: Dict[str, float] = field(default_factory=dict)
+    # Per-plane multiplicative slope scale (default 1). The resistive-strip
+    # (Y) axis keeps a ~3 % slope compression that no kernel knob removes;
+    # kw is its empirical correction, measured like w0 from reference tracks.
+    kw: Dict[str, float] = field(default_factory=dict)
 
     # --- geometry / DAQ ---
     pitch_mm: float = 0.78
@@ -76,6 +86,8 @@ class CalibrationBundle:
         self.provenance = prov
         meta = dict(hyper={k: float(v) for k, v in self.hyper.items()},
                     v_drift=float(self.v_drift),
+                    w0={k: float(v) for k, v in self.w0.items()},
+                    kw={k: float(v) for k, v in self.kw.items()},
                     dt_xy={str(k): float(v) for k, v in self.dt_xy.items()},
                     pitch_mm=self.pitch_mm, sample_ns=self.sample_ns,
                     n_depth_bins=self.n_depth_bins, sat_adc=self.sat_adc,
@@ -94,6 +106,8 @@ class CalibrationBundle:
                    grid=z['grid'], tmpl={'x': z['tmpl_x'], 'y': z['tmpl_y']},
                    gain={'x': z['gain_x'], 'y': z['gain_y']},
                    dt_xy={int(k): v for k, v in m.get('dt_xy', {}).items()},
+                   w0={k: float(v) for k, v in m.get('w0', {}).items()},
+                   kw={k: float(v) for k, v in m.get('kw', {}).items()},
                    pitch_mm=m.get('pitch_mm', 0.78),
                    sample_ns=m.get('sample_ns', 60.0),
                    n_depth_bins=m.get('n_depth_bins', 18),

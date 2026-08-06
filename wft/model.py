@@ -46,6 +46,10 @@ K = 18
 TS = np.arange(NSAMP) * SNS
 UK = (np.arange(K) + 0.5) * DT
 HYPER: dict | None = None
+# Fractional model-error term in the chi2 weights (0 = per-strip noise only,
+# the pre-2026-07-29 behaviour). Settable via env so calibration worker
+# processes and the reco driver pick it up consistently.
+MODEL_FRAC = float(__import__('os').environ.get('WFT_MODEL_FRAC', '0'))
 
 _smear_cache: dict = {}
 _tt_cache: dict = {}
@@ -91,6 +95,17 @@ def set_depth_bins(k: int) -> None:
     _tt_cache.clear()
 
 
+def set_depth_binning(k: int, dt_ns: float) -> None:
+    """Switch to a coarser/finer charge basis covering the same drift span
+    (used by the fast global pre-scan: K=9 x 120 ns instead of 18 x 60 ns).
+    Does NOT clear the time-tensor cache — the cache key carries (K, DT), so
+    both binnings coexist and switching back keeps warm tensors."""
+    global K, UK, DT
+    K = int(k)
+    DT = float(dt_ns)
+    UK = (np.arange(K) + 0.5) * DT
+
+
 def _require_cal():
     if CAL is None:
         raise RuntimeError('wft.model has no calibration: call use_calibration()')
@@ -106,18 +121,75 @@ def _templates(plane: str, sigma_s: float):
     return _smear_cache[key]
 
 
+def _tau_eff(plane: str, hyper: dict) -> float:
+    """Per-plane sharing delay: tau_s, optionally scaled on Y by kTauY (the
+    resistive/capacitive timescale need not be the same on both planes; only
+    the amplitude asymmetry kY was modelled before)."""
+    t = hyper['tau_s']
+    return t * hyper.get('kTauY', 1.0) if plane == 'y' else t
+
+
+def _tau2_delay(plane: str, hyper: dict, tau: float) -> float:
+    """Arrival delay of the +-2-strip copy. Default 2*tau (the historical
+    linear assumption). On the resistive-strip axis the spread is RC
+    *diffusion*, where delay grows quadratically with distance — set
+    'tau2_fac_y' (e.g. 4.0) to model that on Y."""
+    fac = hyper.get('tau2_fac_y', 2.0) if plane == 'y' else 2.0
+    return fac * tau
+
+
+def _lp_copies(plane: str, hyper: dict):
+    """Neighbour copy shapes for the RC-ladder ('share_lp') mode: the +-1 copy
+    is the template through one lateral RC stage (exp kernel, time constant
+    tau_s), the +-2 copy through two cascaded stages. Measured directly on
+    near-vertical det3 tracks (bench/rc_line_step3.py): the copy is a
+    low-passed template — broader, ~100 ns later, with a long late tail —
+    not the delayed+smeared template of the historical kernel."""
+    tau = _tau_eff(plane, hyper)
+    sig = (hyper.get('sigma_sY', hyper['sigma_s']) if plane == 'y'
+           else hyper['sigma_s'])
+    key = ('lp', plane, tau, round(sig, 1))
+    hit = _smear_cache.get(key)
+    if hit is not None:
+        return hit
+    base = TMPL[plane]
+    step = float(TGRID[1] - TGRID[0])
+    n = max(3, int(np.ceil(6 * tau / step)))
+    tg = np.arange(n) * step
+    e = np.exp(-tg / max(tau, 1e-3))
+    e /= e.sum()
+    sm1 = np.convolve(base, e)[:len(base)]
+    sm2 = np.convolve(sm1, e)[:len(base)]
+    if sig > 1.0:
+        sm1 = gaussian_filter1d(sm1, sig / step)
+        sm2 = gaussian_filter1d(sm2, sig / step)
+    _smear_cache[key] = (sm1, sm2)
+    return sm1, sm2
+
+
 def _time_tensors(plane: str, t0q: float, hyper: dict):
     """(K, NSAMP) impulse responses of each depth bin, cached on a 5 ns t0 grid."""
-    key = (plane, t0q, hyper['tau_s'], round(hyper['sigma_s'], 1), NSAMP, K)
+    tau = _tau_eff(plane, hyper)
+    d2 = _tau2_delay(plane, hyper, tau)
+    lp = bool(hyper.get('share_lp'))
+    sig_key = (hyper.get('sigma_sY', hyper['sigma_s']) if plane == 'y'
+               else hyper['sigma_s'])
+    key = (plane, t0q, tau, d2, round(sig_key, 1), NSAMP, K, DT, lp)
     hit = _tt_cache.get(key)
     if hit is not None:
         return hit
-    tmpl, sm = _templates(plane, hyper['sigma_s'])
-    tau = hyper['tau_s']
     base = TS[:, None] - (t0q + UK[None, :])          # (NSAMP, K)
-    H0 = np.interp(base, TGRID, tmpl, left=0, right=0)
-    H1 = np.interp(base - tau, TGRID, sm, left=0, right=0)
-    H2 = np.interp(base - 2 * tau, TGRID, sm, left=0, right=0)
+    if lp:
+        tmpl = TMPL[plane]
+        sm1, sm2 = _lp_copies(plane, hyper)
+        H0 = np.interp(base, TGRID, tmpl, left=0, right=0)
+        H1 = np.interp(base, TGRID, sm1, left=0, right=0)
+        H2 = np.interp(base, TGRID, sm2, left=0, right=0)
+    else:
+        tmpl, sm = _templates(plane, hyper['sigma_s'])
+        H0 = np.interp(base, TGRID, tmpl, left=0, right=0)
+        H1 = np.interp(base - tau, TGRID, sm, left=0, right=0)
+        H2 = np.interp(base - d2, TGRID, sm, left=0, right=0)
     if len(_tt_cache) > 4096:
         _tt_cache.clear()
     _tt_cache[key] = (H0, H1, H2)
@@ -145,28 +217,43 @@ def build_matrix(plane, pos, p0, w, t0, hyper):
     charge in depth bin k, sharing and impulse response included."""
     t0q = round(t0 / T0_STEP) * T0_STEP
     if abs(t0 - t0q) > 1e-9:
-        tmpl, sm = _templates(plane, hyper['sigma_s'])
-        tau = hyper['tau_s']
         base = TS[:, None] - (t0 + UK[None, :])
-        H0 = np.interp(base, TGRID, tmpl, left=0, right=0)
-        H1 = np.interp(base - tau, TGRID, sm, left=0, right=0)
-        H2 = np.interp(base - 2 * tau, TGRID, sm, left=0, right=0)
+        if hyper.get('share_lp'):
+            sm1, sm2 = _lp_copies(plane, hyper)
+            H0 = np.interp(base, TGRID, TMPL[plane], left=0, right=0)
+            H1 = np.interp(base, TGRID, sm1, left=0, right=0)
+            H2 = np.interp(base, TGRID, sm2, left=0, right=0)
+        else:
+            tmpl, sm = _templates(plane, hyper['sigma_s'])
+            tau = _tau_eff(plane, hyper)
+            H0 = np.interp(base, TGRID, tmpl, left=0, right=0)
+            H1 = np.interp(base - tau, TGRID, sm, left=0, right=0)
+            H2 = np.interp(base - _tau2_delay(plane, hyper, tau), TGRID, sm,
+                           left=0, right=0)
     else:
         H0, H1, H2 = _time_tensors(plane, t0q, hyper)
     kY = hyper.get('kY', 1.0) if plane == 'y' else 1.0
     c1, c2 = hyper['c1'] * kY, hyper['c2'] * kY
-    F = strip_fractions(pos, p0, w, hyper['sigma_p0'], hyper['Dp'])
+    # aY (aX): left/right asymmetry of the sharing kernel — copy toward higher
+    # strip positions weighted (1+a), toward lower (1-a). 0 = symmetric.
+    a = hyper.get('aY' if plane == 'y' else 'aX', 0.0)
+    if plane == 'y':
+        sp0 = hyper.get('sigma_p0Y', hyper['sigma_p0'])
+        dp = hyper.get('DpY', hyper['Dp'])
+    else:
+        sp0, dp = hyper['sigma_p0'], hyper['Dp']
+    F = strip_fractions(pos, p0, w, sp0, dp)
     n = len(pos)
     M = np.empty((n, NSAMP, K))
     np.multiply(F[:, None, :], H0[None, :, :], out=M)
     Fs = np.zeros_like(F)
-    Fs[1:] = F[:-1]
-    Fs[:-1] += F[1:]
+    Fs[1:] = (1.0 + a) * F[:-1]
+    Fs[:-1] += (1.0 - a) * F[1:]
     M += (c1 * Fs)[:, None, :] * H1[None, :, :]
     if c2 > 0:
         Fs2 = np.zeros_like(F)
-        Fs2[2:] = F[:-2]
-        Fs2[:-2] += F[2:]
+        Fs2[2:] = (1.0 + a) * F[:-2]
+        Fs2[:-2] += (1.0 - a) * F[2:]
         M += (c2 * Fs2)[:, None, :] * H2[None, :, :]
     return M.reshape(n * NSAMP, K)
 
@@ -183,6 +270,18 @@ def prep_plane(P, plane):
     return W, noise, np.asarray(P['pos'], dtype=np.float64), sat
 
 
+def sample_weights(W, noise):
+    """Per-sample chi2 weights (1/sigma). With MODEL_FRAC > 0, a fractional
+    model-error term is added in quadrature so that percent-level template
+    mismatch on bright samples stops dominating the fit; at 0 this is exactly
+    the production per-strip-noise weighting."""
+    if MODEL_FRAC <= 0:
+        return np.repeat(1.0 / noise, NSAMP)
+    sig = np.sqrt(noise[:, None] ** 2 +
+                  (MODEL_FRAC * np.maximum(W, 0.0)) ** 2)
+    return (1.0 / sig).reshape(-1)
+
+
 def chi2_plane(plane, W, noise, pos, sat, p0, w, t0, hyper, censor=True,
                snap_t0=True):
     """chi2 of the model at (p0, w, t0), with the charge profile profiled out by
@@ -192,9 +291,17 @@ def chi2_plane(plane, W, noise, pos, sat, p0, w, t0, hyper, censor=True,
         t0 = round(t0 / T0_STEP) * T0_STEP
     M = build_matrix(plane, pos, p0, w, t0, hyper)
     ok = ~sat.reshape(-1)
-    Wt = np.repeat(1.0 / noise, NSAMP)
-    A = (M * Wt[:, None])[ok]
-    y = (W / noise[:, None]).reshape(-1)[ok]
+    if MODEL_FRAC <= 0:
+        # production path — kept expression-for-expression identical to the
+        # regression-tested numerics (division vs reciprocal matters at ulp
+        # level, and the NM trajectory is chaotic in the last ulp)
+        Wt = np.repeat(1.0 / noise, NSAMP)
+        A = (M * Wt[:, None])[ok]
+        y = (W / noise[:, None]).reshape(-1)[ok]
+    else:
+        Wt = sample_weights(W, noise)
+        A = (M * Wt[:, None])[ok]
+        y = (W.reshape(-1) * Wt)[ok]
     try:
         q, rn = nnls(A, y, maxiter=50 * K)
     except Exception:
@@ -202,8 +309,12 @@ def chi2_plane(plane, W, noise, pos, sat, p0, w, t0, hyper, censor=True,
     chi = rn * rn
     if censor and sat.any():
         model = (M @ q).reshape(W.shape)
-        pen = np.maximum(0.0, W[sat] - model[sat]) / np.repeat(
-            noise, NSAMP).reshape(W.shape)[sat]
+        if MODEL_FRAC <= 0:
+            pen = np.maximum(0.0, W[sat] - model[sat]) / np.repeat(
+                noise, NSAMP).reshape(W.shape)[sat]
+        else:
+            pen = (np.maximum(0.0, W[sat] - model[sat]) *
+                   Wt.reshape(W.shape)[sat])
         chi += float((pen ** 2).sum())
     return chi, q
 

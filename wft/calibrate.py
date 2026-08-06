@@ -182,6 +182,9 @@ def _init_hyper(cache_path, bundle_path):
     wm.use_calibration(CalibrationBundle.load(bundle_path))
 
 
+HYPER_X0_LP = np.array([0.35, 0.08, 1.9, 230.0, 20.0, 0.098, 0.0114, 36.65])
+
+
 def _event_chi2(payload):
     eid, hyper, v, warm = payload
     ev = _EV[eid]
@@ -215,7 +218,7 @@ def _event_chi2(payload):
 
 
 def fit_hypers(cache_path, bundle_path, train_ids, jobs=12, maxiter=130,
-               x0=None, v_fixed=None):
+               x0=None, v_fixed=None, extra_hyper=None):
     """8-parameter ref-pinned Nelder-Mead. This is the expensive stage:
     ~15 s per objective evaluation on 12 cores for 180 events.
 
@@ -233,6 +236,7 @@ def fit_hypers(cache_path, bundle_path, train_ids, jobs=12, maxiter=130,
                              initargs=(cache_path, bundle_path)) as pool:
         def total_chi2(hv):
             hyper = dict(zip(HYPER_NAMES, hv[:7]))
+            hyper.update(extra_hyper or {})
             v = v_fixed if v_fixed is not None else hv[7]
             c = 0.0
             for eid, tot, t0s in pool.map(
@@ -280,6 +284,66 @@ def fit_hypers(cache_path, bundle_path, train_ids, jobs=12, maxiter=130,
     return out
 
 
+def _fit_free_one(payload):
+    """Reference-free fit of one cached event (production configuration)."""
+    eid = payload
+    from . import reco as wr
+    ev = _EV[eid]
+    out = {}
+    for plane in ('x', 'y'):
+        if plane not in ev:
+            continue
+        P = ev[plane]
+        if np.asarray(P['W']).shape[1] != wm.NSAMP:
+            wm.set_nsamp(np.asarray(P['W']).shape[1])
+        try:
+            p0s, _w, t0s = wm.init_guess(P, plane)
+            p0s, w0, t0s = wr._global_start(P, plane, p0s, t0s, wm.HYPER)
+            r = wm.fit_plane_raw(P, plane, p0s, w0, t0s)
+        except Exception:
+            continue
+        if r is not None and np.isfinite(r['chi2']):
+            out[plane] = (float(r['w']), float(ev[f'tan_{plane}']))
+    return out
+
+
+def measure_w0(cache_path, bundle_path, ids, v, jobs=12):
+    """Per-plane angle-mapping constants from FREE fits of reference tracks
+    (the ref-pinned fit cannot see them — w is fixed there).
+
+    w0 [um/ns]: median of (w_fit - v * tan_ref) at |tan| < 0.3 — an additive
+    transverse-speed offset (apparent transverse drift / kernel asymmetry /
+    common reference systematic). det3-Y: -0.18 (-0.3 deg if uncorrected).
+
+    kw: median of (w_fit - w0) / (v * tan_ref) at 0.10 < |tan| < 0.40 — the
+    slope scale. The resistive-strip (Y) axis keeps ~0.97 (a 3 % compression
+    no kernel knob removes); X is ~1.00.
+
+    Returns (w0, kw) dicts."""
+    acc = {'x': [], 'y': []}
+    with ProcessPoolExecutor(max_workers=jobs, initializer=_init_hyper,
+                             initargs=(cache_path, bundle_path)) as pool:
+        for out in pool.map(_fit_free_one, ids, chunksize=4):
+            for plane, (w, tan) in out.items():
+                acc[plane].append((w * 1e3, tan))
+    w0, kw = {}, {}
+    for plane, vals in acc.items():
+        w = np.array([a for a, _ in vals])
+        tan = np.array([b for _, b in vals])
+        s0 = np.abs(tan) < 0.30
+        if s0.sum() < 30:
+            print(f'[calib] w0 {plane}: too few fits (n={int(s0.sum())}), leaving 0')
+            continue
+        w0[plane] = float(np.median((w - v * tan)[s0]))
+        s1 = (np.abs(tan) > 0.10) & (np.abs(tan) < 0.40)
+        if s1.sum() >= 30:
+            kw[plane] = float(np.median(((w - w0[plane]) / (v * tan))[s1]))
+        print(f'[calib] w0 {plane}: {w0[plane]:+.3f} um/ns (n={int(s0.sum())})'
+              + (f'  kw: {kw[plane]:.3f} (n={int(s1.sum())})'
+                 if plane in kw else ''))
+    return w0, kw
+
+
 def measure_dt_xy(events, bundle_path, hyper, v, sample=200):
     """t0(x) - t0(y) by ftst difference, for the joint two-plane fit."""
     wm.use_calibration(CalibrationBundle.load(bundle_path))
@@ -291,11 +355,24 @@ def measure_dt_xy(events, bundle_path, hyper, v, sample=200):
         t0 = {}
         for plane in ('x', 'y'):
             P = ev[plane]
+            # windows are not all the same length (a run can mix 32- and
+            # 37-sample waveforms); the model must be told before it builds
+            # its matrix, exactly as the reco path does
+            ns = np.asarray(P['W']).shape[1]
+            if ns != wm.NSAMP:
+                wm.set_nsamp(ns)
             g = wm.init_guess(P, plane, ev[f'tan_{plane}'], ev[f'ref_mesh_{plane}'], v)
-            r = wm.fit_plane_raw(P, plane, *g, hyper=hyper,
-                                 fix_p0w=(ev[f'ref_mesh_{plane}'],
-                                          ev[f'tan_{plane}'] * v * 1e-3))
+            try:
+                r = wm.fit_plane_raw(P, plane, *g, hyper=hyper,
+                                     fix_p0w=(ev[f'ref_mesh_{plane}'],
+                                              ev[f'tan_{plane}'] * v * 1e-3))
+            except Exception:
+                r = None
+            if r is None or not np.isfinite(r.get('t0', np.nan)):
+                break
             t0[plane] = r['t0']
+        if len(t0) < 2:
+            continue
         diffs.setdefault(int(ev['ftst_x'] - ev['ftst_y']), []).append(
             t0['x'] - t0['y'])
     out = {}
@@ -309,7 +386,16 @@ def measure_dt_xy(events, bundle_path, hyper, v, sample=200):
 
 # ---------------------------------------------------------------------- main
 def calibrate(cfg, run_key, n_events=400, n_train=180, jobs=12, out=None,
-              seed_bundle=None, maxiter=130, v_fixed=None):
+              seed_bundle=None, maxiter=130, v_fixed=None,
+              tmpl_tan_min=None, tmpl_min_amp=None, extra_hyper=None):
+    global TEMPLATE_TAN_MIN, TEMPLATE_MIN_AMP
+    # Loosened template cuts for the low-gain chambers: the defaults leave
+    # det7's Y template resting on 4 waveforms (det6: 10), which is noise.
+    # tan > 0.10 / amp > 250 gives 74/80 with the same shape.
+    if tmpl_tan_min is not None:
+        TEMPLATE_TAN_MIN = float(tmpl_tan_min)
+    if tmpl_min_amp is not None:
+        TEMPLATE_MIN_AMP = float(tmpl_min_amp)
     out = out or cfg.out_dir('wft', 'calib_bundle')
     work = cfg.out_dir('wft', 'calib_work')
     cache_path = os.path.join(work, 'calib_cache.pkl')
@@ -334,17 +420,27 @@ def calibrate(cfg, run_key, n_events=400, n_train=180, jobs=12, out=None,
     prov_path = os.path.join(work, 'provisional_bundle')
     cal.save(prov_path, note='templates measured, hypers not yet fitted')
 
+    if extra_hyper:
+        cal.hyper.update(extra_hyper)
+        cal.save(prov_path, note='templates measured, extra hypers set')
+
     train = sorted(events)[:n_train]
     print(f'[calib] fitting hypers on {len(train)} events, {jobs} jobs', flush=True)
-    x0 = None if seed is None else np.array(
-        [seed.hyper[k] for k in HYPER_NAMES] + [seed.v_drift])
+    if seed is not None:
+        x0 = np.array([seed.hyper[k] for k in HYPER_NAMES] + [seed.v_drift])
+    elif extra_hyper and extra_hyper.get('share_lp'):
+        x0 = HYPER_X0_LP.copy()
+    else:
+        x0 = None
     if v_fixed is not None and x0 is not None:
         x0[7] = v_fixed
     hj = fit_hypers(cache_path, prov_path, train, jobs=jobs, maxiter=maxiter,
-                    x0=x0, v_fixed=v_fixed)
+                    x0=x0, v_fixed=v_fixed, extra_hyper=extra_hyper)
     if v_fixed is not None:
         hj['v'] = float(v_fixed)
     cal.hyper = {k: hj[k] for k in HYPER_NAMES}
+    if extra_hyper:
+        cal.hyper.update(extra_hyper)
     cal.v_drift = hj['v']
     cal.provenance.update(n_train=hj['n_train'], chi2=hj['chi2'],
                           chi2_init=hj['chi2_init'],
@@ -352,7 +448,9 @@ def calibrate(cfg, run_key, n_events=400, n_train=180, jobs=12, out=None,
     cal.save(out, note='hypers fitted ref-pinned')
 
     cal.dt_xy = measure_dt_xy(events, out, cal.hyper, cal.v_drift)
-    cal.save(out, note='hypers fitted ref-pinned; dt_xy measured')
+    val_ids = sorted(events)[n_train:n_train + 150] or train[:150]
+    cal.w0, cal.kw = measure_w0(cache_path, out, val_ids, cal.v_drift, jobs=jobs)
+    cal.save(out, note='hypers fitted ref-pinned; dt_xy + w0/kw measured')
     with open(os.path.join(work, 'hyper_fit.json'), 'w') as f:
         json.dump(hj, f, indent=1)
     print('[calib]', cal.summary())
@@ -373,8 +471,22 @@ def main(argv=None):
                          'low-statistics chambers')
     ap.add_argument('--seed-bundle', default=None,
                     help='start from another detector\'s kernel (e.g. det3, same batch)')
+    ap.add_argument('--tmpl-tan-min', type=float, default=None,
+                    help='template |tan| cut (default 0.22; use 0.10 on '
+                         'low-gain chambers)')
+    ap.add_argument('--tmpl-min-amp', type=float, default=None,
+                    help='template amplitude cut (default 500; use 250 on '
+                         'low-gain chambers)')
+    ap.add_argument('--share-lp', action='store_true',
+                    help='RC-ladder sharing: neighbour copies are low-passed '
+                         'templates (measured shape), not delayed+smeared')
+    ap.add_argument('--ktau-y', type=float, default=1.78,
+                    help='Y/X ratio of the lateral RC constant (share-lp '
+                         'mode; measured 410/230 ns on det3)')
     ap.add_argument('--out', default=None)
     args = ap.parse_args(argv)
+    extra = ({'share_lp': 1.0, 'kTauY': args.ktau_y} if args.share_lp
+             else None)
 
     repo = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     for p in (repo, os.path.join(repo, 'mx_june_cosmic_qa'),
@@ -386,7 +498,9 @@ def main(argv=None):
     cfg = get_config(args.run_key)
     calibrate(cfg, args.run_key, n_events=args.events, n_train=args.train,
               jobs=args.jobs, out=args.out, seed_bundle=args.seed_bundle,
-              maxiter=args.maxiter, v_fixed=args.fix_v)
+              maxiter=args.maxiter, v_fixed=args.fix_v,
+              tmpl_tan_min=args.tmpl_tan_min, tmpl_min_amp=args.tmpl_min_amp,
+              extra_hyper=extra)
 
 
 if __name__ == '__main__':

@@ -74,9 +74,12 @@ kernels.
   read 31.5–34; the forward fit gives **36.6 ± 0.3 ± 0.9** at 1000 V, which
   matches Magboltz Ar/iso 95/5 + 0.8 % H₂O. Old v numbers derived from either
   ladder or gap carry this bias.
-- **Drift gap**: gap-based estimators inherit −3…−7 % from assuming 29 mm; the
-  real column is 27.9 mm on det3 (cathode tilt), 30.5 mm on det2, 28.8 mm on
-  det4.
+- **Drift gap**: gap-based estimators inherit −3…−7 % from assuming 29 mm. The
+  charge-visible column, all five chambers on the RC-ladder kernel at the K = 22
+  basis (X plane, ± 1 mm calibration systematic each): **det2 30.6, det3 27.9,
+  det6 27.9, det7 27.5, det4 25.6 mm** — det4's is not usable (its two charge
+  halves read 20.9 and 30.2 mm) and det7's is marginal. det3 additionally has a
+  reproducible dished topography (`ANALYSIS_STATE_2026-07-31.md` §3.5).
 - **Angles and depth-resolved anything** from the old chain are compressed.
 - **Positions at the mesh and efficiency are much less affected** — the July-25
   significance-floor fix left det3 at 93.1 % within 5 mm with core σ 0.45 mm, and
@@ -96,8 +99,8 @@ if you know which basis produced it.
 | Alignment | **waveform** — det3, det2, det6, det7 | `mx_june_wft/01_alignment.py` |
 | Efficiency breakdown | **waveform** positions, hits detection | `mx_june_wft/02_efficiency.py` |
 | Efficiency / resolution maps | **waveform** — det3, det2, det6, det7 | `mx_june_wft/04_maps.py` |
-| v(E), gas fit | **waveform** | `waveform_first_threading/` scripts 19–21 (not yet packaged) |
-| Gap / column maps | **waveform** | `waveform_first_threading/` scripts 29–35 (not yet packaged) |
+| v(E), gas fit | **waveform** | `waveform_first_threading/` scripts 19–21 (re-run under the RC-ladder kernel pending) |
+| Gap / column maps | **waveform (RC-ladder, K = 22 basis)** — all five | `mx_june_wft/bench/gap_study.py` / the condor path; verdict in `GAP_STUDY_2026-07-30.md` as amended by `ANALYSIS_STATE_2026-07-31.md` §3.5, §10.4 |
 | Hybrid tracking | hits — **superseded in accuracy**, do not extend | `mx_june_cosmic_qa/34`, `36` |
 | Time resolution | hits + waveform (port pending) | `mx_june_cosmic_qa/42` |
 | Sparks, charge balance, fringe field | hits — QA-level, unaffected | `mx_june_cosmic_qa/38`–`40` |
@@ -119,6 +122,29 @@ compression signature, essentially gone); position at parity (within 5 mm
 "largest cluster wins" rule picks the wrong charge in ~5 % of events, where the
 reference sits a median 37 mm outside the fit window — and a track-compatibility
 seeder is the open follow-up.
+
+**Update 2026-07-30.** The `wft/` fit itself was benchmarked and upgraded
+(3 % model-error chi2 weighting, per-plane `w0`/`kw` angle constants, the
+`share_lp` RC-ladder sharing kernel — the neighbour copy is a low-passed
+template, measured directly; coarse pre-scan). det3 runs on it; the fleet
+procedure is approved-but-not-run. Campaign record:
+`mx_june_wft/RECO_BENCH_2026-07-29.md`; state + procedures:
+`mx_june_wft/HANDOFF_2026-07-30.md`. The drift-gap question is resolved as
+chamber geometry rather than gas or reconstruction
+(`mx_june_wft/GAP_STUDY_2026-07-30.md`, narrowed by the 07-31 fleet maps: it is
+det2 that reads full, and three chambers that read ~2.5 mm short).
+
+**Update 2026-07-31.** The fleet was put on the RC-ladder production
+configuration (`mx_june_wft/rollout_lp.sh`), which fixed det7 (σ_θ 7.05° → 1.98°
+— its stored chain had been produced by a rejected calibration); the drift
+column was re-measured on a deeper charge basis, which fixed det6; and three new
+diagnostics (angle-optimality scan with a disjoint validation split, readout
+framing corner, model residual audit) were run on the grid.
+
+**Current state, and the audit entry point (2026-07-31):**
+`mx_june_wft/ANALYSIS_STATE_2026-07-31.md` — what each chamber's numbers were
+produced by, the full systematics register, and what an external reviewer should
+attack. Read that before quoting any number from the tables above.
 
 ## Reading order for the evidence
 

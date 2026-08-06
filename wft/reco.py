@@ -27,11 +27,17 @@ from . import model as wm
 TAN_MIN_SLOPE = 0.08       # below this the timing carries no slope information
 FLOOR_TAN = 0.018          # ~1.0 deg: the measured per-event physics floor
 FLOOR_P0_MM = 0.33         # measured charge-centroid jitter per 60 ns bin
-CHI2DOF_BAD = 300.0        # showers / multi-track / spark
+# Shower/multi-track flag threshold. The chi2 scale depends on the weighting:
+# 300 under the unweighted likelihood; ~250 matches the same tail under
+# MODEL_FRAC=0.03 (median chi2/dof drops 76/148 -> 20/63 on X/Y).
+CHI2DOF_BAD = float(os.environ.get('WFT_CHI2DOF_BAD', '300'))
 
 # slope search: +-0.021 mm/ns covers |tan| ~ 0.57 at v = 36.6 um/ns
 W_SCAN_HALF = 0.021        # covers |tan| ~ 0.57 at v = 36.6 um/ns
 W_SCAN_STEP = 0.0021
+# coarse-basis global scan (K=9 x 120 ns): accuracy parity, ~1.5x faster
+PRESCAN_COARSE = os.environ.get('WFT_PRESCAN', '0') == '1'
+ITER_SCAN = False          # re-scan t0 at the best (p0, w) after the w scan
 P0_SCAN_HALF = 2.5         # mm around the window's charge centroid
 P0_SCAN_STEP = 0.5
 T0_SCAN_HALF = 120.0
@@ -119,8 +125,15 @@ def _global_start(P, plane, p0_seed, t0_seed, hyper):
 
     So: scan. (p0, t0) first at zero slope, then (p0, w) at the best t0. ~310
     chi2 evaluations, all of them NNLS-profiled, ~0.4 s.
+
+    With PRESCAN_COARSE the scan runs on a K=9 x 120 ns charge basis (same
+    drift span, quarter the NNLS cost); only the basin matters here, and the
+    local fit that follows runs on the full basis.
     """
     W, noise, pos, sat = wm.prep_plane(P, plane)
+    k0, dt0 = wm.K, wm.DT
+    if PRESCAN_COARSE:
+        wm.set_depth_binning(max(6, int(round(k0 * dt0 / 120.0))), 120.0)
 
     def chi(p0, w, t0):
         return wm.chi2_plane(plane, W, noise, pos, sat, p0, w, t0, hyper)[0]
@@ -147,7 +160,40 @@ def _global_start(P, plane, p0_seed, t0_seed, hyper):
             c = chi(p0, w, t0b)
             if c < best2[0]:
                 best2 = (c, float(p0), float(w))
+    if ITER_SCAN:
+        # the first t0 was chosen at w=0; re-scan it at the best (p0, w)
+        best3 = (np.inf, t0b)
+        for t0 in np.arange(t0b - 80.0, t0b + 81.0, 20.0):
+            c = chi(best2[1], best2[2], t0)
+            if c < best3[0]:
+                best3 = (c, float(t0))
+        t0b = best3[1]
+    if PRESCAN_COARSE:
+        wm.set_depth_binning(k0, dt0)
     return best2[1], best2[2], t0b
+
+
+# Robust refit for planes the model cannot describe (delta-ray blobs, showers:
+# chi2/dof ~ 2000 against a good-fit median of ~100, fitted charge ~100x a MIP,
+# and the slope rails). Inflate each strip's sigma to its own residual RMS from
+# the first fit — strips carrying charge the model cannot explain lose their
+# pull, the muon's strips keep it — and refit from a fresh global start.
+ROBUST_REFIT = False
+ROBUST_CHI2DOF = 300.0
+ROBUST_MIN_MOVE_MM = 2.0
+
+
+def _robust_refit(P, plane, r, hyper):
+    W, noise, pos, sat = wm.prep_plane(P, plane)
+    model = wm.model_waveforms(plane, pos, r['p0'], r['w'], r['t0'], r['q'],
+                               hyper)
+    rms = np.sqrt(np.mean((W - model) ** 2, axis=1))
+    g = wm.GAIN[plane][np.asarray(P['ch'], dtype=int)]
+    P2 = dict(P)
+    P2['noise'] = (np.maximum(noise, rms) * g).astype(np.float64)
+    p0s, _w0, t0s = wm.init_guess(P2, plane)
+    p0s, w0, t0s = _global_start(P2, plane, p0s, t0s, hyper)
+    return wm.fit_plane_raw(P2, plane, p0s, w0, t0s, hyper=hyper)
 
 
 def fit_plane(P, plane: str, cal: CalibrationBundle, hyper: Optional[dict] = None,
@@ -162,7 +208,16 @@ def fit_plane(P, plane: str, cal: CalibrationBundle, hyper: Optional[dict] = Non
     r = wm.fit_plane_raw(P, plane, p0_seed, w_seed, t0_seed, hyper=hyper)
     if r is None or not np.isfinite(r['chi2']):
         return None
-    tan = r['w'] * 1e3 / cal.v_drift
+    if ROBUST_REFIT and r['chi2'] / max(r['dof'], 1) > ROBUST_CHI2DOF:
+        r2 = _robust_refit(P, plane, r, hyper)
+        # keep the refit only when it changed basin: small moves are noise
+        # (the reweighted fit is less precise on well-measured planes), large
+        # moves are the shower/blob recoveries this exists for
+        if r2 is not None and np.isfinite(r2['chi2']) and \
+                abs(r2['p0'] - r['p0']) > ROBUST_MIN_MOVE_MM:
+            r = r2
+    tan = ((r['w'] * 1e3 - cal.w0.get(plane, 0.0))
+           / (cal.kw.get(plane, 1.0) * cal.v_drift))
     ep, ew = _errors(P, plane, r, hyper)
     q_sum, q_u50, q_u90, q_uend = _profile_summary(r['q'])
     return PlaneFit(
@@ -188,15 +243,43 @@ U_MIN_NS = 250.0
 U_MAX_NS = 1100.0
 TAN_MAX = 0.6
 
+# Candidate ranking mode. 'dchi2' is the 2026-07-29 production rule (largest
+# chi2 improvement over "no signal" wins). 'dur' ranks primarily on how close
+# the fitted charge column's median arrival is to the run's full-gap value —
+# a muon crosses the whole gap, so q_u50 ~ (gap / v) / 2 regardless of angle,
+# which junk deposits have no reason to satisfy. U50_EXPECT_NS is per run
+# condition (measured as the median q_u50 of single-candidate events).
+SCORE_MODE = 'dchi2'
+U50_EXPECT_NS: Optional[float] = None
+U50_SOFT_NS = 150.0
+
 
 def _candidate_score(P, plane, fit: PlaneFit) -> tuple:
     """(plausible, dchi2) for one candidate cluster's fit."""
     W, noise, pos, sat = wm.prep_plane(P, plane)
-    chi_null = float(((W / noise[:, None]) ** 2)[~sat].sum())
+    if wm.MODEL_FRAC <= 0:
+        chi_null = float(((W / noise[:, None]) ** 2)[~sat].sum())
+    else:
+        Wt = wm.sample_weights(W, noise)
+        chi_null = float(((W.reshape(-1) * Wt) ** 2)[~sat.reshape(-1)].sum())
     u = fit.q_uend
     plausible = (np.isfinite(u) and U_MIN_NS <= u <= U_MAX_NS
                  and abs(fit.tan_theta) < TAN_MAX)
     return bool(plausible), float(chi_null - fit.chi2)
+
+
+def _cand_key(plausible: bool, dchi2: float, fit: PlaneFit) -> tuple:
+    """Ranking key for one candidate; larger wins."""
+    p = 1 if plausible else 0
+    if SCORE_MODE == 'dchi2' or U50_EXPECT_NS is None:
+        return (p, dchi2)
+    du = (abs(fit.q_u50 - U50_EXPECT_NS)
+          if np.isfinite(fit.q_u50) else 1e9)
+    if SCORE_MODE == 'dur':
+        return (p, -du, dchi2)
+    if SCORE_MODE == 'durw':      # dchi2 damped by duration mismatch
+        return (p, dchi2 * float(np.exp(-0.5 * (du / U50_SOFT_NS) ** 2)))
+    raise ValueError(f'unknown SCORE_MODE {SCORE_MODE!r}')
 
 
 def fit_plane_candidates(windows: list, plane: str, cal: CalibrationBundle,
@@ -234,7 +317,7 @@ def fit_plane_candidates(windows: list, plane: str, cal: CalibrationBundle,
         n_ok += 1
         plausible, dchi2 = _candidate_score(P, plane, fit)
         fit._plausible, fit._dchi2 = plausible, dchi2
-        key = (1 if plausible else 0, dchi2)
+        key = _cand_key(plausible, dchi2, fit)
         ranked.append((key, fit))
         if best_key is None or key > best_key:
             best, best_key = fit, key
@@ -418,7 +501,15 @@ def reconstruct_run(cfg, cal: CalibrationBundle, out_path: str,
                                gap_mm=wseed.GAP_THRESHOLD_MM,
                                spark_veto=wseed.SPARK_VETO_HITS,
                                pad_strips=pad_strips,
-                               event_filter=bool(event_filter)))
+                               event_filter=bool(event_filter)),
+                reco_config=dict(model_frac=wm.MODEL_FRAC,
+                                 prescan_coarse=PRESCAN_COARSE,
+                                 chi2dof_bad=CHI2DOF_BAD,
+                                 # both angle constants: an angle in the table
+                                 # is (w*1e3 - w0) / (kw * v), so a reader
+                                 # cannot interpret it without kw either
+                                 w0=dict(cal.w0), kw=dict(cal.kw),
+                                 share_lp=bool(cal.hyper.get('share_lp'))))
     with open(out_path.replace('.parquet', '.meta.json'), 'w') as f:
         json.dump(meta, f, indent=1, default=str)
     if verbose:
