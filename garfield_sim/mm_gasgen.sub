@@ -1,0 +1,23 @@
+# mm_gasgen.sub — one HTCondor job per Magboltz gas table.
+# Submit from garfield_sim/ on lxplus:
+#     condor_submit mm_gasgen.sub
+# Points come from gasgen_points.txt (one "LABEL PRESSURE" pair per line).
+# The finished .gas file is transferred straight into gas_tables/.
+
+universe                = vanilla
+executable              = mm_gasgen_wrap.sh
+arguments               = $(LABEL) $(PRES) 10
+transfer_input_files    = mm_gasgen_one.py, mm_config.py
+should_transfer_files   = YES
+when_to_transfer_output = ON_EXIT
+transfer_output_files   = $(LABEL)_$(PRES).gas
+transfer_output_remaps  = "$(LABEL)_$(PRES).gas = gas_tables/$(LABEL)_$(PRES).gas"
+output                  = logs/gasgen_$(LABEL)_$(PRES).out
+error                   = logs/gasgen_$(LABEL)_$(PRES).err
+log                     = logs/gasgen.clog
+request_cpus            = 1
+request_memory          = 4 GB
+request_disk            = 2 GB
++MaxRuntime             = 86400
+max_retries             = 2
+queue LABEL,PRES from gasgen_points.txt

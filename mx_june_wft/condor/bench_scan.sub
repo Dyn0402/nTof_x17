@@ -1,0 +1,33 @@
+# bench_scan.sub — one condor job per reconstruction-benchmark scan point.
+#
+#   condor_submit bench_scan.sub
+#
+# bench_jobs.txt lines: <cache> <bundle_tgz> <scan_json> <index> <tag>
+# Build it with make_bench_package.py. Each job re-fits the same fixed event
+# subset under one calibration patch and scores it against the cached M3 truth,
+# so points are directly comparable (correlated events, not independent draws).
+
+universe                = vanilla
+executable              = run_bench_job.sh
+arguments               = $(cache) $(bundle) $(scan) $(idx) $(tag)
+
+should_transfer_files   = YES
+when_to_transfer_output = ON_EXIT
+transfer_input_files    = payload.tar.gz, inputs/$(cache), inputs/$(bundle), inputs/$(scan)
+transfer_output_files   = result_bench_$(tag).tar.gz
+transfer_output_remaps  = "result_bench_$(tag).tar.gz = out/result_bench_$(tag).tar.gz"
+
+output                  = log/$(tag).out
+error                   = log/$(tag).err
+log                     = log/bench_scan.log
+
+request_cpus            = 2
+request_memory          = 4GB
+request_disk            = 4GB
+environment             = "OMP_NUM_THREADS=2"
++JobFlavour             = "longlunch"
+
+max_retries             = 2
+requirements            = (OpSysAndVer =?= "AlmaLinux9")
+
+queue cache, bundle, scan, idx, tag from bench_jobs.txt

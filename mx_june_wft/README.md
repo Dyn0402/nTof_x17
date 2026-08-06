@@ -7,6 +7,11 @@ it exists: `../RECONSTRUCTION_BASIS.md`. The reconstruction library it runs on:
 The old chain (`../mx_june_cosmic_qa/`) still runs and is the comparison
 reference. Nothing here overwrites it — all output goes to `.../<det>/wft/`.
 
+**Start here:** `ANALYSIS_STATE_2026-07-31.md` — the current state of the
+analysis, the systematics register, and the audit guide. `fleet_state.py` prints
+what is on disk right now (which bundle produced which table);
+`rollout_lp.sh <key>` puts a chamber on the production configuration.
+
 ## Chain
 
 ```bash

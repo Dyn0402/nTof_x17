@@ -73,6 +73,47 @@ python3 mm_condor_collect.py --no-append    # discard existing results, start fr
 Gas tables must be generated **before** submitting to HTCondor (gas files are
 transferred to worker nodes as HTCondor input files).
 
+### Gas tables on HTCondor (preferred on lxplus)
+
+`mm_generate_gas.py` runs every table in a local process pool — fine on a
+workstation, wrong on lxplus (interactive nodes kill long CPU hogs, and one
+hung Magboltz stalls the pool). Use one job per table instead:
+
+```bash
+# edit gasgen_points.txt: one "GAS_LABEL PRESSURE_LABEL" pair per line
+condor_submit mm_gasgen.sub          # finished .gas lands straight in gas_tables/
+```
+
+`mm_gasgen_one.py` takes the composition and field grid from `mm_config.py`
+(transferred with the job), so the config stays the single source of truth.
+
+### Picking a voltage window before you burn CPU
+
+Avalanche cost explodes with gain — a 200-event batch is minutes at G ~ 10³ and
+hours at G ~ 10⁵. `mm_alpha_predict.py` reads α and η straight out of a new
+`.gas` file and predicts the gain curve, calibrating the Penning shortfall
+`K = ln G_sim / ((α−η)·d)` on gases that were already simulated:
+
+```bash
+python3 mm_alpha_predict.py --calibrate Ar_iC4H10_95_5 Ar_iC4H10_90_10 \
+                            --predict Ar_CO2_iC4H10_93_5_2 --pressure CERN_450m
+```
+
+K runs ~1.5 (Ar/CO₂ 70/30) to ~2.5 (Ar/iC₄H₁₀ 98/2) and tracks the argon
+fraction, so treat the prediction as ±30 V on the window and confirm with a
+cheap prescan:
+
+```bash
+python3 mm_condor_submit.py --gas Ar_CO2_iC4H10_93_5_2_rP040 \
+        --pressure CERN --batches 1 --events-per-batch 20 \
+        --voltages 380:560:20 --jobs-dir $PWD/jobs_prescan
+```
+
+`--jobs-dir` keeps low-statistics prescan fragments out of the production
+merge. Then set `TERNARY_VOLTAGES` in `mm_condor_submit.py` and submit for
+real. **Always pass `--gas`** — an unfiltered submit would refill every missing
+fragment of every gas in `RUN_CONFIG` (thousands of jobs).
+
 ---
 
 ## Gas Mixtures
@@ -91,6 +132,24 @@ automatically by `mm_generate_gas.py` and the local scan scripts.
 | `Ne_CF4_90_10` | Ne/CF₄ 90/10% | manual, rP=0.40 (Ne metastable 16.6 eV; not in Garfield++ built-in table) |
 | `Ar_CF4_CO2_45_40_15` | Ar/CF₄/CO₂ 45/40/15% | auto |
 | `CF4_100` | Pure CF₄ | auto (single component) |
+| `Ar_CO2_iC4H10_93_5_2` | Ar/CO₂/iC₄H₁₀ 93/5/2% | **manual, rP = 0.40** (central; run as `_rP030/_rP040/_rP050`) — auto does **nothing** for this ternary, see below |
+
+**⚠ Ar/CO₂/iC₄H₁₀ 93/5/2 (the n_TOF operating gas) — Penning must be manual.**
+Probed against LCG_108 Garfield++ on 2026-07-31:
+`EnablePenningTransfer()` prints *"Penning transfer probability for
+Ar/CO2/iC4H10 is not implemented"* and returns **false**, i.e. `mode: "auto"`
+would simulate this mixture with **zero** Penning transfer while the
+`Ar_iC4H10_95_5` reference runs at rP = 0.40 — a large, silent bias on any
+gain comparison. Garfield's built-in binaries at 720.8 Torr for reference:
+
+| Ar/CO₂ | 1% | 3% | 5% | 7% | 10% | 15% | 20% | 30% |
+|---|---|---|---|---|---|---|---|---|
+| rP | 0.171 | 0.266 | 0.330 | 0.376 | 0.424 | 0.476 | 0.509 | 0.547 |
+
+Ar/iC₄H₁₀ is a flat 0.400 at every fraction (Garfield only has the 10%
+measurement of Sahin et al.). At 7% total quencher the ternary sits at
+rP ≈ 0.40; it is simulated at 0.30 / 0.40 / 0.50 so the Penning systematic
+propagates into the HV map instead of hiding inside it.
 
 **Penning notes:**
 - `mode: "auto"` calls `EnablePenningTransfer()` — uses Garfield++'s built-in

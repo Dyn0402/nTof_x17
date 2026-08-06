@@ -1,0 +1,59 @@
+{
+ "hyper": {
+  "c1": 0.05018715924117159,
+  "c2": 0.058530893185822316,
+  "kY": 3.10684884252362,
+  "tau_s": 142.9199129942108,
+  "sigma_s": 11.961483880834264,
+  "sigma_p0": 0.3559537921972975,
+  "Dp": 0.00042461921129750336,
+  "share_lp": 1.0,
+  "kTauY": 1.78
+ },
+ "v_drift": 36.6,
+ "w0": {
+  "x": -0.0038760076288477663,
+  "y": -0.16953845072207008
+ },
+ "kw": {
+  "x": 1.0062970541466245,
+  "y": 1.0240896681536453
+ },
+ "dt_xy": {
+  "4": -22.889908237605198,
+  "-2": 50.85961910212225
+ },
+ "pitch_mm": 0.78,
+ "sample_ns": 60.0,
+ "n_depth_bins": 18,
+ "sat_adc": 3550.0,
+ "detector": "mx17_3",
+ "run_key": "g_det3",
+ "conditions": {
+  "run": "mx17_det2_det3_overnight_6-22-26",
+  "sub_run": "long_run"
+ },
+ "provenance": {
+  "code_commit": "1292d91",
+  "note": "transfer ablation: det3 6-22 kernel, 6-27 w0/kw",
+  "n_train": 180,
+  "chi2": 19554443.819992956,
+  "chi2_init": 21999799.535050374,
+  "fitted": "wft.calibrate",
+  "gain_map": "unit (not fitted)",
+  "derived": {
+   "kernel_from": "/home/dylan/x17/cosmic_bench/Analysis/mx17_det2_det3_overnight_6-22-26/long_run/mx17_3/wft/calib_bundle_lp",
+   "w0kw_from": "/home/dylan/x17/cosmic_bench/Analysis/mx17_det3_saturday_scan_6-27-26/long_run_resist_490V_drift_1000V/mx17_3/wft/calib_bundle_lp2",
+   "w0_replaced": [
+    {
+     "x": 0.38472262414408787,
+     "y": -0.12338113139779017
+    },
+    {
+     "x": -0.0038760076288477663,
+     "y": -0.16953845072207008
+    }
+   ]
+  }
+ }
+}

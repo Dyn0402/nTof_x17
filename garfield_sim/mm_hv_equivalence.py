@@ -60,6 +60,20 @@ V_REF_HI  = 490.0
 V_REF_STEP = 10.0
 PRESSURES = [("Saclay_160m", "Saclay 160 m"), ("CERN_450m", "CERN 450 m")]
 
+# ── Ar/CO2/iC4H10 93/5/2 — the n_TOF operating mixture ───────────────────────
+# Not a member of the Ar/iC4H10 binary family, but mapped onto the same 95/5
+# reference. Garfield++ has no built-in Penning parameterisation for this
+# ternary, so it was simulated at three hand-set transfer probabilities; the
+# spread between them IS the Penning systematic on the map.
+TERNARY_BASE     = "Ar_CO2_iC4H10_93_5_2"
+TERNARY_VARIANTS = [
+    (f"{TERNARY_BASE}_rP030", 0.30),
+    (f"{TERNARY_BASE}_rP040", 0.40),   # central
+    (f"{TERNARY_BASE}_rP050", 0.50),
+]
+TERNARY_CENTRAL  = f"{TERNARY_BASE}_rP040"
+TERNARY_LABELS   = [lab for lab, _ in TERNARY_VARIANTS]
+
 PRETTY = {
     "Ar_iC4H10_98_2":  "98/2",
     "Ar_iC4H10_95_5":  "95/5",
@@ -67,24 +81,44 @@ PRETTY = {
     "Ar_iC4H10_85_15": "85/15",
     "Ar_iC4H10_80_20": "80/20",
     "Ar_iC4H10_75_25": "75/25",
+    f"{TERNARY_BASE}_rP030": "93/5/2 r=0.30",
+    f"{TERNARY_BASE}_rP040": "93/5/2 r=0.40",
+    f"{TERNARY_BASE}_rP050": "93/5/2 r=0.50",
 }
+
+
+def is_ternary(gas):
+    return gas.startswith(TERNARY_BASE)
 
 
 def ic4_frac(gas):
     """Isobutane percentage parsed from label 'Ar_iC4H10_<ar>_<ic4>'."""
+    if is_ternary(gas):
+        return 2.0                      # 93/5/2 carries 2% isobutane
     try:
         return float(gas.split("_")[-1])
     except Exception:
         return float("nan")
 
 
+def sort_key(gas):
+    """Binaries ordered by isobutane fraction; ternary variants last."""
+    return (1 if is_ternary(gas) else 0, ic4_frac(gas), gas)
+
+
 def load_family(results_dir):
-    """Load Ar/iC4H10 binary-family results keyed by (gas, pressure_label)."""
+    """
+    Load the Ar/iC4H10 binary family plus the Ar/CO2/iC4H10 ternary variants,
+    keyed by (gas, pressure_label).
+    """
     out = {}
     for fpath in sorted(glob.glob(os.path.join(results_dir, "*.json"))):
         with open(fpath) as f:
             d = json.load(f)
         gas = d.get("gas", "")
+        if is_ternary(gas):
+            out[(gas, d["pressure_label"])] = d
+            continue
         if not gas.startswith(FAMILY):
             continue
         # skip ternaries like Ar_CF4_iC4H10_...
@@ -143,7 +177,7 @@ def main():
     results_dir = cfg.RESULTS_DIR
     fam = load_family(results_dir)
 
-    gases = sorted({g for (g, _) in fam}, key=ic4_frac)
+    gases = sorted({g for (g, _) in fam}, key=sort_key)
     if REF_GAS not in gases:
         raise SystemExit(f"Reference {REF_GAS} not found in {results_dir}")
 
@@ -160,9 +194,11 @@ def main():
                  "V_ref_95_5_V", "G_ref", "V_equiv_V", "delta_V",
                  "extrapolated")]
 
-    # figure: left = V_equiv vs V_ref, right = ΔV vs isobutane at a mid V_ref
-    fig, axes = plt.subplots(1, 2, figsize=(14, 6))
+    # figure: left = V_equiv vs V_ref (binary family), middle = ΔV vs isobutane,
+    # right = the Ar/CO2/iC4H10 93/5/2 map with its Penning band
+    fig, axes = plt.subplots(1, 3, figsize=(19, 6))
     cmap = plt.get_cmap("viridis")
+    tern_curves = {}          # (pressure, gas) -> v_equiv array, for panel 3
 
     for pkey, ptitle in PRESSURES:
         # per-mixture fits
@@ -239,10 +275,23 @@ def main():
                                  f"{vr:.0f}", f"{gr:.1f}", f"{ve:.1f}",
                                  f"{ve - vr:+.1f}", "Y" if ex else "N"))
 
+            if is_ternary(gas):
+                tern_curves[(pkey, gas)] = (v_equiv, extrap)
+
             # plotting on CERN axis pair only to keep the figure legible
             if pkey == "CERN_450m":
-                col = cmap(gi / max(len(gases) - 1, 1))
                 ax = axes[0]
+                if is_ternary(gas):
+                    # only the central rP on the family panel, in red
+                    if gas != TERNARY_CENTRAL:
+                        continue
+                    ax.plot(v_ref_grid[~extrap], v_equiv[~extrap], "-D",
+                            color="crimson", ms=5, lw=2,
+                            label="93/5/2 (r=0.40)")
+                    ax.plot(v_ref_grid[extrap], v_equiv[extrap], "--D",
+                            color="crimson", ms=5, mfc="white")
+                    continue
+                col = cmap(gi / max(len(gases) - 1, 1))
                 ax.plot(v_ref_grid[~extrap], v_equiv[~extrap], "-o", color=col,
                         ms=4, label=PRETTY.get(gas, gas))
                 ax.plot(v_ref_grid[extrap], v_equiv[extrap], "--o", color=col,
@@ -250,26 +299,60 @@ def main():
 
         out["pressures"][pkey] = pdata
 
-        # right panel: ΔV vs isobutane fraction at a representative V_ref
+        # middle panel: ΔV vs isobutane fraction at a representative V_ref.
+        # Binary family only — the ternary's 2% isobutane is not comparable
+        # (it carries 5% CO2 as well), so it goes on as a standalone marker.
         v_pick = 450.0
         fr_list, dv_list, ex_list = [], [], []
+        tern_pick = {}
         a_r, b_r, c2_r = qa_ref
         lnG_pick = a_r + b_r * v_pick + c2_r * v_pick**2
         for gas in gases:
             if gas not in logquad:
                 continue
             ve = invert_logquad(logquad[gas], lnG_pick, vspan[gas])
+            ex = (ve < vspan[gas][0] - 1) or (ve > vspan[gas][1] + 1)
+            if is_ternary(gas):
+                tern_pick[gas] = (ve - v_pick, ex)
+                continue
             fr_list.append(ic4_frac(gas))
             dv_list.append(ve - v_pick)
-            ex_list.append((ve < vspan[gas][0] - 1) or (ve > vspan[gas][1] + 1))
+            ex_list.append(ex)
         order = np.argsort(fr_list)
         fr_arr = np.array(fr_list)[order]
         dv_arr = np.array(dv_list)[order]
         ex_arr = np.array(ex_list)[order]
         ls = "-" if pkey == "CERN_450m" else "--"
-        axes[1].plot(fr_arr, dv_arr, ls, marker="s", label=ptitle)
+        axes[1].plot(fr_arr, dv_arr, ls, marker="s", label=f"Ar/iC₄H₁₀ — {ptitle}")
         axes[1].scatter(fr_arr[ex_arr], dv_arr[ex_arr], facecolor="white",
                         edgecolor="k", zorder=5, s=60)
+        if TERNARY_CENTRAL in tern_pick:
+            dv_c = tern_pick[TERNARY_CENTRAL][0]
+            lo = min(v[0] for v in tern_pick.values())
+            hi = max(v[0] for v in tern_pick.values())
+            axes[1].errorbar([2.0], [dv_c],
+                             yerr=[[dv_c - lo], [hi - dv_c]],
+                             fmt="D", color="crimson", ms=8, capsize=5,
+                             zorder=6,
+                             label=("Ar/CO₂/iC₄H₁₀ 93/5/2 — " + ptitle
+                                    + " (bar = Penning r 0.30–0.50)"))
+
+        # right panel: the ternary map itself, with the Penning band
+        if pkey == "CERN_450m" and (pkey, TERNARY_CENTRAL) in tern_curves:
+            lo_v = np.minimum.reduce(
+                [tern_curves[(pkey, g)][0] for g in TERNARY_LABELS
+                 if (pkey, g) in tern_curves])
+            hi_v = np.maximum.reduce(
+                [tern_curves[(pkey, g)][0] for g in TERNARY_LABELS
+                 if (pkey, g) in tern_curves])
+            ce_v, ce_ex = tern_curves[(pkey, TERNARY_CENTRAL)]
+            axes[2].fill_between(v_ref_grid, lo_v, hi_v, color="crimson",
+                                 alpha=0.18,
+                                 label="Penning r = 0.30 – 0.50")
+            axes[2].plot(v_ref_grid, ce_v, "-D", color="crimson", ms=5, lw=2,
+                         label="central r = 0.40")
+            axes[2].plot(v_ref_grid[ce_ex], ce_v[ce_ex], "D", color="crimson",
+                         ms=5, mfc="white", label="extrapolated")
 
     # finish figure
     ax = axes[0]
@@ -288,9 +371,18 @@ def main():
     axes[1].set_title("Extra mesh voltage to match 95/5 @ 450 V\n"
                       "hollow markers = extrapolated")
     axes[1].grid(alpha=0.3)
-    axes[1].legend(fontsize=9)
+    axes[1].legend(fontsize=8)
 
-    fig.suptitle("Ar/iC₄H₁₀ — HV equivalence to 95/5 at equal gas gain",
+    axes[2].plot([V_REF_LO, V_REF_HI], [V_REF_LO, V_REF_HI], ":", color="grey",
+                 lw=1, label="y = x (95/5)")
+    axes[2].set_xlabel("V in 95/5 (V)")
+    axes[2].set_ylabel("Equivalent V in 93/5/2, same gain (V)")
+    axes[2].set_title("Ar/CO₂/iC₄H₁₀ 93/5/2 vs 95/5  (CERN 450 m)\n"
+                      "band = Penning-transfer systematic")
+    axes[2].grid(alpha=0.3)
+    axes[2].legend(fontsize=9, loc="upper left")
+
+    fig.suptitle("HV equivalence to Ar/iC₄H₁₀ 95/5 at equal gas gain",
                  fontsize=13)
     fig.tight_layout()
     fig.subplots_adjust(top=0.88)
@@ -314,6 +406,65 @@ def main():
     print(f"Saved: {jpath}")
     print(f"Saved: {cpath}")
     print(f"Saved: {os.path.join(results_dir, 'HV_EQUIVALENCE.md')}")
+
+
+def write_ternary_section(out, lines):
+    """
+    Dedicated section for Ar/CO2/iC4H10 93/5/2: the map you actually apply when
+    moving an HV setting from the 95/5 bench gas to the n_TOF operating gas,
+    with the Penning-transfer systematic shown explicitly.
+    """
+    have = any(g in pdata["mixtures"]
+               for pdata in out["pressures"].values()
+               for g in TERNARY_LABELS)
+    if not have:
+        return
+
+    lines.append("## Ar/CO₂/iC₄H₁₀ 93/5/2 — the operating mixture\n")
+    lines.append(
+        "Garfield++ has **no built-in Penning parameterisation** for this "
+        "ternary: `EnablePenningTransfer()` returns *false* and would leave the "
+        "mixture with **zero** Penning transfer while the 95/5 reference runs at "
+        "r = 0.40. It was therefore simulated at three hand-set transfer "
+        "probabilities — r = 0.30, 0.40 (central) and 0.50 — and the spread "
+        "between them is quoted below as the Penning systematic. The central "
+        "value follows Garfield's own binary parameterisations at this quencher "
+        "content (Ar/CO₂ gives 0.376 at 7% CO₂, Ar/iC₄H₁₀ 0.400 flat).\n")
+
+    for pkey, pdata in out["pressures"].items():
+        present = [g for g in TERNARY_LABELS if g in pdata["mixtures"]]
+        if not present:
+            continue
+        lines.append(f"### {pkey}\n")
+        lines.append("| V(95/5) | G(95/5) | " +
+                     " | ".join(f"V(93/5/2) r={PRETTY[g].split('=')[-1]}"
+                                for g in present) +
+                     " | ΔV central | Penning spread |")
+        lines.append("|" + "---|" * (4 + len(present)))
+        ref_rows = pdata["mixtures"][present[0]]["table"]
+        for i, rrow in enumerate(ref_rows):
+            vs = [pdata["mixtures"][g]["table"][i]["V_equiv"] for g in present]
+            marks = ["*" if pdata["mixtures"][g]["table"][i]["extrapolated"]
+                     else "" for g in present]
+            cen = (pdata["mixtures"][TERNARY_CENTRAL]["table"][i]["V_equiv"]
+                   if TERNARY_CENTRAL in pdata["mixtures"] else vs[len(vs) // 2])
+            cells = " | ".join(f"{v:.0f}{m}" for v, m in zip(vs, marks))
+            lines.append(f"| {rrow['V_ref']:.0f} | {rrow['G_ref']:,.0f} | "
+                         f"{cells} | {cen - rrow['V_ref']:+.0f} | "
+                         f"±{0.5 * (max(vs) - min(vs)):.0f} V |")
+        lines.append("")
+
+        if TERNARY_CENTRAL in pdata["mixtures"]:
+            am = pdata["mixtures"][TERNARY_CENTRAL]["analytic_map"]
+            lines.append(
+                f"Closed form at the central Penning value: "
+                f"`V(93/5/2) = {am['m']:.4f} · V(95/5) {am['c']:+.1f}` V "
+                f"(max deviation from the table above: "
+                f"{pdata['mixtures'][TERNARY_CENTRAL]['linear_map_max_resid_vs_table_V']:.1f} V).\n")
+
+    lines.append(
+        "`*` = the match falls outside the voltage range actually simulated for "
+        "the ternary and is an extrapolation of its fit.\n")
 
 
 def write_markdown(out, path):
@@ -380,11 +531,16 @@ def write_markdown(out, path):
             lines.append(f"| {vr:.0f} | {gr:,.0f} | " + " | ".join(cells) + " |")
         lines.append("")
 
+    write_ternary_section(out, lines)
+
     lines.append("## Notes\n")
     lines.append(
         "- Gain model is per-mixture `ln G = a + b·V + c₂·V²` (R² ≥ 0.997); the "
         "closed-form linear map above uses the single-exponential fit and agrees "
         "with the table to within the listed residual inside the reference range.\n"
+        "- The reference itself is simulated to 490 V at Saclay but only to 480 V "
+        "at CERN, so the CERN 490 V row is a 10 V extrapolation of the 95/5 fit "
+        "(small compared with its 80 V fitted span, but it is not measured).\n"
         "- 95/5 is only simulated to 490 V, so the reference does not extrapolate; "
         "the equivalents for 80/20 and 75/25 (and the low-voltage end of 98/2) "
         "*do* extrapolate and should be treated as indicative.\n"

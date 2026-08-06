@@ -46,24 +46,52 @@ DRIFT_GAP = 30.0
 W_STRIP = 30.1           # mylar front -> strip plane (40um mylar + cath + 30mm)
 
 # ---- ACTIVE volumes only (SimConfig.hh / DetectorConstruction.cc) ----------
+# Re-synced 2026-07-31 against the current Geant build (SimConfig.hh via
+# scripts/plot_geometry.py) and cross-checked against the DAQ
+# run_79/run_config.json, which places every scintillator in the global frame.
+# Depths below are from the arm's mylar front face; the strip plane is at
+# W_STRIP, so subtract 30.1 mm for "past the strips".
+#
 # SiPM wall: 20 bars x 25 mm on the STRUCTURE; 16 instrumented, window
-# shifted 1 bar toward the MM = toward -u (DetectorConstruction.cc:489-500,
-# bars 1..16 -> u in [-225, +175] mm). NB plot_geometry.py disagrees on the
-# shift sign (+u, bars 3..18) — the SIM is taken as authoritative here.
+# shifted 1 bar toward the MM = toward -u (DetectorConstruction.cc:620-632,
+# bars 1..16 -> u in [-225, +175] mm). The run_config agrees: sipm_A_01..16
+# sit at u = -212.5 .. +162.5 mm. NB plot_geometry.py in the Geant repo has
+# the shift sign flipped (bars 3..18, u in [-175, +225]) — a bug in that
+# DRAWING script only; the sim and the DAQ config agree with the table here.
 SIPM_BAR_W = 25.0
 SIPM_N_BARS = 20
 SIPM_READ_BARS = list(range(1, 17))       # instrumented bar indices 0..19
-SIPM_SCINT_W0, SIPM_SCINT_W1 = 125.0, 128.0   # 3 mm active scint, container mid
+SIPM_SCINT_W0, SIPM_SCINT_W1 = 126.0, 129.0   # 3 mm active scint, container mid
+SIPM_CONT_W0, SIPM_CONT_W1 = 110.0, 145.0     # container (mostly empty)
 SIPM_HALF_V = 250.0
-# Plastics: two PVT bars 200x300x25 mm, centred on the MM, side by side in u
-PLASTIC_W0, PLASTIC_W1 = 213.2, 238.2     # active PVT depth span
+# Plastics: two PVT bars 200x300x20 mm, centred on the MM, side by side in u.
+# 20 mm, not 25: corrected in the sim on 2026-07-20. The SiPM-back -> plastic
+# gap was surveyed per arm on 2026-07-17, so the depth is per arm too.
+PLASTIC_W0 = {'D': 210.2, 'B': 206.2, 'A': 208.2, 'C': 206.2}   # active PVT
+PLASTIC_THICK = 20.0
 PLASTIC_HALF_U = 100.0                    # one bar
 PLASTIC_HALF_V = 150.0
 PLASTIC_U_OFFSET = 101.72                 # bar centre offset (wrap + 3 mm gap)
-# LS: single LAB layer 450x450x20 mm, centred on the MM
-LS_W0, LS_W1 = 291.0, 311.0
-LS_HALF_U = 225.0
-LS_HALF_V = 225.0
+# LS: one LAB slab, 451x450x21.2 mm + a 12.5 mm bulge dome on each face,
+# surveyed per arm 2026-07-17/18 and centred on the STRUCTURE (not the MM).
+LS_W0 = {'D': 268.0, 'B': 272.0, 'A': 268.0, 'C': 272.0}
+LS_THICK = 21.2
+LS_BULGE = 12.5
+LS_HALF_U = 225.6
+LS_HALF_V = 225.3
+LS_OFFSET_U = {'D': 8.3, 'B': -13.4, 'A': 6.3, 'C': -17.4}      # on structure
+LS_OFFSET_V = {'D': -0.4, 'B': 0.3, 'A': 0.6, 'C': -0.7}
+
+
+def plastic_span(arm: str) -> tuple:
+    """(w0, w1) of the active PVT from the mylar front face."""
+    return PLASTIC_W0[arm], PLASTIC_W0[arm] + PLASTIC_THICK
+
+
+def sipm_bar_u(bar: int) -> tuple:
+    """(u_lo, u_hi) of SiPM bar index `bar` (0..19) on the STRUCTURE."""
+    c = SIPM_BAR_W * (bar - (SIPM_N_BARS - 1) / 2.0)
+    return c - SIPM_BAR_W / 2, c + SIPM_BAR_W / 2
 
 # He-3 target capsule ACTIVE gas: STEP-derived polycone profile, axis = +Y
 # (plot_geometry.py Z_GAS/RO_GAS, cm -> mm)
@@ -227,14 +255,18 @@ def arm_active_volumes(arm: str) -> List[dict]:
                         u_lo=u_c - SIPM_BAR_W / 2, u_hi=u_c + SIPM_BAR_W / 2,
                         w0=SIPM_SCINT_W0, w1=SIPM_SCINT_W1,
                         half_v=SIPM_HALF_V))
+    w0, w1 = plastic_span(arm)
     for side, tag in ((-1.0, 'L'), (+1.0, 'R')):
         u_c = side * PLASTIC_U_OFFSET
         els.append(dict(name=f'plastic {tag}', kind='plastic', on='mm',
                         u_lo=u_c - PLASTIC_HALF_U, u_hi=u_c + PLASTIC_HALF_U,
-                        w0=PLASTIC_W0, w1=PLASTIC_W1, half_v=PLASTIC_HALF_V))
-    els.append(dict(name='LS', kind='ls', on='mm',
-                    u_lo=-LS_HALF_U, u_hi=LS_HALF_U,
-                    w0=LS_W0, w1=LS_W1, half_v=LS_HALF_V))
+                        w0=w0, w1=w1, half_v=PLASTIC_HALF_V))
+    u_c = LS_OFFSET_U[arm]
+    els.append(dict(name='LS', kind='ls', on='struct',
+                    u_lo=u_c - LS_HALF_U, u_hi=u_c + LS_HALF_U,
+                    w0=LS_W0[arm] - LS_BULGE,
+                    w1=LS_W0[arm] + LS_THICK + LS_BULGE,
+                    half_v=LS_HALF_V))
     return els
 
 

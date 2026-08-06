@@ -1,0 +1,467 @@
+{
+  "reference": "Ar_CO2_70_30_uRW50",
+  "target_base": "Ne_CF4_C2H6_80_10_10_uRW50",
+  "target_variants": [
+    "Ne_CF4_C2H6_80_10_10_uRW50_rP040",
+    "Ne_CF4_C2H6_80_10_10_uRW50_rP050",
+    "Ne_CF4_C2H6_80_10_10_uRW50_rP060"
+  ],
+  "target_central": "Ne_CF4_C2H6_80_10_10_uRW50_rP050",
+  "gap_cm": 0.005,
+  "pressures": {
+    "CERN_450m": {
+      "ref": {
+        "span": [
+          280.0,
+          520.0
+        ],
+        "n_events": 1000,
+        "penning": {
+          "mode": "auto"
+        },
+        "partial": false
+      },
+      "targets": {
+        "Ne_CF4_C2H6_80_10_10_uRW50_rP040": {
+          "span": [
+            220.0,
+            480.0
+          ],
+          "n_events": 400,
+          "penning": {
+            "mode": "manual",
+            "rP": 0.4,
+            "gas": "ne"
+          },
+          "partial": false
+        },
+        "Ne_CF4_C2H6_80_10_10_uRW50_rP050": {
+          "span": [
+            220.0,
+            480.0
+          ],
+          "n_events": 1000,
+          "penning": {
+            "mode": "manual",
+            "rP": 0.5,
+            "gas": "ne"
+          },
+          "partial": false
+        },
+        "Ne_CF4_C2H6_80_10_10_uRW50_rP060": {
+          "span": [
+            220.0,
+            480.0
+          ],
+          "n_events": 400,
+          "penning": {
+            "mode": "manual",
+            "rP": 0.6,
+            "gas": "ne"
+          },
+          "partial": false
+        }
+      },
+      "rows": [
+        {
+          "V_ref": 296.06208572935003,
+          "G": 72.12205760708822,
+          "V_ref_extrap": false,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP040": 225.1010633554744,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP040_extrap": false,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP050": 221.39888783372052,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP050_extrap": false,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP060": 219.99999999999991,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP060_extrap": true
+        },
+        {
+          "V_ref": 312.41108931312294,
+          "G": 109.4070774730164,
+          "V_ref_extrap": false,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP040": 242.2371205722804,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP040_extrap": false,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP050": 238.7362978783602,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP050_extrap": false,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP060": 236.59344671114633,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP060_extrap": false
+        },
+        {
+          "V_ref": 328.780346698083,
+          "G": 165.96737528478664,
+          "V_ref_extrap": false,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP040": 259.6933100738841,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP040_extrap": false,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP050": 256.3296625595872,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP050_extrap": false,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP060": 253.4806447748531,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP060_extrap": false
+        },
+        {
+          "V_ref": 345.1699333449185,
+          "G": 251.76771279458416,
+          "V_ref_extrap": false,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP040": 277.48827370158955,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP040_extrap": false,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP050": 274.1906642085411,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP050_extrap": false,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP060": 270.6777702551608,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP060_extrap": false
+        },
+        {
+          "V_ref": 361.5799251840692,
+          "G": 381.92434565558,
+          "V_ref_extrap": false,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP040": 295.6425359970687,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP040_extrap": false,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP050": 292.33190183735195,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP050_extrap": false,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP060": 288.20254069304445,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP060_extrap": false
+        },
+        {
+          "V_ref": 378.0103986198173,
+          "G": 579.3681969198905,
+          "V_ref_extrap": false,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP040": 314.17878166615935,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP040_extrap": false,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP050": 310.7669951171796,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP050_extrap": false,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP060": 306.07442894811624,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP060_extrap": false
+        },
+        {
+          "V_ref": 394.4614305344548,
+          "G": 878.8848142844236,
+          "V_ref_extrap": false,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP040": 333.1221879415805,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP040_extrap": false,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP050": 329.5107040301921,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP050_extrap": false,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP060": 324.3149167639291,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP060_extrap": false
+        },
+        {
+          "V_ref": 410.93309829246664,
+          "G": 1333.242868501069,
+          "V_ref_extrap": false,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP040": 352.50082573494177,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP040_extrap": false,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP050": 348.57906718380667,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP050_extrap": false,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP060": 342.9477974663248,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP060_extrap": false
+        },
+        {
+          "V_ref": 427.42547974478475,
+          "G": 2022.4909083862174,
+          "V_ref_extrap": false,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP040": 372.3461478234709,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP040_extrap": false,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP050": 367.9895624731346,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP050_extrap": false,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP060": 361.9995399575956,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP060_extrap": false
+        },
+        {
+          "V_ref": 443.9386532330767,
+          "G": 3068.060269546931,
+          "V_ref_extrap": false,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP040": 392.69358832783297,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP040_extrap": false,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP050": 387.76129467014164,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP050_extrap": false,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP060": 381.4997298962612,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP060_extrap": false
+        },
+        {
+          "V_ref": 460.4726975940867,
+          "G": 4654.158779424719,
+          "V_ref_extrap": false,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP040": 413.58330615615324,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP040_extrap": false,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP050": 407.9152156696916,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP050_extrap": false,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP060": 401.48160906268,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP060_extrap": false
+        },
+        {
+          "V_ref": 477.0276921640266,
+          "G": 7060.224389690663,
+          "V_ref_extrap": false,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP040": 435.0611170711545,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP040_extrap": false,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP050": 428.47438462207725,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP050_extrap": false,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP060": 421.98274101699,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP060_extrap": false
+        },
+        {
+          "V_ref": 493.6037167830231,
+          "G": 10710.156398863608,
+          "V_ref_extrap": false,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP040": 457.17967639418583,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP040_extrap": false,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP050": 449.4642771528939,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP050_extrap": false,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP060": 443.04584119026805,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP060_extrap": false
+        },
+        {
+          "V_ref": 510.20085179960415,
+          "G": 16246.997794519826,
+          "V_ref_extrap": false,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP040": 479.99999999999994,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP040_extrap": false,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP050": 470.9131554898522,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP050_extrap": false,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP060": 464.7198239598135,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP060_extrap": false
+        }
+      ],
+      "linear_map": {
+        "Ne_CF4_C2H6_80_10_10_uRW50_rP040": {
+          "m": 1.1869558023883442,
+          "c": -131.82329903726577,
+          "max_resid_V": 6.237437610249856
+        },
+        "Ne_CF4_C2H6_80_10_10_uRW50_rP050": {
+          "m": 1.169623024453662,
+          "c": -129.4778847694391,
+          "max_resid_V": 4.5957404663378725
+        },
+        "Ne_CF4_C2H6_80_10_10_uRW50_rP060": {
+          "m": 1.1534707397471877,
+          "c": -127.69606606269153,
+          "max_resid_V": 6.197113025362739
+        }
+      }
+    },
+    "Saclay_160m": {
+      "ref": {
+        "span": [
+          280.0,
+          520.0
+        ],
+        "n_events": 1000,
+        "penning": {
+          "mode": "auto"
+        },
+        "partial": false
+      },
+      "targets": {
+        "Ne_CF4_C2H6_80_10_10_uRW50_rP040": {
+          "span": [
+            220.0,
+            480.0
+          ],
+          "n_events": 400,
+          "penning": {
+            "mode": "manual",
+            "rP": 0.4,
+            "gas": "ne"
+          },
+          "partial": false
+        },
+        "Ne_CF4_C2H6_80_10_10_uRW50_rP050": {
+          "span": [
+            220.0,
+            480.0
+          ],
+          "n_events": 1000,
+          "penning": {
+            "mode": "manual",
+            "rP": 0.5,
+            "gas": "ne"
+          },
+          "partial": false
+        },
+        "Ne_CF4_C2H6_80_10_10_uRW50_rP060": {
+          "span": [
+            220.0,
+            480.0
+          ],
+          "n_events": 400,
+          "penning": {
+            "mode": "manual",
+            "rP": 0.6,
+            "gas": "ne"
+          },
+          "partial": false
+        }
+      },
+      "rows": [
+        {
+          "V_ref": 300.85793590114736,
+          "G": 72.731941912078,
+          "V_ref_extrap": false,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP040": 226.22281199194563,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP040_extrap": false,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP050": 223.57878821786693,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP050_extrap": false,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP060": 220.0000000000001,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP060_extrap": false
+        },
+        {
+          "V_ref": 317.48812038645025,
+          "G": 110.76346171007275,
+          "V_ref_extrap": false,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP040": 243.69705816871416,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP040_extrap": false,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP050": 240.75170565799135,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP050_extrap": false,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP060": 236.99049228857842,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP060_extrap": false
+        },
+        {
+          "V_ref": 334.0976457657347,
+          "G": 168.6816566073484,
+          "V_ref_extrap": false,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP040": 261.4488023389397,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP040_extrap": false,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP050": 258.1911579186314,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP050_extrap": false,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP060": 254.24487975027662,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP060_extrap": false
+        },
+        {
+          "V_ref": 350.68658884053474,
+          "G": 256.88526556056405,
+          "V_ref_extrap": false,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP040": 279.49170033741655,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP040_extrap": false,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP050": 275.90995459867924,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP050_extrap": false,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP060": 271.77585464141583,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP060_extrap": false
+        },
+        {
+          "V_ref": 367.25502593769954,
+          "G": 391.2105263213708,
+          "V_ref_extrap": false,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP040": 297.84056617541,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP040_extrap": false,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP050": 293.9219654483109,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP050_extrap": false,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP060": 289.5971604727458,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP060_extrap": false
+        },
+        {
+          "V_ref": 383.8030329135011,
+          "G": 595.7744426122465,
+          "V_ref_extrap": false,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP040": 316.51151440958074,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP040_extrap": false,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP050": 312.2422474300369,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP050_extrap": false,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP060": 307.7237181052861,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP060_extrap": false
+        },
+        {
+          "V_ref": 400.33068515767013,
+          "G": 907.3047952149225,
+          "V_ref_extrap": false,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP040": 335.5221258347107,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP040_extrap": false,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP050": 330.88719205667303,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP050_extrap": false,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP060": 326.17177198577895,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP060_extrap": false
+        },
+        {
+          "V_ref": 416.83805759741955,
+          "G": 1381.7343151051612,
+          "V_ref_extrap": false,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP040": 354.8916413477199,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP040_extrap": false,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP050": 349.87469710729187,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP050_extrap": false,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP060": 344.95906059855605,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP060_extrap": false
+        },
+        {
+          "V_ref": 433.32522470139446,
+          "G": 2104.2429485748276,
+          "V_ref_extrap": false,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP040": 374.64119006811586,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP040_extrap": false,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP050": 369.22436784008397,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP050_extrap": false,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP060": 364.1050162233728,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP060_extrap": false
+        },
+        {
+          "V_ref": 449.7922604835997,
+          "G": 3204.5512210427337,
+          "V_ref_extrap": false,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP040": 394.7940594172565,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP040_extrap": false,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP050": 388.95775414205366,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP050_extrap": false,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP060": 383.63100040339884,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP060_extrap": false
+        },
+        {
+          "V_ref": 466.2392385072752,
+          "G": 4880.210498146893,
+          "V_ref_extrap": false,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP040": 415.3760169932578,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP040_extrap": false,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP050": 409.09863178616337,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP050_extrap": false,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP060": 403.5605832503181,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP060_extrap": false
+        },
+        {
+          "V_ref": 482.6662318887228,
+          "G": 7432.071720318316,
+          "V_ref_extrap": false,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP040": 436.41569692586955,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP040_extrap": false,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP050": 429.6733382571795,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP050_extrap": false,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP060": 423.9198769941799,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP060_extrap": false
+        },
+        {
+          "V_ref": 499.0733133011131,
+          "G": 11318.30073250512,
+          "V_ref_extrap": false,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP040": 457.94506723882023,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP040_extrap": false,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP050": 450.71117667267174,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP050_extrap": false,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP060": 444.73793723837065,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP060_extrap": false
+        },
+        {
+          "V_ref": 515.4605549782195,
+          "G": 17236.63822043139,
+          "V_ref_extrap": false,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP040": 479.99999999999994,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP040_extrap": false,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP050": 472.24490547634315,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP050_extrap": false,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP060": 466.04724951509326,
+          "Ne_CF4_C2H6_80_10_10_uRW50_rP060_extrap": false
+        }
+      ],
+      "linear_map": {
+        "Ne_CF4_C2H6_80_10_10_uRW50_rP040": {
+          "m": 1.178193197734886,
+          "c": -133.02233215970546,
+          "max_resid_V": 5.710212583717919
+        },
+        "Ne_CF4_C2H6_80_10_10_uRW50_rP050": {
+          "m": 1.1604094411794512,
+          "c": -130.62614954319346,
+          "max_resid_V": 5.086548487606848
+        },
+        "Ne_CF4_C2H6_80_10_10_uRW50_rP060": {
+          "m": 1.153839559828155,
+          "c": -132.76771935973804,
+          "max_resid_V": 5.625931028751012
+        }
+      }
+    }
+  }
+}

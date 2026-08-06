@@ -1,0 +1,31 @@
+# residual.sub — the model goodness-of-fit audit, one job per event shard.
+#
+#   condor_submit residual.sub
+#
+# residual_jobs.txt lines: <cache> <bundle_tgz> <shard_i> <n_shards> <tag>
+# Shards are events[i::N], so every shard samples the whole run uniformly and
+# the stacks add.
+
+universe                = vanilla
+executable              = run_residual_job.sh
+arguments               = $(cache) $(bundle) $(shard) $(nshard) $(tag)
+
+should_transfer_files   = YES
+when_to_transfer_output = ON_EXIT
+transfer_input_files    = payload.tar.gz, inputs/$(cache), inputs/$(bundle)
+transfer_output_files   = result_resid_$(tag).tar.gz
+transfer_output_remaps  = "result_resid_$(tag).tar.gz = out/result_resid_$(tag).tar.gz"
+
+output                  = log/resid_$(tag).out
+error                   = log/resid_$(tag).err
+log                     = log/residual.log
+
+request_cpus            = 1
+request_memory          = 3GB
+request_disk            = 4GB
++JobFlavour             = "longlunch"
+
+max_retries             = 2
+requirements            = (OpSysAndVer =?= "AlmaLinux9")
+
+queue cache, bundle, shard, nshard, tag from residual_jobs.txt

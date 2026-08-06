@@ -60,8 +60,9 @@ run_48 scint-DOUBLES data (32 smp × 60 ns windows, Ar/iso 95/5, dr800):
 | `reco/noise.py` | residual-noise model: coherent time-band finder (the ~1.3 MHz whole-plane oscillation → 50-400 strips in one ~30 ns slice; amp-rescue for track hits crossing a band), isolated-hit removal, hot-channel list |
 | `reco/segments.py` | per-plane spatio-temporal clustering (Chebyshev link 4 mm/250 ns) + guided fragment merge (union robust-fit must stay track-grade) + robust line fits + cluster taxonomy {track, point, band_fragment, blob} with a strip-occupancy guard |
 | `reco/pairing.py` | X/Y pairing (time IoU + PLAN_38 charge balance via microtpc_lib) → 3D local segments; drift-time → depth via DriftModel |
-| `reco/geometry.py` | global frame from run_config det_center_coords/det_orientation (verified = Geant strip-plane centres incl. pinwheel); ACTIVE volumes only (MM drift gas, 16 instrumented SiPM bars per DetectorConstruction.cc, 2 PVT bars, LS liquid, He-3 gas polycone); local→global transforms; per-volume line-crossing tests (→ trigger-bar predictions); bench drift-velocity curve. NB: Geant `plot_geometry.py` has the SiPM read-out window shift sign FLIPPED (+u, bars 3–18) vs the sim itself (−u toward the MM, bars 1–16, DetectorConstruction.cc:489-500) — sim taken as truth; fix the plot script upstream. |
-| `reco/display.py` | per-plane event displays with reco overlays + 3-view global extrapolation figure (active volumes; measured segment drawn only in its own arm's panels) |
+| `reco/geometry.py` | global frame from run_config det_center_coords/det_orientation (verified = Geant strip-plane centres incl. pinwheel); ACTIVE volumes only (MM drift gas, 16 instrumented SiPM bars per DetectorConstruction.cc, 2 PVT bars, LS liquid, He-3 gas polycone); local→global transforms; per-volume line-crossing tests (→ trigger-bar predictions); bench drift-velocity curve. NB: Geant `plot_geometry.py` has the SiPM read-out window shift sign FLIPPED (+u, bars 3–18) vs the sim itself (−u toward the MM, bars 1–16, DetectorConstruction.cc:489-500) — sim taken as truth; fix the plot script upstream. Re-synced 2026-07-31 with the current build: 20 mm PVT plastics at per-arm depths, SiPM scint 126-129 mm, LS per-arm and on the STRUCTURE. |
+| `reco/display.py` | per-plane event displays with reco overlays + 3-view global extrapolation figure (active volumes; measured segment drawn only in its own arm's panels); `_draw_arm_2d(..., highlight=, dim=)` draws the elements that FIRED opaque against ghosted neighbours |
+| `run79_event_display.py` | single-event displays for the wft beam tracks (2026-07-31): `pick` ranks "golden" events (both planes + wall AND plastic tag + back through the capsule bore + inside the fired bar group and plastic bar), `make` draws waveform-vs-forward-model, the 3-panel projections, and a pyvista 3D view. See RUN79_PRELIM_2026-07-30.md §6c. |
 | `reco/search.py` | event sifting: reconstruction-evidence score (3D pair ≫ 1-plane track ≫ nothing) + physics priors (2026-07-17): beamline-pointing bonus (DCA to Y axis < 400 mm, + He-3-gas crossing bonus), ≥3-chamber pair events down-ranked as pile-up (`multi_det`), burst veto (≥3 dets with >120 clean strips). Priors bias ranking only — odd-angle tracks stay findable. |
 
 Driver: `ntof_july_analysis/run48_tracking.py` (`event N` / `search`).
@@ -144,6 +145,11 @@ PLAN_06  DAQ-side waveform upgrades on daq_lxplus: unsharing, early-charge
          centroid, n_u, walk                                [precision tier]
 PLAN_07  timing & neutron ToF: gamma-flash anchor, per-track interaction
          time, E_n                                          [physics tier]
+PLAN_08  waveform-first (wft/) reco on run_79 + the merge with the n_TOF
+         scintillators — SUPERSEDES the angle/depth parts of 02/03 and the
+         frozen hits6 models; carries the calibration-transfer analysis
+         (what survives from the bench, what must be measured in situ)
+                                                            [current plan]
 ```
 01→02→03 are strictly sequential. 04 needs 03's segments from ≥2 chambers.
 05 needs 04. 06 and 07 can run in parallel with 04/05 once 03 exists.

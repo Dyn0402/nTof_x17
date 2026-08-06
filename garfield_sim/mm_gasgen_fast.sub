@@ -1,0 +1,26 @@
+# mm_gasgen_fast.sub — hedge against a slow production Magboltz run.
+#
+# Same composition and field grid as mm_gasgen.sub but at nColl = 4 instead of
+# 10 (~2x faster, ~2-3% on alpha instead of ~1-2%). Writes to a *_nc4 label so
+# it cannot clobber the production table; use it only if the nColl=10 job has
+# not landed in time, and say so in whatever it feeds.
+#
+#     condor_submit mm_gasgen_fast.sub
+
+universe                = vanilla
+executable              = mm_gasgen_fast_wrap.sh
+arguments               = $(LABEL) $(PRES) 4 $(LABEL)_nc4
+transfer_input_files    = mm_gasgen_one.py, mm_config.py
+should_transfer_files   = YES
+when_to_transfer_output = ON_EXIT
+transfer_output_files   = $(LABEL)_nc4_$(PRES).gas
+transfer_output_remaps  = "$(LABEL)_nc4_$(PRES).gas = gas_tables/$(LABEL)_nc4_$(PRES).gas"
+output                  = logs/gasgenfast_$(LABEL)_$(PRES).out
+error                   = logs/gasgenfast_$(LABEL)_$(PRES).err
+log                     = logs/gasgen.clog
+request_cpus            = 1
+request_memory          = 4 GB
+request_disk            = 2 GB
++MaxRuntime             = 86400
+max_retries             = 2
+queue LABEL,PRES from gasgen_points.txt

@@ -1,0 +1,40 @@
+# mm_gasgen_quick.sub — Magboltz table under a wall-clock budget.
+#
+# The production recipe (mm_gasgen.sub: nColl = 10, 20 grid points over
+# 5-60 kV/cm) takes 3.6-4.4 h per ternary table. When the answer is wanted the
+# same hour, the two knobs are nColl and the size of the field grid; cost is
+# roughly linear in their product.
+#
+# Narrowing the grid to the amplification range is the cheap knob and is safe
+# for gain work: mm_sim_core runs AvalancheMicroscopic, which tracks on the
+# Magboltz cross sections rather than on the tabulated transport parameters, so
+# the table's job here is to carry composition/P/T and to give alpha and eta for
+# the voltage-window prediction. A table cut this way must NOT be reused for
+# drift-velocity or diffusion work at low field.
+#
+# nColl is the statistics knob and does show up in alpha (~1-2 % at 10,
+# ~2-3 % at 4, and progressively worse below that). Submit a ladder and use the
+# best table that has landed when you need it — the *_nc<N> output labels keep
+# them from clobbering each other or the production table.
+#
+#     condor_submit mm_gasgen_quick.sub
+#
+# Columns in gasgen_quick_points.txt: LABEL PRES NCOLL EMIN EMAX NPTS OUT
+
+universe                = vanilla
+executable              = mm_gasgen_quick_wrap.sh
+arguments               = $(LABEL) $(PRES) $(NCOLL) $(EMIN) $(EMAX) $(NPTS) $(OUT)
+transfer_input_files    = mm_gasgen_one.py, mm_config.py
+should_transfer_files   = YES
+when_to_transfer_output = ON_EXIT
+transfer_output_files   = $(OUT)_$(PRES).gas
+transfer_output_remaps  = "$(OUT)_$(PRES).gas = gas_tables/$(OUT)_$(PRES).gas"
+output                  = logs/gasgenq_$(OUT)_$(PRES).out
+error                   = logs/gasgenq_$(OUT)_$(PRES).err
+log                     = logs/gasgenq.clog
+request_cpus            = 1
+request_memory          = 4 GB
+request_disk            = 2 GB
++MaxRuntime             = 86400
+max_retries             = 2
+queue LABEL,PRES,NCOLL,EMIN,EMAX,NPTS,OUT from gasgen_quick_points.txt

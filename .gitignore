@@ -217,3 +217,4 @@ ntof_processing/flash_timing/data/
 *.png
 *.gif
 *.npz
+*.parquet
