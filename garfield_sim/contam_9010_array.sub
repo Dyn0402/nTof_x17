@@ -1,7 +1,7 @@
 universe                = vanilla
 executable              = one_wrap.sh
 arguments               = $(MIX)
-transfer_input_files    = mm_one_mixture.py
+transfer_input_files    = mm_one_mixture.py, setup_garfield.sh, /afs/cern.ch/user/d/dneff/work/garfield_install/garfield-927e5c21.tar.gz
 should_transfer_files   = YES
 when_to_transfer_output = ON_EXIT
 transfer_output_files   = drift_9010_$(MIX).json

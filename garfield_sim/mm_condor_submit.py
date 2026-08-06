@@ -40,6 +40,13 @@ JOBS_DIR    = f"{LXPLUS_BASE}/jobs"
 RESULTS_DIR = f"{LXPLUS_BASE}/results"
 LOGS_DIR    = f"{LXPLUS_BASE}/logs"
 
+# Pinned Garfield++ build, shipped to every worker (~7 MB) rather than taken
+# from the CVMFS view, which is hundreds of commits behind. setup_garfield.sh
+# unpacks it and is the only place that names a Garfield or LCG path.
+GARFIELD_PIN     = "927e5c21"
+GARFIELD_TARBALL = ("/afs/cern.ch/user/d/dneff/work/garfield_install/"
+                    f"garfield-{GARFIELD_PIN}.tar.gz")
+
 
 # ── Pressure helper ────────────────────────────────────────────────────────────
 def altitude_to_torr(h_m):
@@ -479,10 +486,12 @@ def build_jdl(jobs, batches_per_point, events_per_batch):
         # Gas file lands in the job's CWD after transfer — use basename only
         gfile_basename = os.path.basename(gfile)
 
-        # Transfer worker, physics core, and the gas file for this job
+        # Transfer worker, physics core, the environment setup, the pinned
+        # Garfield++ build, and the gas file for this job
         lines.append(
             f"transfer_input_files = {REPO_DIR}/mm_condor_worker.py,"
-            f"{REPO_DIR}/mm_sim_core.py,{gfile}"
+            f"{REPO_DIR}/mm_sim_core.py,{REPO_DIR}/setup_garfield.sh,"
+            f"{GARFIELD_TARBALL},{gfile}"
         )
 
         # Build arguments string

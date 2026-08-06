@@ -2,10 +2,10 @@
 """
 mm_water_grid_lxplus.py — fine Magboltz water grid for the det3 gas fit.
 
-Runs on lxplus with the LCG_107 view (Garfield++ loaded via the ROOT
-dictionary, no python Garfield module needed):
+Runs on lxplus (Garfield++ loaded via the ROOT dictionary, no python
+Garfield module needed):
 
-    source /cvmfs/sft.cern.ch/lcg/views/LCG_107/x86_64-el9-gcc13-opt/setup.sh
+    source setup_garfield.sh
     nohup python3 mm_water_grid_lxplus.py > water_grid.log 2>&1 &
 
 Purpose: the geometry-corrected det3 v(E) (extent-slope estimator, E = HV/3 cm)

@@ -21,7 +21,7 @@ Pressure = CERN 450 m (720.8 Torr) to match the July beam and the existing
 results/drift_velocity_Ar_iC4H10_90_10_CERN.json pure reference.
 
 Run on lxplus:
-    source /cvmfs/sft.cern.ch/lcg/views/LCG_107/x86_64-el9-gcc13-opt/setup.sh
+    source setup_garfield.sh
     nohup python3 mm_drift_9010_contam_cern.py > contam_9010.log 2>&1 &
 
 Output: results/drift_9010_contam_cern.json (same schema as water_grid.json).

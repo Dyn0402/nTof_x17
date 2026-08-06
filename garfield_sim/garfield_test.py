@@ -6,8 +6,7 @@ Run with:
     python3 garfield_test.py
 
 Prerequisites:
-    source /path/to/root/bin/thisroot.sh
-    source $GARFIELD_HOME/install/share/Garfield/setupGarfield.sh
+    source setup_garfield.sh      # ROOT + the pinned Garfield++, any host
 
 The script runs 5 tests of increasing complexity:
   1. Import ROOT and Garfield library
@@ -54,7 +53,7 @@ try:
     print(f"{PASS} import Garfield")
 except Exception as e:
     print(f"{FAIL} import Garfield failed: {e}")
-    print("      → Did you source setupGarfield.sh before running?")
+    print("      → Did you source setup_garfield.sh before running?")
     sys.exit(1)
 
 # Also confirm the namespace is accessible

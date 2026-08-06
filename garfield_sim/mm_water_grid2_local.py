@@ -10,10 +10,9 @@ The existing grid already brackets the optimum: 95/5 + 0.8 % H2O fits at
 RMS 1.87 (all points) / 0.67 um/ns (>=700 V); 0.6 % and 1.0 % are clearly
 worse. This grid refines 0.65-0.9 % and tests the iso-ratio degeneracy.
 
-Runs LOCALLY (no lxplus) with the ~/garfield install:
+Runs LOCALLY (no lxplus); setup_garfield.sh picks up the laptop install:
 
-    source ~/Software/root_6_36_06/bin/thisroot.sh
-    source ~/garfield/install/share/Garfield/setupGarfield.sh
+    source setup_garfield.sh
     nohup python3 mm_water_grid2_local.py > water_grid2.log 2>&1 &
 
 Output: results/water_grid2.json (same schema as water_grid.json).

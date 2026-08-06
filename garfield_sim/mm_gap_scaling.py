@@ -35,7 +35,8 @@ claimed voltage?
     python3 mm_gap_scaling.py --gas Ar_CO2_70_30 --pressure CERN_450m \\
                               --claim-gain 1e4 --claim-voltage 530
 
-Must run where Garfield++ is available (lxplus, LCG_108 + setupGarfield.sh).
+Must run where Garfield++ is available — `source setup_garfield.sh` first
+(works on the laptop, the desktop and lxplus).
 """
 
 import os

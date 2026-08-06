@@ -20,6 +20,8 @@ which requires 400–2000 events per voltage step to resolve statistically
 
 ```
 garfield_sim/
+├── setup_garfield.sh         # THE environment: ROOT + pinned Garfield++, any host
+├── probe_penning.py          # Re-probe Garfield's built-in Penning table after a pin change
 ├── mm_config.py              # Central config: gases, pressures, geometry, voltages
 ├── mm_generate_gas.py        # Step 1 — generate Magboltz gas tables (parallel)
 ├── mm_gain_scan.py           # Step 2a — local sequential gain scan
@@ -27,7 +29,7 @@ garfield_sim/
 ├── mm_plot.py                # Step 3 — plot gain vs voltage / field
 ├── mm_condor_submit.py       # HTCondor — submit jobs to lxplus
 ├── mm_condor_worker.py       # HTCondor — single-job worker (runs on worker node)
-├── mm_condor_job.sh          # HTCondor — bash wrapper (sources LCG environment)
+├── mm_condor_job.sh          # HTCondor — bash wrapper (sources setup_garfield.sh)
 ├── mm_condor_collect.py      # HTCondor — merge fragment results into JSON
 ├── gas_tables/               # Cached .gas files (Magboltz output, one per gas×pressure)
 └── results/                  # JSON result files + summary.csv + plots
@@ -135,7 +137,9 @@ automatically by `mm_generate_gas.py` and the local scan scripts.
 | `Ar_CO2_iC4H10_93_5_2` | Ar/CO₂/iC₄H₁₀ 93/5/2% | **manual, rP = 0.40** (central; run as `_rP030/_rP040/_rP050`) — auto does **nothing** for this ternary, see below |
 
 **⚠ Ar/CO₂/iC₄H₁₀ 93/5/2 (the n_TOF operating gas) — Penning must be manual.**
-Probed against LCG_108 Garfield++ on 2026-07-31:
+Probed against LCG_108 Garfield++ on 2026-07-31 and **re-confirmed
+unchanged** against the pinned master `927e5c21` on 2026-08-06
+(`probe_penning.py`; every rP below reproduces exactly):
 `EnablePenningTransfer()` prints *"Penning transfer probability for
 Ar/CO2/iC4H10 is not implemented"* and returns **false**, i.e. `mode: "auto"`
 would simulate this mixture with **zero** Penning transfer while the
@@ -207,19 +211,49 @@ Total events = `len(gain_raw[i]) + n_attached[i]`.
 
 ## Computing Environments
 
-### Local (`dylan-Yoga`, Ubuntu 24.04)
-- ROOT 6.36.06 built from source
-- Garfield++ built from source
-- Python 3.12
-- `ctypes.c_double` / `ctypes.c_int` for Garfield++ output args (`ROOT.Double`
-  and `ROOT.Long` were removed in ROOT 6.22)
+**One entry point on every host:**
 
-### lxplus / HTCondor worker nodes (el9 / RHEL9)
-Source the LCG 108 view before running anything:
 ```bash
-source /cvmfs/sft.cern.ch/lcg/views/LCG_108/x86_64-el9-gcc14-opt/setup.sh
+source setup_garfield.sh
 ```
-This provides ROOT 6.32+ and Garfield++ 2025.x.
+
+It exports ROOT + Garfield++ and prints what it resolved. It is the only file
+in this directory that names a Garfield or LCG path — everything else (the
+wrappers, the `.sub` files, `mm_condor_submit.py`) goes through it.
+
+**Pinned Garfield++: master `927e5c21` (2026-08-06)**, built from source on all
+three hosts. We do *not* use the Garfield in the LCG views: LCG_108 ships
+`6fb94b35` (2025-07-07, 664 commits behind) and LCG_109 ships `78fe1bd3`
+(2026-02-02, 281 behind), and the MX17 response chain needs master-only
+features (`Examples/ResistiveMicromegas`, `AvalancheMicroscopic::GetIons`, the
+neBEM OpenMP race fix, interface-crossing checks, the FFT convolution fix, the
+arbitrary-PSD noise generators). Rationale in `setup_garfield.sh`; the plan is
+`MX17_Geant/design/RESPONSE_SIM_PLAN.md`.
+
+| Host | ROOT | compiler | Garfield install |
+|---|---|---|---|
+| laptop `dylan-Yoga` (Ubuntu 24.04) | 6.36.06 (source) | gcc 13.3 | `~/garfield/install` |
+| desktop `dylan-MS-7C84` (Ubuntu 22.04) | 6.30.02 (`~/Software/root_6_30`) | gcc 11.4 | `~/Software/garfield/install` |
+| lxplus (el9) | 6.38.00 (LCG_109 view) | gcc 14.3 | `/afs/cern.ch/user/d/dneff/work/garfield_install/lcg109-927e5c21` |
+
+All three pass the upstream test suite (`ctest`: 22/22).
+
+`ctypes.c_double` / `ctypes.c_int` are still needed for Garfield++ output args
+(`ROOT.Double` and `ROOT.Long` were removed in ROOT 6.22).
+
+### HTCondor worker nodes
+Jobs do **not** read the AFS install — `setup_garfield.sh` unpacks a shipped
+`garfield-927e5c21.tar.gz` (6.7 MB) from the scratch directory, so nothing
+depends on the worker holding an AFS token. The `.sub` files and
+`mm_condor_submit.py` already list it in `transfer_input_files`.
+
+### Moving the pin
+Rebuild on each host, re-tar the lxplus install, then edit
+`MX17_GARFIELD_PIN` in `setup_garfield.sh`, `GARFIELD_PIN` in
+`mm_condor_submit.py`, and the tarball name in the `.sub` files. Re-run
+`probe_penning.py` afterwards and reconcile it against the tables below — a
+silent change in Garfield's built-in Penning table would bias every gain
+comparison.
 
 **EOS paths** (accessible from both lxplus and worker nodes):
 ```

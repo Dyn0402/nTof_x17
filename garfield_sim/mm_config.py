@@ -156,7 +156,9 @@ GAS_MIXTURES = [
 
     # ── Ar/CO2/iC4H10 93/5/2 — the n_TOF operating mixture ───────────────────
     # Penning MUST be set manually. Probed on lxplus (LCG_108 Garfield++,
-    # 2026-07-31): EnablePenningTransfer() returns *False* for this ternary —
+    # 2026-07-31); re-confirmed unchanged against the pinned master 927e5c21
+    # on 2026-08-06 (run probe_penning.py after any pin change).
+    # EnablePenningTransfer() returns *False* for this ternary —
     # "Penning transfer probability for Ar/CO2/iC4H10 is not implemented" —
     # i.e. auto mode would silently simulate with rP = 0 while the Ar/iC4H10
     # 95/5 reference runs at rP = 0.40. That would bias the whole comparison.
@@ -212,7 +214,9 @@ GAS_MIXTURES = [
     },
     # ── Ne/CF4/C2H6 80/10/10 ────────────────────────────────────────────────
     # Penning MUST be set manually, and here it is the dominant systematic of
-    # the whole comparison. Probed on lxplus (LCG_108 Garfield++, 2026-08-01):
+    # the whole comparison. Probed on lxplus (LCG_108 Garfield++, 2026-08-01);
+    # re-confirmed unchanged against the pinned master 927e5c21 on 2026-08-06
+    # (run probe_penning.py after any pin change).
     # EnablePenningTransfer() returns *False* for this ternary AND for every
     # Ne binary that composes it —
     #   "Penning transfer probability for Ne/CF4 is not implemented"
