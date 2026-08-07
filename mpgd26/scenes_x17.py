@@ -174,8 +174,33 @@ def modelled_shapes(n=SAMPLE_N, seed=SAMPLE_SEED, bin_deg=0.5, smooth_deg=None):
 
     x17, ipc = binned(ang_x), binned(ang_i)
     os.makedirs(CACHE, exist_ok=True)
-    np.savez_compressed(path, theta=centres, x17=x17, ipc=ipc)
+    np.savez_compressed(path, theta=centres, x17=x17, ipc=ipc,
+                        x17_min=ang_x.min(), ipc_median=np.median(ang_i),
+                        ipc_frac_gt60=(ang_i > 60).mean())
     return centres, x17, ipc
+
+
+def validate(n=40_000, seed=SAMPLE_SEED):
+    """Check the sampled X17 channel against the analytic solution.
+
+    Two independent routes to the same number: ``opening_angle_pdf`` solves the
+    boost on a grid here, ``X17PhysicsSpectrum`` samples it event by event over
+    in the simulation package.  If the kinematic minimum ever stops agreeing,
+    one of them has changed and the figure is no longer describing the
+    simulation.  Returns ``(analytic_min, sampled_min, ipc_median,
+    ipc_frac_above_60)``.
+    """
+    if SIM_DIR not in sys.path:
+        sys.path.insert(0, SIM_DIR)
+    from MX17_Simulator import X17PhysicsSpectrum, IPCPhysicsSpectrum
+
+    np.random.seed(seed)
+    ang_x = X17PhysicsSpectrum(m_x17_mev=X17['m_x17'],
+                               E_transition_mev=X17['e_capture']).sample(n)
+    ang_i = IPCPhysicsSpectrum(E_transition_mev=X17['e_capture']).sample(n)
+    analytic = opening_angle_pdf()[2]
+    return (analytic, float(ang_x.min()), float(np.median(ang_i)),
+            float((ang_i > 60).mean()))
 
 
 # --------------------------------------------------------------------------- #
@@ -239,14 +264,15 @@ def excitation_waves(ax, x, y, P, r=1.35, n=3, zorder=8):
     Deliberately small and low-contrast: it is a state marker, not a channel,
     and it must not compete with the three de-excitation arrows for attention.
     """
-    for ang, radius in zip((132.0, 46.0, -38.0), (2.55, 2.55, 2.55)):
-        a0 = np.radians(ang) - 0.40
-        a1 = np.radians(ang) + 0.40
-        t = np.linspace(0, 1, 90)
+    for ang in (128.0, 48.0, -36.0):
+        a0, a1 = np.radians(ang) - 0.30, np.radians(ang) + 0.30
+        t = np.linspace(0, 1, 120)
         a = a0 + (a1 - a0) * t
-        rr = r * radius + 0.20 * np.sin(2 * np.pi * 2.5 * t)
+        # taper the wave to nothing at both ends so the arc doesn't finish on a
+        # stray kink -- that is what makes small squiggles look scraggly
+        rr = r * 2.85 + 0.16 * np.sin(2 * np.pi * 2.0 * t) * np.sin(np.pi * t)
         ax.plot(x + rr * np.cos(a), y + rr * np.sin(a), color=P['ink'],
-                lw=1.15, alpha=0.42, solid_capstyle='round', zorder=zorder)
+                lw=1.0, alpha=0.38, solid_capstyle='round', zorder=zorder)
 
 
 def squiggle(ax, x0, y0, x1, y1, color, n_wave=5, amp=0.85, lw=1.9,
@@ -511,12 +537,15 @@ def _panel_signature(fig, ax, P, halo):
             label='internal pair conversion')
 
     px.axvline(th_min, color=P['x17'], lw=0.9, ls=':', alpha=0.8, zorder=1)
+    # above and left of the peak, right-aligned: the lower left of the panel
+    # belongs to the IPC curve now, and anything to the right of the peak runs
+    # off the canvas
     px.annotate(f'kinematic minimum\n{th_min:.0f}°',
-                xy=(th_min - 1.5, 0.92), xytext=(14, 0.60),
-                fontsize=8.2, color=P['x17'], ha='left', va='center',
+                xy=(th_min + 0.5, 1.00), xytext=(101, 1.05),
+                fontsize=8.2, color=P['x17'], ha='right', va='center',
                 arrowprops=dict(arrowstyle='-|>', color=P['x17'], lw=1.0,
                                 mutation_scale=9,
-                                connectionstyle='arc3,rad=-0.25'),
+                                connectionstyle='arc3,rad=-0.3'),
                 **FONT)
 
     px.set_xlim(0, 180)

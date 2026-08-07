@@ -65,6 +65,22 @@ def p2_outline3d(z, n=90):
     return np.stack([ring[:, 0], ring[:, 1], np.full(len(ring), z)], axis=1)
 
 
+def shift(parts, x=0.0, y=0.0):
+    """Translate a station's meshes and its shadow outline transversely."""
+    if not (x or y):
+        return parts
+    for k, mesh in parts.items():
+        if k == 'outline':
+            continue
+        parts[k] = mesh.translate((x, y, 0.0), inplace=False,
+                                  transform_all_input_vectors=True)
+    o = np.asarray(parts['outline'], float).copy()
+    o[:, 0] += x
+    o[:, 1] += y
+    parts['outline'] = o
+    return parts
+
+
 def p2_meshes(z, pads_lab, sector_of_pad):
     """All meshes for one P2 BASKET station at rail position ``z``."""
     r_lo, r_hi = G.P2_R_ACTIVE
@@ -105,10 +121,12 @@ def shrink_pads(polys, frac):
     return c + (polys - c) * (1.0 - frac)
 
 
-def add_p2(p, z, pads_lab, sector_of_pad, spot=None):
+def add_p2(p, z, pads_lab, sector_of_pad, spot=None, x=0.0, y=0.0):
     """Draw one P2 BASKET chamber; ``spot`` optionally shades the live pads by
     the measured illumination (0..1 per live pad)."""
     m = p2_meshes(z, pads_lab, sector_of_pad)
+    m['outline'] = p2_outline3d(z)
+    m = shift(m, x, y)
     p.add_mesh(m['frame'], **S.mat('alu_matte', S.COL['alu']))
     p.add_mesh(m['pcb'], **S.mat('pcb', S.COL['pcb']))
     p.add_mesh(m['pads'], **S.mat('copper', S.COL['copper_dead'],
@@ -123,19 +141,18 @@ def add_p2(p, z, pads_lab, sector_of_pad, spot=None):
                    **S.mat('copper', None, metallic=0.30, roughness=0.5))
 
     # support: a column from the table up to the bottom of the fan frame
-    foot = G.P2_APEX_HEIGHT - p2_frame_extent()[1]
+    foot = G.P2_APEX_HEIGHT - p2_frame_extent()[1] + y
     if foot > 20:
-        p.add_mesh(M.slab((0.0, foot / 2, z), 150, foot, 70, normal='z'),
+        p.add_mesh(M.slab((x, foot / 2, z), 150, foot, 70, normal='z'),
                    **S.mat('alu_matte', S.COL['alu_dark']))
-        p.add_mesh(M.slab((0.0, 14.0, z), 300, 28, 190, normal='y'),
+        p.add_mesh(M.slab((x, 14.0, z), 300, 28, 190, normal='y'),
                    **S.mat('alu_matte', S.COL['alu_dark']))
-    m['outline'] = p2_outline3d(z)
     return m
 
 
-def add_urwell(p, z, label_side=+1):
+def add_urwell(p, z, label_side=+1, x=0.0, y=0.0):
     parts = M.rect_chamber(
-        center=(0.0, G.SPS_BEAM_HEIGHT, z),
+        center=(x, G.SPS_BEAM_HEIGHT + y, z),
         pcb_size=(G.URW_PCB_MM, G.URW_PCB_MM),
         active_size=(G.URW_ACTIVE_MM, G.URW_ACTIVE_MM),
         frame_size=(G.URW_PCB_MM + 56, G.URW_PCB_MM + 56),
@@ -146,21 +163,21 @@ def add_urwell(p, z, label_side=+1):
     p.add_mesh(parts['active'], **S.mat('copper', S.COL['copper']))
     p.add_mesh(parts['strips'], **S.mat('mesh', S.COL['copper_hot']))
     # stand: a post down to the table
-    post_h = G.SPS_BEAM_HEIGHT - G.URW_PCB_MM / 2 - 28
-    p.add_mesh(M.slab((0.0, post_h / 2, z), 70, post_h, 55, normal='z'),
+    post_h = G.SPS_BEAM_HEIGHT + y - G.URW_PCB_MM / 2 - 28
+    p.add_mesh(M.slab((x, post_h / 2, z), 70, post_h, 55, normal='z'),
                **S.mat('alu_matte', S.COL['alu_dark']))
     w = G.URW_PCB_MM + 56
-    parts['outline'] = M.rect_outline((0.0, G.SPS_BEAM_HEIGHT, z), w, w,
+    parts['outline'] = M.rect_outline((x, G.SPS_BEAM_HEIGHT + y, z), w, w,
                                       normal='z')
     return parts
 
 
-def add_mx17(p, z, drift_dir=-1, yaw=0.0):
+def add_mx17(p, z, drift_dir=-1, yaw=0.0, x=0.0, y=0.0):
     """MX17 on the rail.  ``yaw`` is det_orientation.y -- rotation about the
     vertical through the chamber centre, i.e. the angle the chamber presents to
     the beam."""
     parts = M.rect_chamber(
-        center=(0.0, G.SPS_BEAM_HEIGHT, z),
+        center=(x, G.SPS_BEAM_HEIGHT + y, z),
         pcb_size=(G.MX17_PCB_MM, G.MX17_PCB_MM),
         active_size=(G.MX17_ACTIVE_MM, G.MX17_ACTIVE_MM),
         frame_size=(G.MX17_PCB_MM + 2 * G.MX17_FRAME_MM,
@@ -170,7 +187,7 @@ def add_mx17(p, z, drift_dir=-1, yaw=0.0):
         n_strips=64)
 
     if abs(yaw) > 1e-9:
-        pivot = (0.0, G.SPS_BEAM_HEIGHT, z)
+        pivot = (x, G.SPS_BEAM_HEIGHT + y, z)
         for k, mesh in parts.items():
             # transform_all_input_vectors: without it the stored Normals array
             # is left behind and the yawed chamber renders black
@@ -183,18 +200,18 @@ def add_mx17(p, z, drift_dir=-1, yaw=0.0):
     p.add_mesh(parts['strips'], **S.mat('mesh', S.COL['copper_hot']))
     p.add_mesh(parts['gas'], **S.mat('gas', S.COL['gas']))
     p.add_mesh(parts['cathode'], **S.mat('plastic', '#dfe6ee', opacity=0.35))
-    post_h = G.SPS_BEAM_HEIGHT - G.MX17_PCB_MM / 2 - G.MX17_FRAME_MM
+    post_h = G.SPS_BEAM_HEIGHT + y - G.MX17_PCB_MM / 2 - G.MX17_FRAME_MM
     if post_h > 20:
-        p.add_mesh(M.slab((0.0, post_h / 2, z), 120, post_h, 60, normal='z'),
+        p.add_mesh(M.slab((x, post_h / 2, z), 120, post_h, 60, normal='z'),
                    **S.mat('alu_matte', S.COL['alu_dark']))
     w = G.MX17_PCB_MM + 2 * G.MX17_FRAME_MM
-    out = M.rect_outline((0.0, G.SPS_BEAM_HEIGHT, z), w, w, normal='z')
+    centre = np.array([x, G.SPS_BEAM_HEIGHT + y, z])
+    out = M.rect_outline(tuple(centre), w, w, normal='z')
     if abs(yaw) > 1e-9:
         c, s = math.cos(math.radians(yaw)), math.sin(math.radians(yaw))
-        d = out - np.array([0.0, G.SPS_BEAM_HEIGHT, z])
+        d = out - centre
         out = np.stack([c * d[:, 0] + s * d[:, 2], d[:, 1],
-                        -s * d[:, 0] + c * d[:, 2]], axis=1) \
-            + np.array([0.0, G.SPS_BEAM_HEIGHT, z])
+                        -s * d[:, 0] + c * d[:, 2]], axis=1) + centre
     parts['outline'] = out
     return parts
 

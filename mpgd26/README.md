@@ -149,6 +149,16 @@ they are all zero. A survey or a frame fit drops straight into that table.
 * **MX17 dimensions** — 470 mm PCB, 398.58 mm metallised, 30 mm drift gap,
   512 strips per view at 0.7785 mm pitch, 150 µm amplification gap
   (`garfield_sim/mm_config.py`).
+* **Both opening-angle curves** in `x17_signature` — sampled from
+  `X17PhysicsSpectrum` and `IPCPhysicsSpectrum` in
+  `MX17_Simulation/MX17_Simulator.py`, which that module documents as matching
+  the Geant4 `X17PrimaryGenerator` event for event. 400 000 events per channel,
+  cached under `.cache/`. `make_x17.py --validate` cross-checks the sampled X17
+  minimum against an independent analytic solution in `scenes_x17.py` (they
+  agree to <0.01°) and reports the IPC shape. **IPC is not a small-angle-only
+  background**: its pair mass is drawn from dN/dM ∝ 1/M, giving a median
+  opening angle of 30° and ~30 % of the yield above 60°, right under the X17
+  peak.
 * **Cosmic muons** — sampled from cos²θ and kept only if they cross both
   60 × 60 cm paddles, i.e. the bench trigger. Nothing steeper than ~15° survives
   that, which is why the drawn tracks are near-vertical.
@@ -169,12 +179,13 @@ Collected in `geometry.ASSUMPTIONS` and repeated in every figure caption:
 * **The bench rack and the SPS table** are drawn for context.
 * **Drawn thicknesses** are chosen for legibility. The 30 mm MX17 drift gap is
   the only real one.
-* **The internal pair conversion curve** in `x17_signature` is a *shape* — it
-  says the known channel lives at small opening angle, and nothing more. The
-  X17 curve next to it *is* computed (exact two-body kinematics), but both are
-  normalised to unit peak, so the figure implies no branching ratio. The
-  kinematic minimum it marks, 109°, follows from m = 16.8 MeV carrying the full
-  20.58 MeV; it is not the ~120° quoted from the ATOMKI ⁷Li measurements.
+* **The relative rate of the two channels** in `x17_signature`. The *shapes*
+  are both sampled from `MX17_Simulation` (see below), but each is normalised
+  to unit peak — their ratio is the measurement, so the figure must not appear
+  to assert it.
+* **The kinematic minimum it marks, 109°**, follows from m = 16.8 MeV carrying
+  the full 20.58 MeV transition, recoil neglected. It is *not* the ~120° quoted
+  from the ATOMKI ⁷Li measurements, which sit at a different transition energy.
 * **The pad etch gap** — pads are shrunk 16 % about their own centres so the
   1280 of them don't read as one solid copper sheet. Pad centres, angles and
   count are the measured ones.

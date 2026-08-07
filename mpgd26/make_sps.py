@@ -74,21 +74,27 @@ def build(theme='light', mx17=False, spot=True, tracks=True, envelope=False,
         X.add_table(p, theme, legs=False)
 
     anchors, outlines = {}, []
-    for name, z, kind, label, yaw in G.SPS_STATIONS:
-        if kind not in show:
+    for st in G.SPS_STATIONS:
+        if st.kind not in show:
             continue
-        if kind == 'p2':
+        if st.kind == 'p2':
             parts = X.add_p2(
-                p, z, pads_lab, sectors,
-                spot=illum if (name == 'P2_MID' and illum is not None) else None)
-            anchors[name] = (0.0, G.P2_APEX_HEIGHT - G.P2_R_ACTIVE[1] - 40, z)
-        elif kind == 'urwell':
-            parts = X.add_urwell(p, z)
-            anchors[name] = (0.0, G.SPS_BEAM_HEIGHT + G.URW_PCB_MM / 2 + 40, z)
+                p, st.z, pads_lab, sectors, x=st.x, y=st.y,
+                spot=illum if (st.name == 'P2_MID' and illum is not None)
+                else None)
+            anchors[st.name] = (st.x,
+                                G.P2_APEX_HEIGHT - G.P2_R_ACTIVE[1] - 40 + st.y,
+                                st.z)
+        elif st.kind == 'urwell':
+            parts = X.add_urwell(p, st.z, x=st.x, y=st.y)
+            anchors[st.name] = (st.x,
+                                G.SPS_BEAM_HEIGHT + G.URW_PCB_MM / 2 + 40 + st.y,
+                                st.z)
         else:
-            parts = X.add_mx17(p, z, yaw=yaw)
-            anchors[name] = (0.0, G.SPS_BEAM_HEIGHT + G.MX17_PCB_MM / 2
-                             + G.MX17_FRAME_MM + 20, z)
+            parts = X.add_mx17(p, st.z, yaw=st.yaw, x=st.x, y=st.y)
+            anchors[st.name] = (st.x,
+                                G.SPS_BEAM_HEIGHT + G.MX17_PCB_MM / 2
+                                + G.MX17_FRAME_MM + 20 + st.y, st.z)
         outlines.append(parts['outline'])
 
     if shadows:

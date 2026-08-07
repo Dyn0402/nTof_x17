@@ -3,3 +3,7 @@
 # out of the repository; the DAQ web page serves report.html straight from disk.
 figures/
 animations/
+
+# Sampled opening-angle shapes for the X17 figure. Regenerates itself from
+# MX17_Simulation on first render (~1 min); cached only to keep re-renders fast.
+.cache/

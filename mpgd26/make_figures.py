@@ -56,9 +56,9 @@ def sps_figure(name, view, theme, mx17, size, ssaa, spot=True):
     px = MS.render(view, theme, out, mx17=mx17, spot=spot, size=size,
                    ssaa=ssaa)
 
-    items = [(n, f'{lab}\n{_mm(z)}')
-             for n, z, kind, lab, yaw in G.SPS_STATIONS
-             if kind != 'mx17' or mx17]
+    items = [(st.name, f'{st.label}\n{_mm(st.z)}')
+             for st in G.SPS_STATIONS
+             if st.kind != 'mx17' or mx17]
     items = sorted(items, key=lambda it: px.get(it[0], (0, 0))[1])
     side = 'right' if view != 'side' else 'right'
     labels = A.column_labels(px, items, size, side=side, gutter=0.32)

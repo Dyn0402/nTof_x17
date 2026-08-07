@@ -75,18 +75,30 @@ ul.tight li { margin:.3rem 0; }
    anomaly is real &mdash; a 16.8 MeV boson whose
    e<sup>+</sup>e<sup>-</sup> pair cannot open by less than
    <b>109&deg;</b>.</p>
-<p>That number is not taken from anyone's plot: the curve in panel 3 is exact
-   two-body decay kinematics evaluated in <code>scenes_x17.py</code> (isotropic
-   in the boson rest frame, boosted to the lab, Gaussian-smeared by
-   3&deg; so the Jacobian divergence has a width on
-   paper), with nuclear recoil neglected.  The internal-pair-conversion curve
-   next to it is a <i>shape</i> and is labelled as one in the figure &mdash; it
-   is there to say where the known channel lives, not to predict a rate.  The
-   two curves are each normalised to unit peak, so nothing in the panel implies
-   a branching ratio.</p>
+<p>Neither curve in panel 3 is traced from anyone's plot.  Both are sampled from
+   <code>MX17_Simulation/MX17_Simulator.py</code> &mdash;
+   <code>X17PhysicsSpectrum</code> and <code>IPCPhysicsSpectrum</code>, the same
+   generators the acceptance and significance studies use, and which that module
+   documents as matching the Geant4 <code>X17PrimaryGenerator</code> event for
+   event.  400,000 events per channel, Gaussian-smeared by
+   3&deg; so the X17 Jacobian divergence has a width on
+   paper.  The figure therefore cannot drift away from the simulation: change
+   the generator and the figure follows.</p>
+<p>The X17 channel is additionally solved analytically in
+   <code>scenes_x17.py</code> (<code>opening_angle_pdf</code>), purely as a
+   check on the sampler &mdash; <code>make_x17.py --validate</code> prints both
+   minima, and they agree to better than 0.01&deg;.</p>
+<p class="caveat"><b>Worth knowing before you quote this panel.</b> IPC is not
+   confined to small opening angle the way a quick sketch suggests: because its
+   pair invariant mass is drawn from dN/dM &prop; 1/M, it is a superposition of
+   two-body decays over the whole mass range, with a median opening angle near
+   30&deg; and roughly 30 % of its yield above 60&deg; &mdash; i.e. real
+   background sitting underneath the X17 peak.  The two curves are each
+   normalised to unit peak, so nothing in the panel implies a branching ratio;
+   their relative rate is the measurement.</p>
 <figure id="x17_signature">
   <img src="figures/x17_signature_light.png" alt="x17_signature">
-  <figcaption><b>x17_signature</b> &mdash; The physics case in one figure: capture leaves 4He* with 20.58 MeV, three channels take it away, and only one of them puts an e+e- pair at a large opening angle.  The opening-angle curve is computed, not traced.<br><a href="figures/x17_signature_light.png">PNG</a> &middot; <a href="figures/x17_signature_light.pdf">vector PDF</a></figcaption>
+  <figcaption><b>x17_signature</b> &mdash; The physics case in one figure: capture leaves 4He* with 20.58 MeV, three channels take it away, and only one of them piles e+e- pairs up at a hard minimum opening angle.  Both curves are sampled from the MX17_Simulation generators, not traced from a paper.<br><a href="figures/x17_signature_light.png">PNG</a> &middot; <a href="figures/x17_signature_light.pdf">vector PDF</a></figcaption>
 </figure>
 
 <figure id="x17_signature_bare">

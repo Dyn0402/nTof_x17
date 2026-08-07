@@ -56,6 +56,9 @@ def main():
     ap.add_argument('--no-title', dest='title', action='store_false',
                     help='drop the title/caption bands and crop to the diagram')
     ap.add_argument('--dpi', type=int, default=300)
+    ap.add_argument('--validate', action='store_true',
+                    help='cross-check the sampled X17 channel against the '
+                         'analytic solution and report the IPC shape')
     args = ap.parse_args()
 
     themes = ['light', 'dark'] if args.theme == 'both' else [args.theme]
@@ -64,9 +67,17 @@ def main():
         print(f'{name} [{theme}]')
         render(theme=theme, title=args.title, dpi=args.dpi, name=name)
 
-    th, _, th_min = X.opening_angle_pdf()
-    print(f'\nkinematic minimum opening angle: {th_min:.2f} deg '
-          f'(m_X17 = {X.X17["m_x17"]} MeV, E = {X.X17["e_capture"]} MeV)')
+    if args.validate:
+        ana, samp, med, frac = X.validate()
+        print(f'\nX17 kinematic minimum   analytic {ana:.2f} deg  vs  '
+              f'MX17_Simulation sampler {samp:.2f} deg  '
+              f'(delta {abs(ana - samp):.3f})')
+        print(f'IPC opening angle       median {med:.1f} deg, '
+              f'{frac * 100:.0f} % above 60 deg')
+    else:
+        print(f'\nkinematic minimum opening angle: '
+              f'{X.opening_angle_pdf()[2]:.2f} deg '
+              f'(m_X17 = {X.X17["m_x17"]} MeV, E = {X.X17["e_capture"]} MeV)')
 
 
 if __name__ == '__main__':

@@ -45,8 +45,9 @@ ANIM_BLURB = {
 BLURB = {
     'x17_signature': 'The physics case in one figure: capture leaves '
                      '4He* with 20.58 MeV, three channels take it away, and '
-                     'only one of them puts an e+e- pair at a large opening '
-                     'angle.  The opening-angle curve is computed, not traced.',
+                     'only one of them piles e+e- pairs up at a hard minimum '
+                     'opening angle.  Both curves are sampled from the '
+                     'MX17_Simulation generators, not traced from a paper.',
     'x17_signature_bare': 'The same diagram without the title and caption '
                           'bands, cropped -- for a slide whose own title bar '
                           'already says it.',
@@ -153,12 +154,13 @@ def fig_block(name, theme='light'):
 
 def sps_table():
     rows = ''
-    for n, z, kind, lab, yaw in G.SPS_STATIONS:
-        note = 'placeholder z; yawed %.2f deg' % yaw if kind == 'mx17' else ''
+    for st in G.SPS_STATIONS:
+        note = ('placeholder z; yawed %.2f deg' % st.yaw
+                if st.kind == 'mx17' else '')
         size = {'urwell': f'{G.URW_ACTIVE_MM:.1f} mm square active',
                 'p2': 'fan, r 150.7-635.0 mm, 55.6 deg, 1280 pads',
-                'mx17': f'{G.MX17_ACTIVE_MM:.1f} mm square active'}[kind]
-        rows += (f'<tr><td>{esc(n)}</td><td class="num">{z:g}</td>'
+                'mx17': f'{G.MX17_ACTIVE_MM:.1f} mm square active'}[st.kind]
+        rows += (f'<tr><td>{esc(st.name)}</td><td class="num">{st.z:g}</td>'
                  f'<td>{esc(size)}</td><td class="caveat">{esc(note)}</td></tr>')
     return ('<div class="scroll"><table><thead><tr><th>detector</th>'
             '<th class="num">z [mm]</th><th>size</th><th>note</th></tr></thead>'
@@ -250,15 +252,27 @@ def build(theme='light'):
    anomaly is real &mdash; a {X.X17['m_x17']:g} MeV boson whose
    e<sup>+</sup>e<sup>-</sup> pair cannot open by less than
    <b>{X.opening_angle_pdf()[2]:.0f}&deg;</b>.</p>
-<p>That number is not taken from anyone's plot: the curve in panel 3 is exact
-   two-body decay kinematics evaluated in <code>scenes_x17.py</code> (isotropic
-   in the boson rest frame, boosted to the lab, Gaussian-smeared by
-   {X.X17['smear_deg']:g}&deg; so the Jacobian divergence has a width on
-   paper), with nuclear recoil neglected.  The internal-pair-conversion curve
-   next to it is a <i>shape</i> and is labelled as one in the figure &mdash; it
-   is there to say where the known channel lives, not to predict a rate.  The
-   two curves are each normalised to unit peak, so nothing in the panel implies
-   a branching ratio.</p>
+<p>Neither curve in panel 3 is traced from anyone's plot.  Both are sampled from
+   <code>MX17_Simulation/MX17_Simulator.py</code> &mdash;
+   <code>X17PhysicsSpectrum</code> and <code>IPCPhysicsSpectrum</code>, the same
+   generators the acceptance and significance studies use, and which that module
+   documents as matching the Geant4 <code>X17PrimaryGenerator</code> event for
+   event.  {X.SAMPLE_N:,} events per channel, Gaussian-smeared by
+   {X.X17['smear_deg']:g}&deg; so the X17 Jacobian divergence has a width on
+   paper.  The figure therefore cannot drift away from the simulation: change
+   the generator and the figure follows.</p>
+<p>The X17 channel is additionally solved analytically in
+   <code>scenes_x17.py</code> (<code>opening_angle_pdf</code>), purely as a
+   check on the sampler &mdash; <code>make_x17.py --validate</code> prints both
+   minima, and they agree to better than 0.01&deg;.</p>
+<p class="caveat"><b>Worth knowing before you quote this panel.</b> IPC is not
+   confined to small opening angle the way a quick sketch suggests: because its
+   pair invariant mass is drawn from dN/dM &prop; 1/M, it is a superposition of
+   two-body decays over the whole mass range, with a median opening angle near
+   30&deg; and roughly 30 % of its yield above 60&deg; &mdash; i.e. real
+   background sitting underneath the X17 peak.  The two curves are each
+   normalised to unit peak, so nothing in the panel implies a branching ratio;
+   their relative rate is the measurement.</p>
 {fig_block('x17_signature', theme)}
 {fig_block('x17_signature_bare', theme)}
 

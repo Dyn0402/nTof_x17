@@ -43,6 +43,7 @@ from __future__ import annotations
 
 import math
 import os
+from typing import NamedTuple
 
 import numpy as np
 
@@ -82,22 +83,38 @@ SCINT_THICK_MM = 30.0
 # Every station is square to the beam except MX17 "Detector E", which the run
 # config yaws by det_orientation.y = 25.64 deg.  That is a real mounting angle,
 # not a placeholder like its z, so it is drawn.
+class Station(NamedTuple):
+    """One detector on the rail.
+
+    A named record, not a tuple, deliberately: callers use ``st.z`` / ``st.yaw``
+    rather than unpacking, so adding a field here (a survey offset, a tilt, a
+    second yaw convention) cannot silently break every consumer.  The fields
+    after ``label`` all default to zero, so a station only states what is
+    actually non-nominal about it.
+    """
+    name: str
+    z: float                 # along the rail, mm
+    kind: str                # 'urwell' | 'p2' | 'mx17'
+    label: str
+    yaw: float = 0.0         # det_orientation.y, deg, about the vertical
+    x: float = 0.0           # transverse offset from the beam axis, mm
+    y: float = 0.0
+
+
+# x/y are transverse offsets from the beam axis.  Every run config carries
+# x = y = 0 -- nominal, never surveyed -- so they are all left at the default,
+# but they are threaded through the scene rather than assumed, so a survey (or
+# a frame fit) drops straight in.
 SPS_STATIONS = [
-    # (name, z_mm, kind, label, yaw_deg, x_mm, y_mm)
-    #
-    # x/y are transverse offsets from the beam axis.  Every run config carries
-    # x = y = 0 -- nominal, never surveyed -- so they are all zero here, but they
-    # are threaded through the scene rather than assumed, so a survey (or a
-    # frame fit) drops straight in.
-    ('EIC_uRWELL_front', 0.0,    'urwell', 'EIC uRWELL\n(front reference)',
-     0.0, 0.0, 0.0),
-    ('P2_IN',            320.0,  'p2',     'P2 BASKET  IN', 0.0, 0.0, 0.0),
-    ('P2_MID',           630.0,  'p2',     'P2 BASKET  MID', 0.0, 0.0, 0.0),
-    ('P2_OUT',           940.0,  'p2',     'P2 BASKET  OUT', 0.0, 0.0, 0.0),
-    ('mx17_E',           1155.0, 'mx17',   'MX17 "Detector E"\nyawed 25.6 deg',
-     25.64, 0.0, 0.0),
-    ('EIC_uRWELL_back',  1370.0, 'urwell', 'EIC uRWELL\n(back reference)',
-     0.0, 0.0, 0.0),
+    Station('EIC_uRWELL_front', 0.0,    'urwell',
+            'EIC uRWELL\n(front reference)'),
+    Station('P2_IN',            320.0,  'p2',   'P2 BASKET  IN'),
+    Station('P2_MID',           630.0,  'p2',   'P2 BASKET  MID'),
+    Station('P2_OUT',           940.0,  'p2',   'P2 BASKET  OUT'),
+    Station('mx17_E',           1155.0, 'mx17',
+            'MX17 "Detector E"\nyawed 25.6 deg', yaw=25.64),
+    Station('EIC_uRWELL_back',  1370.0, 'urwell',
+            'EIC uRWELL\n(back reference)'),
 ]
 SPS_MX17_Z_IS_PLACEHOLDER = True     # run_config says so explicitly
 
