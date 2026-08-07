@@ -1,0 +1,5 @@
+# Rendered output: ~220 MB, and every byte of it is reproducible from the code
+# in this directory (make_figures.py / make_chamber.py / make_anim.py).  Keep it
+# out of the repository; the DAQ web page serves report.html straight from disk.
+figures/
+animations/

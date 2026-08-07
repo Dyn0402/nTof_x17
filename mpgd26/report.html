@@ -1,0 +1,220 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MPGD conference visuals</title>
+<style>
+:root { --ink:#16202b; --muted:#5d6874; --rule:#e3e8ee; --bg:#ffffff;
+        --card:#f7f9fb; --accent:#1f6f8b; }
+* { box-sizing:border-box; }
+body { margin:0; padding:0 0 6rem; background:var(--bg); color:var(--ink);
+       font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,
+            "Helvetica Neue",Arial,sans-serif; }
+.wrap { max-width:1080px; margin:0 auto; padding:0 1.5rem; }
+header { border-bottom:1px solid var(--rule); padding:3rem 0 1.6rem;
+         margin-bottom:2rem; }
+h1 { font-size:2.0rem; margin:0 0 .4rem; letter-spacing:-.01em; }
+h2 { font-size:1.32rem; margin:2.6rem 0 .8rem; padding-top:1.4rem;
+     border-top:1px solid var(--rule); }
+h3 { font-size:1.05rem; margin:1.8rem 0 .4rem; }
+.lede { color:var(--muted); font-size:1.07rem; margin:0; }
+.verdict { background:var(--card); border-left:4px solid var(--accent);
+           padding:1rem 1.2rem; border-radius:0 6px 6px 0; margin:1.4rem 0; }
+table { border-collapse:collapse; width:100%; margin:1rem 0 1.6rem;
+        font-size:.94rem; }
+th,td { text-align:left; padding:.5rem .7rem; border-bottom:1px solid var(--rule); }
+th { font-weight:600; color:var(--muted); font-size:.82rem;
+     text-transform:uppercase; letter-spacing:.04em; }
+td.num { text-align:right; font-variant-numeric:tabular-nums; }
+figure { margin:2rem 0; }
+figure img { width:100%; height:auto; border:1px solid var(--rule);
+             border-radius:6px; display:block; }
+figcaption { color:var(--muted); font-size:.9rem; margin-top:.6rem; }
+figcaption b { color:var(--ink); }
+code { background:var(--card); padding:.12em .38em; border-radius:3px;
+       font-size:.9em; }
+pre { background:var(--card); padding:1rem; border-radius:6px; overflow-x:auto;
+      font-size:.86rem; }
+ul.tight li { margin:.3rem 0; }
+.caveat { color:var(--muted); font-size:.94rem; }
+.tag { display:inline-block; background:var(--card); border:1px solid var(--rule);
+       border-radius:99px; padding:.1rem .6rem; font-size:.78rem;
+       color:var(--muted); margin-right:.35rem; }
+.scroll { overflow-x:auto; }
+</style>
+
+<header><div class="wrap">
+  <h1>MPGD conference visuals &mdash; setup renderings</h1>
+  <p class="lede">Publication-grade 3-D views of the two test setups: the SPS
+  H4 beam telescope in P2, and the Saclay cosmic bench.</p>
+</div></header>
+<div class="wrap">
+
+<div class="verdict">
+  <b>What this is.</b> Two rebuildable 3-D scenes, driven entirely from the run
+  configs and the measured records &mdash; not from a drawing package. Every
+  detector position, the P2 fan's exact shape and all 1280 of its pads, the
+  measured beam spot, the muon angular acceptance and the trigger aperture come
+  from files in this repository or on lxplus. Anything <i>not</i> measured is
+  listed under &ldquo;What is drawn but not measured&rdquo; below and is stated
+  in each figure's caption.
+</div>
+
+<p>
+  <span class="tag">PyVista / VTK</span>
+  <span class="tag">PBR metals + Phong dielectrics</span>
+  <span class="tag">analytic cast shadows</span>
+  <span class="tag">SSAA</span>
+  <span class="tag">PNG + vector-text PDF</span>
+</p>
+
+<h2>SPS H4 beam telescope</h2>
+<p>Six stations on one rail in the P2 zone, from <code>run_59</code>'s
+   <code>det_center_coords</code>. The beam runs along +Z; heights are above the
+   mechanical table top.</p>
+<div class="scroll"><table><thead><tr><th>detector</th><th class="num">z [mm]</th><th>size</th><th>note</th></tr></thead><tbody><tr><td>EIC_uRWELL_front</td><td class="num">0</td><td>127.4 mm square active</td><td class="caveat"></td></tr><tr><td>P2_IN</td><td class="num">320</td><td>fan, r 150.7-635.0 mm, 55.6 deg, 1280 pads</td><td class="caveat"></td></tr><tr><td>P2_MID</td><td class="num">630</td><td>fan, r 150.7-635.0 mm, 55.6 deg, 1280 pads</td><td class="caveat"></td></tr><tr><td>P2_OUT</td><td class="num">940</td><td>fan, r 150.7-635.0 mm, 55.6 deg, 1280 pads</td><td class="caveat"></td></tr><tr><td>mx17_E</td><td class="num">1155</td><td>398.6 mm square active</td><td class="caveat">placeholder z</td></tr><tr><td>EIC_uRWELL_back</td><td class="num">1370</td><td>127.4 mm square active</td><td class="caveat"></td></tr></tbody></table></div>
+<p>The P2 BASKET chambers are not drawn as rectangles: the fan is the annulus
+   sector back-solved from the group's own Gerber-derived pad map (apex at pad
+   (-33.69, -20.58) mm, bisector
+   30.074&deg;), mounted bisector-vertical with the apex
+   765 mm above the table, and all 1280 pads are placed as
+   their true rotated rectangles. Only sectors
+   3&ndash;6 of 10 are
+   read out, and they are drawn brighter than the rest.</p>
+<p>On <b>P2 MID</b> the pads carry the <b>measured</b> beam illumination
+   (stage-22 <code>n_tag</code>, 15.1 M tagged tracks summed over the ten
+   <code>eff_nominal_1</code> sub-runs). Pushed through the mounting transform it
+   lands at 250 mm above the table with
+   &sigma;<sub>h</sub> = 28.6 mm &mdash; the documented numbers,
+   reproduced by the scene rather than asserted by it.</p>
+<p>Beam particles are drawn parallel (measured divergence
+   &lt; 0.5 mrad over 620 mm), uniform in height across
+   the 186&ndash;311 mm trigger slab
+   (that hard-edged 125 mm band is the external scintillator aperture, not the
+   beam) and Gaussian horizontally.</p>
+<figure id="sps_hero">
+  <img src="figures/sps_hero_light_labelled.png" alt="sps_hero">
+  <figcaption><b>sps_hero</b> &mdash; The hero shot: three P2 BASKET fans between the two EIC uRWELL references, viewed from downstream-left so every readout face is turned towards the camera.<br><a href="figures/sps_hero_light_labelled.png">labelled PNG</a> &middot; <a href="figures/sps_hero_light_labelled.pdf">labelled PDF</a> &middot; <a href="figures/sps_hero_light.png">bare render</a></figcaption>
+</figure>
+<figure id="sps_hero_mx17">
+  <img src="figures/sps_hero_mx17_light_labelled.png" alt="sps_hero_mx17">
+  <figcaption><b>sps_hero_mx17</b> &mdash; The same view with MX17 &quot;Detector E&quot; added at z = 1155 mm.  Its z is a placeholder in the run config, and at 47 cm square it dominates the rail.<br><a href="figures/sps_hero_mx17_light_labelled.png">labelled PNG</a> &middot; <a href="figures/sps_hero_mx17_light_labelled.pdf">labelled PDF</a> &middot; <a href="figures/sps_hero_mx17_light.png">bare render</a></figcaption>
+</figure>
+<figure id="sps_side">
+  <img src="figures/sps_side_light_labelled.png" alt="sps_side">
+  <figcaption><b>sps_side</b> &mdash; Near-elevation: the figure to use when the point is the spacing along the rail.<br><a href="figures/sps_side_light_labelled.png">labelled PNG</a> &middot; <a href="figures/sps_side_light_labelled.pdf">labelled PDF</a> &middot; <a href="figures/sps_side_light.png">bare render</a></figcaption>
+</figure>
+<figure id="sps_beam">
+  <img src="figures/sps_beam_light_labelled.png" alt="sps_beam">
+  <figcaption><b>sps_beam</b> &mdash; Beam&#x27;s-eye view from downstream -- the stations nested inside one another, and the pad structure of the fan at its clearest.<br><a href="figures/sps_beam_light_labelled.png">labelled PNG</a> &middot; <a href="figures/sps_beam_light_labelled.pdf">labelled PDF</a> &middot; <a href="figures/sps_beam_light.png">bare render</a></figcaption>
+</figure>
+
+
+<h2>Saclay cosmic test bench</h2>
+<p>Four M3 reference Micromegas bracketing two test slots, from
+   <code>bench_geometry</code> and <code>detectors</code> in
+   <code>mx17_det2_det3_overnight_6-22-26/run_config.json</code>.</p>
+<div class="scroll"><table><thead><tr><th>plane</th><th class="num">z [mm]</th><th>size</th><th>note</th></tr></thead><tbody><tr><td>trigger scintillator (top)</td><td class="num">1420</td><td>600 x 600 mm</td><td class="caveat">not in any run config</td></tr><tr><td>m3_top_top</td><td class="num">1302</td><td>500 x 500 mm</td><td class="caveat"></td></tr><tr><td>m3_top_bot</td><td class="num">1185</td><td>500 x 500 mm</td><td class="caveat"></td></tr><tr><td>P2 test slot</td><td class="num">702</td><td>MX17 400 x 400 mm or P2 fan</td><td class="caveat">level p2_z = 697 mm + board</td></tr><tr><td>P1 test slot</td><td class="num">232</td><td>MX17 400 x 400 mm or P2 fan</td><td class="caveat">level p1_z = 227 mm + board</td></tr><tr><td>m3_bot_top</td><td class="num">144</td><td>500 x 500 mm</td><td class="caveat"></td></tr><tr><td>m3_bot_bot</td><td class="num">24</td><td>500 x 500 mm</td><td class="caveat"></td></tr><tr><td>trigger scintillator (bottom)</td><td class="num">-110</td><td>600 x 600 mm</td><td class="caveat">not in any run config</td></tr></tbody></table></div>
+<p>Either slot takes an MX17 chamber (drawn with its 30 mm
+   drift volume, the one real thickness in the scene) or a P2 BASKET fan lying
+   flat; <code>--slots p2,mx17</code> reproduces the mixed configuration that
+   <code>mx17_det3_p2_det1_overnight_6-27-26</code> ran. The uprights carry
+   brackets at every rail level
+   (<code>bottom_level_z</code> = 82 mm, then every
+   97 mm), which is what makes P1 and P2 read as levels
+   rather than free heights.</p>
+<p>Muons are sampled from the sea-level cos<sup>2</sup>&theta; distribution and
+   kept only if they cross <i>both</i> 60 &times; 60 cm paddles &mdash; the
+   bench's actual trigger. Over the 1.53 m paddle separation that leaves nothing
+   steeper than about 15&deg;, so the drawn tracks are near-vertical because the
+   acceptance says so, not because they were drawn that way.</p>
+<figure id="bench_hero">
+  <img src="figures/bench_hero_light_labelled.png" alt="bench_hero">
+  <figcaption><b>bench_hero</b> &mdash; The bench as a rack: both test slots filled with MX17 chambers, drift volumes showing.<br><a href="figures/bench_hero_light_labelled.png">labelled PNG</a> &middot; <a href="figures/bench_hero_light_labelled.pdf">labelled PDF</a> &middot; <a href="figures/bench_hero_light.png">bare render</a></figcaption>
+</figure>
+<figure id="bench_side">
+  <img src="figures/bench_side_light_labelled.png" alt="bench_side">
+  <figcaption><b>bench_side</b> &mdash; Near-elevation with a slight lift, so every plane in the stack is visible at once.  The stacking figure.<br><a href="figures/bench_side_light_labelled.png">labelled PNG</a> &middot; <a href="figures/bench_side_light_labelled.pdf">labelled PDF</a> &middot; <a href="figures/bench_side_light.png">bare render</a></figcaption>
+</figure>
+<figure id="bench_p2">
+  <img src="figures/bench_p2_light_labelled.png" alt="bench_p2">
+  <figcaption><b>bench_p2</b> &mdash; The same bench with both slots carrying P2 BASKET fans.<br><a href="figures/bench_p2_light_labelled.png">labelled PNG</a> &middot; <a href="figures/bench_p2_light_labelled.pdf">labelled PDF</a> &middot; <a href="figures/bench_p2_light.png">bare render</a></figcaption>
+</figure>
+<figure id="bench_p2_side">
+  <img src="figures/bench_p2_side_light_labelled.png" alt="bench_p2_side">
+  <figcaption><b>bench_p2_side</b> &mdash; Elevation of the two-P2 configuration.<br><a href="figures/bench_p2_side_light_labelled.png">labelled PNG</a> &middot; <a href="figures/bench_p2_side_light_labelled.pdf">labelled PDF</a> &middot; <a href="figures/bench_p2_side_light.png">bare render</a></figcaption>
+</figure>
+<figure id="bench_mixed">
+  <img src="figures/bench_mixed_light_labelled.png" alt="bench_mixed">
+  <figcaption><b>bench_mixed</b> &mdash; Mixed slots: a P2 BASKET fan lying flat in P1 and an MX17 in P2 -- the configuration mx17_det3_p2_det1_overnight_6-27-26 actually ran.  Not part of the headline set, but it renders from the same code.<br><a href="figures/bench_mixed_light_labelled.png">labelled PNG</a> &middot; <a href="figures/bench_mixed_light_labelled.pdf">labelled PDF</a> &middot; <a href="figures/bench_mixed_light.png">bare render</a></figcaption>
+</figure>
+
+
+<h2>One chamber, exploded</h2>
+<p>The layer stack of a single MX17: 512 readout strips per view at the strip
+   map's own 0.7785 mm pitch, crossed X and Y, the
+   resistive strips over them, the micromesh
+   150 &micro;m above (garfield_sim/mm_config.py), and the
+   30 mm drift volume with a muon in it.  Each primary
+   cluster drifts straight down to the mesh, so its arrival time measures its
+   depth &mdash; which is the micro-TPC measurement the whole reconstruction
+   rests on.</p>
+<figure id="chamber_exploded">
+  <img src="figures/chamber_exploded_light_labelled.png" alt="chamber_exploded">
+  <figcaption><b>chamber_exploded</b> &mdash; One MX17 chamber with its layers separated along the drift axis, and a muon whose ionisation drifts down to the mesh -- the micro-TPC picture the whole reconstruction rests on.<br><a href="figures/chamber_exploded_light_labelled.png">labelled PNG</a> &middot; <a href="figures/chamber_exploded_light_labelled.pdf">labelled PDF</a> &middot; <a href="figures/chamber_exploded_light.png">bare render</a></figcaption>
+</figure>
+
+
+<h2>Animations</h2>
+<p>Turntables for the talk, and build-up sequences whose numbered stills can be
+   dropped on successive slides so the setup assembles itself as you speak.
+   Every frame comes from the same scene code as the stills above.</p>
+<figure>
+  <video src="animations/turn_sps.mp4" controls loop muted playsinline style="width:100%;border:1px solid var(--rule);border-radius:6px"></video>
+  <figcaption><b>turn_sps</b> &mdash; Turntable of the H4 telescope.<br><a href="animations/turn_sps.mp4">MP4</a> &middot; <a href="animations/turn_sps.gif">GIF</a></figcaption>
+</figure>
+<figure>
+  <video src="animations/turn_bench.mp4" controls loop muted playsinline style="width:100%;border:1px solid var(--rule);border-radius:6px"></video>
+  <figcaption><b>turn_bench</b> &mdash; Turntable of the bench, both slots MX17.<br><a href="animations/turn_bench.mp4">MP4</a> &middot; <a href="animations/turn_bench.gif">GIF</a></figcaption>
+</figure>
+<figure>
+  <video src="animations/turn_bench_p2.mp4" controls loop muted playsinline style="width:100%;border:1px solid var(--rule);border-radius:6px"></video>
+  <figcaption><b>turn_bench_p2</b> &mdash; Turntable of the bench, both slots P2 BASKET.<br><a href="animations/turn_bench_p2.mp4">MP4</a> &middot; <a href="animations/turn_bench_p2.gif">GIF</a></figcaption>
+</figure>
+<figure>
+  <video src="animations/turn_chamber.mp4" controls loop muted playsinline style="width:100%;border:1px solid var(--rule);border-radius:6px"></video>
+  <figcaption><b>turn_chamber</b> &mdash; Turntable of the exploded chamber.<br><a href="animations/turn_chamber.mp4">MP4</a> &middot; <a href="animations/turn_chamber.gif">GIF</a></figcaption>
+</figure>
+<figure>
+  <video src="animations/build_sps.mp4" controls loop muted playsinline style="width:100%;border:1px solid var(--rule);border-radius:6px"></video>
+  <figcaption><b>build_sps</b> &mdash; Build-up: table, then the uRWELL references, the three P2 fans, and finally the beam.<br><a href="animations/build_sps.mp4">MP4</a> &middot; <a href="animations/build_sps.gif">GIF</a> &middot; 4 numbered stills in <code>animations/</code></figcaption>
+</figure>
+<figure>
+  <video src="animations/build_bench.mp4" controls loop muted playsinline style="width:100%;border:1px solid var(--rule);border-radius:6px"></video>
+  <figcaption><b>build_bench</b> &mdash; Build-up: the rack, then the trigger paddles, the M3 reference planes, the chambers under test, and finally the muons.<br><a href="animations/build_bench.mp4">MP4</a> &middot; <a href="animations/build_bench.gif">GIF</a> &middot; 5 numbered stills in <code>animations/</code></figcaption>
+</figure>
+
+
+<h2>What is drawn but not measured</h2>
+<ul class="tight"><li><b>sps transverse alignment</b> &mdash; Every SPS run_config carries det_center_coords x = y = 0 -- nominal, not surveyed.  The uRWELLs and MX17 are drawn centred on the beam axis (250 mm above the table), which is how they were mounted, but no transverse survey exists to confirm it.</li><li><b>sps mx17 z</b> &mdash; MX17 &quot;Detector E&quot; at z = 1155 mm is flagged PLACEHOLDER in the run config itself.</li><li><b>p2 mounting</b> &mdash; Fan bisector vertical, apex up, centred, 130 mm from the lowest active point to the table top -- supplied by the P2 group, corroborated by the trigger aperture coming out horizontal, but not surveyed.</li><li><b>bench scintillator z</b> &mdash; The 60 x 60 cm trigger paddles are not in any run config (they are hardware outside the DAQ geometry).  They are drawn just outside the stack at z = -110 / +1420 mm, matching the engineer-package schematic.</li><li><b>bench structure</b> &mdash; The bench uprights and rails are drawn for context and are not surveyed dimensions.</li><li><b>drawn thicknesses</b> &mdash; Chamber/frame thicknesses are chosen for legibility; only the 30 mm MX17 drift gap is a real dimension.</li></ul>
+
+<h2>Reproduce</h2>
+<pre>cd mpgd26
+../.venv/bin/python make_figures.py                # the whole still set
+../.venv/bin/python make_chamber.py                # the exploded chamber
+../.venv/bin/python make_anim.py                   # turntables + build-ups
+../.venv/bin/python make_report.py                 # this page
+
+../.venv/bin/python make_figures.py --draft        # fast, for framing checks
+../.venv/bin/python make_figures.py --theme both   # + dark theme
+
+# individual scenes, with all the switches
+../.venv/bin/python make_sps.py   --views hero,side,beam [--mx17] [--envelope]
+../.venv/bin/python make_bench.py --views hero,side --slots p2,mx17
+../.venv/bin/python make_anim.py  --only turn_bench --frames 120</pre>
+<p class="caveat">Layout: <code>geometry.py</code> holds every number and its
+   provenance; <code>meshes.py</code> turns geometry into meshes;
+   <code>style.py</code> holds the palette, materials, light rig and render
+   harness; <code>scenes_sps.py</code> / <code>scenes_bench.py</code> assemble
+   each setup; <code>annotate.py</code> projects 3-D anchors to pixels and sets
+   the type; <code>make_figures.py</code> drives the deliverable set.</p>
+
+</div>
