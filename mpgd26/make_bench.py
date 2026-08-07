@@ -105,7 +105,14 @@ def build(theme='light', slots=('mx17', 'mx17'), tracks=True,
 
         # measured position, if an alignment was handed in
         dx = dy = dth = 0.0
-        if slot in align:
+        if slot in align and kind != 'mx17':
+            # alignment.json is fitted for an MX17 against the M3 reference --
+            # detector-local strip coordinates, an MX17 active-area centre, an
+            # MX17 z.  None of that transfers to a P2 fan sitting in the same
+            # slot, so it is refused rather than silently applied.
+            print(f'  {slot}: ignoring alignment -- it is an MX17 fit and this '
+                  f'slot holds a {kind}')
+        elif slot in align:
             a = G.load_bench_alignment(align[slot])
             dx, dy, dth = a['x'], a['y'], a['theta_deg']
             print(f'  {slot}: measured offset ({dx:+.1f}, {dy:+.1f}) mm, '

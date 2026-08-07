@@ -80,9 +80,14 @@ def place(parts, x=0.0, y=0.0, theta_deg=0.0, z=0.0,
           rotate_keys=ROTATE_WITH_STRIPS):
     """Move a chamber to its measured position in the bench frame.
 
-    ``(x, y)`` translates everything; ``theta_deg`` turns only ``rotate_keys``
-    (see above).  Both are applied to the outline the cast shadow is projected
-    from as well, so a moved chamber moves its shadow too.
+    ``(x, y)`` translates everything; ``theta_deg`` turns ``rotate_keys``, or
+    EVERYTHING if ``rotate_keys`` is None.  Both are applied to the outline the
+    cast shadow is projected from as well, so a moved chamber moves its shadow.
+
+    Rotating a subset is only right for a chamber that is rotationally
+    symmetric at 90 deg -- a square MX17, where the strip direction is the only
+    thing the angle changes.  A P2 fan is not: its pads are part of the board,
+    so it has to turn as one rigid object or the pads slide off the outline.
     """
     if not (x or y or theta_deg):
         return parts
@@ -90,7 +95,7 @@ def place(parts, x=0.0, y=0.0, theta_deg=0.0, z=0.0,
     for k, mesh in parts.items():
         if k == 'outline':
             continue
-        if theta_deg and k in rotate_keys:
+        if theta_deg and (rotate_keys is None or k in rotate_keys):
             mesh = mesh.rotate_z(theta_deg, point=pivot, inplace=False,
                                  transform_all_input_vectors=True)
         parts[k] = mesh.translate((x, y, 0.0), inplace=False,
@@ -152,7 +157,8 @@ def add_p2_flat(p, z, pads_lab, sectors, x=0.0, y=0.0, theta_deg=0.0):
     o = SPS.p2_outline3d(z)
     o[:, 1] -= y_mid
     m['outline'] = o
-    m = place(m, x, y, theta_deg, z)
+    # rigid: the fan's pads belong to its board
+    m = place(m, x, y, theta_deg, z, rotate_keys=None)
 
     p.add_mesh(m['frame'], **S.mat('alu_matte', S.COL['alu']))
     p.add_mesh(m['pcb'], **S.mat('pcb', S.COL['pcb']))
@@ -187,7 +193,8 @@ def add_scintillator(p, z, pmt_dir=-1):
         poly = poly[::-1]
     p.add_mesh(M.polygon_prism(poly, z - G.SCINT_THICK_MM / 2,
                                G.SCINT_THICK_MM, normal_axis='z'),
-               **S.mat('scint', S.COL['guide'], opacity=0.40))
+               **S.mat('plastic', S.COL['guide'], specular=0.35,
+                       specular_power=45))
 
     # PMT: glass envelope, then the base / divider can behind it
     p.add_mesh(M.cylinder((0.0, y1 + pmt_dir * 70, z), (0, 1, 0),
