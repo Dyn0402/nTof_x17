@@ -119,14 +119,11 @@ def add_chamber(p, theme='light'):
     p.add_mesh(gas.extract_feature_edges(), color=S.COL['gas'], line_width=1.8,
                lighting=False, opacity=0.55)
 
-    # the drift window / cathode on top: a mylar foil in its own frame, so it
-    # reads as the thing the particle comes in through
+    # the drift window / cathode: a plain mylar plane closing the top of the
+    # gap -- the thing the particle comes in through
     p.add_mesh(M.slab((0, 0, CATHODE_Z + 0.35), WIN_X, WIN_Y, 0.7, normal='z'),
                **S.mat('plastic', '#cfe3f2', opacity=0.42, specular=0.7,
                        specular_power=60))
-    p.add_mesh(M.frame_ring((0, 0, CATHODE_Z + 0.35), WIN_X + 5.0,
-                            WIN_Y + 5.0, WIN_X, WIN_Y, 2.4, normal='z'),
-               **S.mat('alu', S.COL['alu']))
 
 
 def add_event(p, a, b, clusters, cmap='plasma', show_clouds=True):

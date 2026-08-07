@@ -87,10 +87,10 @@ def draw_waveforms(fig, rect, clusters, fs, ink, muted, grid):
     for sp in ax.spines.values():
         sp.set_color(grid)
     ax.grid(True, axis='x', color=grid, lw=fs * 0.04, alpha=0.8)
-    ax.text(0.97, 0.04,
-            'each trace: one strip\nmeasured impulse response (det3)',
-            transform=ax.transAxes, ha='right', va='bottom',
-            fontsize=fs * 0.76, color=ink, linespacing=1.5, **A.FONT)
+    ax.text(0.0, 1.012,
+            'each trace = one strip  ·  measured response (det3)',
+            transform=ax.transAxes, ha='left', va='bottom',
+            fontsize=fs * 0.74, color=ink, **A.FONT)
     return True
 
 
@@ -127,15 +127,16 @@ def compose(png, clusters, hits, out_base, theme, angle, dpi=300,
             ha='left', va='center', fontsize=fs * 1.95, color=ink,
             fontweight='bold', **A.FONT)
     ax.text(0.026 * W, head * 0.76,
-            'One MX17 chamber measures a track angle from a single plane',
+            'Simulated event, measured detector constants — one MX17 chamber '
+            'measures a track angle from a single plane',
             ha='left', va='center', fontsize=fs * 0.95, color=muted, **A.FONT)
 
     if right == 'waveforms':
         lx0 = (w + 0.085 * lad_w) / W
-        draw_waveforms(fig, [lx0, (foot + 0.30 * h) / H,
-                             0.80 * lad_w / W, 0.60 * h / H],
+        draw_waveforms(fig, [lx0, (foot + 0.185 * h) / H,
+                             0.80 * lad_w / W, 0.715 * h / H],
                        clusters, fs, ink, muted, grid)
-        cax = fig.add_axes([lx0, (foot + 0.135 * h) / H,
+        cax = fig.add_axes([lx0, (foot + 0.070 * h) / H,
                             0.80 * lad_w / W, 0.020 * h / H])
         norm = mcolors.Normalize(0, T.drift_time_ns(T.DRIFT_MM))
         fig.colorbar(cm.ScalarMappable(norm=norm, cmap=CMAP), cax=cax,

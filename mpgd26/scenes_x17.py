@@ -687,8 +687,8 @@ S_HEAD1, S_HEAD2 = 76.6, 42.6
 S_A = (8.0, 46.0)           # 1 beam on target
 S_B = (52.0, 90.0)          # 2 capture
 S_C = (96.0, 152.0)         # 3 de-excitation
-S_D = (8.0, 88.0)           # 4 why the pair opens the way it does
-S_E = (94.0, 152.0)         # 5 what we measure
+S_D = (8.0, 100.0)          # 4 why the pair opens the way it does
+S_E = (104.0, 152.0)        # 5 what we measure
 
 
 def draw_story(theme='light', dpi=300, title=True, capsule=False):
@@ -1051,7 +1051,7 @@ def opening_at(m_parent, theta_star_deg, e_tot=None):
         + np.arctan2(p_star * s, -gamma * p_star * c + beta_gamma * e_star)))
 
 
-EXAMPLE_THETA_STAR = (90.0, 45.0, 0.0)
+EXAMPLE_THETA_STAR = (90.0, 67.5, 45.0, 22.5, 0.0)
 
 
 def _rest_frame_pair(ax, cx, cy, r, P, theta_star=52.0, lw=1.4, ms=9,
@@ -1072,7 +1072,7 @@ def _rest_frame_pair(ax, cx, cy, r, P, theta_star=52.0, lw=1.4, ms=9,
 
 
 def _orientation_example(ax, xc, yc, m_parent, theta_star, col, P, halo,
-                         arm=4.6, note=None):
+                         arm=4.4, note=None):
     """One worked example: the decay direction in the rest frame, and where the
     boost actually puts the two leptons in the lab.
 
@@ -1083,13 +1083,15 @@ def _orientation_example(ax, xc, yc, m_parent, theta_star, col, P, halo,
     a_pos, a_ele = lab_angles(m_parent, theta_star)
 
     # --- rest frame: the pair, back-to-back along theta_star ---
-    icy = yc + 4.2
-    _rest_frame_pair(ax, xc, icy, 1.9, P, theta_star=theta_star, lw=1.2, ms=7)
-    ax.text(xc + 2.9, icy, f'$\\theta^{{*}}$ = {theta_star:.0f}°', fontsize=7.0,
-            color=P['muted'], ha='left', va='center', **FONT)
+    # theta* is labelled UNDER the icon rather than beside it: with five
+    # examples in the row, a side label is what sets the column pitch
+    icy = yc + 5.4
+    _rest_frame_pair(ax, xc, icy, 1.6, P, theta_star=theta_star, lw=1.1, ms=6)
+    ax.text(xc, yc + 2.6, f'$\\theta^{{*}}$ = {theta_star:g}°', fontsize=6.9,
+            color=P['muted'], ha='center', va='center', **FONT)
 
     # --- lab: each lepton at its own angle to the boost axis ---
-    vx, vy = xc - 3.2, yc - 2.2
+    vx, vy = xc - 3.2, yc - 2.6
     for ang, lcol in ((a_pos, P['positron']), (a_ele, P['electron'])):
         t = np.radians(ang)
         arrow(ax, (vx, vy), (vx + arm * np.cos(t), vy + arm * np.sin(t)),
@@ -1120,16 +1122,16 @@ def _boost_row(ax, x0, yc, m_parent, tag, col, P, halo=None):
     gamma = e_tot / m_parent
     beta = np.sqrt(max(1.0 - 1.0 / gamma ** 2, 0.0))
 
-    ax.text(x0, yc + 8.0, tag, fontsize=8.8, fontweight='bold', color=col,
+    ax.text(x0, yc + 8.6, tag, fontsize=8.8, fontweight='bold', color=col,
             ha='left', va='center', **FONT)
 
     # --- the pair as it leaves the parent, same for both rows ---
-    _rest_frame_pair(ax, x0 + 5.6, yc, 4.8, P, label=True)
-    ax.text(x0 + 5.6, yc - 6.4, 'rest frame', fontsize=7.4, color=P['muted'],
+    _rest_frame_pair(ax, x0 + 5.0, yc, 4.2, P, label=True)
+    ax.text(x0 + 5.0, yc - 5.8, 'rest frame', fontsize=7.4, color=P['muted'],
             ha='center', va='center', **FONT)
 
     # --- the boost, as an arrow whose length is beta ---
-    bx0, bmax = x0 + 13.0, 11.0
+    bx0, bmax = x0 + 11.5, 9.5
     arrow(ax, (bx0, yc), (bx0 + bmax * beta, yc), col, lw=2.8, ms=15, zorder=4)
     # 2 dp reads as a flat 1.00 once the parent is ultra-relativistic, which is
     # exactly the regime the row is about
@@ -1140,9 +1142,10 @@ def _boost_row(ax, x0, yc, m_parent, tag, col, P, halo=None):
     ax.text(bx0, yc - 3.2, 'boost', fontsize=7.2, color=P['muted'],
             ha='left', va='center', **FONT)
 
-    notes = (None, None, 'collinear' if m_parent < 4.6 else 'back-to-back')
+    last = 'collinear' if m_parent < 4.6 else 'back-to-back'
+    notes = [None] * (len(EXAMPLE_THETA_STAR) - 1) + [last]
     for i, ts in enumerate(EXAMPLE_THETA_STAR):
-        _orientation_example(ax, x0 + 32.0 + i * 18.0, yc, m_parent, ts, col,
+        _orientation_example(ax, x0 + 27.0 + i * 15.0, yc, m_parent, ts, col,
                              P, halo, note=notes[i])
     return opening_band(m_parent)
 
@@ -1163,10 +1166,10 @@ def _story_mechanism(fig, ax, P, halo):
             fontsize=8.0, color=P['muted'], ha='left', va='center', **FONT)
 
     m_ipc = 2.0
-    lo_x, hi_x = _boost_row(ax, x0 + 1.0, 32.0, X17['m_x17'],
+    lo_x, hi_x = _boost_row(ax, x0 + 1.0, 31.8, X17['m_x17'],
                             f'X17  —  one mass, {X17["m_x17"]:g} MeV,  '
                             'heavy and slow', P['x17'], P, halo=halo)
-    lo_i, hi_i = _boost_row(ax, x0 + 1.0, 14.0, m_ipc,
+    lo_i, hi_i = _boost_row(ax, x0 + 1.0, 13.8, m_ipc,
                             f'IPC  —  any mass, here {m_ipc:g} MeV,  '
                             'light and fast', P['ipc'], P, halo=halo)
 
@@ -1184,7 +1187,7 @@ def _story_measure(fig, ax, P, halo):
     th, x17, ipc = modelled_shapes()
     th_min = opening_angle_pdf()[2]
 
-    px = fig.add_axes([(x0 + 6.0) / W, 13.6 / H, 44.0 / W, 21.4 / H],
+    px = fig.add_axes([(x0 + 6.0) / W, 13.6 / H, 39.0 / W, 21.4 / H],
                       facecolor='none')
     for s in ('top', 'right'):
         px.spines[s].set_visible(False)
