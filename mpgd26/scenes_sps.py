@@ -22,6 +22,8 @@ Frame: +Z downstream, +Y up, Y = 0 at the table top.
 """
 from __future__ import annotations
 
+import math
+
 import numpy as np
 import pyvista as pv
 
@@ -153,7 +155,10 @@ def add_urwell(p, z, label_side=+1):
     return parts
 
 
-def add_mx17(p, z, drift_dir=-1):
+def add_mx17(p, z, drift_dir=-1, yaw=0.0):
+    """MX17 on the rail.  ``yaw`` is det_orientation.y -- rotation about the
+    vertical through the chamber centre, i.e. the angle the chamber presents to
+    the beam."""
     parts = M.rect_chamber(
         center=(0.0, G.SPS_BEAM_HEIGHT, z),
         pcb_size=(G.MX17_PCB_MM, G.MX17_PCB_MM),
@@ -163,6 +168,12 @@ def add_mx17(p, z, drift_dir=-1):
         pcb_thick=8.0, normal='z',
         drift_gap=G.MX17_DRIFT_GAP_MM, drift_dir=drift_dir,
         n_strips=64)
+
+    if abs(yaw) > 1e-9:
+        pivot = (0.0, G.SPS_BEAM_HEIGHT, z)
+        for k, mesh in parts.items():
+            parts[k] = mesh.rotate_y(yaw, point=pivot, inplace=False)
+
     p.add_mesh(parts['frame'], **S.mat('alu', S.COL['alu']))
     p.add_mesh(parts['pcb'], **S.mat('pcb', S.COL['pcb']))
     p.add_mesh(parts['active'], **S.mat('copper', S.COL['copper']))
@@ -174,8 +185,14 @@ def add_mx17(p, z, drift_dir=-1):
         p.add_mesh(M.slab((0.0, post_h / 2, z), 120, post_h, 60, normal='z'),
                    **S.mat('alu_matte', S.COL['alu_dark']))
     w = G.MX17_PCB_MM + 2 * G.MX17_FRAME_MM
-    parts['outline'] = M.rect_outline((0.0, G.SPS_BEAM_HEIGHT, z), w, w,
-                                      normal='z')
+    out = M.rect_outline((0.0, G.SPS_BEAM_HEIGHT, z), w, w, normal='z')
+    if abs(yaw) > 1e-9:
+        c, s = math.cos(math.radians(yaw)), math.sin(math.radians(yaw))
+        d = out - np.array([0.0, G.SPS_BEAM_HEIGHT, z])
+        out = np.stack([c * d[:, 0] + s * d[:, 2], d[:, 1],
+                        -s * d[:, 0] + c * d[:, 2]], axis=1) \
+            + np.array([0.0, G.SPS_BEAM_HEIGHT, z])
+    parts['outline'] = out
     return parts
 
 

@@ -132,8 +132,8 @@ def fig_block(name, theme='light'):
 
 def sps_table():
     rows = ''
-    for n, z, kind, lab in G.SPS_STATIONS:
-        note = 'placeholder z' if kind == 'mx17' else ''
+    for n, z, kind, lab, yaw in G.SPS_STATIONS:
+        note = 'placeholder z; yawed %.2f deg' % yaw if kind == 'mx17' else ''
         size = {'urwell': f'{G.URW_ACTIVE_MM:.1f} mm square active',
                 'p2': 'fan, r 150.7-635.0 mm, 55.6 deg, 1280 pads',
                 'mx17': f'{G.MX17_ACTIVE_MM:.1f} mm square active'}[kind]

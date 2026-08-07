@@ -76,15 +76,21 @@ SCINT_THICK_MM = 30.0
 # --------------------------------------------------------------------------- #
 # SPS  --  H4 parasitic telescope in P2
 # --------------------------------------------------------------------------- #
-# z along the rail, mm, from run_59/run_config.json det_center_coords.
+# z along the rail and yaw about the vertical, mm / deg, from
+# run_59/run_config.json ``det_center_coords`` and ``det_orientation``.
+#
+# Every station is square to the beam except MX17 "Detector E", which the run
+# config yaws by det_orientation.y = 25.64 deg.  That is a real mounting angle,
+# not a placeholder like its z, so it is drawn.
 SPS_STATIONS = [
-    # (name, z_mm, kind, label)
-    ('EIC_uRWELL_front', 0.0,    'urwell', 'EIC uRWELL\n(front reference)'),
-    ('P2_IN',            320.0,  'p2',     'P2 BASKET  IN'),
-    ('P2_MID',           630.0,  'p2',     'P2 BASKET  MID'),
-    ('P2_OUT',           940.0,  'p2',     'P2 BASKET  OUT'),
-    ('mx17_E',           1155.0, 'mx17',   'MX17 "Detector E"'),
-    ('EIC_uRWELL_back',  1370.0, 'urwell', 'EIC uRWELL\n(back reference)'),
+    # (name, z_mm, kind, label, yaw_deg)
+    ('EIC_uRWELL_front', 0.0,    'urwell', 'EIC uRWELL\n(front reference)', 0.0),
+    ('P2_IN',            320.0,  'p2',     'P2 BASKET  IN', 0.0),
+    ('P2_MID',           630.0,  'p2',     'P2 BASKET  MID', 0.0),
+    ('P2_OUT',           940.0,  'p2',     'P2 BASKET  OUT', 0.0),
+    ('mx17_E',           1155.0, 'mx17',   'MX17 "Detector E"\nyawed 25.6 deg',
+     25.64),
+    ('EIC_uRWELL_back',  1370.0, 'urwell', 'EIC uRWELL\n(back reference)', 0.0),
 ]
 SPS_MX17_Z_IS_PLACEHOLDER = True     # run_config says so explicitly
 

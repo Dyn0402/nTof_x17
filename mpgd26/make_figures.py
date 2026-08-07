@@ -57,7 +57,7 @@ def sps_figure(name, view, theme, mx17, size, ssaa, spot=True):
                    ssaa=ssaa)
 
     items = [(n, f'{lab}\n{_mm(z)}')
-             for n, z, kind, lab in G.SPS_STATIONS
+             for n, z, kind, lab, yaw in G.SPS_STATIONS
              if kind != 'mx17' or mx17]
     items = sorted(items, key=lambda it: px.get(it[0], (0, 0))[1])
     side = 'right' if view != 'side' else 'right'
