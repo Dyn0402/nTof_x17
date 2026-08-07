@@ -54,9 +54,50 @@ def render_3d(theme, size, ssaa, out, angle, seed):
     return clusters, hits
 
 
+def draw_waveforms(fig, rect, clusters, fs, ink, muted, grid):
+    """Stacked per-strip waveforms -- what the DAQ actually records.
+
+    Each trace is one strip: the primaries that land on it, each folded with
+    the MEASURED single-electron response of the plane, sampled at the bench's
+    own 32 x 60 ns.  The pulse walking steadily across strips is the micro-TPC
+    signature; no fit, just the raw signals.
+    """
+    r = T.strip_waveforms(clusters)
+    if r is None:
+        return False
+    ks, xs, wf, ts = r
+    ax = fig.add_axes(rect, facecolor='none')
+
+    tmax = T.drift_time_ns(T.DRIFT_MM)
+    cmap = plt.get_cmap(CMAP)
+    peak = np.max(wf, axis=1)
+    scale = 0.85 * T.STRIP_PITCH_MM * 6.0 / max(peak.max(), 1e-9)
+    for i in np.argsort(xs):
+        t_pk = ts[int(np.argmax(wf[i]))]
+        col = cmap(np.clip(t_pk / tmax, 0, 1))
+        base = xs[i]
+        ax.plot(ts, base + wf[i] * scale, color=col, lw=fs * 0.055,
+                zorder=3, solid_capstyle='round')
+        ax.axhline(base, color=grid, lw=fs * 0.018, zorder=1)
+    ax.set_xlabel('time  [ns]   (32 samples x 60 ns)', fontsize=fs * 0.85,
+                  color=muted, **A.FONT)
+    ax.set_ylabel('strip position  x [mm]   (traces offset)',
+                  fontsize=fs * 0.85, color=muted, **A.FONT)
+    ax.tick_params(labelsize=fs * 0.72, colors=muted)
+    for sp in ax.spines.values():
+        sp.set_color(grid)
+    ax.grid(True, axis='x', color=grid, lw=fs * 0.04, alpha=0.8)
+    ax.text(0.97, 0.04,
+            'each trace: one strip\nmeasured impulse response (det3)',
+            transform=ax.transAxes, ha='right', va='bottom',
+            fontsize=fs * 0.76, color=ink, linespacing=1.5, **A.FONT)
+    return True
+
+
 def compose(png, clusters, hits, out_base, theme, angle, dpi=300,
-            with_ladder=True):
-    """Render on the left, the strip-time ladder on the right."""
+            with_ladder=True, right='ladder'):
+    """Render on the left, and on the right either the strip-time ladder or
+    the stacked waveforms."""
     img = np.asarray(Image.open(png).convert('RGB'))
     h, w = img.shape[:2]
 
@@ -65,6 +106,7 @@ def compose(png, clusters, hits, out_base, theme, angle, dpi=300,
     page = '#0a0d13' if theme == 'dark' else '#ffffff'
     grid = '#2a3440' if theme == 'dark' else '#e3e8ee'
 
+    with_ladder = right in ('ladder', 'waveforms')
     lad_w = int(w * (0.62 if with_ladder else 0.0))
     head = int(0.12 * h)
     foot = int(0.24 * h)
@@ -88,7 +130,23 @@ def compose(png, clusters, hits, out_base, theme, angle, dpi=300,
             'One MX17 chamber measures a track angle from a single plane',
             ha='left', va='center', fontsize=fs * 0.95, color=muted, **A.FONT)
 
-    if with_ladder:
+    if right == 'waveforms':
+        lx0 = (w + 0.085 * lad_w) / W
+        draw_waveforms(fig, [lx0, (foot + 0.30 * h) / H,
+                             0.80 * lad_w / W, 0.60 * h / H],
+                       clusters, fs, ink, muted, grid)
+        cax = fig.add_axes([lx0, (foot + 0.135 * h) / H,
+                            0.80 * lad_w / W, 0.020 * h / H])
+        norm = mcolors.Normalize(0, T.drift_time_ns(T.DRIFT_MM))
+        fig.colorbar(cm.ScalarMappable(norm=norm, cmap=CMAP), cax=cax,
+                     orientation='horizontal')
+        cax.tick_params(labelsize=fs * 0.66, colors=muted)
+        cax.set_xlabel('drift time to the mesh [ns]  =  depth in the gap',
+                       fontsize=fs * 0.78, color=muted, **A.FONT)
+        for sp in cax.spines.values():
+            sp.set_color(grid)
+
+    elif with_ladder:
         xs, ts = T.strip_ladder(hits)
         lx0 = (w + 0.085 * lad_w) / W
         pax = fig.add_axes([lx0, (foot + 0.30 * h) / H,
@@ -138,17 +196,31 @@ def compose(png, clusters, hits, out_base, theme, angle, dpi=300,
         f'A muon crosses the {T.DRIFT_MM:.0f} mm drift gap at {angle:.0f}° and '
         f'leaves {len(clusters)} primary ionisation clusters '
         f'(~{T.CLUSTERS_PER_CM:.0f}/cm in Ar/isobutane).  Each drifts straight '
-        f'down at v = {T.V_DRIFT_UM_NS:.0f} µm/ns, so its arrival time at the '
+        f'down at v = {T.V_DRIFT_UM_NS:.1f} µm/ns, so its arrival time at the '
         f'mesh measures the depth it was created at: {T.drift_time_ns(T.DRIFT_MM):.0f} ns '
         f'across the full gap.  Transverse diffusion spreads each cloud by '
         f'σ_T ≈ {T.sigma_t_mm(T.DRIFT_MM):.1f} mm over the full drift, which is '
         f'why a cluster lights more than one {T.STRIP_PITCH_MM:.3f} mm strip.  '
-        f'v_drift and σ_T are the Garfield++/Magboltz values for the mixture '
-        f'the bench runs (Ar/iso 95/5 + ~1% H₂O at {T.E_DRIFT_V_CM:.0f} V/cm); '
-        f'the gap, pitch and strip count are the detector\'s own.  The fit '
-        f'uses the FIRST arrival on each strip, which is a deliberately simple '
-        f'estimator and carries a small bias -- the real reconstruction fits '
-        f'the waveforms forward (wft/) for exactly that reason.')
+        f'v_drift is the value MEASURED for this detector (det3, wft '
+        f'calibration bundle for the 6-22 reference run); σ_T is the '
+        f'Garfield++/Magboltz value for the mixture the bench runs '
+        f'(Ar/iso 95/5 + ~1% H₂O at {T.E_DRIFT_V_CM:.0f} V/cm), whose own '
+        f'v_drift of ~34 µm/ns agrees with the measurement.  The gap, pitch '
+        f'and strip count are the detector\'s own.')
+    if right == 'waveforms':
+        cap += (
+            '  On the right, every strip\'s signal: each primary\'s charge '
+            'share folded with the MEASURED single-electron response of this '
+            'plane (det3, wft calibration bundle) and sampled at the bench\'s '
+            f'own {T.N_SAMPLES:d} x {T.SAMPLE_NS:.0f} ns.  The pulse walking '
+            'steadily across strips is the micro-TPC signature -- no fit, just '
+            'the raw signals.')
+    else:
+        cap += (
+            '  The fit uses the FIRST arrival on each strip, which is a '
+            'deliberately simple estimator and carries a small bias -- the '
+            'real reconstruction fits the waveforms forward (wft/) for exactly '
+            'that reason.')
     cfs = fs * 0.66
     import textwrap
     pad = 0.026 * W
@@ -168,19 +240,23 @@ def main():
                     choices=['light', 'dark', 'both'])
     ap.add_argument('--angle', type=float, default=T.TRACK_ANGLE_DEG)
     ap.add_argument('--seed', type=int, default=7)
-    ap.add_argument('--no-ladder', action='store_true')
+    ap.add_argument('--right', default='ladder',
+                    choices=['ladder', 'waveforms', 'none'],
+                    help="what goes beside the render: the strip-time ladder, "
+                         "the stacked per-strip waveforms, or nothing")
     ap.add_argument('--draft', action='store_true')
     args = ap.parse_args()
 
     size = (1000, 820) if args.draft else (2100, 1720)
     themes = ['light', 'dark'] if args.theme == 'both' else [args.theme]
     for theme in themes:
-        out = os.path.join(FIG, f'microtpc_{theme}.png')
+        tag = '' if args.right == 'ladder' else f'_{args.right}'
+        out = os.path.join(FIG, f'microtpc{tag}_{theme}.png')
         clusters, hits = render_3d(theme, size, not args.draft, out,
                                    args.angle, args.seed)
         compose(out, clusters, hits,
-                os.path.join(FIG, f'microtpc_{theme}_labelled'), theme,
-                args.angle, with_ladder=not args.no_ladder)
+                os.path.join(FIG, f'microtpc{tag}_{theme}_labelled'), theme,
+                args.angle, right=args.right)
 
 
 if __name__ == '__main__':

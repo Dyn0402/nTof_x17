@@ -60,6 +60,7 @@ Each figure is written twice:
 | `bench_mixed` | P2 fan in P1, MX17 in P2 (the 6-27 configuration) — available, not headline |
 | `chamber_exploded` | one MX17 chamber pulled apart, with a muon and its drifting ionisation (`make_chamber.py`) |
 | `microtpc` | **how the chamber measures an angle**: primaries drifting to the mesh coloured by arrival time, plus the strip-time ladder and its fit (`make_microtpc.py`) |
+| `microtpc_waveforms` | the same event with the **raw per-strip waveforms** instead of the ladder — the measured impulse response, sampled at 32 × 60 ns (`make_microtpc.py --right waveforms`) |
 | `x17_signature` | the physics case, compact: capture → three de-excitation channels → the e⁺e⁻ opening-angle distribution (`make_x17.py`) |
 | `x17_story` | the same in five beats over two rows, including **why** the boost sets the opening angle (`make_x17.py --layout story`) |
 | `x17_story_capsule` | the story layout with the real Geant4 ³He vessel in beat 1 (`--layout story --capsule`) |

@@ -26,6 +26,9 @@ Frame: +Z up (the drift direction), X across the strips, Y along them.
 """
 from __future__ import annotations
 
+import os
+from math import erf
+
 import numpy as np
 import pyvista as pv
 
@@ -36,8 +39,12 @@ import style as S
 # --- the operating point ----------------------------------------------------
 DRIFT_MM = G.MX17_DRIFT_GAP_MM          # 30
 E_DRIFT_V_CM = 1000.0 / (DRIFT_MM / 10.0)
-V_DRIFT_UM_NS = 34.0
-SIGMA_T_SQRTCM = 0.0351                 # -> sigma_T [cm] = this * sqrt(L[cm])
+V_DRIFT_UM_NS = 36.6      # MEASURED for det3 on the reference run
+                          # (wft calib bundle); the Magboltz table
+                          # gives ~34 um/ns for the same mixture
+SIGMA_T_SQRTCM = 0.0351   # -> sigma_T [cm] = this * sqrt(L[cm])
+SAMPLE_NS = 60.0          # DREAM sampling on the bench (run_config, wft calib)
+N_SAMPLES = 32            # samples per waveform (run_config)
 CLUSTERS_PER_CM = 30.0
 STRIP_PITCH_MM = G.MX17_ACTIVE_MM / 512
 
@@ -48,6 +55,7 @@ MESH_Z = 0.0
 CATHODE_Z = DRIFT_MM
 
 TRACK_ANGLE_DEG = 32.0                  # from vertical, in the x-z plane
+MESH_GAP_DRAWN = 1.15                   # drawn strips->mesh (real: 150 um)
 
 
 def drift_time_ns(z_mm):
@@ -81,32 +89,44 @@ def make_event(angle_deg=TRACK_ANGLE_DEG, seed=7, x0=None):
 
 
 def add_chamber(p, theme='light'):
-    """Cathode, gas volume, mesh and the strip plane, as a cut-out block."""
-    # strip plane (the readout PCB, just under the mesh)
-    p.add_mesh(M.slab((0, 0, -3.0), WIN_X, WIN_Y, 4.0, normal='z'),
+    """The readout stack and the drift window, as a cut-out block.
+
+    The micromesh is drawn as a single thin translucent plane, NOT as a woven
+    grid: its real pitch is ~63 um, which at this zoom is far below a pixel, so
+    any drawn weave would be a made-up coarse grid that reads as "pads" rather
+    than "mesh".  The 150 um amplification gap under it is exaggerated to
+    MESH_GAP_DRAWN for the same reason.
+    """
+    # readout PCB, and the copper strips on top of it
+    p.add_mesh(M.slab((0, 0, -3.2), WIN_X, WIN_Y, 4.0, normal='z'),
                **S.mat('pcb', S.COL['pcb']))
     n_strips = int(WIN_X / STRIP_PITCH_MM)
     p.add_mesh(M.strip_lines(n_strips, (-WIN_X / 2, WIN_X / 2),
-                             (-WIN_Y / 2, WIN_Y / 2), -0.95, along='v',
+                             (-WIN_Y / 2, WIN_Y / 2), -1.15, along='v',
                              width=STRIP_PITCH_MM * 0.7),
                **S.mat('copper', S.COL['copper']))
 
-    # micromesh, a woven grid just above the strips
-    nm = 34
-    for along in ('u', 'v'):
-        p.add_mesh(M.strip_lines(nm, (-WIN_X / 2, WIN_X / 2),
-                                 (-WIN_Y / 2, WIN_Y / 2),
-                                 MESH_Z + (0.16 if along == 'u' else -0.16),
-                                 along=along, width=WIN_X / nm * 0.16),
-                   **S.mat('mesh', '#8f979f', ambient=0.5))
+    # micromesh: one thin plane, just above the strips
+    mesh = M.slab((0, 0, MESH_Z), WIN_X, WIN_Y, 0.10, normal='z')
+    p.add_mesh(mesh, **S.mat('mesh', '#9aa3ad', opacity=0.30, metallic=0.85,
+                             roughness=0.32))
+    p.add_mesh(mesh.extract_feature_edges(), color='#7f8894', line_width=1.6,
+               lighting=False, opacity=0.9)
 
-    # the drift volume itself and the cathode above it
+    # the drift volume
     gas = M.slab((0, 0, DRIFT_MM / 2), WIN_X, WIN_Y, DRIFT_MM, normal='z')
     p.add_mesh(gas, **S.mat('gas', S.COL['gas'], opacity=0.055))
     p.add_mesh(gas.extract_feature_edges(), color=S.COL['gas'], line_width=1.8,
                lighting=False, opacity=0.55)
-    p.add_mesh(M.slab((0, 0, CATHODE_Z + 0.8), WIN_X, WIN_Y, 1.6, normal='z'),
-               **S.mat('plastic', '#dfe7ef', opacity=0.30))
+
+    # the drift window / cathode on top: a mylar foil in its own frame, so it
+    # reads as the thing the particle comes in through
+    p.add_mesh(M.slab((0, 0, CATHODE_Z + 0.35), WIN_X, WIN_Y, 0.7, normal='z'),
+               **S.mat('plastic', '#cfe3f2', opacity=0.42, specular=0.7,
+                       specular_power=60))
+    p.add_mesh(M.frame_ring((0, 0, CATHODE_Z + 0.35), WIN_X + 5.0,
+                            WIN_Y + 5.0, WIN_X, WIN_Y, 2.4, normal='z'),
+               **S.mat('alu', S.COL['alu']))
 
 
 def add_event(p, a, b, clusters, cmap='plasma', show_clouds=True):
@@ -186,3 +206,72 @@ def strip_ladder(strip_hits):
         xs.append(-WIN_X / 2 + (k + 0.5) * STRIP_PITCH_MM)
         ts.append(t)
     return np.array(xs), np.array(ts)
+
+
+# --------------------------------------------------------------------------- #
+# What the DAQ actually records
+# --------------------------------------------------------------------------- #
+IMPULSE_NPZ = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                           'data', 'mx17_impulse_response.npz')
+
+
+def impulse_response(plane='x'):
+    """The MEASURED single-electron response of one MX17 plane.
+
+    Taken from the wft calibration bundle for det3 on the reference run
+    (``wft/calib_bundle_lp``), so the pulse shape in the waveform panel is the
+    detector's own -- amplifier, mesh and all -- rather than a guessed shaper.
+
+    Returns (grid_ns, response) or None if the file is not present.
+    """
+    if not os.path.exists(IMPULSE_NPZ):
+        return None
+    z = np.load(IMPULSE_NPZ, allow_pickle=True)
+    return np.asarray(z['grid_ns'], float), np.asarray(z[f'tmpl_{plane}'],
+                                                       float)
+
+
+def strip_waveforms(clusters, plane='x', sample_ns=None, n_samples=None,
+                    t0_ns=-120.0):
+    """Per-strip waveforms: every cluster's charge folded with the response.
+
+    Each primary drifts down, spreads by sigma_T, and deposits a Gaussian share
+    of its charge on the strips it lands across; each share then contributes a
+    copy of the measured impulse response delayed by that cluster's drift time.
+    Sampling is the bench's own: 32 samples of 60 ns.
+
+    Returns (strip_index, x_mm, waveforms[n_strip, n_samples], t_samples_ns).
+    """
+    sample_ns = SAMPLE_NS if sample_ns is None else sample_ns
+    n_samples = N_SAMPLES if n_samples is None else n_samples
+    ir = impulse_response(plane)
+    if ir is None:
+        return None
+    grid, resp = ir
+
+    t_s = t0_ns + sample_ns * np.arange(n_samples)
+    acc = {}
+    for (x, y, z) in clusters:
+        t_arr = drift_time_ns(z)
+        s = max(sigma_t_mm(z), 1e-3)
+        k_lo = int(np.floor((x - 3 * s + WIN_X / 2) / STRIP_PITCH_MM))
+        k_hi = int(np.ceil((x + 3 * s + WIN_X / 2) / STRIP_PITCH_MM))
+        for k in range(k_lo, k_hi + 1):
+            xc = -WIN_X / 2 + (k + 0.5) * STRIP_PITCH_MM
+            if abs(xc) > WIN_X / 2:
+                continue
+            # charge share: the Gaussian cloud integrated over the strip
+            lo = (xc - STRIP_PITCH_MM / 2 - x) / (s * np.sqrt(2))
+            hi = (xc + STRIP_PITCH_MM / 2 - x) / (s * np.sqrt(2))
+            q = 0.5 * (erf(hi) - erf(lo))
+            if q < 1e-3:
+                continue
+            acc.setdefault(k, np.zeros(n_samples))
+            acc[k] += q * np.interp(t_s - t_arr, grid, resp,
+                                    left=0.0, right=0.0)
+    if not acc:
+        return None
+    ks = np.array(sorted(acc))
+    xs = -WIN_X / 2 + (ks + 0.5) * STRIP_PITCH_MM
+    wf = np.stack([acc[k] for k in ks])
+    return ks, xs, wf, t_s

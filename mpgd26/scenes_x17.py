@@ -939,6 +939,23 @@ def _story_levels(ax, P, halo):
               'pair mass anywhere in 1–20 MeV'),
              (53.2, P['x17'], 'x17', 'X17 $\\rightarrow e^{+}e^{-}$',
               'one fixed mass, $\\approx$ 17 MeV')]
+    # The two channels that put a pair in the detector, boxed together: that is
+    # the whole experimental handle, and the one thing to take away from this
+    # beat.  Drawn in the lepton colour rather than either channel's own, since
+    # it is the pair that is being called out, not the process.
+    bx0, bx1_, by0, by1 = 117.8, 150.6, 48.4, 64.2
+    ax.add_patch(FancyBboxPatch(
+        (bx0, by0), bx1_ - bx0, by1 - by0,
+        boxstyle='round,pad=0,rounding_size=1.6', facecolor=P['lepton'],
+        alpha=0.07, edgecolor='none', zorder=2))
+    ax.add_patch(FancyBboxPatch(
+        (bx0, by0), bx1_ - bx0, by1 - by0,
+        boxstyle='round,pad=0,rounding_size=1.6', facecolor='none',
+        edgecolor=P['lepton'], lw=1.5, alpha=0.85, zorder=2))
+    ax.text((bx0 + bx1_) / 2, 45.9, 'Detect the e$^{+}$e$^{-}$ pair!',
+            fontsize=13.5, fontweight='bold', color=P['lepton'],
+            ha='center', va='center', zorder=6, **FONT)
+
     for y, col, kind, name, note in chans:
         arrow(ax, (lx1 + 1.2, y_hi - 0.4), (ix - 1.4, y), col, lw=1.3,
               rad=0.16, ms=10, alpha=0.85, zorder=3)

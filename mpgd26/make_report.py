@@ -397,10 +397,17 @@ def build(theme='light'):
    (Ar/iso 95/5 + ~1&nbsp;% H<sub>2</sub>O at 333 V/cm, from
    <code>garfield_sim/results/water_grid.json</code>); the gap, the
    0.7785 mm pitch and the 512 strips are the detector's own.</p>
+<p>Two variants: <b>waveforms</b> (the raw per-strip signals, no fit) and
+   <b>ladder</b> (first arrival per strip, with a straight-line fit).  The
+   waveform pulse shape is the plane's own MEASURED single-electron response
+   from the wft calibration bundle, and v<sub>drift</sub> = 36.6 &micro;m/ns is
+   the value measured for det3 on that run &mdash; the Magboltz table's
+   ~34 &micro;m/ns for the same mixture agrees with it.</p>
 <p class="caveat">The ladder is fitted on the <b>first arrival per strip</b>, a
    deliberately simple estimator that carries a small bias &mdash; which is why
    the real reconstruction fits the waveforms forward (<code>wft/</code>)
    instead.  See <code>RECONSTRUCTION_BASIS.md</code>.</p>
+{fig_block('microtpc_waveforms', theme)}
 {fig_block('microtpc', theme)}
 
 <h2>Animations</h2>
