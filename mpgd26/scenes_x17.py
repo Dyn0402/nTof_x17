@@ -691,36 +691,89 @@ S_D = (8.0, 100.0)          # 4 why the pair opens the way it does
 S_E = (104.0, 152.0)        # 5 what we measure
 
 
-def draw_story(theme='light', dpi=300, title=True, capsule=False):
-    """The five-beat layout.  Same numbers, same palette, more room."""
+# Each part is the SAME drawing seen through a different window: the beats keep
+# their absolute coordinates, and the canvas is cropped to the band that holds
+# them.  That is why the split slides need no second layout to maintain -- a
+# change to a beat lands in the combined figure and in its slide together.
+#
+# ``full`` is the band with the title and caption bands included, ``bare`` the
+# band with just the drawing.  Header/footer y move with the band.
+STORY_PARTS = {
+    'all': dict(full=(0.0, 90.0), bare=(4.2, 78.4),
+                head=(85.4, 80.6, 78.2), foot=2.2, beats='12345'),
+    'top': dict(full=(38.0, 90.0), bare=(43.4, 78.4),
+                head=(85.4, 80.6, 78.2), foot=41.0, beats='123'),
+    'bottom': dict(full=(0.0, 56.0), bare=(3.4, 44.2),
+                   head=(51.6, 47.2, 45.0), foot=2.2, beats='45'),
+}
+
+STORY_TITLES = {
+    'all': ('How a 17 MeV boson would show up in n + $^{3}$He',
+            'The pair opening angle is set by the mass of whatever emitted it '
+            '— which is why a single new mass would put a hard edge in a '
+            'smooth background.'),
+    'top': ('How a 17 MeV boson would show up in n + $^{3}$He',
+            'Capture leaves $^{4}$He$^{*}$ with 20.58 MeV.  Two of the three '
+            'ways it can shed that energy put an e$^{+}$e$^{-}$ pair in the '
+            'detector.'),
+    # deliberately does NOT repeat beat 4's own subtitle, which already says
+    # the pair leaves back-to-back
+    'bottom': ('The opening angle is set by the boost',
+               'Everything the lab sees is what the boost did to the pair.  '
+               'One new mass puts a hard edge in the spectrum; a spread of '
+               'masses only makes a slope.'),
+}
+
+TOP_CAPTION = (
+    'Nuclei, gas volume and beam are schematic — this row carries no measured '
+    'quantity. The 20.58 MeV is the n + $^{3}$He capture Q-value, and it is '
+    'what fixes every angle on the next slide.')
+
+
+def draw_story(theme='light', dpi=300, title=True, capsule=False, part='all'):
+    """The five-beat layout, or one row of it.
+
+    ``part`` is 'all', 'top' (beats 1-3) or 'bottom' (beats 4-5).  The two rows
+    split cleanly across two slides: the top one sets up the physics, the
+    bottom one derives the measurement from it.
+    """
+    spec = STORY_PARTS[part]
+    y0, y1 = spec['full'] if title else spec['bare']
     P = palette(theme)
     plt.rcParams['mathtext.fontset'] = 'dejavusans'
 
-    fig = plt.figure(figsize=(W / 10.0, H / 10.0), dpi=dpi, facecolor=P['page'])
+    fig = plt.figure(figsize=(W / 10.0, (y1 - y0) / 10.0), dpi=dpi,
+                     facecolor=P['page'])
     ax = fig.add_axes([0, 0, 1, 1], facecolor='none')
     ax.set_xlim(0, W)
-    ax.set_ylim(0, H)
+    ax.set_ylim(y0, y1)
     ax.set_aspect('equal')
     ax.axis('off')
     halo = [pe.withStroke(linewidth=2.4, foreground=P['halo'], alpha=0.85)]
 
     if title:
-        ax.text(8, 85.4, 'How a 17 MeV boson would show up in n + $^{3}$He',
-                fontsize=19.5, fontweight='bold', color=P['ink'],
+        ty, sy, ry = spec['head']
+        head, sub = STORY_TITLES[part]
+        ax.text(8, ty, head, fontsize=19.5, fontweight='bold', color=P['ink'],
                 ha='left', va='center', **FONT)
-        ax.text(8, 80.6,
-                'The pair opening angle is set by the mass of whatever emitted '
-                'it — which is why a single new mass would put a hard edge in '
-                'a smooth background.',
-                fontsize=10, color=P['muted'], ha='left', va='center', **FONT)
-        ax.plot([8, 152], [78.2, 78.2], color=P['rule'], lw=1.0, zorder=1)
+        ax.text(8, sy, sub, fontsize=10, color=P['muted'], ha='left',
+                va='center', **FONT)
+        ax.plot([8, 152], [ry, ry], color=P['rule'], lw=1.0, zorder=1)
 
-    _story_beam(ax, P, capsule=capsule)
-    _story_capture(ax, P)
-    _story_levels(ax, P, halo)
-    _story_mechanism(fig, ax, P, halo)
-    _story_measure(fig, ax, P, halo)
-    _story_footer(ax, P)
+    beats = spec['beats']
+    if '1' in beats:
+        _story_beam(ax, P, capsule=capsule)
+    if '2' in beats:
+        _story_capture(ax, P)
+    if '3' in beats:
+        _story_levels(ax, P, halo)
+    if '4' in beats:
+        _story_mechanism(fig, ax, P, halo)
+    if '5' in beats:
+        _story_measure(fig, ax, P, halo, y0=y0, y1=y1)
+    if title:
+        _story_footer(ax, P, spec['foot'],
+                      TOP_CAPTION if part == 'top' else None)
     return fig
 
 
@@ -1180,15 +1233,18 @@ def _story_mechanism(fig, ax, P, halo):
             fontsize=8.0, color=P['ink'], ha='left', va='center', **FONT)
 
 
-def _story_measure(fig, ax, P, halo):
+def _story_measure(fig, ax, P, halo, y0=0.0, y1=H):
     x0, x1 = S_E
     _head(ax, x0, S_HEAD2, '5.  So this is what we look for', P)
 
     th, x17, ipc = modelled_shapes()
     th_min = opening_angle_pdf()[2]
 
-    px = fig.add_axes([(x0 + 6.0) / W, 13.6 / H, 39.0 / W, 21.4 / H],
-                      facecolor='none')
+    # the canvas may be a cropped band (the split slides), so the axes is
+    # placed against the band rather than against a fixed 90-unit page
+    span = y1 - y0
+    px = fig.add_axes([(x0 + 6.0) / W, (13.6 - y0) / span, 39.0 / W,
+                       21.4 / span], facecolor='none')
     for s in ('top', 'right'):
         px.spines[s].set_visible(False)
     for s in ('left', 'bottom'):
@@ -1226,17 +1282,17 @@ def _story_measure(fig, ax, P, halo):
             fontsize=8.0, color=P['ink'], ha='left', va='center', **FONT)
 
 
-def _story_footer(ax, P):
-    cap = ('Panel 5 samples the MX17_Simulation generators (X17PhysicsSpectrum, '
+def _story_footer(ax, P, y=2.2, cap=None):
+    cap = cap or ('Panel 5 samples the MX17_Simulation generators (X17PhysicsSpectrum, '
            'IPCPhysicsSpectrum) that track the Geant4 X17PrimaryGenerator: '
            '%s events per channel, smeared %.0f°, recoil neglected, each curve '
            'normalised to unit peak — their relative rate is the measurement, '
            'so nothing here implies it. In panel 4 the boost arrow lengths '
            '(β) and the opening angles are to scale; lepton arm lengths are '
            'not.' % (f'{SAMPLE_N:,}'.replace(',', ' '), X17['smear_deg']))
-    ax.text(8, 2.2, textwrap.fill(cap, 152), fontsize=7.2, color=P['muted'],
+    ax.text(8, y, textwrap.fill(cap, 152), fontsize=7.2, color=P['muted'],
             ha='left', va='center', linespacing=1.65, **FONT)
-    ax.text(152, 2.2, SOURCES, fontsize=7.2, color=P['muted'], ha='right',
+    ax.text(152, y, SOURCES, fontsize=7.2, color=P['muted'], ha='right',
             va='center', linespacing=1.65, **FONT)
 
 

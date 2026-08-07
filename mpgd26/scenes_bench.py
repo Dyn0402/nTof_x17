@@ -36,7 +36,8 @@ import scenes_sps as SPS
 RNG = np.random.default_rng(20260807)
 
 GUIDE_LEN = 230.0           # paddle edge -> photocathode
-PMT_RADIUS = 56.0           # drawn photomultiplier radius
+PMT_RADIUS = 34.0           # photocathode radius; the guide funnels the
+                            # whole 60 cm paddle edge down to this circle
 
 FLOOR_Z = -400.0            # drawn floor, below the bottom paddle
 FLOOR_HALF = 3200.0
@@ -150,7 +151,10 @@ def add_p2_flat(p, z, pads_lab, sectors, x=0.0, y=0.0, theta_deg=0.0):
     fr_lo, fr_hi, _, _ = SPS.p2_frame_extent()
     y_mid = G.P2_APEX_HEIGHT - (fr_lo + fr_hi) / 2
 
-    m = SPS.p2_meshes(z, pads_lab, sectors, pad_side=+1)  # pads up
+    # pads up, and ALL of them read out: the sector-3-6 subset is the SPS
+    # telescope's cabling on that run, not a property of the board
+    m = SPS.p2_meshes(z, pads_lab, sectors, pad_side=+1,
+                      live_sectors=None)
     for key in ('frame', 'pcb', 'pads', 'pads_live'):
         m[key] = m[key].translate((0.0, -y_mid, 0.0), inplace=False)
 
@@ -162,8 +166,9 @@ def add_p2_flat(p, z, pads_lab, sectors, x=0.0, y=0.0, theta_deg=0.0):
 
     p.add_mesh(m['frame'], **S.mat('alu_matte', S.COL['alu']))
     p.add_mesh(m['pcb'], **S.mat('pcb', S.COL['pcb']))
-    p.add_mesh(m['pads'], **S.mat('copper', S.COL['copper_dead'],
-                                  metallic=0.55, roughness=0.62))
+    if m['pads'].n_cells:                      # empty when every pad is live
+        p.add_mesh(m['pads'], **S.mat('copper', S.COL['copper_dead'],
+                                      metallic=0.55, roughness=0.62))
     p.add_mesh(m['pads_live'], **S.mat('copper', S.COL['copper']))
     return m
 
@@ -180,29 +185,26 @@ def add_scintillator(p, z, pmt_dir=-1):
     slab = M.slab((0.0, 0.0, z), G.SCINT_MM, G.SCINT_MM, G.SCINT_THICK_MM,
                   normal='z')
     p.add_mesh(slab, **S.mat('scint', S.COL['scint']))
-    # Light guide: a real funnel.  It takes the WHOLE 60 cm edge -- corner to
-    # corner -- and tapers down to the photocathode, which is what a fishtail
-    # guide on a paddle this size has to do; a parallel-sided stub would
-    # collect a fraction of the light and look wrong next to the paddle.
+    # Light guide: a fishtail.  It has to take the WHOLE 60 cm paddle edge --
+    # the full rectangular cross-section, corner to corner -- and deliver it to
+    # a round photocathode, so it morphs from rectangle to circle along its
+    # length.  A flat taper would not cover the crystal.
     half = G.SCINT_MM / 2
     y0 = pmt_dir * half
     y1 = pmt_dir * (half + GUIDE_LEN)
-    poly = np.array([[-half, y0], [half, y0],
-                     [PMT_RADIUS, y1], [-PMT_RADIUS, y1]])
-    if pmt_dir < 0:                      # keep the winding consistent
-        poly = poly[::-1]
-    p.add_mesh(M.polygon_prism(poly, z - G.SCINT_THICK_MM / 2,
-                               G.SCINT_THICK_MM, normal_axis='z'),
+    p.add_mesh(M.loft_rect_to_circle((0.0, y0, z), G.SCINT_MM,
+                                     G.SCINT_THICK_MM,
+                                     (0.0, y1, z), PMT_RADIUS, axis='y'),
                **S.mat('plastic', S.COL['guide'], specular=0.35,
                        specular_power=45))
 
     # PMT: glass envelope, then the base / divider can behind it
-    p.add_mesh(M.cylinder((0.0, y1 + pmt_dir * 70, z), (0, 1, 0),
-                          radius=PMT_RADIUS, height=140),
+    p.add_mesh(M.cylinder((0.0, y1 + pmt_dir * 60, z), (0, 1, 0),
+                          radius=PMT_RADIUS, height=120),
                **S.mat('plastic', '#c9d3dd', opacity=0.55, specular=0.9,
                        specular_power=70))
-    p.add_mesh(M.cylinder((0.0, y1 + pmt_dir * 220, z), (0, 1, 0),
-                          radius=PMT_RADIUS * 0.86, height=170),
+    p.add_mesh(M.cylinder((0.0, y1 + pmt_dir * 190, z), (0, 1, 0),
+                          radius=PMT_RADIUS * 0.88, height=150),
                **S.mat('plastic', S.COL['pmt']))
     out['outline'] = M.rect_outline((0.0, 0.0, z), G.SCINT_MM, G.SCINT_MM,
                                     normal='z')
@@ -310,14 +312,14 @@ def cosmic_tracks(n=9, accept_only=True, max_try=20000):
         x1, y1 = x0 + tx * dz, y0 + ty * dz
         if accept_only and (abs(x1) > half or abs(y1) > half):
             continue
-        pad = 90.0
+        pad = 110.0
         out.append((np.array([x0 - tx * pad, y0 - ty * pad, z_top + pad]),
                     np.array([x1 + tx * pad, y1 + ty * pad, z_bot - pad])))
     return out
 
 
 def real_tracks(ray_dir, n=7, file_nums=(0,), chi2_cut=None, min_nclus=None,
-                seed=20260807, require_paddles=True):
+                seed=20260807, require_paddles=True, overshoot=110.0):
     """Real reconstructed cosmic muons, straight out of the M3 telescope.
 
     ``ray_dir`` is a run's ``m3_tracking_root*`` directory.  The rays are
@@ -369,15 +371,22 @@ def real_tracks(ray_dir, n=7, file_nums=(0,), chi2_cut=None, min_nclus=None,
     rng = np.random.default_rng(seed)
     pick = rng.choice(idx, size=min(n, idx.size), replace=False)
 
-    pad = 90.0
+    # The rays are fitted between the two M3 planes (z = 24 and 1302), but the
+    # muon that made them came through BOTH scintillators, so extrapolate the
+    # straight line out past each paddle rather than stopping at the tracker.
+    z_hi = max(G.BENCH_SCINT_Z.values()) + overshoot
+    z_lo = min(G.BENCH_SCINT_Z.values()) - overshoot
+
     out = []
     for i in pick:
         lo = np.array([xd[i], yd[i], zd[i]])          # bottom M3 plane
         hi = np.array([xu[i], yu[i], zu[i]])          # top M3 plane
-        u = (hi - lo) / np.linalg.norm(hi - lo)
+        u = (hi - lo) / np.linalg.norm(hi - lo)       # points upwards
+        top = lo + u * (z_hi - lo[2]) / u[2]
+        bot = lo + u * (z_lo - lo[2]) / u[2]
         # returned in TRAVEL order -- a cosmic goes downwards -- so the arrow
         # head always belongs on the second point, same as cosmic_tracks()
-        out.append((hi + u * pad, lo - u * pad))
+        out.append((top, bot))
     return out
 
 

@@ -327,3 +327,55 @@ def fan_chamber(pcb_band, frame_bands, pads_lab, z, pcb_thick,
                        normal_axis=normal_axis) for a, b in frame_bands]
     out['frame'] = bars[0].merge(bars[1:]) if len(bars) > 1 else bars[0]
     return out
+
+
+def loft_rect_to_circle(centre_a, width, thickness, centre_b, radius,
+                        axis='y', n_around=72, n_steps=26, ease=True):
+    """A fishtail light guide: rectangular cross-section morphing into a circle.
+
+    ``centre_a`` is the middle of the rectangular end (the scintillator edge,
+    ``width`` x ``thickness``), ``centre_b`` the middle of the circular end (the
+    photocathode, ``radius``).  Both cross-sections are sampled along the SAME
+    ray angles from their own centre, so corresponding points stay opposite one
+    another and the surface cannot twist.
+
+    A real guide has to collect the whole edge of the paddle and deliver it to a
+    round photocathode, so a parallel-sided stub or a flat taper is the wrong
+    shape -- this is the shape that does the job.
+    """
+    a = np.asarray(centre_a, float)
+    b = np.asarray(centre_b, float)
+    ax = AXES[axis]
+    uv = [i for i in range(3) if i != ax]
+
+    phi = np.linspace(0, 2 * np.pi, n_around, endpoint=False)
+    c, s = np.cos(phi), np.sin(phi)
+    # rectangle sampled along the same rays: distance to whichever wall is hit
+    hw, ht = width / 2, thickness / 2
+    with np.errstate(divide='ignore', invalid='ignore'):
+        r_rect = np.minimum(np.abs(hw / np.where(c == 0, 1e-12, c)),
+                            np.abs(ht / np.where(s == 0, 1e-12, s)))
+    rect = np.stack([r_rect * c, r_rect * s], axis=1)
+    circ = np.stack([radius * c, radius * s], axis=1)
+
+    t = np.linspace(0.0, 1.0, n_steps)
+    w = t * t * (3 - 2 * t) if ease else t          # smoothstep
+
+    rings = []
+    for k in range(n_steps):
+        prof = (1 - w[k]) * rect + w[k] * circ
+        pts = np.zeros((n_around, 3))
+        pts[:, ax] = a[ax] + (b[ax] - a[ax]) * t[k]
+        pts[:, uv[0]] = a[uv[0]] + prof[:, 0]
+        pts[:, uv[1]] = a[uv[1]] + prof[:, 1]
+        rings.append(pts)
+
+    pts = np.concatenate(rings)
+    faces = []
+    for k in range(n_steps - 1):
+        o0, o1 = k * n_around, (k + 1) * n_around
+        for i in range(n_around):
+            j = (i + 1) % n_around
+            faces.append([4, o0 + i, o0 + j, o1 + j, o1 + i])
+    mesh = pv.PolyData(pts, faces=np.hstack(faces))
+    return mesh.compute_normals(auto_orient_normals=True, inplace=False)

@@ -58,6 +58,11 @@ BLURB = {
                  'layout has to assert instead of showing.',
     'x17_story_bare': 'The five-beat layout without the title and caption '
                       'bands, cropped.',
+    'x17_story_1of2': 'Slide 1 of the split version: beats 1-3, which set up '
+                      'the physics and end on the reason the whole experiment '
+                      'is a pair spectrometer.',
+    'x17_story_2of2': 'Slide 2 of the split version: beats 4-5, which derive '
+                      'the measurement from the boost.',
     'x17_story_capsule': 'The same five beats, but with beat 1 drawing the '
                          'real 3He vessel from the Geant4 geometry instead of '
                          'a generic group of nuclei -- for later in a talk, '
@@ -328,6 +333,19 @@ def build(theme='light'):
 {fig_block('x17_story', theme)}
 {fig_block('x17_story_bare', theme)}
 {fig_block('x17_story_capsule', theme)}
+
+<h3>Split across two slides</h3>
+<p>The two rows are a natural break: the top one sets up the physics and ends
+   on <b>&ldquo;detect the e<sup>+</sup>e<sup>-</sup> pair&rdquo;</b>, the
+   bottom one derives the measurement from the boost.
+   <code>--layout split</code> writes them as two figures, each with its own
+   title, subtitle and caption.</p>
+<p class="caveat">They are not crops. Each part is the same drawing seen
+   through a different canvas band, so a change to any beat lands in the
+   combined figure and in its slide together &mdash; there is no second layout
+   to keep in step.</p>
+{fig_block('x17_story_1of2', theme)}
+{fig_block('x17_story_2of2', theme)}
 
 <h2>SPS H4 beam telescope</h2>
 <p>Six stations on one rail in the P2 zone, from <code>run_59</code>'s

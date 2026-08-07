@@ -35,8 +35,14 @@ FIG = os.path.join(HERE, 'figures')
 LAYOUTS = {
     'signature': dict(draw=lambda **kw: X.draw(**kw), name='x17_signature',
                       crop=(0, 0.75, 16.0, 6.85)),
-    'story': dict(draw=lambda **kw: X.draw_story(**kw), name='x17_story',
-                  crop=(0, 0.62, 16.0, 7.20), opts=('capsule',)),
+    'story': dict(draw=lambda **kw: X.draw_story(part='all', **kw),
+                  name='x17_story', opts=('capsule',)),
+    # the same five beats split across two slides: 1-3 sets up the physics,
+    # 4-5 derives the measurement from it
+    'story1': dict(draw=lambda **kw: X.draw_story(part='top', **kw),
+                   name='x17_story_1of2', opts=('capsule',)),
+    'story2': dict(draw=lambda **kw: X.draw_story(part='bottom', **kw),
+                   name='x17_story_2of2'),
 }
 
 
@@ -54,8 +60,9 @@ def render(theme='light', title=True, dpi=300, layout='signature',
     base = os.path.join(FIG, f'{name}_{theme}')
     page = X.palette(theme)['page']
     bbox = None
-    if not title:
-        # crop the header/footer bands away rather than leaving white space
+    if not title and 'crop' in spec:
+        # the signature layout crops in inches; the story layouts crop by
+        # narrowing their own canvas band, so they need nothing here
         bbox = fig.bbox_inches.from_bounds(*spec['crop'])
     for ext in ('png', 'pdf'):
         fig.savefig(f'{base}.{ext}', facecolor=page, bbox_inches=bbox)
@@ -70,10 +77,13 @@ def main():
     ap.add_argument('--theme', default='light',
                     choices=['light', 'dark', 'both'])
     ap.add_argument('--layout', default='signature',
-                    choices=['signature', 'story', 'both'],
+                    choices=['signature', 'story', 'story1', 'story2',
+                             'split', 'both'],
                     help='signature: three panels on one row, the compact '
-                         'version. story: five beats over two rows, including '
-                         'why the parent mass sets the opening angle.')
+                         'version. story: five beats over two rows. '
+                         'story1/story2: the same five beats split across two '
+                         'slides (1-3 then 4-5); split does both of them. '
+                         'both: every layout.')
     ap.add_argument('--no-title', dest='title', action='store_false',
                     help='drop the title/caption bands and crop to the diagram')
     ap.add_argument('--dpi', type=int, default=300)
@@ -87,7 +97,12 @@ def main():
     args = ap.parse_args()
 
     themes = ['light', 'dark'] if args.theme == 'both' else [args.theme]
-    layouts = list(LAYOUTS) if args.layout == 'both' else [args.layout]
+    if args.layout == 'both':
+        layouts = list(LAYOUTS)
+    elif args.layout == 'split':
+        layouts = ['story1', 'story2']
+    else:
+        layouts = [args.layout]
     for layout in layouts:
         for theme in themes:
             print(f'{LAYOUTS[layout]["name"]} [{theme}]')

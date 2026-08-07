@@ -33,16 +33,16 @@ import annotate as A                               # noqa: E402
 import scenes_microtpc as T                        # noqa: E402
 
 FIG = os.path.join(HERE, 'figures')
-CMAP = 'plasma'
 
 VIEW = dict(pos=(52, -78, 40), focal=(0, 0, 13), up=(0, 0, 1), angle=34.0)
 
 
 def render_3d(theme, size, ssaa, out, angle, seed):
+    cmap = S.microtpc_cmap(theme)
     p = S.make_plotter(theme=theme, size=size, ssaa=ssaa, ssao_radius=2.0)
     T.add_chamber(p, theme)
     a, b, clusters = T.make_event(angle_deg=angle, seed=seed)
-    hits = T.add_event(p, a, b, clusters, cmap=CMAP)
+    hits = T.add_event(p, a, b, clusters, cmap=cmap)
     S.add_light_rig(p, np.array([0, 0, 14]), 34.0, theme=theme, shadows=False,
                     up='z')
     p.camera.position = VIEW['pos']
@@ -54,7 +54,7 @@ def render_3d(theme, size, ssaa, out, angle, seed):
     return clusters, hits
 
 
-def draw_waveforms(fig, rect, clusters, fs, ink, muted, grid):
+def draw_waveforms(fig, rect, clusters, fs, ink, muted, grid, cmap):
     """Stacked per-strip waveforms -- what the DAQ actually records.
 
     Each trace is one strip: the primaries that land on it, each folded with
@@ -69,7 +69,6 @@ def draw_waveforms(fig, rect, clusters, fs, ink, muted, grid):
     ax = fig.add_axes(rect, facecolor='none')
 
     tmax = T.drift_time_ns(T.DRIFT_MM)
-    cmap = plt.get_cmap(CMAP)
     peak = np.max(wf, axis=1)
     scale = 0.85 * T.STRIP_PITCH_MM * 6.0 / max(peak.max(), 1e-9)
     for i in np.argsort(xs):
@@ -101,6 +100,7 @@ def compose(png, clusters, hits, out_base, theme, angle, dpi=300,
     img = np.asarray(Image.open(png).convert('RGB'))
     h, w = img.shape[:2]
 
+    cmap = S.microtpc_cmap(theme)
     ink = '#f2f5f9' if theme == 'dark' else '#141b24'
     muted = '#9aa7b6' if theme == 'dark' else '#5d6874'
     page = '#0a0d13' if theme == 'dark' else '#ffffff'
@@ -135,11 +135,11 @@ def compose(png, clusters, hits, out_base, theme, angle, dpi=300,
         lx0 = (w + 0.085 * lad_w) / W
         draw_waveforms(fig, [lx0, (foot + 0.185 * h) / H,
                              0.80 * lad_w / W, 0.715 * h / H],
-                       clusters, fs, ink, muted, grid)
+                       clusters, fs, ink, muted, grid, cmap)
         cax = fig.add_axes([lx0, (foot + 0.070 * h) / H,
                             0.80 * lad_w / W, 0.020 * h / H])
         norm = mcolors.Normalize(0, T.drift_time_ns(T.DRIFT_MM))
-        fig.colorbar(cm.ScalarMappable(norm=norm, cmap=CMAP), cax=cax,
+        fig.colorbar(cm.ScalarMappable(norm=norm, cmap=cmap), cax=cax,
                      orientation='horizontal')
         cax.tick_params(labelsize=fs * 0.66, colors=muted)
         cax.set_xlabel('drift time to the mesh [ns]  =  depth in the gap',
@@ -152,7 +152,7 @@ def compose(png, clusters, hits, out_base, theme, angle, dpi=300,
         lx0 = (w + 0.085 * lad_w) / W
         pax = fig.add_axes([lx0, (foot + 0.30 * h) / H,
                             0.80 * lad_w / W, 0.60 * h / H], facecolor='none')
-        pax.scatter(xs, ts, s=fs * 2.2, c=ts, cmap=CMAP,
+        pax.scatter(xs, ts, s=fs * 2.2, c=ts, cmap=cmap,
                     vmin=0, vmax=T.drift_time_ns(T.DRIFT_MM),
                     edgecolors='none', zorder=3)
         if len(xs) > 2:
@@ -185,7 +185,7 @@ def compose(png, clusters, hits, out_base, theme, angle, dpi=300,
         cax = fig.add_axes([lx0, (foot + 0.135 * h) / H,
                             0.80 * lad_w / W, 0.020 * h / H])
         norm = mcolors.Normalize(0, T.drift_time_ns(T.DRIFT_MM))
-        fig.colorbar(cm.ScalarMappable(norm=norm, cmap=CMAP), cax=cax,
+        fig.colorbar(cm.ScalarMappable(norm=norm, cmap=cmap), cax=cax,
                      orientation='horizontal')
         cax.tick_params(labelsize=fs * 0.66, colors=muted)
         cax.set_xlabel('drift time to the mesh [ns]  =  depth in the gap',

@@ -114,6 +114,23 @@ def illumination_cmap():
                     '#fff3d2', '#fffdf6'])
 
 
+def microtpc_cmap(theme='light'):
+    """Drift-time colour scale that survives its own background.
+
+    ``plasma`` runs to a very pale yellow, which is fine on black and almost
+    invisible on white -- and the pale end is the SHALLOW end of the gap, so on
+    a light theme the figure loses exactly the clusters nearest the cathode.
+    The light theme therefore uses a truncated plasma that stops before the
+    pale end; the dark theme drops the near-black start for the same reason.
+    """
+    from matplotlib.colors import LinearSegmentedColormap
+    import matplotlib.pyplot as _plt
+    lo, hi = (0.0, 0.78) if theme == 'light' else (0.14, 1.0)
+    base = _plt.get_cmap('plasma')
+    return LinearSegmentedColormap.from_list(
+        f'microtpc_{theme}', base(np.linspace(lo, hi, 256)))
+
+
 def mat(name, color=None, **over):
     """Material preset merged with a colour and per-call overrides."""
     kw = dict(MAT[name])

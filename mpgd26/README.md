@@ -63,6 +63,7 @@ Each figure is written twice:
 | `microtpc_waveforms` | the same event with the **raw per-strip waveforms** instead of the ladder — the measured impulse response, sampled at 32 × 60 ns (`make_microtpc.py --right waveforms`) |
 | `x17_signature` | the physics case, compact: capture → three de-excitation channels → the e⁺e⁻ opening-angle distribution (`make_x17.py`) |
 | `x17_story` | the same in five beats over two rows, including **why** the boost sets the opening angle (`make_x17.py --layout story`) |
+| `x17_story_1of2`, `x17_story_2of2` | the same five beats split across two slides — 1–3 then 4–5 (`--layout split`) |
 | `x17_story_capsule` | the story layout with the real Geant4 ³He vessel in beat 1 (`--layout story --capsule`) |
 | `x17_signature_bare`, `x17_story_bare` | either layout with the title and caption bands cropped off (`--no-title`) |
 
@@ -86,6 +87,15 @@ Three worked orientations per channel make that visible: no orientation lets
 X17 close below 109°, and none lets a light IPC pair open past 11°. Since IPC
 draws its pair mass from dN/dM ∝ 1/M it gets a band for every mass, and those
 bands between them are the smooth slope panel 5 shows under the X17 peak.
+
+**One slide or two.** `--layout split` writes the same five beats as two
+figures: beats 1–3 (which set up the physics and end on *"detect the e⁺e⁻
+pair"*) and beats 4–5 (which derive the measurement from the boost). They are
+**not crops** — each part is the same drawing seen through a different canvas
+band, with its own title, subtitle and caption, so editing a beat updates the
+combined figure and its slide together and there is no second layout to
+maintain. The parts come out roughly 16:5, which fills the width of a slide
+and leaves room for a title bar.
 
 Beat 1 is generic (a beam and some ³He) because early in a talk the target
 hardware has not been introduced. `--capsule` swaps in the real vessel, drawn

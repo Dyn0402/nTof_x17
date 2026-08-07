@@ -82,7 +82,8 @@ def shift(parts, x=0.0, y=0.0):
     return parts
 
 
-def p2_meshes(z, pads_lab, sector_of_pad, pad_side=-1):
+def p2_meshes(z, pads_lab, sector_of_pad, pad_side=-1,
+              live_sectors=G.P2_INSTRUMENTED_SECTORS):
     """All meshes for one P2 BASKET station at rail position ``z``."""
     r_lo, r_hi = G.P2_R_ACTIVE
     p_lo, p_hi = G.P2_PHI_ACTIVE
@@ -99,8 +100,15 @@ def p2_meshes(z, pads_lab, sector_of_pad, pad_side=-1):
         G.p2_band(fr_lo, fr_hi, bp_hi, fp_hi),          # side bar, high phi
     ]
 
-    lo, hi = G.P2_INSTRUMENTED_SECTORS
-    live = (sector_of_pad >= lo) & (sector_of_pad <= hi)
+    # ``live_sectors`` = None means every pad is read out.  Only the SPS beam
+    # test instrumented a subset (sectors 3-6 of 10, channels 384-895) -- that
+    # is a fact about the P2 telescope's cabling on that run, not about the
+    # board, so a fan drawn anywhere else should have all its pads on.
+    if live_sectors is None:
+        live = np.ones(len(sector_of_pad), bool)
+    else:
+        lo, hi = live_sectors
+        live = (sector_of_pad >= lo) & (sector_of_pad <= hi)
     pads = shrink_pads(pads_lab, PAD_GAP_FRACTION)
 
     # ``pad_side`` is which face the readout pads sit on, along the chamber
