@@ -386,6 +386,23 @@ def build(theme='light'):
    rests on.</p>
 {fig_block('chamber_exploded', theme)}
 
+<h2>Micro-TPC operation</h2>
+<p>The measurement itself.  A muon crosses the
+   {G.MX17_DRIFT_GAP_MM:g} mm gap at an angle and leaves primary ionisation
+   clusters at ~30/cm; each drifts straight down at v = 34 &micro;m/ns, so its
+   arrival time at the mesh <i>is</i> the depth it was created at &mdash; 882 ns
+   across the full gap.  The slope of arrival time against strip position is
+   then the track angle, from one plane.  v<sub>drift</sub> and &sigma;<sub>T</sub>
+   are the Garfield++/Magboltz values for the mixture the bench actually runs
+   (Ar/iso 95/5 + ~1&nbsp;% H<sub>2</sub>O at 333 V/cm, from
+   <code>garfield_sim/results/water_grid.json</code>); the gap, the
+   0.7785 mm pitch and the 512 strips are the detector's own.</p>
+<p class="caveat">The ladder is fitted on the <b>first arrival per strip</b>, a
+   deliberately simple estimator that carries a small bias &mdash; which is why
+   the real reconstruction fits the waveforms forward (<code>wft/</code>)
+   instead.  See <code>RECONSTRUCTION_BASIS.md</code>.</p>
+{fig_block('microtpc', theme)}
+
 <h2>Animations</h2>
 <p>Turntables for the talk, and build-up sequences whose numbered stills can be
    dropped on successive slides so the setup assembles itself as you speak.

@@ -26,6 +26,7 @@ and the list of what is drawn but not measured.
 cd mpgd26
 ../.venv/bin/python make_figures.py                # the setup stills
 ../.venv/bin/python make_chamber.py                # the exploded chamber
+../.venv/bin/python make_microtpc.py               # micro-TPC operation
 ../.venv/bin/python make_x17.py --layout both --theme both   # physics-case diagrams
 ../.venv/bin/python make_anim.py                   # turntables + build-ups
 ../.venv/bin/python make_report.py                 # rebuild report.html
@@ -58,6 +59,7 @@ Each figure is written twice:
 | `bench_p2_side` | elevation of the two-P2 configuration |
 | `bench_mixed` | P2 fan in P1, MX17 in P2 (the 6-27 configuration) — available, not headline |
 | `chamber_exploded` | one MX17 chamber pulled apart, with a muon and its drifting ionisation (`make_chamber.py`) |
+| `microtpc` | **how the chamber measures an angle**: primaries drifting to the mesh coloured by arrival time, plus the strip-time ladder and its fit (`make_microtpc.py`) |
 | `x17_signature` | the physics case, compact: capture → three de-excitation channels → the e⁺e⁻ opening-angle distribution (`make_x17.py`) |
 | `x17_story` | the same in five beats over two rows, including **why** the boost sets the opening angle (`make_x17.py --layout story`) |
 | `x17_story_capsule` | the story layout with the real Geant4 ³He vessel in beat 1 (`--layout story --capsule`) |

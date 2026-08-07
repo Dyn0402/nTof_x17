@@ -729,11 +729,47 @@ def _head(ax, x, y, text, P):
             ha='left', va='center', **FONT)
 
 
-# where the 3He sit, and which one gets hit.  Fixed rather than sampled: the
-# figure has to come out identical every time it is rebuilt.
-HE3_SITES = ((12.6, 62.8), (20.4, 68.2), (27.2, 61.4), (34.6, 66.8),
-             (41.4, 62.0))
-HE3_STRUCK = 1
+# The contents of the gas volume.  Placed at random, but from a FIXED seed and
+# with a rejection radius, so it reads as a gas and still comes out identical
+# on every rebuild.  (A golden-angle spiral was the first attempt: perfectly
+# even coverage, and it read as a manufactured lattice.)
+HE3_N, HE3_SEED = 30, 11
+NEUTRON_N, NEUTRON_SEED = 17, 5
+
+
+def _poisson_points(rng, n, min_sep, sampler, max_tries=60000):
+    """Dart-throwing with a rejection radius: up to n points, none closer to
+    each other than ``min_sep``."""
+    pts = []
+    for _ in range(max_tries):
+        if len(pts) >= n:
+            break
+        p = sampler(rng)
+        if all((p[0] - q[0]) ** 2 + (p[1] - q[1]) ** 2 >= min_sep ** 2
+               for q in pts):
+            pts.append(p)
+    return np.array(pts)
+
+
+def he3_sites(cx, cy, r_fill, n=HE3_N, min_sep=1.8, seed=HE3_SEED):
+    rng = np.random.RandomState(seed)
+
+    def sample(r):
+        a = r.uniform(0.0, 2.0 * np.pi)
+        rad = r_fill * np.sqrt(r.uniform())        # uniform over the disc
+        return (cx + rad * np.cos(a), cy + rad * np.sin(a))
+
+    return _poisson_points(rng, n, min_sep, sample)
+
+
+def neutron_sites(cx, y_lo, y_hi, half_w, n=NEUTRON_N, min_sep=1.5,
+                  seed=NEUTRON_SEED):
+    rng = np.random.RandomState(seed)
+
+    def sample(r):
+        return (cx + r.uniform(-half_w, half_w), r.uniform(y_lo, y_hi))
+
+    return _poisson_points(rng, n, min_sep, sample)
 
 
 def _story_beam(ax, P, capsule=False):
@@ -750,39 +786,43 @@ def _story_beam(ax, P, capsule=False):
     if capsule:
         return _story_beam_capsule(ax, P)
 
-    # --- the 3He, a loose group ---
-    for x, y in HE3_SITES:
-        nucleus(ax, x, y, 2, 1, r=1.15, P=P, zorder=7)
-    ax.text(HE3_SITES[2][0] + 3.4, HE3_SITES[2][1] - 1.2, '$^{3}$He',
-            fontsize=9.0, color=P['ink'], ha='left', va='center', zorder=7,
-            **FONT)
+    # --- the gas volume: a light disc full of 3He ---
+    cx, cy, rv = (x0 + x1) / 2, 65.8, 8.4
+    ax.add_patch(Circle((cx, cy), rv, facecolor=S.COL['gas'], alpha=0.14,
+                        edgecolor=P['rule'], lw=1.0, zorder=2))
+    sites = he3_sites(cx, cy, rv - 1.5)
+    for x, y in sites:
+        nucleus(ax, x, y, 2, 1, r=0.5, P=P, zorder=6)
+    ax.text(cx + rv - 1.0, cy + rv - 0.6, '$^{3}$He', fontsize=9.5,
+            fontweight='bold', color=P['ink'], ha='left', va='center',
+            zorder=7, **FONT)
 
-    # --- the beam: many neutrons, filling the height of the panel ---
-    hit_x, hit_y = HE3_SITES[HE3_STRUCK]
-    xs = np.linspace(x0 + 2.4, x1 - 2.4, 9)
-    tops = (60.5, 63.0, 58.5, 66.0, 59.5, 64.5, 57.5, 62.0, 61.0)
-    for i, x in enumerate(xs):
-        if abs(x - hit_x) < 2.4:                  # that column interacts
-            continue
-        arrow(ax, (x, 48.6), (x, tops[i]), P['neutron'], lw=1.3, ms=9,
-              alpha=0.72, zorder=3)
-        nucleus(ax, x, 47.5, 0, 1, r=0.78, P=P, zorder=6)
+    # the one that captures: left of centre and a little low, so the beam
+    # reaches it and the label can sit outside on the same side
+    target = np.array([cx - 3.4, cy - 1.4])
+    hit_x, hit_y = sites[int(np.argmin(((sites - target) ** 2).sum(axis=1)))]
 
-    # the interacting neutron runs all the way up to its 3He
-    arrow(ax, (hit_x, 48.6), (hit_x, hit_y - 2.5), P['neutron'], lw=1.6,
-          ms=10, zorder=5)
-    nucleus(ax, hit_x, 47.5, 0, 1, r=0.78, P=P, zorder=6)
-    for r, a in ((3.0, 0.20), (1.9, 0.40)):
+    # --- the beam: an irregular column of neutrons, up from below ---
+    for x, y in neutron_sites(cx, 46.9, 56.0, 3.4):
+        nucleus(ax, x, y, 0, 1, r=0.55, P=P, zorder=6)
+        arrow(ax, (x, y + 0.85), (x, y + 2.3), P['neutron'], lw=1.1, ms=7,
+              alpha=0.5, zorder=3)
+
+    # one of them carries on into the gas and captures
+    arrow(ax, (cx - 1.6, 56.6), (hit_x + 0.6, hit_y - 1.4), P['neutron'],
+          lw=1.4, ms=9, alpha=0.85, zorder=5)
+    for r, a in ((2.4, 0.20), (1.5, 0.40)):
         ax.add_patch(Circle((hit_x, hit_y), r, facecolor=P['x17'], alpha=a,
                             edgecolor='none', zorder=6))
-    ax.annotate('capture', xy=(hit_x + 2.6, hit_y + 1.2),
-                xytext=(hit_x + 5.6, hit_y + 3.4), fontsize=8.2,
-                color=P['x17'], fontweight='bold', ha='left', va='center',
+    # label on the same side as the struck nucleus, so the leader does not have
+    # to cross the volume
+    ax.annotate('capture', xy=(hit_x - 2.0, hit_y - 0.2),
+                xytext=(cx - rv - 0.8, cy - 1.4), fontsize=8.2,
+                color=P['x17'], fontweight='bold', ha='right', va='center',
                 arrowprops=dict(arrowstyle='-', color=P['x17'], lw=0.9,
                                 alpha=0.8), zorder=8, **FONT)
 
-    ax.text((x0 + x1) / 2, 45.4,
-            'neutrons up from EAR2 — energy from time of flight',
+    ax.text(cx, 45.4, 'neutrons up from EAR2 — energy from time of flight',
             fontsize=8.0, color=P['muted'], ha='center', va='center', **FONT)
 
 
@@ -866,35 +906,59 @@ def _story_levels(ax, P, halo):
     x0, x1 = S_C
     _head(ax, x0, S_HEAD1, '3.  Three ways to shed it', P)
 
-    lx0, lx1 = x0 + 3.0, x0 + 26.0
-    y_hi, y_lo = 70.5, 51.5
+    # a narrow ladder: the level lines only have to carry the 20.58 MeV drop,
+    # and the width freed up goes to the three processes on the right
+    lx0, lx1 = x0 + 3.0, x0 + 16.0
+    y_hi, y_lo = 68.2, 52.8
     for y in (y_hi, y_lo):
         ax.plot([lx0, lx1], [y, y], color=P['ink'], lw=2.4,
                 solid_capstyle='round', zorder=4)
-    ax.text(lx1 + 0.6, y_hi + 2.2, '$^{4}$He$^{*}$', fontsize=9.5,
-            fontweight='bold', color=P['ink'], ha='right', va='center', **FONT)
-    ax.text(lx1 + 0.6, y_lo - 2.2, '$^{4}$He', fontsize=9.5, fontweight='bold',
-            color=P['ink'], ha='right', va='center', **FONT)
 
-    arrow(ax, (lx0 + 3.0, y_hi - 0.6), (lx0 + 3.0, y_lo + 0.6), P['ink'],
+    # the nucleus itself, above its level and below the other
+    lxc = (lx0 + lx1) / 2
+    excitation_waves(ax, lxc, y_hi + 3.6, P, r=0.95)
+    nucleus(ax, lxc, y_hi + 3.6, 2, 2, r=0.95, P=P, zorder=6)
+    ax.text(lxc + 4.4, y_hi + 3.6, '$^{4}$He$^{*}$', fontsize=9.5,
+            fontweight='bold', color=P['ink'], ha='left', va='center', **FONT)
+    nucleus(ax, lxc, y_lo - 3.4, 2, 2, r=0.95, P=P, zorder=6)
+    ax.text(lxc + 3.0, y_lo - 3.4, '$^{4}$He', fontsize=9.5,
+            fontweight='bold', color=P['ink'], ha='left', va='center', **FONT)
+
+    arrow(ax, (lx0 + 2.4, y_hi - 0.6), (lx0 + 2.4, y_lo + 0.6), P['ink'],
           lw=1.5, style='<|-|>', ms=10, zorder=5)
-    ax.text(lx0 + 4.6, (y_hi + y_lo) / 2, '20.58\nMeV', fontsize=10.5,
+    ax.text(lx0 + 3.8, (y_hi + y_lo) / 2, '20.58\nMeV', fontsize=10.0,
             fontweight='bold', color=P['ink'], ha='left', va='center',
             linespacing=1.35, path_effects=halo, zorder=6, **FONT)
 
-    chans = [(68.5, P['gamma'], r'$\gamma$  emission', 'no pair to see'),
-             (61.0, P['ipc'], 'internal pair conversion',
+    # --- the three channels, each drawn as what it actually emits ---
+    ix = x1 - 33.0                       # left edge of the process pictures
+    tx = ix + 12.0                       # where the wording starts
+    chans = [(67.8, P['gamma'], 'gamma', r'$\gamma$  emission',
+              'no pair to see'),
+             (60.5, P['ipc'], 'ipc', 'internal pair conversion',
               'pair mass anywhere in 1–20 MeV'),
-             (53.5, P['x17'], 'X17 $\\rightarrow e^{+}e^{-}$',
+             (53.2, P['x17'], 'x17', 'X17 $\\rightarrow e^{+}e^{-}$',
               'one fixed mass, $\\approx$ 17 MeV')]
-    for y, col, name, note in chans:
-        arrow(ax, (lx1 + 1.4, y_hi - 0.4), (x1 - 21.5, y), col, lw=1.3,
-              rad=0.18, ms=10, alpha=0.9, zorder=3)
-        ax.add_patch(Circle((x1 - 20.0, y), 0.85, facecolor=col,
-                            edgecolor='none', zorder=5))
-        ax.text(x1 - 18.2, y + 1.15, name, fontsize=9, fontweight='bold',
+    for y, col, kind, name, note in chans:
+        arrow(ax, (lx1 + 1.2, y_hi - 0.4), (ix - 1.4, y), col, lw=1.3,
+              rad=0.16, ms=10, alpha=0.85, zorder=3)
+        if kind == 'gamma':
+            squiggle(ax, ix, y, ix + 7.4, y, col, n_wave=4, amp=0.75, lw=1.7)
+            ax.text(ix + 9.0, y, r'$\gamma$', fontsize=11, color=col,
+                    ha='left', va='center', **FONT)
+        elif kind == 'ipc':
+            lepton_fork(ax, ix + 0.4, y, 7.0, 15.0, P, lw=1.6, fs=7.4)
+        else:
+            arrow(ax, (ix - 0.4, y), (ix + 4.2, y), col, lw=1.8,
+                  ls=(0, (3.0, 1.9)), style='-', zorder=5)
+            ax.text(ix + 1.9, y + 1.7, 'X17', fontsize=7.6, fontweight='bold',
+                    color=col, ha='center', va='center', **FONT)
+            # a shade narrower than it looks in beat 4: the rows are only 7
+            # apart and the arms have to clear the IPC labels above
+            lepton_fork(ax, ix + 4.2, y, 5.0, 38.0, P, lw=1.6, fs=7.4)
+        ax.text(tx, y + 1.15, name, fontsize=9, fontweight='bold',
                 color=P['ink'], ha='left', va='center', **FONT)
-        ax.text(x1 - 18.2, y - 1.75, note, fontsize=7.8, color=P['muted'],
+        ax.text(tx, y - 1.75, note, fontsize=7.8, color=P['muted'],
                 ha='left', va='center', **FONT)
 
 
@@ -973,32 +1037,49 @@ def opening_at(m_parent, theta_star_deg, e_tot=None):
 EXAMPLE_THETA_STAR = (90.0, 45.0, 0.0)
 
 
-def _orientation_example(ax, xc, yc, theta_star, theta_lab, col, P, halo,
-                         arm=5.2, note=None):
-    """One worked example: the decay direction in the rest frame, and the
-    opening angle it produces in the lab."""
+def _rest_frame_pair(ax, cx, cy, r, P, theta_star=52.0, lw=1.4, ms=9,
+                     label=False, fs=7.6):
+    """The pair as it leaves the parent: back-to-back, at ``theta_star`` to the
+    boost axis."""
+    ax.add_patch(Circle((cx, cy), r, facecolor='none', edgecolor=P['muted'],
+                        lw=0.9, ls=(0, (2.4, 2.0)), alpha=0.8, zorder=3))
+    a = np.radians(theta_star)
+    for sgn, lab, col in ((+1, r'$e^+$', P['positron']),
+                          (-1, r'$e^-$', P['electron'])):
+        ex = cx + sgn * r * 0.84 * np.cos(a)
+        ey = cy + sgn * r * 0.84 * np.sin(a)
+        arrow(ax, (cx, cy), (ex, ey), col, lw=lw, ms=ms, zorder=4)
+        if label:
+            ax.text(ex + sgn * 0.9, ey + sgn * 0.7, lab, color=col,
+                    fontsize=fs, ha='center', va='center', zorder=5, **FONT)
+
+
+def _orientation_example(ax, xc, yc, m_parent, theta_star, col, P, halo,
+                         arm=4.6, note=None):
+    """One worked example: the decay direction in the rest frame, and where the
+    boost actually puts the two leptons in the lab.
+
+    Both arms are drawn at their own computed lab angle, so the picture is only
+    symmetric where the physics is.
+    """
+    theta_lab = opening_at(m_parent, theta_star)
+    a_pos, a_ele = lab_angles(m_parent, theta_star)
+
     # --- rest frame: the pair, back-to-back along theta_star ---
     icy = yc + 4.2
-    ax.add_patch(Circle((xc, icy), 1.9, facecolor='none', edgecolor=P['muted'],
-                        lw=0.8, ls=(0, (2.0, 1.6)), alpha=0.85, zorder=3))
-    a = np.radians(theta_star)
-    for sgn in (+1, -1):
-        arrow(ax, (xc, icy), (xc + sgn * 1.55 * np.cos(a),
-                              icy + sgn * 1.55 * np.sin(a)),
-              P['lepton'], lw=1.2, ms=7, zorder=4)
+    _rest_frame_pair(ax, xc, icy, 1.9, P, theta_star=theta_star, lw=1.2, ms=7)
     ax.text(xc + 2.9, icy, f'$\\theta^{{*}}$ = {theta_star:.0f}°', fontsize=7.0,
             color=P['muted'], ha='left', va='center', **FONT)
 
-    # --- lab: what that orientation actually gives ---
-    vx, vy = xc - 3.2, yc - 3.0
-    half = np.radians(theta_lab / 2.0)
-    for sgn in (+1, -1):
-        arrow(ax, (vx, vy), (vx + arm * np.cos(half),
-                             vy + sgn * arm * np.sin(half)),
-              P['lepton'], lw=1.6, ms=9, zorder=4)
+    # --- lab: each lepton at its own angle to the boost axis ---
+    vx, vy = xc - 3.2, yc - 2.2
+    for ang, lcol in ((a_pos, P['positron']), (a_ele, P['electron'])):
+        t = np.radians(ang)
+        arrow(ax, (vx, vy), (vx + arm * np.cos(t), vy + arm * np.sin(t)),
+              lcol, lw=1.6, ms=9, zorder=4)
     if theta_lab > 4.0:
-        t = np.linspace(-half, half, 50)
-        ax.plot(vx + 2.2 * np.cos(t), vy + 2.2 * np.sin(t), color=col, lw=0.9,
+        t = np.linspace(np.radians(a_ele), np.radians(a_pos), 60)
+        ax.plot(vx + 2.0 * np.cos(t), vy + 2.0 * np.sin(t), color=col, lw=0.9,
                 alpha=0.9, zorder=4)
     ax.text(vx + arm + 1.4, vy + (0.9 if note else 0.0), f'{theta_lab:.0f}°',
             fontsize=9.0, fontweight='bold', color=col, ha='left',
@@ -1025,23 +1106,27 @@ def _boost_row(ax, x0, yc, m_parent, tag, col, P, halo=None):
     ax.text(x0, yc + 8.0, tag, fontsize=8.8, fontweight='bold', color=col,
             ha='left', va='center', **FONT)
 
+    # --- the pair as it leaves the parent, same for both rows ---
+    _rest_frame_pair(ax, x0 + 5.6, yc, 4.8, P, label=True)
+    ax.text(x0 + 5.6, yc - 6.4, 'rest frame', fontsize=7.4, color=P['muted'],
+            ha='center', va='center', **FONT)
+
     # --- the boost, as an arrow whose length is beta ---
-    bx0, bmax = x0 + 0.6, 13.0
+    bx0, bmax = x0 + 13.0, 11.0
     arrow(ax, (bx0, yc), (bx0 + bmax * beta, yc), col, lw=2.8, ms=15, zorder=4)
     # 2 dp reads as a flat 1.00 once the parent is ultra-relativistic, which is
     # exactly the regime the row is about
     bstr = f'{beta:.2f}' if beta < 0.99 else f'{beta:.3f}'
-    ax.text(bx0, yc + 3.2, f'$\\beta$ = {bstr},   $\\gamma$ = {gamma:.1f}',
+    ax.text(bx0, yc + 3.0, f'$\\beta$ = {bstr},   $\\gamma$ = {gamma:.1f}',
             fontsize=8.0, color=col, ha='left', va='center',
             fontweight='bold', **FONT)
-    ax.text(bx0, yc - 3.4, 'boost of the parent', fontsize=7.2,
-            color=P['muted'], ha='left', va='center', **FONT)
+    ax.text(bx0, yc - 3.2, 'boost', fontsize=7.2, color=P['muted'],
+            ha='left', va='center', **FONT)
 
     notes = (None, None, 'collinear' if m_parent < 4.6 else 'back-to-back')
     for i, ts in enumerate(EXAMPLE_THETA_STAR):
-        _orientation_example(ax, x0 + 24.0 + i * 19.0, yc, ts,
-                             opening_at(m_parent, ts), col, P, halo,
-                             note=notes[i])
+        _orientation_example(ax, x0 + 32.0 + i * 18.0, yc, m_parent, ts, col,
+                             P, halo, note=notes[i])
     return opening_band(m_parent)
 
 
@@ -1061,14 +1146,14 @@ def _story_mechanism(fig, ax, P, halo):
             fontsize=8.0, color=P['muted'], ha='left', va='center', **FONT)
 
     m_ipc = 2.0
-    lo_x, hi_x = _boost_row(ax, x0 + 1.0, 31.5, X17['m_x17'],
+    lo_x, hi_x = _boost_row(ax, x0 + 1.0, 32.0, X17['m_x17'],
                             f'X17  —  one mass, {X17["m_x17"]:g} MeV,  '
                             'heavy and slow', P['x17'], P, halo=halo)
-    lo_i, hi_i = _boost_row(ax, x0 + 1.0, 14.5, m_ipc,
+    lo_i, hi_i = _boost_row(ax, x0 + 1.0, 14.0, m_ipc,
                             f'IPC  —  any mass, here {m_ipc:g} MeV,  '
                             'light and fast', P['ipc'], P, halo=halo)
 
-    ax.text(x0 + 1.0, 5.8,
+    ax.text(x0 + 1.0, 5.4,
             f'Whatever the orientation, X17 stays open — never below '
             f'{lo_x:.0f}°.  A light IPC pair is swept forward — never above '
             f'{hi_i:.0f}°.',
@@ -1129,9 +1214,9 @@ def _story_footer(ax, P):
            'so nothing here implies it. In panel 4 the boost arrow lengths '
            '(β) and the opening angles are to scale; lepton arm lengths are '
            'not.' % (f'{SAMPLE_N:,}'.replace(',', ' '), X17['smear_deg']))
-    ax.text(8, 2.4, textwrap.fill(cap, 152), fontsize=7.2, color=P['muted'],
+    ax.text(8, 2.2, textwrap.fill(cap, 152), fontsize=7.2, color=P['muted'],
             ha='left', va='center', linespacing=1.65, **FONT)
-    ax.text(152, 2.4, SOURCES, fontsize=7.2, color=P['muted'], ha='right',
+    ax.text(152, 2.2, SOURCES, fontsize=7.2, color=P['muted'], ha='right',
             va='center', linespacing=1.65, **FONT)
 
 
