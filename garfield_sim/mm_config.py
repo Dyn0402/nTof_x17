@@ -255,6 +255,33 @@ GAS_MIXTURES = [
         # Pure CF4 — single component, no Penning transfer possible.
         "penning":    {"mode": "auto"},
     },
+
+    # ── Ar/iC4H10/H2O 94/5/1 — the MX17 bench gas AS IT ACTUALLY IS ─────────
+    # Added 2026-08-06 for the MX17 response simulation
+    # (MX17_Geant design/RESPONSE_SIM_PLAN.md §5).
+    #
+    # The det3 bench does not run dry Ar/iso 95/5. The geometry-corrected
+    # det3 v(E) (extent-slope estimator, E = HV/3 cm) sits far below dry
+    # Magboltz and matches Ar/iso 95/5 + 1 % H2O at RMS ~0.8 µm/ns — that is
+    # the result already in results/water_grid.json, and 36.6 µm/ns is the
+    # measured drift velocity the response chain has to reproduce. Simulating
+    # the dry mixture would put the drift time, and therefore every arrival-
+    # time observable in Stage B, systematically wrong.
+    #
+    # Penning: MUST be manual. Garfield has no Ar/iC4H10/H2O ternary
+    # parameterisation, so auto mode would silently run at rP = 0 while the
+    # dry Ar/iC4H10 95/5 reference this is compared against runs at 0.40 —
+    # the same trap documented for Ar/CO2/iC4H10 and Ne/CF4/C2H6 above. H2O
+    # (IP 12.62 eV) is ABOVE both Ar metastables (11.55 / 11.72 eV), so water
+    # opens no new Penning channel; at 1 % it mainly steals metastables into
+    # non-ionising channels. rP = 0.40 (the Ar/iC4H10 value) is therefore the
+    # upper bracket, not the central value. Carry 0.30-0.40 as the systematic
+    # until there is gain data to say otherwise.
+    {
+        "label":      "Ar_iC4H10_H2O_94_5_1",
+        "components": [("ar", 94.0), ("ic4h10", 5.0), ("h2o", 1.0)],
+        "penning":    {"mode": "manual", "rP": 0.40, "gas": "ar"},
+    },
 ]
 
 # ── Voltage scan ──────────────────────────────────────────────────────────────
