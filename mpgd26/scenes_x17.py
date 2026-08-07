@@ -62,6 +62,39 @@ SOURCES = ('ATOMKI anomaly:\n'
            'Krasznahorkay et al.,\n'
            'Phys. Rev. Lett. 116, 042501 (2016)')
 
+# --------------------------------------------------------------------------- #
+# The 3He capsule, as built
+# --------------------------------------------------------------------------- #
+# Axial profiles lifted verbatim from the Geant4 geometry --
+# MX17_Full_Geant/src/DetectorConstruction.cc, the three nested G4Polycones
+# "He3Gas" / "He3Cap_Al" / "He3Cap_CFRP", themselves sectioned from the STEP
+# solid MASTINU X17 HPRV 00 01.  Drawing them as a cross-section (r against z,
+# mirrored) gives the real vessel rather than a drawn approximation of it.
+#
+# Mounting is NOSE-FIRST: local +z runs from the tip at z = -35 mm, which faces
+# the beam, up to the valve at z = +51 mm.  The EAR2 beam is vertical and comes
+# from below, so local +z is world "up" and the tip is the bottom of the figure.
+CAPSULE_Z_VESSEL = np.array([
+    -35.0, -34.0, -33.0, -31.0, -29.0, -27.0, -25.0, -23.0, -21.0, -20.0,
+    -15.0, -5.0, 5.0, 15.0, 20.0, 21.0, 23.0, 25.0, 27.0, 29.0,
+    31.0, 33.0, 35.0, 37.0, 39.0, 40.0, 45.0, 50.0, 51.0])
+CAPSULE_R_AL = np.array([
+    0.000, 3.803, 5.287, 7.206, 8.480, 9.375, 9.994, 10.386, 10.600, 10.600,
+    10.600, 10.600, 10.600, 10.600, 10.600, 10.600, 10.386, 9.994, 9.375, 8.480,
+    7.206, 5.747, 4.708, 4.015, 3.621, 3.500, 3.500, 3.500, 3.500])
+CAPSULE_R_CFRP = np.array([
+    0.000, 4.703, 6.187, 8.106, 9.380, 10.275, 10.894, 11.286, 11.500, 11.500,
+    11.500, 11.500, 11.500, 11.500, 11.500, 11.500, 11.286, 10.894, 10.275,
+    9.380, 8.106, 6.647, 5.608, 4.915, 4.521, 4.400, 4.400, 4.400, 4.400])
+CAPSULE_Z_GAS = np.array([
+    -29.5, -28.0, -26.0, -24.0, -22.0, -20.0, -15.0, -5.0, 5.0, 15.0,
+    20.0, 22.0, 24.0, 26.0, 28.0, 30.0, 32.0, 34.0, 36.0, 38.0,
+    40.0, 44.0, 50.7])
+CAPSULE_R_GAS = np.array([
+    0.001, 6.000, 8.000, 9.165, 9.798, 10.000, 10.000, 10.000, 10.000, 10.000,
+    10.000, 9.798, 9.165, 8.000, 6.299, 4.842, 3.660, 2.711, 1.967, 1.410,
+    1.026, 0.750, 0.750])
+
 
 def opening_angle_pdf(m_x=None, e_tot=None, smear_deg=None, n=400001,
                       grid=None):
@@ -180,6 +213,19 @@ def modelled_shapes(n=SAMPLE_N, seed=SAMPLE_SEED, bin_deg=0.5, smooth_deg=None):
     return centres, x17, ipc
 
 
+def ipc_mass_weight(m, e_tot=None):
+    """The IPC parent-mass spectrum, dN/dM ~ 1/M on [2 m_e, E], unit peak.
+
+    Same law ``_sample_ipc_mass`` inverts in MX17_Simulator; written out here
+    so the story panel can *draw* it rather than sample it.
+    """
+    m = np.atleast_1d(np.asarray(m, dtype=float))
+    e_tot = X17['e_capture'] if e_tot is None else e_tot
+    w = np.where((m >= 2 * X17['m_e']) & (m <= e_tot), 1.0 / np.maximum(m, 1e-9),
+                 0.0)
+    return w / w.max()
+
+
 def validate(n=40_000, seed=SAMPLE_SEED):
     """Check the sampled X17 channel against the analytic solution.
 
@@ -218,7 +264,13 @@ def palette(theme='light'):
         card='#141a24' if dark else '#f4f6f9',
         proton=S.COL['m3'] if not dark else '#5f9fd8',
         neutron='#8b96a3' if not dark else '#aab4c0',
+        # the pair reads as one family, but the two halves are told apart by
+        # more than their label: warm red for e+, cooler wine for e-.  Kept
+        # close together on purpose -- they are the same kind of object, and a
+        # hard red/blue split would fight the proton blue in beats 1 and 2.
         lepton='#d6402c' if not dark else '#ff7a63',
+        positron='#d6402c' if not dark else '#ff8a70',
+        electron='#a02c52' if not dark else '#f07a9e',
         gamma='#c1841c' if not dark else '#ffd166',
         # IPC gets its own orange so the channel is not confused with the red
         # of the e+e- arrows, which belong to the *particles* and are shared
@@ -275,6 +327,53 @@ def excitation_waves(ax, x, y, P, r=1.35, n=3, zorder=8):
                 lw=1.0, alpha=0.38, solid_capstyle='round', zorder=zorder)
 
 
+def _profile_polygon(z, r):
+    """(z, r) axial profile -> a closed cross-section outline, r mirrored."""
+    zz = np.concatenate([z, z[::-1]])
+    rr = np.concatenate([r, -r[::-1]])
+    return rr, zz
+
+
+def draw_capsule(ax, xc, y_at_z0, scale, P, zorder=4):
+    """The 3He capsule in cross-section, drawn from the Geant4 polycones.
+
+    ``scale`` is figure units per mm; the three shells are filled from the
+    outside in, so each reads as a wall of the one outside it.  True aspect --
+    the vessel really is this slender.
+    """
+    shells = [
+        (CAPSULE_Z_VESSEL, CAPSULE_R_CFRP, '#33383f', 1.0, 'cfrp'),
+        (CAPSULE_Z_VESSEL, CAPSULE_R_AL, P['neutron'], 1.0, 'al'),
+        (CAPSULE_Z_GAS, CAPSULE_R_GAS, S.COL['gas'], 0.85, 'gas'),
+    ]
+    for i, (z, r, col, alpha, _tag) in enumerate(shells):
+        rr, zz = _profile_polygon(z, r)
+        ax.fill(xc + rr * scale, y_at_z0 + zz * scale, facecolor=col,
+                edgecolor='none', alpha=alpha, zorder=zorder + i)
+    # one outline over the top, so the silhouette stays crisp at slide size
+    rr, zz = _profile_polygon(CAPSULE_Z_VESSEL, CAPSULE_R_CFRP)
+    ax.plot(xc + rr * scale, y_at_z0 + zz * scale, color=P['ink'], lw=0.7,
+            alpha=0.55, zorder=zorder + 4)
+
+
+def magnifier(ax, c1, r1, c2, r2, P, zorder=3, lw=0.9):
+    """Small circle on the object, big circle holding the zoom, and the two
+    external tangents between them -- the standard callout."""
+    c1, c2 = np.asarray(c1, float), np.asarray(c2, float)
+    d = np.linalg.norm(c2 - c1)
+    alpha = np.arctan2(*(c2 - c1)[::-1])
+    phi = np.arccos(np.clip((r2 - r1) / d, -1, 1))
+    for sgn in (+1, -1):
+        a = alpha + sgn * phi
+        u = np.array([np.cos(a), np.sin(a)])
+        ax.plot(*zip(c1 + r1 * u, c2 + r2 * u), color=P['muted'], lw=lw,
+                alpha=0.55, zorder=zorder)
+    ax.add_patch(Circle(c1, r1, facecolor='none', edgecolor=P['muted'],
+                        lw=lw, alpha=0.85, zorder=zorder + 1))
+    ax.add_patch(Circle(c2, r2, facecolor=P['card'], edgecolor=P['muted'],
+                        lw=lw, alpha=1.0, zorder=zorder + 1))
+
+
 def squiggle(ax, x0, y0, x1, y1, color, n_wave=5, amp=0.85, lw=1.9,
              zorder=5):
     """A photon: sine along the segment, with an arrowhead on the end."""
@@ -296,15 +395,16 @@ def lepton_fork(ax, x0, y0, length, half_angle_deg, P, lw=1.9, zorder=5,
                 label=True, fs=8.5):
     """The e+e- pair: two arrows opening symmetrically about the horizontal."""
     a = np.radians(half_angle_deg)
-    for sgn, lab in ((+1, r'$e^+$'), (-1, r'$e^-$')):
+    for sgn, lab, col in ((+1, r'$e^+$', P['positron']),
+                          (-1, r'$e^-$', P['electron'])):
         x1 = x0 + length * np.cos(a)
         y1 = y0 + sgn * length * np.sin(a)
         ax.annotate('', xy=(x1, y1), xytext=(x0, y0),
-                    arrowprops=dict(arrowstyle='-|>', color=P['lepton'], lw=lw,
+                    arrowprops=dict(arrowstyle='-|>', color=col, lw=lw,
                                     mutation_scale=11, shrinkA=1.0, shrinkB=0),
                     zorder=zorder)
         if label:
-            ax.text(x1 + 0.9, y1 + sgn * 0.35, lab, color=P['lepton'],
+            ax.text(x1 + 0.9, y1 + sgn * 0.35, lab, color=col,
                     fontsize=fs, ha='left', va='center', zorder=zorder,
                     **FONT)
 
@@ -572,6 +672,467 @@ def _panel_signature(fig, ax, P, halo):
             'angle, tagged by the neutron\ntime of flight',
             fontsize=9.2, color=P['ink'], ha='left', va='center',
             linespacing=1.5, **FONT)
+
+
+# --------------------------------------------------------------------------- #
+# The "story" layout -- the same physics in five beats over two rows
+# --------------------------------------------------------------------------- #
+# Where the compact layout asserts that X17 makes a peak at a large opening
+# angle, this one derives it: beam -> capture -> level drop -> *why the parent
+# mass sets the angle* -> the distribution.  Beat 4 is the one that earns the
+# extra row; without it panel 5 is a picture you have to be told how to read.
+S_ROW1 = (47.0, 74.0)       # (bottom, top) of the upper row
+S_ROW2 = (7.0, 40.0)
+S_HEAD1, S_HEAD2 = 76.6, 42.6
+S_A = (8.0, 46.0)           # 1 beam on target
+S_B = (52.0, 90.0)          # 2 capture
+S_C = (96.0, 152.0)         # 3 de-excitation
+S_D = (8.0, 88.0)           # 4 why the pair opens the way it does
+S_E = (94.0, 152.0)         # 5 what we measure
+
+
+def draw_story(theme='light', dpi=300, title=True, capsule=False):
+    """The five-beat layout.  Same numbers, same palette, more room."""
+    P = palette(theme)
+    plt.rcParams['mathtext.fontset'] = 'dejavusans'
+
+    fig = plt.figure(figsize=(W / 10.0, H / 10.0), dpi=dpi, facecolor=P['page'])
+    ax = fig.add_axes([0, 0, 1, 1], facecolor='none')
+    ax.set_xlim(0, W)
+    ax.set_ylim(0, H)
+    ax.set_aspect('equal')
+    ax.axis('off')
+    halo = [pe.withStroke(linewidth=2.4, foreground=P['halo'], alpha=0.85)]
+
+    if title:
+        ax.text(8, 85.4, 'How a 17 MeV boson would show up in n + $^{3}$He',
+                fontsize=19.5, fontweight='bold', color=P['ink'],
+                ha='left', va='center', **FONT)
+        ax.text(8, 80.6,
+                'The pair opening angle is set by the mass of whatever emitted '
+                'it — which is why a single new mass would put a hard edge in '
+                'a smooth background.',
+                fontsize=10, color=P['muted'], ha='left', va='center', **FONT)
+        ax.plot([8, 152], [78.2, 78.2], color=P['rule'], lw=1.0, zorder=1)
+
+    _story_beam(ax, P, capsule=capsule)
+    _story_capture(ax, P)
+    _story_levels(ax, P, halo)
+    _story_mechanism(fig, ax, P, halo)
+    _story_measure(fig, ax, P, halo)
+    _story_footer(ax, P)
+    return fig
+
+
+def _head(ax, x, y, text, P):
+    ax.text(x, y, text, fontsize=10.5, fontweight='bold', color=P['ink'],
+            ha='left', va='center', **FONT)
+
+
+# where the 3He sit, and which one gets hit.  Fixed rather than sampled: the
+# figure has to come out identical every time it is rebuilt.
+HE3_SITES = ((12.6, 62.8), (20.4, 68.2), (27.2, 61.4), (34.6, 66.8),
+             (41.4, 62.0))
+HE3_STRUCK = 1
+
+
+def _story_beam(ax, P, capsule=False):
+    """EAR2 is a vertical beamline: the neutrons arrive from below.
+
+    Deliberately generic -- a beam and some 3He, no vessel -- because at this
+    point in the talk the target hardware has not been introduced yet.  Pass
+    ``capsule=True`` for the version that draws the real Geant4 vessel, which
+    is the right picture once it has been.
+    """
+    x0, x1 = S_A
+    _head(ax, x0, S_HEAD1, '1.  A neutron beam on $^{3}$He', P)
+
+    if capsule:
+        return _story_beam_capsule(ax, P)
+
+    # --- the 3He, a loose group ---
+    for x, y in HE3_SITES:
+        nucleus(ax, x, y, 2, 1, r=1.15, P=P, zorder=7)
+    ax.text(HE3_SITES[2][0] + 3.4, HE3_SITES[2][1] - 1.2, '$^{3}$He',
+            fontsize=9.0, color=P['ink'], ha='left', va='center', zorder=7,
+            **FONT)
+
+    # --- the beam: many neutrons, filling the height of the panel ---
+    hit_x, hit_y = HE3_SITES[HE3_STRUCK]
+    xs = np.linspace(x0 + 2.4, x1 - 2.4, 9)
+    tops = (60.5, 63.0, 58.5, 66.0, 59.5, 64.5, 57.5, 62.0, 61.0)
+    for i, x in enumerate(xs):
+        if abs(x - hit_x) < 2.4:                  # that column interacts
+            continue
+        arrow(ax, (x, 48.6), (x, tops[i]), P['neutron'], lw=1.3, ms=9,
+              alpha=0.72, zorder=3)
+        nucleus(ax, x, 47.5, 0, 1, r=0.78, P=P, zorder=6)
+
+    # the interacting neutron runs all the way up to its 3He
+    arrow(ax, (hit_x, 48.6), (hit_x, hit_y - 2.5), P['neutron'], lw=1.6,
+          ms=10, zorder=5)
+    nucleus(ax, hit_x, 47.5, 0, 1, r=0.78, P=P, zorder=6)
+    for r, a in ((3.0, 0.20), (1.9, 0.40)):
+        ax.add_patch(Circle((hit_x, hit_y), r, facecolor=P['x17'], alpha=a,
+                            edgecolor='none', zorder=6))
+    ax.annotate('capture', xy=(hit_x + 2.6, hit_y + 1.2),
+                xytext=(hit_x + 5.6, hit_y + 3.4), fontsize=8.2,
+                color=P['x17'], fontweight='bold', ha='left', va='center',
+                arrowprops=dict(arrowstyle='-', color=P['x17'], lw=0.9,
+                                alpha=0.8), zorder=8, **FONT)
+
+    ax.text((x0 + x1) / 2, 45.4,
+            'neutrons up from EAR2 — energy from time of flight',
+            fontsize=8.0, color=P['muted'], ha='center', va='center', **FONT)
+
+
+def _story_beam_capsule(ax, P):
+    """The same beat once the target hardware *has* been introduced: the real
+    vessel from the Geant4 geometry, with a zoom onto the gas."""
+    x0, x1 = S_A
+    xc, scale = 19.6, 0.245
+    y_z0 = 52.6 + 35.0 * scale        # world y of capsule z = 0
+
+    # --- the beam, from below ---
+    for dx in (-4.8, 0.0, 4.8):
+        x = xc + dx
+        nucleus(ax, x, 48.6, 0, 1, r=0.85, P=P, zorder=6)
+        arrow(ax, (x, 49.9), (x, 51.7 + (1.0 if dx == 0 else 0.0)),
+              P['neutron'], lw=1.4, ms=9, alpha=0.85, zorder=4)
+    ax.text(xc, 45.9, 'neutrons, from EAR2 below', fontsize=8.0,
+            color=P['muted'], ha='center', va='center', **FONT)
+
+    # --- the capsule, as built ---
+    draw_capsule(ax, xc, y_z0, scale, P)
+    # leader labels live in a right-aligned column clear of the silhouette
+    # anchor every leader on the NEAR edge, so no line is drawn across the
+    # silhouette
+    lab_x = xc - 3.6
+    for text, anchor in (('valve', (xc - 4.2 * scale, y_z0 + 45.0 * scale)),
+                         ('Al + CFRP', (xc - 11.2 * scale, y_z0 + 8.0 * scale)),
+                         ('$^{3}$He, 500 bar', (xc - 9.4 * scale,
+                                                y_z0 - 12.0 * scale))):
+        ax.annotate(text, xy=anchor, xytext=(lab_x, anchor[1]), fontsize=7.8,
+                    color=P['muted'], ha='right', va='center',
+                    arrowprops=dict(arrowstyle='-', color=P['muted'], lw=0.8,
+                                    alpha=0.65), zorder=8, **FONT)
+
+    # --- zoom on the gas, where the capture happens ---
+    spot = (xc + 2.4 * scale, y_z0 - 4.0 * scale)
+    zc, zr = (36.4, 62.2), 7.6
+    magnifier(ax, spot, 1.7, zc, zr, P)
+
+    # one neutron meeting one 3He inside the bubble
+    nucleus(ax, zc[0] - 3.9, zc[1] + 3.2, 0, 1, r=0.95, P=P, zorder=7)
+    arrow(ax, (zc[0] - 3.3, zc[1] + 2.0), (zc[0] - 1.3, zc[1] + 0.4),
+          P['neutron'], lw=1.4, ms=9, zorder=6)
+    nucleus(ax, zc[0] + 1.6, zc[1] - 1.5, 2, 1, r=1.05, P=P, zorder=7)
+    ax.text(zc[0] - 5.6, zc[1] + 4.4, 'n', fontsize=8.4, color=P['ink'],
+            ha='center', va='center', zorder=7, **FONT)
+    ax.text(zc[0] + 1.6, zc[1] - 4.6, '$^{3}$He', fontsize=8.4,
+            color=P['ink'], ha='center', va='center', zorder=7, **FONT)
+
+    ax.text(zc[0], 51.0, 'neutron energy from\ntime of flight', fontsize=8.0,
+            color=P['muted'], ha='center', va='center', linespacing=1.45,
+            **FONT)
+
+
+def _story_capture(ax, P):
+    x0, x1 = S_B
+    _head(ax, x0, S_HEAD1, '2.  Capture makes $^{4}$He$^{*}$', P)
+
+    nucleus(ax, x0 + 5.0, 65.0, 0, 1, P=P)
+    ax.text(x0 + 9.0, 64.8, '+', fontsize=12, color=P['muted'], ha='center',
+            va='center', **FONT)
+    nucleus(ax, x0 + 13.6, 64.6, 2, 1, P=P)
+    arrow(ax, (x0 + 18.6, 64.6), (x0 + 24.4, 64.6), P['muted'], lw=1.5, ms=11)
+    excitation_waves(ax, x0 + 31.0, 64.6, P)
+    nucleus(ax, x0 + 31.0, 64.6, 2, 2, P=P)
+
+    ax.text(x0 + 5.0, 60.4, 'n', fontsize=9.5, color=P['ink'], ha='center',
+            va='center', **FONT)
+    ax.text(x0 + 13.6, 60.4, '$^{3}$He', fontsize=9.5, color=P['ink'],
+            ha='center', va='center', **FONT)
+    ax.text(x0 + 31.0, 59.6, '$^{4}$He$^{*}$', fontsize=11, fontweight='bold',
+            color=P['ink'], ha='center', va='center', **FONT)
+    ax.text(x0 + 19.0, 53.4,
+            'the compound nucleus is left\n'
+            '20.58 MeV above its ground state',
+            fontsize=8.6, color=P['muted'], ha='center', va='center',
+            linespacing=1.5, **FONT)
+
+
+def _story_levels(ax, P, halo):
+    x0, x1 = S_C
+    _head(ax, x0, S_HEAD1, '3.  Three ways to shed it', P)
+
+    lx0, lx1 = x0 + 3.0, x0 + 26.0
+    y_hi, y_lo = 70.5, 51.5
+    for y in (y_hi, y_lo):
+        ax.plot([lx0, lx1], [y, y], color=P['ink'], lw=2.4,
+                solid_capstyle='round', zorder=4)
+    ax.text(lx1 + 0.6, y_hi + 2.2, '$^{4}$He$^{*}$', fontsize=9.5,
+            fontweight='bold', color=P['ink'], ha='right', va='center', **FONT)
+    ax.text(lx1 + 0.6, y_lo - 2.2, '$^{4}$He', fontsize=9.5, fontweight='bold',
+            color=P['ink'], ha='right', va='center', **FONT)
+
+    arrow(ax, (lx0 + 3.0, y_hi - 0.6), (lx0 + 3.0, y_lo + 0.6), P['ink'],
+          lw=1.5, style='<|-|>', ms=10, zorder=5)
+    ax.text(lx0 + 4.6, (y_hi + y_lo) / 2, '20.58\nMeV', fontsize=10.5,
+            fontweight='bold', color=P['ink'], ha='left', va='center',
+            linespacing=1.35, path_effects=halo, zorder=6, **FONT)
+
+    chans = [(68.5, P['gamma'], r'$\gamma$  emission', 'no pair to see'),
+             (61.0, P['ipc'], 'internal pair conversion',
+              'pair mass anywhere in 1–20 MeV'),
+             (53.5, P['x17'], 'X17 $\\rightarrow e^{+}e^{-}$',
+              'one fixed mass, $\\approx$ 17 MeV')]
+    for y, col, name, note in chans:
+        arrow(ax, (lx1 + 1.4, y_hi - 0.4), (x1 - 21.5, y), col, lw=1.3,
+              rad=0.18, ms=10, alpha=0.9, zorder=3)
+        ax.add_patch(Circle((x1 - 20.0, y), 0.85, facecolor=col,
+                            edgecolor='none', zorder=5))
+        ax.text(x1 - 18.2, y + 1.15, name, fontsize=9, fontweight='bold',
+                color=P['ink'], ha='left', va='center', **FONT)
+        ax.text(x1 - 18.2, y - 1.75, note, fontsize=7.8, color=P['muted'],
+                ha='left', va='center', **FONT)
+
+
+def opening_band(m_parent, e_tot=None, n=40001):
+    """(lowest, highest) lab opening angle reachable for a parent of mass m.
+
+    Two regimes, and the difference between them is the whole point of the
+    boost panel:
+
+      * parent slower than the leptons are in its rest frame (heavy parent):
+        the backward lepton still goes backward in the lab, so the pair can
+        reach 180 deg and is bounded BELOW at theta_min -- a hard lower edge.
+      * parent faster (light parent): both leptons are swept forward into a
+        cone, so the pair is bounded ABOVE and can close all the way to 0.
+
+    The crossover is at m = sqrt(2 m_e E) ~ 4.6 MeV for E = 20.58 MeV.
+    """
+    e_tot = X17['e_capture'] if e_tot is None else e_tot
+    m_e = X17['m_e']
+    e_star = m_parent / 2.0
+    p_star = np.sqrt(max(e_star ** 2 - m_e ** 2, 0.0))
+    gamma = e_tot / m_parent
+    beta_gamma = np.sqrt(max(gamma ** 2 - 1.0, 0.0))
+
+    c = np.linspace(-1.0, 1.0, n)
+    s = np.sqrt(np.clip(1.0 - c ** 2, 0.0, None))
+    a = (np.arctan2(p_star * s, gamma * p_star * c + beta_gamma * e_star)
+         + np.arctan2(p_star * s, -gamma * p_star * c + beta_gamma * e_star))
+    a = np.degrees(a)
+    return float(a.min()), float(a.max())
+
+
+def lab_angles(m_parent, theta_star_deg, e_tot=None):
+    """Where each lepton actually points in the lab, measured from the boost
+    axis: ``(positron_deg, electron_deg)``, positive above the axis.
+
+    The pair is back-to-back in the parent rest frame, but the boost does NOT
+    treat the two halves alike, so the lab pair is only symmetric about the
+    boost axis in the one case theta* = 90 deg.  Drawing every example
+    symmetric -- which is what a fork at +/- theta/2 does -- gets the shape
+    wrong everywhere else: at theta* = 0 the pair is collinear *along* the
+    axis, one lepton forward and one backward, not two arms splayed about it.
+    """
+    e_tot = X17['e_capture'] if e_tot is None else e_tot
+    m_e = X17['m_e']
+    e_star = m_parent / 2.0
+    p_star = np.sqrt(max(e_star ** 2 - m_e ** 2, 0.0))
+    gamma = e_tot / m_parent
+    beta_gamma = np.sqrt(max(gamma ** 2 - 1.0, 0.0))
+
+    c = np.cos(np.radians(theta_star_deg))
+    s = np.sin(np.radians(theta_star_deg))
+    pt = p_star * s
+    a = np.degrees(np.arctan2(pt, gamma * p_star * c + beta_gamma * e_star))
+    b = np.degrees(np.arctan2(pt, -gamma * p_star * c + beta_gamma * e_star))
+    return float(a), float(-b)
+
+
+def opening_at(m_parent, theta_star_deg, e_tot=None):
+    """Lab opening angle for a decay emitted at ``theta_star`` to the boost
+    axis in the parent rest frame.  This is the per-orientation version of
+    ``opening_band``, and it is what the worked examples in beat 4 show."""
+    e_tot = X17['e_capture'] if e_tot is None else e_tot
+    m_e = X17['m_e']
+    e_star = m_parent / 2.0
+    p_star = np.sqrt(max(e_star ** 2 - m_e ** 2, 0.0))
+    gamma = e_tot / m_parent
+    beta_gamma = np.sqrt(max(gamma ** 2 - 1.0, 0.0))
+    c = np.cos(np.radians(theta_star_deg))
+    s = np.sin(np.radians(theta_star_deg))
+    return float(np.degrees(
+        np.arctan2(p_star * s, gamma * p_star * c + beta_gamma * e_star)
+        + np.arctan2(p_star * s, -gamma * p_star * c + beta_gamma * e_star)))
+
+
+EXAMPLE_THETA_STAR = (90.0, 45.0, 0.0)
+
+
+def _orientation_example(ax, xc, yc, theta_star, theta_lab, col, P, halo,
+                         arm=5.2, note=None):
+    """One worked example: the decay direction in the rest frame, and the
+    opening angle it produces in the lab."""
+    # --- rest frame: the pair, back-to-back along theta_star ---
+    icy = yc + 4.2
+    ax.add_patch(Circle((xc, icy), 1.9, facecolor='none', edgecolor=P['muted'],
+                        lw=0.8, ls=(0, (2.0, 1.6)), alpha=0.85, zorder=3))
+    a = np.radians(theta_star)
+    for sgn in (+1, -1):
+        arrow(ax, (xc, icy), (xc + sgn * 1.55 * np.cos(a),
+                              icy + sgn * 1.55 * np.sin(a)),
+              P['lepton'], lw=1.2, ms=7, zorder=4)
+    ax.text(xc + 2.9, icy, f'$\\theta^{{*}}$ = {theta_star:.0f}°', fontsize=7.0,
+            color=P['muted'], ha='left', va='center', **FONT)
+
+    # --- lab: what that orientation actually gives ---
+    vx, vy = xc - 3.2, yc - 3.0
+    half = np.radians(theta_lab / 2.0)
+    for sgn in (+1, -1):
+        arrow(ax, (vx, vy), (vx + arm * np.cos(half),
+                             vy + sgn * arm * np.sin(half)),
+              P['lepton'], lw=1.6, ms=9, zorder=4)
+    if theta_lab > 4.0:
+        t = np.linspace(-half, half, 50)
+        ax.plot(vx + 2.2 * np.cos(t), vy + 2.2 * np.sin(t), color=col, lw=0.9,
+                alpha=0.9, zorder=4)
+    ax.text(vx + arm + 1.4, vy + (0.9 if note else 0.0), f'{theta_lab:.0f}°',
+            fontsize=9.0, fontweight='bold', color=col, ha='left',
+            va='center', path_effects=halo, zorder=6, **FONT)
+    # the note belongs to the angle, so it sits under the number rather than
+    # floating at the bottom of the row
+    if note:
+        ax.text(vx + arm + 1.4, vy - 1.4, note, fontsize=6.9,
+                color=P['muted'], ha='left', va='center',
+                path_effects=halo, zorder=6, **FONT)
+
+
+def _boost_row(ax, x0, yc, m_parent, tag, col, P, halo=None):
+    """One channel: how hard its parent is boosted, then three worked
+    orientations.
+
+    The arrow length is the parent's beta -- the X17 arrow is visibly stubby
+    next to the IPC one, which is the entire mechanism in one glance.
+    """
+    e_tot = X17['e_capture']
+    gamma = e_tot / m_parent
+    beta = np.sqrt(max(1.0 - 1.0 / gamma ** 2, 0.0))
+
+    ax.text(x0, yc + 8.0, tag, fontsize=8.8, fontweight='bold', color=col,
+            ha='left', va='center', **FONT)
+
+    # --- the boost, as an arrow whose length is beta ---
+    bx0, bmax = x0 + 0.6, 13.0
+    arrow(ax, (bx0, yc), (bx0 + bmax * beta, yc), col, lw=2.8, ms=15, zorder=4)
+    # 2 dp reads as a flat 1.00 once the parent is ultra-relativistic, which is
+    # exactly the regime the row is about
+    bstr = f'{beta:.2f}' if beta < 0.99 else f'{beta:.3f}'
+    ax.text(bx0, yc + 3.2, f'$\\beta$ = {bstr},   $\\gamma$ = {gamma:.1f}',
+            fontsize=8.0, color=col, ha='left', va='center',
+            fontweight='bold', **FONT)
+    ax.text(bx0, yc - 3.4, 'boost of the parent', fontsize=7.2,
+            color=P['muted'], ha='left', va='center', **FONT)
+
+    notes = (None, None, 'collinear' if m_parent < 4.6 else 'back-to-back')
+    for i, ts in enumerate(EXAMPLE_THETA_STAR):
+        _orientation_example(ax, x0 + 24.0 + i * 19.0, yc, ts,
+                             opening_at(m_parent, ts), col, P, halo,
+                             note=notes[i])
+    return opening_band(m_parent)
+
+
+def _story_mechanism(fig, ax, P, halo):
+    """Beat 4, all visual: what the boost does, and what that leaves on the
+    opening-angle axis.
+
+    The left column is one cartoon run twice with only the parent mass changed.
+    The right column carries the consequence onto the same 0-180 deg axis panel
+    5 uses, so the reader arrives at the last panel already knowing what the
+    two curves have to look like.
+    """
+    x0, x1 = S_D
+    _head(ax, x0, S_HEAD2, '4.  The boost is what makes the difference', P)
+    ax.text(x0 + 48.0, S_HEAD2,
+            'in the rest frame the pair is always back-to-back',
+            fontsize=8.0, color=P['muted'], ha='left', va='center', **FONT)
+
+    m_ipc = 2.0
+    lo_x, hi_x = _boost_row(ax, x0 + 1.0, 31.5, X17['m_x17'],
+                            f'X17  —  one mass, {X17["m_x17"]:g} MeV,  '
+                            'heavy and slow', P['x17'], P, halo=halo)
+    lo_i, hi_i = _boost_row(ax, x0 + 1.0, 14.5, m_ipc,
+                            f'IPC  —  any mass, here {m_ipc:g} MeV,  '
+                            'light and fast', P['ipc'], P, halo=halo)
+
+    ax.text(x0 + 1.0, 5.8,
+            f'Whatever the orientation, X17 stays open — never below '
+            f'{lo_x:.0f}°.  A light IPC pair is swept forward — never above '
+            f'{hi_i:.0f}°.',
+            fontsize=8.0, color=P['ink'], ha='left', va='center', **FONT)
+
+
+def _story_measure(fig, ax, P, halo):
+    x0, x1 = S_E
+    _head(ax, x0, S_HEAD2, '5.  So this is what we look for', P)
+
+    th, x17, ipc = modelled_shapes()
+    th_min = opening_angle_pdf()[2]
+
+    px = fig.add_axes([(x0 + 6.0) / W, 13.6 / H, 44.0 / W, 21.4 / H],
+                      facecolor='none')
+    for s in ('top', 'right'):
+        px.spines[s].set_visible(False)
+    for s in ('left', 'bottom'):
+        px.spines[s].set_color(P['muted'])
+        px.spines[s].set_linewidth(0.9)
+    px.tick_params(colors=P['muted'], labelsize=7.6, width=0.9, length=3)
+    for lab in px.get_xticklabels() + px.get_yticklabels():
+        lab.set_fontfamily('DejaVu Sans')
+
+    px.fill_between(th, 0, x17, color=P['x17'], alpha=0.16, lw=0, zorder=2)
+    px.plot(th, x17, color=P['x17'], lw=2.2, zorder=4,
+            label='X17 $\\rightarrow e^{+}e^{-}$')
+    px.plot(th, ipc, color=P['ipc'], lw=2.0, zorder=3,
+            label='internal pair conversion')
+    px.axvline(th_min, color=P['x17'], lw=0.9, ls=':', alpha=0.8, zorder=1)
+
+    px.set_xlim(0, 180)
+    px.set_ylim(0, 1.16)
+    px.set_xticks([0, 45, 90, 135, 180])
+    px.set_yticks([])
+    px.set_xlabel('e$^{+}$e$^{-}$ opening angle  (deg)', fontsize=8.0,
+                  color=P['muted'], labelpad=2, **FONT)
+    px.set_ylabel('yield  (arb.)', fontsize=8.0, color=P['muted'], labelpad=3,
+                  **FONT)
+    leg = px.legend(loc='upper left', bbox_to_anchor=(-0.02, 1.24),
+                    frameon=False, fontsize=7.8, handlelength=1.8,
+                    labelspacing=0.4)
+    for t in leg.get_texts():
+        t.set_color(P['muted'])
+        t.set_fontfamily('DejaVu Sans')
+
+    ax.text(x0 + 6.0, 6.6,
+            f'The edge at {th_min:.0f}° is the measurement — IPC has only a '
+            'slope there.',
+            fontsize=8.0, color=P['ink'], ha='left', va='center', **FONT)
+
+
+def _story_footer(ax, P):
+    cap = ('Panel 5 samples the MX17_Simulation generators (X17PhysicsSpectrum, '
+           'IPCPhysicsSpectrum) that track the Geant4 X17PrimaryGenerator: '
+           '%s events per channel, smeared %.0f°, recoil neglected, each curve '
+           'normalised to unit peak — their relative rate is the measurement, '
+           'so nothing here implies it. In panel 4 the boost arrow lengths '
+           '(β) and the opening angles are to scale; lepton arm lengths are '
+           'not.' % (f'{SAMPLE_N:,}'.replace(',', ' '), X17['smear_deg']))
+    ax.text(8, 2.4, textwrap.fill(cap, 152), fontsize=7.2, color=P['muted'],
+            ha='left', va='center', linespacing=1.65, **FONT)
+    ax.text(152, 2.4, SOURCES, fontsize=7.2, color=P['muted'], ha='right',
+            va='center', linespacing=1.65, **FONT)
 
 
 def _footer(ax, P):

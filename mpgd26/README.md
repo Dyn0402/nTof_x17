@@ -26,7 +26,7 @@ and the list of what is drawn but not measured.
 cd mpgd26
 ../.venv/bin/python make_figures.py                # the setup stills
 ../.venv/bin/python make_chamber.py                # the exploded chamber
-../.venv/bin/python make_x17.py --theme both       # the physics-case diagram
+../.venv/bin/python make_x17.py --layout both --theme both   # physics-case diagrams
 ../.venv/bin/python make_anim.py                   # turntables + build-ups
 ../.venv/bin/python make_report.py                 # rebuild report.html
 
@@ -58,18 +58,43 @@ Each figure is written twice:
 | `bench_p2_side` | elevation of the two-P2 configuration |
 | `bench_mixed` | P2 fan in P1, MX17 in P2 (the 6-27 configuration) — available, not headline |
 | `chamber_exploded` | one MX17 chamber pulled apart, with a muon and its drifting ionisation (`make_chamber.py`) |
-| `x17_signature` | the physics case: capture → three de-excitation channels → the e⁺e⁻ opening-angle distribution (`make_x17.py`) |
-| `x17_signature_bare` | the same with the title and caption bands cropped off (`make_x17.py --no-title`) |
+| `x17_signature` | the physics case, compact: capture → three de-excitation channels → the e⁺e⁻ opening-angle distribution (`make_x17.py`) |
+| `x17_story` | the same in five beats over two rows, including **why** the boost sets the opening angle (`make_x17.py --layout story`) |
+| `x17_story_capsule` | the story layout with the real Geant4 ³He vessel in beat 1 (`--layout story --capsule`) |
+| `x17_signature_bare`, `x17_story_bare` | either layout with the title and caption bands cropped off (`--no-title`) |
 
-The X17 diagram is written straight out as `figures/x17_signature_<theme>.png`
-and `.pdf` — it has no separate `_labelled` version, because its type is drawn
-in from the start. **Prefer the PDF on a slide**: all of it is live text.
+The X17 diagrams are written straight out as `figures/<name>_<theme>.png` and
+`.pdf` — no separate `_labelled` version, because their type is drawn in from
+the start. **Prefer the PDF on a slide**: all of it is live text.
+
+Which layout: `x17_signature` when the diagram shares a slide with something
+else, `x17_story` when it gets a slide of its own. The story layout's fourth
+beat is the part the compact one has to assert. The pair is always
+back-to-back in the parent's rest frame, so the lab angle is *only* the boost,
+and which way it is bounded depends on whether the parent outruns its own
+leptons (crossover at m = √(2mₑE) ≈ 4.6 MeV):
+
+| | X17, m = 16.8 | a 2 MeV IPC pair |
+|---|---|---|
+| β of parent | 0.58 — slower than the leptons | 0.995 — faster |
+| bound | **≥ 109°**, reaches 180° | **≤ 11°**, closes to 0° |
+
+Three worked orientations per channel make that visible: no orientation lets
+X17 close below 109°, and none lets a light IPC pair open past 11°. Since IPC
+draws its pair mass from dN/dM ∝ 1/M it gets a band for every mass, and those
+bands between them are the smooth slope panel 5 shows under the X17 peak.
+
+Beat 1 is generic (a beam and some ³He) because early in a talk the target
+hardware has not been introduced. `--capsule` swaps in the real vessel, drawn
+from the `He3Gas` / `He3Cap_Al` / `He3Cap_CFRP` polycones in
+`~/CLionProjects/MX17_Full_Geant/src/DetectorConstruction.cc` (sectioned from
+the STEP solid), true aspect, mounted nose-first as the simulation mounts it.
 
 ## Animations (`animations/`)
 
 | name | what it is |
 |---|---|
-| `turn_sps`, `turn_bench`, `turn_bench_p2`, `turn_chamber` | turntables, 90 frames, seamless loop — MP4 + GIF |
+| `turn_sps`, `turn_bench`, `turn_bench_p2`, `turn_chamber` | turntables, 270 frames, 18 s per turn, seamless loop — MP4 + GIF |
 | `build_sps` | table → uRWELL references → P2 fans → beam |
 | `build_bench` | rack → trigger paddles → M3 reference → chambers → muons |
 
@@ -116,6 +141,13 @@ The bench scene will draw a chamber **where the fit says it is**, and will draw
     whose z belongs to the other slot triggers a warning rather than being
     drawn silently.
 
+* **`--reference`** — the shortcut: `geometry.BENCH_REFERENCE` names the one
+  June run (`mx17_det2_det3_overnight_6-22-26/long_run`) that carries **both**
+  slots' alignment fits *and* its own M3 rays, so the whole figure comes from a
+  single dataset — mx17_3 in P1 (fit z = 242 mm), mx17_2 in P2 (fit z = 714 mm).
+  The headline `bench_*` figures use it automatically when the data disk is
+  mounted, and fall back to nominal positions and sampled muons when it is not.
+
 * **`--rays DIR`** — an `m3_tracking_root*` directory. The ray files carry
   `Z_Up = 1302` and `Z_Down = 24`, exactly the top and bottom M3 plane heights
   in `geometry.py`, so a ray is a straight line through the scene with **no
@@ -123,9 +155,56 @@ The bench scene will draw a chamber **where the fit says it is**, and will draw
   `mx_june_cosmic_qa/qa_config.py` (χ² < 1.0 **and** NClus = 4 on both planes),
   and only tracks that cross both trigger paddles are drawn.
 
-On the SPS side the plumbing is there — `SPS_STATIONS` carries `x`, `y` and a
-yaw per station — but every run config has x = y = 0 and no survey exists, so
-they are all zero. A survey or a frame fit drops straight into that table.
+### The SPS alignment, and what it says
+
+`sps_beam_test_26/analysis/urw_mapping/mapping_alignment.json` fits a rigid
+(dx, dy, θ) per P2 station, taking a uRWELL track into the P2 pad frame. Two
+results come out of it, and **neither moves anything in the drawing** — which
+is itself the finding:
+
+* the three P2 stations agree to **0.7 mm in x, 1.6 mm in y and 0.38°**, so the
+  telescope is transversely aligned far below anything visible at figure scale;
+* the fitted uRWELL→pad rotation (−59.68 / −59.77 / −60.07°) plus the fan's own
+  pad→lab rotation of −(90 + 30.074)° closes to **180.24 / 180.16 / 179.86°**.
+  A multiple of 90° means the uRWELL strips are square to the lab: the −60° is
+  the fan's mounting geometry, not a tilted detector.
+
+So the stations are drawn on the nominal axis because that is what the
+alignment says. `SPS_STATIONS` still carries per-station `x`, `y` and `yaw`, so
+a survey would drop straight in.
+
+### Real SPS beam tracks
+
+`data/urwell_tracks.csv` holds **measured** two-point tracks from the two EIC
+uRWELLs, produced by `tools/extract_urwell_tracks.py` **on lxplus** (the merged
+hit file is 11 GB and stays there):
+
+```bash
+scp tools/extract_urwell_tracks.py \
+    ../sps_beam_test_26/analysis/urw_mapping/mapping_urwell.csv lxplus:~/mpgd26_tracks/
+ssh lxplus 'cd ~/mpgd26_tracks &&
+  source /cvmfs/sft.cern.ch/lcg/views/LCG_105/x86_64-el9-gcc13-opt/setup.sh &&
+  python3 extract_urwell_tracks.py --mapping mapping_urwell.csv --subrun 23'
+scp lxplus:~/mpgd26_tracks/urwell_tracks.csv data/
+```
+
+Both uRWELLs are on FEU 1 (front x/y = channels 0–255, back x/y = 256–511) and
+`mapping_urwell.csv` already carries the resolved wiring and the final
+`position_mm`, so nothing has to re-derive the connector order — the part with
+four candidate answers and a mirror ambiguity.
+
+**The script will not write tracks unless it reproduces the published
+front→back alignment.** On `highstat_eff_1/beam_commissioning_00`:
+
+| axis | slope (published) | offset (published) | core σ (published) |
+|---|---|---|---|
+| x | 0.99940 (0.99960) | −0.96 mm (−0.96) | 0.67 mm (0.77) |
+| y | 1.03933 (1.04177) | −3.98 mm (−4.11) | 0.64 mm (0.72) |
+
+3 759 events out of 1.19 M had exactly one cluster in all four views. As a
+further check the extracted spot sits at uRWELL local y = 51.0 mm against the
+documented 50.9 mm. The σ come out slightly *better* than published because
+the four-view single-cluster requirement is tighter than the published cut.
 
 ## What is actually measured
 
@@ -229,3 +308,30 @@ was made after the obvious alternative failed:
 * **Type after the fact.** VTK's 3-D text is hard to place and reads badly at
   print size, so the render is composed onto a titled canvas in matplotlib with
   a label gutter, and 3-D anchors are projected through the same camera.
+
+
+## Which way things face
+
+Both scenes had this wrong at first and it is worth stating explicitly.
+
+* **SPS.** The beam runs along **+Z** and meets `EIC_uRWELL_front` (z = 0)
+  first. Every readout plane faces **upstream**: a particle enters through the
+  drift window, crosses the gas, and the pads sit on the face the gas is on —
+  so the pads look back into the beam and the PCB substrate is downstream. All
+  three SPS cameras therefore sit at negative z, looking downstream.
+* **Bench.** Muons travel **downwards**. Both scintillator PMTs point along
+  **−y**, and the rack has its two uprights on **+y** with the rails
+  cantilevered out over the open −y side — which is the side every hero camera
+  looks from, and the side detectors slide in from.
+* **Tracks carry arrow heads on the exit end** in both scenes, so the direction
+  of travel does not depend on the caption or the camera. `cosmic_tracks`,
+  `real_tracks` and `beam_tracks` all return `(entry, exit)` in travel order so
+  the head always belongs on the second point.
+
+## Known conventions that are not pinned by data
+
+The transverse **handedness** of the P2 pad frame is a view-side convention,
+not something the data fixes (`P2_MIRROR`, and the same caveat in the P2
+group's own handoff). It sets the sign of the beam's 6 mm lateral offset and
+the sense of the uRWELL local axes in the drawing. Track *angles*, the spot
+size and the front→back offset are unaffected by it.

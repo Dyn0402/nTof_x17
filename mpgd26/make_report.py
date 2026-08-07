@@ -51,6 +51,17 @@ BLURB = {
     'x17_signature_bare': 'The same diagram without the title and caption '
                           'bands, cropped -- for a slide whose own title bar '
                           'already says it.',
+    'x17_story': 'The long version, five beats over two rows: beam on target, '
+                 'capture, the level drop and its three channels, why the '
+                 'parent mass fixes the opening angle, and the distribution '
+                 'that falls out of it.  Panel 4 is the one the compact '
+                 'layout has to assert instead of showing.',
+    'x17_story_bare': 'The five-beat layout without the title and caption '
+                      'bands, cropped.',
+    'x17_story_capsule': 'The same five beats, but with beat 1 drawing the '
+                         'real 3He vessel from the Geant4 geometry instead of '
+                         'a generic group of nuclei -- for later in a talk, '
+                         'once the target hardware has been introduced.',
     'chamber_exploded': 'One MX17 chamber with its layers separated along the '
                         'drift axis, and a muon whose ionisation drifts down '
                         'to the mesh -- the micro-TPC picture the whole '
@@ -275,6 +286,48 @@ def build(theme='light'):
    their relative rate is the measurement.</p>
 {fig_block('x17_signature', theme)}
 {fig_block('x17_signature_bare', theme)}
+
+<h3>The long version</h3>
+<p>Same physics, five beats over two rows, for when there is a whole slide to
+   spend on it: the EAR2 beam coming up into the <sup>3</sup>He capsule, one
+   capture, the level drop and its three channels, <b>what the boost does</b>,
+   and only then the distribution.</p>
+<p>Beat 1 is deliberately generic &mdash; a beam and some <sup>3</sup>He, no
+   vessel &mdash; because early in a talk the target hardware has not been
+   introduced yet.  <code>--capsule</code> swaps in the version that draws the
+   real thing: the <code>He3Gas</code> / <code>He3Cap_Al</code> /
+   <code>He3Cap_CFRP</code> polycones from
+   <code>MX17_Full_Geant/src/DetectorConstruction.cc</code>, sectioned from the
+   STEP solid <i>MASTINU X17 HPRV 00 01</i>, in true aspect and mounted
+   nose-first as the simulation mounts it.  EAR2 is vertical either way, so the
+   neutrons arrive from below.</p>
+<p>The fourth beat is the reason this layout exists, and it turns on one fact:
+   the pair is <i>always</i> back-to-back in the parent's rest frame, so
+   everything you see in the lab is the boost.  Whether the parent outruns its
+   own decay products decides the shape:</p>
+<ul class="tight">
+  <li><b>Heavy parent, slow</b> (X17 at {X.X17['m_x17']:g} MeV,
+      &beta; = 0.58).  The backward lepton still goes backward, so the pair
+      reaches 180&deg; and is bounded <i>below</i> &mdash; a hard edge at
+      {X.opening_angle_pdf()[2]:.0f}&deg; with the yield piled against it.</li>
+  <li><b>Light parent, ultra-relativistic</b> (a 2 MeV IPC pair,
+      &beta; = 0.995).  Both leptons are swept forward into a cone, so the pair
+      is bounded <i>above</i> &mdash; here at 11&deg; &mdash; and can close all
+      the way to zero.</li>
+</ul>
+<p>The crossover is at <i>m</i> = &radic;(2m<sub>e</sub>E) &asymp; 4.6 MeV.
+   Beat 4 shows this as three worked orientations per channel &mdash; the decay
+   direction in the rest frame, and the lab opening angle it produces &mdash;
+   so the reader can see that <i>no</i> orientation lets X17 close below
+   109&deg;, and none lets a light IPC pair open past 11&deg;.  The boost
+   arrows are drawn to length &beta;, which is why the X17 arrow is visibly
+   stubby next to the IPC one.  Since IPC draws its pair mass from
+   dN/dM &prop; 1/M it gets a different band for every mass, and those bands
+   between them fill the whole axis &mdash; which is exactly the smooth slope
+   panel 5 shows underneath the X17 peak.</p>
+{fig_block('x17_story', theme)}
+{fig_block('x17_story_bare', theme)}
+{fig_block('x17_story_capsule', theme)}
 
 <h2>SPS H4 beam telescope</h2>
 <p>Six stations on one rail in the P2 zone, from <code>run_59</code>'s

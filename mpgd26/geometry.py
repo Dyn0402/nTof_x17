@@ -244,9 +244,64 @@ def p2_band(r_lo, r_hi, phi_lo_deg, phi_hi_deg, n=200, **kw):
 # What is measured, and what is not
 # --------------------------------------------------------------------------- #
 # --------------------------------------------------------------------------- #
-# Measured bench alignment
+# Measured alignment
 # --------------------------------------------------------------------------- #
 MX17_LOCAL_CENTRE = 200.0            # detector-local centre used by the fits
+
+# The one June run that carries BOTH slots' alignments and its own M3 rays, so
+# a figure can be drawn entirely from one dataset instead of mixing runs:
+#   mx17_3 in P1 (fit z = 242 mm), mx17_2 in P2 (fit z = 714 mm).
+BENCH_DATA_ROOT = '/media/dylan/data/x17/cosmic_bench'
+BENCH_REFERENCE = {
+    'run': 'mx17_det2_det3_overnight_6-22-26',
+    'sub_run': 'long_run',
+    'slots': {'P1': 'mx17_3', 'P2': 'mx17_2'},
+    'align_variant': 'alignment_tpc_veto50',
+    'rays_subdir': 'det2_det3',
+}
+
+
+def bench_reference_paths(root=None):
+    """Paths for ``BENCH_REFERENCE``: {'align': {slot: path}, 'rays': dir}.
+
+    Returns None if the data disk is not mounted, so a caller can fall back to
+    nominal positions and sampled muons rather than failing.
+    """
+    root = root or BENCH_DATA_ROOT
+    r = BENCH_REFERENCE
+    align = {
+        slot: os.path.join(root, 'Analysis', r['run'], r['sub_run'], det,
+                           r['align_variant'], 'alignment.json')
+        for slot, det in r['slots'].items()}
+    rays = os.path.join(root, r['rays_subdir'], r['run'], r['sub_run'],
+                        'm3_tracking_root')
+    if not all(os.path.exists(p) for p in align.values()) \
+            or not os.path.isdir(rays):
+        return None
+    return {'align': align, 'rays': rays}
+
+
+# --- SPS: measured, and what it turned out to say ---------------------------
+# sps_beam_test_26/analysis/urw_mapping/mapping_alignment.json fits, per P2
+# station, a rigid (dx, dy, theta) taking a uRWELL track into the P2 pad frame.
+# Two things come out of it, and neither moves anything in the drawing:
+#
+#   * the three P2 stations agree to dx 0.7 mm, dy 1.6 mm, theta 0.38 deg --
+#     i.e. the telescope is transversely aligned far below anything visible at
+#     figure scale, so drawing the stations on a common axis is correct;
+#
+#   * the fitted uRWELL->pad rotation (-59.68 / -59.77 / -60.07 deg) plus the
+#     fan's own pad->lab rotation of -(90 + 30.074) deg closes to 180.24 /
+#     180.16 / 179.86 deg.  A multiple of 90 means the uRWELL strips are square
+#     to the lab: the -60 deg is the mounting geometry of the fan, not a tilted
+#     detector.
+#
+# So the SPS alignment is recorded here as a *result*, not as offsets to apply.
+SPS_ALIGNMENT_NOTE = (
+    'uRWELL->P2 frame fits agree across the three stations to 0.7 mm (x), '
+    '1.6 mm (y) and 0.38 deg, and close to a multiple of 90 deg against the '
+    'fan mounting to within 0.24 deg -- the telescope is square and aligned, '
+    'so every station is drawn on the nominal axis.')
 
 
 def load_bench_alignment(path):

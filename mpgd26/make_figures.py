@@ -33,17 +33,25 @@ SPS_CAPTION = (
     'Detector positions along the rail are the run-config values '
     '(run_59, ~/x17/p2_sps_july).  The P2 BASKET fans are the real annulus '
     'sector with all 1280 pads; the beam spot on P2 MID is the measured '
-    'stage-22 illumination (15.1 M tagged tracks).  Transverse alignment is '
-    'nominal -- no survey exists -- and the chambers are drawn centred on the '
-    'beam.  MX17 at z = 1155 mm is flagged a placeholder in the run config.')
+    'stage-22 illumination (15.1 M tagged tracks), and the beam particles are '
+    'REAL two-point tracks from the two EIC uRWELLs, extracted only after '
+    'reproducing the published front-to-back alignment on both axes.  '
+    'Transverse alignment is '
+    'nominal, but the measured uRWELL->P2 frame fits agree across the three '
+    'stations to 0.7 mm in x and 1.6 mm in y and close to a multiple of 90 deg '
+    'against the fan mounting to within 0.24 deg, so the telescope is square '
+    'and aligned and every station is drawn on the nominal axis.  MX17 at '
+    'z = 1155 mm is flagged a placeholder in the run config.')
 
 BENCH_CAPTION = (
     'Plane heights are the run-config values (mx17_det2_det3_overnight_6-22-26).  '
-    'Muons are drawn from a cos^2(theta) distribution and kept only if they '
-    'cross both paddles, which is the bench trigger and is why they are '
-    'all within ~15 deg of vertical.  The 60 x 60 cm paddles sit outside the '
-    'DAQ geometry and are placed just beyond the stack; the rack itself is '
-    'drawn for context, not surveyed.')
+    'The chambers under test are drawn at their MEASURED positions from that '
+    'run\'s alignment fits, and the muons are REAL reconstructed M3 reference '
+    'tracks from the same run, on the standard recipe (chi2 < 1, NClus = 4 on '
+    'both planes) and required to cross both trigger paddles -- which is why '
+    'none is steeper than about 15 deg.  The 60 x 60 cm paddles sit outside '
+    'the DAQ geometry and are placed just beyond the stack; the rack itself '
+    'is drawn for context, not surveyed.')
 
 
 # --------------------------------------------------------------------------- #
@@ -74,7 +82,13 @@ def sps_figure(name, view, theme, mx17, size, ssaa, spot=True):
 
 def bench_figure(name, view, theme, slots, size, ssaa):
     out = os.path.join(FIG, f'{name}_{theme}.png')
-    px = MB.render(view, theme, out, slots=slots, size=size, ssaa=ssaa)
+    # Ship the real thing when the data disk is there: measured chamber
+    # positions and real reconstructed muons, both from the one run that
+    # carries them together.  Falls back to nominal + sampled otherwise, so
+    # the figures still build on a machine without the disk.
+    ref = G.bench_reference_paths()
+    kw = dict(align=ref['align'], rays=ref['rays']) if ref else {}
+    px = MB.render(view, theme, out, slots=slots, size=size, ssaa=ssaa, **kw)
 
     kind_label = {'mx17': 'MX17 chamber\n40 x 40 cm, 30 mm drift gap',
                   'p2': 'P2 BASKET fan'}

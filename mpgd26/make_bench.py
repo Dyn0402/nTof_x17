@@ -76,17 +76,13 @@ def build(theme='light', slots=('mx17', 'mx17'), tracks=True,
         B.add_level_rails(p)
 
     for side, z in G.BENCH_SCINT_Z.items():
-        if structure:
-            B.add_shelf(p, z, G.SCINT_MM / 2)
         if 'scint' not in show:
             continue
-        parts = B.add_scintillator(p, z, pmt_side=+1 if side == 'top' else -1)
+        parts = B.add_scintillator(p, z)   # both PMTs on -y
         anchors[f'scint_{side}'] = (0.0, -G.SCINT_MM / 2, z)
         outlines.append(parts['outline'])
 
     for name, z in G.BENCH_M3_Z.items():
-        if structure:
-            B.add_shelf(p, z, G.M3_FRAME_MM / 2)
         if 'm3' not in show:
             continue
         parts = B.add_m3(p, z)
@@ -104,8 +100,6 @@ def build(theme='light', slots=('mx17', 'mx17'), tracks=True,
         z = G.BENCH_DUT_Z[slot]
         if kind == 'none':
             continue
-        if structure:
-            B.add_shelf(p, z, G.MX17_PCB_MM / 2)
         if 'dut' not in show:
             continue
 
@@ -187,12 +181,27 @@ def main():
                     help='an m3_tracking_root* directory: draw REAL '
                          'reconstructed cosmic tracks instead of sampled ones')
     ap.add_argument('--n-tracks', type=int, default=7)
+    ap.add_argument('--reference', action='store_true',
+                    help='use geometry.BENCH_REFERENCE: the one June run that '
+                         'carries both slots\' alignments AND its own M3 rays, '
+                         'so the figure comes from a single dataset')
     ap.add_argument('--size', nargs=2, type=int, default=[2200, 2600])
     ap.add_argument('--draft', action='store_true')
     args = ap.parse_args()
 
     slots = tuple(s.strip() for s in args.slots.split(','))
     align = dict(a.split('=', 1) for a in args.align)
+    rays = args.rays
+    if args.reference:
+        ref = G.bench_reference_paths()
+        if ref is None:
+            print('  --reference: bench data disk not mounted; '
+                  'falling back to nominal positions and sampled muons')
+        else:
+            align = {**ref['align'], **align}      # explicit --align still wins
+            rays = rays or ref['rays']
+            print(f"  reference dataset: {G.BENCH_REFERENCE['run']}"
+                  f"/{G.BENCH_REFERENCE['sub_run']}")
     size = (900, 1050) if args.draft else tuple(args.size)
     themes = ['light', 'dark'] if args.theme == 'both' else [args.theme]
 
@@ -204,7 +213,7 @@ def main():
                    tracks=not args.no_tracks,
                    structure=not args.no_structure,
                    shadows=not args.no_shadows,
-                   align=align, rays=args.rays, n_tracks=args.n_tracks,
+                   align=align, rays=rays, n_tracks=args.n_tracks,
                    size=size, ssaa=not args.draft)
 
 

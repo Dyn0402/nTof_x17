@@ -30,16 +30,19 @@ FIG = os.path.join(HERE, 'figures')
 # Camera presets: (position, focal_point, up, view_angle)
 CENTER = np.array([0.0, 300.0, 685.0])
 
+# The readout planes face UPSTREAM (into the beam), so every camera that is
+# meant to show a readout face has to sit upstream too -- i.e. at negative z,
+# looking downstream.  The beam then runs away from the viewer, which is also
+# the right way round for a figure read left to right.
 VIEWS = {
-    # three-quarter hero from downstream-left and above: the beam runs away
-    # from the viewer and every readout face is turned towards the camera.
-    'hero': dict(pos=(-2350, 1500, 2500), focal=(-40, 320, 640), up=(0, 1, 0),
+    # three-quarter hero from upstream-left and above
+    'hero': dict(pos=(-2300, 1450, -1700), focal=(-20, 330, 620), up=(0, 1, 0),
                  angle=27.0),
-    # down the rail from downstream, the stations nested inside each other
-    'beam': dict(pos=(-300, 470, 3450), focal=(0, 330, 450), up=(0, 1, 0),
+    # down the rail from upstream, the stations nested inside each other
+    'beam': dict(pos=(-300, 470, -2700), focal=(0, 330, 700), up=(0, 1, 0),
                  angle=24.0),
     # near-orthographic side elevation: the spacing figure
-    'side': dict(pos=(-4900, 1000, 2450), focal=(0, 330, 660), up=(0, 1, 0),
+    'side': dict(pos=(-4900, 1000, -1150), focal=(0, 330, 660), up=(0, 1, 0),
                  angle=17.0),
 }
 
@@ -50,7 +53,8 @@ PARTS = ('table', 'urwell', 'p2', 'mx17', 'tracks')
 
 
 def build(theme='light', mx17=False, spot=True, tracks=True, envelope=False,
-          size=(2600, 1750), ssaa=True, shadows=True, show=PARTS):
+          size=(2600, 1750), ssaa=True, shadows=True, show=PARTS,
+          real_tracks=True):
     show = set(show)
     if not mx17:
         show.discard('mx17')
@@ -104,7 +108,11 @@ def build(theme='light', mx17=False, spot=True, tracks=True, envelope=False,
     if envelope:
         X.add_beam_envelope(p)
     if 'tracks' in show:
-        X.add_tracks(p, X.beam_tracks(n=11), radius=1.9)
+        # real measured tracks when the extraction has been run, the sampled
+        # beam otherwise -- so the figure builds either way
+        trk = X.real_beam_tracks(n=11) if real_tracks else None
+        X.add_tracks(p, trk if trk is not None else X.beam_tracks(n=11),
+                     radius=1.9)
 
     S.add_light_rig(p, CENTER, 900.0, theme=theme, shadows=False)
     return p, anchors

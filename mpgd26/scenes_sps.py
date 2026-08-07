@@ -23,6 +23,7 @@ Frame: +Z downstream, +Y up, Y = 0 at the table top.
 from __future__ import annotations
 
 import math
+import os
 
 import numpy as np
 import pyvista as pv
@@ -81,7 +82,7 @@ def shift(parts, x=0.0, y=0.0):
     return parts
 
 
-def p2_meshes(z, pads_lab, sector_of_pad):
+def p2_meshes(z, pads_lab, sector_of_pad, pad_side=-1):
     """All meshes for one P2 BASKET station at rail position ``z``."""
     r_lo, r_hi = G.P2_R_ACTIVE
     p_lo, p_hi = G.P2_PHI_ACTIVE
@@ -102,9 +103,16 @@ def p2_meshes(z, pads_lab, sector_of_pad):
     live = (sector_of_pad >= lo) & (sector_of_pad <= hi)
     pads = shrink_pads(pads_lab, PAD_GAP_FRACTION)
 
+    # ``pad_side`` is which face the readout pads sit on, along the chamber
+    # normal.  A particle enters through the drift window, crosses the gas, and
+    # the pads are on the face the gas is on -- so on the SPS rail (normal +Z,
+    # beam +Z) that is -1, the pads looking back into the beam; lying flat on
+    # the cosmic bench, with muons arriving from above, it is +1, pads up.
     parts = M.fan_chamber(pcb_band, frame_bands, pads[~live], z,
-                          G.P2_THICK_MM, frame_depth=P2_FRAME_DEPTH)
-    parts['pads_live'] = M.quads_mesh(pads[live], z + G.P2_THICK_MM / 2 + 0.55)
+                          G.P2_THICK_MM, frame_depth=P2_FRAME_DEPTH,
+                          pad_side=pad_side)
+    parts['pads_live'] = M.quads_mesh(
+        pads[live], z + pad_side * (G.P2_THICK_MM / 2 + 0.55))
     return parts
 
 
@@ -157,6 +165,7 @@ def add_urwell(p, z, label_side=+1, x=0.0, y=0.0):
         active_size=(G.URW_ACTIVE_MM, G.URW_ACTIVE_MM),
         frame_size=(G.URW_PCB_MM + 56, G.URW_PCB_MM + 56),
         pcb_thick=G.URW_THICK_MM, normal='z', drift_gap=None,
+        drift_dir=-1,          # readout faces upstream, into the beam
         n_strips=40)
     p.add_mesh(parts['frame'], **S.mat('alu', S.COL['alu']))
     p.add_mesh(parts['pcb'], **S.mat('pcb', S.COL['pcb_urwell']))
@@ -257,10 +266,59 @@ def beam_tracks(n=14, z0=None, z1=None):
     return out
 
 
+URWELL_TRACKS_CSV = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                 'data', 'urwell_tracks.csv')
+
+
+def real_beam_tracks(n=11, path=None, seed=20260807, z_pad=380.0):
+    """Real H4 tracks, from the two EIC uRWELLs.
+
+    ``data/urwell_tracks.csv`` is produced by
+    ``tools/extract_urwell_tracks.py`` on lxplus, which clusters FEU 1's hits
+    through the recorded uRWELL wiring and only writes anything after
+    reproducing the published front->back alignment (slope, offset and core
+    width, both axes) -- so these are measured two-point tracks, not a model.
+
+    Each row is the front cluster at z = 0 and the back cluster at z = 1370 mm
+    in uRWELL LOCAL mm.  The uRWELL is drawn centred on the beam axis, so local
+    (a/2, a/2) maps to lab (0, SPS_BEAM_HEIGHT); the beam then sits slightly
+    off the detector centre in the drawing, exactly as it does in the data.
+
+    Returns (entry, exit) in travel order, so the arrow head goes on the exit.
+    """
+    import csv as _csv
+
+    path = path or URWELL_TRACKS_CSV
+    if not os.path.exists(path):
+        return None
+    rows = []
+    with open(path) as f:
+        for r in _csv.DictReader(f):
+            rows.append((float(r['front_x_mm']), float(r['front_y_mm']),
+                         float(r['back_x_mm']), float(r['back_y_mm']),
+                         float(r['z_front_mm']), float(r['z_back_mm'])))
+    if not rows:
+        return None
+
+    c = G.URW_ACTIVE_MM / 2
+    rng = np.random.default_rng(seed)
+    pick = rng.choice(len(rows), size=min(n, len(rows)), replace=False)
+
+    out = []
+    for i in pick:
+        fx, fy, bx, by, zf, zb = rows[i]
+        a = np.array([fx - c, G.SPS_BEAM_HEIGHT + (fy - c), zf])
+        b = np.array([bx - c, G.SPS_BEAM_HEIGHT + (by - c), zb])
+        u = (b - a) / np.linalg.norm(b - a)
+        out.append((a - u * z_pad, b + u * z_pad))
+    return out
+
+
 def add_tracks(p, tracks, radius=3.0, color=None):
+    """Beam tracks, each with an arrow head on its downstream end."""
     color = color or S.COL['track_beam']
-    for a, b in tracks:
-        p.add_mesh(M.tube(a, b, radius), **S.mat('glow', color))
+    for mesh in M.tracks_with_heads(tracks, radius):
+        p.add_mesh(mesh, **S.mat('glow', color))
     return tracks
 
 

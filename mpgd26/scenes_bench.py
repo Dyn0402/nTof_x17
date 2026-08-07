@@ -35,6 +35,9 @@ import scenes_sps as SPS
 
 RNG = np.random.default_rng(20260807)
 
+GUIDE_LEN = 230.0           # paddle edge -> photocathode
+PMT_RADIUS = 56.0           # drawn photomultiplier radius
+
 FLOOR_Z = -400.0            # drawn floor, below the bottom paddle
 FLOOR_HALF = 3200.0
 
@@ -142,7 +145,7 @@ def add_p2_flat(p, z, pads_lab, sectors, x=0.0, y=0.0, theta_deg=0.0):
     fr_lo, fr_hi, _, _ = SPS.p2_frame_extent()
     y_mid = G.P2_APEX_HEIGHT - (fr_lo + fr_hi) / 2
 
-    m = SPS.p2_meshes(z, pads_lab, sectors)
+    m = SPS.p2_meshes(z, pads_lab, sectors, pad_side=+1)  # pads up
     for key in ('frame', 'pcb', 'pads', 'pads_live'):
         m[key] = m[key].translate((0.0, -y_mid, 0.0), inplace=False)
 
@@ -159,24 +162,40 @@ def add_p2_flat(p, z, pads_lab, sectors, x=0.0, y=0.0, theta_deg=0.0):
     return m
 
 
-def add_scintillator(p, z, pmt_side=+1):
-    """A 60 x 60 cm trigger paddle with a light guide and PMT."""
+def add_scintillator(p, z, pmt_dir=-1):
+    """A 60 x 60 cm trigger paddle with a light guide and PMT.
+
+    ``pmt_dir`` is the sign along BENCH Y that the light guide and PMT stick
+    out on.  Both paddles use -1, so the two photomultipliers are on the same
+    side of the bench -- which is how they are actually plumbed, and it keeps
+    them out of the way of the open -y face of the frame.
+    """
     out = {}
     slab = M.slab((0.0, 0.0, z), G.SCINT_MM, G.SCINT_MM, G.SCINT_THICK_MM,
                   normal='z')
     p.add_mesh(slab, **S.mat('scint', S.COL['scint']))
-    # light guide: a tapered wedge off one edge, then the PMT can
-    gx = pmt_side * (G.SCINT_MM / 2 + 85)
-    guide = M.slab((gx, 0.0, z), 170, G.SCINT_MM * 0.5, G.SCINT_THICK_MM,
-                   normal='z')
-    p.add_mesh(guide, **S.mat('scint', S.COL['scint'], opacity=0.34))
+    # Light guide: a real funnel.  It takes the WHOLE 60 cm edge -- corner to
+    # corner -- and tapers down to the photocathode, which is what a fishtail
+    # guide on a paddle this size has to do; a parallel-sided stub would
+    # collect a fraction of the light and look wrong next to the paddle.
+    half = G.SCINT_MM / 2
+    y0 = pmt_dir * half
+    y1 = pmt_dir * (half + GUIDE_LEN)
+    poly = np.array([[-half, y0], [half, y0],
+                     [PMT_RADIUS, y1], [-PMT_RADIUS, y1]])
+    if pmt_dir < 0:                      # keep the winding consistent
+        poly = poly[::-1]
+    p.add_mesh(M.polygon_prism(poly, z - G.SCINT_THICK_MM / 2,
+                               G.SCINT_THICK_MM, normal_axis='z'),
+               **S.mat('scint', S.COL['guide'], opacity=0.40))
+
     # PMT: glass envelope, then the base / divider can behind it
-    p.add_mesh(M.cylinder((pmt_side * (G.SCINT_MM / 2 + 215), 0.0, z),
-                          (1, 0, 0), radius=38, height=110),
+    p.add_mesh(M.cylinder((0.0, y1 + pmt_dir * 70, z), (0, 1, 0),
+                          radius=PMT_RADIUS, height=140),
                **S.mat('plastic', '#c9d3dd', opacity=0.55, specular=0.9,
                        specular_power=70))
-    p.add_mesh(M.cylinder((pmt_side * (G.SCINT_MM / 2 + 330), 0.0, z),
-                          (1, 0, 0), radius=32, height=130),
+    p.add_mesh(M.cylinder((0.0, y1 + pmt_dir * 220, z), (0, 1, 0),
+                          radius=PMT_RADIUS * 0.86, height=170),
                **S.mat('plastic', S.COL['pmt']))
     out['outline'] = M.rect_outline((0.0, 0.0, z), G.SCINT_MM, G.SCINT_MM,
                                     normal='z')
@@ -187,20 +206,23 @@ def add_scintillator(p, z, pmt_side=+1):
 # Bench structure
 # --------------------------------------------------------------------------- #
 def add_structure(p, theme, floor=True):
-    """Four uprights and the rail levels they carry (drawn, not surveyed)."""
+    """The rack: two uprights on +y, with the rails cantilevered out over -y.
+
+    Leaving the -y face open is what makes the stack visible: a post on each
+    corner puts an upright across the near face of every hero view, and the
+    detectors slide in from that side anyway.
+    """
     a = G.BENCH_POST_XY
     s = G.BENCH_POST_SECTION
     z0, z1 = G.BENCH_POST_Z
     for sx in (-a, a):
-        for sy in (-a, a):
-            p.add_mesh(M.slab((sx, sy, (z0 + z1) / 2), s, s, z1 - z0,
-                              normal='z'),
-                       **S.mat('alu_matte', S.COL['alu_dark']))
-    # cross-rails at the top and bottom of the frame
+        p.add_mesh(M.slab((sx, a, (z0 + z1) / 2), s, s, z1 - z0, normal='z'),
+                   **S.mat('alu_matte', S.COL['alu_dark']))
+    # top and bottom cross-rails: along x between the two posts, and along y
+    # reaching out over the open -y side
     for zc in (z0 + s / 2, z1 - s / 2):
-        for sy in (-a, a):
-            p.add_mesh(M.slab((0.0, sy, zc), 2 * a + s, s, s, normal='z'),
-                       **S.mat('alu_matte', S.COL['alu_dark']))
+        p.add_mesh(M.slab((0.0, a, zc), 2 * a + s, s, s, normal='z'),
+                   **S.mat('alu_matte', S.COL['alu_dark']))
         for sx in (-a, a):
             p.add_mesh(M.slab((sx, 0.0, zc), s, 2 * a + s, s, normal='z'),
                        **S.mat('alu_matte', S.COL['alu_dark']))
@@ -224,7 +246,7 @@ def add_level_rails(p, z_lo=None, z_hi=1150.0):
     z = z_lo
     while z <= z_hi:
         for sx in (-a, a):
-            for sy in (-a, a):
+            for sy in (a,):
                 p.add_mesh(M.slab((sx - np.sign(sx) * s * 0.62, sy, z),
                                   s * 0.5, s * 0.92, 7, normal='z'),
                            **S.mat('alu_matte', S.COL['alu_dark'],
@@ -232,7 +254,7 @@ def add_level_rails(p, z_lo=None, z_hi=1150.0):
         z += G.BENCH_LEVEL_SPACING
 
 
-def add_shelf(p, z, half_width, drop=15.0, section=20.0):
+def add_shelf(p, z, half_width, drop=15.0, section=20.0, opacity=1.0):
     """The two rails a plane of half-width ``half_width`` rests on.
 
     The uprights stand just outside the widest element, so a plane is carried
@@ -242,9 +264,12 @@ def add_shelf(p, z, half_width, drop=15.0, section=20.0):
     a = G.BENCH_POST_XY
     zc = z - drop
     inset = min(half_width * 0.82, a - section)
+    kw = S.mat('alu_matte', S.COL['alu_dark'], ambient=0.30)
+    if opacity < 1.0:
+        kw['opacity'] = opacity
     for sy in (-inset, inset):
         p.add_mesh(M.slab((0.0, sy, zc), 2 * a, section, section, normal='z'),
-                   **S.mat('alu_matte', S.COL['alu_dark'], ambient=0.30))
+                   **kw)
 
 
 # --------------------------------------------------------------------------- #
@@ -340,10 +365,12 @@ def real_tracks(ray_dir, n=7, file_nums=(0,), chi2_cut=None, min_nclus=None,
     pad = 90.0
     out = []
     for i in pick:
-        a = np.array([xd[i], yd[i], zd[i]])
-        b = np.array([xu[i], yu[i], zu[i]])
-        u = (b - a) / np.linalg.norm(b - a)
-        out.append((a - u * pad, b + u * pad))
+        lo = np.array([xd[i], yd[i], zd[i]])          # bottom M3 plane
+        hi = np.array([xu[i], yu[i], zu[i]])          # top M3 plane
+        u = (hi - lo) / np.linalg.norm(hi - lo)
+        # returned in TRAVEL order -- a cosmic goes downwards -- so the arrow
+        # head always belongs on the second point, same as cosmic_tracks()
+        out.append((hi + u * pad, lo - u * pad))
     return out
 
 
@@ -358,7 +385,8 @@ def ak_flat(arr):
 
 
 def add_tracks(p, tracks, radius=3.4, color=None):
+    """Muons, each with an arrow head on the exit (downward) end."""
     color = color or S.COL['track_mu']
-    for a, b in tracks:
-        p.add_mesh(M.tube(a, b, radius), **S.mat('glow', color))
+    for mesh in M.tracks_with_heads(tracks, radius):
+        p.add_mesh(mesh, **S.mat('glow', color))
     return tracks

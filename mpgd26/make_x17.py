@@ -32,15 +32,31 @@ import scenes_x17 as X                    # noqa: E402
 FIG = os.path.join(HERE, 'figures')
 
 
-def render(theme='light', title=True, dpi=300, name='x17_signature'):
-    fig = X.draw(theme=theme, dpi=dpi, title=title)
+LAYOUTS = {
+    'signature': dict(draw=lambda **kw: X.draw(**kw), name='x17_signature',
+                      crop=(0, 0.75, 16.0, 6.85)),
+    'story': dict(draw=lambda **kw: X.draw_story(**kw), name='x17_story',
+                  crop=(0, 0.62, 16.0, 7.20), opts=('capsule',)),
+}
+
+
+def render(theme='light', title=True, dpi=300, layout='signature',
+           capsule=False):
+    spec = LAYOUTS[layout]
+    kw = dict(theme=theme, dpi=dpi, title=title)
+    if 'capsule' in spec.get('opts', ()):
+        kw['capsule'] = capsule
+    fig = spec['draw'](**kw)
     os.makedirs(FIG, exist_ok=True)
+    name = spec['name'] + ('_capsule' if capsule else '')
+    if not title:
+        name += '_bare'
     base = os.path.join(FIG, f'{name}_{theme}')
     page = X.palette(theme)['page']
     bbox = None
     if not title:
         # crop the header/footer bands away rather than leaving white space
-        bbox = fig.bbox_inches.from_bounds(0, 0.75, 16.0, 6.85)
+        bbox = fig.bbox_inches.from_bounds(*spec['crop'])
     for ext in ('png', 'pdf'):
         fig.savefig(f'{base}.{ext}', facecolor=page, bbox_inches=bbox)
         print(f'  wrote {base}.{ext}')
@@ -53,19 +69,30 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--theme', default='light',
                     choices=['light', 'dark', 'both'])
+    ap.add_argument('--layout', default='signature',
+                    choices=['signature', 'story', 'both'],
+                    help='signature: three panels on one row, the compact '
+                         'version. story: five beats over two rows, including '
+                         'why the parent mass sets the opening angle.')
     ap.add_argument('--no-title', dest='title', action='store_false',
                     help='drop the title/caption bands and crop to the diagram')
     ap.add_argument('--dpi', type=int, default=300)
+    ap.add_argument('--capsule', action='store_true',
+                    help='story layout only: draw the real Geant4 3He vessel '
+                         'in beat 1 instead of a generic group of nuclei. Use '
+                         'once the target hardware has been introduced.')
     ap.add_argument('--validate', action='store_true',
                     help='cross-check the sampled X17 channel against the '
                          'analytic solution and report the IPC shape')
     args = ap.parse_args()
 
     themes = ['light', 'dark'] if args.theme == 'both' else [args.theme]
-    name = 'x17_signature' if args.title else 'x17_signature_bare'
-    for theme in themes:
-        print(f'{name} [{theme}]')
-        render(theme=theme, title=args.title, dpi=args.dpi, name=name)
+    layouts = list(LAYOUTS) if args.layout == 'both' else [args.layout]
+    for layout in layouts:
+        for theme in themes:
+            print(f'{LAYOUTS[layout]["name"]} [{theme}]')
+            render(theme=theme, title=args.title, dpi=args.dpi,
+                   layout=layout, capsule=args.capsule)
 
     if args.validate:
         ana, samp, med, frac = X.validate()

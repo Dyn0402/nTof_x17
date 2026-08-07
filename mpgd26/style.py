@@ -60,6 +60,8 @@ COL = {
     'gas':        '#6fd0e8',   # drift volume
     'mesh':       '#9aa3ad',   # micromesh / amplification plane
     'scint':      '#63d2ff',   # plastic scintillator paddle
+    'guide':      '#a8e6a3',   # perspex light guide -- a different material,
+                               # so a different colour from the paddle
     'pmt':        '#3a4049',   # photomultiplier housing
     'track_mu':   '#ff4f36',   # charged-particle track (both scenes)
     'track_beam': '#ff4f36',   # H4 beam particle -- same red, one visual language

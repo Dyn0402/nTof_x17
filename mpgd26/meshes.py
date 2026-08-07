@@ -201,6 +201,45 @@ def tube(p0, p1, radius, n_sides=24):
         radius=radius, n_sides=n_sides, capping=True)
 
 
+def arrow_head(tip, direction, length, radius, resolution=24):
+    """A cone with its APEX at ``tip``, pointing along ``direction``.
+
+    Tracks are drawn as plain tubes, which say nothing about which way the
+    particle went; a head on the exit end fixes that without needing a caption
+    or a particular camera.
+    """
+    d = np.asarray(direction, float)
+    d = d / np.linalg.norm(d)
+    tip = np.asarray(tip, float)
+    # pv.Cone puts its apex at centre + direction * height / 2
+    return pv.Cone(center=tuple(tip - d * length / 2), direction=tuple(d),
+                   height=length, radius=radius, resolution=resolution,
+                   capping=True)
+
+
+def tracks_with_heads(tracks, radius, head_len=None, head_radius=None,
+                      n_sides=24):
+    """Tubes plus an arrow head on the exit end of each track.
+
+    ``tracks`` is a list of (entry, exit) in TRAVEL order, so the head always
+    goes on the second point.
+    """
+    head_len = head_len if head_len is not None else radius * 12.0
+    head_radius = head_radius if head_radius is not None else radius * 3.4
+    out = []
+    for a, b in tracks:
+        a, b = np.asarray(a, float), np.asarray(b, float)
+        d = b - a
+        n = np.linalg.norm(d)
+        if n < 1e-9:
+            continue
+        d /= n
+        shaft_end = b - d * head_len * 0.92
+        out.append(tube(a, shaft_end, radius, n_sides=n_sides))
+        out.append(arrow_head(b, d, head_len, head_radius))
+    return out
+
+
 def cylinder(center, direction, radius, height, resolution=48):
     return pv.Cylinder(center=center, direction=direction, radius=radius,
                        height=height, resolution=resolution, capping=True)
@@ -266,7 +305,7 @@ def rect_chamber(center, pcb_size, active_size, frame_size, pcb_thick,
 # Composite: the P2 BASKET fan chamber
 # --------------------------------------------------------------------------- #
 def fan_chamber(pcb_band, frame_bands, pads_lab, z, pcb_thick,
-                frame_depth=34.0, normal_axis='z'):
+                frame_depth=34.0, normal_axis='z', pad_side=+1):
     """P2 BASKET: an annulus-sector PCB with its 1280 pads and an aluminium rim.
 
     ``pcb_band``    -- (inner_arc, outer_arc), matched (n, 2) polylines in the
@@ -281,7 +320,8 @@ def fan_chamber(pcb_band, frame_bands, pads_lab, z, pcb_thick,
     out['pcb'] = band_prism(pcb_band[0], pcb_band[1],
                             z - pcb_thick / 2, pcb_thick,
                             normal_axis=normal_axis)
-    out['pads'] = quads_mesh(pads_lab, z + pcb_thick / 2 + 0.4,
+    out['pads'] = quads_mesh(pads_lab,
+                             z + pad_side * (pcb_thick / 2 + 0.4),
                              normal_axis=normal_axis)
     bars = [band_prism(a, b, z - frame_depth / 2, frame_depth,
                        normal_axis=normal_axis) for a, b in frame_bands]
