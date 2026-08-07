@@ -24,6 +24,8 @@ by the whole analysis chain), X/Y transverse.
 """
 from __future__ import annotations
 
+import os
+
 import numpy as np
 
 import geometry as G
@@ -58,7 +60,47 @@ def add_m3(p, z, label=None):
     return parts
 
 
-def add_mx17(p, z, drift_dir=+1):
+# Which parts of a chamber the alignment's in-plane angle should actually turn.
+#
+# theta_deg in an alignment.json is the rotation that carries detector-LOCAL
+# STRIP coordinates into the M3 frame -- on these detectors it is ~90 deg, which
+# is the strip-map convention, not a chamber that was physically stood on its
+# side.  A square aluminium box turned 89 deg about its own centre is
+# mechanically the same box, so turning the whole body would add no information
+# and would actively mislead: it swings the frame's specular reflection from
+# bright to dark and makes two identical chambers look like different objects.
+# The strip direction is the thing that genuinely differs, so that is what turns.
+ROTATE_WITH_STRIPS = ('strips', 'active', 'pads', 'pads_live')
+
+
+def place(parts, x=0.0, y=0.0, theta_deg=0.0, z=0.0,
+          rotate_keys=ROTATE_WITH_STRIPS):
+    """Move a chamber to its measured position in the bench frame.
+
+    ``(x, y)`` translates everything; ``theta_deg`` turns only ``rotate_keys``
+    (see above).  Both are applied to the outline the cast shadow is projected
+    from as well, so a moved chamber moves its shadow too.
+    """
+    if not (x or y or theta_deg):
+        return parts
+    pivot = (0.0, 0.0, z)
+    for k, mesh in parts.items():
+        if k == 'outline':
+            continue
+        if theta_deg and k in rotate_keys:
+            mesh = mesh.rotate_z(theta_deg, point=pivot, inplace=False,
+                                 transform_all_input_vectors=True)
+        parts[k] = mesh.translate((x, y, 0.0), inplace=False,
+                                  transform_all_input_vectors=True)
+
+    o = np.asarray(parts['outline'], float).copy()
+    o[:, 0] += x
+    o[:, 1] += y
+    parts['outline'] = o
+    return parts
+
+
+def add_mx17(p, z, drift_dir=+1, x=0.0, y=0.0, theta_deg=0.0):
     """An MX17 chamber in a test slot, drift volume facing the incoming muons."""
     parts = M.rect_chamber(
         center=(0.0, 0.0, z),
@@ -69,6 +111,10 @@ def add_mx17(p, z, drift_dir=+1):
         pcb_thick=8.0, normal='z',
         drift_gap=G.MX17_DRIFT_GAP_MM, drift_dir=drift_dir,
         n_strips=64)
+    w = G.MX17_PCB_MM + 2 * G.MX17_FRAME_MM
+    parts['outline'] = M.rect_outline((0.0, 0.0, z), w, w, normal='z')
+    parts = place(parts, x, y, theta_deg, z)
+
     p.add_mesh(parts['frame'], **S.mat('alu', S.COL['alu']))
     p.add_mesh(parts['pcb'], **S.mat('pcb', S.COL['pcb']))
     p.add_mesh(parts['active'], **S.mat('copper', S.COL['copper']))
@@ -79,12 +125,10 @@ def add_mx17(p, z, drift_dir=+1):
     p.add_mesh(parts['gas'].extract_feature_edges(), color=S.COL['gas'],
                line_width=2.0, lighting=False, opacity=0.75)
     p.add_mesh(parts['cathode'], **S.mat('plastic', '#e2e9f0', opacity=0.16))
-    w = G.MX17_PCB_MM + 2 * G.MX17_FRAME_MM
-    parts['outline'] = M.rect_outline((0.0, 0.0, z), w, w, normal='z')
     return parts
 
 
-def add_p2_flat(p, z, pads_lab, sectors):
+def add_p2_flat(p, z, pads_lab, sectors, x=0.0, y=0.0, theta_deg=0.0):
     """A P2 BASKET in a test slot, lying flat (fan in the horizontal plane).
 
     On the bench the boards lie horizontally in the rail levels, so the fan's
@@ -102,15 +146,16 @@ def add_p2_flat(p, z, pads_lab, sectors):
     for key in ('frame', 'pcb', 'pads', 'pads_live'):
         m[key] = m[key].translate((0.0, -y_mid, 0.0), inplace=False)
 
+    o = SPS.p2_outline3d(z)
+    o[:, 1] -= y_mid
+    m['outline'] = o
+    m = place(m, x, y, theta_deg, z)
+
     p.add_mesh(m['frame'], **S.mat('alu_matte', S.COL['alu']))
     p.add_mesh(m['pcb'], **S.mat('pcb', S.COL['pcb']))
     p.add_mesh(m['pads'], **S.mat('copper', S.COL['copper_dead'],
                                   metallic=0.55, roughness=0.62))
     p.add_mesh(m['pads_live'], **S.mat('copper', S.COL['copper']))
-
-    o = SPS.p2_outline3d(z)
-    o[:, 1] -= y_mid
-    m['outline'] = o
     return m
 
 
@@ -237,6 +282,79 @@ def cosmic_tracks(n=9, accept_only=True, max_try=20000):
         out.append((np.array([x0 - tx * pad, y0 - ty * pad, z_top + pad]),
                     np.array([x1 + tx * pad, y1 + ty * pad, z_bot - pad])))
     return out
+
+
+def real_tracks(ray_dir, n=7, file_nums=(0,), chi2_cut=None, min_nclus=None,
+                seed=20260807, require_paddles=True):
+    """Real reconstructed cosmic muons, straight out of the M3 telescope.
+
+    ``ray_dir`` is a run's ``m3_tracking_root*`` directory.  The rays are
+    already in the bench frame -- the files carry Z_Up = 1302 and Z_Down = 24,
+    which are exactly the top and bottom M3 plane heights in ``geometry.py`` --
+    so a ray is a straight line through the scene with no transform at all.
+
+    Quality cuts default to the recipe recorded in
+    ``mx_june_cosmic_qa/qa_config.py`` (chi2 < 1.0 on both planes AND
+    NClus = 4 on both), which is the one the whole June analysis uses.  Drawing
+    anything looser would put visibly bad fits in a figure.
+
+    Returns the same (start, end) list as ``cosmic_tracks``, so the two are
+    interchangeable at the call site.
+    """
+    import sys as _sys
+
+    qa = os.path.join(G.REPO, 'mx_june_cosmic_qa')
+    if qa not in _sys.path:
+        _sys.path.insert(0, qa)
+    from qa_config import M3_CHI2_CUT, M3_MIN_NCLUS, setup_paths
+    setup_paths()
+    from M3RefTracking import M3RefTracking
+
+    chi2_cut = M3_CHI2_CUT if chi2_cut is None else chi2_cut
+    min_nclus = M3_MIN_NCLUS if min_nclus is None else min_nclus
+
+    rays = M3RefTracking(ray_dir if ray_dir.endswith(os.sep) else ray_dir + os.sep,
+                         file_nums=list(file_nums), single_track=True,
+                         chi2_cut=chi2_cut, min_nclus=min_nclus)
+    d = rays.ray_data
+    xu, yu, zu = (np.asarray(ak_flat(d[k])) for k in ('X_Up', 'Y_Up', 'Z_Up'))
+    xd, yd, zd = (np.asarray(ak_flat(d[k])) for k in ('X_Down', 'Y_Down',
+                                                      'Z_Down'))
+
+    good = np.isfinite(xu) & np.isfinite(yu) & np.isfinite(xd) & np.isfinite(yd)
+    if require_paddles:
+        # the bench triggers on the two 60 x 60 cm paddles, so a drawn track
+        # should be one that could actually have fired it
+        half = G.SCINT_MM / 2
+        for z_p in G.BENCH_SCINT_Z.values():
+            t = (z_p - zd) / np.where(zu - zd == 0, np.nan, zu - zd)
+            good &= (np.abs(xd + t * (xu - xd)) < half) & \
+                    (np.abs(yd + t * (yu - yd)) < half)
+    idx = np.flatnonzero(good)
+    if idx.size == 0:
+        raise RuntimeError(f'no rays survived the cuts in {ray_dir}')
+
+    rng = np.random.default_rng(seed)
+    pick = rng.choice(idx, size=min(n, idx.size), replace=False)
+
+    pad = 90.0
+    out = []
+    for i in pick:
+        a = np.array([xd[i], yd[i], zd[i]])
+        b = np.array([xu[i], yu[i], zu[i]])
+        u = (b - a) / np.linalg.norm(b - a)
+        out.append((a - u * pad, b + u * pad))
+    return out
+
+
+def ak_flat(arr):
+    """Awkward or numpy -> flat numpy, one entry per (single-track) event."""
+    a = np.asarray(arr.tolist(), dtype=object) if hasattr(arr, 'tolist') \
+        else np.asarray(arr)
+    try:
+        return np.asarray(arr, dtype=float).ravel()
+    except Exception:
+        return np.array([float(v[0]) if np.ndim(v) else float(v) for v in a])
 
 
 def add_tracks(p, tracks, radius=3.4, color=None):

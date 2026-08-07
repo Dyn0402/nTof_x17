@@ -41,6 +41,13 @@ import scenes_chamber as C    # noqa: E402
 
 ANIM = os.path.join(HERE, 'animations')
 
+# One full turn takes this long.  A turntable is for looking at a thing, not for
+# spinning it -- 18 s is slow enough to follow a plane round the stack while
+# still being a short loop on a slide.
+TURN_SECONDS = 18.0
+TURN_FRAMES = 270           # 1.3 deg per frame, so it stays smooth when slow
+BUILD_SECONDS_PER_STAGE = 1.6
+
 
 # --------------------------------------------------------------------------- #
 def orbit(view, frac, up='y'):
@@ -61,27 +68,43 @@ def orbit(view, frac, up='y'):
     return foc + d
 
 
-def write_video(frames, base, fps=25, gif_fps=12, gif_width=900):
-    """MP4 + GIF from a list of RGB arrays."""
+def write_video(frames, base, duration_s, gif_max_fps=12, gif_width=900):
+    """MP4 + GIF from a list of RGB arrays, both running for ``duration_s``.
+
+    Timing is set by the wall-clock duration, not by a frame rate: how smooth
+    the result looks is then a question of how many frames were *rendered*, and
+    the two are decoupled.  Slowing a turntable down therefore means rendering
+    more frames, not showing the same ones for longer -- which would step.
+
+    The GIF is subsampled to keep its frame count (and file size) sane, but is
+    given the same duration so the two formats stay in step.
+    """
     import imageio.v2 as iio
+
+    n = len(frames)
+    fps = n / duration_s
 
     # MP4: even dimensions required by the H.264 encoder
     h, w = frames[0].shape[:2]
     crop = [f[:h - h % 2, :w - w % 2] for f in frames]
-    iio.mimwrite(base + '.mp4', crop, fps=fps, quality=8,
-                 macro_block_size=1)
-    print(f'  wrote {base}.mp4  ({len(frames)} frames)')
+    iio.mimwrite(base + '.mp4', crop, fps=fps, quality=8, macro_block_size=1)
+    print(f'  wrote {base}.mp4  ({n} frames, {duration_s:.0f} s, '
+          f'{fps:.0f} fps)')
 
-    step = max(1, round(fps / gif_fps))
+    step = max(1, math.ceil(n / (gif_max_fps * duration_s)))
     small = []
     for f in frames[::step]:
         im = Image.fromarray(f)
         im = im.resize((gif_width, round(gif_width * im.height / im.width)),
                        Image.LANCZOS)
         small.append(im.convert('P', palette=Image.ADAPTIVE, colors=192))
+    # GIF delays are quantised to 10 ms, so round to that and keep the loop
+    # seamless rather than letting the duration drift
+    delay = max(20, int(round(duration_s * 1000 / len(small) / 10)) * 10)
     small[0].save(base + '.gif', save_all=True, append_images=small[1:],
-                  duration=int(1000 / gif_fps), loop=0, optimize=True)
-    print(f'  wrote {base}.gif  ({len(small)} frames)')
+                  duration=delay, loop=0, optimize=True)
+    print(f'  wrote {base}.gif  ({len(small)} frames, '
+          f'{len(small) * delay / 1000:.0f} s)')
 
 
 def grab(p, close=True):
@@ -117,7 +140,7 @@ def set_cam(p, pos, view, clip=True):
 
 # --------------------------------------------------------------------------- #
 def turntable(name, builder, view, up, n_frames, size, ssaa, theme,
-              save_frames=True):
+              save_frames=True, duration=TURN_SECONDS):
     frame_dir = os.path.join(ANIM, f'{name}_frames')
     if save_frames:
         os.makedirs(frame_dir, exist_ok=True)
@@ -136,10 +159,11 @@ def turntable(name, builder, view, up, n_frames, size, ssaa, theme,
         print(f'    frame {i + 1}/{n_frames}', end='\r', flush=True)
     p.close()
     print(' ' * 30, end='\r')
-    write_video(frames, os.path.join(ANIM, name))
+    write_video(frames, os.path.join(ANIM, name), duration)
 
 
-def buildup(name, builder, stages, view, size, ssaa, theme, hold=18):
+def buildup(name, builder, stages, view, size, ssaa, theme, hold=18,
+            stage_seconds=BUILD_SECONDS_PER_STAGE):
     """Numbered stills plus a slow MP4 that holds on each stage."""
     os.makedirs(ANIM, exist_ok=True)
     frames = []
@@ -151,7 +175,8 @@ def buildup(name, builder, stages, view, size, ssaa, theme, hold=18):
         Image.fromarray(img).save(out)
         print(f'  wrote {out}')
         frames.extend([img] * hold)
-    write_video(frames, os.path.join(ANIM, name), fps=18, gif_fps=6)
+    write_video(frames, os.path.join(ANIM, name),
+                len(stages) * stage_seconds, gif_max_fps=8)
 
 
 # --------------------------------------------------------------------------- #
@@ -211,8 +236,10 @@ def main():
     ap.add_argument('--theme', default='light', choices=['light', 'dark'])
     ap.add_argument('--only', default=None,
                     help='comma-separated subset of ' + ','.join(JOBS))
-    ap.add_argument('--frames', type=int, default=90,
+    ap.add_argument('--frames', type=int, default=TURN_FRAMES,
                     help='turntable frames per full turn')
+    ap.add_argument('--turn-seconds', type=float, default=TURN_SECONDS,
+                    help='wall-clock length of one full turn')
     ap.add_argument('--draft', action='store_true')
     ap.add_argument('--no-frames', action='store_true',
                     help='skip writing the individual turntable frames')
@@ -220,7 +247,7 @@ def main():
 
     os.makedirs(ANIM, exist_ok=True)
     names = list(JOBS) if args.only is None else args.only.split(',')
-    n = 24 if args.draft else args.frames
+    n = 36 if args.draft else args.frames
 
     for name in names:
         j = JOBS[name]
@@ -230,7 +257,8 @@ def main():
         if j['kind'] == 'turn':
             turntable(name, j['builder'], j['view'], j['up'], n, size,
                       not args.draft, args.theme,
-                      save_frames=not args.no_frames)
+                      save_frames=not args.no_frames,
+                      duration=args.turn_seconds)
         else:
             buildup(name, j['builder'], j['stages'], j['view'], size,
                     not args.draft, args.theme)

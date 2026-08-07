@@ -172,7 +172,10 @@ def add_mx17(p, z, drift_dir=-1, yaw=0.0):
     if abs(yaw) > 1e-9:
         pivot = (0.0, G.SPS_BEAM_HEIGHT, z)
         for k, mesh in parts.items():
-            parts[k] = mesh.rotate_y(yaw, point=pivot, inplace=False)
+            # transform_all_input_vectors: without it the stored Normals array
+            # is left behind and the yawed chamber renders black
+            parts[k] = mesh.rotate_y(yaw, point=pivot, inplace=False,
+                                     transform_all_input_vectors=True)
 
     p.add_mesh(parts['frame'], **S.mat('alu', S.COL['alu']))
     p.add_mesh(parts['pcb'], **S.mat('pcb', S.COL['pcb']))

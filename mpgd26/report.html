@@ -66,6 +66,35 @@ ul.tight li { margin:.3rem 0; }
   <span class="tag">PNG + vector-text PDF</span>
 </p>
 
+<h2>The physics case</h2>
+<p>The one diagram in this package that is not a render.  Neutron capture on
+   <sup>3</sup>He leaves the compound nucleus with
+   20.58 MeV of excitation, and the question the experiment
+   asks is <i>how it gets rid of it</i>: a photon, a conventional internal
+   pair conversion pair at small opening angle, or &mdash; if the ATOMKI
+   anomaly is real &mdash; a 16.8 MeV boson whose
+   e<sup>+</sup>e<sup>-</sup> pair cannot open by less than
+   <b>109&deg;</b>.</p>
+<p>That number is not taken from anyone's plot: the curve in panel 3 is exact
+   two-body decay kinematics evaluated in <code>scenes_x17.py</code> (isotropic
+   in the boson rest frame, boosted to the lab, Gaussian-smeared by
+   3&deg; so the Jacobian divergence has a width on
+   paper), with nuclear recoil neglected.  The internal-pair-conversion curve
+   next to it is a <i>shape</i> and is labelled as one in the figure &mdash; it
+   is there to say where the known channel lives, not to predict a rate.  The
+   two curves are each normalised to unit peak, so nothing in the panel implies
+   a branching ratio.</p>
+<figure id="x17_signature">
+  <img src="figures/x17_signature_light.png" alt="x17_signature">
+  <figcaption><b>x17_signature</b> &mdash; The physics case in one figure: capture leaves 4He* with 20.58 MeV, three channels take it away, and only one of them puts an e+e- pair at a large opening angle.  The opening-angle curve is computed, not traced.<br><a href="figures/x17_signature_light.png">PNG</a> &middot; <a href="figures/x17_signature_light.pdf">vector PDF</a></figcaption>
+</figure>
+
+<figure id="x17_signature_bare">
+  <img src="figures/x17_signature_bare_light.png" alt="x17_signature_bare">
+  <figcaption><b>x17_signature_bare</b> &mdash; The same diagram without the title and caption bands, cropped -- for a slide whose own title bar already says it.<br><a href="figures/x17_signature_bare_light.png">PNG</a> &middot; <a href="figures/x17_signature_bare_light.pdf">vector PDF</a></figcaption>
+</figure>
+
+
 <h2>SPS H4 beam telescope</h2>
 <p>Six stations on one rail in the P2 zone, from <code>run_59</code>'s
    <code>det_center_coords</code>. The beam runs along +Z; heights are above the
@@ -167,30 +196,6 @@ ul.tight li { margin:.3rem 0; }
 <p>Turntables for the talk, and build-up sequences whose numbered stills can be
    dropped on successive slides so the setup assembles itself as you speak.
    Every frame comes from the same scene code as the stills above.</p>
-<figure>
-  <video src="animations/turn_sps.mp4" controls loop muted playsinline style="width:100%;border:1px solid var(--rule);border-radius:6px"></video>
-  <figcaption><b>turn_sps</b> &mdash; Turntable of the H4 telescope.<br><a href="animations/turn_sps.mp4">MP4</a> &middot; <a href="animations/turn_sps.gif">GIF</a></figcaption>
-</figure>
-<figure>
-  <video src="animations/turn_bench.mp4" controls loop muted playsinline style="width:100%;border:1px solid var(--rule);border-radius:6px"></video>
-  <figcaption><b>turn_bench</b> &mdash; Turntable of the bench, both slots MX17.<br><a href="animations/turn_bench.mp4">MP4</a> &middot; <a href="animations/turn_bench.gif">GIF</a></figcaption>
-</figure>
-<figure>
-  <video src="animations/turn_bench_p2.mp4" controls loop muted playsinline style="width:100%;border:1px solid var(--rule);border-radius:6px"></video>
-  <figcaption><b>turn_bench_p2</b> &mdash; Turntable of the bench, both slots P2 BASKET.<br><a href="animations/turn_bench_p2.mp4">MP4</a> &middot; <a href="animations/turn_bench_p2.gif">GIF</a></figcaption>
-</figure>
-<figure>
-  <video src="animations/turn_chamber.mp4" controls loop muted playsinline style="width:100%;border:1px solid var(--rule);border-radius:6px"></video>
-  <figcaption><b>turn_chamber</b> &mdash; Turntable of the exploded chamber.<br><a href="animations/turn_chamber.mp4">MP4</a> &middot; <a href="animations/turn_chamber.gif">GIF</a></figcaption>
-</figure>
-<figure>
-  <video src="animations/build_sps.mp4" controls loop muted playsinline style="width:100%;border:1px solid var(--rule);border-radius:6px"></video>
-  <figcaption><b>build_sps</b> &mdash; Build-up: table, then the uRWELL references, the three P2 fans, and finally the beam.<br><a href="animations/build_sps.mp4">MP4</a> &middot; <a href="animations/build_sps.gif">GIF</a> &middot; 4 numbered stills in <code>animations/</code></figcaption>
-</figure>
-<figure>
-  <video src="animations/build_bench.mp4" controls loop muted playsinline style="width:100%;border:1px solid var(--rule);border-radius:6px"></video>
-  <figcaption><b>build_bench</b> &mdash; Build-up: the rack, then the trigger paddles, the M3 reference planes, the chambers under test, and finally the muons.<br><a href="animations/build_bench.mp4">MP4</a> &middot; <a href="animations/build_bench.gif">GIF</a> &middot; 5 numbered stills in <code>animations/</code></figcaption>
-</figure>
 
 
 <h2>What is drawn but not measured</h2>
@@ -200,6 +205,8 @@ ul.tight li { margin:.3rem 0; }
 <pre>cd mpgd26
 ../.venv/bin/python make_figures.py                # the whole still set
 ../.venv/bin/python make_chamber.py                # the exploded chamber
+../.venv/bin/python make_x17.py --theme both       # the physics-case diagram
+../.venv/bin/python make_x17.py --no-title         # ... without title/caption
 ../.venv/bin/python make_anim.py                   # turntables + build-ups
 ../.venv/bin/python make_report.py                 # this page
 
@@ -215,6 +222,8 @@ ul.tight li { margin:.3rem 0; }
    <code>style.py</code> holds the palette, materials, light rig and render
    harness; <code>scenes_sps.py</code> / <code>scenes_bench.py</code> assemble
    each setup; <code>annotate.py</code> projects 3-D anchors to pixels and sets
-   the type; <code>make_figures.py</code> drives the deliverable set.</p>
+   the type; <code>make_figures.py</code> drives the deliverable set.
+   <code>scenes_x17.py</code> is the exception &mdash; a matplotlib diagram
+   rather than a render, sharing only the palette.</p>
 
 </div>

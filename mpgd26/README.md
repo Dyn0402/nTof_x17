@@ -7,6 +7,12 @@ Publication-grade 3-D views of the two setups:
 * **Saclay cosmic bench** — four M3 reference Micromegas around the P1/P2 test
   slots, triggered by a top/bottom scintillator coincidence.
 
+…and the physics case that motivates them:
+
+* **X17 signature** — capture → the three de-excitation channels → the
+  opening-angle distribution that separates the hypothesis from the known
+  channel. A diagram, not a render, but it shares the palette.
+
 Everything is driven from the run configs and the measured records, so a figure
 can be re-rendered from a different angle, at a different size, in a different
 theme, or with a different chamber in a slot, without redrawing anything.
@@ -20,6 +26,7 @@ and the list of what is drawn but not measured.
 cd mpgd26
 ../.venv/bin/python make_figures.py                # the setup stills
 ../.venv/bin/python make_chamber.py                # the exploded chamber
+../.venv/bin/python make_x17.py --theme both       # the physics-case diagram
 ../.venv/bin/python make_anim.py                   # turntables + build-ups
 ../.venv/bin/python make_report.py                 # rebuild report.html
 
@@ -51,6 +58,12 @@ Each figure is written twice:
 | `bench_p2_side` | elevation of the two-P2 configuration |
 | `bench_mixed` | P2 fan in P1, MX17 in P2 (the 6-27 configuration) — available, not headline |
 | `chamber_exploded` | one MX17 chamber pulled apart, with a muon and its drifting ionisation (`make_chamber.py`) |
+| `x17_signature` | the physics case: capture → three de-excitation channels → the e⁺e⁻ opening-angle distribution (`make_x17.py`) |
+| `x17_signature_bare` | the same with the title and caption bands cropped off (`make_x17.py --no-title`) |
+
+The X17 diagram is written straight out as `figures/x17_signature_<theme>.png`
+and `.pdf` — it has no separate `_labelled` version, because its type is drawn
+in from the start. **Prefer the PDF on a slide**: all of it is live text.
 
 ## Animations (`animations/`)
 
@@ -75,6 +88,44 @@ Individual scenes, with all the switches:
 ```
 
 `--slots lower,upper` takes `mx17`, `p2` or `none` for each test level.
+
+## Measured alignment and real tracks
+
+The bench scene will draw a chamber **where the fit says it is**, and will draw
+**real reconstructed muons** instead of sampled ones:
+
+```bash
+../.venv/bin/python make_bench.py --views hero \
+    --align P2=/media/dylan/data/x17/cosmic_bench/Analysis/<run>/<sub>/<det>/alignment_tpc_veto50/alignment.json \
+    --rays  /media/dylan/data/x17/cosmic_bench/<run>/<sub>/m3_tracking_root
+```
+
+* **`--align SLOT=alignment.json`** — the file written by
+  `cosmic_micro_tpc_analysis.save_alignment`. It maps detector-local strip
+  coordinates into the M3 frame; `geometry.load_bench_alignment` pushes the
+  chamber's own active-area centre through that transform to get its transverse
+  offset. The M3 frame is centred on zero, so the result is directly the
+  chamber's (x, y) in the bench frame — typically a few mm to a few cm, e.g.
+  `(-4.3, +12.7) mm` for det2 on 6-22.
+  * The **in-plane angle** (~89–90°) turns the *strip direction only*, not the
+    chamber body. On a square chamber a 90° body rotation carries no
+    information but does swing the frame's specular reflection from bright to
+    dark, making two identical chambers look like different objects.
+  * The fit's own `z_x`/`z_y` (typically 713–715 mm against a configured 702 —
+    the known origin offset) is **reported, not applied**, and an alignment
+    whose z belongs to the other slot triggers a warning rather than being
+    drawn silently.
+
+* **`--rays DIR`** — an `m3_tracking_root*` directory. The ray files carry
+  `Z_Up = 1302` and `Z_Down = 24`, exactly the top and bottom M3 plane heights
+  in `geometry.py`, so a ray is a straight line through the scene with **no
+  transform at all**. Quality cuts default to the recipe in
+  `mx_june_cosmic_qa/qa_config.py` (χ² < 1.0 **and** NClus = 4 on both planes),
+  and only tracks that cross both trigger paddles are drawn.
+
+On the SPS side the plumbing is there — `SPS_STATIONS` carries `x`, `y` and a
+yaw per station — but every run config has x = y = 0 and no survey exists, so
+they are all zero. A survey or a frame fit drops straight into that table.
 
 ## What is actually measured
 
@@ -118,6 +169,12 @@ Collected in `geometry.ASSUMPTIONS` and repeated in every figure caption:
 * **The bench rack and the SPS table** are drawn for context.
 * **Drawn thicknesses** are chosen for legibility. The 30 mm MX17 drift gap is
   the only real one.
+* **The internal pair conversion curve** in `x17_signature` is a *shape* — it
+  says the known channel lives at small opening angle, and nothing more. The
+  X17 curve next to it *is* computed (exact two-body kinematics), but both are
+  normalised to unit peak, so the figure implies no branching ratio. The
+  kinematic minimum it marks, 109°, follows from m = 16.8 MeV carrying the full
+  20.58 MeV; it is not the ~120° quoted from the ATOMKI ⁷Li measurements.
 * **The pad etch gap** — pads are shrunk 16 % about their own centres so the
   1280 of them don't read as one solid copper sheet. Pad centres, angles and
   count are the measured ones.
@@ -132,8 +189,9 @@ Collected in `geometry.ASSUMPTIONS` and repeated in every figure caption:
 | `scenes_sps.py` | the H4 telescope |
 | `scenes_bench.py` | the cosmic bench |
 | `scenes_chamber.py` | one MX17 chamber, exploded |
+| `scenes_x17.py` | the X17 physics case; matplotlib, not PyVista — the decay kinematics live here too |
 | `annotate.py` | 3-D anchors → pixels, then the type layout |
-| `make_sps.py`, `make_bench.py`, `make_chamber.py` | per-scene drivers with camera presets |
+| `make_sps.py`, `make_bench.py`, `make_chamber.py`, `make_x17.py` | per-scene drivers with camera presets |
 | `make_figures.py` | the deliverable still set |
 | `make_anim.py` | turntables and build-up sequences |
 | `make_report.py` | `report.html` |

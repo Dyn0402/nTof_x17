@@ -83,14 +83,21 @@ SCINT_THICK_MM = 30.0
 # config yaws by det_orientation.y = 25.64 deg.  That is a real mounting angle,
 # not a placeholder like its z, so it is drawn.
 SPS_STATIONS = [
-    # (name, z_mm, kind, label, yaw_deg)
-    ('EIC_uRWELL_front', 0.0,    'urwell', 'EIC uRWELL\n(front reference)', 0.0),
-    ('P2_IN',            320.0,  'p2',     'P2 BASKET  IN', 0.0),
-    ('P2_MID',           630.0,  'p2',     'P2 BASKET  MID', 0.0),
-    ('P2_OUT',           940.0,  'p2',     'P2 BASKET  OUT', 0.0),
+    # (name, z_mm, kind, label, yaw_deg, x_mm, y_mm)
+    #
+    # x/y are transverse offsets from the beam axis.  Every run config carries
+    # x = y = 0 -- nominal, never surveyed -- so they are all zero here, but they
+    # are threaded through the scene rather than assumed, so a survey (or a
+    # frame fit) drops straight in.
+    ('EIC_uRWELL_front', 0.0,    'urwell', 'EIC uRWELL\n(front reference)',
+     0.0, 0.0, 0.0),
+    ('P2_IN',            320.0,  'p2',     'P2 BASKET  IN', 0.0, 0.0, 0.0),
+    ('P2_MID',           630.0,  'p2',     'P2 BASKET  MID', 0.0, 0.0, 0.0),
+    ('P2_OUT',           940.0,  'p2',     'P2 BASKET  OUT', 0.0, 0.0, 0.0),
     ('mx17_E',           1155.0, 'mx17',   'MX17 "Detector E"\nyawed 25.6 deg',
-     25.64),
-    ('EIC_uRWELL_back',  1370.0, 'urwell', 'EIC uRWELL\n(back reference)', 0.0),
+     25.64, 0.0, 0.0),
+    ('EIC_uRWELL_back',  1370.0, 'urwell', 'EIC uRWELL\n(back reference)',
+     0.0, 0.0, 0.0),
 ]
 SPS_MX17_Z_IS_PLACEHOLDER = True     # run_config says so explicitly
 
@@ -219,6 +226,56 @@ def p2_band(r_lo, r_hi, phi_lo_deg, phi_hi_deg, n=200, **kw):
 # --------------------------------------------------------------------------- #
 # What is measured, and what is not
 # --------------------------------------------------------------------------- #
+# --------------------------------------------------------------------------- #
+# Measured bench alignment
+# --------------------------------------------------------------------------- #
+MX17_LOCAL_CENTRE = 200.0            # detector-local centre used by the fits
+
+
+def load_bench_alignment(path):
+    """A measured DUT alignment -> where the chamber actually sits, in mm.
+
+    ``alignment.json`` (written by
+    ``cosmic_bench_analysis.cosmic_micro_tpc_analysis.save_alignment``) maps
+    detector-LOCAL strip coordinates into the M3 reference frame:
+
+        x' = cos(t)(x - cx) - sin(t)(y - cy) + cx + x_offset
+        y' = sin(t)(x - cx) + cos(t)(y - cy) + cy + y_offset
+
+    The chamber's own centre is (cx, cy) = (200, 200), so it lands at
+    (200 + x_offset, 200 + y_offset) in the reference frame -- and the M3 frame
+    is centred on zero (ray positions run symmetrically about the origin), so
+    that pair *is* the chamber's transverse offset in the bench frame.
+
+    Returns ``{'x', 'y', 'theta_deg', 'z_x', 'z_y', 'z'}``: the transverse
+    offset, the in-plane rotation (~90 deg, the strip-map/M3 convention), and
+    the z the fit actually put the chamber at -- which is typically 713-715 mm
+    against a configured 702, a known origin offset, so it is reported rather
+    than silently applied.
+    """
+    import json
+
+    with open(path) as f:
+        d = json.load(f)
+
+    th = math.radians(d['theta_deg'])
+    cx, cy = d.get('centre_x', MX17_LOCAL_CENTRE), d.get('centre_y',
+                                                         MX17_LOCAL_CENTRE)
+    # push the chamber's own active-area centre through the fitted transform
+    ax = ay = MX17_ACTIVE_MM / 2
+    dx, dy = ax - cx, ay - cy
+    x = math.cos(th) * dx - math.sin(th) * dy + cx + d['x_offset']
+    y = math.sin(th) * dx + math.cos(th) * dy + cy + d['y_offset']
+
+    zx, zy = d.get('z_x'), d.get('z_y')
+    return {
+        'x': x, 'y': y,
+        'theta_deg': d['theta_deg'],
+        'z_x': zx, 'z_y': zy,
+        'z': None if (zx is None or zy is None) else 0.5 * (zx + zy),
+    }
+
+
 ASSUMPTIONS = {
     'sps_transverse_alignment': (
         'Every SPS run_config carries det_center_coords x = y = 0 -- nominal, '

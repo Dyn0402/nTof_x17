@@ -54,7 +54,12 @@ PARTS = ('structure', 'scint', 'm3', 'dut', 'tracks')
 
 def build(theme='light', slots=('mx17', 'mx17'), tracks=True,
           size=(2200, 2600), ssaa=True, shadows=True, structure=True,
-          show=PARTS):
+          show=PARTS, align=None, rays=None, n_tracks=7):
+    """``align`` maps 'P1'/'P2' to an alignment.json path -- the chamber is then
+    drawn where the fit says it is, not at nominal.  ``rays`` is an
+    ``m3_tracking_root*`` directory; if given, the muons are real reconstructed
+    tracks instead of sampled ones."""
+    align = align or {}
     show = set(show)
     if not structure:
         show.discard('structure')
@@ -103,14 +108,35 @@ def build(theme='light', slots=('mx17', 'mx17'), tracks=True,
             B.add_shelf(p, z, G.MX17_PCB_MM / 2)
         if 'dut' not in show:
             continue
+
+        # measured position, if an alignment was handed in
+        dx = dy = dth = 0.0
+        if slot in align:
+            a = G.load_bench_alignment(align[slot])
+            dx, dy, dth = a['x'], a['y'], a['theta_deg']
+            print(f'  {slot}: measured offset ({dx:+.1f}, {dy:+.1f}) mm, '
+                  f'in-plane {dth:.2f} deg')
+            # An alignment belongs to one chamber in one slot.  The fit's own z
+            # says which slot that was, so a file from the other slot is caught
+            # here rather than silently drawing the wrong chamber's offset.
+            if a['z'] is not None:
+                if abs(a['z'] - z) > 60.0:
+                    print(f'    WARNING: this fit put the chamber at '
+                          f'z = {a["z"]:.0f} mm, but slot {slot} is at '
+                          f'z = {z:.0f} mm -- alignment from the other slot?')
+                else:
+                    print(f'    (fit z = {a["z"]:.0f} mm vs configured '
+                          f'{z:.0f} mm -- the known origin offset)')
+
         if kind == 'mx17':
-            parts = B.add_mx17(p, z)
-            anchors[slot] = (0.0, -(G.MX17_PCB_MM / 2 + G.MX17_FRAME_MM), z)
+            parts = B.add_mx17(p, z, x=dx, y=dy, theta_deg=dth)
+            anchors[slot] = (dx, dy - (G.MX17_PCB_MM / 2 + G.MX17_FRAME_MM), z)
         elif kind == 'p2':
             if pads_lab is None:
                 pads_lab, sectors, _ = SPS.load_pads_lab()
-            parts = B.add_p2_flat(p, z, pads_lab, sectors)
-            anchors[slot] = (0.0, -280.0, z)
+            parts = B.add_p2_flat(p, z, pads_lab, sectors,
+                                  x=dx, y=dy, theta_deg=dth)
+            anchors[slot] = (dx, dy - 280.0, z)
         else:
             continue
         outlines.append(parts['outline'])
@@ -120,7 +146,9 @@ def build(theme='light', slots=('mx17', 'mx17'), tracks=True,
                              theme=theme, opacity=0.045)
 
     if 'tracks' in show:
-        B.add_tracks(p, B.cosmic_tracks(n=7), radius=4.6)
+        trk = B.real_tracks(rays, n=n_tracks) if rays \
+            else B.cosmic_tracks(n=n_tracks)
+        B.add_tracks(p, trk, radius=4.6)
 
     S.add_light_rig(p, CENTER, 900.0, theme=theme, shadows=False, up='z')
     return p, anchors
@@ -151,11 +179,20 @@ def main():
     ap.add_argument('--no-tracks', action='store_true')
     ap.add_argument('--no-structure', action='store_true')
     ap.add_argument('--no-shadows', action='store_true')
+    ap.add_argument('--align', action='append', default=[],
+                    metavar='SLOT=PATH',
+                    help='e.g. --align P2=/path/to/alignment.json -- draw that '
+                         'chamber where the fit says it is')
+    ap.add_argument('--rays', default=None, metavar='DIR',
+                    help='an m3_tracking_root* directory: draw REAL '
+                         'reconstructed cosmic tracks instead of sampled ones')
+    ap.add_argument('--n-tracks', type=int, default=7)
     ap.add_argument('--size', nargs=2, type=int, default=[2200, 2600])
     ap.add_argument('--draft', action='store_true')
     args = ap.parse_args()
 
     slots = tuple(s.strip() for s in args.slots.split(','))
+    align = dict(a.split('=', 1) for a in args.align)
     size = (900, 1050) if args.draft else tuple(args.size)
     themes = ['light', 'dark'] if args.theme == 'both' else [args.theme]
 
@@ -167,6 +204,7 @@ def main():
                    tracks=not args.no_tracks,
                    structure=not args.no_structure,
                    shadows=not args.no_shadows,
+                   align=align, rays=args.rays, n_tracks=args.n_tracks,
                    size=size, ssaa=not args.draft)
 
 

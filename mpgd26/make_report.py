@@ -22,6 +22,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 
 import geometry as G          # noqa: E402
+import scenes_x17 as X        # noqa: E402
 from make_figures import FIGURES   # noqa: E402
 
 FIG = os.path.join(HERE, 'figures')
@@ -42,6 +43,13 @@ ANIM_BLURB = {
 }
 
 BLURB = {
+    'x17_signature': 'The physics case in one figure: capture leaves '
+                     '4He* with 20.58 MeV, three channels take it away, and '
+                     'only one of them puts an e+e- pair at a large opening '
+                     'angle.  The opening-angle curve is computed, not traced.',
+    'x17_signature_bare': 'The same diagram without the title and caption '
+                          'bands, cropped -- for a slide whose own title bar '
+                          'already says it.',
     'chamber_exploded': 'One MX17 chamber with its layers separated along the '
                         'drift axis, and a muon whose ionisation drifts down '
                         'to the mesh -- the micro-TPC picture the whole '
@@ -115,14 +123,27 @@ def esc(s):
 
 
 def fig_block(name, theme='light'):
+    """One figure with its links.
+
+    The 3-D figures come as a bare render plus a separately composed
+    ``_labelled`` version; the X17 diagram is drawn with its type already in
+    it, so there is nothing to compose and the plain file *is* the deliverable.
+    Both layouts are handled here so the report does not need to know which is
+    which.
+    """
     base = f'figures/{name}_{theme}_labelled'
-    if not os.path.exists(os.path.join(HERE, base + '.png')):
-        return ''
     plain = f'figures/{name}_{theme}.png'
-    links = [f'<a href="{base}.png">labelled PNG</a>',
-             f'<a href="{base}.pdf">labelled PDF</a>']
-    if os.path.exists(os.path.join(HERE, plain)):
-        links.append(f'<a href="{plain}">bare render</a>')
+    if os.path.exists(os.path.join(HERE, base + '.png')):
+        links = [f'<a href="{base}.png">labelled PNG</a>',
+                 f'<a href="{base}.pdf">labelled PDF</a>']
+        if os.path.exists(os.path.join(HERE, plain)):
+            links.append(f'<a href="{plain}">bare render</a>')
+    elif os.path.exists(os.path.join(HERE, plain)):
+        base = f'figures/{name}_{theme}'
+        links = [f'<a href="{base}.png">PNG</a>',
+                 f'<a href="{base}.pdf">vector PDF</a>']
+    else:
+        return ''
     return (f'<figure id="{esc(name)}">\n'
             f'  <img src="{base}.png" alt="{esc(name)}">\n'
             f'  <figcaption><b>{esc(name)}</b> &mdash; '
@@ -220,6 +241,27 @@ def build(theme='light'):
   <span class="tag">PNG + vector-text PDF</span>
 </p>
 
+<h2>The physics case</h2>
+<p>The one diagram in this package that is not a render.  Neutron capture on
+   <sup>3</sup>He leaves the compound nucleus with
+   {X.X17['e_capture']:g} MeV of excitation, and the question the experiment
+   asks is <i>how it gets rid of it</i>: a photon, a conventional internal
+   pair conversion pair at small opening angle, or &mdash; if the ATOMKI
+   anomaly is real &mdash; a {X.X17['m_x17']:g} MeV boson whose
+   e<sup>+</sup>e<sup>-</sup> pair cannot open by less than
+   <b>{X.opening_angle_pdf()[2]:.0f}&deg;</b>.</p>
+<p>That number is not taken from anyone's plot: the curve in panel 3 is exact
+   two-body decay kinematics evaluated in <code>scenes_x17.py</code> (isotropic
+   in the boson rest frame, boosted to the lab, Gaussian-smeared by
+   {X.X17['smear_deg']:g}&deg; so the Jacobian divergence has a width on
+   paper), with nuclear recoil neglected.  The internal-pair-conversion curve
+   next to it is a <i>shape</i> and is labelled as one in the figure &mdash; it
+   is there to say where the known channel lives, not to predict a rate.  The
+   two curves are each normalised to unit peak, so nothing in the panel implies
+   a branching ratio.</p>
+{fig_block('x17_signature', theme)}
+{fig_block('x17_signature_bare', theme)}
+
 <h2>SPS H4 beam telescope</h2>
 <p>Six stations on one rail in the P2 zone, from <code>run_59</code>'s
    <code>det_center_coords</code>. The beam runs along +Z; heights are above the
@@ -292,6 +334,8 @@ def build(theme='light'):
 <pre>cd mpgd26
 ../.venv/bin/python make_figures.py                # the whole still set
 ../.venv/bin/python make_chamber.py                # the exploded chamber
+../.venv/bin/python make_x17.py --theme both       # the physics-case diagram
+../.venv/bin/python make_x17.py --no-title         # ... without title/caption
 ../.venv/bin/python make_anim.py                   # turntables + build-ups
 ../.venv/bin/python make_report.py                 # this page
 
@@ -307,7 +351,9 @@ def build(theme='light'):
    <code>style.py</code> holds the palette, materials, light rig and render
    harness; <code>scenes_sps.py</code> / <code>scenes_bench.py</code> assemble
    each setup; <code>annotate.py</code> projects 3-D anchors to pixels and sets
-   the type; <code>make_figures.py</code> drives the deliverable set.</p>
+   the type; <code>make_figures.py</code> drives the deliverable set.
+   <code>scenes_x17.py</code> is the exception &mdash; a matplotlib diagram
+   rather than a render, sharing only the palette.</p>
 
 </div>"""
 

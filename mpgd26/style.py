@@ -82,7 +82,7 @@ COL = {
 MAT = {
     # --- PBR: metals, lit by the studio cubemap ---
     'copper':   dict(pbr=True, metallic=0.82, roughness=0.36),
-    'alu':      dict(pbr=True, metallic=0.70, roughness=0.30),
+    'alu':      dict(pbr=True, metallic=0.52, roughness=0.32),
     'mesh':     dict(pbr=True, metallic=0.90, roughness=0.24),
     # --- Phong: everything else ---
     'pcb':      dict(pbr=False, ambient=0.34, diffuse=0.90, specular=0.24,
@@ -127,7 +127,14 @@ _CUBEMAP_CACHE = {}
 
 
 def _face(size, kind, variant):
-    """One 'studio' cubemap face: gradient sky, horizon, floor, soft key blob."""
+    """One 'studio' cubemap face: gradient sky, horizon, floor, soft key blob.
+
+    The walls carry a bright key and a dimmer fill on OPPOSITE sides, and the
+    two remaining walls get a weak wash.  Concentrating all the light on one
+    wall makes a metal's brightness depend strongly on its azimuth, so two
+    identical chambers would render quite differently purely because a measured
+    alignment turns one of them by 90 deg.
+    """
     y, x = np.mgrid[0:size, 0:size] / (size - 1.0)
 
     if variant == 'studio_dark':
@@ -154,9 +161,12 @@ def _face(size, kind, variant):
         if kind == 'px':                  # one wall carries the key softbox
             r = np.hypot(x - 0.55, y - 0.30)
             img = img * (1.0 + key_gain * np.exp(-(r / 0.20) ** 2))[..., None]
-        if kind == 'nz':                  # a dimmer fill box opposite
+        if kind == 'nx':                  # a dimmer fill box opposite the key
             r = np.hypot(x - 0.40, y - 0.34)
             img = img * (1.0 + 0.45 * key_gain * np.exp(-(r / 0.26) ** 2))[..., None]
+        if kind in ('pz', 'nz'):          # weak wash so azimuth matters less
+            r = np.hypot(x - 0.50, y - 0.33)
+            img = img * (1.0 + 0.28 * key_gain * np.exp(-(r / 0.34) ** 2))[..., None]
 
     img = np.clip(img, 0, 1)
     return (img * 255).astype(np.uint8)
