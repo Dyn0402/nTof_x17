@@ -1,12 +1,59 @@
 # n_TOF reprocessing: current state
 
-**Keep this file current.** It is the resume point if a session drops. Detail
-lives in `FINDINGS_2026-07-28_psa_optimization.md` (what was measured),
-`FLASH_TIME_BASE.md` (the divert and the flash), `userinputs/README.md` (how to
-run one) and `flash_timing/README.md` (the PKUP-referenced calibration).
+**Keep this file current.** It is the resume point if a session drops.
+
+---
+
+## 2026-08-08 — the DREAM-keyed slim, and what n_TOF still owes us
+
+Two things landed today. Detail in
+[`SLIM_FEASIBILITY_2026-08-08.md`](SLIM_FEASIBILITY_2026-08-08.md) (§8 = what
+exists, §9 = what is left).
+
+**1. `slim_pipeline/` — n_TOF hits keyed to DREAM event IDs. Built, validated,
+run on condor.** Per (DREAM sub-run × n_TOF run) segment: join → candidates →
+fit the clock from scratch → keep every scintillator hit within **±150 ns** of
+the fully corrected prediction, plus the same width at +100 µs as an accidental
+control. ~33 MB per DREAM sub-run, ~10 min, one core, 3.2 GB RSS. Output goes to
+`<eos>/july_beam/runs/<run>/<subrun>/ntof_hits/`.
+
+It reproduces **from the slim alone** the published match (95.89 % / 0.046 %)
+and the published liquid same-arm diagonal, on two disjoint hours each against
+its own published numbers. Efficiency is identical to four decimals whether a
+segment ran locally or on a worker. `slim_pipeline/validate.py` is the check;
+`segments.py` says there are **206 ready segments over 60 n_TOF runs**.
+
+*Not done:* the campaign has not been submitted, and the three validated outputs
+sit unpublished in `~/x17slim/out` on lxplus.
+
+**2. The n_TOF pass is incomplete — 41 runs to ask for.** The 5–7 August pass
+uses our v12 UserInput (verified: identical on all 14 detector rows and all 26
+templates, under n_TOF's own name `UserInput_2026_EAR2_X17_v4.h` — **do not
+identify it by filename**, it collides with our own `v4_walshapes`). It then
+stopped, and 41 runs have **no processed output of any kind**, blocking 117 h —
+48 % of the campaign. Request written and published:
+[`NTOF_REPROCESSING_REQUEST_2026-08-08.md`](NTOF_REPROCESSING_REQUEST_2026-08-08.md)
+and <https://dylan-neff.web.cern.ch/notes/ntof-reprocessing-request.html>.
+
+Two mechanisms, separated: runs after 224687 are missing because the pass
+stopped; the in-range gaps correlate with **size** — 0 of 63 skipped below
+0.35 TB, 30 of 72 above, rising with size (`slim_study/why_skipped.py`).
+
+**Traps found the hard way, now in code:** the `index` tree's Date/Time are
+LOCAL not UTC (a flat 7200 s error against anything else); our own `prod_v11`
+runs really are v11, and differ from v12 on the four LIQ rows only — mixing them
+inside one DREAM run is safe for the trigger legs and a 14–21 % liquid yield step.
+
+---
+
+## Earlier: the reprocessing itself
 
 Last updated: 2026-07-30 (evening). **The n_TOF side is closed; the analysis has
 started, and the DREAM<->n_TOF time calibration is now locked.**
+
+> **Superseded in one respect, 2026-08-08:** "the n_TOF side is closed" was true
+> of the *UserInput* and still is — n_TOF adopted v12 unchanged. It is not true
+> of *coverage*: 41 runs have no processed output at all. See the section above.
 
 > **The authority on the match is
 > `../ntof_dream_merge/DREAM_NTOF_CALIBRATION.md`.** Constants, the per-run
