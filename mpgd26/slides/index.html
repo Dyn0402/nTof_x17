@@ -1,0 +1,540 @@
+<title>Saclay Micromegas Micro-TPCs in the X17 Search at n_TOF — MPGD2026</title>
+<style>
+  :root{
+    --bg-top:#fbfcfe; --bg-bottom:#e9ecf1;
+    --ink:#1b2430; --muted:#6a7583; --line:#d4d9e0;
+    --accent:#8a3f8f;      /* mx17 purple, matches style.py COL['mx17'] */
+    --accent-soft:#eadcec;
+    --copper:#d18a44;      /* flag / caution accent, matches style.py COL['copper'] */
+    --track:#ff4f36;       /* reserved for a single sharp highlight, matches COL['track_mu'] */
+    --panel:#ffffff;
+
+    --fs-kicker: clamp(0.68rem, 1.05vw, 0.9rem);
+    --fs-title:  clamp(1.5rem, 3.0vw, 2.5rem);
+    --fs-title-sm: clamp(1.1rem, 2.0vw, 1.6rem);
+    --fs-body:   clamp(0.82rem, 1.3vw, 1.08rem);
+    --fs-caption: clamp(0.72rem, 1.05vw, 0.92rem);
+    --fs-stat:   clamp(1.7rem, 3.4vw, 2.6rem);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{height:100%;margin:0;}
+  body{
+    background: linear-gradient(180deg, var(--bg-top), var(--bg-bottom));
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--ink);
+    display:flex; align-items:center; justify-content:center;
+    overflow:hidden;
+  }
+
+  .stage{ width:100vw; height:100vh; display:flex; align-items:center; justify-content:center; }
+
+  .deck{
+    position:relative;
+    width:min(100vw, 177.78vh);
+    height:min(100vh, 56.25vw);
+    background: linear-gradient(180deg, var(--bg-top), var(--bg-bottom));
+    overflow:hidden;
+  }
+
+  .slide{
+    position:absolute; inset:0;
+    display:flex; flex-direction:column;
+    padding: clamp(1.2rem,3.2vw,3rem) clamp(1.6rem,4.5vw,4.2rem);
+    opacity:0; visibility:hidden; pointer-events:none;
+    transition: opacity .25s ease;
+  }
+  .slide.active{ opacity:1; visibility:visible; pointer-events:auto; }
+
+  .kicker{
+    font-size:var(--fs-kicker); font-weight:700; letter-spacing:.12em;
+    text-transform:uppercase; color:var(--accent); margin:0 0 .35em 0;
+  }
+  .title{ font-size:var(--fs-title); font-weight:700; line-height:1.12; margin:0 0 .3em 0; }
+  .title-sm{ font-size:var(--fs-title-sm); font-weight:700; line-height:1.15; margin:0 0 .2em 0; }
+  .subtitle{ font-size:calc(var(--fs-body) * 1.15); color:var(--muted); margin:0 0 .6em 0; font-weight:400; }
+
+  .content{ flex:1; display:flex; flex-direction:column; min-height:0; }
+
+  .bullets{ margin:.4em 0 0 0; padding-left:1.1em; font-size:var(--fs-body); line-height:1.55; }
+  .bullets li{ margin-bottom:.5em; }
+  .bullets li::marker{ color:var(--accent); font-weight:700; }
+  .bullets li.dim{ color:var(--muted); }
+
+  .figure-solo{ flex:1; display:flex; align-items:center; justify-content:center; min-height:0; }
+  .figure-solo img{ max-width:100%; max-height:100%; object-fit:contain; }
+
+  .cols{ flex:1; display:grid; gap:clamp(1rem,2.4vw,2.2rem); min-height:0; }
+  .cols-2{ grid-template-columns:1fr 1fr; }
+  .cols-3{ grid-template-columns:1fr 1fr 1fr; }
+  .figure{ display:flex; flex-direction:column; min-height:0; }
+  .figure .imgwrap{ flex:1; display:flex; align-items:center; justify-content:center; min-height:0; background:var(--panel); border-radius:10px; overflow:hidden; }
+  .figure img, .figure video{ max-width:100%; max-height:100%; object-fit:contain; }
+  .figure .fig-label{ font-size:var(--fs-caption); color:var(--muted); text-align:center; margin-top:.5em; }
+
+  .caption{ font-size:var(--fs-caption); color:var(--muted); margin-top:.6em; line-height:1.5; }
+
+  .stat-row{ display:flex; gap:clamp(1.4rem,3vw,3rem); margin-top:.8em; flex-wrap:wrap; }
+  .stat{ }
+  .stat .num{ font-size:var(--fs-stat); font-weight:800; color:var(--accent); line-height:1; }
+  .stat .lbl{ font-size:var(--fs-caption); color:var(--muted); margin-top:.25em; max-width:16em; }
+
+  .bar-chart{ display:flex; flex-direction:column; justify-content:center; gap:.65em; flex:1; }
+  .bar-row{ display:grid; grid-template-columns:3.4em 1fr 3.4em; align-items:center; gap:.6em; }
+  .bar-name{ font-size:var(--fs-body); font-weight:600; text-align:right; }
+  .bar-track{ background:var(--line); border-radius:5px; height:clamp(14px,2.4vw,22px); overflow:hidden; }
+  .bar-fill{ background:var(--accent); height:100%; border-radius:5px 0 0 5px; }
+  .bar-val{ font-size:var(--fs-body); font-weight:700; color:var(--ink); }
+  .bar-note{ font-size:var(--fs-caption); color:var(--muted); margin-top:.3em; }
+
+  .outline-list{ display:flex; flex-direction:column; gap:1.1em; flex:1; justify-content:flex-start; margin-top:1.4em; }
+  .outline-item{ display:flex; align-items:baseline; gap:.75em; }
+  .onum{ font-size:var(--fs-title-sm); font-weight:800; color:var(--accent); min-width:1.2em; }
+  .otext{ font-size:var(--fs-title-sm); font-weight:600; color:var(--ink); }
+
+  .callout{
+    margin-top:.7em; padding:.6em .9em;
+    border-left:4px solid var(--accent); background:var(--accent-soft);
+    border-radius:0 8px 8px 0; font-size:var(--fs-body); line-height:1.5;
+  }
+  .callout b{ color:var(--accent); }
+
+  .spec-table{ font-size:var(--fs-body); line-height:1.6; border-collapse:collapse; width:100%; }
+  .spec-table td{ padding:.35em .6em .35em 0; vertical-align:top; }
+  .spec-table td.k{ color:var(--muted); white-space:nowrap; font-weight:600; }
+
+  .flag{
+    display:inline-block; margin-top:.7em; padding:.3em .7em;
+    border:1.5px dashed var(--copper); border-radius:7px;
+    color:var(--copper); font-size:var(--fs-caption); font-weight:600;
+  }
+
+  .footer-tag{ position:absolute; left:clamp(1.6rem,4.5vw,4.2rem); bottom:1.1em; font-size:.68rem; color:var(--muted); letter-spacing:.04em; }
+
+  /* --- title slide --- */
+  .title-slide{ align-items:flex-start; justify-content:center; }
+  .title-slide .kicker{ font-size:calc(var(--fs-kicker)*1.1); }
+  .title-slide .title{ font-size:clamp(1.9rem,4.3vw,3.4rem); max-width:14em; }
+  .title-slide .subtitle{ font-size:calc(var(--fs-body)*1.3); max-width:28em; }
+  .title-slide .byline{ margin-top:auto; font-size:var(--fs-body); color:var(--muted); }
+  .title-slide .byline b{ color:var(--ink); }
+
+  /* --- nav chrome --- */
+  .nav-btn{
+    position:absolute; bottom:1em; width:2.2em; height:2.2em; border-radius:50%;
+    border:1px solid var(--line); background:rgba(255,255,255,.75); color:var(--ink);
+    display:flex; align-items:center; justify-content:center; cursor:pointer;
+    font-size:1.1em; user-select:none; z-index:10;
+  }
+  .nav-btn:hover{ background:#fff; }
+  #prev{ right:4.2em; } #next{ right:1.4em; }
+  .counter{ position:absolute; bottom:1.35em; right:7em; font-size:.75rem; color:var(--muted); z-index:10; }
+  .progress-track{ position:absolute; left:0; right:0; bottom:0; height:3px; background:var(--line); z-index:10; }
+  .progress-fill{ height:100%; background:var(--accent); width:6.6%; transition:width .2s ease; }
+  .click-zone{ position:absolute; top:0; bottom:0; width:12%; z-index:5; cursor:pointer; }
+  #zone-prev{ left:0; } #zone-next{ right:0; }
+
+  @media print{
+    @page{ size: 13.333in 7.5in; margin:0; }
+    html,body{ background:#fff !important; height:auto; }
+    .stage{ width:auto; height:auto; display:block; }
+    .deck{ width:100%; height:auto; }
+    .slide{
+      position:static !important; opacity:1 !important; visibility:visible !important;
+      page-break-after:always; break-after:page;
+      width:100vw; height:100vh; padding:2.6vw 3.6vw;
+    }
+    .nav-btn,.counter,.progress-track,.click-zone{ display:none !important; }
+    .slide{ justify-content:flex-start !important; }
+    .byline{ margin-top:2em !important; }
+  }
+</style>
+
+<div class="stage">
+  <div class="deck" id="deck">
+
+    <!-- 1: TITLE -->
+    <section class="slide title-slide active">
+      <div class="kicker">MPGD 2026 &middot; Applications</div>
+      <div class="title">Saclay Micromegas Micro-TPCs in the X17 Search at n_TOF</div>
+      <div class="subtitle">Cosmic-bench characterization of the detector fleet, and the search assembled around it</div>
+      <div class="byline"><b>[Your name]</b> &middot; on behalf of the n_TOF / X17 collaboration &middot; [venue, date]</div>
+    </section>
+
+    <!-- 2: OUTLINE -->
+    <section class="slide">
+      <div class="kicker">Outline</div>
+      <div class="title">Outline</div>
+      <div class="outline-list">
+        <div class="outline-item"><span class="onum">1</span><span class="otext">X17 history and the n_TOF channel</span></div>
+        <div class="outline-item"><span class="onum">2</span><span class="otext">Micromegas micro-TPC detectors from Saclay</span></div>
+        <div class="outline-item"><span class="onum">3</span><span class="otext">X17 search at n_TOF &mdash; experimental setup</span></div>
+        <div class="outline-item"><span class="onum">4</span><span class="otext">Status</span></div>
+      </div>
+    </section>
+
+    <!-- Status as of 2026-08-08: motivation block condensed to 2 main-flow slides (anomaly
+         + evidence); ATOMKI setup slide moved to backup (slides 20-22), with a new backup
+         spec-sheet slide covering MWPC construction and the ³H target. Still open:
+           - Beam orientation (horizontal vs vertical) at ATOMKI is NOT confirmed anywhere
+             we've sourced — deliberately left off the backup slides rather than asserted.
+             If it's needed, it has to come from somewhere else.
+           - Regenerating the ATOMKI spectrometer schematic as a PyVista scene in the mpgd26
+             house style, instead of the borrowed line art — still just an idea, not started.
+           - Highlighting the ³H(p,e⁺e⁻)⁴He channel specifically (it's the proton-beam mirror
+             of our own n+³He&rarr;⁴He* reaction) as the bridge into the n_TOF/EAR2 slide —
+             not done; the evidence slide still gives equal weight to ⁸Be/⁴He/¹²C. -->
+
+    <!-- 3: A1 anomaly -->
+    <section class="slide">
+      <div class="kicker">Motivation</div>
+      <div class="title">A possible new boson at 17 MeV</div>
+      <div class="content">
+        <ul class="bullets">
+          <li>Nuclear transitions (⁸Be, ⁴He) measured at ATOMKI show an excess of e⁺e⁻ pairs at large opening angle</li>
+          <li>Consistent with a new particle, <b>X17</b>, produced in the transition and decaying to e⁺e⁻</li>
+          <li>The obvious independent check: a different nucleus, a different production mechanism, a different detector technology</li>
+        </ul>
+        <div class="stat-row">
+          <div class="stat"><div class="num">17 MeV</div><div class="lbl">the candidate mass</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4: A1b ATOMKI evidence -->
+    <section class="slide">
+      <div class="kicker">Motivation</div>
+      <div class="title">The ATOMKI evidence</div>
+      <div class="figure-solo"><img src="assets/img/atomki_angular_correlations.png" alt="Angular correlation spectra showing an excess of e+e- pairs near 115-125 degrees in the 7Li(p,e+e-)8Be, 3H(p,e+e-)4He, and 11B(p,e+e-)12C reactions"></div>
+      <div class="caption">The same excess, at the same angle, in three independent transitions — ⁸Be, ⁴He and ¹²C — each fit with a ~17 MeV signal (red/dashed) on top of the smooth IPC background (blue).<br>
+      A.J. Krasznahorkay et al.: <i>Phys. Rev. Lett.</i> 116, 042501 (2016) [⁸Be] &middot; <i>Phys. Rev. C</i> 104, 044003 (2021) [⁴He] &middot; <i>Phys. Rev. C</i> 106, L061601 (2022) [¹²C]</div>
+    </section>
+
+    <!-- 5: A_facility n_TOF / EAR2 -->
+    <!-- TODO for a future pass on this slide (recorded 2026-08-08, not yet implemented):
+         Current state: schematic (ntof_facility_schematic.png, borrowed from Tagliente et
+         al., EPJ Web Conf. 292, 12002 (2024)) + photo (ear1_ear2_photo.jpg, CERN
+         OPEN-PHO-EXP-2016-006, shows EAR1 horizontal line left / EAR2 vertical line right).
+
+         1. Drop EAR1 from the discussion entirely — this talk only uses EAR2, so cut the
+            EAR1 comparison (185 m / energy-resolution framing) and narrow the slide to
+            EAR2 only.
+
+         2. Replace the photo panel (currently the EAR1+EAR2 combined photo) with a PyVista
+            visualization in the mpgd26 house style depicting the EAR2 vertical beamline:
+              - vertical beam pipe
+              - neutrons traveling upward from the lead spallation target at ground level
+              - protons hitting the target from the side, producing the upward neutron flux
+              - a hypothetical detector/target suspended partway up the pipe
+              - the structure at the top of the real photo, tentatively identified as the
+                beam dump — UNVERIFIED, confirm against facility documentation before
+                asserting this in a caption
+              - a visual break/jump in the pipe to compress the 20 m flight path, since
+                drawing it to true scale next to a human-scale detector isn't useful
+            Reuse style.py's palette/materials/lighting so this matches the other renders
+            (chamber, bench, SPS) instead of sitting stylistically apart as a borrowed
+            academic photo.
+
+         3. Once (2) exists, also remake Fig. 1 (the beamline schematic) in-house — consider
+            integrating it directly into the same PyVista scene from (2) rather than keeping
+            it as a separate figure, since both describe the same beamline. -->
+    <section class="slide">
+      <div class="kicker">Motivation</div>
+      <div class="title">n_TOF: CERN's neutron time-of-flight facility</div>
+      <div class="cols cols-2">
+        <div class="figure">
+          <div class="imgwrap"><img src="assets/img/ntof_facility_schematic.png" alt="Schematic: 20 GeV/c protons hit a lead spallation target, feeding a 185 m horizontal beamline to EAR1 and a 20 m vertical beamline to EAR2"></div>
+        </div>
+        <div class="figure">
+          <div class="imgwrap"><img src="assets/img/ear1_ear2_photo.jpg" alt="Photo of the EAR1 horizontal beamline (left) and EAR2 vertical beamline (right)"></div>
+          <div class="fig-label">EAR1's horizontal line (left) and EAR2's vertical line (right)</div>
+        </div>
+      </div>
+      <ul class="bullets">
+        <li>20 GeV/c protons from the CERN PS strike a lead spallation target &mdash; ~300 neutrons per proton, 7 ns pulses, up to 0.8 Hz</li>
+        <li>EAR1: 185 m horizontal, best energy resolution (2001) &middot; <b>EAR2: 20 m vertical, high instantaneous flux (2014)</b> &mdash; the choice for a rare-event search like this one</li>
+      </ul>
+      <div class="caption">G. Tagliente et al. (n_TOF Collaboration), <i>EPJ Web Conf.</i> 292, 12002 (2024) &middot; photo: E. Chiaveri, CERN OPEN-PHO-EXP-2016-006, &copy; CERN</div>
+    </section>
+
+    <!-- 6: A2 channel -->
+    <section class="slide">
+      <div class="kicker">Motivation</div>
+      <div class="title-sm">n + ³He &rarr; the n_TOF search channel</div>
+      <div class="figure-solo"><img src="assets/img/x17_signature.png" alt="Capture on 3He, three de-excitation channels, and the e+e- opening-angle observable"></div>
+      <div class="callout"><b>Discovery channel: e⁺e⁻ tracks and their opening angle.</b> Neutron capture is overwhelmingly a &gamma;-ray process &mdash; a detector that only responds to a charged, back-to-back pair rejects that background by construction, instead of trying to out-shield it.</div>
+      <div class="caption">n_TOF's neutron beam onto a ³He target &mdash; an independent nucleus, an independent facility, from the same simplified picture: capture &rarr; ⁴He* at 20.58 MeV &rarr; &gamma; / IPC / X17. Measuring that angle is what the Micromegas micro-TPC is built to do, next.</div>
+    </section>
+
+    <!-- TODO (recorded 2026-08-08, not yet implemented): the board-peel image
+         (assets/img/mx17_board_peel.png, source: ~/CLionProjects/MX17_Geant/design/figures/
+         mx17_board_peel.png) is currently the full 470 mm board width, which makes the
+         per-layer patterns (ESL resist strip pitch, pad grid, X/Y strip pitch) too small to
+         read clearly on a projected slide. Make a version zoomed in on a small region of the
+         surface so the patterns themselves are magnified — regenerate from
+         ~/CLionProjects/MX17_Geant/scripts/model/plot_mx17_model.py (the script that made
+         the original) rather than crop the PNG, so labels/legend stay sharp at the new
+         scale. -->
+
+    <!-- 7: B1 chamber design -->
+    <section class="slide">
+      <div class="kicker">Micromegas micro-TPC &middot; Saclay</div>
+      <div class="title-sm">Chamber design</div>
+      <div class="cols cols-2">
+        <div class="figure">
+          <div class="imgwrap"><img src="assets/img/chamber_exploded.png" alt="Exploded MX17 chamber with a muon and its drifting ionisation"></div>
+        </div>
+        <div class="figure">
+          <div class="imgwrap"><img src="assets/img/mx17_board_peel.png" alt="MX17 readout board with its four layers peeled back: ESL resistive strips, L4 readout pads, L5 Y strips, L6 X strips"></div>
+          <div class="fig-label">The readout board itself, peeled back four layers: resistive strips &rarr; pads &rarr; Y strips &rarr; X strips</div>
+        </div>
+      </div>
+      <div class="caption">470&times;470&nbsp;mm PCB (398.6&nbsp;mm metallised) &middot; 512 strips/view at 0.7785&nbsp;mm pitch &middot; 30&nbsp;mm drift gap &middot; 150&nbsp;&micro;m amplification gap</div>
+    </section>
+
+    <!-- 8: B2 micro-TPC operation -->
+    <section class="slide">
+      <div class="kicker">Micromegas micro-TPC &middot; Saclay</div>
+      <div class="title-sm">Micro-TPC operation</div>
+      <div class="figure-solo"><img src="assets/img/microtpc.png" alt="Primaries drifting to the mesh, coloured by arrival time, and the strip-time ladder fit"></div>
+      <div class="caption">v<sub>drift</sub> = 36.6&nbsp;&micro;m/ns (matches Magboltz) &middot; 882&nbsp;ns full-gap transit &middot; one 30&nbsp;mm gap gives a 3-D track segment</div>
+    </section>
+
+    <!-- 9: B3 reconstruction -->
+    <section class="slide">
+      <div class="kicker">Micromegas micro-TPC &middot; Reconstruction</div>
+      <div class="title">Resistive strips share charge — the fit has to know it</div>
+      <div class="cols cols-2">
+        <div class="figure">
+          <div class="imgwrap"><img src="assets/img/charge_sharing_schematic.png" alt="Resistive strip charge sharing schematic"></div>
+          <div class="fig-label">~50% of the avalanche charge is shared to the first neighbour (45% X / 52% Y, ~70 ns delay)</div>
+        </div>
+        <div class="figure">
+          <div class="imgwrap"><img src="assets/img/unsharing_depth_bias.png" alt="Hit-level unsharing removes the depth-dependent angle bias"></div>
+          <div class="fig-label">Uncorrected, this compresses the drift ladder 20–30% (~4° too steep); "unsharing" removes the depth trend</div>
+        </div>
+      </div>
+      <div class="caption">Current basis: a waveform-first forward fit reaching &sigma;<sub>&theta;</sub> &asymp; 1.0&ndash;1.1&deg; — the physics floor.</div>
+    </section>
+
+    <!-- 10: B4 event display -->
+    <section class="slide">
+      <div class="kicker">Micromegas micro-TPC &middot; Real data</div>
+      <div class="title">A cosmic muon, reconstructed</div>
+      <div class="figure-solo"><img src="assets/img/event_display_3d.png" alt="3D event display of a cosmic muon with the M3 reference track threading the charge cloud"></div>
+      <div class="caption">The drift-time charge cloud in 3-D, with the independent M3 reference-telescope track threading it to 0.3&nbsp;mm — reconstruction and alignment checked directly, event by event.</div>
+    </section>
+
+    <!-- 11: B5 cosmic bench -->
+    <section class="slide">
+      <div class="kicker">Characterization</div>
+      <div class="title">Characterized on the Saclay cosmic bench</div>
+      <div class="figure-solo"><img src="assets/img/build_bench.gif" alt="The cosmic bench assembling: rack, trigger paddles, M3 reference, chambers, muons"></div>
+      <div class="caption">Four M3 reference Micromegas sandwich two MX17 test slots between top/bottom scintillator triggers — five chambers characterized across June 2026 running.</div>
+      <div class="flag">placeholder — depends on running order with Alexandra's P2 talk</div>
+    </section>
+
+    <!-- TODO for a future pass on the efficiency slide (recorded 2026-08-08, not yet
+         implemented):
+         1. Move the fleet-wide bar chart (det3/det2/det6/det7/det4 comparison) to backup —
+            keep this slide focused on det3 alone as the headline chamber.
+         2. Pair the det3 breakdown (efficiency_breakdown.png) with the residual distribution
+            — spatial_residuals.png (currently used on the B7 resolution slide, slide 13) has
+            the full-range log-scale panels for X/Y, which show the tails; those tails are
+            what explains the "detected but >5&nbsp;mm off track" (3.1%) slice of the
+            breakdown. Decide whether to reuse the same image on both slides, crop it to just
+            the log-scale panels for this slide, or regenerate a version aimed specifically at
+            the tail.
+         3. IMPORTANT — every number on this slide (92.9%, the 5-way breakdown, all of it) is
+            from the 2026-07-14 recipe on the June cosmic-bench dataset. Refresh with best
+            current estimates from a new analysis before the conference — don't ship stale
+            numbers. This is the same source figure (efficiency_breakdown.png) already flagged
+            once for an internal inconsistency (its annotation box still said "88.8%" against
+            a superseded recipe) — regenerating it solves both problems at once. -->
+
+    <!-- 12: B6 efficiency -->
+    <section class="slide">
+      <div class="kicker">Characterization</div>
+      <div class="title">Efficiency: 93% on the best chamber</div>
+      <div class="cols cols-2">
+        <div class="figure">
+          <div class="bar-chart">
+            <div class="bar-row"><div class="bar-name">det3</div><div class="bar-track"><div class="bar-fill" style="width:92.9%"></div></div><div class="bar-val">92.9%</div></div>
+            <div class="bar-row"><div class="bar-name">det2</div><div class="bar-track"><div class="bar-fill" style="width:91.3%"></div></div><div class="bar-val">91.3%</div></div>
+            <div class="bar-row"><div class="bar-name">det6</div><div class="bar-track"><div class="bar-fill" style="width:57.8%"></div></div><div class="bar-val">57.8%</div></div>
+            <div class="bar-row"><div class="bar-name">det7</div><div class="bar-track"><div class="bar-fill" style="width:43.1%"></div></div><div class="bar-val">43.1%</div></div>
+            <div class="bar-row"><div class="bar-name">det4</div><div class="bar-track"><div class="bar-fill" style="width:20.7%"></div></div><div class="bar-val">20.7%</div></div>
+          </div>
+          <div class="bar-note">Efficiency within 5&nbsp;mm of the reference track (&chi;&sup2;&lt;1.0 &amp; NClus=4 recipe, 2026-07-14)</div>
+        </div>
+        <div class="figure">
+          <div class="imgwrap"><img src="assets/img/efficiency_breakdown.png" alt="det3 efficiency loss budget breakdown"></div>
+          <div class="fig-label">det3's loss budget: the residue off 92.9% is a spark coincidence and an edge/near-miss tail — not a failure to detect</div>
+        </div>
+      </div>
+      <div class="caption">det6 / det7 are spark-limited (23% / 33% spark fraction); det4 is gain-limited — it sees ~70% of muons, but too few strips fire to reconstruct.</div>
+    </section>
+
+    <!-- TODO for a future pass on the resolution slide (recorded 2026-08-08, not yet
+         implemented):
+         IMPORTANT CAVEAT — the "0.6-0.7 mm spatial core resolution" stat tile below is
+         quoted against the M3 reference telescope, and the M3 detectors on the cosmic bench
+         only have ~500 &micro;m resolution themselves. That reference resolution is not
+         subtracted out here, so 0.6-0.7 mm is a convolution of the MX17 DUT's true
+         resolution with the M3's own ~500 &micro;m — i.e. it's close to the FLOOR of what
+         this cosmic-bench method can even measure, not necessarily the DUT's intrinsic
+         resolution. Needs an explicit caveat on the slide (or a deconvolved number) before
+         this goes in front of an audience — as written it reads as a clean DUT measurement,
+         which it isn't. Hopefully superseded by a more precise measurement of det4 at the
+         SPS test beam, which may not have the same reference-resolution ceiling. -->
+
+    <!-- 13: B7 resolution -->
+    <section class="slide">
+      <div class="kicker">Characterization</div>
+      <div class="title">Sub-degree angle, sub-mm position</div>
+      <div class="cols cols-2">
+        <div class="figure">
+          <div class="imgwrap"><img src="assets/img/angular_resolution.png" alt="Angular resolution vs track angle, hybrid method"></div>
+          <div class="fig-label">Uniform across track angle — the vertical-track blind spot of the raw ladder (~15.6°) is closed</div>
+        </div>
+        <div class="figure">
+          <div class="imgwrap"><img src="assets/img/spatial_residuals.png" alt="det3 spatial residuals vs the M3 reference telescope"></div>
+          <div class="fig-label">det3 vs the M3 reference telescope, both planes</div>
+        </div>
+      </div>
+      <div class="stat-row">
+        <div class="stat"><div class="num">1.7&deg;</div><div class="lbl">angular (hybrid, uniform in angle; &rarr;1.0&ndash;1.1&deg; with the newer waveform-first fit)</div></div>
+        <div class="stat"><div class="num">0.6&ndash;0.7&nbsp;mm</div><div class="lbl">spatial core resolution</div></div>
+        <div class="stat"><div class="num">33&nbsp;ns</div><div class="lbl">plane-to-plane timing (~1&nbsp;mm of drift)</div></div>
+      </div>
+    </section>
+
+    <!-- 14: C1 target -->
+    <section class="slide">
+      <div class="kicker">X17 search at n_TOF &middot; Experimental setup</div>
+      <div class="title-sm">The target</div>
+      <div class="figure-solo"><img src="assets/img/x17_story_capsule.png" alt="The real Geant4 3He capsule geometry with the ideal e+e- signal"></div>
+      <div class="caption">The real Geant4 ³He vessel (He3Gas / He3Cap_Al / He3Cap_CFRP), mounted nose-first exactly as simulated.</div>
+    </section>
+
+    <!-- 15: C2 tracking -->
+    <section class="slide">
+      <div class="kicker">X17 search at n_TOF &middot; Experimental setup</div>
+      <div class="title">Tracking the pair: four Micromegas around the target</div>
+      <div class="figure-solo"><img src="assets/img/setup_topdown.png" alt="Top-down pinwheel layout of the four MX17 chambers around the He-3 target"></div>
+      <div class="caption">Four MX17 chambers in a pinwheel around the ³He target, mylar entrance windows facing the target — reconstructed e⁺e⁻ tracks point back to the capsule. Real capsule material scatters the ideal picture from the previous slide; quantifying that is part of the search.</div>
+    </section>
+
+    <!-- 16: C3 trigger + calorimetry -->
+    <section class="slide">
+      <div class="kicker">X17 search at n_TOF &middot; Experimental setup</div>
+      <div class="title">Trigger and calorimetry: the full setup</div>
+      <div class="cols cols-3">
+        <div class="figure"><div class="imgwrap"><img src="assets/img/setup_2_sipm.png" alt="+ SiPM wall"></div><div class="fig-label">+ SiPM wall (trigger)</div></div>
+        <div class="figure"><div class="imgwrap"><img src="assets/img/setup_3_plastic.png" alt="+ plastic scintillators"></div><div class="fig-label">+ plastic scintillators</div></div>
+        <div class="figure"><div class="imgwrap"><img src="assets/img/setup_4_full.png" alt="+ liquid scintillator calorimetry, full setup"></div><div class="fig-label">+ liquid scintillator (calorimetry)</div></div>
+      </div>
+    </section>
+
+    <!-- 17: D status -->
+    <section class="slide">
+      <div class="kicker">Status</div>
+      <div class="title">Where things stand</div>
+      <div class="content">
+        <ul class="bullets">
+          <li class="dim">[ fill in: data-taking status / most recent beamtime ]</li>
+          <li class="dim">[ fill in: analysis stage ]</li>
+          <li class="dim">[ fill in: next milestone ]</li>
+        </ul>
+      </div>
+      <div class="flag">placeholder — needs your input, not derivable from the repos</div>
+    </section>
+
+    <!-- 18: summary -->
+    <section class="slide">
+      <div class="kicker">Summary</div>
+      <div class="title">Summary</div>
+      <div class="content">
+        <ul class="bullets">
+          <li>Saclay resistive micro-TPCs: sub-mm position, ~1.7&deg; (&rarr;~1.0&ndash;1.1&deg;) angular resolution at every track angle</li>
+          <li>Fully characterized across a five-chamber fleet on the Saclay cosmic bench</li>
+          <li>Now assembled around the ³He target for the X17 search at n_TOF</li>
+          <li class="dim">[ status / outlook — fill in ]</li>
+        </ul>
+      </div>
+      <div class="footer-tag">Thank you &mdash; questions welcome</div>
+    </section>
+
+    <!-- 19: BACKUP divider -->
+    <section class="slide" style="align-items:center; justify-content:center;">
+      <div class="title" style="font-size:clamp(2.2rem,5vw,4rem);">Backup</div>
+    </section>
+
+    <!-- 20: Backup — How ATOMKI measured it (moved from the motivation section 2026-08-08) -->
+    <section class="slide">
+      <div class="kicker">Backup &middot; ATOMKI</div>
+      <div class="title">How ATOMKI measured it</div>
+      <div class="cols cols-2">
+        <div class="figure">
+          <div class="imgwrap"><img src="assets/img/atomki_spectrometer_schematic.png" alt="Top-down schematic of the ATOMKI five-arm plastic scintillator and MWPC pair spectrometer surrounding the target"></div>
+        </div>
+        <div class="figure" style="justify-content:center;">
+          <ul class="bullets">
+            <li>A thin solid target (Li, tritiated Ti, or B) at the centre of a fixed <b>five-arm</b> array of plastic &Delta;E&ndash;E scintillator telescopes</li>
+            <li>Multiwire proportional chambers in front of each arm give a hit position &rarr; pair opening angle, <b>not a 3-D track</b></li>
+            <li>~7&deg; angular resolution (FWHM), no charge/vertex reconstruction, fixed acceptance set by the five arms</li>
+          </ul>
+        </div>
+      </div>
+      <div class="caption">A wider-acceptance, tracking detector — like the Micromegas micro-TPCs in this talk — is the natural next step. J. Gulyás et al., <i>Nucl. Instrum. Methods Phys. Res. A</i> 808, 21 (2016)</div>
+    </section>
+
+    <!-- 21: Backup — ATOMKI detector & target specs (new 2026-08-08, answers Dylan's setup questions) -->
+    <section class="slide">
+      <div class="kicker">Backup &middot; ATOMKI</div>
+      <div class="title">ATOMKI: detector and target specs</div>
+      <div class="content">
+        <table class="spec-table">
+          <tr><td class="k">Target chamber</td><td>24 cm long conductive carbon-fibre tube, 3.5 cm radius, 0.8 mm wall — deliberately minimal material</td></tr>
+          <tr><td class="k">MWPC anode</td><td>10 &micro;m gold-plated tungsten wires, 2 mm pitch</td></tr>
+          <tr><td class="k">MWPC cathodes</td><td>0.1 mm Ag-plated Cu wires, 1.27 mm pitch, crossed for x/y; 3.5 mm anode&ndash;cathode gap; delay-line readout, 10 ns/tap; Ar(80%)/CO<sub>2</sub>(20%) at atmospheric pressure</td></tr>
+          <tr><td class="k">MWPC resolution</td><td>&Delta;&Theta; = 2&deg; FWHM (position measurement alone) &mdash; the ~7&deg; FWHM quoted for the full five-telescope system also includes target/chamber-wall scattering; the two numbers answer different questions</td></tr>
+          <tr><td class="k">Solid targets (Li, B)</td><td>evaporated onto a 10 &micro;m thick, 50 mm &times; 5 mm Al strip, stretched between two 3 mm rods</td></tr>
+        </table>
+        <div class="callout"><b>The ³H target — our channel's mirror reaction:</b> not evaporated like the others. ³H gas is absorbed into a 4.2 mg/cm² Ti layer evaporated onto a Mo disc — a solid, &micro;m-scale, low-mass target. Their original 0.5 mm Al target holders were replaced after GEANT + data showed they caused shadowing/scattering background: they fixed it by <b>cutting material</b>, not adding shielding. Worth keeping in mind for the ³He capsule.</div>
+      </div>
+      <div class="caption">J. Gulyás et al., <i>Nucl. Instrum. Methods Phys. Res. A</i> 808, 21 (2016) (spectrometer) &middot; A.J. Krasznahorkay et al., <i>Phys. Rev. C</i> 104, 044003 (2021), arXiv:2104.10075 (³H target)</div>
+    </section>
+
+    <div class="click-zone" id="zone-prev"></div>
+    <div class="click-zone" id="zone-next"></div>
+    <div class="nav-btn" id="prev">&#8249;</div>
+    <div class="nav-btn" id="next">&#8250;</div>
+    <div class="counter" id="counter">1 / 15</div>
+    <div class="progress-track"><div class="progress-fill" id="progress"></div></div>
+  </div>
+</div>
+
+<script>
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  let idx = 0;
+  function show(i){
+    idx = Math.max(0, Math.min(slides.length - 1, i));
+    slides.forEach((s, j) => s.classList.toggle('active', j === idx));
+    document.getElementById('counter').textContent = (idx + 1) + ' / ' + slides.length;
+    document.getElementById('progress').style.width = ((idx + 1) / slides.length * 100) + '%';
+    history.replaceState(null, '', '#' + (idx + 1));
+  }
+  document.addEventListener('keydown', e => {
+    if (['ArrowRight','ArrowDown','PageDown',' '].includes(e.key)) { show(idx + 1); e.preventDefault(); }
+    else if (['ArrowLeft','ArrowUp','PageUp'].includes(e.key)) { show(idx - 1); e.preventDefault(); }
+    else if (e.key === 'Home') { show(0); }
+    else if (e.key === 'End') { show(slides.length - 1); }
+  });
+  document.getElementById('next').addEventListener('click', () => show(idx + 1));
+  document.getElementById('prev').addEventListener('click', () => show(idx - 1));
+  document.getElementById('zone-next').addEventListener('click', () => show(idx + 1));
+  document.getElementById('zone-prev').addEventListener('click', () => show(idx - 1));
+  const startAt = parseInt(location.hash.replace('#', ''), 10);
+  show(Number.isFinite(startAt) ? startAt - 1 : 0);
+</script>

@@ -348,3 +348,12 @@ not something the data fixes (`P2_MIRROR`, and the same caveat in the P2
 group's own handoff). It sets the sign of the beam's 6 mm lateral offset and
 the sense of the uRWELL local axes in the drawing. Track *angles*, the spot
 size and the front→back offset are unaffected by it.
+
+## Slides
+
+`slides/` builds the actual MPGD2026 talk from a subset of the figures above
+plus curated material from elsewhere (ATOMKI evidence, the n_TOF/EAR2
+facility, cosmic-bench characterization results). Start with
+`slides/NOTES.md` — open items by slide, and how to regenerate every image
+in `slides/assets/img/`, which is **not tracked in git** (see that file for
+why).
