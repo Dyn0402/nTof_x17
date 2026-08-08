@@ -29,6 +29,14 @@
 # Garfield or LCG path.
 # =============================================================================
 
+# ⚠ LOCAL PATCH ON TOP OF THE PIN (2026-08-08, laptop + desktop):
+# Source/ComponentGrid.cc — the 3D xyz/ijk loader parsed the active-region
+# flag but never stored it, and m_active was allocated before the header-line
+# mesh was known (segfault). Needed by the MX17 T6 mesh field map
+# (MX17_Geant/response/meshcell/FIELD_MAP_RUNBOOK.md, Decision 5). Any
+# rebuild or pin move MUST re-apply it until upstreamed — the symptom of
+# losing it is mesh transparency exactly 1.000 in gates_check.C.
+
 export MX17_GARFIELD_PIN=927e5c21
 
 # LCG view used on lxplus and on condor workers (ROOT 6.38, gcc 14.3).
