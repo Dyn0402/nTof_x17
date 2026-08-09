@@ -1,0 +1,134 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gamma-flash charge into the MX17 chambers</title>
+<style>
+:root{--bg:#fff;--fg:#1b2430;--muted:#6a7583;--line:#e0e4ea;--accent:#0072B2;
+ --warn:#c0632c;--panel:#f7f8fa;--ok:#009E73;}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+ --bg:#15171a;--fg:#e8e8ea;--muted:#a0a4ab;--line:#2c3036;--accent:#6fb0e0;
+ --warn:#e2925c;--panel:#1c1f24;--ok:#6fc493;}}
+:root[data-theme="dark"]{--bg:#15171a;--fg:#e8e8ea;--muted:#a0a4ab;
+ --line:#2c3036;--accent:#6fb0e0;--warn:#e2925c;--panel:#1c1f24;--ok:#6fc493;}
+body{background:var(--bg);color:var(--fg);margin:0 auto;
+ padding:2.2rem 1.2rem 4rem;max-width:54rem;line-height:1.62;
+ font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;}
+h1{font-size:1.7rem;line-height:1.25;margin:0 0 .3rem;}
+h2{font-size:1.18rem;margin:2.4rem 0 .7rem;padding-bottom:.3rem;
+ border-bottom:1px solid var(--line);}
+.sub{color:var(--muted);margin:0 0 1.6rem;font-size:.94rem;}
+.verdict{background:var(--panel);border-left:4px solid var(--accent);
+ padding:1rem 1.15rem;border-radius:0 6px 6px 0;margin:1.4rem 0;}
+.verdict p{margin:.45rem 0;}
+.caveat{background:var(--panel);border-left:4px solid var(--warn);
+ padding:1rem 1.15rem;border-radius:0 6px 6px 0;margin:1.4rem 0;}
+.kpis{display:flex;flex-wrap:wrap;gap:.8rem;margin:1.4rem 0;}
+.kpi{flex:1 1 10rem;background:var(--panel);border:1px solid var(--line);
+ border-radius:7px;padding:.75rem .9rem;}
+.kpi .n{font-size:1.35rem;font-weight:640;color:var(--accent);
+ font-variant-numeric:tabular-nums;}
+.kpi .l{font-size:.79rem;color:var(--muted);line-height:1.35;}
+.scroll{overflow-x:auto;margin:1rem 0;}
+table{border-collapse:collapse;width:100%;font-size:.87rem;
+ font-variant-numeric:tabular-nums;}
+th,td{border-bottom:1px solid var(--line);padding:.42rem .6rem;text-align:right;}
+th{text-align:left;font-weight:600;}
+thead th{color:var(--muted);font-size:.8rem;text-transform:uppercase;
+ letter-spacing:.03em;}
+figure{margin:1.8rem 0;}
+img{max-width:100%;height:auto;border:1px solid var(--line);border-radius:6px;
+ background:#fff;}
+figcaption{font-size:.85rem;color:var(--muted);margin-top:.45rem;}
+code{background:var(--panel);padding:.1rem .32rem;border-radius:3px;font-size:.85em;}
+ul{padding-left:1.15rem;} li{margin:.3rem 0;}
+</style></head><body>
+<h1>How much charge the &gamma; flash puts into an MX17 chamber</h1>
+<p class="sub">Dylan Neff &middot; 9 August 2026 &middot; from the resistive-layer HV supply current, n_TOF EAR2 July&ndash;August 2026</p>
+<div class="verdict">
+<p><b>The flash delivers ~99&ndash;142 nC of avalanche charge per beam pulse, per chamber, at the production operating point.</b> Spread over a chamber&rsquo;s 1024 DREAM channels that is ~139 pC each, against a CSA full-scale input of 50&ndash;600 fC &mdash; <b>231&times; full scale on an average channel</b>, and the beam spot is worse than average.</p>
+<p><b>And the dead time follows the charge, not the voltage.</b> Joined to the flash-recovery map on the <i>same</i> 31 sub-runs, three chambers at three different gains fall on one power law, t &prop; Q<sup>1.2</sup>, over a decade in charge. High voltage is only the knob that sets the charge.</p>
+<p>The measurement sits entirely outside the readout chain, which is the point: everything that could otherwise tell us goes through the front end that the flash saturates.</p>
+</div>
+<div class="kpis">
+<div class="kpi"><div class="n">142 nC</div><div class="l">charge per beam pulse, det A at 540 V (det C 99 nC at 525 V)</div></div>
+<div class="kpi"><div class="n">&times;231</div><div class="l">the CSA&rsquo;s 600 fC full scale, per channel, averaged over the chamber</div></div>
+<div class="kpi"><div class="n">t &prop; Q<sup>1.2</sup></div><div class="l">dead time against delivered charge, three chambers on one curve</div></div>
+<div class="kpi"><div class="n">&times;20</div><div class="l">charge over the 520&ndash;580 V scan &mdash; the gas-gain curve</div></div>
+</div>
+<h2>What was measured, and how</h2>
+<p>The resistive-layer supply carries the avalanche ion current, so its average current <i>is</i> the charge delivered to the amplification stage, integrated over everything one beam pulse does &mdash; flash and neutron tail together. Per sub-run, per chamber:</p>
+<div class="verdict" style="border-left-color:var(--muted)"><p style="margin:0"><code>Q_pulse = [ mean(I_resist) &minus; median(I_resist) ] &divide; f_pulse</code></p></div>
+<ul>
+<li>The CAEN readback samples at ~1 Hz while beam pulses arrive every ~3.3 s, so most samples sit at the standing leakage. The sub-run <b>median is the leakage at that exact HV</b>, and mean &minus; median is the beam-induced part. Self-calibrating &mdash; which is what makes an HV scan usable without a beam-off run at every point.</li>
+<li>The pulse rate is counted per sub-run over that sub-run&rsquo;s own time window from the beam-intensity slow-control log, not taken as a run average: beam availability at n_TOF varies hour to hour.</li>
+<li>Errors are bootstrapped over the sub-run&rsquo;s own samples, so readback noise on a leaky channel inflates the uncertainty without biasing the estimator.</li>
+</ul>
+<h2>Three checks it has to pass</h2>
+<h3 style="font-size:1rem;color:var(--muted);text-transform:uppercase;letter-spacing:.04em">1 &mdash; no beam, no charge</h3>
+<div class="scroll"><table><thead><tr><th>run</th><th>det</th><th>resist V</th><th>leakage [&micro;A]</th><th>&Delta;I [&micro;A]</th><th>pulse rate [Hz]</th></tr></thead><tbody>
+<tr><th>run_159</th><td>A</td><td>540</td><td>0.016</td><td>+0.0002</td><td>0.000</td></tr>
+<tr><th>run_159</th><td>B</td><td>540</td><td>2.927</td><td>+0.0005</td><td>0.000</td></tr>
+<tr><th>run_159</th><td>C</td><td>524</td><td>0.008</td><td>-0.0002</td><td>0.000</td></tr>
+<tr><th>run_159</th><td>D</td><td>520</td><td>0.714</td><td>+0.0015</td><td>0.000</td></tr>
+<tr><th>run_157</th><td>A</td><td>540</td><td>0.013</td><td>+0.0052</td><td>0.031</td></tr>
+<tr><th>run_157</th><td>B</td><td>540</td><td>2.126</td><td>+0.0037</td><td>0.031</td></tr>
+<tr><th>run_157</th><td>C</td><td>524</td><td>0.006</td><td>+0.0040</td><td>0.031</td></tr>
+<tr><th>run_157</th><td>D</td><td>520</td><td>0.693</td><td>+0.0147</td><td>0.031</td></tr>
+</tbody></table></div>
+<p>run_159 is a beam-off cosmic reference at the production setpoint with <b>0.000 Hz</b> of beam pulses in the log, and the estimator returns zero on it &mdash; including on a channel carrying 2.9 &micro;A of standing leakage, which is the part that matters. run_157 was taken as beam-off too but caught residual beam at 0.031 Hz, and it shows a correspondingly small signal.</p>
+<h3 style="font-size:1rem;color:var(--muted);text-transform:uppercase;letter-spacing:.04em">2 &mdash; it tracks the beam, not the detector</h3>
+<div class="scroll"><table><thead><tr><th>run</th><th>det</th><th>pulse rate [Hz]</th><th>&Delta;I [&micro;A]</th><th>Q per pulse [nC]</th></tr></thead><tbody>
+<tr><th>run_157</th><td>A</td><td>0.031</td><td>0.0052</td><td>165</td></tr>
+<tr><th>run_157</th><td>C</td><td>0.031</td><td>0.0040</td><td>128</td></tr>
+<tr><th>run_158</th><td>A</td><td>0.303</td><td>0.0419</td><td>142</td></tr>
+<tr><th>run_158</th><td>C</td><td>0.303</td><td>0.0293</td><td>99</td></tr>
+</tbody></table></div>
+<p>Identical HV setpoint, hours apart, ~10&times; different beam rate. The <b>current changes tenfold and the charge per pulse does not</b> (to ~25 %). This one came free and it is the strongest argument that the number means what it is claimed to mean.</p>
+<h3 style="font-size:1rem;color:var(--muted);text-transform:uppercase;letter-spacing:.04em">3 &mdash; the HV dependence is the gain curve</h3>
+<div class="scroll"><table><thead><tr><th>det</th><th>at 520 V</th><th>at 580 V</th><th>ratio</th><th>points</th></tr></thead><tbody>
+<tr><th>A</th><td>35 nC</td><td>761 nC</td><td>&times;21.5</td><td>31</td></tr>
+<tr><th>B</th><td>27 nC</td><td>534 nC</td><td>&times;19.9</td><td>31</td></tr>
+<tr><th>C</th><td>74 nC</td><td>821 nC</td><td>&times;11.1</td><td>31</td></tr>
+<tr><th>D</th><td>211 nC</td><td>71 nC</td><td>&times;0.3 &mdash; not usable</td><td>31</td></tr>
+</tbody></table></div>
+<p>Smooth and monotonic on A, B and C over 31 points. <b>Det D is not usable in run_57</b> and the reason is not understood: it sits on its own &minus;10 V grid, carries ~2 &micro;A of leakage, and its curve falls with HV. It is the standing &ldquo;bad detector&rdquo; caveat of every flash-recovery analysis; treat this as one more instance.</p>
+<h2>The production operating point</h2>
+<div class="scroll"><table><thead><tr><th>det</th><th>resist V</th><th>leakage [&micro;A]</th><th>Q/pulse [nC]</th><th>per channel [pC]</th><th>&times; 600 fC</th><th>&times; 50 fC</th><th>trust</th></tr></thead><tbody>
+<tr><th>A</th><td>540</td><td>0.016</td><td>142 &plusmn; 2</td><td>139</td><td>231</td><td>2774</td><td>clean</td></tr>
+<tr><th>C</th><td>524</td><td>0.009</td><td>99 &plusmn; 1</td><td>97</td><td>162</td><td>1939</td><td>clean</td></tr>
+<tr><th>B</th><td>540</td><td>2.128</td><td>36 &plusmn; 2</td><td>36</td><td>59</td><td>711</td><td>leaky (2.1 &micro;A)</td></tr>
+<tr><th>D</th><td>520</td><td>0.771</td><td>305 &plusmn; 4</td><td>298</td><td>496</td><td>5957</td><td>leaky (0.8 &micro;A)</td></tr>
+</tbody></table></div>
+<p>Quote A and C. Per-channel divides by the chamber&rsquo;s 1024 channels, so it is an average over the whole active area. Areal: ~0.1 nC/cm&sup2; per pulse over 398.6 &times; 362 mm.</p>
+<h2>Figures</h2>
+<figure>
+<img src="figures/status_deadtime_vs_charge.png" alt="Dead time against charge delivered">
+<figcaption><b>Dead time against charge delivered</b> &mdash; The join. Charge from the supply current and recovery from the flash-random probe, measured on the SAME 31 sub-runs of run_57. Three chambers at three different gains fall on one power law.</figcaption>
+</figure>
+<figure>
+<img src="figures/status_charge_vs_hv.png" alt="Charge per pulse against resistive-layer HV">
+<figcaption><b>Charge per pulse against resistive-layer HV</b> &mdash; A gas-gain curve measured through the charge the detector delivers rather than the signal it makes. Det D is excluded: its run_57 curve falls with HV and is not understood.</figcaption>
+</figure>
+<figure>
+<img src="figures/status_recovery_vs_hv.png" alt="Recovery time against resistive-layer HV">
+<figcaption><b>Recovery time against resistive-layer HV</b> &mdash; The dead-time map this measurement was built to give an abscissa to (nTof_x17_DAQ/docs/flash_recovery_run57_HV_map_2026-07-20.md). Stars mark the production operating point; the band is thermal arrival.</figcaption>
+</figure>
+<figure>
+<img src="figures/status_two_readouts.png" alt="The same chamber, two readout chains">
+<figcaption><b>The same chamber, two readout chains</b> &mdash; Context from ntof_processing/mm_flash/: on a direct 1 GS/s analog channel the chamber is usable 0.87 us after the flash peak. The millisecond dead time belongs to the charge-integrating front end.</figcaption>
+</figure>
+<h2>What this does not establish</h2>
+<div class="caveat">
+<p><b>The one systematic that bounds everything.</b> This assumes the CAEN current readback preserves the time-average of a burst much shorter than the sample spacing. 27.8 % of samples sit above baseline on both clean chambers, which is what ~1 s smoothing of a burst would give (and smoothing conserves the integral) &mdash; but that is inference from one number. <b>If the monitor instead reports a short instantaneous average, every charge here is a lower bound.</b> The cheapest way to settle it is to look up the board&rsquo;s imon integration spec; the definitive way is to inject a known charge at a known rate through the DAQ pulser path.</p>
+</div>
+<ul>
+<li><b>It cannot separate flash from tail.</b> The supply current integrates the whole pulse, and the CSA-pinning mechanism is specifically about <i>sustained</i> current, so the split matters for the mechanism argument. The waveform-level handle exists separately &mdash; see <code>ntof_processing/mm_flash/</code> &mdash; but its 930 pC is a single electrode over ~1 &micro;s and is <b>not</b> directly comparable to the whole-chamber, whole-cycle number here.</li>
+<li><b>It says nothing about primary ionisation</b> without the gas gain at this working point, which is not measured. Any MIP-equivalent figure derived from these numbers is an illustration.</li>
+<li><b>Per-channel numbers are chamber averages.</b> The illuminated region sees more; nothing here maps the charge spatially.</li>
+<li><b>Which CSA input range we actually run is a loose end</b> &mdash; the DREAM <code>state1</code> register decode is unverified, and the four settings span a factor 12.</li>
+<li><b>Five reduced scans are unexploited</b> in the same CSV: a drift axis (run_58/61/64), the operating-point scan (run_67), and an Ar/iso 95/5-vs-90/10 comparison (run_19 vs run_42/57).</li>
+</ul>
+<h2>Reproducing this</h2>
+<p>Method, validation detail and the full to-do list: <code>ntof_july_analysis/flash_charge/HANDOFF_FLASH_CHARGE_2026-08-09.md</code>. Mirror the HV-monitor CSVs (July runs on EOS, August on the DAQ), then:</p>
+<div class="verdict" style="border-left-color:var(--muted)"><p style="margin:0"><code>.venv/bin/python ntof_july_analysis/flash_charge/analyze.py --src &lt;mirror&gt;</code><br><code>.venv/bin/python ntof_july_analysis/flash_charge/make_report.py</code></p></div>
+<p class="sub">1464 (sub-run &times; detector) rows over 11 runs. Figures are rendered by <code>mpgd26/make_status_plots.py</code>, the same code that builds the MPGD2026 talk, so the two cannot drift apart.</p>
+</body></html>

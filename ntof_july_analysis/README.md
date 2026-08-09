@@ -25,6 +25,18 @@ flask_app **"Analysis" tab** browses (`GENERAL_ANALYSIS_DIR = {BASE_DATA_DIR}ana
 All three are **safe to run on a live run**: unprocessed / pedestal-only subruns
 are skipped (see "Gotchas").
 
+## Sub-packages
+
+Deeper studies that grew out of these scans live in their own directories, each
+with its own README/handoff:
+
+| dir | what it answers |
+|---|---|
+| `run58_scan/`, `run61_scan/`, `run62_scan/`, `run64_scan/`, `run67_scan/` | per-run drift x resist (x plastic-threshold) track-efficiency scans; `run67_scan` is the one the production operating point was chosen from |
+| `hv_track_scan/`, `track_rate_hv_time_intensity/` | track rate against HV, time since flash and pulse intensity |
+| `detA_doubletrack/`, `leadshield_compare/`, `run58_scan/` | targeted physics/QA comparisons |
+| **`flash_charge/`** | **how much avalanche charge the gamma flash puts into a chamber**, from the resistive-layer HV supply current -- i.e. the one handle that does not go through the saturated readout. ~100-150 nC per beam pulse per chamber at the production point, and joined to the flash-recovery map it shows **dead time is set by charge, not voltage** (t ~ Q^1.2, three chambers on one curve). Start at `flash_charge/HANDOFF_FLASH_CHARGE_2026-08-09.md`; `flash_charge/results/report.html` is the readable version |
+
 ## Data conventions (July / `beam_july`)
 
 - **4 detectors** mx17_A/B/C/D → FEUs A:[3,4] B:[5,6] C:[7,8] D:[1,2].

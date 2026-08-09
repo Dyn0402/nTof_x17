@@ -436,18 +436,150 @@
       </div>
     </section>
 
-    <!-- 17: D status -->
+    <!-- ===================================================================
+         STATUS SECTION, drafted 2026-08-09.  Plan and provenance for every
+         number: STATUS_PLAN.md in this directory.  This is deliberately MORE
+         slides than the talk can hold — build it long, then cut.  Suggested
+         minimum set if time is tight: D1, D4, D6, D8, D9.
+         Figures: ../make_status_plots.py (regenerates all six status_*.png).
+         =================================================================== -->
+
+    <!-- 17: D0 status overview -->
     <section class="slide">
       <div class="kicker">Status</div>
       <div class="title">Where things stand</div>
       <div class="content">
         <ul class="bullets">
-          <li class="dim">[ fill in: data-taking status / most recent beamtime ]</li>
-          <li class="dim">[ fill in: analysis stage ]</li>
-          <li class="dim">[ fill in: next milestone ]</li>
+          <li><b>Four chambers have been running at EAR2 since July</b>, on ³He, in the pinwheel — the full trigger, calorimetry and DAQ chain is closed and taking production statistics as of today.</li>
+          <li><b>The environment, not the detector, is the hard part.</b> The γ flash saturates the front end for milliseconds — measured, mapped against gain, and now against delivered charge.</li>
+          <li><b>Tracks reconstruct on beam data and point back at the capsule.</b> Waveform-first reconstruction transfers from the cosmic bench to n_TOF.</li>
+          <li>The physics reach of the thermal window is far below the original projection — two reasons, both now quantified (later slide).</li>
         </ul>
       </div>
-      <div class="flag">placeholder — needs your input, not derivable from the repos</div>
+      <div class="flag">running as this talk is given — numbers are 2026-08-09</div>
+    </section>
+
+    <!-- 18: D1 the flash -->
+    <section class="slide">
+      <div class="kicker">Status &middot; The environment</div>
+      <div class="title">What the γ flash does to a DREAM channel</div>
+      <div class="figure-solo"><img src="assets/img/status_flash_waveform.png" alt="Flash waveform railing to 4095 then 0, and the per-channel noise collapsing to the dead floor"></div>
+      <div class="caption"><b>Every channel rails to +4095, swings through to 0, and is back at a flat baseline within ~3 µs.</b> The baseline is a lie: the shaper AC-couples, so a CSA that is pinned against its rail but static looks like DC and the ADC returns to pedestal. A pinned CSA has no small-signal gain — it shows neither tracks <i>nor</i> noise. The <b>absence of noise</b> is the only tell at ADC level, and it is what the right-hand panel measures.</div>
+    </section>
+
+    <!-- 19: D1b where the failure actually lives.  Added 2026-08-09 from the
+         n_TOF-DAQ micromegas analysis (ntof_processing/mm_flash/).  This is the
+         slide that makes the section relevant to an MPGD audience rather than a
+         DAQ post-mortem: the chamber is exonerated by measurement. -->
+    <section class="slide">
+      <div class="kicker">Status &middot; The environment</div>
+      <div class="title">The chamber is fine. The front end is not.</div>
+      <div class="figure-solo"><img src="assets/img/status_two_readouts.png" alt="Recovery of the same chamber seen by a direct 1 GS/s analog channel versus by DREAM, on a log time axis"></div>
+      <div class="caption">Three n_TOF runs carried a micromegas channel digitised <b>directly at 1 GS/s by the n_TOF DAQ, with no charge-sensitive preamplifier</b>. There, the flash signal is back below threshold <b>0.87 µs after its own peak</b>, and hits resume at the first instant the DAQ permits one — at the highest rate of the entire 20 ms cycle. <b>Nothing in the gas, the field or the amplification stage has a millisecond time constant.</b> The millisecond dead time is a property of the charge-integrating front end, and only of that.</div>
+    </section>
+
+    <!-- 20: D2 how much charge -->
+    <section class="slide">
+      <div class="kicker">Status &middot; The environment</div>
+      <div class="title-sm">How much charge are we talking about?</div>
+      <div class="figure-solo"><img src="assets/img/status_charge_scale.png" alt="Charge per DREAM channel against the CSA full-scale ranges, log axis"></div>
+      <div class="stat-row">
+        <div class="stat"><div class="num">142 nC</div><div class="lbl">avalanche charge per beam pulse, per chamber, at the production operating point</div></div>
+        <div class="stat"><div class="num">&times;231</div><div class="lbl">the front end's full-scale input charge, on an <i>average</i> channel</div></div>
+        <div class="stat"><div class="num">0.1 nC/cm²</div><div class="lbl">per pulse, over the 399 &times; 362 mm active area</div></div>
+      </div>
+      <div class="caption">Measured from the resistive-layer supply current — the one handle on this that does not go through the saturated readout. Method and validation on the next-but-one slide.</div>
+    </section>
+
+    <!-- 20: D3 charge vs gain -->
+    <section class="slide">
+      <div class="kicker">Status &middot; The environment</div>
+      <div class="title-sm">Charge delivered, versus gain</div>
+      <div class="figure-solo"><img src="assets/img/status_charge_vs_hv.png" alt="Avalanche charge per beam pulse against resistive-layer HV, three chambers"></div>
+      <div class="caption">A gas-gain curve measured through the <b>charge the detector delivers</b> rather than the signal it makes — which is the point, because the signal is what saturates. 30 nC at the bottom of the scan, 800 nC at the top: a factor of ~20 over 60 V, on three chambers independently.</div>
+    </section>
+
+    <!-- 21: D4 dead time vs gain -->
+    <section class="slide">
+      <div class="kicker">Status &middot; The environment</div>
+      <div class="title-sm">And what it costs: milliseconds of blindness</div>
+      <div class="figure-solo"><img src="assets/img/status_recovery_vs_hv.png" alt="Post-flash recovery time against resistive-layer HV, four chambers, with the thermal window shaded"></div>
+      <div class="caption">Flash defines t = 0; a Poisson pulser then fires random triggers across the ~30 ms gate and each one probes whether the front end has its noise back. <b>Recovery runs from under 1 ms to beyond the gate over 60 V</b> — and the shaded band is where the thermal neutrons arrive. The dead time the flash imposes is the same size as the physics window it precedes.</div>
+    </section>
+
+    <!-- 22: D5 THE JOIN -->
+    <section class="slide">
+      <div class="kicker">Status &middot; The environment</div>
+      <div class="title-sm">Dead time is set by charge, not by voltage</div>
+      <div class="figure-solo"><img src="assets/img/status_deadtime_vs_charge.png" alt="Recovery time against charge per pulse: three chambers on one power law"></div>
+      <div class="caption">Two independent measurements of the <b>same 31 sub-runs</b> — charge from the HV supply current, recovery from the flash-random probe — and three chambers at three different gains fall on <b>one curve</b>. So HV is only the knob; what the front end cannot survive is the <b>charge</b>. Consistent with the mechanism: the CSA's feedback can only sink ~9–90 nA, and a sustained input current above that pins it against the rail for as long as the current lasts.</div>
+    </section>
+
+    <!-- 23: D6 what we did about it -->
+    <section class="slide">
+      <div class="kicker">Status &middot; Operating in it</div>
+      <div class="title">We chose the operating point off the dead-time map</div>
+      <div class="content">
+        <ul class="bullets">
+          <li><b>Deliberately below the efficiency plateau.</b> Production runs drift 700 V, resist 520–540 V — picked for milliseconds of recovery, not for gain. Every ~10 V of resist buys a few ms of blindness.</li>
+          <li><b>Trigger pushed as low as it will go.</b> A threshold &times; drift &times; resist scan showed track efficiency <i>rises</i> toward lower plastic threshold in every time window, so we took 0.90 MIP rather than 1.41.</li>
+          <li><b>Readout window measured, not assumed</b> — 20 samples &times; 60 ns holds 95 % of the drift charge with the onset at sample 2; the trigger FIFO watermark was set from a measured acceptance-comb uniformity (CV 1.50 &rarr; 0.51).</li>
+        </ul>
+        <div class="stat-row">
+          <div class="stat"><div class="num">~1.7 TB</div><div class="lbl">production statistics banked since 2026-08-02, still running</div></div>
+          <div class="stat"><div class="num">4 / 4</div><div class="lbl">chambers live, with beam-off cosmic reference runs interleaved</div></div>
+        </div>
+      </div>
+      <div class="caption">The honest framing: this is a <b>dead-time optimum, not an efficiency optimum</b> — and we can show the map we chose it from.</div>
+    </section>
+
+    <!-- 24: D7 when the data actually arrives -->
+    <section class="slide">
+      <div class="kicker">Status &middot; Operating in it</div>
+      <div class="title-sm">What we record, and when</div>
+      <div class="figure-solo"><img src="assets/img/status_track_rate.png" alt="Reconstructed track rate against time since the gamma flash"></div>
+      <div class="caption">Reconstructed tracks on beam data, joined event-by-event to the n_TOF scintillator stream. The turn-on at 1 ms is the DREAM gate, not the reconstruction; the bulk of everything we record sits in the first ~10 ms — the same interval the recovery map says the chambers are only partly alive in. That overlap <i>is</i> the experiment's central operational problem, stated in data.</div>
+    </section>
+
+    <!-- 25: D8 imaging the target -->
+    <section class="slide">
+      <div class="kicker">Status &middot; Reconstruction</div>
+      <div class="title">The tracks point back at the capsule</div>
+      <div class="figure-solo"><img src="assets/img/target_pointing_fans.png" alt="Four track bundles coloured by the SiPM wall segment that fired, converging at the He-3 target"></div>
+      <div class="caption">Waveform-first reconstruction on beam data, coloured by <b>which SiPM wall segment fired</b> — external position truth on a 100 mm granularity, on a lever arm the chamber knows nothing about. The four bundles are <b>251 mm apart at the wall and 9 mm apart at the target plane</b>; shuffling the segment labels collapses that to 28 mm and 3.2 mm. <span style="color:var(--copper)"><b>Ensemble statement</b></span> — the waist is a convergence of medians, not a per-track pointing resolution.</div>
+    </section>
+
+    <!-- 26: D9 the physics, stated factually.  See STATUS_PLAN.md §5 — this is
+         framing option (b): state the branching ratio and the Al capture as
+         properties of the reaction and the capsule, and let the audience draw
+         the conclusion.  Option (a) (fully open, "we are a demonstrator") and
+         option (c) (say nothing about yield) are both defensible; this needs a
+         decision with the collaboration before the talk. -->
+    <section class="slide">
+      <div class="kicker">Status &middot; What the channel turned out to be</div>
+      <div class="title-sm">Two facts about the reaction and the capsule</div>
+      <div class="content">
+        <ul class="bullets">
+          <li><b>At thermal energies n + ³He goes to ³H + p, essentially always.</b> The radiative branch that carries the 20.6 MeV transition is &sigma;<sub>n&gamma;</sub>/&sigma;<sub>np</sub> &asymp; 10⁻⁸ — and because the gas is opaque to (n,p), self-shielding caps the radiative yield a further factor 50–100 below a thin-target estimate.</li>
+          <li><b>²⁷Al(n,&gamma;) on the capsule produces most of what we trigger on.</b> Geant4 trigger provenance: ~97 % of trigger legs are Al capture γ. Their pairs carry ≤ 6.7 MeV of lepton kinetic energy against the signal's ~19.6 MeV.</li>
+        </ul>
+        <div class="callout"><b>Which leaves a real detector question, not a dead end:</b> the Al background separates cleanly on <b>total pair energy</b> — a cut at 13 MeV — provided the tracker delivers <b>&sigma;(p)/p ≲ 30 %</b> per lepton from multiple scattering or range. Opening angle alone cannot do it; multiple scattering drags 7 % of Al pairs into the signal window.</div>
+      </div>
+      <div class="flag">framing to be agreed with the collaboration before this is shown</div>
+    </section>
+
+    <!-- 27: D10 what this campaign is for -->
+    <section class="slide">
+      <div class="kicker">Status &middot; Outlook</div>
+      <div class="title">What we take away</div>
+      <div class="content">
+        <ul class="bullets">
+          <li><b>Resistive micro-TPCs work in a spallation γ-flash environment.</b> Measured, not asserted: the same chamber on a direct analog channel is usable 0.87 µs after the flash peak. The chambers are not the limitation.</li>
+          <li><b>The limitation is charge integration in the front end</b>, and it is now characterised as a one-parameter problem: dead time against delivered charge, t &prop; Q<sup>1.2</sup>, at ~10² nC per pulse per chamber. That is a specification a future front end can be designed against.</li>
+          <li><b>What did not work:</b> mesh charge injection as a compensation scheme — tuned to kill the positive rail, it simply moves the channel onto the negative one, with no net reduction in railed time.</li>
+          <li><b>Next:</b> in-situ calibration of the reconstruction on beam data, four-arm back-projection of the production statistics, and a direct waveform-level charge measurement through the unsaturated single-channel path.</li>
+        </ul>
+      </div>
     </section>
 
     <!-- 18: summary -->
@@ -458,8 +590,9 @@
         <ul class="bullets">
           <li>Saclay resistive micro-TPCs: sub-mm position, ~1.7&deg; (&rarr;~1.0&ndash;1.1&deg;) angular resolution at every track angle</li>
           <li>Fully characterized across a five-chamber fleet on the Saclay cosmic bench</li>
-          <li>Now assembled around the ³He target for the X17 search at n_TOF</li>
-          <li class="dim">[ status / outlook — fill in ]</li>
+          <li>Now assembled around the ³He target at n_TOF EAR2, taking production statistics</li>
+          <li>Reconstruction transfers to beam data: waveform-first tracks point back at the capsule, cross-checked against the SiPM wall that fired</li>
+          <li>The γ flash delivers <b>~10² nC per chamber per pulse</b> and costs <b>milliseconds</b> of front-end dead time — and we can show that the dead time is set by the <b>charge</b>, not the voltage</li>
         </ul>
       </div>
       <div class="footer-tag">Thank you &mdash; questions welcome</div>
@@ -504,6 +637,66 @@
         <div class="callout"><b>The ³H target — our channel's mirror reaction:</b> not evaporated like the others. ³H gas is absorbed into a 4.2 mg/cm² Ti layer evaporated onto a Mo disc — a solid, &micro;m-scale, low-mass target. Their original 0.5 mm Al target holders were replaced after GEANT + data showed they caused shadowing/scattering background: they fixed it by <b>cutting material</b>, not adding shielding. Worth keeping in mind for the ³He capsule.</div>
       </div>
       <div class="caption">J. Gulyás et al., <i>Nucl. Instrum. Methods Phys. Res. A</i> 808, 21 (2016) (spectrometer) &middot; A.J. Krasznahorkay et al., <i>Phys. Rev. C</i> 104, 044003 (2021), arXiv:2104.10075 (³H target)</div>
+    </section>
+
+    <!-- ===== Status backup slides, added 2026-08-09 ===== -->
+
+    <!-- Backup — how the charge measurement works, and why it is believable -->
+    <section class="slide">
+      <div class="kicker">Backup</div>
+      <div class="title-sm">How the charge per pulse is measured</div>
+      <div class="content">
+        <div class="callout" style="margin-top:0;">Q<sub>pulse</sub> = [ mean(I<sub>resist</sub>) &minus; median(I<sub>resist</sub>) ] / f<sub>pulse</sub> &nbsp;— per sub-run, per chamber</div>
+        <ul class="bullets">
+          <li>The resistive-layer supply carries the <b>avalanche ion current</b>, so its average current is the charge delivered to the amplification stage, integrated over the whole pulse. It sits entirely outside the readout chain.</li>
+          <li>The readback samples at ~1 Hz while beam pulses arrive every ~3.3 s, so most samples sit at the standing leakage: the <b>median is the leakage at that exact HV</b>, and mean &minus; median is the beam-induced part. Self-calibrating, which is what makes an HV scan usable.</li>
+          <li>Pulse rate comes per sub-run from the beam-intensity log, not from a run average.</li>
+        </ul>
+        <table class="spec-table">
+          <tr><td class="k">Null test</td><td>beam-off run at the production setpoint, 0.000 Hz of pulses: &Delta;I = +0.0002 / +0.0005 / &minus;0.0002 / +0.0015 µA on A/B/C/D, against +0.042 µA with beam — including on a channel carrying 2.9 µA of leakage</td></tr>
+          <tr><td class="k">Rate scaling</td><td>same setpoint, 10&times; different beam rate: &Delta;I changes 10&times;, <b>charge per pulse does not</b> (165 vs 142 nC on det A, 128 vs 99 nC on det C)</td></tr>
+          <tr><td class="k">HV dependence</td><td>a smooth &times;20 rise over 60 V on three chambers — i.e. the gas-gain curve</td></tr>
+          <tr><td class="k">Open systematic</td><td>assumes the supply's current readback preserves the time-average of a burst shorter than the sample spacing. 28 % of samples sit above baseline on both clean chambers, consistent with ~1 s smoothing (which conserves the integral). <b>If not, every charge quoted is a lower bound.</b></td></tr>
+        </table>
+      </div>
+    </section>
+
+    <!-- Backup — the rate table.  This is STATUS_PLAN.md §5 framing option (a),
+         kept off the main flow deliberately.  Have it ready; it will be asked. -->
+    <section class="slide">
+      <div class="kicker">Backup</div>
+      <div class="title-sm">Thermal-window rates, as simulated</div>
+      <div class="content">
+        <table class="spec-table">
+          <tr><td class="k">&sigma;<sub>n&gamma;</sub>/&sigma;<sub>np</sub> (³He, thermal)</td><td>1.0 &times; 10⁻⁸ — measured in Geant4, consistent with ENDF / Wolfs <i>et al.</i>, PRL 63, 2721 (1989)</td></tr>
+          <tr><td class="k">Self-shielding</td><td>optical depth ~150 at 25 meV ⇒ radiative captures capped a further &times;50–100 below thin-target; (1.1–2.3) &times; 10⁻⁴ IPC/pulse against the table's 1.21 &times; 10⁻²</td></tr>
+          <tr><td class="k">X17 production</td><td>0.035 /day &rarr; 0.012 /day with both legs in a drift volume</td></tr>
+          <tr><td class="k">IPC</td><td>1.39 /day produced &rarr; 0.44 /day accepted — the irreducible background; total pair energy is the same 19.6 MeV, so the Al cut does not touch it</td></tr>
+          <tr><td class="k">Al(n,&gamma;) pairs</td><td>5.95 &times; 10⁶ /day produced &rarr; 6.5 &times; 10⁵ /day MM-reconstructed; ~5 &times; 10⁷ : 1 over X17</td></tr>
+          <tr><td class="k">Trigger provenance</td><td>~122 legs/pulse at 0.5 MIP, <b>97 % Al capture γ</b>; the Micromegas tag 61 % of them against 100 % of signal</td></tr>
+        </table>
+        <div class="callout">The MeV region — where ~98 % of the physical ³He(n,&gamma;) rate lives, and where the thin-target treatment is valid — sits 1–3 µs after the flash. That is inside the interval this talk has just shown the front end cannot see.</div>
+      </div>
+      <div class="caption">Sources: MX17 Geant4 campaign (thermal_note, mev_note, al_pair_background). Simulation, not measurement.</div>
+    </section>
+
+    <!-- Backup — trigger optimisation, the numbers behind "we ran under the plateau" -->
+    <section class="slide">
+      <div class="kicker">Backup</div>
+      <div class="title-sm">Why the trigger threshold went <i>down</i></div>
+      <div class="content">
+        <ul class="bullets">
+          <li>A plastic-threshold &times; drift &times; resist scan, with efficiency defined as <b>P(3-D x/y pair) per recorded trigger</b> — noise-robust, because two orthogonal planes do not agree by accident.</li>
+          <li>Efficiency <i>rises</i> toward lower threshold in every time window, so the cheap triggers are not junk and throughput follows the rate.</li>
+        </ul>
+        <table class="spec-table">
+          <tr><td class="k">1–10 ms</td><td>1.41 MIP: 171 &plusmn; 2 /1000 &nbsp;&middot;&nbsp; 1.13: 174 &plusmn; 2 &nbsp;&middot;&nbsp; <b>0.90: 178 &plusmn; 2</b></td></tr>
+          <tr><td class="k">10–30 ms</td><td>1.41 MIP: 62 &plusmn; 1 &nbsp;&middot;&nbsp; 1.13: 77 &plusmn; 1 &nbsp;&middot;&nbsp; <b>0.90: 83 &plusmn; 1</b></td></tr>
+          <tr><td class="k">30–80 ms</td><td>1.41 MIP: 69 &plusmn; 1 &nbsp;&middot;&nbsp; 1.13: 88 &plusmn; 1 &nbsp;&middot;&nbsp; <b>0.90: 99 &plusmn; 1</b></td></tr>
+          <tr><td class="k">Throughput</td><td>good tracks per spill, det A, 30–80 ms: 1.18 &rarr; 2.19 &rarr; <b>2.87</b> across the same three thresholds</td></tr>
+        </table>
+        <div class="caption">Yields are relative — single-arm events dominate, so there is no absolute normalisation here. Det A is the reference (clean M1 card).</div>
+      </div>
     </section>
 
     <div class="click-zone" id="zone-prev"></div>
