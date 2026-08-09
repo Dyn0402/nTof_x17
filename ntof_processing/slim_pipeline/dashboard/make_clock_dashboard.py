@@ -24,6 +24,7 @@ T0 is compared only within its own DREAM run.
 from __future__ import annotations
 
 import argparse
+import collections
 import datetime as dt
 import json
 import sys
@@ -46,7 +47,18 @@ MIN_SPREAD = dict(K=2e-7, T0_ns=25.0, efficiency=0.01, accidental=0.0005,
 # ------------------------------------------------------------------ collect
 def collect(root: Path, use_cache=True):
     out = []
-    for f in sorted(root.rglob('ntof_hits_*.root')):
+    roots = sorted(root.rglob('ntof_hits_*.root'))
+    if not roots:
+        # No ROOT files here: this is a records-only tree, rsynced from the
+        # cluster so the page can be built without moving 8 GB of hits. The
+        # records are complete -- clock_qa derives everything at write time.
+        recs = sorted(root.rglob('clock_qa.json'))
+        if recs:
+            print(f'  no .root files; building from {len(recs)} '
+                  f'clock_qa.json record(s)')
+            return [json.loads(p.read_text()) for p in recs]
+        return out
+    for f in roots:
         d = f.parent
         cache = d / 'clock_qa.json'
         if use_cache and cache.is_file() and \
@@ -391,7 +403,7 @@ JS = """
 """
 
 
-def build(recs, notes, title, source):
+def build(recs, notes, title, source, coverage=None):
     n = len(recs)
     v = {k: sum(1 for r in recs if r['verdict'] == k)
          for k in ('PASS', 'WARN', 'FAIL')}
@@ -434,8 +446,42 @@ def build(recs, notes, title, source):
         H.append(f'<div class="covbar">{"".join(seg)}</div>')
 
     # ------------------------------------------------ what to look at first
+    #
+    # A check that fires on most of the campaign is describing the DATASET, not
+    # picking out a segment. Left in the triage table it drowns the handful of
+    # genuinely unusual segments -- 45 identical "plastic tail" rows buried the
+    # one real outlier on the first real run of this page. So: anything firing
+    # on more than half the segments is reported once, as a campaign property,
+    # and excluded from the per-segment list.
+    # A quarter, not a half: the plastic-tail check fires on 39 % of the July
+    # campaign, which is plainly a dataset property, and at a 50 % cut it still
+    # buried the one real outlier.
+    SYSTEMIC = 0.25
+    fired = collections.Counter()
+    for r in recs:
+        for c in r['checks']:
+            if c['level'] in ('WARN', 'FAIL'):
+                fired[c['name']] += 1
+    systemic = {name for name, k in fired.items()
+                if len(recs) and k >= SYSTEMIC * len(recs)}
+    if systemic:
+        H.append('<h2>Systematic across the campaign</h2><p>These fire on most '
+                 'segments, so they are properties of the dataset rather than '
+                 'of any one segment. They are excluded from the triage list '
+                 'below.</p><table><tr><th>check</th><th class="num">segments'
+                 '</th><th>what it means</th></tr>')
+        for cname in sorted(systemic, key=lambda x: -fired[x]):
+            ex = next(c for r in recs for c in r['checks']
+                      if c['name'] == cname and c['level'] in ('WARN', 'FAIL'))
+            H.append(f'<tr><td>{CH.esc(cname)}</td>'
+                     f'<td class="num">{fired[cname]} / {len(recs)}</td>'
+                     f'<td>{CH.esc(ex["detail"])}</td></tr>')
+        H.append('</table>')
+
     trouble = [(i, r) for i, r in enumerate(recs)
-               if r['verdict'] != 'PASS' or notes[i]]
+               if notes[i] or any(c['level'] in ('WARN', 'FAIL')
+                                  and c['name'] not in systemic
+                                  for c in r['checks'])]
     if not trouble:
         H.append('<div class="callout ok"><strong>Nothing to look at.</strong> '
                  'Every segment passed every absolute check and none is a '
@@ -449,7 +495,8 @@ def build(recs, notes, title, source):
                  '<th>what</th></tr>')
         for i, r in trouble:
             why = [f'{c["name"]} ({c["level"]})' for c in r['checks']
-                   if c['level'] in ('WARN', 'FAIL')]
+                   if c['level'] in ('WARN', 'FAIL')
+                   and c['name'] not in systemic]
             why += [f'{o["metric"]} {o["value"]:.4g} vs fleet '
                     f'{o["median"]:.4g} (z={o["z"]:.1f})' for o in notes[i]]
             H.append(f'<tr><td>{CH.esc(_lab(r))}</td>'
@@ -458,6 +505,27 @@ def build(recs, notes, title, source):
         H.append('</table>')
 
     # -------------------------------------------------------------- charts
+    if coverage:
+        cov, tot = coverage['covered'], coverage['total']
+        H.append('<h2>Coverage — what is NOT on this page</h2>')
+        H.append(f'<div class="callout bad"><strong>{tot - cov} of {tot} DREAM '
+                 f'sub-runs produced no slim at all</strong> '
+                 f'({coverage.get("uncovered_pct", 0):.0f} % of beam minutes) '
+                 f'and are therefore absent from every chart below. A page '
+                 f'showing only what succeeded would read as a clean bill of '
+                 f'health for the campaign; it is a clean bill of health for '
+                 f'{cov} sub-runs.</div>')
+        if coverage.get('note'):
+            H.append(f'<p>{coverage["note"]}</p>')
+        seg = []
+        for label, k, c in (('slimmed', cov, 'var(--good)'),
+                            ('no coincidence found', tot - cov, 'var(--bad)')):
+            if k:
+                seg.append(f'<span style="width:{100*k/tot:.2f}%;'
+                           f'background:{c}" data-tip="{k} sub-runs {label}">'
+                           f'{k}</span>')
+        H.append(f'<div class="covbar">{"".join(seg)}</div>')
+
     H.append('<h2>Clock constants</h2><p>The map is '
              '<code>t_nTOF = t_DREAM(1+K) + T0 + a_arm</code>. Nothing here '
              'transfers between pairs, so every segment fits its own. K is a '
@@ -560,10 +628,18 @@ def build(recs, notes, title, source):
                  f'</summary>{rows}{out}</details>')
 
     H.append('</div><div id="tip"></div>')
-    return (f'<title>{CH.esc(title)}</title>'
-            f'<meta name="description" content="Per-segment QA for the '
-            f'DREAM to n_TOF clock fit behind the slimmed ntof_hits files.">'
-            f'<style>{CSS}</style>{"".join(H)}<script>{JS}</script>')
+    # A COMPLETE document, not a fragment: this file has to render identically
+    # from the file system, from the DAQ web page's analysis tab, and as a
+    # published note, none of which wrap it in anything.
+    return (f'<!doctype html>\n<html lang="en"><head><meta charset="utf-8">'
+            f'<meta name="viewport" content="width=device-width,'
+            f'initial-scale=1">'
+            f'<title>{CH.esc(title)}</title>'
+            f'<meta name="description" content="Per-segment QA for the DREAM '
+            f'to n_TOF clock fit behind the slimmed ntof_hits files: '
+            f'{len(recs)} segments, absolute checks and fleet outliers.">'
+            f'<style>{CSS}</style></head><body>'
+            f'{"".join(H)}<script>{JS}</script></body></html>')
 
 
 def main() -> int:
@@ -572,6 +648,10 @@ def main() -> int:
     ap.add_argument('-o', '--out', type=Path, default=Path('clock_dashboard.html'))
     ap.add_argument('--title', default='DREAM ↔ n_TOF clock QA')
     ap.add_argument('--no-cache', action='store_true')
+    ap.add_argument('--coverage', type=Path, default=None,
+                    help='JSON with {covered,total,uncovered_pct,note} -- what '
+                         'is missing from this tree, so the page cannot read '
+                         'as a clean bill of health for the whole campaign')
     a = ap.parse_args()
 
     print(f'collecting from {a.root} ...')
@@ -580,7 +660,8 @@ def main() -> int:
         print('no slim files found')
         return 2
     notes = population(recs)
-    a.out.write_text(build(recs, notes, a.title, str(a.root)))
+    cov = json.loads(a.coverage.read_text()) if a.coverage else None
+    a.out.write_text(build(recs, notes, a.title, str(a.root), cov))
     v = {k: sum(1 for r in recs if r['verdict'] == k)
          for k in ('PASS', 'WARN', 'FAIL')}
     print(f'{len(recs)} segment(s): {v["PASS"]} pass, {v["WARN"]} warn, '

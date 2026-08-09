@@ -153,36 +153,45 @@ def check_liquids(hits, events, cal, subrun, log=print):
 
 
 def check_window(hits, cal, log=print):
-    """Is the kept dt distribution flat at the window edge?
+    """Is the coincidence CONTAINED by the slim window?
 
-    NOTE this is necessary, not sufficient. It only sees a window that cuts into
-    the bulk. It CANNOT see an asymmetric clip of a coincidence window that is
-    centred somewhere other than zero -- `liq_coincidence` integrates +-100 ns
-    about a peak at -25..-5 ns referenced to the WALL hit, which is another
-    +-25 ns from the prediction, so it reaches to dt ~ -150 ns while this test
-    reports a perfectly flat floor at +-100. Check 3 is what catches that.
+    The test this replaces asked whether the kept dt was still RISING at the
+    edge. That is nearly useless: a coincidence peak WIDER than the window falls
+    away slowly and passes it. Measured on the reference pair it returned 0.94
+    -- "flat, window is wide enough" -- while 23 % of the plastic yield was
+    being cut off.
+
+    What works is comparing like with like: background-subtracted excess in the
+    outer decile of the window against the same width at the centre. Both are
+    0.1 W wide, so the ratio is a density ratio, and subtracting the +100 us
+    control removes the accidental floor that made the naive version look flat.
+    Same measure as `clock_qa.check` -- keep the two in step.
     """
-    log('\n4. WINDOW ADEQUACY  (necessary, not sufficient -- see docstring)')
+    log('\n4. WINDOW CONTAINMENT  (background-subtracted, per family)')
     W = cal['slim_ns']
     det = {t: i for i, t in enumerate(C.SCINT_TREES)}
     sig = hits['is_control'] == 0
+    d = np.abs(hits['dt_ns'])
+    core, edge = d <= 0.1 * W, (d > 0.9 * W) & (d <= W)
     bad = False
-    for fam, trees in (('WAL', ARMS), ('PSS', ARMS), ('LIQ', ARMS)):
-        m = sig & np.isin(hits['det'], [det[f'{fam}{q}'] for q in ARMS])
-        d = np.abs(hits['dt_ns'][m])
-        if d.size == 0:
+    for fam in ('WAL', 'PSS', 'LIQ'):
+        m = np.isin(hits['det'], [det[f'{fam}{q}'] for q in ARMS])
+        pk = int((m & sig & core).sum()) - int((m & ~sig & core).sum())
+        eg = int((m & sig & edge).sum()) - int((m & ~sig & edge).sum())
+        if pk <= 0:
+            log(f'   {fam}: no excess in the core -- nothing to contain')
             continue
-        # density in the outer decile of the window vs the one inside it
-        outer = ((d > 0.9 * W) & (d <= W)).sum()
-        inner = ((d > 0.8 * W) & (d <= 0.9 * W)).sum()
-        ratio = outer / max(inner, 1)
-        flat = ratio < 1.15
-        bad |= not flat
-        log(f'   {fam}: {d.size:>9,} hits, edge/next-in density {ratio:5.2f}  '
-            f'{_ok(flat)}  {"flat -> window is wide enough" if flat else "STILL RISING -> window clips"}')
+        r = eg / pk
+        ok = r <= 0.05
+        bad |= not ok
+        log(f'   {fam}: edge/peak excess density {r:6.3f}  {_ok(ok)}  '
+            + ('contained' if ok else 'STILL SUBSTANTIAL AT THE EDGE -> the '
+                                      'window is cutting real coincidences'))
     q = np.percentile(np.abs(hits['dt_ns'][sig]), [50, 90, 99])
     log(f'   |dt| p50/p90/p99 = {q[0]:.0f}/{q[1]:.0f}/{q[2]:.0f} ns '
         f'against a {W:.0f} ns window')
+    log('   NOTE the plastics have a known one-sided late tail (2026-08-09); '
+        'see config.SLIM_NS.')
     return not bad
 
 

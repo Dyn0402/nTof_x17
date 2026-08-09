@@ -88,6 +88,26 @@ def main() -> int:
         print(f'  note: {len(extra)} file(s) present that are not in the ready '
               f'list (an older or superseded run?)')
 
+    # Every file in one campaign must have been cut with the SAME window.
+    # A stale condor retry carrying an older sandbox will happily drop a
+    # narrower file into the tree, and nothing downstream would notice: the
+    # file is valid, just cut differently. Compare, do not assume.
+    windows = {}
+    for k, (f, _) in done.items():
+        cal = f.parent / 'calibration.json'
+        if cal.is_file():
+            w = json.loads(cal.read_text()).get('slim_ns')
+            windows.setdefault(w, []).append(k)
+    if len(windows) > 1:
+        print(f'\n!! MIXED SLIM WINDOWS in this tree -- do not publish as one '
+              f'dataset:')
+        for w, ks in sorted(windows.items(), key=lambda x: -len(x[1])):
+            print(f'   {w} ns: {len(ks)} file(s)' +
+                  (f'   e.g. {ks[0][0]}/{ks[0][1]} x {ks[0][2]}'
+                   if len(ks) < 5 else ''))
+    elif windows:
+        print(f'slim window: {list(windows)[0]:g} ns on all {len(done)} file(s)')
+
     bad = []
     for k, (f, qa) in sorted(done.items()):
         if not qa:

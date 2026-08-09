@@ -44,6 +44,13 @@ BOOT_MIN_PEAK = 150      # counts in the tallest bin
 BOOT_MIN_SNR = 6.0       # tallest bin over the accidental floor beside it
 BOOT_FLOOR_GAP_NS = 2000.0   # "beside it" = further than this from the peak
 
+# The wide fallback, used only when the +-50 us search finds nothing. Covers
+# the whole 80 ms burst by FFT cross-correlation -- see `xcorr_lag`.
+XC_BIN_NS = 1000.0
+XC_BURST_MS = 80.0
+XC_BUNCHES = 300         # enough for a clear peak; the cost is linear
+XC_MIN_Z = 8.0           # robust z of the tallest lag over the flat background
+
 CORE_NS = 250.0          # global fit: residuals inside this define the core
 ITERS = 3
 PB_MIN_EVENTS = 20       # per-bunch fit: below this, do not fit the bunch
@@ -125,8 +132,54 @@ def _line(ev_t, ei, r, core=CORE_NS, nbin=24):
     return float(a), float(b), int(m.sum()), float(np.std(rc - (a + b * tc)))
 
 
+def xcorr_lag(ev_bunch, ev_t, cd_bunch, cd_t, bin_ns=XC_BIN_NS,
+              burst_ms=XC_BURST_MS, max_bunches=XC_BUNCHES, log=print):
+    """The coarse lag between DREAM triggers and n_TOF candidates, at ANY offset.
+
+    `bootstrap` looks in +-50 us, which covers every offset seen on the pairs
+    this pipeline was built on. It is not enough: measured 2026-08-09,
+    run_132/stat090_0005 x 224662 sits at -0.982 ms, and 54 DREAM sub-runs of
+    the July campaign failed for exactly this reason while their joins, bunch
+    ranges and candidate rates all looked perfectly normal.
+
+    Brute force cannot search a 80 ms range at ns resolution, so bin both time
+    series per bunch and cross-correlate by FFT: every lag at once, O(N log N).
+    The peak comes out smeared by ~K*80ms ~ 9 us because the rate ratio is not
+    applied here -- that is fine, this only has to get close enough for the
+    fine search to take over.
+    """
+    nb = int(burst_ms * 1e6 / bin_ns)
+    acc = np.zeros(2 * nb)
+    used = 0
+    for b in np.unique(ev_bunch)[:max_bunches]:
+        te, tc = ev_t[ev_bunch == b], cd_t[cd_bunch == b]
+        if te.size < 5 or tc.size < 5:
+            continue
+        a = np.bincount(np.clip((te / bin_ns).astype(int), 0, nb - 1),
+                        minlength=nb).astype(float)
+        c = np.bincount(np.clip((tc / bin_ns).astype(int), 0, nb - 1),
+                        minlength=nb).astype(float)
+        acc += np.fft.irfft(np.conj(np.fft.rfft(a, 2 * nb))
+                            * np.fft.rfft(c, 2 * nb), 2 * nb)
+        used += 1
+    if not used:
+        return None
+    lags = np.arange(2 * nb) * bin_ns
+    lags[nb:] -= 2 * nb * bin_ns
+    o = np.argsort(lags)
+    lags, acc = lags[o], acc[o]
+    med = float(np.median(acc))
+    mad = float(np.median(np.abs(acc - med))) * 1.4826
+    i = int(np.argmax(acc))
+    z = (acc[i] - med) / max(mad, 1e-9)
+    log(f'    wide scan: lag {lags[i]/1e6:+.4f} ms, robust z {z:.0f} '
+        f'({used} bunches, {bin_ns/1000:g} us bins over +-{burst_ms:g} ms)')
+    return (float(lags[i]), float(z)) if z >= XC_MIN_Z else None
+
+
 def bootstrap(ev_bunch, ev_t, cd_bunch, cd_t, K=K_SEED, T0=T0_SEED,
-              search=BOOT_SEARCH_NS, bin_ns=BOOT_BIN_NS, log=print):
+              search=BOOT_SEARCH_NS, bin_ns=BOOT_BIN_NS, log=print,
+              _retry=True):
     """Find T0 for this pair by coarse search, with no reliance on the seed.
 
     The iterated fit can only see candidates already inside +-CORE_NS of where
@@ -155,12 +208,44 @@ def bootstrap(ev_bunch, ev_t, cd_bunch, cd_t, K=K_SEED, T0=T0_SEED,
     log(f'    bootstrap: peak {tall:,} counts at {peak:+.0f} ns, '
         f'floor {floor:.0f}/bin, S/N {snr:.0f}  '
         f'({r.size:,} candidates in +-{search/1000:g} us)')
+
+    # Nothing here? The offset may simply be bigger than this window. Look
+    # across the whole burst before giving up -- a ms-scale offset is a
+    # flash-reference problem, and the data behind it is perfectly good.
+    if (tall < BOOT_MIN_PEAK or snr < BOOT_MIN_SNR) and _retry:
+        log('    no peak in the fine window; trying the whole burst')
+        wide = xcorr_lag(ev_bunch, ev_t, cd_bunch, cd_t, log=log)
+        if wide is not None:
+            lag, z = wide
+            # Re-centring alone is not enough. The wide scan gives the lag but
+            # not the rate ratio, and at these offsets the correlation arrives
+            # spread over microseconds -- a 20 ns histogram dilutes it below
+            # the floor (measured: peak 164 over a floor of 87, S/N 1.9, on a
+            # correlation the wide scan saw at z 21). So walk the resolution
+            # down, re-centring at each step, and let the width come with it.
+            T0w = T0 + lag
+            for bw, sw in ((2000.0, 40_000.0), (500.0, 10_000.0),
+                           (100.0, 2_000.0), (bin_ns, search)):
+                try:
+                    T0w, info = bootstrap(ev_bunch, ev_t, cd_bunch, cd_t, K,
+                                          T0w, sw, bw, log=log, _retry=False)
+                except RuntimeError:
+                    break
+            else:
+                info.update(wide_lag_ns=lag, wide_z=z,
+                            recovered_by_wide_scan=True)
+                log(f'    recovered at a {lag/1e6:+.4f} ms offset')
+                return T0w, info
+            log('    the wide scan found a lag but the refinement ladder could '
+                'not sharpen it -- the correlation is broad, not a coincidence')
+
     if tall < BOOT_MIN_PEAK or snr < BOOT_MIN_SNR:
         raise RuntimeError(
             f'no time-base peak: tallest bin has {tall} counts at {peak:+.0f} '
             f'ns over a floor of {floor:.0f} (S/N {snr:.1f}, need '
-            f'{BOOT_MIN_SNR:g}). Either the segment is too small to fit, or '
-            f'this DREAM sub-run does not overlap this n_TOF run.')
+            f'{BOOT_MIN_SNR:g}), and the whole-burst scan found no lag '
+            f'either. Either the segment is too small to fit, or this DREAM '
+            f'sub-run really does not overlap this n_TOF run.')
     # Keep the coarse histogram itself, rebinned to ~500 points. A summary
     # cannot show a SECOND peak, an asymmetric shoulder or a floor that slopes
     # -- the shapes that say the map is nearly-degenerate rather than clean --

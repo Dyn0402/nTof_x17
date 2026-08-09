@@ -392,20 +392,34 @@ def analyse(d: Path) -> SegmentQA:
         d_ = np.abs(hits['dt_ns'])
         core = d_ <= 0.1 * W
         edge = (d_ > 0.9 * W) & (d_ <= W)
-        pk = int((m & sig & core).sum()) - int((m & ~sig & core).sum())
-        eg = int((m & sig & edge).sum()) - int((m & ~sig & edge).sum())
+        s_c, c_c = int((m & sig & core).sum()), int((m & ~sig & core).sum())
+        s_e, c_e = int((m & sig & edge).sum()), int((m & ~sig & edge).sum())
+        pk, eg = s_c - c_c, s_e - c_e
         rat = eg / pk if pk > 0 else float('nan')
-        contain[fam] = dict(peak_excess=pk, edge_excess=eg, ratio=rat)
-        if np.isfinite(rat) and rat > worst:
+        # A ratio on small counts is mostly noise. LIQ's core excess is ~37x
+        # smaller than PSS's, so an edge/peak of 0.04 there can be entirely
+        # statistical -- and on the July campaign it lit up 39 % of segments
+        # for nothing. Only call it truncation if the edge excess is a real
+        # excess: > 3 sigma on the Poisson counts that formed it.
+        sigma = np.sqrt(max(s_e + c_e, 1))
+        signif = eg / sigma
+        contain[fam] = dict(peak_excess=pk, edge_excess=eg, ratio=rat,
+                            edge_sigma=float(sigma), edge_significance=
+                            float(signif))
+        if np.isfinite(rat) and rat > worst and signif >= 3.0:
             worst_fam, worst = fam, rat
     out.hits['containment'] = contain
     checks.append(Check(
         'coincidence contained in slim window',
         _level(worst, 0.05, 0.50), worst,
-        '  '.join(f'{f} {contain[f]["ratio"]:.3f}' for f in FAMILIES)
-        + f' = edge/peak excess density at +-{W:g} ns'
-        + (f'; {worst_fam} is still substantial at the edge, so real '
-           f'coincidences are being cut' if worst > 0.05 else ''),
+        '  '.join(f'{f} {contain[f]["ratio"]:.3f}'
+                  f'({contain[f]["edge_significance"]:+.0f}s)'
+                  for f in FAMILIES)
+        + f' = edge/peak excess density at +-{W:g} ns, with the significance '
+          f'of the edge excess itself'
+        + (f'; {worst_fam} is still substantial AND significant at the edge, '
+           f'so real coincidences are being cut' if worst > 0.05 else
+           '; nothing significant at the edge'),
         'edge/peak <= 0.05'))
 
     out.checks = [asdict(c) for c in checks]
