@@ -259,13 +259,20 @@ def make_summary(res, ev_sim, ev_dat, stats, wins):
         frac = {leg: float(np.sqrt(chi) * res[(leg, v)]["median_noise"]
                            / res[(leg, v)]["table"].peak_amp.median())
                 for leg, chi in (("sim", chi_s), ("data", chi_d))}
-        # reco-table cross-check at a fixed tight angle cut, independent of the
-        # waveform extraction path
+        # reco-table cross-check on a tight angle cut, independent of the
+        # waveform extraction path. The cut is +-3 deg around the SIM's own
+        # median angle, not around zero: for the angled-gun ladder a |theta|<3
+        # cut selects nothing on the sim leg (a 20 deg gun has no vertical
+        # events) and the row would come back NaN. On a vertical point the sim
+        # median is ~0 and this reduces to the original |theta| < 3 deg.
+        th0 = float(ev_sim.loc[ev_sim[f"{v}_ok"] & ev_sim[f"{v}_quality_ok"],
+                               f"{v}_theta_deg"].median())
         qs = {}
         for leg, ev in (("sim", ev_sim), ("data", ev_dat)):
             g = ev[ev[f"{v}_ok"] & ev[f"{v}_quality_ok"]
-                   & (ev[f"{v}_theta_deg"].abs() < 3) & ~ev["spark"]]
+                   & ((ev[f"{v}_theta_deg"] - th0).abs() < 3) & ~ev["spark"]]
             qs[leg] = float(g[f"{v}_q_sum"].median())
+            qs[f"n_{leg}"] = int(len(g))
         s["views"][v] = dict(
             n_sim=int(len(ts)), n_data=int(len(td)),
             peak_amp_med=dict(sim=float(ts.peak_amp.median()),
@@ -286,7 +293,9 @@ def make_summary(res, ev_sim, ev_dat, stats, wins):
                 sim=float((ts.peak_amp >= 3500).mean()),
                 data=float((td.peak_amp >= 3500).mean())),
             q_sum_reco_tight3deg=dict(sim=qs["sim"], data=qs["data"],
-                                      ratio=qs["sim"] / qs["data"]),
+                                      ratio=qs["sim"] / qs["data"],
+                                      center_deg=th0,
+                                      n_sim=qs["n_sim"], n_data=qs["n_data"]),
             shape_rms_frac_of_peak=shape_rms,
             median_noise_adc=dict(sim=res[("sim", v)]["median_noise"],
                                   data=res[("data", v)]["median_noise"]),
@@ -442,6 +451,53 @@ def make_figures(fig_dir, res, ev_sim, ev_dat, wins):
     return figs
 
 
+def _rise_floor_para(out_dir):
+    """Quantile-resolved rise-time comparison, computed from the extraction
+    tables already in out_dir. Answers 'shift or population?': neither."""
+    qs = [5, 25, 50, 75, 95]
+    rows = []
+    for v in ("x", "y"):
+        try:
+            s = pd.read_parquet(os.path.join(out_dir, f"wf_sim_{v}.parquet"))
+            d = pd.read_parquet(os.path.join(out_dir, f"wf_data_{v}.parquet"))
+        except Exception:
+            return "<p>(extraction tables not found)</p>"
+        a = np.percentile(s.rise_ns.dropna(), qs)
+        b = np.percentile(d.rise_ns.dropna(), qs)
+        fs = float((s.rise_ns < 240).mean())
+        fd = float((d.rise_ns < 240).mean())
+        rows.append((v, a, b, fs, fd))
+    tr = "".join(
+        f"<tr><th>{v.upper()} sim</th>" + "".join(f"<td>{x:.0f}</td>" for x in a)
+        + f"<td>{100 * fs:.0f} %</td></tr>"
+        f"<tr><th>{v.upper()} data</th>" + "".join(f"<td>{x:.0f}</td>" for x in b)
+        + f"<td>{100 * fd:.0f} %</td></tr>"
+        for v, a, b, fs, fd in rows)
+    return f"""
+<p>Quantile by quantile (10–90 % rise, ns), the sim−data difference is large
+and positive at the fast end but ≈0 (X: negative) at the slow end — a pure
+shift would be constant, and a separate fast population would leave the data
+bulk aligned with the sim. Neither holds: the two upper halves nearly agree,
+while the data's lower half extends far below anything the simulation
+produces.</p>
+<div class="tablewrap"><table>
+<tr><th></th><th>p5</th><th>p25</th><th>p50</th><th>p75</th><th>p95</th>
+<th>rise &lt; 240 ns</th></tr>{tr}
+</table></div>
+<p>Angle mismatch is ruled out within the matched window: fast (&lt;240 ns)
+and slow data events have statistically identical |θ|, charge, and
+drift-window extent — fast risers are ordinary full-gap tracks. Two further
+measurements localise the cause: data waveforms are jaggier (median largest
+single-sample step / peak ≈ 0.25/0.27 vs sim 0.18/0.19 per view), and the
+data amplitude spectrum is much broader than the sim's. The avalanche calib
+DOES carry measured per-electron Polya fluctuations (θ = 1.14, rel. variance
+0.47), so the candidates are the effective dispersion after packet
+aggregation in Stage B, or a modeled impulse response (shaper peaking) slower
+than the real electronics — the sim's ~250 ns floor against data rises of
+~155 ns points at whichever mechanism sets the minimum response width. This
+is the strongest shape lead for the forward-model parameterization.</p>"""
+
+
 def _followup_section(out_dir):
     """Rendered only when bump_undershoot.json exists next to the report
     (produced by the follow-up extraction answering two referee questions)."""
@@ -478,6 +534,9 @@ pickup) that the single-track simulation cannot contain.</p>
 <figcaption>Transverse profile, all events (dashed) vs peak &gt; 1500 ADC
 (solid). The far-strip rise is the threshold-selection floor; the resolved
 profile decays monotonically in both legs.</figcaption></figure>
+<h3>Rise times: not a fast data 'population', and not a pure shift — the
+simulation has a rise-time FLOOR the data does not</h3>
+{_rise_floor_para(out_dir)}
 <h3>The simulation's overshoot is systematic, in both views</h3>
 <p>Per-event undershoot (min of the peak-strip tail / peak, median
 [quartiles]): X sim {u('sim', 'x')} vs data {u('data', 'x')};
@@ -568,15 +627,20 @@ the data side, so the true amplitude deficit is somewhat LARGER than quoted.</p>
 {row('forward-fit χ²/dof', 'chi2_dof_med')}
 {row('fractional model residual', 'frac_model_residual', '{:.3f}')}
 {row('fraction peak ≥ 3500 ADC', 'sat_frac_3500', '{:.3f}')}
-{row('reco q_sum, |θ|<3° [ADC]', 'q_sum_reco_tight3deg', '{:.0f}')}
+{row('reco q_sum, θ within ±3° of sim median [ADC]', 'q_sum_reco_tight3deg', '{:.0f}')}
 {row('median noise [ADC]', 'median_noise_adc')}
 </table>
 <p>The raw χ²/dof gap is mostly scaling — χ² grows as (amplitude/noise)² and
 the legs differ ×2 in amplitude and ×1.5 in noise. The <i>fractional model
 residual</i> row (√(χ²/dof) · noise / peak amplitude) is the comparable
 number: the same forward model misses both legs by a few % of pulse height.
-Note the sim's injected noise (~11 ADC) is 1.5× the noise FeuReader measures
-on this run (7.4 ADC) — the noise model's provenance should be rechecked.</p>
+Noise row caveat: both legs' figures are FeuReader re-characterisations of
+the decoded files, and that estimator is inflated by residual signal on
+occupied channels — the sim has 100 % track occupancy by construction, so
+its re-characterised σ reads high even when the injected spec matches the
+data (sim {v['x']['median_noise_adc']['sim']:.1f} vs data
+{v['x']['median_noise_adc']['data']:.1f} ADC here). Compare injected spec vs
+data spec, not re-characterisations across legs.</p>
 <h2>Seed-rate observable (first-class)</h2>
 <p>Sim: {s['seed']['sim']['n_events_seeded']}/{s['seed']['sim']['n_events_total']}
 events seeded, {s['seed']['sim']['n_hits'] / max(s['seed']['sim']['n_events_seeded'], 1):.1f}
@@ -596,7 +660,14 @@ fitted axis, and is labeled DIAGNOSIS.</li>
 systematic and a ~0.45 % pad-edge shoulder term on shape.</li>
 <li><b>Angle matching</b>: data cut to sim θ window
 (x: {s['theta_windows_deg']['x'][0]:.1f}..{s['theta_windows_deg']['x'][1]:.1f}°,
-y: {s['theta_windows_deg']['y'][0]:.1f}..{s['theta_windows_deg']['y'][1]:.1f}°).</li>
+y: {s['theta_windows_deg']['y'][0]:.1f}..{s['theta_windows_deg']['y'][1]:.1f}°).
+The reco cross-check row uses ±3° around the sim median
+(x: {v['x']['q_sum_reco_tight3deg']['center_deg']:+.2f}°, n =
+{v['x']['q_sum_reco_tight3deg']['n_sim']} sim /
+{v['x']['q_sum_reco_tight3deg']['n_data']} data;
+y: {v['y']['q_sum_reco_tight3deg']['center_deg']:+.2f}°, n =
+{v['y']['q_sum_reco_tight3deg']['n_sim']} /
+{v['y']['q_sum_reco_tight3deg']['n_data']}).</li>
 </ul>
 <h2>What this result does NOT rule out</h2>
 <ul>
