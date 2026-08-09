@@ -118,6 +118,16 @@ GAS_MIXTURES = [
         "components": [("ar", 90.0), ("ic4h10", 10.0)],
         "penning":    {"mode": "auto"},
     },
+    # Added 2026-08-09 for the T14 HV-slope-hunt iso-fraction discriminator
+    # (design/report/... deep-dive session): the bench mixture is
+    # flowmeter-set and never assayed, so the true iso fraction carries the
+    # same epistemic status as the humidity grid. 92.5/7.5 brackets 95/5 and
+    # 90/10 on the "more quencher steepens the slope" side.
+    {
+        "label":      "Ar_iC4H10_92p5_7p5",
+        "components": [("ar", 92.5), ("ic4h10", 7.5)],
+        "penning":    {"mode": "auto"},
+    },
     {
         "label":      "Ar_iC4H10_85_15",
         "components": [("ar", 85.0), ("ic4h10", 15.0)],
