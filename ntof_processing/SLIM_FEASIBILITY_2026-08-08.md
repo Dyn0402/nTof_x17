@@ -23,6 +23,62 @@ pipeline and its validation. The calibration authority remains
 
 ---
 
+## 0a. Update, 2026-08-09 — two things this document got wrong
+
+Read this before the rest. Both were found by running the pipeline on a pair
+other than the one it was developed on, which is the only reason they surfaced.
+
+### The clock fit did not generalise, and passed validation by luck
+
+`fit_global` started from a hard-coded seed (`K = 1.1e-4`, `T0 = -250 ns`) and
+selects candidates within ±250 ns of wherever it is currently looking. That is
+right for run_79 (fitted `T0 = -252.6 ns`) and wrong for run_77 (`T0 = +109.5`).
+Result on the first pair the campaign touched: **7 of 9 segments failed**, and
+the 2 that survived started from 312 candidates against a hard floor of 200 —
+the difference between success and failure was how much of the trigger-latency
+tail happened to fall inside the seed window.
+
+Fixed by `clockfit.bootstrap`: histogram every candidate within ±50 µs, take the
+peak, require S/N ≥ 6 over the accidental floor beside it, and only then iterate.
+On the reference pair it lands ±10 ns from the old seed at S/N ~1850 and every
+published constant reproduces to 4 decimals; run_570 went 0/3 → 3/3, run_571
+1/9 → 7/11 with the remaining two being 2–3 minute slivers that genuinely cannot
+be fitted.
+
+**The general lesson, which is the one worth keeping:** a fit that is seeded near
+its answer validates beautifully and tells you nothing about whether it works.
+The validation set was one pair, and one pair cannot exercise a per-pair constant.
+
+### ±150 ns was too narrow, and the reason was mis-measured
+
+The window check inherited from `validate.py` asks whether the kept `dt`
+distribution is still *rising* at the window edge. A coincidence peak WIDER than
+the window falls away slowly and passes it: it returned 0.94 ("flat, window is
+wide enough") on the reference while 23 % of the plastic yield was being cut.
+
+Measured properly (`slim_study/pss_tail_probe.py`, ±10 µs on 150 bunches), the
+plastic tail is real, one-sided late by 22×, smooth with no discrete echoes, and
+extends to microseconds. **The window is now ±1 µs**, which captures 93 % of the
+PSS excess within ±2 µs at 2.24× the hits — ~72 MB/segment, ~14 GB for the
+campaign instead of ~6 GB.
+
+The liquids do **not** need it: their apparent tail is symmetric (3,701 early
+against 2,224 late), i.e. subtraction noise. An earlier reading of the integral
+scan called it real; that was wrong.
+
+### What now guards against a repeat
+
+`slim_pipeline/clock_qa.py` (13 absolute checks per segment),
+`dashboard/make_clock_dashboard.py` (robust-z against the fleet — the layer that
+catches a segment which passes every absolute check but sits 380 ns from its
+peers) and `tests/test_clock_qa.py` (19 injected defects, asserting each check
+fires). See `slim_pipeline/README.md`.
+
+Numbers below that predate this section — the ±150 ns window, ~33 MB per sub-run,
+~8–9 GB total — are superseded by the ±1 µs figures above.
+
+---
+
 ## 0. Headline numbers
 
 | | |

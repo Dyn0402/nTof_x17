@@ -19,6 +19,14 @@ REPO = Path(__file__).resolve().parents[2]
 # points for 7x the background (DREAM_NTOF_CALIBRATION.md section 4).
 ACCEPT_NS = 25.0
 
+# Fewest DREAM physics events a segment needs before it is worth fitting a clock
+# to. Checked straight after the join, BEFORE the candidate pass, so a proposal
+# that did not pan out costs seconds instead of minutes: the wall-clock overlap
+# is an estimate, and a sub-run can be proposed against an n_TOF run it barely
+# touches (3 % overlap -> 0 events joined, which used to crash on an empty
+# concatenate after a full pass).
+MIN_EVENTS = 500
+
 # What the slim keeps. Six times the accept window.
 #
 # The coincidence itself needs far less: measured 2026-08-08 on
@@ -33,15 +41,37 @@ ACCEPT_NS = 25.0
 # clipped the ACCIDENTAL FLOOR inside liq_coincidence's +-100 ns integration
 # window, which cancels in the subtraction.
 #
-# +-150 is chosen for two reasons that are not the coincidence width:
-#   1. it holds 92 % of the liquid excess rather than 88 %, i.e. the late tail
-#      that the peak-centred metric never integrates but a total yield would;
-#   2. it leaves ~6x the accept window of flat sideband, so a segment whose
-#      clock went wrong is visible in the file itself.
-# For (2) note the primary alarm is NOT the window: `qa.json` carries the
-# efficiency and `events.residual_ns` the nearest-candidate residual out to the
-# 400 ns fit search, so a shifted clock shows up there whatever the slim width.
-SLIM_NS = 150.0
+# WIDENED TO +-1 us on 2026-08-09, after measuring the plastic tail properly.
+#
+# +-150 was set believing the tail was a curiosity. `slim_study/pss_tail_probe.py`
+# slimmed 150 bunches of the reference pair at +-10 us and measured what it
+# actually is. Background-subtracted against the +100 us control:
+#
+#   family   early (< -150 ns)   late (> +150 ns)   ratio   core (|dt| < 25)
+#   WAL                   -572              3,136       -             32,026
+#   PSS                  3,147             69,199     22x             17,490
+#   LIQ                  3,701              2,224    0.6x                879
+#
+# So: the tail is real, it is PLASTIC ONLY, and it is one-sided late. The LIQ
+# "tail" is symmetric, i.e. subtraction noise -- an earlier reading of the
+# integral scan called it real and that was wrong; liquids are contained at
+# +-150. WAL is the trigger and is contained at +-25.
+#
+# The late side falls smoothly and monotonically with no discrete echoes, so it
+# is NOT ringing at a fixed period; it looks like afterpulsing, late light, or
+# the 101 ns PSS template fitter splitting a long pulse. Unexplained as of
+# 2026-08-09 -- do not quote a plastic hit yield until it is.
+#
+# PSS cumulative capture: 46 % at +-150, 57 % at +-250, 71 % at +-500,
+# 80 % at +-1000, 86 % at +-2000, 93 % at +-5000 ns.
+#
+# +-1000 captures 93 % of the excess lying within +-2 us at 2.24x the hits
+# (~72 MB per segment, ~14 GB for the campaign). Past ~2 us each extra
+# microsecond adds 1-2.4 k counts against an early-side noise level of ~1 k,
+# which is not worth paying for. Widening is the cheap direction: the source is
+# 21 TB and re-reading it is the expensive one, and an analysis can always cut
+# tighter than the slim but can never recover what the slim threw away.
+SLIM_NS = 1000.0
 
 # The accidental control. NOT a local sideband -- the singles rate varies far
 # too much across the 80 ms. This is the shift the measured 0.049 % comes from.

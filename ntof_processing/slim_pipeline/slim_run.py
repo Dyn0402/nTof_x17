@@ -32,9 +32,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from ntof_processing.slim_pipeline import config as C           # noqa: E402
 from ntof_processing.slim_pipeline import segments as SEG       # noqa: E402
-from ntof_processing.slim_pipeline.slim import Segment, run_segment  # noqa: E402
+from ntof_processing.slim_pipeline.slim import (                  # noqa: E402
+    LowJoin, Segment, run_segment)
 
-MIN_EVENTS = 500          # below this the wall-clock proposal did not pan out
+MIN_EVENTS = C.MIN_EVENTS    # gate applied at the join, see config
 
 
 def main() -> int:
@@ -77,17 +78,17 @@ def main() -> int:
                    ntof_run=args.ntof_run, proposed_overlap_s=p.overlap_s)
         try:
             path, meta = run_segment(seg, out_base=out_base,
-                                     slim_ns=args.slim_ns)
+                                     slim_ns=args.slim_ns,
+                                     min_events=args.min_events)
             q = meta['qa']
-            if q['n_physics'] < args.min_events:
-                rec.update(status='SKIPPED_LOW_JOIN', n_events=q['n_physics'])
-                print(f'!! {seg}: only {q["n_physics"]} events joined -- the '
-                      f'wall-clock proposal missed. File written anyway; treat '
-                      f'as suspect.\n')
-            else:
-                rec.update(status='OK', path=str(path), **{
-                    k: q[k] for k in ('efficiency', 'accidental', 'n_events',
-                                      'n_physics', 'n_hits', 'seconds')})
+            rec.update(status='OK', path=str(path), **{
+                k: q[k] for k in ('efficiency', 'accidental', 'n_events',
+                                  'n_physics', 'n_hits', 'seconds')})
+        except LowJoin as e:
+            # Expected for the sliver segments the wall-clock proposal throws
+            # off: a distinct status so they never read as pipeline failures.
+            rec.update(status='SKIPPED_LOW_JOIN', error=str(e))
+            print(f'-- {seg} skipped: {e}\n')
         except Exception as e:                                   # noqa: BLE001
             rec.update(status='FAILED', error=f'{type(e).__name__}: {e}')
             print(f'!! {seg} FAILED: {type(e).__name__}: {e}')
@@ -108,7 +109,19 @@ def main() -> int:
               f'eff {eff}')
     print(f'{len(ok)}/{len(results)} segments OK in '
           f'{(time.time() - t_all)/60:.1f} min -> {summary}')
-    return 0 if len(ok) == len(results) else 1
+    # Exit status is read by condor, so it must mean "should this be retried".
+    # A SKIPPED_LOW_JOIN is an expected outcome of a wall-clock proposal, not a
+    # fault, and a FAILED segment is deterministic -- rerunning it just repeats
+    # a 30 GB copy to reach the same error. Only an empty result set (nothing
+    # even attempted) is worth a non-zero exit.
+    bad = [r for r in results if r['status'] == 'FAILED']
+    skipped = [r for r in results if r['status'] == 'SKIPPED_LOW_JOIN']
+    if skipped:
+        print(f'{len(skipped)} segment(s) skipped: too few events joined')
+    if bad:
+        print(f'{len(bad)} segment(s) FAILED -- see the summary. Not retried: '
+              f'the failure is deterministic, so fix the cause and resubmit.')
+    return 0 if results else 1
 
 
 if __name__ == '__main__':

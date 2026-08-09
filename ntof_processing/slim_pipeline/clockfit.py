@@ -23,10 +23,26 @@ import numpy as np
 ARMS = ('A', 'B', 'C', 'D')
 KEY_SCALE = 1e9          # bunch/time packing; |t| stays under 8e7 ns
 
-# Starting point for the iteration. Any value in the right ballpark converges --
-# the fit is re-centred three times -- but starting near the last pair's
-# solution keeps the first core selection populated.
+# Starting point for the COARSE SEARCH only -- see `bootstrap`. It is not a
+# seed the fit relies on: T0 is per (DREAM sub-run, n_TOF run) pair and moves by
+# hundreds of ns between pairs, which is more than the +-250 ns core the
+# iteration selects on.
+#
+# This used to be a real seed, and it was silently fragile. run_79 x 224572
+# converged from it, so the pipeline validated; run_77 x 224571 sits at
+# T0 = +109 ns, 360 ns away, and 7 of 9 segments died with "found only 69
+# candidates". The two that lived started from 312 candidates against a
+# hard floor of 200 -- the difference between success and failure was how much
+# of the latency TAIL happened to fall inside the core, not anything physical.
 K_SEED, T0_SEED = 1.1e-4, -250.0
+
+# The coarse search. Wide enough to cover any offset seen between pairs with
+# room to spare, and binned finely enough that the peak is unambiguous.
+BOOT_SEARCH_NS = 50_000.0
+BOOT_BIN_NS = 20.0
+BOOT_MIN_PEAK = 150      # counts in the tallest bin
+BOOT_MIN_SNR = 6.0       # tallest bin over the accidental floor beside it
+BOOT_FLOOR_GAP_NS = 2000.0   # "beside it" = further than this from the peak
 
 CORE_NS = 250.0          # global fit: residuals inside this define the core
 ITERS = 3
@@ -109,23 +125,80 @@ def _line(ev_t, ei, r, core=CORE_NS, nbin=24):
     return float(a), float(b), int(m.sum()), float(np.std(rc - (a + b * tc)))
 
 
+def bootstrap(ev_bunch, ev_t, cd_bunch, cd_t, K=K_SEED, T0=T0_SEED,
+              search=BOOT_SEARCH_NS, bin_ns=BOOT_BIN_NS, log=print):
+    """Find T0 for this pair by coarse search, with no reliance on the seed.
+
+    The iterated fit can only see candidates already inside +-CORE_NS of where
+    it is looking, so it cannot walk to a solution hundreds of ns away. This
+    looks first, over a window wide enough that being wrong is obvious: one
+    histogram of every candidate within +-`search`, whose tallest bin is the
+    coincidence peak sitting on a flat accidental floor.
+
+    Returns (T0, info). Raises if there is no peak -- which is the honest
+    outcome for a mis-paired segment, and much better than fitting the floor.
+    """
+    ei, r, _ = residuals(ev_bunch, ev_t, cd_bunch, cd_t, K, T0, search=search)
+    if r.size == 0:
+        raise RuntimeError(
+            f'no candidates at all within +-{search:g} ns of the coarse map; '
+            f'this DREAM sub-run and n_TOF run are probably not the same time')
+    edges = np.arange(-search, search + bin_ns, bin_ns)
+    h, _ = np.histogram(r, bins=edges)
+    centres = 0.5 * (edges[:-1] + edges[1:])
+    i = int(h.argmax())
+    peak, tall = float(centres[i]), int(h[i])
+
+    far = np.abs(centres - peak) > BOOT_FLOOR_GAP_NS
+    floor = float(np.median(h[far])) if far.any() else 0.0
+    snr = tall / max(floor, 1.0)
+    log(f'    bootstrap: peak {tall:,} counts at {peak:+.0f} ns, '
+        f'floor {floor:.0f}/bin, S/N {snr:.0f}  '
+        f'({r.size:,} candidates in +-{search/1000:g} us)')
+    if tall < BOOT_MIN_PEAK or snr < BOOT_MIN_SNR:
+        raise RuntimeError(
+            f'no time-base peak: tallest bin has {tall} counts at {peak:+.0f} '
+            f'ns over a floor of {floor:.0f} (S/N {snr:.1f}, need '
+            f'{BOOT_MIN_SNR:g}). Either the segment is too small to fit, or '
+            f'this DREAM sub-run does not overlap this n_TOF run.')
+    # Keep the coarse histogram itself, rebinned to ~500 points. A summary
+    # cannot show a SECOND peak, an asymmetric shoulder or a floor that slopes
+    # -- the shapes that say the map is nearly-degenerate rather than clean --
+    # and this is the only place the wide view exists.
+    keep = max(1, len(h) // 500)
+    trim = (len(h) // keep) * keep
+    coarse = h[:trim].reshape(-1, keep).sum(axis=1)
+    return T0 + peak, dict(
+        peak_ns=peak, counts=tall, floor=floor, snr=snr,
+        n_candidates=int(r.size), search_ns=search,
+        hist=dict(lo_ns=float(edges[0]), bin_ns=float(bin_ns * keep),
+                  counts=[int(c) for c in coarse]))
+
+
 def fit_global(ev_bunch, ev_t, cd_bunch, cd_t, cd_arm, iters=ITERS,
-               K=K_SEED, T0=T0_SEED, log=print):
+               K=K_SEED, T0=T0_SEED, boot=True, log=print):
     """(K, T0, arm_off[4], info) for one segment, from its own candidates.
 
-    Iterated so the core selection is centred on its own solution, then the
-    per-arm offsets are measured at the converged point. The four arms' trigger
-    paths differ by ~25 ns, invisible at +-150 ns and dominant below +-50.
+    A coarse search fixes T0 first (`bootstrap`), because the iteration below
+    only sees candidates within +-CORE_NS of its current guess and cannot walk
+    to a peak further away than that. Then it is iterated so the core selection
+    is centred on its own solution, and the per-arm offsets are measured at the
+    converged point. The four arms' trigger paths differ by ~25 ns, invisible
+    at +-150 ns and dominant below +-50.
     """
     info = {'iters': []}
+    if boot:
+        T0, info['bootstrap'] = bootstrap(ev_bunch, ev_t, cd_bunch, cd_t,
+                                          K, T0, log=log)
     for it in range(iters):
         ei, r, _ = residuals(ev_bunch, ev_t, cd_bunch, cd_t, K, T0)
         a, b, n, s = _line(ev_t, ei, r)
         if not np.isfinite(a):
             raise RuntimeError(
-                f'time-base fit found only {n} candidates inside +-{CORE_NS:g} ns '
-                'of the seed map; the segment is too small, or the seed is wrong '
-                'for this pair')
+                f'time-base fit found only {n} candidates inside +-{CORE_NS:g} '
+                f'ns of T0 = {T0:+.0f} ns on iteration {it}. The coarse search '
+                f'located a peak, so this is a segment with too few events to '
+                f'fit rather than a mis-paired one.')
         T0, K = T0 + a, K + b
         info['iters'].append(dict(shift_ns=a, slope=b, K=K, T0_ns=T0, n=n,
                                   bin_spread_ns=s))

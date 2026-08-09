@@ -243,8 +243,17 @@ def write(seg: Segment, out: Path, hits, events, bunches_tbl, meta, log=print):
     return p
 
 
+class LowJoin(RuntimeError):
+    """Too few DREAM events joined to this n_TOF run to be worth fitting.
+
+    Not an error in the data -- the segment list is proposed from wall-clock
+    overlap, which is an estimate. Callers should record it and move on.
+    """
+
+
 def run_segment(seg: Segment, out_base: Path | None = None,
-                slim_ns: float = C.SLIM_NS, log=print):
+                slim_ns: float = C.SLIM_NS, min_events: int = C.MIN_EVENTS,
+                log=print):
     """The whole chain for one segment. Returns (path, qa)."""
     t_start = time.time()
     log(f'== {seg}')
@@ -253,6 +262,10 @@ def run_segment(seg: Segment, out_base: Path | None = None,
 
     ev = join_events(seg, log=log)
     phys = ~ev['is_flash'].to_numpy()
+    if int(phys.sum()) < min_events:
+        raise LowJoin(f'{int(phys.sum()):,} physics events joined, below the '
+                      f'{min_events:,} needed to fit a clock -- the proposed '
+                      f'overlap did not pan out')
     ev_id = ev['eventId'].to_numpy().astype(np.int64)
     ev_b = ev['BunchNumber'].to_numpy().astype(np.int64)
     ev_t = ev['t_since_flash_ns'].to_numpy().astype(np.float64)
@@ -304,9 +317,18 @@ def run_segment(seg: Segment, out_base: Path | None = None,
         corr_ns=corr_all.astype(np.float32),
         corr_cv_ns=corrcv_all.astype(np.float32))
 
+    # Per-bunch fit parameters belong on the bunch, not smeared over its events:
+    # a drifting clock shows up as structure in da_ns/dk ACROSS bunches, and
+    # that is the first thing to look at when a segment misbehaves.
     ub, cnt = np.unique(ev_b, return_counts=True)
+    pb_a = np.array([pb.get(int(b), (np.nan,) * 3)[0] for b in ub])
+    pb_k = np.array([pb.get(int(b), (np.nan,) * 3)[1] for b in ub])
+    pb_n = np.array([pb.get(int(b), (0, 0, 0))[2] for b in ub])
     bunches_tbl = dict(bunch=ub.astype(np.int32), n_triggers=cnt.astype(np.int32),
-                       fitted=np.isin(ub, list(pb)).astype(np.uint8))
+                       fitted=np.isin(ub, list(pb)).astype(np.uint8),
+                       da_ns=pb_a.astype(np.float32),
+                       dk=pb_k.astype(np.float32),
+                       n_core=np.asarray(pb_n).astype(np.int32))
 
     meta = dict(
         calibration=dict(

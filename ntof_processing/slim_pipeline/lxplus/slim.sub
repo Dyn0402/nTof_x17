@@ -3,7 +3,7 @@
 #   ssh -K lxplus                       # -K is mandatory: no token, no EOS
 #   cd ~/x17slim                        # staged by stage.sh
 #   myschedd bump                       # pick a schedd (prints e.g. bigbird25)
-#   condor_submit slim.sub run=224572
+#   condor_submit slim.sub run=224572 -queue 1
 #   condor_q  <id> -name <schedd>       # status  (re-pass -name each session)
 #   condor_tail <id> -name <schedd>     # live stdout
 #
@@ -11,6 +11,10 @@
 #   python3 ntof_processing/slim_pipeline/segments.py --ready \
 #     | awk '/^n_TOF/ {print $2}' > ready_runs.txt
 #   condor_submit slim.sub -queue run from ready_runs.txt
+#
+# NOTE this file deliberately ends WITHOUT a `queue` statement, so the queue
+# always comes from the command line -- `-queue` and an in-file `queue` are a
+# hard parse error, and the two forms above would otherwise contradict.
 #
 # Outputs land in ~/x17slim/out/runs/<run>/<subrun>/ntof_hits/. Push to EOS with
 #   ./publish_to_eos.sh out
@@ -31,17 +35,22 @@ when_to_transfer_output = ON_EXIT
 # which is what the imports need.
 transfer_input_files    = ntof_processing,ntof_dream_merge,ntof_july_analysis,common,mx_july_beam_qa
 transfer_output_files   = out
+# Every job produces a directory called `out`. Landing 59 of them in the same
+# place is a needless race (and makes it impossible to tell which job wrote
+# what), so each is renamed on arrival. publish_to_eos.sh takes them as a glob.
+transfer_output_remaps  = "out = out_$(run)"
 
 output                  = log/slim_$(run)_$(ClusterId).out
 error                   = log/slim_$(run)_$(ClusterId).err
 log                     = log/slim_$(run)_$(ClusterId).log
 
 request_cpus            = 1
-# Measured on the first full job (224572, 3 segments): peak RSS 3.16 GB. 5 GB is
-# ~1.6x that. Do not inflate it -- CERN scales the CPU allocation with memory
-# (the 9 GB first attempt was given 3 cores for a single-threaded job) and a
-# bigger ask waits longer for a slot.
-request_memory          = 5 GB
+# Measured 2026-08-09 on the 3-run pilot: peak RSS 3.32 GB at a +-150 ns window.
+# The window is now +-1 us (2.24x the hits), and the +-10 us probe held 2.4 M
+# hits in 2.6 GB, so the growth is modest -- 6 GB is ~1.7x the measured peak.
+# Do not inflate it further: CERN scales the CPU allocation with memory (a 9 GB
+# ask was given 3 cores for a single-threaded job) and waits longer for a slot.
+request_memory          = 6 GB
 # 45 GB: the n_TOF run (30-45 GB) is copied into node-local scratch.
 request_disk            = 45 GB
 # workday = 8 h. A 3-segment run is ~30 min plus the xrdcp.
@@ -49,8 +58,16 @@ request_disk            = 45 GB
 # parses it as part of the expression. Keep comments on their own line.
 +JobFlavour             = "workday"
 
-# Fail loudly rather than silently retrying onto a bad node.
-max_retries             = 1
+# No exit-code retries. Every failure this job can produce is deterministic --
+# a bad clock fit reruns to the same bad clock fit -- so a retry costs another
+# 30-45 GB copy and half an hour to reach the identical error. Infrastructure
+# faults (evicted, node lost) are requeued by condor regardless of this.
+max_retries             = 0
 requirements            = (OpSysAndVer =?= "AlmaLinux9")
 
-queue
+# Throttle the campaign. Every job opens with a 30-45 GB xrdcp off the ntof EOS
+# pool at ~225 MB/s, so the whole ready list starting at once would pull a few
+# GB/s from a pool other people are using. Ten at a time is ~2.5 GB/s peak and
+# still finishes 59 runs in ~3 h. Raise it if EOS is quiet and you are in a
+# hurry; do not remove it.
+max_materialize         = 10
