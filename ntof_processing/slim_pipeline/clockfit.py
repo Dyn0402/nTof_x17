@@ -41,7 +41,13 @@ K_SEED, T0_SEED = 1.1e-4, -250.0
 BOOT_SEARCH_NS = 50_000.0
 BOOT_BIN_NS = 20.0
 BOOT_MIN_PEAK = 150      # counts in the tallest bin
-BOOT_MIN_SNR = 6.0       # tallest bin over the accidental floor beside it
+BOOT_MIN_SNR = 6.0       # tallest bin over the floor -- REPORTED, not a cut
+# The acceptance test is significance, not the peak/floor RATIO. A ratio is
+# only meaningful for a peak narrower than the bin: a coincidence spread over
+# microseconds gives ratio 1.4 and 35 sigma at once, and the ratio test threw
+# it away (measured on run_132 x 224662, 2026-08-09). With ~5000 bins the
+# tallest bin of a flat histogram sits ~4 sigma high by chance, so 8 is safe.
+BOOT_MIN_SIGMA = 8.0
 BOOT_FLOOR_GAP_NS = 2000.0   # "beside it" = further than this from the peak
 
 # The wide fallback, used only when the +-50 us search finds nothing. Covers
@@ -212,7 +218,12 @@ def bootstrap(ev_bunch, ev_t, cd_bunch, cd_t, K=K_SEED, T0=T0_SEED,
     # Nothing here? The offset may simply be bigger than this window. Look
     # across the whole burst before giving up -- a ms-scale offset is a
     # flash-reference problem, and the data behind it is perfectly good.
-    if (tall < BOOT_MIN_PEAK or snr < BOOT_MIN_SNR) and _retry:
+    excess = tall - floor
+    sigma = excess / np.sqrt(max(floor, 1.0))
+    log(f'    -> excess {excess:,.0f} over the floor = {sigma:.1f} sigma')
+    weak = tall < BOOT_MIN_PEAK or sigma < BOOT_MIN_SIGMA
+
+    if weak and _retry:
         log('    no peak in the fine window; trying the whole burst')
         wide = xcorr_lag(ev_bunch, ev_t, cd_bunch, cd_t, log=log)
         if wide is not None:
@@ -239,11 +250,11 @@ def bootstrap(ev_bunch, ev_t, cd_bunch, cd_t, K=K_SEED, T0=T0_SEED,
             log('    the wide scan found a lag but the refinement ladder could '
                 'not sharpen it -- the correlation is broad, not a coincidence')
 
-    if tall < BOOT_MIN_PEAK or snr < BOOT_MIN_SNR:
+    if weak:
         raise RuntimeError(
             f'no time-base peak: tallest bin has {tall} counts at {peak:+.0f} '
-            f'ns over a floor of {floor:.0f} (S/N {snr:.1f}, need '
-            f'{BOOT_MIN_SNR:g}), and the whole-burst scan found no lag '
+            f'ns over a floor of {floor:.0f} ({sigma:.1f} sigma, need '
+            f'{BOOT_MIN_SIGMA:g}), and the whole-burst scan found no usable lag '
             f'either. Either the segment is too small to fit, or this DREAM '
             f'sub-run really does not overlap this n_TOF run.')
     # Keep the coarse histogram itself, rebinned to ~500 points. A summary
@@ -255,6 +266,7 @@ def bootstrap(ev_bunch, ev_t, cd_bunch, cd_t, K=K_SEED, T0=T0_SEED,
     coarse = h[:trim].reshape(-1, keep).sum(axis=1)
     return T0 + peak, dict(
         peak_ns=peak, counts=tall, floor=floor, snr=snr,
+        excess=float(excess), sigma=float(sigma), bin_ns=float(bin_ns),
         n_candidates=int(r.size), search_ns=search,
         hist=dict(lo_ns=float(edges[0]), bin_ns=float(bin_ns * keep),
                   counts=[int(c) for c in coarse]))

@@ -88,12 +88,23 @@ class Frame:
         self.x0, self.x1 = 0.0, 1.0
         self.y0, self.y1 = 0.0, 1.0
         self.xticks, self.yticks = [], []
+        self.xtick_labels = None      # [(value, "text"), ...] -- dates, etc.
         self.logy = False
 
     # -- scales ------------------------------------------------------------
-    def xlim(self, lo, hi, ticks=None):
-        self.x0, self.x1, tk = _nice(lo, hi)
-        self.xticks = ticks if ticks is not None else tk
+    def xlim(self, lo, hi, ticks=None, labels=None, exact=False):
+        """`exact` keeps the given bounds instead of rounding them outward --
+        wanted for a time axis, where a 'nice' number is a meaningless epoch."""
+        if exact:
+            self.x0, self.x1 = lo, hi
+            tk = []
+        else:
+            self.x0, self.x1, tk = _nice(lo, hi)
+        if labels:
+            self.xtick_labels = labels
+            self.xticks = [v for v, _ in labels]
+        else:
+            self.xticks = ticks if ticks is not None else tk
         return self
 
     def ylim(self, lo, hi, ticks=None, log=False):
@@ -206,12 +217,18 @@ class Frame:
                      f'x2="{self.w-self.r}" y2="{y:.1f}"/>')
             g.append(f'<text class="tick" x="{self.l-8}" y="{y+4:.1f}" '
                      f'text-anchor="end">{_fmt(t)}</text>')
+        labels = dict(self.xtick_labels) if self.xtick_labels else None
         for t in self.xticks:
             x = self.px(t)
             if not math.isfinite(x) or x < self.l - 1 or x > self.w - self.r + 1:
                 continue
+            txt = labels.get(t, '') if labels is not None else _fmt(t)
+            if labels is not None:
+                g.append(f'<line class="grid" x1="{x:.1f}" y1="{self.t}" '
+                         f'x2="{x:.1f}" y2="{self.h-self.b}" '
+                         f'stroke-dasharray="2 4"/>')
             g.append(f'<text class="tick" x="{x:.1f}" y="{self.h-self.b+18}" '
-                     f'text-anchor="middle">{_fmt(t)}</text>')
+                     f'text-anchor="middle">{esc(txt)}</text>')
         g.append(f'<line class="axis" x1="{self.l}" y1="{self.h-self.b}" '
                  f'x2="{self.w-self.r}" y2="{self.h-self.b}"/>')
         head = (f'<text class="ctitle" x="{self.l}" y="16">'

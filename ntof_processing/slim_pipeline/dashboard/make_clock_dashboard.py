@@ -129,15 +129,66 @@ def population(recs):
     return notes
 
 
+# -------------------------------------------------------------------- time
+def load_times(data_dir: Path | None = None):
+    """{(dream_run, subrun): epoch seconds} for the x axis.
+
+    Segment index tells a reader nothing; wall-clock time is what makes a
+    time-localised problem visible -- the 2026-08-09 campaign's failures sat in
+    three contiguous blocks, which is invisible when the axis is an index.
+    Times come from the same cached listing the segment proposal uses.
+    """
+    d = data_dir or (Path(__file__).resolve().parents[3]
+                     / 'ntof_processing' / 'slim_study' / 'coverage_inputs')
+    try:
+        sys.path.insert(0, str(d.parent))
+        import coverage_map as cm                              # noqa: E402
+        subs, _ = cm.load_dream(d / 'dream_eos_subruns.txt',
+                                d / 'dream_daq_subruns.txt')
+        return {k: v[0] for k, v in subs.items()}
+    except Exception as e:                                     # noqa: BLE001
+        print(f'  (no sub-run times, x axis falls back to index: {e})')
+        return {}
+
+
+def _date_ticks(lo, hi, max_ticks=12):
+    """Midnight ticks, thinned to at most `max_ticks`, labelled MM-DD."""
+    day = 86400.0
+    start = (lo // day) * day
+    step = day * max(1, int(np.ceil((hi - lo) / day / max_ticks)))
+    out, t = [], start
+    while t <= hi + step:
+        if t >= lo - step:
+            out.append((t, dt.datetime.utcfromtimestamp(t).strftime('%m-%d')))
+        t += step
+    return out
+
+
+def _when(r):
+    t = r.get('t_start')
+    return (dt.datetime.utcfromtimestamp(t).strftime('%m-%d %H:%M')
+            if t else '?')
+
+
 # ------------------------------------------------------------------- charts
 def _lab(r):
     s = r['segment']
     return f'{s["dream_run"]}/{s["dream_subrun"]}x{s["ntof_run"]}'
 
 
+def _tip(r, value=''):
+    """What a reader needs to act on a point: when, which DREAM sub-run, which
+    n_TOF run, and where it sits in the ordering."""
+    s = r['segment']
+    head = f'{_when(r)}  ·  seg {r.get("index", "?")}'
+    body = (f'DREAM {s["dream_run"]} / {s["dream_subrun"]}'
+            f'  ·  n_TOF {s["ntof_run"]}')
+    return f'{head}\n{body}' + (f'\n{value}' if value else '')
+
+
 def chart_metric(recs, getter, title, ylabel, *, log=False, pct=False,
                  ref=None, band=None, fmt='{:.4g}', outliers=None):
-    xs = list(range(len(recs)))
+    xs, xlab, dated = _xaxis(recs)
     ys = [getter(r) for r in recs]
     good = [y for y in ys if y is not None and np.isfinite(y)]
     if not good:
@@ -147,8 +198,13 @@ def chart_metric(recs, getter, title, ylabel, *, log=False, pct=False,
         lo, hi = min(lo, band[0]), max(hi, band[1])
     if ref is not None:
         lo, hi = min(lo, ref), max(hi, ref)
-    f = CH.Frame(title=title, ylabel=ylabel, xlabel='segment')
-    f.xlim(-0.5, len(recs) - 0.5, ticks=[])
+    f = CH.Frame(title=title, ylabel=ylabel,
+                 xlabel='date (UTC)' if dated else 'segment')
+    if dated:
+        pad = (max(xs) - min(xs)) * 0.02 or 3600
+        f.xlim(min(xs) - pad, max(xs) + pad, labels=xlab, exact=True)
+    else:
+        f.xlim(-0.5, len(recs) - 0.5, ticks=[])
     if log:
         # Pad multiplicatively. Additive padding drove the lower bound negative,
         # which clamped to the 1e-12 floor and produced a 15-decade axis with
@@ -162,12 +218,16 @@ def chart_metric(recs, getter, title, ylabel, *, log=False, pct=False,
                                  f'..{fmt.format(band[1])}')
     if ref is not None:
         f.hline(ref, label=f'reference {fmt.format(ref)}')
-    # Separate the DREAM runs. T0 in particular is only comparable inside one,
-    # so a reader must be able to see where one ends.
-    for a_, b_, lab in _groups(recs)[:-1]:
-        x = f.px(b_ + 0.5)
-        f.body.append(f'<line class="grid" x1="{x:.1f}" y1="{f.t}" '
-                      f'x2="{x:.1f}" y2="{f.h-f.b}" stroke-dasharray="2 3"/>')
+    # On an index axis the DREAM runs need marking, because nothing else says
+    # where one ends. On a date axis they are contiguous blocks separated by
+    # real gaps, and 22 dashed lines plus a 22-entry key is noise -- the axis
+    # and the hover already carry it.
+    if not dated:
+        for a_, b_, lab in _groups(recs)[:-1]:
+            x = f.px(b_ + 0.5)
+            f.body.append(f'<line class="grid" x1="{x:.1f}" y1="{f.t}" '
+                          f'x2="{x:.1f}" y2="{f.h-f.b}" '
+                          f'stroke-dasharray="2 3"/>')
     # Colour marks by whether THIS metric is odd -- never by the segment's
     # overall verdict. Colouring by verdict paints a segment red in the K chart
     # because its efficiency was low, which reads as "K is wrong" and is how a
@@ -178,10 +238,20 @@ def chart_metric(recs, getter, title, ylabel, *, log=False, pct=False,
         v = ys[i]
         cols.append('var(--bad)' if is_out else 'var(--series1)')
         vs = fmt.format(v) if v is not None and np.isfinite(v) else 'n/a'
-        tips.append(f'{_lab(r)} — {vs}'
-                    + ('  [fleet outlier on this metric]' if is_out else ''))
+        tips.append(_tip(r, f'{ylabel or "value"} = {vs}'
+                         + ('   [fleet outlier on this metric]'
+                            if is_out else '')))
     f.points(xs, ys, colours=cols, tips=tips)
-    return f'<figure>{f.svg()}{_group_key(recs)}</figure>'
+    return (f'<figure>{f.svg()}'
+            f'{"" if dated else _group_key(recs)}</figure>')
+
+
+def _xaxis(recs):
+    """(x values, tick labels, is_a_date_axis)."""
+    ts = [r.get('t_start') for r in recs]
+    if all(t for t in ts) and len(set(ts)) > 1:
+        return ts, _date_ticks(min(ts), max(ts)), True
+    return list(range(len(recs))), None, False
 
 
 def _groups(recs):
@@ -212,13 +282,19 @@ def chart_arms(recs):
     allv = [v for v in allv if np.isfinite(v)]
     if not allv:
         return ''
-    f.xlim(-0.5, len(recs) - 0.5, ticks=[])
+    xs, xlab, dated = _xaxis(recs)
+    if dated:
+        pad = (max(xs) - min(xs)) * 0.02 or 3600
+        f.xlim(min(xs) - pad, max(xs) + pad, labels=xlab, exact=True)
+        f.xlabel = 'date (UTC)'
+    else:
+        f.xlim(-0.5, len(recs) - 0.5, ticks=[])
     f.ylim(min(allv) - 3, max(allv) + 3)
     for a in ARMS:
         ys = [r['match']['per_arm'][a]['offset_ns'] for r in recs]
-        f.points(range(len(recs)), ys, colours=CH.ARM_COLOUR[a],
-                 tips=[f'{_lab(r)} — arm {a} {y:+.2f} ns' for r, y in
-                       zip(recs, ys)], r=2.8)
+        f.points(xs, ys, colours=CH.ARM_COLOUR[a],
+                 tips=[_tip(r, f'arm {a} offset = {y:+.2f} ns')
+                       for r, y in zip(recs, ys)], r=2.8)
         f.hline(Q.REF_ARM[a], cls='ref faint',
                 label=f'arm {a} reference {Q.REF_ARM[a]:+.2f} ns')
     return (f'<figure>{f.svg()}'
@@ -383,8 +459,8 @@ border-radius:0 8px 8px 0;padding:10px 14px;margin:14px 0}
 .callout.ok{border-left-color:var(--good)}
 code{background:var(--code);padding:1px 5px;border-radius:4px;font-size:12.5px}
 #tip{position:fixed;pointer-events:none;background:var(--ink);color:var(--bg);
-font-size:12px;padding:5px 9px;border-radius:6px;opacity:0;transition:opacity
-.1s;z-index:9;max-width:320px}
+font-size:12px;padding:6px 10px;border-radius:6px;opacity:0;transition:opacity
+.1s;z-index:9;max-width:340px;white-space:pre-line;line-height:1.45}
 """
 
 JS = """
@@ -591,7 +667,8 @@ def build(recs, notes, title, source, coverage=None):
     H.append(chart_family_dt(recs))
 
     # --------------------------------------------------------- the segments
-    H.append('<h2>Every segment</h2><table><tr><th>segment</th>'
+    H.append('<h2>Every segment</h2><table><tr><th class="num">#</th>'
+             '<th>when (UTC)</th><th>segment</th>'
              '<th>verdict</th><th class="num">K</th><th class="num">T0 (ns)</th>'
              '<th class="num">eff</th><th class="num">acc</th>'
              '<th class="num">resid RMS</th><th class="num">S/N</th>'
@@ -599,7 +676,8 @@ def build(recs, notes, title, source, coverage=None):
     for i, r in enumerate(recs):
         b = r['bootstrap'] or {}
         H.append(
-            f'<tr><td>{CH.esc(_lab(r))}</td>'
+            f'<tr><td class="num">{r.get("index", i+1)}</td>'
+            f'<td>{_when(r)}</td><td>{CH.esc(_lab(r))}</td>'
             f'<td><span class="pill {r["verdict"]}">{r["verdict"]}</span></td>'
             f'<td class="num">{r["clock"]["K"]:.4e}</td>'
             f'<td class="num">{r["clock"]["T0_ns"]:+.1f}</td>'
@@ -623,7 +701,8 @@ def build(recs, notes, title, source, coverage=None):
             f'{CH.esc(o["metric"])} = {o["value"]:.4g} vs fleet median '
             f'{o["median"]:.4g} (robust z {o["z"]:.1f})</div>'
             for o in notes[i])
-        H.append(f'<details><summary>{CH.esc(_lab(r))} — '
+        H.append(f'<details><summary>{r.get("index", i+1)}. {_when(r)} — '
+                 f'{CH.esc(_lab(r))} — '
                  f'<span class="pill {r["verdict"]}">{r["verdict"]}</span>'
                  f'</summary>{rows}{out}</details>')
 
@@ -659,6 +738,21 @@ def main() -> int:
     if not recs:
         print('no slim files found')
         return 2
+
+    # Order by wall clock, not by filename. Sorting by path interleaves DREAM
+    # runs (run_100 sorts before run_77) and scatters a time-localised problem
+    # across the whole axis.
+    times = load_times()
+    for r in recs:
+        s = r['segment']
+        r['t_start'] = times.get((s['dream_run'], s['dream_subrun']))
+    recs.sort(key=lambda r: (r['t_start'] is None, r['t_start'] or 0,
+                             r['segment']['ntof_run']))
+    for i, r in enumerate(recs, 1):
+        r['index'] = i
+    dated = sum(1 for r in recs if r['t_start'])
+    print(f'  {dated}/{len(recs)} segment(s) have a wall-clock time')
+
     notes = population(recs)
     cov = json.loads(a.coverage.read_text()) if a.coverage else None
     a.out.write_text(build(recs, notes, a.title, str(a.root), cov))
