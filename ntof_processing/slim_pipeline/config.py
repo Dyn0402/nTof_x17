@@ -57,10 +57,35 @@ MIN_EVENTS = 500
 # integral scan called it real and that was wrong; liquids are contained at
 # +-150. WAL is the trigger and is contained at +-25.
 #
-# The late side falls smoothly and monotonically with no discrete echoes, so it
-# is NOT ringing at a fixed period; it looks like afterpulsing, late light, or
-# the 101 ns PSS template fitter splitting a long pulse. Unexplained as of
-# 2026-08-09 -- do not quote a plastic hit yield until it is.
+# EXPLAINED, later on 2026-08-09, by `../pss_ringing/` -- the tail is REAL
+# AFTER-PULSING in the plastics, not a fitter artifact. Every large plastic pulse
+# is followed by a train of genuine secondary pulses in the raw stream1 trace,
+# ~4.4 extra PSA hits per pulse over 18-1000 ns against 0.007 on the SiPM walls
+# in the same run. Established against an event-mixed accidental control, a
+# time-reversal control (4.13 forward vs 0.90 backward), the walls, and the raw
+# traces one event at a time. Full account: `../pss_ringing/report.html`.
+#
+# Two corrections to what this comment used to say:
+#   * "no discrete echoes" was a binning artifact. At 1 ns there is a 2 ns-wide
+#     echo at 81-82 ns, identical on all four plastics -- a reflection. In the
+#     DREAM residual it smears into a bump at 70-90 ns.
+#   * it is not the template fitter splitting a long pulse. The amplitude-
+#     normalised MEDIAN trace decays smoothly, and the walls -- 3x wider pulse,
+#     fatter tail, same PSA -- show no excess at all.
+#
+# WHAT TO DO WITH IT, measured in `../pss_ringing/report_veto.html`: flag a hit
+# when `amp_0 < 0.05 * max(amp_0 on the same channel in the previous 1000 ns)`.
+# That removes 99.5 % of the 150-1000 ns excess and 94.8 % of the 25-150 ns
+# excess for 10.4 % of the core, all of it small-amplitude. It must be computed
+# on the FULL n_TOF stream with a full 1 us of lookback -- an after-pulse whose
+# parent sits just outside this window is exactly what a slim-only
+# recomputation gets wrong -- so it belongs in pass 2, storing `shadow` and
+# `dt_prev` as floats rather than a boolean so the thresholds stay re-tunable.
+# NOT IMPLEMENTED HERE YET. Until it is, `amp_0 > 250` on the slim as it stands
+# removes 95.7 % of the late tail for the same core cost.
+#
+# So the plastic hit yield is now quotable, but only against one of those cuts:
+# the yield inside +-1 us is ~6.1x the coincident core (288 k against 47 k).
 #
 # PSS cumulative capture: 46 % at +-150, 57 % at +-250, 71 % at +-500,
 # 80 % at +-1000, 86 % at +-2000, 93 % at +-5000 ns.

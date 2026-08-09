@@ -4,6 +4,50 @@
 
 ---
 
+## 2026-08-09 — the plastics really do ring: after-pulses in the PSS hit stream
+
+`pss_ringing/` ([`report.html`](pss_ringing/report.html)). Chasing the long tail
+seen after the DREAM/PSS match: **every large plastic pulse is followed by a
+train of real secondary pulses in the raw trace**, and the PSA reports them.
+~4.4 excess hits per large pulse over 18–1000 ns, against 0.007 on the SiPM
+walls in the same run — a factor ~650. Two components: a broad sporadic
+population peaking at 32–40 ns and decaying through a microsecond, plus a
+2 ns-wide **echo at 81–82 ns identical on all four plastics** (a reflection;
+~8 m of cable if it is one bounce at 0.66 c).
+
+Established on run 224572 (v12 hits + local raw chunks) by four independent
+checks: an event-mixed accidental control, a time-reversal control (4.13 forward
+vs 0.90 backward), the walls as a same-beam control with a 3× wider pulse, and
+raw traces conditioned on whether the PSA gave the 81 ns hit. **The PSA is not
+inventing these** — the secondary pulses are visible one event at a time.
+
+**The after-pulses are the DREAM/PSS late tail, and there is a cut for it**
+([`report_veto.html`](pss_ringing/report_veto.html)). Measured on the reference
+pair slimmed locally at ±3 µs: the plastic excess at 150–1000 ns is 122,133 hits
+against a core of 47,292.
+
+- **Per-hit flag:** `amp_0 < 0.05 × max(amp_0 on the same channel in the previous
+  1000 ns)`. Removes **99.5 %** of the 150–1000 ns excess and 94.8 % of the
+  25–150 ns excess, for **10.4 %** of the core — all of it small-amplitude.
+  Must be computed on the **full n_TOF stream** (a parent just outside the slim
+  window is the case a slim-only recomputation gets wrong). Store `shadow` and
+  `dt_prev` as floats rather than the boolean, so R and T stay re-tunable.
+- **Cheap fallback, no new branch, works on today's slims:** `amp_0 > 250`
+  removes 95.7 % of the late tail for the same core cost.
+- **Per-trigger metric:** per (trigger, arm) take the **largest-amplitude**
+  plastic hit — not the earliest — and cut on its residual. On the trigger's own
+  arm **89.5 % land within ±25 ns**, median −5.6 ns. "Earliest" gives a median of
+  −589 ns, because in a µs-wide window the earliest hit is an unrelated single.
+
+This also refines `slim_pipeline/config.py`: the late side is *not* featureless.
+At 1 ns binning there is a bump at 70–90 ns where the 81 ns echo lands.
+
+Not done: tuned on one segment of one run. The flag's cost scales with the
+singles rate, so R and T want re-checking on a high- and a low-rate segment
+before a campaign-wide number is quoted.
+
+---
+
 ## 2026-08-08 — the DREAM-keyed slim, and what n_TOF still owes us
 
 Two things landed today. Detail in
@@ -226,6 +270,7 @@ mistakes I made and corrected so you know where the error modes were.
 | UserInputs, source | `ntof_processing/userinputs/<variant>/` |
 | package for n_TOF | `ntof_handoff/` |
 | DREAM-vs-reprocessed entry point | `../ntof_dream_merge/DREAM_NTOF_CALIBRATION.md` |
+| micromegas channels in the n_TOF DAQ (MMA/MMB, MGAS) | `NTOF_MICROMEGAS_SIGNALS.md` + `mm_signals/` |
 | retired documentation | `archive/` -- do not build on it |
 | local copy of 224572 v12 | `/media/dylan/data/x17/ntof_reproc/v12_liqpileup/` |
 
