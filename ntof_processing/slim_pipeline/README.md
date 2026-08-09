@@ -1,7 +1,10 @@
 # slim_pipeline — n_TOF hits, keyed to DREAM event IDs
 
 Turns one **(DREAM sub-run × n_TOF run) segment** into an `ntof_hits/` directory
-beside the DREAM sub-run on EOS. Feasibility, window choice and sizes:
+beside the DREAM sub-run on EOS. **First full campaign: 2026-08-09, 119 of 202
+segments over 59 n_TOF runs — see
+[`../SLIM_CAMPAIGN_2026-08-09.md`](../SLIM_CAMPAIGN_2026-08-09.md) for what ran,
+what it found and what is still open.** Feasibility, window choice and sizes:
 [`../SLIM_FEASIBILITY_2026-08-08.md`](../SLIM_FEASIBILITY_2026-08-08.md).
 The time calibration authority is
 [`../../ntof_dream_merge/DREAM_NTOF_CALIBRATION.md`](../../ntof_dream_merge/DREAM_NTOF_CALIBRATION.md).
@@ -197,7 +200,29 @@ independent layers exist because they catch different things.
 python clock_qa.py <ntof_hits_dir> [--json]       # 13 absolute checks, verdict
 python dashboard/make_clock_dashboard.py <root>   # the fleet, as one HTML page
 python tests/test_clock_qa.py                     # 19 injected defects, ~5 s
+python segment_diagnose.py <run> <subrun> <ntof>  # why did THIS one find nothing?
+python lxplus/campaign_status.py                  # coverage vs the proposal
 ```
+
+The published dashboard for the July campaign is at
+<https://dylan-neff.web.cern.ch/notes/ntof-dream-clock-qa.html>.
+
+### When a segment finds no coincidence
+
+`segment_diagnose.py` separates four causes the error message cannot, building
+the candidate list once and reusing it:
+
+| it finds | means |
+|---|---|
+| too few events | skip it; the wall-clock proposal did not pan out |
+| a peak at a non-zero **bunch shift** | bunch assignment is off; recoverable |
+| a peak at a **large lag** in the full-burst FFT scan | the fine ±50 µs search was too narrow |
+| a lag that will not **sharpen** under refinement | a broad association, NOT a coincidence |
+
+The last is what the July campaign's 54 uncovered sub-runs turned out to be:
+34.7 σ at 2 µs bins, 5.0 σ at 500 ns, i.e. ~6 µs wide against ~6 ns for a real
+coincidence. Knowing it is broad rather than absent is the difference between
+"these hours have no data" and "these hours were triggered on something else".
 
 * **absolute** (`clock_qa.TH`) — thresholds from measurement, each with its
   reason in the source. PASS / WARN / FAIL, and **NA** when a file predates the

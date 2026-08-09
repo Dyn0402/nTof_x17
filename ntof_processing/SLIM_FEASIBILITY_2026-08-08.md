@@ -23,7 +23,17 @@ pipeline and its validation. The calibration authority remains
 
 ---
 
-## 0a. Update, 2026-08-09 — two things this document got wrong
+## 0a. Update, 2026-08-09 — three things this document got wrong
+
+**The campaign has since run. Its report is
+[`SLIM_CAMPAIGN_2026-08-09.md`](SLIM_CAMPAIGN_2026-08-09.md), which supersedes
+the sizing and coverage numbers below: 119 of 202 segments slimmed, covering 116
+of 170 DREAM sub-runs, at a ±1 µs window and 7.1 GB. The remaining 54 sub-runs
+turned out to contain a real but ~6 µs wide association at −0.982 ms, which
+cannot support a ±25 ns match.**
+
+### The original two
+
 
 Read this before the rest. Both were found by running the pipeline on a pair
 other than the one it was developed on, which is the only reason they surfaced.
@@ -74,8 +84,16 @@ catches a segment which passes every absolute check but sits 380 ns from its
 peers) and `tests/test_clock_qa.py` (19 injected defects, asserting each check
 fires). See `slim_pipeline/README.md`.
 
+### The third: coverage was assumed, not measured
+
+This document's §7 counted how much beam time n_TOF had *processed*. It did not
+occur to me to ask how much of that would actually yield a coincidence, and the
+answer is 77 %, not 100 %. Availability of input is not coverage of output, and
+only running the thing revealed the difference.
+
 Numbers below that predate this section — the ±150 ns window, ~33 MB per sub-run,
-~8–9 GB total — are superseded by the ±1 µs figures above.
+~8–9 GB total — are superseded by the ±1 µs figures in
+[`SLIM_CAMPAIGN_2026-08-09.md`](SLIM_CAMPAIGN_2026-08-09.md).
 
 ---
 
