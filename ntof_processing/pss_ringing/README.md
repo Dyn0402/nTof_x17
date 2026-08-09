@@ -76,6 +76,15 @@ arm **89.5 % land within ±25 ns**, median −5.6 ns. "Earliest" gives −589 ns
 because in a microsecond-wide window at 720 kHz singles the earliest hit is
 almost always an unrelated single.
 
+**Integrated into the slim, 2026-08-09.** `slim_pipeline` now stores
+`shadow_amp`/`shadow_dt` per hit, computed on the full per-bunch stream in
+pass 2 exactly as recommended above, and `clock_qa.py` checks per segment that
+the late tail stays ringing-explained ('PSS late tail is ringing') and that
+the largest plastic pulse per trigger stays inside ±25 ns ('plastic primary
+within accept', 92.0 % on the reference at the production ±1 µs window). On
+files slimmed before the branches existed the QA recomputes the flag
+in-window, which is complete for the late tail.
+
 ## The scripts
 
 | | |

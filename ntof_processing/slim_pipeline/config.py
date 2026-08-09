@@ -79,10 +79,27 @@ MIN_EVENTS = 500
 # excess for 10.4 % of the core, all of it small-amplitude. It must be computed
 # on the FULL n_TOF stream with a full 1 us of lookback -- an after-pulse whose
 # parent sits just outside this window is exactly what a slim-only
-# recomputation gets wrong -- so it belongs in pass 2, storing `shadow` and
-# `dt_prev` as floats rather than a boolean so the thresholds stay re-tunable.
-# NOT IMPLEMENTED HERE YET. Until it is, `amp_0 > 250` on the slim as it stands
-# removes 95.7 % of the late tail for the same core cost.
+# recomputation gets wrong.
+#
+# IMPLEMENTED 2026-08-09 in pass 2 (`slim.pass2_hits`), which sees the full
+# per-bunch stream before the window cut: every kept hit carries
+#   shadow_amp   largest amp_0 on the same (bunch, channel) in the previous
+#                SHADOW_HOLD_NS (0 = nothing there)
+#   shadow_dt    ns since that largest hit (-1 = nothing there)
+# stored as floats, NOT a boolean, so `ratio` and any t_hold <= SHADOW_HOLD_NS
+# stay re-tunable per analysis: the adopted flag is
+#   amp_0 < SHADOW_RATIO * shadow_amp  (and shadow_dt <= t_hold if tightening).
+# Files slimmed before this date lack the branches; `clock_qa.py` falls back
+# to an in-window recomputation, which is complete for the LATE tail (an
+# after-pulse at +dt always has its parent inside the window) and measures
+# 100.6 % of the late excess removed on the reference segment.
+#
+# QA: clock_qa checks 'PSS late tail is ringing' (the flag explains the late
+# excess) and 'plastic primary within accept' (per matched trigger, the
+# LARGEST plastic pulse on the trigger's own arm lands within +-25 ns -- 92.0 %
+# on the reference; "earliest" gives 31 % and must not be used).
+SHADOW_HOLD_NS = 1000.0
+SHADOW_RATIO = 0.05
 #
 # So the plastic hit yield is now quotable, but only against one of those cuts:
 # the yield inside +-1 us is ~6.1x the coincident core (288 k against 47 k).

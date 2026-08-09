@@ -37,9 +37,10 @@ N_EV, N_BUNCH = 40_000, 800
 
 def make_segment(d: Path, *, efficiency=0.958, accidental=0.00046,
                  cv_gap=0.0004, resid_mean=0.0, resid_rms=6.3, drift_ns=0.0,
-                 K=1.1063e-4, T0=-252.6, arm_shift=None, da_rms=6.5,
-                 dk_rms_ppm=0.6, frac_fitted=0.99, flash_hits=0,
-                 edge_pileup=False, bootstrap_snr=180.0, with_bunches=True,
+                 K=1.1063e-4, T0=-252.6, arm_shift=None, arm_resid_shift=None,
+                 da_rms=6.5, dk_rms_ppm=0.6, frac_fitted=0.99, flash_hits=0,
+                 late_clip=False, primary_out_frac=0.02, ringing_loud_frac=0.0,
+                 bootstrap_snr=180.0, with_bunches=True,
                  dream_run='run_00', dream_subrun='synthetic', ntof_run=0,
                  n_ev=None):
     """Write a synthetic ntof_hits directory with the requested properties."""
@@ -64,10 +65,13 @@ def make_segment(d: Path, *, efficiency=0.958, accidental=0.00046,
     r = RNG.normal(resid_mean, resid_rms, m.sum())
     if drift_ns:                                       # linear in t
         r = r + drift_ns * (t[m] / 80e6 - 0.5)
-    r = np.clip(r, -C.ACCEPT_NS, C.ACCEPT_NS)
-    resid[m] = r
     arm = np.full(N_EV, -1, np.int8)
     arm[m] = RNG.integers(0, 4, m.sum())
+    if arm_resid_shift:                                # one arm's fit is wrong
+        for k, v in arm_resid_shift.items():
+            r = r + np.where(arm[m] == 'ABCD'.index(k), v, 0.0)
+    r = np.clip(r, -C.ACCEPT_NS, C.ACCEPT_NS)
+    resid[m] = r
 
     events = dict(
         eventId=ev_id, bunch=bunch, t_dream_ns=t, is_flash=is_flash,
@@ -88,25 +92,80 @@ def make_segment(d: Path, *, efficiency=0.958, accidental=0.00046,
         dk=(RNG.normal(0, dk_rms_ppm, ub.size) * 1e-6).astype(np.float32),
         n_core=np.full(ub.size, 40, np.int32))
 
-    # hits: 8 per matched trigger, dt inside the slim window
+    # hits, in four populations mirroring what a real slim carries:
+    #   background   6 per matched trigger, any tree, small amplitude
+    #   primary      one MIP-sized PSS hit on the trigger's own arm at
+    #                dt ~ N(-5, 7) -- what "largest on the trigger arm" finds
+    #   ringing      after-pulse followers behind the primaries: same channel,
+    #                a few % of the parent amplitude, dt decaying to ~1 us
+    #   clip         (late_clip only) a one-sided uniform LIQ population in
+    #                the outer late decile -- what real truncation looks like
     W = C.SLIM_NS
-    per = 8
-    hid = np.repeat(ev_id[m], per)
-    ndt = hid.size
-    if edge_pileup:                                    # a window that clips
-        dt = RNG.uniform(-W, W, ndt)
-    else:
-        dt = np.clip(RNG.normal(0, 35, ndt), -W, W)
-    det = RNG.integers(0, len(C.SCINT_TREES), ndt).astype(np.int16)
-    ctl = (RNG.random(ndt) < 0.02).astype(np.uint8)
+    per = 6
+    n_bg = int(m.sum()) * per
+    hid = [np.repeat(ev_id[m], per)]
+    dt = [np.clip(RNG.normal(0, 35, n_bg), -W, W)]
+    det = [RNG.integers(0, len(C.SCINT_TREES), n_bg).astype(np.int16)]
+    detn = [RNG.integers(0, 4, n_bg).astype(np.int32)]
+    amp0 = [RNG.uniform(60, 900, n_bg)]
+    ctl = [(RNG.random(n_bg) < 0.02).astype(np.uint8)]
+
+    n_m = int(m.sum())
+    hid.append(ev_id[m])
+    p_dt = RNG.normal(-5, 7, n_m)
+    out = RNG.random(n_m) < primary_out_frac           # displaced primaries
+    p_dt[out] = RNG.uniform(50, 900, out.sum()) * RNG.choice([-1, 1], out.sum())
+    dt.append(np.clip(p_dt, -W, W))
+    det.append((4 + arm[m]).astype(np.int16))          # PSS tree of own arm
+    p_detn = RNG.integers(0, 2, n_m).astype(np.int32)
+    detn.append(p_detn)
+    p_amp = RNG.uniform(3000, 9000, n_m)
+    amp0.append(p_amp)
+    ctl.append(np.zeros(n_m, np.uint8))
+
+    lead = RNG.random(n_m) < 0.5                       # parents that ring
+    nf = RNG.poisson(3.0, lead.sum())
+    f_ev = np.repeat(ev_id[m][lead], nf)
+    f_parent = np.repeat(np.flatnonzero(lead), nf)
+    f_dt = (np.repeat(dt[1][lead], nf)
+            + RNG.exponential(250.0, f_ev.size) + 18.0)
+    keepf = f_dt <= W
+    f_ratio = np.where(RNG.random(f_ev.size) < ringing_loud_frac,
+                       RNG.uniform(0.30, 0.90, f_ev.size),
+                       RNG.uniform(0.005, 0.045, f_ev.size))
+    hid.append(f_ev[keepf])
+    dt.append(f_dt[keepf])
+    det.append(np.repeat(det[1][lead], nf)[keepf])     # parent's channel,
+    detn.append(np.repeat(p_detn[lead], nf)[keepf])    # so the flag can see it
+    amp0.append((p_amp[f_parent] * f_ratio)[keepf])
+    ctl.append(np.zeros(int(keepf.sum()), np.uint8))
+
+    if late_clip:                                      # one-sided truncation
+        n_c = 2 * n_m
+        hid.append(RNG.choice(ev_id[m], n_c))
+        dt.append(RNG.uniform(0.9 * W, W, n_c))
+        det.append(RNG.integers(8, 12, n_c).astype(np.int16))   # LIQ
+        detn.append(RNG.integers(0, 4, n_c).astype(np.int32))
+        amp0.append(RNG.uniform(60, 900, n_c))
+        ctl.append(np.zeros(n_c, np.uint8))
+
     if flash_hits:                                     # hits on flash triggers
-        hid = np.concatenate([hid, ev_id[:flash_hits]])
-        dt = np.concatenate([dt, RNG.uniform(-W, W, flash_hits)])
-        det = np.concatenate([det, RNG.integers(0, 12, flash_hits).astype(np.int16)])
-        ctl = np.concatenate([ctl, np.zeros(flash_hits, np.uint8)])
-    hits = dict(eventId=hid.astype(np.uint64), det=det,
-                dt_ns=dt.astype(np.float32), is_control=ctl,
-                amp=RNG.uniform(10, 500, dt.size).astype(np.float32),
+        hid.append(ev_id[:flash_hits])
+        dt.append(RNG.uniform(-W, W, flash_hits))
+        det.append(RNG.integers(0, 12, flash_hits).astype(np.int16))
+        detn.append(RNG.integers(0, 4, flash_hits).astype(np.int32))
+        amp0.append(RNG.uniform(60, 900, flash_hits))
+        ctl.append(np.zeros(flash_hits, np.uint8))
+
+    hid = np.concatenate(hid)
+    dt = np.concatenate(dt)
+    det = np.concatenate(det)
+    detn = np.concatenate(detn)
+    amp0 = np.concatenate(amp0)
+    ctl = np.concatenate(ctl)
+    hits = dict(eventId=hid.astype(np.uint64), det=det.astype(np.int16),
+                detn=detn, dt_ns=dt.astype(np.float32), is_control=ctl,
+                amp=amp0.astype(np.float32), amp_0=amp0.astype(np.float32),
                 satuflag=np.zeros(dt.size, np.uint8))
 
     fname = f'ntof_hits_{dream_run}_{dream_subrun}_{ntof_run:06d}.root'
@@ -157,10 +216,27 @@ CASES = [
     ('clock drifts',       dict(drift_ns=12.0),             'no residual drift in time-since-flash', 'WARN'),
     ('K unphysical',       dict(K=3.0e-4),                  'K in physical range', 'FAIL'),
     ('arm offset moved',   dict(arm_shift={'C': 20.0}),     'arm offsets vs reference', 'WARN'),
+    # the lat051 signature: fitted offsets displaced, so one arm's matched
+    # residuals centre off zero while everything global stays green
+    ('arm residual off',   dict(arm_resid_shift={'C': 11.0}),
+     'per-arm residuals centred', 'FAIL'),
+    ('arm residual drifted', dict(arm_resid_shift={'B': 4.0}),
+     'per-arm residuals centred', 'WARN'),
     ('per-bunch scatter',  dict(da_rms=22.0),               'per-bunch offset scatter', 'WARN'),
     ('bunches unfitted',   dict(frac_fitted=0.60),          'bunches fitted', 'FAIL'),
     ('hits on flash',      dict(flash_hits=250),            'flash triggers carry no hits', 'FAIL'),
-    ('window clipping',    dict(edge_pileup=True),          'coincidence contained in slim window', 'FAIL'),
+    # truncation is ONE-SIDED late excess at the edge; the symmetric pedestal
+    # a biased control leaves must NOT fire it (that is the 'healthy' case)
+    ('window clipping',    dict(late_clip=True),            'coincidence contained in slim window', 'FAIL'),
+    # ringing followers with amplitudes too big for the shadow flag = a late
+    # tail that is NOT explained by ringing, which a human should look at
+    ('late tail not ringing', dict(ringing_loud_frac=0.55),
+     'PSS late tail is ringing', 'WARN'),
+    # the largest plastic pulse per trigger wanders off the accept window
+    ('plastic primary displaced', dict(primary_out_frac=0.30),
+     'plastic primary within accept', 'WARN'),
+    ('plastic primary lost', dict(primary_out_frac=0.55),
+     'plastic primary within accept', 'FAIL'),
     ('weak coarse peak',   dict(bootstrap_snr=9.0),         'coarse peak above floor', 'WARN'),
     ('no bootstrap record', dict(bootstrap_snr=0.0),        'coarse peak above floor', 'NA'),
     ('old file, no bunches', dict(with_bunches=False),      'bunches fitted', 'NA'),

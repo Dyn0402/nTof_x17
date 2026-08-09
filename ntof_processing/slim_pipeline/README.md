@@ -66,7 +66,12 @@ Flash triggers are tagged in `events` and get no n_TOF hits.
 
 `hits` — `eventId`, `det` (0-11, see `provenance.det_code`), `detn`, `tof`,
 `dt_ns` (to the corrected prediction), `amp`, `amp_0`, `area_0`, `fwhm`,
-`risetime`, `chi2`, `satuflag`, `pileup1`, `pulseshape`, `is_control`.
+`risetime`, `chi2`, `satuflag`, `pileup1`, `pulseshape`, `is_control`, and
+(since 2026-08-09) `shadow_amp`/`shadow_dt` — the largest `amp_0` on the same
+(bunch, channel) in the previous 1 µs and the ns since it, computed on the
+**full** per-bunch stream before the window cut. The adopted plastic ringing
+cut is `amp_0 < 0.05 × shadow_amp` (`../pss_ringing/`); storing the floats
+instead of the boolean keeps the thresholds re-tunable without re-slimming.
 
 `events` — one row per DREAM trigger including flash and unmatched ones, so
 "no n_TOF partner" is distinguishable from "not written": `eventId`, `bunch`,
@@ -176,13 +181,18 @@ not, and the tail is large:
 adds 1–2.4 k counts against an early-side noise level of ~1 k. The choice is one
 constant, `config.SLIM_NS`; re-slimming a sub-run costs ~10 minutes.
 
-**Known, unexplained: the plastic late tail.** One-sided (22× late over early),
-smooth and monotonic with **no discrete echoes**, so it is not ringing at a
-fixed period — more likely afterpulsing, late light, or the 101 ns PSS template
-fitter splitting a long pulse. It is contained by the ±1 µs window, so it can be
-diagnosed from the slims without re-reading the 21 TB source. **Do not quote a
-plastic hit yield until it is understood.** It does not affect the trigger match
-or the liquid physics.
+**The plastic late tail is EXPLAINED: the plastics ring** (`../pss_ringing/`,
+2026-08-09). Every large plastic pulse is followed by a train of real
+secondary pulses out to ~1 µs (~4.4 extra PSA hits per large pulse, against
+0.007 on the walls), plus a 2 ns-wide cable echo at 81–82 ns. Established four
+ways — event-mixed control, time reversal, the walls as a null, and the raw
+traces. The tail does not affect the trigger match (candidates are wall-side,
+and the walls do not ring) or the liquid physics. **A plastic hit yield is
+quotable against the shadow cut** (`amp_0 < 0.05 × shadow_amp`): it removes
+99.5 % of the 150–1000 ns excess for 10.4 % of the core, all small-amplitude.
+Per trigger, the question "is the main plastic peak where it should be" must
+use the **largest-amplitude** hit on the trigger's arm (92 % within ±25 ns),
+never the earliest (31 % — it picks unrelated singles at 720 kHz).
 
 Two earlier readings of this were wrong and are corrected above: that ±100 ns
 clipped the liquid coincidence (it clipped the accidental floor inside
@@ -197,12 +207,50 @@ is attached to the wrong trigger while the file looks perfectly healthy. Two
 independent layers exist because they catch different things.
 
 ```bash
-python clock_qa.py <ntof_hits_dir> [--json]       # 13 absolute checks, verdict
+python clock_qa.py <ntof_hits_dir> [--json]       # 17 absolute checks, verdict
 python dashboard/make_clock_dashboard.py <root>   # the fleet, as one HTML page
-python tests/test_clock_qa.py                     # 19 injected defects, ~5 s
+python tests/test_clock_qa.py                     # 24 injected defects, ~10 s
 python segment_diagnose.py <run> <subrun> <ntof>  # why did THIS one find nothing?
 python lxplus/campaign_status.py                  # coverage vs the proposal
 ```
+
+Three checks added and one fixed on 2026-08-09, after the ringing measurement
+and the first campaign's QA sweep:
+
+* **per-arm residuals centred** — a wrong per-arm offset hides from every
+  global check (the arms average to zero, the efficiency barely moves inside
+  ±25 ns). What cannot hide is that arm's matched residuals centring off zero.
+  This is the check that catches `run_78/stat090_lat051_c0_0005`, whose stored
+  arm C offset was 12 ns off (see below).
+* **plastic primary within accept** — per matched trigger, the largest plastic
+  pulse on the trigger's own arm lands within ±25 ns (92 % reference).
+* **PSS late tail is ringing** — the shadow flag explains ≥ 90 % of the
+  150–1000 ns excess (100.6 % reference; > 100 % means explained to within
+  subtraction noise). If it ever stops doing so, the late tail is no longer
+  ringing and someone should look.
+* **containment is now SIDED, against an empirical null** — the old |dt| edge
+  test lit up 45 of 116 campaign segments, all on LIQ, but the fleet-total
+  edge excess was early +14,491 against late +15,623: *symmetric*, which no
+  truncated coincidence is. It was the +100 µs control mis-stating the local
+  floor by a little — a pedestal, common mode between the two edges. The
+  check now flags only the edge **asymmetry** (|late − early| against core
+  density), and judges it against the **mid-band (0.3–0.7 W) per-decile
+  asymmetry RMS** rather than pure Poisson: measured fleet-wide, the pedestal
+  wobbles 2–3× wider than Poisson everywhere in the window, and against the
+  Poisson null 18 segments still lit up with *random sign*. Against the
+  mid-band null the fleet |z| tops out at 3.2, sign-random; the gate is
+  z ≥ 4, far below what real truncation gives (the ±150 ns mistake was a
+  coherent 22× one-sided tail).
+
+**The per-arm offset estimator was also fixed** (`clockfit.fit_global`). It
+used to keep the intercept of a free per-arm line fit — an extrapolation to
+t = 0 from data starting at 0.1 ms, with a slope the model says should not
+exist per arm. On 3-minute segments the slope noise displaced the stored
+offsets by up to 12 ns (lat051, arm C at −10.3 ns against a fleet median of
++1.5, matched residuals unimodal at +12 ns to prove it). Sliced-reference
+measurement: old estimator 2–5 ns RMS with 9–18 ns worst cases on
+lat051-sized slices; refined median 1.3–1.8 ns RMS. Full-segment values move
+≤ 1.1 ns, inside the validate tolerance.
 
 The published dashboard for the July campaign is at
 <https://dylan-neff.web.cern.ch/notes/ntof-dream-clock-qa.html>.

@@ -191,3 +191,41 @@ lxplus.
    unrelated to the 54 above.
 5. `STATUS.md` has no entry for this campaign: another session held uncommitted
    changes to it at the time and it was not mine to touch.
+
+## 7. Addendum, later on 2026-08-09: the QA sweep of the 119
+
+Aggregating the campaign's `clock_qa.json` records (0 FAIL, 46 WARN) resolved
+all three open threads and reworked the QA around the plastic ringing:
+
+* **The 45 containment WARNs were a check artifact, all LIQ.** Fleet-total
+  edge excess: early +14,491 vs late +15,623 — symmetric, which no truncated
+  coincidence is. It is the +100 µs control mis-stating the local floor
+  slightly (a flat pedestal, common to both edges), passing 3 σ on big
+  segments. The check is now sided: it flags edge *asymmetry*, which a
+  pedestal cancels out of. (PSS: early −1,253 vs late +659,840 — the ringing,
+  one-sided as measured.)
+* **The one fleet outlier (run_78/stat090_lat051_c0_0005, arm C) was a fit
+  defect, now fixed.** The per-arm offsets were the intercepts of free
+  per-arm line fits, extrapolated to t = 0 from data starting at 0.1 ms; on a
+  3-minute segment the slope noise displaced them by up to 12 ns, and the
+  matched residuals sat unimodally at +12 ns (C) / −8 ns (D) to prove it. On
+  lat051-sized slices of the reference the old estimator scatters 2–5 ns RMS
+  (worst 9–18 ns); the refined median that replaced it, 1.3–1.8 ns. A new
+  check ('per-arm residuals centred') FAILs the segment retroactively —
+  nothing global could see it. 224571 re-slimmed with the fix: all 7 of its
+  segments now PASS every check (lat051 arm C −10.3 → +0.7 ns, residuals
+  centred to ±1.8 ns).
+* **The ringing (`pss_ringing/`, section 3 above's "unexplained tail") is now
+  in the QA and the format**: `shadow_amp`/`shadow_dt` branches in new slims,
+  'PSS late tail is ringing' and 'plastic primary within accept' checks in
+  `clock_qa.py`, and the fleet re-judged with them. The ±25 ns slice is safe:
+  the largest plastic pulse per trigger lands inside it for 91.2–93.8 % of
+  matched triggers on every segment, and the late tail is ringing at
+  99.2–104.4 %, not mis-handled yield.
+
+**Fleet after the rework and the 224571 refit: 112 PASS, 4 WARN (the known
+bunches-fitted quartet), 0 FAIL, 0 outliers.** Dashboard republished. Note
+for the pending EOS publication (§6 item 1): the 116 on lxplus predate the
+`shadow_amp`/`shadow_dt` branches (QA covers them via the in-window
+fallback); re-slimming the campaign (~2.5 h wall) would bake the branches in,
+or publish as-is and let analyses recompute in-window.

@@ -318,15 +318,35 @@ def fit_global(ev_bunch, ev_t, cd_bunch, cd_t, cd_arm, iters=ITERS,
         log(f'    iter {it}: shift {a:+7.2f} ns  slope {b:+.3e}  '
             f'-> K = {K:.6e}  T0 = {T0:+.2f} ns   (n = {n:,})')
 
+    # Per-arm offsets are CONSTANTS in the model -- the slope belongs to K and
+    # is already fitted above, shared by all four arms. This used to reuse
+    # `_line` per arm and keep its intercept, i.e. an extrapolation to
+    # t_dream = 0 from data that starts at 0.1 ms, with a free slope fitted on
+    # a quarter of the statistics. On the reference segment (25k candidates
+    # per arm) the two agree to < 0.3 ns; on a 3-minute segment (~700 per arm)
+    # the slope noise displaced the stored offsets by up to 12 ns while the
+    # true offsets sat at their fleet values -- run_78/stat090_lat051_c0_0005,
+    # arm C stored -10.3 ns against a fleet median of +1.5, with the matched
+    # residuals unimodal at +12 ns to say so. A refined median has no slope to
+    # get wrong: sigma ~ 1.25 * 6.5 ns / sqrt(n) ~ 0.3 ns even on that segment.
     ei, r, ci = residuals(ev_bunch, ev_t, cd_bunch, cd_t, K, T0)
     arm = np.asarray(cd_arm)[ci]
     off = np.zeros(4)
     info['per_arm'] = {}
     for ai, name in enumerate(ARMS):
         s = arm == ai
-        aa, _, nn, ss = _line(ev_t, ei[s], r[s])
-        off[ai] = 0.0 if not np.isfinite(aa) else aa
-        info['per_arm'][name] = dict(a_ns=off[ai], n=int(nn), spread_ns=ss)
+        rr = r[s][np.abs(r[s]) < CORE_NS]
+        nn = int(rr.size)
+        if nn >= 50:
+            med = float(np.median(rr))
+            fine = rr[np.abs(rr - med) < 50.0]       # re-centre off the floor
+            aa = float(np.median(fine)) if fine.size >= 50 else med
+            ss = float(1.4826 * np.median(np.abs(fine - aa))) if fine.size \
+                else float('nan')
+        else:
+            aa, ss = 0.0, float('nan')
+        off[ai] = aa
+        info['per_arm'][name] = dict(a_ns=off[ai], n=nn, spread_ns=ss)
         log(f'    arm {name}: {off[ai]:+7.2f} ns  (n = {nn:,})')
     info['K'], info['T0_ns'] = K, T0
     return K, T0, off, info

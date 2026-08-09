@@ -146,6 +146,46 @@ def pass1_candidates(seg: Segment, bunches, log=print):
     return cd, offs, thr
 
 
+def shadow_prev(grp, t, amp, t_hold=C.SHADOW_HOLD_NS):
+    """(largest earlier amp on the same channel within t_hold, ns since it).
+
+    The plastics ring: every large pulse is trailed by real secondary pulses
+    out to ~1 us (`../pss_ringing/`), and the adopted cut for them is
+    `amp_0 < ratio * shadow_amp`. Computed here on the FULL per-bunch stream,
+    BEFORE the slim window cut, because an after-pulse whose parent falls just
+    outside the window is exactly what a slim-only recomputation gets wrong.
+    Returns (0, -1) where nothing precedes the hit. Same walk-back as
+    `pss_ringing/afterpulse_flag.py`: work is proportional to in-window PAIRS
+    (~0.7/hit at the plastics' 720 kHz), not depth x length.
+    """
+    grp = np.asarray(grp)
+    t = np.asarray(t, np.float64)
+    amp = np.asarray(amp, np.float64)
+    order = np.lexsort((t, grp))
+    g, tt, aa = grp[order], t[order], amp[order]
+    smax = np.zeros(t.size)
+    sdt = np.full(t.size, -1.0)
+    active = np.arange(1, t.size)
+    for k in range(1, t.size):
+        j = active - k
+        keep = j >= 0
+        active, j = active[keep], j[keep]
+        if active.size == 0:
+            break
+        inwin = (g[j] == g[active]) & (tt[active] - tt[j] <= t_hold) \
+            & (tt[active] - tt[j] > 0)
+        active, j = active[inwin], j[inwin]
+        if active.size == 0:
+            break
+        upd = aa[j] > smax[active]
+        ai, aj = active[upd], j[upd]
+        smax[ai] = aa[aj]
+        sdt[ai] = tt[ai] - tt[aj]
+    out_a, out_d = np.empty_like(smax), np.empty_like(sdt)
+    out_a[order], out_d[order] = smax, sdt
+    return out_a, out_d
+
+
 def pass2_hits(seg: Segment, ev_bunch, ev_t, ev_id, corr, K, T0,
                slim_ns=C.SLIM_NS, control_ns=C.CONTROL_SHIFT_NS, log=print):
     """Every scintillator hit within +-slim_ns of a corrected prediction.
@@ -172,7 +212,8 @@ def pass2_hits(seg: Segment, ev_bunch, ev_t, ev_id, corr, K, T0,
     bunches = np.unique(np.asarray(ev_bunch))
     cols = {k: [] for k in ('eventId', 'det', 'detn', 'tof', 'dt_ns', 'amp',
                             'amp_0', 'area_0', 'fwhm', 'risetime', 'chi2',
-                            'satuflag', 'pileup1', 'pulseshape', 'is_control')}
+                            'satuflag', 'pileup1', 'pulseshape', 'is_control',
+                            'shadow_amp', 'shadow_dt')}
     n_src = 0
     t0 = time.time()
     for ti, tree in enumerate(C.SCINT_TREES):
@@ -183,6 +224,12 @@ def pass2_hits(seg: Segment, ev_bunch, ev_t, ev_id, corr, K, T0,
             if a['tof'].size == 0:
                 continue
             n_src += a['tof'].size
+            # Ringing shadow, on the FULL chunk stream before any window cut.
+            # Chunks hold whole bunches and tof restarts per bunch, so the
+            # (bunch, channel) grouping never needs lookback across a chunk.
+            sh_amp, sh_dt = shadow_prev(
+                a['BunchNumber'].astype(np.int64) * 100
+                + a['detn'].astype(np.int64), a['tof'], a['amp_0'])
             hk = cf.pack(a['BunchNumber'], a['t_since_flash_ns'])
             j = np.searchsorted(allk, hk)
             j0 = np.clip(j - 1, 0, allk.size - 1)
@@ -199,6 +246,8 @@ def pass2_hits(seg: Segment, ev_bunch, ev_t, ev_id, corr, K, T0,
             cols['is_control'].append(alltag[pick[k]])
             cols['det'].append(np.full(k.size, ti, np.uint8))
             cols['dt_ns'].append(dt[k])
+            cols['shadow_amp'].append(sh_amp[k])
+            cols['shadow_dt'].append(sh_dt[k])
             for b in ('detn', 'tof', 'amp', 'amp_0', 'area_0', 'fwhm',
                       'risetime', 'chi2', 'satuflag', 'pileup1', 'pulseshape'):
                 cols[b].append(a[b][k])
@@ -231,7 +280,9 @@ def write(seg: Segment, out: Path, hits, events, bunches_tbl, meta, log=print):
             'satuflag': hits['satuflag'].astype(np.int32),
             'pileup1': hits['pileup1'].astype(np.int32),
             'pulseshape': hits['pulseshape'].astype(np.int32),
-            'is_control': hits['is_control'].astype(np.uint8)}
+            'is_control': hits['is_control'].astype(np.uint8),
+            'shadow_amp': hits['shadow_amp'].astype(np.float32),
+            'shadow_dt': hits['shadow_dt'].astype(np.float32)}
         f['events'] = events
         f['bunches'] = bunches_tbl
     (out / 'calibration.json').write_text(json.dumps(meta['calibration'], indent=2))
@@ -336,6 +387,7 @@ def run_segment(seg: Segment, out_base: Path | None = None,
             arm_offset_ns={a: float(arm_off[i]) for i, a in enumerate(cf.ARMS)},
             accept_ns=C.ACCEPT_NS, slim_ns=slim_ns,
             control_shift_ns=C.CONTROL_SHIFT_NS,
+            shadow_hold_ns=C.SHADOW_HOLD_NS, shadow_ratio=C.SHADOW_RATIO,
             tb_offsets_ns={a: [float(x) for x in offs[a]] for a in offs},
             thresholds_mv=dict(wall=thr['wall'], plastic=thr['plastic'],
                                polled_at=str(thr.get('polled_at'))),

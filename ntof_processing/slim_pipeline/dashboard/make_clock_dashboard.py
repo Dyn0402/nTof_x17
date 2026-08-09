@@ -126,6 +126,15 @@ def population(recs):
         scan(f'arm {a}',
              lambda r, a=a: r['match']['per_arm'][a]['offset_ns'],
              MIN_SPREAD['arm'], label=f'arm {a} offset')
+        scan(f'arm {a} residual mean',
+             lambda r, a=a: r['match']['per_arm'][a].get('residual_mean'),
+             1.0, label=f'arm {a} residual mean')
+    scan('pss_primary',
+         lambda r: (r['match'].get('pss_primary') or {}).get('within_core'),
+         0.02, label='plastic primary within accept')
+    scan('ringing_removed',
+         lambda r: (r['hits'].get('pss_ringing') or {}).get('late_removed'),
+         0.02, label='PSS late tail removed by ringing flag')
     return notes
 
 
@@ -634,6 +643,46 @@ def build(recs, notes, title, source, coverage=None):
                           'In-sample minus held-out efficiency '
                           '(overfitting of the per-bunch fit)',
                           'points', fmt='{:+.3f}', ref=0.0))
+    H.append(chart_metric(
+        recs, lambda r: max((abs(r['match']['per_arm'][a].get(
+            'residual_mean', float('nan'))) for a in ARMS
+            if np.isfinite(r['match']['per_arm'][a].get(
+                'residual_mean', float('nan')))), default=None),
+        'Worst per-arm residual centring — a wrong arm offset hides from '
+        'every global check', '|mean| (ns)', fmt='{:.2f}',
+        ref=Q.TH['arm_resid_warn'],
+        outliers={i: any('residual mean' in o['metric'] for o in notes[i])
+                  for i in notes}))
+
+    H.append('<h2>The plastics ring</h2><p>Every large plastic pulse is '
+             'followed by a train of real secondary pulses out to ~1 µs '
+             '(<code>pss_ringing/</code>), and they are most of the PSS '
+             'content of the slim window. Two questions decide whether the '
+             '±25 ns analysis slice is safe: per matched trigger, does the '
+             '<strong>largest</strong> plastic pulse on the trigger arm land '
+             'inside it (the earliest almost never does — unrelated singles '
+             'at 720 kHz); and is the late tail fully explained by the '
+             'shadow flag (a hit under 5 % of a bigger hit on the same '
+             'channel in the previous µs), i.e. ringing rather than '
+             'mis-handled coincidence yield.</p>')
+    H.append(chart_metric(
+        recs, lambda r: (r['match'].get('pss_primary') or {}).get('within_core'),
+        'Largest plastic pulse on the trigger arm within ±25 ns',
+        'fraction of matched triggers', fmt='{:.1%}',
+        ref=Q.TH['pss_primary_warn'],
+        outliers={i: any(o['metric'] == 'plastic primary within accept'
+                         for o in notes[i]) for i in notes}))
+    H.append(chart_metric(
+        recs, lambda r: (r['hits'].get('pss_ringing') or {}).get('late_removed'),
+        'PSS 150–1000 ns excess removed by the shadow flag',
+        'fraction of late excess', fmt='{:.1%}',
+        ref=Q.TH['ringing_removed_warn'],
+        outliers={i: any('ringing' in o['metric'] for o in notes[i])
+                  for i in notes}))
+    H.append(chart_metric(
+        recs, lambda r: (r['hits'].get('pss_ringing') or {}).get('core_cost'),
+        'Core cost of the flag (small-amplitude hits inside ±25 ns it also '
+        'removes)', 'fraction of core excess', fmt='{:.1%}'))
 
     H.append('<h2>Fit health</h2><p>The coarse search is what stops the fit '
              'locking onto the accidental floor. Its signal-to-noise is the '

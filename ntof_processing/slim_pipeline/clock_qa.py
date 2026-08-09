@@ -75,9 +75,34 @@ TH = dict(
     # arm offsets reproduce between sub-runs to <= 2.6 ns; the four differ from
     # each other by ~25 ns, so a 15 ns move is well outside normal.
     arm_dev_warn=15.0, arm_dev_fail=40.0,
+    # matched residuals must centre PER ARM, not just overall: the offsets are
+    # fitted quantities and a wrong one leaves its arm displaced while the
+    # arms average to zero. run_78/stat090_lat051_c0_0005 sat at C +11.3 ns /
+    # D -8.1 ns from exactly that and passed every global check.
+    arm_resid_warn=3.0, arm_resid_fail=10.0,
+    # per (matched trigger, its own arm): the LARGEST-amplitude plastic hit in
+    # the slim window lands within +-ACCEPT_NS. Measured 92.0 % on the
+    # reference segment at the production +-1 us window, 91.5-92.6 % on the
+    # run_78 short segments (pss_ringing/report_veto.html measured 89.5 % on
+    # a +-3 us slim, where more unrelated singles compete). "Earliest" is the
+    # wrong estimator at 720 kHz singles -- it gives 31 %.
+    pss_primary_warn=0.80, pss_primary_fail=0.60,
+    # fraction of the PSS 150-1000 ns late excess removed by the in-window
+    # shadow flag (amp_0 < 0.05 x a bigger earlier hit, same channel, <=1 us).
+    # Measured 100.6 % on the reference segment, 99.4/104.4 % on the run_78
+    # shorts (>100 % = the residual goes slightly negative, i.e. the whole
+    # excess is explained to within subtraction noise). The full-stream flag
+    # removes 99.5 %; for the LATE tail in-window lookback is complete
+    # because an after-pulse at +dt always has its parent inside the window.
+    ringing_removed_warn=0.90,
+    # counts below which the late excess is too small to classify at all.
+    ringing_min_excess=100,
     # flash triggers are written with no hits by construction.
     flash_hits_fail=0,
 )
+# The shadow flag's operating point, shared with the slim's stored branches.
+SHADOW_RATIO = C.SHADOW_RATIO
+SHADOW_HOLD_NS = C.SHADOW_HOLD_NS
 # Reference arm offsets, run_79 x 224572. Used only as a shape comparison.
 REF_ARM = dict(A=-17.06, B=7.79, C=1.86, D=-1.01)
 
@@ -155,6 +180,46 @@ def _level(value, warn, fail, worse='high'):
         return 'FAIL'
     warn_ = (value >= warn) if worse == 'high' else (value <= warn)
     return 'WARN' if warn_ else 'PASS'
+
+
+def _shadow_flag(gid, t, amp, ratio=SHADOW_RATIO, t_hold=SHADOW_HOLD_NS):
+    """True where a hit sits in the shadow of a bigger earlier hit on its channel.
+
+    The plastics ring: every large pulse is followed by a train of real
+    secondary pulses out to ~1 us (pss_ringing/report.html), and this is the
+    adopted cut for them -- amp < ratio x any amp on the same channel within
+    t_hold BEFORE the hit. Same walk-back as pss_ringing/afterpulse_flag.py,
+    restricted to what the slim window can see: for the LATE tail the parent
+    is always in the window (an after-pulse at +dt has its parent within
+    t_hold before it, i.e. above dt - t_hold >= -1 us), so in-window lookback
+    is complete there; only early-side hits with pre-window parents are
+    missed, and the tail is one-sided late.
+
+    `gid` is any int64 key separating (trigger, detector, channel, window).
+    Arrays may come in any order; the flag returns in that order.
+    """
+    gid = np.asarray(gid)
+    t = np.asarray(t, np.float64)
+    amp = np.asarray(amp, np.float64)
+    order = np.lexsort((t, gid))
+    g, tt, aa = gid[order], t[order], amp[order]
+    out = np.zeros(t.size, bool)
+    active = np.arange(1, t.size)
+    for k in range(1, t.size):
+        j = active - k
+        keep = j >= 0
+        active, j = active[keep], j[keep]
+        if active.size == 0:
+            break
+        inwin = (g[j] == g[active]) & (tt[active] - tt[j] <= t_hold) \
+            & (tt[active] - tt[j] > 0)
+        active, j = active[inwin], j[inwin]
+        if active.size == 0:
+            break
+        out[active[aa[active] < ratio * aa[j]]] = True
+    res = np.empty_like(out)
+    res[order] = out
+    return res
 
 
 def analyse(d: Path) -> SegmentQA:
@@ -278,6 +343,20 @@ def analyse(d: Path) -> SegmentQA:
                   f'({per_arm[a]["offset_vs_ref"]:+.1f})' for a in ARMS)
         + ' ns vs run_79',
         f'max |dev| <= {TH["arm_dev_warn"]:g} ns'))
+    # A wrong per-arm offset hides from every global check: the arms average
+    # to zero, the efficiency barely moves inside +-25 ns, and the offsets
+    # themselves can sit inside the vs-reference tolerance. What cannot hide
+    # is the matched residuals of that arm centring somewhere other than zero.
+    arm_resid = max((abs(v['residual_mean']) for v in per_arm.values()
+                     if np.isfinite(v['residual_mean']) and v['n'] >= 100),
+                    default=float('nan'))
+    checks.append(Check(
+        'per-arm residuals centred',
+        _level(arm_resid, TH['arm_resid_warn'], TH['arm_resid_fail']),
+        arm_resid,
+        '  '.join(f'{a} {per_arm[a]["residual_mean"]:+.1f}' for a in ARMS)
+        + ' ns mean matched residual per arm',
+        f'max |mean| <= {TH["arm_resid_warn"]:g} ns'))
 
     # ------------------------------------------------- drift across the segment
     t = ev['t_dream_ns'][matched]
@@ -359,6 +438,114 @@ def analyse(d: Path) -> SegmentQA:
         dt_p50_p90_p99=[float(v) for v in np.percentile(
             np.abs(hits['dt_ns'][sig]), [50, 90, 99])] if sig.sum() else [])
 
+    # ------------------------------------------------- the plastics ring
+    # Every large plastic pulse is followed by real secondary pulses out to
+    # ~1 us (pss_ringing/), and they are most of the PSS content of the slim
+    # window. Classify them with the in-window shadow flag, then ask the two
+    # questions the +-25 ns analysis slice depends on:
+    #   1. is the late tail RINGING (explained by the flag), rather than
+    #      coincidence yield the window is mis-handling;
+    #   2. per matched trigger, does the LARGEST plastic pulse on the
+    #      trigger's own arm land inside +-25 ns.
+    pss_ids = np.array([det[f'PSS{a}'] for a in ARMS])
+    pm = np.isin(hits['det'], pss_ids)
+    fl = np.zeros(int(pm.sum()), bool)
+    ring = dict(late_excess=None, late_removed=None, core_excess=None,
+                core_cost=None, flagged_frac=None)
+    if pm.sum():
+        if 'shadow_amp' in hits:
+            # The slim stored the full-stream shadow (parents seen even when
+            # they fall outside the window) -- use it.
+            fl = (hits['amp_0'][pm]
+                  < SHADOW_RATIO * hits['shadow_amp'][pm])
+        else:
+            # Older file: recompute in-window, which is complete for the late
+            # tail (an after-pulse at +dt always has its parent inside).
+            # channel key: (trigger, tree, channel, signal-vs-control window)
+            gid = (((hits['eventId'][pm].astype(np.int64) * 12
+                     + hits['det'][pm]) * 64
+                    + hits['detn'][pm].astype(np.int64)) * 2
+                   + hits['is_control'][pm])
+            fl = _shadow_flag(gid, hits['dt_ns'][pm].astype(np.float64),
+                              hits['amp_0'][pm].astype(np.float64))
+        d_, c_ = hits['dt_ns'][pm], hits['is_control'][pm].astype(bool)
+
+        def _ex(keep, lo_, hi_):
+            s_ = (d_ >= lo_) & (d_ < hi_) & keep
+            return int((s_ & ~c_).sum()) - int((s_ & c_).sum())
+        allh = np.ones(d_.size, bool)
+        late0 = _ex(allh, 150.0, cal['slim_ns'])
+        late1 = _ex(~fl, 150.0, cal['slim_ns'])
+        core0 = _ex(allh, -25.0, 25.0)
+        core1 = _ex(~fl, -25.0, 25.0)
+        ring = dict(
+            late_excess=late0,
+            late_removed=(1.0 - late1 / late0) if late0 > 0 else None,
+            core_excess=core0,
+            core_cost=(1.0 - core1 / core0) if core0 > 0 else None,
+            flagged_frac=float(fl.mean()))
+    out.hits['pss_ringing'] = ring
+    if ring['late_excess'] is not None \
+            and ring['late_excess'] >= TH['ringing_min_excess']:
+        rv = ring['late_removed']
+        checks.append(Check(
+            'PSS late tail is ringing',
+            _level(rv, TH['ringing_removed_warn'], 0.0, worse='low'), rv,
+            f'shadow flag removes {rv:.1%} of the {ring["late_excess"]:,} '
+            f'excess hits at 150-{cal["slim_ns"]:g} ns, for '
+            f'{ring["core_cost"]:.1%} of the +-25 ns core',
+            f'>= {TH["ringing_removed_warn"]:.0%} removed'))
+    else:
+        checks.append(Check(
+            'PSS late tail is ringing', 'NA',
+            ring['late_excess'],
+            f'late excess {ring["late_excess"]} below the '
+            f'{TH["ringing_min_excess"]} counts needed to classify', ''))
+
+    # Per matched trigger: the largest-amplitude plastic hit on the trigger's
+    # own arm. NOT the earliest -- in a +-1 us window at 720 kHz singles the
+    # earliest hit is almost always an unrelated single (31 % inside +-25 ns
+    # against 90 % for largest; pss_ringing/report_veto.html).
+    primary = dict(n=None, within_core=None, median_ns=None)
+    if pm.sum() and matched.any():
+        ev_sorted = np.argsort(ev['eventId'])
+        eid_s = ev['eventId'][ev_sorted]
+        pos = np.searchsorted(eid_s, hits['eventId'][pm])
+        pos = np.clip(pos, 0, eid_s.size - 1)
+        okj = eid_s[pos] == hits['eventId'][pm]
+        h_arm = np.full(pm.sum(), -1, np.int64)
+        h_arm[okj] = ev['arm'][ev_sorted][pos[okj]]
+        h_matched = np.zeros(pm.sum(), bool)
+        h_matched[okj] = matched[ev_sorted][pos[okj]]
+        own = (h_matched & (hits['is_control'][pm] == 0)
+               & (hits['det'][pm] - pss_ids.min() == h_arm))
+        if own.sum():
+            eids = hits['eventId'][pm][own].astype(np.int64)
+            amps = hits['amp_0'][pm][own].astype(np.float64)
+            dts = hits['dt_ns'][pm][own].astype(np.float64)
+            o = np.lexsort((-amps, eids))
+            first = np.ones(o.size, bool)
+            first[1:] = eids[o][1:] != eids[o][:-1]
+            fd = dts[o][first]
+            primary = dict(n=int(fd.size),
+                           within_core=float(np.mean(np.abs(fd) <= C.ACCEPT_NS)),
+                           median_ns=float(np.median(fd)))
+    out.match['pss_primary'] = primary
+    if primary['n']:
+        checks.append(Check(
+            'plastic primary within accept',
+            _level(primary['within_core'], TH['pss_primary_warn'],
+                   TH['pss_primary_fail'], worse='low'),
+            primary['within_core'],
+            f'largest plastic pulse on the trigger arm: '
+            f'{primary["within_core"]:.1%} of {primary["n"]:,} triggers within '
+            f'+-{C.ACCEPT_NS:g} ns (median {primary["median_ns"]:+.1f} ns)',
+            f'>= {TH["pss_primary_warn"]:.0%}'))
+    else:
+        checks.append(Check('plastic primary within accept', 'NA', None,
+                            'no matched triggers with plastic hits on their '
+                            'own arm', ''))
+
     # flash triggers must carry no hits at all
     flash_ids = set(ev['eventId'][~phys].tolist())
     n_flash_hits = (int(np.isin(hits['eventId'], list(flash_ids)).sum())
@@ -370,57 +557,84 @@ def analyse(d: Path) -> SegmentQA:
         f'{n_flash_hits:,} hits attached to flash triggers '
         f'({len(flash_ids):,} flash events)', '== 0'))
 
-    # Window containment, per family, against the control.
+    # Window containment, per family, against the control -- SIDED.
     #
-    # The obvious test -- "is the kept dt still RISING at the edge?" -- is the
-    # one this replaces, and it is nearly useless: a coincidence peak WIDER
-    # than the window falls away slowly and passes it comfortably. Measured on
-    # the reference pair it returned 0.94 ("flat, window is wide enough") while
-    # 23 % of the plastic yield was in fact being cut off.
+    # The obvious test -- "is the kept dt still RISING at the edge?" -- was
+    # nearly useless (a peak wider than the window passes it; measured 0.94
+    # while 23 % of the plastic was being cut). Its replacement, |dt| edge
+    # excess over the core with a 3 sigma requirement, had its own false
+    # alarm: the +100 us control under- or over-states the local accidental
+    # floor by a little (the singles rate varies across the 80 ms), which
+    # leaves a small FLAT pedestal across the whole window. On big-statistics
+    # segments that pedestal passes 3 sigma easily and lit up 45 of 116
+    # campaign segments -- all on LIQ, and the fleet total was early +14,491
+    # against late +15,623: SYMMETRIC, which no truncated coincidence is.
     #
-    # What works is comparing like with like: background-subtracted excess in
-    # the outer decile of the window against the same width at the centre. Both
-    # are 0.1 W wide, so the ratio is a density ratio and needs no scaling, and
-    # subtracting the +100 us control removes the accidental floor that made
-    # the naive version look flat.
+    # Truncation of a real tail is one-sided (the PSS ringing tail is late by
+    # 500x). So flag on the ASYMMETRY of the edge excess: (late - early)
+    # against the core density. A rate-bias pedestal is common mode between
+    # the two edges and cancels; a truncated tail is not. PSS is judged on
+    # ringing-CLEANED hits -- the ringing past +-1 us is known, cut by the
+    # shadow flag, and not coincidence yield.
+    #
+    # The null is EMPIRICAL, not Poisson. Measured fleet-wide (2026-08-09),
+    # the per-decile asymmetries in the mid band (0.3-0.7 W, no coincidence
+    # content for any family after the flag) scatter 2-3x wider than Poisson
+    # -- real pedestal structure spread across the whole window. Against
+    # sqrt(Poisson) the LIQ edge lit up 18 of 119 segments with RANDOM sign;
+    # against max(Poisson, mid-band RMS) the fleet |z| tops out at 3.2, still
+    # sign-random. So the null is the mid band, and the gate is z >= 4: above
+    # everything the healthy fleet produces, far below what truncation gives
+    # (the +-150 ns mistake was a coherent 22x one-sided tail).
     W = cal['slim_ns']
     contain = {}
     worst_fam, worst = None, 0.0
+    keep_all = np.ones(hits['det'].size, bool)
+    keep_all[np.flatnonzero(pm)[fl]] = False
     for fam in FAMILIES:
         ids = [det[f'{fam}{a}'] for a in ARMS]
-        m = np.isin(hits['det'], ids)
-        d_ = np.abs(hits['dt_ns'])
-        core = d_ <= 0.1 * W
-        edge = (d_ > 0.9 * W) & (d_ <= W)
-        s_c, c_c = int((m & sig & core).sum()), int((m & ~sig & core).sum())
-        s_e, c_e = int((m & sig & edge).sum()), int((m & ~sig & edge).sum())
-        pk, eg = s_c - c_c, s_e - c_e
-        rat = eg / pk if pk > 0 else float('nan')
-        # A ratio on small counts is mostly noise. LIQ's core excess is ~37x
-        # smaller than PSS's, so an edge/peak of 0.04 there can be entirely
-        # statistical -- and on the July campaign it lit up 39 % of segments
-        # for nothing. Only call it truncation if the edge excess is a real
-        # excess: > 3 sigma on the Poisson counts that formed it.
-        sigma = np.sqrt(max(s_e + c_e, 1))
-        signif = eg / sigma
-        contain[fam] = dict(peak_excess=pk, edge_excess=eg, ratio=rat,
-                            edge_sigma=float(sigma), edge_significance=
-                            float(signif))
-        if np.isfinite(rat) and rat > worst and signif >= 3.0:
+        m = np.isin(hits['det'], ids) & keep_all
+        d_ = hits['dt_ns']
+
+        def _ex2(a_, b_):
+            s_ = int(((d_ >= a_) & (d_ < b_) & m & sig).sum())
+            c_ = int(((d_ >= a_) & (d_ < b_) & m & ~sig).sum())
+            return s_ - c_, s_ + c_
+        core, _ = _ex2(-0.1 * W, 0.1 * W)
+        eg_e, n_e = _ex2(-W, -0.9 * W)
+        eg_l, n_l = _ex2(0.9 * W, W)
+        mids = []
+        for i in range(3, 7):
+            late_i, _ = _ex2(0.1 * W * i, 0.1 * W * (i + 1))
+            early_i, _ = _ex2(-0.1 * W * (i + 1), -0.1 * W * i)
+            mids.append(late_i - early_i)
+        pk = core / 2.0                   # core is 0.2 W, edges 0.1 W each
+        asym = eg_l - eg_e
+        sig_pois = np.sqrt(max(n_e + n_l, 1))
+        sig_mid = float(np.sqrt(np.mean(np.square(mids)))) if mids else 0.0
+        sigma = max(sig_pois, sig_mid)
+        signif = asym / sigma
+        rat = abs(asym) / pk if pk > 0 else float('nan')
+        contain[fam] = dict(
+            peak_excess_per_decile=pk, early_excess=eg_e, late_excess=eg_l,
+            edge_asymmetry=asym, mid_asym_rms=sig_mid,
+            poisson_sigma=float(sig_pois), asym_significance=float(signif),
+            ratio=rat)
+        if np.isfinite(rat) and rat > worst and abs(signif) >= 4.0:
             worst_fam, worst = fam, rat
     out.hits['containment'] = contain
     checks.append(Check(
         'coincidence contained in slim window',
         _level(worst, 0.05, 0.50), worst,
         '  '.join(f'{f} {contain[f]["ratio"]:.3f}'
-                  f'({contain[f]["edge_significance"]:+.0f}s)'
+                  f'({contain[f]["asym_significance"]:+.0f}s)'
                   for f in FAMILIES)
-        + f' = edge/peak excess density at +-{W:g} ns, with the significance '
-          f'of the edge excess itself'
-        + (f'; {worst_fam} is still substantial AND significant at the edge, '
-           f'so real coincidences are being cut' if worst > 0.05 else
-           '; nothing significant at the edge'),
-        'edge/peak <= 0.05'))
+        + f' = one-sided edge/core excess density at +-{W:g} ns '
+          f'(PSS after the ringing flag; z against the mid-band null)'
+        + (f'; {worst_fam} has a significant one-sided edge, so real '
+           f'coincidences are being cut' if worst > 0.05 else
+           '; nothing one-sided and significant at the edge'),
+        '|late-early|/core <= 0.05 at z >= 4'))
 
     out.checks = [asdict(c) for c in checks]
     lv = [c.level for c in checks]
