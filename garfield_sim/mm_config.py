@@ -205,10 +205,24 @@ GAS_MIXTURES = [
     {
         "label":      "Ar_CF4_iC4H10_88_10_2",
         "components": [("ar", 88.0), ("cf4", 10.0), ("ic4h10", 2.0)],
-        # Dominant Penning channel: Ar* (11.55 eV) → iC4H10 (IP 10.67 eV).
-        # Garfield++ has a built-in parameterisation for Ar/iC4H10 (Sahin et al.,
-        # JINST 5 2010); auto mode uses this for the Ar–iC4H10 sub-system.
-        "penning":    {"mode": "auto"},
+        # Penning: MUST be manual. Corrected 2026-08-09 -- probed directly
+        # (EnablePenningTransfer() on this exact ternary): "Penning transfer
+        # probability for Ar/CF4/iC4H10 is not implemented", i.e. auto mode
+        # returns False and this mixture has been silently running at rP=0
+        # ever since this entry was added, NOT the built-in Ar/iC4H10 value
+        # the comment below used to assume. The same probe on the plain
+        # Ar/CF4 90/10 binary also returns False ("not implemented") --
+        # consistent with CF4's IP (~15.9 eV, NIST adiabatic) sitting above
+        # both Ar metastables (11.55/11.72 eV), i.e. genuinely no Penning
+        # channel there, so rP=0 for THAT entry is correct, not a trap.
+        # iC4H10 (IP 10.67 eV) is the exception: Ar* -> iC4H10 has a real
+        # built-in Garfield++ parameterisation (Sahin et al., JINST 5 2010,
+        # flat rP=0.40 at every iC4H10 fraction it was probed at, 2-10%),
+        # confirmed directly for the pure Ar/iC4H10 98/2 and 95/5 binaries --
+        # auto mode just doesn't decompose the ternary into that sub-system.
+        # rP=0.40, same trap and same fix as the Ar/CO2/iC4H10 93/5/2 entry
+        # above and the Ar/iC4H10/H2O ones below.
+        "penning":    {"mode": "manual", "rP": 0.40, "gas": "ar"},
     },
     {
         "label":      "Ne_CF4_90_10",
