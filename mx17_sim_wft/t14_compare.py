@@ -178,6 +178,17 @@ def main():
     ap.add_argument("--data-n-total", type=int, default=None,
                     help="true total data events (the seeder's per-file max "
                          "under-counts multi-file runs)")
+    ap.add_argument("--theta-halfwidth", type=float, default=None,
+                    help="use [sim median -+ HW] as the angle window instead "
+                         "of the sim's p5/p95. p5/p95 tracks the sim's own "
+                         "spread, which is right while that spread is narrow "
+                         "-- but on a strongly inclined point the reco tails "
+                         "fatten (thx20 X: IQR 5.2 deg, p5/p95 spanning 61 "
+                         "deg) and the 'angle-matched' cut stops matching "
+                         "anything: it admits near-vertical cosmics, whose "
+                         "charge is not spread over as many strips and whose "
+                         "peak amplitude is therefore HIGHER, biasing every "
+                         "ratio. A median-centred fixed width stays matched.")
     a = ap.parse_args()
 
     from wft.io import strip_position_map
@@ -198,8 +209,15 @@ def main():
     # angle windows from the SIM population, applied to DATA only. p5/p95, NOT
     # p1/p99: the sim tail beyond +-5 deg is fit failures, not gun spread, and
     # a loose window lets genuinely inclined cosmics into the data sample.
-    wins = {v: tuple(np.percentile(ev_sim[f"{v}_theta_deg"].dropna(), [5, 95]))
-            for v in ("x", "y")}
+    if a.theta_halfwidth is not None:
+        hw = a.theta_halfwidth
+        wins = {}
+        for v in ("x", "y"):
+            m = float(ev_sim[f"{v}_theta_deg"].dropna().median())
+            wins[v] = (m - hw, m + hw)
+    else:
+        wins = {v: tuple(np.percentile(ev_sim[f"{v}_theta_deg"].dropna(), [5, 95]))
+                for v in ("x", "y")}
 
     stats = {}
     for leg, d in (("sim", sim_dir), ("data", dat_dir)):
@@ -541,6 +559,73 @@ is upstream (gain / kernel scale) and fully decoupled from time structure.</p>
 """
 
 
+def _beta_angle_para(out_dir):
+    """Rendered when the β-scan readout and angled-noions comparisons exist:
+    the two discriminators that localise the slow-component excess."""
+    base = os.path.dirname(out_dir)
+    bp = os.path.join(base, "t14_beta_scan_readout.json")
+    if not os.path.exists(bp):
+        return ""
+    with open(bp) as f:
+        b = json.load(f)
+    betas = sorted({float(k.rsplit("_", 1)[0]) for k in b})
+    rows = ""
+    for beta in betas:
+        x, y = b[f"{beta}_x"], b[f"{beta}_y"]
+        rows += (f"<tr><th>β = {beta:.2f}</th>"
+                 f"<td>{x['rise'][0]:.0f}</td><td>{100 * x['fast']:.0f} %</td>"
+                 f"<td>{100 * x['under']:+.1f} %</td>"
+                 f"<td>{y['rise'][0]:.0f}</td><td>{100 * y['fast']:.0f} %</td>"
+                 f"<td>{100 * y['under']:+.1f} %</td></tr>")
+    rows += ("<tr><th>DATA</th><td>150</td><td>40 %</td><td>−3.4 %</td>"
+             "<td>155</td><td>49 %</td><td>−12.0 %</td></tr>")
+
+    def _peak(rel):
+        p = os.path.join(base, rel, "t14_summary.json")
+        if not os.path.exists(p):
+            return None
+        with open(p) as f:
+            return json.load(f)["views"]["x"]["peak_amp_med"]["ratio"]
+    ladder = {"with ions": [_peak("t14_angW_th00"), _peak("t14_angW_thx10"),
+                            _peak("t14_angW_thx20")],
+              "no ions": [_peak("t14_DIAGNOSIS_noions"),
+                          _peak("t14_DIAGNOSIS_noions_thx10"),
+                          _peak("t14_DIAGNOSIS_noions_thx20")]}
+    lrows = "".join(
+        f"<tr><th>{k}</th>" + "".join(
+            f"<td>{x:.3f}" if x is not None else "<td>—" for x in vals)
+        + "</tr>" for k, vals in ladder.items())
+    return f"""
+<h3>DIAGNOSIS: β cannot fix the rise — the ion current itself is the target;
+the amplitude-vs-angle trend is mostly the same slow component</h3>
+<p>β scan (PZC residual, 4 new Stage B points + the 0.75 anchor, corrected
+noise, with ions). β moves the undershoot linearly but leaves the rise floor
+untouched — the slow ion current passes the shaper at every β:</p>
+<div class="tablewrap"><table>
+<tr><th></th><th>X rise p5 [ns]</th><th>X &lt;240 ns</th><th>X undershoot</th>
+<th>Y rise p5 [ns]</th><th>Y &lt;240 ns</th><th>Y undershoot</th></tr>
+{rows}</table></div>
+<p>Verdicts: (1) the rise-floor fix must come from the ion term itself
+(f_ion / S3 template) — the electronics axis is exonerated;
+(2) X undershoot prefers β ≈ 0.2 <i>given the current ion term</i> (the two
+are coupled: a corrected ion term will shift the β fit — quote them jointly,
+never separately); (3) the Y undershoot is unreachable by ANY β ≥ 0 (β = 0
+still gives −18.9 % vs data's −12.0 %) — a per-view anomaly beyond the
+common electronics, consistent with the view-antisymmetric angle bias.</p>
+<p>Angled <code>--no-ions</code> pair (X-view peak-amplitude ratio vs gun
+angle 0°/10°/20°, fixed ±3° window):</p>
+<div class="tablewrap"><table>
+<tr><th></th><th>0°</th><th>10°</th><th>20°</th></tr>{lrows}
+</table></div>
+<p>The 0→10° degradation largely vanishes without ions (−0.031 vs −0.106) —
+that part of the trend is the slow response converting inclination-broadened
+strip currents into peak loss. The 10→20° step persists ionless (−0.066 vs
+−0.069) and is unexplained (20° carries the low-statistics caveat, ~700
+matched data events). The angle-independent floor (~×0.6) remains the
+genuine upstream gain/kernel deficit.</p>
+"""
+
+
 def _followup_section(out_dir):
     """Rendered only when bump_undershoot.json exists next to the report
     (produced by the follow-up extraction answering two referee questions)."""
@@ -581,6 +666,7 @@ profile decays monotonically in both legs.</figcaption></figure>
 simulation has a rise-time FLOOR the data does not</h3>
 {_rise_floor_para(out_dir)}
 {_ion_verdict_para(out_dir)}
+{_beta_angle_para(out_dir)}
 <h3>The simulation's overshoot is systematic, in both views</h3>
 <p>Per-event undershoot (min of the peak-strip tail / peak, median
 [quartiles]): X sim {u('sim', 'x')} vs data {u('data', 'x')};
