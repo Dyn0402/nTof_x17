@@ -237,3 +237,99 @@ the convention was measured, a median-centred fixed width became safe.
 ```
 
 `--pad-strips` on `t13_reco.py` re-runs the window-clipping control.
+
+---
+
+# ⚠️ CORRECTION, 2026-08-10 (overnight session) — §4's "the sim barely
+# responds" is a threshold artifact, and the ladder's verdict is now stated
+
+Two things were wrong or missing above, and both change the conclusion the
+ladder was built to reach. Full record and the reproducing scripts:
+`MX17_Geant design/report/OVERNIGHT_2026-08-10.md`,
+`MX17_Geant scratchpad/overnight_2026-08-10/`.
+
+## 1. WITHDRAWN: "the sim barely responds" to inclination
+
+§4 states, and the trend report repeats, that *"the data's sub-200 ns fraction
+explodes with angle (0.23 → 0.82 → 0.99) while the sim barely responds (0.020 →
+0.048 → 0.066) — the ion term setting the sim's floor."*
+
+**The counting is right and the inference is wrong. 200 ns sits below the sim's
+own rise floor**, so a counter placed there registers almost nothing while the
+sim's whole distribution slides past it. At the 240 ns threshold the rest of
+the campaign uses, X view:
+
+| \|θ\| | sim f<240ns | data f<240ns | sim f<200ns | data f<200ns |
+|---|---|---|---|---|
+| 0° | 0.045 | 0.378 | 0.020 | 0.226 |
+| 10° | **0.269** | 0.963 | 0.048 | 0.820 |
+| 20° | **0.749** | 0.995 | 0.066 | 0.988 |
+
+The sim goes 0.045 → 0.749. It responds strongly.
+
+## 2. The missing verdict: a RIGID ~70 ns offset, not a missing population
+
+The threshold-free statement. Sim − data rise time [ns] at matched quantiles of
+each angle-matched pair (`rise_offset_vs_angle.json`):
+
+| view | \|θ\| | p5 | p10 | p25 | p50 | p75 | p90 | span |
+|---|---|---|---|---|---|---|---|---|
+| X | 0° | 90.5 | 94.1 | 81.8 | 40.0 | −33.1 | −31.8 | 127 |
+| X | 10° | 76.8 | 82.4 | 78.3 | 75.7 | 71.1 | 66.6 | **16** |
+| X | 20° | 79.2 | 79.9 | 72.6 | 69.3 | 69.0 | 72.0 | **11** |
+| Y | 0° | 64.2 | 74.5 | 72.6 | 12.5 | −108.6 | −88.2 | 183 |
+| Y | 10° | 53.2 | 66.4 | 68.6 | 67.2 | 62.3 | 52.7 | **16** |
+| Y | 20° | 37.8 | 55.0 | 66.5 | 68.1 | 69.3 | 69.9 | **32** |
+
+At both inclined points the offset is flat across the whole distribution and
+the two legs have the same width (at 20° the sim's p5–p90 span is 63 ns against
+the data's 71 ns). The sim's angular response at the fast end matches the
+data's to within 17 % (p25 speed-up ratio 1.17 X, 1.16 Y).
+
+**Verdict: track inclination is NOT the missing mechanism.** There is no absent
+fast population to generate — there is a constant additive delay of ~65–80 ns
+on every pulse, which inclination cannot remove because inclination is already
+being converted into rise time at roughly the right rate.
+
+This **strengthens** the S3 ion closeout instead of competing with it. A rigid
+uniform displacement is the signature of a fixed extra time constant, and the
+f_ion dial is the one measured to move rise by 96 ns while moving nothing else.
+The demand is not "add fast pulses", it is "take ~70 ns off all of them" —
+i.e. f_eff ≈ 0.16. The last live candidate for the rise contradiction closes
+negative.
+
+## 3. The vertical point is different, and it is NOT open thread #4
+
+At 0° alone the offset is not rigid (span 127 ns X, 183 ns Y): the data's
+vertical leg is broader than the sim's in *both* tails, faster at p5 and slower
+at p90.
+
+Open thread #4 proposed the cause — `_sel_ids` windows the data on one view's θ
+only, so the "vertical" leg admits cosmics steeply inclined in the *other*
+view, while the sim gun is a pencil beam vertical in both. **Tested, and the
+answer is no.** Intersecting the vertical leg with the June wft analysis of the
+same run (`…/mx17_3/wft/events.parquet`, which carries per-view θ) and
+additionally requiring |θ_other| < 3°:
+
+| view | leg | n | offset span |
+|---|---|---|---|
+| X | published | 2324 | 127.2 ns |
+| X | overlap only | 692 | 129.2 ns |
+| X | overlap + \|θ_y\|<3° | 171 | **126.2 ns** |
+| Y | published | 1729 | 183.1 ns |
+| Y | overlap only | 645 | 185.4 ns |
+| Y | overlap + \|θ_x\|<3° | 145 | **187.3 ns** |
+
+The cut removes 75 % of the events and moves the span by 1 ns in X and −4 ns in
+Y. **The vertical broadening is real, not a one-view-window artifact**, and
+open thread #4 is answered negative. The control matters here: the comparison
+is overlap-with-cut against overlap-without-cut, both drawn from the same
+events, so the subsample is not doing the work.
+
+What remains is a genuine statement: at normal incidence the data's rise
+distribution is much wider than the sim's at both ends, and the sim's
+pencil-beam monoenergetic gun does not reproduce the topological diversity of
+real vertical cosmics. (The data's χ²/dof at vertical — 83.5 X, 149.4 Y against
+the sim's 19.3/20.4 — says the same thing from a different direction.) The
+clean measurement of the rise offset is therefore the **inclined** points,
+where both legs compress to similar-width distributions.
