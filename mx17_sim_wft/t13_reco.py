@@ -201,6 +201,13 @@ def main():
     ap.add_argument("--jobs", type=int, default=8)
     ap.add_argument("--limit", type=int, default=None)
     ap.add_argument("--sigma", type=float, default=SIGMA_THRESHOLD)
+    ap.add_argument("--pad-strips", type=int, default=3,
+                    help="strips of padding added around the seed channels to "
+                         "build each fit window (wft default 3). Raise it to "
+                         "test whether an inclined track is being clipped by "
+                         "its own window: a clipped lever arm biases the "
+                         "fitted slope toward zero and the bias grows with "
+                         "inclination.")
     a = ap.parse_args()
 
     decoded_dir = os.path.abspath(os.path.expanduser(a.decoded_dir))
@@ -220,7 +227,7 @@ def main():
 
     print("\n[2/2] wft reconstruction")
     reconstruct_run(cfg, cal, os.path.expanduser(a.out),
-                    jobs=a.jobs, limit=a.limit)
+                    jobs=a.jobs, limit=a.limit, pad_strips=a.pad_strips)
     return 0
 
 
