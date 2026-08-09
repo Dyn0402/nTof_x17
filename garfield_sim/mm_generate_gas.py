@@ -84,23 +84,15 @@ def _worker(args):
 
     gas = ROOT.Garfield.MediumMagboltz()
 
-    # Set composition
+    # Set composition. SetComposition takes up to 6 (gas, fraction) pairs as
+    # flat varargs (Garfield/MediumGas.hh); this generalizes the old 1/2/3-
+    # component-only if/elif chain, which raised on the 4-component N2
+    # co-contamination diagnosis mixture.
     components = gas_cfg["components"]
-    if len(components) == 1:
-        gas.SetComposition(components[0][0], components[0][1])
-    elif len(components) == 2:
-        gas.SetComposition(
-            components[0][0], components[0][1],
-            components[1][0], components[1][1],
-        )
-    elif len(components) == 3:
-        gas.SetComposition(
-            components[0][0], components[0][1],
-            components[1][0], components[1][1],
-            components[2][0], components[2][1],
-        )
-    else:
-        raise ValueError(f"Too many gas components: {components}")
+    if len(components) > 6:
+        raise ValueError(f"Too many gas components (max 6): {components}")
+    flat = [x for pair in components for x in pair]
+    gas.SetComposition(*flat)
 
     gas.SetTemperature(cfg.TEMP_K)
     gas.SetPressure(pressure_torr)

@@ -282,6 +282,40 @@ GAS_MIXTURES = [
         "components": [("ar", 94.0), ("ic4h10", 5.0), ("h2o", 1.0)],
         "penning":    {"mode": "manual", "rP": 0.40, "gas": "ar"},
     },
+
+    # ── Contaminant diagnosis grid — DIAGNOSIS-GRID / unconstrained-contaminant-search ──
+    # Added 2026-08-09. NOT a gas assay: no humidity was ever measured on the
+    # det3 bench (MX17_Geant response/avalanche/EOS_README.md, T14 default
+    # freeze note) -- every water figure, including the 1 % point above, is a
+    # Magboltz fit to a slow measured v_drift, not a direct measurement. This
+    # brackets that fit finely (0.5/1.5 %) and tests the June N2 co-contam
+    # candidate, so the post-T14-comparison diagnosis has more than one point
+    # to interpolate from if dry disagrees with data. Do not treat any single
+    # point here as a preferred/blessed composition.
+    #
+    # Same Penning reasoning as the 1 % point directly above: N2 (IP 15.58 eV)
+    # is even further above both Ar metastables than H2O is, so it opens no
+    # new channel either -- rP = 0.40 (the Ar/iC4H10 value) stays the upper
+    # bracket for all of these, carrying 0.30-0.40 as the systematic until
+    # gain data (this campaign's own avalanche points) says otherwise.
+    {
+        "label":      "Ar_iC4H10_H2O_94p5_5_0p5",
+        "components": [("ar", 94.5), ("ic4h10", 5.0), ("h2o", 0.5)],
+        "penning":    {"mode": "manual", "rP": 0.40, "gas": "ar"},
+    },
+    {
+        "label":      "Ar_iC4H10_H2O_93p5_5_1p5",
+        "components": [("ar", 93.5), ("ic4h10", 5.0), ("h2o", 1.5)],
+        "penning":    {"mode": "manual", "rP": 0.40, "gas": "ar"},
+    },
+    # June best fit: 95/5 + 1% H2O + 1% N2 co-contamination
+    # (garfield_sim/results/water_grid.json, mixture "Ar_iso5_H2O1_N2_1").
+    {
+        "label":      "Ar_iC4H10_H2O_N2_93_5_1_1",
+        "components": [("ar", 93.0), ("ic4h10", 5.0), ("h2o", 1.0),
+                       ("n2", 1.0)],
+        "penning":    {"mode": "manual", "rP": 0.40, "gas": "ar"},
+    },
 ]
 
 # ── Voltage scan ──────────────────────────────────────────────────────────────
