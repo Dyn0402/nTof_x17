@@ -498,6 +498,49 @@ than the real electronics — the sim's ~250 ns floor against data rises of
 is the strongest shape lead for the forward-model parameterization.</p>"""
 
 
+def _ion_verdict_para(out_dir):
+    """Rendered only when the DIAGNOSIS_noions sibling comparison exists:
+    the --no-ions discriminator's verdict on the rise-time floor."""
+    noi = os.path.join(os.path.dirname(out_dir), "t14_DIAGNOSIS_noions")
+    if not os.path.exists(os.path.join(noi, "t14_summary.json")):
+        return ""
+    qs = [5, 25, 50, 75, 95]
+    rows = ""
+    for v in ("x", "y"):
+        cells = {}
+        for name, base in (("sim (ions)", out_dir), ("sim (no ions)", noi)):
+            t = pd.read_parquet(os.path.join(base, f"wf_sim_{v}.parquet"))
+            cells[name] = (np.percentile(t.rise_ns.dropna(), qs),
+                           float((t.rise_ns < 240).mean()))
+        t = pd.read_parquet(os.path.join(noi, f"wf_data_{v}.parquet"))
+        cells["data"] = (np.percentile(t.rise_ns.dropna(), qs),
+                         float((t.rise_ns < 240).mean()))
+        for name, (q, f) in cells.items():
+            rows += (f"<tr><th>{v.upper()} {name}</th>"
+                     + "".join(f"<td>{x:.0f}</td>" for x in q)
+                     + f"<td>{100 * f:.0f} %</td></tr>")
+    return f"""
+<h3>DIAGNOSIS: the rise-time floor is the modeled ion induction term</h3>
+<p>A <code>--no-ions</code> Stage B pass (explicitly unphysical, one-lever
+discriminator: the ion treatment redistributes the SAME total charge onto the
+slow measured template — f_ion = 0.90 with 50 % of ion charge by 172 ns — so
+removing it makes all charge prompt) reproduces the data's rise-time
+distribution at every quantile, while the corrected-noise run with ions
+barely moves it:</p>
+<div class="tablewrap"><table>
+<tr><th></th><th>p5</th><th>p25</th><th>p50</th><th>p75</th><th>p95</th>
+<th>rise &lt; 240 ns</th></tr>{rows}
+</table></div>
+<p>Since the data experiences the same ion physics, the conclusion is not
+"remove ions" but that the modeled slow component — f_ion × ion template ×
+what survives the β = 0.75 shaper — grossly overstates the real rising edge's
+slow content. The fitting axes are β/PZC (the pre-declared undershoot-fits-β
+plan) and the S3 v2 ion template / f_ion. Independently, the maximally-prompt
+no-ions sim still peaks at ×0.63 of data, so the absolute amplitude deficit
+is upstream (gain / kernel scale) and fully decoupled from time structure.</p>
+"""
+
+
 def _followup_section(out_dir):
     """Rendered only when bump_undershoot.json exists next to the report
     (produced by the follow-up extraction answering two referee questions)."""
@@ -537,6 +580,7 @@ profile decays monotonically in both legs.</figcaption></figure>
 <h3>Rise times: not a fast data 'population', and not a pure shift — the
 simulation has a rise-time FLOOR the data does not</h3>
 {_rise_floor_para(out_dir)}
+{_ion_verdict_para(out_dir)}
 <h3>The simulation's overshoot is systematic, in both views</h3>
 <p>Per-event undershoot (min of the peak-strip tail / peak, median
 [quartiles]): X sim {u('sim', 'x')} vs data {u('data', 'x')};
