@@ -626,6 +626,56 @@ genuine upstream gain/kernel deficit.</p>
 """
 
 
+def _fion_final_para(out_dir):
+    """Rendered when the f_ion demand-scan readout exists: the campaign's
+    closing statement — every mechanism eliminated, the contradiction is the
+    result."""
+    p = os.path.join(os.path.dirname(out_dir), "t14_fion_scan_readout.json")
+    if not os.path.exists(p):
+        return ""
+    with open(p) as f:
+        d = json.load(f)
+    fions = sorted({k.rsplit("_", 1)[0] for k in d}, key=float)
+    rows = "".join(
+        f"<tr><th>{float(f):.2f} ({d[f + '_x']['model']})</th>"
+        f"<td>{d[f + '_x']['rise'][0]:.0f}</td>"
+        f"<td>{100 * d[f + '_x']['fast']:.0f} %</td>"
+        f"<td>{100 * d[f + '_x']['under']:+.1f} %</td>"
+        f"<td>{d[f + '_y']['rise'][0]:.0f}</td>"
+        f"<td>{100 * d[f + '_y']['fast']:.0f} %</td></tr>"
+        for f in fions)
+    rows += ("<tr><th>DATA</th><td>150</td><td>40 %</td><td>−3.4 %</td>"
+             "<td>155</td><td>49 %</td></tr>")
+    return f"""
+<h3>CLOSING: the f_ion demand curve — every mechanism eliminated, the
+contradiction is the result</h3>
+<div class="tablewrap"><table>
+<tr><th>f_ion (model)</th><th>X rise p5 [ns]</th><th>X &lt;240 ns</th>
+<th>X undershoot</th><th>Y rise p5 [ns]</th><th>Y &lt;240 ns</th></tr>
+{rows}</table></div>
+<p>The data demands an effective slow fraction of ~0.1–0.25 (X; Y broadly
+consistent), against f_ion = 0.9056 defended by two independent routes
+(through-mesh Shockley–Ramo with the T6 map, and the S3 v2 template
+reconstructed independently to 2.8–3.8 %). Undershoot is FLAT in f_ion, as
+rise was flat in β — the two dials are orthogonal, so (f_eff ≈ 0.2,
+β ≈ 0.2) reproduces rise and X undershoot simultaneously and is usable as a
+WORKING DESCRIPTION for reconstruction; it is not physics. Eliminated by
+measurement: β (4 ns leverage), every high-pass topology (rise/undershoot
+exchange rate has the wrong sign), the peaking register (code 2, 44/44
+archived configs; inference, not read-back — the target run archived no
+.cfg), the ion template's fine shape (analytic A/B −3.8 %), ion species
+(Blanc's law: +4 %, not ×2), T10's lateral factorisation (3.7 ns),
+resistive-sheet screening of induced signals (sized: ≤8 % where ×4.5 is
+needed), and the amplification-gap geometry (150 µm bulk Micromegas,
+confirmed from the pillar gerber; an early 50 µm-uRWELL doubt was a
+mis-scoped memory about a DIFFERENT project's detectors — retracted).
+Reference: MX17_Geant <code>design/report/S3_ION_CLOSEOUT_2026-08-09.md</code>.
+The Y view's internal tension (p5 prefers ~0.47, fast-fraction ~0.11) is of
+a piece with the view-antisymmetric angle bias and the Y undershoot excess —
+the per-view anomaly family no view-common parameter can explain.</p>
+"""
+
+
 def _followup_section(out_dir):
     """Rendered only when bump_undershoot.json exists next to the report
     (produced by the follow-up extraction answering two referee questions)."""
@@ -667,6 +717,7 @@ simulation has a rise-time FLOOR the data does not</h3>
 {_rise_floor_para(out_dir)}
 {_ion_verdict_para(out_dir)}
 {_beta_angle_para(out_dir)}
+{_fion_final_para(out_dir)}
 <h3>The simulation's overshoot is systematic, in both views</h3>
 <p>Per-event undershoot (min of the peak-strip tail / peak, median
 [quartiles]): X sim {u('sim', 'x')} vs data {u('data', 'x')};
