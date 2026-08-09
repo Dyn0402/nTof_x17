@@ -234,12 +234,13 @@ def bootstrap(ev_bunch, ev_t, cd_bunch, cd_t, K=K_SEED, T0=T0_SEED,
             # the floor (measured: peak 164 over a floor of 87, S/N 1.9, on a
             # correlation the wide scan saw at z 21). So walk the resolution
             # down, re-centring at each step, and let the width come with it.
-            T0w = T0 + lag
+            T0w, finest, widest = T0 + lag, None, None
             for bw, sw in ((2000.0, 40_000.0), (500.0, 10_000.0),
                            (100.0, 2_000.0), (bin_ns, search)):
                 try:
                     T0w, info = bootstrap(ev_bunch, ev_t, cd_bunch, cd_t, K,
                                           T0w, sw, bw, log=log, _retry=False)
+                    finest, widest = bw, widest or info
                 except RuntimeError:
                     break
             else:
@@ -247,8 +248,23 @@ def bootstrap(ev_bunch, ev_t, cd_bunch, cd_t, K=K_SEED, T0=T0_SEED,
                             recovered_by_wide_scan=True)
                 log(f'    recovered at a {lag/1e6:+.4f} ms offset')
                 return T0w, info
-            log('    the wide scan found a lag but the refinement ladder could '
-                'not sharpen it -- the correlation is broad, not a coincidence')
+            # Report the WIDTH, because that is the physics. A correlation
+            # significant at 2 us bins but not at 500 ns is ~microseconds
+            # wide; a real coincidence here is ~6 ns. Knowing it is broad
+            # rather than absent is the difference between "these hours have
+            # no data" and "these hours were triggered on something else".
+            if finest and widest:
+                spread = widest['excess'] / max(info.get('excess', 1), 1)
+                raise RuntimeError(
+                    f'a correlation IS present at {lag/1e6:+.4f} ms '
+                    f'(wide-scan z {z:.0f}, {widest["sigma"]:.0f} sigma at '
+                    f'{finest:.0f} ns bins) but it is ~{spread*finest/1000:.0f} '
+                    f'us WIDE and does not sharpen -- a real coincidence here '
+                    f'is ~6 ns. This sub-run is not missing n_TOF data; '
+                    f'whatever DREAM was triggering on in these hours is only '
+                    f'loosely associated with the n_TOF hits. Not slimmable '
+                    f'until that is understood.')
+            log('    the wide scan found a lag but nothing sharpened')
 
     if weak:
         raise RuntimeError(
