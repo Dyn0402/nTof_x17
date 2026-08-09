@@ -107,8 +107,14 @@ def build_hits(decoded_dir, feus, out_root, sigma=SIGMA_THRESHOLD):
     df = pd.concat(rows, ignore_index=True) if rows else pd.DataFrame(
         columns=["eventId", "feu", "channel", "amplitude", "significance"])
     os.makedirs(os.path.dirname(out_root), exist_ok=True)
+    # mktree + extend, NOT `f["hits"] = {...}`: the dict form writes an
+    # RNTuple in current uproot, and `wft.reco._load_hits` reads with
+    # library='pd', which only works on a TTree (an RNTuple comes back as an
+    # awkward array and dies in `global_index` with "no field named 'index'").
     with uproot.recreate(out_root) as f:
-        f["hits"] = {c: df[c].to_numpy() for c in df.columns}
+        cols = {c: df[c].to_numpy() for c in df.columns}
+        f.mktree("hits", {c: v.dtype for c, v in cols.items()})
+        f["hits"].extend(cols)
 
     # SEED RATE IS ITSELF THE FIRST WAVEFORM-LEVEL OBSERVABLE. Because both
     # legs are seeded by this identical code at the identical threshold,
