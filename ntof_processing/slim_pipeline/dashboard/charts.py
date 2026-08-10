@@ -168,7 +168,7 @@ class Frame:
             self.body.append(
                 f'<circle class="pt" cx="{self.px(x):.1f}" '
                 f'cy="{self.py(y):.1f}" r="{r}" fill="{c}" '
-                f'data-tip="{tip}"><title>{tip}</title></circle>')
+                f'data-tip="{tip}"></circle>')
         return self
 
     def line(self, xs, ys, colour='var(--series1)', width=2, dash=None,
@@ -203,7 +203,7 @@ class Frame:
             self.body.append(
                 f'<rect class="bar" x="{px-bw/2:.1f}" y="{min(py,y0):.1f}" '
                 f'width="{bw:.1f}" height="{abs(y0-py):.1f}" rx="2" '
-                f'fill="{colour}" data-tip="{tip}"><title>{tip}</title></rect>')
+                f'fill="{colour}" data-tip="{tip}"></rect>')
         return self
 
     # -- render ------------------------------------------------------------
