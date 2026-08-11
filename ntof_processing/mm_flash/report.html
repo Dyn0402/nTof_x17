@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>How much charge does the gamma flash deliver? Two independent measurements</title>
-<meta name="description" content="The flash puts ~1000x the DREAM front end full-scale charge onto a single micromegas strip, measured on a 1 GS/s readout with no preamplifier and cross-checked against the HV supply current; gain cannot fix it and the millisecond dead time follows from it.">
+<meta name="description" content="The flash puts ~1000x the DREAM front end full-scale charge onto a single micromegas strip, measured on a 1 GS/s readout with no preamplifier and cross-checked against the HV supply current; with the real board accounting (checkerboard pad combs, 85 % image capture, exact 50/50 X/Y) the two absolute scales agree once the flash is ~4x denser at this strip than the chamber average -- which the strip's own intensity compression independently confirms. Gain cannot fix it and the millisecond dead time follows from it.">
 <style>
 :root {
   --bg:#ffffff; --fg:#1a1a1a; --muted:#5a5a5a; --line:#e0e0e0;
@@ -93,13 +93,20 @@ by a constant: the chamber charge divided by the single-strip charge is
 scan, a spread of 5.7 % over a factor 21 in charge. Both
 also see the response compress with intensity, by the same few per cent per proton.</p>
 
-<p><strong>The one thing that does not close is the absolute scale.</strong> Counting
-strips properly &mdash; 1024 in total, less the 47 Y strips buried under the
-edge passivation &mdash; the expected divisor is 930, not 266. The single strip
-carries <strong>3.5&times;</strong> more than that. It is not the beam profile: the
-strip map puts this channel 5&ndash;7 mm inside a passivation edge, at the chamber
-periphery, where it should see less than average rather than more. The factor is
-constant, so it is an instrumental or coupling constant, and it is the open item.</p>
+<p><strong>The absolute scales close too, once the board is read from its gerbers
+rather than assumed.</strong> The readout is not two planes of solid strips: it is a
+512&thinsp;&times;&thinsp;512 pad grid, checkerboard-bussed, so a uniform flash splits
+<em>exactly</em> 50/50 between the X and Y views and 85 % of the resistive-layer charge
+images onto the pad plane. That accounting turns the HV-current charge into a uniform
+expectation of <strong>131 pC per strip</strong> &mdash; and the measured strip
+carries <strong>4.2 &plusmn; 0.3&times;</strong> that, one constant across all
+25 working points. The strip's own <em>intensity compression</em>, read through the
+board's sheet capacitance, independently measures the local flash density at
+<strong>2.9&times;</strong> the chamber average &mdash; so the factor is real, local, and
+physical: the delivered charge density at this strip is three-to-four times the chamber
+average. Whether that is the flash illumination profile or a local gain enhancement near
+the board edge, one channel cannot say &mdash; but the two instruments agree wherever
+they measure the same thing.</p>
 
 <p><strong>Gain cannot rescue it, and the dead time follows.</strong> Fitting the flash
 into 600 fC would need <strong>169 V</strong> less amplification, where a real
@@ -117,8 +124,9 @@ millisecond dead time DREAM shows, derived from an independent charge measuremen
     <div class="l">flash charge on one strip, dedicated pulse, production point</div></div>
   <div class="kpi"><div class="n">1,113&times;</div>
     <div class="l">that charge, over the DREAM CSA's 600 fC full scale</div></div>
-  <div class="kpi"><div class="n">2.0&times;</div>
-    <div class="l">agreement with the HV-current method, per strip</div></div>
+  <div class="kpi"><div class="n">4.2&times;</div>
+    <div class="l">local flash density at this strip over the chamber average
+    (the compression independently reads 2.9&times;)</div></div>
   <div class="kpi"><div class="n">24 V</div>
     <div class="l">gain e-folding on detector A, 25 scan points</div></div>
   <div class="kpi"><div class="n">7&ndash;74 ms</div>
@@ -420,6 +428,19 @@ ladder is visible in the current before any analysis is done; the lower panel is
 voltage that produced it.</figcaption>
 </figure>
 
+<p>One feature of that trace deserves a comment: <strong>the standing baseline jumps at
+every drift-HV move</strong> &mdash; from 16 to 587 nA when the drift went
+700&thinsp;&rarr;&thinsp;600 V, and by ~0.15&ndash;0.2 &micro;A at each later move &mdash;
+then relaxes over tens of minutes (the first branch shows the same relaxation from the
+pre-scan ramp, 60&thinsp;&rarr;&thinsp;16 nA). The direction rules out a resistive path from the
+cage divider: the drift voltage went <em>down</em> and the resist baseline went
+<em>up</em>. It is a charging/relaxation current from moving the cathode, and it is
+benign for the charge estimate by construction: the per-plateau median subtracts it, its
+worst within-plateau movement is 24 nA and roughly linear (a linear baseline drift
+cancels in mean&nbsp;&minus;&nbsp;median to first order), and the bootstrap error bars
+absorb what remains. It is also, incidentally, why a single global baseline would not
+work &mdash; the per-plateau median is doing real work here.</p>
+
 <p>At the shared working point (700 / 540 V) it gives
 <strong>143 nC per beam pulse</strong> over the whole chamber &mdash; which
 also reproduces the independent morning measurement of the same setpoint from run_158,
@@ -464,63 +485,224 @@ It was a different gas (Ar/iso 95/5) on a chamber that could not be identified. 
 detector A in 90/10, measured properly, the two methods agree.</p>
 
 <figure>
-<img src="figures/compare_hv.png" alt="Gain slopes from the two methods, and the dynamic-range ladder">
-<figcaption>Left: the two independent gain curves, each normalised at 540 V &mdash; the
-whole chamber's supply current and one strip's waveform trace the same exponential.
-Right: the charges that matter, on a log scale, against what the DREAM front end can
-accept.</figcaption>
+<img src="figures/compare_final.png" alt="Both methods in absolute per-strip charge, and the dynamic-range ladder">
+<figcaption>Left: everything on one absolute axis &mdash; flash charge <em>per strip</em>
+against amplification voltage, drift 700 V. Blue/orange: the waveform on strip 32,
+dedicated and parasitic pulses (dotted grey: their mix). Solid green: the supply-current
+charge converted to the share a strip carries under uniform illumination (the board
+accounting of the next subsection); it runs parallel, a constant &times;4.2 below the
+mix. Dashed green: the same supply-current charge placed at <em>this</em> strip using the
+local density that the strip's own compression measures (the densitometer explained in
+the next subsection, &times;2.9) &mdash; it lands ~40 % under the mix, which is as
+close as the two instruments can be brought and is the residual we accept. The red line
+is the DREAM CSA full scale (600 fC): at the operating region (shaded) every curve is
+two-to-three orders of magnitude above it. Right: the same statement as a ladder at
+700 / 540 V.</figcaption>
 </figure>
 
-<h3>2. Scaling one strip to the whole chamber</h3>
+<h3>2. Scaling one strip to the whole chamber &mdash; what the board actually is</h3>
 
-<p>To put the two on the same axis, the single-strip charge has to be multiplied by the
-number of strips sharing the flash. That count deserves care, because the chambers are
-not fully instrumented to their geometric edge.</p>
+<p>To put the two on the same axis, the single-strip charge has to be scaled to the
+chamber. The first version of this note did that with a strip count and an assumption
+about X/Y sharing. The board design &mdash; gerbers, stack-up and solved electrostatics,
+all in the response-simulation repository (<code>~/CLionProjects/MX17_Geant</code>)
+&mdash; replaces both with measured facts, and they change the picture:</p>
 
 <ul>
-<li><strong>512 strips per plane</strong> at 0.7785 mm pitch, and there are two
-planes &mdash; X and Y &mdash; so <strong>1024 readout strips in total</strong>. The
-supply current is the whole chamber, so both orientations count.</li>
-<li>But the strip plane is <strong>passivated over the Y edges</strong>: measured on this
-very chamber, 18.0 mm at the low edge and 18.7 mm at the high edge, leaving a
-live band of 361.9 mm. So only <strong>465 of the 512 Y strips are live</strong>;
-the other 47 sit under insulation and collect nothing.</li>
-<li>The X strips all survive &mdash; they run along the other axis &mdash; but each is
-live over only 90.8 % of its length, for the same reason.</li>
+<li><strong>There are no strips.</strong> The readout is a 512 &times; 512 grid of
+680 &micro;m pads on 780 &micro;m pitch, bussed in a checkerboard: a &ldquo;Y
+strip&rdquo; is a comb of 256 pads on 1.56 mm pitch along a row (every second pad), and
+the intervening pads belong to X combs running the other way. X and Y live in the
+<em>same</em> copper plane. For a uniform flash the two views therefore split the image
+charge <strong>exactly 50/50, by symmetry</strong> &mdash; the &ldquo;all of it could
+appear on the Y plane&rdquo; reading is not an option the hardware offers.</li>
+<li><strong>85 % of the charge on the resistive layer images onto the pad plane</strong>
+(solved from the real stack: 50 &micro;m coverlay + 19 &micro;m glue against a
+150 &micro;m mesh gap, with the inter-pad channels floating); the mesh takes the
+rest.</li>
+<li><strong>The resistive layer is itself strips</strong> &mdash; 550 &micro;m screen-printed
+resistive lines on 800 &micro;m pitch running along y, contacting copper buses at the
+two y-ends of the active area and nothing in between. At the frozen
+2 M&Omega;/sq that drain takes <strong>&tau; &asymp; 17 ms</strong>: on the 9 &micro;s
+integration window the sheet is charge-conserving, and the supply current is the whole
+per-pulse charge delivered a second later &mdash; the two instruments cannot double-count
+or miss a loop between them.</li>
+<li>The Y-edge passivation (18.0 / 18.7 mm, measured on this chamber) leaves
+<strong>465 of 512 Y combs live</strong>, and shortens every X comb to 90.8 % of its
+length &mdash; 465 full-length-equivalent channels per view.</li>
 </ul>
 
-<p>So the multiplier for scaling one live Y strip to the whole chamber is
-<strong>2 &times; 465 = 930</strong> if the two planes share the induced charge
-equally, or 465 if it all appears on the Y plane. Not 1024: the passivation
-removes 47 Y strips, and ignoring it would overstate the multiplier by
-10 %.</p>
+<figure>
+<img src="figures/board_stack.png" alt="Board cross-section and top view, with the two current loops">
+<figcaption>Left: the stack, with the two measurement loops. The avalanche lands on the
+resistive strips; 85 % of its image appears on the pad plane within the ion-collection
+time, split 50/50 between the views; the one pad-comb on a 50 &Omega; termination reads
+its <em>local</em> image on the microsecond timescale, while the whole charge drains
+along the resistive strips to the end buses over ~17 ms and through the supply,
+where the monitor averages it over ~1 s. The image-return current through the strip
+during the drain is 32 nA &mdash; 1.6 &micro;V across 50 &Omega;, invisible &mdash;
+so the positive lobe cleanly measures the local image. Right: what &ldquo;strip
+32&rdquo; is: a comb of every second pad along one row.</figcaption>
+</figure>
+
+<p>The uniform-illumination expectation for one live Y comb is then a number, not a
+range:</p>
+
+<div class="eq">
+<var>Q</var><sub>strip</sub> = <var>Q</var><sub>chamber</sub> &times; 0.85 &times; &frac12; / 465
+ = 143 nC &times; 0.91&permil; = <strong>131 pC</strong>
+<span class="where">0.85 = image capture of the pad plane (W2 boundary; 0.84&ndash;0.85 depending on
+solver detail) &middot; &frac12; = the checkerboard's exact view split &middot; 465 live
+Y combs &middot; at the 700/540 working point</span>
+</div>
 
 <figure>
 <img src="figures/full_detector_compare.png" alt="Full-detector charge from both methods across the scan">
-<figcaption>The single-strip waveform charge multiplied by 930 strips, against the
-supply current, over the same 15 plateaus at drift 700 V. Dedicated and parasitic pulses
-separate as they should; both track the supply current with the same slope, offset by a
+<figcaption>The single-strip waveform charge scaled to the chamber, against the supply
+current, over the same plateaus at drift 700 V. Dedicated and parasitic pulses separate
+as they should; both track the supply current with the same slope, offset by one
 constant.</figcaption>
 </figure>
 
-<p><strong>The shape agreement is the result.</strong> Taking the ratio point by point
-&mdash; the number of strips that <em>would</em> have to share the chamber charge to
-explain one strip &mdash; gives <strong>266 &plusmn; 15</strong> across
-<strong>all 25 plateaus</strong>, a spread of 5.7 % over a factor
-21 in charge and three drift settings. Two instruments sharing nothing agree on
-the shape of the response to a few per cent; what is left is a single constant.</p>
+<p><strong>The shape agreement is half the result.</strong> Point by point, the measured
+strip charge over the uniform-share expectation is
+<strong>4.2 &plusmn; 0.3</strong> across all 25 plateaus &mdash; a spread of
+6.2 % over a factor 21 in charge and three drift settings. Two instruments
+sharing nothing agree on the shape of the response to a few per cent; what is left is a
+single constant, and the board accounting has sharpened it: it is now a genuine factor
+four, and it must be explained, not absorbed.</p>
 
-<p><strong>That constant is a factor 3.5, and it is not the beam profile.</strong>
-The obvious reading would be that strip 32 sits in the beam spot and so sees more than
-the chamber average. It does not: looking the channel up in the strip map,
-&ldquo;strip 32 of cable Y8&rdquo; is at <strong>y = 374.4 mm</strong> (connector Y8,
-channel 32) &mdash; and on the other reading, global y-strip 32, at y = 25.0 mm. Both are
-<strong>5&ndash;7 mm inside a passivation edge</strong>, i.e. at the very periphery of the
-active area, where the illumination should be at or below average, not three times above
-it. So the residual factor has to live somewhere else: in how much of the avalanche
-charge a readout strip's capacitive image actually carries over the integration window,
-or in the assumption that the digitiser input is a bare 50 &Omega; termination. Both are
-multiplicative constants, which is exactly what the data say it is.</p>
+<h4>What cannot carry the factor</h4>
+<ul>
+<li><strong>Anything passive in the signal path.</strong> The strip is a capacitive
+current source: every series element (cable, back-termination, connector) passes its
+whole charge to a 50 &Omega; load, and every <em>shunt</em> (splitter, attenuator,
+a second termination, a still-connected DREAM input) makes the true strip charge
+<em>larger</em> than measured. Passive patch errors can only widen the gap. The one
+instrumental escape is a digitiser input well above 50 &Omega; &mdash; which the pulse
+shape argues against, and a pulser through the same patch would settle.</li>
+<li><strong>Lateral charge spreading.</strong> For uniform illumination, what diffuses
+out of the comb's band diffuses in (4.2 mm in the window at the frozen
+resistivity); conservation makes the average share kernel-independent.</li>
+<li><strong>X/Y sharing.</strong> Exactly &frac12; by the checkerboard's symmetry.</li>
+<li><strong>A missing current loop.</strong> The drift supply was checked across the
+same scan: its monitor shows pure divider-current steps tracking the drift setting and
+no beam response at all, so the avalanche charge all flows through the monitored resist
+channel.</li>
+<li><strong>The saturated neighbours.</strong> During the flash every DREAM-connected
+comb rails within nanoseconds, and one could worry the lone 50 &Omega; channel drains
+its neighbours' image through the capacitive network. The scale rules it out: a railed
+input floats by at most a volt before its protection conducts, while the resistive layer
+under 10 V of local flash charge is what drives the division &mdash; the
+redistribution is a &le;10 % effect, not a factor.</li>
+<li><strong>The neutron tail.</strong> The supply integrates the whole cycle, the lobe
+only 9 &micro;s &mdash; so any tail charge makes the true residual <em>larger</em>, not
+smaller. On the strip's own record the above-threshold tail beyond 30 &micro;s is zero
+at the working point and 1&ndash;2 % at the hottest scan point.</li>
+</ul>
+
+<h4>What does carry it: the strip itself reports that its neighbourhood is crowded</h4>
+
+<p>First, the honest baseline, stated without any interpretation: <strong>with the board
+accounting and the assumption of a uniform response, the waveform and the supply current
+disagree by one constant factor of 4.2.</strong> Everything in this subsection
+is evidence about where that factor lives &mdash; specifically, that it is charge really
+arriving near this strip, not a broken calibration. The evidence is a nonlinearity the
+strip itself displays, and the argument has three steps:</p>
+
+<figure>
+<img src="figures/board_cartoon.png" alt="The three-step density argument as a cartoon">
+<figcaption>The argument in cartoon form, one panel per step. (1) Flash charge lands on
+the resistive layer, which is a capacitor plate that cannot drain during the flash
+&mdash; so its voltage sags by &Delta;V = &sigma;/c&prime;, and since the gas gain is
+exponential in that voltage, the charge throttles its own amplification. (2) The beam
+alternates pulses of 1&times; and 2&times; protons; the strip returns 1.85&times;, not
+2.00&times; &mdash; and being a ratio on one strip, that number is immune to every
+absolute calibration. (3) Reading the shortfall backwards through the capacitor law
+gauges how much charge landed locally: the chamber-average density would produce a 3 %
+shortfall, the measured 7.6 % requires ~3&times; that density.</figcaption>
+</figure>
+
+<p><strong>Step 1 &mdash; arriving charge lowers the very voltage that amplifies
+it.</strong> The resistive layer is one plate of a capacitor
+(c&prime; = 0.50 &micro;F per m&sup2; of area, computed from the board stack), and
+during the flash it cannot drain &mdash; the path to the HV supply takes ~17 ms.
+So when the flash dumps charge onto some region of it, that region's voltage drops, by
+exactly the capacitor law: &Delta;V = (charge per area) / c&prime;. But this is the
+amplification voltage, and the gas gain depends on it exponentially &mdash; every
+22 V is a factor e (measured on this same scan). Put together: during a
+flash, charge that arrives late is amplified <em>less</em> than charge that arrived
+early, because the early charge has already pulled the voltage down. The denser the
+charge landing in a region, the more of this self-suppression that region shows.</p>
+
+<p><strong>Step 2 &mdash; the beam runs a controlled &ldquo;double the input&rdquo;
+experiment every 36 s.</strong> Dedicated pulses carry 2.00&times; the protons of
+parasitic ones (measured pulse by pulse with the beam pickup). If amplification were
+linear, dedicated pulses would give exactly 2.00&times; the charge. Measured on strip 32
+at the working point they give 1.85&times; &mdash; a <strong>7.6 % shortfall per
+proton</strong>. Note what this shortfall is: a <em>ratio of two measurements on the
+same strip</em>. Every linear calibration cancels out of a ratio &mdash; the 50 &Omega;
+assumption, the capture fractions, the cable, all of it. Whatever else might be wrong
+with our absolute scales, the 7.6 % is real.</p>
+
+<p><strong>Step 3 &mdash; the size of the shortfall is a ruler for the local
+density.</strong> Run Step 1 backwards. To produce a 7.6 % shortfall between
+&times;1 and &times;2 pulses, the parasitic flash must pull the layer down by about
+4 V <em>in the region where this strip's charge is amplified &mdash; directly
+above it</em>. By the capacitor law, 4 V of sag at c&prime; = 0.50 &micro;F/m&sup2;
+means about <strong>194 pC/cm&sup2;</strong> landed there. Now compare: the supply
+current says the <em>chamber-average</em> parasitic flash is 66 pC/cm&sup2;. If
+this strip's neighbourhood received only that average, the sag would be
+1.3 V and the shortfall 3 % &mdash; the measured 7.6 % excludes
+it. So the strip's own nonlinearity, read with nothing but the board capacitance and the
+measured gain slope, says its neighbourhood received <strong>~3&times; the
+chamber-average density</strong>. The waveform lobe &mdash; the absolute route, with the
+50 &Omega; and capture calibrations &mdash; says 274 pC/cm&sup2;, i.e.
+~4&times;. Two routes that share no calibration, the same answer to ~40 %:</p>
+
+<figure>
+<img src="figures/board_ledger.png" alt="Three densitometers at the working point, and the residual across the scan">
+<figcaption>Left: the three measurements of the flash charge surface density at the
+working point (parasitic pulses): the chamber average (supply current &divide; live
+area), and the two independent local measurements at strip 32. Right: the
+measured-over-expected ratio at every plateau &mdash; one constant.</figcaption>
+</figure>
+
+<p>The scan turns this one-point argument into a curve. Raising the amplification
+voltage raises the charge per pulse by a factor 21 across the scan &mdash; and therefore
+the density, and therefore the predicted shortfall, which grows along a definite curve
+with <strong>nothing fitted</strong>: density from the lobe, capacitance from the board,
+gain slope from the scan itself. The measured shortfalls ride that curve from
+8 % at the working point up to ~29 % at the hottest point:</p>
+
+<figure>
+<img src="figures/board_compression.png" alt="Compression versus local flash density, with the parameter-free sheet-charging prediction">
+<figcaption>How to read this: each blue point is one plateau of the scan. Its
+<em>x</em> is the flash density at the strip inferred from the waveform lobe; its
+<em>y</em> is the directly measured compression &mdash; how much less charge per proton
+a dedicated pulse delivered than a parasitic one on that plateau. The black line is the
+sheet-charging prediction, &sigma; &rarr; sag &rarr; deficit, with nothing fitted (grey
+band: the measured range of gain e-folds). The blue points riding the line over a factor
+~20 in density is the closure. The grey crosses are the <em>same measured deficits</em>
+re-plotted at the density the strip would have under uniform illumination: they sit far
+left of the line, i.e. uniform illumination cannot produce the compression actually
+observed. (The scatter at low density is the low-gain end, where both classes' charges
+are small and the deficit is poorly determined &mdash; see the error bars.)</figcaption>
+</figure>
+
+<p><strong>What the density factor is made of, this note cannot say.</strong> The
+delivered density is (primary ionisation per area) &times; (local gas gain), so a
+3&ndash;4&times; excess can be an illumination profile &mdash; the flash is prompt
+&gamma;s and their conversions, and the material around the active area (frame, support
+plate, board edge) serves an edge strip differently from the middle &mdash; or a
+<em>local gain enhancement</em>: this strip sits 5&ndash;7 mm from the passivation edge,
+where amplification-field distortion is expected and where the June bench work found
+spark activity concentrated. Both are multiplicative constants, both are consistent with
+the clean e-fold slope (a locally higher gain shifts the exponential without bending
+it), and one channel cannot separate them. What would: the DREAM recovery-time map
+across the plane (a gain hot-spot is fixed to the detector; an illumination profile
+follows the beam), a second patched strip near the centre, or the June bench amplitude
+maps of this very chamber at this strip's position.</p>
 
 <h3>3. The absolute charge at the working point</h3>
 <p>At the shared setpoint (drift 700 V, amplification 540 V, det A, Ar/iso 90/10, 2026-08-09), for the record:</p>
@@ -534,10 +716,10 @@ multiplicative constants, which is exactly what the data say it is.</p>
 <tr><th>waveform, strip 32</th><td>one strip, prompt flash</td>
 <td>538 pC per pulse (mix);
 668 pC dedicated</td></tr>
-<tr><th>implied divisor</th><td>chamber / strip</td>
-<td>267 strips</td></tr>
-<tr><th>geometric expectation</th><td>2 &times; live Y strips</td>
-<td>930 strips</td></tr>
+<tr><th>uniform share, board accounting</th><td>chamber &times; 0.85 &times; &frac12; / 465</td>
+<td>131 pC per strip</td></tr>
+<tr><th>measured / uniform share</th><td>= local / average flash density</td>
+<td>4.1 (lobe); 2.9 (compression)</td></tr>
 </tbody></table></div>
 </details>
 
@@ -545,7 +727,7 @@ multiplicative constants, which is exactly what the data say it is.</p>
 sub-runs, gives 142 &plusmn; 3 nC &mdash; the same to better than 1 %,
 which is a useful check that nothing about the chamber moved across the day.</p>
 
-<h3>3. The compression</h3>
+<h3>4. The compression</h3>
 <p>Both see the response fall short of proportional to beam intensity, in the same
 direction and of the same size &mdash; expressed as how much less charge a dedicated
 pulse delivers per proton than a parasitic one:</p>
@@ -564,6 +746,32 @@ pulse delivers per proton than a parasitic one:</p>
 seeing the same few-to-fifteen percent shortfall. That makes space charge in the
 amplification region a good deal more credible than it was from either alone.</p>
 
+<p>A natural question is whether the supply current can make the dedicated/parasitic
+split <em>on this same scan</em>, point for point with the waveform. It cannot &mdash;
+and the reason is timing, not statistics. There are plenty of parasitic pulses (36 at
+the working point alone); the problem is that <strong>a parasitic pulse is never
+alone</strong>. The monitor smears every pulse into a ~1&ndash;2 s bump and timestamps
+its samples in whole seconds, so a pulse can only be read out individually when no other
+pulse sits within a few seconds of it &mdash; and the PS supercycle delivers parasitic
+pulses 1.2&ndash;2.4 s from their neighbours, always, so their bumps always overlap with
+someone else's. Only dedicated pulses, which border the supercycle's long gaps, ever
+stand alone: a strict isolation cut on this run keeps
+<strong>91 dedicated and 1 parasitic</strong> of 2 672. (The clock offset itself
+resolves cleanly, +2 s; and fitting the overlapping bumps instead of cutting them
+is the ill-conditioning trap documented in the July handoff, &sect;8.6.) The split
+<em>has</em> been made with the supply current where the 1 s time base was reconstructed
+to millisecond accuracy &mdash; run_79 at the production point, the det A / det C rows
+in the table above &mdash; and that is the imon's answer: same sign, same size as the
+waveform's.</p>
+
+<p>The pulse mix does not, however, drag the comparison anywhere: the strip-to-chamber
+ratio is taken mix-against-mix &mdash; both instruments average the same bunches &mdash;
+so the 4.2 is mix-independent. And the mix <em>can</em> be separated
+algebraically, using the counted classes and the waveform-measured charge ratio: at the
+working point the chamber delivers <strong>177 nC per dedicated pulse and
+96 nC per parasitic pulse</strong>, which are the numbers to quote when a
+single-class figure is needed rather than the 143 nC mix average.</p>
+
 <h2>What this means for DREAM</h2>
 
 <p>The DREAM charge-sensitive amplifier has selectable input ranges of
@@ -572,8 +780,8 @@ amplification region a good deal more credible than it was from either alone.</p
 <div class="kpis">
   <div class="kpi"><div class="n">1,113&times;</div>
     <div class="l">measured strip charge over the 600 fC full scale</div></div>
-  <div class="kpi"><div class="n">462&times;</div>
-    <div class="l">chamber-average strip, from the HV current</div></div>
+  <div class="kpi"><div class="n">219&times;</div>
+    <div class="l">chamber-average strip, from the HV current + board accounting</div></div>
   <div class="kpi"><div class="n">7&ndash;74 ms</div>
     <div class="l">time to drain that charge at the CSA's 90&ndash;9 nA feedback limit</div></div>
 </div>
@@ -581,8 +789,9 @@ amplification region a good deal more credible than it was from either alone.</p
 <p><strong>The flash puts roughly a thousand times the front end's full-scale input
 charge onto a single strip.</strong> That is the answer to &ldquo;how much can we
 swallow before we die&rdquo;: not this much, and not by a small margin. The
-chamber-average figure from the HV current, 462&times;, is the
-optimistic bound; the strip actually measured sits at 1,113&times;. And 600 fC is the
+chamber-average figure from the HV current with the board accounting,
+219&times;, is the optimistic bound &mdash; a typical channel away from the hot
+region; the strip actually measured sits at 1,113&times;. And 600 fC is the
 <em>largest</em> of the four selectable ranges: a parallel audit of 44 saved bench
 configs reads the DREAM registers as 200 fC, which if it holds for the beam runs makes
 every multiple here three times worse.</p>
@@ -619,18 +828,32 @@ shaper or zero-suppression do with the same charge &mdash; that comparison is th
 next step, and DREAM run_18 is simultaneous with 224327, so it can be done on the same
 bunches.</li>
 <li><strong>The absolute charge scale assumes a direct 50 &Omega; termination</strong> and
-no amplification between chamber and digitiser. If anything sits in that path, the
-picocoulomb numbers scale accordingly; the relative results (HV dependence, intensity
-compression, recovery times, and the gain-slope comparison) are unaffected. The
-10&ndash;20 m of RG-58 is <em>not</em> a worry &mdash; it costs under 1 % of the charge,
-and that is shown rather than assumed above.</li>
-<li><strong>The factor 3.5 on the absolute scale is unexplained.</strong>
-The two methods agree on shape to 5.7 % across the scan, so it is one
-constant, not a drift or a slope error &mdash; but naming it needs work this note does not
-do. The candidates are the fraction of the avalanche charge a readout strip's capacitive
-image carries over a finite integration window, and the assumption that the digitiser sees
-a bare 50 &Omega;. The beam-profile explanation is disfavoured because the strip is at the
-chamber periphery, and the X/Y sharing can only move it by two.</li>
+no amplification between chamber and digitiser. Note the direction: every passive error
+in that path &mdash; a splitter, an attenuator, a second termination, a still-connected
+DREAM input &mdash; makes the true strip charge <em>larger</em> than quoted, never
+smaller. Only a digitiser input well above 50 &Omega; would lower it, which the pulse
+shape argues against. A pulser through the same patch would pin the whole chain and is
+the single most valuable follow-up measurement. The 10&ndash;20 m of RG-58 is
+<em>not</em> a worry &mdash; it costs under 1 % of the charge, and that is shown rather
+than assumed above.</li>
+<li><strong>Why the density is high at this strip is inferred, not mapped.</strong> The
+board accounting plus the compression establish that the residual factor
+4.2 is real local charge density &mdash; but density is illumination &times; local
+gain, and one channel cannot split the product. Four measurements would: (1) the
+per-channel <em>recovery-time</em> map from DREAM run_160/161, simultaneous with this
+scan &mdash; dead time follows delivered charge as t &prop; Q<sup>1.2</sup>, so the
+saturation-recovery pattern across the plane is a flash-charge profile read from data
+that already exist, and a gain hot-spot is fixed to the detector while an illumination
+profile follows the beam; (2) the June cosmic-bench amplitude maps of this very chamber
+at this strip's position, which bound the gain component alone; (3) a second patched
+strip near the chamber centre; (4) the pulser calibration above, which removes the one
+instrumental alternative. The two local densitometers also differ by ~40 %
+(4.1 vs 2.9), which is attributed to the roughness of the sheet-charging
+model and not further explained here.</li>
+<li><strong>The CAEN monitor's absolute DC calibration</strong> is still taken on trust
+(the July work verified it conserves burst integrals and resolves nanoamps, not that its
+ampere is an ampere). A scale error there moves the chamber charge and the residual
+factor together.</li>
 <li><strong>Which strip this is rests on reading the label.</strong> &ldquo;Strip 32 of
 cable Y8&rdquo; is taken as connector Y8, channel 32 (y = 374.4 mm); the alternative
 reading, global y-strip 32, is y = 25.0 mm. Both sit 5&ndash;7 mm inside a passivation
@@ -649,8 +872,10 @@ it lands on the observed millisecond dead time is a consistency check, not a der
 of it.</li>
 <li><strong>Neither method separates the prompt flash from the neutron-induced tail.</strong>
 The waveform integral covers 11&ndash;20 &micro;s, so it is prompt by construction; the HV
-current integrates the whole 80 ms cycle. The comparison therefore sets the prompt part
-against the total, which is part of why a concentration factor above one is expected.</li>
+current integrates the whole cycle. Any tail charge in the supply current therefore makes
+the density-enhancement factor an <em>under</em>-estimate. The strip's own record bounds
+its share of the tail: above threshold, everything beyond 30 &micro;s sums to zero at the
+working point and 1&ndash;2 % at the hottest scan point.</li>
 <li><strong>224302's conditions are only partly known.</strong> DREAM run_12 covers the
 last 41 % of it (1256 of 3067 bunches); there was no DREAM run before that, so the HV for
 the earlier bunches is unmonitored. The gas differs from the other runs
@@ -1142,6 +1367,17 @@ the bulk. <code>extract_mm_full.py</code> &rarr; <code>merge_709.py</code> &rarr
 <code>charge_chain.py</code>; the cross-comparison in
 <code>compare_hv_current.py</code>. HV plateaus from the DREAM
 <code>hv_monitor.csv</code> of run_160/161, in <code>hv_plateaus_224709.csv</code>.</p>
+
+<p><strong>The board accounting</strong> is <code>board_accounting.py</code>. Its
+constants come from the response-simulation repository
+<code>~/CLionProjects/MX17_Geant</code> &mdash; the checkerboard channel map read from
+the L5/L6 gerber stubs (<code>response/common/channel_map.py</code>), the pad-plane
+image capture from the solved weighting potentials
+(<code>response/solver/wpot_w2.py</code>, <code>design/report/V6_PAD_GAPS_2026-08-08.md</code>),
+the sheet capacitance and drain time from the stack constants
+(<code>response/common/constants.py</code>, <code>response/solver/wpot.py</code>), and the
+ESL strip pattern and end-bus contact from <code>design/RESPONSE_SIM_PLAN.md</code>. The
+per-source citation list is embedded in <code>results_board.json</code>.</p>
 
 <p><strong>The July runs (Appendix A).</strong> Raw secured to
 <code>/eos/experiment/ntof/data/x17/mm_raw_2026-07/</code> (591 files, 24 G,

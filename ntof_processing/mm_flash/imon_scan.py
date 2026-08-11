@@ -210,14 +210,17 @@ def main():
     fig.savefig(FIG / 'imon_method.png', dpi=140)
     plt.close(fig)
 
-    # 3. full-detector comparison against the waveform
+    # 3. full-detector comparison against the waveform. The chamber multiplier
+    # comes from the board accounting (board_accounting.py): a uniform flash
+    # gives one live Y comb capture x 1/2 / 465 of the chamber charge, so one
+    # strip scales to the chamber by 465 / (0.85 x 0.5) = 1094.
+    mult = round(N_Y_LIVE / (0.85 * 0.5))
     fig, ax = plt.subplots(figsize=(7.6, 4.8))
-    mult = 2 * N_Y_LIVE
     for cls, c, mk in (('dedicated', '#2f6f9f', 'o'), ('parasitic', '#c0632c', 's')):
         pts = sorted((r['resist'], r[f'wf_{cls}_pC'] * mult / 1e3)
                      for r in rows if r['drift'] == 700 and f'wf_{cls}_pC' in r)
         ax.semilogy([p[0] for p in pts], [p[1] for p in pts], marker=mk, color=c,
-                    lw=1.3, ms=4, label=f'waveform $\\times$ {mult} strips, {cls}')
+                    lw=1.3, ms=4, label=f'waveform $\\times$ {mult} (board), {cls}')
     mixpts = sorted((r['resist'], r['wf_mix_pC'] * mult / 1e3)
                     for r in rows if r['drift'] == 700 and 'wf_mix_pC' in r)
     ax.semilogy([p[0] for p in mixpts], [p[1] for p in mixpts], color='#6a6a6a',
@@ -229,7 +232,7 @@ def main():
                 label='HV supply current, whole chamber')
     imp = np.array([r['q_nC'] * 1e3 / r['wf_mix_pC'] for r in rows if 'wf_mix_pC' in r])
     ax.annotate(f'constant offset $\\times${mult/imp.mean():.1f}\n'
-                f'(implied {imp.mean():.0f} strips, not {mult})',
+                f'(the local-density factor at strip 32)',
                 xy=(0.05, 0.72), xycoords='axes fraction', fontsize=8.5,
                 bbox=dict(fc='#f7f7f8', ec='#c0c0c0', lw=.8))
     ax.set_xlabel('detector A amplification voltage (V)')

@@ -4,6 +4,41 @@
 reproducible from `ntof_processing/mm_flash/` plus the products on EOS; nothing
 needs the 1.5 TB of raw.
 
+> **STATUS — the deep dive was done the same day (§8, `board_accounting.py`).**
+> The board (gerbers + solved electrostatics in `~/CLionProjects/MX17_Geant`)
+> replaces the strip accounting of §2: the readout is a checkerboard pad grid,
+> the X/Y split is *exactly* ½ by symmetry (the "465, all on Y" reading in §2
+> is not physically available), 85 % of the ESL charge images to the pad plane,
+> and the uniform-share expectation is **131 pC** → the residual sharpens to
+> **4.2 ± 0.3 across all 25 plateaus**. The factor is carried by **local flash
+> density**: the strip's own intensity compression, read through the board's
+> sheet capacitance c′ with zero free parameters, independently measures the
+> local density at **2.9× the chamber average** (lobe says 4.1×) and tracks the
+> measured deficit across the whole scan. §4.1 (termination) is direction-dead:
+> every passive patch error makes the true strip charge *larger*; §4.2 closed
+> (drift imon = pure divider steps, no beam response); §4.3 closed (exact ½ +
+> conservation); §3's "periphery ⇒ below average" assumed the flash follows the
+> neutron-beam profile, which is the assumption that died. Remaining tests, in
+> value order: DREAM run_160/161 per-channel recovery-time map (= a flash-charge
+> profile via t ∝ Q^1.2), a pulser through the same patch, a second strip near
+> centre. The note (`report.html` / the CERN site) is updated and is the
+> canonical write-up.
+>
+> **Second pass, same day (review feedback):** the residual is properly stated
+> as *delivered charge density* = illumination x local gain — one channel can't
+> split the product, and the strip's 5–7 mm proximity to the passivation edge
+> makes a local gain enhancement as serious a candidate as the flash profile
+> (June bench: this chamber's sparks were edge-dominated). Also measured: the
+> resist-leakage baseline **steps 0.15–0.57 µA at every drift-HV move** and
+> relaxes over tens of minutes (cathode-motion charging current, direction
+> excludes a divider path; per-plateau median subtracts it, worst within-plateau
+> movement 24 nA). And the imon **cannot** split dedicated/parasitic on 224709 —
+> with gaps wide enough to isolate the 1 s response, survivors are 91 dedicated
+> vs 1 parasitic (supercycle entangles isolation with class); run_79's
+> ms-reconstructed fold remains the imon's class answer. New summary figure
+> `figures/compare_final.png` (absolute per-strip curves + ladder, with the
+> 600 fC line and the 540–560 V operating band).
+
 ---
 
 ## 0. The question
@@ -261,3 +296,46 @@ node do not help.
   44 saved *bench* configs reads `Dream 6/7 = 0xAAAA` → 200 fC at 10 mV/fC. The
   note quotes the conservative 600 fC. If the beam ran at 200 fC, every "× full
   scale" figure is three times worse.
+
+---
+
+## 8. Resolution — the board accounting (2026-08-11, `board_accounting.py`)
+
+Constants and their sources are embedded in `results_board.json`; figures
+`figures/board_{stack,ledger,compression}.png`; the note carries the prose.
+The three load-bearing board facts:
+
+1. **Checkerboard combs, not strips.** 512×512 pads (680 µm on 780 µm pitch);
+   a "Y strip" = 256 pads on 1.56 mm pitch along a row, X combs own the
+   intervening pads, both views in the same copper plane
+   (`response/common/channel_map.py`, read from the L5/L6 gerber stubs). Uniform
+   flash ⇒ exact 50/50 X/Y.
+2. **Capture 0.85** of ESL charge images to the pad plane (W2 boundary,
+   `wpot_w2.py` / `V6_PAD_GAPS_2026-08-08.md`); mesh takes ~15 %.
+3. **ESL = 550/250 µm resistive strips along y, bused at the two y-ends only**;
+   τ_drain ≈ 17 ms at the frozen 2 MΩ/sq ⇒ the sheet is charge-conserving on
+   the 9 µs window (strip lobe = local image) and the supply integrates
+   everything (imon = whole charge). c′ = 0.50 µF/m² converts density → gain
+   sag; with the measured ~22 V e-fold this predicts the dedicated/parasitic
+   per-proton deficit with no fitted parameters, and the prediction tracks the
+   measurement from 8 % (700/540) to ~29 % (700/570). Had the strip carried
+   only the chamber-average density the predicted deficit would be 3 % — so
+   the compression *discriminates*, and it sides with the lobe.
+
+New measurements folded in: strip's own >30 µs tail = 0 above threshold at the
+working point (1–2 % at 570 V); `A_drift_imon` = quantised divider current
+only, mean−median negative ⇒ no avalanche return path outside the monitored
+channel.
+
+What is still open, and would each close it further:
+- **DREAM run_160/161 recovery-time profile** — the flash-density map across
+  the plane, from data that already exist (t ∝ Q^1.2 turns per-channel dead
+  time into per-channel charge).
+- **Pulser through the n_TOF patch** — removes the last instrumental
+  alternative (a >50 Ω effective input, the only error that could *shrink*
+  the strip charge).
+- **CAEN absolute DC scale** — moves chamber charge and residual together;
+  board-model-independent.
+- The 40 % gap between the two local densitometers (4.1 vs 2.9) is booked to
+  the sheet-charging model's roughness (uniform-in-time delivery, e-fold band
+  20–24 V, spreading during the ~2 µs sweep) and not chased.
