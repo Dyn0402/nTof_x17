@@ -73,20 +73,52 @@ basket is hit rather than only the header.
 | bunch gaps within a run | **0** |
 | runs with a different `history` md5 | **0** |
 
-## 4. Physics, on the 13 runs with beam
+## 4. Physics, on all 26 runs with beam
 
 `campaign_qa/compare_campaign.py`, one partial per run, gated on `PKUP amp > 0`,
-normalised to the protons those bunches carried.
+normalised to the protons those bunches carried. **Widened on 08-11 evening from
+13 runs to all 26 beam runs of the block** (224688-224715); 224708 is held out and
+treated in § 4a.
 
-| axis | ours (13 runs) | official (6 runs) | verdict |
+| axis | ours (25 runs) | official (6 runs) | verdict |
 |---|---|---|---|
 | hits per 1e12 p, WALA | 1483-1556 | 1470-1558 | overlap |
-| hits per 1e12 p, PSSC | 6813-7083 | 6899-7073 | overlap |
-| hits per 1e12 p, LIQA | 2647-2706 | 2637-2659 | overlap |
+| hits per 1e12 p, PSSC | 6813-7263 | 6899-7073 | overlap |
+| hits per 1e12 p, LIQA | 2647-2709 | 2637-2659 | overlap |
 | **all 12 trees** | | | **all overlap** |
 | median hit amplitude, **all 12 trees** | | | **all overlap** |
 | modal `tflash`, per tree | | | **same 10 ns bin as official on every tree** |
 | bunches > 150 ns off flash | **0.00 %** | 0.00 % | target < 2 %; broken July processing was 37-85 % on PSS |
+
+A slow rise runs across the block — PSSC 6987 → 7263 per 1e12 p, about +4 % from
+224688 to 224715. It continues the trend already present in the official runs, so
+it is time, not a step at the processing boundary.
+
+## 4a. The one run that is different: 224708
+
+**224708 carries a real excess on three of the four plastics**, confirmed over
+*every* partial of the run (135 beam bunches, 894e12 protons) against our own
+224707 — the adjacent run, same conditions, same processing:
+
+| tree | 224708 /1e12 p | 224707 /1e12 p | ratio | amp 224708 | amp 224707 |
+|---|---|---|---|---|---|
+| **PSSD** | 250 230 | 6 359 | **×39.4** | 97 | 131 |
+| **PSSA** | 27 283 | 4 434 | **×6.2** | 96 | 124 |
+| **PSSB** | 7 720 | 5 987 | ×1.29 | 139 | 150 |
+| PSSC | 7 068 | 7 151 | ×0.99 | 125 | 125 |
+| WAL A-D | | | ×1.01-1.03 | | |
+| LIQ A-D | | | ×0.98-1.03 | | |
+
+**This is the detector, not the processing.** PSSC, all four walls and all four
+liquids are normal to a few percent, and the **median amplitude falls on exactly
+the trees that gained hits** (PSSA 124→96, PSSD 131→97 ADC) — a low-amplitude
+population, not more particles. The same pipeline gave normal numbers for 224707
+immediately before and 224710 immediately after.
+
+Everything else about 224708 is fine: 0.74 % off-flash (target < 2 %, though above
+the 0.00 % the others sit at), modal `tflash` in the same bin, arm offsets within
+±1 ns. **Why** is untested — a threshold, a discriminator or a plastic in a bad
+state during that short run are all consistent with it.
 
 The slow rise on LIQA/LIQD across run number is a **time trend that runs through
 both sets** — official 224660 sits at 2637 and our 224700 at 2688 — not a step at

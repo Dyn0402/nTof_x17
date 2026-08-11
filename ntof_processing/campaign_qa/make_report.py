@@ -30,6 +30,13 @@ TREES_RATE = ['WALA', 'WALB', 'WALC', 'WALD', 'PSSA', 'PSSB', 'PSSC', 'PSSD',
               'LIQA', 'LIQB', 'LIQC', 'LIQD']
 ARMS = 'ABCD'
 
+# Runs held out of the aggregate ranges and shown on their own. 224708 carries a
+# real low-amplitude excess on plastics A/B/D (x6.2/x1.3/x39 against its
+# neighbour 224707, over ALL its partials); folding it into a min-max span would
+# hide 25 healthy runs behind one sick detector. It is not a processing defect --
+# see the section on it.
+OUTLIER_RUNS = {224708}
+
 
 # ---------------------------------------------------------------- helpers
 def col(rows, tree, field):
@@ -82,7 +89,7 @@ def figures(ours, off):
         ax.tick_params(axis='x', labelrotation=45, labelbottom=True, labelsize=7)
     ax = axes.ravel()[3]
     ax.axis('off')
-    ax.text(0.02, 0.95, 'squares = runs we processed (224688–224700)\n'
+    ax.text(0.02, 0.95, 'squares = runs we processed (224688–224715)\n'
                         'circles  = n_TOF official (224660–224676)\n\n'
                         'Beam bunches only (PKUP amp > 0), normalised to the\n'
                         'protons those bunches carried, so runs at different\n'
@@ -142,8 +149,8 @@ def rate_table(ours, off):
             f'<td>{span(off, t, "hits_per_1e12p")}</td>'
             f'<td class="{"ok" if abs(gap) < 3 else "warn"}">'
             f'{"overlap" if gap == 0 else f"{gap:+.1f} %"}</td></tr>')
-    return ('<table><thead><tr><th>tree</th><th>ours (13 runs)</th>'
-            '<th>official (6 runs)</th><th>separation</th></tr></thead>'
+    return (f'<table><thead><tr><th>tree</th><th>ours ({len(ours)} runs)</th>'
+            f'<th>official ({len(off)} runs)</th><th>separation</th></tr></thead>'
             f'<tbody>{"".join(rows)}</tbody></table>')
 
 
@@ -196,6 +203,71 @@ def offset_table(ours, off):
     return ('<table><thead><tr><th>pair</th><th>ours (ns)</th><th>official (ns)</th>'
             '<th>|worst| ours</th></tr></thead>'
             f'<tbody>{"".join(rows)}</tbody></table>')
+
+
+def outlier_section(held, ours, off):
+    """224708 on its own: what is wrong with it, and what is not.
+
+    Prefers `compare_<run>.json`, a dedicated pass over EVERY partial of the run
+    with its neighbour as control -- the main compare.json samples one partial,
+    which is too thin to tell a sick detector from a statistical fluctuation on
+    a short run.
+    """
+    if not held:
+        return ''
+    blocks = []
+    for h in held:
+        run = h['run']
+        dedicated = RES / f'compare_{run}.json'
+        every_partial = False
+        if dedicated.exists():
+            d = json.loads(dedicated.read_text())
+            by = {r['run']: r for r in d['ours']}
+            if run in by and len(by) > 1:
+                h = by[run]
+                ours = [r for r in d['ours'] if r['run'] != run]
+                every_partial = True
+        # nearest healthy neighbour of ours, as the like-for-like control
+        ctl = min(ours, key=lambda r: abs(r['run'] - run))
+        cells = []
+        for t in TREES_RATE:
+            a = h['trees'][t]['hits_per_1e12p']
+            b = ctl['trees'][t]['hits_per_1e12p']
+            ah = h['trees'][t]['median_amp']
+            bh = ctl['trees'][t]['median_amp']
+            ratio = a / b if b else float('nan')
+            cls = 'warn' if ratio > 1.2 or ratio < 0.8 else 'ok'
+            cells.append(
+                f'<tr><td class="k">{t}</td><td>{a:,.0f}</td><td>{b:,.0f}</td>'
+                f'<td class="{cls}">×{ratio:.2f}</td>'
+                f'<td>{ah:.0f}</td><td>{bh:.0f}</td></tr>')
+        worst = max(h['trees'][t].get('flash_bad_pct', 0) for t in TREES_RATE)
+        blocks.append(f"""
+<h2>The one run that is different: {run}</h2>
+<p><strong>{run} carries a real excess on three of the four plastics.</strong>
+Measured over {'<em>every</em> partial of the run' if every_partial
+              else 'one partial'} ({h['bunches_beam']} beam bunches,
+{h['protons_1e12']:,.0f}×10<sup>12</sup> protons), against our own {ctl['run']} —
+the adjacent run, same conditions, same processing:</p>
+<table><thead><tr><th>tree</th><th>{run} /1e12 p</th><th>{ctl['run']} /1e12 p</th>
+<th>ratio</th><th>amp {run}</th><th>amp {ctl['run']}</th></tr></thead>
+<tbody>{''.join(cells)}</tbody></table>
+<p><strong>This is the detector, not the processing.</strong> The excess sits on
+PSSA, PSSD and mildly PSSB while <em>PSSC, all four walls and all four liquids are
+normal to a few percent</em>, and the median amplitude falls on exactly the trees
+that gained hits (PSSA 124→96, PSSD 131→97 ADC) — a low-amplitude population, not
+more real particles. The same pipeline produced normal numbers for {ctl['run']}
+immediately before and 224710 immediately after.</p>
+<p>Everything else about {run} is healthy: <strong>{worst:.2f} %</strong> of its
+beam bunches are off-flash — inside the &lt; 2 % target, though above the 0.00 %
+the other runs sit at — its modal <code>tflash</code> is in the same bin as every
+other run, and its arm offsets are all within ±1&nbsp;ns. It is held out of
+the aggregate ranges above so that one sick detector does not hide 25 healthy
+runs — <strong>the rest of the block shows nothing like it</strong>.</p>
+<p>What this does not say: why. A threshold, a discriminator or a plastic in a bad
+state during that short run are all consistent with it, and none of them is tested
+here.</p>""")
+    return ''.join(blocks)
 
 
 def per_run_table(ours):
@@ -424,7 +496,9 @@ code{background:var(--band);padding:.1em .35em;border-radius:3px;font-size:.86em
 
 def build():
     data = json.loads((RES / 'compare.json').read_text())
-    ours, off = data['ours'], data['official']
+    all_ours, off = data['ours'], data['official']
+    ours = [r for r in all_ours if r['run'] not in OUTLIER_RUNS]
+    held = [r for r in all_ours if r['run'] in OUTLIER_RUNS]
     figures(ours, off)
 
     wal_o = col(ours, 'WALA', 'hits_per_1e12p')
@@ -636,8 +710,10 @@ show. <code>quality_metrics.py</code> on two partials each of our 224691 and off
 <figure><img src="figures/amps.png" alt="amplitudes">
 <figcaption>Median hit amplitude per tree, one point per run.</figcaption></figure>
 
-<h2>Per-run detail, our 13 runs</h2>
-{per_run_table(ours)}
+{outlier_section(held, ours, off)}
+
+<h2>Per-run detail, every beam run of the block</h2>
+{per_run_table(all_ours)}
 
 <h2>What this does not rule out</h2>
 <ul>

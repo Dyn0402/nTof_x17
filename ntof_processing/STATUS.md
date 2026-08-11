@@ -39,6 +39,15 @@ past the block and on to 224719+, which is a different experiment
 eviction and a retry) was still running at 16:07, so the driver called it stalled;
 finish and harvest it by hand.
 
+**Physics widened to all 26 beam runs of the block** (was 13): every tree still
+overlaps official in rate and amplitude, 0.00 % off-flash, modal `tflash` in the
+same bin. **One run is different — 224708**: PSSD ×39, PSSA ×6.2, PSSB ×1.3
+against its neighbour 224707, confirmed over *every* partial (135 beam bunches).
+PSSC, all walls and all liquids are normal, and the median amplitude *falls* on
+exactly the trees that gained hits (PSSA 124→96, PSSD 131→97 ADC) — a
+low-amplitude population, so **the detector, not the processing**. Held out of the
+aggregate ranges; `campaign_qa/results/compare_224708.json`. Why is untested.
+
 **The campaign driver has exited:** 15 moved, 3 flagged. The two `COPY FAILED`
 runs (224705, 224711) both verify **clean on the ntof disk** — full contiguous
 partial set, 0 unreadable, 0 gaps — so that was a `cp -r` exit code, not a bad
