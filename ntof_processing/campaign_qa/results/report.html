@@ -1,0 +1,271 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>n_TOF campaign QA — our processing vs n_TOF's</title><style>
+:root{--fg:#1b1b1b;--bg:#fff;--mut:#666;--line:#ddd;--ok:#0a7d33;--warn:#b25000;
+      --band:#f6f7f9;}
+*{box-sizing:border-box}
+body{margin:0 auto;max-width:1000px;padding:2rem 1.2rem 4rem;
+     font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+     color:var(--fg);background:var(--bg)}
+h1{font-size:1.7rem;margin:0 0 .2rem}
+h2{font-size:1.15rem;margin:2.4rem 0 .6rem;padding-bottom:.25rem;
+   border-bottom:2px solid var(--line)}
+h3{font-size:1rem;margin:1.4rem 0 .4rem}
+.sub{color:var(--mut);margin:0 0 1.4rem}
+.verdict{background:var(--band);border-left:4px solid var(--ok);padding:.9rem 1.1rem;
+         margin:1.2rem 0;border-radius:0 4px 4px 0}
+.verdict strong{font-size:1.05rem}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:.7rem;
+      margin:1.2rem 0}
+.card{background:var(--band);border:1px solid var(--line);border-radius:5px;padding:.7rem .8rem}
+.card .n{font-size:1.35rem;font-weight:650;display:block}
+.card .l{color:var(--mut);font-size:.8rem}
+table{border-collapse:collapse;width:100%;margin:.8rem 0;font-size:.87rem}
+th,td{border-bottom:1px solid var(--line);padding:.35rem .5rem;text-align:right}
+th:first-child,td:first-child{text-align:left}
+thead th{border-bottom:2px solid var(--line);font-weight:600;color:var(--mut);
+         font-size:.78rem;text-transform:uppercase;letter-spacing:.03em}
+td.k{font-weight:600}
+.ok{color:var(--ok)}
+.warn{color:var(--warn)}
+pre{background:var(--band);border:1px solid var(--line);border-radius:4px;
+    padding:.7rem .8rem;overflow-x:auto;font-size:.76rem;line-height:1.45}
+figure{margin:1.2rem 0}
+img{max-width:100%;border:1px solid var(--line);border-radius:4px}
+figcaption{color:var(--mut);font-size:.83rem;margin-top:.4rem}
+ul{padding-left:1.2rem}
+li{margin:.3rem 0}
+code{background:var(--band);padding:.1em .35em;border-radius:3px;font-size:.86em}
+</style></head><body>
+<h1>n_TOF reprocessing campaign — are our runs as good as n_TOF's?</h1>
+<p class="sub">Runs 224688–224700, processed by us and moved to
+<code>/eos/experiment/ntof/data/x17/reproc/prod_v12/</code>, checked against runs
+n_TOF processed themselves in <code>official/completed/</code>. 2026-08-11</p>
+
+<div class="verdict">
+<strong>Yes. The 13 transferred runs are good.</strong> They were produced with a
+configuration that is byte-identical to n_TOF's own — same parameter file, same
+26 pulse-shape templates — and on every measurable axis they are
+indistinguishable from official runs taken under the same beam: intensity-normalised
+hit rates overlap, the gamma flash lands in the same 10&nbsp;ns bin in every tree,
+0.00&nbsp;% of beam bunches are off-flash (the broken July processing sat at
+37–85&nbsp;% on the plastics), and hit quality matches to a few percent.
+</div>
+
+<div class="grid">
+  <div class="card"><span class="n">17</span><span class="l">runs on the ntof disk (13 with beam)</span></div>
+  <div class="card"><span class="n">494</span><span class="l">partials, 384 GB — 0 unreadable</span></div>
+  <div class="card"><span class="n">26/26</span><span class="l">templates byte-identical to official</span></div>
+  <div class="card"><span class="n">0.00 %</span><span class="l">worst off-flash bunches (target &lt; 2 %)</span></div>
+  <div class="card"><span class="n">1483–1556</span><span class="l">WALA hits/1e12 p (official 1470–1558)</span></div>
+</div>
+
+<h2>What was compared, and the one thing that makes it awkward</h2>
+<p><strong>No run exists in both sets.</strong> The block we are processing,
+224688–224718, is precisely the block n_TOF never processed — that is why we are
+processing it. So this cannot be a file-against-file diff. It is an equivalence
+argument in two parts:</p>
+<ul>
+<li><strong>Configuration</strong> — compared exactly, because each product records
+the UserInput it was made with in its own <code>history</code> object.</li>
+<li><strong>Behaviour</strong> — compared statistically against the nearest official
+runs in time (224660–224676), with everything normalised to the protons delivered,
+because a raw hit count is a beam measurement, not a processing measurement.</li>
+</ul>
+
+<h3>Two traps that make an honest comparison look broken</h3>
+<ul>
+<li><strong>The official runs next door have no beam.</strong> 224678–224687 all sit
+at zero PulseIntensity and zero PKUP amplitude. Picking 224687 — the run immediately
+before our block — as the control makes our output look 400× too busy. It is not;
+that run had no protons.</li>
+<li><strong>Empty PS pulses inside our runs.</strong> The first partial of 224692 is
+75&nbsp;% empty pulses; those bunches have no flash, so tflash is 0 and every
+flash check flags them. Restricted to bunches that actually had protons, 224692 is
+clean like the rest — and its intensity-normalised rates match the other twelve
+runs to ~1&nbsp;%. Every number in this report is gated on PKUP amplitude &gt; 0.</li>
+</ul>
+
+<h2>Configuration: identical, not merely similar</h2>
+<p>n_TOF's production <code>UserInput_2026_EAR2_X17_v4.h</code> <em>is</em> our
+v12_liqpileup — they adopted it after the July handoff, so both processings run the
+same recipe. Every parameter column matches; the only differing lines are the file
+name itself and the directory the templates are read from (our AFS staging area vs
+their EOS shapes directory). All 26 referenced templates are byte-identical.</p>
+<pre>### UserInput parameter diff, ours (224689) vs official (224687)
+A = /eos/experiment/ntof/data/x17/reproc/prod_v12/224689/completed/224689/history_224689.root   (10359 chars, 65 non-empty lines)
+B = /eos/experiment/ntof/processing/official/completed/224687/history_224687.root   (10696 chars, 65 non-empty lines)
+
+2 differing lines:
+
+--- official
++++ ours
+@@ -1,2 +1,2 @@
+-UserInput_2026_EAR2_X17_v4.h
++UserInput.h
+ .                                                DETECTOR SPECIFIC PARAMETERS (Lines may be commented with &#x27;#&#x27; sign!)
+
+### pulse-shape template md5, ours vs official shapes_X17_v4
+  not in official set (unreferenced spare): X17_WALA_Signal_3.txt
+  not in official set (unreferenced spare): X17_WALB_Signal_0.txt
+  not in official set (unreferenced spare): X17_WALC_Signal_0.txt
+  identical: 26 ; extra local files: 3</pre>
+
+<h2>Structural verification of every transferred partial</h2>
+<p>Not a sample — every partial of every run is opened, all 16 top-level objects are
+required, and a real array read is issued on all 14 hit trees so a truncated basket
+is hit rather than only the header. Contiguity is checked against
+<code>ceil(raw_files / 4)</code>, the split RunProcessing uses, and the
+<code>history</code> md5 is compared across our own runs.</p>
+<pre>base = /eos/experiment/ntof/data/x17/reproc/prod_v12
+
+    run parts  exp  contig  raw     hist badfiles  bunches  gaps      GB
+------------------------------------------------------------------------
+ 224688    44   44    True  173      ref        0     2910     0    33.2
+ 224689     5    5    True   19       ok        0      274     0     3.1
+ 224690    40   40    True  157       ok        0     2930     0    32.8
+ 224691    38   38    True  150       ok        0     2925     0    32.4
+ 224692    39   39    True  153       ok        0     3050     0    34.9
+ 224693    36   36    True  144       ok        0     2866     0    31.0
+ 224694    11   11    True   42       ok        0      840     0    10.3
+ 224695    35   35    True  140       ok        0     2695     0    30.8
+ 224696    36   36    True  141       ok        0     2739     0    31.6
+ 224697    39   39    True  154       ok        0     2800     0    31.6
+ 224698    40   40    True  159       ok        0     3023     0    31.9
+ 224699    38   38    True  149       ok        0     2967     0    31.3
+ 224700    57   57    True  225       ok        0     4494     0    49.0
+
+all runs: complete, contiguous, same UserInput, every partial reads.</pre>
+
+<h2>Which transferred runs actually have beam</h2>
+<p>Read from the <code>index</code> tree, which is replicated in full in every
+partial and therefore describes the whole run rather than the sampled partial.
+13 of the 17 runs on the disk carry beam; 4 carry none at
+all — they were processed correctly and are simply quiet, which is why their files
+are a few MB rather than tens of GB. The physics comparison above uses the
+13 beam runs.</p>
+<table><thead><tr><th>run</th><th>bunches</th><th>with protons</th><th>beam fraction</th><th>protons (1e12)</th><th>state</th></tr></thead><tbody><tr><td class="k">224688</td><td>2910</td><td>2906</td><td>99.9 %</td><td>21,539</td><td class="ok">beam</td></tr><tr><td class="k">224689</td><td>274</td><td>260</td><td>94.9 %</td><td>1,989</td><td class="ok">beam</td></tr><tr><td class="k">224690</td><td>2930</td><td>2929</td><td>100.0 %</td><td>21,258</td><td class="ok">beam</td></tr><tr><td class="k">224691</td><td>2925</td><td>2922</td><td>99.9 %</td><td>21,033</td><td class="ok">beam</td></tr><tr><td class="k">224692</td><td>3050</td><td>2988</td><td>98.0 %</td><td>22,545</td><td class="ok">beam</td></tr><tr><td class="k">224693</td><td>2866</td><td>2616</td><td>91.3 %</td><td>20,071</td><td class="ok">beam</td></tr><tr><td class="k">224694</td><td>840</td><td>837</td><td>99.6 %</td><td>6,705</td><td class="ok">beam</td></tr><tr><td class="k">224695</td><td>2695</td><td>2516</td><td>93.4 %</td><td>20,065</td><td class="ok">beam</td></tr><tr><td class="k">224696</td><td>2739</td><td>2694</td><td>98.4 %</td><td>20,471</td><td class="ok">beam</td></tr><tr><td class="k">224697</td><td>2800</td><td>2800</td><td>100.0 %</td><td>20,308</td><td class="ok">beam</td></tr><tr><td class="k">224698</td><td>3023</td><td>3017</td><td>99.8 %</td><td>20,388</td><td class="ok">beam</td></tr><tr><td class="k">224699</td><td>2967</td><td>2960</td><td>99.8 %</td><td>20,025</td><td class="ok">beam</td></tr><tr><td class="k">224700</td><td>4494</td><td>4483</td><td>99.8 %</td><td>31,333</td><td class="ok">beam</td></tr><tr><td class="k">224706</td><td>2615</td><td>0</td><td>0.0 %</td><td>0</td><td class="warn">NO BEAM</td></tr><tr><td class="k">224716</td><td>4</td><td>0</td><td>0.0 %</td><td>0</td><td class="warn">NO BEAM</td></tr><tr><td class="k">224717</td><td>8</td><td>0</td><td>0.0 %</td><td>0</td><td class="warn">NO BEAM</td></tr><tr><td class="k">224718</td><td>16</td><td>0</td><td>0.0 %</td><td>0</td><td class="warn">NO BEAM</td></tr></tbody></table>
+<p>224692 is worth reading twice: 98.0&nbsp;% beam over the whole run, but its
+<em>first partial</em> is 75&nbsp;% empty. Sampling one partial and not gating on
+protons is exactly how a healthy run gets called broken.</p>
+
+<h3>Second batch, landed while this check was running</h3>
+<p>224706, 224716, 224717 and 224718 arrived after the sweep started, so they have
+the structural pass and the beam state but not the physics comparison — there is no
+beam in them to compare.</p>
+<pre>base = /eos/experiment/ntof/data/x17/reproc/prod_v12
+
+    run parts  exp  contig  raw     hist badfiles  bunches  gaps      GB
+------------------------------------------------------------------------
+ 224706    33   33    True  131      ref        0     2615     0     0.2
+ 224716     1    1    True    1       ok        0        4     0     0.0
+ 224717     1    1    True    1       ok        0        8     0     0.0
+ 224718     1    1    True    1       ok        0       16     0     0.0
+
+all runs: complete, contiguous, same UserInput, every partial reads.</pre>
+
+<h2>Hit rates, normalised to delivered protons</h2>
+<table><thead><tr><th>tree</th><th>ours (13 runs)</th><th>official (6 runs)</th><th>separation</th></tr></thead><tbody><tr><td class="k">WALA</td><td>1483–1556</td><td>1470–1558</td><td class="ok">overlap</td></tr><tr><td class="k">WALB</td><td>1438–1466</td><td>1423–1467</td><td class="ok">overlap</td></tr><tr><td class="k">WALC</td><td>1526–1565</td><td>1532–1584</td><td class="ok">overlap</td></tr><tr><td class="k">WALD</td><td>1528–1565</td><td>1521–1565</td><td class="ok">overlap</td></tr><tr><td class="k">PSSA</td><td>4309–4431</td><td>4335–4463</td><td class="ok">overlap</td></tr><tr><td class="k">PSSB</td><td>5776–5973</td><td>5817–6001</td><td class="ok">overlap</td></tr><tr><td class="k">PSSC</td><td>6813–7083</td><td>6899–7073</td><td class="ok">overlap</td></tr><tr><td class="k">PSSD</td><td>6146–6346</td><td>6224–6320</td><td class="ok">overlap</td></tr><tr><td class="k">LIQA</td><td>2647–2706</td><td>2637–2659</td><td class="ok">overlap</td></tr><tr><td class="k">LIQB</td><td>2938–3016</td><td>2920–2953</td><td class="ok">overlap</td></tr><tr><td class="k">LIQC</td><td>746–783</td><td>743–763</td><td class="ok">overlap</td></tr><tr><td class="k">LIQD</td><td>1792–1847</td><td>1779–1801</td><td class="ok">overlap</td></tr></tbody></table>
+<figure><img src="figures/rates.png" alt="rates">
+<figcaption>Intensity-normalised hit rate per tree. Our runs (squares) continue the
+official runs (circles) with no step at the boundary between the two processings.
+The slow rise visible on LIQA/LIQD across run number is a time trend that runs
+through both sets, not a difference between them.</figcaption></figure>
+
+<h2>Gamma flash</h2>
+<p>This is the check that failed in the July processing: per tree, the fraction of
+bunches whose stored <code>tflash</code> is more than 150&nbsp;ns off that tree's
+modal value. The target is &lt; 2&nbsp;% per tree.</p>
+<table><thead><tr><th>tree</th><th>modal tflash, ours (ns)</th><th>modal tflash, official (ns)</th><th>worst off-flash, ours</th><th>worst off-flash, official</th></tr></thead><tbody><tr><td class="k">WALA</td><td>11605–11615</td><td>11595–11625</td><td class="ok">0.00 %</td><td class="ok">0.00 %</td></tr><tr><td class="k">WALB</td><td>11605–11615</td><td>11605–11605</td><td class="ok">0.00 %</td><td class="ok">0.00 %</td></tr><tr><td class="k">WALC</td><td>11605–11605</td><td>11605–11605</td><td class="ok">0.00 %</td><td class="ok">0.00 %</td></tr><tr><td class="k">WALD</td><td>11605–11605</td><td>11605–11605</td><td class="ok">0.00 %</td><td class="ok">0.00 %</td></tr><tr><td class="k">PSSA</td><td>11645–11645</td><td>11645–11645</td><td class="ok">0.00 %</td><td class="ok">0.00 %</td></tr><tr><td class="k">PSSB</td><td>11635–11635</td><td>11635–11635</td><td class="ok">0.00 %</td><td class="ok">0.00 %</td></tr><tr><td class="k">PSSC</td><td>11645–11645</td><td>11645–11645</td><td class="ok">0.00 %</td><td class="ok">0.00 %</td></tr><tr><td class="k">PSSD</td><td>11645–11645</td><td>11645–11645</td><td class="ok">0.00 %</td><td class="ok">0.00 %</td></tr><tr><td class="k">LIQA</td><td>11615–11625</td><td>11615–11625</td><td class="ok">0.00 %</td><td class="ok">0.00 %</td></tr><tr><td class="k">LIQB</td><td>11615–11615</td><td>11615–11615</td><td class="ok">0.00 %</td><td class="ok">0.00 %</td></tr><tr><td class="k">LIQC</td><td>11635–11635</td><td>11625–11635</td><td class="ok">0.00 %</td><td class="ok">0.00 %</td></tr><tr><td class="k">LIQD</td><td>11625–11625</td><td>11625–11625</td><td class="ok">0.00 %</td><td class="ok">0.00 %</td></tr></tbody></table>
+<figure><img src="figures/tflash.png" alt="tflash">
+<figcaption>Modal tflash per tree, one point per run. Ours land in the same 10 ns
+histogram bin as the official runs on every one of the twelve trees.</figcaption></figure>
+
+<h3>Cross-detector consistency, per arm</h3>
+<p>Prompt-coincidence peak of large plastic hits (amp &gt; 1000) and of liquid hits
+against the same arm's wall, after removing each tree's modal tflash. The broken
+processing sat at −375/+25/−325/−325&nbsp;ns on A/B/C/D.</p>
+<table><thead><tr><th>pair</th><th>ours (ns)</th><th>official (ns)</th><th>|worst| ours</th></tr></thead><tbody><tr><td class="k">PSSA</td><td>-1 … +1</td><td>-1 … +1</td><td class="ok">1 ns</td></tr><tr><td class="k">PSSB</td><td>-1 … +1</td><td>-1 … +1</td><td class="ok">1 ns</td></tr><tr><td class="k">PSSC</td><td>+1 … +35</td><td>-1 … +35</td><td class="ok">35 ns</td></tr><tr><td class="k">PSSD</td><td>-1 … +27</td><td>-1 … +29</td><td class="ok">27 ns</td></tr><tr><td class="k">LIQA</td><td>-1 … +1</td><td>-1 … +1</td><td class="ok">1 ns</td></tr><tr><td class="k">LIQB</td><td>-1 … +1</td><td>-1 … +1</td><td class="ok">1 ns</td></tr><tr><td class="k">LIQC</td><td>-1 … +1</td><td>-1 … +1</td><td class="ok">1 ns</td></tr><tr><td class="k">LIQD</td><td>-1 … +1</td><td>-1 … +1</td><td class="ok">1 ns</td></tr></tbody></table>
+<p>PSSC — and PSSD in some runs — sits near 30&nbsp;ns rather than 0. <strong>The
+official runs show the same thing in the same trees</strong> (PSSC 33–35&nbsp;ns on
+224660/224667/224674/224676), so it is a property of those channels under this
+recipe, not something our processing introduced. It is worth chasing, but it is not
+a campaign defect.</p>
+
+<h2>Hit quality, not just hit count</h2>
+<p>A processing can buy hits by measuring them worse, which no rate comparison would
+show. <code>quality_metrics.py</code> on two partials each of our 224691 and official
+224672 — every number accidental-subtracted:</p>
+<pre>============================================================================
+ours_224691
+  T1 wall top&lt;-&gt;bottom dt : centre    0.64 ns  sigma   6.66 ns  (peak n=1,662,129)
+  T2 wall&lt;-&gt;plastic    dt : centre    5.45 ns  sigma   6.12 ns  (peak n=193,983)   [plastic amp &gt; 1000]
+  A1 MIP sqrt(top*bot)    : peak    1057 ADC  FWHM    1289  FWHM/peak  1.22   (prompt 207,437, accidental 12,442)
+  A2 linearity            : log(top/bot) vs dt slope -0.016/ns, resid 0.375  |  sqrt(top*bot) varies +12.4% across the bar  (n=200,501)
+  T3 timing walk          : T2 centre spans  1.43 ns across amplitude deciles (+7.37 -&gt; +5.95)
+
+============================================================================
+official_224672
+  T1 wall top&lt;-&gt;bottom dt : centre    0.73 ns  sigma   6.69 ns  (peak n=1,709,130)
+  T2 wall&lt;-&gt;plastic    dt : centre    5.69 ns  sigma   5.86 ns  (peak n=200,715)   [plastic amp &gt; 1000]
+  A1 MIP sqrt(top*bot)    : peak    1047 ADC  FWHM    1277  FWHM/peak  1.22   (prompt 214,512, accidental 12,868)
+  A2 linearity            : log(top/bot) vs dt slope -0.015/ns, resid 0.377  |  sqrt(top*bot) varies +12.7% across the bar  (n=207,383)
+  T3 timing walk          : T2 centre spans  1.37 ns across amplitude deciles (+7.42 -&gt; +6.05)
+
+============================================================================
+relative to ours_224691
+  (lower = better for every row except A1_mip_peak / A1_mip_n)
+  T1_tb_sigma        base     6.66   official_224672:     6.69 (+0.5%)
+  T2_wp_sigma        base     6.12   official_224672:     5.86 (-4.2%)
+  T3_walk_ns         base     1.43   official_224672:     1.37 (-4.3%)
+  A2_logratio_resid  base     0.37   official_224672:     0.38 (+0.5%)
+  A2_gmean_flatness  base     0.12   official_224672:     0.13 (+2.5%)
+  A1_mip_relwidth    base     1.22   official_224672:     1.22 (-0.0%)
+  A1_mip_peak        base  1056.58   official_224672:  1046.97 (-0.9%)
+  A1_mip_n           base 194034.50   official_224672: 200654.50 (+3.4%)</pre>
+
+<h2>Amplitudes</h2>
+<table><thead><tr><th>tree</th><th>ours</th><th>official</th><th>separation</th></tr></thead><tbody><tr><td class="k">WALA</td><td>648.0–682.0</td><td>636.2–678.6</td><td class="ok">overlap</td></tr><tr><td class="k">WALB</td><td>892.4–917.4</td><td>886.3–914.4</td><td class="ok">overlap</td></tr><tr><td class="k">WALC</td><td>838.1–867.5</td><td>828.2–862.8</td><td class="ok">overlap</td></tr><tr><td class="k">WALD</td><td>851.4–878.1</td><td>847.6–871.1</td><td class="ok">overlap</td></tr><tr><td class="k">PSSA</td><td>123.7–125.9</td><td>122.7–125.5</td><td class="ok">overlap</td></tr><tr><td class="k">PSSB</td><td>148.9–151.6</td><td>148.7–150.9</td><td class="ok">overlap</td></tr><tr><td class="k">PSSC</td><td>123.2–125.9</td><td>123.2–125.1</td><td class="ok">overlap</td></tr><tr><td class="k">PSSD</td><td>130.2–132.5</td><td>129.2–131.7</td><td class="ok">overlap</td></tr><tr><td class="k">LIQA</td><td>205.0–207.0</td><td>204.1–205.1</td><td class="ok">overlap</td></tr><tr><td class="k">LIQB</td><td>300.6–302.8</td><td>298.0–301.2</td><td class="ok">overlap</td></tr><tr><td class="k">LIQC</td><td>136.2–136.9</td><td>135.6–136.4</td><td class="ok">overlap</td></tr><tr><td class="k">LIQD</td><td>147.2–147.8</td><td>146.5–147.4</td><td class="ok">overlap</td></tr></tbody></table>
+<figure><img src="figures/amps.png" alt="amplitudes">
+<figcaption>Median hit amplitude per tree, one point per run.</figcaption></figure>
+
+<h2>Per-run detail, our 13 runs</h2>
+<table><thead><tr><th>run</th><th>beam bunches</th><th>empty</th><th>protons (1e12)</th><th>WALA /1e12p</th><th>PSSC /1e12p</th><th>LIQA /1e12p</th><th>worst off-flash</th></tr></thead><tbody><tr><td class="k">224688</td><td>63</td><td>0 %</td><td>464</td><td>1499</td><td>6987</td><td>2650</td><td class="ok">0.00 %</td></tr><tr><td class="k">224689</td><td>63</td><td>0 %</td><td>485</td><td>1510</td><td>6813</td><td>2651</td><td class="ok">0.00 %</td></tr><tr><td class="k">224690</td><td>75</td><td>0 %</td><td>543</td><td>1493</td><td>6991</td><td>2658</td><td class="ok">0.00 %</td></tr><tr><td class="k">224691</td><td>80</td><td>0 %</td><td>573</td><td>1520</td><td>6948</td><td>2654</td><td class="ok">0.00 %</td></tr><tr><td class="k">224692</td><td>20</td><td>75 %</td><td>143</td><td>1483</td><td>7083</td><td>2647</td><td class="ok">0.00 %</td></tr><tr><td class="k">224693</td><td>80</td><td>0 %</td><td>609</td><td>1499</td><td>7033</td><td>2691</td><td class="ok">0.00 %</td></tr><tr><td class="k">224694</td><td>80</td><td>0 %</td><td>640</td><td>1507</td><td>6935</td><td>2691</td><td class="ok">0.00 %</td></tr><tr><td class="k">224695</td><td>80</td><td>0 %</td><td>640</td><td>1499</td><td>6919</td><td>2689</td><td class="ok">0.00 %</td></tr><tr><td class="k">224696</td><td>63</td><td>0 %</td><td>504</td><td>1504</td><td>6950</td><td>2706</td><td class="ok">0.00 %</td></tr><tr><td class="k">224697</td><td>79</td><td>0 %</td><td>590</td><td>1503</td><td>7038</td><td>2689</td><td class="ok">0.00 %</td></tr><tr><td class="k">224698</td><td>80</td><td>0 %</td><td>541</td><td>1546</td><td>7082</td><td>2677</td><td class="ok">0.00 %</td></tr><tr><td class="k">224699</td><td>80</td><td>0 %</td><td>542</td><td>1538</td><td>7017</td><td>2680</td><td class="ok">0.00 %</td></tr><tr><td class="k">224700</td><td>80</td><td>0 %</td><td>543</td><td>1556</td><td>7033</td><td>2688</td><td class="ok">0.00 %</td></tr></tbody></table>
+
+<h2>What this does not rule out</h2>
+<ul>
+<li><strong>Shared systematics are invisible here.</strong> Both processings run the
+same UserInput through the same PSA binary, so a defect in that recipe affects ours
+and n_TOF's identically and this comparison would never see it. This establishes
+<em>equivalence to the official product</em>, not absolute correctness.</li>
+<li><strong>The physics comparison samples one partial per run</strong> (two for the
+quality metrics), which is 63–80 bunches out of thousands. The structural pass is
+the one that covers every file. A defect confined to late partials of a run would
+survive this.</li>
+<li><strong>The runs still in flight are not covered.</strong> 224701–224718 were
+submitted at 13:24 today and 14 are still running. They need the same pass before
+the campaign is declared done, and the beam-off ones among them will need a
+different acceptance test than the one used here — with no protons there is no
+flash and no rate to compare, so structure and readability is all there is.</li>
+<li><strong>No downstream check yet.</strong> Nothing here runs the DREAM slim over
+these runs; the association efficiency and clock QA on the new block are still to
+do, and those are what would catch a timing problem that survives all of the above.</li>
+<li>The three extra template files in our staging directory
+(<code>X17_WALA_Signal_3.txt</code>, <code>X17_WALB_Signal_0.txt</code>,
+<code>X17_WALC_Signal_0.txt</code>) are unreferenced leftovers; the UserInput points
+only at the <code>_avg0/1/2</code> set. Harmless, but they should be cleared so a
+future reader does not think they were used.</li>
+</ul>
+
+<h2>How to re-run this</h2>
+<pre>ssh -K lxplus
+source /cvmfs/sft.cern.ch/lcg/views/LCG_105/x86_64-el9-gcc13-opt/setup.sh
+cd /afs/cern.ch/work/d/dneff/x17_reproc/campaign_qa
+
+python3 -u verify_transferred.py &lt;run&gt; ...                 # structure, every partial
+python3 -u compare_campaign.py --partials=1 --json=compare.json \
+        ours=&lt;dir&gt;,... official=&lt;dir&gt;,...                    # beam-gated physics
+python3 history_diff.py &lt;ours_history&gt; &lt;official_history&gt;   # configuration
+python3 ../quality_metrics.py ours=&lt;f&gt;,&lt;f&gt; official=&lt;f&gt;,&lt;f&gt;  # hit quality
+
+# then, locally, with the logs rsynced into campaign_qa/results/
+.venv/bin/python ntof_processing/campaign_qa/make_report.py</pre>
+</body></html>

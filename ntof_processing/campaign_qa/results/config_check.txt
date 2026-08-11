@@ -1,0 +1,18 @@
+### UserInput parameter diff, ours (224689) vs official (224687)
+A = /eos/experiment/ntof/data/x17/reproc/prod_v12/224689/completed/224689/history_224689.root   (10359 chars, 65 non-empty lines)
+B = /eos/experiment/ntof/processing/official/completed/224687/history_224687.root   (10696 chars, 65 non-empty lines)
+
+2 differing lines:
+
+--- official
++++ ours
+@@ -1,2 +1,2 @@
+-UserInput_2026_EAR2_X17_v4.h
++UserInput.h
+ .                                                DETECTOR SPECIFIC PARAMETERS (Lines may be commented with '#' sign!)
+
+### pulse-shape template md5, ours vs official shapes_X17_v4
+  not in official set (unreferenced spare): X17_WALA_Signal_3.txt
+  not in official set (unreferenced spare): X17_WALB_Signal_0.txt
+  not in official set (unreferenced spare): X17_WALC_Signal_0.txt
+  identical: 26 ; extra local files: 3

@@ -1,0 +1,28 @@
+
+============================================================================
+ours_224691
+  T1 wall top<->bottom dt : centre    0.64 ns  sigma   6.66 ns  (peak n=1,662,129)
+  T2 wall<->plastic    dt : centre    5.45 ns  sigma   6.12 ns  (peak n=193,983)   [plastic amp > 1000]
+  A1 MIP sqrt(top*bot)    : peak    1057 ADC  FWHM    1289  FWHM/peak  1.22   (prompt 207,437, accidental 12,442)
+  A2 linearity            : log(top/bot) vs dt slope -0.016/ns, resid 0.375  |  sqrt(top*bot) varies +12.4% across the bar  (n=200,501)
+  T3 timing walk          : T2 centre spans  1.43 ns across amplitude deciles (+7.37 -> +5.95)
+
+============================================================================
+official_224672
+  T1 wall top<->bottom dt : centre    0.73 ns  sigma   6.69 ns  (peak n=1,709,130)
+  T2 wall<->plastic    dt : centre    5.69 ns  sigma   5.86 ns  (peak n=200,715)   [plastic amp > 1000]
+  A1 MIP sqrt(top*bot)    : peak    1047 ADC  FWHM    1277  FWHM/peak  1.22   (prompt 214,512, accidental 12,868)
+  A2 linearity            : log(top/bot) vs dt slope -0.015/ns, resid 0.377  |  sqrt(top*bot) varies +12.7% across the bar  (n=207,383)
+  T3 timing walk          : T2 centre spans  1.37 ns across amplitude deciles (+7.42 -> +6.05)
+
+============================================================================
+relative to ours_224691
+  (lower = better for every row except A1_mip_peak / A1_mip_n)
+  T1_tb_sigma        base     6.66   official_224672:     6.69 (+0.5%)
+  T2_wp_sigma        base     6.12   official_224672:     5.86 (-4.2%)
+  T3_walk_ns         base     1.43   official_224672:     1.37 (-4.3%)
+  A2_logratio_resid  base     0.37   official_224672:     0.38 (+0.5%)
+  A2_gmean_flatness  base     0.12   official_224672:     0.13 (+2.5%)
+  A1_mip_relwidth    base     1.22   official_224672:     1.22 (-0.0%)
+  A1_mip_peak        base  1056.58   official_224672:  1046.97 (-0.9%)
+  A1_mip_n           base 194034.50   official_224672: 200654.50 (+3.4%)
