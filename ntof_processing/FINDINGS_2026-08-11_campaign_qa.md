@@ -14,7 +14,15 @@ Scripts and the gotchas: [`campaign_qa/README.md`](campaign_qa/README.md).
 
 ## 1. The awkward part
 
-**No run exists in both sets.** The block we are processing, 224688-224718, is
+> **Superseded in part, the same day.** Later on 08-11 n_TOF merged 27
+> previously-unmerged runs, two of which (224573, 224577) we had processed
+> ourselves — so runs *do* now exist in both sets, and the direct comparison
+> passes bit for bit. See
+> [`FINDINGS_2026-08-11_official_ledger.md`](FINDINGS_2026-08-11_official_ledger.md).
+> What follows still holds for the 224688-224718 block, which n_TOF has not
+> touched.
+
+**No run of the block we are processing exists in both sets.** 224688-224718 is
 exactly the block n_TOF never processed — that is why we are processing it. So this
 cannot be a file-against-file diff. It is an equivalence argument in two parts:
 

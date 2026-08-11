@@ -1,5 +1,24 @@
 # Request to n_TOF: 41 X17 runs still to process
 
+> # ⛔ SUPERSEDED 2026-08-10 — DO NOT SEND THIS VERSION
+>
+> **The central claim below — "these runs have no processed output at all" — is
+> wrong for 28 of the 41.** Their reconstruction finished; a complete,
+> contiguous, v12 partial set is sitting in
+> `/eos/experiment/ntof/processing/official/completed/<run>/`, verified
+> byte-identical in `history` to `done/run224572.root`. Only the MERGE is
+> missing, which is why `done/` looks empty for them.
+>
+> That is 90.1 of the 116.6 blocked beam hours. **Only 13 runs genuinely need
+> processing**: 224688-224698 (the pass stopped 08-07 19:56) and 224649/224650
+> (tape). The right ask of n_TOF is *re-run the merge*, plus a note that
+> `done/run224405.root` and `done/run224667.root` are zero-byte failed merges.
+>
+> Evidence, audit scripts and the corrected picture:
+> [`skip_diagnosis/README.md`](skip_diagnosis/README.md).
+> §"A clue: only large runs were skipped" below is still a valid *association*,
+> but it is an association about the merge step, not the reconstruction.
+
 **From the X17 / DREAM group (Dylan Neff), 2026-08-08.** Contact: dneff@cern.ch.
 
 Thank you — the pass you ran on 2026-08-05 to 08-07 is **exactly right**, and we

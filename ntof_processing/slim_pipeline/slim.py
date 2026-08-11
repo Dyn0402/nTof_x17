@@ -76,7 +76,10 @@ def _bind_ntof(seg: Segment):
     import ntof_dream_merge.tflash_repair as rep
 
     files = C.ntof_files(seg.ntof_run, seg.ntof_source)
-    src = Path(seg.ntof_source) if seg.ntof_source else C.NTOF_DONE
+    # the directory the files ACTUALLY came from -- `ntof_files` falls back to
+    # the unmerged partials under completed/<run>/, so C.NTOF_DONE would name
+    # the wrong variant here. The fingerprint is on the file set either way.
+    src = Path(seg.ntof_source) if seg.ntof_source else files[0].parent
     io.ntof_paths = lambda r: files
     io.ntof_path = lambda r: files[0]
     if C.CACHE_BASE:

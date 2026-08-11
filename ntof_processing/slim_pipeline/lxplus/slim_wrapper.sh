@@ -45,13 +45,37 @@ echo "preflight OK"
 # The n_TOF file -> node-local NVMe. The whole run is touched (the bunch index
 # reads every tree's BunchNumber, then two passes read entry ranges), so a
 # staged copy beats FUSE random access by a wide margin.
+#
+# Two layouts to handle. Most runs are a single merged run<run>.root in done/.
+# For 28 runs the 5-7 August pass finished the RECONSTRUCTION but not the merge,
+# so done/ has nothing (or a ZERO-BYTE file -- run224405 and run224667 are both
+# 0 bytes) while completed/<run>/ holds the full, contiguous, v12 partial set.
+# Those partials are the same processing, so prefer a merged file only when it
+# is actually non-empty. See ../../skip_diagnosis/README.md.
 SRCDIR=$_CONDOR_SCRATCH_DIR/ntof
 mkdir -p "$SRCDIR"
-SRC=root://eosexperiment.cern.ch//eos/experiment/ntof/processing/official/done/run${RUN}.root
-echo "xrdcp start $(date '+%T')  $SRC"
+MGM=root://eosexperiment.cern.ch
+DONE=/eos/experiment/ntof/processing/official/done/run${RUN}.root
+COMPLETED=/eos/experiment/ntof/processing/official/completed/${RUN}
+
+MERGED_BYTES=$(xrdfs "$MGM" stat "$DONE" 2>/dev/null | awk '/^Size:/ {print $2}')
+: "${MERGED_BYTES:=0}"
+
 t0=$SECONDS
-xrdcp -f -s "$SRC" "$SRCDIR/run${RUN}.root"
-echo "xrdcp done  $((SECONDS-t0)) s  $(du -h "$SRCDIR/run${RUN}.root" | cut -f1)"
+if [ "$MERGED_BYTES" -gt 0 ]; then
+  echo "xrdcp start $(date '+%T')  merged $DONE ($MERGED_BYTES bytes)"
+  xrdcp -f -s "$MGM/$DONE" "$SRCDIR/run${RUN}.root"
+else
+  echo "no usable merged file (size=$MERGED_BYTES); taking partials from $COMPLETED"
+  xrdcp -f -s -r "$MGM/$COMPLETED" "$SRCDIR/" \
+    || { echo "PARTIAL COPY FAILED for run $RUN"; exit 4; }
+  # -r reproduces the remote directory name; flatten it into $SRCDIR
+  if [ -d "$SRCDIR/$RUN" ]; then mv "$SRCDIR/$RUN"/* "$SRCDIR/"; rmdir "$SRCDIR/$RUN"; fi
+  n=$(ls "$SRCDIR"/run${RUN}_[0-9]*.root 2>/dev/null | wc -l)
+  [ "$n" -gt 0 ] || { echo "NO PARTIALS COPIED for run $RUN"; exit 4; }
+  echo "copied $n partials"
+fi
+echo "xrdcp done  $((SECONDS-t0)) s  $(du -sh "$SRCDIR" | cut -f1)"
 
 /usr/bin/time -f "TIMING slim wall=%es maxrss=%MkB" \
   python3 -u ntof_processing/slim_pipeline/slim_run.py "$RUN" \

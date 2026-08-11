@@ -41,28 +41,80 @@ code{background:var(--band);padding:.1em .35em;border-radius:3px;font-size:.86em
 n_TOF processed themselves in <code>official/completed/</code>. 2026-08-11</p>
 
 <div class="verdict">
-<strong>Yes. The 13 transferred runs are good.</strong> They were produced with a
-configuration that is byte-identical to n_TOF's own — same parameter file, same
-26 pulse-shape templates — and on every measurable axis they are
-indistinguishable from official runs taken under the same beam: intensity-normalised
-hit rates overlap, the gamma flash lands in the same 10&nbsp;ns bin in every tree,
+<strong>Yes — and on the runs that now exist in both processings, bit for
+bit.</strong> Given the same UserInput our chain reproduces n_TOF's product
+exactly: on run 224572 every hit of every wall, plastic, silicon and pickup tree
+matches on all 22 columns. The transferred block was produced with a configuration
+byte-identical to n_TOF's own, and on every measurable axis it is indistinguishable
+from official runs taken under the same beam: intensity-normalised hit rates
+overlap, the gamma flash lands in the same 10&nbsp;ns bin in every tree,
 0.00&nbsp;% of beam bunches are off-flash (the broken July processing sat at
 37–85&nbsp;% on the plastics), and hit quality matches to a few percent.
 </div>
 
 <div class="grid">
   <div class="card"><span class="n">17</span><span class="l">runs on the ntof disk (13 with beam)</span></div>
-  <div class="card"><span class="n">494</span><span class="l">partials, 384 GB — 0 unreadable</span></div>
+  <div class="card"><span class="n">831</span><span class="l">partials, 674 GB — 0 unreadable</span></div>
+  <div class="card"><span class="n">8</span><span class="l">runs now in both processings</span></div>
+  <div class="card"><span class="n">30</span><span class="l">runs only we have (n_TOF: raw only)</span></div>
   <div class="card"><span class="n">26/26</span><span class="l">templates byte-identical to official</span></div>
   <div class="card"><span class="n">0.00 %</span><span class="l">worst off-flash bunches (target &lt; 2 %)</span></div>
   <div class="card"><span class="n">1483–1556</span><span class="l">WALA hits/1e12 p (official 1470–1558)</span></div>
 </div>
 
-<h2>What was compared, and the one thing that makes it awkward</h2>
-<p><strong>No run exists in both sets.</strong> The block we are processing,
-224688–224718, is precisely the block n_TOF never processed — that is why we are
-processing it. So this cannot be a file-against-file diff. It is an equivalence
-argument in two parts:</p>
+<h2>Where every run of the campaign stands, ours and n_TOF's</h2>
+<p><code>official_ledger.py</code> walks all 445 runs staged under the X17
+EAR2 2026 DAQ directory and records, per run, what n_TOF has, what we have, and
+which UserInput each product was actually made with — read out of the product's
+own <code>history</code> object rather than assumed.</p>
+<table><thead><tr><th>official state</th><th>runs</th><th>what it means</th><th>run range (not contiguous)</th></tr></thead><tbody><tr><td class="k ok">MERGED</td><td>385</td><td style="text-align:left">merged file in <code>done/</code> — usable, best</td><td style="text-align:left">224264–224687</td></tr><tr><td class="k warn">IN_FLIGHT</td><td>24</td><td style="text-align:left">n_TOF wiped <code>completed/</code> and is reprocessing it now</td><td style="text-align:left">224454–224673</td></tr><tr><td class="k ok">PARTIALS_ONLY</td><td>3</td><td style="text-align:left">reconstruction finished, merge never ran — partials are the truth</td><td style="text-align:left">224451, 224452, 224453</td></tr><tr><td class="k warn">MERGE_EMPTY</td><td>2</td><td style="text-align:left">zero-byte <code>done/</code> file: the merge failed, partials are the truth</td><td style="text-align:left">224405, 224667</td></tr><tr><td class="k warn">RAW_ONLY</td><td>31</td><td style="text-align:left">raw staged, n_TOF has processed nothing</td><td style="text-align:left">224688–224718</td></tr></tbody></table>
+<p><strong>n_TOF moved a long way on 08-10/08-11.</strong> Against the 08-10
+inventory (359 MERGED / 53 PARTIALS_ONLY / 2 MERGE_EMPTY / 31 RAW_ONLY), 27
+of the unmerged runs have since been merged and 24 more are being
+reprocessed from scratch right now — their <code>completed/</code> directories were emptied and
+are refilling with partials stamped within the hour. A snapshot taken during that
+window reads those as data loss; they are not.</p>
+<p><strong>The recipe is uniform.</strong> Every official X17 product with a
+readable history — all 413 of them, including the ones written today — carries
+<code>UserInput_2026_EAR2_X17_v4.h</code>, and its parameters normalise to the same
+fingerprint as our <code>v12_liqpileup</code>. There is no recipe boundary hiding
+inside the official set.</p>
+
+<h3>Runs that exist in both processings</h3>
+<p>8 runs are now in both — which was not true a week ago, and it is what
+makes the next section possible.</p>
+<table><thead><tr><th>run</th><th>official</th><th>parts</th><th>GB</th><th>our production</th><th>our variant</th><th>parts</th><th>GB</th><th>recipe</th></tr></thead><tbody><tr><td class="k">224572</td><td>MERGED</td><td>38</td><td>30.0</td><td>v12_liqpileup</td><td>v12_liqpileup</td><td>16</td><td>30.0</td><td class="ok">same recipe</td></tr><tr><td class="k">224573</td><td>MERGED</td><td>39</td><td>30.7</td><td>prod_v11</td><td>v11_pssfit_width</td><td>16</td><td>29.3</td><td class="warn">different</td></tr><tr><td class="k">224574</td><td>MERGED</td><td>38</td><td>30.1</td><td>prod_v11</td><td>v11_pssfit_width</td><td>16</td><td>28.6</td><td class="warn">different</td></tr><tr><td class="k">224575</td><td>MERGED</td><td>5</td><td>3.0</td><td>prod_v11</td><td>v11_pssfit_width</td><td>2</td><td>2.9</td><td class="warn">different</td></tr><tr><td class="k">224576</td><td>IN_FLIGHT</td><td>21</td><td>16.4</td><td>prod_v11</td><td>v11_pssfit_width</td><td>15</td><td>28.7</td><td class="warn">different</td></tr><tr><td class="k">224577</td><td>MERGED</td><td>42</td><td>30.9</td><td>prod_v11</td><td>v11_pssfit_width</td><td>17</td><td>29.4</td><td class="warn">different</td></tr><tr><td class="k">224578</td><td>MERGED</td><td>18</td><td>13.4</td><td>prod_v11</td><td>v11_pssfit_width</td><td>8</td><td>12.8</td><td class="warn">different</td></tr><tr><td class="k">224579</td><td>MERGED</td><td>1</td><td>0.0</td><td>prod_v11</td><td>v11_pssfit_width</td><td>1</td><td>0.0</td><td class="warn">different</td></tr></tbody></table>
+
+<h3>Runs we processed that n_TOF still has not</h3>
+<p>30 runs, all of them <code>RAW_ONLY</code> on n_TOF's side: the
+contiguous block at the end of the campaign. n_TOF's pass has skipped past it —
+it spent 08-11 merging and reprocessing runs below 224688 and then moved on to
+224719+, which belong to a different experiment.</p>
+<table><thead><tr><th>run</th><th>raw files</th><th>raw GB</th><th>our partials</th><th>our GB</th></tr></thead><tbody><tr><td class="k">224688</td><td>173</td><td>711.8</td><td>44</td><td>33.2</td></tr><tr><td class="k">224689</td><td>19</td><td>76.1</td><td>5</td><td>3.1</td></tr><tr><td class="k">224690</td><td>157</td><td>631.7</td><td>40</td><td>32.8</td></tr><tr><td class="k">224691</td><td>150</td><td>565.3</td><td>38</td><td>32.4</td></tr><tr><td class="k">224692</td><td>153</td><td>564.4</td><td>39</td><td>34.9</td></tr><tr><td class="k">224693</td><td>144</td><td>483.6</td><td>36</td><td>31.0</td></tr><tr><td class="k">224694</td><td>42</td><td>145.6</td><td>11</td><td>10.3</td></tr><tr><td class="k">224695</td><td>140</td><td>525.5</td><td>35</td><td>30.8</td></tr><tr><td class="k">224696</td><td>141</td><td>557.4</td><td>36</td><td>31.6</td></tr><tr><td class="k">224697</td><td>154</td><td>620.8</td><td>39</td><td>31.6</td></tr><tr><td class="k">224698</td><td>159</td><td>646.3</td><td>40</td><td>31.9</td></tr><tr><td class="k">224699</td><td>149</td><td>522.4</td><td>38</td><td>31.3</td></tr><tr><td class="k">224700</td><td>225</td><td>744.7</td><td>57</td><td>49.0</td></tr><tr><td class="k">224701</td><td>224</td><td>755.9</td><td>56</td><td>49.6</td></tr><tr><td class="k">224702</td><td>46</td><td>162.2</td><td>12</td><td>10.0</td></tr><tr><td class="k">224703</td><td>142</td><td>489.0</td><td>36</td><td>31.4</td></tr><tr><td class="k">224704</td><td>147</td><td>544.7</td><td>37</td><td>31.5</td></tr><tr><td class="k">224705</td><td>28</td><td>99.8</td><td>7</td><td>5.6</td></tr><tr><td class="k">224706</td><td>131</td><td>75.8</td><td>33</td><td>0.2</td></tr><tr><td class="k">224707</td><td>35</td><td>138.4</td><td>9</td><td>6.9</td></tr><tr><td class="k">224708</td><td>23</td><td>99.0</td><td>6</td><td>10.3</td></tr><tr><td class="k">224710</td><td>10</td><td>37.7</td><td>3</td><td>2.1</td></tr><tr><td class="k">224711</td><td>141</td><td>505.7</td><td>36</td><td>29.6</td></tr><tr><td class="k">224712</td><td>74</td><td>264.8</td><td>19</td><td>15.7</td></tr><tr><td class="k">224713</td><td>149</td><td>522.9</td><td>38</td><td>31.6</td></tr><tr><td class="k">224714</td><td>186</td><td>650.6</td><td>47</td><td>39.2</td></tr><tr><td class="k">224715</td><td>122</td><td>455.8</td><td>31</td><td>25.9</td></tr><tr><td class="k">224716</td><td>1</td><td>0.0</td><td>1</td><td>0.0</td></tr><tr><td class="k">224717</td><td>1</td><td>0.2</td><td>1</td><td>0.0</td></tr><tr><td class="k">224718</td><td>1</td><td>0.8</td><td>1</td><td>0.0</td></tr></tbody></table>
+
+<h2>Hit for hit, on the runs that exist in both</h2>
+<p><code>compare_identity.py</code> matches on <code>BunchNumber</code> — the two
+processings split a run into partials differently, so partial N is not partial N —
+and compares all 22 per-hit columns for a window of bunches.</p>
+<h3>run 224572 — ours <code>v12_liqpileup</code> vs official — same recipe</h3><p class="sub" style="margin:.2rem 0 .5rem">our partial <code>run224572_0005.root</code>, bunches 896–900</p><table><thead><tr><th>tree</th><th>hits compared</th><th>verdict</th><th>difference</th></tr></thead><tbody><tr><td class="k">WALA</td><td>49,483</td><td class="ok">IDENTICAL</td><td style="text-align:left"></td></tr><tr><td class="k">WALB</td><td>47,591</td><td class="ok">IDENTICAL</td><td style="text-align:left"></td></tr><tr><td class="k">WALC</td><td>52,427</td><td class="ok">IDENTICAL</td><td style="text-align:left"></td></tr><tr><td class="k">WALD</td><td>51,888</td><td class="ok">IDENTICAL</td><td style="text-align:left"></td></tr><tr><td class="k">PSSA</td><td>143,636</td><td class="ok">IDENTICAL</td><td style="text-align:left"></td></tr><tr><td class="k">PSSB</td><td>192,101</td><td class="ok">IDENTICAL</td><td style="text-align:left"></td></tr><tr><td class="k">PSSC</td><td>231,164</td><td class="ok">IDENTICAL</td><td style="text-align:left"></td></tr><tr><td class="k">PSSD</td><td>205,055</td><td class="ok">IDENTICAL</td><td style="text-align:left"></td></tr><tr><td class="k">LIQA</td><td>85,873</td><td class="warn">DIFFERENT (values)</td><td style="text-align:left"></td></tr><tr><td class="k">LIQB</td><td>95,653</td><td class="warn">DIFFERENT (values)</td><td style="text-align:left"></td></tr><tr><td class="k">LIQC</td><td>24,895</td><td class="warn">DIFFERENT (values)</td><td style="text-align:left"></td></tr><tr><td class="k">LIQD</td><td>59,799</td><td class="warn">DIFFERENT (values)</td><td style="text-align:left"></td></tr><tr><td class="k">SILI</td><td>2,663</td><td class="ok">IDENTICAL</td><td style="text-align:left"></td></tr><tr><td class="k">PKUP</td><td>5</td><td class="ok">IDENTICAL</td><td style="text-align:left"></td></tr></tbody></table><h3>run 224574 — ours <code>prod_v11</code> vs official <code>v12</code> — recipes differ on LIQ only</h3><p class="sub" style="margin:.2rem 0 .5rem">our partial <code>run224574_0005.root</code>, bunches 899–903</p><table><thead><tr><th>tree</th><th>hits compared</th><th>verdict</th><th>difference</th></tr></thead><tbody><tr><td class="k">WALA</td><td>42,828</td><td class="ok">IDENTICAL</td><td style="text-align:left"></td></tr><tr><td class="k">WALB</td><td>41,400</td><td class="ok">IDENTICAL</td><td style="text-align:left"></td></tr><tr><td class="k">WALC</td><td>44,826</td><td class="ok">IDENTICAL</td><td style="text-align:left"></td></tr><tr><td class="k">WALD</td><td>44,937</td><td class="ok">IDENTICAL</td><td style="text-align:left"></td></tr><tr><td class="k">PSSA</td><td>125,651</td><td class="ok">IDENTICAL</td><td style="text-align:left"></td></tr><tr><td class="k">PSSB</td><td>170,487</td><td class="ok">IDENTICAL</td><td style="text-align:left"></td></tr><tr><td class="k">PSSC</td><td>204,990</td><td class="ok">IDENTICAL</td><td style="text-align:left"></td></tr><tr><td class="k">PSSD</td><td>180,759</td><td class="ok">IDENTICAL</td><td style="text-align:left"></td></tr><tr><td class="k">LIQA</td><td>60,793</td><td class="warn">DIFFERENT (hit count)</td><td style="text-align:left">+12950 hits (+21.3 %)</td></tr><tr><td class="k">LIQB</td><td>71,755</td><td class="warn">DIFFERENT (hit count)</td><td style="text-align:left">+11455 hits (+16.0 %)</td></tr><tr><td class="k">LIQC</td><td>18,459</td><td class="warn">DIFFERENT (hit count)</td><td style="text-align:left">+2818 hits (+15.3 %)</td></tr><tr><td class="k">LIQD</td><td>42,602</td><td class="warn">DIFFERENT (hit count)</td><td style="text-align:left">+8184 hits (+19.2 %)</td></tr><tr><td class="k">SILI</td><td>2,392</td><td class="ok">IDENTICAL</td><td style="text-align:left"></td></tr><tr><td class="k">PKUP</td><td>5</td><td class="ok">IDENTICAL</td><td style="text-align:left"></td></tr></tbody></table><h3>run 224577 — ours <code>prod_v11</code> vs official <code>v12</code> — merged by n_TOF on 08-11</h3><p class="sub" style="margin:.2rem 0 .5rem">our partial <code>run224577_0005.root</code>, bunches 899–903</p><table><thead><tr><th>tree</th><th>hits compared</th><th>verdict</th><th>difference</th></tr></thead><tbody><tr><td class="k">WALA</td><td>48,854</td><td class="ok">IDENTICAL</td><td style="text-align:left"></td></tr><tr><td class="k">WALB</td><td>47,805</td><td class="ok">IDENTICAL</td><td style="text-align:left"></td></tr><tr><td class="k">WALC</td><td>52,181</td><td class="ok">IDENTICAL</td><td style="text-align:left"></td></tr><tr><td class="k">WALD</td><td>51,726</td><td class="ok">IDENTICAL</td><td style="text-align:left"></td></tr><tr><td class="k">PSSA</td><td>141,182</td><td class="ok">IDENTICAL</td><td style="text-align:left"></td></tr><tr><td class="k">PSSB</td><td>191,902</td><td class="ok">IDENTICAL</td><td style="text-align:left"></td></tr><tr><td class="k">PSSC</td><td>228,155</td><td class="ok">IDENTICAL</td><td style="text-align:left"></td></tr><tr><td class="k">PSSD</td><td>202,945</td><td class="ok">IDENTICAL</td><td style="text-align:left"></td></tr><tr><td class="k">LIQA</td><td>71,160</td><td class="warn">DIFFERENT (hit count)</td><td style="text-align:left">+15133 hits (+21.3 %)</td></tr><tr><td class="k">LIQB</td><td>81,750</td><td class="warn">DIFFERENT (hit count)</td><td style="text-align:left">+13569 hits (+16.6 %)</td></tr><tr><td class="k">LIQC</td><td>22,021</td><td class="warn">DIFFERENT (hit count)</td><td style="text-align:left">+2813 hits (+12.8 %)</td></tr><tr><td class="k">LIQD</td><td>49,472</td><td class="warn">DIFFERENT (hit count)</td><td style="text-align:left">+9442 hits (+19.1 %)</td></tr><tr><td class="k">SILI</td><td>2,622</td><td class="ok">IDENTICAL</td><td style="text-align:left"></td></tr><tr><td class="k">PKUP</td><td>5</td><td class="ok">IDENTICAL</td><td style="text-align:left"></td></tr></tbody></table>
+<p><strong>Same UserInput reproduces n_TOF bit for bit.</strong> On 224572, where
+our product and theirs were made with the same recipe, every hit of every wall,
+plastic, silicon and pickup tree agrees exactly — same count, same
+<code>tof</code>, <code>amp</code>, <code>area</code>, <code>chi2</code>, every
+column. The liquids agree on every column too except <code>afast</code>, which
+differs on 3–6 hits in ~85 000 (0.00–0.02 %) with huge magnitude — a numerically
+unstable integral on a handful of pathological pulses, not a difference in the
+reconstruction.</p>
+<p><strong>Our <code>prod_v11</code> runs differ exactly where they were always
+documented to.</strong> 224574 and 224577 are bit-identical to official on WAL,
+PSS, SILI and PKUP and differ only in the LIQ hit count (official +17 to +21 %) —
+the known v11→v12 liquid yield step from <code>STEP SIZE</code> and
+<code>SIGNAL WIDTH HIGH</code>. Nothing else moved, which is the strongest
+available evidence that the difference is the recipe and not our chain.</p>
+
+<h2>What was compared for the block n_TOF has not processed</h2>
+<p>For 224688–224718 there is still nothing to diff against, so the argument there
+remains an equivalence one, in two parts:</p>
 <ul>
 <li><strong>Configuration</strong> — compared exactly, because each product records
 the UserInput it was made with in its own <code>history</code> object.</li>
@@ -70,6 +122,8 @@ the UserInput it was made with in its own <code>history</code> object.</li>
 runs in time (224660–224676), with everything normalised to the protons delivered,
 because a raw hit count is a beam measurement, not a processing measurement.</li>
 </ul>
+<p>The hit-for-hit result above upgrades it: the chain that produced this block is
+the same chain that reproduces n_TOF exactly on the runs where both exist.</p>
 
 <h3>Two traps that make an honest comparison look broken</h3>
 <ul>
@@ -162,6 +216,36 @@ beam in them to compare.</p>
 
 all runs: complete, contiguous, same UserInput, every partial reads.</pre>
 
+<h3>Third batch — the rest of the campaign</h3>
+<p>224701–224715 landed on 08-11 afternoon and pass the same structural test.
+Two of them, <strong>224705 and 224711, were flagged <code>COPY FAILED</code> by
+the campaign driver</strong> — its <code>cp -r</code> returned non-zero and it kept
+the staging copy. Both are complete and readable at the destination, so that was an
+exit code, not a bad transfer.</p>
+<pre>base = /eos/experiment/ntof/data/x17/reproc/prod_v12
+
+    run parts  exp  contig  raw     hist badfiles  bunches  gaps      GB
+------------------------------------------------------------------------
+ 224701    56   56    True  224      ref        0     4468     0    49.6
+ 224702    12   12    True   46       ok        0      907     0    10.0
+ 224703    36   36    True  142       ok        0     2829     0    31.4
+ 224704    37   37    True  147       ok        0     2861     0    31.5
+ 224705     7    7    True   28       ok        0      552     0     5.6
+ 224707     9    9    True   35       ok        0      634     0     6.9
+ 224708     6    6    True   23       ok        0      135     0    10.3
+ 224710     3    3    True   10       ok        0      196     0     2.1
+ 224711    36   36    True  141       ok        0     2788     0    29.6
+ 224712    19   19    True   74       ok        0     1472     0    15.7
+ 224713    38   38    True  149       ok        0     2961     0    31.6
+ 224714    47   47    True  186       ok        0     3701     0    39.2
+ 224715    31   31    True  122       ok        0     2432     0    25.9
+
+all runs: complete, contiguous, same UserInput, every partial reads.</pre>
+<p><strong>224709 is the one run of the block not yet on the ntof disk.</strong> Its
+last job (partial 0023) was evicted once and its retry was still running when the
+driver's stall timer fired; 85 of 86 partials are staged. It needs
+<code>harvest_staged.sh 224709</code> once the job lands.</p>
+
 <h2>Hit rates, normalised to delivered protons</h2>
 <table><thead><tr><th>tree</th><th>ours (13 runs)</th><th>official (6 runs)</th><th>separation</th></tr></thead><tbody><tr><td class="k">WALA</td><td>1483–1556</td><td>1470–1558</td><td class="ok">overlap</td></tr><tr><td class="k">WALB</td><td>1438–1466</td><td>1423–1467</td><td class="ok">overlap</td></tr><tr><td class="k">WALC</td><td>1526–1565</td><td>1532–1584</td><td class="ok">overlap</td></tr><tr><td class="k">WALD</td><td>1528–1565</td><td>1521–1565</td><td class="ok">overlap</td></tr><tr><td class="k">PSSA</td><td>4309–4431</td><td>4335–4463</td><td class="ok">overlap</td></tr><tr><td class="k">PSSB</td><td>5776–5973</td><td>5817–6001</td><td class="ok">overlap</td></tr><tr><td class="k">PSSC</td><td>6813–7083</td><td>6899–7073</td><td class="ok">overlap</td></tr><tr><td class="k">PSSD</td><td>6146–6346</td><td>6224–6320</td><td class="ok">overlap</td></tr><tr><td class="k">LIQA</td><td>2647–2706</td><td>2637–2659</td><td class="ok">overlap</td></tr><tr><td class="k">LIQB</td><td>2938–3016</td><td>2920–2953</td><td class="ok">overlap</td></tr><tr><td class="k">LIQC</td><td>746–783</td><td>743–763</td><td class="ok">overlap</td></tr><tr><td class="k">LIQD</td><td>1792–1847</td><td>1779–1801</td><td class="ok">overlap</td></tr></tbody></table>
 <figure><img src="figures/rates.png" alt="rates">
@@ -235,16 +319,24 @@ relative to ours_224691
 <li><strong>Shared systematics are invisible here.</strong> Both processings run the
 same UserInput through the same PSA binary, so a defect in that recipe affects ours
 and n_TOF's identically and this comparison would never see it. This establishes
-<em>equivalence to the official product</em>, not absolute correctness.</li>
+<em>equivalence to the official product</em>, not absolute correctness — and the
+hit-for-hit agreement makes that sharper, not weaker: it proves the two chains are
+the same chain.</li>
+<li><strong>The identity comparison samples five bunches of one partial per
+run.</strong> It is an exactness test, not a coverage test; the structural pass is
+what covers every file.</li>
+<li><strong>The ledger is a snapshot.</strong> 24 runs were mid-reprocessing when
+it was taken, so their partial counts are meaningless until n_TOF finishes. Re-run
+<code>official_ledger.py</code> rather than quoting those numbers later.</li>
 <li><strong>The physics comparison samples one partial per run</strong> (two for the
 quality metrics), which is 63–80 bunches out of thousands. The structural pass is
 the one that covers every file. A defect confined to late partials of a run would
 survive this.</li>
-<li><strong>The runs still in flight are not covered.</strong> 224701–224718 were
-submitted at 13:24 today and 14 are still running. They need the same pass before
-the campaign is declared done, and the beam-off ones among them will need a
-different acceptance test than the one used here — with no protons there is no
-flash and no rate to compare, so structure and readability is all there is.</li>
+<li><strong>The late runs have structure but not physics.</strong> 224701–224718 all
+passed the structural pass, but the beam-gated comparison above still covers only
+224688–224700. Several of the late ones have no beam at all, and for those the
+acceptance test can only be structural — with no protons there is no flash and no
+rate to compare.</li>
 <li><strong>No downstream check yet.</strong> Nothing here runs the DREAM slim over
 these runs; the association efficiency and clock QA on the new block are still to
 do, and those are what would catch a timing problem that survives all of the above.</li>

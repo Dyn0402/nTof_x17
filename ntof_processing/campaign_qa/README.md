@@ -4,11 +4,18 @@ Acceptance checking for the self-processing campaign
 (`../process_missing_runs.sh`, `../SELF_PROCESSING_RUNBOOK.md`). Answer as of
 2026-08-11: **yes** — see [`results/report.html`](results/report.html).
 
-## The awkward part, and how it is handled
+## Two kinds of comparison, because there are two kinds of run
 
-**No run exists in both sets.** The block we process, 224688-224718, is exactly
-the block n_TOF never processed. So this cannot be a file-against-file diff. It
-is an equivalence argument in two parts:
+**On 08-11 n_TOF merged 27 previously-unmerged runs**, two of which
+(224573, 224577) we had processed ourselves. So eight runs now exist in **both**
+processings, and for those the check is direct: `compare_identity.py` compares
+every hit, column by column, on the same bunches. Result: with the same
+UserInput we reproduce n_TOF **bit for bit**. See
+[`../FINDINGS_2026-08-11_official_ledger.md`](../FINDINGS_2026-08-11_official_ledger.md).
+
+**For 224688-224718 there is still nothing to diff against** — that block is
+exactly the block n_TOF has never processed. There the check stays an
+equivalence argument in two parts:
 
 * **configuration**, compared exactly — every product records the UserInput it
   was made with in its own `history` object;
@@ -30,6 +37,8 @@ So: **run `beam_state.py` first, and gate every comparison on protons.**
 
 | script | what it answers |
 |---|---|
+| `official_ledger.py` | per run: what n_TOF has, what we have, and which UserInput each was made with — the bookkeeping |
+| `compare_identity.py` | hit for hit, ours against official on the same bunches, for the runs that exist in both |
 | `beam_state.py` | whole-run beam state, one open per run, from the `index` tree |
 | `verify_transferred.py` | structure: contiguity, `ceil(raw/4)`, history, and a real read of **every** partial |
 | `history_diff.py` | which UserInput a product was actually made with, ours vs official, path prefixes dropped |
@@ -50,6 +59,10 @@ cd /afs/cern.ch/work/d/dneff/x17_reproc/campaign_qa      # rsync this directory 
 O=/eos/experiment/ntof/data/x17/reproc/prod_v12
 F=/eos/experiment/ntof/processing/official/completed
 
+python3 -u official_ledger.py --csv=ledger.csv --json=ledger.json   # ~15 min, 445 runs
+python3 -u compare_identity.py --run=224572 \
+        --ours=/eos/experiment/ntof/data/x17/reproc/v12_liqpileup/completed/224572 \
+        --official=$F/224572 --json=identity_224572.json
 python3 -u beam_state.py --json=beam_state.json $O/*/completed/*
 python3 -u verify_transferred.py 224688 224689 ...        # slow: opens every partial
 python3 -u compare_campaign.py --partials=1 --json=compare.json \

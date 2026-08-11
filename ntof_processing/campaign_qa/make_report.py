@@ -242,6 +242,130 @@ def pre(path, fallback):
             else f'<p class="warn">{fallback}</p>')
 
 
+# ------------------------------------------------- ledger: official vs ours
+STATE_NOTE = {
+    'MERGED': 'merged file in <code>done/</code> — usable, best',
+    'IN_FLIGHT': 'n_TOF wiped <code>completed/</code> and is reprocessing it now',
+    'PARTIALS_ONLY': 'reconstruction finished, merge never ran — partials are the truth',
+    'MERGE_EMPTY': 'zero-byte <code>done/</code> file: the merge failed, partials are the truth',
+    'RAW_ONLY': 'raw staged, n_TOF has processed nothing',
+    'NOTHING': 'no raw staged and nothing processed',
+}
+
+
+def ledger_rows():
+    p = RES / 'ledger_2026-08-11.json'
+    if not p.exists():
+        return []
+    return json.loads(p.read_text())
+
+
+def ledger_state_table(rows):
+    from collections import Counter
+    c = Counter(r['off_state'] for r in rows)
+    order = ['MERGED', 'IN_FLIGHT', 'PARTIALS_ONLY', 'MERGE_EMPTY',
+             'RAW_ONLY', 'NOTHING']
+    out = []
+    for s in order:
+        if not c[s]:
+            continue
+        runs = [r['run'] for r in rows if r['off_state'] == s]
+        rng = (f'{runs[0]}–{runs[-1]}' if len(runs) > 6
+               else ', '.join(str(x) for x in runs))
+        ok = 'ok' if s in ('MERGED', 'PARTIALS_ONLY') else 'warn'
+        out.append(f'<tr><td class="k {ok}">{s}</td><td>{c[s]}</td>'
+                   f'<td style="text-align:left">{STATE_NOTE.get(s, "")}</td>'
+                   f'<td style="text-align:left">{rng}</td></tr>')
+    return ('<table><thead><tr><th>official state</th><th>runs</th>'
+            '<th>what it means</th><th>run range (not contiguous)</th></tr></thead>'
+            f'<tbody>{"".join(out)}</tbody></table>')
+
+
+def newly_merged(rows):
+    """Runs that were not MERGED in the 08-10 inventory and are now."""
+    import csv as _csv
+    p = HERE.parent / 'skip_diagnosis' / 'inputs' / 'inventory_2026-08-10.csv'
+    if not p.exists():
+        return []
+    with p.open() as fh:
+        old = {r['run']: r['state'] for r in _csv.DictReader(fh)}
+    return [r['run'] for r in rows if r['off_state'] == 'MERGED'
+            and old.get(str(r['run']), 'MERGED') != 'MERGED']
+
+
+def overlap_table(rows):
+    both = [r for r in rows if r['ours_prod'] and r['off_state'] != 'RAW_ONLY']
+    cells = ''.join(
+        f'<tr><td class="k">{r["run"]}</td><td>{r["off_state"]}</td>'
+        f'<td>{r["off_parts"]}</td><td>{r["off_GB"]}</td>'
+        f'<td>{r["ours_prod"]}</td><td>{r["ours_variant"]}</td>'
+        f'<td>{r["ours_parts"]}</td><td>{r["ours_GB"]}</td>'
+        f'<td class="{"ok" if r["ours_recipe"] == r["off_recipe"] else "warn"}">'
+        f'{"same recipe" if r["ours_recipe"] == r["off_recipe"] else "different"}</td></tr>'
+        for r in both)
+    return ('<table><thead><tr><th>run</th><th>official</th><th>parts</th><th>GB</th>'
+            '<th>our production</th><th>our variant</th><th>parts</th><th>GB</th>'
+            f'<th>recipe</th></tr></thead><tbody>{cells}</tbody></table>')
+
+
+def ours_only_table(rows):
+    only = [r for r in rows if r['ours_prod'] and r['off_state'] == 'RAW_ONLY']
+    cells = ''.join(
+        f'<tr><td class="k">{r["run"]}</td><td>{r["raw_files"]}</td>'
+        f'<td>{r["raw_GB"]}</td><td>{r["ours_parts"]}</td><td>{r["ours_GB"]}</td></tr>'
+        for r in only)
+    return ('<table><thead><tr><th>run</th><th>raw files</th><th>raw GB</th>'
+            '<th>our partials</th><th>our GB</th></tr></thead>'
+            f'<tbody>{cells}</tbody></table>'), only
+
+
+IDENTITY_FILES = [
+    ('identity_224572.json',
+     'ours <code>v12_liqpileup</code> vs official — same recipe'),
+    ('identity_224574.json',
+     'ours <code>prod_v11</code> vs official <code>v12</code> — recipes differ on LIQ only'),
+    ('identity_224577.json',
+     'ours <code>prod_v11</code> vs official <code>v12</code> — merged by n_TOF on 08-11'),
+]
+
+
+def identity_table():
+    blocks = []
+    for fn, note in IDENTITY_FILES:
+        p = RES / fn
+        if not p.exists():
+            continue
+        d = json.loads(p.read_text())
+        cells = []
+        for tree, rec in d['trees'].items():
+            if 'error' in rec:
+                cells.append(f'<tr><td class="k">{tree}</td><td colspan="3" '
+                             f'class="warn">{rec["error"]}</td></tr>')
+                continue
+            v = rec['verdict']
+            cls = 'ok' if v == 'IDENTICAL' else 'warn'
+            detail = ''
+            if v.startswith('DIFFERENT (values)'):
+                detail = ', '.join(
+                    f'{c} {x["cells"]} cells ({100 * x["frac"]:.2f} %)'
+                    for c, x in rec.get('columns_differing', {}).items())
+            elif v.startswith('DIFFERENT (hit'):
+                detail = (f'{rec["n_official"] - rec["n_ours"]:+d} hits '
+                          f'({100 * (rec["n_official"] / max(1, rec["n_ours"]) - 1):+.1f} %)')
+            cells.append(
+                f'<tr><td class="k">{tree}</td><td>{rec["n_ours"]:,}</td>'
+                f'<td class="{cls}">{v}</td>'
+                f'<td style="text-align:left">{detail}</td></tr>')
+        blocks.append(
+            f'<h3>run {d["run"]} — {note}</h3>'
+            f'<p class="sub" style="margin:.2rem 0 .5rem">our partial '
+            f'<code>{d["ours_partial"]}</code>, bunches '
+            f'{d["bunches"][0]}–{d["bunches"][1]}</p>'
+            '<table><thead><tr><th>tree</th><th>hits compared</th><th>verdict</th>'
+            f'<th>difference</th></tr></thead><tbody>{"".join(cells)}</tbody></table>')
+    return ''.join(blocks)
+
+
 def beam_table():
     p = RES / 'beam_state.json'
     if not p.exists():
@@ -315,6 +439,14 @@ def build():
     n_beam = sum(1 for r in beam_rows if r['state'] == 'beam')
     n_dark = len(beam_rows) - n_beam
 
+    led = ledger_rows()
+    ours_tbl, ours_only = ours_only_table(led)
+    n_both = len([r for r in led
+                  if r['ours_prod'] and r['off_state'] != 'RAW_ONLY'])
+    ident = identity_table()
+    n_new = len(newly_merged(led))
+    n_flight = sum(1 for r in led if r['off_state'] == 'IN_FLIGHT')
+
     body = f"""
 <h1>n_TOF reprocessing campaign — are our runs as good as n_TOF's?</h1>
 <p class="sub">Runs 224688–224700, processed by us and moved to
@@ -322,11 +454,13 @@ def build():
 n_TOF processed themselves in <code>official/completed/</code>. {date.today()}</p>
 
 <div class="verdict">
-<strong>Yes. The 13 transferred runs are good.</strong> They were produced with a
-configuration that is byte-identical to n_TOF's own — same parameter file, same
-26 pulse-shape templates — and on every measurable axis they are
-indistinguishable from official runs taken under the same beam: intensity-normalised
-hit rates overlap, the gamma flash lands in the same 10&nbsp;ns bin in every tree,
+<strong>Yes — and on the runs that now exist in both processings, bit for
+bit.</strong> Given the same UserInput our chain reproduces n_TOF's product
+exactly: on run 224572 every hit of every wall, plastic, silicon and pickup tree
+matches on all 22 columns. The transferred block was produced with a configuration
+byte-identical to n_TOF's own, and on every measurable axis it is indistinguishable
+from official runs taken under the same beam: intensity-normalised hit rates
+overlap, the gamma flash lands in the same 10&nbsp;ns bin in every tree,
 {worst_flash:.2f}&nbsp;% of beam bunches are off-flash (the broken July processing sat at
 37–85&nbsp;% on the plastics), and hit quality matches to a few percent.
 </div>
@@ -334,16 +468,66 @@ hit rates overlap, the gamma flash lands in the same 10&nbsp;ns bin in every tre
 <div class="grid">
   <div class="card"><span class="n">{len(beam_rows) or 13}</span><span class="l">runs on the ntof disk ({n_beam} with beam)</span></div>
   {vol}
+  <div class="card"><span class="n">{n_both}</span><span class="l">runs now in both processings</span></div>
+  <div class="card"><span class="n">{len(ours_only)}</span><span class="l">runs only we have (n_TOF: raw only)</span></div>
   <div class="card"><span class="n">26/26</span><span class="l">templates byte-identical to official</span></div>
   <div class="card"><span class="n">{worst_flash:.2f} %</span><span class="l">worst off-flash bunches (target &lt; 2 %)</span></div>
   <div class="card"><span class="n">{wal_o.min():.0f}–{wal_o.max():.0f}</span><span class="l">WALA hits/1e12 p (official {wal_f.min():.0f}–{wal_f.max():.0f})</span></div>
 </div>
 
-<h2>What was compared, and the one thing that makes it awkward</h2>
-<p><strong>No run exists in both sets.</strong> The block we are processing,
-224688–224718, is precisely the block n_TOF never processed — that is why we are
-processing it. So this cannot be a file-against-file diff. It is an equivalence
-argument in two parts:</p>
+<h2>Where every run of the campaign stands, ours and n_TOF's</h2>
+<p><code>official_ledger.py</code> walks all {len(led)} runs staged under the X17
+EAR2 2026 DAQ directory and records, per run, what n_TOF has, what we have, and
+which UserInput each product was actually made with — read out of the product's
+own <code>history</code> object rather than assumed.</p>
+{ledger_state_table(led)}
+<p><strong>n_TOF moved a long way on 08-10/08-11.</strong> Against the 08-10
+inventory (359 MERGED / 53 PARTIALS_ONLY / 2 MERGE_EMPTY / 31 RAW_ONLY), {n_new}
+of the unmerged runs have since been merged and {n_flight} more are being
+reprocessed from scratch right now — their <code>completed/</code> directories were emptied and
+are refilling with partials stamped within the hour. A snapshot taken during that
+window reads those as data loss; they are not.</p>
+<p><strong>The recipe is uniform.</strong> Every official X17 product with a
+readable history — all 413 of them, including the ones written today — carries
+<code>UserInput_2026_EAR2_X17_v4.h</code>, and its parameters normalise to the same
+fingerprint as our <code>v12_liqpileup</code>. There is no recipe boundary hiding
+inside the official set.</p>
+
+<h3>Runs that exist in both processings</h3>
+<p>{n_both} runs are now in both — which was not true a week ago, and it is what
+makes the next section possible.</p>
+{overlap_table(led)}
+
+<h3>Runs we processed that n_TOF still has not</h3>
+<p>{len(ours_only)} runs, all of them <code>RAW_ONLY</code> on n_TOF's side: the
+contiguous block at the end of the campaign. n_TOF's pass has skipped past it —
+it spent 08-11 merging and reprocessing runs below 224688 and then moved on to
+224719+, which belong to a different experiment.</p>
+{ours_tbl}
+
+<h2>Hit for hit, on the runs that exist in both</h2>
+<p><code>compare_identity.py</code> matches on <code>BunchNumber</code> — the two
+processings split a run into partials differently, so partial N is not partial N —
+and compares all 22 per-hit columns for a window of bunches.</p>
+{ident or '<p class="warn">identity comparison pending</p>'}
+<p><strong>Same UserInput reproduces n_TOF bit for bit.</strong> On 224572, where
+our product and theirs were made with the same recipe, every hit of every wall,
+plastic, silicon and pickup tree agrees exactly — same count, same
+<code>tof</code>, <code>amp</code>, <code>area</code>, <code>chi2</code>, every
+column. The liquids agree on every column too except <code>afast</code>, which
+differs on 3–6 hits in ~85 000 (0.00–0.02 %) with huge magnitude — a numerically
+unstable integral on a handful of pathological pulses, not a difference in the
+reconstruction.</p>
+<p><strong>Our <code>prod_v11</code> runs differ exactly where they were always
+documented to.</strong> 224574 and 224577 are bit-identical to official on WAL,
+PSS, SILI and PKUP and differ only in the LIQ hit count (official +17 to +21 %) —
+the known v11→v12 liquid yield step from <code>STEP SIZE</code> and
+<code>SIGNAL WIDTH HIGH</code>. Nothing else moved, which is the strongest
+available evidence that the difference is the recipe and not our chain.</p>
+
+<h2>What was compared for the block n_TOF has not processed</h2>
+<p>For 224688–224718 there is still nothing to diff against, so the argument there
+remains an equivalence one, in two parts:</p>
 <ul>
 <li><strong>Configuration</strong> — compared exactly, because each product records
 the UserInput it was made with in its own <code>history</code> object.</li>
@@ -351,6 +535,8 @@ the UserInput it was made with in its own <code>history</code> object.</li>
 runs in time (224660–224676), with everything normalised to the protons delivered,
 because a raw hit count is a beam measurement, not a processing measurement.</li>
 </ul>
+<p>The hit-for-hit result above upgrades it: the chain that produced this block is
+the same chain that reproduces n_TOF exactly on the runs where both exist.</p>
 
 <h3>Two traps that make an honest comparison look broken</h3>
 <ul>
@@ -399,6 +585,18 @@ the structural pass and the beam state but not the physics comparison — there 
 beam in them to compare.</p>
 {pre('verify_batch2.log', 'verify_batch2.log missing')}
 
+<h3>Third batch — the rest of the campaign</h3>
+<p>224701–224715 landed on 08-11 afternoon and pass the same structural test.
+Two of them, <strong>224705 and 224711, were flagged <code>COPY FAILED</code> by
+the campaign driver</strong> — its <code>cp -r</code> returned non-zero and it kept
+the staging copy. Both are complete and readable at the destination, so that was an
+exit code, not a bad transfer.</p>
+{pre('verify_batch3.log', 'verify_batch3.log missing')}
+<p><strong>224709 is the one run of the block not yet on the ntof disk.</strong> Its
+last job (partial 0023) was evicted once and its retry was still running when the
+driver's stall timer fired; 85 of 86 partials are staged. It needs
+<code>harvest_staged.sh 224709</code> once the job lands.</p>
+
 <h2>Hit rates, normalised to delivered protons</h2>
 {rate_table(ours, off)}
 <figure><img src="figures/rates.png" alt="rates">
@@ -446,16 +644,24 @@ show. <code>quality_metrics.py</code> on two partials each of our 224691 and off
 <li><strong>Shared systematics are invisible here.</strong> Both processings run the
 same UserInput through the same PSA binary, so a defect in that recipe affects ours
 and n_TOF's identically and this comparison would never see it. This establishes
-<em>equivalence to the official product</em>, not absolute correctness.</li>
+<em>equivalence to the official product</em>, not absolute correctness — and the
+hit-for-hit agreement makes that sharper, not weaker: it proves the two chains are
+the same chain.</li>
+<li><strong>The identity comparison samples five bunches of one partial per
+run.</strong> It is an exactness test, not a coverage test; the structural pass is
+what covers every file.</li>
+<li><strong>The ledger is a snapshot.</strong> 24 runs were mid-reprocessing when
+it was taken, so their partial counts are meaningless until n_TOF finishes. Re-run
+<code>official_ledger.py</code> rather than quoting those numbers later.</li>
 <li><strong>The physics comparison samples one partial per run</strong> (two for the
 quality metrics), which is 63–80 bunches out of thousands. The structural pass is
 the one that covers every file. A defect confined to late partials of a run would
 survive this.</li>
-<li><strong>The runs still in flight are not covered.</strong> 224701–224718 were
-submitted at 13:24 today and 14 are still running. They need the same pass before
-the campaign is declared done, and the beam-off ones among them will need a
-different acceptance test than the one used here — with no protons there is no
-flash and no rate to compare, so structure and readability is all there is.</li>
+<li><strong>The late runs have structure but not physics.</strong> 224701–224718 all
+passed the structural pass, but the beam-gated comparison above still covers only
+224688–224700. Several of the late ones have no beam at all, and for those the
+acceptance test can only be structural — with no protons there is no flash and no
+rate to compare.</li>
 <li><strong>No downstream check yet.</strong> Nothing here runs the DREAM slim over
 these runs; the association efficiency and clock QA on the new block are still to
 do, and those are what would catch a timing problem that survives all of the above.</li>

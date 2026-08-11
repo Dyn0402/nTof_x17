@@ -117,6 +117,51 @@
   "state": "beam"
  },
  {
+  "run": 224701,
+  "bunches": 4468,
+  "beam_bunches": 4468,
+  "beam_pct": 100.0,
+  "protons_1e12": 31637.626750500865,
+  "mean_intensity": 7080937259008.0,
+  "state": "beam"
+ },
+ {
+  "run": 224702,
+  "bunches": 907,
+  "beam_bunches": 901,
+  "beam_pct": 99.33847850055126,
+  "protons_1e12": 6389.511713980416,
+  "mean_intensity": 7091577683968.0,
+  "state": "beam"
+ },
+ {
+  "run": 224703,
+  "bunches": 2829,
+  "beam_bunches": 2827,
+  "beam_pct": 99.9293036408625,
+  "protons_1e12": 20073.199672754177,
+  "mean_intensity": 7100530425856.0,
+  "state": "beam"
+ },
+ {
+  "run": 224704,
+  "bunches": 2861,
+  "beam_bunches": 2835,
+  "beam_pct": 99.09122684376092,
+  "protons_1e12": 20117.983296749568,
+  "mean_intensity": 7096290508800.0,
+  "state": "beam"
+ },
+ {
+  "run": 224705,
+  "bunches": 552,
+  "beam_bunches": 509,
+  "beam_pct": 92.21014492753623,
+  "protons_1e12": 3592.480297582592,
+  "mean_intensity": 7057917870080.0,
+  "state": "beam"
+ },
+ {
   "run": 224706,
   "bunches": 2615,
   "beam_bunches": 0,
@@ -124,6 +169,78 @@
   "protons_1e12": 0.0,
   "mean_intensity": 0.0,
   "state": "NO BEAM"
+ },
+ {
+  "run": 224707,
+  "bunches": 634,
+  "beam_bunches": 626,
+  "beam_pct": 98.73817034700315,
+  "protons_1e12": 4393.550217216,
+  "mean_intensity": 7018451042304.0,
+  "state": "beam"
+ },
+ {
+  "run": 224708,
+  "bunches": 135,
+  "beam_bunches": 135,
+  "beam_pct": 100.0,
+  "protons_1e12": 894.102400925696,
+  "mean_intensity": 6622980603904.0,
+  "state": "beam"
+ },
+ {
+  "run": 224710,
+  "bunches": 196,
+  "beam_bunches": 196,
+  "beam_pct": 100.0,
+  "protons_1e12": 1306.73977327616,
+  "mean_intensity": 6667039670272.0,
+  "state": "beam"
+ },
+ {
+  "run": 224711,
+  "bunches": 2788,
+  "beam_bunches": 2787,
+  "beam_pct": 99.96413199426112,
+  "protons_1e12": 18707.842454257665,
+  "mean_intensity": 6712537907200.0,
+  "state": "beam"
+ },
+ {
+  "run": 224712,
+  "bunches": 1472,
+  "beam_bunches": 1468,
+  "beam_pct": 99.72826086956522,
+  "protons_1e12": 9906.640568451072,
+  "mean_intensity": 6748392914944.0,
+  "state": "beam"
+ },
+ {
+  "run": 224713,
+  "bunches": 2961,
+  "beam_bunches": 2961,
+  "beam_pct": 100.0,
+  "protons_1e12": 19930.33402810368,
+  "mean_intensity": 6730947231744.0,
+  "state": "beam"
+ },
+ {
+  "run": 224714,
+  "bunches": 3701,
+  "beam_bunches": 3673,
+  "beam_pct": 99.24344771683329,
+  "protons_1e12": 24703.934627053568,
+  "mean_intensity": 6725819170816.0,
+  "state": "beam"
+ },
+ {
+  "run": 224715,
+  "bunches": 2432,
+  "beam_bunches": 2429,
+  "beam_pct": 99.8766447368421,
+  "protons_1e12": 16334.65183240192,
+  "mean_intensity": 6724846616576.0,
+  "state": "beam"
  },
  {
   "run": 224716,

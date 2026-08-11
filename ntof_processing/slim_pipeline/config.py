@@ -187,12 +187,43 @@ NTOF_DONE = Path(os.environ.get(
     'X17_NTOF_DONE', '/eos/experiment/ntof/processing/official/done'))
 NTOF_PROCESSING = 'official_done_v4_eq_v12_liqpileup'
 
+# The per-job partials the pass leaves behind BEFORE the merge node runs. For 28
+# of the 41 runs we asked n_TOF to reprocess, the processing had in fact already
+# succeeded and only the merge is missing, so `done/` has no file while this
+# directory holds a complete, contiguous, v12 partial set -- 77 % of the beam
+# time we thought was unprocessed. Verified 2026-08-10: part count equals
+# ceil(raw files / 4), indices 1..N with no gap, and the `history` string is
+# byte-identical (md5 e51a3ef3dc0b32c1803e59ad18639a7c) to the reference
+# done/run224572.root. See ../skip_diagnosis/README.md.
+NTOF_COMPLETED = Path(os.environ.get(
+    'X17_NTOF_COMPLETED', '/eos/experiment/ntof/processing/official/completed'))
+
 # Local staging, for the reference pair and for testing off-CERN.
 LOCAL_V12 = Path('/media/dylan/data/x17/ntof_reproc/v12_liqpileup')
 
 
+def _merged_ok(p: Path) -> bool:
+    """A merged run file that is actually worth opening.
+
+    A FAILED merge leaves a zero-byte `run<run>.root` behind rather than nothing
+    -- `done/run224405.root` and `done/run224667.root` are both 0 bytes, dated
+    2026-08-05. `exists()` says yes to those, so anything keyed on existence
+    picks an empty file over a complete partial set sitting in completed/<run>/.
+    """
+    try:
+        return p.is_file() and p.stat().st_size > 0
+    except OSError:
+        return False
+
+
 def ntof_files(run: int, source: Path | None = None) -> list:
-    """The run's file(s). NEVER hadd a run -- read the partials in order."""
+    """The run's file(s). NEVER hadd a run -- read the partials in order.
+
+    A merged file in `done/` is preferred when one exists AND is non-empty; the
+    unmerged partial set under `completed/<run>/` is the fallback, and it is the
+    SAME processing, not a lesser one -- the merge is a separate DAG node that
+    adds no content.
+    """
     src = Path(source) if source else NTOF_DONE
     if src.is_file():
         return [src]
@@ -201,13 +232,52 @@ def ntof_files(run: int, source: Path | None = None) -> list:
     if parts:
         return parts
     single = src / f'run{run}.root'
-    if single.exists():
+    if _merged_ok(single):
         return [single]
     chained = sorted((src / f'run{run}.parts').glob(f'run{run}_[0-9]*.root'),
                      key=lambda p: int(p.stem.split('_')[-1]))
     if chained:
         return chained
+    if source is None:
+        unmerged = sorted((NTOF_COMPLETED / str(run)).glob(f'run{run}_[0-9]*.root'),
+                          key=lambda p: int(p.stem.split('_')[-1]))
+        if unmerged:
+            _require_complete(run, unmerged)
+            return unmerged
     raise FileNotFoundError(f'no n_TOF files for run {run} under {src}')
+
+
+# The raw the pass ran over, needed to know how many partials a run SHOULD have.
+NTOF_RAW = Path(os.environ.get(
+    'X17_NTOF_RAW', '/eos/experiment/ntof/DAQ/2026/EAR2/X17_measurement'))
+FILES_PER_JOB = 4
+
+
+def _require_complete(run: int, parts: list) -> None:
+    """Refuse a partial set that is still being written.
+
+    On 2026-08-11 n_TOF began REPROCESSING 24 runs: each `completed/<run>/` was
+    emptied and is refilling one partial at a time. Reading such a directory
+    gives a silently short run -- the slim would fit a clock on a third of the
+    bunches and report a healthy efficiency for it. So a fallback to the
+    unmerged set is only allowed when the set is contiguous 1..N AND N matches
+    ceil(raw stream1 files / 4), the split RunProcessing uses.
+    """
+    idx = [int(p.stem.split('_')[-1]) for p in parts]
+    if idx != list(range(1, len(idx) + 1)):
+        raise FileNotFoundError(
+            f'run {run}: unmerged partial set is not contiguous '
+            f'({len(idx)} files, indices {idx[0]}..{idx[-1]}) -- it is probably '
+            f'being rewritten; do not read it')
+    try:
+        n_raw = len(os.listdir(NTOF_RAW / str(run) / 'stream1'))
+    except OSError:
+        return          # raw aged off disk: contiguity is all we can check
+    want = -(-n_raw // FILES_PER_JOB)
+    if want and len(idx) != want:
+        raise FileNotFoundError(
+            f'run {run}: unmerged partial set has {len(idx)} of {want} partials '
+            f'-- incomplete or mid-reprocessing; do not read it')
 
 
 # ------------------------------------------------------------------- DREAM in
