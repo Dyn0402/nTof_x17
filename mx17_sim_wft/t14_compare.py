@@ -60,6 +60,31 @@ MAX_EVENTS = 2500    # per leg per view, extraction cap (deterministic subset)
 DT_NS = 60.0         # nominal bench DAQ sampling period (labels the axes; a
                      # different actual period would shift BOTH legs equally)
 
+# SHAPE OBSERVABLES ARE CENSORED ABOVE THIS PEAK AMPLITUDE (fix 2026-08-11).
+#
+# The 10-90 % rise and the FWHM are measured against the waveform's own peak.
+# On a RAILED waveform that peak is the rail, so the 90 % level sits at
+# 0.9 x rail — a point the still-rising edge reaches EARLY — and the pulse
+# reads FAST. The FWHM reads WIDE for the mirror reason. The bias would be
+# harmless if it hit both legs alike; it does not. The data legs rail on
+# 24-26 % of events against the sim's 3-5 %, so it is almost entirely a
+# data-leg speed-up, in the direction that makes the sim look slow.
+#
+# This is the same railed-denominator failure this comparison has already been
+# caught by once, on the undershoot "cap" that turned out to be a railed-bin
+# artefact (nTof_x17 mx17_sim_wft/hv_slope/HV_SLOPE_2026-08-09.md:26-34).
+#
+# 3500, not wft's SAT = 3550: the DREAM's response bends before the hard rail,
+# so the last ~50 ADC are already compressed, and this statistic wants to
+# exclude compression, not just clipping. Censoring is applied identically to
+# both legs and the excluded fraction is reported per leg — an asymmetric cut
+# is exactly the disease, so it must never be tuned per leg.
+#
+# Deliberately NOT applied to peak_amp or q_event: the amplitude ledger keeps
+# the railed events and corrects for them explicitly (OVERNIGHT_2026-08-10 §7.2
+# derives the missing top fraction from the saturation fractions themselves).
+SAT_ADC = 3500.0
+
 
 def _leg_cfg(decoded_dir, run_key):
     hits_dir = os.path.join(decoded_dir, "sim_hits")
@@ -119,12 +144,25 @@ def extract_view(decoded_dir, feu, pos, wanted, tag):
                 return i + (lvl - w[i]) / (w[j] - w[i])
             r10, r90 = _cross(0.10, -1), _cross(0.90, -1)
             hl, hr = _cross(0.50, -1), _cross(0.50, +1)
+            # A railed peak is not a peak — see SAT_ADC. Censor the SHAPE
+            # observables and keep the amplitude ones, so the ledger still sees
+            # every event while the rise/FWHM distributions see only pulses
+            # whose own maximum is real.
+            sat = a >= SAT_ADC
+            rise = (r90 - r10) * DT_NS if (r10 is not None
+                                           and r90 is not None) else np.nan
+            fwhm = (hr - hl) * DT_NS if (hl is not None
+                                         and hr is not None) else np.nan
             rows.append(dict(
                 event_id=int(eid), peak_ch=pk, peak_amp=a,
                 peak_sample=ipk, n_over=int(over.sum()),
                 q_event=float(amp[over].sum()),
-                rise_ns=(r90 - r10) * DT_NS if r10 is not None and r90 is not None else np.nan,
-                fwhm_ns=(hr - hl) * DT_NS if hl is not None and hr is not None else np.nan,
+                saturated=bool(sat),
+                rise_ns=np.nan if sat else rise,
+                fwhm_ns=np.nan if sat else fwhm,
+                # The uncensored values, kept so the size of this correction
+                # stays measurable from the frozen parquets without a re-run.
+                rise_ns_raw=rise, fwhm_ns_raw=fwhm,
             ))
             # aligned average (skip peaks too close to the window edge)
             lo = ALIGN_AT - ipk
@@ -310,6 +348,22 @@ def make_summary(res, ev_sim, ev_dat, stats, wins):
             sat_frac_3500=dict(
                 sim=float((ts.peak_amp >= 3500).mean()),
                 data=float((td.peak_amp >= 3500).mean())),
+            # What the rise/FWHM medians above are actually computed over.
+            # Two DIFFERENT losses, reported apart because they mean different
+            # things: `censored` is the saturation cut (SAT_ADC, deliberate,
+            # leg-asymmetric because the legs rail at different rates), and
+            # `undefined` is a pulse whose 10 %, 90 % or half-maximum crossing
+            # never happens inside the window — a real shape statement, not a
+            # cut. Conflating them would hide either one.
+            rise_censored_frac=dict(
+                sim=float(ts.saturated.mean()),
+                data=float(td.saturated.mean())),
+            rise_undefined_frac=dict(
+                sim=float((~ts.saturated & ts.rise_ns_raw.isna()).mean()),
+                data=float((~td.saturated & td.rise_ns_raw.isna()).mean())),
+            rise_ns_med_uncensored=dict(
+                sim=float(ts.rise_ns_raw.median()),
+                data=float(td.rise_ns_raw.median())),
             q_sum_reco_tight3deg=dict(sim=qs["sim"], data=qs["data"],
                                       ratio=qs["sim"] / qs["data"],
                                       center_deg=th0,
