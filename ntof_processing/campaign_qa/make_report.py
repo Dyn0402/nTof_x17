@@ -353,6 +353,58 @@ def ledger_state_table(rows):
             f'<tbody>{"".join(out)}</tbody></table>')
 
 
+# ------------------------------------------- simplified ledger: coverage only
+def coverage_rows():
+    p = RES / 'completed_ledger_2026-08-11.json'
+    return json.loads(p.read_text()) if p.exists() else []
+
+
+def runlist(rs):
+    """Compress a sorted run list into ranges, so 31 runs read as one block."""
+    if not rs:
+        return '—'
+    out, s, prev = [], rs[0], rs[0]
+    for r in rs[1:]:
+        if r == prev + 1:
+            prev = r
+            continue
+        out.append(str(s) if s == prev else f'{s}–{prev}')
+        s = prev = r
+    out.append(str(s) if s == prev else f'{s}–{prev}')
+    return ', '.join(out)
+
+
+def coverage_table(rows):
+    """The whole campaign in four rows: who has a complete partial set."""
+    off_ok = [r for r in rows if r['off_state'] == 'COVERED']
+    short = [r for r in rows if r['off_state'] not in ('COVERED',)]
+    with_merged = [r for r in short if r['merged_bytes'] > 0]
+    ours_cover = [r for r in short
+                  if r['merged_bytes'] <= 0 and r['ours_state'] == 'COVERED']
+    nowhere = [r for r in short
+               if r['merged_bytes'] <= 0 and r['ours_state'] != 'COVERED']
+    body = [
+        ('ok', 'official has a complete partial set', len(off_ok),
+         'usable — the merge is irrelevant to this', ''),
+        ('ok', 'official short, but a good merged file exists', len(with_merged),
+         'partials cleaned up after merging; the merged file is the product',
+         runlist(sorted(r['run'] for r in with_merged))),
+        ('ok', 'official has nothing, <strong>we</strong> have a complete set',
+         len(ours_cover), 'our own processing covers it',
+         runlist(sorted(r['run'] for r in ours_cover))),
+        ('warn', 'complete nowhere, right now', len(nowhere),
+         'n_TOF is mid-reprocessing these; 224709 is ours, one job short',
+         runlist(sorted(r['run'] for r in nowhere))),
+    ]
+    cells = ''.join(
+        f'<tr><td class="k {c}">{lab}</td><td>{n}</td>'
+        f'<td style="text-align:left">{note}</td>'
+        f'<td style="text-align:left"><code>{which}</code></td></tr>'
+        for c, lab, n, note, which in body)
+    return ('<table><thead><tr><th>coverage</th><th>runs</th><th>meaning</th>'
+            f'<th>which</th></tr></thead><tbody>{cells}</tbody></table>')
+
+
 def newly_merged(rows):
     """Runs that were not MERGED in the 08-10 inventory and are now."""
     import csv as _csv
@@ -518,6 +570,7 @@ def build():
     n_both = len([r for r in led
                   if r['ours_prod'] and r['off_state'] != 'RAW_ONLY'])
     ident = identity_table()
+    cov = coverage_rows()
     n_new = len(newly_merged(led))
     n_flight = sum(1 for r in led if r['off_state'] == 'IN_FLIGHT')
 
@@ -550,10 +603,31 @@ overlap, the gamma flash lands in the same 10&nbsp;ns bin in every tree,
 </div>
 
 <h2>Where every run of the campaign stands, ours and n_TOF's</h2>
-<p><code>official_ledger.py</code> walks all {len(led)} runs staged under the X17
-EAR2 2026 DAQ directory and records, per run, what n_TOF has, what we have, and
-which UserInput each product was actually made with — read out of the product's
-own <code>history</code> object rather than assumed.</p>
+<p><strong>The merge is not the question.</strong> Large runs are left unmerged as
+a matter of course and the partial set is the same processing, so the only thing
+worth asking of <code>official/completed/&lt;run&gt;/</code> is whether the
+partials <em>cover the run</em>. <code>completed_ledger.py</code> answers that
+from inside the files: the <code>index</code> tree is replicated in full in every
+partial, so one open gives the run's true bunch range, and the last partial's own
+hits say where the processing actually stopped. A set is complete when its file
+indices run 1..N with no gap <em>and</em> its hits reach the last bunch the run
+recorded.</p>
+<p>Counting partials against <code>ceil(raw files / N)</code> does not work:
+n_TOF used <strong>two split sizes</strong> — 10 raw files per job before
+2026-07-08 and 4 after — and the raw has aged off disk for 309 of the 445 runs,
+so for most of them there is no denominator at all.</p>
+{coverage_table(cov) if cov else '<p class="warn">completed_ledger.json missing</p>'}
+<p>So <strong>{len([r for r in cov if r['off_state'] == 'COVERED'])} of
+{len(cov)} runs are usable straight from n_TOF's partials</strong>, three more
+from their merged file, and {len([r for r in cov if r['ours_state'] == 'COVERED'
+                                  and r['off_state'] != 'COVERED'])} only from
+ours. The handful covered nowhere are runs n_TOF is reprocessing at this moment,
+plus our own 224709.</p>
+
+<h3>The same picture in terms of the merge, for reference</h3>
+<p><code>official_ledger.py</code> keeps the merge-level detail and the UserInput
+each product was actually made with, read out of its own <code>history</code>
+object rather than assumed.</p>
 {ledger_state_table(led)}
 <p><strong>n_TOF moved a long way on 08-10/08-11.</strong> Against the 08-10
 inventory (359 MERGED / 53 PARTIALS_ONLY / 2 MERGE_EMPTY / 31 RAW_ONLY), {n_new}

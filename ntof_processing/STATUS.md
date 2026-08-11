@@ -10,6 +10,19 @@
 ledger CSV [`campaign_qa/results/ledger_2026-08-11.csv`](campaign_qa/results/ledger_2026-08-11.csv),
 tools `campaign_qa/official_ledger.py` + `campaign_qa/compare_identity.py`.
 
+**Bookkeeping, in the form that matters** (`campaign_qa/completed_ledger.py`,
+`results/completed_ledger_2026-08-11.csv`). Forget the merge — it carries no
+information about usability. The question is whether `completed/<run>/` **covers
+the run**, judged from the `index` tree (replicated in full in every partial) plus
+the last partial's own hits: **400 of 445 runs are complete from n_TOF's
+partials**, 3 more only from their merged file (224526, 224566, 224569 — partials
+cleaned up post-merge), **31 only from ours**, and 11 are complete nowhere right
+now (10 that n_TOF is rewriting, plus our 224709).
+
+**Do not count partials against `ceil(raw/4)`.** n_TOF used **two split sizes** —
+10 raw files per job before 07-08, 4 after — so that rule mis-flags the older half
+of the campaign, and the raw has aged off disk for 309 of 445 runs anyway.
+
 **The official pass moved.** Against the 08-10 inventory: **27 unmerged runs are
 now MERGED**, **24 are being reprocessed from scratch right now** (`completed/`
 emptied and refilling — do not read that as data loss; `official_ledger.py` calls

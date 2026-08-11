@@ -17,6 +17,41 @@ Tools: `campaign_qa/official_ledger.py`, `campaign_qa/compare_identity.py`.
 
 ## 1. Where the official processing stands
 
+### The simple form: ignore the merge, ask only whether the partials cover the run
+
+Large runs are left unmerged as a matter of course and the partial set is the same
+processing, so the merge carries no information about whether a run is usable.
+`completed_ledger.py` therefore asks one question of
+`official/completed/<run>/`: **do the partials cover the run?**
+
+Counting them against `ceil(raw files / N)` cannot answer it — n_TOF used **two
+split sizes** (10 raw files per job before 2026-07-08, 4 after; 224302, 224602,
+224627, 224630, 224634, 224667, 224670, 224682 and 224686 all match `ceil(raw/10)`
+exactly), and the raw has aged off disk for **309 of the 445** runs, so for most
+of them there is no denominator. The answer is inside the files instead: the
+`index` tree is replicated in full in every partial, so one open gives the run's
+true bunch range, and the last partial's own hits say where the processing
+stopped. **Complete = file indices 1..N with no gap AND hits reaching the last
+bunch the run recorded.**
+
+| coverage | runs | which |
+|---|---|---|
+| **official has a complete partial set** | **400** | |
+| official short, but a good merged file exists | 3 | 224526, 224566, 224569 — partials cleaned up after merging |
+| official has nothing, **we** have a complete set | **31** | 224576, 224688-224708, 224710-224718 |
+| **complete nowhere, right now** | **11** | 224454, 224461, 224499, 224508, 224549, 224565, 224617, 224637-224639 (n_TOF reprocessing) + **224709** (ours, one job short) |
+
+So **400 of 445 runs are usable straight from n_TOF's partials**, three more from
+their merged file, 31 only from ours, and the 11 with nothing anywhere are all in
+motion — ten being rewritten by n_TOF as this was taken, one being finished by us.
+Per-run form: [`campaign_qa/results/completed_ledger_2026-08-11.csv`](campaign_qa/results/completed_ledger_2026-08-11.csv).
+
+**224569 is the one run whose partials are simply gone** — a 32 GB merged file and
+an empty `completed/` directory. It is fine to read; it is just the only run in the
+campaign where the merged file is the *only* product.
+
+### The same picture at merge level, for reference
+
 `official_ledger.py` walks all **445** runs staged under
 `/eos/experiment/ntof/DAQ/2026/EAR2/X17_measurement`, and for each one records what
 n_TOF has, what we have, and **which UserInput each product was actually made

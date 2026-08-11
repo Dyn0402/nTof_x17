@@ -37,7 +37,8 @@ So: **run `beam_state.py` first, and gate every comparison on protons.**
 
 | script | what it answers |
 |---|---|
-| `official_ledger.py` | per run: what n_TOF has, what we have, and which UserInput each was made with — the bookkeeping |
+| `completed_ledger.py` | **the bookkeeping**: does each run's partial set *cover the run*? Ignores the merge, checks bunch coverage from the files |
+| `official_ledger.py` | the same runs at merge level, plus which UserInput each product was actually made with |
 | `compare_identity.py` | hit for hit, ours against official on the same bunches, for the runs that exist in both |
 | `beam_state.py` | whole-run beam state, one open per run, from the `index` tree |
 | `verify_transferred.py` | structure: contiguity, `ceil(raw/4)`, history, and a real read of **every** partial |
@@ -59,6 +60,7 @@ cd /afs/cern.ch/work/d/dneff/x17_reproc/campaign_qa      # rsync this directory 
 O=/eos/experiment/ntof/data/x17/reproc/prod_v12
 F=/eos/experiment/ntof/processing/official/completed
 
+python3 -u completed_ledger.py --csv=cov.csv --json=cov.json       # ~20 min, 445 runs
 python3 -u official_ledger.py --csv=ledger.csv --json=ledger.json   # ~15 min, 445 runs
 python3 -u compare_identity.py --run=224572 \
         --ours=/eos/experiment/ntof/data/x17/reproc/v12_liqpileup/completed/224572 \
