@@ -178,10 +178,18 @@ it is not a stub waiting on a recall. The X17 raw files carry **no tape replica*
 copies and zero on tape. Nothing was found under `DAQ/scrapdir` or elsewhere in
 `DAQ/2026/EAR2/`. So once a run's `stream1` was cleared, that raw is gone for us.
 
-**n_TOF still had it this morning** — their reprocessing of 224576 wrote 35
-partials during 08-11, and then the directory was emptied again. So the input
-exists somewhere on their side. **The ask is therefore theirs to satisfy**: either
-finish the 224576 reprocessing, or give us the raw and we will run it at v12.
+**n_TOF still has it.** Their reprocessing of 224576 wrote 35 partials during
+08-11, the directory was emptied at 16:55, and **at 18:22 it started filling
+again** — so the input exists on their side and the run is live, not abandoned.
+**The ask is therefore theirs to satisfy**: let the 224576 reprocessing finish,
+or give us the raw and we will run it at v12.
+
+*A wiped directory is not a failed run.* Six directories (224461, 224499, 224508,
+224549, 224565, 224576) were emptied at **exactly 16:55** — one sweep, not six
+failures — and all six restarted at **18:22-18:23**. The clear is what n_TOF does
+*before* a run, so a snapshot taken in that window shows zero partials for a run
+that is perfectly healthy. Wait for the directory mtime to move before concluding
+anything.
 
 **Do not delete our v11 copy.** As of this writing `official/completed/224576/` is
 empty and `done/run224576.root` does not exist, which makes
