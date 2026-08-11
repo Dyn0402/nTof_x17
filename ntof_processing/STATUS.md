@@ -14,10 +14,20 @@ tools `campaign_qa/official_ledger.py` + `campaign_qa/compare_identity.py`.
 `results/completed_ledger_2026-08-11.csv`). Forget the merge — it carries no
 information about usability. The question is whether `completed/<run>/` **covers
 the run**, judged from the `index` tree (replicated in full in every partial) plus
-the last partial's own hits: **400 of 445 runs are complete from n_TOF's
+the last partial's own hits: **401 of 445 runs are complete from n_TOF's
 partials**, 3 more only from their merged file (224526, 224566, 224569 — partials
-cleaned up post-merge), **31 only from ours**, and 11 are complete nowhere right
-now (10 that n_TOF is rewriting, plus our 224709).
+cleaned up post-merge), **30 only from ours**, 1 only as an off-recipe copy
+(224576), and 10 are complete nowhere right now (9 that n_TOF is rewriting, plus
+our 224709). A `prod_v11` product counts as `OFF_RECIPE`, **not** as coverage.
+
+**224576 cannot be reprocessed by us — its raw is gone.**
+`DAQ/.../X17_measurement/224576/stream1/` is empty *in the EOS namespace*, and X17
+raw carries no tape replica (`eos fileinfo` → `d2::t0`), so there is nothing to
+recall. n_TOF still had the input on 08-11 (their reprocessing wrote 35 partials
+before the directory was emptied again), so the ask is theirs: finish it, or send
+us the raw. **Meanwhile do not delete `reproc/prod_v11/224576/`** — with
+`official/completed/224576/` empty and no merged file, it is the only complete
+product of that run in existence.
 
 **Do not count partials against `ceil(raw/4)`.** n_TOF used **two split sizes** —
 10 raw files per job before 07-08, 4 after — so that rule mis-flags the older half

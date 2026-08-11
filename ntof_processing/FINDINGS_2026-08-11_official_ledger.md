@@ -36,15 +36,21 @@ bunch the run recorded.**
 
 | coverage | runs | which |
 |---|---|---|
-| **official has a complete partial set** | **400** | |
+| **official has a complete partial set** | **401** | |
 | official short, but a good merged file exists | 3 | 224526, 224566, 224569 — partials cleaned up after merging |
-| official has nothing, **we** have a complete set | **31** | 224576, 224688-224708, 224710-224718 |
-| **complete nowhere, right now** | **11** | 224454, 224461, 224499, 224508, 224549, 224565, 224617, 224637-224639 (n_TOF reprocessing) + **224709** (ours, one job short) |
+| official has nothing, **we** have a complete set | **30** | 224688-224708, 224710-224718 |
+| only an **off-recipe** copy exists | 1 | **224576** — ours, but v11_pssfit_width; see § 4a |
+| **complete nowhere, right now** | **10** | 224461, 224499, 224508, 224549, 224565, 224617, 224637-224639 (n_TOF reprocessing) + **224709** (ours, one job short) |
 
-So **400 of 445 runs are usable straight from n_TOF's partials**, three more from
-their merged file, 31 only from ours, and the 11 with nothing anywhere are all in
-motion — ten being rewritten by n_TOF as this was taken, one being finished by us.
+So **401 of 445 runs are usable straight from n_TOF's partials**, three more from
+their merged file, 30 only from ours, and the rest are in motion.
 Per-run form: [`campaign_qa/results/completed_ledger_2026-08-11.csv`](campaign_qa/results/completed_ledger_2026-08-11.csv).
+
+**A v11 product does not count as coverage.** `completed_ledger.py` marks our
+`prod_v11` runs `OFF_RECIPE` rather than `COVERED`: the recipe differs from
+production on the four LIQ rows and that is a measured 17-21 % liquid yield step.
+Six of the seven are also covered officially, so it changes nothing for them.
+224576 is the one where it matters.
 
 **224569 is the one run whose partials are simply gone** — a 32 GB merged file and
 an empty `completed/` directory. It is fine to read; it is just the only run in the
@@ -156,6 +162,32 @@ the wall and plastic legs and **not** safe for the liquids.
 **Consequence for DREAM run_79.** Of its three gaps, 224573 and 224577 are now
 officially merged at v12, and 224576 is being reprocessed. Once 224576 lands, run_79
 is fully covered by official v12 products and prod_v11 need not be mixed in at all.
+
+## 4a. 224576 cannot be reprocessed by us — the raw is gone
+
+We wanted a v12 copy of 224576 so the off-recipe v11 one could be retired. **It
+cannot be made.** The raw is no longer on EOS:
+
+```
+/eos/experiment/ntof/DAQ/2026/EAR2/X17_measurement/224576/stream1/   -- empty
+```
+
+and it is empty in the EOS *namespace*, not merely absent from the FUSE view, so
+it is not a stub waiting on a recall. The X17 raw files carry **no tape replica**
+— `eos fileinfo` on a surviving one reports layout `replica … d2::t0`, two disk
+copies and zero on tape. Nothing was found under `DAQ/scrapdir` or elsewhere in
+`DAQ/2026/EAR2/`. So once a run's `stream1` was cleared, that raw is gone for us.
+
+**n_TOF still had it this morning** — their reprocessing of 224576 wrote 35
+partials during 08-11, and then the directory was emptied again. So the input
+exists somewhere on their side. **The ask is therefore theirs to satisfy**: either
+finish the 224576 reprocessing, or give us the raw and we will run it at v12.
+
+**Do not delete our v11 copy.** As of this writing `official/completed/224576/` is
+empty and `done/run224576.root` does not exist, which makes
+`reproc/prod_v11/224576/` **the only complete product of run 224576 in
+existence**. It is off-recipe and must never be passed off as the official one —
+but it is also the only thing standing between us and having nothing at all.
 
 ## 4. What we have that n_TOF does not
 

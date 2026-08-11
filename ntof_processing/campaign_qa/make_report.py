@@ -381,8 +381,11 @@ def coverage_table(rows):
     with_merged = [r for r in short if r['merged_bytes'] > 0]
     ours_cover = [r for r in short
                   if r['merged_bytes'] <= 0 and r['ours_state'] == 'COVERED']
+    off_recipe = [r for r in short
+                  if r['merged_bytes'] <= 0 and r['ours_state'] == 'OFF_RECIPE']
     nowhere = [r for r in short
-               if r['merged_bytes'] <= 0 and r['ours_state'] != 'COVERED']
+               if r['merged_bytes'] <= 0
+               and r['ours_state'] not in ('COVERED', 'OFF_RECIPE')]
     body = [
         ('ok', 'official has a complete partial set', len(off_ok),
          'usable — the merge is irrelevant to this', ''),
@@ -390,8 +393,13 @@ def coverage_table(rows):
          'partials cleaned up after merging; the merged file is the product',
          runlist(sorted(r['run'] for r in with_merged))),
         ('ok', 'official has nothing, <strong>we</strong> have a complete set',
-         len(ours_cover), 'our own processing covers it',
+         len(ours_cover), 'our own processing covers it, same recipe',
          runlist(sorted(r['run'] for r in ours_cover))),
+        ('warn', 'only an <strong>off-recipe</strong> copy exists', len(off_recipe),
+         'ours, but v11_pssfit_width — the LIQ rows differ from production. '
+         'Currently the only product of the run in existence, so keep it; '
+         'do not treat it as the official one',
+         runlist(sorted(r['run'] for r in off_recipe))),
         ('warn', 'complete nowhere, right now', len(nowhere),
          'n_TOF is mid-reprocessing these; 224709 is ours, one job short',
          runlist(sorted(r['run'] for r in nowhere))),

@@ -37,7 +37,7 @@ So: **run `beam_state.py` first, and gate every comparison on protons.**
 
 | script | what it answers |
 |---|---|
-| `completed_ledger.py` | **the bookkeeping**: does each run's partial set *cover the run*? Ignores the merge, checks bunch coverage from the files |
+| `completed_ledger.py` | **the bookkeeping**: does each run's partial set *cover the run*? Ignores the merge, checks bunch coverage from the files, and marks an off-recipe product `OFF_RECIPE` rather than counting it |
 | `official_ledger.py` | the same runs at merge level, plus which UserInput each product was actually made with |
 | `compare_identity.py` | hit for hit, ours against official on the same bunches, for the runs that exist in both |
 | `beam_state.py` | whole-run beam state, one open per run, from the `index` tree |

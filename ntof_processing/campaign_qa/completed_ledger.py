@@ -25,6 +25,7 @@ States:
   COVERED      contiguous partials spanning the run -- usable, merged or not
   SHORT        partials present but they stop early, or an index is missing
   MERGED_ONLY  partials cleaned up; the merged file is the only product (224569)
+  OFF_RECIPE   we have a complete set, but not in the production configuration
   ABSENT       nothing at all
 
 Usage:
@@ -42,6 +43,13 @@ COMPLETED = Path('/eos/experiment/ntof/processing/official/completed')
 DONE = Path('/eos/experiment/ntof/processing/official/done')
 OURS = [Path('/eos/experiment/ntof/data/x17/reproc/prod_v12'),
         Path('/eos/experiment/ntof/data/x17/reproc/prod_v11')]
+
+# Only a product made with the production recipe counts as covering a run.
+# `prod_v11` is v11_pssfit_width, which differs from the official v4/v12 on the
+# four LIQ rows and is a 14-21 % liquid yield step -- measured, see
+# FINDINGS_2026-08-11_official_ledger.md. It is real data and worth keeping, but
+# it is NOT a substitute for the official product and must not be counted as one.
+PRODUCTION = {'prod_v12'}
 
 # a hit tree that is populated even on a quiet run; the walls see the flash
 PROBE = ['WALA', 'WALB', 'PSSA', 'LIQA']
@@ -132,6 +140,8 @@ def main():
                 our_n, _, _, ob1, our_last, our_state = coverage(ps, run)
                 if b1 is None:
                     b1 = ob1
+                if our_state == 'COVERED' and our_prod not in PRODUCTION:
+                    our_state = 'OFF_RECIPE'
                 break
 
         rows.append(dict(run=run, off_state=state, off_parts=n,

@@ -64,10 +64,21 @@ UserInput it was made with, and ours was read from
 string differs. We left it as it is, because it is honest provenance — these
 files were produced outside your pass.
 
-**224576 is deliberately not in the list.** We hold it only in an older variant
-(`v11_pssfit_width`, which differs from v4 on the four LIQ rows), and you are
-reprocessing it yourselves. Publishing ours would put a different recipe into the
-official area under the same name.
+**224576 is deliberately not in the list, and it needs your attention.** We hold
+it only in an older variant (`v11_pssfit_width`, which differs from v4 on the four
+LIQ rows — a measured 17-21 % step in liquid yield), so publishing ours would put
+a different recipe into the official area under the same name.
+
+We would happily reprocess it at v4 instead, but **we cannot**: its raw is gone
+from `DAQ/2026/EAR2/X17_measurement/224576/stream1/`, which is empty in the EOS
+namespace, and the X17 raw carries no tape replica (`d2::t0`). Your own
+reprocessing of 224576 wrote 35 partials on 08-11 and the directory was then
+emptied, so the input still exists on your side. As things stand
+`official/completed/224576/` is empty and there is no merged file, which leaves
+our off-recipe copy the only complete product of that run anywhere.
+
+**Either finishing your 224576 reprocessing, or sending us the raw, would close
+it.**
 
 ## If something looks wrong
 

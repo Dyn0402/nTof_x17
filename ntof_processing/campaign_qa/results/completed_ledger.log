@@ -185,7 +185,7 @@
  224451   COVERED     51           1-4007    4007         -      0       -      no
  224452   COVERED     53           1-4144    4144         -      0       -      no
  224453   COVERED     54           1-4223    4223         -      0       -      no
- 224454     SHORT     38           1-2994    2994         -      0       -      no
+ 224454   COVERED     39           1-2994    2994         -      0       -      no
  224455   COVERED      9            1-709     709         -      0       -     yes
  224456   COVERED      1             1-55      55         -      0       -     yes
  224457   COVERED     36           1-2867    2867         -      0       -     yes
@@ -345,7 +345,7 @@
  224614   COVERED     47           1-3749    3749         -      0       -     yes
  224615   COVERED     43           1-3420    3420         -      0       -     yes
  224616   COVERED     51           1-4018    4018         -      0       -     yes
- 224617    ABSENT      0                ?       -         -      0       -      no
+ 224617     SHORT     27           1-4031    4031         -      0       -      no
  224618   COVERED     37           1-2954    2954         -      0       -     yes
  224619   COVERED     41           1-3217    3217         -      0       -     yes
  224620   COVERED     43           1-3381    3381         -      0       -     yes
@@ -365,9 +365,9 @@
  224634   COVERED     17           1-3365    3365         -      0       -     yes
  224635   COVERED     45           1-3560    3560         -      0       -     yes
  224636   COVERED     53           1-4179    4179         -      0       -     yes
- 224637    ABSENT      0                ?       -         -      0       -      no
- 224638    ABSENT      0                ?       -         -      0       -      no
- 224639    ABSENT      0                ?       -         -      0       -      no
+ 224637     SHORT     42           1-3915    3840         -      0       -      no
+ 224638     SHORT     26           1-3297    3297         -      0       -      no
+ 224639     SHORT     34           1-3555    3555         -      0       -      no
  224640   COVERED     30           1-2341    2341         -      0       -     yes
  224641   COVERED     41           1-3252    3252         -      0       -     yes
  224642   COVERED     43           1-3392    3392         -      0       -     yes
@@ -448,7 +448,7 @@
 wrote completed_ledger_2026-08-11.csv
 wrote completed_ledger_2026-08-11.json
 
-official: Counter({'COVERED': 400, 'ABSENT': 41, 'SHORT': 3, 'MERGED_ONLY': 1})
-ours    : Counter({'ABSENT': 408, 'COVERED': 37})
+official: Counter({'COVERED': 401, 'ABSENT': 37, 'SHORT': 6, 'MERGED_ONLY': 1})
+ours    : Counter({'ABSENT': 408, 'COVERED': 30, 'OFF_RECIPE': 7})
 
-covered by NEITHER (13): [224454, 224461, 224499, 224508, 224526, 224549, 224565, 224566, 224617, 224637, 224638, 224639, 224709]
+covered by NEITHER (13): [224461, 224499, 224508, 224526, 224549, 224565, 224566, 224576, 224617, 224637, 224638, 224639, 224709]
