@@ -26,9 +26,11 @@ new data to use it.
 
 **Status: DONE and validated three ways (§2, §3). The scan reduction and the
 join to the dead-time map are done, and the join gave a result (§5): dead time
-follows charge, t ∝ Q^1.2, with three chambers on one curve. The one systematic
-that bounds the absolute scale is still open (§4) — until it is closed, every
-charge here is potentially a lower bound.**
+follows charge, t ∝ Q^1.2, with three chambers on one curve. The systematic that
+bounded the absolute scale is now CLOSED by direct measurement of the monitor's
+impulse response (§4, §8, 2026-08-10): the readback averages over ≥ 0.47 s, so
+`mean − median` IS the time-average current. The charges are measurements, not
+lower bounds, and there is no correction factor.**
 
 ---
 
@@ -146,7 +148,21 @@ illustration, not a result, and should be labelled as one until §6.2 is done.
 
 ---
 
-## 4. The one systematic that bounds everything — DO THIS FIRST
+## 4. The one systematic that bounded everything — ✅ CLOSED 2026-08-10
+
+> **CLOSED by measurement, not by spec-reading.** The monitor's impulse response
+> was measured directly by phase-folding imon against the individual beam pulses
+> (§8). It is a **~1 s averager**: the response to one pulse rises from 0.3 s,
+> peaks at 88 nA about 1.1 s later, and is back at zero by 2.3 s, with an area
+> equal to the charge. The averaging window is **≥ 0.47 s** from a
+> timestamp-free bound, versus the ~10 ms burst. **`mean − median` is the
+> time-average current, the charges below are measurements, and there is no
+> correction factor.** Route 2 (pulser injection) is no longer needed; route 1
+> (the board model) is still a nice-to-have but nothing depends on it.
+>
+> The paragraphs below are kept as the record of what the argument was before it
+> was measured — including the "28 % of samples" inference, which the direct
+> measurement confirms (26.6 % on run_79's det C at the same threshold).
 
 Everything above assumes **the CAEN imon readback preserves the time-average of
 a current burst much shorter than the sample spacing.**
@@ -177,8 +193,9 @@ Three ways to settle it, cheapest first:
    deliberately over 100× would expose any rate-dependent bias directly: a
    monitor that misses bursts gives a Q that *falls* as the rate falls.
 
-Until one of these is done, state the number as **"≥ 100 nC per pulse"** or
-attach the assumption explicitly.
+~~Until one of these is done, state the number as **"≥ 100 nC per pulse"** or
+attach the assumption explicitly.~~ **Superseded — say "100 nC", no inequality.
+See §8.**
 
 ---
 
@@ -313,3 +330,264 @@ builds the MPGD2026 talk — so the report and the talk cannot drift apart.
 
 **Do not** reduce the bulk waveform data for this — the whole point of the
 method is that it needs 8 MB of CSV and no reprocessing.
+
+---
+
+# §8. The monitor's impulse response, measured — 2026-08-10
+
+**Verdict up front: the CAEN imon readback is a ~1 s averager, not a snapshot.
+`mean − median` is the time-average current. Every charge in this document is a
+MEASUREMENT, not a lower bound; there is no correction factor. The residual
+uncertainty on the absolute scale is ±3 % from estimator spread on the one clean
+chamber, not the factor-of-many that §4 feared.**
+
+Code: `imon_response.py` (analysis), `make_imon_figure.py` (the deck figure).
+Products: `results/imon_response_run_79.json`,
+`results/imon_fold_run_79_<det>_{isolated,isolated_labels,recon,labels}.csv`,
+`results/imon_kernel_run_79_<det>.csv`. Slide markup:
+`mpgd26/slides/HANDOFF_imon.md`.
+
+```bash
+.venv/bin/python ntof_july_analysis/flash_charge/imon_response.py \
+    --src /media/dylan/data/x17/beam_july --run run_79
+.venv/bin/python ntof_july_analysis/flash_charge/make_imon_figure.py
+```
+
+## 8.1 Which run, and why not run_158
+
+`run_157/158/159` are **not in the local July mirror** and the August tree could
+not be fetched (the DAQ at 128.141.177.17 was unreachable, lxplus needed a
+Kerberos ticket). The measurement was therefore done on **run_79 sub-runs
+`stat090_0000/0001`** (2026-07-26), which is the *same production setpoint* —
+resist A540/B540/C525/D520, drift 700 V — and is the only production-point
+`hv_monitor.csv` on disk. 7 113 imon samples over 2.01 h, 2 085 logged beam
+pulses at 0.288 Hz.
+
+It is the same measurement: **run_79 det C gives 97 nC/pulse, run_158 det C gives
+97–101 nC/pulse.** Note that in July det **A** carried ~2 µA of leakage and only
+became clean in August (§6.6), so the clean chamber here is **C**; A and D are
+cross-checks.
+
+**If you get the August tree, re-run this on run_158 and run_157.** Nothing about
+the conclusion is expected to move, and the run_157 comparison would settle §6.3
+outright (see §8.7).
+
+## 8.2 The trap was real, and it is the interesting part
+
+`hv_monitor.csv` timestamps are **whole seconds** —
+`time.strftime('%Y-%m-%d %H:%M:%S')`, taken in `hv_control.py:monitor_hvs()`
+*before* the CAEN read cycle (all 20 channels are read within ~16 ms, so the
+channel-order offset is negligible). `monitor_interval` is 1 and the loop is
+`reads; write; time.sleep(1)`, so the **real period is 1.0162 s** and the logger
+drops a whole labelled second every ~81 samples (115 times in 7 113).
+
+That means the sub-second phase of the true read inside its labelled second
+**drifts uniformly over [0, 1)**. Folding on the raw labels therefore convolves
+the true response with a 1 s box — σ = 289 ms — which on its own would smear a
+delta into a ~1 s feature and hand back exactly the reassuring answer. The
+label-based fold also puts apparent response *before* the pulse, which is the
+tell.
+
+Two independent defences were used.
+
+**(a) Timestamp-free tests.** These use no timestamp at all, only counting:
+
+| observable | measured (det C) | what an instantaneous read of a 10 ms burst gives |
+|---|---:|---:|
+| fraction of samples above baseline (+20 nA) | **26.6 %** | 0.29 % |
+| largest single-sample excess | **0.216 µA** | 10.1 µA |
+
+Both discriminate by ~2 orders of magnitude, in the same direction. The second
+one is a *hard bound*: a sample whose averaging window fully contains one burst
+reads `Q/w`, so `w ≥ Q/ΔI_max` = **0.47 s**. (The burst is ms and the window is
+≥ 0.47 s, so "fully contains" holds for all but ~1 % of elevated samples.) Run
+lengths of consecutive elevated samples — 925 singles, 508 pairs, 112 triples —
+say the same thing. Det A and det D give w ≥ 0.49 s and ≥ 0.61 s independently.
+
+**(b) The time base was reconstructed.** The drift is also the cure. For a run of
+consecutively-logged samples, `label[k] ≤ t0 + k·P < label[k]+1` is 2N linear
+inequalities in two unknowns, so the *pattern of dropped seconds* pins (t0, P).
+Solved as an exact convex feasibility problem (ternary search on
+`F(P) = a_lo(P) − a_hi(P)`, which is convex — a grid search gives false negatives
+because the feasible period interval is ~10 µs wide for a 3 500-sample segment),
+on greedy-maximal segments inside each sub-run. Result: **94.9 % of samples
+recovered, median 2 ms, p95 16 ms.**
+
+Validations of the reconstruction, all passed: `floor(t̂) == label` for
+6 728/6 747 samples (19 boundary-rounding cases); the recovered sub-second phase
+histogram is **flat** (699/686/660/678/657/666/681/647/690/683 per 0.1 s bin),
+exactly as a drifting `sleep(1)` loop predicts; and the fold sharpens — the label
+fold's rms width is 0.49 s against the reconstructed 0.458 s, and the label fold
+shows response *before* the pulse, which is impossible.
+
+**Do not turn that rms pair into a quadrature check of the 289 ms box.** I tried;
+it does not work, and the handoff should say so rather than quote a number that
+looks like a closure. Naively you would expect the label fold at
+`sqrt(0.458² + 0.289² + 0.115²) = 0.554 s` (the last term is its own 0.4 s
+binning), and 0.49 s is *less* than that — because both rms values are computed
+over the finite [−0.8, 2.4] s fold window, which clips the smeared tails and
+pulls the label fold's rms down. The qualitative signature (broader, and
+acausal) is the check; the quantitative one would need a wider window.
+
+**The clock offset.** `beam_intensity_*.csv`'s `unix_ts` comes from
+**NXCALS/pytimber** (`beam_monitor/beam_intensity_controller.py`), i.e. the CERN
+timing system, while `hv_monitor.csv` carries the DAQ host clock — so a genuine
+host-to-host offset is possible and had to be bounded, not assumed. A ±3 600 s
+lag scan of the excess series against the 1 s-binned pulse train gives a global
+maximum at **+1 s** (r = 0.302); the nearest competitor is at **+217 s**
+(r = 0.277), which is 6 × the 36 s PS supercycle, i.e. a structural alias, not a
+rival hypothesis. **An offset shifts the response curve; it cannot widen it**, so
+the verdict does not depend on it — and the offset is bounded well below the
+response width regardless. The two halves of the run give fold centroids of
+1.197 s and 1.222 s, so there is no clock drift within the run either (25 ms).
+
+## 8.3 The measured response
+
+Model-free, on **692 isolated pulses** (no other pulse within 3 s before or 2.4 s
+after — both gaps are required; see §8.6), det C:
+
+| quantity | value |
+|---|---:|
+| rises from | ~0.3 s |
+| peak | **88 nA at 1.1 s** |
+| FWHM | **1.0 s** |
+| rms width | 0.46 s |
+| back to zero by | 2.3 s |
+| response before the pulse | 0 ± 2 nA |
+| area | **98 nC per pulse** |
+
+The same shape appears on det A and det D (each divided by its own area, they
+overlay). The **drift-cathode channel `9:2 imon` is exactly constant at
+0.1800 µA** across all 7 113 samples — same crate, same host, same 1 Hz logger,
+no avalanche current — so this is not crate-wide pickup or a logging artefact.
+Randomising the pulse times flattens the fold: χ²/ndf against a flat line is
+**1.03 ± 0.49 for the randomised control against 63 for the real fold**. (Use
+χ², not `max(fold)`: the maximum of ~30 noisy bin means is biased upward, and a
+pure *time shift* is not a valid null here because the 36 s supercycle aliases
+onto itself.)
+
+**Whether the ~1 s smoothing is digital (the board's imon integration/ripple
+filter) or analog (the RC of the HV output filter feeding the resistive layer)
+does not matter, and we cannot tell them apart from this data.** Both are linear,
+both conserve charge, and the peak excursion is 0.216 µA on a channel that
+demonstrably resolves 1 nA and reads det B's 5.6 µA standing leakage linearly —
+26× headroom — so nothing clips. The only scenario that would have biased the
+answer is *burst shorter than the sample spacing AND an instantaneous reader*,
+and that is what §8.2(a) excludes.
+
+## 8.4 Four estimators, one number
+
+| estimator | det C [nC/pulse] |
+|---|---:|
+| `mean − median` (the published one) | 97.1 |
+| `mean − rolling 20th percentile` (leakage-detrended) | 100.5 |
+| **isolated-pulse fold, area** | **98.4** |
+| least-squares deconvolution over all 2 085 pulses | 101.7 |
+
+Spread **±2.5 %**, and det C's answer moves only 98.3 → 100.8 nC as the
+detrending percentile is swept 30 → 5. Take **±3 %** as the systematic on the
+absolute scale at the production point. Any residual bias is in the direction of
+`mean − median` being slightly *low* (the median sits marginally inside the
+elevated population when 27 % of samples are elevated), which is the safe side.
+
+## 8.5 Two by-products worth having
+
+**Charge is proportional to protons — the readback is linear.** The isolated-pulse
+fold split by n_TOF intensity band gives, per 10¹⁰ protons:
+
+| band | pulses | mean intensity | det C | det A | det D |
+|---|---:|---:|---:|---:|---:|
+| parasitic | 279 | 414e10 | 150.6 pC | 268.7 pC | 816.3 pC |
+| dedicated | 413 | 853e10 | 144.4 pC | 228.3 pC | 517.5 pC |
+
+Det C agrees to **4 %** across a factor 2.06 in instantaneous current — so there
+is no amplitude-dependent loss, and every logged pulse really does deliver charge
+in proportion to its protons (i.e. the intensity log is not over-counting
+extractions that never reached the target, which would have inflated `f_pulse`
+and deflated Q). The A/D disagreement (18 %, 58 %) tracks their leakage, and D's
+58 % is one more entry on the "do not trust det D" list (§6.5).
+
+**Det A is recoverable in July.** Its `mean − median` in run_79 is garbage
+(39 nC, and 7–90 nC sub-run to sub-run) purely because its 2 µA leakage drifts
+2.11 → 1.29 µA across the run. Detrended, it gives **143–164 nC/pulse**, which
+agrees with run_158's *clean* det A at 142 nC. That is a nice consistency check
+on both the estimator and the run_79 ↔ run_158 equivalence. **Det D remains
+untrustworthy** either way: 277 nC by `mean − median`, 378–414 nC detrended, and
+373–497 nC as the detrending percentile is swept — its leakage swamps it.
+
+## 8.6 One methodological trap, for whoever extends this
+
+n_TOF's PS supercycle is **strictly periodic: 36 s, 11 pulses (6 dedicated at
+853e10 + 5 parasitic at 414e10), every spacing a multiple of 1.2 s.** Two
+consequences:
+
+1. **Do not split the least-squares deconvolution by intensity band.** The fixed
+   pattern makes the two bands' kernels near-degenerate, and the fit will happily
+   report a 3.3× difference in charge per proton that is entirely an artefact of
+   ill-conditioning. (It did, on the first pass.) Split the *isolated-pulse fold*
+   instead — that is model-free.
+2. **Cut on both gaps, not just the preceding one.** Cutting only on the
+   predecessor and then truncating each sample at its successor makes the
+   long-τ bins a *different, longer-gap* subset of pulses; because the two
+   intensity bands sit at fixed places in the supercycle, that subset has a
+   different mean intensity and it shows up as a **spurious dip in the middle of
+   the response** — a double-humped "response" that is pure selection.
+
+Also: `charge_lib._parse_ts` interprets the DAQ's local-time strings in **the
+local timezone of whatever machine runs the analysis**. It is right on this
+laptop (Europe/Paris, same offset as Geneva) and would be silently wrong by
+hours from a US machine.
+
+## 8.7 What this says about §6.3 (the 15–25 % low-rate excess)
+
+§8.5's linearity result explains it without new physics. run_79's pulse mix
+averages **665e10 protons**; an all-dedicated mix would be **×1.28** in charge
+per *counted* pulse. run_157 caught only **14 residual pulses** in a mostly-off
+period — a set that is both ±27 % Poisson and quite plausibly dedicated-heavy.
+Either effect alone covers the observed 15–25 %.
+
+**The check, when the August mirror is available:** compute the mean logged
+intensity per run and compare `Q/pulse ÷ mean intensity` between run_157 and
+run_158. If those agree, §6.3 closes as a beam-mix bookkeeping effect. If they do
+not, the charging-up hypothesis (charge per pulse falling as rate rises) becomes
+interesting and should be chased with a deliberate rate scan.
+
+## 8.8 What this does NOT rule out
+
+- **The absolute DC calibration of the CAEN ammeter.** This measurement shows the
+  readback conserves the integral of a short burst; it says nothing about whether
+  its nA scale is accurate. That is a board-spec question, and it is the one place
+  where knowing the exact card model would still help. *(One-line question for
+  Dylan: which CAEN board is card 5 of the crate at 128.141.177.244? The model is
+  recorded nowhere in either repo, and the live crate was deliberately not
+  probed — four chambers are taking production data and its CFE server has
+  crashed mid-scan before, `nTof_x17_DAQ/docs/incident_2026-07-05_hv_cfe_crash.md`.)*
+- **Anything about the flash/tail split (§6.4).** The supply current integrates the
+  whole 80 ms cycle and the monitor then smears it over a second, so this method
+  is structurally blind to time structure inside a pulse. The MM waveform work is
+  the handle for that.
+- **Det D, and det B.** Their leakage dominates; nothing here rescues them.
+- **The run_57 HV-scan numbers specifically.** They were not re-measured this way.
+  There is no reason to expect the monitor to behave differently at 580 V than at
+  525 V, but the impulse response was only measured at the production setpoint.
+
+---
+
+# §9. The strip-vs-chamber comparison — CLOSED 2026-08-11
+
+§6.4's "do not naively compare 930 pC to the 142 nC" got its proper treatment
+in `ntof_processing/mm_flash/` (run 224709: same detector A, same day, same 25
+HV plateaus for both instruments). Verdict, in one line: **the two absolute
+scales are consistent once the board is accounted for and the flash is ~4×
+denser at the measured strip than the chamber average — which the strip's own
+intensity compression independently confirms at ~3× through the board's sheet
+capacitance, with zero free parameters.** The board accounting (checkerboard
+pad combs, exact ½ X/Y split, 0.85 image capture, 17 ms ESL drain to the
+y-end buses) is `board_accounting.py`; the write-up is that package's
+`report.html` (also on the CERN notes site) and
+`HANDOFF_CHARGE_COMPARISON_2026-08-11.md` §8. The July slope-factor-2 puzzle
+in §6.4 was already resolved in that package (different gas, unidentifiable
+chamber; on det A in 90/10 the slopes agree to 7 %). Still open there and
+worth doing from this package's side: nothing — the remaining tests (DREAM
+run_160/161 recovery-time profile, pulser through the n_TOF patch, CAEN DC
+scale) all live on the mm_flash side.
