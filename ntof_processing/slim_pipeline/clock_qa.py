@@ -60,7 +60,10 @@ TH = dict(
     # per-bunch scatter: 6.67 ns / 0.62 ppm reference.
     da_rms_warn=15.0, da_rms_fail=30.0,
     dk_rms_ppm_warn=2.0, dk_rms_ppm_fail=5.0,
-    # 953 of 961 bunches fitted on run_77 = 99.2 %.
+    # Of the bunches that HAD BEAM: 100.0000 % over the first campaign
+    # (45,225 parasitic and 49,473 dedicated, two exceptions, both the first
+    # bunch of a sub-run). Empty pulses are excluded from this fraction since
+    # 2026-08-10 -- judged over all bunches it measures the PS, not the fit.
     bunch_fit_frac_warn=0.90, bunch_fit_frac_fail=0.70,
     # residual core after the per-bunch correction: 6 ns RMS by construction.
     resid_rms_warn=12.0, resid_rms_fail=20.0,
@@ -383,9 +386,36 @@ def analyse(d: Path) -> SegmentQA:
     if len(bunches) and 'da_ns' in bunches:
         fit = bunches['fitted'].astype(bool)
         da, dk = bunches['da_ns'][fit], bunches['dk'][fit]
-        frac = float(fit.sum() / max(fit.size, 1))
+        # 'bunches fitted' is a question about the CLOCK FIT, so it must be
+        # asked of the bunches that had beam. Measured 2026-08-10 over the whole
+        # first campaign: 1,658 of the 1,660 bunches that never got their own
+        # (da_b, dk_b) were PS pulses that delivered no protons, and in 114 of
+        # 116 segments the unfitted count equalled the empty-pulse count
+        # exactly. Judged over all bunches, this check reports beam
+        # availability -- an accelerator fact the QA cannot act on -- and its
+        # four campaign WARNs were exactly that. Availability is reported
+        # separately below, and never as a PASS/FAIL.
+        if 'has_beam' in bunches:
+            beam = bunches['has_beam'].astype(bool)
+            fit_scope, scope_txt = beam, 'bunches that had beam'
+        else:
+            beam = np.ones(fit.size, bool)
+            fit_scope, scope_txt = beam, 'bunches (pre-2026-08-10 file: no ' \
+                                         'beam record, empty pulses included)'
+        frac = float(fit[fit_scope].sum() / max(int(fit_scope.sum()), 1))
+        inten = bunches.get('intensity_e10')
         out.perbunch = dict(
             n_bunches=int(fit.size), n_fitted=int(fit.sum()), frac_fitted=frac,
+            n_bunches_beam=int(beam.sum()), n_bunches_empty=int((~beam).sum()),
+            beam_availability=float(beam.mean()) if fit.size else float('nan'),
+            has_beam_column='has_beam' in bunches,
+            parasitic_fraction=(float(np.mean(np.asarray(inten)[beam]
+                                              < C.PARASITIC_E10))
+                                if inten is not None and beam.any()
+                                else float('nan')),
+            intensity_median_e10=(float(np.median(np.asarray(inten)[beam]))
+                                  if inten is not None and beam.any()
+                                  else float('nan')),
             da_rms=float(np.std(da)) if da.size else float('nan'),
             dk_rms_ppm=float(np.std(dk) * 1e6) if dk.size else float('nan'),
             da_hist=_hist(da, -60, 60, 48),
@@ -398,8 +428,61 @@ def analyse(d: Path) -> SegmentQA:
             'bunches fitted',
             _level(frac, TH['bunch_fit_frac_warn'], TH['bunch_fit_frac_fail'],
                    worse='low'), frac,
-            f'{fit.sum():,} of {fit.size:,} bunches got their own correction',
+            f'{int(fit[fit_scope].sum()):,} of {int(fit_scope.sum()):,} '
+            f'{scope_txt} got their own correction'
+            + (f'; {int((~beam).sum()):,} empty pulses excluded '
+               f'(beam availability {beam.mean():.1%})'
+               if (~beam).any() else ''),
             f'>= {TH["bunch_fit_frac_warn"]:.0%}'))
+        # The filter is load-bearing, so assert it ran: no event in the file may
+        # belong to a bunch the beam record says was empty. A no-beam trigger is
+        # detector background whose t_since_flash is referenced to another
+        # background trigger, and it can never match -- 0 of 2,764 did over the
+        # first campaign.
+        if 'has_beam' in bunches:
+            empty_b = bunches['bunch'][~beam]
+            n_leak = int(np.isin(ev['bunch'], empty_b).sum()) if empty_b.size \
+                else 0
+            checks.append(Check(
+                'no-beam pulses filtered out',
+                'PASS' if n_leak == 0 else 'FAIL', n_leak,
+                f'{n_leak:,} trigger(s) from the {empty_b.size:,} empty pulses '
+                f'survived into the events tree', '== 0'))
+            # ...and that what was dropped was really no-beam. DREAM's gate
+            # opens on the PS timing regardless of protons, but only background
+            # walks through it: 1-2 triggers against ~92 in a beam bunch. A
+            # dropped pulse holding a FULL burst means bursts are landing on
+            # the wrong bunches -- the beam record is not what is wrong. This is
+            # the only check that can see a mis-assigned join from the written
+            # file alone, and it costs one ratio.
+            nt = bunches['n_triggers']
+            if (~beam).any() and beam.any():
+                ratio = float(np.median(nt[~beam])
+                              / max(np.median(nt[beam]), 1))
+                out.perbunch['empty_trigger_ratio'] = ratio
+                checks.append(Check(
+                    'dropped pulses look like no beam',
+                    _level(ratio, C.EMPTY_TRIGGER_RATIO_WARN,
+                           C.EMPTY_TRIGGER_RATIO_FAIL), ratio,
+                    f'the {int((~beam).sum()):,} dropped pulses held '
+                    f'{np.median(nt[~beam]):.0f} triggers each against '
+                    f'{np.median(nt[beam]):.0f} in a beam bunch'
+                    + ('' if ratio < C.EMPTY_TRIGGER_RATIO_WARN else
+                       ' -- a no-beam pulse cannot produce a full DREAM burst, '
+                       'so suspect the burst-to-bunch assignment'),
+                    f'<= {C.EMPTY_TRIGGER_RATIO_WARN:g} of the beam median'))
+            else:
+                checks.append(Check(
+                    'dropped pulses look like no beam', 'NA', None,
+                    'no empty pulses in this segment' if beam.all()
+                    else 'no beam bunches to compare against', ''))
+        else:
+            checks.append(Check(
+                'no-beam pulses filtered out', 'NA', None,
+                'no beam record in the bunches tree -- file predates the '
+                'empty-pulse filter, so it may carry no-beam triggers '
+                '(campaign measurement: 0.05 % of triggers, all unmatched)',
+                ''))
         checks.append(Check(
             'per-bunch offset scatter',
             _level(out.perbunch['da_rms'], TH['da_rms_warn'], TH['da_rms_fail']),
@@ -414,6 +497,10 @@ def analyse(d: Path) -> SegmentQA:
             f'<= {TH["dk_rms_ppm_warn"]:g} ppm'))
     else:
         checks.append(Check('bunches fitted', 'NA', None,
+                            'no per-bunch columns -- file predates them', ''))
+        checks.append(Check('no-beam pulses filtered out', 'NA', None,
+                            'no per-bunch columns -- file predates them', ''))
+        checks.append(Check('dropped pulses look like no beam', 'NA', None,
                             'no per-bunch columns -- file predates them', ''))
 
     # ------------------------------------------------------------------ hits
@@ -620,6 +707,19 @@ def analyse(d: Path) -> SegmentQA:
             edge_asymmetry=asym, mid_asym_rms=sig_mid,
             poisson_sigma=float(sig_pois), asym_significance=float(signif),
             ratio=rat)
+        # The same dt histograms as above, with the ringing removed -- what is
+        # left of a family once the after-pulses and the 81-82 ns cable echo
+        # are flagged out (`amp_0 < 0.05 x shadow_amp` on the same channel
+        # within 1 us). Stored beside the raw ones so the two can be drawn
+        # together: on PSS the late tail collapses onto the accidental floor,
+        # and on WAL/LIQ nothing moves, which is the control that says the flag
+        # is not just eating hits.
+        fam_stats[fam]['dt_signal_ring_cut'] = _hist(
+            hits['dt_ns'][m & sig], -W, W, 60)
+        fam_stats[fam]['dt_control_ring_cut'] = _hist(
+            hits['dt_ns'][m & ~sig], -W, W, 60)
+        fam_stats[fam]['n_signal_ring_cut'] = int((m & sig).sum())
+        fam_stats[fam]['n_control_ring_cut'] = int((m & ~sig).sum())
         if np.isfinite(rat) and rat > worst and abs(signif) >= 4.0:
             worst_fam, worst = fam, rat
     out.hits['containment'] = contain
@@ -658,8 +758,17 @@ def report(q: SegmentQA, colour=True) -> str:
          f'  K  {q.clock["K"]:.6e}      T0 {q.clock["T0_ns"]:+9.2f} ns',
          f'  efficiency {q.match["efficiency"]:.3%} '
          f'(held-out {q.match["efficiency_cv"]:.3%})   '
-         f'accidental {q.match["accidental"]:.4%}',
-         '']
+         f'accidental {q.match["accidental"]:.4%}']
+    # The beam, reported and never judged: availability is the PS's business,
+    # and the parasitic mix is what most of the fleet's efficiency spread is
+    # (r = -0.82 over the first campaign).
+    pb = q.perbunch
+    if pb.get('has_beam_column'):
+        L.append(f'  beam       {pb["beam_availability"]:.1%} availability '
+                 f'({pb["n_bunches_empty"]:,} empty of {pb["n_bunches"]:,} '
+                 f'pulses)   {pb["parasitic_fraction"]:.0%} parasitic, '
+                 f'median {pb["intensity_median_e10"]:.0f}e10')
+    L.append('')
     for ch in q.checks:
         mark = dict(PASS='ok  ', WARN='WARN', FAIL='FAIL', NA='--  ')[ch['level']]
         L.append(f'  {c(ch["level"], mark)}  {ch["name"]:<34} {ch["detail"]}')
@@ -686,8 +795,17 @@ def main() -> int:
         return 2
 
     worst, n = 'PASS', {'PASS': 0, 'WARN': 0, 'FAIL': 0}
+    broken = []
     for d in targets:
-        q = analyse(d)
+        # One unreadable directory must not cost the other 118 their verdicts.
+        # It is still an error -- reported at the end and in the exit code --
+        # but a sweep that aborts on the first bad file does not sweep.
+        try:
+            q = analyse(d)
+        except Exception as e:                                  # noqa: BLE001
+            broken.append(f'{d}: {type(e).__name__}: {e}')
+            print(f'  !! {broken[-1]}')
+            continue
         n[q.verdict] = n.get(q.verdict, 0) + 1
         if q.verdict == 'FAIL' or (q.verdict == 'WARN' and worst != 'FAIL'):
             worst = q.verdict
@@ -696,8 +814,9 @@ def main() -> int:
         if a.json:
             (d / 'clock_qa.json').write_text(json.dumps(asdict(q), indent=1))
     print(f'{len(targets)} segment(s): '
-          f'{n["PASS"]} pass, {n["WARN"]} warn, {n["FAIL"]} fail')
-    return 0 if n['FAIL'] == 0 else 1
+          f'{n["PASS"]} pass, {n["WARN"]} warn, {n["FAIL"]} fail'
+          + (f', {len(broken)} UNREADABLE' if broken else ''))
+    return 0 if (n['FAIL'] == 0 and not broken) else 1
 
 
 if __name__ == '__main__':

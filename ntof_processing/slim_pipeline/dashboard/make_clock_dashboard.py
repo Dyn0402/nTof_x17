@@ -356,11 +356,21 @@ def chart_drift(recs):
 
 
 def chart_family_dt(recs):
-    """Signal and +100 us control, per detector family, summed over segments."""
+    """Signal, +100 us control and ringing-cut signal, per detector family.
+
+    The third series is the point of the plot on PSS. The plastics ring: every
+    large pulse is trailed by real secondary pulses out to ~1 us plus a fixed
+    81-82 ns cable echo (`../../pss_ringing/`), and they are most of what the
+    slim window holds -- 6.1x the coincident core. `clock_qa` flags them with
+    `amp_0 < 0.05 x shadow_amp` on the same channel within 1 us and stores the
+    surviving histogram, so the raw and cleaned shapes can be read against each
+    other. What it should show: the PSS late tail collapsing onto the
+    accidental floor, and WAL/LIQ barely moving -- the latter is the control
+    that says the flag removes ringing rather than hits in general.
+    """
     out = []
     for fam in FAMILIES:
-        sig = None
-        ctl = None
+        sig = ctl = cut = cutc = None
         meta = None
         for r in recs:
             fs = r['hits']['families'].get(fam)
@@ -370,29 +380,63 @@ def chart_family_dt(recs):
             c = np.array(fs['dt_control']['counts'], float)
             sig = s if sig is None else sig + s
             ctl = c if ctl is None else ctl + c
+            if 'dt_signal_ring_cut' in fs:
+                k = np.array(fs['dt_signal_ring_cut']['counts'], float)
+                kc = np.array(fs['dt_control_ring_cut']['counts'], float)
+                cut = k if cut is None else cut + k
+                cutc = kc if cutc is None else cutc + kc
             meta = fs['dt_signal']
         if sig is None:
             continue
         f = CH.Frame(h=230, title=f'{fam}: hit time vs prediction',
                      ylabel='hits / bin', xlabel='dt (ns)')
         f.xlim(meta['lo'], meta['hi'])
-        f.ylim(0, max(sig.max(), 1) * 1.1)
+        # Log y. The four series span three decades -- the coincidence peak,
+        # the ringing tail, and the accidental floor the cleaned tail has to
+        # fall onto -- and on a linear axis the only question the plot is asked
+        # ("is the late tail gone?") is decided in a band two pixels tall.
+        floor = min([x[x > 0].min() for x in (sig, ctl, cut, cutc)
+                     if x is not None and (x > 0).any()] or [1.0])
+        f.ylim(max(floor, 1.0) / 3, max(sig.max(), 1) * 3, log=True)
         f.step_hist(meta['lo'], meta['bin'], sig, colour=CH.PALETTE[0],
                     tip=f'{fam} signal')
         f.step_hist(meta['lo'], meta['bin'], ctl, colour=CH.PALETTE[1],
                     tip=f'{fam} +100 us control (accidental floor)')
+        keys = [('signal', CH.PALETTE[0]), ('+100 µs control', CH.PALETTE[1])]
+        cap_cut = ''
+        if cut is not None and cut.sum():
+            # BOTH sides of the subtraction get the flag. The +100 us control
+            # is plastic singles too, so it rings exactly as hard (measured on
+            # the reference segment: 62.7 % of signal hits flagged, 34.9 % of
+            # control ones), and a cleaned signal against a raw control
+            # subtracts a floor that is no longer there -- it reads 122 %
+            # removed and puts the late excess NEGATIVE.
+            f.step_hist(meta['lo'], meta['bin'], cut, colour=CH.PALETTE[2],
+                        tip=f'{fam} signal, ringing flagged out')
+            f.step_hist(meta['lo'], meta['bin'], cutc, colour=CH.PALETTE[3],
+                        tip=f'{fam} +100 us control, ringing flagged out')
+            keys += [('signal, ringing removed', CH.PALETTE[2]),
+                     ('control, ringing removed', CH.PALETTE[3])]
+            late = slice(int(len(sig) * 0.55), None)     # the tail, +100 ns on
+            ex0 = sig[late].sum() - ctl[late].sum()
+            ex1 = cut[late].sum() - cutc[late].sum()
+            cap_cut = (f' Against the equally-flagged control, the ringing cut '
+                       f'takes the late (dt &gt; +100 ns) excess from '
+                       f'{ex0:,.0f} to {ex1:,.0f} hits '
+                       f'({1 - ex1/max(ex0, 1):.0%}), for '
+                       f'{1 - cut.sum()/max(sig.sum(), 1):.0%} of all {fam} '
+                       f'hits in the window.')
         edge = int(len(sig) * 0.05)
         frac = float((sig[:edge].sum() + sig[-edge:].sum() -
                       ctl[:edge].sum() - ctl[-edge:].sum())
                      / max(sig.sum() - ctl.sum(), 1))
         out.append(
             f'<figure>{f.svg()}'
-            + CH.legend([('signal', CH.PALETTE[0]),
-                         ('+100 µs control', CH.PALETTE[1])])
+            + CH.legend(keys)
             + f'<figcaption>{fam}: {frac:.1%} of the background-subtracted '
               f'excess sits in the outer 10 % of the window. Near zero means '
               f'the window contains the coincidence; a large value means it '
-              f'is being cut.</figcaption></figure>')
+              f'is being cut.{cap_cut}</figcaption></figure>')
     return ''.join(out)
 
 
@@ -702,8 +746,31 @@ def build(recs, notes, title, source, coverage=None):
         'Per-bunch rate scatter', 'dk RMS (ppm)', fmt='{:.2f}'))
     H.append(chart_metric(
         recs, lambda r: (r['perbunch'] or {}).get('frac_fitted'),
-        'Fraction of bunches that got their own correction', 'fraction',
-        fmt='{:.1%}'))
+        'Fraction of bunches WITH BEAM that got their own correction',
+        'fraction', fmt='{:.1%}'))
+
+    # The beam, reported and never judged. Availability is the PS's business:
+    # a segment can be perfect and still sit at 0.86, and every one of the
+    # first campaign's four 'bunches fitted' WARNs was exactly that
+    # (FINDINGS_2026-08-10_unfitted_bunches.md). The parasitic mix belongs
+    # beside it because it is most of the efficiency spread above -- r = -0.82
+    # over the campaign, 97.7 % dedicated against 91.2 % parasitic.
+    if any((r['perbunch'] or {}).get('has_beam_column') for r in recs):
+        H.append('<h2>The beam</h2><p>Neither of these is a quality metric. '
+                 'Empty pulses — PS pulses that delivered no protons, '
+                 'intensity below 10e10 with no gamma flash — are filtered out '
+                 'of the slim, and the fraction of them is the accelerator '
+                 'talking, not the fit. The parasitic mix is here because it '
+                 'sets the match efficiency: 97.7 % on dedicated pulses '
+                 'against 91.2 % on parasitic.</p>')
+        H.append(chart_metric(
+            recs, lambda r: (r['perbunch'] or {}).get('beam_availability'),
+            'Beam availability (pulses that delivered protons)', 'fraction',
+            fmt='{:.1%}'))
+        H.append(chart_metric(
+            recs, lambda r: (r['perbunch'] or {}).get('parasitic_fraction'),
+            'Parasitic fraction of the delivered pulses', 'fraction',
+            fmt='{:.1%}'))
 
     H.append('<h2>Residuals</h2>')
     H.append(chart_resid_overlay(recs))

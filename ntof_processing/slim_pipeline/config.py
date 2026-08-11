@@ -19,6 +19,41 @@ REPO = Path(__file__).resolve().parents[2]
 # points for 7x the background (DREAM_NTOF_CALIBRATION.md section 4).
 ACCEPT_NS = 25.0
 
+# ------------------------------------------------------------- the beam record
+# A PS pulse below this delivered NO PROTONS, and the bunch is dropped from the
+# slim before anything is fitted or read.
+#
+# Measured 2026-08-10 over the whole first campaign
+# (`../FINDINGS_2026-08-10_unfitted_bunches.md`): the beam is bimodal at
+# ~413e10 (parasitic, 47.8 %) and ~851e10 (dedicated, 52.2 %), and 1,658 of
+# 96,206 bunches sit at ZERO -- intensity < 1e10 on 97.5 % of them and
+# `tflash == 0` on all of them, i.e. the n_TOF flash finder found no gamma
+# flash either. Nothing separates the populations by less than two orders of
+# magnitude, so this is a classifier and not a tuning knob.
+#
+# What those bunches contain: 0-19 DREAM triggers against 46-139 in a beam
+# bunch, at ~22 Hz against ~1.2 kHz, because DREAM's gate opens on the PS
+# timing whether or not protons arrive. Their hits are SiPM dark counts (WAL
+# 2.80 per trigger, PSS 0.017, LIQ 0.000) and NONE of them matches an n_TOF
+# candidate -- `bunch_join` labels the first background trigger of the gate
+# `is_flash`, so their time base is referenced to nothing.
+EMPTY_PULSE_E10 = 10.0
+
+# How many triggers a dropped (no-beam) pulse may hold, relative to the median
+# beam bunch, before the drop stops being a beam statement and starts being a
+# join failure. Healthy: 1-2 triggers against ~92, i.e. ~0.02. Broken:
+# run_116/stat090_0013 x 224636, a 13 %-overlap proposal that fitted a
+# -1,324 s burst-to-pulse offset, put 66-108 triggers in each "empty" bunch --
+# ratio ~1.0. Nothing real lives between these.
+EMPTY_TRIGGER_RATIO_WARN = 0.25
+EMPTY_TRIGGER_RATIO_FAIL = 0.50
+
+# Splits the two beam families, for reporting only -- nothing is cut on it.
+# Per-segment match efficiency correlates with the parasitic fraction at
+# r = -0.82 (97.7 % dedicated vs 91.2 % parasitic), which is most of the
+# campaign's 93.6-97.3 % spread, so a segment's mix is worth carrying.
+PARASITIC_E10 = 600.0
+
 # Fewest DREAM physics events a segment needs before it is worth fitting a clock
 # to. Checked straight after the join, BEFORE the candidate pass, so a proposal
 # that did not pan out costs seconds instead of minutes: the wall-clock overlap

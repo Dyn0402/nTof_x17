@@ -40,12 +40,19 @@ def make_segment(d: Path, *, efficiency=0.958, accidental=0.00046,
                  K=1.1063e-4, T0=-252.6, arm_shift=None, arm_resid_shift=None,
                  da_rms=6.5, dk_rms_ppm=0.6, frac_fitted=0.99, flash_hits=0,
                  late_clip=False, primary_out_frac=0.02, ringing_loud_frac=0.0,
-                 bootstrap_snr=180.0, with_bunches=True,
+                 bootstrap_snr=180.0, with_bunches=True, with_beam=True,
+                 empty_frac=0.0, empty_leak=0, empty_full_bursts=False,
                  dream_run='run_00', dream_subrun='synthetic', ntof_run=0,
                  n_ev=None):
     """Write a synthetic ntof_hits directory with the requested properties."""
     d.mkdir(parents=True, exist_ok=True)
-    global N_EV
+    global N_EV, RNG
+    # Reseed per case, so a case's data depends only on its own arguments.
+    # Sharing one stream across CASES makes every case depend on how many draws
+    # the ones before it happened to make: adding a case in the middle moved a
+    # borderline one (resid_mean = 10.0 against a 10 ns per-arm threshold)
+    # across its line, which is noise in the harness rather than a finding.
+    RNG = np.random.default_rng(20260809)
     N_EV = n_ev or 40_000
     n_flash = 500
     n_phys = N_EV - n_flash
@@ -82,15 +89,48 @@ def make_segment(d: Path, *, efficiency=0.958, accidental=0.00046,
         corr_cv_ns=np.zeros(N_EV, np.float32))
 
     ub = np.unique(bunch)
-    nfit = int(frac_fitted * ub.size)
-    fitted = np.zeros(ub.size, np.uint8); fitted[:nfit] = 1
+    # Empty pulses: PS pulses that delivered no protons. A real slim drops
+    # their triggers and keeps the bunch row with has_beam = 0, so by
+    # construction they are never fitted -- 'bunches fitted' must not count
+    # them, and any of their triggers found in the events tree is a filter
+    # regression. `empty_leak` injects exactly that.
+    n_empty = int(empty_frac * ub.size)
+    has_beam = np.ones(ub.size, np.uint8)
+    inten = RNG.choice([413.0, 851.0], ub.size)
+    n_trig = np.full(ub.size, N_EV // ub.size, np.int32)
+    if n_empty:
+        has_beam[-n_empty:] = 0
+        inten[-n_empty:] = RNG.uniform(0.0, 1.0, n_empty)
+        # A no-beam pulse holds background only: ~2 triggers against ~90.
+        # `empty_full_bursts` is the mis-assigned join, where the dropped
+        # bunches hold full bursts and the beam record is not what is wrong.
+        n_trig[-n_empty:] = (n_trig[-n_empty:] if empty_full_bursts
+                             else RNG.integers(0, 5, n_empty))
+    beam_ub = ub[has_beam == 1]
+    nfit = int(frac_fitted * beam_ub.size)
+    fitted = np.zeros(ub.size, np.uint8)
+    fitted[np.isin(ub, beam_ub[:nfit])] = 1
     bunches = dict(
         bunch=ub.astype(np.int32),
-        n_triggers=np.full(ub.size, N_EV // ub.size, np.int32),
+        n_triggers=n_trig,
+        has_beam=has_beam,
+        intensity_e10=inten.astype(np.float32),
         fitted=fitted,
         da_ns=RNG.normal(0, da_rms, ub.size).astype(np.float32),
         dk=(RNG.normal(0, dk_rms_ppm, ub.size) * 1e-6).astype(np.float32),
         n_core=np.full(ub.size, 40, np.int32))
+    if not with_beam:
+        del bunches['has_beam'], bunches['intensity_e10']
+    if n_empty and not empty_leak:      # the filter did its job
+        keep = np.isin(bunch, beam_ub)
+        events = {k: v[keep] for k, v in events.items()}
+        ev_id, is_flash, bunch, t = (events['eventId'], events['is_flash'],
+                                     events['bunch'], events['t_dream_ns'])
+        matched, resid, arm = (events['matched'], events['residual_ns'],
+                               events['arm'])
+        phys = is_flash == 0
+        m = matched == 1
+        n_flash = int((~phys).sum()); n_phys = int(phys.sum()); N_EV = ev_id.size
 
     # hits, in four populations mirroring what a real slim carries:
     #   background   6 per matched trigger, any tree, small amplitude
@@ -224,6 +264,24 @@ CASES = [
      'per-arm residuals centred', 'WARN'),
     ('per-bunch scatter',  dict(da_rms=22.0),               'per-bunch offset scatter', 'WARN'),
     ('bunches unfitted',   dict(frac_fitted=0.60),          'bunches fitted', 'FAIL'),
+    # An empty-pulse-heavy segment is the PS having a bad night, not a bad
+    # clock: 20 % of its pulses delivered no protons, every bunch that DID get
+    # beam was fitted, and the check must stay green. Judged over all bunches
+    # this was 'bunches fitted' 0.80 = WARN, which is what the first campaign's
+    # four WARNs actually were.
+    ('empty pulses, beam fine', dict(empty_frac=0.20),      'bunches fitted', 'PASS'),
+    ('empty pulses + real deficit', dict(empty_frac=0.20, frac_fitted=0.60),
+     'bunches fitted', 'FAIL'),
+    ('no-beam triggers left in', dict(empty_frac=0.10, empty_leak=1),
+     'no-beam pulses filtered out', 'FAIL'),
+    # the run_116/stat090_0013 signature: the join fitted a -1,324 s offset and
+    # paired unrelated bursts to unrelated pulses, so the "empty" bunches held
+    # 66-108 triggers each. The beam record is not what is wrong there.
+    ('dropped pulses hold full bursts', dict(empty_frac=0.10,
+                                             empty_full_bursts=True),
+     'dropped pulses look like no beam', 'FAIL'),
+    ('old file, no beam record', dict(with_beam=False),
+     'no-beam pulses filtered out', 'NA'),
     ('hits on flash',      dict(flash_hits=250),            'flash triggers carry no hits', 'FAIL'),
     # truncation is ONE-SIDED late excess at the edge; the symmetric pedestal
     # a biased control leaves must NOT fire it (that is the 'healthy' case)
@@ -241,6 +299,13 @@ CASES = [
     ('no bootstrap record', dict(bootstrap_snr=0.0),        'coarse peak above floor', 'NA'),
     ('old file, no bunches', dict(with_bunches=False),      'bunches fitted', 'NA'),
 ]
+
+
+# Collateral that is CORRECT, not a threshold accident: a defect that two
+# checks can both see should light both up. A global +10 ns residual offset
+# displaces every arm by +10 ns, which is exactly what the per-arm check is
+# built to notice (its FAIL threshold is 10).
+ALSO_FAILS = {'fit badly off': ('per-arm residuals centred',)}
 
 
 def main() -> int:
@@ -269,7 +334,8 @@ def main() -> int:
             # the healthy control must stay clean in every non-verdict case
             if check is not None and want in ('WARN', 'FAIL'):
                 others = [c for c in q.checks
-                          if c['name'] != check and c['level'] == 'FAIL']
+                          if c['name'] != check and c['level'] == 'FAIL'
+                          and c['name'] not in ALSO_FAILS.get(name, ())]
                 if others and name not in ('K unphysical',):
                     fails.append(f'{name}: collateral FAIL in '
                                  f'{[c["name"] for c in others]}')

@@ -224,8 +224,55 @@ all three open threads and reworked the QA around the plastic ringing:
   99.2–104.4 %, not mis-handled yield.
 
 **Fleet after the rework and the 224571 refit: 112 PASS, 4 WARN (the known
-bunches-fitted quartet), 0 FAIL, 0 outliers.** Dashboard republished. Note
+bunches-fitted quartet — resolved 2026-08-10, §8), 0 FAIL, 0 outliers.** Dashboard republished. Note
 for the pending EOS publication (§6 item 1): the 116 on lxplus predate the
 `shadow_amp`/`shadow_dt` branches (QA covers them via the in-window
 fallback); re-slimming the campaign (~2.5 h wall) would bake the branches in,
 or publish as-is and let analyses recompute in-window.
+
+## 8. Addendum, 2026-08-10: the bunches-fitted quartet is beam availability
+
+The four 'bunches fitted' WARNs are not a fit defect. **1,658 of the 1,660
+bunches that never got their own `(da_b, dk_b)` are empty PS pulses** — PKUP
+intensity < 10e10 and `tflash = 0`, so no protons and no gamma flash. They hold
+0-19 DREAM triggers against 46-139 in a beam bunch, the triggers they do hold
+are detector background (WAL dark counts only: PSS 0.017 and LIQ 0.000 hits per
+trigger), and none of the 2,764 of them matches anything. In 114 of 116 segments
+the unfitted count *equals* the empty-pulse count exactly.
+
+Parasitic pulses are fitted 100.0000 % of the time, so the deficit does not skew
+parasitic; empty is a third category. By-product: per-segment efficiency
+correlates with the segment's parasitic fraction at r = -0.82 (97.7 % dedicated
+vs 91.2 % parasitic), which explains most of the 93.58-97.31 % spread §2 called
+unexplained.
+
+Full account, with the recommended `bunches`-tree column that would let
+`clock_qa` separate beam availability from fit quality:
+[`FINDINGS_2026-08-10_unfitted_bunches.md`](FINDINGS_2026-08-10_unfitted_bunches.md).
+
+### 8.1 What changed in the pipeline, 2026-08-10
+
+Empty pulses are now **dropped at the join**, before the candidate pass reads
+anything, and the `bunches` tree carries `has_beam` + `intensity_e10` for every
+bunch the sub-run touched — so the table is both the beam record and the record
+of what was filtered. `clock_qa` asks 'bunches fitted' of the bunches that *had*
+beam, adds 'no-beam pulses filtered out' and 'dropped pulses look like no beam',
+and reports availability and beam mix without judging them. The dashboard grows
+a "The beam" section and a ringing-removed series on the per-family dt plots.
+
+Regression evidence: the reference pair (224572, which has **zero** empty
+pulses) re-slims bit for bit — same efficiency, same event count, same
+2,515,178 hits — and `validate.py` still reproduces the published calibration,
+match and liquid diagonal.
+
+**Smoke test, n_TOF 224636** (the worst run for availability, 493 of 4,179
+pulses empty): the filter drops 265 pulses holding 683 triggers on
+`run_116/stat090_0014` and 184 holding 480 on `stat090_0015` — the numbers the
+study predicted, to the trigger.
+
+It also found something the study could not see. `run_116/stat090_0013`, a
+13 %-overlap proposal that is **not** among the 116 successful segments, showed
+22 "empty" bunches holding 66–108 triggers each. A no-beam pulse cannot produce
+a full DREAM burst: its join had fitted a **−1,324 s** burst-to-pulse offset and
+paired unrelated bursts to unrelated pulses. That segment fails its clock fit
+anyway, but the ratio names the cause minutes earlier, and it is now a check.

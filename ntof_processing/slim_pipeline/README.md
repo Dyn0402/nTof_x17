@@ -30,6 +30,7 @@ python validate.py /tmp/slim_test/runs/run_79/stat090_0000/ntof_hits/ntof_hits_*
             -> candidate list                          reads WAL + PSS
 [2] fit     COARSE SEARCH for T0, then K, T0, per-arm offsets, then
             per-bunch (da_b, dk_b)                               seconds
+    (empty PS pulses are dropped at [0], before any of this)
 [3] pass 2  every scintillator hit within +-1 us of the FULLY CORRECTED
             prediction, plus the same width at +100 us  reads all 12 trees
 [4] write   one ROOT file + three JSON sidecars
@@ -73,12 +74,43 @@ Flash triggers are tagged in `events` and get no n_TOF hits.
 cut is `amp_0 < 0.05 × shadow_amp` (`../pss_ringing/`); storing the floats
 instead of the boolean keeps the thresholds re-tunable without re-slimming.
 
-`events` — one row per DREAM trigger including flash and unmatched ones, so
-"no n_TOF partner" is distinguishable from "not written": `eventId`, `bunch`,
-`t_dream_ns`, `is_flash`, `t_pred_ns`, `matched`, `residual_ns`, `arm`,
-`da_ns`, `dk`, `corr_ns`, `corr_cv_ns`.
+`events` — one row per DREAM trigger of a bunch **that had beam**, flash and
+unmatched ones included, so "no n_TOF partner" is distinguishable from "not
+written": `eventId`, `bunch`, `t_dream_ns`, `is_flash`, `t_pred_ns`, `matched`,
+`residual_ns`, `arm`, `da_ns`, `dk`, `corr_ns`, `corr_cv_ns`.
 
-`bunches` — `bunch`, `n_triggers`, `fitted`.
+`bunches` — `bunch`, `n_triggers`, `fitted`, `da_ns`, `dk`, `n_core`, and
+(since 2026-08-10) `has_beam`/`intensity_e10`. **This table spans every bunch
+the sub-run touched, including the ones whose triggers were filtered out**, so
+it is both the beam record and the record of what the slim dropped.
+
+### Empty pulses are filtered, and the file says so
+
+A PS pulse that delivered **no protons** (`intensity_e10 < 10`, and `tflash = 0`
+independently) is dropped at the join, before anything is read or fitted. Its
+bunch stays in `bunches` with `has_beam = 0` and its trigger count intact.
+
+Measured over the whole first campaign
+(`../FINDINGS_2026-08-10_unfitted_bunches.md`): 1,658 of 96,206 bunches, holding
+0–19 DREAM triggers each against 46–139 in a beam bunch. DREAM's gate opens on
+the PS timing whether or not protons arrive, so an empty pulse still produces a
+burst of detector background — SiPM dark counts, WAL 2.80 hits per trigger
+against PSS 0.017 and LIQ 0.000 — and `bunch_join` labels the first of those
+background triggers `is_flash`, which leaves the whole burst referenced to
+nothing. None of the campaign's 2,764 such triggers matched an n_TOF candidate.
+
+The filter guards itself: a dropped pulse that holds a *full* DREAM burst is not
+a beam statement but a mis-assigned join, and `clock_qa` fails the segment on
+the ratio ('dropped pulses look like no beam'). Found in the wild on
+`run_116/stat090_0013 × 224636`, a 13 %-overlap proposal whose join fitted a
+−1,324 s burst-to-pulse offset.
+
+**Two things follow for an analysis.** Use `intensity_e10` for the
+dedicated/parasitic split — the two families sit at ~851e10 and ~413e10, and
+they do not match equally well (97.7 % against 91.2 %, which is most of the
+fleet's 93.6–97.3 % efficiency spread). And do not read `frac_fitted` as a
+quality number on a file written before 2026-08-10: there it silently includes
+empty pulses, i.e. it is beam availability.
 
 ### `is_control` is not optional
 

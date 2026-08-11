@@ -7,7 +7,10 @@ Two passes over the n_TOF source, and the clock is fully fitted between them, so
 NOTHING is ever cut on a provisional calibration:
 
   [0] join    DREAM eventId -> BunchNumber, t_since_flash, is_flash
-              (bunch_join; beam record only, independent of the PSA settings)
+              (bunch_join; beam record only, independent of the PSA settings),
+              then DROP the bunches whose PS pulse delivered no protons -- see
+              `bunch_table` and C.EMPTY_PULSE_E10. They stay in the `bunches`
+              tree with has_beam = 0 so the file still says what was dropped.
   [1] pass 1  wall top/bottom offsets, then the N1081B SINGLES emulation over
               the whole segment -> the candidate list. Reads WAL + PSS.
   [2] fit     K, T0, per-arm offsets, then per-bunch (da_b, dk_b). Seconds.
@@ -98,6 +101,52 @@ def join_events(seg: Segment, log=print):
     log(f'  joined {len(ev):,} DREAM events, {flash.sum():,} flash triggers, '
         f'{ev["BunchNumber"].nunique()} bunches')
     return ev
+
+
+def bunch_table(ev, log=print):
+    """(per-bunch table, has_beam per EVENT) from the joined events.
+
+    One row per bunch the sub-run touched, EMPTY PULSES INCLUDED, because the
+    accounting is the point: the rows say what was dropped and why, and the
+    fraction of them with beam is this segment's beam availability. Bunches the
+    beam record does not describe at all (NaN intensity, which the join only
+    produces for a burst it could not place) count as beam and are kept -- an
+    unknown is not a reason to throw data away.
+    """
+    b = ev['BunchNumber'].to_numpy().astype(np.int64)
+    inten = ev['bunch_intensity_e10'].to_numpy().astype(np.float64)
+    ub, first, cnt = np.unique(b, return_index=True, return_counts=True)
+    bi = inten[first]                       # intensity is a property of the bunch
+    beam = ~(bi < C.EMPTY_PULSE_E10)        # NaN -> True, deliberately
+    tbl = dict(bunch=ub, n_triggers=cnt, intensity_e10=bi, has_beam=beam)
+    if ub.size == 0:                    # nothing joined; the caller says why
+        return tbl, np.zeros(b.size, bool)
+    n_drop = int(cnt[~beam].sum())
+    log(f'  beam record: {int(beam.sum()):,} of {ub.size:,} bunches carried '
+        f'protons ({beam.mean():.2%} availability); dropping {ub.size - int(beam.sum()):,} '
+        f'empty pulses and their {n_drop:,} triggers')
+    if beam.any():
+        par = float(np.mean(bi[beam] < C.PARASITIC_E10))
+        log(f'  beam mix: {par:.1%} parasitic (< {C.PARASITIC_E10:g}e10), '
+            f'median intensity {np.median(bi[beam]):.0f}e10')
+    # An empty pulse should hold a HANDFUL of triggers, because DREAM's gate
+    # opens on the PS timing but only background walks through it: measured
+    # 1-2 against ~92 in a beam bunch. An empty pulse holding a FULL burst is
+    # therefore not a beam statement at all -- it means bursts are landing on
+    # the wrong bunches. Seen 2026-08-10 on run_116/stat090_0013 x 224636, a
+    # 13 %-overlap proposal whose join fitted a -1,324 s offset and paired
+    # unrelated bursts to unrelated pulses: 22 "empty" bunches holding 66-108
+    # triggers each, one burst apiece. That segment fails its clock fit anyway,
+    # but the ratio sees it several minutes earlier and says why.
+    if (~beam).any() and beam.any():
+        r = float(np.median(cnt[~beam]) / max(np.median(cnt[beam]), 1))
+        if r >= C.EMPTY_TRIGGER_RATIO_WARN:
+            log(f'  !! the dropped pulses hold {np.median(cnt[~beam]):.0f} '
+                f'triggers each against {np.median(cnt[beam]):.0f} in a beam '
+                f'bunch (ratio {r:.2f}). A no-beam pulse cannot produce a full '
+                f'DREAM burst -- suspect the burst-to-bunch assignment, not '
+                f'the beam')
+    return tbl, np.isin(b, ub[beam])
 
 
 def pass1_candidates(seg: Segment, bunches, log=print):
@@ -312,11 +361,31 @@ def run_segment(seg: Segment, out_base: Path | None = None,
     log(f'  {len(files)} n_TOF file(s), cache {io.CACHE_DIR}')
 
     ev = join_events(seg, log=log)
-    phys = ~ev['is_flash'].to_numpy()
+
+    # Empty pulses out, BEFORE anything is fitted or read. They are PS pulses
+    # that delivered no protons (C.EMPTY_PULSE_E10, and the measurement behind
+    # it); the triggers DREAM took during their gates are detector background
+    # with a time base referenced to a background trigger rather than a flash,
+    # so they can only add junk to the fit, the file and every analysis
+    # downstream. The bunches themselves stay in the `bunches` tree with
+    # has_beam = 0, which is where beam availability is read from.
+    btbl, keep = bunch_table(ev, log=log)
+    if not keep.all():
+        ev = ev[keep].reset_index(drop=True)
+
+    phys = ~ev['is_flash'].to_numpy() if len(ev) else np.zeros(0, bool)
     if int(phys.sum()) < min_events:
-        raise LowJoin(f'{int(phys.sum()):,} physics events joined, below the '
-                      f'{min_events:,} needed to fit a clock -- the proposed '
-                      f'overlap did not pan out')
+        # Say which of the two it is. "No beam" and "no overlap" look the same
+        # from here -- both end with an empty frame -- and calling a zero join
+        # a no-beam segment is a lie about the accelerator. Seen on
+        # run_116/stat090_0017 x 224636, which joined nothing at all.
+        n_b = int(btbl['bunch'].size)
+        why = ('the proposed overlap did not pan out' if n_b == 0
+               or btbl['has_beam'].any() else
+               f'all {n_b} joined bunches were empty pulses -- no beam '
+               f'delivered in this segment at all')
+        raise LowJoin(f'{int(phys.sum()):,} physics events joined with beam, '
+                      f'below the {min_events:,} needed to fit a clock -- {why}')
     ev_id = ev['eventId'].to_numpy().astype(np.int64)
     ev_b = ev['BunchNumber'].to_numpy().astype(np.int64)
     ev_t = ev['t_since_flash_ns'].to_numpy().astype(np.float64)
@@ -371,15 +440,26 @@ def run_segment(seg: Segment, out_base: Path | None = None,
     # Per-bunch fit parameters belong on the bunch, not smeared over its events:
     # a drifting clock shows up as structure in da_ns/dk ACROSS bunches, and
     # that is the first thing to look at when a segment misbehaves.
-    ub, cnt = np.unique(ev_b, return_counts=True)
+    #
+    # The table spans every bunch the sub-run touched, empty pulses included, so
+    # it doubles as the record of what was filtered: `has_beam` says whether the
+    # PS delivered, `intensity_e10` says how much, and `n_triggers` is what the
+    # bunch held before the cut. Analyses select on it -- has_beam for a clean
+    # sample, intensity for the dedicated/parasitic split.
+    ub = btbl['bunch']
     pb_a = np.array([pb.get(int(b), (np.nan,) * 3)[0] for b in ub])
     pb_k = np.array([pb.get(int(b), (np.nan,) * 3)[1] for b in ub])
     pb_n = np.array([pb.get(int(b), (0, 0, 0))[2] for b in ub])
-    bunches_tbl = dict(bunch=ub.astype(np.int32), n_triggers=cnt.astype(np.int32),
+    bunches_tbl = dict(bunch=ub.astype(np.int32),
+                       n_triggers=btbl['n_triggers'].astype(np.int32),
+                       has_beam=btbl['has_beam'].astype(np.uint8),
+                       intensity_e10=btbl['intensity_e10'].astype(np.float32),
                        fitted=np.isin(ub, list(pb)).astype(np.uint8),
                        da_ns=pb_a.astype(np.float32),
                        dk=pb_k.astype(np.float32),
                        n_core=np.asarray(pb_n).astype(np.int32))
+    beam = btbl['has_beam']
+    bi = btbl['intensity_e10']
 
     meta = dict(
         calibration=dict(
@@ -388,9 +468,17 @@ def run_segment(seg: Segment, out_base: Path | None = None,
             accept_ns=C.ACCEPT_NS, slim_ns=slim_ns,
             control_shift_ns=C.CONTROL_SHIFT_NS,
             shadow_hold_ns=C.SHADOW_HOLD_NS, shadow_ratio=C.SHADOW_RATIO,
-            tb_offsets_ns={a: [float(x) for x in offs[a]] for a in offs},
+            # `measure_tb_offsets` returns {group: offset}, so iterating it
+            # yields the GROUP INDICES: every slim written before 2026-08-10
+            # recorded its top/bottom calibration as [0, 1, 2, 3]. The data was
+            # never affected -- the real dict goes to `fast_singles.all_arms` --
+            # but the file's record of its own calibration was wrong, which is
+            # the one thing a provenance sidecar exists to get right.
+            tb_offsets_ns={a: [float(offs[a][g]) for g in range(4)]
+                           for a in offs},
             thresholds_mv=dict(wall=thr['wall'], plastic=thr['plastic'],
                                polled_at=str(thr.get('polled_at'))),
+            empty_pulse_e10=C.EMPTY_PULSE_E10, parasitic_e10=C.PARASITIC_E10,
             n_bunches_fitted=len(pb), fit=ginfo),
         qa=dict(
             efficiency=qa_in['efficiency'], efficiency_cv=qa_cv['efficiency'],
@@ -402,6 +490,17 @@ def run_segment(seg: Segment, out_base: Path | None = None,
             n_hits_control=int((hits['is_control'] == 1).sum()),
             n_hits_read=int(n_src),
             hits_per_trigger=float(hits['eventId'].size / max(phys.sum(), 1)),
+            # The beam, as this segment saw it. `beam_availability` is a PS
+            # statement, not a data-quality one, and the two are worth keeping
+            # apart: a segment can be perfect and still sit at 0.86.
+            n_bunches=int(beam.size), n_bunches_beam=int(beam.sum()),
+            n_bunches_empty=int((~beam).sum()),
+            beam_availability=float(beam.mean()),
+            n_triggers_empty=int(btbl['n_triggers'][~beam].sum()),
+            parasitic_fraction=(float(np.mean(bi[beam] < C.PARASITIC_E10))
+                                if beam.any() else float('nan')),
+            intensity_median_e10=(float(np.median(bi[beam]))
+                                  if beam.any() else float('nan')),
             seconds=round(time.time() - t_start, 1)),
         provenance=dict(
             dream_run=seg.dream_run, dream_subrun=seg.dream_subrun,
