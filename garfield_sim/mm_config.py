@@ -340,6 +340,40 @@ GAS_MIXTURES = [
                        ("n2", 1.0)],
         "penning":    {"mode": "manual", "rP": 0.40, "gas": "ar"},
     },
+
+    # ── SPS det4 wet quaternary — Ar/CF4/iC4H10 88/10/2 + H2O ─────────────────
+    # Added 2026-08-11, queued fill-in work. Dry base is the
+    # Ar_CF4_iC4H10_88_10_2 entry above; det4's bench humidity is not
+    # measured any more precisely than a 1.3-1.7 % H2O range, so this is a
+    # 3-point bracket (1.3/1.5/1.7 %) rather than a single point, same
+    # reasoning as the det3 contaminant diagnosis grid above. CF4 and iC4H10
+    # fractions held fixed, H2O traded against Ar.
+    #
+    # Penning: manual, rP = 0.40, gas = ar. Same fix and same reasoning as
+    # the dry Ar_CF4_iC4H10_88_10_2 entry above -- auto mode does not
+    # decompose this quaternary into the Ar->iC4H10 sub-system that actually
+    # has a built-in Garfield++ parameterisation, so it would silently run
+    # at rP = 0. H2O (IP 12.62 eV) sits above both Ar metastables (11.55 /
+    # 11.72 eV), same as every other wet mixture in this file, so it opens
+    # no new Penning channel and rP = 0.40 stays the upper bracket.
+    {
+        "label":      "Ar_CF4_iC4H10_H2O_86p7_10_2_1p3",
+        "components": [("ar", 86.7), ("cf4", 10.0), ("ic4h10", 2.0),
+                       ("h2o", 1.3)],
+        "penning":    {"mode": "manual", "rP": 0.40, "gas": "ar"},
+    },
+    {
+        "label":      "Ar_CF4_iC4H10_H2O_86p5_10_2_1p5",
+        "components": [("ar", 86.5), ("cf4", 10.0), ("ic4h10", 2.0),
+                       ("h2o", 1.5)],
+        "penning":    {"mode": "manual", "rP": 0.40, "gas": "ar"},
+    },
+    {
+        "label":      "Ar_CF4_iC4H10_H2O_86p3_10_2_1p7",
+        "components": [("ar", 86.3), ("cf4", 10.0), ("ic4h10", 2.0),
+                       ("h2o", 1.7)],
+        "penning":    {"mode": "manual", "rP": 0.40, "gas": "ar"},
+    },
 ]
 
 # ── Voltage scan ──────────────────────────────────────────────────────────────
