@@ -15,6 +15,17 @@ error), so both arms go through exactly the accounting FLEET_DIGEST uses.
 Verdict rule (T0_PRIOR_2026-08-11 §8): ADOPT if nothing regresses beyond noise
 (within5 −0.1, far +0.1, core +2 %) and something improves; else FALLBACK.
 The verdict is advice — the campaign runbook says who decides.
+
+⚠ THIS LEAVES THE LIVE ACCOUNTING JSONs HOLDING THE LAST ARM'S NUMBERS.
+The parquets are restored (the `finally` below), but `wft/efficiency/`,
+`wft/angles/` and `wft/alignment/` are *products* of the arm that ran last and
+are NOT restored. Anything reading them afterwards — digest.py, the mpgd26
+figure builders — will silently mix one generation's JSONs with another's
+parquet. This bit us twice on 2026-08-12: once here across the gate, once when
+an old parquet was pushed through this same path to prove a recovery, leaving
+det6's live JSONs 0.5 pp off the campaign numbers.
+**After any arm evaluation, re-run 01→04 on the live parquet before trusting
+or publishing anything downstream.**
 """
 import argparse
 import json
