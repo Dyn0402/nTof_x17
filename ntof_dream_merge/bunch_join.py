@@ -223,7 +223,23 @@ def dream_event_to_bunch(run: str, subrun: str, ntof_run: int,
                      delta_margin=int(best_n - second_n),
                      pulse_match_margin=mr.get('lock_margin'),
                      pulse_match_chosen_by=mr.get('lock_chosen_by'),
-                     pulse_match_r_sig=mr.get('lock_r_sig'))
+                     pulse_match_r_sig=mr.get('lock_r_sig'),
+                     # MEASURED extent of the sub-run's beam-synchronised
+                     # triggering, so nothing downstream has to estimate it.
+                     # The coverage map's duration is file count x 47.1 s when
+                     # the DAQ recorded no stop time, and that estimator was
+                     # wrong three times on 2026-08-12 alone: it produced a
+                     # bogus +41 bunch-shift prediction, a false accusation
+                     # that a good product was silently corrupt, and the
+                     # campaign's only apparently-unexplained failure
+                     # (run_81/stat090_0001 x 224580: 31.3 min estimated
+                     # against 48.4 measured, which moved its overhang from
+                     # 0.311 to 0.559 and across the bootstrap threshold).
+                     # The overlap MINUTES were right every time; it is always
+                     # this denominator. With n_bursts and n_matched beside it,
+                     # both the burst and wall-clock overhangs are computable
+                     # from the product with no reconstruction.
+                     subrun_span_s=float(epoch.max() - epoch.min()))
     return out
 
 
