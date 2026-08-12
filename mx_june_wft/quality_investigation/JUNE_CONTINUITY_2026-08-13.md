@@ -146,6 +146,18 @@ session; the n_TOF reconstruction session briefed (w0/kw stopgap, slope gate,
 LCG matching gotcha). Still queued post-freeze: restore w0/kw in `plane_fit`
 itself; head-on X-plane fit fragility (46 events, 0.2 %).
 
+## 5d · Arm-D (det7) beam-side sign mirror: bench records checked, clean
+
+The run_145 beam session reports arm D fitting with a mirrored x-plane sign
+vs arms A/B/C (det4-SPS-style connector inversion suspected). June bench
+records exonerate the map: mx17_7's `dream_feus` ordering is identical to
+det2/3/4, and all five June alignments (hits and wft) converge at
+`ref_x_sign=+1`, θ 89.2–90.1°, positive-slope correlations — a mirrored map
+cannot produce det7's 0.62 mm core σ. The suspect is beam-side: July install
+re-cabling, arm-D mounting parity (D pairs against B across the target), or
+the pointing fit's `sign_z` for that arm. Handed back to the beam session
+with a discriminating test (externally-confirmed multi-arm track through D).
+
 ## 6 · The remade report
 
 `mx_june_wft/report/make_grand_report.py` now emits
