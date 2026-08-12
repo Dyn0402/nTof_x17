@@ -12,10 +12,16 @@ The cheap structural tests are not sufficient any more, for two reasons found on
     for 224526 it computes want = ceil(22/4) = 6 and the truncated 6-partial
     official product PASSES. The guard cannot see the loss.
 
-So this asks the only question that matters: **for every bunch that had beam,
-did any detector record a hit?** It resolves the source the way
+So this asks the question those miss: **for every bunch that had beam, did the
+processing actually produce a record?** It resolves the source the way
 `slim_pipeline.config.ntof_files` does -- non-empty merged file preferred,
-partial set as fallback -- and reads the same trees the slim will.
+partial set as fallback -- and counts distinct `PKUP` bunches against the
+`index` tree's beam bunches.
+
+An earlier version probed WAL/PSS instead and condemned 61 early runs at
+"0.0 % coverage". They were fine: the detectors were commissioned progressively
+and those runs have only PKUP and SILI, so the probe read nothing. **An absent
+tree is not absent data** -- see the PROBE comment below.
 
 Usage (lxplus, LCG view sourced):
     python3 -u slim_ready.py --out=slim_ready.txt [--jobs=12] [--runs=a,b,c]
@@ -34,9 +40,25 @@ DAQ = Path('/eos/experiment/ntof/DAQ/2026/EAR2/X17_measurement')
 COMPLETED = Path('/eos/experiment/ntof/processing/official/completed')
 DONE = Path('/eos/experiment/ntof/processing/official/done')
 
-# A bunch counts as recorded if ANY of these fired, so one dead detector cannot
-# condemn a run.
-PROBE = ['WALA', 'WALB', 'PSSA', 'PSSB']
+# PKUP -- the proton pickup -- is the completeness probe, for three reasons:
+#
+#   * It exists in EVERY run. The detectors were commissioned progressively:
+#     224266-224329 have only PKUP and SILI, 224330 adds WAL, and PSS/LIQ appear
+#     later. Probing WAL/PSS condemned 61 early runs at "0.0 % coverage" when the
+#     trees simply were not there -- absent tree is not absent data.
+#   * It tracks the failure this is looking for. The loss mode is whole raw
+#     FILES missing, which drops every tree together; 224526's truncated product
+#     has exactly 440 PKUP entries for its 440 surviving bunches.
+#   * It is ~one entry per beam pulse -- thousands, not the tens of millions a
+#     hit tree carries, so the sweep is fast and cannot exhaust memory.
+#
+# What it does NOT test is whether the detectors were working: a bunch that was
+# processed but whose detectors were silent still counts. That is a physics-QA
+# question (compare_campaign.py), not a completeness one.
+PROBE = 'PKUP'
+# Recorded for context only -- which detectors that run actually had.
+DETECTORS = ['WALA', 'WALB', 'WALC', 'WALD', 'PSSA', 'PSSB', 'PSSC', 'PSSD',
+             'LIQA', 'LIQB', 'LIQC', 'LIQD', 'SILI']
 BEAM_P = 1e12
 READY_FRAC = 0.98
 CHUNK = 4_000_000        # entries per read; caps worker RSS at ~tens of MB
@@ -60,7 +82,7 @@ def source_for(run):
 def check(run):
     out = {'run': run, 'source': 'none', 'nfiles': 0, 'bunches': 0,
            'beam': 0, 'covered': 0, 'frac': None, 'state': 'ABSENT',
-           'contiguous': None, 'note': ''}
+           'contiguous': None, 'detectors': '', 'note': ''}
     files, kind = source_for(run)
     out['source'], out['nfiles'] = kind, len(files)
     if not files:
@@ -86,20 +108,20 @@ def check(run):
         out['state'] = 'NO_BEAM'
         return out
 
-    hits = set()
-    bad = 0
-    cov = 0
-    # Probe one tree first. If WALA alone already accounts for every beam bunch,
-    # adding more cannot change the verdict, and reading four trees on every run
-    # costs ~4x for nothing. The rest only rescue a run whose first detector was
-    # dead or dropping bunches.
-    for probe in ([PROBE[0]], PROBE[1:]):
-        bad += _scan(files, probe, hits)
-        hb = np.fromiter((b in hits for b in bn), bool, len(bn))
-        cov = int((beam & hb).sum())
-        if cov >= READY_FRAC * out['beam']:
-            break
+    try:
+        out['detectors'] = ','.join(t for t in DETECTORS if t in f0)
+    except Exception:
+        pass
 
+    hits = set()
+    bad = _scan(files, [PROBE], hits)
+    if not hits and bad == 0 and PROBE not in f0:
+        out['state'] = 'NO_PROBE'
+        out['note'] = f'{PROBE} tree absent'
+        return out
+
+    hb = np.fromiter((b in hits for b in bn), bool, len(bn))
+    cov = int((beam & hb).sum())
     out['covered'] = cov
     out['frac'] = round(cov / out['beam'], 5)
     out['state'] = 'READY' if out['frac'] >= READY_FRAC else 'INCOMPLETE'
@@ -183,12 +205,14 @@ def main():
 
     ready = sorted(by.get('READY', []) + by.get('NO_BEAM', []))
     bad = sorted(by.get('INCOMPLETE', []) + by.get('UNREADABLE', [])
-                 + by.get('ABSENT', []))
+                 + by.get('ABSENT', []) + by.get('NO_PROBE', []))
 
     L = ['# n_TOF X17 EAR2 2026 -- runs ready to slim',
          f'# generated {datetime.now():%Y-%m-%d %H:%M} by campaign_qa/slim_ready.py',
          '# test: of the bunches with beam (PulseIntensity > 1e12), what fraction',
-         f'#       recorded a hit in any of {"/".join(PROBE)}. READY at >= {READY_FRAC:.0%}.',
+         f'#       has a {PROBE} entry. READY at >= {READY_FRAC:.0%}. PKUP is used because',
+         '#       it exists in every run and is lost with the raw file, unlike the',
+         '#       detector trees, which appear only as they were commissioned.',
          '# source resolved as slim_pipeline.config.ntof_files does.',
          '',
          f'## READY -- {len(ready)} runs']
