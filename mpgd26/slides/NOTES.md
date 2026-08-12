@@ -13,7 +13,7 @@ page (confirmed positional, not content-specific, by swapping slide order).
 `make_pdf.sh` sidesteps it by printing each slide to its own single-page PDF
 and merging with `pdfunite`.
 
-Current: **53 slides** (title, outline, motivation incl. the **5-frame EAR2
+Current: **56 slides** (title, outline, motivation incl. the **5-frame EAR2
 beam-line build-up, 2026-08-11**, detectors, **n_TOF setup — the 9-frame 3-D
 build-up, 2026-08-10**, **Status — 11 slides, drafted 2026-08-09**, summary,
 backup incl. the two imon teaching slides, 3 status backups, the old
@@ -227,7 +227,7 @@ renders.** No slide was added or removed; every change is inside the drawing.
 **Two new backup slides: the target, in full** (2026-08-11, Dylan — *"add a
 backup slide with full details on how this target works (cooling, layers, etc).
 Would be good for me in the future. Feel free to design a more detailed
-visualization"*). Slides **20 and 21**, and they are the **source of record for
+visualization"*). Slides **46 and 47**, and they are the **source of record for
 the target in this deck**:
 
 1. *"The n_TOF spallation target, layer by layer — Target #3"* — the assembly cut
@@ -265,9 +265,19 @@ added: the **10° beam-to-target angle** is a yaw about the *vertical* axis, so 
 foreshortens to nothing on a view of the plate face. It is in the layers figure,
 where the horizontal proton arrow and the yawed stack are both in frame.
 
-**Deck is now 56 printed slides** — fine, it is a menu; `RUNNING_ORDER.md` holds
-the 16-slide cut. `mpgd26_talk_draft.pdf` was regenerated on 2026-08-11 and is
-current at 56 pages.
+**Deck is now 56 printed slides** — 43 of main flow, a `Backup` divider, then 12
+backup slides. Fine: it is a menu, and `RUNNING_ORDER.md` holds the 16-slide cut.
+`mpgd26_talk_draft.pdf` is current at 56 pages.
+
+⚠️ **Slide numbers in this file are a moving target.** The deck went 51 → 53 → 56
+in two days and the setup section was renumbered when it landed, so any "slide N"
+written here may be a day stale — the two target slides quoted as **20 and 21**
+when they were written are now **46 and 47**. Identify a slide by its **title** and
+re-derive the number; the check is one command:
+
+```
+cd mpgd26/slides && grep -n 'class="title' index.html | nl
+```
 
 **Left:**
 
