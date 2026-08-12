@@ -58,20 +58,42 @@ def fetch(eos_path, dest):
         sh(['cp', '-r', eos_path, dest])
 
 
-def fetch_decoded(eos_sub, dest, feus):
-    """Only the detector's FEU files from decoded_root (…_NN.root)."""
-    os.makedirs(dest, exist_ok=True)
+def _ls(eos_dir):
     url = os.environ.get('EOS_URL', 'root://eospublic.cern.ch/')
+    if os.path.isdir(eos_dir):
+        return os.listdir(eos_dir)
+    out = subprocess.run(['xrdfs', url, 'ls', eos_dir], check=True,
+                         capture_output=True, text=True).stdout
+    return [os.path.basename(l.strip()) for l in out.splitlines() if l.strip()]
+
+
+def _datrun_stem(name):
+    """'..._datrun_260628_01H34_003_07.root' -> '260628_01H34' (acquisition)."""
+    import re
+    m = re.search(r'_datrun_(\d+_\d+H\d+)_', name)
+    return m.group(1) if m else None
+
+
+def fetch_decoded(eos_sub, dest, feus, m3_dir):
+    """Only the detector's FEU files from decoded_root (…_NN.root), and only
+    from acquisitions the M3 tracking dir covers at top level. A false-start
+    acquisition restarts event ids at 0; its decoded events collide with the
+    main run and get cross-matched against the wrong segment's rays (this put
+    620 duplicate-id rows in g_det3_wknd's campaign table, 2026-08-13)."""
+    os.makedirs(dest, exist_ok=True)
     src = eos_sub + '/decoded_root'
-    if os.path.isdir(src):
-        names = os.listdir(src)
-    else:
-        out = subprocess.run(['xrdfs', url, 'ls', src], check=True,
-                             capture_output=True, text=True).stdout
-        names = [os.path.basename(l.strip()) for l in out.splitlines()
-                 if l.strip()]
+    names = _ls(src)
+    m3_stems = {s for s in (_datrun_stem(n) for n in _ls(m3_dir)
+                            if n.endswith('.root')) if s}
     pats = tuple(f'_{f:02d}.root' for f in feus)
     picked = [n for n in names if n.endswith(pats)]
+    if m3_stems:
+        skipped = [n for n in picked if _datrun_stem(n) not in m3_stems]
+        if skipped:
+            print(f'[job] skipping {len(skipped)} decoded files from '
+                  f'acquisitions absent in the M3 dir: '
+                  f'{sorted({_datrun_stem(n) for n in skipped})}', flush=True)
+        picked = [n for n in picked if _datrun_stem(n) in m3_stems]
     if not picked:
         sys.exit(f'FATAL: no decoded files matching FEUs {feus} in {src}')
     for n in picked:
@@ -112,12 +134,12 @@ def main():
     sub_local = os.path.join(tree, run, subrun)
     fetch(f'{eos_run}/run_config.json',
           os.path.join(tree, run, 'run_config.json'))
-    fetch_decoded(eos_sub, os.path.join(sub_local, 'decoded_root'),
-                  [feux, feuy])
-    fetch(f'{eos_sub}/combined_hits_root',
-          os.path.join(sub_local, 'combined_hits_root'))
     m3 = 'm3_tracking_root_v2' if row['has_m3v2'] == '1' else 'm3_tracking_root'
     fetch(f'{eos_sub}/{m3}', os.path.join(sub_local, m3))
+    fetch_decoded(eos_sub, os.path.join(sub_local, 'decoded_root'),
+                  [feux, feuy], m3_dir=f'{eos_sub}/{m3}')
+    fetch(f'{eos_sub}/combined_hits_root',
+          os.path.join(sub_local, 'combined_hits_root'))
 
     # ---- frozen code on the path, config synthesized from the row
     sys.path[:0] = [CODE, os.path.join(CODE, 'mx_june_cosmic_qa'),
@@ -167,7 +189,18 @@ def main():
                          min_nclus=M3_MIN_NCLUS)
     _xa, _ya, evn = get_xy_angles(rays.ray_data)
     filt = set(int(e) for e in evn)
-    print(f'[job] {len(filt):,} M3-matched events', flush=True)
+    m3_has_nclus = bool(getattr(rays, 'has_nclus', True))
+    print(f'[job] {len(filt):,} M3-matched events '
+          f'(NClus branches: {m3_has_nclus})', flush=True)
+    if not m3_has_nclus:
+        # chi2-only fallback = a DIFFERENT selection than every local
+        # accounting (g_det3_wknd 2026-08-13: 36,745 vs 26,670 events, 5.3 %
+        # of good rays silently absent). Refuse rather than mislabel.
+        sys.exit('FATAL: M3 NClus branches unavailable in '
+                 f'{cfg.m3_tracking_dir} on this stack — the recipe would '
+                 'silently degrade to chi2-only. Reprocess the run with '
+                 'm3_tracking_root_v2 or run on a stack that reads these '
+                 'files (JUNE_CONTINUITY_2026-08-13.md §5b).')
     cal = CalibrationBundle.load(bundle)
     out = os.path.join(out_dir, 'events.parquet')
     reconstruct_run(cfg, cal, out, event_filter=filt, jobs=args.jobs,
@@ -176,7 +209,9 @@ def main():
     with open(os.path.join(out_dir, 'job_row.json'), 'w') as f:
         json.dump(dict(row, bundle_used=bundle_name,
                        vrefit=bool(args.vrefit), out_tag=args.out_tag or '',
-                       off_conditions=(row['tier'] == 'C')), f, indent=1)
+                       off_conditions=(row['tier'] == 'C'),
+                       n_matched=len(filt), m3_has_nclus=m3_has_nclus),
+                  f, indent=1)
     print('[job] done:', out_dir, flush=True)
 
 

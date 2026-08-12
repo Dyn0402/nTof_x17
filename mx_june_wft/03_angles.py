@@ -14,8 +14,18 @@ Two things are measured, and the second is the one that matters:
    angle range, which is the compression signature. This is the test that
    catches a chain that has quietly reacquired the old bias.
 
-Planes with |tan| < 0.08 carry no slope information (``slope_reliable``) and are
-excluded from both — including them is how a bias sneaks back in.
+Coverage (changed 2026-08-13): the residual/bias accounting uses EVERY ok
+plane — the old ``slope_reliable`` gate (|tan| >= 0.08) was a hits-chain
+inheritance (the time-ladder angle has no lever arm head-on; June filled that
+band with the 33/34 signature-hybrid). The forward fit measures the head-on
+band natively: on det3-golden it is unbiased (|bias| <= 0.15 deg) at the same
+sigma68 as the inclined bands with 88-97 % sign fidelity, while the gate was
+masking 37-44 % of reconstructed planes (JUNE_CONTINUITY_2026-08-13.md §5b).
+The JSON also reports the |theta| < 5 deg band (``s68_lt5_deg`` — the June
+hybrid's headline convention) and the old gated numbers (``*_relonly``) for
+continuity. **Implied-v keeps the |tan_ref| >= 0.08 bins**: it divides by
+tan_ref, so the head-on band genuinely carries no velocity information there
+— that part of the old caveat stands.
 
     ../.venv/bin/python mx_june_wft/03_angles.py <run_key>
 Outputs: <OUT_BASE>/wft/angles/{angular_resolution.json, angles.png}
@@ -87,9 +97,20 @@ def main():
         tx, ty = cm._rotate_ref_tangents(r, params)
         ref[int(r.event_id)] = (tx, ty)
 
+    # duplicate event ids (multi-datrun collisions) crash .loc lookups and are
+    # untrustworthy rows anyway — keep neither copy
+    dup = df['event_id'].duplicated(keep=False)
+    if dup.any():
+        print(f'WARNING: dropping {int(dup.sum())} rows with duplicate '
+              f'event ids ({df.loc[dup, "event_id"].nunique()} ids)')
+        df = df[~dup]
     idx = df.set_index('event_id')
     summary = {'run_key': args.run_key, 'v_cal_um_ns': v_cal,
-               'basis': 'waveform-first (wft)', 'planes': {}}
+               'basis': 'waveform-first (wft)',
+               'coverage': 'full — slope_reliable not gated (2026-08-13); '
+                           'implied-v unchanged (|tan_ref| >= 0.08 bins)',
+               'planes': {}}
+    LT5 = 0.0875                              # tan(5 deg)
     fig, axs = plt.subplots(2, 2, figsize=(13, 9))
     for i, plane in enumerate(('x', 'y')):
         eids = [e for e in idx.index if e in ref and idx.loc[e, f'{plane}_ok']]
@@ -98,17 +119,35 @@ def main():
         rel = idx.loc[eids, f'{plane}_slope_reliable'].to_numpy().astype(bool)
         w = idx.loc[eids, f'{plane}_w'].to_numpy()
 
-        use = rel & np.isfinite(tan_fit) & np.isfinite(tan_ref)
-        dth = (np.degrees(np.arctan(tan_fit[use]))
-               - np.degrees(np.arctan(tan_ref[use])))
-        sig, med = robust_sigma(dth), float(np.median(dth))
-        s68 = float(np.percentile(np.abs(dth - med), 68)) if len(dth) else np.nan
+        finite = np.isfinite(tan_fit) & np.isfinite(tan_ref)
+        use = finite                              # full coverage (see docstring)
+        use_rel = rel & finite                    # old gated selection
+        dth_all = (np.degrees(np.arctan(tan_fit[use]))
+                   - np.degrees(np.arctan(tan_ref[use])))
+        sig, med = robust_sigma(dth_all), float(np.median(dth_all))
+        s68 = (float(np.percentile(np.abs(dth_all - med), 68))
+               if len(dth_all) else np.nan)
+        dth_rel = (np.degrees(np.arctan(tan_fit[use_rel]))
+                   - np.degrees(np.arctan(tan_ref[use_rel])))
+        sig_rel = robust_sigma(dth_rel)
+        med_rel = float(np.median(dth_rel)) if len(dth_rel) else np.nan
+        lt5 = use & (np.abs(tan_ref) < LT5)
+        dth5 = (np.degrees(np.arctan(tan_fit[lt5]))
+                - np.degrees(np.arctan(tan_ref[lt5])))
+        med5 = float(np.median(dth5)) if len(dth5) else np.nan
+        s68_5 = (float(np.percentile(np.abs(dth5 - med5), 68))
+                 if len(dth5) else np.nan)
 
         ax = axs[0, i]
-        ax.hist(dth, bins=np.linspace(-8, 8, 100), histtype='step', lw=2,
-                label=f'median {med:+.2f}, sigma {sig:.2f}, s68 {s68:.2f} deg')
+        ax.hist(dth_all, bins=np.linspace(-8, 8, 100), histtype='step', lw=2,
+                label=f'full coverage: median {med:+.2f}, sigma {sig:.2f}, '
+                      f's68 {s68:.2f} deg')
+        ax.hist(dth5, bins=np.linspace(-8, 8, 100), histtype='step', lw=1.4,
+                ls='--',
+                label=f'|theta|<5 deg: s68 {s68_5:.2f} deg (n={lt5.sum():,})')
         ax.set_xlabel('reconstructed - reference angle [deg]')
-        ax.set_title(f'{plane}: per-event angle residual (n={use.sum():,})')
+        ax.set_title(f'{plane}: per-event angle residual (n={use.sum():,}, '
+                     f'full coverage)')
         ax.legend(fontsize=8)
         ax.axvline(0, color='gray', lw=0.8)
 
@@ -117,7 +156,7 @@ def main():
         vimp = w * 1e3 / tan_ref
         ctr, medv, errv = [], [], []
         for lo, hi in ANGLE_BINS:
-            m = use & (at >= lo) & (at < hi)
+            m = use_rel & (at >= lo) & (at < hi)   # implied-v: old gated basis
             ctr.append(0.5 * (lo + hi))
             medv.append(float(np.nanmedian(vimp[m])) if m.sum() else np.nan)
             errv.append(robust_sigma(vimp[m]) / max(np.sqrt(m.sum()), 1)
@@ -138,12 +177,17 @@ def main():
                   if np.isfinite(medv).any() else np.nan)
         summary['planes'][plane] = dict(
             n=int(use.sum()), bias_deg=med, sigma_deg=sig, s68_deg=s68,
+            n_lt5=int(lt5.sum()), bias_lt5_deg=med5, s68_lt5_deg=s68_5,
+            n_relonly=int(use_rel.sum()), bias_deg_relonly=med_rel,
+            sigma_deg_relonly=sig_rel,
             implied_v=medv, implied_v_bins=[list(b) for b in ANGLE_BINS],
             implied_v_spread=spread,
             frac_slope_reliable=float(np.mean(rel)) if len(rel) else np.nan)
         print(f'{plane}: n={use.sum():,}  bias {med:+.2f} deg  sigma {sig:.2f} deg  '
-              f's68 {s68:.2f}  implied-v spread {spread:.2f} um/ns  '
-              f'(slope_reliable {100*np.mean(rel):.0f} %)')
+              f's68 {s68:.2f}  |t|<5deg s68 {s68_5:.2f} (n={lt5.sum():,})  '
+              f'implied-v spread {spread:.2f} um/ns  '
+              f'(gated would keep {100*np.mean(rel):.0f} %: '
+              f'bias {med_rel:+.2f} sigma {sig_rel:.2f})')
 
     fig.tight_layout()
     fig.savefig(os.path.join(out_dir, 'angles.png'), dpi=110)

@@ -358,18 +358,20 @@ def fig_angle_corr(cfg):
 
 def main():
     keys = [a for a in sys.argv[1:] if not a.startswith('-')] or JUNE_KEYS
+    angles_only = '--angles-only' in sys.argv
     for key in keys:
         cfg = get_config(key)
         print(f'== {key} ({cfg.DET_NAME})')
-        d, box, params = per_ray_table(cfg)
-        out = cfg.out_dir('wft', 'efficiency')
-        d.to_csv(os.path.join(out, 'ray_hit_miss_list.csv'), index=False)
-        print(f'  {len(d):,} rays in active box; integrated within '
-              f'{100 * d["within"].mean():.1f}%')
-        fig_sliding(cfg, d, box, params)
-        fig_pos_corr(cfg, d)
-        fig_scatter(cfg, d, box, params)
-        fig_wide_breakdown(cfg)
+        if not angles_only:
+            d, box, params = per_ray_table(cfg)
+            out = cfg.out_dir('wft', 'efficiency')
+            d.to_csv(os.path.join(out, 'ray_hit_miss_list.csv'), index=False)
+            print(f'  {len(d):,} rays in active box; integrated within '
+                  f'{100 * d["within"].mean():.1f}%')
+            fig_sliding(cfg, d, box, params)
+            fig_pos_corr(cfg, d)
+            fig_scatter(cfg, d, box, params)
+            fig_wide_breakdown(cfg)
         fig_angle_corr(cfg)
         print(f'  figures written under {cfg.OUT_BASE}/wft/')
 
