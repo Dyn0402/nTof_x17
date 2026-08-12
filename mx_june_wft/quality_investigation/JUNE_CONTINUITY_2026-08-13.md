@@ -184,6 +184,15 @@ positive-u wall pairs). Testable from slim occupancy alone; on the beam
 session's queue. Bench involvement CLOSED; published arm-A/fleet v numbers
 unaffected.
 
+Fourth round (beam session, occupancy test): wall-side hypotheses
+DISFAVORED — D's +u pairs have fleet-normal rates (0.17/0.31 vs A's
+0.18/0.29) and amplitudes; the one-sided compression must live in the
+beam-side geometry description of D or D's reconstruction on that half.
+Multi-arm confirmed-track test is now the primary instrument. Byproduct for
+the record: **WALD detn 7 (pair 3, −u side) runs at half the fleet-typical
+median amplitude (666 vs ~1050–1300) — weak SiPM channel**, unrelated to the
+compression but relevant to any WALD hit-efficiency accounting.
+
 ## 6 · The remade report
 
 `mx_june_wft/report/make_grand_report.py` now emits
