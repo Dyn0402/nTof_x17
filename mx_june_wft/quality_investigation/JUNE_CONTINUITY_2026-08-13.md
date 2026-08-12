@@ -124,6 +124,28 @@ efficient":
   (`decoded_root/_false_start_01H29/`), mirroring the M3 quarantine, so no
   future reco consumes them.
 
+## 5c · Resolution (early 8-13): detA lands at ~93 %, fixes propagated
+
+Full local re-reconstruction of `g_det3_wknd` at the frozen code+bundle:
+**within 5 mm 93.0 %, reco-at-all 97.2 %, core σ 0.444 mm** — matching
+sat_det3 (93.3 %) as predicted; the "less efficient detector A" was entirely
+the campaign-job artifact. w0/kw-corrected angles: bias −0.06/+0.02°,
+σθ 1.17/1.14°, |θ|<5° σ68 1.33/1.26° at full coverage (June hybrid: 1.63°).
+(First re-reco pre-dated the decoded false-start quarantine and carried 175
+colliding ids; an event-level dedup mistakenly clobbered its candidates
+sidecar, so the final table is a clean re-reco with the quarantine in place —
+no collisions by construction.)
+
+Fixes made everywhere per Dylan's instruction (commit `0f35a3c`):
+`03_angles.py` full-coverage accounting (+ `s68_lt5_deg`, `*_relonly`
+continuity fields, loud dup-id handling; implied-v keeps the gated basis);
+`run_reco_job.py` restricts decoded fetches to M3-covered acquisitions,
+records `n_matched`/`m3_has_nclus`, and FATALs on NClus-less M3 reads.
+Fleet rerun with these fixes requested from the `cosmic_reprocess_12-8-26`
+session; the n_TOF reconstruction session briefed (w0/kw stopgap, slope gate,
+LCG matching gotcha). Still queued post-freeze: restore w0/kw in `plane_fit`
+itself; head-on X-plane fit fragility (46 events, 0.2 %).
+
 ## 6 · The remade report
 
 `mx_june_wft/report/make_grand_report.py` now emits
