@@ -39,6 +39,7 @@ DONE = Path('/eos/experiment/ntof/processing/official/done')
 PROBE = ['WALA', 'WALB', 'PSSA', 'PSSB']
 BEAM_P = 1e12
 READY_FRAC = 0.98
+CHUNK = 4_000_000        # entries per read; caps worker RSS at ~tens of MB
 
 
 def source_for(run):
@@ -81,7 +82,37 @@ def check(run):
     beam = pi > BEAM_P
     out['bunches'], out['beam'] = int(len(bn)), int(beam.sum())
 
+    if out['beam'] == 0:
+        out['state'] = 'NO_BEAM'
+        return out
+
     hits = set()
+    bad = 0
+    cov = 0
+    # Probe one tree first. If WALA alone already accounts for every beam bunch,
+    # adding more cannot change the verdict, and reading four trees on every run
+    # costs ~4x for nothing. The rest only rescue a run whose first detector was
+    # dead or dropping bunches.
+    for probe in ([PROBE[0]], PROBE[1:]):
+        bad += _scan(files, probe, hits)
+        hb = np.fromiter((b in hits for b in bn), bool, len(bn))
+        cov = int((beam & hb).sum())
+        if cov >= READY_FRAC * out['beam']:
+            break
+
+    out['covered'] = cov
+    out['frac'] = round(cov / out['beam'], 5)
+    out['state'] = 'READY' if out['frac'] >= READY_FRAC else 'INCOMPLETE'
+    if bad:
+        out['note'] = f'{bad} unreadable tree(s)'
+    return out
+
+
+def _scan(files, trees, hits):
+    """Union the distinct BunchNumbers of `trees` across `files` into `hits`.
+
+    Returns the number of unreadable trees.
+    """
     bad = 0
     for p in files:
         try:
@@ -89,30 +120,26 @@ def check(run):
         except Exception:
             bad += 1
             continue
-        for t in PROBE:
-            if t in g:
-                try:
-                    # np.unique FIRST. A hit tree carries tens of millions of
-                    # entries but only a few thousand distinct bunches, and
-                    # set(arr.tolist()) materialises the whole thing as Python
-                    # ints -- that took the process pool out with 16 workers.
-                    a = g[t]['BunchNumber'].array(library='np')
-                    hits |= set(np.unique(a).tolist())
+        for t in trees:
+            if t not in g:
+                continue
+            try:
+                # A hit tree carries tens of millions of entries but only a few
+                # thousand distinct bunches. Two traps, each of which took the
+                # process pool out before the read was chunked:
+                # set(arr.tolist()) materialises the lot as Python ints, and
+                # even .array() alone is ~240 MB for a big tree -- times four
+                # trees, times N workers. Read a window and reduce it at once.
+                br = g[t]['BunchNumber']
+                n = br.num_entries
+                for lo in range(0, n, CHUNK):
+                    a = br.array(library='np', entry_start=lo,
+                                 entry_stop=min(lo + CHUNK, n))
+                    hits.update(np.unique(a).tolist())
                     del a
-                except Exception:
-                    bad += 1
-    if bad:
-        out['note'] = f'{bad} unreadable tree(s)'
-
-    if out['beam'] == 0:
-        out['state'] = 'NO_BEAM'
-        return out
-    hb = np.fromiter((b in hits for b in bn), bool, len(bn))
-    cov = int((beam & hb).sum())
-    out['covered'] = cov
-    out['frac'] = round(cov / out['beam'], 5)
-    out['state'] = 'READY' if out['frac'] >= READY_FRAC else 'INCOMPLETE'
-    return out
+            except Exception:
+                bad += 1
+    return bad
 
 
 def ranges(rs):
