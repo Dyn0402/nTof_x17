@@ -55,6 +55,8 @@ GAP_S = 0.5             # burst split, same convention as pulse_match
 MATCH_TOL_S = 0.05      # burst<->bunch accept window; ~10x the 5 ms residual MAD
                         # and ~1/24 of the 1.2 s PS basic period, so it cannot
                         # reach the neighbouring pulse
+PS_SPACING_S = 1.2      # PS basic period: the closest a WRONG lock can sit, so
+                        # a bootstrap that moves further than this changed lock
 
 
 def dream_events(run: str, subrun: str) -> pd.DataFrame:
@@ -164,7 +166,38 @@ def dream_event_to_bunch(run: str, subrun: str, ntof_run: int,
             f'diagnose before joining. Refusing the silent pick '
             f'(ntof_processing/join_mislock/).')
 
-    delta = float(np.median(epoch - ps[assign(best_delta)]))
+    # ONLY THE MATCHED PAIRS DEFINE THE OFFSET (fixed 2026-08-12). A burst
+    # whose pulse is not in this run's list -- every burst of the sub-run that
+    # falls outside the n_TOF run, which on a boundary sliver is the MAJORITY --
+    # still gets a nearest pulse, clipped to the first or last one, and
+    # contributes (epoch - ps[0]) instead of the offset. Taking the median over
+    # all bursts then walks the offset by however far the sub-run overhangs the
+    # run. Measured on run_79/stat090_0002 x 224573, 77 % overhang: the scan
+    # locks correctly at +0.790 s (247 bursts, bunches 1-247), this median
+    # returns -957.971 s, and the join ships 277 bursts on bunches 1-527 --
+    # every one of them paired with a pulse ~280 later than the one it belongs
+    # to. Invisible downstream: both sides sit on the 1.2 s grid, so the
+    # residuals stay at 8 ms and the intensity check is circular. This is the
+    # mystery class (ntof_processing/join_mislock/); the ridge that found it is
+    # cross_bunch_matrix.py.
+    k0 = assign(best_delta)
+    sel = np.abs((epoch - best_delta) - ps[k0]) < MATCH_TOL_S
+    if not sel.any():
+        raise RuntimeError(
+            f'{run}/{subrun} x n_TOF {ntof_run}: no burst matched a pulse at '
+            f'the best delta {best_delta:+.3f} s -- nothing to bootstrap the '
+            f'offset from. Refusing to join (ntof_processing/join_mislock/).')
+    delta = float(np.median((epoch - ps[k0])[sel]))
+    # The bootstrap REFINES the scan's lock; it may not move it. Anything past
+    # one pulse spacing is a different lock arrived at silently -- the shape the
+    # bug above had, and the only way it stayed invisible for a whole campaign.
+    if abs(delta - best_delta) > PS_SPACING_S:
+        raise RuntimeError(
+            f'{run}/{subrun} x n_TOF {ntof_run}: the offset bootstrap walked '
+            f'from the scan lock {best_delta:+.3f} s to {delta:+.3f} s '
+            f'({delta - best_delta:+.1f} s, over one {PS_SPACING_S} s pulse '
+            f'spacing). That is a different lock, not a refinement. Refusing '
+            f'to join (ntof_processing/join_mislock/).')
     k = assign(delta)
     resid = (epoch - delta) - ps[k]
     ok = np.abs(resid) < MATCH_TOL_S

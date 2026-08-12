@@ -1,9 +1,20 @@
 # join_mislock — the 2026-08-11/12 matching-failure investigation
 
 **The n_TOF↔DREAM matching failures (25.7 % of attempted beam, 107 of 291
-segments) are `pulse_match` silently taking a supercycle-shifted wall-clock
-lock on a count tie. The data is fine and recoverable — demonstrated at
-95.47 % efficiency on a formerly total-loss hour.**
+segments) are TWO bugs of ours, both silent, both recoverable. The data is
+fine.**
+
+1. **Whole hours** — `pulse_match` takes a supercycle-shifted wall-clock lock
+   on a count tie. Demonstrated recovered at 95.47 % efficiency on a formerly
+   total-loss hour.
+2. **Boundary slivers** — `bunch_join`'s offset bootstrap takes its median
+   over *all* bursts including those with no pulse in the run, walking the
+   offset off a correct lock by however far the sub-run overhangs. This is
+   the "mystery class". Demonstrated recovered at **95.56 %** on the exemplar
+   that had defeated every previous probe. See the solved section below.
+
+Neither shows up in any join statistic: both produce ~100 % matched bursts at
+a few ms rms, because a wrong lock on the 1.2 s PS grid is still a lock.
 
 Narrative and full evidence chain: the campaign report
 [`../SLIM_CAMPAIGN_2026-08-12.md`](../SLIM_CAMPAIGN_2026-08-12.md) and the
@@ -43,6 +54,8 @@ statistic and simply writes no file — the QA never sees it.
 | `arbitration_floor.py` | is there a segment length below which arbitration cannot work? (yes, and it is structural: the count margin grows ~linearly with clusters when schedules differ — run_79/0001 wins by count at 25 clusters — but the intensity discriminant is a STEP function: it is carried by sparse schedule-break events ~one per 10–40 min, so run_96/0001 has r-separation 0.001 through 150 clusters then 4.2σ at 200, and run_86/0001 stays ambiguous to 400. A 5-minute sub-run typically contains no discriminating event at all; the scan route is the standard path for short segments, and the AmbiguousLock message now says so below 200 clusters) |
 | `sliver_census.py` | which "sliver" failures are really sliver-class? (36 of 78 have no fitted sibling and are whole-sub-run mislocks in disguise — recoverable; the mystery class is the 42 with a fitted sibling, all ≤ 402 bunches; the run-START orientation hypothesis died 33/33) |
 | `margin_study.py` | what separates failed from fitted sub-runs? (the pulse_match count margin: failures 35/41 at 0, all ≤ 8; fitted median 23; **14 fitted at ≤ 2**; run_102/0003's dead tie −69.3 s r=0.508 chosen vs +60.3 s r=0.925 true validated the intensity-fluctuation discriminator in the wild) |
+| `cross_bunch_matrix.py` | where did the mystery class's true partners go? (every DREAM bunch × every n_TOF bunch; found the off-diagonal ridge at −280. `--dump`/`--load` splits extraction from the FFT so the heavy stage runs on any box with numpy. **Its `z` ranking is degenerate — believe only the 20 ns sharpness**) |
+| `shift_ridge.py` | how much of the ridge is real? (**129 of 130 eligible bunches, 99 %, sharp at −280 ± 1**, 45 counts over a floor of 0 at −250 ns — the measurement that closed the mystery class) |
 
 The wide bunch-shift scans that found the mechanism used the existing
 `slim_pipeline/segment_diagnose.py` with `--span 200` (condor wrapper
@@ -79,7 +92,145 @@ the fix declares AmbiguousLock need one shift scan
 (`segment_diagnose --span 200`), then re-run with
 `match_subrun(..., accept_offset_s=<scanned offset>)`.
 
-## ⚠ The sliver class is NOT recovered, and it is NOT a join error
+## ✅ SOLVED 2026-08-12: the sliver class was OUR bug, one line
+
+**Everything in the section below headed "the sliver class is NOT recovered"
+was wrong, and it was wrong for one reason: the join was never correct. The
+δ-scan locked correctly and the bootstrap that followed threw the lock away.
+The exemplar now fits at 95.56 % efficiency.** The retracted reasoning is
+kept below the fix because the way it failed is the lesson.
+
+### The bug
+
+`dream_event_to_bunch` bootstraps the final offset from the scan's lock:
+
+```python
+delta = float(np.median(epoch - ps[assign(best_delta)]))      # WRONG
+```
+
+`assign()` returns the *nearest* pulse for every burst, **clipped to the
+first or last pulse of the list**. A burst whose pulse is not in this n_TOF
+run at all — every burst of the sub-run that falls outside the run, which on
+a boundary sliver is the MAJORITY — still gets one, and contributes
+`epoch − ps[0]` instead of the offset. The median over all bursts therefore
+walks the offset by however far the sub-run overhangs the run. The docstring
+already said "the offset is DEFINED by the matched pairs"; the code never
+applied the mask.
+
+Measured on run_79/stat090_0002 × 224573 (77 % overhang):
+
+| quantity | value |
+|---|---|
+| δ-scan lock (correct) | **+0.790 s** → 247 bursts, bunches 1–247 |
+| bursts with no pulse in this run | 806 of 1053 (77 %) |
+| median over ALL bursts (**shipped**) | **−957.971 s** |
+| median over MATCHED only (correct) | **+0.837 s** |
+| what the corrupted δ produced | 277 bursts, 277 bunches, range 1–527, resid 8 ms |
+
+That last row reproduces the shipped campaign log bit for bit. Every burst
+was paired with a pulse **~280 later** than the one it belongs to.
+
+### Why it hid for a whole campaign
+
+Both sides sit on the 1.2 s PS grid, so a wrong lock is still a lock:
+residuals stayed at 8 ms, 277 of 277 bursts landed on the grid, and the
+"PulseIntensity matches the CSV at r = 1.0000" check was **circular** — it
+compares n_TOF against the CSV at the same wrong bunch, and never compares
+DREAM against n_TOF. Probe (c) below is that circularity, written up as
+proof of innocence.
+
+`delta_hint_s` did **not** protect against it: the hint constrains the scan
+window, and the bootstrap then discards the scan's answer.
+
+### How it was caught
+
+`cross_bunch_matrix.py` — correlate every DREAM bunch against every n_TOF
+bunch of the run (1 µs-bin FFT over ±80 ms), then test whether the best
+match sharpens to 20 ns. **129 of the 130 DREAM bunches whose partner exists
+in the file (99 %) show a sharp coincidence at n_TOF bunch b−280**: 45 counts
+in a 20 ns bin over a floor of 0, residual −250 ns ± 20. The 10 bunches whose
+partner would be bunch < 1 match nothing, exactly as they must. The n_TOF
+hits were never missing — they sat under a bunch index 280 lower than the one
+we asked for.
+
+Note the matrix's own `z` column is saturated garbage (MAD = 0 on sparse
+rows, so `z = pk/1e-9` ~ 1e8) and its argmax picks an arbitrary row among
+ties; that is why the first pass reported only 26 sharp matches. The verdict
+rests on the 20 ns sharpness test, never on z. `shift_ridge.py` re-tests the
+shift window directly and is the number to quote.
+
+### The failure file is clean — checked directly
+
+v11 partials of 224573: 200 bunches per file, contiguous global numbering
+1–1000, `index` tree carrying the whole run's 3118 bunches in every partial,
+PKUP 1000 bunches all exactly on the 1.2 s grid, zero bad psTime,
+PulseIntensity identical to the index tree. Nothing wrong on the n_TOF side.
+
+### The fix
+
+```python
+k0 = assign(best_delta)
+sel = np.abs((epoch - best_delta) - ps[k0]) < MATCH_TOL_S
+if not sel.any(): raise RuntimeError(...)     # refuse; do not invent an offset
+delta = float(np.median((epoch - ps[k0])[sel]))
+if abs(delta - best_delta) > PS_SPACING_S: raise RuntimeError(...)
+```
+
+The second guard is the general lesson: **the bootstrap refines the scan's
+lock, it may not move it.** Anything past one pulse spacing is a different
+lock arrived at silently — the shape this bug had, and the only reason it
+survived a campaign. It fires on all 48 affected segments.
+
+### Blast radius
+
+The bug can only bite when the overhang exceeds **half** the sub-run, because
+that is when the median falls into the clipped population. A segment wholly
+inside its n_TOF run (`overlap_frac` 1.000) has `sel` all-true and the two
+medians are identical — the whole-hour class was never exposed, and neither
+were the two recoveries made during the 08-12 campaign. Against the campaign
+inventory, `overlap_frac < 0.5` predicts the failures:
+
+| | FAILED | OK |
+|---|---|---|
+| overlap_frac < 0.5 | **48** | 1 |
+| overlap_frac ≥ 0.5 | 18 | 54 |
+
+**No wrong product shipped. This bug destroys data; it does not corrupt it.**
+A bug-bitten segment pairs its triggers with the wrong bunches, so the clock
+fit finds nothing and the segment FAILS loudly, writing no file. All 48 did.
+The campaign's 170 OK products are sound, and no re-validation of them is
+needed.
+
+A short-lived claim that `run_81/stat090_0001 × 224581` was a silently-wrong
+product is **withdrawn**. It rested on `joined_bunches (232) ≤
+overlap_min·60/1.2 (75)`, and `overlap_min` is derived from an *estimated*
+sub-run duration (file count × 47.1 s when no stop time is recorded), so the
+test converts an estimator error into a data-quality verdict. The measurement
+that settles it is the product's own efficiency: **94.81 % of physics triggers
+matched at an accidental rate of 0.052 %**. A wrong-bunch join lands at the
+accidental rate — ~7e-4 for ~1,000 candidates over a 75 ms burst, a factor
+~1,400 below what that segment shows. Those 232 bunches are the bunches its
+triggers belong to; the duration estimate was short.
+
+**Generalise that, because it is the whole lesson twice over:** efficiency
+and the +100 µs control ARE the join-correctness test, and they are the same
+instrument as `shift_ridge.py` — a ±25 ns coincidence against a control. Any
+proposed structural gate (bunch counts, overlap arithmetic, orientation)
+either agrees with them or is wrong, and the ones built on estimated
+quantities are wrong in the dangerous direction. Two bad inferences this
+night came from structural reasoning over an estimated or mislocked index
+(the "+41 shift", the "206 s anomaly"); a third nearly condemned good data.
+
+### Retracted below
+
+The section that follows argued the sliver class survived a *proven* join.
+The join was not proven; it was corrupted after a correct lock, by code that
+ran between the lock and the product. The transferred-δ test "confirmed" a δ
+the bootstrap then overwrote. Every probe below is sound as a measurement and
+useless as an inference, because all of them conditioned on the same bad
+bunch mapping.
+
+## ⚠ RETRACTED — The sliver class is NOT recovered, and it is NOT a join error
 
 Tested 2026-08-12 morning: run_79/stat090_0002 × 224573 re-slimmed with the
 majority side's δ transferred (`delta_hint_s = 0.829`, the value its own
@@ -89,6 +240,9 @@ same sub-run's pulse_match offset is proven right by the ×224572 fit, the δ
 is right, and the bunch mapping follows from both, the sliver failure
 survives a fully correct join. Corollary: the per-bunch scan's "random
 −1…−24 ms lags" on this segment were measured on CORRECT bunch pairings.
+
+*(Retracted: the δ was right and was then discarded by the bootstrap. The
+bunch mapping did not follow from it.)*
 
 **Census (2026-08-12, `sliver_census.py` on the campaign inventory) — the
 78 non-OK "sliver" segments are two populations:**
@@ -113,13 +267,35 @@ the census: mystery-class failures split run_END vs run_START almost
 exactly evenly (and OK slivers exist in both orientations). Orientation
 carries no information; withdrawn.
 
-Two probes on the mystery class: (a) the same sliver against an
-independent processing of 224573 (`reproc/prod_v11/224573` — the local
-re-slim already used the official-done merge, which is the v12 lineage) —
-if it fits, the anomaly is in the processing, not the raw data; (b)
-per-bunch lag + per-bunch refit at the now-known-correct join
-(`perbunch_lag.py --delta-hint`) — if each bunch has a findable sharp
-offset, sliver recovery is per-bunch, n_TOF-side or not.
+Probe results on the mystery class (2026-08-12, run_79/0002 × 224573):
+
+- **(a) cross-processing: FAILS IDENTICALLY on prod_v11** — same wide-scan
+  −0.9830 ms z 32, same 2 µs non-sharpening hump, matching bootstrap
+  counts. The processing recipe and infrastructure are exonerated; v11 and
+  the v12 lineage derive the same hits from the same raw data.
+- **(b) per-bunch scan at the verified join: NEGATIVE** — all 277 bunches
+  show only envelope artifacts (1 µs-bin peaks at scattered ms lags,
+  median −5.1 ms, bounded above by the −0.98 ms hold-off edge); the 49
+  "sharpening" bunches are 5 counts over a floor of 0 at scattered ±17 µs
+  positions = Poisson flukes. A genuine per-bunch coincidence would be
+  ~90 counts in one 20 ns bin (~90σ). **There is no per-bunch time-base
+  offset to find; per-bunch recovery is impossible on this axis.**
+- **(c) n_TOF bunch bookkeeping: IMMACULATE in the failing window** —
+  every one of bunches 1–527 sits exactly on the beam-CSV pulse grid
+  (psTime + 0.829 s, rms 0 ms) and the recorded PulseIntensity matches the
+  CSV at r = 1.0000, indistinguishable from healthy windows of 224572/3.
+  Bunch b really is pulse b. (Trap for the tester: pick the nearest pulse
+  to psTime + δ, not psTime — without the 0.829 s offset half the picks
+  are wrong everywhere and the test has no power.)
+
+Net: join right, processing right, bunch record right, no per-bunch lag —
+DREAM's events in the window have no counterpart in their own bunches' n_TOF
+hits at ANY lag within ±80 ms. Last suspect standing: the n_TOF *payload*
+(waveform buffers) misassociated with bunch headers at the run transition,
+with a possibly DRIFTING shift K(b) (a constant K is excluded by the flat
+±200 shift scans; a drifting one would smear them flat).
+`cross_bunch_matrix.py` tests this: every DREAM bunch × every n_TOF bunch,
+looking for a sharp off-diagonal ridge.
 
 ## The fix — IMPLEMENTED 2026-08-12 (this commit)
 
