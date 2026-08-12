@@ -319,6 +319,54 @@ bitten end of this sub-run and leaves the well-behaved end untouched.
 **Every failure in the campaign is now accounted for by one of the two bugs.
 None is outstanding.**
 
+### Pre-flight, 2026-08-12 — five predictions registered in advance, five held
+
+Burst overhangs were computed and sent **before** each job ran, so the
+threshold could not be placed after the fact:
+
+| segment | burst overhang | predicted | observed |
+|---|---|---|---|
+| run_79/0005 × 224574 | 0.714 | recovers | **OK, 95.758 %** |
+| run_79/0008 × 224576 | 0.939 | recovers | **OK, 96.008 %** |
+| run_79/0011 × 224577 | **0.567** | recovers | **OK, 96.123 %** |
+| run_81/0001 × 224580 | 0.691 | recovers | **OK, 94.715 %** |
+| run_81/0001 × 224581 | 0.335 | *clean already* | OK, 94.812 % (= shipped) |
+
+0011 at 0.567 is the load-bearing row: the threshold holds where it is
+thinnest. `run_79/0014 × 224577` also recovered at **94.642 %** — not
+predicted, and it is the sub-run whose *both* sides failed originally, handed
+over at the start as a 57-minute hole and evidence that the slivers were an
+n_TOF problem. It was this bug.
+
+Transition table over the 23 comparable segments:
+
+| | n | |
+|---|---|---|
+| OK → OK | 10 | efficiency delta **+0.00000** on every one |
+| FAILED → OK | 5 | recovered |
+| FAILED → AMBIGUOUS | 5 | refused pending a scan; were already lost |
+| OK → AMBIGUOUS | 3 | all run_82 short scan sub-runs — see below |
+| OK → FAILED | **0** | no regressions |
+
+Ten exact reproductions *in the same jobs* as five recoveries is the
+discrimination that matters: a fix that merely joined more loosely would have
+moved the reproductions too.
+
+**`OK → AMBIGUOUS` is not attrition.** Those segments had products, and by
+everything above a product at fleet-typical efficiency has a correct join —
+a wrong-bunch join sits at the accidental rate. The guard is not saying they
+were wrong, it is saying it cannot self-verify them, which is true and is
+what it was built for. The remedy is the bunch-shift scan, which
+`arbitration_floor.py` established is the STANDARD route below ~200 clusters
+rather than an exception. Scan, re-issue with `accept_offset_s` so provenance
+reads `chosen_by = 'verified'`, and count them on their own line.
+
+**Do not reinstate them on the strength of their old efficiency alone.** That
+argument is sound and was used to defend `run_81/0001 × 224581` above — but
+validating a lock by the self-consistency of the join it produced is the
+circularity that cost this campaign, and being right in one instance is not a
+reason to accept it as a method.
+
 **No wrong product shipped. This bug destroys data; it does not corrupt it.**
 A bug-bitten segment pairs its triggers with the wrong bunches, so the clock
 fit finds nothing and the segment FAILS loudly, writing no file. All 48 did.
