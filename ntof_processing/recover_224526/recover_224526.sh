@@ -18,6 +18,7 @@
 #   ./recover_224526.sh filelists  # build the 42 per-job .files lists
 #   ./recover_224526.sh process    # submit the 42 processing jobs
 #   ./recover_224526.sh verify     # partial count, contiguity, bunch coverage
+#   ./recover_224526.sh publish   # copy to /eos/experiment once complete
 #
 # The recall is the slow step: the n_TOF wiki quotes up to 72 h, usually hours.
 set -u
@@ -35,7 +36,11 @@ PS=/eos/experiment/ntof/repositories/processingscripts
 W=/afs/cern.ch/work/d/dneff/x17_reproc
 UI=$W/userinputs/v12_liqpileup/UserInput.h
 WORK=$W/recover_$RUN
-OUT=${X17_RECOVER_OUT:-/eos/experiment/ntof/data/x17/reproc/prod_v12_recover/$RUN}
+# ProcessFileList.sh only accepts /eos/user, /eos/home-, /eos/project* (and AFS
+# outside /afs/cern.ch/user). /eos/experiment is rejected outright, so -- as the
+# campaign driver does -- process into EOS user space and publish afterwards.
+OUT=${X17_RECOVER_OUT:-/eos/user/d/dneff/x17/reproc/prod_v12_recover/$RUN}
+FINAL=${X17_RECOVER_FINAL:-/eos/experiment/ntof/data/x17/reproc/prod_v12_recover/$RUN}
 
 FILES_PER_JOB=4
 
@@ -88,13 +93,27 @@ filelists)
     ;;
 
 process)
-    ls "$WORK"/lists/*.files >/dev/null 2>&1 || { echo "run '$0 filelists' first"; exit 2; }
+    # StageRuns.sh already left a submit directory holding one .files list per
+    # job, with CTA paths -- use it, so the lists that were staged are exactly
+    # the lists that get processed.
+    SUB=$W/$RUN
+    n=$(ls "$SUB"/*.files 2>/dev/null | wc -l)
+    [ "$n" -gt 0 ] || { echo "no .files in $SUB -- run '$0 stage' first"; exit 2; }
     mkdir -p "$OUT"
-    for f in "$WORK"/lists/*.files; do
-        echo "submitting $(basename "$f")"
-        $PS/ProcessFileList.sh -c 1 -f "$f" -o "$OUT" -p "$UI" -r $RUN || \
-            echo "  SUBMIT FAILED: $f"
-    done
+
+    # ProcessFileList.sh run directly does the work in the FOREGROUND, on the
+    # login node. AddProcessingJob.sh instead emits DAG JOB/RETRY lines and
+    # writes one .sub per list; that is the route to condor.
+    # The generated .sub sets `executable = $W/ProcessFileList.sh`, i.e. relative
+    # to the working directory rather than the repository, so it has to be there.
+    [ -x "$W/ProcessFileList.sh" ] || cp $PS/ProcessFileList.sh "$W/"
+    chmod +x "$W/ProcessFileList.sh"
+
+    cd "$W" || exit 2
+    $PS/AddProcessingJob.sh -c 1 -d "$SUB" -o "$OUT" -p "$UI" -r $RUN \
+        > "$SUB/process$RUN.dag" 2>/dev/null
+    echo "$RUN: $n jobs -> $SUB/process$RUN.dag"
+    cd "$SUB" && condor_submit_dag -batch-name Recover_$RUN "process$RUN.dag"
     echo "submitted; watch with condor_q, then '$0 verify'"
     ;;
 
@@ -134,6 +153,15 @@ print(f'  {len(bn)} bunches, {beam.sum()} beam, {(beam & hb).sum()} with hits '
       f'-> {100 * (beam & hb).sum() / max(beam.sum(), 1):.1f} % '
       f'(official product: 13.3 %)')
 PY
+    ;;
+
+publish)
+    src=$OUT/completed/$RUN
+    want=$(ls "$WORK"/lists/*.files 2>/dev/null | wc -l)
+    got=$(ls "$src" 2>/dev/null | grep -c "^run${RUN}_.*\.root$")
+    [ "$got" -eq "$want" ] || { echo "refusing: $got of $want partials in $src"; exit 2; }
+    mkdir -p "$FINAL/completed"
+    cp -r "$src" "$FINAL/completed/" && echo "published to $FINAL/completed/$RUN"
     ;;
 
 *)
