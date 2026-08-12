@@ -195,6 +195,32 @@ inventory, `overlap_frac < 0.5` predicts the failures:
 | overlap_frac < 0.5 | **48** | 1 |
 | overlap_frac ≥ 0.5 | 18 | 54 |
 
+**The 18 above 0.5 are not a third mechanism — they are bug 1.** Crossing the
+66 sliver failures against the census's sibling test:
+
+| | no fitted sibling | sibling_ok |
+|---|---|---|
+| overlap < 0.5 | 15 | 33 |
+| overlap ≥ 0.5 | **17** | 1 |
+
+17 of the 18 have no fitted sibling, i.e. they are the census's whole-sub-run
+`pulse_match` mislocks filed as slivers because the sub-run straddles a
+boundary. Not merely a correlation: two of the census's *demonstrated* cases
+sit in this list (run_132/0007 × 224663 at overlap 0.846, run_139/0007 ×
+224668 at 0.560, both pinned by cached v1 offsets), as do both dark-run
+families (run_128/0000 at 0.881; run_156/0009 and /0011). They are covered by
+`ce8ced7`, not by this fix.
+
+**Exactly one segment in the campaign is unexplained: `run_81/stat090_0001 ×
+224580`** — sibling_ok (so the pulse_match offset is pinned), nominal overlap
+0.689 (so the bootstrap median should stay in the matched population), yet it
+joined only 44 bunches / 4,249 events with 17 dropped pulses and the 'dropped
+pulses look like no beam' guard FIRING. Treat its 0.689 with suspicion: it
+rests on the same file-count duration extrapolation shown above to run short
+for this very sub-run, so the "should not have been bitten" argument is only
+as good as a number we already caught being wrong. Do not build a third
+mechanism on it before the fixed campaign reports.
+
 **No wrong product shipped. This bug destroys data; it does not corrupt it.**
 A bug-bitten segment pairs its triggers with the wrong bunches, so the clock
 fit finds nothing and the segment FAILS loudly, writing no file. All 48 did.
