@@ -55,10 +55,18 @@ def main():
     for name in done:
         d = os.path.join(args.results, name)
         rowf = os.path.join(d, 'job_row.json')
-        if '__' in name or not os.path.exists(rowf):
-            continue                       # tagged arm — never promoted
+        if not os.path.exists(rowf):
+            continue
         row = json.load(open(rowf))
         if row.get('off_conditions'):
+            continue
+        # The promotable artifact is the dir named EXACTLY after the row's key;
+        # arms carry a suffix (<key>__t0p, <key>__prod_noprior). Testing for
+        # '__' anywhere in the name instead silently skipped all 17 tier-A rows
+        # whose synthesized keys are c26__<run>__<subrun>__<det>, and testing
+        # out_tag alone would promote the parked no-prior arms (their out_tag is
+        # empty — they WERE the prod arm before the gate adopted the prior).
+        if name != row['key']:
             continue
         out_base = os.path.join(BENCH, 'Analysis', row['run'], row['subrun'],
                                 row['det'], 'wft')
@@ -69,7 +77,16 @@ def main():
             live = os.path.join(out_base, f)
             if os.path.exists(live):
                 os.makedirs(bak, exist_ok=True)
-                shutil.move(live, os.path.join(bak, f))
+                # NEVER overwrite an existing backup: the first one is the true
+                # pre-campaign state. Without this guard a second --promote
+                # parks the ALREADY-PROMOTED campaign file on top of it and the
+                # original is gone (this destroyed the 7-31 parquets of the five
+                # golden keys on 2026-08-12 — they are not reproducible, the
+                # code that made them is not in this repo).
+                if os.path.exists(os.path.join(bak, f)):
+                    os.remove(live)
+                else:
+                    shutil.move(live, os.path.join(bak, f))
             src = os.path.join(d, f)
             if os.path.exists(src):
                 shutil.copy2(src, live)
