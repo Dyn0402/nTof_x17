@@ -23,6 +23,24 @@ The corruption grows continuously from zero as the fraction crosses 50 %
 regime where a >50 % segment is quietly fine. This killed the hypothesis that
 one-sided overhang might behave differently from two-sided at equal fraction.
 
+**THE FRACTION IS OF BURSTS, NOT OF TIME**, and the two diverge whenever the
+burst density is not uniform -- which is exactly what a beam gap, a DAQ pause
+or a parasitic-only stretch produces. Thinning the pre-run bursts while
+holding the sub-run's wall-clock extent FIXED:
+
+    thin   time-overhang   burst-overhang   delta_all    corrupted?
+     1x       76.6 %          76.5 %        -957.971       YES
+     2x       76.6 %          62.0 %        -536.169       YES
+     3x       76.6 %          52.2 %        -116.766       YES
+     4x       76.6 %          45.1 %          +0.835       no
+     8x       76.6 %          29.1 %          +0.836       no
+
+Time-overhang is identical in every row; the corruption tracks the bursts.
+So `overlap_frac` from the coverage map is a wall-clock PROXY: a good one
+where density is roughly uniform, and wrong for exactly those segments that
+straddle a beam gap. A 61 % time overhang can be a sub-50 % burst overhang.
+Quote recovery predictions in bursts when it matters.
+
 It also closes the mechanism quantitatively: the corrupted delta is always the
 true delta plus an INTEGER number of PS periods. For the exemplar,
 delta_bad - delta_true = -958.808 s = -799.0068 x 1.2 s -- 799 grid steps and
@@ -87,6 +105,18 @@ def main():
                 continue
             print('     %5.1f %12.3f %11.3f      %s'
                   % (100 * f, da, dok, 'YES' if abs(da - dok) > 1.2 else 'no'))
+
+    # bursts vs time: thin the pre-run bursts, hold the wall-clock extent fixed
+    print('\nbursts, not time (pre-run bursts thinned, extent unchanged):')
+    print('   thin   time-oh   burst-oh    delta_all   corrupted?')
+    early = epoch - DELTA_TRUE < ps[0]
+    for thin in (1, 2, 3, 4, 6, 8):
+        ep = np.sort(np.concatenate([epoch[early][::thin], epoch[~early]]))
+        f, da, dok = probe(ep, ps)
+        f_time = (ps[0] - (ep.min() - DELTA_TRUE)) / (ep.max() - ep.min())
+        print('    %dx     %5.1f %%   %5.1f %%  %11.3f      %s'
+              % (thin, 100 * f_time, 100 * f, da,
+                 'YES' if abs(da - dok) > 1.2 else 'no'))
 
 
 if __name__ == '__main__':

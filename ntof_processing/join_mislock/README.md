@@ -183,8 +183,19 @@ survived a campaign. It fires on all 48 affected segments.
 
 ### Blast radius
 
-The bug can only bite when the overhang exceeds **half** the sub-run, because
-that is when the median falls into the clipped population. A segment wholly
+The bug can only bite when the overhang exceeds **half the sub-run's BURSTS**,
+because that is when the median falls into the clipped population. Measured
+by construction in `overhang_threshold.py`: the threshold is sharp at 50 %
+and identical for start-side, end-side and both-side overhang, and the
+corruption grows continuously from zero as it is crossed.
+
+**The fraction is of bursts, not of time**, and the two diverge across a beam
+gap, a DAQ pause or a parasitic-only stretch. Thinning pre-run bursts while
+holding the wall-clock extent fixed moves the corruption while time-overhang
+stays at 76.6 %: 62.0 % bursts corrupt, 52.2 % corrupt, 45.1 % clean. So the
+`overlap_frac` table below is a wall-clock **proxy** — a good one where
+density is roughly uniform, and wrong for exactly the segments that straddle
+a beam gap, where a 61 % time overhang can be a sub-50 % burst overhang. A segment wholly
 inside its n_TOF run (`overlap_frac` 1.000) has `sel` all-true and the two
 medians are identical — the whole-hour class was never exposed, and neither
 were the two recoveries made during the 08-12 campaign. Against the campaign
