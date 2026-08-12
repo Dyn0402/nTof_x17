@@ -49,17 +49,31 @@ DET_LABEL = {'mx17_2': 'det2', 'mx17_3': 'det3', 'mx17_4': 'det4',
 def row_metrics(parquet):
     df = pd.read_parquet(parquet, columns=[
         'event_id', 'spark', 'x_ok', 'y_ok', 'x_q_sum', 'y_q_sum',
+        'x_chi2', 'x_dof', 'y_chi2', 'y_dof',
         'x_quality_ok', 'y_quality_ok'])
     n = len(df)
     if n == 0:
         return None
     both = df.x_ok & df.y_ok
     ok = df[both]
+    # Gain-normalized shape chi2: the fit's chi2 is weighted by PEDESTAL
+    # noise, so chi2/dof grows as amplitude^2 (measured exponent 2.0 on
+    # sat_det3, INVESTIGATION_2026-08-12.md) and the absolute-threshold
+    # x/y_quality_ok flag is an amplitude cut in disguise — do not plot it.
+    # (chi2/dof)/(q_sum/1e3)^2 is flat vs HV within a run, so a rise flags a
+    # genuine shape breakdown (saturation, wrong-v off-conditions) instead
+    # of just gain.
+    def cnorm(d, p):
+        q = d[f'{p}_q_sum']
+        c = d[f'{p}_chi2'] / d[f'{p}_dof'].clip(lower=1)
+        v = (c / (q / 1e3) ** 2).replace([np.inf, -np.inf], np.nan)
+        return float(v.median()) if len(v) else np.nan
     return dict(
         n_events=int(n),
         frac_reco=float(both.mean()),
         frac_spark=float(df.spark.mean()),
         frac_quality=float((df.x_quality_ok & df.y_quality_ok).mean()),
+        cnorm_x=cnorm(ok, 'x') if len(ok) else np.nan,
         med_qsum_x=float(ok.x_q_sum.median()) if len(ok) else np.nan,
         med_qsum_y=float(ok.y_q_sum.median()) if len(ok) else np.nan,
     )
@@ -131,12 +145,15 @@ def figures(rows, out_dir):
     # NOTE the parquet's `spark` column is inert (always False, even on
     # golden rows whose accounting shows 8-37 % spark) — spark categorization
     # lives in the hits-chain accounting, not the reco table. Do not plot it.
+    # NOTE the x/y_quality_ok flag is an absolute chi2/dof cut on a
+    # pedestal-weighted chi2 → an amplitude cut in disguise; plot the
+    # gain-normalized shape chi2 instead (see row_metrics).
     metrics = [('frac_reco', 'fraction of M3-matched events reconstructed '
                 '(both planes)', 'reco'),
                ('med_qsum_x', 'median fitted charge, X plane [ADC·samples]',
                 'gain'),
-               ('frac_quality', 'fraction passing per-plane fit-quality '
-                'flags (both planes)', 'quality')]
+               ('cnorm_x', 'shape χ² per (q/1000)², X plane — '
+                'gain-normalized', 'shape')]
     for det, g in df.groupby('det'):
         lab = DET_LABEL.get(det, det)
         for col, ylab, tag in metrics:
@@ -158,11 +175,11 @@ def figures(rows, out_dir):
                         label='golden point (bundle conditions)')
             ax.set_xlabel('resistive-strip HV [V]')
             ax.set_ylabel(ylab)
-            if tag == 'gain':
+            if tag in ('gain', 'shape'):
                 ax.set_yscale('log')
             short = {'reco': 'reconstructed fraction',
                      'gain': 'relative gain (median fitted charge)',
-                     'quality': 'fit-quality fraction'}[tag]
+                     'shape': 'gain-normalized shape χ²'}[tag]
             ax.set_title(f'{lab} — {short} vs resist HV (trend-grade)',
                          fontsize=11)
             ax.grid(alpha=0.3)

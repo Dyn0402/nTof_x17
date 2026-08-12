@@ -111,11 +111,15 @@ DET_NOTES = {
             'recovers it). Where the chamber does amplify, the fit performs: '
             'the t0 prior was adopted with the strongest arm of the gate '
             '(core −20 %, median −16 %).',
-    'det6': 'Middle of the fleet at 74.9 % within 5 mm. Its fitted drift '
-            'velocity (26.7 µm/ns) is the fleet’s slowest by far — a '
-            'real gas/field condition, not a fit artefact, and its σθY is '
-            'the fleet’s worst. The t0 prior fell back here (marginal '
-            'regression, within tolerance noise of the gate rule).',
+    'det6': 'Middle of the fleet at 74.9 % within 5 mm. Its headline σθY '
+            '(2.82°) and Y bias (−1.04°) are dominated by known artefacts, '
+            'not the chamber: the unapplied w0/kw angle constants (corrected '
+            'bias +0.22°, σθY 2.59° — see Method) account for the bias, and '
+            'its calibration bundle is under review (σ_s 165.9 ns and '
+            'v 26.7 µm/ns vs det7’s 36.6 in the same run suggest a '
+            'degenerate calibration basin, so treat the fitted v as '
+            'provisional). The t0 prior fell back here (marginal, at the '
+            'gate-rule tolerance).',
     'det7': 'Spark-dominated: 37 % of M3-matched events carry a spark flag, '
             'the fleet’s highest by 1.7×, and the efficiency ceiling '
             'follows. The t0-prior gate exposed a real position-vs-angles '
@@ -353,6 +357,17 @@ def figure(link, caption, wide=False):
             f'<figcaption>{caption}</figcaption></figure>')
 
 
+def corr_bias(d, plane):
+    """Bias with the bundle's w0/kw angle constants applied — the frozen code
+    does not apply them (INVESTIGATION_2026-08-12.md §4); values from the
+    standard 03_angles run on the corrected table (wft/angles_w0corr/)."""
+    a = jload(os.path.join(d['cfg'].OUT_BASE, 'wft', 'angles_w0corr',
+                           'angular_resolution.json'))
+    if not a:
+        return None
+    return a['planes'].get(plane, {}).get('bias_deg')
+
+
 def build(data):
     by_det = {d['det']: d for d in data}
     order = ['det3', 'det2', 'det6', 'det7', 'det4']   # best -> worst
@@ -379,8 +394,12 @@ def build(data):
          ('spark-flagged %', lambda d: fmt(d['eff']['spark_frac'], '{:.1f}')),
          ('σθ X °', lambda d: fmt(d['state'].get('sig_x'))),
          ('σθ Y °', lambda d: fmt(d['state'].get('sig_y'))),
-         ('bias X / Y °', lambda d: fmt(d['state'].get('bias_x'), '{:+.2f}')
+         ('bias X / Y ° (uncorrected¹)', lambda d:
+          fmt(d['state'].get('bias_x'), '{:+.2f}')
           + ' / ' + fmt(d['state'].get('bias_y'), '{:+.2f}')),
+         ('bias X / Y ° (w0/kw applied¹)', lambda d:
+          fmt(corr_bias(d, 'x'), '{:+.2f}') + ' / '
+          + fmt(corr_bias(d, 'y'), '{:+.2f}')),
          ('implied-v spread X / Y', lambda d: fmt(d['state'].get('vsp_x'))
           + ' / ' + fmt(d['state'].get('vsp_y'))),
          ('v_drift µm/ns', lambda d: fmt(d['state'].get('v_drift'), '{:.1f}')),
@@ -410,9 +429,15 @@ results, 0 unaccounted).</p></div>
 {digest_tbl}
 <p class="note">σθ values sit above pre-freeze figures quoted in older slides
 (det3 X: 1.08 → 1.16): the per-event slopes are unchanged — the
-slope-reliable <i>population</i> and the per-plane angle constants changed at
-the freeze. The trusted flatness judge (implied-v spread) improves sharply.
-Quote angles only from this table.</p>
+slope-reliable <i>population</i> and the angle mapping changed at the freeze.
+The trusted flatness judge (implied-v spread) improves sharply. Quote angles
+only from this table.<br>
+¹ The frozen code computes angles <b>without</b> the per-plane w→angle
+constants (w0/kw) that every calibration bundle carries — a silent
+regression at <code>f9e18d2</code>, found 8-12 overnight. The uncorrected
+row is what the frozen campaign wrote; the corrected row applies the exact
+<code>9dd7d6e</code> formula through the standard accounting and collapses
+every |bias| to ≤ 0.27°. See Method &amp; caveats.</p>
 <h2>Efficiency vs matching radius</h2>
 {svg_eff_curves(dd)}
 """
@@ -518,8 +543,11 @@ suppression are immediately visible.</p>
                  'a two-plane reconstruction vs resistive HV.'),
                 ('gain', f'<b>{det}</b> — relative gain (median fitted '
                  'charge, X plane; log scale).'),
-                ('quality', f'<b>{det}</b> — fraction of reconstructed '
-                 'events passing the per-plane fit-quality flags.')]
+                ('shape', f'<b>{det}</b> — gain-normalized shape χ² '
+                 '(median (χ²/dof)/(q/1000)², X plane; log scale). Flat = '
+                 'healthy; a rise flags a genuine shape breakdown, not '
+                 'gain. The raw per-plane quality flag is an amplitude cut '
+                 'in disguise and is deliberately not plotted.')]
             if os.path.exists(os.path.join(FIG, f'hv_{det}_{tag}.png')))
         if row:
             hv_figs.append(f'<h3>{det}</h3><div class="figgrid">{row}</div>')
@@ -667,6 +695,36 @@ nothing. All campaign numbers, gates and validations were measured on that
 loaded configuration, so the fleet is self-consistent; the delay-vs-lp
 adjudication is deliberately post-MPGD26 (runbook §2/§8). Measured
 difference on det3: median |Δp0| 10–20 µm.</p>
+<h2>Findings of the 8-12 overnight audit (det3 deep-dive)</h2>
+<p>Triggered by the maps looking off-centre and the fit-quality-vs-HV
+collapse; full record in
+<code>mx_june_wft/quality_investigation/INVESTIGATION_2026-08-12.md</code>.</p>
+<ul>
+<li><b>The reconstruction reproduces bit-identically</b> on a second machine
+from an independent copy of the raw data (400 golden det3 events: p0/w/t0
+|Δ| = 0, all flags identical, same 8,479 M3-matched events).</li>
+<li><b>Alignment is right and the off-centre footprint is real geometry</b>:
+wft and hits-chain alignments agree to 10 µm; the dead column at reference
+X &gt; 145 mm is the detector-local Y-passivation band ([18, 380] mm) mapped
+through the ~90° strip rotation, identical in the hits-chain maps.</li>
+<li><b>Track counts are the frozen M3 recipe</b>, not a loss: 47,452 M3
+events → 8,479 good tracks ([χ²&lt;1 &amp; NClus≥4], 17.9 %) → 7,049 rays
+in the active box — within 1 % of both the hits accounting (7,119) and the
+pre-campaign baseline (7,130).</li>
+<li><b>The per-plane quality flag is an amplitude cut in disguise</b>:
+χ² is pedestal-weighted, so χ²/dof ∝ amplitude² (measured exponent
+2.0) against an absolute threshold of 300. Quality-fail events still
+reconstruct at 93.1 % within 5 mm; p0_err is amplitude-flat. It gates
+nothing in the headline accounting. Real saturation censoring is confined
+to the top amplitude decile (~5 % of samples).</li>
+<li><b>The fleet-wide angle bias is a code regression at the freeze</b>:
+<code>f9e18d2</code> silently dropped the per-plane w→angle constants
+(w0/kw) of <code>9dd7d6e</code>; every bundle carries them calibrated.
+arctan(w0/v) reproduces the bias detector-by-detector (det6 Y: predicted
+−1.14°, measured −1.04°); applying the constants through the standard
+accounting collapses every |bias| to ≤ 0.27° (the corrected digest row).
+Post-freeze fix: restore the two lines in <code>plane_fit</code>.</li>
+</ul>
 <h2>Caveats — what this report does and does not claim</h2>
 <ul>
 <li><b>HV-scan tab is trend-grade only</b> (off-conditions bundles + looser
@@ -676,8 +734,9 @@ not.</li>
 change at the freeze; per-event slopes unchanged; implied-v flatness — the
 trusted judge — improved). This table is the quotable record.</li>
 <li><b>det4/det6/det7 numbers characterize the chambers as operated in
-June</b>, not the reconstruction ceiling: det4's stripes are hardware, det6
-ran slow gas, det7 sparked. The algorithm's ceiling is det3/det2.</li>
+June</b>, not the reconstruction ceiling: det4's stripes are hardware, det7 sparked,
+and det6's fitted v/σ_s pair is under review (possible degenerate
+calibration basin). The algorithm's ceiling is det3/det2.</li>
 <li><b>Efficiency depends on the M3 acceptance and recipe</b>: the
 denominator is reference tracks crossing the active area; a different
 χ²/NClus recipe shifts every number at the few-tenths-pp level.</li>
