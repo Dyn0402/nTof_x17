@@ -49,7 +49,10 @@ case "${1:-}" in
 stage)
     n=$(list_cta | wc -l)
     echo "$RUN: $n files on tape, requesting recall"
-    $PS/StageRuns.sh -y $YEAR -a $AREA -c $CAMPAIGN -r $RUN -l $RUN
+    # StageRuns.sh finds the 22-file EOS remnant, asks "stage anyway?" and
+    # DEFAULTS TO NO -- the same EOS-preference that produced the short product
+    # in the first place. Answer yes, or it silently skips the run.
+    printf 'y\n' | $PS/StageRuns.sh -y $YEAR -a $AREA -c $CAMPAIGN -r $RUN -l $RUN
     echo "recall requested; poll with '$0 check'"
     ;;
 
@@ -57,11 +60,10 @@ check)
     mkdir -p "$WORK"
     list_cta | sed "s|^|$CTA/stream1/run${RUN}_|; s|$|_s1.raw.finished|" > "$WORK/all.list"
     tot=$(wc -l < "$WORK/all.list")
-    on=0
-    while read -r f; do
-        xrdfs $XRD query prepare 0 "$f" 2>/dev/null | tr -d ' \n' |
-            grep -q '"online":true' && on=$((on + 1))
-    done < "$WORK/all.list"
+    # query prepare takes many paths in one call and answers instantly; one
+    # call per file takes minutes and this gets polled for hours.
+    on=$(xargs -a "$WORK/all.list" -n 50 xrdfs $XRD query prepare 0 2>/dev/null |
+         tr -d ' \n' | grep -o '"online":true' | wc -l)
     echo "$RUN: $on / $tot files online"
     [ "$on" -eq "$tot" ] && echo "ready -- run '$0 filelists'"
     ;;
