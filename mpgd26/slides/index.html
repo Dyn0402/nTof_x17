@@ -74,6 +74,17 @@
 
   .caption{ font-size:var(--fs-caption); color:var(--muted); margin-top:.6em; line-height:1.5; }
 
+  /* figure on one side, the step's explanation on the other (setup build-up) */
+  .cols.figtext{ grid-template-columns:0.92fr 1.08fr; align-items:center; }
+  .figtext .side{ display:flex; flex-direction:column; justify-content:center; min-height:0; }
+  .figtext .side .bullets{ margin-top:0; }
+  .figtext .side .caption{ margin-top:.9em; }
+  .imgwrap.bare{ background:transparent; }
+
+  .legend{ display:flex; flex-wrap:wrap; gap:.55em 1.1em; margin-top:.9em; font-size:var(--fs-caption); color:var(--muted); }
+  .chip{ display:inline-flex; align-items:center; gap:.4em; }
+  .chip i{ width:1.5em; height:.32em; border-radius:2px; display:inline-block; }
+
   .stat-row{ display:flex; gap:clamp(1.4rem,3vw,3rem); margin-top:.8em; flex-wrap:wrap; }
   .stat{ }
   .stat .num{ font-size:var(--fs-stat); font-weight:800; color:var(--accent); line-height:1; }
@@ -158,7 +169,7 @@
       <div class="kicker">MPGD 2026 &middot; Applications</div>
       <div class="title">Saclay Micromegas Micro-TPCs in the X17 Search at n_TOF</div>
       <div class="subtitle">Cosmic-bench characterization of the detector fleet, and the search assembled around it</div>
-      <div class="byline"><b>[Your name]</b> &middot; on behalf of the n_TOF / X17 collaboration &middot; [venue, date]</div>
+      <div class="byline"><b>Dylan Neff</b> &middot; on behalf of the n_TOF / X17 collaboration &middot; MPGD 2026, Prague &middot; 3 September 2026</div>
     </section>
 
     <!-- 2: OUTLINE -->
@@ -206,55 +217,311 @@
       <div class="kicker">Motivation</div>
       <div class="title">The ATOMKI evidence</div>
       <div class="figure-solo"><img src="assets/img/atomki_angular_correlations.png" alt="Angular correlation spectra showing an excess of e+e- pairs near 115-125 degrees in the 7Li(p,e+e-)8Be, 3H(p,e+e-)4He, and 11B(p,e+e-)12C reactions"></div>
-      <div class="caption">The same excess, at the same angle, in three independent transitions — ⁸Be, ⁴He and ¹²C — each fit with a ~17 MeV signal (red/dashed) on top of the smooth IPC background (blue).<br>
+      <div class="caption">The same excess, at the same angle, in three independent transitions — ⁸Be, <b>⁴He</b> and ¹²C — each fit with a ~17 MeV signal (red/dashed) on top of the smooth IPC background (blue). <b>The ⁴He panel is the one this talk follows:</b> ATOMKI reach ⁴He* with a proton beam on ³H, we reach the same excited nucleus with a neutron beam on ³He — the mirror entrance channel to the same 20.6 MeV state.<br>
       A.J. Krasznahorkay et al.: <i>Phys. Rev. Lett.</i> 116, 042501 (2016) [⁸Be] &middot; <i>Phys. Rev. C</i> 104, 044003 (2021) [⁴He] &middot; <i>Phys. Rev. C</i> 106, L061601 (2022) [¹²C]</div>
     </section>
 
-    <!-- 5: A_facility n_TOF / EAR2 -->
-    <!-- TODO for a future pass on this slide (recorded 2026-08-08, not yet implemented):
-         Current state: schematic (ntof_facility_schematic.png, borrowed from Tagliente et
-         al., EPJ Web Conf. 292, 12002 (2024)) + photo (ear1_ear2_photo.jpg, CERN
-         OPEN-PHO-EXP-2016-006, shows EAR1 horizontal line left / EAR2 vertical line right).
+    <!-- 5: A_facility n_TOF / EAR2.
+         REWORKED 2026-08-10, revised twice on 2026-08-11. Four things changed from the
+         original and all four were deliberate:
 
-         1. Drop EAR1 from the discussion entirely — this talk only uses EAR2, so cut the
-            EAR1 comparison (185 m / energy-resolution framing) and narrow the slide to
-            EAR2 only.
+         1. EAR1 is out of the discussion. The 185 m / energy-resolution comparison is
+            gone; this talk only ever uses EAR2, so the slide is about EAR2 only.
+         2. The borrowed SCHEMATIC is gone. The main panel is an in-house render,
+            mpgd26/make_ear2.py + scenes_ear2.py -> assets/img/ear2_beamline_{1_target,
+            2_collimation,3_full}.png (regeneration command in slides/NOTES.md). The
+            citations that remain are for the NUMBERS, not for a picture. The stale
+            assets of the earlier cuts (the single-frame ear2_beamline.png, and the
+            2_flight / 3_dump / 4_full names of the first three- and four-frame
+            versions) were DELETED on 2026-08-11 rather than left to rot; nothing
+            should point at them, and `make_ear2.py` no longer writes them.
+         3. The borrowed PHOTOGRAPH is back, cropped (2026-08-11, Dylan asked for it):
+            assets/img/ear2_hall_photo.jpg, the right-hand panel of ear1_ear2_photo.jpg.
+            It earns its place three times over: it shows the real hall, it shows the
+            aluminium-profile support frame the render deliberately omits, and since
+            2026-08-11 it is also the SOURCE for the shape of the line inside the hall
+            (the white shielding, the stepped diameters, the reducer, the wide pipe on
+            up to the dump -- see scenes_ear2.H_CHAMBER_TOP).
+            ** IN THE PHOTOGRAPH THE LINE IS CLOSED FROM FLOOR TO CEILING **, with
+            detectors on a chamber in the beam; ours ends the pipe a metre above the
+            floor and puts the capsule in air. The backup slide's caption states that
+            difference and claims nothing about which is removable. Do not quietly
+            "reconcile" the two -- it is an open question, see NOTES.md.
+         4. The Tagliente Fig. 1 schematic was FOLDED IN rather than kept as a panel:
+            everything it said about EAR2 is in the render, and the only thing it added
+            was the horizontal line to EAR1, which this slide no longer discusses.
+            ntof_facility_schematic.png is now unused by every slide.
 
-         2. Replace the photo panel (currently the EAR1+EAR2 combined photo) with a PyVista
-            visualization in the mpgd26 house style depicting the EAR2 vertical beamline:
-              - vertical beam pipe
-              - neutrons traveling upward from the lead spallation target at ground level
-              - protons hitting the target from the side, producing the upward neutron flux
-              - a hypothetical detector/target suspended partway up the pipe
-              - the structure at the top of the real photo, tentatively identified as the
-                beam dump — UNVERIFIED, confirm against facility documentation before
-                asserting this in a caption
-              - a visual break/jump in the pipe to compress the 20 m flight path, since
-                drawing it to true scale next to a human-scale detector isn't useful
-            Reuse style.py's palette/materials/lighting so this matches the other renders
-            (chamber, bench, SPS) instead of sitting stylistically apart as a borrowed
-            academic photo.
+         THE RENDER STOPS ABOVE THE STATION (2026-08-11, Dylan). There used to be a third
+         act at the top with the bunker ceiling, a second break, and the beam dump drawn
+         in full. It cost 2.7 m of drawn height and was the widest object in the picture,
+         all of it shielding, and it left the measuring station small. Removing it takes
+         DRAWN_H from 8.67 m to 5.71 m, so everything left is drawn ~1.5x larger. Nothing
+         is asserted away: the beam leaves the top of the frame under a label giving the
+         dump's height, and scenes_ear2.ASSUMPTIONS + this slide's caption both say what
+         is above the frame. That also removed the upper break, which Dylan did not want.
 
-         3. Once (2) exists, also remake Fig. 1 (the beamline schematic) in-house — consider
-            integrating it directly into the same PyVista scene from (2) rather than keeping
-            it as a separate figure, since both describe the same beamline. -->
+         THE PIPE ENDS FOR REAL, and that is a FACILITY FACT, not a drawing device
+         (Dylan, 2026-08-11, correcting the 2026-08-10 version of this render): the beam
+         pipe stops ~1 m above the EAR2 floor and the space above it is open, so the
+         neutrons cross it in air. The pre-correction version ran ONE pipe continuously
+         into the dump and then "cut it away" above the floor with a section marker and a
+         disclaimer -- wrong about EAR2, and the disclaimer is gone with it.
+         There IS a pipe higher up, and it is a different pipe: the wide section that
+         starts above the experimental space (H_UP0 = 20.45 m) and carries the beam on
+         through the ceiling to the dump, added 2026-08-11 at Dylan's request and cut off
+         by the top of the frame. So the line reads: narrow tube, flanged end, OPEN SPACE
+         with the experiment in it, wide tube away. Do not join those two into one pipe,
+         and do not delete the upper one -- the first mistake was the first of those.
+
+         ONE DEPARTURE FROM AS-BUILT GEOMETRY REMAINS, deliberate and DISCLOSED THREE
+         TIMES OVER (on-figure label, scenes_ear2.ASSUMPTIONS, the caption): the station's
+         SUPPORT FRAME IS NOT DRAWN, so the capsule appears to float. Drawn as built it
+         sits behind four grey uprights. Keep that disclosure -- and note the photograph
+         now shows the frame, which is the honest way to have it both ways.
+
+         NO SOURCED NUMBER HAS CHANGED IN ANY OF THIS: the heights, apertures, materials,
+         the beam dump's three layers, the 19.95 m flight path and the 90 deg geometry are
+         exactly as cited. The one new number, the 19.16 m pipe end, is Dylan's
+         recollection of the hall and is NOT from a drawing -- it is stated on the figure
+         as "= 1 m above the floor", which is the precision it deserves.
+
+         Do NOT change 19.95 m to 19.5 m: no source states 19.5 m. 19.95 m is the
+         reference flight path in Pavon-Rodriguez et al. (2025). See NOTES.md.
+
+         IT IS ONE SLIDE IN FIVE FRAMES, slides 5-9 below, because Dylan wants a build to
+         talk over and asked on 2026-08-11 for it cut finer: target -> the neutrons leave
+         at 90 deg -> the whole middle of the line (collimator, floor, shielding, the pipe
+         ending) -> back into a pipe on up to the dump -> the measuring station. Six
+         things to know before editing any of them:
+
+         1. The five frames are STRICT SUBSETS of one picture (scenes_ear2.STAGE_PARTS):
+            same camera, same lens, same light rig, same canvas, same drawn scale, and the
+            label column is solved once from the full set and then filtered -- so nothing
+            moves and no label shifts. That is also why THE FIVE SLIDES MUST KEEP AN
+            IDENTICAL LAYOUT: change the figure markup on one of them and its figure box
+            changes height, and both pictures jump on screen when you
+            page. The bullets may differ (they accumulate, with the already-narrated ones
+            set .dim, and the dim ones are SHORTENED as they pile up so frame 5 still
+            fits) because the text column is independent. The PHOTOGRAPH is on all five
+            frames for the same reason -- it is not part of the build.
+            ONE EXCEPTION TO STRICT SUBSETS, in the render itself and deliberate: the
+            collimated beam is drawn at a whisper across the 0.5 m the sample occupies,
+            on frame 5 only (scenes_ear2.add_neutrons_hi, fade_sample). At full strength
+            it is a grey line down the middle of a translucent capsule and reads as the
+            capsule being BEHIND the beam, which is what Dylan saw. Nothing else in the
+            scene depends on which frame it is.
+         2. The deck has no fragment mechanism -- make_pdf.sh prints one page per <section>
+            -- so a build IS consecutive slides.
+         3. The layout is photo | render | text (photo first since 2026-08-11, Dylan),
+            set inline so no shared CSS had to change. align-items:stretch is
+            load-bearing: .figtext centres its columns, which leaves .figure with no
+            bounded height, and a PORTRAIT image then renders at its natural size and
+            overflows up over the title. Stretching gives .imgwrap the row height so
+            max-height:100% can bite.
+         4. THERE IS NO CAPTION ON THESE THREE, on purpose (2026-08-11, Dylan): both
+            pictures are portrait, so height is the scarce resource and a six-line
+            caption was costing them a fifth of it. The provenance and every
+            drawn-not-measured item moved to a single BACKUP slide that carries the full
+            caption under the same figure -- find it next to the Backup divider. What is
+            left here is a one-line .fig-label credit under each picture, which is the
+            minimum attribution and is not a caption. If you add a caption back, the
+            column widths need re-tuning and all three must get the SAME one.
+         5. The renders on these slides are the ON-FIGURE-LABELLED variant
+            (ear2_onfig_<n>_<tag>.png, labels on the drawing's own background, left and
+            right) rather than the gutter variant (ear2_beamline_<n>_<tag>.png, labels in
+            a column down one side). Both are built by every make_ear2.py run; swapping is
+            five img src edits. On-figure wins HERE because a gutter is dead width and
+            these slides are paying for width to buy height. The backup slide keeps the
+            gutter version, because under a caption the figure is short and the on-figure
+            labels are then the first thing to stop being readable.
+         6. THE MEASURING STATION, rebuilt 2026-08-11. The chambers were plain teal slabs
+            and Dylan asked what the green was, which is fair -- a 400 mm square of PCB
+            colour seen obliquely is a green box. They are chambers now: aluminium frame,
+            readout board WITH STRIPS on it (24 drawn, not 512 -- the real 0.78 mm pitch
+            is 0.26 px here), 30 mm of lit drift gas facing the sample, window as a tint.
+            "Measuring station" became TWO labels, and on 2026-08-11 they were made
+            GENERIC -- "sample" and "detectors", not "3He sample" / "Micromegas
+            trackers". This is slide 9; the experiment is introduced on slide 16, and the
+            specific words made the facility slide look like the setup slide. And frame 5
+            exists in two versions: TWO CHAMBERS IN SECTION (ear2_onfig_5_station.png --
+            the default, and what is on the slide) or the true four-arm pinwheel
+            (..._4arm.png). Dylan asked to compare and chose the section pair, because the
+            pinwheel closes on the drawn capsule from both sides until they touch it.
+            NB1 the section pair's azimuths are set RELATIVE TO THE CAMERA, so they are
+            136 deg apart and not the real 90 -- declared in scenes_ear2.ASSUMPTIONS, and
+            the _4arm render is the record of the true arrangement.
+            NB2 in the _4arm render the near two must be drawn UNCUT -- the cutaway plane
+            would delete them outright, which is why the first attempt at the four-arm
+            version was pixel-identical to the two-arm one.
+            NB3 NOTHING at the station is 1:1: CAPSULE_SCALE = 5.5 and PLATE_DRAW = 1.35
+            (Dylan, 2026-08-11 -- "this is mostly just a generic example diagram"). The
+            chambers were the one true-size thing here until then, so the backup caption's
+            "the four chamber plates are true size (400 mm)" was REPLACED, not softened.
+         7. THREE PALETTE / BREAK TRAPS, all from Dylan reading the render (2026-08-11).
+            (a) COL['neutron'] is DARK (#55657a) on purpose: the old grey had the same
+            value as the amber-tinted pipe interior and the arrows leaving the target were
+            invisible -- and making them WHITE, the obvious fix, would lose them where the
+            same beam crosses the near-white open hall higher up. (b) ONE ENV_ALPHA=0.16
+            for the beam envelope above and below the collimator; at the old 0.34 the thin
+            pencil came out olive-brown, i.e. a different colour from the beam below it.
+            (c) BREAK_TILT = 0: a 350 mm section disc tipped 24 deg, seen from a camera
+            6 deg above the horizon, projects to a thin dark diagonal streak across the
+            pipe, and that is exactly how it read.
+
+         At 15 minutes ALL THREE go to backup as one unit -- which is what RUNNING_ORDER.md
+         already did with the single slide, so the 16-slide cut is unchanged. If you find
+         60 s for the facility after all, show FRAME 3 ONLY and narrate the build over it. -->
     <section class="slide">
       <div class="kicker">Motivation</div>
-      <div class="title">n_TOF: CERN's neutron time-of-flight facility</div>
-      <div class="cols cols-2">
+      <div class="title-sm">n_TOF EAR2: a vertical neutron beam line</div>
+      <div class="cols cols-3 figtext" style="grid-template-columns:0.62fr 1.00fr 1.04fr;align-items:stretch">
         <div class="figure">
-          <div class="imgwrap"><img src="assets/img/ntof_facility_schematic.png" alt="Schematic: 20 GeV/c protons hit a lead spallation target, feeding a 185 m horizontal beamline to EAR1 and a 20 m vertical beamline to EAR2"></div>
+          <div class="imgwrap bare"><img src="assets/img/ear2_hall_photo.jpg" alt="Photograph of the n_TOF EAR2 experimental hall: the vertical beam line rising from a white segmented shielding disc on the floor, through an aluminium-profile support frame at mid height where detector snouts point in at a chamber in the beam, and on up through the ceiling in a wider pipe. © CERN."></div>
+          <div class="fig-label">The EAR2 hall &mdash; &copy; CERN</div>
         </div>
         <div class="figure">
-          <div class="imgwrap"><img src="assets/img/ear1_ear2_photo.jpg" alt="Photo of the EAR1 horizontal beamline (left) and EAR2 vertical beamline (right)"></div>
-          <div class="fig-label">EAR1's horizontal line (left) and EAR2's vertical line (right)</div>
+          <div class="imgwrap bare"><img src="assets/img/ear2_onfig_1_target.png" alt="Frame 1 of five: the lead spallation target alone, low in a tall empty frame, with 20 GeV/c protons arriving horizontally from the left and stopping in it. The target is drawn as Target #3 actually is - a stack of six square lead slices with aluminium cooling plates between them, inside a stainless vessel, with a lead plate and the four-centimetre water layer of the EAR2 moderator on top of it and the hemispherical vacuum window above that. Everything else is the empty space above, and appears in the following four frames."></div>
+          <div class="fig-label">In-house render &middot; Wei&szlig; (2015), Pavon-Rodriguez (2025)</div>
+        </div>
+        <div class="side">
+          <ul class="bullets">
+            <li><b>20 GeV/c protons</b> from the CERN PS strike a <b>lead spallation target</b> &mdash; ~300 neutrons per proton, in 7 ns rms pulses at &le; 0.8 Hz</li>
+          </ul>
         </div>
       </div>
-      <ul class="bullets">
-        <li>20 GeV/c protons from the CERN PS strike a lead spallation target &mdash; ~300 neutrons per proton, 7 ns pulses, up to 0.8 Hz</li>
-        <li>EAR1: 185 m horizontal, best energy resolution (2001) &middot; <b>EAR2: 20 m vertical, high instantaneous flux (2014)</b> &mdash; the choice for a rare-event search like this one</li>
-      </ul>
-      <div class="caption">G. Tagliente et al. (n_TOF Collaboration), <i>EPJ Web Conf.</i> 292, 12002 (2024) &middot; photo: E. Chiaveri, CERN OPEN-PHO-EXP-2016-006, &copy; CERN</div>
+    </section>
+
+    <!-- 6: A_facility, frame 2 of 5 -- and the neutrons leave, at 90 degrees.
+         The pipe in the shaft and the flux filling it, nothing above the break yet.
+         The BREAK label lands here because the break only exists once there is a pipe
+         to break, and it is where the first collimator, the sweeping magnet and the
+         filter station all went -- naming them here is what stopped the drawing
+         inviting the question "where is the first one?". -->
+    <section class="slide">
+      <div class="kicker">Motivation</div>
+      <div class="title-sm">n_TOF EAR2: a vertical neutron beam line</div>
+      <div class="cols cols-3 figtext" style="grid-template-columns:0.62fr 1.00fr 1.04fr;align-items:stretch">
+        <div class="figure">
+          <div class="imgwrap bare"><img src="assets/img/ear2_hall_photo.jpg" alt="Photograph of the n_TOF EAR2 experimental hall: the vertical beam line rising from a white segmented shielding disc on the floor, through an aluminium-profile support frame at mid height where detector snouts point in at a chamber in the beam, and on up through the ceiling in a wider pipe. © CERN."></div>
+          <div class="fig-label">The EAR2 hall &mdash; &copy; CERN</div>
+        </div>
+        <div class="figure">
+          <div class="imgwrap bare"><img src="assets/img/ear2_onfig_2_neutrons.png" alt="Frame 2 of five: the same target, now with the vertical beam pipe in the shaft above it, the neutrons leaving at 90 degrees to the proton beam and filling the full 317 mm bore, and the annotated break that removes about 20 m of empty flight path along with the first collimator, the sweeping magnet and the filter station."></div>
+          <div class="fig-label">In-house render &middot; Wei&szlig; (2015), Pavon-Rodriguez (2025)</div>
+        </div>
+        <div class="side">
+          <ul class="bullets">
+            <li class="dim"><b>20 GeV/c protons</b> from the CERN PS strike a <b>lead spallation target</b> &mdash; ~300 neutrons per proton, in 7 ns rms pulses at &le; 0.8 Hz</li>
+            <li>EAR2 takes the neutrons that leave at <b>90&deg; to the proton beam</b> and carries them <b>~20 m straight up</b>. The drawing is <b>broken</b> to remove most of that empty pipe &mdash; and with it the <b>first collimator at 7.4&nbsp;m</b> (1&nbsp;m of iron, 200&nbsp;mm bore), the sweeping magnet and the filter station, all far below the hall</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7: A_facility, frame 3 of 5 -- the middle of the line: the second
+         collimator, the lead disks, the EAR2 floor and its polyethylene shielding, the
+         reducer, and the pipe ENDING a metre above the floor. This is the frame that
+         carries the collimation argument: the target radiates into the whole bore
+         (frame 2) and what comes out here is a 3 cm pencil. -->
+    <section class="slide">
+      <div class="kicker">Motivation</div>
+      <div class="title-sm">n_TOF EAR2: a vertical neutron beam line</div>
+      <div class="cols cols-3 figtext" style="grid-template-columns:0.62fr 1.00fr 1.04fr;align-items:stretch">
+        <div class="figure">
+          <div class="imgwrap bare"><img src="assets/img/ear2_hall_photo.jpg" alt="Photograph of the n_TOF EAR2 experimental hall: the vertical beam line rising from a white segmented shielding disc on the floor, through an aluminium-profile support frame at mid height where detector snouts point in at a chamber in the beam, and on up through the ceiling in a wider pipe. © CERN."></div>
+          <div class="fig-label">The EAR2 hall &mdash; &copy; CERN</div>
+        </div>
+        <div class="figure">
+          <div class="imgwrap bare"><img src="assets/img/ear2_onfig_3_collimation.png" alt="Frame 3 of five: the middle of the line appears. The second collimator crossing the break, the EAR2 floor 18.16 m above the target with white polyethylene shielding on it around the pipe penetration, the lead-disk chamber, a reducer down to a narrow tube, and the flanged exit window about a metre above the floor with the collimated beam continuing up in air."></div>
+          <div class="fig-label">In-house render &middot; Wei&szlig; (2015), Pavon-Rodriguez (2025)</div>
+        </div>
+        <div class="side">
+          <ul class="bullets">
+            <li class="dim"><b>20 GeV/c protons</b> on a <b>lead spallation target</b>, ~300 neutrons per proton</li>
+            <li class="dim">the neutrons that leave at <b>90&deg;</b> go <b>~20 m straight up</b>, through a first collimator at 7.4&nbsp;m</li>
+            <li>The <b>second collimator</b> &mdash; 15.0&ndash;18.0&nbsp;m, iron plus borated polyethylene, bore <b>70 &rarr; 21.8&nbsp;mm</b> &mdash; and the <b>lead disks</b> after it cut that flux down to a <b>&asymp; 3 cm</b> pencil</li>
+            <li>The <b>beam pipe ends ~1 m above the EAR2 floor</b>. Above it the hall is open, the beam crosses it in air, and <b>that space is where the experiments stand</b></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- 8: A_facility, frame 4 of 5 -- and back into a pipe, on up to the dump.
+         The wide upper section is a DIFFERENT pipe from the one below, with the open
+         experimental space between them; see the note above and scenes_ear2.add_uppipe.
+         It is cut off by the top of the frame, not capped. -->
+    <section class="slide">
+      <div class="kicker">Motivation</div>
+      <div class="title-sm">n_TOF EAR2: a vertical neutron beam line</div>
+      <div class="cols cols-3 figtext" style="grid-template-columns:0.62fr 1.00fr 1.04fr;align-items:stretch">
+        <div class="figure">
+          <div class="imgwrap bare"><img src="assets/img/ear2_hall_photo.jpg" alt="Photograph of the n_TOF EAR2 experimental hall: the vertical beam line rising from a white segmented shielding disc on the floor, through an aluminium-profile support frame at mid height where detector snouts point in at a chamber in the beam, and on up through the ceiling in a wider pipe. © CERN."></div>
+          <div class="fig-label">The EAR2 hall &mdash; &copy; CERN</div>
+        </div>
+        <div class="figure">
+          <div class="imgwrap bare"><img src="assets/img/ear2_onfig_4_dump.png" alt="Frame 4 of five: above the open experimental space the wide upper pipe appears, taking the beam on through the bunker ceiling to the dump on the roof, and it is cut off by the top of the frame rather than ended."></div>
+          <div class="fig-label">In-house render &middot; Wei&szlig; (2015), Pavon-Rodriguez (2025)</div>
+        </div>
+        <div class="side">
+          <ul class="bullets">
+            <li class="dim"><b>20 GeV/c protons</b> on a <b>lead spallation target</b>, ~300 neutrons per proton</li>
+            <li class="dim">the neutrons that leave at <b>90&deg;</b> go <b>~20 m straight up</b>, through a first collimator at 7.4&nbsp;m</li>
+            <li class="dim">a second collimator and lead disks cut it to a <b>&asymp; 3 cm</b> pencil, and the <b>pipe ends ~1 m above the EAR2 floor</b>, leaving open hall</li>
+            <li>Above the experimental space the beam goes <b>back into a pipe</b>, through the bunker ceiling at <b>23.66&nbsp;m</b>, to the <b>beam dump</b> on the roof &mdash; entrance <b>24.73&nbsp;m</b>, borated polyethylene inside iron inside concrete. Both are above the top of the frame</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- 9: A_facility, frame 5 of 5 -- the experiment, and the hand-off into the
+         Status section. The sample appears ONLY here, which is the point of the build:
+         everything before it is beam line, and the last thing to land on the slide is
+         us. This is the frame to keep if only one survives (RUNNING_ORDER.md), and it
+         is also the standalone figure, figures/ear2_beamline_light_labelled.pdf.
+
+         TWO LABELS, not one, and both GENERIC: "sample" on the capsule and "detectors"
+         on a chamber board (Dylan, 2026-08-11) -- the thing the beam hits and the things
+         that watch it are different objects, and naming them "3He" and "Micromegas" here
+         makes this look like the setup slide, which is seven slides away. The chambers
+         are drawn as chambers now (frame, strip board, 30 mm of drift gas, window tint);
+         they were plain teal slabs and read as "green boxes".
+
+         TWO OF THE FOUR, IN SECTION. The pair is placed relative to the CAMERA -- just
+         past edge-on, on the far side -- so the cutaway slices them, every surviving
+         piece is behind the sample, and the capsule is left alone on the beam. The price
+         is that the two drawn azimuths are 136 deg apart, not the real 90; that is
+         declared in scenes_ear2.ASSUMPTIONS and on the backup slide's caption.
+
+         THE ALTERNATIVE RENDER: ear2_onfig_5_station_4arm.png is the same frame with the
+         true four-arm pinwheel instead. Swap the img src to compare. Nothing else changes
+         -- same camera, same labels, same everything. It is what the section pair was
+         chosen over: at this camera the two solid arms come in at 45 deg to the screen and
+         close on the drawn capsule until they touch it. -->
+    <section class="slide">
+      <div class="kicker">Motivation</div>
+      <div class="title-sm">n_TOF EAR2: a vertical neutron beam line</div>
+      <div class="cols cols-3 figtext" style="grid-template-columns:0.62fr 1.00fr 1.04fr;align-items:stretch">
+        <div class="figure">
+          <div class="imgwrap bare"><img src="assets/img/ear2_hall_photo.jpg" alt="Photograph of the n_TOF EAR2 experimental hall: the vertical beam line rising from a white segmented shielding disc on the floor, through an aluminium-profile support frame at mid height where detector snouts point in at a chamber in the beam, and on up through the ceiling in a wider pipe. © CERN."></div>
+          <div class="fig-label">The EAR2 hall &mdash; &copy; CERN</div>
+        </div>
+        <div class="figure">
+          <div class="imgwrap bare"><img src="assets/img/ear2_onfig_5_station.png" alt="Frame 5 of five: the full picture. The measuring station appears, with the sample capsule alone in the open beam at 19.95 m, halfway between the end of the lower pipe and the start of the upper one, and a Micromegas chamber set back on either side of it, each drawn in section so that the aluminium frame, the strip readout board and the 30 mm of drift gas facing the sample are all visible. The real station has four such chambers in a pinwheel; two are drawn."></div>
+          <div class="fig-label">In-house render &middot; Wei&szlig; (2015), Pavon-Rodriguez (2025)</div>
+        </div>
+        <div class="side">
+          <ul class="bullets">
+            <li class="dim"><b>20 GeV/c protons</b> on a <b>lead spallation target</b>, ~300 neutrons per proton</li>
+            <li class="dim">the neutrons that leave at <b>90&deg;</b> go <b>~20 m straight up</b>, through a first collimator at 7.4&nbsp;m</li>
+            <li class="dim">a second collimator and lead disks cut it to a <b>&asymp; 3 cm</b> pencil, and the <b>pipe ends ~1 m above the EAR2 floor</b>, leaving open hall</li>
+            <li class="dim">above that, the beam goes back into a pipe and on to the <b>dump</b> on the bunker roof</li>
+            <li><b>Our station stands in that open beam at 19.95 m</b> &mdash; the &sup3;He sample, with <b>four Micromegas micro-TPCs</b> in a pinwheel around it (two of them drawn, in section)</li>
+            <li>Short flight path &rarr; <b>the highest instantaneous flux at n_TOF</b>, which is what a rare-event search needs</li>
+          </ul>
+          <div class="callout"><b>The flux we came for is also the problem.</b> A 7 ns proton pulse 20 m below makes a prompt &gamma;-flash that arrives before any neutron does &mdash; and it dominates the detector’s first microsecond. That is the Status section.</div>
+        </div>
+      </div>
     </section>
 
     <!-- 6: A2 channel -->
@@ -264,6 +531,23 @@
       <div class="figure-solo"><img src="assets/img/x17_signature.png" alt="Capture on 3He, three de-excitation channels, and the e+e- opening-angle observable"></div>
       <div class="callout"><b>Discovery channel: e⁺e⁻ tracks and their opening angle.</b> Neutron capture is overwhelmingly a &gamma;-ray process &mdash; a detector that only responds to a charged, back-to-back pair rejects that background by construction, instead of trying to out-shield it.</div>
       <div class="caption">n_TOF's neutron beam onto a ³He target &mdash; an independent nucleus, an independent facility, from the same simplified picture: capture &rarr; ⁴He* at 20.58 MeV &rarr; &gamma; / IPC / X17. Measuring that angle is what the Micromegas micro-TPC is built to do, next.</div>
+    </section>
+
+    <!-- 6b: the ideal-case pair kinematics.  Added 2026-08-10 -- this is the figure
+         Dylan wanted for the target slide and which did not exist anywhere in the
+         repos; it is now a Geant4 campaign product, not a hand-drawn curve
+         (mpgd26/make_pair_kinematics.py, provenance in its docstring and in
+         NOTES.md).  NOTE the two curves are normalised SEPARATELY and are 50/50 by
+         construction -- they are SHAPES, not a branching ratio.  Say that if asked;
+         the deck deliberately makes no yield claim (see the D9 note below).
+         AT 15 MINUTES THIS IS A CUT CANDIDATE -- see RUNNING_ORDER.md.  It earns its
+         place if you want to motivate "why a tracker and not a pair of counters",
+         because the answer is on the right-hand panel. -->
+    <section class="slide">
+      <div class="kicker">Motivation</div>
+      <div class="title-sm">What the detector has to separate</div>
+      <div class="figure-solo"><img src="assets/img/ideal_pair_spectrum.png" alt="Left: single-lepton kinetic energy, a flat box between 3.8 and 15.7 MeV for X17 against a peaked continuum for IPC. Right: opening angle, X17 confined above a 109 degree kinematic threshold with a 117 degree median, against IPC falling from small angles with a 30 degree median."></div>
+      <div class="caption"><b>Ideal case &mdash; Geant4 generator truth, before any material.</b> A 17 MeV two-body decay cannot make a small opening angle: it is <b>kinematically confined above 109&deg;</b>, exactly where ATOMKI see their excess, while internal pair conversion piles up at small angle. That separation is the whole measurement &mdash; and it is an <i>angle</i>, which is why this needs a tracker. The real capsule material degrades this picture; quantifying that is part of the search.</div>
     </section>
 
     <!-- TODO (recorded 2026-08-08, not yet implemented): the board-peel image
@@ -285,11 +569,18 @@
           <div class="imgwrap"><img src="assets/img/chamber_exploded.png" alt="Exploded MX17 chamber with a muon and its drifting ionisation"></div>
         </div>
         <div class="figure">
-          <div class="imgwrap"><img src="assets/img/mx17_board_peel.png" alt="MX17 readout board with its four layers peeled back: ESL resistive strips, L4 readout pads, L5 Y strips, L6 X strips"></div>
-          <div class="fig-label">The readout board itself, peeled back four layers: resistive strips &rarr; pads &rarr; Y strips &rarr; X strips</div>
+          <div class="imgwrap"><img src="assets/img/mx17_board_peel_zoom.png" alt="Close-up of a 25 by 25 mm patch of the MX17 readout board with four layers peeled back: ESL resistive strips, L4 readout pads, L5 Y strips, L6 X strips"></div>
+          <div class="fig-label">A 25&nbsp;mm patch of the board, peeled back four layers &mdash; ESL resist (0.80&nbsp;mm) over pads and X/Y strips (0.78&nbsp;mm)</div>
         </div>
       </div>
-      <div class="caption">470&times;470&nbsp;mm PCB (398.6&nbsp;mm metallised) &middot; 512 strips/view at 0.7785&nbsp;mm pitch &middot; 30&nbsp;mm drift gap &middot; 150&nbsp;&micro;m amplification gap</div>
+      <!-- Caption corrected 2026-08-10: the pitch was 0.7785 mm, which is an off-by-one
+           artefact -- 398.6 mm is the first-to-last strip CENTRE span, i.e. 511 pitches,
+           and dividing it by the strip COUNT 512 gives 0.77852.  The design pitch is a
+           round 0.78 mm and the active area is 512 x 0.78 = 399.36 mm.  Gerber-verified:
+           strip dots sit at +-0.39, +-1.17 mm, spacing exactly 0.780.  The zoom figure
+           above now carries a burned-in 0.78 mm caliper, so the old number would have
+           contradicted the figure on the same slide.  See HANDOFF_board_peel.md §1. -->
+      <div class="caption">470&times;470&nbsp;mm PCB (399.36&nbsp;mm active) &middot; 512 strips/view on a 0.78&nbsp;mm pitch &middot; 30&nbsp;mm drift gap &middot; 150&nbsp;&micro;m amplification gap</div>
     </section>
 
     <!-- 8: B2 micro-TPC operation -->
@@ -334,59 +625,44 @@
       <div class="flag">placeholder — depends on running order with Alexandra's P2 talk</div>
     </section>
 
-    <!-- TODO for a future pass on the efficiency slide (recorded 2026-08-08, not yet
-         implemented):
-         1. Move the fleet-wide bar chart (det3/det2/det6/det7/det4 comparison) to backup —
-            keep this slide focused on det3 alone as the headline chamber.
-         2. Pair the det3 breakdown (efficiency_breakdown.png) with the residual distribution
-            — spatial_residuals.png (currently used on the B7 resolution slide, slide 13) has
-            the full-range log-scale panels for X/Y, which show the tails; those tails are
-            what explains the "detected but >5&nbsp;mm off track" (3.1%) slice of the
-            breakdown. Decide whether to reuse the same image on both slides, crop it to just
-            the log-scale panels for this slide, or regenerate a version aimed specifically at
-            the tail.
-         3. IMPORTANT — every number on this slide (92.9%, the 5-way breakdown, all of it) is
-            from the 2026-07-14 recipe on the June cosmic-bench dataset. Refresh with best
-            current estimates from a new analysis before the conference — don't ship stale
-            numbers. This is the same source figure (efficiency_breakdown.png) already flagged
-            once for an internal inconsistency (its annotation box still said "88.8%" against
-            a superseded recipe) — regenerating it solves both problems at once. -->
-
-    <!-- 12: B6 efficiency -->
+    <!-- 12: B6 efficiency.  Refreshed 2026-08-10 on the waveform-first chain --
+         see slides/HANDOFF_efficiency.md for old-vs-new and provenance.  The
+         five-chamber fleet comparison moved to the backup slide "The fleet, and
+         what limits each chamber".  Both figures come from ONE command,
+         mpgd26/make_efficiency_breakdown.py, which reads only the JSON written by
+         mx_june_wft/02_efficiency.py -- no number on this slide is hand-typed
+         into a figure. -->
     <section class="slide">
       <div class="kicker">Characterization</div>
       <div class="title">Efficiency: 93% on the best chamber</div>
       <div class="cols cols-2">
         <div class="figure">
-          <div class="bar-chart">
-            <div class="bar-row"><div class="bar-name">det3</div><div class="bar-track"><div class="bar-fill" style="width:92.9%"></div></div><div class="bar-val">92.9%</div></div>
-            <div class="bar-row"><div class="bar-name">det2</div><div class="bar-track"><div class="bar-fill" style="width:91.3%"></div></div><div class="bar-val">91.3%</div></div>
-            <div class="bar-row"><div class="bar-name">det6</div><div class="bar-track"><div class="bar-fill" style="width:57.8%"></div></div><div class="bar-val">57.8%</div></div>
-            <div class="bar-row"><div class="bar-name">det7</div><div class="bar-track"><div class="bar-fill" style="width:43.1%"></div></div><div class="bar-val">43.1%</div></div>
-            <div class="bar-row"><div class="bar-name">det4</div><div class="bar-track"><div class="bar-fill" style="width:20.7%"></div></div><div class="bar-val">20.7%</div></div>
-          </div>
-          <div class="bar-note">Efficiency within 5&nbsp;mm of the reference track (&chi;&sup2;&lt;1.0 &amp; NClus=4 recipe, 2026-07-14)</div>
+          <div class="imgwrap"><img src="assets/img/efficiency_breakdown.png" alt="det3 loss budget: 93.5% reconstructed within 5 mm, 3.7% detected but off track, 2.5% spark coincidence, 0.3% no valid point, 0.0% silent"></div>
+          <div class="fig-label">Every crossing muon accounted for &mdash; the residue off 93.5% is a spark coincidence and a near-miss tail, never a failure to detect</div>
         </div>
         <div class="figure">
-          <div class="imgwrap"><img src="assets/img/efficiency_breakdown.png" alt="det3 efficiency loss budget breakdown"></div>
-          <div class="fig-label">det3's loss budget: the residue off 92.9% is a spark coincidence and an edge/near-miss tail — not a failure to detect</div>
+          <div class="imgwrap"><img src="assets/img/efficiency_residual_tail.png" alt="Left: log-scale distribution of detector-to-reference distance with the 5 mm match marked. Right: efficiency rising from 65% at 1 mm to 94.5% at 10 mm and flattening below the 97.3% reconstructed-at-all line."></div>
+          <div class="fig-label">The &ldquo;off-track&rdquo; slice is near-misses: opening the match 5&nbsp;&rarr;&nbsp;10&nbsp;mm recovers 93.5&nbsp;&rarr;&nbsp;94.5%, then it flattens</div>
         </div>
       </div>
-      <div class="caption">det6 / det7 are spark-limited (23% / 33% spark fraction); det4 is gain-limited — it sees ~70% of muons, but too few strips fire to reconstruct.</div>
+      <div class="caption">det3, 7,055 reference muons (6-27 run, resist 490&nbsp;V / drift 1000&nbsp;V). Efficiency = a reconstructed point within 5&nbsp;mm of the M3 reference track, &chi;&sup2;&lt;1.0 &amp; NClus=4 reference recipe; position from the waveform-first fit, detection from the hits. Genuine blindness is <b>0.00%</b> &mdash; the chamber fired on all 7,055. The other four chambers are in backup.</div>
     </section>
 
-    <!-- TODO for a future pass on the resolution slide (recorded 2026-08-08, not yet
-         implemented):
-         IMPORTANT CAVEAT — the "0.6-0.7 mm spatial core resolution" stat tile below is
-         quoted against the M3 reference telescope, and the M3 detectors on the cosmic bench
-         only have ~500 &micro;m resolution themselves. That reference resolution is not
-         subtracted out here, so 0.6-0.7 mm is a convolution of the MX17 DUT's true
-         resolution with the M3's own ~500 &micro;m — i.e. it's close to the FLOOR of what
-         this cosmic-bench method can even measure, not necessarily the DUT's intrinsic
-         resolution. Needs an explicit caveat on the slide (or a deconvolved number) before
-         this goes in front of an audience — as written it reads as a clean DUT measurement,
-         which it isn't. Hopefully superseded by a more precise measurement of det4 at the
-         SPS test beam, which may not have the same reference-resolution ceiling. -->
+    <!-- 13: B7 resolution.  RESOLVED 2026-08-10 -- the old caveat here rested on a wrong
+         premise and has been deleted.  It claimed the tile was reference-limited because
+         "the M3 detectors only have ~500 um resolution": that is the PER-PLANE number.
+         The quantity that matters is the four-plane fit's pointing interpolated to the DUT
+         plane, measured on this same run as 0.21 mm (X) / 0.24 mm (Y) -- the DUT sits ~50 mm
+         from the telescope centroid, where interpolation is best.  The reference is only
+         10-21% of the residual VARIANCE, so the quadrature subtraction is stable to
+         < 0.01 mm and the tile now carries the deconvolved number.  Do NOT describe this
+         measurement as reference-limited on stage.  Full derivation, sources and the two
+         repo errors it uncovered: slides/HANDOFF_resolution.md.
+         STILL OPEN, worth doing before 3 September: the displayed figure and its 0.61/0.73 mm
+         are hits-basis from run g_det3_wknd, which was never reprocessed after the
+         2026-07-25 significance-floor fix.  Regenerating from sat_det3 on the waveform-first
+         basis (the basis the rest of the deck advertises, and the run the efficiency slide
+         now uses) would give ~0.50/0.47 mm -- better than what the slide claims. -->
 
     <!-- 13: B7 resolution -->
     <section class="slide">
@@ -404,7 +680,7 @@
       </div>
       <div class="stat-row">
         <div class="stat"><div class="num">1.7&deg;</div><div class="lbl">angular (hybrid, uniform in angle; &rarr;1.0&ndash;1.1&deg; with the newer waveform-first fit)</div></div>
-        <div class="stat"><div class="num">0.6&ndash;0.7&nbsp;mm</div><div class="lbl">spatial core resolution</div></div>
+        <div class="stat"><div class="num">0.57 / 0.69&nbsp;mm</div><div class="lbl">spatial resolution X / Y &mdash; M3 reference pointing (0.21 / 0.24&nbsp;mm at the DUT plane) deconvolved</div></div>
         <div class="stat"><div class="num">33&nbsp;ns</div><div class="lbl">plane-to-plane timing (~1&nbsp;mm of drift)</div></div>
       </div>
     </section>
@@ -417,22 +693,371 @@
       <div class="caption">The real Geant4 ³He vessel (He3Gas / He3Cap_Al / He3Cap_CFRP), mounted nose-first exactly as simulated.</div>
     </section>
 
-    <!-- 15: C2 tracking -->
+    <!-- =====================================================================
+         15-22: THE SETUP, BUILT UP.  Replaces the old slide 15 (top-down
+         pinwheel) and slide 16 (three matplotlib build-up panels), both now in
+         backup.  Added 2026-08-10.
+
+         One figure, nine states, four cameras -- the subject changes scale by a
+         factor of fifty and then changes what it has to show, so it is shot in
+         four acts:
+
+           1-3  micro   the 23 mm vessel, filling a portrait frame
+           4    close   the chambers arriving around it
+           5-7  hero    the apparatus, assembled at a FIXED camera
+           8-9  over    almost straight down (84 deg), because the layers are
+                        stacked RADIALLY and the trigger wall hides the
+                        plastics behind it in any three-quarter view.  This act
+                        also runs BARE: frames, boards and vessel shells drop
+                        to a whisper and only the active volumes keep colour,
+                        since looking down the beam the four arms are seen
+                        through each other and the aluminium becomes a lid.
+
+         Within each act the frames share a camera and a size exactly, so
+         flipping forward grows the detector onto a still picture.  The cuts
+         between acts are deliberate, and each lands on something the previous
+         camera could not show.
+
+         Regenerate all eight with
+
+             ../.venv/bin/python make_ntof.py
+             cp ../figures/ntof_build_<n>_<tag>_light.png \
+                assets/img/setup3d_<n>_<tag>.png
+
+         Geometry comes from MX17_Full_Geant/scripts/plot_geometry.py (itself
+         written against SimConfig.hh); the neutron and the pair are real
+         Geant4 events selected by tools/extract_ntof_event.py.  The PAIR is a
+         single real event; the neutron is DRAWN as a straight line up the beam
+         axis (a real neutron event is stored, and gives the beam envelope, but
+         its transported history is a different event's and is not drawn -- the
+         stored one is shifted 28.3 mm onto this vertex).  That is stated on the
+         "born" slide and in ../report.html -- do not drop it when editing.
+
+         Sizes: the chambers' active area was remeasured on 2026-08-11 (39.9 x
+         36.0 cm, was an unsourced 38 x 34) and the frame is a FIXED 440 mm
+         outer square, not a constant cheek -- see scenes_ntof.FRAME_HU before
+         touching either, because 440 is what buys the clearance between
+         neighbouring arms.
+
+         Only the charged pair is drawn.  The event's bremsstrahlung gammas are
+         real but neutral, so they cross the picture as rays with no visible
+         cause; scenes_ntof.DRAWN_PARTICLES is what suppresses them.
+
+         The legs GROW with the apparatus: each is cut where it first reaches a
+         layer that is not on the slide yet (scenes_ntof.truncate_at_next_layer),
+         so the track only runs on to the trigger wall on the frame that puts
+         the trigger wall there.  Drawn full length from the start they claim
+         three slides early that all of it is measured.
+
+         The neutron is a straight line up the beam axis to the vertex, NOT a
+         transported Geant4 trajectory -- see the pair slide's caption and
+         scenes_ntof.add_neutron.  Once any detector is placed the beam column
+         stops at the vessel's NOSE (scenes_ntof.CAPSULE_NOSE_Y): drawn past it
+         the column runs through the middle of the apparatus and reads as a pole
+         holding it up, and drawn even alongside the capsule it sleeves the 23 mm
+         target in translucent grey and the target goes hazy.
+
+         Each build frame NAMES the layer it just added, with ONE LEADER PER
+         SOLID ARM onto that layer (make_ntof.LAYER_LABEL / LAYER_POS, anchored
+         by scenes_ntof.layer_anchor).  Two lines, because a layer is four
+         objects and the frame draws two of them solid -- a single leader picks
+         one arm out and implies the label is only about that one.  It is a line
+         per drawn OBJECT, so the plastics (two bars per arm) carry four, and
+         their label drops the "2 x" the lines already say.  One label at
+         a time: it moves outward with the build instead of accumulating.  It
+         deliberately repeats the size from the first bullet, so the figure still
+         says what it is if it is lifted out of the deck; on the FIGURES those
+         sizes are in cm (read across a room), in the BULLETS in mm (quoted).
+         Top-left on the build frames, bottom on the close-up, where the chambers
+         fill the frame and the only space left is the see-through one.
+         --no-labels turns all in-image type off.
+
+         The overhead frames do NOT cut the capsule open (VIEWS['over'] sets
+         cut=False).  The cutaway plane contains the view direction, so from
+         above it does not section the vessel, it deletes the half of it nearest
+         the bottom of the frame.  The capsule is also the one thing BARE does
+         not whisper up there -- 23 mm on a 1.2 m frame, faded it is a smudge at
+         the point the whole picture converges on, so it is drawn solid.
+
+         The event is chosen, not hand-picked: extract_ntof_event.py requires
+         BOTH legs to leave through the barrel wall (transversely, |dy| < 0.55)
+         rather than through a domed end, and heavily prefers the rare event in
+         which BOTH legs cross all four layers -- exactly one of the 400
+         simulated events does, which is why this one is used.  It also prefers
+         the two arms the figure draws solid: change scenes_ntof.NEAR_ARMS and
+         the camera azimuth, and --prefer-arms must change with them.
+
+         If time is short, the cuttable frames are 4 (the chambers close up,
+         which repeats frame 5's content at a larger scale) and 2.
+         ===================================================================== -->
+
+    <!-- 15: the target itself -->
     <section class="slide">
       <div class="kicker">X17 search at n_TOF &middot; Experimental setup</div>
-      <div class="title">Tracking the pair: four Micromegas around the target</div>
-      <div class="figure-solo"><img src="assets/img/setup_topdown.png" alt="Top-down pinwheel layout of the four MX17 chambers around the He-3 target"></div>
-      <div class="caption">Four MX17 chambers in a pinwheel around the ³He target, mylar entrance windows facing the target — reconstructed e⁺e⁻ tracks point back to the capsule. Real capsule material scatters the ideal picture from the previous slide; quantifying that is part of the search.</div>
+      <div class="title-sm">The vessel, as built: 500 bar of ³He in the beam</div>
+      <div class="cols cols-2 figtext">
+        <div class="figure"><div class="imgwrap bare"><img src="assets/img/setup3d_1_capsule.png" alt="The He-3 capsule cut open along the beam axis and labelled, in the EAR2 neutron beam"></div></div>
+        <div class="side">
+          <ul class="bullets">
+            <li>Ø20 mm bore, 40 mm of gas, domed at both ends — <b>86 mm over the whole vessel</b>. At 500 bar it is not a thin target, which is the point of the pressure.</li>
+            <li>The 0.6 mm Al vessel and its 0.9 mm CFRP wrap are also a <b>converter</b>: the ²⁷Al(n,γ) 7.72 MeV γ pair-converting in that wall is the irreducible background to an e⁺e⁻ final state.</li>
+            <li>Mounted <b>nose-first</b> into the vertical EAR2 beam, which arrives from below.</li>
+          </ul>
+          <div class="callout">Cut open along the beam axis so the gas bore is visible. <b>Drawn from the simulation's own geometry</b> — the three <code>G4Polycone</code>s sectioned from the STEP solid, not a sketch of them.</div>
+        </div>
+      </div>
     </section>
 
-    <!-- 16: C3 trigger + calorimetry -->
+    <!-- 16: a real neutron -->
     <section class="slide">
       <div class="kicker">X17 search at n_TOF &middot; Experimental setup</div>
-      <div class="title">Trigger and calorimetry: the full setup</div>
-      <div class="cols cols-3">
-        <div class="figure"><div class="imgwrap"><img src="assets/img/setup_2_sipm.png" alt="+ SiPM wall"></div><div class="fig-label">+ SiPM wall (trigger)</div></div>
-        <div class="figure"><div class="imgwrap"><img src="assets/img/setup_3_plastic.png" alt="+ plastic scintillators"></div><div class="fig-label">+ plastic scintillators</div></div>
-        <div class="figure"><div class="imgwrap"><img src="assets/img/setup_4_full.png" alt="+ liquid scintillator calorimetry, full setup"></div><div class="fig-label">+ liquid scintillator (calorimetry)</div></div>
+      <div class="title-sm">A neutron arrives</div>
+      <div class="cols cols-2 figtext">
+        <div class="figure"><div class="imgwrap bare"><img src="assets/img/setup3d_2_neutron.png" alt="A simulated 222 eV EAR2 neutron travelling up the beam line into the He-3 gas"></div></div>
+        <div class="side">
+          <ul class="bullets">
+            <li>A neutron arrives from below and is captured in the gas. n_TOF <b>tags its energy by time of flight</b> over the flight path — every event carries the energy of the neutron that made it.</li>
+            <li>At 500 bar the capsule is not a thin target: that is what the pressure is for.</li>
+            <li>The grey column is the beam, drawn at the radius the simulation's sampled primaries actually occupy — <b>90 % inside 8.8 mm</b>. The neutron itself is drawn as a straight line up that axis to the capture point, not as a transported trajectory.</li>
+          </ul>
+          <!-- The "~10^-8" that was here is a YIELD statement and this talk makes none
+               (framing option (c), 2026-08-10) -- the ratio lives on the backup rate
+               table only.  Do not put the number back on a main-flow slide. -->
+          <div class="callout">Capture is <b>overwhelmingly ³He(n,p)t</b>. The radiative branch that forms ⁴He* is the rare one — and it is the one this search lives on.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 17: the pair -->
+    <section class="slide">
+      <div class="kicker">X17 search at n_TOF &middot; Experimental setup</div>
+      <div class="title-sm">…and a pair leaves</div>
+      <div class="cols cols-2 figtext">
+        <div class="figure"><div class="imgwrap bare"><img src="assets/img/setup3d_3_pair.png" alt="An e+e- pair leaving the He-3 gas from the capture vertex"></div></div>
+        <div class="side">
+          <ul class="bullets">
+            <li>⁴He* → ⁴He + X17 → <b>e⁺e⁻</b>, sharing the 20.58 MeV transition: this event <b>10.7 MeV</b> and <b>8.8 MeV</b>, opening angle <b>110°</b>.</li>
+            <li>Both legs leave <b>sideways, through the barrel wall</b> — 0.6 mm of Al and 0.9 mm of CFRP, crossed once and at close to normal incidence. Everything downstream exists to measure that angle before the material spoils it.</li>
+          </ul>
+          <div class="legend">
+            <span class="chip"><i style="background:#a02c52"></i>e⁻</span>
+            <span class="chip"><i style="background:#d6402c"></i>e⁺</span>
+            <span class="chip"><i style="background:#8b96a3"></i>neutron</span>
+            <span class="chip"><i style="background:#9aa4b0"></i>beam</span>
+          </div>
+          <div class="caption">The pair is one real Geant4 event, tracks and energy deposits and all. The neutron that made it is <b>drawn</b> rather than simulated alongside it: no single simulated event contains both, because the branch that forms the ⁴He* is far rarer than the ³He(n,p)t a transported neutron actually undergoes.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 18: the chambers arrive, still close in.  Cuttable -- it shows the
+         same layer as slide 19, at the scale where the drift gap is legible. -->
+    <section class="slide">
+      <div class="kicker">X17 search at n_TOF &middot; Experimental setup</div>
+      <div class="title-sm">Now build something that can catch them</div>
+      <div class="cols cols-2 figtext">
+        <div class="figure"><div class="imgwrap bare"><img src="assets/img/setup3d_4_mm_near.png" alt="The four Micromegas chambers closing in around the capsule, the pair crossing two of them"></div></div>
+        <div class="side">
+          <ul class="bullets">
+            <li>Four chambers close in around the vessel, mylar windows facing it at <b>204.0 / 204.5 mm</b> — the first thing either leg meets after the capsule wall.</li>
+            <li>What each one offers the track is <b>30 mm of drift gas</b>, seen here edge-on: the teal slab in front of the readout board.</li>
+            <li>The capsule is <b>23 mm</b> across; what is being built around it is <b>1.2 m</b>.</li>
+          </ul>
+          <div class="caption">Two arms are drawn as outlines only — the camera looks straight through them, and they are the two this pair missed. The pale trail inside each drift volume is the ionisation the pair actually left there.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 19: + Micromegas, pulled back.  FIXED CAMERA from here to the end. -->
+    <section class="slide">
+      <div class="kicker">X17 search at n_TOF &middot; Experimental setup</div>
+      <div class="title-sm">+ four Micromegas micro-TPCs</div>
+      <div class="cols cols-2 figtext">
+        <div class="figure"><div class="imgwrap bare"><img src="assets/img/setup3d_5_mm.png" alt="Four MX17 chambers in a pinwheel around the capsule, the pair crossing two of them"></div></div>
+        <div class="side">
+          <ul class="bullets">
+            <li>The same four chambers at the scale of the apparatus, in a <b>pinwheel</b> (15.5–17.3 mm tangential offset per chamber) so the four active areas overlap rather than leave a seam.</li>
+            <li><b>399 × 360 mm</b> active, <b>30 mm</b> drift gap: one gap gives a 3-D track segment, and two arms give the opening angle. The short axis is the one <b>along the beam</b> — 19 mm at each end of the strip plane is passivated.</li>
+            <li>This pair leaves <b>13 keV</b> in the drift gas — the pale trail through each drift volume, and the only thing the chambers get. Enough to track it, far too little to measure its energy.</li>
+          </ul>
+          <div class="callout">The chambers are the <b>only</b> layer that measures a <b>direction</b>. Everything outside them counts energy and makes the trigger. <b>Fixed camera from here on</b> — everything that appears next is a new layer, in its surveyed position.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 20: + SiPM wall -->
+    <section class="slide">
+      <div class="kicker">X17 search at n_TOF &middot; Experimental setup</div>
+      <div class="title-sm">+ the SiPM trigger wall</div>
+      <div class="cols cols-2 figtext">
+        <div class="figure"><div class="imgwrap bare"><img src="assets/img/setup3d_6_sipm.png" alt="The SiPM scintillator trigger walls added behind the chambers"></div></div>
+        <div class="side">
+          <ul class="bullets">
+            <li><b>500 × 500 mm</b> of scintillator per arm, <b>20 bars</b> of 25 mm — <b>16 read out</b>, the window shifted one bar toward the chamber.</li>
+            <li>110–145 mm behind the mylar window, centred on the <b>mechanical structure</b>, not on the pinwheel-shifted chamber.</li>
+            <li>Both legs of this event cross it: <b>1.17 MeV</b> deposited, which is what the trigger is built on.</li>
+          </ul>
+          <div class="caption">Glowing markers are the actual Geant4 energy deposits, sized by how much energy each crossing left behind.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 21: + plastics -->
+    <section class="slide">
+      <div class="kicker">X17 search at n_TOF &middot; Experimental setup</div>
+      <div class="title-sm">+ the plastic scintillators</div>
+      <div class="cols cols-2 figtext">
+        <div class="figure"><div class="imgwrap bare"><img src="assets/img/setup3d_7_plastic.png" alt="The plastic scintillator bars added outside the trigger wall"></div></div>
+        <div class="side">
+          <ul class="bullets">
+            <li>Two wrapped bars per arm, <b>200 × 300 × 20 mm</b>, 61–65 mm behind the trigger wall.</li>
+            <li>20 mm of PVT stops a few MeV of electron: <b>9.86 MeV</b> from this event — the largest single share of it.</li>
+          </ul>
+          <div class="callout">These are the bars whose <b>after-pulses</b> the slim pipeline had to learn to cut: ~4 extra hits per large pulse out to ~1 µs, plus a fixed 81 ns cable echo.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 22: the same, from above.  The camera moves ONCE more here, because
+         the layers are stacked radially and a three-quarter view cannot show a
+         track arriving in the plastics -- the trigger wall is in front of them.
+         Frames 8 and 9 share this camera, so the liquid still grows onto a
+         still picture. -->
+    <section class="slide">
+      <div class="kicker">X17 search at n_TOF &middot; Experimental setup</div>
+      <div class="title-sm">The same event from above — where each leg actually lands</div>
+      <div class="cols cols-2 figtext">
+        <div class="figure"><div class="imgwrap bare"><img src="assets/img/setup3d_8_plastic_top.png" alt="The setup seen from above, so the pair's arrival in the plastic scintillators is not hidden behind the trigger wall"></div></div>
+        <div class="side">
+          <ul class="bullets">
+            <li>The layers are stacked <b>radially</b>, one behind the other, so from the side the trigger wall hides everything outside it. Looking almost straight down the beam, the stack opens out into four nested rings.</li>
+            <li>Frames, boards and vessel walls drop to a whisper here: <b>what keeps its colour is exactly the material that measures something</b> — drift gas, trigger bars, plastic, liquid.</li>
+            <li>Now you can follow each leg all the way: <b>chamber → trigger wall → plastic → liquid</b>, in <b>two different arms</b>, which is what makes the opening angle a measurement rather than an assumption. This event was chosen because both legs do all four — only one simulated event in four hundred does.</li>
+          </ul>
+          <div class="caption">Same frame size and camera as the next slide, so only the liquid appears between them.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 23: + liquid scintillator = the full setup -->
+    <section class="slide">
+      <div class="kicker">X17 search at n_TOF &middot; Experimental setup</div>
+      <div class="title-sm">+ liquid-scintillator calorimetry — the full setup</div>
+      <div class="cols cols-2 figtext">
+        <div class="figure"><div class="imgwrap bare"><img src="assets/img/setup3d_9_full.png" alt="The complete n_TOF setup: capsule, four chambers, trigger walls, plastics and liquid scintillator vessels"></div></div>
+        <div class="side">
+          <ul class="bullets">
+            <li>One <b>450 × 450 mm</b> CFRP vessel per arm holding <b>6.5 L</b> of LAB, read by a PMT half-inserted into its neck.</li>
+            <li>Catches what the plastic did not: <b>3.80 MeV</b> here, mostly the bremsstrahlung the electrons radiate on their way out.</li>
+            <li>Total over the four layers: <b>14.8 MeV</b> of the 19.6 MeV the two legs were born with.</li>
+          </ul>
+          <div class="caption">Geometry from the Geant4 <code>SimConfig</code>, per-arm distances and rotations as surveyed 2026-07-17/18. The two arms nearest the camera (B in front of it, A on the right) are drawn as outlines only, so the target and the two arms this pair crossed stay visible; the liquid's fill dome is drawn at constant height along the vessel.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 24: the plan.  Closes the sequence by swapping the LENS for a RULER --
+         ../make_ntof_plan.py, a matplotlib drawing, not a render.  Every frame
+         before this one has perspective, so the four arms are at four different
+         distances from the camera and every length is foreshortened by its own
+         amount; here the beam axis is the view axis and the X-Z plane is 1:1,
+         so the standoff, the layer depths and the size of the target can be
+         measured off the slide.  Same geometry module and same event JSON as
+         the renders, so it cannot drift away from them.
+         Regenerate: ../.venv/bin/python make_ntof_plan.py --bare
+         (the titled version, for report.html, is the same command without it).
+         CUTTABLE: this is the natural place to stop if the section overruns --
+         it repeats no content, it re-states it in a form the renders cannot. -->
+    <section class="slide">
+      <div class="kicker">X17 search at n_TOF &middot; Experimental setup</div>
+      <div class="title-sm">The same setup as a plan — everything at 1:1</div>
+      <div class="cols cols-2 figtext">
+        <div class="figure"><div class="imgwrap"><img src="assets/img/ntof_plan.png" alt="Orthographic plan view of the four n_TOF arms and one simulated e+e- pair, looking down the beam"></div></div>
+        <div class="side">
+          <ul class="bullets">
+            <li>A drawing, not a render: <b>no perspective</b>, so a length measured on it is a real length. The four arms are drawn identically because they are identical.</li>
+            <li>Every arm stands off the beam by the same <b>204.5 mm</b> (the dashed circle), and the stack runs out to <b>~485 mm</b>: chamber at 204, trigger wall at 330, plastics at 410, liquid at 487 — the chain on the drawing is arm B's, and the outer two layers move by a few mm from arm to arm.</li>
+            <li><b>The target is drawn to scale</b> — 23 mm at the middle of a 1.1 m apparatus. Everything else on the slide is arranged around a dot.</li>
+            <li>The event, once more: <b>e⁻ 10.7 MeV into arm D, e⁺ 8.8 MeV into arm C</b>, in two arms 90° apart, depositing 14.8 of 19.6 MeV.</li>
+          </ul>
+          <div class="caption">Same geometry module and same simulated event as the 3-D frames. <b>The beam axis is projected away</b>: both legs also rise ~135 mm along it before they reach the liquid, so the opening angle <i>as drawn</i> is 122° while the space angle is 110°. The two vessels whose PMTs point sideways are the two arms whose vessel is laid on its side — that is the real mounting, not a drawing convention.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 25-26: PHOTOGRAPHS OF THE REAL STATION.  *** PLACEHOLDERS ***
+         Added 2026-08-11 at Dylan's request, parked here (right after the
+         drawings, before the status section) so they are in the deck and can be
+         placed properly later.  Not yet integrated: the talk currently arrives
+         at the photographs having already said everything they show.
+
+         Sources: ~/Downloads/PXL_20260810_072347028.jpg (down into the station)
+         and PXL_20260810_071943424.jpg (one arm from outside), taken in EAR2 on
+         2026-08-10.  Full-resolution originals are kept in ../photos/; the slide
+         copies are 1125x1500, resized by make_photos.py -- Downloads is not a
+         durable location and these are the only pictures of the assembly here.
+
+         OPEN QUESTIONS before these are finished:
+           * the big bolted flanges in the middle of the top-down shot are not
+             identified on the slide on purpose -- confirm what they are (they
+             look like the chambers' gas/HV flanges seen edge-on, but the
+             capsule mount is in the same place) before writing a bullet;
+           * decide the JOB each photo does.  The strongest candidate is to
+             replace, not follow, one of the renders: the top-down photo against
+             the plan drawing side by side is the pairing that pays, and it
+             would make the "these are the four surveyed arms" point in one
+             slide instead of two;
+           * a crop is probably wanted.  Both are portrait phone frames and about
+             a third of each is ceiling, floor or the neighbouring rack, and the
+             panel pads the sides to make up the width;
+           * the "gamma-flash recovery" silkscreen is READ OFF THE ORIGINAL, not
+             legible at slide size.  If that bullet stays, it wants a zoomed
+             inset of the board -- or it has to be said out loud and not claimed
+             to be visible.
+
+         align-items:stretch on the .cols is load-bearing here for the same
+         reason as on the EAR2 slides: .figtext centres its columns, which leaves
+         .figure unbounded in height, and a PORTRAIT image then renders at its
+         natural size and climbs over the title.  See note 3 on those slides.
+         =================================================================== -->
+
+    <!-- 25: the station from above -- the photographic answer to the plan. -->
+    <section class="slide">
+      <div class="kicker">X17 search at n_TOF &middot; Experimental setup</div>
+      <div class="title-sm">The same view, in the experimental area</div>
+      <div class="cols cols-2 figtext" style="align-items:stretch">
+        <div class="figure">
+          <div class="imgwrap"><img src="assets/img/photo_station_topdown.jpg" alt="Photograph looking down into the assembled MX17 station in EAR2: an aluminium-profile support frame around four Micromegas chambers standing in a pinwheel, their aluminised windows facing inward on the target at the centre, with signal cabling, gas lines and high-voltage leads routed out to the four sides."></div>
+          <div class="fig-label">n_TOF EAR2, 10 August 2026</div>
+        </div>
+        <div class="side">
+          <ul class="bullets">
+            <li>The <b>same square</b> as the previous slide, from the same direction: four chambers in a pinwheel, windows facing inward, the target in the middle. The beam comes up out of the page.</li>
+            <li>The arms are <b>lettered A–D in marker on the frame</b> — the letters the plots use are the letters written on the aluminium.</li>
+            <li>What the drawing leaves out is the part that takes the time: gas lines, HV, and one signal cable per readout board, all of it routed out through the same square.</li>
+          </ul>
+          <div class="caption">Photograph, not a render — placed here as the check that the surveyed geometry on the previous slides is the geometry that was built.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 26: one arm from outside -- the layer stack as hardware. -->
+    <section class="slide">
+      <div class="kicker">X17 search at n_TOF &middot; Experimental setup</div>
+      <div class="title-sm">One arm, from outside</div>
+      <div class="cols cols-2 figtext" style="align-items:stretch">
+        <div class="figure">
+          <div class="imgwrap"><img src="assets/img/photo_arm_outside.jpg" alt="Photograph of one arm of the MX17 station from outside: a black carbon-fibre liquid-scintillator vessel filling the middle of the frame on its mounting brackets, photomultipliers on tapered light guides standing above it, and behind them the trigger wall's front-end boards and their blue signal cables on an aluminium-profile frame."></div>
+          <div class="fig-label">n_TOF EAR2, 10 August 2026</div>
+        </div>
+        <div class="side">
+          <ul class="bullets">
+            <li>The stack from the outside in: the <b>carbon-fibre liquid vessel</b> facing us, the <b>plastic scintillators' photomultipliers</b> on their light guides above it, and the <b>trigger wall</b> and its front-end boards behind.</li>
+            <li>The chamber is not visible from here — it is the innermost layer, 204 mm from the beam and behind everything in this picture.</li>
+            <li>The front-end boards are silkscreened <b>“SiPM gamma-flash recovery”</b>. The flash on the next slides is not a surprise we found in the data: it is what the electronics were built around.</li>
+          </ul>
+          <div class="caption">Photograph, not a render. The vessel is the 450 × 450 mm CFRP box from the previous slides; each arm carries two plastic bars, which is why the light guides come in pairs.</div>
+        </div>
       </div>
     </section>
 
@@ -453,7 +1078,7 @@
           <li><b>Four chambers have been running at EAR2 since July</b>, on ³He, in the pinwheel — the full trigger, calorimetry and DAQ chain is closed and taking production statistics as of today.</li>
           <li><b>The environment, not the detector, is the hard part.</b> The γ flash saturates the front end for milliseconds — measured, mapped against gain, and now against delivered charge.</li>
           <li><b>Tracks reconstruct on beam data and point back at the capsule.</b> Waveform-first reconstruction transfers from the cosmic bench to n_TOF.</li>
-          <li>The physics reach of the thermal window is far below the original projection — two reasons, both now quantified (later slide).</li>
+          <li><b>Analysis is ongoing</b> — this is a status report on a campaign that is still taking data, not a result.</li>
         </ul>
       </div>
       <div class="flag">running as this talk is given — numbers are 2026-08-09</div>
@@ -488,7 +1113,7 @@
         <div class="stat"><div class="num">&times;231</div><div class="lbl">the front end's full-scale input charge, on an <i>average</i> channel</div></div>
         <div class="stat"><div class="num">0.1 nC/cm²</div><div class="lbl">per pulse, over the 399 &times; 362 mm active area</div></div>
       </div>
-      <div class="caption">Measured from the resistive-layer supply current — the one handle on this that does not go through the saturated readout. Method and validation on the next-but-one slide.</div>
+      <div class="caption">Measured from the resistive-layer supply current — the one handle on this that does not go through the saturated readout. The readback's response to a single beam pulse has now been measured directly, so this is a number and not a lower bound: it averages over <b>&ge; 0.47 s</b> against a millisecond burst, and four independent estimators of the charge agree to <b>&plusmn;3 %</b>. Method and validation in backup.</div>
     </section>
 
     <!-- 20: D3 charge vs gain -->
@@ -549,24 +1174,17 @@
       <div class="caption">Waveform-first reconstruction on beam data, coloured by <b>which SiPM wall segment fired</b> — external position truth on a 100 mm granularity, on a lever arm the chamber knows nothing about. The four bundles are <b>251 mm apart at the wall and 9 mm apart at the target plane</b>; shuffling the segment labels collapses that to 28 mm and 3.2 mm. <span style="color:var(--copper)"><b>Ensemble statement</b></span> — the waist is a convergence of medians, not a per-track pointing resolution.</div>
     </section>
 
-    <!-- 26: D9 the physics, stated factually.  See STATUS_PLAN.md §5 — this is
-         framing option (b): state the branching ratio and the Al capture as
-         properties of the reaction and the capsule, and let the audience draw
-         the conclusion.  Option (a) (fully open, "we are a demonstrator") and
-         option (c) (say nothing about yield) are both defensible; this needs a
-         decision with the collaboration before the talk. -->
-    <section class="slide">
-      <div class="kicker">Status &middot; What the channel turned out to be</div>
-      <div class="title-sm">Two facts about the reaction and the capsule</div>
-      <div class="content">
-        <ul class="bullets">
-          <li><b>At thermal energies n + ³He goes to ³H + p, essentially always.</b> The radiative branch that carries the 20.6 MeV transition is &sigma;<sub>n&gamma;</sub>/&sigma;<sub>np</sub> &asymp; 10⁻⁸ — and because the gas is opaque to (n,p), self-shielding caps the radiative yield a further factor 50–100 below a thin-target estimate.</li>
-          <li><b>²⁷Al(n,&gamma;) on the capsule produces most of what we trigger on.</b> Geant4 trigger provenance: ~97 % of trigger legs are Al capture γ. Their pairs carry ≤ 6.7 MeV of lepton kinetic energy against the signal's ~19.6 MeV.</li>
-        </ul>
-        <div class="callout"><b>Which leaves a real detector question, not a dead end:</b> the Al background separates cleanly on <b>total pair energy</b> — a cut at 13 MeV — provided the tracker delivers <b>&sigma;(p)/p ≲ 30 %</b> per lepton from multiple scattering or range. Opening angle alone cannot do it; multiple scattering drags 7 % of Al pairs into the signal window.</div>
-      </div>
-      <div class="flag">framing to be agreed with the collaboration before this is shown</div>
-    </section>
+    <!-- D9 (the physics reach) REMOVED 2026-08-10 by Dylan's decision: STATUS_PLAN.md §5
+         framing option (c) — say nothing about yield in this talk.  Rationale: at a
+         15-minute slot on 2026-09-03 there will not be enough analysis to support a
+         reach statement, so the talk is framed as a status update with analysis
+         ongoing, and stays on detector performance in the flash environment.
+         The slide's markup is preserved in git history (last present in d3e4993) and
+         its content is unchanged in STATUS_PLAN.md §5 if it needs to come back.
+         What survived the cut: the σ(p)/p ≲ 30 % tracker requirement, moved to the
+         outlook slide below as a forward-looking detector specification — it is a
+         detector statement, not a yield statement.  The thermal-window rate table
+         stays in BACKUP (it will be asked); backup is not "saying it". -->
 
     <!-- 27: D10 what this campaign is for -->
     <section class="slide">
@@ -577,6 +1195,7 @@
           <li><b>Resistive micro-TPCs work in a spallation γ-flash environment.</b> Measured, not asserted: the same chamber on a direct analog channel is usable 0.87 µs after the flash peak. The chambers are not the limitation.</li>
           <li><b>The limitation is charge integration in the front end</b>, and it is now characterised as a one-parameter problem: dead time against delivered charge, t &prop; Q<sup>1.2</sup>, at ~10² nC per pulse per chamber. That is a specification a future front end can be designed against.</li>
           <li><b>What did not work:</b> mesh charge injection as a compensation scheme — tuned to kill the positive rail, it simply moves the channel onto the negative one, with no net reduction in railed time.</li>
+          <li><b>The requirement the analysis now has to meet:</b> ²⁷Al(n,&gamma;) on the capsule dominates what we trigger on, and it separates from signal on <b>total pair energy</b>, not on opening angle — which asks the tracker for <b>&sigma;(p)/p ≲ 30 %</b> per lepton from multiple scattering or range.</li>
           <li><b>Next:</b> in-situ calibration of the reconstruction on beam data, four-arm back-projection of the production statistics, and a direct waveform-level charge measurement through the unsaturated single-channel path.</li>
         </ul>
       </div>
@@ -602,6 +1221,121 @@
     <section class="slide" style="align-items:center; justify-content:center;">
       <div class="title" style="font-size:clamp(2.2rem,5vw,4rem);">Backup</div>
     </section>
+
+    <!-- Backup — n_TOF EAR2, the render DOCUMENTED (new 2026-08-11, Dylan: "kick the
+         current iteration to the backup with the full figure caption").
+
+         WHY THIS SLIDE EXISTS. Slides 5-7 carry the same render with NO CAPTION, so that
+         the two pictures can use the full height of the frame -- which is what they need,
+         both being portrait. That is the right call for the room and the wrong one for the
+         record: everything in this figure that is drawn rather than sourced was disclosed
+         in that caption. So the caption lives here, in full, on the last frame of the
+         build. If you change what the render draws, change THIS text with it.
+
+         It is ONE slide, not three. The three main-flow frames are strict subsets of one
+         picture, so frames 1 and 2 would carry a caption about parts they do not show;
+         frame 3 is the one the caption is true of. If you do want all three in backup,
+         copy this section twice and swap the img src -- but read RUNNING_ORDER.md first,
+         which already says to show frame 3 alone if the facility gets any time at all.
+
+         THE TWO FIGURES ARE SMALL HERE and that cannot be fixed by re-tuning: the caption
+         is 14 lines, .cols takes what is left, and the figures are then height-limited, so
+         widening their columns does nothing. Setting the caption in two columns does not
+         help either -- it fills both of them and comes out exactly as tall (measured
+         2026-08-11, and reverted). The only lever is cutting the caption, which is the one
+         thing this slide exists to carry. So the caption points at
+         figures/ear2_beamline_light_labelled.pdf, which is the same figure at full size
+         with live text, and that is the copy to open if anyone wants to read the labels.
+
+         This copy uses the GUTTER-labelled render (ear2_beamline_5_station.png, labels in a
+         column down the right) rather than the on-figure variant the main flow uses. That
+         is deliberate: with a caption under it the figure box is short, and at that height
+         the on-figure labels are the first thing to become unreadable. -->
+    <section class="slide">
+      <div class="kicker">Backup &middot; n_TOF EAR2</div>
+      <div class="title-sm">The EAR2 render, and what in it is drawn rather than measured</div>
+      <div class="cols cols-2 figtext" style="grid-template-columns:1.06fr 0.62fr;align-items:stretch">
+        <div class="figure">
+          <div class="imgwrap bare"><img src="assets/img/ear2_beamline_5_station.png" alt="The EAR2 beam-line render, last frame, with its labels in a column down the right-hand side: the lead target and the 20 GeV/c proton beam at the bottom, the break in the vertical scale, the second collimator, the EAR2 floor with polyethylene shielding on it, the lead-disk chamber, the reducer and narrow tube ending about a metre above the floor, the measuring station in the open beam at 19.95 m, and the wide pipe above it heading for the beam dump."></div>
+        </div>
+        <div class="figure">
+          <div class="imgwrap bare"><img src="assets/img/ear2_hall_photo.jpg" alt="Photograph of the n_TOF EAR2 experimental hall: the vertical beam line rising from a white segmented shielding disc on the floor, through an aluminium-profile support frame at mid height where detector snouts point in at a chamber in the beam, and on up through the ceiling in a wider pipe. © CERN."></div>
+        </div>
+      </div>
+      <div class="caption"><b>Left &mdash; the in-house render</b> (<code>mpgd26/make_ear2.py</code> + <code>scenes_ear2.py</code>; readable at full size, with live text, in <code>figures/ear2_beamline_light_labelled.pdf</code>): <b>one drawing in five frames</b> (main flow, slides 5&ndash;9), same camera and same scale, cut open along the beam axis, <b>with one break that removes ~20 m of empty pipe</b> &mdash; so the labelled heights are the real ones and the drawing&rsquo;s are not. What the break hides: the <b>first collimator at 7.4&nbsp;m</b> (1&nbsp;m of iron, 200&nbsp;mm bore), the sweeping magnet at 10.4&nbsp;m and the filter station at 11.4&nbsp;m, all ~10 m below the EAR2 floor. It stops about 1.15&nbsp;m above the station: the bunker ceiling (23.66&nbsp;m) and the beam dump standing on the roof (entrance 24.73&nbsp;m &mdash; a borated-polyethylene core inside 1.6&nbsp;m of iron inside 3.2&nbsp;m of concrete) are real and above the frame, and the wide pipe heading there is cut off by the frame rather than ended. <b>The lower pipe really does end</b> about a metre above the floor; the space above it is open hall, and the beam crosses it in air. <b>Four things are drawn rather than sourced.</b> (i) The <b>shape of the line inside the hall</b> &mdash; the white shielding on the floor, the stepped diameters, the reducer and the height at which the upper pipe starts &mdash; is scaled off the photograph on the right against its ~1.2&nbsp;m white disc, and is good for &ldquo;it changes diameter here, about this much&rdquo; and no finer. (ii) The <b>lead disks</b> are a 0.36&nbsp;m stack against the 0.57&nbsp;m effective height in the design paper &mdash; the drawn hall segment is 1&nbsp;m tall and also has to carry the collar, the reducer and the exit flange. (iii) The station&rsquo;s <b>support frame is left out</b>, so the capsule appears to float; it does not, and the photograph shows the aluminium-profile frame it really hangs in. (iv) <b>Two of the four chambers are drawn, in section</b>, and their drawn azimuths (136&deg; apart) are chosen to present that section to this camera &mdash; the real station has four, 90&deg; apart, in a pinwheel around the sample. Drawn as the true pinwheel the two solid arms come out 45&deg; to the screen and close on the capsule from both sides until they touch it; the four-arm version is rendered too, as <code>figures/ear2_onfig_5_station_4arm.png</code>. <b>Nothing at the station is drawn 1:1</b>: the &sup3;He capsule is 23&nbsp;mm across against a 600&nbsp;mm target, so at true scale it is one pixel, and it is drawn 5.5&times; oversize; the chambers are drawn 1.35&times; oversize (board, gap and frame scaled together, so each is still a chamber and only its size is wrong) and draw 24 strips rather than 512, the real 0.78&nbsp;mm pitch being a quarter of a pixel here. Their <i>standoff</i> from the beam is the real 330&nbsp;mm. What the frame claims is &ldquo;detectors, set back, watching the sample&rdquo;, and nothing dimensional beyond that. <b>The target is Target&nbsp;#3</b> &mdash; the third-generation target installed during LS2, and the one our data were taken on &mdash; drawn to scale from its design paper: six slices of high-purity lead on the proton axis, 600&nbsp;&times;&nbsp;600&nbsp;mm in cross-section, five of them 50&nbsp;mm thick with the 150&nbsp;mm one at the downstream end; 9.85&nbsp;mm aluminium anti-creep plates between them carrying the nitrogen cooling channels; an AISI&nbsp;316L vessel; and then what a neutron on its way here actually crosses &mdash; the 4&nbsp;mm stainless neutron window, the 50&nbsp;mm lead plate that buys back the prompt &gamma; the improved EAR2 coupling cost, and the EAR2 moderator's <b>40&nbsp;mm water layer</b>, which is what sets this beam line's energy resolution. Four target details are drawn and not sourced, all of them wall thicknesses or extents the paper does not give: the vessel wall, the moderator cans' walls and plan size, how far the EAR1 moderator extends, and the radius of the hemispherical aluminium vacuum window. Until 2026-08-11 this was the <i>Target&nbsp;#2</i> cylinder &mdash; a real object, but the wrong one, retired at the end of 2018 &mdash; with none of the EAR2-facing assembly drawn at all. <b>Right &mdash; the EAR2 hall</b> (&copy; CERN, OPEN-PHO-EXP-2016-006), and one <b>caveat worth stating out loud</b>: this is the vertical line as it was set up for an <i>earlier</i> experiment, closed all the way from the floor to the ceiling with detectors on a chamber in the beam. Ours ends the pipe about a metre above the floor and puts the capsule in air above it. Both are presumably true of different runs &mdash; the section above the experimental space being removable &mdash; but that has not been confirmed, so neither picture is claiming more than what it shows. Heights, apertures and the beam dump&rsquo;s three layers from C. Wei&szlig; et al. (n_TOF Collaboration), <i>Nucl. Instrum. Meth. A</i> 799 (2015) 90 &middot; the target from R. Esposito et al. (n_TOF Collaboration), <i>Phys. Rev. Accel. Beams</i> 24 (2021) 093001, arXiv:2106.11242 &middot; flight path, beam size and the 90&deg; geometry from J. A. Pavon-Rodriguez et al. (n_TOF Collaboration), <i>Eur. Phys. J. A</i> 61 (2025), arXiv:2505.00042</div>
+    </section>
+
+    <!-- 20: Backup — Target #3, layer by layer (new 2026-08-11, Dylan: "add a backup
+         slide with full details on how this target works ... would be good for me in
+         the future"). This and the next slide are the SOURCE OF RECORD for the target
+         in this deck: the facility render on slides 5-9 draws the same object, and
+         both figures are built from the same constants in scenes_ear2.py so they
+         cannot disagree. Regenerate with: ../.venv/bin/python make_target.py
+
+         Everything on these two slides is from Esposito et al., PRAB 24 (2021) 093001
+         except the four drawn-not-sourced items listed in the caption -- which are the
+         same four the EAR2 backup slide lists, because it is the same geometry.
+
+         NB the 10 deg beam-to-target angle is only visible in this figure, not in the
+         cooling one: it is a yaw about the VERTICAL axis, so it foreshortens to nothing
+         on a view of the plate face. scenes_target.build_cooling says so in its own
+         comment; do not "fix" it by adding a beam there. -->
+    <section class="slide">
+      <div class="kicker">Backup &middot; n_TOF target</div>
+      <div class="title-sm">The n_TOF spallation target, layer by layer &mdash; Target&nbsp;#3</div>
+      <div class="cols cols-2 figtext" style="grid-template-columns:1.32fr 1.00fr;align-items:stretch">
+        <div class="figure">
+          <div class="imgwrap bare"><img src="assets/img/target3_layers.png" alt="In-house cutaway render of the n_TOF Target #3 assembly: six square lead slices on the proton axis with aluminium anti-creep plates between them, sitting in a stainless steel vessel on an aluminium cradle, with nitrogen entering the cradle and leaving the top of the vessel, and above the core a 4 mm steel neutron window, a 50 mm lead plate, the EAR2 moderator's 40 mm water layer and a hemispherical aluminium vacuum window through which neutrons leave for EAR2."></div>
+          <div class="fig-label">In-house render &middot; geometry from Esposito <i>et al.</i> (2021)</div>
+        </div>
+        <div class="side">
+          <table class="spec-table">
+            <tr><td class="k">Lead core</td><td><b>six slices</b>, 600 &times; 600&nbsp;mm each &mdash; five of 50&nbsp;mm and one of <b>150&nbsp;mm</b>, the thick one downstream against the EAR1 moderator. 400&nbsp;mm of lead in all</td></tr>
+            <tr><td class="k">Lead grade</td><td>UNS L50006, &ge; 99.98&nbsp;wt% pure</td></tr>
+            <tr><td class="k">Between slices</td><td><b>9.85 &plusmn; 0.05&nbsp;mm</b> aluminium (EN AW-6082 T6) <b>anti-creep plates</b>, carrying the nitrogen channels. Slice-to-plate gap held to <b>45&ndash;195&nbsp;&micro;m</b> &mdash; the minimum allows for thermal expansion, the maximum keeps the flow</td></tr>
+            <tr><td class="k">Vessel</td><td>AISI&nbsp;316L, welded from two U-shaped halves, closed on the upstream side after the core went in. <b>0.5&nbsp;bar</b> of N&sub2;</td></tr>
+            <tr><td class="k">Proton window</td><td>the vessel wall locally thinned to <b>3&nbsp;mm</b>, so the beam does not dump heat into it</td></tr>
+            <tr><td class="k">&rarr; towards EAR2</td><td><b>4&nbsp;mm</b> steel neutron window, e-beam welded to the vessel top; it carries a <b>50&nbsp;mm lead plate</b>; then the EAR2 moderator can with <b>40&nbsp;mm of water</b>; then a hemispherical aluminium vacuum window</td></tr>
+            <tr><td class="k">Moderators</td><td>forged aluminium EN AW-5083 H112, <b>two independent circuits</b> at 2.5&nbsp;bar, each able to run demineralised <i>or</i> borated water. The EAR1 one is bonded to the steel vessel by an <b>explosive-bonded</b> Al&ndash;Ti&ndash;steel joint</td></tr>
+            <tr><td class="k">Beam</td><td>20&nbsp;GeV/<i>c</i>, up to <b>10<sup>13</sup> protons per pulse</b> (32&nbsp;kJ), 7&nbsp;ns rms, 15&nbsp;mm rms spot, &ge;&nbsp;1.2&nbsp;s apart &mdash; and it strikes the target at <b>10&deg;</b>, which cuts the &gamma; and charged-particle background down the EAR1 line</td></tr>
+          </table>
+          <div class="callout"><b>Why any of this matters to us.</b> The 50&nbsp;mm lead plate and the 40&nbsp;mm water layer are <i>purpose-built for EAR2</i>, and they are what sets this beam line&rsquo;s energy resolution: FLUKA picked 40&nbsp;mm as the optimum, and the uniform layer removed the double-peak &lambda; structure that Target&nbsp;#2 imposed on EAR2. The lead plate buys back the <b>factor 6</b> in prompt &gamma; that better target-to-beamline coupling cost.</div>
+        </div>
+      </div>
+      <div class="caption"><b>Drawn rather than sourced</b>, all of them wall thicknesses or extents the design paper does not give: the vessel wall, the moderator cans&rsquo; walls and plan size, how far the EAR1 moderator extends, and the radius of the vacuum window. Everything else is from R. Esposito <i>et al.</i> (n_TOF Collaboration), <i>Phys. Rev. Accel. Beams</i> <b>24</b> (2021) 093001, arXiv:2106.11242 &mdash; &sect;III&nbsp;A the core, &sect;III&nbsp;B the vessel and moderators, &sect;II&nbsp;B the water layer, &sect;II&nbsp;C the lead plate &middot; hemispherical vacuum window from J. A. Pavon-Rodriguez <i>et al.</i> (n_TOF), <i>Eur. Phys. J. A</i> <b>61</b> (2025), arXiv:2505.00042</div>
+    </section>
+
+    <!-- 21: Backup — Target #3 cooling. The companion to the slide above: that one is
+         "what is it made of", this one is "how does it survive". The figure is an
+         EXPLODED plate, not a cutaway -- see scenes_target.build_cooling, which records
+         the two idioms that were tried and failed first (a beam-axis cutaway slices a
+         10 mm plate diagonally; a sandwich put lead, plate and groove within 0.2 in
+         value and came out as one slab). -->
+    <section class="slide">
+      <div class="kicker">Backup &middot; n_TOF target</div>
+      <div class="title-sm">How 2.7 kW leaves a block of lead that creeps at 135&nbsp;&deg;C</div>
+      <div class="cols cols-2 figtext" style="grid-template-columns:1.26fr 1.00fr;align-items:stretch">
+        <div class="figure">
+          <div class="imgwrap bare"><img src="assets/img/target3_cooling.png" alt="In-house render of one aluminium anti-creep plate exploded off its lead slice: the plate face carries thirteen vertical channels milled 3 mm deep, nitrogen flows up them, the channels on the beam axis are clear and drawn with long arrows while the outer ones are narrowed by wedge-shaped obstructions and drawn with short arrows, and a thermocouple touches the lead slice behind."></div>
+          <div class="fig-label">In-house render &middot; mechanism from Esposito <i>et al.</i> (2021)</div>
+        </div>
+        <div class="side">
+          <table class="spec-table">
+            <tr><td class="k">Why gas</td><td>Targets&nbsp;#1 and #2 ran water in <i>direct contact</i> with the lead. That eroded the lead and contaminated the water with radioactive spallation products. Target&nbsp;#3 is cooled by <b>nitrogen</b> instead, and the moderator water is a separate, sealed circuit</td></tr>
+            <tr><td class="k">The circuit</td><td>N&sub2; generator &rarr; <b>blower</b> (multistage centrifugal, 1000&nbsp;Nm&sup3;/h, +285&nbsp;mbar) &rarr; <b>29&nbsp;kW heat exchanger</b> to 20&nbsp;&deg;C &rarr; HEPA &rarr; <b>target</b> &rarr; nuclear-grade HEPA + active carbon &rarr; back to the blower. AISI&nbsp;304L pipework</td></tr>
+            <tr><td class="k">Duty</td><td>2.6&nbsp;kW of cooling, <b>780&nbsp;Nm&sup3;/h</b> nominal, 30&nbsp;mbar pressure drop, gas supplied at 20&nbsp;&plusmn;&nbsp;2&nbsp;&deg;C, 500&nbsp;mbar max</td></tr>
+            <tr><td class="k">Inside the target</td><td>4&ndash;7&nbsp;kPa pressure drop at 800&ndash;1000&nbsp;Nm&sup3;/h. Peak gas speed 77&ndash;90&nbsp;m/s beside the wedges &mdash; but <b>below 40&nbsp;m/s at the beam spot</b>, and everywhere under the 110&nbsp;m/s erosion limit and Mach&nbsp;0.3</td></tr>
+            <tr><td class="k">The wedge trick</td><td>the channels <i>away</i> from the beam are throttled by wedge-shaped obstructions, so the flow &mdash; and the heat-transfer coefficient &mdash; is concentrated where the beam actually deposits its power</td></tr>
+            <tr><td class="k">Heat load</td><td>5.4&nbsp;kW average beam power, <b>2.7&nbsp;kW absorbed by the lead</b>; 1.8&nbsp;TW <i>peak</i>, since each pulse lands in 7&nbsp;ns</td></tr>
+            <tr><td class="k">Temperature</td><td>steady state <b>85&ndash;90&nbsp;&deg;C</b> (hottest: slices 2 and 6, which are cooled on one face only); transient peak <b>135&nbsp;&deg;C</b>, against lead&rsquo;s 327&nbsp;&deg;C melting point. A 25&nbsp;mm rms spot instead of 15 would drop the peak to 96&nbsp;&deg;C. <b>Six</b> radiation-hard thermocouples touch the lead</td></tr>
+            <tr><td class="k">Creep</td><td>this is what the plates are named for. At 135&nbsp;&deg;C pure lead flows &mdash; plastic flow starts below 1&nbsp;MPa and the peak von Mises stress is 2.6&nbsp;MPa (hydrostatic 80&nbsp;MPa). Modelled with a purpose-written Ansys UPF: the 150&nbsp;mm slice intrudes <b>0.64&nbsp;mm</b> into a <b>3&nbsp;mm</b> channel over 2&times;10<sup>8</sup>&nbsp;s &mdash; twice the target&rsquo;s life. Even with 5 channels blocked the peak only reaches 160&nbsp;&deg;C</td></tr>
+            <tr><td class="k">Containment</td><td>the circuit between vessel and filters sits in a <b>sealed room under dynamic confinement</b>; &le;&nbsp;5&nbsp;L/h leak accepted in the unconfined part; quadrupole mass spectrometry watches the gas either side of the filters</td></tr>
+          </table>
+        </div>
+      </div>
+      <div class="caption"><b>Drawn rather than sourced:</b> the <i>number</i> and width of the channels (the paper shows rows of them but only ever counts them relatively &mdash; &ldquo;three channels obstructed&rdquo;, &ldquo;five channels&rdquo;); their 3&nbsp;mm <i>depth</i> is sourced. How many channels carry a wedge is drawn, and the wedge is drawn <b>narrowing the channel across its width</b> rather than as the depth-tapering ramp of the paper&rsquo;s Fig.&nbsp;12 &mdash; same statement, and the ramp is invisible inside a drawn groove. The arrows are a flow <i>topology</i>, not a velocity field. R. Esposito <i>et al.</i> (n_TOF Collaboration), <i>Phys. Rev. Accel. Beams</i> <b>24</b> (2021) 093001, arXiv:2106.11242 &mdash; &sect;IV the cooling design and performance, &sect;V the thermal, stress and creep analyses, &sect;VI the nitrogen station</div>
+    </section>
+
 
     <!-- 20: Backup — How ATOMKI measured it (moved from the motivation section 2026-08-08) -->
     <section class="slide">
@@ -639,6 +1373,59 @@
       <div class="caption">J. Gulyás et al., <i>Nucl. Instrum. Methods Phys. Res. A</i> 808, 21 (2016) (spectrometer) &middot; A.J. Krasznahorkay et al., <i>Phys. Rev. C</i> 104, 044003 (2021), arXiv:2104.10075 (³H target)</div>
     </section>
 
+    <!-- Backup — the setup as measured drawings, moved off the main flow
+         2026-08-10 when slides 15-22 became the 3-D build-up.  Keep them:
+         these are the figures that carry the actual survey numbers, and they
+         are what to put up if anyone asks "how far apart, exactly?".
+         Source: ~/CLionProjects/MX17_Full_Geant/scripts/plot_mm_layout.py and
+         plot_buildup.py (--style clean). -->
+    <section class="slide">
+      <div class="kicker">Backup &middot; Experimental setup</div>
+      <div class="title-sm">The setup to scale: top-down, and layer by layer</div>
+      <div class="cols cols-2">
+        <div class="figure">
+          <div class="imgwrap"><img src="assets/img/setup_topdown.png" alt="Top-down pinwheel layout of the four MX17 chambers around the He-3 target"></div>
+          <div class="fig-label">Pinwheel, to scale: opposing mylar faces 408.0 mm (B↔D) and 409.0 mm (C↔A)</div>
+        </div>
+        <div class="figure">
+          <div class="imgwrap"><img src="assets/img/setup_4_full.png" alt="Top-down section of one full arm: chamber, SiPM wall, plastics, liquid scintillator"></div>
+          <div class="fig-label">The full stack in section — every layer depth from the mylar front face</div>
+        </div>
+      </div>
+      <div class="caption">Same geometry as the 3-D build-up, drawn as a measured section rather than a render: distances 2026-07-15, per-arm gaps and vessel placements 2026-07-17/18. The intermediate build states (+SiPM, +plastics) are <code>setup_2_sipm.png</code> / <code>setup_3_plastic.png</code> in <code>assets/img/</code>.</div>
+    </section>
+
+    <!-- Backup — the five-chamber fleet comparison, moved off the main
+         efficiency slide 2026-08-10.  ALL FIVE NUMBERS REFRESHED on the
+         waveform-first chain; the previous 92.9/91.3/57.8/43.1/20.7 set was
+         2026-07-14 and is superseded by 14-21 points on the last three
+         chambers.  Provenance: slides/HANDOFF_efficiency.md §1. -->
+    <section class="slide">
+      <div class="kicker">Backup &middot; Characterization</div>
+      <div class="title-sm">The fleet, and what limits each chamber</div>
+      <div class="cols cols-2">
+        <div class="figure">
+          <div class="bar-chart">
+            <div class="bar-row"><div class="bar-name">det3</div><div class="bar-track"><div class="bar-fill" style="width:93.5%"></div></div><div class="bar-val">93.5%</div></div>
+            <div class="bar-row"><div class="bar-name">det2</div><div class="bar-track"><div class="bar-fill" style="width:91.9%"></div></div><div class="bar-val">91.9%</div></div>
+            <div class="bar-row"><div class="bar-name">det6</div><div class="bar-track"><div class="bar-fill" style="width:75.4%"></div></div><div class="bar-val">75.4%</div></div>
+            <div class="bar-row"><div class="bar-name">det7</div><div class="bar-track"><div class="bar-fill" style="width:56.9%"></div></div><div class="bar-val">56.9%</div></div>
+            <div class="bar-row"><div class="bar-name">det4</div><div class="bar-track"><div class="bar-fill" style="width:41.9%"></div></div><div class="bar-val">41.9%</div></div>
+          </div>
+          <div class="bar-note">Reconstructed within 5&nbsp;mm of the M3 reference track (&chi;&sup2;&lt;1.0 &amp; NClus=4). One high-statistics sub-run per chamber, 3.7k&ndash;12.3k reference muons, waveform-first reconstruction, 2026-08-10.</div>
+        </div>
+        <div class="figure" style="justify-content:center;">
+          <table class="spec-table">
+            <tr><td class="k">det3 / det2</td><td>Healthy. <b>100%</b> of crossings fire; the whole residue is a 2.5&ndash;3.3% spark coincidence and a 3.7&ndash;4.4% near-miss tail.</td></tr>
+            <tr><td class="k">det6 / det7</td><td><b>Spark-limited</b> &mdash; 22.3% / 37.4% of firing events are &gt;50-strip discharges. Both ran at resist 495&nbsp;V, <i>above</i> their measured optima (~480 / ~440&nbsp;V): this is a chosen operating point, not a ceiling.</td></tr>
+            <tr><td class="k">det4</td><td><b>Gain-limited</b>, and it is not blind: it produces a signal on <b>95.8%</b> of crossings, but on 38.3% too few strips fire to form a valid X+Y point. Independently confirmed at the SPS: 62% of its area does not amplify.</td></tr>
+            <tr><td class="k">Position core &sigma;</td><td>0.43&ndash;0.46&nbsp;mm on det2/det3/det6, 0.64/0.67&nbsp;mm on det7/det4 (radial) &mdash; on the good chambers the M3 reference contributes only ~10&ndash;20% of the variance.</td></tr>
+          </table>
+        </div>
+      </div>
+      <div class="caption">Superseded 2026-07-14 values were 92.9 / 91.3 / 57.8 / 43.1 / 20.7%. The last three chambers gain 14&ndash;21 points from the matched-filter reprocessing of the raw waveforms &mdash; low-amplitude hits the previous analyzer never admitted &mdash; plus a further 0.4&ndash;4 points from reconstructing position from the waveforms instead of the strip hit times.</div>
+    </section>
+
     <!-- ===== Status backup slides, added 2026-08-09 ===== -->
 
     <!-- Backup — how the charge measurement works, and why it is believable -->
@@ -656,9 +1443,48 @@
           <tr><td class="k">Null test</td><td>beam-off run at the production setpoint, 0.000 Hz of pulses: &Delta;I = +0.0002 / +0.0005 / &minus;0.0002 / +0.0015 µA on A/B/C/D, against +0.042 µA with beam — including on a channel carrying 2.9 µA of leakage</td></tr>
           <tr><td class="k">Rate scaling</td><td>same setpoint, 10&times; different beam rate: &Delta;I changes 10&times;, <b>charge per pulse does not</b> (165 vs 142 nC on det A, 128 vs 99 nC on det C)</td></tr>
           <tr><td class="k">HV dependence</td><td>a smooth &times;20 rise over 60 V on three chambers — i.e. the gas-gain curve</td></tr>
-          <tr><td class="k">Open systematic</td><td>assumes the supply's current readback preserves the time-average of a burst shorter than the sample spacing. 28 % of samples sit above baseline on both clean chambers, consistent with ~1 s smoothing (which conserves the integral). <b>If not, every charge quoted is a lower bound.</b></td></tr>
+          <tr><td class="k">Readback response</td><td><b>measured, not assumed</b> (2026-08-10): phase-folding imon against the individual beam pulses gives the monitor's response to one impulse of charge — it rises over 0.3 s, peaks at 88 nA, and is back to zero by 2.3 s, with an <b>area equal to the charge</b>. A timestamp-free bound puts the averaging window at <b>&ge; 0.47 s</b> against a ~10 ms burst, so <b>the time-average is preserved and the charges are measurements, not lower bounds</b>. Four estimators agree to &plusmn;3 %. See the imon backup slide.</td></tr>
+          <tr><td class="k">Still not calibrated</td><td>this shows the readback conserves the <i>integral</i> of a short burst; it does not check the absolute accuracy of its nA scale, which is a board-datasheet question. The exact CAEN card model is recorded in neither repo and the live crate was deliberately not probed.</td></tr>
         </table>
       </div>
+    </section>
+
+    <!-- Backup — the imon systematic, measured and closed 2026-08-10.
+         Analysis: ntof_july_analysis/flash_charge/imon_response.py; every number
+         in HANDOFF_FLASH_CHARGE_2026-08-09.md §8.  This slide is deliberately
+         long — the teaching version Dylan asked for.  If time is short, keep the
+         callout, the figure and the last two table rows of the slide above. -->
+    <section class="slide">
+      <div class="kicker">Backup &middot; How the charge number survives scrutiny</div>
+      <div class="title-sm">Does the current readback actually see a millisecond burst?</div>
+      <div class="callout" style="margin-top:0;"><b>Yes — it averages over ≥ 0.47 s, so it cannot miss one.</b> The charge numbers are measurements, not lower bounds, and there is no correction factor. Four independent estimators agree to <b>±3 %</b>.</div>
+      <div class="figure-solo"><img src="assets/img/status_imon_response.png" alt="The HV monitor's measured response to one beam pulse: a 1 s wide hump peaking at 88 nA, on three chambers, with a flat drift-cathode null"></div>
+      <div class="caption"><b>What the left panel is.</b> Every imon sample is tagged with how long it came after the nearest beam pulse, and then averaged in bins of that delay — a phase fold. What comes out is the monitor's response to one known impulse of charge. <b>The area under it is the charge per pulse: 98 nC.</b> The dashed step is the same fold on the logger's raw whole-second timestamps — visibly wider, and rising <i>before</i> the pulse, which is impossible: that is the timestamp smear, and beating it is most of the work. <b>Right panel:</b> the same shape on three chambers once each is divided by its own area — the shape belongs to the <i>monitor</i>, not to a detector — plus a drift-cathode channel on the same crate and the same logger, which stays flat to the last digit.</div>
+    </section>
+
+    <!-- Backup — why the imon measurement is believable.  The adversarial
+         version: what the failure mode would have looked like, and the two
+         defences against the timestamp trap.  Cut this one first. -->
+    <section class="slide">
+      <div class="kicker">Backup &middot; How the charge number survives scrutiny</div>
+      <div class="title-sm">Why that is a measurement and not a comforting story</div>
+      <div class="content">
+        <ul class="bullets">
+          <li><b>What imon physically is.</b> The resistive layer is what the avalanche ions land on. Every electron the gas multiplies has to be resupplied through that one HV channel, so the channel's <b>average current is the avalanche charge per second</b> — divided by the pulse rate, the charge per pulse. It sits entirely outside the readout, which is the whole point: the readout is the thing that saturates.</li>
+          <li><b>Why mean &minus; median.</b> The readback samples at ~1 Hz and beam pulses come every ~3.3 s, so <i>most</i> samples sit at the standing leakage current. The <b>median is therefore the leakage at that exact voltage</b> — and leakage is strongly HV-dependent, which is why a single subtracted constant would not do and why an HV scan is usable at all. The <b>mean</b> includes the beam. The difference is beam-induced current; divided by the pulse rate, it is charge per pulse.</li>
+          <li><b>Where the doubt came from.</b> The burst lasts milliseconds; the samples are a second apart. A monitor that reported an <i>instantaneous</i> current would sit at baseline almost always and catch a burst once in ~350 samples — and every charge we quote would have been a lower bound by a factor nobody had measured.</li>
+          <li><b>The two numbers that settle it, using no timestamps at all.</b> <b>27 %</b> of samples sit above baseline, not 0.3 %. And the largest single-sample excess ever recorded on that channel is <b>0.216 µA</b>, where an instantaneous read of the same charge in 10 ms would have to read <b>10.1 µA</b> — 47× larger. Turn that round: a sample that contains a whole burst and reads 0.216 µA <i>must</i> be averaging over at least Q/ΔI = <b>0.47 s</b>. Both discriminate by two orders of magnitude, in the same direction.</li>
+          <li><b>And the trap we had to beat.</b> The HV logger writes whole-second timestamps but its loop runs at <b>1.0162 s</b>, so the true read time drifts through its labelled second and a raw-label fold is smeared by a 1 s box — which would fabricate a wide response from a narrow one. The drift is also the cure: the pattern of dropped seconds over-constrains the logger's own clock, and solving it recovers <b>95 % of the sample times to 2 ms</b>. The sharp fold is what the figure shows.</li>
+        </ul>
+        <table class="spec-table">
+          <tr><td class="k">Null #1</td><td>randomise the pulse times and the fold goes flat: &chi;&sup2;/ndf <b>1.03 vs 63</b></td></tr>
+          <tr><td class="k">Null #2</td><td>the <b>drift-cathode</b> channel — same crate, same logger, no avalanche current — is constant to the last digit</td></tr>
+          <tr><td class="k">Causality</td><td>zero response <b>before</b> the pulse, to &plusmn;2 nA, on the reconstructed time base</td></tr>
+          <tr><td class="k">Linearity</td><td>n_TOF's two intensity bands (414 vs 853 &times;10<sup>10</sup> p) give the same charge per proton to <b>4 %</b> — no amplitude-dependent loss, and every logged pulse really does deliver charge</td></tr>
+          <tr><td class="k">Clock offset</td><td>the intensity log is on CERN timing, the HV log on the DAQ host clock. A &plusmn;1 h lag scan bounds the offset at <b>~1 s</b> — and an offset <i>shifts</i> this curve, it cannot widen it</td></tr>
+        </table>
+      </div>
+      <div class="caption">Measured on run_79 at the production setpoint (the same setpoint as the run the headline numbers come from, and the only one with the monitor log on disk here); its det C charge agrees with the headline run's det C to 5 %. Full method and caveats: <code>ntof_july_analysis/flash_charge/HANDOFF_FLASH_CHARGE_2026-08-09.md</code> §8.</div>
     </section>
 
     <!-- Backup — the rate table.  This is STATUS_PLAN.md §5 framing option (a),

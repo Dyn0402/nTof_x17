@@ -28,6 +28,11 @@ cd mpgd26
 ../.venv/bin/python make_chamber.py                # the exploded chamber
 ../.venv/bin/python make_microtpc.py               # micro-TPC operation
 ../.venv/bin/python make_x17.py --layout both --theme both   # physics-case diagrams
+../.venv/bin/python make_ear2.py                   # the n_TOF EAR2 beam line (5 frames)
+../.venv/bin/python make_ntof.py                   # the n_TOF setup, 9 build frames
+../.venv/bin/python make_ntof_plan.py --bare       # ...and the same thing as a plan
+../.venv/bin/python make_target.py                 # the spallation target, in detail (2 views)
+../.venv/bin/python make_photos.py                 # slide copies of the two station PHOTOGRAPHS
 ../.venv/bin/python make_anim.py                   # turntables + build-ups
 ../.venv/bin/python make_report.py                 # rebuild report.html
 ../.venv/bin/python make_status_plots.py           # the Status-section DATA plots
@@ -66,7 +71,10 @@ Each figure is written twice:
 | `x17_story` | the same in five beats over two rows, including **why** the boost sets the opening angle (`make_x17.py --layout story`) |
 | `x17_story_1of2`, `x17_story_2of2` | the same five beats split across two slides — 1–3 then 4–5 (`--layout split`) |
 | `x17_story_capsule` | the story layout with the real Geant4 ³He vessel in beat 1 (`--layout story --capsule`) |
+| `ntof_build_1…9` | **the n_TOF setup, built up** — capsule → neutron → pair → +Micromegas (close) → (zoom out) +Micromegas → +SiPM wall → +plastics → (rotate overhead) plastics → +liquid scintillator (`make_ntof.py`) |
+| `ntof_plan` | **the same setup and event as a plan** — orthographic, down the beam, 1:1 in both axes, with the standoff circle and a dimension chain; a matplotlib drawing, not a render (`make_ntof_plan.py`). `ntof_plan_bare` drops the headline and the note, and is what the slide uses |
 | `x17_signature_bare`, `x17_story_bare` | either layout with the title and caption bands cropped off (`--no-title`) |
+| `ear2_build_1…5`, `ear2_onfig_1…5`, `ear2_beamline` | **the n_TOF EAR2 vertical beam line, built up in five frames**: **Target #3** and the 20 GeV/c protons — six 600 × 600 mm lead slices (5 × 50 mm + 150 mm) with aluminium anti-creep plates between them, the AISI 316L vessel, and on top of it the 4 mm neutron window, the 50 mm lead plate and the EAR2 moderator's 40 mm water layer, all from Esposito et al., *PRAB* **24** (2021) 093001 (rebuilt 2026-08-11; it used to be the retired Target #2 cylinder, with the EAR2-facing assembly not drawn at all) → the neutrons leaving at 90° and filling the pipe → the middle of the line, both collimators, the floor and its shielding, and the lower beam pipe *ending* about a metre above the EAR2 floor → back into a pipe, on up to the dump → the measuring station in the open beam, halfway between the two pipes. The drawing **stops ~1.15 m above the station** — the bunker ceiling and the beam dump are real but above the frame (removed 2026-08-11 so the station is not dwarfed by 2.7 m of shielding); the **wide upper pipe** that carries the beam there is drawn and cut off by the top of the frame. Cut open along the beam axis, with one annotated break that removes the empty pipe. Inside the hall the shape of the line — polyethylene shielding on the floor, the lead-disk chamber, a reducer, the narrow tube — is **scaled off the CERN photograph beside it**, not off a drawing; that and the station's deliberately omitted support frame are in `scenes_ear2.ASSUMPTIONS`. The measuring station is drawn as real chambers — aluminium frame, strip readout board, 30 mm of drift gas facing the sample — with **24 strips drawn rather than 512**, since the real 0.78 mm pitch is a quarter of a pixel here. ⚠️ **Nothing at the station is 1:1**: the capsule is drawn 5.5× oversize and the chambers 1.35× (`CAPSULE_SCALE`, `PLATE_DRAW`), their 330 mm standoff being the one real dimension left; frame 5 is written twice: **two chambers in section** (the default, and what the slides use — the pair is placed relative to the *camera*, so their drawn azimuths are 136° apart and not the real 90°, which `ASSUMPTIONS` says) and the true four-arm pinwheel (`STATION_ARMS`, `_4arm`). The frames are strict subsets of one picture — same camera, same scale, no label moves — with one deliberate exception, the beam faded across the sample on the last frame. **Two label layouts of the same render** are written every run: `ear2_onfig_*` puts the labels on the drawing's own background (left and right), `ear2_build_*` / `ear2_beamline_*` put them in a gutter column; frame 3 is also written under the plain `ear2_beamline` names (`make_ear2.py`) |
 
 The X17 diagrams are written straight out as `figures/<name>_<theme>.png` and
 `.pdf` — no separate `_labelled` version, because their type is drawn in from
@@ -104,6 +112,239 @@ from the `He3Gas` / `He3Cap_Al` / `He3Cap_CFRP` polycones in
 `~/CLionProjects/MX17_Full_Geant/src/DetectorConstruction.cc` (sectioned from
 the STEP solid), true aspect, mounted nose-first as the simulation mounts it.
 
+## The n_TOF setup, built up (`make_ntof.py`)
+
+```bash
+../.venv/bin/python make_ntof.py                 # the nine build frames
+../.venv/bin/python make_ntof.py --only full     # just the last one
+../.venv/bin/python make_ntof.py --view top      # a different camera
+../.venv/bin/python make_ntof.py --draft         # small and fast
+```
+
+Nine frames of one figure: the ³He capsule, a neutron reaching it, the e⁺e⁻
+pair leaving it, and then the four detector layers going on one at a time.
+Slides 16–24 of the talk are these nine frames with the step's explanation
+beside them; flipping forward assembles the detector.
+
+**Four cameras, not nine.** The subject changes scale by a factor of fifty —
+the capsule is 23 mm across and the setup is 1.2 m — and then changes what it
+has to show, so the sequence runs in four acts: `micro` (frames 1–3, the vessel
+and the event in it, portrait), `close` (frame 4, the chambers arriving around
+it), `hero` (frames 5–7, the apparatus assembled) and `over` (frames 8–9,
+straight down — 89°, since 90° leaves the camera with no defined roll). The last cut earns itself: the layers are stacked
+**radially**, so from any three-quarter view the trigger wall stands in front
+of the plastics and the liquid and a leg arriving in them cannot be seen. That
+act also runs **bare** — frames, boards and vessel shells drop to a whisper and
+only the active volumes keep their colour, because looking down the beam the
+four arms are seen through each other and the aluminium becomes a lid.
+Within each act the frames share a camera and a size exactly, so the layers
+grow onto a still picture. Frame 4 repeats frame 5's content at a larger scale
+and is the first to cut if the section runs long.
+
+⚠️ The overhead act draws the capsule **whole** (`VIEWS['over']` sets
+`cut=False`). Everywhere else the vessel is sectioned on a plane through the
+beam axis with the near half removed, which is the only way to show 0.6 mm of
+wall and a lit gas core at the same time — but that plane *contains* the
+overhead view direction, so from up there it does not open the vessel, it
+deletes the half of it nearest the bottom of the frame and the capsule reads as
+broken. It is also the one thing `BARE` does **not** whisper: everything else
+that drops to `BARE_ALPHA` up there is a box the eye can still infer from its
+neighbours, but the capsule is 23 mm on a 1.2 m frame and whispered it is a
+smudge at the exact point the picture converges on. Solid, it is a small dark
+disc — the CFRP overwrap seen end-on, with the gas bore a speck at its centre —
+where the two legs meet.
+
+**The frames carry their own labels.** The first one names the vessel's layers —
+the wall is 0.6 mm of Al under 0.9 mm of CFRP on a 20 mm bore, which at slide
+size is two thin bands that nothing else identifies. Every *build* frame names
+**the layer it just added**, and only that one: the label moves outward with the
+build rather than accumulating, so the picture says what it is showing without
+the audience having to find it in the bullets. The text is pinned to a corner of
+the frame (`LAYER_LABEL`, `LAYER_POS`) — top-left on the build acts, and at the
+**bottom** on the close-up, where the chambers fill the frame and the only empty
+space left is the see-through one. **One label, a leader to each solid arm**: a
+layer is four objects and the frame draws two of them solid, so a single leader
+would quietly imply the label is about that one; which arms get a line is read
+off the view's own `near`, so it cannot fall out of step with the ghosting. It is
+a leader per drawn **object**, not per arm — `scenes_ntof.LAYER_PARTS` says the
+plastics are two separate bars, so that label carries four, and its text drops
+the "2 ×" the lines already say. The
+anchors are that layer's own centre in each arm, taken from the geometry by
+`scenes_ntof.layer_anchor` — so a label cannot end up pointing at where a layer
+used to be. Sizes on these labels are in **centimetres**: they are read from
+across a room, not quoted. The leaders are drawn in matplotlib over the render
+at 1:1 (`make_ntof.overlay`) — by hand rather than by `annotate(arrowprops=)`,
+since one block of type has to serve several anchors, so each line is struck
+from the text's own bounding box towards its target and two leaders leave it
+from the two edges that face their arms. The frame keeps its size and its alpha;
+`--no-labels` turns all of it off. The package's usual label path, `annotate.compose`, is not
+used here because it grows the canvas and writes an opaque page.
+
+**The plastics are lavender, not the package's scintillator blue** (`style.COL`
+still has that, and the bench figure still uses it). Here they sit two layers out
+from a 30 mm slab of drift gas drawn in `#6fd0e8`, and a light blue beside a
+light cyan reads as the same material twice; lavender is the one pastel left that
+is far in hue from all of the gas, the gold trigger bars, the orange liquid and
+the red/crimson tracks.
+
+**What is drawn.** Only the charged pair: the event's bremsstrahlung gammas are
+real but neutral, so on the picture they are rays crossing the frame with no
+visible cause (`scenes_ntof.DRAWN_PARTICLES`). The two arms nearest the camera
+(B in front, A on the right) are drawn as outlines, not as translucent solids —
+four half-transparent layers still hide what is behind them, and in a different
+colour at every overlap. The two the pair actually crossed (D, C) stay solid,
+and on the overhead act everything that is not an active volume drops to
+`BARE_ALPHA`. The camera azimuth, `NEAR_ARMS` and the extractor's
+`--prefer-arms` are one decision in three places — change one and change all.
+
+**The legs grow with the apparatus.** Each is cut where it first reaches a layer
+that is not on the frame yet (`truncate_at_next_layer`), so a track runs on to
+the trigger wall only on the frame that puts the trigger wall there. Drawn full
+length from the start they assert three frames early that all of it is measured,
+and the layer being added stops being the thing that changes.
+
+**The beam** is a plain grey column at the sampled 90 % radius, with a slim dart
+lying on the axis inside it for direction — an arrowhead on the beam itself has
+to be bigger than the 23 mm target it points at before it reads at slide size,
+and one standing off to the side is a second object to explain. The dart's
+*length* comes from the frame (`spherical(..., arrow=, arrow_y=)`) and its girth
+from the beam, so it can never grow out through the column; only the close-up
+act asks for one. Once any detector is placed the column stops at the vessel's
+**nose** (`CAPSULE_NOSE_Y`), with a short stub below it: drawn past the target it
+runs through the middle of the apparatus and reads as a pole holding it up, and
+drawn even alongside the capsule it sleeves a 23 mm object in translucent grey
+and the target goes hazy instead of crisp.
+
+**The neutron is drawn, not transported.** It is a straight line up the beam axis
+to the pair vertex, running off the bottom of the frame. The real Geant4 history
+is still selected and stored in the JSON, but it belonged to a different event
+from the pair, so drawing it meant translating it onto this vertex and then
+showing its own in-gas scattering — a fact about that neutron rather than about
+this figure. The neutron *run* is still needed: the beam envelope is measured
+from its sampled primaries.
+
+The frames are written with an **alpha channel** so they sit on a slide of any
+colour (`--opaque` keeps the theme background instead).
+
+**Where the geometry comes from.** Every dimension is imported at run time from
+`~/CLionProjects/MX17_Full_Geant/scripts/plot_geometry.py`, which is written
+against the simulation's own `SimConfig.hh` — so the figure and the Geant4
+model cannot drift apart. Point `MX17_FULL_GEANT` elsewhere if that repository
+is not at the default path. Two things are drawn rather than measured, and both
+are flagged in `report.html`: the liquid's fill dome is extruded at constant
+height along the vessel, and the beam envelope is drawn at the radius the
+simulation's own sampled primaries occupy.
+
+One number is **typed here rather than imported**, because `plot_geometry` does
+not carry it: the chambers' **440 mm outer frame square** (`scenes_ntof.FRAME_HU`;
+as-built, CAD plus two gerber cross-checks, `MX17_Full_Geant/docs/
+HANDOFF_ARM_GEOMETRY.md`). It used to be drawn as a constant 30 mm cheek around
+the active area, which came to the same 440 while the active area was the
+unsourced 38 × 34 cm. On **2026-08-11** the sim took the measured **39.9 × 36.0 cm**
+(the short axis is the one *along the beam* — ~19 mm at each end of the strip
+plane is passivated), and a constant cheek around that is 490 mm: too big to
+fit, since the pinwheel has only 15.5–17.3 mm of tangential shift to buy
+clearance with and 440 is exactly what it clears. The frame is therefore a fixed
+square and the cheek is what is left over — 20.3 mm across the chamber, 40.0 mm
+along the beam. If the active area is remeasured again, change the sim, not the
+cheek.
+
+**Where the event comes from.** The neutron and the pair are real Geant4
+events, picked out of `--trajdump` step dumps by `tools/extract_ntof_event.py`
+into `data/ntof_event.json`:
+
+```bash
+# in MX17_Full_Geant, after sourcing the Geant4 environment
+build/mx17_full_sim -n 400  -t 1 --trajdump 400  --ipc 0 -s 20260810 -o pairs
+build/mx17_full_sim -n 4000 -t 1 --trajdump 4000 -s 77 \
+    --neutron data/fluxEAR2-Ph3_in_different_units.root \
+             data/lamda2DvsEn_EAR2.root \
+    --emin 1e-3 --emax 1000 -o neutrons
+
+../.venv/bin/python tools/extract_ntof_event.py \
+    --pairs /path/pairs_traj_t0.csv --neutrons /path/neutrons_traj_t0.csv
+```
+
+**The pair on the figures is one real Geant4 event**; the neutron that made it
+is *drawn*, not simulated alongside it, and it has to be that way — the
+radiative branch that forms the ⁴He* is ~10⁻⁸ of ³He(n,p)t, so no neutron run
+will ever contain one. A real neutron event is still selected and stored in the
+JSON, translated so its interaction point lands on the pair vertex (28.3 mm of
+shift on the shipped one), and the neutron run is needed regardless because the
+beam envelope is measured from its sampled primaries — but no scene draws that
+history: what it added to the picture was its own in-gas scattering. The tool
+records the pairing, the shift and the residual in the JSON's `provenance`
+block, and the talk says it on the slide.
+
+## The same setup as a plan (`make_ntof_plan.py`)
+
+```bash
+../.venv/bin/python make_ntof_plan.py           # titled, for report.html
+../.venv/bin/python make_ntof_plan.py --bare    # no headline/note, for the slide
+```
+
+The tenth slide of the setup section, and the only figure in it that is **not a
+render**. Every frame above it has perspective: the four arms sit at four
+different distances from the lens, so every length is foreshortened by its own
+amount and the distances can only be *written* in a caption. This one is
+orthographic and 1:1 in both axes — the beam is the view axis, so the drawing
+plane is the X-Z plane the apparatus is symmetric in, and a length measured off
+the page is a real length.
+
+**What the drawing can say that the renders cannot.** The **204.5 mm** standoff
+every arm's window sits on, drawn as the dashed circle all four are tangent to;
+the layer radii out to the vessels (330 / 410 / 487 mm), drawn as a dimension
+chain on arm B — the one arm no leg crosses, and the numbers are that arm's:
+the plastics and the vessel sit a few mm differently on each; and the **size of the target**,
+which at 1:1 is a 23 mm dot in the middle of a 1.1 m apparatus — which is why
+the vertex marker on it is deliberately tiny, a bigger one covering the one
+object whose size is the point. Two mechanical facts also become visible: the
+~16 mm pinwheel offsets, and that **two of the four liquid vessels are laid on
+their side**, with their necks and PMTs pointing sideways into the plane
+(`LS_ROT`) — from above the two orientations really do look different, upright
+showing the pillow cross-section with its domed edges and laid-over showing the
+flat flank of a 451 mm slab, so both are drawn as they are.
+
+⚠️ **What the plan gives up is the beam axis.** Both legs also rise ~135 mm
+along it before they reach the liquid, so the opening angle *as drawn* is 122°
+while the space angle is 110°; the figure quotes both. Two small departures
+from the 3-D frames, and both are legibility rather than geometry: the 40 µm
+mylar window gets no line of its own (the stroke would be four times its
+thickness, and in the only honest colour for it — red — it reads as a highlight
+box in almost the positron's own colour, so the drift gas's own front edge
+stands for it), and a deposit marker is drawn in the **depositing leg's**
+colour rather than the layer's, since a lavender dot inside a lavender bar is
+not on the page at all.
+
+Geometry and event come from `scenes_ntof` — so from the same
+`plot_geometry.py` and the same `data/ntof_event.json` as the renders, and the
+two cannot drift apart. Every number on it, including the dimension-chain
+labels, is computed from that geometry rather than typed in.
+
+**This is the view where the chamber's outer size is not decoration.** The plan
+is the only figure that shows all four arms in one plane, so it is the only one
+where a chamber drawn too big visibly runs into its neighbour — see the note at
+`scenes_ntof.FRAME_HU` before changing either the active area or the frame.
+
+## Photographs of the real station (`make_photos.py`)
+
+```bash
+../.venv/bin/python make_photos.py           # rebuild the slide copies
+../.venv/bin/python make_photos.py --list    # what is in photos/
+```
+
+Two pictures taken in EAR2 on **2026-08-10**: down into the assembled station
+(the photographic answer to the plan above) and one arm from outside. The
+full-resolution originals live in `photos/` under the names the camera gave
+them — that is the point of the directory, since a Downloads folder is not a
+durable location — and `make_photos.py` writes the 1125 × 1500 copies the deck
+loads. No cropping is done: both are portrait phone frames with about a third
+to spare, and the right crop depends on where they land.
+
+⚠️ They are in the deck as **placeholders** (slides 25–26, after the plan and
+before the status section) and are not yet worked into the argument. The open
+questions are listed in the comment above them in `slides/index.html`.
+
 ## Animations (`animations/`)
 
 | name | what it is |
@@ -111,6 +352,8 @@ the STEP solid), true aspect, mounted nose-first as the simulation mounts it.
 | `turn_sps`, `turn_bench`, `turn_bench_p2`, `turn_chamber` | turntables, 270 frames, 18 s per turn, seamless loop — MP4 + GIF |
 | `build_sps` | table → uRWELL references → P2 fans → beam |
 | `build_bench` | rack → trigger paddles → M3 reference → chambers → muons |
+| `build_ntof` | the n_TOF setup assembling around the target — the build act of `make_ntof.py`, at its fixed camera |
+| `turn_ntof` | turntable of the full n_TOF setup |
 
 Build-ups are written **both** as a slow MP4 and as numbered stills
 (`build_bench_1_rack.png` …). Drop the stills on successive slides and the
@@ -240,7 +483,7 @@ the four-view single-cluster requirement is tighter than the published cut.
 * **Bench plane z** (−110 … 1420 mm) and the P1/P2 levels — `bench_geometry` and
   `detectors` in `mx17_det2_det3_overnight_6-22-26/run_config.json`.
 * **MX17 dimensions** — 470 mm PCB, 398.58 mm metallised, 30 mm drift gap,
-  512 strips per view at 0.7785 mm pitch, 150 µm amplification gap
+  512 strips per view at 0.78 mm pitch, 150 µm amplification gap
   (`garfield_sim/mm_config.py`).
 * **Both opening-angle curves** in `x17_signature` — sampled from
   `X17PhysicsSpectrum` and `IPCPhysicsSpectrum` in
@@ -295,6 +538,10 @@ Collected in `geometry.ASSUMPTIONS` and repeated in every figure caption:
 | `scenes_bench.py` | the cosmic bench |
 | `scenes_chamber.py` | one MX17 chamber, exploded |
 | `scenes_x17.py` | the X17 physics case; matplotlib, not PyVista — the decay kinematics live here too |
+| `scenes_target.py` | **the n_TOF Target #3 spallation target, in detail** — two views for the target backup slides: `build_layers` (the whole assembly cut open along the beam, cradle to vacuum window) and `build_cooling` (one anti-creep plate exploded off its slice, with the channels, the wedge obstructions and the nitrogen path). ⚠️ Every shared dimension is **imported from `scenes_ear2`**, never re-typed — the facility figure draws the same object. Records three rendering traps in its own docstrings: the beam-axis cutaway is wrong for a plate, lead/aluminium/groove are three greys within 0.2 in value, and the plates in the layers view need PBR to separate on a single cut plane. The 10° beam yaw is only visible in `build_layers` |
+| `make_target.py` | the two target detail figures, and the only writer of `slides/assets/img/target3_{layers,cooling}.png` |
+| `scenes_ear2.py` | the n_TOF EAR2 vertical beam line; every sourced height and aperture is cited in its docstring, `ACTS` / `y_of()` are the broken vertical scale, `STAGE_PARTS` is the five-frame build, `H_PIPE_END` is where the lower pipe really stops and `H_UP0` where the separate upper one starts, `_section_angles()` places the two drawn chambers relative to the camera, the acts end just above the station (no ceiling, no dump), and everything read off the photograph rather than a drawing is in `ASSUMPTIONS` |
+| `make_ear2.py` | the EAR2 build-up in both label layouts, and the only writer of `slides/assets/img/ear2_{onfig,beamline}_{1_target,2_neutrons,3_collimation,4_dump,5_station}.png` |
 | `annotate.py` | 3-D anchors → pixels, then the type layout |
 | `make_sps.py`, `make_bench.py`, `make_chamber.py`, `make_x17.py` | per-scene drivers with camera presets |
 | `make_figures.py` | the deliverable still set |
