@@ -195,9 +195,24 @@ holding the wall-clock extent fixed moves the corruption while time-overhang
 stays at 76.6 %: 62.0 % bursts corrupt, 52.2 % corrupt, 45.1 % clean. So the
 `overlap_frac` table below is a wall-clock **proxy** — a good one where
 density is roughly uniform, and wrong for exactly the segments that straddle
-a beam gap, where a 61 % time overhang can be a sub-50 % burst overhang.
-`run_81/stat090_0001 × 224581` is that case, observed: 61 % time overhang,
-joins correctly, so its burst overhang is under 50 %.
+a beam gap. **Measured on `run_81/stat090_0001 × 224581`:**
+
+| | overhang | overlap |
+|---|---|---|
+| wall clock (`overlap_frac`) | 0.614 | 0.386 |
+| **bursts (what the median sees)** | **0.335** | **0.665** |
+
+349 bursts in the sub-run, 232 matched by this n_TOF run; 12.3 bursts/min
+inside the run against 3.9/min over the overhanging stretch, **3.2× sparser**.
+Measured from the sub-run's own burst list at a lock matching 98.0 % of
+bursts to the beam record, so it does not depend on the join under test.
+
+**The proxy does not merely blur the classification, it can INVERT it.** This
+segment is listed at 0.386 overlap — nominally deep in the bites-region — and
+is actually at 0.665 in the units that matter, i.e. on the other side of the
+line. Any segment straddling a beam gap can move that far. That is the case
+for taking the tables from the fixed campaign rather than patching the
+existing ones.
 
 Do **not** recompute the tables in bursts from the first campaign — on a
 mislocked segment the matched-burst count is itself the corrupted number
