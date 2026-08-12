@@ -1,0 +1,45 @@
+#  condor_submit pull.sub                      # every run in runs.txt
+#  condor_submit pull.sub -a 'runs=one.txt'    # a subset
+#
+# One job per n_TOF run: the raw is read once per run and it is the only
+# expensive thing here.  A run is 0.4-0.9 TB read; the job streams it a file at
+# a time and never holds more than one raw file plus its own output.
+#
+# NOTE: no trailing "# comment" on a value line.  Condor parses it into the
+# expression and `request_disk = 40 GB  # note` is a syntax error, not a
+# warning.  That cost the slim campaign a submit.
+
+universe                = vanilla
+executable              = wrapper.sh
+arguments               = $(run)
+
+runs                    = runs.txt
+
+transfer_input_files    = ntof_processing, ntof_dream_merge, common
+should_transfer_files   = YES
+when_to_transfer_output = ON_EXIT
+transfer_output_files   = ""
+
+output                  = logs/pull_$(run).out
+error                   = logs/pull_$(run).err
+log                     = logs/pull.log
+
+request_cpus            = 1
+request_memory          = 4 GB
+request_disk            = 40 GB
+
++JobFlavour             = "tomorrow"
+MY.WantOS               = "el9"
+
+# Forwards a Kerberos credential to the worker, which is what lets the job write
+# its output straight to EOS.  Verified 2026-08-12 (cluster 20191171): the worker
+# gets a dneff@CERN.CH ticket and both xrdcp and FUSE cp succeed.  Without this
+# the job cannot publish, and the output is far too big (~4 GB per sub-run) for
+# condor file transfer, whose cap is ~1 GB per job.
+MY.SendCredential       = true
+
+on_exit_remove          = (ExitCode =?= 0)
+max_retries             = 2
+requirements            = Machine =!= LastRemoteHost
+
+queue run from $(runs)

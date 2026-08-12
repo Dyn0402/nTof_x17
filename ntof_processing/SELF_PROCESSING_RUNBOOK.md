@@ -185,9 +185,28 @@ carry 61 h of DREAM beam time (run_150 onward).
 
 * **Never `condor_rm -all` while a DAG is up** — DAGMan reads the removals as
   node failures, burns all three `RETRY`s and aborts the DAG.
-* The 2 h `longlunch` wall on *processing* nodes is real (three of our 78 July
-  jobs were killed by it) but the split is now 4 files/job instead of 10, so
-  there is ~2.4x more headroom than in July.
+* **The 2 h `longlunch` wall still kills the occasional node, and RETRY does not
+  help** — the retry re-runs identical work under the identical limit. Of 1 300+
+  jobs across the 31-run campaign exactly one hit it: **224709 node 0023**, which
+  was killed at 2h00m, retried, and would have burned all three attempts.
+  **Fix: raise the flavour in the node's own submit file. DAGMan re-reads it on
+  every retry**, so no resubmission is needed:
+
+  ```bash
+  A=<aux>/aux_prod_<run>/<run>
+  sed -i 's/"longlunch"/"workday"/' $A/run<run>_<NNNN>_process.sub   # 2 h -> 8 h
+  condor_rm -name <schedd> <clusterid>      # kill the doomed attempt; retry picks up the edit
+  ```
+
+  224709/0023 then finished in **5h06m** — 5x the slowest normal job in that run
+  (0.99 h) and far beyond any 2 h limit.
+* **A stalled node is not always a heavy one — check CPU before theorising.**
+  0023 burned only ~21 min of CPU in 249 min of wall time (8 % utilisation), so
+  it was I/O-blocked, not compute-bound. Its data volume (17.1 GB) was ordinary:
+  job 0032 did 17.4 GB in 0.99 h. Its four raw files read at 48-205 MB/s from
+  lxplus, so the inputs were fine. Read `RemoteUserCpu`/`RemoteSysCpu` from
+  `condor_q` before assuming a slow job is a big job — and note that a blocked
+  job's runtime cannot be extrapolated from a working job's.
 * `history` is a ROOT **string object**, not a TTree: read it with
   `uproot.open(f)['history'].member('fString')`; `.keys()` raises.
 * A zero-byte `run<run>.root` in `done/` is a failed merge, not a processed run.

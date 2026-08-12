@@ -118,8 +118,10 @@ process)
     ;;
 
 verify)
-    want=$(ls "$WORK"/lists/*.files 2>/dev/null | wc -l)
-    d=$OUT/completed/$RUN
+    # ProcessFileList.sh writes its partials straight into -o; the
+    # completed/<run>/ layout is RunProcessing.sh's doing, not its.
+    want=$(ls $W/$RUN/*.files 2>/dev/null | wc -l)
+    d=$OUT
     got=$(ls "$d" 2>/dev/null | grep -c "^run${RUN}_.*\.root$")
     echo "$RUN: $got / $want partials in $d"
     ls "$d" 2>/dev/null | grep -o "_[0-9]\{4\}\.root$" | tr -cd '0-9\n' |
@@ -156,12 +158,13 @@ PY
     ;;
 
 publish)
-    src=$OUT/completed/$RUN
-    want=$(ls "$WORK"/lists/*.files 2>/dev/null | wc -l)
+    src=$OUT
+    want=$(ls $W/$RUN/*.files 2>/dev/null | wc -l)
     got=$(ls "$src" 2>/dev/null | grep -c "^run${RUN}_.*\.root$")
     [ "$got" -eq "$want" ] || { echo "refusing: $got of $want partials in $src"; exit 2; }
-    mkdir -p "$FINAL/completed"
-    cp -r "$src" "$FINAL/completed/" && echo "published to $FINAL/completed/$RUN"
+    mkdir -p "$FINAL/completed/$RUN"
+    cp "$src"/run${RUN}_*.root "$src"/history_$RUN.root "$FINAL/completed/$RUN/" \
+        && echo "published to $FINAL/completed/$RUN"
     ;;
 
 *)

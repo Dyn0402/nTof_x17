@@ -75,6 +75,21 @@ TH = dict(
     drift_warn=8.0, drift_fail=20.0,
     # K is a clock rate ratio and physically ~1.1e-4 for this DAQ pair.
     k_lo=0.9e-4, k_hi=1.3e-4,
+    # pulse_match's count margin (best lock minus runner-up), from the join
+    # provenance block. Margin study over 211 sub-runs, 2026-08-12: the 41
+    # whole-hour FAILURES sat at 0 in 35 cases and never above 8, while fitted
+    # segments ran p10 3 / median 23 / max 380 -- but 14 FITTED sub-runs sat at
+    # <= 2 and two at 0. Those passed every other check and were a coin flip
+    # from the mis-lock that cost 25.7 % of the beam, so a low margin is worth
+    # saying out loud even when the segment is fine.
+    #
+    # It cannot hard-FAIL on its own: two segments at margin 0 were correct.
+    # A FAIL is only raised when nothing else adjudicated the lock -- if
+    # pulse_match arbitrated on the intensity fluctuation at >= R_SIG, or a
+    # scan verified it (chosen_by 'verified'), the margin is not the evidence
+    # the lock rests on and the check defers to that.
+    join_margin_warn=10.0, join_margin_fail=2.0,
+    join_r_sig_min=3.0,
     # arm offsets reproduce between sub-runs to <= 2.6 ns; the four differ from
     # each other by ~25 ns, so a 15 ns move is well outside normal.
     arm_dev_warn=15.0, arm_dev_fail=40.0,
@@ -502,6 +517,46 @@ def analyse(d: Path) -> SegmentQA:
                             'no per-bunch columns -- file predates them', ''))
         checks.append(Check('dropped pulses look like no beam', 'NA', None,
                             'no per-bunch columns -- file predates them', ''))
+
+    # ------------------------------------------------------------- join lock
+    # The segment's clock can be perfect while the JOIN underneath it is a coin
+    # flip: a mis-locked segment does not fail here, it fails its clock fit and
+    # never reaches QA at all. So this check is not about this file being
+    # wrong -- it is about how much evidence chose the lock this file was
+    # built on. Files written before 2026-08-12 have no join block.
+    jn = cal.get('join') or {}
+    if jn.get('pulse_match_margin') is None and not jn.get('pulse_match_chosen_by'):
+        checks.append(Check('pulse_match margin adequate', 'NA', None,
+                            'no join provenance -- file predates it', ''))
+    else:
+        margin = jn.get('pulse_match_margin')
+        by = jn.get('pulse_match_chosen_by')
+        r_sig = jn.get('pulse_match_r_sig')
+        adjudicated = (by == 'verified'
+                       or (by == 'intensity' and r_sig is not None
+                           and r_sig >= TH['join_r_sig_min']))
+        if margin is None:
+            # a verified override carries no margin of its own
+            level = 'PASS' if adjudicated else 'WARN'
+            m_txt = 'no count margin recorded'
+        else:
+            m_txt = f'count margin {margin:g}'
+            if margin >= TH['join_margin_warn']:
+                level = 'PASS'
+            elif margin > TH['join_margin_fail'] or adjudicated:
+                level = 'WARN'
+            else:
+                level = 'FAIL'
+        why = f'chosen by {by}'
+        if r_sig is not None:
+            why += f' (r_sig {r_sig:.2f})'
+        if jn.get('delta_hint_s') is not None:
+            why += f", delta hinted {jn['delta_hint_s']:.3f} s"
+        checks.append(Check(
+            'pulse_match margin adequate', level, margin,
+            f'{m_txt}, {why}',
+            f'>= {TH["join_margin_warn"]:g}, or arbitrated '
+            f'(intensity r_sig >= {TH["join_r_sig_min"]:g}, or verified)'))
 
     # ------------------------------------------------------------------ hits
     det = {t_: i for i, t_ in enumerate(C.SCINT_TREES)}

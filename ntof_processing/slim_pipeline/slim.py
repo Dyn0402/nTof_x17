@@ -505,7 +505,27 @@ def run_segment(seg: Segment, out_base: Path | None = None,
                 pulse_match_r_sig=join_attrs.get('pulse_match_r_sig'),
                 delta_s=join_attrs.get('delta_s'),
                 delta_margin=join_attrs.get('delta_margin'),
-                delta_hint_s=join_attrs.get('delta_hint_s'))),
+                delta_hint_s=join_attrs.get('delta_hint_s'),
+                # Burst counts, so the overhang can be read in the units the
+                # bootstrap bug actually depends on. `overlap_frac` in the
+                # coverage map is a fraction of TIME and diverges from the
+                # fraction of BURSTS wherever beam density is not uniform --
+                # measured at 0.335 burst against 0.611 time on
+                # run_81/stat090_0001 x 224581, a 3.2x density step across the
+                # boundary. It does not merely blur the classification, it can
+                # invert it: that sub-run's other side reads 0.311 overhang
+                # nominally and 0.691 in bursts, opposite sides of the 50 %
+                # threshold. Recording both counts means the question never has
+                # to be reconstructed from a wall-clock proposal again.
+                n_bursts=join_attrs.get('n_bursts'),
+                n_bursts_matched=join_attrs.get('n_matched'),
+                # The MEASURED extent of this sub-run's beam-synchronised
+                # triggering. Not a general sub-run duration: it ends with the
+                # last flash burst, so a sub-run whose beam stops before its
+                # DAQ does will read short. It is the right denominator for
+                # overhang -- a stretch with no bursts cannot move a median
+                # over bursts -- and nothing else.
+                subrun_span_s=join_attrs.get('subrun_span_s'))),
         qa=dict(
             efficiency=qa_in['efficiency'], efficiency_cv=qa_cv['efficiency'],
             accidental=qa_in['accidental'], purity=qa_in['purity'],

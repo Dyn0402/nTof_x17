@@ -1,5 +1,5 @@
 # n_TOF X17 EAR2 2026 -- runs that are finished and not moving
-# generated 2026-08-12 10:40 by campaign_qa/settled_runs.py
+# generated 2026-08-12 17:34 by campaign_qa/settled_runs.py
 # criterion: a non-empty merged file in official/done/. Every such run has
 # been left untouched, while complete-but-unmerged runs were wiped and
 # reconstructed again -- see the module docstring.

@@ -43,7 +43,7 @@ def make_segment(d: Path, *, efficiency=0.958, accidental=0.00046,
                  bootstrap_snr=180.0, with_bunches=True, with_beam=True,
                  empty_frac=0.0, empty_leak=0, empty_full_bursts=False,
                  dream_run='run_00', dream_subrun='synthetic', ntof_run=0,
-                 n_ev=None):
+                 n_ev=None, join=('count', 40, None), delta_hint_s=None):
     """Write a synthetic ntof_hits directory with the requested properties."""
     d.mkdir(parents=True, exist_ok=True)
     global N_EV, RNG
@@ -226,10 +226,20 @@ def make_segment(d: Path, *, efficiency=0.958, accidental=0.00046,
                     snr=bootstrap_snr, n_candidates=50000, search_ns=50000.0,
                     hist=dict(lo_ns=-50000.0, bin_ns=200.0,
                               counts=[1] * 500))
+    # join provenance: (chosen_by, margin, r_sig), or None for a file written
+    # before the block existed
+    jn = None
+    if join is not None:
+        by, margin, r_sig = join
+        jn = dict(pulse_match_offset_s=12.34, pulse_match_margin=margin,
+                  pulse_match_chosen_by=by, pulse_match_r_sig=r_sig,
+                  delta_s=0.829, delta_margin=507,
+                  delta_hint_s=delta_hint_s)
     (d / 'calibration.json').write_text(json.dumps(dict(
         K=K, T0_ns=T0, arm_offset_ns=arm_off, accept_ns=C.ACCEPT_NS,
         slim_ns=W, control_shift_ns=C.CONTROL_SHIFT_NS,
-        n_bunches_fitted=nfit, fit=dict(iters=[], bootstrap=boot))))
+        n_bunches_fitted=nfit, fit=dict(iters=[], bootstrap=boot),
+        join=jn)))
     (d / 'qa.json').write_text(json.dumps(dict(
         efficiency=efficiency, efficiency_cv=efficiency - cv_gap,
         accidental=accidental, purity=1 - accidental,
@@ -245,6 +255,30 @@ def make_segment(d: Path, *, efficiency=0.958, accidental=0.00046,
 CASES = [
     # (name, kwargs, check name, expected level)
     ('healthy',            {},                              None,   'PASS'),
+    # --- join lock provenance ---------------------------------------------
+    # A thin count margin is not proof the segment is wrong -- it is a
+    # statement that little evidence chose its lock. 14 of the first
+    # campaign's 170 ACCEPTED segments sat at margin <= 2.
+    ('join margin thin',   dict(join=('count', 5, None)),
+     'pulse_match margin adequate', 'WARN'),
+    ('join margin tie',    dict(join=('count', 0, None)),
+     'pulse_match margin adequate', 'FAIL'),
+    # THE GUARD AGAINST OVER-TIGHTENING. Two segments in the margin study sat
+    # at count margin 0 and were CORRECT -- the intensity fluctuation, not the
+    # count, is what chose them. If a future tightening makes this FAIL, the
+    # gate has started rejecting good data, which is the failure mode the
+    # whole fix exists to avoid.
+    ('margin 0 but arbitrated', dict(join=('intensity', 0, 4.5)),
+     'pulse_match margin adequate', 'WARN'),
+    # a scan-verified override carries no margin of its own and must not be
+    # punished for it
+    ('scan verified',      dict(join=('verified', None, None)),
+     'pulse_match margin adequate', 'PASS'),
+    # arbitration that did not actually separate is not arbitration
+    ('intensity too weak', dict(join=('intensity', 1, 1.2)),
+     'pulse_match margin adequate', 'FAIL'),
+    ('no join provenance', dict(join=None),
+     'pulse_match margin adequate', 'NA'),
     ('efficiency low',     dict(efficiency=0.80),           'match efficiency', 'WARN'),
     ('efficiency dead',    dict(efficiency=0.40),           'match efficiency', 'FAIL'),
     ('accidental high',    dict(accidental=0.004),          'accidental rate', 'WARN'),

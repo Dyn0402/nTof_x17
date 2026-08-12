@@ -29,10 +29,18 @@ TWiki.pdf` §3.1). All **445 / 445** runs are on tape, complete and contiguous �
 224526 included, 167 files, 313.8 GB. An earlier "no tape replica" call here was
 wrong; `eos fileinfo`'s `d2::t0` describes the disk copy, not the archive.
 
-`recover_224526/recover_224526.sh` does stage → check → filelists → process →
-verify, reading only from CTA (`ProcessFileList.sh -c 1`) so it cannot repeat the
-short-file-list trap. 42 job lists built and verified. **The tape recall has not
-been fired** — awaiting Dylan's go.
+**RECOVERED, 100 %.** `recover_224526/recover_224526.sh` (stage → check →
+filelists → process → verify → publish) reads only from CTA
+(`ProcessFileList.sh -c 1`), so it cannot repeat the short-file-list trap.
+Recall 12:30→16:57 (4 h 27 m, four of them queued at 0/167); reprocessing 42
+condor jobs in ~35 min. Verified at the published path: 42/42 partials,
+contiguous, **3313/3313 beam bunches = 100.0 %** vs the official 13.3 %. Lives at
+`/eos/experiment/ntof/data/x17/reproc/prod_v12_recover/224526/completed/224526`.
+
+**224526 is not a slim run** — the slim inventory spans 224570-224698 and 224526
+appears in no DREAM inventory. Nothing was blocked by it. **The official copy is
+still short**, and `ntof_files()` resolves to official, so reading the good copy
+needs `--ntof-source`.
 
 Follow-ups: **the `handoff_publish/` scripts are no longer needed**, `prod_v11`
 (224573-224579) is retirable, and `prod_v12/224709` (stalled at 18 of 86) can be

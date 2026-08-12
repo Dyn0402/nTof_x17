@@ -154,7 +154,31 @@ The sweep for a gapped raw sequence over all 445 runs found only one other
 candidate, **224531** (12 files, max index 25), and it is **fine** — 652 of 652
 beam bunches carry hits, so its processing predates the aging. 224526 is alone.
 
-### Recovery
+### Recovery — done, 100 % recovered
+
+Run the same day. Recall requested 12:30, **0/167 online for four hours of queue
+wait**, then 127/167 at 16:42 and all 167 by 16:57 — 4 h 27 m. Reprocessing was
+42 condor jobs, ~35 min. Verified at the published path:
+
+```
+42 / 42 partials, contiguous 1..42
+3324 bunches, 3313 beam, 3313 with hits  ->  100.0 %   (official product: 13.3 %)
+```
+
+Published to `/eos/experiment/ntof/data/x17/reproc/prod_v12_recover/224526/completed/224526`
+(42 partials + `history_224526.root`).
+
+**224526 is not a slim run.** The slim inventory's n_TOF runs span 224570-224698;
+224526 is below that window and appears in no DREAM inventory, so nothing was
+blocked by its being short and nothing is unblocked by its being fixed. It is
+worth having on its own terms, not for that campaign.
+
+**The official copy is still the 13.3 % one**, and `official/done/run224526.root`
+still looks like an ordinary 4 GB file. `ntof_files()` resolves against the
+official paths, so reading the recovered copy needs `--ntof-source` pointed at it
+explicitly; nothing stops a reader picking up the short one.
+
+### How it was recovered
 
 [`recover_224526/recover_224526.sh`](recover_224526/recover_224526.sh),
 five sub-commands: `stage` → `check` → `filelists` → `process` → `verify`.
@@ -185,10 +209,11 @@ that run in existence until last night; it no longer is.
 * **The identity check is two runs, not thirty.** 224705 and 224710 are exact;
   the other 28 are inferred from an identical recipe fingerprint. The full diff
   is cheap to run and has not been run.
-* **The 224526 recall has not been fired.** Everything up to it is verified; the
-  staging, processing and coverage recovery are predicted, not measured.
-* **224526's 440 bunches in the official product have not been checked for
-  quality** — only that they exist.
+* **The recovered 224526 has been checked for coverage, not for physics.** Every
+  beam bunch records a hit; whether the rates and amplitudes look like its
+  neighbours is untested. `compare_campaign.py` would answer it.
+* **It has not been diffed against the official product** on the 440 bunches
+  they share, which would confirm the two processings agree where both have data.
 * **Whether other runs need restaging is untested.** The tape archive is
   complete, but any *future* reprocessing of a run whose EOS copy has expired
   will silently truncate unless it goes through CTA. That is a property of
