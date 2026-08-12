@@ -107,7 +107,8 @@ def burst_epochs(run: str, subrun: str, events: pd.DataFrame | None = None):
     return flash['burst_id'].to_numpy(), epoch, mr
 
 
-def dream_event_to_bunch(run: str, subrun: str, ntof_run: int) -> pd.DataFrame:
+def dream_event_to_bunch(run: str, subrun: str, ntof_run: int,
+                         delta_hint_s: float | None = None) -> pd.DataFrame:
     """
     The section-3 chain, end to end.
 
@@ -115,6 +116,15 @@ def dream_event_to_bunch(run: str, subrun: str, ntof_run: int) -> pd.DataFrame:
       eventId, burst_id, is_flash, t_since_flash_ns,
       BunchNumber, join_resid_s, bunch_intensity_e10, pulse_e10, pstime_recovered
     Events whose burst found no bunch get BunchNumber = -1.
+
+    `delta_hint_s` is the boundary-sliver recovery lever (2026-08-12,
+    ntof_processing/join_mislock/): a sub-run straddling an n_TOF run
+    boundary lost its minority side 26 of 26 times in the August campaign,
+    because this delta scan is under-determined against a truncated pulse
+    list. The DREAM and n_TOF clocks are the same on both sides of the
+    boundary, so the MAJORITY side's fitted delta (ev.attrs['delta_s'] of
+    the segment that worked) transfers: pass it here and the scan is
+    confined to hint +-0.5 s. Only transfer within the same DREAM sub-run.
     """
     ev = dream_events(run, subrun)
     bids, epoch, mr = burst_epochs(run, subrun, ev)
@@ -128,12 +138,32 @@ def dream_event_to_bunch(run: str, subrun: str, ntof_run: int) -> pd.DataFrame:
         k = np.clip(np.searchsorted(ps, cand), 1, len(ps) - 1)
         return np.where(np.abs(ps[k - 1] - cand) <= np.abs(ps[k] - cand), k - 1, k)
 
-    best_n, best_delta = -1, 0.0
-    for delta in np.arange(-3.0, 3.0, 0.001):
+    def count(delta):
         k = assign(delta)
-        n = int((np.abs(ps[k] - (epoch - delta)) < MATCH_TOL_S).sum())
-        if n > best_n:
-            best_n, best_delta = n, float(delta)
+        return int((np.abs(ps[k] - (epoch - delta)) < MATCH_TOL_S).sum())
+
+    lo, hi = (-3.0, 3.0) if delta_hint_s is None else \
+        (delta_hint_s - 0.5, delta_hint_s + 0.5)
+    grid = np.arange(lo, hi, 0.001)
+    counts = np.fromiter((count(d) for d in grid), int, len(grid))
+    best_delta = float(grid[int(counts.argmax())])
+    best_n = int(counts.max())
+
+    # Ambiguity guard (2026-08-12): a second delta lock nearly as good as the
+    # winner means this scan is deciding by luck — the failure mode that cost
+    # the sliver class. Locks are >= one pulse spacing (1.2 s) apart, so
+    # anything beyond +-0.5 s of the winner is a different lock.
+    far = np.abs(grid - best_delta) > 0.5
+    second_n = int(counts[far].max()) if far.any() else 0
+    if delta_hint_s is None and best_n - second_n < 3:
+        raise RuntimeError(
+            f'{run}/{subrun} x n_TOF {ntof_run}: the burst-to-pulse delta is '
+            f'ambiguous (best {best_n} vs {second_n} matched bursts at a '
+            f'different lock). If a segment of this sub-run against another '
+            f'n_TOF run fitted, pass its delta as delta_hint_s; otherwise '
+            f'diagnose before joining. Refusing the silent pick '
+            f'(ntof_processing/join_mislock/).')
+
     delta = float(np.median(epoch - ps[assign(best_delta)]))
     k = assign(delta)
     resid = (epoch - delta) - ps[k]
@@ -152,7 +182,15 @@ def dream_event_to_bunch(run: str, subrun: str, ntof_run: int) -> pd.DataFrame:
     out.attrs.update(delta_s=delta, pulse_match_offset_s=mr['offset_s'],
                      n_bursts=len(bids), n_matched=int(ok.sum()),
                      resid_mad_s=float(np.median(np.abs(resid[ok] - np.median(resid[ok])))),
-                     ntof_run=ntof_run, run=run, subrun=subrun)
+                     ntof_run=ntof_run, run=run, subrun=subrun,
+                     # join provenance (2026-08-12): enough to tell a
+                     # recovered segment from an originally-clean one, and a
+                     # confident join from a lucky one, from the products
+                     delta_hint_s=delta_hint_s,
+                     delta_margin=int(best_n - second_n),
+                     pulse_match_margin=mr.get('lock_margin'),
+                     pulse_match_chosen_by=mr.get('lock_chosen_by'),
+                     pulse_match_r_sig=mr.get('lock_r_sig'))
     return out
 
 

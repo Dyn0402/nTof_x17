@@ -67,11 +67,62 @@ transfers `ntof_processing`, `ntof_dream_merge`, `ntof_july_analysis`,
 
 ## Recovery recipe
 
-Whole-hour class (41 segments): per segment, wide shift scan → apply the
-found shift at the join → record provenance → standard chain. Table
-(`shift_predictions.txt`) as cross-check only — the 43.2 s rows under-count
-(harmonic). ~one condor evening. Sliver class (66): needs the reformulated
-join fit, or δ transferred from the same sub-run's fitted majority side.
+Whole-hour class (41 segments): with the 2026-08-12 pulse_match fix
+(below), **just re-run the slim** — the join locks correctly on its own and
+the standard chain runs unmodified. Acceptance test: run_96/0001×224597
+end-to-end through the fixed chain with zero manual input →
+**eff 95.4773 %, accidental 0.065 %, full product written**, provenance
+`chosen_by: intensity, margin 0, r_sig 3.2` in calibration.json. Sub-runs
+the fix declares AmbiguousLock need one shift scan
+(`segment_diagnose --span 200`), then re-run with
+`match_subrun(..., accept_offset_s=<scanned offset>)`.
+
+## ⚠ The sliver class is NOT recovered, and it is NOT a join error
+
+Tested 2026-08-12 morning: run_79/stat090_0002 × 224573 re-slimmed with the
+majority side's δ transferred (`delta_hint_s = 0.829`, the value its own
+×224572 segment fitted at margin 507; the sliver's δ-scan accepts it
+cleanly) — **and the clock fit still finds no sharp coincidence**. Since the
+same sub-run's pulse_match offset is proven right by the ×224572 fit, the δ
+is right, and the bunch mapping follows from both, the sliver failure
+survives a fully correct join. Corollary: the per-bunch scan's "random
+−1…−24 ms lags" on this segment were measured on CORRECT bunch pairings.
+Current leading suspect is n_TOF-side: a per-bunch time-base anomaly in the
+first ~15 minutes of a run (failed slivers contain n_TOF run STARTS; the
+same runs' later minutes always fit; end-of-run slivers like 0015×224578
+fit). Two probes queued: (a) the same sliver against OUR
+`reproc/prod_v12/224573` — if it fits, the anomaly is in n_TOF's processing
+infrastructure, not the recipe; (b) per-bunch lag + per-bunch refit at the
+now-known-correct join — if each bunch has a findable sharp offset, sliver
+recovery is per-bunch, n_TOF-side or not.
+
+## The fix — IMPLEMENTED 2026-08-12 (this commit)
+
+- `ntof_july_analysis/pulse_match.py`: `select_lock()` enumerates every
+  candidate lock, arbitrates near-ties (count margin < 10) by the
+  intensity-fluctuation correlation (Fisher-z ≥ 3σ), and raises
+  `AmbiguousLock`/`NoLock` instead of silently returning a winner. Caches
+  are versioned (v2); pre-fix caches rebuild automatically.
+  `accept_offset_s=` is the scan-verified override (recorded as
+  `chosen_by: 'verified'`; refuses to override a confident contradicting
+  selection). Tests: `ntof_july_analysis/test_pulse_match_locks.py`
+  (5 synthetic cases incl. the margin-0-but-correct case, which must RAISE,
+  never coin-flip).
+- `ntof_dream_merge/bunch_join.py`: `delta_hint_s=` (majority-side δ
+  transfer within a sub-run), δ-scan ambiguity guard (margin < 3 without a
+  hint raises), join provenance in `DataFrame.attrs`.
+- `slim_pipeline/slim.py`: `Segment.delta_hint_s`; `calibration.json` gains
+  the `join` block (pulse_match offset / margin / chosen_by / r_sig, δ,
+  δ-margin, hint) — recovered and originally-clean segments are permanently
+  distinguishable.
+- Validation: healthy sub-runs bit-identical (run_79/0001 offset +51.918,
+  margin 222, by count); both corrupt hours lock correctly (run_96/0001
+  +50.722 by intensity 3.2σ; run_86/0001 +42.32 at 12.1σ = the scan's +20
+  pulses); margin-5 run_86/0000 correctly raises pending verification;
+  `tests/test_clock_qa.py` 29/29 unchanged.
+- Still with the matching-QA session: the `clock_qa` absolute check
+  'pulse_match margin adequate' (WARN < 10 / FAIL ≤ 2 unless verified),
+  reading the new `calibration.json:join` block.
 
 ## Traps recorded on the way
 

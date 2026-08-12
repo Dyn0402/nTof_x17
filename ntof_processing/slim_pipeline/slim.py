@@ -59,6 +59,10 @@ class Segment:
     bunches: np.ndarray | None = None    # restrict; None -> all the sub-run's
     processing: str = C.NTOF_PROCESSING
     files: list = field(default_factory=list)
+    # boundary-sliver recovery (2026-08-12, ntof_processing/join_mislock/):
+    # the majority side's fitted burst->pulse delta, transferred within the
+    # same DREAM sub-run so the truncated minority side does not refit it
+    delta_hint_s: float | None = None
 
     def __str__(self):
         return f'{self.dream_run}/{self.dream_subrun} x n_TOF {self.ntof_run}'
@@ -96,10 +100,13 @@ def _bind_ntof(seg: Segment):
 def join_events(seg: Segment, log=print):
     """DREAM events of the sub-run that belong to this n_TOF run."""
     from ntof_dream_merge.bunch_join import dream_event_to_bunch
-    ev = dream_event_to_bunch(seg.dream_run, seg.dream_subrun, seg.ntof_run)
+    ev = dream_event_to_bunch(seg.dream_run, seg.dream_subrun, seg.ntof_run,
+                              delta_hint_s=seg.delta_hint_s)
+    attrs = dict(ev.attrs)         # filtering below may drop DataFrame.attrs
     ev = ev[ev['BunchNumber'] > 0].reset_index(drop=True)
     if seg.bunches is not None:
         ev = ev[ev['BunchNumber'].isin(seg.bunches)].reset_index(drop=True)
+    ev.attrs.update(attrs)
     flash = ev['is_flash'].to_numpy()
     log(f'  joined {len(ev):,} DREAM events, {flash.sum():,} flash triggers, '
         f'{ev["BunchNumber"].nunique()} bunches')
@@ -364,6 +371,7 @@ def run_segment(seg: Segment, out_base: Path | None = None,
     log(f'  {len(files)} n_TOF file(s), cache {io.CACHE_DIR}')
 
     ev = join_events(seg, log=log)
+    join_attrs = dict(ev.attrs)     # survives the filters below
 
     # Empty pulses out, BEFORE anything is fitted or read. They are PS pulses
     # that delivered no protons (C.EMPTY_PULSE_E10, and the measurement behind
@@ -482,7 +490,22 @@ def run_segment(seg: Segment, out_base: Path | None = None,
             thresholds_mv=dict(wall=thr['wall'], plastic=thr['plastic'],
                                polled_at=str(thr.get('polled_at'))),
             empty_pulse_e10=C.EMPTY_PULSE_E10, parasitic_e10=C.PARASITIC_E10,
-            n_bunches_fitted=len(pb), fit=ginfo),
+            n_bunches_fitted=len(pb), fit=ginfo,
+            # Join provenance (2026-08-12, ntof_processing/join_mislock/):
+            # a recovered segment must stay distinguishable from an
+            # originally-clean one, and a confident join from a lucky one.
+            # `pulse_match_chosen_by` is 'count' (clear win), 'intensity'
+            # (near-tie arbitrated by the fluctuation correlation) or
+            # 'verified' (scan-verified override); `delta_hint_s` non-null
+            # means a sliver joined on its majority side's transferred delta.
+            join=dict(
+                pulse_match_offset_s=join_attrs.get('pulse_match_offset_s'),
+                pulse_match_margin=join_attrs.get('pulse_match_margin'),
+                pulse_match_chosen_by=join_attrs.get('pulse_match_chosen_by'),
+                pulse_match_r_sig=join_attrs.get('pulse_match_r_sig'),
+                delta_s=join_attrs.get('delta_s'),
+                delta_margin=join_attrs.get('delta_margin'),
+                delta_hint_s=join_attrs.get('delta_hint_s'))),
         qa=dict(
             efficiency=qa_in['efficiency'], efficiency_cv=qa_cv['efficiency'],
             accidental=qa_in['accidental'], purity=qa_in['purity'],
