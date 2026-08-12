@@ -11,7 +11,11 @@ mesh.
 Layer stack, bottom (readout) to top (cathode) -- what is measured and what is
 nominal:
 
-  X readout strips     512 strips, pitch 398.58/512 = 0.7785 mm   [measured]
+  X readout strips     512 strips on a 0.78 mm pitch              [measured]
+                       (398.58 mm is the first-to-last strip CENTRE span, i.e.
+                        511 pitches -- dividing it by 512 gives a spurious
+                        0.7785; gerber dots sit at +-0.39, +-1.17 mm, spacing
+                        exactly 0.780. Corrected 2026-08-10.)
   Y readout strips     512 strips, orthogonal                     [measured]
   resistive strips     over the readout, 'resist_type': 'strip'   [run config]
   amplification gap    150 um, mesh to resistive layer            [garfield_sim/
@@ -39,7 +43,9 @@ RNG = np.random.default_rng(20260807)
 # --- the real stack, mm ------------------------------------------------------
 AMP_GAP_MM = 0.150            # garfield_sim/mm_config.py: GAP_CM = 0.0150
 N_STRIPS = 512                # mx17_m1_map.csv
-STRIP_PITCH_MM = G.MX17_ACTIVE_MM / N_STRIPS      # 0.7785 mm
+# N_STRIPS strip centres span N_STRIPS-1 pitches, not N_STRIPS. Dividing by the
+# strip COUNT is the off-by-one that produced the old 0.7785 mm.
+STRIP_PITCH_MM = G.MX17_ACTIVE_MM / (N_STRIPS - 1)   # 0.780 mm, the design pitch
 
 # --- what the figure draws (a WINDOW on the chamber, not the whole 40 cm) ----
 WIN_MM = 30.0                 # side of the cut-out square shown

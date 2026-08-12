@@ -37,6 +37,7 @@ import style as S             # noqa: E402
 import make_sps as MS         # noqa: E402
 import make_bench as MB       # noqa: E402
 import make_chamber as MC     # noqa: E402
+import make_ntof as MN       # noqa: E402
 import scenes_chamber as C    # noqa: E402
 
 ANIM = os.path.join(HERE, 'animations')
@@ -191,6 +192,32 @@ def _bench(slots):
     return f
 
 
+NTOF_VIEW = 'over'
+
+
+def _ntof(theme, size, ssaa, show=MN.N.PARTS):
+    # the same track, beam-arrow and capsule-cutaway sizing the stills use, so
+    # a frame lifted out of the video matches the slide it belongs to
+    v = MN.VIEWS[NTOF_VIEW]
+    look = np.asarray(v['pos'], float) - np.asarray(v['focal'], float)
+    cut = (look[0], 0.0, look[2]) if v.get('cut', True) else None
+    return MN.build(theme=theme, size=size, ssaa=ssaa, show=show,
+                    event=_ntof_event(), transparent=False,
+                    track_scale=v['track_scale'], near=v['near'],
+                    bare=v.get('bare', False),
+                    arrow_kw=MN.beam_arrow_kw(v), cut_normal=cut)
+
+
+_NTOF_EVENT = []
+
+
+def _ntof_event():
+    """Read the event once: it is the same one in every frame."""
+    if not _NTOF_EVENT:
+        _NTOF_EVENT.append(MN.N.load_event())
+    return _NTOF_EVENT[0]
+
+
 def _chamber(theme, size, ssaa, show=None):
     p = S.make_plotter(theme=theme, size=size, ssaa=ssaa, ssao_radius=6.0)
     C.build(p)
@@ -205,6 +232,21 @@ SPS_STAGES = [
     ('p2', ('table', 'urwell', 'p2')),
     ('beam', ('table', 'urwell', 'p2', 'tracks')),
 ]
+
+# The n_TOF build-up runs at ONE camera, unlike the stills, which change scale
+# between the close-up act and the build act: a video that cut scale mid-way
+# would read as an edit rather than as an assembly.  So the video is the build
+# act only, and the close-ups stay stills.
+#
+# It uses the FROM-ABOVE camera for all four layers, not the hero one, because
+# the last two layers are behind the trigger wall from any three-quarter view
+# and a build-up whose last two beats add nothing visible is not a build-up.
+_seen = set()
+NTOF_STAGES = []
+for _tag, _show, _view, _lab in MN.STAGES:
+    if _view in ('hero', 'over') and frozenset(_show) not in _seen:
+        _seen.add(frozenset(_show))
+        NTOF_STAGES.append((_tag, _show))
 
 BENCH_STAGES = [
     ('rack', ('structure',)),
@@ -228,6 +270,11 @@ JOBS = {
     'build_bench':   dict(kind='build', builder=_bench(('mx17', 'mx17')),
                           view=MB.VIEWS['hero'], stages=BENCH_STAGES,
                           size=(1300, 1650)),
+    'build_ntof':    dict(kind='build', builder=_ntof,
+                          view=MN.VIEWS[NTOF_VIEW], stages=NTOF_STAGES,
+                          size=(1500, 1400)),
+    'turn_ntof':     dict(kind='turn', builder=_ntof, view=MN.VIEWS['hero'],
+                          up='y', size=(1400, 1300)),
 }
 
 

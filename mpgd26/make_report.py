@@ -30,7 +30,7 @@ OUT = os.path.join(HERE, 'report.html')
 
 ANIM = os.path.join(HERE, 'animations')
 
-ANIM_BLURB = {
+ANIM_BLURB = {  # NTOF_BLURB is merged in below
     'turn_sps': 'Turntable of the H4 telescope.',
     'turn_bench': 'Turntable of the bench, both slots MX17.',
     'turn_bench_p2': 'Turntable of the bench, both slots P2 BASKET.',
@@ -40,9 +40,58 @@ ANIM_BLURB = {
     'build_bench': 'Build-up: the rack, then the trigger paddles, the M3 '
                    'reference planes, the chambers under test, and finally '
                    'the muons.',
+    'build_ntof': 'Build-up: the four detector layers going on around the '
+                  'target, one at a time, with a real Geant4 e+e- pair '
+                  'crossing them.  The close-up act of the still sequence is '
+                  'not in the video -- it is at a different scale, and a cut '
+                  'mid-way would read as an edit rather than as an assembly.',
+    'turn_ntof': 'Turntable of the full n_TOF setup.',
 }
 
-BLURB = {
+NTOF_BLURB = {  # NTOF_BLURB is merged in below
+    'ntof_build_1_capsule': 'The 3He capsule, cut open along the beam axis: '
+        'a 20 mm bore of 500 bar 3He in a 0.6 mm Al vessel under a 0.9 mm '
+        'CFRP wrap, mounted nose-first into the vertical EAR2 beam.',
+    'ntof_build_2_neutron': 'A neutron arriving up the beam and captured in '
+        'the gas.  The line is the beam axis, not a transported trajectory -- '
+        'see the caveat below.',
+    'ntof_build_3_pair': 'The e+e- pair leaving the vertex -- 10.7 and '
+        '8.8 MeV, 110 degrees apart, both legs out through the barrel wall.  '
+        'The neutron is drawn, not transported: see the caveat below.',
+    'ntof_build_4_mm_near': 'The four micro-TPCs closing in around the vessel, '
+        'at the scale where the 30 mm drift gap is still legible.  The camera '
+        'looks through two of the arms, which are drawn as outlines.',
+    'ntof_build_5_mm': 'The same four micro-TPCs at the scale of the '
+        'apparatus, pinwheeled around the target: the only layer that measures '
+        'a direction.  The pale trail inside each drift volume is the 13 keV '
+        'the pair leaves there, drawn as the ionisation trail it is rather '
+        'than as a dot.',
+    'ntof_build_6_sipm': 'Plus the SiPM trigger walls, 16 of 20 bars read out.',
+    'ntof_build_7_plastic': 'Plus the plastic scintillators, two wrapped bars '
+        'per arm.',
+    'ntof_build_8_plastic_top': 'The same, from almost straight down and with '
+        'the structure dropped to a whisper.  The layers are stacked radially, '
+        'so from a three-quarter view the trigger wall hides the plastics '
+        'behind it; from here each leg can be followed chamber -> trigger wall '
+        '-> plastic, in two different arms, and what keeps its colour is '
+        'exactly the material that measures something.',
+    'ntof_build_9_full': 'Plus the liquid-scintillator calorimeters -- the '
+        'full setup, same camera as the frame before it.',
+    'ntof_plan': 'The same setup and the same event as a PLAN: orthographic, '
+        'looking down the beam, 1:1 in both axes.  Not a render -- a '
+        'matplotlib drawing (make_ntof_plan.py) off the same geometry module, '
+        'so the standoff circle, the layer radii and the size of the target '
+        'can be measured off the page instead of being asserted in a caption.  '
+        'A "_bare" version without the headline and the note is what the slide '
+        'uses.',
+}
+# Every build frame names the layer it just added, with one leader per SOLID arm
+# onto that layer, and drops the name again on the next frame -- so the label
+# follows the build outward instead of accumulating on the finished apparatus.
+# The anchors come from the geometry (scenes_ntof.layer_anchor), so a leader
+# cannot end up pointing at where a layer used to be.
+
+BLURB = {  # NTOF_BLURB is merged in below
     'x17_signature': 'The physics case in one figure: capture leaves '
                      '4He* with 20.58 MeV, three channels take it away, and '
                      'only one of them piles e+e- pairs up at a hard minimum '
@@ -135,6 +184,9 @@ ul.tight li { margin:.3rem 0; }
 """
 
 
+BLURB.update(NTOF_BLURB)
+
+
 def esc(s):
     return html.escape(str(s))
 
@@ -157,8 +209,12 @@ def fig_block(name, theme='light'):
             links.append(f'<a href="{plain}">bare render</a>')
     elif os.path.exists(os.path.join(HERE, plain)):
         base = f'figures/{name}_{theme}'
-        links = [f'<a href="{base}.png">PNG</a>',
-                 f'<a href="{base}.pdf">vector PDF</a>']
+        links = [f'<a href="{base}.png">PNG</a>']
+        # the X17 diagrams are matplotlib and ship a vector PDF next to the
+        # PNG; the PyVista renders are rasters and have none, so the link is
+        # offered only when the file is actually there
+        if os.path.exists(os.path.join(HERE, base + '.pdf')):
+            links.append(f'<a href="{base}.pdf">vector PDF</a>')
     else:
         return ''
     return (f'<figure id="{esc(name)}">\n'
@@ -414,7 +470,7 @@ def build(theme='light'):
    are the Garfield++/Magboltz values for the mixture the bench actually runs
    (Ar/iso 95/5 + ~1&nbsp;% H<sub>2</sub>O at 333 V/cm, from
    <code>garfield_sim/results/water_grid.json</code>); the gap, the
-   0.7785 mm pitch and the 512 strips are the detector's own.</p>
+   0.78 mm pitch and the 512 strips are the detector's own.</p>
 <p>Two variants: <b>waveforms</b> (the raw per-strip signals, no fit) and
    <b>ladder</b> (first arrival per strip, with a straight-line fit).  The
    waveform pulse shape is the plane's own MEASURED single-electron response
@@ -428,13 +484,148 @@ def build(theme='light'):
 {fig_block('microtpc_waveforms', theme)}
 {fig_block('microtpc', theme)}
 
+<h2>The n_TOF setup, built up</h2>
+<p>The talk's setup section is one figure in eight states: the &sup3;He capsule,
+   a neutron reaching it, the e&#8314;e&#8315; pair leaving it, and then the four
+   detector layers going on one at a time at a fixed camera.  Unlike the two
+   bench scenes, <b>the geometry here is not held in <code>geometry.py</code></b>
+   &mdash; it is imported at run time from
+   <code>MX17_Full_Geant/scripts/plot_geometry.py</code>, which is written
+   against the simulation's own <code>SimConfig.hh</code>, so the figure and the
+   Geant4 model cannot drift apart.</p>
+<p>The subject changes scale by a factor of fifty between the capsule (23 mm)
+   and the setup (1.2 m) and then changes what it has to show, so the sequence
+   runs in four acts at four cameras: frames 1&ndash;3 on the vessel and the
+   event in it, frame 4 as the chambers close in around it, frames 5&ndash;7 on
+   the apparatus, and frames 8&ndash;9 on the same apparatus <b>from above</b>.
+   The last cut is not decoration: the layers are stacked <b>radially</b>, so
+   from any three-quarter view the trigger wall stands in front of the plastics
+   and the liquid, and a leg arriving in them cannot be seen.  Within each act
+   the frames share a camera and a size exactly, so the layers grow onto a still
+   picture; frame 4 repeats frame 5's layer at a larger scale and is the first
+   to cut.</p>
+<p>The event is <b>selected, not hand-picked</b>.  On top of the legibility
+   ranking, <code>extract_ntof_event.py</code> requires both legs to leave the
+   vessel through the <b>barrel wall</b> &mdash; at the barrel radius, inside the
+   straight section, and within ~33&deg; of transverse &mdash; rather than
+   through a domed end, where a leg crosses several times the wall thickness at
+   a glancing angle.  It then weights heavily towards the event in which
+   <b>both legs cross all four layers</b>, so each can be followed chamber
+   &rarr; trigger wall &rarr; plastic &rarr; liquid and the build-up has
+   something to add at every step: exactly <b>one of the 400 simulated events
+   does that</b>, and it is the one drawn.  (A leg can pass between the two
+   plastic bars or out of the side of the stack, so this is rarer than it
+   sounds.)  It also prefers events whose legs land in the two arms the figure
+   draws solid, so no deposit ends up glowing inside a wireframe;
+   <code>--prefer-arms</code>, <code>scenes_ntof.NEAR_ARMS</code> and the camera
+   azimuth all have to be kept in step.</p>
+<p>Only the <b>charged</b> pair is drawn.  The event's bremsstrahlung gammas are
+   real, and they are in the JSON, but a neutral track leaves the frame in a
+   straight line from wherever it was radiated, so on the picture they read as
+   stray rays with no visible cause; <code>scenes_ntof.DRAWN_PARTICLES</code> is
+   what suppresses them.</p>
+<p>The legs <b>grow with the apparatus</b>: each is cut where it first reaches a
+   layer that is not on the frame yet
+   (<code>scenes_ntof.truncate_at_next_layer</code>), so a track only runs on to
+   the trigger wall on the frame that puts the trigger wall there.  Drawn full
+   length from the start, the tracks claim three frames early that all of it is
+   measured, and the layer being added stops being the thing that changes.  The
+   beam column stops at the vessel's <b>nose</b> as soon as any detector is
+   placed: past the target it runs through the middle of the apparatus and reads
+   as a pole holding it up, and drawn even alongside the capsule it sleeves a
+   23 mm object in translucent grey, so the target goes hazy instead of crisp.
+   The direction dart lies on the axis inside the column, on the close-up act
+   only.</p>
+<p>Each build frame <b>names the layer it just added</b>, and drops the name
+   again on the next frame &mdash; so the label follows the build outward
+   instead of piling four names onto the finished apparatus.  It carries
+   <b>one leader per solid arm</b>: a layer is four objects and the frame draws
+   two of them solid, so a single line would quietly imply the label is about
+   that one &mdash; and it is one leader per drawn <i>object</i>, so the
+   plastics, which are two separate bars per arm, carry four and their label
+   drops the &quot;2 &times;&quot; the lines already say.
+   The anchors are computed from the same geometry the meshes are
+   built from (<code>scenes_ntof.layer_anchor</code>), so a leader cannot end up
+   pointing at where a layer used to be, and the text is pinned to a corner of
+   the frame rather than offset from its anchor, because a pinwheel's corners
+   are the only reliably empty places &mdash; top-left on the build acts, and at
+   the bottom on the close-up, where the chambers fill the frame and the only
+   empty space left is the see-through one.  Sizes on the figures are in
+   <b>centimetres</b>, since they are read from across a room; the slide bullets
+   keep the millimetres.  <code>--no-labels</code> turns all in-image type off.</p>
+<p>The overhead act draws the capsule <b>whole and solid</b>.  Everywhere else
+   the vessel is sectioned on a plane through the beam axis with the near half
+   removed &mdash; the only way to show 0.6 mm of wall and a lit gas core at
+   once &mdash; but that plane <i>contains</i> the overhead view direction, so
+   from up there it does not open the vessel, it deletes the half of it nearest
+   the bottom of the frame (<code>VIEWS['over']</code> sets
+   <code>cut=False</code>).  It is also the one part <code>BARE</code> does not
+   whisper: everything else that drops to <code>BARE_ALPHA</code> is a box the
+   eye can still infer from its neighbours, but the capsule is 23 mm on a 1.2 m
+   frame and faded it is a smudge at the exact point the picture converges on.
+   Solid, it is a small dark disc &mdash; the CFRP overwrap end-on, with the gas
+   bore a speck at its centre &mdash; where the two legs meet.</p>
+<p>The sequence closes on a <b>plan</b> (<code>make_ntof_plan.py</code>,
+   <code>ntof_plan</code> below), which is the one figure here that is not a
+   render.  Every frame above it has perspective: the four arms sit at four
+   different distances from the lens, so every length on them is foreshortened
+   by its own amount and the distances can only be <i>written</i> in a caption.
+   The plan is orthographic and 1:1 in both axes &mdash; the beam is the view
+   axis, so the drawing plane is the X-Z plane the apparatus is symmetric in.
+   Three things become measurable rather than asserted: the <b>204.5 mm</b>
+   standoff every arm's window sits on, drawn as the circle they are all
+   tangent to; the layer radii out to the vessels (330 / 410 / 487 mm on arm B,
+   the one arm no leg crosses and so the one the chain is drawn on &mdash; the
+   outer two move by a few mm between arms); and the <b>size of the
+   target</b>, which at 1:1 is a 23 mm dot in the middle of a 1.1 m apparatus.
+   It is built from the same geometry module and the same event JSON as the
+   renders, so it cannot drift away from them, and it makes two facts visible
+   that a three-quarter camera cannot: the ~16 mm pinwheel offsets, and that
+   two of the four liquid vessels are laid on their side with their PMTs
+   pointing sideways into the plane.  What it gives up is the beam axis: the
+   legs also rise ~135 mm along it, so the opening angle as drawn (122&deg;) is
+   not the space angle (110&deg;), and the figure says both.</p>
+<div class="verdict">
+  <b>The e&#8314;e&#8315; pair is one real Geant4 event; the neutron that made
+  it is drawn, not simulated alongside it</b>, and it has to be that way.  The neutron is transported
+  from the measured EAR2 flux and does what the physics list says it does,
+  which is &sup3;He(n,p)t; the radiative branch that forms the &#8308;He* this
+  search lives on is ~10&#8315;&#8318; of it, so no neutron run will ever
+  contain one.  The pair is therefore thrown by the generator from a vertex
+  sampled in the gas, and the neutron history is translated so its interaction
+  point coincides with that vertex.  <code>tools/extract_ntof_event.py</code>
+  records the pairing and the shift in <code>data/ntof_event.json</code>; the
+  talk says it on the slide.  What the <i>scene</i> draws for the neutron is a
+  straight line up the beam axis to the pair vertex &mdash; the transported
+  history is still selected and stored, but it belonged to a different event,
+  so drawing it meant translating it onto this vertex and then showing its own
+  in-gas scattering, which is a fact about that neutron rather than about this
+  figure.  The neutron run is still needed either way: the beam envelope is
+  measured from its sampled primaries.  The
+  (n,p)t proton and triton the transported neutron actually made are kept in
+  the JSON and deliberately <i>not</i> drawn &mdash; they belong to the other
+  branch.
+</div>
+{''.join(fig_block(n, theme) for n in sorted(NTOF_BLURB))}
+<p class="caveat">Drawn but not measured, in this scene only: the liquid
+   scintillator's fill dome is extruded at constant height along the vessel's
+   long axis (the real 6.5 L bulge falls away towards the edges), and the beam
+   envelope is drawn at the radius the simulation's own sampled primaries
+   occupy &mdash; 90&nbsp;% inside 8.8 mm &mdash; which is the beam profile, not
+   the collimator; and the arriving neutron is a straight line up that axis
+   rather than a trajectory.  The two arms nearest the camera &mdash; B in front
+   of it and A on the right of the frame &mdash; are drawn as outlines only, so
+   that the target and the two arms this pair actually crossed (D and C) stay
+   visible, and on the overhead frames the structure of the other two drops to
+   <code>BARE_ALPHA</code> so only the active volumes carry colour.</p>
+
 <h2>Animations</h2>
 <p>Turntables for the talk, and build-up sequences whose numbered stills can be
    dropped on successive slides so the setup assembles itself as you speak.
    Every frame comes from the same scene code as the stills above.</p>
 {''.join(anim_block(n) for n in
          ['turn_sps', 'turn_bench', 'turn_bench_p2', 'turn_chamber',
-          'build_sps', 'build_bench'])}
+          'build_sps', 'build_bench', 'build_ntof', 'turn_ntof'])}
 
 <h2>What is drawn but not measured</h2>
 <ul class="tight">{assumptions}</ul>
@@ -445,6 +636,7 @@ def build(theme='light'):
 ../.venv/bin/python make_chamber.py                # the exploded chamber
 ../.venv/bin/python make_x17.py --theme both       # the physics-case diagram
 ../.venv/bin/python make_x17.py --no-title         # ... without title/caption
+../.venv/bin/python make_ntof.py                   # the n_TOF build-up
 ../.venv/bin/python make_anim.py                   # turntables + build-ups
 ../.venv/bin/python make_report.py                 # this page
 

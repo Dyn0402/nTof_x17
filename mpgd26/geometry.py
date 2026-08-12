@@ -60,6 +60,11 @@ MX17_PCB_MM = 449.68 - (-20.32)      # 470.0 mm square PCB   (14_board_map.py)
 MX17_PCB_LO = -20.32                 # detector-local, PCB edge
 MX17_ACTIVE_MM = 398.58              # metallised strip region (mx17_m1_map.csv)
 MX17_Y_PASSIVATION = (18.0, 379.9)   # true efficient Y (common/mx17_active_area)
+# The same two facts as the simulation states them, since 2026-08-11:
+# SimConfig's mm_size_u/v = 39.9 x 36.0 cm, u across the chamber and v along the
+# beam.  399.4 vs 398.6 is the metallised envelope vs the strip-CENTRE span (one
+# pitch), and 360.0 vs 361.9 is the same passivated band measured two ways --
+# they are not competing numbers.  scenes_ntof imports the sim's pair directly.
 MX17_DRIFT_GAP_MM = 30.0             # nominal drift gap (run_config 'drift_gap')
 MX17_FRAME_MM = 40.0                 # frame lip drawn outside the PCB (visual)
 

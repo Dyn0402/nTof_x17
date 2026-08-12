@@ -232,7 +232,8 @@ def supersample_factor(size, ssaa=True, max_dim=SS_MAX_DIM):
     return max(1.0, min(2.0, max_dim / max(size)))
 
 
-def make_plotter(theme='light', size=(2400, 1600), ssaa=True, ssao_radius=None):
+def make_plotter(theme='light', size=(2400, 1600), ssaa=True, ssao_radius=None,
+                 transparent=False):
     """A plotter with the shared background, cubemap and (optionally) SSAO.
 
     SSAO has to be installed *before* the shadow pass -- both rewrite the
@@ -250,7 +251,14 @@ def make_plotter(theme='light', size=(2400, 1600), ssaa=True, ssao_radius=None):
     # PyVista blocks new public attributes on Plotter; private ones are fine
     p._mpgd_scale = k
     p._mpgd_out_size = tuple(size)
-    p.set_background(th['bg_bottom'], top=th['bg_top'])
+    # A *gradient* background is drawn as geometry, so VTK returns alpha = 255
+    # everywhere and ``screenshot(transparent_background=True)`` silently gives
+    # back an opaque frame.  A figure that has to sit on a slide of unknown
+    # colour therefore gives up the gradient.
+    if transparent:
+        p.set_background(th['bg_bottom'])
+    else:
+        p.set_background(th['bg_bottom'], top=th['bg_top'])
     p.set_environment_texture(studio_cubemap(th['cubemap']), is_srgb=True)
     if ssao_radius:
         try:

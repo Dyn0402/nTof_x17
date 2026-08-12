@@ -106,6 +106,56 @@ def column_labels(px, items, size, side='right', x_frac=1.015, top=0.04,
     return out
 
 
+def side_labels(px, items, size, x_pad=0.018, top=0.032, bottom=0.972,
+                min_gap=None):
+    """Labels laid out ON the render's own background, in two columns.
+
+    ``column_labels`` puts every label in a gutter that ``compose`` adds beside
+    the render.  That is the right answer for a wide scene and the wrong one for
+    a tall narrow one: the gutter is dead space down the whole height, and the
+    picture has to be made smaller to pay for it.  This lays the labels out
+    *inside* the image instead, left and right of the subject -- which only works
+    because a 20 m beam line drawn 1:1 leaves the sides of the frame empty, so
+    render wide enough that it does.
+
+    ``items`` is ``(anchor_key, text, side)`` with ``side`` in {'left', 'right'},
+    in the order they should appear top to bottom.  Each side is pushed apart
+    independently, the same way ``column_labels`` does it.  Returns an ordered
+    ``{key: label_dict}`` rather than a list, so a caller building a BUILD-UP can
+    solve the whole set once and then select by key -- which is what stops a
+    label moving between frames.
+    """
+    w, h = size
+    out = {}
+    for want in ('left', 'right'):
+        grp = [(k, t) for k, t, s in items if s == want and k in px]
+        if not grp:
+            continue
+        gap = min_gap
+        if gap is None:
+            lines = max(t.count('\n') + 1 for _, t in grp)
+            gap = (lines * 1.34 + 0.60) * TEXT_FRAC * w / h
+        ys = list(np.clip([px[k][1] / h for k, _ in grp], top, bottom))
+        for _ in range(400):
+            moved = False
+            for i in range(len(ys) - 1):
+                d = ys[i + 1] - ys[i]
+                if d < gap:
+                    shift = (gap - d) / 2
+                    ys[i] -= shift
+                    ys[i + 1] += shift
+                    moved = True
+            ys = list(np.clip(ys, top, bottom))
+            if not moved:
+                break
+        for (key, text), y in zip(grp, ys):
+            ax, ay = px[key]
+            tx = x_pad * w if want == 'left' else (1 - x_pad) * w
+            out[key] = dict(xy=(ax, ay), dx=tx - ax, dy=y * h - ay, text=text,
+                            ha='left' if want == 'left' else 'right')
+    return out
+
+
 def compose(png, labels, out_base, title=None, subtitle=None, caption=None,
             theme='light', dpi=300, gutter=0.30, header=0.13, footer=0.16):
     """Lay the render out on a titled canvas and write ``out_base``.png/.pdf.

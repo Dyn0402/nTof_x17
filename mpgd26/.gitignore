@@ -7,3 +7,14 @@ animations/
 # Sampled opening-angle shapes for the X17 figure. Regenerates itself from
 # MX17_Simulation on first render (~1 min); cached only to keep re-renders fast.
 .cache/
+
+# The printed deck: ~38 MB, and `slides/make_pdf.sh` rebuilds it from
+# index.html in about a minute.  index.html IS the deck and is tracked; this is
+# a backup for the conference laptop, not a source.
+slides/mpgd26_talk_draft.pdf
+
+# NOTE on the slide images: the repository's top-level .gitignore ignores *.png,
+# so slides/assets/img/*.png is NOT tracked -- every one of them is a render and
+# NOTES.md carries the command that makes it.  The .jpg files there ARE tracked,
+# because photographs cannot be regenerated.  Full-resolution originals of ours
+# live in photos/; see make_photos.py.

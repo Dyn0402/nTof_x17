@@ -19,7 +19,9 @@ not invented:
                                              agrees with the 34 +- 1.5 um/ns
                                              measured by the geometry estimator)
   sigma_T          0.35 mm / sqrt(cm)        same table -> ~0.5 mm over 3 cm
-  strip pitch      0.7785 mm                 398.58 mm / 512 strips
+  strip pitch      0.780 mm                  398.58 mm / 511 pitches
+                                             (NOT /512 -- that off-by-one
+                                              gave the old 0.7785)
   cluster density  ~30 /cm                   Ar/isobutane at NTP
 
 Frame: +Z up (the drift direction), X across the strips, Y along them.

@@ -30,7 +30,7 @@ VIEW = dict(pos=(178, -205, 138), focal=(0, 0, 56), up=(0, 0, 1), angle=33.0)
 
 CAPTION = (
     'One MX17 chamber, layers separated along the drift axis.  Strip count and '
-    'pitch (512 strips, 0.7785 mm) are from the strip map; the 30 mm drift gap '
+    'pitch (512 strips, 0.78 mm) are from the strip map; the 30 mm drift gap '
     'and the resistive-strip readout are from the run config; the 150 um '
     'amplification gap is the value the Garfield++ work uses '
     '(garfield_sim/mm_config.py).  The window drawn is 30 mm of a 400 mm '
