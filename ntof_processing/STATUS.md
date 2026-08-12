@@ -18,10 +18,21 @@ Two block runs diffed hit for hit against ours: WAL A-D, PSS A-D, SILI, PKUP
 **bit-identical on all 22 columns**; LIQ same hit counts with `afast` differing
 on ≤8 hits in ~100 000 — the same signature as 224572.
 
-**Run 224526 is 87 % lost and it is permanent.** 140 of its ~162 raw files aged
-off disk, n_TOF reprocessed it on 08-07 from the 22 that were left, and 440 of
-3313 beam bunches survive. No tape replica, no other copy. One other run with a
-gapped raw sequence (224531) checked out clean.
+**Run 224526's official product covers 13.3 % of its beam bunches** — 140 of its
+167 raw files had expired from the EOS disk buffer when n_TOF reprocessed it on
+08-07, and `RunProcessing.sh` built its file list from the 22 that were left.
+One other run with a gapped raw sequence (224531) checked out clean.
+
+**The run is not lost.** EOS `DAQ/` is a **two-week staging buffer**; the archive
+is CTA tape at `/eos/ctapublicdisk/archive/ntof/` (wiki `docs/Lxplus _ NTOF _
+TWiki.pdf` §3.1). All **445 / 445** runs are on tape, complete and contiguous —
+224526 included, 167 files, 313.8 GB. An earlier "no tape replica" call here was
+wrong; `eos fileinfo`'s `d2::t0` describes the disk copy, not the archive.
+
+`recover_224526/recover_224526.sh` does stage → check → filelists → process →
+verify, reading only from CTA (`ProcessFileList.sh -c 1`) so it cannot repeat the
+short-file-list trap. 42 job lists built and verified. **The tape recall has not
+been fired** — awaiting Dylan's go.
 
 Follow-ups: **the `handoff_publish/` scripts are no longer needed**, `prod_v11`
 (224573-224579) is retirable, and `prod_v12/224709` (stalled at 18 of 86) can be

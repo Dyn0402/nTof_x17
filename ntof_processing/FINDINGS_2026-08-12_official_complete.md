@@ -12,8 +12,19 @@ Scans: `campaign_qa/settled_runs.py`, `campaign_qa/completed_ledger.py`,
 evening of 08-11 and finished by 20:26; nothing has moved since. 224576, the
 run we could only hold off-recipe, finished too.
 
-**Run 224526 is the single casualty and it is permanent** — 13.3 % of its beam
-bunches survive. See §4.
+**Run 224526's official product covers 13.3 % of its beam bunches.** The run
+itself is *not* lost — the complete raw is on CTA tape and it is recoverable.
+See §4.
+
+> **Correction (same day).** This document first called 224526 "permanently
+> lost", on the strength of `eos fileinfo` reporting layout `replica … d2::t0`
+> for the DAQ copy. That was the wrong test: it describes the layout of *that
+> disk copy*, not whether an archive copy exists. Per
+> [`docs/Lxplus _ NTOF _ TWiki.pdf`](docs/Lxplus%20_%20NTOF%20_%20TWiki.pdf)
+> §3.1, n_TOF raw is written to **two** locations — EOS `DAQ/`, which holds it
+> for **two weeks only**, and CTA tape at `/eos/ctapublicdisk/archive/ntof/`,
+> which is permanent. Verified: all 445 runs of the campaign are on tape,
+> complete and contiguous.
 
 Consequences for us: **the handoff scripts are no longer needed**, `prod_v11`
 can be retired in full, and our stalled 224709 job can be abandoned.
@@ -84,7 +95,7 @@ seen before: **post-merge partial cleanup**. A run with a healthy merged file an
 gapped partials is finished, not broken. The test needs the merged file as a
 fallback, which it does not currently do.
 
-## 4. Run 224526 is 87 % lost, permanently
+## 4. Run 224526's official product is 87 % short — and it is recoverable
 
 `official/done/run224526.root` is 4.0 GB where its neighbours are 27-33 GB. Of
 3313 beam bunches, **440 carry hits — 13.3 %**.
@@ -104,20 +115,58 @@ off disk**. n_TOF then reprocessed the run on 08-07 15:35 from what was left,
 and the surviving fraction matches exactly: 22/162 = 13.6 % of files,
 440/3313 = 13.3 % of bunches.
 
-This is not recoverable:
+### The input is intact on tape
 
-* X17 raw carries **no tape replica** (`eos fileinfo` → layout `replica … d2::t0`).
-* We have no product of 224526 — it was never in our block.
-* `official/done/run224526.root` is the reprocessed short file; whatever existed
-  before 08-07 was overwritten.
+```
+xrdfs root://eosctapublicdisk.cern.ch/ ls \
+  /eos/ctapublicdisk/archive/ntof/2026/EAR2/X17_measurement/224526/stream1
+```
 
-The sweep for this signature over all 445 runs found only one other candidate,
-**224531** (12 raw files, max index 25), and it is **fine** — 652 of 652 beam
-bunches carry hits, so its merge predates the aging. 224526 is alone.
+**167 files, indices 0..166, no gaps, 313.8 GB.** Every one reports
+`on_tape: true, online: false, path_exists: true` — the normal dormant state,
+which `xrdfs prepare -s -f` clears.
 
-**This is the wipe-then-reprocess pattern doing real damage.** It was already
-documented on 08-11 as a risk to complete-but-unmerged runs; here it consumed a
-run outright, because the reprocessing ran after the input had partly expired.
+That is not special to this run. Sweeping the whole archive:
+
+| | |
+|---|---|
+| runs in `DAQ/` (disk) | 445 |
+| runs on CTA | 445 |
+| in `DAQ/` but not on tape | 0 |
+| tape copies with a contiguous `0..N-1` index sequence | **445 / 445** |
+
+**Nothing in the campaign is lost.** The EOS `DAQ/` area is a two-week staging
+buffer, not the archive.
+
+### Why the official product came out short
+
+`RunProcessing.sh` builds its file list from **whatever is on EOS**. On 08-07
+that was 22 files, so it produced 6 partials and stopped — it did not fall back
+to CTA for the other 145. The arithmetic matches exactly: 22/162 of the files
+that were then on disk, 440/3313 of the bunches.
+
+So the failure is not "the data expired", it is **reprocessing a run whose input
+had partly expired, without staging it back first**. Any run reprocessed more
+than two weeks after acquisition is exposed to this, and the campaign's last
+runs passed the two-week mark during the 08-11 resubmission.
+
+The sweep for a gapped raw sequence over all 445 runs found only one other
+candidate, **224531** (12 files, max index 25), and it is **fine** — 652 of 652
+beam bunches carry hits, so its processing predates the aging. 224526 is alone.
+
+### Recovery
+
+[`recover_224526/recover_224526.sh`](recover_224526/recover_224526.sh),
+five sub-commands: `stage` → `check` → `filelists` → `process` → `verify`.
+
+It never reads the EOS remnant. It lists from CTA and processes with
+`ProcessFileList.sh -c 1` ("Use CTA (1) or EOS (0)"), so the short-file-list trap
+cannot recur. Built and verified as far as it can go without the recall:
+**42 job lists, 167 distinct CTA paths, correct idx pairing**, at the v12
+UserInput that produced everything else of ours.
+
+The recall is the slow step — the wiki quotes up to 72 h, usually hours.
+Reprocessing is then ~42 jobs, comparable to any other run of this size.
 
 ## 5. What this changes for us
 
@@ -136,8 +185,14 @@ that run in existence until last night; it no longer is.
 * **The identity check is two runs, not thirty.** 224705 and 224710 are exact;
   the other 28 are inferred from an identical recipe fingerprint. The full diff
   is cheap to run and has not been run.
-* **224526's 440 surviving bunches have not been checked for quality** — only
-  that they exist. If the run matters, look before using it.
+* **The 224526 recall has not been fired.** Everything up to it is verified; the
+  staging, processing and coverage recovery are predicted, not measured.
+* **224526's 440 bunches in the official product have not been checked for
+  quality** — only that they exist.
+* **Whether other runs need restaging is untested.** The tape archive is
+  complete, but any *future* reprocessing of a run whose EOS copy has expired
+  will silently truncate unless it goes through CTA. That is a property of
+  `RunProcessing.sh`, and it is not guarded anywhere.
 * **The `afast` LIQ divergence is unexplained.** It appeared on 224572 and on
   both block runs, always a handful of hits, always with absurd magnitudes.
 * **Coverage says nothing about correctness.** A run can be complete and still
