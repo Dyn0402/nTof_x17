@@ -4,6 +4,40 @@
 
 ---
 
+## 2026-08-12 overnight — matching failures SOLVED: pulse_match supercycle mis-lock; 25.7 % of beam recoverable
+
+[`join_mislock/README.md`](join_mislock/README.md) (mechanism, scripts, recipe),
+[`SLIM_CAMPAIGN_2026-08-12.md`](SLIM_CAMPAIGN_2026-08-12.md) (the campaign it
+was found in), note
+<https://dylan-neff.web.cern.ch/notes/ntof-dream-join-mislock.html>.
+
+**The Aug-9 "54 sub-runs not slimmable, ask the DAQ logs" conclusion is
+RETRACTED** — its −0.982 ms evidence is a universal artifact (the 0.9927 ms
+post-flash hold-off edge; fires identically on healthy segments).
+**The real cause:** `pulse_match.match_subrun`'s count-only offset scan is
+degenerate under the accelerator supercycle and silently keeps the most
+negative tying lock (−3 cycles = 118.8/129.6 s ⇒ bunch shifts +20…+41,
+confirmed by scan at S/N 541–1822 on 8 of 8 failures). DREAM data is flawless.
+Failed hours re-join and run the UNMODIFIED chain at fleet quality —
+demonstrated: run_96/0001×224597, eff 95.47 % / accidental 0.065 %.
+Margin study (`margin_results.csv` on lxplus AFS): failures 35/41 at
+count-margin 0; **14 accepted segments sit at margin ≤ 2** (correct by coin
+flip — verify by scan before use).
+
+**Pending Dylan's sign-off (nothing implemented):** pulse_match fix (count +
+intensity-fluctuation + continuity + loud failure on ties), clock_qa
+'pulse_match margin adequate' check (WARN <10 / FAIL ≤2 unless scan-verified),
+`join_shift`+margin provenance in calibration.json BEFORE any bulk re-slim,
+then the re-slim itself: 41 whole-hour segments by scan→apply→verify (~one
+condor evening); 66 slivers need the reformulated join (or δ from the same
+sub-run's fitted majority side).
+
+Data staged for follow-ups: laptop `/media/dylan/data/x17/desktop_stage/`
+and desktop `/media/ucla/x17match/` (code + DREAM sub-runs + n_TOF
+224573/224583/224597).
+
+---
+
 ## 2026-08-11 evening — n_TOF merged 27 runs; we match them bit for bit
 
 [`FINDINGS_2026-08-11_official_ledger.md`](FINDINGS_2026-08-11_official_ledger.md),
