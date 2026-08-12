@@ -171,6 +171,19 @@ untouched — invisible to the fan-sign test, maximal in the wall test);
 suggested re-running D's per-segment medians under u→L−u / u→−u as the
 no-new-data verdict.
 
+Third round, closing the thread: the beam session ran the reflection test —
+**no reflection** (both mirrors make D sharply worse, 36→17–19 % in-band,
+ordering anti-correlates; control arm A 60→9–13 % shows the instrument has
+teeth). D's frame convention matches A, consistent with the exact bench
+scale/parity. The residual anomaly is ONE-SIDED (positive-u segment bands
+compressed, negative-u nearly correct), which no offset/scale/reflection can
+produce — leading candidates are wall-side instrumentation (the
+[[sipm-readout-window-side]] record's dead-bar asymmetry, never verified
+against data, per-arm orientation unconfirmed; or dead/hot channels in D's
+positive-u wall pairs). Testable from slim occupancy alone; on the beam
+session's queue. Bench involvement CLOSED; published arm-A/fleet v numbers
+unaffected.
+
 ## 6 · The remade report
 
 `mx_june_wft/report/make_grand_report.py` now emits
