@@ -282,14 +282,24 @@ median should have stayed in the matched population), yet it joined only 44
 bunches / 4,249 events with 17 dropped pulses and the 'dropped pulses look
 like no beam' guard FIRING.
 
-**It is no longer a candidate third mechanism.** Its 0.689 was the estimated
-duration, and on measured numbers it sits at 0.559 wall-clock / 0.691 burst
-overhang — over the threshold on both, i.e. bug 2 after all. Recorded before
-the job landed: **prediction is that it recovers under `3a6c284`**, which
-would leave nothing in the campaign outstanding. The prediction's method is
-validated on the other side of the same sub-run (×224581 predicted clean at
-0.335, observed fitting at 94.81 %). Judge it against that statement rather
-than explaining the outcome afterwards.
+**It was not a third mechanism — it was bug 2 behind a bad denominator, and
+it is RECOVERED.** Its 0.689 was the estimated duration; on measured numbers
+it sits at 0.559 wall-clock / 0.691 burst overhang, over the threshold on
+both. Predicted BITTEN from burst counts *before* the job ran, with the other
+side of the same sub-run as the control that validated the method (×224581
+predicted clean at 0.335, observed fitting at 94.81 %):
+
+| run_81/stat090_0001 × 224580 | |
+|---|---|
+| predicted | bitten → recovers under `3a6c284` |
+| **observed** | **OK, efficiency 0.94715** |
+
+The same job reproduced `run_81/stat090_0000 × 224580` at 0.94480 against a
+shipped 0.94480 — exact, at 0.242 burst overhang. So the fix recovers the
+bitten end of this sub-run and leaves the well-behaved end untouched.
+
+**Every failure in the campaign is now accounted for by one of the two bugs.
+None is outstanding.**
 
 **No wrong product shipped. This bug destroys data; it does not corrupt it.**
 A bug-bitten segment pairs its triggers with the wrong bunches, so the clock
