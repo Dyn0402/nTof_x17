@@ -102,12 +102,16 @@ def main():
 
     events = {}
     for payloads in wr._stream_windows(cfg, pos_maps, seeds, wanted, pad_strips=3):
-        for (eid, wins, sd, n_hits, spark, fd) in payloads:
+        for (eid, wins, sd, n_hits, spark, ftst) in payloads:
             sinfo = {p: [dict(n_strips=s.n_strips, n_dropped=s.n_dropped,
                               amp_sum=s.amp_sum) for s in sd.get(p, [])]
                      for p in ('x', 'y')}
+            fd = (ftst['x'] - ftst['y']
+                  if ftst.get('x') is not None and ftst.get('y') is not None
+                  else None)
             events[eid] = dict(wins=wins, seeds=sinfo, n_hits=n_hits,
-                               spark=spark, ftst_diff=fd, truth=truth[eid])
+                               spark=spark, ftst=ftst, ftst_diff=fd,
+                               truth=truth[eid])
 
     # active box from the existing production reco (fixed for all variants)
     box = None

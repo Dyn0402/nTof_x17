@@ -37,6 +37,20 @@ P0_SCAN_STEP = 0.5
 T0_SCAN_HALF = 120.0
 T0_SCAN_STEP = 40.0
 
+# absolute-t0 prior overrides (None = defer to the calibration bundle). The
+# bench harness sets these via reco_globals to A/B the prior without a new
+# bundle; production should carry t0_abs/t0_prior_sigma in the bundle itself.
+T0_PRIOR_SIGMA: Optional[float] = None
+T0_ABS: Optional[dict] = None
+
+# §21.1: p0 is the position AT THE MESH, but the global scan is centred on the
+# window's charge centroid — on an inclined track those differ by ~w * (half
+# the column), so 21 % of planes start outside the ±2.5 mm box at 5× the
+# catastrophic-failure rate. P0_SHEAR evaluates each stage-2 (p0, w) point at
+# p0 - w*u_mid instead: the same 11×21 grid, re-centred per slope, zero extra
+# cost. Off by default pending its A/B (bench variant 'p0shear').
+P0_SHEAR = False
+
 RECO_COLUMNS = [
     'event_id', 'n_hits', 'spark',
     # per plane p in (x, y): p0, w, t0, tan, errors, chi2, dof, profile, flags
@@ -55,6 +69,7 @@ class PlaneFit:
     p0_err: float
     w_err: float
     tan_err: float
+    t0_err: float            # 1-sigma t0 from the chi2 curvature [ns]
     q_sum: float             # total fitted charge
     q_u50: float             # median charge arrival time after t0 [ns]
     q_u90: float
@@ -84,28 +99,36 @@ def _profile_summary(q: np.ndarray) -> tuple:
     return tot, u50, u90, uend
 
 
-def _errors(P, plane, r, hyper, dp=0.05, dw=2e-4) -> tuple:
-    """1-sigma (p0, w) from the chi2 curvature, scaled by sqrt(chi2/dof) so that
-    model imperfection is absorbed rather than ignored."""
+def _errors(P, plane, r, hyper, dp=0.05, dw=2e-4, dt=2.0,
+            t0_prior=None) -> tuple:
+    """1-sigma (p0, w, t0) from the chi2 curvature, scaled by sqrt(chi2/dof) so
+    that model imperfection is absorbed rather than ignored.
+
+    Each error is a 1-D curvature at the minimum: the p0-t0 correlation (the
+    slide-along-the-track degeneracy, doc §20) is not propagated, so p0_err is
+    ~20 % optimistic (measured pull widths 1.19/1.13)."""
     W, noise, pos, sat = wm.prep_plane(P, plane)
 
-    def chi(p0v, wv):
-        return wm.chi2_plane(plane, W, noise, pos, sat, p0v, wv, r['t0'],
-                             hyper, snap_t0=False)[0]
+    def chi(p0v, wv, t0v):
+        return wm.chi2_plane(plane, W, noise, pos, sat, p0v, wv, t0v,
+                             hyper, snap_t0=False, t0_prior=t0_prior)[0]
 
     try:
         c0 = r['chi2']
-        d2p = (chi(r['p0'] + dp, r['w']) - 2 * c0 + chi(r['p0'] - dp, r['w'])) / dp ** 2
-        d2w = (chi(r['p0'], r['w'] + dw) - 2 * c0 + chi(r['p0'], r['w'] - dw)) / dw ** 2
+        p0, w, t0 = r['p0'], r['w'], r['t0']
+        d2p = (chi(p0 + dp, w, t0) - 2 * c0 + chi(p0 - dp, w, t0)) / dp ** 2
+        d2w = (chi(p0, w + dw, t0) - 2 * c0 + chi(p0, w - dw, t0)) / dw ** 2
+        d2t = (chi(p0, w, t0 + dt) - 2 * c0 + chi(p0, w, t0 - dt)) / dt ** 2
         scale = max(r['chi2'] / max(r['dof'], 1), 1.0)
         ep = float(np.sqrt(2 * scale / d2p)) if d2p > 0 else np.nan
         ew = float(np.sqrt(2 * scale / d2w)) if d2w > 0 else np.nan
-        return ep, ew
+        et = float(np.sqrt(2 * scale / d2t)) if d2t > 0 else np.nan
+        return ep, ew, et
     except Exception:
-        return np.nan, np.nan
+        return np.nan, np.nan, np.nan
 
 
-def _global_start(P, plane, p0_seed, t0_seed, hyper):
+def _global_start(P, plane, p0_seed, t0_seed, hyper, t0_prior=None):
     """Reference-free global search for the fit's starting point.
 
     The R&D fits were seeded at the M3 reference (position AND angle), which is
@@ -123,14 +146,22 @@ def _global_start(P, plane, p0_seed, t0_seed, hyper):
     W, noise, pos, sat = wm.prep_plane(P, plane)
 
     def chi(p0, w, t0):
-        return wm.chi2_plane(plane, W, noise, pos, sat, p0, w, t0, hyper)[0]
+        return wm.chi2_plane(plane, W, noise, pos, sat, p0, w, t0, hyper,
+                             t0_prior=t0_prior)[0]
 
     # charge-weighted centre of the window as the p0 scan centre
     amp = np.maximum(W.max(axis=1), 0.0)
     p_c = float((pos * amp).sum() / amp.sum()) if amp.sum() > 0 else p0_seed
     p0s = p_c + np.arange(-P0_SCAN_HALF, P0_SCAN_HALF + 1e-9, P0_SCAN_STEP)
-    t0s = np.arange(t0_seed - T0_SCAN_HALF, t0_seed + T0_SCAN_HALF + 1e-9,
-                    T0_SCAN_STEP)
+    if t0_prior is not None:
+        # the external clock collapses the t0 axis of the scan (T1.1): one
+        # point at the prediction instead of 7. The stage-2 (p0, w) scan and
+        # the Nelder-Mead refinement still see t0 through the penalty.
+        t0s = np.array([float(t0_prior[0])])
+        t0_seed = float(t0_prior[0])
+    else:
+        t0s = np.arange(t0_seed - T0_SCAN_HALF, t0_seed + T0_SCAN_HALF + 1e-9,
+                        T0_SCAN_STEP)
 
     best = (np.inf, p0_seed, t0_seed)
     for t0 in t0s:
@@ -141,29 +172,57 @@ def _global_start(P, plane, p0_seed, t0_seed, hyper):
     t0b = best[2]
 
     ws = np.arange(-W_SCAN_HALF, W_SCAN_HALF + 1e-9, W_SCAN_STEP)
+    # centroid-to-anchor lever arm [ns]: True = half the drift column
+    # (the measured value, see 12_shear_lever.py); a number = explicit ns
+    if P0_SHEAR and wm.CAL is not None:
+        shear = (15000.0 / wm.CAL.v_drift if P0_SHEAR is True
+                 else float(P0_SHEAR))
+    else:
+        shear = 0.0
     best2 = (np.inf, best[1], 0.0)
     for p0 in p0s:
         for w in ws:
-            c = chi(p0, w, t0b)
+            p0m = p0 - w * shear
+            c = chi(p0m, w, t0b)
             if c < best2[0]:
-                best2 = (c, float(p0), float(w))
+                best2 = (c, float(p0m), float(w))
     return best2[1], best2[2], t0b
 
 
+def t0_prior_for(cal: CalibrationBundle, plane: str, ftst) -> Optional[tuple]:
+    """(t0_pred, sigma) for one plane of one event, or None if the prior is
+    not calibrated/enabled. t0_pred is the bundle's per-ftst-class prediction
+    (the trigger is the muon; ftst is its phase against the DREAM clock);
+    sigma is the bundle's, overridable via the module global T0_PRIOR_SIGMA."""
+    sig = T0_PRIOR_SIGMA if T0_PRIOR_SIGMA is not None else \
+        (cal.t0_prior_sigma or None)
+    t0a = (T0_ABS or getattr(cal, 't0_abs', None) or {}).get(plane)
+    if not sig or not t0a or ftst is None:
+        return None
+    pred = t0a.get(int(ftst))
+    if pred is None:
+        return None
+    return float(pred), float(sig)
+
+
 def fit_plane(P, plane: str, cal: CalibrationBundle, hyper: Optional[dict] = None,
-              n_seed: int = 0, n_dropped: int = 0) -> Optional[PlaneFit]:
-    """Fit one plane's window. P: dict/PlaneWindow-like with W, pos, noise, ch."""
+              n_seed: int = 0, n_dropped: int = 0,
+              t0_prior: Optional[tuple] = None) -> Optional[PlaneFit]:
+    """Fit one plane's window. P: dict/PlaneWindow-like with W, pos, noise, ch.
+    ``t0_prior=(t0_pred, sigma)``: external-clock t0 penalty (see t0_prior_for)."""
     hyper = hyper or cal.hyper
     W = np.asarray(P['W'])
     if W.shape[1] != wm.NSAMP:
         wm.set_nsamp(W.shape[1])
     p0_seed, _w0, t0_seed = wm.init_guess(P, plane)
-    p0_seed, w_seed, t0_seed = _global_start(P, plane, p0_seed, t0_seed, hyper)
-    r = wm.fit_plane_raw(P, plane, p0_seed, w_seed, t0_seed, hyper=hyper)
+    p0_seed, w_seed, t0_seed = _global_start(P, plane, p0_seed, t0_seed, hyper,
+                                             t0_prior=t0_prior)
+    r = wm.fit_plane_raw(P, plane, p0_seed, w_seed, t0_seed, hyper=hyper,
+                         t0_prior=t0_prior)
     if r is None or not np.isfinite(r['chi2']):
         return None
     tan = r['w'] * 1e3 / cal.v_drift
-    ep, ew = _errors(P, plane, r, hyper)
+    ep, ew, et = _errors(P, plane, r, hyper, t0_prior=t0_prior)
     q_sum, q_u50, q_u90, q_uend = _profile_summary(r['q'])
     return PlaneFit(
         p0=float(r['p0']), w=float(r['w']), t0=float(r['t0']),
@@ -173,6 +232,7 @@ def fit_plane(P, plane: str, cal: CalibrationBundle, hyper: Optional[dict] = Non
         w_err=float(ew) if np.isfinite(ew) else np.nan,
         tan_err=float(np.hypot(ew * 1e3 / cal.v_drift, FLOOR_TAN))
         if np.isfinite(ew) else FLOOR_TAN,
+        t0_err=float(et) if np.isfinite(et) else np.nan,
         q_sum=q_sum, q_u50=q_u50, q_u90=q_u90, q_uend=q_uend,
         n_strips=int(W.shape[0]), n_seed=int(n_seed), n_dropped=int(n_dropped),
         slope_reliable=bool(abs(tan) >= TAN_MIN_SLOPE),
@@ -200,7 +260,8 @@ def _candidate_score(P, plane, fit: PlaneFit) -> tuple:
 
 
 def fit_plane_candidates(windows: list, plane: str, cal: CalibrationBundle,
-                         seeds: Optional[list] = None, return_all: bool = False):
+                         seeds: Optional[list] = None, return_all: bool = False,
+                         t0_prior: Optional[tuple] = None):
     """Fit every candidate cluster of one plane and keep the muon's.
 
     'Largest cluster wins' is wrong for ~5 % of events, and when it is wrong the
@@ -226,7 +287,8 @@ def fit_plane_candidates(windows: list, plane: str, cal: CalibrationBundle,
         try:
             fit = fit_plane(P, plane, cal,
                             n_seed=getattr(s, 'n_strips', 0) if s else 0,
-                            n_dropped=getattr(s, 'n_dropped', 0) if s else 0)
+                            n_dropped=getattr(s, 'n_dropped', 0) if s else 0,
+                            t0_prior=t0_prior)
         except Exception:
             fit = None
         if fit is None:
@@ -307,17 +369,24 @@ def row_from_fits(event_id: int, fits: Dict[str, Optional[PlaneFit]],
         if f is None:
             row[f'{plane}_ok'] = False
             for k in ('p0', 'w', 't0', 'tan_theta', 'theta_deg', 'chi2',
-                      'p0_err', 'w_err', 'tan_err', 'q_sum', 'q_u50', 'q_u90',
-                      'q_uend'):
+                      'p0_err', 'w_err', 'tan_err', 't0_err', 'q_sum', 'q_u50',
+                      'q_u90', 'q_uend'):
                 row[f'{plane}_{k}'] = np.nan
             for k in ('dof', 'n_strips', 'n_seed', 'n_dropped', 'n_candidates'):
                 row[f'{plane}_{k}'] = 0
             row[f'{plane}_slope_reliable'] = False
             row[f'{plane}_quality_ok'] = False
+            row[f'{plane}_isochronous'] = False
         else:
             row[f'{plane}_ok'] = True
             for k, v in asdict(f).items():
                 row[f'{plane}_{k}'] = v
+            # F32: charge arriving in ≲2 depth bins is a flash/discharge
+            # signature, not a track (a vertical muon still fills the gap in
+            # TIME). Computed for candidate ranking since day one but never
+            # written out — this makes it cuttable downstream.
+            row[f'{plane}_isochronous'] = bool(
+                np.isfinite(f.q_uend) and f.q_uend < U_MIN_NS)
     return row
 
 
@@ -332,7 +401,8 @@ PAIR_SELECT = os.environ.get('WFT_PAIR_SELECT', '0') == '1'
 
 
 def _worker_fit(payload):
-    eid, wins, seeds, n_hits, spark, ftst_diff = payload
+    eid, wins, seeds, n_hits, spark, ftst = payload
+    ftst = ftst or {}
     fits, all_fits = {}, {}
     for plane in ('x', 'y'):
         cand = wins.get(plane)
@@ -340,18 +410,25 @@ def _worker_fit(payload):
             fits[plane], all_fits[plane] = None, []
             continue
         try:
-            best, ranked = fit_plane_candidates(cand, plane, _CAL,
-                                                seeds=seeds.get(plane),
-                                                return_all=True)
+            best, ranked = fit_plane_candidates(
+                cand, plane, _CAL, seeds=seeds.get(plane), return_all=True,
+                t0_prior=t0_prior_for(_CAL, plane, ftst.get(plane)))
             fits[plane], all_fits[plane] = best, ranked
         except Exception:
             fits[plane], all_fits[plane] = None, []
     if PAIR_SELECT:
+        ftst_diff = (ftst['x'] - ftst['y']
+                     if ftst.get('x') is not None and ftst.get('y') is not None
+                     else None)
         try:
             fits = select_pair(all_fits, ftst_diff, _CAL)
         except Exception:
             pass
-    return row_from_fits(eid, fits, n_hits, spark)
+    row = row_from_fits(eid, fits, n_hits, spark)
+    for plane in ('x', 'y'):
+        f = ftst.get(plane)
+        row[f'{plane}_ftst'] = int(f) if f is not None else -1
+    return row
 
 
 def reconstruct_run(cfg, cal: CalibrationBundle, out_path: str,
@@ -411,6 +488,10 @@ def reconstruct_run(cfg, cal: CalibrationBundle, out_path: str,
                             v_drift=cal.v_drift, hyper=cal.hyper,
                             conditions=cal.conditions,
                             provenance=cal.provenance),
+                t0_prior=dict(sigma=T0_PRIOR_SIGMA if T0_PRIOR_SIGMA is not None
+                              else cal.t0_prior_sigma,
+                              t0_abs_planes=sorted((T0_ABS or cal.t0_abs
+                                                    or {}).keys())),
                 run=dict(key=getattr(cfg, 'KEY', ''), run=cfg.RUN,
                          sub_run=cfg.SUB_RUN, detector=cfg.DET_NAME,
                          feu_x=feu_x, feu_y=feu_y),
@@ -484,10 +565,9 @@ def _stream_windows(cfg, pos_maps, seeds, wanted, pad_strips, verbose=True):
                 rec['ftst_' + plane] = ftst
         payloads = []
         for eid, rec in buf.items():
-            fd = (rec['ftst_x'] - rec['ftst_y']
-                  if 'ftst_x' in rec and 'ftst_y' in rec else None)
+            ftst = {p: rec.get('ftst_' + p) for p in ('x', 'y')}
             payloads.append((eid, rec['w'], rec['s'], seeds[eid]['n_hits'],
-                             seeds[eid]['spark'], fd))
+                             seeds[eid]['spark'], ftst))
         if verbose:
             print(f'[wft]   {tag}: {len(payloads):,} events windowed', flush=True)
         yield payloads

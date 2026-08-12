@@ -49,6 +49,20 @@ class CalibrationBundle:
     gain: Dict[str, np.ndarray]             # per-channel gain (512), 1.0 = unmeasured
     dt_xy: Dict[int, float] = field(default_factory=dict)   # t0x - t0y by ftst diff
 
+    # --- absolute-t0 prior (T1.1, 2026-08-11): the scintillator trigger fixes
+    # each plane's t0 up to the ftst clock phase. t0_abs[plane][ftst] is the
+    # predicted t0 [ns]; t0_prior_sigma is the penalty width [ns] (0 = prior
+    # disabled). Per run condition like everything else in the bundle.
+    t0_abs: Dict[str, Dict[int, float]] = field(default_factory=dict)
+    t0_prior_sigma: float = 0.0
+
+    # --- dead-channel mask (T1.3, 2026-08-12): channels with no signal RATE
+    # (a broken connection downstream of the preamp still has a normal
+    # pedestal, so this is a rate mask, not a pedestal mask). Dead strips are
+    # censored samples: dropped from the chi2 sum entirely, no penalty in
+    # either direction. Per run condition like everything else here.
+    dead: Dict[str, list] = field(default_factory=dict)
+
     # --- geometry / DAQ ---
     pitch_mm: float = 0.78
     sample_ns: float = 60.0
@@ -81,6 +95,11 @@ class CalibrationBundle:
         meta = dict(hyper={k: float(v) for k, v in self.hyper.items()},
                     v_drift=float(self.v_drift),
                     dt_xy={str(k): float(v) for k, v in self.dt_xy.items()},
+                    t0_abs={p: {str(k): float(v) for k, v in d.items()}
+                            for p, d in self.t0_abs.items()},
+                    t0_prior_sigma=float(self.t0_prior_sigma),
+                    dead={p: [int(c) for c in ch]
+                          for p, ch in self.dead.items()},
                     pitch_mm=self.pitch_mm, sample_ns=self.sample_ns,
                     n_depth_bins=self.n_depth_bins, sat_adc=self.sat_adc,
                     share_mode=self.share_mode,
@@ -99,6 +118,11 @@ class CalibrationBundle:
                    grid=z['grid'], tmpl={'x': z['tmpl_x'], 'y': z['tmpl_y']},
                    gain={'x': z['gain_x'], 'y': z['gain_y']},
                    dt_xy={int(k): v for k, v in m.get('dt_xy', {}).items()},
+                   t0_abs={p: {int(k): float(v) for k, v in d.items()}
+                           for p, d in m.get('t0_abs', {}).items()},
+                   t0_prior_sigma=m.get('t0_prior_sigma', 0.0),
+                   dead={p: [int(c) for c in ch]
+                         for p, ch in m.get('dead', {}).items()},
                    pitch_mm=m.get('pitch_mm', 0.78),
                    sample_ns=m.get('sample_ns', 60.0),
                    n_depth_bins=m.get('n_depth_bins', 18),

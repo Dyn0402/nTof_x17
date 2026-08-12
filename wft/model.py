@@ -62,6 +62,7 @@ TS = np.arange(NSAMP) * SNS
 UK = (np.arange(K) + 0.5) * DT
 HYPER: dict | None = None
 SHARE_MODE = 'delay'      # 'delay' | 'lp' — see module docstring
+DEAD: dict = {}           # per-plane dead-channel arrays (T1.3); see prep_plane
 
 _smear_cache: dict = {}
 _lp_cache: dict = {}
@@ -72,8 +73,10 @@ T0_STEP = 5.0             # t0 quantisation for the cached time tensors
 def use_calibration(cal: CalibrationBundle) -> None:
     """Install a calibration bundle as the model's calibration."""
     global CAL, TGRID, TMPL, GAIN, DT_XY, PITCH, SNS, SAT, DT, K, UK, HYPER, \
-        SHARE_MODE
+        SHARE_MODE, DEAD
     CAL = cal
+    DEAD = {p: np.asarray(sorted(ch), dtype=int)
+            for p, ch in getattr(cal, 'dead', {}).items() if len(ch)}
     TGRID = np.asarray(cal.grid, float)
     TMPL = {p: np.asarray(cal.tmpl[p], float) for p in ('x', 'y')}
     GAIN = {p: np.asarray(cal.gain[p], float) for p in ('x', 'y')}
@@ -170,8 +173,18 @@ def _lp_copies(plane: str, sigma_s: float, tau_s: float):
 
 def _copy_responses(plane: str, base: np.ndarray, hyper: dict):
     """(H1, H2) neighbour-copy responses on the (NSAMP, K) time offsets in
-    ``base``, per the active SHARE_MODE."""
-    tau = hyper['tau_s']
+    ``base``, per the active SHARE_MODE.
+
+    ``tau_y_fac`` scales the RC constant on the Y plane only: the resistive
+    strips run along y, so Y's copy is slower as well as stronger (measured
+    directly, tau_X 230 / tau_Y 410 ns). NOTE the key is deliberately NOT the
+    bundles' ``kTauY``: that constant belongs to the archived RC-ladder
+    representation, and switching it on under this kernel form regressed Y
+    badly (sigma_Y 1.14 -> 1.57 deg, bench 2026-08-12) — the F19 lesson, RC
+    constants are representation-dependent. A per-plane tau must enter here
+    through a recalibration that fits/validates ``tau_y_fac`` under THIS
+    kernel; no existing bundle carries the key, so nothing changes silently."""
+    tau = hyper['tau_s'] * (hyper.get('tau_y_fac', 1.0) if plane == 'y' else 1.0)
     if SHARE_MODE == 'lp':
         ge, l1, l2 = _lp_copies(plane, hyper['sigma_s'], tau)
         H1 = np.interp(base, ge, l1, left=0, right=0)
@@ -186,7 +199,7 @@ def _copy_responses(plane: str, base: np.ndarray, hyper: dict):
 def _time_tensors(plane: str, t0q: float, hyper: dict):
     """(K, NSAMP) impulse responses of each depth bin, cached on a 5 ns t0 grid."""
     key = (plane, t0q, hyper['tau_s'], round(hyper['sigma_s'], 1), NSAMP, K,
-           SHARE_MODE)
+           SHARE_MODE, hyper.get('tau_y_fac', 1.0) if plane == 'y' else 1.0)
     hit = _tt_cache.get(key)
     if hit is not None:
         return hit
@@ -227,7 +240,12 @@ def build_matrix(plane, pos, p0, w, t0, hyper):
         H1, H2 = _copy_responses(plane, base, hyper)
     else:
         H0, H1, H2 = _time_tensors(plane, t0q, hyper)
-    kY = hyper.get('kY', 1.0) if plane == 'y' else 1.0
+    # per-plane amplitude on the discrete (RC) sharing kernel. kY is the
+    # long-standing Y multiplier; cX (default 1, i.e. no change) scales the X
+    # side — the resistive strips run along y, so X cannot have resistive
+    # sharing and its +-1 copy should be diffusion (F6): cX = 0 with Dp
+    # refit is the physically motivated test arm (handoff T1.2).
+    kY = hyper.get('kY', 1.0) if plane == 'y' else hyper.get('cX', 1.0)
     c1, c2 = hyper['c1'] * kY, hyper['c2'] * kY
     F = strip_fractions(pos, p0, w, hyper['sigma_p0'], hyper['Dp'])
     n = len(pos)
@@ -248,24 +266,46 @@ def build_matrix(plane, pos, p0, w, t0, hyper):
 def prep_plane(P, plane):
     """Gain-correct one plane's waveform window. P: dict with W (nstrip, nsamp),
     pos [mm], noise per strip, ch (channel numbers).
-    Returns (W, noise, pos, saturation mask)."""
+    Returns (W, noise, pos, censor mask).
+
+    Dead channels (bundle ``dead``, T1.3) are censored samples — a broken
+    connection reads baseline, not zero charge, so their rows are excluded
+    from the fit and the dof exactly like saturated samples, and their noise
+    is inflated so the one-sided saturation penalty cannot pull on them
+    either: no information in either direction."""
     W = np.asarray(P['W'], dtype=np.float64).copy()
-    g = GAIN[plane][np.asarray(P['ch'], dtype=int)]
+    ch = np.asarray(P['ch'], dtype=int)
+    g = GAIN[plane][ch]
     W /= g[:, None]
     noise = np.maximum(np.asarray(P['noise'], dtype=np.float64), 3.0) / g
     sat = np.asarray(P['W'], dtype=np.float64) >= SAT
+    d = DEAD.get(plane)
+    if d is not None and len(d):
+        rows = np.isin(ch, d)
+        if rows.any():
+            sat[rows] = True
+            noise[rows] = 1e9
     return W, noise, np.asarray(P['pos'], dtype=np.float64), sat
 
 
 def chi2_plane(plane, W, noise, pos, sat, p0, w, t0, hyper, censor=True,
-               snap_t0=True):
+               snap_t0=True, t0_prior=None):
     """chi2 of the model at (p0, w, t0), with the charge profile profiled out by
     NNLS. Saturated samples are censored: excluded from the fit, and penalised
-    only if the model falls *below* the clipped value."""
+    only if the model falls *below* the clipped value.
+
+    ``t0_prior=(t0_pred, sigma)`` adds a Gaussian penalty pinning t0 to an
+    external per-event prediction (the scintillator trigger through the ftst
+    phase). The chi2 surface has near-degenerate minima 60 ns (one depth bin)
+    apart — the profile shifts a bin and p0 slides by w*60 — and only ~35 % of
+    free fits land in the physical one (T1.1 gate, 2026-08-11); the prior is
+    what selects it."""
     if snap_t0:
         t0 = round(t0 / T0_STEP) * T0_STEP
     M = build_matrix(plane, pos, p0, w, t0, hyper)
     ok = ~sat.reshape(-1)
+    if not ok.any():
+        return np.inf, None
     Wt = np.repeat(1.0 / noise, NSAMP)
     A = (M * Wt[:, None])[ok]
     y = (W / noise[:, None]).reshape(-1)[ok]
@@ -279,6 +319,8 @@ def chi2_plane(plane, W, noise, pos, sat, p0, w, t0, hyper, censor=True,
         pen = np.maximum(0.0, W[sat] - model[sat]) / np.repeat(
             noise, NSAMP).reshape(W.shape)[sat]
         chi += float((pen ** 2).sum())
+    if t0_prior is not None:
+        chi += ((t0 - t0_prior[0]) / t0_prior[1]) ** 2
     return chi, q
 
 
@@ -287,10 +329,12 @@ def model_waveforms(plane, pos, p0, w, t0, q, hyper):
 
 
 # --------------------------------------------------------------------- fits
-def fit_plane_raw(P, plane, p0_init, w_init, t0_init, hyper=None, fix_p0w=None):
+def fit_plane_raw(P, plane, p0_init, w_init, t0_init, hyper=None, fix_p0w=None,
+                  t0_prior=None):
     """Two-stage fit: coarse (p0, w, t0) grid, then Nelder-Mead. With
     ``fix_p0w=(p0, w)`` only t0 and the charge profile are fitted — that is the
-    'ref-pinned' configuration used for calibration and for the chi2(v) scan."""
+    'ref-pinned' configuration used for calibration and for the chi2(v) scan.
+    ``t0_prior=(t0_pred, sigma)`` is passed through to :func:`chi2_plane`."""
     _require_cal()
     hyper = hyper or HYPER
     W, noise, pos, sat = prep_plane(P, plane)
@@ -299,14 +343,17 @@ def fit_plane_raw(P, plane, p0_init, w_init, t0_init, hyper=None, fix_p0w=None):
     if fix_p0w is not None:
         p0f, wf = fix_p0w
         grid = np.arange(t0_init - 240, t0_init + 241, 20.0)
-        cs = [chi2_plane(plane, W, noise, pos, sat, p0f, wf, t, hyper)[0]
+        cs = [chi2_plane(plane, W, noise, pos, sat, p0f, wf, t, hyper,
+                         t0_prior=t0_prior)[0]
               for t in grid]
         j = int(np.argmin(cs))
         g2 = np.arange(grid[j] - 20, grid[j] + 21, T0_STEP)
-        cs2 = [chi2_plane(plane, W, noise, pos, sat, p0f, wf, t, hyper)[0]
+        cs2 = [chi2_plane(plane, W, noise, pos, sat, p0f, wf, t, hyper,
+                          t0_prior=t0_prior)[0]
                for t in g2]
         t0b = float(g2[int(np.argmin(cs2))])
-        chi, q = chi2_plane(plane, W, noise, pos, sat, p0f, wf, t0b, hyper)
+        chi, q = chi2_plane(plane, W, noise, pos, sat, p0f, wf, t0b, hyper,
+                            t0_prior=t0_prior)
         return dict(chi2=chi, dof=dof, p0=p0f, w=wf, t0=t0b, q=q, nfev=len(cs) + len(cs2))
 
     nfev = 0
@@ -315,14 +362,15 @@ def fit_plane_raw(P, plane, p0_init, w_init, t0_init, hyper=None, fix_p0w=None):
         for dp in (-0.8, 0.0, 0.8):
             for dw in (-2.4e-3, -0.8e-3, 0.0, 0.8e-3, 2.4e-3):
                 c, _ = chi2_plane(plane, W, noise, pos, sat,
-                                  p0_init + dp, w_init + dw, t0, hyper)
+                                  p0_init + dp, w_init + dw, t0, hyper,
+                                  t0_prior=t0_prior)
                 nfev += 1
                 if c < best[0]:
                     best = (c, p0_init + dp, w_init + dw, t0)
 
     def obj(v):
         return chi2_plane(plane, W, noise, pos, sat, v[0], v[1], v[2], hyper,
-                          snap_t0=False)[0]
+                          snap_t0=False, t0_prior=t0_prior)[0]
 
     v0 = np.array(best[1:])
     r = minimize(obj, v0, method='Nelder-Mead',
@@ -331,7 +379,7 @@ def fit_plane_raw(P, plane, p0_init, w_init, t0_init, hyper=None, fix_p0w=None):
                                   [[0, 0, 0], [0.4, 0, 0], [0, 1.5e-3, 0],
                                    [0, 0, 20]])))
     chi, q = chi2_plane(plane, W, noise, pos, sat, r.x[0], r.x[1], r.x[2],
-                        hyper, snap_t0=False)
+                        hyper, snap_t0=False, t0_prior=t0_prior)
     return dict(chi2=chi, dof=dof, p0=float(r.x[0]), w=float(r.x[1]),
                 t0=float(r.x[2]), q=q, nfev=nfev + r.nfev)
 
