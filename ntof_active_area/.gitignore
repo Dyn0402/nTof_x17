@@ -1,0 +1,5 @@
+# Derived cache: the per-strip profiles and the paired-track table, ~2.4 MB.
+# Rebuilt in ~80 s by `mm_edges.measure()` from the run_79 combined_hits, and
+# no .npz is committed anywhere else in this repo. The *results* it feeds are
+# committed: results_mm.json carries the span profiles and every fitted edge.
+profiles.npz

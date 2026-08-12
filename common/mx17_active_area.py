@@ -77,6 +77,23 @@ TRUE_ACTIVE_BY_DET = {
 # fleet-wide passivation stats (mm): low mean=18.9 (17.9-20.4 range), high mean=19.1
 # (17.9-20.0 range) -- consistent within ~2.5 mm across all 5 chambers.
 
+# --- independent confirmation on n_TOF beam data (2026-08-11) -----------------
+# Reproduced without any external telescope, in the n_TOF configuration, from
+# run_79 paired strip clusters (ntof_active_area/, report.html). Chambers A
+# (det3), B (det2) and C (det6) each give a hard v edge at both ends:
+#   A 19.5-376.7   B 18.7-379.1   C 20.3-379.1 mm
+# agreeing with the June 50% points above to 1-2 mm. No passivation on X: det2
+# is live at strip 0 AND strip 511. Chamber D's planes are too damaged in that
+# run to measure. Beam + June together: v span 359.9 +- 1.8 mm, midpoint 199.1
+# vs a strip-plane centre of 199.3 -- the band is centred.
+#
+# Numbers for the Geant SimConfig.hh `mm_size_*` fields (which carried an
+# unsourced 38 x 34 cm estimate until 2026-08-11):
+SIM_ACTIVE_U_CM = 39.9    # tangential: full metallised strip region + one pitch
+SIM_ACTIVE_V_CM = 36.0    # along beam: 359.9 mm between the passivation bands
+CONFIRMED_ON_BEAM = ('run_79 stat090_0000/0001, 215k DREAM events, '
+                     'ntof_active_area/report.html, 2026-08-11')
+
 # provenance
 MEASURED_ON = 'det3 (g_det3_wknd + sat_det3), June 2026 cosmic bench'
 METHOD = 'efficiency turn-on/off vs detector-local position (50% points)'
