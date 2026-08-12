@@ -158,6 +158,19 @@ re-cabling, arm-D mounting parity (D pairs against B across the target), or
 the pointing fit's `sign_z` for that arm. Handed back to the beam session
 with a discriminating test (externally-confirmed multi-arm track through D).
 
+Second round: the beam session's wall test is sign-blind on D (96 mm lever ×
+small angles) but surfaced a real POSITION-frame anomaly — per-segment wall
+crossings compressed toward centre (+22/+29/−80/−108 mm vs bands ±75/±175;
+~36 % in-band vs arm A's 51–71 %). Bench closes its side: det7's position
+scale vs M3 is 0.9997 (X) / 1.0012 (Y), offsets ≤ 0.1 mm — fleet spread
+[0.9989, 1.0016] — and no 8-channel group discontinuity (a re-plug offset
+would show one). Map, parity, pitch, ordering all exact. Remaining suspects
+are beam-side only: arm-D geometry description (position/rotation/lever) or a
+position-only reflection (strip origin from the wrong side, u→L−u with tan
+untouched — invisible to the fan-sign test, maximal in the wall test);
+suggested re-running D's per-segment medians under u→L−u / u→−u as the
+no-new-data verdict.
+
 ## 6 · The remade report
 
 `mx_june_wft/report/make_grand_report.py` now emits
