@@ -1,3 +1,11 @@
+# lxplus condor for the wft chain
+
+> **MPGD26 full-June reco campaign (2026-08-12):** the manifest, job scripts
+> and two-phase runbook live here too — `make_manifest.py`,
+> `make_reco_package.py`, `run_reco_job.py`, `reco.sub`, `gate_eval.py`,
+> `collect_results.py`. The runbook is `../FREEZE_MPGD26_2026-08-12.md` §5.
+> The rest of this file documents the older drift-gap-fit workflow.
+
 # Running the drift-gap fits on lxplus condor
 
 The gap study splits cleanly in two, and only the cheap half needs the bench
