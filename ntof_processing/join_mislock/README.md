@@ -40,6 +40,8 @@ statistic and simply writes no file — the QA never sees it.
 | `dream_forensics.py` | is anything wrong with DREAM in the corrupt hours? (no — flash leads 100 % of bursts, multiplicity and hold-off identical to clean hours) |
 | `perbunch_lag.py` | does the coincidence exist per bunch in a failed segment? (yes, everywhere — though the per-bunch lags it reports for a mis-joined segment are artifact+noise; see the kill-list) |
 | `recovery_shift.py` | does the standard chain recover a mis-joined hour once the bunch shift is applied? (**yes: 95.47 % / cv 95.43 %, S/N 1319, accidental 0.065 %** — `recovery_shift_run_96_stat090_0001_224597.json`) |
+| `arbitration_floor.py` | is there a segment length below which arbitration cannot work? (yes, and it is structural: the count margin grows ~linearly with clusters when schedules differ — run_79/0001 wins by count at 25 clusters — but the intensity discriminant is a STEP function: it is carried by sparse schedule-break events ~one per 10–40 min, so run_96/0001 has r-separation 0.001 through 150 clusters then 4.2σ at 200, and run_86/0001 stays ambiguous to 400. A 5-minute sub-run typically contains no discriminating event at all; the scan route is the standard path for short segments, and the AmbiguousLock message now says so below 200 clusters) |
+| `sliver_census.py` | which "sliver" failures are really sliver-class? (36 of 78 have no fitted sibling and are whole-sub-run mislocks in disguise — recoverable; the mystery class is the 42 with a fitted sibling, all ≤ 402 bunches; the run-START orientation hypothesis died 33/33) |
 | `margin_study.py` | what separates failed from fitted sub-runs? (the pulse_match count margin: failures 35/41 at 0, all ≤ 8; fitted median 23; **14 fitted at ≤ 2**; run_102/0003's dead tie −69.3 s r=0.508 chosen vs +60.3 s r=0.925 true validated the intensity-fluctuation discriminator in the wild) |
 
 The wide bunch-shift scans that found the mechanism used the existing
@@ -87,14 +89,37 @@ same sub-run's pulse_match offset is proven right by the ×224572 fit, the δ
 is right, and the bunch mapping follows from both, the sliver failure
 survives a fully correct join. Corollary: the per-bunch scan's "random
 −1…−24 ms lags" on this segment were measured on CORRECT bunch pairings.
-Current leading suspect is n_TOF-side: a per-bunch time-base anomaly in the
-first ~15 minutes of a run (failed slivers contain n_TOF run STARTS; the
-same runs' later minutes always fit; end-of-run slivers like 0015×224578
-fit). Two probes queued: (a) the same sliver against OUR
-`reproc/prod_v12/224573` — if it fits, the anomaly is in n_TOF's processing
-infrastructure, not the recipe; (b) per-bunch lag + per-bunch refit at the
-now-known-correct join — if each bunch has a findable sharp offset, sliver
-recovery is per-bunch, n_TOF-side or not.
+
+**Census (2026-08-12, `sliver_census.py` on the campaign inventory) — the
+78 non-OK "sliver" segments are two populations:**
+
+- **42 with a fitted sibling** (the same DREAM sub-run fitted on its other
+  side, pinning the shared pulse_match offset): the true mystery class.
+  All small — ≤ 402 joined bunches, median 158, overlap median 0.26. The
+  pulse_match fix does nothing for these.
+- **36 with no fitted sibling** (on 24 sub-runs): the offset was never
+  verified, and these include every *large* "sliver" failure (up to 1101
+  bunches / 55.6 min) plus all four dark DREAM runs appearing among
+  slivers (run_126/128/150/156). Cached v1 offsets betray supercycle
+  mislocks: run_132/0007 locked −68.08 s where its run's OK sub-run locked
+  +48.32 (−68.08 + 3×39.6 = +50.7); run_139/0007 locked −48.88 vs 0003's
+  +67.5 (118.8 apart) — both with the trademark 100 % match / ~4 ms rms.
+  **These are whole-sub-run mislocks that happened to straddle a boundary
+  and got filed as slivers. They belong in the plain re-run recovery with
+  the whole-hour 41.**
+
+The "failed slivers contain n_TOF run STARTS" observation did not survive
+the census: mystery-class failures split run_END vs run_START almost
+exactly evenly (and OK slivers exist in both orientations). Orientation
+carries no information; withdrawn.
+
+Two probes on the mystery class: (a) the same sliver against an
+independent processing of 224573 (`reproc/prod_v11/224573` — the local
+re-slim already used the official-done merge, which is the v12 lineage) —
+if it fits, the anomaly is in the processing, not the raw data; (b)
+per-bunch lag + per-bunch refit at the now-known-correct join
+(`perbunch_lag.py --delta-hint`) — if each bunch has a findable sharp
+offset, sliver recovery is per-bunch, n_TOF-side or not.
 
 ## The fix — IMPLEMENTED 2026-08-12 (this commit)
 

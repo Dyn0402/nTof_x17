@@ -255,6 +255,15 @@ def select_lock(c_t, sizes, anchor, pt, pe):
 
     tab = '; '.join(f"{L['off_s']:+.2f}s n={L['n']} r={L['r']:.3f}"
                     for L in locks[:6])
+    # the intensity discriminant is carried by sparse schedule-break events
+    # (~one per 10-40 min of beam), not accumulated per cluster — a short
+    # segment typically contains NONE, so ambiguity there is the expected
+    # outcome, not bad luck (join_mislock/arbitration_floor.py: r-separation
+    # is a step function of window length; 0.001 apart below it)
+    short = (f' Segment is only {len(c_t)} clusters: below ~200 clusters '
+             f'intensity arbitration has no power in principle, and the '
+             f'bunch-shift scan is the STANDARD route, not an exception.'
+             if len(c_t) < 200 else '')
     raise AmbiguousLock(
         f'count margin {margin} (< {MARGIN_CLEAR}) and intensity '
         f'correlation cannot separate the top locks '
@@ -262,7 +271,7 @@ def select_lock(c_t, sizes, anchor, pt, pe):
         f'{tab}. This sub-run needs a bunch-shift scan '
         f'(segment_diagnose --span 200) before it can be joined — refusing '
         f'to pick one silently. That silent pick cost 25.7 % of the July '
-        f'campaign beam (ntof_processing/join_mislock/).')
+        f'campaign beam (ntof_processing/join_mislock/).{short}')
 
 
 def match_subrun(run: str, subrun: str, rebuild: bool = False,

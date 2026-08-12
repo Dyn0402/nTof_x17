@@ -80,11 +80,15 @@ def main():
     ap.add_argument('dream_subrun')
     ap.add_argument('ntof_run', type=int)
     ap.add_argument('--ntof-source', default=None)
+    ap.add_argument('--delta-hint', type=float, default=None,
+                    help='majority-side burst->pulse delta (s); pins the '
+                         'join so the per-bunch scan runs on the verified-'
+                         'correct pairing')
     args = ap.parse_args()
 
     seg = Segment(args.dream_run, args.dream_subrun, args.ntof_run,
                   ntof_source=Path(args.ntof_source) if args.ntof_source
-                  else None)
+                  else None, delta_hint_s=args.delta_hint)
     _bind_ntof(seg)
     ev = join_events(seg)
     btbl, keep = bunch_table(ev)
