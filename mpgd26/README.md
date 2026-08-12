@@ -544,6 +544,7 @@ Collected in `geometry.ASSUMPTIONS` and repeated in every figure caption:
 | `make_ear2.py` | the EAR2 build-up in both label layouts, and the only writer of `slides/assets/img/ear2_{onfig,beamline}_{1_target,2_neutrons,3_collimation,4_dump,5_station}.png` |
 | `annotate.py` | 3-D anchors → pixels, then the type layout |
 | `make_sps.py`, `make_bench.py`, `make_chamber.py`, `make_x17.py` | per-scene drivers with camera presets |
+| `make_couplings.py` | the two X17-theory teaching figures for the backup slides — the "What ε is" vertex/chain explainer (drawn with the `scenes_x17` primitives) and the three-lane coupling-windows chart (`plotstyle`); the only writer of `slides/assets/img/x17_{epsilon,couplings}.png`. Every number is the verified set from the theory backup slides, and the docstring says to change slide and script together |
 | `make_figures.py` | the deliverable still set |
 | `make_anim.py` | turntables and build-up sequences |
 | `make_report.py` | `report.html` |

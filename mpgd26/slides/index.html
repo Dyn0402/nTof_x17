@@ -1469,6 +1469,110 @@
       <div class="caption">J. Gulyás et al., <i>Nucl. Instrum. Methods Phys. Res. A</i> 808, 21 (2016) (spectrometer) &middot; A.J. Krasznahorkay et al., <i>Phys. Rev. C</i> 104, 044003 (2021), arXiv:2104.10075 (³H target)</div>
     </section>
 
+    <!-- ===== Backup — X17 theory, 3 slides, added 2026-08-12 (Dylan: "backup slides
+         about the X17 theory ... why the x17 might be protophobic and how it could
+         wiggle around the constraints set by other experiments").
+
+         The papers are Feng et al. (UC IRVINE, not Berkeley) and the constraint
+         experiment is NA64 (not NA63) — both corrected from the request. Every number
+         on these three slides was verified against the arXiv abstract or full text on
+         2026-08-12. Four things could NOT be verified and are handled as follows:
+           - MEG-II's final EPJC volume/page — cited by arXiv ID only.
+           - PADME's g_ve <~ 5.6e-4 point limit — left off; the ~2 sigma global
+             significance and the 16.90 MeV scan point ARE from the abstract.
+           - The "6.8 sigma" for 8Be is Feng et al.'s characterization; ATOMKI's own
+             abstract says ">5 sigma" — the slide quotes it that way.
+           - Feng 2016 also claimed the X could relieve the then-3.6 sigma MUON g-2
+             discrepancy; the SM prediction has since moved, so that claim is obsolete
+             and is deliberately left off (the electron g-2 bound, which is what caps
+             epsilon_e, is a different number and still stands).
+         The 4He state energies: ATOMKI populate the 0- (21.01 MeV) / 0+ (20.21 MeV)
+         region; the main flow calls the n+3He entrance 20.58 MeV. Both are right and
+         these slides stay off the state-energy question entirely rather than seem to
+         contradict slide 3's caption.
+
+         Slide order is the argument: (1) what was seen and what particle could do it,
+         (2) why the vector must be protophobic + the coupling windows that survive,
+         (3) the case against + who tests it next. If only one goes up when asked,
+         it is (2) — it answers "how is this not already excluded?", which is the
+         question the kicker of a question session actually asks. -->
+    <section class="slide">
+      <div class="kicker">Backup &middot; X17 theory</div>
+      <div class="title-sm">Three anomalies, one mass &mdash; and what kind of particle could do it</div>
+      <div class="content">
+        <table class="spec-table">
+          <tr><td class="k">⁸Be (2016)</td><td>⁷Li(p,e⁺e⁻)⁸Be, the 18.15&nbsp;MeV <b>isoscalar M1</b> transition (1⁺&rarr;0⁺): excess near 140&deg;, <b>&gt;5&sigma;</b>. m<sub>X</sub> = <b>16.70 &plusmn; 0.35 (stat) &plusmn; 0.5 (sys) MeV</b>; B(X)/B(&gamma;) &asymp; 5.8&times;10<sup>&minus;6</sup>. The 17.6&nbsp;MeV <i>isovector</i> transition shows no excess</td></tr>
+          <tr><td class="k">⁴He (2021)</td><td>³H(p,e⁺e⁻)⁴He &mdash; <b>the mirror of our channel</b> &mdash; an <b>E0/M0</b> pair transition: peak at 115&deg;. m<sub>X</sub> = <b>16.94 &plusmn; 0.12 &plusmn; 0.21 MeV</b>; B<sub>x</sub> = 5.1(13)&times;10<sup>&minus;6</sup></td></tr>
+          <tr><td class="k">¹²C (2022)</td><td>¹¹B(p,e⁺e⁻)¹²C, the 17.23&nbsp;MeV 1⁻ state, <b>E1</b> to the ground state: excess above 120&deg;. m<sub>X</sub> = <b>17.03 &plusmn; 0.11 &plusmn; 0.20 MeV</b>; B<sub>x</sub> = 3.6(3)&times;10<sup>&minus;6</sup></td></tr>
+        </table>
+        <ul class="bullets" style="margin-top:.8em">
+          <li>One mass from <b>three different multipolarities</b> (M1, M0, E1) in three nuclei, all at ~10<sup>&minus;6</sup> of the &gamma; branch &mdash; a real particle has to fit all three at once, which is a strong consistency test&hellip;</li>
+          <li>&hellip;and the standing criticism: all three are from <b>the same group and the same apparatus</b>. Independent confirmation is the entire game (next two slides, and this talk).</li>
+          <li><b>What it could be</b> (Feng et al., effective operators by J<sup>P</sup>, assuming parity conservation): a <b>scalar is excluded</b>, a pseudoscalar highly disfavored &mdash; what survives is a <b>vector</b> or an <b>axial vector</b> at 17 MeV, decaying promptly to e⁺e⁻.</li>
+        </ul>
+      </div>
+      <div class="caption">A.J. Krasznahorkay et al., <i>PRL</i> 116, 042501 (2016), arXiv:1504.01527 [⁸Be] &middot; <i>PRC</i> 104, 044003 (2021), arXiv:2104.10075 [⁴He] &middot; <i>PRC</i> 106, L061601 (2022), arXiv:2209.10795 [¹²C] &middot; spin-parity analysis: J.L. Feng, T.M.P. Tait, C.B. Verhaaren, <i>PRD</i> 102, 036016 (2020), arXiv:2006.01151</div>
+    </section>
+
+    <!-- The epsilon explainer + the windows chart (2 slides, added 2026-08-12,
+         Dylan: "I need to have epsilon explained clearly in general" and
+         "visualizations to help with these constraints").  Both figures from
+         make_couplings.py, which also writes the slide copies to assets/img/
+         (bare, no title band -- the slide's own title bar carries it).  The
+         explainer is drawn in the scenes_x17 idiom (same nuclei/squiggle/
+         lepton-fork primitives as the signature figure) so the theory block
+         reads as one visual family; the windows chart is plotstyle.py.  The
+         NUMBERS on the chart are the same verified set as the table slide
+         after it -- if one changes, change make_couplings.py too; the module
+         docstring says so.  Presenting order: explainer -> protophobic table
+         -> windows chart, so the chart lands after the numbers it draws. -->
+    <section class="slide">
+      <div class="kicker">Backup &middot; X17 theory</div>
+      <div class="title-sm">What &epsilon; is</div>
+      <div class="figure-solo"><img src="assets/img/x17_epsilon.png" alt="Two vertex diagrams side by side: a photon coupling to a fermion pair with strength e times Q_f, and an X boson coupling with strength epsilon_f times e. Below, the 4He* to X to e+e- chain with the production vertex labelled rate proportional to epsilon_n squared and the decay vertex labelled lifetime proportional to one over epsilon_e squared."></div>
+      <div class="caption"><b>&epsilon;<sub>f</sub> is the X-charge of fermion f, in units of the electron charge</b> &mdash; the photon couples to every charged particle with the one strength e; the X couples to each fermion with its own small &epsilon;<sub>f</sub>&middot;e, and the pattern of those charges is what the model gets to choose. Rates go as <b>&epsilon;&sup2;</b>, so &epsilon; ~ 10<sup>&minus;3</sup> means ~10<sup>&minus;6</sup> of an electromagnetic rate &mdash; why a 17 MeV particle can still be unexcluded. In our channel: <b>production</b> &prop; &epsilon;<sub>n</sub>&sup2; (with &epsilon;<sub>p</sub> &asymp; 0, next slide), <b>decay</b> to e⁺e⁻ needs &epsilon;<sub>e</sub> &ne; 0 and its lifetime &prop; 1/&epsilon;<sub>e</sub>&sup2; &mdash; which is exactly the handle beam-dump experiments pull on. Figure: <code>mpgd26/make_couplings.py</code>, drawn in the same visual language as the signature figure.</div>
+    </section>
+
+    <section class="slide">
+      <div class="kicker">Backup &middot; X17 theory</div>
+      <div class="title-sm">Why &ldquo;protophobic&rdquo; &mdash; and the coupling window still open</div>
+      <div class="content">
+        <table class="spec-table">
+          <tr><td class="k">The trap</td><td>a generic 17&nbsp;MeV vector coupled to quarks is already dead: <b>NA48/2's &pi;⁰ &rarr; &gamma;(X&rarr;e⁺e⁻) search</b> would have seen it. The &pi;⁰ amplitude &prop; (2&epsilon;<sub>u</sub>+&epsilon;<sub>d</sub>) = <b>&epsilon;<sub>p</sub></b>, the coupling to <i>protons</i></td></tr>
+          <tr><td class="k">The escape</td><td>make &epsilon;<sub>p</sub> nearly vanish &mdash; <b>&ldquo;protophobic&rdquo;</b>: |&epsilon;<sub>p</sub>| &lsim; 1.2&times;10<sup>&minus;3</sup>, while the ⁸Be rate wants |&epsilon;<sub>n</sub>| = <b>(2&ndash;10)&times;10<sup>&minus;3</sup></b>. A boson that sees <b>neutrons but not protons</b> kills the &pi;⁰ constraint by construction; n&ndash;Pb scattering allows |&epsilon;<sub>n</sub>| up to 2.5&times;10<sup>&minus;2</sup></td></tr>
+          <tr><td class="k">&epsilon;<sub>e</sub> floor</td><td>it must also couple to electrons (it decays to them). Too weak and it lives long enough to escape a beam dump: SLAC <b>E141</b> requires |&epsilon;<sub>e</sub>| &gt; 2&times;10<sup>&minus;4</sup>; <b>NA64</b> (100 GeV e⁻ on active target, X&rarr;e⁺e⁻) raised that floor stepwise, excluding <b>1.2&times;10<sup>&minus;4</sup> &lt; &epsilon;<sub>e</sub> &lt; 6.8&times;10<sup>&minus;4</sup></b> by 2020</td></tr>
+          <tr><td class="k">&epsilon;<sub>e</sub> ceiling</td><td>too strong and it shifts the <b>electron g&minus;2</b> and shows in KLOE-2 e⁺e⁻&rarr;&gamma;X: |&epsilon;<sub>e</sub>| &lsim; 1.4&times;10<sup>&minus;3</sup></td></tr>
+          <tr><td class="k">What survives</td><td><b>|&epsilon;<sub>e</sub>| &asymp; (0.7&ndash;1.4)&times;10<sup>&minus;3</sup></b> &mdash; a <i>relatively strongly coupled, promptly decaying</i> X (c&tau; ~ mm). NA64 squeezes from below; each run narrows the window rather than closing it</td></tr>
+          <tr><td class="k">Model building</td><td>anomaly-free completions exist: gauged <b>U(1)<sub>B</sub></b> or <b>U(1)<sub>B&minus;L</sub></b> with photon kinetic mixing, weak-scale vectorlike leptons (LHC-testable); &nu;&ndash;e scattering (TEXONO) separately forces the <i>neutrino</i> coupling to be suppressed</td></tr>
+        </table>
+        <div class="callout"><b>Why this matters for a nuclear search:</b> the surviving X17 couples to neutrons and barely to protons or neutrinos &mdash; so <b>nuclear transitions are precisely where it shows</b>, and collider-style probes squeeze it only through the thin e⁺e⁻ window. An n + &sup3;He entrance channel is exactly the kind of place a protophobic boson cannot hide from.</div>
+      </div>
+      <div class="caption">J.L. Feng et al. (UC Irvine et al.), <i>PRL</i> 117, 071803 (2016), arXiv:1604.07411 (the protophobic proposal) &middot; <i>PRD</i> 95, 035017 (2017), arXiv:1608.03591 (models and the full constraint set) &middot; NA48/2, <i>PLB</i> 746 (2015) 178, arXiv:1504.00607 &middot; NA64: <i>PRL</i> 120, 231802 (2018), arXiv:1803.07748 and <i>PRD</i> 101, 071101(R) (2020), arXiv:1912.11389. The &epsilon;<sub>p</sub>, &epsilon;<sub>n</sub> numbers are Feng et al.&rsquo;s translation of the NA48/2 and n&ndash;Pb limits.</div>
+    </section>
+
+    <section class="slide">
+      <div class="kicker">Backup &middot; X17 theory</div>
+      <div class="title-sm">The coupling windows, drawn</div>
+      <div class="figure-solo"><img src="assets/img/x17_couplings.png" alt="Three horizontal lanes on one shared log axis of coupling strength epsilon, from 1e-4 to 6e-2. Neutron lane: a purple band from 2e-3 to 1e-2 labelled what the 8Be rate needs, and a hatched exclusion above 2.5e-2 from n-Pb scattering. Proton lane: hatched exclusion above 1.2e-3 from NA48/2 pi0 decay, with the protophobic gap arrow up to the neutron band. Electron lane: hatched beam-dump exclusion up to the NA64 2020 edge at 6.8e-4, a purple surviving window up to 1.4e-3, and hatched exclusion above from electron g-2 and KLOE-2."></div>
+      <div class="caption"><b>Hatched = excluded, purple = what the anomaly needs (nucleon lanes) and what survives (electron lane).</b> One shared axis, so the protophobia argument is the vertical read: the ⁸Be rate needs &epsilon;<sub>n</sub> = (2&ndash;10)&times;10<sup>&minus;3</sup>, sitting <i>above</i> the &epsilon;<sub>p</sub> &lsim; 1.2&times;10<sup>&minus;3</sup> ceiling NA48/2's &pi;⁰ &rarr; &gamma;X search imposes &mdash; the particle must see neutrons, not protons. On the electron lane the beam dumps exclude from below (a weakly coupled X lives long and escapes; E141's edge at 2&times;10<sup>&minus;4</sup>, pushed to 4.2 then 6.8&times;10<sup>&minus;4</sup> by NA64), the electron g&minus;2 and KLOE-2 cap from above at 1.4&times;10<sup>&minus;3</sup> &mdash; leaving the thin purple window where the X17 must live: relatively strongly coupled, decaying in ~mm. <b>Caveat:</b> a one-dimensional projection of the published two-dimensional limits at m<sub>X</sub> = 17 MeV, for teaching &mdash; the numbers are the previous slide's table, same sources. Figure: <code>mpgd26/make_couplings.py</code>.</div>
+    </section>
+
+    <section class="slide">
+      <div class="kicker">Backup &middot; X17 theory</div>
+      <div class="title-sm">The case against, the alternative, and who tests it next</div>
+      <div class="content">
+        <table class="spec-table">
+          <tr><td class="k">Theory objection</td><td><b>Zhang &amp; Miller</b>: isospin relations predict X production dominated by direct (non-resonant) dipole transitions &mdash; a <b>smooth energy dependence</b>, where ATOMKI see the excess tied to the resonance; they conclude this &ldquo;invalidates&rdquo; the protophobic vector. <b>Contested</b> by Feng et al.; treat as open, not settled</td></tr>
+          <tr><td class="k">The alternative</td><td>a 17&nbsp;MeV <b>axial vector</b> (Kozaczuk, Morrissey, Stroberg; ab initio matrix elements): evades the &pi;⁰ constraint automatically, no protophobia needed &mdash; at the price of much less certain nuclear matrix elements</td></tr>
+          <tr><td class="k">MEG-II (2024)</td><td>the first independent repeat of ⁷Li(p,e⁺e⁻)⁸Be, wider acceptance than ATOMKI: <b>no significant signal</b>; R<sub>18.1</sub> &lt; 1.2&times;10<sup>&minus;5</sup> (90% CL) against ATOMKI&rsquo;s ~6&times;10<sup>&minus;6</sup> &mdash; compatibility with the ATOMKI X17 at <b>1.5&sigma; (p = 6.2%)</b>. <b>Does not confirm; cannot yet exclude</b></td></tr>
+          <tr><td class="k">PADME (2025)</td><td>resonant e⁺ beam scan of &radic;s = 16.4&ndash;17.4&nbsp;MeV, blind: largest deviation at <b>&radic;s &asymp; 16.90 MeV</b> &mdash; consistent with the ATOMKI mass &mdash; at <b>~2&sigma; global</b>. Intriguing, not evidence; Run IV aims to settle it</td></tr>
+          <tr><td class="k">Coming</td><td>DarkLight (JLab), HPS, Mu3e (PSI), MAGIX/DarkMESA (Mainz), New JEDI (GANIL), NA62, VEPP-3 &mdash; and <b>n_TOF: this talk</b>, in the 2024 community update&rsquo;s list</td></tr>
+        </table>
+        <div class="callout"><b>The honest summary:</b> nine years in, the anomaly is neither reproduced nor excluded. Every claimed sighting traces to one apparatus; the one independent nuclear repeat is in mild tension; the surviving parameter space is narrow but real. That is exactly the situation an independent nucleus, entrance channel and detector technology is for.</div>
+      </div>
+      <div class="caption">X. Zhang, G.A. Miller, <i>PLB</i> 813 (2021) 136061, arXiv:2008.11288 &middot; J. Kozaczuk, D.E. Morrissey, S.R. Stroberg, <i>PRD</i> 95, 115024 (2017), arXiv:1612.01525 &middot; MEG-II, arXiv:2411.07994 &middot; PADME, <i>JHEP</i> 11 (2025) 007, arXiv:2505.24797 &middot; community roadmaps: Alves et al., <i>EPJC</i> 83 (2023) 230, arXiv:2201.09764 and the 2024 update, <i>Universe</i> 10, 409, arXiv:2409.16300</div>
+    </section>
+
     <!-- Backup — the setup as measured drawings, moved off the main flow
          2026-08-10 when slides 15-22 became the 3-D build-up.  Keep them:
          these are the figures that carry the actual survey numbers, and they

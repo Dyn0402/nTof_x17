@@ -59,11 +59,36 @@ now:
 
 `mpgd26_talk_draft.pdf` regenerated on the new design, 56 pages.
 
-Current: **56 slides** (title, outline, motivation incl. the **5-frame EAR2
+## X17 theory backup slides — 2026-08-12
+
+**Three theory backup slides added** (pages 50–52, right after the two ATOMKI
+backup slides): (1) the three anomalies + spin/parity argument, (2) why
+protophobic + the surviving ε windows, (3) the case against + who tests next.
+Dylan asked for "the Feng paper" — that is Feng et al., **UC Irvine** (not
+Berkeley), arXiv:1604.07411/1608.03591, and the constraint experiment is
+**NA64** (not NA63); both corrected. Every number was verified against arXiv
+abstracts/full texts on 2026-08-12; the four things that could *not* be
+verified (MEG-II's final journal ref, PADME's point limit, the 6.8σ vs >5σ
+attribution, the obsolete muon-g−2 claim) are listed in the HTML comment above
+the slides and deliberately kept off them. They do not use `dense` — they were
+tried with it and came out under-filled. Not in the 15-minute cut; if only one
+goes up in questions, it is the middle one ("how is this not already
+excluded?").
+
+**Two more theory slides on 2026-08-12** (Dylan: "epsilon explained clearly in
+general" + "visualizations for these constraints"): a "What ε is" explainer and
+"The coupling windows, drawn", both figures from a new `mpgd26/make_couplings.py`
+(the only writer of `assets/img/x17_{epsilon,couplings}.png`). The chart repeats
+the table slide's verified numbers — the script's docstring says to change both
+together. Presenting order inside the block: anomalies → ε explainer →
+protophobic table → windows chart → case-against.
+
+Current: **61 slides** (title, outline, motivation incl. the **5-frame EAR2
 beam-line build-up, 2026-08-11**, detectors, **n_TOF setup — the 9-frame 3-D
 build-up, 2026-08-10**, **Status — 11 slides, drafted 2026-08-09**, summary,
-backup incl. the two imon teaching slides, 3 status backups, the old
-measured-drawing setup slide and the **EAR2 render's documentation slide**).
+backup incl. the two imon teaching slides, **3 X17-theory slides (2026-08-12)**,
+3 status backups, the old measured-drawing setup slide and the **EAR2 render's
+documentation slide**).
 
 **The Status section is deliberately over-built.** It is written as a menu to
 cut from, not as a running order — see [`STATUS_PLAN.md`](STATUS_PLAN.md) for
