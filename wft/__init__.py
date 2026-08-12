@@ -27,9 +27,10 @@ report WAVEFORM_FIRST_THREADING.md.
 from .calib import CalibrationBundle          # noqa: F401
 from .reco import (                            # noqa: F401
     PlaneFit, fit_plane, fit_plane_candidates, fit_event, select_pair,
-    reconstruct_run, RECO_COLUMNS,
+    select_tracks, candidate_rows, reconstruct_run, RECO_COLUMNS,
 )
 
 __all__ = ['CalibrationBundle', 'PlaneFit', 'fit_plane',
            'fit_plane_candidates', 'fit_event', 'select_pair',
-           'reconstruct_run', 'RECO_COLUMNS']
+           'select_tracks', 'candidate_rows', 'reconstruct_run',
+           'RECO_COLUMNS']

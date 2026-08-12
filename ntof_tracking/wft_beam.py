@@ -322,6 +322,10 @@ def reconstruct_subrun(cfg: BeamConfig, bundle_path: str, out_path: str,
             d = d.sort_values('event_id').reset_index(drop=True)
         os.makedirs(os.path.dirname(path), exist_ok=True)
         d.to_parquet(path, index=False)
+        if cand_rows:
+            pd.DataFrame(cand_rows).sort_values(
+                ['event_id', 'plane', 'rank']).reset_index(drop=True).to_parquet(
+                path.replace('.parquet', '.candidates.parquet'), index=False)
         # the sidecar goes with EVERY checkpoint: a table without its bundle
         # metadata is unusable downstream (v_drift lives there, and it is the
         # angle scale), and a half-finished run is exactly when that bites
@@ -329,7 +333,7 @@ def reconstruct_subrun(cfg: BeamConfig, bundle_path: str, out_path: str,
                     n_seeded, pad_strips, partial=len(tags_done) < len(tags))
         return d
 
-    rows, n_seeded, done = [], 0, []
+    rows, cand_rows, n_seeded, done = [], [], 0, []
     with ProcessPoolExecutor(max_workers=jobs, initializer=wreco._worker_init,
                              initargs=(bundle_path,)) as pool:
         for tag in tags:
@@ -351,7 +355,9 @@ def reconstruct_subrun(cfg: BeamConfig, bundle_path: str, out_path: str,
                                         pad_strips)
             if not payloads:
                 continue
-            rows.extend(pool.map(wreco._worker_fit, payloads, chunksize=8))
+            for r in pool.map(wreco._worker_fit, payloads, chunksize=8):
+                cand_rows.extend(r.pop('_cand', []))
+                rows.append(r)
             done.append(tag)
             if verbose:
                 print(f'[wft-beam]   {tag}: {len(payloads):,} windowed, '
@@ -432,10 +438,12 @@ def _windows_for_tag(cfg, tag, pos_maps, seeds, wanted, pad_strips):
             rec['ftst_' + plane] = ftst
     payloads = []
     for eid, rec in buf.items():
-        fd = (rec['ftst_x'] - rec['ftst_y']
-              if 'ftst_x' in rec and 'ftst_y' in rec else None)
+        # per-plane ftst dict — wft.reco._worker_fit's contract since the
+        # 2026-08-11 t0-prior work (it derives ftst_diff itself; the old
+        # scalar here made every event with ftst_x != ftst_y fit as None)
+        ftst = {p: rec.get('ftst_' + p) for p in ('x', 'y')}
         payloads.append((eid, rec['w'], rec['s'], seeds[eid]['n_hits'],
-                         seeds[eid]['spark'], fd))
+                         seeds[eid]['spark'], ftst))
     return payloads
 
 

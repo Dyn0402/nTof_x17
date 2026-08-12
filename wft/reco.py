@@ -311,6 +311,85 @@ def fit_plane_candidates(windows: list, plane: str, cal: CalibrationBundle,
 DT_XY_TOL_NS = 120.0     # how far t0x - t0y may sit from the measured offset
 
 
+def select_tracks(cand_fits: Dict[str, list], ftst_diff: Optional[int],
+                  cal: CalibrationBundle, max_tracks: int = 3) -> list:
+    """Disjoint time-coincident (x, y) candidate pairs, ranked — the
+    multi-track generalisation of :func:`select_pair`.
+
+    ``select_pair`` answers "which single pair is the muon"; this answers "how
+    many track-like pairs does the event contain". Pair 0 is select_pair's
+    choice (same key, same maximum, kept even when it fails the gate, so the
+    single-track answer is unchanged). Every FURTHER pair must earn its place:
+    time-coincident AND both members plausible. That gate is the
+    double-counting guard — one track split into two clusters (a dead region,
+    a delta ray) yields a second pair that is time-coincident with the first
+    by construction, but its fragments rarely both pass the column-duration
+    plausibility window, and a noise cluster has no reason to be coincident
+    at all.
+
+    Returns ``[(ix, iy, gated)]`` indices into ``cand_fits['x']/['y']``;
+    the event's track count is ``sum(gated)``.
+    """
+    dt = cal.dt_xy.get(int(ftst_diff), -18.8) if ftst_diff is not None else -18.8
+    combos = []
+    for i, fx in enumerate(cand_fits.get('x') or []):
+        for j, fy in enumerate(cand_fits.get('y') or []):
+            if fx is None or fy is None:
+                continue
+            coincident = int(abs((fx.t0 - fy.t0) - dt) <= DT_XY_TOL_NS)
+            plaus = (int(getattr(fx, '_plausible', True))
+                     + int(getattr(fy, '_plausible', True)))
+            dchi2 = (getattr(fx, '_dchi2', 0.0) or 0.0) + \
+                (getattr(fy, '_dchi2', 0.0) or 0.0)
+            combos.append(((coincident, plaus, dchi2), i, j))
+    # stable sort on the key alone: ties keep x-major order, which is the
+    # combo select_pair's strict > would have kept
+    combos.sort(key=lambda c: c[0], reverse=True)
+    used_x, used_y, out = set(), set(), []
+    for key, i, j in combos:
+        if i in used_x or j in used_y:
+            continue
+        gated = key[0] == 1 and key[1] == 2
+        if out and not gated:
+            break        # keys descend: no later combo can pass the gate
+        out.append((i, j, gated))
+        used_x.add(i)
+        used_y.add(j)
+        if len(out) >= max_tracks:
+            break
+    return out
+
+
+def candidate_rows(event_id: int, all_fits: Dict[str, list],
+                   pairs: Optional[list] = None,
+                   ftst: Optional[dict] = None) -> list:
+    """One dict per fitted candidate cluster — the full ranked list that
+    :func:`row_from_fits` reduces to a single winner. ``pairs`` (from
+    :func:`select_tracks`) stamps each candidate with the track it belongs
+    to; ``track_id`` -1 = not part of any selected pair."""
+    track_of = {}
+    for tid, (ix, iy, gated) in enumerate(pairs or []):
+        track_of[('x', ix)] = (tid, gated)
+        track_of[('y', iy)] = (tid, gated)
+    rows = []
+    for plane in ('x', 'y'):
+        f_ftst = (ftst or {}).get(plane)
+        for rank, f in enumerate(all_fits.get(plane) or []):
+            if f is None:
+                continue
+            row = {'event_id': int(event_id), 'plane': plane, 'rank': int(rank)}
+            row.update(asdict(f))
+            row['plausible'] = bool(getattr(f, '_plausible', True))
+            row['dchi2'] = float(getattr(f, '_dchi2', np.nan))
+            tid, gated = track_of.get((plane, rank), (-1, False))
+            row['track_id'], row['track_gated'] = int(tid), bool(gated)
+            row['isochronous'] = bool(np.isfinite(f.q_uend)
+                                      and f.q_uend < U_MIN_NS)
+            row['ftst'] = int(f_ftst) if f_ftst is not None else -1
+            rows.append(row)
+    return rows
+
+
 def select_pair(cand_fits: Dict[str, list], ftst_diff: Optional[int],
                 cal: CalibrationBundle) -> Dict[str, Optional[PlaneFit]]:
     """Choose one cluster per plane using the fact that the muon fired both.
@@ -398,11 +477,15 @@ def _worker_init(bundle_path):
 
 
 PAIR_SELECT = os.environ.get('WFT_PAIR_SELECT', '0') == '1'
+EMIT_CANDIDATES = os.environ.get('WFT_EMIT_CANDIDATES', '1') == '1'
+MAX_TRACKS = 3
 
 
 def _worker_fit(payload):
     eid, wins, seeds, n_hits, spark, ftst = payload
-    ftst = ftst or {}
+    # older beam drivers passed a scalar ftst_diff here; treat anything that
+    # is not the per-plane dict as absent rather than dying inside the try
+    ftst = ftst if isinstance(ftst, dict) else {}
     fits, all_fits = {}, {}
     for plane in ('x', 'y'):
         cand = wins.get(plane)
@@ -416,18 +499,25 @@ def _worker_fit(payload):
             fits[plane], all_fits[plane] = best, ranked
         except Exception:
             fits[plane], all_fits[plane] = None, []
+    ftst_diff = (ftst['x'] - ftst['y']
+                 if ftst.get('x') is not None and ftst.get('y') is not None
+                 else None)
     if PAIR_SELECT:
-        ftst_diff = (ftst['x'] - ftst['y']
-                     if ftst.get('x') is not None and ftst.get('y') is not None
-                     else None)
         try:
             fits = select_pair(all_fits, ftst_diff, _CAL)
         except Exception:
             pass
+    try:
+        pairs = select_tracks(all_fits, ftst_diff, _CAL, max_tracks=MAX_TRACKS)
+    except Exception:
+        pairs = []
     row = row_from_fits(eid, fits, n_hits, spark)
+    row['n_tracks'] = int(sum(1 for _i, _j, g in pairs if g))
     for plane in ('x', 'y'):
         f = ftst.get(plane)
         row[f'{plane}_ftst'] = int(f) if f is not None else -1
+    if EMIT_CANDIDATES:
+        row['_cand'] = candidate_rows(eid, all_fits, pairs, ftst)
     return row
 
 
@@ -469,20 +559,27 @@ def reconstruct_run(cfg, cal: CalibrationBundle, out_path: str,
         print(f'[wft] {len(seeds):,} seeded events, {len(wanted):,} to reconstruct',
               flush=True)
 
-    rows = []
+    rows, cand_rows = [], []
     with ProcessPoolExecutor(max_workers=jobs, initializer=_worker_init,
                              initargs=(bundle_path,)) as pool:
         for payloads in _stream_windows(cfg, pos_maps, seeds, wanted, pad_strips,
                                         verbose=verbose):
             if not payloads:
                 continue
-            rows.extend(pool.map(_worker_fit, payloads, chunksize=8))
+            for r in pool.map(_worker_fit, payloads, chunksize=8):
+                cand_rows.extend(r.pop('_cand', []))
+                rows.append(r)
             if verbose:
                 print(f'[wft]   {len(rows):,} events reconstructed', flush=True)
 
     df = pd.DataFrame(rows).sort_values('event_id').reset_index(drop=True)
     os.makedirs(os.path.dirname(out_path), exist_ok=True)
     df.to_parquet(out_path, index=False)
+    cand_path = out_path.replace('.parquet', '.candidates.parquet')
+    if cand_rows:
+        pd.DataFrame(cand_rows).sort_values(
+            ['event_id', 'plane', 'rank']).reset_index(drop=True).to_parquet(
+            cand_path, index=False)
     meta = dict(n_events=len(df), calibration=bundle_path,
                 bundle=dict(detector=cal.detector, run_key=cal.run_key,
                             v_drift=cal.v_drift, hyper=cal.hyper,
@@ -499,7 +596,13 @@ def reconstruct_run(cfg, cal: CalibrationBundle, out_path: str,
                                gap_mm=wseed.GAP_THRESHOLD_MM,
                                spark_veto=wseed.SPARK_VETO_HITS,
                                pad_strips=pad_strips,
-                               event_filter=bool(event_filter)))
+                               event_filter=bool(event_filter)),
+                multi_track=dict(emit_candidates=EMIT_CANDIDATES,
+                                 max_tracks=MAX_TRACKS,
+                                 n_candidate_rows=len(cand_rows),
+                                 n_events_multitrack=int(
+                                     (df['n_tracks'] >= 2).sum())
+                                 if 'n_tracks' in df else 0))
     with open(out_path.replace('.parquet', '.meta.json'), 'w') as f:
         json.dump(meta, f, indent=1, default=str)
     if verbose:
