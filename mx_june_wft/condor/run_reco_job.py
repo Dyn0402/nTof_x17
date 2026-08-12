@@ -146,8 +146,13 @@ def main():
         pins = ','.join(f'{h}={b["hyper"][h]}' for h in PINNED_HYPERS
                         if h in b.get('hyper', {}))
         argv = sys.argv
+        # No --share-mode: the refit bundle must keep the campaign's kernel
+        # branch. Production bundles carry share_mode null -> the loader falls
+        # back to 'delay' (FREEZE_MPGD26 §2), and calibrate's default writes
+        # 'delay'. Passing 'lp' here would have run these 7 tier-B rows on a
+        # different kernel than the other 207.
         sys.argv = ['wft.calibrate', row['key'], '--seed-bundle', bundle,
-                    '--fix-hyper', pins, '--share-mode', 'lp',
+                    '--fix-hyper', pins,
                     '--jobs', str(args.jobs), '--out', refit_out]
         print('[job]', ' '.join(sys.argv), flush=True)
         runpy.run_module('wft.calibrate', run_name='__main__')

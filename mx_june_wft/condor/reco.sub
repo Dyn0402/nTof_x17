@@ -2,7 +2,12 @@
 # Submit from the package directory (make_reco_package.py builds it):
 #   condor_submit reco.sub                       # phase 1: jobs.txt = gate
 #   condor_submit jobfile=jobs_rest.txt reco.sub # phase 2, after gate_eval
-jobfile                 = jobs.txt
+# A plain `jobfile = jobs.txt` here would override the command line — submit
+# file assignments win over `condor_submit jobfile=...`. Guard it so the
+# phase-2 override actually takes.
+if ! defined jobfile
+  jobfile               = jobs.txt
+endif
 universe                = vanilla
 executable              = run_reco_wrapper.sh
 arguments               = "$(row) $(tag) $(extra)"
