@@ -261,7 +261,17 @@ def fig_pos_corr(cfg, d):
 
 def fig_angle_corr(cfg):
     """Ref-vs-reconstructed angle density, per plane, on the w0/kw-corrected
-    angles (03_angles conventions: slope_reliable only)."""
+    angles — FULL COVERAGE (every ok plane, no slope_reliable mask).
+
+    The slope_reliable gate (|tan| >= 0.08) is a hits-chain inheritance: the
+    time-ladder angle genuinely has no lever arm head-on, which is why June
+    needed the 33/34 signature-hybrid to fill the |theta|<5 deg hole. The
+    forward waveform fit measures the slope from the pulse shapes, and with
+    w0/kw applied the head-on band is unbiased (|bias| <= 0.15 deg) at the
+    same sigma68 as the inclined bands, with 88-97 % sign fidelity — masking
+    it discards 37-44 % of reconstructed planes for nothing. This figure and
+    the angles_fullcoverage.json it writes use every ok plane; the frozen
+    03_angles output (slope_reliable only) is left untouched."""
     W = os.path.join(cfg.OUT_BASE, 'wft')
     table = os.path.join(W, 'angles_w0corr', 'events_w0corr.parquet')
     out_dir = os.path.join(W, 'angles_w0corr')
@@ -287,30 +297,63 @@ def fig_angle_corr(cfg):
         ref[int(r.event_id)] = (tx, ty)
     idx = df.drop_duplicates('event_id').set_index('event_id')
 
+    BANDS = [(0.0, 0.02), (0.02, 0.05), (0.05, 0.0875), (0.0875, 0.14),
+             (0.14, 0.30), (0.30, 0.60)]
+    LT5 = 0.0875                       # tan(5 deg) — the June hybrid headline band
+    summary = {'basis': tag, 'lt5_tan': LT5, 'planes': {}}
     fig, axs = plt.subplots(1, 2, figsize=(12.6, 5.6))
     for i, plane in enumerate(('x', 'y')):
         ok = idx[f'{plane}_ok'].astype(bool)
         rel = idx[f'{plane}_slope_reliable'].astype(bool)
-        eids = [e for e in idx.index[ok & rel] if e in ref]
-        th_ref = np.degrees(np.arctan([ref[e][0 if plane == 'x' else 1]
-                                       for e in eids]))
-        th_det = np.degrees(np.arctan(idx.loc[eids, f'{plane}_tan_theta']
-                                      .to_numpy(float)))
-        m = np.isfinite(th_ref) & np.isfinite(th_det)
+        eids = [e for e in idx.index[ok] if e in ref]
+        tan_ref = np.array([ref[e][0 if plane == 'x' else 1] for e in eids])
+        tan_det = idx.loc[eids, f'{plane}_tan_theta'].to_numpy(float)
+        m = np.isfinite(tan_ref) & np.isfinite(tan_det)
+        th_ref = np.degrees(np.arctan(tan_ref[m]))
+        th_det = np.degrees(np.arctan(tan_det[m]))
         ax = axs[i]
-        hb = ax.hist2d(th_det[m], th_ref[m], bins=[np.linspace(-30, 30, 121)] * 2,
+        hb = ax.hist2d(th_det, th_ref, bins=[np.linspace(-30, 30, 121)] * 2,
                        norm=matplotlib.colors.LogNorm(), cmap='viridis')
         fig.colorbar(hb[3], ax=ax, fraction=0.046, pad=0.04, label='events / bin')
         ax.plot([-30, 30], [-30, 30], color='red', lw=0.8, ls='--')
         ax.set_xlabel(f'{plane} detector angle [deg]')
         ax.set_ylabel(f'{plane} reference angle [deg]')
-        ax.set_title(f'{plane.upper()} angle correlation (n={m.sum():,})\n{tag}',
-                     fontsize=9)
+        ax.set_title(f'{plane.upper()} angle correlation (n={m.sum():,}, '
+                     f'full coverage)\n{tag}', fontsize=9)
+
+        bands = []
+        for lo, hi in BANDS:
+            bm = (np.abs(tan_ref[m]) >= lo) & (np.abs(tan_ref[m]) < hi)
+            if bm.sum() < 30:
+                continue
+            dth = th_det[bm] - th_ref[bm]
+            med = float(np.median(dth))
+            bands.append(dict(
+                lo=lo, hi=hi, n=int(bm.sum()), bias_deg=med,
+                s68_deg=float(np.percentile(np.abs(dth - med), 68)),
+                sign_agree=float(np.mean(np.sign(tan_det[m][bm])
+                                         == np.sign(tan_ref[m][bm])))))
+        l5 = np.abs(tan_ref[m]) < LT5
+        dth5 = th_det[l5] - th_ref[l5]
+        med5 = float(np.median(dth5)) if l5.any() else np.nan
+        summary['planes'][plane] = dict(
+            n=int(m.sum()), frac_slope_reliable=float(rel.mean()),
+            bands=bands,
+            n_lt5=int(l5.sum()), bias_lt5_deg=med5,
+            s68_lt5_deg=(float(np.percentile(np.abs(dth5 - med5), 68))
+                         if l5.any() else np.nan))
     fig.suptitle(f'{cfg.DET_NAME} angular correlation vs M3 — '
                  f'{cfg.RUN}/{cfg.SUB_RUN}', fontsize=11)
     fig.tight_layout()
     fig.savefig(os.path.join(out_dir, 'angle_correlation_hist.png'), dpi=130)
     plt.close(fig)
+    with open(os.path.join(out_dir, 'angles_fullcoverage.json'), 'w') as f:
+        json.dump(summary, f, indent=1)
+    for p, s in summary['planes'].items():
+        print(f'  {p}: full-coverage n={s["n"]:,} '
+              f'(slope_reliable would keep {100 * s["frac_slope_reliable"]:.0f}%)'
+              f'  |theta|<5deg: n={s["n_lt5"]:,} bias {s["bias_lt5_deg"]:+.2f} '
+              f's68 {s["s68_lt5_deg"]:.2f} deg')
 
 
 def main():

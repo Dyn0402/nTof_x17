@@ -153,11 +153,23 @@ def gather(entry):
              ang_frozen=jload(os.path.join(W, 'angles', 'angular_resolution.json')),
              meta=jload(os.path.join(W, 'events.meta.json')))
     d['resist'], d['drift'] = hv_settings(cfg)
+    # theta headline in the June PDF's own convention: sigma68 in the
+    # |theta|<5 deg band — June needed the 33/34 signature-hybrid there; the
+    # forward fit covers it natively (angles_fullcoverage.json, every ok
+    # plane, w0/kw applied, no slope_reliable mask).
+    d['fullcov'] = jload(os.path.join(W, 'angles_w0corr',
+                                      'angles_fullcoverage.json'))
+    fc_planes = (d['fullcov'] or {}).get('planes', {})
+    s5 = [fc_planes.get(p, {}).get('s68_lt5_deg') for p in ('x', 'y')]
+    s5 = [s for s in s5 if isinstance(s, (int, float)) and np.isfinite(s)]
+    d['theta'] = float(np.mean(s5)) if s5 else None
     a = d['ang'] or d['ang_frozen'] or {}
     planes = a.get('planes', {})
     sig = [planes.get(p, {}).get('sigma_deg') for p in ('x', 'y')]
     sig = [s for s in sig if isinstance(s, (int, float)) and np.isfinite(s)]
-    d['theta'] = float(np.mean(sig)) if sig else None
+    d['theta_incl'] = float(np.mean(sig)) if sig else None
+    if d['theta'] is None:
+        d['theta'] = d['theta_incl']
     d['theta_corr'] = bool(d['ang'])
     figs = {}
     for slug, rel in [
@@ -361,10 +373,18 @@ def detector_section(d):
     ang_line = ''
     if ang:
         ang_line = (f"σθ X/Y = {fmt(ang.get('x', {}).get('sigma_deg'))} / "
-                    f"{fmt(ang.get('y', {}).get('sigma_deg'))}°, bias "
-                    f"{fmt(ang.get('x', {}).get('bias_deg'), '{:+.2f}')} / "
+                    f"{fmt(ang.get('y', {}).get('sigma_deg'))}° (|tanθ|≥0.08), "
+                    f"bias {fmt(ang.get('x', {}).get('bias_deg'), '{:+.2f}')} / "
                     f"{fmt(ang.get('y', {}).get('bias_deg'), '{:+.2f}')}° "
                     f"({theta_note})")
+    fc = (d['fullcov'] or {}).get('planes', {})
+    if fc:
+        ang_line += (f" · head-on band |θ|&lt;5°: σ68 X/Y = "
+                     f"{fmt(fc.get('x', {}).get('s68_lt5_deg'))} / "
+                     f"{fmt(fc.get('y', {}).get('s68_lt5_deg'))}°, full "
+                     f"coverage — no slope_reliable mask (June needed the "
+                     f"signature-hybrid here; the forward fit covers it "
+                     f"natively)")
     return f"""
 <section class="det" id="det-{L}">
 <div class="det-head">
@@ -530,8 +550,10 @@ run per detector · waveform-first reconstruction (frozen campaign 2026-08-12)
 {figure(ff.get('eff'), 'Best-run efficiency (within 5 mm), crossing-muon '
         'denominator incl. sparks — the June PDF convention.')}
 {figure(ff.get('sigma'), 'Spatial resolution (core σ of |r| &lt; 15 mm).')}
-{figure(ff.get('theta'), 'micro-TPC angular resolution (waveform-first σθ, '
-        'mean of X/Y, |tanθ| ≥ 0.08, w0/kw applied).')}
+{figure(ff.get('theta'), 'micro-TPC angular resolution — σ68 in the '
+        '|θ|&lt;5° band, mean of X/Y, waveform-first with w0/kw applied, '
+        'full coverage (the June PDF quoted the same band from the '
+        'signature-hybrid; the forward fit covers it natively).')}
 {figure(ff.get('spark'), 'Spark rate (&gt;50 strips), % of crossing muons in '
         'active area.')}
 {figure(ff.get('effhv'), 'Efficiency vs resist HV — wft off-conditions trend '
@@ -551,14 +573,16 @@ run per detector · waveform-first reconstruction (frozen campaign 2026-08-12)
 <thead><tr><th>Det</th><th>Eff %</th><th>σ mm</th><th>θ°</th>
 <th>Spark %</th><th>rays</th></tr></thead>
 <tbody>{june_rows}</tbody></table></div>
-<p class="note">Same runs, same crossing-muon denominator. What moved and
-why: <b>θ</b> — June's hybrid-hits estimator vs tonight's waveform-first fit
-(roughly 2× better fleet-wide); <b>spark</b> — the 7-25 significance floor
-re-classifies discharge-adjacent crossings that the old veto discarded, so
-det6/det7 recover 20–40 points of efficiency from the spark bucket;
-<b>rays</b> — each accounting draws its own active box from its own reco
-footprint (±2–7 %). det3's June page run (22.4k rays) is restored as the
-Detector A page below.</p>
+<p class="note">Same runs, same crossing-muon denominator, and the θ columns
+share June's own convention — σ68 in the |θ|&lt;5° band. What moved and why:
+<b>θ</b> — June filled the head-on band with the 33/34 signature-hybrid;
+the forward waveform fit measures it natively (full coverage, w0/kw
+applied); <b>spark</b> — the 7-25 significance floor re-classifies
+discharge-adjacent crossings that the old veto discarded, so det6/det7
+recover 20–40 points of efficiency from the spark bucket; <b>rays</b> —
+each accounting draws its own active box from its own reco footprint
+(±2–7 %). det3's June page run (22.4k rays) is restored as the Detector A
+page below.</p>
 </div>
 </div>
 
@@ -597,6 +621,14 @@ NOTES = [
     'HV figure.',
     'The per-plane <code>quality_ok</code> flag is an amplitude cut in '
     'disguise (χ²/dof ∝ gain²) and gates nothing here.',
+    'The <code>slope_reliable</code> gate (|tanθ| ≥ 0.08) is a hits-chain '
+    'inheritance that masks 37–44 % of reconstructed planes from the frozen '
+    'angle accounting. Measured on det3: the forward fit\'s head-on band is '
+    'unbiased (|bias| ≤ 0.15°) at σ68 1.0–1.7° with 88–97 % sign fidelity, '
+    'so this report\'s θ figures use full coverage '
+    '(<code>angles_fullcoverage.json</code>). The frozen '
+    '<code>03_angles</code> output is untouched; retiring the gate there is '
+    'a post-freeze queue item.',
     'What this does not rule out: det6\'s bundle v/σ_s degeneracy is an open '
     'item (its v=26.7 µm/ns is not a settled gas fact); merged-cluster double '
     'tracks are not split; off-conditions HV points use the golden bundle and '
@@ -617,7 +649,7 @@ def main():
         sigma=bar_chart(dd, 'core', 'Spatial resolution (core σ)', 'mm',
                         '{:.2f}', 'fleet_sigma.png'),
         theta=bar_chart(dd, 'theta',
-                        'micro-TPC angular resolution (wft, w0/kw applied)',
+                        'micro-TPC angular resolution (σ68, |θ|<5°)',
                         'deg', '{:.2f}', 'fleet_theta.png'),
         spark=bar_chart(dd, 'spark_pct', 'Spark rate (>50 strips)', '%',
                         '{:.1f}', 'fleet_spark.png'),

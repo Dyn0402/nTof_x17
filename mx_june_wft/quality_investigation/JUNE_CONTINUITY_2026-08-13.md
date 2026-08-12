@@ -87,6 +87,43 @@ category counts identical to the event (19,333 / 835 / 639 / 1,387 / 3).
 Together with the earlier 400-event bit-identical re-reco from the desktop's
 own raw copy (verify.log), the chain is machine-independent end to end.
 
+## 5b · Follow-up (same night): the 5.3 % wft deficit is a job artifact, and
+## the angle "hole" is a self-inflicted mask
+
+Second look after the 87.1 % detA number raised "how did A get less
+efficient":
+
+- **The campaign job silently dropped ~5.3 % of matched events on this run.**
+  1,175 hit_no_reco rays are simply absent from the job's table; local re-reco
+  of a 300-event sample at the frozen code+bundle recovers **300/300** with
+  valid X+Y fits. Losses are random per event (gap statistics = pure
+  thinning), inputs are byte-identical EOS↔local, `wft/` is unchanged since
+  freeze `effef73`. The job's own M3 event list is provably different: 36,745
+  events vs 26,670 recipe-passing locally, 97.8 % inside the χ²-only
+  superset, 5,943 recipe events missing → `M3RefTracking` resolves
+  differently under LCG_105 (python 3.9, uproot 4.3, awkward 1.10) **on v1
+  rays files** — and this run is the only tier-A run without
+  `m3_tracking_root_v2` (audit: det6 lost 0 events, det7 lost 3).
+  Fix: full local re-reconstruction (frozen code+bundle, local matched list),
+  campaign table parked in `wft/campaign_lxplus_reco/`. Post-freeze queue:
+  repro the v1-file read on LCG_105; run future campaigns' M3 matching on
+  v2 everywhere or pin a modern stack.
+- **The head-on "hole" in the angle correlation is the `slope_reliable`
+  gate, not the fit.** The gate (|tan| ≥ 0.08) is a hits-chain inheritance —
+  June needed the 33/34 signature-hybrid because the time-ladder angle has no
+  lever arm head-on. The forward fit does not have that problem: with w0/kw
+  applied, detA's head-on bands are unbiased (|bias| ≤ 0.15°) at σ68
+  1.0–1.7° (same as inclined bands), with 88–97 % sign fidelity down to
+  1–3°. The gate was masking **37 % (X) / 44 % (Y) of reconstructed planes**
+  out of the angle accounting and plots. The report now uses full coverage
+  (`angles_w0corr/angles_fullcoverage.json`, June's |θ|<5° σ68 convention);
+  the frozen `03_angles` output is untouched; retiring the gate there is a
+  post-freeze item. The genuine head-on weakness is tiny and different:
+  46 in-table X-plane fit failures skew head-on (0.2 % of rays).
+- False-start decoded files quarantined
+  (`decoded_root/_false_start_01H29/`), mirroring the M3 quarantine, so no
+  future reco consumes them.
+
 ## 6 · The remade report
 
 `mx_june_wft/report/make_grand_report.py` now emits
