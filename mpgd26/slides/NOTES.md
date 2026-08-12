@@ -13,6 +13,52 @@ page (confirmed positional, not content-specific, by swapping slide order).
 `make_pdf.sh` sidesteps it by printing each slide to its own single-page PDF
 and merging with `pdfunite`.
 
+## Design reboot — 2026-08-12
+
+**The deck was restyled wholesale for a scientific-conference aesthetic** (Dylan:
+the tech look was wrong for the room, and HTML is risky to hand a conference —
+so the **PDF from `make_pdf.sh` is now the deliverable**, with the HTML as the
+authoring/presenting format). Slide *content* and *structure* are untouched: the
+whole look lives in the `<style>` block, and the only markup edits were the
+Backup divider (now `class="slide divider"`), a `dense` class on four
+overstuffed backup slides (see below), and two column-ratio tweaks on the target
+slides.
+
+**The theme is "Modern", chosen by Dylan the same day from four rendered
+options** (journal didone serif + mx17 purple / Times "preprint" + navy /
+modern all-sans / slate banded-header TDR). The comparison snapshots are in
+`theme_preview/` (`compare.html` + 20 screenshots) — a record of the decision,
+regenerable from git history, delete at will. The three variant decks themselves
+were deleted after the choice was merged into `index.html`. What the system is
+now:
+
+- **All-sans, Metropolis-inspired**: Noto Sans Display titles (bold, dark rule
+  under), Noto Sans body — **local system fonts**, so the file stays
+  offline-self-contained. White paper, dark teal-black ink (`#23373b`), **one
+  orange accent** (`#eb811b`), hairline rules, booktabs-style `spec-table`s, a
+  running footer (`D. Neff · MPGD 2026, Prague · …` + slide number) on every
+  slide but the title. The copper caution accent survives; the figures' mx17
+  purple now reads as a *figure* colour rather than a chrome colour, which
+  keeps the two layers distinguishable.
+- **Slide numbers are a CSS counter**, and `make_pdf.sh` injects a per-slide
+  `counter-reset` so they survive its one-page-at-a-time printing. If you add or
+  reorder slides, numbers update themselves in both paths.
+- **Photographs get a hairline frame automatically** (`img[src$=".jpg"]`);
+  renders and plots sit borderless on the paper. Don't re-add panel boxes — a
+  height-limited figure in a bordered box reads as dead space.
+- ⚠️ **`class="slide dense"`** shrinks `spec-table`/`callout`/`bullets`/caption
+  on the four reference slides that carry more than a page of content (the EAR2
+  documentation slide, both Target #3 slides, and "Why that is a measurement…").
+  **The two target tables overflowed the page in the old design too** — checked
+  against git HEAD before fixing, so this was a pre-existing fit bug, not a
+  regression. If a new slide overflows, `dense` is the intended lever.
+- The old body font stack resolved to Liberation Sans, which is ~7 % narrower
+  than Noto Sans — that is why the densest slides needed refitting, and why
+  eyeballing "it fit before" is not a check after any font change. The full-deck
+  QA loop is: `./make_pdf.sh`, render pages with `pdftoppm`, look.
+
+`mpgd26_talk_draft.pdf` regenerated on the new design, 56 pages.
+
 Current: **56 slides** (title, outline, motivation incl. the **5-frame EAR2
 beam-line build-up, 2026-08-11**, detectors, **n_TOF setup — the 9-frame 3-D
 build-up, 2026-08-10**, **Status — 11 slides, drafted 2026-08-09**, summary,
@@ -873,6 +919,117 @@ position is wrong** — this was a documentation error only.
 constant, so their drawn geometry is 0.2 % off. That is invisible at slide size and
 the code is now right, so they will self-correct on the next re-render. Not worth a
 re-render on its own.
+
+## The plan slide, answered: two questions it invites — 2026-08-12
+
+Both came from Dylan reading the finished figure, and both are the sort of thing
+that gets asked from the floor. Numbers below are from `data/ntof_event.json`
+itself (event #208), not estimates. **This is ONE event** — do not generalise
+either answer into a statement about the setup.
+
+### "110° in space but 122° as drawn — is that scattering in the capsule?"
+
+No. Both numbers come from the *same* primary directions at the vertex: the
+generator recorded 110.1°, and recomputing from the direction vectors the figure
+actually draws gives 110.2°. Nothing about the material enters.
+
+It is pure projection, and the intuition that projecting can only widen an angle
+is not right — it can go either way:
+
+```
+cos θ_3D = a⊥·b⊥ + a_y b_y            (unit vectors, y = beam)
+cos θ_2D = a⊥·b⊥ / (|a⊥| |b⊥|)
+```
+
+In this event **both legs leave going up** (+y components +0.284 and +0.407;
+polar 73.5° and 66.0° from the beam), so `a_y b_y = +0.116` — the one term
+pulling cos θ *up*, i.e. making the space angle **less** obtuse than the drawn
+one. Drop it and renormalise by `|a⊥||b⊥| < 1` and you get 121.7°. Had the legs
+gone to opposite sides of the drawing plane, projection would have **shrunk** the
+angle instead. Recorded in the `make_ntof_plan.py` docstring too.
+
+### "14.8 of 19.6 MeV seen — where did the other 4.7 go? The MM PCB?"
+
+The PCB is the biggest *dead-material* sink but it is not most of it. Full
+budget, by tracking each primary's KE loss region by region (sums exactly to the
+19.558 MeV the pair started with):
+
+| Where the energy went | e⁻ (arm D) | e⁺ (arm C) | total |
+|---|---|---|---|
+| **Seen** — deposits in sensitive volumes | 8.39 | 6.46 | **14.84** |
+| ³He capsule itself (gas + Al + CFRP wall, ~13 mm crossed) | 0.63 | 0.50 | 1.13 |
+| MM stack dead material | 0.61 | 0.52 | 1.13 |
+| air, containers, plastic wrapping (~460 mm of path) | 0.06 | 0.08 | 0.14 |
+| radiated out of the plastic/LS and never re-absorbed | 1.06 | 1.27 | 2.33 |
+| | | | **19.56** |
+
+Inside that MM row, per leg (e⁻ arm D / e⁺ arm C), read off a 0.2 mm dE/dx
+profile through the stack rather than from volume names:
+
+| | e⁻ | e⁺ |
+|---|---|---|
+| **readout board laminate** (1.7 mm of Cu/FR4/kapton, w = 35.0–36.8 mm) | **0.507** | **0.421** |
+| Rohacell backing (5 mm, w = 36.8–41.8) | 0.048 | 0.048 |
+| back mylar/Al foil (w ≈ 41.8, 40 µm) | 0.003 | 0.003 |
+| mylar + Al window, drift cathode | 0.012 | 0.014 |
+| **the 30 mm of drift gas** | **0.046** | **0.032** |
+| gas behind the mesh (w = 30–35, dE/dx ≈ 0) | ~0 | ~0 |
+
+So the chamber's whole material cost to a 10 MeV electron is the **readout
+board** — 0.93 MeV of the 1.13, about a fifth of the total deficit — and the gas
+it actually measures in costs 0.08 MeV. Everything else is foils.
+
+⚠️ **The 8 mm Al support plate is NOT in this budget, and must not be put in it**
+(Dylan, 2026-08-12). It is built by `addRing` in
+`MX17_Geant/shared/MX17ModuleGeometry.hh` — a plate with a **402 mm square
+through-aperture concentric with the active area** (`AsBuiltSpec`:
+`plate_mm = 8.0`, `plateAp_mm = 402.0`), i.e. a frame around the outside with
+nothing over the active area. These legs cross at |u| ≤ 83 mm and |v| ≤ 92 mm,
+deep inside the ±201 mm aperture, and the profile shows air (0.1–0.2 keV/mm)
+from w = 42 mm out. A track that did cross 8 mm of Al would lose ~3.7 MeV —
+i.e. if the plate ever appears in an energy budget, something is wrong.
+An earlier draft of this note credited it with 0.14 / 0.11 MeV; that energy is
+the Rohacell and the foil behind it.
+
+**The dominant term is escaping photons, ≈2.3 MeV — half the deficit.** Mostly
+arm C: the e⁺ spent 5.97 MeV in the 25 mm plastic, arrived at the liquid with
+~1.2 MeV, stopped in its first 2.2 mm, and arm C's LS recorded only 0.077 MeV.
+The two 511 keV annihilation gammas evidently left as well — and note they are
+*extra* energy, not part of the 19.56, so they do not close the gap either.
+
+Rebuild the table: the region-by-region KE decomposition is a few lines over
+`ev['legs'][i]['ke']` and `['layers']`; `layers` labels every step, and `'world'`
+means any non-sensitive volume.
+
+## The SiPM dead bars were mirrored — corrected 2026-08-12
+
+Dylan, off the top-down slide: "the SiPM bars seem to be shifted in the wrong
+direction — there should be one unread on the left and three on the right,
+looking from the top and behind the MMs." Correct, and the deck had it backwards.
+
+The 16-of-20 read-out window is shifted **one bar toward the MM**, and the MM is
+pinwheel-shifted along **−u**, so the window goes to −u: **live bars 1–16**, dead
+**{0}** on the MM side (left, seen from behind the wall) and **{17,18,19}** on the
+far side (right). `DetectorConstruction.cc` and `mx_july_beam_qa/mx17_geom.py`
+both had that sign; `MX17_Full_Geant/scripts/plot_geometry.py` — which every
+figure in this package imports — had `+shift` instead of `−shift`, so it drew
+bars 3–18 and mirrored the dead ones. **Drawing-only: the simulation is
+unaffected.** One-line fix in `plot_geometry.py`, dated comment there and a full
+write-up in `GEOMETRY_COORDINATE_CONVENTION.md` §6.
+
+Regenerated and re-copied: `setup3d_6_sipm`, `_7_plastic`, `_8_plastic_top`,
+`_9_full` (slides 26–29), `ntof_plan.png` (slide 30), the backup
+`setup_2_sipm` / `_3_plastic` / `_4_full` (slide 51, from `plot_buildup.py
+--style clean`), and the `build_ntof` / `turn_ntof` animations in `report.html`.
+`setup_topdown.png` does not draw individual bars and was left alone.
+
+⚠️ **Still unverified against hardware.** Sim, analysis, figures and the written
+convention now agree, but they are all the *same* convention — no measurement has
+confirmed which side the real dead bars are on. The check is to project
+reconstructed MM tracks onto the wall and see which group fires; logged as an
+open item in `GEOMETRY_COORDINATE_CONVENTION.md` §6, with the σ ≈ 47 mm pointing
+blur caveat. Nothing on the slides depends on it — the wall is drawn, never used
+for a number — so this is not a blocker for 3 September.
 
 ## Dylan's review of the two new renders — 2026-08-10, in flight
 

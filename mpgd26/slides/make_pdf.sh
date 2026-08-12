@@ -22,7 +22,11 @@ with open('index.html') as f:
 head = c[:c.index('<div class="stage">')]
 sections = re.findall(r'<section class="slide.*?</section>', c, flags=re.S)
 for i, sec in enumerate(sections, start=1):
-    doc = head + '<div class="stage"><div class="deck">\n' + sec + '\n</div></div>'
+    # Each slide prints alone, so the CSS slide counter would read "1" on every
+    # page; pre-load it with this slide's position in the full deck instead.
+    doc = (head
+           + f'<style>.deck{{counter-reset:slide {i-1};}}</style>\n'
+           + '<div class="stage"><div class="deck">\n' + sec + '\n</div></div>')
     with open(f'{work}/slide_{i:02d}.html', 'w') as f:
         f.write(doc)
 print(f'{len(sections)} slides', file=sys.stderr)

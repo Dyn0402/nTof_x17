@@ -80,7 +80,7 @@ NTOF_BLURB = {  # NTOF_BLURB is merged in below
     'ntof_plan': 'The same setup and the same event as a PLAN: orthographic, '
         'looking down the beam, 1:1 in both axes.  Not a render -- a '
         'matplotlib drawing (make_ntof_plan.py) off the same geometry module, '
-        'so the standoff circle, the layer radii and the size of the target '
+        'so the standoff, the layer radii and the size of the target '
         'can be measured off the page instead of being asserted in a caption.  '
         'A "_bare" version without the headline and the note is what the slide '
         'uses.',

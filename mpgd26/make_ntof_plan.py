@@ -38,6 +38,22 @@ above the vertex -- and none of that is visible here.  The opening angle drawn
 between them is therefore the projected one, and the box on the figure quotes
 both it and the true space angle.  The event's bremsstrahlung gammas and its
 knock-on electrons are not drawn, exactly as on the 3-D frames.
+
+The drawn angle is WIDER than the space angle here (122 deg vs 110), which is
+not a general rule and is worth knowing before it is asked from the floor.
+Projection is not a bound in either direction:
+
+    cos(theta_3D) = a_perp . b_perp + a_y b_y        (unit vectors)
+    cos(theta_2D) = a_perp . b_perp / (|a_perp| |b_perp|)
+
+Both legs of this event leave going UP (+y components +0.284 and +0.407, i.e.
+polar 73.5 and 66.0 deg from the beam), so a_y b_y > 0 and it is the one term
+pulling cos(theta) up, i.e. making the space angle less obtuse.  Drop it, then
+renormalise by |a_perp||b_perp| < 1, and the drawn angle opens to 121.7 deg.
+Had the two legs gone to opposite sides of the drawing plane the projection
+would have SHRUNK the angle instead.  None of this is scattering: both numbers
+come from the same primary directions at the vertex, and the 110.1 deg the
+generator recorded reproduces to 110.2 deg from the drawn direction vectors.
 """
 from __future__ import annotations
 
@@ -220,17 +236,11 @@ def draw_ls(ax, arm):
           COL['pmt'], EDGE, lw=0.7, alpha=0.95, z=4)
 
 
-def draw_standoff_circle(ax):
-    """The circle every arm's front face is tangent to.
-
-    The four arms are at one standoff, and on a plan that is a fact you can
-    draw rather than assert: one faint circle, and the four mylar windows sit
-    on it.  It is also what the dimension chain is measured from.
-    """
-    from matplotlib.patches import Circle
-    r = float(PG.dist * CM)
-    ax.add_patch(Circle((0, 0), r, facecolor='none', edgecolor=P.MUTED,
-                        lw=0.8, ls=(0, (5, 5)), alpha=0.45, zorder=1))
+# The standoff circle -- one faint dashed circle every arm's mylar window sits
+# on -- was drawn here until 2026-08-12.  Dropped on Dylan's call: the four
+# windows are visibly on one circle without it, the dimension chain already
+# states the 204.5 mm, and at this scale the circle passes close enough to the
+# chamber frames to read as a part rather than as a construction line.
 
 
 def draw_capsule(ax):
@@ -330,8 +340,11 @@ def draw_labels(ax, ev, legs):
                 path_effects=halo, rotation=_arm_rot(arm))
 
     # --- the target, to scale ----------------------------------------------
-    ax.annotate('³He capsule\nØ23 mm\ndrawn to scale',
-                xy=(-13.0, 13.0), xytext=(-46.0, 96.0),
+    # Just the name.  The Ø23 mm and the "drawn to scale" were saying in words
+    # what the drawing says by being 1:1 -- and the whole point of this figure
+    # is that you can measure the capsule off it.
+    ax.annotate('³He',
+                xy=(-13.0, 13.0), xytext=(-46.0, 62.0),
                 ha='right', va='center', fontsize=10.5, color=P.INK,
                 zorder=10, path_effects=halo,
                 arrowprops=dict(arrowstyle='-', lw=1.0, color=P.MUTED,
@@ -480,7 +493,6 @@ def figure(ev, bare=False):
     ax.set_aspect('equal')
     ax.grid(False)
 
-    draw_standoff_circle(ax)
     for arm in N.ARMS:
         draw_chamber(ax, arm)
         draw_sipm(ax, arm)
@@ -520,11 +532,10 @@ def figure(ev, bare=False):
            'Geometry from the Geant4 SimConfig via MX17_Full_Geant/scripts/'
            'plot_geometry.py; per-arm distances and vessel rotations as '
            'surveyed 2026-07-17/18. Event: the same simulated pair as the 3-D '
-           'build-up (data/ntof_event.json). The dashed circle is the 204.5 mm '
-           'standoff every arm’s 40 µm mylar window sits on — the '
-           'drift gas’s own front edge here. The beam axis is projected '
+           'build-up (data/ntof_event.json). The beam axis is projected '
            'away, so the legs also rise ~135 mm along it before reaching the '
-           'liquid, and the opening angle as drawn is not the space angle. '
+           'liquid; both legs rise, which is why the drawn opening angle is '
+           'the wider of the two. '
            'Markers are energy deposits, in the depositing leg’s colour '
            'and sized by how much; bremsstrahlung gammas and knock-on '
            'electrons are not drawn.')
