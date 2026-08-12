@@ -246,10 +246,28 @@ fixed by patching one of them.
 
 Do **not** recompute the tables in bursts from the first campaign — on a
 mislocked segment the matched-burst count is itself the corrupted number
-(run_81/0001 × 224580 reporting 44 bunches is exactly that trap). The fixed
-campaign computes matched-against-total bursts as part of every join, so the
-burst fractions fall out of it with no separate reconstruction; take them
-from there and drop this caveat. A segment wholly
+(run_81/0001 × 224580 reporting 44 bunches is exactly that trap).
+
+Rebuilding them takes **three routes, and all three must appear in the table**,
+because the provenance exists only where a product does — and the tables
+classify *failures*, which is precisely where it is silent:
+
+| segment | route | status |
+|---|---|---|
+| produced a product | `n_bursts` / `n_bursts_matched` in the join block | **measured** — what the code actually used |
+| failed, but its sub-run locked | burst epochs against the run's pulse span | **reconstructed** — sound, but a reconstruction |
+| refused (`AmbiguousLock`) | none: no offset exists, so the bursts cannot be placed in absolute time | **not determinable** |
+
+Label the routes. The second must use a **freshly computed** `pulse_match`
+offset, never a cached v1 one: those betray supercycle mislocks, and a
+118.8 s error displaces the burst epochs by ~3.3 % of an hour-long sub-run —
+harmless in the bulk, decisive within ~0.03 of the 0.5 threshold.
+
+The third category must be printed, not dropped. A refused sub-run has a
+recorded `t_span_s` but no offset, so it has a duration and no position.
+Omitting those rows would make the table under-report exactly the population
+it is about — the same shape as *"the QA is clean precisely because the
+broken ones are absent"*. A segment wholly
 inside its n_TOF run (`overlap_frac` 1.000) has `sel` all-true and the two
 medians are identical — the whole-hour class was never exposed, and neither
 were the two recoveries made during the 08-12 campaign. Against the campaign
