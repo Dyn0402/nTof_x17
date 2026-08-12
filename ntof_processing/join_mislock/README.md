@@ -195,7 +195,16 @@ holding the wall-clock extent fixed moves the corruption while time-overhang
 stays at 76.6 %: 62.0 % bursts corrupt, 52.2 % corrupt, 45.1 % clean. So the
 `overlap_frac` table below is a wall-clock **proxy** — a good one where
 density is roughly uniform, and wrong for exactly the segments that straddle
-a beam gap, where a 61 % time overhang can be a sub-50 % burst overhang. A segment wholly
+a beam gap, where a 61 % time overhang can be a sub-50 % burst overhang.
+`run_81/stat090_0001 × 224581` is that case, observed: 61 % time overhang,
+joins correctly, so its burst overhang is under 50 %.
+
+Do **not** recompute the tables in bursts from the first campaign — on a
+mislocked segment the matched-burst count is itself the corrupted number
+(run_81/0001 × 224580 reporting 44 bunches is exactly that trap). The fixed
+campaign computes matched-against-total bursts as part of every join, so the
+burst fractions fall out of it with no separate reconstruction; take them
+from there and drop this caveat. A segment wholly
 inside its n_TOF run (`overlap_frac` 1.000) has `sel` all-true and the two
 medians are identical — the whole-hour class was never exposed, and neither
 were the two recoveries made during the 08-12 campaign. Against the campaign
@@ -237,6 +246,14 @@ A bug-bitten segment pairs its triggers with the wrong bunches, so the clock
 fit finds nothing and the segment FAILS loudly, writing no file. All 48 did.
 The campaign's 170 OK products are sound, and no re-validation of them is
 needed.
+
+Structurally, the corrupted δ lands either grid-aligned (a full-looking join
+on wrong bunches → no coincidence → the clock fit fails) or off-grid (nothing
+clears `MATCH_TOL_S` → an empty join). Neither path writes a passing product.
+**Tested at the one point where it was load-bearing for a specific shipped
+file**: `run_81/stat090_0001 × 224581`, the segment briefly accused below,
+re-run under the fix with a cold cache → **0.94812, identical to the shipped
+value to five decimals.**
 
 A short-lived claim that `run_81/stat090_0001 × 224581` was a silently-wrong
 product is **withdrawn**. It rested on `joined_bunches (232) ≤
