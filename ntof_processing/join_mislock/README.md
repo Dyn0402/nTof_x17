@@ -214,6 +214,36 @@ line. Any segment straddling a beam gap can move that far. That is the case
 for taking the tables from the fixed campaign rather than patching the
 existing ones.
 
+### `overlap_frac` misleads in TWO independent ways — separate them
+
+The pair either side of this sub-run is the worked example:
+
+| run_81/stat090_0001 | burst overhang | time overhang | outcome |
+|---|---|---|---|
+| × 224581 | 0.335 | 0.611 | fits, 94.81 % |
+| × 224580 | **0.691** | 0.559 (nominal **0.311**) | failed; predicted to recover |
+
+The ×224580 row stacks two corrections, and **the threshold is already crossed
+by the first**:
+
+| | overhang | verdict |
+|---|---|---|
+| nominal wall clock (inventory) | 0.311 | clean |
+| measured wall clock | 0.559 | **bitten** |
+| bursts | 0.691 | **bitten** |
+
+So this segment was hidden primarily by the **duration estimator**, not by the
+time-vs-bursts distinction; bursts add margin but do not flip it. The overlap
+*minutes* were right (21.6 nominal vs 21.3 measured) — the **denominator** was
+wrong, 31.3 min estimated against 48.4 measured, because no stop time was
+recorded and the estimator falls back to file count × 47.1 s.
+
+That is a second failure mode of `overlap_frac`, independent of beam density:
+it bites any sub-run with no recorded stop time, *including* ones where the
+beam is perfectly steady. Both are fixed by taking the fractions from the
+corrected campaign, which measures duration and bursts alike; neither is
+fixed by patching one of them.
+
 Do **not** recompute the tables in bursts from the first campaign — on a
 mislocked segment the matched-burst count is itself the corrupted number
 (run_81/0001 × 224580 reporting 44 bunches is exactly that trap). The fixed
@@ -246,15 +276,20 @@ sit in this list (run_132/0007 × 224663 at overlap 0.846, run_139/0007 ×
 families (run_128/0000 at 0.881; run_156/0009 and /0011). They are covered by
 `ce8ced7`, not by this fix.
 
-**Exactly one segment in the campaign is unexplained: `run_81/stat090_0001 ×
-224580`** — sibling_ok (so the pulse_match offset is pinned), nominal overlap
-0.689 (so the bootstrap median should stay in the matched population), yet it
-joined only 44 bunches / 4,249 events with 17 dropped pulses and the 'dropped
-pulses look like no beam' guard FIRING. Treat its 0.689 with suspicion: it
-rests on the same file-count duration extrapolation shown above to run short
-for this very sub-run, so the "should not have been bitten" argument is only
-as good as a number we already caught being wrong. Do not build a third
-mechanism on it before the fixed campaign reports.
+**One segment was unexplained: `run_81/stat090_0001 × 224580`** — sibling_ok
+(so the pulse_match offset is pinned), nominal overlap 0.689 (so the bootstrap
+median should have stayed in the matched population), yet it joined only 44
+bunches / 4,249 events with 17 dropped pulses and the 'dropped pulses look
+like no beam' guard FIRING.
+
+**It is no longer a candidate third mechanism.** Its 0.689 was the estimated
+duration, and on measured numbers it sits at 0.559 wall-clock / 0.691 burst
+overhang — over the threshold on both, i.e. bug 2 after all. Recorded before
+the job landed: **prediction is that it recovers under `3a6c284`**, which
+would leave nothing in the campaign outstanding. The prediction's method is
+validated on the other side of the same sub-run (×224581 predicted clean at
+0.335, observed fitting at 94.81 %). Judge it against that statement rather
+than explaining the outcome afterwards.
 
 **No wrong product shipped. This bug destroys data; it does not corrupt it.**
 A bug-bitten segment pairs its triggers with the wrong bunches, so the clock
