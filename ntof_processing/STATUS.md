@@ -4,6 +4,31 @@
 
 ---
 
+## 2026-08-12 morning — official processing is COMPLETE except one lost run
+
+[`FINDINGS_2026-08-12_official_complete.md`](FINDINGS_2026-08-12_official_complete.md).
+
+n_TOF's manual resubmission of the tail block on the evening of 08-11 finished
+by 20:26. **444 of 445 runs now have a complete official product** at the
+campaign recipe (`UserInput_2026_EAR2_X17_v4.h`, fingerprint `e737ed0da496`,
+the same one our `prod_v12` carries). 224688-224718 and 224576 all pass
+contiguity, `ceil(raw/4)`, history and bunch-coverage.
+
+Two block runs diffed hit for hit against ours: WAL A-D, PSS A-D, SILI, PKUP
+**bit-identical on all 22 columns**; LIQ same hit counts with `afast` differing
+on ≤8 hits in ~100 000 — the same signature as 224572.
+
+**Run 224526 is 87 % lost and it is permanent.** 140 of its ~162 raw files aged
+off disk, n_TOF reprocessed it on 08-07 from the 22 that were left, and 440 of
+3313 beam bunches survive. No tape replica, no other copy. One other run with a
+gapped raw sequence (224531) checked out clean.
+
+Follow-ups: **the `handoff_publish/` scripts are no longer needed**, `prod_v11`
+(224573-224579) is retirable, and `prod_v12/224709` (stalled at 18 of 86) can be
+abandoned — official has all 86. Nothing deleted yet.
+
+---
+
 ## 2026-08-12 overnight — matching failures SOLVED: pulse_match supercycle mis-lock; 25.7 % of beam recoverable
 
 [`join_mislock/README.md`](join_mislock/README.md) (mechanism, scripts, recipe),

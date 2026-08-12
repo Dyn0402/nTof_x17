@@ -1,0 +1,23 @@
+# n_TOF X17 EAR2 2026 -- runs that are finished and not moving
+# generated 2026-08-12 10:40 by campaign_qa/settled_runs.py
+# criterion: a non-empty merged file in official/done/. Every such run has
+# been left untouched, while complete-but-unmerged runs were wiped and
+# reconstructed again -- see the module docstring.
+
+## FINISHED -- 414 runs
+224264-224339, 224341-224377, 224379-224394, 224398-224404, 224406-224450, 224455-224460, 224462-224464, 224466-224474
+224476-224496, 224498, 224500-224564, 224566-224616, 224618-224637, 224640-224648, 224651, 224654-224665
+224668-224670, 224672-224687, 224689, 224694, 224698, 224702-224703, 224705-224708, 224710-224712
+224715-224718
+
+## STABLE BUT UNMERGED -- 5 runs
+# complete partial sets, untouched for more than 24 h. Usable,
+# but not blessed, and a re-run would cost them their partials for hours.
+224405, 224451-224453, 224667
+
+## MOVING -- 26 runs. Do not read these.
+224454, 224461, 224499, 224565, 224617, 224638-224639, 224652-224653, 224666, 224671, 224688, 224690-224693, 224695-224697, 224699-224701, 224704, 224709, 224713-224714
+
+## zero-byte done/run<N>.root -- 2
+# either a failed merge or one in flight; look twice before concluding.
+224405, 224667
