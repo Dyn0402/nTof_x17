@@ -124,6 +124,37 @@ efficient":
   (`decoded_root/_false_start_01H29/`), mirroring the M3 quarantine, so no
   future reco consumes them.
 
+## 5b-CORRECTIONS (from the rerun session, later 8-13) — read before citing §5b
+
+Three statements in §5b were wrong or understated; the rerun session
+(cosmic_reprocess_12-8-26) measured the true scope:
+
+- **"only tier-A run without v2" is FALSE**: 184 of 214 manifest rows have no
+  `m3_tracking_root_v2` — tier C 167, **tier A 16**, tier B 1. All five
+  golden keys DO have v2, which is why the conference digest and the det6/
+  det7 golden-key audit (0/3 lost) never saw it. My uniqueness claim was an
+  overgeneralization from that audit.
+- **Severity**: not a 5.3 % thinning. On the 16 v1 tier-A rows, **55.4 % of
+  the 116,776 reconstructed events lie outside χ²<1 & NClus≥4** (per row
+  43.6–68.5 %) — the v1 jobs effectively ran χ²-only, a different recipe in
+  both directions.
+- **`--matched-list` did not exist** when my brief offered it; the rerun
+  session implemented it (`condor/make_matched_lists.py` + refusal on
+  recipe/row/key mismatch) plus `--local` (all 16 rows have complete local
+  decoded_root — no lxplus, no LCG_105 at all). Its row-59 matched list
+  reproduces this session's 26,670 exactly.
+
+Also superseding §5b's "post-freeze queue" per Dylan ("forget the freeze"):
+**w0/kw is restored in-reco** — `CalibrationBundle` round-trips w0/kw (the
+class was blind to them; every load→save shed them, which is why the n_TOF
+beam bundles are bare), `plane_fit` applies the 9dd7d6e formula, reco stamps
+`angle_constants.applied`, and `corrected_angles.py` skips already-corrected
+tables. Caveat: in-reco restoration is NOT identical to the post-hoc arm
+(tan_theta feeds candidate selection via TAN_MAX; a few candidates near the
+cut flip) — post-hoc remains correct for pre-restore tables. Rerun scope
+(Dylan): the 16 v1 tier-A rows; tier C stays; row 59 (g_det3_wknd) runs as
+end-to-end validation only, nothing promoted for it.
+
 ## 5c · Resolution (early 8-13): detA lands at ~93 %, fixes propagated
 
 Full local re-reconstruction of `g_det3_wknd` at the frozen code+bundle
