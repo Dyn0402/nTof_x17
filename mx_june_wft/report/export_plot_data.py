@@ -47,8 +47,8 @@ from make_june_figs import per_ray_table, JUNE_KEYS       # noqa: E402
 from wft import compat                                    # noqa: E402
 
 FLEET_REPORT = '/home/dylan/x17/cosmic_bench/Analysis/fleet_report'
-LETTER = {'g_det3_wknd': 'A', 'o22_long_det2': 'B', 'g_det6_long': 'C',
-          'g_det7_long': 'D', 'g_det4': 'E'}
+LETTER = {'g_det3_wknd': 'A', 'g_det2': 'B', 'o22_long_det2': 'B-June',
+          'g_det6_long': 'C', 'g_det7_long': 'D', 'g_det4': 'E'}
 
 # Columns lifted from events.parquet onto the ray table. Everything a figure
 # colours, cuts or bins by -- keep this list generous, the table is small.

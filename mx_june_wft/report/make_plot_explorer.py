@@ -20,9 +20,12 @@ Input is plot_data/rays.csv (export_plot_data.py). Run that first.
     ../../.venv/bin/python mx_june_wft/report/make_plot_explorer.py [keys...]
 """
 import base64
+import csv
+import glob
 import html
 import json
 import os
+import re
 import sys
 
 import numpy as np
@@ -40,9 +43,16 @@ import matplotlib.pyplot as plt                               # noqa: E402
 from matplotlib.colors import LogNorm                         # noqa: E402
 
 FLEET_REPORT = '/home/dylan/x17/cosmic_bench/Analysis/fleet_report'
-KEYS = ['g_det3_wknd', 'o22_long_det2', 'g_det6_long', 'g_det7_long', 'g_det4']
-LETTER = {'g_det3_wknd': 'A', 'o22_long_det2': 'B', 'g_det6_long': 'C',
-          'g_det7_long': 'D', 'g_det4': 'E'}
+# B appears twice on purpose. The fleet report keys det2 on the 6-22 longer_run
+# because that is the run the June PDF's det2 page used (3,772 rays), the same
+# reason A is keyed on g_det3_wknd -- the continuity table only means something
+# against the same run. But det2's long_run is the SAME night at the SAME
+# settings with 5x the statistics, and that is the one to look at. Both are
+# here; the June-matched one is labelled as such.
+KEYS = ['g_det3_wknd', 'g_det2', 'o22_long_det2', 'g_det6_long',
+        'g_det7_long', 'g_det4']
+LETTER = {'g_det3_wknd': 'A', 'g_det2': 'B', 'o22_long_det2': 'B-June',
+          'g_det6_long': 'C', 'g_det7_long': 'D', 'g_det4': 'E'}
 CAT_COLOUR = {'within': '#1c6b3f', 'reco_far': '#c9761d',
               'hit_no_reco': '#a8322d', 'no_hit': '#8b8f94', 'spark': '#6b3fa0'}
 
@@ -587,6 +597,129 @@ def build_detector(key, root):
                                          FLEET_REPORT))
 
 
+CAMPAIGN = '/home/dylan/x17/cosmic_bench/condor_campaign'
+SCAN_RE = re.compile(r'(?:drift_scan_)?resist_(?:det\d+_)?(\d+)V'
+                     r'(?:_det\d+_(\d+)V)?_drift_(\d+)V$')
+
+
+def _scan_point(key, det):
+    """Metrics for one scan point, from its staged product. No alignment or M3
+    needed: everything here is a property of the reconstruction itself."""
+    for cand in (os.path.join(CAMPAIGN, 'results_20260813', key),
+                 os.path.join(CAMPAIGN, 'results_20260813', key + '__offcond'),
+                 os.path.join(CAMPAIGN, 'rerun_20260813', 'rerun_out', key)):
+        if os.path.isdir(cand):
+            d = cand
+            break
+    else:
+        return None
+    pq = os.path.join(d, 'events.parquet')
+    jr = os.path.join(d, 'job_row.json')
+    if not (os.path.exists(pq) and os.path.exists(jr)):
+        return None
+    row = json.load(open(jr))
+    want = ['x_q_sum', 'y_q_sum', 'x_n_strips', 'y_n_strips',
+            'x_chi2', 'y_chi2']
+    try:
+        t = pd.read_parquet(pq, columns=want)
+    except Exception:                                          # noqa: BLE001
+        t = pd.read_parquet(pq)
+    n_matched = row.get('n_matched') or np.nan
+    out = dict(key=key, n_reco=len(t), n_matched=n_matched,
+               reco_frac=len(t) / n_matched if n_matched else np.nan,
+               bundle=row.get('bundle_used'),
+               off_conditions=bool(row.get('off_conditions')))
+    for p in ('x', 'y'):
+        for c, name in ((f'{p}_q_sum', f'q_{p}'), (f'{p}_n_strips', f'strips_{p}'),
+                        (f'{p}_chi2', f'chi2_{p}')):
+            out[name] = float(np.nanmedian(t[c])) if c in t else np.nan
+    # v from the tier-B refit, when this point had one
+    vre = glob.glob(os.path.join(d, '*_vrefit', 'bundle.json'))
+    out['v_drift'] = (json.load(open(vre[0])).get('v_drift')
+                      if vre else np.nan)
+    return out
+
+
+def build_scans(root):
+    """HV and drift scans, assembled from the campaign's own scan products."""
+    rel = 'plots/scans'
+    P = Plots(os.path.join(root, rel), rel)
+    rows = list(csv.DictReader(open(os.path.join(CAMPAIGN,
+                                                 'campaign_manifest.csv'))))
+    fam = {}
+    for r in rows:
+        m = SCAN_RE.match(r['subrun'])
+        if not m or not r['key']:
+            continue
+        pt = _scan_point(r['key'], r['det'])
+        if pt is None:
+            continue
+        pt.update(resist_v=int(m.group(1)), drift_v=int(m.group(3)),
+                  run=r['run'], det=r['det'], subrun=r['subrun'],
+                  tier=r['tier'])
+        fam.setdefault((r['run'], r['det']), []).append(pt)
+
+    n_plots = 0
+    for (run, det), pts in sorted(fam.items()):
+        df = pd.DataFrame(pts)
+        axis = 'resist_v' if df['resist_v'].nunique() > 1 else 'drift_v'
+        if df[axis].nunique() < 3:
+            continue
+        df = df.sort_values(axis)
+        kind = 'HV scan' if axis == 'resist_v' else 'drift scan'
+        xlab = ('resistive-strip HV [V]' if axis == 'resist_v'
+                else 'drift voltage [V]')
+        short = run.replace('mx17_', '').replace('_overnight', '')
+        group = f'{det} · {short} · {kind}'
+        tag = f'{det}_{run}_{axis}'.replace('-', '_')
+        fixed = (f"drift {df['drift_v'].iloc[0]} V" if axis == 'resist_v'
+                 else f"resist {df['resist_v'].iloc[0]} V")
+        note = (f'{len(df)} points, {fixed} throughout. Reconstructed with the '
+                'detector\'s nominal bundle at every setting, so away from '
+                'nominal the RECONSTRUCTION is off-calibration even where the '
+                'detector is fine — read the charge curve as the physical '
+                'response and the reco fraction as calibration transfer.')
+
+        # Explicit slugs: deriving them from the title collided "Cluster
+        # charge" with "Cluster size" and silently overwrote one plot with the
+        # other (31 plots, 21 files).
+        specs = [('recofrac', 'reco_frac', 'Reconstruction fraction',
+                  'reconstructed / M3-matched',
+                  'Fraction of matched events the fit reconstructed.', 1),
+                 ('charge', ('q_x', 'q_y'), 'Cluster charge',
+                  'median cluster charge [ADC]',
+                  'Median summed cluster charge per plane — the gain curve.', 0),
+                 ('size', ('strips_x', 'strips_y'), 'Cluster size',
+                  'median strips in cluster',
+                  'Median strips per cluster; widens as the gain grows.', 0)]
+        if df['v_drift'].notna().sum() >= 3:
+            specs.append(('vdrift', 'v_drift', 'Drift velocity', 'v [um/ns]',
+                          'Fitted drift velocity per point (tier-B v-refit).', 0))
+        for slug, cols, title, ylab, cap, zero in specs:
+            cols = (cols,) if isinstance(cols, str) else cols
+            if not any(df[c].notna().any() for c in cols):
+                continue
+            fig, a = plt.subplots(figsize=(7.4, 4.3))
+            for c, mk, col in zip(cols, ('o-', 's--'), ('#1d5fa8', '#c9761d')):
+                if df[c].notna().any():
+                    a.plot(df[axis], df[c], mk, ms=4, lw=1.4, color=col,
+                           label=c.split('_')[-1].upper() if len(cols) > 1 else None)
+            if len(cols) > 1:
+                a.legend(title='plane', fontsize=9)
+            if zero:
+                a.set_ylim(0, max(1.02, float(df[list(cols)].max().max()) * 1.05))
+            a.set_xlabel(xlab); a.set_ylabel(ylab)
+            a.set_title(f'{det} · {title} vs {"HV" if axis == "resist_v" else "drift"}')
+            P.add(fig, f'{tag}_{slug}', f'{det} · {title}',
+                  f'{cap} {note}', df, group)
+            n_plots += 1
+    print(f'== scans: {n_plots} plots over {len(fam)} scan families')
+    return dict(key='scans', letter='Scans', detector='HV and drift scans',
+                run='campaign scan points', summary={},
+                n_rays=int(sum(len(v) for v in fam.values())),
+                items=P.items, rays_csv='')
+
+
 def build_fleet(root, dets):
     rel = 'plots/fleet'
     P = Plots(os.path.join(root, rel), rel)
@@ -855,6 +988,7 @@ def main():
     keys = [a for a in sys.argv[1:] if not a.startswith('-')] or KEYS
     root = FLEET_REPORT
     dets = [build_detector(k, root) for k in keys]
+    dets.append(build_scans(root))
     dets.append(build_fleet(root, dets))
     build_page(root, dets)
     if '--selfcontained' in sys.argv:
