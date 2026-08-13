@@ -222,11 +222,11 @@ the ⁴He excitation branch is ~10<sup>−8</sup> of (n,p), while
 — so what we recorded is, to first order, an aluminium measurement with a
 well-characterised tracker sitting in it.</p>
 
-<p>None of that makes the run a null. We have a complete, time-matched
-DREAM ↔ n_TOF dataset, a tracker that demonstrably images the target, a
-quantitative specification for what a post-LS3 front end must survive, and a
-detector-level understanding of the flash environment that did not exist
-before.</p>
+<p>None of that makes the run a null. We have a large dataset joined event by
+event to the n_TOF stream at 96 % efficiency and 0.05 % accidentals, a tracker
+that demonstrably images the target, a quantitative specification for what a
+post-LS3 front end must survive, and a detector-level understanding of the
+flash environment that did not exist before.</p>
 """)
 
     A(tiles([
@@ -235,7 +235,7 @@ before.</p>
         ("17.9 TB", "DREAM data on EOS"),
         ("83", "n_TOF runs (last with beam: 224715)"),
         (f"{stats['on_pct']:.0f} %", "of the run had protons on target"),
-        ("~13.2 M", "time-matched DREAM triggers"),
+        (f"{evt['total']/1e6:.0f} M", "DREAM events recorded"),
     ]))
 
     A(photo_row([
@@ -474,35 +474,54 @@ cross-checks. The last beam sub-run ended at 09:10 on 10 August.</p>
         ("162", "DREAM runs · 2 705 sub-runs"),
         ("342", "production statistics sub-runs"),
         ("17.9 TB", "on /eos/experiment/ntof/data/x17"),
-        (f"{evt['total']/1e6:.1f} M", "DREAM events recorded on beam"),
-        (f"{evt['matched']/1e6:.1f} M", "of them matched to n_TOF today"),
+        (f"{evt['total']/1e6:.1f} M", "DREAM events recorded"),
+        (f"{evt['beam']/1e6:.1f} M", "of them on beam"),
         (f"{stats['pulses']:,}".replace(",", " "), "beam pulses on target logged"),
     ]))
 
-    A("""
+    A(f"""
 <h3>What we banked</h3>
 
-<p>Counted segment by segment across the production phase — one segment being
-one DREAM sub-run against one n_TOF run — the campaign recorded
-<b>17.8 million DREAM events</b> on beam. Of those, <b>13.2 million</b> sit in
-segments whose clock fit locked and are usable for physics today; the remaining
-4.5 million are recorded data waiting on the matching fix described in §7, not
-lost data.</p>
+<p>Counted directly from the DREAM data on EOS — one entry of every sub-run's
+event tree, {evt['tags']:,} file tags across the 2 511 sub-runs that produced
+decoded output — the campaign recorded
+<b>{evt['total']/1e6:.1f} million triggered events</b>:
+<b>{evt['beam']/1e6:.1f} M on beam</b>, {evt['cosmic']/1e6:.1f} M on the
+interleaved beam-off cosmic runs, and {evt['pulser']/1e3:.0f} k on pulser runs
+taken to characterise the DAQ. The best day was
+{dt.date.fromisoformat(evt['best_day']):%-d %B} at
+{evt['best_day_events']/1e6:.2f} M events. One file of the
+{evt['tags']:,} would not open and is not counted.</p>
+
+<p>This count goes nowhere near the n_TOF side: it is the number of triggers
+DREAM actually wrote, dated by the DAQ's own file names. The daily rate climbing
+by an order of magnitude between 14 and 26 July is the trigger and DAQ work of
+§3 landing — same beam, same detectors, ten times the statistics.</p>
+
+<p>How much of it is joined to n_TOF today is a separate question. The slim
+campaign put the 35 production runs that overlap settled n_TOF runs through the
+matching pipeline: 17.8 M events attempted, <b>13.2 M matched</b>. The rest of
+the beam data is recorded and intact, but has not been through that pipeline —
+either because it predates the production configuration or because its n_TOF
+partner was not in the campaign's settled list. §7 has the detail.</p>
 """)
 
     A(fig("events_collected.png",
-          f"DREAM events banked per day over the production phase, split by "
-          f"whether the DREAM ↔ n_TOF clock fit locked, with the cumulative "
-          f"totals on the right axis. <b>{evt['total']/1e6:.1f} M events "
-          f"recorded, {evt['matched']/1e6:.1f} M ({evt['matched_pct']:.0f} %) "
-          f"matched.</b> The unmatched fraction is small early and grows over "
-          f"the last week — the signature of the mis-lock mechanism in §7, not "
-          f"of anything changing in the detector. Beam-off cosmic runs, the "
-          f"commissioning scans and the 9–10 August runs (which post-date this "
-          f"inventory) are not included.",
+          f"DREAM events recorded per day across the whole campaign, beam and "
+          f"cosmics, with the cumulative total on the right axis. "
+          f"<b>{evt['total']/1e6:.1f} M events in total, "
+          f"{evt['beam']/1e6:.1f} M of them on beam.</b> The vertical lines are "
+          f"the two phase boundaries. The rate climbs by an order of magnitude "
+          f"across the commissioning phases as the trigger and the DAQ "
+          f"configuration improve; the day-to-day scatter after 26 July is "
+          f"mostly beam availability, not configuration changes — compare the "
+          f"panel below. Grey is the beam-off cosmic running, which fills the "
+          f"gaps rather than adding to them. Counted from every sub-run's own "
+          f"event tree on EOS; no part of this depends on the n_TOF stream or "
+          f"on anything having been matched.",
           wide=True,
-          source="ntof_run_report/figures_local.py, from the slim campaign's "
-                 "segment inventory"))
+          source="ntof_run_report/count_events.py (scan) + figures_local.py "
+                 "(figure)"))
 
     A("""
 <h3>Beam availability and dead time</h3>
@@ -1216,13 +1235,19 @@ and resolution numbers are not yet available for any chamber.</div>
   <h1>The 2026 X17 physics run at n_TOF EAR2</h1>
   <div class="sub">28 June – 10 August 2026 · four MX17 micromegas, a four-arm
   scintillator trigger and DREAM on the EAR2 neutron beam<br>
+  <b>Written by Claude</b> (Anthropic's Claude Opus 5, via Claude Code) from the
+  run logbook and the campaign's analysis packages, for Dylan Neff<br>
   <b>Last edited {stamp:%-d %B %Y}</b> · analysis ongoing, contents subject to change</div>
 </header>
 {body}
 <footer>
-Compiled from the run logbook and the campaign's analysis packages by
-<code>ntof_run_report/make_report.py</code>. Re-running it regenerates this
-page, its figures and every number in it.
+<b>Written by Claude</b> — Anthropic's Claude Opus 5, running in Claude Code —
+from the "X17 n_Tof Physics Run Logbook", the campaign's analysis packages and
+the DAQ's own slow-control record, for Dylan Neff. Every figure and number is
+regenerated by <code>ntof_run_report/make_report.py</code>, so re-running it
+rebuilds the page rather than patching it. The judgements, the emphasis and any
+errors in them are the author's; the underlying measurements are the
+collaboration's.
 </footer>
 </div></body></html>"""
 

@@ -33,17 +33,8 @@ from matplotlib.patches import Patch
 
 BEAM_LOG = Path(os.path.expanduser("~/x17/beam_july/slow_control/beam_intensity"))
 
-# the slim campaign's own inventory: one row per (DREAM sub-run x n_TOF run)
-# segment, carrying how many DREAM events that segment holds and whether the
-# clock fit locked.  This is the only per-sub-run event census that exists off
-# the DAQ machine.
-SLIM_INVENTORY = Path(
-    os.path.expanduser("~/x17/slim_campaign_2026-08-12/inventory.csv")
-)
-NTOF_TIMES = (
-    Path(__file__).resolve().parents[1]
-    / "ntof_processing/slim_study/coverage_inputs/ntof_index_times.txt"
-)
+# every DREAM sub-run's event count, scanned off EOS once (see count_events.py)
+EVENT_CENSUS = Path(__file__).resolve().parent / "data/events_per_subrun.csv"
 
 PHASE_COLOUR = {
     "setup": "#8aa5c4",       # 28 Jun - 13 Jul
@@ -148,68 +139,69 @@ def beam_availability(out: Path) -> dict:
 
 
 def events_collected(out: Path) -> dict:
-    """Cumulative DREAM events banked over the production phase.
+    """Total DREAM events recorded per day, over the whole campaign.
 
-    Counted from the slim campaign's segment inventory rather than from the
-    DAQ's own ledger, which only reaches 29 July on this machine.  Each segment
-    is one DREAM sub-run against one n_TOF run, so a sub-run that straddles two
-    n_TOF runs contributes two rows and every event is still counted once.
-    Segments are dated by the first bunch of their n_TOF run.
+    Counted from `events_per_subrun.csv`, which is one row per (sub-run, file
+    tag) with the number of entries in that tag's `nt` tree — one entry per
+    triggered event.  FEU 1 stands for the sub-run: every FEU sees the same
+    global triggers.  The timestamp comes out of the DAQ's own file name, so
+    this figure does not depend on the n_TOF side, on the clock fit, or on
+    anything having been matched.  Beam vs cosmics is each run's `beam_type`
+    from its `run_config.json`.
 
-    Two populations, and the distinction is worth drawing: segments whose clock
-    fit **locked** (the events usable for physics today) and segments where it
-    did not.  The latter are recorded data, not lost data — the failure is the
-    supercycle-degenerate offset search described in the report.
+    Produced by `ntof_run_report/count_events.py`, which has to run on lxplus
+    against `/eos/experiment/ntof/data/x17/july_beam/runs`; the CSV is committed
+    because that scan takes ~8 minutes and needs EOS.
     """
-    times = {}
-    for line in NTOF_TIMES.read_text().splitlines():
-        if line.startswith("#") or not line.strip():
+    rows = list(csv.DictReader(EVENT_CENSUS.open()))
+    KINDS = ("neutrons", "cosmics", "pulser")
+    per_day = defaultdict(lambda: dict.fromkeys(KINDS, 0))
+    bad = 0
+    for r in rows:
+        if not r["events"] or not r["stamp"]:
+            bad += 1
             continue
-        p = line.split()
-        times[p[0]] = int(p[1])
-
-    per_day = defaultdict(lambda: [0, 0])  # day -> [matched, unmatched]
-    import datetime as _dt
-
-    for row in csv.DictReader(SLIM_INVENTORY.open()):
-        t = times.get(row["ntof_run"])
-        if t is None:
-            continue
-        day = _dt.datetime.utcfromtimestamp(t).strftime("%Y-%m-%d")
-        n = int(row["joined_events"] or 0)
-        per_day[day][0 if row["status"] == "OK" else 1] += n
+        kind = r["beam_type"] if r["beam_type"] in KINDS else "pulser"
+        per_day[r["stamp"][:10]][kind] += int(r["events"])
 
     days = sorted(per_day)
     x = [np.datetime64(d) for d in days]
-    ok = np.array([per_day[d][0] for d in days], float)
-    no = np.array([per_day[d][1] for d in days], float)
+    beam, cos, pul = (
+        np.array([per_day[d][k] for d in days], float) for k in KINDS
+    )
 
     fig, ax = plt.subplots(figsize=(11.5, 4.4))
-    ax.bar(x, ok / 1e6, width=0.82, color="#5b9279", label="clock fit locked — usable now")
-    ax.bar(x, no / 1e6, width=0.82, bottom=ok / 1e6, color="#c9ccd0",
-           label="recorded, not yet matched")
-    ax.set_ylabel("DREAM events banked per day\n[millions]")
+    ax.bar(x, beam / 1e6, width=0.82, color=PHASE_COLOUR["production"],
+           label="beam")
+    ax.bar(x, cos / 1e6, width=0.82, bottom=beam / 1e6, color="#b9bfc6",
+           label="cosmics (beam-off reference)")
+    ax.bar(x, pul / 1e6, width=0.82, bottom=(beam + cos) / 1e6, color="#e0a458",
+           label="pulser (DAQ characterisation)")
+    ax.set_ylabel("DREAM events recorded per day\n[millions]")
+    import datetime as _dt
     span = (f"{_dt.date.fromisoformat(days[0]):%-d %B} – "
             f"{_dt.date.fromisoformat(days[-1]):%-d %B %Y}")
-    ax.set_title(f"Production statistics, {span}",
+    ax.set_title(f"DREAM events recorded, {span}",
                  fontsize=13, fontweight="bold", loc="left")
     ax.xaxis.set_major_formatter(mdates.DateFormatter("%d %b"))
-    ax.xaxis.set_major_locator(mdates.DayLocator(interval=2))
+    ax.xaxis.set_major_locator(mdates.DayLocator(interval=3))
     ax.grid(axis="y", alpha=0.3)
     ax.set_axisbelow(True)
 
+    for boundary, label in ((SETUP_END, "14 Jul"), (PRODUCTION_START, "26 Jul")):
+        xb = np.datetime64(boundary) - np.timedelta64(12, "h")
+        ax.axvline(xb, color="#3a3f45", lw=1.4, zorder=5)
+
     ax2 = ax.twinx()
-    cum = np.cumsum(ok + no) / 1e6
-    ax2.plot(x, cum, color="#8a4b2a", lw=2.0, marker="o", ms=3.5,
-             label="cumulative, all recorded")
-    ax2.plot(x, np.cumsum(ok) / 1e6, color="#2f6f5e", lw=1.6, ls="--",
-             label="cumulative, matched")
+    cum = np.cumsum(beam + cos + pul) / 1e6
+    ax2.plot(x, cum, color="#8a4b2a", lw=2.0)
     ax2.set_ylabel("cumulative [millions]", color="#8a4b2a")
     ax2.tick_params(axis="y", colors="#8a4b2a")
-    ax2.set_ylim(0, cum[-1] * 1.12)
-    ax2.annotate(f"{cum[-1]:.1f} M recorded", xy=(x[-1], cum[-1]),
-                 xytext=(-8, 10), textcoords="offset points",
-                 ha="right", fontsize=10, color="#8a4b2a", fontweight="bold")
+    ax2.set_ylim(0, cum[-1] * 1.25)
+    ax2.annotate(f"{cum[-1]:.1f} M events total", xy=(x[-1], cum[-1]),
+                 xytext=(-6, 8), textcoords="offset points", ha="right",
+                 fontsize=10.5, color="#8a4b2a", fontweight="bold")
+    ax2.plot([], [], color="#8a4b2a", lw=2.0, label="cumulative, all")
 
     h1, l1 = ax.get_legend_handles_labels()
     h2, l2 = ax2.get_legend_handles_labels()
@@ -221,11 +213,13 @@ def events_collected(out: Path) -> dict:
     plt.close(fig)
 
     return {
-        "total": int(ok.sum() + no.sum()),
-        "matched": int(ok.sum()),
-        "unmatched": int(no.sum()),
-        "matched_pct": 100 * ok.sum() / (ok.sum() + no.sum()),
+        "total": int(beam.sum() + cos.sum() + pul.sum()),
+        "beam": int(beam.sum()),
+        "cosmic": int(cos.sum()),
+        "pulser": int(pul.sum()),
         "days": len(days),
-        "best_day": max(days, key=lambda d: sum(per_day[d])),
-        "best_day_events": int(max(sum(per_day[d]) for d in days)),
+        "best_day": max(days, key=lambda d: sum(per_day[d].values())),
+        "best_day_events": int(max(sum(per_day[d].values()) for d in days)),
+        "unreadable_tags": bad,
+        "tags": len(rows),
     }
