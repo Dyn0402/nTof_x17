@@ -70,6 +70,7 @@ class Plots:
         self.out_dir, self.rel_dir = out_dir, rel_dir
         os.makedirs(out_dir, exist_ok=True)
         self.items = []
+        self.written = set()
 
     def add(self, fig, name, title, caption, data=None, group='', png=False,
             dpi=None):
@@ -81,9 +82,22 @@ class Plots:
         if data is not None:
             data.to_csv(os.path.join(self.out_dir, f'{name}.csv'), index=False)
             csv = f'{self.rel_dir}/{name}.csv'
+        self.written.update({f'{name}.{ext}'} | ({f'{name}.csv'} if csv else set()))
         self.items.append(dict(name=name, title=title, caption=caption,
                                src=f'{self.rel_dir}/{name}.{ext}', csv=csv,
                                group=group))
+
+    def prune(self):
+        """Drop files this build did not write.
+
+        A renamed plot otherwise leaves its old file sitting in the output
+        directory looking exactly like a current product -- which is how the
+        scan-slug collision stayed invisible: 31 plots, 52 files."""
+        for f in sorted(os.listdir(self.out_dir)):
+            if f not in self.written and os.path.isfile(
+                    os.path.join(self.out_dir, f)):
+                os.remove(os.path.join(self.out_dir, f))
+                print(f'   pruned stale {self.rel_dir}/{f}')
 
 
 def _hist(ax, v, bins, label, colour='#1d5fa8'):
@@ -590,6 +604,7 @@ def build_detector(key, root):
                   'inefficiency is reference mis-pointing.',
                   scan, 'Reference cut')
 
+    P.prune()
     return dict(key=key, letter=L, detector=cfg.DET_NAME,
                 run=f'{cfg.RUN}/{cfg.SUB_RUN}', summary=summary,
                 n_rays=int(len(d)), items=P.items,
@@ -713,6 +728,7 @@ def build_scans(root):
             P.add(fig, f'{tag}_{slug}', f'{det} · {title}',
                   f'{cap} {note}', df, group)
             n_plots += 1
+    P.prune()
     print(f'== scans: {n_plots} plots over {len(fam)} scan families')
     return dict(key='scans', letter='Scans', detector='HV and drift scans',
                 run='campaign scan points', summary={},
@@ -748,6 +764,7 @@ def build_fleet(root, dets):
         a.grid(axis='x', alpha=0)
         P.add(fig, name, title, 'One bar per detector, from fleet.csv.',
               fl[['letter', 'detector', col]], 'Fleet')
+    P.prune()
     return dict(key='fleet', letter='Fleet', detector='all five',
                 run='June 2026 cosmic bench', summary={}, n_rays=int(fl['n_rays'].sum()),
                 items=P.items, rays_csv='plot_data/fleet.csv')
