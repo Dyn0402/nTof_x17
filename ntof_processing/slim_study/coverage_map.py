@@ -81,7 +81,18 @@ def _spans(path: Path, skip_short=True, shift_s=0.0):
     return sorted(out)
 
 
-INDEX_LOCAL_SHIFT_S = -7200.0     # see _spans
+# The index tree's Date/Time is LOCAL Geneva time (UTC+2, whole campaign in
+# CEST); everything else lives on the UTC psTime/CSV base. Measured twice,
+# independently, against different reference clocks:
+#   * raw file mtimes (true UTC), 109 runs: raw_start - index_start flat at
+#     -7127 s (p10 -7185, p90 -7080) = -7200 plus ~1 min of first-file write
+#     lag (see _spans);
+#   * PKUP psTime of run 224572: index_start - psTime_start = 7199.5 s
+#     (pulse_ledger, 2026-08-13 — found when whole sub-runs classified
+#     NTOF_NO_BUNCH while their products sat on disk).
+# This is the ONE home of the constant: pulse_ledger imports it from here, so
+# the ledger and the segment proposals cannot silently disagree about it.
+INDEX_LOCAL_SHIFT_S = -7200.0
 RAW_WRITE_LAG_S = 73.0            # median (raw_start - corrected index_start)
 
 
