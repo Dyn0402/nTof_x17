@@ -544,6 +544,10 @@ tbody tr:last-child td {{ border-bottom:0; }}
 <p class="sub">M3 v2 reference tracking (NClus=4 &amp; χ²&lt;1.0); best long
 run per detector · waveform-first reconstruction (frozen campaign 2026-08-12)
 · generated {stamp}</p>
+<p class="sub" style="margin-top:-.4rem"><b><a href="explorer.html">Plot
+explorer</a></b> — the same figures broken out one subject per plot, zoomable,
+each with the numbers behind it as CSV, plus the full per-ray table per
+detector. Use it to look closely at anything on this page.</p>
 <p class="toc">{toc}</p>
 
 <div class="grid2">
