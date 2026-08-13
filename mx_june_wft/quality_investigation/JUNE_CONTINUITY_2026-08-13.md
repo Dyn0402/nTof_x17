@@ -126,15 +126,24 @@ efficient":
 
 ## 5c · Resolution (early 8-13): detA lands at ~93 %, fixes propagated
 
-Full local re-reconstruction of `g_det3_wknd` at the frozen code+bundle:
-**within 5 mm 93.0 %, reco-at-all 97.2 %, core σ 0.444 mm** — matching
-sat_det3 (93.3 %) as predicted; the "less efficient detector A" was entirely
-the campaign-job artifact. w0/kw-corrected angles: bias −0.06/+0.02°,
-σθ 1.17/1.14°, |θ|<5° σ68 1.33/1.26° at full coverage (June hybrid: 1.63°).
+Full local re-reconstruction of `g_det3_wknd` at the frozen code+bundle
+(final, clean table — false-start quarantined, 22,095 events, zero duplicate
+ids, candidates sidecar intact at 45,501 rows): **within 5 mm 93.13 %,
+reco-at-all 97.22 %, core σ 0.443 mm, median |r| 0.704 mm, 21,948 rays** —
+matching sat_det3 (93.3 %) as predicted; the "less efficient detector A" was
+entirely the campaign-job artifact. `hit_no_reco` collapsed 6.25 % → 0.21 %
+(the 46 genuine head-on X-plane fit failures). w0/kw-corrected angles: bias
+−0.06/+0.02°, σθ 1.17/1.14°, |θ|<5° σ68 1.33/1.26° at full coverage (June
+hybrid: 1.63°). Final fleet table (June PDF → tonight): A 82.3→93.1 %,
+B 80.3→92.0, C 42.8→74.9, D 16.7→56.9, E 35.3→41.6; θ (σ68 |θ|<5°)
+1.63→1.30 / 2.16→1.59 / 3.63→2.82 / 2.61→2.05 / 2.48→2.57.
 (First re-reco pre-dated the decoded false-start quarantine and carried 175
 colliding ids; an event-level dedup mistakenly clobbered its candidates
-sidecar, so the final table is a clean re-reco with the quarantine in place —
-no collisions by construction.)
+sidecar — both defects cured by the clean re-reco. Operational note: three
+consecutive background bash wrappers were SIGKILLed on the laptop overnight
+— not OOM, kernel log clean; the detached python worker survived. Cause
+unidentified; desktop fallback was staged but blocked on a Tailscale SSH
+re-auth.)
 
 Fixes made everywhere per Dylan's instruction (commit `0f35a3c`):
 `03_angles.py` full-coverage accounting (+ `s68_lt5_deg`, `*_relonly`
