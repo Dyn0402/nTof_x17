@@ -273,14 +273,25 @@ def fig_angle_corr(cfg):
     the angles_fullcoverage.json it writes use every ok plane; the frozen
     03_angles output (slope_reliable only) is left untouched."""
     W = os.path.join(cfg.OUT_BASE, 'wft')
-    table = os.path.join(W, 'angles_w0corr', 'events_w0corr.parquet')
     out_dir = os.path.join(W, 'angles_w0corr')
-    tag = 'w0/kw corrected'
-    if not os.path.exists(table):
-        print(f'  WARNING: {table} missing — falling back to frozen angles')
+    meta = json.load(open(os.path.join(W, 'events.meta.json')))
+    if (meta.get('angle_constants') or {}).get('applied'):
+        # Reconstructed since 2026-08-13: the live table already carries the
+        # corrected angles and no events_w0corr.parquet is written. Falling
+        # through to the "missing" branch below would still read correct data,
+        # but it would write angles_fullcoverage.json into angles/ while the
+        # report reads it from angles_w0corr/ — leaving the PREVIOUS
+        # generation's file there to be quoted alongside today's efficiencies.
         table = os.path.join(W, 'events.parquet')
-        out_dir = os.path.join(W, 'angles')
-        tag = 'frozen (w0/kw NOT applied)'
+        tag = 'w0/kw applied in reco'
+    else:
+        table = os.path.join(W, 'angles_w0corr', 'events_w0corr.parquet')
+        tag = 'w0/kw corrected'
+        if not os.path.exists(table):
+            print(f'  WARNING: {table} missing — falling back to frozen angles')
+            table = os.path.join(W, 'events.parquet')
+            out_dir = os.path.join(W, 'angles')
+            tag = 'frozen (w0/kw NOT applied)'
     params = cm.load_alignment(os.path.join(W, 'alignment', 'alignment.json'))
     df = compat.load_table(table)
     results = compat.as_event_results(df)

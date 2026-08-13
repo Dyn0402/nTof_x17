@@ -17,6 +17,7 @@ runs 03_angles on it with --table/--out into <OUT_BASE>/wft/angles_w0corr/.
 
     ../../.venv/bin/python mx_june_wft/quality_investigation/corrected_angles.py
 """
+import argparse
 import json
 import os
 import subprocess
@@ -38,8 +39,17 @@ PY = os.path.join(REPO, '.venv', 'bin', 'python')
 
 
 def main():
+    # FLEET is the calibration fleet and carries sat_det3 for det3; the report's
+    # Detector A is g_det3_wknd, which is therefore NOT refreshed by a bare run.
+    # --keys exists so A can be included without editing the fleet definition.
+    ap = argparse.ArgumentParser()
+    ap.add_argument('--keys', default=None,
+                    help='comma-separated run keys (default: the FLEET)')
+    args = ap.parse_args()
+    keys = [k.strip() for k in args.keys.split(',')] if args.keys else FLEET
+
     summary = {}
-    for key in FLEET:
+    for key in keys:
         cfg = get_config(key)
         W = os.path.join(cfg.OUT_BASE, 'wft')
         meta = json.load(open(os.path.join(W, 'events.meta.json')))
