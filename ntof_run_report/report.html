@@ -71,6 +71,17 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
 .note .lab{font-weight:660;color:var(--accent);font-size:12.5px;
  text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:3px}
 .note.warn .lab{color:var(--flag)}
+.alert{border:2px solid var(--flag);border-radius:10px;padding:16px 20px;
+ margin:26px 0 30px;background:color-mix(in srgb,var(--flag) 7%,transparent)}
+.alert .lab{display:block;color:var(--flag);font-weight:750;font-size:14px;
+ text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px}
+.alert p{margin:.4em 0;font-size:15.5px}
+.alert .stamp{font-size:13px;color:var(--muted);margin-top:10px;
+ font-variant-numeric:tabular-nums}
+.badge{display:inline-block;color:var(--flag);border:1px solid var(--flag);
+ border-radius:4px;padding:1px 7px;font-size:11px;font-weight:700;
+ text-transform:uppercase;letter-spacing:.06em;margin-right:8px;
+ vertical-align:1px;white-space:nowrap}
 .dates{display:grid;grid-template-columns:auto 1fr;gap:2px 20px;
  margin:20px 0;font-size:14.5px}
 .dates dt{color:var(--accent);font-weight:640;white-space:nowrap;
@@ -85,8 +96,29 @@ footer{border-top:1px solid var(--line);margin-top:56px;padding-top:20px;
   <div class="kicker">MX17 · n_TOF EAR2 · end-of-run report</div>
   <h1>The 2026 X17 physics run at n_TOF EAR2</h1>
   <div class="sub">28 June – 10 August 2026 · four MX17 micromegas, a four-arm
-  scintillator trigger and DREAM on the EAR2 neutron beam · written 2026-08-13</div>
+  scintillator trigger and DREAM on the EAR2 neutron beam<br>
+  <b>Last edited 13 August 2026</b> · analysis ongoing, contents subject to change</div>
 </header>
+
+<div class="alert">
+<span class="lab">⚠ The analysis is at a very early stage</span>
+<p><b>Every reconstruction, tracking and detector-performance number in this
+report is preliminary and is likely to change.</b> The in-situ calibration of
+the tracker — impulse template, resistive sharing kernel, diffusion and drift
+velocity — has been done for <b>one arm on two runs</b>, out of four arms and
+342 production sub-runs. Nothing here has been through a collaboration review.
+Figures carrying a red <span class="badge">Preliminary</span> tag are
+demonstrations that the chain works end to end, <b>not measurements</b>.</p>
+<p>Efficiency, resolution and the liquid-scintillator performance are not yet
+available for any chamber. The physics-reach and background numbers in §6 are
+our own simulation estimates, not a collaboration result.</p>
+<p>What <em>is</em> a measurement with a stated systematic: the γ-flash charge
+and the post-flash recovery map in §5, the beam record in §4, and the
+DREAM ↔ n_TOF time calibration in §7.</p>
+<div class="stamp">Last edited <b>13 August 2026</b> · regenerated from the
+analysis packages on every build — re-read it if the date has moved.</div>
+</div>
+
 
 <p class="lede">Between <strong>28 June and 10 August 2026</strong> the MX17
 collaboration installed four resistive-strip micromegas TPCs, a four-arm
@@ -133,15 +165,15 @@ band at each end of the beam coordinate, not the tangential one.</p>
 
 <p>Behind each chamber sits one arm of the trigger: a <b>SiPM wall</b> (four
 25 mm bar segments read from both ends, summed in a LeCroy 428F) and, behind
-that, <b>two 2.5 cm plastic bars</b> on PMTs. Two <b>liquid-scintillator
-cells</b> (JUNO liquid, ~7.5 L each) were eventually mounted, one on arm A and
-one on arm D. The neutron target is the <b>³He capsule</b> on the beam axis,
+that, <b>two 2.5 cm plastic bars</b> on PMTs. Four <b>liquid-scintillator
+cells</b> (JUNO liquid, ~7.5 L per cell as filled) were eventually mounted, one
+behind each arm, but they never entered the trigger. The neutron target is the <b>³He capsule</b> on the beam axis,
 235 mm from each chamber's strip plane.</p>
 
 <figure class="fig wide"><img src="figures/setup_3d.png" alt=""><figcaption>The station as built, from the in-house Geant4 model: the ³He capsule on the beam axis, the four micromegas drift gaps around it, then the SiPM walls and the plastic bars behind them.<div class="src">mpgd26/make_ear2.py</div></figcaption></figure>
 <div class="tw"><table class=""><thead><tr><th></th><th>chamber A</th><th>chamber B</th><th>chamber C</th><th>chamber D</th></tr></thead><tbody><tr><td>bench identity</td><td>det3</td><td>det2</td><td>det6</td><td>det7</td></tr><tr><td>FEUs</td><td>3, 4</td><td>5, 6</td><td>7, 8</td><td>1, 2</td></tr><tr><td>production resist HV</td><td>540 V</td><td>540 V</td><td>525 V</td><td>520 V</td></tr><tr><td>production drift HV</td><td>−700 V</td><td>−700 V</td><td>−700 V</td><td>−700 V</td></tr><tr><td>paired tracks, run_79 (2 sub-runs)</td><td>15 056</td><td>2 546</td><td>13 868</td><td>3 622</td></tr></tbody></table></div>
 
-<h2 id="phase1">2. Hardware set-up (28 June – 8 July)</h2>
+<h2 id="phase1">2. Hardware set-up (28 June – 14 July)</h2>
 
 <p>The chambers were assembled on their frame in the conference room over
 29–30 June — one JZ connector on chamber D had to be re-glued and reseated,
@@ -178,14 +210,20 @@ collected from Germany in two attempts and arrived on <b>13 July</b>.</li>
 
 <div class="note warn"><span class="lab">The liquid scintillators</span>
 Only <b>one of the two intended liquid layers</b> was ever mounted, and it never
-entered the trigger. The two cells that were filled swelled transversely and
-would not fit together in the CEA-printed clamps, so one went horizontally on
-arm A and one vertically on arm D. When they were prepared with a Y-88 source
-on 14 July, the light collection turned out to fall off far more steeply with
-distance from the PMT than expected — under 10 mV at the far end. We swapped
-the trigger back to the plastics that afternoon and rebuilt the mechanics so
-the plastics sat in front. The liquids were recorded throughout but stayed out
-of the trigger logic, and they still look inefficient in the offline data.
+entered the trigger. The liquid arrived on 13 July; the first two cells were
+filled that afternoon and swelled transversely enough that they would not fit
+together in the CEA-printed clamps, so one went horizontally on arm A and one
+vertically on arm D. The remaining two went in during the 14 July access,
+completing one cell per arm — and that is the day this report takes as the end
+of the set-up phase, because it is the point at which the scintillator system
+was finally complete.
+<br><br>
+It is also the day the liquids left the trigger. Preparing them with a Y-88
+source showed the light collection falling off far more steeply with distance
+from the PMT than expected — under 10 mV at the far end. We swapped the trigger
+back to the plastics that afternoon and spent 3PM–8PM rebuilding the mechanics
+so the plastics sat in front. The liquids were recorded throughout but stayed
+out of the trigger logic, and they still look inefficient in the offline data.
 They have not been studied properly yet.</div>
 
 <h3>The last attempts at a high-energy measurement</h3>
@@ -204,8 +242,9 @@ on/off comparison of run_71. The mechanism is understood — compensation trades
 positive rail time for negative rail time and the total railed time does not
 change — and there was a hard limit besides: the ramp hold-off decays after
 <b>5–10 ms</b>, set by a capacitor on the PCB, while the thermal window runs to
-30 ms. The circuits were finally removed on <b>27 July</b> after a shifter
-noticed them firing when they should not have been.</p>
+30 ms. They came off the chambers on 14 July, went back on A and C on 21 July
+for one more controlled comparison, and were removed for good on <b>27 July</b>
+after a shifter noticed them firing when they should not have been.</p>
 
 <p><b>Isobutane fraction.</b> Ar/iC₄H₁₀ was scanned from 5 % up to 30 %
 (10 July onward: 30 %, then 80/20, then 90/10, then 95/5). Higher isobutane did
@@ -218,12 +257,15 @@ than the bench-calibrated 95/5.</p>
 the beam. It bought about 5 V of resist HV at equal recovery time — real, but
 not enough to change the picture — and was removed.</p>
 
-<p>By the end of the first week of July the conclusion was unavoidable: the
-front end cannot be made to survive the flash on this timescale, so
-<b>this would be a thermal measurement</b>.</p>
+<p>The set-up phase closes on <b>14 July</b>, in a single five-hour access: the
+fourth liquid cell went in, completing the scintillator system; the liquids came
+out of the trigger and the stack was rebuilt with the plastics in front; the
+mesh circuits came off the chambers; and the B4C target went in. By then the
+conclusion was unavoidable — <b>the front end cannot be made to survive the
+flash on this timescale, so this would be a thermal measurement</b>.</p>
 
 
-<h2 id="phase2">3. Building the thermal measurement (9 – 26 July)</h2>
+<h2 id="phase2">3. Building the thermal measurement (14 – 26 July)</h2>
 
 <p>The thermal window is 1–30 ms after the flash, and the physics rate there is
 low enough that the whole game is <em>how many DREAM events can we bank per beam
@@ -300,7 +342,18 @@ production setpoint, cosmic runs automatically substituted whenever the beam
 dropped, pedestals after every access, and periodic HV and threshold
 cross-checks. The last beam sub-run ended at 09:10 on 10 August.</p>
 
-<div class="tiles"><div class="tile"><div class="v">162</div><div class="k">DREAM runs</div></div><div class="tile"><div class="v">2 705</div><div class="k">DREAM sub-runs</div></div><div class="tile"><div class="v">342</div><div class="k">production statistics sub-runs</div></div><div class="tile"><div class="v">17.9 TB</div><div class="k">on /eos/experiment/ntof/data/x17</div></div><div class="tile"><div class="v">83</div><div class="k">n_TOF runs of ours</div></div><div class="tile"><div class="v">436 373</div><div class="k">beam pulses on target logged</div></div></div>
+<div class="tiles"><div class="tile"><div class="v">162</div><div class="k">DREAM runs · 2 705 sub-runs</div></div><div class="tile"><div class="v">342</div><div class="k">production statistics sub-runs</div></div><div class="tile"><div class="v">17.9 TB</div><div class="k">on /eos/experiment/ntof/data/x17</div></div><div class="tile"><div class="v">17.8 M</div><div class="k">DREAM events recorded on beam</div></div><div class="tile"><div class="v">13.2 M</div><div class="k">of them matched to n_TOF today</div></div><div class="tile"><div class="v">436 373</div><div class="k">beam pulses on target logged</div></div></div>
+
+<h3>What we banked</h3>
+
+<p>Counted segment by segment across the production phase — one segment being
+one DREAM sub-run against one n_TOF run — the campaign recorded
+<b>17.8 million DREAM events</b> on beam. Of those, <b>13.2 million</b> sit in
+segments whose clock fit locked and are usable for physics today; the remaining
+4.5 million are recorded data waiting on the matching fix described in §7, not
+lost data.</p>
+
+<figure class="fig wide"><img src="figures/events_collected.png" alt=""><figcaption>DREAM events banked per day over the production phase, split by whether the DREAM ↔ n_TOF clock fit locked, with the cumulative totals on the right axis. <b>17.8 M events recorded, 13.2 M (74 %) matched.</b> The unmatched fraction is small early and grows over the last week — the signature of the mis-lock mechanism in §7, not of anything changing in the detector. Beam-off cosmic runs, the commissioning scans and the 9–10 August runs (which post-date this inventory) are not included.<div class="src">ntof_run_report/figures_local.py, from the slim campaign's segment inventory</div></figcaption></figure>
 
 <h3>Beam availability and dead time</h3>
 
@@ -309,7 +362,7 @@ cross-checks. The last beam sub-run ended at 09:10 on 10 August.</p>
 run, once per cycle, so beam availability is a measurement rather than a
 recollection.</p>
 
-<figure class="fig"><img src="figures/beam_availability.png" alt=""><figcaption>Fraction of each day with protons on the n_TOF target, over 41 days and 976 hours. Campaign mean <b>78.6 %</b>; over the production phase alone (26 Jul – 10 Aug, 376 h) <b>79.8 %</b>.<div class="src">ntof_run_report/figures_local.py, from the DAQ beam watcher's one-minute NXCALS log</div></figcaption></figure>
+<figure class="fig"><img src="figures/beam_availability.png" alt=""><figcaption>Fraction of each day with protons on the n_TOF target, over 41 days and 976 hours. Campaign mean <b>78.6 %</b>; over the production phase alone (26 Jul – 10 Aug, 376 h) <b>79.8 %</b>. The two vertical lines are the phase boundaries: 14 July, when the fourth liquid cell went in and the scintillator system was complete, and 26 July, when run_79 started at the frozen production configuration.<div class="src">ntof_run_report/figures_local.py, from the DAQ beam watcher's one-minute NXCALS log</div></figcaption></figure>
 
 <div class="note warn"><span class="lab">Read this before quoting a dead-time
 breakdown</span>
@@ -339,7 +392,7 @@ ten minutes and one overnight run. All recovered by power cycling.</li>
 
 <h3>When our events actually arrive</h3>
 
-<figure class="fig wide"><img src="figures/track_rate.png" alt=""><figcaption>Reconstructed tracks against time since the γ flash, run_79 arm A. The distribution turns on sharply at 1 ms — that is the DREAM gate, not a reconstruction effect — and 29 % of everything we record lands in 3–8 ms, which is precisely the interval the recovery map (§5) says the chambers are still blind or only partly alive in. The tagged and untagged curves keep the same shape, so the scintillator tag is an acceptance and not a time-dependent selection.<div class="src">ntof_tracking/run79_prelim_figures.py · PRELIMINARY</div></figcaption></figure>
+<figure class="fig wide"><img src="figures/track_rate.png" alt=""><figcaption><span class="badge">Preliminary — early analysis, expect this to change</span>Reconstructed tracks against time since the γ flash, run_79 arm A. The distribution turns on sharply at 1 ms — that is the DREAM gate, not a reconstruction effect — and 29 % of everything we record lands in 3–8 ms, which is precisely the interval the recovery map (§5) says the chambers are still blind or only partly alive in. The tagged and untagged curves keep the same shape, so the scintillator tag is an acceptance and not a time-dependent selection.<div class="src">ntof_tracking/run79_prelim_figures.py · PRELIMINARY</div></figcaption></figure>
 
 <p>That overlap is the whole failure of the high-energy programme, in one
 sentence: <b>the dead time the flash imposes is the same size as the physics
@@ -353,8 +406,20 @@ It reconstructs the drift-time ladder inside the 30 mm gap from the raw
 waveforms — not from hit times, which on these resistive-strip chambers are
 aggregates and compress the ladder by 20–30 %.</p>
 
-<figure class="fig wide"><img src="figures/event_display.png" alt=""><figcaption>One reconstructed track in the 3-D model of arm A: the piece measured inside the drift gap, extrapolated out to the SiPM wall segment and the plastic bar that actually fired the trigger, and back to the ³He capsule.<div class="src">ntof_tracking/run79_event_display.py · run_79, PRELIMINARY</div></figcaption></figure>
-<figure class="fig wide"><img src="figures/wall_segment_tour.png" alt=""><figcaption>2 267 arm-A tracks from run_79, coloured by which SiPM wall segment fired for that event. The four bundles are <b>251 mm apart at the wall and 9 mm apart at the target plane</b> — against 28 mm / 3.2 mm for a label-shuffled null. The tracker points, and the trigger and the tracker agree about where.<div class="src">ntof_tracking/run79_wall_segment_gif.py · PRELIMINARY</div></figcaption></figure>
+<div class="note warn"><span class="lab">Everything in this subsection is very
+early analysis</span>
+These are the <b>first</b> passes of the reconstruction over beam data, on
+<b>arm A only</b>, on <b>two runs of 342 production sub-runs</b>, with a
+calibration transferred from the June cosmic bench rather than measured in
+situ. They are shown because they demonstrate the chain works end to end — the
+tracker points at the target and agrees with the trigger about where. <b>Treat
+every number in them as provisional.</b> The angle scale, the drift velocity
+and the pointing resolution will all move once the in-situ calibration is
+done across the four arms, and the qualitative conclusions could move
+with them.</div>
+
+<figure class="fig wide"><img src="figures/event_display.png" alt=""><figcaption><span class="badge">Preliminary — early analysis, expect this to change</span>One reconstructed track in the 3-D model of arm A: the piece measured inside the drift gap, extrapolated out to the SiPM wall segment and the plastic bar that actually fired the trigger, and back to the ³He capsule.<div class="src">ntof_tracking/run79_event_display.py · run_79, PRELIMINARY</div></figcaption></figure>
+<figure class="fig wide"><img src="figures/wall_segment_tour.png" alt=""><figcaption><span class="badge">Preliminary — early analysis, expect this to change</span>2 267 arm-A tracks from run_79, coloured by which SiPM wall segment fired for that event. The four bundles are <b>251 mm apart at the wall and 9 mm apart at the target plane</b> — against 28 mm / 3.2 mm for a label-shuffled null. The tracker points, and the trigger and the tracker agree about where.<div class="src">ntof_tracking/run79_wall_segment_gif.py · PRELIMINARY</div></figcaption></figure>
 
 <p>run_145 (5 August) is the strongest version of the same statement, because
 it is the only late run whose every sub-run is fully matched to n_TOF. Arm A
@@ -363,10 +428,13 @@ reconstructed angle follows the point-source expectation
 tan θ = u / 235 mm across the whole plane; the residual scale factor is the
 <b>first in-situ drift-velocity measurement at beam conditions</b>,
 v ≈ 36.1 µm/ns, 15 % below the clean-gas Magboltz prior. With that scale
-applied the back-projection focuses inside the capsule.</p>
+applied the back-projection focuses inside the capsule. <b>This is one arm of
+one sub-run, self-calibrated</b> — the 15 % deficit against Magboltz is
+interesting and not yet explained, and it is exactly the sort of number an
+in-situ calibration across all four arms could move.</p>
 
-<figure class="fig"><img src="figures/run145_pointing.png" alt=""><figcaption>Reconstructed tan θ against track position on the strip plane, run_145 arm A. The band lies on the point-source line tan θ = u/235 mm (dashed). The empty horizontal stripe is the slope-reliability cut removing isochronous tracks, which carry no angle information.<div class="src">published note: run145-target-imaging</div></figcaption></figure>
-<figure class="fig wide"><img src="figures/run145_image.png" alt=""><figcaption>The image. Each inclined track extrapolated to its closest approach to the beam axis. Left, with the Magboltz-prior drift velocity; right, with the in-situ scale — the focal spot tightens onto the origin, inside the r = 10 mm capsule.<div class="src">published note: run145-target-imaging · PRELIMINARY</div></figcaption></figure>
+<figure class="fig"><img src="figures/run145_pointing.png" alt=""><figcaption><span class="badge">Preliminary — early analysis, expect this to change</span>Reconstructed tan θ against track position on the strip plane, run_145 arm A. The band lies on the point-source line tan θ = u/235 mm (dashed). The empty horizontal stripe is the slope-reliability cut removing isochronous tracks, which carry no angle information.<div class="src">published note: run145-target-imaging</div></figcaption></figure>
+<figure class="fig wide"><img src="figures/run145_image.png" alt=""><figcaption><span class="badge">Preliminary — early analysis, expect this to change</span>The image. Each inclined track extrapolated to its closest approach to the beam axis. Left, with the Magboltz-prior drift velocity; right, with the in-situ scale — the focal spot tightens onto the origin, inside the r = 10 mm capsule.<div class="src">published note: run145-target-imaging · PRELIMINARY</div></figcaption></figure>
 
 <h2 id="flash">5. How much charge the γ flash actually delivers</h2>
 
@@ -510,10 +578,13 @@ and it is not yet explained. For planning purposes: <b>the real detectors see
 
 <h2 id="analysis">7. Analysis status</h2>
 
-<div class="note"><span class="lab">Where this stands</span>
-Detector performance metrics are <b>not ready</b>. What follows is what is
-established well enough to state now; efficiency, resolution and the liquid
-scintillators are all still open.</div>
+<div class="note warn"><span class="lab">Where this stands</span>
+Detector performance metrics are <b>not ready</b>, and the analysis as a whole
+is at an early stage — see the banner at the top of this report. What follows is
+what is established well enough to state now, with the DREAM ↔ n_TOF time
+calibration the one piece that is genuinely settled. Efficiency, resolution,
+the liquid scintillators and every tracking number are still open and
+<b>expected to change</b>.</div>
 
 <h3>DREAM ↔ n_TOF matching</h3>
 
@@ -553,6 +624,13 @@ loudly rather than tie-break silently. That work is in progress; the affected
 segments are recoverable.</p>
 
 <h3>Chamber performance</h3>
+
+<p>The one thing that can be said about the chambers today comes from
+<em>paired tracks</em> — a particle-like cluster on each plane of the same
+chamber with the two planes' charges balanced. That is a detection-level
+quantity, not a reconstructed geometry, so it survives the caveats above. It
+does not measure efficiency; it says which chambers were producing usable
+avalanches, and where.</p>
 
 <figure class="fig wide"><img src="figures/mm_maps.png" alt=""><figcaption>Paired tracks per chamber over two sub-runs of run_79 — one particle-like cluster on each plane with the two planes' charges balanced, which is a physical statement about a real avalanche. <b>A and C work; B and D do not, and their failures are different.</b> Red lines are the independent June cosmic-bench active-area measurement.<div class="src">ntof_active_area/</div></figcaption></figure>
 
@@ -714,8 +792,8 @@ detector response, is the right place to start asking.</p>
 <dt>7 Jul</dt><dd>ATEX gas mixer obtained and commissioned; isobutane line connected.</dd>
 <dt>9 Jul</dt><dd>Three remaining SiPM walls and all eight plastic bars installed.</dd>
 <dt>10–12 Jul</dt><dd>Isobutane scan to 30 %, then 80/20 and 90/10; network and N1081B outage recovered.</dd>
-<dt>13 Jul</dt><dd>JUNO liquid arrives; two cells filled and mounted.</dd>
-<dt>14 Jul</dt><dd>Liquids taken out of the trigger; stack rebuilt with plastics in front. B4C target in.</dd>
+<dt>13 Jul</dt><dd>JUNO liquid arrives; the first two cells are filled and mounted.</dd>
+<dt><b>14 Jul</b></dt><dd><b>The scintillator system is complete</b> — the fourth liquid cell goes in. The same access takes the liquids out of the trigger, rebuilds the stack with the plastics in front, removes the mesh circuits and installs the B4C target. <b>End of the set-up phase.</b></dd>
 <dt>15 Jul</dt><dd>³He target mounted.</dd>
 <dt>16–17 Jul</dt><dd>20 mm lead filter tested; SiPM cross-wiring fixed; Y-88 plastic calibration.</dd>
 <dt>19–20 Jul</dt><dd>run_57 flash-recovery HV map — the measurement the operating point came from.</dd>
