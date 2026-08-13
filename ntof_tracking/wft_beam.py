@@ -53,9 +53,14 @@ REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if REPO not in sys.path:
     sys.path.insert(0, REPO)
 
-BEAM_BASE = '/media/dylan/data/x17/beam_july/runs/'
-ANALYSIS_BASE = '/media/dylan/data/x17/beam_july/analysis/wft/'
-BENCH_ANALYSIS = '/media/dylan/data/x17/cosmic_bench/Analysis/'
+# Overridable so the same driver runs on other hosts (e.g. the desktop, where
+# the data lives under /media/ucla/x17match/) without editing this table.
+BEAM_BASE = os.environ.get('WFT_BEAM_BASE',
+                           '/media/dylan/data/x17/beam_july/runs/')
+ANALYSIS_BASE = os.environ.get('WFT_BEAM_ANALYSIS',
+                               '/media/dylan/data/x17/beam_july/analysis/wft/')
+BENCH_ANALYSIS = os.environ.get('WFT_BENCH_ANALYSIS',
+                                '/media/dylan/data/x17/cosmic_bench/Analysis/')
 
 # beam arm -> (bench detector, FEU x, FEU y, bench bundle to seed from).
 # Same table as mx_june_wft/bench/framing_compare.py, plus the bundle chosen in
@@ -74,8 +79,10 @@ BEAM_DETS = {
                      'long_run/mx17_6/wft/calib_bundle_lp',
               gap_mm=30.0),
     'D': dict(bench='mx17_7', feu_x=1, feu_y=2,
+              # calib_bundle_lp superseded det7's v36 in the 7-31 fleet rollout
+              # (the MPGD26 freeze ships lp for det7); v36 was the old kernel.
               bundle=BENCH_ANALYSIS + 'mx17_det6_det7_overnight_6-26-26/'
-                     'long_run/mx17_7/wft/calib_bundle_v36',
+                     'long_run/mx17_7/wft/calib_bundle_lp',
               gap_mm=30.0),
 }
 
