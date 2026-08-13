@@ -244,3 +244,65 @@ June stat cards, info box and figure slots. Figures built by
 scatter, wide breakdown, position/angle correlation densities) on the wft
 basis. Self-contained copy `note_selfcontained.html`; the 8-12 tabbed report
 is archived in `fleet_report/archive_tabbed_2026-08-12/`.
+
+## 7 · The fleet rerun, executed (8-13 afternoon) — grid path fixed, 21 rows promoted
+
+The laptop shut down mid-rerun in the morning; the first attempt's outputs were
+in `/tmp` and did not survive. Everything since lives on the data drive under
+`condor_campaign/rerun_20260813/`. Both halves ran: **156 jobs on condor**
+(clusters 14706905/6) and the rows the grid structurally cannot do, locally.
+
+**The LCG_105 bug is now impossible on a worker, not merely avoided.** Every
+job ships `matched_lists/matched_row<NNN>.json` built here; `run_reco_job.py
+--matched-list` refuses a list whose recipe, row or key disagrees; the worker
+never opens a rays file. Three defects were found while building it:
+
+- **Condor splits `queue` items on whitespace as well as commas**, and only the
+  last variable absorbs the line remainder. With `extra` in a middle column
+  every job would have gone out as `extra="--bundle-name"` with the rest
+  swallowed into the transfer request. `condor_submit -dry-run` caught it
+  pre-submission; column order is now `row,tag,mlist,extra`.
+- **The phase-2 gate was being ignored for the golden keys.** mx17_2 and
+  mx17_4 adopted the t0 prior (checked against every promoted product's
+  `events.meta.json`), but the golden `prod` arm was built on the base bundle,
+  and the local rerun had the same gap — six local products were discarded and
+  redone. The decided t0p comparison arms are now opt-in (`--gate-arms`).
+- **`--vrefit` had never worked in this campaign** — all 7 tier-B rows are
+  absent from the 8-12 `back/` too. Two blockers: `wft.calibrate` was invoked
+  via `runpy` under `run_name='__main__'`, so its ProcessPoolExecutor could not
+  pickle `_event_chi2`; and the six 6-27 drift-scan points had no alignment.
+  `seed_scan_alignment.py` supplies one the way the registry says to (long run
+  seeds z/θ/handedness, translation refitted — the points land within 0.04 mm
+  of the seed, i.e. the detector did not move). Tier B now runs end to end:
+  **v = 15.4 / 21.8 / 27.0 / 33.7 / 38.7 µm/ns at 300–1100 V** (the 100 V point
+  is 16.5, above 300 V — the one non-monotonic point, and the weakest sample).
+
+**Promoted: 21 rows** (20 from the grid, row 20 from its local twin), each with
+`pre_rerun_backup_20260813/`. NOT promoted, deliberately: the 127 tier-C
+offcond rows (staging only, as `collect_results.py` has always done — the
+promoter now enforces it), and **tier B**, because a refit bundle carries no
+w0/kw at all (`wft/calibrate.py` has no notion of them, despite this file's own
+"w0 via the refit's own accounting"), so those tables' angles are on the
+uncorrected mapping and are not quotable. Their v numbers are.
+
+**Grid ≡ local**, measured twice: row 103 agrees to 3.3e-14 relative (float
+summation order, geometry columns identical), row 20 to 2e-5 on fit-error
+columns and 4e-6 on `y_tan_theta` — optimizer convergence across machines, not
+a difference in what was computed.
+
+**Fleet numbers are unchanged, and that is the expected result**: A 93.1 /
+B 92.0 / C 74.9 / D 57.0 / E 41.6. All five golden keys have v2 rays, so the
+NClus bug never touched them; for them this generation changes only *where*
+w0/kw is applied. Angle bias is now |≤0.20°| on every fleet plane. What the
+rerun actually corrects is the 144 v1 rows, which feed the scan/digest tables
+rather than the five detector pages. `angles_w0corr/` is refreshed rather than
+skipped for already-corrected tables — skipping would have paired today's
+efficiencies with the previous generation's angles, invisibly.
+
+**Still open.** Row 100 (tier B, v1): needs a hits-chain cache built before it
+can be v-refitted, and would be unpromotable anyway for the w0/kw reason above.
+Rows 139/140: the telescope recorded no rays (0 matched), nothing to
+reconstruct. Row 59 (`g_det3_wknd`): reconstructed and validated — **the same
+22,095-event set as the live reference, same bundle** — but not promoted, per
+the instruction that it is validation only. Adopting it is now the only thing
+standing between detector A and a fleet that applies w0/kw in-reco everywhere.
