@@ -53,6 +53,7 @@ LETTER = {'g_det3_wknd': 'A', 'o22_long_det2': 'B', 'g_det6_long': 'C',
 # Columns lifted from events.parquet onto the ray table. Everything a figure
 # colours, cuts or bins by -- keep this list generous, the table is small.
 FIT_COLS = ['x_ok', 'y_ok', 'x_p0', 'y_p0', 'x_w', 'y_w',
+            'x_t0', 'y_t0', 'x_ftst', 'y_ftst',
             'x_tan_theta', 'y_tan_theta', 'x_theta_deg', 'y_theta_deg',
             'x_chi2', 'y_chi2', 'x_dof', 'y_dof',
             'x_p0_err', 'y_p0_err', 'x_tan_err', 'y_tan_err',
@@ -98,6 +99,13 @@ projection of; rebuild any of them from here.
 retained for continuity, not recommended as a cut), `quality_ok`,
 `n_candidates`. Plus `n_tracks`, `n_hits` per event.
 
+## Reference track quality (M3)
+
+`chi2_x`, `chi2_y`, `nclus_x`, `nclus_y` — the quantities the reference recipe
+cuts on. The cut can only be **tightened** from this table: reconstruction ran
+on the matched list, which is already `chi2 < 1.0` and `NClus >= 4`, so rays
+outside the frozen recipe have no reconstruction to score.
+
 ## Angle residuals
 
 `dtheta_x_deg`, `dtheta_y_deg` — reconstructed minus reference, per plane.
@@ -111,6 +119,28 @@ NaN where the plane did not fit or the reference angle is undefined.
   own frame — do not rotate again.
 - Positions are post-alignment. The alignment used is in `summary.json`.
 """
+
+
+def ref_quality(cfg):
+    """Per-event M3 track quality: the chi2 and NClus the recipe cuts on.
+
+    Needed to ask how the answer moves with the reference cut. Note the cut can
+    only be TIGHTENED from here: reconstruction ran on the matched list, which
+    is already chi2 < M3_CHI2_CUT and NClus >= M3_MIN_NCLUS, so rays outside
+    the frozen recipe have no reconstruction to score.
+    """
+    rays = M3RefTracking(cfg.m3_tracking_dir, chi2_cut=M3_CHI2_CUT,
+                         min_nclus=M3_MIN_NCLUS)
+    rd = rays.ray_data
+    import awkward as ak
+    cols = {f: np.asarray(ak.to_numpy(rd[f]), float)
+            for f in ('Chi2X', 'Chi2Y', 'NClusX', 'NClusY') if f in ak.fields(rd)}
+    evn = np.asarray(ak.to_numpy(rd['evn']), int)
+    return pd.DataFrame(dict(event_id=evn,
+                             chi2_x=cols.get('Chi2X'), chi2_y=cols.get('Chi2Y'),
+                             nclus_x=cols.get('NClusX'),
+                             nclus_y=cols.get('NClusY'))
+                        ).drop_duplicates('event_id')
 
 
 def ref_angles(cfg, params):
@@ -157,6 +187,8 @@ def export_key(key):
     keep = ['event_id'] + [c for c in FIT_COLS if c in fits.columns]
     d = d.merge(fits[keep].drop_duplicates('event_id'), on='event_id',
                 how='left', suffixes=('', '_fit'))
+
+    d = d.merge(ref_quality(cfg), on='event_id', how='left')
 
     ra = ref_angles(cfg, params)
     d['ref_tan_x'] = [ra.get(int(e), (np.nan, np.nan))[0] for e in d['event_id']]

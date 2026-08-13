@@ -61,10 +61,11 @@ class Plots:
         os.makedirs(out_dir, exist_ok=True)
         self.items = []
 
-    def add(self, fig, name, title, caption, data=None, group='', png=False):
+    def add(self, fig, name, title, caption, data=None, group='', png=False,
+            dpi=None):
         ext = 'png' if png else 'svg'
         fig.savefig(os.path.join(self.out_dir, f'{name}.{ext}'),
-                    bbox_inches='tight')
+                    bbox_inches='tight', **({'dpi': dpi} if dpi else {}))
         plt.close(fig)
         csv = None
         if data is not None:
@@ -136,6 +137,120 @@ def s68(v):
     v = np.asarray(v, float)
     v = v[np.isfinite(v)]
     return float(np.percentile(np.abs(v - np.median(v)), 68.27)) if len(v) else np.nan
+
+
+# ---------------------------------------------------------------- sliding scan
+STEP_MM = 2.0          # grid pitch of the scan
+TARGET_N = 150         # rays per circle the default radius aims for
+
+
+def _disc(radius_mm, step):
+    k = int(np.ceil(radius_mm / step))
+    yy, xx = np.mgrid[-k:k + 1, -k:k + 1]
+    return ((xx ** 2 + yy ** 2) * step ** 2 <= radius_mm ** 2).astype(float)
+
+
+def _smear(H, disc):
+    """Sum of H over the disc centred on each cell."""
+    from scipy.signal import fftconvolve
+    return fftconvolve(H, disc, mode='same')
+
+
+def auto_radius(n_rays, box):
+    """Radius holding ~TARGET_N rays on average, rounded to something sane.
+
+    A literally 2 mm circle is not a statistics question anyone can answer: at
+    this run's density it holds ~2 rays, so efficiency in it is 0, 50 or 100 %.
+    The SCAN steps every 2 mm; the circle has to be wide enough to measure.
+    """
+    area = max((box['x1'] - box['x0']) * (box['y1'] - box['y0']), 1.0)
+    r = np.sqrt(TARGET_N * area / (np.pi * max(n_rays, 1)))
+    return float(np.clip(round(r), 6, 40))
+
+
+def sliding_maps(d, box, radius_mm, step=STEP_MM):
+    """Every sliding-circle quantity in one pass over the binned sums.
+
+    Binning once and convolving with a disc gives the same answer as asking
+    "which rays are within radius of this point" at every grid point, but in
+    seconds rather than minutes: at a 2 mm step that is ~35,000 circles per
+    map per detector.
+    """
+    xe = np.arange(box['x0'], box['x1'] + step, step)
+    ye = np.arange(box['y0'], box['y1'] + step, step)
+    disc = _disc(radius_mm, step)
+    x, y = d['x'].to_numpy(float), d['y'].to_numpy(float)
+
+    def binned(w=None, sel=None):
+        xs, ys = (x, y) if sel is None else (x[sel], y[sel])
+        ws = None if w is None else (w if sel is None else w[sel])
+        H, _, _ = np.histogram2d(xs, ys, bins=[xe, ye], weights=ws)
+        return _smear(H, disc)
+
+    out = {'x_edges': xe, 'y_edges': ye, 'radius_mm': radius_mm, 'step': step}
+    n_tot = binned()
+    out['n_rays'] = n_tot
+
+    r = d['r_mm'].to_numpy(float)
+    for cut in (2.0, 5.0):
+        hit = np.isfinite(r) & (r < cut)
+        with np.errstate(invalid='ignore', divide='ignore'):
+            out[f'eff{cut:g}'] = np.where(n_tot >= 40,
+                                          100 * binned(sel=hit) / n_tot, np.nan)
+
+    def sigma_map(comps, window, min_n=60, passes=2):
+        """Width of `comps` per circle, with the window re-tightened once.
+
+        A fixed wide window measures the RMS INCLUDING the non-Gaussian
+        shoulder, which is not what "resolution" means anywhere else in this
+        analysis -- on detector A it reads 0.8 mm against the report's 0.44 mm
+        core sigma. Re-running with a window of 2.5 sigma converges on the
+        core, matching the iterative Gaussian used by the accounting.
+        """
+        sel_var = np.zeros(1)
+        sig = n = None
+        for _ in range(passes):
+            sel = np.ones(len(d), bool)
+            for c in comps:
+                sel &= np.isfinite(c) & (np.abs(c - np.nanmedian(c)) < window)
+            n = binned(sel=sel)
+            with np.errstate(invalid='ignore', divide='ignore'):
+                var = np.zeros_like(n)
+                for c in comps:
+                    cc = np.where(np.isfinite(c), c, 0.0)
+                    m1 = binned(w=cc, sel=sel) / n
+                    m2 = binned(w=cc ** 2, sel=sel) / n
+                    var += np.maximum(m2 - m1 ** 2, 0)
+                sig = np.where(n >= min_n, np.sqrt(var / len(comps)), np.nan)
+            if np.isfinite(sig).any():
+                window = float(np.clip(2.5 * np.nanmedian(sig),
+                                       0.3 * window, window))
+            sel_var = sig
+        return sel_var, n, window
+
+    # Spatial: the mis-association tail is not resolution, so start inside 5 mm
+    # and let the window tighten onto the core.
+    dx, dy = d['dx'].to_numpy(float), d['dy'].to_numpy(float)
+    rr = np.where(np.isfinite(r), r, np.nan)
+    keep = np.abs(rr - 0) < 5.0
+    out['sigma_pos'], out['n_core'], out['win_pos'] = sigma_map(
+        [np.where(keep, dx, np.nan), np.where(keep, dy, np.nan)], 5.0)
+
+    # Angles, per plane
+    for p in ('x', 'y'):
+        col = f'dtheta_{p}_deg'
+        if col in d:
+            (out[f'sigma_theta_{p}'], _,
+             out[f'win_theta_{p}']) = sigma_map([d[col].to_numpy(float)], 10.0)
+
+    # Time: the two planes timestamp the same event, so their difference is
+    # free of trigger jitter; per-plane sigma is that spread over root two.
+    if {'x_t0', 'y_t0'} <= set(d.columns):
+        dt = (d['x_t0'] - d['y_t0']).to_numpy(float)
+        st, _, win = sigma_map([dt], 250.0)
+        out['sigma_t'] = st / np.sqrt(2)
+        out['win_t'] = win
+    return out
 
 
 def build_detector(key, root):
@@ -267,6 +382,68 @@ def build_detector(key, root):
           'mis-association tail does not set the colour.',
           g, 'Residuals', png=True)
 
+    # ---------- sliding-circle scans ----------
+    R = auto_radius(len(d), box)
+    sm = sliding_maps(d, box, R)
+    sxe, sye = sm['x_edges'], sm['y_edges']
+    per_circle = float(np.nanmedian(sm['n_rays']))
+    p_eff = float(ok.mean())
+    stat_pct = 100 * np.sqrt(max(p_eff * (1 - p_eff), 1e-9) / max(per_circle, 1))
+    grid_note = (f'Circle r = {R:.0f} mm stepped every {STEP_MM:g} mm '
+                 f'(~{per_circle:.0f} rays per circle, so neighbouring circles '
+                 f'overlap heavily). Statistical spread at this circle size is '
+                 f'about +/-{stat_pct:.1f}% on efficiency — structure smaller '
+                 f'than that is noise, not the detector.')
+
+    def slide(field, name, title, cbar, caption, cmap='viridis',
+              lo_pct=2, hi_pct=98, vmin=None, vmax=None, group='Sliding scans'):
+        M = sm.get(field)
+        if M is None or not np.isfinite(M).any():
+            return
+        fin = M[np.isfinite(M)]
+        v0 = vmin if vmin is not None else float(np.percentile(fin, lo_pct))
+        v1 = vmax if vmax is not None else float(np.percentile(fin, hi_pct))
+        fig, a = plt.subplots(figsize=(6.6, 5.6))
+        im = a.pcolormesh(sxe, sye, M.T, cmap=cmap, vmin=v0, vmax=v1)
+        fig.colorbar(im, ax=a, label=cbar)
+        a.set_xlabel('x [mm]'); a.set_ylabel('y [mm]'); a.set_aspect('equal')
+        a.set_title(f'{L} · {title}')
+        g2 = _grid_csv(M, sxe, sye, field)
+        g2['n_rays_in_circle'] = _grid_csv(sm['n_rays'], sxe, sye, 'n')['n']
+        P.add(fig, name, title, f'{caption} {grid_note}', g2, group, png=True,
+              dpi=170)
+
+    slide('n_rays', 'slide_stats', 'Ray statistics (sliding)', 'rays in circle',
+          'How many reference rays each circle contains — the exposure behind '
+          'every other sliding map, and the reason the edges are noisier.',
+          cmap='cividis', lo_pct=0, hi_pct=100)
+    slide('eff2', 'slide_eff2', 'Efficiency, 2 mm match (sliding)',
+          'within 2 mm [%]',
+          'Fraction of rays reconstructed within 2 mm of the reference.')
+    slide('eff5', 'slide_eff5', 'Efficiency, 5 mm match (sliding)',
+          'within 5 mm [%]',
+          'The same scan at the 5 mm match radius the headline numbers use.')
+    slide('sigma_pos', 'slide_sigma_pos', 'Spatial resolution (sliding)',
+          'sigma position [mm]',
+          'Width of the residual per axis, on a window that re-tightens onto '
+          'the core (~2.5 sigma) so the mis-association shoulder does not set '
+          'it. This is a windowed RMS and sits BETWEEN the two widths the '
+          'report quotes — on detector A, 0.53 mm here against 0.44 mm for the '
+          'Gaussian core fit and 0.63 mm for sigma68. Compare map to map, not '
+          'to the headline number.',
+          cmap='magma_r')
+    for p in ('x', 'y'):
+        slide(f'sigma_theta_{p}', f'slide_sigma_theta_{p}',
+              f'Angle resolution {p.upper()} (sliding)', 'sigma theta [deg]',
+              f'RMS of the {p}-plane angle residual over |dtheta| < 10 deg.',
+              cmap='magma_r')
+    slide('sigma_t', 'slide_sigma_t', 'Time resolution (sliding)',
+          'sigma t per plane [ns]',
+          'From the X-Y plane time difference (trigger jitter cancels), '
+          'divided by root two. Sampling-limited: the DAQ samples every 60 ns, '
+          'so this is fit granularity, NOT the scintillator-referenced time '
+          'resolution of the June timing study.', cmap='magma_r')
+
     # ---------- position correlation ----------
     for p in ('x', 'y'):
         s = np.isfinite(d[f'det_{p}'])
@@ -358,6 +535,50 @@ def build_detector(key, root):
         P.add(fig, name, lab.capitalize(),
               'Distribution over all fitted planes in the active box.',
               data, 'Fit quality')
+
+    # ---------- how the answer moves with the reference cut ----------
+    if {'chi2_x', 'chi2_y'} <= set(d.columns) and d['chi2_x'].notna().any():
+        c2 = np.maximum(d['chi2_x'].to_numpy(float), d['chi2_y'].to_numpy(float))
+        far = (d['category'] == 'reco_far').to_numpy(bool)
+        hnr = (d['category'] == 'hit_no_reco').to_numpy(bool)
+        cuts = np.round(np.arange(0.05, float(np.nanmax(c2)) + 1e-9, 0.05), 3)
+        rows = []
+        for c in cuts:
+            s = np.isfinite(c2) & (c2 < c)
+            if s.sum() < 100:
+                continue
+            rows.append(dict(chi2_cut=float(c), n_rays=int(s.sum()),
+                             frac_rays_kept=float(s.mean()),
+                             within_5mm_pct=float(100 * ok.to_numpy(bool)[s].mean()),
+                             reco_far_pct=float(100 * far[s].mean()),
+                             hit_no_reco_pct=float(100 * hnr[s].mean())))
+        scan = pd.DataFrame(rows)
+        if len(scan) > 2:
+            fig, a = plt.subplots(figsize=(7.6, 4.4))
+            a.plot(scan['chi2_cut'], scan['within_5mm_pct'], 'o-', ms=3.5,
+                   lw=1.4, color='#1c6b3f', label='within 5 mm')
+            a.set_xlabel('M3 reference cut: max(chi2_x, chi2_y) <')
+            a.set_ylabel('within 5 mm [%]', color='#1c6b3f')
+            a.tick_params(axis='y', labelcolor='#1c6b3f')
+            a2 = a.twinx()
+            a2.plot(scan['chi2_cut'], scan['reco_far_pct'], 's--', ms=3.5,
+                    lw=1.4, color='#c9761d', label='reco_far')
+            a2.set_ylabel('reco_far [%]', color='#c9761d')
+            a2.tick_params(axis='y', labelcolor='#c9761d')
+            a2.grid(False)
+            a.axvline(1.0, color='#888', lw=1.0, ls=':')
+            a.text(0.995, a.get_ylim()[0], ' frozen recipe', rotation=90,
+                   va='bottom', ha='right', fontsize=8, color='#666')
+            a.set_title(f'{L} · efficiency and reco_far vs reference chi2 cut')
+            P.add(fig, 'chi2_scan', 'Efficiency vs reference chi2 cut',
+                  'Both quantities against the M3 track-quality cut. The cut '
+                  'can only be TIGHTENED: reconstruction ran on rays already '
+                  'passing chi2 < 1 and NClus >= 4, so there is nothing to '
+                  'score beyond the frozen recipe. A flat curve means the '
+                  'reference selection is not manufacturing the efficiency; '
+                  'a rise toward tighter cuts means some of what is called '
+                  'inefficiency is reference mis-pointing.',
+                  scan, 'Reference cut')
 
     return dict(key=key, letter=L, detector=cfg.DET_NAME,
                 run=f'{cfg.RUN}/{cfg.SUB_RUN}', summary=summary,
