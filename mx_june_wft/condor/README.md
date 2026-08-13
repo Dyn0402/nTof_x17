@@ -6,6 +6,73 @@
 > `collect_results.py`. The runbook is `../FREEZE_MPGD26_2026-08-12.md` §5.
 > The rest of this file documents the older drift-gap-fit workflow.
 
+## The reco campaign, as it stands after the 2026-08-13 rerun
+
+Read this before submitting a reco campaign again. Full account:
+`../quality_investigation/JUNE_CONTINUITY_2026-08-13.md` §7–8.
+
+```bash
+# 1. matched lists — ALWAYS, for every row, computed locally
+../../.venv/bin/python mx_june_wft/condor/make_matched_lists.py \
+    --out /home/dylan/x17/cosmic_bench/condor_campaign/rerun_<date>/matched_lists_all
+
+# 2. package (refuses a dirty tree; --t0p-dets IS the gate decision)
+../../.venv/bin/python mx_june_wft/condor/make_reco_package.py \
+    --t0p-dets mx17_2,mx17_4 \
+    --matched-lists <the dir from step 1>
+
+# 3. ship, DRY-RUN, then submit
+rsync -av --exclude back/ --exclude results/ --exclude log/ \
+    /home/dylan/x17/cosmic_bench/condor_campaign/ lxplus:~/wft_campaign/
+ssh lxplus 'cd ~/wft_campaign && condor_submit -dry-run /tmp/d.txt \
+    jobfile=jobs_rest.txt reco.sub && grep -m2 TransferInput /tmp/d.txt'
+ssh lxplus 'cd ~/wft_campaign && condor_submit jobfile=jobs_gate.txt reco.sub \
+    && condor_submit jobfile=jobs_rest.txt reco.sub'
+
+# 4. collect into a DATED tree, then promote (dry-run first)
+../../.venv/bin/python mx_june_wft/condor/collect_results.py \
+    --back <...>/back_<date> --results <...>/results_<date>
+../../.venv/bin/python mx_june_wft/condor/promote_rerun.py \
+    --src <...>/results_<date> [--apply]
+```
+
+### Rules that are enforced in code, and why
+
+- **Every job carries its own matched list.** LCG_105 mis-resolves the NClus
+  branches of **v1** rays files (184 of 214 rows), silently degrading the
+  recipe to chi2-only: 55.4 % of what those jobs reconstructed fell outside
+  `chi2<1 & NClus>=4`. `run_reco_job.py --matched-list` refuses a list whose
+  recipe, row or key disagrees, and the worker never opens a rays file. Rows
+  that cannot be listed are refused, not downgraded.
+- **`--t0p-dets` is the gate decision, not a default.** The phase-2 gate
+  adopted the t0 prior for mx17_2 and mx17_4. Omitting the flag rebuilds those
+  detectors on the un-adopted bundle — verify against a promoted product's
+  `events.meta.json`, not against the submit files.
+- **Tier B (`--vrefit`) cannot run on a worker at all.** `wft.calibrate` needs
+  the hits-chain event cache *and* `alignment_tpc_veto50/alignment.json`,
+  neither of which is staged. Run those rows locally with `--local`. Scan
+  subruns that have a cache but no alignment get one from
+  `seed_scan_alignment.py` (long run seeds z/theta, translation refitted).
+- **Refit bundles carry no w0/kw** — `wft/calibrate.py` has no notion of them —
+  so tier-B tables' ANGLES are on the uncorrected mapping and are not
+  quotable. Their v values are. `promote_rerun.py` refuses them, along with
+  off-conditions rows and tagged arms.
+
+### Condor gotchas that cost real time
+
+- **`queue` splits items on whitespace as well as commas**, and only the LAST
+  variable absorbs the remainder of the line. A middle column holding
+  space-separated flags silently becomes one token with the rest swallowed by
+  the next variable. Column order is `row,tag,mlist,extra`. **Always
+  `condor_submit -dry-run` and read the expanded `Arguments`/`TransferInput`.**
+- **`condor_q` AND `condor_rm` need `-name <schedd>`.** A cluster lives on the
+  schedd it was submitted from; from a login node both commands quietly
+  address the local one and report nothing found. Get the schedd with
+  `condor_q -global -constraint 'ClusterId==N' -af GlobalJobId | cut -d'#' -f1`.
+- **`combined_hits_root` is fetched per acquisition**, like `decoded_root`.
+  EOS can hold acquisitions the M3 chain rejected, old enough to predate the
+  `significance` branch; fetching the directory wholesale kills seeding.
+
 # Running the drift-gap fits on lxplus condor
 
 The gap study splits cleanly in two, and only the cheap half needs the bench

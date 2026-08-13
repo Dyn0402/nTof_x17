@@ -306,3 +306,101 @@ reconstruct. Row 59 (`g_det3_wknd`): reconstructed and validated — **the same
 22,095-event set as the live reference, same bundle** — but not promoted, per
 the instruction that it is validation only. Adopting it is now the only thing
 standing between detector A and a fleet that applies w0/kw in-reco everywhere.
+
+## 8 · Detector A homogenised, and the results made legible (8-13 late)
+
+**Detector A is now on the same basis as the rest.** Row 59 was promoted after
+all: §7 left it out per the "validation only" instruction, but the validation
+passed (identical 22,095-event set to the reference, same bundle), and leaving
+it out meant A alone applied w0/kw post-hoc while every other detector applied
+it in reco — the two differ near `TAN_MAX`, which feeds candidate selection.
+Re-accounted: **93.1 % within 5 mm, 21,948 rays, bias −0.06/+0.02°**,
+unchanged, exactly as the identical event set predicted.
+
+That exposed two silent-failure paths in the reporting chain, both now fixed:
+
+- `make_june_figs.py` read the corrected COPY `events_w0corr.parquet`, which
+  the pass-through no longer writes. It fell back to the live table (correct
+  data) but wrote `angles_fullcoverage.json` into `angles/` while the report
+  reads it from `angles_w0corr/` — so the report quoted **the previous
+  generation's angles beside today's efficiencies**. The numbers happened to
+  agree, because the golden keys were never touched by the NClus bug; the
+  pairing was still wrong.
+- `corrected_angles.py` iterates `FLEET`, which carries `sat_det3` for det3,
+  so the report's Detector A key was never refreshed by it at all. `--keys`.
+
+### 8a · The products are now data, not just pictures
+
+`report/export_plot_data.py` writes, per detector, `plot_data/rays.csv`: one
+row per reference ray — where it crossed, what was reconstructed there, the
+residual, both planes' fit quality, the reference angle the plane should have
+measured, and the M3 `chi2`/`NClus` the recipe cuts on. Every per-detector
+figure in the report is a projection of that one table, so any of them can be
+re-cut without re-running reconstruction. Plus `summary.json`, `COLUMNS.md`,
+and a machine-readable `plot_data/fleet.csv`.
+
+`report/make_plot_explorer.py` renders **215 single-subject plots** (1-D as
+SVG, 2-D as PNG) with the numbers drawn beside each, and builds `explorer.html`
+— card grid plus a full-screen zoom/pan viewer. Published self-contained at
+`dylan-neff.web.cern.ch/notes/june-fleet-plots.html`. Verified headless: page
+renders, viewer zooms, individual map bins resolve.
+
+Three plots were not worth zooming into until they were fixed, and the fixes
+are the useful record: the residual map averaged over sparse bins so the
+mis-association tail set the colour (now median, ≥10 rays, 5–95 pct scale);
+the position/angle densities used 140 fixed bins over a diagonal locus, which
+reads as speckle (now scaled to the sample); and the sliding width estimator
+used a fixed 5 mm window, which measures the RMS *including* the shoulder
+(0.80 mm on A against the report's 0.44 mm core σ) — it now re-tightens onto
+the core, landing at 0.53 mm, and the caption states where that sits between
+the report's two widths rather than implying it equals either.
+
+### 8b · Sliding scans, the reference-cut scan, and the HV/drift scans
+
+- **Sliding-circle scans**, 2 mm grid step: ray statistics, efficiency at 2 mm
+  and 5 mm match radius, spatial resolution, angle resolution per plane, time
+  resolution. Binned once and convolved with a disc kernel — ~35 000 circles
+  per map per detector, in seconds. **The circle is not 2 mm**: at June ray
+  densities a 2 mm circle holds ~2 rays, so its efficiency could only read 0,
+  50 or 100 %. The radius holds ~150 rays (17 mm on A) and every caption
+  states it with the binomial spread at that size.
+- **Time resolution is measurable but sampling-limited**: from the X−Y plane
+  time difference over √2 (trigger jitter cancels), **~59 ns per plane**,
+  consistent with the trigger-referenced route (70–73 ns). With 60 ns DAQ
+  sampling this is fit granularity, NOT the scintillator-referenced resolution
+  of the June timing study, and is labelled as such.
+- **Reference-cut scan**: efficiency and `reco_far` against the M3 χ² cut. On
+  A, tightening 1.0 → 0.05 moves efficiency **93.1 → 94.3 %** and `reco_far`
+  **4.07 → 3.51 %** — mirror images, so ~1.2 points of the quoted inefficiency
+  is reference mis-pointing rather than the detector. The cut can only be
+  TIGHTENED (reco ran on rays already inside the recipe); `NClus` is uniformly
+  4, so there is no NClus scan.
+- **HV and drift scans**: 31 plots over 11 scan families, from the campaign's
+  own 114 scan-point products — reconstruction fraction, cluster charge (the
+  gain curve), cluster size, and drift velocity where a tier-B refit exists.
+  Every point is reconstructed with the detector's NOMINAL bundle, so away
+  from nominal the *reconstruction* is off-calibration even where the detector
+  is fine: charge is the physical response, reco fraction is calibration
+  transfer.
+
+### 8c · Detector B was being shown on the wrong run
+
+`o22_long_det2` (6-22 **longer_run**) carries 3,678 rays; the same night's
+**long_run** (`g_det2`, tier A, same settings, promoted in §7) carries
+**19,054** — 5× the statistics, at 91.39 % vs 91.98 % and bias −0.05/−0.02°
+vs −0.01/−0.01°, i.e. the same detector far better resolved. The small run was
+not a mistake: the June PDF's det2 page used 3,772 rays, and the report's
+continuity table only means something against the same run — which is also why
+A is keyed on `g_det3_wknd`. The explorer therefore carries **both** (`B` and
+`B-June`); `report.html` is left keyed as it was. Moving the report's B means
+re-basing its continuity row, and that is a decision, not a refresh.
+
+### 8d · Grid housekeeping
+
+Ten held jobs removed: the 7 from this rerun (rows 61–66, 202 — all completed
+locally) and **3 stale ones from the 8-12 campaign** (rows 90, 91, 202) that
+had been sitting held since that run. Rows 90/91 have no reference rays at all
+(telescope not recording), so nothing was ever recoverable there. No
+`wft_campaign` jobs remain queued. `condor_rm`, like `condor_q`, addresses the
+LOCAL schedd unless given `-name` — the first removal reported success for one
+cluster and quietly did nothing for the other.
