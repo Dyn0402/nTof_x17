@@ -49,7 +49,37 @@ def main():
         # table that is already right. Tables reconstructed before the restore
         # carry no stamp and still need this pass, so the fleet can be mixed.
         if (meta.get('angle_constants') or {}).get('applied'):
-            print(f'{key}: angles already corrected in reco — skipping')
+            # Already corrected in reco: correcting again would subtract w0
+            # twice and divide by kw twice. But the accounting still has to be
+            # REFRESHED, not skipped — angles_w0corr/ is what the fleet report
+            # and digest quote, so leaving the previous generation's files in
+            # place would pair today's efficiencies with yesterday's angles and
+            # nothing downstream would notice. Run the same accounting on the
+            # live table, unmodified.
+            print(f'{key}: angles corrected in reco — re-running accounting '
+                  'on the live table (no second correction)')
+            out_dir = os.path.join(W, 'angles_w0corr')
+            os.makedirs(out_dir, exist_ok=True)
+            subprocess.run(
+                [PY, os.path.join(REPO, 'mx_june_wft', '03_angles.py'), key,
+                 '--table', os.path.join(W, 'events.parquet'),
+                 '--out', out_dir], check=True, cwd=REPO)
+            with open(os.path.join(out_dir, 'PROVENANCE.txt'), 'w') as f:
+                f.write('Angles applied IN RECO (events.meta.json '
+                        'angle_constants.applied=true); this directory is the '
+                        'standard 03_angles accounting run on the live table '
+                        'with no post-hoc correction.\n')
+            a = json.load(open(os.path.join(out_dir,
+                                            'angular_resolution.json')))
+            summary[key] = {p: dict(bias=a['planes'][p]['bias_deg'],
+                                    sigma=a['planes'][p]['sigma_deg'],
+                                    vsp=a['planes'][p]['implied_v_spread'])
+                            for p in ('x', 'y')}
+            print(f'{key}: '
+                  + '  '.join(f'{p}: bias {summary[key][p]["bias"]:+.2f} '
+                              f'sigma {summary[key][p]["sigma"]:.2f} '
+                              f'vsp {summary[key][p]["vsp"]:.2f}'
+                              for p in ('x', 'y')))
             continue
         bdir = os.path.basename(str(meta['calibration']))
         b = json.load(open(os.path.join(W, bdir, 'bundle.json')))

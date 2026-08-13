@@ -103,6 +103,33 @@ def fetch_decoded(eos_sub, dest, feus, m3_dir):
         fetch(f'{src}/{n}', os.path.join(dest, n))
 
 
+def fetch_hits(eos_sub, dest, m3_dir):
+    """combined_hits_root, restricted to M3-covered acquisitions like the
+    decoded files. Fetching the directory wholesale pulls strays the M3 chain
+    already rejected, and seeding reads every file it finds: row 202 died on
+    260622_15H51, an acquisition absent locally and old enough to predate the
+    'significance' branch (uproot KeyInFileError). Same rule, same reason as
+    fetch_decoded -- an acquisition the reference does not cover is not part of
+    this run."""
+    os.makedirs(dest, exist_ok=True)
+    src = eos_sub + '/combined_hits_root'
+    m3_stems = {s for s in (_datrun_stem(n) for n in _ls(m3_dir)
+                            if n.endswith('.root')) if s}
+    names = [n for n in _ls(src) if n.endswith('.root')]
+    picked = names
+    if m3_stems:
+        skipped = [n for n in names if _datrun_stem(n) not in m3_stems]
+        if skipped:
+            print(f'[job] skipping {len(skipped)} combined_hits files from '
+                  f'acquisitions absent in the M3 dir: '
+                  f'{sorted({_datrun_stem(n) for n in skipped})}', flush=True)
+        picked = [n for n in names if _datrun_stem(n) in m3_stems]
+    if not picked:
+        sys.exit(f'FATAL: no combined_hits files covered by the M3 dir in {src}')
+    for n in picked:
+        fetch(f'{src}/{n}', os.path.join(dest, n))
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('row', type=int)
@@ -176,8 +203,8 @@ def main():
         fetch(f'{eos_sub}/{m3}', os.path.join(sub_local, m3))
         fetch_decoded(eos_sub, os.path.join(sub_local, 'decoded_root'),
                       [feux, feuy], m3_dir=f'{eos_sub}/{m3}')
-        fetch(f'{eos_sub}/combined_hits_root',
-              os.path.join(sub_local, 'combined_hits_root'))
+        fetch_hits(eos_sub, os.path.join(sub_local, 'combined_hits_root'),
+                   m3_dir=f'{eos_sub}/{m3}')
 
     # ---- frozen code on the path, config synthesized from the row
     sys.path[:0] = [CODE, os.path.join(CODE, 'mx_june_cosmic_qa'),
@@ -201,23 +228,29 @@ def main():
     os.makedirs(out_dir, exist_ok=True)
 
     if args.vrefit:
-        import runpy
         refit_out = os.path.join(out_dir, f'{bundle_name}_vrefit')
         b = json.load(open(os.path.join(bundle, 'bundle.json')))
         pins = ','.join(f'{h}={b["hyper"][h]}' for h in PINNED_HYPERS
                         if h in b.get('hyper', {}))
-        argv = sys.argv
+        # Call main() on the IMPORTED module, never runpy under run_name
+        # '__main__'. calibrate fits with a ProcessPoolExecutor, and submitting
+        # to it pickles the worker function by qualified name: run as '__main__'
+        # its _event_chi2 resolves to a throwaway namespace and every tier-B row
+        # dies with "Can't pickle <function _event_chi2>". Imported, the same
+        # function is wft.calibrate._event_chi2 and pickles fine. The run key is
+        # resolved through qa_config.RUNS, which this process populated above,
+        # so the call has to stay in-process -- a subprocess would not have it.
+        #
         # No --share-mode: the refit bundle must keep the campaign's kernel
         # branch. Production bundles carry share_mode null -> the loader falls
         # back to 'delay' (FREEZE_MPGD26 §2), and calibrate's default writes
         # 'delay'. Passing 'lp' here would have run these 7 tier-B rows on a
         # different kernel than the other 207.
-        sys.argv = ['wft.calibrate', row['key'], '--seed-bundle', bundle,
-                    '--fix-hyper', pins,
-                    '--jobs', str(args.jobs), '--out', refit_out]
-        print('[job]', ' '.join(sys.argv), flush=True)
-        runpy.run_module('wft.calibrate', run_name='__main__')
-        sys.argv = argv
+        from wft import calibrate as wft_calibrate
+        cargv = [row['key'], '--seed-bundle', bundle, '--fix-hyper', pins,
+                 '--jobs', str(args.jobs), '--out', refit_out]
+        print('[job] wft.calibrate', ' '.join(cargv), flush=True)
+        wft_calibrate.main(cargv)
         bundle = refit_out
 
     # ---- reco (mirrors wft.cli cmd_reco on the synthesized config)

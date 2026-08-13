@@ -67,6 +67,21 @@ def main():
             print(f'SKIP (no matched list) {row["key"]}')
             n_skip += 1
             continue
+        if row.get('off_conditions'):
+            # Tier C ran a bundle outside its calibration conditions. Those
+            # recos are consumed from the staging tree WITH their flag, the
+            # same rule collect_results.py --promote follows; promoting them
+            # would put off-conditions numbers in the live Analysis tree with
+            # nothing left to mark them as such.
+            print(f'SKIP (off conditions) {row["key"]}')
+            n_skip += 1
+            continue
+        if os.path.basename(d) != row['key']:
+            # Gate/comparison arms are <key>__<tag> directories. They are
+            # inputs to a decision, not production output.
+            print(f'SKIP (tagged arm) {os.path.basename(d)}')
+            n_skip += 1
+            continue
         meta = json.load(open(os.path.join(d, 'events.meta.json')))
         if not (meta.get('angle_constants') or {}).get('applied'):
             print(f'SKIP (angle constants not applied) {row["key"]}')
