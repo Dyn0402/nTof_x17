@@ -30,4 +30,8 @@ environment             = "RECO_JOBS=8"
 MY.SendCredential       = true
 on_exit_hold            = (ExitBySignal == True) || (ExitCode != 0)
 max_retries             = 2
-queue row,tag,extra,mlist from $(jobfile)
+# Column order matters: condor splits queue items on whitespace AS WELL AS
+# commas, and only the LAST variable absorbs the remainder of the line. $(extra)
+# holds space-separated flags, so it has to be last -- put $(mlist) after it and
+# every job silently gets extra="--bundle-name" with the rest swallowed by mlist.
+queue row,tag,mlist,extra from $(jobfile)

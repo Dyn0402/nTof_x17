@@ -64,6 +64,10 @@ def main():
                          'make_matched_lists.py. Every submitted row must have '
                          'one — the worker stack cannot be trusted to resolve '
                          'the recipe itself (v1 NClus, 184/214 rows).')
+    ap.add_argument('--gate-arms', action='store_true',
+                    help='also emit the golden keys\' t0p comparison arms. '
+                         'The gate was decided 2026-08-12; only pass this to '
+                         're-open it.')
     ap.add_argument('--t0p-dets', default=None,
                     help='comma-separated dets whose gate ADOPTED the t0 '
                          'prior (e.g. mx17_2,mx17_6): jobs_rest.txt runs '
@@ -157,13 +161,21 @@ def main():
 
     gate, rest = [], []
     for i, row in enumerate(rows):
+        adopted = row['det'] in t0p_dets
         if row['key'] in GOLDEN_KEYS or row['key'] == 'sat_det3':
-            add(gate, i, 'prod', '')
-            if row['key'] in GOLDEN_KEYS:
+            # The golden keys' prod arm IS the production product for those
+            # rows, so it has to run the gate-ADOPTED bundle like every other
+            # row of that detector -- building it on the base bundle would
+            # promote mx17_2/mx17_4 back onto the un-adopted configuration.
+            add(gate, i, 'prod',
+                f'--bundle-name {row["bundle"]}_t0p' if adopted else '')
+            # The t0p comparison arm only exists to decide the gate. That
+            # decision is made (gate_eval, 8-12); re-running it would just
+            # re-litigate a settled question, so it is opt-in now.
+            if args.gate_arms and row['key'] in GOLDEN_KEYS:
                 add(gate, i, 't0p',
                     f'--bundle-name {GATE_BUNDLE[GOLDEN_KEYS[row["key"]]]}')
             continue
-        adopted = row['det'] in t0p_dets
         extra = (f'--bundle-name {row["bundle"]}_t0p' if adopted else '')
         if row['tier'] == 'A':
             add(rest, i, 'prod', extra)
@@ -174,7 +186,9 @@ def main():
     for name, jobs in (('jobs_gate.txt', gate), ('jobs_rest.txt', rest)):
         with open(os.path.join(args.dest, name), 'w') as f:
             for r, tag, extra, mlist in jobs:
-                f.write(f'{r}, {tag}, {extra}, {mlist}\n')
+                # mlist BEFORE extra: see reco.sub's queue line -- extra holds
+                # spaces and only the last queue variable absorbs them.
+                f.write(f'{r}, {tag}, {mlist}, {extra}\n')
         print(f'{name}: {len(jobs)} jobs')
     print(f'matched_lists/: {len(os.listdir(mdest))} lists staged')
     if unlistable:
