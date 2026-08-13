@@ -28,8 +28,11 @@ import subprocess
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-CODE = os.path.join(HERE, 'code')
-DATA = os.path.join(HERE, 'data')
+# On a worker the package unpacks code/ and data/ beside this file. A --local
+# rerun instead runs the repo against the real bench tree, so both are
+# overridable; nothing else in the job cares which it got.
+CODE = os.environ.get('WFT_CODE', os.path.join(HERE, 'code'))
+DATA = os.environ.get('WFT_DATA', os.path.join(HERE, 'data'))
 
 # Hypers that stay pinned during a tier-B v-refit: everything the bench
 # campaign froze (KERNEL_ARMS_2026-08-12.md) — only v (and w0 via the refit's
@@ -113,6 +116,20 @@ def main():
     ap.add_argument('--vrefit', action='store_true')
     ap.add_argument('--limit', type=int, default=None,
                     help='smoke tests only — never for production rows')
+    ap.add_argument('--local', action='store_true',
+                    help='inputs are already in the local bench tree — skip '
+                         'all EOS staging. Pairs with --matched-list to run a '
+                         'row entirely off lxplus, which is the ONLY way to '
+                         'reconstruct a v1-only row correctly (see '
+                         'make_matched_lists.py).')
+    ap.add_argument('--matched-list', default=None,
+                    help='JSON {event_ids, recipe, source} of M3-matched event '
+                         'ids computed on a stack that reads this run\'s rays '
+                         'files. Bypasses the on-worker M3 read entirely — the '
+                         'only way to run a v1-only row, since LCG_105 '
+                         'mis-resolves NClus there. Reco needs nothing else '
+                         'from M3: reference positions are attached later by '
+                         '01_alignment/03_angles, which run locally.')
     args = ap.parse_args()
 
     with open(args.manifest) as f:
@@ -125,21 +142,42 @@ def main():
     run, subrun, det = row['run'], row['subrun'], row['det']
     feux, feuy = int(row['feu_x']), int(row['feu_y'])
     eos_run = row['eos_run_dir']
-    if not eos_run:
+    if not eos_run and not args.local:
         sys.exit(f'FATAL: row {args.row} has no eos_run_dir')
     eos_sub = f'{eos_run}/{subrun}'
 
     # ---- stage inputs into the local bench layout _Config expects
     tree = os.path.join(DATA, row['tree'])
     sub_local = os.path.join(tree, run, subrun)
-    fetch(f'{eos_run}/run_config.json',
-          os.path.join(tree, run, 'run_config.json'))
     m3 = 'm3_tracking_root_v2' if row['has_m3v2'] == '1' else 'm3_tracking_root'
-    fetch(f'{eos_sub}/{m3}', os.path.join(sub_local, m3))
-    fetch_decoded(eos_sub, os.path.join(sub_local, 'decoded_root'),
-                  [feux, feuy], m3_dir=f'{eos_sub}/{m3}')
-    fetch(f'{eos_sub}/combined_hits_root',
-          os.path.join(sub_local, 'combined_hits_root'))
+    if args.local:
+        # Nothing to stage. Still enforce fetch_decoded's false-start rule --
+        # it lives in the staging path, so a local run would otherwise silently
+        # skip the one guard that keeps colliding event ids out of the table.
+        m3_stems = {s for s in (_datrun_stem(n)
+                                for n in _ls(os.path.join(sub_local, m3))
+                                if n.endswith('.root')) if s}
+        pats = tuple(f'_{f:02d}.root' for f in (feux, feuy))
+        stray = sorted({_datrun_stem(n)
+                        for n in _ls(os.path.join(sub_local, 'decoded_root'))
+                        if n.endswith(pats)
+                        and _datrun_stem(n) not in m3_stems})
+        if stray and m3_stems:
+            sys.exit(
+                f'FATAL: local decoded_root has acquisitions absent from {m3}: '
+                f'{stray}. These are false starts whose event ids restart at 0 '
+                'and cross-match against the wrong segment (620 dup rows in '
+                "g_det3_wknd's campaign table). Quarantine them into "
+                'decoded_root/_false_start_<stem>/ before rerunning.')
+        print(f'[job] --local: inputs in place under {sub_local}', flush=True)
+    else:
+        fetch(f'{eos_run}/run_config.json',
+              os.path.join(tree, run, 'run_config.json'))
+        fetch(f'{eos_sub}/{m3}', os.path.join(sub_local, m3))
+        fetch_decoded(eos_sub, os.path.join(sub_local, 'decoded_root'),
+                      [feux, feuy], m3_dir=f'{eos_sub}/{m3}')
+        fetch(f'{eos_sub}/combined_hits_root',
+              os.path.join(sub_local, 'combined_hits_root'))
 
     # ---- frozen code on the path, config synthesized from the row
     sys.path[:0] = [CODE, os.path.join(CODE, 'mx_june_cosmic_qa'),
@@ -158,7 +196,8 @@ def main():
         sys.exit(f'FATAL: bundle {bundle} not staged')
 
     tag = f'__{args.out_tag}' if args.out_tag else ''
-    out_dir = os.path.join(HERE, 'out', f'{row["key"]}{tag}')
+    out_dir = os.path.join(os.environ.get('WFT_OUT', os.path.join(HERE, 'out')),
+                           f'{row["key"]}{tag}')
     os.makedirs(out_dir, exist_ok=True)
 
     if args.vrefit:
@@ -184,14 +223,35 @@ def main():
     # ---- reco (mirrors wft.cli cmd_reco on the synthesized config)
     from wft.calib import CalibrationBundle
     from wft.reco import reconstruct_run
-    from M3RefTracking import M3RefTracking, get_xy_angles
-    rays = M3RefTracking(cfg.m3_tracking_dir, chi2_cut=M3_CHI2_CUT,
-                         min_nclus=M3_MIN_NCLUS)
-    _xa, _ya, evn = get_xy_angles(rays.ray_data)
-    filt = set(int(e) for e in evn)
-    m3_has_nclus = bool(getattr(rays, 'has_nclus', True))
-    print(f'[job] {len(filt):,} M3-matched events '
-          f'(NClus branches: {m3_has_nclus})', flush=True)
+    if args.matched_list:
+        with open(args.matched_list) as f:
+            ml = json.load(f)
+        filt = set(int(e) for e in ml['event_ids'])
+        m3_source, m3_has_nclus = ml.get('source', args.matched_list), True
+        if ml.get('recipe') != f'chi2<{M3_CHI2_CUT} & NClus>={M3_MIN_NCLUS}':
+            # A list built under a different recipe would silently redefine the
+            # denominator of every efficiency number this job feeds.
+            sys.exit(f'FATAL: matched list recipe {ml.get("recipe")!r} != the '
+                     f'frozen recipe chi2<{M3_CHI2_CUT} & '
+                     f'NClus>={M3_MIN_NCLUS}')
+        if ml.get('row') != args.row or ml.get('key') != row['key']:
+            # Rows are addressed by index and 5 manifest keys are empty, so a
+            # mismatched list is easy to ship and impossible to spot later.
+            sys.exit(f'FATAL: matched list is for row {ml.get("row")!r} '
+                     f'key {ml.get("key")!r}, not row {args.row} '
+                     f'key {row["key"]!r}')
+        print(f'[job] {len(filt):,} M3-matched events from {m3_source} '
+              '(on-worker M3 read bypassed)', flush=True)
+    else:
+        from M3RefTracking import M3RefTracking, get_xy_angles
+        rays = M3RefTracking(cfg.m3_tracking_dir, chi2_cut=M3_CHI2_CUT,
+                             min_nclus=M3_MIN_NCLUS)
+        _xa, _ya, evn = get_xy_angles(rays.ray_data)
+        filt = set(int(e) for e in evn)
+        m3_source = cfg.m3_tracking_dir
+        m3_has_nclus = bool(getattr(rays, 'has_nclus', True))
+        print(f'[job] {len(filt):,} M3-matched events '
+              f'(NClus branches: {m3_has_nclus})', flush=True)
     if not m3_has_nclus:
         # chi2-only fallback = a DIFFERENT selection than every local
         # accounting (g_det3_wknd 2026-08-13: 36,745 vs 26,670 events, 5.3 %
@@ -210,7 +270,9 @@ def main():
         json.dump(dict(row, bundle_used=bundle_name,
                        vrefit=bool(args.vrefit), out_tag=args.out_tag or '',
                        off_conditions=(row['tier'] == 'C'),
-                       n_matched=len(filt), m3_has_nclus=m3_has_nclus),
+                       n_matched=len(filt), m3_has_nclus=m3_has_nclus,
+                       m3_source=m3_source,
+                       matched_list=args.matched_list or ''),
                   f, indent=1)
     print('[job] done:', out_dir, flush=True)
 

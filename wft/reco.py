@@ -221,7 +221,11 @@ def fit_plane(P, plane: str, cal: CalibrationBundle, hyper: Optional[dict] = Non
                          t0_prior=t0_prior)
     if r is None or not np.isfinite(r['chi2']):
         return None
-    tan = r['w'] * 1e3 / cal.v_drift
+    # Per-plane angle mapping (9dd7d6e; reverted by f9e18d2, restored 8-13).
+    # w0/kw are measured from free fits of reference tracks; dropping the w0
+    # term is the fleet angle bias, arctan(w0_plane/v) detector by detector.
+    tan = ((r['w'] * 1e3 - cal.w0.get(plane, 0.0))
+           / (cal.kw.get(plane, 1.0) * cal.v_drift))
     ep, ew, et = _errors(P, plane, r, hyper, t0_prior=t0_prior)
     q_sum, q_u50, q_u90, q_uend = _profile_summary(r['q'])
     return PlaneFit(
@@ -585,6 +589,13 @@ def reconstruct_run(cfg, cal: CalibrationBundle, out_path: str,
                             v_drift=cal.v_drift, hyper=cal.hyper,
                             conditions=cal.conditions,
                             provenance=cal.provenance),
+                # Which angle mapping this table is on. A bundle that lost its
+                # constants still reconstructs, but on the UNCORRECTED mapping,
+                # and nothing downstream could tell -- that is how the fleet
+                # bias survived a whole campaign. applied=False here means the
+                # angles need the post-hoc w0/kw pass before they are quoted.
+                angle_constants=dict(applied=bool(cal.w0 or cal.kw),
+                                     w0=dict(cal.w0), kw=dict(cal.kw)),
                 t0_prior=dict(sigma=T0_PRIOR_SIGMA if T0_PRIOR_SIGMA is not None
                               else cal.t0_prior_sigma,
                               t0_abs_planes=sorted((T0_ABS or cal.t0_abs

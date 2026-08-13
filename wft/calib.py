@@ -63,6 +63,18 @@ class CalibrationBundle:
     # either direction. Per run condition like everything else here.
     dead: Dict[str, list] = field(default_factory=dict)
 
+    # --- per-plane angle-mapping constants (9dd7d6e, restored 2026-08-13).
+    # The fitted width w maps to a tangent as  tan = (w*1e3 - w0[p]) / (kw[p]*v)
+    # -- w0 is the zero-angle width offset and kw the scale, both measured from
+    # free fits of reference tracks. These MUST round-trip: between 9dd7d6e and
+    # 8-13 the fields existed in every bundle.json but not on this class, so any
+    # load()->save() silently shed them and plane_fit ignored them entirely --
+    # that omission is the whole fleet angle bias (arctan(w0/v) per detector,
+    # up to -1.04 deg on det6). Absent in a bundle -> 0.0/1.0, which reproduces
+    # the uncorrected mapping, so reco stamps whether they were found.
+    w0: Dict[str, float] = field(default_factory=dict)
+    kw: Dict[str, float] = field(default_factory=dict)
+
     # --- geometry / DAQ ---
     pitch_mm: float = 0.78
     sample_ns: float = 60.0
@@ -100,6 +112,8 @@ class CalibrationBundle:
                     t0_prior_sigma=float(self.t0_prior_sigma),
                     dead={p: [int(c) for c in ch]
                           for p, ch in self.dead.items()},
+                    w0={p: float(v) for p, v in self.w0.items()},
+                    kw={p: float(v) for p, v in self.kw.items()},
                     pitch_mm=self.pitch_mm, sample_ns=self.sample_ns,
                     n_depth_bins=self.n_depth_bins, sat_adc=self.sat_adc,
                     share_mode=self.share_mode,
@@ -123,6 +137,8 @@ class CalibrationBundle:
                    t0_prior_sigma=m.get('t0_prior_sigma', 0.0),
                    dead={p: [int(c) for c in ch]
                          for p, ch in m.get('dead', {}).items()},
+                   w0={p: float(v) for p, v in (m.get('w0') or {}).items()},
+                   kw={p: float(v) for p, v in (m.get('kw') or {}).items()},
                    pitch_mm=m.get('pitch_mm', 0.78),
                    sample_ns=m.get('sample_ns', 60.0),
                    n_depth_bins=m.get('n_depth_bins', 18),

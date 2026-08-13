@@ -57,6 +57,13 @@ def main():
                     default='/home/dylan/x17/cosmic_bench/condor_campaign')
     ap.add_argument('--manifest', default=os.path.join(HERE,
                                                        'campaign_manifest.csv'))
+    ap.add_argument('--matched-lists',
+                    default=('/home/dylan/x17/cosmic_bench/condor_campaign/'
+                             'rerun_20260813/matched_lists_all'),
+                    help='directory of matched_row<NNN>.json built by '
+                         'make_matched_lists.py. Every submitted row must have '
+                         'one — the worker stack cannot be trusted to resolve '
+                         'the recipe itself (v1 NClus, 184/214 rows).')
     ap.add_argument('--t0p-dets', default=None,
                     help='comma-separated dets whose gate ADOPTED the t0 '
                          'prior (e.g. mx17_2,mx17_6): jobs_rest.txt runs '
@@ -121,27 +128,59 @@ def main():
     # (= the 7-31-configuration baseline arm) + the four non-det3 t0p arms.
     # Phase 2 (jobs_rest.txt): every other runnable row, with each detector's
     # gate-decided bundle (--t0p-dets after gate_eval.py).
+    # ---- matched lists: one per submitted row, staged beside the scripts.
+    # A row without a list is NOT submitted — running it would let the worker
+    # fall back to its own M3 read, which is the bug this package exists to
+    # avoid. Refusing is the whole point; do not "helpfully" skip the flag.
+    mdest = os.path.join(args.dest, 'matched_lists')
+    shutil.rmtree(mdest, ignore_errors=True)
+    os.makedirs(mdest)
+    unlistable = []
+
+    def add(bucket, i, tag, extra):
+        """Queue row i, or record why it cannot be run on a worker."""
+        row = rows[i]
+        name = f'matched_row{i:03d}.json'
+        src = os.path.join(args.matched_lists, name)
+        if not os.path.exists(src):
+            unlistable.append((i, row['tier'], row['key'], 'no matched list'))
+            return
+        if '--vrefit' in extra and row['has_m3v2'] != '1':
+            # calibrate.py's reference corridor reads M3 itself (rays geometry,
+            # not just event ids), so a list cannot protect a v-refit. One row
+            # (100) is affected; run it locally.
+            unlistable.append((i, row['tier'], row['key'],
+                               'v1 + --vrefit: calibrate reads M3 directly'))
+            return
+        shutil.copy2(src, os.path.join(mdest, name))
+        bucket.append((i, tag, f'{extra} --matched-list {name}'.strip(), name))
+
     gate, rest = [], []
     for i, row in enumerate(rows):
         if row['key'] in GOLDEN_KEYS or row['key'] == 'sat_det3':
-            gate.append((i, 'prod', ''))
+            add(gate, i, 'prod', '')
             if row['key'] in GOLDEN_KEYS:
-                gate.append((i, 't0p',
-                             f'--bundle-name {GATE_BUNDLE[GOLDEN_KEYS[row["key"]]]}'))
+                add(gate, i, 't0p',
+                    f'--bundle-name {GATE_BUNDLE[GOLDEN_KEYS[row["key"]]]}')
             continue
         adopted = row['det'] in t0p_dets
         extra = (f'--bundle-name {row["bundle"]}_t0p' if adopted else '')
         if row['tier'] == 'A':
-            rest.append((i, 'prod', extra))
+            add(rest, i, 'prod', extra)
         elif row['tier'] == 'B':
-            rest.append((i, 'prod', (extra + ' --vrefit').strip()))
+            add(rest, i, 'prod', (extra + ' --vrefit').strip())
         elif row['tier'] == 'C' and row['reason'].startswith('resist'):
-            rest.append((i, 'offcond', extra))
+            add(rest, i, 'offcond', extra)
     for name, jobs in (('jobs_gate.txt', gate), ('jobs_rest.txt', rest)):
         with open(os.path.join(args.dest, name), 'w') as f:
-            for r, tag, extra in jobs:
-                f.write(f'{r}, {tag}, {extra}\n')
+            for r, tag, extra, mlist in jobs:
+                f.write(f'{r}, {tag}, {extra}, {mlist}\n')
         print(f'{name}: {len(jobs)} jobs')
+    print(f'matched_lists/: {len(os.listdir(mdest))} lists staged')
+    if unlistable:
+        print(f'NOT SUBMITTED — {len(unlistable)} rows cannot run on a worker:')
+        for i, tier, key, why in unlistable:
+            print(f'   row {i:3d} [{tier}] {key[:50]:50s} {why}')
     print(f'jobs_rest.txt t0p-adopted dets: {sorted(t0p_dets) or "none yet"}')
     # default jobs.txt -> the gate phase, so a bare condor_submit is phase 1
     shutil.copy2(os.path.join(args.dest, 'jobs_gate.txt'),

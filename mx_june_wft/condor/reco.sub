@@ -11,7 +11,11 @@ endif
 universe                = vanilla
 executable              = run_reco_wrapper.sh
 arguments               = "$(row) $(tag) $(extra)"
-transfer_input_files    = code.tar.gz, bundles.tar.gz, run_reco_job.py, campaign_manifest.csv
+# $(mlist) is the row's locally-computed M3-matched event list. Every job gets
+# one: LCG_105 mis-resolves the NClus branches of v1 rays files (184 of 214
+# rows), silently degrading the recipe to chi2-only, so the worker must not do
+# the M3 read at all. Shipping the list for v2 rows too keeps one code path.
+transfer_input_files    = code.tar.gz, bundles.tar.gz, run_reco_job.py, campaign_manifest.csv, matched_lists/$(mlist)
 should_transfer_files   = YES
 when_to_transfer_output = ON_EXIT
 transfer_output_files   = reco_r$(row)_$(tag).tar.gz
@@ -26,4 +30,4 @@ environment             = "RECO_JOBS=8"
 MY.SendCredential       = true
 on_exit_hold            = (ExitBySignal == True) || (ExitCode != 0)
 max_retries             = 2
-queue row,tag,extra from $(jobfile)
+queue row,tag,extra,mlist from $(jobfile)

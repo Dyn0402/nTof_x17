@@ -43,9 +43,21 @@ def main():
         cfg = get_config(key)
         W = os.path.join(cfg.OUT_BASE, 'wft')
         meta = json.load(open(os.path.join(W, 'events.meta.json')))
+        # Since 2026-08-13 plane_fit applies the constants itself and stamps
+        # it. Re-applying here would subtract w0 twice and divide by kw twice —
+        # a second correction of the same size, in the same direction, on a
+        # table that is already right. Tables reconstructed before the restore
+        # carry no stamp and still need this pass, so the fleet can be mixed.
+        if (meta.get('angle_constants') or {}).get('applied'):
+            print(f'{key}: angles already corrected in reco — skipping')
+            continue
         bdir = os.path.basename(str(meta['calibration']))
         b = json.load(open(os.path.join(W, bdir, 'bundle.json')))
         w0, kw, v = b.get('w0') or {}, b.get('kw') or {}, b['v_drift']
+        if not w0 and not kw:
+            print(f'{key}: WARNING bundle {bdir} carries no w0/kw — angles '
+                  'cannot be corrected, and are NOT quotable')
+            continue
 
         df = pd.read_parquet(os.path.join(W, 'events.parquet'))
         for p in ('x', 'y'):
