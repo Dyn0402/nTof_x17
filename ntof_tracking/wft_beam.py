@@ -392,6 +392,13 @@ def _write_meta(df, out_path, cal, cfg, bundle_path, feu_x, feu_y, tags_done,
                             sat_adc=cal.sat_adc, n_depth_bins=cal.n_depth_bins,
                             conditions=cal.conditions,
                             provenance=cal.provenance),
+                # Same stamp as wft.reco.reconstruct_run: whether the fit
+                # applied the per-plane angle constants in-reco. Without it a
+                # post-hoc corrector cannot tell this table from a frozen-gen
+                # one and would double-apply. applied=False -> the angles are
+                # on the uncorrected mapping and need the post-hoc pass.
+                angle_constants=dict(applied=bool(cal.w0 or cal.kw),
+                                     w0=dict(cal.w0), kw=dict(cal.kw)),
                 run=dict(key=cfg.KEY, run=cfg.RUN, sub_run=cfg.SUB_RUN,
                          detector=cfg.DET_NAME, feu_x=feu_x, feu_y=feu_y,
                          file_tags=list(cfg.file_tags or [])),

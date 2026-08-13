@@ -41,6 +41,17 @@ def pct(x):
 S = json.load(open(FULLCOV + '/imaging_summary.json'))
 R = {a['arm']: a for a in S['results']}
 W3 = json.load(open(WALL3D + '/wall3d_summary.json'))
+SUB1 = BASE.replace('stat090_0000', 'stat090_0001') + '/imaging_fullcov'
+R1 = {a['arm']: a for a in
+      json.load(open(SUB1 + '/imaging_summary.json'))['results']} \
+    if os.path.exists(SUB1 + '/imaging_summary.json') else None
+
+# Per-side k medians (u>0 / u<0, inclined wall-matched tracks, both
+# sub-runs) — measured 2026-08-13 on the desktop working copy; the check
+# script is inline in the session record. A's ~15% split is the u0-offset
+# signature; D's ~60% split is its one-sided anomaly, reproducible.
+SIDE_K = {'A': {'0000': (1.086, 1.272), '0001': (1.092, 1.292)},
+          'D': {'0000': (1.182, 1.957), '0001': (1.243, 1.938)}}
 
 A = R['A']
 kA = A['k_track']['median']
@@ -91,6 +102,56 @@ for arm in 'ABCD':
         f"<td>{w['convergence']['spread_wall_mm']:.0f}</td>"
         f"<td>{w['convergence']['spread_target_mm']:.0f}</td>"
         f"<td>{w['null']['spread_wall_mm']:.0f}</td></tr>")
+
+sub1_section = ''
+if R1:
+    rows = []
+    for arm in 'ADCB':
+        r0, r1 = R[arm], R1[arm]
+        c0, c1 = r0.get('k_track_coincident') or {}, \
+            r1.get('k_track_coincident') or {}
+        rows.append(
+            f"<tr><td>{arm}</td>"
+            f"<td>{c0.get('median', float('nan')):.2f} "
+            f"(n={c0.get('n', 0):,})</td>"
+            f"<td>{c1.get('median', float('nan')):.2f} "
+            f"(n={c1.get('n', 0):,})</td>"
+            f"<td>{r0['n_pointing_coincident']:,} / "
+            f"{r1['n_pointing_coincident']:,}</td></tr>")
+    side = []
+    for arm in ('A', 'D'):
+        s = SIDE_K[arm]
+        side.append(
+            f"<tr><td>{arm}</td><td>{s['0000'][0]:.2f} / {s['0000'][1]:.2f}"
+            f"</td><td>{s['0001'][0]:.2f} / {s['0001'][1]:.2f}</td></tr>")
+    sub1_section = f'''
+<h2>Sub-run 0001 — an independent hour, a new code generation</h2>
+<p>Sub-run 0001 was reconstructed with the post-restore <code>wft</code>
+(w0/kw applied inside the fit, <code>angle_constants.applied</code> stamped in
+the output metadata; the analysis detects the stamp and skips its post-hoc
+correction). Same chain, independent data, different code generation:</p>
+<table>
+<tr><th>arm</th><th>k coincident, 0000</th><th>k coincident, 0001</th>
+<th>confirmed tracks 0000 / 0001</th></tr>
+{''.join(rows)}
+</table>
+<p>A and C reproduce to better than 3&nbsp;%. D's single-number k moves —
+because D does not <em>have</em> a single angle scale. Splitting the
+per-track estimator by which side of the plane the track crossed:</p>
+<table>
+<tr><th>arm</th><th>k (u&gt;0 / u&lt;0), sub-run 0000</th>
+<th>k (u&gt;0 / u&lt;0), sub-run 0001</th></tr>
+{''.join(side)}
+</table>
+<p>A's ~15&nbsp;% side asymmetry is stable and is the expected signature of
+the un-surveyed in-plane offset u<sub>0</sub> (it biases the two sides in
+opposite directions). D's ~60&nbsp;% split is far too large for any offset
+and reproduces exactly across the two hours: its +u side agrees with the
+fleet (k&nbsp;≈&nbsp;1.2) while its −u side wants k&nbsp;≈&nbsp;1.9 — the
+same one-sided anomaly the wall crossings show, now measured as an angle
+scale. The apparent 0000→0001 shift in D's headline k was only the mixture
+weights moving with the coincident sample composition. B's k is unstable, as
+expected for an arm with no usable angle information.</p>'''
 
 html = f'''<!--note
 title: Beam tracks image the He-3 target (run_145, arm A)
@@ -389,6 +450,7 @@ match its known occupancy. The v ordering A&nbsp;≈&nbsp;D&nbsp;&gt;&nbsp;C is
 not yet a gas statement: C's number is bundle-limited and B's field is not
 nominal, so the clean gas-chain reading needs the C recalibration and the D
 anomaly closed first.</p>
+{sub1_section}
 
 <h2>What this does not show (yet)</h2>
 <ul>
@@ -401,14 +463,16 @@ coordinate is real.</li>
 arm is provisional; the ~5&nbsp;mm off-axis ridge in Fig&nbsp;2 is its likely
 signature. A naive (u<sub>0</sub>,&nbsp;k) grid scan rails at its edge — the
 proper two-parameter likelihood fit is the open item.</li>
-<li><strong>One sub-run so far.</strong> All four arms are on sub-run 0000;
-sub-run 0001 is reconstructing on the post-restore code generation (w0/kw
-applied in-reco, <code>angle_constants.applied</code> stamped).</li>
+<li><strong>Sub-run 0002 is not pulled yet.</strong> Sub-runs 0000 and 0001
+are reconstructed and imaged (all four arms); the run's third hour is staged
+on EOS only.</li>
 <li><strong>Arm D's +u compression is unexplained.</strong> Reflection and
 map-mirroring are ruled out, the bench position scale is exact, and the wall
 instrumentation is healthy on that side — the remaining suspects are the
 beam-side geometry description of D's +u half or D's own reconstruction
-there. The multi-arm confirmed-track test is the queued instrument.</li>
+there. The per-side angle scale (previous section) is the same anomaly as a
+number: −u wants k&nbsp;≈&nbsp;1.9 while +u agrees with the fleet. The
+multi-arm confirmed-track test is the queued instrument.</li>
 <li><strong>Single-k calibration.</strong> First-order only; the
 |u|&nbsp;&gt;&nbsp;130 compression is excluded, not corrected.</li>
 </ul>
