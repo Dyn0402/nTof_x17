@@ -25,10 +25,21 @@ ACCEPT_NS = 25.0
 # dashboard and pulse ledger for their tables -- it lived in two modules until
 # 2026-08-13 and a threshold with two homes drifts.
 #
-# 0.80 sits in the empty gap between the two populations: at the right lock the
-# median pulse runs 87-96 %, at a wrong one ~0-2 %. Three orders of magnitude,
-# so its exact value cannot matter.
-PULSE_MIN_FRAC = 0.80
+# The bar sits in the empty gap between the two populations: at the right lock
+# the median pulse runs 87-96 %, at a wrong one ~0-2 % (campaign-wide the
+# highest any wrong lock ever measured was 0.00 %). Three orders of magnitude,
+# so its exact value cannot matter for the LOCK decision, which is taken on
+# the median of ~32 sampled pulses.
+#
+# It does matter for the PER-PULSE classification. Was 0.80 until 2026-08-15;
+# the per-pulse coincidence distribution (277,690 joined pulses, log scale)
+# shows a single smooth tail below it -- 544 pulses in 70-80 %, falling ~1.4x
+# per percent bin, median 73 triggers vs ~82 fleet-wide: the same population
+# undersampled, not a second failure mode -- so Dylan lowered the bar to 0.60,
+# where the tail has thinned to ~20 pulses and anything below is a genuine
+# outlier. clock_qa.json records written before that date carry the
+# 'pulses fully matched' check at 0.80 (their `accept_frac` says which).
+PULSE_MIN_FRAC = 0.60
 
 # ------------------------------------------------------------- the beam record
 # A PS pulse below this delivered NO PROTONS, and the bunch is dropped from the

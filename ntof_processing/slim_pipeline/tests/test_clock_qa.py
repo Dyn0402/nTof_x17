@@ -382,14 +382,17 @@ CASES = [
     ('plastic primary lost', dict(primary_out_frac=0.55),
      'plastic primary within accept', 'FAIL'),
     # --- unmatched pulses, THE follow-up quantity --------------------------
-    # A pulse is matched when >= 80 % of its physics triggers show the
-    # wall+plastic coincidence. The two populations are three orders of
-    # magnitude apart (96.2 % at the right lock against ~0.05 % at a wrong
-    # one), so a segment sits at one end or the other and the level is really
-    # asking "how many pulses fell off the good end".
-    ('a few pulses unmatched', dict(wall_leg_frac=0.90),
+    # A pulse is matched when >= PULSE_MIN_FRAC (0.60 since 2026-08-15, was
+    # 0.80) of its physics triggers show the wall+plastic coincidence. The
+    # two populations are three orders of magnitude apart (96.2 % at the
+    # right lock against ~0.05 % at a wrong one), so a segment sits at one end
+    # or the other and the level is really asking "how many pulses fell off
+    # the good end". wall_leg_frac scales the per-pulse coincidence: 0.68
+    # puts the per-pulse spread across the bar (a few below), 0.45 puts most
+    # of it below.
+    ('a few pulses unmatched', dict(wall_leg_frac=0.68),
      'pulses fully matched', 'WARN'),
-    ('most pulses unmatched', dict(wall_leg_frac=0.60),
+    ('most pulses unmatched', dict(wall_leg_frac=0.45),
      'pulses fully matched', 'FAIL'),
     ('weak coarse peak',   dict(bootstrap_snr=9.0),         'coarse peak above floor', 'WARN'),
     ('no bootstrap record', dict(bootstrap_snr=0.0),        'coarse peak above floor', 'NA'),

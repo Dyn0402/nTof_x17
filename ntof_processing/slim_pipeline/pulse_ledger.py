@@ -783,6 +783,7 @@ def campaign(qa_root: Path, out: Path, since_run: int | None = None,
     ntof_off = sum(total.get(s, 0) for s in NTOF_OFF)
     summary = dict(since_run=since_run, states=total, denominator=denom,
                    matched_frac=(total['MATCHED'] / denom) if denom else None,
+                   accept_frac=float(ACCEPT_FRAC),
                    # beam pulses DREAM saw = denominator + n_TOF-off; the
                    # n_TOF loss is quoted against THIS
                    beam_pulses=beam, ntof_off=ntof_off,
