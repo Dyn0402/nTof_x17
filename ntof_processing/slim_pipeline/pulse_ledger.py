@@ -85,6 +85,14 @@ STATES = ('MATCHED', 'LOW_COINC', 'UNKNOWN_COINC', 'TOO_FEW_TRIGGERS',
 # States that a perfect chain could still not match -- they come out of the
 # 99 % denominator. UNKNOWN/UNJOINED/FAILED stay IN it: they are our problem.
 NOT_OURS = frozenset({'EMPTY_PULSE', 'NO_BEAM_PULSE', 'NOT_COINC_TRIGGERED'})
+# n_TOF not recording is a THIRD kind: real beam pulses DREAM triggered on,
+# for which no n_TOF data exists (run transitions, DAQ resets, one 25-min
+# gap). Fully understood, irrecoverable, and worth its own headline ("how much
+# did n_TOF miss") -- so it is reported separately and, since 2026-08-15 at
+# Dylan's request, kept OUT of the matching denominator like the empty pulses,
+# rather than mixed in with LOW_COINC / SEGMENT_FAILED which are ours to fix.
+NTOF_OFF = frozenset({'NTOF_NO_BUNCH'})
+NOT_IN_DENOM = NOT_OURS | NTOF_OFF
 
 # Trigger-mode lists, DERIVED FROM OBSERVATION (the 08-13 clock_qa sweep
 # aggregate, 392 slims), not from the trigger definition: the N1081B config is
@@ -682,7 +690,7 @@ def classify_subrun(run: str, subrun: str, qa_root: Path,
 def _emit(run, subrun, cen, state, ntof_run, bunch, frac, reasons, reason_idx,
           lock, lock_pending=None):
     counts = {s: int((state == k).sum()) for k, s in enumerate(STATES)}
-    denom = sum(v for s, v in counts.items() if s not in NOT_OURS)
+    denom = sum(v for s, v in counts.items() if s not in NOT_IN_DENOM)
     return dict(
         run=run, subrun=subrun, n_bursts=int(len(state)), lock=lock,
         lock_pending=lock_pending,
@@ -770,15 +778,24 @@ def campaign(qa_root: Path, out: Path, since_run: int | None = None,
             f'{led["states"]["MATCHED"]} matched'
             + (f' ({led["matched_frac"]:.1%} of ours)'
                if led['matched_frac'] is not None else ''))
-    denom = sum(v for s, v in total.items() if s not in NOT_OURS)
+    denom = sum(v for s, v in total.items() if s not in NOT_IN_DENOM)
+    beam = sum(v for s, v in total.items() if s not in NOT_OURS)
+    ntof_off = sum(total.get(s, 0) for s in NTOF_OFF)
     summary = dict(since_run=since_run, states=total, denominator=denom,
                    matched_frac=(total['MATCHED'] / denom) if denom else None,
+                   # beam pulses DREAM saw = denominator + n_TOF-off; the
+                   # n_TOF loss is quoted against THIS
+                   beam_pulses=beam, ntof_off=ntof_off,
+                   ntof_off_frac=(ntof_off / beam) if beam else None,
                    n_subruns=len(rows), subruns=rows,
                    missing_census=missing)
     (out / 'campaign_ledger.json').write_text(json.dumps(summary))
     log(f'\n{denom:,} pulses in the denominator'
         + (f', {summary["matched_frac"]:.2%} matched'
            if summary['matched_frac'] is not None else '')
+        + f'; n_TOF not recording for {ntof_off:,} of {beam:,} beam pulses'
+        + (f' ({summary["ntof_off_frac"]:.2%})'
+           if summary['ntof_off_frac'] is not None else '')
         + f'; states: ' + ', '.join(f'{s} {v:,}' for s, v in total.items()
                                     if v))
     return summary
@@ -813,7 +830,11 @@ def build_dashboard_section(ledger_dir: Path, since_run: int | None = 79,
         f'<div class="sub"><b>{matched:,} of {denom:,}</b> pulses matched'
         + (f' ({frac:.2%})' if frac is not None else '')
         + f' &mdash; denominator is every DREAM burst except empty/beam-off '
-        f'pulses, over {c["n_subruns"]} sub-runs.{tgt} '
+        f'pulses and the {c.get("ntof_off", 0):,} beam pulses n_TOF was not '
+        f'recording'
+        + (f' ({c["ntof_off_frac"]:.2%} of beam pulses, irrecoverable)'
+           if c.get('ntof_off_frac') is not None else '')
+        + f', over {c["n_subruns"]} sub-runs.{tgt} '
         f'{known:,} pulses have a definitive state; the rest await '
         f'per-pulse rows or a segment run.</div>')
     miss = c.get('missing_census') or []
@@ -844,10 +865,12 @@ def build_dashboard_section(ledger_dir: Path, since_run: int | None = 79,
     rows = sorted(c['subruns'], key=lambda r: -bad_n(r))
     out.append('<table class="tbl"><tr><th>sub-run</th><th>bursts</th>'
                '<th>matched</th><th>low coinc</th><th>unjoined</th>'
-               '<th>seg failed</th><th>unknown</th><th>not ours</th></tr>')
+               '<th>seg failed</th><th>unknown</th><th>n_TOF off</th>'
+               '<th>not ours</th></tr>')
     for r in rows:
         s = r['states']
         notours = sum(s.get(k, 0) for k in NOT_OURS)
+        ntoff = sum(s.get(k, 0) for k in NTOF_OFF)
         unk = s.get('UNKNOWN_COINC', 0) + s.get('NOT_ATTEMPTED', 0) \
             + s.get('TOO_FEW_TRIGGERS', 0)
         mf = r.get('matched_frac')
@@ -860,6 +883,7 @@ def build_dashboard_section(ledger_dir: Path, since_run: int | None = 79,
                       f'{s.get(k, 0):,}</td>'
                       for k in ('LOW_COINC', 'UNJOINED', 'SEGMENT_FAILED'))
             + f'<td class="{"warn" if unk else ""}">{unk:,}</td>'
+            f'<td>{ntoff:,}</td>'
             f'<td>{notours:,}</td></tr>')
     out.append('</table>')
 
