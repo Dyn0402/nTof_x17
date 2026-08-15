@@ -70,7 +70,16 @@ MERGED_BYTES=$(xrdfs "$MGM" stat "$DONE" 2>/dev/null | awk '/^Size:/ {print $2}'
 : "${MERGED_BYTES:=0}"
 
 t0=$SECONDS
-if [ "$MERGED_BYTES" -gt 0 ]; then
+if [ -n "$X17_NTOF_NOSTAGE" ]; then
+  # Read the run straight off EOS FUSE instead of staging it. For the one run
+  # that does not fit a worker's scratch (224709: 87 partials, 206 GB for a
+  # 2.5 h run) -- the bunch index is one pass over BunchNumber and each
+  # segment then reads only its own bunches' entry ranges, so the traffic is
+  # a few times the segment's share of the run, not the whole run per
+  # segment. Slower than NVMe; use only when staging is impossible.
+  if [ "$MERGED_BYTES" -gt 0 ]; then SRCDIR=$(dirname "$DONE"); else SRCDIR=$COMPLETED; fi
+  echo "NO STAGING: reading $SRCDIR over FUSE ($(ls "$SRCDIR"/run${RUN}_[0-9]*.root "$SRCDIR"/run${RUN}.root 2>/dev/null | wc -l) file(s))"
+elif [ "$MERGED_BYTES" -gt 0 ]; then
   echo "xrdcp start $(date '+%T')  merged $DONE ($MERGED_BYTES bytes)"
   xrdcp -f -s "$MGM/$DONE" "$SRCDIR/run${RUN}.root"
 else

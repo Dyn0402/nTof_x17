@@ -353,7 +353,14 @@ def enumerate_locks(run: str, subrun: str,
         return None
     locks = enumerate_candidates(c_t, sizes, anchor, pt, pe,
                                  search_s=search_s)
-    return dict(run=run, subrun=subrun, locks=_lock_records(locks),
+    # EVERY candidate, not the top 8. `_lock_records`' default limit exists
+    # for the cached diagnostic record; applied here it silently withheld
+    # candidates from the coincidence arbiter -- on 2026-08-13 the three
+    # "dark hours" were refused with "best 0 % of 8 measured" while their
+    # true lock (~+63 s, well inside +-120 s) was the 9th-or-later count tie
+    # and was never offered. Found 2026-08-15 when a +-400 s enumeration
+    # returned eight candidates all between -300 and -400 s.
+    return dict(run=run, subrun=subrun, locks=_lock_records(locks, limit=None),
                 n_clusters=int(len(c_t)), anchor_epoch=anchor,
                 t_span_s=span_s,
                 search_s=float(SEARCH_S if search_s is None else search_s))
