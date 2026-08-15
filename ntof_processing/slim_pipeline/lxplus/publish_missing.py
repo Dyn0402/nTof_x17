@@ -50,6 +50,11 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument('trees', nargs='+', type=Path)
     ap.add_argument('--dry-run', action='store_true')
+    ap.add_argument('--refresh-sidecars', action='store_true',
+                    help='where EOS already has the identical root (same '
+                         'size), overwrite its sidecars with the source ones '
+                         '-- for re-analysed clock_qa.json records. Roots '
+                         'are still never touched.')
     a = ap.parse_args()
 
     seen = {}
@@ -84,7 +89,7 @@ def main() -> int:
         elif droot.stat().st_size == root.stat().st_size:
             missing = [f for f in d.iterdir()
                        if f.is_file() and f.suffix != '.root'
-                       and not (dd / f.name).exists()]
+                       and (a.refresh_sidecars or not (dd / f.name).exists())]
             if missing:
                 sidecars.append((run, subrun, ntof, [f.name for f in missing]))
                 if not a.dry_run:
@@ -100,7 +105,8 @@ def main() -> int:
     print(f'\n{tag} {len(added)} product(s):')
     for k in added:
         print('   ', '/'.join(k))
-    print(f'\nsidecars completed on {len(sidecars)} existing product(s)')
+    print(f'\nsidecars {"refreshed" if a.refresh_sidecars else "completed"} '
+          f'on {len(sidecars)} existing product(s)')
     for k in sidecars[:20]:
         print('   ', '/'.join(k[:3]), k[3])
     print(f'\nalready published, identical: {len(same)}')
