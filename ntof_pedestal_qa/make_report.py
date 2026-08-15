@@ -401,6 +401,15 @@ quoted here.</p>""")
     A_(table(["DREAM clock configuration", "pedestals", "dates",
               "median raw σ", "median common mode", "median residual σ"],
              epoch_rows))
+    A_("""<p><b>Which runs are on which side.</b> No run straddles the change,
+but one sits inside the bracket the pedestals leave. <code>run_67</code> and
+earlier are on the quiet side (run_67 ends at 09:52, before the 10:05
+pedestal); <code>run_69</code> onward are on the noisy side (run_69 starts at
+17:27, after the 16:47 one). <b><code>run_68</code> ran 14:54–16:08, between
+the two, and the pedestals do not place it</b> — it loaded the 10:04 pedestal,
+which suggests the old configuration, but that is an inference. Exclude it from
+either side, or check it directly.</p>""")
+
     A_(f"""<p>The campaign ran three clock configurations, and it is the
 <em>combination</em> rather than the readout speed alone that matters: the first
 epoch also used <code>RdClk_Div 4</code> and was quiet, but with
