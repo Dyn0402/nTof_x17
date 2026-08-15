@@ -1,0 +1,284 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DREAM pedestal stability — X17 at n_TOF</title>
+<meta name="description" content="Every DREAM pedestal run of the 2026 n_TOF X17
+campaign, per channel and per chip, and what moved over the six weeks.">
+<style>
+:root{--plane:#f9f9f7;--surface:#fff;--ink:#0b0b0b;--ink2:#52514e;--muted:#898781;
+--ring:rgba(11,11,11,.10);--grid:#e1e0d9;--A:#2a78d6;--B:#eb6834;--C:#1baf7a;--D:#8a5cd6;
+--good:#0ca30c;--warn:#fab219;--bad:#d03b3b}
+*{box-sizing:border-box}
+body{margin:0;background:var(--plane);color:var(--ink);
+ font:15px/1.62 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.wrap{max-width:960px;margin:0 auto;padding:34px 22px 80px}
+h1{font-size:27px;line-height:1.22;margin:0 0 6px;letter-spacing:-.01em}
+h2{font-size:19px;margin:38px 0 10px;padding-top:16px;border-top:1px solid var(--ring)}
+h3{font-size:15.5px;margin:24px 0 6px}
+p{margin:0 0 12px;color:var(--ink2)} p b,li b{color:var(--ink);font-weight:600}
+.tagline{color:var(--muted);font-size:13.5px;margin:0 0 18px}
+.verdict{background:var(--surface);border:1px solid var(--ring);border-left:4px solid var(--A);
+ border-radius:12px;padding:16px 18px;margin:20px 0}
+.verdict p:last-child{margin-bottom:0}
+.stats{list-style:none;display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+ gap:10px;padding:0;margin:18px 0}
+.stats li{background:var(--surface);border:1px solid var(--ring);border-radius:12px;padding:12px 14px}
+.stats .n{display:block;font-size:23px;font-weight:650;letter-spacing:-.02em;
+ font-variant-numeric:tabular-nums}
+.stats .k{display:block;font-size:12.5px;color:var(--ink2);margin-top:2px}
+.stats .s{display:block;font-size:11.5px;color:var(--muted);margin-top:3px}
+figure{margin:20px 0;background:var(--surface);border:1px solid var(--ring);
+ border-radius:12px;padding:12px}
+figure img{width:100%;height:auto;display:block;border-radius:6px}
+figcaption{font-size:12.5px;color:var(--ink2);margin-top:9px}
+figcaption b{color:var(--ink)}
+.tablewrap{overflow-x:auto;margin:14px 0}
+table{border-collapse:collapse;width:100%;font-size:13px;background:var(--surface)}
+th,td{text-align:right;padding:6px 9px;border-bottom:1px solid var(--grid);
+ font-variant-numeric:tabular-nums;white-space:nowrap}
+th:first-child,td:first-child{text-align:left;font-variant-numeric:normal}
+thead th{color:var(--ink2);font-weight:600;border-bottom:1.5px solid var(--ring)}
+tbody tr:hover{background:#f4f4f0}
+code{font:12.5px ui-monospace,SFMono-Regular,Menlo,monospace;background:#f0efe9;
+ padding:1px 5px;border-radius:4px}
+.chip{display:inline-block;font-size:11px;font-weight:600;padding:1px 8px;border-radius:999px;
+ border:1px solid var(--ring);color:var(--ink2)}
+.chip.bad{color:#8d1f1f;border-color:#e6b3b3;background:#fdf2f2}
+.chip.warn{color:#7a5600;border-color:#eddaa8;background:#fdf8ec}
+.chip.good{color:#0a6b0a;border-color:#b6dfb6;background:#f1f9f1}
+.A{color:var(--A);font-weight:600}.B{color:var(--B);font-weight:600}
+.C{color:var(--C);font-weight:600}.D{color:var(--D);font-weight:600}
+ul.plain{margin:0 0 14px;padding-left:20px;color:var(--ink2)}
+ul.plain li{margin-bottom:6px}
+.src{display:block;font-size:12px;color:var(--muted);margin-top:10px}
+@media (prefers-color-scheme:dark){
+ :root{--plane:#0d0d0d;--surface:#1a1a19;--ink:#fff;--ink2:#c3c2b7;--muted:#898781;
+  --ring:rgba(255,255,255,.12);--grid:#2c2c2a;--A:#3987e5;--B:#d95926;--C:#199e70;--D:#9575e0}
+ figure img{background:#fff}
+ code{background:#242422}
+ tbody tr:hover{background:#232321}
+ .chip.bad{color:#f2a6a6;border-color:#5d2a2a;background:#2a1717}
+ .chip.warn{color:#e8c479;border-color:#5a4a1e;background:#272014}
+ .chip.good{color:#8fd68f;border-color:#26521f;background:#152615}}
+</style></head><body><div class="wrap">
+<h1>DREAM pedestal stability over the n_TOF campaign</h1>
+<p class="tagline">56 pedestal acquisitions · 8 FEUs · 4 096 channels ·
+01 July – 10 August 2026 · built by re-deriving every number from the decoded
+pedestal runs on EOS</p>
+<div class="verdict">
+<p><b>The pedestals were stable to a few per cent for weeks at a time, and then
+moved in three ways worth knowing about.</b></p>
+<p>One change was ours and global: on <b>23 July around 13:00</b> the DREAM
+readout clock divider went from 6 to 4, and the per-channel residual noise
+<b>rose by ×2.0 on every one of the eight FEUs at once</b> and stayed
+there for the last 18 days — which is the whole production period. The coherent
+common mode did <em>not</em> change (×1.07), so this is a real
+degradation of the incoherent noise floor, not a rescaling.</p>
+<p>Two changes were chamber <span class="A">A</span>'s and physical. From <b>21 July</b>
+its common mode tripled on all sixteen chips of both views, and from
+<b>22 July</b> its x-view <b>connector 8 — 64 strips — was electrically
+disconnected</b>. Both were fixed together at an access on <b>27 July between
+11:23 and 14:11</b>. The dead connector covers <b>every sub-run of run_79</b>,
+the first long production run, and it is confirmed in the physics data: 41 of
+those 64 channels recorded literally zero hits.</p>
+<p>Everything else is quiet. Baselines held, no chamber drifted, and the three
+other connector dropouts (all on connector 8, all in early July or on 9 August)
+recovered within days.</p>
+</div>
+<ul class="stats"><li><span class="n">56</span><span class="k">pedestal acquisitions</span><span class="s">01 Jul to 10 Aug 2026</span></li><li><span class="n">35</span><span class="k">of them ever loaded</span><span class="s">across 2 695 sub-runs</span></li><li><span class="n">×2.0</span><span class="k">residual-noise step</span><span class="s">all eight FEUs, 23 July</span></li><li><span class="n">4</span><span class="k">connector dropouts</span><span class="s">all on connector 8, all recovered</span></li><li><span class="n">117 h</span><span class="k">oldest pedestal in force</span><span class="s">median 11.6 h</span></li></ul>
+<h2>Event log</h2>
+<p>Everything the pedestals say changed, in order. "Recovered" is the
+first pedestal that shows the old behaviour back; the true fix is somewhere
+between it and the one before.</p>
+<div class="tablewrap"><table><thead><tr><th>Started</th><th>Where</th><th>What</th><th>Recovered</th><th>Covers</th></tr></thead><tbody><tr><td>03 Jul 12:21</td><td><span class="A">Ay</span> connector 8</td><td>64 channels (448–511) electrically silent</td><td>08 Jul 16:13</td><td>run_4–run_16 · 595 sub-runs</td></tr><tr><td>03 Jul 12:21</td><td><span class="B">By</span> connector 8</td><td>64 channels (448–511) electrically silent</td><td>09 Jul 20:51</td><td>run_4–run_18 · 634 sub-runs</td></tr><tr><td>09 Aug 16:21</td><td><span class="A">Ay</span> connector 8</td><td>64 channels (448–511) electrically silent</td><td>09 Aug 19:46</td><td>run_161 · 25 sub-runs</td></tr><tr><td>21 Jul 12:04</td><td><span class="A">A</span> both views</td><td>common mode ×3.3 on all 16 chips</td><td>27 Jul 14:11</td><td>run_64–run_82 · 415 sub-runs</td></tr><tr><td>22 Jul 10:13</td><td><span class="A">Ax</span> connector 8</td><td>64 channels (448–511) electrically silent</td><td>27 Jul 14:11</td><td>run_67–run_82 · 321 sub-runs</td></tr><tr><td>23 Jul ~13:00</td><td>all four chambers</td><td>residual noise ×2.0, common mode unchanged</td><td>never</td><td>run_69–run_162 · 822 sub-runs</td></tr></tbody></table></div>
+<h2>What a pedestal here actually measures</h2>
+<p>Each acquisition is a no-trigger readout of all eight FEUs — 512
+channels × 32 samples × ~1 000 events each. Every channel is decomposed the same
+way, and the three numbers mean different things:</p>
+<ul class="plain">
+<li><b>Raw σ</b> — the spread of the raw ADC about the channel's own baseline.
+On these detectors it is <b>dominated by coherent pickup</b>, not by the
+amplifier: at the end of the run the raw σ is
+8×
+the residual.</li>
+<li><b>Common mode</b> — per chip, per time sample, the median over its 64
+channels of (amplitude − channel mean). Its RMS is the coherent swing that chip
+sees. This is the same definition the
+<a href="../ntof_run_report/report.html">end-of-run report</a> uses.</li>
+<li><b>Residual σ</b> — what is left of a channel once that common mode is
+subtracted. This is the number that sets the zero-suppression threshold (5 σ)
+and therefore what the experiment's sensitivity actually rests on.</li>
+</ul>
+<p>Two checks that the decomposition is honest. The raw spread is <em>not</em> a
+fixed waveform shape repeated every event — the event-averaged shape carries
+under 0.1 % of the raw variance, so raw σ really is noise. And the residual
+agrees with the firmware's own per-channel σ (the one it used to program the
+thresholds) at a median <b>r = 0.980</b> over all
+448 FEU-acquisitions, with
+81 % above 0.9 — recomputed independently
+from the samples, and from a different acquisition than the one the firmware
+used.</p>
+<p>Where they disagree is instructive rather than alarming. The poorest
+agreement (r = 0.14, Ay on 21 Jul)
+is on chamber A's y view during its high-common-mode excursion: the louder the
+coherent swing, the noisier a median-over-64-channels estimate of it becomes
+compared with the firmware's. Our residual also sits
+6 % above theirs in absolute terms
+for the same reason. <b>Ratios and steps are the trustworthy part of this
+analysis, not the last digit of any single sigma.</b></p>
+<figure><img src="figures/noise_history.png" alt="Common mode and residual noise per chamber over the campaign"><figcaption><b>The whole campaign in two lines per chamber.</b> Top: the
+coherent swing each chip sees. Bottom: what is left per channel once it is
+removed. The red dashed line is the 23 July readout-clock change — visible in
+the residual on every chamber, invisible in the common mode. The blue band is
+chamber A's excursion. Shaded blocks are the three DREAM clock configurations.
+Log scale on both.</figcaption></figure>
+<h2>23 July: the readout clock, and a doubled noise floor</h2>
+<p>Between the pedestal at 10:05 and the one at 16:47 on 23 July, the
+residual noise rose on all eight FEUs — by ×1.74 to
+×2.46. Over the same boundary the common mode moved
+by at most ×1.25 and the baseline by under 20 ADC.
+<b>A gain change would have scaled all three together; only the incoherent part
+moved</b>, so the per-channel noise floor genuinely got worse.</p>
+<div class="tablewrap"><table><thead><tr><th></th><th>residual before</th><th>after</th><th>step</th><th>common mode before</th><th>after</th><th>step</th><th>baseline before</th><th>after</th></tr></thead><tbody><tr><td><span class="A">Ax</span></td><td>5.13</td><td>9.80</td><td><b>×1.91</b></td><td>104</td><td>107</td><td>×1.03</td><td>361</td><td>346</td></tr><tr><td><span class="A">Ay</span></td><td>5.61</td><td>10.50</td><td><b>×1.87</b></td><td>89</td><td>92</td><td>×1.04</td><td>340</td><td>325</td></tr><tr><td><span class="B">Bx</span></td><td>3.71</td><td>8.74</td><td><b>×2.36</b></td><td>77</td><td>88</td><td>×1.14</td><td>342</td><td>333</td></tr><tr><td><span class="B">By</span></td><td>4.06</td><td>8.64</td><td><b>×2.13</b></td><td>90</td><td>105</td><td>×1.17</td><td>361</td><td>351</td></tr><tr><td><span class="C">Cx</span></td><td>3.97</td><td>9.43</td><td><b>×2.37</b></td><td>70</td><td>71</td><td>×1.03</td><td>328</td><td>309</td></tr><tr><td><span class="C">Cy</span></td><td>4.00</td><td>9.83</td><td><b>×2.46</b></td><td>91</td><td>90</td><td>×0.99</td><td>344</td><td>328</td></tr><tr><td><span class="D">Dx</span></td><td>6.54</td><td>11.38</td><td><b>×1.74</b></td><td>97</td><td>107</td><td>×1.10</td><td>373</td><td>360</td></tr><tr><td><span class="D">Dy</span></td><td>6.08</td><td>11.68</td><td><b>×1.92</b></td><td>108</td><td>135</td><td>×1.25</td><td>371</td><td>375</td></tr></tbody></table></div>
+<p>Exactly one configuration parameter changed at that boundary. The
+DREAM readout clock divider <code>RdClk_Div</code> went <b>6 → 4</b> while the
+sampling clock <code>WrClk_Div</code> stayed at 6 — the ADC digitises 1.5× faster
+into the same 60 ns sampling period. Everything else the FEUs were programmed
+with is byte-identical across the step, including <code>Feu_Pwr_Dream</code>,
+the DREAM registers, the polarity masks, latency and the 32-sample window. The
+HV was also identical: 200 V on all eight channels, powered, for every pedestal
+quoted here.</p>
+<div class="tablewrap"><table><thead><tr><th>DREAM clock configuration</th><th>pedestals</th><th>dates</th><th>median raw σ</th><th>median common mode</th><th>median residual σ</th></tr></thead><tbody><tr><td>20 ns · RdClk/WrClk 4/2</td><td>7</td><td>01 Jul – 05 Jul</td><td>94</td><td>103</td><td>4.79</td></tr><tr><td>60 ns · RdClk/WrClk 6/6</td><td>29</td><td>08 Jul – 23 Jul</td><td>77</td><td>84</td><td>4.13</td></tr><tr><td>60 ns · RdClk/WrClk 4/6</td><td>20</td><td>23 Jul – 10 Aug</td><td>90</td><td>92</td><td>9.57</td></tr></tbody></table></div>
+<p>The campaign ran three clock configurations, and it is the
+<em>combination</em> rather than the readout speed alone that matters: the first
+epoch also used <code>RdClk_Div 4</code> and was quiet, but with
+<code>WrClk_Div 2</code> beside it. That is an observation, not a mechanism —
+these pedestals cannot say why.</p>
+<h2>Chamber A: 21–27 July</h2>
+<p>On <b>21 July at 12:04</b> chamber <span class="A">A</span>'s common mode
+went from 31 to 103 ADC
+on the x view and 23 to
+77 on the y — a factor
+3.3, <b>on all sixteen chips of both
+FEUs at once and on no other chamber</b>. A fault on one cable moves one chip;
+sixteen chips moving together is a shared ground, shield or supply path at the
+chamber. The next pedestal, on <b>22 July at 10:13</b>, shows x-view connector 8
+gone as well.</p>
+<p>Both were fixed at the same intervention. The pedestal at 27 July 11:23 still
+has them; the one at 14:11 has neither, and A is back to
+34 / 25 ADC — its
+pre-21-July values to within a few per cent.</p>
+<figure><img src="figures/chamber_a_detail.png" alt="Chamber A x view, channel by channel, at four moments"><figcaption><b>Chamber A's x view, all 512 channels, before / during / during /
+after.</b> Connector 8 (shaded) collapses from ~32 ADC raw to under 5 — no load
+on the preamp input, so no pickup — while the rest of the FEU is running three
+times louder than normal. At 27 Jul 14:11 both are back. The channel-to-channel
+comb in the residual is a standing feature of the readout, present throughout.</figcaption></figure>
+<p><b>This lands on run_79.</b> The window 22–27 July covers runs 67
+to 82, all 16 sub-runs of run_79 among them — the first long statistics run at
+the production setpoint. Read directly off the hits of
+<code>run_79/stat090_0001</code>, connector 8 of A-x delivered <b>3.7 % of that
+FEU's hits against 11.3 % in run_100</b> after the fix, <b>41 of its 64 channels
+recorded no hits at all</b>, and the hits that did survive sit in a narrow band
+at threshold (median amplitude 30, 90th percentile 34) rather than the wide
+spectrum of a live connector (median 192, 90th percentile 3 467). The pedestal
+diagnosis and the physics data agree.</p>
+<h2>Every chip, every acquisition</h2>
+<figure><img src="figures/chip_common_mode_rel.png" alt="Common mode against each chip&#x27;s own campaign median"><figcaption><b>The stability view: each chip against its own campaign
+median</b>, so a chip that is always loud and a chip that is always quiet both
+sit at 1×, and only <em>change</em> shows. Chamber A's block of red at 21–27
+July, the four connector-8 dropouts as deep-blue bars, and chamber B's noisy
+first week are the whole story. Diverging scale, ¼× to 4×.</figcaption></figure>
+<figure><img src="figures/chip_common_mode.png" alt="Absolute common-mode level per chip"><figcaption>The same grid in absolute ADC. This is where the chambers differ
+from each other rather than from themselves: <span class="D">D</span> and
+<span class="B">B</span> run an order of magnitude louder than
+<span class="A">A</span>, and D's connectors 1 and 4 are persistently five times
+quieter than its other six — a standing feature from the first pedestal to the
+last, not an event.</figcaption></figure>
+<figure><img src="figures/chip_residual.png" alt="Residual noise per chip"><figcaption>Residual noise per chip. The vertical break on 23 July runs the
+full height of the figure: every chip of every FEU, at once.</figcaption></figure>
+<h2>Channel health</h2>
+<p>A disconnected strip is diagnosed on the <em>raw</em> σ, not the
+residual: losing the strip loses the pickup, and the raw noise collapses while
+the residual barely moves. A channel counts as disconnected when its raw σ is
+below 12 % of its FEU's median or below 8 ADC outright; loud means a residual
+more than 3× the FEU median. Both cuts are relative to the same acquisition, so
+the 23 July scale change does not masquerade as four thousand new dead
+channels.</p>
+<figure><img src="figures/channel_health.png" alt="Disconnected and loud channel counts"><figcaption>The three early- and mid-campaign connector dropouts show as clean
+64-channel plateaus. The persistent floors are real, standing populations:
+<span class="D">D</span>-x carries ~24 disconnected channels and ~69 loud ones
+throughout, <span class="C">C</span>-x ~12 and ~42.</figcaption></figure>
+<div class="tablewrap"><table><thead><tr><th></th><th>baseline</th><th>spread</th><th>raw σ</th><th>common mode</th><th>residual σ</th><th>coherent</th><th>5σ threshold</th><th>disconnected</th><th>loud</th></tr></thead><tbody><tr><td><span class="A">Ax</span> <code>FEU 3</code></td><td>310</td><td>67</td><td>33</td><td>33</td><td>8.92</td><td>4×</td><td>46</td><td>0</td><td>0</td></tr><tr><td><span class="A">Ay</span> <code>FEU 4</code></td><td>289</td><td>49</td><td>25</td><td>25</td><td>9.66</td><td>3×</td><td>48</td><td>1</td><td>8</td></tr><tr><td><span class="B">Bx</span> <code>FEU 5</code></td><td>315</td><td>58</td><td>68</td><td>67</td><td>8.22</td><td>8×</td><td>43</td><td>0</td><td>7</td></tr><tr><td><span class="B">By</span> <code>FEU 6</code></td><td>330</td><td>59</td><td>88</td><td>86</td><td>8.06</td><td>11×</td><td>38</td><td>0</td><td>2</td></tr><tr><td><span class="C">Cx</span> <code>FEU 7</code></td><td>308</td><td>81</td><td>66</td><td>73</td><td>9.20</td><td>7×</td><td>48</td><td>12</td><td>42</td></tr><tr><td><span class="C">Cy</span> <code>FEU 8</code></td><td>319</td><td>67</td><td>84</td><td>83</td><td>9.46</td><td>9×</td><td>47</td><td>2</td><td>4</td></tr><tr><td><span class="D">Dx</span> <code>FEU 1</code></td><td>344</td><td>83</td><td>89</td><td>84</td><td>10.84</td><td>8×</td><td>54</td><td>24</td><td>69</td></tr><tr><td><span class="D">Dy</span> <code>FEU 2</code></td><td>340</td><td>63</td><td>66</td><td>97</td><td>11.20</td><td>6×</td><td>55</td><td>11</td><td>29</td></tr></tbody></table></div>
+<span class="src">State at the last pedestal of the campaign,
+10 August 09:12. Baseline, spread, σ and threshold in ADC counts; "coherent" is
+raw σ / residual σ; counts are channels out of 512.</span>
+<figure><img src="figures/baseline_drift.png" alt="Baseline level and spread"><figcaption><b>Baselines did not drift.</b> Each FEU holds its median to within
+a few tens of ADC across six weeks; the visible steps are the clock epochs, not
+time. The lower panel is the channel-to-channel spread, which is a property of
+the boards and equally steady.</figcaption></figure>
+<figure><img src="figures/threshold_history.png" alt="Zero-suppression threshold in force"><figcaption>The 5 σ threshold the DAQ actually programmed into the FEUs,
+above baseline. It is a direct consequence of the residual noise, so the 23 July
+step doubles it — the same absolute signal had to clear roughly twice the bar for
+the rest of the campaign. Zero suppression itself was off in the run
+configuration, so this bounds sensitivity rather than describing the recorded
+data.</figcaption></figure>
+<h2>Which pedestal was in force</h2>
+<p>All 2 695 sub-runs carry a
+<code>pedestal_run.txt</code> naming the pedestal directory whose memory files
+the DAQ loaded, so what was in force is a fact rather than an inference. Of the
+56 acquisitions, <b>35 were ever loaded</b> — the rest were
+superseded within the hour or taken as cross-checks.</p>
+<p>The pedestal in force was a median <b>11.6 hours</b>
+old, but the tail is long: <b>30 % of sub-runs ran
+on a pedestal more than a day old</b> and the worst was
+117 hours (4.9 days), in early
+August.</p>
+<figure><img src="figures/usage_timeline.png" alt="Pedestal age over the campaign"><figcaption>When pedestals were taken (top) and how old the one in force was
+(bottom). The sawtooth resets at each new pedestal. Given how steady the
+baselines were, the long teeth cost little — but they are why the event log above
+gives a window rather than a moment for every fix.</figcaption></figure>
+<h2>What this does not establish</h2>
+<ul class="plain">
+<li><b>Not that the 23 July change hurt the physics.</b> A pedestal measures
+noise, never signal. If the same clock change also raised the signal amplitude,
+the signal-to-noise ratio could be unchanged or better. Settling that needs hit
+amplitudes across the boundary, which is a different measurement; the honest
+statement here is that the <em>noise floor</em> doubled and the threshold with
+it.</li>
+<li><b>Not which physical object moved.</b> A pedestal measures a FEU and its
+cable, not a chamber. "Chamber A's common mode tripled" means the electronics
+chain labelled A did; separating chamber, cabling and FEU needs the record of
+which board sat where.</li>
+<li><b>Not a continuous history.</b> These are 56 snapshots over six weeks, some
+hours apart and some days. Every window in the event log is bounded by the two
+pedestals either side of it, and something that started and finished between two
+of them leaves no trace here at all.</li>
+<li><b>Not the state of chambers before 1 July.</b> The first pedestal preserved
+in the campaign area is 1 July 19:52; data taking began on 28 June, and the
+30 June commissioning set lives outside this tree.</li>
+<li><b>Not a claim about the other three connector dropouts' effect on data.</b>
+Only the run_79 case was checked against hits. The early-July ones
+(<span class="A">A</span>-y and <span class="B">B</span>-y) fall in the
+commissioning period and the 9 August one lasted at most three hours, but
+neither was confirmed in the recorded data the way run_79 was.</li>
+</ul>
+<h2>How to rebuild this</h2>
+<p>Three read-only extractions on lxplus, then everything else locally:</p>
+<ul class="plain">
+<li><code>ntof_pedestal_qa/lxplus/extract_pedestals.py</code> — decodes every
+pedestal ROOT under
+<code>/eos/experiment/ntof/data/x17/july_beam/pedestals/</code> into per-channel
+mean, raw σ, residual σ and per-chip common mode, and parses the firmware's own
+<code>_ped.aux</code> / <code>_thr.aux</code> alongside for comparison.</li>
+<li><code>lxplus/extract_usage.py</code> — walks all 2 695 sub-runs
+for <code>pedestal_run.txt</code>.</li>
+<li><code>lxplus/extract_context.py</code> — the configuration and HV each
+pedestal was taken under, which is what makes a clock change distinguishable
+from a cable change.</li>
+<li><code>figures.py</code> then <code>make_report.py</code> rebuild the pictures
+and this page from <code>data/ped_stats.npz</code>.</li>
+</ul>
+<span class="src">Generated 15 August 2026 by
+<code>ntof_pedestal_qa/make_report.py</code>. Chamber↔FEU map from
+<code>ntof_active_area/clusters.py</code>: A = FEU 3/4, B = 5/6, C = 7/8,
+D = 1/2.</span>
+</div></body></html>
