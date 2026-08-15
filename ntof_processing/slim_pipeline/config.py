@@ -19,6 +19,17 @@ REPO = Path(__file__).resolve().parents[2]
 # points for 7x the background (DREAM_NTOF_CALIBRATION.md section 4).
 ACCEPT_NS = 25.0
 
+# A pulse's DREAM triggers that must show a same-arm wall AND plastic hit inside
+# ACCEPT_NS for the pulse to count as matched. THE SINGLE SOURCE: clock_qa reads
+# it for its per-pulse check, coincidence_arbiter for its lock decision, and the
+# dashboard and pulse ledger for their tables -- it lived in two modules until
+# 2026-08-13 and a threshold with two homes drifts.
+#
+# 0.80 sits in the empty gap between the two populations: at the right lock the
+# median pulse runs 87-96 %, at a wrong one ~0-2 %. Three orders of magnitude,
+# so its exact value cannot matter.
+PULSE_MIN_FRAC = 0.80
+
 # ------------------------------------------------------------- the beam record
 # A PS pulse below this delivered NO PROTONS, and the bunch is dropped from the
 # slim before anything is fitted or read.

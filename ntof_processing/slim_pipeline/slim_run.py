@@ -46,17 +46,23 @@ def main() -> int:
     ap.add_argument('--ntof-source', default=None)
     ap.add_argument('--segments-dir', default=str(SEG.DATA))
     ap.add_argument('--only', default=None,
-                    help='restrict to one DREAM sub-run name')
+                    help='restrict to these DREAM sub-run name(s), comma-separated')
     ap.add_argument('--slim-ns', type=float, default=C.SLIM_NS)
     ap.add_argument('--min-events', type=int, default=MIN_EVENTS)
     ap.add_argument('--allow-unreprocessed', action='store_true',
                     help='also slim if the n_TOF run is not on the v12 list')
+    ap.add_argument('--search-s', type=float, default=None,
+                    help='half-width of the candidate-lock enumeration in s '
+                         '(default pulse_match.SEARCH_S = 120). Widen ONLY '
+                         'for segments a bunch-shift scan placed outside it; '
+                         'the coincidence still chooses among the candidates')
     args = ap.parse_args()
 
     props = SEG.for_ntof_run(args.ntof_run, Path(args.segments_dir),
                              ready_only=not args.allow_unreprocessed)
     if args.only:
-        props = [p for p in props if p.dream_subrun == args.only]
+        only = set(args.only.split(','))
+        props = [p for p in props if p.dream_subrun in only]
     if not props:
         print(f'no segments for n_TOF {args.ntof_run} '
               f'(reprocessed-only={not args.allow_unreprocessed})')
@@ -73,7 +79,7 @@ def main() -> int:
     for p in props:
         seg = Segment(p.dream_run, p.dream_subrun, args.ntof_run,
                       ntof_source=Path(args.ntof_source) if args.ntof_source
-                      else None)
+                      else None, search_s=args.search_s)
         rec = dict(dream_run=p.dream_run, dream_subrun=p.dream_subrun,
                    ntof_run=args.ntof_run, proposed_overlap_s=p.overlap_s)
         try:
@@ -84,6 +90,32 @@ def main() -> int:
             rec.update(status='OK', path=str(path), **{
                 k: q[k] for k in ('efficiency', 'accidental', 'n_events',
                                   'n_physics', 'n_hits', 'seconds')})
+            # A PRODUCT IS BORN WITH ITS QA RECORD. clock_qa.json carries the
+            # per-pulse arrays the pulse ledger classifies from; without it a
+            # perfectly good segment harvests as `lock_pending`, which reads as
+            # "we do not know" when in fact we do. Leaving it to a later sweep
+            # means every new product is invisible to the accounting until
+            # somebody remembers to run one -- and on 2026-08-13 that gap bit
+            # four times, most recently on 12 segments that had just been
+            # recovered and reported as carrying arrays they did not have.
+            #
+            # Cheap here: the file was written seconds ago and is local, so this
+            # is a read of node-local scratch, not EOS.
+            try:
+                from dataclasses import asdict
+                from ntof_processing.slim_pipeline import clock_qa as CQ
+                d = Path(path).parent
+                (d / 'clock_qa.json').write_text(
+                    json.dumps(asdict(CQ.analyse(d)), indent=1))
+                print(f'   clock_qa.json written for {seg}')
+            except Exception as e:                               # noqa: BLE001
+                # Never fail a good product over its QA record -- but say so,
+                # because a silent miss is exactly what this block exists to
+                # stop, and the ledger needs to know to re-run.
+                rec['clock_qa_error'] = f'{type(e).__name__}: {e}'
+                print(f'   !! clock_qa.json NOT written for {seg} '
+                      f'({type(e).__name__}: {e}) -- run clock_qa on '
+                      f'{Path(path).parent} before harvesting')
         except LowJoin as e:
             # Expected for the sliver segments the wall-clock proposal throws
             # off: a distinct status so they never read as pipeline failures.
@@ -91,6 +123,12 @@ def main() -> int:
             print(f'-- {seg} skipped: {e}\n')
         except Exception as e:                                   # noqa: BLE001
             rec.update(status='FAILED', error=f'{type(e).__name__}: {e}')
+            # The coincidence arbiter's own account of why, as DATA. Present
+            # only when the arbiter ran and refused; the pulse ledger reads it
+            # to classify SEGMENT_FAILED without parsing the message text.
+            arb = getattr(e, 'arbiter', None)
+            if arb:
+                rec['arbiter'] = arb
             print(f'!! {seg} FAILED: {type(e).__name__}: {e}')
             traceback.print_exc()
         results.append(rec)

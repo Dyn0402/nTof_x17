@@ -366,21 +366,47 @@ def pkup_bunches(run: int) -> dict:
     good = ps > 1e9                       # a plausible 2026 unix timestamp
 
     ps_filled = ps.copy()
+    recovered = np.zeros(bn.size, bool)
     if (~good).any():
         ibn, iep = _index_epoch(run)
         if not np.array_equal(ibn, bn):
-            iep = iep[np.searchsorted(ibn, bn)]
+            # `searchsorted` returns an INSERTION POINT, not a match, and the
+            # old code indexed with it directly. Two failures, one loud and one
+            # silent:
+            #   * a PKUP bunch beyond the index tree's last gives len(ibn) and
+            #     an IndexError -- seen on run 224498, "index 2287 is out of
+            #     bounds for axis 0 with size 2287";
+            #   * a bunch the index tree simply does not have gives the NEXT
+            #     bunch's epoch, mis-dating it by up to a pulse spacing with
+            #     nothing raised. That is the worse of the two.
+            # So clip, then keep only EXACT matches and leave the rest
+            # unrepaired rather than repaired to a neighbour's clock.
+            if ibn.size:
+                pos = np.clip(np.searchsorted(ibn, bn), 0, ibn.size - 1)
+                iep = np.where(ibn[pos] == bn, iep[pos], np.nan)
+            else:
+                iep = np.full(bn.size, np.nan)
         # index.Time is local; take the constant local->UTC shift from the bunches
         # where both clocks exist, rather than trusting this machine's timezone.
-        shift = np.median(ps[good] - iep[good])
-        approx = iep[~good] + shift
-        ref = ps[good][0]
-        ps_filled[~good] = ref + np.round((approx - ref) / PS_PERIOD_S) * PS_PERIOD_S
+        ref_ok = good & np.isfinite(iep)
+        fix = (~good) & np.isfinite(iep)
+        if ref_ok.any() and fix.any():
+            shift = np.median(ps[ref_ok] - iep[ref_ok])
+            approx = iep[fix] + shift
+            ref = ps[good][0]
+            ps_filled[fix] = (ref + np.round((approx - ref) / PS_PERIOD_S)
+                              * PS_PERIOD_S)
+            recovered = fix
+        # Bunches with neither a good psTime nor an index epoch keep their
+        # unfilled value. That is deliberate: an unfillable psTime never
+        # matches a burst, which loses the burst, whereas a fabricated one
+        # pairs it with the WRONG pulse. Losing a burst is visible in the
+        # ledger; a wrong pairing is not.
 
     return dict(BunchNumber=bn, psTime_s=ps_filled,
                 intensity_e10=a['PulseIntensity'][o] / 1e10,
                 tflash_ns=a['tflash'][o],
-                pstime_recovered=~good)
+                pstime_recovered=recovered)
 
 
 if __name__ == '__main__':

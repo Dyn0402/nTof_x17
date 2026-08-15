@@ -63,6 +63,22 @@ class Segment:
     # the majority side's fitted burst->pulse delta, transferred within the
     # same DREAM sub-run so the truncated minority side does not refit it
     delta_hint_s: float | None = None
+    # A burst-to-pulse lock established by EVIDENCE rather than by the count
+    # scan -- a bunch-shift scan, or coincidence_arbiter. Forces pulse_match to
+    # take the nearest candidate lock to this offset. Until 2026-08-13 there was
+    # no path at all from "we know the right lock" to "produce the product",
+    # which is why every recovery had to be done by hand.
+    accept_offset_s: float | None = None
+    # which evidence established `accept_offset_s` -- 'verified' (a hand-run
+    # bunch-shift scan) or 'coincidence' (coincidence_arbiter). Recorded as
+    # lock_chosen_by, and the override result is CACHED, so this label outlives
+    # the run that set it.
+    accept_source: str = 'verified'
+    # Half-width of the candidate-lock enumeration, seconds; None = pulse_match's
+    # default (+-120 s). Widened for the segments whose lock the 2026-08-14
+    # bunch-shift scans placed OUTSIDE that window (+172.8 s = four
+    # supercycles). Recorded in the join block as `lock_search_s`.
+    search_s: float | None = None
 
     def __str__(self):
         return f'{self.dream_run}/{self.dream_subrun} x n_TOF {self.ntof_run}'
@@ -97,11 +113,16 @@ def _bind_ntof(seg: Segment):
     return io, files
 
 
-def join_events(seg: Segment, log=print):
+def join_events(seg: Segment, log=print, events=None):
     """DREAM events of the sub-run that belong to this n_TOF run."""
     from ntof_dream_merge.bunch_join import dream_event_to_bunch
     ev = dream_event_to_bunch(seg.dream_run, seg.dream_subrun, seg.ntof_run,
-                              delta_hint_s=seg.delta_hint_s)
+                              delta_hint_s=seg.delta_hint_s,
+                              accept_offset_s=getattr(seg, 'accept_offset_s',
+                                                      None),
+                              accept_source=getattr(seg, 'accept_source',
+                                                    'verified'),
+                              events=events)
     attrs = dict(ev.attrs)         # filtering below may drop DataFrame.attrs
     ev = ev[ev['BunchNumber'] > 0].reset_index(drop=True)
     if seg.bunches is not None:
@@ -159,8 +180,16 @@ def bunch_table(ev, log=print):
     return tbl, np.isin(b, ub[beam])
 
 
-def pass1_candidates(seg: Segment, bunches, log=print):
-    """Wall top/bottom offsets and the wall AND plastic SINGLES candidates."""
+def pass1_candidates(seg: Segment, bunches, log=print, offsets=None):
+    """Wall top/bottom offsets and the wall AND plastic SINGLES candidates.
+
+    `offsets` supplies the top/bottom table instead of measuring it here. The
+    offsets are a property of the n_TOF RUN, not of `bunches`, so a caller that
+    works on a handful of bunches at a time (coincidence_arbiter, via
+    arbiter_measure) must measure them once on a proper sample and pass them in
+    -- measuring them on its own 8-bunch sample lands them on noise, and a wrong
+    window keeps only ~28 % of genuine top/bottom pairs.
+    """
     from ntof_dream_merge import dream_trigger as dt
     from ntof_dream_merge import fast_singles as fs
 
@@ -180,10 +209,15 @@ def pass1_candidates(seg: Segment, bunches, log=print):
     # than per chunk. They are per PROCESSING, not per cabling: on the official
     # file they are +-32-39 ns, on v12 within +-5.5 ns. A stored table would
     # pair the bar ends around an offset that is no longer there.
-    n_off = min(OFFSET_BUNCHES, len(bunches))
-    offs = {a: fs.measure_tb_offsets(seg.ntof_run, bunches[:n_off], a)
-            for a in dt.ARMS}
-    log(f'  top/bottom offsets on {n_off} bunches [{time.time()-t0:.0f} s]: ' +
+    if offsets is None:
+        n_off = min(OFFSET_BUNCHES, len(bunches))
+        offs = {a: fs.measure_tb_offsets(seg.ntof_run, bunches[:n_off], a)
+                for a in dt.ARMS}
+        src = f'on {n_off} bunches [{time.time()-t0:.0f} s]'
+    else:
+        offs = offsets
+        src = 'supplied by the caller'
+    log(f'  top/bottom offsets {src}: ' +
         '; '.join(f'{a} ' + ','.join(f'{offs[a][g]:+.1f}' for g in range(4))
                   for a in dt.ARMS))
 
@@ -347,10 +381,83 @@ def write(seg: Segment, out: Path, hits, events, bunches_tbl, meta, log=print):
     (out / 'calibration.json').write_text(json.dumps(meta['calibration'], indent=2))
     (out / 'qa.json').write_text(json.dumps(meta['qa'], indent=2))
     (out / 'provenance.json').write_text(json.dumps(meta['provenance'], indent=2))
+    # THE BURST MAP, its own sidecar. Every burst of the sub-run that this
+    # segment's join looked at, matched or not (bunch -1, resid null), so the
+    # pulse ledger has a denominator. It is deliberately NOT in calibration.json:
+    # that file is per-segment calibration and a ~1000-row table does not belong
+    # in it. Bursts that found no bunch exist ONLY here -- `join_events` filters
+    # them at `BunchNumber > 0` and they are otherwise lost.
+    if meta.get('burst_map'):
+        (out / 'burst_map.json').write_text(json.dumps(meta['burst_map']))
     mb = p.stat().st_size / 1e6
     log(f'  -> {p.name}  {mb:.1f} MB  '
         f'({p.stat().st_size/max(events["eventId"].size,1):.0f} B/trigger)')
     return p
+
+
+# Kept for one release as an escape hatch: set False and the slim falls back to
+# letting pulse_match decide (weak count scan, silent tie-break). There is no
+# reason to use it except to reproduce a pre-2026-08-13 product bit-for-bit.
+ARBITRATE_AMBIGUOUS = True
+
+
+def _join_by_coincidence(seg: Segment, log=print, events=None):
+    """Join at the lock the COINCIDENCE chooses, every segment, every time.
+
+    `pulse_match` enumerates candidates; it no longer decides. The count scan
+    it runs is a 50 ms-tolerance cluster match that ties routinely under the PS
+    supercycle -- that silent tie-break cost 25.7 % of the July campaign beam.
+    The wall+plastic coincidence separates the same question by three orders of
+    magnitude: measured 2026-08-13 over ~190 candidate evaluations, a correct
+    lock puts 87-98 % of a pulse's triggers on a same-arm coincidence and the
+    highest any wrong lock reached was 0.00 %.
+
+    So the ordering is inverted from what the pipeline had: the strong
+    instrument chooses, and the weak one is only used to propose. If no
+    candidate clears the bar the segment REFUSES -- "none of these locks is
+    right" is a real answer, and the refusal carries the evidence in
+    `.arbiter`.
+    """
+    sys.path.insert(0, str(HERE.parents[1] / 'ntof_july_analysis'))
+    import pulse_match as pm
+    from ntof_processing.slim_pipeline import arbiter_measure as AM
+    from ntof_processing.slim_pipeline import coincidence_arbiter as CA
+
+    if seg.accept_offset_s is not None:
+        # a lock already established by evidence (a hand scan, or a caller that
+        # arbitrated) -- apply it, do not re-decide
+        return join_events(seg, log=log, events=events)
+
+    enum = pm.enumerate_locks(seg.dream_run, seg.dream_subrun,
+                              search_s=seg.search_s)
+    if not enum or not enum.get('locks'):
+        raise pm.NoLock(
+            f'{seg}: pulse_match enumerated no candidate lock at all -- no '
+            f'events, no beam-record coverage, or nothing matching the CSV. '
+            f'Nothing for the coincidence to choose between.')
+    log(f'  [0] {len(enum["locks"])} candidate lock(s) within '
+        f'+-{enum["search_s"]:g} s over {enum["n_clusters"]:,} clusters; '
+        f'the coincidence chooses')
+    v = CA.arbitrate(enum['locks'],
+                     AM.make_measurer(seg.dream_run, seg.dream_subrun,
+                                      seg.ntof_run, ntof_source=seg.ntof_source,
+                                      log=log),
+                     log=log)
+    if not v.ok:
+        exc = pm.AmbiguousLock(
+            f'{seg}: the coincidence could not settle the lock '
+            f'({v.reason}; {v.tested} measurement(s) over '
+            f'{len(enum["locks"])} candidates)')
+        exc.arbiter = dict(
+            resolved=False, reason=v.reason, tested=v.tested,
+            n_candidates=len(enum['locks']),
+            rejected=[[float(o), float(f)] for o, f in v.rejected],
+            unmeasured=[float(o) for o in v.unmeasured])
+        raise exc
+    log(f'  coincidence chose {v.offset_s:+.4f} s -- {v.reason}')
+    seg.accept_offset_s = v.offset_s
+    seg.accept_source = 'coincidence'
+    return join_events(seg, log=log, events=events)
 
 
 class LowJoin(RuntimeError):
@@ -370,7 +477,27 @@ def run_segment(seg: Segment, out_base: Path | None = None,
     io, files = _bind_ntof(seg)
     log(f'  {len(files)} n_TOF file(s), cache {io.CACHE_DIR}')
 
-    ev = join_events(seg, log=log)
+    # THE CENSUS BEFORE THE JOIN, because a segment that REFUSES is exactly the
+    # one whose denominator must not vanish. Every burst of the sub-run, from
+    # the DREAM files alone, written before anything downstream can raise. The
+    # same frame is then handed to the join, so this costs no extra read.
+    from ntof_dream_merge.bunch_join import dream_events
+    ev_all = dream_events(seg.dream_run, seg.dream_subrun)
+    try:
+        from ntof_processing.slim_pipeline import pulse_ledger
+        cdir = C.out_dir(seg.dream_run, seg.dream_subrun, out_base)
+        cdir.mkdir(parents=True, exist_ok=True)
+        pulse_ledger.write_census_from_events(ev_all, seg.dream_run,
+                                              seg.dream_subrun, cdir)
+        log(f'  [0] burst census -> {cdir/"burst_census.json"}')
+    except Exception as e:                                   # noqa: BLE001
+        # Auxiliary to the product, so it must not kill a segment -- but say so
+        # loudly, because a missing census is a hole in the accounting and the
+        # standalone census path has to be run to fill it.
+        log(f'  !! burst census NOT written ({type(e).__name__}: {e}); '
+            f'run pulse_ledger census for {seg.dream_run}/{seg.dream_subrun}')
+
+    ev = _join_by_coincidence(seg, log=log, events=ev_all)
     join_attrs = dict(ev.attrs)     # survives the filters below
 
     # Empty pulses out, BEFORE anything is fitted or read. They are PS pulses
@@ -473,6 +600,10 @@ def run_segment(seg: Segment, out_base: Path | None = None,
     bi = btbl['intensity_e10']
 
     meta = dict(
+        # every burst the join looked at, matched or not -- see the sidecar
+        # write in `write_slim`. Carried through join_attrs because the event
+        # frame it came on has already had its unmatched rows filtered out.
+        burst_map=join_attrs.get('burst_map'),
         calibration=dict(
             K=K, T0_ns=T0,
             arm_offset_ns={a: float(arm_off[i]) for i, a in enumerate(cf.ARMS)},
@@ -499,6 +630,7 @@ def run_segment(seg: Segment, out_base: Path | None = None,
             # 'verified' (scan-verified override); `delta_hint_s` non-null
             # means a sliver joined on its majority side's transferred delta.
             join=dict(
+                lock_search_s=seg.search_s,
                 pulse_match_offset_s=join_attrs.get('pulse_match_offset_s'),
                 pulse_match_margin=join_attrs.get('pulse_match_margin'),
                 pulse_match_chosen_by=join_attrs.get('pulse_match_chosen_by'),

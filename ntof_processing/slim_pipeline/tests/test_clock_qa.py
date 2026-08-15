@@ -43,7 +43,8 @@ def make_segment(d: Path, *, efficiency=0.958, accidental=0.00046,
                  bootstrap_snr=180.0, with_bunches=True, with_beam=True,
                  empty_frac=0.0, empty_leak=0, empty_full_bursts=False,
                  dream_run='run_00', dream_subrun='synthetic', ntof_run=0,
-                 n_ev=None, join=('count', 40, None), delta_hint_s=None):
+                 n_ev=None, join=('count', 40, None), delta_hint_s=None,
+                 wall_leg_frac=1.0):
     """Write a synthetic ntof_hits directory with the requested properties."""
     d.mkdir(parents=True, exist_ok=True)
     global N_EV, RNG
@@ -197,6 +198,51 @@ def make_segment(d: Path, *, efficiency=0.958, accidental=0.00046,
         amp0.append(RNG.uniform(60, 900, flash_hits))
         ctl.append(np.zeros(flash_hits, np.uint8))
 
+    # ------------------------------------------------------- the WALL leg
+    # DREAM triggered on a wall AND plastic coincidence on ONE arm, so every
+    # physics trigger has both legs. The fixture carried only the plastic until
+    # 2026-08-13, which left `pulses fully matched` nothing but background to
+    # find and made the HEALTHY case fail its own verdict.
+    #
+    # The legs go on ALL physics triggers, not just `matched` ones. `matched`
+    # means the offline N1081B EMULATION rebuilt the coincidence; the hits are
+    # there either way, and clock_qa deliberately asks the physical question
+    # instead -- measured on run_79/stat090_0000, 99.5 % of the triggers the
+    # emulator calls unmatched do have both legs inside +-25 ns. Tying the
+    # coincidence to `matched` capped the fixture's per-pulse fraction at the
+    # match efficiency and put its median at 94.6 % against the campaign's
+    # measured 96.2 %.
+    #
+    # APPENDED LAST ON PURPOSE: every draw above keeps the RNG stream it had,
+    # so the other cases see bit-identical data (see the reseeding note above).
+    # wall_leg_frac < 1 is how a segment with unmatched PULSES is built.
+    def _leg(sel_ids, sel_arm, tree_base):
+        """One MIP-sized primary per trigger, on that trigger's own arm."""
+        n_ = sel_ids.size
+        if not n_:
+            return
+        hid.append(sel_ids)
+        dt.append(np.clip(RNG.normal(-5, 7, n_), -W, W))
+        det.append((tree_base + sel_arm).astype(np.int16))
+        detn.append(RNG.integers(1, 9, n_).astype(np.int32))
+        amp0.append(RNG.uniform(3000, 9000, n_))
+        ctl.append(np.zeros(n_, np.uint8))
+
+    w_keep = RNG.random(n_m) < wall_leg_frac
+    _leg(ev_id[m][w_keep], arm[m][w_keep], 0)          # WAL tree of own arm
+
+    # the unmatched physics triggers: both legs, at the measured 99.5 %
+    um = phys & (matched == 0)
+    if um.any():
+        u_keep = RNG.random(int(um.sum())) < 0.995 * wall_leg_frac
+        u_id = ev_id[um][u_keep]
+        # `events.arm` is -1 for an unmatched trigger -- the emulation never
+        # assigned one, so there is nothing to reuse. The trigger still fired on
+        # a real arm; draw it here rather than letting -1 address tree -1.
+        u_arm = RNG.integers(0, 4, u_id.size).astype(np.int8)
+        _leg(u_id, u_arm, 0)                           # WAL
+        _leg(u_id, u_arm, 4)                           # PSS
+
     hid = np.concatenate(hid)
     dt = np.concatenate(dt)
     det = np.concatenate(det)
@@ -274,6 +320,12 @@ CASES = [
     # punished for it
     ('scan verified',      dict(join=('verified', None, None)),
      'pulse_match margin adequate', 'PASS'),
+    # coincidence_arbiter: the lock was CHOSEN by the wall+plastic coincidence
+    # rather than confirmed by it afterwards. Strongest evidence in the
+    # pipeline, so it adjudicates like a hand-run shift scan -- and it must not
+    # be punished for carrying no count margin, which is the whole point of it.
+    ('arbiter chose the lock', dict(join=('coincidence', None, None)),
+     'pulse_match margin adequate', 'PASS'),
     # arbitration that did not actually separate is not arbitration
     ('intensity too weak', dict(join=('intensity', 1, 1.2)),
      'pulse_match margin adequate', 'FAIL'),
@@ -329,6 +381,16 @@ CASES = [
      'plastic primary within accept', 'WARN'),
     ('plastic primary lost', dict(primary_out_frac=0.55),
      'plastic primary within accept', 'FAIL'),
+    # --- unmatched pulses, THE follow-up quantity --------------------------
+    # A pulse is matched when >= 80 % of its physics triggers show the
+    # wall+plastic coincidence. The two populations are three orders of
+    # magnitude apart (96.2 % at the right lock against ~0.05 % at a wrong
+    # one), so a segment sits at one end or the other and the level is really
+    # asking "how many pulses fell off the good end".
+    ('a few pulses unmatched', dict(wall_leg_frac=0.90),
+     'pulses fully matched', 'WARN'),
+    ('most pulses unmatched', dict(wall_leg_frac=0.60),
+     'pulses fully matched', 'FAIL'),
     ('weak coarse peak',   dict(bootstrap_snr=9.0),         'coarse peak above floor', 'WARN'),
     ('no bootstrap record', dict(bootstrap_snr=0.0),        'coarse peak above floor', 'NA'),
     ('old file, no bunches', dict(with_bunches=False),      'bunches fitted', 'NA'),
@@ -339,7 +401,15 @@ CASES = [
 # checks can both see should light both up. A global +10 ns residual offset
 # displaces every arm by +10 ns, which is exactly what the per-arm check is
 # built to notice (its FAIL threshold is 10).
-ALSO_FAILS = {'fit badly off': ('per-arm residuals centred',)}
+ALSO_FAILS = {
+    'fit badly off': ('per-arm residuals centred',),
+    # A plastic primary displaced outside the accept window IS a lost
+    # wall+plastic coincidence -- the same defect, seen once per trigger by
+    # 'plastic primary within accept' and once per pulse by 'pulses fully
+    # matched'. Suppressing the second would be hiding a true positive.
+    'plastic primary displaced': ('pulses fully matched',),
+    'plastic primary lost': ('pulses fully matched',),
+}
 
 
 def main() -> int:

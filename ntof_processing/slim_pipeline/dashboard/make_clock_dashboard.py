@@ -532,7 +532,7 @@ JS = """
 """
 
 
-def build(recs, notes, title, source, coverage=None):
+def build(recs, notes, title, source, coverage=None, ledger_dir=None):
     n = len(recs)
     v = {k: sum(1 for r in recs if r['verdict'] == k)
          for k in ('PASS', 'WARN', 'FAIL')}
@@ -573,6 +573,100 @@ def build(recs, notes, title, source, coverage=None):
                            f'background:{c}" data-tip="{v[k]} {k}">'
                            f'{v[k] if 100*v[k]/n > 6 else ""}</span>')
         H.append(f'<div class="covbar">{"".join(seg)}</div>')
+
+    # ------------------------------------------- UNMATCHED PULSES, FIRST
+    #
+    # The follow-up list, and the reason the page exists now: for every
+    # (sub-run x n_TOF run), how many beam pulses failed the coincidence test
+    # -- under `pulse_min_frac` of their triggers having a wall AND plastic hit
+    # on the same arm in the accept window. This is the number that has to
+    # reach zero, so it goes above everything else; the clock diagnostics below
+    # explain WHY a segment misses, but this says which ones do.
+    #
+    # Not the same as 'bunches fitted', which asks whether a bunch got its own
+    # per-bunch clock correction. A pulse can be perfectly matched and still
+    # lack its own correction, and vice versa.
+    # ------------------------------------- every pulse accounted for, FIRST
+    # The pulse ledger's own section, delivered by pulse_ledger as a function
+    # so this file stays single-owner (contract 2026-08-13). It goes ABOVE the
+    # follow-up list below because it carries the DENOMINATOR: this file can
+    # only ever count pulses that reached a product, while the ledger counts
+    # every censused burst -- including the segments that failed, the inter-run
+    # gaps and the spans never attempted, which are invisible from here and are
+    # exactly where the campaign's real losses live.
+    #
+    # Absent ledger -> empty string -> no section. The dashboard must still
+    # build from products alone, because it did for the whole campaign before
+    # the ledger existed.
+    have_ledger = False
+    if ledger_dir:
+        try:
+            from ntof_processing.slim_pipeline import pulse_ledger
+            sec = pulse_ledger.build_dashboard_section(Path(ledger_dir))
+            if sec:
+                H.append(sec)
+                have_ledger = True
+            else:
+                H.append('<div class="sub warn">Pulse ledger directory given '
+                         f'({CH.esc(str(ledger_dir))}) but it holds no '
+                         'campaign_ledger.json -- run pulse_ledger campaign '
+                         'first. Counts below are PRODUCT-side only.</div>')
+        except Exception as e:                                   # noqa: BLE001
+            # A broken ledger must not cost the clock dashboard, but it must
+            # not vanish either -- silence here would read as "no losses".
+            H.append('<div class="sub bad">Pulse ledger section failed to '
+                     f'build ({CH.esc(type(e).__name__)}: {CH.esc(str(e))}). '
+                     'Counts below are PRODUCT-side only and do NOT include '
+                     'failed segments, gaps or unattempted spans.</div>')
+
+    pu = [(r, (r.get('pulses') or {})) for r in recs]
+    have = [(r, d) for r, d in pu if d.get('n')]
+    if have:
+        tot_p = sum(d['n'] for _, d in have)
+        tot_u = sum(d['unmatched'] for _, d in have)
+        nseg_bad = sum(1 for _, d in have if d['unmatched'])
+        H.append('<h2>Unmatched pulses &mdash; the follow-up list</h2>')
+        # Point at the ledger only when there IS one above. Saying "see the
+        # pulse ledger above" on a page that has no ledger section sends the
+        # reader looking for something that is not there -- and worse, implies
+        # the denominator has been accounted for somewhere when it has not.
+        H.append('<div class="sub">Product-side: pulses that reached a slim. '
+                 + ('For the campaign denominator &mdash; including segments '
+                    'that failed, inter-run gaps and spans never attempted '
+                    '&mdash; see the pulse ledger above.'
+                    if have_ledger else
+                    'This does NOT include segments that failed, inter-run '
+                    'gaps or spans never attempted &mdash; those are invisible '
+                    'from the products alone. Build with --ledger for the '
+                    'campaign denominator.')
+                 + '</div>')
+        H.append(f'<div class="sub">{tot_u:,} of {tot_p:,} beam pulses failed '
+                 f'the coincidence test, across {nseg_bad} of {len(have)} '
+                 f'segments. A pulse counts as matched when at least '
+                 f'{100*Q.TH["pulse_min_frac"]:.0f}% of its triggers have a '
+                 f'wall+plastic coincidence on the same arm inside the accept '
+                 f'window.</div>')
+        worst = sorted(have, key=lambda rd: -rd[1]['unmatched'])
+        rows = ['<table class="tbl"><tr><th>segment</th><th>n_TOF</th>'
+                '<th>pulses</th><th>unmatched</th><th>median pulse</th></tr>']
+        for r, d in worst:
+            if not d['unmatched']:
+                continue
+            s = r['segment']
+            cls = ('bad' if d['unmatched'] > Q.TH['pulse_unmatched_warn']
+                   else 'warn')
+            rows.append(
+                f'<tr><td>{CH.esc(s["dream_run"])}/'
+                f'{CH.esc(s["dream_subrun"])}</td>'
+                f'<td>{s["ntof_run"]}</td><td>{d["n"]:,}</td>'
+                f'<td class="{cls}">{d["unmatched"]:,}</td>'
+                f'<td>{d.get("median_frac", 0):.1%}</td></tr>')
+        rows.append('</table>')
+        if nseg_bad:
+            H.append(''.join(rows))
+        else:
+            H.append('<div class="sub good">Every pulse in every segment '
+                     'matched. Nothing to follow up.</div>')
 
     # ------------------------------------------------ what to look at first
     #
@@ -843,6 +937,9 @@ def main() -> int:
     ap.add_argument('-o', '--out', type=Path, default=Path('clock_dashboard.html'))
     ap.add_argument('--title', default='DREAM ↔ n_TOF clock QA')
     ap.add_argument('--no-cache', action='store_true')
+    ap.add_argument('--ledger', type=Path, default=None,
+                    help='pulse_ledger directory (<qa-root>/pulse_ledger); '
+                         'adds the every-pulse-accounted-for section')
     ap.add_argument('--coverage', type=Path, default=None,
                     help='JSON with {covered,total,uncovered_pct,note} -- what '
                          'is missing from this tree, so the page cannot read '
@@ -871,7 +968,8 @@ def main() -> int:
 
     notes = population(recs)
     cov = json.loads(a.coverage.read_text()) if a.coverage else None
-    a.out.write_text(build(recs, notes, a.title, str(a.root), cov))
+    a.out.write_text(build(recs, notes, a.title, str(a.root), cov,
+                           ledger_dir=a.ledger))
     v = {k: sum(1 for r in recs if r['verdict'] == k)
          for k in ('PASS', 'WARN', 'FAIL')}
     print(f'{len(recs)} segment(s): {v["PASS"]} pass, {v["WARN"]} warn, '

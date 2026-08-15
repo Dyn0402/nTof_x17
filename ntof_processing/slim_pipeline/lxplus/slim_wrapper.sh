@@ -14,7 +14,11 @@
 # with publish_to_eos.sh.
 set -eo pipefail
 RUN=$1
-[ -z "$RUN" ] && { echo "usage: $0 <ntof_run>"; exit 2; }
+[ -z "$RUN" ] && { echo "usage: $0 <ntof_run> [extra slim_run.py args]"; exit 2; }
+# Anything after the run number is passed straight to slim_run.py -- e.g.
+#   --only stat090_0027 --search-s 400
+# for a segment whose lock a bunch-shift scan placed outside +-120 s.
+EXTRA=("${@:2}")
 
 echo "START $(date '+%F %T')  host $(hostname)  run $RUN"
 echo "scratch $_CONDOR_SCRATCH_DIR"
@@ -58,7 +62,11 @@ MGM=root://eosexperiment.cern.ch
 DONE=/eos/experiment/ntof/processing/official/done/run${RUN}.root
 COMPLETED=/eos/experiment/ntof/processing/official/completed/${RUN}
 
-MERGED_BYTES=$(xrdfs "$MGM" stat "$DONE" 2>/dev/null | awk '/^Size:/ {print $2}')
+# `|| true`: xrdfs stat exits 54 when the path does not exist, and
+# `set -eo pipefail` would abort the job there instead of falling
+# through to the partials below. Absent and zero-byte merged files
+# must both reach the fallback.
+MERGED_BYTES=$(xrdfs "$MGM" stat "$DONE" 2>/dev/null | awk '/^Size:/ {print $2}') || true
 : "${MERGED_BYTES:=0}"
 
 t0=$SECONDS
@@ -79,7 +87,7 @@ echo "xrdcp done  $((SECONDS-t0)) s  $(du -sh "$SRCDIR" | cut -f1)"
 
 /usr/bin/time -f "TIMING slim wall=%es maxrss=%MkB" \
   python3 -u ntof_processing/slim_pipeline/slim_run.py "$RUN" \
-    --out out --ntof-source "$SRCDIR"
+    --out out --ntof-source "$SRCDIR" "${EXTRA[@]}"
 rc=$?
 
 echo "ALL DONE $(date '+%T')  outputs:"

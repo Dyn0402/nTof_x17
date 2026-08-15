@@ -88,6 +88,13 @@ TH = dict(
     # pulse_match arbitrated on the intensity fluctuation at >= R_SIG, or a
     # scan verified it (chosen_by 'verified'), the margin is not the evidence
     # the lock rests on and the check defers to that.
+    # a pulse counts as matched at this coincidence fraction; 0.80 sits in the
+    # empty gap between the two populations (96.2 % median vs ~0.05 % for a
+    # wrong lock) so its exact value cannot matter
+    pulse_min_frac=C.PULSE_MIN_FRAC,
+    # every unmatched pulse is a follow-up item, so the bar is zero; a handful
+    # warns rather than fails so a segment is not condemned for a few pulses
+    pulse_unmatched_warn=5,
     join_margin_warn=10.0, join_margin_fail=2.0,
     join_r_sig_min=3.0,
     # arm offsets reproduce between sub-runs to <= 2.6 ns; the four differ from
@@ -144,6 +151,7 @@ class SegmentQA:
     perbunch: dict = field(default_factory=dict)
     hits: dict = field(default_factory=dict)
     bootstrap: dict = field(default_factory=dict)
+    pulses: dict = field(default_factory=dict)
 
 
 def _arrays(f, name):
@@ -518,6 +526,126 @@ def analyse(d: Path) -> SegmentQA:
         checks.append(Check('dropped pulses look like no beam', 'NA', None,
                             'no per-bunch columns -- file predates them', ''))
 
+    # ------------------------------------------------- pulses fully matched
+    # THE FOLLOW-UP LIST. Everything else here judges the clock; this counts
+    # the PULSES we failed to match at all, which is the quantity that has to
+    # reach zero. A pulse is matched when at least PULSE_MIN_FRAC of its
+    # physics triggers have a SiPM (wall) AND plastic hit on the same arm
+    # inside the accept window -- the physical question, deliberately not the
+    # `matched` flag, which additionally requires the offline N1081B emulation
+    # to rebuild the coincidence and costs ~4 % for nothing here (measured on
+    # run_79/stat090_0000: 99.5 % of "unmatched" triggers have both legs
+    # inside +-25 ns).
+    #
+    # Not to be confused with 'bunches fitted', which asks whether a bunch got
+    # its own per-bunch CLOCK correction -- a different question that a
+    # perfectly matched pulse can still fail.
+    # ONE BAD SEGMENT MUST NOT COST ITS OTHER 25 CHECKS. This block reads
+    # seven columns (hits: is_control/dt_ns/eventId/det, events:
+    # is_flash/eventId/bunch) and products span several vintages -- the 8-12
+    # campaign predates the block entirely. A missing column raised a KeyError
+    # straight out of `analyse`, and `main` then filed the whole directory as
+    # UNREADABLE, discarding every other verdict it had already computed. The
+    # per-pulse answer is worth reporting as NA; it is not worth the segment.
+    #
+    # The partition failure is treated differently on purpose: it means the leg
+    # categories no longer add up, which would put WRONG numbers in the pulse
+    # ledger's denominator. That is louder than a missing column, so it FAILS
+    # the check AND withholds the arrays -- the ledger seeing no arrays is
+    # recoverable, the ledger seeing wrong ones is not.
+    try:
+        det_i = {t_: i for i, t_ in enumerate(C.SCINT_TREES)}
+        _sig = (hits['is_control'] == 0) & (np.abs(hits['dt_ns']) <= cal['accept_ns'])
+        _hid, _hdet = hits['eventId'][_sig], hits['det'][_sig]
+        _phys = ev['is_flash'] == 0
+        _eid, _bun = ev['eventId'][_phys], ev['bunch'][_phys]
+        if _eid.size:
+            # WHICH LEG IS MISSING, not just that the pulse missed. A pulse under
+            # the bar because the wall leg is absent is a different fault from one
+            # where both legs fired on DIFFERENT arms, and the follow-up list is
+            # useless without that split. These sets were already being built here
+            # and thrown away.
+            _ord = np.argsort(_eid, kind='stable')
+            _seid = _eid[_ord]
+
+            def _rows(det_idx):
+                """Boolean over physics triggers: has a hit in this tree, in window."""
+                ids = _hid[_hdet == det_idx]
+                m = np.zeros(_eid.size, bool)
+                if ids.size:
+                    pos = np.searchsorted(_seid, ids)
+                    good = (pos < _seid.size)
+                    pos = pos[good]
+                    good2 = _seid[pos] == ids[good]
+                    m[_ord[pos[good2]]] = True
+                return m
+
+            _wall = [_rows(det_i[f'WAL{_a}']) for _a in ARMS]
+            _pss = [_rows(det_i[f'PSS{_a}']) for _a in ARMS]
+            _ok = np.zeros(_eid.size, bool)
+            for _w, _p in zip(_wall, _pss):
+                _ok |= (_w & _p)                      # same-arm coincidence
+            _anyw = np.logical_or.reduce(_wall)
+            _anyp = np.logical_or.reduce(_pss)
+            # disjoint by construction, and exhaustive -- asserted below
+            _wrong = (~_ok) & _anyw & _anyp           # both legs, never same arm
+            _wonly = (~_ok) & _anyw & (~_anyp)
+            _ponly = (~_ok) & (~_anyw) & _anyp
+            _none = (~_anyw) & (~_anyp)
+
+            _o = np.argsort(_bun, kind='stable')
+            _b = _bun[_o]
+            _st = np.r_[0, np.flatnonzero(np.diff(_b)) + 1]
+            _tot = np.diff(np.r_[_st, _b.size])
+
+            def _per(mask):
+                return np.add.reduceat(mask[_o].astype(np.int64), _st)
+
+            _got, _nwrong = _per(_ok), _per(_wrong)
+            _nwonly, _nponly, _nnone = _per(_wonly), _per(_ponly), _per(_none)
+            # The invariant the ledger's arithmetic depends on. If these ever stop
+            # partitioning the triggers, a consumer silently under- or double-counts
+            # rather than failing, so check it here where the sets are built.
+            _sum = _got + _nwrong + _nwonly + _nponly + _nnone
+            if not np.array_equal(_sum, _tot):
+                raise AssertionError(
+                    f'per-pulse leg categories do not partition the triggers: '
+                    f'{int(np.abs(_sum - _tot).max())} max discrepancy over '
+                    f'{_tot.size} pulses')
+            _frac = _got / np.maximum(_tot, 1)
+            _n_bad = int((_frac < TH['pulse_min_frac']).sum())
+            _n_pul = int(_frac.size)
+            out.pulses = dict(
+                n=_n_pul, unmatched=_n_bad, median_frac=float(np.median(_frac)),
+                accept_frac=float(TH['pulse_min_frac']),
+                bunch=[int(v) for v in _b[_st]],
+                n_trig=[int(v) for v in _tot],
+                n_coinc=[int(v) for v in _got],
+                wall_only=[int(v) for v in _nwonly],
+                pss_only=[int(v) for v in _nponly],
+                neither=[int(v) for v in _nnone],
+                wrong_arm=[int(v) for v in _nwrong])
+            checks.append(Check(
+                'pulses fully matched',
+                'PASS' if _n_bad == 0 else
+                ('WARN' if _n_bad <= TH['pulse_unmatched_warn'] else 'FAIL'),
+                _n_bad,
+                f'{_n_bad} of {_n_pul} beam pulses under '
+                f'{TH["pulse_min_frac"]:.0%} wall+plastic coincidence '
+                f'(median pulse {np.median(_frac):.1%})',
+                f'0 unmatched pulses'))
+    except KeyError as e:
+        checks.append(Check(
+            'pulses fully matched', 'NA', None,
+            f'cannot count pulses: this file has no {e} column -- it predates '
+            f'the per-pulse block. Re-slim it to get a per-pulse answer.', ''))
+    except AssertionError as e:
+        out.pulses = {}          # withhold rather than ship a wrong partition
+        checks.append(Check(
+            'pulses fully matched', 'FAIL', None,
+            f'per-pulse leg categories do not partition the triggers ({e}); '
+            f'arrays withheld so nothing downstream counts them', ''))
+
     # ------------------------------------------------------------- join lock
     # The segment's clock can be perfect while the JOIN underneath it is a coin
     # flip: a mis-locked segment does not fail here, it fails its clock fit and
@@ -532,11 +660,16 @@ def analyse(d: Path) -> SegmentQA:
         margin = jn.get('pulse_match_margin')
         by = jn.get('pulse_match_chosen_by')
         r_sig = jn.get('pulse_match_r_sig')
-        adjudicated = (by == 'verified'
+        # 'coincidence' is coincidence_arbiter: the lock was chosen by the
+        # wall+plastic coincidence rather than confirmed by it afterwards. That
+        # is the STRONGEST evidence in this pipeline (96 % of a pulse's
+        # triggers at the right lock against ~0.05 % at a wrong one), so it
+        # adjudicates for the same reason a hand-run shift scan does.
+        adjudicated = (by in ('verified', 'coincidence')
                        or (by == 'intensity' and r_sig is not None
                            and r_sig >= TH['join_r_sig_min']))
         if margin is None:
-            # a verified override carries no margin of its own
+            # an override carries no count margin of its own
             level = 'PASS' if adjudicated else 'WARN'
             m_txt = 'no count margin recorded'
         else:

@@ -70,7 +70,21 @@ class NoLock(RuntimeError):
 
 
 class AmbiguousLock(RuntimeError):
-    """Two locks the instruments cannot separate — do not pick silently."""
+    """Two locks the instruments cannot separate — do not pick silently.
+
+    Carries `.locks`, the candidates that tied: a list of
+    {off_s, n, r} with r None where the correlation is undefined. A downstream
+    arbiter (coincidence_arbiter) needs exactly this list, and until
+    2026-08-13 the only way to get it was to re-parse the message text — which
+    dropped every candidate whose r was NaN, because `r=nan` does not match a
+    numeric pattern. Short segments are precisely the ambiguous ones AND the
+    ones where the intensity correlation is undefined, so that silently hid
+    the candidates most in need of arbitration.
+    """
+
+    def __init__(self, *args, locks=None):
+        super().__init__(*args)
+        self.locks = list(locks or [])
 
 
 _FNAME_T = re.compile(r'_datrun_(\d{6})_(\d{2})H(\d{2})_')
@@ -165,22 +179,43 @@ def _refine(c_t, anchor, pt, off):
     return float(off)
 
 
-def select_lock(c_t, sizes, anchor, pt, pe):
-    """Choose the wall-clock lock, or refuse loudly.
+def _lock_records(locks, limit=8):
+    """Candidate locks as plain JSON-able dicts; r is None where undefined."""
+    return [dict(off_s=float(L['off_s']), n=int(L['n']),
+                 r=None if not np.isfinite(L['r']) else float(L['r']))
+            for L in locks[:limit]]
 
-    Returns (offset_s, locks, diag). `locks` is every candidate alignment as
-    dict(off_s, n, frac, r): refined offset, matched clusters, matched
-    fraction, and the cluster-size <-> pulse-intensity correlation. `diag`
-    records margin / chosen_by / r_sig for provenance.
 
-    Raises NoLock when nothing matches (the old code returned the scan edge
-    with 0 matches and everything downstream failed mysteriously), and
-    AmbiguousLock when the top locks are separated neither by count
-    (>= MARGIN_CLEAR) nor by intensity correlation (>= R_SIG Fisher sigmas).
-    An ambiguous sub-run needs a bunch-shift scan
-    (slim_pipeline/segment_diagnose.py --span 200), not a coin flip.
+def enumerate_candidates(c_t, sizes, anchor, pt, pe, search_s=None):
+    """EVERY candidate alignment, ranked by count. NO decision is made here.
+
+    `search_s` widens the offset scan past SEARCH_S for the segments whose
+    true lock lies outside +-120 s of the filename anchor. Measured 2026-08-14
+    on the three "dark hours" (run_116/stat090_0027, run_118/stat090_0017,
+    run_122/stat090_0000): every candidate inside +-120 s measured 0 %
+    coincidence, and a +-200-bunch scan found the lock at +60 bunches =
+    +172.8 s, exactly four 43.2 s supercycles away, S/N 1377-1619. Only the
+    coincidence may choose among the extra candidates -- a wider count scan
+    has MORE degenerate ties, not fewer.
+
+    Returns `locks`, a list of dict(off_s, n, frac, r): refined offset, matched
+    clusters, matched fraction, and the cluster-size <-> pulse-intensity
+    correlation. Ranked best-count-first and deduped to one entry per lock
+    group.
+
+    This is the SEARCH, and it is all the count scan is good for. Choosing
+    among these is a separate question answered by a far stronger instrument
+    (the wall+plastic coincidence, ntof_processing/slim_pipeline/
+    coincidence_arbiter.py): at 50 ms tolerance the count ties routinely under
+    the PS supercycle, while the coincidence separates right from wrong locks
+    by three orders of magnitude.
+
+    Raises NoLock when nothing matches at all -- that is an absence of data,
+    not a decision, so it belongs here. `r` is computed and returned as a
+    DIAGNOSTIC; it no longer decides anything for the slim products.
     """
-    offsets = np.arange(-SEARCH_S, SEARCH_S + STEP_S, STEP_S)
+    half = float(SEARCH_S if search_s is None else search_s)
+    offsets = np.arange(-half, half + STEP_S, STEP_S)
     counts = np.empty(len(offsets), int)
     for i, off in enumerate(offsets):
         cand = anchor + c_t + off
@@ -193,7 +228,7 @@ def select_lock(c_t, sizes, anchor, pt, pe):
     best_n = int(counts.max()) if len(counts) else 0
     if best_n < MIN_LOCK_N or best_n < MIN_LOCK_FRAC * len(c_t):
         raise NoLock(
-            f'no offset in ±{SEARCH_S:g} s matches the beam record: best '
+            f'no offset in ±{half:g} s matches the beam record: best '
             f'{best_n} of {len(c_t)} clusters. The beam CSV may not cover '
             f'this hour, or the anchor is off by more than the search range. '
             f'Refusing to return a lock rather than guessing.')
@@ -228,7 +263,21 @@ def select_lock(c_t, sizes, anchor, pt, pe):
     for L in refined:
         if not any(abs(L['off_s'] - K['off_s']) < LOCK_GROUP_S for K in locks):
             locks.append(L)
+    return locks
 
+
+def select_lock(c_t, sizes, anchor, pt, pe):
+    """Pick a lock by count, then by intensity -- the WEAK path, kept for the
+    analysis scripts that have no coincidence available (run30_flash_intensity,
+    leadshield_compare and friends read per-event intensity and never build a
+    slim). The slim itself does not use this any more: it enumerates and lets
+    the coincidence choose, so a tie here can no longer reach a product.
+
+    Returns (offset_s, locks, diag); raises AmbiguousLock when neither count
+    nor intensity separates the top locks, because a silent pick on this
+    instrument is what cost 25.7 % of the July campaign beam.
+    """
+    locks = enumerate_candidates(c_t, sizes, anchor, pt, pe)
     n1 = locks[0]['n']
     margin = n1 - (locks[1]['n'] if len(locks) > 1 else 0)
     if margin >= MARGIN_CLEAR or len(locks) == 1:
@@ -271,28 +320,80 @@ def select_lock(c_t, sizes, anchor, pt, pe):
         f'{tab}. This sub-run needs a bunch-shift scan '
         f'(segment_diagnose --span 200) before it can be joined — refusing '
         f'to pick one silently. That silent pick cost 25.7 % of the July '
-        f'campaign beam (ntof_processing/join_mislock/).{short}')
+        f'campaign beam (ntof_processing/join_mislock/).{short}',
+        locks=_lock_records(locks))
+
+
+def enumerate_locks(run: str, subrun: str,
+                    search_s: float | None = None) -> dict | None:
+    """Candidate locks for one sub-run, with NO decision taken.
+
+    The entry point for the coincidence path: the slim asks for every
+    candidate, measures the wall+plastic coincidence at each, and applies the
+    winner through `match_subrun(..., accept_offset_s=..., accept_source=
+    'coincidence')`. Nothing here can raise AmbiguousLock, because nothing
+    here chooses -- ambiguity is only a problem for an instrument that has to
+    decide, and this one does not.
+
+    Returns None when the sub-run has no events or the beam CSV does not cover
+    it; raises NoLock when no offset matches the beam record at all.
+
+        {run, subrun, locks: [{off_s, n, r}, ...], n_clusters, anchor_epoch}
+    """
+    eid, t_rel, anchor = _event_times(run, subrun)
+    if eid is None or anchor is None:
+        return None
+    starts = np.concatenate([[0], np.where(np.diff(t_rel) > GAP_S)[0] + 1])
+    c_t = t_rel[starts]
+    sizes = np.diff(np.r_[starts, len(t_rel)]).astype(float)
+    span_s = float(t_rel.max()) if len(t_rel) else 600.0
+    pt, pe = _load_pulses([anchor + s_ for s_ in
+                           np.arange(0, span_s + 600 + 43200, 43200)])
+    if pt.size == 0:
+        return None
+    locks = enumerate_candidates(c_t, sizes, anchor, pt, pe,
+                                 search_s=search_s)
+    return dict(run=run, subrun=subrun, locks=_lock_records(locks),
+                n_clusters=int(len(c_t)), anchor_epoch=anchor,
+                t_span_s=span_s,
+                search_s=float(SEARCH_S if search_s is None else search_s))
 
 
 def match_subrun(run: str, subrun: str, rebuild: bool = False,
-                 accept_offset_s: float | None = None) -> dict | None:
+                 accept_offset_s: float | None = None,
+                 accept_source: str = 'verified') -> dict | None:
     """Wall-clock lock for one sub-run; raises rather than guessing.
 
-    `accept_offset_s` is the scan-verified override: when a bunch-shift scan
-    (segment_diagnose --span 200) has independently established the lock, pass
-    its offset and the nearest candidate lock (within LOCK_GROUP_S) is
-    accepted even if the automatic selection would be ambiguous. The result
-    records lock_chosen_by = 'verified' so the provenance survives into the
-    slim products. It is an override for VERIFIED locks, not a seed — an
-    unverified guess here recreates the bug this function exists to prevent.
+    `accept_offset_s` is the evidence-backed override: when something OTHER
+    than the count scan has established the lock, pass its offset and the
+    nearest candidate lock (within LOCK_GROUP_S) is accepted even if the
+    automatic selection would be ambiguous. It is an override for ESTABLISHED
+    locks, not a seed — an unverified guess here recreates the bug this
+    function exists to prevent.
+
+    `accept_source` says WHICH evidence, and is what gets recorded as
+    lock_chosen_by so the provenance survives into the slim products:
+
+        'verified'    a hand-run bunch-shift scan (segment_diagnose --span 200)
+        'coincidence' the wall+plastic coincidence, via coincidence_arbiter
+
+    The two are not interchangeable and the override result is CACHED, so the
+    label outlives the run that made it. Collapsing both to 'verified' would
+    make an automatic decision indistinguishable from a human one for as long
+    as the cache lives.
     """
     cpath = CACHE / f'{run}_{subrun}.json'
     if cpath.exists() and not rebuild and accept_offset_s is None:
         d = json.loads(cpath.read_text())
         if d.get('cache_version') == 2:
             if d.get('ambiguous'):
-                raise AmbiguousLock(d.get('error', f'{run}/{subrun}: cached '
-                                    'ambiguous lock — scan before joining'))
+                # the candidates too, not just the message: an arbiter reading
+                # a CACHED refusal must see the same list as one reading a
+                # fresh raise, or it silently has nothing to arbitrate
+                raise AmbiguousLock(
+                    d.get('error', f'{run}/{subrun}: cached ambiguous lock '
+                          '— scan before joining'),
+                    locks=d.get('locks'))
             d['event_e10'] = {int(k): v for k, v in d['event_e10'].items()}
             return d
         # pre-2026-08-12 cache: selected by the count-only scan — rebuild
@@ -322,7 +423,8 @@ def match_subrun(run: str, subrun: str, rebuild: bool = False,
         if accept_offset_s is None:
             cpath.write_text(json.dumps(dict(
                 run=run, subrun=subrun, cache_version=2, ambiguous=True,
-                error=str(e), anchor_epoch=anchor, t_span_s=span_s)))
+                error=str(e), locks=getattr(e, 'locks', []),
+                anchor_epoch=anchor, t_span_s=span_s)))
             raise
         # scan-verified override: lock onto the verified offset
         best_off = _refine(c_t, anchor, pt, float(accept_offset_s))
@@ -331,16 +433,36 @@ def match_subrun(run: str, subrun: str, rebuild: bool = False,
                 f'no candidate lock within {LOCK_GROUP_S:g} s of the '
                 f'verified offset {accept_offset_s:+.2f} s') from e
         locks = []
-        diag = dict(margin=None, chosen_by='verified', r_sig=None)
+        diag = dict(margin=None, chosen_by=accept_source, r_sig=None)
+    override_disagreed = None
     if auto_ok and accept_offset_s is not None and \
             abs(best_off - accept_offset_s) >= LOCK_GROUP_S:
-        # a CONFIDENT automatic selection contradicting the verified offset
-        # is not overridable — something is wrong on one side; look by hand
-        raise AmbiguousLock(
-            f'verified offset {accept_offset_s:+.2f} s disagrees with the '
-            f'confident automatic selection {best_off:+.2f} s '
-            f'(margin {diag["margin"]}, by {diag["chosen_by"]}) — resolve '
-            f'by hand before joining')
+        # THE OVERRIDE WINS, and says so. This used to raise: a confident
+        # automatic selection contradicting the offered offset was treated as
+        # unresolvable. That made sense while the only overrides were hand
+        # scans; it is wrong now that the offer comes from the wall+plastic
+        # coincidence, which separates right from wrong locks by three orders
+        # of magnitude (96 % vs 0.00 % measured over ~190 candidate
+        # evaluations) while this selection is a cluster count at 50 ms
+        # tolerance. The weaker instrument does not get to veto the stronger.
+        #
+        # Measured 2026-08-13: this guard alone blocked 31 of 36 candidate
+        # evaluations on the unmatched campaign -- the coincidence was never
+        # allowed to be computed on them.
+        #
+        # The disagreement is still INFORMATION, so it is recorded rather than
+        # discarded: a segment where the count scan and the coincidence point
+        # to different locks is worth a human eye even though the coincidence
+        # is the one to believe.
+        override_disagreed = dict(count_lock_s=float(best_off),
+                                  count_margin=diag['margin'],
+                                  count_chosen_by=diag['chosen_by'])
+        nearest = min(locks, key=lambda L: abs(L['off_s'] - accept_offset_s)) \
+            if locks else None
+        best_off = (float(nearest['off_s']) if nearest is not None
+                    and abs(nearest['off_s'] - accept_offset_s) < LOCK_GROUP_S
+                    else _refine(c_t, anchor, pt, float(accept_offset_s)))
+        diag = dict(margin=None, chosen_by=accept_source, r_sig=None)
 
     pick, res, m = _at_offset(c_t, anchor, pt, best_off)
     c_e10 = np.full(len(c_t), np.nan)
@@ -354,9 +476,10 @@ def match_subrun(run: str, subrun: str, rebuild: bool = False,
                resid_rms_ms=float(np.std(res[m]) * 1e3) if m.any() else None,
                lock_margin=diag['margin'], lock_chosen_by=diag['chosen_by'],
                lock_r_sig=diag['r_sig'],
-               locks=[dict(off_s=L['off_s'], n=L['n'],
-                           r=None if not np.isfinite(L['r']) else L['r'])
-                      for L in locks[:8]],
+               # set only when the count scan pointed elsewhere and was
+               # overruled; null on the ordinary path
+               lock_override_disagreed=override_disagreed,
+               locks=_lock_records(locks),
                anchor_epoch=anchor, t_span_s=span_s,
                event_e10={int(e): (None if np.isnan(v) else float(v))
                           for e, v in zip(eid, ev_e10)})

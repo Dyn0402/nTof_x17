@@ -26,7 +26,9 @@
 
 universe                = vanilla
 executable              = slim_wrapper.sh
-arguments               = $(run)
+# `extra` is optional and passed through to slim_run.py, e.g.
+#   condor_submit slim.sub run=224640 extra="--only stat090_0027 --search-s 400" -queue 1
+arguments               = $(run) $(extra)
 
 should_transfer_files   = YES
 when_to_transfer_output = ON_EXIT
