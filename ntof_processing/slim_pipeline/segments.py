@@ -77,9 +77,15 @@ def propose(data_dir: Path = DATA, min_overlap_s: float = MIN_OVERLAP_S):
     return out
 
 
-def for_ntof_run(run: int, data_dir: Path = DATA, ready_only: bool = True):
-    """Segments to slim when a job is handed one n_TOF run."""
-    return [p for p in propose(data_dir)
+def for_ntof_run(run: int, data_dir: Path = DATA, ready_only: bool = True,
+                 min_overlap_s: float = MIN_OVERLAP_S):
+    """Segments to slim when a job is handed one n_TOF run.
+
+    `min_overlap_s` below the default admits the run-boundary slivers the
+    campaign skips by design (a few bunches at the tail of a sub-run in the
+    NEXT n_TOF run) -- for the deliberate mop-up of 2026-08-16, not routine.
+    """
+    return [p for p in propose(data_dir, min_overlap_s)
             if p.ntof_run == run and (p.reprocessed or not ready_only)]
 
 

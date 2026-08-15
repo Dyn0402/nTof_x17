@@ -107,7 +107,13 @@ NOT_IN_DENOM = NOT_OURS | NTOF_OFF
 # mis-locked segment cannot drag a mode from 96 % to 26 %). Revisit against
 # the DAQ-side N1081B configs when they are to hand.
 COINC_TRIGGER_PREFIXES = ('stat090', 'acmeshOff', 'mOn')
-NON_COINC_PREFIXES = ('scint', 'scintd', 'sngPSmesh', 'frand')
+# pulsipd / clamp / mpack (2026-08-16): every one of these sub-runs is a
+# SINGLE cluster of 2,800-6,800 triggers at t=0 -- a continuous pulser or
+# pedestal stream that the 0.5 s burst gap cannot split, not beam bursts of
+# ~80 triggers. Nothing in them is a beam pulse, so they cannot match by
+# construction; classified from the burst census, not the trigger definition.
+NON_COINC_PREFIXES = ('scint', 'scintd', 'sngPSmesh', 'frand',
+                      'pulsipd', 'clamp', 'mpack')
 
 ACCEPT_FRAC = C.PULSE_MIN_FRAC   # single source (config.py, contract item
                                  # delivered 2026-08-13); populations sit at
@@ -299,11 +305,21 @@ def pkup_lookup(ntof_run):
     o = np.argsort(ps)
     ps, bn = ps[o], bn[o]
 
+    e10 = z['e10'][o] if 'e10' in z.files else None
+
     def look(epoch, delta=DELTA_PKUP_S):
         cand = epoch - delta
         j = np.clip(np.searchsorted(ps, cand), 1, len(ps) - 1)
         k = j - 1 if abs(ps[j - 1] - cand) <= abs(ps[j] - cand) else j
         return int(bn[k]) if abs(ps[k] - cand) < PKUP_TOL_S else None
+
+    # PKUP intensity of a bunch: n_TOF's OWN measurement of protons on target.
+    # Lets a burst that landed in a no-beam n_TOF run (224622, 224627: DAQ
+    # self-cycling at 0.5 s with zero protons in every bunch) be called EMPTY
+    # by positive measurement instead of falling through to SEGMENT_FAILED.
+    by_bunch = ({int(b): float(v) for b, v in zip(bn, e10)}
+                if e10 is not None else {})
+    look.e10 = lambda bunch: by_bunch.get(int(bunch))
     return look
 
 
@@ -514,6 +530,15 @@ def classify_subrun(run: str, subrun: str, qa_root: Path,
                                     for k, v in sorted(tried.items()))
                     state[:] = STATES.index('SEGMENT_FAILED')
                     set_reason(np.ones(nb, bool), why)
+                    tiny = n_trig < MIN_JUDGE_TRIG
+                    if tiny.any():
+                        # noise clusters, not beam bursts (see the same rule
+                        # in the post-join section)
+                        state[tiny] = STATES.index('TOO_FEW_TRIGGERS')
+                        set_reason(tiny, f'cluster of < {MIN_JUDGE_TRIG} '
+                                         f'triggers -- not a beam burst DREAM '
+                                         f'recorded (beam bursts carry ~80); '
+                                         f'nothing to judge on. Sub-run: {why[:160]}')
                     return _emit(run, subrun, cen, state, ntof_run, bunch,
                                  frac, reasons, reason_idx, lock=None)
                 return _emit(run, subrun, cen, state, ntof_run, bunch, frac,
@@ -655,6 +680,33 @@ def classify_subrun(run: str, subrun: str, qa_root: Path,
             continue
         if b_at is not None:
             bunch[i] = b_at
+            e_at = pkup[r].e10(b_at)
+            if e_at is not None and e_at < C.EMPTY_PULSE_E10:
+                # n_TOF's PKUP saw no protons in this bunch: an empty pulse by
+                # n_TOF's own measurement (found 2026-08-16 on run_112/0000 x
+                # 224627 and run_108/0000 x 224622 -- 56 bursts in n_TOF runs
+                # with zero beam bunches, the beam CSV silent for the same
+                # minutes). Not ours to match.
+                state[i] = STATES.index('EMPTY_PULSE')
+                reasons.append(f'PKUP intensity {e_at:.0f}e10 at bunch {b_at} '
+                               f'of n_TOF {r} -- no protons on target by '
+                               f'n_TOF\'s own measurement')
+                reason_idx[i] = len(reasons) - 1
+                continue
+        if n_trig[i] < MIN_JUDGE_TRIG:
+            # A cluster of fewer than MIN_JUDGE_TRIG triggers that never
+            # joined is not a beam burst DREAM saw (beam bursts carry ~80;
+            # run_137/0000's 19 "bursts" of 1-5 triggers over 280 s are noise
+            # coincidences while no beam burst was recorded). Nothing to judge
+            # on -- same state as a joined pulse too small to score, and it
+            # says so instead of reading as a chain failure. Stays in the
+            # denominator: we cannot prove the beam was off.
+            state[i] = STATES.index('TOO_FEW_TRIGGERS')
+            reasons.append(f'cluster of {n_trig[i]} triggers that never '
+                           f'joined -- not a beam burst DREAM recorded (beam '
+                           f'bursts carry ~80); nothing to judge on')
+            reason_idx[i] = len(reasons) - 1
+            continue
         if r in segs:
             if segs[r].get('burst_map'):
                 # the map exists and says this burst found no bunch -- a real

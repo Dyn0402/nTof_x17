@@ -51,6 +51,9 @@ def main() -> int:
     ap.add_argument('--min-events', type=int, default=MIN_EVENTS)
     ap.add_argument('--allow-unreprocessed', action='store_true',
                     help='also slim if the n_TOF run is not on the v12 list')
+    ap.add_argument('--min-overlap-s', type=float, default=SEG.MIN_OVERLAP_S,
+                    help='propose segments down to this many seconds of '
+                         'overlap (default %(default)s) -- for boundary slivers')
     ap.add_argument('--search-s', type=float, default=None,
                     help='half-width of the candidate-lock enumeration in s '
                          '(default pulse_match.SEARCH_S = 120). Widen ONLY '
@@ -59,7 +62,8 @@ def main() -> int:
     args = ap.parse_args()
 
     props = SEG.for_ntof_run(args.ntof_run, Path(args.segments_dir),
-                             ready_only=not args.allow_unreprocessed)
+                             ready_only=not args.allow_unreprocessed,
+                             min_overlap_s=args.min_overlap_s)
     if args.only:
         only = set(args.only.split(','))
         props = [p for p in props if p.dream_subrun in only]
