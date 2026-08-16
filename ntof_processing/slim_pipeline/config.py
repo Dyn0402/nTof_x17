@@ -302,6 +302,14 @@ def _require_complete(run: int, parts: list) -> None:
             f'-- incomplete or mid-reprocessing; do not read it')
 
 
+# ------------------------------------------------------- per-burst overrides
+# Evidence-based overrides from burst_bruteforce.py (2026-08-16): whole-segment
+# locks for sub-run tails too small for the arbiter, and per-burst bunch /
+# flash-reference fixes for the LOW_COINC outliers. Every entry carries the
+# scan numbers that established it. Loaded by slim_run.py and run_segment.py
+# by default; --no-burst-fixes disables. See slim.apply_burst_fix.
+BURST_FIXES = REPO / 'ntof_processing' / 'slim_pipeline' / 'burst_fixes.json'
+
 # ------------------------------------------------------------------- DREAM in
 DREAM_RUNS = Path(os.environ.get(
     'X17_DREAM_RUNS', '/media/dylan/data/x17/beam_july/runs'))

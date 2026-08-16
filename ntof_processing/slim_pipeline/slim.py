@@ -79,6 +79,20 @@ class Segment:
     # bunch-shift scans placed OUTSIDE that window (+172.8 s = four
     # supercycles). Recorded in the join block as `lock_search_s`.
     search_s: float | None = None
+    # Small-segment lever (2026-08-16): the clock bootstrap's peak-count floor,
+    # None = clockfit.BOOT_MIN_PEAK (150). Lowered ONLY for a segment whose
+    # lock was established burst by burst (burst_bruteforce.py) and which is
+    # too small to reach 150 counts -- a sub-run tail of 6-17 real bursts.
+    # clockfit clamps it at BOOT_MIN_PEAK_FLOOR; the value used is recorded in
+    # calibration.json fit.bootstrap.min_peak.
+    boot_min_peak: int | None = None
+    # Per-burst overrides established by burst_bruteforce.py, keyed by
+    # burst_id: {'bunch': int (the bunch whose hits coincide), 'flash_shift_ns':
+    # float (the DREAM flash mis-tag: add to t_since_flash_ns), plus free-form
+    # evidence keys}. Applied in `join_events` before anything downstream sees
+    # the events; recorded in calibration.json join.burst_fix and in
+    # burst_map.json. See ../slim_pipeline/burst_fixes.json.
+    burst_fix: dict | None = None
 
     def __str__(self):
         return f'{self.dream_run}/{self.dream_subrun} x n_TOF {self.ntof_run}'
@@ -124,6 +138,8 @@ def join_events(seg: Segment, log=print, events=None):
                                                     'verified'),
                               events=events)
     attrs = dict(ev.attrs)         # filtering below may drop DataFrame.attrs
+    if seg.burst_fix:
+        ev, attrs = apply_burst_fix(seg, ev, attrs, log=log)
     ev = ev[ev['BunchNumber'] > 0].reset_index(drop=True)
     if seg.bunches is not None:
         ev = ev[ev['BunchNumber'].isin(seg.bunches)].reset_index(drop=True)
@@ -132,6 +148,92 @@ def join_events(seg: Segment, log=print, events=None):
     log(f'  joined {len(ev):,} DREAM events, {flash.sum():,} flash triggers, '
         f'{ev["BunchNumber"].nunique()} bunches')
     return ev
+
+
+# A trigger this close to (or before) the re-referenced flash IS the flash, or
+# the flash's own tail; the N93B gate admits singles from ~1 ms after it.
+FLASH_RETAG_NS = 1000.0
+
+
+def apply_burst_fix(seg: Segment, ev, attrs, log=print):
+    """Apply burst_bruteforce.py's per-burst overrides to the joined frame.
+
+    Two levers, both per burst_id, both established by scanning the burst
+    against every bunch in reach and finding the one whose wall+plastic
+    candidates line up with its triggers at the production accept window:
+
+      bunch           the join put this burst on the wrong pulse (or on none);
+                      move its events to the bunch that actually coincides
+      flash_shift_ns  the burst's DREAM time base is referenced to the wrong
+                      trigger (a mis-tagged flash: the sub-run's first burst
+                      recorded mid-gate, or the flash trigger dropped and the
+                      first single ~1 ms later tagged in its place). Measured
+                      in n_TOF ns by the scan; added to t_since_flash_ns as
+                      DREAM ns (divided by 1 + K_SEED) so the events sit on
+                      the sub-run's clock again; triggers that then fall
+                      within FLASH_RETAG_NS of the true flash are re-tagged
+                      is_flash and get no hits, like every other flash.
+
+    Nothing is fitted here; these are numbers the scan measured, and they are
+    recorded verbatim in the product so the burst stays distinguishable from
+    one the join placed on its own.
+    """
+    import ntof_dream_merge.ntof_io as io
+    pk = io.pkup_bunches(seg.ntof_run)
+    inten = dict(zip(pk['BunchNumber'].tolist(), pk['intensity_e10'].tolist()))
+    bm = attrs.get('burst_map') or {}
+    bm_idx = {b: i for i, b in enumerate(bm.get('burst_id', []))}
+    applied = {}
+    for bid, fx in seg.burst_fix.items():
+        bid = int(bid)
+        m = (ev['burst_id'] == bid).to_numpy()
+        if not m.any():
+            log(f'  !! burst_fix: burst {bid} not in this sub-run -- ignored')
+            continue
+        rec = dict(fx)
+        was = int(ev.loc[m, 'BunchNumber'].iloc[0])
+        if fx.get('bunch') is not None:
+            b = int(fx['bunch'])
+            if b not in inten:
+                log(f'  !! burst_fix: bunch {b} is not in n_TOF {seg.ntof_run} '
+                    f'-- burst {bid} left as joined')
+                continue
+            ev.loc[m, 'BunchNumber'] = b
+            ev.loc[m, 'bunch_intensity_e10'] = inten[b]
+            ev.loc[m, 'join_resid_s'] = np.nan
+            if bid in bm_idx:
+                bm['bunch'][bm_idx[bid]] = b
+                bm['resid_ms'][bm_idx[bid]] = None
+        sh = float(fx.get('flash_shift_ns') or 0.0)
+        n_retag = 0
+        if sh:
+            # `flash_shift_ns` is measured in the n_TOF time base (it is the
+            # burst's lag against its neighbours'), and t_since_flash_ns is
+            # DREAM time, which the clock map stretches by (1 + K) -- so
+            # convert, or a 4.38 ms shift lands 482 ns off and the per-bunch
+            # fit (+-400 ns search) never sees the burst (run_102/stat090_0002
+            # burst 0, first attempt 2026-08-16). K_SEED is within ~1e-6 of
+            # any fitted K, i.e. a few ns at these shifts.
+            t = ev.loc[m, 't_since_flash_ns'].to_numpy().astype(np.int64) \
+                + np.int64(round(sh / (1.0 + cf.K_SEED)))
+            ev.loc[m, 't_since_flash_ns'] = t
+            # re-tag from scratch: the flash is whatever sits at t' ~ 0. A
+            # positive shift (first burst recorded mid-gate) frees the trigger
+            # that was standing in for the flash; a negative one (orphan ahead
+            # of the flash) tags the true flash and leaves the orphan tagged.
+            new_flash = t < FLASH_RETAG_NS
+            n_retag = int((new_flash != ev.loc[m, 'is_flash'].to_numpy()).sum())
+            ev.loc[m, 'is_flash'] = new_flash
+        rec.update(was_bunch=was, n_events=int(m.sum()), n_retagged=n_retag)
+        applied[str(bid)] = rec
+        log(f'  burst_fix: burst {bid} ({int(m.sum())} events) bunch '
+            f'{was} -> {int(ev.loc[m, "BunchNumber"].iloc[0])}, '
+            f'flash shift {sh:+.0f} ns, {n_retag} flash tag(s) changed')
+    if applied:
+        bm['fix'] = applied
+        attrs['burst_map'] = bm
+    attrs['burst_fix'] = applied
+    return ev, attrs
 
 
 def bunch_table(ev, log=print):
@@ -395,6 +497,44 @@ def write(seg: Segment, out: Path, hits, events, bunches_tbl, meta, log=print):
     return p
 
 
+def load_burst_fixes(path=None) -> dict:
+    """{'run/subrun': {'lock': {...}, 'bursts': {burst_id: {...}}}} or {}."""
+    p = Path(path) if path else C.BURST_FIXES
+    if not p.exists():
+        return {}
+    d = json.loads(p.read_text())
+    return {k: v for k, v in d.items() if not k.startswith('_')}
+
+
+def apply_fixes(seg: Segment, fixes: dict, log=print):
+    """Put a burst_fixes.json entry onto the Segment. Returns the entry used.
+
+    A `lock` entry applies only when its ntof_run is this segment's: it sets
+    accept_offset_s (source 'bruteforce') and boot_min_peak. `bursts` entries
+    apply whenever their bunch is in this n_TOF run (checked in
+    apply_burst_fix), so a fixed burst on the other side of a run boundary is
+    simply ignored by the segment it does not belong to.
+    """
+    e = fixes.get(f'{seg.dream_run}/{seg.dream_subrun}')
+    if not e:
+        return None
+    used = {}
+    lock = e.get('lock')
+    if lock and int(lock.get('ntof_run', -1)) == int(seg.ntof_run):
+        seg.accept_offset_s = float(lock['offset_s'])
+        seg.accept_source = 'bruteforce'
+        if lock.get('boot_min_peak') is not None:
+            seg.boot_min_peak = int(lock['boot_min_peak'])
+        used['lock'] = lock
+        log(f'  burst_fixes: lock {seg.accept_offset_s:+.3f} s '
+            f'(boot_min_peak {seg.boot_min_peak}) -- {lock.get("source", "")}')
+    if e.get('bursts'):
+        seg.burst_fix = {int(k): v for k, v in e['bursts'].items()}
+        used['bursts'] = e['bursts']
+        log(f'  burst_fixes: {len(seg.burst_fix)} per-burst override(s)')
+    return used or None
+
+
 # Kept for one release as an escape hatch: set False and the slim falls back to
 # letting pulse_match decide (weak count scan, silent tie-break). There is no
 # reason to use it except to reproduce a pre-2026-08-13 product bit-for-bit.
@@ -533,9 +673,10 @@ def run_segment(seg: Segment, out_base: Path | None = None,
     cd, offs, thr = pass1_candidates(seg, bunches, log=log)
 
     log('  [2] clock')
-    K, T0, arm_off, ginfo = cf.fit_global(ev_b[phys], ev_t[phys],
-                                          cd['bunch'], cd['t'], cd['arm'],
-                                          log=log)
+    K, T0, arm_off, ginfo = cf.fit_global(
+        ev_b[phys], ev_t[phys], cd['bunch'], cd['t'], cd['arm'], log=log,
+        min_peak=(seg.boot_min_peak if seg.boot_min_peak is not None
+                  else cf.BOOT_MIN_PEAK))
     corr_in, corr_cv, pb = cf.fit_perbunch(ev_b[phys], ev_t[phys],
                                            cd['bunch'], cd['t'], cd['arm'],
                                            K, T0, arm_off, log=log)
@@ -631,6 +772,10 @@ def run_segment(seg: Segment, out_base: Path | None = None,
             # means a sliver joined on its majority side's transferred delta.
             join=dict(
                 lock_search_s=seg.search_s,
+                # burst_bruteforce.py overrides actually applied (2026-08-16):
+                # {burst_id: {bunch, flash_shift_ns, was_bunch, ...}}; absent
+                # or empty on every segment the join placed on its own
+                burst_fix=join_attrs.get('burst_fix') or None,
                 pulse_match_offset_s=join_attrs.get('pulse_match_offset_s'),
                 pulse_match_margin=join_attrs.get('pulse_match_margin'),
                 pulse_match_chosen_by=join_attrs.get('pulse_match_chosen_by'),

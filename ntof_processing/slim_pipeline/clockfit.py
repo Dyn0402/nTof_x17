@@ -41,6 +41,13 @@ K_SEED, T0_SEED = 1.1e-4, -250.0
 BOOT_SEARCH_NS = 50_000.0
 BOOT_BIN_NS = 20.0
 BOOT_MIN_PEAK = 150      # counts in the tallest bin
+# The smallest peak a caller may lower the floor to, for a segment that is
+# KNOWN to be small -- a sub-run tail of 6-17 real bursts whose lock was
+# established burst by burst (burst_bruteforce.py, 2026-08-16). Below ~40
+# counts the Poisson tail of the floor's tallest bin over ~5000 bins starts to
+# matter; above it, with the sigma test still applied, a wrong lock cannot
+# pass. The default stays 150; a lowered floor is recorded in the product.
+BOOT_MIN_PEAK_FLOOR = 40
 BOOT_MIN_SNR = 6.0       # tallest bin over the floor -- REPORTED, not a cut
 # The acceptance test is significance, not the peak/floor RATIO. A ratio is
 # only meaningful for a peak narrower than the bin: a coincidence spread over
@@ -185,7 +192,7 @@ def xcorr_lag(ev_bunch, ev_t, cd_bunch, cd_t, bin_ns=XC_BIN_NS,
 
 def bootstrap(ev_bunch, ev_t, cd_bunch, cd_t, K=K_SEED, T0=T0_SEED,
               search=BOOT_SEARCH_NS, bin_ns=BOOT_BIN_NS, log=print,
-              _retry=True):
+              _retry=True, min_peak=BOOT_MIN_PEAK):
     """Find T0 for this pair by coarse search, with no reliance on the seed.
 
     The iterated fit can only see candidates already inside +-CORE_NS of where
@@ -221,7 +228,10 @@ def bootstrap(ev_bunch, ev_t, cd_bunch, cd_t, K=K_SEED, T0=T0_SEED,
     excess = tall - floor
     sigma = excess / np.sqrt(max(floor, 1.0))
     log(f'    -> excess {excess:,.0f} over the floor = {sigma:.1f} sigma')
-    weak = tall < BOOT_MIN_PEAK or sigma < BOOT_MIN_SIGMA
+    min_peak = max(int(min_peak), BOOT_MIN_PEAK_FLOOR)
+    weak = tall < min_peak or sigma < BOOT_MIN_SIGMA
+    if min_peak != BOOT_MIN_PEAK:
+        log(f'    (peak floor lowered to {min_peak} counts for this segment)')
 
     if weak and _retry:
         log('    no peak in the fine window; trying the whole burst')
@@ -239,7 +249,8 @@ def bootstrap(ev_bunch, ev_t, cd_bunch, cd_t, K=K_SEED, T0=T0_SEED,
                            (100.0, 2_000.0), (bin_ns, search)):
                 try:
                     T0w, info = bootstrap(ev_bunch, ev_t, cd_bunch, cd_t, K,
-                                          T0w, sw, bw, log=log, _retry=False)
+                                          T0w, sw, bw, log=log, _retry=False,
+                                          min_peak=min_peak)
                     finest, widest = bw, widest or info
                 except RuntimeError:
                     break
@@ -283,13 +294,15 @@ def bootstrap(ev_bunch, ev_t, cd_bunch, cd_t, K=K_SEED, T0=T0_SEED,
     return T0 + peak, dict(
         peak_ns=peak, counts=tall, floor=floor, snr=snr,
         excess=float(excess), sigma=float(sigma), bin_ns=float(bin_ns),
+        min_peak=int(min_peak),
         n_candidates=int(r.size), search_ns=search,
         hist=dict(lo_ns=float(edges[0]), bin_ns=float(bin_ns * keep),
                   counts=[int(c) for c in coarse]))
 
 
 def fit_global(ev_bunch, ev_t, cd_bunch, cd_t, cd_arm, iters=ITERS,
-               K=K_SEED, T0=T0_SEED, boot=True, log=print):
+               K=K_SEED, T0=T0_SEED, boot=True, log=print,
+               min_peak=BOOT_MIN_PEAK):
     """(K, T0, arm_off[4], info) for one segment, from its own candidates.
 
     A coarse search fixes T0 first (`bootstrap`), because the iteration below
@@ -302,7 +315,7 @@ def fit_global(ev_bunch, ev_t, cd_bunch, cd_t, cd_arm, iters=ITERS,
     info = {'iters': []}
     if boot:
         T0, info['bootstrap'] = bootstrap(ev_bunch, ev_t, cd_bunch, cd_t,
-                                          K, T0, log=log)
+                                          K, T0, log=log, min_peak=min_peak)
     for it in range(iters):
         ei, r, _ = residuals(ev_bunch, ev_t, cd_bunch, cd_t, K, T0)
         a, b, n, s = _line(ev_t, ei, r)

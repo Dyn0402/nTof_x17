@@ -1,0 +1,83 @@
+{
+ "_doc": "Evidence-based overrides from burst_bruteforce.py (2026-08-16). Loaded by slim_run.py / run_segment.py by default (--no-burst-fixes disables) and put on the Segment by slim.apply_fixes; applied by slim.apply_burst_fix; recorded in calibration.json join.burst_fix and burst_map.json. 'lock' entries: a whole-segment lock for a sub-run tail too small for the coincidence arbiter (its bursts were paired one by one; the implied pulse_match offsets agree to the ms). 'bursts' entries: per-burst bunch and/or DREAM flash re-reference for the LOW_COINC outliers (each scanned against every bunch within +-120 s at every lag within +-100 ms; the winner is the bunch whose wall+plastic candidates put >= 60 % of the burst's triggers inside +-25 ns after a per-burst (da,dk) line, the runner-up ~3 %). Scan records: ntof_processing/slim_pipeline/bruteforce_scans/.",
+ "run_82/stat090_h2i5_0007": {
+  "lock": {
+   "ntof_run": 224581,
+   "offset_s": 41.129,
+   "boot_min_peak": 40,
+   "min_events": 300,
+   "source": "burst_bruteforce 2026-08-16",
+   "evidence": "14 of 17 real bursts (0-13) pair with bunches 655-668, the last bunches of 224581, frac25 78-99 %, runner-up 2-6 %, implied offset +41.129 s on all 14; bursts 14-16 fall after the run's last bunch (n_TOF off). Below the arbiter's 32-bunch / 150-count bootstrap floor, hence the lowered peak floor."
+  }
+ },
+ "run_110/stat090_0003": {
+  "lock": {
+   "ntof_run": 224625,
+   "offset_s": 59.129,
+   "boot_min_peak": 40,
+   "min_events": 300,
+   "source": "burst_bruteforce 2026-08-16",
+   "evidence": "all 6 real bursts pair with bunches 3205-3210 (the run's tail), frac25 71-99 %, runner-up 2-4 %, implied offset +59.129 s on all 6; the other 15 clusters are 1-6 triggers (no beam)."
+  }
+ },
+ "run_102/stat090_0002": {
+  "bursts": {
+   "0": {
+    "bunch": 2277,
+    "flash_shift_ns": 4383062.6,
+    "frac": 0.98,
+    "runner_up_frac": 0.03,
+    "source": "burst_bruteforce 2026-08-16 (8 matched controls, blind, all re-found)",
+    "evidence": "first burst of the sub-run, 88 triggers: winning lag +4.383 ms off the controls' (control intercept -269.0 ns, MAD 4.0 ns) -- recorded mid-gate, the first recorded trigger stood in for the flash; same bunch the join gave it"
+   }
+  }
+ },
+ "run_124/stat090_0006": {
+  "bursts": {
+   "521": {
+    "bunch": 1241,
+    "flash_shift_ns": 1001303.3,
+    "frac": 0.97,
+    "runner_up_frac": 0.05,
+    "source": "burst_bruteforce 2026-08-16 (8 matched controls, blind, all re-found)",
+    "evidence": "93 triggers, lag +1.001 ms off the controls' (intercept -270.2 ns, MAD 6.0 ns): the flash trigger was dropped and the first single ~1 ms later (the N93B gate opening) was tagged as flash; same bunch the join gave it"
+   }
+  }
+ },
+ "run_124/stat090_0010": {
+  "bursts": {
+   "1075": {
+    "bunch": 3091,
+    "flash_shift_ns": 997356.3,
+    "frac": 0.94,
+    "runner_up_frac": 0.02,
+    "source": "burst_bruteforce 2026-08-16 (8 matched controls, blind, all re-found)",
+    "evidence": "99 triggers, lag +0.997 ms off the controls' (intercept -274.6 ns, MAD 2.3 ns): dropped flash trigger, first single tagged as flash; same bunch the join gave it"
+   }
+  }
+ },
+ "run_130/stat090_0000": {
+  "bursts": {
+   "12": {
+    "bunch": 300,
+    "flash_shift_ns": 1039570.2,
+    "frac": 0.97,
+    "runner_up_frac": 0.04,
+    "source": "burst_bruteforce 2026-08-16 (8 matched controls, blind, all re-found)",
+    "evidence": "68 triggers, lag +1.040 ms off the controls' (intercept -230.3 ns, MAD 6.2 ns): dropped flash trigger, first single tagged as flash; same bunch the join gave it"
+   }
+  }
+ },
+ "run_118/stat090_0005": {
+  "bursts": {
+   "1212": {
+    "bunch": 677,
+    "flash_shift_ns": 0.0,
+    "frac": 0.88,
+    "runner_up_frac": 0.04,
+    "source": "burst_bruteforce 2026-08-16 (8 matched controls, blind, all re-found)",
+    "evidence": "73 triggers: the join put it on bunch 680 (0 % coincidence); its partner hits are in bunch 677 at the normal lag (-1.2 ns off the controls' intercept, MAD 8.9 ns). Bunches 677-679 sit at an n_TOF psTime irregularity (bursts 1213-1214 found no bunch at all)"
+   }
+  }
+ }
+}

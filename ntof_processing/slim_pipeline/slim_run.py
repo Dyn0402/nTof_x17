@@ -33,7 +33,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from ntof_processing.slim_pipeline import config as C           # noqa: E402
 from ntof_processing.slim_pipeline import segments as SEG       # noqa: E402
 from ntof_processing.slim_pipeline.slim import (                  # noqa: E402
-    LowJoin, Segment, run_segment)
+    LowJoin, Segment, apply_fixes, load_burst_fixes, run_segment)
 
 MIN_EVENTS = C.MIN_EVENTS    # gate applied at the join, see config
 
@@ -46,7 +46,9 @@ def main() -> int:
     ap.add_argument('--ntof-source', default=None)
     ap.add_argument('--segments-dir', default=str(SEG.DATA))
     ap.add_argument('--only', default=None,
-                    help='restrict to these DREAM sub-run name(s), comma-separated')
+                    help='restrict to these DREAM sub-run(s), comma-separated: '
+                         'a bare name (stat090_0000, every DREAM run) or '
+                         'run/name (run_130/stat090_0000)')
     ap.add_argument('--slim-ns', type=float, default=C.SLIM_NS)
     ap.add_argument('--min-events', type=int, default=MIN_EVENTS)
     ap.add_argument('--allow-unreprocessed', action='store_true',
@@ -59,14 +61,24 @@ def main() -> int:
                          '(default pulse_match.SEARCH_S = 120). Widen ONLY '
                          'for segments a bunch-shift scan placed outside it; '
                          'the coincidence still chooses among the candidates')
+    ap.add_argument('--burst-fixes', default=None,
+                    help=f'burst_bruteforce.py overrides (default '
+                         f'{C.BURST_FIXES.name} beside the package)')
+    ap.add_argument('--no-burst-fixes', action='store_true')
     args = ap.parse_args()
+    fixes = {} if args.no_burst_fixes else load_burst_fixes(args.burst_fixes)
 
     props = SEG.for_ntof_run(args.ntof_run, Path(args.segments_dir),
                              ready_only=not args.allow_unreprocessed,
                              min_overlap_s=args.min_overlap_s)
     if args.only:
+        # 'stat090_0000' matches that sub-run name in EVERY DREAM run the
+        # n_TOF run overlaps (224660 spans run_128/130/132, all with a
+        # stat090_0000 -- three segments for one --only, 2026-08-16);
+        # 'run_130/stat090_0000' pins the run too.
         only = set(args.only.split(','))
-        props = [p for p in props if p.dream_subrun in only]
+        props = [p for p in props if p.dream_subrun in only
+                 or f'{p.dream_run}/{p.dream_subrun}' in only]
     if not props:
         print(f'no segments for n_TOF {args.ntof_run} '
               f'(reprocessed-only={not args.allow_unreprocessed})')
@@ -86,10 +98,16 @@ def main() -> int:
                       else None, search_s=args.search_s)
         rec = dict(dream_run=p.dream_run, dream_subrun=p.dream_subrun,
                    ntof_run=args.ntof_run, proposed_overlap_s=p.overlap_s)
+        used = apply_fixes(seg, fixes)
+        min_events = args.min_events
+        if used and used.get('lock', {}).get('min_events') is not None:
+            min_events = int(used['lock']['min_events'])
+        if used:
+            rec['burst_fixes'] = used
         try:
             path, meta = run_segment(seg, out_base=out_base,
                                      slim_ns=args.slim_ns,
-                                     min_events=args.min_events)
+                                     min_events=min_events)
             q = meta['qa']
             rec.update(status='OK', path=str(path), **{
                 k: q[k] for k in ('efficiency', 'accidental', 'n_events',

@@ -21,8 +21,11 @@ Rules, per (run, subrun, n_TOF run) segment:
   * EOS has the root, DIFFERENT size                   -> a different
     vintage is already published: touch NOTHING, report it.
 
-Never deletes, never overwrites a root file. Run on lxplus with a token
-(writes to EOS need it). Verifies every copied root by size afterwards.
+Never deletes, never overwrites a root file -- EXCEPT the segments named with
+--replace run/subrun/ntof (2026-08-16: products deliberately re-made with
+burst_fixes.json overrides), whose root AND sidecars are overwritten from the
+first tree that has them; the previous sizes are printed. Run on lxplus with a
+token (writes to EOS need it). Verifies every copied root by size afterwards.
 """
 import argparse
 import os
@@ -55,7 +58,11 @@ def main() -> int:
                          'size), overwrite its sidecars with the source ones '
                          '-- for re-analysed clock_qa.json records. Roots '
                          'are still never touched.')
+    ap.add_argument('--replace', nargs='*', default=[],
+                    help='run/subrun/ntof segments whose EOS product may be '
+                         'OVERWRITTEN (root and sidecars) by the source')
     a = ap.parse_args()
+    replace = {tuple(r.split('/')) for r in a.replace}
 
     seen = {}
     for t in a.trees:
@@ -67,9 +74,21 @@ def main() -> int:
     print(f'{len(seen)} distinct segment(s) across {len(a.trees)} tree(s)')
 
     added, sidecars, same, differ, verify_fail = [], [], [], [], []
+    replaced = []
     for (run, subrun, ntof), (d, root) in sorted(seen.items()):
         dd = DEST / 'runs' / run / subrun / 'ntof_hits'
         droot = dd / root.name
+        if (run, subrun, ntof) in replace:
+            old = droot.stat().st_size if droot.exists() else None
+            replaced.append((run, subrun, ntof, old, root.stat().st_size))
+            if not a.dry_run:
+                dd.mkdir(parents=True, exist_ok=True)
+                for f in d.iterdir():
+                    if f.is_file():
+                        shutil.copy2(f, dd / f.name)
+                if droot.stat().st_size != root.stat().st_size:
+                    verify_fail.append((run, subrun, ntof))
+            continue
         if not droot.exists():
             added.append((run, subrun, ntof))
             if not a.dry_run:
@@ -109,6 +128,9 @@ def main() -> int:
           f'on {len(sidecars)} existing product(s)')
     for k in sidecars[:20]:
         print('   ', '/'.join(k[:3]), k[3])
+    print(f'\n{"WOULD REPLACE" if a.dry_run else "REPLACED"} {len(replaced)}:')
+    for k in replaced:
+        print('   ', '/'.join(k[:3]), f'eos {k[3]} B -> src {k[4]} B')
     print(f'\nalready published, identical: {len(same)}')
     print(f'DIFFERENT vintage on EOS, untouched: {len(differ)}')
     for k in differ:

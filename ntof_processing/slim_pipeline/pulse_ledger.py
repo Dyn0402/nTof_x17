@@ -377,13 +377,18 @@ def collect_segments(qa_root: Path, run: str, subrun: str):
         if ntof_run is None:
             continue
         rec = dict(join=join, pulses=pulses, verdict=verdict,
-                   burst_map=burst_map)
+                   burst_map=burst_map,
+                   _mtime=max((f.stat().st_mtime for f in (cal, cq, bmp)
+                               if f.exists()), default=0.0))
         # a qa_root can hold several vintages of the same segment (a stale
         # pre-sweep mirror next to the swept tree) -- keep the one carrying
-        # the most contract fields, not whichever the walk found last
+        # the most contract fields, and among equals the NEWEST (a segment
+        # deliberately re-made, e.g. with burst_fixes.json, must beat its
+        # own earlier vintage; found 2026-08-16 when three re-made products
+        # lost the tie to their stale copies by walk order)
         def _score(r):
             return (2 * bool(r['pulses'] and 'bunch' in r['pulses'])
-                    + bool(r['burst_map']))
+                    + bool(r['burst_map']), r['_mtime'])
         old = segs.get(int(ntof_run))
         if old is None or _score(rec) > _score(old):
             segs[int(ntof_run)] = rec
@@ -494,6 +499,20 @@ def classify_subrun(run: str, subrun: str, qa_root: Path,
                    f'{subrun.split("_")[0]} trigger mode -- not triggered on '
                    f'the wall+plastic coincidence, cannot match by '
                    f'construction (mode list from the 08-13 sweep aggregate)')
+        return _emit(run, subrun, cen, state, ntof_run, bunch, frac,
+                     reasons, reason_idx, lock=None)
+
+    if nb and (n_trig < MIN_JUDGE_TRIG).all():
+        # Not one cluster of beam-burst size in the whole sub-run: DREAM
+        # recorded no beam here, only noise coincidences (run_145/0003, 11
+        # clusters of 1-4 triggers over 3 minutes while n_TOF sat between
+        # runs; run_137/0000 likewise). No lock is computable from noise, and
+        # none is needed -- there is nothing to judge, and the sub-run must
+        # not hang in lock_pending for lack of one (found 2026-08-16).
+        state[:] = STATES.index('TOO_FEW_TRIGGERS')
+        set_reason(np.ones(nb, bool),
+                   f'every cluster of this sub-run has < {MIN_JUDGE_TRIG} '
+                   f'triggers -- no beam burst was recorded, nothing to judge')
         return _emit(run, subrun, cen, state, ntof_run, bunch, frac,
                      reasons, reason_idx, lock=None)
 
