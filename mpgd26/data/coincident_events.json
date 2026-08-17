@@ -1,0 +1,1249 @@
+{
+ "source": {
+  "run": "highstat_eff_1",
+  "sub_run": "beam_commissioning_00",
+  "subrun_id": 23,
+  "file": "/eos/experiment/ntof/data/x17/p2_sps_july/merged/all_subruns_hits.root"
+ },
+ "selection": {
+  "probe_r_mm": 15.0,
+  "amp_min": 25.0,
+  "p2_amp_min": 40.0,
+  "single_pad": false,
+  "min_strips": 2
+ },
+ "validation": {
+  "urwell_alignment": "reproduced",
+  "n_tracked": 628,
+  "n_coincident": 476,
+  "residual_mean_mm": 4.814135672427642,
+  "residual_median_mm": 4.929852281624975
+ },
+ "events": [
+  {
+   "geventId": 230000168979,
+   "urwell": {
+    "front_x_mm": 69.92371188757934,
+    "front_y_mm": 84.56167495802886,
+    "back_x_mm": 69.14379650330578,
+    "back_y_mm": 84.03527533398284,
+    "z_front_mm": 0.0,
+    "z_back_mm": 1370.0
+   },
+   "stations": {
+    "P2_IN": {
+     "pad_cx_mm": 424.1838,
+     "pad_cy_mm": 237.9667,
+     "channel_id": 627,
+     "amplitude": 212.43112182617188,
+     "n_pads": 1,
+     "z_mm": 320.0,
+     "pred_cx_mm": 424.99915642148915,
+     "pred_cy_mm": 236.73074164955906,
+     "residual_mm": 1.480675230456781
+    },
+    "P2_MID": {
+     "pad_cx_mm": 424.1838,
+     "pad_cy_mm": 237.9667,
+     "channel_id": 627,
+     "amplitude": 1329.88623046875,
+     "n_pads": 1,
+     "z_mm": 630.0,
+     "pred_cx_mm": 425.4457852674657,
+     "pred_cy_mm": 238.27256216908316,
+     "residual_mm": 1.2985216524096277
+    },
+    "P2_OUT": {
+     "pad_cx_mm": 424.1838,
+     "pad_cy_mm": 237.9667,
+     "channel_id": 627,
+     "amplitude": 1218.926025390625,
+     "n_pads": 1,
+     "z_mm": 940.0,
+     "pred_cx_mm": 425.20033553893006,
+     "pred_cy_mm": 237.63482209741042,
+     "residual_mm": 1.069339723443889
+    }
+   },
+   "max_residual_mm": 1.480675230456781,
+   "mean_residual_mm": 1.2828455354367658,
+   "total_pads": 3
+  },
+  {
+   "geventId": 230000193751,
+   "urwell": {
+    "front_x_mm": 68.51703665919008,
+    "front_y_mm": 17.080032881884794,
+    "back_x_mm": 67.37371978984588,
+    "back_y_mm": 14.052086477716562,
+    "z_front_mm": 0.0,
+    "z_back_mm": 1370.0
+   },
+   "stations": {
+    "P2_IN": {
+     "pad_cx_mm": 364.7919,
+     "pad_cy_mm": 203.6852,
+     "channel_id": 622,
+     "amplitude": 1312.760009765625,
+     "n_pads": 1,
+     "z_mm": 320.0,
+     "pred_cx_mm": 365.48856486475023,
+     "pred_cy_mm": 203.65980121859297,
+     "residual_mm": 0.6971277012674378
+    },
+    "P2_MID": {
+     "pad_cx_mm": 364.7919,
+     "pad_cy_mm": 203.6852,
+     "channel_id": 622,
+     "amplitude": 241.2899932861328,
+     "n_pads": 1,
+     "z_mm": 630.0,
+     "pred_cx_mm": 365.3555099294803,
+     "pred_cy_mm": 205.07639601386052,
+     "residual_mm": 1.5010271488518057
+    },
+    "P2_OUT": {
+     "pad_cx_mm": 364.7919,
+     "pad_cy_mm": 203.6852,
+     "channel_id": 622,
+     "amplitude": 401.21337890625,
+     "n_pads": 1,
+     "z_mm": 940.0,
+     "pred_cx_mm": 364.406114304966,
+     "pred_cy_mm": 204.54142902476733,
+     "residual_mm": 0.939126586433818
+    }
+   },
+   "max_residual_mm": 1.5010271488518057,
+   "mean_residual_mm": 1.0457604788510204,
+   "total_pads": 3
+  },
+  {
+   "geventId": 230000189504,
+   "urwell": {
+    "front_x_mm": 51.867081728964884,
+    "front_y_mm": 50.30006768842785,
+    "back_x_mm": 51.43787583890011,
+    "back_y_mm": 48.22102473262617,
+    "z_front_mm": 0.0,
+    "z_back_mm": 1370.0
+   },
+   "stations": {
+    "P2_IN": {
+     "pad_cx_mm": 385.4802,
+     "pad_cy_mm": 236.1986,
+     "channel_id": 671,
+     "amplitude": 70.07499694824219,
+     "n_pads": 1,
+     "z_mm": 320.0,
+     "pred_cx_mm": 386.03655610293004,
+     "pred_cy_mm": 234.7696098094786,
+     "residual_mm": 1.5334748377048337
+    },
+    "P2_MID": {
+     "pad_cx_mm": 385.4802,
+     "pad_cy_mm": 236.1986,
+     "channel_id": 671,
+     "amplitude": 435.3719177246094,
+     "n_pads": 1,
+     "z_mm": 630.0,
+     "pred_cx_mm": 386.21671503287126,
+     "pred_cy_mm": 236.12404361120537,
+     "residual_mm": 0.7402790343886679
+    },
+    "P2_OUT": {
+     "pad_cx_mm": 385.4802,
+     "pad_cy_mm": 236.1986,
+     "channel_id": 671,
+     "amplitude": 345.1025695800781,
+     "n_pads": 1,
+     "z_mm": 940.0,
+     "pred_cx_mm": 385.69572245308115,
+     "pred_cy_mm": 235.4469216758946,
+     "residual_mm": 0.7819656199041009
+    }
+   },
+   "max_residual_mm": 1.5334748377048337,
+   "mean_residual_mm": 1.0185731639992008,
+   "total_pads": 3
+  },
+  {
+   "geventId": 230000129238,
+   "urwell": {
+    "front_x_mm": 75.55716942468639,
+    "front_y_mm": 28.519890594445172,
+    "back_x_mm": 74.31133721763051,
+    "back_y_mm": 25.068973095413526,
+    "z_front_mm": 0.0,
+    "z_back_mm": 1370.0
+   },
+   "stations": {
+    "P2_IN": {
+     "pad_cx_mm": 377.5512,
+     "pad_cy_mm": 204.1957,
+     "channel_id": 607,
+     "amplitude": 89.92308044433594,
+     "n_pads": 1,
+     "z_mm": 320.0,
+     "pred_cx_mm": 378.8203460994117,
+     "pred_cy_mm": 203.3278762529814,
+     "residual_mm": 1.5374816673838312
+    },
+    "P2_MID": {
+     "pad_cx_mm": 377.5512,
+     "pad_cy_mm": 204.1957,
+     "channel_id": 607,
+     "amplitude": 1011.005126953125,
+     "n_pads": 1,
+     "z_mm": 630.0,
+     "pred_cx_mm": 378.5924099581978,
+     "pred_cy_mm": 204.69645543744528,
+     "residual_mm": 1.155367554149438
+    },
+    "P2_OUT": {
+     "pad_cx_mm": 377.5512,
+     "pad_cy_mm": 204.1957,
+     "channel_id": 607,
+     "amplitude": 219.7232208251953,
+     "n_pads": 1,
+     "z_mm": 940.0,
+     "pred_cx_mm": 377.546334662771,
+     "pred_cy_mm": 204.06477942914984,
+     "residual_mm": 0.1310109437340295
+    }
+   },
+   "max_residual_mm": 1.5374816673838312,
+   "mean_residual_mm": 0.9412867217557661,
+   "total_pads": 3
+  },
+  {
+   "geventId": 230000180290,
+   "urwell": {
+    "front_x_mm": 68.08477014174125,
+    "front_y_mm": 37.033880568943104,
+    "back_x_mm": 67.56876883684879,
+    "back_y_mm": 37.27468765197218,
+    "z_front_mm": 0.0,
+    "z_back_mm": 1370.0
+   },
+   "stations": {
+    "P2_IN": {
+     "pad_cx_mm": 384.5895,
+     "pad_cy_mm": 215.1119,
+     "channel_id": 624,
+     "amplitude": 347.3555603027344,
+     "n_pads": 1,
+     "z_mm": 320.0,
+     "pred_cx_mm": 383.22850684329774,
+     "pred_cy_mm": 214.36422956616758,
+     "residual_mm": 1.5528404458338598
+    },
+    "P2_MID": {
+     "pad_cx_mm": 384.5895,
+     "pad_cy_mm": 215.1119,
+     "channel_id": 624,
+     "amplitude": 695.7881469726562,
+     "n_pads": 1,
+     "z_mm": 630.0,
+     "pred_cx_mm": 383.82190700860633,
+     "pred_cy_mm": 216.00413960125428,
+     "residual_mm": 1.1769836475002842
+    },
+    "P2_OUT": {
+     "pad_cx_mm": 384.5895,
+     "pad_cy_mm": 215.1119,
+     "channel_id": 624,
+     "amplitude": 91.67500305175781,
+     "n_pads": 1,
+     "z_mm": 940.0,
+     "pred_cx_mm": 383.64108750482967,
+     "pred_cy_mm": 215.61873590534506,
+     "residual_mm": 1.075345942449286
+    }
+   },
+   "max_residual_mm": 1.5528404458338598,
+   "mean_residual_mm": 1.26839001192781,
+   "total_pads": 3
+  },
+  {
+   "geventId": 230000173662,
+   "urwell": {
+    "front_x_mm": 98.30664967562558,
+    "front_y_mm": 48.93568916065018,
+    "back_x_mm": 96.40705610759203,
+    "back_y_mm": 47.71320010624064,
+    "z_front_mm": 0.0,
+    "z_back_mm": 1370.0
+   },
+   "stations": {
+    "P2_IN": {
+     "pad_cx_mm": 408.1335,
+     "pad_cy_mm": 194.453,
+     "channel_id": 540,
+     "amplitude": 110.30769348144531,
+     "n_pads": 1,
+     "z_mm": 320.0,
+     "pred_cx_mm": 408.30000266268416,
+     "pred_cy_mm": 194.38957992475787,
+     "residual_mm": 0.17817194679473522
+    },
+    "P2_MID": {
+     "pad_cx_mm": 408.1335,
+     "pad_cy_mm": 194.453,
+     "channel_id": 540,
+     "amplitude": 2195.716796875,
+     "n_pads": 1,
+     "z_mm": 630.0,
+     "pred_cx_mm": 408.41989445452475,
+     "pred_cy_mm": 196.09593046044324,
+     "residual_mm": 1.6677056938904862
+    },
+    "P2_OUT": {
+     "pad_cx_mm": 408.1335,
+     "pad_cy_mm": 194.453,
+     "channel_id": 540,
+     "amplitude": 647.8648681640625,
+     "n_pads": 1,
+     "z_mm": 940.0,
+     "pred_cx_mm": 407.69171062924806,
+     "pred_cy_mm": 195.6885614706825,
+     "residual_mm": 1.3121699569585021
+    }
+   },
+   "max_residual_mm": 1.6677056938904862,
+   "mean_residual_mm": 1.052682532547908,
+   "total_pads": 3
+  },
+  {
+   "geventId": 230000229243,
+   "urwell": {
+    "front_x_mm": 74.49011701992312,
+    "front_y_mm": 50.70829719641931,
+    "back_x_mm": 72.70015271028727,
+    "back_y_mm": 48.481884960607466,
+    "z_front_mm": 0.0,
+    "z_back_mm": 1370.0
+   },
+   "stations": {
+    "P2_IN": {
+     "pad_cx_mm": 397.3555,
+     "pad_cy_mm": 215.6236,
+     "channel_id": 609,
+     "amplitude": 288.59869384765625,
+     "n_pads": 1,
+     "z_mm": 320.0,
+     "pred_cx_mm": 397.61852345916986,
+     "pred_cy_mm": 215.70342404824015,
+     "residual_mm": 0.2748694576542152
+    },
+    "P2_MID": {
+     "pad_cx_mm": 397.3555,
+     "pad_cy_mm": 215.6236,
+     "channel_id": 609,
+     "amplitude": 75.19999694824219,
+     "n_pads": 1,
+     "z_mm": 630.0,
+     "pred_cx_mm": 397.58641220230913,
+     "pred_cy_mm": 217.28986057952432,
+     "residual_mm": 1.6821845214042142
+    },
+    "P2_OUT": {
+     "pad_cx_mm": 397.3555,
+     "pad_cy_mm": 215.6236,
+     "channel_id": 609,
+     "amplitude": 275.90673828125,
+     "n_pads": 1,
+     "z_mm": 940.0,
+     "pred_cx_mm": 396.784463413912,
+     "pred_cy_mm": 216.8038751267263,
+     "residual_mm": 1.3111568012330834
+    }
+   },
+   "max_residual_mm": 1.6821845214042142,
+   "mean_residual_mm": 1.0894035934305044,
+   "total_pads": 3
+  },
+  {
+   "geventId": 230000156236,
+   "urwell": {
+    "front_x_mm": 51.37218966286542,
+    "front_y_mm": 26.751834265651706,
+    "back_x_mm": 50.39607008518768,
+    "back_y_mm": 23.451073914317938,
+    "z_front_mm": 0.0,
+    "z_back_mm": 1370.0
+   },
+   "stations": {
+    "P2_IN": {
+     "pad_cx_mm": 365.6814,
+     "pad_cy_mm": 224.762,
+     "channel_id": 673,
+     "amplitude": 62.77777862548828,
+     "n_pads": 1,
+     "z_mm": 320.0,
+     "pred_cx_mm": 365.1479922570823,
+     "pred_cy_mm": 223.27630846023743,
+     "residual_mm": 1.578544637166342
+    },
+    "P2_MID": {
+     "pad_cx_mm": 365.6814,
+     "pad_cy_mm": 224.762,
+     "channel_id": 673,
+     "amplitude": 82.04166412353516,
+     "n_pads": 1,
+     "z_mm": 630.0,
+     "pred_cx_mm": 365.0098860070177,
+     "pred_cy_mm": 224.62961984014927,
+     "residual_mm": 0.6844381268552437
+    },
+    "P2_OUT": {
+     "pad_cx_mm": 365.6814,
+     "pad_cy_mm": 224.762,
+     "channel_id": 673,
+     "amplitude": 550.2716064453125,
+     "n_pads": 1,
+     "z_mm": 940.0,
+     "pred_cx_mm": 364.12788939756047,
+     "pred_cy_mm": 224.03260048480638,
+     "residual_mm": 1.7162222596903702
+    }
+   },
+   "max_residual_mm": 1.7162222596903702,
+   "mean_residual_mm": 1.326401674570652,
+   "total_pads": 3
+  },
+  {
+   "geventId": 230000027263,
+   "urwell": {
+    "front_x_mm": 67.89920662695013,
+    "front_y_mm": 16.809872268593303,
+    "back_x_mm": 66.63934062895578,
+    "back_y_mm": 13.57072204232576,
+    "z_front_mm": 0.0,
+    "z_back_mm": 1370.0
+   },
+   "stations": {
+    "P2_IN": {
+     "pad_cx_mm": 364.7919,
+     "pad_cy_mm": 203.6852,
+     "channel_id": 622,
+     "amplitude": 148.97634887695312,
+     "n_pads": 1,
+     "z_mm": 320.0,
+     "pred_cx_mm": 364.8871520016427,
+     "pred_cy_mm": 204.05536649760717,
+     "residual_mm": 0.3822252997483121
+    },
+    "P2_MID": {
+     "pad_cx_mm": 364.7919,
+     "pad_cy_mm": 203.6852,
+     "channel_id": 622,
+     "amplitude": 586.112060546875,
+     "n_pads": 1,
+     "z_mm": 630.0,
+     "pred_cx_mm": 364.70011785186375,
+     "pred_cy_mm": 205.4715805043856,
+     "residual_mm": 1.7887367802908902
+    },
+    "P2_OUT": {
+     "pad_cx_mm": 364.7919,
+     "pad_cy_mm": 203.6852,
+     "channel_id": 622,
+     "amplitude": 179.4499969482422,
+     "n_pads": 1,
+     "z_mm": 940.0,
+     "pred_cx_mm": 363.698217585051,
+     "pred_cy_mm": 204.93903552348678,
+     "residual_mm": 1.6638042988062096
+    }
+   },
+   "max_residual_mm": 1.7887367802908902,
+   "mean_residual_mm": 1.2782554596151374,
+   "total_pads": 3
+  },
+  {
+   "geventId": 230000166080,
+   "urwell": {
+    "front_x_mm": 93.81935756481712,
+    "front_y_mm": 60.86483482384939,
+    "back_x_mm": 93.1388157721985,
+    "back_y_mm": 58.68312129755773,
+    "z_front_mm": 0.0,
+    "z_back_mm": 1370.0
+   },
+   "stations": {
+    "P2_IN": {
+     "pad_cx_mm": 415.4646,
+     "pad_cy_mm": 205.5186,
+     "channel_id": 559,
+     "amplitude": 554.640625,
+     "n_pads": 1,
+     "z_mm": 320.0,
+     "pred_cx_mm": 416.28300652439776,
+     "pred_cy_mm": 203.92594632766549,
+     "residual_mm": 1.7906241814455053
+    },
+    "P2_MID": {
+     "pad_cx_mm": 415.4646,
+     "pad_cy_mm": 205.5186,
+     "channel_id": 559,
+     "amplitude": 150.6704559326172,
+     "n_pads": 1,
+     "z_mm": 630.0,
+     "pred_cx_mm": 416.3684568280502,
+     "pred_cy_mm": 205.27277617713102,
+     "residual_mm": 0.9366891253254199
+    },
+    "P2_OUT": {
+     "pad_cx_mm": 415.4646,
+     "pad_cy_mm": 205.5186,
+     "channel_id": 559,
+     "amplitude": 291.2326965332031,
+     "n_pads": 1,
+     "z_mm": 940.0,
+     "pred_cx_mm": 415.6375844912095,
+     "pred_cy_mm": 204.47645869947007,
+     "residual_mm": 1.0564005511496097
+    }
+   },
+   "max_residual_mm": 1.7906241814455053,
+   "mean_residual_mm": 1.2612379526401785,
+   "total_pads": 3
+  },
+  {
+   "geventId": 230000264954,
+   "urwell": {
+    "front_x_mm": 99.57546835864161,
+    "front_y_mm": 26.543318716695495,
+    "back_x_mm": 98.74363164586084,
+    "back_y_mm": 23.612952897747814,
+    "z_front_mm": 0.0,
+    "z_back_mm": 1370.0
+   },
+   "stations": {
+    "P2_IN": {
+     "pad_cx_mm": 388.2657,
+     "pad_cy_mm": 183.0042,
+     "channel_id": 536,
+     "amplitude": 311.9705810546875,
+     "n_pads": 1,
+     "z_mm": 320.0,
+     "pred_cx_mm": 389.39187642781417,
+     "pred_cy_mm": 181.57432787380426,
+     "residual_mm": 1.8201119866194573
+    },
+    "P2_MID": {
+     "pad_cx_mm": 388.2657,
+     "pad_cy_mm": 183.0042,
+     "channel_id": 536,
+     "amplitude": 857.9796752929688,
+     "n_pads": 1,
+     "z_mm": 630.0,
+     "pred_cx_mm": 389.28044390909565,
+     "pred_cy_mm": 182.9055447680596,
+     "residual_mm": 1.0195283496970435
+    },
+    "P2_OUT": {
+     "pad_cx_mm": 388.2657,
+     "pad_cy_mm": 183.0042,
+     "channel_id": 536,
+     "amplitude": 957.3375854492188,
+     "n_pads": 1,
+     "z_mm": 940.0,
+     "pred_cx_mm": 388.2693558038868,
+     "pred_cy_mm": 182.19599547337282,
+     "residual_mm": 0.8082127948521489
+    }
+   },
+   "max_residual_mm": 1.8201119866194573,
+   "mean_residual_mm": 1.2159510437228833,
+   "total_pads": 3
+  },
+  {
+   "geventId": 230000179813,
+   "urwell": {
+    "front_x_mm": 76.0050646553548,
+    "front_y_mm": 27.508034972891124,
+    "back_x_mm": 74.9886022156435,
+    "back_y_mm": 24.26286935178409,
+    "z_front_mm": 0.0,
+    "z_back_mm": 1370.0
+   },
+   "stations": {
+    "P2_IN": {
+     "pad_cx_mm": 377.5512,
+     "pad_cy_mm": 204.1957,
+     "channel_id": 607,
+     "amplitude": 64.24038696289062,
+     "n_pads": 1,
+     "z_mm": 320.0,
+     "pred_cx_mm": 378.241485818717,
+     "pred_cy_mm": 202.40847544863186,
+     "residual_mm": 1.915898251091336
+    },
+    "P2_MID": {
+     "pad_cx_mm": 377.5512,
+     "pad_cy_mm": 204.1957,
+     "channel_id": 607,
+     "amplitude": 181.72222900390625,
+     "n_pads": 1,
+     "z_mm": 630.0,
+     "pred_cx_mm": 378.0785372509347,
+     "pred_cy_mm": 203.7565171024919,
+     "residual_mm": 0.686269767428932
+    },
+    "P2_OUT": {
+     "pad_cx_mm": 377.5512,
+     "pad_cy_mm": 204.1957,
+     "channel_id": 607,
+     "amplitude": 92.05921173095703,
+     "n_pads": 1,
+     "z_mm": 940.0,
+     "pred_cx_mm": 377.09380967413097,
+     "pred_cy_mm": 203.105787713475,
+     "residual_mm": 1.1819960670479035
+    }
+   },
+   "max_residual_mm": 1.915898251091336,
+   "mean_residual_mm": 1.2613880285227237,
+   "total_pads": 3
+  },
+  {
+   "geventId": 230000171004,
+   "urwell": {
+    "front_x_mm": 87.5462305335688,
+    "front_y_mm": 26.303231726166327,
+    "back_x_mm": 87.14092820875386,
+    "back_y_mm": 23.396322782315018,
+    "z_front_mm": 0.0,
+    "z_back_mm": 1370.0
+   },
+   "stations": {
+    "P2_IN": {
+     "pad_cx_mm": 383.0551,
+     "pad_cy_mm": 193.6743,
+     "channel_id": 571,
+     "amplitude": 398.3477783203125,
+     "n_pads": 1,
+     "z_mm": 320.0,
+     "pred_cx_mm": 383.16748967706684,
+     "pred_cy_mm": 191.75409358117238,
+     "residual_mm": 1.9234926905028582
+    },
+    "P2_MID": {
+     "pad_cx_mm": 383.0551,
+     "pad_cy_mm": 193.6743,
+     "channel_id": 571,
+     "amplitude": 514.7872314453125,
+     "n_pads": 1,
+     "z_mm": 630.0,
+     "pred_cx_mm": 383.1244163565102,
+     "pred_cy_mm": 193.0138593399568,
+     "residual_mm": 0.6640682364923973
+    },
+    "P2_OUT": {
+     "pad_cx_mm": 383.0551,
+     "pad_cy_mm": 193.6743,
+     "channel_id": 571,
+     "amplitude": 139.27272033691406,
+     "n_pads": 1,
+     "z_mm": 940.0,
+     "pred_cx_mm": 382.2189084840158,
+     "pred_cy_mm": 192.2552971907425,
+     "residual_mm": 1.6470534976389017
+    }
+   },
+   "max_residual_mm": 1.9234926905028582,
+   "mean_residual_mm": 1.4115381415447192,
+   "total_pads": 3
+  },
+  {
+   "geventId": 230000049668,
+   "urwell": {
+    "front_x_mm": 28.429488472132096,
+    "front_y_mm": 70.97871667914306,
+    "back_x_mm": 27.174920793063038,
+    "back_y_mm": 69.5385403160751,
+    "z_front_mm": 0.0,
+    "z_back_mm": 1370.0
+   },
+   "stations": {
+    "P2_IN": {
+     "pad_cx_mm": 392.3838,
+     "pad_cy_mm": 267.5979,
+     "channel_id": 737,
+     "amplitude": 623.5487060546875,
+     "n_pads": 1,
+     "z_mm": 320.0,
+     "pred_cx_mm": 392.0879319848773,
+     "pred_cy_mm": 265.6820012407946,
+     "residual_mm": 1.9386092793282026
+    },
+    "P2_MID": {
+     "pad_cx_mm": 392.3838,
+     "pad_cy_mm": 267.5979,
+     "channel_id": 737,
+     "amplitude": 586.3255004882812,
+     "n_pads": 1,
+     "z_mm": 630.0,
+     "pred_cx_mm": 392.34502181954355,
+     "pred_cy_mm": 267.26152870529705,
+     "residual_mm": 0.3385991659464598
+    },
+    "P2_OUT": {
+     "pad_cx_mm": 392.3838,
+     "pad_cy_mm": 267.5979,
+     "channel_id": 737,
+     "amplitude": 294.3992004394531,
+     "n_pads": 1,
+     "z_mm": 940.0,
+     "pred_cx_mm": 392.01848582954136,
+     "pred_cy_mm": 266.78599262962246,
+     "residual_mm": 0.8903078238515246
+    }
+   },
+   "max_residual_mm": 1.9386092793282026,
+   "mean_residual_mm": 1.0558387563753957,
+   "total_pads": 3
+  },
+  {
+   "geventId": 230000256460,
+   "urwell": {
+    "front_x_mm": 51.31830700836028,
+    "front_y_mm": 51.493247996493736,
+    "back_x_mm": 50.31063034661481,
+    "back_y_mm": 49.69542005188838,
+    "z_front_mm": 0.0,
+    "z_back_mm": 1370.0
+   },
+   "stations": {
+    "P2_IN": {
+     "pad_cx_mm": 385.4802,
+     "pad_cy_mm": 236.1986,
+     "channel_id": 671,
+     "amplitude": 266.9004211425781,
+     "n_pads": 1,
+     "z_mm": 320.0,
+     "pred_cx_mm": 386.7780502711181,
+     "pred_cy_mm": 235.9954308217259,
+     "residual_mm": 1.3136563634534884
+    },
+    "P2_MID": {
+     "pad_cx_mm": 385.4802,
+     "pad_cy_mm": 236.1986,
+     "channel_id": 671,
+     "amplitude": 230.91136169433594,
+     "n_pads": 1,
+     "z_mm": 630.0,
+     "pred_cx_mm": 386.94910870181434,
+     "pred_cy_mm": 237.4938897597327,
+     "residual_mm": 1.958435175320899
+    },
+    "P2_OUT": {
+     "pad_cx_mm": 385.4802,
+     "pad_cy_mm": 236.1986,
+     "channel_id": 671,
+     "amplitude": 223.89627075195312,
+     "n_pads": 1,
+     "z_mm": 940.0,
+     "pred_cx_mm": 386.4250837159732,
+     "pred_cy_mm": 236.95811472842993,
+     "residual_mm": 1.2122985850908385
+    }
+   },
+   "max_residual_mm": 1.958435175320899,
+   "mean_residual_mm": 1.4947967079550752,
+   "total_pads": 3
+  },
+  {
+   "geventId": 230000138405,
+   "urwell": {
+    "front_x_mm": 81.68425794222047,
+    "front_y_mm": 17.15689800794936,
+    "back_x_mm": 80.45903867598402,
+    "back_y_mm": 14.046279824621127,
+    "z_front_mm": 0.0,
+    "z_back_mm": 1370.0
+   },
+   "stations": {
+    "P2_IN": {
+     "pad_cx_mm": 370.4316,
+     "pad_cy_mm": 193.2386,
+     "channel_id": 588,
+     "amplitude": 61.625,
+     "n_pads": 1,
+     "z_mm": 320.0,
+     "pred_cx_mm": 372.1751797243558,
+     "pred_cy_mm": 192.3388124864456,
+     "residual_mm": 1.9620621357982264
+    },
+    "P2_MID": {
+     "pad_cx_mm": 370.4316,
+     "pad_cy_mm": 193.2386,
+     "channel_id": 588,
+     "amplitude": 533.5629272460938,
+     "n_pads": 1,
+     "z_mm": 630.0,
+     "pred_cx_mm": 371.9997513691762,
+     "pred_cy_mm": 193.75204783195244,
+     "residual_mm": 1.6500689054660083
+    },
+    "P2_OUT": {
+     "pad_cx_mm": 370.4316,
+     "pad_cy_mm": 193.2386,
+     "channel_id": 588,
+     "amplitude": 1244.54931640625,
+     "n_pads": 1,
+     "z_mm": 940.0,
+     "pred_cx_mm": 370.9657245575009,
+     "pred_cy_mm": 193.1892967099567,
+     "residual_mm": 0.5363952435794088
+    }
+   },
+   "max_residual_mm": 1.9620621357982264,
+   "mean_residual_mm": 1.382842094947881,
+   "total_pads": 3
+  },
+  {
+   "geventId": 230000098144,
+   "urwell": {
+    "front_x_mm": 82.17659214296386,
+    "front_y_mm": 62.046988995590695,
+    "back_x_mm": 81.080392520511,
+    "back_y_mm": 60.47813035255942,
+    "z_front_mm": 0.0,
+    "z_back_mm": 1370.0
+   },
+   "stations": {
+    "P2_IN": {
+     "pad_cx_mm": 410.0603,
+     "pad_cy_mm": 216.0998,
+     "channel_id": 593,
+     "amplitude": 287.222412109375,
+     "n_pads": 1,
+     "z_mm": 320.0,
+     "pred_cx_mm": 411.5009926234147,
+     "pred_cy_mm": 214.72932209098582,
+     "residual_mm": 1.9884176961235673
+    },
+    "P2_MID": {
+     "pad_cx_mm": 410.0603,
+     "pad_cy_mm": 216.0998,
+     "channel_id": 593,
+     "amplitude": 589.5892944335938,
+     "n_pads": 1,
+     "z_mm": 630.0,
+     "pred_cx_mm": 411.6750083763359,
+     "pred_cy_mm": 216.23435161529923,
+     "residual_mm": 1.6203046867144917
+    },
+    "P2_OUT": {
+     "pad_cx_mm": 410.0603,
+     "pad_cy_mm": 216.0998,
+     "channel_id": 593,
+     "amplitude": 403.8858642578125,
+     "n_pads": 1,
+     "z_mm": 940.0,
+     "pred_cx_mm": 411.07463558205984,
+     "pred_cy_mm": 215.6130764644969,
+     "residual_mm": 1.1250673193393015
+    }
+   },
+   "max_residual_mm": 1.9884176961235673,
+   "mean_residual_mm": 1.5779299007257868,
+   "total_pads": 3
+  },
+  {
+   "geventId": 230000165136,
+   "urwell": {
+    "front_x_mm": 82.05192209490275,
+    "front_y_mm": 60.7144617092176,
+    "back_x_mm": 81.30843779246739,
+    "back_y_mm": 59.43789898673013,
+    "z_front_mm": 0.0,
+    "z_back_mm": 1370.0
+   },
+   "stations": {
+    "P2_IN": {
+     "pad_cx_mm": 410.0603,
+     "pad_cy_mm": 216.0998,
+     "channel_id": 593,
+     "amplitude": 264.29656982421875,
+     "n_pads": 1,
+     "z_mm": 320.0,
+     "pred_cx_mm": 410.38828591644324,
+     "pred_cy_mm": 214.1276499568135,
+     "residual_mm": 1.9992374932022288
+    },
+    "P2_MID": {
+     "pad_cx_mm": 410.0603,
+     "pad_cy_mm": 216.0998,
+     "channel_id": 593,
+     "amplitude": 307.65399169921875,
+     "n_pads": 1,
+     "z_mm": 630.0,
+     "pred_cx_mm": 410.65873571644636,
+     "pred_cy_mm": 215.59868271288664,
+     "residual_mm": 0.7805407370294805
+    },
+    "P2_OUT": {
+     "pad_cx_mm": 410.0603,
+     "pad_cy_mm": 216.0998,
+     "channel_id": 593,
+     "amplitude": 412.7442626953125,
+     "n_pads": 1,
+     "z_mm": 940.0,
+     "pred_cx_mm": 410.1522024856435,
+     "pred_cy_mm": 214.94655527821894,
+     "residual_mm": 1.1569007974685246
+    }
+   },
+   "max_residual_mm": 1.9992374932022288,
+   "mean_residual_mm": 1.3122263425667446,
+   "total_pads": 3
+  },
+  {
+   "geventId": 230000031681,
+   "urwell": {
+    "front_x_mm": 73.9338102321617,
+    "front_y_mm": 29.21292902746068,
+    "back_x_mm": 74.4420470126686,
+    "back_y_mm": 26.131646939249727,
+    "z_front_mm": 0.0,
+    "z_back_mm": 1370.0
+   },
+   "stations": {
+    "P2_IN": {
+     "pad_cx_mm": 377.5512,
+     "pad_cy_mm": 204.1957,
+     "channel_id": 607,
+     "amplitude": 244.5377960205078,
+     "n_pads": 1,
+     "z_mm": 320.0,
+     "pred_cx_mm": 378.8805106053471,
+     "pred_cy_mm": 204.76897084858646,
+     "residual_mm": 1.4476553979892506
+    },
+    "P2_MID": {
+     "pad_cx_mm": 377.5512,
+     "pad_cy_mm": 204.1957,
+     "channel_id": 607,
+     "amplitude": 1158.7791748046875,
+     "n_pads": 1,
+     "z_mm": 630.0,
+     "pred_cx_mm": 378.9268275636604,
+     "pred_cy_mm": 205.83664523861472,
+     "residual_mm": 2.141273562633858
+    },
+    "P2_OUT": {
+     "pad_cx_mm": 377.5512,
+     "pad_cy_mm": 204.1957,
+     "channel_id": 607,
+     "amplitude": 173.37062072753906,
+     "n_pads": 1,
+     "z_mm": 940.0,
+     "pred_cx_mm": 378.1572286622719,
+     "pred_cy_mm": 204.90097990505558,
+     "residual_mm": 0.9298873501507072
+    }
+   },
+   "max_residual_mm": 2.141273562633858,
+   "mean_residual_mm": 1.5062721035912718,
+   "total_pads": 3
+  },
+  {
+   "geventId": 230000156631,
+   "urwell": {
+    "front_x_mm": 81.77463268394182,
+    "front_y_mm": 38.81013221459548,
+    "back_x_mm": 82.87591106896556,
+    "back_y_mm": 36.46194978528019,
+    "z_front_mm": 0.0,
+    "z_back_mm": 1370.0
+   },
+   "stations": {
+    "P2_IN": {
+     "pad_cx_mm": 390.247,
+     "pad_cy_mm": 204.669,
+     "channel_id": 590,
+     "amplitude": 432.382080078125,
+     "n_pads": 1,
+     "z_mm": 320.0,
+     "pred_cx_mm": 391.3409148210952,
+     "pred_cy_mm": 202.81177204527282,
+     "residual_mm": 2.1554455018932677
+    },
+    "P2_MID": {
+     "pad_cx_mm": 390.247,
+     "pad_cy_mm": 204.669,
+     "channel_id": 590,
+     "amplitude": 561.2901611328125,
+     "n_pads": 1,
+     "z_mm": 630.0,
+     "pred_cx_mm": 391.5951893479289,
+     "pred_cy_mm": 203.82845851930597,
+     "residual_mm": 1.5887493504754835
+    },
+    "P2_OUT": {
+     "pad_cx_mm": 390.247,
+     "pad_cy_mm": 204.669,
+     "channel_id": 590,
+     "amplitude": 3383.937255859375,
+     "n_pads": 1,
+     "z_mm": 940.0,
+     "pred_cx_mm": 391.0256571630099,
+     "pred_cy_mm": 202.79320719859072,
+     "residual_mm": 2.030986364140712
+    }
+   },
+   "max_residual_mm": 2.1554455018932677,
+   "mean_residual_mm": 1.9250604055031542,
+   "total_pads": 3
+  },
+  {
+   "geventId": 230000120358,
+   "urwell": {
+    "front_x_mm": 73.90236697475697,
+    "front_y_mm": 95.78644804743986,
+    "back_x_mm": 72.92697456951765,
+    "back_y_mm": 95.57829340543212,
+    "z_front_mm": 0.0,
+    "z_back_mm": 1370.0
+   },
+   "stations": {
+    "P2_IN": {
+     "pad_cx_mm": 436.9609,
+     "pad_cy_mm": 238.4796,
+     "channel_id": 613,
+     "amplitude": 105.2892837524414,
+     "n_pads": 1,
+     "z_mm": 320.0,
+     "pred_cx_mm": 436.7383790113661,
+     "pred_cy_mm": 239.03919279882967,
+     "residual_mm": 0.6022123303990317
+    },
+    "P2_MID": {
+     "pad_cx_mm": 436.9609,
+     "pad_cy_mm": 238.4796,
+     "channel_id": 613,
+     "amplitude": 594.13427734375,
+     "n_pads": 1,
+     "z_mm": 630.0,
+     "pred_cx_mm": 437.2283824834087,
+     "pred_cy_mm": 240.6379890738287,
+     "residual_mm": 2.174900060451874
+    },
+    "P2_OUT": {
+     "pad_cx_mm": 436.9609,
+     "pad_cy_mm": 238.4796,
+     "channel_id": 613,
+     "amplitude": 1017.159423828125,
+     "n_pads": 1,
+     "z_mm": 940.0,
+     "pred_cx_mm": 437.0354486432611,
+     "pred_cy_mm": 240.0130087113211,
+     "residual_mm": 1.5352197810631254
+    }
+   },
+   "max_residual_mm": 2.174900060451874,
+   "mean_residual_mm": 1.437444057304677,
+   "total_pads": 3
+  },
+  {
+   "geventId": 230000001702,
+   "urwell": {
+    "front_x_mm": 52.82119931201719,
+    "front_y_mm": 71.55208850779317,
+    "back_x_mm": 49.11466481575127,
+    "back_y_mm": 70.92128879675782,
+    "z_front_mm": 0.0,
+    "z_back_mm": 1370.0
+   },
+   "stations": {
+    "P2_IN": {
+     "pad_cx_mm": 405.2788,
+     "pad_cy_mm": 247.6348,
+     "channel_id": 670,
+     "amplitude": 223.63377380371094,
+     "n_pads": 1,
+     "z_mm": 320.0,
+     "pred_cx_mm": 404.7695081690211,
+     "pred_cy_mm": 245.50520427632404,
+     "residual_mm": 2.1896474865605287
+    },
+    "P2_MID": {
+     "pad_cx_mm": 405.2788,
+     "pad_cy_mm": 247.6348,
+     "channel_id": 670,
+     "amplitude": 536.43212890625,
+     "n_pads": 1,
+     "z_mm": 630.0,
+     "pred_cx_mm": 404.8753971755659,
+     "pred_cy_mm": 247.63743332608306,
+     "residual_mm": 0.40341141923307366
+    },
+    "P2_OUT": {
+     "pad_cx_mm": 405.2788,
+     "pad_cy_mm": 247.6348,
+     "channel_id": 670,
+     "amplitude": 117.90725708007812,
+     "n_pads": 1,
+     "z_mm": 940.0,
+     "pred_cx_mm": 404.3281746569287,
+     "pred_cy_mm": 247.66899373836785,
+     "residual_mm": 0.9512401140789765
+    }
+   },
+   "max_residual_mm": 2.1896474865605287,
+   "mean_residual_mm": 1.181433006624193,
+   "total_pads": 3
+  },
+  {
+   "geventId": 230000170201,
+   "urwell": {
+    "front_x_mm": 80.19374171848527,
+    "front_y_mm": 59.17821162294633,
+    "back_x_mm": 79.06702832378568,
+    "back_y_mm": 58.07448993010191,
+    "z_front_mm": 0.0,
+    "z_back_mm": 1370.0
+   },
+   "stations": {
+    "P2_IN": {
+     "pad_cx_mm": 410.0603,
+     "pad_cy_mm": 216.0998,
+     "channel_id": 593,
+     "amplitude": 636.4939575195312,
+     "n_pads": 1,
+     "z_mm": 320.0,
+     "pred_cx_mm": 408.11381188483745,
+     "pred_cy_mm": 215.05389568675935,
+     "residual_mm": 2.209690434184025
+    },
+    "P2_MID": {
+     "pad_cx_mm": 410.0603,
+     "pad_cy_mm": 216.0998,
+     "channel_id": 593,
+     "amplitude": 119.52155303955078,
+     "n_pads": 1,
+     "z_mm": 630.0,
+     "pred_cx_mm": 408.37577443406315,
+     "pred_cy_mm": 216.62293139970973,
+     "residual_mm": 1.7638857229585752
+    },
+    "P2_OUT": {
+     "pad_cx_mm": 410.0603,
+     "pad_cy_mm": 216.0998,
+     "channel_id": 593,
+     "amplitude": 2055.877685546875,
+     "n_pads": 1,
+     "z_mm": 940.0,
+     "pred_cx_mm": 407.8652395691356,
+     "pred_cy_mm": 216.07736519378062,
+     "residual_mm": 2.1951750763154605
+    }
+   },
+   "max_residual_mm": 2.209690434184025,
+   "mean_residual_mm": 2.056250411152687,
+   "total_pads": 3
+  },
+  {
+   "geventId": 230000166697,
+   "urwell": {
+    "front_x_mm": 55.79723374236578,
+    "front_y_mm": 64.10681871491596,
+    "back_x_mm": 55.957444501269045,
+    "back_y_mm": 59.66997143947104,
+    "z_front_mm": 0.0,
+    "z_back_mm": 1370.0
+   },
+   "stations": {
+    "P2_IN": {
+     "pad_cx_mm": 398.4475,
+     "pad_cy_mm": 236.8299,
+     "channel_id": 653,
+     "amplitude": 1134.9447021484375,
+     "n_pads": 2,
+     "z_mm": 320.0,
+     "pred_cx_mm": 399.53313846613304,
+     "pred_cy_mm": 237.94948696517656,
+     "residual_mm": 1.5595146205601789
+    },
+    "P2_MID": {
+     "pad_cx_mm": 398.4475,
+     "pad_cy_mm": 236.8299,
+     "channel_id": 653,
+     "amplitude": 1607.0029296875,
+     "n_pads": 1,
+     "z_mm": 630.0,
+     "pred_cx_mm": 399.3242154863069,
+     "pred_cy_mm": 238.89994581566896,
+     "residual_mm": 2.2480479805597793
+    },
+    "P2_OUT": {
+     "pad_cx_mm": 398.4475,
+     "pad_cy_mm": 236.8299,
+     "channel_id": 653,
+     "amplitude": 1037.7921142578125,
+     "n_pads": 1,
+     "z_mm": 940.0,
+     "pred_cx_mm": 398.42172367593287,
+     "pred_cy_mm": 237.77260425142333,
+     "residual_mm": 0.9430565860721294
+    }
+   },
+   "max_residual_mm": 2.2480479805597793,
+   "mean_residual_mm": 1.5835397290640294,
+   "total_pads": 4
+  },
+  {
+   "geventId": 230000059690,
+   "urwell": {
+    "front_x_mm": 74.32593779441787,
+    "front_y_mm": 26.31145318719848,
+    "back_x_mm": 72.77294985736661,
+    "back_y_mm": 23.537820612937562,
+    "z_front_mm": 0.0,
+    "z_back_mm": 1370.0
+   },
+   "stations": {
+    "P2_IN": {
+     "pad_cx_mm": 377.5512,
+     "pad_cy_mm": 204.1957,
+     "channel_id": 607,
+     "amplitude": 96.79605102539062,
+     "n_pads": 1,
+     "z_mm": 320.0,
+     "pred_cx_mm": 376.3927643890457,
+     "pred_cy_mm": 203.41773983995023,
+     "residual_mm": 1.3954193188256139
+    },
+    "P2_MID": {
+     "pad_cx_mm": 377.5512,
+     "pad_cy_mm": 204.1957,
+     "channel_id": 607,
+     "amplitude": 148.0321502685547,
+     "n_pads": 1,
+     "z_mm": 630.0,
+     "pred_cx_mm": 376.26238203646733,
+     "pred_cy_mm": 204.92714965355935,
+     "residual_mm": 1.4819144168327005
+    },
+    "P2_OUT": {
+     "pad_cx_mm": 377.5512,
+     "pad_cy_mm": 204.1957,
+     "channel_id": 607,
+     "amplitude": 460.0400390625,
+     "n_pads": 1,
+     "z_mm": 940.0,
+     "pred_cx_mm": 375.3156737482515,
+     "pred_cy_mm": 204.44432946728116,
+     "residual_mm": 2.2493097239502333
+    }
+   },
+   "max_residual_mm": 2.2493097239502333,
+   "mean_residual_mm": 1.7088811532028494,
+   "total_pads": 3
+  }
+ ]
+}
