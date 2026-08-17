@@ -56,6 +56,33 @@ Total ≈ 13 min 40 s of slides. That leaves headroom, which you will need.
 | What we record, and when (D7) | Backup. |
 | The tracks point back at the capsule (D8) | **Judgement call.** It was on the load-bearing list, and "reconstruction transfers from bench to beam" is a real result. But it is PRELIMINARY on one arm / one sub-run / a transferred calibration whose own document says nothing is quotable. At 15 min with a caveat that long, I would keep it in backup and mention the result in one sentence on slide 11. Restore it to main flow only if the in-situ calibration lands before 3 September. |
 
+## Added 2026-08-15: the timeline and the post-LS3 slides
+
+Two main-flow slides landed after this order was written, both at Dylan's
+request: **"How we got here"** (a project timeline, opening the Status section)
+and **"What a post-LS3 measurement needs"** (between D10 and the Summary).
+NOTES.md, same date, has their provenance and says how to find them in
+`index.html` without a page number.
+
+**Neither is in the 16-slide cut above, and this document does not decide for
+them** — that is Dylan's call, and it is a real trade because both are cheap in
+seconds and expensive in what they displace:
+
+- **The timeline is a ~40 s slide** and is the only thing in the deck that says
+  why the Status section is about a DAQ problem at all — the flash was the
+  constraint from the first exposure in November 2025, and the audience
+  otherwise has to take that on trust. If it goes in at 15 minutes, take the
+  time from slide 10 (the setup build already nominates its droppable frames).
+- **The post-LS3 slide overlaps slide 16 (Summary) and slide 15's last bullet.**
+  At 15 minutes, showing both the outlook slide *and* D10 is redundant: **pick
+  one.** The outlook slide is the better close for a room that wants to know
+  what a future front end has to do; D10 is the better close for a room that
+  wants what this campaign established. At 20 minutes, show both, in that order.
+
+Both slides also state that data taking **ended on 10 August**, which is why
+the three stale "still running" lines elsewhere in the deck were corrected the
+same day (NOTES.md).
+
 ## One thing to review before trusting this
 
 The 3-D setup sequence is **nine frames on slides 16–24**, plus a backup slide,

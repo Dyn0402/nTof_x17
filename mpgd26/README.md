@@ -36,6 +36,7 @@ cd mpgd26
 ../.venv/bin/python make_anim.py                   # turntables + build-ups
 ../.venv/bin/python make_report.py                 # rebuild report.html
 ../.venv/bin/python make_status_plots.py           # the Status-section DATA plots
+../.venv/bin/python make_timeline.py               # the project timeline (Status opener)
 
 ../.venv/bin/python make_figures.py --draft        # fast, for framing checks
 ../.venv/bin/python make_figures.py --theme both   # + dark theme

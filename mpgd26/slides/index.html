@@ -1165,19 +1165,43 @@
          Figures: ../make_status_plots.py (regenerates all six status_*.png).
          =================================================================== -->
 
+    <!-- 17pre: T1 project timeline.  Added 2026-08-15 at Dylan's request: the
+         Status section used to open cold on "where things stand", with no
+         account of how a detector programme got from a borrowed prototype to
+         four chambers on the beam.  This slide is that account, and it also
+         does the argumentative work of showing that the γ flash was the
+         constraint from the first day and shaped every choice after it.
+
+         Figure: ../make_timeline.py -> assets/img/project_timeline.{png,pdf}.
+         The PDF is the one to open if you need to read the small type; the
+         script's docstring names the source for every count on it (run
+         tables on EOS, the November logbook, ntof_run_report/).  Numbers on
+         the figure and numbers in this caption have to move together.
+
+         The starting point is DELIBERATELY November 2025 -- when Dylan joined
+         the project -- and not the proposal.  The talk does not claim this is
+         the whole history of the experiment; the ATOMKI/theory backup slides
+         carry that. -->
+    <section class="slide">
+      <div class="kicker">Status</div>
+      <div class="title">How we got here</div>
+      <div class="figure-solo"><img src="assets/img/project_timeline.png" alt="Timeline of the project from November 2025 to August 2026: first exposure, February prototype run, May two-chamber run, June build and bench characterization, and the July-August physics run"></div>
+      <div class="caption"><b>Four exposures at EAR2 in nine months, and the same problem in all of them.</b> The γ flash was there on the first day, in November 2025, on borrowed prototypes — and everything since has been a response to it: the February month of scans measured that <b>DREAM saturates below the gain the chamber needs</b>, May tried three ways out and found none, and the July&ndash;August run was built around <b>living with it</b> rather than defeating it. The chambers themselves went from one prototype to a characterized fleet of four in the same nine months. <b>Data taking ended 09:10 on 10 August</b>; what follows in this section is a status report on that dataset, not a result.</div>
+    </section>
+
     <!-- 17: D0 status overview -->
     <section class="slide">
       <div class="kicker">Status</div>
       <div class="title">Where things stand</div>
       <div class="content">
         <ul class="bullets">
-          <li><b>Four chambers have been running at EAR2 since July</b>, on ³He, in the pinwheel — the full trigger, calorimetry and DAQ chain is closed and taking production statistics as of today.</li>
+          <li><b>Four chambers ran at EAR2 from July</b>, on ³He, in the pinwheel — the full trigger, calorimetry and DAQ chain was closed, and the campaign banked <b>41.8 M events</b> before the beam came off on 10 August.</li>
           <li><b>The environment, not the detector, is the hard part.</b> The γ flash saturates the front end for milliseconds — measured, mapped against gain, and now against delivered charge.</li>
           <li><b>Tracks reconstruct on beam data and point back at the capsule.</b> Waveform-first reconstruction transfers from the cosmic bench to n_TOF.</li>
-          <li><b>Analysis is ongoing</b> — this is a status report on a campaign that is still taking data, not a result.</li>
+          <li><b>Analysis is ongoing</b> — this is a status report on a campaign that has just ended, not a result.</li>
         </ul>
       </div>
-      <div class="flag">running as this talk is given — numbers are 2026-08-09</div>
+      <div class="flag">data taking ended 2026-08-10 &mdash; analysis ongoing</div>
     </section>
 
     <!-- 18: D1 the flash -->
@@ -1247,7 +1271,7 @@
           <li><b>Readout window measured, not assumed</b> — 20 samples &times; 60 ns holds 95 % of the drift charge with the onset at sample 2; the trigger FIFO watermark was set from a measured acceptance-comb uniformity (CV 1.50 &rarr; 0.51).</li>
         </ul>
         <div class="stat-row">
-          <div class="stat"><div class="num">~1.7 TB</div><div class="lbl">production statistics banked since 2026-08-02, still running</div></div>
+          <div class="stat"><div class="num">17.9 TB</div><div class="lbl">DREAM data on EOS &mdash; the whole campaign, 28 Jun &ndash; 10 Aug</div></div>
           <div class="stat"><div class="num">4 / 4</div><div class="lbl">chambers live, with beam-off cosmic reference runs interleaved</div></div>
         </div>
       </div>
@@ -1297,6 +1321,38 @@
       </div>
     </section>
 
+    <!-- 27b: T2 post-LS3.  Added 2026-08-15 at Dylan's request, alongside the
+         timeline slide.  Source: ntof_run_report/make_report.py §10, "What a
+         post-LS3 measurement would need" — every number here is quoted from
+         there and from the packages it cites (flash_charge/, mm_flash/,
+         flash_recovery/run57/).
+
+         DELIBERATELY NOT ON THIS SLIDE: the Asimov significance projection in
+         MX17_Full_Geant (docs/slides/HANDOFF_SLIDES.md: 4.9σ stat-only for a
+         30-day post-LS3 run in 0.2–2 MeV, 6.4σ after the nose-first geometry
+         fix).  That number is a statistics-only ceiling whose own handoff says
+         the IPC angular-SHAPE systematic, not statistics, will set the real
+         CL — and the deck's framing decision of 2026-08-10 (RUNNING_ORDER.md)
+         is that this talk makes no claim about physics reach.  If that
+         decision is reversed, the number goes here, with its caveat, and
+         nowhere else. -->
+    <section class="slide">
+      <div class="kicker">Status &middot; Outlook</div>
+      <div class="title">What a post-LS3 measurement needs</div>
+      <div class="content">
+        <ul class="bullets">
+          <li><b>The measurement has to move to MeV neutron energies</b>, in the first microseconds after the flash. The thermal gate we ran in is background-characterization territory: ²⁷Al(n,&gamma;) on the capsule makes ~96 % of what we trigger on. <b>That window is exactly the one this run measured and could not use.</b></li>
+          <li><b>Not the chamber.</b> The same chamber, digitized directly at 1 GS/s with no charge-sensitive preamplifier, is usable <b>0.87 µs</b> after the flash peak — nothing in the gas, the field or the amplification stage has a millisecond time constant.</li>
+          <li><b>The front end, stated as a specification:</b> survive <b>10²&ndash;10³ &times; the CSA's full-scale input charge</b> in one pulse, and be live again within <b>~1 µs</b>. The curve to design against is measured: <b>t &prop; Q<sup>1.2</sup></b>.</li>
+        </ul>
+        <table class="spec-table">
+          <tr><td class="k">Two routes</td><td><b>Reduce the charge that arrives</b> — actively divert or clamp the input during the flash. Mesh charge injection was tried and only trades one rail for the other; lowering the gain works, and the run_57 recovery map is the exact exchange rate against efficiency.</td></tr>
+          <tr><td class="k"></td><td><b>Or build a front end that can take it.</b> Direct digitization already survives this environment — we ran it, on the n_TOF DAQ, for the whole 20 ms cycle. Scaling it from one channel to a tracker is the engineering problem.</td></tr>
+        </table>
+        <div class="callout"><b>And then the problem after that one:</b> at MeV energies the rate is ~10<sup>4</sup> above the thermal gate, and it is <b>not established</b> that tracks separate there. The X17 search at PADME uses a similar micromegas TPC and appears to disentangle comparable pile-up — an encouraging precedent, not a proof. <b>This dataset, with a tracker that already images the target, is the right place to answer it.</b></div>
+      </div>
+    </section>
+
     <!-- 18: summary -->
     <section class="slide">
       <div class="kicker">Summary</div>
@@ -1305,7 +1361,7 @@
         <ul class="bullets">
           <li>Saclay resistive micro-TPCs: sub-mm position, ~1.7&deg; (&rarr;~1.0&ndash;1.1&deg;) angular resolution at every track angle</li>
           <li>Fully characterized across a five-chamber fleet on the Saclay cosmic bench</li>
-          <li>Now assembled around the ³He target at n_TOF EAR2, taking production statistics</li>
+          <li>Assembled around the ³He target at n_TOF EAR2, where they took production statistics until 10 August</li>
           <li>Reconstruction transfers to beam data: waveform-first tracks point back at the capsule, cross-checked against the SiPM wall that fired</li>
           <li>The γ flash delivers <b>~10² nC per chamber per pulse</b> and costs <b>milliseconds</b> of front-end dead time — and we can show that the dead time is set by the <b>charge</b>, not the voltage</li>
         </ul>

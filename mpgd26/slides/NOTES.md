@@ -13,6 +13,54 @@ page (confirmed positional, not content-specific, by swapping slide order).
 `make_pdf.sh` sidesteps it by printing each slide to its own single-page PDF
 and merging with `pdfunite`.
 
+## Two new main-flow slides — 2026-08-15 (Dylan asked for both)
+
+**A project timeline and a post-LS3 outlook slide are now in the main flow**,
+not in the proposed block below. **No page number is quoted here on purpose** —
+every structural edit renumbers the deck. Find them by the `index.html` comments
+`17pre: T1 project timeline` and `27b: T2 post-LS3`, which do not move.
+
+- **`How we got here`** opens the Status section, immediately before
+  D0. One figure, `assets/img/project_timeline.png`, from the new
+  **`mpgd26/make_timeline.py`** (`../.venv/bin/python make_timeline.py`; it also
+  writes a `.pdf` beside it, which is the one to open if you need to read the
+  small type). The figure's spine is a true date axis, the panel strip under it
+  is five equal columns — done that way because the campaigns are weeks apart
+  and their descriptions are paragraphs, so nothing readable fits beside a bar.
+  **The script's docstring names the source of every count on the figure**; the
+  slide caption quotes the same numbers, so the two have to move together.
+  The window starts at **November 2025, when Dylan joined the project** — this
+  is deliberately not the whole history of the experiment.
+- **`What a post-LS3 measurement needs`** sits between D10 ("What we
+  take away") and the Summary. Everything on it is quoted from
+  `ntof_run_report/make_report.py` §10 and the packages that section cites.
+
+**Both slides predate `SLIDE_EDITS_TODO.md` and do not obey it.** The timeline
+carries a four-line caption and the post-LS3 slide carries three bullets, a
+two-row table and a callout — under the cut-the-text principle both are
+candidates for the standing text-reduction sweep. The timeline's caption is the
+easier cut: the figure's own panel strip already says most of it, and what is
+left ("the flash was there on the first day; every campaign since was a
+response to it") is one line, or is spoken.
+
+**What is deliberately NOT on the post-LS3 slide:** the Asimov significance
+projection in `MX17_Full_Geant/docs/slides/HANDOFF_SLIDES.md` (4.9σ stat-only
+for a 30-day post-LS3 run in 0.2–2 MeV; 6.4σ after the nose-first geometry
+fix). That handoff's own caveat is that the IPC angular-*shape* systematic, not
+statistics, will set the real CL, and the deck's 2026-08-10 framing decision is
+that this talk makes no claim about physics reach. **If Dylan reverses that
+decision, the number goes on this slide with its caveat and nowhere else** —
+the HTML comment above the slide says so too.
+
+**Three stale "still running" claims were corrected at the same time**, because
+the timeline slide states that the beam came off on 10 August and they
+contradicted it: D0's first bullet and its `flag` line, D6's first stat tile
+(was "~1.7 TB … still running", now the campaign's 17.9 TB), and the Summary's
+third bullet. This is the edit NOTES flagged as required on 2026-08-13.
+
+**Not yet done:** neither slide is in `RUNNING_ORDER.md`'s 16-slide cut — see
+the note added there the same day.
+
 ## Design reboot — 2026-08-12
 
 **The deck was restyled wholesale for a scientific-conference aesthetic** (Dylan:
