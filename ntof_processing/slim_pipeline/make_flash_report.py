@@ -4,9 +4,11 @@
 Build the HTML report for the flash-reference sweep.
 
 Writes <out>/report.html beside flash_reference.json, which the DAQ page's
-Analysis tab lists and opens inline. Figures are referenced with ordinary
-relative links (figures/x.png) so the same file works from disk, from the DAQ
-page's /analysis_file/<relpath> route, or copied elsewhere.
+Analysis tab lists and opens inline. Both charts are INLINE SVG rather than
+PNGs in a figures/ directory -- they are two histograms of a ratio, which SVG
+draws exactly and which then survives being served, copied or emailed as a
+single file with no companion assets. Nothing here loads an external
+resource.
 
 Generated, not hand-written: re-run after flash_reference_report.py and the
 numbers, the charts and the verdict text all follow.
@@ -100,17 +102,22 @@ def main() -> int:
     flagged = d['flagged']
     since = [f for f in flagged if f['since_run']]
     matched = [f for f in flagged if f['state'] == 'MATCHED']
+    corrected = [f for f in matched if f['fixed']]
+    silent = [f for f in matched if not f['fixed']]
     both = [f for f in flagged if f['both']]
-    ok = not matched
+    noff = [f for f in flagged if f['state'] == 'NTOF_NO_BUNCH']
+    ok = not silent
 
     tiles = [
         (f'{d["n_judged"]:,}', 'bursts examined',
          f'of {d["n_bursts"]:,} clusters, over {d["n_runs"]} DREAM runs'),
         (f'{len(flagged)}', 'with a mis-tagged flash',
          f'{len(both)} flagged by BOTH signatures, {len(since)} since run_79'),
-        (f'{len(matched)}', 'of those counted as matched',
-         'the silent class: a wrong time base inside a healthy-looking product'
-         if matched else 'none — every one was refused by the chain'),
+        (f'{len(silent)}', 'carrying a wrong time base',
+         'a mis-tagged flash inside a matched product, uncorrected'
+         if silent else
+         f'none — {len(corrected)} matched ones are already corrected, the '
+         f'rest were refused by the chain'),
         ('{:.3f}&times;'.format(d['pooled']['gap1_frac_pct'].get('0.01',
                                                                   float('nan'))),
          'lowest gap1 in the bulk',
@@ -138,18 +145,22 @@ def main() -> int:
             '<td class="n">{gf:.3f}</td><td class="n">{nh:,}</td>'
             '<td class="n">{hf:.3f}</td><td class="{cls}">{st}</td>'
             '<td class="n">{co}</td><td class="n">{fitted}</td>'
-            '<td class="n">{da}</td></tr>'.format(
+            '<td class="n">{da}</td><td class="n">{fx}</td></tr>'.format(
                 run=esc(f['run']), sub=esc(f['subrun']), bid=f['burst_id'],
                 ntrig=f['n_trig'], g=f['gap1_ns'] / 1e3, gf=f['gap1_frac'],
                 nh=f['flash_nhits'], hf=f['nhits_frac'], cls=cls, st=esc(st),
                 co=num(f['ledger_frac']),
                 fitted=num(fit.get('fitted'), '{:d}'),
-                da=num(fit.get('da_ns'), '{:.1f}')))
+                da=num(fit.get('da_ns'), '{:.1f}'),
+                fx=('{:+.3f} ms'.format(
+                    (f['fixed'].get('flash_shift_ns') or 0) / 1e6)
+                    if f['fixed'] else DASH)))
     table = ('<div class="tbl-wrap"><table class="num"><thead><tr>'
              '<th>sub-run</th><th>burst</th><th>triggers</th>'
              '<th>gap1 [µs]</th><th>gap1 / median</th><th>flash hits</th>'
              '<th>hits / median</th><th>ledger state</th><th>coincidence</th>'
-             '<th>fitted</th><th>da [ns]</th></tr></thead><tbody>'
+             '<th>fitted</th><th>da [ns]</th><th>correction</th>'
+             '</tr></thead><tbody>'
              + ''.join(rows) + '</tbody></table></div>') if rows else \
         '<p class="muted">No burst was flagged.</p>'
 
@@ -163,12 +174,16 @@ def main() -> int:
                          'hits in the tagged flash event, ÷ the sub-run median')
 
     verdict = (
-        '<p><b>No product carries a mis-tagged gamma flash.</b> Every burst '
-        'whose tagged flash fails either signature was already refused by the '
-        'matching chain — it appears in the ledger as an unmatched pulse, not '
-        'as a matched one. The concern that a dropped flash could be absorbed '
-        'into a per-bunch correction and pass silently is not realised '
-        'anywhere in the campaign.</p>'
+        f'<p><b>No product carries an uncorrected mis-tagged gamma flash.</b> '
+        f'Of {len(flagged)} flagged bursts in {d["n_judged"]:,} judged, only '
+        f'{len(matched)} are matched pulses — and all {len(corrected)} of '
+        f'those already carry a <code>burst_fixes.json</code> override applied '
+        f'by the slim (they stay visible here because the mis-tag is in the '
+        f'DREAM data and the correction is in the join). Every other flagged '
+        f'burst was refused by the chain and sits in the ledger as an '
+        f'unmatched pulse. The concern that a dropped flash could be absorbed '
+        f'into a per-bunch correction and pass silently is not realised '
+        f'anywhere in the campaign.</p>'
         if ok else
         f'<p><b>{len(matched)} burst(s) with a mis-tagged flash are counted as '
         f'matched.</b> Their DREAM time base is referenced to the wrong '
@@ -178,6 +193,9 @@ def main() -> int:
         f'<code>burst_bruteforce.py</code> scan and a '
         f'<code>burst_fixes.json</code> entry.</p>')
 
+    n_noff = len(noff)
+    tot_noff = (d.get('ledger_states') or {}).get('NTOF_NO_BUNCH')
+    tot_noff = '{:,}'.format(tot_noff) if tot_noff else 'all'
     doc = f"""<!doctype html>
 <html lang="en">
 <head>
@@ -298,6 +316,29 @@ product's per-bunch clock fit accepted its bunch. A flagged burst that is
 <span class="muted">not</span> MATCHED was refused by the chain and cost
 nothing.</p>
 {table}
+
+<h2>Two things the sweep found on its own</h2>
+<p><b>Two of the three bursts the brute-force pass could not pair are
+explained.</b> run_102/stat090_0001 burst 0 and run_118/stat090_0019 burst 0
+are the FIRST burst of their sub-run, and their tagged flash carries 22 and 13
+hits against ~4,080 — there is no gamma flash in the file at all. Their physics
+triggers are feeble too (median 23 hits against ~150), so the DAQ started
+recording partway through the gate and caught the weak tail of a burst. Their
+time base is anchored to a background trigger, which is why no bunch could be
+found for them; they are not simply small. The third, run_116/stat090_0028
+burst 1073, has a perfectly normal flash (gap1 1.11&nbsp;ms, 2,992 hits) and
+stays unexplained.</p>
+<p><b>{n_noff} of the {tot_noff} pulses the ledger calls &ldquo;n_TOF not
+recording&rdquo; also delivered no beam to the EAR2 target.</b> Their bursts
+have no gamma flash (23&ndash;794 hits) <em>and</em> feeble physics triggers
+(14&ndash;38 hits each against 138&ndash;178 in the healthy bursts of the same
+sub-run), at ~23 triggers per burst against ~90. They are interleaved with
+healthy bursts, pulse by pulse, rather than forming a block — so this is not a
+detector warming up, it is the PS pulse not arriving. The beam record says
+those pulses were extracted; DREAM says they did not reach this target.
+n_TOF's own PKUP would have settled it, and n_TOF was not recording — the two
+absences agree. Nothing moves: the class is already outside the matching
+denominator.</p>
 
 <h2>What this does not settle</h2>
 <ul>

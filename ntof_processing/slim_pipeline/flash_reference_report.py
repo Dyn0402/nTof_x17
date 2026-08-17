@@ -42,6 +42,30 @@ from ntof_processing.slim_pipeline.flash_reference_sweep import (  # noqa: E402
 
 LEDGER = Path('/media/dylan/data/x17/slim_recovery_2026-08-13/pulse_ledger')
 
+# ONLY A PULSE THAT DELIVERED PROTONS HAS A GAMMA FLASH, so only its bursts can
+# be asked whether they are timed from one. The states below are the ones whose
+# burst sat under real beam; EMPTY_PULSE, NO_BEAM_PULSE and NOT_COINC_TRIGGERED
+# are not judged.
+#
+# This is not a refinement, it is the difference between a working test and a
+# broken one. The sweep references each burst against its SUB-RUN's median, and
+# in a sub-run that is mostly empty pulses that median is the median of bursts
+# with NO flash: measured over the campaign, a no-beam burst's first event
+# carries 1-3 hits against ~4,080 for a beam burst. Referenced against that, the
+# HEALTHY bursts of such a sub-run come out 30x high and get flagged -- 348 of
+# them on the first pass (run_112/0000, run_108/0000, run_126/0000 ...), every
+# one a false positive with a perfectly normal 1 ms gap and 4,100-hit flash.
+BEAM_STATES = frozenset({
+    'MATCHED', 'LOW_COINC', 'UNKNOWN_COINC', 'TOO_FEW_TRIGGERS',
+    'NTOF_NO_BUNCH', 'UNJOINED', 'SEGMENT_FAILED', 'NOT_ATTEMPTED'})
+# Fewest judgeable bursts a sub-run needs before its own median is used as the
+# reference; below it the campaign median of sub-run medians stands in. Both
+# signatures are stable enough campaign-wide for that to be safe -- gap1 runs
+# 991-1,170 us over 281,437 beam bursts -- but a per-sub-run reference is still
+# preferred where it exists, because the gate width is a DAQ setting and the
+# flash hit count depends on which chambers were live.
+MIN_REF_BURSTS = 20
+
 
 def load_sweep(d: Path):
     out = {}
@@ -69,6 +93,22 @@ def load_ledger(d: Path):
             zip(b['burst_id'], b['state'], b['ntof_run'], b['bunch'],
                 b['frac'])}
     return out
+
+
+def burst_fixed(prod: dict, burst_id: int):
+    """Was a burst_fixes.json override APPLIED to this burst in the product?
+
+    `slim.apply_burst_fix` records what it did in burst_map.json under `fix`,
+    so a burst the sweep flags on the raw DREAM files may already be corrected
+    downstream -- the override lives in the join, not in the DREAM data, so
+    the mis-tagged flash stays visible here forever. Without this the four
+    bursts fixed on 2026-08-16 read as an unsolved silent class.
+    """
+    for rec in prod.values():
+        fx = ((rec.get('burst_map') or {}).get('fix') or {}).get(str(burst_id))
+        if fx:
+            return fx
+    return None
 
 
 def bunch_record(prod: dict, burst_id: int):
@@ -109,10 +149,14 @@ def main() -> int:
         print(f'no sweep files under {a.sweep}')
         return 1
     ledger = load_ledger(a.ledger) if a.ledger.is_dir() else {}
+    camp_path = a.ledger / 'campaign_ledger.json'
+    camp_states = (json.loads(camp_path.read_text()).get('states', {})
+                   if camp_path.exists() else {})
     print(f'{len(sweep)} DREAM run(s) swept, {len(ledger)} ledger sub-run(s)')
 
-    flagged, pooled_g, pooled_h, per_sub = [], [], [], []
-    n_bursts = n_judged = n_err = 0
+    # ---- pass 1: per sub-run reference over the BEAM bursts alone
+    subs = []
+    n_bursts = n_err = n_noflash = 0
     for run, d in sorted(sweep.items()):
         try:
             rn = int(run.split('_')[1])
@@ -122,45 +166,77 @@ def main() -> int:
             if 'error' in r:
                 n_err += 1
                 continue
-            ref, b = r['ref'], r['bursts']
+            b = r['bursts']
             n = np.asarray(b['n_trig'])
+            n_bursts += int(n.size)
+            st = ledger.get((run, sub), {})
+            state = np.array([st.get(int(i), (None,) * 4)[0]
+                              for i in b['burst_id']], dtype=object)
+            beam = (n >= MIN_BURST_TRIG) & np.array(
+                [s in BEAM_STATES for s in state])
             g1 = np.asarray(b['gap1_ns'], float)
             fh = np.asarray(b['flash_nhits'], float)
-            n_bursts += int(n.size)
-            big = n >= MIN_BURST_TRIG
-            gm, hm = ref['gap1_med_ns'], ref['flash_nhits_med']
-            per_sub.append(dict(run=run, subrun=sub, n_bursts=int(n.size),
-                                n_big=int(big.sum()), gap1_med_ns=gm,
-                                flash_nhits_med=hm,
-                                phys_nhits_med=ref['phys_nhits_med']))
-            if not big.any() or not gm or not hm:
-                continue
-            n_judged += int(big.sum())
-            pooled_g.append(g1[big] / gm)
-            pooled_h.append(fh[big] / hm)
-            hit = big & ((g1 < GAP_FRAC * gm) | (fh < NHITS_FRAC * hm))
-            for i in np.flatnonzero(hit):
-                led = ledger.get((run, sub), {}).get(int(b['burst_id'][i]),
-                                                     (None,) * 4)
-                nt, bunch, fit = bunch_record(
-                    (d.get('products') or {}).get(sub, {}),
-                    int(b['burst_id'][i]))
-                flagged.append(dict(
-                    run=run, subrun=sub, burst_id=int(b['burst_id'][i]),
-                    since_run=rn >= a.since_run,
-                    n_trig=int(n[i]), t_rel_s=round(b['t_rel_s'][i], 1),
-                    gap1_ns=float(g1[i]), gap1_frac=round(float(g1[i] / gm), 4),
-                    flash_nhits=int(fh[i]),
-                    nhits_frac=round(float(fh[i] / hm), 4),
-                    both=bool(g1[i] < GAP_FRAC * gm and fh[i] < NHITS_FRAC * hm),
-                    state=led[0], ledger_ntof=led[1], ledger_bunch=led[2],
-                    ledger_frac=led[3],
-                    product_ntof=nt, product_bunch=bunch, fit=fit))
+            n_noflash += int(((n >= MIN_BURST_TRIG) & ~beam).sum())
+            subs.append(dict(run=run, rn=rn, subrun=sub, bursts=b, n=n,
+                             g1=g1, fh=fh, state=state, beam=beam,
+                             gap1_med_ns=(float(np.median(g1[beam]))
+                                          if beam.sum() >= MIN_REF_BURSTS
+                                          else None),
+                             flash_nhits_med=(float(np.median(fh[beam]))
+                                              if beam.sum() >= MIN_REF_BURSTS
+                                              else None),
+                             n_beam=int(beam.sum()),
+                             products=(d.get('products') or {}).get(sub, {})))
+    have = [s for s in subs if s['gap1_med_ns']]
+    camp_g = float(np.median([s['gap1_med_ns'] for s in have])) if have else None
+    camp_h = float(np.median([s['flash_nhits_med'] for s in have])) if have \
+        else None
+    print(f'campaign reference from {len(have)} sub-run(s) with '
+          f'>= {MIN_REF_BURSTS} beam bursts: gap1 {camp_g/1e3:.1f} us, '
+          f'flash hits {camp_h:.0f}')
+
+    # ---- pass 2: flag, and join against what the chain did
+    flagged, pooled_g, pooled_h, per_sub = [], [], [], []
+    n_judged = 0
+    for s in subs:
+        gm = s['gap1_med_ns'] or camp_g
+        hm = s['flash_nhits_med'] or camp_h
+        per_sub.append(dict(run=s['run'], subrun=s['subrun'],
+                            n_bursts=int(s['n'].size), n_beam=s['n_beam'],
+                            gap1_med_ns=gm, flash_nhits_med=hm,
+                            own_reference=bool(s['gap1_med_ns'])))
+        beam = s['beam']
+        if not beam.any() or not gm or not hm:
+            continue
+        n_judged += int(beam.sum())
+        g1, fh, b = s['g1'], s['fh'], s['bursts']
+        pooled_g.append(g1[beam] / gm)
+        pooled_h.append(fh[beam] / hm)
+        hit = beam & ((g1 < GAP_FRAC * gm) | (fh < NHITS_FRAC * hm))
+        for i in np.flatnonzero(hit):
+            led = ledger.get((s['run'], s['subrun']), {}).get(
+                int(b['burst_id'][i]), (None,) * 4)
+            nt, bunch, fit = bunch_record(s['products'], int(b['burst_id'][i]))
+            flagged.append(dict(
+                run=s['run'], subrun=s['subrun'],
+                burst_id=int(b['burst_id'][i]), since_run=s['rn'] >= a.since_run,
+                n_trig=int(s['n'][i]), t_rel_s=round(b['t_rel_s'][i], 1),
+                gap1_ns=float(g1[i]), gap1_frac=round(float(g1[i] / gm), 4),
+                flash_nhits=int(fh[i]),
+                nhits_frac=round(float(fh[i] / hm), 4),
+                both=bool(g1[i] < GAP_FRAC * gm and fh[i] < NHITS_FRAC * hm),
+                own_reference=bool(s['gap1_med_ns']),
+                state=led[0], ledger_ntof=led[1], ledger_bunch=led[2],
+                ledger_frac=led[3], fixed=burst_fixed(s['products'],
+                                                      int(b['burst_id'][i])),
+                product_ntof=nt, product_bunch=bunch, fit=fit))
     g = np.concatenate(pooled_g) if pooled_g else np.zeros(0)
     h = np.concatenate(pooled_h) if pooled_h else np.zeros(0)
 
-    print(f'{n_bursts:,} bursts, {n_judged:,} with >= {MIN_BURST_TRIG} '
-          f'triggers (the judgeable ones); {n_err} sub-run(s) errored')
+    print(f'{n_bursts:,} clusters, {n_judged:,} judged (>= {MIN_BURST_TRIG} '
+          f'triggers AND a beam pulse under them); {n_noflash:,} big clusters '
+          f'skipped as no-beam -- with no protons there is no gamma flash to '
+          f'be timed from; {n_err} sub-run(s) errored')
     if g.size:
         print(f'gap1 / sub-run median: pct '
               f'{np.percentile(g, [0.01, 1, 50, 99, 99.99]).round(3)}')
@@ -173,18 +249,28 @@ def main() -> int:
     by_state: dict = {}
     for f in flagged:
         by_state.setdefault(f['state'] or 'no ledger entry', []).append(f)
-    matched_fitted, matched_unfitted = [], []
-    for f in by_state.get('MATCHED', []):
-        (matched_fitted if (f['fit'] or {}).get('fitted')
-         else matched_unfitted).append(f)
+    matched = by_state.get('MATCHED', [])
+    corrected = [f for f in matched if f['fixed']]
+    silent = [f for f in matched if not f['fixed']]
+    matched_fitted = [f for f in silent if (f['fit'] or {}).get('fitted')]
     print('  by ledger state: ' + ', '.join(
         f'{k} {len(v)}' for k, v in sorted(by_state.items(),
                                            key=lambda kv: -len(kv[1]))))
-    if by_state.get('MATCHED'):
-        print(f'  !! {len(by_state["MATCHED"])} flagged burst(s) count as '
-              f'MATCHED -- {len(matched_fitted)} of them with their own '
-              f'per-bunch correction. These are the silent class.')
-        for f in by_state['MATCHED'][:40]:
+    print(f'  {len(corrected)} flagged burst(s) already carry a '
+          f'burst_fixes.json override in the product (the mis-tag is in the '
+          f'DREAM data; the correction is in the join, so it stays visible '
+          f'here):')
+    for f in corrected:
+        fx = f['fixed']
+        print(f'     {f["run"]}/{f["subrun"]} burst {f["burst_id"]} -- '
+              f'flash shift {fx.get("flash_shift_ns", 0)/1e6:+.3f} ms, bunch '
+              f'{fx.get("was_bunch")} -> {fx.get("bunch")}, now '
+              f'{f["ledger_frac"]:.0%} coincident')
+    if silent:
+        print(f'  !! {len(silent)} flagged burst(s) count as MATCHED with NO '
+              f'correction applied -- {len(matched_fitted)} of them with '
+              f'their own per-bunch fit. These are the silent class.')
+        for f in silent[:40]:
             fit = f['fit'] or {}
             print(f'     {f["run"]}/{f["subrun"]} burst {f["burst_id"]} '
                   f'n={f["n_trig"]} gap1 {f["gap1_ns"]/1e3:.1f} us '
@@ -193,15 +279,23 @@ def main() -> int:
                   f'coinc {f["ledger_frac"]} fitted {fit.get("fitted")} '
                   f'da {fit.get("da_ns")}')
     else:
-        print('  no flagged burst is MATCHED: every mis-tagged flash the sweep '
-              'finds was refused by the chain, so no product carries one.')
+        print('  no flagged burst is MATCHED without a correction: every '
+              'mis-tagged flash the sweep finds was either refused by the '
+              'chain or already fixed, so no product carries an uncorrected '
+              'one.')
 
     a.out.mkdir(parents=True, exist_ok=True)
     (a.out / 'flash_reference.json').write_text(json.dumps(dict(
         thresholds=dict(gap_frac=GAP_FRAC, nhits_frac=NHITS_FRAC,
                         min_burst_trig=MIN_BURST_TRIG),
         n_runs=len(sweep), n_bursts=n_bursts, n_judged=n_judged,
-        n_subrun_errors=n_err, since_run=a.since_run,
+        n_noflash_skipped=n_noflash, n_subrun_errors=n_err,
+        since_run=a.since_run, beam_states=sorted(BEAM_STATES),
+        # the ledger's own totals, so the report can quote a rate per class
+        # without re-deriving (or hard-coding) a denominator
+        ledger_states=camp_states,
+        min_ref_bursts=MIN_REF_BURSTS,
+        campaign_ref=dict(gap1_ns=camp_g, flash_nhits=camp_h),
         pooled=dict(
             gap1_frac_pct={str(p): float(np.percentile(g, p)) for p in
                            (0.01, 0.1, 1, 5, 50, 95, 99, 99.9, 99.99)}
@@ -216,15 +310,16 @@ def main() -> int:
                                          range=(0, 2))[0].tolist()
             if h.size else []),
         by_state={k: len(v) for k, v in by_state.items()},
-        n_matched_flagged=len(by_state.get('MATCHED', [])),
-        n_matched_flagged_fitted=len(matched_fitted),
+        n_matched_flagged=len(matched), n_corrected=len(corrected),
+        n_silent=len(silent), n_silent_fitted=len(matched_fitted),
         flagged=flagged, per_subrun=per_sub), indent=1))
     with open(a.out / 'flash_reference.csv', 'w', newline='') as fh_:
         w = csv.writer(fh_)
         w.writerow(['run', 'subrun', 'burst_id', 'n_trig', 't_rel_s',
                     'gap1_us', 'gap1_frac', 'flash_nhits', 'nhits_frac',
                     'both_signatures', 'ledger_state', 'ntof_run', 'bunch',
-                    'coincidence', 'fitted', 'da_ns', 'n_core'])
+                    'coincidence', 'fitted', 'da_ns', 'n_core',
+                    'correction_applied_ns'])
         for f in flagged:
             fit = f['fit'] or {}
             w.writerow([f['run'], f['subrun'], f['burst_id'], f['n_trig'],
@@ -232,7 +327,8 @@ def main() -> int:
                         f['gap1_frac'], f['flash_nhits'], f['nhits_frac'],
                         int(f['both']), f['state'], f['ledger_ntof'],
                         f['ledger_bunch'], f['ledger_frac'], fit.get('fitted'),
-                        fit.get('da_ns'), fit.get('n_core')])
+                        fit.get('da_ns'), fit.get('n_core'),
+                        (f['fixed'] or {}).get('flash_shift_ns')])
     print(f'\n-> {a.out}/flash_reference.json + .csv')
     return 0
 

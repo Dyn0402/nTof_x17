@@ -18,7 +18,11 @@ S = 4_383_062.6
 seg = slim.Segment('run_x', 'sub', 224572, burst_fix={
     5: dict(bunch=300, flash_shift_ns=S),          # first burst mid-gate
     6: dict(flash_shift_ns=-1500.0),               # orphan ahead of the flash
-    9: dict(bunch=300)})                           # not in the sub-run
+    9: dict(bunch=300),                            # not in the sub-run
+    # a bunch number means nothing without its n_TOF run: this one belongs to
+    # the OTHER side of a straddling sub-run and must not fire here, even
+    # though bunch 202 exists in this run too
+    7: dict(ntof_run=224573, bunch=202, flash_shift_ns=9e6)})
 ev = pd.DataFrame(dict(
     eventId=np.arange(9), burst_id=[5, 5, 5, 6, 6, 6, 7, 7, 7],
     is_flash=[True, False, False, True, False, False, True, False, False],
@@ -37,8 +41,10 @@ assert not b5.is_flash.any(), 'the stand-in flash is freed after a + shift'
 b6 = out[out.burst_id == 6]
 assert list(b6.is_flash) == [True, True, False], \
     'orphan stays tagged, true flash (t~0) tagged, physics untouched'
-assert (out[out.burst_id == 7].t_since_flash_ns ==
-        [0, 1_000_000, 2_000_000]).all()
+b7 = out[out.burst_id == 7]
+assert (b7.t_since_flash_ns == [0, 1_000_000, 2_000_000]).all() and \
+    (b7.BunchNumber == 202).all(), \
+    'an override keyed to another n_TOF run must not fire'
 assert set(at['burst_fix']) == {'5', '6'} and at['burst_fix']['5']['was_bunch'] == -1
 assert at['burst_map']['bunch'] == [300, 201, 202] and '5' in at['burst_map']['fix']
 print('all burst_fix cases behaved as specified')

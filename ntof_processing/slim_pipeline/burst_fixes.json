@@ -1,5 +1,5 @@
 {
- "_doc": "Evidence-based overrides from burst_bruteforce.py (2026-08-16). Loaded by slim_run.py / run_segment.py by default (--no-burst-fixes disables) and put on the Segment by slim.apply_fixes; applied by slim.apply_burst_fix; recorded in calibration.json join.burst_fix and burst_map.json. 'lock' entries: a whole-segment lock for a sub-run tail too small for the coincidence arbiter (its bursts were paired one by one; the implied pulse_match offsets agree to the ms). 'bursts' entries: per-burst bunch and/or DREAM flash re-reference for the LOW_COINC outliers (each scanned against every bunch within +-120 s at every lag within +-100 ms; the winner is the bunch whose wall+plastic candidates put >= 60 % of the burst's triggers inside +-25 ns after a per-burst (da,dk) line, the runner-up ~3 %). Scan records: ntof_processing/slim_pipeline/bruteforce_scans/.",
+ "_doc": "Evidence-based overrides from burst_bruteforce.py (2026-08-16). Loaded by slim_run.py / run_segment.py by default (--no-burst-fixes disables) and put on the Segment by slim.apply_fixes; applied by slim.apply_burst_fix; recorded in calibration.json join.burst_fix and burst_map.json. 'lock' entries: a whole-segment lock for a sub-run tail too small for the coincidence arbiter (its bursts were paired one by one; the implied pulse_match offsets agree to the ms). 'bursts' entries (each keyed to its 'ntof_run', because a bunch number is meaningless without one -- every run numbers from 1, so a straddling sub-run would otherwise take the override in BOTH of its joins): per-burst bunch and/or DREAM flash re-reference for the LOW_COINC outliers (each scanned against every bunch within +-120 s at every lag within +-100 ms; the winner is the bunch whose wall+plastic candidates put >= 60 % of the burst's triggers inside +-25 ns after a per-burst (da,dk) line, the runner-up ~3 %). Scan records: ntof_processing/slim_pipeline/bruteforce_scans/.",
  "run_82/stat090_h2i5_0007": {
   "lock": {
    "ntof_run": 224581,
@@ -23,6 +23,7 @@
  "run_102/stat090_0002": {
   "bursts": {
    "0": {
+    "ntof_run": 224606,
     "bunch": 2277,
     "flash_shift_ns": 4383062.6,
     "frac": 0.98,
@@ -35,6 +36,7 @@
  "run_124/stat090_0006": {
   "bursts": {
    "521": {
+    "ntof_run": 224654,
     "bunch": 1241,
     "flash_shift_ns": 1001303.3,
     "frac": 0.97,
@@ -47,6 +49,7 @@
  "run_124/stat090_0010": {
   "bursts": {
    "1075": {
+    "ntof_run": 224655,
     "bunch": 3091,
     "flash_shift_ns": 997356.3,
     "frac": 0.94,
@@ -59,6 +62,7 @@
  "run_130/stat090_0000": {
   "bursts": {
    "12": {
+    "ntof_run": 224660,
     "bunch": 300,
     "flash_shift_ns": 1039570.2,
     "frac": 0.97,
@@ -71,6 +75,7 @@
  "run_118/stat090_0005": {
   "bursts": {
    "1212": {
+    "ntof_run": 224643,
     "bunch": 677,
     "flash_shift_ns": 0.0,
     "frac": 0.88,

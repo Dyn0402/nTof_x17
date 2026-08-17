@@ -87,7 +87,9 @@ class Segment:
     # calibration.json fit.bootstrap.min_peak.
     boot_min_peak: int | None = None
     # Per-burst overrides established by burst_bruteforce.py, keyed by
-    # burst_id: {'bunch': int (the bunch whose hits coincide), 'flash_shift_ns':
+    # burst_id: {'ntof_run': int (a bunch number is meaningless without it --
+    # every n_TOF run numbers from 1), 'bunch': int (the bunch whose hits
+    # coincide), 'flash_shift_ns':
     # float (the DREAM flash mis-tag: add to t_since_flash_ns), plus free-form
     # evidence keys}. Applied in `join_events` before anything downstream sees
     # the events; recorded in calibration.json join.burst_fix and in
@@ -186,6 +188,20 @@ def apply_burst_fix(seg: Segment, ev, attrs, log=print):
     applied = {}
     for bid, fx in seg.burst_fix.items():
         bid = int(bid)
+        # A BUNCH NUMBER MEANS NOTHING WITHOUT ITS n_TOF RUN: every run starts
+        # at 1, so bunch 677 exists in both 224642 and 224643 as unrelated
+        # pulses. A sub-run that straddles a run boundary is joined once per
+        # n_TOF run, and without this guard the override would fire in BOTH --
+        # moving the burst onto a real, wrong pulse of the other run, which
+        # the PKUP membership check below cannot catch because that bunch does
+        # exist there. Found 2026-08-17 by the flash sweep, on
+        # run_118/stat090_0005 (224642 + 224643); no product was affected,
+        # because only the correct segment happened to be re-made.
+        want = fx.get('ntof_run')
+        if want is not None and int(want) != int(seg.ntof_run):
+            log(f'  burst_fix: burst {bid} belongs to n_TOF {int(want)}, '
+                f'not {seg.ntof_run} -- not applied here')
+            continue
         m = (ev['burst_id'] == bid).to_numpy()
         if not m.any():
             log(f'  !! burst_fix: burst {bid} not in this sub-run -- ignored')
