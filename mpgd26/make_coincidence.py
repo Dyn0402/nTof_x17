@@ -57,6 +57,10 @@ FIG = os.path.join(HERE, 'figures')
 ALIGN = os.path.join(os.path.dirname(HERE), 'sps_beam_test_26', 'analysis',
                      'urw_mapping', 'mapping_alignment.json')
 COINC_JSON = os.path.join(HERE, 'data', 'coincident_events.json')
+# the track-pair extraction (tools/extract_track_pairs.py): same coincidences,
+# but with a charge-weighted cluster centroid per station and a straight line
+# fitted through the three of them -- the P2 telescope tracking on its own
+PAIRS_JSON = os.path.join(HERE, 'data', 'track_pairs.json')
 TRACKS_CSV = os.path.join(HERE, 'data', 'urwell_tracks.csv')
 
 Z_FRONT, Z_BACK = 0.0, 1370.0
@@ -109,6 +113,40 @@ def pad_at_station(align, pad_map, apex, front, back, name):
 
 
 # ------------------------------------------------------------------ event --- #
+def load_pair_event(index=0, gevent=None):
+    """An event carrying BOTH tracks: (front, back, stations, prov, p2).
+
+    ``p2`` is the line fitted through the three P2 cluster centroids, in pad
+    frame -- x(z) = slope_x z + offset_x, likewise y.  Drawing it through the
+    same pad-frame -> lab composition as the pads is what keeps the two tracks
+    comparable; see the handedness note at the top of this file.
+    """
+    d = json.load(open(PAIRS_JSON))
+    evs = d['events']
+    if gevent is not None:
+        hit = [e for e in evs if e['geventId'] == gevent]
+        if not hit:
+            raise SystemExit(f'geventId {gevent} is not among the '
+                             f'{len(evs)} display events in {PAIRS_JSON}')
+        e = hit[0]
+    else:
+        if index >= len(evs):
+            raise SystemExit(f'only {len(evs)} events in {PAIRS_JSON}')
+        e = evs[index]
+    u, tr = e['urwell'], e['tracks']
+    prov = (f'five-fold coincidence with both tracks, '
+            f'{d["source"]["run"]}/{d["source"]["sub_run"]}, '
+            f'geventId {e["geventId"]}  '
+            f'(P2-only vs uRWELL: {tr["dtheta_x_mrad"]:+.1f} / '
+            f'{tr["dtheta_y_mrad"]:+.1f} mrad, '
+            f'{tr["dx_at_mid_mm"]:+.1f} / {tr["dy_at_mid_mm"]:+.1f} mm at MID)')
+    st = {k: dict(channel_id=v['channel_id'], residual_mm=v['residual_mm'],
+                  n_pads=v['n_pads'], measured=True)
+          for k, v in e['stations'].items()}
+    return ((u['front_x_mm'], u['front_y_mm']),
+            (u['back_x_mm'], u['back_y_mm']), st, prov, tr['p2'])
+
+
 def load_event(index=0):
     """Return (front, back, per-station dict, provenance string)."""
     if os.path.exists(COINC_JSON):
@@ -171,14 +209,18 @@ def choose_track(align, pad_map, apex, rows, sectors):
 
 # ------------------------------------------------------------------ scene --- #
 def build(theme='light', size=(2600, 1750), ssaa=True, shadows=True,
-          event=0, spot=True):
+          event=0, spot=True, pairs=False, gevent=None):
     align = json.load(open(ALIGN))
     pads_lab, sectors, pad_map = X.load_pads_lab()
     _m, _polys, apex = G.load_p2_pads()
     lo, hi = G.P2_INSTRUMENTED_SECTORS
     live = (sectors >= lo) & (sectors <= hi)
 
-    front, back, stations, prov = load_event(event)
+    p2track = None
+    if pairs:
+        front, back, stations, prov, p2track = load_pair_event(event, gevent)
+    else:
+        front, back, stations, prov = load_event(event)
     if front is None:                       # fallback path
         front, back, stations, prov = choose_track(align, pad_map, apex, prov,
                                                    sectors)
@@ -254,6 +296,24 @@ def build(theme='light', size=(2600, 1750), ssaa=True, shadows=True,
     X.add_tracks(p, [(a - u * pad_, b + u * pad_)], radius=2.6,
                  color=S.COL['track_mu'])
 
+    # the P2 telescope's own answer: the line through its three cluster
+    # centroids, drawn over the span it actually measures (IN -> OUT) and
+    # through the same pad-frame -> lab composition as the pads themselves
+    if p2track is not None:
+        zi, zo = 320.0, 940.0
+        def _p2_lab(z):
+            xy = np.array([p2track['slope_x'] * z + p2track['offset_x'],
+                           p2track['slope_y'] * z + p2track['offset_y']])
+            return G.p2_pad_to_lab(xy, apex=apex)
+        ai_xy, ao_xy = _p2_lab(zi), _p2_lab(zo)
+        ai = np.array([ai_xy[0], ai_xy[1], zi])
+        ao = np.array([ao_xy[0], ao_xy[1], zo])
+        v = (ao - ai) / np.linalg.norm(ao - ai)
+        # a colour the reference track does not use, so the two lines read
+        # apart even where they nearly coincide
+        X.add_tracks(p, [(ai - v * 260.0, ao + v * 260.0)], radius=2.6,
+                     color='#2f6fa8')
+
     S.add_light_rig(p, np.array([0.0, 300.0, 685.0]), 900.0, theme=theme,
                     shadows=False)
     return p, anchors, stations, prov
@@ -279,6 +339,11 @@ def main():
                     choices=['light', 'dark', 'both'])
     ap.add_argument('--views', default='hero,beam,pads')
     ap.add_argument('--event', type=int, default=0)
+    ap.add_argument('--pairs', action='store_true',
+                    help='draw the P2-only track beside the uRWELL one, '
+                         'from data/track_pairs.json')
+    ap.add_argument('--gevent', type=int, default=None,
+                    help='pick the display event by geventId')
     ap.add_argument('--no-spot', action='store_true')
     ap.add_argument('--no-shadows', action='store_true')
     ap.add_argument('--size', nargs=2, type=int, default=[2600, 1750])
@@ -291,9 +356,11 @@ def main():
 
     for theme in themes:
         for view in args.views.split(','):
-            out = os.path.join(FIG, f'coincidence_{view}_{theme}.png')
+            stem = 'twotrack' if args.pairs else 'coincidence'
+            out = os.path.join(FIG, f'{stem}_{view}_{theme}.png')
             _px, stations, prov = render(
-                view, theme, out, event=args.event,
+                view, theme, out, event=args.event, pairs=args.pairs,
+                gevent=args.gevent,
                 spot=not args.no_spot, shadows=not args.no_shadows,
                 size=size, ssaa=not args.draft)
     print('\n  fired pads')
