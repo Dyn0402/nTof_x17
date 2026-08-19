@@ -32,6 +32,10 @@ def main():
     ap.add_argument('--bundle', default=None,
                     help='bundle to read v from / write into '
                          '(default <OUT_BASE>/wft/calib_bundle)')
+    ap.add_argument('--events', default=None,
+                    help='reco table to measure from, absolute or relative to '
+                         '<OUT_BASE>/wft (default events.parquet). Use this to '
+                         'measure a tagged arm without touching the live one.')
     args = ap.parse_args()
 
     from qa_config import get_config, setup_paths
@@ -39,7 +43,12 @@ def main():
     from wft.calib import CalibrationBundle
     cfg = get_config(args.run_key)
     W = os.path.join(cfg.OUT_BASE, 'wft')
-    p = pd.read_parquet(os.path.join(W, 'events.parquet'))
+    ev = args.events or 'events.parquet'
+    ev = ev if os.path.isabs(ev) else os.path.join(W, ev)
+    if not os.path.exists(ev):
+        raise SystemExit(f'no reco table at {ev}')
+    print(f'measuring from {ev}')
+    p = pd.read_parquet(ev)
     for tname in ('bench_cache.pkl', 'bench_truth.pkl'):
         tpath = os.path.join(W, tname)
         if os.path.exists(tpath):
@@ -79,7 +88,18 @@ def main():
               + (f'   kw = {kw[plane]:.3f}' if plane in kw else ''))
     if args.write:
         cal.w0, cal.kw = w0, kw
-        cal.save(bundle, note=f'w0/kw measured from events.parquet ({args.run_key})')
+        # The staleness this flag warns about is exactly what we just fixed --
+        # leave it set and every downstream guard keeps refusing the bundle.
+        if cal.provenance.get('w0_kw_stale'):
+            cal.provenance = dict(cal.provenance)
+            cal.provenance['w0_kw_stale'] = False
+            cal.provenance['w0_kw_note'] = (
+                f'w0/kw re-measured from {os.path.basename(ev)} '
+                f'({args.run_key}), a reco run with THIS bundle')
+            print('  cleared the w0_kw_stale flag')
+        cal.save(bundle,
+                 note=f'w0/kw measured from {os.path.basename(ev)} '
+                      f'({args.run_key})')
         print(f'wrote w0/kw into {bundle}')
 
 

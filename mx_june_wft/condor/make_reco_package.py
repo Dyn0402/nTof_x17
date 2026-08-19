@@ -20,6 +20,7 @@ Then:  rsync -av <dest>/ lxplus:~/wft_campaign/
 """
 import argparse
 import csv
+import json
 import os
 import shutil
 import subprocess
@@ -74,8 +75,32 @@ def main():
                          'their rows with <bundle>_t0p. Only set this after '
                          'gate_eval.py — it is the gate decision, not a '
                          'default.')
+    ap.add_argument('--bundle-override', action='append', default=[],
+                    metavar='DET=BUNDLE',
+                    help='run every row of DET with BUNDLE instead of the '
+                         'frozen one, e.g. mx17_3=calib_bundle_r06. The '
+                         'manifest column is left alone (it stays the record '
+                         'of what was frozen); the override is emitted as an '
+                         'explicit --bundle-name on each job line, so '
+                         'jobs_*.txt shows exactly what ran. This is how a '
+                         're-freeze is done -- deliberately, per detector, '
+                         'not by editing BUNDLE above.')
     args = ap.parse_args()
     t0p_dets = set(filter(None, (args.t0p_dets or '').split(',')))
+    override = {}
+    for spec in args.bundle_override:
+        det, _, name = spec.partition('=')
+        if not name:
+            sys.exit(f'FATAL: --bundle-override wants DET=BUNDLE, got {spec!r}')
+        if det not in GOLDEN_WFT:
+            sys.exit(f'FATAL: --bundle-override unknown detector {det!r}')
+        if det in t0p_dets:
+            sys.exit(f'FATAL: {det} is both t0p-adopted and overridden -- the '
+                     'override must name the bundle it wants in full')
+        override[det] = name
+    if override:
+        print('BUNDLE OVERRIDE:', ', '.join(f'{d} -> {b}'
+                                            for d, b in sorted(override.items())))
 
     os.makedirs(os.path.join(args.dest, 'log'), exist_ok=True)
 
@@ -107,6 +132,18 @@ def main():
         if not os.path.isdir(src):
             sys.exit(f'FATAL: frozen bundle missing: {src}')
         shutil.copytree(src, os.path.join(bdir, det, BUNDLE[det]))
+        ov = override.get(det)
+        if ov:
+            osrc = os.path.join(wft, ov)
+            if not os.path.isdir(osrc):
+                sys.exit(f'FATAL: override bundle missing: {osrc}')
+            ob = json.load(open(os.path.join(osrc, 'bundle.json')))
+            if ob.get('provenance', {}).get('w0_kw_stale'):
+                sys.exit(f'FATAL: {det}/{ov} is still stamped w0_kw_stale -- '
+                         'its w0/kw were measured under a different kernel. '
+                         'Reco the golden key with it, run bench/set_w0.py '
+                         '--write, then rebuild this package.')
+            shutil.copytree(osrc, os.path.join(bdir, det, ov))
         gate = GATE_BUNDLE.get(det)
         if gate:
             gsrc = os.path.join(wft, gate)
@@ -162,13 +199,15 @@ def main():
     gate, rest = [], []
     for i, row in enumerate(rows):
         adopted = row['det'] in t0p_dets
+        ov = override.get(row['det'])
         if row['key'] in GOLDEN_KEYS or row['key'] == 'sat_det3':
             # The golden keys' prod arm IS the production product for those
             # rows, so it has to run the gate-ADOPTED bundle like every other
             # row of that detector -- building it on the base bundle would
             # promote mx17_2/mx17_4 back onto the un-adopted configuration.
             add(gate, i, 'prod',
-                f'--bundle-name {row["bundle"]}_t0p' if adopted else '')
+                f'--bundle-name {ov}' if ov else
+                (f'--bundle-name {row["bundle"]}_t0p' if adopted else ''))
             # The t0p comparison arm only exists to decide the gate. That
             # decision is made (gate_eval, 8-12); re-running it would just
             # re-litigate a settled question, so it is opt-in now.
@@ -176,7 +215,8 @@ def main():
                 add(gate, i, 't0p',
                     f'--bundle-name {GATE_BUNDLE[GOLDEN_KEYS[row["key"]]]}')
             continue
-        extra = (f'--bundle-name {row["bundle"]}_t0p' if adopted else '')
+        extra = (f'--bundle-name {ov}' if ov else
+                 (f'--bundle-name {row["bundle"]}_t0p' if adopted else ''))
         if row['tier'] == 'A':
             add(rest, i, 'prod', extra)
         elif row['tier'] == 'B':
@@ -196,6 +236,9 @@ def main():
         for i, tier, key, why in unlistable:
             print(f'   row {i:3d} [{tier}] {key[:50]:50s} {why}')
     print(f'jobs_rest.txt t0p-adopted dets: {sorted(t0p_dets) or "none yet"}')
+    if override:
+        n = sum(1 for r, _, e, _ in gate + rest if '--bundle-name' in e)
+        print(f'bundle overrides applied to {n} job lines')
     # default jobs.txt -> the gate phase, so a bare condor_submit is phase 1
     shutil.copy2(os.path.join(args.dest, 'jobs_gate.txt'),
                  os.path.join(args.dest, 'jobs.txt'))
