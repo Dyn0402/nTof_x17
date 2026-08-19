@@ -38,7 +38,7 @@ def unpack(results, work):
     return work
 
 
-def merge_arm(work, arm, out_dir, park_dir=None):
+def merge_arm(work, arm, out_dir, park_dir=None, code_commit=None):
     import pandas as pd
     src = os.path.join(work, 'out', f'mx17_{arm}')
     tabs = sorted(glob.glob(os.path.join(src, 'events_*.parquet')))
@@ -78,6 +78,12 @@ def merge_arm(work, arm, out_dir, park_dir=None):
             index=False)
 
     meta = dict(metas[0])
+    prov = meta['bundle'].get('provenance', {})
+    if code_commit and prov.get('code_commit') in (None, 'unknown'):
+        # the worker had no CODE_COMMIT.txt (it was not in transfer_input_files
+        # until 2026-08-19); fill it from the package that built the jobs
+        prov['code_commit'] = code_commit
+        prov['code_commit_source'] = 'package CODE_COMMIT.txt, filled at merge'
     meta.update(n_events=int(len(df)),
                 n_seeded=int(sum(m['n_seeded'] for m in metas)),
                 partial=False,
@@ -117,15 +123,23 @@ def main():
     ap.add_argument('--subrun', default='stat090_0000')
     ap.add_argument('--arms', default='A,B,D')
     ap.add_argument('--park', default='pre_r06_backup_20260819')
+    ap.add_argument('--code-commit', default=None,
+                    help='fill the merged meta when the worker had no '
+                         'CODE_COMMIT.txt (default: read it beside --results)')
     a = ap.parse_args()
 
+    cpath = os.path.join(os.path.dirname(a.results.rstrip('/')),
+                         'CODE_COMMIT.txt')
+    commit = a.code_commit or (open(cpath).read().strip()
+                               if os.path.isfile(cpath) else None)
     work = a.work or os.path.join(a.results, 'unpacked')
     unpack(a.results, work)
     print(f'merging {a.run}/{a.subrun} from {a.results}')
     for arm in a.arms.split(','):
         out_dir = os.path.join(a.analysis, a.run, a.subrun, f'mx17_{arm}')
         merge_arm(work, arm, out_dir,
-                  park_dir=os.path.join(out_dir, a.park) if a.park else None)
+                  park_dir=os.path.join(out_dir, a.park) if a.park else None,
+                  code_commit=commit)
     return 0
 
 
