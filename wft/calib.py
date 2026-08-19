@@ -207,9 +207,16 @@ class CalibrationBundle:
 
     def summary(self) -> str:
         h = self.hyper
+        # c2 may be SLAVED: when the bundle carries c2_over_c1, build_matrix
+        # ignores the stored c2 (which is 0.0) and uses ratio * c1. Printing
+        # the stored field there says "no +-2 copy" about a model that draws
+        # one -- report what the model actually uses, and say it is slaved.
+        r = h.get('c2_over_c1')
+        c2 = float(r) * h['c1'] if r is not None else h['c2']
+        c2s = f"c2={c2:.3f}" + (f" (={r:g}xc1)" if r is not None else '')
         return (f"{self.detector or '?'} / {self.run_key or '?'} "
                 f"[{self.share_mode}]: "
-                f"v={self.v_drift:.2f} um/ns, c1={h['c1']:.3f}, c2={h['c2']:.3f}, "
+                f"v={self.v_drift:.2f} um/ns, c1={h['c1']:.3f}, {c2s}, "
                 f"kY={h.get('kY', 1.0):.3f}, tau_s={h['tau_s']:.0f} ns, "
                 f"sigma_s={h['sigma_s']:.0f} ns, sigma_p0={h['sigma_p0']:.3f} mm, "
                 f"Dp={h['Dp']:.4f}  [{self.provenance.get('code_commit', '?')}]")

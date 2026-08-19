@@ -247,6 +247,21 @@ def build_matrix(plane, pos, p0, w, t0, hyper):
     # refit is the physically motivated test arm (handoff T1.2).
     kY = hyper.get('kY', 1.0) if plane == 'y' else hyper.get('cX', 1.0)
     c1, c2 = hyper['c1'] * kY, hyper['c2'] * kY
+    r = hyper.get('c2_over_c1')
+    if r is not None:
+        # SLAVE c2 TO c1.  The +-2 strip is reached only through the +-1
+        # strip, so c2 < c1 always -- yet the shipped bundles carry c2 > c1 on
+        # every detector (det3 1.14, det2 1.53, det7 1.75, det4 2.12).  That is
+        # not a bound artefact: the ref-pinned cosmic chi2 is genuinely flat in
+        # this direction (sloppy-mode analysis 2026-08-17), so the fit is free
+        # to walk there and does.  The H4 head-on beam data measures the ratio
+        # directly and model-free, at 0.45 +- 0.03 over a 2.6x range of drift
+        # field (sps_beam_test_26/analysis/sharing_kernel); near-vertical bench
+        # cosmics give 0.63 +- 0.10 on det3.  Pinning it costs one hyper and
+        # makes the ordering structural.
+        # Applied to the BASE hypers, before the per-plane kY/cX scaling, so
+        # the ratio is plane-independent.  No existing bundle carries the key.
+        c2 = float(r) * c1
     F = strip_fractions(pos, p0, w, hyper['sigma_p0'], hyper['Dp'])
     n = len(pos)
     M = np.empty((n, NSAMP, K))
