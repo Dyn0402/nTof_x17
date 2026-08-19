@@ -49,7 +49,8 @@ def prepare(run, subrun, arm, slim, trs):
     v_bundle = meta['bundle']['v_drift']
     df, _ = I.apply_w0_kw(df, arm, v_bundle, meta)
     tr = trs[f'mx17_{arm}']
-    L = float(np.linalg.norm(tr.center[[0, 2]]))
+    d_perp, foot_x = I.plane_geometry(tr)
+    L = d_perp          # the PERPENDICULAR distance; |centre| drops the pinwheel
 
     ok = (df['x_ok'] & df['y_ok']).to_numpy()
     sane = ((np.abs(df['x_tan_theta']) < I.TAN_SANE)
@@ -59,31 +60,26 @@ def prepare(run, subrun, arm, slim, trs):
     wal = I.slim_wall_events(slim, arm)
     inwal = df['event_id'].isin(wal).to_numpy()
     sel = base & inwal
-    # ORDER MATTERS, and it is run_arm's: the wall/plastic extrapolation runs
-    # on the UNFLIPPED tan (run_arm calls pointing_coincidence before the
-    # pointing fits set the sign). Flipping first halves the lever and turns
-    # 51 % confirmed into 33 %.
-    coin, cinfo = I.pointing_coincidence(slim, arm, df, sel)
-    u_unflipped, tan_unflipped = (df['x_p0'].to_numpy() - I.STRIP_MAP_HALF,
-                                  df['x_tan_theta'].to_numpy().copy())
-
+    # No sign flipping here any more (2026-08-20). The in-plane sign is a
+    # measured property of the reconstruction and lives in I.local_x /
+    # I.track_lines; the old per-figure `tan *= sign(slope)` was the mirror of
+    # it, about a plane centre that sits 16 mm off the beam axis.
+    coin, cinfo = I.pointing_coincidence(slim, arm, df, sel, foot_x=foot_x)
     df = df.copy()
-    for plane in ('x', 'y'):
-        m = (df[f'{plane}_ok'].to_numpy()
-             & (np.abs(df[f'{plane}_tan_theta']) < I.TAN_SANE))
-        uu = df[f'{plane}_p0'].to_numpy()[m] - I.STRIP_MAP_HALF
-        fit = I.pointing_fit(uu, df[f'{plane}_tan_theta'].to_numpy()[m])
-        df[f'{plane}_tan_theta'] *= np.sign(fit['slope']) if fit else 1.0
 
-    u = df['x_p0'].to_numpy() - I.STRIP_MAP_HALF
+    # lever arm measured from the foot of the perpendicular, not the centre
+    u = I.local_x(df['x_p0'].to_numpy())
+    u_unflipped, tan_unflipped = u.copy(), df['x_tan_theta'].to_numpy().copy()
+    lever = u - foot_x
     tan = df['x_tan_theta'].to_numpy()
     inc = (sel & (np.abs(tan) > TAN_FLOOR)
-           & (np.abs(u) > U_CAL_MIN) & (np.abs(u) < U_CAL_MAX))
-    k_i = (u[inc] / L) / tan[inc]
+           & (np.abs(lever) > U_CAL_MIN) & (np.abs(lever) < U_CAL_MAX))
+    k_i = (lever[inc] / L) / tan[inc]
     k_i = k_i[(k_i > 0) & (k_i < 5)]          # wrong-sign = not from target
-    k_coin = (u[inc & coin] / L) / tan[inc & coin]
+    k_coin = (lever[inc & coin] / L) / tan[inc & coin]
     k_coin = k_coin[(k_coin > 0) & (k_coin < 5)]
-    return dict(df=df, meta=meta, tr=tr, L=L, v_bundle=v_bundle, u=u, tan=tan,
+    return dict(df=df, meta=meta, tr=tr, L=L, v_bundle=v_bundle,
+                d_perp=d_perp, foot_x=foot_x, lever=lever, u=u, tan=tan,
                 u_unflipped=u_unflipped, tan_unflipped=tan_unflipped,
                 base=base, sel=sel, coin=coin, cinfo=cinfo, inc=inc,
                 k_track=float(np.median(k_i)) if len(k_i) else float('nan'),
@@ -130,14 +126,16 @@ def fig1(S, out, mask=None, ax=None, title=None):
     own = ax is None
     if own:
         fig, ax = plt.subplots(figsize=FIGSIZE)
-    ax.hexbin(S['u'][m], S['tan'][m], gridsize=80, cmap='viridis', mincnt=1,
-              extent=(-200, 200, -1, 1))
+    ax.hexbin(S['lever'][m], S['tan'][m], gridsize=80, cmap='viridis',
+              mincnt=1, extent=(-200, 200, -1, 1))
     uu = np.linspace(-200, 200, 10)
-    ax.plot(uu, uu / S['L'], 'w--', lw=1.2, label=f'tan = u/L, L = {S["L"]:.0f} mm')
+    ax.plot(uu, uu / S['L'], 'w--', lw=1.2,
+            label=f'tan = u/L, L = {S["L"]:.0f} mm')
     for lo, hi in ((-200, -U_CAL_MAX), (U_CAL_MAX, 200)):
         ax.axvspan(lo, hi, color='k', alpha=0.18, lw=0)
     ax.set_xlim(-200, 200); ax.set_ylim(-1, 1)
-    ax.set_xlabel('u on the strip plane [mm]'); ax.set_ylabel(r'tan $\theta$ (x)')
+    ax.set_xlabel('u on the strip plane [mm], from the beam-axis perpendicular')
+    ax.set_ylabel(r'tan $\theta$ (x)')
     ax.set_title(title or f'arm {S["arm"]}: {int(m.sum()):,} two-plane '
                           'wall-matched tracks', fontsize=9)
     ax.legend(loc='upper left', fontsize=8)
@@ -215,9 +213,11 @@ def fig6(S, out):
     for eid, dn in zip(a['eventId'][it], a['detn'][it]):
         fired[int(eid)].add((int(dn) - 1) // 2)
 
-    # same convention as pointing_coincidence: unflipped tan
-    u_wall = (S['u_unflipped'] - I.STRIPS_TO_WALL * S['tan_unflipped']
-              - I.PINWHEEL[arm])
+    # same convention as pointing_coincidence (corrected frame 2026-08-20):
+    # outward extrapolation ADDS tan*d, and the pinwheel comes off in the
+    # corrected local x
+    u_wall = (S['u_unflipped'] + I.STRIPS_TO_WALL * S['tan_unflipped']
+              - S['foot_x'])
     eids = S['df']['event_id'].to_numpy()
     fig, ax = plt.subplots(figsize=FIGSIZE)
     rows, colors = [], ['#d95f02', '#7570b3', '#1b9e77', '#e7298a']
@@ -226,7 +226,7 @@ def fig6(S, out):
                       for i in range(len(eids))])
         if m.sum() < 20:
             continue
-        lo, hi = I._wall_seg_u(3 - pair)      # detn pair order is descending
+        lo, hi = I._wall_seg_u(pair)          # detn pair order is ascending
         vals = u_wall[m]
         inside = float(np.mean((vals >= lo) & (vals < hi)))
         rows.append(dict(pair=pair, n=int(m.sum()),

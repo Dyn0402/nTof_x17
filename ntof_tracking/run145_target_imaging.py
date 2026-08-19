@@ -50,6 +50,53 @@ ANALYSIS_BASE = os.environ.get('WFT_BEAM_ANALYSIS',
 
 STRIP_MAP_HALF = 199.29        # strip coords run 0..398.58 mm; centre = half
 TAN_SANE = 1.0                 # drop railed angle fits
+
+# IN-PLANE SIGN — MEASURED 2026-08-20, was the dominant defect in the image.
+#
+# geometry.py's ALIGNMENT CAVEAT says the sign of the strip coordinate within
+# the plane is provisional. It is -1: the strip index runs along -u_hat, so
+#     x_local = -(x_p0 - STRIP_MAP_HALF)
+# and the stored wft tan needs NO flip (this analysis used to flip the tan
+# instead, by the sign of the fitted pointing slope, and leave the position
+# alone -- which is the same thing as MIRRORING the track about the plane
+# CENTRE).
+#
+# It matters because the chambers are PINWHEELED: each plane centre sits
+# ~16 mm off the beam axis (geometry.PINWHEEL), so a mirror about the plane
+# centre displaces the reconstructed source by 2 x pinwheel, in opposite
+# global directions for opposing arms. Measured on the scale-free zero
+# crossing of the pointing band (where tan = 0, independent of the angle
+# scale), run_145 both sub-runs, pointing-coincident tracks:
+#
+#     arm  measures   old convention   corrected      surveyed
+#     A    global X      -21.8 mm       -10.9 mm         0
+#     C    global X      +41.7 mm        -7.1 mm         0
+#     B    global Z      -38.0 mm        +6.5 mm         0
+#     D    global Z      +36.2 mm        -5.2 mm         0
+#
+# Opposing arms have to see the SAME source. Under the old convention A and C
+# disagree by 64 mm = 2 x (P_A + P_C); corrected they agree to 4 mm and every
+# arm lands within ~11 mm of the beam axis. The focus improves with it (arm A
+# median axis-miss 34.6 -> 14.8 mm, r<10 mm fraction 18.5 % -> 31.4 %) and so
+# does the external SiPM/plastic confirmation rate (arm A 50.6 % -> 53.4 %).
+IN_PLANE_SIGN = -1.0
+
+
+def local_x(x_p0):
+    """Strip-map coordinate -> local x, in the corrected in-plane sign."""
+    return IN_PLANE_SIGN * (np.asarray(x_p0, float) - STRIP_MAP_HALF)
+
+
+def plane_geometry(tr):
+    """(perpendicular distance from the target to the strip plane,
+    local x of the foot of that perpendicular).
+
+    NOT |centre|: the pinwheel makes the plane centre ~16 mm off the axis, so
+    the lever arm is the perpendicular 234.6 mm and the point-source relation
+    is tan = (x_local - foot_x) / d_perp, not tan = x_local / |centre|."""
+    n = tr.R @ np.array([0.0, 0.0, 1.0])          # outward normal, global
+    uhat = tr.R @ np.array([1.0, 0.0, 0.0])       # local +x, global
+    return float(np.dot(tr.center, n)), -float(np.dot(tr.center, uhat))
 N_POINT_BINS = 8
 MIN_PER_BIN = 25
 K_GRID = np.linspace(0.5, 2.0, 61)   # v-scale scan: tan' = tan * k
@@ -109,10 +156,18 @@ def slim_wall_events(slim_path, arm):
 # ---------------------------------------------------- pointing coincidence
 # Wall / plastic geometry per run79_merge_prelim + RUN79_PRELIM §4: the wall
 # is 16 read bars of 25 mm in 4 groups of 4 (100 mm), 96.4 mm past the strip
-# plane; nTOF detn 1..8 = segment pairs (top/bottom), seg = (detn-1)//2, and
-# the measured read-out order is DESCENDING: detn pair 0 reads the group at
-# most positive structure-u. Plastics: two 200 mm bars at the per-arm depth,
-# detn 1 = positive u under the same (joint) mapping.
+# plane; nTOF detn 1..8 = segment pairs (top/bottom), seg = (detn-1)//2.
+# Plastics: two 200 mm bars at the per-arm depth, centred on the MM (the wall
+# is centred on the STRUCTURE -- geometry.py) so only the wall carries the
+# pinwheel term.
+#
+# READ-OUT ORDER (2026-08-20): ASCENDING -- detn pair 0 reads the group at
+# most NEGATIVE structure-u, and plastic detn 1 is the negative-u bar. This is
+# the same empirical mapping as before, restated in the corrected in-plane
+# frame (IN_PLANE_SIGN): the order was measured by maximising the coincidence,
+# so mirroring the frame flips the order with it. What does NOT cancel is the
+# 2 x pinwheel offset the old frame carried, and removing it is why the
+# confirmed fraction goes up (arm A 50.6 % -> 53.4 %).
 STRIPS_TO_WALL = 96.4
 PINWHEEL = {'D': 15.5, 'B': 15.75, 'A': 16.35, 'C': 17.3}
 SIPM_BAR_W, SIPM_N_BARS, N_WALL_SEG = 25.0, 20, 4
@@ -127,14 +182,16 @@ def _wall_seg_u(g):
     return min(u) - SIPM_BAR_W / 2, max(u) + SIPM_BAR_W / 2
 
 
-def pointing_coincidence(slim_path, arm, df, sel):
+def pointing_coincidence(slim_path, arm, df, sel, foot_x=None):
     """Boolean mask over df rows: the track extrapolates to a wall segment AND
     a plastic bar that BOTH have an in-time slim hit in this arm.
 
-    Track extrapolation in wft-frame tan (fan measured as tan = -u/L, so
-    outward = -tan): u_wall = u - STRIPS_TO_WALL*tan - pinwheel (structure
-    frame). Segment from geometry, converted to detn pair via the measured
-    descending order: detn_pair = 3 - geometric_group."""
+    Extrapolation in the corrected local frame: going OUTWARD (past the
+    strips, toward the wall) by d, x_local moves by +tan*d, so
+        u_wall(structure) = x_local + tan*STRIPS_TO_WALL - foot_x
+        u_plastic(MM)     = x_local + tan*STRIPS_TO_PLASTIC
+    with foot_x the local x of the perpendicular foot (= the pinwheel; the
+    structure is centred on the beam axis, the plastics on the MM)."""
     import uproot
     t = uproot.open(slim_path)['hits']
     a = t.arrays(['eventId', 'det', 'detn', 'dt_ns', 'is_control'],
@@ -151,22 +208,22 @@ def pointing_coincidence(slim_path, arm, df, sel):
     for eid, dn in zip(a['eventId'][it & pss], a['detn'][it & pss]):
         pss_bars[int(eid)].add(int(dn))
 
-    u = df['x_p0'].to_numpy() - STRIP_MAP_HALF
+    xl = local_x(df['x_p0'].to_numpy())
     tan = df['x_tan_theta'].to_numpy()
     eids = df['event_id'].to_numpy()
-    u_wall = u - STRIPS_TO_WALL * tan - PINWHEEL[arm]
-    u_pl = u - STRIPS_TO_PLASTIC[arm] * tan - PINWHEEL[arm]
+    fx = PINWHEEL[arm] if foot_x is None else foot_x
+    u_wall = xl + STRIPS_TO_WALL * tan - fx          # structure frame
+    u_pl = xl + STRIPS_TO_PLASTIC[arm] * tan         # MM frame
 
-    # geometric wall group of the predicted crossing (None if off the wall)
+    # geometric wall group of the predicted crossing (-1 if off the wall)
     geo_edges = [_wall_seg_u(g) for g in range(N_WALL_SEG)]
     seg_pred = np.full(len(df), -1)
     for g, (lo, hi) in enumerate(geo_edges):
-        seg_pred[(u_wall >= lo) & (u_wall < hi)] = 3 - g   # descending
-    # plastic bar: detn 1 = positive u (descending, joint with wall order)
-    bar_pred = np.where(u_pl >= -PINWHEEL[arm] + 0.0, 1, 2)
-    on_bar = np.abs(u_pl + PINWHEEL[arm]
-                    - np.where(bar_pred == 1, PLASTIC_U_OFFSET,
-                               -PLASTIC_U_OFFSET)) < PLASTIC_HALF_U
+        seg_pred[(u_wall >= lo) & (u_wall < hi)] = g   # ascending
+    # plastic bar: detn 2 = positive u (joint with the wall order)
+    bar_pred = np.where(u_pl >= 0.0, 2, 1)
+    on_bar = np.abs(u_pl - np.where(bar_pred == 2, PLASTIC_U_OFFSET,
+                                    -PLASTIC_U_OFFSET)) < PLASTIC_HALF_U
 
     coin = np.zeros(len(df), bool)
     n_predictable = 0
@@ -214,6 +271,43 @@ def pointing_fit(u, tan, n_bins=N_POINT_BINS, min_per_bin=MIN_PER_BIN):
                 bins=b.tolist())
 
 
+def _robust_line(u, t, n_iter=8):
+    """Soft-redescending IRLS line fit — the band sits on a broad background
+    the median-per-bin fit only partly suppresses."""
+    A = np.vstack([u, np.ones_like(u)]).T
+    w = np.ones_like(u)
+    c = np.array([0.0, 0.0])
+    for _ in range(n_iter):
+        c, *_ = np.linalg.lstsq(A * w[:, None], t * w, rcond=None)
+        r = t - (c[0] * u + c[1])
+        s = 1.4826 * np.median(np.abs(r - np.median(r)))
+        w = 1.0 / np.sqrt(1.0 + (r / (2.5 * max(s, 1e-4))) ** 2)
+    return float(c[0]), float(c[1])
+
+
+def _source_from_band(u, t, tr, d_perp, foot_x, n_boot=200, seed=1):
+    """Zero crossing of the pointing band -> the source, scale-free."""
+    slope, icept = _robust_line(u, t)
+    x0 = -icept / slope
+    rng = np.random.default_rng(seed)
+    bs = []
+    for _ in range(n_boot):
+        i = rng.integers(0, len(u), len(u))
+        sl, ic = _robust_line(u[i], t[i])
+        bs.append(-ic / sl)
+    uhat = tr.R @ np.array([1.0, 0.0, 0.0])
+    src = tr.center + x0 * uhat
+    ax = 'X' if abs(uhat[0]) > 0.5 else 'Z'
+    return dict(n=int(len(u)), slope=slope, intercept=icept,
+                zero_crossing_x_local=float(x0),
+                zero_crossing_err=float(np.std(bs)),
+                foot_x_surveyed=float(foot_x),
+                implied_k=float(1.0 / abs(slope * d_perp)),
+                source_global=[float(v) for v in src],
+                source_measured_axis=ax,
+                source_measured_mm=float(src[0] if ax == 'X' else src[2]))
+
+
 # -------------------------------------------------------------------- imaging
 def track_lines(df, tr, sel):
     """Global-frame (P0, D) for each selected 2-plane track.
@@ -221,8 +315,13 @@ def track_lines(df, tr, sel):
     Local frame per reco/geometry.py: x_l, y_l about the strip-plane centre,
     z_l = -w (drift depth inward). wft tan_theta = du/dw, so one depth unit
     inward (dz = -1) moves (tan_x, tan_y) in plane: D_local ∝ (tan_x, tan_y, -1).
+
+    The in-plane sign is applied HERE and nowhere else (IN_PLANE_SIGN): to the
+    POSITION, with the tan left as reconstructed. Flipping the tan instead --
+    which is what this analysis did until 2026-08-20 -- mirrors the track about
+    the plane CENTRE, and the plane centre is 16 mm off the beam axis.
     """
-    xl = df['x_p0'].to_numpy()[sel] - STRIP_MAP_HALF
+    xl = local_x(df['x_p0'].to_numpy()[sel])
     yl = df['y_p0'].to_numpy()[sel] - STRIP_MAP_HALF
     tx = df['x_tan_theta'].to_numpy()[sel]
     ty = df['y_tan_theta'].to_numpy()[sel]
@@ -297,39 +396,53 @@ def run_arm(run, subrun, arm, trs, G, slim_path, slim_cut, out_dir, plots=True):
         sel = sel & inwal
         # second step: track must POINT at a wall segment + plastic bar that
         # both carry an in-time hit (external per-track confirmation)
-        coin, cinfo = pointing_coincidence(slim_path, arm, df, sel)
+        coin, cinfo = pointing_coincidence(slim_path, arm, df, sel,
+                                           foot_x=plane_geometry(tr)[1])
         res['pointing_coincidence'] = cinfo
         res['n_pointing_coincident'] = int(coin.sum())
     else:
         coin = None
 
     # [1] pointing fits per plane (x = tangent u; y = beam axis v)
-    L = float(np.linalg.norm(tr.center[[0, 2]]))     # axis distance to strips
+    #
+    # The lever arm is the PERPENDICULAR distance and the point-source relation
+    # is tan = (x_local - foot_x)/d_perp. Using |centre| with the foot at zero
+    # (what this did until 2026-08-20) throws away the pinwheel and puts a
+    # spurious ~0.07 intercept in the fit. The in-plane sign is fixed, not
+    # fitted, and it lives in the POSITION (see IN_PLANE_SIGN).
+    d_perp, foot_x = plane_geometry(tr)
+    L = float(np.linalg.norm(tr.center[[0, 2]]))     # centre distance, legacy
     res['L_strips_mm'] = L
+    res['plane_geometry'] = dict(d_perp=float(d_perp), foot_x=float(foot_x),
+                                 in_plane_sign=float(IN_PLANE_SIGN))
     for plane in ('x', 'y'):
         m = (df[f'{plane}_ok'].to_numpy()
              & (np.abs(df[f'{plane}_tan_theta']) < TAN_SANE))
-        u = df[f'{plane}_p0'].to_numpy()[m] - STRIP_MAP_HALF
+        u = (local_x(df['x_p0'].to_numpy()[m]) if plane == 'x'
+             else df['y_p0'].to_numpy()[m] - STRIP_MAP_HALF)
         fit = pointing_fit(u, df[f'{plane}_tan_theta'].to_numpy()[m])
         if fit:
-            fit['expected_abs_slope'] = 1.0 / L if plane == 'x' else None
+            fit['expected_slope'] = 1.0 / d_perp if plane == 'x' else None
             if plane == 'x':
                 # slope_reco/slope_true = tan_reco/tan_true = v_true/v_bundle
                 # (tan ∝ 1/v). Biased toward 0 by tan≈0 background — the
-                # image k-scan below is the trustworthy estimator.
-                fit['implied_k'] = abs(fit['slope']) * L
-                fit['v_insitu'] = v_bundle * fit['implied_k']
+                # per-track and image estimators below are the trustworthy
+                # ones. The ZERO CROSSING, though, is scale-free and is the
+                # measurement that fixed the in-plane sign.
+                fit['implied_k'] = 1.0 / abs(fit['slope'] * d_perp)
+                fit['v_insitu'] = v_bundle / fit['implied_k']
+                x0 = -fit['intercept'] / fit['slope']
+                uhat = tr.R @ np.array([1.0, 0.0, 0.0])
+                src = tr.center + x0 * uhat
+                fit['zero_crossing_x_local'] = float(x0)
+                fit['foot_x_surveyed'] = float(foot_x)
+                fit['source_global'] = [float(v) for v in src]
+                # the coordinate this arm actually measures (X for A/C, Z for
+                # B/D): the other two are degenerate along the arm's own line
+                fit['source_measured_axis'] = 'X' if abs(uhat[0]) > 0.5 else 'Z'
+                fit['source_measured_mm'] = float(src[0] if abs(uhat[0]) > 0.5
+                                                  else src[2])
         res[f'pointing_{plane}'] = fit
-
-    # orient the fan outward using the fitted sign (in-plane convention is
-    # provisional — geometry.py ALIGNMENT CAVEAT)
-    sx = np.sign(res['pointing_x']['slope']) if res.get('pointing_x') else 1.0
-    sy = (np.sign(res['pointing_y']['slope'])
-          if res.get('pointing_y') and res['pointing_y'] else 1.0)
-    df = df.copy()
-    df['x_tan_theta'] *= sx
-    df['y_tan_theta'] *= sy
-    res['sign_flip'] = dict(x=float(sx), y=float(sy))
 
     # [1b] per-track angle-scale estimator, inclined tracks only.
     # A ray from the origin crossing the strip plane at u has tan_true = u/L
@@ -338,16 +451,18 @@ def run_arm(run, subrun, arm, trs, G, slim_path, slim_cut, out_dir, plots=True):
     # is a k-invariant ridge along Z=0 through the capsule), so require a
     # minimum reconstructed inclination AND a minimum |u|.
     MIN_TAN, MIN_U, MAX_U = 0.10, 40.0, 130.0
-    u_all = df['x_p0'].to_numpy() - STRIP_MAP_HALF
+    u_all = local_x(df['x_p0'].to_numpy())
     tx_all = df['x_tan_theta'].to_numpy()
+    # lever arm measured from the PERPENDICULAR FOOT, not the plane centre
+    lever = u_all - foot_x
     # MAX_U: beyond ~130 mm the per-slice tan mode collapses toward zero
     # (plane-edge acceptance + window truncation of the deepest columns), so
     # those slices measure the truncation, not the angle scale.
-    inc = sel & (np.abs(tx_all) > MIN_TAN) & (np.abs(u_all) > MIN_U) \
-        & (np.abs(u_all) < MAX_U)
+    inc = sel & (np.abs(tx_all) > MIN_TAN) & (np.abs(lever) > MIN_U) \
+        & (np.abs(lever) < MAX_U)
     res['n_inclined'] = int(inc.sum())
     if inc.sum() >= 50:
-        k_i = (u_all[inc] / L) / tx_all[inc]
+        k_i = (lever[inc] / d_perp) / tx_all[inc]
         k_i = k_i[(k_i > 0) & (k_i < 5)]        # wrong-sign = not from target
         res['k_track'] = dict(
             n=int(len(k_i)), median=float(np.median(k_i)),
@@ -368,11 +483,25 @@ def run_arm(run, subrun, arm, trs, G, slim_path, slim_cut, out_dir, plots=True):
             scan.append(dict(k=float(k), **image_metrics(r, y)))
         # per-track k on the pointing-coincident subset (with-cut estimate)
         if coin is not None and (inc & coin).sum() >= 50:
-            kc = (u_all[inc & coin] / L) / tx_all[inc & coin]
+            kc = (lever[inc & coin] / d_perp) / tx_all[inc & coin]
             kc = kc[(kc > 0) & (kc < 5)]
             res['k_track_coincident'] = dict(
                 n=int(len(kc)), median=float(np.median(kc)),
                 v_insitu=float(v_bundle / np.median(kc)))
+
+        # [1c] THE SCALE-FREE MEASUREMENT: where the pointing band crosses
+        # tan = 0 is where the track is perpendicular to the plane, i.e. the
+        # foot of the perpendicular from the source. It does not involve the
+        # angle scale at all, so it is independent of k, of v_drift and of the
+        # whole bench transfer. On the confirmed subset, restricted to the
+        # range where the band is linear (beyond ~130 mm from the foot the
+        # window truncation flattens it).
+        if coin is not None and coin.sum() >= 200:
+            mm = coin & (np.abs(lever) > 30) & (np.abs(lever) < 130) \
+                & (np.abs(tx_all) > 1e-3)
+            if mm.sum() >= 200:
+                res['pointing_x_coincident'] = _source_from_band(
+                    u_all[mm], tx_all[mm], tr, d_perp, foot_x)
 
         res['k_scan'] = scan
         best = min(scan, key=lambda s: s['r_core'])
@@ -392,8 +521,12 @@ def run_arm(run, subrun, arm, trs, G, slim_path, slim_cut, out_dir, plots=True):
         d2 = df.copy()
         d2['x_tan_theta'] = df['x_tan_theta'] * k_use
         d2['y_tan_theta'] = df['y_tan_theta'] * k_use
-        for tag, m in (('full', sel), ('relonly', sel & rel),
-                       ('headon', sel & ~rel)):
+        tags = [('full', sel), ('relonly', sel & rel), ('headon', sel & ~rel)]
+        if coin is not None:
+            # the externally CONFIRMED sample — the one the deck figure draws
+            # and the only one where the background is actually gone
+            tags.insert(0, ('coincident', coin))
+        for tag, m in tags:
             if m.sum() >= 20:
                 P0, D = track_lines(d2, tr, m)
                 r, y, _ = axis_approach(P0, D)

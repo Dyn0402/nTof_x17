@@ -262,6 +262,49 @@ velocity moves 36.1&nbsp;→&nbsp;36.2&nbsp;µm/ns, the focus tightens slightly,
 and the externally confirmed fraction is unchanged at 51&nbsp;%. Record:
 <code>ntof_tracking/RUN145_R06_2026-08-19.md</code>.</p>
 
+<p><strong>Corrected 2026-08-20: the in-plane sign, and the pinwheel.</strong>
+Two geometry errors, both in this analysis rather than in the reconstruction,
+and together they were the dominant defect in the image.
+<em>(i)</em> The sign of the strip coordinate within the plane — flagged
+provisional in <code>reco/geometry.py</code> and never verified — was applied
+to the <em>angle</em> (by the fitted sign of the pointing slope) and not to
+the <em>position</em>. That is a mirror about the strip-plane centre, and the
+chambers are <strong>pinwheeled</strong>: each plane centre sits ~16&nbsp;mm
+off the beam axis, so the mirror displaces the reconstructed source by
+2&nbsp;×&nbsp;pinwheel, in opposite global directions for opposing arms.
+<em>(ii)</em> The point-source relation used the distance to the plane
+<em>centre</em> with the lever measured from the centre, instead of the
+perpendicular distance with the lever measured from the perpendicular foot —
+a spurious 0.07 offset in tan&thinsp;θ.</p>
+
+<p>The fingerprint is unmistakable and it is scale-free. Where the pointing
+band crosses tan&thinsp;θ&nbsp;=&nbsp;0 is the foot of the perpendicular from
+the source; it involves no angle scale, no drift velocity and no part of the
+bench transfer. Read that way, the four arms said:</p>
+
+<table>
+<tr><th>arm</th><th>measures</th><th>source, old convention</th>
+    <th>source, corrected</th></tr>
+<tr><td>A</td><td>global X</td><td>−21.8 mm</td><td><strong>−10.9 mm</strong></td></tr>
+<tr><td>C</td><td>global X</td><td>+41.7 mm</td><td><strong>−7.1 mm</strong></td></tr>
+<tr><td>B</td><td>global Z</td><td>−38.0 mm</td><td>+6.5 mm</td></tr>
+<tr><td>D</td><td>global Z</td><td>+36.2 mm</td><td>−5.2 mm</td></tr>
+</table>
+
+<p>Opposing arms have to see the same source. Under the old convention A and C
+disagreed by 64&nbsp;mm&nbsp;=&nbsp;2&nbsp;×&nbsp;(P<sub>A</sub>&nbsp;+&nbsp;P<sub>C</sub>),
+which is the arithmetic of the mirror; corrected they agree to 4&nbsp;mm and
+every arm lands within ~11&nbsp;mm of the beam axis. Three independent things
+improved with it and one did not move, which is the right signature:
+arm&nbsp;A's median axis-miss 34.6&nbsp;→&nbsp;14.8&nbsp;mm and its
+r&nbsp;&lt;&nbsp;10&nbsp;mm fraction 18.5&nbsp;→&nbsp;31.4&nbsp;%; the external
+SiPM/plastic confirmation rate 51.2&nbsp;→&nbsp;54.0&nbsp;%; the two
+independent angle-scale estimators, which used to disagree badly, now agree
+(image focus scan 0.75&nbsp;→&nbsp;1.18 against per-track 1.17). What did
+<em>not</em> move is the in-situ drift velocity, 36.2&nbsp;→&nbsp;36.3&nbsp;µm/ns
+— as it should not, because the defect was an offset and not a scale. Record:
+<code>ntof_tracking/RUN145_ALIGNMENT_2026-08-20.md</code>.</p>
+
 <h2>The pointing correlation</h2>
 <figure>
 {img(NOTE_FIGS + '/fig1_tan_vs_u.png')}
