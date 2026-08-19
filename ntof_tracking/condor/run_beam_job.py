@@ -127,6 +127,16 @@ def main():
                             v_drift=a.v_drift, run=a.run, sub_run=a.subrun)
     stamp_provenance(bundle, bench_origin)
 
+    # The bench absolute-time table must not ride along on a beam run (see
+    # wft_beam.make_bundle). Assert it here too: this is a worker, nobody reads
+    # its log unless something already went wrong.
+    import json as _json
+    _b = _json.load(open(os.path.join(bundle, 'bundle.json')))
+    if _b.get('t0_prior_sigma') or _b.get('t0_abs'):
+        sys.exit('FATAL: seeded bundle still carries a t0 prior '
+                 f'(sigma={_b.get("t0_prior_sigma")}) — that is the BENCH '
+                 'trigger, not this run\'s')
+
     cfg = wb.beam_config(a.arm, a.run, a.subrun)
     cfg.file_tags = [a.tag]
     wb.reconstruct_subrun(cfg, bundle,

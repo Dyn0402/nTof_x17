@@ -177,19 +177,41 @@ def hits_file_for_tag(cfg: BeamConfig, tag: str) -> Optional[str]:
 
 # --------------------------------------------------------------------- bundle
 def make_bundle(arm: str, out: Optional[str] = None, v_drift: Optional[float] = None,
-                run: str = 'run_79', sub_run: str = 'stat090_0000') -> str:
-    """Seed a run_79 bundle from the bench bundle.
+                run: str = 'run_79', sub_run: str = 'stat090_0000',
+                keep_t0_prior: bool = False) -> str:
+    """Seed a beam bundle from the bench bundle.
 
     What transfers (PLAN_08 §2): the impulse template and the resistive-strip
     sharing kernel -- hardware properties of the same chambers. What does not:
     v_drift, the diffusion pair, and the DAQ constants. This routine transfers
-    the first group verbatim, replaces the DAQ constants with run_79's, and
-    puts a PRIOR (not a measurement) in v_drift; sigma_p0/Dp are left at the
-    bench values, which is the largest un-validated assumption in this chain.
+    the first group verbatim, replaces the DAQ constants with the beam run's,
+    and puts a PRIOR (not a measurement) in v_drift; sigma_p0/Dp are left at
+    the bench values, which is the largest un-validated assumption in this
+    chain.
+
+    ALSO dropped: `t0_abs` and `t0_prior_sigma`. Those are an ABSOLUTE arrival
+    time in the readout window, measured on the bench against its scintillator
+    trigger and its DAQ latency -- a property of the trigger, not of the
+    chamber. A beam run is triggered by n_TOF, so the bench table is a wrong
+    answer stated to +-5 ns, which at sigma = 5 is effectively a hard pin.
+    This matters because it is SILENT: it arrived only when the fleet moved to
+    the *_t0p bundles (r06 derives from calib_bundle_lp2_t0p), so a beam re-run
+    that changes nothing but the kernel would have quietly also acquired a
+    bench clock. Measured on run_145 tag 004: with the prior the fitted t0
+    sits at 236 +- 80 ns, pulled onto the bench's per-bin table (222-305);
+    without it the free fit medians 30 ns. Pass keep_t0_prior=True only once
+    an in-situ t0 calibration for THIS run exists.
     """
     from wft.calib import CalibrationBundle
     d = BEAM_DETS[arm]
     cal = CalibrationBundle.load(d['bundle'])
+    dropped_t0 = None
+    if not keep_t0_prior and (getattr(cal, 't0_abs', None)
+                              or getattr(cal, 't0_prior_sigma', 0)):
+        dropped_t0 = dict(t0_prior_sigma=cal.t0_prior_sigma,
+                          t0_abs_planes=sorted(cal.t0_abs))
+        cal.t0_abs = {}
+        cal.t0_prior_sigma = 0.0
     with open(f'{BEAM_BASE}{run}/run_config.json') as f:
         rc = json.load(f)
     daq = rc['dream_daq_info']
@@ -215,6 +237,16 @@ def make_bundle(arm: str, out: Optional[str] = None, v_drift: Optional[float] = 
         not_revalidated='sigma_p0, Dp (gas-dependent), template (assumed same '
                         'DREAM shaping), dt_xy',
         status='PRELIMINARY -- see ntof_tracking/TRACK_PLAN_08 phase 2')
+    if dropped_t0:
+        cal.provenance['dropped'] = (
+            't0_abs + t0_prior_sigma (bench absolute time vs the bench '
+            'scintillator trigger; this run is triggered by n_TOF, so the '
+            'bench table does not transfer)')
+        cal.provenance['dropped_t0_was'] = dropped_t0
+    elif keep_t0_prior:
+        cal.provenance['kept_t0_prior'] = (
+            'BENCH t0_abs/t0_prior_sigma kept on a beam run by explicit '
+            'request -- only defensible with an in-situ t0 for this run')
     out = out or os.path.join(ANALYSIS_BASE, run, sub_run, f'mx17_{arm}',
                               'calib_bundle_prelim')
     cal.save(out, note=f'preliminary {run} bundle for arm {arm}')
@@ -481,6 +513,9 @@ def main():
     b.add_argument('--run', default='run_79')
     b.add_argument('--subrun', default='stat090_0000')
     b.add_argument('--v-drift', type=float, default=None)
+    b.add_argument('--keep-t0-prior', action='store_true',
+                   help='keep the bench t0_abs/t0_prior_sigma. Off by '
+                        'default, and it should stay off: see make_bundle.')
     b.add_argument('--out', default=None)
 
     r = sub.add_parser('reco', help='reconstruct a beam sub-run')
@@ -497,7 +532,7 @@ def main():
     a = ap.parse_args()
     if a.cmd == 'bundle':
         make_bundle(a.det, out=a.out, v_drift=a.v_drift, run=a.run,
-                    sub_run=a.subrun)
+                    sub_run=a.subrun, keep_t0_prior=a.keep_t0_prior)
         return 0
     cfg = beam_config(a.det, a.run, a.subrun, n_tags=a.tags)
     bundle = a.bundle or os.path.join(ANALYSIS_BASE, a.run, a.subrun,
