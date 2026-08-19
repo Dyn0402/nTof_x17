@@ -86,7 +86,11 @@ def stage(outdir: Path) -> list[str]:
     """Copy every source figure into ``outdir``.  Returns the names missing."""
     outdir.mkdir(parents=True, exist_ok=True)
     keep = (set(SOURCES) | set(FROM_NOTE)
-            | {"beam_availability.png", "events_collected.png"})  # figures_local
+            | {"beam_availability.png", "events_collected.png",
+               "capsule_pressure.png"}                           # figures_local
+            | {"hv_current_scan.png"}                            # figures_flash
+            | {"setup_topdown.png"}                              # figures_geometry
+            | {"comb_evolution.png"})                            # figures_comb
     for stale in outdir.iterdir():  # a figure dropped from the report
         if stale.name not in keep:  # must not linger and get published
             stale.unlink()

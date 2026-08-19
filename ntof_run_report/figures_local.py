@@ -1,4 +1,4 @@
-"""The two figures that only this report makes.
+"""The figures that only this report makes.
 
 `beam_availability` — the beam record for the whole run, from the DAQ's own
 NXCALS logger (`FTN.BCT477`, protons on the n_TOF target).  The logger writes a
@@ -13,6 +13,10 @@ statement about protons on target and is trustworthy; the blame is not.  This
 figure therefore shows one number per day — the fraction of the day with beam.
 
 `timeline` — the four phases, drawn from the logbook dates.
+
+`capsule_pressure` — the ³He capsule's gauge for every day it was mounted, from
+the DAQ's own Keithley/GPIB slow-control log.  See the function's docstring for
+what is cut off and why.
 """
 
 from __future__ import annotations
@@ -35,6 +39,10 @@ BEAM_LOG = Path(os.path.expanduser("~/x17/beam_july/slow_control/beam_intensity"
 
 # every DREAM sub-run's event count, scanned off EOS once (see count_events.py)
 EVENT_CENSUS = Path(__file__).resolve().parent / "data/events_per_subrun.csv"
+
+# the ³He capsule's gauge, reduced to five-minute bins off the EOS slow-control
+# log (1.08 M samples -> 7 371 bins); see capsule_pressure() for provenance
+PRESSURE_LOG = Path(__file__).resolve().parent / "data/he3_pressure_5min.csv"
 
 PHASE_COLOUR = {
     "setup": "#8aa5c4",       # 28 Jun - 13 Jul
@@ -222,4 +230,118 @@ def events_collected(out: Path) -> dict:
         "best_day_events": int(max(sum(per_day[d].values()) for d in days)),
         "unreadable_tags": bad,
         "tags": len(rows),
+    }
+
+
+def capsule_pressure(out: Path) -> dict:
+    """The ³He capsule's own pressure gauge, for the whole time it was mounted.
+
+    A Keithley 2000 sat on the capsule's transducer over GPIB and the DAQ's
+    `he3_pressure_watcher` wrote one row every ~2 s, converting volts with the
+    transducer's calibration P = (V - 1) x 400 bar.  Source of truth is
+    `/eos/experiment/ntof/data/x17/july_beam/slow_control/he3_pressure/`,
+    one CSV per day.  That is 1.08 M samples and 34 MB, so what is committed
+    here is a five-minute reduction (`data/he3_pressure_5min.csv`: per-bin
+    median, min, max and sample count).  The figure is drawn from the medians.
+
+    Three things to know about the record:
+
+    * **It starts on 14 July, not 28 June.**  The capsule went on the beam
+      axis in the 14 July access; the gauge read 504.8 bar as soon as it was
+      plugged in.  The only earlier reading is a 36-sample bench stub from
+      8 July at 507.1 bar, taken while the read-out was being commissioned —
+      it is in the CSV but is not joined to the campaign trace.
+    * **The end-of-run vent is cut off.**  At dismount on 10 August the valve
+      was opened at 09:43 and the capsule equalised to ~7.8 bar.  Plotting it
+      would compress the whole run into one line, so the trace stops at the
+      last pre-vent sample and the drop is annotated instead.
+    * **111 samples are negative** (0.01 %), all during the 14-15 July
+      bring-up when the GPIB lead was being plugged and unplugged.  They are
+      dropped in the reduction; no sample after 15 July 12:00 is affected.
+    """
+    import datetime as _dt
+
+    rows = list(csv.DictReader(PRESSURE_LOG.open()))
+    t_all = [_dt.datetime.fromisoformat(r["timestamp"]) for r in rows]
+    p_all = np.array([float(r["p_med_bar"]) for r in rows])
+    n_all = np.array([int(r["n"]) for r in rows])
+
+    # the 8 July commissioning stub, and the vent at dismount, are both out
+    stub_p = float(p_all[0])
+    stub_day = t_all[0]
+    keep = [i for i, (t, p) in enumerate(zip(t_all, p_all))
+            if t >= _dt.datetime(2026, 7, 14) and p > 400.0]
+    t = [t_all[i] for i in keep]
+    p = p_all[keep]
+    nsamp = int(n_all[keep].sum())
+
+    # break the line wherever the logger was down for more than half an hour
+    tg, pg = [t[0]], [p[0]]
+    for i in range(1, len(t)):
+        if (t[i] - t[i - 1]).total_seconds() > 1800:
+            tg.append(t[i - 1] + _dt.timedelta(seconds=1))
+            pg.append(np.nan)
+        tg.append(t[i])
+        pg.append(p[i])
+
+    fig, ax = plt.subplots(figsize=(11.5, 2.2))
+    ax.plot(tg, pg, color="#3d6b8c", lw=1.0)
+    ax.axvline(np.datetime64(PRODUCTION_START), color="#3a3f45", lw=1.2,
+               alpha=0.55, zorder=1)
+    ax.annotate("26 Jul — production", xy=(np.datetime64(PRODUCTION_START), 0.06),
+                xycoords=("data", "axes fraction"), xytext=(4, 0),
+                textcoords="offset points", fontsize=7.5, color="#3a3f45")
+
+    lo, hi = float(p.min()), float(p.max())
+    ax.set_ylim(lo - 1.2, hi + 1.6)
+    ax.set_xlim(_dt.datetime(2026, 7, 14), _dt.datetime(2026, 8, 11, 12))
+    ax.set_ylabel("capsule pressure\n[bar]", fontsize=9)
+    ax.set_title("³He capsule pressure over the run — vent at dismount not shown",
+                 fontsize=11, fontweight="bold", loc="left")
+    ax.xaxis.set_major_formatter(mdates.DateFormatter("%d %b"))
+    ax.xaxis.set_major_locator(mdates.DayLocator(interval=2))
+    ax.tick_params(labelsize=8)
+    ax.grid(alpha=0.3)
+    ax.set_axisbelow(True)
+
+    # the 14 July mount is a single five-minute bin, then the logger was down
+    # overnight; draw it as a point so it is not mistaken for noise
+    ax.plot([t[0]], [p[0]], "o", ms=3.2, color="#3d6b8c")
+    ax.annotate(f"capsule mounted 14 Jul, {p[0]:.1f} bar", xy=(t[0], p[0]),
+                xytext=(-2, -66), textcoords="offset points", fontsize=7.5,
+                color="#3d6b8c", ha="left", va="center")
+    ax.annotate(f"10 Aug 09:43 — valve opened\nat dismount, {p[-1]:.0f} → 7.8 bar",
+                xy=(t[-1], p[-1]), xytext=(-6, 16), textcoords="offset points",
+                fontsize=7.5, color="#8a4b2a", ha="right",
+                arrowprops=dict(arrowstyle="->", color="#8a4b2a", lw=0.9))
+
+    fig.tight_layout()
+    fig.savefig(out, dpi=140)
+    plt.close(fig)
+
+    # the diurnal breathing: the median day's peak-to-peak
+    per_day = defaultdict(list)
+    for ti, pi in zip(t, p):
+        per_day[ti.date().isoformat()].append(pi)
+    swings = sorted(max(v) - min(v) for d, v in per_day.items()
+                    if len(v) > 250)          # full days only
+    days_held = (t[-1] - t[0]).total_seconds() / 86400
+
+    return {
+        "mean": float(p.mean()),
+        "min": lo,
+        "max": hi,
+        "first": float(p[0]),
+        "last": float(p[-1]),
+        "start": t[0].date().isoformat(),
+        "end": t[-1].date().isoformat(),
+        "days": days_held,
+        "bins": len(p),
+        "samples": nsamp,
+        "drop_bar": float(p[0] - p[-1]),
+        "drop_per_day": float((p[0] - p[-1]) / days_held),
+        "diurnal_swing": swings[len(swings) // 2] if swings else float("nan"),
+        "vented_to": 7.8,
+        "commissioning_bar": stub_p,
+        "commissioning_day": stub_day.date().isoformat(),
     }

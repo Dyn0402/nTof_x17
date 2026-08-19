@@ -20,9 +20,14 @@ note has to carry its own images.
 |---|---|
 | `make_report.py` | the prose, the tables and the page. Everything is here; there is no template file to keep in sync. |
 | `assets.py` | the figure inventory — one source path per figure, in the analysis package that produced it. A moved figure fails loudly at build time instead of vanishing from the page. |
-| `figures_local.py` | the two figures that exist nowhere else: beam availability and the event census. |
+| `figures_local.py` | beam availability, the event census, and the ³He capsule pressure. |
+| `figures_geometry.py` | the dimensioned top-down plan view, drawn from a geometry dump of the as-built `MX17_Full_Geant` model. |
+| `figures_comb.py` | the acceptance-comb evolution across the five DAQ configuration epochs, with the simulated IPC spectrum behind. |
+| `figures_flash.py` | the HV-supply current through the 25-plateau flash-charge scan (n_TOF run 224709). |
 | `count_events.py` | **runs on lxplus, not here.** Scans `decoded_root` on EOS for every sub-run's event count. ~15 min; the result is committed as `data/events_per_subrun.csv` so the report builds without EOS. |
 | `data/events_per_subrun.csv` | one row per (sub-run, file tag): events and the DAQ's own timestamp. |
+| `data/he3_pressure_5min.csv` | the capsule pressure log, reduced to five-minute bins on lxplus (the raw 1.08 M samples live on EOS). |
+| `data/comb/` | per-epoch time-since-flash histograms and the IPC spectrum, extracted on lxplus by `extract_comb.py`. |
 
 ## Conventions this report holds itself to
 
@@ -30,10 +35,13 @@ note has to carry its own images.
   elsewhere in the repo and carries its source in the text.
 - **Preliminary is marked, everywhere.** The reconstruction chain has an in-situ
   calibration for one arm on two runs; every figure built on it carries a red
-  badge, and the banner at the top says so in full. If that stops being true,
-  the badges come off — not before.
-- **The beam record quotes the total, never the blame.** The DAQ's logger splits
-  downtime into PS and n_TOF; that split is unreliable and the report says so.
+  badge reading exactly `Preliminary` and nothing else. If that stops being
+  true, the badges come off — not before.
+- **The beam record quotes the total, never the blame.** The DAQ's logger tries
+  to split downtime into PS and n_TOF; we do not yet know how accurate that is,
+  and no number in the report uses it.
+- **Units.** Microns for PCB pitches, centimetres for setup distances,
+  millimetres for anything smaller.
 
 ## Re-running the event census
 
