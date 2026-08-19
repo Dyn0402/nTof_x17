@@ -21,11 +21,19 @@ with open('index.html') as f:
     c = f.read()
 head = c[:c.index('<div class="stage">')]
 sections = re.findall(r'<section class="slide.*?</section>', c, flags=re.S)
+# Each slide prints alone, so the CSS slide counter would read "1" on every
+# page; pre-load it with this slide's position in the full deck instead. An
+# overlay build (.bstart + .bcont, see the <style> block) is ONE slide printed
+# as several pages, numbered 6.1, 6.2, ...: its continuation frames do not
+# increment the counter, so they print at the number the build started on. The
+# ".n" half is the section's own data-frame attribute and needs nothing here.
+s_no = 0
 for i, sec in enumerate(sections, start=1):
-    # Each slide prints alone, so the CSS slide counter would read "1" on every
-    # page; pre-load it with this slide's position in the full deck instead.
+    cont = 'bcont' in re.match(r'<section class="([^"]*)"', sec).group(1).split()
+    if not cont:
+        s_no += 1
     doc = (head
-           + f'<style>.deck{{counter-reset:slide {i-1};}}</style>\n'
+           + f'<style>.deck{{counter-reset:slide {s_no if cont else s_no - 1};}}</style>\n'
            + '<div class="stage"><div class="deck">\n' + sec + '\n</div></div>')
     with open(f'{work}/slide_{i:02d}.html', 'w') as f:
         f.write(doc)

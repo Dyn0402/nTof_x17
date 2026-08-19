@@ -681,14 +681,29 @@ def _panel_signature(fig, ax, P, halo):
 # angle, this one derives it: beam -> capture -> level drop -> *why the parent
 # mass sets the angle* -> the distribution.  Beat 4 is the one that earns the
 # extra row; without it panel 5 is a picture you have to be told how to read.
-S_ROW1 = (47.0, 74.0)       # (bottom, top) of the upper row
-S_ROW2 = (7.0, 40.0)
-S_HEAD1, S_HEAD2 = 76.6, 42.6
-S_A = (8.0, 46.0)           # 1 beam on target
-S_B = (52.0, 90.0)          # 2 capture
-S_C = (96.0, 152.0)         # 3 de-excitation
-S_D = (8.0, 100.0)          # 4 why the pair opens the way it does
-S_E = (104.0, 152.0)        # 5 what we measure
+#
+# THE STORY CANVAS IS NARROWER THAN THE COMPACT ONE, and that is the whole
+# mechanism behind how big this figure comes out on a slide (2026-08-18, Dylan:
+# "make them taller such that they better fill the page").  On the deck each
+# row is one slide's figure, so it is WIDTH-limited: whatever the canvas is, it
+# is drawn across the same ~12.4 in of slide.  Type is set in POINTS and the
+# drawing in canvas UNITS, so the only lever on how big both come out is how
+# many units the row spans -- 160 units across 12.4 in renders 9 pt type at
+# 7 pt, 124 units renders it at 9 pt.  Hence SW: the beats were re-flowed from
+# three/two wide, flat boxes into narrower, taller ones, the row went from
+# 160x35 to 124x57 (4.6:1 -> 2.2:1, which is the shape of the hole in the
+# slide), and everything on it is ~29 % larger without one font size changing.
+# Do not widen SW back out to W without re-flowing the beats: the row would go
+# flat again and the type would shrink with it.
+SW = 124.0                  # story-canvas width (the compact layout is W=160)
+S_ROW1 = (66.0, 120.0)      # (bottom, top) of the upper row
+S_ROW2 = (7.0, 63.0)
+S_HEAD1, S_HEAD2 = 117.6, 60.6
+S_A = (1.0, 37.0)           # 1 beam on target
+S_B = (40.0, 68.0)          # 2 capture
+S_C = (71.0, 122.0)         # 3 de-excitation
+S_D = (3.0, 79.0)           # 4 why the pair opens the way it does
+S_E = (82.0, 122.0)         # 5 what we measure
 
 
 # Each part is the SAME drawing seen through a different window: the beats keep
@@ -698,13 +713,24 @@ S_E = (104.0, 152.0)        # 5 what we measure
 #
 # ``full`` is the band with the title and caption bands included, ``bare`` the
 # band with just the drawing.  Header/footer y move with the band.
+#
+# The two ``bare`` bands are each ~2.16:1 BY DESIGN -- that is the shape of the
+# figure hole on the deck slide (1186 x 547 px, measured, see slides/NOTES.md),
+# so a row printed bare fills it top to bottom instead of floating in a band of
+# white.  Change a beat's height and re-measure; a row that ends up flatter
+# than ~2.2:1 is leaving slide height, and rendered size, on the table.
 STORY_PARTS = {
-    'all': dict(full=(0.0, 90.0), bare=(4.2, 78.4),
-                head=(85.4, 80.6, 78.2), foot=2.2, beats='12345'),
-    'top': dict(full=(38.0, 90.0), bare=(43.4, 78.4),
-                head=(85.4, 80.6, 78.2), foot=41.0, beats='123'),
-    'bottom': dict(full=(0.0, 56.0), bare=(3.4, 44.2),
-                   head=(51.6, 47.2, 45.0), foot=2.2, beats='45'),
+    'all': dict(full=(-6.6, 136.0), bare=(4.6, 121.6),
+                head=(132.6, 127.0, 124.0), foot=-1.8, beats='12345'),
+    'top': dict(full=(56.0, 136.0), bare=(64.2, 121.6),
+                head=(132.6, 127.0, 124.0), foot=60.2, beats='123'),
+    # the BOTTOM bare band is 124 x 61.1 = 2.03:1 since 2026-08-18, not 2.16:1.
+    # Its deck slide lost its .fig-label that day, and four lines of small type
+    # under the picture were four lines of figure height: the hole re-measured
+    # 2.028:1 with the red-box recipe, so the band follows it.  The top row keeps
+    # its label and keeps 2.16.
+    'bottom': dict(full=(-6.6, 78.0), bare=(0.9, 62.0),
+                   head=(74.6, 69.0, 66.0), foot=-1.8, beats='45'),
 }
 
 STORY_TITLES = {
@@ -730,22 +756,33 @@ TOP_CAPTION = (
     'what fixes every angle on the next slide.')
 
 
-def draw_story(theme='light', dpi=300, title=True, capsule=False, part='all'):
-    """The five-beat layout, or one row of it.
+def draw_story(theme='light', dpi=300, title=True, capsule=False, part='all',
+               upto=None, detect=False):
+    """The five-beat layout, or one row of it, or one row part-drawn.
 
     ``part`` is 'all', 'top' (beats 1-3) or 'bottom' (beats 4-5).  The two rows
     split cleanly across two slides: the top one sets up the physics, the
     bottom one derives the measurement from it.
+
+    ``detect`` (bottom row only) draws the micro-TPC cartoon in beat 4's box
+    instead of the boost rows: the last frame of the deck's slide 6, where the
+    spectrum stays exactly where it is and the argument beside it changes.
+
+    ``upto`` keeps only the first N beats of that part, on the SAME canvas --
+    which is how a row is turned into a build (2026-08-17).  The frames are
+    strict subsets of one picture: identical canvas, identical coordinates, so
+    a beat lands in its final position the moment it appears and nothing
+    already on the slide moves.  Same discipline as the EAR2 build in the deck.
     """
     spec = STORY_PARTS[part]
     y0, y1 = spec['full'] if title else spec['bare']
     P = palette(theme)
     plt.rcParams['mathtext.fontset'] = 'dejavusans'
 
-    fig = plt.figure(figsize=(W / 10.0, (y1 - y0) / 10.0), dpi=dpi,
+    fig = plt.figure(figsize=(SW / 10.0, (y1 - y0) / 10.0), dpi=dpi,
                      facecolor=P['page'])
     ax = fig.add_axes([0, 0, 1, 1], facecolor='none')
-    ax.set_xlim(0, W)
+    ax.set_xlim(0, SW)
     ax.set_ylim(y0, y1)
     ax.set_aspect('equal')
     ax.axis('off')
@@ -754,13 +791,15 @@ def draw_story(theme='light', dpi=300, title=True, capsule=False, part='all'):
     if title:
         ty, sy, ry = spec['head']
         head, sub = STORY_TITLES[part]
-        ax.text(8, ty, head, fontsize=19.5, fontweight='bold', color=P['ink'],
+        ax.text(3, ty, head, fontsize=19.5, fontweight='bold', color=P['ink'],
                 ha='left', va='center', **FONT)
-        ax.text(8, sy, sub, fontsize=10, color=P['muted'], ha='left',
-                va='center', **FONT)
-        ax.plot([8, 152], [ry, ry], color=P['rule'], lw=1.0, zorder=1)
+        # wrapped: the subtitle used to run as one line across a 160-unit
+        # canvas, which is wider than this one
+        ax.text(3, sy, textwrap.fill(sub, 96), fontsize=10, color=P['muted'],
+                ha='left', va='center', linespacing=1.5, **FONT)
+        ax.plot([3, SW - 3], [ry, ry], color=P['rule'], lw=1.0, zorder=1)
 
-    beats = spec['beats']
+    beats = spec['beats'] if upto is None else spec['beats'][:upto]
     if '1' in beats:
         _story_beam(ax, P, capsule=capsule)
     if '2' in beats:
@@ -768,7 +807,10 @@ def draw_story(theme='light', dpi=300, title=True, capsule=False, part='all'):
     if '3' in beats:
         _story_levels(ax, P, halo)
     if '4' in beats:
-        _story_mechanism(fig, ax, P, halo)
+        # ``detect`` swaps beat 4's boost rows for the micro-TPC cartoon in the
+        # same box -- deck frame 6.3, see _story_detect
+        (_story_detect(ax, P, halo) if detect
+         else _story_mechanism(fig, ax, P, halo))
     if '5' in beats:
         _story_measure(fig, ax, P, halo, y0=y0, y1=y1)
     if title:
@@ -777,9 +819,227 @@ def draw_story(theme='light', dpi=300, title=True, capsule=False, part='all'):
     return fig
 
 
+# Each beat, on its own canvas -- added 2026-08-16 so the five pictures can be
+# dropped into slides one at a time (a build, another deck, a poster) instead
+# of only as the compilation.  Same principle as STORY_PARTS above and the same
+# consequence: THERE IS NO SECOND DRAWING TO MAINTAIN.  A beat keeps its
+# absolute coordinates and the canvas is cropped to the window that holds it,
+# so an edit to a beat lands in the compilation and in its standalone file
+# together, at the same size, in the same style.
+#
+# The windows are (x0, x1, y0, y1) in canvas units, padded off the S_A..S_E
+# extents; the y bands are the STORY_PARTS 'bare' rows, so a beat printed alone
+# is the same height it is in the compilation.
+BEAT_WINDOWS = {
+    '1': (0.0, 38.5, 64.2, 121.6),
+    '2': (38.5, 69.0, 64.2, 121.6),
+    '3': (69.0, 124.0, 64.2, 121.6),
+    # beat 4 runs a little past its nominal S_D right edge -- the last
+    # orientation column's "back-to-back" / "collinear" note. Cropping at
+    # S_D[1] cut them off, so the window overlaps beat 5's; the two never share
+    # a file, so the overlap costs nothing but a little whitespace.
+    '4': (1.0, 86.5, 0.9, 62.0),
+    '5': (84.0, 124.0, 0.9, 62.0),
+}
+BEAT_NAMES = {'1': 'beam', '2': 'capture', '3': 'channels',
+              '4': 'boost', '5': 'spectrum'}
+
+
+def draw_beat(beat, theme='light', dpi=300, capsule=False):
+    """One beat of the story layout, alone on a canvas cropped to it.
+
+    ``beat`` is '1'..'5'.  ``capsule`` applies to beat 1 only and swaps the
+    generic gas volume for the real Geant4 vessel, exactly as in ``draw_story``.
+    """
+    beat = str(beat)
+    x0, x1, y0, y1 = BEAT_WINDOWS[beat]
+    P = palette(theme)
+    plt.rcParams['mathtext.fontset'] = 'dejavusans'
+
+    fig = plt.figure(figsize=((x1 - x0) / 10.0, (y1 - y0) / 10.0), dpi=dpi,
+                     facecolor=P['page'])
+    ax = fig.add_axes([0, 0, 1, 1], facecolor='none')
+    ax.set_xlim(x0, x1)
+    ax.set_ylim(y0, y1)
+    ax.set_aspect('equal')
+    ax.axis('off')
+    halo = [pe.withStroke(linewidth=2.4, foreground=P['halo'], alpha=0.85)]
+
+    if beat == '1':
+        _story_beam(ax, P, capsule=capsule)
+    elif beat == '2':
+        _story_capture(ax, P)
+    elif beat == '3':
+        _story_levels(ax, P, halo)
+    elif beat == '4':
+        _story_mechanism(fig, ax, P, halo)
+    elif beat == '5':
+        _story_measure(fig, ax, P, halo, y0=y0, y1=y1, x0f=x0, x1f=x1)
+    return fig
+
+
 def _head(ax, x, y, text, P):
     ax.text(x, y, text, fontsize=10.5, fontweight='bold', color=P['ink'],
             ha='left', va='center', **FONT)
+
+
+# --------------------------------------------------------------------------- #
+# ...and the beat that hands the story to the detector (added 2026-08-17)
+# --------------------------------------------------------------------------- #
+# Dylan: "slide 6.2 needs a transition to the Micromegas. Maybe we add a 6.3
+# with a cartoon at the bottom of the page showing e+e- coming out at an angle
+# and going through a cartoon of our Micromegas drift volume."
+#
+# By the end of beat 5 the audience has been told that the observable is an
+# ANGLE.  Nothing on the slide has yet said what measures one, and the next
+# slide opens on an exploded chamber -- which lands as a change of subject
+# unless something bridges it.  This is the bridge, and it makes exactly one
+# claim: a micro-TPC turns ONE gas gap into a DIRECTION, so two of them give
+# the opening angle.  That is the argument for the whole detector half of the
+# talk, in one picture.
+#
+# It is its own canvas rather than a sixth beat of the story layout: the story
+# rows are full (S_A..S_E cover 8..152 on both), and this figure has to be a
+# short wide band because it sits UNDER the spectrum on a slide that already
+# has one figure on it.
+#
+# Drawn, not simulated -- and deliberately not to scale.  The real standoff is
+# 204 mm from a 23 mm capsule, i.e. the chambers are nine capsule-diameters
+# away and the drift gap is a tenth of that again; at scale the gas gap would
+# be a hairline.  What IS honest here is the opening angle (a real 110 deg,
+# the kinematic minimum beat 5 has just put on the screen) and the topology:
+# the pair crosses the gas, the ionisation drifts to the mesh, and the fit
+# reads a direction out of one gap.
+# W is trimmed to the ink (2026-08-17): at 160 the drawing left 15 units of
+# margin on each side, and on the slide that margin is height -- the figure is
+# width-limited, so empty canvas at the sides shrinks the whole picture.
+DETECT_W, DETECT_H = 142.0, 47.0
+DETECT_OPENING_DEG = 110.0      # the X17 kinematic minimum, drawn true
+
+# geometry of one drawn chamber, in canvas units along its own leg
+_ARM = 24.0                     # vertex -> near face of the drift volume
+_GAP = 13.0                     # drawn drift volume (the real 30 mm)
+_BOARD = 3.0                    # readout board
+_FACE = 34.0                    # how much of the 400 mm plane is drawn
+_TILT = 21.0                    # track's angle of incidence on the chamber
+
+
+def _utpc_arm(ax, vertex, ang_deg, colour, P, halo, flip=False, scale=1.0):
+    """One leg of the pair crossing one Micromegas, drawn along ``ang_deg``.
+
+    ``ang_deg`` is measured from +x and IS the lepton's direction, so the angle
+    the two arms subtend on the page is the real opening angle and can be
+    measured off the figure with a protractor.  The CHAMBER is what gets
+    rotated: its readout plane is tilted ``_TILT`` off normal to the leg, which
+    is the only reason a micro-TPC has anything to reconstruct -- a track
+    arriving square to the plane deposits all its charge at one depth.
+
+    ``scale`` multiplies every LENGTH and leaves every ANGLE alone, so the same
+    drawing can stand on its own canvas (draw_detect) or inside beat 4's box on
+    the story canvas (_story_detect) without a second copy of the geometry.
+    """
+    _ARM, _GAP, _BOARD, _FACE = (globals()['_ARM'] * scale,
+                                 globals()['_GAP'] * scale,
+                                 globals()['_BOARD'] * scale,
+                                 globals()['_FACE'] * scale)
+    th = np.radians(ang_deg)
+    u = np.array([np.cos(th), np.sin(th)])          # along the leg, outward
+    o = np.asarray(vertex, float)
+
+    # the chamber's own frame: m out of the readout plane, p across it
+    tilt = np.radians(-_TILT if flip else _TILT)
+    m = np.array([np.cos(th + tilt), np.sin(th + tilt)])
+    p = np.array([-m[1], m[0]])
+    # centred so the leg crosses the middle of the gas
+    c = o + u * (_ARM + _GAP / 2.0)
+
+    def quad(a0, a1):
+        return [c + m * a0 - p * _FACE / 2, c + m * a0 + p * _FACE / 2,
+                c + m * a1 + p * _FACE / 2, c + m * a1 - p * _FACE / 2]
+
+    ax.add_patch(plt.Polygon(quad(-_GAP / 2, _GAP / 2), closed=True,
+                             facecolor=S.COL['gas'], alpha=0.20,
+                             edgecolor=S.COL['gas'], lw=1.1, zorder=3))
+    ax.add_patch(plt.Polygon(quad(_GAP / 2, _GAP / 2 + _BOARD), closed=True,
+                             facecolor=S.COL['pcb'], edgecolor='none',
+                             zorder=5))
+    mesh = np.array([c + m * _GAP / 2 - p * _FACE / 2,
+                     c + m * _GAP / 2 + p * _FACE / 2])
+    ax.plot(mesh[:, 0], mesh[:, 1], color=S.COL['mesh'], lw=1.4, zorder=5)
+
+    # the lepton, straight along its own direction, in and out of the gas
+    reach = (_GAP / 2 + _BOARD + 5.0 * scale) / np.cos(tilt)
+    arrow(ax, o + u * 5.5 * scale, c + u * reach, colour, lw=2.0 * scale ** 0.5,
+          ms=13 * scale ** 0.5, zorder=7)
+
+    # the ionisation it leaves in the gas, and its drift to the mesh.  The
+    # drift is along the chamber normal; the track is not -- that difference IS
+    # the depth-versus-position ladder the fit reads.
+    for f in np.linspace(-0.40, 0.40, 6):
+        q = c + u * (f * _GAP / np.cos(tilt))
+        depth = _GAP / 2 - float(np.dot(q - c, m))      # distance to the mesh
+        ax.plot(*np.array([q, q + m * depth]).T, color=S.COL['gas'], lw=1.0,
+                alpha=0.95, zorder=4)
+        ax.plot([q[0]], [q[1]], marker='o', ms=2.8 * scale ** 0.5,
+                color='#e0a52f', mec='none', zorder=6)
+    return u, m, p, c
+
+
+def draw_detect(theme='light', dpi=300, title=False):
+    """The transition figure: two micro-TPCs measure the opening angle.
+
+    ``title`` is accepted and ignored -- this figure only ever appears under a
+    slide that has one (make_x17 forces it bare).
+    """
+    P = palette(theme)
+    plt.rcParams['mathtext.fontset'] = 'dejavusans'
+    fig = plt.figure(figsize=(DETECT_W / 10.0, DETECT_H / 10.0), dpi=dpi,
+                     facecolor=P['page'])
+    ax = fig.add_axes([0, 0, 1, 1], facecolor='none')
+    ax.set_xlim(0, DETECT_W)
+    ax.set_ylim(0, DETECT_H)
+    ax.set_aspect('equal')
+    ax.axis('off')
+    halo = [pe.withStroke(linewidth=2.6, foreground=P['halo'], alpha=0.9)]
+
+    vx, vy = DETECT_W / 2, 7.0
+    half = DETECT_OPENING_DEG / 2.0
+    ang_e, ang_p = 90.0 + half, 90.0 - half      # symmetric about vertical
+
+    _, m_e, p_e, c_e = _utpc_arm(ax, (vx, vy), ang_e, P['electron'], P, halo,
+                                 flip=True)
+    _, m_p, p_p, c_p = _utpc_arm(ax, (vx, vy), ang_p, P['positron'], P, halo)
+
+    # the vertex, and the angle it subtends
+    ax.plot([vx], [vy], marker='o', ms=7, color=P['gamma'], mec=P['ink'],
+            mew=0.8, zorder=8)
+    r = 15.0
+    t = np.radians(np.linspace(ang_p, ang_e, 100))
+    ax.plot(vx + r * np.cos(t), vy + r * np.sin(t), color=P['ink'], lw=1.2,
+            ls='--', alpha=0.75, zorder=6)
+    ax.text(vx, vy + r + 2.4, f'θ = {DETECT_OPENING_DEG:.0f}°', fontsize=12.5,
+            fontweight='bold', color=P['ink'], ha='center', va='bottom',
+            path_effects=halo, zorder=9, **FONT)
+    ax.text(vx, vy - 3.4, 'e$^{+}$e$^{-}$ from $^{4}$He*', fontsize=9.5,
+            color=P['muted'], ha='center', va='top', **FONT)
+    ax.text(vx - 26.0, vy + 4.0, 'e$^{-}$', fontsize=12, fontweight='bold',
+            color=P['electron'], ha='center', va='center', path_effects=halo,
+            zorder=9, **FONT)
+    ax.text(vx + 26.0, vy + 4.0, 'e$^{+}$', fontsize=12, fontweight='bold',
+            color=P['positron'], ha='center', va='center', path_effects=halo,
+            zorder=9, **FONT)
+
+    # ONE sentence, and it is the whole argument for the rest of the talk.
+    ax.text(vx, DETECT_H - 1.5,
+            'One gas gap → a 3-D segment.   Two segments → the opening angle.',
+            fontsize=12.5, fontweight='bold', color=P['ink'], ha='center',
+            va='top', path_effects=halo, zorder=9, **FONT)
+    # the object itself, named once, in the empty corner above the left
+    # chamber (the only quadrant of this canvas with nothing in it)
+    ax.text(6.0, DETECT_H - 10.0, 'Micromegas µTPC\n30 mm drift gap',
+            fontsize=10.0, color=P['muted'], ha='left', va='center',
+            linespacing=1.35, **FONT)
+    return fig
 
 
 # The contents of the gas volume.  Placed at random, but from a FIXED seed and
@@ -840,59 +1100,62 @@ def _story_beam(ax, P, capsule=False):
         return _story_beam_capsule(ax, P)
 
     # --- the gas volume: a light disc full of 3He ---
-    cx, cy, rv = (x0 + x1) / 2, 65.8, 8.4
+    cx, cy, rv = (x0 + x1) / 2, 96.0, 11.6
     ax.add_patch(Circle((cx, cy), rv, facecolor=S.COL['gas'], alpha=0.14,
                         edgecolor=P['rule'], lw=1.0, zorder=2))
-    sites = he3_sites(cx, cy, rv - 1.5)
+    sites = he3_sites(cx, cy, rv - 2.0)
     for x, y in sites:
-        nucleus(ax, x, y, 2, 1, r=0.5, P=P, zorder=6)
-    ax.text(cx + rv - 1.0, cy + rv - 0.6, '$^{3}$He', fontsize=9.5,
+        nucleus(ax, x, y, 2, 1, r=0.65, P=P, zorder=6)
+    ax.text(cx + rv - 1.4, cy + rv - 0.8, '$^{3}$He', fontsize=9.5,
             fontweight='bold', color=P['ink'], ha='left', va='center',
             zorder=7, **FONT)
 
     # the one that captures: left of centre and a little low, so the beam
     # reaches it and the label can sit outside on the same side
-    target = np.array([cx - 3.4, cy - 1.4])
+    target = np.array([cx - 4.5, cy - 1.8])
     hit_x, hit_y = sites[int(np.argmin(((sites - target) ** 2).sum(axis=1)))]
 
     # --- the beam: an irregular column of neutrons, up from below ---
-    for x, y in neutron_sites(cx, 46.9, 56.0, 3.4):
-        nucleus(ax, x, y, 0, 1, r=0.55, P=P, zorder=6)
-        arrow(ax, (x, y + 0.85), (x, y + 2.3), P['neutron'], lw=1.1, ms=7,
+    for x, y in neutron_sites(cx, 71.0, 82.0, 4.4):
+        nucleus(ax, x, y, 0, 1, r=0.7, P=P, zorder=6)
+        arrow(ax, (x, y + 1.05), (x, y + 2.8), P['neutron'], lw=1.1, ms=7,
               alpha=0.5, zorder=3)
 
     # one of them carries on into the gas and captures
-    arrow(ax, (cx - 1.6, 56.6), (hit_x + 0.6, hit_y - 1.4), P['neutron'],
+    arrow(ax, (cx - 2.0, 82.8), (hit_x + 0.8, hit_y - 1.8), P['neutron'],
           lw=1.4, ms=9, alpha=0.85, zorder=5)
-    for r, a in ((2.4, 0.20), (1.5, 0.40)):
+    for r, a in ((3.0, 0.20), (1.9, 0.40)):
         ax.add_patch(Circle((hit_x, hit_y), r, facecolor=P['x17'], alpha=a,
                             edgecolor='none', zorder=6))
     # label on the same side as the struck nucleus, so the leader does not have
     # to cross the volume
-    ax.annotate('capture', xy=(hit_x - 2.0, hit_y - 0.2),
-                xytext=(cx - rv - 0.8, cy - 1.4), fontsize=8.2,
+    ax.annotate('capture', xy=(hit_x - 2.4, hit_y - 0.2),
+                xytext=(cx - rv - 0.8, cy - 1.8), fontsize=8.2,
                 color=P['x17'], fontweight='bold', ha='right', va='center',
                 arrowprops=dict(arrowstyle='-', color=P['x17'], lw=0.9,
                                 alpha=0.8), zorder=8, **FONT)
 
-    ax.text(cx, 45.4, 'neutrons up from EAR2 — energy from time of flight',
-            fontsize=8.0, color=P['muted'], ha='center', va='center', **FONT)
+    ax.text(cx, 67.2, 'neutrons up from EAR2\nenergy from time of flight',
+            fontsize=8.0, color=P['muted'], ha='center', va='center',
+            linespacing=1.45, **FONT)
 
 
 def _story_beam_capsule(ax, P):
     """The same beat once the target hardware *has* been introduced: the real
     vessel from the Geant4 geometry, with a zoom onto the gas."""
     x0, x1 = S_A
-    xc, scale = 19.6, 0.245
-    y_z0 = 52.6 + 35.0 * scale        # world y of capsule z = 0
+    # scale 0.40 (was 0.245): the vessel is the one object in the row that is
+    # naturally VERTICAL, so it is what pays for the taller canvas
+    xc, scale = 15.6, 0.40
+    y_z0 = 90.4                       # world y of capsule z = 0
 
     # --- the beam, from below ---
-    for dx in (-4.8, 0.0, 4.8):
+    for dx in (-6.0, 0.0, 6.0):
         x = xc + dx
-        nucleus(ax, x, 48.6, 0, 1, r=0.85, P=P, zorder=6)
-        arrow(ax, (x, 49.9), (x, 51.7 + (1.0 if dx == 0 else 0.0)),
+        nucleus(ax, x, 70.4, 0, 1, r=1.0, P=P, zorder=6)
+        arrow(ax, (x, 71.9), (x, 74.2 + (1.2 if dx == 0 else 0.0)),
               P['neutron'], lw=1.4, ms=9, alpha=0.85, zorder=4)
-    ax.text(xc, 45.9, 'neutrons, from EAR2 below', fontsize=8.0,
+    ax.text(xc, 67.2, 'neutrons, from EAR2 below', fontsize=8.0,
             color=P['muted'], ha='center', va='center', **FONT)
 
     # --- the capsule, as built ---
@@ -900,7 +1163,7 @@ def _story_beam_capsule(ax, P):
     # leader labels live in a right-aligned column clear of the silhouette
     # anchor every leader on the NEAR edge, so no line is drawn across the
     # silhouette
-    lab_x = xc - 3.6
+    lab_x = xc - 6.4
     for text, anchor in (('valve', (xc - 4.2 * scale, y_z0 + 45.0 * scale)),
                          ('Al + CFRP', (xc - 11.2 * scale, y_z0 + 8.0 * scale)),
                          ('$^{3}$He, 500 bar', (xc - 9.4 * scale,
@@ -912,43 +1175,56 @@ def _story_beam_capsule(ax, P):
 
     # --- zoom on the gas, where the capture happens ---
     spot = (xc + 2.4 * scale, y_z0 - 4.0 * scale)
-    zc, zr = (36.4, 62.2), 7.6
-    magnifier(ax, spot, 1.7, zc, zr, P)
+    zc, zr = (29.6, 96.4), 8.8
+    magnifier(ax, spot, 2.2, zc, zr, P)
 
     # one neutron meeting one 3He inside the bubble
-    nucleus(ax, zc[0] - 3.9, zc[1] + 3.2, 0, 1, r=0.95, P=P, zorder=7)
-    arrow(ax, (zc[0] - 3.3, zc[1] + 2.0), (zc[0] - 1.3, zc[1] + 0.4),
+    nucleus(ax, zc[0] - 4.5, zc[1] + 3.7, 0, 1, r=1.1, P=P, zorder=7)
+    arrow(ax, (zc[0] - 3.8, zc[1] + 2.3), (zc[0] - 1.5, zc[1] + 0.5),
           P['neutron'], lw=1.4, ms=9, zorder=6)
-    nucleus(ax, zc[0] + 1.6, zc[1] - 1.5, 2, 1, r=1.05, P=P, zorder=7)
-    ax.text(zc[0] - 5.6, zc[1] + 4.4, 'n', fontsize=8.4, color=P['ink'],
+    nucleus(ax, zc[0] + 1.8, zc[1] - 1.7, 2, 1, r=1.2, P=P, zorder=7)
+    ax.text(zc[0] - 6.4, zc[1] + 5.1, 'n', fontsize=8.4, color=P['ink'],
             ha='center', va='center', zorder=7, **FONT)
-    ax.text(zc[0] + 1.6, zc[1] - 4.6, '$^{3}$He', fontsize=8.4,
+    ax.text(zc[0] + 1.8, zc[1] - 5.2, '$^{3}$He', fontsize=8.4,
             color=P['ink'], ha='center', va='center', zorder=7, **FONT)
 
-    ax.text(zc[0], 51.0, 'neutron energy from\ntime of flight', fontsize=8.0,
+    ax.text(zc[0], 82.6, 'neutron energy\nfrom time of flight', fontsize=8.0,
             color=P['muted'], ha='center', va='center', linespacing=1.45,
             **FONT)
 
 
 def _story_capture(ax, P):
+    """Beat 2, read DOWNWARDS since 2026-08-18.
+
+    It used to run left to right -- n + 3He -> 4He* -- which made the shortest
+    beat of the five the second-widest, on a row where width is the scarce
+    thing (see SW).  Stacked, the same three objects are drawn half again as
+    large in a box two-thirds as wide, and the reaction arrow now points the
+    way the beam actually travels.
+    """
     x0, x1 = S_B
+    xc = (x0 + x1) / 2
     _head(ax, x0, S_HEAD1, '2.  Capture makes $^{4}$He$^{*}$', P)
 
-    nucleus(ax, x0 + 5.0, 65.0, 0, 1, P=P)
-    ax.text(x0 + 9.0, 64.8, '+', fontsize=12, color=P['muted'], ha='center',
+    # --- the entrance channel, side by side ---
+    nucleus(ax, xc - 7.4, 107.0, 0, 1, r=1.9, P=P)
+    ax.text(xc - 2.6, 106.8, '+', fontsize=15, color=P['muted'], ha='center',
             va='center', **FONT)
-    nucleus(ax, x0 + 13.6, 64.6, 2, 1, P=P)
-    arrow(ax, (x0 + 18.6, 64.6), (x0 + 24.4, 64.6), P['muted'], lw=1.5, ms=11)
-    excitation_waves(ax, x0 + 31.0, 64.6, P)
-    nucleus(ax, x0 + 31.0, 64.6, 2, 2, P=P)
-
-    ax.text(x0 + 5.0, 60.4, 'n', fontsize=9.5, color=P['ink'], ha='center',
+    nucleus(ax, xc + 4.6, 106.6, 2, 1, r=1.9, P=P)
+    ax.text(xc - 7.4, 101.4, 'n', fontsize=10.5, color=P['ink'], ha='center',
             va='center', **FONT)
-    ax.text(x0 + 13.6, 60.4, '$^{3}$He', fontsize=9.5, color=P['ink'],
+    ax.text(xc + 4.6, 101.4, '$^{3}$He', fontsize=10.5, color=P['ink'],
             ha='center', va='center', **FONT)
-    ax.text(x0 + 31.0, 59.6, '$^{4}$He$^{*}$', fontsize=11, fontweight='bold',
+
+    # --- and down into the compound nucleus ---
+    arrow(ax, (xc, 98.0), (xc, 92.0), P['muted'], lw=1.7, ms=13)
+
+    excitation_waves(ax, xc, 86.6, P, r=1.9)
+    nucleus(ax, xc, 86.6, 2, 2, r=1.9, P=P)
+    ax.text(xc, 79.8, '$^{4}$He$^{*}$', fontsize=13, fontweight='bold',
             color=P['ink'], ha='center', va='center', **FONT)
-    ax.text(x0 + 19.0, 53.4,
+
+    ax.text(xc, 72.8,
             'the compound nucleus is left\n'
             '20.58 MeV above its ground state',
             fontsize=8.6, color=P['muted'], ha='center', va='center',
@@ -961,42 +1237,42 @@ def _story_levels(ax, P, halo):
 
     # a narrow ladder: the level lines only have to carry the 20.58 MeV drop,
     # and the width freed up goes to the three processes on the right
-    lx0, lx1 = x0 + 3.0, x0 + 16.0
-    y_hi, y_lo = 68.2, 52.8
+    lx0, lx1 = x0 + 2.0, x0 + 12.0
+    y_hi, y_lo = 105.4, 84.0
     for y in (y_hi, y_lo):
         ax.plot([lx0, lx1], [y, y], color=P['ink'], lw=2.4,
                 solid_capstyle='round', zorder=4)
 
     # the nucleus itself, above its level and below the other
     lxc = (lx0 + lx1) / 2
-    excitation_waves(ax, lxc, y_hi + 3.6, P, r=0.95)
-    nucleus(ax, lxc, y_hi + 3.6, 2, 2, r=0.95, P=P, zorder=6)
-    ax.text(lxc + 4.4, y_hi + 3.6, '$^{4}$He$^{*}$', fontsize=9.5,
+    excitation_waves(ax, lxc, y_hi + 4.2, P, r=1.15)
+    nucleus(ax, lxc, y_hi + 4.2, 2, 2, r=1.15, P=P, zorder=6)
+    ax.text(lxc + 5.0, y_hi + 4.2, '$^{4}$He$^{*}$', fontsize=9.5,
             fontweight='bold', color=P['ink'], ha='left', va='center', **FONT)
-    nucleus(ax, lxc, y_lo - 3.4, 2, 2, r=0.95, P=P, zorder=6)
-    ax.text(lxc + 3.0, y_lo - 3.4, '$^{4}$He', fontsize=9.5,
+    nucleus(ax, lxc, y_lo - 4.0, 2, 2, r=1.15, P=P, zorder=6)
+    ax.text(lxc + 3.6, y_lo - 4.0, '$^{4}$He', fontsize=9.5,
             fontweight='bold', color=P['ink'], ha='left', va='center', **FONT)
 
-    arrow(ax, (lx0 + 2.4, y_hi - 0.6), (lx0 + 2.4, y_lo + 0.6), P['ink'],
+    arrow(ax, (lx0 + 2.0, y_hi - 0.6), (lx0 + 2.0, y_lo + 0.6), P['ink'],
           lw=1.5, style='<|-|>', ms=10, zorder=5)
-    ax.text(lx0 + 3.8, (y_hi + y_lo) / 2, '20.58\nMeV', fontsize=10.0,
+    ax.text(lx0 + 3.4, (y_hi + y_lo) / 2, '20.58\nMeV', fontsize=10.0,
             fontweight='bold', color=P['ink'], ha='left', va='center',
             linespacing=1.35, path_effects=halo, zorder=6, **FONT)
 
     # --- the three channels, each drawn as what it actually emits ---
     ix = x1 - 33.0                       # left edge of the process pictures
     tx = ix + 12.0                       # where the wording starts
-    chans = [(67.8, P['gamma'], 'gamma', r'$\gamma$  emission',
+    chans = [(103.4, P['gamma'], 'gamma', r'$\gamma$  emission',
               'no pair to see'),
-             (60.5, P['ipc'], 'ipc', 'internal pair conversion',
+             (93.0, P['ipc'], 'ipc', 'internal pair conversion',
               'pair mass anywhere in 1–20 MeV'),
-             (53.2, P['x17'], 'x17', 'X17 $\\rightarrow e^{+}e^{-}$',
+             (82.6, P['x17'], 'x17', 'X17 $\\rightarrow e^{+}e^{-}$',
               'one fixed mass, $\\approx$ 17 MeV')]
     # The two channels that put a pair in the detector, boxed together: that is
     # the whole experimental handle, and the one thing to take away from this
     # beat.  Drawn in the lepton colour rather than either channel's own, since
     # it is the pair that is being called out, not the process.
-    bx0, bx1_, by0, by1 = 117.8, 150.6, 48.4, 64.2
+    bx0, bx1_, by0, by1 = 87.4, 122.4, 76.8, 98.4
     ax.add_patch(FancyBboxPatch(
         (bx0, by0), bx1_ - bx0, by1 - by0,
         boxstyle='round,pad=0,rounding_size=1.6', facecolor=P['lepton'],
@@ -1005,7 +1281,7 @@ def _story_levels(ax, P, halo):
         (bx0, by0), bx1_ - bx0, by1 - by0,
         boxstyle='round,pad=0,rounding_size=1.6', facecolor='none',
         edgecolor=P['lepton'], lw=1.5, alpha=0.85, zorder=2))
-    ax.text((bx0 + bx1_) / 2, 45.9, 'Detect the e$^{+}$e$^{-}$ pair!',
+    ax.text((bx0 + bx1_) / 2, 71.8, 'Detect the e$^{+}$e$^{-}$ pair!',
             fontsize=13.5, fontweight='bold', color=P['lepton'],
             ha='center', va='center', zorder=6, **FONT)
 
@@ -1017,18 +1293,16 @@ def _story_levels(ax, P, halo):
             ax.text(ix + 9.0, y, r'$\gamma$', fontsize=11, color=col,
                     ha='left', va='center', **FONT)
         elif kind == 'ipc':
-            lepton_fork(ax, ix + 0.4, y, 7.0, 15.0, P, lw=1.6, fs=7.4)
+            lepton_fork(ax, ix + 0.4, y, 7.4, 17.0, P, lw=1.6, fs=7.4)
         else:
             arrow(ax, (ix - 0.4, y), (ix + 4.2, y), col, lw=1.8,
                   ls=(0, (3.0, 1.9)), style='-', zorder=5)
-            ax.text(ix + 1.9, y + 1.7, 'X17', fontsize=7.6, fontweight='bold',
+            ax.text(ix + 1.9, y + 1.9, 'X17', fontsize=7.6, fontweight='bold',
                     color=col, ha='center', va='center', **FONT)
-            # a shade narrower than it looks in beat 4: the rows are only 7
-            # apart and the arms have to clear the IPC labels above
-            lepton_fork(ax, ix + 4.2, y, 5.0, 38.0, P, lw=1.6, fs=7.4)
-        ax.text(tx, y + 1.15, name, fontsize=9, fontweight='bold',
+            lepton_fork(ax, ix + 4.2, y, 5.6, 38.0, P, lw=1.6, fs=7.4)
+        ax.text(tx, y + 1.35, name, fontsize=9, fontweight='bold',
                 color=P['ink'], ha='left', va='center', **FONT)
-        ax.text(tx, y - 1.75, note, fontsize=7.8, color=P['muted'],
+        ax.text(tx, y - 1.95, note, fontsize=7.8, color=P['muted'],
                 ha='left', va='center', **FONT)
 
 
@@ -1125,7 +1399,7 @@ def _rest_frame_pair(ax, cx, cy, r, P, theta_star=52.0, lw=1.4, ms=9,
 
 
 def _orientation_example(ax, xc, yc, m_parent, theta_star, col, P, halo,
-                         arm=4.4, note=None):
+                         arm=5.2, note=None):
     """One worked example: the decay direction in the rest frame, and where the
     boost actually puts the two leptons in the lab.
 
@@ -1138,30 +1412,38 @@ def _orientation_example(ax, xc, yc, m_parent, theta_star, col, P, halo,
     # --- rest frame: the pair, back-to-back along theta_star ---
     # theta* is labelled UNDER the icon rather than beside it: with five
     # examples in the row, a side label is what sets the column pitch
-    icy = yc + 5.4
-    _rest_frame_pair(ax, xc, icy, 1.6, P, theta_star=theta_star, lw=1.1, ms=6)
-    ax.text(xc, yc + 2.6, f'$\\theta^{{*}}$ = {theta_star:g}°', fontsize=6.9,
+    icy = yc + 6.8
+    _rest_frame_pair(ax, xc, icy, 2.0, P, theta_star=theta_star, lw=1.3, ms=7)
+    ax.text(xc, yc + 3.2, f'$\\theta^{{*}}$ = {theta_star:g}°', fontsize=7.8,
             color=P['muted'], ha='center', va='center', **FONT)
 
     # --- lab: each lepton at its own angle to the boost axis ---
-    vx, vy = xc - 3.2, yc - 2.6
+    vx, vy = xc - 3.8, yc - 3.2
     for ang, lcol in ((a_pos, P['positron']), (a_ele, P['electron'])):
         t = np.radians(ang)
         arrow(ax, (vx, vy), (vx + arm * np.cos(t), vy + arm * np.sin(t)),
-              lcol, lw=1.6, ms=9, zorder=4)
+              lcol, lw=1.9, ms=10, zorder=4)
     if theta_lab > 4.0:
         t = np.linspace(np.radians(a_ele), np.radians(a_pos), 60)
-        ax.plot(vx + 2.0 * np.cos(t), vy + 2.0 * np.sin(t), color=col, lw=0.9,
+        ax.plot(vx + 2.4 * np.cos(t), vy + 2.4 * np.sin(t), color=col, lw=1.0,
                 alpha=0.9, zorder=4)
-    ax.text(vx + arm + 1.4, vy + (0.9 if note else 0.0), f'{theta_lab:.0f}°',
-            fontsize=9.0, fontweight='bold', color=col, ha='left',
+    # +0.7 rather than +1.4 off the arm: on the tighter column pitch the number
+    # has to clear the NEXT column's backward arm, which is what it would run
+    # into, not its own fork
+    # The number sits ABOVE the vertex line, not on it (2026-08-18).  At pitch
+    # 15 the NEXT column's backward arm -- the theta* = 0 case, where an X17
+    # pair really is back-to-back -- comes back along vy and arrives exactly
+    # where this column's number was.  Lifting it 2.2 units clears that arm
+    # without costing any width, and the row has the height to spend.
+    ax.text(vx + arm + 0.8, vy + 2.2, f'{theta_lab:.0f}°',
+            fontsize=10.4, fontweight='bold', color=col, ha='left',
             va='center', path_effects=halo, zorder=6, **FONT)
-    # the note belongs to the angle, so it sits under the number rather than
-    # floating at the bottom of the row
+    # The note is CENTRED UNDER ITS OWN COLUMN, not hung off the number: it
+    # only ever lands on the last column, and "back-to-back" set flush left at
+    # pitch 15 runs straight into the spectrum panel's left spine.
     if note:
-        ax.text(vx + arm + 1.4, vy - 1.4, note, fontsize=6.9,
-                color=P['muted'], ha='left', va='center',
-                path_effects=halo, zorder=6, **FONT)
+        ax.text(xc, vy - 5.6, note, fontsize=7.6, color=P['muted'],
+                ha='center', va='center', path_effects=halo, zorder=6, **FONT)
 
 
 def _boost_row(ax, x0, yc, m_parent, tag, col, P, halo=None):
@@ -1175,30 +1457,41 @@ def _boost_row(ax, x0, yc, m_parent, tag, col, P, halo=None):
     gamma = e_tot / m_parent
     beta = np.sqrt(max(1.0 - 1.0 / gamma ** 2, 0.0))
 
-    ax.text(x0, yc + 8.6, tag, fontsize=8.8, fontweight='bold', color=col,
+    ax.text(x0, yc + 12.4, tag, fontsize=9.8, fontweight='bold', color=col,
             ha='left', va='center', **FONT)
 
-    # --- the pair as it leaves the parent, same for both rows ---
-    _rest_frame_pair(ax, x0 + 5.0, yc, 4.2, P, label=True)
-    ax.text(x0 + 5.0, yc - 5.8, 'rest frame', fontsize=7.4, color=P['muted'],
+    # THE LEFT BLOCK IS STACKED, NOT INLINE (2026-08-18).  It used to run
+    # rest-frame icon -> boost arrow -> five orientation columns across one
+    # line, and those first two items ate 21.5 of the row's ~82 units of width.
+    # This row is WIDTH-LIMITED like every other figure in the deck, so those
+    # units were the whole budget for making the columns bigger: stacking the
+    # icon over the arrow costs vertical space the row now has (the summary
+    # paragraph under it came off the same day) and returns ~9 units of width,
+    # which is what pays for pitch 12.6 -> 15.0 and everything drawn at 1.19x.
+    _rest_frame_pair(ax, x0 + 5.0, yc + 5.4, 4.2, P, label=True)
+    ax.text(x0 + 5.0, yc - 0.4, 'rest frame', fontsize=7.8, color=P['muted'],
             ha='center', va='center', **FONT)
 
     # --- the boost, as an arrow whose length is beta ---
-    bx0, bmax = x0 + 11.5, 9.5
-    arrow(ax, (bx0, yc), (bx0 + bmax * beta, yc), col, lw=2.8, ms=15, zorder=4)
+    bx0, bmax = x0 + 0.6, 9.0
+    arrow(ax, (bx0, yc - 6.2), (bx0 + bmax * beta, yc - 6.2), col, lw=2.8,
+          ms=15, zorder=4)
     # 2 dp reads as a flat 1.00 once the parent is ultra-relativistic, which is
     # exactly the regime the row is about
     bstr = f'{beta:.2f}' if beta < 0.99 else f'{beta:.3f}'
-    ax.text(bx0, yc + 3.0, f'$\\beta$ = {bstr},   $\\gamma$ = {gamma:.1f}',
-            fontsize=8.0, color=col, ha='left', va='center',
-            fontweight='bold', **FONT)
-    ax.text(bx0, yc - 3.2, 'boost', fontsize=7.2, color=P['muted'],
+    ax.text(bx0, yc - 3.6, 'boost', fontsize=7.4, color=P['muted'],
             ha='left', va='center', **FONT)
+    ax.text(bx0, yc - 9.8, f'$\\beta$ = {bstr}   $\\gamma$ = {gamma:.1f}',
+            fontsize=8.6, color=col, ha='left', va='center',
+            fontweight='bold', **FONT)
 
     last = 'collinear' if m_parent < 4.6 else 'back-to-back'
     notes = [None] * (len(EXAMPLE_THETA_STAR) - 1) + [last]
     for i, ts in enumerate(EXAMPLE_THETA_STAR):
-        _orientation_example(ax, x0 + 27.0 + i * 15.0, yc, m_parent, ts, col,
+        # pitch 15.0, not less: at theta* = 0 the X17 pair is back-to-back, so
+        # ONE ARM POINTS BACKWARDS 5.2 units from its vertex and would be drawn
+        # through the previous column's angle number
+        _orientation_example(ax, x0 + 13.0 + i * 15.0, yc, m_parent, ts, col,
                              P, halo, note=notes[i])
     return opening_band(m_parent)
 
@@ -1214,85 +1507,168 @@ def _story_mechanism(fig, ax, P, halo):
     """
     x0, x1 = S_D
     _head(ax, x0, S_HEAD2, '4.  The boost is what makes the difference', P)
-    ax.text(x0 + 48.0, S_HEAD2,
-            'in the rest frame the pair is always back-to-back',
-            fontsize=8.0, color=P['muted'], ha='left', va='center', **FONT)
 
+    # NO SUBTITLE AND NO SUMMARY PARAGRAPH since 2026-08-18, on Dylan's call
+    # ("keep the 4. and 5. titles, but remove the 'in the rest frame ...' and
+    # 'whatever the orientation ...'  -- can add it on the html later if
+    # needed").  Both said in words what the drawing under them shows: the
+    # rest-frame icon IS the pair leaving back-to-back, and the five angle
+    # numbers per row ARE the bound.  They cost ~14 canvas units of height,
+    # which on a width-limited figure is 14 units the pictures now have.
     m_ipc = 2.0
-    lo_x, hi_x = _boost_row(ax, x0 + 1.0, 31.8, X17['m_x17'],
-                            f'X17  —  one mass, {X17["m_x17"]:g} MeV,  '
-                            'heavy and slow', P['x17'], P, halo=halo)
-    lo_i, hi_i = _boost_row(ax, x0 + 1.0, 13.8, m_ipc,
-                            f'IPC  —  any mass, here {m_ipc:g} MeV,  '
-                            'light and fast', P['ipc'], P, halo=halo)
-
-    ax.text(x0 + 1.0, 5.4,
-            f'Whatever the orientation, X17 stays open — never below '
-            f'{lo_x:.0f}°.  A light IPC pair is swept forward — never above '
-            f'{hi_i:.0f}°.',
-            fontsize=8.0, color=P['ink'], ha='left', va='center', **FONT)
+    _boost_row(ax, x0 + 1.0, 45.0, X17['m_x17'],
+               f'X17  —  one mass, {X17["m_x17"]:g} MeV,  heavy and slow',
+               P['x17'], P, halo=halo)
+    _boost_row(ax, x0 + 1.0, 17.0, m_ipc,
+               f'IPC  —  any mass, here {m_ipc:g} MeV,  light and fast',
+               P['ipc'], P, halo=halo)
 
 
-def _story_measure(fig, ax, P, halo, y0=0.0, y1=H):
+# Beat 4's box, with the micro-TPC cartoon standing in it instead of the boost
+# rows -- deck frame 6.3 (2026-08-18, Dylan: "for 6.3, remove the left diagram
+# with the angles and replace it with the MMs, keeping the spectrum in place").
+#
+# It is the SAME drawing as draw_detect, at 0.78 of its length scale, placed on
+# the story canvas: _utpc_arm grew a ``scale`` argument rather than a second
+# implementation, so the 110 deg is still the kinematic minimum drawn true and
+# still measures 110 with a protractor on the slide.  What this buys the frame
+# is that the spectrum does not move and does not resize between 6.2 and 6.3 --
+# only the argument beside it changes.  Frame 3 used to stack the cartoon UNDER
+# the spectrum in the slide's figure box, which cost both pictures ~41 % of
+# their width.
+DETECT_INSET_SCALE = 0.87
+
+
+def _story_detect(ax, P, halo):
+    x0, x1 = S_D
+    _head(ax, x0, S_HEAD2, '4.  ...and this is what measures it', P)
+
+    sc = DETECT_INSET_SCALE
+    vx, vy = (x0 + x1) / 2.0 + 2.0, 15.0
+    half = DETECT_OPENING_DEG / 2.0
+    ang_e, ang_p = 90.0 + half, 90.0 - half      # symmetric about vertical
+    _utpc_arm(ax, (vx, vy), ang_e, P['electron'], P, halo, flip=True, scale=sc)
+    _utpc_arm(ax, (vx, vy), ang_p, P['positron'], P, halo, scale=sc)
+
+    ax.plot([vx], [vy], marker='o', ms=7, color=P['gamma'], mec=P['ink'],
+            mew=0.8, zorder=8)
+    r = 14.5
+    t = np.radians(np.linspace(ang_p, ang_e, 100))
+    ax.plot(vx + r * np.cos(t), vy + r * np.sin(t), color=P['ink'], lw=1.2,
+            ls='--', alpha=0.75, zorder=6)
+    ax.text(vx, vy + r + 2.0, f'θ = {DETECT_OPENING_DEG:.0f}°', fontsize=12.5,
+            fontweight='bold', color=P['ink'], ha='center', va='bottom',
+            path_effects=halo, zorder=9, **FONT)
+    ax.text(vx, vy - 2.8, 'e$^{+}$e$^{-}$ from $^{4}$He*', fontsize=9.0,
+            color=P['muted'], ha='center', va='top', **FONT)
+    ax.text(vx - 25.0, vy + 3.4, 'e$^{-}$', fontsize=12, fontweight='bold',
+            color=P['electron'], ha='center', va='center', path_effects=halo,
+            zorder=9, **FONT)
+    ax.text(vx + 25.0, vy + 3.4, 'e$^{+}$', fontsize=12, fontweight='bold',
+            color=P['positron'], ha='center', va='center', path_effects=halo,
+            zorder=9, **FONT)
+    # the object, named once, in the corner of the box the drawing leaves empty
+    ax.text(x0, S_HEAD2 - 6.0, 'Micromegas µTPC\n30 mm drift gap',
+            fontsize=9.4, color=P['muted'], ha='left', va='top',
+            linespacing=1.35, **FONT)
+
+
+# The spectrum panel is a STACK: a small X17 yield sitting on top of the IPC
+# background (2026-08-17, Dylan's call).  It used to be the two channels
+# overlaid, each normalised to unit peak, which is the honest way to compare two
+# *shapes* -- but it is not what a measurement looks like, and the slide's job
+# is to show what we will be staring at: a smooth background with a bump on it.
+#
+# Stacking forces the figure to state a ratio it does not know -- the relative
+# rate is exactly what the experiment is trying to measure.  So the ratio is a
+# free, declared parameter: SIG_FRAC is the X17 yield as a fraction of the IPC
+# yield in the plotted window, it is printed on the panel in words, and it is
+# NOT a prediction.  0.04 puts the bump ~80 % above the local background at the
+# peak: legible from the back of a room, and still visibly a bump ON something
+# rather than a peak of its own.  Chosen by eye at 2 % / 4 % / 6 %.
+#
+# The window starts at SPEC_XLIM[0] rather than 0 for the same reason ATOMKI
+# plot from 40 deg: the IPC forward peak is eight times the yield at 109 deg, so
+# including it flattens everything the panel is about.  The forward sweep is
+# already beat 4's argument, drawn there as kinematics -- it does not need to be
+# argued twice, once as a spectrum the audience cannot read.
+SIG_FRAC = 0.04
+SPEC_XLIM = (40.0, 180.0)
+
+
+def _story_measure(fig, ax, P, halo, y0=0.0, y1=136.0, x0f=0.0, x1f=SW):
     x0, x1 = S_E
     _head(ax, x0, S_HEAD2, '5.  So this is what we look for', P)
 
     th, x17, ipc = modelled_shapes()
     th_min = opening_angle_pdf()[2]
+    # both arrive normalised to unit peak; SIG_FRAC is defined on the integrals
+    # over the plotted window, so the number quoted on the panel is the one the
+    # eye is actually being shown
+    win = (th >= SPEC_XLIM[0]) & (th <= SPEC_XLIM[1])
+    sig = x17 * (SIG_FRAC * ipc[win].sum() / x17[win].sum())
+    tot = ipc + sig
 
-    # the canvas may be a cropped band (the split slides), so the axes is
-    # placed against the band rather than against a fixed 90-unit page
-    span = y1 - y0
-    px = fig.add_axes([(x0 + 6.0) / W, (13.6 - y0) / span, 39.0 / W,
-                       21.4 / span], facecolor='none')
+    # The canvas may be a cropped band -- vertically for the split slides, and
+    # since 2026-08-16 horizontally too for the one-beat-per-file renders --
+    # so the axes is placed against the window rather than against a fixed
+    # 160x90 page.  The defaults are the full page, i.e. what it always did.
+    # 34 x 26 at y = 24 until 2026-08-18, when the two paragraphs under it came
+    # off the figure (Dylan: "remove the text 'The edge at ...' and 'X17 drawn
+    # at ...'").  The panel took the height they were using: same width, 26 ->
+    # 38 tall, starting 12 units off the floor of the band.
+    span, xspan = y1 - y0, x1f - x0f
+    px = fig.add_axes([(x0 + 4.0 - x0f) / xspan, (12.0 - y0) / span,
+                       34.0 / xspan, 38.0 / span], facecolor='none')
     for s in ('top', 'right'):
         px.spines[s].set_visible(False)
     for s in ('left', 'bottom'):
         px.spines[s].set_color(P['muted'])
         px.spines[s].set_linewidth(0.9)
-    px.tick_params(colors=P['muted'], labelsize=7.6, width=0.9, length=3)
+    px.tick_params(colors=P['muted'], labelsize=8.6, width=0.9, length=3)
     for lab in px.get_xticklabels() + px.get_yticklabels():
         lab.set_fontfamily('DejaVu Sans')
 
-    px.fill_between(th, 0, x17, color=P['x17'], alpha=0.16, lw=0, zorder=2)
-    px.plot(th, x17, color=P['x17'], lw=2.2, zorder=4,
-            label='X17 $\\rightarrow e^{+}e^{-}$')
-    px.plot(th, ipc, color=P['ipc'], lw=2.0, zorder=3,
+    # background first, then the signal band on top of it: the filled area
+    # between the two curves IS the excess, which is the whole point
+    px.fill_between(th, 0, ipc, color=P['ipc'], alpha=0.14, lw=0, zorder=2)
+    px.fill_between(th, ipc, tot, color=P['x17'], alpha=0.34, lw=0, zorder=3)
+    px.plot(th, ipc, color=P['ipc'], lw=1.8, zorder=4,
             label='internal pair conversion')
+    px.plot(th, tot, color=P['x17'], lw=2.2, zorder=5,
+            label='+ X17 $\\rightarrow e^{+}e^{-}$')
     px.axvline(th_min, color=P['x17'], lw=0.9, ls=':', alpha=0.8, zorder=1)
 
-    px.set_xlim(0, 180)
-    px.set_ylim(0, 1.16)
-    px.set_xticks([0, 45, 90, 135, 180])
+    px.set_xlim(*SPEC_XLIM)
+    px.set_ylim(0, 1.16 * tot[win].max())
+    px.set_xticks([45, 90, 135, 180])
     px.set_yticks([])
-    px.set_xlabel('e$^{+}$e$^{-}$ opening angle  (deg)', fontsize=8.0,
+    px.set_xlabel('e$^{+}$e$^{-}$ opening angle  (deg)', fontsize=9.0,
                   color=P['muted'], labelpad=2, **FONT)
-    px.set_ylabel('yield  (arb.)', fontsize=8.0, color=P['muted'], labelpad=3,
+    px.set_ylabel('yield  (arb.)', fontsize=9.0, color=P['muted'], labelpad=3,
                   **FONT)
-    leg = px.legend(loc='upper left', bbox_to_anchor=(-0.02, 1.24),
-                    frameon=False, fontsize=7.8, handlelength=1.8,
+    leg = px.legend(loc='upper left', bbox_to_anchor=(-0.02, 1.16),
+                    frameon=False, fontsize=8.6, handlelength=1.8,
                     labelspacing=0.4)
     for t in leg.get_texts():
         t.set_color(P['muted'])
         t.set_fontfamily('DejaVu Sans')
 
-    ax.text(x0 + 6.0, 6.6,
-            f'The edge at {th_min:.0f}° is the measurement — IPC has only a '
-            'slope there.',
-            fontsize=8.0, color=P['ink'], ha='left', va='center', **FONT)
-
 
 def _story_footer(ax, P, y=2.2, cap=None):
     cap = cap or ('Panel 5 samples the MX17_Simulation generators (X17PhysicsSpectrum, '
            'IPCPhysicsSpectrum) that track the Geant4 X17PrimaryGenerator: '
-           '%s events per channel, smeared %.0f°, recoil neglected, each curve '
-           'normalised to unit peak — their relative rate is the measurement, '
-           'so nothing here implies it. In panel 4 the boost arrow lengths '
-           '(β) and the opening angles are to scale; lepton arm lengths are '
-           'not.' % (f'{SAMPLE_N:,}'.replace(',', ' '), X17['smear_deg']))
-    ax.text(8, y, textwrap.fill(cap, 152), fontsize=7.2, color=P['muted'],
+           '%s events per channel, smeared %.0f°, recoil neglected. The X17 '
+           'yield is stacked on the IPC background at %.0f %% of it over the '
+           'plotted range — a drawn ratio, not a predicted one: the relative '
+           'rate is what the experiment measures. In panel 4 the boost arrow '
+           'lengths (β) and the opening angles are to scale; lepton arm '
+           'lengths are not.'
+           % (f'{SAMPLE_N:,}'.replace(',', ' '), X17['smear_deg'],
+              SIG_FRAC * 100))
+    ax.text(3, y, textwrap.fill(cap, 132), fontsize=7.2, color=P['muted'],
             ha='left', va='center', linespacing=1.65, **FONT)
-    ax.text(152, y, SOURCES, fontsize=7.2, color=P['muted'], ha='right',
+    ax.text(SW - 3, y, SOURCES, fontsize=7.2, color=P['muted'], ha='right',
             va='center', linespacing=1.65, **FONT)
 
 

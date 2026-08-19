@@ -7,15 +7,27 @@ make_efficiency_breakdown.py -- the efficiency figures for the MPGD2026 talk.
     ../.venv/bin/python make_efficiency_breakdown.py --only breakdown
     ../.venv/bin/python make_efficiency_breakdown.py --print   # numbers only
 
-Two figures, both for the efficiency slide:
+Three figures for the efficiency slide.  Since 2026-08-17 the SLIDE draws the
+loss budget itself, in HTML, so the two below it are what the audience sees and
+`efficiency_breakdown.png` is now the standalone/handoff copy of the same
+numbers (slides/HANDOFF_efficiency.md quotes it).  It is still regenerated here
+so that copy cannot go stale behind the slide's:
 
   efficiency_breakdown.png      det3's loss budget -- where every crossing muon
                                 goes, in plain language, with an annotation box
-                                whose every number is READ FROM THE JSON.
+                                whose every number is READ FROM THE JSON.  NOT
+                                on a slide any more; the .bar-chart.loss markup
+                                in slides/index.html is, and the two must agree
+                                bar for bar.
   efficiency_residual_tail.png  the |r| distribution on a log scale with the
-                                5 mm match circle marked, plus efficiency vs
-                                match radius -- the panel that explains the
-                                "detected but >5 mm off track" slice.
+                                5 mm match circle marked -- the figure that
+                                explains the "detected but >5 mm off track"
+                                slice.  ONE panel since 2026-08-17.
+  efficiency_map_2mm.png        efficiency across the chamber face at the tight
+                                r < 2 mm criterion, from the 40x40 grid
+                                mx_june_wft/report/make_maps_2mm.py writes.
+                                Read its docstring before quoting a level off
+                                it -- 2 mm is not the headline criterion.
 
 Why this file exists
 --------------------
@@ -82,10 +94,15 @@ HEADLINE = 'sat_det3'          # the chamber the main slide is about
 # categories of 02_efficiency.py.  Colours: one green for the answer, copper
 # for "our position, not their signal", accent for the discharge, grey for
 # unusable, red reserved for genuine blindness.
+#
+# "DISCHARGE", not "spark", since 2026-08-17 (Dylan).  The analysis code's
+# category is still `spark_cat` and stays that way -- renaming a JSON key to
+# fix a slide would be the tail wagging the dog -- but the word on the page is
+# the one an MPGD audience uses for what a resistive detector does.
 ROWS = [
     ('within_R',    'Reconstructed within 5 mm\n(the efficiency)',        '#2e8b57'),
     ('reco_far',    'Detected, point >5 mm\noff the telescope track',      P.COPPER),
-    ('spark_cat',   'Sparked during this muon\n(self-quenching, no dead time)', P.ACCENT),
+    ('spark_cat',   'Discharged during this muon\n(self-quenching, no dead time)', P.ACCENT),
     ('hit_no_reco', 'Fired, no valid X+Y point formed',                    P.MUTED),
     ('no_hit',      'Silent — no signal at all\n(genuine blindness)', '#b04a3a'),
 ]
@@ -176,7 +193,7 @@ def fig_breakdown(d: dict) -> None:
         f'reconstructs a point for {d["reco_at_all"]:.1f}%.  Genuine blindness is '
         f'{d["no_hit"]:.2f}%.\n'
         f'Neither of the two losses off {d["within_R"]:.1f}% is the chamber failing to '
-        f'see the muon: a {d["spark_cat"]:.1f}% spark coincidence (self-quenching, no\n'
+        f'see the muon: a {d["spark_cat"]:.1f}% discharge coincidence (self-quenching, no\n'
         f'dead time afterwards) and a {d["reco_far"]:.1f}% edge / near-miss position '
         f'tail — open the match to 10 mm and the efficiency recovers to {r10:.1f}%.')
     fig.text(0.5, 0.14, note, ha='center', va='top', fontsize=9.6,
@@ -193,60 +210,152 @@ def fig_breakdown(d: dict) -> None:
 # --------------------------------------------------------------------------- #
 
 def fig_tail(d: dict) -> None:
+    """The |r| distribution, core and tail, on one axes.
+
+    ONE panel since 2026-08-17 (Dylan).  It used to carry a second panel --
+    efficiency against match radius -- which is a *re-plot of this histogram's
+    own cumulative*, and it cost half the width to say something the tail
+    already shows.  The two numbers worth having off it (93.3 % at 5 mm,
+    94.6 % at 10 mm) are on the slide as type, where they can be read from the
+    back of the room.
+
+    NO burned-in title: the slide carries its heading in HTML type.
+    """
     edges = np.asarray(d['r_hist_edges'], float)
     cts = np.asarray(d['r_hist_counts'], float)
     ctr = 0.5 * (edges[:-1] + edges[1:])
     R = d['R_mm']
+    r10 = d['eff_vs_R']['10.0']
 
-    fig, axs = plt.subplots(1, 2, figsize=(11.2, 3.9))
-
-    # (a) the tail itself, log counts, so the 3.7 % is visible at all
-    ax = axs[0]
+    # SMALL ON PURPOSE (5.6 x 3.5 in, was 7.4 x 4.9).  On the slide this figure
+    # gets about a fifth of the page width; a figure saved at 7.4 in and shown
+    # at 2 in has 4-pixel tick labels.  Sizing the canvas near the size it is
+    # displayed at is the only thing that makes matplotlib type legible from
+    # the back of a room -- everything else here is unchanged.
+    fig, ax = plt.subplots(figsize=(5.6, 3.5))
     ax.step(ctr, np.where(cts > 0, cts, np.nan), where='mid',
-            color=P.DET_COLOR['A'], lw=1.6)
+            color=P.DET_COLOR['A'], lw=1.8)
     ax.fill_between(ctr, 1e-1, np.where(cts > 0, cts, 1e-1), step='mid',
                     color=P.DET_COLOR['A'], alpha=0.16, lw=0)
     ax.axvline(R, color=P.COPPER, lw=1.6, ls='--')
     ax.set_yscale('log')
-    ax.set_xlim(0, edges[-1])
-    ax.set_ylim(0.7, max(cts.max() * 2.2, 10))
-    ax.set_xlabel('|r|  detector − reference track  [mm]')
-    ax.set_ylabel('muons per 0.25 mm')
-    P.title(ax, 'The position tail',
-            f'core σ {d["core_sigma_mm"]:.2f} mm, median {d["median_r_mm"]:.2f} mm')
-    P.strip(ax)
-    ax.text(R + 0.7, ax.get_ylim()[1] / 3.0,
-            f'{R:.0f} mm match\n→ {d["within_R"]:.1f}% efficiency',
-            fontsize=10, color=P.COPPER, va='top', ha='left', fontweight='bold')
-
-    # (b) the recovery curve: efficiency vs match radius, same denominator
-    ax = axs[1]
-    radii = sorted(float(k) for k in d['eff_vs_R'])
-    vals = [d['eff_vs_R'][str(r)] for r in radii]
-    ax.plot(radii, vals, marker=P.DET_MARKER['A'], color=P.DET_COLOR['A'],
-            lw=2.0, ms=5)
-    ax.axvline(R, color=P.COPPER, lw=1.6, ls='--')
-    ax.set_xscale('log')
-    ax.set_xticks([1, 2, 5, 10, 20, 30])
-    ax.get_xaxis().set_major_formatter(matplotlib.ticker.ScalarFormatter())
-    ax.set_xlabel('match radius R  [mm]')
-    ax.set_ylabel('efficiency  [% of crossings]')
-    plateau = d['eff_vs_R']['30.0']
-    ax.set_ylim(min(vals) - 3, max(plateau + 3, 100))
-    ax.axhline(d['reco_at_all'], color=P.MUTED, lw=1.2, ls=':')
-    ax.text(30, d['reco_at_all'] + 0.6,
-            f'reconstructed at all  {d["reco_at_all"]:.1f}%',
-            fontsize=9.5, color=P.MUTED, ha='right', va='bottom')
-    P.title(ax, 'Efficiency vs match radius',
-            f'{d["within_R"]:.1f}% at {R:.0f} mm → '
-            f'{d["eff_vs_R"]["10.0"]:.1f}% at 10 mm; '
-            f'the tail is near-misses, not failures')
+    ax.set_xlim(0, 20)
+    ax.set_ylim(0.7, max(cts.max() * 3.0, 10))
+    ax.set_xlabel('|r|   reconstructed point − reference track   [mm]',
+                  fontsize=12)
+    ax.set_ylabel('muons per 0.25 mm', fontsize=12)
+    ax.tick_params(labelsize=11.5)
     P.strip(ax)
 
-    P.note(fig, f'det3 / {d["run_key"]}, {d["n_rays"]:,} reference muons · '
-                f'{d["basis"]} · mx_june_wft/02_efficiency.py')
+    # the core, stated on the plot rather than in a caption nobody reads
+    ax.annotate(f'core σ {d["core_sigma_mm"]:.2f} mm\nmedian '
+                f'{d["median_r_mm"]:.2f} mm',
+                xy=(0.6, cts.max() * 0.55), xytext=(3.2, cts.max() * 1.55),
+                fontsize=12, color=P.DET_COLOR['A'], fontweight='bold',
+                ha='left', va='center',
+                arrowprops=dict(arrowstyle='-', color=P.DET_COLOR['A'],
+                                lw=1.1, shrinkA=2, shrinkB=6))
+    ax.text(R + 0.55, cts.max() * 0.13,
+            f'{R:.0f} mm match\n{d["within_R"]:.1f} % efficiency',
+            fontsize=12, color=P.COPPER, va='top', ha='left',
+            fontweight='bold', linespacing=1.35)
+    n_tail = int(round(d['reco_far'] * d['n_rays'] / 100.0))
+    # in the empty upper right, not along the bottom -- at 0.06 it sat on top
+    # of the tail bins it is describing
+    ax.text(0.985, 0.80, f'the tail: {n_tail:,} muons, {d["reco_far"]:.1f} %',
+            transform=ax.transAxes, ha='right', va='bottom', fontsize=11,
+            color=P.MUTED)
     fig.tight_layout()
     P.save(fig, os.path.join(OUT, 'efficiency_residual_tail.png'))
+
+
+# --------------------------------------------------------------------------- #
+# Figure 3 -- where on the chamber, at the tight criterion
+# --------------------------------------------------------------------------- #
+
+def map_csv(run_key: str) -> str:
+    from qa_config import get_config
+    cfg = get_config(run_key)
+    return os.path.join(cfg.OUT_BASE, 'wft', 'maps', 'Plot_Data',
+                        'efficiency_r2mm_cut.csv')
+
+
+def fig_map(run_key: str) -> None:
+    """Efficiency across the chamber face at the r < 2 mm criterion.
+
+    The input is the CSV written by mx_june_wft/report/make_maps_2mm.py --
+    40x40 bins of ~12 mm, success = a reconstructed point within 2 mm of the
+    reference track, bins with < 5 reference muons masked.  Nothing is
+    re-derived here; this is the same grid the June report leads with, redrawn
+    in the deck's inks.
+
+    TWO THINGS TO KNOW BEFORE QUOTING A NUMBER OFF THIS MAP.
+
+    * 2 mm is the TIGHT criterion, not the slide's headline.  Detector-wide the
+      same reconstruction is 86.5 % within 2 mm and 93.3 % within 5 mm.  The
+      map is here to show that the efficiency is FLAT across the face, which is
+      a statement no single number can make; read the level off the bars.
+    * the denominator is every M3 ray, including the ones that miss the
+      chamber, so the bins outside the active area are genuinely 0 % and the
+      chamber's own edge is visible in the map.  That is why the plotted range
+      is cropped to the populated region rather than to a nominal 40 x 40 cm.
+    """
+    import pandas as pd
+    path = map_csv(run_key)
+    if not os.path.exists(path):
+        print(f'  ! missing {path} -- run mx_june_wft/report/make_maps_2mm.py')
+        return
+    df = pd.read_csv(path)
+    xs = np.sort(df.ref_x_mm.unique())
+    ys = np.sort(df.ref_y_mm.unique())
+    grid = (df.pivot(index='ref_y_mm', columns='ref_x_mm', values='efficiency')
+              .reindex(index=ys, columns=xs).to_numpy())
+    shown = df.dropna(subset=['efficiency'])
+
+    dx = float(np.diff(xs).mean())
+    dy = float(np.diff(ys).mean())
+    xe = np.append(xs - dx / 2, xs[-1] + dx / 2)
+    ye = np.append(ys - dy / 2, ys[-1] + dy / 2)
+
+    # The FIDUCIAL crop, derived from the data rather than from a nominal size:
+    # keep the rows and columns whose median populated bin is above 30 %.  The
+    # M3 acceptance is wider than the chamber, so without this the frame ends
+    # in a wall of dead bins that is not a property of the detector -- it is
+    # the telescope pointing past its edge.  The threshold is far from either
+    # population (inside runs 70-100 %, outside sits at 0), so nothing about
+    # the picture depends on where between them it is put.
+    with np.errstate(invalid='ignore'):
+        col = np.nanmedian(np.where(np.isfinite(grid), grid, np.nan), axis=0)
+        row = np.nanmedian(np.where(np.isfinite(grid), grid, np.nan), axis=1)
+    jx = np.where(np.nan_to_num(col) > 0.30)[0]
+    jy = np.where(np.nan_to_num(row) > 0.30)[0]
+
+    fig, ax = plt.subplots(figsize=(6.4, 5.6))
+    cmap = P.efficiency_cmap()
+    cmap.set_bad('#e6eaef')                 # too few muons, not low efficiency
+    pc = ax.pcolormesh(xe, ye, np.ma.masked_invalid(grid) * 100.0,
+                       cmap=cmap, vmin=50, vmax=100, shading='flat')
+    ax.set_aspect('equal')
+    ax.set_facecolor('#e6eaef')
+    ax.set_xlim(xe[jx[0]], xe[jx[-1] + 1])
+    ax.set_ylim(ye[jy[0]], ye[jy[-1] + 1])
+    ax.set_xlabel('reference x  [mm]')
+    ax.set_ylabel('reference y  [mm]')
+    ax.grid(False)
+    P.strip(ax)
+
+    cb = fig.colorbar(pc, ax=ax, fraction=0.046, pad=0.03,
+                      ticks=[50, 60, 70, 80, 90, 100], extend='min')
+    cb.set_label('efficiency in the bin,  r < 2 mm  [%]', fontsize=11)
+    cb.outline.set_visible(False)
+    cb.ax.tick_params(length=0)
+
+    inside = np.isfinite(grid[np.ix_(jy, jx)])
+    print(f'  map: {int(len(shown))} populated bins, '
+          f'{int(inside.sum())} inside the fiducial crop, '
+          f'~{dx:.0f} x {dy:.0f} mm each')
+    fig.tight_layout()
+    P.save(fig, os.path.join(OUT, 'efficiency_map_2mm.png'))
 
 
 # --------------------------------------------------------------------------- #
@@ -277,7 +386,7 @@ def print_fleet() -> None:
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument('--only', choices=('breakdown', 'tail'), default=None)
+    ap.add_argument('--only', choices=('breakdown', 'tail', 'map'), default=None)
     ap.add_argument('--print', dest='show', action='store_true',
                     help='print the fleet table and exit')
     args = ap.parse_args()
@@ -298,6 +407,8 @@ def main() -> None:
         fig_breakdown(d)
     if not args.only or args.only == 'tail':
         fig_tail(d)
+    if not args.only or args.only == 'map':
+        fig_map(HEADLINE)
     print_fleet()
 
 

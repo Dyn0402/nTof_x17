@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import argparse
 import os
+import shutil
 import sys
 
 import numpy as np
@@ -33,6 +34,7 @@ import annotate as A                               # noqa: E402
 import scenes_microtpc as T                        # noqa: E402
 
 FIG = os.path.join(HERE, 'figures')
+SLIDE_IMG = os.path.join(HERE, 'slides', 'assets', 'img')
 
 VIEW = dict(pos=(52, -78, 40), focal=(0, 0, 13), up=(0, 0, 1), angle=34.0)
 
@@ -75,10 +77,23 @@ def draw_waveforms(fig, rect, clusters, fs, ink, muted, grid, cmap):
         t_pk = ts[int(np.argmax(wf[i]))]
         col = cmap(np.clip(t_pk / tmax, 0, 1))
         base = xs[i]
-        ax.plot(ts, base + wf[i] * scale, color=col, lw=fs * 0.055,
+        # lw 0.055 -> 0.085 (2026-08-18, Dylan): this panel is projected, and
+        # a hairline trace in a dark colour is the first thing a projector
+        # loses.  The traces overlap at ~6 strip pitches of offset and still
+        # read as separate at this weight.
+        ax.plot(ts, base + wf[i] * scale, color=col, lw=fs * 0.085,
                 zorder=3, solid_capstyle='round')
         ax.axhline(base, color=grid, lw=fs * 0.018, zorder=1)
-    ax.set_xlabel('time  [ns]   (32 samples x 60 ns)', fontsize=fs * 0.85,
+    # Trim the dead end of the window: the last few hundred ns of the 32-sample
+    # window carry nothing but baseline, and on a slide that is width the pulses
+    # want.  The cut is data-driven (last sample above 2 % of the biggest peak),
+    # so it cannot silently hide a late pulse.
+    thr = 0.02 * peak.max()
+    live = np.where(np.max(wf, axis=0) > thr)[0]
+    if len(live):
+        ax.set_xlim(ts[0], min(ts[-1], ts[min(live[-1] + 2, len(ts) - 1)]))
+    ax.set_xlabel(f'time  [ns]   ({T.N_SAMPLES:d} samples x '
+                  f'{T.SAMPLE_NS:.0f} ns)', fontsize=fs * 0.85,
                   color=muted, **A.FONT)
     ax.set_ylabel('strip position  x [mm]   (traces offset)',
                   fontsize=fs * 0.85, color=muted, **A.FONT)
@@ -94,9 +109,20 @@ def draw_waveforms(fig, rect, clusters, fs, ink, muted, grid, cmap):
 
 
 def compose(png, clusters, hits, out_base, theme, angle, dpi=300,
-            with_ladder=True, right='ladder'):
+            with_ladder=True, right='ladder', bare=False):
     """Render on the left, and on the right either the strip-time ladder or
-    the stacked waveforms."""
+    the stacked waveforms.
+
+    ``bare`` is the DECK COPY (2026-08-17, Dylan: "remove both the figure
+    caption and footer to make the visualization larger").  The title band and
+    the caption paragraph together were 36 % of this figure's height, and on the
+    slide they are both redundant: the slide carries its own title in HTML type,
+    and a six-line caption on a projected slide is text nobody reads while the
+    speaker is talking.  What the caption was actually load-bearing for -- the
+    operating point, and that v_drift is MEASURED rather than assumed -- is
+    burned onto the render instead, in two lines.  The report still gets the
+    fully titled and captioned version.
+    """
     img = np.asarray(Image.open(png).convert('RGB'))
     h, w = img.shape[:2]
 
@@ -108,8 +134,10 @@ def compose(png, clusters, hits, out_base, theme, angle, dpi=300,
 
     with_ladder = right in ('ladder', 'waveforms')
     lad_w = int(w * (0.62 if with_ladder else 0.0))
-    head = int(0.12 * h)
-    foot = int(0.24 * h)
+    head = int((0.012 if bare else 0.12) * h)
+    # bare still needs a sliver of foot: the colour bar's own axis label hangs
+    # below the bar, and at head=foot=0 it is clipped by the page edge.
+    foot = int((0.075 if bare else 0.24) * h)
     W, H = w + lad_w, h + head + foot
 
     fig = plt.figure(figsize=(W / dpi, H / dpi), dpi=dpi, facecolor=page)
@@ -123,21 +151,42 @@ def compose(png, clusters, hits, out_base, theme, angle, dpi=300,
     ax.set_ylim(H, 0)
     ax.axis('off')
 
-    ax.text(0.026 * W, head * 0.38, 'Micro-TPC operation',
-            ha='left', va='center', fontsize=fs * 1.95, color=ink,
-            fontweight='bold', **A.FONT)
-    ax.text(0.026 * W, head * 0.76,
-            'Simulated event, measured detector constants — one MX17 chamber '
-            'measures a track angle from a single plane',
-            ha='left', va='center', fontsize=fs * 0.95, color=muted, **A.FONT)
+    if not bare:
+        ax.text(0.026 * W, head * 0.38, 'Micro-TPC operation',
+                ha='left', va='center', fontsize=fs * 1.95, color=ink,
+                fontweight='bold', **A.FONT)
+        ax.text(0.026 * W, head * 0.76,
+                'Simulated event, measured detector constants — one MX17 '
+                'chamber measures a track angle from a single plane',
+                ha='left', va='center', fontsize=fs * 0.95, color=muted,
+                **A.FONT)
+    else:
+        # the operating point, on the render, where the caption used to say it.
+        # Top-left of the 3-D panel is empty at this camera (the chamber sits
+        # centre-right), so this costs the picture nothing.  Kept to three SHORT
+        # lines on purpose: the muon enters the frame at ~27 % of the panel
+        # width, and a long line runs straight into it.  NOTE ax is in pixels
+        # from the TOP (ylim is inverted), so the render's top edge is ``head``,
+        # not ``foot`` -- getting that wrong pushes the block down onto the track.
+        ax.text(0.030 * W, head + 0.030 * h,
+                f'{T.DRIFT_MM:.0f} mm gap  ·  {T.E_DRIFT_V_CM:.0f} V/cm\n'
+                f'v = {T.V_DRIFT_UM_NS:.1f} µm/ns (measured)\n'
+                f'{T.drift_time_ns(T.DRIFT_MM):.0f} ns full transit',
+                ha='left', va='top', fontsize=fs * 0.90, color=muted,
+                linespacing=1.7, **A.FONT)
+
+    # The right panel's own x-label needs room ABOVE the colour bar; the two
+    # collided until 2026-08-17 (the label was drawn onto the bar's top edge).
+    cb_y, pan_y = 0.045, (0.20 if bare else 0.235)
+    pan_h = (0.975 if bare else 0.90) - pan_y
 
     if right == 'waveforms':
         lx0 = (w + 0.085 * lad_w) / W
-        draw_waveforms(fig, [lx0, (foot + 0.185 * h) / H,
-                             0.80 * lad_w / W, 0.715 * h / H],
+        draw_waveforms(fig, [lx0, (foot + pan_y * h) / H,
+                             0.80 * lad_w / W, pan_h * h / H],
                        clusters, fs, ink, muted, grid, cmap)
-        cax = fig.add_axes([lx0, (foot + 0.070 * h) / H,
-                            0.80 * lad_w / W, 0.020 * h / H])
+        cax = fig.add_axes([lx0, (foot + cb_y * h) / H,
+                            0.80 * lad_w / W, 0.018 * h / H])
         norm = mcolors.Normalize(0, T.drift_time_ns(T.DRIFT_MM))
         fig.colorbar(cm.ScalarMappable(norm=norm, cmap=cmap), cax=cax,
                      orientation='horizontal')
@@ -193,6 +242,13 @@ def compose(png, clusters, hits, out_base, theme, angle, dpi=300,
         for sp in cax.spines.values():
             sp.set_color(grid)
 
+    if bare:
+        fig.savefig(out_base + '.png', dpi=dpi, facecolor=page)
+        fig.savefig(out_base + '.pdf', facecolor=page)
+        plt.close(fig)
+        print(f'  wrote {out_base}.png/.pdf')
+        return
+
     cap = (
         f'A muon crosses the {T.DRIFT_MM:.0f} mm drift gap at {angle:.0f}° and '
         f'leaves {len(clusters)} primary ionisation clusters '
@@ -246,6 +302,8 @@ def main():
                     help="what goes beside the render: the strip-time ladder, "
                          "the stacked per-strip waveforms, or nothing")
     ap.add_argument('--draft', action='store_true')
+    ap.add_argument('--no-slide', action='store_true',
+                    help='skip the deck copy (light theme, --right waveforms)')
     args = ap.parse_args()
 
     size = (1000, 820) if args.draft else (2100, 1720)
@@ -258,6 +316,21 @@ def main():
         compose(out, clusters, hits,
                 os.path.join(FIG, f'microtpc{tag}_{theme}_labelled'), theme,
                 args.angle, right=args.right)
+
+        # the deck copy: the WAVEFORM variant, no type bands.  The deck asks for
+        # the raw signals rather than the ladder fit (2026-08-17) -- the ladder
+        # is the estimator the forward fit exists to replace, so showing it as
+        # "what the chamber records" undersells the next three slides.
+        if (theme != 'light' or args.right != 'waveforms'
+                or args.no_slide or args.draft):
+            continue
+        bare = os.path.join(FIG, 'microtpc_slide')
+        compose(out, clusters, hits, bare, theme, args.angle,
+                right=args.right, bare=True)
+        os.makedirs(SLIDE_IMG, exist_ok=True)
+        dst = os.path.join(SLIDE_IMG, 'microtpc.png')
+        shutil.copyfile(bare + '.png', dst)
+        print(f'  wrote {dst}')
 
 
 if __name__ == '__main__':

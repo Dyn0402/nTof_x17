@@ -48,6 +48,23 @@ BAND_SIGNAL = '#8a3f8f'     # the thermal arrival window
 BAND_DEAD = '#b04a3a'       # the blind region
 
 
+def efficiency_cmap():
+    """Bad -> good ramp for efficiency maps, in the deck's own inks.
+
+    Sequential colour maps built for *quantities* (viridis, plasma) are the
+    wrong tool here: efficiency has a good end and a bad end, and the reader is
+    looking for departures from uniformity, not for a value.  This runs from
+    the same red the loss budget reserves for genuine blindness, through the
+    copper it uses for "our position, not their signal", to the green it uses
+    for the answer -- so a bin's colour on the map means what the same colour
+    means on the bar chart beside it.
+    """
+    from matplotlib.colors import LinearSegmentedColormap
+    return LinearSegmentedColormap.from_list(
+        'efficiency', ['#b04a3a', '#c9743f', '#d9a86a', '#cdc08d', '#8fb87a',
+                       '#4f9c62', '#2e8b57'])
+
+
 def use() -> None:
     """Apply the house rcParams.  Call once before plotting."""
     mpl.rcParams.update({

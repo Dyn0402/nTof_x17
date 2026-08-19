@@ -122,10 +122,20 @@ def microtpc_cmap(theme='light'):
     a light theme the figure loses exactly the clusters nearest the cathode.
     The light theme therefore uses a truncated plasma that stops before the
     pale end; the dark theme drops the near-black start for the same reason.
+
+    2026-08-18, Dylan on deck slide 8: "please use only dark colors ... I worry
+    about it showing up on a projector".  The light-theme cut moved 0.78 -> 0.45,
+    which takes the relative luminance of the hottest colour from 0.67 to 0.36 --
+    every trace and every cluster is now dark against the white page, and the
+    scale still runs blue -> purple -> red so the drift-time ordering is intact.
+    It is ONE cut for the whole figure on purpose: the render on the left, the
+    stacked waveforms on the right and the colour bar under them all encode the
+    same drift time, and darkening only the panel that was complained about
+    would put two colour scales for one quantity on one slide.
     """
     from matplotlib.colors import LinearSegmentedColormap
     import matplotlib.pyplot as _plt
-    lo, hi = (0.0, 0.78) if theme == 'light' else (0.14, 1.0)
+    lo, hi = (0.0, 0.45) if theme == 'light' else (0.14, 1.0)
     base = _plt.get_cmap('plasma')
     return LinearSegmentedColormap.from_list(
         f'microtpc_{theme}', base(np.linspace(lo, hi, 256)))

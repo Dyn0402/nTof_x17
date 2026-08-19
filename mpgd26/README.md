@@ -26,8 +26,13 @@ and the list of what is drawn but not measured.
 cd mpgd26
 ../.venv/bin/python make_figures.py                # the setup stills
 ../.venv/bin/python make_chamber.py                # the exploded chamber
-../.venv/bin/python make_microtpc.py               # micro-TPC operation
+../.venv/bin/python make_microtpc.py --right waveforms   # micro-TPC operation (+ deck copy)
+../.venv/bin/python make_share.py                  # sharing cartoon, kernels, model diagram, real-data split
+../.venv/bin/python make_efficiency_breakdown.py   # loss budget, |r| tail, r<2 mm map (deck assets only)
+../.venv/bin/python make_resolution.py             # angle correlation + sigma68 vs angle (deck assets only)
 ../.venv/bin/python make_x17.py --layout both --theme both   # physics-case diagrams
+../.venv/bin/python make_x17.py --layout beats --capsule     # ...one beat per file
+../.venv/bin/python make_x17.py --layout detect --slides     # ...the hand-over to the detector (slide 6.3)
 ../.venv/bin/python make_ear2.py                   # the n_TOF EAR2 beam line (5 frames)
 ../.venv/bin/python make_ntof.py                   # the n_TOF setup, 9 build frames
 ../.venv/bin/python make_ntof_plan.py --bare       # ...and the same thing as a plan
@@ -36,7 +41,9 @@ cd mpgd26
 ../.venv/bin/python make_anim.py                   # turntables + build-ups
 ../.venv/bin/python make_report.py                 # rebuild report.html
 ../.venv/bin/python make_status_plots.py           # the Status-section DATA plots
-../.venv/bin/python make_timeline.py               # the project timeline (Status opener)
+../.venv/bin/python make_timeline.py               # the project timeline, in full (backup)
+../.venv/bin/python make_campaign.py --slides      # mini timeline + the daily event census
+../.venv/bin/python make_x17_rate.py --slides      # where the X17 rate is, with/without the dead time
 
 ../.venv/bin/python make_figures.py --draft        # fast, for framing checks
 ../.venv/bin/python make_figures.py --theme both   # + dark theme
@@ -65,13 +72,24 @@ Each figure is written twice:
 | `bench_p2` | the same bench, **both slots P2 BASKET fans** |
 | `bench_p2_side` | elevation of the two-P2 configuration |
 | `bench_mixed` | P2 fan in P1, MX17 in P2 (the 6-27 configuration) — available, not headline |
-| `chamber_exploded` | one MX17 chamber pulled apart, with a muon and its drifting ionisation (`make_chamber.py`) |
+| `chamber_exploded` | one MX17 chamber pulled apart, with a muon and its drifting ionisation — **landscape**: a `44 × 34 mm` window on the chamber (`scenes_chamber.WIN_MM`) with the labels on the render down its left side, sized for the 56 % column of the deck's "Chamber design" slide. **The readout side is the as-built board**, re-sourced 2026-08-17 from `MX17_Geant` (`shared/MX17ModuleGeometry.hh` + the gerbers): 0.68 mm **L4 pads** on the 0.78 mm grid, 0.5 mm L5 (Y, along x) and L6 (X, along y) strips, and over them the **black** ESL film — 550 µm strips, 250 µm gaps, its own 0.80 mm pitch — with the colours and L-numbers of the board-peel figure beside it. `WIN_MM` and `EXPLODE` are one setting: they set the figure's aspect between them — the window went `120 × 30` → `60 × 18` (in, to resolve the strip structure) → `60 × 34` (deeper along the strips, so the layers read as *planes* and not ribbons; 48 mm clips the near corner at this camera) → **`44 × 34`** (in again across the strips, 56 of them on screen instead of 77). The last step is a true **magnification, not a crop**: `make_chamber.VIEW`'s `view_angle` came down 17.8 → 16.6° with it, so the frame width is unchanged and the deck's column weights did not have to move. It came with the muon — the track tube was 0.9 mm across, i.e. 1.2 strip pitches, drawn at the scale of the structure it crosses, and is now 0.30 with 0.10 drift lines and 15 smaller ionisation clusters. The deck copy `chamber_exploded_slide` drops the title/caption bands and is written straight into `slides/assets/img/`; `make_anim`'s turntable uses the centred `ANIM_VIEW`, not this one (`make_chamber.py`) |
 | `microtpc` | **how the chamber measures an angle**: primaries drifting to the mesh coloured by arrival time, plus the strip-time ladder and its fit (`make_microtpc.py`) |
-| `microtpc_waveforms` | the same event with the **raw per-strip waveforms** instead of the ladder — the measured impulse response, sampled at 32 × 60 ns (`make_microtpc.py --right waveforms`) |
+| `microtpc_waveforms` | the same event with the **raw per-strip waveforms** instead of the ladder — the measured impulse response, sampled at 32 × 60 ns (`make_microtpc.py --right waveforms`). **This is the variant the deck shows** since 2026-08-17: the ladder is one estimator built on the waveforms, and it is the estimator the forward-fit slides exist to replace. `compose(bare=True)` writes the deck copy — no title band, no caption paragraph (they were 36 % of the height), the operating point burned onto the render in three lines — straight into `slides/assets/img/microtpc.png` |
+| `share_cartoon` | **the sharing mechanism as a drawing**: the avalanche onto the resistive film, sideways through the film's own sheet resistance, then down onto the strips — so the neighbours' copies are **late** (146 / 291 ns) and dispersed (`make_share.py`) |
+| `share_kernels` | **the kernels production uses**, per plane, from the frozen det3 bundle: charge on the strip itself, and what ±1 and ±2 see. X 5 / 6 %, Y 15 / 17 % — the film's strips run along y, so Y shares ~3× more (kY = 2.9). ⚠️ **c₁ sits on its C1_MIN = 0.05 calibration floor on a cosmic fit** — read `make_share.py`'s docstring before quoting an amplitude off this figure |
+| `share_build` | **what the model does**, four stages: 60 ns depth slices with free q ≥ 0 → the geometric strip integral → the kernel copies onto ±1/±2 → the fold with the measured impulse response |
+| `share_decompose` | **the same split on real data**: four *consecutive* strips of event 1663 (Y plane), each fitted waveform stacked into own / ±1 / ±2 against the measurement. Exact, not estimated — the model is a sum of those three terms, so the split is a difference of three builds of the design matrix |
+| `efficiency_breakdown` | det3's **loss budget** — where every crossing muon goes, every percentage read from `efficiency_breakdown.json`. **Not on a slide since 2026-08-17**: the deck draws the same five bars in HTML (`.bar-chart.loss`), because matplotlib set the sentence-length labels in its own font at the saved size and they arrived smaller than the deck's body text. Kept as the standalone/handoff copy — the two must agree bar for bar (`make_efficiency_breakdown.py`) |
+| `efficiency_residual_tail` | the **|r| distribution**, core and tail, one panel and no burned-in title. The second panel (efficiency vs match radius) was dropped 2026-08-17 — it re-plotted this histogram's own cumulative. Saved at 5.6 × 3.5 in *because* it is shown at about that size: a 7.4 in figure displayed at 2 in has 4-pixel tick labels |
+| `efficiency_map_sliding` | efficiency **across the chamber face**, as a **20 mm circle swept over it 0.5 mm at a time** — efficiency inside the circle is *reconstructed within 5 mm / all reference muons*, the same 5 mm the loss budget beside it uses (`make_efficiency_map.py`, on `g_det3_wknd`, the highest-statistics det3 set: **21,948** reference muons against `sat_det3`’s 7,049, and the two agree to 0.15 points). Replaced the 40 × 40 **binned** `efficiency_map_2mm` on 2026-08-18. ⚠️ **the kernel cannot be 2 mm**: at 0.16 rays/mm² a 2 mm circle holds two muons, and even a 12 mm one holds ~75, where a single missed muon paints its own 24 mm disc and the map becomes a field of blue circles that is pure counting noise. 20 mm holds ~224. The **0.5 mm step** is exactly as briefed and free — the map is an FFT convolution, not a double loop. Yellow = efficient (viridis), which is the one deviation from `plotstyle.efficiency_cmap()` in the deck |
+| `angle_correlation` | **reconstructed against reference track angle**, X and Y, as a 2-D density with the line of equality — the plot that says the fit *measures* the angle rather than regressing to the mean of it. σ₆₈ 1.19° / 1.16°, bias < 0.1°, no `slope_reliable` gate (`make_resolution.py`) |
+| `angle_resolution` | σ₆₈ of the same residual **in bins of |reference angle|**, both planes, against the ~1° physics floor. Flat at 0.94–1.48° from head-on to 18° — **including the head-on bin**, where a drift-time ladder has no lever arm at all. Replaces the 2026-07-14 hits-basis `angular_resolution.png`, which showed 1.66° |
 | `x17_signature` | the physics case, compact: capture → three de-excitation channels → the e⁺e⁻ opening-angle distribution (`make_x17.py`) |
-| `x17_story` | the same in five beats over two rows, including **why** the boost sets the opening angle (`make_x17.py --layout story`) |
+| `x17_story` | the same in five beats over two rows, including **why** the boost sets the opening angle (`make_x17.py --layout story`). ⚠️ **Re-flowed 2026-08-18 onto a 124-unit canvas** (`scenes_x17.SW`, against the compact layout's `W = 160`) so that each row alone is 2.16 : 1 — the shape of the figure hole on a deck slide. A slide figure is width-limited, so the number of canvas units a row spans is the *only* lever on how big its type and its drawing come out: 160 units across 12.4 in renders 9 pt type at 7 pt, 124 units renders it at 9 pt. Making these rows taller and making them bigger was the same operation. The two-row compilation is consequently **portrait** now. Do not widen `SW` back out without re-flowing the beats |
 | `x17_story_1of2`, `x17_story_2of2` | the same five beats split across two slides — 1–3 then 4–5 (`--layout split`) |
 | `x17_story_capsule` | the story layout with the real Geant4 ³He vessel in beat 1 (`--layout story --capsule`) |
+| `x17_story_bot_3_detect` | **deck frame 6.3**: the bottom story row with the **micro-TPC cartoon in beat 4’s box** and the spectrum untouched beside it, so the frame changes the argument and not the picture the audience is reading (`make_x17.py --layout bot3`). It was two stacked full-width pictures in one figure box until 2026-08-18, which cost both ~41 % of their width. One claim — one gap gives a direction, two give the angle. The **opening angle is drawn true**; the 204 mm standoff, the 30 mm gap and the 400 mm chamber are not. The 21° tilt is on the **chamber**, not the track: square incidence puts all the charge at one depth and leaves a micro-TPC nothing to reconstruct. `--layout detect_solo` writes the cartoon on a canvas of its own |
+| `x17_beat1_beam`, `x17_beat2_capture`, `x17_beat3_channels`, `x17_beat4_boost`, `x17_beat5_spectrum` | **the same five beats, one per file**, for dropping into slides individually — a build, another deck, a poster (`--layout beats`, or `--layout beat3` for one; `--capsule` applies to beat 1, exactly as in the story layout). Each is the story drawing cropped to its own beat, **not a redrawn version of it**: the beats keep their absolute coordinates and the canvas is cropped to the window that holds them, so an edit lands in the compilation and in the single file together, at the same size and in the same style — the identity is asserted by `x17_story_capsule_light.png` coming out **byte-identical** after the split was added. By default each beat keeps its **row's full height**, so beats dropped one after another land in exactly the register they have in the compilation; `--tight` trims each to its own ink instead and writes `…_tight_…` alongside |
 | `ntof_build_1…9` | **the n_TOF setup, built up** — capsule → neutron → pair → +Micromegas (close) → (zoom out) +Micromegas → +SiPM wall → +plastics → (rotate overhead) plastics → +liquid scintillator (`make_ntof.py`) |
 | `ntof_plan` | **the same setup and event as a plan** — orthographic, down the beam, 1:1 in both axes, with a dimension chain; a matplotlib drawing, not a render (`make_ntof_plan.py`). `ntof_plan_bare` drops the headline and the note, and is what the slide uses |
 | `x17_signature_bare`, `x17_story_bare` | either layout with the title and caption bands cropped off (`--no-title`) |
@@ -360,6 +378,17 @@ Build-ups are written **both** as a slow MP4 and as numbered stills
 (`build_bench_1_rack.png` …). Drop the stills on successive slides and the
 setup assembles itself as you speak — no video embedding needed.
 
+**The deck does exactly that for the cosmic bench** since 2026-08-18: slide 12
+was `build_bench.gif` and is now the five stills as a five-frame overlay build,
+with HTML `.pin` labels calling out what each frame adds (60 × 60 cm trigger
+paddles, 50 × 50 cm M3 references, 40 × 40 cm chambers under test). A GIF cannot
+be paged, cannot be held on the frame being talked about, and prints as whatever
+frame the PDF exporter happened to catch. Refresh the deck copies with
+
+```bash
+cp animations/build_bench_?_*.png slides/assets/img/
+```
+
 Individual scenes, with all the switches:
 
 ```bash
@@ -520,6 +549,12 @@ Collected in `geometry.ASSUMPTIONS` and repeated in every figure caption:
   are both sampled from `MX17_Simulation` (see below), but each is normalised
   to unit peak — their ratio is the measurement, so the figure must not appear
   to assert it.
+* **…and in the story panel 5 it *is* drawn**, deliberately: since 2026-08-17
+  that panel stacks the X17 yield on the IPC background at
+  `scenes_x17.SIG_FRAC` (4 % of the IPC yield over the plotted window) so the
+  slide shows what a measurement looks like — a bump on a background. The
+  fraction is illustrative, is printed on the panel in words, and is not a
+  prediction. Change it in one place if you want a different-looking bump.
 * **The kinematic minimum it marks, 109°**, follows from m = 16.8 MeV carrying
   the full 20.58 MeV transition, recoil neglected. It is *not* the ~120° quoted
   from the ATOMKI ⁷Li measurements, which sit at a different transition energy.

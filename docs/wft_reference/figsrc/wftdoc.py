@@ -40,9 +40,19 @@ FIGDIR = os.environ.get(
 
 ANALYSIS = ('/media/dylan/data/x17/cosmic_bench/Analysis/'
             'mx17_det3_saturday_scan_6-27-26/long_run_resist_490V_drift_1000V/mx17_3')
-BUNDLE = os.path.join(ANALYSIS, 'wft', 'calib_bundle_lp_sp0free')
+# Re-pointed 2026-08-13: the document was written against calib_bundle_lp_sp0free
+# and events_lp.parquet, which the MPGD26 freeze/campaign superseded on disk. The
+# frozen production products are calib_bundle_lp2_t0p and events.parquet.
+# Overridable since 2026-08-18 (WFT_DOC_BUNDLE) so the same scripts can be
+# re-run on the CORRECTED kernel, calib_bundle_r06, without editing this file:
+# the frozen bundle carries c2/c1 = 1.14, a +-2 copy larger than the +-1 copy.
+# The document still DEFAULTS to the frozen products, because that is what the
+# reco on disk (events.parquet) was produced with -- any figure that reads the
+# event table must stay on the default until the re-freeze campaign runs.
+BUNDLE = os.environ.get(
+    'WFT_DOC_BUNDLE', os.path.join(ANALYSIS, 'wft', 'calib_bundle_lp2_t0p'))
 CALIB_CACHE = os.path.join(ANALYSIS, 'wft', 'calib_work', 'calib_cache.pkl')
-EVENTS = os.path.join(ANALYSIS, 'wft', 'events_lp.parquet')
+EVENTS = os.path.join(ANALYSIS, 'wft', 'events.parquet')
 DET4_ANALYSIS = ('/media/dylan/data/x17/cosmic_bench/Analysis/'
                  'mx17_det4_day_6-24-26/long_run/mx17_4')
 

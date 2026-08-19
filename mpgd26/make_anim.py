@@ -263,8 +263,10 @@ JOBS = {
                           view=MB.VIEWS['hero'], up='z', size=(1100, 1400)),
     'turn_bench_p2': dict(kind='turn', builder=_bench(('p2', 'p2')),
                           view=MB.VIEWS['hero'], up='z', size=(1100, 1400)),
-    'turn_chamber':  dict(kind='turn', builder=_chamber, view=MC.VIEW,
-                          up='z', size=(1000, 1300)),
+    # the chamber's still-figure camera is deliberately off-centre (labels), so
+    # the turntable uses the centred landscape one -- see make_chamber.ANIM_VIEW
+    'turn_chamber':  dict(kind='turn', builder=_chamber, view=MC.ANIM_VIEW,
+                          up='z', size=MC.ANIM_SIZE),
     'build_sps':     dict(kind='build', builder=_sps, view=MS.VIEWS['hero'],
                           stages=SPS_STAGES, size=(1900, 1200)),
     'build_bench':   dict(kind='build', builder=_bench(('mx17', 'mx17')),

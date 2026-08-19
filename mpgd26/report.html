@@ -145,9 +145,23 @@ ul.tight li { margin:.3rem 0; }
    dN/dM &prop; 1/M it gets a different band for every mass, and those bands
    between them fill the whole axis &mdash; which is exactly the smooth slope
    panel 5 shows underneath the X17 peak.</p>
+<p><b>Panel 5 is a stack, not an overlay</b> (2026-08-17). The compact
+   <code>x17_signature</code> panel above compares two <i>shapes</i>, each
+   normalised to unit peak; the story panel instead draws what the measurement
+   will look like &mdash; the IPC background, with a small X17 yield sitting on
+   top of it and the filled area between the two curves being the excess. That
+   costs the figure its ratio-free honesty, so the ratio is a declared
+   parameter: <code>scenes_x17.SIG_FRAC</code>
+   (4&nbsp;% of the IPC yield over the plotted window)
+   is printed on the panel in words, and is illustrative, not predicted. It
+   puts the bump about 80&nbsp;% above the local background at its peak. The
+   window starts at 40&deg; for the same reason ATOMKI plot
+   from 40&deg;: the IPC forward peak is eight times the yield at 109&deg;, and
+   including it flattens everything the panel is about &mdash; the forward
+   sweep is beat 4's argument, made there as kinematics.</p>
 <figure id="x17_story">
   <img src="figures/x17_story_light.png" alt="x17_story">
-  <figcaption><b>x17_story</b> &mdash; The long version, five beats over two rows: beam on target, capture, the level drop and its three channels, why the parent mass fixes the opening angle, and the distribution that falls out of it.  Panel 4 is the one the compact layout has to assert instead of showing.<br><a href="figures/x17_story_light.png">PNG</a> &middot; <a href="figures/x17_story_light.pdf">vector PDF</a></figcaption>
+  <figcaption><b>x17_story</b> &mdash; The long version, five beats over two rows: beam on target, capture, the level drop and its three channels, why the parent mass fixes the opening angle, and the distribution that falls out of it.  Panel 4 is the one the compact layout has to assert instead of showing.  Re-flowed on 2026-08-18 onto a 124-unit canvas (scenes_x17.SW) so that each row ALONE is 2.16:1, the shape of the figure hole on a deck slide -- which is why the two-row compilation is now portrait.  A slide figure is width-limited, so the units a row spans are the only lever on how large its type comes out; the beats were re-flowed rather than re-typed, and not one font size changed.<br><a href="figures/x17_story_light.png">PNG</a> &middot; <a href="figures/x17_story_light.pdf">vector PDF</a></figcaption>
 </figure>
 
 <figure id="x17_story_bare">
@@ -179,6 +193,104 @@ ul.tight li { margin:.3rem 0; }
 <figure id="x17_story_2of2">
   <img src="figures/x17_story_2of2_light.png" alt="x17_story_2of2">
   <figcaption><b>x17_story_2of2</b> &mdash; Slide 2 of the split version: beats 4-5, which derive the measurement from the boost.<br><a href="figures/x17_story_2of2_light.png">PNG</a> &middot; <a href="figures/x17_story_2of2_light.pdf">vector PDF</a></figcaption>
+</figure>
+
+<p><b>The deck uses this split as of 2026-08-17</b> &mdash; two slides where
+   there was one, on the <code>--no-title</code> variants, since the slide's own
+   title bar carries what each row's headline said. The rows are wide and short
+   (4.6:1 and 3.9:1), so on a 16:9 slide the figure is <b>width-bound and fills
+   about 55&ndash;60&nbsp;% of the height</b>. Rearranging the beats inside a
+   slide does not recover that &mdash; two stacked rows halve the height per row
+   and give back what the extra width buys (measured: gains of &times;1.0 or
+   worse for every 2-row arrangement). The only lever that would is a narrower
+   set of beats, e.g. fewer than five orientation columns in beat 4.</p>
+
+<h3>One beat per file</h3>
+<p>The same five beats are also written one to a file
+   (<code>--layout beats</code>, or <code>--layout beat3</code> for one), for
+   building a slide up a beat at a time or for lifting a single picture into
+   another deck. Same principle as the split above and the same guarantee: each
+   is the story drawing cropped to its own beat, so nothing is redrawn and
+   nothing can drift &mdash; adding them left
+   <code>x17_story_capsule_light.png</code> byte-identical. Each keeps its
+   row's full height by default so beats used in sequence stay in register;
+   <code>--tight</code> trims to the ink instead.</p>
+<figure id="x17_beat1_beam_capsule">
+  <img src="figures/x17_beat1_beam_capsule_light.png" alt="x17_beat1_beam_capsule">
+  <figcaption><b>x17_beat1_beam_capsule</b> &mdash; Beat 1 alone: the neutron beam arriving from below on the real 3He vessel, with a zoom onto one capture in the gas.<br><a href="figures/x17_beat1_beam_capsule_light.png">PNG</a> &middot; <a href="figures/x17_beat1_beam_capsule_light.pdf">vector PDF</a></figcaption>
+</figure>
+
+<figure id="x17_beat2_capture">
+  <img src="figures/x17_beat2_capture_light.png" alt="x17_beat2_capture">
+  <figcaption><b>x17_beat2_capture</b> &mdash; Beat 2 alone: n + 3He -&gt; 4He*, 20.58 MeV above the ground state.<br><a href="figures/x17_beat2_capture_light.png">PNG</a> &middot; <a href="figures/x17_beat2_capture_light.pdf">vector PDF</a></figcaption>
+</figure>
+
+<figure id="x17_beat3_channels">
+  <img src="figures/x17_beat3_channels_light.png" alt="x17_beat3_channels">
+  <figcaption><b>x17_beat3_channels</b> &mdash; Beat 3 alone: the level drop and the three ways it can be taken away -- gamma, internal pair conversion, and the X17 hypothesis.<br><a href="figures/x17_beat3_channels_light.png">PNG</a> &middot; <a href="figures/x17_beat3_channels_light.pdf">vector PDF</a></figcaption>
+</figure>
+
+<figure id="x17_beat4_boost">
+  <img src="figures/x17_beat4_boost_light.png" alt="x17_beat4_boost">
+  <figcaption><b>x17_beat4_boost</b> &mdash; Beat 4 alone: the same pair cartoon for a heavy slow X17 and a light fast IPC pair, boosted from five rest-frame orientations. The X17 pair never closes below 109 deg; the IPC pair never opens above 11 -- which the five angle numbers per row now have to say on their own: the subtitle and the summary paragraph came off on 2026-08-18, and the drawing grew 1.19x into the space (Dylan: &quot;remove the in the rest frame ... and whatever the orientation ...&quot;). The left block was restacked to pay for it -- rest-frame icon over boost arrow instead of beside it -- because the row is width-limited and those units were the whole budget.<br><a href="figures/x17_beat4_boost_light.png">PNG</a> &middot; <a href="figures/x17_beat4_boost_light.pdf">vector PDF</a></figcaption>
+</figure>
+
+<figure id="x17_beat5_spectrum">
+  <img src="figures/x17_beat5_spectrum_light.png" alt="x17_beat5_spectrum">
+  <figcaption><b>x17_beat5_spectrum</b> &mdash; Beat 5 alone: the opening-angle distributions the boost produces -- a peak at the kinematic minimum against a smooth IPC slope. The panel went 34 x 26 -&gt; 34 x 38 canvas units on 2026-08-18, into the height the two paragraphs under it were using.<br><a href="figures/x17_beat5_spectrum_light.png">PNG</a> &middot; <a href="figures/x17_beat5_spectrum_light.pdf">vector PDF</a></figcaption>
+</figure>
+
+
+<h3>&hellip;and the beat that hands over to the detector</h3>
+<p>Added 2026-08-17.  By the end of beat 5 the audience has been told that the
+   observable is an <b>angle</b>, and nothing has yet said what measures one.
+   This is the bridge, and it is deliberately the smallest possible claim: a
+   micro-TPC turns one gas gap into a direction, so two of them give the
+   opening angle.  Since 2026-08-18 it is drawn <b>inside the story canvas</b>,
+   in the box beat 4 was using (<code>--layout bot3</code>), so the deck's frame
+   6.3 is one full-width picture: the spectrum neither moves nor resizes, and
+   what changes beside it is the argument.  It sat <i>under</i> the spectrum
+   until then, and two stacked full-width pictures can never be more than
+   ~59&nbsp;% as wide as one.  <code>--layout detect_solo</code> still writes it
+   on a canvas of its own.</p>
+<p class="caveat">Drawn, and not to scale &mdash; except for the one thing that
+   is.  The <b>opening angle is the real 110&deg;</b> and can be measured off
+   the page; the standoff (204 mm from a 23 mm capsule), the 30 mm gap and the
+   400 mm chamber are not, because at scale the gap would be a hairline.  What
+   is tilted is the <b>chamber</b>, by 21&deg;: a track arriving square to the
+   readout plane leaves all its charge at one depth, and then there is no
+   drift-time ladder to reconstruct at all.</p>
+<figure id="x17_story_bot_3_detect">
+  <img src="figures/x17_story_bot_3_detect_light.png" alt="x17_story_bot_3_detect">
+  <figcaption><b>x17_story_bot_3_detect</b> &mdash; Deck frame 6.3: the bottom row with the micro-TPC cartoon standing where beat 4 was, and the spectrum exactly where it was on 6.2 -- so the frame changes the ARGUMENT beside the spectrum and not the spectrum. Until 2026-08-18 the slide stacked two full-width pictures in one figure box, which cost both of them ~41 % of their width. One claim only -- one gas gap gives a direction, two give the opening angle. The OPENING ANGLE is drawn true (measure it with a protractor); the standoff, the gap and the chamber size are not to scale, and the real ones are 204 mm, 30 mm and 400 mm. The chamber, not the track, carries the 21 deg tilt: a track square to the readout plane deposits all its charge at one depth and there is nothing for a micro-TPC to reconstruct.<br><a href="figures/x17_story_bot_3_detect_light.png">PNG</a> &middot; <a href="figures/x17_story_bot_3_detect_light.pdf">vector PDF</a></figcaption>
+</figure>
+
+<figure id="x17_detect_solo">
+  <img src="figures/x17_detect_solo_light.png" alt="x17_detect_solo">
+  <figcaption><b>x17_detect_solo</b> &mdash; The same micro-TPC cartoon on a canvas of its own, for a slide or a poster that wants it without the spectrum. scenes_x17.draw_detect; the version INSIDE the story row is the same drawing at 0.87 of its length scale, not a second implementation.<br><a href="figures/x17_detect_solo_light.png">PNG</a> &middot; <a href="figures/x17_detect_solo_light.pdf">vector PDF</a></figcaption>
+</figure>
+
+
+<h2>The Status section&rsquo;s two arguments</h2>
+<p>Rebuilt 2026-08-19.  The section used to be a list of results; it is now one
+   argument, and these are the two figures that carry it.  Both are light-only
+   and both are saved on their full canvas at the <b>measured</b> aspect of the
+   slide hole they go into (2.95:1 with a stat row under it, 2.22:1 with only a
+   caption) &mdash; a tight bounding box would crop to the ink and change the
+   ratio, so the figure would arrive smaller than the hole.</p>
+<figure id="campaign_overview">
+  <img src="figures/campaign_overview.png" alt="campaign_overview">
+  <figcaption><b>campaign_overview</b> &mdash; Nine months of the programme over the six weeks of beam, on one canvas: the mini timeline (four EAR2 exposures, names and dates only) with the daily event census expanded out of its last bar by a zoom wedge. The Saclay bench month is off the strip -- it is the one bar that is not a beam exposure. Events are entries in each sub-run&#x27;s own decoded event tree, counted on EOS, so the census depends on neither the n_TOF stream nor any matching.<br><a href="figures/campaign_overview.png">PNG</a> &middot; <a href="figures/campaign_overview.pdf">vector PDF</a></figcaption>
+</figure>
+
+<figure id="x17_rate_1_physics">
+  <img src="figures/x17_rate_1_physics.png" alt="x17_rate_1_physics">
+  <figcaption><b>x17_rate_1_physics</b> &mdash; Where the X17 rate is. Dylan&#x27;s December 2025 rate calculation (data/x17_rate_3He.txt) on a neutron flight-time axis with energy on top, drawn as the interpolated point plot from neutron_energy_vs_flight_time.py: the markers carry the exact decade bin widths and the faint line is a log-log cubic spline through them. Two decades carry 79 % of the rate, and they arrive 0.45-4.5 us after the flash.<br><a href="figures/x17_rate_1_physics.png">PNG</a> &middot; <a href="figures/x17_rate_1_physics.pdf">vector PDF</a></figcaption>
+</figure>
+
+<figure id="x17_rate_2_window">
+  <img src="figures/x17_rate_2_window.png" alt="x17_rate_2_window">
+  <figcaption><b>x17_rate_2_window</b> &mdash; The same drawing with the front end&#x27;s measured dead time on it: firm to 1 ms (no track has ever been reconstructed earlier, run_79) and fading to 9 ms (the slowest chamber at the production operating point, the run_57 recovery map). The whole MeV peak is inside it, so the accent moves to the thermal bin -- 10 % of the rate, and recordable. Same points, same limits, same annotation positions as frame 1.<br><a href="figures/x17_rate_2_window.png">PNG</a> &middot; <a href="figures/x17_rate_2_window.pdf">vector PDF</a></figcaption>
 </figure>
 
 
@@ -275,16 +387,19 @@ ul.tight li { margin:.3rem 0; }
    rests on.</p>
 <figure id="chamber_exploded">
   <img src="figures/chamber_exploded_light_labelled.png" alt="chamber_exploded">
-  <figcaption><b>chamber_exploded</b> &mdash; One MX17 chamber with its layers separated along the drift axis, and a muon whose ionisation drifts down to the mesh -- the micro-TPC picture the whole reconstruction rests on.<br><a href="figures/chamber_exploded_light_labelled.png">labelled PNG</a> &middot; <a href="figures/chamber_exploded_light_labelled.pdf">labelled PDF</a> &middot; <a href="figures/chamber_exploded_light.png">bare render</a></figcaption>
+  <figcaption><b>chamber_exploded</b> &mdash; One MX17 chamber with its layers separated along the drift axis, and a muon whose ionisation drifts down to the mesh -- the micro-TPC picture the whole reconstruction rests on. Landscape since 2026-08-17: a 44 x 34 mm window on the chamber rather than a 30 mm square, with the labels on the render beside their own layer instead of in a gutter, so the layers get the width of the slide. The readout side is the as-built board (L4 pads, L5/L6 strips, the black ESL film on its own 0.80 mm pitch) and the window went 120 x 30 -&gt; 60 x 18 -&gt; 60 x 34 -&gt; 44 x 34 mm over that one day: in to resolve the strip structure, then deeper along the strips so the layers read as planes rather than ribbons, then in again across them. The last step came with the muon: its tube was drawn 0.9 mm across, i.e. 1.2 strip pitches, at the scale of the structure it is supposed to be crossing, and is now 0.30 with drift lines to match. The frame width never changed -- make_chamber.VIEW s view_angle tracks WIN_MM, so these are magnifications and not crops.<br><a href="figures/chamber_exploded_light_labelled.png">labelled PNG</a> &middot; <a href="figures/chamber_exploded_light_labelled.pdf">labelled PDF</a> &middot; <a href="figures/chamber_exploded_light.png">bare render</a></figcaption>
 </figure>
 
 
 <h2>Micro-TPC operation</h2>
 <p>The measurement itself.  A muon crosses the
    30 mm gap at an angle and leaves primary ionisation
-   clusters at ~30/cm; each drifts straight down at v = 34 &micro;m/ns, so its
-   arrival time at the mesh <i>is</i> the depth it was created at &mdash; 882 ns
-   across the full gap.  The slope of arrival time against strip position is
+   clusters at ~30/cm; each drifts straight down at the MEASURED
+   v = 36.6 &micro;m/ns, so its arrival time at the mesh <i>is</i> the depth it
+   was created at &mdash; 820 ns across the full gap.  (The Magboltz value for
+   the same mixture, ~34 &micro;m/ns, would give 882 ns; the two numbers agree
+   within the measurement, but mixing them is how the deck's old caption came
+   to read "36.6 &micro;m/ns &middot; 882 ns", which is neither.)  The slope of arrival time against strip position is
    then the track angle, from one plane.  v<sub>drift</sub> and &sigma;<sub>T</sub>
    are the Garfield++/Magboltz values for the mixture the bench actually runs
    (Ar/iso 95/5 + ~1&nbsp;% H<sub>2</sub>O at 333 V/cm, from
@@ -308,6 +423,50 @@ ul.tight li { margin:.3rem 0; }
 <figure id="microtpc">
   <img src="figures/microtpc_light_labelled.png" alt="microtpc">
   <figcaption><b>microtpc</b> &mdash; <br><a href="figures/microtpc_light_labelled.png">labelled PNG</a> &middot; <a href="figures/microtpc_light_labelled.pdf">labelled PDF</a> &middot; <a href="figures/microtpc_light.png">bare render</a></figcaption>
+</figure>
+
+
+<h2>Charge sharing, and what a predicted waveform is made of</h2>
+<p>Four figures from <code>make_share.py</code>, behind the two reconstruction
+   slides.  They share one colour rule &mdash; blue for a strip's own charge,
+   vermillion for &plusmn;1, purple for &plusmn;2 &mdash; in the cartoon, in the
+   kernels, in the diagram and in the real-data decomposition, so a colour means
+   one thing across the whole section.</p>
+<p>Everything with a number on it comes from the <b>frozen production
+   bundle</b> <code>calib_bundle_lp2_t0p</code> (det3, Saturday long run,
+   resistive 490 V / drift 1000 V) and from event 1663 of its ref-pinned
+   calibration cache &mdash; the same event the "One muon through the forward
+   fit" slide uses.  The decomposition is exact rather than estimated: the model
+   is a sum of an own-charge term and two neighbour terms, so rebuilding the
+   design matrix with c<sub>1</sub> and c<sub>2</sub> zeroed and differencing
+   gives the terms themselves.</p>
+<p class="caveat"><b>The amplitudes are a floor, not a measurement.</b> On this
+   bundle c<sub>1</sub> = 0.051 sits on the C1_MIN = 0.05 bound that
+   <code>wft.calibrate</code> imposes: a cosmic-angle fit cannot separate
+   sharing from a wider initial cloud plus a different v<sub>drift</sub>, and
+   without the bound it walks c<sub>1</sub> to zero and hides the sharing in
+   <code>sigma_p0</code>.  The H4 beam test at normal incidence breaks that
+   degeneracy and measures ~0.28&ndash;0.30.  The <i>shapes</i> and the
+   <i>delays</i> on these figures are the model's own and need no caveat; the
+   X/Y ratio (kY = 2.9) is fitted and is the interesting number; the absolute
+   level is floor-limited.  c<sub>2</sub> &gt; c<sub>1</sub> in this bundle,
+   which is a fit correlation and not a ladder &mdash; what the model needs
+   right is their sum and their delay.</p>
+<figure id="share_cartoon">
+  <img src="figures/share_cartoon_light.png" alt="share_cartoon">
+  <figcaption><b>share_cartoon</b> &mdash; The sharing mechanism as a drawing: the avalanche lands on the resistive layer, the charge that goes sideways goes through the layer&#x27;s own sheet resistance, and the neighbours pick up copies that are LATE (166 ns to +-1, 333 to +-2) and dispersed. Deck slide 9.1.<br><a href="figures/share_cartoon_light.png">PNG</a> &middot; <a href="figures/share_cartoon_light.pdf">vector PDF</a></figcaption>
+</figure>
+<figure id="share_kernels">
+  <img src="figures/share_kernels_light.png" alt="share_kernels">
+  <figcaption><b>share_kernels</b> &mdash; The kernels, per plane, out of the CORRECTED det3 bundle calib_bundle_r06: the response to charge on the strip itself, and the copies +-1 and +-2 see. X 5 / 3 %, Y 15 / 9 % -- the layer&#x27;s strips run along y, so Y shares ~3x more (kY = 2.9). The +-2 copy is SMALLER than the +-1 copy, which is the only ordering possible: the +-2 strip is reached only through the +-1. The frozen production bundle had it the other way round (c2/c1 = 1.14); the ratio is now pinned at 0.6, from the H4 beam&#x27;s model-free 0.45 +- 0.02. The absolute c1 on a cosmic fit is still a lower bound. Deck slide 9.2.<br><a href="figures/share_kernels_light.png">PNG</a> &middot; <a href="figures/share_kernels_light.pdf">vector PDF</a></figcaption>
+</figure>
+<figure id="share_build">
+  <img src="figures/share_build_light.png" alt="share_build">
+  <figcaption><b>share_build</b> &mdash; What the model does, in four stages: the drift column in 60 ns slices with free non-negative charges, the geometric strip integral, the kernel copies onto +-1/+-2, and the fold with the measured impulse response. Deck slide 10, left.<br><a href="figures/share_build_light.png">PNG</a> &middot; <a href="figures/share_build_light.pdf">vector PDF</a></figcaption>
+</figure>
+<figure id="share_decompose">
+  <img src="figures/share_decompose_light.png" alt="share_decompose">
+  <figcaption><b>share_decompose</b> &mdash; The same split on REAL DATA -- four consecutive strips of event 1663 (Y plane), each fitted waveform stacked into own / +-1 / +-2 charge against the measurement. Walk out from the core and 40 % of the pulse stops being the strip&#x27;s own charge (20 % on the core, 42 % three strips out). Deck slide 10, right.<br><a href="figures/share_decompose_light.png">PNG</a> &middot; <a href="figures/share_decompose_light.pdf">vector PDF</a></figcaption>
 </figure>
 
 
@@ -517,6 +676,10 @@ ul.tight li { margin:.3rem 0; }
 <figure>
   <video src="animations/build_ntof.mp4" controls loop muted playsinline style="width:100%;border:1px solid var(--rule);border-radius:6px"></video>
   <figcaption><b>build_ntof</b> &mdash; Build-up: the four detector layers going on around the target, one at a time, with a real Geant4 e+e- pair crossing them.  The close-up act of the still sequence is not in the video -- it is at a different scale, and a cut mid-way would read as an edit rather than as an assembly.<br><a href="animations/build_ntof.mp4">MP4</a> &middot; <a href="animations/build_ntof.gif">GIF</a> &middot; 4 numbered stills in <code>animations/</code></figcaption>
+</figure>
+<figure>
+  <video src="animations/turn_ntof.mp4" controls loop muted playsinline style="width:100%;border:1px solid var(--rule);border-radius:6px"></video>
+  <figcaption><b>turn_ntof</b> &mdash; Turntable of the full n_TOF setup.<br><a href="animations/turn_ntof.mp4">MP4</a> &middot; <a href="animations/turn_ntof.gif">GIF</a></figcaption>
 </figure>
 
 

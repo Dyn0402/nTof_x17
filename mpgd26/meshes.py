@@ -119,6 +119,29 @@ def quads_mesh(polys, offset, normal_axis='z', scalars=None):
     return mesh
 
 
+def pad_grid(span_u, span_v, pitch, size, offset, normal_axis='z'):
+    """A regular grid of square pads -- the MX17 L4 pad ("pixel") layer.
+
+    ``pitch`` is the centre-to-centre spacing and ``size`` the pad side, both in
+    plane units, so the drawn gap between pads is the real one; the grid is
+    centred on the spans and clipped to whole pads.
+    """
+    out = []
+    for (lo, hi) in (span_u, span_v):
+        n = max(1, int((hi - lo) // pitch))
+        c0 = 0.5 * (lo + hi) - 0.5 * (n - 1) * pitch
+        out.append(c0 + pitch * np.arange(n))
+    cu, cv = out
+    h = size / 2
+    uu, vv = np.meshgrid(cu, cv, indexing='ij')
+    uu, vv = uu.ravel(), vv.ravel()
+    polys = np.stack([np.stack([uu - h, vv - h], axis=1),
+                      np.stack([uu + h, vv - h], axis=1),
+                      np.stack([uu + h, vv + h], axis=1),
+                      np.stack([uu - h, vv + h], axis=1)], axis=1)
+    return quads_mesh(polys, offset, normal_axis=normal_axis)
+
+
 def strip_lines(n_strips, span_u, span_v, offset, along='u', normal_axis='z',
                 width=None):
     """Readout strips as thin quads -- the visual signature of a strip detector.
