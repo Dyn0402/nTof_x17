@@ -1,0 +1,14 @@
+{
+ "run145_image.png": {
+  "source": "/media/dylan/data/x17/beam_july/analysis/wft/run_145/stat090_0000/imaging/note_figs_fullcov/fig2_image.png",
+  "md5": "d1c9a7ac29fb86f0ea0ee2d44cf19ba8"
+ },
+ "run145_pointing.png": {
+  "source": "/media/dylan/data/x17/beam_july/analysis/wft/run_145/stat090_0000/imaging/note_figs_fullcov/fig1_tan_vs_u.png",
+  "md5": "86c00ebb3933272791d7e49dfeb00e1b"
+ },
+ "run145_wall3d_all.png": {
+  "source": "/media/dylan/data/x17/beam_july/analysis/wft/run_145/stat090_0000/imaging_fullcov/wall_3d/wall3d_run145_all_arms.png",
+  "md5": "0d23b297cdf29586dffd5ac29cfebfb2"
+ }
+}

@@ -38,16 +38,29 @@ def unpack(results, work):
     return work
 
 
-def merge_arm(work, arm, out_dir, park_dir=None, code_commit=None):
+def merge_arm(work, arm, out_dir, run, subrun, park_dir=None,
+              code_commit=None):
     import pandas as pd
     src = os.path.join(work, 'out', f'mx17_{arm}')
     tabs = sorted(glob.glob(os.path.join(src, 'events_*.parquet')))
     tabs = [t for t in tabs if not t.endswith('.candidates.parquet')]
+
+    # EVERY sub-run's tags unpack into the same out/mx17_<arm>/ (the tag is in
+    # the filename, the sub-run is not), so the glob alone would stitch
+    # stat090_0000 and _0001 into one table -- 47,546 "events" for arm A, and
+    # 8,814 duplicate event_ids where the two sub-runs' numbering overlaps.
+    # Filter on what the table itself says it is.
+    keep, metas = [], []
+    for t in tabs:
+        m = json.load(open(t.replace('.parquet', '.meta.json')))
+        if (m['run'].get('run'), m['run'].get('sub_run')) == (run, subrun):
+            keep.append(t)
+            metas.append(m)
+    tabs = keep
     if not tabs:
-        print(f'  arm {arm}: nothing to merge in {src}')
+        print(f'  arm {arm}: no {run}/{subrun} tags in {src}')
         return None
 
-    metas = [json.load(open(t.replace('.parquet', '.meta.json'))) for t in tabs]
     hypers = {json.dumps(m['bundle']['hyper'], sort_keys=True) for m in metas}
     if len(hypers) != 1:
         sys.exit(f'FATAL: arm {arm}: {len(hypers)} different bundles across '
@@ -56,6 +69,11 @@ def merge_arm(work, arm, out_dir, park_dir=None, code_commit=None):
     dfs = [pd.read_parquet(t) for t in tabs]
     df = pd.concat(dfs, ignore_index=True).sort_values('event_id')
     dup = int(df['event_id'].duplicated().sum())
+    if dup:
+        sys.exit(f'FATAL: arm {arm}: {dup:,} duplicate event_ids across the '
+                 f'{len(tabs)} tags of {run}/{subrun} — file tags of one '
+                 'sub-run do not share event numbering, so this means the '
+                 'wrong tags were collected')
     df = df.reset_index(drop=True)
 
     cands = [pd.read_parquet(t.replace('.parquet', '.candidates.parquet'))
@@ -107,8 +125,7 @@ def merge_arm(work, arm, out_dir, park_dir=None, code_commit=None):
     c2 = float(r) * h['c1'] if r is not None else h['c2']
     print(f'  arm {arm}: {len(tabs)} tags -> {len(df):,} events '
           f'(seeded {meta["n_seeded"]:,}), c2/c1={c2 / h["c1"]:.3f}, '
-          f'v={meta["bundle"]["v_drift"]}' +
-          (f', {dup} duplicate event_ids' if dup else ''))
+          f'v={meta["bundle"]["v_drift"]}')
     return meta
 
 
@@ -137,7 +154,7 @@ def main():
     print(f'merging {a.run}/{a.subrun} from {a.results}')
     for arm in a.arms.split(','):
         out_dir = os.path.join(a.analysis, a.run, a.subrun, f'mx17_{arm}')
-        merge_arm(work, arm, out_dir,
+        merge_arm(work, arm, out_dir, a.run, a.subrun,
                   park_dir=os.path.join(out_dir, a.park) if a.park else None,
                   code_commit=commit)
     return 0

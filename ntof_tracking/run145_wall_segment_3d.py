@@ -52,10 +52,26 @@ DT_LO, DT_HI = -100.0, 60.0
 WAL_CODE = {'A': 0, 'B': 1, 'C': 2, 'D': 3}
 
 # In-situ angle scale per arm: median per-track k on the pointing-coincident
-# subset (imaging_fullcov/imaging_summary.json, sub-run 0000). B's drift field
-# is not nominal (degrador absent) and its k is NOT a velocity statement —
-# used here only so B's fan is drawn at the scale its own data prefers.
-K_INSITU = {'A': 1.239, 'B': 1.918, 'C': 1.488, 'D': 1.136}
+# subset. B's drift field is not nominal (degrador absent) and its k is NOT a
+# velocity statement — used here only so B's fan is drawn at the scale its own
+# data prefers.
+#
+# READ from the imaging summary, never hard-coded: this used to be the literal
+# {'A': 1.239, 'B': 1.918, 'C': 1.488, 'D': 1.136}, which is a figure that
+# silently keeps drawing the previous reconstruction's angle scale after the
+# reconstruction changes.
+def _k_insitu(summary=None):
+    p = summary or os.path.join(os.path.dirname(OUT), 'imaging_summary.json')
+    with open(p) as f:
+        S = json.load(f)
+    k = {r['arm']: r['k_phys'] for r in S['results'] if 'k_phys' in r}
+    if not k:
+        raise SystemExit(f'FATAL: no k_phys in {p} — run '
+                         'run145_target_imaging first')
+    return k
+
+
+K_INSITU = _k_insitu()
 # az/elev per arm derive from the arm normal; +45 deg matches the run_79 view
 ARM_AZ = {a: float(np.degrees(np.arctan2(geo.W_HAT[a][0], geo.W_HAT[a][2])))
           for a in geo.ARMS}

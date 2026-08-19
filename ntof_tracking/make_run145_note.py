@@ -235,17 +235,32 @@ drift 700&nbsp;V on all four chambers, resist A540/B540/C525/D520&nbsp;V,
 Ar/iC<sub>4</sub>H<sub>10</sub> 90/10, 20 samples × 60&nbsp;ns) is the only
 last-week run with full nTOF matching: the slim pipeline joins DREAM events to
 nTOF run 224670 on <code>eventId</code> at ~95&nbsp;% efficiency, so every
-track knows which SiPM bars and plastics fired and when. The frozen
-(MPGD26-generation) <code>wft/</code> forward-model reconstruction ran on the
-desktop over all four arms with bench-transferred calibration bundles
-(template + sharing kernel as hardware; v_drift seeded from Magboltz at
-42.6&nbsp;µm/ns), per-plane angle-mapping constants w0/kw applied, and the
-multi-track candidate sidecar on. Selection: both planes fit OK,
+track knows which SiPM bars and plastics fired and when. The
+<code>wft/</code> forward-model reconstruction ran over all four arms with
+bench-transferred calibration bundles (template + sharing kernel as hardware;
+v_drift seeded from Magboltz at 42.6&nbsp;µm/ns), per-plane angle-mapping
+constants w0/kw applied, and the multi-track candidate sidecar on. Selection:
+both planes fit OK,
 |tan&thinsp;θ|&nbsp;&lt;&nbsp;1, and a same-arm in-time SiPM wall hit in the
 slim record. No slope gate — the June bench re-analysis measured the forward
 fit's head-on band <em>unbiased</em> (≤&nbsp;0.15°) at the same σ68 as the
 inclined bands, and at nTOF that band is the tracks that point straight at
 the target.</p>
+
+<p><strong>Re-run 2026-08-19 on a corrected sharing kernel.</strong> The bench
+bundles three of the four arms were seeded from carried an <em>inverted</em>
+charge-sharing ladder — the ±2-strip copy larger than the ±1, which cannot
+happen, since ±2 is reached only through ±1. They were refit with
+c₂&nbsp;=&nbsp;0.6&nbsp;c₁ (arm&nbsp;A's det3 had carried 1.14, B's det2 1.53,
+D's det7 1.75; C's det6 was always physical at 0.82 and is unchanged), and
+everything on this page — numbers, figures and event displays — was
+regenerated from that reconstruction. The effect on the result is small and
+was measured, not assumed: on identical events the corrected kernel steepens
+tan&thinsp;θ by 0.5&nbsp;% in x and 3.8&nbsp;% in y, but the angle scale here
+is <em>fitted</em>, so k absorbs nearly all of it — arm&nbsp;A's in-situ
+velocity moves 36.1&nbsp;→&nbsp;36.2&nbsp;µm/ns, the focus tightens slightly,
+and the externally confirmed fraction is unchanged at 51&nbsp;%. Record:
+<code>ntof_tracking/RUN145_R06_2026-08-19.md</code>.</p>
 
 <h2>The pointing correlation</h2>
 <figure>
