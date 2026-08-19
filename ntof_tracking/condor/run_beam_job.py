@@ -46,6 +46,27 @@ def fetch(eos_path, dest):
     sh(['xrdcp', '-s', '-f', EOS_URL + eos_path, dest])
 
 
+def stamp_provenance(bundle_dir, bench_origin):
+    """Record what `git archive` cannot: the code commit (there is no .git on a
+    worker, so wft stamps `[unknown]`) and the bench bundle this arm was really
+    seeded from."""
+    import json
+    commit = None
+    for c in (os.path.join(HERE, 'CODE_COMMIT.txt'),
+              os.path.join(HERE, '..', 'CODE_COMMIT.txt')):
+        if os.path.isfile(c):
+            commit = open(c).read().strip()
+            break
+    p = os.path.join(bundle_dir, 'bundle.json')
+    b = json.load(open(p))
+    b.setdefault('provenance', {}).update(
+        seeded_from_bench=bench_origin,
+        code_commit=commit or 'unknown',
+        ran_on='lxplus condor (ntof_tracking/condor/run_beam_job.py)')
+    with open(p, 'w') as f:
+        json.dump(b, f, indent=1)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('arm')
@@ -59,6 +80,10 @@ def main():
     # kernel the only thing that differs from the superseded tables.
     ap.add_argument('--v-drift', type=float, default=42.6)
     ap.add_argument('--jobs', type=int, default=int(os.environ.get('RECO_JOBS', 8)))
+    ap.add_argument('--limit-per-tag', type=int, default=None,
+                    help='reconstruct only the first N seeded events -- for '
+                         'smoke-testing the stack on a login node, never for '
+                         'a production job')
     a = ap.parse_args()
 
     sys.path.insert(0, CODE)
@@ -86,7 +111,11 @@ def main():
         f = f'Mx17_{a.subrun}_datrun_{a.tag}_{feu:02d}.root'
         fetch(f'{sub}/decoded_root/{f}', os.path.join(loc, 'decoded_root', f))
 
-    # the shipped bench bundle replaces the laptop path in the seed table
+    # the shipped bench bundle replaces the laptop path in the seed table --
+    # but keep the laptop path, it is the only record of WHICH bench key and
+    # sub-run this arm is seeded from (`bundles/mx17_A/calib_bundle_r06` is
+    # not: three arms would look alike).
+    bench_origin = wb.BEAM_DETS[a.arm]['bundle']
     wb.BEAM_DETS[a.arm] = dict(
         wb.BEAM_DETS[a.arm],
         bundle=os.path.join(a.bundles, f'mx17_{a.arm}', a.bundle_name))
@@ -96,11 +125,13 @@ def main():
     bundle = wb.make_bundle(a.arm, out=os.path.join(out_dir,
                                                     'calib_bundle_prelim'),
                             v_drift=a.v_drift, run=a.run, sub_run=a.subrun)
+    stamp_provenance(bundle, bench_origin)
+
     cfg = wb.beam_config(a.arm, a.run, a.subrun)
     cfg.file_tags = [a.tag]
     wb.reconstruct_subrun(cfg, bundle,
                           os.path.join(out_dir, f'events_{a.tag}.parquet'),
-                          jobs=a.jobs)
+                          jobs=a.jobs, limit_per_tag=a.limit_per_tag)
     shutil.rmtree(data, ignore_errors=True)          # don't tar 300 MB back
     return 0
 

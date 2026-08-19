@@ -217,7 +217,7 @@ def make_bundle(arm: str, out: Optional[str] = None, v_drift: Optional[float] = 
         status='PRELIMINARY -- see ntof_tracking/TRACK_PLAN_08 phase 2')
     out = out or os.path.join(ANALYSIS_BASE, run, sub_run, f'mx17_{arm}',
                               'calib_bundle_prelim')
-    cal.save(out, note=f'preliminary run_79 bundle for arm {arm}')
+    cal.save(out, note=f'preliminary {run} bundle for arm {arm}')
     print(cal.summary())
     print('wrote', out)
     return out
