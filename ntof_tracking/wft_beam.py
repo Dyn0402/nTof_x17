@@ -67,22 +67,31 @@ BENCH_ANALYSIS = os.environ.get('WFT_BENCH_ANALYSIS',
 # mx_june_wft/HANDOFF_2026-07-30.md's fleet status table.
 BEAM_DETS = {
     'A': dict(bench='mx17_3', feu_x=3, feu_y=4,
+              # r06 (2026-08-19): c2 slaved to 0.6*c1. calib_bundle_lp2 carried
+              # c2/c1 = 1.14 -- an inverted ladder, physically impossible, since
+              # the +-2 strip is reached only through the +-1.
               bundle=BENCH_ANALYSIS + 'mx17_det3_saturday_scan_6-27-26/'
-                     'long_run_resist_490V_drift_1000V/mx17_3/wft/calib_bundle_lp2',
+                     'long_run_resist_490V_drift_1000V/mx17_3/wft/calib_bundle_r06',
               gap_mm=27.9),
     'B': dict(bench='mx17_2', feu_x=5, feu_y=6,
+              # NB the bench key here is o22_long_det2 (`longer_run`), NOT
+              # g_det2 (`long_run`) -- that collision is what hid det2's
+              # inversion for two days. lp carried c2/c1 = 1.53.
               bundle=BENCH_ANALYSIS + 'mx17_det2_det3_overnight_6-22-26/'
-                     'longer_run/mx17_2/wft/calib_bundle_lp',
+                     'longer_run/mx17_2/wft/calib_bundle_r06',
               gap_mm=30.5),
     'C': dict(bench='mx17_6', feu_x=7, feu_y=8,
+              # NOT moved to r06: det6's lp bundle is already physical
+              # (c2/c1 = 0.82), so there is nothing to correct here.
               bundle=BENCH_ANALYSIS + 'mx17_det6_det7_overnight_6-26-26/'
                      'long_run/mx17_6/wft/calib_bundle_lp',
               gap_mm=30.0),
     'D': dict(bench='mx17_7', feu_x=1, feu_y=2,
-              # calib_bundle_lp superseded det7's v36 in the 7-31 fleet rollout
-              # (the MPGD26 freeze ships lp for det7); v36 was the old kernel.
+              # calib_bundle_lp superseded det7's v36 in the 7-31 fleet rollout;
+              # r06 supersedes lp in turn -- lp carried c2/c1 = 1.75, the worst
+              # inversion in the fleet.
               bundle=BENCH_ANALYSIS + 'mx17_det6_det7_overnight_6-26-26/'
-                     'long_run/mx17_7/wft/calib_bundle_lp',
+                     'long_run/mx17_7/wft/calib_bundle_r06',
               gap_mm=30.0),
 }
 

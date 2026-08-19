@@ -1,0 +1,27 @@
+# run_145 (and run_79) beam wft reconstruction — one job per (arm, file tag).
+# Submit from the package directory that make_beam_package.py builds:
+#   condor_submit beam_reco.sub
+if ! defined jobfile
+  jobfile               = jobs.txt
+endif
+universe                = vanilla
+executable              = run_beam_wrapper.sh
+arguments               = "$(arm) $(tag) $(extra)"
+transfer_input_files    = code.tar.gz, bundles.tar.gz, run_beam_job.py
+should_transfer_files   = YES
+when_to_transfer_output = ON_EXIT
+transfer_output_files   = beam_$(arm)_$(tag).tar.gz
+initialdir              = .
+output                  = log/beam_$(arm)_$(tag).out
+error                   = log/beam_$(arm)_$(tag).err
+log                     = log/beam.log
+request_cpus            = 8
+request_memory          = 8000MB
+request_disk            = 8000MB
+environment             = "RECO_JOBS=8"
++JobFlavour             = "workday"
+MY.SendCredential       = true
+on_exit_hold            = (ExitBySignal == True) || (ExitCode != 0)
+max_retries             = 2
+# $(extra) absorbs the rest of the line, so it MUST be last (see reco.sub).
+queue arm,tag,extra from $(jobfile)
