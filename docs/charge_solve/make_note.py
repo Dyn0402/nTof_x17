@@ -456,6 +456,30 @@ t<sub>s</sub>, slice u<sub>k</sub>. That is <code>build_matrix</code>, and
 Figures 2–4 are its three factors, one column, and the flattening.</small>
 </div>
 
+<p>Strip the noise off and that is an ordinary system of linear equations —
+<strong>A q = y</strong>, matrix times column vector — with one equation per
+measurement:</p>
+
+<div class="eq">
+for every strip i and sample s: &nbsp;
+Σ<sub>k</sub> A[(i,s), k] · q<sub>k</sub> = y<sub>i</sub>(s)
+<small>A is {n('n_row')} × 18, q is 18 × 1, y is {n('n_row')} × 1. In words:
+the eighteen pictures, scaled by their charges, add up to what the detector
+recorded.</small>
+</div>
+
+<p>Two things about that system decide everything that follows. It is
+<strong>overdetermined</strong> — {n('n_row')} equations for 18 unknowns — so
+with noise in y there is no q satisfying all of them, and A, not being square,
+has no inverse to apply. "Solve" therefore means <em>miss by the least</em>:
+take the q that minimises ‖A q − y‖². Setting the derivative to zero gives
+Aᵀ(A q − y) = 0, the <em>normal equations</em> AᵀA·q = Aᵀ·y, and only then
+q̂ = (AᵀA)<sup>−1</sup>Aᵀy. The matrix that gets inverted is never A: it is the
+18 × 18 AᵀA, the table of overlaps between columns. §4.5 does that arithmetic
+on a 12 × 2 example, §6 is the same statement as a picture, and §7 is what
+changes when q ≥ 0 is enforced — the production code calls
+<code>scipy.optimize.nnls</code> and never forms the inverse at all.</p>
+
 <table>
 <tr><th>in the equation</th><th>in the code</th><th>this event</th></tr>
 <tr><td>y<sub>i</sub>(t)</td><td><code>prep_plane</code> → W / gain</td>
