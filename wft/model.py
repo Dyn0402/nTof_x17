@@ -44,7 +44,7 @@ from scipy.optimize import nnls, minimize
 from scipy.ndimage import gaussian_filter1d
 from scipy.special import erf
 
-from .calib import CalibrationBundle
+from .calib import CalibrationBundle, check_kernel_ordering
 
 # ---------------------------------------------------------------- module state
 CAL: CalibrationBundle | None = None
@@ -74,6 +74,7 @@ def use_calibration(cal: CalibrationBundle) -> None:
     """Install a calibration bundle as the model's calibration."""
     global CAL, TGRID, TMPL, GAIN, DT_XY, PITCH, SNS, SAT, DT, K, UK, HYPER, \
         SHARE_MODE, DEAD
+    check_kernel_ordering(cal.hyper, where=f'bundle {cal.detector}/{cal.run_key}')
     CAL = cal
     DEAD = {p: np.asarray(sorted(ch), dtype=int)
             for p, ch in getattr(cal, 'dead', {}).items() if len(ch)}

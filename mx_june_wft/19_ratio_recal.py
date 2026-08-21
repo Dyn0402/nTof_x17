@@ -50,6 +50,13 @@ LO = dict(c1=0.05, kY=0.3, tau_s=30.0, sigma_s=1.0, sigma_p0=0.10, Dp=0.001)
 HI = dict(c1=0.60, kY=6.0, tau_s=400.0, sigma_s=400.0, sigma_p0=1.50, Dp=0.100)
 
 
+# This tool's whole purpose is to refit AWAY from an inverted kernel, so it is
+# the one place allowed to read one. The gate added 2026-08-21
+# (wft.calib.check_kernel_ordering) refuses c2 > c1 everywhere else, including
+# in the worker processes, which inherit this environment.
+os.environ.setdefault('WFT_ALLOW_INVERTED_KERNEL', '1')
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('run_key', nargs='?', default='sat_det3')

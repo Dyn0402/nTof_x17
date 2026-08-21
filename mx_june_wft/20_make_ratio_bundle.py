@@ -36,6 +36,13 @@ sys.path[:0] = [REPO, os.path.join(REPO, 'mx_june_cosmic_qa'),
                 os.path.join(REPO, 'cosmic_bench_analysis')]
 
 
+# This tool's whole purpose is to refit AWAY from an inverted kernel, so it is
+# the one place allowed to read one. The gate added 2026-08-21
+# (wft.calib.check_kernel_ordering) refuses c2 > c1 everywhere else, including
+# in the worker processes, which inherit this environment.
+os.environ.setdefault('WFT_ALLOW_INVERTED_KERNEL', '1')
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('run_key')

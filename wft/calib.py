@@ -37,6 +37,50 @@ def _git_commit(path: str) -> str:
         return 'unknown'
 
 
+# ---------------------------------------------------------------- the c2 gate
+# The +-2 strip is reached only THROUGH the +-1 strip, so c2 < c1 always. The
+# ref-pinned cosmic chi2 is genuinely flat in this direction (sloppy-mode
+# analysis 2026-08-17), so an unconstrained fit walks there and lands at c2 > c1
+# -- det3 1.14, det2 1.53, det7 1.75, det4 2.12. The H4 head-on beam measures
+# the ratio directly and model-free at 0.45 +- 0.02 over a 2.6x range of drift
+# field (sps_beam_test_26/analysis/sharing_kernel); near-vertical bench cosmics
+# give 0.63 +- 0.10 on det3. An inverted bundle is therefore not a fit result,
+# it is a defect, and every product built on one was retired on 2026-08-21.
+#
+# This gate is what stops one coming back. It refuses at LOAD and at INSTALL,
+# which between them cover every path into the forward model.
+C2_GATE_ENV = 'WFT_ALLOW_INVERTED_KERNEL'
+
+
+def effective_c2(hyper: dict) -> float:
+    """The +-2 amplitude the model will actually use. MUST mirror
+    build_matrix: when the bundle carries ``c2_over_c1`` the stored ``c2``
+    (0.0) is ignored and the ratio is applied to c1."""
+    r = hyper.get('c2_over_c1')
+    return float(r) * float(hyper['c1']) if r is not None else float(hyper['c2'])
+
+
+def check_kernel_ordering(hyper: dict, where: str = '') -> None:
+    """Raise unless c2 < c1. Set WFT_ALLOW_INVERTED_KERNEL=1 to read a parked
+    bundle deliberately -- the only legitimate use is a report *about* the
+    defect, and it must say so."""
+    c1 = float(hyper.get('c1', 0.0))
+    c2 = effective_c2(hyper)
+    if c1 <= 0 or c2 <= c1:
+        return
+    if os.environ.get(C2_GATE_ENV):
+        print(f'[wft] WARNING: inverted sharing kernel c2/c1 = {c2 / c1:.2f} '
+              f'allowed by {C2_GATE_ENV} {where}', flush=True)
+        return
+    raise ValueError(
+        f'inverted sharing kernel: c2 = {c2:.4f} > c1 = {c1:.4f} '
+        f'(ratio {c2 / c1:.2f}){" in " + where if where else ""}. The +-2 strip '
+        f'is reached only through the +-1 strip, so this cannot be physical; '
+        f'it is the defect retired on 2026-08-21. Use the detector\'s '
+        f'calib_bundle_r06 (c2 = 0.6 x c1). To read a parked bundle anyway, '
+        f'set {C2_GATE_ENV}=1.')
+
+
 @dataclass
 class CalibrationBundle:
     """Per-detector, per-condition calibration for the forward model."""
@@ -104,6 +148,7 @@ class CalibrationBundle:
         if note:
             prov['note'] = note
         self.provenance = prov
+        check_kernel_ordering(self.hyper, where=path)
         meta = dict(hyper={k: float(v) for k, v in self.hyper.items()},
                     v_drift=float(self.v_drift),
                     dt_xy={str(k): float(v) for k, v in self.dt_xy.items()},
@@ -128,6 +173,7 @@ class CalibrationBundle:
         with open(os.path.join(path, 'bundle.json')) as f:
             m = json.load(f)
         z = np.load(os.path.join(path, 'arrays.npz'))
+        check_kernel_ordering(m['hyper'], where=path)
         return cls(hyper=m['hyper'], v_drift=m['v_drift'],
                    grid=z['grid'], tmpl={'x': z['tmpl_x'], 'y': z['tmpl_y']},
                    gain={'x': z['gain_x'], 'y': z['gain_y']},
