@@ -13,8 +13,10 @@ python3 ~/PycharmProjects/dylan-cern-site/scripts/add-note.py charge_solve.html 
 ```
 
 Inputs (overridable): `WFT_DOC_BUNDLE` picks the calibration bundle — the
-default is the frozen production one, `calib_bundle_lp2_t0p`, which is what the
-reconstruction on disk was produced with. `CS_FIGDIR` moves the PNGs.
+default is `calib_bundle_r06`, the corrected sharing kernel, which is what the
+reconstruction on disk was produced with since 2026-08-21. An inverted bundle
+(c2 > c1) will not load at all: `wft.calib.check_kernel_ordering`.
+`CS_FIGDIR` moves the PNGs.
 
 `figs.py` carries an instrumented Lawson–Hanson NNLS so the solver's steps can
 be plotted; it is checked against `scipy.optimize.nnls` on every run (agreement

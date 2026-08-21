@@ -185,7 +185,7 @@ BODY = f"""
 <h1>The charge solve: what <code>A</code> is, and what NNLS does with it</h1>
 <p class="meta">wft forward-fit reconstruction · every figure generated from
 <code>sat_det3</code> (mx17_3, Saturday long run, resistive 490 V / drift
-1000 V) with the frozen production bundle <code>calib_bundle_lp2_t0p</code> ·
+1000 V) with <code>calib_bundle_r06</code>, the corrected sharing kernel ·
 2026-08-21</p>
 
 <div class="verdict">
@@ -323,8 +323,9 @@ samples gives a strip × sample picture. Three of them, added.</small>
      'that is both smaller and later (③). Bottom row: those factors as '
      'pictures. The own-strip term, the ±1 copies, the ±2 copies, and their '
      'sum — which <em>is</em> column ' + str(7) + ' of A. On the x plane the '
-     'sharing terms are small (c₁ = ' + f"{N['c1']:.3f}" + '); on the y plane '
-     'they are three times larger and clearly visible.',
+     'sharing terms are small (c₁ = ' + f"{N['c1']:.3f}" + ', c₂ = '
+     + f"{N['c2']:.3f}" + ' = 0.6 c₁); on the y plane they are three times '
+     'larger and clearly visible.',
      'figs.py · det3 frozen bundle, x plane, depth bin k = 7')}
 
 <p>Do that for all eighteen depth slices and you have the whole of A. Seen
@@ -713,21 +714,25 @@ instead of being fooled by them.</p>
 <h2 id="s14">14 · Traps</h2>
 
 <ul>
-<li><strong>The stored <code>c2</code> can be a lie.</strong> On bundles refit
-after 2026-08-19 the ±2 amplitude is slaved to the ±1 one
-(<code>c2 = 0.6 · c1</code>) and the stored <code>c2</code> field is literally
-<code>0.0</code>, with the ratio in the <code>c2_over_c1</code> hyper. Code
-that reads <code>h['c2']</code> directly draws no ±2 copy at all and will
-build a subtly wrong A. Use <code>build_matrix</code>, or
-<code>bundle.summary()</code>, which reports what the model actually uses.</li>
-<li><strong>The bundle this note uses is the frozen production one</strong>,
-which carries the superseded kernel — c₂ ({N['c2']:.3f}) is <em>larger</em>
-than c₁ ({N['c1']:.3f}), which cannot be physical, since the ±2 strip is
-reached only through the ±1. That inversion is a fit artefact of a genuinely
-flat χ² direction, and it is what the r06 refit corrected. It does not change
-anything in this note — the structure of A, the solve and everything in §§6–12
-are identical — but it is why the amplitudes here should not be quoted as
-measurements.</li>
+<li><strong>The stored <code>c2</code> is 0.0, and it is not zero.</strong>
+The ±2 amplitude is slaved to the ±1 one (<code>c2 = 0.6 · c1</code>), so the
+stored <code>c2</code> field is literally <code>0.0</code> and the ratio lives
+in the <code>c2_over_c1</code> hyper. Code that reads <code>h['c2']</code>
+directly draws no ±2 copy at all and builds a subtly wrong A. Use
+<code>wft.calib.effective_c2()</code>, <code>build_matrix</code>, or
+<code>bundle.summary()</code>, all of which report what the model actually
+uses. Figure&nbsp;16 of this note walked straight into it on the day the note
+was written, which is why the trap is first in the list.</li>
+<li><strong>c₂ &gt; c₁ is a defect, and it no longer loads.</strong> Until
+2026-08-21 every shipped bundle carried a ±2 copy <em>larger</em> than the ±1
+copy — det3 1.14, det2 1.53, det7 1.75, det4 2.12 — which cannot be physical,
+since the ±2 strip is reached only through the ±1. It is not a measurement but
+an artefact of a genuinely flat χ² direction, which an unconstrained fit walks
+along; the H4 head-on beam measures the ratio model-free at 0.45&nbsp;±&nbsp;0.02.
+<code>wft.calib.check_kernel_ordering()</code> now refuses such a bundle at
+load, at save and at install, so no analysis can pick one up by accident. Every
+product built on one has been retired and re-reconstructed on the corrected
+kernel.</li>
 <li><strong>K is not universal.</strong> 18 bins of 60 ns is a
 det3-at-1000-V number. Slower chambers need 22 or 26 bins or the charge column
 runs off the end of the basis, and the fit then piles charge into the last bin
@@ -755,7 +760,7 @@ measurement of the primary ionisation cloud, it is a warning light.</li>
 
 <p>Everything is driven by the live products under
 <code>&lt;Analysis&gt;/mx17_det3_saturday_scan_6-27-26/long_run_resist_490V_drift_1000V/mx17_3/wft/</code>:
-the bundle <code>calib_bundle_lp2_t0p</code> and the 400-event ref-pinned
+the bundle <code>calib_bundle_r06</code> and the 400-event ref-pinned
 calibration cache. The code under discussion is <code>wft/model.py</code> —
 <code>build_matrix()</code>, <code>strip_fractions()</code> and
 <code>chi2_plane()</code> are the three functions this whole note is about, and

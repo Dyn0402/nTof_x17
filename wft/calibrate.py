@@ -417,11 +417,22 @@ def calibrate(cfg, run_key, n_events=400, n_train=180, jobs=12, out=None,
         [seed.hyper[k] for k in HYPER_NAMES] + [seed.v_drift])
     if v_fixed is not None and x0 is not None:
         x0[7] = v_fixed
+    # Hypers the seed carries that are NOT fitted: they must ride along in every
+    # chi2 evaluation AND survive into the output bundle. Dropping them is
+    # silent and severe -- c2_over_c1 is what makes the +-2 copy exist at all,
+    # so a refit that loses it writes a bundle whose stored c2 is 0.0 and whose
+    # model draws NO +-2 copy, while every printed number looks fine. That is
+    # what a v-refit seeded from calib_bundle_r06 did until 2026-08-21.
+    extra = {k: float(v) for k, v in (seed.hyper if seed else {}).items()
+             if k not in HYPER_NAMES}
+    if extra:
+        print(f'[calib] carrying unfitted seed hypers: {extra}', flush=True)
     hj = fit_hypers(cache_path, prov_path, train, jobs=jobs, maxiter=maxiter,
-                    x0=x0, v_fixed=v_fixed, fixed=fix_hyper)
+                    x0=x0, v_fixed=v_fixed, fixed=fix_hyper, extra_hyper=extra)
     if v_fixed is not None:
         hj['v'] = float(v_fixed)
     cal.hyper = {k: hj[k] for k in HYPER_NAMES}
+    cal.hyper.update(extra)
     cal.v_drift = hj['v']
     cal.provenance.update(n_train=hj['n_train'], chi2=hj['chi2'],
                           chi2_init=hj['chi2_init'],

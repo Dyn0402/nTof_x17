@@ -12,10 +12,10 @@ model moves, these figures move with it.
 Calibration: calib_bundle_r06 (det3, Saturday long run, resistive 490 V /
 drift 1000 V) -- the refit with c2 slaved to 0.6 x c1, which is the ratio the
 H4 head-on beam measures (0.45 +- 0.02) and near-vertical bench cosmics confirm
-(0.63 +- 0.09).  The FROZEN production bundle calib_bundle_lp2_t0p carries
-c2/c1 = 1.14 -- a +-2 copy LARGER than the +-1 copy, which cannot happen on a
-resistive film because the +-2 strip is reached only through the +-1 strip.  It
-appears in exactly one place here, section 10, as the thing that was replaced.
+(0.63 +- 0.09).  The bundle the frozen MPGD26 reco used carried c2/c1 = 1.14 --
+a +-2 copy LARGER than the +-1 copy, which cannot happen on a resistive film
+because the +-2 strip is reached only through the +-1 strip.  It was retired on
+2026-08-21 and appears nowhere in these figures; wft.calib refuses to load one.
 """
 from __future__ import annotations
 
@@ -42,9 +42,6 @@ ANALYSIS = ('/media/dylan/data/x17/cosmic_bench/Analysis/'
 # THE calibration this walkthrough runs on: c2 slaved to 0.6 x c1, the
 # physically ordered kernel (19_ratio_recal.py / 20_make_ratio_bundle.py).
 BUNDLE = os.path.join(ANALYSIS, 'wft', 'calib_bundle_r06')
-# The FROZEN production bundle, kept only so section 10 can show what it was:
-# it carries c2/c1 = 1.14, i.e. a +-2 copy larger than the +-1 copy.
-BUNDLE_PROD = os.path.join(ANALYSIS, 'wft', 'calib_bundle_lp2_t0p')
 CACHE = os.path.join(ANALYSIS, 'wft', 'calib_work', 'calib_cache.pkl')
 ANGLES = os.path.join(ANALYSIS, 'wft', 'angles', 'angular_resolution.json')
 FIG = os.path.join(HERE, 'figures')

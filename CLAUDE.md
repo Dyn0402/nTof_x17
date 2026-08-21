@@ -96,3 +96,12 @@ from the control-room browser with no file-system access.
 - Detector-local frame: x/y from the strip maps, z = drift depth from the mesh.
 - Anything calibrated (kernel, template, v, gap map) is per detector **and** per
   run condition. A bundle used outside its conditions is a silent error.
+- **The sharing kernel must have c2 < c1**, always: the ±2 strip is reached only
+  through the ±1. Every bundle shipped before 2026-08-21 had it backwards (det3
+  1.14, det2 1.53, det7 1.75, det4 2.12) because the ref-pinned cosmic χ² is
+  flat in that direction. `wft.calib.check_kernel_ordering` now refuses such a
+  bundle at load, save and install, and every product built on one was retired
+  and re-reconstructed — record `mx_june_wft/RETIRE_C2GTC1_2026-08-21.md`. Use
+  `calib_bundle_r06` (c2 = 0.6·c1). Note the stored `c2` on those bundles is
+  literally `0.0` and the ratio lives in `c2_over_c1`: read it with
+  `wft.calib.effective_c2`, never `hyper['c2']`.

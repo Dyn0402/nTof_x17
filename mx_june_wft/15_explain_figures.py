@@ -411,8 +411,10 @@ def main():
     from wft import reco as wr
 
     cfg = get_config(args.run_key)
+    # calib_bundle_r06 since 2026-08-21: the previous default,
+    # calib_bundle_lp2_t0p, carried c2/c1 = 1.14 and no longer loads.
     bundle = args.bundle or os.path.join(cfg.OUT_BASE, 'wft',
-                                         'calib_bundle_lp2_t0p')
+                                         'calib_bundle_r06')
     out = cfg.out_dir('wft', 'explain')
     os.makedirs(out, exist_ok=True)
     cal = CalibrationBundle.load(bundle)

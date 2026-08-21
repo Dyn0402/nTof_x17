@@ -87,3 +87,24 @@ def test_escape_hatch(monkeypatch, capsys):
     monkeypatch.setenv(C2_GATE_ENV, '1')
     check_kernel_ordering(_hyper(0.0509, 0.0580), where='a parked bundle')
     assert 'WARNING' in capsys.readouterr().out
+
+
+def test_refit_carries_c2_over_c1(monkeypatch):
+    """A refit seeded from a slaved bundle must KEEP c2_over_c1.
+
+    Dropping it is silent and severe: the stored c2 is 0.0, so the output
+    bundle's model draws no +-2 copy at all while every printed number looks
+    reasonable. This is what the tier-B v-refit did to calib_bundle_r06 until
+    2026-08-21. The gate cannot catch it -- c2 = 0 is 'physical' -- so it is
+    tested here instead.
+    """
+    from wft import calibrate as wc
+    seed = _hyper(0.05, ratio=0.6)
+    seed['share_lp'] = 1.0
+    extra = {k: v for k, v in seed.items() if k not in wc.HYPER_NAMES}
+    assert extra == {'c2_over_c1': 0.6, 'share_lp': 1.0}
+    # what calibrate() writes back: fitted names, then the carried extras
+    out = {k: seed[k] for k in wc.HYPER_NAMES}
+    out.update(extra)
+    assert out['c2_over_c1'] == 0.6
+    assert effective_c2(out) == pytest.approx(0.6 * out['c1'])

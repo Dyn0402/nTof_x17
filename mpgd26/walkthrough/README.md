@@ -31,15 +31,16 @@ track angle."* Right in outline; three corrections, all drawn:
 
 ## Which calibration it runs on — read this first
 
-**`calib_bundle_r06`**, i.e. the CORRECTED kernel (c2 = 0.6 c1). It deliberately
-does **not** run on the frozen production bundle: `calib_bundle_lp2_t0p` carries
+**`calib_bundle_r06`**, i.e. the CORRECTED kernel (c2 = 0.6 c1) — now the only
+kind that will load. The bundle the frozen MPGD26 reco used carried
 c2/c1 = 1.14, a ±2 copy larger than the ±1 copy, which cannot happen on a
-resistive film. That bundle appears in exactly one place, section 10, as the
-thing that was replaced. Switch with `wt.BUNDLE` / `wt.BUNDLE_PROD`.
+resistive film; it was retired on 2026-08-21 together with every product built
+on it, and `wft.calib.check_kernel_ordering` refuses to load one.
 
-Every number on the MPGD26 deck came out of a reco that used the broken one.
-Section 10 quantifies the cost: nothing measurable (σθ moves under 0.6σ).
-**The re-freeze has not been run.**
+The old side-by-side (section 10) is gone with it. What it measured, before it
+was deleted: the kernel change moves σθ by under 0.6σ on this event set. The
+population-level cost is in `mx_june_wft/R06_GATE_2026-08-19.md`, which is the
+record to read.
 
 ## Numbers worth having (event 1663, Y, `calib_bundle_r06`)
 

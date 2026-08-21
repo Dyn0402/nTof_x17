@@ -4,8 +4,8 @@ Figures for "The charge solve" — a deep dive on the design matrix A and the
 NNLS step inside the waveform-first fit.
 
 Everything is generated from the live `sat_det3` products: the frozen
-production calibration bundle (`calib_bundle_lp2_t0p`) and real waveform
-windows from the 400-event ref-pinned calibration cache. Nothing is schematic.
+calibration bundle (`calib_bundle_r06`, the corrected sharing kernel) and real
+waveform windows from the 400-event ref-pinned calibration cache. Nothing is schematic.
 
     ../../.venv/bin/python figs.py            # -> $CS_FIGDIR (default scratchpad)
 
@@ -29,6 +29,7 @@ sys.path.insert(0, os.path.join(REPO, 'docs', 'wft_reference', 'figsrc'))
 import wftdoc as K                                        # noqa: E402
 from wftdoc import C, CHROME                              # noqa: E402
 from wft import model as wm                               # noqa: E402
+from wft.calib import effective_c2                        # noqa: E402
 
 FIGDIR = os.environ.get(
     'CS_FIGDIR',
@@ -1012,8 +1013,11 @@ def fig_sharing(evs, cal):
         M0 = wm.build_matrix(pl, pos, r['p0'], r['w'], r['t0'], h0)
         frac = 1 - np.linalg.norm(M0) / np.linalg.norm(M)
         kk = h.get('kY', 1.0) if pl == 'y' else h.get('cX', 1.0)
+        # effective_c2, not h['c2']: on a slaved bundle the stored c2 is 0.0
+        # and the ratio carries it -- the trap this note warns about, which
+        # this figure walked into on 2026-08-21 before being fixed.
         stats[pl] = dict(frac=float(frac), c1=float(h['c1'] * kk),
-                         c2=float(h['c2'] * kk))
+                         c2=float(effective_c2(h) * kk))
         k = 7
         prof_full = M.reshape(len(pos), wm.NSAMP, wm.K)[:, :, k].sum(1)
         prof_own = M0.reshape(len(pos), wm.NSAMP, wm.K)[:, :, k].sum(1)

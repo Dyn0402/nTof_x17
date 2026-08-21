@@ -32,12 +32,11 @@ def cap(t):
 ev, raw, tr = S['event'], S['raw'], S['track']
 ker, col, nn = S['kernel'], S['column'], S['nnls']
 dec, res, sc = S['decompose'], S['residual'], S['scan']
-rat, ens, imp = S['ratio'], S['ensemble'], S['implied_v']
+ens, imp = S['ensemble'], S['implied_v']
 ky, kx = ker['y'], ker['x']
 CK = sorted(col, key=int)          # the two slices figure 5 drew
 c_early, c_late = col[CK[0]], col[CK[-1]]
 h, fr = ens['held'], ens['full_run']
-pr, cu = rat['prod'], rat['cur']
 
 # the w -> angle map re-measured for THIS bundle on the training half only
 W0, KW = h['y']['w0'], h['y']['kw']
@@ -124,21 +123,18 @@ show already modelled.</p>
 
 <div class="box good">
 <h4>Which calibration this runs on, and why it matters</h4>
-<p>Everything below uses <code>{cu['bundle']}</code>, in which
+<p>Everything below uses <code>calib_bundle_r06</code>, in which
 c<sub>2</sub> = 0.6&thinsp;c<sub>1</sub> — the &plusmn;2 copy is
 <i>smaller</i> than the &plusmn;1 copy, which is the only ordering a resistive
 film can produce, because the &plusmn;2 strip is reached only through the
 &plusmn;1 strip.</p>
-<p><b>The frozen MPGD26 production reco was not run this way.</b>
-<code>{pr['bundle']}</code> carries c<sub>2</sub>/c<sub>1</sub> =
-{pr['ratio']:.2f} — a &plusmn;2 copy <i>larger</i> than the &plusmn;1 — and
-every number currently on the deck came out of a reco that used it. That defect
-was measured and fixed on 17–18 August; the refit bundle exists for det3 and
-det7 and the re-freeze has not been run yet. Section 10 shows exactly what
-changed and section 11 shows what it costs: <b>nothing measurable</b> — the
-angle resolution is the same within 0.5&sigma;. The frozen results are not
-wrong in value; the calibration that produced them was not defensible in
-description, which is a different and still-real problem.</p>
+<p><b>Every bundle shipped before 21 August had that backwards</b> — det3 at
+c<sub>2</sub>/c<sub>1</sub> = 1.14, det2 1.53, det7 1.75, det4 2.12 — because
+the reference-pinned cosmic &chi;&sup2; is genuinely flat in that direction, so
+an unconstrained fit wanders there and stays. It was retired on 21&nbsp;August
+together with every product built on it, and
+<code>wft.calib.check_kernel_ordering</code> now refuses such a bundle at load,
+at save and at install. Section&nbsp;10 is what that cost.</p>
 </div>
 
 <div class="box">
@@ -222,7 +218,7 @@ in it that is not already calibrated.</p>
 the neighbour <i>late</i> and dispersed. In this calibration that is modelled as
 a delayed copy of the impulse response: amplitude c<sub>1</sub> at a lag of
 &tau;<sub>s</sub> = {ker['tau_s']:.0f}&nbsp;ns to &plusmn;1, and
-c<sub>2</sub> = {cu['ratio']:.1f}&thinsp;c<sub>1</sub> at twice the lag to
+c<sub>2</sub> = 0.6&thinsp;c<sub>1</sub> at twice the lag to
 &plusmn;2 (<code>share_mode = '{ker['share_mode']}'</code>).</p>
 {img('f4_kernel', 'The own-charge response and the plus-minus-one and '
      'plus-minus-two copies for the Y and X planes, normalised to the own-charge '
@@ -231,7 +227,7 @@ c<sub>2</sub> = {cu['ratio']:.1f}&thinsp;c<sub>1</sub> at twice the lag to
 {cap(f'Y shares {ky["c1"] / kx["c1"]:.1f}&times; more than X — the strips run '
      f'along y, so only the Y view sees the film&rsquo;s own sheet resistance. '
      f'On Y, c<sub>1</sub> = {ky["c1"]:.3f} and c<sub>2</sub> = '
-     f'{ky["c2"]:.3f}; the ratio is pinned at {cu["ratio"]:.1f} rather than '
+     f'{ky["c2"]:.3f}; the ratio is pinned at 0.6 rather than '
      'fitted, because a cosmic-angle &chi;&sup2; cannot resolve it and will '
      'wander if left free. The value comes from the H4 beam, which measures it '
      'head-on and model-free at 0.45&nbsp;&plusmn;&nbsp;0.02; near-vertical '
@@ -351,82 +347,57 @@ which are stale by construction, so the ones used here were re-measured on the
 180 calibration events with <code>bench/set_w0.py</code>&rsquo;s recipe and
 applied to the 220 held-out ones — never fitted on the events being scored.</p>
 
-<h2><span class="num">10</span>What was replaced, and what it cost</h2>
-<p>The &plusmn;2 strip is only reached <i>through</i> the &plusmn;1 strip, so
-c<sub>2</sub>&nbsp;&lt;&nbsp;c<sub>1</sub> always. The frozen production bundle
-carries c<sub>2</sub>/c<sub>1</sub> = <span class="bad">{pr['ratio']:.2f}</span>.
-That is not a bound artefact: the ref-pinned cosmic &chi;&sup2; is genuinely flat
-in this direction, so an unconstrained fit wanders there and stays. The H4 beam,
-at normal incidence, breaks the degeneracy and measures the ratio directly. The
-fix is to pin the ratio and refit everything else — so &tau;<sub>s</sub> and
-&sigma;<sub>s</sub> move too; this is a refit, not a relabelling.</p>
-{img('f10_ratio', 'Left: the superseded frozen kernel, with the plus-minus-two '
-     'copy larger than the plus-minus-one. Middle: the kernel in use here, '
-     'correctly ordered. Right: the plus-two strip of this event under both, '
-     'against the measurement.')}
-{cap(f'Same event, same code, two calibrations. The angle moves by '
-     f'{abs(rat["d_theta"]):.3f}&deg; ({pr["theta"]:.2f}&deg; &rarr; '
-     f'{cu["theta"]:.2f}&deg;) and &chi;&sup2;/dof falls from '
-     f'{pr["chi2_dof"]:.1f} to {cu["chi2_dof"]:.1f}. The right-hand panel is '
-     'where they differ most: the superseded kernel needs a large late '
-     '&plusmn;2 bump on the +2 strip that the corrected one does not.')}
-<table>
-<tr><th></th><th>superseded — <code>{pr['bundle']}</code></th><th>in use here — <code>{cu['bundle']}</code></th></tr>
-<tr><td>c<sub>1</sub>, c<sub>2</sub> (Y)</td><td>{pr['c1']:.3f}, <span class="bad">{pr['c2']:.3f}</span></td><td>{cu['c1']:.3f}, <span class="good">{cu['c2']:.3f}</span></td></tr>
-<tr><td>c<sub>2</sub>/c<sub>1</sub></td><td class="bad">{pr['ratio']:.2f}</td><td class="good">{cu['ratio']:.2f} (pinned)</td></tr>
-<tr><td>&tau;<sub>s</sub></td><td>{pr['tau_s']:.0f} ns</td><td>{cu['tau_s']:.0f} ns</td></tr>
-<tr><td>&sigma;<sub>s</sub></td><td>{pr['sigma_s']:.1f} ns</td><td>{cu['sigma_s']:.1f} ns</td></tr>
-<tr><td>free hyper-parameters</td><td>7</td><td>6</td></tr>
-<tr><td>this event: p<sub>0</sub>, t<sub>0</sub></td><td>{pr['p0']:.2f} mm, {pr['t0']:.0f} ns</td><td>{cu['p0']:.2f} mm, {cu['t0']:.0f} ns</td></tr>
-<tr><td>this event: &theta;, &chi;&sup2;/dof</td><td>{pr['theta']:.2f}&deg;, {pr['chi2_dof']:.1f}</td><td>{cu['theta']:.2f}&deg;, {cu['chi2_dof']:.1f}</td></tr>
-<tr><td>held-out &sigma;<sub>68</sub> X / Y</td><td>{h['x']['s68_prod']:.2f}&deg; / {h['y']['s68_prod']:.2f}&deg;</td><td>{h['x']['s68']:.2f}&deg; / {h['y']['s68']:.2f}&deg;</td></tr>
-</table>
-<p><b>The correction is free, not an improvement.</b> On 220 held-out events the
-angle resolution changes by {h['x']['s68'] - h['x']['s68_prod']:+.03f}&deg; (X)
-and {h['y']['s68'] - h['y']['s68_prod']:+.03f}&deg; (Y). A paired bootstrap over
-shared held-out events, run when the refit was benched, put it at
-+0.028&nbsp;&plusmn;&nbsp;0.062&deg; on det3 and
-+0.023&nbsp;&plusmn;&nbsp;0.080&deg; on det7 — under 0.6&sigma; either way. What is bought is that the kernel
-constants now mean what they are called, and one fitted parameter becomes a
-measured constraint. Anyone who reads c<sub>2</sub>&nbsp;&gt;&nbsp;c<sub>1</sub>
-off a slide will ask how charge reaches the second neighbour without passing the
-first, and there is no answer.</p>
+<h2><span class="num">10</span>What it cost</h2>
+<p>The &plusmn;2 strip is reached only <i>through</i> the &plusmn;1 strip, so
+c<sub>2</sub>&nbsp;&lt;&nbsp;c<sub>1</sub> always. Pinning the ratio and
+refitting everything else is a refit, not a relabelling &mdash;
+&tau;<sub>s</sub> and &sigma;<sub>s</sub> move with it, and on the fleet
+c<sub>1</sub> rises by roughly 1.8&times; while &sigma;<sub>s</sub> rises by an
+order of magnitude. The model compensates for the smaller &plusmn;2 copy with a
+wider, later &plusmn;1 copy.</p>
 <div class="box warn">
-<h4>One thing this event exposed</h4>
-<p>Under the corrected kernel this event settles a full depth bin earlier —
-t<sub>0</sub> {pr['t0']:.0f}&nbsp;&rarr;&nbsp;{cu['t0']:.0f}&nbsp;ns with
-p<sub>0</sub> sliding {cu['p0'] - pr['p0']:+.2f}&nbsp;mm along the degeneracy,
-exactly as w&thinsp;&times;&thinsp;60&nbsp;ns predicts. Scanning t<sub>0</sub>
-by hand, <i>both</i> calibrations have their lower &chi;&sup2; at the earlier bin;
-the frozen fit sat in the higher one. With &chi;&sup2;/dof&nbsp;&asymp;&nbsp;20
-the &sigma;&nbsp;=&nbsp;5&nbsp;ns prior contributes ~50 units against a ~400-unit
-&chi;&sup2; difference between the two minima, so it cannot arbitrate here — the
-bin is chosen by where the coarse grid starts. The reference prefers the
-corrected answer (position residual {abs(cu['p0'] - sc['p0_ref']):.2f} mm against
-{abs(pr['p0'] - sc['p0_ref']):.2f} mm), but that is one event. <b>Worth checking
-across the run during the re-freeze</b>; it is not visible in the ensemble
-numbers, which are unchanged.</p>
+<h4>It is a trade, and the deck states it as one</h4>
+<p>The corrected kernel is <i>worse</i> on angular resolution, on three of four
+planes. Paired bootstrap over identical events, superseded &rarr; corrected:
+det3&nbsp;Y <b>+0.061&nbsp;&plusmn;&nbsp;0.013&deg;</b> (4.7&sigma;),
+det7&nbsp;Y <b>+0.131&nbsp;&plusmn;&nbsp;0.019&deg;</b> (6.9&sigma;),
+det7&nbsp;X +0.076&nbsp;&plusmn;&nbsp;0.033&deg;; det3&nbsp;X flat. The training
+&chi;&sup2; agrees &mdash; pinning the ratio anywhere in 0.45&ndash;0.8 costs
+2.8&ndash;3.3&nbsp;% of &chi;&sup2;. Efficiency, position and alignment do not
+move at all.</p>
+<p>Two things are true at once: the bench data prefer the inverted kernel
+<i>inside this model</i>, and the inverted kernel cannot be a physical resistive
+film. So the preference is evidence that the <b>model</b> is wrong in that
+direction, not that the film is. The failure is also plane-specific &mdash; the
+corrected kernel improves X on both detectors and degrades Y on both, and Y is
+the plane the kernel acts on. A single global ratio is what fails; a per-plane
+ratio, pinned on X and bounded-free on Y, is the identified next experiment.
+Gate table and per-detector &chi;&sup2; cost:
+<code>mx_june_wft/R06_GATE_2026-08-19.md</code>; the retirement itself:
+<code>mx_june_wft/RETIRE_C2GTC1_2026-08-21.md</code>.</p>
 </div>
+<p>Anyone who reads c<sub>2</sub>&nbsp;&gt;&nbsp;c<sub>1</sub> off a slide will
+ask how charge reaches the second neighbour without passing the first, and there
+is no answer. That is why the worse number ships.</p>
 
 <h2><span class="num">11</span>Does it work</h2>
 <p>The reference telescope never enters any of the above. Held-out events —
 the ones the calibration did not train on — put the fitted angle against M3.</p>
 {img('f11_ensemble', 'Reconstructed against reference angle for held-out '
-     'events, the angle residual for both kernels, the position residual, and '
-     'the implied drift velocity against track angle.')}
+     'events, the angle residual, the position residual, and the implied drift '
+     'velocity against track angle.')}
 {cap(f'Held out, {h["y"]["n"]} events: &sigma;<sub>68</sub> = '
      f'{h["x"]["s68"]:.2f}&deg; (X) and {h["y"]["s68"]:.2f}&deg; (Y), bias under '
-     f'0.06&deg;; the dashed histograms are the superseded kernel on the same '
-     f'events. Over the full frozen run ({fr["y"]["n"]:,} events, superseded '
-     f'kernel) it is {fr["x"]["s68"]:.2f}&deg; / {fr["y"]["s68"]:.2f}&deg; — the '
-     'cached sample is the cleanly-matched subset, so it flatters slightly.')}
+     f'0.06&deg;. Over the full run ({fr["y"]["n"]:,} events) it is '
+     f'{fr["x"]["s68"]:.2f}&deg; / {fr["y"]["s68"]:.2f}&deg; — the cached '
+     'sample is the cleanly-matched subset, so it flatters slightly.')}
 <p>The bottom-right panel is the check that cannot be tuned away. Divide the
 fitted w by the <i>reference</i> angle and you get an implied drift velocity; if
 the model were mistiming the ladder, that number would depend on track angle.
 Across three bins it varies by {imp['x']['spread']:.1f} (X) and
 {imp['y']['spread']:.1f} (Y) &micro;m/ns against a per-bin uncertainty of about
 {0.5 * (imp['x']['err_typ'] + imp['y']['err_typ']):.1f} — flat within what 220
-events can say, and no more than that. The full frozen run has the statistics to
+events can say, and no more than that. The full run has the statistics to
 say it properly: spread {fr['x']['implied_v_spread']:.1f} (X) and
 {fr['y']['implied_v_spread']:.1f} (Y) &micro;m/ns around the calibrated
 {V:.1f}. Re-running that check on the corrected bundle is part of the
@@ -462,19 +433,17 @@ also have an M3 reference.</li>
 resolution, the implied-velocity check are all unchanged within errors. What
 changes is that the calibration behind them becomes describable.</li>
 </ul>
-<p>The full re-freeze — swap the manifest to <code>{cu['bundle']}</code> for
-det3 and det7, re-run the reco, re-measure w<sub>0</sub>/k<sub>w</sub>, re-run
-the digest — is a condor campaign, and is the remaining piece. Details in the
+<p>The full re-freeze — swap the manifest to <code>calib_bundle_r06</code>,
+re-run the reco, re-measure w<sub>0</sub>/k<sub>w</sub>, re-run the digest —
+was done on 21&nbsp;August as a condor campaign. Details in the
 <a href="https://dylan-neff.web.cern.ch/notes/sharing-kernel-measured.html">sharing
 kernel, measured</a> note.</p>
 
 <p class="foot">Generated by <code>mpgd26/walkthrough/make_figures.py</code> +
 <code>make_note.py</code>. Every kernel and design-matrix call goes through
-<code>wft.model</code> itself, not a re-implementation. Cross-check: the same
-code on the frozen bundle reproduces the production <code>events.parquet</code>
-row for event {ev['eid']} exactly — p<sub>0</sub> {pr['p0']:.4f} mm,
-w {pr['w'] / 1e3:.6f} mm/ns, t<sub>0</sub> {pr['t0']:.1f} ns against the
-table&rsquo;s 230.9417 / &minus;0.008548 / 290.0.</p>
+<code>wft.model</code> itself, not a re-implementation. Calibration
+<code>calib_bundle_r06</code> throughout; an inverted-kernel bundle no longer
+loads at all.</p>
 
 </div>
 </body>

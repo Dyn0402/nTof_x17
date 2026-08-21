@@ -512,77 +512,11 @@ def f9_scan(cal, wm, st):
     return wt.save(fig, 'f9_scan')
 
 
-# ------------------------------------------------- 10. what was replaced
-def f10_ratio(cal, wm, st):
-    """The kernel this walkthrough runs on, against the one the FROZEN MPGD26
-    production reco actually used -- which has the +-2 copy larger than the
-    +-1 copy."""
-    calp, wmp = wt.load(wt.BUNDLE_PROD)
-    evs = wt.events()
-    stp = wt.fit_event(calp, wmp, evs[wt.EID])
-    t = np.linspace(-100, 1400, 900)
-    fig, axes = plt.subplots(1, 3, figsize=(13.4, 4.3))
-    for ax, (c, w_, ttl, sub, colr) in zip(axes[:2], (
-            (calp, wmp, 'SUPERSEDED',
-             'the frozen MPGD26 reco ran with this', '#b91c1c'),
-            (cal, wm, 'IN USE HERE',
-             'the only ordering a resistive film can give', '#15803d'))):
-        H0, K1, K2, c1, c2 = _kern(c, w_, 'y', t, dict(c.hyper))
-        n = H0.max()
-        ax.fill_between(t, 0, H0 / n, color=OWN, alpha=0.18)
-        ax.plot(t, H0 / n, color=OWN, lw=2.0, label='own')
-        ax.plot(t, K1 / n, color=N1, lw=2.4, label=f'$\\pm1$   $c_1$={c1:.3f}')
-        ax.plot(t, K2 / n, color=N2, lw=2.4, label=f'$\\pm2$   $c_2$={c2:.3f}')
-        ax.set_title(f'{ttl}   —   $c_2/c_1$ = {c2 / c1:.2f}', color=colr,
-                     fontsize=11.5)
-        ax.text(0.5, 1.015, sub, transform=ax.transAxes, ha='center',
-                fontsize=8.8, color=colr)
-        ax.set_xlabel('time since arrival [ns]')
-        ax.legend(fontsize=9)
-        ax.set_ylim(-0.16, 1.05)
-    axes[0].set_ylabel('response, normalised to the own peak')
-
-    ax = axes[2]
-    s2 = wt.core_index(st) + 2
-    ax.plot(st['t'], st['W'][s2], 'o', ms=4.2, color=DATA, label='measured',
-            zorder=5)
-    for stx, ls, lab, cc in ((stp, '--', 'superseded', '#b91c1c'),
-                             (st, '-', 'in use here', '#15803d')):
-        sx = wt.core_index(stx) + 2
-        ax.plot(stx['t'], stx['full'][sx], ls, color=cc, lw=1.6,
-                label=f'model, {lab}')
-        ax.plot(stx['t'], stx['sh2'][sx], ls, color=N2, lw=2.0,
-                label=f"$\\pm2$ copies, {lab}")
-    ax.set_xlabel('time [ns]')
-    ax.set_ylabel('ADC (gain corrected)')
-    ax.set_title('the $+2$ strip — where the two differ most')
-    ax.legend(fontsize=8)
-    OUT['ratio'] = dict(
-        prod=dict(c1=float(calp.hyper['c1'] * calp.hyper['kY']),
-                  c2=float(calp.hyper['c2'] * calp.hyper['kY']),
-                  ratio=float(calp.hyper['c2'] / calp.hyper['c1']),
-                  theta=float(np.degrees(np.arctan(stp['tan']))),
-                  chi2_dof=float(stp['chi2'] / stp['dof']),
-                  tau_s=float(calp.hyper['tau_s']),
-                  sigma_s=float(calp.hyper['sigma_s']),
-                  p0=float(stp['p0']), w=float(stp['w'] * 1e3),
-                  t0=float(stp['t0']), t0_pred=float(stp['t0_pred']),
-                  bundle=os.path.basename(wt.BUNDLE_PROD)),
-        cur=dict(c1=float(cal.hyper['c1'] * cal.hyper['kY']),
-                 c2=float(0.6 * cal.hyper['c1'] * cal.hyper['kY']),
-                 ratio=0.6,
-                 theta=float(np.degrees(np.arctan(st['tan']))),
-                 chi2_dof=float(st['chi2'] / st['dof']),
-                 tau_s=float(cal.hyper['tau_s']),
-                 sigma_s=float(cal.hyper['sigma_s']),
-                 p0=float(st['p0']), w=float(st['w'] * 1e3),
-                 t0=float(st['t0']), t0_pred=float(st['t0_pred']),
-                 bundle=os.path.basename(wt.BUNDLE)),
-        theta_ref=float(np.degrees(np.arctan(st['tan_ref']))),
-        d_theta=float(np.degrees(np.arctan(st['tan'])) -
-                      np.degrees(np.arctan(stp['tan']))))
-    wt.load()          # restore this walkthrough's calibration
-    return wt.save(fig, 'f10_ratio')
+# Section 10 -- "what was replaced", a side-by-side against the superseded
+# c2 > c1 kernel -- was DELETED on 2026-08-21 along with every other product
+# built on that kernel. wft.calib.check_kernel_ordering now refuses to load an
+# inverted bundle at all. The story is kept in text only:
+# mx_june_wft/R06_GATE_2026-08-19.md and docs/charge_solve/.
 
 
 # ------------------------------------------------------------ 11. the ensemble
@@ -656,7 +590,9 @@ def f11_ensemble(cal, wm, st, nmax=220):
     train, held = eids[:180], eids[180:][:nmax]
     v = cal.v_drift
     arms = {}
-    for name, bundle in (('cur', wt.BUNDLE), ('prod', wt.BUNDLE_PROD)):
+    # ONE arm. The superseded-kernel comparison was removed 2026-08-21 with
+    # every other product built on c2 > c1; wft.calib now refuses to load one.
+    for name, bundle in (('cur', wt.BUNDLE),):
         tr_ = _run_bundle(bundle, train)
         hd = _run_bundle(bundle, held)
         arms[name] = (hd, _fit_w0kw(tr_, v))
@@ -683,26 +619,16 @@ def f11_ensemble(cal, wm, st, nmax=220):
                           pos_bias=float(np.median(dp)), pos_s68=p68,
                           w0=arms['cur'][1][plane][0],
                           kw=arms['cur'][1][plane][1])
-        ap = arms['prod'][0][plane]
-        trp, tfp = _to_deg(ap, v, arms['prod'][1], plane)
-        dpr = tfp - trp
-        res[plane]['s68_prod'] = float(
-            np.percentile(np.abs(dpr - np.median(dpr)), 68))
-        res[plane]['w0_prod'] = arms['prod'][1][plane][0]
-        res[plane]['kw_prod'] = arms['prod'][1][plane][1]
         axes[0, 1].hist(d, bins=np.arange(-6, 6.01, 0.5), histtype='step',
                         lw=2.0, color=cols[plane],
-                        label=f'{plane.upper()}: $\\sigma_{{68}}$ = {s68:.2f}$^\\circ$ '
-                              f'(superseded {res[plane]["s68_prod"]:.2f}$^\\circ$)')
-        axes[0, 1].hist(dpr, bins=np.arange(-6, 6.01, 0.5), histtype='step',
-                        lw=1.1, ls='--', color=cols[plane])
+                        label=f'{plane.upper()}: $\\sigma_{{68}}$ = {s68:.2f}$^\\circ$')
         axes[1, 0].hist(dp, bins=np.arange(-3, 3.01, 0.2), histtype='step',
                         lw=2.0, color=cols[plane],
                         label=f'{plane.upper()}: $\\sigma_{{68}}$ = {1e3 * p68:.0f} $\\mu$m, '
                               f'bias {1e3 * np.median(dp):+.0f} $\\mu$m')
     axes[0, 1].set_xlabel('fit $-$ reference angle [deg]')
     axes[0, 1].set_ylabel('events')
-    axes[0, 1].set_title('angle residual (dashed = superseded kernel)')
+    axes[0, 1].set_title('angle residual')
     axes[0, 1].legend(fontsize=9)
     axes[1, 0].set_xlabel('fit $-$ reference position at the mesh [mm]')
     axes[1, 0].set_ylabel('events')
@@ -752,7 +678,7 @@ def f11_ensemble(cal, wm, st, nmax=220):
 
 
 ALL = [f1_raw, f2_track, f3_fractions, f4_kernel, f5_column, f6_nnls,
-       f7_modelvsdata, f8_residual, f9_scan, f10_ratio, f11_ensemble]
+       f7_modelvsdata, f8_residual, f9_scan, f11_ensemble]
 
 
 def main():
