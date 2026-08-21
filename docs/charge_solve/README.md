@@ -2,11 +2,16 @@
 
 A standalone note answering one question in detail: *what is the design matrix
 `A` in `wft/model.py::build_matrix`, and what does the NNLS step do with it?*
-Sixteen figures, all generated from live `sat_det3` products, plus a 12 × 2
-worked example small enough to check by hand.
+Section 4 writes the underlying equation out in full — a Fredholm integral
+equation of the first kind — collapses it to the equivalent 1-D deconvolution
+(the same event with the strip index summed away) and builds it back up
+dimension by dimension, measuring what each one buys: the strips are worth
+nothing at w = 0 and a factor of thirty once the track leans. Eighteen
+figures, all generated from live `sat_det3` products, plus a 12 × 2 worked
+example small enough to check by hand.
 
 ```bash
-../../.venv/bin/python figs.py        # figures + numbers.json  (~15 s)
+../../.venv/bin/python figs.py        # figures + numbers.json  (~50 s)
 ../../.venv/bin/python make_note.py   # charge_solve.html, figures inlined
 python3 ~/PycharmProjects/dylan-cern-site/scripts/add-note.py charge_solve.html \
     --slug wft-charge-solve --tags "X17, cosmic bench, micromegas, reconstruction, waveforms" --force

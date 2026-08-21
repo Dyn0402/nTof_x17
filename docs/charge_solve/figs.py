@@ -344,7 +344,174 @@ def fig_flatten(cs, k=7):
     return save(fig, 'f04_flatten')
 
 
-# ------------------------------------------------- 5. the toy worked example
+# ------------------------------------------- 5. the one-dimensional problem
+def _sig(A):
+    """(condition number, per-column sigma) of a weighted design matrix, via
+    the SVD — A'A is the square of an ill-conditioned matrix and inverting it
+    directly fails outright at w = 0."""
+    U, s, Vt = np.linalg.svd(A, full_matrices=False)
+    cov = (Vt.T * (1.0 / s ** 2)) @ Vt
+    return float(s[0] / s[-1]), np.sqrt(np.diag(cov)), s, cov
+
+
+def collapse(cs):
+    """The same event with the strip index thrown away: sum the model over
+    strips and the data over strips. y1(t) = sum_k q_k h1(t - t0 - u_k) — the
+    textbook 1-D deconvolution, on this event's real waveforms."""
+    T = cs.M.reshape(cs.n_strip, wm.NSAMP, wm.K)
+    H = T.sum(0)                                   # (NSAMP, K)
+    y = cs.W.sum(0)
+    noise = float(np.sqrt((cs.noise ** 2).sum()))  # strips add in quadrature
+    return H / noise, y / noise, noise
+
+
+def fig_oned(cs):
+    A1, y1, noise1 = collapse(cs)
+    q1, _ = nnls(A1, y1)
+    c1d, s1, sv1, cov1 = _sig(A1)
+    c2d, s2, sv2, cov2 = _sig(cs.A)
+    J = np.ones(wm.K)
+    tot1 = float(np.sqrt(J @ cov1 @ J))
+    tot2 = float(np.sqrt(J @ cov2 @ J))
+    tmpl, _sm = wm._templates(cs.plane, wm.HYPER['sigma_s'])
+    hi = np.where(tmpl >= 0.5 * tmpl.max())[0]
+    fwhm = float(wm.TGRID[hi[-1]] - wm.TGRID[hi[0]])
+
+    fig = plt.figure(figsize=(11.4, 3.7))
+    gs = GridSpec(1, 3, width_ratios=[1.25, 0.95, 1.1], wspace=0.30)
+
+    ax = fig.add_subplot(gs[0])
+    ts = wm.TS
+    # every column drawn at the same charge, on a common arbitrary scale
+    scale = 0.45 * float((y1 * noise1).max()) / float((A1 * noise1).max())
+    for k in range(wm.K):
+        ax.plot(ts, scale * A1[:, k] * noise1, lw=0.9, color=C['orange'],
+                alpha=0.55)
+    ax.plot(ts, y1 * noise1, 'o-', ms=3, color=C['blue'],
+            label='data, summed over strips')
+    ax.plot(ts, (A1 @ q1) * noise1, color=C['green'], lw=1.6,
+            label='Σ q̂ₖ hₖ — the 1-D fit')
+    ax.plot([], [], color=C['orange'], lw=0.9,
+            label='the 18 columns, equal charge')
+    ax.set_ylim(top=1.42 * float((y1 * noise1).max()))
+    ax.set_xlabel('time [ns]')
+    ax.set_ylabel('summed amplitude')
+    ax.set_title(f'1-D: eighteen copies of one {fwhm:.0f} ns pulse,\n'
+                 'stepped 60 ns apart', loc='left', fontsize=9.5)
+    ax.legend(fontsize=7.5, loc='upper left')
+
+    ax = fig.add_subplot(gs[1])
+    ax.semilogy(sv1 / sv1[0], 'o-', ms=4, color=C['red'],
+                label=f'1-D  (cond {c1d:,.0f})')
+    ax.semilogy(sv2 / sv2[0], 'o-', ms=4, color=C['blue'],
+                label=f'strips + slope  (cond {c2d:,.0f})')
+    ax.set_xlabel('singular value index')
+    ax.set_ylabel('σ / σ₀')
+    ax.set_title('what the extra dimension buys', loc='left', fontsize=9.5)
+    ax.legend(fontsize=7.5)
+
+    ax = fig.add_subplot(gs[2])
+    kk = np.arange(wm.K)
+    ax.bar(kk - 0.19, q1, width=0.38, color=C['red'], alpha=0.85,
+           label='1-D solve')
+    ax.bar(kk + 0.19, cs.q, width=0.38, color=C['green'], label='full solve')
+    ax.errorbar(kk - 0.19, q1, yerr=s1, fmt='none', ecolor=C['red'], lw=0.9,
+                capsize=2, alpha=0.75)
+    ax.errorbar(kk + 0.19, cs.q, yerr=s2, fmt='none', ecolor=CHROME, lw=1.0,
+                capsize=2)
+    ax.set_xlabel('depth bin k')
+    ax.set_ylabel('charge')
+    ax.set_title(f'per-bin error {np.median(s1):,.0f} → {np.median(s2):,.0f};\n'
+                 f'total charge {tot1:,.0f} → {tot2:,.0f}', loc='left',
+                 fontsize=9.5)
+    ax.legend(fontsize=7.5)
+
+    N['fwhm_h'] = fwhm
+    N['cond_1d'] = c1d
+    N['sig_1d_med'] = float(np.median(s1))
+    N['sig_2d_med'] = float(np.median(s2))
+    N['tot_1d'] = tot1
+    N['tot_2d'] = tot2
+    N['corr_adj_1d'] = float(np.median(np.diag(
+        (A1.T @ A1) / np.outer(np.linalg.norm(A1, axis=0),
+                               np.linalg.norm(A1, axis=0)), 1)))
+    N['n_1d_row'] = int(wm.NSAMP)
+    return save(fig, 'f05_oned')
+
+
+# ------------------------------------------------ 6. adding the strips back
+def fig_buildup(cs, n_w=26):
+    """Conditioning as the second dimension is switched on. w is scanned from
+    0 (a vertical track: every depth bin lands on the same strips) up to this
+    event's fitted value; past that the deep bins walk out of the window and
+    the comparison stops being like-for-like."""
+    A1, _y1, _nz = collapse(cs)
+    c_1d, _s, _sv, _cov = _sig(A1)
+
+    J = np.ones(wm.K)
+    ws = np.linspace(0.0, cs.w, n_w)
+    conds, sigs, tots = [], [], []
+    for w in ws:
+        cs.build(w=w)
+        c, s, _sv, cov = _sig(cs.A)
+        conds.append(c)
+        sigs.append(float(np.median(s)))
+        tots.append(float(np.sqrt(J @ cov @ J)))
+    R = []
+    for w in (0.0, cs.w):
+        cs.build(w=w)
+        G = cs.A.T @ cs.A
+        d = np.sqrt(np.diag(G))
+        R.append(G / np.outer(d, d))
+    cs.build()                                     # restore the fitted matrix
+
+    fig = plt.figure(figsize=(11.4, 3.6))
+    gs = GridSpec(1, 3, width_ratios=[0.85, 0.85, 1.3], wspace=0.34)
+
+    for j, (Rm, ttl) in enumerate(zip(
+            R, ['w = 0: vertical track', f'w = {cs.w:.4f}: this event'])):
+        ax = fig.add_subplot(gs[j])
+        im = ax.imshow(Rm, origin='lower', cmap='viridis', vmin=0, vmax=1)
+        ax.set_xlabel('depth bin k')
+        if j == 0:
+            ax.set_ylabel('depth bin k′')
+        ax.set_title(ttl, loc='left', fontsize=9)
+        if j == 1:
+            fig.colorbar(im, ax=ax, pad=0.03)
+
+    ax = fig.add_subplot(gs[2])
+    ax.semilogy(ws, conds, 'o-', ms=3.5, color=C['blue'],
+                label='cond(A) — left axis')
+    ax.axhline(c_1d, color=C['red'], ls='--', lw=1.2,
+               label=f'1-D, no strips  ({c_1d:,.0f})')
+    ax.set_xlabel('transverse speed w [mm/ns]   (tan θ = w / v)')
+    ax.set_ylabel('cond(A)')
+    ax.set_title('the strips only help once the track leans', loc='left',
+                 fontsize=9.5)
+    ax2 = ax.twinx()
+    ax2.semilogy(ws, sigs, 's-', ms=3.0, color=C['olive'], alpha=0.9,
+                 label='σ of one bin')
+    ax2.semilogy(ws, tots, 's-', ms=3.0, color=C['green'], alpha=0.9,
+                 label='σ of the total charge')
+    ax2.set_ylabel('charge error', color=C['olive'])
+    ax2.set_ylim(5, 1e4)
+    ax2.grid(False)
+    h1, l1 = ax.get_legend_handles_labels()
+    h2, l2 = ax2.get_legend_handles_labels()
+    ax.legend(h1 + h2, l1 + l2, fontsize=7, loc='center left')
+
+    N['cond_w0'] = float(conds[0])
+    N['cond_wfit'] = float(conds[-1])
+    N['sig_w0'] = float(sigs[0])
+    N['sig_wfit'] = float(sigs[-1])
+    N['tot_w0'] = float(tots[0])
+    N['tot_wfit'] = float(tots[-1])
+    N['w_fit'] = float(cs.w)
+    N['tan_at_w'] = float(cs.w / 36.6e-3)
+    return save(fig, 'f06_buildup')
+
+
+# ------------------------------------------------- 7. the toy worked example
 TOY_H = np.array([0.0, 1.0, 0.5, 0.1])          # a 4-sample "template"
 TOY_F = np.array([[0.20, 0.05],                  # 3 strips x 2 depth bins
                   [0.60, 0.35],
@@ -429,10 +596,10 @@ def fig_toy():
     N['toy_G'] = [[float(v) for v in row] for row in G]
     N['toy_b'] = [float(v) for v in b_]
     N['toy_corr'] = float(G[0, 1] / np.sqrt(G[0, 0] * G[1, 1]))
-    return save(fig, 'f05_toy')
+    return save(fig, 'f07_toy')
 
 
-# ------------------------------------------- 6. weighting and censoring
+# ------------------------------------------- 8. weighting and censoring
 def fig_censor(evs, cal):
     cs = Case(evs, SAT_EVENT, PLANE, cal)
     fig = plt.figure(figsize=(11.4, 3.9))
@@ -476,10 +643,10 @@ def fig_censor(evs, cal):
     N['sat_rows'] = int(keep.sum())
     N['sat_tot'] = int(len(keep))
     N['sat_event'] = int(SAT_EVENT)
-    return save(fig, 'f06_censor')
+    return save(fig, 'f08_censor')
 
 
-# --------------------------------------------- 7. the geometry of the solve
+# --------------------------------------------- 9. the geometry of the solve
 def pick_rows(A2, y, n=3):
     """Three rows that make a legible 3-D picture: rows where the two columns
     are individually large and point in different directions."""
@@ -546,10 +713,10 @@ def fig_projection(cs, ka=12, kb=13):
     N['pair_un'] = [float(v) for v in q_un]
     N['pair_nn'] = [float(v) for v in q_nn]
     N['pair_corr'] = float(G[0, 1] / np.sqrt(G[0, 0] * G[1, 1]))
-    return save(fig, 'f07_projection')
+    return save(fig, 'f09_projection')
 
 
-# --------------------------------------------- 8. the Lawson-Hanson walk
+# --------------------------------------------- 10. the Lawson-Hanson walk
 def fig_lh(cs):
     x, log = lawson_hanson(cs.A, cs.y)
     xs, _ = nnls(cs.A, cs.y, maxiter=50 * wm.K)
@@ -594,10 +761,10 @@ def fig_lh(cs):
     ax.set_ylabel('iteration')
     ax.set_title('the profile being assembled', loc='left', fontsize=9.5)
     fig.colorbar(im, ax=ax, pad=0.02, label='charge')
-    return save(fig, 'f08_lh')
+    return save(fig, 'f10_lh')
 
 
-# ------------------------------------------ 9. unconstrained vs constrained
+# ------------------------------------------ 11. unconstrained vs constrained
 def fig_uncon(cs):
     qu = np.linalg.lstsq(cs.A, cs.y, rcond=None)[0]
     chi_u = float(((cs.A @ qu - cs.y) ** 2).sum())
@@ -644,10 +811,10 @@ def fig_uncon(cs):
     N['chi2_uncon'] = chi_u
     N['chi2_nnls'] = float(cs.chi2)
     N['chi2_gain_pct'] = float(100 * (cs.chi2 - chi_u) / chi_u)
-    return save(fig, 'f09_uncon')
+    return save(fig, 'f11_uncon')
 
 
-# ----------------------------------------------- 10. how independent are they
+# ----------------------------------------------- 12. how independent are they
 def fig_gram(cs):
     A = cs.A
     G = A.T @ A
@@ -687,10 +854,10 @@ def fig_gram(cs):
     N['cond'] = float(sv[0] / sv[-1])
     N['corr_adj'] = float(np.median(np.diag(R, 1)))
     N['corr_2'] = float(np.median(np.diag(R, 2)))
-    return save(fig, 'f10_gram')
+    return save(fig, 'f12_gram')
 
 
-# ------------------------------------------------------ 11. what came out
+# ------------------------------------------------------ 13. what came out
 def fig_result(cs):
     mod = cs.model()
     res = (cs.W - mod) / cs.noise[:, None]
@@ -756,10 +923,10 @@ def fig_result(cs):
     N['q_total'] = float(cs.q.sum())
     N['tan_fit'] = float(cs.w / (36.6e-3))
     N['tan_ref'] = float(cs.tan_ref)
-    return save(fig, 'f11_result')
+    return save(fig, 'f13_result')
 
 
-# ---------------------------------------------------- 12. errors on the q
+# ---------------------------------------------------- 14. errors on the q
 def fig_errors(cs):
     free = cs.q > 0
     Af = cs.A[:, free]
@@ -804,10 +971,10 @@ def fig_errors(cs):
     N['q_tot_err'] = tot_err
     N['q_tot_err_pct'] = float(100 * tot_err / cs.q.sum())
     N['sig_q_med'] = float(np.median(sig[free]))
-    return save(fig, 'f12_errors')
+    return save(fig, 'f14_errors')
 
 
-# ------------------------------------------------------- 13. the profiling
+# ------------------------------------------------------- 15. the profiling
 def fig_profile(cs):
     dps = np.linspace(-2.0, 2.0, 81)
     chis, qs = [], []
@@ -849,10 +1016,10 @@ def fig_profile(cs):
     ax.set_title('three of those profiles', loc='left', fontsize=9.5)
     ax.legend(fontsize=7.5)
     N['profile_nsolve'] = int(len(dps))
-    return save(fig, 'f13_profile')
+    return save(fig, 'f15_profile')
 
 
-# ------------------------------------------------------- 14. the 60 ns tooth
+# ------------------------------------------------------- 16. the 60 ns tooth
 def fig_tooth(cs):
     out = []
     for dt in (-60.0, 0.0):
@@ -917,10 +1084,10 @@ def fig_tooth(cs):
     N['tooth_chi2'] = [float(o[1]) for o in out]
     N['tooth_dp'] = [float(o[2]) for o in out]
     N['tooth_dchi2_pct'] = float(100 * (out[0][1] - out[1][1]) / out[1][1])
-    return save(fig, 'f14_tooth')
+    return save(fig, 'f16_tooth')
 
 
-# ------------------------------------------------------- 15. the population
+# ------------------------------------------------------- 17. the population
 def fig_population(evs, cal, n_scan=250):
     nz, its, bts, prof, chid = [], [], [], [], []
     for eid in sorted(evs)[:n_scan]:
@@ -992,10 +1159,10 @@ def fig_population(evs, cal, n_scan=250):
     N['pop_bt_frac'] = float(np.mean(bts > 0))
     N['pop_bt_max'] = int(bts.max())
     N['pop_chi2dof_med'] = float(np.median(chid))
-    return save(fig, 'f15_population')
+    return save(fig, 'f17_population')
 
 
-# ------------------------------------------------- 16. how much is sharing
+# ------------------------------------------------- 18. how much is sharing
 def fig_sharing(evs, cal):
     fig, axs = plt.subplots(1, 3, figsize=(11.2, 3.6))
     ev = evs[EVENT]
@@ -1051,7 +1218,7 @@ def fig_sharing(evs, cal):
     ax.set_title('the copy is late as well as small', loc='left', fontsize=9.5)
     ax.legend(fontsize=7.5)
     N['share'] = stats
-    return save(fig, 'f16_sharing')
+    return save(fig, 'f18_sharing')
 
 
 def main():
@@ -1065,6 +1232,8 @@ def main():
     fig_column_build(cs)
     fig_atlas(cs)
     fig_flatten(cs)
+    fig_oned(cs)
+    fig_buildup(cs)
     fig_toy()
     fig_censor(evs, cal)
     fig_projection(cs)

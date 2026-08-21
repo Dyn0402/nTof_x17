@@ -219,7 +219,7 @@ three geometric numbers that decide which 18 pictures to draw.
 1 · <a href="#s1">The problem, stated honestly</a><br>
 2 · <a href="#s2">One column of A, built from scratch</a><br>
 3 · <a href="#s3">Why it is a matrix at all: the flattening</a><br>
-4 · <a href="#s4">A worked example small enough to check by hand</a><br>
+4 · <a href="#s4">The equation being solved</a><br>
 5 · <a href="#s5">Weights and censoring</a><br>
 6 · <a href="#s6">The solve, geometrically</a><br>
 7 · <a href="#s7">How the constrained solve actually runs</a><br>
@@ -369,7 +369,242 @@ charge). Tall and thin is good — it means the problem is
 18-number answer extracted from a noisy window is stable at all.
 </div>
 
-<h2 id="s4">4 · A worked example small enough to check by hand</h2>
+<h2 id="s4">4 · The equation being solved</h2>
+
+<p>Sections 2 and 3 built A from the bottom up, one column at a time. It is
+worth stopping to write down the equation those columns are a discretisation
+<em>of</em> — because everything the fit can and cannot do follows from its
+structure, and because that structure is clearest in one dimension, where the
+same equation collapses to a textbook problem with a textbook pathology.</p>
+
+<h3>4.1 The equation, in full</h3>
+
+<p>A track crossing the gap liberates charge along its path. Label that charge
+not by where it was born but by <em>when it arrives at the mesh</em>: let
+<strong>λ(u) du</strong> be the charge reaching the mesh between u and u + du
+after t₀, the arrival time of the shallowest charge. Depth and arrival time
+are the same coordinate — z = v·u, with v = 36.6 µm/ns, so one 60 ns slice is
+2.2 mm of gap — and λ(u) is the only thing about the ionisation the detector
+can report.</p>
+
+<p>Charge in slice u lands at transverse position p₀ + w·u, spread by a
+Gaussian, and strip i collects whatever falls inside its pitch:</p>
+
+<div class="eq">
+S<sub>i</sub>(u) = ∫<sub>x<sub>i</sub> − P/2</sub><sup>x<sub>i</sub> + P/2</sup>
+ dp &nbsp; N( p ; p₀ + w·u , σ(u) )
+<small>σ²(u) = σ₀² + D<sub>p</sub>²·u + (w·Δu)²/12 — the initial cloud, the
+diffusion accumulated over the drift, and the track's own sideways travel
+inside one 60 ns slice. P = 0.78 mm is the strip pitch. This integral is
+<code>strip_fractions()</code>, and it is the whole of the transverse
+physics.</small>
+</div>
+
+<p>Each strip's charge then rings the amplifier, and a fraction of it appears
+on the neighbours through the resistive layer. Put together, the equation the
+reconstruction is trying to solve is:</p>
+
+<div class="eq">
+y<sub>i</sub>(t) = ∫<sub>0</sub><sup>∞</sup> du &nbsp; λ(u) &nbsp;[&nbsp;
+S<sub>i</sub>(u)·h(t − t₀ − u)
+&nbsp;+&nbsp; c₁·(S<sub>i−1</sub> + S<sub>i+1</sub>)(u)·h₁(t − t₀ − u)
+&nbsp;+&nbsp; c₂·(S<sub>i−2</sub> + S<sub>i+2</sub>)(u)·h₂(t − t₀ − u)
+&nbsp;]&nbsp; + ε<sub>i</sub>(t)
+<small>y<sub>i</sub>(t): the gain-corrected waveform on strip i. h: the
+measured impulse response; h₁ and h₂ its RC-dispersed copies on the ±1 and ±2
+neighbours, with amplitudes c₁ and c₂. ε: the per-strip noise. Unknown: the
+function λ(u) ≥ 0, and the three numbers p₀, w, t₀ buried inside the
+kernel.</small>
+</div>
+
+<p>That is a <strong>Fredholm integral equation of the first kind</strong> — a
+measured left-hand side, a known kernel, an unknown non-negative function
+under the integral — with the extra twist that three parameters of the kernel
+are unknown as well. Everything in this note is one particular way of
+attacking it: discretise λ, solve for it exactly, search the three.</p>
+
+<div class="box"><strong>What the equation quietly assumes.</strong>
+<ul>
+<li><strong>One track.</strong> Two tracks in one window need two copies of the
+whole bracket, each with its own p₀, w and its own λ. Clusters more than
+12 mm apart get separate windows and are fitted separately; a genuinely merged
+pair would need a 2K-column matrix and is the one tier of the multi-track
+generalisation that is <em>not</em> built (<code>wft/MULTITRACK_2026-08-12.md</code>) —
+such events show up as one compromise track with a large χ²/dof.</li>
+<li><strong>One plane at a time.</strong> x and y are fitted independently, each
+with its own λ; nothing in the equation forces the two profiles to agree.</li>
+<li><strong>λ ≥ 0.</strong> Charge, not signal — the constraint that makes
+§8 necessary.</li>
+<li><strong>A calibrated, position-independent response.</strong> h, c₁, c₂,
+σ₀ and D<sub>p</sub> come from the bundle and are the same everywhere on the
+detector; per-channel gain is divided out of y before the fit, not carried in
+the kernel.</li>
+</ul></div>
+
+<h3>4.2 Discretising it: where A comes from</h3>
+
+<p>Two discretisations turn that integral into arithmetic. The waveform is
+sampled — t → t<sub>s</sub>, {n('n_samp')} of them, 60 ns apart. And λ is taken
+constant across each 60 ns slice of drift — λ(u) → q<sub>k</sub>, K = 18 of
+them. The integral becomes a sum, and the bracket evaluated at u<sub>k</sub>
+<em>is</em> column k:</p>
+
+<div class="eq">
+y = A(p₀, w, t₀)·q + ε , &nbsp; q ≥ 0
+<small>with A[(i,s), k] = the bracket above, at strip i, sample
+t<sub>s</sub>, slice u<sub>k</sub>. That is <code>build_matrix</code>, and
+Figures 2–4 are its three factors, one column, and the flattening.</small>
+</div>
+
+<table>
+<tr><th>in the equation</th><th>in the code</th><th>this event</th></tr>
+<tr><td>y<sub>i</sub>(t)</td><td><code>prep_plane</code> → W / gain</td>
+    <td class="n">{n('n_strip')} × {n('n_samp')}</td></tr>
+<tr><td>λ(u)</td><td>the NNLS answer <code>q</code></td><td class="n">18</td></tr>
+<tr><td>S<sub>i</sub>(u)</td><td><code>strip_fractions()</code> → F</td>
+    <td class="n">{n('n_strip')} × 18</td></tr>
+<tr><td>h, h₁, h₂</td><td><code>_time_tensors()</code> → H0, H1, H2</td>
+    <td class="n">{n('n_samp')} × 18</td></tr>
+<tr><td>p₀, w, t₀</td><td>the Nelder-Mead vector</td><td class="n">3</td></tr>
+<tr><td>ε<sub>i</sub></td><td>per-strip noise → the row weights</td>
+    <td class="n">§5</td></tr>
+</table>
+
+<h3>4.3 The same equation in one dimension</h3>
+
+<p>Now delete a dimension. Sum the equation over strips: the S's sum to one —
+all the charge lands on <em>some</em> strip, bar the tails that fall off the
+ends of the window — and the two neighbour terms sum to twice that, so the
+strip index vanishes entirely and what is left is</p>
+
+<div class="eq">
+Y(t) = ∫ du &nbsp; λ(u)·g(t − t₀ − u) &nbsp;=&nbsp; (λ ∗ g)(t − t₀) ,
+&nbsp;&nbsp; g = h + 2c₁h₁ + 2c₂h₂
+<small>A plain convolution. Discretised, Y = H·q with H a Toeplitz matrix of
+shifted copies of g — the classic one-dimensional deconvolution.</small>
+</div>
+
+<p>This is not a thought experiment: it is <em>this event</em>, with only the
+information about <em>which</em> strip saw the charge thrown away.</p>
+
+{fig('f05_oned', 5,
+     'The one-dimensional problem, on the real event. Left: the strip-summed '
+     'waveform, and the 18 columns of H — eighteen copies of the same '
+     f"{N['fwhm_h']:.0f} ns pulse, stepped 60 ns apart, drawn at a common "
+     'arbitrary charge. They overlap almost completely; adjacent columns '
+     f"correlate at {N['corr_adj_1d']:.3f}. Middle: the singular values of the "
+     'two problems. The 1-D spectrum falls off a cliff — its last modes are '
+     'a thousand times weaker than its first — while the full problem stays '
+     'within two decades. Right: the two solutions. The 1-D fit reproduces '
+     'the waveform perfectly well and yet its individual charges are '
+     'meaningless: the error bar on a single bin is larger than the entire '
+     'signal.',
+     'figs.py · sat_det3 event 1663, x plane · unconstrained errors, all 18 bins')}
+
+<p>The pathology is entirely in the numbers. The impulse response is
+<strong>{N['fwhm_h']:.0f} ns wide</strong> at half maximum — five depth bins —
+so consecutive columns of H are nearly the same picture, correlated at
+<strong>{N['corr_adj_1d']:.3f}</strong>. The matrix is ill-conditioned
+(cond = {N['cond_1d']:,.0f}), and the price is paid in the answer: the
+unconstrained error on one bin's charge is <strong>{N['sig_1d_med']:,.0f}</strong>
+on an event whose <em>total</em> charge is only {n('q_total')}. In one
+dimension a single depth bin is not measured at all.</p>
+
+<p>What <em>is</em> measured in 1-D is everything smooth. The error on the
+total charge is {N['tot_1d']:,.0f}, i.e.
+{100 * N['tot_1d'] / N['q_total']:.1f} % — the arrival time and the amount of
+charge are fine; only the fine structure is destroyed. That is the standard
+behaviour of a first-kind integral equation, and the standard responses to it
+are regularisation — a smoothness or entropy penalty, or a parametric shape
+for λ. <strong>None of those is used here.</strong> Non-negativity does some
+of that work (§8), but the real answer is different: put the missing dimension
+back.</p>
+
+<h3>4.4 Back up to our dimensionality, one dimension at a time</h3>
+
+<p><strong>Step 1 — restore the strips, but keep the track vertical.</strong>
+Set w = 0: every depth slice now lands on a strip pattern, but on the
+<em>same</em> pattern, wider with depth only through diffusion. The problem
+grows from {n('n_samp')} rows to {n('n_row')}, and almost none of that is new
+information about depth: the condition number moves from
+{N['cond_1d']:,.0f} to {N['cond_w0']:,.0f}. The per-bin error does improve,
+{N['sig_1d_med']:,.0f} → {N['sig_w0']:,.0f}, but that is just the noise
+averaging down over {n('n_strip')} strips. Seventeen times the data, the same
+degeneracy.</p>
+
+<p><strong>Step 2 — let the track lean.</strong> With w ≠ 0, slice k lands at
+p₀ + w·u<sub>k</sub> — a different <em>place</em> for every k, and the place
+and the time are locked to each other by the single number w. Now the columns
+are distinguishable by something other than a time shift the response has
+already smeared over, and the problem transforms: cond {N['cond_w0']:,.0f} →
+{N['cond_wfit']:,.0f}, per-bin error {N['sig_w0']:,.0f} →
+{N['sig_wfit']:,.0f}. A factor of thirty in charge resolution, bought from
+geometry — not from better electronics, a finer clock or a lower noise
+floor.</p>
+
+{fig('f06_buildup', 6,
+     'Adding the second dimension back. Left and middle: how much each depth '
+     'bin looks like every other, for a vertical track and for this event’s '
+     f"tan θ = {N['tan_at_w']:.2f}. Vertical, the correlation is a fat band — "
+     'neighbouring depths are nearly indistinguishable; leaning, it collapses '
+     'towards the diagonal. Right: the condition number against the '
+     'transverse speed, with the strips-summed-away value as the dashed line. '
+     'At w = 0 seventeen strips are worth no more than one summed waveform. '
+     'The scan stops at this event’s fitted w because beyond it the deep '
+     'bins walk out of the window and the comparison is no longer '
+     'like-for-like. Note the flat green curve: the error on the <em>total</em> '
+     'charge never cared about any of this.',
+     'figs.py · sat_det3 event 1663, x plane · unconstrained, all 18 bins')}
+
+<table>
+<tr><th>problem</th><th class="n">rows</th><th class="n">cond(A)</th>
+    <th class="n">σ of one bin</th><th class="n">σ of the total</th></tr>
+<tr><td>1-D — strips summed away</td><td class="n">{n('n_1d_row')}</td>
+    <td class="n">{N['cond_1d']:,.0f}</td><td class="n">{N['sig_1d_med']:,.0f}</td>
+    <td class="n">{N['tot_1d']:,.0f}</td></tr>
+<tr><td>{n('n_strip')} strips, vertical track (w = 0)</td>
+    <td class="n">{n('n_row')}</td><td class="n">{N['cond_w0']:,.0f}</td>
+    <td class="n">{N['sig_w0']:,.0f}</td><td class="n">{N['tot_w0']:,.0f}</td></tr>
+<tr><td>{n('n_strip')} strips, this track
+    (w = {N['w_fit']:.4f} mm/ns, tan θ = {N['tan_at_w']:.2f})</td>
+    <td class="n">{n('n_row')}</td><td class="n">{N['cond_wfit']:,.0f}</td>
+    <td class="n">{N['sig_wfit']:,.0f}</td><td class="n">{N['tot_wfit']:,.0f}</td></tr>
+</table>
+<p class="meta">Unconstrained errors, all 18 bins, noise-weighted units. The
+q ≥ 0 constraint switches most bins off and shrinks the error bars on the
+survivors — §10 and Figure 14 quote those instead.</p>
+
+<div class="box"><strong>The strips are not there for statistics.</strong>
+They are there to break the depth degeneracy — and they only do it when the
+track leans. Two consequences follow. The angle is not a by-product of the
+charge profile; it is the parameter that <em>makes</em> the charge profile
+measurable, which is why the χ² is sharp in w. And a near-vertical track is
+intrinsically the hard case: its depth profile is barely determined, whatever
+the electronics do.</div>
+
+<p><strong>Step 3 — put the neighbours back.</strong> Charge sharing adds no
+unknowns at all; it adds the c₁ and c₂ terms inside the bracket. It makes the
+transverse handle slightly blunter — sharing correlates strips that geometry
+had separated, which is exactly why the kernel's ordering has to be right
+(c₂ &lt; c₁, always) — but because it lives in A rather than in the data, it
+biases nothing. That is the point §13 makes at length, and the reason this
+basis exists at all.</p>
+
+<p><strong>Step 4 — flatten, weight, censor.</strong> §3 unrolled the pictures
+into columns; §5 divides every row by its strip's noise and drops the rows
+that are saturated or dead. What is left is the finite problem the code
+actually solves:</p>
+
+<div class="eq">
+minimise over (p₀, w, t₀) &nbsp;of&nbsp;
+[ &nbsp;minimise over q ≥ 0 &nbsp;of&nbsp;
+‖ ( y − A(p₀, w, t₀)·q ) / σ ‖² &nbsp;]
+<small>{n('n_row')} numbers in; 18 charges solved exactly in the inner
+bracket, 3 geometric numbers searched in the outer one. The inner solve is
+§6–§8; the outer search is §11.</small>
+</div>
+
+<h3>4.5 A worked example small enough to check by hand</h3>
 
 <p>The real problem is {n('n_row')} × 18. The structure is identical at 12 × 2,
 so here is one built from scratch: 3 strips, 4 samples, 2 depth slices. The
@@ -378,7 +613,7 @@ the three strips and slice 1, being deeper on an inclined track, lands
 5/35/60 %. The true charges are 100 and 60, and Gaussian noise of σ = 2 is
 added.</p>
 
-{fig('f05_toy', 5,
+{fig('f07_toy', 7,
      'The whole calculation. Left: the 12 × 2 matrix, every entry printed — '
      'each is simply (strip fraction) × (template sample). Middle: the data, '
      'the two columns scaled by their true charges, and the fitted sum. '
@@ -433,7 +668,7 @@ direction. (This is the machinery that masks chamber A's connector 8 on
 run_79.)</li>
 </ul>
 
-{fig('f06_censor', 6,
+{fig('f08_censor', 8,
      'Censoring on a real saturated event. Left: ' + n('sat_n') + ' samples '
      'hit the clip. Middle: the brightest strip — the model is free to go '
      'above the clipped samples and is penalised only for going below. Right: '
@@ -461,7 +696,7 @@ imperfection are precisely the part of y that no charge profile can reach.</p>
 <p>Charge cannot be negative. That single constraint changes the character of
 the answer completely, and it is worth seeing why on real columns.</p>
 
-{fig('f07_projection', 7,
+{fig('f09_projection', 9,
      'Two real columns of A — depth bins ' + str(N['pair'][0]) + ' and '
      + str(N['pair'][1]) + ', which overlap at ' + f"{N['pair_corr']:.2f}" +
      '. Left: χ² over their two charges. The valley is long and diagonal '
@@ -496,7 +731,7 @@ loop:
 instrumented implementation reproduces <code>scipy</code>'s answer to
 {N['lh_agree']:.0e} — it is the same algorithm, only narrating.)</p>
 
-{fig('f08_lh', 8,
+{fig('f10_lh', 10,
      'The solve, step by step. Left: at the first step every bin is at zero, '
      'so the gradient is just "how much does the data look like this depth?" '
      '— bin ' + str(N['lh_order'][0]) + ' wins and is admitted. Middle: χ² '
@@ -526,7 +761,7 @@ than greedy.
 <p>It is tempting to think the constraint is a tidy-up. It is not: without it
 the solve produces a profile that fits marginally better and means nothing.</p>
 
-{fig('f09_uncon', 9,
+{fig('f11_uncon', 11,
      'Unconstrained against NNLS on the same event and the same A. Left: '
      'released, ' + n('n_neg') + ' of 18 bins go negative — several by more '
      'than a thousand units — and their neighbours grow to compensate. '
@@ -551,7 +786,7 @@ columns of A resemble each other. Adjacent depth slices are separated by 60 ns
 of drift — but the amplifier response is hundreds of nanoseconds wide, so their
 pictures overlap heavily.</p>
 
-{fig('f10_gram', 10,
+{fig('f12_gram', 12,
      'Left: the correlation between columns. Neighbouring depth bins overlap '
      'at ' + f"{N['corr_adj']:.2f}" + ', next-but-one at '
      + f"{N['corr_2']:.2f}" + '. Middle: the singular-value spectrum, '
@@ -576,7 +811,7 @@ summaries, not the eighteen numbers.
 
 <h2 id="s10">10 · The answer, and its error bars</h2>
 
-{fig('f11_result', 11,
+{fig('f13_result', 13,
      'What one solve buys. Top: data and model on eighteen strips at once — '
      'all of them are described by the <em>same</em> 18-number charge profile '
      'plus three geometric numbers; nothing is fitted strip by strip. Bottom '
@@ -592,12 +827,12 @@ summaries, not the eighteen numbers.
 survived: <code>cov = (A<sub>free</sub>ᵀ A<sub>free</sub>)⁻¹</code>. The
 contrast between a single bin and a smooth summary is stark.</p>
 
-{fig('f12_errors', 12,
+{fig('f14_errors', 14,
      'Left: the profile with 1σ error bars from the free-set covariance; the '
      '<em>total</em> is ' + n('q_total') + ' ± ' + n('q_tot_err') + ', i.e. '
      + f"{N['q_tot_err_pct']:.2f}" + ' %. Middle: the surviving bins are '
      'strongly anti-correlated with their neighbours — one bin’s excess is '
-     'the next one’s deficit, which is the zigzag mode of Figure 10 seen '
+     'the next one’s deficit, which is the zigzag mode of Figure 12 seen '
      'from another angle. Right: per-bin fractional errors.',
      'figs.py · sat_det3 event 1663, x plane')}
 
@@ -613,7 +848,7 @@ they are not guessed once and held: they are re-derived exactly at every single
 trial geometry. What the outer search navigates by is the χ² <em>after</em>
 that re-derivation — a profile likelihood in the statistical sense.</p>
 
-{fig('f13_profile', 13,
+{fig('f15_profile', 15,
      'Sliding p₀ across ±2 mm, with the charges re-solved at each of '
      + n('profile_nsolve') + ' points. Left: the profiled χ². Middle: the '
      'charge profile at every trial — as the assumed track position moves, '
@@ -637,7 +872,7 @@ by one depth bin and slide p₀ along the track by w·60 ns, and the charge
 profile simply moves one index over — the model waveforms are almost
 unchanged.</p>
 
-{fig('f14_tooth', 14,
+{fig('f16_tooth', 16,
      'Left: the best solution at t₀ and at t₀ − 60 ns. The profile has moved '
      'one bin, p₀ has slid ' + f"{abs(N['tooth_dp'][0]):.2f}" + ' mm, and χ² '
      'is only ' + f"{N['tooth_dchi2_pct']:.1f}" + ' % worse. Middle: on the '
@@ -660,7 +895,7 @@ such trigger.
 
 <h2 id="s12">12 · What this looks like across a population</h2>
 
-{fig('f15_population', 15,
+{fig('f17_population', 17,
      'Reference-pinned fits on ' + n('pop_n') + ' planes. Left: '
      f"{N['pop_nz']:.1f}" + ' of 18 bins survive on average — '
      f"{100 * N['pop_nz_frac']:.0f}" + ' %; individual profiles are sparse and '
@@ -700,7 +935,7 @@ steep, and no threshold or estimator change fixes it.</p>
 charge <em>is</em> predicted to look like, so the solve accounts for them
 instead of being fooled by them.</p>
 
-{fig('f16_sharing', 16,
+{fig('f18_sharing', 18,
      'How much of A is neighbours. Left and middle: for one depth slice, the '
      'charge landing on each strip, split into the strip’s own and the '
      'copies it receives — ' + f"{100 * N['share']['x']['frac']:.1f}" + ' % of '
@@ -752,7 +987,7 @@ measurement of the primary ionisation cloud, it is a warning light.</li>
 <h2 id="s15">15 · Reproduce</h2>
 
 <pre>cd docs/charge_solve
-../../.venv/bin/python figs.py        # 16 figures + numbers.json, ~15 s
+../../.venv/bin/python figs.py        # 18 figures + numbers.json, ~50 s
 ../../.venv/bin/python make_note.py   # this page
 
 # override the inputs:
@@ -778,7 +1013,9 @@ SUMMARY = ('A deep dive on the linear half of the waveform-first fit: the '
            'design matrix A as a dictionary of "one unit of charge, this deep" '
            'pictures, the non-negative least-squares solve that reads the '
            'charge profile off it, and what that profile can and cannot be '
-           'asked. 16 figures from live det3 data, plus a worked 12 x 2 '
+           'asked. It writes the underlying integral equation out in full, '
+           'reduces it to a 1-D deconvolution and builds it back up. 18 '
+           'figures from live det3 data, plus a worked 12 x 2 '
            'example.')
 
 PAGE = f"""<!--note
