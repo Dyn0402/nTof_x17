@@ -51,14 +51,14 @@ def load():
     return g, H, bw, S, n
 
 
-def groups(g, H, bw):
-    """Pads sorted by gain, cut into NGROUP bands.  Each band's spectrum is the
+def groups(g, H, bw, ngroup=None):
+    """Pads sorted by gain, cut into `ngroup` bands (NGROUP by default).  Each band's spectrum is the
     track-weighted mean of its pads' UNIT-AREA spectra, not the pooled raw
     counts -- that way the band's sub-threshold fraction is exactly the mean of
     its pads', which is the number the efficiency model uses."""
     order = np.argsort(g["amp_med_d"].to_numpy())
     out = []
-    for idx in np.array_split(order, NGROUP):
+    for idx in np.array_split(order, ngroup or NGROUP):
         w = g["n_track_v"].to_numpy()[idx].astype(float)
         p = H[idx] / H[idx].sum(1, keepdims=True)
         out.append(dict(
@@ -72,7 +72,7 @@ def groups(g, H, bw):
 
 
 # --------------------------------------------------------------------------- #
-def ridge(ax, gr, bw, T, xlim=(28.0, 3000.0), h=1.02):
+def ridge(ax, gr, bw, T, xlim=(28.0, 3000.0), h=1.02, fs=1.0):
     """The hero panel.  One filled curve per gain band, stacked bottom (weak)
     to top (strong), with the single discriminator level drawn straight through
     all of them.
@@ -98,8 +98,8 @@ def ridge(ax, gr, bw, T, xlim=(28.0, 3000.0), h=1.02):
                         alpha=0.80, lw=0, zorder=3 + j)
         ax.plot(c[k], base + y, lw=1.6, color=DREAM_C, zorder=3.5 + j)
         ax.plot(xlim, [base, base], lw=0.7, color=F.GRID, zorder=1)
-        ax.text(xlim[0] * 0.90, base + 0.30, f"{G['gain']:.2f}x", fontsize=9,
-                color=F.INK2, ha="right", va="center")
+        ax.text(xlim[0] * 0.90, base + 0.30, f"{G['gain']:.2f}x",
+                fontsize=9 * fs, color=F.INK2, ha="right", va="center")
 
     ax.axvline(T, lw=2.2, color=VMM_C, zorder=40)
     ax.set_xscale("log")
@@ -115,18 +115,21 @@ def ridge(ax, gr, bw, T, xlim=(28.0, 3000.0), h=1.02):
     return 1.0
 
 
-def effbars(ax, gr, n):
+def effbars(ax, gr, n, fs=1.0, bh=0.26):
     """The consequence, on the same rows: what each band's pads actually
     recorded."""
     for j, G in enumerate(gr):
-        ax.barh(j + 0.30, G["eff_d"], height=0.26, color=DREAM_C, alpha=0.85,
-                zorder=3)
-        ax.barh(j + 0.60, G["eff_v"], height=0.26, color=VMM_C, zorder=3)
-        ax.text(G["eff_v"] - 0.010, j + 0.62, f"{G['eff_v'] * 100:.0f}",
-                ha="right", va="center", fontsize=8.5, color=F.SURFACE,
+        # pair centred at j+0.45 with a 0.04 surface gap, so bh=0.26 lands on
+        # the 0.30 / 0.60 rows this figure has always used
+        d = (bh + 0.04) / 2
+        yd, yv = j + 0.45 - d, j + 0.45 + d
+        ax.barh(yd, G["eff_d"], height=bh, color=DREAM_C, alpha=0.85, zorder=3)
+        ax.barh(yv, G["eff_v"], height=bh, color=VMM_C, zorder=3)
+        ax.text(G["eff_v"] - 0.010, yv, f"{G['eff_v'] * 100:.0f}",
+                ha="right", va="center", fontsize=8.5 * fs, color=F.SURFACE,
                 fontweight="bold", zorder=4)
-        ax.text(G["eff_d"] - 0.010, j + 0.32, f"{G['eff_d'] * 100:.0f}",
-                ha="right", va="center", fontsize=8.5, color=F.SURFACE,
+        ax.text(G["eff_d"] - 0.010, yd, f"{G['eff_d'] * 100:.0f}",
+                ha="right", va="center", fontsize=8.5 * fs, color=F.SURFACE,
                 fontweight="bold", zorder=4)
     ax.set_xlim(0.40, 1.0)
     ax.set_ylim(-0.42, len(gr) + 0.35)

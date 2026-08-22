@@ -12,6 +12,8 @@ import os
 
 import pandas as pd
 
+import figures_deck as D
+import figures_slide as FS
 import make_report as R
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -41,6 +43,11 @@ def main():
     span = g["amp_med_d"].max() / g["amp_med_d"].min()
     ev = g["eff_v"].sort_values().to_numpy()
     worst_live = ev[1]
+    # the band numbers quoted below are read off the slide's own bands, so they
+    # cannot drift from the figure when NGROUP changes
+    _g, _H, _bw, _S, _n = FS.load()
+    bands = FS.groups(_g, _H, _bw, ngroup=D.NGROUP)
+    b_lo, b_hi = bands[0], bands[-1]
 
     h = f"""<title>Three slides: the VMM efficiency deficit</title>
 <meta name="description" content="A three-slide MPGD2026 sequence for P2_OUT:
@@ -54,6 +61,19 @@ and one discriminator level inside the Landau explains it.">
 provenance. They are built by <code>figures_deck.py</code> from the same tables
 as <a href="p2out-vmm-threshold-weak-pads.html">the full note</a>, so the
 numbers move together.</p>
+
+<p class="sub">Sized for a projector, not a desk: type is ~2&times; a printed
+figure's, the pad maps drop their tick labels for a scale bar, and slide 3 runs
+{D.NGROUP} gain bands instead of eight so the rows are tall enough to read from
+the back. Colour does two separate jobs and they are kept apart &mdash;
+<b>which readout</b> is categorical (DREAM orange, VMM blue, on the dots, bars
+and lines), while <b>what is mapped</b> is a sequential ramp that changes with
+the quantity: <b style="color:#7250a4">purple for efficiency</b> on slide 1,
+<b style="color:#ac5f1a">amber for gain</b> on slide 2. Both maps on a slide
+share one ramp and one colorbar, which is what makes them comparable. Each ramp
+passes the ordinal checks against the slide background, including the one that
+matters in a hall: the pale end clears 2:1 contrast, so it does not wash out to
+paper.</p>
 
 <div class="order">
 <span class="prev">&hellip;&nbsp; DREAM on the SPS beam &mdash; efficiency,
@@ -114,7 +134,9 @@ factor is a pure sideways shift. The blue line is the VMM's discriminator
 the rows: the solid orange area is what falls below it. On the strong pads that
 is the bottom of the tail; on the weak pads the peak itself has slid onto the
 line. The bars on the right are the consequence &mdash; DREAM holds
-98&nbsp;&rarr;&nbsp;89&nbsp;%, the VMM falls 91&nbsp;&rarr;&nbsp;53&nbsp;%.
+{b_hi['eff_d'] * 100:.0f}&nbsp;&rarr;&nbsp;{b_lo['eff_d'] * 100:.0f}&nbsp;%
+across the {D.NGROUP} gain bands, the VMM falls
+{b_hi['eff_v'] * 100:.0f}&nbsp;&rarr;&nbsp;{b_lo['eff_v'] * 100:.0f}&nbsp;%.
 <br><br>
 One fitted level, {n['T']:.0f} DREAM ADC, cut into DREAM's own per-pad spectra
 reproduces the VMM's efficiency pad by pad: r&nbsp;=&nbsp;{n['r_pred']:+.2f},

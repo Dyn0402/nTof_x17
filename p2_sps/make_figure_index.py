@@ -29,22 +29,27 @@ REMOTE = "lxplus:/eos/user/d/dneff/www/p2_sps/"
 
 # name -> caption. Order and grouping are the order they are meant to be used.
 GROUPS = [
-    ("The MPGD2026 slides", "16:9, 2132&times;1200 px. Built by "
-     "<code>figures_deck.py</code>.", [
+    ("The MPGD2026 slides", "16:9, 2132&times;1200 px, sized for a projector "
+     "(type ~2&times; a printed figure's; maps carry a scale bar, not tick "
+     "labels). Colour separates the two jobs: DREAM orange / VMM blue is "
+     "categorical and rides the dots, bars and lines, while the map ramp is "
+     "sequential and changes with the quantity &mdash; purple for efficiency, "
+     "amber for gain. Built by <code>figures_deck.py</code>.", [
          ("deck_1_deficit.png",
-          "Same chamber, same beam, same working point &mdash; DREAM 95.6 %, "
-          "VMM 85.3 %. Two per-pad efficiency maps on one scale, and the "
-          "pad-by-pad pairing that shows the deficit is a place, not a scale "
-          "factor."),
+          "Same pads, same beam, same working point &mdash; DREAM 95.6 %, "
+          "VMM 85.3 %. Two per-pad efficiency maps on one purple ramp, and "
+          "the pad-by-pad pairing that shows the deficit is a place, not a "
+          "scale factor."),
          ("deck_2_gainmap.png",
           "The gain rolls off &times;3.9 across the beam spot and both "
           "readouts measure the same roll-off &mdash; per-pad r = +0.94, same "
           "gradient direction to 5&deg;. The dashed ellipse is the corner "
           "marked on slide 1."),
          ("deck_3_threshold.png",
-          "The mechanism: 53 pads banded by gain, spectra on a log axis so a "
-          "gain factor is a sideways shift, one discriminator level drawn "
-          "through them, and what each band actually records."),
+          "The mechanism: 53 pads in six gain bands, spectra on a log axis so "
+          "a gain factor is a sideways shift, one discriminator level drawn "
+          "through them, and what each band actually records &mdash; DREAM "
+          "98 &rarr; 92 %, the VMM 93 &rarr; 63 %."),
      ]),
     ("Backup slides", "Kept off the main line so each slide carries one idea. "
      "Built by <code>figures_slide.py</code>.", [
