@@ -1,0 +1,12 @@
+# Regenerated from data/ by the figure scripts -- the repository keeps code and
+# the small derived tables, not the pictures.
+figures/
+
+# make_note.py output: the report fragment with every PNG inlined as a data:
+# URI, ~1 MB each. Generated, and only ever consumed by the site publisher.
+*_note.html
+
+# The repository root drops *.npz, but these two are chain inputs, not output:
+# the per-pad DREAM spectra the threshold fit reads, and the per-channel ADC
+# histograms. Both are small. Keep them.
+!data/*.npz
