@@ -27,6 +27,37 @@ Notes (unlisted, world-readable by URL):
 - [Three slides](https://dylan-neff.web.cern.ch/notes/p2out-vmm-three-slides.html) — the MPGD2026 sequence, with speaker notes
 - Figures: <https://dylan-neff.web.cern.ch/p2_sps/>
 
+## The second question: how well do the three of them track?
+
+`p2_selftrack.py` asks what `urw_p2_efficiency.py` cannot — not "did the
+station fire?" but "where does the P2-only track say the particle went?", with
+the uRWELL standing in for truth. All three stations are put in one frame at
+once (each station's uRWELL &rarr; pad affine inverted), a straight line is
+fitted through the three clusters, and the result is compared with the
+reference track.
+
+The answer, on `eff_nominal_1`: detection is fine, geometry is pad-limited.
+Every station's residual is a 12 mm box, σ_core ≈ 3.65 mm — pitch/√12, with no
+charge sharing — and a two-pad cluster is not better than a single pad. The
+P2-only track points to ~4.3 mm and ~0.75 mrad in the core, on a heavy tail.
+
+**And P2 cannot measure any of that on its own.** Checking P2_MID against the
+line through P2_IN and P2_OUT returns 0.18 mm, 23× better than the 4.3 mm the
+reference measures on the same events, because **70 % of three-station tracks
+have all three stations reporting the identical pad**. The self-consistency
+residual is the same rounding error three times over. That is the tracking
+version of the 4-point efficiency gap in the handoff's §13.4, and it is much
+bigger.
+
+Report: `report_track.html` —
+[published](https://dylan-neff.web.cern.ch/notes/p2-tracking-vs-reference.html).
+Analysis chain in the table below.
+
+The committed `data/p2_selftrack_*.npz` carries every histogram and map whole
+but a **thinned** per-track sample (`track_stats.py --trim`); the full sample is
+on EOS at `analysis/selftrack/<run>/`. Widths recomputed from the thinned
+sample agree with the full one to 2 %.
+
 ## The runs
 
 The comparison only means anything at a **matched operating point**. Every VMM
@@ -46,11 +77,13 @@ the two extraction steps need lxplus and the raw data.
 | Step | Script | Writes |
 |---|---|---|
 | DREAM per-pad efficiency + spectra (lxplus, LCG_110) | `urw_p2_padadc.py` | `data/dream_padadc_*` |
+| P2 self-tracking vs the reference (lxplus, LCG_110) | `p2_selftrack.py` | `data/p2_selftrack_*` |
 | VMM per-pad ADC, tracked and untracked | `pad_adc.py`, `compare_tracked.py` | `data/pad_adc_*` |
 | Join the two on the pad map | `compare_dream_vmm.py` | `data/compare_dream_vmm_P2_OUT.csv` |
 | Fit the one threshold, cost the fixes | `threshold_model.py` | `data/threshold_model_P2_OUT.json` |
-| Figures | `figures.py`, `figures_p2out.py`, `figures_dv.py`, `figures_slide.py`, `figures_deck.py` | `figures/*.png` |
-| Reports | `make_report.py`, `make_report_dv.py`, `make_report_slide.py`, `make_deck_mockup.py` | `report*.html`, `deck_mockup.html` |
+| Aggregate the self-tracking counts | `track_stats.py` | (in memory) |
+| Figures | `figures.py`, `figures_p2out.py`, `figures_dv.py`, `figures_slide.py`, `figures_deck.py`, `figures_track.py` | `figures/*.png` |
+| Reports | `make_report.py`, `make_report_dv.py`, `make_report_slide.py`, `make_deck_mockup.py`, `make_report_track.py` | `report*.html`, `deck_mockup.html` |
 | Notes for the site | `make_note.py` | `*_note.html` (PNGs inlined as data: URIs) |
 
 `figures/` and `*_note.html` are **not committed** — they are regenerated from
@@ -84,5 +117,11 @@ signal-over-threshold).
   area spans 0.16 % while pulse height spans a factor 2.9, so a regression on
   area is a regression on position in disguise. An earlier version of the
   published note said otherwise and was corrected.
-- P2_MID and P2_IN are **not** in this comparison. Their chips sit at higher
-  `sdt`, and P2_MID has 27 of 64 channels dead on VMM 12.
+- P2_MID and P2_IN are **not** in the VMM/DREAM comparison. Their chips sit at
+  higher `sdt`, and P2_MID has 27 of 64 channels dead on VMM 12. They *are* in
+  the tracking study, which is DREAM-only.
+- **Three sub-runs of `eff_nominal_1` are missing P2 FEUs from
+  `combined_hits_root`** — `eff_nominal_10` and `_15` have no FEU 4 (P2_MID),
+  and `_14` has neither FEU 4 nor FEU 5 (P2_OUT). Not a detector
+  inefficiency: the FEU is absent from the merged file. `p2_selftrack.py`
+  refuses those sub-runs and says so; 14 of 17 are used.

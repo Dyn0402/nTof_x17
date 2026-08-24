@@ -51,6 +51,36 @@ GROUPS = [
           "through them, and what each band actually records &mdash; DREAM "
           "98 &rarr; 92 %, the VMM 93 &rarr; 63 %."),
      ]),
+    ("P2 tracking against the uRWELL reference",
+     "The three P2 stations judged against external reference tracks: what one "
+     "station knows, what the three know together, and why P2 cannot check "
+     "its own tracking. Built by <code>figures_track.py</code> from "
+     "<code>p2_selftrack.py</code>.", [
+         ("track_1_pointing.png",
+          "One station against the reference: a 12 mm box, the same on all "
+          "three, and a two-pad centroid does not improve it."),
+         ("track_2_selftrack.png",
+          "The P2-only track against the reference &mdash; offset at the exit "
+          "plane, angle, and how the error grows with the lever arm. The "
+          "satellites in the angle sit at &plusmn;1 pad over the 620 mm "
+          "between the outer stations."),
+         ("track_3_illusion.png",
+          "The headline: P2_MID checked against the other two P2 stations "
+          "reads more than 20&times; better than the same events checked against the "
+          "reference, because 70 % of the time all three report the identical "
+          "pad."),
+         ("track_4_maps.png",
+          "Efficiency against the reference track, binned in each station's "
+          "own pad frame."),
+         ("track_5_purity.png",
+          "How much of the efficiency is a real hit: the track-to-cluster "
+          "distance per unit area, and the same as efficiency against probe "
+          "radius."),
+         ("track_6_inpad.png",
+          "Every track folded onto the face of the pad it pointed at &mdash; "
+          "efficiency and pulse height across a single pad, and the drop at "
+          "the edge where the avalanche is split between two."),
+     ]),
     ("Backup slides", "Kept off the main line so each slide carries one idea. "
      "Built by <code>figures_slide.py</code>.", [
          ("slide_proof.png",
