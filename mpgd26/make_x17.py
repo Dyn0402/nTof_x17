@@ -95,6 +95,13 @@ LAYOUTS.update(BUILD_LAYOUTS)
 LAYOUTS['detect_solo'] = dict(draw=lambda **kw: X.draw_detect(**kw),
                               name='x17_detect_solo', force_bare=True)
 
+# The Summary slide's figure (2026-08-24): find the two-track events, then
+# histogram their opening angle.  Same palette and the same kinematics as the
+# physics-case beats, which is the point -- the closing figure is the opening
+# one, answered.  Always bare: it sits under the Summary's own title.
+LAYOUTS['outlook'] = dict(draw=lambda **kw: X.draw_outlook(**kw),
+                          name='x17_outlook', force_bare=True)
+
 
 def render(theme='light', title=True, dpi=300, layout='signature',
            capsule=False, tight=False, slides=False):
@@ -149,7 +156,8 @@ def main():
                     choices=['light', 'dark', 'both'])
     ap.add_argument('--layout', default='signature',
                     choices=(['signature', 'story', 'story1', 'story2',
-                              'split', 'beats', 'build', 'detect_solo', 'both']
+                              'split', 'beats', 'build', 'detect_solo',
+                              'outlook', 'both']
                              + sorted(BEAT_LAYOUTS) + sorted(BUILD_LAYOUTS)),
                     help='signature: three panels on one row, the compact '
                          'version. story: five beats over two rows. '
@@ -160,6 +168,8 @@ def main():
                          'top1..top3 / bot1..bot3: the two rows as BUILDS, one '
                          'more beat per frame on the same canvas; build does '
                          'all five frames. '
+                         'outlook: the Summary slide figure -- two-track '
+                         'search + the opening-angle spectrum it produces. '
                          'both: every layout.')
     ap.add_argument('--no-title', dest='title', action='store_false',
                     help='drop the title/caption bands and crop to the diagram')

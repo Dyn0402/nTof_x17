@@ -101,8 +101,12 @@ def draw_waveforms(fig, rect, clusters, fs, ink, muted, grid, cmap):
     for sp in ax.spines.values():
         sp.set_color(grid)
     ax.grid(True, axis='x', color=grid, lw=fs * 0.04, alpha=0.8)
+    # "measured response (det3)" came off 2026-08-20 (Dylan): the slide now
+    # says in HTML that the whole figure is a simulation, and a line claiming a
+    # MEASURED response inside a simulated event is the one thing on it that can
+    # be misread as data.
     ax.text(0.0, 1.012,
-            'each trace = one strip  ·  measured response (det3)',
+            'each trace = one strip',
             transform=ax.transAxes, ha='left', va='bottom',
             fontsize=fs * 0.74, color=ink, **A.FONT)
     return True
@@ -170,7 +174,7 @@ def compose(png, clusters, hits, out_base, theme, angle, dpi=300,
         # not ``foot`` -- getting that wrong pushes the block down onto the track.
         ax.text(0.030 * W, head + 0.030 * h,
                 f'{T.DRIFT_MM:.0f} mm gap  ·  {T.E_DRIFT_V_CM:.0f} V/cm\n'
-                f'v = {T.V_DRIFT_UM_NS:.1f} µm/ns (measured)\n'
+                f'v = {T.V_DRIFT_UM_NS:.1f} µm/ns\n'
                 f'{T.drift_time_ns(T.DRIFT_MM):.0f} ns full transit',
                 ha='left', va='top', fontsize=fs * 0.90, color=muted,
                 linespacing=1.7, **A.FONT)

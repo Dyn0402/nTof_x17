@@ -133,6 +133,10 @@ def main(argv=None) -> int:
     ap.add_argument('--no-tflash-crosscheck', action='store_true',
                     help='skip reading the processed file; back-solve tflash '
                          'from the slim alone (needs a hit per det and bunch)')
+    ap.add_argument('--tflash-fallback-on-incomplete', action='store_true',
+                    help='if the processed n_TOF set is an incomplete partial '
+                         'set, degrade to the slim-only back-solve instead of '
+                         'failing the run (recorded in the provenance)')
     ap.add_argument('--max-files', type=int, help='stop after N raw files (dev)')
     ap.add_argument('--bunches', help='restrict to these bunches: a comma list '
                                       'or a file of one per line. For targeted '
@@ -163,10 +167,26 @@ def main(argv=None) -> int:
                 library='np')
 
         tf_slim = W.tflash_from_slim(hits, ev, a.control_shift_ns)
-        if a.no_tflash_crosscheck:
+        skip_crosscheck, why = a.no_tflash_crosscheck, 'asked for'
+        if not skip_crosscheck and a.tflash_fallback_on_incomplete:
+            # `config.ntof_files` refuses an incomplete partial set outright
+            # (never merge partials). That guard is right and stays: the point
+            # here is only that it should cost the run its CROSS-CHECK, not its
+            # waveforms -- the slim's own back-solve is an independent and
+            # sufficient source of tflash. Measured on 224667 (17 of 41
+            # partials), which otherwise failed the whole run at exit 1.
+            try:
+                W.check_processed_available(a.ntof_run, a.ntof_source)
+            except FileNotFoundError as e:
+                skip_crosscheck, why = True, str(e).strip()
+                log(f'  WARNING: no cross-check for {a.ntof_run}: {why}')
+                log(f'           tflash comes from the slim back-solve alone; '
+                    f'recorded as tflash_crosscheck_skipped in the provenance')
+        if skip_crosscheck:
             table = {k: (v, 1) for k, (v, _n, _s) in tf_slim.items()}
             report = {'n_processed': 0, 'n_slim_only': len(table),
-                      'n_cross_checked': 0, 'n_total': len(table)}
+                      'n_cross_checked': 0, 'n_total': len(table),
+                      'tflash_crosscheck_skipped': why}
         else:
             # Cross-check on a SAMPLE, then keep the slim's own values for
             # everything. Reading every bunch of all twelve trees costs ~15 min
@@ -296,7 +316,8 @@ def main(argv=None) -> int:
         'coverage': coverage,
         'scan': {k: getattr(stats, k) for k in
                  ('events', 'banks_seen', 'banks_read', 'blocks_seen',
-                  'blocks_kept', 'samples_kept', 'bytes_read')},
+                  'blocks_kept', 'blocks_short', 'samples_kept',
+                  'bytes_read')},
         'runtime_s': round(time.time() - t_start, 1),
         'produced': time.strftime('%Y-%m-%dT%H:%M:%S'),
     }

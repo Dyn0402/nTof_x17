@@ -85,7 +85,7 @@ C_SPS = P.COPPER
 # Body text is wrapped to the column at draw time (WRAP_CHARS), so write it as
 # one paragraph and do not hand-break it.
 CAMPAIGNS = [
-    (D(2025, 11, 27), D(2025, 12, 5), C_EAR2, 'n_TOF EAR2', 'First exposure',
+    (D(2025, 11, 27), D(2025, 12, 5), C_EAR2, 'n_TOF EAR2', 'First test',
      'Two prototype chambers and a SiPM wall on DREAM, '
      '86 runs. Read-out timed into the flash — and '
      'blinded by it; SiPM channels take ~10 ms to recover.'),

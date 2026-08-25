@@ -132,13 +132,27 @@ def microtpc_cmap(theme='light'):
     stacked waveforms on the right and the colour bar under them all encode the
     same drift time, and darkening only the panel that was complained about
     would put two colour scales for one quantity on one slide.
+
+    2026-08-20, Dylan: "still don't love the strip colour scheme.  Need to keep
+    it all dark to show up on a projector, but maybe try something else that has
+    a bit more colour variation?".  Truncated plasma is dark enough, but it is
+    only ONE hue move -- navy to plum -- so twenty overlaid traces read as
+    twenty shades of the same colour and the depth ordering rests almost
+    entirely on lightness, which is the channel a projector crushes first.  The
+    light theme now sets its own five stops, green -> teal -> blue -> violet ->
+    deep crimson: four hue moves instead of one, with every stop under 0.17
+    relative luminance, i.e. the whole scale darker than the old one's hot end
+    was.  The dark theme is unchanged -- it never had the problem.
     """
     from matplotlib.colors import LinearSegmentedColormap
     import matplotlib.pyplot as _plt
-    lo, hi = (0.0, 0.45) if theme == 'light' else (0.14, 1.0)
+    if theme == 'light':
+        return LinearSegmentedColormap.from_list(
+            'microtpc_light',
+            ['#1a6b3a', '#0e7a72', '#1c4f9e', '#5a2f96', '#a11d3f'])
     base = _plt.get_cmap('plasma')
     return LinearSegmentedColormap.from_list(
-        f'microtpc_{theme}', base(np.linspace(lo, hi, 256)))
+        'microtpc_dark', base(np.linspace(0.14, 1.0, 256)))
 
 
 def mat(name, color=None, **over):

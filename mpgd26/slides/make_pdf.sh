@@ -35,7 +35,11 @@ for i, sec in enumerate(sections, start=1):
     doc = (head
            + f'<style>.deck{{counter-reset:slide {s_no if cont else s_no - 1};}}</style>\n'
            + '<div class="stage"><div class="deck">\n' + sec + '\n</div></div>')
-    with open(f'{work}/slide_{i:02d}.html', 'w') as f:
+    # 3 digits, not 2: past 99 sections (crossed 2026-08-23, adding the
+    # section-transition dividers), slide_100.html sorted lexicographically
+    # BEFORE slide_11.html..slide_99.html in the shell glob below, and
+    # pdfunite merged the pages in that scrambled order with no error.
+    with open(f'{work}/slide_{i:03d}.html', 'w') as f:
         f.write(doc)
 print(f'{len(sections)} slides', file=sys.stderr)
 PYEOF

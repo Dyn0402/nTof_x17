@@ -652,6 +652,7 @@ def _panel_signature(fig, ax, P, halo):
     px.set_ylim(0, 1.20)
     px.set_xticks([0, 45, 90, 135, 180])
     px.set_yticks([])
+    px.set_yticks([], minor=True)
     px.set_xlabel('e$^{+}$e$^{-}$ opening angle  (deg)', fontsize=8.8,
                   color=P['muted'], labelpad=3, **FONT)
     px.set_ylabel('yield  (arb.)', fontsize=8.8, color=P['muted'], labelpad=4,
@@ -878,8 +879,8 @@ def draw_beat(beat, theme='light', dpi=300, capsule=False):
     return fig
 
 
-def _head(ax, x, y, text, P):
-    ax.text(x, y, text, fontsize=10.5, fontweight='bold', color=P['ink'],
+def _head(ax, x, y, text, P, fontsize=10.5):
+    ax.text(x, y, text, fontsize=fontsize, fontweight='bold', color=P['ink'],
             ha='left', va='center', **FONT)
 
 
@@ -917,11 +918,24 @@ DETECT_W, DETECT_H = 142.0, 47.0
 DETECT_OPENING_DEG = 110.0      # the X17 kinematic minimum, drawn true
 
 # geometry of one drawn chamber, in canvas units along its own leg
-_ARM = 24.0                     # vertex -> near face of the drift volume
-_GAP = 13.0                     # drawn drift volume (the real 30 mm)
-_BOARD = 3.0                    # readout board
-_FACE = 34.0                    # how much of the 400 mm plane is drawn
-_TILT = 21.0                    # track's angle of incidence on the chamber
+# Re-proportioned 2026-08-20 with the 90 deg station: at 10 deg incidence the
+# drift lines are nearly parallel to the track, so the only thing that separates
+# them on the page is the DEPTH they start at -- the gap therefore has to read
+# as a gap.  Deeper gap, narrower drawn face, thinner board.
+_ARM = 20.0                     # vertex -> near face of the drift volume
+_GAP = 20.0                     # drawn drift volume (the real 30 mm)
+_BOARD = 2.4                    # readout board
+_FACE = 26.0                    # how much of the 400 mm plane is drawn
+# The two drawn chambers are at 90 deg TO EACH OTHER (2026-08-20, Dylan), which
+# is the real station: the four arms sit on the four sides of the beam, so any
+# two adjacent ones subtend a right angle.  That fixes this number rather than
+# leaving it a drawing choice -- with the legs 110 deg apart, the readout planes
+# are 110 - 2*_TILT apart, so _TILT = 10 deg and nothing else.  The honest
+# consequence, and it is worth saying out loud in the room: a pair at the
+# kinematic MINIMUM arrives within 10 deg of normal on both chambers, which is
+# the shallowest ladder a micro-TPC ever has to read.  Wider pairs (the spectrum
+# runs to 180 deg) land much more obliquely.
+_TILT = 10.0                    # track's angle of incidence on the chamber
 
 
 def _utpc_arm(ax, vertex, ang_deg, colour, P, halo, flip=False, scale=1.0):
@@ -967,21 +981,59 @@ def _utpc_arm(ax, vertex, ang_deg, colour, P, halo, flip=False, scale=1.0):
                      c + m * _GAP / 2 + p * _FACE / 2])
     ax.plot(mesh[:, 0], mesh[:, 1], color=S.COL['mesh'], lw=1.4, zorder=5)
 
-    # the lepton, straight along its own direction, in and out of the gas
+    # THE LEPTON, in three pieces (2026-08-20, Dylan: "make the track line in
+    # the drift volume semi transparent and put in some mock primary production
+    # as visually appealing clusters").  Outside the gas it is the particle and
+    # is drawn as one; INSIDE the gas the thing that matters is not the line, it
+    # is the ionisation the line leaves, so the line goes to 30 % and the
+    # clusters carry the eye.  Drawn as one opaque arrow the way it was, the
+    # clusters read as decoration ON the track instead of as the measurement.
+    s_in = -(_GAP / 2) / np.cos(tilt)               # leg parameter, from c
+    s_out = +(_GAP / 2) / np.cos(tilt)
     reach = (_GAP / 2 + _BOARD + 5.0 * scale) / np.cos(tilt)
-    arrow(ax, o + u * 5.5 * scale, c + u * reach, colour, lw=2.0 * scale ** 0.5,
+    lw = 2.0 * scale ** 0.5
+    ax.plot(*np.array([o + u * 5.5 * scale, c + u * s_in]).T, color=colour,
+            lw=lw, solid_capstyle='round', zorder=7)
+    ax.plot(*np.array([c + u * s_in, c + u * s_out]).T, color=colour,
+            lw=lw, alpha=0.30, solid_capstyle='round', zorder=7)
+    arrow(ax, c + u * s_out, c + u * reach, colour, lw=lw,
           ms=13 * scale ** 0.5, zorder=7)
 
-    # the ionisation it leaves in the gas, and its drift to the mesh.  The
-    # drift is along the chamber normal; the track is not -- that difference IS
-    # the depth-versus-position ladder the fit reads.
-    for f in np.linspace(-0.40, 0.40, 6):
-        q = c + u * (f * _GAP / np.cos(tilt))
+    # THE PRIMARY IONISATION: discrete clusters, because that is what it is --
+    # ~30 per cm in Ar/isobutane, each a handful of electrons freed at one
+    # point, NOT a uniform line of charge.  Placed from a fixed seed (the arm's
+    # own, so the two arms differ and neither moves between rebuilds).
+    #
+    # Each cluster then drifts along the chamber NORMAL, while the track is not
+    # along it -- that difference is the depth-versus-position ladder the fit
+    # reads, and at the 10 deg incidence this station's minimum-angle pairs
+    # arrive at, it is a SHORT ladder.  The drawing says so honestly.
+    rng = np.random.default_rng(int(round(ang_deg)) % 360 + 17)
+    n_cl = 6
+    for i in range(n_cl):
+        f = (i + 0.5) / n_cl + float(rng.uniform(-0.06, 0.06))
+        q = c + u * (s_in + f * (s_out - s_in))
         depth = _GAP / 2 - float(np.dot(q - c, m))      # distance to the mesh
-        ax.plot(*np.array([q, q + m * depth]).T, color=S.COL['gas'], lw=1.0,
-                alpha=0.95, zorder=4)
-        ax.plot([q[0]], [q[1]], marker='o', ms=2.8 * scale ** 0.5,
-                color='#e0a52f', mec='none', zorder=6)
+        # the drift, from the cluster to the mesh, with a head on it: at this
+        # incidence the six lines are nearly parallel and land within a couple
+        # of strips of each other, so what separates them is their LENGTH, and
+        # a line with a direction reads as a journey where a bare one does not
+        ax.add_patch(FancyArrowPatch(
+            tuple(q), tuple(q + m * depth), arrowstyle='-|>',
+            mutation_scale=8.5 * scale ** 0.5, lw=1.15 * scale ** 0.5,
+            color=S.COL['gas'], alpha=0.9, zorder=4,
+            shrinkA=0, shrinkB=0))
+        # ...and the cluster itself: a few electrons, sizes and offsets jittered
+        n_e = int(rng.integers(3, 6))
+        sig = 0.55 * scale
+        for j in range(n_e):
+            d = rng.normal(0.0, sig, 2)
+            ax.plot([q[0] + d[0]], [q[1] + d[1]], marker='o',
+                    ms=(2.2 + 2.0 * rng.random()) * scale ** 0.5,
+                    color='#e0a52f', mec='none', alpha=0.95, zorder=6)
+        # a soft halo, so a cluster reads as a clump and not as three dots
+        ax.plot([q[0]], [q[1]], marker='o', ms=8.6 * scale ** 0.5,
+                color='#e0a52f', mec='none', alpha=0.20, zorder=5)
     return u, m, p, c
 
 
@@ -1253,8 +1305,11 @@ def _story_levels(ax, P, halo):
     ax.text(lxc + 3.6, y_lo - 4.0, '$^{4}$He', fontsize=9.5,
             fontweight='bold', color=P['ink'], ha='left', va='center', **FONT)
 
+    # ONE head, at the bottom (2026-08-20, Dylan).  The double head read as
+    # "the gap is 20.58 MeV", which is true but is not what this beat is about:
+    # the nucleus DROPS, and the three channels underneath are the ways it can.
     arrow(ax, (lx0 + 2.0, y_hi - 0.6), (lx0 + 2.0, y_lo + 0.6), P['ink'],
-          lw=1.5, style='<|-|>', ms=10, zorder=5)
+          lw=1.5, style='-|>', ms=10, zorder=5)
     ax.text(lx0 + 3.4, (y_hi + y_lo) / 2, '20.58\nMeV', fontsize=10.0,
             fontweight='bold', color=P['ink'], ha='left', va='center',
             linespacing=1.35, path_effects=halo, zorder=6, **FONT)
@@ -1541,7 +1596,11 @@ DETECT_INSET_SCALE = 0.87
 
 def _story_detect(ax, P, halo):
     x0, x1 = S_D
-    _head(ax, x0, S_HEAD2, '4.  ...and this is what measures it', P)
+    # "6." and not "4." (2026-08-20, Dylan).  The cartoon stands in beat 4's
+    # BOX -- the box is where the layout has room -- but it is not beat 4; it is
+    # the beat after the spectrum, the answer to the question beat 5 has just
+    # asked.  Numbering it 4 told the room to read it before the spectrum.
+    _head(ax, x0, S_HEAD2, '6.  Measure it with a µTPC Micromegas', P)
 
     sc = DETECT_INSET_SCALE
     vx, vy = (x0 + x1) / 2.0 + 2.0, 15.0
@@ -1643,6 +1702,7 @@ def _story_measure(fig, ax, P, halo, y0=0.0, y1=136.0, x0f=0.0, x1f=SW):
     px.set_ylim(0, 1.16 * tot[win].max())
     px.set_xticks([45, 90, 135, 180])
     px.set_yticks([])
+    px.set_yticks([], minor=True)
     px.set_xlabel('e$^{+}$e$^{-}$ opening angle  (deg)', fontsize=9.0,
                   color=P['muted'], labelpad=2, **FONT)
     px.set_ylabel('yield  (arb.)', fontsize=9.0, color=P['muted'], labelpad=3,
@@ -1690,3 +1750,573 @@ def _footer(ax, P):
             ha='left', va='center', linespacing=1.7, **FONT)
     ax.text(152, 5.2, SOURCES, fontsize=7.6, color=P['muted'], ha='right',
             va='center', linespacing=1.7, **FONT)
+
+
+# --------------------------------------------------------------------------- #
+# The outlook figure: where the analysis goes from here (added 2026-08-24)
+# --------------------------------------------------------------------------- #
+# Dylan, for the Summary slide: "show that our plan is to look for 2 track
+# events and try to build an opening angle distribution ... some top down image
+# implying search for 2 track events, then an arrow to a cartoonish opening
+# angle spectrum".
+#
+# It is two panels and one arrow: FIND the pairs (the station seen from above,
+# with the two topologies a pair can have) -> HISTOGRAM the angle (what that
+# spectrum will look like, feature by feature).  The whole detector half of the
+# talk exists to make the right-hand panel measurable, so this is the one figure
+# that says what the talk was for.
+#
+# WHAT IS COMPUTED AND WHAT IS DRAWN.  This matters, because the panel looks
+# like a prediction and is only partly one:
+#
+#   computed  the station acceptance -- which pairs land in one chamber, which
+#             in two, and which are too close together to resolve.  Straight
+#             ray tracing on the as-built geometry (``pair_acceptance``).
+#   computed  both channel shapes, from the MX17_Simulation generators, exactly
+#             as in beat 5 (``modelled_shapes``).
+#   DRAWN     the X17 yield.  Its size relative to the background is what the
+#             experiment is trying to measure, so it is a declared, legible
+#             fraction (``OUTLOOK_SIG_FRAC``) and is labelled on the panel as
+#             one -- the same discipline SIG_FRAC follows in beat 5.
+#   DRAWN     the two-track separation the reconstruction needs (12 mm, from
+#             MULTITRACK_2026-08-12.md's merged-cluster limit) -- an estimate
+#             from the single-track fit, not a measured two-track efficiency.
+#
+# The left panel is NOT a cartoon: the four chambers, their 204 mm standoff and
+# their 399 x 360 mm active area are drawn to scale in the plane, so the angles
+# a pair subtends at the station can be read off it.  Only the capsule (drawn
+# at its true 23 mm, which is nearly a point here) and the tracks' thickness
+# are indicative.
+
+# The station, from MX17_Full_Geant/scripts/plot_geometry.py -- the same module
+# scenes_ntof.py imports rather than re-typing.  Typed out here because this
+# module is deliberately matplotlib-only and standalone (it is a diagram, not a
+# render) and must not pull in PyVista or the Geant4 checkout to draw a figure.
+# Keep in step with plot_geometry: ARM_DEF ff_struct (20.4 cm), HW_U['mm']
+# (19.95 cm), HW_V['mm'] (18.0 cm), PINWHEEL (1.55-1.73 cm), t_MM (3.0 cm).
+STATION = dict(
+    standoff=204.0,     # capsule -> drift-volume front face, mm
+    gap=30.0,           # drift depth
+    board=8.0,          # readout board, drawn thickness
+    half_u=199.5,       # active half-width across the chamber
+    half_v=180.0,       # active half-height along the beam
+    pinwheel=16.0,      # tangential shift of the active area (15.5-17.3 real)
+    n_arms=4,
+    merge_mm=12.0,      # below this the two tracks fit as one cluster
+)
+# Arm normals and in-plane u axes in the simulation frame (beam along +Y, so a
+# plan view is the X-Z plane).  Order and letters as plot_geometry.ARM_DEF:
+# 0 = D (+X), 1 = B (-X), 2 = A (+Z), 3 = C (-Z).
+ARM_N = np.array([[1, 0, 0], [-1, 0, 0], [0, 0, 1], [0, 0, -1]], float)
+ARM_U = np.array([[0, 0, -1], [0, 0, 1], [1, 0, 0], [-1, 0, 0]], float)
+ARM_LETTER = ('D', 'B', 'A', 'C')
+
+ACC_N, ACC_SEED = 40_000, 20260824
+
+
+def _arm_hit(d, plane=None):
+    """Which arm each direction ``d`` (n x 3, unit) enters, and where.
+
+    Returns ``(arm, u, v)`` with ``arm = -1`` for a direction that misses every
+    chamber, and ``(u, v)`` the position in that chamber's own active-area
+    frame [mm].  ``plane`` is the distance at which to evaluate the crossing;
+    it defaults to the front face of the drift volume.
+    """
+    plane = STATION['standoff'] if plane is None else plane
+    n = len(d)
+    arm = np.full(n, -1)
+    uu = np.zeros(n)
+    vv = np.zeros(n)
+    for k in range(STATION['n_arms']):
+        c = d @ ARM_N[k]
+        ok = c > 1e-9
+        t = np.where(ok, plane / np.where(ok, c, 1.0), 0.0)
+        p = d * t[:, None]
+        u = p @ ARM_U[k] + STATION['pinwheel']
+        v = p[:, 1]
+        # tested against the FRONT face, so a track is accepted on the volume
+        # it enters and keeps that identity all the way to the board
+        good = ok & (np.abs(u) <= STATION['half_u']) & (np.abs(v) <= STATION['half_v'])
+        arm = np.where(good, k, arm)
+        uu = np.where(good, u, uu)
+        vv = np.where(good, v, vv)
+    return arm, uu, vv
+
+
+def pair_acceptance(theta_deg=None, n=ACC_N, seed=ACC_SEED):
+    """Where a pair of a given opening angle lands, by ray tracing the station.
+
+    A pair leaves the capsule with its first leg isotropic and its second at
+    ``theta`` to it about a uniformly random azimuth, which is what an
+    unpolarised two-body decay does.  Each leg is followed to the four
+    chambers, and the pair is classified:
+
+      ``merged``  both legs in the same chamber, closer than ``merge_mm`` where
+                  they enter the gas -- one cluster, not two.  This is the
+                  low-angle cutoff, and the geometry puts it at ~3 deg: the
+                  chambers stand 204 mm off, so a pair separates fast.
+      ``same``    both legs in the same chamber, resolvable.  Dies out by
+                  ~95 deg -- one chamber only subtends so much.
+      ``two``     the legs in two DIFFERENT chambers.  Rises with the opening
+                  angle and is the ONLY channel left above ~100 deg, which is
+                  exactly the range the X17 hypothesis lives in.
+
+    Returns ``(theta, merged, same, two)`` as fractions of all pairs emitted.
+    Cached under ``.cache/`` like ``modelled_shapes``.
+    """
+    if theta_deg is None:
+        theta_deg = np.concatenate([np.arange(0.25, 10.0, 0.25),
+                                    np.arange(10.0, 180.01, 1.0)])
+    theta_deg = np.asarray(theta_deg, float)
+    tag = (f'acc_n{n}_s{seed}_t{len(theta_deg)}_'
+           f'{STATION["standoff"]:.0f}_{STATION["half_u"]:.0f}_'
+           f'{STATION["half_v"]:.0f}_{STATION["merge_mm"]:.0f}.npz')
+    path = os.path.join(CACHE, tag)
+    if os.path.exists(path):
+        z = np.load(path)
+        return z['theta'], z['merged'], z['same'], z['two']
+
+    rng = np.random.default_rng(seed)
+    merged = np.empty_like(theta_deg)
+    same = np.empty_like(theta_deg)
+    two = np.empty_like(theta_deg)
+    for i, t in enumerate(theta_deg):
+        cz = rng.uniform(-1.0, 1.0, n)
+        ph = rng.uniform(0.0, 2 * np.pi, n)
+        sz = np.sqrt(1.0 - cz * cz)
+        d1 = np.stack([sz * np.cos(ph), sz * np.sin(ph), cz], axis=1)
+        # an orthonormal pair spanning the plane perpendicular to d1, then the
+        # second leg at theta about a random azimuth in it
+        a = np.tile(np.array([0.0, 0.0, 1.0]), (n, 1))
+        a[np.abs(d1[:, 2]) > 0.9] = (1.0, 0.0, 0.0)
+        e1 = np.cross(d1, a)
+        e1 /= np.linalg.norm(e1, axis=1)[:, None]
+        e2 = np.cross(d1, e1)
+        psi = rng.uniform(0.0, 2 * np.pi, n)
+        th = np.radians(t)
+        d2 = (np.cos(th) * d1
+              + np.sin(th) * (np.cos(psi)[:, None] * e1
+                              + np.sin(psi)[:, None] * e2))
+
+        a1, u1, v1 = _arm_hit(d1)
+        a2, u2, v2 = _arm_hit(d2)
+        both = (a1 >= 0) & (a2 >= 0)
+        s = both & (a1 == a2)
+        m = s & (np.hypot(u1 - u2, v1 - v2) < STATION['merge_mm'])
+        merged[i] = m.mean()
+        same[i] = (s & ~m).mean()
+        two[i] = (both & (a1 != a2)).mean()
+
+    os.makedirs(CACHE, exist_ok=True)
+    np.savez_compressed(path, theta=theta_deg, merged=merged, same=same,
+                        two=two)
+    return theta_deg, merged, same, two
+
+
+# The X17 yield drawn on the two-chamber background, as a fraction of it above
+# the kinematic threshold.  Not a prediction -- the relative rate is the
+# measurement -- and stated as such on the panel.  0.30 puts a bump the back of
+# a room can see on a log axis without swamping the tail it sits on; beat 5's
+# SIG_FRAC = 0.04 is the same declaration on a linear axis over a wider window.
+OUTLOOK_SIG_FRAC = 0.30
+
+# The canvas.  Wide and short, because on the Summary slide the figure sits
+# under three one-line bullets and gets a band, not a box -- measured hole
+# ~1600 x 560 px, i.e. 2.9:1.  As everywhere else in this file the drawing is
+# in canvas UNITS and the type in POINTS, so the width is the only lever on how
+# big both come out: 152 units across the slide renders 9 pt type at ~7 pt.
+# The canvas.  Wide and short, because on the Summary slide the figure sits
+# under three one-line bullets and gets a band, not a box -- measured hole
+# ~1600 x 560 px, i.e. 2.9:1.  As everywhere else in this file the drawing is
+# in canvas UNITS and the type in POINTS, so the width is one lever on how big
+# both come out: 152 units across the slide renders 9 pt type at ~7 pt.
+OUTLOOK_W, OUTLOOK_H = 152.0, 63.0
+_OL_PANEL = (2.0, 42.0)         # left panel, x range on the canvas
+_OL_SPEC = (60.0, 150.0)        # spectrum axes, x range
+_OL_HEAD = 58.0                 # both panel headings sit on this line
+
+# ...and the OTHER lever, which is the one that matters in a conference room
+# (2026-08-24, Dylan: "make the text on the figures much larger such that an
+# audience can read").  Narrowing the canvas magnifies the type and the drawing
+# TOGETHER; this magnifies the type alone, which is what was actually wrong --
+# the drawing was already legible from the back and the labels were not.  Every
+# fontsize in the three outlook panels goes through _ofs(), so the whole figure
+# retunes from one number.  1.6 puts the panel headings at ~13.7 pt and the
+# smallest label at ~10 pt as projected, against 8.6 and 6.7 before.
+#
+# Raising it further needs the drawing to give ground: text takes canvas units,
+# and at 1.6 the station panel is already down to sc = 0.079 from 0.088 to keep
+# its labels clear of its chambers.
+OUTLOOK_FS = 1.6
+
+
+# The spectrum panel is the one carrying the argument, and it is read from
+# further back than the drawing beside it, so it gets a second bump ON TOP of
+# OUTLOOK_FS (2026-08-24, Dylan: "for the spectrum on right try to make the text
+# even a bit larger").  Kept as its own number rather than folded into
+# OUTLOOK_FS: raising the global scale would push the station panel's labels
+# back into its chambers, which is the constraint that fixed 1.6 in the first
+# place.  The two panel HEADINGS stay on the global scale -- they are peers and
+# have to match.
+OUTLOOK_FS_SPEC = 1.18
+
+
+def _ofs(pt):
+    """A point size on the outlook canvas, at the figure's own type scale."""
+    return pt * OUTLOOK_FS
+
+
+def _sfs(pt):
+    """A point size inside the spectrum panel, which runs a size larger."""
+    return _ofs(pt) * OUTLOOK_FS_SPEC
+
+
+def _outlook_station(ax, P, halo):
+    """Panel 1: the station from above, and the two topologies a pair can have.
+
+    Drawn to scale in the plane -- 204 mm standoff, 399 mm active width, four
+    arms at 90 deg -- so the opening angles on it are real, and the reason a
+    WIDE pair needs two chambers while a NARROW one lands in a single chamber
+    is visible on the drawing rather than asserted beside it.  That is the
+    whole link between this panel and the two background curves in the next.
+    """
+    x0, x1 = _OL_PANEL
+    _head(ax, x0, _OL_HEAD, '1.  Find the two-track events', P,
+          fontsize=_ofs(10.5))
+
+    cx, cy = 22.0, 28.0
+    sc = 0.083                        # canvas units per mm
+    st = STATION
+    r_gas = st['standoff']
+    r_out = st['standoff'] + st['gap'] + st['board']
+
+    def mm(px_, pz):
+        """simulation (x, z) in mm -> canvas units, seen from ABOVE.
+
+        THE X AXIS IS MIRRORED HERE, and it has to be.  The beam runs along +Y
+        and EAR2's beam line is vertical going UP, so a plan view looks along
+        -Y, i.e. +Y comes out of the page.  In a right-handed frame with +Z up
+        the page that puts +X on the LEFT:
+
+            X = Y x Z = (out of page) x (up the page) = left
+
+        Drawn without the mirror -- which is what this figure did until
+        2026-08-24 -- the picture is the station seen from BELOW, and arms D
+        (+X) and B (-X) come out on the wrong sides.  The pinwheel offsets
+        mirror with the chambers, so the drawn pinwheel is right-handed seen
+        from above, as the station is.
+        """
+        return cx - px_ * sc, cy + pz * sc
+
+    def ray(az_deg, r_mm):
+        """A ray at a CANVAS azimuth: degrees anticlockwise from page-right.
+
+        Deliberately NOT a simulation azimuth.  The tracks are placed by where
+        they should sit in the picture, and routing them through ``mm`` would
+        mean undoing the mirror by hand at every call site.  Which arm each one
+        actually enters is asserted in the comments below, and checked against
+        ``_arm_hit`` (canvas az -> sim az is 180 - az).
+        """
+        a = np.radians(az_deg)
+        return cx + r_mm * sc * np.cos(a), cy + r_mm * sc * np.sin(a)
+
+    # --- the four chambers ------------------------------------------------- #
+    for k in range(st['n_arms']):
+        n2 = np.array([ARM_N[k][0], ARM_N[k][2]])
+        u2 = np.array([ARM_U[k][0], ARM_U[k][2]])
+
+        def quad(w0, w1, n2=n2, u2=u2):
+            pts = []
+            for w, sgn in ((w0, -1), (w0, +1), (w1, +1), (w1, -1)):
+                q = n2 * w + u2 * (sgn * st['half_u'] - st['pinwheel'])
+                pts.append(mm(q[0], q[1]))
+            return pts
+
+        ax.add_patch(plt.Polygon(quad(r_gas, r_gas + st['gap']), closed=True,
+                                 facecolor=S.COL['gas'], alpha=0.22,
+                                 edgecolor=S.COL['gas'], lw=1.0, zorder=2))
+        ax.add_patch(plt.Polygon(quad(r_gas + st['gap'], r_out), closed=True,
+                                 facecolor=S.COL['pcb'], edgecolor='none',
+                                 zorder=3))
+        m0 = n2 * (r_gas + st['gap']) - u2 * st['pinwheel']
+        e = u2 * st['half_u']
+        ax.plot(*np.array([mm(*(m0 - e)), mm(*(m0 + e))]).T,
+                color=S.COL['mesh'], lw=1.1, zorder=4)
+        # the arm letter INSIDE its own gas volume, at the end of the plane:
+        # unambiguous, and it cannot collide with a track leaving the capsule
+        lp = n2 * (r_gas + st['gap'] / 2) + u2 * (0.80 * st['half_u']
+                                                  - st['pinwheel'])
+        ax.text(*mm(lp[0], lp[1]), ARM_LETTER[k], fontsize=_ofs(10.0),
+                fontweight='bold', color=P['muted'], ha='center', va='center',
+                path_effects=halo, zorder=6, **FONT)
+
+    # A scatter of faint grey single tracks used to sit here, standing for the
+    # 41.8 M ordinary events the pair search runs over.  REMOVED 2026-08-24
+    # (Dylan): they were the only thing on this panel that was not one of the
+    # two topologies, they crossed both of them, and the arrow already carries
+    # "41.8 M events" between the panels.  The panel now shows exactly two
+    # things, which is what it is for.
+
+    # --- topology A: both legs in ONE chamber (24 deg, into arm D) ---------- #
+    # Drawn in the IPC orange, which is the same orange the one-chamber curve
+    # is drawn in next door -- the two panels are colour-linked, so neither
+    # needs a sentence pointing at the other.
+    for az in (168.0, 192.0):
+        ax.plot(*np.array([mm(0, 0), ray(az, r_out + 3.0)]).T, color=P['ipc'],
+                lw=2.0, zorder=6, solid_capstyle='round')
+    # ...and name them, small (2026-08-24, Dylan).  Same species and same order
+    # as the wide pair -- e- on the upper leg, e+ on the lower -- so the panel
+    # shows one kind of object in two topologies and not two kinds of event.
+    # They stay in the IPC orange rather than taking the e+/e- colours: the
+    # colour is what links this pair to the one-chamber curve next door.
+    for az, lab, side in ((168.0, 'e$^{-}$', -1.0), (192.0, 'e$^{+}$', +1.0)):
+        a = np.radians(az)
+        # step off the leg along its own normal, so the label clears the line
+        # instead of sitting on it -- 24 deg apart, these two are too close
+        # together for an along-the-ray offset to separate them
+        perp = np.array([-np.sin(a), np.cos(a)]) * side * 2.3
+        px_, py_ = ray(az, 0.60 * r_gas)
+        ax.text(px_ + perp[0], py_ + perp[1], lab, fontsize=_ofs(7.4),
+                fontweight='bold', color=P['ipc'], ha='center', va='center',
+                path_effects=halo, zorder=8, **FONT)
+    # The topology's name goes in the open middle of the upper-left quadrant --
+    # placed on the canvas, not along a ray: the two chambers pin the left and
+    # top edges of that quadrant and the e- label pins its lower right, so the
+    # only clear spot is a box, and a radius-and-angle would have to be retuned
+    # every time the drawing scale moved.
+    ax.text(cx - 10.0, cy + 11.0, 'one\nchamber', fontsize=_ofs(8.6),
+            fontweight='bold', color=P['ipc'], ha='center', va='center',
+            linespacing=1.25, path_effects=halo, zorder=8, **FONT)
+
+    # --- topology B: the legs in TWO chambers (110 deg, into A and B) ------- #
+    # Canvas 70 and -40 deg: both inside their chamber's +-44 deg acceptance,
+    # and 110 apart, which is the kinematic minimum the spectrum marks.  A pair this
+    # wide CANNOT land in one chamber, and the drawing is to scale, so that is
+    # something the audience can check rather than be told.
+    az_e, az_p = 70.0, -40.0
+    ax.plot(*np.array([mm(0, 0), ray(az_e, r_out + 3.0)]).T, color=P['electron'],
+            lw=2.8, zorder=7, solid_capstyle='round')
+    ax.plot(*np.array([mm(0, 0), ray(az_p, r_out + 3.0)]).T, color=P['positron'],
+            lw=2.8, zorder=7, solid_capstyle='round')
+    ax.text(*ray(az_e, 0.82 * r_gas), 'e$^{-}$', fontsize=_ofs(11),
+            fontweight='bold', color=P['electron'], ha='right', va='center',
+            path_effects=halo, zorder=9, **FONT)
+    ax.text(*ray(az_p, 0.82 * r_gas), 'e$^{+}$', fontsize=_ofs(11),
+            fontweight='bold', color=P['positron'], ha='right', va='center',
+            path_effects=halo, zorder=9, **FONT)
+
+    r_arc = 8.0
+    t = np.radians(np.linspace(az_p, az_e, 140))
+    ax.plot(cx + r_arc * np.cos(t), cy + r_arc * np.sin(t), color=P['ink'],
+            lw=1.3, ls='--', alpha=0.8, zorder=8)
+    am = np.radians(0.5 * (az_p + az_e))
+    ax.text(cx + (r_arc + 3.4) * np.cos(am), cy + (r_arc + 3.4) * np.sin(am),
+            'θ', fontsize=_ofs(13.5), fontweight='bold', color=P['ink'],
+            ha='center', va='center', path_effects=halo, zorder=9, **FONT)
+    ax.text(cx + (r_arc + 3.6) * np.cos(am),
+            cy + (r_arc + 3.6) * np.sin(am) - 3.6, 'two\nchambers',
+            fontsize=_ofs(8.6), fontweight='bold', color=P['ink'], ha='center',
+            va='top', linespacing=1.25, path_effects=halo, zorder=9, **FONT)
+
+    # --- the capsule, at its true 23 mm ------------------------------------ #
+    ax.add_patch(Circle((cx, cy), 11.5 * sc, facecolor=P['gamma'],
+                        edgecolor=P['ink'], lw=0.8, zorder=9))
+    ax.text(cx - 1.4, cy - 1.8, '$^{3}$He', fontsize=_ofs(8.2),
+            color=P['muted'], ha='right', va='top', path_effects=halo,
+            zorder=9, **FONT)
+
+
+def _outlook_arrow(ax, P, halo):
+    """The hand-over between the panels: one number, one operation."""
+    xa, xb = 44.5, 55.5
+    y = 28.0
+    arrow(ax, (xa, y), (xb, y), P['ink'], lw=3.0, ms=21, zorder=6)
+    ax.text(0.5 * (xa + xb), y + 3.8, '41.8 M\nevents', fontsize=_ofs(9.0),
+            fontweight='bold', color=P['ink'], ha='center', va='bottom',
+            linespacing=1.3, path_effects=halo, zorder=7, **FONT)
+    ax.text(0.5 * (xa + xb), y - 3.4, 'one angle\nper pair',
+            fontsize=_ofs(8.4), color=P['muted'], ha='center', va='top',
+            linespacing=1.3, zorder=7, **FONT)
+
+
+def _outlook_spectrum(fig, ax, P, halo):
+    """Panel 2: the opening-angle spectrum this search is going to produce.
+
+    RE-EMPHASISED 2026-08-24 (Dylan: "can you outline the full IPC background
+    (any number of detectors hit) as a top layer? Then add the X17 on top ...
+    I like the separation of 1 vs 2 detector IPC background, but the emphasis
+    needs to be done differently").  The first version drew the two topologies
+    as two peers and stacked X17 on the two-chamber one alone, which read as
+    three unrelated curves -- and put the purple line down at zero on the left,
+    where there is no X17 hypothesis at all, only the two-chamber acceptance
+    dying.
+
+    The hierarchy now says what the measurement is:
+
+      ONE background.  The bold orange curve is every accepted IPC pair,
+      whatever it hit, and it is the thing a spectrum from these data would
+      actually contain.  It sits on top, in the sense that it is the sum.
+
+      TWO topologies, underneath and subordinate -- thin, half-strength, the
+      same orange.  They explain the SHAPE of the bold curve (a one-chamber
+      peak that dies by ~95 deg, handing over to a flat two-chamber tail) and
+      they are what makes the flat tail an acceptance statement rather than a
+      coincidence.  They are an explanation of the background, not rivals to it.
+
+      X17 ON TOP OF THAT, and only where it exists: the purple is drawn over
+      the bump alone, so the eye reads "background, plus something above
+      threshold", which is the measurement, instead of "a third curve".
+
+    Neither curve is clamped to the axis floor any more, so the one-chamber
+    topology falls off the bottom of the frame where it dies instead of running
+    along the axis as a flat orange line -- which is what it did, and which
+    read as yield that is not there.
+    """
+    x0, x1 = _OL_SPEC
+    _head(ax, x0 - 3.0, _OL_HEAD, '2.  Histogram the opening angle', P,
+          fontsize=_ofs(10.5))
+
+    th, x17, ipc = modelled_shapes()
+    th_min = opening_angle_pdf()[2]
+    a_th, a_mrg, a_same, a_two = pair_acceptance()
+    f_mrg = np.interp(th, a_th, a_mrg)
+    f_same = np.interp(th, a_th, a_same)
+    f_two = np.interp(th, a_th, a_two)
+
+    one_ch = ipc * f_same
+    two_ch = ipc * f_two
+    total = one_ch + two_ch          # every accepted pair, whatever it hit
+    lost = ipc * f_mrg
+    sig = x17 * f_two
+    hi = th >= th_min
+    # the declared ratio is now against the WHOLE background, not against the
+    # two-chamber part of it -- above threshold they are the same thing to a
+    # per-cent, but the figure should quote the quantity it draws
+    sig *= OUTLOOK_SIG_FRAC * total[hi].sum() / max(sig[hi].sum(), 1e-12)
+    tot_sig = total + sig
+
+    px = fig.add_axes([x0 / OUTLOOK_W, 10.5 / OUTLOOK_H,
+                       (x1 - x0) / OUTLOOK_W, 41.0 / OUTLOOK_H],
+                      facecolor='none')
+    for sp in ('top', 'right'):
+        px.spines[sp].set_visible(False)
+    for sp in ('left', 'bottom'):
+        px.spines[sp].set_color(P['muted'])
+        px.spines[sp].set_linewidth(1.1)
+    px.tick_params(colors=P['muted'], labelsize=_sfs(8.6), width=1.1, length=4)
+    for lab in px.get_xticklabels():
+        lab.set_fontfamily('DejaVu Sans')
+
+    lo, hi_y = 4e-3, 2.2
+    # the cutoff, as a region and not as a line: everything left of it is a
+    # single unresolved cluster, whatever the true angle was
+    px.axvspan(0, 3.2, color=P['muted'], alpha=0.20, lw=0, zorder=1)
+
+    # --- the two topologies, subordinate ----------------------------------- #
+    px.plot(th, one_ch, color=P['ipc'], lw=1.5, alpha=0.55, zorder=3,
+            label='   … both legs in one chamber')
+    px.plot(th, two_ch, color=P['ipc'], lw=1.5, ls='--', alpha=0.55, zorder=3,
+            label='   … legs in two chambers')
+
+    # --- the background, as ONE thing -------------------------------------- #
+    px.fill_between(th, lo, np.maximum(total, lo), color=P['ipc'], alpha=0.13,
+                    lw=0, zorder=2)
+    px.plot(th, total, color=P['ipc'], lw=3.4, zorder=5,
+            label='IPC background, all pairs')
+
+    # --- and X17 on top of it, only where there is any --------------------- #
+    m = sig > 0.02 * sig.max()
+    px.fill_between(th[m], total[m], tot_sig[m], color=P['x17'], alpha=0.42,
+                    lw=0, zorder=6)
+    px.plot(th[m], tot_sig[m], color=P['x17'], lw=3.0, zorder=7,
+            label='+ X17 $\\rightarrow$ e$^{+}$e$^{-}$  (drawn, not predicted)')
+    px.axvline(th_min, color=P['x17'], lw=1.1, ls=':', alpha=0.85, zorder=4)
+
+    px.set_yscale('log')
+    px.set_xlim(0, 180)
+    px.set_ylim(lo, hi_y)
+    px.set_xticks([0, 45, 90, 135, 180])
+    px.set_yticks([])
+    px.set_yticks([], minor=True)
+    px.set_xlabel('e$^{+}$e$^{-}$ opening angle  (deg)', fontsize=_sfs(9.4),
+                  color=P['muted'], labelpad=3, **FONT)
+    px.set_ylabel('pairs  (log, arb.)', fontsize=_sfs(9.4), color=P['muted'],
+                  labelpad=5, **FONT)
+    # upper right: the only corner with room once the one-chamber peak takes
+    # the top left and the bump annotation takes the bottom right
+    # ORDER IS THE ARGUMENT: the background first, its two topologies indented
+    # under it, X17 last -- matplotlib would otherwise list them in plot order,
+    # which puts the subordinate curves above the thing they are a breakdown of
+    h, l = px.get_legend_handles_labels()
+    order = [2, 0, 1, 3]
+    # OPAQUE, and in the page colour rather than transparent (2026-08-24,
+    # Dylan): the theta_min guide line runs the full height of the axes and was
+    # showing through the legend text.  facecolor follows the theme, so this is
+    # still right on the dark render.
+    leg = px.legend([h[i] for i in order], [l[i] for i in order],
+                    loc='upper right', bbox_to_anchor=(1.03, 1.04),
+                    frameon=True, facecolor=P['page'], edgecolor='none',
+                    framealpha=1.0, borderpad=0.5,
+                    fontsize=_sfs(8.0), handlelength=1.9, labelspacing=0.42)
+    leg.set_zorder(10)          # above the guide line it is there to cover
+    for t_ in leg.get_texts():
+        t_.set_color(P['muted'])
+        t_.set_fontfamily('DejaVu Sans')
+    leg.get_texts()[0].set_color(P['ink'])          # the background line
+    leg.get_texts()[3].set_color(P['x17'])          # the X17 line
+
+    # THE SKETCH MARK (2026-08-24, Dylan: "put some kind of cartoonish question
+    # mark or something above the X17 peak to make clear this is just a sketch,
+    # not to be misinterpreted as a measurement").  Everything else on this
+    # panel is computed; the bump is the one thing that is drawn, and a legend
+    # entry reading "(drawn, not predicted)" is not what a room looks at.  A big
+    # tilted "?" sitting over the peak is, and it cannot be mistaken for data.
+    # Placed off the ACTUAL apex of the drawn curve rather than a typed angle,
+    # so it follows the bump if the kinematics or the acceptance ever move.
+    # It sits close over the bump (2026-08-24, Dylan) -- far enough up to clear
+    # the curve, near enough that it reads as a mark ON that peak and not as a
+    # floating glyph.  The word "sketch" under it came off in the same edit: the
+    # "?" does the work, and a second label was reading as a data point.
+    apex = np.argmax(np.where(m, tot_sig, -np.inf))
+    px.text(th[apex], tot_sig[apex] * 1.55, '?', fontsize=_sfs(19),
+            fontweight='bold', color=P['x17'], ha='center', va='center',
+            rotation=-11, alpha=0.92, path_effects=halo, zorder=9, **FONT)
+
+    note = dict(ha='center', va='center', zorder=9, path_effects=halo, **FONT)
+    px.annotate('below ~3° the two tracks\nare one cluster',
+                xy=(3.6, 0.62), xytext=(30.0, 1.5), color=P['muted'],
+                fontsize=_sfs(8.4), linespacing=1.3,
+                arrowprops=dict(arrowstyle='-|>', color=P['muted'], lw=1.2,
+                                shrinkA=3, shrinkB=3), **note)
+    # the empty quadrant: under the flat tail, right of threshold
+    px.annotate('an excess here is\nthe whole measurement',
+                xy=(112.0, 0.058), xytext=(141.0, 0.0105), color=P['x17'],
+                fontsize=_sfs(8.6), fontweight='bold', linespacing=1.3,
+                arrowprops=dict(arrowstyle='-|>', color=P['x17'], lw=1.3,
+                                shrinkA=3, shrinkB=3), **note)
+    px.text(th_min - 3.0, 4.8e-3, 'θ$_{min}$ = %.0f°' % th_min,
+            fontsize=_sfs(8.4), fontweight='bold', color=P['x17'], ha='right',
+            va='bottom', path_effects=halo, zorder=9, **FONT)
+
+
+def draw_outlook(theme='light', dpi=300, title=False):
+    """The Summary slide's figure: find the pairs, then histogram the angle.
+
+    ``title`` is accepted and ignored -- this only ever sits under a slide that
+    has one.
+    """
+    P = palette(theme)
+    plt.rcParams['mathtext.fontset'] = 'dejavusans'
+    fig = plt.figure(figsize=(OUTLOOK_W / 10.0, OUTLOOK_H / 10.0), dpi=dpi,
+                     facecolor=P['page'])
+    ax = fig.add_axes([0, 0, 1, 1], facecolor='none')
+    ax.set_xlim(0, OUTLOOK_W)
+    ax.set_ylim(0, OUTLOOK_H)
+    ax.set_aspect('equal')
+    ax.axis('off')
+    halo = [pe.withStroke(linewidth=2.6, foreground=P['halo'], alpha=0.9)]
+
+    _outlook_station(ax, P, halo)
+    _outlook_arrow(ax, P, halo)
+    _outlook_spectrum(fig, ax, P, halo)
+    return fig

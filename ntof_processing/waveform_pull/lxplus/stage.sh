@@ -29,7 +29,7 @@ rsync -a --delete -e "ssh -K" \
     --include='*/' --include='*.py' --exclude='*' \
     "$REPO/common/" "$HOST:$DIR/common/"
 rsync -a -e "ssh -K" \
-    "$REPO/ntof_processing/waveform_pull/lxplus/"{wrapper.sh,pull.sub,recall.sh,raw_inventory.sh} \
+    "$REPO/ntof_processing/waveform_pull/lxplus/"{wrapper.sh,pull.sub,recall.sh,raw_inventory.sh,campaign.sh} \
     "$HOST:$DIR/"
 ssh -K "$HOST" "chmod +x $DIR/*.sh"
 
@@ -39,10 +39,19 @@ staged. On lxplus:
 
   ssh -K lxplus                     # -K is mandatory: no token, no EOS
   cd $DIR
-  ./raw_inventory.sh runs.txt > inventory.csv          # who needs a recall
-  awk -F, 'NR>1 && \$2==0 {print \$1}' inventory.csv > recall.txt
-  ./recall.sh request recall.txt                      # fire the tape recalls
-  awk -F, 'NR>1 && \$2>0  {print \$1}' inventory.csv > ondisk.txt
   myschedd bump
-  condor_submit pull.sub -a 'runs=ondisk.txt'         # start on what is here
+
+  # The whole campaign, paced against the tape staging lifetime. Recalled files
+  # go offline again in WELL under a day, so recall and read are coupled: the
+  # driver stages a batch, submits it, and pre-stages the next while that reads.
+  ./campaign.sh plan runs.txt              # classify: disk / tape / no-slim
+  nohup ./campaign.sh run > campaign.log 2>&1 &
+  ./campaign.sh status                     # any time, from any session
+
+  # or, by hand, for one batch:
+  ./recall.sh request batch.txt && ./recall.sh check batch.txt
+  condor_submit pull.sub -a 'runs=batch.txt'
+
+  # what actually landed, read from the products and not from the logs:
+  python -m ntof_processing.waveform_pull.fleet_report
 EOF

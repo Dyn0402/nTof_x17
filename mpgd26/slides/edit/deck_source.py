@@ -12,6 +12,14 @@ Editable = an element that carries text and whose element children are all
 inline (b/i/sub/sup/code/span/br/...). That picks up titles, kickers, captions,
 bullets, table cells and stat labels, and skips the layout scaffolding, images
 and bar-chart geometry.
+
+There is a second, wider set: RESIZABLE elements. Text size is not content, it
+is one custom property on the start tag -- style="--fs-scale:.92" -- and it
+inherits, so it can be set on something that is not editable at all: a bullet
+list, a column, a whole <section class="slide">. Those get a `data-fsid` and
+their START TAG is the byte span that a save rewrites. The two kinds of span
+never overlap (an editable's children are all inline; a resizable is never
+inline), which is what lets one save carry both.
 """
 from __future__ import annotations
 
@@ -52,6 +60,14 @@ class Element:
     child_tags: set = field(default_factory=set)
     has_text: bool = False
     depth: int = 0
+
+    @property
+    def resizable(self) -> bool:
+        """Can carry --fs-scale. Wider than `editable`: containers count."""
+        return (self.content_end > self.content_start
+                and self.tag not in VOID and self.tag not in NEVER
+                and self.tag not in INLINE   # would sit inside a content span
+                and self.has_text)
 
     @property
     def editable(self) -> bool:
@@ -143,6 +159,12 @@ class DeckSource:
                           if e.editable and self._in_slide(e)]
         self.editables.sort(key=lambda e: e.content_start)
         self.by_eid = {i: e for i, e in enumerate(self.editables)}
+        # A slide is resizable as a whole (that is the "this one is overfull"
+        # fix), so the containment test here includes the slide itself.
+        self.resizables = [e for e in self.elements
+                           if e.resizable and (e in self.slides or self._in_slide(e))]
+        self.resizables.sort(key=lambda e: (e.tag_start, e.depth))
+        self.by_fsid = {i: e for i, e in enumerate(self.resizables)}
         self.entity_map = entity_preferences(src)
 
     def _in_slide(self, e) -> bool:
@@ -161,26 +183,113 @@ class DeckSource:
         e = self.by_eid[eid]
         return self.src[e.content_start:e.content_end]
 
+    def start_tag(self, fsid: int) -> str:
+        e = self.by_fsid[fsid]
+        return self.src[e.tag_start:e.content_start]
+
+    def scale(self, fsid: int):
+        """The --fs-scale currently written on this element, or None."""
+        m = _SCALE_RE.search(self.start_tag(fsid))
+        return m.group(1).strip() if m else None
+
     def inject_ids(self) -> str:
-        """Return the source with data-eid="N" added to every editable tag."""
+        """Add data-eid to every editable tag and data-fsid to every resizable."""
+        add: dict[int, list[str]] = {}
+        for eid, e in self.by_eid.items():
+            add.setdefault(id(e), []).append(f'data-eid="{eid}"')
+        for fsid, e in self.by_fsid.items():
+            add.setdefault(id(e), []).append(f'data-fsid="{fsid}"')
+        # At the END of the start tag, not after the tag name: `<section
+        # class="slide ...` is a literal that make_pdf.sh and several checks
+        # match on, and it must survive being served.
+        cuts = {}
+        for e in list(self.by_eid.values()) + list(self.by_fsid.values()):
+            cuts[id(e)] = self.src.rindex('>', e.tag_start, e.content_start)
         out = self.src
-        for eid in sorted(self.by_eid, reverse=True):
-            e = self.by_eid[eid]
-            cut = e.tag_start + 1 + len(e.tag)
-            out = out[:cut] + f' data-eid="{eid}"' + out[cut:]
+        for key in sorted(cuts, key=lambda k: cuts[k], reverse=True):
+            cut = cuts[key]
+            out = out[:cut] + ' ' + ' '.join(add[key]) + out[cut:]
         return out
 
-    def apply(self, edits: dict[int, str]) -> str:
-        """Splice new inner HTML into the spans of `edits` (eid -> html)."""
+    def apply(self, edits: dict[int, str] = None,
+              scales: dict[int, object] = None) -> str:
+        """Rewrite the spans named by `edits` (eid -> inner html) and `scales`
+        (fsid -> factor, or None to clear). Every other byte is left alone."""
+        reps = []                       # (start, end, replacement)
+        for eid, frag in (edits or {}).items():
+            e = self.by_eid[int(eid)]
+            was = self.src[e.content_start:e.content_end]
+            keep = frozenset(_STYLE_RE.findall(was))
+            # `.fig-head span`, `.bar-name span` and `.bar-val span` are the
+            # deck's own sub-labels, written as an attribute-free <span>, which
+            # is otherwise exactly what contenteditable leaves behind. Keep them
+            # in the fields that already had one; the page marks the deck's own
+            # so the browser does not strip them either.
+            reps.append((e.content_start, e.content_end,
+                         restore_entities(
+                             sanitize(frag, keep, bool(BARE_SPAN_RE.search(was))),
+                             self.entity_map)))
+        for fsid, k in (scales or {}).items():
+            e = self.by_fsid[int(fsid)]
+            reps.append((e.tag_start, e.content_start,
+                         set_scale(self.src[e.tag_start:e.content_start], k)))
+
+        reps.sort(reverse=True)
+        prev = len(self.src)
+        for start, end, _ in reps:       # a half-written tag is unrecoverable
+            if end > prev:
+                raise ValueError(f'overlapping edit spans at {start}..{end}')
+            prev = start
         out = self.src
-        for eid in sorted(edits, reverse=True):
-            e = self.by_eid[eid]
-            styles = frozenset(_STYLE_RE.findall(
-                self.src[e.content_start:e.content_end]))
-            new = restore_entities(
-                sanitize(edits[eid], styles), self.entity_map)
-            out = out[:e.content_start] + new + out[e.content_end:]
+        for start, end, new in reps:
+            out = out[:start] + new + out[end:]
         return out
+
+
+# --------------------------------------------------------------------------
+# --fs-scale on a start tag
+# --------------------------------------------------------------------------
+
+_SCALE_RE = re.compile(r'--fs-scale\s*:\s*([^;"\']*)')
+_SCALE_DECL_RE = re.compile(r'\s*;?\s*--fs-scale\s*:[^;"]*;?')
+_STYLE_ATTR_RE = re.compile(r'(\s+)style\s*=\s*"([^"]*)"')
+SCALE_MIN, SCALE_MAX = 0.3, 3.0
+
+
+def _clean_scale(k) -> str:
+    """A --fs-scale value is one bounded number. Nothing else is accepted --
+    this string is written straight into a style attribute."""
+    v = float(k)
+    if not (SCALE_MIN <= v <= SCALE_MAX):
+        raise ValueError(f'--fs-scale {v} outside [{SCALE_MIN}, {SCALE_MAX}]')
+    return f'{round(v, 4):g}'
+
+
+def set_scale(tag_text: str, k) -> str:
+    """Return `tag_text` with --fs-scale set to k, or removed when k is None.
+
+    Removing restores the tag byte for byte, including dropping a style
+    attribute that we were the only reason for -- so resetting a size to 1x
+    leaves no trace in the file.
+    """
+    m = _STYLE_ATTR_RE.search(tag_text)
+    if k is None and not (m and _SCALE_RE.search(m.group(2))):
+        return tag_text                       # nothing of ours to take out
+    # Whatever else the style attribute says is left as its author wrote it:
+    # ours is appended as a suffix and removed as a suffix, so setting a size
+    # and resetting it gives the original bytes back.
+    rest = _SCALE_DECL_RE.sub('', m.group(2)).strip() if m else ''
+    if k is None:
+        repl = f'{m.group(1)}style="{rest}"' if rest else ''
+        return tag_text[:m.start()] + repl + tag_text[m.end():]
+
+    val = f'--fs-scale:{_clean_scale(k)}'
+    style = f'{rest}; {val}' if rest else val
+    if m:
+        return tag_text[:m.start()] + f'{m.group(1)}style="{style}"' + tag_text[m.end():]
+    close = tag_text.rstrip()
+    end = len(tag_text) - (len(tag_text) - len(close))
+    return tag_text[:end - 1] + f' style="{style}"' + tag_text[end - 1:]
 
 
 # --------------------------------------------------------------------------
@@ -233,11 +342,12 @@ def restore_entities(text: str, prefs: dict[str, str]) -> str:
 # --------------------------------------------------------------------------
 
 class _Sanitizer(HTMLParser):
-    def __init__(self, keep_styles=frozenset()):
+    def __init__(self, keep_styles=frozenset(), allow_bare_span=False):
         super().__init__(convert_charrefs=False)
         self.out = []
         self.open: list[str | None] = []
         self.keep_styles = keep_styles
+        self.allow_bare_span = allow_bare_span
 
     def handle_starttag(self, tag, attrs):
         tag = TAG_CANON.get(tag, tag)
@@ -257,7 +367,7 @@ class _Sanitizer(HTMLParser):
         style = dict(attrs).get('style')
         if style and style in self.keep_styles:
             keep['style'] = style
-        if tag == 'span' and not keep:
+        if tag == 'span' and not keep and not self.allow_bare_span:
             self.open.append(None)      # bare <span> = contenteditable residue
             return
         s = ''.join(f' {k}="{html.escape(v, quote=True)}"' for k, v in keep.items())
@@ -299,8 +409,11 @@ class _Sanitizer(HTMLParser):
         return ''.join(self.out)
 
 
-def sanitize(fragment: str, keep_styles=frozenset()) -> str:
-    p = _Sanitizer(keep_styles)
+BARE_SPAN_RE = re.compile(r'<span\s*>')
+
+
+def sanitize(fragment: str, keep_styles=frozenset(), allow_bare_span=False) -> str:
+    p = _Sanitizer(keep_styles, allow_bare_span)
     p.feed(fragment)
     p.close()
     return p.result()

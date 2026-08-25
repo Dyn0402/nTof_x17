@@ -8,6 +8,8 @@ Open http://localhost:8017/ — that is the deck exactly as it is on disk, with
 no edit machinery in it. http://localhost:8017/?edit turns every text element
 into a live text field: click a title, a bullet, a caption or a table cell and
 type. Ctrl+S writes back. Ctrl+D shows the diff a save would make, first.
+Alt+Up / Alt+Down resize the text you are in; add Shift and it resizes the list,
+the column or the whole slide around it.
 
 The file on disk is never touched by a GET, only by an explicit save, and every
 save leaves a timestamped copy in slides/edit/.backups/ first. Writes are
@@ -43,6 +45,31 @@ EDIT_CSS = """
   [data-eid]:focus{ outline:none; background:rgba(235,129,27,.07);
                     box-shadow: inset 0 0 0 1.5px var(--accent, #eb811b); border-radius:2px; }
   [data-eid].dirty{ background:rgba(235,129,27,.10); }
+  [data-fsid].fs-dirty{ box-shadow: inset 0 0 0 1px rgba(235,129,27,.55); border-radius:2px; }
+  [data-fsid].fs-preview{ outline:2px dashed rgba(235,129,27,.85); outline-offset:2px; }
+  #edit-size-ui{
+    position:fixed; left:14px; bottom:48px; z-index:9999;
+    display:flex; align-items:center; gap:5px;
+    font:600 11px/1 var(--sans, sans-serif); letter-spacing:.03em;
+    background:#23373b; color:#fff; padding:6px 9px; border-radius:18px;
+    box-shadow:0 2px 10px rgba(0,0,0,.25); user-select:none;
+  }
+  #edit-size-ui button{
+    font:inherit; color:#fff; background:rgba(255,255,255,.14); border:0;
+    border-radius:12px; padding:5px 9px; cursor:pointer;
+  }
+  #edit-size-ui button:hover{ background:rgba(255,255,255,.30); }
+  #edit-size-ui button.on{ background:var(--accent, #eb811b); }
+  #edit-size-ui .tgt{ opacity:.7; min-width:9.5em; }
+  #edit-size-ui .val{ font-weight:800; min-width:3.2em; text-align:center; }
+  #edit-size{
+    position:fixed; left:50%; top:14px; transform:translateX(-50%); z-index:10001;
+    font:700 13px/1.5 var(--sans, sans-serif); letter-spacing:.03em;
+    background:#23373b; color:#fff; padding:6px 14px; border-radius:16px;
+    box-shadow:0 3px 14px rgba(0,0,0,.3); opacity:0; transition:opacity .12s;
+    pointer-events:none; white-space:nowrap;
+  }
+  #edit-size.on{ opacity:1; }
   #edit-badge{
     position:fixed; left:14px; bottom:12px; z-index:9999;
     font:600 12px/1.5 var(--sans, sans-serif); letter-spacing:.04em;
@@ -60,7 +87,7 @@ EDIT_CSS = """
   }
   #edit-diff .add{ color:#7ee0a5; } #edit-diff .del{ color:#ff8f7a; }
   #edit-diff .hdr{ color:#7fb6c4; }
-  @media print{ #edit-badge,#edit-diff{ display:none !important; } }
+  @media print{ #edit-badge,#edit-diff,#edit-size,#edit-size-ui{ display:none !important; } }
 </style>
 """
 
@@ -75,18 +102,122 @@ EDIT_JS = r"""
   const diffbox = document.createElement('div');
   diffbox.id = 'edit-diff';
   document.body.appendChild(diffbox);
+  const sizetip = document.createElement('div');
+  sizetip.id = 'edit-size';
+  document.body.appendChild(sizetip);
 
   document.execCommand('styleWithCSS', false, false);   // emit <b>, not <span style>
 
   const nodes = Array.from(document.querySelectorAll('[data-eid]'));
   const styles = new Map();        // eid -> the inline styles the deck itself uses
   nodes.forEach(el => {
+    // The deck writes its own sub-labels as an attribute-free <span>
+    // (.fig-head span, .bar-name span, .bar-val span) -- which is also exactly
+    // what contenteditable leaves behind after a delete. Mark the ones that
+    // were in the file so normalize() below spares them. The attribute is not
+    // in the server's allow-list, so it never reaches the file.
+    el.querySelectorAll('span:not([class]):not([style])')
+      .forEach(sp => sp.setAttribute('data-deck-span', ''));
     orig.set(el.dataset.eid, el.innerHTML);
     styles.set(el.dataset.eid, new Set(
       Array.from(el.querySelectorAll('[style]')).map(n => n.getAttribute('style'))));
     el.setAttribute('contenteditable', 'true');
     el.spellcheck = true;
   });
+
+  // ---- text size ---------------------------------------------------------
+  // One inherited custom property, --fs-scale, on the element's own start tag.
+  // It works on anything, not just the text fields: the nearest list, column
+  // or <section class="slide"> is what Shift widens the target to, and sizing
+  // a whole slide is the fix for one that overflows.
+  const STEPS = [.6,.65,.7,.75,.8,.85,.9,.95,1,1.05,1.1,1.15,1.2,1.3,1.4,1.5,1.65,1.8,2];
+  const sized = Array.from(document.querySelectorAll('[data-fsid]'));
+  const origScale = new Map();
+  sized.forEach(el => origScale.set(
+    el.dataset.fsid, el.style.getPropertyValue('--fs-scale').trim()));
+
+  function curScale(el){
+    const v = parseFloat(el.style.getPropertyValue('--fs-scale'));
+    return isNaN(v) ? 1 : v;
+  }
+  function putScale(el, v){
+    if (Math.abs(v - 1) < 1e-9) el.style.removeProperty('--fs-scale');
+    else el.style.setProperty('--fs-scale', String(v));
+    if (!el.getAttribute('style')) el.removeAttribute('style');   // leave no trace
+  }
+  // Alt+Shift is the keyboard-layout chord on a lot of Linux desktops and may
+  // never reach the page, so the scope is a visible control first and a key
+  // second: pick text / block / slide once, then +/- or Alt+Up/Down.
+  let scope = 'text';
+  const ui = document.createElement('div');
+  ui.id = 'edit-size-ui';
+  ui.innerHTML = '<span style="opacity:.6">SIZE</span>'
+    + '<button data-scope="text">text</button>'
+    + '<button data-scope="block">block</button>'
+    + '<button data-scope="slide">slide</button>'
+    + '<span class="tgt"></span>'
+    + '<button data-act="-1">&minus;</button>'
+    + '<span class="val"></span>'
+    + '<button data-act="1">+</button>'
+    + '<button data-act="0">reset</button>';
+  document.body.appendChild(ui);
+  // mousedown must not move focus, or the field we are sizing stops being the
+  // target between pressing the button and the click landing.
+  ui.addEventListener('mousedown', e => e.preventDefault());
+  ui.addEventListener('click', e => {
+    const b = e.target.closest('button');
+    if (!b) return;
+    if (b.dataset.scope){ scope = b.dataset.scope; syncUI(); }
+    else resize(parseInt(b.dataset.act, 10), false);
+  });
+  ui.addEventListener('mouseenter', () => {
+    const t = target(); if (t) t.classList.add('fs-preview');
+  });
+  ui.addEventListener('mouseleave', () => {
+    document.querySelectorAll('.fs-preview').forEach(n => n.classList.remove('fs-preview'));
+  });
+
+  function syncUI(){
+    const t = target();
+    ui.querySelectorAll('[data-scope]').forEach(
+      b => b.classList.toggle('on', b.dataset.scope === scope));
+    ui.querySelector('.tgt').textContent = t ? label(t) : '—';
+    ui.querySelector('.val').textContent = t ? curScale(t).toFixed(2) + '\u00d7' : '';
+  }
+
+  function label(el){
+    const c = (el.getAttribute('class') || '').split(' ').filter(Boolean)[0];
+    return el.tagName.toLowerCase() + (c ? '.' + c : '');
+  }
+  function target(sc){
+    sc = sc || scope;
+    const slide = document.querySelector('.slide.active');
+    const a = document.activeElement;
+    const f = a && a.closest ? a.closest('[data-eid]') : null;
+    if (sc === 'slide' || !f) return slide;
+    if (sc === 'text') return f;
+    let p = f.parentElement;                       // the list / column / table
+    while (p && !p.hasAttribute('data-fsid')) p = p.parentElement;
+    return p || slide;
+  }
+  function resize(dir, sc){
+    const el = target(sc);
+    if (!el || !el.hasAttribute('data-fsid')) return;
+    const cur = curScale(el);
+    let v;
+    if (dir === 0) v = 1;
+    else if (dir > 0) v = STEPS.find(x => x > cur + 1e-9) || STEPS[STEPS.length - 1];
+    else { const s = STEPS.filter(x => x < cur - 1e-9); v = s.length ? s[s.length - 1] : STEPS[0]; }
+    putScale(el, v);
+    sizetip.textContent = label(el) + '  ' + v.toFixed(2) + '\u00d7'
+                        + (Math.abs(v - 1) < 1e-9 ? '  (reset)' : '');
+    sizetip.classList.add('on');
+    clearTimeout(resize._t);
+    resize._t = setTimeout(() => sizetip.classList.remove('on'), 1100);
+    paint();
+  }
+  document.addEventListener('focusin', syncUI);
+  document.addEventListener('click', syncUI);
 
   // contenteditable answers Ctrl+B with <span style="font-weight:700"> and
   // leaves bare <span>s behind after a delete. The server strips those anyway;
@@ -108,7 +239,8 @@ EDIT_JS = r"""
       else if (/font-style:\s*italic/.test(st))          retag(s, 'i');
       else                                               unwrap(s);
     });
-    Array.from(el.querySelectorAll('span:not([class]):not([style])')).forEach(unwrap);
+    Array.from(el.querySelectorAll(
+      'span:not([class]):not([style]):not([data-deck-span])')).forEach(unwrap);
     el.normalize();
   }
   function normalizeAll(){ dirtyList().forEach(normalize); }
@@ -116,17 +248,29 @@ EDIT_JS = r"""
   function dirtyList(){
     return nodes.filter(el => el.innerHTML !== orig.get(el.dataset.eid));
   }
+  function dirtySizes(){
+    return sized.filter(el => el.style.getPropertyValue('--fs-scale').trim()
+                              !== origScale.get(el.dataset.fsid));
+  }
   function paint(){
-    const d = dirtyList();
+    const d = dirtyList(), z = dirtySizes();
     nodes.forEach(el => el.classList.toggle(
       'dirty', el.innerHTML !== orig.get(el.dataset.eid)));
-    badge.classList.toggle('dirty', d.length > 0);
+    sized.forEach(el => el.classList.toggle('fs-dirty',
+      el.style.getPropertyValue('--fs-scale').trim() !== origScale.get(el.dataset.fsid)));
+    if (ui.isConnected) syncUI();
+    const n = d.length + z.length;
+    badge.classList.toggle('dirty', n > 0);
     badge.classList.remove('saved');
-    badge.innerHTML = d.length
-      ? `<b>${d.length}</b> unsaved &middot; Ctrl+S save &middot; Ctrl+D diff`
+    const bits = [];
+    if (d.length) bits.push(`<b>${d.length}</b> edited`);
+    if (z.length) bits.push(`<b>${z.length}</b> resized`);
+    badge.innerHTML = n
+      ? bits.join(' &middot; ') + ' &middot; Ctrl+S save &middot; Ctrl+D diff'
       : `EDIT MODE &middot; ${nodes.length} fields &middot; Ctrl+S save`;
   }
   paint();
+  syncUI();
 
   document.addEventListener('input', e => {
     if (e.target.closest('[data-eid]')) paint();
@@ -148,6 +292,24 @@ EDIT_JS = r"""
     }
     if (diffbox.style.display === 'block' && e.key === 'Escape'){
       diffbox.style.display = 'none'; e.stopPropagation(); return;
+    }
+    // Text size. Works with or without a field focused -- with none, the
+    // target is the whole slide on screen.
+    const ctrl = e.ctrlKey || e.metaKey;
+    let dir = null;
+    if (e.altKey && !ctrl){
+      if (e.key === 'ArrowUp')        dir = +1;
+      else if (e.key === 'ArrowDown') dir = -1;
+      else if (e.code === 'Digit0')   dir = 0;
+    } else if (ctrl && e.shiftKey){
+      if (e.code === 'Period')      dir = +1;      // Ctrl+Shift+> , as in Docs
+      else if (e.code === 'Comma')  dir = -1;
+      else if (e.code === 'Digit0') dir = 0;
+    }
+    if (dir !== null){
+      e.preventDefault(); e.stopPropagation();
+      resize(dir, e.altKey && e.shiftKey ? 'block' : null);
+      return;
     }
     if (!inField) return;
     if (e.key === 'Escape'){ e.target.blur(); e.stopPropagation(); return; }
@@ -178,14 +340,18 @@ EDIT_JS = r"""
   }, true);
 
   window.addEventListener('beforeunload', e => {
-    if (dirtyList().length){ e.preventDefault(); e.returnValue = ''; }
+    if (dirtyList().length || dirtySizes().length){ e.preventDefault(); e.returnValue = ''; }
   });
 
   function payload(){
     normalizeAll();          // send exactly what the page is showing
-    const edits = {};
+    const edits = {}, sizes = {};
     dirtyList().forEach(el => { edits[el.dataset.eid] = el.innerHTML; });
-    return JSON.stringify({hash: HASH, edits: edits});
+    dirtySizes().forEach(el => {
+      const v = el.style.getPropertyValue('--fs-scale').trim();
+      sizes[el.dataset.fsid] = v || null;          // null = take it back out
+    });
+    return JSON.stringify({hash: HASH, edits: edits, sizes: sizes});
   }
 
   async function post(path){
@@ -195,8 +361,7 @@ EDIT_JS = r"""
   }
 
   async function save(){
-    const d = dirtyList();
-    if (!d.length){ flash('nothing to save'); return; }
+    if (!dirtyList().length && !dirtySizes().length){ flash('nothing to save'); return; }
     const r = await post('/save');
     if (!r.ok){
       alert('Save refused (' + r.status + '): ' + (r.data.error || '') +
@@ -206,6 +371,8 @@ EDIT_JS = r"""
     badge.classList.remove('dirty'); badge.classList.add('saved');
     badge.innerHTML = `saved <b>${r.data.applied}</b> field(s) &rarr; reloading`;
     nodes.forEach(el => orig.set(el.dataset.eid, el.innerHTML));  // disarm unload
+    sized.forEach(el => origScale.set(
+      el.dataset.fsid, el.style.getPropertyValue('--fs-scale').trim()));
     setTimeout(() => location.reload(), 450);
   }
 
@@ -252,11 +419,14 @@ class Deck:
         js = EDIT_JS.replace('__HASH__', self.hash)
         return html + EDIT_CSS + js
 
-    def build(self, edits: dict[str, str]) -> str:
-        return self.doc.apply({int(k): v for k, v in edits.items()})
+    def build(self, edits: dict, sizes: dict = None) -> str:
+        return self.doc.apply(
+            {int(k): v for k, v in (edits or {}).items()},
+            {int(k): (None if v in (None, '', 'none') else v)
+             for k, v in (sizes or {}).items()})
 
-    def save(self, edits: dict[str, str]) -> int:
-        new = self.build(edits)
+    def save(self, edits: dict, sizes: dict = None) -> int:
+        new = self.build(edits, sizes)
         BACKUPS.mkdir(exist_ok=True)
         stamp = time.strftime('%Y%m%d-%H%M%S')
         shutil.copy2(self.path, BACKUPS / f'{self.path.stem}.{stamp}.html')
@@ -264,7 +434,7 @@ class Deck:
         tmp.write_text(new, encoding='utf-8')
         os.replace(tmp, self.path)
         self.load()
-        return len(edits)
+        return len(edits or {}) + len(sizes or {})
 
 
 class Handler(http.server.BaseHTTPRequestHandler):
@@ -286,7 +456,8 @@ class Handler(http.server.BaseHTTPRequestHandler):
             return
         if u.path == '/status':
             self._json(200, {'file': str(self.deck.path), 'hash': self.deck.hash,
-                             'fields': len(self.deck.doc.editables)})
+                             'fields': len(self.deck.doc.editables),
+                             'resizable': len(self.deck.doc.resizables)})
             return
         # static assets, restricted to the slides directory
         target = (SLIDES / u.path.lstrip('/')).resolve()
@@ -306,6 +477,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
             self._json(400, {'error': f'bad json: {e}'})
             return
         edits = req.get('edits') or {}
+        sizes = req.get('sizes') or {}
 
         if req.get('hash') != self.deck.hash:
             self._json(409, {'error': 'index.html changed on disk since this '
@@ -313,7 +485,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
             return
         try:
             if u.path == '/preview':
-                new = self.deck.build(edits)
+                new = self.deck.build(edits, sizes)
                 diff = difflib.unified_diff(
                     self.deck.src.splitlines(), new.splitlines(),
                     'index.html (disk)', 'index.html (after save)',
@@ -321,8 +493,9 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 self._json(200, {'diff': '\n'.join(diff)})
                 return
             if u.path == '/save':
-                applied = self.deck.save(edits)
-                print(f"  saved {applied} field(s) -> {self.deck.path}")
+                applied = self.deck.save(edits, sizes)
+                print(f"  saved {len(edits)} edit(s), {len(sizes)} size(s)"
+                      f" -> {self.deck.path}")
                 self._json(200, {'applied': applied, 'hash': self.deck.hash})
                 return
         except Exception as e:                       # never half-write the deck
@@ -371,7 +544,8 @@ def main():
 
     Handler.deck = Deck(path)
     print(f"editing : {path}")
-    print(f"fields  : {len(Handler.deck.doc.editables)} editable text elements")
+    print(f"fields  : {len(Handler.deck.doc.editables)} editable text elements, "
+          f"{len(Handler.deck.doc.resizables)} resizable")
     print(f"deck    : http://localhost:{a.port}/          (read-only, as on disk)")
     print(f"editor  : http://localhost:{a.port}/?edit     (click text, Ctrl+S)")
     with Server(('127.0.0.1', a.port), Handler) as httpd:

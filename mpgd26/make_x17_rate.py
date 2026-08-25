@@ -13,8 +13,10 @@ THE FIGURE IS THE ARGUMENT OF THE WHOLE STATUS SECTION.  Frame 1 is what we
 came to measure; frames 2 is the same axis with the front end's dead time drawn
 on it.  The talk shows frame 1, spends three slides on the flash, and comes
 back to frame 2 -- so the two must be the SAME drawing with one thing added,
-exactly like the x17 story builds: same limits, same bins, same annotations in
-the same places, nothing moving between the two.
+exactly like the x17 story builds: same limits, same points, same annotations
+in the same places, nothing moving between the two.  Both verdict labels sit
+UNDER the curve -- the peak is the tallest thing on the figure and a label
+above it lands on the interpolation.
 
 WHAT IS PLOTTED
 ---------------
@@ -72,7 +74,7 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from matplotlib.ticker import LogLocator, NullFormatter
-from scipy.interpolate import CubicSpline
+from scipy.interpolate import PchipInterpolator
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
@@ -168,18 +170,25 @@ def draw(window: bool):
     flash_us = n['flash_ns'] / 1e3
 
     P.use()
-    # 2.22:1 -- the MEASURED aspect of a figure-solo hole with one caption
-    # line under it (probe render, 2026-08-19), and saved with
-    # bbox_inches=None so the canvas is the figure.
-    fig = plt.figure(figsize=(12.5, 5.62))
+    # 2.38:1 -- the MEASURED aspect of a figure-solo hole with a caption AND
+    # the .figsrc provenance line under it (probe render, 2026-08-20; it was
+    # 2.225:1 before the provenance moved into the markup).  Saved with the
+    # canvas named explicitly, because savefig.bbox is 'tight' in plotstyle.
+    fig = plt.figure(figsize=(12.5, 5.25))
     # the title block is drawn by hand above the axes: the top axis carries
     # the energy scale and its own label, and a matplotlib title would land
     # on top of them
-    ax = fig.add_axes([0.085, 0.235, 0.895, 0.660])
+    ax = fig.add_axes([0.085, 0.170, 0.895, 0.725])
     ax.set_xscale('log')
-    ax.set_yscale('log')
+    # LINEAR in y (2026-08-20, Dylan).  A log axis gives the six decades below
+    # the peak the same visual weight as the peak itself, which is the exact
+    # opposite of this slide's sentence -- on a linear axis the two MeV
+    # decades ARE the figure and the rest is a floor, which is what 79 % means.
+    # The cost is the eV trough (0.1/day) collapsing onto the axis; that is
+    # the honest picture of it, and its numbers are on the previous axis in
+    # every earlier version of this figure.
     ax.set_xlim(0.05, 4.0e4)          # 50 ns .. 40 ms
-    ax.set_ylim(0.05, 60.0)
+    ax.set_ylim(0.0, 21.0)
 
     # ---- the dead band, first, so everything else sits on top of it -----
     if window:
@@ -214,7 +223,12 @@ def draw(window: bool):
     order = np.argsort(t_mid)
     t_mid, t_a, t_b, yv = t_mid[order], t_lo[order], t_hi[order], y[order]
 
-    cs = CubicSpline(np.log(t_mid), np.log(yv))
+    # PCHIP, not a cubic spline (2026-08-20).  On the old log y axis a cubic
+    # overshot the 17.9/day peak to ~23 and it barely showed; on a LINEAR axis
+    # that overshoot is a 30 % hump above the highest measured point, sitting
+    # exactly where the eye reads the headline.  PCHIP is shape-preserving:
+    # it cannot rise above the points it passes through.
+    cs = PchipInterpolator(np.log(t_mid), np.log(yv))
     t_s = np.logspace(np.log10(t_mid.min()), np.log10(t_mid.max()), 800)
     ax.plot(t_s, np.exp(cs(np.log(t_s))), color=P.ACCENT, lw=1.6, alpha=0.35,
             zorder=3)
@@ -235,38 +249,44 @@ def draw(window: bool):
 
     # ---- the flash ------------------------------------------------------
     ax.axvline(flash_us, color=P.INK, lw=1.3, zorder=5)
-    ax.text(flash_us * 1.3, 0.062, 'γ flash\n(t = 0)', fontsize=10,
-            color=P.INK, ha='left', va='bottom', fontweight='bold', zorder=6)
+    # at the TOP of its line, not the bottom: on the linear axis the bottom
+    # left corner is where the 10-100 MeV point and its decade-wide error bar
+    # sit, and the label landed on them
+    ax.text(flash_us * 1.3, 20.4, 'γ flash\n(t = 0)', fontsize=10,
+            color=P.INK, ha='left', va='top', fontweight='bold', zorder=6)
 
     # ---- the two verdicts ----------------------------------------------
     tm = np.sqrt(n['mev_t'][0] * n['mev_t'][1])
     tt = np.sqrt(n['thermal_t'][0] * n['thermal_t'][1]) * 1e3
+    # BOTH frames put the MeV verdict UNDER the curve, in the same place
+    # (Dylan, 2026-08-19: "move the 79%... text below the curve so it doesn't
+    # block").  The peak is the tallest thing on the figure and a label above
+    # it sat on the interpolation; the trough under it is empty, and inside
+    # the shaded window the label needs no arrow -- the band is the pointer.
     if not window:
-        ax.annotate(f"{n['mev']:.0f} X17 / day\n"
-                    f"{n['mev_frac'] * 100:.0f} % of the whole rate",
-                    xy=(tm, 16.5), xytext=(tm, 50.0), ha='center', va='top',
-                    fontsize=12.5, fontweight='bold', color=P.ACCENT,
-                    arrowprops=dict(arrowstyle='-|>', color=P.ACCENT, lw=1.6,
-                                    shrinkA=5, shrinkB=3), zorder=6)
-        ax.text(tt, 6.2, '4.4 / day', fontsize=10.5, color=P.MUTED,
+        ax.text(tm, 7.4, f"{n['mev']:.0f} X17 / day\n"
+                f"{n['mev_frac'] * 100:.0f} % of the whole rate",
+                ha='center', va='center', fontsize=12.5, fontweight='bold',
+                color=P.ACCENT, zorder=6, linespacing=1.45)
+        ax.text(tt, 5.3, '4.4 / day', fontsize=10.5, color=P.MUTED,
                 ha='center', va='bottom', zorder=6)
     else:
-        ax.text(tm, 21.0, f"{n['mev']:.0f} / day, unreachable",
-                fontsize=11.5, fontweight='bold', color=P.ACCENT,
-                ha='center', va='bottom', alpha=0.85, zorder=6)
+        ax.text(tm, 7.4, f"{n['mev']:.0f} / day,\nunreachable",
+                ha='center', va='center', fontsize=12.5, fontweight='bold',
+                color=P.ACCENT, alpha=0.85, zorder=6, linespacing=1.45)
         ax.annotate(f"{n['thermal']:.1f} / day — "
                     f"{n['thermal_frac'] * 100:.0f} %,\nand we can record it",
-                    xy=(tt, 5.6), xytext=(tt, 26.0), ha='center', va='bottom',
+                    xy=(tt, 5.1), xytext=(tt, 11.4), ha='center', va='bottom',
                     fontsize=12.5, fontweight='bold', color=P.ACCENT,
-                    arrowprops=dict(arrowstyle='-|>', color=P.ACCENT, lw=1.6,
-                                    shrinkA=5, shrinkB=3), zorder=6)
+                    arrowprops=dict(arrowstyle='-|>', color=P.ACCENT,
+                                    lw=1.6, shrinkA=5, shrinkB=3), zorder=6)
         # the two dead-band labels ride along the top, inside their own band
-        ax.text(np.sqrt(flash_us * DEAD_FIRM_MS * 1e3), 46.0,
+        ax.text(np.sqrt(flash_us * DEAD_FIRM_MS * 1e3), 19.4,
                 'DREAM front end blind', fontsize=12.5, fontweight='bold',
                 color=P.BAND_DEAD, ha='center', va='center', zorder=6)
         # knocked out of the bar behind it, the way make_timeline handles
         # its SPS label: there is no empty place in this band to put it
-        ax.text(DEAD_FIRM_MS * 1.06e3, 0.055,
+        ax.text(DEAD_FIRM_MS * 1.06e3, 0.45,
                 'still coming back\nto 9 ms', fontsize=8.8,
                 color=P.BAND_DEAD, ha='left', va='bottom', zorder=6,
                 linespacing=1.35,
@@ -301,17 +321,12 @@ def draw(window: bool):
     # a figure never repeats its slide's title.  The height it would have
     # taken goes to the plot instead.
 
-    _note(fig, 'Rate calculation for a nominal 40 mm, 500 bar ³He cell '
-                '(data/x17_rate_3He.txt, Dec 2025): EAR2 flux, ³He(n,γ) '
-                'capture, 2.1×10⁻³ IPC per capture, 2.5×10⁻² X17 per IPC pair. '
-                'Flight time is the relativistic conversion over '
-                f'{FLIGHT_M:.1f} m. '
-              + ('Dead band: no track has ever been reconstructed before '
-                 '0.993 ms on beam (run_79); the run_57 map puts the slowest '
-                 'chamber at 8.9 ms.'
-                 if window else
-                 'A nominal per-day rate, not a yield projection for this run.'),
-           0.085, 0.135, 150)
+    # NO provenance paragraph on the canvas either (2026-08-20, Dylan:
+    # "remove the small text at the bottom and put it in HTML so that I can
+    # edit or remove it later").  It is now the .figsrc <div> under each
+    # slide's caption; the height it used to take goes to the plot.  Keep
+    # _note() around -- it is what would be used for a figure that has to
+    # travel outside the deck.
     return fig
 
 

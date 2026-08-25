@@ -220,6 +220,13 @@ def main():
     ap.add_argument('--step', type=float, default=STEP_MM)
     ap.add_argument('--no-slide', dest='slide', action='store_false')
     ap.add_argument('--print', dest='show', action='store_true')
+    ap.add_argument('--min-rays', type=float, default=MIN_RAYS,
+                    help='floor on muons per circle (default 30)')
+    ap.add_argument('--min-fill', type=float, default=MIN_FILL,
+                    help='floor on circle fill fraction (default 0.55)')
+    ap.add_argument('--suffix', default='',
+                    help='appended to the output basename, e.g. _v2, so a '
+                         'variant does not overwrite efficiency_map_sliding.png')
     args = ap.parse_args()
 
     d, meta = load()
@@ -229,7 +236,8 @@ def main():
     within = d['within'].to_numpy(bool).astype(float)
 
     eff, cnt, extent = sliding(x, y, within, box, kernel=args.kernel,
-                               step=args.step)
+                               step=args.step, min_rays=args.min_rays,
+                               min_fill=args.min_fill)
     live = np.isfinite(eff)
     if args.show or True:
         print(f'{RUN_KEY}: {len(d):,} rays, integrated within {R_MATCH:g} mm = '
@@ -245,7 +253,8 @@ def main():
         return
     os.makedirs(FIG, exist_ok=True)
     draw(eff, cnt, extent, box, meta, args.kernel,
-         os.path.join(FIG, 'efficiency_map_sliding'), slide=args.slide)
+         os.path.join(FIG, 'efficiency_map_sliding' + args.suffix),
+         slide=args.slide)
 
 
 if __name__ == '__main__':

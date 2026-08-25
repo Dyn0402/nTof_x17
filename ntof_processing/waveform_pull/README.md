@@ -31,6 +31,26 @@ about two weeks after the run**, and 27 of the campaign's 83 runs had already
 expired by 2026-08-12. Everything is still on CTA tape, but a recall is hours to
 days, so this is a one-shot: pull generously now or pay the tape again later.
 
+**And a recall does not stay staged.** A recall verified at 3187/3187 files
+online was back to `online:false` on 26 of 27 runs inside a day, holding no pin
+(`requested:false`), and jobs that reached the queue head after it lapsed died
+on `[3005] no disk replica exists`. Recalled data is perishable: it must be
+consumed, not banked, which is why `campaign.sh` couples recall to submit rather
+than staging everything up front. Measured 2026-08-13 —
+[`CAMPAIGN_2026-08-13.md`](CAMPAIGN_2026-08-13.md) §2.
+
+## No slim, no waveforms
+
+`find_slims` raises before a byte of raw is read. Every window is centred on the
+slim's own `t_pred_ns`, so a segment whose match was never established has no
+defensible place to point a window — the pull is strictly downstream of
+pulse-match and the clock fit, and inherits their confidence rather than adding
+to it. A fitted segment is safe to build on: a mis-locked one lands at the
+accidental rate (0.065 %) and never reaches the fitted set at all, which the
+efficiency floor of 0.9358 over all 170 fitted segments confirms. See
+[`CAMPAIGN_2026-08-13.md`](CAMPAIGN_2026-08-13.md) §3 for the argument and its
+limits — chiefly that `verify.py` is circular with respect to the match.
+
 ## What it keeps, and why block-driven
 
 For each DREAM trigger, for each of the twelve scintillator detectors, the
@@ -132,21 +152,36 @@ It separates three things that look alike and are not:
 sub-run that overlaps it.
 
 ```bash
-./lxplus/stage.sh                                    # push code, no data
-ssh -K lxplus && cd x17wf                            # -K: no token, no EOS
-./raw_inventory.sh runs.txt > inventory.csv          # disk vs tape, TODAY
-awk -F, 'NR>1 && $2==0 {print $1}' inventory.csv > recall.txt
-./recall.sh request recall.txt                       # fire the tape recalls
-awk -F, 'NR>1 && $2>0  {print $1}' inventory.csv > ondisk.txt
+./lxplus/stage.sh                          # push code, no data
+ssh -K lxplus && cd x17wf                  # -K: no token, no EOS
 myschedd bump
-condor_submit pull.sub -a 'runs=ondisk.txt'          # start on what is here
-./recall.sh check recall.txt                         # poll; then submit those
+
+./campaign.sh plan runs.txt                # classify: disk / tape / no-slim
+nohup ./campaign.sh run > campaign.log 2>&1 &
+./campaign.sh status                       # from any session, any time
+
+python -m ntof_processing.waveform_pull.fleet_report   # what actually landed
 ```
 
-`raw_inventory.sh` must be re-run, not remembered: the disk copies expire
-day by day, and a run that was on disk last week is a tape recall today. A
-**partial** disk copy is treated as gone — a short file list is exactly how
-224526 came to be processed at 13 % coverage.
+`campaign.sh` is the supported route and it exists because of the staging
+lifetime above: it walks batches of `X17_WF_BATCH` runs, requesting each recall,
+waiting for every file to be online, submitting, **and pre-requesting the next
+batch while that one reads** — so the tape system works in parallel with the
+farm and nothing sits staged waiting for a slot. It is resumable and writes its
+state to files; ~4 h per 8-run batch, ~2 days for all 83.
+
+`plan` refuses a run with no slim, and re-measures disk-versus-tape every time
+rather than trusting a stored inventory: disk copies expire day by day, and a
+run that was on disk last week is a tape recall today. A **partial** disk copy
+is treated as gone — a short file list is exactly how 224526 came to be
+processed at 13 % coverage.
+
+**Read status from the products, not the logs.** `fleet_report.py` aggregates
+the `_provenance.json` and `_verify.json` published beside each product; a
+segment counts as done only if it has a product, that product carries provenance
+(written last, so its presence means finished), and closure passed. Parsing
+pass/fail out of log prose produced four confident wrong numbers in one night on
+this project.
 
 ## Cost
 
@@ -180,7 +215,17 @@ fails only AFTER the raw read unless it is preflighted:
 | **awkward 1.10 / uproot 4.3** on LCG_105 | `ak.contents` does not exist and the `mktree` type APIs disagree with awkward 2; use `ak.unflatten` and create the tree from its first batch |
 | `set -u` | LCG's own `setup.sh` references an unbound `COMPILER` and dies instantly |
 
-And two about the batch system:
+And four about the batch system:
+
+- **A CTA recall lapses in under a day** and there is no user-settable pin. The
+  wrapper queries `prepare 0` on every file before reading and refuses to start
+  a run that is not fully online — otherwise a lapsed batch costs a slot per run
+  and risks a partial read that looks like a quiet detector.
+- **Publish on the provenance, never on the `.root`.** `SegmentWriter.close`
+  writes provenance last, so its presence is the only reliable statement that a
+  product is finished. Publishing on the `.root` alone put seven 1,778-byte
+  empty files onto EOS from a job that died mid-scan.
+
 
 - **Workers CAN write to EOS**, with `MY.SendCredential = true` — verified
   2026-08-12, cluster 20191171: the worker gets a `dneff@CERN.CH` ticket and both

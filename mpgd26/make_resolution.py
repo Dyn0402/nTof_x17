@@ -311,7 +311,7 @@ def fig_vs_angle(res: dict) -> None:
         P.end_label(ax, 19.4, 1.60 if plane == 'x' else 1.50, label, colour)
 
     ax.set_xlim(0, 22.4)
-    ax.set_ylim(0.78, 1.70)
+    ax.set_ylim(0.78, 1.85)
     ax.set_xlabel('|reference track angle|  [deg]')
     ax.set_ylabel('σ₆₈ (reconstructed − reference)  [deg]')
     ax.set_xticks([0, 5, 10, 15, 20])

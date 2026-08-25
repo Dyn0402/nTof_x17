@@ -53,16 +53,18 @@ def verify(wf_path: Path, slim_path: Path | None = None,
         blk = f['blocks'].arrays(['bunch', 'det', 'detn', 'tof0', 'n'],
                                  library='np')
         n_entries = f['blocks'].num_entries
-        lens = f['blocks']['samples'].array().layout.offsets.data
-        lens = np.diff(np.asarray(lens))
         ev = f['events'].arrays(['bunch'], library='np') if 'events' in f else None
 
     res = {'file': str(wf_path), 'n_blocks': int(n_entries),
-           'n_samples': int(lens.sum()), 'window_ns': meta.get('window_ns'),
+           'n_samples': int(blk['n'].sum()), 'window_ns': meta.get('window_ns'),
            'coverage_reported': meta.get('coverage')}
 
-    # ---- truncated blocks: declared n vs samples actually stored
-    short = int((lens < blk['n']).sum())
+    # ---- blocks the raw declared longer than it actually held. Counted during
+    # the scan, which is the only place the declared length survives; reading it
+    # back off the product cannot work, because the product stores the length it
+    # actually wrote. (Reading the samples array to measure it also crashed on
+    # awkward 1.10, whose Index64 has no `.data`, and would pull GBs into RAM.)
+    short = int(meta.get('scan', {}).get('blocks_short', 0))
     res['blocks_truncated'] = short
 
     if slim_path is None:
@@ -178,12 +180,19 @@ def main(argv=None) -> int:
     ap.add_argument('--edge-tol-ns', type=float, default=8.0,
                     help='a hit this far past a block end still counts as held')
     ap.add_argument('--json', action='store_true')
+    ap.add_argument('--write-json', action='store_true',
+                    help='also write <product>_verify.json beside each product, '
+                         'so the fleet verdict can be read from summaries '
+                         'instead of grepped out of job logs')
     a = ap.parse_args(argv)
 
     bad = 0
     for p in a.waveform_file:
         r = verify(p, a.slim, a.edge_tol_ns)
         bad += not r['status'].startswith('PASS')
+        if a.write_json:
+            Path(p).with_name(Path(p).stem + '_verify.json').write_text(
+                json.dumps(r, indent=2, sort_keys=True, default=str))
         if a.json:
             print(json.dumps(r, indent=2, sort_keys=True))
         else:

@@ -335,7 +335,12 @@ def fig_model_vs_data(eid, st):
     ax.set_xlabel('time [µs]')
     ax.set_ylabel('strip (offset), labelled by position [mm]')
     ax.set_title('every strip in the window, simultaneously', loc='left')
-    ax.legend(loc='upper left')
+    # global rcParam is legend.framealpha=0.0 (see wftdoc.py) -- fine where a
+    # legend sits in blank space, but this one overlaps the stacked waveforms,
+    # so it needs its own opaque-ish, rounded frame to stay readable (Dylan,
+    # 2026-08-23).
+    leg = ax.legend(loc='upper left', framealpha=0.75, fancybox=True)
+    leg.get_frame().set_edgecolor(K.CHROME)
     ax.set_xlim(0, t[-1] + 0.25)
 
     ax = fig.add_subplot(gs[1, 2])

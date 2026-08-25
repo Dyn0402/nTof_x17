@@ -28,6 +28,17 @@ The resistive kernel has two forms (``share_mode`` on the bundle):
 Because the neighbours' delayed copies are *in the model*, they stop being
 contamination — which is exactly what a per-strip hit time cannot do.
 
+PRIOR ART (``REFERENCES.md`` in this package has the annotated list). This model
+was re-derived from our own data, not lifted from a paper, but it is not new:
+the resistive layer as a distributed RC network whose neighbour signal carries
+position is Dixit et al., NIM A 518 (2004) 721; the resistive-*strip*
+transmission line that makes the copy a cascaded one-pole — and that forces
+``c2 < c1`` — is Galan et al., JINST 7 (2012) C04009; and fitting neighbouring
+channels *simultaneously* against a spreading-times-electronics model is the
+T2K ND280 ERAM analysis, Attie et al., NIM A 1056 (2023) 168534. What is ours
+is solving the drift-depth charge profile inside that fit, so the result is a
+micro-TPC rather than a sharpened centroid.
+
 This is the packaged form of ``forward_model2.py`` (model v2) and
 ``forward_model3.py`` (the vectorised fitter) from the R&D directory, with the
 module-level calibration replaced by an explicit

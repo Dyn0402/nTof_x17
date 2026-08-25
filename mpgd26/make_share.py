@@ -86,7 +86,8 @@ for _p in (HERE, REPO, os.path.join(REPO, 'mx_june_cosmic_qa'),
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt                          # noqa: E402
-from matplotlib.patches import Rectangle, FancyArrowPatch, FancyBboxPatch  # noqa: E402
+from matplotlib.patches import (Rectangle, Ellipse, FancyArrowPatch,        # noqa: E402
+                                FancyBboxPatch)
 
 import plotstyle as PS                                   # noqa: E402
 
@@ -349,6 +350,63 @@ def fig_cartoon(out, c1x, c2x, c1y, c2y, tau):
 # --------------------------------------------------------------------------- #
 # 2.  the kernels production uses
 # --------------------------------------------------------------------------- #
+def _film_inset(ax, plane):
+    """A plan view of the resistive layer, with the direction THIS plane reads.
+
+    2026-08-20, Dylan: "put a little resistive strip visualisation in the space
+    on the right and show the direction the charge is spreading -- for the top
+    where there's little sharing it's across strips and on the bottom it's along
+    strips."
+
+    One drawing, twice, with one thing changed.  The ESL film is not a sheet:
+    it is strips, 550 um wide on an 800 um pitch, and they run along y.  Charge
+    landing on one travels easily ALONG it and has to cross a gap to leave it,
+    so the cloud on the film is an ellipse with its long axis in y -- the same
+    ellipse in both panels, because it is the same physics.
+
+    What differs is which projection of that ellipse the readout plane samples.
+    The X strips are pitched in x, so X sees the SHORT axis; the Y strips are
+    pitched in y and see the LONG one.  That single asymmetry is the whole of
+    kY, and it is a geometry statement, not a fitted one -- which is why it
+    belongs as a drawing next to the two measured curves rather than as another
+    number in the text block.
+    """
+    ins = ax.inset_axes([0.685, 0.105, 0.295, 0.52])
+    ins.set_xlim(0, 10)
+    ins.set_ylim(0, 10)
+    ins.set_aspect('equal')
+    ins.axis('off')
+    ins.text(5.0, 9.9, 'the resistive layer, from above', ha='center',
+             va='top', fontsize=7.4, color=PS.MUTED)
+
+    # the film's own strips, seen from above, running along y (up the inset)
+    w = 10.0 * RESIST_WIDTH_MM / (5 * RESIST_PITCH_MM)
+    for k in range(5):
+        xc = (k + 0.5) * 2.0
+        ins.add_patch(Rectangle((xc - w / 2, 1.7), w, 7.1, facecolor=FILM,
+                                alpha=0.85, edgecolor='none', zorder=2))
+
+    # the charge on it: long along a strip, short across the gaps between them
+    # PALE copper, not the strip copper: the direction arrow is drawn over this
+    # ellipse on the Y panel, so the fill has to be the lightest thing in the
+    # inset or the arrow disappears into it.
+    ins.add_patch(Ellipse((5.0, 5.25), 2.5, 5.6, facecolor='#f6dcbd',
+                          edgecolor='none', zorder=3))
+
+    if plane == 'x':
+        ins.annotate('', xy=(6.6, 5.25), xytext=(3.4, 5.25),
+                     arrowprops=dict(arrowstyle='<|-|>', color=N1, lw=1.8,
+                                     shrinkA=0, shrinkB=0), zorder=5)
+        lab = 'X reads ACROSS them'
+    else:
+        ins.annotate('', xy=(5.0, 8.4), xytext=(5.0, 2.1),
+                     arrowprops=dict(arrowstyle='<|-|>', color=N1, lw=1.8,
+                                     shrinkA=0, shrinkB=0), zorder=5)
+        lab = 'Y reads ALONG them'
+    ins.text(5.0, 0.7, lab, ha='center', va='center', fontsize=8.6, color=N1,
+             fontweight='bold', zorder=6)
+
+
 def fig_kernels(out, cal, wm):
     """Own charge, +-1 and +-2 -- one panel per plane, at the model\'s own
     amplitudes, normalised to the own-charge peak because the number that
@@ -369,6 +427,7 @@ def fig_kernels(out, cal, wm):
     fig, axs = plt.subplots(2, 1, figsize=(6.8, 6.4), sharex=True)
 
     h = dict(cal.hyper)
+    tau = float(h['tau_s'])
     for ax, plane, sub in zip(
             axs, ('x', 'y'),
             ('pitched ACROSS the layer’s strips — the charge barely crosses them',
@@ -397,14 +456,26 @@ def fig_kernels(out, cal, wm):
                 transform=ax.transAxes, ha='right', va='top', color=N2,
                 fontsize=12, fontweight='bold')
 
-        # the delays, marked where they are: peak to peak
-        for tp, y, col in ((t1p, 0.48, N1), (t2p, 0.31, N2)):
+        # The delays, marked where they are: peak to peak.  The NUMBER printed
+        # is the model's tau and 2*tau, not the peak separation measured off
+        # this grid -- those differ by a nanosecond (332 vs 333) and the deck
+        # quotes 166 / 333 in three other places (2026-08-20, Dylan: "in some
+        # places we have 332 ns and other places 333 ns ... can we make it
+        # consistent").  One delay, one number, everywhere.
+        #
+        # The label sits at a THIRD of the way along its arrow, not the middle,
+        # and a size down: centred on the +-2 arrow it overhangs the right
+        # shoulder of the own-charge curve and reads as if it belonged to the
+        # curve boundary rather than to the arrow.
+        for tp, y, col, lab in ((t1p, 0.48, N1, tau), (t2p, 0.31, N2, 2 * tau)):
             ax.annotate('', xy=(tp, y), xytext=(t0p, y),
                         arrowprops=dict(arrowstyle='<|-|>', color=col,
                                         lw=1.2, shrinkA=0, shrinkB=0,
                                         alpha=0.85))
-            ax.text(0.5 * (t0p + tp), y + 0.022, f'+{tp - t0p:.0f} ns',
-                    ha='center', va='bottom', fontsize=11.5, color=col)
+            ax.text(t0p + 0.34 * (tp - t0p), y + 0.020, f'+{lab:.0f} ns',
+                    ha='center', va='bottom', fontsize=9.8, color=col)
+
+        _film_inset(ax, plane)
 
         ax.set_ylim(-0.06, 1.16)
         ax.set_yticks([0.0, 0.5, 1.0])
@@ -465,19 +536,39 @@ def fig_build(out, c1, c2, tau, c1_other, c2_other):
           'The charges are solved, not searched.')
 
     # -- (2) geometry: which strips a slice lands on -------------------------
+    # THE ICON IS A FUNNEL since 2026-08-20 (Dylan: "maybe we can make the icon
+    # there a bit of a funnel shaped amplification instead").  It used to be the
+    # resulting strip histogram, which is what stage 3 already draws -- two bar
+    # charts in four stages, and neither of them said where the width comes
+    # from.  A funnel does: primaries come DOWN the drift, the mesh is a line,
+    # and each one opens into an avalanche that lands on the layer over a finite
+    # width.  Drawn as several funnels, not one, because the electrons in a
+    # slice arrive at several places -- that separation is the diffusion term
+    # and the single funnel's opening is the amplification term.
     y = rows[1]
     ctr = sk_x0 + sk_w / 2
-    bars = np.array([0.04, 0.13, 0.30, 1.00, 0.36, 0.11, 0.03])
-    bx = ctr + (np.arange(7) - 3) * 3.9
-    for xx, bb in zip(bx, bars):
-        ax.add_patch(Rectangle((xx - 1.6, y - 7.5), 3.2, 13.0 * bb,
-                               facecolor=OWN, alpha=0.30 + 0.55 * bb,
-                               edgecolor='none'))
-    ax.plot([sk_x0, sk_x0 + sk_w], [y - 7.5] * 2, color=PS.LINE, lw=1.0)
-    stage(y, '②', 'geometry → strips',
-          'The slice’s cloud, integrated over the 0.78 mm\n'
-          'pitch: F$_{ik}$.  Its width is the initial cloud,\n'
-          'diffusion, and the slice’s own sideways travel.')
+    y_mesh = y + 1.6
+    y_pad = y - 7.5
+    for dx, hw in ((-5.6, 1.9), (-1.4, 2.4), (2.6, 2.1), (6.2, 1.7)):
+        xx = ctr + dx
+        # the primary, arriving at the mesh
+        ax.add_patch(FancyArrowPatch((xx, y + 6.4), (xx, y_mesh + 0.4),
+                                     arrowstyle='-|>', mutation_scale=11,
+                                     lw=1.2, color=PS.MUTED, zorder=4))
+        # ...and its avalanche, opening onto the layer
+        ax.add_patch(plt.Polygon([(xx, y_mesh), (xx + hw, y_pad),
+                                  (xx - hw, y_pad)], closed=True,
+                                 facecolor=OWN, alpha=0.28, edgecolor='none',
+                                 zorder=3))
+    ax.plot([sk_x0, sk_x0 + sk_w], [y_mesh] * 2, color=PS.LINE, lw=1.2,
+            ls=(0, (4, 3)), zorder=5)
+    ax.text(sk_x0 + sk_w, y_mesh + 1.0, 'mesh', fontsize=8.0, color=PS.MUTED,
+            ha='right', va='bottom')
+    ax.plot([sk_x0, sk_x0 + sk_w], [y_pad] * 2, color=PS.LINE, lw=1.0)
+    stage(y, '②', 'geometric spread',
+          'What one slice puts on the layer, integrated\n'
+          'over the 0.78 mm pitch.  Its width is transverse\n'
+          'diffusion plus the amplification width.')
 
     # -- (3) the kernel: neighbours get delayed copies -----------------------
     y = rows[2]
@@ -499,11 +590,11 @@ def fig_build(out, c1, c2, tau, c1_other, c2_other):
                                          connectionstyle='arc3,rad=%.2f'
                                                          % (-s * 0.45)))
     ax.plot([sk_x0, sk_x0 + sk_w], [y - 7.5] * 2, color=PS.LINE, lw=1.0)
-    stage(y, '③', 'the kernel → neighbours',
+    stage(y, '③', 'charge spread',
           f'Every strip’s charge appears again on ±1 and\n'
           f'±2 — and LATE, by {tau:.0f} and {2 * tau:.0f} ns.\n'
-          f'Per plane: Y {c1:.2f} / {c2:.2f},  X {c1_other:.2f} / '
-          f'{c2_other:.2f}.')
+          f'Per plane: Y {100 * c1:.0f} % / {100 * c2:.0f} %,  '
+          f'X {100 * c1_other:.0f} % / {100 * c2_other:.0f} %.')
 
     # -- (4) fold with the measured response --------------------------------
     y = rows[3]
@@ -515,8 +606,8 @@ def fig_build(out, c1, c2, tau, c1_other, c2_other):
                     alpha=0.22, lw=0)
     ax.plot(px, y - 7.5 + 13.0 * pulse, color=OWN, lw=2.2)
     ax.plot([sk_x0, sk_x0 + sk_w], [y - 7.5] * 2, color=PS.LINE, lw=1.0)
-    stage(y, '④', 'fold with h(t)',
-          'The measured single-electron response of this\n'
+    stage(y, '④', 'fold with response',
+          'The measured single-primary response of this\n'
           'plane, sampled at 32 × 60 ns — one complete\n'
           'predicted (strip × sample) window.')
 

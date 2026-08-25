@@ -180,15 +180,63 @@ BLURB = {  # NTOF_BLURB is merged in below
                         'angle. The OPENING ANGLE is drawn true (measure it '
                         'with a protractor); the standoff, the gap and the '
                         'chamber size are not to scale, and the real ones are '
-                        '204 mm, 30 mm and 400 mm. The chamber, not the track, '
-                        'carries the 21 deg tilt: a track square to the '
-                        'readout plane deposits all its charge at one depth '
-                        'and there is nothing for a micro-TPC to reconstruct.',
+                        '204 mm, 30 mm and 400 mm. The two CHAMBERS are at 90 '
+                        'deg to each other (2026-08-20) -- the real station, '
+                        'four arms on the four sides of the beam -- and with '
+                        'the legs 110 deg apart that FIXES the incidence at '
+                        '10 deg on each, which is the shallowest ladder a '
+                        'micro-TPC ever has to read. Wider pairs land much '
+                        'more obliquely. Same edit: the track is drawn at 30 % '
+                        'inside the gas and the ionisation as discrete '
+                        'clusters with their drift to the mesh, because at '
+                        'this incidence the clusters, not the line, are what '
+                        'the picture is about.',
     'x17_detect_solo': 'The same micro-TPC cartoon on a canvas of its own, '
                        'for a slide or a poster that wants it without the '
                        'spectrum. scenes_x17.draw_detect; the version INSIDE '
                        'the story row is the same drawing at 0.87 of its '
                        'length scale, not a second implementation.',
+    'x17_outlook': 'The Summary slide\'s figure, and the closing argument of '
+                   'the talk: FIND the two-track events, then HISTOGRAM their '
+                   'opening angle. Left, the station in plan view and TO SCALE '
+                   '\u2014 204 mm standoff, 399 x 360 mm active, four arms at '
+                   '90\u00b0 \u2014 with the two topologies a pair can have: a '
+                   'narrow one landing in a single chamber (drawn in the IPC '
+                   'orange) and a 110\u00b0 one that cannot, and so needs two. '
+                   'Right, the spectrum that falls out, with its four features '
+                   'named on it. ONE background, in bold \u2014 every '
+                   'accepted IPC pair, whatever it hit \u2014 with the one- '
+                   'and two-chamber topologies drawn thin underneath, '
+                   'subordinate, because they explain its shape rather than '
+                   'rival it: a one-chamber peak dying by ~95\u00b0, handing '
+                   'over to a flat two-chamber tail (the acceptance rises '
+                   'about as fast as the physics falls). X17 is drawn ONLY '
+                   'over the bump, on top of the total, so the eye reads '
+                   '"background plus something above threshold" and not "a '
+                   'third curve"; the ~3\u00b0 merging cutoff is the shaded '
+                   'band at the left and \u03b8_min = 109\u00b0 its dotted '
+                   'line, and the bump carries a big tilted "?" and the word '
+                   '"sketch" \u2014 placed off the drawn curve\'s actual apex, '
+                   'so it follows the bump \u2014 because a legend entry '
+                   'reading "(drawn, not predicted)" is not what a room looks '
+                   'at. The station panel shows exactly two things: the two '
+                   'topologies, both labelled e-/e+; the scatter of grey '
+                   'single tracks that used to stand for the 41.8 M ordinary '
+                   'events came off 2026-08-24, since the arrow between the '
+                   'panels already says so. WHAT IS '
+                   'COMPUTED: both channel shapes, from the MX17_Simulation '
+                   'generators, as in beat 5; and the one-/two-chamber split, '
+                   'ray-traced on the as-built geometry '
+                   '(scenes_x17.pair_acceptance, typed from '
+                   'MX17_Full_Geant/scripts/plot_geometry.py). WHAT IS DRAWN: '
+                   'the X17 yield, at a declared 30 % of the whole '
+                   'background above threshold \u2014 the relative rate is '
+                   'exactly what the experiment measures, so the figure must '
+                   'not appear to assert it \u2014 and the 12 mm two-track '
+                   'separation the merging cutoff comes from, which is the '
+                   'single-track fit\'s merged-cluster limit '
+                   '(MULTITRACK_2026-08-12.md) and not a measured two-track '
+                   'efficiency.',
     'share_cartoon': 'The sharing mechanism as a drawing: the avalanche lands '
                      'on the resistive layer, the charge that goes sideways '
                      'goes through the layer\'s own sheet resistance, and the '
@@ -204,12 +252,26 @@ BLURB = {  # NTOF_BLURB is merged in below
                      'frozen production bundle had it the other way round '
                      '(c2/c1 = 1.14); the ratio is now pinned at 0.6, from the '
                      'H4 beam\'s model-free 0.45 +- 0.02. The absolute c1 on a '
-                     'cosmic fit is still a lower bound. Deck slide 9.2.',
+                     'cosmic fit is still a lower bound. The inset per panel '
+                     '(2026-08-20) is the film seen from ABOVE: one ellipse, '
+                     'long along the layer\'s strips and short across them, '
+                     'with the direction THAT plane samples marked -- kY as a '
+                     'geometry statement rather than a fitted number. The two '
+                     'delays print the model\'s tau and 2*tau, so the figure '
+                     'says 166 / 333 like everything else (peak-to-peak off '
+                     'this grid reads 332). Deck slide 9.2.',
     'share_build': 'What the model does, in four stages: the drift column in '
                    '60 ns slices with free non-negative charges, the '
-                   'geometric strip integral, the kernel copies onto '
-                   '+-1/+-2, and the fold with the measured impulse '
-                   'response. Deck slide 10, left.',
+                   'GEOMETRIC SPREAD, the CHARGE SPREAD onto +-1/+-2, and the '
+                   'fold with the response. Deck slide 10, left. Reworded '
+                   '2026-08-20 (Dylan): stage 2 no longer says the width is '
+                   'an "initial cloud" -- the primaries are discrete clusters, '
+                   'not a cloud, so the width is transverse diffusion plus the '
+                   'width one primary makes when it amplifies, and the icon is '
+                   'now four avalanche funnels off the mesh instead of a '
+                   'second strip histogram. F_ik is gone (unused on the '
+                   'slide); stage 3 quotes percentages; stage 4 calls h(t) the '
+                   'single-primary response.',
     'share_decompose': 'The same split on REAL DATA -- four consecutive '
                        'strips of event 1663 (Y plane), each fitted waveform '
                        'stacked into own / +-1 / +-2 charge against the '
@@ -335,9 +397,13 @@ RATE1_BLURB = (
     '(data/x17_rate_3He.txt) on a neutron flight-time axis with energy on '
     'top, drawn as the interpolated point plot from '
     'neutron_energy_vs_flight_time.py: the markers carry the exact decade bin '
-    'widths and the faint line is a log-log cubic spline through them. Two '
-    'decades carry 79 % of the rate, and they arrive 0.45-4.5 us after the '
-    'flash.')
+    'widths and the faint line is a shape-preserving (PCHIP) interpolation '
+    'through them. Two decades carry 79 % of the rate, and they arrive '
+    '0.45-4.5 us after the flash. LINEAR in y since 2026-08-20 (Dylan): a log '
+    'axis gave the six decades below the peak the same visual weight as the '
+    'peak, which is the opposite of what the figure is for. The interpolation '
+    'changed with the axis -- a cubic spline overshot the 17.9/day peak to '
+    '~23, invisible on log and a 30 % phantom hump on linear.')
 
 RATE2_BLURB = (
     "The same drawing with the front end's measured dead time on it: firm to "
@@ -346,6 +412,86 @@ RATE2_BLURB = (
     'run_57 recovery map). The whole MeV peak is inside it, so the accent '
     'moves to the thermal bin -- 10 % of the rate, and recordable. Same '
     'points, same limits, same annotation positions as frame 1.')
+
+
+XANGLE_BLURB = (
+    'The pointing test, with a diagram of it beside it. A source on the beam '
+    'axis at L = 235 mm can only reach the strip plane at u with '
+    'tan(theta) = u/L; the dashed line is that relation, not a fit to these '
+    'points. Arm A, run_145 sub-runs stat090_0000 + _0001 on the r06 '
+    're-reconstruction, 7,849 tracks passing the SiPM-segment AND plastic-bar '
+    'pointing coincidence. The band sits ~27 % shallower than the line -- the '
+    'angle scale is still bench-transferred, which is what the slide\'s '
+    '"work in progress" stamp is about. The schematic is drawn so u runs '
+    'left-right in both panels.')
+
+OVERHEAD_BLURB = (
+    'The same statement as a picture. Arms A and C at Z = +-234.6 mm, seen '
+    'from above, every track drawn from its strip-plane crossing back to its '
+    'closest approach to the beam axis and stopped there; 15,194 tracks, all '
+    'pointing-coincident, drawn as reconstructed with no angle rescaling. '
+    'Cropped to |X| < 130 mm so the drawing fills the 2.225:1 slide hole. '
+    'Each waist sits 2-3 cm off the axis in opposite directions (median X '
+    '-21 mm on A, +31 mm on C), which is the same shallow angle scale. A + C '
+    'is degenerate in Z -- both chambers measure global X -- so this is a '
+    'pointing picture, not a tomogram.')
+
+
+FLASH_BLURBS = {
+    'status_flash_railing': (
+        'One flash event on the 24 hottest strips of a DREAM chamber '
+        '(run_32, flash compensation off, resist 500 V, 400 samples x 20 ns). '
+        'The left panel of the old two-panel status_flash_waveform, on its '
+        'own, in the column aspect slide 23.2 now needs. The pair of arrows is '
+        'the whole point of the trace: the baseline carries visible ripple '
+        'BEFORE the flash and none after it, and a preamplifier pinned '
+        'against its rail is exactly what shows neither tracks nor noise.'),
+    'status_two_readouts_op': (
+        'When each read-out chain is usable again, both rows now DETECTOR A '
+        'AT 540 V. Upper: run 224709, MMA = strip 32 of det A on cable Y8, '
+        'digitised at 1 GS/s with no charge-sensitive preamplifier, back '
+        'under 4 mV 2.05 us after its own flash peak. Lower: the run_57 '
+        'flash-random probe on the same chamber at the same amplification '
+        'voltage, noise back after 4.99 ms. Ratio 2,435. This replaces the '
+        '224302 comparison, which was a different run, a different gas and a '
+        'chamber whose identity is not recoverable from the data.'),
+    'status_flash_two_chains': (
+        'The same flash down both chains, each aligned on ITS OWN peak. '
+        'Green, left axis: the bunch-mean of 52 dedicated pulses at drift '
+        '700 / amplification 540 V -- a 45 mV pulse, back under the 4 mV '
+        'threshold in 2.0 us. Blue, right axis: the run_32 DREAM event, '
+        'railed to +4095, crossed to 0, and settled onto a baseline that '
+        'looks recovered and is not. The DREAM trace is not at 540 V: it is '
+        'the only long-window DREAM recording of a flash we hold, because '
+        'production reads 20 samples of 60 ns.'),
+    'status_charge_ladder': (
+        "The front end's largest input range against the two independent "
+        'determinations of detector A\'s flash charge at drift 700 / '
+        'amplification 540 V. Chamber average, from the resistive-layer '
+        'supply current over the board\'s own channel accounting: 131 pC, '
+        'x219 full scale. The one strip measured directly on the n_TOF '
+        'digitiser: 543 pC (the dedicated/parasitic pulse mix), x904. The '
+        '4.1x between them is that strip\'s own charge density, and it is '
+        'the residual results_board.json quotes -- which is why the mix and '
+        'not the 662 pC dedicated median is the number drawn.'),
+    'status_deadtime_detA': (
+        'Post-flash recovery against avalanche charge per beam pulse, '
+        'detector A alone, run_57, both axes measured on the same sub-runs. '
+        "det A's own power law is 1.11 (all three chambers pooled give "
+        '1.20). Two horizontal bands: the thermal window we can reach, and '
+        'the MeV window 3 decades below the point we ran at. 540 V = 5.0 ms, '
+        '560 V = 13.9 ms, and run_55 puts ~4x the track yield at 560 V -- '
+        'that trade is the slide.'),
+    'status_eff_recovery': (
+        'Backup. Efficiency and blindness against the same knob. Left axis: '
+        'June cosmic-bench efficiency for det A and det B (Ar/iC4H10 90/10, '
+        'drift 1000 V, M3-referenced, 5 mm match), with det A\'s spark '
+        'fraction shaded underneath -- the efficiency fall above ~485 V is '
+        'the mirror image of the spark rate, not a gain limit. Right axis: '
+        'run_57 post-flash recovery at n_TOF. The two scans barely overlap '
+        '(450-525 V against 520-580 V, and different drift fields), so this '
+        'is the shape of the trade and not one calibrated curve.'),
+}
 
 
 def plain_fig(name, blurb):
@@ -598,26 +744,93 @@ def build(theme='light'):
    until then, and two stacked full-width pictures can never be more than
    ~59&nbsp;% as wide as one.  <code>--layout detect_solo</code> still writes it
    on a canvas of its own.</p>
-<p class="caveat">Drawn, and not to scale &mdash; except for the one thing that
-   is.  The <b>opening angle is the real 110&deg;</b> and can be measured off
-   the page; the standoff (204 mm from a 23 mm capsule), the 30 mm gap and the
-   400 mm chamber are not, because at scale the gap would be a hairline.  What
-   is tilted is the <b>chamber</b>, by 21&deg;: a track arriving square to the
-   readout plane leaves all its charge at one depth, and then there is no
-   drift-time ladder to reconstruct at all.</p>
+<p class="caveat">Drawn, and not to scale &mdash; except for two things that
+   are.  The <b>opening angle is the real 110&deg;</b> and can be measured off
+   the page, and since 2026-08-20 the two <b>chambers are at the real 90&deg;</b>
+   to each other.  The standoff (204 mm from a 23 mm capsule), the 30 mm gap and
+   the 400 mm chamber are not, because at scale the gap would be a hairline.
+   Those two true angles are not independent: legs 110&deg; apart onto planes
+   90&deg; apart force the incidence to <b>10&deg; on each chamber</b>, so a pair
+   at the kinematic minimum arrives nearly square to both readout planes and
+   leaves the shortest drift-time ladder a micro-TPC ever gets.  That is a real
+   property of the station and not a defect of the drawing &mdash; in 3&#8209;D the
+   pair plane is free to tip out of the page, and most pairs land far more
+   obliquely &mdash; but it is why the in-gas track is drawn at 30&nbsp;% and the
+   primary <b>clusters</b> and their drift lines carry the picture.</p>
 {fig_block('x17_story_bot_3_detect', theme)}
 {fig_block('x17_detect_solo', theme)}
+
+<h2>Where the analysis goes next</h2>
+<p>The closing figure (2026-08-24), and the one the whole detector half of the
+   talk is for.  It is the opening figure answered: the physics case says the
+   observable is an <b>opening angle</b>, and this says how the banked data turn
+   into one &mdash; find the events with two tracks, histogram the angle between
+   them.</p>
+<p>The left panel is <b>not a cartoon</b>.  The four chambers, their 204&nbsp;mm
+   standoff and their 399&nbsp;&times;&nbsp;360&nbsp;mm active area are drawn to
+   scale in the plane, so the angles a pair subtends at the station can be read
+   off it with a protractor &mdash; which is the point, because the reason a
+   110&deg; pair needs <i>two</i> chambers while a narrow one fits in
+   <i>one</i> is then something the audience checks rather than something the
+   speaker asserts.  Only the capsule (drawn at its true 23&nbsp;mm, which is
+   nearly a point at this scale) and the track thicknesses are indicative.</p>
+<p>The right panel splits into what is <b>computed</b> and what is
+   <b>drawn</b>.  Both figure captions came off on Dylan's instruction
+   2026-08-24, so this paragraph and <code>scenes_x17.py</code> are now the only
+   place it is written down &mdash; it has to be <i>said</i> in the room.
+   Computed: both channel
+   shapes, from the same MX17_Simulation generators beat&nbsp;5 uses, and the
+   one-/two-chamber split, which is straight ray tracing on the as-built
+   geometry (<code>scenes_x17.pair_acceptance</code>).  That split is the whole
+   reason the two-chamber background comes out <b>flat</b> &mdash; the
+   acceptance rises with opening angle at about the rate the IPC physics falls
+   &mdash; and it is what puts the X17 window in a region the station covers
+   well.  Drawn: the X17 yield, at a declared <b>30&nbsp;%</b> of the
+   whole background above threshold, which is not a prediction (the
+   relative rate is the measurement); and the 12&nbsp;mm two-track separation
+   behind the ~3&deg; merging cutoff, which is the single-track forward fit's
+   merged-cluster limit and not a measured two-track efficiency.  Weighted by
+   the IPC spectrum, that cutoff costs <b>5.1&nbsp;%</b> of accepted pairs
+   &mdash; small, because the chambers stand 204&nbsp;mm off a point source and
+   a pair separates fast.</p>
+{fig_block('x17_outlook', theme)}
 
 <h2>The Status section&rsquo;s two arguments</h2>
 <p>Rebuilt 2026-08-19.  The section used to be a list of results; it is now one
    argument, and these are the two figures that carry it.  Both are light-only
    and both are saved on their full canvas at the <b>measured</b> aspect of the
-   slide hole they go into (2.95:1 with a stat row under it, 2.22:1 with only a
-   caption) &mdash; a tight bounding box would crop to the ink and change the
-   ratio, so the figure would arrive smaller than the hole.</p>
+   slide hole they go into (2.95:1 with a stat row under it; 2.38:1 with a
+   caption and the <code>.figsrc</code> provenance line, which was 2.225:1
+   before that line moved off the canvas and into the markup on 2026-08-20)
+   &mdash; a tight bounding box would crop to the ink and change the ratio, so
+   the figure would arrive smaller than the hole.</p>
 {plain_fig('campaign_overview', CAMPAIGN_BLURB)}
 {plain_fig('x17_rate_1_physics', RATE1_BLURB)}
 {plain_fig('x17_rate_2_window', RATE2_BLURB)}
+
+<h2>The DAQ-saturation slides, rebuilt</h2>
+<p>New 2026-08-20, from <code>make_flash_slides.py</code>.  The DREAM slide
+   (23.1/23.2 in the deck) became a two-frame build (what DREAM <i>is</i>, then
+   what February 2026 found); slide 24 was rebuilt at the <b>production
+   operating point</b> so both of its rows are detector A at 540 V; slide 25's
+   two panels were replaced.  Every provenance paragraph these figures used to
+   burn into the canvas is now a <code>.figsrc</code> block in the slide
+   markup.</p>
+{plain_fig('status_flash_railing', FLASH_BLURBS['status_flash_railing'])}
+{plain_fig('status_two_readouts_op', FLASH_BLURBS['status_two_readouts_op'])}
+{plain_fig('status_flash_two_chains', FLASH_BLURBS['status_flash_two_chains'])}
+{plain_fig('status_charge_ladder', FLASH_BLURBS['status_charge_ladder'])}
+{plain_fig('status_deadtime_detA', FLASH_BLURBS['status_deadtime_detA'])}
+{plain_fig('status_eff_recovery', FLASH_BLURBS['status_eff_recovery'])}
+
+<h2>The two closing pointing figures</h2>
+<p>New 2026-08-19, from <code>make_run145_pointing.py</code>, which imports its
+   coincidence and geometry from <code>ntof_tracking/run145_target_imaging.py</code>
+   rather than re-implementing them.  Both are on the <b>r06</b>
+   re-reconstruction of run_145, which landed 19:38 on 2026-08-19; both
+   sub-runs are used, each joined to its own slim file.</p>
+{plain_fig('run145_xangle', XANGLE_BLURB)}
+{plain_fig('run145_overhead_AC', OVERHEAD_BLURB)}
 
 <h2>SPS H4 beam telescope</h2>
 <p>Six stations on one rail in the P2 zone, from <code>run_59</code>'s
@@ -696,6 +909,17 @@ def build(theme='light'):
    from the wft calibration bundle, and v<sub>drift</sub> = 36.6 &micro;m/ns is
    the value measured for det3 on that run &mdash; the Magboltz table's
    ~34 &micro;m/ns for the same mixture agrees with it.</p>
+<p>The <b>event is simulated</b> and the deck now says so under the figure
+   (2026-08-20, Dylan).  It needs saying precisely because every constant in it
+   is real: the gap, the pitch, the field, v<sub>drift</sub> and the impulse
+   response all come from det3, so the picture looks like data.  The two claims
+   that used to be burned onto the canvas &mdash; "(measured)" beside v, and
+   "measured response (det3)" over the traces &mdash; came off in the same
+   edit; on a simulated event they invite exactly that misreading.  The
+   drift-time colour scale changed with it, from truncated plasma to five
+   stops running green &rarr; teal &rarr; blue &rarr; violet &rarr; deep
+   crimson: same darkness, four hue moves instead of one, so twenty overlaid
+   traces separate by hue and not only by lightness (<code>style.microtpc_cmap</code>).</p>
 <p class="caveat">The ladder is fitted on the <b>first arrival per strip</b>, a
    deliberately simple estimator that carries a small bias &mdash; which is why
    the real reconstruction fits the waveforms forward (<code>wft/</code>)
@@ -709,8 +933,8 @@ def build(theme='light'):
    vermillion for &plusmn;1, purple for &plusmn;2 &mdash; in the cartoon, in the
    kernels, in the diagram and in the real-data decomposition, so a colour means
    one thing across the whole section.</p>
-<p>Everything with a number on it comes from the <b>frozen production
-   bundle</b> <code>calib_bundle_lp2_t0p</code> (det3, Saturday long run,
+<p>Everything with a number on it comes from the <b>corrected</b> bundle
+   <code>calib_bundle_r06</code> (det3, Saturday long run,
    resistive 490 V / drift 1000 V) and from event 1663 of its ref-pinned
    calibration cache &mdash; the same event the "One muon through the forward
    fit" slide uses.  The decomposition is exact rather than estimated: the model

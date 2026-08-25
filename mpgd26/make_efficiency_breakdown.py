@@ -88,7 +88,7 @@ FLEET = [
     ('D', 'det7', 'g_det7_long'),
     ('E', 'det4', 'g_det4'),
 ]
-HEADLINE = 'sat_det3'          # the chamber the main slide is about
+HEADLINE = 'g_det3_wknd'      # the chamber the main slide is about -- switched from sat_det3 (7,049 rays) to match the map's higher-statistics run (Dylan, 2026-08-23: "use the 22k set")
 
 # Plain-language rows for the loss budget, best -> worst, keyed to the
 # categories of 02_efficiency.py.  Colours: one green for the answer, copper

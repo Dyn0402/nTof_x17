@@ -38,6 +38,13 @@ MY.WantOS               = "el9"
 # condor file transfer, whose cap is ~1 GB per job.
 MY.SendCredential       = true
 
+# Where the slims are read from and the products written to.  These live HERE,
+# in the versioned submit file, not applied to the deployed copy by hand:
+# `stage.sh` rsyncs this file from the repo, so a hand-edit on lxplus survives
+# exactly until the next stage and then vanishes silently.  That cost 56 jobs on
+# 2026-08-13, which all fell back to the wrapper's defaults and found no slims.
+environment = "X17_SLIM_BASE=/eos/experiment/ntof/data/x17/wf_pull/slim_input X17_WF_DEST=root://eosuser.cern.ch//eos/experiment/ntof/data/x17/wf_pull/out"
+
 on_exit_remove          = (ExitCode =?= 0)
 max_retries             = 2
 requirements            = Machine =!= LastRemoteHost

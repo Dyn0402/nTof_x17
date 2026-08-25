@@ -35,6 +35,7 @@ class ScanStats:
     banks_read: int = 0
     blocks_seen: int = 0
     blocks_kept: int = 0
+    blocks_short: int = 0
     samples_kept: int = 0
     bytes_read: int = 0
 
@@ -42,7 +43,7 @@ class ScanStats:
         self.events += other.events
         self.bunches |= other.bunches
         for k in ('banks_seen', 'banks_read', 'blocks_seen', 'blocks_kept',
-                  'samples_kept', 'bytes_read'):
+                  'blocks_short', 'samples_kept', 'bytes_read'):
             setattr(self, k, getattr(self, k) + getattr(other, k))
 
 
@@ -180,5 +181,11 @@ def scan_file(path, windows: dict, keep_flash: bool = False,
                 s = np.frombuffer(payload, dtype=C.SAMPLE_DTYPE,
                                   offset=int(off[k]), count=cnt).copy()
                 st.blocks_kept += 1
+                # The declared length vs what the file actually holds. This is
+                # the ONLY place both numbers exist: the writer stores
+                # len(samples), so a downstream comparison of n against the
+                # stored array is vacuous by construction.
+                if cnt < int(n[k]):
+                    st.blocks_short += 1
                 st.samples_kept += cnt
                 yield bunch, det, chan, int(tof0[k]), s

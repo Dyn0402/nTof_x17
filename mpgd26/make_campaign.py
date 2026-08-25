@@ -85,6 +85,7 @@ CENSUS = os.path.normpath(os.path.join(
     HERE, '..', 'ntof_run_report', 'data', 'events_per_subrun.csv'))
 
 # the two phase boundaries the run report marks, and what they are
+EXPLODE_FROM = dt.date(2026, 7, 1)       # left edge of the exploded panel
 SETUP_END = dt.date(2026, 7, 14)         # scintillator system complete
 PRODUCTION_START = dt.date(2026, 7, 26)  # final configuration frozen
 
@@ -113,7 +114,7 @@ def numbers():
     return dict(days=len(days), unreadable=bad, total=sum(tot.values()), **tot)
 
 
-def draw():
+def draw(highlight_explode: bool = False):
     days, per_day, _bad = census()
     x = np.array([np.datetime64(d) for d in days])
     stacks = {k: np.array([per_day[d][k] for d in days], float) / 1e6
@@ -179,7 +180,19 @@ def draw():
         ax_t.text(mid, 0.74, f'{where} · {_span(start, end)}',
                   ha='center', va='top', fontsize=9.5, color=colour)
         if start == dt.date(2026, 6, 28):
-            last_ab = (a, b)
+            last_ab = (mdates.date2num(EXPLODE_FROM), b)
+            if highlight_explode:
+                # Same bbox, stroke only, in COPPER not ACCENT: the bar's own fill
+                # IS P.ACCENT, so an accent-coloured outline was invisible on it
+                # (caught by reading the rendered PNG). An outline distinct from the fill so
+                # the bar the wedge explodes from is visible as SUCH before
+                # the wedge is emphasized, for the 17.2 build frame (Dylan,
+                # 2026-08-23: "the explosion outline for the August test").
+                ax_t.add_patch(FancyBboxPatch(
+                    (a, Y_SPINE - BAR_H / 2), b - a, BAR_H,
+                    boxstyle='round,pad=0,rounding_size=0.004',
+                    facecolor='none', edgecolor=P.COPPER, linewidth=2.6,
+                    zorder=4))
 
     # the SPS week is NOT on the mini timeline: it is a parasitic side test in
     # another hall, and this figure is down to big-picture titles only.  It is
@@ -190,7 +203,14 @@ def draw():
     ax_t.set_xticks([]), ax_t.set_yticks([])
 
     # ------------------------------------------------------- events per day
-    e0 = np.datetime64('2026-06-27')
+    # The exploded panel starts on 1 JULY, not on the 28 June arrival (Dylan,
+    # 2026-08-19: "it looks like the left side starts in June rather than
+    # July").  The four days before it are the install: the first recorded
+    # sub-run is 2 July, so nothing is lost, and the panel now reads as the
+    # recording period rather than as the run with an empty margin on it.
+    # EXPLODE_FROM is also where the zoom wedge is anchored, so the wedge and
+    # the panel are guaranteed to describe the same interval.
+    e0 = np.datetime64(EXPLODE_FROM.isoformat())
     e1 = np.datetime64('2026-08-11')
     bottom = np.zeros_like(cum)
     for k in KINDS:
@@ -200,7 +220,8 @@ def draw():
     ax_e.set_xlim(e0, e1)
     ax_e.set_ylabel('events recorded per day\n[millions]')
     ax_e.xaxis.set_major_formatter(mdates.DateFormatter('%-d %b'))
-    ax_e.xaxis.set_major_locator(mdates.DayLocator(interval=4))
+    ax_e.xaxis.set_major_locator(mdates.DayLocator(bymonthday=(1, 5, 9, 13,
+                                                               17, 21, 25, 29)))
     ax_e.grid(axis='y', alpha=0.28)
     ax_e.set_axisbelow(True)
     P.strip(ax_e)
@@ -242,13 +263,23 @@ def draw():
     # up.  This is the only thing that makes the two panels one figure.
     if last_ab:
         inv = fig.transFigure.inverted().transform
-        pts = [inv(ax_t.transData.transform((last_ab[0], 0.235 - 0.155 / 2))),
-               inv(ax_t.transData.transform((last_ab[1], 0.235 - 0.155 / 2))),
+        pts = [inv(ax_t.transData.transform((last_ab[0], Y_SPINE - BAR_H / 2))),
+               inv(ax_t.transData.transform((last_ab[1], Y_SPINE - BAR_H / 2))),
                inv(ax_e.transAxes.transform((1.0, 1.0))),
                inv(ax_e.transAxes.transform((0.0, 1.0)))]
+        # zorder 0.5, not 0.  Figure-level artists are drawn BEFORE the axes
+        # when the zorder ties (Figure.get_children puts .artists ahead of
+        # .axes), so at zorder 0 the timeline panel's own opaque background
+        # painted over the top third of the wedge -- the visible apex then
+        # started level with the panel's bottom edge, three months to the LEFT
+        # of the bar it is supposed to come out of, and the wedge read as
+        # opening from May (Dylan, 2026-08-20: "the shaded region ... still
+        # starts from May/June on the timeline").  Above the axes it is drawn
+        # whole, from the underside of the July-August bar, and at 7.5 % it
+        # tints the month labels it crosses without hiding them.
         fig.add_artist(matplotlib.patches.Polygon(
             pts, closed=True, facecolor=P.ACCENT, alpha=0.075,
-            edgecolor='none', zorder=0))
+            edgecolor='none', zorder=0.5))
 
     _note(fig, 'Every beam exposure of the programme (make_timeline.py; the '
                 'annotated version is in backup), and one bar per day of entries '
@@ -261,6 +292,9 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--slides', action='store_true')
     ap.add_argument('--numbers', action='store_true')
+    ap.add_argument('--highlight-explode', action='store_true',
+                     help='outline the July-August bar the events panel '
+                          'explodes from (slide 17.2)')
     args = ap.parse_args()
 
     n = numbers()
@@ -271,8 +305,9 @@ def main():
         return
 
     os.makedirs(FIG, exist_ok=True)
-    fig = draw()
-    base = os.path.join(FIG, 'campaign_overview')
+    fig = draw(highlight_explode=args.highlight_explode)
+    name = 'campaign_overview_highlight' if args.highlight_explode else 'campaign_overview'
+    base = os.path.join(FIG, name)
     for ext in ('png', 'pdf'):
         # the rcParam is savefig.bbox='tight'; passing None falls back to it,
         # so the full canvas has to be named explicitly or the aspect drifts
@@ -283,7 +318,7 @@ def main():
         import shutil
         os.makedirs(SLIDES, exist_ok=True)
         shutil.copyfile(f'{base}.png',
-                        os.path.join(SLIDES, 'campaign_overview.png'))
+                        os.path.join(SLIDES, f'{name}.png'))
     plt.close(fig)
 
 

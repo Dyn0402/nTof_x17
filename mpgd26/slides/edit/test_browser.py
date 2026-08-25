@@ -255,6 +255,114 @@ try:
           badge_txt.strip().startswith(str(len(edited))),
           f'{len(edited)} edited, badge says {badge_txt!r}')
 
+    # ---- 4b. text size, the whole point of Alt+arrows -----------------------
+    PICK = """(() => {
+        const el = Array.from(document.querySelectorAll('.slide.active [data-eid]'))
+          .find(n => n.dataset.fsid && n.textContent.trim().length > 8
+                     && !n.classList.contains('dirty'));
+        if (!el) return null;
+        el.focus();
+        const r = document.createRange(); r.selectNodeContents(el); r.collapse(false);
+        const s = getSelection(); s.removeAllRanges(); s.addRange(r);
+        return el.dataset.fsid; })()"""
+    fsid = ws.js(PICK)
+    check('a resizable field takes focus', fsid is not None, f'fsid {fsid}')
+    px = lambda sel: ws.js(f"parseFloat(getComputedStyle({sel}).fontSize)")
+    Q = f"document.querySelector('[data-fsid=\"{fsid}\"]')"
+    base = px(Q)
+    ws.key('ArrowUp', 'ArrowUp', 38, mods=1)          # Alt+Up
+    up1 = px(Q)
+    check('Alt+Up makes the focused text bigger', up1 > base + 0.5,
+          f'{base:.1f}px -> {up1:.1f}px')
+    check('it writes --fs-scale and nothing else',
+          ws.js(f"{Q}.getAttribute('style')") == '--fs-scale: 1.05;',
+          ws.js(f"{Q}.getAttribute('style')"))
+    check('the size tip names the target',
+          '1.05' in ws.js("document.getElementById('edit-size').textContent"),
+          ws.js("document.getElementById('edit-size').textContent"))
+    ws.key('ArrowUp', 'ArrowUp', 38, mods=1)
+    check('a second step goes up the ladder', px(Q) > up1 + 0.5,
+          f'{up1:.1f}px -> {px(Q):.1f}px')
+    ws.key('0', 'Digit0', 48, mods=1)                 # Alt+0 = reset
+    check('Alt+0 restores the original size', abs(px(Q) - base) < 0.01)
+    check('and leaves no style attribute behind',
+          ws.js(f"{Q}.hasAttribute('style')") is False)
+    check('a reset element is not counted as unsaved',
+          'resized' not in ws.js("document.getElementById('edit-badge').textContent"))
+
+    # widen the target with Shift: the list / column / slide around the field
+    wide = ws.js(f"""(() => {{
+        const el = {Q}; let p = el.parentElement;
+        while (p && !p.hasAttribute('data-fsid')) p = p.parentElement;
+        return p ? p.dataset.fsid : null; }})()""")
+    check('the field has a resizable container', wide is not None, f'fsid {wide}')
+    ws.key('ArrowDown', 'ArrowDown', 40, mods=1 | 8)   # Alt+Shift+Down
+    W = f"document.querySelector('[data-fsid=\"{wide}\"]')"
+    check('Alt+Shift+Down shrinks the container, not the field',
+          ws.js(f"{W}.style.getPropertyValue('--fs-scale')").strip() == '0.95'
+          and ws.js(f"{Q}.hasAttribute('style')") is False)
+    check('the text inside it actually got smaller', px(Q) < base - 0.2,
+          f'{base:.1f}px -> {px(Q):.1f}px')
+    ws.key('0', 'Digit0', 48, mods=1 | 8)              # put it back
+    check('Alt+Shift+0 resets the container', abs(px(Q) - base) < 0.01)
+
+    # with no field focused the target is the whole slide -- the overfull fix
+    ws.js("document.activeElement.blur(); document.body.focus();")
+    ws.key('ArrowDown', 'ArrowDown', 40, mods=1)
+    check('with nothing focused, the slide itself is resized',
+          ws.js("document.querySelector('.slide.active')"
+                ".style.getPropertyValue('--fs-scale')").strip() == '0.95')
+    check('every text size on that slide moved with it', px(Q) < base - 0.2,
+          f'{base:.1f}px -> {px(Q):.1f}px')
+    # keep this one, plus one field-level size, for the save
+    ws.js(PICK)
+    ws.key('ArrowUp', 'ArrowUp', 38, mods=1)
+    resized = 2
+    check('badge reports the resizes', 'resized' in ws.js(
+        "document.getElementById('edit-badge').textContent"),
+        ws.js("document.getElementById('edit-badge').textContent"))
+
+    # ---- 4c. the same thing with the mouse, on a real bullet list -----------
+    # This is the case that failed in use: a scale on a <ul class="bullets">
+    # set the property but moved nothing, because the type scale was multiplied
+    # in the variable definition instead of in the font-size declaration.
+    li = ws.js("""(() => {
+        const el = document.querySelector('.slide .bullets li[data-eid]');
+        if (!el) return null;
+        el.closest('.slide').classList.add('active');
+        document.querySelectorAll('.slide').forEach(s => {
+            if (s !== el.closest('.slide')) s.classList.remove('active'); });
+        el.focus();
+        const r = document.createRange(); r.selectNodeContents(el); r.collapse(false);
+        const s = getSelection(); s.removeAllRanges(); s.addRange(r);
+        return el.dataset.eid; })()""")
+    check('found a real bullet to work on', li is not None)
+    L = f"document.querySelector('[data-eid=\"{li}\"]')"
+    ul = f"{L}.closest('ul')"
+    li0, ul0 = px(L), px(ul)
+    li_own = ws.js(f"{L}.style.getPropertyValue('--fs-scale')")   # may already be set
+    check('the size panel is on the page',
+          ws.js("!!document.getElementById('edit-size-ui')") is True)
+    ws.js("document.querySelector('#edit-size-ui [data-scope=\"block\"]').click()")
+    check('the panel points at the list, not the bullet',
+          ws.js("document.querySelector('#edit-size-ui .tgt').textContent") == 'ul.bullets',
+          ws.js("document.querySelector('#edit-size-ui .tgt').textContent"))
+    ws.js("document.querySelector('#edit-size-ui [data-act=\"-1\"]').click()")
+    check('the list itself carries the scale',
+          ws.js(f"{ul}.style.getPropertyValue('--fs-scale')").strip() == '0.95',
+          ws.js(f"{ul}.getAttribute('style')"))
+    check("the bullet's own size is left alone",
+          ws.js(f"{L}.style.getPropertyValue('--fs-scale')") == li_own,
+          f'was {li_own!r}')
+    check('EVERY bullet in the list got smaller',
+          ws.js(f"""Array.from({ul}.querySelectorAll('li'))
+                    .every(n => parseFloat(getComputedStyle(n).fontSize) < {li0} - 0.2)"""),
+          f'{li0:.2f}px -> {px(L):.2f}px')
+    ws.js("document.querySelector('#edit-size-ui [data-act=\"0\"]').click()")
+    check('reset puts the whole list back',
+          abs(px(L) - li0) < 0.01 and abs(px(ul) - ul0) < 0.01)
+    ws.js("document.querySelector('#edit-size-ui [data-scope=\"text\"]').click()")
+
     # ---- 5. Ctrl+D preview, then Ctrl+S save -------------------------------
     ws.key('d', 'KeyD', 68, mods=2)
     time.sleep(0.8)
@@ -281,12 +389,26 @@ try:
     check('a <b> from Ctrl+B reached the file', '<b>' in
           next((l for l in saved.splitlines()
                 if l != before.splitlines()[saved.splitlines().index(l)]), '') or True)
+    # the stylesheet mentions --fs-scale too, so count the delta, not the total
+    check('the sizes reached the file',
+          saved.count('--fs-scale:') - before.count('--fs-scale:') == resized,
+          f"{saved.count('--fs-scale:') - before.count('--fs-scale:')} of {resized}")
+    check('a whole slide carries one of them',
+          any('<section class="slide' in l and '--fs-scale:' in l
+              for l in saved.splitlines()))
     changed = [(a, b) for a, b in zip(before.splitlines(), saved.splitlines()) if a != b]
-    check('only the edited fields changed', len(changed) == len(edited),
-          f'{len(changed)} line(s) for {len(edited)} field(s)')
-    if len(changed) != len(edited):
+    check('only what we touched changed',
+          len(changed) <= len(edited) + resized
+          and all('EDITED ok' in b or 'second field' in b or '--fs-scale:' in b
+                  or ('<b>' in b and '<b>' not in a) for a, b in changed),
+          f'{len(changed)} line(s) for {len(edited)} edit(s) + {resized} size(s)')
+    if not all('EDITED ok' in b or 'second field' in b or '--fs-scale:' in b
+               or ('<b>' in b and '<b>' not in a) for a, b in changed):
         for a, b in changed:
             print(f'       - {a.strip()[:100]}\n       + {b.strip()[:100]}')
+    check("the deck's own bare <span> sub-labels survived",
+          saved.count('<span>') == before.count('<span>'),
+          f"{saved.count('<span>')} vs {before.count('<span>')}")
     check('line count unchanged',
           len(before.splitlines()) == len(saved.splitlines()))
 
@@ -294,11 +416,16 @@ try:
     time.sleep(1.5)
     check('page reloaded clean after save',
           ws.js("document.querySelectorAll('[data-eid]').length") == nfields)
-    check('no unsaved edits after reload', 'unsaved' not in ws.js(
-        "document.getElementById('edit-badge').textContent"))
-    check('saved file still renders all 82 slides',
+    check('no unsaved edits after reload', 'EDIT MODE' in ws.js(
+        "document.getElementById('edit-badge').textContent"),
+        ws.js("document.getElementById('edit-badge').textContent"))
+    check('saved file still renders every slide',
           ws.js("document.querySelectorAll('.slide').length") ==
           before.count('<section class="slide'))
+    in_markup = saved[saved.index('</style>'):].count('--fs-scale:')
+    check('the saved sizes are still applied after the reload',
+          ws.js("document.querySelectorAll('[style*=\"--fs-scale\"]').length")
+          == in_markup, f'{in_markup} in the markup')
 
 finally:
     for p in (chrome, server):

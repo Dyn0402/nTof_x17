@@ -90,6 +90,20 @@ def sample_bunches(bunches, n_blocks=5, block=10):
     return np.unique(np.concatenate([b[s:s + block] for s in starts]))
 
 
+def check_processed_available(ntof_run: int, ntof_source=None) -> None:
+    """Raise if this run's processed n_TOF set cannot legally be read.
+
+    Same resolution `tflash_from_processed` performs, and nothing more, so the
+    caller can learn that the cross-check is impossible BEFORE the raw read
+    rather than after it. `config.ntof_files` is the authority on what counts as
+    complete -- an incomplete partial set must never be read (a 17-of-41 set
+    covers 17/41 of the bunches and looks like a quiet detector everywhere
+    else), and this function exists to surface that verdict, never to soften it.
+    """
+    from ntof_processing.slim_pipeline import config as SC
+    SC.ntof_files(ntof_run, ntof_source)
+
+
 def tflash_from_processed(ntof_run: int, bunches, dets=C.SCINT_DETS,
                           ntof_source=None) -> dict:
     """{(det_code, detn, bunch): value} from the processed file's `tflash`.

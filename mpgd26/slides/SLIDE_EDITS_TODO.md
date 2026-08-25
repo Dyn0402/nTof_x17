@@ -47,7 +47,157 @@ they need to be.
 
 ## Queue
 
+### Staged, waiting on the word (2026-08-24)
+
+- [ ] **Put the outlook figure and its heading into the Summary slide.**
+      One command, idempotent, and it does both halves together:
+
+      ```bash
+      cd mpgd26/slides && ../../.venv/bin/python staged/apply_outlook_heading.py
+      ```
+
+      **(a)** Copies the current render into `assets/img/x17_outlook.png`. The
+      deck asset is **deliberately stale** right now — the figure went through
+      four rounds on 2026-08-24 while the slide was left alone on Dylan's
+      instruction (*"Don't edit the slides for now, just point me to the
+      image"*), so what is in `assets/` is the *first* version.
+      **(b)** Adds a heading above the figure — *"Next steps for the
+      analysis"* — Dylan: *"put in HTML text above this diagram in large text
+      … to make clear this hasn't been done but will be done."*
+
+      The heading is **markup, not part of the figure**, on purpose: the figure
+      is shared with `report.html`, while "this has not been done yet" is a
+      claim about where the talk stands and belongs to the slide. It also stays
+      live text that way — editable in the browser editor, and it scales with
+      the deck's own type scale instead of being baked into a PNG. Styled from
+      the deck's tokens rather than a new class: `--fs-title-sm × 0.86` sits
+      clearly above body text and below the slide title, and `--accent-ink` is
+      the one colour in the palette reserved for *look here*.
+
+      Verified by running it and reverting: it applies cleanly, the second run
+      reports "nothing to do", and it leaves the acknowledgements line that
+      appeared on the slide in the meantime alone. **After it runs**: mirror +
+      `add-note.py --deploy`, and `slides/make_pdf.sh`. The script prints those
+      three commands.
+
 ### Done
+
+- [x] **The Summary became a figure slide** (2026-08-24): six bullets → three
+      one-liners, plus a new figure under them — *find the two-track events →
+      histogram the opening angle* (`x17_outlook.png`,
+      `make_x17.py --layout outlook`). The efficiency number came off the
+      chamber bullet (slide 12 argues it with a map), the two front-end bullets
+      merged into one, and the reconstruction bullet was cut — slide 22 already
+      shows the fans closing on the capsule, and the new figure makes the same
+      point forward instead of backward. The old "Next:" bullet **is** the
+      figure. Left panel is the station in plan view **to scale**; right panel
+      names the four features of the spectrum. The X17 yield on it is a
+      declared 30 %, not a prediction, and the panel says so. Full write-up in
+      `NOTES.md`.
+
+- [x] **Ninth batch** (2026-08-23): removed the slide-transition crossfade
+      (slides now just appear); merged the two on-screen counters into one
+      (the printed footer, now carrying `x / 29`); added four
+      section-transition dividers (kicker word + one-sentence primer) which
+      pushed the talk from 25 to **29 slides**; and per-slide edits on 5, 11,
+      12, 13, 14, 15.x (now 18.x), and 17 (now 21.x, split into a 3-frame
+      build) — legend transparency, dataset consistency, det3/M3 references
+      dropped, a text-wall build for the setup section's back half, and a
+      highlighted-bar figure variant for the campaign slide. Also fixed
+      `make_pdf.sh`'s 2-digit filename padding, which silently scrambled page
+      order once the deck crossed 99 sections. Full write-up in `NOTES.md`.
+      **Not yet decided**: which sliding-efficiency-map threshold variant to
+      ship on slide 13 (four are on disk). `RUNNING_ORDER.md`'s row-by-row
+      table was not re-walked and is stale by 1-4 slide numbers throughout.
+
+- [x] **Slide numbering, eighth batch** (2026-08-21): the ten-section 3-D setup
+      sequence collapsed to one number, **15.1–15.10**, and the "x / N" counter
+      now stops at the Summary (`data-total-end`) while backup keeps counting
+      past it — `26 / 25` … `71 / 25`. The talk is **25 slides**. `index.html`
+      only; no figure re-rendered, and `make_pdf.sh` needed no change because it
+      already derives its counter injection from `bstart`/`bcont`. Write-up in
+      `NOTES.md`. Worth remembering: **the build classes are a numbering
+      mechanism, not a layout one.** `.fut` (reserve the space, hide the text)
+      is what stops text jumping *within* one argument; a sequence of different
+      pictures wants the numbering and none of the reservation. They are
+      separable, and here they were separated.
+
+- [x] **Motivation + Reconstruction, seventh batch** (2026-08-20 evening):
+      slide 5.3's arrow, slide 6.3's station geometry, slide 8's colours and
+      its "simulated" line, slide 9.2's film inset, slide 10's four stages.
+      Write-up in `NOTES.md`; four things worth remembering:
+      **(a) drawing two true angles at once can force a third one you did not
+      choose.** Putting the chambers at their real 90° while keeping the pair
+      at its real 110° fixes the incidence at 10° — the drawing had no freedom
+      left, and the ladder the cartoon exists to show went nearly flat. Check
+      the *derived* angle before committing to two independent ones.
+      **(b) a physics wording error survives a long time if it sits in small
+      type.** Stage 2 said the spread was "the initial cloud, diffusion, and
+      the slice's own sideways travel" for weeks. There is no initial cloud —
+      the primaries are discrete clusters. Read the diagram bodies out loud
+      occasionally; that is how this one was caught, by Dylan, in a slide
+      review.
+      **(c) two encodings of one number will drift apart.** The kernel figure
+      measured its delay off its own grid (332 ns) while everything else quoted
+      2τ (333 ns). Print the *model's* number and draw the arrow where the data
+      says; never let the arrow's endpoints generate the label.
+      **(d) removing one caption of a pair changes what the other one is.** It
+      stops being a footnote and becomes the slide's only sentence, so it needs
+      a size that survives the back of the room — `.fig-label.big`. Deleting
+      text and resizing what is left are one edit, not two.
+
+- [x] **The Status section, sixth batch** (2026-08-20): the wedge on 26, a
+      linear rate axis, slide 28 rebuilt as an introduction to DREAM, slide 29
+      moved onto the production operating point, slide 30 cut down, and all
+      the small print out of the figures and into markup. Full write-up in
+      `NOTES.md`; five things worth remembering:
+      **(a) "the numbers look wrong" is usually about the caveats, not the
+      arithmetic.** Slide 29's 0.87 µs and 5 ms were both correct — they just
+      came from different runs, gases and chambers, and one of the chambers
+      could not even be named. Run 224709 gives the same comparison on **one
+      named chamber at one voltage**, and the answer is a cleaner ×2 435. When
+      a number is doubted, look for a version of the measurement with fewer
+      free ends before defending the one you have.
+      **(b) changing an axis can change what the reading aid is allowed to
+      be.** The cubic spline on the rate figure overshot the highest measured
+      point by 30 %. On the old log axis that was invisible; on a linear axis
+      it is a phantom peak where the eye reads the headline. PCHIP cannot
+      overshoot, and nothing else about the figure changed.
+      **(c) a figure-level artist at the same zorder as an Axes draws
+      *underneath* it.** `Figure.get_children()` puts `.artists` before
+      `.axes`, so the campaign wedge was painted over by the timeline panel's
+      own background — and what survived read as starting three months early.
+      The polygon's coordinates were right the whole time.
+      **(d) provenance belongs in markup, not on the canvas.** `.figsrc` costs
+      nothing to edit or delete and arrives in the deck's own type. It also
+      **changes the figure hole** — 2.225:1 became 2.38:1 the moment the line
+      moved off the canvas — so re-probe before you re-render.
+      **(e) build the figure before you write its caption.** The bench
+      efficiency curve *falls* above 485 V, tracking the chamber's own spark
+      fraction; the caption drafted from memory said it was still climbing.
+      Draw the thing, read it, then write.
+
+- [x] **The two closing slides rebuilt, and a "work in progress" stamp**
+      (2026-08-19, fifth batch). Full write-up in `NOTES.md`; four things
+      worth remembering:
+      **(a) the strongest version of a result is the one with no free
+      parameter.** The old closing pair fitted an angle scale until the image
+      focused, and quoted the scale. The new slide 32 draws
+      tan θ = u / 235 mm — one measured distance, no fit — and lets the reader
+      see how close the band sits. It is a weaker-sounding claim that is much
+      harder to argue with.
+      **(b) a stamp only means something while it is rare.** `.wip` is on
+      eight slides out of 77. Put it on a third of the deck and it reads as
+      decoration; the CSS comment says so, next to the rule.
+      **(c) an external cut is not a selection if its geometry cannot produce
+      the answer.** The wall coincidence keeps the tracks the scintillators
+      confirm — and the wall is 96 mm behind the strip plane, with no 235 mm
+      anywhere in it, so it cannot fake the slope. Say that on the slide;
+      someone will ask.
+      **(d) check the input's mtime before you check your arithmetic.** Two
+      builds an hour apart gave different counts because the r06
+      re-reconstruction landed underneath them at 19:38. It looked exactly
+      like a nondeterminism bug.
 
 - [x] **The Status section rebuilt into one argument** (2026-08-19, fourth
       batch). Full write-up in `NOTES.md`; the four things worth remembering:

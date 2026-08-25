@@ -16,8 +16,8 @@ RUN=${1:?usage: wrapper.sh <ntof_run>}
 XRD=${X17_CTA_XRD:-root://eosctapublicdisk.cern.ch/}
 CTA=${X17_CTA_BASE:-/eos/ctapublicdisk/archive/ntof/2026/EAR2/X17_measurement}
 DISK=${X17_NTOF_RAW:-/eos/experiment/ntof/DAQ/2026/EAR2/X17_measurement}
-SLIM=${X17_SLIM_BASE:-/eos/experiment/ntof/data/x17/july_beam}
-DEST=${X17_WF_DEST:-root://eosuser.cern.ch//eos/experiment/ntof/data/x17/july_beam}
+SLIM=${X17_SLIM_BASE:-/eos/experiment/ntof/data/x17/wf_pull/slim_input}
+DEST=${X17_WF_DEST:-root://eosuser.cern.ch//eos/experiment/ntof/data/x17/wf_pull/out}
 WINDOW=${X17_WF_WINDOW_NS:-5000}
 EXTRA=${X17_WF_EXTRA:-}
 
@@ -61,6 +61,18 @@ fi
 echo "credential OK: $(klist 2>/dev/null | awk '/krbtgt/ {print $1, $2, "->", $3, $4}' | head -1)"
 echo "preflight OK"
 
+# ---- is there anything to build? -------------------------------------------
+# BEFORE the raw listing, which takes minutes to hours when the whole fleet
+# hits EOS and CTA at once. A run with no slim under $SLIM can produce nothing,
+# and discovering that after the listing is how 56 jobs burned ~3 h each.
+n_slim=$(find "$SLIM" -name "ntof_hits_*_${RUN}.root" 2>/dev/null | wc -l)
+if [ "$n_slim" -eq 0 ]; then
+    echo "FAIL: no slim products for $RUN under $SLIM"
+    echo "      (X17_SLIM_BASE=${X17_SLIM_BASE:-<unset, using default>})"
+    exit 3
+fi
+echo "$n_slim slim segment(s) for $RUN"
+
 # ---- decide the raw source -------------------------------------------------
 n_cta=$(xrdfs "$XRD" ls "$CTA/$RUN/stream1" 2>/dev/null | grep -c '_s1\.raw\.finished$' || true)
 n_disk=$(ls "$DISK/$RUN/stream1" 2>/dev/null | grep -c '_s1\.raw' || true)
@@ -86,6 +98,28 @@ else
         sed "s|.*/run${RUN}_\([0-9]*\)_s1.*|\1 $XRD&|" | sort -n | cut -d' ' -f2- \
         > "$RAWLIST"
     STAGE_ARG="--stage-dir $STAGE"
+
+    # A CTA recall does NOT stay staged. Measured 2026-08-13: a recall that read
+    # 3187/3187 files online was back to online:false on 26 of 27 runs inside a
+    # day, with no pin held (`requested:false`), and 224614/224616 died on
+    # `[3005] no disk replica exists` at their FIRST xrdcp. So the recall must be
+    # consumed, not banked -- see campaign.sh, which couples recall to submit.
+    #
+    # Check before reading rather than after: a job that starts on an evicted
+    # run wastes a slot and, worse, could xrdcp its way to a PARTIAL read that
+    # looks like a quiet detector downstream.
+    sed "s|^$XRD||" "$RAWLIST" > "$RAWLIST.paths"
+    n_online=$(xargs -a "$RAWLIST.paths" -n 50 xrdfs "$XRD" query prepare 0 2>/dev/null |
+               tr -d ' \n' | grep -o '"online":true' | wc -l)
+    n_want=$(wc -l < "$RAWLIST")
+    echo "tape staging: $n_online of $n_want files online"
+    if [ "$n_online" -lt "$n_want" ]; then
+        echo "FAIL: $RUN is not fully staged ($n_online/$n_want online)."
+        echo "      The recall has expired or never completed. Re-request it and"
+        echo "      submit this run WITHIN THE SAME PASS -- recalled files fall"
+        echo "      back to tape-only in well under a day."
+        exit 3
+    fi
 fi
 echo "$(wc -l < "$RAWLIST") raw files to read"
 
@@ -93,27 +127,55 @@ echo "$(wc -l < "$RAWLIST") raw files to read"
 set +e
 python -m ntof_processing.waveform_pull.pull_run "$RUN" \
     --slim-base "$SLIM" --raw-list "$RAWLIST" --out "$OUT" \
-    --window-ns "$WINDOW" $STAGE_ARG $EXTRA
+    --window-ns "$WINDOW" --tflash-fallback-on-incomplete $STAGE_ARG $EXTRA
 rc=$?
 set -e
 echo "pull_run exit $rc"
 
-# ---- publish, whatever the exit code ---------------------------------------
-# A run that failed its completeness check still produced real data for the
-# bunches it did see, and the provenance JSON records exactly which. Publish it
-# with the verdict attached rather than throwing the raw read away.
-published=0
-while IFS= read -r f; do
-    rel=${f#"$OUT"/}
-    echo "  publish $rel"
-    xrdcp --force --silent "$f" "$DEST/$rel" || { echo "  XRDCP FAILED: $rel"; exit 4; }
-    published=$((published + 1))
-done < <(find "$OUT" -type f \( -name '*.root' -o -name '*.json' \))
-echo "published $published files to $DEST"
-
-# ---- verify what landed ----------------------------------------------------
+# ---- verify BEFORE publishing ----------------------------------------------
+# `--write-json` drops a <product>_verify.json beside each product so the fleet
+# verdict is read from summaries rather than grepped out of prose in job logs
+# (that habit produced four confident wrong numbers in one night on this
+# project). The verdict does not gate the publish -- a product that fails
+# closure is still evidence, and the raw may be gone by the time anyone looks --
+# but it travels WITH the product instead of dying in a log.
 find "$OUT" -name 'ntof_wf_*.root' -print0 |
-    xargs -0 -r python -m ntof_processing.waveform_pull.verify || true
+    xargs -0 -r python -m ntof_processing.waveform_pull.verify --write-json || true
+
+# ---- publish COMPLETE products only ----------------------------------------
+# The provenance JSON is written last, by `SegmentWriter.close`, so its presence
+# is exactly the statement "this product is finished". Publishing on the .root
+# alone put three files with no `blocks` tree at all onto EOS on 2026-08-13,
+# from a job that died mid-scan -- indistinguishable from a real product until
+# something tries to open one.
+published=0 skipped=0
+while IFS= read -r prov; do
+    stem=${prov%_provenance.json}
+    if [ ! -f "$stem.root" ]; then
+        echo "  ORPHAN provenance with no product: $prov"; continue
+    fi
+    for f in "$stem.root" "$prov" "${stem}_verify.json"; do
+        [ -f "$f" ] || continue
+        rel=${f#"$OUT"/}
+        echo "  publish $rel"
+        xrdcp --force --silent "$f" "$DEST/$rel" \
+            || { echo "  XRDCP FAILED: $rel"; exit 4; }
+        published=$((published + 1))
+    done
+done < <(find "$OUT" -type f -name 'ntof_wf_*_provenance.json')
+
+while IFS= read -r f; do
+    [ -f "${f%.root}_provenance.json" ] && continue
+    echo "  NOT PUBLISHED (half-written, no provenance): ${f#"$OUT"/}"
+    skipped=$((skipped + 1))
+done < <(find "$OUT" -type f -name 'ntof_wf_*.root')
+
+# The run-level summary is not a product and carries no provenance of its own.
+if [ -f "$OUT/pull_$RUN.json" ]; then
+    xrdcp --force --silent "$OUT/pull_$RUN.json" "$DEST/pull_$RUN.json" \
+        && published=$((published + 1))
+fi
+echo "published $published files to $DEST ($skipped incomplete products withheld)"
 
 echo "=== done, exit $rc, $(date -u)"
 exit $rc

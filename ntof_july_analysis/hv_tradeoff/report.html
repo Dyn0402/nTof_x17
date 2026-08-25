@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>What the amplification voltage bought — chamber A</title>
+<style>
+:root{--ink:#23373b;--muted:#5d7176;--line:#d3dadb;--accent:#c66a0f;
+       --dead:#a8402f;--good:#2e8b57;--paper:#fff;--ground:#f4f6f6;}
+*{box-sizing:border-box}
+body{margin:0;padding:0 1.5rem 5rem;background:var(--ground);color:var(--ink);
+     font:16px/1.6 "Noto Sans","Segoe UI",Helvetica,Arial,sans-serif;}
+.wrap{max-width:1080px;margin:0 auto}
+header{padding:2.6rem 0 1rem}
+h1{font-size:2.1rem;line-height:1.12;margin:0 0 .5rem}
+h2{font-size:1.35rem;margin:2.6rem 0 .3rem}
+h3{font-size:1.02rem;margin:1.6rem 0 .3rem}
+.eyebrow{font-size:.7rem;letter-spacing:.16em;text-transform:uppercase;
+         color:var(--muted);font-weight:700;margin:0 0 .8rem}
+.dek{color:var(--muted);max-width:70ch;margin:0}
+.verdict{background:var(--paper);border-left:4px solid var(--accent);
+         padding:1.1rem 1.3rem;margin:1.6rem 0;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.verdict p{margin:0 0 .6rem}.verdict p:last-child{margin:0}
+.tiles{display:flex;flex-wrap:wrap;gap:1rem;margin:1.4rem 0}
+.tile{background:var(--paper);padding:.9rem 1.1rem;flex:1 1 190px;
+      box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.tile .n{font-size:1.7rem;font-weight:700;line-height:1.1;
+         font-variant-numeric:tabular-nums}
+.tile .l{font-size:.8rem;color:var(--muted);margin-top:.25rem}
+table{border-collapse:collapse;width:100%;background:var(--paper);font-size:.92rem;
+      box-shadow:0 1px 3px rgba(0,0,0,.06);margin:.8rem 0}
+th,td{padding:.5rem .8rem;text-align:right;border-bottom:1px solid var(--line)}
+th:first-child,td:first-child{text-align:left}
+thead th{font-size:.7rem;letter-spacing:.09em;text-transform:uppercase;
+         color:var(--muted)}
+tbody td{font-variant-numeric:tabular-nums;font-family:"Noto Sans Mono",monospace}
+tbody td:first-child{font-family:inherit}
+tr.op td{background:#fdf1e2;font-weight:700}
+figure{margin:1.4rem 0;background:var(--paper);padding:.8rem;
+       box-shadow:0 1px 3px rgba(0,0,0,.06)}
+figure img{width:100%;display:block}
+figcaption{font-size:.87rem;color:var(--muted);margin-top:.6rem}
+figcaption b{color:var(--ink)}
+code{font-family:"Noto Sans Mono",monospace;font-size:.87em;background:var(--ground);
+     padding:.05em .3em}
+.warn{border-left:4px solid var(--dead)}
+.warn h3{color:var(--dead);margin-top:0}
+ul{max-width:74ch}li{margin-bottom:.45rem}
+footer{margin-top:3rem;padding-top:1rem;border-top:1px solid var(--line);
+       font-size:.83rem;color:var(--muted)}
+</style></head><body><div class="wrap">
+
+<header>
+<p class="eyebrow">n_TOF July analysis · HV trade-off · chamber A</p>
+<h1>What we gave up by running at 540 V</h1>
+<p class="dek">The flash recovery time says how high the amplification voltage
+may go. This is the other half: what the voltage buys, from the June cosmic
+bench at Ar/iso 95/5, carried onto the n_TOF voltage axis with the Garfield
+equivalence map, and checked against n_TOF's own resist scan in the production
+gas.</p>
+</header>
+
+<div class="verdict">
+<p><b>Which noise era you ask about decides whether 540 V was on the
+plateau.</b> The 27 June bench scan puts the chamber's efficiency plateau at
+81 % over 455–500 V
+(95/5). Carried onto the n_TOF axis by the July ledger, 540 V is worth
+81 % — on the plateau, indistinguishable
+from 560 V's 81 %. Carried by the
+<em>production</em> ledger, after the 23 July noise step, the same setpoint is
+worth <b>69 %</b> against
+81 % at 560 V — on the shoulder of
+the turn-on, not the plateau. <b>That difference, ~12
+points, is the honest cost of the 540 V decision</b>, and it is a cost the
+noise step imposed rather than the decision itself. The product of visible X17
+rate and reconstructed-track yield still peaks at <b>550 V</b>,
+with 540 V within 95 % of it.</p>
+<p><b>The usable window is about 20 V wide and it has a ceiling on both
+sides.</b> Below ~535 V the chamber falls off its own detection turn-on in the
+production noise, and stops reconstructing tracks well before that; above ~555 V
+the recovery passes the thermal peak and the rate goes to nothing; and the
+bench's own discharge onset maps to <b>565 V</b>, a
+few volts above where the dead time already ended the argument.</p>
+<p><b>The 23 July noise step moved the operating point, not just the noise.</b>
+In the run_55 configuration 540 V is worth bench 459 V;
+in the production configuration it is worth bench
+437 V — 22 V
+lower, for the same setpoint, because the threshold rides on a doubled noise
+floor.</p>
+</div>
+
+<div class="tiles">
+<div class="tile"><div class="n">+73 V</div>
+  <div class="l">the gas costs this much voltage, 95/5 → 90/10</div></div>
+<div class="tile"><div class="n">459 V</div>
+  <div class="l">bench-equivalent of 540 V (run_55 configuration)</div></div>
+<div class="tile"><div class="n">550 V</div>
+  <div class="l">optimum of rate × yield, unbiased window</div></div>
+<div class="tile"><div class="n">±20 V</div>
+  <div class="l">what the map is actually worth</div></div>
+</div>
+
+<h2>1. The gas costs 73 volts</h2>
+<p>The bench ran Ar/iso 95/5 and n_TOF ran 90/10, so the bench's efficiency
+curve cannot be read on the n_TOF voltage axis without a gain map. The
+repository already has one —
+<code>garfield_sim/results/hv_equivalence.json</code>, per-mixture
+ln&nbsp;G&nbsp;=&nbsp;a&nbsp;+&nbsp;bV&nbsp;+&nbsp;c₂V² fits at two site
+pressures — and it is the authority used here, inverted so that the match is
+made on <em>gain</em> rather than by a constant offset.</p>
+<figure><img src="figures/gas_map.png" alt="Left: simulated gas gain against voltage for Ar/iso 95/5 and 90/10, with an arrow showing the 73 volt shift at equal gain. Right: five determinations of that shift as a bar chart, spanning 63 to 103 volts.">
+<figcaption><b>Left:</b> the two mixtures at CERN pressure. The shift is flat to
+±0.6 V across 400–590 V, which is why everything downstream treats it as a
+constant. <b>Right:</b> the same ratio from three independent Garfield products,
+each divided by either the simulated or the measured gain slope. <b>The spread
+— 63 to 103 V — is the honest uncertainty on the map</b>, and it is dominated
+by the known factor-1.4 disagreement between the bench's measured gain slope
+(0.418 per 10 V) and Garfield's (0.306).</figcaption>
+</figure>
+
+<h2>2. The ledger</h2>
+<p>Three terms carry a bench voltage onto the n_TOF axis. Only the first is
+about the gas; the third is the one that is easy to forget, and it is the
+largest single change between the run_55 scan and the production period.</p>
+<table><thead><tr><th>Term</th><th>run_55 era</th><th>production</th>
+<th>why</th></tr></thead><tbody><tr><td>Gas — Ar/iso 95/5 → 90/10</td><td>+72.6</td><td>+72.6</td><td>more quencher, less gain at the same field</td></tr><tr><td>Pressure — Saclay 160 m → CERN 450 m</td><td>-4.7</td><td>-4.7</td><td>thinner air at CERN, so more gain</td></tr><tr><td>Electronics — CSA range and noise</td><td>+12.8</td><td>+34.8</td><td>200 → 600 fC full scale; σ 6.85 → 3.90 / 9.80 ADC</td></tr><tr><td>TOTAL</td><td>+80.6</td><td>+102.7</td><td></td></tr></tbody></table>
+<p>The CSA range is not an assumption: every saved bench configuration carries
+<code>Feu * Dream * 6 0xAAAA</code> = 200 fC, and all 56 n_TOF pedestal contexts
+from 1 July to 10 August carry <code>0xffff</code> = 600 fC. <b>That also
+settles the deck's open question about which range production ran on.</b></p>
+
+<h2>3. The bench curve, on the n_TOF axis</h2>
+<figure><img src="figures/bench_mapped.png" alt="Reconstruction efficiency and discharge fraction from the June bench scan, plotted against the equivalent n_TOF voltage, with the operating point marked.">
+<figcaption>det3 <em>is</em> chamber A, so this is the same physical detector.
+Efficiency is M3-referenced, drift 1000 V, 22 June. The dashed grey copy is the
+same measurement placed by the production ledger instead of the run_55 one —
+the gap between the two curves is the 23 July noise step, worth
+22 V.</figcaption>
+</figure>
+
+<h2>4. What n_TOF measured in the production gas</h2>
+<figure><img src="figures/ntof_ladders.png" alt="MIP track rate per trigger against amplification voltage in two time windows, with the post-flash recovery time on a second axis.">
+<figcaption>Both halves of the trade on one axis, and both measured on chamber A
+at drift 600 V two days apart. <b>The 16–28 ms window is the one to trust:</b>
+above 550 V the recovery reaches into the 8–12 ms window, so that ladder's top
+points are suppressed by the very quantity being traded against.</figcaption>
+</figure>
+
+<h2>5. The trade</h2>
+<figure><img src="figures/tradeoff.png" alt="Three curves against voltage: the visible X17 rate falling, the track yield rising, and their product peaking near 550 volts.">
+<figcaption>Both factors are relative, so the product is too — it has a maximum
+and no units. <b>550 V on the unbiased window;
+555 V on the biased one.</b></figcaption>
+</figure>
+
+<table><thead><tr><th>Voltage</th><th>recovery [ms]</th><th>X17 rate left [%]</th>
+<th>yield 16–28 ms</th><th>product</th><th>yield 8–12 ms</th><th>product</th>
+</tr></thead><tbody><tr class=""><td>520 V</td><td>1.14</td><td>12.9</td><td>0.11</td><td>0.42</td><td>0.11</td><td>0.27</td></tr><tr class=""><td>525 V</td><td>1.50</td><td>12.7</td><td>0.10</td><td>0.38</td><td>0.14</td><td>0.34</td></tr><tr class=""><td>530 V</td><td>1.98</td><td>12.1</td><td>0.10</td><td>0.36</td><td>0.15</td><td>0.34</td></tr><tr class=""><td>535 V</td><td>2.60</td><td>11.6</td><td>0.17</td><td>0.59</td><td>0.16</td><td>0.35</td></tr><tr class="op"><td>540 V</td><td>3.43</td><td>11.0</td><td>0.29</td><td>0.95</td><td>0.23</td><td>0.48</td></tr><tr class=""><td>545 V</td><td>4.53</td><td>10.3</td><td>0.31</td><td>0.93</td><td>0.31</td><td>0.61</td></tr><tr class=""><td>550 V</td><td>5.97</td><td>7.8</td><td>0.43</td><td>1.00</td><td>0.59</td><td>0.88</td></tr><tr class=""><td>555 V</td><td>7.87</td><td>5.3</td><td>0.64</td><td>1.00</td><td>1.00</td><td>1.00</td></tr><tr class=""><td>560 V</td><td>10.38</td><td>2.8</td><td>1.00</td><td>0.82</td><td>0.90</td><td>0.47</td></tr></tbody></table>
+
+<h2>What this does not rule out</h2>
+<div class="verdict warn"><h3>Read these before quoting a number</h3>
+<ul>
+<li><b>The n_TOF ladder is not an efficiency.</b> Its denominator is a
+doubles-trigger whose geometric ceiling per arm is ~50 %, and its numerator
+needs a 3–20 strip, ≤25 mm MIP-like cluster in <em>both</em> views. A cluster
+loses strips over threshold as the gain falls, so it turns on much later than
+detection does. Only its <b>shape</b> is used here.</li>
+<li><b>Which is why it can disagree with the mapped bench curve, and does.</b>
+The mapped curve says the chamber was on its detection plateau across the whole
+n_TOF scan; the ladder rises ×9 over the same span. Both can be true: what the
+voltage bought at n_TOF was <em>reconstructability</em>, not detection. If you
+want a single sentence, it is that one.</li>
+<li><b>Withdrawn 2026-08-25: "the bench never measured below 450 V".</b> It
+did. The <b>27 June saturday det3 scan</b> runs 425–525 V with the <em>same</em>
+efficiency definition and shows the turn-on directly — 49 % at 425 V, 66 % at
+435, 77 % at 445, plateau by 455. This page previously said the low edge was an
+extrapolation because only the 22 June scan had been looked at; that scan
+starts at 450 V, already flat, which is why it looked like there was no
+turn-on. The two scans agree on the plateau's flatness and on where discharges
+end it; the 27 June absolute level is ~10 points lower because det3 sat in the
+top slot (z 702, FEU 7/8) rather than the bottom one, twice the M3 lever arm
+into the same fixed 5 mm match box. <b>Only the 520 V frame of the deck build
+is still extrapolated</b> (it maps to bench 417 V).</li>
+<li><b>The gas mixture is an operator label.</b> <code>run_config.json</code>
+says "Ar/Iso 95/5" as free text; the mixer that sets and logs isobutane was
+commissioned on 7 July, ten days after the bench scan. No certificate exists
+for June.</li>
+<li><b>The drift fields differ.</b> Bench 1000 V, n_TOF 600 V on chamber A in
+both run_55 and run_57, production 700 V. The bench's own drift control puts
+that at roughly −15 % in peak amplitude, ~4 V — inside the map's uncertainty,
+but not zero.</li>
+<li><b>The optimum is soft on the low side and a cliff on the high side.</b>
+The recovery scatters ×1.33 rms about its fit, which moves the cliff by several
+volts; the low side is flat, so nothing here says 540 V was a mistake.</li>
+</ul>
+</div>
+
+<footer>
+Generated by <code>ntof_july_analysis/hv_tradeoff/make_report.py</code>;
+numbers from <code>hv_tradeoff.py</code> → <code>results.json</code>.
+Inputs: bench <code>mx17_det2_det3_overnight_6-22-26</code> and
+<code>mx17_det3_saturday_scan_6-27-26</code>; map
+<code>garfield_sim/results/hv_equivalence.json</code>; n_TOF
+<code>run_55</code> (<code>calib/25_hv_scan_summary.json</code>) and
+<code>run_57</code>; pedestals <code>ntof_pedestal_qa/</code> and the bench
+pedestal of 22 June.
+</footer>
+</div></body></html>

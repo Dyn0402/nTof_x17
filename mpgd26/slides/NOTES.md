@@ -1,5 +1,777 @@
 # mpgd26/slides — status and open items
 
+## The dead time moved onto the beam's clock — 2026-08-24
+
+Dylan, on the charge slide (then 21, by the time it was built 25): *"I like
+this plot, it shows the flash recovery is roughly linearly related to the total
+charge. However I think this could be a backup slide instead. Incorporate the
+recovery time into the X17 stats vs time-of-flight plot from the previous
+slide. Keep all the HTML text on this slide only in backup — remove it to make
+vertical space. Then a very short, simplified recovery-vs-charge plot just to
+show it's linear, then a series of X17-stats plots showing each HV point,
+starting with 560 V to show it eliminates almost all of the spectrum, then
+vertical lines for 550 V in steps of 10 V down to 520 V, highlighting that we
+ran at 540 V."* Then, on the second pass: *"what we give up when we decrease
+the voltage — from the det3 HV scan on the cosmic bench we have gain and
+efficiency vs HV, and Garfield data to map 95/5 to 90/10. Then we'd have a full
+picture."*
+
+### What is on the slide now
+
+**Slide 25 is a six-frame build** (`hv_window_{1_560 … 6_540}.png`,
+`mpgd26/make_hv_window.py --variant b --shape wide --slides`). Three panels
+over the beam's own clock:
+
+| | |
+|---|---|
+| top left | **the chamber's own detection efficiency** vs amplification voltage — the 27 June cosmic-bench det3 scan, both passes, carried across the gas boundary by the full ledger, in both noise eras |
+| top middle | **three numbers, large**: the voltage, the per cent of the X17 rate left, the efficiency. The recovery time is small under them *on purpose* — the strip puts it on an axis and the main panel draws it as a wall |
+| top right | charge (nC) against the recovery time it buys, **sharing the main panel's x axis**, so the lit point stands directly above the wall it makes |
+
+**The top-left panel is the cosmic bench's own efficiency** (2026-08-25,
+fourth pass). Dylan: *"this plot in the top left needs to be exactly the
+detector efficiency measured by the cosmic bench, which is relatively flat
+though decreases a bit at low voltage — translated of course to 90/10 Ar/iso.
+If you need to go lower than the last point please extrapolate from the last 2
+or 3 points, though plot the measured points directly."*
+
+The scan is the **27 June saturday det3 run**, both interleaved passes
+(`hv_scan` 425–525 V and `hv_scan2` 460–520 V) — the only bench scan that
+reaches below the plateau: **49 % at 425 V, 66 % at 435, 77 % at 445, 81 % from
+455**, then the discharge collapse from 505. It is also the run `mesh_ladder.csv`
+comes from, so the efficiency curve and the gain slope that maps it are one
+measurement. The 22 June scan starts at 450 V, already flat, which is exactly
+why the previous pass concluded there was no turn-on to show. **Both scans are
+now on backup D2c**; they agree on the plateau's flatness and on where sparks
+end it, and 27 June sits ~10 points lower only because det3 was in the top slot
+(z 702) rather than the bottom (z 232) — twice the M3 lever arm into the same
+fixed 5 mm match box.
+
+**Both noise eras are drawn**, solid = production (where we ran), dashed = the
+quieter July front end, because the full ledger puts 22 V between them and that
+is half the panel. It changes the answer: 540 V is worth **81 %** on the July
+placement (indistinguishable from 560 V) and **69 %** on the production one,
+against 81 % at 560 V. So *the cost of running at 540 V was ~12 points of
+efficiency, and the 23 July noise step is what imposed it* — not the decision.
+Only the **520 V** frame is extrapolated (it maps to bench 417 V, below the
+scan); its number carries a `~` and the panel says `extrap.` over a shaded
+band. The straight continuation is a fit to the three lowest points, 0.0141/V.
+
+*What this replaced:* the run_55 MIP-track ladder, which fell 100 → 29 % across
+560 → 540 V where the bench says detection went 81 → 69 %. Not a contradiction
+— the ladder needs a 3-strip cluster in both views, so it measures
+reconstructability — but it is not an efficiency and it is backup D2b now.
+
+**The word "efficiency" is off this slide** (2026-08-24, third pass, now
+superseded by the pass above — the word is back, correctly this time). Dylan
+went looking for the cosmic-bench efficiency curve on the top-left panel and
+did not recognise it — correctly, because it is not there. What falls steeply
+is run_55's **MIP tracks per trigger** (16–28 ms window) normalised to its own
+best point: 100 / 64 / 43 / 31 / **29** / 17 / 10 / 10 / 11 % across
+560 → 520 V. The bench enters that panel only as the shaded band. Mapped onto
+the same axis (+80.6 V), **the bench efficiency is flat at 91 % across every
+voltage the panel shows** — `eff_anyhit` is 99.4–100 % at all of them, and the
+only fall is above 565 V, from sparking (`spark_frac` 4.6 % → 49 %). So the
+shading and the curve were asserting opposite things and only the shading was
+an efficiency. `hv_tradeoff.py` had always said so in its docstring; the slide
+threw the caveat away in the one place the audience reads. The panel headline
+now says *relative track yield* and the third number *N % of the tracks
+reconstructed*. **And note what we do not have:** the bench scan stops at
+450 V (n_TOF-equivalent 530 V), so there is **no measurement of a low-voltage
+efficiency turn-on anywhere in this campaign** — do not let a plot imply one.
+
+**Frame 7 is backup only** (2026-08-24, third pass, *"kick 25.7 to backup"*).
+The figure-of-merit curve was already duplicated as a backup slide with a
+"keep this only if the frame is cut" note; that copy is now the only one.
+`hv_window_7_trade.png` is still generated by the same command.
+
+**The strip stops where its data starts** (2026-08-24, second pass). Sharing an
+axis does not mean spanning the canvas: it means a time maps to the same figure
+position in both panels. So the strip is cut back to just before its first
+point and its *box* is moved right by exactly the fraction that removes — the
+plumb line still lands on the wall to **0.0000 px** (checked through the
+transforms, not by eye), and the left end belongs to the efficiency panel and
+the numbers for good. Its charge axis is read on the **right**, labelled ticks
+from 10², floor 28 nC rather than a hard 10² because 520 / 530 / 540 V put
+35 / 74 / 93 nC on the chamber. The `col` shape keeps a full-width strip — it
+has no efficiency panel to hand the space to.
+| main | the X17 rate vs neutron flight time — slide 22's drawing, same limits, same points, same 79 % callout — with that voltage's measured recovery as the edge of the blind band |
+
+The build walks the voltage **down** from where the gain wants to be and then
+**comes back to 540 V** (frame 6) with every other edge left on the axis, so
+the last frame says *of all of these* rather than *this one*. Frame 7 is the
+two costs multiplied; it is the first thing to cut for time (and it is
+duplicated in backup for exactly that case).
+
+**No `.caption` and no `.figsrc`.** That is what buys the vertical space, and
+the figure is sized against the text-free hole — **1.961 : 1**, probed
+2026-08-23 by the recipe in *Measuring the hole* below. Adding either back
+means re-rendering at the new `figsize`, not squeezing the PNG. A ready-made
+provenance line is in `HANDOFF_hv_window.md`.
+
+### Five backup slides came with it (68–72)
+
+The retired slide **verbatim** (both figures, caption and `.figsrc`) plus four
+new ones: the gas map and its ±20 V bracket, the bench curve on the n_TOF
+axis, both measured ladders, and the trade. The three analysis figures are
+rendered **without their burned-in titles** for the deck —
+`ntof_july_analysis/hv_tradeoff/make_report.py --deck` writes
+`hv_{gas_map,bench_mapped,ladders}.png` straight into `assets/img/`. Run it
+again if the analysis moves; the report keeps its own titled copies.
+
+### The numbers are not deck arithmetic
+
+They come from **`ntof_july_analysis/hv_tradeoff/`** (its own `report.html`),
+which owns the gas map, the electronics ledger and the figure of merit. The
+deck imports them, so the slide and the report cannot disagree. In one line:
+the gas costs **+72.6 V**, the site pressure gives **−4.7 V** back, the front
+end costs **+12.8 V** in July and **+34.8 V** in production, so **n_TOF 540 V
+is worth bench 459 V** and the bench's 91–92.5 % plateau maps to **531–561 V**.
+
+**Two things to know before you are asked.** The efficiency ladder is *not* an
+absolute efficiency — doubles trigger, ~50 % geometric ceiling per arm, a
+3-strip cluster required in both views — so only its shape is used. And its
+16–28 ms window is not the 8–12 ms one because above 550 V the recovery
+reaches into the earlier window; trading rate against that would be circular.
+
+**One thing this settled.** Slide 24's `.figsrc` used to call the production
+CSA range a loose end. It is not: all 56 n_TOF pedestal contexts carry
+`0xffff` = **600 fC**, against the bench's `0xAAAA` = 200 fC, so the ×219 /
+×904 full-scale ratios are the conservative ones.
+
+## The Summary became a figure slide — 2026-08-24
+
+Dylan: *"for the summary slide I want to add a figure/visualization on where we
+go from here … some cartoonish sketch of this process (some top down image
+implying search for 2 track events) then an arrow to a cartoonish opening angle
+spectrum … Definitely need to rework this summary slide to be much more
+visual."*
+
+**The bullets, as instructed.** Six → three, each one line:
+
+| was | now |
+|---|---|
+| micro-TPCs: 93 % efficiency, sub-mm position, ~1° angles | **~1° on a track**, and nothing else. The efficiency came off — slide 12 already argues it with a map, and the closing slide should not re-argue a settled point |
+| the four-chamber campaign, 41.8 M / 17.9 TB / 44 days | unchanged; it was already one line |
+| 79 % of the X17 rate is in the MeV… | **merged into one**: the γ flash saturates the charge-integrating front end for milliseconds, so what we recorded is the thermal window |
+| ~10² nC per pulse, dead time ∝ Q^1.2 | ⬑ (the measured detail stays on slides 18–21 and in backup) |
+| reconstruction transfers to beam / points at the capsule | **cut.** Slide 22 shows it as two fans closing on the capsule; the new figure carries the same claim *forward* instead of backward |
+| **Next:** the pair search | **is the figure now** |
+
+**The figure** — `assets/img/x17_outlook.png`, from
+`mpgd26/make_x17.py --layout outlook` (`scenes_x17.draw_outlook`). Two panels
+and an arrow: **find the two-track events → histogram the opening angle.** It
+is the opening figure answered — the physics case (slides 5–6) says the
+observable is an angle; this says how 41.8 M banked events turn into one.
+
+*Left is drawn to scale, and deliberately so.* Four chambers, 204 mm standoff,
+399 × 360 mm active, 90° apart, straight out of
+`MX17_Full_Geant/scripts/plot_geometry.py`. A narrow pair (drawn in the IPC
+orange) lands in a **single** chamber; a 110° pair cannot, and needs **two**.
+That is the link to the two background curves next door, and because the plan
+view is true, it is something the room can check with a protractor rather than
+something the speaker asserts.
+
+*Right is one background with a breakdown under it.* **Re-emphasised the same
+day** — the first cut drew the two topologies as peers and stacked X17 on the
+two-chamber one alone, which read as three unrelated curves and put the purple
+line down at zero on the left, where there is no X17 hypothesis at all, only
+the two-chamber acceptance dying. Now: the **bold** orange curve is every
+accepted IPC pair whatever it hit (Dylan: *"outline the full IPC background
+(any number of detectors hit) as a top layer"*); the two thin curves under it
+are the one- and two-chamber topologies, subordinate, explaining the *shape* of
+the bold one — a one-chamber peak dying by ~95°, handing over to a flat
+two-chamber tail; and **X17 is drawn only over the bump**, on top of the total.
+The ~3° merging cutoff is the shaded band at the left, and θ_min = 109° its
+dotted line. Neither component is clamped to the axis floor any more, so the
+one-chamber curve falls off the bottom of the frame where it dies instead of
+running along the axis as a flat orange line — yield that is not there.
+
+**Both figure captions came off** (Dylan), so what the figure asserts about
+computed-vs-drawn now lives in `scenes_x17.py` and in this note, and has to be
+*said* in the room rather than read off the slide.
+
+**The type is much larger** — `scenes_x17.OUTLOOK_FS = 1.6`, a single knob every
+fontsize in the three outlook panels goes through, and
+`OUTLOOK_FS_SPEC = 1.18` on top of it for the spectrum panel alone, which is
+read from further back than the drawing beside it. Panel headings land at
+~13.7 pt projected and the spectrum's smallest label at ~12 pt, against 8.6 and
+6.7 before. The two headings deliberately stay on the *global* scale — they are
+peers and have to match. Note this is a **different lever from the canvas
+width**: narrowing the canvas magnifies type and drawing together,
+`OUTLOOK_FS` magnifies the type alone, which is what was actually wrong.
+Raising the global one further needs the drawing to give ground — which is why
+the spectrum got its own.
+
+**The plan view was seen from BELOW — corrected 2026-08-24** (Dylan: *"detectors
+B and D should be swapped if we're looking from top down"*). He is right, and
+the reason is worth writing down because it is the same class of error as
+[[run145-pinwheel-alignment]]. The beam runs along **+Y** and EAR2's beam line is
+**vertical, going up**, so a plan view looks along **−Y** and +Y comes out of the
+page. In a right-handed frame with +Z up the page:
+
+```
+X = Y × Z = (out of page) × (up the page) = LEFT
+```
+
+so **+X (arm D) belongs on the left**, not the right. Drawn without the mirror
+the figure is the station seen from *underneath*. `scenes_x17`'s `mm()` now
+negates x, and `ray()` was made canvas-native (degrees anticlockwise from
+page-right) so the tracks are placed by where they should sit in the picture
+rather than having the mirror undone by hand at every call. Which arm each of
+the four drawn legs enters was checked against `_arm_hit` (canvas az → sim az is
+`180 − az`): the wide pair is **A and B**, the narrow pair is **D**.
+
+**The pinwheel mirrors with the chambers**, which is the part a letter swap
+alone would not have fixed — the station's pinwheel is right-handed, and seen
+from above it now reads as such.
+
+**Fourth pass, same day**: the word *sketch* came off under the "?" (it was
+reading as a data label; the "?" does the work) and the "?" came down close over
+the bump; and the legend went **opaque in the page colour** — the θ_min guide
+line runs the full height of the axes and was showing through its text.
+`facecolor=P['page']` follows the theme, so the dark render is right too.
+
+**Third pass, same day** (Dylan), all on the panels rather than the argument:
+
+* **The grey single tracks came off the station panel.** They stood for the
+  41.8 M ordinary events, but they were the only thing on that panel that was
+  not one of the two topologies, they crossed both of them, and the arrow
+  between the panels already says *41.8 M events*. The panel now shows exactly
+  two things. With them gone the drawing took the freed room: `sc` 0.079 → 0.083.
+* **The same-chamber pair is labelled e⁻/e⁺ too**, small, and in the IPC orange
+  rather than the e± colours — the colour is what links that pair to the
+  one-chamber curve next door. Offset along the leg's own *normal*: 24° apart,
+  the two are far too close together for an along-the-ray offset to separate
+  them. "one chamber" moved to a canvas position in the open middle of the
+  upper-left quadrant, not a ray — the two chambers pin that quadrant's left
+  and top edges and the new e⁻ label pins its lower right, so the clear spot is
+  a box, and a radius-and-angle would need retuning every time `sc` moved.
+* **A big tilted "?" and the word *sketch* sit over the bump.** Everything else
+  on the panel is computed; the bump is the one drawn thing, and a legend entry
+  reading *(drawn, not predicted)* is not what a room looks at. It is placed off
+  the **actual apex** of the drawn curve, not a typed angle, so it follows the
+  bump if the kinematics or the acceptance ever move.
+
+**The flat tail is the interesting result, not a drawing choice.** The
+two-chamber acceptance rises with opening angle at about the rate the IPC
+physics falls, so the product is flat — which means the station covers the X17
+window well, and a bump there would sit on something smooth.
+
+**What is computed and what is drawn**, stated on the figure and at length in
+`scenes_x17.py`:
+
+* *computed* — both channel shapes, from the `MX17_Simulation` generators, the
+  same ones beat 5 uses; and the one-/two-chamber split, ray-traced on the
+  as-built geometry (`scenes_x17.pair_acceptance`, 40 k pairs per angle point,
+  cached). Weighted by the IPC spectrum the merging cutoff costs **5.1 %** of
+  accepted pairs — small, because the chambers stand 204 mm off a point source
+  and a pair separates fast.
+* *drawn* — the **X17 yield**, at a declared **30 %** of the whole background
+  above threshold (it was against the two-chamber part before the re-emphasis;
+  above threshold those agree to a per-cent, but the figure should quote the
+  quantity it draws). The relative rate is exactly what the experiment
+  measures, so the figure must not appear to assert it; same discipline as
+  `SIG_FRAC = 0.04` on beat 5, at a value that reads on a log axis. And the
+  **12 mm** two-track separation behind the ~3° cutoff, which is the
+  single-track forward fit's merged-cluster limit
+  (`MULTITRACK_2026-08-12.md`) — *not* a measured two-track efficiency.
+
+**Canvas 152 × 63 units = 2.42 : 1**, which is the *measured* shape of this
+slide's figure hole with three one-line bullets over it (~1788 × 738 px). Same
+rule as the story rows: a slide figure is width-limited, so the number of
+canvas units it spans is the only lever on how big its type comes out — the
+canvas went 152 × 55 → 152 × 63 once the hole was measured, and everything on
+it got ~8 % larger without a font size changing. Re-measure if the bullets
+change count.
+
+Backup slide *"Next: from single tracks to pairs"* is unchanged and carries the
+detail the summary now only gestures at — the real `ev1054` double track, the
+merged-cluster limit, and the σ(p)/p ≲ 30 % question.
+
+## Ninth batch — 2026-08-23
+
+A large batch, run mostly in parallel (three background figure-regeneration
+agents alongside direct HTML edits). All in `index.html` unless noted.
+
+**Global.** The slide-transition crossfade (`transition: opacity .25s ease`)
+is gone — slides now just appear, no flash. The on-screen JS "x / N" overlay
+is removed (it duplicated the printed footer counter); the printed footer
+(`.slide::after`) now carries both the number and the denominator, e.g.
+`15.1 / 29`. That denominator is a typed CSS literal, not computed — it moved
+from 25 to **29** later in this same batch once four section-transition
+divider slides went in ("The Micromegas μTPC", "Characterization", "The
+n_TOF Search", "Status" — kicker word + one-sentence primer, `.divider` /
+`.divider-primer`), each before the section it introduces. See
+`RUNNING_ORDER.md`'s numbering section for the up-to-date map; that document's
+own row-by-row table was **not** re-walked and is likely stale by 1-4.
+
+**Slide 11** ("One muon through the forward fit"): the bottom-left legend on
+`wft_model_vs_data.png` was fully transparent (a global rcParam) and sat on
+top of the waveform traces — now `framealpha=0.75, fancybox=True`, regenerated.
+The slide's `.caption` moved to a new backup copy ("...with the qualifying
+numbers"), right after the existing hit-time-chain backup slide; the main-flow
+slide now shows the figure alone.
+
+**Slide 5** ("Capture on ³He..."): the repeated `.fig-label` under the image
+(identical on all three frames) is gone.
+
+**Slide 12** ("Characterized on the Saclay cosmic bench"): the `.flag`
+placeholder about running order with Alexandra is gone on all five frames
+(Dylan is going before her). The build now uses a `.figtext` two-column layout
+(`0.68fr` text / `1.32fr` figure, `align-items:stretch`) with the caption in a
+`.side` column instead of stacked below the image, so the portrait build
+image runs the full slide height. The two pins that used to spill into the
+left margin are mirrored to the right so none land on the new text column.
+
+**Slide 13** ("Efficiency..."): the loss-budget bars and residual-tail figure
+now read `g_det3_wknd` (21,953 rays) instead of `sat_det3` (7,049), matching
+the efficiency map's own dataset — new bars 93.1/4.2/2.6/0.2/0.01%, 10mm
+recovery 93.1→94.3%. "det3" and "M3" dropped from the visible text. The map's
+fig-head now says "500 µm" not "0.5 mm"; its fig-label paragraph (which also
+carried the det3 mention) is gone. **Not yet decided**: Dylan wants the
+sliding map to reach closer to the active-area edges; `make_efficiency_map.py`
+now takes `--min-rays/--min-fill/--suffix`, and three looser variants are on
+disk beside the one the slide currently shows (`efficiency_map_sliding_v2.png`
+through `_v4_k12.png` — see the big comment above the slide for the tradeoffs).
+The recommendation, if one has to be picked, is v3.
+
+**Slide 14** ("Sub-degree angle, sub-mm position"): "det3" dropped from both
+fig-labels and the angle stat (det4 stays — it's a genuinely different, named
+chamber). Each stat's `.lbl` trimmed to roughly its first clause. The right
+figure's y-axis was clipping the head-on Y point (σ₆₈ = 1.71° ± 0.04°, errorbar
+cap past the old 1.70° ceiling) — `make_resolution.py`'s ylim is now
+0.78-1.85, regenerated.
+
+**Slide 15.x → 18.x** (shifted by the dividers): frames .2 and .3 used to
+override the grid to a figure-heavy ratio while .1 used the base `.figtext`
+ratio, so the capsule visibly resized advancing past .1 — they now inherit
+.1's ratio, and the fig-head + ³He-pressure SVG (previously only on .1) is
+copied onto .2 and .3 too, unchanged, at the bottom of the side column. .4
+onward (a new topic — building the detector) is now a genuine text wall
+instead of five independent two-bullet flashes: each frame keeps every
+earlier frame's bullets, marked `.dim`, and adds its own 1-2 new ones — by .9
+that's 10 dimmed + 2 new, with `--fs-scale` trimmed on the two heaviest frames
+as a safety margin against overflow.
+
+**Slide 17 → 21.x** ("How we got here"): split into a 3-frame build. .1 is
+the bare campaign figure; .2 swaps in a new `campaign_overview_highlight.png`
+(same figure, `make_campaign.py --highlight-explode`, a copper outline drawn
+around the July-August production bar so it's clear which bar the zoom wedge
+below comes from); .3 reveals the stat-row and caption. The stat-row/caption
+are on all three frames as `.fut` so the figure doesn't resize between frames.
+
+**Also fixed, found along the way**: `make_pdf.sh` zero-padded temp filenames
+to 2 digits (`slide_NN.html`); past 99 sections (crossed by this batch)
+`slide_100.html` sorts lexicographically *before* `slide_11.html`..`slide_99
+.html` in the shell glob, and `pdfunite` silently merged the pages in that
+scrambled order. Now 3 digits. `make_report.py` had three stale slide-number
+references in prose (19.2/20/21 → 23.2/24/25) from the 2026-08-21 renumbering
+that this batch's dividers would have made stale again regardless; fixed
+against the current numbering and `report.html` regenerated.
+
+Net effect: the talk is **29 slides** (was 25), the printed PDF is **101
+pages** for **76** numbered slides.
+
+## Slide numbering, eighth batch — 2026-08-21
+
+Dylan: *"From the first slide on the 3D capsule alone (with the ³He pressure
+measurement) till the top-down 2D diagram should all be counted as one slide
+with .1, .2, … numbering. Then the last slide should be the summary, so only go
+to there for the x/Total. The backups should be 52/28 or whatever, just keep
+counting past but only count till the summary."*
+
+Both done, in `index.html` alone — no figure was re-rendered.
+
+**The setup sequence is one slide.** The ten sections from *The vessel, as
+built* through *The same setup as a plan* now carry `slide bstart` /
+`slide bcont` + `data-frame="1".."10"` and number **15.1 … 15.10**. This is the
+existing overlay-build mechanism used for **numbering only**: each frame keeps
+its own figure and its own bullets, there is no `.fut` reservation, and nothing
+about the layout changed. The pictures are *meant* to change here — that is the
+build. Adding or removing a frame means renumbering every `data-frame` after it.
+
+**The counter stops at the Summary.** The Summary section carries a bare
+`data-total-end` attribute; the script reads it and uses that slide's group
+number as the denominator. Everything after it — the Backup divider and the 45
+backup slides — keeps counting up against the same denominator:
+
+| footer | |
+|---|---|
+| `15.1 / 25` … `15.10 / 25` | the setup build |
+| `25 / 25` | Summary, the end of the talk |
+| `26 / 25` | Backup divider |
+| `71 / 25` | the last backup slide |
+
+The progress bar is clamped at 100 % so it does not run off the end in backup.
+
+Net effect: **the talk is 25 slides** (was 34 numbers for the same material),
+and the printed PDF is unchanged at 94 pages — `make_pdf.sh` already derives its
+per-page counter injection from `bstart`/`bcont`, so it needed no edit.
+
+*Why bother:* a number in the footer is a promise about how much is left. The
+setup section spent ten of them on one drawing that grows, and the backup spent
+another forty-six on material nobody is going to see, so the promise was a lie
+in both directions.
+
+
+## The Motivation and Reconstruction run, seventh batch — 2026-08-20 (evening)
+
+Dylan, one message, five slides — all of them in the first half of the deck,
+which had not been touched since the Status rebuild.
+
+### What changed
+
+| | |
+|---|---|
+| 5.3 | the 20.58 MeV arrow has **one head**, pointing down |
+| 6.3 | head is **6.** not 4.; chambers at **90° to each other**; primary clusters, drift lines, in-gas track at 30 % |
+| 8 | new **five-stop drift-time colour scale**; an HTML line saying the event is **simulated**; two burned-in "measured" claims removed |
+| 9.2 | plan-view **film inset** per panel; delays consistent at 166 / 333; right caption removed, left caption enlarged |
+| 10 | stage 2 is a **funnel icon** and says diffusion + amplification width; stages renamed *geometric spread* / *charge spread* / *fold with response*; F_ik gone; percentages; both captions enlarged, right one cut to its first sentence |
+
+### The one thing to know before showing 6.3
+
+The two chambers are now at the real 90° to each other, and this is not free:
+**legs 110° apart onto readout planes 90° apart forces the incidence to 10° on
+each chamber.** The drift lines are therefore nearly parallel to the track and
+all six clusters land within about a tenth of the drawn face. That is not a bug
+in the drawing — it is what a minimum-angle pair does to this station, in the
+plane of the page.
+
+Two things save it. First, the page is a 2-D section: in 3-D the pair plane is
+free to tip out of it, and most pairs land far more obliquely; the spectrum runs
+to 180°, and only the kinematic minimum is this bad. Second, at 10° incidence
+the depth information is in the *arrival times*, not in the spread of arrival
+*positions* — the six drift lines differ in length by the full gap. So the
+drawing is honest and the sentence over it ("one gas gap → a 3-D segment") still
+holds; it just cannot be read off the geometry the way a 30° track's can.
+
+If it is ever wanted the other way round, the lever is `DETECT_OPENING_DEG`:
+draw the pair at 140° and the incidence goes to 25° and the ladder appears —
+at the cost of the figure's protractor property, which is the one thing on it
+that is currently true to the millimetre.
+
+### Why the drift-time colours changed on 8
+
+Truncated plasma was dark enough after the 18 August cut, and that was the whole
+of the problem: it is *one* hue move, navy to plum, so the depth ordering rode
+almost entirely on lightness — the channel a projector crushes first. Twenty
+overlaid traces then read as twenty shades of one colour. The light theme now
+sets five stops of its own, green → teal → blue → violet → deep crimson: four
+hue moves, every stop under 0.17 relative luminance (darker than the old scale's
+hot end), and the ordering survives a greyscale print because the stops also
+fall slightly in lightness. One scale for the render, the traces and the colour
+bar, as before — they all encode the same drift time.
+
+### Why slide 8 needed to say "simulated"
+
+Because every constant in it is real. The gap, the pitch, the field,
+v_drift and the impulse response are det3's own, which is exactly what makes the
+picture look like data. The two lines that used to be burned onto the canvas —
+"(measured)" beside v, and "measured response (det3)" over the traces — were the
+worst of it: true statements about the *constants*, sitting on a *simulated*
+event, in a position that reads as a claim about the event.
+
+### Stage 2 of the build diagram was wrong, and Dylan caught it
+
+It said the width of what a slice puts on the layer is "the initial cloud,
+diffusion, and the slice's own sideways travel". The primaries are not a cloud —
+they are discrete clusters, ~30/cm, each a handful of electrons freed at one
+point. His correction stands: the width is **transverse diffusion of those
+electrons plus the width one of them makes when it amplifies**. The icon
+followed the wording: four avalanche funnels opening off the mesh, instead of a
+strip histogram that stage 3 was already drawing.
+
+### The film inset on 9.2
+
+One drawing, twice, with one thing changed. The ESL film is strips, 550 µm on
+an 800 µm pitch, running along y; charge landing on one travels easily along it
+and has to cross a gap to leave it, so the cloud is an ellipse with its long
+axis in y — the same ellipse in both panels, because it is the same physics.
+What differs is which projection the readout plane samples: X is pitched across
+the film's strips and sees the short axis, Y is pitched along them and sees the
+long one. That is the whole of kY, stated as geometry rather than as a fitted
+number, which is why it belongs beside the two measured curves.
+
+### Delays: 166 / 333, everywhere
+
+The kernel figure used to print the peak-to-peak separation measured off its own
+time grid, which rounds to **332** for the ±2 copy, while every other place in
+the deck quotes 2τ = **333**. It now prints τ and 2τ from the bundle
+(τ = 166.29 ns) and draws the arrow between the peaks, so one delay has one
+number.
+
+### Captions
+
+`.fig-label.big` is new: 1.16× the caption size, in the body colour, left-
+aligned, capped at 34 em. It exists because when one column of a pair loses its
+caption, the surviving one stops being a footnote and becomes the slide's only
+sentence — at 0.92× it then reads as an afterthought from the back of a room.
+Used on 9 (left) and 10 (both).
+
+**Watch this on 10.** The left caption is three lines at the new size and its
+last line sits close to the footer rule. Anything added to it needs the slide
+re-rendered, not eyeballed.
+
+### What came off, and where it went
+
+* 9.2's right caption carried "Calibrated on det3" and the kY claim. det3 moved
+  into the `.fig-head` as ` · det3` (one line, so it does not change the column
+  height and does not desynchronise the build); kY is on the panel subtitle and
+  now in the inset.
+* 10's right caption carried "40 % of the pulse stops being this strip's
+  charge". That is a good number and it is **not on the slide any more** — it is
+  in the figure's own per-panel headers ("20 % / 38 % / 42 % / 38 % from ±1, ±2")
+  and in the report. Say it out loud.
+
+## The Status section, sixth batch — 2026-08-20
+
+Dylan, one message, five parts: fix the zoom wedge on 26 and rename *First
+exposure*; make the X17-rate axis linear; rework the DAQ-saturation run into
+an introduction to DREAM plus a build; put an **actual n_TOF waveform at the
+operating voltage** on the two-readouts slide because the numbers on it were
+not trustworthy; and cut slide 30 down. Plus: **all the small print out of the
+figures and into HTML, so it can be edited or deleted without re-rendering.**
+
+### What changed
+
+| | |
+|---|---|
+| 26, the zoom wedge | apex now at **1 July**, under the bar it comes from |
+| 26 + backup timeline | *First exposure* → **First test** (`make_timeline.CAMPAIGNS`) |
+| 27 and 31 | **linear y**, PCHIP interpolation, provenance → `.figsrc` |
+| 28 | now a **two-frame build**: what DREAM *is*, then what February found |
+| 28's noise panel | → backup, as its own slide |
+| 29 | rebuilt at the **production operating point**, + the waveform that proves it |
+| 29's old figure (run 224302) | → backup — it is the only run that recorded the whole 20 ms cycle |
+| 30 | both panels replaced, det A only, all text in markup |
+| new backup | bench efficiency **and** n_TOF recovery on one axis |
+| new class | `.figsrc` — the provenance line, in the deck's own type |
+
+### The wedge on 26 was drawn correctly and rendered wrong
+
+Its top corners really were at 1 July all along. The bug is a Z-order one, and
+it is worth writing down because nothing about the code looks wrong:
+`Figure.get_children()` returns `[patch, *artists, *axes, …]`, so when a
+figure-level artist and an Axes carry the **same** zorder the artist is drawn
+**first** — and the timeline panel's opaque background then painted over the
+top third of the wedge. What survived was a wedge whose visible apex began
+level with that panel's bottom edge, three months to the left of the bar.
+`zorder=0.5` on the polygon fixes it. At 7.5 % opacity it tints the month
+labels it crosses and hides nothing.
+
+### Why linear beats log on the rate axis
+
+The slide's sentence is *79 % of the rate is in two decades*. A log y axis
+gives the six decades **below** the peak the same visual weight as the peak, so
+the figure was arguing the opposite of its title. Linear costs the eV trough —
+0.1/day collapses onto the axis — and that is the honest picture of a number
+which is 0.2 % of the total.
+
+One real trap came with it: the reading-aid interpolation was a **cubic
+spline**, which overshot the 17.9/day peak to about 23. On a log axis nobody
+saw it; on a linear axis it is a 30 % hump above the highest measured point,
+sitting exactly where the eye reads the headline. It is a **PCHIP** now —
+shape-preserving, so it cannot rise above the points it passes through.
+
+### Slide 29: the scepticism was justified
+
+The old comparison was run 224302 against DREAM det A at 540 V, and it carried
+three caveats that all pointed the same way: **a different run, a different
+gas** (Ar/CF₄/iso 88/10/2), and **a chamber whose identity cannot be recovered
+from the data** — only the cabling record could say which of the four the
+n_TOF channel was on.
+
+Run **224709** (9 August) has none of them. Its MMA channel *is* strip 32 of
+detector A on cable Y8, the gas is Ar/iso 90/10, and the scan sits on a
+700 / 540 V plateau — the same chamber at the same amplification voltage as
+the run_57 recovery point it is being compared with. So both rows of the
+interval plot are now one chamber at one setpoint:
+
+| | |
+|---|---|
+| n_TOF digitiser, 1 GS/s, no CSA | back under 4 mV **2.05 µs** after its own peak |
+| DREAM, same chamber, same 540 V | noise back after **4.99 ms** |
+| | **×2 435** |
+
+Beside it is the waveform Dylan asked for — the bunch-mean of 52 dedicated
+pulses at the operating point, with the run_32 DREAM event on the same axis,
+each aligned on **its own** flash peak. The 45 mV strip pulse is over in two
+microseconds. The DREAM trace rails, crosses, and settles onto a line that
+looks recovered and is not.
+
+**What did not survive the move**: 224709 only stored 30 µs around the flash,
+so it cannot say when hits resume. That statement — first zero-suppressed hit
+**18 µs** after the peak, at the highest rate of the whole cycle — is 224302's
+alone, and 224302 is now a backup slide for exactly that reason.
+
+### Slide 30, and a number that had to be chosen
+
+The left panel is three rows instead of eight. The two flash rows are the two
+independent determinations of detector A's charge at 700 / 540 V, and the
+choice between two versions of the second one matters:
+
+* **662 pC** is the dedicated-pulse median at that plateau.
+* **543 pC** is the dedicated/parasitic **pulse mix** that actually arrived.
+
+`results_board.json` divides the *mix* by the board's uniform expectation
+(131 pC) to get the **4.1×** charge-density residual that the note and the
+published write-up quote. Putting 662 pC on the slide would have printed a
+5.0× against a 4.1× in the document it cites. The slide uses the mix, and the
+`.figsrc` gives both.
+
+The right panel is detector A alone. Its own power-law fit is **1.11**, not
+the 1.20 of the three chambers pooled — the caption says 1.1 and the
+provenance line says both. The MeV window is drawn three decades below the
+point we ran at, and the empty axis between them is annotated rather than left
+blank, because that emptiness is the result.
+
+**"560 V is the ideal operating voltage" is not an assertion.** run_55's own
+resist scan at n_TOF puts det A's MIP-track rate in the 6–14 ms window at
+**3.1 % at 540 V** against **13.6 / 12.3 % at 555 / 560 V**
+(`mx_july_beam_qa/calib/25_hv_scan_summary.json`). A factor ~4 in yield, bought
+with 9 ms of blindness.
+
+### The backup figure Dylan remembered does not exist
+
+"We had a very nice plot of recovery time curves superimposed with efficiency
+curves from the cosmic bench." Searched the repo, the run report, both flash
+packages and the June QA suite: there is no such figure. It is built now
+(`make_flash_slides.fig_eff_recovery`) from the two committed reductions — and
+building it turned up something the remembered version would not have shown.
+
+**The bench efficiency curve falls above ~485 V, and it is a spark story.**
+det A holds 90–93 % to 485 V and then drops to 57 % by 515 V — and its
+`spark_frac` column climbs 0.08 → 0.49 over exactly that range. The efficiency
+curve is the mirror image of the spark rate. Plotting efficiency alone would
+have invited "more gain is simply worse", which is not what n_TOF says (the
+in-situ track yield is still rising at 555 V), so the spark fraction is drawn
+on the same axis and the caption says which is which.
+
+The two scans barely overlap — bench 450–525 V at drift 1000 V, n_TOF
+520–580 V at drift 700–800 V — and the slide says so on its face. It is the
+*shape* of the trade, not one calibrated curve.
+
+### `.figsrc`, and why the small print moved
+
+Six figures were burning a provenance paragraph into the canvas with
+`plotstyle.note`. That paragraph is the first thing anyone wants edited or
+deleted, every edit meant re-rendering, and it arrived in matplotlib's font at
+whatever size the PNG happened to be saved. It is a `<div class="figsrc">`
+under the caption now, in the deck's own type. Delete the div and nothing else
+changes — the figure does not know about it.
+
+Two consequences worth remembering:
+
+1. **It changes the figure hole.** Slides 27/31 went from **2.225 : 1** to
+   **2.38 : 1** once the provenance line was under the caption. Every figure in
+   this batch was sized against a fresh probe render, not against the old
+   numbers.
+2. `plotstyle.note` is still there and is still right for a figure that has to
+   travel outside the deck.
+
+### A build's caption has to be the same height on every frame
+
+Slide 28's first draft gave frame 1 a one-line caption and frame 2 a four-line
+one. `.cols` is `flex:1`, so the taller caption shrank the columns and the
+figure changed size between frames — the exact jitter `.fut` exists to
+prevent. Both frames now carry the **whole** caption and the whole `.figsrc`,
+with the second beat wrapped in `<span class="fut">`.
+
+### Measuring the hole
+
+The probe recipe from the fifth batch, unchanged: print the section alone
+through headless Chrome with the image slots painted a flat colour and the
+`<img>` hidden, then read the box off the render. This batch measured seven
+holes; the two-column ones come out **1.2–1.5 : 1**, which is nothing like the
+`figsize` any of these scripts started from.
+
+
+## The closing two slides, rebuilt — 2026-08-19 (fifth batch)
+
+Dylan, same evening as the Status rebuild below: put a subtle *Work in
+progress* stamp on the six reconstruction slides and the two closing ones; cut
+the thermal-trigger slide; and remake the two run_145 slides — the first as
+"the reconstructed x angle vs point source at center expectation line" with a
+diagram of what that plot means, the second as an **overhead of the opposing
+arms A and C**, tracks filtered to those a SiPM-wall *and* plastic coincidence
+confirms. And: **remove the references to the drift velocity.**
+
+### What changed
+
+| | |
+|---|---|
+| new `.wip` stamp | slides 9.1, 9.2, 10, 11, 13, 14 and the two new closers |
+| old 32, the thermal trigger | → backup, next to "What we record, and when" |
+| old 33, the imaging / v-in-situ slide | **retired** — its whole headline was the drift velocity |
+| old 34, the four-arm 3-D grid | → backup, with a note that its figure predates the 19 Aug re-reconstruction |
+| new 32 | the angle–position relation, arm A, with a schematic of it beside it |
+| new 33 | the overhead: A and C nose to nose on one capsule |
+| Summary | the "calibrate the drift velocity in situ" clause replaced |
+
+Main flow is now **34 numbered slides**, 77 in all, 90 printed pages.
+
+### The measurement the new slide 32 makes
+
+A source on the beam axis at distance L can only reach the strip plane at
+position u with **tan θ = u / L**. That is one line through the origin with a
+slope made of one measured distance, and *it is not a fit to the points*. The
+schematic on the left of the figure is drawn so u runs left-right in both
+panels — that correspondence is the reason the two are side by side rather
+than on consecutive slides.
+
+**It does not close.** The band's ridge is ~27 % shallower than the line on
+arm A (mode-per-slice fit: slope × L = 0.73; on C, 0.56). That is the angle
+*scale*, and it is the reason both slides carry the stamp. What does not
+depend on it, and is on the slide: the sign, the correlation, and the zero
+crossing, which puts the source within ~5 mm of the beam axis. The same
+shortfall is why the overhead's two waists sit ~2–3 cm off the axis in
+*opposite* directions (median X: −21 mm on A, +31 mm on C) — a fan that is too
+shallow back-projects to a waist pulled toward its own chamber's transverse
+offset, which is roughly what those two medians are.
+
+### Why the confirmed sample, and why that is not circular
+
+Two-plane tracks alone (21,124 on arm A over both sub-runs) show the same band
+under a flash-residue background, plus a tan ≈ 0 ridge of huge-charge 34-strip
+events — median `q_sum` 6.5 × 10⁶ against 1.5 × 10³ in the band. The pointing
+coincidence removes both. It is **external**: the wall sits 96 mm *behind* the
+strip plane and its geometry contains no 235 mm, so it cannot manufacture the
+slope the line is drawn at. It is a purity cut, it is named on the slide, and
+the coincidence code is imported from `ntof_tracking/run145_target_imaging.py`
+rather than re-implemented, so the figure cannot drift away from the analysis.
+
+### A + C is degenerate in Z
+
+Both chambers measure the same transverse coordinate (global X), so the
+closest-approach cloud is a ridge along Z and the overhead cannot localise the
+source along the A–C line. **B and D are the arms that measure Z.** The slide
+is a pointing picture, not a tomogram, and the caption does not claim one.
+
+### The run_145 tables were re-reconstructed while this was being built
+
+The r06 campaign — corrected sharing kernel (c₂ > c₁ was impossible), bench t0
+prior dropped when seeding a beam bundle — **landed at 19:38 on 2026-08-19**,
+all four arms, both sub-runs, 7/7 tags, commit `5f1ee4a`, with the old tables
+parked in `pre_r06_backup_20260819/`. Both new figures are on it (arm C on
+`calib_bundle_lp`: det6 was never inverted). Two consequences:
+
+* **The counts moved between two builds an hour apart and it was not a bug in
+  this code** — the parquet changed underneath it. It looked exactly like
+  nondeterminism. If a number here disagrees with a note, check the table's
+  mtime before you check the arithmetic.
+* The r06 session also re-made the three run_145 deck assets (19:47–19:50) and
+  left `mpgd26/sync_run145_assets.py --check` to prove it — the backup
+  four-arm grid is **current**, not stale, and its convergence numbers were
+  refreshed off `wall3d_summary.json` (wall 135–251 mm, target 14–68 mm,
+  nulls 10–40 / 1–15 mm). `run145_image.png` and `run145_pointing.png` are now
+  unreferenced by the deck: the slide that used the first is retired, and the
+  second is the note's figure, not the deck's.
+
+Both sub-runs are used (`stat090_0000` + `_0001`), joined to their own slim
+files separately because `event_id` is unique within a sub-run and not across.
+
 ## The Status section, rebuilt — 2026-08-19 (fourth batch)
 
 Dylan: *"work on the end of the presentation"* — miniaturize the timeline and
@@ -92,6 +864,16 @@ adjacent.
   census counts triggers of our own read-out either way, and the acronym buys
   the audience nothing at this point in the talk. (DREAM is introduced two
   slides later, on 28, where it is load-bearing.)
+- **The exploded panel starts on 1 July, not on the 28 June arrival.** The four
+  days before it are the install — the first recorded sub-run is 2 July — so
+  nothing is lost, and the panel now reads as the recording period instead of
+  as the run with an empty margin on its left. `EXPLODE_FROM` is also where the
+  zoom wedge is anchored, so the wedge and the panel cannot describe different
+  intervals. The day ticks are pinned to the 1st/5th/9th… rather than every
+  fourth day from the start, so the first one is *1 Jul*.
+- **Three stat tiles, not four**: the 78.6 % beam-availability number came off
+  at Dylan's request. It is still on the beam-availability backup slide, which
+  is where the question gets asked.
 - The full-text timeline is unchanged and is now the first backup slide,
   retitled *"How we got here, in full"* so it does not read as a duplicate of
   26. `make_campaign.py` imports `CAMPAIGNS` from `make_timeline.py` rather
