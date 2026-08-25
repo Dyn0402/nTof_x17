@@ -81,6 +81,32 @@ GROUPS = [
           "efficiency and pulse height across a single pad, and the drop at "
           "the edge where the avalanche is split between two."),
      ]),
+    ("Dead areas and the bulk pillar lattice",
+     "What the reference telescope can see of the amplification gap itself: "
+     "one &oslash;6.15 mm support pillar imaged directly, and the "
+     "&oslash;0.75 mm bulk pillars measured as a lattice. Built by "
+     "<code>figures_pillar.py</code> from <code>p2_pillars.py</code>.", [
+         ("pill_1_bigpillar.png",
+          "A support pillar, imaged at 0.2 mm from reference tracks alone. "
+          "The dashed circle is the gerber, drawn not fitted; efficiency "
+          "inside is 1.6&ndash;2.3 % against 91&ndash;98 % outside."),
+         ("pill_2_kplane.png",
+          "The whole k-plane of the efficiency map: six spots 60&deg; apart at "
+          "|k| = 2.42 rad/mm, i.e. a triangular lattice at d = 3.00 mm, at "
+          "15&ndash;19&sigma;. No pitch is assumed anywhere in this figure."),
+         ("pill_3_avgpillar.png",
+          "The average bulk pillar &mdash; every one in the beam spot folded "
+          "onto one cell, because no single one has enough tracks on it."),
+         ("pill_4_resolution.png",
+          "The reference's pointing resolution at the P2 planes, measured two "
+          "independent ways, and the contrast that leaves at each scale."),
+         ("pill_5_cost.png",
+          "What the lattice costs: the charge footprint is the same on all "
+          "three chambers, the efficiency footprint follows the gain margin."),
+         ("pill_6_mask.png",
+          "The dead areas that can be masked, and what masking them does to "
+          "the stack &mdash; in this beam spot, almost nothing."),
+     ]),
     ("Backup slides", "Kept off the main line so each slide carries one idea. "
      "Built by <code>figures_slide.py</code>.", [
          ("slide_proof.png",

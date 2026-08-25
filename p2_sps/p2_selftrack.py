@@ -135,11 +135,24 @@ def station_table(cfg, det, sub_run, files, tracks, dz, args):
     t = pd.DataFrame({'eventId': tracks['eventId'].to_numpy(),
                       'ex': ex, 'ey': ey, 'fid': d_pad < args.fid_r,
                       # where on the face of its own pad the track landed
-                      'qx': ex - pc[i_pad, 0], 'qy': ey - pc[i_pad, 1]})
+                      'qx': ex - pc[i_pad, 0], 'qy': ey - pc[i_pad, 1],
+                      # and which pad that was -- the handle a dead-pad mask
+                      # needs.  Unused by this stage's own products.
+                      'pid': pads['channel_id'].to_numpy()[i_pad],
+                      'pa': pads['pad_angle'].to_numpy()[i_pad]})
     t = t.merge(p2[['eventId', 'x', 'y', 'x2', 'y2', 'n_clus', 'n_pad',
                     'a_lead', 'q']], on='eventId', how='left')
     t['dx'] = t['x'] - t['ex']
     t['dy'] = t['y'] - t['ey']
+    # ... and the same residual along the pad's OWN axes.  The pads are a fan,
+    # so a residual taken along the board axes is the projection of a rotated
+    # rectangle and its edge is smeared by however much the pad angle varies
+    # across the beam spot -- a few tenths of a millimetre, which is the size
+    # of the thing the edge is used to measure.
+    ca = np.cos(np.deg2rad(t['pa'].to_numpy()))
+    sa = np.sin(np.deg2rad(t['pa'].to_numpy()))
+    t['rw'] = t['dx'] * ca + t['dy'] * sa
+    t['rh'] = -t['dx'] * sa + t['dy'] * ca
     d1 = np.hypot(t['dx'], t['dy'])
     d2 = np.hypot(t['x2'] - t['ex'], t['y2'] - t['ey'])
     t['dmin'] = np.fmin(d1.fillna(np.inf), d2.fillna(np.inf))
@@ -230,7 +243,13 @@ def self_track_block(m, zs, args):
 
 
 # --------------------------------------------------------------------------- #
-def run_subrun(cfg, dets, sub_run, args, run_dir, run_json):
+def build_joined(cfg, dets, sub_run, args, run_dir, run_json):
+    """Everything up to the joined per-track table, shared with p2_pillars.py.
+
+    Split out of `run_subrun` unchanged so a second stage can ask a different
+    question of exactly the same tracks, alignment and vetoes -- the moment two
+    stages build their own denominators they stop being comparable.
+    """
     sub_dir = os.path.join(run_dir, sub_run)
     print(f'\n=== {sub_run}')
     sys.stdout.flush()
@@ -304,8 +323,16 @@ def run_subrun(cfg, dets, sub_run, args, run_dir, run_json):
                       'slope_y': tracks['slope_y'].to_numpy()})
     for s in STATIONS:
         cols = ['ex', 'ey', 'qx', 'qy', 'dx', 'dy', 'dmin', 'found', 'fid',
-                'ux', 'uy', 'n_clus', 'a_lead']
+                'ux', 'uy', 'n_clus', 'a_lead', 'pid', 'rw', 'rh']
         m = m.join(tabs[s][cols].add_suffix(f'_{s}'))
+    return m, tracks, tinfo, zs, fits, exts
+
+
+def run_subrun(cfg, dets, sub_run, args, run_dir, run_json):
+    got = build_joined(cfg, dets, sub_run, args, run_dir, run_json)
+    if got is None:
+        return None
+    m, tracks, tinfo, zs, fits, exts = got
 
     res = {'run': args.run, 'sub_run': sub_run, 'z_mm': zs.tolist(),
            'n_tracks': int(len(tracks)), 'urwell': tinfo,

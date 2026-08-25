@@ -58,6 +58,52 @@ but a **thinned** per-track sample (`track_stats.py --trim`); the full sample is
 on EOS at `analysis/selftrack/<run>/`. Widths recomputed from the thinned
 sample agree with the full one to 2 %.
 
+## The third question: the dead areas, and the bulk pillars
+
+Two things at once, off one new extraction stage (`p2_pillars.py`, which reuses
+`p2_selftrack.build_joined` so the tracks, alignment, fiducial and vetoes are
+literally the same): **cut the dead areas out of each chamber and re-measure the
+stack**, and **can the reference resolve the bulk support pillars?**
+
+The pillars, yes — comfortably. The reference points to **0.21–0.26 mm** at the
+P2 planes (measured two independent ways: the edge of the pad-residual box, and
+the ratio of the pillar lattice's first and second harmonics, in which the
+pillar's size and deadness cancel). At that resolution a 3 mm period keeps 80 %
+of its contrast, and the lattice shows up in the efficiency map as six spots
+60° apart at **15–19 σ**. Folding every pillar in the beam spot onto one cell
+images the average one: efficiency drops to 0.39 (IN) / 0.58 (OUT) at the
+centre and the leading pad loses 40 % of its charge.
+
+Three results worth carrying:
+
+- **The as-built lattice is triangular, d = 2.995 ± 0.004 mm, rows along the
+  board x axis, effective ⌀ 0.75 mm in charge** — the same on all three
+  chambers (each station's fitted lattice read on its neighbours' maps recovers
+  ~90 % of the amplitude). That matches the *symmetry, orientation and diameter*
+  of the archived April artwork (`P2_BASKET-Mask_M2_V*.gbr`, triangular
+  ⌀0.80 mm) but **not its 4.000 mm spacing**, and nothing about the CERN May
+  bulk order (`P2_Mask2.gbr`, square 2.000 mm, ⌀0.500 mm). Neither file in the
+  repositories is the mask this bulk was made from.
+- **The pillars are most of the inefficiency**: 9.5 pp of P2_IN's 10.7,
+  3.5 pp of P2_OUT's 4.5. The *charge* footprint is the same on all three, the
+  *efficiency* footprint is not — a pillar only costs a hit when the charge it
+  removes takes the pad under threshold, so the weakest station pays the most.
+- **There is almost nothing to mask** in the `eff_nominal_1` beam spot: ~75 live
+  pads per station, no dead channels, no weak connector block, one ⌀6.15 mm
+  support pillar. Masking it moves every tracking number by < 0.1 %. The
+  documented P2_IN connector-11 problem is under the `highstat_eff_1` spot,
+  which is processed the same way.
+
+The ⌀6.15 mm support pillar is worth looking at on its own: binned at 0.2 mm it
+is a round hole sitting exactly on its gerber position, efficiency 1.6–2.3 %
+inside against 91–98 % a few millimetres away. That is the calibration for
+everything above — the reference images a millimetre-scale feature at its true
+place, and a pillar is dead, not merely attenuating.
+
+Report: `report_pillar.html`. **Only the derived products are committed**
+(`data/pillar_numbers_*.json`, `data/pillar_arrays_*.npz`); the raw
+`p2_pillars_*.npz` are 45–78 MB and live on EOS under `analysis/pillars/`.
+
 ## The runs
 
 The comparison only means anything at a **matched operating point**. Every VMM
@@ -78,12 +124,15 @@ the two extraction steps need lxplus and the raw data.
 |---|---|---|
 | DREAM per-pad efficiency + spectra (lxplus, LCG_110) | `urw_p2_padadc.py` | `data/dream_padadc_*` |
 | P2 self-tracking vs the reference (lxplus, LCG_110) | `p2_selftrack.py` | `data/p2_selftrack_*` |
+| Fine maps, pad ledger, box-edge histograms (lxplus) | `p2_pillars.py` | EOS `analysis/pillars/p2_pillars_*` |
+| Bulk-pillar geometry from the mask gerber | `pillar_geom.py --build` | `data/p2_pillars_gerber.npz` |
+| Lattice fit, folds, masks, resolution | `pillar_stats.py`, `pillar_numbers.py` | `data/pillar_numbers_*`, `data/pillar_arrays_*` |
 | VMM per-pad ADC, tracked and untracked | `pad_adc.py`, `compare_tracked.py` | `data/pad_adc_*` |
 | Join the two on the pad map | `compare_dream_vmm.py` | `data/compare_dream_vmm_P2_OUT.csv` |
 | Fit the one threshold, cost the fixes | `threshold_model.py` | `data/threshold_model_P2_OUT.json` |
 | Aggregate the self-tracking counts | `track_stats.py` | (in memory) |
-| Figures | `figures.py`, `figures_p2out.py`, `figures_dv.py`, `figures_slide.py`, `figures_deck.py`, `figures_track.py` | `figures/*.png` |
-| Reports | `make_report.py`, `make_report_dv.py`, `make_report_slide.py`, `make_deck_mockup.py`, `make_report_track.py` | `report*.html`, `deck_mockup.html` |
+| Figures | `figures.py`, `figures_p2out.py`, `figures_dv.py`, `figures_slide.py`, `figures_deck.py`, `figures_track.py`, `figures_pillar.py` | `figures/*.png` |
+| Reports | `make_report.py`, `make_report_dv.py`, `make_report_slide.py`, `make_deck_mockup.py`, `make_report_track.py`, `make_report_pillar.py` | `report*.html`, `deck_mockup.html` |
 | Notes for the site | `make_note.py` | `*_note.html` (PNGs inlined as data: URIs) |
 
 `figures/` and `*_note.html` are **not committed** — they are regenerated from
@@ -125,3 +174,11 @@ signal-over-threshold).
   and `_14` has neither FEU 4 nor FEU 5 (P2_OUT). Not a detector
   inefficiency: the FEU is absent from the merged file. `p2_selftrack.py`
   refuses those sub-runs and says so; 14 of 17 are used.
+- **The pillar lattice is fitted, never assumed.** `hex_scan` scans spacing and
+  orientation together rather than three independent wavevectors: fitted
+  separately they disagree by parts per thousand in |G|, which over a 64 mm
+  window is a radian of phase and puts the folded origin on an interstitial
+  site. For the same reason the fold's origin is taken from the *minimum of the
+  folded cell*, not from the harmonic phases, and `fold_hex` must carry the
+  fitted θ — a fifth of a degree is 0.2 mm of drift across the window, which is
+  the width of the thing being folded. Both of those were bugs first.
