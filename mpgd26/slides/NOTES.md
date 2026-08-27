@@ -1,5 +1,329 @@
 # mpgd26/slides — status and open items
 
+> **The deck of record is `mpgd26_talk.pptx`, from 2026-08-26.**  `index.html`
+> is frozen: it is the provenance record (every slide's comment says where its
+> figure and its numbers come from) and the source `to_pptx.py` can re-export
+> from, but editing it no longer changes the talk.  See
+> [The deck moved to PowerPoint](#the-deck-moved-to-powerpoint--2026-08-26).
+
+## Slide 9 fills the slide now — and cannot be rendered on the laptop
+
+**2026-08-27.**  Dylan: *"fine tune this figure to use the width of the slide.
+First, separate the right plot a bit more such that the y-axis label doesn't
+overlap the background of the left plot.  Make all text/axis labels a bit
+larger.  Then with the remaining horizontal space make both plots a bit
+wider."*  All three are in `make_microtpc.py`.  **The figure itself is not
+rebuilt**, because this machine has not got the input — see the last section.
+
+### Where the space was
+
+The hole on slide 9 is 12.13 × 6.01 in, **2.018** wide-to-tall.  The composite
+was 3402 × 1869, **1.820**, so PowerPoint fitted it on height and left 1.16 in
+of slide width empty.  The fit being height-limited is the whole story:
+
+* **widening the canvas cannot enlarge the left panel.**  At fixed height the
+  scale is fixed, so every pixel added on the right is slide width converted
+  into right-hand panel, one for one.  Good for the right panel, nothing for
+  the render.
+* **only a shorter canvas enlarges the render**, and the render has no room to
+  give: its content runs to **99.1 %** of the frame.  It *looks* like there is
+  9 % of empty floor under the chamber, and a 6 % bottom trim was the first
+  thing tried — it ate the front-bottom corner of the PCB.  That white band is
+  the composite's own **foot**, not the render's.
+
+So the foot is where the height came from.  It was `0.075 h` kept for the
+colour bar's axis label; the bar moved up into the empty bottom-right of the
+render band instead (`cb_y` 0.045 → 0.105) and the foot went to `0.012 h`.
+112 px off the canvas, and the fit stops being height-limited by a hair:
+
+| | before | after |
+|---|---|---|
+| canvas | 3402 × 1869 (1.820) | 3549 × 1759 (2.018) |
+| on the slide | 10.98 × 6.03 in | **12.13 × 6.01** |
+| left render | 6.75 in | **7.17 in**  (+6.3 %) |
+| right band | 4.18 in | **4.95 in**  (+18.5 %) |
+|   of which gutter | 0.29 in | **0.79 in** |
+|   of which panel | 3.34 in | **3.86 in**  (+15.5 %) |
+| axis labels, projected | 10.4 pt | **13.2 pt** |
+| tick labels, projected | 8.8 pt | **11.2 pt** |
+
+The gutter is `PAN_X = 0.16` of the band and the panel `PAN_W = 0.78`; the
+y-label needs ~210 px at the new type size and now finds them on white page
+instead of on the render's own background, which was the complaint.
+
+`SLIDE_FS = 1.15` is the type scale, and `fs` already tracks the canvas width,
+so the geometry alone had lifted every label ~6 % before it applied.  It scales
+**type only** — trace and grid weights stay on `fs`, which grew with the canvas
+and did not want another 15 %.  13.2 pt is where the motivation section was set
+on 2026-08-26, so the two sections now project at the same size.
+
+Place it at **(0.60, 1.13), 12.13 × 6.01 in** — the old placement (1.15, 1.16),
+11.31 × 6.21 hung 0.20 in over the footer rule.
+
+### It needs `data/mx17_impulse_response.npz`, which is not in the clone
+
+The right panel folds each cluster's charge with the **measured** per-plane
+single-electron response, and that array is not on the Windows box:
+`mpgd26/data/mx17_impulse_response.npz` is an export of `tmpl_x` from the wft
+calibration bundle under `/media/dylan/data/x17/cosmic_bench/Analysis/...`, and
+the repository ignores `*.npz`, so it does not travel with a clone.  Nothing
+else in the tree carries a template — the bundles under
+`mx_june_wft/bench/derived_bundles/` are `bundle.json` only, without their
+`arrays.npz`.
+
+`scenes_microtpc.strip_waveforms` returns `None` when it cannot find it and
+`draw_waveforms` returned `False`, which `compose` ignored — so the first run
+of this wrote a perfectly clean figure **with an empty right half**.  That is
+now a `SystemExit` naming the missing file: a missing input should not be able
+to reach a slide quietly.
+
+To finish, either copy that one file in and
+
+    ../.venv/bin/python make_microtpc.py --theme light --right waveforms
+
+or run the same command on the bench and copy `slides/assets/img/microtpc.png`
+across — the export recipe (the key names differ) and every other missing
+input are in [`HANDOFF_offline_rebuild.md`](HANDOFF_offline_rebuild.md).  `figures/microtpc_slide_PREVIEW_stand-in_response.png` is the new
+geometry rendered with a plain CR-RC⁴ shaper standing in for the measured
+response — **layout review only**, the pulse shapes in it are not det3's.
+
+## The boost columns read 0 → 90 now — 2026-08-27
+
+Dylan: *"can you actually reverse the ordering of the angles? So do from left
+at horizontal to right at vertical — think that will help with my
+explanation."*  `EXAMPLE_THETA_STAR` is `(0, 45, 67.5, 90)`.
+
+The rest-frame icon now starts lying **along** the boost axis and ends
+**across** it, and the lab angle walks *down* on to the kinematic minimum
+instead of up away from it:
+
+| | left | | | right |
+|---|---|---|---|---|
+| θ* | 0° | 45° | 67.5° | 90° |
+| X17 | 180° | 127° | 114° | **109°** |
+| IPC | 0° | 11° | 10° | **10°** |
+
+So each row ends on the number the panel beside it is about — and on frame 6.2
+the X17 row's **109°** now sits directly left of the spectrum's dotted line at
+109°, which is an adjacency the old order did not have.
+
+**Two things had to move with it**, and they are the reason this is not a
+one-line change:
+
+* **The edge note swapped ends.** "back-to-back" / "collinear" belongs to
+  θ* = 0, which is the first column now. It is keyed off the angle
+  (`edge if ts == 0.0 else None`) rather than off a position, so it cannot come
+  adrift the next time the order moves.
+* **The column with the long left-hand reach changed ends too.** At θ* = 0 an
+  X17 pair is genuinely back-to-back, so one arm points *backwards* 6.4 units
+  from its vertex. As the last column that arm only had the previous column's
+  angle number to clear; as the first it reaches back at the **"boost"** label
+  — and a horizontal red pair one unit above a horizontal purple boost arrow is
+  a drawing that answers the wrong question. Hence **first column x0 + 18.5,
+  pitch 18.0 → 17.5**: 2.9 units of air on the left, and the last column
+  (θ* = 90, both arms forward, so the row ends narrower than it did) still puts
+  its "109" clear of beat 5's y-label. The note also came up 1.2 units, off the
+  β/γ line it now shares a corner with.
+
+Only **frames 6.1 and 6.2** change; 6.3 draws the micro-TPC cartoon in beat 4's
+box and is byte-identical. Rebuild:
+
+    ../.venv/bin/python make_x17.py --layout build --capsule --slides
+
+The .pptx is Dylan's to update this time — slides 11 and 12, `Change Picture`,
+same pixel dimensions as before so nothing moves.
+
+## The motivation section, set for a room — 2026-08-26
+
+Dylan: *"on all the figures in the motivation section of the power point
+slides, I want to make the text larger for presentation … for the boost
+angles, things are still a bit small … expand vertically and try to make the
+circles larger. If that's not enough, we can cut one of the angles."*
+
+The section is **pptx slides 3–13**: the ATOMKI figure (3), the EAR2 beam-line
+build (4–7), the capture story's top row (8–10) and its bottom row (11–13).
+
+### What was actually wrong, and the one lever that fixes it
+
+Every figure in this package is drawn in canvas **units** and typeset in
+**points**, and each goes into the same 12.13 in hole on the slide. So a label
+projects at `pt × 12.13 / (canvas width in inches)` — for the story canvas
+(124 units = 12.4 in) that is **× 0.978**, i.e. the point sizes in the code
+*are* the point sizes in the room. They were 7.4–10.5 pt against slide bullets
+at 16–21 pt.
+
+Narrowing the canvas magnifies type and drawing together, but there is nothing
+to narrow — three beats already span 121 of the 124 units. So the type is
+scaled on its own, exactly as `OUTLOOK_FS` already does for the Summary
+figure:
+
+| | before | now | projected |
+|---|---|---|---|
+| story beats (`scenes_x17.STORY_FS`) | — | **× 1.30** | heads 13.3 pt, smallest label 9.4 pt |
+| EAR2 on-figure labels (`make_ear2.ONFIG_STYLE['text']`) | 0.022 | **0.028** | ~10.6 → ~13.5 pt |
+
+1.30 is not a taste: it is the number that puts the story canvas on the *same
+projected* scale as the Summary figure, which was signed off at
+`OUTLOOK_FS = 1.6` on a wider (152-unit) canvas. Move one and move the other.
+
+Every fontsize in the five beats now goes through `scenes_x17._tfs()`, so the
+row retunes from one number.
+
+### The boost beat (slides 11–13, frame 6.1)
+
+Three changes, in the order asked for:
+
+| | before | now |
+|---|---|---|
+| orientation icons | r = 2.0 units | **r = 2.9** (× 1.45) |
+| lab arms / arc | 5.2 / 2.4 | 6.4 / 3.0 |
+| column pitch | 15.0 | **18.5** |
+| θ* columns | 90, 67.5, 45, 22.5, 0 | **90, 67.5, 45, 0** |
+| row height | ~24 units | ~27 |
+| rows at | y = 45 / 17 | 43.6 / 14.1 |
+
+**22.5° is the right one to cut.** 90 and 67.5 are the pair that carries the
+argument — two very different rest-frame orientations landing 5° apart in the
+lab, which is *why* the spectrum piles up at the minimum; 45 shows the opening
+growing; 0 is the endpoint. 150° said nothing the columns either side of it
+did not.
+
+**"Expand vertically" has a hard floor here.** The band is 124 × 61.1 units and
+the slide hole is 2.011:1, so the canvas is width-limited: making the band
+taller makes the figure *smaller*, not bigger. What the rows got instead is the
+band's own slack — the beat now runs 2.8 units off the floor to 1.8 under the
+"4." head, and there is nothing left in it. The next thing that wants height in
+beat 4 has to take it from a drawing.
+
+*Frame 6.1 leaves the right third of the slide white, and cropping it to the
+boost block would not help:* the block is 85 × 61 units, so in a 2.011:1 hole
+it would be height-limited and come out at 0.982 against the 0.978 it already
+has. The empty third is the price of the no-jump rule, and it is nearly free.
+
+### Fallout the type bump caused, and what paid for it
+
+* **Beat 3** — "pair mass anywhere in 1–20 MeV" ran off the canvas at 1.30×.
+  The level ladder narrowed 10 → 9 units, the three process pictures moved
+  ~1.5 units left and each lost ~1.2 units of its own length (the e⁺/e⁻ tags
+  sit on exactly the lines the channel name and note sit on). The pictures
+  gave the width, not the wording.
+* **Beat 1 (capsule)** — "³He, 500 bar" is 9.6 units wide at 1.30×,
+  right-aligned 9.2 units in, so its superscript ran off the left edge. Set on
+  two lines now.
+
+### Sizing: what still has slack, and where
+
+Measured off the .pptx (13.33 × 7.5 in; figure hole 12.13 × 6.03 in):
+
+| slides | figure | placed | verdict |
+|---|---|---|---|
+| 11–13 | story bottom row, 2.029:1 | 12.13 × 5.98 | **fills it** |
+| 8–10 | story top row, 2.160:1 | 12.13 × 5.61 | 0.42 in of slide height unused |
+| 4–7 | EAR2 render, 0.833:1 | 4.68 × 5.62 | ~0.1 in short of the caption line |
+| 3 | ATOMKI, 1.706:1 | 7.80 × 4.57 | width-limited **by the bullet column** |
+
+Two of those are worth something and neither is a figure change:
+
+* **Slide 3.** The picture is as wide as the 4.33 in bullet column leaves it.
+  Narrow the bullets to ~3.60 in and the figure goes to 8.45 × 4.95 — **+8 %**,
+  in PowerPoint, no re-render.
+* **Slides 8–10.** The 0.42 in cannot be taken by adding band height (that adds
+  whitespace and nothing else — the canvas is width-limited, and the axes is
+  `set_aspect('equal')` so taller means wider). It needs beat 1's capsule drawn
+  ~7 % larger, which would lift the whole row by 7 %, and would close the
+  1.0-unit gap between the vessel and its zoom bubble. Left alone; the
+  reasoning is in the `STORY_PARTS` comment.
+
+### Rebuild
+
+    ../.venv/bin/python make_x17.py --layout build --capsule --slides
+    ../.venv/bin/python make_ear2.py
+
+then swap the PNGs into `mpgd26_talk.pptx` by hand — `slides/assets/img/` is
+still the only place the scripts write, and the .pptx is still edited by hand
+(see *The deck moved to PowerPoint*, below).
+
+
+## The deck moved to PowerPoint — 2026-08-26
+
+Dylan: *"note on the html that it is deprecated and that we're using the power
+point now — I'll update that myself."*  The talk is edited in
+`mpgd26_talk.pptx` by hand from here to 3 September.
+
+**What this changes**
+
+| | before | now |
+|---|---|---|
+| the deck | `index.html` | `mpgd26_talk.pptx` |
+| an edit to wording / order | edit `index.html` | edit the .pptx in PowerPoint |
+| a figure change | re-run `make_*.py --slides`, reload the browser | re-run `make_*.py --slides`, then **swap the picture into the .pptx by hand** |
+| the printed copy | `make_pdf.sh` | PowerPoint's own export |
+
+`to_pptx.py` still works and still converts `index.html` into a native
+PowerPoint deck — but it **overwrites `mpgd26_talk.pptx`**, hand edits and
+all. Run it to start over, never to "sync" one change across.
+
+**What is still live.** Every `make_*.py` in `mpgd26/` — they are the only
+source of the figures, they still write into `slides/assets/img/`, and their
+docstrings are still where a number's provenance is written down. This
+NOTES.md is still the log. `index.html`'s per-slide comments are still the
+reason a slide looks the way it does; they were not copied into the .pptx and
+nothing else records them.
+
+**Two things to watch**
+
+* `mpgd26_talk.pptx` is in `mpgd26/.gitignore` (~49 MB), which was right when
+  it was a regenerable export and is **not** right now that it is hand-edited:
+  the hand edits exist in exactly one place, on one machine. Track it or keep a
+  copy elsewhere.
+* The frame-.1 timeline fix made earlier the same day (below) lives in
+  `index.html` and in `assets/img/campaign_overview_timeline.png`. To get it
+  into the talk, set frame .1's picture in PowerPoint to that PNG — it is not
+  in the .pptx otherwise.
+
+## Frame .1 of "How we got here" is now actually just the timeline — 2026-08-26
+
+Dylan: *"one should be just the timeline but it also includes the stats."*  The
+3-frame build's own comment has said *".1 is the bare timeline"* since it was
+written on 2026-08-23, but .1 pointed at `campaign_overview.png` — the joined
+figure, census panel and zoom wedge included. So the build opened with the
+numbers already on screen, .2 added nothing but a copper outline, and the
+wedge's *"the events panel IS that bar, opened up"* argument had nothing left
+to open.
+
+`make_campaign.py` now takes **`--timeline-only`** and writes a third product,
+`campaign_overview_timeline.png`, which .1 uses:
+
+| frame | image | what is new on it |
+|---|---|---|
+| .1 | `campaign_overview_timeline.png` | the four EAR2 exposures, and nothing else |
+| .2 | `campaign_overview_highlight.png` | the census panel, the zoom wedge, and the outline on the bar it comes out of |
+| .3 | *(same image)* | the stat-row and caption |
+
+**Same canvas, same axes rectangle** (14.8 × 5.02 in, `ax_t` at
+`[L, 0.775, R-L, 0.190]`) — the strip is in the identical place in all three,
+so advancing does not move it; the lower two-thirds of .1 are empty on purpose,
+because that is the hole .2 fills. The footer source note stays at the foot of
+the canvas in both and loses its census clause on .1. Same no-jump rule the
+`.fut` stat-row already follows.
+
+In the code, `draw()` grew an `events=True` argument: with `events=False` it
+skips the second axes, the census read, the legend and the wedge. The census
+`.csv` is only read when there is a panel to put it in, so the timeline frame
+also builds on a machine with no copy of it.
+
+**Also fixed, found along the way**: the events axis formatted its day with
+`'%-d %b'`, a glibc extension that raises `ValueError: Invalid format string`
+on Windows — the deck now gets built on both, so the day is formatted by hand
+through a `FuncFormatter` instead. Tick labels are unchanged (`1 Jul`,
+`5 Jul`, …).
+
+**Not done, on purpose**: the obvious fourth frame — timeline, then outline,
+then census, then stats — would restore the *"show which bar it explodes from
+BEFORE the numbers land"* reading in full. `make_campaign.py --timeline-only
+--highlight-explode` already builds that image; it is one `<section>` and a
+`data-frame` renumber away if the talk has room for it.
+
 ## The dead time moved onto the beam's clock — 2026-08-24
 
 Dylan, on the charge slide (then 21, by the time it was built 25): *"I like
@@ -2273,6 +2597,12 @@ cd mpgd26/slides && grep -n 'class="title' index.html | nl
   not probed during production running.
 
 ## Images are intentionally not tracked in git
+
+> **What that costs, measured:** 89 of the deck’s 104 pictures exist
+> nowhere on the Windows laptop except inside `mpgd26_talk.pptx`.
+> [`HANDOFF_offline_rebuild.md`](HANDOFF_offline_rebuild.md) is the
+> inventory — what still builds without the bench, what does not, and
+> the exact files to copy to fix each one.
 
 The repo's top-level `.gitignore` blanket-excludes `*.png`/`*.gif` (see the
 comment there — 250 MB was purged from history on 2026-08-04, policy is

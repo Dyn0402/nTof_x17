@@ -22,6 +22,11 @@ and the list of what is drawn but not measured.
 
 ## Quick start
 
+**Not all of these run off the bench.** Ten of the figure families need
+`/media/dylan`, `~/CLionProjects` or one small exported file that `*.npz` keeps
+out of git; [`slides/HANDOFF_offline_rebuild.md`](slides/HANDOFF_offline_rebuild.md)
+says which, and what to copy.
+
 ```bash
 cd mpgd26
 ../.venv/bin/python make_figures.py                # the setup stills
@@ -642,6 +647,15 @@ the sense of the uRWELL local axes in the drawing. Track *angles*, the spot
 size and the front→back offset are unaffected by it.
 
 ## Slides
+
+**The deck of record is `slides/mpgd26_talk.pptx` from 2026-08-26** — it is
+edited by hand in PowerPoint, and `slides/index.html` is frozen. The HTML is
+kept as the provenance record (per-slide comments naming the script, the
+source and the reasoning behind each slide) and as what `slides/to_pptx.py`
+can re-export from — but a re-export overwrites the .pptx and every hand edit
+in it, so it is a start-over, not a sync. Figures are unaffected: the
+`make_*.py` scripts still write `slides/assets/img/`, and a changed figure is
+swapped into the .pptx by hand.
 
 `slides/` builds the actual MPGD2026 talk from a subset of the figures above
 plus curated material from elsewhere (ATOMKI evidence, the n_TOF/EAR2

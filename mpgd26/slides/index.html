@@ -1,3 +1,30 @@
+<!-- =======================================================================
+     DEPRECATED as the deck of record — 2026-08-26.
+
+     THE TALK IS NOW `mpgd26_talk.pptx`.  Dylan edits that by hand; it is
+     where every change from here to the talk (3 September 2026) lands, and
+     it is the file that gets presented.
+
+     This file is FROZEN.  Editing it does not change the talk.  It is kept
+     for two things:
+
+       * PROVENANCE.  Every slide here carries a comment saying which script
+         drew its figure, which number came from where, and why the slide is
+         shaped the way it is.  That record is not in the .pptx and is worth
+         more than the markup.
+       * RE-EXPORT, if the deck ever has to be rebuilt from scratch:
+         `to_pptx.py` still converts this file into a native PowerPoint deck.
+         BUT a re-export OVERWRITES mpgd26_talk.pptx and every hand edit in
+         it — so do not run it to "sync" a change, only to start over.
+
+     Changing a figure now: re-run its make_*.py as before (they still write
+     into assets/img/), then swap the picture into the .pptx by hand.  The
+     scripts and their docstrings stay live; only this HTML is retired.
+
+     NOT BACKED UP: mpgd26_talk.pptx is in .gitignore (~49 MB), written back
+     when it was a regenerable export.  Now that it is hand-edited it is the
+     only copy of those edits — track it, or keep a copy off this machine.
+     ======================================================================= -->
 <meta charset="utf-8">
 <title>Saclay Micromegas Micro-TPCs in the X17 Search at n_TOF — MPGD2026</title>
 <style>
@@ -2430,18 +2457,25 @@
          on the full timeline, which is now the first backup slide. -->
     <!-- SPLIT INTO A 3-FRAME BUILD 2026-08-23 (Dylan: "in .2 we add ... the
          explosion outline for the August test, then .3 add the stats").  .1
-         is the bare timeline; .2 swaps in campaign_overview_highlight.png,
-         the same figure with an outline drawn around the July-August
-         production bar so it is visually obvious which bar the zoom wedge
-         below is exploding from BEFORE the numbers land; .3 reveals the
-         stat-row and caption.  The stat-row and caption are on all three
+         is the bare timeline -- campaign_overview_timeline.png,
+         make_campaign.py --timeline-only, the strip with NOTHING under it.
+         Corrected 2026-08-26: .1 used to be the whole figure, census panel
+         included, so the first two frames differed only by an outline and the
+         numbers landed before the timeline had been read.  It is the same
+         canvas at the same axes rectangle as the other two, so the strip does
+         not move when the census and the zoom wedge arrive underneath it.  .2
+         swaps in campaign_overview_highlight.png -- the joined figure, with an
+         outline drawn around the July-August production bar so it is visually
+         obvious which bar the zoom wedge below is exploding from BEFORE the
+         numbers land; .3 reveals the stat-row and caption.  The stat-row and
+         caption are on all three
          frames as .fut (hidden but laid out) rather than only appearing in
          the markup at .3, so the figure does not resize/jump between frames
          -- same rule the rest of the deck's builds follow. -->
     <section class="slide bstart" data-frame="1">
       <div class="kicker">Status</div>
       <div class="title">How we got here</div>
-      <div class="figure-solo"><img src="assets/img/campaign_overview.png" alt="Two panels on one canvas. Above, a nine-month timeline strip from November 2025 to August 2026 with four beam exposures at n_TOF EAR2: first exposure, prototype on beam, two chambers, and the physics run. Below, expanded from the last bar by a shaded wedge, one stacked bar per day of events recorded from 28 June to 10 August, split into beam and cosmic reference, with a cumulative curve rising to 41.8 million and the two campaign phase boundaries marked."></div>
+      <div class="figure-solo"><img src="assets/img/campaign_overview_timeline.png" alt="A nine-month timeline strip from November 2025 to August 2026 with four beam exposures at n_TOF EAR2: first exposure, prototype on beam, two chambers, and the physics run. The lower half of the canvas is empty; the daily event census arrives there on the next frame."></div>
       <div class="stat-row fut">
         <div class="stat"><div class="num">41.8 M</div><div class="lbl">events recorded &mdash; 35.9 M on beam, 5.8 M cosmic reference</div></div>
         <div class="stat"><div class="num">17.9 TB</div><div class="lbl">on EOS, across 162 runs / 2,705 sub-runs</div></div>

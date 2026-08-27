@@ -174,11 +174,22 @@ SLIDE_STYLE = dict(gutter=0.50, text=0.026)
 #   * the type is sized against that wider canvas, so TEXT_FRAC comes down to
 #     keep the same cap height in pixels as the gutter version has.
 #
-# Each side has ~1.7 m of drawn hall to write in, i.e. ~20 characters at this
-# size -- the same cap LABELS_SLIDE already works to, which is why this variant
-# reuses that label set rather than defining a third one.
+# Each side has ~1.7 m of drawn hall to write in, i.e. ~16 characters at this
+# size -- close to the cap LABELS_SLIDE already works to, which is why this
+# variant reuses that label set rather than defining a third one.
+#
+# text 0.022 -> 0.028 on 2026-08-26 (Dylan: "on all the figures in the
+# motivation section ... make the text larger for presentation").  The frame
+# goes on the slide 4.68 in wide, so a cap height of 0.022 x 1740 px = 38 px
+# projects at ~10.6 pt and 0.028 at ~13.5 pt -- which is where the story beats
+# next door now sit (scenes_x17.STORY_FS) and roughly where the slide's own
+# bullets are.  This variant can afford it and the GUTTER one cannot: labels
+# here run inward across empty hall and simply get closer to the beam line,
+# where a gutter label that outgrows its column is silently CLIPPED at the edge
+# of the PNG.  Checked frame by frame after the change -- the tightest is
+# "20 GeV/c protons", which now reaches the tail of its own proton arrow.
 ONFIG_SIZE = (1740, 2050)
-ONFIG_STYLE = dict(gutter=0.0, text=0.022)
+ONFIG_STYLE = dict(gutter=0.0, text=0.028)
 
 # Which side each label goes on.  Assigned by hand rather than from the sign of
 # the projected anchor: the beam line is a narrow column near the middle of a
