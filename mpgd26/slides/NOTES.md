@@ -6,6 +6,257 @@
 > from, but editing it no longer changes the talk.  See
 > [The deck moved to PowerPoint](#the-deck-moved-to-powerpoint--2026-08-26).
 
+## Slide 21's build fills the slide now — and the deck moved under it
+
+**2026-08-28, in three passes.**  Slides 50–55, the six-frame build
+`21.1–21.6`, *“Every volt of gain costs milliseconds of beam”* (Dylan: *“the
+figure … is very nice.  However, I want to work on the formatting”*).
+Source: `mpgd26/make_hv_window.py`, variant **b**, shape **wide**.  The title
+on those slides was *“… and the milliseconds are the beam”* when this was
+drafted — see the last section.
+
+> **In the deck.**  For half a day it was not — two of this figure’s inputs
+> were missing from the laptop — and then the USB turned up with all three of
+> them on it.  *Where the inputs came from* below is worth reading before the
+> next figure goes missing an input.
+
+**Widened twice, at exactly the same height.**  `12.5` → `13.5` →
+**`14.25 × 6.38`** in, `2000` → `2160` → **`2280 × 1020`** px,
+**1.961 : 1 → 2.118 → 2.235 : 1**.  On the slide that is a picture
+**13.327 × 5.962 in on a 13.333 in slide** — a 0.003 in hairline each side,
+effectively full bleed, which is where the rest of the deck has been going
+(slide 56 is 13.338 wide at `x = 0`).
+
+The height was held on purpose through both passes and it is what makes this
+edit cheap: the on-slide type size is (frame height) ÷ (canvas height), so
+with **both** heights unchanged every letter on the slide projects at exactly
+the size it did before and there is no font rescale to chase.  Contrast slide
+12 a day earlier, where the canvas got both wider *and* taller and `DECK_FS`
+had to be scaled +4 % to cancel it.  **1.75 in of new canvas, and all of it
+went to the top band.**
+
+The extra inch went entirely to the top band, which is what Dylan called *“the
+most problematic part of this slide”*:
+
+| | before | after |
+|---|---|---|
+| charge strip (top right) | `0.115` of the canvas, **0.73 in** | `0.235`, **1.50 in** |
+| efficiency panel (top left) | `0.140 × 0.300`, **0.89 × 3.75 in** | `0.235 × 0.222`, **1.50 × 3.16 in** |
+| scoreboard (centre) | bare text on the canvas, 11.5 pt | on a post-it, 12.5 pt |
+| both headlines | over the panels | **gone** |
+
+Both small panels sit on the **same baseline** (`0.740`) and reach the same
+`0.975`, so the band reads as a row rather than as two things at slightly
+different heights.  **They doubled in height.**  The first pass took the room
+between the top of the main panel’s energy axis and the panels; the second
+took the band the two headlines had been sitting in.  The main panel never
+moved.
+
+**The two headlines are gone** (Dylan: *“remove the titles above the two top
+plots all together to recover some vertical space”*) and that is a real trade,
+not just a tidy-up — they carried the two panels’ provenance:
+
+| was | says it now |
+|---|---|
+| `bench efficiency, mapped to 90/10` | the y axis, which is why it is spelt out as **`Efficiency [%]`** instead of a bare `%` — plus the speaker, for *bench* and *mapped to 90/10*, which is not a detail |
+| `det A · run_57 · one sub-run per 2 V` | the speaker only.  The charge strip now names nothing about where its points come from |
+
+Both sentences are in `RUNNING_ORDER.md` under this slide and in the deck’s
+alt text.  **If the room ever asks “efficiency of what?”, this is the edit
+that made them ask.**
+
+**The efficiency panel lost its second curve.**  Dylan: *“remove the gray
+dashed line and in the comment remove ‘solid: …’ and all after”*.  That line
+was run\_55’s own placement of the same bench scan, 22 V to the left of the
+production one — the 23 July noise step, drawn rather than asserted, and it is
+what turns 540 V from 81 % into **69 %**.  It needed a key in the headline
+(`solid: as we ran · dashed: July`) to be readable at all, and that key sat
+over the most crowded band on the canvas.  **The step is now the speaker’s
+line, not the figure’s** — it is still in
+`ntof_july_analysis/hv_tradeoff/report.html`, and
+`T.bench_eff_on_ntof_axis('run_55', …)` still returns the other placement.
+The headline is just `bench efficiency, mapped to 90/10`.  The *blue* dashed
+segment stays: that is the extrapolation below the scan, and the panel labels
+it `extrap.` on its own shaded band.
+
+**The card is a dull post-it** — `#fdfbef` on a `#e9e0bf` edge (Dylan:
+*“light yellow like a dull post-it note, take creative freedom”*, then *“make
+the yellow background much more subtle”*).  It started at `#faf3cf` /
+`#e0d296` and was toned down to **4/5 of the way back to the canvas**.
+
+Two things worth keeping from that.  The colour is doing a job beyond
+decoration: every other surface here is the same cool near-white `P.SURFACE`
+(`#fbfcfe`), so a warm one is the only thing the eye separates at 20 m without
+reading it — and **warm-against-cool is read long before saturation is**,
+which is why the tint can sit almost at the background and still divide the
+band into three.  And when the fill goes that quiet, **the edge is what holds
+the card together**, so it was *not* lightened proportionally; lighten both
+and the card stops being an object and becomes a smudge.  Anything stronger
+competes with the `540 V` and the shaded blind region, which are what the
+frame is actually about.
+
+**It is measured, not guessed.**  `_readout_card` unions the drawn text
+extents and pads in **inches** (not figure fraction — at 2.2 : 1 an equal
+fraction is over twice as much room across as down, and the rounded corners
+would come out elliptical).  It has 5.47 in of canvas between the efficiency
+panel’s right edge and the charge strip’s left edge, and it lands **+0.39 in
+clear on the left and +0.23…+0.36 in on the right** across all six frames.
+`draw()` prints both clearances per frame, so a later layout change that eats
+them says so in the build log.
+
+Making it fit needed one word: `efficient  (cosmic bench, **extrapolated**)`
+→ `(cosmic bench, **extrap.**)`.  Spelt out it made the 520 V frame half an
+inch wider than the other five, so the card changed size mid-build *and* ran
+under the charge strip.  Abbreviated, the width-setting line is `blind for
+NN.N ms after every flash` on **every** frame, so the card is one rectangle
+throughout the build — which matters when the frames flip in sequence.
+`extrap.` is also the word the efficiency panel already prints on its own
+shaded band, so the canvas says it the same way twice.
+
+**`draw_trade` deliberately did not move.**  The closing “two costs
+multiplied” frame is backup slide 46 (deck slide **102**, `image98.png`), not
+part of the build, and its inputs cannot be rebuilt here either — so it keeps
+`TRADE_WIDE = (12.5, 6.38)` and slide 102’s frame stays correct.  If it is
+ever widened to match, **slide 102’s picture frame has to be re-fitted with
+it**, the way backup slide 52 had to be when slide 12 grew.
+
+### Where the inputs came from
+
+`make_hv_window.py` runs here as far as the numbers on its own, but the
+**efficiency panel and the `69 %` on the card** both go through
+`hv_tradeoff.bench_eff_on_ntof_axis`, and that opens two things the repository
+does not carry.  Both were on the USB (`F:`), which is a *different* drive
+from `D:\mpgd26_data_for_windows` — look at both before declaring anything
+unbuildable:
+
+| file | from | to |
+|---|---|---|
+| `slopes.json`, `mesh_ladder.csv` | `F:\x17\response_sim\hv_slope\` | `~/x17/response_sim/hv_slope/` |
+| `efficiency_vs_hv_scan.csv` | `F:\x17\cosmic_bench\Analysis\mx17_det3_saturday_scan_6-27-26\hv_scan\mx17_3\` | the same path under **both** `C:\media\dylan\data\x17` and `~/x17` |
+| `efficiency_vs_hv_scan2.csv` | …`\hv_scan2\mx17_3\` | ″ |
+
+**They were checked against the repository before being trusted**, which is
+worth doing on anything that arrives on a drive: `bench_gain_slope()` off the
+copied `slopes.json` returns `0.4183970948671223 / 0.004148042733300713`,
+which is `bench.slope10` / `slope10_err` in the committed
+`hv_tradeoff/results.json` to the last digit; `total_shift('production')`
+comes back `102.66730728878349`, also exact; and the scan reads
+**48.8 / 66.4 / 77.0 / 80.9 %** at 425 / 435 / 445 / 455 V, which is the
+`49 / 66 / 77 / 81` this file has quoted since 2026-08-25.  Right files, right
+scan.
+
+### The baseline reproduced, to 6 pixels in 2 040 000
+
+Before the swap, the **unmodified** `make_hv_window.py` (from `HEAD`) was
+rendered here and pixel-diffed against the deck’s own `image50…image55.png`:
+
+| frame | 560 | 550 | 540 | 530 | 520 | 540 |
+|---|---|---|---|---|---|---|
+| pixels differing | 8 | 8 | 4 | 7 | 8 | 4 |
+
+— every one of them by **1/255 in a single channel**, i.e. antialiasing
+rounding.  Same discipline as slide 12 the day before, and the same
+conclusion: the laptop reproduces this build, so everything that differs
+afterwards is the edit.  (Hashes are useless for this — all six differ in
+encoder metadata.  Compare pixels.)
+
+### The swap
+
+`python make_hv_window.py --variant b --shape wide` → six frames at
+**2280 × 1020**, all six `card clears the panels by …` lines positive, and
+`hv_window_b_wide_7_trade.png` still at 2000 × 1020 as intended.
+
+Twelve parts rewritten in the deck (`image50…image55.png` and
+`slide50…slide55.xml`); **246 zip entries in, 246 out**, twice — then six
+more (media only) for the post-it re-tone, which needed no frame change.
+Backups:
+`mpgd26_talk_2026-08-28_pre-hvwindow-widen.pptx` (before pass 2) and
+`…_pre-hvwindow-fullbleed.pptx` (before pass 3).  Every picture re-fitted to
+**`(0.003, 1.155) 13.327 × 5.962 in`** — the same top and the same height the
+build has had since it was drawn, and as wide as the slide allows.  (Pass 2
+stopped at `(0.354, 1.155) 12.625 × 5.962`.)
+
+### ⚠️ The deck changed underneath this edit — read this before the next one
+
+The `.pptx` was open in PowerPoint with **unsaved changes** for the whole of
+this work, and what was saved back is not the deck this entry started from:
+
+* **111 slides → 70.**  The backup section was cut hard: `image69` through
+  `image104` and every slide that used them are gone, 118 zip parts in all.
+  The file went 51.98 → 40.35 MB, 364 → 246 entries.
+* **Titles were rewritten** on at least three slides in this stretch — this
+  build’s is now *“Every volt of gain costs milliseconds of beam”*, slide 49’s
+  is *“The detector is fine. The DREAM DAQ is not”*, slide 56’s is *“So we
+  made a measurement at thermal energies”*.
+* **Pictures were re-fitted by hand**, including these six: they were at
+  `(0.985, 1.322) 11.364 × 5.795` when the patch ran, not the
+  `(0.821, 1.155) 11.691 × 5.962` recorded when this entry was drafted.
+  **The patch overwrote that**, to the centred full-width geometry above.
+  If those numbers were deliberate, the pre-patch backup has them.
+
+Two things follow.  **Re-read the slide XML immediately before writing it**,
+never from a reading taken earlier in the session — the geometry printed by
+the patch script is what makes an overwrite like that visible instead of
+silent.  (Guard the *right* thing while you are at it: the script asserted
+`new_xml != old_xml`, which fired on the post-it re-run for a good reason —
+the frame was already correct and the XML rightly did not change.  The
+assertion that means something is that the intended `<a:off>` and `<a:ext>`
+are *present* afterwards, not that the part differs.)  And **the trade frame is no longer on any slide**: `image98.png` went
+with the backup cut, so `TRADE_WIDE`’s job is now only to stop a rebuild from
+changing a picture nobody asked about.
+
+## The forward-fit example fills its slide now — and is lettered for a room
+
+**2026-08-27, in two passes.**  Slide 12, `One muon through the forward fit`,
+the last slide of the reconstruction section (Dylan: *“I very much like this
+slide, but…”*).  Widened past the text column and re-lettered for a projector,
+with four panel edits.  Source: `docs/wft_reference/figsrc/f_model.py`,
+`fig_model_vs_data`.
+
+**That function is deck-only** and it is worth knowing why it lives in the
+reference-document directory anyway: no section carries
+`{{FIG:model_vs_data}}` — it is the one figure `figsrc` builds that the
+document never shows.  Its consumers are slide 12 and backup slide 52, so it
+can be tuned for a room without costing the document anything.  Every *other*
+`f_*.py` figure is shared, and the same edit there would be a regression on
+the page.
+
+What changed, panel by panel:
+
+| | |
+|---|---|
+| canvas | `13 × 6.2` → `13.6 × 6.028` in, which crops (`bbox_inches='tight'`) to **2.120:1** — the aspect of the widened frame.  The crop makes that not predictable in closed form, so it was tuned by rendering.  **Widen, do not shorten**: the first pass reached the same aspect by cutting the height to 5.76 in, and the stacked panel’s 18 strip-position labels ran into each other |
+| type | every size set explicitly in `DECK_FS`, ~1.35× the `wftdoc.style()` defaults.  As projected: panel titles **14.2 pt**, axis labels **13.1**, ticks **12.1**, legend **12.6**.  A wider canvas into a fixed frame shrinks every letter on the slide, so widening the canvas from 13 to 13.6 in came with a matching **+4 %** on `DECK_FS` to cancel it exactly |
+| stacked waveforms | title removed; the y label cut to `strip position [mm]` and moved off the “0.00” x tick it used to sit on — `labelpad=18`, since the tick reaches ~13 pt left of the spine and there are no y tick labels to push against.  (First pass used `align_ylabels` to park it in the top-left panel’s label column; that cleared the tick but retreated much further left than it needed to, and the gap read as wasted width.)  legend frame now opaque **white** (`framealpha` 0.75 let the traces through the words; the slide background is `bg1` = `FFFFFF`, so white is exact) |
+| charge profile | the u50/u90 rules and their legend removed, title → `charge profile` |
+
+**Placement.**  `(0.833, 1.155) 11.666 × 5.962 in` → `(0.350, 1.155) 12.633
+× 5.960` — centred on the slide and a quarter inch past the text column on
+each side, at the same height to within 0.002 in.  (The first pass stopped at
+the text column, `0.600` wide `12.154`.)  The vertical room is what is
+actually scarce: the title block ends at 1.044 and the footer starts at 7.255,
+so the frame cannot grow much taller than it is — which is why extra width has
+to come with a wider canvas rather than a taller picture.
+
+**Backup slide 52 shares `ppt/media/image20.png`**, so its frame had to move
+too: the new picture is 8 % wider in aspect (1.957 → 2.120), and left alone
+the old frame
+stretched it.  Re-fitted about its own centre, height untouched: `(1.785,
+1.155) 9.763 × 4.990` → `(1.378, 1.155) 10.577 × 4.990`.  Its caption still
+reads true — nothing in it names the u50/u90 rules.  **Any future edit to this
+figure has two slides to check, not one.**
+
+Two parts changed in the deck (`image20.png`, `slide20.xml`), then one more
+(`slide82.xml`); 364 zip entries in, 364 out every time.  Backup (taken
+before the first pass, so it restores the original figure and both frames):
+`mpgd26_talk_2026-08-27_pre-slide20-widen.pptx`.
+
+> Before the swap, the *unmodified* script was re-run here and its output was
+> **pixel-identical to `ppt/media/image20.png`** (the two PNGs differ by one
+> byte of encoder metadata and not one pixel).  Worth doing first on any
+> figure edit: it proves the laptop reproduces the deck’s build, so anything
+> that differs afterwards is the edit and not the environment.
+
 ## The laptop can rebuild the deck now — and it reproduces it exactly
 
 **2026-08-27.**  563 MB arrived on a flash drive
@@ -3479,3 +3730,42 @@ fig-label should change, the exact replacement text is in
   discovery: `mx_june_wft/R06_GATE_2026-08-19.md`. Worked example:
   `mpgd26/walkthrough/` and
   <https://dylan-neff.web.cern.ch/notes/forward-fit-det3.html>.
+
+## 2026-08-28 — the T2K ND280 credit, on 9.1 and 9.2, in the .pptx
+
+Both frames of slide 9 now carry one muted line in the header band, centred
+between the eyebrow and the WORK IN PROGRESS badge:
+
+> Method inspired by **T2K ND280** · Attié et al., NIM A 1056 (2023) 168534
+
+7.5 pt against the eyebrow's 9.12 pt so it does not compete; footer grey
+`5D7176` with "T2K ND280" in the darker `3C5257`, Noto Sans / Noto Sans
+SemiBold. It is the answer to "has anyone else done this?" — ND280's resistive
+Micromegas measure the same object and fit neighbouring channels
+simultaneously, which is the closest published method to our forward fit. What
+we extend is solving the *drift-depth profile* inside the fit rather than a
+sharpened centroid. Full prior-art list, Dixit 2004 onward, in
+`wft/REFERENCES.md`.
+
+**This credit did not previously exist anywhere in the deck.** `REFERENCES.md`
+and `RUNNING_ORDER.md` had both recorded, on 2026-08-23, that slide 9.2 carried
+it — but `git log -S T2K -- mpgd26/slides/index.html` returns nothing and the
+string was in neither `index.html` nor the .pptx. The write-up was done; the
+slide edit never was. Both documents are corrected.
+
+**How it was applied.** The deck is the .pptx now and `index.html` is frozen, so
+this went in as a direct edit of `ppt/slides/slide17.xml` and `slide18.xml` (the
+parts carrying "9.1 / 25" and "9.2 / 25") inside the zip — python-pptx is not
+installable on this machine, pip has no working TLS. Script kept at
+`mpgd26/slides/staged/add_t2k_credit.ps1`; it is idempotent, skipping a part
+that already matches `T2K ND280`. Backup before the edit:
+`mpgd26_talk_2026-08-27_pre-t2k-credit.pptx`. Verified by exporting both slides
+through PowerPoint itself.
+
+Two traps worth keeping:
+
+- **PowerPoint holds a write lock on the open .pptx.** The zip cannot be updated
+  while the deck is open in PowerPoint; close it first.
+- **The leading space of a run following a bold run is dropped**, even with
+  `xml:space="preserve"`. The separator needs a literal `&#160;` or it renders
+  "ND280· Attié".

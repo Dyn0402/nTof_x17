@@ -71,6 +71,45 @@ claim (RUNNING_ORDER.md, 2026-08-10) -- what the frames use is the FRACTION
 that survives each cut, which is a property of the neutron spectrum and the
 capture cross-section and survives everything the normalisation does not.
 
+FORMATTED FOR THE ROOM, 2026-08-28
+----------------------------------
+The build is slides 50-55 of ``mpgd26_talk.pptx`` (21.1-21.6 in the footer),
+and it is the densest drawing in the talk: three panels and a scoreboard, the
+top three of them crammed into a band an inch and a quarter deep.  Dylan asked
+for width and for that band to use it.  What changed:
+
+  canvas       12.5 -> 13.5 -> 14.25 in at the SAME 6.38 in height.  The
+               picture frame on the slide went with it, 11.691 -> 12.625 ->
+               13.327 in wide at the same 5.962 in tall -- a 13.333 in slide,
+               so that is full bleed but for a hairline.  Because neither
+               height ever moved, every point size on the slide is unchanged
+               through all three passes: the projection scale is frame height
+               over canvas height whatever the width.  1.75 in of new canvas,
+               and all of it went to the top band.
+  top band     both small panels sit on the same baseline (0.740) and reach
+               the same 0.975, and they DOUBLED: 0.115 -> 0.235 of the canvas
+               for the charge strip, 0.140 -> 0.235 for the efficiency panel,
+               i.e. 0.73 -> 1.50 in and 0.89 -> 1.50 in.  The first pass took
+               the gap over the main panel's energy axis; the second took the
+               band the two headlines were in, which is why they went.
+  headlines    both removed.  They carried the panels' provenance, so it moved
+               to the y label (``Efficiency [%]``, spelt out now) and to the
+               speaker -- see the notes in ``_eff_panel`` and ``_strip``, and
+               the row for this slide in slides/RUNNING_ORDER.md.
+  efficiency   the grey dashed July placement is gone too, and with it the key
+               in the headline that explained it.  See ``_eff_panel``.
+  scoreboard   on a faint post-it now (the one warm surface on a cool-white
+               canvas -- warm reads before saturation does, so it can be
+               nearly the background colour and still separate),
+               so that the three numbers read as the third element of the band
+               rather than as a caption that lost its figure.  Measured from
+               the drawn text; it clears both panels by better than 0.2 in on
+               every frame and ``draw`` prints the clearance each time.
+
+The closing "two costs multiplied" frame (``draw_trade``) is NOT part of the
+build and did NOT move -- it keeps ``TRADE_WIDE``.  See the note there: the
+backup section it used to live in was trimmed away the same day.
+
 WHAT THIS FIGURE DELIBERATELY DOES NOT DO
 -----------------------------------------
 It does not multiply the surviving fraction by a track yield to find an
@@ -95,6 +134,8 @@ import numpy as np
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+import matplotlib.transforms as mtransforms
+from matplotlib.patches import FancyBboxPatch
 from matplotlib.ticker import LogLocator, NullFormatter
 from scipy.interpolate import PchipInterpolator
 
@@ -129,11 +170,57 @@ SEQUENCE = FRAMES + (OP_RESIST,)
 
 # figure holes, measured 2026-08-23 by the probe recipe in slides/NOTES.md
 # ("Measuring the hole"), on a slide with a kicker, a .title-sm, and NO
-# .caption and NO .figsrc -- which is the point of the rebuild.
+# .caption and NO .figsrc -- which is the point of the rebuild.  'wide' is no
+# longer that hole: since 2026-08-28 it is the .pptx picture frame, which is
+# what the deck of record actually uses (index.html has been frozen since
+# 2026-08-26 -- slides/NOTES.md).
 SHAPES = {
-    'wide': (12.5, 6.38),             # .figure-solo, text-free   1.961 : 1
+    # 2026-08-28, in two passes: widened 12.5 -> 13.5 -> 14.25 in at an
+    # UNCHANGED height, on the way to the full slide (Dylan: "widen the figure
+    # while keeping the height to use the width of the slide", then "can we
+    # make it even wider").  2280 x 1020 px at 160 dpi, 2.235 : 1, which is a
+    # picture 13.327 x 5.962 in on a 13.333 in slide -- a hairline of margin,
+    # essentially full bleed, which is where the rest of the deck has been
+    # going (slide 56 is 13.338 wide at x = 0).
+    #
+    # Because the HEIGHT never moved, every point size in the drawing projects
+    # at exactly the size it did before, through both passes: the on-slide
+    # scale is frame-height / canvas-height = 5.962 / 6.38 whatever the width.
+    # The 1.75 in of new canvas is pure room and all of it went to the top
+    # band, which was the crowded part.
+    'wide': (14.25, 6.38),            # .figure-solo, text-free   2.235 : 1
     'col': (6.60, 7.10),              # right column of .cols-2   0.930 : 1
 }
+# The closing "two costs multiplied" frame is NOT part of the build, and it
+# keeps the shape it was drawn at.  It was backup slide 46 (deck slide 102)
+# until 2026-08-28, when the deck's whole backup section was cut from 111
+# slides to 70 and took it with it -- so today there is no frame to match and
+# no frame to stretch, and widening it would be a change with no reader.  If
+# it goes back on a slide, THAT frame sets its shape: measure the picture hole
+# first, the way the build's 13.5 x 6.38 was set from slides 50-55.
+TRADE_WIDE = (12.5, 6.38)
+
+# The scoreboard's card.  The three numbers sit between two plots with nothing
+# but canvas around them, and at 2.235 : 1 there is enough width that a panel
+# behind them reads as a third element rather than as a patch over one of the
+# plots (Dylan, 2026-08-28).
+#
+# A dull post-it, on request, and the colour is doing a second job: every
+# other surface on this canvas is the same cool near-white (P.SURFACE
+# #fbfcfe), so a warm one is the one thing the eye separates at 20 m without
+# reading it.  It does NOT have to be a strong yellow to do that -- the eye
+# reads warm-against-cool long before it reads saturation, so the tint can sit
+# almost at the background and still divide the band into three.
+#
+# Toned down hard on 2026-08-28 ("make the yellow background much more
+# subtle"): #faf3cf -> #fdfbef, which is 4/5 of the way back to the canvas.
+# What holds the card together now is the EDGE, not the fill, so the edge was
+# NOT lightened by as much -- lighten both and the card stops being an object
+# and becomes a smudge.  Anything stronger than this competes with the two
+# things that are meant to carry the frame: the 540 V and the shaded blind
+# region.
+CARD_FACE = '#fdfbef'
+CARD_EDGE = '#e9e0bf'
 
 
 # --------------------------------------------------------------------------- #
@@ -282,14 +369,16 @@ def _strip(ax, variant, volts, shape):
     P.strip(ax)
     # Short, because in variant a this headline shares its row with the yield
     # strip's.  The two are written as a pair: one cost each.
-    lead = ('the charge sets how long we are blind'
-            if variant == 'a' else
-            'det A  ·  run_57  ·  one sub-run per 2 V')
-    # variant b's scoreboard sits in the strip's empty left end, so its
-    # headline goes to the right end where the points are
-    ax.text(0.0 if variant == 'a' else 1.0, 1.06, lead, transform=ax.transAxes,
-            ha='left' if variant == 'a' else 'right', va='bottom',
-            fontsize=small, color=P.MUTED)
+    # Variant b has no headline since 2026-08-28 (Dylan: "remove the titles
+    # above the two top plots all together to recover some vertical space").
+    # It said ``det A  ·  run_57  ·  one sub-run per 2 V``, which is the
+    # panel's whole provenance, so this is a real trade: the room bought the
+    # panel 0.24 in of height and the sentence moved into the speaker's mouth.
+    # It is in RUNNING_ORDER.md under this slide, and in the deck's alt text.
+    if variant == 'a':
+        ax.text(0.0, 1.06, 'the charge sets how long we are blind',
+                transform=ax.transAxes, ha='left', va='bottom',
+                fontsize=small, color=P.MUTED)
     return xh, yh
 
 
@@ -315,11 +404,20 @@ def _eff_panel(ax, volts, shape, compact=False):
 
     HOW IT IS PLACED on the n_TOF axis: the full ledger, not the gas term
     alone -- an efficiency is a threshold quantity, so the CSA range and the
-    per-channel noise belong in the shift as much as the gas does.  Both eras
-    are drawn, because they differ by 22 V and that is half this panel:
-    **solid = production**, after the 23 July noise step, which is where we
-    actually ran, and **dashed = July**, run_55's own configuration.  The
-    23 July step is the gap between them.
+    per-channel noise belong in the shift as much as the gas does.  The
+    placement drawn is **production**, after the 23 July noise step, which is
+    where the campaign actually ran.
+
+    ONE CURVE, NOT TWO (Dylan, 2026-08-28: *"remove the gray dashed line"*).
+    Until 2026-08-28 run_55's own placement was drawn beside it as a grey
+    dashed line, 22 V to the left, so that the 23 July noise step was on the
+    canvas rather than in a footnote -- it is what turns 540 V from 81 % into
+    69 %.  That is a real point, but it needed a key in the headline
+    (``solid: as we ran · dashed: July``) to be readable at all, and the
+    headline sits over the most crowded band of the drawing.  The step is the
+    speaker's line now, and ``ntof_july_analysis/hv_tradeoff/report.html``
+    carries it; ``T.bench_eff_on_ntof_axis('run_55', ...)`` still returns the
+    other placement for anyone who wants the curve back.
 
     Measured points are plotted as markers, always.  Where the production
     placement runs off the left of the scan the LINE continues as a straight
@@ -328,11 +426,6 @@ def _eff_panel(ax, volts, shape, compact=False):
     """
     small = 9.2 if compact else (10.0 if shape == 'wide' else 9.2)
     x0, x1 = 517, 563
-
-    # July first, so production draws over it
-    vj, ej, _dj, vjl, ejl, nxj = T.bench_eff_on_ntof_axis('run_55', v_min=x0)
-    ax.plot(vjl, np.asarray(ejl) * 100, '-', color=P.MUTED, lw=1.1, ls=(0, (4, 2)),
-            alpha=0.85, zorder=2)
 
     vp, ep, dep, vpl, epl, nxp = T.bench_eff_on_ntof_axis('production', v_min=x0)
     vpl, epl = np.asarray(vpl), np.asarray(epl) * 100
@@ -372,15 +465,25 @@ def _eff_panel(ax, volts, shape, compact=False):
     ax.tick_params(labelsize=small - 0.8, pad=1.5 if compact else 3)
     ax.set_xlabel('amplification voltage  [V]', fontsize=small,
                   labelpad=1 if compact else 2)
-    ax.set_ylabel('%' if compact else 'efficiency\n[%]', fontsize=small,
-                  linespacing=1.15, labelpad=2 if compact else 4)
+    # Spelt out since 2026-08-28 (Dylan).  It used to be a bare ``%``, which
+    # only worked while the headline overhead said what the axis was; the
+    # headline is gone and the panel now has to name itself.  There is room
+    # for it: the panel is 1.5 in tall, and the rotated label is ~1.0 in.
+    ax.set_ylabel('Efficiency [%]' if compact else 'efficiency\n[%]',
+                  fontsize=small, linespacing=1.15,
+                  labelpad=2 if compact else 4)
     ax.grid(axis='y', alpha=0.18)
     P.strip(ax)
-    ax.text(0.0, 1.06,
-            'bench efficiency, mapped to 90/10  ·  solid: as we ran  ·  dashed: July'
-            if compact else 'and the gain sets what we see',
-            transform=ax.transAxes, ha='left', va='bottom',
-            fontsize=small + (0.6 if compact else 0), color=P.MUTED)
+    # No headline in the compact (variant b) panel since 2026-08-28 -- see the
+    # matching note in _strip.  It said ``bench efficiency, mapped to 90/10``;
+    # the axis label now carries "efficiency" and the speaker carries "bench,
+    # mapped to 90/10".  That mapping is not a detail, so it is worth saying
+    # out loud: this is the 27 June cosmic bench in 95/5, moved onto the n_TOF
+    # 90/10 axis by the full ledger.  It is also in the deck's alt text.
+    if not compact:
+        ax.text(0.0, 1.06, 'and the gain sets what we see',
+                transform=ax.transAxes, ha='left', va='bottom',
+                fontsize=small, color=P.MUTED)
     return e_here / 100.0
 
 
@@ -458,6 +561,11 @@ def _readout_stats(fig, volts, x, y, dy, size):
     recovery time is the fourth fact and it is deliberately small: the strip
     puts it on the axis and the main panel draws it as the wall, so writing it
     large would be the third time the same number appears on one canvas.
+
+    Returns the Text artists, so ``_readout_card`` can measure what was
+    actually drawn rather than guess at it.  The block is meant to be the same
+    width on every frame -- see the note on ``extrap.`` below -- and measuring
+    is how that stays true when someone edits a line.
     """
     hv = hv_points()
     ms = hv[volts][1]
@@ -471,18 +579,64 @@ def _readout_stats(fig, volts, x, y, dy, size):
             (f'{frac * 100:.1f} %', 'of the X17 rate left', size + 6.0,
              P.ACCENT if frac > 0.01 else P.MUTED, P.MUTED),
             (f'{"~" if extrap else ""}{rel * 100:.0f} %',
-             'efficient  (cosmic bench, extrapolated)' if extrap
+             # ``extrap.``, not ``extrapolated``, and for a layout reason worth
+             # keeping: spelt out it made the 520 V frame half an inch wider
+             # than the other five, so the card behind the block changed size
+             # mid-build and the block stopped clearing the charge strip.
+             # Abbreviated, the width-setting line is ``blind for NN.N ms
+             # after every flash`` on EVERY frame, so the card is the same
+             # rectangle throughout.  It is also the word the efficiency panel
+             # already writes over its own shaded extrapolation.
+             'efficient  (cosmic bench, extrap.)' if extrap
              else 'efficient  (cosmic bench)', size + 6.0,
              P.DET_COLOR['A'], P.MUTED))
+    art = []
     for k, (num, lab, fs, cnum, clab) in enumerate(rows):
         yy = y - k * dy
-        fig.text(x, yy, num, fontsize=fs, fontweight='bold', color=cnum,
-                 ha='right', va='center', zorder=9)
-        fig.text(x + gap, yy, lab, fontsize=size, color=clab, ha='left',
-                 va='center', zorder=9)
-    fig.text(x + gap, y - (len(rows) - 0.42) * dy,
-             f'blind for {ms:.1f} ms after every flash', fontsize=size - 0.5,
-             color=P.BAND_DEAD, ha='left', va='center', zorder=9)
+        art.append(fig.text(x, yy, num, fontsize=fs, fontweight='bold',
+                            color=cnum, ha='right', va='center', zorder=9))
+        art.append(fig.text(x + gap, yy, lab, fontsize=size, color=clab,
+                            ha='left', va='center', zorder=9))
+    art.append(fig.text(x + gap, y - (len(rows) - 0.42) * dy,
+                        f'blind for {ms:.1f} ms after every flash',
+                        fontsize=size - 0.5, color=P.BAND_DEAD, ha='left',
+                        va='center', zorder=9))
+    return art
+
+
+def _readout_card(fig, art, padx=0.17, pady=0.10):
+    """A light panel behind the scoreboard (Dylan, 2026-08-28).
+
+    The three numbers are the only thing on this canvas that is neither a plot
+    nor a label on one, and between two plots with nothing but canvas around
+    them they read as a caption that lost its figure.  A tinted card says they
+    are the third element.
+
+    Measured from the drawn text and padded in INCHES, not in figure fraction:
+    the canvas is 2.1 : 1, so an equal fraction is twice as much room
+    horizontally as vertically and the corners would come out elliptical.
+
+    It has to clear the efficiency panel on its left and the charge strip on
+    its right, and there are only 5.13 in between the two.  Measured on the
+    six frames it lands 0.35 in clear on the left and 0.22-0.34 in on the
+    right, the tight one being 520 V (the ``extrap.`` line) and 560 V (the
+    13.9 ms one).  ``draw`` prints both clearances for every frame, so a
+    layout change that eats them says so in the build log instead of in
+    Prague.
+    """
+    fig.canvas.draw()
+    r = fig.canvas.get_renderer()
+    bb = mtransforms.Bbox.union([a.get_window_extent(r) for a in art])
+    bb = bb.transformed(fig.dpi_scale_trans.inverted())
+    card = FancyBboxPatch((bb.x0 - padx, bb.y0 - pady),
+                          bb.width + 2 * padx, bb.height + 2 * pady,
+                          boxstyle='round,pad=0,rounding_size=0.12',
+                          transform=fig.dpi_scale_trans, clip_on=False,
+                          facecolor=CARD_FACE, edgecolor=CARD_EDGE, lw=1.0,
+                          zorder=8)
+    fig.patches.append(card)
+    return mtransforms.Bbox.from_extents(bb.x0 - padx, bb.y0 - pady,
+                                         bb.x1 + padx, bb.y1 + pady)
 
 
 def _readout_row(fig, volts, left, right, y, size):
@@ -654,7 +808,7 @@ def draw_trade(shape='wide'):
     construction.  Where the two disagree, the solid one is right.
     """
     P.use()
-    w, h = SHAPES[shape]
+    w, h = TRADE_WIDE if shape == 'wide' else SHAPES[shape]
     fig = plt.figure(figsize=(w, h))
     ax = fig.add_axes([0.085, 0.135, 0.895, 0.735])
 
@@ -718,6 +872,8 @@ def draw(volts, variant='a', shape='wide', step=None):
     w, h = SHAPES[shape]
     fig = plt.figure(figsize=(w, h))
     ax_y = None                       # the yield strip, wide + variant a only
+    ax_card = None                    # the scoreboard's text, wide + variant b
+    card_bb = None
 
     if shape == 'wide':
         # Variant b reads its strip's charge axis on the RIGHT, so both axes
@@ -730,9 +886,20 @@ def draw(volts, variant='a', shape='wide', step=None):
         # on the right.  variant b: the strip needs the whole width, because
         # it is the main panel's axis, so the scoreboard moves inside the plot
         # and the yield strip is dropped (there is nowhere left to put it).
-        ax_s = fig.add_axes([L, 0.780 if variant == 'a' else 0.815,
+        # 2026-08-28, in two passes: variant b's strip grew 0.115 -> 0.198 ->
+        # 0.235 of the canvas and dropped 0.815 -> 0.740 (Dylan: "increase the
+        # height of both of these small plots ... to use the full vertical
+        # space", then "remove the titles ... to recover some vertical space
+        # as well and stretch there").  The first pass took the room between
+        # the main panel's energy axis and the panels; the second took the
+        # band the two headlines had been sitting in, which is why they had to
+        # go for it.  Its charge decade now has somewhere to go -- 0.73 in of
+        # axis for a factor 43 in charge, and 1.50 in now.  Both top panels
+        # sit on the same baseline, 0.740, and reach the same 0.975, so the
+        # band reads as a row.
+        ax_s = fig.add_axes([L, 0.780 if variant == 'a' else 0.740,
                              (R - L) * (0.30 if variant == 'a' else 1.0),
-                             0.150 if variant == 'a' else 0.115])
+                             0.150 if variant == 'a' else 0.235])
         ax_m = fig.add_axes([L, 0.115, R - L, 0.520])
         if variant == 'a':
             ax_y = fig.add_axes([0.445, 0.780, 0.185, 0.150])
@@ -745,14 +912,30 @@ def draw(volts, variant='a', shape='wide', step=None):
             # are empty.  That is where the other two things go: the
             # efficiency panel (which is tied to no axis on this canvas) as an
             # opaque inset, and the three numbers beside it.  Nothing overlaps
-            # the strip's own data, which starts at x = 0.70 of the canvas.
-            # widened 2026-08-24 into the gap that used to sit between it and
-            # the numbers; the numbers' own column starts at ~0.43
-            ax_y = fig.add_axes([0.088, 0.792, 0.300, 0.140])
+            # the strip's own data, which begins at x = 0.683 of the canvas
+            # whatever the canvas is (the strip's box is cut to the axis, so
+            # that fraction is a property of the time axis, not of the width).
+            #
+            # 2026-08-28: taller with the strip, and narrower in inches than
+            # it started -- 0.222 x 14.25 = 3.16 in where it was 0.300 x 12.5
+            # = 3.75.  The scoreboard between the two panels is what sets
+            # this: it must clear both, so the width the panel gives up is the
+            # width the card needs.  The panel does not miss it -- it is a
+            # turn-on and a plateau, and it gains far more than it loses
+            # (0.89 -> 1.50 in tall; 4.2 : 1 was a letterbox, 2.1 : 1 is a
+            # plot).
+            ax_y = fig.add_axes([0.077, 0.740, 0.222, 0.235])
             ax_y.set_facecolor(P.SURFACE)
             ax_y.patch.set_alpha(1.0)
             ax_y.set_zorder(4)
-            _readout_stats(fig, volts, 0.500, 0.902, 0.058, 11.5)
+            # x is set by the card, not by the type: the block is centred
+            # in the 5.47 in of canvas between the efficiency panel's right
+            # edge and the charge strip's left one.  draw() prints both
+            # clearances.  The type went up with the band -- 11.5 -> 12.5,
+            # the only size on this canvas that changed on 2026-08-28 -- so
+            # that the card fills the height the headlines gave back instead
+            # of floating in it.
+            ax_card = _readout_stats(fig, volts, 0.424, 0.925, 0.062, 12.5)
     else:
         # In the column shape the strip always takes the full width and the
         # scoreboard always goes inside the main panel: there is no free
@@ -765,6 +948,8 @@ def draw(volts, variant='a', shape='wide', step=None):
 
     shown = (SEQUENCE[:step + 1] if step is not None
              else FRAMES[:FRAMES.index(volts) + 1])
+    if ax_card is not None:
+        card_bb = _readout_card(fig, ax_card)
     if ax_y is not None:
         _eff_panel(ax_y, volts, shape, compact=(variant == 'b'))
     xh, yh = _strip(ax_s, variant, volts, shape)
@@ -800,6 +985,13 @@ def draw(volts, variant='a', shape='wide', step=None):
                       arrowprops=dict(arrowstyle='-|>', color=P.BAND_DEAD,
                                       lw=1.2, ls=':', alpha=0.75, shrinkA=8,
                                       shrinkB=1), zorder=8)
+    if card_bb is not None:
+        # Both must stay positive.  The scoreboard is the widest thing on the
+        # canvas and it is the ONLY one whose width the data can change.
+        wi = fig.get_size_inches()[0]
+        print(f'     card clears the panels by '
+              f'{card_bb.x0 - ax_y.get_position().x1 * wi:+.2f} in left, '
+              f'{ax_s.get_position().x0 * wi - card_bb.x1:+.2f} in right')
     return fig
 
 

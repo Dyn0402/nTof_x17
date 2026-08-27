@@ -292,13 +292,39 @@ def fig_sharing_decomposition(eid):
 
 
 # ------------------------------------------------------ 6. model vs data
+# The one figure in this directory the reference document does NOT use: no
+# section carries {{FIG:model_vs_data}}. Its only consumer is the MPGD 2026
+# deck, where it is the whole of slide 12 ("One muon through the forward fit")
+# and, smaller, of backup slide 52. It is therefore sized and lettered for a
+# projector rather than for a page, and shorn of the labels a reader would
+# want but a room cannot read (Dylan, 2026-08-27):
+#
+#   * the canvas is proportioned to the picture frame on the slide
+#     (12.633 x 5.960 in, a little wider than the text column) instead of to
+#     a document figure;
+#   * every size is set explicitly, ~1.35x the wftdoc.style() defaults, so
+#     axis titles land near 14 pt and tick labels near 12 pt as projected;
+#   * the stacked-waveform panel loses its title and its long y label (the
+#     label ran past the axes and collided with the "0.00" x tick), and its
+#     legend gets an opaque white frame — the slide background is white;
+#   * the charge panel loses the u50/u90 rules and their legend, which were
+#     three extra things to explain for a picture whose point is the shape.
+DECK_FS = dict(title=13.5, label=12.45, tick=11.5, legend=12.0, strip=8.85)
+
+
 def fig_model_vs_data(eid, st):
     W, pos, noise = st['W'], st['pos'], st['noise']
     full, q, t0 = st['full'], st['q'], st['t0']
     t = np.arange(wm.NSAMP) * 0.06
     v = CAL.v_drift
+    fs = DECK_FS
 
-    fig = plt.figure(figsize=(13, 6.2))
+    # 13.6 x 6.028 in crops (bbox_inches='tight') to 2.120:1, the aspect of
+    # the slide's picture frame. The crop makes that not predictable in
+    # closed form, so re-tune the width if the layout changes -- and rescale
+    # DECK_FS with it, since a wider canvas into a fixed frame shrinks every
+    # letter on the slide.
+    fig = plt.figure(figsize=(13.6, 6.028))
     gs = GridSpec(2, 3, figure=fig, width_ratios=[1, 1, 1.05],
                   hspace=0.4, wspace=0.3)
 
@@ -312,13 +338,14 @@ def fig_model_vs_data(eid, st):
         im = ax.imshow(A, aspect='auto', origin='lower', cmap=cmap,
                        extent=[0, wm.NSAMP * .06, pos[0] - .39, pos[-1] + .39],
                        interpolation='nearest', **kw)
-        ax.set_title(lab, loc='left')
-        ax.set_xlabel('time [µs]')
+        ax.set_title(lab, loc='left', fontsize=fs['title'])
+        ax.set_xlabel('time [µs]', fontsize=fs['label'])
         if j == 0:
-            ax.set_ylabel('strip position [mm]')
+            ax.set_ylabel('strip position [mm]', fontsize=fs['label'])
+        ax.tick_params(labelsize=fs['tick'])
         ax.grid(False)
         cb = fig.colorbar(im, ax=ax, pad=0.02)
-        cb.ax.tick_params(colors=K.CHROME)
+        cb.ax.tick_params(colors=K.CHROME, labelsize=fs['tick'])
         cb.outline.set_edgecolor(K.CHROME)
 
     ax = fig.add_subplot(gs[1, :2])
@@ -327,35 +354,38 @@ def fig_model_vs_data(eid, st):
         ax.plot(t, W[i] + i * off, color=K.CHROME, lw=1.0, marker='o', ms=2,
                 alpha=0.85)
         ax.plot(t, full[i] + i * off, color=C['orange'], lw=1.5)
-        ax.text(t[-1] + 0.02, i * off, f'{pos[i]:.1f}', fontsize=6.5,
+        ax.text(t[-1] + 0.02, i * off, f'{pos[i]:.1f}', fontsize=fs['strip'],
                 color=K.CHROME, va='center')
     ax.plot([], [], color=K.CHROME, marker='o', ms=3, label='data')
     ax.plot([], [], color=C['orange'], label='model')
     ax.set_yticks([])
-    ax.set_xlabel('time [µs]')
-    ax.set_ylabel('strip (offset), labelled by position [mm]')
-    ax.set_title('every strip in the window, simultaneously', loc='left')
+    ax.set_xlabel('time [µs]', fontsize=fs['label'])
+    # labelpad clears the "0.00" x tick the old label sat on -- the tick
+    # reaches ~13 pt left of the spine, and there are no y tick labels to
+    # push against -- without retreating all the way to the top-left panel's
+    # label column, which just wasted the width.
+    ax.set_ylabel('strip position [mm]', fontsize=fs['label'], labelpad=18)
+    ax.tick_params(labelsize=fs['tick'])
     # global rcParam is legend.framealpha=0.0 (see wftdoc.py) -- fine where a
     # legend sits in blank space, but this one overlaps the stacked waveforms,
-    # so it needs its own opaque-ish, rounded frame to stay readable (Dylan,
-    # 2026-08-23).
-    leg = ax.legend(loc='upper left', framealpha=0.75, fancybox=True)
+    # so it needs its own frame to stay readable (Dylan, 2026-08-23). Opaque
+    # white from 2026-08-27: at 0.75 the traces still showed through the
+    # labels from the back of a room.
+    leg = ax.legend(loc='upper left', framealpha=1.0, fancybox=True,
+                    fontsize=fs['legend'])
     leg.get_frame().set_edgecolor(K.CHROME)
+    leg.get_frame().set_facecolor('white')
+    leg.set_zorder(20)
     ax.set_xlim(0, t[-1] + 0.25)
 
     ax = fig.add_subplot(gs[1, 2])
     z = wm.UK * v * 1e-3
     ax.step(z, q, where='mid', color=C['green'])
     ax.fill_between(z, 0, q, step='mid', color=C['green'], alpha=0.3)
-    tot = q.sum()
-    cum = np.cumsum(q) / tot
-    for frac, col, lab in ((0.5, C['blue'], 'u50'), (0.9, C['purple'], 'u90')):
-        ax.axvline(np.interp(frac, cum, z), color=col, ls='--', lw=1,
-                   label=f'{lab} = {np.interp(frac, cum, wm.UK):.0f} ns')
-    ax.set_xlabel('drift depth  $z = v\\,u$  [mm]')
-    ax.set_ylabel('fitted charge  $q_k$')
-    ax.set_title('the NNLS charge profile', loc='left')
-    ax.legend(fontsize=7.5)
+    ax.set_xlabel('drift depth  $z = v\\,u$  [mm]', fontsize=fs['label'])
+    ax.set_ylabel('fitted charge  $q_k$', fontsize=fs['label'])
+    ax.set_title('charge profile', loc='left', fontsize=fs['title'])
+    ax.tick_params(labelsize=fs['tick'])
     save(fig, 'model_vs_data')
 
 

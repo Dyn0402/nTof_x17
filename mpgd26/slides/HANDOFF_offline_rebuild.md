@@ -154,8 +154,39 @@ frames), `make_ear2.py` (all five build frames, both label layouts),
 (reads `ntof_run_report/data/events_per_subrun.csv`), `make_timeline.py`,
 `make_pair_kinematics.py` (committed 394-line reduction — the `--reduce` path
 is the one that needs the 64 MB npz), `make_x17_rate.py`, `make_couplings.py`,
-`make_hv_window.py`, `make_photos.py` (both originals are in `mpgd26/photos/`),
+`make_photos.py` (both originals are in `mpgd26/photos/`),
 `make_chamber.py`, `make_target.py`, `make_sps.py`, `make_report.py`.
+
+> **Corrected 2026-08-28: `make_hv_window.py` was on that list and does not
+> belong there.**  It was inferred from an import check, not from a render.
+> `--numbers` works, and so does everything on the beam's clock, but the
+> efficiency panel (and the `NN %` on the scoreboard) goes through
+> `hv_tradeoff.bench_eff_on_ntof_axis`, which opens two files that are on
+> **neither** mirror root and were never committed:
+>
+> | file | recoverable |
+> |---|---|
+> | `~/x17/response_sim/hv_slope/slopes.json` | **yes** — `ntof_july_analysis/hv_tradeoff/results.json` carries `bench.slope10` / `slope10_err`, which is exactly what `bench_gain_slope()` returns |
+> | `…/mx17_det3_saturday_scan_6-27-26/hv_scan{,2}/mx17_3/efficiency_vs_hv_scan{,2}.csv` | **no** — two small CSVs, and the whole of that panel |
+>
+> **Resolved the same day: all three were on `F:`.**  That is a *different*
+> drive from `D:\mpgd26_data_for_windows`, and it carries a much fuller
+> `x17` tree — `F:\x17\response_sim\hv_slope\` and
+> `F:\x17\cosmic_bench\Analysis\mx17_det3_saturday_scan_6-27-26\hv_scan{,2}\mx17_3\`.
+> Copied to `~/x17/response_sim/hv_slope/` and, for the bench tree, to the
+> same path under **both** `C:\media\dylan\data\x17` and `~/x17`, since
+> different modules name different roots (see *Where it was unpacked*).
+> Verified against the repository before use: `bench_gain_slope()` returns the
+> committed `results.json` values to the last digit.  Slides 50–55 were
+> rebuilt and swapped — NOTES.md, *“Slide 21's build fills the slide now”*.
+>
+> **Check `F:` before declaring anything unbuildable.**  This file's whole
+> *“No regeneration path anywhere”* section was written against `D:`, and at
+> least one of its rows may not survive a look at `F:\x17`.
+>
+> The lesson stands, though, and it is the one already in this file's *“Two
+> ways this fails quietly”*: **an import is not a render.**  Nothing else on
+> the list above has been rendered here either.
 
 The `pdftocairo` figures (`charge_sharing_schematic`, `unsharing_depth_bias`,
 `event_display_3d`, `angular_resolution`, `spatial_residuals`,
