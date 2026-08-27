@@ -174,5 +174,8 @@ X-ray-level) analyses fit the drift profile rather than the centroid.
 
 - `wft/model.py` — module docstring.
 - `RECONSTRUCTION_BASIS.md` — "What replaces it".
-- `mpgd26/slides/index.html` — slide 9.2 carries a one-line T2K credit under the
-  measured-kernel figure.
+- `mpgd26/slides/mpgd26_talk.pptx` — slides **9.1 and 9.2** carry a one-line T2K
+  credit in the header band, "Method inspired by T2K ND280 · Attié et al., NIM A
+  1056 (2023) 168534" (added 2026-08-28; `slides/staged/add_t2k_credit.ps1`).
+  This entry previously claimed the credit was on slide 9.2 of `index.html`. It
+  never was — the write-up was done on 2026-08-23 and the slide edit was not.
