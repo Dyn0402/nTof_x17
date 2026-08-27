@@ -1,5 +1,17 @@
 # Rebuilding mpgd26 figures away from the bench
 
+> ## Mostly resolved -- 2026-08-27, later the same day
+>
+> The bench sent a 563 MB payload on a flash drive
+> (`D:\mpgd26_data_for_windows`, with its own `README.md` mapping every
+> file to the script that reads it).  **19 of the 21 inputs below are now
+> on this machine**, and every figure family except three rebuilds here.
+> Slide 9 -- the live blocker -- is rendered and placed in the deck.
+>
+> Read [the reproduction record](#what-the-flash-drive-changed) at the
+> bottom before using the tier tables: some of their rows are now stale,
+> and one figure needs non-default flags that the tables do not mention.
+
 **2026-08-27.** Written on the Windows laptop after slide 9's micro-TPC figure
 turned out to be unrebuildable here. This is the inventory: what still builds
 on a machine with no `/media/dylan` and no `~/CLionProjects`, what does not, and
@@ -67,10 +79,10 @@ uses the `~/x17` form.
 
 | # | copy | to | unlocks |
 |---|---|---|---|
-| 1 | the det3 impulse response, exported (recipe below) | `mpgd26/data/mx17_impulse_response.npz` | **slide 9**, `microtpc.png` — the live blocker |
-| 2 | `…/mx17_3/wft/efficiency/efficiency_breakdown.json` | mirror the tree, or pass a path | `efficiency_breakdown.png`, `efficiency_residual_tail.png` |
-| 3 | `…/mx17_3/wft/maps/Plot_Data/efficiency_r2mm_cut.csv` | same | `efficiency_map_2mm.png` |
-| 4 | `~/.cache/mpgd26_status/metrics_run_57_perdet.csv` | `~/.cache/mpgd26_status/` | one of the six `status_*.png` |
+| ~~1~~ | **DELIVERED** -- `repo_relative/mpgd26/data/mx17_impulse_response.npz`, exported already | `mpgd26/data/` | **slide 9**, `microtpc.png` -- done, and in the deck |
+| 2 | `…/mx17_3/wft/efficiency/efficiency_breakdown.json` -- **STILL MISSING**, not on the drive | mirror the tree, or pass a path | `efficiency_breakdown.png`, `efficiency_residual_tail.png` |
+| ~~3~~ | **STALE ROW** -- `make_efficiency_map.py` has read `ray_hit_miss_list.csv` since 56e05dc, and that **is** on the drive | -- | `efficiency_map_sliding.png` |
+| ~~4~~ | **DELIVERED** -- `metrics_run_57_perdet.csv` *and* the run_32 `wf/*.root` | `~/.cache/mpgd26_status/` | all twelve `status_*.png` |
 
 For 2–3 the run key is `sat_det3` →
 `~/x17/cosmic_bench/Analysis/mx17_det3_saturday_scan_6-27-26/long_run_resist_490V_drift_1000V/mx17_3/`
@@ -110,9 +122,9 @@ which bundle it came from.**
 
 | # | copy | unlocks |
 |---|---|---|
-| 5 | `…/mx17_3/wft/calib_bundle_r06/` + `…/mx17_3/wft/calib_work/calib_cache.pkl` | `share_cartoon`, `share_kernels`, `share_build`, `share_decompose` (`make_share.py`, worked event 1663) |
-| 6 | a checkout of **MX17_Full_Geant** (or set `$MX17_FULL_GEANT`) | `setup3d_1…9.png` and `ntof_plan.png` — ten pictures, slides 30–41. `make_{ntof,ntof_plan,anim}.py` refuse to import without it |
-| 7 | a checkout of **MX17_Geant** | `mx17_board_peel{,_zoom,_slide}.png` |
+| ~~5~~ | **DELIVERED**, both | all four `share_*` rebuild pixel-identically (worked event 1663, `c2/c1 = 0.60`) |
+| ~~6~~ | **DELIVERED** -- only `scripts/plot_geometry.py`, which is all that is imported.  Put at `~/CLionProjects/MX17_Full_Geant/scripts/`, the default, so no env var is needed | all ten rebuild |
+| 7 | **STILL MISSING** -- a checkout of **MX17_Geant** | `mx17_board_peel{,_zoom,_slide}.png`.  `scenes_chamber.py` only *re-sourced* its numbers from that repo, so `make_chamber.py` is fine without it |
 
 The event `.pkl` is the only bulky item in tier 2; the bundle itself is small.
 Neither Geant repository needs its data — only the geometry/model scripts.
@@ -206,3 +218,116 @@ for name, p in [
         ('peel      MX17_Geant',       H + '/CLionProjects/MX17_Geant/scripts/model/plot_mx17_model.py')]:
     print('%-28s %-8s %s' % (name, 'OK' if os.path.exists(p) else 'MISSING', p))
 ```
+
+---
+
+## What the flash drive changed
+
+**2026-08-27, later the same day.**  `D:\mpgd26_data_for_windows` (563 MB)
+arrived with its own `README.md` mapping every file to the script that reads
+it.  This section records what was done with it, what still cannot be built,
+and -- the part that matters most -- **which figures were verified against the
+deck rather than merely re-rendered**.
+
+### Where it was unpacked
+
+The scripts hold *absolute Linux* paths.  On Windows a path beginning `/` is
+drive-relative, so `/media/dylan/...` resolves to `C:\media\dylan\...` for
+any process whose cwd is on C:.  That makes the "no edits" option work here
+too:
+
+| from the drive | to |
+|---|---|
+| `home/dylan/x17` | `C:\Users\Dyn04\x17` (`~/x17`) |
+| `home/dylan/.cache/mpgd26_status` | `C:\Users\Dyn04\.cache\mpgd26_status` |
+| `media/dylan/data` | `C:\media\dylan\data` |
+| `MX17_Full_Geant_scripts/plot_geometry.py` | `C:\Users\Dyn04\CLionProjects\MX17_Full_Geant\scripts\` |
+| `repo_relative/mpgd26/data/mx17_impulse_response.npz` | `mpgd26/data/` |
+
+Three scripts disagree with the drive's own layout about where the *same*
+tree lives, so it is mirrored at all three roots (it is only ~10 MB):
+
+* `make_share.py` wants `/media/dylan/data/x17/cosmic_bench/Analysis/...`
+* `make_efficiency_breakdown.py` wants `/home/dylan/x17/cosmic_bench/...`
+* `common/beam_july_paths.py` wants `$X17_BEAM_JULY`, `/mnt/data/x17/beam_july`
+  or `~/x17/beam_july` -- **none** of which is where the drive puts
+  `beam_july`.  Export `X17_BEAM_JULY=C:/media/dylan/data/x17/beam_july`.
+
+`repo_relative/sps_beam_test_26/.../results.json` was **not** copied: the
+tracked file already in the repo is semantically identical (same JSON, only
+key order and float formatting differ).  Do not overwrite a tracked file with
+it.
+
+### Two environment notes
+
+* **`pyarrow` is required** and was in neither interpreter.
+  `make_resolution.py` and `make_status_plots.py` read `.parquet`.
+* **`PYTHONIOENCODING=utf-8` is required.**  `make_resolution.py` prints a
+  `theta` through `cosmic_micro_tpc_analysis.load_alignment` and dies on the
+  cp1252 console with `UnicodeEncodeError` -- a pure console-encoding failure
+  that looks like a data failure.
+
+### Verified against the deck, not just re-rendered
+
+Every rebuilt asset was compared pixel-by-pixel with the media part the deck
+is actually using.  **18 of 20 came back pixel-identical**, which is the real
+result here: fonts, matplotlib and the numerics all agree, so this laptop is
+a faithful build environment and not merely a working one.
+
+| | |
+|---|---|
+| pixel-identical to the deck | `efficiency_map_sliding`, all four `share_*`, `angle_correlation`, `angle_resolution`, and 11 of the 12 `status_*` |
+| intentionally new | `microtpc.png` -- the slide-9 re-fit, now byte-identical to the deck because it was placed there |
+| **differs** | `status_track_rate` -- see below |
+
+`make_resolution.py` also rewrites the tracked `mpgd26/data/angle_resolution.json`.
+The rebuild reproduces every committed value except the 15th decimal of four
+`s68_err_deg` entries (a different BLAS).  **Revert it** rather than commit
+float noise.
+
+### The one figure whose default flags do not reproduce the deck
+
+`make_efficiency_map.py` run bare gives the **hard-disc** map.  The deck's
+slide 27 uses the Gaussian one, and three of its four flags are non-default:
+
+```
+python make_efficiency_map.py --gaussian --sigma 3 --vmin 0 --min-rays 1
+```
+
+`--min-rays 1` is the one that is easy to miss and impossible to guess: at the
+default 5 the map masks 18.7 % of the face instead of 1.2 %, and *looks*
+plausible either way.  With all four it is pixel-identical to the deck.
+
+(Its caption still says the sigma is "the same length as the auto-derived
+hard-kernel radius".  With `--sigma 3` against an auto-derived 6.32 mm that
+sentence is simply untrue -- a static string in `main()` that `--sigma` does
+not update.  Left alone here; worth fixing when the figure is next touched.)
+
+### `status_track_rate` -- the deck is on an older reconstruction
+
+The rebuild has the same shape, the same annotations and the same two quoted
+numbers as the deck (`no events at all before 0.99 ms`, `29 % ... lands in
+3-8 ms`) but a y-axis **~4.4x higher**: the deck peaks near 850 tracks/ms, the
+rebuild at 3 725.
+
+The drive's `run_79/stat090_0000/mx17_A/merged_prelim.parquet` simply holds
+more tracks than whatever built the deck copy.  It is not a selection
+difference -- `x_ok`, `x_ok & x_quality_ok`, `x_ok & y_ok` and all three with
+quality were tried and none lands near 850.
+
+**No claim on the slide moves**, because both numbers on it are ratios and
+positions rather than counts.  But the absolute normalisation is a real
+difference, and which vintage belongs in the talk is a call for whoever knows
+what was reprocessed -- so the deck was **left alone**.  Note also that
+`CLAUDE.md`'s run_79 caveat applies to this figure: chamber A x-view
+connector 8 was dead through run_79, so A-x counts there are masked-channel
+counts.
+
+### Still not buildable anywhere on this machine
+
+| what | why |
+|---|---|
+| `efficiency_breakdown.png`, `efficiency_residual_tail.png` | `efficiency_breakdown.json` is not on the drive.  The script names its own fix: `mx_june_wft/02_efficiency.py g_det3_wknd --max-dropped -1` |
+| `mx17_board_peel{,_zoom,_slide}.png` | needs an **MX17_Geant** checkout |
+| `status_eff_recovery` (backup slide) | needs `.../mx17_det2_det3_overnight_6-22-26/hv_scan/mx17_{2,3}/efficiency_vs_hv.csv`, not on the drive.  `make_flash_slides.py` skips it with a message rather than failing |
+| `atomki_angular_correlations.png` | unchanged -- the source PDF is still only in `~/Downloads` on the Linux box |

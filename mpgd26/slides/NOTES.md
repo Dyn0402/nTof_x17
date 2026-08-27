@@ -6,14 +6,53 @@
 > from, but editing it no longer changes the talk.  See
 > [The deck moved to PowerPoint](#the-deck-moved-to-powerpoint--2026-08-26).
 
-## Slide 9 fills the slide now — and cannot be rendered on the laptop
+## The laptop can rebuild the deck now — and it reproduces it exactly
+
+**2026-08-27.**  563 MB arrived on a flash drive
+(`D:\mpgd26_data_for_windows`) holding every external input the `mpgd26`
+scripts read.  Unpacking, the per-script path quirks and the full status are
+in [`HANDOFF_offline_rebuild.md`](HANDOFF_offline_rebuild.md); the two things
+worth knowing from here:
+
+**It reproduces the deck, not just something like it.**  Every rebuilt asset
+was compared pixel-by-pixel against the media part the deck actually uses, and
+**18 of 20 came back pixel-identical** — fonts, matplotlib and the numerics
+all agree.  So a figure can be re-cut here and dropped into the talk without a
+visible seam, which is what makes further tweaking possible at all.
+
+**Default flags are not the deck’s flags, in one case.**
+`make_efficiency_map.py` run bare produces the hard-disc map that 56e05dc
+replaced.  Slide 27 needs
+
+    python make_efficiency_map.py --gaussian --sigma 3 --vmin 0 --min-rays 1
+
+and `--min-rays 1` is the trap: at the default 5 the map masks 18.7 % of the
+face rather than 1.2 %, and looks perfectly reasonable while doing it.  The
+flags are recorded nowhere except the rendered caption, which is how they were
+recovered — worth remembering for any figure whose script takes options.
+
+One genuine disagreement came out of the comparison: **`status_track_rate`
+sits on an older reconstruction in the deck than the bench now has** — same
+shape, same annotations, same two quoted numbers, y-axis ~4.4× higher on the
+current `run_79` parquet.  Nothing on that slide is a count, so no claim
+moves; the deck was left alone, because which vintage belongs in the talk is
+not a call to make from here.
+
+Slide 9 was placed at **(0.600, 1.130), 12.130 × 6.010 in**, replacing
+`ppt/media/image15.png`.  Only that part and `slide16.xml` changed — 364 zip
+entries in, 364 out, same order.  Backup:
+`mpgd26_talk_2026-08-27_pre-slide9-refit.pptx`.
+
+## Slide 9 fills the slide now — rendered and placed
 
 **2026-08-27.**  Dylan: *"fine tune this figure to use the width of the slide.
 First, separate the right plot a bit more such that the y-axis label doesn't
 overlap the background of the left plot.  Make all text/axis labels a bit
 larger.  Then with the remaining horizontal space make both plots a bit
-wider."*  All three are in `make_microtpc.py`.  **The figure itself is not
-rebuilt**, because this machine has not got the input — see the last section.
+wider."*  All three are in `make_microtpc.py`.  The figure could not be
+rebuilt when this was written — the measured impulse response was not on
+the laptop.  **It arrived on a flash drive the same day and the figure is
+now rendered and in the deck**; the last section closes that out.
 
 ### Where the space was
 
@@ -86,6 +125,15 @@ across — the export recipe (the key names differ) and every other missing
 input are in [`HANDOFF_offline_rebuild.md`](HANDOFF_offline_rebuild.md).  `figures/microtpc_slide_PREVIEW_stand-in_response.png` is the new
 geometry rendered with a plain CR-RC⁴ shaper standing in for the measured
 response — **layout review only**, the pulse shapes in it are not det3's.
+
+> **Closed 2026-08-27.**  The bench sent the file (see the next entry).
+> It is `run_key = g_det3`, not the `sat_det3` the export recipe assumed
+> — same detector, same v = 36.6 µm/ns, same pitch and 60 ns sampling, a
+> different run condition.  Its `tmpl_x` correlates 0.9956 with
+> `calib_bundle_r06`’s rather than matching it, so it is a genuinely
+> separate measurement and not a copy.  Used as delivered, because it is
+> what the bench exported and labelled for this figure.  The stand-in
+> preview has served its purpose and can go.
 
 ## The boost columns read 0 → 90 now — 2026-08-27
 
