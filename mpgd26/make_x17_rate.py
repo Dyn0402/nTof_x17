@@ -53,14 +53,30 @@ THE DEAD BAND (frame 2)
 -----------------------
 Two measurements, both in STATUS_PLAN.md §1.2-1.3:
 
-* run_57's flash-recovery HV map -- at the production operating point (resist
-  520-540 V) the per-chamber recovery runs 0.5-8.9 ms, and it is a two-decade
-  monotonic function of the resist voltage above that.
+* run_57's flash-recovery HV map, detector A (== bench det3, the chamber the
+  HV-window slide right before this one is built on) -- 5.0 ms at the
+  production operating point, 540 V.  ``make_hv_window.py`` draws exactly
+  this number as "the front end wakes up here" on its own 540 V frame, so the
+  two slides now show the same recovery -- 2026-08-29, Dylan: the two were
+  disagreeing (this band used to run to 9 ms, the slowest of the THREE
+  chambers, B and C included) and reads as one continuous argument only if
+  they match.  ``make_flash_slides.detA_charge_recovery()`` is the shared
+  source for both.
 * run_79 beam data -- the earliest reconstructed track anywhere is 0.993 ms.
 
 So the band is drawn as a firm edge at 1 ms (nothing has ever been recorded
-before it) and a hatched continuation to 9 ms (the slowest chamber at the top
-of the production window is still coming back inside the thermal peak).
+before it) and a soft continuation to 5 ms (detector A's own recovery at the
+production operating point, 540 V).
+
+FRAMED AS A TRIGGER, NOT JUST A BLIND SPOT (2026-08-29, Dylan): 0-1 ms is
+labelled "Trigger vetoed" (why nothing is EVER seen there, at any voltage);
+1-5 ms is "gain still recovering", a caveat inside the live trigger, not a
+second veto; and a top label states the acquisition window itself, 1-
+TRIGGER_GATE_MS ms.  Caveat carried in the constant's own comment: the only
+"30 ms" found in the repo is the run_57 flash-recovery PROBE's own gate
+length, not a separately documented production trigger-enable window -- used
+here on Dylan's instruction, worth confirming against the DAQ config before
+it is stated as a hard number in the room.
 """
 from __future__ import annotations
 
@@ -75,6 +91,7 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from matplotlib.ticker import LogLocator, NullFormatter
 from scipy.interpolate import PchipInterpolator
+from scipy.integrate import quad
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
@@ -104,8 +121,16 @@ MEV_LO_EV, MEV_HI_EV = 1.0e5, 1.0e7
 TH_LO_EV, TH_HI_EV = 1.0e-2, 1.0e-1
 
 # --- the front end, measured (STATUS_PLAN.md 1.2-1.3) --------------------
-DEAD_FIRM_MS = 1.0           # nothing recorded before 0.993 ms, ever
-DEAD_SOFT_MS = 9.0           # slowest chamber at the top of the production HV
+DEAD_FIRM_MS = 1.0           # nothing recorded before 0.993 ms, ever --
+                              # framed as the trigger veto edge (2026-08-29)
+DEAD_SOFT_MS = 5.0           # detector A (== bench det3) at 540 V, the same
+                              # number make_hv_window.py's 540 V frame draws
+# The only "30 ms" in the repo is the run_57 flash-recovery PROBE's own
+# acquisition gate (STATUS_PLAN.md 1.2, make_status_plots.py: "does not
+# recover inside the ~30 ms gate") -- that measurement's window, not a
+# documented production trigger-enable window.  Flagged to Dylan; used here
+# on his instruction.
+TRIGGER_GATE_MS = 30.0
 
 
 def t_of_E(E_eV):
@@ -141,14 +166,54 @@ def _sum_between(elo, ehi, y, lo, hi):
     return float(y[m].sum())
 
 
+def _thermal_recordable(elo, ehi, y, cut_ms):
+    """What fraction of the thermal bin's rate arrives after ``cut_ms``.
+
+    The table has one point per decade of energy -- no finer time resolution
+    inside the thermal bin -- so this apportions its known total (the bin
+    edges are exact; only the SHAPE inside them is interpolated) using the
+    same log(t)-log(rate) PCHIP already fit through every bin's own point
+    (``draw()``'s visual spline).  Consistent by construction: integrating
+    that shape over the bin's OWN edges reproduces the tabulated total, so
+    dividing the partial integral by the full one gives an interpolation-
+    based fraction rather than an assumed-uniform one, and the ratio is
+    normalised back onto the measured 4.42/day rather than trusted in
+    absolute terms.  The bin's far edge (14.1 ms) is beyond the last plotted
+    point (9.3 ms, the bin's own midpoint) -- PCHIP's natural extrapolation
+    of the last segment covers it, and because it enters both the numerator
+    and the denominator the ratio is far less sensitive to that than the
+    absolute curve would be.
+    """
+    t_lo, t_hi = t_of_E(ehi) * 1e6, t_of_E(elo) * 1e6  # us
+    t_mid = 0.5 * (t_lo + t_hi)
+    order = np.argsort(t_mid)
+    t_mid, yv = t_mid[order], y[order]
+    cs = PchipInterpolator(np.log(t_mid), np.log(yv))
+
+    lo_edge = t_of_E(TH_HI_EV) * 1e6   # the bin's true near edge, 4.46 ms
+    hi_edge = t_of_E(TH_LO_EV) * 1e6   # the bin's true far edge, 14.1 ms
+    cut = cut_ms * 1e3
+
+    def density(u):
+        return np.exp(cs(u))
+
+    full, _ = quad(density, np.log(lo_edge), np.log(hi_edge), limit=200)
+    part, _ = quad(density, np.log(max(cut, lo_edge)), np.log(hi_edge),
+                    limit=200)
+    return part / full
+
+
 def numbers():
     elo, ehi, y = load()
     tot = float(y.sum())
     mev = _sum_between(elo, ehi, y, MEV_LO_EV, MEV_HI_EV)
     th = _sum_between(elo, ehi, y, TH_LO_EV, TH_HI_EV)
+    rec_frac = _thermal_recordable(elo, ehi, y, DEAD_SOFT_MS)
+    rec = th * rec_frac
     return dict(
         total=tot, mev=mev, thermal=th,
         mev_frac=mev / tot, thermal_frac=th / tot, ratio=mev / th,
+        thermal_recordable=rec, thermal_recordable_frac=rec / tot,
         mev_t=(t_of_E(MEV_HI_EV) * 1e6, t_of_E(MEV_LO_EV) * 1e6),   # us
         thermal_t=(t_of_E(TH_HI_EV) * 1e3, t_of_E(TH_LO_EV) * 1e3),  # ms
         flash_ns=FLIGHT_M / C * 1e9)
@@ -206,7 +271,12 @@ def draw(window: bool):
     # A band, not a recoloured bar: with points and an interpolation there is
     # no bar to recolour, and the band is what the sentence is about anyway.
     if window:
-        ax.axvspan(t_of_E(TH_HI_EV) * 1e6, t_of_E(TH_LO_EV) * 1e6,
+        # left edge is the dead-band's OWN soft edge, not the bin's -- the
+        # recordable window starts where the front end wakes up (the same
+        # 540 V number make_hv_window.py's build draws), so the two bands
+        # now meet with no gap and no overlap.  2026-08-29, Dylan: move the
+        # purple band to the red line.
+        ax.axvspan(DEAD_SOFT_MS * 1e3, t_of_E(TH_LO_EV) * 1e6,
                    color=P.ACCENT, alpha=0.13, zorder=1, lw=0)
     else:
         ax.axvspan(t_of_E(MEV_HI_EV) * 1e6, t_of_E(MEV_LO_EV) * 1e6,
@@ -274,23 +344,48 @@ def draw(window: bool):
         ax.text(tm, 7.4, f"{n['mev']:.0f} / day,\nunreachable",
                 ha='center', va='center', fontsize=12.5, fontweight='bold',
                 color=P.ACCENT, alpha=0.85, zorder=6, linespacing=1.45)
-        ax.annotate(f"{n['thermal']:.1f} / day — "
-                    f"{n['thermal_frac'] * 100:.0f} %,\nand we can record it",
+        ax.annotate(f"{n['thermal_recordable']:.1f} / day — "
+                    f"{n['thermal_recordable_frac'] * 100:.0f} %,"
+                    f"\nand we can record it",
                     xy=(tt, 5.1), xytext=(tt, 11.4), ha='center', va='bottom',
                     fontsize=12.5, fontweight='bold', color=P.ACCENT,
                     arrowprops=dict(arrowstyle='-|>', color=P.ACCENT,
                                     lw=1.6, shrinkA=5, shrinkB=3), zorder=6)
-        # the two dead-band labels ride along the top, inside their own band
+        # the veto label rides along the top, inside its own band (2026-08-29,
+        # Dylan: frame the 0-1 ms floor as a trigger veto, not a vague
+        # "blind" -- it is the reason nothing has ever been reconstructed
+        # before 0.993 ms, for any chamber at any voltage)
         ax.text(np.sqrt(flash_us * DEAD_FIRM_MS * 1e3), 19.4,
-                'DREAM front end blind', fontsize=12.5, fontweight='bold',
+                'Trigger vetoed', fontsize=12.5, fontweight='bold',
                 color=P.BAND_DEAD, ha='center', va='center', zorder=6)
-        # knocked out of the bar behind it, the way make_timeline handles
-        # its SPS label: there is no empty place in this band to put it
-        ax.text(DEAD_FIRM_MS * 1.06e3, 0.45,
-                'still coming back\nto 9 ms', fontsize=8.8,
-                color=P.BAND_DEAD, ha='left', va='bottom', zorder=6,
-                linespacing=1.35,
-                bbox=dict(facecolor=P.SURFACE, edgecolor='none', pad=1.6))
+        # raised clear of the low-rate points near 1-3 ms (2026-08-29,
+        # Dylan) -- it used to sit on top of them with a knockout box; at
+        # this height the band itself is empty and no box is needed.  An
+        # arrow (not a vertical line) now ties the label to the boundary --
+        # the purple band's own left edge -- so the two-line label doesn't
+        # need to sit right on top of it.  Text and arrow are two separate
+        # calls, not one annotate(): annotate's auto patchA (the text's own
+        # bounding box) made the arrow shrink to almost nothing.
+        ax.text(DEAD_FIRM_MS * 1.06e3, 3.0, 'gain still recovering\ntill 5 ms',
+                fontsize=8.8, color=P.BAND_DEAD, ha='left', va='bottom',
+                linespacing=1.35, zorder=6)
+        ax.annotate('', xy=(DEAD_SOFT_MS * 1e3, 2.75),
+                    xytext=(2650, 2.75),
+                    arrowprops=dict(arrowstyle='-|>', color=P.BAND_DEAD,
+                                    lw=1.3), zorder=6)
+        # the trigger-enable window, above everything else (2026-08-29,
+        # Dylan) -- veto lifts at 1 ms, the acquisition gate runs to
+        # TRIGGER_GATE_MS; "gain still recovering" (above) is a caveat
+        # WITHIN this window, not a second veto
+        tg_lo, tg_hi = DEAD_FIRM_MS * 1e3, TRIGGER_GATE_MS * 1e3
+        ax.text(np.sqrt(tg_lo * tg_hi), 19.4,
+                f'Trigger from {DEAD_FIRM_MS:.0f} – '
+                f'{TRIGGER_GATE_MS:.0f} ms',
+                fontsize=12.5, fontweight='bold', color=P.INK,
+                ha='center', va='center', zorder=6)
+        ax.annotate('', xy=(tg_hi, 18.5), xytext=(tg_lo, 18.5),
+                    arrowprops=dict(arrowstyle='<->', color=P.INK, lw=1.3),
+                    zorder=6)
 
     # ---- axes -----------------------------------------------------------
     ax.set_xlabel(f'neutron flight time over {FLIGHT_M:.1f} m  [µs]'
