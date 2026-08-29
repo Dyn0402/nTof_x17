@@ -24,15 +24,16 @@ THE THREE LEGS
 1. **The bench, at Ar/iso 95/5** (June, Saclay).  det3 == chamber A, so this
    is the same physical chamber.  TWO scans, and which one you read matters:
    the **27 June saturday scan** (``bench_efficiency_saturday()``, both
-   passes) runs **425-525 V** and is the only one that reaches below the
-   plateau -- 49 % at 425 V climbing to 81 % by 455 -- so it is the one the
-   deck plots; the **22 June overnight scan** (``bench_efficiency()``) runs
-   450-525 V, starts already flat, and cannot show a turn-on at all.  They
-   agree on the plateau's flatness and on the discharge collapse; 27 June's
-   level is ~10 points lower because det3 sat in the top slot there (z 702,
-   FEU 7/8) instead of the bottom (z 232, FEU 3/4), twice the M3 lever arm
-   into the same fixed 5 mm match box.  Same efficiency definition in both.
-   Spark fraction and the older mapping numbers still come from 22 June.
+   passes) runs **425-525 V**, the only one reaching below 450 V, so it is the
+   one the deck plots; the **22 June overnight scan** (``bench_efficiency()``)
+   runs 450-525 V.  BOTH WERE RE-DERIVED 2026-08-28 (see BENCH_EFF_SAT): the
+   plateau is **93-95 %**, not 81 %, and the two scans **agree** -- they used
+   to differ by ~10 points and that gap was explained by the top slot's M3
+   lever arm; the gap is gone and the explanation is withdrawn.  **Neither
+   scan shows a turn-on**: 425 V reads 89.6 %, and the chamber's own gain
+   ladder says why (69 ADC on the peak strip in the weakest 2 % of events,
+   ~10 sigma over the bench pedestal).  Same efficiency definition in both,
+   and it is the one 02_efficiency.py publishes for this chamber.
    M3-referenced, drift 1000 V.  The 27 June
    saturday scan (``mesh_ladder.csv``) gives the MEASURED gain ladder --
    median strip amplitude against voltage, 425-525 V -- whose slope,
@@ -120,23 +121,57 @@ BENCH_EFF = ('/media/dylan/data/x17/cosmic_bench/Analysis/'
              'efficiency_vs_hv.csv')
 # The 27 June saturday det3 scan -- the SAME chamber, five days later, in the
 # TOP slot (FEU 7 x / 8 y, z = 702) instead of the bottom one.  Two interleaved
-# passes, 425-525 V and 460-520 V, and it is the only bench scan that reaches
-# BELOW the plateau: 0.49 at 425 V climbing to 0.81 by 455 V.  The 22 June scan
-# starts at 450 V, already on the plateau, so it cannot show a turn-on at all.
-# Its plateau sits ~10 points lower than 22 June's because the top slot doubles
-# the M3 lever arm into the same fixed 5 mm match box -- same chamber, same
-# efficiency definition, different pointing.  Use it for SHAPE, and say which
-# scan any absolute number came from.  This is also the run that produced
-# ``mesh_ladder.csv``, so the efficiency and the gain ladder are the same scan.
+# passes, 425-525 V and 460-520 V.  It is the only bench scan that reaches
+# below 450 V, which is why the panel uses it.
+#
+# REDERIVED 2026-08-28.  Both this scan and the 22 June one above were rebuilt
+# by mx_june_cosmic_qa/10b_hv_scan_efficiency.py on the current chain -- golden
+# M3 recipe (chi2<1.0 & NClus=4), the 2026-07-25 significance floor, the
+# reprocessed hits, and the 02_efficiency.py accounting inside the long run's
+# own box.  The files this used to read were written on 29 JUNE and carried
+# none of that; they plateaued at 81 % where the same chamber at the same
+# 490 V, the same night, reads 93.3 %.  They are parked under
+# ``<scan>/mx17_3/_superseded_20260629/`` with a README.  Two things the
+# correction changed, and both are load-bearing here:
+#
+#   * THE PLATEAU IS 93-95 %, not 81 %, and it agrees with the chamber's
+#     published headline (93.1 % hits / 93.5 % wft on long_run at 490 V).
+#   * THERE IS NO TURN-ON INSIDE THIS SCAN.  425 V reads 89.6 %, not 49 %.
+#     The old rise from 0.49 to 0.81 across 425-455 V was the pre-reprocessing
+#     analyzer's amplitude threshold, not the chamber: this scan's own gain
+#     ladder (mesh_ladder.csv, same sub-runs) puts the peak strip at 69 ADC in
+#     the weakest 2 % of events at 425 V, ~10 sigma over the 6.85 ADC bench
+#     pedestal.  Anything downstream that leans on a steep low-V turn-on is
+#     leaning on an artefact.
+#
+# The 22 June scan's plateau also moved, 91 -> 91-94 %, and the two scans now
+# AGREE.  The old note here explained their ~10-point gap by the top slot
+# doubling the M3 lever arm into the same fixed 5 mm box; that gap is gone, so
+# the explanation is withdrawn.  The lever arm is still visible where it
+# belongs -- in the core residual, 0.34-0.41 mm bottom slot against
+# 0.44-0.59 mm top -- it just never cost efficiency at a 5 mm match.
+#
+# This is also the run that produced ``mesh_ladder.csv``, so the efficiency and
+# the gain ladder are the same scan.
 BENCH_EFF_SAT = [
     ('/media/dylan/data/x17/cosmic_bench/Analysis/'
-     'mx17_det3_saturday_scan_6-27-26/hv_scan/mx17_3/efficiency_vs_hv_scan.csv',
+     'mx17_det3_saturday_scan_6-27-26/hv_scan/mx17_3/efficiency_vs_hv.csv',
      'pass 1'),
     ('/media/dylan/data/x17/cosmic_bench/Analysis/'
      'mx17_det3_saturday_scan_6-27-26/hv_scan2/mx17_3/'
-     'efficiency_vs_hv_scan2.csv', 'pass 2'),
+     'efficiency_vs_hv.csv', 'pass 2'),
 ]
 MESH_LADDER = os.path.expanduser('~/x17/response_sim/hv_slope/mesh_ladder.csv')
+# The SAME 18 sub-runs, read a second way: total collected charge per track,
+# from mx_june_cosmic_qa/10e_hv_scan_charge_angle.py.  ``q_sum`` is the
+# deconvolved forward-fit charge, which CENSORS railed samples and so keeps
+# measuring to 505 V where the peak strip stopped at ~495; ``q_win`` is a
+# model-free sum of every sample over +-10 strips.  The two, and the peak
+# sample, agree on d ln Q / dV to under 2 % over 425-505 V, so the charge
+# ladder and the mesh ladder are one measurement seen three ways.
+CHARGE_LADDER = ('/media/dylan/data/x17/cosmic_bench/Analysis/'
+                 'mx17_det3_saturday_scan_6-27-26/hv_scan/mx17_3/'
+                 'charge_angle_vs_hv.csv')
 SLOPES = os.path.expanduser('~/x17/response_sim/hv_slope/slopes.json')
 NTOF_SCAN = os.path.join(REPO, 'mx_july_beam_qa', 'calib',
                          '25_hv_scan_summary.json')
@@ -166,13 +201,27 @@ SIGMA_NTOF_PROD_ADC = 9.80
 CSA_BENCH_FC = 200.0
 CSA_NTOF_FC = 600.0
 
+# The 12-bit DREAM sample rails at 3871.5 ADC (measured: the median peak
+# amplitude at 525 V, where >99 % of tracks clip -- 10c_hv_scan_gain.py).
+# ``SAT_ADC`` is the level 10e counts a sample as railed at, 92 % of that; the
+# 0.6 V between the two definitions of "saturated" is far inside the map's own
+# bracket and nothing here is sensitive to the choice.
+ADC_RAIL = 3871.5
+SAT_ADC = 3550.0
+
 
 # --------------------------------------------------------------------------- #
 # the bench, at 95/5
 # --------------------------------------------------------------------------- #
 
 def bench_efficiency():
-    """(V, eff, err, spark_frac) from the 22 June det3 overnight scan."""
+    """(V, eff, err, spark_frac) from the 22 June det3 overnight scan.
+
+    Re-derived 2026-08-28 on the current chain (see BENCH_EFF_SAT).  Plateau
+    91-94 %, which now agrees with the 27 June scan; the two used to differ by
+    ~10 points and no longer do.  `eff` and `spark_frac` are FRACTIONS -- the
+    CSV carries the 02_efficiency percent columns too, under their own names.
+    """
     v, e, de, sp = [], [], [], []
     with open(BENCH_EFF) as fh:
         for r in csv.DictReader(fh):
@@ -187,10 +236,17 @@ def bench_efficiency():
 def bench_efficiency_saturday():
     """(V, eff, err, spark) from the 27 June det3 scan, both passes merged.
 
-    The two passes interleave (425/435/... and 460/470/...), were taken the
-    same day on the same slot at the same drift voltage, and agree to about
-    0.02 in the overlap, so they are one curve sampled twice.  Sorted by
-    voltage; duplicates are not averaged because there are none.
+    The two passes interleave (pass 1 at 425/435/445/455/465/..., pass 2 at
+    460/470/480/...), were taken the same day on the same slot at the same
+    drift voltage, and share no voltage, so nothing is averaged -- they are one
+    curve sampled twice.  On the re-derived chain adjacent points from opposite
+    passes agree to 1-2 points (465 -> 94.1 against 460 -> 94.8 and 470 ->
+    94.9; 485 -> 93.7 against 480 -> 93.8 and 490 -> 93.7), which is the
+    cross-check that the two passes are one measurement.
+
+    Plateau 93-95 %.  Statistical errors are ~0.9 points, so the point-to-point
+    scatter on the plateau is a little wider than statistics alone; treat a
+    single point to better than ~1.5 points as unmeasured.
     """
     v, e, de, sp = [], [], [], []
     for path, _tag in BENCH_EFF_SAT:
@@ -209,9 +265,23 @@ def eff_turn_on_slope(n=3):
     """(slope per V, intercept) of a straight line through the LOWEST n points.
 
     Only for continuing the curve below 425 V, where the panel's axis reaches
-    and the scan does not.  Three points (425/435/445) give 0.0141 per V; two
-    give 0.0176.  Extrapolated values are drawn dashed and clipped at zero --
-    a turn-on is not a straight line and this one would cross zero at 410 V.
+    and the scan does not.
+
+    ON THE RE-DERIVED CHAIN THIS IS ESSENTIALLY FLAT: three points
+    (425/435/445 = 89.6/93.1/91.8 %) give **0.0011 per V**, two give 0.0035.
+    It used to be 0.0141 per V, off a curve that rose 0.49 -> 0.81 over the
+    same three points -- and that rise was the old analyzer's amplitude
+    threshold, not the chamber (mesh_ladder.csv, same sub-runs, puts the weakest
+    2 % of events at 69 ADC on the peak strip at 425 V, ~10 sigma over the
+    6.85 ADC bench pedestal).
+
+    So the continuation below 425 V is now a nearly horizontal line near 90 %,
+    and it is a WEAK statement: the fit is through three points whose own
+    scatter (+-1.5) is larger than the slope times the extrapolated span.  It
+    says only "no turn-on is visible yet by 425 V", which is what the gain
+    ladder independently says.  It must not be read as a measured plateau below
+    425 V -- the chamber has to turn off eventually, this scan just never
+    reaches low enough to see it.  Draw it dashed and label it extrapolated.
     """
     v, e, _, _ = bench_efficiency_saturday()
     k = np.argsort(v)[:n]
@@ -274,6 +344,102 @@ def bench_gain_slope():
     return float(np.mean(per)), float(np.mean(err))
 
 
+def bench_charge_ladder(est='q_sum', v_max=505.0):
+    """(V, Q, ln-error) -- TOTAL collected charge per track, 27 June scan.
+
+    Both views averaged in the log (they are the same tracks seen twice and
+    their ladders are parallel), one row per mesh voltage.  ``q_sum`` is the
+    deconvolved forward-fit charge; ``q_win`` the model-free window sum.
+
+    Cut at ``v_max`` = 505 V: above it the WINDOW SUM clips as well (tens of
+    railed cells per track) and the fit is censoring most of the pulse, so
+    nothing up there is a charge measurement.  See the grey band that
+    10e_hv_scan_charge_angle.py draws on the same ladder.
+    """
+    rows = {}
+    with open(CHARGE_LADDER) as fh:
+        for r in csv.DictReader(fh):
+            v = float(r['hv'])
+            if v > v_max:
+                continue
+            rows.setdefault(v, []).append((float(r[est]),
+                                           float(r[f'{est}_lnerr'])))
+    v = np.array(sorted(rows))
+    q = np.array([np.exp(np.mean([np.log(a) for a, _ in rows[k]])) for k in v])
+    e = np.array([float(np.mean([b for _, b in rows[k]])) / np.sqrt(len(rows[k]))
+                  for k in v])
+    return v, q, e
+
+
+def saturating_voltage(frac=0.5):
+    """The bench mesh voltage at which ``frac`` of tracks rail the peak strip.
+
+    ``peak_amp`` is the tallest SAMPLE of the tallest STRIP of the event -- the
+    max strip, which is what the question is about, not a per-strip average.
+
+    Dylan's definition of the ideal gain, 2026-08-28: *"aim for the peak strip
+    in the median event to be saturated (just barely saturating is probably
+    ideal gain)"*.  The median event is ``frac = 0.5``, and the scan measures
+    it directly -- ``frac_sat`` goes 0.39 at 495 V to 0.66 at 500 V in BOTH
+    views, so the crossing is bracketed by two measured points 5 V apart and
+    is not an extrapolation.  Linear in the fraction inside that bracket.
+
+    HOW MUCH THE DEFINITION MATTERS, measured 2026-08-29 on the 23,774 per-event
+    ``peak_amp`` values, when Dylan said he remembered ~500 V off the gain plot:
+
+      clipped at >= 0.88 x rail (3407)   V50 = 496.4 V
+      clipped at >= 0.92 x rail (3550)   V50 = 497.0 V   <- what this returns
+      clipped at >= 0.95 x rail (3678)   V50 = 497.1 V
+      clipped at >= 0.98 x rail (3800)   V50 = 508.6 V   <- NOT a clipping test
+
+    Stable to 0.7 V over any sane clipping threshold.  0.98 breaks because the
+    railed population is not a delta function: per-channel pedestal subtraction
+    spreads it over ~3700-3900, so a cut at 3800 stops asking "is this event
+    clipped" and starts asking "did this channel's rail land high".
+
+    **Both readings of the gain plot are right.**  Half the events have the max
+    strip clipped at 497 V; the MEDIAN AMPLITUDE only reaches the nominal
+    3871.5 rail near 500 V, because at the 50 % point half the sample is still
+    below it.  500 V is what the eye reads off ``gain_vs_hv.png``, where the
+    p50 marker visibly lies on the rail line -- there, 67 % of events are
+    clipped and the median sits at 97 % of the rail.  Moving the anchor from
+    497 to 500 V would lower every percentage on the gain scale by ~13 %.
+
+    The spark veto is not what sets this: on the full M3-golden fiducial set
+    V50 is 496.8 V against 497.0 spark-free.
+
+    Returns (V, per-view dict).  The two views agree to 0.04 V.
+    """
+    per = {}
+    for view in ('x', 'y'):
+        v, f = [], []
+        with open(CHARGE_LADDER) as fh:
+            for r in csv.DictReader(fh):
+                if r['view'] != view:
+                    continue
+                v.append(float(r['hv']))
+                f.append(float(r['frac_sat']))
+        o = np.argsort(v)
+        per[view] = float(np.interp(frac, np.asarray(f)[o], np.asarray(v)[o]))
+    return float(np.mean(list(per.values()))), per
+
+
+def saturation_ladder():
+    """(V, fraction of tracks whose MAX STRIP is railed), both views averaged.
+
+    Straight off ``frac_sat`` in the charge ladder -- the spark-free,
+    M3-golden, fiducial set, at the 3550 ADC censoring level.  This is the
+    "when does the max strip start to clip" ladder; ``saturating_voltage``
+    is just its 50 % point.
+    """
+    rows = {}
+    with open(CHARGE_LADDER) as fh:
+        for r in csv.DictReader(fh):
+            rows.setdefault(float(r['hv']), []).append(float(r['frac_sat']))
+    v = np.array(sorted(rows))
+    return v, np.array([float(np.mean(rows[k])) for k in v])
+
+
 def sim_gain_slope():
     """The simulated 90/10 ladder's slope per 10 V, for the bracket."""
     return float(json.load(open(SLOPES))['sim']['iso10_full']['slope10'])
@@ -334,6 +500,114 @@ def total_shift(era='run_55'):
     terms['total'] = sum(terms.values())
     terms['threshold_ratio'] = ratio
     return terms
+
+
+def adc_shift():
+    """Volts to add to a BENCH voltage to get the n_TOF voltage with the same
+    number of ADC COUNTS on the peak strip.
+
+    This is NOT ``total_shift()``, and the difference is the whole reason this
+    function exists.  ``total_shift`` answers *where does the bench's
+    signal-to-noise reappear*, so it carries the per-channel noise; that is
+    the right map for an EFFICIENCY, which is a threshold quantity.
+    Saturation is not a threshold quantity -- the rail sits at a fixed number
+    of ADC counts however noisy the channel is -- so the noise term must come
+    OUT and only the CSA range stays in:
+
+        gas 95/5 -> 90/10        +72.6 V   (same as always)
+        Saclay -> CERN            -4.7 V   (same as always)
+        CSA 200 fC -> 600 fC     +26.3 V   (3x less ADC per electron, so 3x
+                                            the avalanche to reach the rail)
+                                 --------
+                                 +94.1 V
+
+    against +102.7 V for the production threshold map.  The 8.6 V between them
+    is exactly ln(9.80/6.85) worth of noise, and putting it in would be saying
+    that a noisier channel saturates sooner.
+    """
+    slope10, _ = bench_gain_slope()
+    terms = dict(gas=gas_shift(), pressure=pressure_shift(),
+                 csa=float(np.log(CSA_NTOF_FC / CSA_BENCH_FC) / (slope10 / 10.0)))
+    terms['total'] = float(sum(terms.values()))
+    terms['adc_ratio'] = CSA_NTOF_FC / CSA_BENCH_FC
+    return terms
+
+
+def bench_gain_on_ntof_axis(est='q_sum', ref='bench200', n_top=5):
+    """The charge ladder on the n_TOF axis, as a PER CENT OF OPTIMAL GAIN.
+
+    100 % is the gain at which the peak strip of the median track just fills
+    the readout.  WHICH readout is a choice, and it is worth 3x:
+
+      ``bench200``  the DREAM the scan was taken with, 200 fC full scale.  The
+                    measured point, ``saturating_voltage(0.5)`` = **bench
+                    497 V**, which lands at **n_TOF 565 V**.  DEFAULT since
+                    2026-08-29 (Dylan: *"I think 497 V is fine ... can we put
+                    100 % at 497 V instead?"*).  Everything on the panel is
+                    then measured: bench 425-505 V covers n_TOF 493-573 V, so
+                    the setpoints AND the 100 % crossing sit inside data.
+      ``ntof600``   the DREAM n_TOF actually ran, 600 fC full scale -- 3x less
+                    ADC per electron, so 3x the avalanche to reach the same
+                    rail.  That is bench ~518 V, n_TOF ~586 V, and it needs
+                    ~13 V of continuation past the last trustworthy bench
+                    point, so its top is extrapolated.
+
+    Both are honest; they answer "full scale of what".  ``bench200`` is the
+    one to lead with, for three reasons: it is the scan's own measured
+    saturation point, nothing on the curve is extrapolated, and the 600 fC
+    setting was forced by the gamma flash (668 pC on a strip -- 1113x the
+    DREAM range) rather than chosen for tracking, so referring a TRACKING gain
+    to it asks for 3x more avalanche than a MIP measurement needs.  Say which
+    one a number came from; do not mix them.
+
+    THE ARITHMETIC.  Only gas and site pressure move the VOLTAGE:
+
+        pct(W)  =  Q_bench(W - 67.85) / Q_bench(497)            [bench200]
+        pct(W)  =  Q_bench(W - 67.85) / (3 * Q_bench(497))      [ntof600]
+
+    so n_TOF 560 V is read off the bench ladder at bench 492 V -- the plain gas
+    equivalence.  **Corrected 2026-08-28**: the first version folded the factor
+    3 into the voltage axis as ln(3)/slope = +26.3 V, one shift of +94.1 V.
+    That is exact only for a straight ladder, and this one is CURVED (0.33 per
+    10 V near 435-445 V, 0.52 near 485-505), so it read the wrong part of the
+    ladder -- by -13 % at n_TOF 520 V and +6 % at 560 V.  Keep ``adc_shift()``
+    for SAYING which bench voltage makes the same ADC; never for evaluating.
+
+    Returns a dict: ``v``/``pct``/``lnerr`` the measured points, ``v_line`` and
+    ``pct_line`` the drawn line (its first ``n_meas`` entries are the measured
+    ones; on ``bench200`` that is all of them), ``v_opt`` the 100 % crossing,
+    ``v_last_meas`` where the measurement stops, and the continuation slopes.
+    """
+    if ref not in ('bench200', 'ntof600'):
+        raise ValueError(ref)
+    shift = gas_shift() + pressure_shift()
+    v, q, e = bench_charge_ladder(est)
+    lnq = np.log(q)
+    v_sat, _ = saturating_voltage(0.5)
+    q_opt = float(np.exp(np.interp(v_sat, v, lnq)))
+    if ref == 'ntof600':
+        q_opt *= CSA_NTOF_FC / CSA_BENCH_FC
+
+    k = v >= v[-n_top]
+    s_top = float(np.polyfit(v[k], lnq[k], 1)[0])
+    s_all = float(np.polyfit(v, lnq, 1)[0])
+    v_end = v[-1] + (np.log(q_opt) - lnq[-1]) / s_top          # 100 % crossing
+    if v_end <= v[-1]:                                          # inside the data
+        v_end = float(np.interp(np.log(q_opt), lnq, v))
+        vx, qx = np.array([]), np.array([])
+    else:
+        vx = np.arange(v[-1] + 1.0, v_end + 4.0, 1.0)
+        qx = q[-1] * np.exp(s_top * (vx - v[-1]))
+
+    return dict(
+        ref=ref, v=v + shift, pct=100.0 * q / q_opt, lnerr=e,
+        v_line=np.concatenate([v, vx]) + shift,
+        pct_line=100.0 * np.concatenate([q, qx]) / q_opt,
+        n_meas=len(v), v_last_meas=float(v[-1] + shift),
+        v_opt=float(v_end + shift),
+        v_opt_alt=float(v[-1] + (np.log(q_opt) - lnq[-1]) / s_all + shift)
+        if len(vx) else float(v_end + shift),
+        slope10=s_top * 10, slope10_all=s_all * 10, shift=shift)
 
 
 def bracket():
@@ -520,6 +794,32 @@ def results():
         plateau_hi_ntof_V=float(bv[np.argmax(be)]) + s55,
         spark_10pct_ntof_V=float(np.interp(0.10, bsp, bv)) + s55,
     )
+    vsat, vsat_per = saturating_voltage(0.5)
+    g = bench_gain_on_ntof_axis('q_sum')
+    gw = bench_gain_on_ntof_axis('q_win')
+    g6 = bench_gain_on_ntof_axis('q_sum', ref='ntof600')
+    grid = list(range(520, 565, 5))
+
+    def _at(d, x):
+        return float(np.exp(np.interp(x, d['v'], np.log(d['pct']))))
+
+    sv, sf = saturation_ladder()
+    out['gain_scale'] = dict(
+        v_sat50_bench=vsat, v_sat50_per_view=vsat_per,
+        onset={int(a): float(b) for a, b in zip(sv, sf)},
+        onset_quartile=float(np.interp(0.25, sf, sv)),
+        onset_5pct=float(np.interp(0.05, sf, sv)),
+        onset_90pct=float(np.interp(0.90, sf, sv)),
+        shift=g['shift'], adc_shift=adc_shift(),
+        v_opt_ntof=g['v_opt'], v_opt_ntof_alt=g['v_opt_alt'],
+        v_meas_ntof=[float(g['v'].min()), float(g['v'].max())],
+        slope10=g['slope10'], slope10_all=g['slope10_all'],
+        pct={int(v): _at(g, v) for v in grid},
+        pct_qwin={int(v): _at(gw, v) for v in grid},
+        # the same scale referred to the 600 fC range n_TOF actually ran
+        ntof600=dict(v_opt_ntof=g6['v_opt'],
+                     pct={int(v): _at(g6, v) for v in grid}),
+    )
     fom = {}
     for w in ('b1', 'b2'):
         v, vis, rel, p = figure_of_merit(w)
@@ -571,6 +871,34 @@ def main():
           f'{sat["eff_at_op"]["production"] * 100:.0f} % (production)')
     print(f'  bench 10 % spark fraction maps to n_TOF '
           f'{m["spark_10pct_ntof_V"]:.0f} V')
+
+    g = r['gain_scale']
+    print('\n--- how much gain we actually had  (100 % = median peak strip'
+          ' just fills the 12-bit sample)')
+    print(f'  max strip clips in 5 % of tracks by bench'
+          f' {g["onset_5pct"]:.0f} V, a quarter by {g["onset_quartile"]:.0f} V,'
+          f' 90 % by {g["onset_90pct"]:.0f} V')
+    print(f'  median peak strip rails at bench {g["v_sat50_bench"]:.1f} V'
+          f' (x {g["v_sat50_per_view"]["x"]:.1f},'
+          f' y {g["v_sat50_per_view"]["y"]:.1f})')
+    am = g['adc_shift']
+    print(f'  100 % = fills the 200 fC DREAM the scan ran  ->  n_TOF'
+          f' {g["v_opt_ntof"]:.0f} V.  For the 600 fC range n_TOF ran, 3x the'
+          f' charge  ->  n_TOF {g["ntof600"]["v_opt_ntof"]:.0f} V')
+    print(f'  the ladder is evaluated at V - {g["shift"]:.2f} V (gas+pressure);'
+          f' the one-shift form {am["total"]:+.1f} V is equivalent only for a'
+          f' straight ladder, so it is not used')
+    print(f'  [same-gas-gain {g["shift"]:+.1f} | same-ADC {am["total"]:+.1f}'
+          f' | same-S/N {r["shift"]["production"]["total"]:+.1f}]')
+    print(f'  measured bench charge covers n_TOF '
+          f'{g["v_meas_ntof"][0]:.0f}-{g["v_meas_ntof"][1]:.0f} V;'
+          f' above that the curve is a continuation on'
+          f' {g["slope10"]:.3f}/10 V')
+    print(f'  {"V":>5} {"% optimal":>10} {"(window sum)":>13}'
+          f' {"vs 600 fC":>11}')
+    for v in sorted(g['pct']):
+        print(f'  {v:5d} {g["pct"][v]:9.1f} % {g["pct_qwin"][v]:12.1f} %'
+              f' {g["ntof600"]["pct"][v]:10.1f} %')
 
     print('\n--- the trade, on the run_55 grid')
     v, vis, rel, p = figure_of_merit('b2')

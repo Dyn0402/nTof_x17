@@ -131,12 +131,30 @@ def fig_gas_map(r):
 def fig_bench_mapped(r):
     """Both det3 efficiency scans, on the n_TOF axis, in both noise eras.
 
-    Rebuilt 2026-08-25 when the deck panel switched to the saturday scan.  The
-    figure has to carry three facts at once: the turn-on (only the 27 June
-    scan reaches it), the plateau's flatness (both scans agree), and the 22 V
-    the 23 July noise step moves the whole curve by.  Everything is placed
-    with the PRODUCTION ledger except the one deliberate ghost, so the top
-    axis is unambiguous.
+    Rebuilt 2026-08-25 when the deck panel switched to the saturday scan.
+    **Re-derived 2026-08-28** -- both scans were rebuilt on the current chain
+    (mx_june_cosmic_qa/10b_hv_scan_efficiency.py); the files this used to read
+    were written on 29 June and plateaued at 81 %.  See BENCH_EFF_SAT in
+    hv_tradeoff.py for the three reasons and the parked originals.
+
+    The figure carries three facts, and the correction changed two of them:
+
+      * **The plateau is 93-95 %**, and it matches det3's published headline
+        (93.1 % hits / 93.5 % wft at 490 V on this run's own long run).
+      * **The two scans now AGREE.**  They used to differ by ~10 points and
+        that gap was explained by the top slot's M3 lever arm; the gap is gone
+        and the explanation is withdrawn.  The lever arm survives where it
+        belongs, in the core residual (0.34-0.41 mm bottom slot against
+        0.44-0.59 mm top), and never cost efficiency at a 5 mm match.
+      * **There is NO turn-on inside either scan.**  The 27 June scan reaches
+        425 V and reads 89.6 % there, not 49 %.  What the figure shows below
+        the plateau is a ~4-point sag, not a turn-on, and the collapse at the
+        top is discharges.  So the honest statement is "flat across the whole
+        n_TOF window, and we never found the low edge", NOT "we measured the
+        turn-on".
+
+    Everything is placed with the PRODUCTION ledger except the one deliberate
+    ghost, so the top axis is unambiguous.
     """
     sv, se, sde, ssp = T.bench_efficiency_saturday()
     bv, be, bde, _bsp = T.bench_efficiency()
@@ -156,7 +174,7 @@ def fig_bench_mapped(r):
     # the independent scan: same chamber, bottom slot, five days earlier
     ax.errorbar(bv + sprod, be * 100, yerr=bde * 100, fmt='s-', color=P.ACCENT,
                 ms=4, lw=1.3, alpha=0.85, capsize=2,
-                label='22 June scan, bottom slot (starts on the plateau)')
+                label='22 June scan, bottom slot (independent, agrees)')
 
     ax.set_ylim(0, 100)
     ax.set_xlim(sv[0] + sprod - 14, sv[-1] + sprod + 6)
@@ -172,7 +190,8 @@ def fig_bench_mapped(r):
     ax.set_ylabel('per cent')
     ax.legend(loc='lower right', fontsize=10.0)
     if TITLES:
-        ax.set_title('The bench curves, moved onto the n_TOF voltage axis',
+        ax.set_title('The bench curves, moved onto the n_TOF voltage axis '
+                     '— flat at 93–95 % across the whole window',
                      loc='left', color=P.INK, pad=44)
 
     top = ax.twiny()
@@ -183,6 +202,87 @@ def fig_bench_mapped(r):
     P.strip(ax)
     fig.tight_layout()
     return save(fig, 'bench_mapped.png')
+
+
+# --------------------------------------------------------------------------- #
+# 2b. how much gain we actually had
+# --------------------------------------------------------------------------- #
+
+def fig_gain_scale(r):
+    """The charge ladder as a per cent of the gain that fills the readout.
+
+    Added 2026-08-28 when the deck's top-left panel swapped from efficiency to
+    gain; re-anchored and re-scaled 2026-08-29 (Dylan: *"can we put 100 % at
+    497 V instead? Then also make it linear y-axis"*).
+
+    100 % is ``T.saturating_voltage(0.5)`` -- the median track's peak strip
+    just filling the 12-bit sample of the **200 fC** DREAM the scan ran, bench
+    497 V, n_TOF 565 V.  n_TOF itself ran **600 fC**, which needs 3x the charge
+    and would put 100 % at n_TOF 586 V; that scale is in the table beside this
+    figure and in ``results()['gain_scale']['ntof600']``.
+
+    Only gas and pressure move the voltage (-67.85 V), so the top axis is the
+    plain gas equivalence: n_TOF 560 V is bench 492 V.
+    """
+    g = r['gain_scale']
+    d = T.bench_gain_on_ntof_axis('q_sum')
+    dw = T.bench_gain_on_ntof_axis('q_win')
+    vn, pct, v_opt = d['v'], d['pct'], d['v_opt']
+    shift = d['shift']
+
+    fig, ax = plt.subplots(figsize=(11.2, 5.2))
+    y1 = 165.0
+    ax.axhspan(100, y1, color=P.COPPER, alpha=0.10, lw=0, zorder=0)
+    ax.axhline(100, color=P.COPPER, lw=1.6, ls='--', zorder=2)
+
+    ax.plot(dw['v'], dw['pct'], 's--', color=P.MUTED, ms=4, lw=1.2, alpha=0.85,
+            label='raw window sum (no threshold, no model)')
+    ax.plot(vn, pct, 'o-', color=P.DET_COLOR['A'], ms=5, lw=1.8,
+            label='deconvolved forward-fit charge — THE DECK CURVE')
+    ax.plot([v_opt], [100], 'o', ms=10, mfc=P.SURFACE, color=P.COPPER,
+            markeredgewidth=2.0, zorder=6)
+
+    ax.text(float(vn.min()) + 2.0, 78.0,
+            f'100 % = the median track\'s peak strip just fills the 12-bit '
+            f'sample\nn_TOF {v_opt:.0f} $\\pm$ 20 V  (bench '
+            f'{g["v_sat50_bench"]:.0f} V, on the 200 fC range the scan ran)',
+            ha='left', va='center', color=P.COPPER, fontsize=10.5,
+            linespacing=1.35)
+    ax.text(0.99, 0.955, 'over 100 % — the median track is clipping',
+            transform=ax.transAxes, ha='right', va='top', color=P.COPPER,
+            fontsize=10.5)
+
+    for x, col, lab in ((OP, P.INK, f'{OP} V — where we ran'),
+                        (GAIN, P.BAND_DEAD, f'{GAIN} V')):
+        ax.axvline(x, color=col, lw=1.6, ls='-' if x == OP else ':', zorder=5)
+        yy = float(np.interp(x, vn, pct))
+        ax.text(x, 3.0, ' ' + lab, color=col, fontsize=11, fontweight='bold',
+                ha='left', va='bottom', rotation=90)
+        ax.annotate(f'{yy:.0f} %', xy=(x, yy), xytext=(-9, 3),
+                    textcoords='offset points', ha='right', va='center',
+                    color=col, fontsize=12, fontweight='bold')
+    ax.axvspan(517, 563, color=P.ACCENT, alpha=0.08, lw=0, zorder=0)
+
+    ax.set_xlim(float(vn.min()) - 2, float(vn.max()) + 2)
+    ax.set_ylim(0.0, y1)
+    ax.set_yticks([0, 25, 50, 75, 100, 125, 150])
+    ax.set_xlabel('n_TOF amplification voltage, Ar/iso 90/10  [V]'
+                  f'   (the bench ladder, read at V − {shift:.1f} V)')
+    ax.set_ylabel('collected charge  [% of optimal gain]')
+    ax.legend(loc='upper left', fontsize=10.0, framealpha=0.92)
+    if TITLES:
+        ax.set_title('We ran at about a third of the gain that fills the '
+                     'readout — and the last 20 V is where it runs away',
+                     loc='left', color=P.INK, pad=44)
+
+    top = ax.twiny()
+    top.set_xlim(*(np.array(ax.get_xlim()) - shift))
+    top.set_xlabel('the bench voltage it came from, Ar/iso 95/5  [V]', labelpad=7)
+    for side in ('right', 'left', 'bottom'):
+        top.spines[side].set_visible(False)
+    P.strip(ax)
+    fig.tight_layout()
+    return save(fig, 'gain_scale.png')
 
 
 # --------------------------------------------------------------------------- #
@@ -345,6 +445,30 @@ def build_html(r, figs):
              '200 → 600 fC full scale; σ 6.85 → 3.90 / 9.80 ADC'),
             ('TOTAL', s55['total'], sp['total'], '')))
 
+    g = r['gain_scale']
+    onset_row = ''.join(f'<td>{g["onset"][vv] * 100:.0f}</td>'
+                        for vv in sorted(g['onset']) if vv >= 475)
+    onset_hdr = ''.join(f'<th>{vv}</th>'
+                        for vv in sorted(g['onset']) if vv >= 475)
+    gain_rows = ''.join(
+        f'<tr class="{"op" if vv == OP else ""}"><td>{vv} V</td>'
+        f'<td>{g["pct"][vv]:.1f}</td><td>{g["pct_qwin"][vv]:.1f}</td>'
+        f'<td>{g["ntof600"]["pct"][vv]:.1f}</td>'
+        f'<td>{vv - g["shift"]:.0f} V</td></tr>'
+        for vv in sorted(g['pct']))
+    adc_ledger = ''.join(
+        f'<tr><td>{esc(n)}</td><td>{x:+.1f}</td><td>{esc(why)}</td></tr>'
+        for n, x, why in (
+            ('Gas — Ar/iso 95/5 → 90/10', g['adc_shift']['gas'],
+             'the same term as above'),
+            ('Pressure — Saclay → CERN', g['adc_shift']['pressure'],
+             'the same term as above'),
+            ('CSA range — 200 → 600 fC', g['adc_shift']['csa'],
+             '3× less ADC per electron, so 3× the avalanche to reach the rail'),
+            ('Per-channel noise', 0.0,
+             'excluded on purpose — the rail is a fixed ADC count'),
+            ('TOTAL', g['adc_shift']['total'], '')))
+
     trade = ''.join(
         f'<tr class="{"op" if vv == OP else ""}"><td>{vv:.0f} V</td>'
         f'<td>{T.recovery_at(vv):.2f}</td><td>{vis[i] * 100:.1f}</td>'
@@ -369,20 +493,27 @@ gas.</p>
 </header>
 
 <div class="verdict">
-<p><b>Which noise era you ask about decides whether {OP} V was on the
-plateau.</b> The 27 June bench scan puts the chamber's efficiency plateau at
-{sat['plateau'] * 100:.0f} % over {sat['plateau_lo_V']:.0f}–{sat['plateau_hi_V']:.0f} V
-(95/5). Carried onto the n_TOF axis by the July ledger, {OP} V is worth
-{sat['eff_at_op']['run_55'] * 100:.0f} % — on the plateau, indistinguishable
-from {GAIN} V's {sat['eff_at_gain']['run_55'] * 100:.0f} %. Carried by the
-<em>production</em> ledger, after the 23 July noise step, the same setpoint is
-worth <b>{sat['eff_at_op']['production'] * 100:.0f} %</b> against
-{sat['eff_at_gain']['production'] * 100:.0f} % at {GAIN} V — on the shoulder of
-the turn-on, not the plateau. <b>That difference, ~{(sat['eff_at_gain']['production'] - sat['eff_at_op']['production']) * 100:.0f}
-points, is the honest cost of the {OP} V decision</b>, and it is a cost the
-noise step imposed rather than the decision itself. The product of visible X17
-rate and reconstructed-track yield still peaks at <b>{f2['best_V']:.0f} V</b>,
-with {OP} V within {f2['at_op'] / f2['best'] * 100:.0f} % of it.</p>
+<p><b>{OP} V cost essentially no efficiency, in either noise era.</b> The
+27 June bench scan puts the chamber's plateau at
+<b>{sat['plateau'] * 100:.1f} %</b> over {sat['plateau_lo_V']:.0f}–{sat['plateau_hi_V']:.0f} V
+(95/5) — the same chamber's published headline. Carried onto the n_TOF axis by
+the July ledger, {OP} V is worth {sat['eff_at_op']['run_55'] * 100:.0f} %
+against {GAIN} V's {sat['eff_at_gain']['run_55'] * 100:.0f} %; carried by the
+<em>production</em> ledger, after the 23 July noise step,
+<b>{sat['eff_at_op']['production'] * 100:.0f} %</b> against
+{sat['eff_at_gain']['production'] * 100:.0f} %. <b>Both placements put the
+setpoint on the plateau</b>, and the {OP}→{GAIN} V difference is ~1 point in
+each — inside the scan's own point-to-point scatter. So <b>the honest cost of
+the {OP} V decision, in detection efficiency, is not measurable here</b>: what
+the extra volts bought was dead time, and what they cost was nothing the bench
+can see.
+<em>Superseded 2026-08-28:</em> this paragraph used to read that the noise step
+pushed {OP} V "onto the shoulder of the turn-on, not the plateau", worth 69 %
+against 81 %, and called that ~12-point gap the cost of the decision. That came
+from the 29 June CSVs; there is no turn-on and there was no 12-point gap.
+The product of visible X17 rate and reconstructed-track yield — which uses the
+n_TOF MIP ladder, not this curve, and is unaffected — still peaks at
+<b>{f2['best_V']:.0f} V</b>, with {OP} V within {f2['at_op'] / f2['best'] * 100:.0f} % of it.</p>
 <p><b>The usable window is about 20 V wide and it has a ceiling on both
 sides.</b> Below ~535 V the chamber falls off its own detection turn-on in the
 production noise, and stops reconstructing tracks well before that; above ~555 V
@@ -446,7 +577,99 @@ the gap between the two curves is the 23 July noise step, worth
 {sp['electronics'] - s55['electronics']:.0f} V.</figcaption>
 </figure>
 
-<h2>4. What n_TOF measured in the production gas</h2>
+<h2>4. How much gain did we actually have?</h2>
+<p>Efficiency answers <em>were you detecting?</em> and the answer is a flat
+yes. It does not answer <em>how much gain did you have</em>, and that is the
+quantity the recovery time is being paid for. Scale it against the gain the
+readout could actually take: <b>100 % is the voltage at which the peak strip of
+the median track just fills the 12-bit sample</b>.</p>
+<p><code>peak_amp</code> is the tallest <em>sample</em> of the tallest <em>strip</em> of
+the event — the max strip, which is the thing that clips first. It starts clipping in a few per
+cent of tracks well before the median does:</p>
+<table><thead><tr><th>bench V</th>{onset_hdr}</tr></thead>
+<tbody><tr><td>max strip railed [%]</td>{onset_row}</tr></tbody></table>
+<p><b>5 % of tracks by {g['onset_5pct']:.0f} V, a quarter by {g['onset_quartile']:.0f} V,
+half by {g['v_sat50_bench']:.0f} V, 90 % by {g['onset_90pct']:.0f} V.</b></p>
+
+<p><b>Reading ~500 V off the gain plot is also right, and it is a different statement.</b>
+At the 50 % point half the sample is still below the rail, so the <em>median amplitude</em>
+only reaches the nominal 3871.5 ADC near <b>500 V</b> — which is where the p50 marker visibly
+lies on the rail line in <code>gain_vs_hv.png</code> (67 % of events clipped there, median at
+97 % of the rail). Anchoring at 500 V instead of 497 would lower every percentage on this
+scale by ~13 %.</p>
+
+<p>The 50 % point barely cares where the clipping line is drawn:
+<b>496.4 / 497.0 / 497.1 V</b> for a cut at 0.88 / 0.92 / 0.95 of the rail. A cut at 0.98 gives
+508.6 V, but that is no longer a clipping test — per-channel pedestal subtraction spreads the
+railed population over ~3700–3900 ADC, so it asks whether a channel's rail landed high rather
+than whether the event clipped. The spark veto is not what sets it either: 496.8 V on the full
+M3-golden fiducial set against 497.0 spark-free.</p>
+
+<p>That point is measured, not modelled — the saturated fraction goes 0.39 at
+495 V to 0.66 at 500 V in <em>both</em> views, so the 0.5 crossing is bracketed
+by two points 5 V apart at <b>bench {g['v_sat50_bench']:.0f} V</b>, which is
+<b>n_TOF {g['v_opt_ntof']:.0f} V</b>. Plotted is
+the <b>total collected charge</b>, not the peak sample: the deconvolved forward
+fit censors railed samples and so keeps measuring where the peak sample cannot.
+The model-free window sum agrees to 3 %.</p>
+
+<div class="verdict warn"><h3>Full scale of <em>what</em>? It is worth a factor 3</h3>
+<p>Bench 497 V fills the <b>200 fC</b> DREAM the scan was taken with. n_TOF ran
+<b>600 fC</b> — 3× less ADC per electron — so filling <em>that</em> needs three times the
+avalanche, at bench ~518 V, <b>n_TOF {g['ntof600']['v_opt_ntof']:.0f} V</b>. Both are honest;
+they answer different questions, and every percentage here moves by 3× between them (the table
+carries both).</p>
+<p><b>This page leads with the 200 fC one</b>, for three reasons: it is the scan's own
+<em>measured</em> saturation point; it leaves nothing on the curve extrapolated (bench
+425–505 V covers n_TOF 493–573 V, and 565 V is inside it, where 586 V is 13 V past the last
+trustworthy bench point); and the 600 fC setting was forced by the gamma flash — 668 pC on a
+single strip, 1113× the DREAM range — rather than chosen for tracking, so referring a
+<em>tracking</em> gain to it asks for 3× more avalanche than a MIP measurement needs. Say which
+one a number came from; never mix them.</p></div>
+
+<p><b>How a bench voltage becomes an n_TOF one here.</b> Only the gas and the site
+pressure move the <em>voltage</em>: n_TOF <i>W</i> is read off the bench ladder at
+<b><i>W</i> − {g['shift']:.1f} V</b>, so <b>n_TOF 560 V is bench 492 V</b> — the
+plain gas equivalence. The readout change then <b>divides the ADC by three</b>
+(200 → 600 fC full scale); it is a factor, not a voltage. Written as one shift
+that is +94.1 V, and that form is fine for <em>saying</em> which bench voltage makes
+the same ADC — but it must not be used to <em>evaluate</em> the ladder, because it is
+exact only for a straight ladder and this one is curved (0.33 per 10 V near 440 V,
+0.52 near 495). Doing it that way read the wrong part of the ladder, by −13 % at
+520 V and +6 % at 560 V. <b>Corrected 2026-08-28</b>, after Dylan queried the
+mapping.</p>
+<figure><img src="figures/{figs['gain']}" alt="Collected charge as a percentage of the gain that just saturates the median track's peak strip, on a logarithmic axis against the n_TOF-equivalent voltage. A straight rising line passes through 11 per cent at 540 volts and 25 per cent at 560 volts and reaches 100 per cent at 591 volts, above a shaded band marked as over-gain.">
+<figcaption><b>Every setpoint in the deck build is measured</b> — bench
+425–505 V covers n_TOF {g['v_meas_ntof'][0]:.0f}–{g['v_meas_ntof'][1]:.0f} V.
+The dashed top is not: reaching 100 % needs three times the charge that rails the
+<em>bench</em> readout, about 13 V more ladder than exists, so it is continued off
+the top five points at {g['slope10']:.2f} per 10 V (the whole-ladder slope would put
+the crossing at {g['v_opt_ntof_alt']:.0f} V instead). The gas term's ±20 V slides
+the whole curve sideways and takes the crossing with it, without touching the ratios
+between setpoints.</figcaption>
+</figure>
+<table><thead><tr><th>n_TOF</th>
+<th>% of optimal gain<br>(forward fit)</th><th>% (window sum)</th>
+<th>% if referred to<br>the 600 fC range</th>
+<th>bench V it is<br>read at</th></tr></thead>
+<tbody>{gain_rows}</tbody></table>
+<p><b>Section 2's ledger does not apply here.</b> It carries the per-channel noise,
+which is right for an efficiency and wrong for a rail: a rail sits at a fixed number
+of ADC counts however noisy the channel is. Three different questions, three
+different answers, and all three are correct:</p>
+<table><thead><tr><th>&ldquo;the bench equivalent of n_TOF 560 V&rdquo;</th>
+<th>shift</th><th>bench V</th><th>what it answers</th></tr></thead><tbody>
+<tr><td>same <b>gas gain</b></td><td>+{g['shift']:.1f}</td><td><b>492.1</b></td>
+    <td>the plain gas map — what the curve above is evaluated on</td></tr>
+<tr><td>same <b>ADC counts</b></td><td>+{g['adc_shift']['total']:.1f}</td>
+    <td>465.9</td><td>&hellip;plus the 600 fC CSA, written as volts</td></tr>
+<tr><td>same <b>signal-to-noise</b></td><td>+{sp['total']:.1f}</td><td>457.3</td>
+    <td>&hellip;plus the 23 July noise step — the efficiency panel's map</td></tr>
+</tbody></table>
+<table><thead><tr><th>Term</th><th>volts</th><th>why</th></tr></thead>
+<tbody>{adc_ledger}</tbody></table>
+
+<h2>5. What n_TOF measured in the production gas</h2>
 <figure><img src="figures/{figs['ladders']}" alt="MIP track rate per trigger against amplification voltage in two time windows, with the post-flash recovery time on a second axis.">
 <figcaption>Both halves of the trade on one axis, and both measured on chamber A
 at drift 600 V two days apart. <b>The 16–28 ms window is the one to trust:</b>
@@ -454,7 +677,7 @@ above 550 V the recovery reaches into the 8–12 ms window, so that ladder's top
 points are suppressed by the very quantity being traded against.</figcaption>
 </figure>
 
-<h2>5. The trade</h2>
+<h2>6. The trade</h2>
 <figure><img src="figures/{figs['trade']}" alt="Three curves against voltage: the visible X17 rate falling, the track yield rising, and their product peaking near 550 volts.">
 <figcaption>Both factors are relative, so the product is too — it has a maximum
 and no units. <b>{f2['best_V']:.0f} V on the unbiased window;
@@ -479,16 +702,61 @@ n_TOF scan; the ladder rises ×9 over the same span. Both can be true: what the
 voltage bought at n_TOF was <em>reconstructability</em>, not detection. If you
 want a single sentence, it is that one.</li>
 <li><b>Withdrawn 2026-08-25: "the bench never measured below 450 V".</b> It
-did. The <b>27 June saturday det3 scan</b> runs 425–525 V with the <em>same</em>
-efficiency definition and shows the turn-on directly — 49 % at 425 V, 66 % at
-435, 77 % at 445, plateau by 455. This page previously said the low edge was an
-extrapolation because only the 22 June scan had been looked at; that scan
-starts at 450 V, already flat, which is why it looked like there was no
-turn-on. The two scans agree on the plateau's flatness and on where discharges
-end it; the 27 June absolute level is ~10 points lower because det3 sat in the
-top slot (z 702, FEU 7/8) rather than the bottom one, twice the M3 lever arm
-into the same fixed 5 mm match box. <b>Only the 520 V frame of the deck build
-is still extrapolated</b> (it maps to bench 417 V).</li>
+did — the <b>27 June saturday det3 scan</b> runs 425–525 V with the
+<em>same</em> efficiency definition. <b>Only the 520 V frame of the deck build
+is extrapolated</b> (it maps to bench 417 V).</li>
+<li><b>Withdrawn 2026-08-28: "the 27 June scan shows the turn-on directly".</b>
+It does not, and neither scan does. Both were re-derived on the current chain
+(<code>mx_june_cosmic_qa/10b_hv_scan_efficiency.py</code>, closure-checked
+against this chamber's published breakdown to the third decimal). What this
+page used to read — 49 % at 425 V rising to a plateau near 81 % — came from
+CSVs written on <b>29 June</b>, before the golden M3 recipe, the significance
+floor and the matched-filter reprocessing. Corrected, the plateau is
+<b>93–95 %</b> and <b>425 V reads 89.6 %</b>: a ~4-point sag, not a turn-on.
+The chamber's own gain ladder, from these same sub-runs, says why — at 425 V
+the peak strip carries 69 ADC in the weakest 2 % of events, ~10 σ over the
+6.85 ADC bench pedestal, so nothing is near threshold. <b>The scan never
+reaches the chamber's low edge.</b></li>
+<li><b>Also withdrawn 2026-08-28: the two scans' ~10-point gap and its
+explanation.</b> The gap was an artefact of the stale CSVs; on the current
+chain the 22 June and 27 June scans agree. The M3 lever arm that was invoked to
+explain it is real but shows up in the <em>core residual</em> instead
+(0.34–0.41 mm bottom slot against 0.44–0.59 mm top) and never cost efficiency
+at a 5 mm match.</li>
+<li><b>&ldquo;100 % of optimal gain&rdquo; is a READOUT limit, not a physics
+optimum.</b> It says the ADC would be full, nothing more. The same 27 June scan
+measures the chamber's angular resolution against M3 over every fitted plane,
+and that is best at <b>bench 445&ndash;460 V</b> (1.02&ndash;1.06&deg;) &mdash;
+already 1.11&ndash;1.15&deg; by bench 497 V, where the median track saturates,
+and 1.31&ndash;1.38&deg; by 515 V. A resolution is a threshold quantity, so the ledger that
+carries it across is the signal-to-noise one (+{sp['total']:.1f} V), which puts that optimum at
+<b>n_TOF 548&ndash;563 V</b> &mdash; at or a little above where we ran, and well inside the
+map's own &plusmn;20 V. So the honest reading of the vertical scale is <em>how much of the
+readout's range we were using</em>, not <em>how far from best we were</em>.</li>
+<li><b>The vertical scale is a choice, and it is worth 3×.</b> 100 % here is the
+gain that fills the <em>200 fC</em> range the bench scan ran. Referred to the 600 fC range
+n_TOF actually ran, every number divides by three and 100 % moves to n_TOF
+{g['ntof600']['v_opt_ntof']:.0f} V. Neither is more correct; they answer different questions.
+The table carries both.</li>
+<li><b>Corrected 2026-08-28: how the CSA range enters.</b> The first version folded the factor
+of three into the <em>voltage axis</em> as ln 3 / slope = +26.3 V, which is exact only for a
+straight ladder — and this one is curved, so it read the wrong part of it (−13 % at n_TOF
+520 V, +6 % at 560 V) and hid a 26 V extrapolation inside what looked like a measured curve.
+The ladder is now evaluated at the gas-equivalent voltage, full stop, and the range enters as
+a factor.</li>
+<li><b>The percentages are gain RATIOS.</b> There is no ADC&rarr;electron
+calibration for the June bench range, so nothing here is an absolute gas gain,
+and the vertical scale means nothing outside its own normalisation. The ratios
+themselves survive the map: the gas term's &plusmn;20 V slides the whole curve
+sideways without changing them.</li>
+<li><b>The flash charge climbs faster than the cosmic gain does.</b> Over
+520&ndash;560 V the HV-current flash charge goes 35 &rarr; 277 nC, a factor
+7.8, where the bench gain ladder gives 4.7 over the same span
+(0.51 against 0.42 per 10 V). A 23 % slope difference across two very different
+measurements &mdash; a MIP's avalanche against a gamma flash read off a supply
+current, in different gases, mapped between them &mdash; is inside the known
+scatter, but it is not zero, and the imon integration systematic is still
+open.</li>
 <li><b>The gas mixture is an operator label.</b> <code>run_config.json</code>
 says "Ar/Iso 95/5" as free text; the mixer that sets and logs isobutane was
 commissioned on 7 July, ten days after the bench scan. No certificate exists
@@ -532,6 +800,7 @@ def main():
         fig_gas_map(r), fig_bench_mapped(r), fig_ntof_ladders(r)
         return
     figs = dict(gas=fig_gas_map(r), bench=fig_bench_mapped(r),
+                gain=fig_gain_scale(r),
                 ladders=fig_ntof_ladders(r), trade=fig_tradeoff(r))
     path = os.path.join(HERE, 'report.html')
     with open(path, 'w') as fh:

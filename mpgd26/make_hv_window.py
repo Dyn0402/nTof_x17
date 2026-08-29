@@ -29,6 +29,9 @@ So the drawing is two panels that share a story and, in variant B, an axis:
   strip (short)  what sets the recovery time: the charge, and it is linear.
   main  (tall)   what the recovery time costs: everything to the left of it.
 
+plus, top left, what the recovery time is BEING PAID FOR -- see ``_gain_panel``
+and the entry for 2026-08-28 (evening) below.
+
 and the build walks the voltage DOWN -- 560 V first, where the front end is
 blind for 13.9 ms and essentially the whole spectrum is behind the shading,
 then 550, 540, 530, 520 -- with 540 V, where we ran, called out.
@@ -105,6 +108,50 @@ for width and for that band to use it.  What changed:
                rather than as a caption that lost its figure.  Measured from
                the drawn text; it clears both panels by better than 0.2 in on
                every frame and ``draw`` prints the clearance each time.
+
+THE TOP-LEFT PANEL, 2026-08-28 (EVENING): GAIN, NOT EFFICIENCY
+--------------------------------------------------------------
+Dylan: *"instead show a scaled gain curve ... aim for the peak strip in the
+median event to be saturated ... we'll call this 100 % optimal gain ... then we
+can show percentages of this optimal gain instead of efficiency."*
+
+The efficiency was re-derived that morning and came out FLAT at 93-95 % with no
+turn-on -- correct, and a poor left half of a trade: a panel that does not move
+cannot be what the milliseconds are being paid for.  The gain does move, and the
+same 27 June scan measures it best.  ``_gain_panel`` replaces ``_eff_panel``,
+which is kept, still works, and comes back with ``--panel eff``.
+
+  100 %        the median track's peak strip just fills the readout --
+               frac_sat = 0.5, bench 497 V, bracketed by two measured points
+               5 V apart in BOTH views.  Over it, the median track is clipping.
+               That is the 200 fC DREAM the SCAN ran; the 600 fC one n_TOF ran
+               needs 3x the charge and would put 100 % at n_TOF 586 V instead
+               (``T.bench_gain_on_ntof_axis(ref='ntof600')``, and its top is
+               extrapolated).  Dylan, 2026-08-29: 100 % goes at 497 V.
+  the curve    TOTAL COLLECTED CHARGE (deconvolved forward fit, rail censored),
+               referred to its value at 497 V.  LINEAR axis (Dylan, same day):
+               nothing on it is more than a factor 7 from anything else once
+               the curve stops at 100 %, and linear shows the run-away at the
+               top, which is the point.
+  the numbers  560/550/540/530/520 V = 78/48/32/20/14 % of optimal, and the
+               100 % crossing is at n_TOF 565 +- 20 V, just past 560.
+  the map      ONLY gas + pressure move the voltage, -67.85 V, so n_TOF 560 V
+               is read at bench 492 V -- the plain gas equivalence.  The CSA
+               change (200 -> 600 fC) then DIVIDES the ADC by three; it is a
+               factor, not a voltage.  The efficiency map's +102.7 V does not
+               apply: it carries the per-channel noise, and a rail is a fixed
+               ADC count however noisy the channel is.
+
+CORRECTED 2026-08-28 (Dylan: *"in my head 560 corresponded to 490, did I have
+this wrong?"* -- he did not).  The first version folded the factor 3 into the
+voltage axis as ln(3)/slope = +26.3 V, one shift of +94.1 V.  That is exact
+only for a straight ladder, and this one is curved: it read the wrong part of
+the ladder, by -13 % at 520 V and +6 % at 560 V, and it hid a 26 V slide inside
+what looked like a fully measured curve.  The panel now dashes the ~13 V of
+continuation the 100 % crossing genuinely needs.
+
+The scoreboard's third row changed with it.  Everything else on the canvas is
+untouched.
 
 The closing "two costs multiplied" frame (``draw_trade``) is NOT part of the
 build and did NOT move -- it keeps ``TRADE_WIDE``.  See the note there: the
@@ -221,6 +268,13 @@ TRADE_WIDE = (12.5, 6.38)
 # region.
 CARD_FACE = '#fdfbef'
 CARD_EDGE = '#e9e0bf'
+
+# Which small panel goes top-left: ``gain`` (the default since 2026-08-28) or
+# ``eff``, the efficiency curve it replaced.  Both functions are kept and both
+# still work; the efficiency one is backup, and the reason for the swap is in
+# ``_gain_panel``'s docstring.  ``--panel eff`` restores the old drawing
+# without editing anything.
+PANEL = 'gain'
 
 
 # --------------------------------------------------------------------------- #
@@ -382,6 +436,178 @@ def _strip(ax, variant, volts, shape):
     return xh, yh
 
 
+def _gain_panel(ax, volts, shape, compact=False):
+    """What the gain IS, as a fraction of the gain the readout could take.
+
+    Dylan, 2026-08-28: *"instead show a scaled gain curve ... show the full
+    charge collected, and aim for the peak strip in the median event to be
+    saturated (just barely saturating is probably ideal gain).  We'll call
+    this 100 % optimal gain (can show over 100 % and indicate probably too
+    much if we end up there on the scale).  Then we can show percentages of
+    this optimal gain instead of efficiency."*
+
+    WHY THIS PANEL REPLACED THE EFFICIENCY ONE.  The efficiency curve was
+    re-derived the same day and came out **flat at 93-95 % across the whole
+    n_TOF window, with no turn-on** (see ``_eff_panel`` below, kept as
+    backup).  A flat panel beside a panel that walks 13.9 -> 1.0 ms says
+    "nothing to see here" -- true, and useless as the left half of a trade.
+    The gain is the quantity that actually moves, it is what the recovery time
+    is paid for, and it is what the same 27 June scan measures best.
+
+    WHAT 100 % MEANS.  The mesh voltage at which the peak strip of the MEDIAN
+    track just fills the readout: ``frac_sat`` = 0.5, bracketed by two measured
+    points 5 V apart (0.39 at 495 V, 0.66 at 500 V, both views) at **bench
+    497 V**, which is **n_TOF 565 V**.  Above that the median track is clipping
+    and the extra gain goes into the rail rather than into the measurement --
+    hence the shaded "too much" band, and hence "just barely saturating"
+    being the ideal.
+
+    ``peak_amp`` is the tallest SAMPLE of the tallest STRIP of the event -- the
+    max strip, the thing that clips first.  The 50 % point is stable to 0.7 V
+    over any sane clipping threshold (496.4 / 497.0 / 497.1 V at 0.88 / 0.92 /
+    0.95 of the rail).  Note the *median amplitude* only reaches the nominal
+    rail near 500 V, which is what the eye reads off ``gain_vs_hv.png``; both
+    are right and they are different statements.
+
+    WHICH READOUT, AND IT IS WORTH 3x.  497 V fills the **200 fC** DREAM the
+    bench scan ran.  n_TOF ran **600 fC** -- 3x less ADC per electron -- so
+    filling *that* needs 3x the charge, at n_TOF 586 V.  Dylan, 2026-08-29,
+    chose 497 V, and it is the right lead: it is the scan's own measured
+    saturation point, it leaves nothing on the panel extrapolated, and the
+    600 fC setting was forced by the gamma flash rather than chosen for
+    tracking.  ``T.bench_gain_on_ntof_axis(ref='ntof600')`` gives the other
+    scale; ``results()['gain_scale']['ntof600']`` carries its numbers.
+
+    WHAT IS PLOTTED is the **total collected charge** per track, not the peak
+    sample -- the deconvolved forward-fit charge from the same 18 sub-runs,
+    which censors railed samples and so keeps measuring where the peak sample
+    cannot.  It is normalised to its own value at 497 V.  Charge and peak
+    amplitude are proportional to +-5 % across this range, so a charge ladder
+    referred to a saturation voltage is self-consistent; the model-free window
+    sum gives the same percentages to 5 % (10.2 vs 10.7 % at 540 V).
+
+    THE MAP.  Only the GAS and PRESSURE terms move the voltage: n_TOF W is
+    read off the bench ladder at **W - 67.85 V**, so 560 V is bench 492 V --
+    the equivalence everyone already carries in their head.  The readout change
+    (CSA 200 -> 600 fC) then DIVIDES the ADC by three; it is not a voltage.
+    The efficiency panel's +102.7 V map does not apply here at all: it carries
+    the per-channel noise, and a rail sits at a fixed ADC count however noisy
+    the channel is.
+
+    ``T.adc_shift()``'s +94.1 V is the same statement collapsed into one shift
+    (67.85 + ln 3 / slope).  It is a fair way to SAY which bench voltage makes
+    the same ADC, and it is not used to evaluate the ladder: that would be
+    exact only for a straight ladder, and this one is curved (0.33 per 10 V
+    near 440 V, 0.52 near 495).  Corrected 2026-08-28 after Dylan queried the
+    mapping -- it had been reading the ladder 26 V too low, by -13 % at 520 V
+    and +6 % at 560 V.
+
+NOTHING ON THIS PANEL IS EXTRAPOLATED, and that is a consequence of
+    where 100 % was put.  The measured bench charge runs 425-505 V = n_TOF
+    493-573 V, and the 100 % crossing is at n_TOF 565 V -- inside it.  (Refer
+    the scale to the 600 fC range instead and 100 % moves to 586 V, ~13 V past
+    the last trustworthy bench point, and the top of the curve has to be
+    dashed.  That is the other reason to lead with this one.)  The
+    horizontal placement carries the gas map's +-20 V (``T.bracket()``), which
+    slides the whole curve and takes the 100 % voltage with it; it does NOT
+    touch the ratios between setpoints, which is all the percentages compare.
+    The axis runs past the crossing so that 100 % is a place on the plot rather
+    than an assertion in a caption.
+    """
+    small = 9.2 if compact else (10.0 if shape == 'wide' else 9.2)
+    # x stops just past the last measured point (n_TOF 573 V) and y just past
+    # where the curve gets there, so the whole measured ladder is on the canvas
+    # and it exits through the top-right corner rather than the top edge.
+    x0, x1 = 517, 572
+    y0, y1 = 0.0, 150.0
+
+    g = T.bench_gain_on_ntof_axis()
+    vn, pct, v_opt, nm = g['v'], g['pct'], g['v_opt'], g['n_meas']
+    vl, pl = g['v_line'], g['pct_line']
+
+    # LINEAR since 2026-08-29 (Dylan).  It works now and would not have before:
+    # with 100 % at 565 V the drawn range is 14-100 %, a factor 7, where the
+    # 600 fC scale ran 4.5-100 over a factor 22 and needed a log axis to be
+    # anything but a hockey stick.  Linear also puts the run-away at the top
+    # back on the canvas, which is what the slide is about.
+    # over-gain.  Copper is the deck's caution accent and it is the only warm
+    # thing in the panel, so it reads as a boundary without a key.
+    ax.axhspan(100.0, y1, color=P.COPPER, alpha=0.10, lw=0, zorder=0)
+    ax.axhline(100.0, color=P.COPPER, lw=1.2, ls=(0, (4, 2)), zorder=2)
+    # Both annotations are placed in AXES fractions, not data: this panel is
+    # drawn at 3.16 x 1.50 in in variant b and at 2.64 x 0.96 in in variant a,
+    # and a data-space offset that clears the curve in one lands on it in the
+    # other.
+    ax.text(0.025, 0.845, 'too much gain', transform=ax.transAxes, ha='left',
+            va='center', fontsize=small - 1.6, color=P.COPPER)
+
+    ax.plot(vl[:nm], pl[:nm], '-', color=P.DET_COLOR['A'], lw=1.7, zorder=3)
+    ax.plot(vn, pct, 'o', ms=3.4, color=P.DET_COLOR['A'],
+            markeredgecolor=P.SURFACE, markeredgewidth=0.5, zorder=4)
+    if nm < len(vl):                      # only the ref='ntof600' scale needs it
+        ax.plot(vl[nm - 1:], pl[nm - 1:], color=P.DET_COLOR['A'], lw=1.4,
+                ls=(0, (2, 2)), alpha=0.55, zorder=3)
+        ax.axvspan(g['v_last_meas'], x1, color=P.MUTED, alpha=0.07, lw=0,
+                   zorder=0)
+
+    # Where the curve meets 100 %.  A RING, not a filled marker: it is a
+    # crossing the chamber never ran at.  The +-20 V is the gas map's own
+    # bracket and it is written rather than drawn -- a whisker that long
+    # reaches past the right edge of a 3.2 in panel, and at this size a
+    # systematic whisker reads as scatter anyway.
+    ax.plot([v_opt], [100.0], 'o', ms=5.5, mfc=P.SURFACE, color=P.COPPER,
+            markeredgewidth=1.4, zorder=5)
+    # Under the curve at the right edge -- the only empty corner of the panel
+    # once the line has climbed past 50 %.  Two short lines rather than one
+    # long one: right-aligned at the axis edge, a single line would reach back
+    # under the curve at 573 V.
+    # bottom right: on a linear axis the curve leaves that corner empty until
+    # the last few volts, and the ring at 565 V is directly above it
+    ax.text(0.985, 0.13, f'100 % at\n{v_opt:.0f} $\\pm$ 20 V',
+            transform=ax.transAxes, ha='right', va='center', linespacing=1.25,
+            fontsize=small - 1.6, color=P.COPPER)
+
+    g_here = float(np.exp(np.interp(volts, vn, np.log(pct))))
+    assert volts <= g['v_last_meas'], 'a setpoint has left the measured ladder'
+    ax.plot(volts, g_here, marker='*', ms=17, color=P.DET_COLOR['A'], zorder=6,
+            markeredgecolor=P.BAND_DEAD, markeredgewidth=1.5)
+    # Above the star: the curve is a rising straight line on a log axis, so
+    # everything below-right of it is under the line and everything above-left
+    # is empty panel.  Up and slightly left is the only clean corner, and it
+    # stays clean for every frame because the star only ever moves along the
+    # line.
+    # ...except at the bottom of the build, where 520 V sits 3 V from the
+    # left spine and a centred label hangs over the tick labels.  There it goes
+    # up and to the RIGHT, which is still above the line.
+    # LEFT of the star at its own height.  The curve is convex on a linear
+    # axis, so at every setpoint the space immediately to the left is above the
+    # line and empty; going UP instead runs the 560 V label into the 100 % rule.
+    # Except at the bottom of the build, where 520 V sits 3 V from the spine.
+    lab = (dict(ha='left', va='bottom', xytext=(7, 9)) if volts - x0 < 8
+           else dict(ha='right', va='center', xytext=(-9, 3)))
+    ax.annotate(f'{g_here:.0f} %', xy=(volts, g_here),
+                textcoords='offset points', fontsize=small,
+                color=P.BAND_DEAD, fontweight='bold', zorder=6, **lab)
+
+    ax.set_xlim(x0, x1)
+    ax.set_ylim(y0, y1)
+    ax.set_yticks([0, 50, 100, 150])
+    ax.set_xticks([520, 530, 540, 550, 560, 570])
+    ax.tick_params(labelsize=small - 0.8, pad=1.5 if compact else 3)
+    ax.set_xlabel('amplification voltage  [V]', fontsize=small,
+                  labelpad=1 if compact else 2)
+    ax.set_ylabel('Gain [% of optimal]' if compact else 'gain\n[% of optimal]',
+                  fontsize=small, linespacing=1.15,
+                  labelpad=2 if compact else 4)
+    ax.grid(axis='y', alpha=0.18, which='major')
+    P.strip(ax)
+    if not compact:
+        ax.text(0.0, 1.06, 'and the gain is what it is paid for',
+                transform=ax.transAxes, ha='left', va='bottom',
+                fontsize=small, color=P.MUTED)
+    return g_here / 100.0
+
+
 def _eff_panel(ax, volts, shape, compact=False):
     """What the gain buys: the chamber's OWN efficiency against voltage.
 
@@ -394,13 +620,36 @@ def _eff_panel(ax, volts, shape, compact=False):
     measured.  That ladder is backup only now.
 
     WHICH BENCH SCAN.  The **27 June saturday det3 scan**, both interleaved
-    passes -- the only one that reaches below the plateau (0.49 at 425 V, up to
-    0.81 by 455 V).  The 22 June overnight scan starts at 450 V, already flat,
-    so it cannot show a turn-on; it agrees on the plateau's flatness and sits
-    ~10 points higher only because det3 was in the bottom slot there, half the
-    M3 lever arm into the same fixed 5 mm box.  The saturday scan is also the
-    run ``mesh_ladder.csv`` comes from, so this curve and the gain slope that
-    maps it are the same measurement.
+    passes -- the only one that reaches below 450 V.  It is also the run
+    ``mesh_ladder.csv`` comes from, so this curve and the gain slope that maps
+    it are the same measurement.
+
+    RE-DERIVED 2026-08-28, AND THE PANEL'S STORY CHANGED.  Until then this read
+    a scan written on 29 June that carried none of July's basis changes -- the
+    golden M3 recipe, the significance floor, the reprocessed hits -- and took
+    its active box from the highest-HV sub-run, where half the events are
+    discharges.  It plateaued at **81 %** where the same chamber, the same
+    night, at the same 490 V reads **93.3 %** off its own long run.  Both
+    scans were rebuilt by ``mx_june_cosmic_qa/10b_hv_scan_efficiency.py``,
+    whose ``--closure`` reproduces that published breakdown to the third
+    decimal.  Two consequences for what this panel may say:
+
+      * **The plateau is 93-95 %** (455-500 V mean: 93.5 %), so the star reads
+        ~93 % at 540 V, not 69 %.
+      * **There is no turn-on in the scan.**  425 V reads 89.6 %, not 49 %.
+        The old rise was the pre-reprocessing analyzer's amplitude threshold:
+        this scan's own gain ladder puts the weakest 2 % of events at 69 ADC on
+        the peak strip at 425 V, ~10 sigma over the 6.85 ADC bench pedestal.
+        So the panel is FLAT across the whole n_TOF window and the low edge was
+        never reached.  Do not describe it as a turn-on, and do not lean on the
+        extrapolation below the scan for anything but "still no turn-on yet".
+
+    The 22 June overnight scan starts at 450 V, already flat.  It used to sit
+    ~10 points higher, which was explained here by the top slot doubling the M3
+    lever arm into the same fixed 5 mm box; on the re-derived chain the two
+    scans AGREE and that explanation is withdrawn.  The lever arm shows up in
+    the core residual instead (0.34-0.41 mm bottom slot, 0.44-0.59 mm top) and
+    never cost efficiency at a 5 mm match.
 
     HOW IT IS PLACED on the n_TOF axis: the full ledger, not the gas term
     alone -- an efficiency is a threshold quantity, so the CSA range and the
@@ -441,15 +690,22 @@ def _eff_panel(ax, volts, shape, compact=False):
     e_here = float(np.interp(volts, vpl, epl))
     ax.plot(volts, e_here, marker='*', ms=17, color=P.DET_COLOR['A'], zorder=6,
             markeredgecolor=P.BAND_DEAD, markeredgewidth=1.5)
-    # beside the star, never over it: high on the plateau there is no room
-    # above (the headline is there), low on the turn-on there is none below
-    # on the plateau the curve is flat, so a label beside the star lands ON
-    # the line -- go above it, where the only thing overhead is empty panel
+    # beside the star, never over it.  The curve is flat, so a label beside the
+    # star lands ON the line -- go above it, where the only thing overhead is
+    # empty panel.  EXCEPT inside the extrapolation band: since the 2026-08-28
+    # re-derivation the star sits near 90 % at every voltage, including the
+    # leftmost frame, and there 'above the star' is exactly where the 'extrap.'
+    # tag lives.  So in the band, go to the right at the star's own height.
     high = e_here > 75
-    ax.annotate(f'{e_here:.0f} %', xy=(volts, e_here),
-                xytext=(0, 12) if high else (12, 6),
-                textcoords='offset points', fontsize=small,
-                ha='center' if high else 'left', va='bottom',
+    in_extrap = bool(nxp) and volts < float(vpl[nxp])
+    if high and in_extrap:
+        off, ha, va = (13, 0), 'left', 'center'
+    elif high:
+        off, ha, va = (0, 12), 'center', 'bottom'
+    else:
+        off, ha, va = (12, 6), 'left', 'bottom'
+    ax.annotate(f'{e_here:.0f} %', xy=(volts, e_here), xytext=off,
+                textcoords='offset points', fontsize=small, ha=ha, va=va,
                 color=P.BAND_DEAD, fontweight='bold', zorder=6)
 
     if nxp:
@@ -491,6 +747,23 @@ def _eff_panel(ax, volts, shape, compact=False):
 # the main panel: the rate, on the beam's clock, with the cut on it
 # --------------------------------------------------------------------------- #
 
+def gain_at(volts):
+    """(gain as a fraction of optimal, is_over) at an n_TOF setpoint.
+
+    One definition, used by the panel and by the scoreboard, so the star and
+    the number can never disagree -- the same contract ``eff_at`` had.
+    Interpolated on the MEASURED points only; every setpoint in the build is
+    inside them (they reach n_TOF 573 V).
+
+    ``is_over`` is the flag the scoreboard needs to say "past the rail" rather
+    than print a number over 100 % as if more were better.  On the drawn axis
+    it is never set: 560 V, the top of the build, is at 26 %.
+    """
+    d = T.bench_gain_on_ntof_axis()
+    g = float(np.exp(np.interp(volts, d['v'], np.log(d['pct']))))
+    return g / 100.0, bool(g > 100.0)
+
+
 def eff_at(volts):
     """(efficiency, is_extrapolated) at an n_TOF setpoint, production placement.
 
@@ -522,7 +795,7 @@ def _readout(target, volts, x, y, dy, size, ha='left'):
     kw = dict(ha=ha, va='top', zorder=9)
     if hasattr(target, 'transAxes'):
         kw['transform'] = target.transAxes
-    rel, extrap = eff_at(volts)
+    rel, over = gain_at(volts)
     lines = [
         (0.00, f'{volts} V', size + 10.0, 'bold', P.BAND_DEAD),
         (1.55, role, size, 'normal', P.MUTED),
@@ -530,9 +803,9 @@ def _readout(target, volts, x, y, dy, size, ha='left'):
          size + 1.0, 'bold', P.BAND_DEAD),
         (3.00, f'{frac * 100:.1f} % of the X17 rate is left',
          size + 1.0, 'bold', P.ACCENT if frac > 0.01 else P.MUTED),
-        (3.70, f'{"~" if extrap else ""}{rel * 100:.0f} % efficient, from the '
-         f'bench{" (extrapolated)" if extrap else ""}',
-         size + 1.0, 'bold', P.DET_COLOR['A']),
+        (3.70, f'{rel * 100:.0f} % of the gain the readout could take'
+         f'{" -- past the rail" if over else ""}',
+         size + 1.0, 'bold', P.COPPER if over else P.DET_COLOR['A']),
     ]
     for k, txt, fs, weight, col in lines:
         if not txt:
@@ -570,7 +843,7 @@ def _readout_stats(fig, volts, x, y, dy, size):
     hv = hv_points()
     ms = hv[volts][1]
     frac, _ = surviving(ms * 1e3)
-    rel, extrap = eff_at(volts)
+    rel, over = gain_at(volts)
     role = {560: 'where the gain wants to be',
             OP_RESIST: 'where we ran'}.get(volts, '')
 
@@ -578,18 +851,17 @@ def _readout_stats(fig, volts, x, y, dy, size):
     rows = ((f'{volts} V', role, size + 15.0, P.BAND_DEAD, P.MUTED),
             (f'{frac * 100:.1f} %', 'of the X17 rate left', size + 6.0,
              P.ACCENT if frac > 0.01 else P.MUTED, P.MUTED),
-            (f'{"~" if extrap else ""}{rel * 100:.0f} %',
-             # ``extrap.``, not ``extrapolated``, and for a layout reason worth
-             # keeping: spelt out it made the 520 V frame half an inch wider
-             # than the other five, so the card behind the block changed size
-             # mid-build and the block stopped clearing the charge strip.
-             # Abbreviated, the width-setting line is ``blind for NN.N ms
-             # after every flash`` on EVERY frame, so the card is the same
-             # rectangle throughout.  It is also the word the efficiency panel
-             # already writes over its own shaded extrapolation.
-             'efficient  (cosmic bench, extrap.)' if extrap
-             else 'efficient  (cosmic bench)', size + 6.0,
-             P.DET_COLOR['A'], P.MUTED))
+            (f'{rel * 100:.0f} %',
+             # The width-setting line of the block is ``blind for NN.N ms
+             # after every flash``, which is the same length on every frame,
+             # so the card behind the scoreboard is the same rectangle
+             # throughout the build.  Keep this label shorter than that one or
+             # the card starts changing size mid-build and stops clearing the
+             # charge strip -- which is what happened when the old efficiency
+             # row spelt out ``extrapolated``.
+             'of optimal gain  (past the rail)' if over
+             else 'of optimal gain  (cosmic bench)', size + 6.0,
+             P.COPPER if over else P.DET_COLOR['A'], P.MUTED))
     art = []
     for k, (num, lab, fs, cnum, clab) in enumerate(rows):
         yy = y - k * dy
@@ -951,7 +1223,8 @@ def draw(volts, variant='a', shape='wide', step=None):
     if ax_card is not None:
         card_bb = _readout_card(fig, ax_card)
     if ax_y is not None:
-        _eff_panel(ax_y, volts, shape, compact=(variant == 'b'))
+        (_eff_panel if PANEL == 'eff' else _gain_panel)(
+            ax_y, volts, shape, compact=(variant == 'b'))
     xh, yh = _strip(ax_s, variant, volts, shape)
     t_cut = _main(ax_m, volts, shape, shown)
     _energy_axis(ax_m)
@@ -996,8 +1269,12 @@ def draw(volts, variant='a', shape='wide', step=None):
 
 
 def main():
+    global PANEL
     ap = argparse.ArgumentParser()
     ap.add_argument('--numbers', action='store_true')
+    ap.add_argument('--panel', default=PANEL, choices=('gain', 'eff'),
+                    help='top-left panel: scaled gain curve (default) or the '
+                         'efficiency curve it replaced on 2026-08-28')
     ap.add_argument('--variant', default='ab', help='a, b or ab')
     ap.add_argument('--shape', default='wide', help='wide, col or both')
     ap.add_argument('--contact', action='store_true',
@@ -1006,11 +1283,24 @@ def main():
                     help='copy the PNGs into slides/assets/img (NOT the default:'
                          ' the deck is being edited elsewhere)')
     args = ap.parse_args()
+    PANEL = args.panel
 
+    _g = T.bench_gain_on_ntof_axis()
+    _g6 = T.bench_gain_on_ntof_axis(ref='ntof600')
+    print(f'  100 % of optimal gain = the median peak strip fills the readout'
+          f' = bench {T.saturating_voltage(0.5)[0]:.0f} V'
+          f' = n_TOF {_g["v_opt"]:.0f} V  (200 fC, the range the scan ran;'
+          f' the 600 fC range n_TOF ran needs x3 and lands at'
+          f' {_g6["v_opt"]:.0f} V)')
+    print(f'  ladder read at V - {_g["shift"]:.2f} V (gas+pressure);'
+          f' measured to n_TOF {_g["v_last_meas"]:.0f} V, so nothing drawn is'
+          f' extrapolated')
     for r in numbers():
+        g, _over = gain_at(r['volts'])
         print(f'  {r["volts"]} V   Q = {r["charge_nC"]:6.1f} nC   '
               f'recovery {r["recovery_ms"]:6.2f} ms   '
-              f'surviving {r["frac"] * 100:5.2f} %  ({r["rate"]:.2f} /day)')
+              f'surviving {r["frac"] * 100:5.2f} %  ({r["rate"]:.2f} /day)'
+              f'   gain {g * 100:5.1f} % of optimal')
     if args.numbers:
         return
 

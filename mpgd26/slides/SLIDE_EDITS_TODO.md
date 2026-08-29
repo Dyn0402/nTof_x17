@@ -47,6 +47,47 @@ they need to be.
 
 ## Queue
 
+### Open — the HV panel after the 2026-08-28 efficiency re-derivation
+
+The det3 HV-scan efficiency was **wrong and is fixed**; the figures and the
+factual alt/figsrc text are already updated, so the deck is self-consistent as
+it stands. What is left is three presentation decisions that are Dylan's.
+Full account and evidence: `HANDOFF_hv_window.md`, "The 2026-08-28
+re-derivation". Short version: the curve read 81 % where the same chamber the
+same night reads 93.3 %; the plateau is **93–95 %**, the frame numbers went
+81/78/69/53/~39 % → **94/92/93/90/~90 %**, and **there is no turn-on** — 425 V
+reads 89.6 %, not 49 %.
+
+- [x] **Slide 25's top-left panel is now a flat line.** RESOLVED
+      2026-08-28 (late), and not by any of the three options offered: Dylan
+      chose a fourth. The panel is now a **scaled gain curve** — collected
+      charge as a per cent of the gain at which the median track's peak strip
+      just fills the 12-bit sample. 560/550/540/530/520 V read
+      **78/48/32/20/14 %**, 100 % is at n_TOF 565 ± 20 V, the y axis is linear,
+      and a shaded band above the line says *too much gain*. Two corrections
+      followed on 08-29 from Dylan's questions: the ladder is read at the
+      **gas-equivalent** voltage (n_TOF 560 V = bench 492 V) with the CSA range
+      entering as a **factor**, not an axis shift; and 100 % is referred to the
+      **200 fC** range the bench scan ran, not the 600 fC range n_TOF ran
+      (which would divide every number by three and put 100 % at 586 V). `make_hv_window._gain_panel`;
+      `_eff_panel` is kept and comes back with `--panel eff`. Account:
+      `HANDOFF_hv_window.md`, "The top-left panel is the GAIN now".
+- [ ] **Does the build's wording still work?** The title *"Every volt of gain
+      costs milliseconds"* gets **stronger**, and the panel swap strengthens it
+      again: the volts buy essentially no efficiency across the window, and the
+      panel now shows how little gain they buy either. Frame 2's alt text
+      already said "the starred point has moved down both panels" — true again
+      now that the left panel moves. Still worth one pass over what is **said
+      aloud** on frames 2–5, which is the part no file records.
+      One line to have ready: *100 % is a readout limit, not a physics
+      optimum* — the same scan's angular resolution is best at bench
+      445–460 V, which lands at n_TOF 539–563 V, i.e. right where we ran.
+- [ ] **Decide whether the bench curve and the run_55 MIP ladder may share an
+      axis anywhere.** They now disagree far more loudly: 560→540 V is
+      100→29 % on the ladder against 94→93 % on the bench. The deck's existing
+      caveat (the ladder is reconstructability, not efficiency, and only its
+      shape is used) is still correct but is carrying much more weight.
+
 ### Staged, waiting on the word (2026-08-24)
 
 - [ ] **Put the outlook figure and its heading into the Summary slide.**

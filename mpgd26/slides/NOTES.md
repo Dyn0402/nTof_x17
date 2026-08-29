@@ -132,8 +132,14 @@ unbuildable:
 | file | from | to |
 |---|---|---|
 | `slopes.json`, `mesh_ladder.csv` | `F:\x17\response_sim\hv_slope\` | `~/x17/response_sim/hv_slope/` |
-| `efficiency_vs_hv_scan.csv` | `F:\x17\cosmic_bench\Analysis\mx17_det3_saturday_scan_6-27-26\hv_scan\mx17_3\` | the same path under **both** `C:\media\dylan\data\x17` and `~/x17` |
-| `efficiency_vs_hv_scan2.csv` | …`\hv_scan2\mx17_3\` | ″ |
+| `efficiency_vs_hv_scan.csv` ⛔ | `F:\x17\cosmic_bench\Analysis\mx17_det3_saturday_scan_6-27-26\hv_scan\mx17_3\` | the same path under **both** `C:\media\dylan\data\x17` and `~/x17` |
+| `efficiency_vs_hv_scan2.csv` ⛔ | …`\hv_scan2\mx17_3\` | ″ |
+
+⛔ **Both superseded 2026-08-28.** They were written on 29 June, plateau 12
+points low, and are parked under `<scan>/mx17_3/_superseded_20260629/`. The
+panel reads `efficiency_vs_hv.csv` in the same directories now, written by
+`mx_june_cosmic_qa/10b_hv_scan_efficiency.py`. See
+`HANDOFF_hv_window.md`, "The 2026-08-28 re-derivation".
 
 **They were checked against the repository before being trusted**, which is
 worth doing on anything that arrives on a drive: `bench_gain_slope()` off the
@@ -660,15 +666,21 @@ or 3 points, though plot the measured points directly."*
 
 The scan is the **27 June saturday det3 run**, both interleaved passes
 (`hv_scan` 425–525 V and `hv_scan2` 460–520 V) — the only bench scan that
-reaches below the plateau: **49 % at 425 V, 66 % at 435, 77 % at 445, 81 % from
-455**, then the discharge collapse from 505. It is also the run `mesh_ladder.csv`
-comes from, so the efficiency curve and the gain slope that maps it are one
-measurement. The 22 June scan starts at 450 V, already flat, which is exactly
-why the previous pass concluded there was no turn-on to show. **Both scans are
-now on backup D2c**; they agree on the plateau's flatness and on where sparks
-end it, and 27 June sits ~10 points lower only because det3 was in the top slot
-(z 702) rather than the bottom (z 232) — twice the M3 lever arm into the same
-fixed 5 mm match box.
+reaches below 450 V. It is also the run `mesh_ladder.csv` comes from, so the
+efficiency curve and the gain slope that maps it are one measurement. **Both
+scans are on backup D2c.**
+
+> ⛔ **RE-DERIVED 2026-08-28 — the numbers in the rest of this entry are the
+> OLD ones and are kept only as the record of what the panel used to say.**
+> The CSVs were written on 29 June and carried none of July's basis changes.
+> Corrected: the plateau is **93–95 %** (455–500 V mean 93.5 %), matching this
+> chamber's published headline; **425 V reads 89.6 %, not 49 %**, so there is
+> no turn-on in the scan at all; and the two scans now **agree**, which
+> withdraws the M3-lever-arm explanation of their old ~10-point gap (the lever
+> arm survives in the core residual, 0.34–0.41 mm bottom slot against
+> 0.44–0.59 mm top). Frame numbers 560/550/540/530/520 V went
+> 81/78/69/53/~39 % → **94/92/93/90/~90 %**. Evidence, closure test and the
+> three open presentation decisions: `HANDOFF_hv_window.md`.
 
 **Both noise eras are drawn**, solid = production (where we ran), dashed = the
 quieter July front end, because the full ledger puts 22 V between them and that

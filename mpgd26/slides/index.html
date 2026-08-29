@@ -2698,49 +2698,124 @@
          gas map, the electronics ledger and the figure of merit.  Backup
          slides D2b and D2c carry that evidence.
 
-THREE THINGS TO KNOW BEFORE YOU ARE ASKED.  (a) WHICH BENCH SCAN
-         this is: the 27 June det3 saturday scan, 425-525 V, both interleaved
-         passes.  Not the 22 June overnight one, which starts at 450 V --
-         already on the plateau -- and so cannot show a turn-on at all.  The
-         two agree on the plateau's flatness; 27 June's absolute level is
-         ~10 points lower because det3 sat in the TOP slot there, twice the
-         M3 lever arm into the same fixed 5 mm match box.  Backup D2c draws
-         both, so that question has a slide.  (b) THE 520 V FRAME'S NUMBER IS
-         EXTRAPOLATED and says so on the canvas -- 520 V maps to bench 417 V,
-         below the lowest point measured; the continuation is a straight line
-         through the three lowest points.  (c) The run_55 MIP-track ladder
-         that used to be on this panel is NOT an efficiency -- doubles
-         trigger, ~50 % geometric ceiling per arm, a 3-strip cluster in both
-         views -- and it fell 100 -> 29 % across 560 -> 540 V where the bench
-         says detection went 81 -> 69 %.  They do not conflict: what the extra
-         volts bought at n_TOF was RECONSTRUCTABILITY.  That ladder is backup
-         D2b now.  And its 16-28 ms window is not the 8-12 ms one
-         because above 550 V the recovery reaches into the earlier window;
-         trading rate against that would be circular. -->
+THE TOP-LEFT PANEL IS THE GAIN NOW, NOT THE EFFICIENCY
+         (Dylan, 2026-08-28, evening).  It reads: gain as a PER CENT OF THE
+         GAIN THAT WOULD JUST FILL THE READOUT.  560/550/540/530/520 V are at
+         78/48/32/20/14 % of it, and the 100 % crossing is at 565 +- 20 V --
+         just past the top of the build.  LINEAR y axis, so the run-away in the
+         last 20 V is what the eye gets.
+
+         WHY THE SWAP.  The efficiency was re-derived earlier the same day and
+         came out FLAT at 93-95 % across the whole window with no turn-on
+         (560/550/540/530/520 V read 94/92/93/90/~90 %, where the 29 June CSVs
+         had said 81/78/69/53/~39 %).  That correction stands and it is worth
+         saying out loud -- but a flat panel is a poor left half of a trade.
+         The gain is the thing that actually moves, it is what the recovery
+         time is being paid for, and the same 27 June scan measures it best.
+
+         WHAT 100 % IS.  The mesh voltage at which the peak strip of the MEDIAN
+         track just fills the 12-bit sample -- frac_sat = 0.5, bracketed by two
+         measured points 5 V apart (0.39 at 495 V, 0.66 at 500 V, both views),
+         bench 497 V = n_TOF 565 V.  Beyond it the median track clips and the
+         extra gain goes into the rail instead of the measurement; that is the
+         shaded band.  PLOTTED is the TOTAL COLLECTED CHARGE (the deconvolved
+         forward fit, which censors railed samples and so keeps measuring where
+         the peak sample cannot), normalised to its own value at 497 V.  The
+         model-free window sum gives the same percentages to 3 %.
+
+         FULL SCALE OF WHAT?  IT IS WORTH A FACTOR 3, so be ready for it.  Bench
+         497 V fills the **200 fC** DREAM the SCAN ran.  n_TOF ran **600 fC**,
+         3x less ADC per electron, so filling THAT needs 3x the avalanche --
+         n_TOF 586 V, and the setpoints would read 26/16/11/7/5 % instead.
+         Dylan chose the 200 fC one (2026-08-29) and it is the right lead: it
+         is the scan's own MEASURED saturation point, it leaves nothing on the
+         panel extrapolated, and the 600 fC setting was forced by the gamma
+         flash (668 pC on one strip, 1113x the DREAM range) rather than chosen
+         for tracking.  Say which one a number came from; never mix them.
+         Both are in hv_tradeoff/report.html section 4.
+
+         FOUR THINGS TO KNOW BEFORE YOU ARE ASKED.  (a) WHICH BENCH SCAN this
+         is: the 27 June det3 saturday scan, 425-525 V, both interleaved
+         passes -- the same scan the efficiency and the gain slope come from.
+         (b) THE MAP -- KNOW THIS ONE COLD.  Only gas + pressure move the
+         VOLTAGE, -67.85 V, so **n_TOF 560 V is read off the bench ladder at
+         bench 492 V**: the plain gas equivalence, and the number to say if
+         anyone asks.  The CSA change (200 -> 600 fC) then DIVIDES the ADC by
+         three; it is a factor, not a voltage.  Folded into one shift that
+         reads +94.1 V, and the efficiency panel's +102.7 V does NOT apply
+         here -- it carries the per-channel noise, and a rail is a fixed ADC
+         count however noisy the channel is.  (c) NOTHING ON THE PANEL IS
+         EXTRAPOLATED, and that follows from where 100 % was put: the measured
+         bench charge, 425-505 V, covers n_TOF 493-573 V, and the crossing at
+         565 V is inside it.  (Refer the scale to the 600 fC range instead and
+         100 % moves to 586 V, past the measurement, and the top has to be
+         dashed -- the other reason to lead with this one.)  The horizontal
+         PLACEMENT carries the gas map's +-20 V, which slides the whole curve
+         and takes 565 with it -- but it does NOT touch the ratios between
+         setpoints, and the ratios are what the percentages compare.
+         (d) THE EFFICIENCY
+         IS STILL THE ANSWER TO "were you detecting?": flat 93-95 %, no turn-on
+         in the scan, 425 V reads 89.6 %.  Say "we never found the bottom",
+         never "we measured the turn-on".  make_hv_window.py --panel eff
+         redraws the old panel if you want it on a backup slide.  Full account
+         of both: HANDOFF_hv_window.md.
+
+         IF SOMEONE ASKS "didn't the gain plot saturate at 500, not 497?":
+         both are right and they are different statements.  HALF THE EVENTS have
+         the max strip clipped at 497 V (5 % by 469, a quarter by 489, 90 % by
+         509).  The MEDIAN AMPLITUDE only reaches the nominal rail near 500 V,
+         because at the 50 % point half the sample is still under it -- and 500
+         is where the p50 marker visibly lies on the rail line in the gain plot,
+         which is what the eye reads.  Anchoring at 500 would lower every
+         percentage here by ~13 % (540 V would read 28 % instead of 32).  The 50 % point is stable to 0.7 V over any
+         sane clipping threshold (496.4/497.0/497.1 at 0.88/0.92/0.95 of rail).
+
+         IF SOMEONE ASKS "so you were miles off the optimum": no -- 100 % is a
+         READOUT limit, not a physics optimum.  It says the ADC would be full.
+         The same scan's angular resolution against M3 is best at bench
+         445-460 V (1.02-1.06 deg), is already 1.11-1.15 deg at bench 497 V
+         where the median track saturates, and 1.31-1.38 deg by 515 V.  That
+         optimum is carried across by the SIGNAL-TO-NOISE ledger (+102.7 V),
+         a resolution being a threshold quantity, which puts it at n_TOF
+         548-563 V -- at or a little above where we ran, well inside the map's
+         own +-20 V.  So the scale says how much of the readout's range we were
+         using, not how far from best we were.  hv_tradeoff/report.html section 4 and its caveat list.
+
+         AND (e) The run_55
+         MIP-track ladder that used to be on this panel is NOT an efficiency --
+         doubles trigger, ~50 % geometric ceiling per arm, a 3-strip cluster in
+         both views -- and it fell 100 -> 29 % across 560 -> 540 V where the
+         bench now says detection went 94 -> 93 %.  That gap is far wider than
+         it used to be, and it is the SAME point, harder: what the extra volts
+         bought at n_TOF was RECONSTRUCTABILITY, not detection.  Do not put the
+         two curves on one axis without saying so.  That ladder is backup D2b
+         now.  And its 16-28 ms window is not the 8-12 ms one because above
+         550 V the recovery reaches into the earlier window; trading rate
+         against that would be circular. -->
     <section class="slide bstart" data-frame="1">
       <div class="kicker">Status &middot; The environment</div>
       <div class="title-sm">Every volt of gain costs milliseconds &mdash; and the milliseconds are the beam</div>
-      <div class="figure-solo"><img src="assets/img/hv_window_1_560.png" alt="Three panels. Top left, the cosmic bench's own detection efficiency against amplification voltage, translated to the 90/10 gas, with the 560 volt point starred at 81 per cent. Middle, three large numbers: 560 volts, 0.1 per cent of the X17 rate left, 81 per cent efficient. Top right, avalanche charge against the recovery time it buys, on the same time axis as the panel below. Bottom, the X17 pair rate against neutron flight time with a red blind band covering everything up to 13.9 milliseconds, which is nearly the whole axis."></div>
+      <div class="figure-solo"><img src="assets/img/hv_window_1_560.png" alt="Three panels. Top left, the gain the chamber had as a percentage of the gain that would just fill the readout's twelve-bit range, against amplification voltage on a linear scale: a curve that climbs slowly and then runs away in the last twenty volts, with the 560 volt point starred at 78 per cent, a shaded band above the 100 per cent line labelled too much gain, and the curve crossing that line at 565 volts just past the setpoint, off to the right of every setpoint in this build. Middle, three large numbers: 560 volts, 0.1 per cent of the X17 rate left, 78 per cent of optimal gain. Top right, avalanche charge against the recovery time it buys, on the same time axis as the panel below. Bottom, the X17 pair rate against neutron flight time with a red blind band covering everything up to 13.9 milliseconds, which is nearly the whole axis."></div>
     </section>
     <section class="slide bcont" data-frame="2">
       <div class="kicker">Status &middot; The environment</div>
       <div class="title-sm">Every volt of gain costs milliseconds &mdash; and the milliseconds are the beam</div>
-      <div class="figure-solo"><img src="assets/img/hv_window_2_550.png" alt="The same three panels at 550 volts: the starred point has moved down both panels, the blind band has retreated to 7.7 milliseconds, and the numbers read 5.5 per cent of the rate left and 78 per cent efficient."></div>
+      <div class="figure-solo"><img src="assets/img/hv_window_2_550.png" alt="The same three panels at 550 volts: the star has moved down both the charge panel and the gain line, the blind band has retreated to 7.7 milliseconds, and the numbers read 5.5 per cent of the rate left and 48 per cent of optimal gain."></div>
     </section>
     <section class="slide bcont" data-frame="3">
       <div class="kicker">Status &middot; The environment</div>
       <div class="title-sm">Every volt of gain costs milliseconds &mdash; and the milliseconds are the beam</div>
-      <div class="figure-solo"><img src="assets/img/hv_window_3_540.png" alt="The same three panels at 540 volts, where we ran: blind for 5.0 milliseconds, the thermal point clear of the band, 9.5 per cent of the rate left and 69 per cent efficient."></div>
+      <div class="figure-solo"><img src="assets/img/hv_window_3_540.png" alt="The same three panels at 540 volts, where we ran: blind for 5.0 milliseconds, the thermal point clear of the band, 9.5 per cent of the rate left and 32 per cent of optimal gain."></div>
     </section>
     <section class="slide bcont" data-frame="4">
       <div class="kicker">Status &middot; The environment</div>
       <div class="title-sm">Every volt of gain costs milliseconds &mdash; and the milliseconds are the beam</div>
-      <div class="figure-solo"><img src="assets/img/hv_window_4_530.png" alt="The same three panels at 530 volts: blind for 2.4 milliseconds, 11.7 per cent of the rate left and 53 per cent efficient, the star now on the shoulder of the efficiency turn-on. The 540 volt edge stays on the axis behind it."></div>
+      <div class="figure-solo"><img src="assets/img/hv_window_4_530.png" alt="The same three panels at 530 volts: blind for 2.4 milliseconds, 11.7 per cent of the rate left and 20 per cent of optimal gain, the star now low on the gain curve. The 540 volt edge stays on the axis behind it."></div>
     </section>
     <section class="slide bcont" data-frame="5">
       <div class="kicker">Status &middot; The environment</div>
       <div class="title-sm">Every volt of gain costs milliseconds &mdash; and the milliseconds are the beam</div>
-      <div class="figure-solo"><img src="assets/img/hv_window_5_520.png" alt="The same three panels at 520 volts: blind for 0.9 milliseconds, 13.0 per cent of the rate left and about 39 per cent efficient, a number read off the extrapolated part of the bench curve and marked as such. The whole MeV peak is still behind the band at every voltage."></div>
+      <div class="figure-solo"><img src="assets/img/hv_window_5_520.png" alt="The same three panels at 520 volts, the bottom of the build: blind for 0.9 milliseconds, 13.0 per cent of the rate left and 14 per cent of optimal gain. The whole MeV peak is still behind the band at every voltage."></div>
     </section>
     <section class="slide bcont" data-frame="6">
       <div class="kicker">Status &middot; The environment</div>
@@ -3698,15 +3773,21 @@ THREE THINGS TO KNOW BEFORE YOU ARE ASKED.  (a) WHICH BENCH SCAN
          THE RANGES BARELY OVERLAP, and the figure says so: the bench scan ran
          450-525 V and n_TOF ran 520-580 V, so there is one common step.  What
          the pair shows is the SHAPE of the trade, not a single curve -- the
-         bench efficiency is still climbing where it stops, and the recovery
-         curve leaves the thermal window a few volts above it.  Figure:
-         make_flash_slides.py. -->
+         bench efficiency is FLAT where it starts and the collapse at its top
+         is discharges, and the recovery curve leaves the thermal window a few
+         volts above it.  Figure: make_flash_slides.py.
+
+         BOTH BENCH CURVES RE-DERIVED 2026-08-28 (10b_hv_scan_efficiency.py):
+         the plateau went ~90 -> 88-94 % and det A's spark fraction at 520 V
+         went 49 -> 36 %.  The slide's argument is unchanged -- the efficiency
+         curve is still the mirror of the spark fraction -- but the numbers in
+         the caption moved.  HANDOFF_hv_window.md has the account. -->
     <section class="slide">
       <div class="kicker">Backup &middot; The environment</div>
       <div class="title-sm">The trade, on one axis: efficiency against blindness</div>
-      <div class="figure-solo"><img src="assets/img/status_eff_recovery.png" alt="Amplification voltage along the bottom. On the left axis, cosmic-bench detection efficiency for detectors A and B, flat near 90 per cent up to 485 volts and then falling to about 55 per cent by 520 volts, mirrored by a shaded spark-fraction curve that climbs to 49 per cent over the same range. On the right axis, post-flash recovery time at n_TOF for the same chambers plus C, rising from under a millisecond at 520 volts to over 20 milliseconds at 580. The thermal arrival window is shaded across the recovery axis."></div>
-      <div class="caption"><b>Two measurements of the same knob, and neither of them likes turning it up.</b> On the bench, with no flash, det A holds <b>90&ndash;93 %</b> to about 485 V and then <i>falls</i> &mdash; and not for want of gain: the efficiency curve is the mirror image of the chamber&rsquo;s own <b>spark fraction</b>, which reaches 49 % by 520 V. At n_TOF, on a lower drift field, the same volts buy <b>blindness</b> instead, and the recovery curve leaves the thermal window within ~20 V of where we ran. <b>Caveat: the two scans barely overlap</b> &mdash; bench 450&ndash;525 V at drift 1000 V, n_TOF 520&ndash;580 V at drift 700&ndash;800 V, different references and different rate &mdash; so this is the <i>shape</i> of the trade, not one calibrated curve. The in-situ version of the left axis is run_55&rsquo;s own track-yield scan, which is still <i>rising</i> at 555 V.</div>
-      <div class="figsrc">Bench: June 2026 cosmic bench, Ar/iC&#8324;H&#8321;&#8320; 90/10, drift 1000 V, efficiency against M3 reference tracks inside a fixed active box, 5 mm match radius (<code>mx_june_cosmic_qa/10_hv_scan_efficiency.py</code>). n_TOF: run_57 flash-random probe, recovery = when per-channel baseline noise returns and stays back. Chamber identity is the same hardware in both &mdash; det A = mx17_3, det B = mx17_2.</div>
+      <div class="figure-solo"><img src="assets/img/status_eff_recovery.png" alt="Amplification voltage along the bottom. On the left axis, cosmic-bench detection efficiency for detectors A and B, flat between 88 and 94 per cent up to about 500 volts and then falling to about 60 per cent by 520 volts, mirrored by a shaded spark-fraction curve that climbs to 36 per cent over the same range. On the right axis, post-flash recovery time at n_TOF for the same chambers plus C, rising from under a millisecond at 520 volts to over 20 milliseconds at 580. The thermal arrival window is shaded across the recovery axis."></div>
+      <div class="caption"><b>Two measurements of the same knob, and neither of them likes turning it up.</b> On the bench, with no flash, det A holds <b>92&ndash;94 %</b> to about 500 V and then <i>falls</i> &mdash; and not for want of gain: the efficiency curve is the mirror image of the chamber&rsquo;s own <b>spark fraction</b>, which reaches 36 % by 520 V. At n_TOF, on a lower drift field, the same volts buy <b>blindness</b> instead, and the recovery curve leaves the thermal window within ~20 V of where we ran. <b>Caveat: the two scans barely overlap</b> &mdash; bench 450&ndash;525 V at drift 1000 V, n_TOF 520&ndash;580 V at drift 700&ndash;800 V, different references and different rate &mdash; so this is the <i>shape</i> of the trade, not one calibrated curve. The in-situ version of the left axis is run_55&rsquo;s own track-yield scan, which is still <i>rising</i> at 555 V.</div>
+      <div class="figsrc">Bench: June 2026 cosmic bench, Ar/iC&#8324;H&#8321;&#8320; 90/10, drift 1000 V, efficiency against M3 reference tracks inside a fixed active box, 5 mm match radius. <b>Both chambers re-derived 2026-08-28</b> by <code>mx_june_cosmic_qa/10b_hv_scan_efficiency.py</code> on the golden M3 recipe and the <code>02_efficiency.py</code> accounting; det B&rsquo;s 490&nbsp;V point reads <b>92.6&nbsp;%</b> against the <b>92.1&nbsp;%</b> its own long run on this same night publishes (<code>o22_long_det2</code>), which is the closure check for this run. det&nbsp;A has no published breakdown on the 22 June run &mdash; its headline 93.1&nbsp;% is the 27 June saturday run &mdash; so read A here for the plateau&rsquo;s shape and level (88&ndash;94&nbsp;%), not as a second determination of that number. n_TOF: run_57 flash-random probe, recovery = when per-channel baseline noise returns and stays back. Chamber identity is the same hardware in both &mdash; det A = mx17_3, det B = mx17_2.</div>
     </section>
 
     <!-- 20: D3 charge vs gain -->
@@ -3767,9 +3848,9 @@ THREE THINGS TO KNOW BEFORE YOU ARE ASKED.  (a) WHICH BENCH SCAN
     <section class="slide">
       <div class="kicker">Backup &middot; The environment</div>
       <div class="title-sm">det3 <i>is</i> chamber A &mdash; so the bench measured this detector</div>
-      <div class="figure-solo"><img src="assets/img/hv_bench_mapped.png" alt="Two cosmic-bench efficiency scans of the same chamber plotted against the equivalent n_TOF voltage: the 27 June scan, which rises from 49 per cent at the left edge onto a plateau near 81 per cent and then collapses under discharges, and the 22 June scan, which starts already on the plateau ten points higher and collapses at the same place. A grey dashed copy of the first sits 22 volts to the left, the July noise configuration. The discharge fraction is shaded along the bottom and the operating point is marked."></div>
+      <div class="figure-solo"><img src="assets/img/hv_bench_mapped.png" alt="Two cosmic-bench efficiency scans of the same chamber plotted against the equivalent n_TOF voltage. Both sit on one flat plateau at 93 to 95 per cent across the whole operating window and lie on top of each other; the 27 June scan reaches furthest left, to 425 volts on the bench, and sags only about four points there. Both collapse together well above the window, under discharges. A grey dashed copy of the first sits 22 volts to the left, the July noise configuration. The discharge fraction is shaded along the bottom and the operating point is marked."></div>
       <div class="caption">Three terms carry a bench voltage onto the n_TOF axis: the <b>gas</b> (+72.6 V), the <b>site pressure</b> (&minus;4.7 V, thinner air at CERN), and the <b>front end</b> (+12.8 V in July, +34.8 V after the 23 July noise step, because the CSA range is 600 fC against the bench&rsquo;s 200 fC). <b>The blue curve is the one on the main slide</b> &mdash; the 27 June scan, the only one that reaches below the plateau. The purple one is an independent scan of the same chamber five days earlier, from the bottom slot: it <b>agrees on the plateau and on the discharge collapse</b> and sits ~10 points higher only because half the M3 lever arm lands more tracks inside the same fixed 5&nbsp;mm match box. The grey dashes are the blue points in the July configuration &mdash; <b>the gap between them is the 23 July noise step, and it is worth 22 V.</b></div>
-      <div class="figsrc">Blue: <code>mx17_det3_saturday_scan_6-27-26</code>, <code>hv_scan</code> + <code>hv_scan2</code> (det3 top slot, FEU 7/8, z&nbsp;702) &mdash; the same run <code>mesh_ladder.csv</code> comes from, so this curve and the gain slope that maps it are one measurement. Purple: <code>mx17_det2_det3_overnight_6-22-26</code> (bottom slot, FEU 3/4, z&nbsp;232). Both M3-referenced at drift 1000 V, efficiency = an X+Y cluster within 5&nbsp;mm of the reference prediction inside a fixed active box, same recipe (<code>mx_june_cosmic_qa/10_hv_scan_efficiency.py</code>). Noise: <code>ntof_pedestal_qa/</code> and this scan&rsquo;s own bench pedestal (median CNS &sigma; 6.85 ADC on FEU 3, against 3.90 in July and 9.80 in production). Full ledger and its &plusmn;20&nbsp;V bracket: <code>ntof_july_analysis/hv_tradeoff/report.html</code>.</div>
+      <div class="figsrc">Blue: <code>mx17_det3_saturday_scan_6-27-26</code>, <code>hv_scan</code> + <code>hv_scan2</code> (det3 top slot, FEU 7/8, z&nbsp;702) &mdash; the same run <code>mesh_ladder.csv</code> comes from, so this curve and the gain slope that maps it are one measurement. Purple: <code>mx17_det2_det3_overnight_6-22-26</code> (bottom slot, FEU 3/4, z&nbsp;232). Both M3-referenced at drift 1000 V, efficiency = an X+Y cluster within 5&nbsp;mm of the reference prediction inside a fixed active box &mdash; the long run&rsquo;s own box. <b>Both re-derived 2026-08-28</b> by <code>mx_june_cosmic_qa/10b_hv_scan_efficiency.py</code>, which runs the scan through the <code>mx_june_wft/02_efficiency.py</code> accounting and reproduces this chamber&rsquo;s published breakdown to the third decimal; the curves this slide carried until then were written on 29 June, before the golden M3 recipe, the significance floor and the matched-filter reprocessing, and plateaued 12 points low. Noise: <code>ntof_pedestal_qa/</code> and this scan&rsquo;s own bench pedestal (median CNS &sigma; 6.85 ADC on FEU 3, against 3.90 in July and 9.80 in production). Full ledger and its &plusmn;20&nbsp;V bracket: <code>ntof_july_analysis/hv_tradeoff/report.html</code>.</div>
     </section>
 
     <section class="slide">
