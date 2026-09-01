@@ -207,7 +207,7 @@ def overlay(png, px, labels, theme='light'):
 # Sizes in CENTIMETRES: this figure is looked at from across a room, and the
 # numbers on it are meant to be read at a glance, not to be quoted.
 LAYER_LABEL = {
-    'mm': dict(text='Micromegas micro-TPC\n40 × 36 cm, 3 cm drift', v_frac=0.45),
+    'mm': dict(text='Micromegas TPC\n40 × 36 cm, 3 cm drift', v_frac=0.45),
     'sipm': dict(text='SiPM trigger wall\n50 × 50 cm, 20 bars', v_frac=0.70),
     # no "2 x" -- there are four leaders on the frame doing that job
     'plastic': dict(text='Plastic scintillators\n20 × 30 × 2 cm', v_frac=0.72),
