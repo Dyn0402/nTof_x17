@@ -98,7 +98,7 @@ LABELS = [
                 'beam dump — through the bunker\n'
                 'ceiling at 23.66 m to its entrance at\n'
                 '24.73 m, on the roof, above this frame'),
-    ('detectors', 'Micromegas micro-TPCs around it — four in\n'
+    ('detectors', 'Micromegas TPCs around it — four in\n'
                   'a pinwheel, two of them drawn, in section.\n'
                   '400 mm strip boards, 30 mm of drift gas\n'
                   'facing the sample (support frame not drawn)'),

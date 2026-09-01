@@ -105,7 +105,7 @@ CAMPAIGNS = [
      'measured on the cosmic bench: 93 % efficient, '
      'sub-mm position, ~1° on the track angle.'),
     (D(2026, 6, 28), D(2026, 8, 10), C_EAR2, 'n_TOF EAR2', 'The physics run',
-     'Four micro-TPCs around 500 bar of ³He, four-arm '
+     'Four TPCs around 500 bar of ³He, four-arm '
      'trigger and calorimetry. 162 runs, 41.8 M events, '
      '17.9 TB. Beam off 10 Aug, 09:10.'),
 ]

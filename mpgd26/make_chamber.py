@@ -139,7 +139,7 @@ def main():
 
         A.compose(out, labels,
                   os.path.join(FIG, f'chamber_exploded_{theme}_labelled'),
-                  title='MX17 resistive micro-TPC chamber',
+                  title='MX17 resistive TPC chamber',
                   subtitle='Layer stack, exploded along the drift axis, with a '
                            'muon and its drifting ionisation',
                   caption=CAPTION, theme=theme, gutter=0.0,

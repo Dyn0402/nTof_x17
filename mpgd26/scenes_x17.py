@@ -1136,7 +1136,7 @@ def draw_detect(theme='light', dpi=300, title=False):
             va='top', path_effects=halo, zorder=9, **FONT)
     # the object itself, named once, in the empty corner above the left
     # chamber (the only quadrant of this canvas with nothing in it)
-    ax.text(6.0, DETECT_H - 10.0, 'Micromegas µTPC\n30 mm drift gap',
+    ax.text(6.0, DETECT_H - 10.0, 'Micromegas TPC\n30 mm drift gap',
             fontsize=10.0, color=P['muted'], ha='left', va='center',
             linespacing=1.35, **FONT)
     return fig
@@ -1732,7 +1732,7 @@ def _story_detect(ax, P, halo):
     # BOX -- the box is where the layout has room -- but it is not beat 4; it is
     # the beat after the spectrum, the answer to the question beat 5 has just
     # asked.  Numbering it 4 told the room to read it before the spectrum.
-    _head(ax, x0, S_HEAD2, '6.  Measure it with a µTPC Micromegas', P)
+    _head(ax, x0, S_HEAD2, '6.  Measure it with a Micromegas TPC', P)
 
     sc = DETECT_INSET_SCALE
     vx, vy = (x0 + x1) / 2.0 + 2.0, 15.0
@@ -1762,7 +1762,7 @@ def _story_detect(ax, P, halo):
             color=P['positron'], ha='center', va='center', path_effects=halo,
             zorder=9, **FONT)
     # the object, named once, in the corner of the box the drawing leaves empty
-    ax.text(x0, S_HEAD2 - 6.0, 'Micromegas µTPC\n30 mm drift gap',
+    ax.text(x0, S_HEAD2 - 6.0, 'Micromegas TPC\n30 mm drift gap',
             fontsize=_tfs(9.4), color=P['muted'], ha='left', va='top',
             linespacing=1.35, **FONT)
 

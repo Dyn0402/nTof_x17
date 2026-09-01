@@ -202,7 +202,7 @@ def compose(png, clusters, hits, out_base, theme, angle, dpi=300,
     ax.axis('off')
 
     if not bare:
-        ax.text(0.026 * W, head * 0.38, 'Micro-TPC operation',
+        ax.text(0.026 * W, head * 0.38, 'TPC operation',
                 ha='left', va='center', fontsize=fs * 1.95, color=ink,
                 fontweight='bold', **A.FONT)
         ax.text(0.026 * W, head * 0.76,
@@ -341,7 +341,7 @@ def compose(png, clusters, hits, out_base, theme, angle, dpi=300,
             'share folded with the MEASURED single-electron response of this '
             'plane (det3, wft calibration bundle) and sampled at the bench\'s '
             f'own {T.N_SAMPLES:d} x {T.SAMPLE_NS:.0f} ns.  The pulse walking '
-            'steadily across strips is the micro-TPC signature -- no fit, just '
+            'steadily across strips is the TPC signature -- no fit, just '
             'the raw signals.')
     else:
         cap += (

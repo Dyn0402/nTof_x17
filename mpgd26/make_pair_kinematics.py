@@ -330,7 +330,7 @@ def fig_pair_kinematics(red: dict, meta: dict, out_path: str) -> None:
     ax.set_ylabel('probability / deg')
     P.strip(ax)
     P.title(ax, 'and that is what puts the pair at large angle',
-            'the observable the micro-TPC is built to measure')
+            'the observable the TPC is built to measure')
 
     fig.subplots_adjust(wspace=0.24)
     P.note(fig,
