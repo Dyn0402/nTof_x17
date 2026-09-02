@@ -286,14 +286,6 @@ def fig_correlation(angles: dict, res: dict, lim: float = 20.0) -> None:
 
 def fig_vs_angle(res: dict) -> None:
     fig, ax = plt.subplots(figsize=(7.6, 5.1))
-    ax.axhspan(0, FLOOR_DEG, color=P.ACCENT, alpha=0.09, lw=0, zorder=0)
-    ax.axhline(FLOOR_DEG, color=P.ACCENT, lw=1.3, ls='--', zorder=1)
-    # inside the shaded band and BELOW the lowest point (0.94 deg), so the one
-    # bin that dips under the floor does not have to share pixels with it
-    ax.text(0.35, 0.855,
-            'the ~1° physics floor:  diffusion + ionisation granularity',
-            ha='left', va='center', fontsize=10.5, color=P.ACCENT,
-            fontweight='bold', zorder=4)
 
     for plane, (label, colour, marker) in PLANES.items():
         rows = res['planes'][plane]['bins']
