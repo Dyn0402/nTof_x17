@@ -123,8 +123,13 @@ def coincident_tracks(run: str, sub: str, arm: str, merged_dir: str):
                                       foot_x=TI.PINWHEEL[arm])
     m = coin & sel
     g = df[m]
+    # Both planes carry the same in-plane sign (build_tracks.IN_PLANE_SIGN_Y,
+    # measured 2026-09-07).  The focus objective is the miss distance in the XZ
+    # projection and is blind to the y sign for these chambers -- which is
+    # exactly how the y error survived -- but the frame must still be right.
+    from sept26_prelim_analysis.build_tracks import IN_PLANE_SIGN_Y
     return (TI.local_x(g['x_p0'].to_numpy()),
-            g['y_p0'].to_numpy() - TI.STRIP_MAP_HALF,
+            IN_PLANE_SIGN_Y * (g['y_p0'].to_numpy() - TI.STRIP_MAP_HALF),
             g['x_tan_theta'].to_numpy(), g['y_tan_theta'].to_numpy())
 
 
@@ -305,6 +310,9 @@ def build(run: str, subruns, merged_dir: str) -> dict:
             r['focus_plateau'] = [min(p[0] for p in pl), max(p[1] for p in pl)]
             r['focus_n'] = int(sum(scans[(a, s)]['n'] for s in subruns
                                    if (a, s) in scans))
+            # The scan curves themselves, so the figure and the verdict are
+            # built from one object and cannot disagree about the plateau.
+            r['scan'] = {s: scans[(a, s)] for s in subruns if (a, s) in scans}
             width = r['focus_plateau'][1] / max(r['focus_plateau'][0], 1e-9) - 1
             if width > SPREAD_MAX and r['verdict'] == 'CALIBRATED':
                 r['verdict'] = 'PROVISIONAL'

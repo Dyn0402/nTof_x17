@@ -57,6 +57,22 @@ def fmt(n) -> str:
     return f'{int(n):,}'
 
 
+def figure(name: str, caption: str, alt: str = '') -> str:
+    """A figure with an ORDINARY RELATIVE link (CLAUDE.md).
+
+    The DAQ page's `/analysis_file/<relpath>` route is path-based and the CERN
+    web space serves the directory as-is, so the same markup works from disk,
+    from the DAQ page and from the web -- provided `figures/` travels with the
+    HTML.  Each PNG has a CSV of the same name beside it, and the caption links
+    to it: a figure nobody can check is a figure nobody should trust.
+    """
+    return (f'<figure><a href="figures/{name}.png">'
+            f'<img src="figures/{name}.png" alt="{html.escape(alt or caption)}">'
+            f'</a><figcaption>{caption} '
+            f'<a class="src" href="figures/{name}.csv">numbers &#8599;</a>'
+            f'</figcaption></figure>')
+
+
 def pct(x) -> str:
     return '&mdash;' if pd.isna(x) else f'{100 * x:.1f}%'
 
@@ -329,6 +345,14 @@ table.t tbody tr:last-child td,table.t tbody tr:last-child th{border-bottom:none
 .legend i{display:inline-block;width:10px;height:10px;border-radius:2px;
   margin-right:6px}
 ul{margin:10px 0;padding-left:20px;max-width:80ch}li{margin:6px 0}
+figure{margin:22px 0;padding:0}
+figure img{display:block;width:100%;height:auto;border:1px solid var(--line);
+  border-radius:8px;background:#fbfcfe}
+figcaption{font-size:12.5px;color:var(--ink-2);margin-top:9px;max-width:82ch;
+  line-height:1.55}
+figcaption .src{font-family:var(--mono);font-size:11px;color:var(--ink-3);
+  text-decoration:none;white-space:nowrap;margin-left:4px}
+figcaption .src:hover{color:var(--accent);text-decoration:underline}
 footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
   color:var(--ink-3);font-size:12px;font-family:var(--mono);line-height:1.8}
 svg text{font-family:var(--mono);font-variant-numeric:tabular-nums}
@@ -415,6 +439,12 @@ stronger evidence of a real particle than either alone.</p>
 n_TOF, restricted to events the seeder accepted but the reconstruction failed to
 turn into a track. The ratio of the two rows is the lift, and it is what says the
 tracking is doing work rather than following the trigger.</p>
+{figure('det_status',
+        'Left: what fraction of DAQ triggers each chamber seeds, and what '
+        'fraction ends as a gated track. Right: the wall-and-plastic '
+        'confirmation rate for tracked events against the same chamber&rsquo;s '
+        'no-track control, with the lift above each pair.',
+        'per-chamber seeding, tracking and n_TOF confirmation rates')}
 
 <div class="caution">
 <b>Chamber D seeds twice as often as the others</b> ({pct(F.set_index('arm').loc['D','seed_eff'])}
@@ -441,6 +471,20 @@ many tracks back-project within a fixed radius of the beam axis. <b>Agreement
 between the three is the measurement</b> &mdash; one estimator alone proves
 nothing &mdash; and all three run on the pointing-coincident sample.</p>
 <div class="scroll">{k_table(cal, img)}</div>
+{figure('k_scan',
+        'The focus objective against the angle scale, one panel per chamber, '
+        'on the pointing-coincident sample. A, C and D turn over; <b>B never '
+        'does</b> &mdash; its curve rises monotonically across the whole grid, '
+        'which is why B is not calibrated rather than merely imprecise. Shaded '
+        'band: the plateau within 5&thinsp;% of the peak. Markers: the three '
+        'point estimators.',
+        'focus objective vs angle scale k, per chamber')}
+{figure('k_summary',
+        'The same result as a drift velocity. Every chamber drifts slower than '
+        'the 42.6&thinsp;&micro;m/ns prior the bundles carry; the bar is the '
+        'focus plateau, and B&rsquo;s spans essentially the whole scan. Open '
+        'markers are chambers whose angles are <i>not</i> published.',
+        'measured drift velocity per chamber against the bundle prior')}
 <p class="note"><b>Reading the table.</b> The <b>focus plateau</b> is the range of
 <i>k</i> over which the focus objective stays within 5% of its peak &mdash; the
 range the data genuinely cannot separate. It is why A and C are marked

@@ -320,9 +320,19 @@ def track_lines(df, tr, sel):
     POSITION, with the tan left as reconstructed. Flipping the tan instead --
     which is what this analysis did until 2026-08-20 -- mirrors the track about
     the plane CENTRE, and the plane centre is 16 mm off the beam axis.
+
+    BOTH planes carry that sign. Until 2026-09-07 only x did: the 2026-08-20
+    measurement was made on the target image, which lives in the XZ projection
+    and is blind to the y sign, so y silently kept the raw strip direction.
+    Measured on the pointing-coincident sample of run_145, both sub-runs:
+    corr(y_local, tan_y) is negative in all four chambers unflipped and
+    positive in all four flipped, and the flip moves the median target height
+    from below the He-3 capsule to near its centre, roughly doubling the
+    fraction of tracks pointing into its y span (arm A 18.5 % -> 36.2 %). See
+    `sept26_prelim_analysis/build_tracks.py:IN_PLANE_SIGN_Y`.
     """
     xl = local_x(df['x_p0'].to_numpy()[sel])
-    yl = df['y_p0'].to_numpy()[sel] - STRIP_MAP_HALF
+    yl = IN_PLANE_SIGN * (df['y_p0'].to_numpy()[sel] - STRIP_MAP_HALF)
     tx = df['x_tan_theta'].to_numpy()[sel]
     ty = df['y_tan_theta'].to_numpy()[sel]
     P0 = tr.local_to_global(xl, yl, np.zeros_like(xl))

@@ -62,6 +62,28 @@ STRIP_MAP_HALF = 199.29
 #: measurement that fixed it; this is the same constant, not a second opinion.
 IN_PLANE_SIGN = -1.0
 
+#: **The Y plane needs the same flip, and until 2026-09-07 it did not get it.**
+#: The 2026-08-20 measurement was made on the target image, which lives in the
+#: XZ projection and is blind to the y sign -- so only x was ever measured and
+#: y silently kept the raw strip direction.
+#:
+#: Measured the same way the x sign was, on the pointing-coincident sample of
+#: run_145, both sub-runs: a track from the source arriving at ``y_local`` must
+#: move further from zero going outward, so ``corr(y_local, tan_y)`` has to be
+#: POSITIVE.  Unflipped it is negative in all four chambers and both sub-runs
+#: (A -0.63/-0.67, C -0.34/-0.39, D -0.19/-0.24, B -0.23/-0.08); flipped it is
+#: positive in all eight, and the implied angle scale from the y band lands in
+#: the same family as the x band's (A 1.46 vs 1.30, C 2.5 vs 1.8).  k_y runs
+#: systematically higher than k_x because the He-3 capsule is ~80 mm long along
+#: y (``geometry.HE3_GAS_Y``) and an extended source dilutes the band -- so k_y
+#: is an upper bound, not a competing measurement.
+#:
+#: What it broke: every 3D direction had a mirrored vertical component.
+#: ``dca_axis_mm`` is the XZ projection and barely notices, which is why this
+#: survived; ``target_y_mm``, ``angle_to_beam_deg``, the LS/plastic crossings
+#: and **any opening angle between two chambers** all did notice.
+IN_PLANE_SIGN_Y = -1.0
+
 #: Angle fits that railed.  |tan| > 1 is a 45 deg track in a 30 mm gap, which
 #: the acceptance does not contain; they are kept as rows and flagged.
 TAN_SANE = 1.0
@@ -171,7 +193,7 @@ def local_and_global(df: pd.DataFrame, tr: G.DetTransform,
     not depend on the drift velocity.
     """
     xl = IN_PLANE_SIGN * (df['x_p0'].to_numpy(float) - STRIP_MAP_HALF)
-    yl = df['y_p0'].to_numpy(float) - STRIP_MAP_HALF
+    yl = IN_PLANE_SIGN_Y * (df['y_p0'].to_numpy(float) - STRIP_MAP_HALF)
     scale = np.nan if k is None else float(k)
     tx = df['x_tan_theta'].to_numpy(float) * scale
     ty = df['y_tan_theta'].to_numpy(float) * scale
