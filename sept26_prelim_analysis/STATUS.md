@@ -506,6 +506,15 @@ A and C reproduce between sub-runs to 2 %; their point estimates agree to
 is flat across ~35 % — that is the honest uncertainty on k, and it is large.
 B's plateau spans the entire scan grid: B carries no angle information.
 
+**A third sub-run confirms it.** Sub-run 0002, reconstructed on 2026-09-07 and
+never used to fit anything, reproduces A and C exactly — A gives band 1.30,
+track 1.27, focus 1.20 against 1.30/1.26/1.20 and 1.32/1.27/1.20 on the two
+sub-runs the calibration was made on; C gives 1.78/1.61/1.60 against
+1.77/1.58/1.55 and 1.81/1.66/1.60. And it fails B for a third time, on yield
+alone: the charge-window coincident sample is **1 635 tracks in A, 1 203 in C
+and 143 in B** — B is down by an order of magnitude on the very sample the
+calibration needs.
+
 **Two methodological traps, both live in `run145_target_imaging.py`:**
 
 - `k_phys` is set to `k_track_coincident` *verbatim*. Reading it as a third
