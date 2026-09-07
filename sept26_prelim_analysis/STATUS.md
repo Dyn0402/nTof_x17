@@ -25,19 +25,21 @@ found. Stages 0, 1 and 2 all run.
 
 **Next, in order:**
 
-1. **Measure the in-situ angle scale `k_arm`** — the single blocking null in the
-   track table. Every bundle pins `v = 42.6 um/ns` for all four arms, and the
-   pointing says that is wrong by 1.1x (A) to 1.8x (D). Until it is fixed no
-   angle, opening angle or invariant mass from this table means anything.
-   `run145_target_imaging.py` already implements the per-plane estimator; run it
-   on the **August full pass** (`analysis/wft_beam145/extracted/out`, sub-runs
-   0000 and 0001) rather than on the filtered stage-2 output, publish
-   `imaging_summary.json` as a calibration file, and feed it through
-   `build_tracks.py --k-arm`.
+1. **Re-certify D, and diagnose B.** `k_arm` is measured (see
+   [The angle scale, measured](#the-angle-scale-measured)): A and C are
+   PROVISIONAL and applied, B and D are NOT CALIBRATED and carry null angles.
+   For **D** the per-track and focus estimators agree to 0.7 % (1.713, 1.725)
+   and it is the *band* fit that fails at 3.29 — one estimator, one fit, and D
+   becomes usable. For **B** the focus plateau spans the whole scan grid
+   (k = 0.60–2.55): B carries no angle information at all, and that is a
+   detector question, not a fitting one.
 2. **Then re-read the two-chamber excess** below. It cannot be interpreted
-   before (1).
-3. Stage 2 on the other two censused sub-runs, then the campaign stage-1 pass
-   (~135 core-hours) and stage 2 (~760).
+   before (1) — and note the finding in §2 that the stage-2 sample is
+   background-dominated, so the excess must be re-measured on the
+   pointing-coincident sample.
+3. **Sub-run 0002** — the only run_145 sub-run with no full pass (9 tags,
+   7.0 GB, ~2.5 h locally on 16 cores). Closing it makes run_145 complete.
+4. Then the campaign stage-1 pass (~135 core-hours) and stage 2 (~760).
 
 ### N0 · Land on the machine — ✅ done
 
@@ -194,8 +196,8 @@ Two things to settle first, both raised by today's staging:
 | 0 · sample | **DONE** | the cuts have been *applied* to the frozen registry (2026-09-07): `mode=beam & phys & run≥79` gives 40 runs / 329 sub-runs / **25.87 M triggers** / 8.41 TB, and every one of those 40 is already ³He + Ar/Iso 90/10 + `st=complete` + 8 FEUs, so those cuts cost nothing. Dropping run_82 (watermark × IPD scan) and run_161 (detector-A resist × drift scan) leaves the core sample: **38 runs / 296 sub-runs / 25.62 M triggers / 8.32 TB** | — (see [Stage 0, frozen](#stage-0-frozen)) |
 | 1 · time base | **todo** | the flash calibration and clock QA are done and published | pick the veto window; write `t_since_flash` and E_n per trigger |
 | 2 · candidate filter | **RUNS** | `../ntof_tracking/reco/noise.py` and `reco/segments.py` already do the clustering and the taxonomy; the slim files carry the n_TOF arm flags | census on a full sub-run; then the stage-2 event-id allowlist |
-| 3 · reco | **RAN ON CONDOR** | 28 jobs (4 arms x 7 tags) on cluster 4139919, all succeeded, allowlist honoured. `stat090_0000` reconstructed | the other two censused sub-runs, then the campaign |
-| 4 · database | **RUNS** | `build_tracks.py` — 4 216 segments / 2 263 gated for `stat090_0000`, joined to the stage-1 class and the stage-2 selection reason. `k_arm`, `t_since_flash` and `e_neutron` are declared nulls | measure `k_arm`; then the time base |
+| 3 · reco | **RAN ON CONDOR** | 28 jobs (4 arms x 7 tags) on cluster 4139919, all succeeded, allowlist honoured. A **full** pass (no allowlist) already exists locally for sub-runs 0000 and 0001 — `analysis/wft_beam145/extracted/out`, 15 tags x 4 arms — and is what the funnel and `k_arm` are built on | sub-run 0002 (the only one with no full pass), then the campaign |
+| 4 · database | **RUNS** | `build_tracks.py` — 4 216 segments / 2 263 gated for `stat090_0000`. `k_arm` is **measured and applied** (A 1.25, C 1.58; B and D uncertified, angles null). `t_since_flash` and `e_neutron` remain declared nulls | re-certify D, diagnose B; then the time base |
 | 5 · scint positions | **todo** | `../ntof_processing/quality_metrics.py` A1/A2 has both estimators and their caveats | recalibrate λ and the Δt scale against MM tracks |
 | 6 · pairs & spectrum | **todo** | nothing | after 4 |
 | — · figures | **scaffolded** | `figstyle.py` (validated palette, 16:9, PNG+CSV enforced) and `paths.py` | build them as each stage lands |
@@ -248,6 +250,43 @@ lxplus, not against the documents.**
 
 ---
 
+## The funnel — published, and what it measures
+
+`funnel.py` + `make_funnel_report.py`. Built on the **full** August waveform
+pass (every trigger, every tag of sub-runs 0000 and 0001, no allowlist, no
+prescale), so no number in it inherits a hits-based selection. `combined_hits`
+enters at exactly one stage, the seeder, and only as a set of channels; the
+seeder's acceptance is therefore a row in the funnel rather than an assumption.
+
+122 280 triggers -> 75 473 gated 3D track segments -> 15 398 pointing-confirmed.
+
+| | A | B | C | D |
+|---|---:|---:|---:|---:|
+| seeded / triggers | 38.9 % | 36.7 % | 39.6 % | **79.8 %** |
+| gated tracks | 16 391 | 10 368 | 15 034 | 33 680 |
+| wall+plastic \| tracked | 56.0 % | 39.9 % | 54.6 % | 32.0 % |
+| same, seeded but NO track (control) | 37.7 % | 34.6 % | 45.6 % | 27.3 % |
+| **lift** | **1.49x** | 1.15x | 1.20x | 1.17x |
+| pointing-confirmed \| predictable | 43.9 % | 16.1 % | 35.9 % | 15.2 % |
+
+Every chamber sits above its own no-track control, so the tracking selects real
+particles rather than following the trigger. Two things to carry forward:
+
+- **D seeds twice as often as anyone else and confirms worst.** Same threshold,
+  same seeder — D passes clusters n_TOF does not back. Its track counts are an
+  upper bound until that is understood.
+- **LIQ C is effectively dead in run_145**: 891 in-time hits against 7 227 in A.
+  LIQ is excluded from the partition for that reason.
+
+**Published** to `/eos/user/d/dneff/www/x17/reco-funnel.html` ->
+<https://dylan-neff.web.cern.ch/x17/reco-funnel.html> (HTTP 200 verified
+2026-09-07). The DAQ machine (`daq_lxplus`, 128.141.177.17 and .103) is
+**unreachable from lxplus** — by IP and by name, port 22 closed — so the DAQ
+page's Analysis tab was not an option; that is expected with our run ended
+2026-08-10, but it means the DAQ route needs re-testing before it is relied on.
+`report.html` is a complete document (doctype, head, body) and `body.html` the
+fragment form for the artifact publisher.
+
 ## Stage 3 — the track database, and what it says
 
 `build_tracks.py`, 2026-09-07. One row per **3D track segment**: a paired
@@ -295,27 +334,64 @@ later cut has to argue about. **The gate is a column, never a filter.**
 stage-1 time base is not written); `k_arm` is null (no in-situ angle scale is
 published). Each carries its reason in the sidecar.
 
-### The angles are not calibrated, and the table says so
+### The angle scale, measured
 
-Every bundle pins `v_drift = 42.6 um/ns` for all four arms. The angle scale
-goes as 1/v, so if v is wrong every reconstructed angle is wrong by the same
-factor. Wall-coincident gated tracks miss the beam axis by a median **25.8 mm
-in arm A** and **50–90 mm in B, C and D**; scanning an angle scale k per arm
-drives every arm to k > 1:
+*Superseded the 2026-09-07 morning scan in this section, which minimised a
+median over 23–60 tracks from one tag. Measured properly the same day on the
+August full pass, both sub-runs, `sept26_prelim_analysis/k_arm.py`.*
 
-| arm | k that minimises the median axis-miss | implied v | median miss at k | at k = 1 |
-|---|---:|---:|---:|---:|
-| A | 1.12 | 38.0 | 21.8 mm | 25.8 mm |
-| C | 1.50 | 28.4 | 37.5 mm | 50.3 mm |
-| B | 1.64 | 26.0 | 57.9 mm | 90.1 mm |
-| D | 1.78 | 23.9 | 71.6 mm | 77.0 mm |
+Every bundle pins `v_drift = 42.6 um/ns` for all four arms — a Magboltz prior
+for Ar/iso 90/10, never measured in these chambers with this gas. The fit
+measures a transverse **speed** `w`; only `tan = w/v` needs the velocity, so
+**positions are measured and angles are measured × an assumed constant**.
+`k = v_prior/v_true` is the correction.
 
-A (the dry chamber on 07-19) needs the least correction and B/C/D much more,
-which is the shape `V_DRIFT_PRIOR` already predicted. **This scan is a
-consistency check, not the calibration** — 23–60 tracks per arm from one tag,
-minimising a median rather than fitting the pointing band per plane.
-`run145_target_imaging.py` implements the real estimator. Run it on the August
-**full** pass, not on the selected stage-2 sample.
+Three estimators, failure modes deliberately non-overlapping, all on the
+pointing-coincident sample (wall segment **and** plastic bar confirmed):
+
+| arm | k | v in situ | band | track | focus | focus plateau | verdict |
+|---|---:|---:|---:|---:|---:|---|---|
+| A | 1.25 | 34.1 | 1.29 | 1.25 | 1.15 | 1.00–1.35 | PROVISIONAL |
+| C | 1.58 | 27.0 | 1.79 | 1.58 | 1.55 | 1.30–1.85 | PROVISIONAL |
+| D | 1.73 | 24.7 | 3.29 | 1.71 | 1.73 | 1.45–1.95 | NOT CALIBRATED |
+| B | 1.62 | 26.3 | 8.48 | 1.62 | 1.33 | **0.60–2.55** | NOT CALIBRATED |
+
+A and C reproduce between sub-runs to 2 %; their point estimates agree to
+12–16 %. They are **provisional, not certified**, because the focus objective
+is flat across ~35 % — that is the honest uncertainty on k, and it is large.
+B's plateau spans the entire scan grid: B carries no angle information.
+
+**Two methodological traps, both live in `run145_target_imaging.py`:**
+
+- `k_phys` is set to `k_track_coincident` *verbatim*. Reading it as a third
+  opinion counts the per-track estimator twice and makes any arm look
+  self-consistent. It is not read.
+- `k_opt` minimises `r_core`, the median of the sub-30 mm population — a median
+  conditioned on a cut that k itself moves, so it can be "improved" by
+  shrinking the core rather than focusing it. (The imaging source already says
+  its scan rails; this is why.) `k_arm.py` re-derives the focus estimator as a
+  **count inside a fixed radius**, where the selection cannot move with the
+  parameter, and reports the plateau.
+
+**The stage-2 sample is background-dominated, and k exposed it.** Applying the
+measured k makes the median axis-miss *worse* on the stage-2 allowlist reco
+(A 54.6 → 56.7 mm, C 79.4 → 99.8 mm). On that sample the k that maximises
+target pointing is ≈1.1 for *every* arm, regardless of the chamber — i.e. the
+sample carries almost no target-track information. On the pointing-coincident
+sample the optima are sharp and chamber-specific (A 1.20, C 1.55, D 1.70).
+Anything measured on the allowlist sample alone inherits this.
+
+`build_tracks.py` now **applies** k rather than recording it: once, in
+`local_and_global`, so the direction, the pointing, the scintillator
+predictions and the path length cannot land on different calibrations, with
+`v_insitu = v_prior/k` for the depth. **An arm with no certified k gets NaN
+angles, never a silent k = 1.** Positions are untouched.
+
+The **source position** (zero crossing of the pointing band, −intercept/slope)
+is scale-free — scaling every angle by k scales intercept and slope together —
+so it is a geometry check, not evidence about v. A and C measure the same
+global axis: −7.7 ± 0.4 mm and −11.5 ± 0.7 mm against a surveyed 0, stable to
+0.01 mm and 0.9 mm between sub-runs.
 
 ### `q_uend` rails, so `q_per_len` had to be withdrawn
 
