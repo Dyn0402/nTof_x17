@@ -198,6 +198,34 @@ VERDICT_STYLE = {'CALIBRATED': ('#0072B2', 'certified'),
                  'NO DATA': ('#8f8aa0', 'no data')}
 
 
+def pair_table(P) -> str:
+    """The controlled excess, one row per direction and target cut."""
+    if P is None or not len(P):
+        return '<p class="note">no <code>pair_excess</code> table staged.</p>'
+    rows = []
+    for _, r in P.iterrows():
+        sig = float(r['sigma'])
+        col = ('#b04a3a' if abs(sig) >= 3 else
+               '#a86a1e' if abs(sig) >= 2 else 'var(--ink-2)')
+        rows.append(
+            f'<tr><th class="s">track in '
+            f'<b style="color:{DET_COLOR[r["track_arm"]]}">{r["track_arm"]}</b>'
+            f', triggered on '
+            f'<b style="color:{DET_COLOR[r["trig_arm"]]}">{r["trig_arm"]}</b>'
+            f'</th>'
+            f'<td class="n">{int(r["dca_cut"])}</td>'
+            f'<td class="n">{int(r["n_obs"]):,}</td>'
+            f'<td class="n">{r["n_exp"]:,.0f}</td>'
+            f'<td class="n">{r["excess"]:+,.0f}</td>'
+            f'<td class="n" style="color:{col};font-weight:600">'
+            f'{sig:+.2f}</td></tr>')
+    return ('<table class="t"><thead><tr><th>direction</th>'
+            '<th>target cut<br><span class="u">mm</span></th>'
+            '<th>observed</th><th>expected<br><span class="u">from control</span></th>'
+            '<th>excess</th><th>significance</th></tr></thead>'
+            f'<tbody>{"".join(rows)}</tbody></table>')
+
+
 def k_table(cal: dict, img: dict) -> str:
     """The angle scale per chamber: three estimators, the spread, the verdict."""
     if not cal:
@@ -359,7 +387,8 @@ svg text{font-family:var(--mono);font-variant-numeric:tabular-nums}
 """
 
 
-def build_html(F: pd.DataFrame, meta: dict, img: dict, cal: dict) -> str:
+def build_html(F: pd.DataFrame, meta: dict, img: dict, cal: dict,
+               pairs=None) -> str:
     n_trig = int(meta['n_triggers'])
     tot_tracks = int(F.n_tracks.sum())
     tot_point = int(F.pointing.sum())
@@ -507,7 +536,34 @@ direction, target pointing, scintillator prediction, path length &mdash; rather
 than a silent <i>k</i>&thinsp;=&thinsp;1. Their positions are untouched and
 remain valid, because positions never depended on the drift velocity.</div>
 
-<h2><span class="n">4</span>What this does not show</h2>
+<h2><span class="n">4</span>The two-chamber rate, controlled</h2>
+<p>An X17 at 16.8&thinsp;MeV has a minimum opening angle of 109&deg;, so its pair
+lands in <i>two</i> chambers &mdash; and the chambers are opposed in pairs
+(A&nbsp;+94.0&deg; vs C&nbsp;&minus;85.8&deg;; D&nbsp;+3.8&deg; vs
+B&nbsp;&minus;176.2&deg;). Counting two-chamber events directly does not work,
+and the reason is the trigger: it fires on a wall-and-plastic coincidence in
+<b>one</b> arm, which partitions the events by arm. The A-pointing and
+C-pointing event sets overlap <b>3.5&times; less</b> than independent
+expectation, so any excess quoted against a product-of-marginals null is
+measuring the trigger.</p>
+<p>The controlled version fixes the track chamber and varies the <i>trigger</i>
+chamber: the rate of a target-pointing track in C given the event triggered on
+A, against given it triggered on B or D. C is equally &ldquo;not the trigger
+arm&rdquo; in all three, so acceptance and the ambient rate divide out. B and D
+serve as controls even without usable angles, because the trigger arm comes
+from the n_TOF slim rather than from the reconstruction.</p>
+{pair_table(pairs)}
+<div class="caution"><b>Null.</b> A back-to-back signal has to be
+<i>symmetric</i> &mdash; A-in-C-triggered and C-in-A-triggered must move
+together. They do not: one direction is positive at every cut and its mirror is
+negative at every cut. That is an acceptance asymmetry between A and C, not a
+pair. Two further arguments against a signal reading: the apparent excess
+<i>grows</i> as the target cut is loosened, which is backwards for something
+that points at the target; and A&rsquo;s ambient rate in non-A triggers is
+~1.2&thinsp;% against C&rsquo;s ~0.78&thinsp;%, the same A&ndash;C quality gap
+every other measure on this page shows.</div>
+
+<h2><span class="n">5</span>What this does not show</h2>
 <ul>
 <li><b>No opening angles, no invariant mass.</b> Both go as 1/v, and v is not
 measured. Nothing angular in this report should be quoted.</li>
@@ -577,6 +633,11 @@ def main() -> int:
     if marker not in body:
         raise RuntimeError(f'cannot split head from body: {marker!r} not found')
     head, rest = body.split(marker, 1)
+    pp = paths.out('pairs') / f'pair_excess_{a.run}.csv'
+    pairs = pd.read_csv(pp) if os.path.exists(pp) else None
+    if pairs is None:
+        print(f'[warn] no pair table at {pp}; section 4 will be thin')
+
     out = os.path.join(od, 'report.html')
     with open(out, 'w') as fh:
         fh.write('<!doctype html>\n<html lang="en">\n<head>\n'

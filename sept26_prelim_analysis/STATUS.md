@@ -25,21 +25,20 @@ found. Stages 0, 1 and 2 all run.
 
 **Next, in order:**
 
-1. **Re-certify D, and diagnose B.** `k_arm` is measured (see
-   [The angle scale, measured](#the-angle-scale-measured)): A and C are
-   PROVISIONAL and applied, B and D are NOT CALIBRATED and carry null angles.
-   For **D** the per-track and focus estimators agree to 0.7 % (1.713, 1.725)
-   and it is the *band* fit that fails at 3.29 — one estimator, one fit, and D
-   becomes usable. For **B** the focus plateau spans the whole scan grid
-   (k = 0.60–2.55): B carries no angle information at all, and that is a
-   detector question, not a fitting one.
-2. **Then re-read the two-chamber excess** below. It cannot be interpreted
-   before (1) — and note the finding in §2 that the stage-2 sample is
-   background-dominated, so the excess must be re-measured on the
-   pointing-coincident sample.
-3. **Sub-run 0002** — the only run_145 sub-run with no full pass (9 tags,
-   7.0 GB, ~2.5 h locally on 16 cores). Closing it makes run_145 complete.
-4. Then the campaign stage-1 pass (~135 core-hours) and stage 2 (~760).
+1. **Chamber B.** The only chamber still without angles. Its focus objective
+   never turns over across the whole scan grid (k = 0.60–2.55) and its k jumps
+   1.35 → 2.30 depending on the charge window, so this is a detector question,
+   not a fitting one. B also has the fewest tracks by far (1 258
+   pointing-confirmed against A's 5 909) and sub-run 0001 leaves under 200 in
+   the charge window. Start from the funnel: B is the chamber with the lowest
+   lift (1.15×) and the weakest pointing confirmation (16.1 %).
+2. **Sub-run 0002**, then re-run the whole chain over all three sub-runs.
+3. **The B–D pair direction.** With D certified, D-track/B-trigger is
+   measurable; its mirror needs B. Until then the X17 topology has one
+   measurable channel and a half.
+4. Campaign stage-1 census pass (~135 core-hours), then stage 2 (~760).
+5. Stage 1's time base (flash t0 per bunch) → unblocks `t_since_flash_ns` and
+   `e_neutron_keV`, and with them any energy-differential statement.
 
 ### N0 · Land on the machine — ✅ done
 
@@ -249,6 +248,46 @@ lxplus, not against the documents.**
 | 5 | condor throughput and AFS/EOS quota | **Queue is clear and fast** — an 8-job × 8-core `workday` probe was fully started in 78 s and done in 131 s. Cluster-wide 285 running / 263 idle, 0 for dneff. **Storage: use EOS, not AFS.** `/afs/.../work/d/dneff` is 74 % of 100 GB → ~26 GB free; AFS `~` is 62 % of 10 GB. `/eos/user/d/dneff` is 41 % filled of a **2 TB** quota — ample for the campaign outputs. | 2026-09-07 |
 
 ---
+
+## The two-chamber rate, measured against a control — and it is null
+
+`pairs.py`. An X17 at 16.8 MeV has a minimum opening angle of 109 deg, so its
+pair lands in two chambers, and the chambers are opposed in pairs: **A +94.0
+against C −85.8**, **D +3.8 against B −176.2** (measured from `run_config`).
+
+**Counting two-chamber events directly does not work, and this retires the
+earlier "two-chamber excess".** The trigger is a wall AND plastic coincidence
+in ONE arm, which partitions events by arm: an event with an A track is
+overwhelmingly an A-triggered event and is therefore *less* likely to carry a C
+track. Measured: the A-pointing and C-pointing event sets overlap **3.5× less**
+than independent expectation. An excess quoted against a product-of-marginals
+null measures the trigger, not the physics — which is exactly what the stage-2
+number was doing.
+
+The controlled measurement fixes the track chamber and varies the **trigger**
+chamber. B and D can serve as controls even without usable angles, because the
+trigger arm comes from the n_TOF slim, not the reconstruction. Over 118 190
+single-arm triggers:
+
+| target cut | A track / C trig | C track / A trig | D track / B trig |
+|---|---:|---:|---:|
+| 20 mm | +1.78 σ | −1.04 σ | +0.67 σ |
+| 30 mm | +1.95 σ | −0.24 σ | +1.36 σ |
+| 50 mm | +2.83 σ | −1.79 σ | +2.25 σ |
+
+**Null.** Three arguments, not one:
+
+1. A back-to-back signal must be **symmetric**, and it is not — A-in-C-triggered
+   is positive at every cut while its mirror C-in-A-triggered is negative at
+   every cut.
+2. The apparent excess **grows as the target cut is loosened**, which is
+   backwards for something that points at the target.
+3. The asymmetry has an ordinary explanation: A's ambient rate in non-A
+   triggers is ~1.2 % against C's ~0.78 %, the same A–C quality gap the funnel,
+   the lift and the pointing-confirmation rate all show.
+
+B–D is the other X17 channel and only half of it is measurable until B has
+angles.
 
 ## The funnel — published, and what it measures
 
