@@ -280,6 +280,50 @@ lxplus, not against the documents.**
 
 ---
 
+## Stage 1 across the campaign — homogeneous from run_116 on
+
+Four single-tag censuses, ~8,200 triggers each, spanning six weeks
+(`candidate_filter.py`, one sub-run of each run staged by
+`stage_validation_runs.sh`):
+
+| run | date | INTER | INTRA | BUSY | NONE |
+|---|---|---:|---:|---:|---:|
+| run_79 | 26 Jul | **1.86 %** | **5.73 %** | **2.64 %** | 72.95 % |
+| run_116 | 31 Jul | 0.96 % | 2.65 % | 1.20 % | 77.97 % |
+| run_145 | 5 Aug | 1.01 % | 2.26 % | 1.27 % | 78.74 % |
+| run_162 | 9 Aug | 0.98 % | 2.34 % | 1.15 % | 78.77 % |
+
+**116, 145 and 162 agree to a few percent** — inside the ~10 % single-tag
+sampling error, which is measured rather than assumed: run_145's one-tag census
+gives INTER 1.006 % against 1.114 % for all seven tags. So **run_145 is
+representative of the bulk**, and the class partition is stable across the
+production period.
+
+**run_79 is genuinely different**, and the per-arm rates locate it: chamber A is
+busy in **9.2 %** of triggers against 1.4–1.6 % in the later runs, a factor of
+six. INTER, INTRA and BUSY all inflate together, which is what extra spurious
+activity in one arm does to this partition.
+
+**It is not the dead connector**, which was the obvious suspect — run_79 is the
+only run in the sample carrying it. Channels 448–511 of FEU 3 fire at **0.3×**
+the per-channel rate of the rest of that FEU, with 23 of 64 alive: exactly what
+a partly disconnected connector should look like, and consistent with the
+41-silent-channel record. What is elevated is the **rest of the FEU** — 34.98
+hits/event against 13.53 (run_116) and 15.19 (run_162), 2.5× per channel.
+Chamber A's x plane was broadly noisier in run_79, not locally broken, and
+whatever changed had changed by 31 July; the 27 July access sits in between.
+
+Stage 1 has no run_79-specific mask — its hot-channel cut is generic occupancy
+(53 channels masked in run_79, 75 in run_116, 106 in run_162). The frozen sample
+already carries `flag_a_x_mask` for run_79, so the campaign pass should either
+mask it or quote run_79 separately.
+
+**Cost, measured rather than extrapolated:** 8.3–14.0 core-hours per 10⁶
+triggers, and every one of those numbers was taken while 14 reconstruction jobs
+were saturating the machine, so they are upper bounds. At 25.6 M triggers the
+campaign census is ~210–360 core-hours loaded, and the earlier ~135 estimate
+looks right for an idle machine.
+
 ## The two-chamber rate, measured against a control — and it is null
 
 `pairs.py`. An X17 at 16.8 MeV has a minimum opening angle of 109 deg, so its
