@@ -4,12 +4,14 @@
 Plan of record: [`PLAN.md`](PLAN.md). Board:
 <https://dylan-neff.web.cern.ch/x17/analysis.html>.
 
-**One line:** **stages 0, 1 and 2 all run end to end on run_145.** Sample frozen
+**One line:** **stages 0-3 all run end to end on run_145,** the last of them on
+condor at CERN. Sample frozen
 at 36 runs / 293 sub-runs / 25.60 M triggers; the candidate filter classifies
 every trigger at **5.8 core-hours per million**; the stage-2 allowlist cuts the
 reconstruction to **4.1 % of a full pass — ~760 core-hours campaign-wide, not
-the ~1 900 the plan budgeted** — and reproduces the August full pass row for
-row. Next: launch stage 2 on condor, and stage 3's schema.
+the ~1 900 the plan budgeted**; 28 condor jobs turned `stat090_0000` into the
+first **track database — 4 216 segments, 2 263 gated**. Next: the in-situ angle
+scale, which every angle in that table is currently missing.
 
 Last updated **2026-09-07**.
 
@@ -23,14 +25,19 @@ found. Stages 0, 1 and 2 all run.
 
 **Next, in order:**
 
-1. **Launch stage 2 on condor** for run_145's three censused sub-runs:
-   `allowlist.py --subrun all`, then
-   `make_beam_package.py --allow <json> --arms A,B,C,D`, rsync, submit. ~5.6
-   core-hours; the point is to prove the packaged path end to end before the
-   campaign, not to get the numbers.
-2. **Stage 3's schema and `build_tracks.py`** — `PLAN.md` §3 stage 3 has the
-   column list. This is the artefact the week has to leave behind.
-3. Then the campaign stage-1 pass (~135 core-hours) and stage 2 (~760).
+1. **Measure the in-situ angle scale `k_arm`** — the single blocking null in the
+   track table. Every bundle pins `v = 42.6 um/ns` for all four arms, and the
+   pointing says that is wrong by 1.1x (A) to 1.8x (D). Until it is fixed no
+   angle, opening angle or invariant mass from this table means anything.
+   `run145_target_imaging.py` already implements the per-plane estimator; run it
+   on the **August full pass** (`analysis/wft_beam145/extracted/out`, sub-runs
+   0000 and 0001) rather than on the filtered stage-2 output, publish
+   `imaging_summary.json` as a calibration file, and feed it through
+   `build_tracks.py --k-arm`.
+2. **Then re-read the two-chamber excess** below. It cannot be interpreted
+   before (1).
+3. Stage 2 on the other two censused sub-runs, then the campaign stage-1 pass
+   (~135 core-hours) and stage 2 (~760).
 
 ### N0 · Land on the machine — ✅ done
 
@@ -187,8 +194,8 @@ Two things to settle first, both raised by today's staging:
 | 0 · sample | **DONE** | the cuts have been *applied* to the frozen registry (2026-09-07): `mode=beam & phys & run≥79` gives 40 runs / 329 sub-runs / **25.87 M triggers** / 8.41 TB, and every one of those 40 is already ³He + Ar/Iso 90/10 + `st=complete` + 8 FEUs, so those cuts cost nothing. Dropping run_82 (watermark × IPD scan) and run_161 (detector-A resist × drift scan) leaves the core sample: **38 runs / 296 sub-runs / 25.62 M triggers / 8.32 TB** | — (see [Stage 0, frozen](#stage-0-frozen)) |
 | 1 · time base | **todo** | the flash calibration and clock QA are done and published | pick the veto window; write `t_since_flash` and E_n per trigger |
 | 2 · candidate filter | **RUNS** | `../ntof_tracking/reco/noise.py` and `reco/segments.py` already do the clustering and the taxonomy; the slim files carry the n_TOF arm flags | census on a full sub-run; then the stage-2 event-id allowlist |
-| 3 · reco | **RUNS (filtered)** | `wft_beam.py` takes `--allow`; `allowlist.py` builds it from stage 1; `make_beam_package.py --allow` ships it and drops empty (arm, tag) jobs. Benchmarked and validated on run_145 tag 000, all four arms | launch on condor for run_145's three censused sub-runs, then the campaign |
-| 4 · database | **todo** | `microtpc_lib.pair_planes`, `reco/geometry.py` (corrected sign + pinwheel), `reco/pairing.py` | fix the schema, write `build_tracks.py` |
+| 3 · reco | **RAN ON CONDOR** | 28 jobs (4 arms x 7 tags) on cluster 4139919, all succeeded, allowlist honoured. `stat090_0000` reconstructed | the other two censused sub-runs, then the campaign |
+| 4 · database | **RUNS** | `build_tracks.py` — 4 216 segments / 2 263 gated for `stat090_0000`, joined to the stage-1 class and the stage-2 selection reason. `k_arm`, `t_since_flash` and `e_neutron` are declared nulls | measure `k_arm`; then the time base |
 | 5 · scint positions | **todo** | `../ntof_processing/quality_metrics.py` A1/A2 has both estimators and their caveats | recalibrate λ and the Δt scale against MM tracks |
 | 6 · pairs & spectrum | **todo** | nothing | after 4 |
 | — · figures | **scaffolded** | `figstyle.py` (validated palette, 16:9, PNG+CSV enforced) and `paths.py` | build them as each stage lands |
@@ -238,6 +245,122 @@ lxplus, not against the documents.**
 | 3 | do run_79's products get rebuilt, or patched at read time? | **Moot — there is nothing to patch.** No run_79 wft product exists on the laptop or on lxplus. The 2026-07-30 prelim was arm A only, tags 000–002 of 13, on `calib_bundle_prelim` (c2/c1 = 1.14 — the inverted kernel retired 2026-08-21), so it would have to be re-run regardless. **Rebuild.** | 2026-09-07 |
 | 4 | link speed to CERN from the laptop | **17.5 MB/s from AFS, 36 MB/s from EOS** — 56–115× the August figure of 310 kB/s. Measured by `rsync` over ssh: 129 MB of tarballs in 7.7 s; a 54 MB slim file in 1.5 s. **The link is no longer the bottleneck; the local disk is** (`/media/dylan/data` 6.8 GB free of 477 GB, `/home` 9.9 GB of 115 GB). One measurement, one time of day — re-measure before committing to a multi-hundred-GB pull. | 2026-09-07 |
 | 5 | condor throughput and AFS/EOS quota | **Queue is clear and fast** — an 8-job × 8-core `workday` probe was fully started in 78 s and done in 131 s. Cluster-wide 285 running / 263 idle, 0 for dneff. **Storage: use EOS, not AFS.** `/afs/.../work/d/dneff` is 74 % of 100 GB → ~26 GB free; AFS `~` is 62 % of 10 GB. `/eos/user/d/dneff` is 41 % filled of a **2 TB** quota — ample for the campaign outputs. | 2026-09-07 |
+
+---
+
+## Stage 3 — the track database, and what it says
+
+`build_tracks.py`, 2026-09-07. One row per **3D track segment**: a paired
+(x, y) candidate in one chamber of one trigger, keyed on
+`(run, subrun, tag, event_id, arm, track_id)`.
+
+### The condor pass
+
+28 jobs (4 arms x 7 tags), cluster 4139919, **all succeeded, no held jobs, no
+`FATAL`**. The workers honoured the allowlist — arm A tag 000 reports
+`319 -> 174 seeded`, identical to the laptop run. First product:
+
+| | |
+|---|---|
+| segments | **4 216** (A 921, B 860, C 1 272, D 1 163) |
+| gated | **2 263** |
+| events with >= 1 segment | 2 765 |
+| by stage-1 class | INTRA 1 296, INTER 1 172, SINGLE 771, NONE 563, IMPLIED 271, BUSY 143 |
+
+### The reco is deterministic per platform, not across platforms
+
+Comparing the condor tables against the laptop's on the same tag, same
+allowlist, same bundle: **12 of 770 events (1.6 %) differ**, and where they do
+the difference is large (relative 0.4–1.0) — a *different candidate cluster*
+winning a near-tie, not floating-point drift. `x_ok`, `y_ok` and `n_tracks` are
+identical everywhere, so the gate decisions are stable; only the choice among
+near-tied candidates moves. Per arm: A 1.1 %, B 1.0 %, C 1.5 %, D 2.7 %.
+
+**This corrects an earlier claim in this file.** The 1-of-145 disagreement
+between the filtered run and the August full pass was attributed to `wft/`
+moving between the two. A ~1.6 % platform-dependent rate explains it on its
+own, and the code-movement explanation is not needed and was not established.
+A re-run *on the same machine* still reproduces bit-for-bit.
+
+### Two rules the table enforces
+
+**Every X/Y pairing is a row, gated or not.** `wft` pairs candidates and then
+gates on `quality_ok & plausible` in both planes; `n_tracks` counts only
+survivors — 69 of 128 pairings on tag 000 / arm A. Writing only the survivors
+would make the gate's own efficiency unmeasurable from the product, and the 33
+that are `quality_ok` but not `plausible` are exactly the marginal population a
+later cut has to argue about. **The gate is a column, never a filter.**
+
+**Nothing is invented.** `t_since_flash_ns` and `e_neutron_keV` are null (the
+stage-1 time base is not written); `k_arm` is null (no in-situ angle scale is
+published). Each carries its reason in the sidecar.
+
+### The angles are not calibrated, and the table says so
+
+Every bundle pins `v_drift = 42.6 um/ns` for all four arms. The angle scale
+goes as 1/v, so if v is wrong every reconstructed angle is wrong by the same
+factor. Wall-coincident gated tracks miss the beam axis by a median **25.8 mm
+in arm A** and **50–90 mm in B, C and D**; scanning an angle scale k per arm
+drives every arm to k > 1:
+
+| arm | k that minimises the median axis-miss | implied v | median miss at k | at k = 1 |
+|---|---:|---:|---:|---:|
+| A | 1.12 | 38.0 | 21.8 mm | 25.8 mm |
+| C | 1.50 | 28.4 | 37.5 mm | 50.3 mm |
+| B | 1.64 | 26.0 | 57.9 mm | 90.1 mm |
+| D | 1.78 | 23.9 | 71.6 mm | 77.0 mm |
+
+A (the dry chamber on 07-19) needs the least correction and B/C/D much more,
+which is the shape `V_DRIFT_PRIOR` already predicted. **This scan is a
+consistency check, not the calibration** — 23–60 tracks per arm from one tag,
+minimising a median rather than fitting the pointing band per plane.
+`run145_target_imaging.py` implements the real estimator. Run it on the August
+**full** pass, not on the selected stage-2 sample.
+
+### `q_uend` rails, so `q_per_len` had to be withdrawn
+
+`drift_len_mm` first came out at a median 43–46 mm against a **30 mm** gap. Not
+the drift velocity: `q_uend` is the last depth bin above 5 % of the profile
+peak, `n_depth_bins = 18` at 60 ns, and **50.4 % of gated tracks sit exactly on
+that 1080 ns edge**. For them q_uend is a censoring bound. So `drift_railed` is
+a column, the raw time is kept, and `q_per_len` is **null where it rails** — a
+censored denominator makes it a wrong number, not an uncertain one. Per arm:
+A 33 %, C 45 %, D 47 %, B 61 %.
+
+Consequence worth knowing: `wft`'s plausibility window is `250 <= q_uend <=
+1100`, and the grid cannot produce more than 1080. **The upper bound is
+unreachable**; only the shallow cut ever bites.
+
+### The two-chamber excess — real, and not yet interpretable
+
+Counting events with a gated track in >= 2 distinct chambers:
+
+| stage-1 class | 1 arm | 2 arms | 3 | 4 |
+|---|---:|---:|---:|---:|
+| `INTER` | 310 | **111** | 0 | 0 |
+| `INTRA` | 632 | 0 | 0 | 0 |
+| `SINGLE` | 242 | 55 | 9 | 0 |
+| `NONE` | 158 | 26 | 4 | 2 |
+| `IMPLIED` | 73 | 25 | 0 | 0 |
+| `BUSY` | 17 | 18 | 3 | 0 |
+
+Two things fall out, and only the first is safe.
+
+**Stage 1's `INTER` is not a clean selector of the reconstructed topology.**
+Of 421 `INTER` events with any gated track, only **111 (26 %)** reconstruct in
+two chambers; the rest lose an arm at the fit. And 142 two-chamber events come
+from classes stage 1 did *not* call `INTER`.
+
+**The extrapolation is where it stops being safe.** `SINGLE` is sampled at 5 %
+and `NONE` at 1 %, so 64 and 32 found there scale to ~1 280 and ~3 200 across
+the sub-run — which would make `INTER` a few per cent of the two-chamber
+population. **Do not quote that number.** Three reasons: the gate is loose
+(`quality_ok & plausible`, and half of `plausible` is unreachable, above); the
+angles are uncalibrated, so the pointing that would separate a real pair from
+two unrelated clusters does not yet discriminate (median axis-miss is 75–98 mm
+in *every* class, flat); and a `NONE` event with two gated tracks is exactly
+what an over-permissive gate produces. The measurement is real; the
+interpretation waits on `k_arm`.
 
 ---
 
@@ -816,6 +939,37 @@ order of magnitude until re-measured.
 ---
 
 ## Log
+
+**2026-09-07 (latest+1, Ubuntu)** — stage 2 ran at CERN and stage 3 exists.
+Two corrections and one thing that has to be fixed before any physics.
+
+*The condor pass.* 28 jobs, all succeeded, allowlist honoured — arm A tag 000
+gave `319 -> 174 seeded`, identical to the laptop. 4 216 track segments,
+2 263 gated.
+
+*Correction: the reco is deterministic per platform, not across platforms.*
+12 of 770 events (1.6 %) differ between lxplus and the laptop on identical
+inputs, always as a different candidate winning a near-tie; gate decisions are
+identical everywhere. That rate explains the earlier 1-of-145 disagreement with
+the August pass on its own, so my attributing it to `wft/` moving between the
+two was not established and is withdrawn.
+
+*Correction: `q_per_len` was wrong and is now null where it rails.*
+`drift_len_mm` read 43-46 mm against a 30 mm gap. `q_uend` is quantised to the
+model's 18-bin depth grid and half the gated tracks sit exactly on its 1080 ns
+edge, so it is a censoring bound, not a depth. The derived rate is withdrawn
+rather than reported; `q_total` stands. Same inspection found that `wft`'s
+plausibility window has an unreachable upper bound.
+
+*The thing to fix.* Every bundle pins v = 42.6 um/ns for all four arms and the
+pointing says that is wrong by 1.1x (A) to 1.8x (D) — exactly the wet/dry split
+`V_DRIFT_PRIOR` predicted. Angle scale goes as 1/v, so **no angle in the track
+table means anything yet**, and that is why `k_arm` is a declared null instead
+of a silent 1.0. It also means the two-chamber excess found in `SINGLE` and
+`NONE` — which prescale-corrects to something far larger than `INTER` — is a
+real measurement with no safe interpretation: the pointing that would separate
+a pair from two unrelated clusters is flat across every class at 75-98 mm.
+Measure `k_arm` first.
 
 **2026-09-07 (latest, Ubuntu)** — Stage 2's allowlist: built, benchmarked,
 validated against the August full pass, and a third the budgeted cost.
