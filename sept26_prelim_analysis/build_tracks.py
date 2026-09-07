@@ -172,14 +172,34 @@ def local_and_global(df: pd.DataFrame, tr: G.DetTransform,
     return df
 
 
-def drift_extent(df: pd.DataFrame, v_um_ns: float) -> pd.DataFrame:
+#: `q_uend` is the last depth bin above 5 % of the profile peak, so it is
+#: quantised to the model's depth grid and **cannot exceed its last bin**.
+#: `wft_beam.make_bundle` sets `n_depth_bins = 18`, so that edge is
+#: 18 x 60 = 1080 ns -- and on run_145 **50.4 % of gated tracks sit exactly on
+#: it**.  For those tracks q_uend is a censoring bound, not a measurement: the
+#: column lit at least that much gap and possibly more.
+DEPTH_BIN_NS = 60.0
+
+
+def drift_extent(df: pd.DataFrame, v_um_ns: float,
+                 n_depth_bins: int | None = None) -> pd.DataFrame:
     """Depth of the measured segment, from the charge profile's time extent.
 
-    ``q_uend`` is the drift time of the deepest charge in the fitted column, so
-    ``q_uend * v`` is how much of the 30 mm gap this track actually lit.  It is
-    a quality and dE/dx quantity -- the *line* comes from (p0, tan) and does
-    not depend on it -- but a track that lit 4 mm of gap and one that lit 28 mm
-    are not equally trustworthy and the table has to be able to say so.
+    ``q_uend * v`` is how much of the 30 mm gap the track lit.  It is a quality
+    and dE/dx quantity -- the *line* comes from (p0, tan) and does not depend
+    on it -- but a track that lit 4 mm of gap and one that lit 28 mm are not
+    equally trustworthy and the table has to be able to say so.
+
+    **Half of them cannot say it.**  ``q_uend`` rails at the depth grid's last
+    bin (see :data:`DEPTH_BIN_NS`), and a railed value is a lower bound.  So
+    ``drift_railed`` is a column, the raw time is kept as measured, and
+    ``q_per_len`` -- whose denominator would then be censored, making it a
+    *wrong* number rather than an uncertain one -- is **null** where it rails.
+    ``q_total`` stays populated either way: it is not divided by anything.
+
+    This also makes `wft`'s plausibility window one-sided in practice: it
+    requires ``250 <= q_uend <= 1100`` and the grid cannot produce more than
+    1080, so the upper bound is unreachable and only the shallow cut bites.
     """
     v_mm = v_um_ns / 1000.0
     df = df.copy()
@@ -187,13 +207,17 @@ def drift_extent(df: pd.DataFrame, v_um_ns: float) -> pd.DataFrame:
                          df['y_q_uend'].to_numpy(float)], axis=1)
     df['drift_t_end_ns'] = ue
     df['drift_len_mm'] = ue * v_mm
-    # path length through the lit depth, along the track
+    edge = (n_depth_bins * DEPTH_BIN_NS) if n_depth_bins else np.nan
+    df['drift_railed'] = (ue >= edge - 1e-6) if np.isfinite(edge) else False
+    df['depth_grid_edge_ns'] = edge
+
     sec = np.sqrt(1.0 + df['tanx'].to_numpy(float) ** 2
                   + df['tany'].to_numpy(float) ** 2)
     df['path_len_mm'] = df['drift_len_mm'] * sec
     df['q_total'] = df['x_q_sum'].to_numpy(float) + df['y_q_sum'].to_numpy(float)
     with np.errstate(divide='ignore', invalid='ignore'):
-        df['q_per_len'] = df['q_total'] / df['path_len_mm'].replace(0, np.nan)
+        qpl = df['q_total'] / df['path_len_mm'].replace(0, np.nan)
+    df['q_per_len'] = qpl.where(~df['drift_railed'])
     return df
 
 
@@ -286,8 +310,10 @@ def build_arm(reco_dir: Path, arm: str, tr: G.DetTransform,
                          'these tables cannot go in one table')
     v = float(next(iter(vs))) if vs else np.nan
 
+    nbins = {m['bundle'].get('n_depth_bins') for m in metas.values()}
+    nbins = next(iter(nbins)) if len(nbins) == 1 else None
     df = local_and_global(df, tr)
-    df = drift_extent(df, v)
+    df = drift_extent(df, v, n_depth_bins=nbins)
     df = pointing(df)
     df = predictions(df)
     df['v_drift_um_ns'] = v
@@ -298,7 +324,8 @@ def build_arm(reco_dir: Path, arm: str, tr: G.DetTransform,
             df[f'chi2dof_{c}'] = (df[f'{c}_chi2'].to_numpy(float)
                                   / df[f'{c}_dof'].replace(0, np.nan))
     prov = dict(
-        arm=arm, v_drift_um_ns=v,
+        arm=arm, v_drift_um_ns=v, n_depth_bins=nbins,
+        frac_drift_railed=round(float(df['drift_railed'].mean()), 4),
         n_tags=len(metas),
         bundles=sorted({m['calibration'] for m in metas.values()}),
         code_commit=sorted({(m['bundle']['provenance'] or {}).get('code_commit',
@@ -356,7 +383,7 @@ ORDER = (
     ['run', 'subrun', 'tag', 'event_id', 'arm', 'track_id', 'event_class',
      'select_reason', 'bunch']
     + ['x_local', 'y_local', 'tanx', 'tany', 'drift_t_end_ns', 'drift_len_mm',
-       'path_len_mm']
+       'path_len_mm', 'drift_railed']
     + [f'p0_{k}' for k in 'xyz'] + [f'd_{k}' for k in 'xyz']
     + ['gated', 'x_quality_ok', 'y_quality_ok', 'x_plausible', 'y_plausible',
        'chi2dof_x', 'chi2dof_y', 'x_n_strips', 'y_n_strips',
