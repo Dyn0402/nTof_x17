@@ -65,16 +65,15 @@ from sept26_prelim_analysis import paths  # noqa: E402
 ARMS = ('A', 'B', 'C', 'D')
 SCHEMA = 'sept26_prelim/funnel/1'
 
-#: The full waveform pass this reads.  NOT the stage-2 filtered output: the
-#: funnel is the one product that must be free of the hits-based selection.
+#: The full waveform pass this reads: the NESTED, merged tree, one pair of
+#: tables per (sub-run, arm).  ``merge_fullpass.py`` puts the flat August CERN
+#: output into this shape, and ``wft_beam`` writes it directly for sub-runs
+#: reconstructed here, so one reader covers both.
+#:
+#: NOT the stage-2 filtered output: the funnel is the one product that must be
+#: free of the hits-based selection.
 FULLPASS = os.environ.get(
-    'X17_FULLPASS',
-    '/media/dylan/data/x17/beam_july/analysis/wft_beam145/extracted/out')
-
-#: file tag prefix -> sub-run.  The pass is stored flat, by tag.
-TAG_SUBRUN = {'260805_14H06': 'stat090_0000',
-              '260805_15H07': 'stat090_0001',
-              '260805_16H07': 'stat090_0002'}
+    'X17_FULLPASS', '/media/dylan/data/x17/sept26_prelim/fullpass/run_145')
 
 #: slim n_TOF detector families, by ``det`` code (config.SCINT_TREES order).
 FAMILY = {**{i: 'WAL' for i in range(0, 4)},
@@ -87,50 +86,38 @@ ARM_OF_DET = {i: ARMS[i % 4] for i in range(12)}
 DT_WINDOW = (-100.0, 60.0)
 
 
-# --------------------------------------------------------------- the full pass
 def read_fullpass(run: str, subruns) -> tuple:
-    """(events, candidates) for every arm and tag of ``subruns``.
+    """(events, candidates) for every arm of ``subruns``, from the merged tree.
 
-    ``events`` is one row per (arm, sub-run, tag, event) -- the wide per-event
+    ``events`` is one row per (arm, sub-run, event) -- the wide per-event
     table.  ``candidates`` is one row per plane candidate offered to the fit.
-    Raises if a sub-run has no tags in the pass, rather than reporting it as a
-    sub-run with zero tracks.
+    Raises if a sub-run is absent rather than reporting it as a sub-run with
+    zero tracks, which is the failure this whole package is written against.
     """
     ev, cand = [], []
-    want = set(subruns)
-    seen = set()
-    for arm in ARMS:
-        pat = os.path.join(FULLPASS, f'mx17_{arm}', 'events_*.parquet')
-        files = sorted(glob.glob(pat))
-        if not files:
-            raise FileNotFoundError(
-                f'no full-pass tables for arm {arm} under {FULLPASS}\n'
-                f'  set $X17_FULLPASS, or stage the pass there.')
-        for f in files:
-            tag = os.path.basename(f).split('events_')[1] \
-                .replace('.candidates.parquet', '').replace('.parquet', '')
-            sub = TAG_SUBRUN.get(tag[:12])
-            if sub is None:
-                raise KeyError(f'tag {tag} maps to no sub-run; extend TAG_SUBRUN')
-            if sub not in want:
-                continue
-            seen.add(sub)
-            if f.endswith('.candidates.parquet'):
-                d = pd.read_parquet(f, columns=['event_id', 'plane', 'rank',
-                                                'track_id', 'track_gated',
-                                                'quality_ok', 'plausible'])
-                cand.append(d.assign(arm=arm, tag=tag, subrun=sub))
-            else:
-                d = pd.read_parquet(f, columns=['event_id', 'n_hits', 'spark',
-                                                'x_ok', 'y_ok', 'n_tracks'])
-                ev.append(d.assign(arm=arm, tag=tag, subrun=sub))
-    missing = want - seen
-    if missing:
+    for sub in subruns:
+        for arm in ARMS:
+            d = os.path.join(FULLPASS, sub, f'mx17_{arm}')
+            pe = os.path.join(d, 'events_prelim.parquet')
+            pc = os.path.join(d, 'events_prelim.candidates.parquet')
+            if not os.path.exists(pe):
+                raise FileNotFoundError(
+                    f'no full pass for {arm}/{sub} under {FULLPASS}\n'
+                    f'  reconstruct it, or run merge_fullpass.py if it exists '
+                    f'in the flat per-tag layout. Do NOT drop it from '
+                    f'--subruns silently: a missing sub-run and an empty one '
+                    f'are different things.')
+            e = pd.read_parquet(pe, columns=['event_id', 'n_hits', 'spark',
+                                             'x_ok', 'y_ok', 'n_tracks'])
+            ev.append(e.assign(arm=arm, subrun=sub))
+            if os.path.exists(pc):
+                c = pd.read_parquet(pc, columns=['event_id', 'plane', 'rank',
+                                                 'track_id', 'track_gated',
+                                                 'quality_ok', 'plausible'])
+                cand.append(c.assign(arm=arm, subrun=sub))
+    if not cand:
         raise FileNotFoundError(
-            f'the full pass does not cover {", ".join(sorted(missing))} -- '
-            f'those sub-runs were never reconstructed without an allowlist. '
-            f'Run them, or drop them from --subruns; do not report them as '
-            f'zero.')
+            f'no candidate tables under {FULLPASS}; the pairing count needs them')
     return (pd.concat(ev, ignore_index=True),
             pd.concat(cand, ignore_index=True))
 
@@ -252,8 +239,10 @@ def build(run: str, subruns, merged_dir: str = None) -> dict:
         # considered; a gated track is one that survived.  n_tracks is the
         # authority on the latter -- the candidate table's track_id marks
         # every pairing, gated or not.
+        # event_id is global within a sub-run (verified: tags carve disjoint
+        # ranges), so the tag is not part of the key.
         pair = c[c.track_id >= 0].groupby(
-            ['subrun', 'tag', 'event_id', 'track_id']).ngroups
+            ['subrun', 'event_id', 'track_id']).ngroups
         rows.append(dict(
             arm=arm,
             n_triggers=n_trig,
