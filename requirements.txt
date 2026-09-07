@@ -1,0 +1,13 @@
+numpy
+pandas
+matplotlib
+scipy
+seaborn
+awkward
+uproot
+vector
+tqdm
+gspread
+gspread_dataframe
+google-auth
+google-api-python-client
