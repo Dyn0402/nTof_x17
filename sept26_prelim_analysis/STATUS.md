@@ -275,6 +275,19 @@ single-arm triggers:
 | 30 mm | +1.95 σ | −0.24 σ | +1.36 σ |
 | 50 mm | +2.83 σ | −1.79 σ | +2.25 σ |
 
+**Combining the two directions** — the same physics measured twice, and a real
+signal cannot average away while an acceptance asymmetry can:
+
+| target cut | A–C combined excess | significance | 95 % CL limit |
+|---|---:|---:|---|
+| 20 mm | +1.5 ± 11.2 | +0.14 σ | < 0.07 % of triggers |
+| 30 mm | +12.9 ± 13.7 | +0.95 σ | < 0.12 % |
+| 50 mm | +5.7 ± 18.2 | +0.31 σ | < 0.12 % |
+
+So the result is not just "null" but **null below ~0.1 % of triggers**, and the
+combination averaging the per-direction +2.0 σ and −1.5 σ to 0.1 σ is the check
+that the asymmetry was acceptance — argued before it was computed.
+
 **Null.** Three arguments, not one:
 
 1. A back-to-back signal must be **symmetric**, and it is not — A-in-C-triggered
@@ -288,6 +301,24 @@ single-arm triggers:
 
 B–D is the other X17 channel and only half of it is measurable until B has
 angles.
+
+### The geometry, validated end to end — for free
+
+The same two-chamber events that give the null give the best validation in the
+package, because it costs nothing extra: two tracks from the target into
+**opposing** chambers must open wide, into **perpendicular** ones ~90°.
+Measured at dca < 50 mm:
+
+| pair | | n | median opening angle | above 109° |
+|---|---|---:|---:|---:|
+| A–C | opposing | 153 | **143.7°** | 93.5 % |
+| A–D | perpendicular | 285 | 82.6° | 22.1 % |
+| C–D | perpendicular | 194 | 96.9° | 30.4 % |
+
+A–C has essentially no density below 95°. That one separation validates the
+strip maps, **both** in-plane signs, the pinwheel, the chamber transforms and
+the angle scale together — if any of them were wrong the distributions would
+not separate. It is not evidence of a pair; the rate above is null.
 
 ## The funnel — published, and what it measures
 
