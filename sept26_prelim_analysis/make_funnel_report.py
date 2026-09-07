@@ -410,7 +410,10 @@ def build_html(F: pd.DataFrame, meta: dict, img: dict, cal: dict,
     tot_tracks = int(F.n_tracks.sum())
     tot_point = int(F.pointing.sum())
     best = F.loc[F.lift.idxmax()]
-    kk = [v['k'] for v in (cal.get('arms') or {}).values() if v.get('k')]
+    # Only the CERTIFIED chambers: an uncertified k is not a measurement, and
+    # quoting B's here would put a number in the lede the table refuses to
+    # stand behind.
+    kk = [float(v) for v in (cal.get('apply') or {}).values()]
     kmin, kmax = (min(kk), max(kk)) if kk else (float('nan'), float('nan'))
     n_cal = len(cal.get('apply') or {})
     ac = {r['arm']: r for r in img['results']} if img else {}
