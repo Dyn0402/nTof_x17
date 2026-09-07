@@ -23,6 +23,37 @@ Written on Windows, executed on the **Ubuntu laptop** on 2026-09-07.
 **N0–N5 are done** and kept below for the record, each marked with what it
 found. Stages 0, 1 and 2 all run.
 
+### The night of 2026-09-07 — what changed
+
+Six things, in rough order of how much they matter.
+
+1. **A geometry bug: the Y plane never got the in-plane sign flip X got.** The
+   2026-08-20 sign measurement was made on the target image, which lives in the
+   XZ projection and is blind to the y sign, so y silently kept the raw strip
+   direction — **every 3D track direction has carried a mirrored vertical
+   component since**. Fixed. It moves the median target height from below the
+   He-3 capsule to near its centre and roughly doubles the fraction pointing
+   into its y span. `dca` in XZ barely notices, which is why it survived; the
+   opening angle between two chambers very much does.
+2. **Chamber D is calibrated.** k = 1.751, v = 24.3 µm/ns. Three of four
+   chambers now carry angles.
+3. **The two-chamber rate is null, with a limit and a systematic.** Combined
+   A–C excess 1.5 ± 11.2 events; second-track rate < 0.07–0.12 % of triggers at
+   95 % CL. The dominant systematic is the *choice of control chamber*, which
+   alone moves the significance by 3.4 σ.
+4. **The geometry is validated end to end** by the opening angles: opposing
+   chambers 144°, perpendicular ones 83–97°.
+5. **Chamber B is closed out** — not statistics, not the scan range, not the
+   charge window. Most likely the bench-transferred sharing kernel does not
+   describe B in the beam.
+6. **Two methodological faults found and fixed in my own tooling**: the focus
+   estimator was reading a value that double-counted the per-track one, and my
+   own scan grid was narrow enough that a railed optimum could have passed for
+   a measurement. `focus_scan` now refuses one.
+
+Everything is published: <https://dylan-neff.web.cern.ch/x17/reco-funnel/>,
+linked from the X17 hub, with the board's log carrying each result.
+
 **Next, in order:**
 
 1. **Chamber B.** The only chamber still without angles. Its focus objective
