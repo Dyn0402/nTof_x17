@@ -118,6 +118,16 @@ GAS_MIXTURES = [
         "components": [("ar", 90.0), ("ic4h10", 10.0)],
         "penning":    {"mode": "auto"},
     },
+    # Added 2026-08-09 for the T14 HV-slope-hunt iso-fraction discriminator
+    # (design/report/... deep-dive session): the bench mixture is
+    # flowmeter-set and never assayed, so the true iso fraction carries the
+    # same epistemic status as the humidity grid. 92.5/7.5 brackets 95/5 and
+    # 90/10 on the "more quencher steepens the slope" side.
+    {
+        "label":      "Ar_iC4H10_92p5_7p5",
+        "components": [("ar", 92.5), ("ic4h10", 7.5)],
+        "penning":    {"mode": "auto"},
+    },
     {
         "label":      "Ar_iC4H10_85_15",
         "components": [("ar", 85.0), ("ic4h10", 15.0)],
@@ -195,10 +205,24 @@ GAS_MIXTURES = [
     {
         "label":      "Ar_CF4_iC4H10_88_10_2",
         "components": [("ar", 88.0), ("cf4", 10.0), ("ic4h10", 2.0)],
-        # Dominant Penning channel: Ar* (11.55 eV) → iC4H10 (IP 10.67 eV).
-        # Garfield++ has a built-in parameterisation for Ar/iC4H10 (Sahin et al.,
-        # JINST 5 2010); auto mode uses this for the Ar–iC4H10 sub-system.
-        "penning":    {"mode": "auto"},
+        # Penning: MUST be manual. Corrected 2026-08-09 -- probed directly
+        # (EnablePenningTransfer() on this exact ternary): "Penning transfer
+        # probability for Ar/CF4/iC4H10 is not implemented", i.e. auto mode
+        # returns False and this mixture has been silently running at rP=0
+        # ever since this entry was added, NOT the built-in Ar/iC4H10 value
+        # the comment below used to assume. The same probe on the plain
+        # Ar/CF4 90/10 binary also returns False ("not implemented") --
+        # consistent with CF4's IP (~15.9 eV, NIST adiabatic) sitting above
+        # both Ar metastables (11.55/11.72 eV), i.e. genuinely no Penning
+        # channel there, so rP=0 for THAT entry is correct, not a trap.
+        # iC4H10 (IP 10.67 eV) is the exception: Ar* -> iC4H10 has a real
+        # built-in Garfield++ parameterisation (Sahin et al., JINST 5 2010,
+        # flat rP=0.40 at every iC4H10 fraction it was probed at, 2-10%),
+        # confirmed directly for the pure Ar/iC4H10 98/2 and 95/5 binaries --
+        # auto mode just doesn't decompose the ternary into that sub-system.
+        # rP=0.40, same trap and same fix as the Ar/CO2/iC4H10 93/5/2 entry
+        # above and the Ar/iC4H10/H2O ones below.
+        "penning":    {"mode": "manual", "rP": 0.40, "gas": "ar"},
     },
     {
         "label":      "Ne_CF4_90_10",
@@ -254,6 +278,101 @@ GAS_MIXTURES = [
         "components": [("cf4", 100.0)],
         # Pure CF4 — single component, no Penning transfer possible.
         "penning":    {"mode": "auto"},
+    },
+
+    # ── Ar/iC4H10/H2O 94/5/1 — the MX17 bench gas AS IT ACTUALLY IS ─────────
+    # Added 2026-08-06 for the MX17 response simulation
+    # (MX17_Geant design/RESPONSE_SIM_PLAN.md §5).
+    #
+    # The det3 bench does not run dry Ar/iso 95/5. The geometry-corrected
+    # det3 v(E) (extent-slope estimator, E = HV/3 cm) sits far below dry
+    # Magboltz and matches Ar/iso 95/5 + 1 % H2O at RMS ~0.8 µm/ns — that is
+    # the result already in results/water_grid.json, and 36.6 µm/ns is the
+    # measured drift velocity the response chain has to reproduce. Simulating
+    # the dry mixture would put the drift time, and therefore every arrival-
+    # time observable in Stage B, systematically wrong.
+    #
+    # Penning: MUST be manual. Garfield has no Ar/iC4H10/H2O ternary
+    # parameterisation, so auto mode would silently run at rP = 0 while the
+    # dry Ar/iC4H10 95/5 reference this is compared against runs at 0.40 —
+    # the same trap documented for Ar/CO2/iC4H10 and Ne/CF4/C2H6 above. H2O
+    # (IP 12.62 eV) is ABOVE both Ar metastables (11.55 / 11.72 eV), so water
+    # opens no new Penning channel; at 1 % it mainly steals metastables into
+    # non-ionising channels. rP = 0.40 (the Ar/iC4H10 value) is therefore the
+    # upper bracket, not the central value. Carry 0.30-0.40 as the systematic
+    # until there is gain data to say otherwise.
+    {
+        "label":      "Ar_iC4H10_H2O_94_5_1",
+        "components": [("ar", 94.0), ("ic4h10", 5.0), ("h2o", 1.0)],
+        "penning":    {"mode": "manual", "rP": 0.40, "gas": "ar"},
+    },
+
+    # ── Contaminant diagnosis grid — DIAGNOSIS-GRID / unconstrained-contaminant-search ──
+    # Added 2026-08-09. NOT a gas assay: no humidity was ever measured on the
+    # det3 bench (MX17_Geant response/avalanche/EOS_README.md, T14 default
+    # freeze note) -- every water figure, including the 1 % point above, is a
+    # Magboltz fit to a slow measured v_drift, not a direct measurement. This
+    # brackets that fit finely (0.5/1.5 %) and tests the June N2 co-contam
+    # candidate, so the post-T14-comparison diagnosis has more than one point
+    # to interpolate from if dry disagrees with data. Do not treat any single
+    # point here as a preferred/blessed composition.
+    #
+    # Same Penning reasoning as the 1 % point directly above: N2 (IP 15.58 eV)
+    # is even further above both Ar metastables than H2O is, so it opens no
+    # new channel either -- rP = 0.40 (the Ar/iC4H10 value) stays the upper
+    # bracket for all of these, carrying 0.30-0.40 as the systematic until
+    # gain data (this campaign's own avalanche points) says otherwise.
+    {
+        "label":      "Ar_iC4H10_H2O_94p5_5_0p5",
+        "components": [("ar", 94.5), ("ic4h10", 5.0), ("h2o", 0.5)],
+        "penning":    {"mode": "manual", "rP": 0.40, "gas": "ar"},
+    },
+    {
+        "label":      "Ar_iC4H10_H2O_93p5_5_1p5",
+        "components": [("ar", 93.5), ("ic4h10", 5.0), ("h2o", 1.5)],
+        "penning":    {"mode": "manual", "rP": 0.40, "gas": "ar"},
+    },
+    # June best fit: 95/5 + 1% H2O + 1% N2 co-contamination
+    # (garfield_sim/results/water_grid.json, mixture "Ar_iso5_H2O1_N2_1").
+    {
+        "label":      "Ar_iC4H10_H2O_N2_93_5_1_1",
+        "components": [("ar", 93.0), ("ic4h10", 5.0), ("h2o", 1.0),
+                       ("n2", 1.0)],
+        "penning":    {"mode": "manual", "rP": 0.40, "gas": "ar"},
+    },
+
+    # ── SPS det4 wet quaternary — Ar/CF4/iC4H10 88/10/2 + H2O ─────────────────
+    # Added 2026-08-11, queued fill-in work. Dry base is the
+    # Ar_CF4_iC4H10_88_10_2 entry above; det4's bench humidity is not
+    # measured any more precisely than a 1.3-1.7 % H2O range, so this is a
+    # 3-point bracket (1.3/1.5/1.7 %) rather than a single point, same
+    # reasoning as the det3 contaminant diagnosis grid above. CF4 and iC4H10
+    # fractions held fixed, H2O traded against Ar.
+    #
+    # Penning: manual, rP = 0.40, gas = ar. Same fix and same reasoning as
+    # the dry Ar_CF4_iC4H10_88_10_2 entry above -- auto mode does not
+    # decompose this quaternary into the Ar->iC4H10 sub-system that actually
+    # has a built-in Garfield++ parameterisation, so it would silently run
+    # at rP = 0. H2O (IP 12.62 eV) sits above both Ar metastables (11.55 /
+    # 11.72 eV), same as every other wet mixture in this file, so it opens
+    # no new Penning channel and rP = 0.40 stays the upper bracket.
+    {
+        "label":      "Ar_CF4_iC4H10_H2O_86p7_10_2_1p3",
+        "components": [("ar", 86.7), ("cf4", 10.0), ("ic4h10", 2.0),
+                       ("h2o", 1.3)],
+        "penning":    {"mode": "manual", "rP": 0.40, "gas": "ar"},
+    },
+    {
+        "label":      "Ar_CF4_iC4H10_H2O_86p5_10_2_1p5",
+        "components": [("ar", 86.5), ("cf4", 10.0), ("ic4h10", 2.0),
+                       ("h2o", 1.5)],
+        "penning":    {"mode": "manual", "rP": 0.40, "gas": "ar"},
+    },
+    {
+        "label":      "Ar_CF4_iC4H10_H2O_86p3_10_2_1p7",
+        "components": [("ar", 86.3), ("cf4", 10.0), ("ic4h10", 2.0),
+                       ("h2o", 1.7)],
+        "penning":    {"mode": "manual", "rP": 0.40, "gas": "ar"},
     },
 ]
 
