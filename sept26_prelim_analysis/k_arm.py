@@ -94,7 +94,12 @@ V_BUNDLE_PRIOR = 42.6
 #: The focus scan.  Radii are fixed in mm so the objective's selection cannot
 #: move with k; 30 mm is the imaging's own core radius and 10 mm is the He-3
 #: capsule's outer radius (``geometry.HE3_R_MAX``).
-K_GRID = np.round(np.arange(0.60, 2.61, 0.05), 2)
+#: The grid runs to 3.5 (v = 12 um/ns), well past any plausible drift velocity
+#: for Ar/iso 90/10, so a real optimum is interior.  It used to stop at 2.6,
+#: which is close enough to chamber B's apparent peak that a clipped maximum
+#: could have passed for a measurement -- `focus_scan` now refuses one outright
+#: rather than leaving that to be noticed.
+K_GRID = np.round(np.arange(0.60, 3.51, 0.05), 2)
 FOCUS_RADII_MM = (30.0, 10.0)
 
 #: Charge window, as percentiles of ``x_q_sum`` within the coincident sample.
@@ -224,12 +229,19 @@ def focus_scan(S: dict, tr, gap_mm: float = 30.0) -> dict:
         med.append(float(np.median(r)))
     best = {rad: float(K_GRID[int(np.argmax(c))]) for rad, c in counts.items()}
     best['median'] = float(K_GRID[int(np.argmin(med))])
+    # An objective still climbing at either edge has no optimum inside the
+    # grid, and the argmax is then just the last bin.  That is not a
+    # measurement, and it must not be reported as one.
+    c0 = np.array(counts[FOCUS_RADII_MM[0]], float)
+    railed = bool(c0[-1] >= 0.98 * c0.max() or c0[0] >= 0.98 * c0.max())
     # How well the objective is actually constrained: the width of the k range
     # holding >=95 % of the peak count at 30 mm.  A flat scan is not a
     # measurement, and this is what says so.
     c30 = np.array(counts[FOCUS_RADII_MM[0]], float)
     within = K_GRID[c30 >= 0.95 * c30.max()]
-    return dict(best=best, k=float(np.median(list(best.values()))),
+    return dict(best=best,
+                k=float('nan') if railed else float(np.median(list(best.values()))),
+                railed=railed,
                 plateau=[float(within.min()), float(within.max())],
                 n=int(len(xl)), grid=K_GRID.tolist(),
                 counts={str(r): c for r, c in counts.items()},
