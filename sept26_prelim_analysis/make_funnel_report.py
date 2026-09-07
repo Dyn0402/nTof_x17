@@ -519,10 +519,34 @@ def main() -> int:
     if not img:
         print(f'[warn] no imaging summary at {ip}; section 3 will be thin')
 
+    body = build_html(F, meta, img, cal)
+
+    # Two forms of the same page, and the difference matters.
+    #
+    # report.html is a COMPLETE document: a plain web server (the DAQ page's
+    # Analysis tab, the CERN web space, a file:// open) hands the bytes over
+    # untouched, and without a doctype the browser falls into quirks mode and
+    # the box model shifts under the tables.  body.html is the fragment form,
+    # for the Artifact publisher, which supplies its own <!doctype>/<head> and
+    # rejects a page that brings its own.
+    marker = '<div class="wrap">'
+    if marker not in body:
+        raise RuntimeError(f'cannot split head from body: {marker!r} not found')
+    head, rest = body.split(marker, 1)
     out = os.path.join(od, 'report.html')
     with open(out, 'w') as fh:
-        fh.write(build_html(F, meta, img, cal))
+        fh.write('<!doctype html>\n<html lang="en">\n<head>\n'
+                 '<meta charset="utf-8">\n'
+                 '<meta name="viewport" content="width=device-width,'
+                 'initial-scale=1">\n'
+                 '<meta name="color-scheme" content="light dark">\n'
+                 f'{head}</head>\n<body>\n{marker}{rest}\n'
+                 '</body>\n</html>\n')
+    frag = os.path.join(od, 'body.html')
+    with open(frag, 'w') as fh:
+        fh.write(body)
     print(f'wrote {out}  ({os.path.getsize(out) / 1024:.0f} kB)')
+    print(f'wrote {frag}  (fragment, for the artifact publisher)')
     return 0
 
 
