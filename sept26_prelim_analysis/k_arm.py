@@ -52,6 +52,20 @@ The sample is the pointing-coincident one -- the track extrapolates to the wall
 segment AND the plastic bar that actually fired -- because on the full sample the
 estimators diverge by an order of magnitude, which is the background talking.
 
+A NOTE ON CIRCULARITY, AND WHY IT DOES NOT BITE.  The pointing-coincident
+sample is selected by extrapolating each track to the wall and the plastic with
+its RAW tan -- i.e. at k = 1 -- so the sample k is measured on is defined before
+k is known.  Checked by iterating once (2026-09-07): apply k, re-derive the
+sample, re-measure.  The sample shifts by 8-21 %, and the answer does not --
+
+    arm   k in    k out (both sub-runs)
+     A    1.27    1.20, 1.20
+     C    1.62    1.55, 1.60
+     D    1.75    1.75, 1.80
+
+every one within a grid step of the input.  k is a fixed point of the
+selection, so the ordering costs nothing.
+
 WHAT IS NOT MEASURED HERE.  The SOURCE POSITION (the zero crossing of the band,
 -intercept/slope) is scale-free: multiply every angle by k and both the intercept
 and the slope scale with it.  It is reported alongside as an independent check on
