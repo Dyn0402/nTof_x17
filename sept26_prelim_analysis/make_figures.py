@@ -314,7 +314,12 @@ def fig_opening(out):
     K = cal['apply']
     DCA = 50.0
     rows = []
-    for sub in ('stat090_0000', 'stat090_0001'):
+    # Whatever sub-runs the merged pass actually holds -- hardcoding the list
+    # meant a newly reconstructed sub-run was silently left out of this figure
+    # while every other product picked it up.
+    subs = sorted(d for d in os.listdir(base)
+                  if os.path.isdir(os.path.join(base, d)))
+    for sub in subs:
         for a, k in K.items():
             f = os.path.join(base, sub, f'mx17_{a}', 'events_prelim.parquet')
             if not os.path.exists(f):
