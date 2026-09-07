@@ -176,30 +176,52 @@ def rate_table(F: pd.DataFrame) -> str:
             f'<tbody>{"".join(rows)}</tbody></table>')
 
 
-def k_table(img: dict) -> str:
-    if not img:
-        return '<p class="note">no <code>imaging_summary.json</code> staged.</p>'
-    rows = []
-    for r in img['results']:
+VERDICT_STYLE = {'CALIBRATED': ('#0072B2', 'certified'),
+                 'PROVISIONAL': ('#a86a1e', 'provisional'),
+                 'NOT CALIBRATED': ('#b04a3a', 'not calibrated'),
+                 'NO DATA': ('#8f8aa0', 'no data')}
+
+
+def k_table(cal: dict, img: dict) -> str:
+    """The angle scale per chamber: three estimators, the spread, the verdict."""
+    if not cal:
+        return '<p class="note">no <code>k_arm_&lt;run&gt;.json</code> staged.</p>'
+    src = {}
+    for r in (img or {}).get('results', []):
         p = r.get('pointing_x_coincident', {})
-        rows.append(
-            f'<tr><th class="s" style="color:{DET_COLOR[r["arm"]]}">'
-            f'chamber {r["arm"]}</th>'
-            f'<td class="n">{r["v_bundle"]:.1f}</td>'
-            f'<td class="n">{r["k_phys"]:.2f}</td>'
-            f'<td class="n">{r["v_bundle"] / r["k_phys"]:.1f}</td>'
-            f'<td class="n">{p.get("source_measured_axis", "&mdash;")}</td>'
-            f'<td class="n">{p.get("source_measured_mm", float("nan")):+.1f}'
-            f' &plusmn; {p.get("zero_crossing_err", float("nan")):.1f}</td>'
-            f'<td class="n">{r["image_at_kphys_coincident"]["r_med"]:.1f}</td>'
-            f'</tr>')
+        src[r['arm']] = (p.get('source_measured_axis'),
+                         p.get('source_measured_mm'), p.get('zero_crossing_err'))
+    def num(x, fmt='.2f'):
+        return (f'<td class="n">{x:{fmt}}</td>' if x is not None and x == x
+                else '<td class="n">&mdash;</td>')
+
+    rows = []
+    order = sorted(cal['arms'], key=lambda a: (
+        list(VERDICT_STYLE).index(cal['arms'][a].get('verdict', 'NO DATA')), a))
+    for a in order:
+        v = cal['arms'][a]
+        col, word = VERDICT_STYLE.get(v.get('verdict', 'NO DATA'),
+                                      VERDICT_STYLE['NO DATA'])
+        pe = v.get('per_estimator', {})
+        pl = v.get('focus_plateau')
+        ax, mm, err = src.get(a, (None, float('nan'), float('nan')))
+        k = v.get('k')
+        cells = [f'<th class="s" style="color:{DET_COLOR[a]}">chamber {a}</th>',
+                 num(k), num(cal['v_bundle'] / k if k else None, '.0f'),
+                 num(pe.get('band')), num(pe.get('track')), num(pe.get('focus')),
+                 (f'<td class="n">{pl[0]:.2f}&ndash;{pl[1]:.2f}</td>' if pl
+                  else '<td class="n">&mdash;</td>'),
+                 (f'<td class="n">{mm:+.1f} &plusmn; {err:.1f}'
+                  f'<span class="u"> {ax or ""}</span></td>' if mm == mm
+                  else '<td class="n">&mdash;</td>'),
+                 f'<td><span style="color:{col};font-weight:600">{word}</span></td>']
+        rows.append(f'<tr>{"".join(cells)}</tr>')
     return ('<table class="t"><thead><tr><th></th>'
-            '<th>v in bundle<br><span class="u">&micro;m/ns</span></th>'
-            '<th>k measured</th>'
-            '<th>v implied<br><span class="u">&micro;m/ns</span></th>'
-            '<th>images<br>axis</th>'
-            '<th>source position<br><span class="u">mm from beam axis</span></th>'
-            '<th>median miss<br><span class="u">mm</span></th></tr></thead>'
+            '<th>k</th><th>v in situ<br><span class="u">&micro;m/ns</span></th>'
+            '<th>band</th><th>track</th><th>focus</th>'
+            '<th>focus plateau<br><span class="u">k the data cannot separate</span></th>'
+            '<th>source position<br><span class="u">mm, scale-free</span></th>'
+            '<th>verdict</th></tr></thead>'
             f'<tbody>{"".join(rows)}</tbody></table>')
 
 
@@ -313,13 +335,14 @@ svg text{font-family:var(--mono);font-variant-numeric:tabular-nums}
 """
 
 
-def build_html(F: pd.DataFrame, meta: dict, img: dict) -> str:
+def build_html(F: pd.DataFrame, meta: dict, img: dict, cal: dict) -> str:
     n_trig = int(meta['n_triggers'])
     tot_tracks = int(F.n_tracks.sum())
     tot_point = int(F.pointing.sum())
     best = F.loc[F.lift.idxmax()]
-    kmin = min(r['k_phys'] for r in img['results']) if img else float('nan')
-    kmax = max(r['k_phys'] for r in img['results']) if img else float('nan')
+    kk = [v['k'] for v in (cal.get('arms') or {}).values() if v.get('k')]
+    kmin, kmax = (min(kk), max(kk)) if kk else (float('nan'), float('nan'))
+    n_cal = len(cal.get('apply') or {})
     ac = {r['arm']: r for r in img['results']} if img else {}
 
     def src(a):
@@ -351,9 +374,11 @@ def build_html(F: pd.DataFrame, meta: dict, img: dict) -> str:
 the scintillator wall segment <i>and</i> the plastic bar that actually fired.
 The tracking is selecting real particles &mdash; every chamber shows a
 wall-and-plastic coincidence rate above its own no-track control, by
-{F.lift.min():.2f}&times; to {F.lift.max():.2f}&times;. <b>The angles are not yet
-calibrated</b>: the drift velocity in every bundle is a prior, and the target
-image says it is wrong by {kmin:.1f}&times; to {kmax:.1f}&times;, chamber by chamber.</p>
+{F.lift.min():.2f}&times; to {F.lift.max():.2f}&times;. <b>Angles are published
+for {n_cal} of the four chambers only</b>: the drift velocity in every bundle is
+a prior, and the target image measures it wrong by {kmin:.2f}&times; to
+{kmax:.2f}&times;. Chambers whose three independent estimates of that correction
+do not agree carry null angles here rather than a plausible-looking number.</p>
 
 <div class="cards">
   <div class="card"><div class="v">{fmt(n_trig)}</div><div class="l">DAQ triggers</div></div>
@@ -400,26 +425,43 @@ D's track counts as an upper bound until this is understood. Chamber B is the
 opposite problem &mdash; the fewest tracks and the weakest pointing confirmation.
 </div>
 
-<h2><span class="n">3</span>The angle scale is the open null</h2>
+<h2><span class="n">3</span>The angle scale, and which chambers have one</h2>
 <p>The fit estimates three numbers per plane: the position at the mesh
 <code>p0</code>, the transverse speed <code>w</code> in mm/ns, and the start time
 <code>t0</code>. <b>None of them depends on the drift velocity.</b> <code>v</code>
 enters only afterwards, converting the measured speed into an angle:
 <code>tan&theta; = w / v</code>. So position is measured; angle is measured
-&times; an assumed constant.</p>
+&times; an assumed constant, and <code>k = v<sub>prior</sub>/v<sub>true</sub></code>
+is the correction that fixes it.</p>
 <p>Every bundle carries <code>v = 42.6 &micro;m/ns</code> &mdash; a Magboltz
-prior for Ar/iso 90/10, not an in-situ measurement. The target image measures the
-correction:</p>
-<div class="scroll">{k_table(img)}</div>
-<p class="note">The <b>source position</b> column is the zero crossing of the
-pointing band, <code>-intercept/slope</code>. Scaling every angle by <i>k</i>
-scales the intercept and the slope together, so this number is <b>invariant under
-the angle scale</b> &mdash; it cannot be produced, or improved, by tuning drift
-velocities. Chambers A and C both measure the same global axis and land at
-{a_s:+.1f} &plusmn; {a_e:.1f} mm and {c_s:+.1f} &plusmn; {c_e:.1f} mm against a
-surveyed 0. That agreement is a genuine, scale-free result. The <i>k</i> column
-beside it is not yet a calibration: the estimators (band slope, per-track,
-image focus) agree for A and C and disagree badly for B and D.</p>
+prior for Ar/iso 90/10, never measured in these chambers with this gas. <i>k</i>
+is measured three ways whose failure modes do not overlap: the slope of the
+pointing band, the median per-track ratio, and a focus scan that maximises how
+many tracks back-project within a fixed radius of the beam axis. <b>Agreement
+between the three is the measurement</b> &mdash; one estimator alone proves
+nothing &mdash; and all three run on the pointing-coincident sample.</p>
+<div class="scroll">{k_table(cal, img)}</div>
+<p class="note"><b>Reading the table.</b> The <b>focus plateau</b> is the range of
+<i>k</i> over which the focus objective stays within 5% of its peak &mdash; the
+range the data genuinely cannot separate. It is why A and C are marked
+provisional rather than certified: their point estimates agree to 12&ndash;16%
+and reproduce between sub-runs to 2%, but the objective is flat across ~35%.
+Chamber B's plateau spans the entire scan grid, which is the clean way of saying
+B carries no angle information at all. For D the per-track and focus estimators
+agree to 0.7% and it is the band fit that fails, so D is the first candidate for
+re-certification once that fit is understood.</p>
+<p class="note">The <b>source position</b> column is a different quantity and a
+genuine result: the zero crossing of the pointing band,
+<code>-intercept/slope</code>. Scaling every angle by <i>k</i> scales the
+intercept and the slope together, so it is <b>invariant under the angle
+scale</b> &mdash; it cannot be produced, or improved, by tuning drift velocities.
+A and C measure the same global axis and land at {a_s:+.1f} &plusmn; {a_e:.1f} mm
+and {c_s:+.1f} &plusmn; {c_e:.1f} mm against a surveyed 0.</p>
+<div class="caution"><b>Only A and C have their angles filled in.</b> In the track
+table B and D carry <code>NaN</code> for every angle-derived column &mdash;
+direction, target pointing, scintillator prediction, path length &mdash; rather
+than a silent <i>k</i>&thinsp;=&thinsp;1. Their positions are untouched and
+remain valid, because positions never depended on the drift velocity.</div>
 
 <h2><span class="n">4</span>What this does not show</h2>
 <ul>
@@ -470,12 +512,16 @@ def main() -> int:
     ip = a.imaging or str(paths.out('kcal') / f'{a.run}_stat090_0000'
                           / 'imaging_summary.json')
     img = json.load(open(ip)) if os.path.exists(ip) else {}
+    kp = str(paths.out('kcal') / f'k_arm_{a.run}.json')
+    cal = json.load(open(kp)) if os.path.exists(kp) else {}
+    if not cal:
+        print(f'[warn] no angle calibration at {kp}; section 3 will be thin')
     if not img:
         print(f'[warn] no imaging summary at {ip}; section 3 will be thin')
 
     out = os.path.join(od, 'report.html')
     with open(out, 'w') as fh:
-        fh.write(build_html(F, meta, img))
+        fh.write(build_html(F, meta, img, cal))
     print(f'wrote {out}  ({os.path.getsize(out) / 1024:.0f} kB)')
     return 0
 
