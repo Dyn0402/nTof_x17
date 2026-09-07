@@ -1,0 +1,474 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+build_tracks.py -- stage 3: the track database.
+
+One row per **3D track segment**: a paired (x, y) candidate in one chamber of
+one trigger.  This is the artefact every later analysis reads instead of
+re-running anything, so the rules are strict:
+
+* **Every X/Y pairing the reco made is a row**, gated or not.  `wft` pairs
+  candidates into tracks (`track_id >= 0`) and then gates them on
+  `quality_ok & plausible` in both planes; the events table's `n_tracks` counts
+  only the survivors.  On run_145 tag 000 / arm A that is 69 of 128 pairings.
+  Writing only the 69 would make the gate's efficiency unmeasurable from the
+  product, and the 33 that are `quality_ok` but not `plausible` are exactly the
+  marginal population any later cut has to argue about.  The gate is a
+  **column** (`gated`), never a filter.
+* **Nothing is invented.**  Columns the inputs cannot support are written as
+  null with the reason recorded in the sidecar, not filled with a plausible
+  guess.  See `NOT_POPULATED`.
+* **Geometry comes from the waveform fit**, never from hit times
+  (`../RECONSTRUCTION_BASIS.md`).
+
+Identity is `(run, subrun, tag, event_id, arm, track_id)`.  `event_id` is
+unique within a sub-run (run_145 `stat090_0000`: 1..57 754 across its 7 tags),
+but *not* across sub-runs, so never join on it alone.
+
+Usage:
+    python -m sept26_prelim_analysis.build_tracks \\
+        --run run_145 --subrun stat090_0000 --reco <dir with mx17_*/events_*>
+"""
+from __future__ import annotations
+
+import argparse
+import json
+from datetime import datetime, timezone
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
+
+try:
+    from . import paths
+except ImportError:                                     # run as a script
+    import sys
+    sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+    from sept26_prelim_analysis import paths
+
+from ntof_tracking.reco import geometry as G
+
+ARMS = ('A', 'B', 'C', 'D')
+
+#: Strip coordinates run 0..398.58 mm; the plane centre is half of that.
+STRIP_MAP_HALF = 199.29
+
+#: The strip index runs along **-u_hat**, so ``x_local = -(x_p0 - half)``.
+#: Measured 2026-08-20 and applied to the POSITION only, never to the tan --
+#: flipping the tan instead mirrors the track about the plane *centre*, and the
+#: pinwheel puts that centre ~16 mm off the beam axis, which displaces the
+#: reconstructed source by twice the pinwheel in opposite directions for
+#: opposing arms.  `../ntof_tracking/run145_target_imaging.py` carries the
+#: measurement that fixed it; this is the same constant, not a second opinion.
+IN_PLANE_SIGN = -1.0
+
+#: Angle fits that railed.  |tan| > 1 is a 45 deg track in a 30 mm gap, which
+#: the acceptance does not contain; they are kept as rows and flagged.
+TAN_SANE = 1.0
+
+#: Columns the current inputs cannot support.  Present in the schema (so the
+#: table's shape does not change when they arrive) and null, with the reason
+#: carried into the sidecar rather than left for a reader to guess.
+NOT_POPULATED = {
+    't_since_flash_ns': 'needs the stage-1 time base (flash t0 per bunch), '
+                        'which is not written yet -- board stage 1 is todo',
+    'e_neutron_keV': 'follows from t_since_flash and the EAR2 flight path; '
+                     'blocked on the same time base',
+    'k_arm': 'the in-situ angle scale from target imaging. run145_target_'
+             'imaging.py measures it per arm and plane, but no calibration '
+             'file is published yet, so v_drift is the bundle PRIOR and every '
+             'angle here inherits that. Pass --k-arm to fill it.',
+}
+
+SCHEMA = 'sept26_prelim/tracks/1'
+
+
+# --------------------------------------------------------------------------- #
+# Inputs
+# --------------------------------------------------------------------------- #
+def load_reco(reco_dir: Path, arm: str) -> tuple[pd.DataFrame, dict]:
+    """Every tag's candidate rows for one arm, plus the merged sidecar.
+
+    Reads the ``.candidates.parquet`` files -- the events table is a reduction
+    of them (one winner per plane) and cannot express a second track.
+    """
+    d = Path(reco_dir) / f'mx17_{arm}'
+    frames, metas = [], {}
+    for p in sorted(d.glob('events_*.candidates.parquet')):
+        tag = p.name[len('events_'):-len('.candidates.parquet')]
+        c = pd.read_parquet(p)
+        c['tag'] = tag
+        frames.append(c)
+        mp = d / f'events_{tag}.meta.json'
+        if mp.is_file():
+            metas[tag] = json.loads(mp.read_text())
+    if not frames:
+        raise FileNotFoundError(
+            f'no events_*.candidates.parquet under {d} -- stage 2 has not run '
+            f'for arm {arm}, or WFT_EMIT_CANDIDATES was off when it did')
+    return pd.concat(frames, ignore_index=True), metas
+
+
+def pair_rows(cand: pd.DataFrame) -> pd.DataFrame:
+    """Candidate rows -> one row per (tag, event, track), x and y side by side.
+
+    Only ``track_id >= 0`` (the reco's X/Y pairings).  Unpaired candidates are
+    not tracks and are not rows; their count survives as ``n_cand_x/y``.
+    """
+    t = cand[cand['track_id'] >= 0]
+    key = ['tag', 'event_id', 'track_id']
+    x = t[t['plane'] == 'x'].set_index(key)
+    y = t[t['plane'] == 'y'].set_index(key)
+    common = x.index.intersection(y.index)
+    lost = len(x.index.symmetric_difference(y.index))
+    if lost:
+        # wft pairs one x with one y by construction, so this cannot happen
+        # unless the sidecar was written by a different version.
+        raise AssertionError(
+            f'{lost} track_id(s) are not an x/y pair -- the candidates file '
+            f'does not match the pairing contract in wft/reco.py')
+    x, y = x.loc[common], y.loc[common]
+    out = pd.DataFrame(index=common)
+    for pl, src in (('x', x), ('y', y)):
+        for c in ('p0', 'w', 't0', 'tan_theta', 'theta_deg', 'chi2', 'dof',
+                  'p0_err', 'tan_err', 't0_err', 'q_sum', 'q_u50', 'q_u90',
+                  'q_uend', 'n_strips', 'n_seed', 'n_dropped',
+                  'slope_reliable', 'quality_ok', 'plausible', 'isochronous',
+                  'n_candidates', 'rank', 'dchi2', 'ftst'):
+            out[f'{pl}_{c}'] = src[c].to_numpy()
+    out['gated'] = x['track_gated'].to_numpy() & y['track_gated'].to_numpy()
+    return out.reset_index()
+
+
+# --------------------------------------------------------------------------- #
+# Geometry
+# --------------------------------------------------------------------------- #
+def local_and_global(df: pd.DataFrame, tr: G.DetTransform,
+                     gap_mm: float = G.DRIFT_GAP) -> pd.DataFrame:
+    """Attach local coordinates and the global line (p0, d) to each track.
+
+    The direction is built from two points a full drift gap apart rather than
+    from the tan directly, so the local->global rotation is applied once, to
+    points, and the arm's convention lives entirely in ``DetTransform``.
+    """
+    xl = IN_PLANE_SIGN * (df['x_p0'].to_numpy(float) - STRIP_MAP_HALF)
+    yl = df['y_p0'].to_numpy(float) - STRIP_MAP_HALF
+    tx = df['x_tan_theta'].to_numpy(float)
+    ty = df['y_tan_theta'].to_numpy(float)
+
+    P0 = tr.local_to_global(xl, yl, np.zeros_like(xl))
+    P1 = tr.local_to_global(xl - tx * gap_mm, yl - ty * gap_mm,
+                            np.full_like(xl, gap_mm))
+    D = P1 - P0
+    n = np.linalg.norm(D, axis=-1, keepdims=True)
+    D = np.divide(D, n, out=np.full_like(D, np.nan), where=n > 0)
+
+    df = df.copy()
+    df['x_local'], df['y_local'] = xl, yl
+    df['tanx'], df['tany'] = tx, ty
+    df['tan_sane'] = (np.abs(tx) <= TAN_SANE) & (np.abs(ty) <= TAN_SANE)
+    for i, k in enumerate('xyz'):
+        df[f'p0_{k}'], df[f'd_{k}'] = P0[:, i], D[:, i]
+    return df
+
+
+def drift_extent(df: pd.DataFrame, v_um_ns: float) -> pd.DataFrame:
+    """Depth of the measured segment, from the charge profile's time extent.
+
+    ``q_uend`` is the drift time of the deepest charge in the fitted column, so
+    ``q_uend * v`` is how much of the 30 mm gap this track actually lit.  It is
+    a quality and dE/dx quantity -- the *line* comes from (p0, tan) and does
+    not depend on it -- but a track that lit 4 mm of gap and one that lit 28 mm
+    are not equally trustworthy and the table has to be able to say so.
+    """
+    v_mm = v_um_ns / 1000.0
+    df = df.copy()
+    ue = np.nanmax(np.c_[df['x_q_uend'].to_numpy(float),
+                         df['y_q_uend'].to_numpy(float)], axis=1)
+    df['drift_t_end_ns'] = ue
+    df['drift_len_mm'] = ue * v_mm
+    # path length through the lit depth, along the track
+    sec = np.sqrt(1.0 + df['tanx'].to_numpy(float) ** 2
+                  + df['tany'].to_numpy(float) ** 2)
+    df['path_len_mm'] = df['drift_len_mm'] * sec
+    df['q_total'] = df['x_q_sum'].to_numpy(float) + df['y_q_sum'].to_numpy(float)
+    with np.errstate(divide='ignore', invalid='ignore'):
+        df['q_per_len'] = df['q_total'] / df['path_len_mm'].replace(0, np.nan)
+    return df
+
+
+def pointing(df: pd.DataFrame) -> pd.DataFrame:
+    """Closest approach of each track line to the beam axis (global Y).
+
+    The He-3 capsule is the source, it lies on the beam axis, and it is
+    ~80 mm long by 10 mm in radius -- so "does this track come from the
+    target?" is a distance to a *line*, not to a point, and the height along
+    that line is itself a measurement worth keeping.
+    """
+    P0 = df[['p0_x', 'p0_y', 'p0_z']].to_numpy(float)
+    D = df[['d_x', 'd_y', 'd_z']].to_numpy(float)
+    # minimise |(P0 + s D) - (0, y, 0)|: only the XZ projection matters
+    p, d = P0[:, [0, 2]], D[:, [0, 2]]
+    dd = np.einsum('ij,ij->i', d, d)
+    with np.errstate(divide='ignore', invalid='ignore'):
+        s = -np.einsum('ij,ij->i', p, d) / np.where(dd > 1e-12, dd, np.nan)
+    c = P0 + s[:, None] * D
+    df = df.copy()
+    df['dca_axis_mm'] = np.hypot(c[:, 0], c[:, 2])
+    df['target_y_mm'] = c[:, 1]
+    df['target_x_mm'], df['target_z_mm'] = c[:, 0], c[:, 2]
+    df['in_bore'] = ((df['dca_axis_mm'] <= G.HE3_R_MAX)
+                     & (df['target_y_mm'] >= float(G.HE3_GAS_Y[0]))
+                     & (df['target_y_mm'] <= float(G.HE3_GAS_Y[-1])))
+    df['angle_to_beam_deg'] = np.degrees(np.arccos(np.clip(np.abs(D[:, 1]), 0, 1)))
+    return df
+
+
+def predictions(df: pd.DataFrame) -> pd.DataFrame:
+    """Which scintillator volumes each track's line crosses, going outward.
+
+    `geometry.split_crossings` applies the beamline-origin prior: crossings
+    from the beam-axis closest approach *outward* are the plausible particle
+    path; anything behind it is a geometric line extension and is NOT a claim
+    the particle went there.  Only the outward set is predicted here.
+
+    These are the columns stage 4 calibrates the scintillator positions
+    against, and stage 5 uses to confirm a pair -- so a prediction that is
+    absent must read as absent, not as bar 0.
+    """
+    cols = {k: [] for k in ('pred_sipm_bar', 'pred_plastic', 'pred_ls',
+                            'pred_n_cross', 'pred_sipm_s_mm')}
+    for row in df[['p0_x', 'p0_y', 'p0_z', 'd_x', 'd_y', 'd_z']].itertuples(index=False):
+        p0 = np.array(row[:3], float)
+        d = np.array(row[3:], float)
+        if not np.all(np.isfinite(p0)) or not np.all(np.isfinite(d)):
+            for k in cols:
+                cols[k].append(np.nan if k.endswith(('_bar', '_mm', '_cross'))
+                               else None)
+            continue
+        gseg = dict(p_lo_global=p0, p_hi_global=p0 + d, dir_global=d)
+        out = G.split_crossings(gseg)['outward']
+        bar, plastic, ls, s_sipm = np.nan, None, False, np.nan
+        for c in out:
+            if c['name'].startswith('SiPM bar') and not np.isfinite(bar):
+                bar = float(c['name'].split()[-1])
+                s_sipm = 0.5 * (c['s_in'] + c['s_out'])
+            elif c['name'].startswith('plastic') and plastic is None:
+                plastic = c['name'].split()[-1]         # 'L' or 'R'
+            elif c['name'] == 'LS':
+                ls = True
+        cols['pred_sipm_bar'].append(bar)
+        cols['pred_plastic'].append(plastic)
+        cols['pred_ls'].append(ls)
+        cols['pred_n_cross'].append(float(len(out)))
+        cols['pred_sipm_s_mm'].append(s_sipm)
+    df = df.copy()
+    for k, v in cols.items():
+        df[k] = v
+    return df
+
+
+# --------------------------------------------------------------------------- #
+# Build
+# --------------------------------------------------------------------------- #
+def build_arm(reco_dir: Path, arm: str, tr: G.DetTransform,
+              run: str, subrun: str) -> tuple[pd.DataFrame, dict]:
+    cand, metas = load_reco(reco_dir, arm)
+    df = pair_rows(cand)
+    df['run'], df['subrun'], df['arm'] = run, subrun, arm
+
+    # v_drift is per bundle and per tag; assert the tags agree rather than
+    # silently averaging two calibrations into one column.
+    vs = {m['bundle']['v_drift'] for m in metas.values()}
+    if len(vs) > 1:
+        raise ValueError(f'arm {arm}: tags disagree on v_drift {sorted(vs)} -- '
+                         'a bundle is per detector AND per run condition; '
+                         'these tables cannot go in one table')
+    v = float(next(iter(vs))) if vs else np.nan
+
+    df = local_and_global(df, tr)
+    df = drift_extent(df, v)
+    df = pointing(df)
+    df = predictions(df)
+    df['v_drift_um_ns'] = v
+    df['n_cand_x'] = df['x_n_candidates']
+    df['n_cand_y'] = df['y_n_candidates']
+    for c in ('x', 'y'):
+        with np.errstate(divide='ignore', invalid='ignore'):
+            df[f'chi2dof_{c}'] = (df[f'{c}_chi2'].to_numpy(float)
+                                  / df[f'{c}_dof'].replace(0, np.nan))
+    prov = dict(
+        arm=arm, v_drift_um_ns=v,
+        n_tags=len(metas),
+        bundles=sorted({m['calibration'] for m in metas.values()}),
+        code_commit=sorted({(m['bundle']['provenance'] or {}).get('code_commit',
+                                                                 'unknown')
+                            for m in metas.values()}),
+        angle_constants_applied=sorted(
+            {bool((m.get('angle_constants') or {}).get('applied'))
+             for m in metas.values()}),
+        allowlist=sorted({json.dumps((m.get('allowlist') or {}).get('header', {})
+                                     .get('policy', {}), sort_keys=True)
+                          for m in metas.values()}),
+        seeding=dict(
+            n_allowed=int(sum((m.get('allowlist') or {}).get('n_allowed', 0)
+                              for m in metas.values())),
+            n_seeded=int(sum((m.get('allowlist') or {}).get('n_seeded', 0)
+                             for m in metas.values())),
+            n_missing=int(sum((m.get('allowlist') or {}).get('n_missing', 0)
+                              for m in metas.values()))),
+    )
+    return df, prov
+
+
+def attach_context(tracks: pd.DataFrame, stage1: Path | None,
+                   allow: Path | None) -> pd.DataFrame:
+    """Join the stage-1 class and n_TOF flags, and the stage-2 selection reason.
+
+    A track with no class is a track from an event stage 1 never classified --
+    it should not exist, so it is flagged rather than dropped.
+    """
+    if stage1 is not None and Path(stage1).is_file():
+        s1 = pd.read_parquet(stage1)
+        keep = (['eventId', 'cls', 'arms_lit', 'bunch', 'is_flash',
+                 'n_coinc_arms']
+                + [f'coinc_{a}' for a in ARMS] + [f'wall_{a}' for a in ARMS]
+                + [f'plastic_{a}' for a in ARMS])
+        keep = [c for c in keep if c in s1.columns]
+        tracks = tracks.merge(s1[keep].rename(columns={'eventId': 'event_id',
+                                                       'cls': 'event_class'}),
+                              on='event_id', how='left')
+        # the n_TOF coincidence for THIS arm, as one column
+        if all(f'coinc_{a}' in tracks.columns for a in ARMS):
+            tracks['coinc_this_arm'] = [
+                int(r[f'coinc_{a}']) if pd.notna(r[f'coinc_{a}']) else -1
+                for a, r in zip(tracks['arm'], tracks.to_dict('records'))]
+        tracks['no_stage1_class'] = tracks['event_class'].isna()
+    if allow is not None and Path(allow).is_file():
+        al = pd.read_parquet(allow)[['eventId', 'arm', 'reason']]
+        tracks = tracks.merge(al.rename(columns={'eventId': 'event_id',
+                                                 'reason': 'select_reason'}),
+                              on=['event_id', 'arm'], how='left')
+    return tracks
+
+
+ORDER = (
+    ['run', 'subrun', 'tag', 'event_id', 'arm', 'track_id', 'event_class',
+     'select_reason', 'bunch']
+    + ['x_local', 'y_local', 'tanx', 'tany', 'drift_t_end_ns', 'drift_len_mm',
+       'path_len_mm']
+    + [f'p0_{k}' for k in 'xyz'] + [f'd_{k}' for k in 'xyz']
+    + ['gated', 'x_quality_ok', 'y_quality_ok', 'x_plausible', 'y_plausible',
+       'chi2dof_x', 'chi2dof_y', 'x_n_strips', 'y_n_strips',
+       'x_slope_reliable', 'y_slope_reliable', 'x_isochronous',
+       'y_isochronous', 'tan_sane', 'n_cand_x', 'n_cand_y', 'x_rank', 'y_rank']
+    + ['q_total', 'q_per_len', 'x_q_sum', 'y_q_sum', 'x_q_u50', 'y_q_u50',
+       'x_q_u90', 'y_q_u90']
+    + ['x_t0', 'y_t0', 'x_ftst', 'y_ftst', 't_since_flash_ns', 'e_neutron_keV']
+    + ['dca_axis_mm', 'target_x_mm', 'target_y_mm', 'target_z_mm', 'in_bore',
+       'angle_to_beam_deg']
+    + ['pred_sipm_bar', 'pred_plastic', 'pred_ls', 'pred_n_cross',
+       'pred_sipm_s_mm']
+    + ['v_drift_um_ns', 'k_arm']
+)
+
+
+def build(run: str, subrun: str, reco_dir: Path, stage1: Path | None = None,
+          allow: Path | None = None, out_dir: Path | None = None,
+          k_arm: dict | None = None, write: bool = True):
+    base = str(paths.root('runs')) + '/'
+    cfg = json.loads((Path(base) / run / 'run_config.json').read_text())
+    trs = G.detector_transforms(cfg)
+
+    frames, prov = [], {}
+    for arm in ARMS:
+        try:
+            df, p = build_arm(Path(reco_dir), arm, trs[G.DET_NAME[arm]],
+                              run, subrun)
+        except FileNotFoundError as exc:
+            print(f'  arm {arm}: skipped -- {exc}')
+            continue
+        print(f'  arm {arm}: {len(df):,} track segments '
+              f'({int(df.gated.sum()):,} gated)')
+        frames.append(df)
+        prov[arm] = p
+    if not frames:
+        raise FileNotFoundError(f'no reco for any arm under {reco_dir}')
+
+    tracks = pd.concat(frames, ignore_index=True)
+    tracks = attach_context(tracks, stage1, allow)
+    for c, _why in NOT_POPULATED.items():
+        if c not in tracks.columns:
+            tracks[c] = np.nan
+    if k_arm:
+        tracks['k_arm'] = tracks['arm'].map(k_arm)
+    cols = [c for c in ORDER if c in tracks.columns]
+    tracks = tracks[cols + [c for c in tracks.columns if c not in cols]]
+    tracks = tracks.sort_values(['arm', 'tag', 'event_id', 'track_id'])
+    tracks = tracks.reset_index(drop=True)
+
+    meta = dict(
+        schema=SCHEMA, run=run, subrun=subrun,
+        built=datetime.now(timezone.utc).isoformat(timespec='seconds'),
+        reco_dir=str(reco_dir), stage1=str(stage1) if stage1 else None,
+        allowlist=str(allow) if allow else None,
+        n_tracks=int(len(tracks)), n_gated=int(tracks['gated'].sum()),
+        n_events=int(tracks.groupby(['tag', 'event_id']).ngroups),
+        by_arm={a: int((tracks['arm'] == a).sum()) for a in ARMS},
+        by_class=(tracks['event_class'].value_counts().to_dict()
+                  if 'event_class' in tracks else {}),
+        geometry=dict(in_plane_sign=IN_PLANE_SIGN,
+                      strip_map_half=STRIP_MAP_HALF,
+                      drift_gap_mm=G.DRIFT_GAP,
+                      pinwheel=G.PINWHEEL,
+                      mm_dist_x=G.MM_DIST_X, mm_dist_z=G.MM_DIST_Z),
+        not_populated=NOT_POPULATED,
+        provenance=prov)
+
+    if write:
+        out_dir = Path(out_dir) if out_dir else paths.out('stage3')
+        out_dir.mkdir(parents=True, exist_ok=True)
+        p = out_dir / f'tracks_{run}_{subrun}.parquet'
+        tracks.to_parquet(p, index=False)
+        (out_dir / f'tracks_{run}_{subrun}.meta.json').write_text(
+            json.dumps(meta, indent=1, default=str))
+        print(f'\n  -> {p}  ({len(tracks):,} rows, {len(cols)} named columns)')
+    return tracks, meta
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser(description=__doc__.split('\n')[1])
+    ap.add_argument('--run', default='run_145')
+    ap.add_argument('--subrun', default='stat090_0000')
+    ap.add_argument('--reco', type=Path, required=True,
+                    help='directory holding mx17_<arm>/events_<tag>.parquet')
+    ap.add_argument('--stage1', type=Path, default=None,
+                    help='stage-1 candidates parquet (default: <out>/stage1/)')
+    ap.add_argument('--allow', type=Path, default=None,
+                    help='stage-2 allowlist parquet (default: <out>/stage2/)')
+    ap.add_argument('--out', type=Path, default=None)
+    ap.add_argument('--k-arm', default=None,
+                    help='in-situ angle scale, e.g. "A=1.02,C=0.98"')
+    a = ap.parse_args()
+
+    s1 = a.stage1 or paths.out('stage1') / f'candidates_{a.run}_{a.subrun}.parquet'
+    al = a.allow or paths.out('stage2') / f'allowlist_{a.run}_{a.subrun}.parquet'
+    k = (dict(kv.split('=') for kv in a.k_arm.split(',')) if a.k_arm else None)
+    if k:
+        k = {arm: float(v) for arm, v in k.items()}
+
+    print(f'{a.run}/{a.subrun}')
+    tracks, meta = build(a.run, a.subrun, a.reco, stage1=s1, allow=al,
+                         out_dir=a.out, k_arm=k)
+    print(f'\n  {meta["n_tracks"]:,} segments in {meta["n_events"]:,} '
+          f'(tag, event)s; {meta["n_gated"]:,} gated')
+    if meta['by_class']:
+        print('  by event class:', meta['by_class'])
+    print('\n  null by construction:')
+    for c, why in NOT_POPULATED.items():
+        print(f'    {c:<20} {why}')
+    return 0
+
+
+if __name__ == '__main__':
+    raise SystemExit(main())
