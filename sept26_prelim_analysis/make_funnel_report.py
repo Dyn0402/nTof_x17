@@ -57,6 +57,14 @@ def fmt(n) -> str:
     return f'{int(n):,}'
 
 
+#: Set while rendering the fragment: the artifact publisher serves a single
+#: file with no `figures/` beside it, so relative links there render as broken
+#: images.  The on-disk and CERN copies keep the relative links (CLAUDE.md), and
+#: only the fragment inlines the PNGs.
+EMBED_FIGURES = False
+FIG_DIR = None
+
+
 def figure(name: str, caption: str, alt: str = '') -> str:
     """A figure with an ORDINARY RELATIVE link (CLAUDE.md).
 
@@ -66,6 +74,14 @@ def figure(name: str, caption: str, alt: str = '') -> str:
     HTML.  Each PNG has a CSV of the same name beside it, and the caption links
     to it: a figure nobody can check is a figure nobody should trust.
     """
+    if EMBED_FIGURES and FIG_DIR:
+        import base64
+        p = os.path.join(FIG_DIR, f'{name}.png')
+        if os.path.exists(p):
+            b64 = base64.b64encode(open(p, 'rb').read()).decode()
+            return (f'<figure><img src="data:image/png;base64,{b64}" '
+                    f'alt="{html.escape(alt or caption)}">'
+                    f'<figcaption>{caption}</figcaption></figure>')
     return (f'<figure><a href="figures/{name}.png">'
             f'<img src="figures/{name}.png" alt="{html.escape(alt or caption)}">'
             f'</a><figcaption>{caption} '
@@ -682,9 +698,13 @@ def main() -> int:
                  '<meta name="color-scheme" content="light dark">\n'
                  f'{head}</head>\n<body>\n{marker}{rest}\n'
                  '</body>\n</html>\n')
+    # Re-render with the PNGs inlined, so the fragment stands alone.
+    global EMBED_FIGURES, FIG_DIR
+    EMBED_FIGURES, FIG_DIR = True, os.path.join(od, 'figures')
     frag = os.path.join(od, 'body.html')
     with open(frag, 'w') as fh:
-        fh.write(body)
+        fh.write(build_html(F, meta, img, cal, pairs, comb))
+    EMBED_FIGURES = False
     print(f'wrote {out}  ({os.path.getsize(out) / 1024:.0f} kB)')
     print(f'wrote {frag}  (fragment, for the artifact publisher)')
     return 0
