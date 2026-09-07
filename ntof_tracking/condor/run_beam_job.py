@@ -84,6 +84,11 @@ def main():
                     help='reconstruct only the first N seeded events -- for '
                          'smoke-testing the stack on a login node, never for '
                          'a production job')
+    ap.add_argument('--allow', default=None,
+                    help='stage-2 allowlist JSON, shipped with the job. Only '
+                         'the listed events of this arm are fitted. Relative '
+                         'names resolve beside this script (condor drops the '
+                         'transferred files in the scratch dir).')
     a = ap.parse_args()
 
     sys.path.insert(0, CODE)
@@ -137,11 +142,25 @@ def main():
                  f'(sigma={_b.get("t0_prior_sigma")}) — that is the BENCH '
                  'trigger, not this run\'s')
 
+    allow = allow_meta = None
+    if a.allow:
+        ap_path = a.allow if os.path.isabs(a.allow) else os.path.join(HERE, a.allow)
+        if not os.path.isfile(ap_path):
+            sys.exit(f'FATAL: --allow {a.allow} not found at {ap_path}. It must '
+                     'be in transfer_input_files, or the job would silently '
+                     'reconstruct every trigger of the tag instead of the '
+                     'selection.')
+        allow = wb.load_allowlist(ap_path, a.arm)
+        allow_meta = wb.allowlist_header(ap_path)
+        print(f'[job] allowlist {ap_path}: arm {a.arm} tag {a.tag} -> '
+              f'{len(allow.get(a.tag, ())):,} event(s)', flush=True)
+
     cfg = wb.beam_config(a.arm, a.run, a.subrun)
     cfg.file_tags = [a.tag]
     wb.reconstruct_subrun(cfg, bundle,
                           os.path.join(out_dir, f'events_{a.tag}.parquet'),
-                          jobs=a.jobs, limit_per_tag=a.limit_per_tag)
+                          jobs=a.jobs, limit_per_tag=a.limit_per_tag,
+                          allow_events=allow, allow_meta=allow_meta)
     shutil.rmtree(data, ignore_errors=True)          # don't tar 300 MB back
     return 0
 

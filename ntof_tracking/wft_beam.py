@@ -175,6 +175,50 @@ def hits_file_for_tag(cfg: BeamConfig, tag: str) -> Optional[str]:
     return hits[0] if hits else None
 
 
+# ----------------------------------------------------------------- allowlist
+ALLOWLIST_SCHEMA = 'sept26_prelim/allowlist/1'
+
+
+def load_allowlist(path: str, arm: str) -> Dict[str, set]:
+    """One arm's slice of a stage-2 allowlist: ``{file tag: {event ids}}``.
+
+    Written by `sept26_prelim_analysis/allowlist.py` from the stage-1 class
+    table -- which events, in which arms, are worth the fit.  This reader is
+    deliberately a dozen lines and imports nothing: it runs on a condor worker,
+    which gets `code.tar.gz` (wft + ntof_tracking + common) and not the
+    analysis package.
+
+    An arm that appears nowhere in the document raises rather than returning
+    ``{}``.  Empty means "fit nothing", and a typo'd arm silently producing an
+    empty output table is the failure this exists to prevent.
+    """
+    with open(path) as f:
+        doc = json.load(f)
+    if doc.get('schema') != ALLOWLIST_SCHEMA:
+        raise ValueError(f'{path}: schema {doc.get("schema")!r}, '
+                         f'expected {ALLOWLIST_SCHEMA!r}')
+    if arm not in doc['events']:
+        raise KeyError(f'{path}: no entry for arm {arm!r} '
+                       f'(has {sorted(doc["events"])}). An allowlist with no '
+                       f'rows for this arm means the selection never chose it '
+                       f'-- do not run the job rather than run it empty.')
+    return {tag: set(int(e) for e in ids)
+            for tag, ids in doc['events'][arm].items()}
+
+
+def allowlist_header(path: str) -> dict:
+    """The allowlist's policy/provenance header, for the reco sidecar.
+
+    The events fitted are only interpretable next to the rule that chose them
+    (which classes, which prescale, which salt), so the rule travels into
+    ``.meta.json`` with the table.
+    """
+    with open(path) as f:
+        doc = json.load(f)
+    return {k: doc.get(k) for k in
+            ('schema', 'run', 'subrun', 'built', 'source', 'policy', 'counts')}
+
+
 # --------------------------------------------------------------------- bundle
 def make_bundle(arm: str, out: Optional[str] = None, v_drift: Optional[float] = None,
                 run: str = 'run_79', sub_run: str = 'stat090_0000',
@@ -340,11 +384,22 @@ def seeds_from_hits_beam(df, pos_maps, feu_x, feu_y,
 # --------------------------------------------------------------------- driver
 def reconstruct_subrun(cfg: BeamConfig, bundle_path: str, out_path: str,
                        jobs: int = 6, limit_per_tag: Optional[int] = None,
-                       pad_strips: int = 3, verbose: bool = True):
+                       pad_strips: int = 3, verbose: bool = True,
+                       allow_events: Optional[Dict[str, set]] = None,
+                       allow_meta: Optional[dict] = None):
     """Reconstruct a beam sub-run tag by tag into one parquet table.
 
     Mirrors `wft.reco.reconstruct_run` (and reuses its worker), but streams the
     hits per file tag instead of concatenating the whole sub-run.
+
+    ``allow_events`` is ``{file tag: {event ids}}`` from `load_allowlist`.  When
+    given, only those triggers are fitted -- the stage-2 selection.  Seeding
+    still runs over the whole tag, because the seeder is cheap next to the fit
+    and because the count it produces is the denominator of the number that
+    matters: **how many allowlisted events the seeder could not seed**.  That
+    is the stage-1 -> stage-2 loss, it is per tag and per arm, and it goes in
+    the sidecar as ``allowlist.n_allowed/n_seeded/n_missing`` rather than being
+    left to be inferred later from a short table.
     """
     import pandas as pd
     from concurrent.futures import ProcessPoolExecutor
@@ -363,6 +418,22 @@ def reconstruct_subrun(cfg: BeamConfig, bundle_path: str, out_path: str,
         print(f'[wft-beam] {cal.summary()}')
         print(f'[wft-beam] {cfg.DET_NAME} {cfg.RUN}/{cfg.SUB_RUN}: '
               f'{len(tags)} file tag(s)', flush=True)
+    if allow_events is not None:
+        # A tag with no entry is a tag the selection chose nothing in -- legal,
+        # and different from a tag whose entry is missing because the allowlist
+        # was built for another sub-run. Say which, once, up front.
+        unknown = [t for t in tags if t not in allow_events]
+        if verbose:
+            n_al = sum(len(allow_events.get(t, ())) for t in tags)
+            print(f'[wft-beam] allowlist: {n_al:,} event(s) over '
+                  f'{len(tags) - len(unknown)}/{len(tags)} tag(s)'
+                  + (f'; not named for {unknown}' if unknown else ''), flush=True)
+        if len(unknown) == len(tags):
+            raise KeyError(
+                f'the allowlist names none of this sub-run\'s tags {tags} '
+                f'(it has {sorted(allow_events)[:4]}...) -- almost certainly '
+                f'an allowlist built for a different run/sub-run')
+    allow_acct = []
 
     def _write(rows, path, tags_done=()):
         d = pd.DataFrame(rows)
@@ -378,7 +449,8 @@ def reconstruct_subrun(cfg: BeamConfig, bundle_path: str, out_path: str,
         # metadata is unusable downstream (v_drift lives there, and it is the
         # angle scale), and a half-finished run is exactly when that bites
         _write_meta(d, path, cal, cfg, bundle_path, feu_x, feu_y, tags_done,
-                    n_seeded, pad_strips, partial=len(tags_done) < len(tags))
+                    n_seeded, pad_strips, partial=len(tags_done) < len(tags),
+                    allow_acct=allow_acct, allow_meta=allow_meta)
         return d
 
     rows, cand_rows, n_seeded, done = [], [], 0, []
@@ -393,10 +465,24 @@ def reconstruct_subrun(cfg: BeamConfig, bundle_path: str, out_path: str,
             seeds = seeds_from_hits_beam(hits, pos_maps, feu_x, feu_y)
             del hits
             wanted = set(seeds)
+            if allow_events is not None:
+                allowed = allow_events.get(tag, set())
+                wanted &= allowed
+                allow_acct.append(dict(tag=tag, n_allowed=len(allowed),
+                                       n_seeded=len(wanted),
+                                       n_missing=len(allowed - set(seeds))))
+                if verbose:
+                    a = allow_acct[-1]
+                    print(f'[wft-beam]   {tag}: allowlist {a["n_allowed"]:,} -> '
+                          f'{a["n_seeded"]:,} seeded '
+                          f'({a["n_missing"]:,} not seeded)', flush=True)
+                if not wanted:
+                    done.append(tag)
+                    continue
             if limit_per_tag:
                 wanted = set(sorted(wanted)[:limit_per_tag])
             n_seeded += len(wanted)
-            if verbose:
+            if verbose and allow_events is None:
                 print(f'[wft-beam]   {tag}: {len(wanted):,} seeded events',
                       flush=True)
             payloads = _windows_for_tag(cfg, tag, pos_maps, seeds, wanted,
@@ -422,7 +508,8 @@ def reconstruct_subrun(cfg: BeamConfig, bundle_path: str, out_path: str,
 
 
 def _write_meta(df, out_path, cal, cfg, bundle_path, feu_x, feu_y, tags_done,
-                n_seeded, pad_strips, partial=False):
+                n_seeded, pad_strips, partial=False, allow_acct=None,
+                allow_meta=None):
     meta = dict(n_events=int(len(df)), n_seeded=int(n_seeded),
                 status='PRELIMINARY' + (' (PARTIAL: run still going)'
                                         if partial else ''),
@@ -454,6 +541,23 @@ def _write_meta(df, out_path, cal, cfg, bundle_path, feu_x, feu_y, tags_done,
                                  prescan=os.environ.get('WFT_PRESCAN', '0'),
                                  pair_select=os.environ.get('WFT_PAIR_SELECT', '0'),
                                  chi2dof_bad=os.environ.get('WFT_CHI2DOF_BAD', '300')))
+    # The selection this table was fitted under, and what it cost at the seeder.
+    # `n_missing` is the number that must not be lost: allowlisted events the
+    # beam seeder produced no cluster for. They are a real stage-1 -> stage-2
+    # inefficiency, they are invisible in the output table (the rows simply are
+    # not there), and every efficiency downstream needs them.
+    if allow_acct is not None:
+        tot = {k: int(sum(a[k] for a in allow_acct))
+               for k in ('n_allowed', 'n_seeded', 'n_missing')} if allow_acct else \
+              dict(n_allowed=0, n_seeded=0, n_missing=0)
+        meta['allowlist'] = dict(
+            applied=True, per_tag=list(allow_acct), **tot,
+            seed_efficiency=round(tot['n_seeded'] / max(tot['n_allowed'], 1), 4),
+            header=allow_meta or {})
+    else:
+        meta['allowlist'] = dict(
+            applied=False,
+            note='no allowlist -- every seeded trigger of every tag was fitted')
     with open(out_path.replace('.parquet', '.meta.json'), 'w') as f:
         json.dump(meta, f, indent=1, default=str)
 
@@ -528,6 +632,10 @@ def main():
     r.add_argument('--limit-per-tag', type=int, default=None)
     r.add_argument('--bundle', default=None)
     r.add_argument('--out', default=None)
+    r.add_argument('--allow', default=None,
+                   help='stage-2 allowlist JSON (sept26_prelim_analysis/'
+                        'allowlist.py). Only the listed events of this arm are '
+                        'fitted. Without it every seeded trigger is.')
 
     a = ap.parse_args()
     if a.cmd == 'bundle':
@@ -540,8 +648,10 @@ def main():
     if not os.path.isdir(bundle):
         bundle = make_bundle(a.det, run=a.run, sub_run=a.subrun)
     out = a.out or cfg.out_dir() + '/events_prelim.parquet'
+    allow = load_allowlist(a.allow, a.det) if a.allow else None
     reconstruct_subrun(cfg, bundle, out, jobs=a.jobs,
-                       limit_per_tag=a.limit_per_tag)
+                       limit_per_tag=a.limit_per_tag, allow_events=allow,
+                       allow_meta=allowlist_header(a.allow) if a.allow else None)
     return 0
 
 

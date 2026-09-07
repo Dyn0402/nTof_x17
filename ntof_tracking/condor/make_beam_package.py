@@ -49,6 +49,12 @@ def main():
                          'bundle whose sharing kernel was inverted. C (det6) '
                          'was already physical and is NOT re-run.')
     ap.add_argument('--tags', default=','.join(TAGS_RUN145))
+    ap.add_argument('--allow', default=None,
+                    help='stage-2 allowlist JSON (sept26_prelim_analysis/'
+                         'allowlist.py). Ships with the package, and the job '
+                         'list is built FROM it: an (arm, tag) the selection '
+                         'chose nothing in gets no job, rather than a job that '
+                         'runs and writes an empty table.')
     ap.add_argument('--v-drift', type=float, default=42.6,
                     help='pinned for every arm, as the published run_145 '
                          'bundles were (V_DRIFT_MAGBOLTZ, not the per-arm '
@@ -108,19 +114,58 @@ def main():
         t.add(bdir, arcname='bundles')
     shutil.rmtree(bdir)
 
+    # ---- allowlist
+    allow_name, allow_doc = None, None
+    if a.allow:
+        allow_doc = json.load(open(a.allow))
+        if allow_doc.get('run') != a.run or allow_doc.get('subrun') != a.subrun:
+            sys.exit(f'FATAL: allowlist is for {allow_doc.get("run")}/'
+                     f'{allow_doc.get("subrun")}, package is for {a.run}/'
+                     f'{a.subrun}. Event ids are per sub-run; crossing them '
+                     'would fit the wrong triggers and say nothing about it.')
+        allow_name = os.path.basename(a.allow)
+        shutil.copy2(a.allow, os.path.join(a.dest, allow_name))
+        c = allow_doc['counts']
+        print(f'allowlist {allow_name}: {c["n_arm_events"]:,} (arm, event) fits '
+              f'of {c["n_arm_events_full_reco"]:,} '
+              f'({c["n_arm_events"] / c["n_arm_events_full_reco"]:.2%} of a full '
+              f'reco); prescale {allow_doc["policy"]["control_prescale"]}')
+
     # ---- jobs
     jobs = os.path.join(a.dest, 'jobs.txt')
+    n_jobs, n_skip, n_ev = 0, 0, 0
     with open(jobs, 'w') as f:
         for arm in arms:
             for tag in tags:
                 extra = (f'--run {a.run} --subrun {a.subrun} '
                          f'--bundle-name {names[arm]} --v-drift {a.v_drift}')
+                if allow_doc is not None:
+                    n = len(allow_doc['events'].get(arm, {}).get(tag, []))
+                    if not n:
+                        n_skip += 1
+                        continue
+                    n_ev += n
+                    extra += f' --allow {allow_name}'
                 f.write(f'{arm},{tag},{extra}\n')
-    print(f'jobs.txt: {len(arms) * len(tags)} jobs '
-          f'({len(arms)} arms x {len(tags)} tags)')
+                n_jobs += 1
+    print(f'jobs.txt: {n_jobs} jobs of {len(arms) * len(tags)} '
+          f'({len(arms)} arms x {len(tags)} tags)'
+          + (f'; {n_skip} skipped (nothing selected), {n_ev:,} events queued'
+             if allow_doc is not None else ''))
 
     for f in ('beam_reco.sub', 'run_beam_wrapper.sh', 'run_beam_job.py'):
         shutil.copy2(os.path.join(HERE, f), os.path.join(a.dest, f))
+    if allow_name:
+        # Condor transfers only what the submit file names. Patch the default
+        # rather than ask the submitter to remember `-a`: a job that runs
+        # without its allowlist reconstructs the whole tag and looks fine.
+        p = os.path.join(a.dest, 'beam_reco.sub')
+        txt = open(p).read()
+        old = '  allowfile             =\n'
+        if old not in txt:
+            sys.exit(f'FATAL: cannot find the allowfile default in {p}')
+        open(p, 'w').write(txt.replace(old, f'  allowfile             = , {allow_name}\n'))
+        print(f'beam_reco.sub: transfers {allow_name}')
     os.chmod(os.path.join(a.dest, 'run_beam_wrapper.sh'), 0o755)
     print('package at', a.dest)
     print(f'  rsync -av {a.dest}/ lxplus:~/{os.path.basename(a.dest)}/')

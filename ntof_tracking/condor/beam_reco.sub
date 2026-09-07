@@ -4,10 +4,16 @@
 if ! defined jobfile
   jobfile               = jobs.txt
 endif
+# The stage-2 allowlist, as a LEADING-COMMA fragment ("", or ", allow.json").
+# make_beam_package.py rewrites this line when it is given --allow; the empty
+# default is what a full-tag reco (run_79's first pass) used and still works.
+if ! defined allowfile
+  allowfile             =
+endif
 universe                = vanilla
 executable              = run_beam_wrapper.sh
 arguments               = "$(arm) $(tag) $(extra)"
-transfer_input_files    = code.tar.gz, bundles.tar.gz, run_beam_job.py, CODE_COMMIT.txt
+transfer_input_files    = code.tar.gz, bundles.tar.gz, run_beam_job.py, CODE_COMMIT.txt$(allowfile)
 should_transfer_files   = YES
 when_to_transfer_output = ON_EXIT
 transfer_output_files   = beam_$(arm)_$(tag).tar.gz
