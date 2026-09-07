@@ -74,11 +74,19 @@ NOT_POPULATED = {
                         'which is not written yet -- board stage 1 is todo',
     'e_neutron_keV': 'follows from t_since_flash and the EAR2 flight path; '
                      'blocked on the same time base',
-    'k_arm': 'the in-situ angle scale from target imaging. run145_target_'
-             'imaging.py measures it per arm and plane, but no calibration '
-             'file is published yet, so v_drift is the bundle PRIOR and every '
-             'angle here inherits that. Pass --k-arm to fill it.',
 }
+
+#: Angle-derived columns.  They are populated only for an arm carrying a
+#: certified ``k`` (:mod:`sept26_prelim_analysis.k_arm`); for any other arm they
+#: are NaN by construction, because the tans they descend from are NaN.  The
+#: positions are NOT in this list: ``p0``, ``x_local``/``y_local`` and the
+#: strip-map geometry do not depend on the drift velocity at all.
+ANGLE_DERIVED = (
+    'tanx', 'tany', 'd_x', 'd_y', 'd_z', 'path_len_mm', 'q_per_len',
+    'drift_len_mm', 'dca_axis_mm', 'target_x_mm', 'target_y_mm', 'target_z_mm',
+    'in_bore', 'angle_to_beam_deg', 'pred_sipm_bar', 'pred_plastic',
+    'pred_ls', 'pred_n_cross', 'pred_sipm_s_mm',
+)
 
 SCHEMA = 'sept26_prelim/tracks/1'
 
@@ -144,17 +152,29 @@ def pair_rows(cand: pd.DataFrame) -> pd.DataFrame:
 # Geometry
 # --------------------------------------------------------------------------- #
 def local_and_global(df: pd.DataFrame, tr: G.DetTransform,
-                     gap_mm: float = G.DRIFT_GAP) -> pd.DataFrame:
+                     gap_mm: float = G.DRIFT_GAP,
+                     k: float | None = None) -> pd.DataFrame:
     """Attach local coordinates and the global line (p0, d) to each track.
 
     The direction is built from two points a full drift gap apart rather than
     from the tan directly, so the local->global rotation is applied once, to
     points, and the arm's convention lives entirely in ``DetTransform``.
+
+    ``k`` is the in-situ angle scale (:mod:`sept26_prelim_analysis.k_arm`) and
+    is applied HERE, once, to the tans -- so every angle-derived quantity
+    downstream (the global direction, the pointing, the scintillator
+    predictions, the path length) inherits it and no two of them can disagree
+    about which calibration they are on.  ``k=None`` means the arm has no
+    certified scale, and then the tans are **NaN**: an uncalibrated angle in a
+    column called ``angle_to_beam_deg`` is exactly the silent error this
+    package exists to prevent.  Positions are untouched either way -- they do
+    not depend on the drift velocity.
     """
     xl = IN_PLANE_SIGN * (df['x_p0'].to_numpy(float) - STRIP_MAP_HALF)
     yl = df['y_p0'].to_numpy(float) - STRIP_MAP_HALF
-    tx = df['x_tan_theta'].to_numpy(float)
-    ty = df['y_tan_theta'].to_numpy(float)
+    scale = np.nan if k is None else float(k)
+    tx = df['x_tan_theta'].to_numpy(float) * scale
+    ty = df['y_tan_theta'].to_numpy(float) * scale
 
     P0 = tr.local_to_global(xl, yl, np.zeros_like(xl))
     P1 = tr.local_to_global(xl - tx * gap_mm, yl - ty * gap_mm,
@@ -166,6 +186,9 @@ def local_and_global(df: pd.DataFrame, tr: G.DetTransform,
     df = df.copy()
     df['x_local'], df['y_local'] = xl, yl
     df['tanx'], df['tany'] = tx, ty
+    df['tan_raw_x'] = df['x_tan_theta'].to_numpy(float)
+    df['tan_raw_y'] = df['y_tan_theta'].to_numpy(float)
+    df['angle_calibrated'] = k is not None
     df['tan_sane'] = (np.abs(tx) <= TAN_SANE) & (np.abs(ty) <= TAN_SANE)
     for i, k in enumerate('xyz'):
         df[f'p0_{k}'], df[f'd_{k}'] = P0[:, i], D[:, i]
@@ -296,7 +319,8 @@ def predictions(df: pd.DataFrame) -> pd.DataFrame:
 # Build
 # --------------------------------------------------------------------------- #
 def build_arm(reco_dir: Path, arm: str, tr: G.DetTransform,
-              run: str, subrun: str) -> tuple[pd.DataFrame, dict]:
+              run: str, subrun: str,
+              k: float | None = None) -> tuple[pd.DataFrame, dict]:
     cand, metas = load_reco(reco_dir, arm)
     df = pair_rows(cand)
     df['run'], df['subrun'], df['arm'] = run, subrun, arm
@@ -312,11 +336,19 @@ def build_arm(reco_dir: Path, arm: str, tr: G.DetTransform,
 
     nbins = {m['bundle'].get('n_depth_bins') for m in metas.values()}
     nbins = next(iter(nbins)) if len(nbins) == 1 else None
-    df = local_and_global(df, tr)
-    df = drift_extent(df, v, n_depth_bins=nbins)
+    # The bundle's v is the Magboltz PRIOR.  k is the measured correction, so
+    # the velocity that actually converts a drift time to a depth is v/k -- the
+    # same k the tans are scaled by, since both follow from tan = w/v.  Using
+    # the prior here while correcting the angles there would put the depth and
+    # the direction on two different calibrations.
+    v_insitu = v / float(k) if k else np.nan
+    df = local_and_global(df, tr, k=k)
+    df = drift_extent(df, v_insitu, n_depth_bins=nbins)
     df = pointing(df)
     df = predictions(df)
-    df['v_drift_um_ns'] = v
+    df['v_drift_um_ns'] = v_insitu
+    df['v_drift_prior_um_ns'] = v
+    df['k_arm'] = float(k) if k else np.nan
     df['n_cand_x'] = df['x_n_candidates']
     df['n_cand_y'] = df['y_n_candidates']
     for c in ('x', 'y'):
@@ -324,7 +356,8 @@ def build_arm(reco_dir: Path, arm: str, tr: G.DetTransform,
             df[f'chi2dof_{c}'] = (df[f'{c}_chi2'].to_numpy(float)
                                   / df[f'{c}_dof'].replace(0, np.nan))
     prov = dict(
-        arm=arm, v_drift_um_ns=v, n_depth_bins=nbins,
+        arm=arm, v_drift_prior_um_ns=v, k_arm=(float(k) if k else None),
+        v_drift_um_ns=v_insitu, angle_calibrated=bool(k), n_depth_bins=nbins,
         frac_drift_railed=round(float(df['drift_railed'].mean()), 4),
         n_tags=len(metas),
         bundles=sorted({m['calibration'] for m in metas.values()}),
@@ -396,7 +429,8 @@ ORDER = (
        'angle_to_beam_deg']
     + ['pred_sipm_bar', 'pred_plastic', 'pred_ls', 'pred_n_cross',
        'pred_sipm_s_mm']
-    + ['v_drift_um_ns', 'k_arm']
+    + ['v_drift_um_ns', 'v_drift_prior_um_ns', 'k_arm', 'angle_calibrated',
+       'tan_raw_x', 'tan_raw_y']
 )
 
 
@@ -407,16 +441,21 @@ def build(run: str, subrun: str, reco_dir: Path, stage1: Path | None = None,
     cfg = json.loads((Path(base) / run / 'run_config.json').read_text())
     trs = G.detector_transforms(cfg)
 
+    k_arm = dict(k_arm or {})
     frames, prov = [], {}
     for arm in ARMS:
+        k = k_arm.get(arm)
         try:
             df, p = build_arm(Path(reco_dir), arm, trs[G.DET_NAME[arm]],
-                              run, subrun)
+                              run, subrun, k=k)
         except FileNotFoundError as exc:
             print(f'  arm {arm}: skipped -- {exc}')
             continue
+        note = (f'k={k:.4f}, v {p["v_drift_prior_um_ns"]:.1f} -> '
+                f'{p["v_drift_um_ns"]:.1f} um/ns' if k
+                else 'NO ANGLE SCALE -- angles null')
         print(f'  arm {arm}: {len(df):,} track segments '
-              f'({int(df.gated.sum()):,} gated)')
+              f'({int(df.gated.sum()):,} gated), {note}')
         frames.append(df)
         prov[arm] = p
     if not frames:
@@ -427,8 +466,6 @@ def build(run: str, subrun: str, reco_dir: Path, stage1: Path | None = None,
     for c, _why in NOT_POPULATED.items():
         if c not in tracks.columns:
             tracks[c] = np.nan
-    if k_arm:
-        tracks['k_arm'] = tracks['arm'].map(k_arm)
     cols = [c for c in ORDER if c in tracks.columns]
     tracks = tracks[cols + [c for c in tracks.columns if c not in cols]]
     tracks = tracks.sort_values(['arm', 'tag', 'event_id', 'track_id'])
@@ -450,6 +487,12 @@ def build(run: str, subrun: str, reco_dir: Path, stage1: Path | None = None,
                       pinwheel=G.PINWHEEL,
                       mm_dist_x=G.MM_DIST_X, mm_dist_z=G.MM_DIST_Z),
         not_populated=NOT_POPULATED,
+        k_arm=dict(applied=k_arm,
+                   uncalibrated=[a_ for a_ in prov if a_ not in k_arm],
+                   angle_derived_null_for_uncalibrated=list(ANGLE_DERIVED),
+                   source='sept26_prelim_analysis.k_arm',
+                   rule='tan_true = k * tan_reco; v_insitu = v_prior / k. An '
+                        'arm with no certified k gets NaN angles, never k=1.'),
         provenance=prov)
 
     if write:
@@ -475,14 +518,33 @@ def main() -> int:
                     help='stage-2 allowlist parquet (default: <out>/stage2/)')
     ap.add_argument('--out', type=Path, default=None)
     ap.add_argument('--k-arm', default=None,
-                    help='in-situ angle scale, e.g. "A=1.02,C=0.98"')
+                    help='in-situ angle scale, e.g. "A=1.02,C=0.98". Overrides '
+                         '--k-file; an arm named here is applied whatever the '
+                         'calibration says, so use it for diagnostics only.')
+    ap.add_argument('--k-file', type=Path, default=None,
+                    help='k_arm_<run>.json from sept26_prelim_analysis.k_arm. '
+                         'Only arms it certifies are applied; the rest get '
+                         'null angles. Default: <out>/kcal/k_arm_<run>.json')
     a = ap.parse_args()
 
     s1 = a.stage1 or paths.out('stage1') / f'candidates_{a.run}_{a.subrun}.parquet'
     al = a.allow or paths.out('stage2') / f'allowlist_{a.run}_{a.subrun}.parquet'
-    k = (dict(kv.split('=') for kv in a.k_arm.split(',')) if a.k_arm else None)
-    if k:
-        k = {arm: float(v) for arm, v in k.items()}
+    kf = a.k_file or paths.out('kcal') / f'k_arm_{a.run}.json'
+    k = {}
+    if Path(kf).exists():
+        cal = json.loads(Path(kf).read_text())
+        k = {arm: float(v) for arm, v in (cal.get('apply') or {}).items()}
+        for arm in ARMS:
+            v = (cal.get('arms') or {}).get(arm, {})
+            if arm not in k:
+                print(f'  [k] arm {arm}: {v.get("verdict", "absent")} -- '
+                      f'{v.get("reason", "no calibration")}')
+    else:
+        print(f'  [k] no calibration at {kf}; every angle will be null '
+              f'unless --k-arm is given')
+    if a.k_arm:                       # explicit override, diagnostics only
+        k.update({arm: float(val)
+                  for arm, val in (kv.split('=') for kv in a.k_arm.split(','))})
 
     print(f'{a.run}/{a.subrun}')
     tracks, meta = build(a.run, a.subrun, a.reco, stage1=s1, allow=al,
