@@ -7,7 +7,7 @@ Plan of record: [`PLAN.md`](PLAN.md). Board:
 **One line:** **stages 0, 1 and 2 all run end to end on run_145.** Sample frozen
 at 36 runs / 293 sub-runs / 25.60 M triggers; the candidate filter classifies
 every trigger at **5.8 core-hours per million**; the stage-2 allowlist cuts the
-reconstruction to **3.0 % of a full pass — ~610 core-hours campaign-wide, not
+reconstruction to **4.1 % of a full pass — ~760 core-hours campaign-wide, not
 the ~1 900 the plan budgeted** — and reproduces the August full pass row for
 row. Next: launch stage 2 on condor, and stage 3's schema.
 
@@ -23,17 +23,14 @@ found. Stages 0, 1 and 2 all run.
 
 **Next, in order:**
 
-1. **Fix the `BUSY` prescale or retire its acceptance claim** (30 min) — 44
-   seeded arm-events is not a measurement. See
-   [seed efficiency](#what-the-allowlist-costs-at-the-seeder--the-number-that-must-not-be-lost).
-2. **Launch stage 2 on condor** for run_145's three censused sub-runs:
+1. **Launch stage 2 on condor** for run_145's three censused sub-runs:
    `allowlist.py --subrun all`, then
-   `make_beam_package.py --allow <json> --arms A,B,C,D`, rsync, submit. ~4.5
+   `make_beam_package.py --allow <json> --arms A,B,C,D`, rsync, submit. ~5.6
    core-hours; the point is to prove the packaged path end to end before the
    campaign, not to get the numbers.
-3. **Stage 3's schema and `build_tracks.py`** — `PLAN.md` §3 stage 3 has the
+2. **Stage 3's schema and `build_tracks.py`** — `PLAN.md` §3 stage 3 has the
    column list. This is the artefact the week has to leave behind.
-4. Then the campaign stage-1 pass (~135 core-hours) and stage 2 (~610).
+3. Then the campaign stage-1 pass (~135 core-hours) and stage 2 (~760).
 
 ### N0 · Land on the machine — ✅ done
 
@@ -282,42 +279,49 @@ run_145/`stat090_0000`, and the three censused sub-runs agree to 2 %:
 | `INTRA` | 1 430 | 1 430 (100 %) | 1 430 | 0.62 % |
 | `IMPLIED` | 181 | 181 (100 %) | 398 | 0.17 % |
 | `SINGLE` | 9 629 | 475 (4.9 %) | 1 900 | 0.82 % |
-| `BUSY` | 687 | 64 (9.3 %) | 256 | 0.11 % |
+| `BUSY` | 687 | 687 (100 %) | 2 748 | 1.19 % |
 | `NONE` | 45 172 | 439 (1.0 %) | 1 756 | 0.76 % |
-| **total** | **57 742** | **3 232 (5.6 %)** | **7 026** | **3.04 %** |
+| **total** | **57 742** | **3 855 (6.7 %)** | **9 518** | **4.12 %** |
 
-Signal is 3 114 of those fits, the control 3 912 — **the control is 56 % of the
-budget.** That is the price of having an acceptance at all; it is the first
-number to cut if the budget moves, and cutting it means saying what the
+Signal is 3 114 of those fits, the control 6 404 — **the control is two thirds
+of the budget.** That is the price of having an acceptance at all; it is the
+first number to cut if the budget moves, and cutting it means saying what the
 spectrum's acceptance is then based on.
 
 Timing, tag `260805_14H06_000`, all four arms, 8 workers on the laptop
 (`stage2/bench/bench_run145_*.csv`):
 
-| arm | allowed | seeded | wall | core-s | core-s/fit |
+| arm | allowed | seeded/fitted | wall | core-s | core-s/fit |
 |---|---:|---:|---:|---:|---:|
-| A | 223 | 145 | 20.7 s | 103 | 0.71 |
-| B | 256 | 167 | 41.0 s | 236 | 1.42 |
-| C | 276 | 189 | 36.2 s | 224 | 1.19 |
-| D | 206 | 176 | 30.1 s | 156 | 0.88 |
+| A | 319 | 174 | 27.3 s | 171 | 0.98 |
+| B | 352 | 209 | 48.7 s | 306 | 1.47 |
+| C | 372 | 201 | 38.2 s | 254 | 1.26 |
+| D | 302 | 186 | 28.5 s | 162 | 0.87 |
 
-719 core-s for 677 fits over 8 353 triggers = **0.086 core-s per trigger across
+893 core-s for 770 fits over 8 353 triggers = **0.107 core-s per trigger across
 all four arms**, so:
 
 | | triggers | core-hours |
 |---|---:|---:|
-| one sub-run | 57 742 | **1.4** |
-| run_145 (24 tags) | 189 724 | **4.5** |
-| **the campaign** | 25 598 064 | **≈ 610** |
+| one sub-run | 57 742 | **1.7** |
+| run_145 (24 tags) | 189 724 | **5.6** |
+| **the campaign** | 25 598 064 | **≈ 760** |
 
 **PLAN.md §5 budgeted ~1 900 core-hours** from the 3.80 % event-level selection.
-The measured number is a third of that, for two reasons the plan did not model:
-arm scoping (2.17 arms per event, not 4) and the seeder firing on only 70 % of
-allowlisted arm-events. Includes interpreter start-up and I/O in every figure,
-so it is an upper bound. **CPU is not the constraint** — 8 200 jobs each pulling
-~290 MB from EOS is, and the current one-job-per-(arm, tag) design fetches the
-same `combined_hits` file four times. Left alone for now; noted as the thing to
-fix if the condor pass is I/O-bound.
+The measured number is 40 % of that, for two reasons the plan did not model:
+arm scoping (2.47 arms per selected event, not 4) and the seeder firing on only
+56 % of allowlisted arm-events. Includes interpreter start-up and I/O in every
+figure, so it is an upper bound.
+
+Taking `BUSY` whole rather than at 10 % cost **+24 %** (612 → 760 core-hours) —
+more than its share of fits, because the `BUSY` events that *do* seed are the
+dear ones: the 93 extra fits per tag cost 1.87 core-s each against a 1.16
+average.
+
+**CPU is not the constraint** — 8 200 jobs each pulling ~290 MB from EOS is, and
+the current one-job-per-(arm, tag) design fetches the same `combined_hits` file
+four times. Left alone for now; noted as the thing to fix if the condor pass is
+I/O-bound.
 
 ### It reproduces the August full pass, row for row
 
@@ -350,8 +354,8 @@ Against the full August pass (`allowlist.py --seed-eff`):
 | `IMPLIED` | forced_silent | 217 | 173 | **0.797** |
 | `SINGLE` | control | 1 900 | 994 | 0.523 |
 | `NONE` | control | 1 756 | 843 | 0.480 |
-| `BUSY` | control | 256 | 44 | **0.172** |
-| | **all** | 7 026 | 4 901 | 0.698 |
+| `BUSY` | control | 2 748 | 478 | **0.174** |
+| | **all** | 9 518 | 5 335 | 0.561 |
 
 Three things to read off it:
 
@@ -361,16 +365,42 @@ Three things to read off it:
    a particle crossed a chamber and stage 1 found no track, the *waveform*
    seeder does find a clusterable deposit. `IMPLIED` is not an empty class, and
    the forced fit has something to work on.
-3. **`BUSY` seeds at 17 %, and the two "busy" definitions disagree.** Stage 1
-   calls an event `BUSY` at > 120 strips in an arm; the seeder vetoes a *plane*
-   at > 150 hits (`BUSY_PLANE_HITS`). In a `BUSY` event most planes are over the
-   seeder's veto, so they are dropped. At a 10 % prescale that leaves **44
-   seeded arm-events** — not enough to measure anything. Either raise the `BUSY`
-   prescale or state that `BUSY` has no acceptance measurement; do not leave it
-   looking like it has one. **Open.**
+3. **`BUSY` seeds at 17 %** — and the reason is not a threshold mismatch to be
+   tuned away. See below. **Resolved by taking the class whole.**
 
 Per-arm seeding runs A 0.64, B 0.64, C 0.69, **D 0.84** — D seeds most, as its
 higher raw track rate in stage 1 already said.
+
+### `BUSY` is flooded, not crowded — so it is taken whole
+
+The first reading of that 17 % was that stage 1's "busy" (> 120 strips in an
+arm) and the seeder's (> 150 hits in a plane) are different tests and the seeder
+was throwing away crowded multi-track events. **That is wrong, and the data
+says so plainly.** Splitting the 256 `BUSY` arm-events of `stat090_0000` by
+clean strips in the arm:
+
+| clean strips in the arm | n | seeded | frac |
+|---|---:|---:|---:|
+| ≤ 200 | 16 | 16 | **1.000** |
+| 200–400 | 57 | 12 | 0.211 |
+| > 400 | 183 | 16 | 0.087 |
+
+97 % of the arms in a `BUSY` event carry more than 120 clean strips, and the
+median arm that fails to seed carries **493** — roughly half the chamber's
+channels lit. Those are discharges and flashes, not tracks, and
+`BUSY_PLANE_HITS = 150` is rejecting them correctly. Everything a chamber can
+still be read out for seeds at **100 %**.
+
+So there is nothing to fix in the seeder, and no prescale recovers the flooded
+part — that information is not in the data. What the 10 % prescale *was* doing
+was leaving 44 arm-events to characterise the whole class. **`BUSY` prescale is
+now 1.00.** It costs little (the class is 1.2 % of triggers and 83 % of it
+never reaches the fit) and it buys a real number on the reconstructable part
+plus a measured count of the flooded part, which is itself a detector-QA
+quantity worth having per run.
+
+With `BUSY` whole, `stat090_0000` selects **9 518** (arm, event) fits — 4.12 %
+of a full reco, 5 335 of them seeded.
 
 ### Files
 

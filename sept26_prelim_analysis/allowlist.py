@@ -79,14 +79,26 @@ SIGNAL_CLASSES = ('INTER', 'INTRA', 'IMPLIED')
 #:  SINGLE 5 %   one arm lit is where a missed second track most plausibly
 #:               hides, so this is the class the efficiency measurement leans
 #:               on hardest.  5 % of run_145/0000 is ~480 events.
-#:  BUSY   10 %  a small class (~1.2 %) and the one where the reco is most
-#:               likely to behave differently, so it is cheap to take a big
-#:               fraction and expensive to be left guessing.  It is also the
-#:               most expensive per event -- four crowded chambers -- which is
-#:               why this is 10 % and not 100 %.
+#:  BUSY  100 %  all of it -- see below.
 #:  NONE    1 %  79 % of all triggers.  Its job is to bound the "both arms
 #:               missed" rate, which needs a number, not precision.
-CONTROL_PRESCALE = {'SINGLE': 0.05, 'BUSY': 0.10, 'NONE': 0.01}
+#:
+#: **Why BUSY is taken whole.**  It looks like the expensive class and is not.
+#: Measured on run_145/stat090_0000 against the full August pass: a `BUSY`
+#: event's arms are flooded, not crowded -- 97 % of them carry more than 120
+#: clean strips and the median arm that fails to seed has **493**, roughly half
+#: the chamber's channels.  Those planes are over `wft_beam.BUSY_PLANE_HITS`
+#: (150 hits) and the seeder drops them, correctly: they are discharges and
+#: flashes, not multi-track events.  Seeding is 100 % (16/16) below 200 strips
+#: and 8.7 % above 400.
+#:
+#: So only ~17 % of `BUSY` arm-events cost anything to fit, and a 10 % prescale
+#: on top of that left **44** of them -- not a measurement of anything.  Taking
+#: the class whole costs ~12 % more budget (it is 1.2 % of triggers) and buys
+#: both a real number on the reconstructable part and a measured count of the
+#: flooded part.  No prescale recovers the flooded part; that information is
+#: not in the data.
+CONTROL_PRESCALE = {'SINGLE': 0.05, 'BUSY': 1.00, 'NONE': 0.01}
 
 #: Changing this redraws the whole control sample.  Bump it only deliberately,
 #: and say so in STATUS.md -- a silently redrawn control is a control whose
@@ -255,6 +267,14 @@ def seed_efficiency(sel: pd.DataFrame, reco_dir, tags=None) -> pd.DataFrame:
         raise FileNotFoundError(f'no events_*.parquet under {reco_dir}/mx17_*/')
 
     have = sel[[(a, t) in seeded for a, t in zip(sel['arm'], sel['tag'])]].copy()
+    if not len(have):
+        # The usual cause: a full pass exists, but for a DIFFERENT sub-run.
+        # Returning zeros here would read as "nothing seeds", which is the
+        # opposite of "nothing was compared".
+        raise ValueError(
+            f'no (arm, tag) of this allowlist has a table under {reco_dir} -- '
+            f'allowlist tags {sorted(set(sel["tag"]))[:3]}..., reco tags '
+            f'{sorted({t for _, t in seeded})[:3]}...  Nothing was compared.')
     have['seeded'] = [e in seeded[(a, t)]
                       for a, t, e in zip(have['arm'], have['tag'], have['eventId'])]
 
@@ -396,7 +416,11 @@ def main() -> int:
         print('  by reason:', doc['counts']['by_reason'])
         print('  by arm:   ', doc['counts']['by_arm'])
         if a.seed_eff:
-            eff = seed_efficiency(sel, a.seed_eff)
+            try:
+                eff = seed_efficiency(sel, a.seed_eff)
+            except ValueError as exc:      # no full pass for THIS sub-run
+                print(f'\n  seed efficiency: skipped -- {exc}')
+                continue
             print('\nseed efficiency -- allowlisted (arm, event)s the beam '
                   f'seeder produces a cluster for\n(vs the full pass in '
                   f'{a.seed_eff})\n')
