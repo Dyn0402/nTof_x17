@@ -553,6 +553,16 @@ arm&rdquo; in all three, so acceptance and the ambient rate divide out. B and D
 serve as controls even without usable angles, because the trigger arm comes
 from the n_TOF slim rather than from the reconstruction.</p>
 {pair_table(pairs)}
+{figure('opening_angle',
+        'The geometry, checked end to end. Two tracks from the target into '
+        '<b>opposing</b> chambers must open wide; into <b>perpendicular</b> '
+        'ones, ~90&deg;. They do: A&ndash;C has essentially no density below '
+        '95&deg; and a median of 144&deg;, while A&ndash;D and C&ndash;D peak '
+        'near 90&deg; and fall away above 120&deg;. This validates the strip '
+        'maps, both in-plane signs, the pinwheel, the chamber transforms and '
+        'the angle scale together &mdash; it is <i>not</i> a claim of a pair '
+        'signal, which the table above shows is null.',
+        'opening angle distributions for opposing and perpendicular chamber pairs')}
 <div class="caution"><b>Null.</b> A back-to-back signal has to be
 <i>symmetric</i> &mdash; A-in-C-triggered and C-in-A-triggered must move
 together. They do not: one direction is positive at every cut and its mirror is

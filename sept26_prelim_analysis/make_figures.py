@@ -291,6 +291,97 @@ def _fig_det_evidence(plt, F: pd.DataFrame, out):
             data=F[['arm', 'n_track_events'] + [k for k, _, _ in keys]])
 
 
+def fig_opening(out):
+    """Opening angle between two chambers' tracks -- the end-to-end geometry check.
+
+    This figure does NOT claim a pair signal; the rate is null (see pairs.py).
+    What it validates is the geometry: two tracks from the target into OPPOSING
+    chambers must give a large opening angle and into PERPENDICULAR ones ~90
+    deg.  If the strip maps, either in-plane sign, the pinwheel, the transforms
+    or k were wrong, these distributions would not separate.
+    """
+    import json
+    from ntof_tracking import run145_target_imaging as TI
+    from ntof_tracking.reco import geometry as G
+    from sept26_prelim_analysis.build_tracks import (
+        IN_PLANE_SIGN, IN_PLANE_SIGN_Y, STRIP_MAP_HALF)
+
+    base = str(paths.out('fullpass') / 'run_145')
+    runs = str(paths.root('runs'))
+    cfg = json.loads((paths.root('runs') / 'run_145' / 'run_config.json').read_text())
+    trs = G.detector_transforms(cfg)
+    cal = json.load(open(paths.out('kcal') / 'k_arm_run_145.json'))
+    K = cal['apply']
+    DCA = 50.0
+    rows = []
+    for sub in ('stat090_0000', 'stat090_0001'):
+        for a, k in K.items():
+            f = os.path.join(base, sub, f'mx17_{a}', 'events_prelim.parquet')
+            if not os.path.exists(f):
+                continue
+            df = pd.read_parquet(f)
+            sel = (df.x_ok.to_numpy() & df.y_ok.to_numpy()
+                   & (df.n_tracks.to_numpy() > 0))
+            xl = IN_PLANE_SIGN * (df.x_p0.to_numpy() - STRIP_MAP_HALF)
+            yl = IN_PLANE_SIGN_Y * (df.y_p0.to_numpy() - STRIP_MAP_HALF)
+            tx = df.x_tan_theta.to_numpy() * k
+            ty = df.y_tan_theta.to_numpy() * k
+            tr = trs[f'mx17_{a}']
+            P0 = tr.local_to_global(xl, yl, np.zeros_like(xl))
+            P1 = tr.local_to_global(xl - tx * 30., yl - ty * 30.,
+                                    np.full_like(xl, 30.))
+            D = P1 - P0
+            D = D / np.linalg.norm(D, axis=-1, keepdims=True)
+            r, _, _ = TI.axis_approach(P0, D)
+            rows.append(pd.DataFrame(dict(
+                subrun=sub, event_id=df.event_id.to_numpy(), arm=a, dca=r,
+                dx=D[:, 0], dy=D[:, 1], dz=D[:, 2]))[sel])
+    T = pd.concat(rows, ignore_index=True)
+    P = T[T.dca < DCA]
+    m = P.merge(P, on=['subrun', 'event_id'], suffixes=('1', '2'))
+    m = m[m.arm1 < m.arm2].copy()
+    dot = (m.dx1 * m.dx2 + m.dy1 * m.dy2 + m.dz1 * m.dz2).clip(-1, 1)
+    m['open_deg'] = np.degrees(np.arccos(dot))
+    m['pair'] = m.arm1 + m.arm2
+
+    plt = _plt()
+    with _scaled(plt, 0.8):
+        fig, ax = plt.subplots(figsize=(fs.WIDE[0], 4.8),
+                               constrained_layout=True)
+        bins = np.arange(0, 181, 7.5)
+        # opposing pairs are the signal topology; perpendicular are the control
+        opposing = {'AC', 'BD'}
+        # The two perpendicular pairs are one category but must still be
+        # separable from each other: same muted ink, different dash.
+        dashes = {}
+        for pair, g in sorted(m.groupby('pair')):
+            opp = pair in opposing
+            col = fs.DET_COLOR[pair[0]] if opp else fs.MUTED
+            if not opp:
+                dashes[pair] = (4, 2) if len(dashes) == 0 else (1.5, 2)
+            ax.hist(g.open_deg, bins=bins, histtype='step',
+                    lw=2.6 if opp else 1.7, color=col,
+                    ls='-' if opp else (0, dashes[pair]), density=True,
+                    label=f'{pair[0]}\u2013{pair[1]}  '
+                          f'({"opposing" if opp else "perpendicular"}), '
+                          f'n={len(g)}, med {g.open_deg.median():.0f}\u00b0')
+        ax.axvline(109, color=fs.BAND_SIGNAL, lw=2, ls=':')
+        ax.annotate('X17 minimum, 109\u00b0', (109, ax.get_ylim()[1] * 0.94),
+                    textcoords='offset points', xytext=(7, 0),
+                    color=fs.BAND_SIGNAL, fontsize=fs.BASE_PT * 0.6)
+        ax.set_xlabel('opening angle between the two tracks  [deg]')
+        ax.set_ylabel('normalised')
+        ax.set_xlim(0, 180)
+        ax.set_xticks(np.arange(0, 181, 30))
+        ax.set_title('Geometry check: opposing chambers give large opening '
+                     'angles, perpendicular ones ~90\u00b0')
+        ax.legend(frameon=False, loc='upper left',
+                  fontsize=fs.BASE_PT * 0.62)
+        fs.preliminary(ax, loc='upper right')
+        fs.save(fig, out / 'opening_angle',
+                data=m[['subrun', 'event_id', 'pair', 'open_deg']])
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split('\n')[1])
     ap.add_argument('--run', default='run_145')
@@ -310,7 +401,8 @@ def main() -> int:
     fig_k_summary(cal, od)
     fig_det_status(F, od)
     fig_det_evidence(F, od)
-    print(f'wrote 4 figures (+ CSVs) to {od}')
+    fig_opening(od)
+    print(f'wrote 5 figures (+ CSVs) to {od}')
     return 0
 
 
