@@ -1,12 +1,386 @@
 # n_TOF reprocessing: current state
 
-**Keep this file current.** It is the resume point if a session drops. Detail
-lives in `FINDINGS_2026-07-28_psa_optimization.md` (what was measured),
-`FLASH_TIME_BASE.md` (the divert and the flash), `userinputs/README.md` (how to
-run one) and `flash_timing/README.md` (the PKUP-referenced calibration).
+**Keep this file current.** It is the resume point if a session drops.
+
+---
+
+## 2026-08-12 morning — official processing is COMPLETE except one lost run
+
+[`FINDINGS_2026-08-12_official_complete.md`](FINDINGS_2026-08-12_official_complete.md).
+
+n_TOF's manual resubmission of the tail block on the evening of 08-11 finished
+by 20:26. **444 of 445 runs now have a complete official product** at the
+campaign recipe (`UserInput_2026_EAR2_X17_v4.h`, fingerprint `e737ed0da496`,
+the same one our `prod_v12` carries). 224688-224718 and 224576 all pass
+contiguity, `ceil(raw/4)`, history and bunch-coverage.
+
+Two block runs diffed hit for hit against ours: WAL A-D, PSS A-D, SILI, PKUP
+**bit-identical on all 22 columns**; LIQ same hit counts with `afast` differing
+on ≤8 hits in ~100 000 — the same signature as 224572.
+
+**Run 224526's official product covers 13.3 % of its beam bunches** — 140 of its
+167 raw files had expired from the EOS disk buffer when n_TOF reprocessed it on
+08-07, and `RunProcessing.sh` built its file list from the 22 that were left.
+One other run with a gapped raw sequence (224531) checked out clean.
+
+**The run is not lost.** EOS `DAQ/` is a **two-week staging buffer**; the archive
+is CTA tape at `/eos/ctapublicdisk/archive/ntof/` (wiki `docs/Lxplus _ NTOF _
+TWiki.pdf` §3.1). All **445 / 445** runs are on tape, complete and contiguous —
+224526 included, 167 files, 313.8 GB. An earlier "no tape replica" call here was
+wrong; `eos fileinfo`'s `d2::t0` describes the disk copy, not the archive.
+
+**RECOVERED, 100 %.** `recover_224526/recover_224526.sh` (stage → check →
+filelists → process → verify → publish) reads only from CTA
+(`ProcessFileList.sh -c 1`), so it cannot repeat the short-file-list trap.
+Recall 12:30→16:57 (4 h 27 m, four of them queued at 0/167); reprocessing 42
+condor jobs in ~35 min. Verified at the published path: 42/42 partials,
+contiguous, **3313/3313 beam bunches = 100.0 %** vs the official 13.3 %. Lives at
+`/eos/experiment/ntof/data/x17/reproc/prod_v12_recover/224526/completed/224526`.
+
+**224526 is not a slim run** — the slim inventory spans 224570-224698 and 224526
+appears in no DREAM inventory. Nothing was blocked by it. **The official copy is
+still short**, and `ntof_files()` resolves to official, so reading the good copy
+needs `--ntof-source`.
+
+Follow-ups: **the `handoff_publish/` scripts are no longer needed**, `prod_v11`
+(224573-224579) is retirable, and `prod_v12/224709` (stalled at 18 of 86) can be
+abandoned — official has all 86. Nothing deleted yet.
+
+---
+
+## 2026-08-12 overnight — matching failures SOLVED: pulse_match supercycle mis-lock; 25.7 % of beam recoverable
+
+[`join_mislock/README.md`](join_mislock/README.md) (mechanism, scripts, recipe),
+[`SLIM_CAMPAIGN_2026-08-12.md`](SLIM_CAMPAIGN_2026-08-12.md) (the campaign it
+was found in), note
+<https://dylan-neff.web.cern.ch/notes/ntof-dream-join-mislock.html>.
+
+**The Aug-9 "54 sub-runs not slimmable, ask the DAQ logs" conclusion is
+RETRACTED** — its −0.982 ms evidence is a universal artifact (the 0.9927 ms
+post-flash hold-off edge; fires identically on healthy segments).
+**The real cause:** `pulse_match.match_subrun`'s count-only offset scan is
+degenerate under the accelerator supercycle and silently keeps the most
+negative tying lock (−3 cycles = 118.8/129.6 s ⇒ bunch shifts +20…+41,
+confirmed by scan at S/N 541–1822 on 8 of 8 failures). DREAM data is flawless.
+Failed hours re-join and run the UNMODIFIED chain at fleet quality —
+demonstrated: run_96/0001×224597, eff 95.47 % / accidental 0.065 %.
+Margin study (`margin_results.csv` on lxplus AFS): failures 35/41 at
+count-margin 0; **14 accepted segments sit at margin ≤ 2** (correct by coin
+flip — verify by scan before use).
+
+**Pending Dylan's sign-off (nothing implemented):** pulse_match fix (count +
+intensity-fluctuation + continuity + loud failure on ties), clock_qa
+'pulse_match margin adequate' check (WARN <10 / FAIL ≤2 unless scan-verified),
+`join_shift`+margin provenance in calibration.json BEFORE any bulk re-slim,
+then the re-slim itself: 41 whole-hour segments by scan→apply→verify (~one
+condor evening); 66 slivers need the reformulated join (or δ from the same
+sub-run's fitted majority side).
+
+Data staged for follow-ups: laptop `/media/dylan/data/x17/desktop_stage/`
+and desktop `/media/ucla/x17match/` (code + DREAM sub-runs + n_TOF
+224573/224583/224597).
+
+---
+
+## 2026-08-11 evening — n_TOF merged 27 runs; we match them bit for bit
+
+[`FINDINGS_2026-08-11_official_ledger.md`](FINDINGS_2026-08-11_official_ledger.md),
+ledger CSV [`campaign_qa/results/ledger_2026-08-11.csv`](campaign_qa/results/ledger_2026-08-11.csv),
+tools `campaign_qa/official_ledger.py` + `campaign_qa/compare_identity.py`.
+
+**Bookkeeping, in the form that matters** (`campaign_qa/completed_ledger.py`,
+`results/completed_ledger_2026-08-11.csv`). Forget the merge — it carries no
+information about usability. The question is whether `completed/<run>/` **covers
+the run**, judged from the `index` tree (replicated in full in every partial) plus
+the last partial's own hits: **401 of 445 runs are complete from n_TOF's
+partials**, 3 more only from their merged file (224526, 224566, 224569 — partials
+cleaned up post-merge), **30 only from ours**, 1 only as an off-recipe copy
+(224576), and 10 are complete nowhere right now (9 that n_TOF is rewriting, plus
+our 224709). A `prod_v11` product counts as `OFF_RECIPE`, **not** as coverage.
+
+**224576 cannot be reprocessed by us — its raw is gone.**
+`DAQ/.../X17_measurement/224576/stream1/` is empty *in the EOS namespace*, and X17
+raw carries no tape replica (`eos fileinfo` → `d2::t0`), so there is nothing to
+recall. n_TOF still had the input on 08-11 (their reprocessing wrote 35 partials
+before the directory was emptied again), so the ask is theirs: finish it, or send
+us the raw. **Meanwhile do not delete `reproc/prod_v11/224576/`** — with
+`official/completed/224576/` empty and no merged file, it is the only complete
+product of that run in existence.
+
+**Do not count partials against `ceil(raw/4)`.** n_TOF used **two split sizes** —
+10 raw files per job before 07-08, 4 after — so that rule mis-flags the older half
+of the campaign, and the raw has aged off disk for 309 of 445 runs anyway.
+
+**The official pass moved.** Against the 08-10 inventory: **27 unmerged runs are
+now MERGED**, **24 are being reprocessed from scratch right now** (`completed/`
+emptied and refilling — do not read that as data loss; `official_ledger.py` calls
+it IN_FLIGHT off the directory mtime), 3 are still PARTIALS_ONLY (224451-224453)
+and 2 still zero-byte (224405, 224667). **224560 was already merged and got wiped
+and re-queued anyway — its 31.8 GB merged file is gone for now.**
+
+**Two of the newly merged runs are ours** (224573, 224577), so eight runs now sit
+in both processings — and the direct test is finally possible.
+
+**Given the same UserInput we reproduce n_TOF bit for bit.** On 224572 (ours
+`v12_liqpileup` vs their `v4`) every hit of WAL A-D, PSS A-D, SILI and PKUP matches
+on all 22 columns — `tof`, `amp`, `area`, `chi2`, every one. The liquids match too
+except `afast` on 3-6 hits in ~85 000 (0.00-0.02 %), a numerically unstable
+integral on pathological pulses. On 224574/224577 our `prod_v11` is bit-identical
+to official on WAL/PSS/SILI/PKUP and differs **only** in LIQ hit count (official
++17 to +21 %) — exactly the documented v11→v12 liquid step, nothing else. That
+measures, rather than infers, the warning in `SLIM_FEASIBILITY_2026-08-08.md` § (c).
+
+**DREAM run_79:** 224573 and 224577 are now official v12; 224576 is mid-reprocess.
+When it lands, run_79 is fully covered officially and prod_v11 need not be mixed in.
+
+**224688-224718 stays ours.** All 31 are still RAW_ONLY officially; the pass went
+past the block and on to 224719+, which is a different experiment
+(`UserInput_2026_EAR2_STAR_commissioning_v0.h`). We hold 30 of them, 831 partials,
+674 GB. **224709** is the exception — its last job (partial 0023, one condor
+eviction and a retry) was still running at 16:07, so the driver called it stalled;
+finish and harvest it by hand.
+
+**Physics widened to all 26 beam runs of the block** (was 13): every tree still
+overlaps official in rate and amplitude, 0.00 % off-flash, modal `tflash` in the
+same bin. **One run is different — 224708**: PSSD ×39, PSSA ×6.2, PSSB ×1.3
+against its neighbour 224707, confirmed over *every* partial (135 beam bunches).
+PSSC, all walls and all liquids are normal, and the median amplitude *falls* on
+exactly the trees that gained hits (PSSA 124→96, PSSD 131→97 ADC) — a
+low-amplitude population, so **the detector, not the processing**. Held out of the
+aggregate ranges; `campaign_qa/results/compare_224708.json`. Why is untested.
+
+**The campaign driver has exited:** 15 moved, 3 flagged. The two `COPY FAILED`
+runs (224705, 224711) both verify **clean on the ntof disk** — full contiguous
+partial set, 0 unreadable, 0 gaps — so that was a `cp -r` exit code, not a bad
+transfer; their staging copies can be dropped.
+
+---
+
+## 2026-08-11 — our products check out against n_TOF's own processing
+
+`campaign_qa/` ([`FINDINGS_2026-08-11_campaign_qa.md`](FINDINGS_2026-08-11_campaign_qa.md),
+[`report.html`](campaign_qa/results/report.html)). The 17 runs the
+campaign has moved to `/eos/experiment/ntof/data/x17/reproc/prod_v12/` were checked
+against the runs n_TOF processed themselves. **They are good.**
+
+**Configuration is identical, not merely similar.** n_TOF's production
+`UserInput_2026_EAR2_X17_v4.h` **is** our v12_liqpileup — they adopted it after the
+July handoff. Every parameter column matches and all 26 referenced pulse-shape
+templates are byte-identical (md5). The only differing lines in `history` are the
+header file name and the directory the templates are read from (our AFS staging vs
+their EOS `shapes_X17_v4`). So this is an equivalence check against the official
+product, **not** an absolute validation: a defect in the shared recipe is invisible
+to it.
+
+**Structure: 494 partials over 17 runs, 384 GB, 0 unreadable, 0 bunch gaps**, every
+run contiguous at `ceil(raw/4)` and every partial actually opened and read (not
+sampled) — `verify_transferred.py`.
+
+**Physics, on the 13 runs with beam** (`compare_campaign.py`, one partial each,
+against official 224660-224676): intensity-normalised hit rates overlap the official
+range on all 12 trees (WALA ours 1483-1556 vs official 1470-1558 hits per 1e12 p);
+the modal `tflash` lands in the **same 10 ns bin as official on every tree**;
+**0.00 %** of beam bunches are off-flash (broken July processing: 37-85 % on PSS);
+arm offsets match, including the PSSC ~33 ns and PSSD ~27 ns features that **the
+official runs show in the same trees** — a channel property under this recipe, not
+something we introduced. Hit *quality* (`quality_metrics.py`, ours 224691 vs
+official 224672) agrees within a few percent: T1 6.66 vs 6.69 ns, MIP peak 1057 vs
+1047 ADC, relative width equal.
+
+**Two traps, both paid for, both now handled by the tooling:**
+
+* **Never use 224678-224687 as the control** — those official runs have **no beam**
+  (zero PulseIntensity, zero PKUP amplitude). Comparing our beam runs to 224687
+  makes our output look 400x too busy. It is not.
+* **Gate on protons.** The first partial of 224692 is 75 % empty PS pulses, which
+  have no flash, so tflash is 0 and every flash check flags them. Whole-run, 224692
+  is 98.0 % beam and clean. `beam_state.py` reads the whole-run beam state from the
+  `index` tree (replicated in full in every partial) with one open per run — run it
+  before any comparison.
+
+**224706, 224716, 224717, 224718 have no beam at all** (0 of 2615/4/8/16 bunches
+with protons). They processed correctly and are simply quiet — a few MB per partial
+instead of ~800 MB. Expect more of these in 224701-224718, and note that the
+acceptance test for them can only be structural.
+
+**Not yet done:** the 14 runs still in flight; no DREAM slim has been run over the
+new block, so the association efficiency and clock QA on it are still open.
+
+---
+
+## 2026-08-10 — 55 runs were processed but never merged; full availability pass
+
+`skip_diagnosis/` ([`README.md`](skip_diagnosis/README.md)). Setting up to
+reprocess one of the 41 runs from
+[`NTOF_REPROCESSING_REQUEST_2026-08-08.md`](NTOF_REPROCESSING_REQUEST_2026-08-08.md),
+we found them already sitting in
+`/eos/experiment/ntof/processing/official/completed/<run>/`. **The
+reconstruction finished; only the MERGE is missing**, and the pass publishes
+only merged files, so `done/` looked empty.
+
+**Campaign-wide inventory of all 445 runs** (`inventory.sh`,
+`inputs/inventory_2026-08-10.csv`): 359 MERGED, **53 PARTIALS_ONLY**, 2
+MERGE_EMPTY (zero-byte `done/` file), 31 RAW_ONLY. The 55 unmerged carry 2 223
+partials and 1 816 GB.
+
+**Availability in beam time** (`availability.py`), over 289.0 h and 342 DREAM
+sub-runs — data taking ended 08-10, DREAM now runs to run_162:
+
+| | hours | |
+|---|---|---|
+| AVAILABLE (merged **or** partials) | **223.3** | **77 %** |
+| NEEDS PROCESSING (raw staged, nothing done) | 60.9 | 21 % |
+| no n_TOF live | 4.7 | 2 % |
+
+The split is clean in time: every DREAM run through **run_147 is 88-100 %
+available**, every run from **run_150 on is 0 %**. That boundary is the pass
+stopping at 08-07 19:56, not a data problem. The unprocessed n_TOF runs are the
+contiguous block **224688-224718** (31 runs, 12.76 TB raw, all staged).
+
+**The partials are not second-class, proven end to end.** run_116/stat090_0001
+slimmed straight off the 224632 partials: **PASS on all 19 clock-QA checks, 0
+warnings**, efficiency 94.23 % (held-out 94.16 %), accidental 0.0498 %, residual
+RMS 6.87 ns, 1 146/1 146 bunches fitted. Its per-arm offsets land within 0.6 ns
+of the locked run_79 v12 values (A -17.6 vs -16.81, B +7.7 vs +7.55, C +1.2 vs
++1.62, D -1.2 vs -0.83) — independent confirmation from the physics, not just
+the `history` checksum.
+
+**Is the no-merge deliberate?** No marker or lock file exists anywhere (`ls -A`
+on the run directories, `official/`, `done/`), and merged runs keep their
+partials too. Size correlates hard — **275 of 275 runs under 20 GB of output
+merged, zero failures**, then 76/74/57/25/17 % as size climbs — but the
+populations overlap (merged 20.5-42.0 GB, unmerged 20.3-39.5 GB), so it is not a
+deterministic rule. **Measured, not guessed:** our own 224688 merge node (44
+partials, 34.0 GB) died in FIVE minutes on condor's `max total download bytes
+exceeded (max=1024 MB)` plus `disk usage exceeded allowed max` (3 MB requested,
+58 GB used) — the transfer cap and disk request, NOT the 1 h wall. That is the
+failure `ntof_io.py` recorded in July. It cannot be n_TOF's whole story though,
+since they merged 66 runs in the 1-20 GB band that also exceed 1 GB of transfer,
+so their merge is invoked differently; we cannot see their config.
+
+Also established: **the `index` tree is replicated IN FULL in every partial**
+(224632 partials 1/32/63 all carry bunches 1..4966 with identical Date/Time), so
+one open per run is enough and the merge adds nothing structurally.
+
+**224649/224650 have no DAQ directory at all** — drop them from the request; the
+"recall from tape" ask was based on a bracketed guess.
+
+**The merge is the failing step, and it left proof:** `done/run224405.root` and
+`done/run224667.root` are **zero bytes**, dated 08-05. A failed merge leaves an
+empty file rather than nothing, so `exists()` is not a usable test.
+`slim_pipeline/config.ntof_files()` now (a) falls back to `completed/<run>/`
+when `done/` has no merged file and (b) requires the merged file to be
+non-empty first — without (b) those two runs resolve to an empty file while a
+complete partial set sits next door. This matches what `ntof_io.py` has said
+since July: the merge node dies on condor's 1024 MB transfer cap — now confirmed
+directly on our own 224688 merge (§ above).
+
+**Corrected in passing:** a first reading blamed the 2 h `longlunch` wall on the
+*processing* jobs. That is measured and real — three of our 78 July jobs were
+killed by `SYSTEM_PERIODIC_REMOVE`, absorbed by `RETRY 3` — but it is **not**
+why these runs have no output, because their processing completed. Kept in
+`skip_diagnosis/walltime_diagnosis.py` as a separate finding.
+
+**Next:** ask n_TOF to re-run the merge only (not 90 h of reconstruction that is
+already on their disk), and mention the two zero-byte files. Slim campaign can
+re-run over the 28 now that `ntof_files()` finds them.
+
+---
+
+## 2026-08-09 — the plastics really do ring: after-pulses in the PSS hit stream
+
+`pss_ringing/` ([`report.html`](pss_ringing/report.html)). Chasing the long tail
+seen after the DREAM/PSS match: **every large plastic pulse is followed by a
+train of real secondary pulses in the raw trace**, and the PSA reports them.
+~4.4 excess hits per large pulse over 18–1000 ns, against 0.007 on the SiPM
+walls in the same run — a factor ~650. Two components: a broad sporadic
+population peaking at 32–40 ns and decaying through a microsecond, plus a
+2 ns-wide **echo at 81–82 ns identical on all four plastics** (a reflection;
+~8 m of cable if it is one bounce at 0.66 c).
+
+Established on run 224572 (v12 hits + local raw chunks) by four independent
+checks: an event-mixed accidental control, a time-reversal control (4.13 forward
+vs 0.90 backward), the walls as a same-beam control with a 3× wider pulse, and
+raw traces conditioned on whether the PSA gave the 81 ns hit. **The PSA is not
+inventing these** — the secondary pulses are visible one event at a time.
+
+**The after-pulses are the DREAM/PSS late tail, and there is a cut for it**
+([`report_veto.html`](pss_ringing/report_veto.html)). Measured on the reference
+pair slimmed locally at ±3 µs: the plastic excess at 150–1000 ns is 122,133 hits
+against a core of 47,292.
+
+- **Per-hit flag:** `amp_0 < 0.05 × max(amp_0 on the same channel in the previous
+  1000 ns)`. Removes **99.5 %** of the 150–1000 ns excess and 94.8 % of the
+  25–150 ns excess, for **10.4 %** of the core — all of it small-amplitude.
+  Must be computed on the **full n_TOF stream** (a parent just outside the slim
+  window is the case a slim-only recomputation gets wrong). Store `shadow` and
+  `dt_prev` as floats rather than the boolean, so R and T stay re-tunable.
+- **Cheap fallback, no new branch, works on today's slims:** `amp_0 > 250`
+  removes 95.7 % of the late tail for the same core cost.
+- **Per-trigger metric:** per (trigger, arm) take the **largest-amplitude**
+  plastic hit — not the earliest — and cut on its residual. On the trigger's own
+  arm **89.5 % land within ±25 ns**, median −5.6 ns. "Earliest" gives a median of
+  −589 ns, because in a µs-wide window the earliest hit is an unrelated single.
+
+This also refines `slim_pipeline/config.py`: the late side is *not* featureless.
+At 1 ns binning there is a bump at 70–90 ns where the 81 ns echo lands.
+
+Not done: tuned on one segment of one run. The flag's cost scales with the
+singles rate, so R and T want re-checking on a high- and a low-rate segment
+before a campaign-wide number is quoted.
+
+---
+
+## 2026-08-08 — the DREAM-keyed slim, and what n_TOF still owes us
+
+Two things landed today. Detail in
+[`SLIM_FEASIBILITY_2026-08-08.md`](SLIM_FEASIBILITY_2026-08-08.md) (§8 = what
+exists, §9 = what is left).
+
+**1. `slim_pipeline/` — n_TOF hits keyed to DREAM event IDs. Built, validated,
+run on condor.** Per (DREAM sub-run × n_TOF run) segment: join → candidates →
+fit the clock from scratch → keep every scintillator hit within **±150 ns** of
+the fully corrected prediction, plus the same width at +100 µs as an accidental
+control. ~33 MB per DREAM sub-run, ~10 min, one core, 3.2 GB RSS. Output goes to
+`<eos>/july_beam/runs/<run>/<subrun>/ntof_hits/`.
+
+It reproduces **from the slim alone** the published match (95.89 % / 0.046 %)
+and the published liquid same-arm diagonal, on two disjoint hours each against
+its own published numbers. Efficiency is identical to four decimals whether a
+segment ran locally or on a worker. `slim_pipeline/validate.py` is the check;
+`segments.py` says there are **206 ready segments over 60 n_TOF runs**.
+
+*Not done:* the campaign has not been submitted, and the three validated outputs
+sit unpublished in `~/x17slim/out` on lxplus.
+
+**2. The n_TOF pass is incomplete — 41 runs to ask for.** The 5–7 August pass
+uses our v12 UserInput (verified: identical on all 14 detector rows and all 26
+templates, under n_TOF's own name `UserInput_2026_EAR2_X17_v4.h` — **do not
+identify it by filename**, it collides with our own `v4_walshapes`). It then
+stopped, and 41 runs have **no processed output of any kind**, blocking 117 h —
+48 % of the campaign. Request written and published:
+[`NTOF_REPROCESSING_REQUEST_2026-08-08.md`](NTOF_REPROCESSING_REQUEST_2026-08-08.md)
+and <https://dylan-neff.web.cern.ch/notes/ntof-reprocessing-request.html>.
+
+Two mechanisms, separated: runs after 224687 are missing because the pass
+stopped; the in-range gaps correlate with **size** — 0 of 63 skipped below
+0.35 TB, 30 of 72 above, rising with size (`slim_study/why_skipped.py`).
+
+**Traps found the hard way, now in code:** the `index` tree's Date/Time are
+LOCAL not UTC (a flat 7200 s error against anything else); our own `prod_v11`
+runs really are v11, and differ from v12 on the four LIQ rows only — mixing them
+inside one DREAM run is safe for the trigger legs and a 14–21 % liquid yield step.
+
+---
+
+## Earlier: the reprocessing itself
 
 Last updated: 2026-07-30 (evening). **The n_TOF side is closed; the analysis has
 started, and the DREAM<->n_TOF time calibration is now locked.**
+
+> **Superseded in one respect, 2026-08-08:** "the n_TOF side is closed" was true
+> of the *UserInput* and still is — n_TOF adopted v12 unchanged. It is not true
+> of *coverage*: 41 runs have no processed output at all. See the section above.
 
 > **The authority on the match is
 > `../ntof_dream_merge/DREAM_NTOF_CALIBRATION.md`.** Constants, the per-run
@@ -179,6 +553,8 @@ mistakes I made and corrected so you know where the error modes were.
 | UserInputs, source | `ntof_processing/userinputs/<variant>/` |
 | package for n_TOF | `ntof_handoff/` |
 | DREAM-vs-reprocessed entry point | `../ntof_dream_merge/DREAM_NTOF_CALIBRATION.md` |
+| micromegas channels in the n_TOF DAQ (MMA/MMB, MGAS) | `NTOF_MICROMEGAS_SIGNALS.md` + `mm_signals/` |
+| the flash charge measured on one strip, and vs the HV current | `mm_flash/` (`report.html`; open question in `mm_flash/HANDOFF_CHARGE_COMPARISON_2026-08-11.md`) |
 | retired documentation | `archive/` -- do not build on it |
 | local copy of 224572 v12 | `/media/dylan/data/x17/ntof_reproc/v12_liqpileup/` |
 

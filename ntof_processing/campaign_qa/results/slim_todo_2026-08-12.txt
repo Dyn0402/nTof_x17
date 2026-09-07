@@ -1,0 +1,79 @@
+# n_TOF runs still to be slimmed -- generated 2026-08-12
+#
+# Availability is judged by MEASUREMENT, not by settled_runs.py's 24 h rule:
+# a run counts as ready if it has a non-empty merged done/ file, OR a
+# partial set verified to carry 100 % of its index tree's bunches. 22 of
+# the runs below were labelled MOVING purely because their reconstruction
+# finished 21-23 h ago; every one is complete (moving_readiness.py).
+#
+# The slim wrapper prefers a merged file and falls back to partials by
+# itself, so no per-run handling is needed -- but see the caveat: a
+# complete-but-unmerged set has historically been WIPED and rebuilt, and
+# if that happens mid-job the xrdcp fails (exit 4, no bad data written).
+#
+# 30 runs, 129 segments, 4868 min of beam
+#
+#     run  source     seg     min  DREAM sub-runs
+#  224617  partials     5   212.8  run_104 0009,0010,0011,0012,0013
+#  224638  partials     4   191.6  run_116 0020,0021,0022,0023
+#  224639  partials     4   185.9  run_116 0024,0025,0026,0027
+#  224652  partials     4   211.8  run_122 0000,0001,0002
+#  224653  partials     4   183.8  run_124 0002,0003,0004,0005
+#  224666  partials     4   217.1  run_139 0000,0001,0002,0003
+#  224671  partials     4   192.3  run_147 0000,0001,0002,0003
+#  224688  partials     4   197.0  run_150 0000,0001,0002,0003
+#  224690  partials     3   174.5  run_152 0000,0001,0002
+#  224691  partials     4   165.2  run_152 0002,0003,0004,0005
+#  224692  partials     4   188.4  run_154 0000,0001,0002,0003
+#  224693  partials     4   193.1  run_154 0003,0004,0005,0006
+#  224695  partials     4   191.7  run_156 0000,0001,0002,0003
+#  224696  partials     4   176.2  run_156 0003,0004,0005,0006
+#  224697  partials     4   178.2  run_156 0006,0007,0008,0009
+#  224699  partials     4   158.1  run_156 0011,0012,0013,0014
+#  224700  partials     5   244.4  run_156 0014,0015,0016,0017,0018
+#  224701  partials     5   244.9  run_156 0018,0019,0020,0021,0022
+#  224702  merged       2    50.0  run_156 0022,0023
+#  224703  merged       3   155.0  run_158 0000,0001,0002
+#  224704  partials     4   156.3  run_158 0002,0003,0004,0005
+#  224705  merged       1    30.1  run_158 0005
+#  224707  merged       1    33.9  run_160 0000
+#  224709  partials    25   144.0  run_161 dA500rA530_024,dA500rA540_023,dA500rA550_022,dA500rA560_021,dA500rA570_020,dA600rA530_019,dA600rA540_018,dA600rA550_017,dA600rA560_016,dA600rA570_015,dA700rA500_014,dA700rA505_013,dA700rA510_012,dA700rA515_011,dA700rA520_010,dA700rA525_009,dA700rA530_008,dA700rA535_007,dA700rA540_006,dA700rA545_005,dA700rA550_004,dA700rA555_003,dA700rA560_002,dA700rA565_001,dA700rA570_000
+#  224710  merged       1     5.8  run_162 0000
+#  224711  merged       3   160.4  run_162 0000,0001,0002
+#  224712  merged       3    85.7  run_162 0002,0003,0004
+#  224713  partials     4   172.3  run_162 0004,0005,0006,0007
+#  224714  partials     4   218.7  run_162 0007,0008,0009,0010
+#  224715  merged       4   149.4  run_162 0010,0011,0012,0013
+#
+# new DREAM sub-runs unlocked (not covered by the running campaign): 103
+
+224617
+224638
+224639
+224652
+224653
+224666
+224671
+224688
+224690
+224691
+224692
+224693
+224695
+224696
+224697
+224699
+224700
+224701
+224702
+224703
+224704
+224705
+224707
+224709
+224710
+224711
+224712
+224713
+224714
+224715

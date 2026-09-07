@@ -33,8 +33,8 @@ def load():
     from qa_config import get_config, setup_paths, M3_CHI2_CUT, M3_MIN_NCLUS
     setup_paths()
     cfg = get_config(K.RUN_KEY)
-    table = os.path.join(cfg.OUT_BASE, 'wft', 'events_lp.parquet')
-    align = os.path.join(cfg.OUT_BASE, 'wft', 'alignment_lp', 'alignment.json')
+    table = os.path.join(cfg.OUT_BASE, 'wft', 'events.parquet')
+    align = os.path.join(cfg.OUT_BASE, 'wft', 'alignment', 'alignment.json')
     params = cm.load_alignment(align)
     df = compat.load_table(table)
     results = compat.as_event_results(df)

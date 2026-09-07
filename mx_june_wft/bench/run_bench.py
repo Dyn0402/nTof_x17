@@ -75,6 +75,13 @@ VARIANTS = {
     'aym15': {'hyper_patch': {'aY': -0.15}},
     # second t0 scan at the best (p0, w) in the global search
     'iter2': {'reco_globals': {'ITER_SCAN': True}},
+    # §21.1: stage-2 global scan sheared to the mesh (p0 - w*u_mid); pair
+    # with --t0-abs/--t0-sigma (T2.4 — the collapsed t0 scan pays for it)
+    'p0shear': {'reco_globals': {'P0_SHEAR': True}},
+    # half-lever arm: tests the valley-alignment reading of the p0shear
+    # rejection (12_shear_lever.py measured the full lever ~390 ns = the
+    # assumed u_mid, so the LEVER VALUE was not the problem)
+    'p0shear200': {'reco_globals': {'P0_SHEAR': 200.0}},
     # the proposed production configuration (2026-07-29 bench outcome):
     # 3% fractional model-error weighting + coarse-basis global pre-scan;
     # pair with a w0-carrying calibration bundle via --bundle
@@ -183,7 +190,8 @@ def _crop_windows(wins, start, n):
 
 def _worker_fit(payload):
     from wft import reco as wr
-    eid, wins, sinfo, n_hits, spark, fd = payload
+    eid, wins, sinfo, n_hits, spark, fd, ftst = payload
+    ftst = ftst or {}
     if _VAR.get('crop'):
         wins = _crop_windows(wins, *_VAR['crop'])
     t0 = time.time()
@@ -205,9 +213,9 @@ def _worker_fit(payload):
             sobjs.append(o)
         n_planes += len(cand)
         try:
-            best, ranked = wr.fit_plane_candidates(cand, plane, _CAL,
-                                                   seeds=sobjs or None,
-                                                   return_all=True)
+            best, ranked = wr.fit_plane_candidates(
+                cand, plane, _CAL, seeds=sobjs or None, return_all=True,
+                t0_prior=wr.t0_prior_for(_CAL, plane, ftst.get(plane)))
             fits[plane], all_fits[plane] = best, ranked
         except Exception:
             fits[plane], all_fits[plane] = None, []
@@ -217,6 +225,9 @@ def _worker_fit(payload):
         except Exception:
             pass
     row = wr.row_from_fits(eid, fits, n_hits, spark)
+    for plane in ('x', 'y'):
+        f = ftst.get(plane)
+        row[f'{plane}_ftst'] = int(f) if f is not None else -1
     row['_dt'] = time.time() - t0
     row['_n_plane_fits'] = n_planes
     return row
@@ -263,6 +274,13 @@ def score(rows, events, box, max_dropped=2):
                            - np.degrees(np.arctan(t[f'tan_{p}'])))
                     res.setdefault('dth14', {'x': [], 'y': []})[p].append(
                         dth if t[f'tan_{p}'] > 0 else -dth)
+                # near-vertical, reference-selected: where the t0 prior /
+                # joint fit are expected to act (T1.1, doc §22)
+                if r[f'{p}_ok'] and np.isfinite(t[f'tan_{p}']) \
+                        and abs(t[f'tan_{p}']) < 0.08:
+                    dth = (np.degrees(np.arctan(r[f'{p}_tan_theta']))
+                           - np.degrees(np.arctan(t[f'tan_{p}'])))
+                    res.setdefault('dthnv', {'x': [], 'y': []})[p].append(dth)
     return res
 
 
@@ -295,6 +313,10 @@ def summarize(res, rows, label):
         d14 = np.array(res.get('dth14', {}).get(p, []))
         out[f'comp14_{p}'] = float(np.median(d14)) if len(d14) else np.nan
         out[f'sig14_{p}'] = robust_sigma(d14)
+        dnv = np.array(res.get('dthnv', {}).get(p, []))
+        out[f'signv_{p}'] = robust_sigma(dnv)
+        out[f'biasnv_{p}'] = float(np.median(dnv)) if len(dnv) else np.nan
+        out[f'n_nv_{p}'] = int(len(dnv))
     dts = [r['_dt'] for r in rows if '_dt' in r]
     nf = sum(r.get('_n_plane_fits', 0) for r in rows)
     out['s_per_plane'] = float(np.sum(dts) / max(nf, 1))
@@ -311,6 +333,8 @@ def fmt(s):
             f"{s.get('comp14_y', float('nan')):+.2f} "
             f"s14 {s.get('sig14_x', float('nan')):.2f}/"
             f"{s.get('sig14_y', float('nan')):.2f}  "
+            f"sNV {s.get('signv_x', float('nan')):.2f}/"
+            f"{s.get('signv_y', float('nan')):.2f}  "
             f"| {s['s_per_plane']:.2f} s/fit ({s['n_plane_fits']})")
 
 
@@ -333,6 +357,12 @@ def main():
                          'framing_compare.py for the measured START)')
     ap.add_argument('--k-bins', type=int, default=None,
                     help='override the charge-basis depth bins (K)')
+    ap.add_argument('--t0-abs', default=None,
+                    help='JSON file {plane: {ftst: t0_pred_ns}} enabling the '
+                         'absolute-t0 trigger prior (T1.1); requires a cache '
+                         'with per-plane ftst (rebuild post-2026-08-11)')
+    ap.add_argument('--t0-sigma', type=float, default=25.0,
+                    help='prior width [ns] used with --t0-abs')
     ap.add_argument('--subset', type=int, default=None,
                     help='deterministic subset of N events')
     ap.add_argument('--subset-mod', default=None,
@@ -384,8 +414,18 @@ def main():
         hp = dict(variant.get('hyper_patch', {}))
         hp.update(json.loads(args.patch))
         variant['hyper_patch'] = hp
+    if args.t0_abs:
+        with open(args.t0_abs) as f:
+            t0a = {p: {int(k): float(v) for k, v in d.items()}
+                   for p, d in json.load(f).items()}
+        rg = dict(variant.get('reco_globals', {}))
+        rg['T0_ABS'] = t0a
+        rg['T0_PRIOR_SIGMA'] = float(args.t0_sigma)
+        variant['reco_globals'] = rg
+        print(f'absolute-t0 prior: sigma {args.t0_sigma} ns, table {args.t0_abs}')
     payloads = [(e, ev['wins'], ev['seeds'], ev['n_hits'], ev['spark'],
-                 ev['ftst_diff']) for e, ev in sorted(events.items())]
+                 ev['ftst_diff'], ev.get('ftst'))
+                for e, ev in sorted(events.items())]
     t0 = time.time()
     rows = []
     with ProcessPoolExecutor(max_workers=args.jobs, initializer=_worker_init,

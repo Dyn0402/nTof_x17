@@ -1,0 +1,6 @@
+== brute force run_145/stat090_0003 x n_TOF 224670
+  pulse_match: no lock (NoLock: no offset in ±120 s matches the beam record: best 5 of 11 clusters. The beam CSV may not cover this )
+  11 bursts, anchor 1785942420, lock none s
+  scanning 0 target burst(s) + 0 control(s)
+  window +-400 s: 0 beam bunches (0 empty pulses skipped)
+  no bunches in range -- nothing to scan

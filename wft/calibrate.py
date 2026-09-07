@@ -215,7 +215,7 @@ def _event_chi2(payload):
 
 
 def fit_hypers(cache_path, bundle_path, train_ids, jobs=12, maxiter=130,
-               x0=None, v_fixed=None, fixed=None):
+               x0=None, v_fixed=None, fixed=None, extra_hyper=None):
     """8-parameter ref-pinned Nelder-Mead. This is the expensive stage:
     ~15 s per objective evaluation on 12 cores for 180 events.
 
@@ -232,6 +232,10 @@ def fit_hypers(cache_path, bundle_path, train_ids, jobs=12, maxiter=130,
     sharing directly (c1, the +-1 delay) and showed it is gain- and
     drift-invariant, which is exactly the constraint the cosmic fit cannot
     produce on its own (the v <-> sharing degeneracy again).
+
+    ``extra_hyper`` rides along in every chi2 evaluation without being fitted
+    — the hypers outside HYPER_NAMES (``kTauY``, ``cX``, ``share_lp``), which
+    the objective's dict(zip(HYPER_NAMES, ...)) would otherwise silently drop.
     """
     fixed = dict(fixed or {})
     unknown = set(fixed) - set(HYPER_NAMES)
@@ -256,6 +260,8 @@ def fit_hypers(cache_path, bundle_path, train_ids, jobs=12, maxiter=130,
                              initargs=(cache_path, bundle_path)) as pool:
         def total_chi2(hv):
             hyper = dict(zip(HYPER_NAMES, hv[:7]))
+            if extra_hyper:
+                hyper.update(extra_hyper)
             v = v_fixed if v_fixed is not None else hv[7]
             c = 0.0
             for eid, tot, t0s in pool.map(
@@ -305,6 +311,44 @@ def fit_hypers(cache_path, bundle_path, train_ids, jobs=12, maxiter=130,
     if fixed:
         out['fixed'] = {k: float(v) for k, v in fixed.items()}
     return out
+
+
+def measure_t0_abs(events, bundle_path, hyper, v, sample=None):
+    """Absolute-t0 prediction per plane per ftst class, for the trigger prior
+    (T1.1). Ref-pinned fits, like measure_dt_xy: with (p0, w) pinned to the
+    reference, t0 is the only free parameter and is far more stable than the
+    free fit's (whose chi2 surface has near-degenerate minima 60 ns apart).
+    Returns ({plane: {ftst: median t0}}, {plane: {ftst: robust sigma}})."""
+    wm.use_calibration(CalibrationBundle.load(bundle_path))
+    vals = {'x': {}, 'y': {}}
+    for eid in sorted(events)[:sample] if sample else sorted(events):
+        ev = events[eid]
+        for plane in ('x', 'y'):
+            if f'ftst_{plane}' not in ev or plane not in ev:
+                continue
+            P = ev[plane]
+            if np.asarray(P['W']).shape[1] != wm.NSAMP:
+                wm.set_nsamp(np.asarray(P['W']).shape[1])
+            g = wm.init_guess(P, plane, ev[f'tan_{plane}'],
+                              ev[f'ref_mesh_{plane}'], v)
+            r = wm.fit_plane_raw(P, plane, *g, hyper=hyper,
+                                 fix_p0w=(ev[f'ref_mesh_{plane}'],
+                                          ev[f'tan_{plane}'] * v * 1e-3))
+            vals[plane].setdefault(int(ev[f'ftst_{plane}']), []).append(r['t0'])
+    pred, spread = {}, {}
+    for plane in ('x', 'y'):
+        pred[plane], spread[plane] = {}, {}
+        for c, ts in sorted(vals[plane].items()):
+            if len(ts) < 5:
+                continue
+            ts = np.asarray(ts, float)
+            med = float(np.median(ts))
+            sig = float(1.4826 * np.median(np.abs(ts - med)))
+            pred[plane][c] = med
+            spread[plane][c] = sig
+            print(f'[calib] t0_abs {plane} ftst {c}: {med:+.1f} ns '
+                  f'(rsig {sig:.1f}, n={len(ts)})')
+    return pred, spread
 
 
 def measure_dt_xy(events, bundle_path, hyper, v, sample=200):
@@ -373,11 +417,22 @@ def calibrate(cfg, run_key, n_events=400, n_train=180, jobs=12, out=None,
         [seed.hyper[k] for k in HYPER_NAMES] + [seed.v_drift])
     if v_fixed is not None and x0 is not None:
         x0[7] = v_fixed
+    # Hypers the seed carries that are NOT fitted: they must ride along in every
+    # chi2 evaluation AND survive into the output bundle. Dropping them is
+    # silent and severe -- c2_over_c1 is what makes the +-2 copy exist at all,
+    # so a refit that loses it writes a bundle whose stored c2 is 0.0 and whose
+    # model draws NO +-2 copy, while every printed number looks fine. That is
+    # what a v-refit seeded from calib_bundle_r06 did until 2026-08-21.
+    extra = {k: float(v) for k, v in (seed.hyper if seed else {}).items()
+             if k not in HYPER_NAMES}
+    if extra:
+        print(f'[calib] carrying unfitted seed hypers: {extra}', flush=True)
     hj = fit_hypers(cache_path, prov_path, train, jobs=jobs, maxiter=maxiter,
-                    x0=x0, v_fixed=v_fixed, fixed=fix_hyper)
+                    x0=x0, v_fixed=v_fixed, fixed=fix_hyper, extra_hyper=extra)
     if v_fixed is not None:
         hj['v'] = float(v_fixed)
     cal.hyper = {k: hj[k] for k in HYPER_NAMES}
+    cal.hyper.update(extra)
     cal.v_drift = hj['v']
     cal.provenance.update(n_train=hj['n_train'], chi2=hj['chi2'],
                           chi2_init=hj['chi2_init'],

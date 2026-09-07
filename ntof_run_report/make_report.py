@@ -1,0 +1,1581 @@
+#!/usr/bin/env python
+"""Build the end-of-run report for the 28 June – 10 August 2026 physics run.
+
+    .venv/bin/python -m ntof_run_report.make_report [--out DIR]
+
+Writes ``report.html`` plus ``figures/`` into the output directory (default:
+this package).  Prose lives here; figures are staged by ``assets.py`` from the
+analysis packages that produced them, and the two campaign-level figures are
+made by ``figures_local.py``.  Nothing here re-reduces bulk data — every number
+below is quoted from a committed result and carries its source in the text.
+"""
+
+from __future__ import annotations
+
+import argparse
+import datetime as dt
+import html
+from pathlib import Path
+
+from . import assets
+from .figures_comb import comb_evolution
+from .figures_flash import hv_current_scan
+from .figures_geometry import topdown
+from .figures_local import beam_availability, capsule_pressure, events_collected
+
+HERE = Path(__file__).resolve().parent
+
+
+# ----------------------------------------------------------------------------
+# small helpers for the HTML
+# ----------------------------------------------------------------------------
+PRELIM_BADGE = '<span class="badge">Preliminary</span>'
+
+
+def fig(name: str, caption: str, *, wide: bool = False, source: str = "",
+        prelim: bool = False) -> str:
+    """One figure.
+
+    ``prelim=True`` stamps the caption. Anything built on the reconstruction
+    chain gets it: the in-situ calibration is done for one arm on two runs, so
+    those numbers are demonstrations that the chain hangs together, not
+    measurements, and the report must not let a reader forget which is which.
+    """
+    cls = "fig wide" if wide else "fig"
+    src = f'<div class="src">{source}</div>' if source else ""
+    badge = PRELIM_BADGE if prelim else ""
+    return (
+        f'<figure class="{cls}"><img src="figures/{name}" alt="">'
+        f"<figcaption>{badge}{caption}{src}</figcaption></figure>"
+    )
+
+
+def photo_row(items: list[tuple[str, str]]) -> str:
+    cells = "".join(
+        f'<figure class="ph"><img src="figures/{n}" alt="">'
+        f"<figcaption>{c}</figcaption></figure>"
+        for n, c in items
+    )
+    cls = "photos one" if len(items) == 1 else "photos"
+    return f'<div class="{cls}">{cells}</div>'
+
+
+def table(headers: list[str], rows: list[list[str]], *, cls: str = "") -> str:
+    h = "".join(f"<th>{c}</th>" for c in headers)
+    b = "".join(
+        "<tr>" + "".join(f"<td>{c}</td>" for c in r) + "</tr>" for r in rows
+    )
+    return f'<div class="tw"><table class="{cls}"><thead><tr>{h}</tr></thead><tbody>{b}</tbody></table></div>'
+
+
+def tiles(items: list[tuple[str, str]]) -> str:
+    cells = "".join(
+        f'<div class="tile"><div class="v">{v}</div><div class="k">{k}</div></div>'
+        for v, k in items
+    )
+    return f'<div class="tiles">{cells}</div>'
+
+
+# ----------------------------------------------------------------------------
+CSS = """
+:root{
+  --bg:#ffffff; --fg:#1b1f24; --muted:#5a636e; --line:#e2e6ea;
+  --accent:#2f6f5e; --accent2:#8a4b2a; --panel:#f6f8f9; --flag:#8c2f39;
+}
+@media (prefers-color-scheme: dark){
+ :root:not([data-theme="light"]){
+  --bg:#14171a; --fg:#e8eaed; --muted:#a2abb5; --line:#2b3138;
+  --accent:#67b39b; --accent2:#d99a6c; --panel:#1c2126; --flag:#e08b93;
+ }
+}
+:root[data-theme="dark"]{
+  --bg:#14171a; --fg:#e8eaed; --muted:#a2abb5; --line:#2b3138;
+  --accent:#67b39b; --accent2:#d99a6c; --panel:#1c2126; --flag:#e08b93;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);margin:0;
+ font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+ -webkit-font-smoothing:antialiased}
+.wrap{max-width:960px;margin:0 auto;padding:0 22px 90px}
+header.top{border-bottom:1px solid var(--line);padding:44px 0 26px;margin-bottom:34px}
+header.top .kicker{color:var(--accent);font-weight:650;letter-spacing:.09em;
+ text-transform:uppercase;font-size:12.5px}
+h1{font-size:34px;line-height:1.2;margin:.30em 0 .18em;letter-spacing:-.015em}
+header.top .sub{color:var(--muted);font-size:15px}
+h2{font-size:24px;margin:2.4em 0 .5em;letter-spacing:-.01em;
+ padding-top:.5em;border-top:1px solid var(--line)}
+h3{font-size:17.5px;margin:1.9em 0 .35em}
+h4{font-size:15px;margin:1.5em 0 .3em;color:var(--muted);
+ text-transform:uppercase;letter-spacing:.06em}
+p{margin:.75em 0}
+a{color:var(--accent)}
+code{font:13.5px/1.4 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+ background:var(--panel);padding:1px 5px;border-radius:4px}
+ul,ol{margin:.7em 0;padding-left:1.35em}
+li{margin:.34em 0}
+.lede{font-size:18px;color:var(--fg)}
+.lede strong{color:var(--accent)}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(268px,1fr));
+ gap:12px;margin:22px 0}
+.tile{background:var(--panel);border:1px solid var(--line);border-radius:9px;
+ padding:14px 14px 12px}
+.tile .v{font-size:23px;font-weight:660;letter-spacing:-.02em;line-height:1.15}
+.tile .k{font-size:12.5px;color:var(--muted);margin-top:5px;line-height:1.35}
+figure{margin:26px 0}
+figure img{width:100%;height:auto;display:block;border-radius:8px;
+ border:1px solid var(--line);background:#fff}
+figcaption{font-size:13.5px;color:var(--muted);margin-top:9px;line-height:1.55}
+.fig.wide img{border:none;background:transparent}
+.src{font-size:12px;opacity:.8;margin-top:4px;font-style:italic}
+.photos{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
+ gap:16px;margin:26px 0}
+.photos figure{margin:0}
+.photos img{aspect-ratio:3/4;object-fit:cover}
+.photos figure.land img{aspect-ratio:4/3}
+.photos.one{grid-template-columns:minmax(0,420px)}
+.tw{overflow-x:auto;margin:20px 0}
+table{border-collapse:collapse;width:100%;font-size:14px;min-width:460px}
+th,td{border-bottom:1px solid var(--line);padding:7px 11px;text-align:left;
+ vertical-align:top}
+th{font-weight:640;color:var(--muted);font-size:12.5px;
+ text-transform:uppercase;letter-spacing:.05em;white-space:nowrap}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+.note{background:var(--panel);border-left:3px solid var(--accent);
+ border-radius:0 8px 8px 0;padding:13px 17px;margin:22px 0;font-size:15px}
+.note.warn{border-left-color:var(--flag)}
+.note .lab{font-weight:660;color:var(--accent);font-size:12.5px;
+ text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:3px}
+.note.warn .lab{color:var(--flag)}
+.alert{border:2px solid var(--flag);border-radius:10px;padding:16px 20px;
+ margin:26px 0 30px;background:color-mix(in srgb,var(--flag) 7%,transparent)}
+.alert .lab{display:block;color:var(--flag);font-weight:750;font-size:14px;
+ text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px}
+.alert p{margin:.4em 0;font-size:15.5px}
+.alert .stamp{font-size:13px;color:var(--muted);margin-top:10px;
+ font-variant-numeric:tabular-nums}
+.badge{display:inline-block;color:var(--flag);border:1px solid var(--flag);
+ border-radius:4px;padding:1px 7px;font-size:11px;font-weight:700;
+ text-transform:uppercase;letter-spacing:.06em;margin-right:8px;
+ vertical-align:1px;white-space:nowrap}
+.dates{display:grid;grid-template-columns:auto 1fr;gap:2px 20px;
+ margin:20px 0;font-size:14.5px}
+.dates dt{color:var(--accent);font-weight:640;white-space:nowrap;
+ font-variant-numeric:tabular-nums}
+.dates dd{margin:0 0 10px}
+footer{border-top:1px solid var(--line);margin-top:56px;padding-top:20px;
+ color:var(--muted);font-size:13.5px}
+@media (max-width:620px){h1{font-size:27px}.wrap{padding:0 15px 60px}}
+"""
+
+
+def build(outdir: Path) -> Path:
+    figdir = outdir / "figures"
+    missing = assets.stage(figdir)
+    stats = beam_availability(figdir / "beam_availability.png")
+    evt = events_collected(figdir / "events_collected.png")
+    pres = capsule_pressure(figdir / "capsule_pressure.png")
+    geo = topdown(figdir / "setup_topdown.png")
+    hv = hv_current_scan(figdir / "hv_current_scan.png")
+    ce = comb_evolution(figdir / "comb_evolution.png")
+
+    B = []  # body
+    A = B.append
+    stamp = dt.date.today()
+
+    # ------------------------------------------------------------------ alert
+    A(f"""
+<div class="alert">
+<span class="lab">Preliminary</span>
+<p><b>Every reconstruction, tracking and detector-performance number in this
+report is preliminary and is likely to change.</b></p>
+<p>Figures and statements carrying a red <span class="badge">Preliminary</span>
+tag are demonstrations that the analysis chain works end to end, <b>not
+measurements</b>. Treat every number in them as provisional.</p>
+<div class="stamp">Last edited <b>{stamp:%-d %B %Y}</b> · regenerated from the
+analysis packages on every build — re-read it if the date has moved.</div>
+</div>
+""")
+
+    # ---------------------------------------------------------------- summary
+    A(f"""
+<p class="lede">Between <strong>28 June and 10 August 2026</strong> the
+<strong>X17 collaboration at n_TOF</strong> installed four resistive-strip
+micromegas TPCs, the scintillators behind them and a four-arm trigger in EAR2,
+commissioned them on the neutron beam, and took about three weeks of production
+data. This report is the record of what was built, what was measured,
+and what a future measurement would have to do differently.</p>
+
+<p>Two things frame everything else. First, <strong>the read-out cannot survive
+the beam pulse, and that is what ruled out the high-energy measurement we came
+for</strong>. The γ flash at EAR2 delivers of order
+<strong>10<sup>2</sup> nC of avalanche charge per beam pulse per
+chamber</strong> — measured here for the first time — and the DREAM front end
+saturates on it and is then blind for milliseconds, which is the same timescale
+as the physics window. Neither Ciro's mesh charge-injection circuits nor any
+isobutane fraction bought that dead time back, so the MeV measurement was
+abandoned during commissioning and the run became a thermal measurement. That
+drove every operating decision afterwards.</p>
+
+<p>Second, at thermal energies the physics itself is against us: the
+³He(n,p) channel dominates completely, the ⁴He excitation branch we want is
+~10<sup>−8</sup> of it, and <strong>aluminium capture on the capsule produces
+~96 % of our triggers</strong> — so what we recorded is, to first order, an
+aluminium measurement with a well-characterised tracker sitting in it.</p>
+
+<p>None of that makes the run a null. We have a large dataset joined event by
+event to the n_TOF stream at 96 % efficiency and 0.05 % accidentals, a tracker
+that demonstrably images the target, a quantitative specification for what a
+post-LS3 front end must survive, and a detector-level understanding of the
+flash environment that did not exist before.</p>
+""")
+
+    A(tiles([
+        ("44 days", "on site, 28 Jun – 10 Aug"),
+        ("17.9 TB", "DREAM data on EOS"),
+        (f"{stats['on_pct']:.0f} %", "of the logged minutes had protons on the "
+                                     "n_TOF target"),
+        (f"{evt['total']/1e6:.0f} M", "DREAM events recorded"),
+    ]))
+
+    A(photo_row([
+        ("photo_beamline.jpg", "The four-arm X17 search configuration above the "
+         "EAR2 neutron line, on the morning of the dismount."),
+        ("photo_topdown.jpg", "Top-down into the chamber stack: four MX17 "
+         "micromegas in a pinwheel, gas and HV routed through the frame."),
+        ("photo_side.jpg", "The signal side — 32 SiPM channels, 8 plastic PMTs "
+         "and the NIM trigger chain, from beside the station."),
+    ]))
+
+    # -------------------------------------------------------------- what it was
+    A("""
+<h2 id="setup">1. What was installed</h2>
+
+<p>The apparatus is four <b>MX17 resistive-strip micromegas</b>, chambers
+<b>A, B, C and D</b>, arranged in a pinwheel around the beam axis with their
+mylar windows 40.8–40.9 cm apart across the beam, each shifted 1.6–1.7 cm off
+centre so that their 30 mm drift gaps overlap. Each chamber has 512 strips per
+plane on a <b>778.5 µm pitch</b>, read out by two DREAM FEUs (1 024 channels per
+chamber, 8 FEUs and 4 096 channels in all). The <b>active area was measured
+during the run</b> — 39.9 cm tangential × 36.0 cm along the beam, against the
+38 × 34 cm guess the simulation had carried since the start of the project; the
+missing 3.6 cm is a passivation band at each end of the beam coordinate, not the
+tangential one.</p>
+
+<p>Behind each chamber sits one arm of the trigger. First a <b>SiPM wall</b>: a
+wall of scintillator bars <b>2.5 cm</b> wide, each read out by SiPMs at the top
+and at the bottom, in <b>four groups of four bars</b> whose SiPMs are summed at
+the top and at the bottom separately — eight channels per wall, 32 in the
+experiment. Behind the wall sit <b>two plastic bars, 2 cm thick</b>, read out by
+PMTs. Four <b>liquid-scintillator cells</b> were eventually mounted, one behind
+each arm, but they never entered the trigger. The cells are nominally 4 L and
+were <b>over-filled to ~6.5 L</b>, which is why they bulge by ~1.3 cm on each
+face — the reason the first two would not sit together in their clamps (§2).</p>
+
+<p>The neutron target is a <b>highly pressurised ³He capsule at 500 bar</b> on
+the beam axis, 23.5 cm from each chamber's strip plane.</p>
+""")
+
+    A(fig("setup_3d.png",
+          "The station as built, from the in-house Geant4 model: the ³He "
+          "capsule on the beam axis, the four micromegas drift gaps around it, "
+          "then the SiPM walls and the plastic bars behind them.",
+          wide=True,
+          source="mpgd26/make_ntof.py (frame 9)"))
+
+    A(fig("setup_topdown.png",
+          "The station seen from above and to scale, drawn straight from the "
+          "as-built Geant4 model. The neutron beam is vertical and comes out of "
+          "the page through the ³He capsule at the centre; the four arms lie "
+          "around it in a pinwheel, each one a micromegas drift volume, then "
+          "its strip read-out plane, then the SiPM wall, the two plastic bars "
+          "and finally the liquid cell. The pinwheel offset — each module slid "
+          f"{geo['pinwheel_shift_cm'][0]:.1f}–"
+          f"{geo['pinwheel_shift_cm'][1]:.1f} cm along its own plane — is what "
+          "makes the four drift volumes overlap over the target rather than "
+          "leave a hole at the centre. <b>One number to read with care:</b> the "
+          f"capsule-to-strip-plane distance is "
+          f"{geo['strip_plane_cm_model']:.1f} cm in this as-built model but "
+          f"{geo['strip_plane_cm_reco']:.1f} cm in the frame the "
+          "reconstruction actually uses, because it is not settled whether the "
+          "surveyed 40.8/40.9 cm was referenced to the mylar window or to the "
+          "flange in front of it. Everything reconstructed in this report uses "
+          "23.5 cm.",
+          wide=True,
+          source="ntof_run_report/figures_geometry.py, from a geometry dump of "
+                 "MX17_Full_Geant (SimConfig.hh + MX17ModuleGeometry.hh)"))
+
+    A("""
+<p>The capsule is the one part of the apparatus that simply worked, and it is
+worth showing because it is also the only thing we monitored continuously that
+never gave us a bad day:</p>
+""")
+
+    A(fig("capsule_pressure.png",
+          f"³He capsule pressure for the whole time it was mounted, "
+          f"{pres['days']:.0f} days at ~2 s cadence. It sits at "
+          f"<b>{pres['mean']:.0f} bar</b> throughout "
+          f"({pres['min']:.0f}–{pres['max']:.0f} bar), losing "
+          f"{pres['drop_bar']:.0f} bar over the run "
+          f"({pres['drop_per_day']:.2f} bar/day) with a clean "
+          f"{pres['diurnal_swing']:.1f} bar day/night breathing cycle on top. The "
+          f"end-of-run vent to {pres['vented_to']:.1f} bar is annotated rather "
+          f"than plotted, so that the axis resolves the band the capsule "
+          f"actually lived in.",
+          wide=True,
+          source="ntof_run_report/figures_local.py, from the DAQ's "
+                 "he3_pressure watcher (Keithley 2000 on the capsule "
+                 "transducer)"))
+
+    A(table(
+        ["", "chamber A", "chamber B", "chamber C", "chamber D"],
+        [
+            ["FEUs", "3, 4", "5, 6", "7, 8", "1, 2"],
+            ["production resist HV", "540 V", "540 V", "525 V", "520 V"],
+            ["production drift HV", "−700 V", "−700 V", "−700 V", "−700 V"],
+            ["paired tracks, run_79 (2 sub-runs)", "15 056", "2 546",
+             "13 868", "3 622"],
+        ],
+    ))
+
+    # ------------------------------------------------------------ phase 1
+    A("""
+<h2 id="phase1">2. Hardware set-up (28 June – 14 July)</h2>
+
+<p>The chambers were assembled on their frame in the conference room over
+29–30 June and mounted on the beam line on 30 June. All DREAM cabling and the
+gas and grounding routing went in the same day, and the first pedestals with the
+full cable plant showed straight away the one difference between the chambers
+that we already knew about.</p>
+
+<div class="note warn"><span class="lab">Two kinds of M1 board</span>
+The four chambers do not carry the same front-end M1 boards. <b>Chamber A has
+the good one, built at CERN. B, C and D carry boards from an outside supplier
+that are known to be poor</b>, most likely through an inadequate ground return.
+What they add is <b>common-mode noise</b> — a coherent swing shared by every
+channel of a chip at once, sitting on top of each channel's own noise — and as
+delivered to the read-out it is enormous.
+<br><br>
+The left-hand column below is the number that matters for anyone looking at raw
+data: the per-channel pedestal width <b>before common-noise subtraction</b>, on
+the first pedestals of the run.</div>
+""")
+
+    A(table(
+        ["30 June, per-channel pedestal σ [ADC]",
+         "chamber A <span style='font-weight:400'>(CERN board)</span>",
+         "chamber B", "chamber C", "chamber D"],
+        [
+            ["<b>raw — before common-noise subtraction</b>",
+             "<b>5.5 / 7.7</b>", "<b>173 / 155</b>", "<b>86 / 201</b>",
+             "<b>91 / 81</b>"],
+            ["after common-noise subtraction",
+             "3.0 / 3.0", "6.1 / 6.0", "4.9 / 8.0", "5.2 / 4.0"],
+            ["ratio — how much of it is coherent",
+             "×1.9 / ×2.6", "×28 / ×26", "×17 / ×25", "×17 / ×20"],
+        ],
+    ))
+
+    A("""
+<div class="note warn">
+Raw, chamber A sits at <b>5.5–7.7 ADC while the other three run at 81–201</b> —
+a factor 10 to 25, and on chamber C's second FEU the pedestal is 201 ADC wide
+before anything is done to it. Almost all of that is coherent: subtracting the
+common mode brings every chamber back to <b>3–8 ADC</b>, and A barely moves
+because it had almost nothing to remove. The two boards are not a little
+different, they are a different class of object.
+<br><br>
+The production configuration is the same story with the contrast compressed —
+raw <b>26–34 ADC on A against 59–90 on B, C and D</b>, residual 9–11 ADC on all
+four — because by then A had picked up some common mode of its own (it went from
+~5 ADC to ~30 in mid-July and stayed there).
+<br><br>
+Two honest qualifications. Because the coherent part <em>is</em> removable, and
+the chain does remove it, this cost us headroom and dynamic range rather than
+making the bad chambers unusable. And a pedestal measures a <em>FEU</em>, not a
+board — chamber, cabling and FEU cannot be separated from pedestal data alone,
+so pinning it on the M1 boards specifically rests on knowing which board went
+where.
+<br><br>
+<span class="src">Measured directly from the decoded pedestal runs. Per event,
+per 64-channel chip, per time sample, the common mode is the median over live
+channels of (amplitude − channel mean); the residual is what is left per channel
+once it is subtracted. First pedestals from
+<code>Mx17_test_pedthr_260630_17H31</code> (30 June, 1 033 events); production
+numbers from <code>pedestals_08-06-26_14-45-39</code> (6 August), reproduced on
+the 30 July and 9 August pedestals.</span></div>
+""")
+
+    A("""
+
+<p>The first HV ramp, in Ar/CO₂ 70/30 on 1 July, immediately produced the
+problem that would follow us for the whole run: the drift electrodes spark, and
+they spark at different voltages on every chamber (B from 1000 V, D from
+1150 V, A from 1350 V, C above 1450 V). This was a problem we brought with us
+rather than one we found at n_TOF. The day before we left for CERN the drift
+cages were found to be sparking on <em>all four</em> chambers; we fixed three of
+them in the time available, but on <b>chamber B</b> we could not work out what
+was wrong, so its <b>drift-cage degrader rings were removed</b> to get it into
+the truck. B therefore ran the whole campaign without a degrader chain — a
+known, understood handicap carried in deliberately, not a surprise. It shows:
+B's drift drew a fluctuating current that coupled directly into the SiPM
+read-out board.</p>
+
+<h3>Waiting on infrastructure</h3>
+
+<p>Two long poles dominated this phase, and neither was ours.</p>
+
+<ul>
+<li><b>Gas.</b> The flammable-gas turn-on, the isobutane line and the ATEX gas
+mixer took until <b>7 July</b>. The mixer, once we had it, worked immediately —
+but the argon bottle regulator would only give ~0.7 bar against the 3 bar the
+mixer's flow controller is calibrated for, capping us at 4.0 L/h and doubling
+every flush time. That was fixed on 8 July by adjusting the line regulator to
+2.5 bar. Until the mixer arrived we ran premixed Ar/CO₂ 70/30 and then
+Ar/CF₄/iso 88/10/2.</li>
+<li><b>Scintillators.</b> The SiPM walls and plastics arrived in pieces. Only
+one wall was available in the first week; the remaining three walls and all
+eight plastic bars were installed on <b>9 July</b>. The JUNO liquid was
+collected from Germany in two attempts and arrived on <b>13 July</b>.</li>
+</ul>
+
+<div class="note warn"><span class="lab">The liquid scintillators</span>
+The liquid arrived on 13 July. The first two cells were filled that afternoon
+and swelled transversely enough that they would not sit together in the
+CEA-printed clamps, but that was a mechanical problem and we solved it: we
+worked out how to mount two layers, and the mounting was never what stopped us.
+The remaining two cells went in during the 14 July access, completing one cell
+per arm — and that is the day this report takes as the end of the set-up phase,
+because it is the point at which the scintillator system was finally complete.
+<br><br>
+What stopped us was <b>performance</b>. Preparing the cells with a Y-88 source
+showed the light collection falling off far more steeply with distance from the
+PMT than expected — under 10 mV at the far end. On that evidence we
+<b>abandoned the idea of using the liquid in the trigger</b> and went back to
+the smaller plastics, spending 3PM–8PM that afternoon rebuilding the mechanics
+so the plastics sat in front. The <b>second layer of cells was then never
+mounted</b>: the liquid looked inefficient, and the second shipment arrived too
+late for it to be worth the access. The mounted cells were recorded throughout
+but stayed out of the trigger logic, and they still look inefficient in the
+offline data. They have not been studied properly yet.</div>
+
+<h3>The last attempts at a high-energy measurement</h3>
+
+<p>The MeV measurement needs the read-out <b>alive within a few microseconds of
+the γ flash</b>. Two ideas were tested, in earnest, and both failed.</p>
+
+<div class="note"><span class="lab">What actually saturates the read-out</span>
+We do not think the prompt γ flash itself is what kills the front end. The
+picture that fits the data is that <b>the whole burst of interactions</b> — the
+charged particles crossing the chamber, and the neutron and γ conversions in the
+material around it — leaves primary ionisation throughout the drift volume, and
+it is that charge, amplified, that saturates the DAQ. The tell is in the
+waveforms: <b>we appear to see the start of real tracks before the waveforms all
+go into saturation</b>. If that is right, then the thing a future front end has
+to survive is not a single prompt spike but a sustained current.</div>
+
+<p><b>Ciro's mesh charge-injection circuits.</b> These inject charge onto the
+mesh during the flash so as to <b>induce a compensating charge on the read-out
+strips</b>, cancelling the flash signal before the front end has to integrate
+it. Four were built and tuned on the bench, installed on chambers A and B on
+3–5 July and later on A and C, and run in on/off pairs against identical HV
+scans. The result was consistently null: no shift in the turn-off voltage, no
+improvement in recovery time, and no difference in tracks per trigger in the
+on/off comparison of run_71. There was a hard limit besides: the ramp hold-off
+decays after <b>5–10 ms</b>, set by a capacitor on the PCB, while the thermal
+window runs to ~20 ms. They came off the chambers on 14 July, went back on A and
+C on 21 July for one more controlled comparison, and were removed for good on
+<b>27 July</b> after a shifter noticed them firing when they should not have
+been — which was later traced to a <b>faulty N1081B misfiring</b>, not to any
+fault of the circuits themselves.</p>
+
+<p><b>Isobutane fraction.</b> Ar/iC₄H₁₀ was scanned from 5 % up to 30 %
+(10 July onward: 30 %, then 80/20, then 90/10, then 95/5). Higher isobutane did
+not shorten the flash recovery. It did do something useful — it visibly reduced
+the drift sparking on chambers A and D and made D's resist voltage more stable
+— which is why the run eventually settled on <b>Ar/iC₄H₁₀ 90/10</b> rather
+than the bench-calibrated 95/5.</p>
+
+<p>A third, cheaper idea was tried on 16–17 July: a <b>2 cm lead filter</b> in
+the beam. It bought about 5 V of resist HV at equal recovery time — real, but
+not enough to change the picture — and was removed.</p>
+
+<p>The set-up phase closes on <b>14 July</b>, in a single five-hour access: the
+fourth liquid cell went in, completing the scintillator system; the liquids came
+out of the trigger and the stack was rebuilt with the plastics in front; the
+mesh circuits came off the chambers; and the B4C target went in. By then the
+conclusion was unavoidable — <b>the front end cannot be made to survive the
+flash on this timescale, so this would be a thermal measurement</b>.</p>
+""")
+
+    # ------------------------------------------------------------ phase 2
+    A("""
+<h2 id="phase2">3. Building the thermal measurement (14 – 26 July)</h2>
+
+<p>The thermal window is <b>1 to about 20 ms</b> after the flash, and the physics
+rate there is low enough that the whole game is <em>how many DREAM events can we
+bank per beam pulse</em>. This phase was spent on the trigger and on the DAQ, in
+parallel.</p>
+
+<h3>The trigger</h3>
+
+<p>The trigger is built in six CAEN N1081B modules: per arm, the SiPM wall's
+four segment sums are OR-ed above a threshold, AND-ed with a plastic bar above
+its own threshold inside a 20 ns logic pulse; the four arm "singles" then feed
+the doubles logic and the DREAM trigger. Getting there took most of two weeks:</p>
+
+<ul>
+<li><b>Cabling and channel mapping.</b> Thirty-two SiPM channels, eight plastic
+PMTs, fan-outs, a 9.6 µs PS-pickup delay and a flash veto. Three SiPM channel
+pairs were found to be <b>cross-wired on Ciro's summing boards</b> — the boards
+that sum the bar groups on the detector before the signal goes out to either the
+n_TOF DAQ or the trigger, and not to be confused with his mesh
+charge-injection circuits — namely wall A 5↔7 and wall D 2↔4 and 5↔7, D's board
+having been mapped upside down. Fixed on 17 July.</li>
+<li><b>Gain equalisation and energy calibration.</b> A Y-88 source scan gave a
+per-PMT MIP scale; a dedicated <b>Y-88 + Cs-137</b> two-source calibration was
+run on 28 July during a long beam stop, five minutes per position, giving two
+clean points per bar. Plastic gains were spread by a factor ~3.</li>
+<li><b>Threshold choice.</b> run_67 scanned plastic threshold × drift × resist
+and found that track yield <em>rises</em> toward lower plastic threshold in
+every time window. Production settled at <b>0.9 MIP on the plastics and 0.5 MIP
+on the walls</b> — deliberately low.</li>
+</ul>
+
+<p>The logic was <b>built and commissioned to take doubles</b> — an X17 decay
+gives a pair, so a coincidence between two arms is the signature the experiment
+is ultimately after, and the doubles leg was wired, timed in and available
+throughout. In the end we <b>ran on singles</b>. The doubles rate is low enough
+that requiring one would have thrown away most of what the DAQ could hold, and
+with the read-out rather than the trigger setting the limit (below), the more
+valuable thing to bank was <b>as many unbiased events as possible</b> and to
+leave the pair selection to the offline analysis. The doubles are still there to
+be found in the singles data; the trigger simply did not pre-select them.</p>
+
+<h3>The DAQ</h3>
+
+<p>DREAM cannot be triggered while it is reading out, which stamps a
+characteristic "comb" on the accepted triggers: a burst of about eleven events,
+then ~9.6 µs of nothing, then a few more. Squeezing that comb — making it both
+denser and more uniform across the 30 ms gate — was the single highest-value
+activity of the run.</p>
+
+<ul>
+<li><b>Inter-packet delay</b> down to 5 (the curve flattens below ~10) and the
+FEU watermarks forced to <b>Hwm 1 / Lwm 0</b>, which is what finally made the
+accepted triggers land <em>evenly</em> across the window instead of in a few
+tall teeth. The measure used throughout this report is the <b>bin-to-bin
+scatter of the trigger count over 1–10 ms, divided by its own mean</b> (0 would
+be a perfectly flat comb, 1 means the scatter is as big as the average itself).
+The watermark change took it from <b>0.86 to 0.38</b>, at a small cost in total
+rate — a more even sampling of the neutron energy spectrum is worth more than
+raw events.</li>
+<li><b>Read clock to 25 MHz</b> (from the nominal setting), worth ~50 % more
+events per pulse. DREAM is rated for 20 MHz, so this was taken knowingly.</li>
+<li><b>10 GbE — worth a factor 3 on its own.</b> A new PCIe network card in the
+DAQ machine and a new switch in the area on 22 July, with all eight FEUs on
+dedicated 1 Gb ports and a 10 Gb uplink. Measured on matched IPD ladders the
+same afternoon, before and after the cutover: <b>36.0 → 95.7 events per
+spill</b>, and corruption-free down to IPD 1 where 1 GbE had already broken at
+IPD 75. Against the IPD 100 point we had actually been running, that is
+<b>×3.1</b>. This was the single biggest step of the campaign, and it also
+changed what the limit <em>is</em>: below IPD 5 the yield stops moving, so from
+22 July onward the ceiling is the trigger and the read-out cycle, not the
+network.</li>
+<li><b>Read-out window.</b> The 80 ms acquisition was delayed past the flash —
+first 4 ms, then 5.1 ms, finally <b>1 ms</b> once the operating point was low
+enough that the chambers were alive there. Latency 27 with 20 samples × 60 ns
+holds 95 % of the drift charge (measured in the run_78 latency scan).</li>
+</ul>
+
+<p>Measured capacity at the end of it: <b>95.7 events per spill</b> at IPD 5
+with a packet-loss fraction of 0.00–0.04 %, against 36.0 on the best clean
+1 GbE point beforehand. Pushing IPD from 5 to 1 shortens the read-out cycle by
+1.68× and moves the yield by 1.4 %, which is what "the network is no longer the
+limit" looks like in numbers. The physics singles rate is still well above what
+we bank, so the read-out, not the trigger threshold, sets what we record.</p>
+""")
+
+    A(fig("comb_evolution.png",
+          "The comb being squeezed, one configuration change at a time. Each "
+          "panel is real recorded DREAM data — triggers against neutron arrival "
+          "time, anchored on that pulse's own γ flash — with the simulated "
+          "in-gate IPC production behind it in blue, which is the distribution "
+          "we would like to sample evenly. Read top to bottom: the starting "
+          f"point banks {ce['epochs'][0]['per_pulse_1_30']:.0f} triggers per "
+          "pulse in a couple of narrow teeth and leaves "
+          f"{100*ce['epochs'][0]['starved']:.0f} % of the band starved; the "
+          "production point at the bottom banks "
+          f"{ce['epochs'][-1]['per_pulse_1_30']:.0f} and starves "
+          f"{100*ce['epochs'][-1]['starved']:.0f} %. Overall "
+          f"<b>×{ce['rate_gain']:.0f} in rate and ×{ce['cv_gain']:.0f} in "
+          "uniformity</b>. Note the third panel: the 25 MHz read clock raised "
+          "the rate but made the comb <em>worse</em> "
+          f"({ce['epochs'][1]['cv']:.2f} → {ce['epochs'][2]['cv']:.2f}) "
+          "because faster read-outs sharpen the teeth — which is precisely why "
+          "the FIFO watermark had to be attacked next. <b>CV</b> on the panels "
+          "is the unevenness measure defined above: the bin-to-bin scatter of "
+          "the trigger count across 1–10 ms divided by its mean, so smaller is "
+          "flatter and 0 would be perfect. \"Starved\" is the fraction of the "
+          "band getting less than a quarter of the average trigger rate — the "
+          "part of the neutron spectrum we were effectively not sampling.",
+          wide=True,
+          source="ntof_run_report/figures_comb.py · recorded data from FEU 01 "
+                 "of each run, IPC spectrum reweighted from Geant4"))
+
+    A("""
+<p>Taken together, <b>the trigger and DAQ work between 14 and 26 July bought a
+factor 10 in event rate</b> — 15.1 events per beam pulse on 14 July against
+161.7 across the production phase, a factor 10.7; normalising instead by
+beam-on time gives 11.2. Same beam, same chambers, ten times the statistics.
+It is the highest-return fortnight of the campaign.</p>
+
+<div class="note"><span class="lab">Operating point</span>
+Production ran at drift <b>−700 V</b> on all four chambers and resist
+<b>A 540 / B 540 / C 525 / D 520 V</b>, in Ar/iC₄H₁₀ 90/10, with plastic
+thresholds at 0.9 MIP and wall thresholds at 0.5 MIP, 20 samples × 60 ns,
+latency 27, IPD 5, Hwm 1 / Lwm 0, and an 80 ms read-out window opening 1 ms
+after the flash. <b>This is a dead-time optimum, not an efficiency
+optimum</b> — see §5.</div>
+""")
+
+    A(photo_row([
+        ("photo_daq.jpg", "The DAQ rack from behind after the 10 GbE upgrade "
+         "on 22 July: eight FEU links, the new switch, the LV supply and the "
+         "patch to the area."),
+    ]))
+
+    # ------------------------------------------------------------ phase 3
+    A(f"""
+<h2 id="phase3">4. Data taking (26 July – 10 August)</h2>
+
+<p>run_79 on 26 July was the first long statistics run at the final
+configuration, and from there the pattern was steady: hour-long sub-runs at the
+production setpoint, cosmic runs automatically substituted whenever the beam
+dropped, pedestals after every access, and periodic HV and threshold
+cross-checks. The last beam sub-run ended at 09:10 on 10 August.</p>
+""")
+
+    A(tiles([
+        ("162", "DREAM runs · 2 705 sub-runs"),
+        ("342", "production statistics sub-runs"),
+        ("17.9 TB", "on /eos/experiment/ntof/data/x17"),
+        (f"{evt['total']/1e6:.1f} M", "DREAM events recorded"),
+        (f"{evt['beam']/1e6:.1f} M", "of them on beam"),
+        (f"{stats['pulses']:,}".replace(",", " "), "beam pulses on target logged"),
+    ]))
+
+    A(f"""
+<h3>What we banked</h3>
+
+<p>Counted directly from the DREAM data on EOS — one entry of every sub-run's
+event tree, {evt['tags']:,} file tags across the 2 511 sub-runs that produced
+decoded output — the campaign recorded
+<b>{evt['total']/1e6:.1f} million triggered events</b>:
+<b>{evt['beam']/1e6:.1f} M on beam</b>, {evt['cosmic']/1e6:.1f} M on the
+interleaved beam-off cosmic runs, and {evt['pulser']/1e3:.0f} k on pulser runs
+taken to characterise the DAQ. The best day was
+{dt.date.fromisoformat(evt['best_day']):%-d %B} at
+{evt['best_day_events']/1e6:.2f} M events.</p>
+
+<p>How much of it is joined to the n_TOF stream today is a separate question,
+and that work is <b>in progress</b>. The join works: once a DREAM sub-run's beam
+pulses are matched to n_TOF's and the two clocks' relative offset and drift are
+corrected, the events line up. Applying it across the whole campaign is what is
+being done now. §7 has the detail.</p>
+""")
+
+    A(fig("events_collected.png",
+          f"DREAM events recorded per day across the whole campaign, beam and "
+          f"cosmics, with the cumulative total on the right axis. "
+          f"<b>{evt['total']/1e6:.1f} M events in total, "
+          f"{evt['beam']/1e6:.1f} M of them on beam.</b> The vertical lines are "
+          f"the two phase boundaries. The rate climbs by a <b>factor 10</b> "
+          f"between 14 and 26 July — that is the trigger and DAQ work of §3 "
+          f"landing, on the same beam and the same detectors; the day-to-day "
+          f"scatter after 26 July is "
+          f"mostly beam availability, not configuration changes — compare the "
+          f"panel below. Grey is the beam-off cosmic running, which fills the "
+          f"gaps rather than adding to them. Counted from every sub-run's own "
+          f"event tree on EOS; no part of this depends on the n_TOF stream or "
+          f"on anything having been matched.",
+          wide=True,
+          source="ntof_run_report/count_events.py (scan) + figures_local.py "
+                 "(figure)"))
+
+    A("""
+<h3>Beam availability and dead time</h3>
+
+<p>The DAQ logged protons on the n_TOF target directly from NXCALS
+(<code>FTN.BCT477</code>, the last transformer before the target) for the whole
+run, once per cycle, so beam availability is a measurement rather than a
+recollection.</p>
+""")
+
+    A(fig("beam_availability.png",
+          f"Fraction of each day with protons on the n_TOF target, over "
+          f"{stats['days']} days and {stats['hours']:.0f} hours. Campaign mean "
+          f"<b>{stats['on_pct']:.1f} %</b>; over the production phase alone "
+          f"(26 Jul – 10 Aug, {stats['prod_hours']:.0f} h) "
+          f"<b>{stats['prod_on_pct']:.1f} %</b>. The two vertical lines are the "
+          f"phase boundaries: 14 July, when the fourth liquid cell went in and "
+          f"the scintillator system was complete, and 26 July, when run_79 "
+          f"started at the frozen production configuration.",
+          source="ntof_run_report/figures_local.py, from the DAQ beam watcher's "
+                 "one-minute NXCALS log"))
+
+    A("""
+<div class="note warn"><span class="lab">Read this before quoting a dead-time
+breakdown</span>
+The beam logger also tries to assign each dead minute to "PS" or "n_TOF", from a
+supercycle snapshot. We are <b>trying to work out who the downtime belongs
+to</b>, but we do not yet know how accurate that attribution is, and <b>no
+number or figure in this report uses it</b>. The <b>total</b> is a direct
+statement about protons on target and is what this report quotes.</div>
+
+<p>On top of beam downtime there are three dead-time terms that are ours:</p>
+
+<ul>
+<li><b>DREAM read-out dead time</b> — the dominant one. The comb structure means
+we bank of order 10–20 events per beam pulse against a physics singles rate an
+order of magnitude higher. This is the limiting term on the whole
+experiment.</li>
+<li><b>Post-flash blindness</b> — milliseconds, gain-dependent, quantified in
+§5. At the production point the slowest chamber is still recovering inside the
+thermal peak.</li>
+<li><b>Operational</b> — a handful of FEU and N1081B communication dropouts
+(FEU 3 on 24 July, FEU 7, several N1081B "wedges" traced to a bug in an
+unfinished C library, a DAQ machine lock-up on 18 July), each costing between
+ten minutes and one overnight run. All recovered by power cycling.</li>
+</ul>
+""")
+
+    A("""
+<h3>When our events actually arrive</h3>
+""")
+
+    A(fig("track_rate.png",
+          "Reconstructed tracks against time since the γ flash, run_79 arm A. "
+          "The distribution turns on sharply at 1 ms — that is the DREAM gate, "
+          "not a reconstruction effect — and 29 % of everything we record lands "
+          "in 3–8 ms, which is precisely the interval the recovery map (§5) says "
+          "the chambers are still blind or only partly alive in. The tagged and "
+          "untagged curves keep the same shape, so the scintillator tag is an "
+          "acceptance and not a time-dependent selection.",
+          wide=True,
+          source="ntof_tracking/run79_prelim_figures.py",
+          prelim=True))
+
+    A("""
+<h3>What the tracker sees</h3>
+
+<p>The waveform-first reconstruction (<code>wft/</code>, driven on beam data by
+<code>ntof_tracking/wft_beam.py</code>) was run on run_79 and later on run_145.
+It reconstructs the drift-time ladder inside the 30 mm gap from the raw
+waveforms — not from hit times, which on these resistive-strip chambers are
+aggregates and compress the ladder by 20–30 %.</p>
+
+<div class="note warn"><span class="lab">Preliminary</span>
+These are the <b>first</b> passes of the reconstruction over beam data, on
+<b>arm A only</b>, on <b>two runs of 342 production sub-runs</b>, with a
+calibration transferred from the June cosmic bench rather than measured in
+situ. They are shown because they demonstrate the chain works end to end — the
+tracker points at the target and agrees with the trigger about where. <b>Treat
+every number in them as provisional.</b> The angle scale, the drift velocity
+and the pointing resolution will all move once the in-situ calibration is
+done across the four arms, and the qualitative conclusions could move
+with them.</div>
+""")
+
+    A(fig("event_display.png",
+          "One reconstructed track in the 3-D model of arm A: the piece "
+          "measured inside the drift gap, extrapolated out to the SiPM wall "
+          "segment and the plastic bar that actually fired the trigger, and "
+          "back to the ³He capsule.",
+          wide=True,
+          source="ntof_tracking/run79_event_display.py · run_79",
+          prelim=True))
+
+    A(fig("wall_segment_tour.png",
+          "2 267 arm-A tracks from run_79, coloured by which SiPM wall segment "
+          "fired for that event. The four bundles are <b>251 mm apart at the "
+          "wall and 9 mm apart at the target plane</b> — against 28 mm / 3.2 mm "
+          "for a label-shuffled null. The tracker points, and the trigger and "
+          "the tracker agree about where.",
+          wide=True,
+          source="ntof_tracking/run79_wall_segment_gif.py",
+          prelim=True))
+
+    A("""
+<p>run_145 (5 August) is the strongest version of the same statement, because
+it is the <b>first run whose every sub-run is fully matched</b> to n_TOF. Arm A
+gives 22 434 reconstructed events and 8 116 two-plane wall-matched tracks. The
+reconstructed angle follows the point-source expectation
+tan θ = u / 235 mm across the whole plane; the residual scale factor is the
+<b>first in-situ drift-velocity measurement at beam conditions</b>,
+v ≈ 36.1 µm/ns, 15 % below the clean-gas Magboltz prior. With that scale
+applied the back-projection focuses inside the capsule. <b>This is one arm of
+one sub-run, self-calibrated</b> — the 15 % deficit against Magboltz is
+interesting and not yet explained, and it is exactly the sort of number an
+in-situ calibration across all four arms could move.</p>
+""")
+
+    A(fig("run145_pointing.png",
+          "Reconstructed tan θ against track position on the strip plane, "
+          "run_145 arm A. The band lies on the point-source line "
+          "tan θ = u/235 mm (dashed). The empty horizontal stripe is the "
+          "slope-reliability cut removing isochronous tracks, which carry no "
+          "angle information.",
+          source="published note: run145-target-imaging",
+          prelim=True))
+
+    A(fig("run145_image.png",
+          "The image. Each inclined track extrapolated to its closest approach "
+          "to the beam axis. Left, with the Magboltz-prior drift velocity; "
+          "right, with the in-situ scale — the focal spot tightens onto the "
+          "origin, inside the r = 10 mm capsule.",
+          wide=True,
+          source="published note: run145-target-imaging",
+          prelim=True))
+
+    # ------------------------------------------------------------ flash charge
+    A("""
+<h2 id="flash">5. How much charge the γ flash actually delivers</h2>
+
+<p>This is the measurement that most directly determines whether a post-LS3
+experiment is possible, and it did not exist before this run. The question is
+simple — <em>how much charge does one beam pulse put into the amplification
+stage?</em> — but everything that could tell us goes through a saturated front
+end, so the DREAM data cannot answer it.</p>
+
+<p>So in the <b>last days of the campaign we set out to measure it properly</b>.
+On 9 August, with the physics programme essentially finished and the setup about
+to come down, we gave up an evening to a dedicated <b>HV scan on chamber A</b>,
+and for it we <b>patched a single strip of chamber A directly into the n_TOF
+DAQ</b> — a 1 GS/s digitiser with no charge-sensitive preamplifier anywhere in
+the chain, which is to say an instrument that does not saturate on the flash.
+Twenty-five amplification-voltage plateaus were taken in one evening, and at
+every plateau the flash charge was recorded <b>two independent ways</b>.</p>
+""")
+
+    A(fig("flash_waveform.png",
+          "What one beam pulse does to a DREAM channel: the prompt flash rails "
+          "the ADC to +4095 for ~0.4 µs, then to 0 for ~0.4 µs, ~2 µs railed "
+          "in total, after which the baseline goes <em>flat</em>. The flat "
+          "baseline is not recovery — it is the shaper's AC coupling. The "
+          "channel is still pinned, and the tell is the absence of noise "
+          "(dead ≈ 2 ADC of scatter, alive ≈ 50–130).",
+          wide=True,
+          source="daq:analysis/dream_saturation_7-12-26/"))
+
+    A("""
+<h3>Method 1 — the HV supply current</h3>
+
+<p>The first method needs no new hardware at all. The resistive-layer HV supply
+<b>carries the avalanche ion current</b>: every electron multiplied in the
+amplification gap leaves an ion that the resistive layer's supply must
+eventually replace. Its average current therefore <em>is</em> the charge
+delivered, integrated over everything one beam pulse does to the chamber, and —
+this is the point — it sits <b>completely outside the read-out chain</b>, so
+nothing about DREAM's saturation touches it. Better still, it was logged once a
+second for every sub-run of the campaign, so the measurement is retrospective:
+we did not have to plan for it. The charge per pulse is then just the excess
+current over the standing leakage, divided by the pulse rate:</p>
+
+<p style="text-align:center"><code>Q per pulse = ( mean(imon) − median(imon) ) / f_pulse</code></p>
+
+<p>The median is the standing leakage at that exact voltage — most samples sit
+there, because pulses arrive every ~3.3 s and the monitor samples at 1 Hz — and
+<code>f_pulse</code> is counted per sub-run from the beam log. No new data, no
+reprocessing, 8 MB of CSV.</p>
+
+""")
+
+    A(fig("hv_current_scan.png",
+          "The raw evidence, on the evening of 9 August: chamber A's "
+          "resistive-layer supply current through the whole 25-plateau scan. "
+          "Top, the logged current (log scale — the standing leakage differs "
+          "~30× between drift blocks, which is a channel property and is what "
+          "the per-plateau median removes); the horizontal lines are each "
+          "plateau's median and mean. Middle, the difference between them, "
+          "ΔI = mean − median, which is the beam-induced current and therefore "
+          "the charge per pulse. Bottom, the voltage staircase. The scan walks "
+          "the amplification voltage <em>down</em> inside each drift block, so "
+          "the current steps down across a block and jumps back up at each "
+          "boundary. At the production point (drift 700 V, resist 540 V) "
+          "ΔI = 42.1 nA, which is the 143 nC per pulse quoted below.",
+          wide=True,
+          source="ntof_run_report/figures_flash.py, from the CAEN imon log of "
+                 "n_TOF run 224709 · method from "
+                 "ntof_july_analysis/flash_charge/"))
+
+    A("""
+
+<p>Three independent checks pass. A beam-off run at the production setpoint
+returns <b>zero</b> charge, including on a channel carrying 2.9 µA of leakage.
+Two runs hours apart at identical HV but a 10× different pulse rate return the
+<b>same charge per pulse</b> to 25 %. And the HV dependence reproduces the gas
+gain curve, ×20 over 60 V, smoothly across 31 points on three chambers.</p>
+
+<p>The one systematic that could have made all of this a lower bound — whether
+the CAEN readback preserves the integral of a burst much shorter than its
+sample spacing — was <b>closed by direct measurement</b>: folding the monitor
+against isolated beam pulses shows it is a ~1 s averager (peak 88 nA at 1.1 s,
+back to zero by 2.3 s, area equal to the charge). Four independent estimators
+agree to ±2.5 %. The numbers below are measurements, with a ±3 % systematic on
+the absolute scale.</p>
+
+<h3>Method 2 — integrating the waveform on one strip</h3>
+
+<p>The second method measures the same charge <b>on the signal side</b>, and it
+is what the strip patched into the n_TOF DAQ was for. Chamber A's <b>strip
+32</b> was taken off DREAM and digitised directly at <b>1 GS/s with no charge
+amplifier in the chain</b>. Without a CSA there is nothing to pin against a
+rail: the strip's current during and after the flash is recorded as a waveform,
+and <b>integrating that waveform gives the charge that arrived on that one
+strip</b>, in coulombs, with no gain model in between.</p>
+
+<p>The two methods measure different things on purpose. The HV current is the
+<b>whole chamber</b>, all 1 024 channels and everything between them, averaged
+over a second. The waveform is <b>one strip</b>, resolved in time to a
+nanosecond. Reconciling them needs the read-out board's checkerboard pad
+geometry and its image-charge capture to be accounted for; once that is done
+they agree, and what is left over is a factor 4.1 that is simply the local flash
+density at that particular strip being higher than the chamber average. Two
+instruments with nothing in common but the chamber, giving the same answer, is
+the reason we quote these numbers as measurements rather than estimates.</p>
+
+<h3>The answer</h3>
+""")
+
+    A(tiles([
+        ("143 ± 17 nC", "per pulse per chamber at the production point "
+                        "(det A, drift 700 V, resist 540 V)"),
+        ("~131 pC", "per read-out channel, chamber average"),
+        ("~220 ×", "DREAM CSA full scale (600 fC) on an average channel"),
+        ("668 pC", "on a single measured strip — 1 113 × full scale"),
+        ("0.1 nC/cm²", "per pulse over the active area"),
+        ("366 nC", "per pulse at 560 V"),
+    ]))
+
+    A(table(
+        ["amplification HV", "chamber charge / pulse", "measured strip 32",
+         "× DREAM CSA full scale (strip)"],
+        [
+            ["500 V", "26.8 ± 3.9 nC", "111 pC", "185 ×"],
+            ["520 V", "59.0 ± 7.2 nC", "225 pC", "375 ×"],
+            ["<b>540 V — production</b>", "<b>143.4 ± 16.5 nC</b>",
+             "<b>538 pC</b>", "<b>896 ×</b>"],
+            ["550 V", "230.7 ± 29.1 nC", "854 pC", "1 424 ×"],
+            ["560 V", "366.1 ± 42.8 nC", "1 358 pC", "2 263 ×"],
+            ["570 V", "573.9 ± 66.7 nC", "2 044 pC", "3 406 ×"],
+        ],
+    ))
+
+    A("""
+<p class="src" style="font-size:13.5px;color:var(--muted)">Run 224709, detector
+A, drift 700 V, Ar/iC₄H₁₀ 90/10, 25 HV plateaus in one evening. Chamber charge
+from the HV supply current; strip charge from the same chamber's strip 32
+digitised directly at 1 GS/s by the n_TOF DAQ with no charge amplifier in the
+chain, quoted for the delivered pulse mix (dedicated pulses alone are ~1.24×
+higher — 668 pC at 540 V). "× full scale" is against the DREAM CSA's 600 fC
+setting; if the beam ran at 200 fC — which is what the archived bench
+configurations read, and which has not been confirmed for the beam runs —
+every multiple is three times worse.</p>
+
+<div class="note"><span class="lab">Note on the operating voltage</span>
+Production ran at 520–540 V, not 560 V. The 560 V row is included because it is
+inside the band the chambers were scanned over and because it is roughly where
+one would want to run for efficiency if the front end allowed it — the cost of
+that 20 V is a factor 2.6 in delivered charge.</div>
+""")
+
+    A(fig("charge_compare.png",
+          "Left: the two independent measurements of flash charge on the same "
+          "chamber, same day, same 25 HV plateaus — the whole chamber through "
+          "its HV supply, and one strip through a direct 1 GS/s digitiser. "
+          "They agree once the read-out board's checkerboard pad geometry and "
+          "image-charge capture are accounted for, leaving a factor 4.1 that "
+          "is local flash density at that strip. Right: what the front end is "
+          "asked to swallow, against its own full scale.",
+          wide=True,
+          source="ntof_processing/mm_flash/ · report published as "
+                 "\"ntof-micromegas-gamma-flash\""))
+
+    A("""
+<h3>What that costs, and the result worth keeping</h3>
+
+<p>The consequence is measured directly with a "flash-random" trigger: the
+flash defines t = 0, a Poisson pulser then fires random triggers across the
+30 ms gate, and each probe asks whether the per-channel baseline <em>noise</em>
+has come back. (A flat baseline is not proof of recovery — a pinned CSA has
+zero small-signal gain, so it produces no tracks <em>and</em> no noise. The
+absence of noise is the tell.)</p>
+""")
+
+    A(fig("recovery_vs_hv.png",
+          "Post-flash recovery time against amplification voltage, run_57. "
+          "Two decades of dead time against a single detector knob, and the "
+          "shaded band is the thermal-neutron arrival window the dead time "
+          "lands on. Stars mark the production operating point.",
+          wide=True,
+          source="daq:analysis/flash_recovery · docs/flash_recovery_run57_HV_map"))
+
+    A(fig("deadtime_vs_charge.png",
+          "The result worth keeping: charge (HV supply current) and recovery "
+          "(flash-random probe) measured on the <b>same</b> 31 sub-runs. Three "
+          "chambers at three different gains fall on one curve, t ∝ Q^1.2. "
+          "Dead time is set by the charge delivered; voltage is only the knob "
+          "that sets it — which is exactly the form a future front end can be "
+          "specified against.",
+          wide=True,
+          source="ntof_july_analysis/flash_charge/"))
+
+    A("""
+<p>And one exoneration, which matters for anyone designing the replacement:</p>
+""")
+
+    A(fig("two_readouts.png",
+          "The same style of chamber on two read-out chains. Digitised "
+          "directly at 1 GS/s with no charge-sensitive preamplifier, the "
+          "chamber is back below threshold <b>0.87 µs</b> after the flash peak "
+          "and delivers hits at the first instant the DAQ permits. Through "
+          "DREAM, the same chamber is blind for milliseconds. Nothing in the "
+          "gas, the field or the amplification stage has a millisecond time "
+          "constant.",
+          wide=True,
+          source="ntof_processing/mm_flash/"))
+
+    # ------------------------------------------------------------ physics
+    A("""
+<h2 id="physics">6. What we are actually measuring</h2>
+
+<h3>The branching ratio, and the self-shielding that follows from it</h3>
+
+<p>The problem at thermal energies is the <b>branching ratio</b>, and it is not
+close. The two channels of n + ³He are separated by eight orders of magnitude:
+σ(n,p) = 5 333 b against σ(n,γ) = 54 µb, a ratio of <b>1.0 × 10⁻⁸</b>
+(ENDF/Wolfs 1989, reproduced in our Geant4 at the same value). The
+<b>³He(n,p)³H break-up dominates completely</b>. The ⁴He excitation we want —
+the one that can emit an X17 or an internal-pair-conversion pair — is the
+10⁻⁸ channel. That, and not anything about the apparatus, is what makes a
+thermal X17 search hard.</p>
+
+<p><b>Self-shielding is a consequence of the same fact, and a comparatively
+benign one.</b> A 5 333 b cross section is exactly what makes the capsule opaque
+to its own beam: the neutrons are consumed within the first centimetres of gas,
+so the deeper gas sees a strongly attenuated flux. We knew this before arriving
+— it is written up in <code>MX17_Full_Geant/docs/report/thermal_note.pdf</code>
+— and the measured capture profile confirms it: median capture 14 mm into the
+gas, 95 % of them inside the first 25 mm, putting the effective source ~3.7 cm
+upstream of the capsule centre. The cost is a further factor 50–100 on the
+excitation yield, from the naive 1.21 × 10⁻² down to (1.1–2.3) × 10⁻⁴ IPC per
+pulse. That is a real loss, but it is a loss of a factor ~100 sitting on top of
+a loss of a factor 10⁸ — and unlike the branching ratio, it is a geometry
+problem, which a thinner or lower-pressure target could largely engineer
+away.</p>
+
+<h3>Aluminium</h3>
+
+<p>During the run we simulated the whole station rather than just the target,
+and found the trigger's real source. The capsule and its mount are
+<b>aluminium</b>, and thermal neutron capture on ²⁷Al emits a 7.724 MeV γ.
+At the surveyed geometry that is 4 121 γ per pulse — 8 × 10⁷ per day — and the
+Compton electrons and conversion pairs they make are what fire the
+scintillators.</p>
+""")
+
+    A(fig("sim_timedist_bysource.png",
+          "Simulated thermal-gate rates against neutron arrival time, broken "
+          "down by where the capture happened. Top: SiPM-wall singles, "
+          "2 063 per pulse, 80 % aluminium. Middle: plastic singles, 942 per "
+          "pulse, 57 % aluminium. Bottom: the arm coincidence that is our "
+          "actual trigger leg — <b>205 per pulse, 96 % aluminium</b>.",
+          source="MX17_Full_Geant/scripts/plot_timedist_bysource_thermal.py · "
+                 "10⁹ EAR2-flux neutrons, nose-first geometry, 0.5 MIP"))
+
+    A(table(
+        ["", "per pulse (sim)", "aluminium fraction"],
+        [
+            ["SiPM-wall singles", "2 063", "80 %"],
+            ["plastic singles", "942", "57 %"],
+            ["<b>arm coincidence (trigger leg)</b>", "<b>205</b>", "<b>96 %</b>"],
+            ["pair-tags (both arms)", "0.8–1.8", "—"],
+        ],
+    ))
+
+    A("""
+<p>The corresponding background estimate is uncomfortable and should be stated
+plainly: aluminium produces <b>5.95 × 10⁶ pairs per day</b>, of which
+6.5 × 10⁵ per day land in the micromegas acceptance, against an X17 yield at
+thermal of <b>0.012 acceptance pairs per day</b> — about 5 × 10⁷ : 1. It is not
+hopeless in principle: a total-pair-energy cut at 13 MeV separates them,
+<em>provided</em> the tracker can measure momentum to better than ~30 % per
+lepton. Whether it can is an open and genuinely interesting question, and one
+this dataset can answer.</p>
+
+<h3>The yield, measured against the simulation</h3>
+
+<p>The most useful cross-check we have is the trigger rate itself, as a
+function of neutron arrival time, against Geant4. The hardware trigger was
+re-built in software from the recorded n_TOF hit data (the same wall-sum OR,
+the same plastic AND, the same 20 ns logic pulses and the same standing
+thresholds), and independently checked against the real N1081B time-tag capture
+— hardware and emulation agree to 12–17 %.</p>
+""")
+
+    A(fig("yield_data_vs_sim.png",
+          "Thermal-gate trigger rate against neutron arrival time: recorded "
+          "data (blue) against Geant4 (green), summed over the four arms. The "
+          "<b>shape reproduces</b>, including the 5.3 ms thermal peak — the "
+          "moderation and transport are understood. The <b>normalisation does "
+          "not</b>: 429 legs per pulse recorded against 205 simulated.",
+          wide=True,
+          source="mx_july_beam_qa/31_sim_data_compare.py · n_TOF run 224524"))
+
+    A("""
+<p>The excess is <b>a constant factor, not a shape</b>. Coincidence legs come
+out 2.1× high overall (2.1 / 2.5 / 2.6 / 1.1 for walls A / B / C / D), SiPM
+singles 2.4–2.65×, and plastic singles 3.8–5.5×. The obvious explanation —
+accidental coincidences — was tested with a 500 ns sideband and killed:
+accidentals are only ~5 % of the in-gate rate (23 per pulse of 429), and they
+concentrate near the flash rather than under the thermal peak. So the excess is
+real, it is on the scintillator response rather than on the neutron transport,
+and it is not yet explained. For planning purposes: <b>the real detectors see
+2–4× more than Geant4 predicts, with the right time structure.</b></p>
+""")
+
+    # ------------------------------------------------------------ analysis
+    A("""
+<h2 id="analysis">7. Analysis status</h2>
+
+<div class="note warn"><span class="lab">Where this stands</span>
+Detector performance metrics are <b>not ready</b>, and the analysis as a whole
+is at an early stage — see the banner at the top of this report. What follows is
+what is established well enough to state now, with the DREAM ↔ n_TOF time
+calibration the one piece that is genuinely settled. Efficiency, resolution,
+the liquid scintillators and every tracking number are still open and
+<b>expected to change</b>.</div>
+
+<h3>DREAM ↔ n_TOF matching</h3>
+
+<p>The DREAM stream and the n_TOF stream are two independent DAQs with
+independent clocks, and every physics analysis needs them joined event by
+event. This turned out to be one of the more interesting pieces of work of the
+campaign.</p>
+
+<p>The calibration aligns n_TOF to itself first — every tree referenced to the
+beam pickup, which needs no common particle — and then maps DREAM onto that
+time base with a rate error <i>K</i>, a fixed offset <i>T0</i>, per-arm offsets
+and, crucially, a <b>per-bunch</b> offset and rate correction fitted from that
+bunch's own ~107 triggers. The residual is then flat at 6 ns (68 % half-width)
+from 1 ms to 80 ms.</p>
+""")
+
+    A(table(
+        ["at the ±25 ns accept window", "wall AND plastic", "wall only"],
+        [
+            ["efficiency", "<b>95.84 %</b>", "98.30 %"],
+            ["accidental match rate", "<b>0.049 %</b>", "1.04 %"],
+            ["purity of the matched sample", "99.998 %", "99.982 %"],
+            ["≥ 2 candidate arms in the window", "0.15 %", "3.04 %"],
+        ],
+    ))
+
+    A("""
+<p class="src" style="font-size:13.5px;color:var(--muted)">Measured on run_79
+sub-runs stat090_0000/0001, 213 420 non-flash triggers, against n_TOF run
+224572. Accidental rates are measured by repeating the match with the DREAM
+time shifted ±100 µs — never modelled.</p>
+
+<p>Applied across the campaign the pipeline attempted 291 (DREAM sub-run ×
+n_TOF run) segments over the 83 n_TOF runs; <b>170 fitted, and all 170 pass
+every QA check</b> with no population outliers, at a median 94.9 % efficiency.
+In matched bunches that is <b>148 412 joined and 51 331 lost — 25.7 % of
+attempted beam</b>.</p>
+
+<p>The failures are understood and are not a data problem. The offset search
+is <b>degenerate under the PS supercycle</b>: the supercycle is strictly
+periodic at 36 s with every spacing a multiple of 1.2 s, so a lock displaced by
+a whole number of bunches produces perfect-looking match statistics at the
+wrong offset. Two such mis-locks were caught (+26 and +20 bunches, at signal-to-
+noise 1 273 and 1 708 — i.e. they looked excellent). The fix is to score the
+lock on an intensity-fluctuation term that breaks the periodicity, and to fail
+loudly rather than tie-break silently. That work is in progress; the affected
+segments are recoverable.</p>
+
+<p>A second and much smaller failure has since been separated out from that one.
+Three hours of data could not be rescued by any candidate lock the matcher was
+offered, because their true lock lies <b>outside the ±120 s window the candidate
+search enumerates</b> — displaced by 172.8 s, exactly four PS supercycles — so
+every candidate on the list measured 0 % and the segment failed for what looked
+like a data reason but was a search-range reason. Widening the enumeration finds
+them, and those hours are being re-joined now.</p>
+
+<p>Because these numbers move as the recovery runs, the campaign's live matching
+status is kept on the <a href="../x17/qa-match.html">matching QA page</a> rather
+than frozen into this report.</p>
+
+<h3>Chamber performance</h3>
+
+<p>The one thing that can be said about the chambers today comes from
+<em>paired tracks</em> — a particle-like cluster on each plane of the same
+chamber with the two planes' charges balanced. That is a detection-level
+quantity, not a reconstructed geometry, so it survives the caveats above. It
+does not measure efficiency; it says which chambers were producing usable
+avalanches, and where.</p>
+""")
+
+    A(fig("mm_maps.png",
+          "Paired tracks per chamber over two sub-runs of run_79 — one "
+          "particle-like cluster on each plane with the two planes' charges "
+          "balanced, which is a physical statement about a real avalanche. "
+          "<b>A and C work; B and D do not, and their failures are different.</b> "
+          "Red lines are the independent June cosmic-bench active-area "
+          "measurement.",
+          wide=True,
+          source="ntof_active_area/"))
+
+    A("""
+<ul>
+<li><b>Chamber A</b> is the good one and carries most of the reconstruction
+work. Its X-plane connector 8 (strips 448–511) <b>died during the campaign</b>
+— alive in run_55 on 18 July, dead in run_79 on 26 July — so arm A read only
+87.5 % of its tangential width from then on.</li>
+<li><b>Chamber C</b> is nearly as good, with a real ~20-strip interior dead
+stripe near u = 190 mm.</li>
+<li><b>Chamber B</b> makes real tracks, but far fewer and later. B is the
+chamber whose <b>drift-cage degrader rings we removed before shipping</b>, when
+we could not stop it sparking in the last day at CEA, and it carried 2 µA of
+standing leakage for much of the run. So B's field cage is known to be
+non-nominal by construction — that is a handicap we understand and brought with
+us. Whether it fully accounts for how much worse B is has not been
+established.</li>
+<li><b>Chamber D</b> is the worst: its tangential plane is largely dark in
+run_79, it sits on its own HV grid 10 V below the others, and its flash-charge
+numbers are unusable. Not understood.</li>
+</ul>
+
+<p>D in particular has not been diagnosed, and both B and D are candidates for a
+bench autopsy now that the chambers are back at CEA.</p>
+
+<h3>What is still open</h3>
+
+<ul>
+<li><b>Efficiency, resolution and matching-to-truth for all four chambers</b> —
+the in-situ calibration (template, sharing kernel, diffusion, drift velocity)
+exists for arm A on two runs and needs to be done across the production set.
+Everything shown here from run_79 and run_145 is marked preliminary for that
+reason.</li>
+<li><b>The full production reconstruction</b> — 342 statistics sub-runs, of
+which a handful have been reconstructed.</li>
+<li><b>The double-track search</b>, which is the actual physics analysis and has
+not started.</li>
+<li><b>The liquid scintillators</b> — recorded throughout, apparently
+inefficient, not studied.</li>
+<li><b>The 2–4× yield excess over Geant4</b> (§6).</li>
+</ul>
+
+<p>What does look solid already: the <b>SiPM wall + plastic trigger works
+well</b> — it is efficient, its coincidences match the n_TOF stream at 96 %
+with 0.05 % accidentals, and its geometry is confirmed in the data (wall
+segment ordering correlates at r = +0.97 with reconstructed track position, and
+the plastic pair's left/right boundary sits at −6.8 ± 5.3 mm where the survey
+puts it at 0).</p>
+""")
+
+    # ------------------------------------------------------------ SPS
+    A("""
+<h2 id="sps">8. The SPS test (31 July – 3 August)</h2>
+
+<p>Detector <b>E</b> was the spare, left out of the n_TOF setup
+because 62 % of its area does not amplify — in fixed ~3.5 cm stripes, at every
+voltage, with flat pedestals across the dead bands, so it is the amplification
+structure and not the read-out. Over the first weekend of August it was taken
+to the SPS North Area H4 line and run <b>parasitically inside the Saclay P2 /
+banco uRWELL test beam</b>, which supplied the trigger and a reference tracker.
+It was mounted so it could be rotated, and was run flat, at 15.5° and at
+25.6°.</p>
+
+<p>The detector barely worked, which was expected. What made the weekend worth
+it is that we could <b>aim</b>: the beam spot was parked on the live band, and
+inside a good band it behaves like a normal chamber.</p>
+""")
+
+    A(fig("det4_sps_efficiency.png",
+          "Detector E at H4, referenced to the uRWELL telescope. Between the "
+          "bands "
+          "the chamber is at 0.1 % — dead, not inefficient — at every voltage. "
+          "Inside the X 149–161 band it reaches <b>80 % within 5 mm</b>, "
+          "matching its own June cosmic-bench number of 80.0 % for the same "
+          "band. Efficiency is still climbing at 670 V, the highest point "
+          "taken.",
+          wide=True,
+          source="sps_beam_test_26/det4_sps_assessment/"))
+
+    A("""
+<p>The physics value of the weekend is not the efficiency map, it is the
+<b>charge-sharing calibration</b>. At normal incidence the ±1-strip sharing
+separates in time into a prompt component (transverse diffusion, arriving with
+the central strip) and a dispersed component (through the resistive layer,
+arriving late) — a geometry we cannot get from an inclined cosmic track. That
+measurement pinned the ±1 peak-time shift at <b>+29 to +36 ns</b>, stable
+across two gases, four drift fields, three resist voltages and both
+zero-suppressed and RAW read-out, and it established that the sharing is
+RC-<em>dispersed</em> rather than a delayed copy. The <code>share_lp</code>
+kernel branch was adopted fleet-wide on the strength of it, and it is what the
+n_TOF reconstruction now runs.</p>
+
+<p>Two by-products: a 200 GeV muon dataset precise enough to serve as a
+calibration reference for the whole fleet, and the discovery (and fix) of a
+~24 % sample-group loss in the DREAM RAW-mode decoder under FEU bandwidth
+pressure.</p>
+""")
+
+    # ------------------------------------------------------------ dismount
+    A("""
+<h2 id="dismount">9. Dismount</h2>
+
+<p>Almost all of it happened on <b>Monday 10 August</b>. The last physics
+sub-run stopped at 09:10 and a final pedestal was taken; HV came off and the
+isobutane was closed at 09:15, with pure argon left flowing at 7 L/h. The ³He
+capsule was pulled at ~09:45 with Oliver, the valve opened to equalise capsule
+and bottle (reading 7.5 bar), and it went into its transport cylinder. The
+argon flow was stopped at 10:30 and the full chamber structure was dismounted
+as one assembly. James passed for the safety inspection at 13:35 and the gas
+team closed the isobutane line at 14:30; the gas mixer was disconnected and
+prepared for return.</p>
+
+<p>Detector E and most of the EAR2 equipment had already shipped back to CEA
+with the P2 group on 4 August. The remaining DREAM cabling was boxed on
+12 August, the DAQ machine's original network card was restored, and everything
+was backed up to the n_TOF x17 EOS area before the machine was wiped. Nothing
+was left in the area.</p>
+""")
+
+    # ------------------------------------------------------------ outlook
+    A("""
+<h2 id="outlook">10. What a post-LS3 measurement would need</h2>
+
+<p>The thermal window is background-characterisation territory: the ⁴He
+excitation branch is 10⁻⁸ of (n,p), self-shielding costs another factor 50–100,
+and aluminium capture on the capsule produces ~96 % of the triggers. Any real
+X17 search here has to be at <b>MeV neutron energies</b>, in the first
+microseconds after the flash. That means the problem to solve is the one this
+run measured.</p>
+
+<h3>The blocker, stated as a specification</h3>
+
+<p>At the voltages the chambers need, one beam pulse delivers
+<b>~10²–10³ nC of avalanche charge per chamber</b> — 130 pC to over 600 pC on a
+single read-out channel, i.e. <b>10²–10³ times the DREAM CSA's full-scale input
+charge</b>, and the channels under the beam spot see several times the chamber
+average. The CSA is then pinned against its rail for as long as the input
+current exceeds its ~9–90 nA feedback limit, and the resulting blindness follows
+<b>t ∝ Q<sup>1.2</sup></b> — milliseconds, on top of the microsecond-scale
+window we would want to use.</p>
+
+<p>Critically, <b>the chamber is not the problem</b>. The same chamber
+digitised directly at 1 GS/s with no charge-sensitive preamplifier is usable
+0.87 µs after the flash peak. So there are two routes:</p>
+
+<ol>
+<li><b>Reduce the charge that reaches the front end.</b> Mesh charge injection
+was tried and does not work — it trades one rail for the other. Lowering the
+gain works but costs efficiency, and the run_57 map is the exact exchange rate.
+Something that actively diverts or clamps the input during the flash, or a
+front end with a fast recovery path, is what is needed.</li>
+<li><b>Bring a DAQ that can swallow it.</b> A front end specified against
+"survive 10³ × full scale and be live again within a microsecond" is a concrete,
+testable requirement, and the t ∝ Q^1.2 curve is what to specify it against.
+Direct digitisation of a subset of channels is proven to work in this
+environment — we did it, on the n_TOF DAQ, for the whole 20 ms cycle.</li>
+</ol>
+
+<h3>The problem after that one</h3>
+
+<p>Even with the charge problem solved, a MeV-window measurement faces an
+unknown amount of background and pile-up at rates ~10⁴ above the thermal gate,
+and it is not established that tracks can be separated there. There is one
+encouraging precedent: the <b>X17 search at PADME</b> uses a similar micromegas
+TPC and appears to disentangle a large amount of pile-up. So the answer is
+probably not "no" — but it needs to be demonstrated, and this dataset, with its
+tracker that already images the target and its measured 2–4× excess in real
+detector response, is the right place to start asking.</p>
+""")
+
+    # ------------------------------------------------------------ appendix
+    A("""
+<h2 id="appendix">Appendix — timeline and sources</h2>
+
+<h4>Timeline</h4>
+<dl class="dates">
+<dt>28 Jun</dt><dd>Arrival; DAQ computer set up in the rack room.</dd>
+<dt>29–30 Jun</dt><dd>Chambers assembled, cabled and mounted on the beam line; first pedestals.</dd>
+<dt>1 Jul</dt><dd>Safety and flammable-gas inspection; first HV ramp in Ar/CO₂ 70/30.</dd>
+<dt>2 Jul</dt><dd>First beam data (run 1).</dd>
+<dt>3–5 Jul</dt><dd>Ciro's mesh charge-injection circuits installed and tuned; first null results.</dd>
+<dt>7 Jul</dt><dd>ATEX gas mixer obtained and commissioned; isobutane line connected.</dd>
+<dt>9 Jul</dt><dd>Three remaining SiPM walls and all eight plastic bars installed.</dd>
+<dt>10–12 Jul</dt><dd>Isobutane scan to 30 %, then 80/20 and 90/10; network and N1081B outage recovered.</dd>
+<dt>13 Jul</dt><dd>JUNO liquid arrives; the first two cells are filled and mounted.</dd>
+<dt><b>14 Jul</b></dt><dd><b>The scintillator system is complete</b> — the fourth liquid cell goes in. The same access takes the liquids out of the trigger, rebuilds the stack with the plastics in front, removes the mesh circuits and installs the B4C target. <b>End of the set-up phase.</b></dd>
+<dt>15 Jul</dt><dd>³He target mounted.</dd>
+<dt>16–17 Jul</dt><dd>2 cm lead filter tested; SiPM cross-wiring fixed; Y-88 plastic calibration.</dd>
+<dt>19–20 Jul</dt><dd>run_57 flash-recovery HV map — the measurement the operating point came from.</dd>
+<dt>22 Jul</dt><dd>10 GbE network card and switch installed; read clock to 25 MHz.</dd>
+<dt>23 Jul</dt><dd>DREAM configuration optimisation confirmed; run_67 threshold × HV scan.</dd>
+<dt>26 Jul</dt><dd><b>run_79</b> — first long statistics run at the final configuration.</dd>
+<dt>27 Jul</dt><dd>Mesh circuits removed for good; watermark and IPD settings frozen.</dd>
+<dt>28 Jul</dt><dd>Y-88 + Cs-137 two-source scintillator calibration during a long beam stop.</dd>
+<dt>31 Jul – 3 Aug</dt><dd>Detector E at SPS H4, parasitic in the P2 uRWELL test beam.</dd>
+<dt>4 Aug</dt><dd>EAR2 spares and detector E shipped back to CEA with P2.</dd>
+<dt>5 Aug</dt><dd><b>run_145</b> — the fully n_TOF-matched production run used for the target imaging.</dd>
+<dt>9 Aug</dt><dd>Chamber A strip 32 patched into the n_TOF DAQ; 25-plateau flash-charge scan (run 224709).</dd>
+<dt>10 Aug</dt><dd>Last beam sub-run 09:10; HV off 09:15; ³He capsule pulled; structure dismounted.</dd>
+</dl>
+
+<h4>Where the numbers come from</h4>
+<ul>
+<li><b>Logbook</b> — "X17 n_Tof Physics Run Logbook", 28 Jun – 13 Aug 2026.</li>
+<li><b>Flash charge</b> — <code>ntof_july_analysis/flash_charge/</code>
+(HV-supply method, validations, the imon impulse response) and
+<code>ntof_processing/mm_flash/</code> (waveform method, board accounting, the
+strip-vs-chamber reconciliation).</li>
+<li><b>Recovery map</b> — <code>daq:analysis/flash_recovery/run57/</code>,
+<code>docs/flash_recovery_run57_HV_map_2026-07-20.md</code>.</li>
+<li><b>Beam record</b> — the DAQ beam watcher's NXCALS log,
+<code>slow_control/beam_intensity/</code>.</li>
+<li><b>Matching</b> — <code>ntof_dream_merge/DREAM_NTOF_CALIBRATION.md</code>
+(the authority), <code>ntof_processing/SLIM_CAMPAIGN_2026-08-12.md</code>,
+<code>ntof_processing/join_mislock/</code>.</li>
+<li><b>Tracking</b> — <code>ntof_tracking/RUN79_PRELIM_2026-07-30.md</code>,
+published note "run145-target-imaging", <code>wft/</code>.</li>
+<li><b>Active area and chamber performance</b> —
+<code>ntof_active_area/ACTIVE_AREA_2026-08-11.md</code>.</li>
+<li><b>Simulation</b> — <code>MX17_Full_Geant/</code>:
+<code>CAMPAIGN_STATUS.md</code>, <code>HANDOFF_THERMAL_TRIGGER.md</code>,
+<code>analysis/trigger_provenance/</code>,
+<code>docs/al_gamma_yield_check/RESULT.md</code>,
+<code>docs/report/thermal_note.pdf</code>.</li>
+<li><b>Yield comparison</b> — <code>mx_july_beam_qa/30_trigger_emulation.py</code>,
+<code>31_sim_data_compare.py</code>, <code>32_hardware_trigger_compare.py</code>.</li>
+<li><b>SPS</b> — <code>sps_beam_test_26/</code>.</li>
+</ul>
+
+<div class="note warn"><span class="lab">Status of the numbers</span>
+Everything in §5 (flash charge and recovery) is a measurement with a stated
+systematic. Everything in §4 and §7 that comes from the tracker is
+<b>PRELIMINARY</b> — the in-situ calibration is done for arm A on two runs
+only. §6 is simulation plus one data/simulation comparison, and its background
+ratios are our own estimates, not a collaboration result. Detector efficiency
+and resolution numbers are not yet available for any chamber.</div>
+""")
+
+    if missing:
+        A('<div class="note warn"><span class="lab">Missing figures at build '
+          "time</span><ul>"
+          + "".join(f"<li><code>{html.escape(m)}</code></li>" for m in missing)
+          + "</ul></div>")
+
+    body = "\n".join(B)
+    doc = f"""<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>X17 at n_TOF EAR2 — end-of-run report</title>
+<style>{CSS}</style></head><body>
+<div class="wrap">
+<header class="top">
+  <div class="kicker">X17 collaboration at n_TOF · EAR2 · end-of-run report</div>
+  <h1>The 2026 X17 physics run at n_TOF EAR2</h1>
+  <div class="sub">28 June – 10 August 2026 · four MX17 micromegas and a
+  four-arm scintillator trigger on the EAR2 neutron beam<br>
+  Dylan Neff<br>
+  <b>Written by Claude</b> (Anthropic's Claude Opus 5, via Claude Code) from the
+  run logbook and the campaign's analysis packages<br>
+  <b>Last edited {stamp:%-d %B %Y}</b> · analysis ongoing, contents subject to change</div>
+</header>
+{body}
+<footer>
+<b>Written by Claude</b> — Anthropic's Claude Opus 5, running in Claude Code —
+from the "X17 n_Tof Physics Run Logbook", the campaign's analysis packages and
+the DAQ's own slow-control record, for Dylan Neff. Every figure and number is
+regenerated by <code>ntof_run_report/make_report.py</code>, so re-running it
+rebuilds the page rather than patching it. The judgements, the emphasis and any
+errors in them are the author's; the underlying measurements are the
+collaboration's.
+</footer>
+</div></body></html>"""
+
+    out = outdir / "report.html"
+    out.write_text(doc)
+    return out
+
+
+def inline(report: Path, dest: Path, max_px: int = 1500) -> Path:
+    """Write a single-file copy with every figure embedded as a data: URI.
+
+    This is what gets published: the notes site is an offline-first PWA, so a
+    note that references image files would be blank on a phone with no network.
+    Images wider than ``max_px`` are downscaled on the way in — the page never
+    renders wider than ~960 CSS px, and the un-downscaled set is ~7 MB.
+    """
+    import base64
+    import io
+    import re
+
+    figdir = report.parent / "figures"
+    cache: dict[str, str] = {}
+
+    def uri(name: str) -> str:
+        if name in cache:
+            return cache[name]
+        path = figdir / name
+        raw, mime = path.read_bytes(), (
+            "image/jpeg" if path.suffix == ".jpg" else "image/png"
+        )
+        try:
+            from PIL import Image
+
+            im = Image.open(io.BytesIO(raw)).convert("RGB")
+            if im.width > max_px:
+                im.thumbnail((max_px, 10 * max_px), Image.LANCZOS)
+
+            # A matplotlib figure is flat colour and palettises for free; a
+            # rendered scene or a photograph does not and wants JPEG.  Rather
+            # than guess from the filename, encode both and keep the smaller.
+            cands = []
+            b = io.BytesIO()
+            im.quantize(colors=256, method=Image.MEDIANCUT).save(b, "PNG", optimize=True)
+            cands.append((b.tell(), b.getvalue(), "image/png"))
+            b = io.BytesIO()
+            im.save(b, "JPEG", quality=88, optimize=True, subsampling=0)
+            cands.append((b.tell(), b.getvalue(), "image/jpeg"))
+            cands.append((len(raw), raw, mime))
+            _, raw, mime = min(cands, key=lambda c: c[0])
+        except ImportError:
+            pass
+        cache[name] = f"data:{mime};base64," + base64.b64encode(raw).decode()
+        return cache[name]
+
+    doc = re.sub(r'src="figures/([^"]+)"',
+                 lambda m: f'src="{uri(m.group(1))}"',
+                 report.read_text())
+    dest.write_text(doc)
+    return dest
+
+
+def main() -> None:
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("--out", type=Path, default=HERE)
+    ap.add_argument("--inline", type=Path, default=None,
+                    help="also write a single-file copy here, figures embedded")
+    a = ap.parse_args()
+    out = build(a.out)
+    print(f"wrote {out}  ({out.stat().st_size/1024:.0f} kB)")
+    if a.inline:
+        one = inline(out, a.inline)
+        print(f"wrote {one}  ({one.stat().st_size/1024/1024:.1f} MB, self-contained)")
+
+
+if __name__ == "__main__":
+    main()

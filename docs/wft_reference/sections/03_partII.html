@@ -255,6 +255,20 @@ deconvolution amplifies noise at exactly the frequencies where the kernel is
 small, and a 32-sample window of a 17-strip cluster does not contain enough
 information to regularise that stably event by event.</p>
 
+<p>The honest boundary of that statement matters. Deconvolution is not
+categorically dead — it is <em>stable enough to display, too unstable to
+measure from</em>. §45's threading test itself uses a 2-D Tikhonov charge
+deconvolution (plus a "free ladder") as its line-free cluster estimators, and
+those displays are the sharpest validation in this document. What fails is
+deconvolution as a <strong>per-event geometry estimator</strong> — reading a
+position or an angle off the inverted profile of a single event. And, answering
+a question the forward model invites: its straight-track assumption does
+<em>not</em> mean giving up spatial event displays. Line-free 3-D clusters
+already exist (§45,
+<code>waveform_first_threading/THREADING_DISPLAYS_2026-07-28.md</code>) — they
+borrow only t₀ from the fit, precisely so the threading test would not be
+circular.</p>
+
 <p>The forward direction has no such problem. Instead of asking "what charge
 distribution, un-mixed, produced these waveforms?", it asks "does <em>this</em>
 track, mixed forward through the known kernel, look like these waveforms?" —

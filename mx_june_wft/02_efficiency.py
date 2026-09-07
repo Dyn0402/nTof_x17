@@ -19,6 +19,12 @@ moves reco_near/reco_far, not has_any.
 
     ../.venv/bin/python mx_june_wft/02_efficiency.py <run_key> [--r 5]
 Outputs: <OUT_BASE>/wft/efficiency/{efficiency_breakdown.txt,.json,.png}
+
+The JSON also carries a small reduction for downstream figures — `eff_vs_R`
+(efficiency at a range of match radii, same denominator as `within_R`) and
+`r_hist_edges`/`r_hist_counts` (the |r| distribution to 30 mm in 0.25 mm bins).
+`mpgd26/make_efficiency_breakdown.py` builds the conference figures from those
+fields alone, so no slide number can drift from this accounting.
 """
 import argparse
 import json
@@ -171,6 +177,17 @@ def main():
     core = rstd(rlist[rlist < 15]) if len(rlist) else np.nan
     med = float(np.median(rlist)) if len(rlist) else np.nan
 
+    # Reduction for downstream figures (mpgd26/make_efficiency_breakdown.py):
+    # the |r| tail histogram and the efficiency-vs-match-radius curve, both on
+    # the SAME denominator n as within_R, so a plot built from this JSON alone
+    # cannot disagree with the breakdown above. eff_vs_R[str(R)] == within_R.
+    r_edges = np.arange(0.0, 30.0 + 1e-9, 0.25)
+    r_counts = (np.histogram(rlist, bins=r_edges)[0] if len(rlist)
+                else np.zeros(len(r_edges) - 1, int))
+    radii = (1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 15, 20, 30)
+    eff_vs_R = {str(float(rr)): (100.0 * float((rlist <= rr).sum()) / n
+                                 if len(rlist) else 0.0) for rr in radii}
+
     summary = dict(run_key=args.run_key, source=args.source,
                    max_dropped=(None if args.source == 'hits' or args.max_dropped < 0
                                 else args.max_dropped),
@@ -183,6 +200,10 @@ def main():
                    n_reco=len(reco),
                    basis=('hits chain, wft accounting' if args.source == 'hits'
                           else 'waveform-first (wft)'),
+                   eff_vs_R=eff_vs_R,
+                   r_hist_edges=[float(v) for v in r_edges],
+                   r_hist_counts=[int(v) for v in r_counts],
+                   n_r_overflow=int((rlist > r_edges[-1]).sum()) if len(rlist) else 0,
                    table=table, alignment=align_path)
     # headline file (no suffix) = wft with no cluster cut, so the digest and
     # the hits comparison are both scored without an extra selection

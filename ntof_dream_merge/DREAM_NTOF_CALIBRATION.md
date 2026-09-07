@@ -313,6 +313,15 @@ what §7 depends on.
 
 ---
 
+## 6b. Who uses this in production
+
+`../ntof_processing/slim_pipeline/` re-fits everything in §2a **per (DREAM
+sub-run × n_TOF run) segment** from that segment's own candidates — it reads no
+constant from this document, by design, since none of them transfer. It lands on
+the values here to 0.24 % in `K` and 0.25 ns in the per-arm offsets, which is
+the best available cross-check that both the recipe and this table are right.
+The slim it writes carries its own `calibration.json` per segment.
+
 ## 7. For the Micromegas integration
 
 The MM cross-check keys on *which arm* fired. At ±25 ns the two-arm ambiguity is

@@ -1,0 +1,21 @@
+{
+ "mx17_det0_He_HV_Scan_4-1-26": "/eos/experiment/ntof/data/x17/cosmic_bench/det_0_old/mx17_det0_He_HV_Scan_4-1-26",
+ "mx17_det1_1-27-26": "/eos/experiment/ntof/data/x17/cosmic_bench/det_0_old/mx17_det1_1-27-26",
+ "mx17_det1_daytime_run_1-28-26": "/eos/experiment/ntof/data/x17/cosmic_bench/det_0_old/mx17_det1_daytime_run_1-28-26",
+ "mx17_det1_det2_overnight_6-17-26": "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det1_det2_overnight_6-17-26",
+ "mx17_det2_det3_overnight_6-22-26": "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det2_det3_overnight_6-22-26",
+ "mx17_det3_ArIso_Test_6-16-26": "/eos/experiment/ntof/data/x17/cosmic_bench/det_3_old/mx17_det3_ArIso_Test_6-16-26",
+ "mx17_det3_HV_Scan_5-5-26": "/eos/experiment/ntof/data/x17/cosmic_bench/det_3_old/mx17_det3_HV_Scan_5-5-26",
+ "mx17_det3_day_6-25-26": "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_day_6-25-26",
+ "mx17_det3_det4_overnight_6-23-26": "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_det4_overnight_6-23-26",
+ "mx17_det3_long_run_5-6-26": "/eos/experiment/ntof/data/x17/cosmic_bench/det_3_old/mx17_det3_long_run_5-6-26",
+ "mx17_det3_p2_det1_overnight_6-27-26": "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_p2_det1_overnight_6-27-26",
+ "mx17_det3_quick_6-26-26": "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_quick_6-26-26",
+ "mx17_det3_saturday_scan_6-27-26": "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_saturday_scan_6-27-26",
+ "mx17_det3_test_6-22-26": "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_test_6-22-26",
+ "mx17_det4_ArIso_HV_Scan_5-7-26": "/eos/experiment/ntof/data/x17/cosmic_bench/det_4_old/mx17_det4_ArIso_HV_Scan_5-7-26",
+ "mx17_det4_day_6-24-26": "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det4_day_6-24-26",
+ "mx17_det6_det7_hv_scan_6-26-26": "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det6_det7_hv_scan_6-26-26",
+ "mx17_det6_det7_overnight_6-26-26": "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det6_det7_overnight_6-26-26",
+ "zs_compression_scan_4_6-6-26": "/eos/experiment/ntof/data/x17/cosmic_bench/det_3_old/zs_compression_scan_4_6-6-26"
+}

@@ -53,29 +53,45 @@ REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if REPO not in sys.path:
     sys.path.insert(0, REPO)
 
-BEAM_BASE = '/media/dylan/data/x17/beam_july/runs/'
-ANALYSIS_BASE = '/media/dylan/data/x17/beam_july/analysis/wft/'
-BENCH_ANALYSIS = '/media/dylan/data/x17/cosmic_bench/Analysis/'
+# Overridable so the same driver runs on other hosts (e.g. the desktop, where
+# the data lives under /media/ucla/x17match/) without editing this table.
+BEAM_BASE = os.environ.get('WFT_BEAM_BASE',
+                           '/media/dylan/data/x17/beam_july/runs/')
+ANALYSIS_BASE = os.environ.get('WFT_BEAM_ANALYSIS',
+                               '/media/dylan/data/x17/beam_july/analysis/wft/')
+BENCH_ANALYSIS = os.environ.get('WFT_BENCH_ANALYSIS',
+                                '/media/dylan/data/x17/cosmic_bench/Analysis/')
 
 # beam arm -> (bench detector, FEU x, FEU y, bench bundle to seed from).
 # Same table as mx_june_wft/bench/framing_compare.py, plus the bundle chosen in
 # mx_june_wft/HANDOFF_2026-07-30.md's fleet status table.
 BEAM_DETS = {
     'A': dict(bench='mx17_3', feu_x=3, feu_y=4,
+              # r06 (2026-08-19): c2 slaved to 0.6*c1. calib_bundle_lp2 carried
+              # c2/c1 = 1.14 -- an inverted ladder, physically impossible, since
+              # the +-2 strip is reached only through the +-1.
               bundle=BENCH_ANALYSIS + 'mx17_det3_saturday_scan_6-27-26/'
-                     'long_run_resist_490V_drift_1000V/mx17_3/wft/calib_bundle_lp2',
+                     'long_run_resist_490V_drift_1000V/mx17_3/wft/calib_bundle_r06',
               gap_mm=27.9),
     'B': dict(bench='mx17_2', feu_x=5, feu_y=6,
+              # NB the bench key here is o22_long_det2 (`longer_run`), NOT
+              # g_det2 (`long_run`) -- that collision is what hid det2's
+              # inversion for two days. lp carried c2/c1 = 1.53.
               bundle=BENCH_ANALYSIS + 'mx17_det2_det3_overnight_6-22-26/'
-                     'longer_run/mx17_2/wft/calib_bundle_lp',
+                     'longer_run/mx17_2/wft/calib_bundle_r06',
               gap_mm=30.5),
     'C': dict(bench='mx17_6', feu_x=7, feu_y=8,
+              # NOT moved to r06: det6's lp bundle is already physical
+              # (c2/c1 = 0.82), so there is nothing to correct here.
               bundle=BENCH_ANALYSIS + 'mx17_det6_det7_overnight_6-26-26/'
                      'long_run/mx17_6/wft/calib_bundle_lp',
               gap_mm=30.0),
     'D': dict(bench='mx17_7', feu_x=1, feu_y=2,
+              # calib_bundle_lp superseded det7's v36 in the 7-31 fleet rollout;
+              # r06 supersedes lp in turn -- lp carried c2/c1 = 1.75, the worst
+              # inversion in the fleet.
               bundle=BENCH_ANALYSIS + 'mx17_det6_det7_overnight_6-26-26/'
-                     'long_run/mx17_7/wft/calib_bundle_v36',
+                     'long_run/mx17_7/wft/calib_bundle_r06',
               gap_mm=30.0),
 }
 
@@ -161,19 +177,41 @@ def hits_file_for_tag(cfg: BeamConfig, tag: str) -> Optional[str]:
 
 # --------------------------------------------------------------------- bundle
 def make_bundle(arm: str, out: Optional[str] = None, v_drift: Optional[float] = None,
-                run: str = 'run_79', sub_run: str = 'stat090_0000') -> str:
-    """Seed a run_79 bundle from the bench bundle.
+                run: str = 'run_79', sub_run: str = 'stat090_0000',
+                keep_t0_prior: bool = False) -> str:
+    """Seed a beam bundle from the bench bundle.
 
     What transfers (PLAN_08 §2): the impulse template and the resistive-strip
     sharing kernel -- hardware properties of the same chambers. What does not:
     v_drift, the diffusion pair, and the DAQ constants. This routine transfers
-    the first group verbatim, replaces the DAQ constants with run_79's, and
-    puts a PRIOR (not a measurement) in v_drift; sigma_p0/Dp are left at the
-    bench values, which is the largest un-validated assumption in this chain.
+    the first group verbatim, replaces the DAQ constants with the beam run's,
+    and puts a PRIOR (not a measurement) in v_drift; sigma_p0/Dp are left at
+    the bench values, which is the largest un-validated assumption in this
+    chain.
+
+    ALSO dropped: `t0_abs` and `t0_prior_sigma`. Those are an ABSOLUTE arrival
+    time in the readout window, measured on the bench against its scintillator
+    trigger and its DAQ latency -- a property of the trigger, not of the
+    chamber. A beam run is triggered by n_TOF, so the bench table is a wrong
+    answer stated to +-5 ns, which at sigma = 5 is effectively a hard pin.
+    This matters because it is SILENT: it arrived only when the fleet moved to
+    the *_t0p bundles (r06 derives from calib_bundle_lp2_t0p), so a beam re-run
+    that changes nothing but the kernel would have quietly also acquired a
+    bench clock. Measured on run_145 tag 004: with the prior the fitted t0
+    sits at 236 +- 80 ns, pulled onto the bench's per-bin table (222-305);
+    without it the free fit medians 30 ns. Pass keep_t0_prior=True only once
+    an in-situ t0 calibration for THIS run exists.
     """
     from wft.calib import CalibrationBundle
     d = BEAM_DETS[arm]
     cal = CalibrationBundle.load(d['bundle'])
+    dropped_t0 = None
+    if not keep_t0_prior and (getattr(cal, 't0_abs', None)
+                              or getattr(cal, 't0_prior_sigma', 0)):
+        dropped_t0 = dict(t0_prior_sigma=cal.t0_prior_sigma,
+                          t0_abs_planes=sorted(cal.t0_abs))
+        cal.t0_abs = {}
+        cal.t0_prior_sigma = 0.0
     with open(f'{BEAM_BASE}{run}/run_config.json') as f:
         rc = json.load(f)
     daq = rc['dream_daq_info']
@@ -199,9 +237,19 @@ def make_bundle(arm: str, out: Optional[str] = None, v_drift: Optional[float] = 
         not_revalidated='sigma_p0, Dp (gas-dependent), template (assumed same '
                         'DREAM shaping), dt_xy',
         status='PRELIMINARY -- see ntof_tracking/TRACK_PLAN_08 phase 2')
+    if dropped_t0:
+        cal.provenance['dropped'] = (
+            't0_abs + t0_prior_sigma (bench absolute time vs the bench '
+            'scintillator trigger; this run is triggered by n_TOF, so the '
+            'bench table does not transfer)')
+        cal.provenance['dropped_t0_was'] = dropped_t0
+    elif keep_t0_prior:
+        cal.provenance['kept_t0_prior'] = (
+            'BENCH t0_abs/t0_prior_sigma kept on a beam run by explicit '
+            'request -- only defensible with an in-situ t0 for this run')
     out = out or os.path.join(ANALYSIS_BASE, run, sub_run, f'mx17_{arm}',
                               'calib_bundle_prelim')
-    cal.save(out, note=f'preliminary run_79 bundle for arm {arm}')
+    cal.save(out, note=f'preliminary {run} bundle for arm {arm}')
     print(cal.summary())
     print('wrote', out)
     return out
@@ -322,6 +370,10 @@ def reconstruct_subrun(cfg: BeamConfig, bundle_path: str, out_path: str,
             d = d.sort_values('event_id').reset_index(drop=True)
         os.makedirs(os.path.dirname(path), exist_ok=True)
         d.to_parquet(path, index=False)
+        if cand_rows:
+            pd.DataFrame(cand_rows).sort_values(
+                ['event_id', 'plane', 'rank']).reset_index(drop=True).to_parquet(
+                path.replace('.parquet', '.candidates.parquet'), index=False)
         # the sidecar goes with EVERY checkpoint: a table without its bundle
         # metadata is unusable downstream (v_drift lives there, and it is the
         # angle scale), and a half-finished run is exactly when that bites
@@ -329,7 +381,7 @@ def reconstruct_subrun(cfg: BeamConfig, bundle_path: str, out_path: str,
                     n_seeded, pad_strips, partial=len(tags_done) < len(tags))
         return d
 
-    rows, n_seeded, done = [], 0, []
+    rows, cand_rows, n_seeded, done = [], [], 0, []
     with ProcessPoolExecutor(max_workers=jobs, initializer=wreco._worker_init,
                              initargs=(bundle_path,)) as pool:
         for tag in tags:
@@ -351,7 +403,9 @@ def reconstruct_subrun(cfg: BeamConfig, bundle_path: str, out_path: str,
                                         pad_strips)
             if not payloads:
                 continue
-            rows.extend(pool.map(wreco._worker_fit, payloads, chunksize=8))
+            for r in pool.map(wreco._worker_fit, payloads, chunksize=8):
+                cand_rows.extend(r.pop('_cand', []))
+                rows.append(r)
             done.append(tag)
             if verbose:
                 print(f'[wft-beam]   {tag}: {len(payloads):,} windowed, '
@@ -379,6 +433,13 @@ def _write_meta(df, out_path, cal, cfg, bundle_path, feu_x, feu_y, tags_done,
                             sat_adc=cal.sat_adc, n_depth_bins=cal.n_depth_bins,
                             conditions=cal.conditions,
                             provenance=cal.provenance),
+                # Same stamp as wft.reco.reconstruct_run: whether the fit
+                # applied the per-plane angle constants in-reco. Without it a
+                # post-hoc corrector cannot tell this table from a frozen-gen
+                # one and would double-apply. applied=False -> the angles are
+                # on the uncorrected mapping and need the post-hoc pass.
+                angle_constants=dict(applied=bool(cal.w0 or cal.kw),
+                                     w0=dict(cal.w0), kw=dict(cal.kw)),
                 run=dict(key=cfg.KEY, run=cfg.RUN, sub_run=cfg.SUB_RUN,
                          detector=cfg.DET_NAME, feu_x=feu_x, feu_y=feu_y,
                          file_tags=list(cfg.file_tags or [])),
@@ -432,10 +493,12 @@ def _windows_for_tag(cfg, tag, pos_maps, seeds, wanted, pad_strips):
             rec['ftst_' + plane] = ftst
     payloads = []
     for eid, rec in buf.items():
-        fd = (rec['ftst_x'] - rec['ftst_y']
-              if 'ftst_x' in rec and 'ftst_y' in rec else None)
+        # per-plane ftst dict — wft.reco._worker_fit's contract since the
+        # 2026-08-11 t0-prior work (it derives ftst_diff itself; the old
+        # scalar here made every event with ftst_x != ftst_y fit as None)
+        ftst = {p: rec.get('ftst_' + p) for p in ('x', 'y')}
         payloads.append((eid, rec['w'], rec['s'], seeds[eid]['n_hits'],
-                         seeds[eid]['spark'], fd))
+                         seeds[eid]['spark'], ftst))
     return payloads
 
 
@@ -450,6 +513,9 @@ def main():
     b.add_argument('--run', default='run_79')
     b.add_argument('--subrun', default='stat090_0000')
     b.add_argument('--v-drift', type=float, default=None)
+    b.add_argument('--keep-t0-prior', action='store_true',
+                   help='keep the bench t0_abs/t0_prior_sigma. Off by '
+                        'default, and it should stay off: see make_bundle.')
     b.add_argument('--out', default=None)
 
     r = sub.add_parser('reco', help='reconstruct a beam sub-run')
@@ -466,7 +532,7 @@ def main():
     a = ap.parse_args()
     if a.cmd == 'bundle':
         make_bundle(a.det, out=a.out, v_drift=a.v_drift, run=a.run,
-                    sub_run=a.subrun)
+                    sub_run=a.subrun, keep_t0_prior=a.keep_t0_prior)
         return 0
     cfg = beam_config(a.det, a.run, a.subrun, n_tags=a.tags)
     bundle = a.bundle or os.path.join(ANALYSIS_BASE, a.run, a.subrun,

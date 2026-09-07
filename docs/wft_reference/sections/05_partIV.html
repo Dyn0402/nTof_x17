@@ -66,6 +66,20 @@ making the profile meaningless. NNLS forbids it.</p>
 want to go negative are clipped to exactly zero. This surprises people, so it is
 worth showing why it happens.</p>
 
+<p>How the constrained solve actually proceeds
+(<code>scipy.optimize.nnls</code>, the Lawson–Hanson active-set algorithm):
+start with every charge at zero and every constraint "active"; compute the
+gradient and move the variable that most wants to go positive into the free
+set; solve the <em>unconstrained</em> least-squares problem on the free set
+only; if any freed variable came out negative, backtrack along the line to the
+constraint boundary, re-activate whatever hit zero, and re-solve; stop when no
+active variable wants to leave. The algorithm terminates in a finite number of
+steps and returns the exact constrained optimum — the inner solve in
+Figure&nbsp;21 is not iterative refinement, it is a closed-form answer. The
+visible sparsity is then easy to read: a bin lands on exactly zero because its
+constraint stayed active — it "wanted" to go negative and was held at the
+boundary — not because the solver rounded a small number down.</p>
+
 <figure>
 {{FIG:nnls_profile}}
 <figcaption><span class="fignum">Figure 22.</span> Left: twelve individual
@@ -108,10 +122,21 @@ well determined, with a clean parabolic minimum.
 </figure>
 
 <p>The middle panel is the one to remember. <code>p₀</code> and <code>t₀</code>
-are strongly correlated, which is why <code>t₀</code> must be fitted freely and
-never fixed from an external clock, and why the joint two-plane fit (§22) that
+are strongly correlated, which is why the joint two-plane fit (§22) that
 ties the two planes' <code>t₀</code> together is a real constraint rather than a
-formality.</p>
+formality. Earlier editions concluded from the same panel that <code>t₀</code>
+"must be fitted freely and never fixed from an external clock" — that was
+aimed at a bundle-level constant, and the 2026-08-11 gate measurement
+(<code>mx_june_wft/T0_PRIOR_2026-08-11.md</code>) overturned it for the
+<em>per-event</em> clock: the free fit's t₀ has a 60 ns one-depth-bin tooth
+ambiguity (only ~34 % of planes land in the physical tooth) plus ±60–100 ns of
+model-error drag along this very valley, while the scintillator trigger + ftst
+predict t₀ per event to ~4 ns. A Gaussian t₀ prior on that prediction
+(<code>chi2_plane(..., t0_prior=...)</code>, σ = 5 ns) was A/B-tested and
+validated out-of-sample on 2026-08-12 — core position −4.6 %, implied-v
+flatness better on both planes, 14 % faster, nothing regresses — and is the
+recommended production configuration (bundle fields <code>t0_abs</code> +
+<code>t0_prior_sigma</code>).</p>
 
 <h2 id="starting-point">21 · Finding the starting point without the reference</h2>
 
@@ -157,7 +182,7 @@ drawing error, and it is worth understanding.</p>
 <p>The <code>p₀</code> scan is centred on the window's charge-weighted centroid.
 But <code>p₀</code> is the track's position <em>at the mesh</em>, and on an
 inclined track those two differ by roughly half the transverse span — which for
-|tan θ| = 0.25 over a 29 mm gap is about 3.6 mm, more than the scan's
+|tan θ| = 0.25 over a 30 mm gap is about 3.8 mm, more than the scan's
 ±2.5&nbsp;mm half-width.</p>
 
 <figure>
@@ -209,6 +234,17 @@ failure.</div>
 per-plane scale factor <code>α</code>, and a single <code>t₀</code> with the Y
 plane offset by <code>dt_xy</code>.</p>
 
+<div class="box open"><span class="lbl">Open</span>
+<strong><code>fit_joint()</code> is not in the executed path.</strong> It is
+not exported from <code>wft/__init__.py</code> and has zero callers anywhere
+in the repository; every number in this document comes from independent 1D
+fits (pair selection off). The measured claims below are from the R&amp;D
+branch. Wiring it in behind a flag and A/B-ing it is handoff item T2.3 — and
+note the <code>dt_xy</code> it needs is bundle-specific (three inconsistent
+generations exist: the −18.8 ns R&amp;D fallback still in
+<code>reco.py</code>/<code>model.py</code>, the −7.65/−16.01 ns measured in
+§36, and +5.4/+30.2 ns in the shipped <code>calib_bundle_lp2</code>).</div>
+
 <p>At medium angles this changes nothing — <code>t₀</code> was not the limiting
 parameter. Its value is for <strong>near-vertical planes</strong>, where the
 charge sits on one or two strips and timing carries almost no slope
@@ -249,6 +285,32 @@ is the intended behaviour.
 <span class="src">figsrc/f_fit.py · sat_det3</span></figcaption>
 </figure>
 
+<p>Formally, what §19 built is a <strong>profile likelihood</strong>: for
+Gaussian noise, χ²(p₀, w, t₀) = min over q ≥ 0 of ‖(M·q − y)/σ‖² replaces the
+eighteen charges by their conditional best fit at every trial geometry —
+profiled out, not marginalised. The reduction from a 21-parameter problem to a
+3-parameter search is exact, because the profiling is a closed-form solve
+rather than an approximation. The errors above are curvatures of that
+<em>profiled</em> surface. Three caveats belong next to that statement, said
+plainly:</p>
+
+<ol>
+<li>Profiling over an <strong>inequality-constrained</strong> nuisance breaks
+the usual Wilks asymptotics at the boundary. With sparse profiles many q sit
+exactly at zero, so the effective number of degrees of freedom is not 18 and
+the χ² surface is not exactly parabolic there.</li>
+<li>t₀ is searched jointly with p₀ and w, but the reported position error is
+taken from a <strong>(p₀, w) curvature only</strong> — the strong p₀–t₀
+correlation of §20 is not propagated into <code>p0_err</code>. The same
+blind spot made the fixed-geometry t₀ curvature read ~1.5 ns while the true
+per-event t₀ scatter is ±60–100 ns along the valley
+(<code>mx_june_wft/T0_PRIOR_2026-08-11.md</code>); the trigger prior of §20
+is what now anchors that direction physically.</li>
+<li>The measured pull widths below are ~20 % optimistic — the right size and
+sign for (2). Quoting the pull together with its explanation is more honest
+than quoting the pull alone.</li>
+</ol>
+
 <div class="box meas"><span class="lbl">Measured</span>
 Do the errors mean anything? The pull — (fitted − reference) / reported error —
 has width <strong>1.19 on X and 1.13 on Y</strong> over the full run
@@ -261,7 +323,8 @@ detector-physics error bar is a good place to be.</div>
 <pre>p0, w, t0            <span class="c"># the three fitted geometric numbers</span>
 tan_theta, theta_deg <span class="c"># w / v_drift, and its arctangent</span>
 p0_err, w_err, tan_err
-chi2, dof            <span class="c"># dof = number of unsaturated samples</span>
+t0_err               <span class="c"># fixed-(p0,w) curvature — see §23 caveat 2</span>
+chi2, dof            <span class="c"># dof = uncensored samples (not saturated, not dead)</span>
 q_sum                <span class="c"># total fitted charge</span>
 q_u50, q_u90         <span class="c"># median / 90 % charge arrival time after t0 [ns]</span>
 q_uend               <span class="c"># last depth bin above 5 % of the profile peak</span>

@@ -170,9 +170,36 @@ def main():
         print(f'GATE ({", ".join(scored)}): all thresholds met')
     else:
         print('GATE: not applicable to these keys (thresholds are det3-specific)')
+    # Which calibration each column is. A digest that pools detectors across
+    # bundles without saying so breaks the standing rule (a bundle is per
+    # detector AND per run condition, and results are labelled by their
+    # bundle) -- and the fleet HAS been mixed since 2026-08-19, when det2,
+    # det3 and det7 moved to calib_bundle_r06 and det4/det6 did not.
+    prov = []
+    for k in args.keys:
+        try:
+            import json as _json
+            from qa_config import get_config as _gc
+            m = _json.load(open(os.path.join(_gc(k).OUT_BASE, 'wft',
+                                             'events.meta.json')))
+            b = os.path.basename(m.get('calibration', '?'))
+            h = m.get('bundle', {}).get('hyper', {})
+            r = h.get('c2_over_c1')
+            c2 = float(r) * h['c1'] if r is not None else h.get('c2', float('nan'))
+            prov.append(f'| {k} | `{b}` | {c2 / h["c1"]:.2f} |'
+                        if h.get('c1') else f'| {k} | `{b}` | ? |')
+        except Exception as e:                          # noqa: BLE001
+            prov.append(f'| {k} | (unreadable: {e}) | |')
+    prov_txt = ('\n### Which calibration each column is\n\n'
+                '| key | bundle | c2/c1 |\n|---|---|---|\n'
+                + '\n'.join(prov) +
+                '\n\nA bundle is per detector **and** per run condition; '
+                'columns built on different bundles are not interchangeable.\n')
+    print(prov_txt)
     if args.out:
         with open(args.out, 'w') as f:
-            f.write('# Waveform-first vs hits-chain digest\n\n' + txt + '\n\n')
+            f.write('# Waveform-first vs hits-chain digest\n\n' + txt + '\n'
+                    + prov_txt + '\n')
             f.write('GATE: ' + ('FAILED\n- ' + '\n- '.join(gate_fail)
                                 if gate_fail else 'all thresholds met') + '\n')
         print(f'\nwrote {args.out}')

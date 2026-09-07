@@ -1,0 +1,20 @@
+== brute force run_102/stat090_0002 x n_TOF 224606
+  1148 bursts, anchor 1785321060, lock +35.122 s
+  scanning 1 target burst(s) + 8 control(s)
+  window +-120 s: 569 beam bunches (0 empty pulses skipped)
+  bunches 2240-3261 (569)
+  tb offsets on 150 bunches [10 s]
+  570,419 candidates over 569 bunches [173 s]
+  burst     0 n=  88 [target]  -> bunch 2277 known 2277 z 90.0 peak 91/88 lag +4383.0 us 2nd bunch 2703 frac 3% z 12.4 frac25 98% (ctl 0.0%) da -16 ns dk +0.9 ppm core 86 implied offset +35.129 s  MATCH
+  burst     1 n=  75 [control] -> bunch 2278 known 2278 z 67.0 peak 68/75 lag -1.0 us 2nd bunch 2703 frac 3% z 12.7 frac25 87% (ctl 0.0%) da +1 ns dk -0.0 ppm core 68 implied offset +35.133 s  MATCH
+  burst   141 n=  94 [control] -> bunch 2418 known 2418 z 52.0 peak 93/94 lag -1.0 us 2nd bunch 3128 frac 3% z 10.1 frac25 96% (ctl 0.0%) da -19 ns dk +0.5 ppm core 92 implied offset +35.131 s  MATCH
+  burst   281 n= 103 [control] -> bunch 2558 known 2558 z 57.7 peak 103/103 lag -1.0 us 2nd bunch 3128 frac 4% z 11.7 frac25 94% (ctl 0.0%) da -18 ns dk +0.9 ppm core 101 implied offset +35.128 s  MATCH
+  burst   422 n=  76 [control] -> bunch 2699 known 2699 z 77.0 peak 78/76 lag -1.0 us 2nd bunch 2969 frac 5% z 13.6 frac25 89% (ctl 0.0%) da -5 ns dk -0.2 ppm core 74 implied offset +35.125 s  MATCH
+  burst   562 n= 117 [control] -> bunch 2839 known 2839 z 66.4 peak 118/117 lag -1.0 us 2nd bunch 2246 frac 3% z 11.3 frac25 96% (ctl 0.0%) da -15 ns dk +0.3 ppm core 114 implied offset +35.123 s  MATCH
+  burst   703 n=  73 [control] -> bunch 2980 known 2980 z 72.0 peak 73/73 lag -1.0 us 2nd bunch 2969 frac 4% z 11.0 frac25 89% (ctl 0.0%) da -20 ns dk +1.6 ppm core 69 implied offset +35.120 s  MATCH
+  burst   843 n=  70 [control] -> bunch 3120 known 3120 z 65.0 peak 66/70 lag -1.0 us 2nd bunch 2308 frac 4% z 11.3 frac25 86% (ctl 1.4%) da -25 ns dk +1.3 ppm core 65 implied offset +35.118 s  MATCH
+  burst   984 n=  73 [control] -> bunch 3261 known 3261 z 68.0 peak 69/73 lag -1.0 us 2nd bunch 2692 frac 3% z 12.0 frac25 90% (ctl 0.0%) da +2 ns dk +0.4 ppm core 68 implied offset +35.115 s  MATCH
+  control intercept -269.0 ns (MAD 4.0 ns, 8 controls)
+  burst     0: flash shift +4383062.6 ns relative to the controls
+  -> bf/run_102_stat090_0002_224606.json
+  done in 182 s

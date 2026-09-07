@@ -1,0 +1,75 @@
+# Condor submit for the n_TOF -> DREAM slim. One job = one n_TOF run.
+#
+#   ssh -K lxplus                       # -K is mandatory: no token, no EOS
+#   cd ~/x17slim                        # staged by stage.sh
+#   myschedd bump                       # pick a schedd (prints e.g. bigbird25)
+#   condor_submit slim.sub run=224572 -queue 1
+#   condor_q  <id> -name <schedd>       # status  (re-pass -name each session)
+#   condor_tail <id> -name <schedd>     # live stdout
+#
+# Many runs at once -- the ready list comes from segments.py:
+#   python3 ntof_processing/slim_pipeline/segments.py --ready \
+#     | awk '/^n_TOF/ {print $2}' > ready_runs.txt
+#   condor_submit slim.sub -queue run from ready_runs.txt
+#
+# NOTE this file deliberately ends WITHOUT a `queue` statement, so the queue
+# always comes from the command line -- `-queue` and an in-file `queue` are a
+# hard parse error, and the two forms above would otherwise contradict.
+#
+# Outputs land in ~/x17slim/out/runs/<run>/<subrun>/ntof_hits/. Push to EOS with
+#   ./publish_to_eos.sh out
+#
+# Sizing, measured on the real thing: n_TOF 224572, 3 DREAM sub-runs,
+#   xrdcp 30 GB in 133 s, then 646 + 575 + 452 s of segment
+#   = 28.0 min wall, peak RSS 3.16 GB, single core.
+# Budget ~10 min per DREAM sub-run plus ~2.5 min for the copy.
+
+universe                = vanilla
+executable              = slim_wrapper.sh
+# `extra` is optional and passed through to slim_run.py, e.g.
+#   condor_submit slim.sub run=224640 extra="--only stat090_0027 --search-s 400" -queue 1
+arguments               = $(run) $(extra)
+
+should_transfer_files   = YES
+when_to_transfer_output = ON_EXIT
+# NO trailing slashes. `dir/` transfers the CONTENTS of dir into the scratch
+# root and flattens the package layout; `dir` transfers the directory itself,
+# which is what the imports need.
+transfer_input_files    = ntof_processing,ntof_dream_merge,ntof_july_analysis,common,mx_july_beam_qa
+transfer_output_files   = out
+# Every job produces a directory called `out`. Landing 59 of them in the same
+# place is a needless race (and makes it impossible to tell which job wrote
+# what), so each is renamed on arrival. publish_to_eos.sh takes them as a glob.
+transfer_output_remaps  = "out = out_$(run)"
+
+output                  = log/slim_$(run)_$(ClusterId).out
+error                   = log/slim_$(run)_$(ClusterId).err
+log                     = log/slim_$(run)_$(ClusterId).log
+
+request_cpus            = 1
+# Measured 2026-08-09 on the 3-run pilot: peak RSS 3.32 GB at a +-150 ns window.
+# The window is now +-1 us (2.24x the hits), and the +-10 us probe held 2.4 M
+# hits in 2.6 GB, so the growth is modest -- 6 GB is ~1.7x the measured peak.
+# Do not inflate it further: CERN scales the CPU allocation with memory (a 9 GB
+# ask was given 3 cores for a single-threaded job) and waits longer for a slot.
+request_memory          = 6 GB
+# 45 GB: the n_TOF run (30-45 GB) is copied into node-local scratch.
+request_disk            = 45 GB
+# workday = 8 h. A 3-segment run is ~30 min plus the xrdcp.
+# NOTE condor does NOT accept a trailing "# comment" on a value line -- it
+# parses it as part of the expression. Keep comments on their own line.
++JobFlavour             = "workday"
+
+# No exit-code retries. Every failure this job can produce is deterministic --
+# a bad clock fit reruns to the same bad clock fit -- so a retry costs another
+# 30-45 GB copy and half an hour to reach the identical error. Infrastructure
+# faults (evicted, node lost) are requeued by condor regardless of this.
+max_retries             = 0
+requirements            = (OpSysAndVer =?= "AlmaLinux9")
+
+# Throttle the campaign. Every job opens with a 30-45 GB xrdcp off the ntof EOS
+# pool at ~225 MB/s, so the whole ready list starting at once would pull a few
+# GB/s from a pool other people are using. Ten at a time is ~2.5 GB/s peak and
+# still finishes 59 runs in ~3 h. Raise it if EOS is quiet and you are in a
+# hurry; do not remove it.
+max_materialize         = 10

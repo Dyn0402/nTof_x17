@@ -1,0 +1,220 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>MX17 active areas from n_TOF beam data</title>
+<style>
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+         max-width:1080px;margin:2rem auto;padding:0 1.2rem;line-height:1.55;color:#1a1a1a}
+    h1{font-size:1.7rem;margin-bottom:.2rem} h2{margin-top:2.2rem;border-bottom:2px solid #eee;padding-bottom:.3rem}
+    h3{margin-top:1.6rem;font-size:1.05rem}
+    table{border-collapse:collapse;width:100%;margin:1rem 0;font-size:.92rem}
+    th,td{border:1px solid #ddd;padding:.4rem .6rem;text-align:right}
+    th:first-child,td:first-child{text-align:left}
+    thead th{background:#f4f6f8}
+    .dim{color:#888} .ok{color:#137333;font-weight:600} .bad{color:#b3261e;font-weight:600}
+    .verdict{background:#eef5ff;border-left:5px solid #1a73e8;padding:1rem 1.2rem;margin:1.4rem 0}
+    .caveat{background:#fff8e6;border-left:5px solid #e0a800;padding:.9rem 1.2rem;margin:1.2rem 0}
+    figure{margin:1.6rem 0} img{width:100%;border:1px solid #ddd;border-radius:4px}
+    figcaption{color:#555;font-size:.88rem;margin-top:.4rem}
+    code{background:#f4f4f4;padding:.1rem .3rem;border-radius:3px;font-size:.9em}
+    </style></head><body>
+
+<h1>MX17 detector active areas, measured on n_TOF beam data</h1>
+<p class="dim">2026-08-11 &middot; run_79
+(27 files, 215,481 DREAM events) &middot; n_TOF 224572
+&middot; <code>ntof_active_area/</code></p>
+
+<div class="verdict">
+<h3 style="margin-top:0">Verdict</h3>
+<p><b>The chambers are bigger than the simulation assumes, in both directions.</b>
+The Geant <code>SimConfig.hh</code> carries <code>mm_size_u_cm = 38.0</code>,
+<code>mm_size_v_cm = 34.0</code>.  The beam data says
+<b>u = 39.9 cm</b> (the full metallised strip region, no passivation)
+and <b>v = 36.0 cm</b> (a ~19 mm dead band at each end of the beam
+axis), for <b>+11% active area</b>.  Both numbers agree
+with the June cosmic-bench telescope measurement already recorded in
+<code>common/mx17_active_area.py</code>, which was taken with an external
+reference and is the better of the two; this analysis is the independent
+confirmation <em>in the n_TOF configuration</em>.</p>
+<p>The active band is centred: its midpoint sits at
+199.1 mm against a strip-plane centre of 199.3 mm,
+so only the size changes, not the placement.</p>
+<p><b>The scintillators are a different matter.</b>  Their sizes in
+<code>SimConfig.hh</code> come from tape-and-STEP surveys (2026-07-15/17/18) and
+are accurate to millimetres.  Chamber pointing has a blur of
+<b>σ = 47 mm</b> at the plastic plane, so it cannot improve on
+them and this analysis does not try to.  What it does do is confirm the
+<em>placement</em>: the plastic L/R boundary lands at
+-6.8 ± 5.3 mm where the geometry puts it at 0.</p>
+</div>
+
+<h2>1. What was measured, and why this observable</h2>
+<p>The active area is where a particle crossing the chamber produces a signal.
+In the beam the illumination is smooth — the source is the He-3 target 235 mm
+away plus the whole neutron flight path, so nothing about the <em>illumination</em>
+changes over a few millimetres. A physical edge does: it is a step. So the
+measurement is a search for steps.</p>
+
+<p>The observable is a <b>paired track</b>: exactly one particle-like cluster on
+each plane of the same chamber in the same event, with the two planes' charges
+balanced (0.6–1.6). That balance
+requirement is what makes this work — an MX17 avalanche splits about 50/50
+between the two strip planes, so demanding it rejects the uncorrelated per-plane
+noise that otherwise swamps the raw occupancy exactly where the edges are. On
+three of the four chambers a raw <code>y</code>-plane occupancy is
+<em>higher</em> beyond 380 mm — outside the chamber — than in the chamber's own
+interior (B 3.6×, C 2.1×, D 15×). Paired tracks go to zero at 379 on all
+four.</p>
+
+<p>No hit times are used anywhere here, so this stays on the right side of
+<code>RECONSTRUCTION_BASIS.md</code>: strip identity and charge are detection
+and QA quantities, which is exactly what an occupancy edge is.</p>
+
+<p>Coordinates: the <code>x</code> plane is <b>u</b>, the chamber's tangential
+coordinate; the <code>y</code> plane is <b>v</b>, along the beam. Both are 512
+strips at 0.78 mm spanning 0–398.58 mm centre to centre.</p>
+
+<h2>2. Chamber edges</h2>
+<table>
+<thead><tr><th>chamber</th><th>paired tracks</th><th>u low</th><th>u high</th><th>u June</th><th>v low</th><th>v high</th><th>v June</th></tr></thead>
+<tbody><tr><td><b>A</b> <span class="dim">(mx17_3)</span></td><td>15,056</td><td>1.6</td><td>348.7<sup class="bad">†</sup></td><td><span class="dim">0.0–398.6</span></td><td>19.5</td><td>376.7</td><td><span class="dim">18.0–379.9</span></td></tr><tr><td><b>B</b> <span class="dim">(mx17_2)</span></td><td>2,546</td><td>0.8</td><td>398.6 <span class="dim">(board end)</span></td><td><span class="dim">0.0–398.6</span></td><td>18.7</td><td>379.1</td><td><span class="dim">19.7–378.8</span></td></tr><tr><td><b>C</b> <span class="dim">(mx17_6)</span></td><td>13,868</td><td>14.0<sup class="bad">†</sup></td><td>397.8</td><td><span class="dim">0.0–398.6</span></td><td>20.3</td><td>379.1</td><td><span class="dim">17.9–380.7</span></td></tr><tr><td><b>D</b> <span class="dim">(mx17_7)</span></td><td>3,622</td><td>199.7<sup class="bad">†</sup></td><td><span class="bad">—</span></td><td><span class="dim">0.0–398.6</span></td><td><span class="bad">—</span></td><td><span class="bad">—</span></td><td><span class="dim">20.4–379.3</span></td></tr></tbody>
+</table>
+<p class="dim">All values in mm, detector-local. “June” is the cosmic-bench
+telescope 50 % efficiency point from <code>common/mx17_active_area.py</code>.
+“—” means the profile ran out of contrast before a step was found (chamber D);
+“board end” means the plane was still live at the last strip, which is itself
+the answer for u; <sup class="bad">†</sup> marks an edge that sits more than
+5 mm inside the known geometry, i.e. a run_79 readout defect rather than
+a chamber boundary (section 3). Only the unmarked v edges feed the
+recommendation.</p>
+
+<h3>v (along the beam): a ~19 mm dead band at each end</h3>
+<p>Three chambers give a determined edge at both ends, and they agree with each
+other and with June:
+<b>A</b> 19.5–376.7; <b>B</b> 18.7–379.1; <b>C</b> 20.3–379.1 mm.
+Mean active span over the beam and June measurements together:
+<b>359.9 ± 1.8 mm</b>. The two methods define
+the edge differently — June is a 50 % efficiency point against an external
+track, this is the outermost strip that ever takes part in a track — so
+agreement at the 1–2 mm level is as close as they can come.</p>
+
+<h3>u (tangential): full width, no passivation</h3>
+<p>Chamber B is live at strip 0 and at strip 511, i.e. across the whole
+metallised region; A reaches strip 2 at the low end. Nothing anywhere in the
+data shows a passivation band on this axis, which is what June found too. The u
+active size is therefore the strip region itself: 398.58 mm centre to
+centre, 399.36 mm of metal, <b>39.9 cm</b>.</p>
+
+<figure><img src="figures/mm_maps.png" alt="2-D track maps">
+<figcaption>Paired tracks in each chamber. Red = the June telescope active area,
+grey dashed = the metallised strip region. In every chamber the tracks stop
+dead at the red horizontal lines and run to the grey vertical ones. The
+chamber-specific damage is also visible: A is cut off at 350 mm in u, C has a
+dead stripe near u = 190 mm, D has lost most of its u plane.</figcaption></figure>
+
+<figure><img src="figures/mm_profiles.png" alt="strip participation profiles">
+<figcaption>How many paired tracks used each strip. The broad shape is
+illumination; the edges are geometry. Black = measured last live strip, red
+dotted = June.</figcaption></figure>
+
+<figure><img src="figures/mm_edges_zoom.png" alt="edge zooms">
+<figcaption>Both ends of every plane, magnified, with the low and high edge
+regions placed side by side. The v turn-offs happen inside one or two
+strips.</figcaption></figure>
+
+<h2>3. Readout health in run_79 — not chamber geometry</h2>
+<div class="caveat">
+<p><b>Dead in this run: Ax connector 8 (strips 448–511, 349–399 mm).</b> Chamber A's X-plane connector 8 was fully
+alive on 18 July (run_55) and is dead in run_79, so this is a cabling or
+front-end fault during the campaign, not a property of the chamber. Anyone
+simulating run_79 specifically needs it; anyone simulating the chamber must
+not.</p>
+<p>Chamber D's u plane is largely dark in this run and its edges are reported as
+undetermined rather than fitted. Chamber C carries a genuine interior dead
+stripe near u = 190 mm. These are all readout/detector pathologies on top of the
+geometric active area, and the table above keeps them separate from it.</p>
+</div>
+<figure><img src="figures/mm_connectors.png" alt="connector health">
+<figcaption>Cluster occupancy per 64-strip connector, relative to each plane's
+interior. Green ≈ healthy.</figcaption></figure>
+
+<h2>4. Scintillators</h2>
+<p>Using the merged n_TOF ↔ DREAM sample for arm A (6,839 tracks
+with a full waveform-first fit), a track can be extrapolated to each
+scintillator plane and asked whether that detector tagged the event. Two things
+limit this and both are fitted rather than assumed: the pointing blur, and the
+flat pedestal of accidental tags from the other arms (the DREAM trigger is an OR
+over all four).</p>
+
+<h3>What this does establish</h3>
+<ul>
+<li><b>The plastic pair is centred on the chamber.</b> The L/R boundary is at
+u = -6.8 ± 5.3 mm; the surveyed geometry — two
+200 mm bars abutting on the pinwheel-shifted chamber centre line — puts it at
+-0.0 mm. This is the sharpest statement available because
+it is a boundary between two live detectors, not an edge, so no acceptance falls
+off across it.</li>
+<li><b>The wall segment ordering is right</b>, r = +0.972
+across the four n_TOF channels, confirming the descending mapping. The slope of
+0.53 against geometry is accidental-tag dilution, not a wrong
+segment pitch — it matches the pedestal the acceptance fits find
+independently.</li>
+<li><b>The pointing blur is σ = 47 ± 6 mm</b>
+at the plastic plane. That is a useful number in its own right for anyone
+planning to use chamber pointing.</li>
+</ul>
+
+<h3>What it does not</h3>
+<table>
+<thead><tr><th>quantity</th><th>survey</th><th>fit</th><th>blur σ</th><th>contrast</th><th>verdict</th></tr></thead>
+<tbody><tr><td>plastic bar, along beam (half)</td><td>150 mm</td><td>253 ± 27 mm</td><td>102 mm</td><td>0.58</td><td><span class="bad">not constrained</span></td></tr><tr><td>plastic pair, tangential (half)</td><td>200 mm</td><td>277 ± 5 mm</td><td>17 mm</td><td>0.43</td><td><span class="bad">not constrained</span></td></tr><tr><td>SiPM wall, along beam (half)</td><td>250 mm</td><td>184 ± 11 mm</td><td>45 mm</td><td>0.59</td><td><span class="bad">not constrained</span></td></tr></tbody>
+</table>
+<p>None of the outer scintillator dimensions is constrained by this sample. The
+blur is comparable to the extent being measured, and the tagged plateau stands
+only a factor ~1.5–2.5 above the accidental pedestal, so the fitted half-extent
+trades freely against the blur and the pedestal. The fits land both above and
+below the survey, which is the signature of an unconstrained parameter rather
+than a real disagreement. <b>Keep the surveyed scintillator sizes.</b></p>
+
+<figure><img src="figures/scint_acceptance.png" alt="scintillator acceptance">
+<figcaption>Arm-A acceptance seen from chamber A. Top left is the one panel that
+constrains geometry.</figcaption></figure>
+<figure><img src="figures/wall_segments.png" alt="wall segment ordering">
+<figcaption>Mean chamber-u of the tracks each wall segment tagged, against where
+that segment is. Ordered and monotonic; compressed by accidental tags.</figcaption></figure>
+
+<h2>5. What to change</h2>
+<table>
+<thead><tr><th>SimConfig.hh field</th><th>now</th><th>recommended</th><th>basis</th></tr></thead>
+<tbody>
+<tr><td><code>mm_size_u_cm</code></td><td>38.0</td><td><b>39.9</b></td><td>full metallised strip region; no passivation on this axis (B live at both board ends, plus June)</td></tr>
+<tr><td><code>mm_size_v_cm</code></td><td>34.0</td><td><b>36.0</b></td><td>~19 mm dead band at each end; 360 ± 2 mm over 3 beam + 4 June measurements</td></tr>
+<tr><td>SiPM wall, plastics, LS</td><td>surveyed</td><td>unchanged</td><td>beam pointing (σ ≈ 47 mm) cannot improve on a tape measure</td></tr>
+</tbody>
+</table>
+<p>The active area is centred on the chamber in both axes, so no offset changes
+with it. If a run_79-specific simulation is wanted, chamber A's u range has to
+be cut to the live connectors on top of this — but that is a readout mask, not
+geometry.</p>
+
+<h2>6. What this does not rule out</h2>
+<ul>
+<li><b>The v edge is measured on strip liveness, not on efficiency.</b> A region
+that is live but at reduced efficiency would not show up here as an edge. June's
+telescope measurement is the one that carries efficiency information, and it
+puts the 50 % points within 1–2 mm of these, so the two together bound this
+well — but neither says the efficiency inside is uniform.</li>
+<li><b>Chamber D is not measured.</b> Its u plane is mostly dark in run_79 and
+its v edges are undetermined. The recommendation above rests on A, B and C from
+the beam plus all four from June.</li>
+<li><b>Only two sub-runs, one run.</b> 27 files of run_79. Nothing
+here tests whether the passivation band is the same at other times, though there
+is no mechanism by which it would move.</li>
+<li><b>Whether the drift volume is larger than the readout.</b> This measures
+where charge is <em>collected</em>. Ionisation outside that region still
+happens and still draws current; if the sim needs the gas volume rather than the
+sensitive area, this is a lower bound.</li>
+<li><b>The scintillator sizes are not confirmed, only their placement.</b> A
+10 cm error in the wall length would sit comfortably inside these error
+bars.</li>
+</ul>
+
+</body></html>

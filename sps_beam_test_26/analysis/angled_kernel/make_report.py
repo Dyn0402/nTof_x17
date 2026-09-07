@@ -1,0 +1,473 @@
+#!/usr/bin/env python3
+"""Build report.html for the angled-mount kernel measurement.
+
+Generated, not hand-written: re-running measure.py then this script keeps the
+numbers, the tables and the verdict text in step (CLAUDE.md reporting rule).
+Figures are referenced with relative links so the DAQ page's
+/analysis_file/<relpath> route serves the same file from disk or web.
+"""
+import json
+from pathlib import Path
+
+import numpy as np
+
+HERE = Path(__file__).resolve().parent
+R = json.loads((HERE / "results.json").read_text())
+M = R["meta"]
+ARMS = [a for a in ("flat700", "rot_d425", "rot_d325", "rot_d225") if a in R]
+NAME = {"flat700": "flat700", "rot_d425": "rot d425", "rot_d325": "rot d325",
+        "rot_d225": "rot d225"}
+
+
+def sym(o, k, d=1):
+    v = [o.get(f"{k}_+{d}"), o.get(f"{k}_-{d}")]
+    v = [q for q in v if q is not None and np.isfinite(q)]
+    return float(np.mean(v)) if v else float("nan")
+
+
+def delay(o):
+    return float(np.mean([o["shift_p1_ns"], o["shift_m1_ns"]]))
+
+
+# ---- the numbers the prose quotes ----------------------------------------
+rot = [a for a in ARMS if a != "flat700"]
+Ef = R["flat700"]["E_Vcm"]
+dev = {}
+for key, get in (("pk", lambda o: sym(o, "pk")),
+                 ("area", lambda o: sym(o, "area")),
+                 ("delay", delay)):
+    Er = np.array([R[m]["E_Vcm"] for m in rot])
+    yr = np.array([get(R[m]["x"]) for m in rot])
+    pred = np.polyval(np.polyfit(Er, yr, 1), Ef)
+    dev[key] = 100 * (get(R["flat700"]["x"]) - pred) / abs(pred)
+
+sg = {a: np.array(R[a]["width_x"]["sigma_mm"]) for a in ARMS}
+qq = {a: np.array(R[a]["width_x"]["charge"]) for a in ARMS}
+pk_i = {a: int(np.nanargmax(qq[a])) for a in ARMS}
+sig = {a: float(sg[a][pk_i[a]]) for a in ARMS}
+fac = R["flat700"]["E_Vcm"] / R["rot_d325"]["E_Vcm"] - 1
+d_s2 = sig["rot_d325"] ** 2 - sig["flat700"] ** 2
+bound = float(np.sqrt(2 * 2 * sig["flat700"] * 0.01 / fac))
+bound_pct = 100 * bound ** 2 / sig["flat700"] ** 2
+
+r2 = sym(R["rot_d425"]["y"], "pk", 2) / sym(R["rot_d425"]["y"], "pk")
+r0 = sym(R["flat700"]["y"], "pk", 2) / sym(R["flat700"]["y"], "pk")
+
+CSS = """
+:root{--ink:#16191d;--muted:#5a6470;--line:#d8dde3;--bg:#fff;--panel:#f6f8fa;
+--accent:#2a78d6;--good:#166534;--bad:#9E2B25;--warn:#B45309}
+@media(prefers-color-scheme:dark){:root{--ink:#e6e9ee;--muted:#9aa5b1;
+--line:#2b3138;--bg:#14171b;--panel:#1b1f25;--accent:#5AB4F0;--good:#7BC47F;
+--bad:#E88C86;--warn:#E0A458}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.62 -apple-system,
+BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+.wrap{max-width:56rem;margin:0 auto;padding:2.2rem 1.2rem 5rem}
+h1{font-size:1.66rem;line-height:1.25;margin:0 0 .4rem}
+h2{font-size:1.12rem;margin:2.4rem 0 .6rem;padding-top:1rem;
+border-top:1px solid var(--line)}
+h3{font-size:1rem;margin:1.5rem 0 .3rem}
+.dek{color:var(--muted);margin:0 0 1.4rem}
+.meta{color:var(--muted);font-size:.85rem;margin:0 0 1.8rem}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+font-size:.88em;background:var(--panel);padding:.1em .34em;border-radius:3px}
+.verdict{background:var(--panel);border-left:3px solid var(--accent);
+border-radius:0 6px 6px 0;padding:1rem 1.15rem;margin:1.4rem 0}
+.verdict p:first-child{margin-top:0}.verdict p:last-child{margin-bottom:0}
+.tablewrap{overflow-x:auto;margin:1rem 0;border:1px solid var(--line);
+border-radius:6px}
+table{border-collapse:collapse;width:100%;font-size:.87rem}
+th,td{padding:.42rem .6rem;text-align:right;border-bottom:1px solid var(--line);
+white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+thead th{background:var(--panel);font-weight:600;color:var(--muted);
+font-size:.78rem;text-transform:uppercase;letter-spacing:.03em}
+tbody tr:last-child td{border-bottom:none}
+tr.hi td{background:color-mix(in srgb,var(--accent) 10%,transparent);
+font-weight:600}
+.good{color:var(--good);font-weight:600}.bad{color:var(--bad);font-weight:600}
+.warn{color:var(--warn);font-weight:600}
+figure{margin:1.3rem 0}
+img{max-width:100%;height:auto;border:1px solid var(--line);border-radius:6px}
+figcaption{color:var(--muted);font-size:.85rem;margin-top:.45rem}
+ul,ol{margin:.6rem 0;padding-left:1.3rem}li{margin:.3rem 0}
+.stats{display:flex;flex-wrap:wrap;gap:.7rem;margin:1.2rem 0}
+.stat{flex:1 1 11rem;background:var(--panel);border:1px solid var(--line);
+border-radius:6px;padding:.7rem .9rem}
+.stat b{display:block;font-size:1.28rem;line-height:1.2}
+.stat span{color:var(--muted);font-size:.8rem}
+.foot{color:var(--muted);font-size:.85rem;margin-top:2.4rem;
+border-top:1px solid var(--line);padding-top:1rem}
+"""
+
+
+def m1_rows():
+    out = []
+    for a in ARMS:
+        o = R[a]["x"]
+        cls = ' class="hi"' if a in ("flat700", "rot_d425") else ""
+        out.append(
+            f"<tr{cls}><td>{NAME[a]}</td><td>{R[a]['mount']}</td>"
+            f"<td>{R[a]['E_Vcm']:.0f}</td><td>{o['n_events']}</td>"
+            f"<td>{sym(o,'pk'):.4f}</td><td>{sym(o,'area'):.4f}</td>"
+            f"<td>{sym(o,'pk',2)/sym(o,'pk'):.4f}</td>"
+            f"<td>{delay(o):+.0f}</td><td>{sym(o,'detfrac'):.3f}</td></tr>")
+    return "\n".join(out)
+
+
+def m2_rows():
+    out = []
+    for a in ARMS:
+        o = R[a]["y"]
+        cls = ' class="hi"' if a == "rot_d425" else ""
+        out.append(
+            f"<tr{cls}><td>{NAME[a]}</td><td>{o['incidence']}</td>"
+            f"<td>{R[a]['E_Vcm']:.0f}</td><td>{sym(o,'pk'):.4f}</td>"
+            f"<td>{sym(o,'pk',2):.4f}</td>"
+            f"<td>{sym(o,'pk',2)/sym(o,'pk'):.4f}</td>"
+            f"<td>{o['width_20pct']:.0f}</td>"
+            f"<td>{o['shift_p1_ns']:+.0f}</td><td>{o['shift_m1_ns']:+.0f}</td>"
+            f"<td>{o['shift_asym_ns']:+.0f}</td></tr>")
+    return "\n".join(out)
+
+
+def m3_rows():
+    out = []
+    for a in ARMS:
+        w = R[a]["width_x"]
+        vl = R[a]["y"].get("v_from_ladder_um_ns")
+        vtxt = f"{vl:.1f}" if vl else "&mdash;"
+        bad = ' class="bad"' if vl and vl > 12 else ""
+        out.append(
+            f"<tr><td>{NAME[a]}</td><td>{R[a]['E_Vcm']:.0f}</td>"
+            f"<td>{w['n_events']}</td>"
+            f"<td>{R[a]['telescope_x']['mad_mm']:.3f}</td>"
+            f"<td>{sig[a]:.3f}</td>"
+            f"<td>{sig['flat700']*np.sqrt(R['flat700']['E_Vcm']/R[a]['E_Vcm']):.3f}</td>"
+            f"<td{bad}>{vtxt}</td></tr>")
+    return "\n".join(out)
+
+
+HTML = f"""<h1>Does det4's charge-spreading kernel survive a 25.64&deg; rotation?</h1>
+<p class="dek">The flat-mount kernel, re-measured on the same detector tilted to
+25.64&deg; in the same run &mdash; plus the drift ladder that rotation buys, used
+to bound how much of the kernel is transverse diffusion.</p>
+<p class="meta">run_63, {M['gas']}, resist {M['resist_V']} V, ZS
+{M['zs_sigma']:.0f}&sigma;, {M['sample_ns']:.0f} ns sampling &middot;
+uRWELL telescope as the external reference &middot; generated by
+<code>measure.py</code> + <code>make_report.py</code></p>
+
+<div class="verdict">
+<p><b>The kernel holds.</b> The X view is at <b>normal incidence in every arm</b>,
+flat and rotated alike, so it isolates the kernel from track geometry. Across a
+25.64&deg; mount rotation and a 3.1&times; drift-field range its &plusmn;1
+amplitude, area and delay stay within <b>{abs(dev['pk']):.0f}&ndash;{abs(dev['area']):.0f} %</b>
+of the trend the rotated arms define, and the &plusmn;1 delay is
+<b>48 &plusmn; 3 ns</b> in all four.</p>
+<p><b>The geometry signature is unmistakable, and it is not the kernel.</b> The Y
+view &mdash; normal in the flat mount, carrying the ladder in the rotated one
+&mdash; goes 3 &rarr; 8 strips of extent, and its &plusmn;1 delay flips from
+<b>symmetric</b> ({R['flat700']['y']['shift_asym_ns']:+.0f} ns, the RC signature)
+to <b>strongly antisymmetric</b>
+({R['rot_d425']['y']['shift_asym_ns']:+.0f} ns, the ladder) &mdash; RC sharing is
+symmetric in &plusmn;d by construction, a drift ladder is not.
+<b>&plusmn;2/&plusmn;1 grows 2.8&times;</b> at matched &plusmn;2 detection
+(0.218 &rarr; 0.618). The larger factor the stacks give is partly the
+4&nbsp;&sigma; threshold, not the track &mdash; see the correction below.</p>
+<p><b>Transverse diffusion is not what the kernel is made of.</b> The lateral rms
+about the telescope impact point is field-<i>independent</i>
+({sig['flat700']:.3f} mm at 233 V/cm, {sig['rot_d325']:.3f} mm at 108 V/cm) where
+diffusion would have grown as E<sup>&minus;1/2</sup> to
+{sig['flat700']*np.sqrt(233/108):.2f} mm. That bounds the diffusion term at
+<b>&lt; {bound:.2f} mm rms</b>, under <b>{bound_pct:.0f} %</b> of &sigma;&sup2;.</p>
+</div>
+
+<div class="stats">
+<div class="stat"><b>{abs(dev['pk']):.0f} %</b><span>flat vs rotated,
+&plusmn;1 peak &mdash; the mount test</span></div>
+<div class="stat"><b>48 &plusmn; 3 ns</b><span>&plusmn;1 delay, all four arms</span></div>
+<div class="stat"><b>{r2/r0:.1f}&times;</b><span>&plusmn;2/&plusmn;1 from geometry
+alone, at 25.64&deg;</span></div>
+<div class="stat"><b>&lt; {bound_pct:.0f} %</b><span>of &sigma;&sup2; attributable
+to diffusion</span></div>
+</div>
+
+<h2>Why this run is an A/B and not a comparison</h2>
+<p>run_63 contains <b>both mounts, 90 minutes apart</b>, either side of one H4 TAX
+access (<code>FLAT_CF4_RUN63.md</code>). Same run number, same gas, resist held at
+769.8 V throughout, ZS at 4&sigma; in both. Only the mount angle and the drift
+field differ &mdash; and the drift field is itself the second lever.</p>
+
+<h3>Which view is tilted, and how we know</h3>
+<p>Not from the alignment matrix: det4 is rolled +90.2&deg;, so the strips
+<code>det4_sps_map</code> calls &ldquo;x&rdquo; measure the detector's Y
+coordinate and the row norms of <code>A</code> mislead. Measured instead from the
+data, by fitting peak time against strip position event by event and taking the
+<b>signed</b> median slope &mdash; a ladder has a coherent sign, normal incidence
+scatters about zero:</p>
+<div class="tablewrap"><table>
+<thead><tr><th>arm</th><th>X view</th><th>Y view</th><th>reading</th></tr></thead>
+<tbody>
+<tr><td>flat700</td><td>&minus;4.4 ns/mm</td><td>&minus;0.4 ns/mm</td>
+<td>neither &mdash; flat, as expected</td></tr>
+<tr class="hi"><td>rot d425</td><td>&minus;0.5 ns/mm</td>
+<td>&minus;209 ns/mm</td><td><b>Y is the ladder; X is normal</b></td></tr>
+</tbody></table></div>
+<p>&minus;209 ns/mm implies v&middot;tan&thinsp;&theta; = 4.8 &micro;m/ns, i.e.
+v = 10.0 &micro;m/ns at 142 V/cm, where this wet CF<sub>4</sub> mixture belongs
+(<code>RAW_RUN71_REANALYSIS</code> measured 13&ndash;15 &micro;m/ns at 233 V/cm).
+The ladder is real, and the X view is normal incidence at <em>both</em> mounts
+&mdash; which is what makes the kernel test possible at all.</p>
+
+<h2>M1 &mdash; the kernel, at normal incidence in every arm</h2>
+<div class="tablewrap"><table>
+<thead><tr><th>arm</th><th>mount</th><th>E [V/cm]</th><th>n</th>
+<th>&plusmn;1 peak</th><th>&plusmn;1 area</th><th>&plusmn;2/&plusmn;1</th>
+<th>delay [ns]</th><th>&plusmn;1 det frac</th></tr></thead>
+<tbody>
+{m1_rows()}
+</tbody></table></div>
+<figure><img src="figures/kernel_ab.png" alt="Three panels: plus-minus-one peak
+ratio, area ratio and peak delay against drift field, with the three rotated-mount
+arms defining a trend and the single flat-mount arm tested against its
+extrapolation."></figure>
+<figcaption>Plotted against <b>field</b>, not as categories, because the flat arm
+is the only one at 233 V/cm: mount and drift field are confounded in this dataset,
+so the honest test is whether the flat point sits on the trend the three rotated
+points define. It does, to {abs(dev['pk']):.0f} % (peak),
+{abs(dev['area']):.0f} % (area) and {abs(dev['delay']):.0f} % (delay).</figcaption>
+<p>Detection fractions are matched across the four arms
+(0.82&ndash;0.85), so this comparison is at equal censoring &mdash; which matters,
+because censoring is the dominant systematic in every slow observable
+(<code>TWOGAS_HEADON</code> F3).</p>
+
+<h2>M2 &mdash; the geometry lever</h2>
+<div class="tablewrap"><table>
+<thead><tr><th>arm</th><th>incidence</th><th>E [V/cm]</th><th>&plusmn;1 peak</th>
+<th>&plusmn;2 peak</th><th>&plusmn;2/&plusmn;1</th><th>extent</th>
+<th>shift +1</th><th>shift &minus;1</th><th>asym</th></tr></thead>
+<tbody>
+{m2_rows()}
+</tbody></table></div>
+<figure><img src="figures/geometry.png" alt="Three bar panels comparing the flat
+arm against the three rotated arms in the Y view: the plus-minus-two over
+plus-minus-one peak ratio, the cluster extent in strips, and the plus-minus-one
+delay asymmetry."></figure>
+<figcaption>Tilting the chamber leaves the &plusmn;1 amplitude nearly alone but
+multiplies &plusmn;2 by {r2/r0:.1f}&times;: an inclined column simply
+<em>reaches</em> the second strip. The delay asymmetry is the cleanest
+discriminator &mdash; RC sharing is symmetric in &plusmn;d by construction, a
+drift ladder is antisymmetric.</figcaption>
+<figure><img src="figures/stacks.png" alt="Peak-aligned trim20 stacks for the
+centre, plus-minus-one and plus-minus-two strips, flat mount on the left and
+25.64 degree mount on the right, both views overlaid."></figure>
+<figcaption>The stacks themselves. In the flat arm the two views agree; in the
+rotated arm the Y view's &plusmn;1 and &plusmn;2 traces walk out in time along
+the ladder while X stays put.</figcaption>
+
+<h2>M3 &mdash; is any of it transverse diffusion?</h2>
+<p>&sigma;<sub>T</sub> &prop; E<sup>&minus;1/2</sup>, so dropping the field from
+233 to 108 V/cm must inflate diffusion by 1.47&times;. The film does not care.
+Measuring the lateral rms about the <b>telescope-predicted</b> impact point (not
+det4's own centroid, which would be circular) therefore separates them:</p>
+<div class="tablewrap"><table>
+<thead><tr><th>arm</th><th>E [V/cm]</th><th>n</th><th>telescope MAD [mm]</th>
+<th>&sigma; measured [mm]</th><th>&sigma; if all diffusion</th>
+<th>v from ladder [&micro;m/ns]</th></tr></thead>
+<tbody>
+{m3_rows()}
+</tbody></table></div>
+<figure><img src="figures/width.png" alt="Left: lateral rms against time after the
+leading strip peak, one curve per drift field. Right: lateral rms at the peak
+against drift field, with the E to the minus one half curve diffusion would
+follow and the flat line a field-independent film term would give."></figure>
+<figcaption>The measured widths sit on the field-<i>independent</i> line, not on
+the diffusion curve. &Delta;&sigma;&sup2; between 233 and 108 V/cm is
+{d_s2:+.4f} mm&sup2; where diffusion alone demands
++{fac:.2f}&thinsp;&sigma;<sub>diff</sub>&sup2;(233).</figcaption>
+<p>The <b>v-from-ladder</b> column is a truncation diagnostic, and it is why only
+<code>rot d425</code> carries the headline. Drift velocity must <em>fall</em> with
+field; instead the implied v rises (10.0 &rarr; 11.3 &rarr; 33.3 &micro;m/ns)
+because the ladder overruns the 3.84 &micro;s window at low field and the fitted
+slope flattens. <b>d325 is partly truncated and d225 is badly truncated.</b></p>
+
+
+<h2>Correction &mdash; how much of the &plusmn;2 jump is the threshold?</h2>
+<p>Asked directly, and it matters: both arms are ZS at 4&sigma;, but their
+&plusmn;2 <em>detection fractions</em> are not the same (0.87 flat vs 0.98
+angled at the loose gate), because at an angle the &plusmn;2 strip genuinely
+carries more charge and clears threshold more often. So the censoring is matched
+for &plusmn;1 but <b>not</b> for &plusmn;2, and part of the raw contrast is the
+threshold rather than the geometry.</p>
+<div class="tablewrap"><table>
+<thead><tr><th>arm</th><th>incidence</th><th>central gate</th>
+<th>&plusmn;2 detected</th><th>&plusmn;2/&plusmn;1 (zeros in)</th>
+<th>&plusmn;2/&plusmn;1 (detected only)</th></tr></thead>
+<tbody>
+<tr><td>flat700</td><td>normal</td><td>200&ndash;3000</td><td>0.865</td>
+<td>0.340</td><td>0.372</td></tr>
+<tr class="hi"><td>flat700</td><td>normal</td><td>900&ndash;3000</td><td>0.996</td>
+<td>0.218</td><td>0.219</td></tr>
+<tr class="hi"><td>rot d425</td><td>25.64&deg;</td><td>200&ndash;3000</td><td>0.976</td>
+<td>0.608</td><td>0.618</td></tr>
+</tbody></table></div>
+<p>Re-gating the flat arm to a higher central amplitude brings its &plusmn;2
+detection to 0.996, matching the angled arm's 0.976. At that matched censoring
+the geometry factor is <b>2.8&times;</b>, not the 4.8&times; the trimmed-mean
+stacks suggest. Two independent checks that 2.8&times; is the right answer: the
+flat number at matched detection (0.218) agrees with the <b>RAW</b> flat
+measurement of 0.249 (<code>TWOGAS_HEADON</code>) to 12 %, which is the
+ZS&ndash;RAW offset that document predicts; and the loose-gate flat number is
+inflated by taking a maximum over a noisy weak trace.</p>
+
+<h2>Correction &mdash; the cosmic bench is RAW, not zero-suppressed</h2>
+<p>An earlier reading of the det3 bench drift scan blamed zero suppression. That
+was wrong: the bench calibration windows carry <b>37 % of strips peaking below
+20 ADC against a ~7 ADC noise &sigma;</b> (a 5&sigma; cut would sit near 37),
+samples reaching &minus;411, and a populated per-strip noise field. Nothing is
+suppressed. The real cause is <b>window truncation</b>, and it is measurable
+directly &mdash; the central strip's last sample, as a fraction of its peak:</p>
+<div class="tablewrap"><table>
+<thead><tr><th>drift</th><th>E [V/cm]</th><th>drift time</th>
+<th>last sample / peak (X)</th><th>(Y)</th><th>verdict</th></tr></thead>
+<tbody>
+<tr><td>300 V</td><td>104</td><td>1.87 &micro;s</td><td class="bad">+0.130</td>
+<td>&minus;0.014</td><td class="bad">truncated</td></tr>
+<tr><td>500 V</td><td>174</td><td>1.32 &micro;s</td><td class="bad">+0.129</td>
+<td>+0.004</td><td class="bad">truncated</td></tr>
+<tr><td>700 V</td><td>243</td><td>1.07 &micro;s</td><td>&minus;0.021</td>
+<td>&minus;0.096</td><td class="good">complete</td></tr>
+<tr><td>1100 V</td><td>382</td><td>0.74 &micro;s</td><td>&minus;0.023</td>
+<td>&minus;0.089</td><td class="good">complete</td></tr>
+</tbody></table></div>
+<p>The window is 32 &times; 60 ns = 1.92 &micro;s; below ~700 V the column takes
+longer than that and the delayed, dispersed shared copy is exactly the part that
+falls off the end. Restricting to the untruncated points (700&ndash;1100 V) and
+holding the central amplitude fixed at 1000&ndash;1600 ADC, the Y-plane
+&plusmn;1 ratio moves <b>0.564 &rarr; 0.591, +5 % over a 1.57&times; field
+range</b> &mdash; consistent with the SPS RAW invariance, not with diffusion.
+The X plane still walks +33 % over the same range and is not explained by either
+truncation or selection; X's sharing is the weak, ambiguous channel
+(&plusmn;2/&plusmn;1 &asymp; 0.11) and this stays open.</p>
+
+<h2>Can we measure the waveform kernel itself?</h2>
+<div class="verdict" style="border-left-color:#9E2B25">
+<p><b>SUPERSEDED 2026-08-18 &mdash; this section's numbers are wrong, its
+conclusion is not.</b> Two defects, both fixed in
+<a href="sharing-kernel-measured.html">The sharing kernel, measured</a>:</p>
+<ol>
+<li><b>Stale input.</b> The deconvolution below consumed the pre-made
+<code>d4_kernel_fit_raw*.npz</code>, which are dated 08-03 and predate the clean
+selection. Their peak-aligned central stack sits at <b>12.4 % of peak before the
+pulse exists</b>, against 1.7 % for the clean stacks &mdash; so the
+17&ndash;18 % "negative weight at t &lt; 0" quoted below is that artefact, not
+the kernel. Only two of the three RAW drift plateaus were used, and the missing
+one (700 V) is the best populated.</li>
+<li><b>The method was harder than it needed to be.</b> Deconvolution needs a
+regulariser, and &lambda; moved the answer by &plusmn;10 % in area and
+250&nbsp;&rarr;&nbsp;400 ns in tail &tau;. The <em>cross-relation</em>
+<code>n<sub>0</sub> &lowast; W<sub>d</sub> = n<sub>d</sub> &lowast;
+W<sub>0</sub></code> tests the same physics with nothing inverted &mdash; both
+sides are measured data convolved with a model filter.</li>
+</ol>
+<p>What stands: the cancellation argument in the next paragraph, that the
+shipped kernel form cannot make the measured tail, and that this only works
+head-on. What does <em>not</em>: every number in the table below, and in
+particular the tail &tau; &mdash; it turns out to depend on how much tail the
+fit window contains, so it is not a constant at all.</p>
+</div>
+
+<p>Yes &mdash; and only from head-on data. At normal incidence every strip sees
+the <em>same</em> ionisation column, so each strip's waveform is one common
+signal C(t) (column arrival folded with the amplifier) through a lateral
+transfer function:</p>
+<p style="text-align:center"><code>W<sub>d</sub>(t) = (h<sub>d</sub> * C)(t)
+&nbsp;&rArr;&nbsp; W<sub>d</sub>(f)/W<sub>0</sub>(f) = G<sub>d</sub>(f)</code></p>
+<p><b>The column and the electronics cancel exactly in the ratio.</b> So
+g<sub>d</sub>(t) is the sharing kernel itself &mdash; no shaper template, no
+drift model, no v<sub>drift</sub>, no assumed functional form. The cancellation
+holds only at normal incidence, which is precisely why the flat runs are the
+ones that can do this and the 25.64&deg; ones cannot.</p>
+<figure><img src="figures/deconv_kernel.png" alt="Two panels showing the
+deconvolved sharing kernel to plus-minus one and plus-minus two strips, measured
+at two drift fields, against the narrow Gaussian that the wft model assumes."></figure>
+<figcaption>Wiener-regularised deconvolution of the RAW per-offset mean
+waveforms, Y view, symmetrised over +d and &minus;d (which agree to 1&ndash;4 %).
+The dip below zero before t = 0 is the regulariser's own ringing.</figcaption>
+<div class="tablewrap"><table>
+<thead><tr><th>arm</th><th>d</th><th>area</th><th>peak</th><th>centroid</th>
+<th>tail &tau;</th><th>+d / &minus;d</th></tr></thead>
+<tbody>
+<tr><td>RAW 156 V/cm</td><td>1</td><td>0.531</td><td>+0 ns</td><td>+320 ns</td><td>303 ns</td><td>1.04</td></tr>
+<tr><td>RAW 156 V/cm</td><td>2</td><td>0.267</td><td>+60 ns</td><td>+733 ns</td><td>long</td><td>1.01</td></tr>
+<tr><td>RAW 95 V/cm</td><td>1</td><td>0.486</td><td>+0 ns</td><td>+263 ns</td><td>256 ns</td><td>1.03</td></tr>
+<tr><td>RAW 95 V/cm</td><td>2</td><td>0.242</td><td>+120 ns</td><td>+734 ns</td><td>long</td><td>0.99</td></tr>
+</tbody></table></div>
+<div class="verdict">
+<p><b>The measured kernel is a prompt spike plus a one-sided ~280 ns
+exponential tail. The model assumes a symmetric 12 ns Gaussian translated by
+146 ns.</b> These are different objects. The measured &plusmn;2 kernel is later
+still (centroid +733 ns, 2.4&times; the &plusmn;1's) and nearly a plateau out
+past 1.7 &micro;s &mdash; the cascade signature. The kernel is also stable
+between the two fields (areas within 8 %, &plusmn;2 centroid identical to 1 ns),
+so it is a layer property, as the amplitude work already said.</p>
+<p>This is how you get the kernels: <b>deconvolve them from RAW head-on data</b>,
+and use the measured g<sub>d</sub>(t) in place of the
+(c<sub>1</sub>, c<sub>2</sub>, &tau;<sub>s</sub>, &sigma;<sub>s</sub>)
+parameterisation. Note the impulse response itself is already measured &mdash;
+<code>wft.calibrate.measure_templates</code> takes it from bright inclined bench
+strips. It is only the <em>sharing</em> kernel that is currently assumed.</p>
+</div>
+<p><b>Systematics on the deconvolution.</b> The area is stable to about
+&plusmn;10 % over a 20&times; range of the Wiener regularisation
+(&lambda; = 0.005&ndash;0.10 gives 0.574&ndash;0.458); the tail &tau; is more
+&lambda;-sensitive (288&ndash;434 ns) and should be quoted as
+<b>250&ndash;400 ns</b>, not to three figures. Per-sample acceptance falls to
+~0.37 at the window edges even in RAW, so the far tail is the least certain part.
+The X view does <em>not</em> deconvolve cleanly &mdash; its +d and &minus;d
+kernels disagree by 30 % and 18 % of the weight lands at t &lt; 0 &mdash;
+consistent with the standing X tilt, so only Y is quoted.</p>
+
+<h2>What this does not establish</h2>
+<ul>
+<li><b>Mount and field are confounded.</b> There is exactly one flat arm and it is
+the only one at 233 V/cm, so &ldquo;does rotation change the kernel&rdquo; is
+answered by extrapolating the rotated arms' field trend by 91 V/cm. A flat arm at
+142 V/cm would settle it outright; none exists in run_63.</li>
+<li><b>Zero-suppressed throughout.</b> Every arm is ZS 4&sigma;, so absolute
+values are not comparable to the RAW arms &mdash; <code>TWOGAS_HEADON</code> F3
+sized the ZS&ndash;RAW offset at ~6 % on the &plusmn;1 peak and ~18 % on the area.
+Only the flat-vs-rotated <em>difference</em> is meant to be read here.</li>
+<li><b>The diffusion bound is weaker than it looks.</b> Censoring worsens at low
+field (strips per sample 1.91 &rarr; 1.62), biasing the width <em>down</em>
+exactly where diffusion should push it up &mdash; the same sign as the null. The
+better-controlled statement is the &plusmn;1 peak ratio at matched detection
+fraction, which moves the wrong way for diffusion.</li>
+<li><b>d225 is 307 events</b> and its ladder is badly truncated; it is shown for
+completeness, not weight.</li>
+<li><b>The deconvolution is one detector, two fields, Y view only</b>, and it
+inherits the run_71 mean-waveform selection (strong central strip, oscillating
+channels 510/372 masked). It is a first measurement, not a calibration product
+&mdash; turning it into one means a per-plane, per-detector g<sub>d</sub>(t)
+with its own error band, and a wft kernel form that can accept a tabulated
+kernel instead of four numbers.</li>
+<li><b>One detector, one gas, one tilt angle.</b> This is det4 in Ar/CF<sub>4</sub>/iso
+at 25.64&deg;. Nothing here licenses transporting the numbers to another chamber
+&mdash; the standing rule that a kernel is per-detector is unchanged.</li>
+</ul>
+
+<p class="foot">Reproduce: <code>measure.py</code> &rarr; <code>results.json</code>;
+<code>make_figures.py</code> &rarr; <code>figures/</code>;
+<code>make_report.py</code> &rarr; this page. Inputs
+<code>wf_run63_flat.npz</code> and <code>wf_run63_operating.npz</code> under
+<code>/media/dylan/data/x17/sps_run53_det4_check/staging/run_63/</code>; strip map
+from <code>det4_sps_map.py</code>; estimator conventions follow
+<code>robust_waveforms.py</code> / <code>05_beam_kernel_xcheck.py</code>.</p>
+"""
+
+(HERE / "report.html").write_text(
+    "<!doctype html>\n<html lang=\"en\"><head><meta charset=\"utf-8\">"
+    "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">"
+    "<title>det4 kernel at 25.64 deg</title><style>" + CSS +
+    "</style></head><body><div class=\"wrap\">" + HTML + "</div></body></html>")
+print("wrote", HERE / "report.html")

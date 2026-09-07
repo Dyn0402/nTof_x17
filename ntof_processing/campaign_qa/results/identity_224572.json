@@ -1,0 +1,122 @@
+{
+ "run": 224572,
+ "ours_partial": "run224572_0005.root",
+ "bunches": [
+  896,
+  900
+ ],
+ "trees": {
+  "WALA": {
+   "n_ours": 49483,
+   "n_official": 49483,
+   "max_abs_diff": 0.0,
+   "max_diff_column": "",
+   "differing_cells": 0,
+   "verdict": "IDENTICAL"
+  },
+  "WALB": {
+   "n_ours": 47591,
+   "n_official": 47591,
+   "max_abs_diff": 0.0,
+   "max_diff_column": "",
+   "differing_cells": 0,
+   "verdict": "IDENTICAL"
+  },
+  "WALC": {
+   "n_ours": 52427,
+   "n_official": 52427,
+   "max_abs_diff": 0.0,
+   "max_diff_column": "",
+   "differing_cells": 0,
+   "verdict": "IDENTICAL"
+  },
+  "WALD": {
+   "n_ours": 51888,
+   "n_official": 51888,
+   "max_abs_diff": 0.0,
+   "max_diff_column": "",
+   "differing_cells": 0,
+   "verdict": "IDENTICAL"
+  },
+  "PSSA": {
+   "n_ours": 143636,
+   "n_official": 143636,
+   "max_abs_diff": 0.0,
+   "max_diff_column": "",
+   "differing_cells": 0,
+   "verdict": "IDENTICAL"
+  },
+  "PSSB": {
+   "n_ours": 192101,
+   "n_official": 192101,
+   "max_abs_diff": 0.0,
+   "max_diff_column": "",
+   "differing_cells": 0,
+   "verdict": "IDENTICAL"
+  },
+  "PSSC": {
+   "n_ours": 231164,
+   "n_official": 231164,
+   "max_abs_diff": 0.0,
+   "max_diff_column": "",
+   "differing_cells": 0,
+   "verdict": "IDENTICAL"
+  },
+  "PSSD": {
+   "n_ours": 205055,
+   "n_official": 205055,
+   "max_abs_diff": 0.0,
+   "max_diff_column": "",
+   "differing_cells": 0,
+   "verdict": "IDENTICAL"
+  },
+  "LIQA": {
+   "n_ours": 85873,
+   "n_official": 85873,
+   "max_abs_diff": 105662855.0078125,
+   "max_diff_column": "afast",
+   "differing_cells": 3,
+   "verdict": "DIFFERENT (values)"
+  },
+  "LIQB": {
+   "n_ours": 95653,
+   "n_official": 95653,
+   "max_abs_diff": 315073773.2109375,
+   "max_diff_column": "afast",
+   "differing_cells": 6,
+   "verdict": "DIFFERENT (values)"
+  },
+  "LIQC": {
+   "n_ours": 24895,
+   "n_official": 24895,
+   "max_abs_diff": 1371412.6953125,
+   "max_diff_column": "afast",
+   "differing_cells": 5,
+   "verdict": "DIFFERENT (values)"
+  },
+  "LIQD": {
+   "n_ours": 59799,
+   "n_official": 59799,
+   "max_abs_diff": 2359974.984375,
+   "max_diff_column": "afast",
+   "differing_cells": 4,
+   "verdict": "DIFFERENT (values)"
+  },
+  "SILI": {
+   "n_ours": 2663,
+   "n_official": 2663,
+   "max_abs_diff": 0.0,
+   "max_diff_column": "",
+   "differing_cells": 0,
+   "verdict": "IDENTICAL"
+  },
+  "PKUP": {
+   "n_ours": 5,
+   "n_official": 5,
+   "max_abs_diff": 0.0,
+   "max_diff_column": "",
+   "differing_cells": 0,
+   "verdict": "IDENTICAL"
+  }
+ }
+}

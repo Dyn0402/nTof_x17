@@ -29,11 +29,47 @@ check the migration status table in `RECONSTRUCTION_BASIS.md` first.
   registry `qa_config.py`. Entry point: `MICROTPC_RUNBOOK.md`.
 - `mx_june_cosmic_qa/waveform_first_threading/` — the waveform-first study that
   established the basis above; `WAVEFORM_FIRST_THREADING.md` is the report.
-- `mx_july_beam_qa/`, `ntof_*` — July beam and n_TOF work.
+- `mx_july_beam_qa/`, `ntof_*` — July beam and n_TOF work. **Our n_TOF data
+  taking ended the morning of 2026-08-10** — the dataset is final (last run with
+  beam 224715). n_TOF keeps running *other* experiments, so new runs on the DAQ
+  page and under `/eos/experiment/ntof/` are not ours: identify ours by **run
+  title**, never by recency or run-number proximity.
+- `ntof_pedestal_qa/` — the DREAM pedestal history of the n_TOF campaign, per
+  channel and per chip. Two of its findings are campaign-wide and are listed
+  under "Two n_TOF conditions" below; read them before comparing anything
+  across 23 July or using chamber A in run_79.
 - `common/` — strip maps, active area, shared config.
 - Bench data: `/media/dylan/data/x17/cosmic_bench` (mirror at
   `~/x17/cosmic_bench`); waveforms in `<run>/<subrun>/decoded_root`.
 - venv is `.venv` (`../../.venv/bin/python` from a subdirectory).
+
+## Two n_TOF conditions that will silently bias an analysis
+
+Both were measured from the pedestal runs and confirmed against the data;
+`ntof_pedestal_qa/README.md` has the evidence and the caveats.
+
+**The noise floor doubled on 23 July and never came back.** The DREAM readout
+clock divider went 6 → 4 (`RdClk_Div`, sampling clock unchanged) and the
+per-channel residual noise rose **×2.0 on all eight FEUs at once** — so did the
+5σ threshold the DAQ loaded. This splits the campaign in two, and **the entire
+production period is on the noisy side**. The bracketing pedestals are 23 July
+10:05 (old) and 16:47 (new), so:
+
+| | |
+|---|---|
+| **run_67 and earlier** | old, quiet configuration (run_67 ends 09:52) |
+| **run_68** | 14:54–16:08, *inside* the bracket — not placed by the pedestals. It loaded the 10:04 pedestal, which suggests the old configuration, but that is an inference, not a measurement. Exclude it or check it directly. |
+| **run_69 onward** | new, noisy configuration (run_69 starts 17:27) |
+
+Never pool amplitude, threshold, efficiency or hit-rate numbers across that
+boundary without saying so. The coherent common mode did *not* change, so a
+single overall gain factor does not undo it.
+
+**Chamber A x-view connector 8 was dead through run_79.** Channels 448–511 of
+FEU 3 were electrically disconnected from 22 July to the 27 July access — every
+sub-run of run_79, the first long production run. 41 of those 64 channels
+recorded no hits at all. Any A-x occupancy, efficiency or cluster study on
+run_79 must mask them; the strips are live again from run_83.
 
 ## Reporting results — write an HTML report, not just PNGs
 
@@ -60,3 +96,12 @@ from the control-room browser with no file-system access.
 - Detector-local frame: x/y from the strip maps, z = drift depth from the mesh.
 - Anything calibrated (kernel, template, v, gap map) is per detector **and** per
   run condition. A bundle used outside its conditions is a silent error.
+- **The sharing kernel must have c2 < c1**, always: the ±2 strip is reached only
+  through the ±1. Every bundle shipped before 2026-08-21 had it backwards (det3
+  1.14, det2 1.53, det7 1.75, det4 2.12) because the ref-pinned cosmic χ² is
+  flat in that direction. `wft.calib.check_kernel_ordering` now refuses such a
+  bundle at load, save and install, and every product built on one was retired
+  and re-reconstructed — record `mx_june_wft/RETIRE_C2GTC1_2026-08-21.md`. Use
+  `calib_bundle_r06` (c2 = 0.6·c1). Note the stored `c2` on those bundles is
+  literally `0.0` and the ratio lives in `c2_over_c1`: read it with
+  `wft.calib.effective_c2`, never `hyper['c2']`.

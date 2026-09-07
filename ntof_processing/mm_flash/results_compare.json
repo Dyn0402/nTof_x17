@@ -1,0 +1,129 @@
+{
+ "inputs": {
+  "waveform": "run 224709, MMA = strip 32 of det A, cable Y8",
+  "hv_current": "ntof_july_analysis/flash_charge/results/flash_charge_subruns.csv",
+  "gas": "Ar/iso 90/10 throughout",
+  "detector": "A"
+ },
+ "gain_slope": [
+  {
+   "method": "HV supply current",
+   "run": "run_57",
+   "det": "A",
+   "drift_V": 599.75,
+   "n": 31,
+   "v_lo": 519.75,
+   "v_hi": 579.75,
+   "e_fold_V": 20.15138154443606,
+   "gain_per_10V": 1.642540110810374
+  },
+  {
+   "method": "HV supply current",
+   "run": "run_57",
+   "det": "B",
+   "drift_V": 799.75,
+   "n": 31,
+   "v_lo": 519.75,
+   "v_hi": 579.75,
+   "e_fold_V": 20.169833883642582,
+   "gain_per_10V": 1.6417945867097432
+  },
+  {
+   "method": "HV supply current",
+   "run": "run_57",
+   "det": "C",
+   "drift_V": 799.75,
+   "n": 30,
+   "v_lo": 519.5,
+   "v_hi": 579.5,
+   "e_fold_V": 22.38276001111532,
+   "gain_per_10V": 1.5632585024591485
+  },
+  {
+   "method": "waveform, strip 32",
+   "run": "224709",
+   "det": "A",
+   "drift_V": 700,
+   "n": 15,
+   "v_lo": 500,
+   "v_hi": 570,
+   "e_fold_V": 24.078673055409723,
+   "gain_per_10V": 1.5148331148861411,
+   "pulse_class": "dedicated"
+  },
+  {
+   "method": "waveform, strip 32",
+   "run": "224709",
+   "det": "A",
+   "drift_V": 700,
+   "n": 15,
+   "v_lo": 500,
+   "v_hi": 570,
+   "e_fold_V": 21.651725402900016,
+   "gain_per_10V": 1.58701827451901,
+   "pulse_class": "parasitic"
+  }
+ ],
+ "slope_agreement": {
+  "hv_det_A_e_fold_V": 20.15138154443606,
+  "waveform_parasitic_e_fold_V": 21.651725402900016,
+  "ratio": 1.0744536475157065
+ },
+ "absolute": {
+  "setpoint": "drift 700 V, amplification 540 V, det A, Ar/iso 90/10, 2026-08-09",
+  "hv_run": "run_158",
+  "hv_nC_per_pulse": 142.04860169904148,
+  "hv_nC_rms": 3.3307759789082,
+  "hv_n_subruns": 6,
+  "waveform_run": "224709",
+  "strip_pC_dedicated": 667.8728661507157,
+  "strip_pC_parasitic": 361.45537412216646,
+  "strip_pC_pulse_mix": 542.5202557754001,
+  "n_dedicated": 52,
+  "n_parasitic": 36,
+  "uniform_expectation_pC_per_strip": 277.4386751934404,
+  "concentration_factor": 1.955460086439409,
+  "implied_plane_total_nC": 277.77037095700484,
+  "note": "concentration factor = measured strip / (chamber charge spread uniformly over 512 strips of one plane). It absorbs both the beam profile at strip 32 and any X/Y charge sharing."
+ },
+ "compression": {
+  "waveform": {
+   "charge_ratio": 1.8477325666348643,
+   "intensity_ratio": 1.9997119193374144,
+   "per_proton_deficit_pct": 7.600062350626335
+  },
+  "hv_fold": {
+   "A": {
+    "per_proton_deficit_pct": 15.035355414960916,
+    "source": "HANDOFF section 8.5, run_79 isolated-pulse fold"
+   },
+   "C": {
+    "per_proton_deficit_pct": 4.116865869853914,
+    "source": "HANDOFF section 8.5, run_79 isolated-pulse fold"
+   }
+  }
+ },
+ "dream": {
+  "csa_full_scale_fC": 600.0,
+  "csa_ranges_fC": [
+   50,
+   100,
+   200,
+   600
+  ],
+  "strip_charge_pC": 667.8728661507157,
+  "strip_over_full_scale": 1113.1214435845263,
+  "chamber_average_per_strip_over_full_scale": 462.39779198906734,
+  "volts_to_fit_in_range": 168.91004847932854,
+  "voltage_that_would_be_needed": 371.08995152067143,
+  "drain_time_ms": [
+   74.20809623896841,
+   7.42080962389684
+  ],
+  "feedback_nA": [
+   9.0,
+   90.0
+  ],
+  "note": "drain time = Q / I_feedback, the time a pinned CSA needs to swallow the flash charge; brackets the millisecond dead time seen in DREAM."
+ }
+}

@@ -37,6 +37,50 @@ def _git_commit(path: str) -> str:
         return 'unknown'
 
 
+# ---------------------------------------------------------------- the c2 gate
+# The +-2 strip is reached only THROUGH the +-1 strip, so c2 < c1 always. The
+# ref-pinned cosmic chi2 is genuinely flat in this direction (sloppy-mode
+# analysis 2026-08-17), so an unconstrained fit walks there and lands at c2 > c1
+# -- det3 1.14, det2 1.53, det7 1.75, det4 2.12. The H4 head-on beam measures
+# the ratio directly and model-free at 0.45 +- 0.02 over a 2.6x range of drift
+# field (sps_beam_test_26/analysis/sharing_kernel); near-vertical bench cosmics
+# give 0.63 +- 0.10 on det3. An inverted bundle is therefore not a fit result,
+# it is a defect, and every product built on one was retired on 2026-08-21.
+#
+# This gate is what stops one coming back. It refuses at LOAD and at INSTALL,
+# which between them cover every path into the forward model.
+C2_GATE_ENV = 'WFT_ALLOW_INVERTED_KERNEL'
+
+
+def effective_c2(hyper: dict) -> float:
+    """The +-2 amplitude the model will actually use. MUST mirror
+    build_matrix: when the bundle carries ``c2_over_c1`` the stored ``c2``
+    (0.0) is ignored and the ratio is applied to c1."""
+    r = hyper.get('c2_over_c1')
+    return float(r) * float(hyper['c1']) if r is not None else float(hyper['c2'])
+
+
+def check_kernel_ordering(hyper: dict, where: str = '') -> None:
+    """Raise unless c2 < c1. Set WFT_ALLOW_INVERTED_KERNEL=1 to read a parked
+    bundle deliberately -- the only legitimate use is a report *about* the
+    defect, and it must say so."""
+    c1 = float(hyper.get('c1', 0.0))
+    c2 = effective_c2(hyper)
+    if c1 <= 0 or c2 <= c1:
+        return
+    if os.environ.get(C2_GATE_ENV):
+        print(f'[wft] WARNING: inverted sharing kernel c2/c1 = {c2 / c1:.2f} '
+              f'allowed by {C2_GATE_ENV} {where}', flush=True)
+        return
+    raise ValueError(
+        f'inverted sharing kernel: c2 = {c2:.4f} > c1 = {c1:.4f} '
+        f'(ratio {c2 / c1:.2f}){" in " + where if where else ""}. The +-2 strip '
+        f'is reached only through the +-1 strip, so this cannot be physical; '
+        f'it is the defect retired on 2026-08-21. Use the detector\'s '
+        f'calib_bundle_r06 (c2 = 0.6 x c1). To read a parked bundle anyway, '
+        f'set {C2_GATE_ENV}=1.')
+
+
 @dataclass
 class CalibrationBundle:
     """Per-detector, per-condition calibration for the forward model."""
@@ -48,6 +92,32 @@ class CalibrationBundle:
     tmpl: Dict[str, np.ndarray]             # per-plane impulse response
     gain: Dict[str, np.ndarray]             # per-channel gain (512), 1.0 = unmeasured
     dt_xy: Dict[int, float] = field(default_factory=dict)   # t0x - t0y by ftst diff
+
+    # --- absolute-t0 prior (T1.1, 2026-08-11): the scintillator trigger fixes
+    # each plane's t0 up to the ftst clock phase. t0_abs[plane][ftst] is the
+    # predicted t0 [ns]; t0_prior_sigma is the penalty width [ns] (0 = prior
+    # disabled). Per run condition like everything else in the bundle.
+    t0_abs: Dict[str, Dict[int, float]] = field(default_factory=dict)
+    t0_prior_sigma: float = 0.0
+
+    # --- dead-channel mask (T1.3, 2026-08-12): channels with no signal RATE
+    # (a broken connection downstream of the preamp still has a normal
+    # pedestal, so this is a rate mask, not a pedestal mask). Dead strips are
+    # censored samples: dropped from the chi2 sum entirely, no penalty in
+    # either direction. Per run condition like everything else here.
+    dead: Dict[str, list] = field(default_factory=dict)
+
+    # --- per-plane angle-mapping constants (9dd7d6e, restored 2026-08-13).
+    # The fitted width w maps to a tangent as  tan = (w*1e3 - w0[p]) / (kw[p]*v)
+    # -- w0 is the zero-angle width offset and kw the scale, both measured from
+    # free fits of reference tracks. These MUST round-trip: between 9dd7d6e and
+    # 8-13 the fields existed in every bundle.json but not on this class, so any
+    # load()->save() silently shed them and plane_fit ignored them entirely --
+    # that omission is the whole fleet angle bias (arctan(w0/v) per detector,
+    # up to -1.04 deg on det6). Absent in a bundle -> 0.0/1.0, which reproduces
+    # the uncorrected mapping, so reco stamps whether they were found.
+    w0: Dict[str, float] = field(default_factory=dict)
+    kw: Dict[str, float] = field(default_factory=dict)
 
     # --- geometry / DAQ ---
     pitch_mm: float = 0.78
@@ -78,9 +148,17 @@ class CalibrationBundle:
         if note:
             prov['note'] = note
         self.provenance = prov
+        check_kernel_ordering(self.hyper, where=path)
         meta = dict(hyper={k: float(v) for k, v in self.hyper.items()},
                     v_drift=float(self.v_drift),
                     dt_xy={str(k): float(v) for k, v in self.dt_xy.items()},
+                    t0_abs={p: {str(k): float(v) for k, v in d.items()}
+                            for p, d in self.t0_abs.items()},
+                    t0_prior_sigma=float(self.t0_prior_sigma),
+                    dead={p: [int(c) for c in ch]
+                          for p, ch in self.dead.items()},
+                    w0={p: float(v) for p, v in self.w0.items()},
+                    kw={p: float(v) for p, v in self.kw.items()},
                     pitch_mm=self.pitch_mm, sample_ns=self.sample_ns,
                     n_depth_bins=self.n_depth_bins, sat_adc=self.sat_adc,
                     share_mode=self.share_mode,
@@ -95,10 +173,18 @@ class CalibrationBundle:
         with open(os.path.join(path, 'bundle.json')) as f:
             m = json.load(f)
         z = np.load(os.path.join(path, 'arrays.npz'))
+        check_kernel_ordering(m['hyper'], where=path)
         return cls(hyper=m['hyper'], v_drift=m['v_drift'],
                    grid=z['grid'], tmpl={'x': z['tmpl_x'], 'y': z['tmpl_y']},
                    gain={'x': z['gain_x'], 'y': z['gain_y']},
                    dt_xy={int(k): v for k, v in m.get('dt_xy', {}).items()},
+                   t0_abs={p: {int(k): float(v) for k, v in d.items()}
+                           for p, d in m.get('t0_abs', {}).items()},
+                   t0_prior_sigma=m.get('t0_prior_sigma', 0.0),
+                   dead={p: [int(c) for c in ch]
+                         for p, ch in m.get('dead', {}).items()},
+                   w0={p: float(v) for p, v in (m.get('w0') or {}).items()},
+                   kw={p: float(v) for p, v in (m.get('kw') or {}).items()},
                    pitch_mm=m.get('pitch_mm', 0.78),
                    sample_ns=m.get('sample_ns', 60.0),
                    n_depth_bins=m.get('n_depth_bins', 18),
@@ -167,9 +253,16 @@ class CalibrationBundle:
 
     def summary(self) -> str:
         h = self.hyper
+        # c2 may be SLAVED: when the bundle carries c2_over_c1, build_matrix
+        # ignores the stored c2 (which is 0.0) and uses ratio * c1. Printing
+        # the stored field there says "no +-2 copy" about a model that draws
+        # one -- report what the model actually uses, and say it is slaved.
+        r = h.get('c2_over_c1')
+        c2 = float(r) * h['c1'] if r is not None else h['c2']
+        c2s = f"c2={c2:.3f}" + (f" (={r:g}xc1)" if r is not None else '')
         return (f"{self.detector or '?'} / {self.run_key or '?'} "
                 f"[{self.share_mode}]: "
-                f"v={self.v_drift:.2f} um/ns, c1={h['c1']:.3f}, c2={h['c2']:.3f}, "
+                f"v={self.v_drift:.2f} um/ns, c1={h['c1']:.3f}, {c2s}, "
                 f"kY={h.get('kY', 1.0):.3f}, tau_s={h['tau_s']:.0f} ns, "
                 f"sigma_s={h['sigma_s']:.0f} ns, sigma_p0={h['sigma_p0']:.3f} mm, "
                 f"Dp={h['Dp']:.4f}  [{self.provenance.get('code_commit', '?')}]")

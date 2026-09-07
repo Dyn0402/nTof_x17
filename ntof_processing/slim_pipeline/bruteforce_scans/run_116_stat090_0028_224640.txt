@@ -1,0 +1,11 @@
+== brute force run_116/stat090_0028 x n_TOF 224640
+  1120 bursts, anchor 1785611940, lock +27.922 s
+  join for controls failed: FileNotFoundError: neither /eos/experiment/ntof/data/x17/july_beam/ntof_data/run224640.root nor /eos/experiment/ntof/data/x17/july_beam/ntof_data/run224640.parts/ is staged. Get it with ntof_dream_merge/stage_reference_pair.sh ntof
+  scanning 1 target burst(s) + 0 control(s)
+  window +-120 s: 41 beam bunches (12 empty pulses skipped)
+  bunches 2203-2243 (41)
+  tb offsets on 150 bunches [8 s]
+  37,672 candidates over 41 bunches [70 s]
+  burst  1073 n=  12 [target]  -> bunch 2228 z 28.0 peak 29/12 lag -23699.0 us 2nd bunch 2241 frac 8% z 25.0 frac25 8% (ctl 8.3%) da +0 ns dk +0.0 ppm core 1 implied offset -15.285 s  NO_MATCH
+  -> bf/run_116_stat090_0028_224640.json
+  done in 70 s

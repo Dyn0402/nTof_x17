@@ -92,11 +92,17 @@ angle: &nbsp; <span class="lhs">tan θ</span> = w / v_drift
 </div>
 
 <p>The 18 bins of 60 ns span <code>u</code> = 0 to 1080 ns, which at 36.6 µm/ns
-is 39.5&nbsp;mm — comfortably past the ~29&nbsp;mm gap. That headroom is
+is 39.5&nbsp;mm — comfortably past the 30.0&nbsp;mm gap (the mechanical value
+is exact: the Al gas frame is the spacer, its faces coincide with the readout
+PCB and the cathode — <code>GEOMETRY_FROM_CAD.md</code>; earlier editions of
+this document said "~29 mm"). That headroom is
 deliberate: it lets the fit place charge beyond the physical cathode rather than
 piling it up against a wall, which would bias <code>t₀</code>. At low drift
 field the column takes longer than the window and <code>set_depth_bins()</code>
-extends the basis to K = 26.</p>
+extends the basis to K = 26. K = 18 is a det3-at-1000-V number, not a
+universal one: the fleet refit of the slower chambers used K = 22 (det2's
+column endpoint moved 1206 → 1230 ns, det7's 1266 → 1418 ns —
+<code>ANALYSIS_STATE §10.4</code>).</p>
 
 <figure>
 {{FIG:depth_ladder}}
@@ -137,6 +143,13 @@ steep track this term dominates. It enters as the RMS of a uniform segment.</dd>
 <span class="lhs">F<sub>ik</sub></span> = ½ [ erf( (p<sub>i</sub> + pitch/2 − p<sub>c,k</sub>) / √2 σ<sub>p</sub> )
                          − erf( (p<sub>i</sub> − pitch/2 − p<sub>c,k</sub>) / √2 σ<sub>p</sub> ) ]
 </div>
+
+<p>The erf carries no physics of its own. The fraction of a Gaussian that falls
+between two limits is the difference of its cumulative distribution at those
+limits, and the Gaussian CDF <em>is</em> the error function up to scaling — so
+the formula above is nothing more than "the area under the Gaussian between the
+strip's two edges", written in closed form. Any other transverse profile would
+produce the same structure with a different CDF in place of erf.</p>
 
 <figure>
 {{FIG:strip_fractions}}
@@ -269,7 +282,20 @@ needs about 2.1.</p>
 stronger <em>and</em> ~2× later (+87 ns against X's +37 ns). A single-τ kernel
 with an amplitude-only kY cannot represent both planes. A per-plane
 <span class="hy">tau_s</span> is the identified next structural improvement and
-has not been done.</div>
+has not been done <em>in this line of the code</em>: the archived second
+implementation (<code>wft/archive/rc_ladder_2026-07-31/</code>) has it —
+<span class="hy">kTauY</span> = 1.78 from a direct measurement
+(τ_X 230 ns / τ_Y 410 ns on ~1000 near-vertical tracks per plane), plus
+<span class="hy">tau2_fac_y</span> and <span class="hy">sigma_sY</span>. It
+was set aside at the 2026-08-06 merge because the shipped copy was newer, not
+because it was worse; the shipped det3 bundle still carries
+<code>kTauY: 1.78</code> in its hyper dict as an inert value. <strong>The
+naive port was A/B-tested 2026-08-12 and rejected</strong> — switching 1.78 on
+under this kernel form regresses Y badly (σ<sub>Y</sub> 1.14 → 1.57°,
+implied-v spread ×5): RC constants are representation-dependent (the §14.2 /
+arm-B lesson). A per-plane τ now enters through <code>tau_y_fac</code>, a new
+hyper that must be <em>fitted under this kernel</em>
+(<code>mx_june_wft/11_tauy_refit.py</code>, KERNEL_ARMS_2026-08-12.md).</div>
 
 <h2 id="design-matrix">15 · Assembling the design matrix</h2>
 
@@ -349,6 +375,20 @@ failure tail.
 <span class="src">figsrc/f_fit.py · sat_det3 event 4</span></figcaption>
 </figure>
 
+<p><strong>Dead channels ride the same machinery</strong> (2026-08-12). A
+channel listed in the bundle's <code>dead</code> mask is censored completely:
+its samples leave the fit and the dof like saturated ones, and its noise is
+inflated so the one-sided penalty cannot pull on it either — no information in
+either direction. The mask must be built from the channel's signal
+<em>rate</em>, never its pedestal (a connection broken downstream of the
+preamp still shows a normal pedestal): <code>mx_june_wft/14_dead_mask.py</code>
+measures it from the fraction of candidate-window rows in which the channel
+fires above 5× its noise. Without the mask, a dead strip inside a window reads
+"exactly zero charge here", which is a systematic pull on p₀ and w; det3's
+sat-scan sample has no dead channels, so the machinery is validated by unit
+test (<code>wft/tests/test_dead_mask.py</code>) and matters for the detectors
+that do (det2's half-dead X plane, det4).</p>
+
 <h2 id="gain">17 · Per-channel gain</h2>
 
 <p>Channels do not all have the same gain. <code>prep_plane()</code> divides
@@ -371,7 +411,7 @@ detectors.</div>
 <li><strong>Two tracks.</strong> One line, one charge profile. A δ-ray or a
 second particle in the window is fitted as a compromise between them. This is
 the dominant failure mode in the tail (Figure 34).</li>
-<li><strong>Curvature.</strong> The track is straight over the 29 mm gap. For
+<li><strong>Curvature.</strong> The track is straight over the 30 mm gap. For
 cosmic muons and beam particles this is exact to well below the resolution;
 for a low-energy electron spiralling in a field it would not be.</li>
 <li><strong>Attachment or gain varying with depth.</strong> There is no term for
