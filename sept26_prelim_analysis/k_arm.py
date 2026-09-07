@@ -97,6 +97,38 @@ V_BUNDLE_PRIOR = 42.6
 K_GRID = np.round(np.arange(0.60, 2.61, 0.05), 2)
 FOCUS_RADII_MM = (30.0, 10.0)
 
+#: Charge window, as percentiles of ``x_q_sum`` within the coincident sample.
+#:
+#: Both tails are KNOWN failure modes, identified before this window was chosen
+#: rather than by scanning for a good answer:
+#:
+#:   low   the model fits noise.  Chi2/dof is *small* there because there is
+#:         nothing to fit, so a chi2 cut selects these rather than removing
+#:         them -- in chamber D the lowest-chi2 quarter of the coincident
+#:         sample anti-points, corr(lever, tan) = -0.43, while the other three
+#:         quarters all point correctly at +0.40 to +0.70.
+#:   high  saturation (``sat_adc`` = 3700) and discharges.  D's top charge
+#:         quartile degrades to corr +0.13.
+#:
+#: Banding by charge instead of chi2 separates them cleanly: D runs
+#: -0.01 / +0.56 / +0.71 / +0.13 across charge quartiles.
+#:
+#: **It is not a tuned cut.**  The focus estimator -- the one that decides the
+#: verdict -- moves by less than a plateau width as the window is opened from
+#: 25-75 all the way to 0-100: A 1.20 -> 1.17, C 1.60 -> 1.52, D 1.68 -> 1.73.
+#: What the window fixes is the *band* estimator, which is dilution-sensitive
+#: and is the one that failed.  Chamber B is the exception and stays
+#: uncertified: its focus k jumps 1.35 -> 2.30 across windows, which is B
+#: having no stable optimum rather than the window doing something.
+CHARGE_WINDOW = (25.0, 75.0)
+
+#: The pointing band is fitted over this lever-arm range only.  Beyond ~130 mm
+#: from the perpendicular foot the drift-window truncation flattens it; inside
+#: 30 mm the lever is too short to carry angle information.  Same window
+#: ``run145_target_imaging`` uses.
+LEVER_WINDOW_MM = (30.0, 130.0)
+D_PERP_MM = 234.6
+
 
 def coincident_tracks(run: str, sub: str, arm: str, merged_dir: str):
     """(x_local, y_local, tan_x, tan_y) for the pointing-coincident tracks.
@@ -121,19 +153,55 @@ def coincident_tracks(run: str, sub: str, arm: str, merged_dir: str):
            & (df['n_tracks'].to_numpy() > 0))
     coin, _ = TI.pointing_coincidence(os.path.join(d, slim[0]), arm, df, sel,
                                       foot_x=TI.PINWHEEL[arm])
-    m = coin & sel
-    g = df[m]
     # Both planes carry the same in-plane sign (build_tracks.IN_PLANE_SIGN_Y,
     # measured 2026-09-07).  The focus objective is the miss distance in the XZ
     # projection and is blind to the y sign for these chambers -- which is
     # exactly how the y error survived -- but the frame must still be right.
     from sept26_prelim_analysis.build_tracks import IN_PLANE_SIGN_Y
-    return (TI.local_x(g['x_p0'].to_numpy()),
-            IN_PLANE_SIGN_Y * (g['y_p0'].to_numpy() - TI.STRIP_MAP_HALF),
-            g['x_tan_theta'].to_numpy(), g['y_tan_theta'].to_numpy())
+    q = df['x_q_sum'].to_numpy()
+    m = coin & sel & np.isfinite(q) & (q > 0)
+    g = df[m]
+    qs = q[m]
+    lo, hi = np.percentile(qs, CHARGE_WINDOW)
+    keep = (qs >= lo) & (qs <= hi)
+    return dict(
+        xl=TI.local_x(g['x_p0'].to_numpy())[keep],
+        yl=(IN_PLANE_SIGN_Y * (g['y_p0'].to_numpy() - TI.STRIP_MAP_HALF))[keep],
+        tx=g['x_tan_theta'].to_numpy()[keep],
+        ty=g['y_tan_theta'].to_numpy()[keep],
+        q=qs[keep], foot_x=TI.PINWHEEL[arm],
+        n_coincident=int(m.sum()), q_lo=float(lo), q_hi=float(hi))
 
 
-def focus_scan(xl, yl, tx, ty, tr, gap_mm: float = 30.0) -> dict:
+def band_k(S: dict) -> float:
+    """Angle scale from the slope of the pointing band.
+
+    A point source at ``D_PERP_MM`` forces tan = (u - foot)/d_perp, so the
+    expected slope is 1/d_perp and k is the ratio to the fitted one.  Sensitive
+    to dilution: any population whose tan does not track position flattens the
+    band and inflates k without bound, which is why it is never quoted alone.
+    """
+    from ntof_tracking import run145_target_imaging as TI
+    lev = S['xl'] - S['foot_x']
+    m = ((np.abs(lev) > LEVER_WINDOW_MM[0]) & (np.abs(lev) < LEVER_WINDOW_MM[1])
+         & (np.abs(S['tx']) > 1e-3))
+    if m.sum() < 200:
+        return float('nan')
+    slope, _ = TI._robust_line(lev[m], S['tx'][m])
+    return (1.0 / D_PERP_MM) / slope if abs(slope) > 1e-12 else float('nan')
+
+
+def track_k(S: dict) -> float:
+    """Median of the per-track ratio tan_expected / tan_reco."""
+    lev = S['xl'] - S['foot_x']
+    m = ((np.abs(lev) > LEVER_WINDOW_MM[0]) & (np.abs(lev) < LEVER_WINDOW_MM[1])
+         & (np.abs(S['tx']) > 1e-3))
+    if m.sum() < 200:
+        return float('nan')
+    return float(np.median((lev[m] / D_PERP_MM) / S['tx'][m]))
+
+
+def focus_scan(S: dict, tr, gap_mm: float = 30.0) -> dict:
     """k that maximises the count of tracks pointing within each fixed radius.
 
     Returns the per-radius optima and the grid, so a flat scan is visible as a
@@ -141,6 +209,7 @@ def focus_scan(xl, yl, tx, ty, tr, gap_mm: float = 30.0) -> dict:
     """
     from ntof_tracking import run145_target_imaging as TI
 
+    xl, yl, tx, ty = S['xl'], S['yl'], S['tx'], S['ty']
     counts = {r: [] for r in FOCUS_RADII_MM}
     med = []
     for k in K_GRID:
@@ -167,20 +236,17 @@ def focus_scan(xl, yl, tx, ty, tr, gap_mm: float = 30.0) -> dict:
                 median_miss=med)
 
 
-def estimators(rec: dict) -> dict:
-    """The three coincident-sample k values from one arm's imaging record."""
-    # NOT k_phys.  run145_target_imaging sets `k_phys = k_track_coincident`
-    # verbatim (it is the value it trusts for the QUOTED image, not a separate
-    # measurement), so reading it here would count the per-track estimator
-    # twice and make any arm look self-consistent.  The genuine focus estimator
-    # is k_opt: the k that minimises r_core over the scan.  Its own caveat,
-    # from the imaging source, is that the naive scan can rail -- which is
-    # precisely the kind of failure the three-way spread is here to catch.
-    return {
-        'band': rec.get('pointing_x_coincident', {}).get('implied_k'),
-        'track': rec.get('k_track_coincident', {}).get('median'),
-        'focus': rec.get('_focus_k'),        # filled by build(), see focus_scan
-    }
+def estimators(S: dict, scan: dict) -> dict:
+    """All three k values, computed HERE on one consistently-defined sample.
+
+    Nothing is read from ``imaging_summary.json`` any more.  Two reasons: the
+    imaging's ``k_phys`` is ``k_track_coincident`` verbatim, so reading it as a
+    third opinion double-counts one estimator; and its ``k_opt`` minimises a
+    median conditioned on a cut that k itself moves.  Computing all three on
+    the same rows also means the spread between them measures the estimators
+    and not three different samples.
+    """
+    return {'band': band_k(S), 'track': track_k(S), 'focus': scan['k']}
 
 
 def combine(per_sub: dict) -> dict:
@@ -271,27 +337,27 @@ def build(run: str, subruns, merged_dir: str) -> dict:
     cfg = _json.loads((Path(str(paths.root('runs'))) / run
                        / 'run_config.json').read_text())
     trs = G.detector_transforms(cfg)
-    scans = {}
+    scans, samples = {}, {}
     for sub in subruns:
         for a in ARMS:
             if a not in imgs[sub]:
                 continue
             try:
-                xl, yl, tx, ty = coincident_tracks(run, sub, a, merged_dir)
+                S = coincident_tracks(run, sub, a, merged_dir)
             except FileNotFoundError as exc:
-                print(f'  [focus] {a}/{sub}: skipped -- {exc}')
+                print(f'  [k] {a}/{sub}: skipped -- {exc}')
                 continue
-            if len(xl) < 200:
-                print(f'  [focus] {a}/{sub}: only {len(xl)} coincident tracks, '
-                      f'not scanned')
+            if len(S['xl']) < 200:
+                print(f'  [k] {a}/{sub}: only {len(S["xl"])} tracks in the '
+                      f'charge window, not measured')
                 continue
-            s = focus_scan(xl, yl, tx, ty, trs[f'mx17_{a}'])
-            scans[(a, sub)] = s
-            imgs[sub][a]['_focus_k'] = s['k']
+            sc = focus_scan(S, trs[f'mx17_{a}'])
+            scans[(a, sub)] = sc
+            samples[(a, sub)] = estimators(S, sc)
 
     arms = {}
     for a in ARMS:
-        per_sub = {s: estimators(imgs[s][a]) for s in subruns if a in imgs[s]}
+        per_sub = {s: samples[(a, s)] for s in subruns if (a, s) in samples}
         if not per_sub:
             arms[a] = dict(k=None, verdict='NO DATA',
                            reason='arm absent from every imaging summary')
