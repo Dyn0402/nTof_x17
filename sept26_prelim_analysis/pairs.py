@@ -179,6 +179,31 @@ def excess(M: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+def control_spread(M: pd.DataFrame) -> pd.DataFrame:
+    """How much the answer moves if you pick a different control chamber.
+
+    The pooled control assumes the two perpendicular chambers are equivalent
+    backgrounds for the track chamber.  They need not be -- occupancy and
+    efficiency differ -- so the honest systematic is the spread of the answer
+    over the choice.  A signal survives it; a fluctuation does not.
+    """
+    rows = []
+    for (track_arm, cut), g in M.groupby(['track_arm', 'dca_cut']):
+        sig = g[g.is_opposite]
+        if sig.empty:
+            continue
+        n_s, t_s = int(sig.n.iloc[0]), int(sig.n_trig.iloc[0])
+        for _, c in g[~g.is_opposite & ~g.is_self].iterrows():
+            r_c = c.n / c.n_trig
+            exp = r_c * t_s
+            err = np.sqrt(exp + exp ** 2 / max(c.n, 1))
+            rows.append(dict(track_arm=track_arm, dca_cut=cut,
+                             control=c.trig_arm, n_obs=n_s, n_exp=exp,
+                             excess=n_s - exp,
+                             sigma=(n_s - exp) / err if err else np.nan))
+    return pd.DataFrame(rows)
+
+
 def limits(E: pd.DataFrame) -> pd.DataFrame:
     """Turn each null into a 95 % CL upper limit on the second-track rate.
 
@@ -270,6 +295,16 @@ def main() -> int:
     print('\nControlled excess (opposite-arm trigger vs perpendicular pooled)')
     print(E[['dca_cut', 'track_arm', 'trig_arm', 'n_obs', 'n_exp', 'excess',
              'sigma']].round(2).to_string(index=False))
+    S = control_spread(M)
+    S.to_csv(od / f'pair_control_spread_{a.run}.csv', index=False)
+    print('\nSystematic: the same excess against each control chamber alone')
+    piv = S.pivot_table(index=['track_arm', 'dca_cut'], columns='control',
+                        values='sigma')
+    print('   ' + piv.round(2).to_string().replace('\n', '\n   '))
+    rng = (piv.max(axis=1) - piv.min(axis=1))
+    print(f'   control choice moves the significance by up to '
+          f'{rng.max():.1f} sigma')
+
     L, C = limits(E)
     L.to_csv(od / f'pair_limits_{a.run}.csv', index=False)
     C.to_csv(od / f'pair_combined_{a.run}.csv', index=False)

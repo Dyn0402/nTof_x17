@@ -606,11 +606,20 @@ measured twice, and a real signal cannot average away &mdash; gives the result:<
 <i>symmetric</i> &mdash; A-in-C-triggered and C-in-A-triggered must move
 together. They do not: one direction is positive at every cut and its mirror is
 negative at every cut. That is an acceptance asymmetry between A and C, not a
-pair. Two further arguments against a signal reading: the apparent excess
-<i>grows</i> as the target cut is loosened, which is backwards for something
-that points at the target; and A&rsquo;s ambient rate in non-A triggers is
-~1.2&thinsp;% against C&rsquo;s ~0.78&thinsp;%, the same A&ndash;C quality gap
-every other measure on this page shows.</div>
+pair. Three further arguments against a signal reading:
+<ul>
+<li><b>Nothing survives the choice of control.</b> Run the same comparison
+against each perpendicular chamber <i>alone</i> instead of pooled and the
+significance moves by up to <b>3.4&thinsp;&sigma;</b> &mdash; chamber D&rsquo;s
+apparent excess is +3.4&thinsp;&sigma; against control A and
++0.7&thinsp;&sigma; against control C. Every number in the table above sits
+inside that systematic.</li>
+<li>The apparent excess <i>grows</i> as the target cut is loosened, which is
+backwards for something that points at the target.</li>
+<li>A&rsquo;s ambient rate in non-A triggers is ~1.2&thinsp;% against
+C&rsquo;s ~0.78&thinsp;%, the same A&ndash;C quality gap every other measure on
+this page shows.</li>
+</ul></div>
 
 <h2><span class="n">5</span>What this does not show</h2>
 <ul>
