@@ -179,6 +179,51 @@ def excess(M: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+def limits(E: pd.DataFrame) -> pd.DataFrame:
+    """Turn each null into a 95 % CL upper limit on the second-track rate.
+
+    A null is only useful with a sensitivity attached: "no excess" and "no
+    excess above 5 %" are very different statements.  The limit is quoted as a
+    fraction of the opposite-arm triggers, which is the quantity a pair
+    hypothesis predicts -- how often a trigger in one chamber is accompanied by
+    a target-pointing track in the chamber facing it, beyond the ambient rate.
+
+    One-sided Gaussian at 1.645 sigma on the excess, floored at zero: a
+    negative central value gives a limit set by the error alone, which is the
+    honest reading when the point estimate is below the control.
+    """
+    rows = []
+    for _, r in E.iterrows():
+        err = abs(r['excess'] / r['sigma']) if r['sigma'] else np.nan
+        ul = max(float(r['excess']), 0.0) + 1.645 * err
+        rows.append(dict(
+            dca_cut=r['dca_cut'], track_arm=r['track_arm'],
+            trig_arm=r['trig_arm'], excess=r['excess'], err=err,
+            ul_events=ul, ul_frac=ul / r['n_trig_sig'],
+            n_trig=r['n_trig_sig']))
+    L = pd.DataFrame(rows)
+    # The two directions of one chamber pair are the same physics measured
+    # twice, so combine them inverse-variance -- and a real signal cannot
+    # average away, which is the point.
+    comb = []
+    for cut, g in L.groupby('dca_cut'):
+        for pair in {frozenset((a, OPPOSITE[a])) for a in g.track_arm}:
+            gg = g[g.track_arm.isin(pair) & g.trig_arm.isin(pair)]
+            if len(gg) < 2:
+                continue
+            w = 1.0 / gg.err.to_numpy() ** 2
+            x = gg.excess.to_numpy()
+            mu = float((w * x).sum() / w.sum())
+            se = float(np.sqrt(1.0 / w.sum()))
+            nt = float(gg.n_trig.mean())
+            comb.append(dict(dca_cut=cut, pair='-'.join(sorted(pair)),
+                             excess=mu, err=se, sigma=mu / se,
+                             ul_events=max(mu, 0.0) + 1.645 * se,
+                             ul_frac=(max(mu, 0.0) + 1.645 * se) / nt,
+                             n_trig=nt))
+    return L, pd.DataFrame(comb)
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split('\n')[1])
     ap.add_argument('--run', default='run_145')
@@ -225,6 +270,19 @@ def main() -> int:
     print('\nControlled excess (opposite-arm trigger vs perpendicular pooled)')
     print(E[['dca_cut', 'track_arm', 'trig_arm', 'n_obs', 'n_exp', 'excess',
              'sigma']].round(2).to_string(index=False))
+    L, C = limits(E)
+    L.to_csv(od / f'pair_limits_{a.run}.csv', index=False)
+    C.to_csv(od / f'pair_combined_{a.run}.csv', index=False)
+    print('\n95 % CL upper limit on the second-track rate, per direction')
+    print(L[['dca_cut', 'track_arm', 'trig_arm', 'excess', 'err',
+             'ul_events']].round(1).assign(
+        ul_pct=(100 * L.ul_frac).round(3)).to_string(index=False))
+    if len(C):
+        print('\nBoth directions of a pair combined (a real signal cannot '
+              'average away)')
+        print(C.assign(ul_pct=(100 * C.ul_frac).round(3))[
+            ['dca_cut', 'pair', 'excess', 'err', 'sigma', 'ul_events',
+             'ul_pct']].round(2).to_string(index=False))
     print(f'\nwrote {od}')
     return 0
 

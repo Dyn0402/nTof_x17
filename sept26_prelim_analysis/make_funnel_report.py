@@ -198,6 +198,23 @@ VERDICT_STYLE = {'CALIBRATED': ('#0072B2', 'certified'),
                  'NO DATA': ('#8f8aa0', 'no data')}
 
 
+def comb_block(C) -> str:
+    """The two directions combined -- the headline the null is worth."""
+    if C is None or not len(C):
+        return ''
+    cards = []
+    for _, r in C.sort_values('dca_cut').iterrows():
+        cards.append(
+            f'<div class="card"><div class="v">{r["excess"]:+.0f}'
+            f'<span style="font-size:15px;font-weight:400;color:var(--ink-2)">'
+            f' &plusmn; {r["err"]:.0f}</span></div>'
+            f'<div class="l">{r["pair"]} combined, target cut '
+            f'{r["dca_cut"]:.0f} mm &mdash; {r["sigma"]:+.2f}&thinsp;&sigma;<br>'
+            f'95&thinsp;% CL &lt; {100 * r["ul_frac"]:.2f}&thinsp;% of triggers'
+            f'</div></div>')
+    return (f'<div class="cards">{"".join(cards)}</div>')
+
+
 def pair_table(P) -> str:
     """The controlled excess, one row per direction and target cut."""
     if P is None or not len(P):
@@ -388,7 +405,7 @@ svg text{font-family:var(--mono);font-variant-numeric:tabular-nums}
 
 
 def build_html(F: pd.DataFrame, meta: dict, img: dict, cal: dict,
-               pairs=None) -> str:
+               pairs=None, comb=None) -> str:
     n_trig = int(meta['n_triggers'])
     tot_tracks = int(F.n_tracks.sum())
     tot_point = int(F.pointing.sum())
@@ -552,6 +569,8 @@ A, against given it triggered on B or D. C is equally &ldquo;not the trigger
 arm&rdquo; in all three, so acceptance and the ambient rate divide out. B and D
 serve as controls even without usable angles, because the trigger arm comes
 from the n_TOF slim rather than from the reconstruction.</p>
+<p>Combining the two directions of the A&ndash;C pair &mdash; the same physics
+measured twice, and a real signal cannot average away &mdash; gives the result:</p>
 {pair_table(pairs)}
 {figure('opening_angle',
         'The geometry, checked end to end. Two tracks from the target into '
@@ -563,6 +582,7 @@ from the n_TOF slim rather than from the reconstruction.</p>
         'the angle scale together &mdash; it is <i>not</i> a claim of a pair '
         'signal, which the table above shows is null.',
         'opening angle distributions for opposing and perpendicular chamber pairs')}
+{comb_block(comb)}
 <div class="caution"><b>Null.</b> A back-to-back signal has to be
 <i>symmetric</i> &mdash; A-in-C-triggered and C-in-A-triggered must move
 together. They do not: one direction is positive at every cut and its mirror is
@@ -645,6 +665,8 @@ def main() -> int:
     head, rest = body.split(marker, 1)
     pp = paths.out('pairs') / f'pair_excess_{a.run}.csv'
     pairs = pd.read_csv(pp) if os.path.exists(pp) else None
+    cp = paths.out('pairs') / f'pair_combined_{a.run}.csv'
+    comb = pd.read_csv(cp) if os.path.exists(cp) else None
     if pairs is None:
         print(f'[warn] no pair table at {pp}; section 4 will be thin')
 
