@@ -632,9 +632,14 @@ energy-blind.</li>
 tracks in one chamber is counted once. Matching an individual track to an
 individual scintillator hit needs the pointing column, which is why it is
 reported separately.</li>
-<li><b>The two-chamber (X17-topology) rate is deliberately absent.</b> Separating
-a genuine pair from two unrelated clusters needs the pointing resolution, and
-that is angle-limited &mdash; see section 3.</li>
+<li><b>Chamber B, and with it half the X17 topology.</b> B has no usable angle
+scale, so the B&ndash;D channel has only one measurable direction and cannot be
+symmetrised the way A&ndash;C is. A limit from one direction alone is worth
+much less, as section 4 shows.</li>
+<li><b>An X17 exclusion.</b> Section 4 limits the <i>second-track rate</i>, not
+a branching ratio. Turning one into the other needs the pair acceptance, the
+tracking efficiency as a function of opening angle, and the production
+kinematics &mdash; none of which are measured here.</li>
 <li><b>One run, two sub-runs.</b> {html.escape(', '.join(meta['subruns']))} only.
 These are not campaign numbers, and the 23 July noise-floor step means they may
 not be poolable with earlier runs at all.</li>
