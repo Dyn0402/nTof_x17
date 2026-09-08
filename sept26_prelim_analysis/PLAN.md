@@ -511,3 +511,308 @@ unblocks it**.
   by §2.1. Either bring them in with their own calibration, or record the loss.
 - **D15 — Pile-up within a bunch.** ~112 triggers per bunch; the `BUSY` class is
   vetoed wholesale this week and its contents never examined.
+
+---
+
+## 10 · The alignment and spectrum phase — S1 to S4
+
+**Added 2026-09-08**, from Dylan, after the run_145 chain closed end to end.
+Stages 0–3 run; the local development run is complete. What is left before a
+full-statistics campaign pass is worth launching is *understanding the local
+run* — and specifically, understanding the **geometry**, because every number
+in §5 is divided by an acceptance and the acceptance is geometry.
+
+Four workstreams. They are ordered by dependency, not by size: **S4 needs S2**,
+and S2's y handle needs one measurement out of S1.
+
+| | workstream | ships |
+|---|---|---|
+| **S1** | the n_TOF scintillators — what is integrated, and what is only a filter | `x17/scintillators/` |
+| **S2** | imaging the ³He capsule; what the chamber-to-chamber spread says about alignment | `x17/source-imaging/` |
+| **S3** | drift velocity along the gas chain, and the contamination it implies | folded into `x17/reco-funnel/` |
+| **S4** | the opening-angle spectrum against an acceptance-folded expectation | `x17/opening-angle/` |
+
+Every one of them is a **generated** page (`make_*_report.py`), figures with
+CSV beside them, relative links, `Preliminary` badge — the same contract as
+`reco-funnel` and `detector-response`.
+
+---
+
+### S1 — The scintillators are a *filter*, and that is all they are
+
+**The answer to "has the n_TOF scintillator information been fully integrated?"
+is: it is fully integrated as a tag, and not at all as a measurement.**
+
+Three roles today, all of them boolean:
+
+1. **Stage 1** — `candidate_filter.py` reads `det`/`detn`/`dt_ns` from the slim
+   and asks *which arms have a wall+plastic coincidence in the accept window*.
+   That is what separates `INTER` from `IMPLIED` from `NONE`.
+2. **Efficiency** — `efficiency.py` uses "wall AND plastic fired in arm X" as
+   the MM-independent denominator, accidental-corrected against the untagged
+   control.
+3. **Funnel** — `funnel.py` asks the sharper question: does the track
+   extrapolate to the wall *segment* and the plastic *bar* that actually fired.
+   That is the pointing confirmation, and it is the strongest column in the
+   report.
+
+**Nothing reads an amplitude or a time except as "in the window".** No
+position, no energy, no `scint.parquet`. PLAN §Stage 4 is unstarted.
+
+The slim carries more than we use — verified 2026-09-08 on
+`ntof_hits_run_145_stat090_0000_224670.root`: `amp`, `amp_0`, `area_0`,
+`fwhm`, `risetime`, `chi2`, `satuflag`, `pileup1`, `pulseshape`, `shadow_amp`,
+`shadow_dt`, and `tof` as a `double`. **So stage 4 needs no reprocessing and no
+EOS** — only the analysis.
+
+**Deliverables**
+
+- the audit page: the three roles, drawn; the branch inventory; and an explicit
+  list of what a scintillator-derived number would unlock (S2's y handle,
+  D6 energy, D7 gain-vs-position) and what it would cost.
+- **one new measurement, because S2 needs it**: the wall is read out
+  **top and bottom** (`detn` odd/even within a group of 4 bars), so
+  `Δt = t_top − t_bot` and `log(A_top/A_bot)` both measure **position along the
+  bar — the beam axis, y** — the one coordinate the capsule's 80 mm length
+  denies the pointing method. Calibrate both against Micromegas tracks that
+  predict the crossing point on the fired bar; quote λ, the Δt scale and a
+  resolution. If it works it is a *second, independent* handle on the capsule's
+  y position, and it is the only one that does not go through the chambers.
+- the caveat that already stands: **LIQ C is effectively dead in run_145**
+  (891 in-time hits against A's 7 227), so LIQ stays out of the partition.
+- and the one that is deferred and must be repeated on the page: **a
+  scintillator tag is not proof a charged particle crossed the gas.** Chamber A
+  measures 63 % where 80–90 % is expected, and a neutron or gamma converting in
+  the PCB would push it exactly that way.
+
+---
+
+### S2 — Where the ³He capsule is, and what the disagreement means
+
+The pointing band's **zero crossing is scale-free**: it is the strip coordinate
+at which a track from the source is normal to the plane, so it does not depend
+on `k`, on `v_drift`, or on the bundle. That is what makes it the right
+alignment observable — it survives every calibration doubt in §2.3.
+
+Each chamber measures **one** transverse coordinate, the one along its own
+`u_hat`:
+
+| chamber | u_hat | measures | run_145 |
+|---|---|---|---|
+| A | +x | global **X** | −7.67 ± 0.41, −7.68 ± 0.40, −8.58 ± 0.36 mm |
+| C | −x | global **X** | −11.54 ± 0.72, −10.62 ± 0.58, −11.34 ± 0.59 mm |
+| B | +z | global **Z** | *no field cage — nothing* |
+| D | −z | global **Z** | −48.1 ± 13.1, −35.9 ± 7.0, −35.6 ± 10.5 mm |
+
+**X is the measurable one, and it is measured twice.** A and C look at the same
+number from opposite sides, so
+
+- their **mean** is the capsule's X, and
+- their **difference** is a *relative in-plane offset* between A and C — a
+  chamber's strip-coordinate origin shifted by δ moves only that chamber's
+  estimate. A − C = **+3.8 mm**, reproducing across all three sub-runs.
+
+That is the measurement to make final (preliminary): **X = −9.6 mm, with a
+±1.9 mm chamber-to-chamber alignment systematic**, against a capsule bore of
+r = 10 mm. It is already consistent with the r = 10 mm bore — the point of the
+work is to quote it *with its systematic* and to say which part of it is target
+and which is survey. That split is D8 and stays open.
+
+**Z is measured once, and the answer is not believable as it stands.** D says
+the source is 36–48 mm off axis in z — four to five capsule radii, and a gross
+installation error if true, while A and C see only ~1 cm in X. The obvious
+suspect is in the chamber, not the target: **D has ~130 dead channels of 512,
+and they are one-sided** (x_local +0…+57 mm and +150…+178 mm). A band fit whose
+acceptance is asymmetric about the crossing pulls the crossing. So:
+
+1. re-measure D's zero crossing **with the dead runs masked**, and with a
+   lever window forced symmetric about the crossing;
+2. re-measure it **on the outer-ring-excluded sample** that already moved D's
+   `k` by 2 %;
+3. if it stays at −40 mm, say so, and record that Z is uncertain at the 4 cm
+   level with **no second chamber to check it** — which is itself a result, and
+   the strongest single argument for what chamber B costs us.
+
+**Y — the coordinate with no lever.** The capsule is a point in XZ (r = 10 mm)
+but 80 mm long in y, so no zero crossing exists. Three routes, in increasing
+order of how much they assume:
+
+- **(a) the pointing distribution.** `target_y_mm` at closest approach to the
+  beam axis is a per-track estimate of the emission height. Its *distribution*
+  is the capsule's y profile convolved with the y resolution. The gas profile
+  is known exactly (`geometry.HE3_GAS_Y/R`, a STEP-derived polycone from
+  y = −29.5 to +50.7 mm), so this is a forward comparison, not a fit: predict
+  the `target_y` distribution from the polycone, compare to what each chamber
+  sees, and let the **offset between chambers** be the alignment number the
+  way A−C is in X. Run_145 medians on all gated tracks are **A +16.2, C +14.3,
+  D −33.5 mm** — A and C agree to 2 mm and D is 50 mm away, the same shape of
+  disagreement as in Z, and quite possibly the same cause.
+- **(b) the expected hit map in v.** The occupancy along the chamber's vertical
+  coordinate is the capsule's y profile projected through the plastic-bar
+  acceptance (`plastic_acceptance.py` already ray-traces the capsule, and the
+  measured occupancy already sits inside its contours). Shifting the capsule in
+  y shifts that pattern; the comparison is a one-parameter fit per chamber.
+- **(c) the wall's top/bottom ratio** — S1's new measurement, and the only one
+  that does not use a Micromegas angle at all.
+
+Agreement among (a), (b) and (c) is the result. Disagreement localises the
+problem to the chamber it comes from, which is the point.
+
+**Double-track vertexing.** If two tracks in one event come from a common
+vertex in the capsule, their distance of closest approach *to each other*
+locates that vertex in all three coordinates at once — no beam-axis assumption,
+and the y lever comes back. Run_145 has, with `dca_axis < 30 mm` and both
+tracks gated: **160 intra-chamber and 444 inter-chamber** candidate events.
+That is enough to *test the method* and not enough to *make the measurement*, so
+this week's job is:
+
+- build the two-line vertex (DCA point, DCA distance, per-track pull);
+- show, on the intra-chamber sample, that the vertex distribution collapses
+  onto the capsule and not onto the chamber — and quantify how much of it is
+  accidental by running the identical estimator on **mixed events** from
+  different bunches;
+- from the observed vertex resolution, state **how many events a y measurement
+  needs**, so the campaign pass has a target rather than a hope.
+
+**Deliverables:** `x17/source-imaging/` — the geometry drawn, the three
+coordinates each with its estimate and its systematic, the chamber-to-chamber
+disagreement table, the double-track vertex demonstration and its statistics
+projection.
+
+---
+
+### S3 — The gas chain, made obvious
+
+The four chambers are **daisy-chained on one gas line, A → B → C → D →
+exhaust** (`mx_july_beam_qa/DRIFT_WINDOW_HANDOFF.md` §0, confirmed twice). In
+run_145 **all four drift cathodes are at the same 700 V** (HV monitor:
+v0 700.0, vmon 699.8–700.0), so E = 233 V/cm everywhere and **the velocity
+differences are gas, not field.** The measured in-situ velocities fall
+monotonically along the chain:
+
+| position on the line | A | (B) | C | D |
+|---|---:|---:|---:|---:|
+| v_insitu [µm/ns] | 33.6 | — | 26.4 | 24.2 |
+| deficit vs Magboltz 42.6 | −21 % | | −38 % | −43 % |
+
+**That is the signature of pickup along a series line**, and it is the same
+mechanism the June fleet and the July run_58 work already established: each
+chamber outgasses water into the gas that feeds the next one.
+
+**Changes to the figure** (`make_figures.fig_k_summary`):
+
+- **drop B's marker** — B has no drift field, so its `k` is not a velocity —
+  but **keep its slot on the x axis**, labelled, so the series reads
+  A → B → C → D and the gap is visibly *a chamber we cannot measure* rather
+  than a chamber that is not there;
+- draw the chain explicitly: an arrow along the axis, gas in at A, exhaust
+  after D;
+- put a **second y axis in implied H₂O %**, from the Magboltz curves we already
+  have.
+
+**The contamination estimate**, from `garfield_sim/results/drift_9010_contam_cern.json`
+(Ar/iso 90/10, CERN 720.8 Torr, evaluated at 233 V/cm):
+
+| mixture | v [µm/ns] | η [cm⁻¹] |
+|---|---:|---:|
+| pure 90/10 | 42.6 | 0 |
+| +0.3 % H₂O | 35.6 | 0 |
+| +0.5 % H₂O | 30.1 | 0 |
+| +1.0 % H₂O | 19.3 | 0 |
+| +5 % N₂ | 35.2 | 0 |
+| +1 % O₂ | 41.6 | **3.70** |
+| +3 % air | 38.2 | **2.61** |
+
+Interpolating: **A ≈ 0.35 %, C ≈ 0.6 %, D ≈ 0.7 % H₂O**, rising monotonically
+down the line. Two exclusions come free and must be stated with the number:
+
+- **O₂ and air cannot do this.** They barely move v (1 % O₂ still gives 41.6)
+  and they attach at η = 2–4 cm⁻¹, which would strip the cathode-side charge to
+  a per-cent of the anode side. `garfield_sim/attachment_run58.py` measured the
+  opposite on real data — flat-to-rising amplitude across the full 30 mm.
+- **N₂ can explain A and cannot explain C or D**: 5 % N₂ only reaches 35.2, and
+  N₂ has no natural source that does not also bring O₂.
+
+**Caveats that go on the figure, not in a footnote:** the in-situ v is
+`v_prior / k` and `k` is the angle scale, whose focus objective is flat over
+±20 % — so the *ordering* is much better established than the absolute level;
+and v is derived assuming a 30 mm effective gap, so a smaller effective gap
+shrinks every deficit and every implied water fraction together.
+
+---
+
+### S4 — The opening angle, against something
+
+The current figure is a **geometry check**: 939 inter-chamber pairs from
+run_145 (A–D 419, C–D 291, A–C 229, no B), opposing chambers at 144° and
+perpendicular at 83–97°, which is what the geometry demands. It is not yet a
+measurement, because there is nothing to compare it to.
+
+**What is missing is the expected shape**, and it factorises:
+
+```
+   expected(θ | topology)  =  physics(θ)  ⊗  acceptance(θ | topology)
+```
+
+**The acceptance** is ours to build, and S2 is what makes it credible. A
+straight-line toy through the as-built model:
+
+- vertices sampled from the **He-3 polycone** (`geometry.HE3_GAS_Y/R`), shifted
+  by the S2-measured capsule offset — that is the coupling between the two
+  workstreams;
+- pairs thrown with a flat opening-angle distribution and isotropic
+  orientation, so the toy measures acceptance and not physics;
+- propagated through the **as-built volumes**, the **plastic-bar trigger
+  acceptance** (`plastic_acceptance.py` — already validated against the
+  measured occupancy, both lobes and the gap), the **dead-channel masks**
+  (D's ~130, C's 10), and the **measured per-chamber efficiency map**
+  (`efficiency.py`, binned in u);
+- **B enters as a tagging chamber only**, never with an angle, so a B pair is
+  `IMPLIED` and is reported separately.
+
+**The physics** is the part we do not own, and it needs care. There is a full
+Geant4 pair simulation at `~/CLionProjects/MX17_Full_Geant`:
+`analysis/al_pair/signal_reco.npz` holds **300 000 events** with
+`type` (0 = X17, 1 = IPC), `theta_truth`, `theta_reco` (MSC-smeared),
+`n_mm`, `same_arm` — X17 median 117°, IPC median 30°, and 2-MM acceptance
+already applied. That is the right starting point and it is **not** the whole
+answer, because its IPC generator samples
+
+```
+dN/dM_ee  ∝  1/M_ee      (log-uniform, 2m_e → E_transition), isotropic in the γ* frame
+```
+
+which is an ansatz, not the IPC matrix element. The real internal-pair rate
+depends on the multipolarity of the 20.58 MeV ⁴He transition and carries its
+own angular correlation. So:
+
+1. take the Geant IPC truth as the **baseline** shape;
+2. implement the standard IPC angular correlation for the relevant
+   multipolarity as an **alternative** shape;
+3. quote the difference as the **dominant modelling systematic**, as a band on
+   the expectation and never as a single curve.
+
+**The categories**, split identically in data and in the expectation, because a
+shape comparison is only as good as the topology it is made in:
+
+| category | arms | why |
+|---|---|---|
+| **intra-chamber** | both tracks in one chamber | θ ≲ 90°: pure IPC continuum, no X17 possible. **The normalisation and the strongest background test.** |
+| **perpendicular** | A–B, A–D, C–B, C–D | θ ~ 60–120°, the acceptance turns over here |
+| **opposing** | A–C, B–D | θ ≳ 110° — **the signal region** |
+| **implied** | one track + a second arm's scintillator coincidence | B recovery; separate, with its own false-positive rate |
+
+**The test that carries the least model dependence** is the *ratio* between
+categories: a steeply-falling IPC continuum and a 110–140° X17 peak differ
+most between intra-chamber and opposing, and a great deal of the acceptance
+uncertainty divides out. Quote the raw spectrum, the acceptance-corrected
+spectrum, and the category ratios, in that order.
+
+**Statistics.** run_145 gives 229 A–C pairs. The campaign is ~50× run_145, so
+the campaign pass is what turns this from a shape check into a measurement —
+and S4's job this week is to prove the machinery and **state the yield the
+campaign needs**, exactly as S2 does for the vertex.
+
+**Deliverables:** `x17/opening-angle/` — the four categories in data, the
+acceptance per category, the folded expectation with its IPC band, the raw and
+corrected spectra side by side, and the statistics projection.

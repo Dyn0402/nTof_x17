@@ -13,7 +13,29 @@ the ~1 900 the plan budgeted**; 28 condor jobs turned `stat090_0000` into the
 first **track database — 4 216 segments, 2 263 gated**. Next: the in-situ angle
 scale, which every angle in that table is currently missing.
 
-Last updated **2026-09-07**.
+Last updated **2026-09-08**.
+
+> ## The next phase is planned: PLAN.md §10, workstreams S1-S4
+>
+> Set 2026-09-08 by Dylan, after the run_145 chain closed. The local run is
+> complete; what is left before a campaign pass is worth launching is
+> understanding its **geometry**, because every number in the spectrum is
+> divided by an acceptance and the acceptance is geometry.
+>
+> | | | ships |
+> |---|---|---|
+> | **S1** | the scintillators: integrated as a *filter*, not as a measurement | `x17/scintillators/` |
+> | **S2** | imaging the He-3 capsule; chamber-to-chamber spread = alignment | `x17/source-imaging/` |
+> | **S3** | drift velocity along the gas chain, and the H2O it implies | into `x17/reco-funnel/` |
+> | **S4** | the opening angle against an acceptance-folded expectation | `x17/opening-angle/` |
+>
+> Order is dependency, not size: **S4 needs S2**, and S2's y handle needs one
+> measurement out of S1. Full scope, and the caveats each carries, in
+> [`PLAN.md`](PLAN.md) §10.
+>
+> **lxplus is reachable again** -- single probe 2026-09-08, `SSH_OK` on
+> lxplus942, ticket renewable to 13 Sep. The connection-storm warning below
+> stands as a lesson; the block it describes is lifted.
 
 ---
 
