@@ -41,6 +41,23 @@ Last updated **2026-09-08** (S1-S4 complete).
 > 3. **N₂ cannot explain any chamber's drift velocity.** 5 % N₂ reaches only
 >    35.2 µm/ns, above all three.
 >
+> ### The autonomous shift of 2026-09-08 — threads (a), (b), (c)
+>
+> | | result |
+> |---|---|
+> | **(a) D's angle scale** | **survives.** `k_robustness.py` re-measures k under four sample cuts against a threshold declared first (the baseline estimator half-spread). D moves 3.65 % against a 5.1 % tolerance. **The hot cells are the whole story** — they remove 22.4 % of D's coincident sample and are the only cut that moves k, and they move it toward a *better* calibration (spread 0.103 → 0.056). The outer ring is already gone: 42 % of D's fitted clusters sit there but only 6.7 % of its coincident ones. Dead channels remove 0.2 %, because a dead channel produces no track. |
+> | **(b) the normal-incidence hole** | **does not exist.** `TAN_MIN_SLOPE` sets a flag and gates nothing in this chain — verified in `wft/reco.py`/`wft/compat.py` (no caller passes `require_slope=True`, and every caller is a June bench package) and in the data (23-30 % of gated tracks carry the flag False and are all still there). The real cost is **resolution**: if a reliable slope were ever required on both planes of both legs it would take **~50 % of pairs**, near-flat across topologies. `normal_incidence.py`. |
+> | **(c) chamber B** | characterised in **both** in-plane coordinates with no angle anywhere. Position information real (lift 1.45×) but **not better than D** — that claim is withdrawn above. What separates B is **charge density: 0.45× A's**, the widest and most dilute clusters of the four, which is what a fringing field predicts. `chamber_b.py`. |
+>
+> **One new systematic on S4, from (b).** The acceptance toy predicts the
+> per-leg head-on fraction from geometry alone and lands within ~25 % for A and
+> C — but the data has *fewer* head-on tracks than geometry allows, in both.
+> The natural reading is that **reconstruction efficiency depends on incidence**
+> (a head-on track deposits on few strips in a short time) while
+> `acceptance.py` applies efficiency independent of angle. That biases the whole
+> opening-angle acceptance and is not yet corrected. D goes the other way
+> (1.33× after its hot cells are masked) and the residual is unexplained.
+
 > ### The three things S1-S4 leave open, in priority order
 >
 > 1. **The accidental normalisation for pairs.** The mixed sample carries no
@@ -190,8 +207,32 @@ linked from the X17 hub, with the board's log carrying each result.
 > | **B** | **49.7 %** | 27.4 % | **1.82** |
 > | D | 48.6 % | 29.3 % | 1.66 |
 >
-> B's position information is real and **better than D's**, which is a chamber
-> being used for tracking. B's efficiency is measured on **hits, not tracks**.
+> B's position information is real. B's efficiency is measured on **hits, not
+> tracks**.
+>
+> **CORRECTED 2026-09-08 (later), by `chamber_b.py`.** The table above was an
+> ad-hoc comparison and its *ordering* does not survive a proper one. Using the
+> geometric lever prediction (a particle at u_c reaches the wall at
+> `foot + 1.409·(u_c − foot)`) on single-group events, the lifts are
+> **A 2.70, C 2.25, D 1.71, B 1.45** — so **B is real but NOT better than D**.
+> The ordering is robust: dropping the single-group requirement gives
+> 1.42 / 1.71, and scanning the lever from 1.0 to 1.6 leaves B at 1.41–1.45 and
+> D at 1.57–1.71 throughout. The first half of the claim stands; the second is
+> withdrawn.
+>
+> **What does separate B is its cluster shape**, and it is what the missing ring
+> chain predicts — a fringing field spreads the same charge over more strips, so
+> the signature is a *wide, dilute* cluster and not a weak one:
+>
+> | arm | width_x [strips] | vs A | charge/strip | vs A |
+> |---|---:|---:|---:|---:|
+> | A | 25 | 1.00 | 94.7 | 1.00 |
+> | C | 34 | 1.36 | 62.1 | 0.66 |
+> | D | 42 | 1.68 | 74.0 | 0.78 |
+> | **B** | **43** | **1.72** | **42.3** | **0.45** |
+>
+> D is nearly as wide, so width alone does not isolate the fault; the charge
+> **density** does, and B sits well clear of the other three.
 
 > ### Chamber D has ~130 dead channels; A is clean; the "acceptance hole" was mine
 >
