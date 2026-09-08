@@ -235,6 +235,70 @@ Last updated **2026-09-08** (S1-S4 complete).
 > sample; the head-on excess closes; cluster width falls toward A's 25; A/C
 > must not move; gated-track COUNT goes up, not down).
 
+> ### The re-run happened — and the wildcard, as first tuned, makes D WORSE — 2026-09-08
+>
+> `calib_bundle_hotmasked` ran on lxplus/condor (cluster 4141149, 7 jobs, all
+> D/run_145/stat090_0000, no allowlist — same full reconstruction as the
+> frozen baseline, +hot wildcards). All 7 completed clean, no holds. Merged
+> with `merge_beam_tags.py` into a dedicated directory, never touching the
+> frozen products. Direct comparison against the frozen table, same
+> event_ids:
+>
+> | | frozen (no wildcards) | hot-masked |
+> |---|---:|---:|
+> | rows (events attempted) | 46 218 | 33 393 |
+> | both-plane fit converges | 72.6 % | 33.4 % |
+> | quality_ok (both planes) | 67.4 % | 29.4 % |
+> | median x_chi2/dof | 10.7 | 41.9 |
+> | median x_n_strips | 42 | 32 |
+>
+> Of the 33 393 events common to both tables: **0 gained a good fit, 16 152
+> lost one that the frozen run had.** This fails §3.3's own criterion
+> outright (gated tracks must go UP, not down) — the wildcard as built makes
+> the reconstruction substantially worse, not better.
+>
+> **Two candidate causes, not yet disentangled — both are tuning choices
+> flagged as unvalidated when they were written, now confirmed to matter**:
+>
+> 1. **HOT_NOISE_INFLATION = 10.0 is too weak.** Splitting the hot-masked
+>    table by whether a window touches a flagged strip: windows that do
+>    (84.6 % of attempted events — far more than the 8-12 % raw flagged-
+>    strip rate per window, because D's hot channels are common enough that
+>    most windows touch at least one) show median chi2/dof 45.6; windows
+>    with none show 6.6, close to baseline. A hot channel's actual amplitude
+>    excursion looks large enough that 10x noise inflation still lets it pull
+>    real chi2 weight — it needs to be inflated much harder, or the
+>    down-weighting approach needs rethinking.
+> 2. **The seeding admission rule may be too strict.** `seed_candidates`
+>    rejects a cluster when its CLEAN strip count is below `min_strips`
+>    (5 for beam) — but "never seed on a flagged channel" (HANDOFF_D_NOISY_
+>    CHANNELS.md item 1) most plausibly means a cluster made ENTIRELY of
+>    flagged strips, not one that merely falls a strip or two short of
+>    `min_strips` once its flagged strips are discounted. In a chamber with
+>    D's hot-channel density, a real 5-6 strip cluster grazing 1-2 hot
+>    strips now loses its seed ENTIRELY (46 218 -> 33 393 attempted events,
+>    -28 %) rather than being kept and down-weighted — arguably the opposite
+>    of "a track should never be lost because it crossed a bad channel."
+>
+> Neither of these is a code bug — both are exactly the "first cut,
+> not tuned" choices flagged when they were written (`wft/model.py`
+> `HOT_NOISE_INFLATION`, `wft/seed.py`'s clean-count admission threshold).
+> They need retuning (and probably re-deriving from data rather than
+> guessed constants) before this wildcard is a net improvement. **Not done
+> without checking in first**: iterating the inflation factor and/or the
+> seeding threshold burns another condor cycle (~15 min) each time, and the
+> right fix changes what the mechanism actually does, which is worth a
+> second opinion before spending more of it blindly.
+>
+> **Handed off**: [`HANDOFF_HOT_WILDCARD_TUNING.md`](HANDOFF_HOT_WILDCARD_TUNING.md).
+> Dylan's instruction for the next pass: tune locally, event by event --
+> `combined_hits_root` AND `decoded_root` for run_145/D are both already
+> staged locally, so building a handful of real fit windows and scanning
+> `HOT_NOISE_INFLATION` / the seeding admission rule against them needs no
+> condor at all. Only re-run the condor cluster once a local check looks
+> right. `compare_hotmasked_rerun.py` (new) is the frozen-vs-rerun comparison
+> tool, reusable on any `events_prelim.parquet`.
+
 > ### The three things S1-S4 leave open, in priority order
 >
 > 1. ~~The accidental normalisation for pairs.~~ **MEASURED 2026-09-08** — not
