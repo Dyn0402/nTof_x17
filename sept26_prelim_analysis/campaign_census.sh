@@ -30,6 +30,9 @@ WORK=/media/dylan/data/x17/sept26_prelim/stage1/.claims
 LOG=/media/dylan/data/x17/sept26_prelim/stage1/campaign.log
 SSH="ssh -o BatchMode=yes -o ConnectTimeout=25"
 WORKERS=${WORKERS:-8}
+#: consecutive staging failures a worker tolerates before it gives up.
+#: Small on purpose -- see the back-off comment in worker().
+MAX_FAILS=${MAX_FAILS:-5}
 LIST=/media/dylan/data/x17/sept26_prelim/stage1/campaign_worklist.txt
 
 # ---------------------------------------------------------------- the worklist
@@ -67,6 +70,7 @@ mkdir -p "$WORK" "$OUT"
 
 worker () {
   local id=$1
+  local fails=0
   while read -r RUN SUB; do
     [ -s "$OUT/census_${RUN}_${SUB}.csv" ] && continue          # already done
     mkdir "$WORK/${RUN}_${SUB}" 2>/dev/null || continue         # atomic claim
@@ -80,8 +84,24 @@ worker () {
     if ! rsync -a -e "$SSH" "lxplus:$EOS/$RUN/$SUB/combined_hits_root/" "$D/" \
          >>"$LOG" 2>&1; then
       echo "[$(date -Is)] w$id $RUN/$SUB STAGE FAILED" >>"$LOG"
-      rmdir "$WORK/${RUN}_${SUB}" 2>/dev/null; continue
+      rmdir "$WORK/${RUN}_${SUB}" 2>/dev/null
+      # BACK OFF, DO NOT STORM. A systemic failure -- ssh refused, EOS down,
+      # ticket expired -- fails EVERY sub-run, and without this the worker
+      # simply walks the worklist retrying, which on 2026-09-08 turned one
+      # refused connection into 1,318 attempts against lxplus in about a
+      # minute. That is abusive to shared infrastructure regardless of intent.
+      fails=$((fails + 1))
+      if [ "$fails" -ge "$MAX_FAILS" ]; then
+        echo "[$(date -Is)] w$id ABORTING: $fails consecutive staging failures." \
+             "This is a systemic problem (check: ssh lxplus true), not this" \
+             "sub-run. Fix it, then re-run -- finished sub-runs are skipped." \
+             | tee -a "$LOG"
+        return 1
+      fi
+      sleep $((fails * 10))
+      continue
     fi
+    fails=0
     # the slim too, for the IMPLIED class -- small, and incremental as well
     rsync -a -e "$SSH" "lxplus:$EOS/$RUN/$SUB/ntof_hits/" \
           "$RUNS/$RUN/$SUB/ntof_hits/" >>"$LOG" 2>&1 || true
