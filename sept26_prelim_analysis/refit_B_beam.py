@@ -52,14 +52,29 @@ REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if REPO not in sys.path:
     sys.path.insert(0, REPO)
 
+from sept26_prelim_analysis import paths  # noqa: E402
+
 CANDIDATE = 'calib_bundle_{arm}beam_candidate'
 
 
 def fit(arm: str, run: str, subrun: str, jobs: int, events: int, train: int,
-        share_mode: str, seed: str | None) -> str:
+        share_mode: str, seed: str | None, use_beam_cache: bool = False) -> str:
     from ntof_tracking.wft_beam import beam_config, BEAM_DETS
     from wft import calibrate as C
 
+    if use_beam_cache:
+        from sept26_prelim_analysis import beam_cache as BC
+        cfg = beam_config(arm, run, subrun)
+        work = cfg.out_dir('wft', 'calib_work')
+        cache = os.path.join(work, 'calib_cache.pkl')
+        if not os.path.exists(cache):
+            BC.build(run, subrun, arm,
+                     str(paths.out('fullpass') / run), events, out_path=cache)
+        else:
+            print(f'reusing training cache {cache}')
+        print(f'  hypers this cache can pin: '
+              f'{", ".join(BC.hypers_to_fit())}  '
+              f'(kY stays transferred -- no y truth)')
     try:
         import qa_config  # noqa: F401
     except ModuleNotFoundError:
@@ -133,13 +148,19 @@ def main() -> int:
     ap.add_argument('--seed-bundle', default=None)
     ap.add_argument('--evaluate', action='store_true',
                     help='do not fit; report the existing candidate')
+    ap.add_argument('--use-beam-cache', action='store_true',
+                    help='build a target-pinned training cache with '
+                         'beam_cache.py and place it where calibrate() looks, '
+                         'instead of the ref-pinned bench one. This is what '
+                         'makes the fit possible at all -- see the docstring '
+                         'for what it still cannot constrain.')
     a = ap.parse_args()
 
     if a.evaluate:
         r = evaluate(a.arm, a.run, [a.subrun])
         return 0 if r else 1
     out = fit(a.arm, a.run, a.subrun, a.jobs, a.events, a.train,
-              a.share_mode, a.seed_bundle)
+              a.share_mode, a.seed_bundle, use_beam_cache=a.use_beam_cache)
     print(f'\nfitted -> {out}')
     print('NOT installed. Evaluate it:')
     print(f'  python -m sept26_prelim_analysis.refit_B_beam --arm {a.arm} --evaluate')
