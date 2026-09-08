@@ -174,6 +174,45 @@ linked from the X17 hub, with the board's log carrying each result.
 > coincidence already strips the junk (D goes from 44.1 % of fitted clusters in
 > the ring to 6.8 % of the k sample).
 
+> ### The two-lobe structure is the TRIGGER, not the detectors
+>
+> **2026-09-08, Dylan's explanation, confirmed from the Geant geometry.** The
+> production trigger needs a coincidence with the two plastic bars behind each
+> wall. There is a gap between them, so a charged particle threading it makes no
+> plastic signal and no trigger — the chamber is not inefficient there, the
+> trigger is blind.
+>
+> Nothing was tuned to make this work. The Geant config
+> (`~/CLionProjects/MX17_Full_Geant/include/SimConfig.hh`) and the reconstruction
+> constants are independent sources and they agree where they overlap:
+>
+> * `bscTape_hu + bsc_gap/2 = 100.22 + 1.5 = 101.72 mm` = `PLASTIC_U_OFFSET`
+> * `mm_pinwheel_shift_cm = {1.55, 1.575, 1.635, 1.73}` = `PINWHEEL` for D, B, A, C
+>
+> **The predicted shadow centre** is `x = foot_x · L/(234.6 + L)`: **+7.3, +7.0,
+> +7.7, +6.9 mm** for A, B, C, D — essentially identical across arms, as the
+> symmetry demands. Measured minimum in arm A's purest tier: **+5 mm**, one bin
+> away.
+>
+> `plastic_acceptance.py` ray-traces the He-3 capsule (r = 10 mm, 60 mm long
+> with hemispherical caps) through the bars and produces the acceptance per
+> chamber surface. The measured occupancy sits **inside the predicted contours**
+> for all four chambers — both lobes, the gap between them, and the ±85 mm
+> extent in v that the 300 mm bar imposes at the 1.8× lever.
+>
+> **Depth needs ~5 mm of inactive scintillator at each bar edge**: the bare
+> 3.4 mm geometric gap gives only a 3 % dip, against 86 % measured (A's target
+> tier falls to 0.14 of its median). At a 5 mm dead edge the model gives 0.08.
+> The measured dip is *wider* than the model's — ~30 mm against 5-15 mm — which
+> is expected and not a failure of the model: the `dca < 30 mm` selection alone
+> smears the plastic crossing by 30 × L/D ≈ 24 mm.
+>
+> **This does not retract the dead channels**, it sits on top of them. Chamber A
+> has no dead runs, so its dip is purely the trigger. C and D have dead runs at
+> x ≈ +15…+57 mm, which is *the same place*, so their dip is both effects at
+> once — and that is why theirs shows in the raw occupancy while A's needs the
+> scintillator cut to appear.
+
 **Next, in order:**
 
 1. **Chamber B.** The only chamber still without angles. Four suspects have now
