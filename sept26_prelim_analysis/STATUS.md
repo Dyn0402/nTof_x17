@@ -351,17 +351,19 @@ single-arm triggers:
 | 50 mm | +2.83 σ | −1.79 σ | +2.25 σ |
 
 **Combining the two directions** — the same physics measured twice, and a real
-signal cannot average away while an acceptance asymmetry can:
+signal cannot average away while an acceptance asymmetry can. Over all three
+sub-runs, **183 361 single-arm triggers**:
 
 | target cut | A–C combined excess | significance | 95 % CL limit |
 |---|---:|---:|---|
-| 20 mm | +1.5 ± 11.2 | +0.14 σ | < 0.07 % of triggers |
-| 30 mm | +12.9 ± 13.7 | +0.95 σ | < 0.12 % |
-| 50 mm | +5.7 ± 18.2 | +0.31 σ | < 0.12 % |
+| 20 mm | −17.9 ± 14.2 | −1.26 σ | < 0.05 % of triggers |
+| 30 mm | −11.8 ± 17.4 | −0.68 σ | < 0.06 % |
+| 50 mm | −43.5 ± 23.0 | −1.89 σ | < 0.08 % |
 
-So the result is not just "null" but **null below ~0.1 % of triggers**, and the
-combination averaging the per-direction +2.0 σ and −1.5 σ to 0.1 σ is the check
-that the asymmetry was acceptance — argued before it was computed.
+**The apparent excess did not scale with statistics** — the cleanest argument
+that it was never signal. A-track/C-trigger at dca < 50 mm reads 2.83 σ on two
+sub-runs and **0.88 σ on three**; a real signal grows as √N. The control-choice
+systematic grew with the sample instead, to **4.3 σ**.
 
 **Null.** Three arguments, not one:
 
