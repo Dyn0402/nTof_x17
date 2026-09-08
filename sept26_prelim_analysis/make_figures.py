@@ -10,8 +10,10 @@ Four, each answering one question:
                point estimators marked on it, and the plateau shaded.  This is
                the figure that says why A and C are provisional and B is not
                calibrated at all -- B's curve simply has no minimum.
-  k_summary    The measured drift velocity per chamber against the prior every
-               bundle carries, with the plateau as the error bar.
+  k_summary    The measured drift velocity along the GAS LINE -- the chambers
+               are daisy-chained A -> B -> C -> D, all four at the same 700 V,
+               so the ladder is contamination and not field.  B keeps its slot
+               and loses its marker.  Second axis: the implied H2O.
   det_status   Where each chamber stands: the funnel as a rate, and the n_TOF
                confirmation against its own no-track control.  The lift is the
                number that says the tracking is doing work.
@@ -38,6 +40,7 @@ if REPO not in sys.path:
 
 from sept26_prelim_analysis import paths  # noqa: E402
 from sept26_prelim_analysis import figstyle as fs  # noqa: E402
+from sept26_prelim_analysis import gas_chain  # noqa: E402
 
 ARMS = ('A', 'B', 'C', 'D')
 VERDICT_COLOR = {'CALIBRATED': '#0072B2', 'PROVISIONAL': '#d18a44',
@@ -144,52 +147,122 @@ def _fig_k_scan(plt, cal: dict, out):
     fs.save(fig, out / 'k_scan', data=pd.DataFrame(rows))
 
 
-def fig_k_summary(cal: dict, out):
-    """Measured drift velocity per chamber, against the prior."""
+def fig_k_summary(cal: dict, out, gas: dict = None):
+    """The drift velocity along the gas chain, and the water it implies."""
     plt = _plt()
     with _scaled(plt, 0.8):
-        return _fig_k_summary(plt, cal, out)
+        return _fig_k_summary(plt, cal, out, gas)
 
 
-def _fig_k_summary(plt, cal: dict, out):
-    fig, ax = plt.subplots(figsize=(fs.QUARTER[0], 4.4),
+def _fig_k_summary(plt, cal: dict, out, gas: dict = None):
+    """One chamber per slot in GAS-LINE order, not alphabetical order.
+
+    The four chambers are daisy-chained on a single line, A -> B -> C -> D ->
+    exhaust, so "which chamber" and "how far down the line" are the same axis.
+    Chamber B keeps its slot and loses its marker: it has no field-shaping ring
+    chain, so it has no drift field and therefore no velocity -- but it is
+    still physically between A and C in the gas, and the figure has to show
+    that the gas passed through something we cannot measure.
+    """
+    from sept26_prelim_analysis import gas_chain as gc
+
+    fig, ax = plt.subplots(figsize=(fs.WIDE[0] * 0.62, 4.9),
                            constrained_layout=True)
     v_prior = cal['v_bundle']
-    rows = []
-    xs = np.arange(len(ARMS))
-    for i, a in enumerate(ARMS):
-        v = cal['arms'][a]
+    chain = gas['chain'] if gas else None
+    rows, xs = [], np.arange(len(gc.CHAIN))
+
+    for i, a in enumerate(gc.CHAIN):
+        v = cal['arms'].get(a, {})
         k = v.get('k')
-        if not k:
+        cert = v.get('verdict') in ('CALIBRATED', 'PROVISIONAL')
+        if not (k and cert):
+            # B: the hole in the chain.  Drawn as a hole.
+            ax.axvspan(i - 0.32, i + 0.32, color=fs.BAND_DEAD, alpha=0.07,
+                       zorder=0, lw=0)
+            ax.annotate('no drift field\n(no ring chain)\n— not a velocity',
+                        (i, v_prior * 0.60), ha='center', va='center',
+                        fontsize=fs.BASE_PT * 0.55, color=fs.BAND_DEAD,
+                        linespacing=1.35)
+            rows.append(dict(position=i + 1, arm=a, v_insitu_um_ns=float('nan'),
+                             v_lo=float('nan'), v_hi=float('nan'), k=k,
+                             verdict=v.get('verdict')))
             continue
         pl = v.get('focus_plateau') or [k, k]
-        # v = v_prior / k, so the plateau in k inverts into the error bar in v
-        lo, hi = v_prior / pl[1], v_prior / pl[0]
-        val = v_prior / k
-        cert = v.get('verdict') in ('CALIBRATED', 'PROVISIONAL')
+        lo, hi, val = v_prior / pl[1], v_prior / pl[0], v_prior / k
         ax.errorbar([i], [val], yerr=[[val - lo], [hi - val]],
-                    fmt=fs.DET_MARKER[a], ms=11, color=fs.DET_COLOR[a],
-                    mfc=fs.DET_COLOR[a] if cert else 'none', mew=2,
-                    capsize=6, lw=2, zorder=4)
-        ax.annotate(f'{val:.0f}', (i, val), textcoords='offset points',
-                    xytext=(15, -4), fontsize=fs.BASE_PT * 0.8,
+                    fmt=fs.DET_MARKER[a], ms=12, color=fs.DET_COLOR[a],
+                    mfc=fs.DET_COLOR[a], mew=2, capsize=6, lw=2, zorder=5)
+        ax.annotate(f'{val:.1f}', (i, val), textcoords='offset points',
+                    xytext=(16, 3), fontsize=fs.BASE_PT * 0.78,
                     color=fs.DET_COLOR[a], fontweight='bold')
-        rows.append(dict(arm=a, v_insitu_um_ns=val, v_lo=lo, v_hi=hi,
-                         k=k, verdict=v.get('verdict')))
+        h2o = (chain.loc[chain.arm == a, 'h2o_pct'].iloc[0]
+               if chain is not None else float('nan'))
+        if np.isfinite(h2o):
+            ax.annotate(f'{h2o:.2f} % H\u2082O', (i, lo),
+                        textcoords='offset points', xytext=(0, -19),
+                        ha='center', fontsize=fs.BASE_PT * 0.58,
+                        color=fs.MUTED)
+        rows.append(dict(position=i + 1, arm=a, v_insitu_um_ns=val,
+                         v_lo=lo, v_hi=hi, k=k, verdict=v.get('verdict'),
+                         h2o_pct=h2o))
+
+    # the measured points, joined in gas order -- the ladder is the message
+    seen = [(i, r['v_insitu_um_ns']) for i, r in enumerate(rows)
+            if np.isfinite(r['v_insitu_um_ns'])]
+    if len(seen) > 1:
+        ax.plot([i for i, _ in seen], [v for _, v in seen], '-',
+                color=fs.MUTED, lw=1.6, ls=(0, (5, 3)), zorder=3)
+
     ax.axhline(v_prior, color=fs.COPPER, lw=2, ls='--', zorder=2)
-    ax.annotate(f'bundle prior {v_prior:.1f}', (len(ARMS) - 0.5, v_prior),
-                textcoords='offset points', xytext=(-4, 8), ha='right',
-                color=fs.COPPER, fontsize=fs.BASE_PT * 0.75)
+    ax.annotate(f'Magboltz, clean Ar/iso 90/10:  {v_prior:.1f}',
+                (len(gc.CHAIN) - 0.5, v_prior), textcoords='offset points',
+                xytext=(-4, 8), ha='right', color=fs.COPPER,
+                fontsize=fs.BASE_PT * 0.62)
+
+    # --- the gas line itself, drawn under the axis ------------------------- #
+    ymin = 12.0
+    ax.set_ylim(ymin, v_prior * 1.14)
+    yline = 13.2
+    ax.annotate('', xy=(len(gc.CHAIN) - 0.62, yline), xytext=(-0.42, yline),
+                arrowprops=dict(arrowstyle='-|>', color=fs.MUTED, lw=2.2,
+                                shrinkA=0, shrinkB=0), zorder=1)
+    ax.annotate('gas in', (-0.44, yline), textcoords='offset points',
+                xytext=(0, 9), ha='left', fontsize=fs.BASE_PT * 0.55,
+                color=fs.MUTED)
+    ax.annotate('exhaust', (len(gc.CHAIN) - 0.62, yline),
+                textcoords='offset points', xytext=(0, 9), ha='right',
+                fontsize=fs.BASE_PT * 0.55, color=fs.MUTED)
+
     ax.set_xticks(xs)
-    ax.set_xticklabels([f'{a}' for a in ARMS])
-    ax.set_xlim(-0.5, len(ARMS) - 0.5)
-    ax.set_xlabel('chamber')
-    ax.set_ylabel('drift velocity  [µm/ns]')
-    ax.set_title('Every chamber drifts slower than the prior')
-    ax.text(0.99, 0.04, 'open marker = not certified\nbar = focus plateau',
-            transform=ax.transAxes, ha='right', va='bottom',
-            fontsize=fs.BASE_PT * 0.62, color=fs.MUTED)
-    fs.preliminary(ax)
+    ax.set_xticklabels([f'{a}' for a in gc.CHAIN])
+    ax.set_xlim(-0.5, len(gc.CHAIN) - 0.5)
+    ax.set_xlabel('chamber, in gas-line order  (one line, A \u2192 B \u2192 C \u2192 D)')
+    ax.set_ylabel('drift velocity  [\u00b5m/ns]')
+
+    # --- right axis: the same velocity read as implied water --------------- #
+    if gas is not None:
+        lad = gas['ladder']
+        h = lad[lad.species == 'H2O'].sort_values('frac_pct')
+        fr, vv = h.frac_pct.to_numpy(), h.v_um_ns.to_numpy()
+        ticks = [f for f in (0.0, 0.25, 0.5, 0.75, 1.0)
+                 if vv.min() <= np.interp(f, fr, vv) <= v_prior * 1.14]
+        ax2 = ax.twinx()
+        ax2.set_ylim(*ax.get_ylim())
+        ax2.set_yticks([float(np.interp(f, fr, vv)) for f in ticks])
+        ax2.set_yticklabels([f'{f:.2f}' for f in ticks])
+        ax2.set_ylabel('implied H\u2082O  [%]', color=fs.MUTED)
+        ax2.tick_params(colors=fs.MUTED)
+        for sp in ax2.spines.values():
+            sp.set_visible(False)
+
+    E = gas['E_Vcm'] if gas else float('nan')
+    ax.set_title('Slower down the gas line, at the same field in every chamber')
+    ax.annotate(f'all four cathodes at 700 V \u2192 E = {E:.0f} V/cm, '
+                f'so the ladder is gas and not field',
+                (-0.42, 16.4), ha='left', va='bottom',
+                fontsize=fs.BASE_PT * 0.58, color=fs.MUTED)
+    fs.preliminary(ax, loc='upper right')
     fs.save(fig, out / 'k_summary', data=pd.DataFrame(rows))
 
 
@@ -391,7 +464,10 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split('\n')[1])
     ap.add_argument('--run', default='run_145')
     ap.add_argument('--out', default=None)
+    ap.add_argument('--subruns',
+                    default='stat090_0000,stat090_0001,stat090_0002')
     a = ap.parse_args()
+    subruns = [x for x in a.subruns.split(',') if x]
 
     od = paths.out('funnel', 'figures') if a.out is None else a.out
     fdir = paths.out('funnel')
@@ -403,7 +479,8 @@ def main() -> int:
     from pathlib import Path
     od = Path(od)
     fig_k_scan(cal, od)
-    fig_k_summary(cal, od)
+    gas = gas_chain.build(a.run, subruns, cal)
+    fig_k_summary(cal, od, gas)
     fig_det_status(F, od)
     fig_det_evidence(F, od)
     fig_opening(od)

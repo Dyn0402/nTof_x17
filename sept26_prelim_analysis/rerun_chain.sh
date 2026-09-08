@@ -4,6 +4,7 @@
 #
 #   merge_fullpass  the flat CERN pass -> the nested per-sub-run layout
 #   k_arm           the in-situ angle scale, per chamber (needs the pass)
+#   gas_chain       v along the A->B->C->D line, and the H2O it implies
 #   funnel          trigger -> track -> n_TOF confirmation (needs stage-1 census)
 #   pairs           the controlled two-chamber rate (needs k_arm)
 #   make_figures    the five figures (needs funnel + k_arm)
@@ -27,6 +28,7 @@ step () {  # step <name> <command...>
 
 step "merge_fullpass" $PY -W ignore -m sept26_prelim_analysis.merge_fullpass --run "$RUN"
 step "k_arm"        $PY -W ignore -m sept26_prelim_analysis.k_arm --run "$RUN" --subruns "$SUBRUNS"
+step "gas_chain"   $PY -W ignore -m sept26_prelim_analysis.gas_chain --run "$RUN" --subruns "$SUBRUNS"
 step "funnel"       $PY -W ignore -m sept26_prelim_analysis.funnel --run "$RUN" --subruns "$SUBRUNS"
 step "pairs"        $PY -W ignore -m sept26_prelim_analysis.pairs --run "$RUN" --subruns "$SUBRUNS"
 step "figures"      $PY -W ignore -m sept26_prelim_analysis.make_figures --run "$RUN"

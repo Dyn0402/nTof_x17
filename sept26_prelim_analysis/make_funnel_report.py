@@ -24,6 +24,7 @@ import json
 import os
 import sys
 
+import numpy as np
 import pandas as pd
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -259,6 +260,73 @@ def pair_table(P) -> str:
             f'<tbody>{"".join(rows)}</tbody></table>')
 
 
+def gas_table(gas) -> str:
+    """The chain: position on the line, velocity, deficit, implied water."""
+    if gas is None:
+        return '<p class="note">no gas-chain product staged.</p>'
+    rows = []
+    for _, r in gas['chain'].iterrows():
+        a = r['arm']
+        if not np.isfinite(r['v_um_ns']):
+            rows.append(
+                f'<tr><td class="n">{int(r["position"])}</td>'
+                f'<th class="s" style="color:{DET_COLOR[a]}">chamber {a}</th>'
+                f'<td class="n">{r["v0_V"]:.0f}</td>'
+                f'<td class="n" colspan="4"><span style="color:var(--warn)">'
+                f'no drift field &mdash; no velocity to measure</span></td></tr>')
+            continue
+        h = (f'{r["h2o_pct"]:.2f} '
+             f'<span class="u">({r["h2o_pct_lo"]:.2f}&ndash;{r["h2o_pct_hi"]:.2f})</span>')
+        rows.append(
+            f'<tr><td class="n">{int(r["position"])}</td>'
+            f'<th class="s" style="color:{DET_COLOR[a]}">chamber {a}</th>'
+            f'<td class="n">{r["v0_V"]:.0f}</td>'
+            f'<td class="n">{r["E_Vcm"]:.0f}</td>'
+            f'<td class="n">{r["v_um_ns"]:.1f}</td>'
+            f'<td class="n">{r["deficit_pct"]:+.0f} %</td>'
+            f'<td class="n">{h}</td></tr>')
+    return ('<table class="t"><thead><tr>'
+            '<th>on the line</th><th></th>'
+            '<th>drift V<br><span class="u">set point</span></th>'
+            '<th>E<br><span class="u">V/cm</span></th>'
+            '<th>v in situ<br><span class="u">&micro;m/ns</span></th>'
+            '<th>vs Magboltz</th>'
+            '<th>implied H<sub>2</sub>O<br><span class="u">%, focus plateau</span></th>'
+            '</tr></thead><tbody>' + ''.join(rows) + '</tbody></table>')
+
+
+def magboltz_table(gas) -> str:
+    """What each candidate contaminant would have to be, and what it costs."""
+    if gas is None:
+        return ''
+    lad = gas['ladder']
+    pick = [('H2O', 0.3), ('H2O', 0.5), ('H2O', 1.0),
+            ('N2', 5.0), ('O2', 1.0), ('air', 3.0)]
+    base = lad[(lad.species == 'H2O') & (lad.frac_pct == 0)].iloc[0]
+    pretty = {'H2O': 'H<sub>2</sub>O', 'N2': 'N<sub>2</sub>',
+              'O2': 'O<sub>2</sub>', 'air': 'air'}
+    rows = [f'<tr><th class="s">pure Ar/iso 90/10</th>'
+            f'<td class="n">{base.v_um_ns:.1f}</td>'
+            f'<td class="n">0</td>'
+            f'<td>&mdash;</td></tr>']
+    for sp, fr in pick:
+        g = lad[(lad.species == sp) & (lad.frac_pct == fr)]
+        if g.empty:
+            continue
+        g = g.iloc[0]
+        att = ('<span style="color:var(--warn)">strips the cathode side</span>'
+               if g.eta_per_cm > 0.5 else 'none')
+        rows.append(f'<tr><th class="s">+{fr:g} % {pretty[sp]}</th>'
+                    f'<td class="n">{g.v_um_ns:.1f}</td>'
+                    f'<td class="n">{g.eta_per_cm:.2f}</td>'
+                    f'<td>{att}</td></tr>')
+    return ('<table class="t"><thead><tr><th></th>'
+            '<th>v<br><span class="u">&micro;m/ns at 233 V/cm</span></th>'
+            '<th>&eta;<br><span class="u">/cm</span></th>'
+            '<th>attachment over the 30 mm gap</th>'
+            '</tr></thead><tbody>' + ''.join(rows) + '</tbody></table>')
+
+
 def k_table(cal: dict, img: dict) -> str:
     """The angle scale per chamber: three estimators, the spread, the verdict."""
     if not cal:
@@ -421,7 +489,7 @@ svg text{font-family:var(--mono);font-variant-numeric:tabular-nums}
 
 
 def build_html(F: pd.DataFrame, meta: dict, img: dict, cal: dict,
-               pairs=None, comb=None) -> str:
+               pairs=None, comb=None, gas=None) -> str:
     n_trig = int(meta['n_triggers'])
     tot_tracks = int(F.n_tracks.sum())
     tot_point = int(F.pointing.sum())
@@ -441,6 +509,35 @@ def build_html(F: pd.DataFrame, meta: dict, img: dict, cal: dict,
 
     a_s, a_e = src('A')
     c_s, c_e = src('C')
+
+    # --- section 3b: the gas chain ---------------------------------------- #
+    # Every string below is built from the product, never typed, so re-running
+    # gas_chain.py after a new k moves the prose and the table together.
+    run = meta['run'].replace('run_', '')
+    cal_arms = sorted(cal.get('apply') or {})
+    uncal = [a for a in ('A', 'B', 'C', 'D') if a not in cal_arms]
+    def _join(xs, word='and'):
+        xs = [f'chamber {x}' if len(xs) == 1 else x for x in xs]
+        return (xs[0] if len(xs) == 1 else
+                f'{", ".join(xs[:-1])} {word} {xs[-1]}')
+    cal_list = _join(cal_arms) if cal_arms else 'no chamber'
+    uncal_list = _join(uncal) if uncal else 'no chamber'
+    uncal_verb = 'ies' if len(uncal) == 1 else 'y'
+
+    gas_tbl = gas_table(gas)
+    mag_tbl = magboltz_table(gas)
+    gas_field = gas['E_Vcm'] if gas else float('nan')
+    if gas is not None:
+        c = gas['chain']
+        m = c[np.isfinite(c.v_um_ns)]
+        gas_ladder_words = ' &rarr; '.join(
+            f'{r.arm} {r.v_um_ns:.1f}' for r in m.itertuples()) + \
+            ' &micro;m/ns, falling monotonically from the head of the line to ' \
+            'the exhaust.'
+        gas_h2o_words = ', '.join(
+            f'{r.arm} {r.h2o_pct:.2f} %' for r in m.itertuples()) + ' H<sub>2</sub>O'
+    else:
+        gas_ladder_words = gas_h2o_words = '&mdash;'
 
     return f"""<title>Run 145 Reconstruction Funnel</title>
 {FONT_LINK}
@@ -545,11 +642,14 @@ nothing &mdash; and all three run on the pointing-coincident sample.</p>
         'point estimators.',
         'focus objective vs angle scale k, per chamber')}
 {figure('k_summary',
-        'The same result as a drift velocity. Every chamber drifts slower than '
-        'the 42.6&thinsp;&micro;m/ns prior the bundles carry; the bar is the '
-        'focus plateau, and B&rsquo;s spans essentially the whole scan. Open '
-        'markers are chambers whose angles are <i>not</i> published.',
-        'measured drift velocity per chamber against the bundle prior')}
+        'The same result as a drift velocity, with the chambers in <b>gas-line '
+        'order</b>. Every chamber drifts slower than the 42.6&thinsp;&micro;m/ns '
+        'prior the bundles carry, and each one slower than the one upstream of '
+        'it. The bar is the focus plateau. Chamber B keeps its slot and loses '
+        'its marker: it has no drift field, so it has no velocity &mdash; but '
+        'the gas still passes through it.',
+        'measured drift velocity per chamber along the gas line, '
+        'with the implied water fraction')}
 <p class="note"><b>Reading the table.</b> The <b>focus plateau</b> is the range of
 <i>k</i> over which the focus objective stays within 5% of its peak &mdash; the
 range the data genuinely cannot separate. It is why A and C are marked
@@ -566,11 +666,49 @@ intercept and the slope together, so it is <b>invariant under the angle
 scale</b> &mdash; it cannot be produced, or improved, by tuning drift velocities.
 A and C measure the same global axis and land at {a_s:+.1f} &plusmn; {a_e:.1f} mm
 and {c_s:+.1f} &plusmn; {c_e:.1f} mm against a surveyed 0.</p>
-<div class="caution"><b>Only A and C have their angles filled in.</b> In the track
-table B and D carry <code>NaN</code> for every angle-derived column &mdash;
-direction, target pointing, scintillator prediction, path length &mdash; rather
-than a silent <i>k</i>&thinsp;=&thinsp;1. Their positions are untouched and
-remain valid, because positions never depended on the drift velocity.</div>
+<div class="caution"><b>Only {cal_list} have their angles filled in.</b> In the
+track table {uncal_list} carr{uncal_verb} <code>NaN</code> for every
+angle-derived column &mdash; direction, target pointing, scintillator
+prediction, path length &mdash; rather than a silent
+<i>k</i>&thinsp;=&thinsp;1. Positions are untouched and remain valid, because
+positions never depended on the drift velocity.</div>
+
+<h2><span class="n">3b</span>The velocities fall along the gas line, and that is
+the shape of a leak that is not a leak</h2>
+<p>The four chambers are not four independent detectors as far as the gas is
+concerned. They are <b>daisy-chained on a single line, A&nbsp;&rarr;&nbsp;B&nbsp;&rarr;&nbsp;C&nbsp;&rarr;&nbsp;D&nbsp;&rarr;&nbsp;exhaust</b>,
+so a contaminant the detectors themselves emit accumulates downstream. That is a
+prediction with a <i>direction</i>, and the measured velocities have it:
+{gas_ladder_words}</p>
+<p><b>It cannot be the field.</b> Read from run&nbsp;{run}&rsquo;s own
+<code>hv_monitor.csv</code>, all four drift cathodes sit at the same 700&nbsp;V
+set point ({gas_field:.0f}&nbsp;V/cm across a 30&nbsp;mm gap) for the whole run,
+so E is identical in every chamber and the ladder is gas.</p>
+<div class="scroll">{gas_tbl}</div>
+<p>Inverting the deficit against the Magboltz suite for this exact mixture at
+CERN pressure (<code>garfield_sim/results/drift_9010_contam_cern.json</code>,
+720.8&nbsp;Torr, 293&nbsp;K) gives <b>{gas_h2o_words}</b> &mdash; monotonically
+rising down the line, at the few-tenths-of-a-per-cent level that slow water
+outgassing from detector materials produces.</p>
+<div class="scroll">{mag_tbl}</div>
+<p class="note"><b>The other candidates are excluded, and the attachment column
+is what excludes them.</b> O<sub>2</sub> and air barely slow the gas &mdash; 1 %
+O<sub>2</sub> still drifts at 41.6&nbsp;&micro;m/ns &mdash; and at any fraction
+large enough to matter they attach at &eta;&nbsp;=&nbsp;2&ndash;4&nbsp;/cm, which
+would leave a per cent of the cathode-side charge alive at the strips.
+<code>garfield_sim/attachment_run58.py</code> measured the opposite on real
+data: amplitude flat to rising across the full 30&nbsp;mm. N<sub>2</sub> does not
+attach, but the ladder tops out at 5&nbsp;% N<sub>2</sub> =
+35.2&nbsp;&micro;m/ns, <i>above every chamber here</i> &mdash; so N<sub>2</sub>
+cannot account for even the driest of them, and it has no source that does not
+also bring O<sub>2</sub>.</p>
+<div class="caution"><b>Two caveats that travel with every number in this
+section.</b> The in-situ velocity is <code>v<sub>prior</sub>/k</code>, and
+<i>k</i>&rsquo;s focus objective is flat over roughly &plusmn;20&thinsp;% &mdash;
+so the <b>ordering along the chain is far better established than the absolute
+level</b>, and the water fractions inherit the whole plateau as their band. And
+<i>v</i> assumes a 30&nbsp;mm effective gap; a smaller effective drift region
+shrinks every deficit and every implied fraction together.</div>
 
 <h2><span class="n">4</span>The two-chamber rate, controlled</h2>
 <p>An X17 at 16.8&thinsp;MeV has a minimum opening angle of 109&deg;, so its pair
@@ -682,7 +820,20 @@ def main() -> int:
     if not img:
         print(f'[warn] no imaging summary at {ip}; section 3 will be thin')
 
-    body = build_html(F, meta, img, cal)
+    gp = paths.out('gaschain')
+    gcsv = os.path.join(str(gp), f'gas_chain_{a.run}.csv')
+    if os.path.exists(gcsv):
+        gas = dict(
+            chain=pd.read_csv(gcsv),
+            ladder=pd.read_csv(os.path.join(str(gp),
+                                            f'magboltz_ladder_{a.run}.csv')),
+            **json.load(open(os.path.join(str(gp),
+                                          f'gas_chain_{a.run}.meta.json'))))
+    else:
+        gas = None
+        print(f'[warn] no gas chain at {gcsv}; section 3b will be omitted')
+
+    body = build_html(F, meta, img, cal, gas=gas)
 
     # Two forms of the same page, and the difference matters.
     #
