@@ -9,7 +9,12 @@
 #   pairs           the controlled two-chamber rate (needs k_arm)
 #   make_figures    the five figures (needs funnel + k_arm)
 #   make_report     report.html + body.html (needs all of the above)
-#   rsync           -> lxplus:/eos/user/d/dneff/www/x17/reco-funnel/
+#   scintillators   S1: the wall read at both ends -> position along the bar
+#   source_imaging  S2: the pointing crossing -> where the capsule is
+#   pair_physics    S4a: X17 and IPC birth spectra, validated against Geant4
+#   acceptance      S4b: the geometric toy, thrown flat in opening angle
+#   opening_angle   S4c: the measured spectrum against the folded expectation
+#   rsync           -> lxplus:/eos/user/d/dneff/www/x17/<page>/
 #
 # Each step must succeed before the next runs: a report built on a half-updated
 # k_arm would be worse than no report.
@@ -34,13 +39,36 @@ step "pairs"        $PY -W ignore -m sept26_prelim_analysis.pairs --run "$RUN" -
 step "figures"      $PY -W ignore -m sept26_prelim_analysis.make_figures --run "$RUN"
 step "report"       $PY -W ignore -m sept26_prelim_analysis.make_funnel_report --run "$RUN"
 
+# --- S1-S4: the alignment and spectrum phase (PLAN.md sec 10) --------------- #
+# Order is a real dependency chain: the acceptance toy throws from the position
+# source_imaging measured, and opening_angle folds that acceptance.
+step "scintillators" $PY -W ignore -m sept26_prelim_analysis.scintillators --run "$RUN" --subruns "$SUBRUNS"
+step "scint figures" $PY -W ignore -m sept26_prelim_analysis.make_scint_figures --run "$RUN"
+step "scint report"  $PY -W ignore -m sept26_prelim_analysis.make_scint_report --run "$RUN"
+step "imaging"      $PY -W ignore -m sept26_prelim_analysis.source_imaging --run "$RUN" --subruns "$SUBRUNS"
+step "imaging figs" $PY -W ignore -m sept26_prelim_analysis.make_imaging_figures --run "$RUN" --subruns "$SUBRUNS"
+step "imaging rpt"  $PY -W ignore -m sept26_prelim_analysis.make_imaging_report --run "$RUN"
+step "pair physics" $PY -W ignore -m sept26_prelim_analysis.pair_physics
+step "acceptance"   $PY -W ignore -m sept26_prelim_analysis.acceptance --run "$RUN" --subruns "$SUBRUNS"
+step "opening angle" $PY -W ignore -m sept26_prelim_analysis.opening_angle --run "$RUN" --subruns "$SUBRUNS"
+step "angle figures" $PY -W ignore -m sept26_prelim_analysis.make_angle_figures --run "$RUN"
+step "angle report"  $PY -W ignore -m sept26_prelim_analysis.make_angle_report --run "$RUN"
+
 echo; echo "=== publish  $(date -Is)"
 cp "$OUT/report.html" "$OUT/index.html"
-rsync -a --delete -e "ssh -o BatchMode=yes -o ConnectTimeout=25" \
-      "$OUT/index.html" "$OUT/figures" \
-      lxplus:/eos/user/d/dneff/www/x17/reco-funnel/ || {
-  echo "!! rsync failed -- the local products are still good"; exit 1; }
-code=$(curl -sS -o /dev/null -w '%{http_code}' \
-       https://dylan-neff.web.cern.ch/x17/reco-funnel/ || echo 000)
-echo "live: HTTP $code"
+BASE=/media/dylan/data/x17/sept26_prelim
+for pair in "funnel:reco-funnel" "scint:scintillators" \
+            "imaging:source-imaging" "angle:opening-angle"; do
+  dir=${pair%%:*}; slug=${pair##*:}
+  [ -f "$BASE/$dir/report.html" ] || continue
+  cp "$BASE/$dir/report.html" "$BASE/$dir/index.html"
+  rsync -a --delete -e "ssh -o BatchMode=yes -o ConnectTimeout=25" \
+        "$BASE/$dir/index.html" "$BASE/$dir/figures" \
+        "lxplus:/eos/user/d/dneff/www/x17/$slug/" || {
+    echo "!! rsync failed for $slug -- the local products are still good"
+    exit 1; }
+  code=$(curl -sS -o /dev/null -w '%{http_code}' \
+         "https://dylan-neff.web.cern.ch/x17/$slug/" || echo 000)
+  echo "live: $slug HTTP $code"
+done
 echo "=== done $(date -Is)"
