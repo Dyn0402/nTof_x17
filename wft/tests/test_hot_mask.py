@@ -123,10 +123,94 @@ def test_track_crossing_hot_strip_is_not_split_or_lost():
          out3 == [], f'got {out3}')
 
 
+def test_wide_hot_band_does_not_weld_a_noise_column_onto_a_track():
+    """The reason seeding clusters the CLEAN strips (2026-09-08).
+
+    A real track and a noise column, separated by a hot run WIDER than the gap
+    threshold — D-y 44-63 is exactly this, 20 strips / 15.6 mm. Clustering on
+    all strips bridges through the band and returns ONE cluster spanning both;
+    the fit then gets a window twice as wide as the track, which on D measured
+    chi2/dof 62 against 25 for an uncontaminated window. Deleting the hot
+    strips reopens the gap and the two separate.
+    """
+    print('seeding: a WIDE hot band must not weld a noise column onto a track')
+    p = ws.PITCH_MM
+    # track at strips 24-43, hot band 44-63 (D-y's real one), column 64-71
+    ch = np.arange(24, 72)
+    pos = ch * p
+    amp = np.full(len(ch), 100.0)
+    hot = np.arange(44, 64)
+    check('the band alone is wider than the gap threshold',
+         len(hot) * p > ws.GAP_THRESHOLD_MM,
+         f'{len(hot) * p:.1f} mm vs {ws.GAP_THRESHOLD_MM} mm')
+
+    welded = ws.seed_candidates(pos, ch, amp, min_strips=5, hot=None)
+    check('without the mask the whole 48-strip run is ONE cluster',
+         len(welded) == 1 and welded[0].n_strips == 48,
+         f'got {[c.n_strips for c in welded]}')
+
+    out = ws.seed_candidates(pos, ch, amp, min_strips=5, n_candidates=3, hot=hot)
+    check('with the mask it separates into 2 candidates',
+         len(out) == 2, f'got {[c.n_strips for c in out]}')
+    check('the best candidate is the 20-strip track, not the welded 48',
+         len(out) == 2 and out[0].n_strips == 20,
+         f'got {out[0].n_strips if out else None}')
+    check('neither candidate reaches into the band',
+         all(not set(c.channels.tolist()) & set(hot.tolist()) for c in out))
+
+    allhot = ws.seed_candidates(hot * p, hot, np.full(len(hot), 100.0),
+                                min_strips=5, hot=hot)
+    check('an all-hot column still never seeds', allhot == [], f'got {allhot}')
+
+
+def test_narrow_hot_band_is_crossed_for_free():
+    """The other half of the same rule, and the common case: D's hot runs are
+    mostly narrower than the gap threshold (x 448-461 is 14 strips / 10.9 mm).
+    Deleting those strips leaves a SUB-threshold hole, so a track crossing one
+    is neither split nor holed — the ordinary gap constant does the work, with
+    no special-casing."""
+    print('seeding: a track crossing a NARROW hot band stays one cluster')
+    p = ws.PITCH_MM
+    ch = np.arange(440, 476)
+    pos = ch * p
+    amp = np.full(len(ch), 100.0)
+    hot = np.arange(448, 462)              # 14 strips ~ 10.9 mm < gap_mm
+    check('the band is narrower than the gap threshold',
+         len(hot) * p < ws.GAP_THRESHOLD_MM,
+         f'{len(hot) * p:.1f} mm vs {ws.GAP_THRESHOLD_MM} mm')
+
+    out = ws.seed_candidates(pos, ch, amp, min_strips=5, n_candidates=3, hot=hot)
+    check('the track is not split by the band',
+         len(out) == 1, f'got {[c.n_strips for c in out]}')
+    check('and its window spans the band, hot strips included as members',
+         len(out) == 1 and out[0].n_strips == 36,
+         f'got {out[0].n_strips if out else None}')
+    check('the hot strips really are members (they reach the fit, down-weighted)',
+         len(out) == 1 and set(hot.tolist()) <= set(out[0].channels.tolist()))
+
+
+def test_empty_hot_mask_is_the_historical_behaviour():
+    print('seeding: no hot mask -> unchanged from before the wildcard')
+    p = ws.PITCH_MM
+    ch = np.arange(40, 64)
+    pos = ch * p
+    amp = np.full(len(ch), 100.0)
+    a = ws.seed_candidates(pos, ch, amp, min_strips=5, n_candidates=3, hot=None)
+    for label, h in (('hot=[]', []), ('hot=all-clean', [900, 901])):
+        b = ws.seed_candidates(pos, ch, amp, min_strips=5, n_candidates=3, hot=h)
+        check(f'{label} gives the same seeds as hot=None',
+             len(a) == len(b) and all(x.n_strips == y.n_strips
+                                      and (x.channels == y.channels).all()
+                                      for x, y in zip(a, b)))
+
+
 if __name__ == '__main__':
     test_hot_channel_stays_in_fit_but_down_weighted()
     test_bundle_roundtrip()
     test_seed_never_seeds_on_hot_alone()
     test_track_crossing_hot_strip_is_not_split_or_lost()
+    test_wide_hot_band_does_not_weld_a_noise_column_onto_a_track()
+    test_narrow_hot_band_is_crossed_for_free()
+    test_empty_hot_mask_is_the_historical_behaviour()
     print('\n' + ('ALL PASS' if not FAILS else f'FAILURES: {FAILS}'))
     sys.exit(1 if FAILS else 0)

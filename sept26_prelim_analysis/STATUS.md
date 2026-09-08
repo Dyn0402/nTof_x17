@@ -299,6 +299,96 @@ Last updated **2026-09-08** (S1-S4 complete).
 > right. `compare_hotmasked_rerun.py` (new) is the frozen-vs-rerun comparison
 > tool, reusable on any `events_prelim.parquet`.
 
+> ### RESOLVED: it was never a regression, and the cut belongs downstream — 2026-09-08
+>
+> Tuned locally, event by event, as instructed — and **no condor at all**. The
+> local harness reproduces the frozen products *bit for bit* (`x_ok` agrees on
+> 100.0 %; `x_p0`, `x_tan_theta` and `x_chi2` identical to the last digit on
+> 99.8 % of fitted events), so a configuration costs ~5 min on 8 cores against
+> a ~15 min condor round-trip, and it can be diffed per event.
+>
+> **The frozen D sample is two populations and the mask separates them.**
+> 29 % of D's triggers have a largest x cluster made ENTIRELY of flagged
+> channels, and those noise columns **fit better than real tracks do**:
+>
+> | stratum of the baseline x cluster | n | median χ²/dof | quality_ok | fitted p0 |
+> |---|---:|---:|---:|---|
+> | **all-hot** (zero clean strips) | 1 948 | **1.27** | **99.6 %** | 65 mm, IQR 142 |
+> | mostly-hot (<50 % clean) | 1 853 | 20.2 | 93.4 % | 137 mm, IQR 308 |
+> | clean (≥50 % clean) | 2 339 | 22.5 | 94.6 % | 257 mm, IQR 228 |
+>
+> A smooth, wide, dilute coherent-noise deposit is *easy* for the forward
+> model; a real track is not. The all-hot fits pile up at p0 ≈ 65 mm — the
+> hot band itself — while real tracks spread across the plane. So the frozen
+> table's 72.6 % convergence and 10.7 median χ²/dof were being held **up** by
+> the noise, and the table above is the whole of "0 gained, 16 152 lost".
+>
+> **§3.3's criterion "gated tracks in D go UP" is struck.** The flagged
+> channels do not cost D tracks; they manufacture 29 % of them. The other four
+> criteria stand and are what was used.
+>
+> **Both suspected causes answered, both negative:**
+>
+> 1. **`HOT_NOISE_INFLATION` is irrelevant.** 10 / 30 / 100 over one fixed set
+>    of 3 600 real triggers agree to three decimals on every metric in every
+>    stratum. Paired per event, a window whose *seed* is unchanged fits
+>    identically with the mask on (χ²/dof 39.45 → 38.54, median |Δp0| **0.00
+>    mm**). Everything the wildcard does, it does through seeding. The
+>    "84.6 % of windows touch a flagged strip → χ²/dof 45.6" reading above was
+>    the stratum effect, not a weighting effect.
+> 2. **Seeding is the driver, and no seeding rule helps.** It is what drops
+>    the events (48 % of D's x planes lose every candidate; 31 % because the
+>    cluster is entirely hot, correctly). `seed_candidates` is rewritten to
+>    *form* clusters from the clean strips — so a hot band can never weld a
+>    noise column onto a real track, and a band narrower than the 12 mm gap is
+>    crossed for free — which is better defined and newly tested. But against
+>    the old rule it is a wash, and **wherever the mask relocates a seed the
+>    fit gets worse** (clean stratum χ²/dof 13.1 → 20.6, p0 moving 4.8 mm).
+>    Do not spend a condor pass installing it.
+>
+> **What works, and is now the default.** Use the same classification as a
+> **downstream cut on the frozen products** — no re-reconstruction, every
+> frozen product still valid. `hot_seed_strata.py` labels every trigger by the
+> hot content of its raw cluster (4 min, all four arms, all sub-runs, keyed
+> `(subrun, event_id)` because ids restart); `dropped_events` is the single
+> definition; `k_arm.coincident_tracks` applies it by default (before the
+> charge window, since a noise column carries charge like a track);
+> `k_robustness` asks for the *uncut* sample so its `baseline` stays a
+> baseline and its new `no_hotstrip` row stays a measurement.
+>
+> | arm | variant | removes | k shift | spread | reproducibility |
+> |---|---|---:|---:|---|---|
+> | **D** | `no_hot` (old, 2D post-fit) | 22.4 % | 3.76 % | 0.103 → 0.056 | 0.059 → 0.029 |
+> | **D** | **`no_hotstrip` (default)** | **3.6 %** | **0.55 %** | 0.103 → 0.087 | 0.059 → **0.029** |
+> | A | `no_hot` | 1.2 % | 0.02 % | 0.089 → **0.103** | 0.014 → **0.043** |
+> | A | `no_hotstrip` | **0.0 %** | 0.00 % | unchanged | unchanged |
+> | C | `no_hot` | 4.1 % | 0.94 % | 0.128 → **0.136** | 0.048 → 0.039 |
+> | C | `no_hotstrip` | **0.0 %** | 0.00 % | unchanged | unchanged |
+>
+> All of the old mask's reproducibility gain for a sixth of the sample,
+> without its 3.76 % k shift — and the only one of the two that meets "A and C
+> do not move": B and C have literally **zero** all-hot triggers in either
+> plane, so it cannot touch them, whereas `no_hot` moves C by ~1 % and makes
+> A *worse*. D re-certifies PROVISIONAL at **k = 1.767**, spread 9.0 %,
+> reproducibility 2.9 % (was 1.757 / 10.3 % / 5.9 %).
+>
+> `rerun_chain.sh` now runs `noisy_channels` and `hot_seed_strata` **first**,
+> ahead of `k_arm`, since the cut feeds the angle scale and everything below
+> it. Running them last, as before, would calibrate on the previous run's
+> strata.
+>
+> **Found and not chased**: A's *y* view has its own hot connector-8 run
+> (448–460, 21.7 % of the plane's hits), the same fault class as D's. The cut
+> is on x only, so A is untouched either way — but A-y is not clean, and
+> anything using A's y angles should know it.
+>
+> Written up in [`HANDOFF_HOT_WILDCARD_TUNING.md`](HANDOFF_HOT_WILDCARD_TUNING.md),
+> which now carries the October angles: candidate ranking by the fit's own
+> `_candidate_score` rather than by strip count (the real reason seeding does
+> not help), whether `mostly-hot` should be cut too, whether the all-hot
+> triggers hide real tracks (the scintillator tag would say), and the physical
+> connector fix.
+
 > ### The three things S1-S4 leave open, in priority order
 >
 > 1. ~~The accidental normalisation for pairs.~~ **MEASURED 2026-09-08** — not

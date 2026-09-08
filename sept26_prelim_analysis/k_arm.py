@@ -149,13 +149,28 @@ LEVER_WINDOW_MM = (30.0, 130.0)
 D_PERP_MM = 234.6
 
 
-def coincident_tracks(run: str, sub: str, arm: str, merged_dir: str):
+def coincident_tracks(run: str, sub: str, arm: str, merged_dir: str,
+                      drop_hotstrip: bool = True):
     """(x_local, y_local, tan_x, tan_y) for the pointing-coincident tracks.
 
     The clean sample: both planes fit, a gated 3D track, and the track
     extrapolates onto the wall segment AND the plastic bar that actually fired.
     Everything here delegates to run145_target_imaging so the frame, the
     in-plane sign and the coincidence geometry are the ones already measured.
+
+    ``drop_hotstrip`` (default ON, 2026-09-08) additionally throws away
+    triggers whose largest raw cluster is made entirely of hot channels --
+    ``hot_seed_strata.dropped_events``, which is the single definition of that
+    cut. On D that is 3.6 % of this sample and it is what takes the angle
+    scale's sub-run reproducibility from 0.059 to 0.029; on A, B and C it
+    removes nothing at all, because those chambers have no such triggers.
+    The count actually removed comes back as ``n_hotstrip`` so it reaches the
+    sidecar rather than being inferred later.
+
+    Pass ``drop_hotstrip=False`` to get the uncut sample -- ``k_robustness``
+    does, so that its ``baseline`` stays a real baseline and its
+    ``no_hotstrip`` row stays a measurement of this cut rather than a
+    restatement of it.
     """
     import pandas as pd
     from ntof_tracking import run145_target_imaging as TI
@@ -179,6 +194,17 @@ def coincident_tracks(run: str, sub: str, arm: str, merged_dir: str):
     from sept26_prelim_analysis.build_tracks import IN_PLANE_SIGN_Y
     q = df['x_q_sum'].to_numpy()
     m = coin & sel & np.isfinite(q) & (q > 0)
+    # Before the charge window, not after: a noise column carries charge like
+    # a track (median 0.94x, HANDOFF_D_NOISY_CHANNELS.md Sec. 2.1), so leaving
+    # them in would set the percentiles this sample is then cut on.
+    n_hotstrip = 0
+    if drop_hotstrip:
+        from sept26_prelim_analysis.hot_seed_strata import dropped_events
+        bad = dropped_events(run, arm).get(sub)
+        if bad:
+            drop = m & np.isin(df['event_id'].to_numpy(), list(bad))
+            n_hotstrip = int(drop.sum())
+            m = m & ~drop
     g = df[m]
     qs = q[m]
     lo, hi = np.percentile(qs, CHARGE_WINDOW)
@@ -189,7 +215,11 @@ def coincident_tracks(run: str, sub: str, arm: str, merged_dir: str):
         tx=g['x_tan_theta'].to_numpy()[keep],
         ty=g['y_tan_theta'].to_numpy()[keep],
         q=qs[keep], foot_x=TI.PINWHEEL[arm],
-        n_coincident=int(m.sum()), q_lo=float(lo), q_hi=float(hi))
+        # carried so a caller can join per-event products that are not
+        # positions -- k_robustness's hot-strip variant needs the trigger id
+        event_id=g['event_id'].to_numpy()[keep],
+        n_coincident=int(m.sum()), q_lo=float(lo), q_hi=float(hi),
+        n_hotstrip=n_hotstrip)
 
 
 def band_k(S: dict) -> float:
@@ -412,6 +442,11 @@ def build(run: str, subruns, merged_dir: str) -> dict:
             run, a, {s: raw[(a, s)] for s in subruns if (a, s) in raw})
         r['n_coincident'] = int(sum(
             raw[(a, s)]['n_coincident'] for s in subruns if (a, s) in raw))
+        # how many triggers the hot-channel cut removed to get there, so the
+        # sidecar says what this k was measured on rather than leaving it to
+        # be re-derived (0 on every chamber but D)
+        r['n_hotstrip_dropped'] = int(sum(
+            raw[(a, s)].get('n_hotstrip', 0) for s in subruns if (a, s) in raw))
         # The focus scan's plateau: how wide a range of k the data cannot
         # distinguish.  A wide plateau is the honest reason an arm is not
         # certified even when the three point estimates happen to agree.

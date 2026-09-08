@@ -58,6 +58,8 @@ penalised for the crossing.
 """
 from __future__ import annotations
 
+import os
+
 import numpy as np
 from scipy.optimize import nnls, minimize
 from scipy.ndimage import gaussian_filter1d
@@ -89,9 +91,19 @@ HOT: dict = {}            # per-plane hot-channel arrays; see prep_plane
 #: channel DOES carry signal and stays in the fit (rows are not censored --
 #: `sat` is untouched), just down-weighted by 1/HOT_NOISE_INFLATION**2 in the
 #: chi2 sum, so it cannot dominate but a real track crossing it is not
-#: penalised for the crossing. Not yet tuned against a re-reconstruction --
-#: first cut, see the module docstring / HANDOFF_D_NOISY_CHANNELS.md Sec. 4.
-HOT_NOISE_INFLATION = 10.0
+#: penalised for the crossing.
+#:
+#: **Scanned 2026-09-08 on D/run_145 and it does not matter.** 10, 30 and 100
+#: were fitted over one fixed set of 3 600 real triggers and agree to three
+#: decimals on every metric, in every stratum -- convergence, chi2/dof, angle,
+#: p0. HANDOFF_HOT_WILDCARD_TUNING.md Sec. 4.1 proposed that 10 was "probably
+#: too weak" and that this was why the first hot-masked re-run regressed; it
+#: was not. Paired per-event, a window whose SEED is unchanged by the mask
+#: fits identically with it (chi2/dof 39.45 -> 38.54, median |dp0| 0.00 mm):
+#: everything the wildcard does, it does through seeding, not weighting.
+#: 10 is kept because nothing argues for anything else.
+#: ``WFT_HOT_NOISE_INFLATION`` overrides it, which is how that scan is run.
+HOT_NOISE_INFLATION = float(os.environ.get('WFT_HOT_NOISE_INFLATION', 10.0))
 
 _smear_cache: dict = {}
 _lp_cache: dict = {}

@@ -3,6 +3,8 @@
 # publish. Idempotent: safe to run twice, and safe to run from cron.
 #
 #   merge_fullpass  the flat CERN pass -> the nested per-sub-run layout
+#   noisy_channels  D's hot/dead/noisy strips, from raw hits (HANDOFF_D_NOISY_CHANNELS.md)
+#   hot_seed_strata per-trigger hot content -> the production hot-channel cut
 #   k_arm           the in-situ angle scale, per chamber (needs the pass)
 #   gas_chain       v along the A->B->C->D line, and the H2O it implies
 #   funnel          trigger -> track -> n_TOF confirmation (needs stage-1 census)
@@ -17,8 +19,12 @@
 #   k_robustness    is k a property of the chamber, or of the sample?
 #   normal_incidence what a head-on track costs the opening angle
 #   chamber_b       B on its own chain, as the hit detector it is
-#   noisy_channels  D's hot/dead/noisy strips, from raw hits (HANDOFF_D_NOISY_CHANNELS.md)
 #   rsync           -> lxplus:/eos/user/d/dneff/www/x17/<page>/
+#
+# noisy_channels and hot_seed_strata moved to the FRONT on 2026-09-08: the
+# hot-channel cut they define is applied by k_arm.coincident_tracks, so it now
+# feeds the angle scale and everything downstream of it. Running them last, as
+# they were, would silently calibrate on the previous run's strata.
 #
 # Each step must succeed before the next runs: a report built on a half-updated
 # k_arm would be worse than no report.
@@ -36,6 +42,8 @@ step () {  # step <name> <command...>
 }
 
 step "merge_fullpass" $PY -W ignore -m sept26_prelim_analysis.merge_fullpass --run "$RUN"
+step "noisy channels" $PY -W ignore -m sept26_prelim_analysis.noisy_channels --run "$RUN" --subruns "$SUBRUNS"
+step "hot strata"   $PY -W ignore -m sept26_prelim_analysis.hot_seed_strata --run "$RUN" --arm all
 step "k_arm"        $PY -W ignore -m sept26_prelim_analysis.k_arm --run "$RUN" --subruns "$SUBRUNS"
 step "gas_chain"   $PY -W ignore -m sept26_prelim_analysis.gas_chain --run "$RUN" --subruns "$SUBRUNS"
 step "funnel"       $PY -W ignore -m sept26_prelim_analysis.funnel --run "$RUN" --subruns "$SUBRUNS"
@@ -62,7 +70,6 @@ step "angle report"  $PY -W ignore -m sept26_prelim_analysis.make_angle_report -
 step "k robustness"  $PY -W ignore -m sept26_prelim_analysis.k_robustness --run "$RUN" --subruns "$SUBRUNS"
 step "normal incid"  $PY -W ignore -m sept26_prelim_analysis.normal_incidence --run "$RUN" --subruns "$SUBRUNS"
 step "chamber B"     $PY -W ignore -m sept26_prelim_analysis.chamber_b --run "$RUN" --subruns "$SUBRUNS"
-step "noisy channels" $PY -W ignore -m sept26_prelim_analysis.noisy_channels --run "$RUN" --subruns "$SUBRUNS"
 
 echo; echo "=== publish  $(date -Is)"
 cp "$OUT/report.html" "$OUT/index.html"

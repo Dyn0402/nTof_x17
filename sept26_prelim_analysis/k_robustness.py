@@ -59,7 +59,53 @@ EDGE_MM = 20.0
 HOT_FACTOR = 5.0
 HOT_CELL_MM = 10.0
 
-VARIANTS = ('baseline', 'no_ring', 'no_dead', 'no_hot', 'clean')
+VARIANTS = ('baseline', 'no_ring', 'no_dead', 'no_hot', 'no_hotstrip', 'clean')
+
+#: ``no_hotstrip`` is ``no_hot`` done at the right granularity, and it is here
+#: to be compared against it rather than to replace it.
+#:
+#: ``no_hot`` is a 2D cell mask on the FITTED position, so it is post-fit and
+#: partly circular -- a fit displaced by a bad channel is judged by where it
+#: landed. ``no_hotstrip`` cuts on the hot content of the event's cluster in
+#: the raw hits (`hot_seed_strata.py`), before any fit: the trigger is dropped
+#: when the largest cluster the seeder would have taken is made ENTIRELY of
+#: channels the per-strip classifier flagged. On D that is 29 % of triggers,
+#: sitting on 42 channels that run ~35x their neighbours' occupancy.
+#:
+#: It is deliberately NOT folded into ``clean``: that variant's numbers are
+#: already reported, and changing what it means silently would make the two
+#: incomparable.
+#:
+#: **This variant is now the production default** (``k_arm.coincident_tracks``
+#: applies it), which is exactly why ``measure()`` below asks that function for
+#: the UNCUT sample: a baseline that already had the cut in it could not
+#: measure the cut.
+#:
+#: Measured on run_145, 2026-09-08 -- it does most of ``no_hot``'s work for a
+#: sixth of the sample, and unlike ``no_hot`` it is a no-op where it should be:
+#:
+#:   arm  variant      removed        k shift   spread          repro
+#:   D    no_hot        22.4 %        3.76 %    0.103 -> 0.056  0.059 -> 0.029
+#:   D    no_hotstrip    3.6 %        0.55 %    0.103 -> 0.087  0.059 -> 0.029
+#:   A    no_hot         1.2 %        0.02 %    0.089 -> 0.103  0.014 -> 0.043
+#:   A    no_hotstrip    0.0 %        0.00 %    unchanged       unchanged
+#:   C    no_hot         4.1 %        0.94 %    0.128 -> 0.136  0.048 -> 0.039
+#:   C    no_hotstrip    0.0 %        0.00 %    unchanged       unchanged
+#:
+#: HANDOFF_D_NOISY_CHANNELS.md Sec. 3.3 set "A and C do not move" as a success
+#: criterion before any of this was measured. ``no_hot`` does not meet it --
+#: it shifts C by ~1 % and makes A's estimator spread and reproducibility
+#: WORSE -- because a 10 mm post-fit cell mask on a plane whose illumination
+#: is genuinely two-lobed removes real tracks. Cutting on the raw per-strip
+#: classification instead touches nothing at all in A, B or C: those chambers
+#: have no all-hot triggers to drop (B and C have literally zero in either
+#: plane; see hot_seed_strata.py).
+#:
+#: What the cut IS lives in ``hot_seed_strata`` (``DROP_STRATA``,
+#: ``DROP_PLANES``, ``dropped_events``) and is not restated here -- this module
+#: measures it, so a second spelling of it here could drift from the one
+#: production actually applies and the measurement would quietly stop being
+#: about the cut.
 
 
 def hot_cells(x_p0: np.ndarray, y_p0: np.ndarray) -> tuple:
@@ -100,13 +146,31 @@ class Masks:
         self.half = TI.STRIP_MAP_HALF
         self.hot_frac = float(self.hot.sum()) / max(self.hot.size, 1)
         self.dead_mm = float(sum(b - a for a, b in self.dead))
+        self.hotstrip = self._hotstrip_events(run, arm)
+
+    @staticmethod
+    def _hotstrip_events(run: str, arm: str) -> dict:
+        """The production cut's own definition -- ``{subrun: set(event_id)}``.
+
+        Empty (and the variant a no-op) when the strata table has not been
+        built for this arm; ``no_hotstrip`` then reports ``removed = 0``
+        rather than silently masking nothing under a name that implies it did.
+        """
+        from sept26_prelim_analysis.hot_seed_strata import dropped_events
+        return dropped_events(run, arm)
 
     def _raw(self, xl, yl):
         return self.sign * xl + self.half, self.sign * yl + self.half
 
-    def keep(self, xl, yl, variant: str) -> np.ndarray:
+    def keep(self, xl, yl, variant: str, event_id=None,
+             subrun: str = '') -> np.ndarray:
         m = np.ones(len(xl), bool)
         rx, ry = self._raw(xl, yl)
+        if variant == 'no_hotstrip':
+            drop = self.hotstrip.get(subrun)
+            if event_id is None or not drop:
+                return m
+            return ~np.isin(np.asarray(event_id), list(drop))
         if variant in ('no_ring', 'clean'):
             m &= (np.abs(xl) < STRIP_HALF - EDGE_MM) & \
                  (np.abs(yl) < STRIP_HALF - EDGE_MM)
@@ -122,8 +186,9 @@ class Masks:
 
 def _subset(S: dict, m: np.ndarray) -> dict:
     out = dict(S)
-    for k in ('xl', 'yl', 'tx', 'ty', 'q'):
-        out[k] = S[k][m]
+    for k in ('xl', 'yl', 'tx', 'ty', 'q', 'event_id'):
+        if k in S:
+            out[k] = S[k][m]
     return out
 
 
@@ -139,11 +204,13 @@ def measure(run: str, subruns, merged_dir: str) -> tuple:
     for sub in subruns:
         for a in ARMS:
             try:
-                S = K.coincident_tracks(run, sub, a, merged_dir)
+                # the UNCUT sample on purpose -- see no_hotstrip's note above
+                S = K.coincident_tracks(run, sub, a, merged_dir,
+                                        drop_hotstrip=False)
             except FileNotFoundError:
                 continue
             for v in VARIANTS:
-                m = masks[a].keep(S['xl'], S['yl'], v)
+                m = masks[a].keep(S['xl'], S['yl'], v, S.get('event_id'), sub)
                 kept.append(dict(subrun=sub, arm=a, variant=v,
                                  n_in=int(len(m)), n_out=int(m.sum()),
                                  removed=float(1 - m.mean())))

@@ -1,225 +1,256 @@
-# HANDOFF — the hot-channel wildcard is built and wired in, and its first
-# tuning made D worse. Tune it locally, event by event, before touching
-# condor again.
+# HANDOFF — the hot-channel wildcard: tuned locally, and the answer is that
+# the wildcard belongs downstream, not in the seeder
 
-**Written 2026-09-08. Local work on run_145/D only.**
+**Written 2026-09-08 after the condor regression; resolved the same day by the
+local, event-by-event pass this file originally asked for. Local work on
+run_145 only — no condor, no EOS, nothing here needs either.**
 
 Companions: [`HANDOFF_D_NOISY_CHANNELS.md`](HANDOFF_D_NOISY_CHANNELS.md) (the
-original spec this implements), [`STATUS.md`](STATUS.md),
-`compare_hotmasked_rerun.py`.
+original spec), [`STATUS.md`](STATUS.md), `hot_seed_strata.py`,
+`compare_hotmasked_rerun.py`, `k_robustness.py`.
 
 ---
 
-## 1 · Where this stands in one paragraph
+## 0 · Resolved — read this first, then §3–4 for the evidence
 
-`HANDOFF_D_NOISY_CHANNELS.md`'s wildcard spec (never seed on a flagged
-channel, keep it in the fit down-weighted, cap its influence, record it) is
-**built, unit-tested, and wired into both reconstruction drivers** (bench and
-beam) and the condor packaging. It was then **actually run** — a real
-lxplus/condor re-reconstruction of D/run_145/stat090_0000, all 7 tags, full
-reco, no allowlist — and the result **fails the spec's own success
-criterion**: gated-fit rate should go up, it went from 72.6 % to 33.4 %, and
-of the events common to both runs **zero gained a fit that the frozen run
-didn't have; 16 152 lost one it did have**. This is not a code bug. It is two
-unvalidated constants, both flagged as "first cut, not tuned" when they were
-written, both now confirmed to matter a lot. Fixing them needs looking at
-real event windows directly, which needs no condor at all — the raw data is
-already local.
+**The re-run was not a regression, and neither of the two constants this file
+blamed was the problem.** Both §4.1 and §4.2 below were written as guesses and
+both have now been measured against real windows; the guesses were wrong in
+opposite directions, and the reason the condor numbers looked catastrophic is
+something neither anticipated.
+
+**1 · The frozen D sample is two populations, and the mask separates them.**
+29 % of D's triggers have a largest x cluster made **entirely** of flagged
+channels — channels running ~35× their neighbours' occupancy, on connector
+boundaries. Those noise columns **fit better than real tracks do**:
+
+| stratum of the baseline x cluster | n | median χ²/dof | quality_ok | fitted p0 |
+|---|---:|---:|---:|---|
+| **all-hot** (zero clean strips) | 1 948 | **1.27** | **99.6 %** | 65 mm, IQR 142 |
+| mostly-hot (<50 % clean) | 1 853 | 20.2 | 93.4 % | 137 mm, IQR 308 |
+| clean (≥50 % clean) | 2 339 | 22.5 | 94.6 % | 257 mm, IQR 228 |
+
+A smooth, wide, dilute coherent-noise deposit is *easy* for the forward model;
+a real track has to be fitted against real diffusion and sharing. And the
+all-hot fits pile up at p0 ≈ 65 mm — the u ∈ [50, 70) mm hot band of
+`HANDOFF_D_NOISY_CHANNELS.md` §2.2 — while real tracks spread across the plane.
+
+So the frozen table's 72.6 % convergence and 10.7 median χ²/dof were being
+**held up by the noise**. Removing it must make both look worse. §3's "0 gained
+a fit, 16 152 lost one" is that and nothing more.
+
+> ⚠ **`HANDOFF_D_NOISY_CHANNELS.md` §3.3's criterion "the number of gated
+> tracks in D goes UP" cannot be met by any correct mask, and should be struck.**
+> It was written on the assumption that the flagged channels cost D tracks. They
+> do not — they *manufacture* triggers, 29 % of them. The other four criteria in
+> that section stand, and are what is used below.
+
+**2 · `HOT_NOISE_INFLATION` does not matter at all.** §4.1's scan, run over one
+fixed set of 3 600 real triggers: 10, 30 and 100 agree **to three decimals on
+every metric in every stratum**. Paired per event, a window whose *seed* the
+mask leaves alone fits identically with the mask on (χ²/dof 39.45 → 38.54,
+median |Δp0| **0.00 mm**). Everything the wildcard does, it does through
+seeding. The constant stays at 10; `WFT_HOT_NOISE_INFLATION` re-runs the scan.
+
+**3 · §4.2 correctly identified seeding as the driver, and its fix does not
+help either.** The admission rule is what drops the events (48 % of D's
+x-planes lose every candidate), so §4.2 was right about the mechanism. But
+neither its one-line fix nor the better rule now in `wft/seed.py` improves the
+fits that survive. Paired per event, **when the mask changes which cluster is
+seeded, the fit gets worse** — clean stratum χ²/dof 13.1 → 20.6, p0 moving a
+median 4.8 mm. Seeding on the mask buys nothing measurable today.
+
+**4 · What does work: use the classification downstream, on the frozen
+products, with no re-reconstruction.** `hot_seed_strata.py` labels every
+trigger by the hot content of its raw cluster in 4 minutes over all four arms,
+and `k_robustness`'s new `no_hotstrip` variant cuts on it:
+
+| arm | variant | removes | k shift | estimator spread | reproducibility |
+|---|---|---:|---:|---|---|
+| **D** | `no_hot` (existing, 2D post-fit) | 22.4 % | 3.76 % | 0.103 → 0.056 | 0.059 → 0.029 |
+| **D** | **`no_hotstrip` (new)** | **3.6 %** | **0.55 %** | 0.103 → **0.087** | 0.059 → **0.029** |
+| A | `no_hot` | 1.2 % | 0.02 % | 0.089 → **0.103** | 0.014 → **0.043** |
+| A | `no_hotstrip` | **0.0 %** | 0.00 % | unchanged | unchanged |
+| C | `no_hot` | 4.1 % | 0.94 % | 0.128 → **0.136** | 0.048 → 0.039 |
+| C | `no_hotstrip` | **0.0 %** | 0.00 % | unchanged | unchanged |
+
+It takes **all** of `no_hot`'s reproducibility gain and most of its spread gain
+**for a sixth of the sample**, and it shifts k by 0.55 % instead of 3.76 % — so
+it is not buying its improvement by moving the calibration. And it is the only
+one of the two that meets §3.3's "A and C do not move": B and C have literally
+zero all-hot triggers in either plane, so the cut cannot touch them, whereas
+`no_hot` moves C by ~1 % and makes A's spread and reproducibility *worse*.
+
+**That is the "something that works", and it is deliberately the simple
+version.** It needs no condor cycle, leaves every frozen product valid, and is
+one join on `(subrun, event_id)`. Seeding on the wildcard is the October
+question — §6.
 
 ---
 
-## 2 · What is built (do not redo this part)
+## 1 · What is built (unchanged from the original handoff, plus this session)
 
 | piece | file | what |
 |---|---|---|
-| per-strip dead/hot/noisy classifier | `noisy_channels.py` | built from raw `combined_hits`, matches `k_robustness`'s independent measurement to ~1 point per chamber. `hot` class only is wired downstream (`noisy` is threshold-fragile, empty on D-x — see its own docstring) |
-| bundle field | `wft/calib.py` `CalibrationBundle.hot` | mirrors `dead`, save/load round-trips |
-| fit down-weighting | `wft/model.py` `HOT`, `HOT_NOISE_INFLATION`, `prep_plane` | a hot row's noise is inflated (NOT censored like `dead` — `sat` untouched, row keeps its dof) |
-| seeding admission | `wft/seed.py` `seed_candidates` | ranks/admits by CLEAN (non-hot) strip count; **the exact admission rule is the thing to revisit, see §4.2** |
-| provenance | `wft/reco.py` `PlaneFit.n_flagged_strips` | dead+hot strips in the fit window, per plane, every row |
-| condor plumbing | `ntof_tracking/wft_beam.py`, `condor/{run_beam_job,make_beam_package,beam_reco.sub}` | `--hot <json>` ships a per-arm wildcard file the same way `--allow` ships a stage-2 allowlist |
-| bundle builder | `apply_hot_wildcards.py` | re-derives `calib_bundle_prelim` (verified byte-for-byte against the frozen run's own `events_prelim.meta.json`) and attaches `hot`; `--export-json` makes the condor-shippable file |
-| tests | `wft/tests/test_hot_mask.py` | 4 checks, synthetic bundle, no data needed. Full suite 23/23 passing |
-| comparison tool | `compare_hotmasked_rerun.py` | frozen vs. a re-run's `events_prelim.parquet`, the table in §3 |
-
-Git commit `a77c262` has everything above except this handoff and the
-comparison script. **`wft`/`ntof_tracking` must be committed before any
-`make_beam_package.py` run** — it ships `git archive HEAD`, so uncommitted
-changes there silently do not reach the worker.
+| per-strip dead/hot/noisy classifier | `noisy_channels.py` | unchanged; **validated this session** — D's 42 hot x channels carry 55.6 % of the plane's hits at ~35× the good-channel median occupancy, in connector-aligned runs. Not the beam. |
+| **per-trigger hot strata** | **`hot_seed_strata.py`** | **new.** all-hot / mostly-hot / clean per trigger per plane, from raw hits. 4 min for all four arms, all sub-runs. Keyed `(subrun, event_id)`. |
+| **the downstream cut** | **`k_robustness.py` `no_hotstrip`** | **new.** the table in §0.4. Not folded into `clean`, so the published variants stay comparable. |
+| **stratified comparison** | **`compare_hotmasked_rerun.py --strata`** | **new.** the aggregate comparison is a mixture on D and will mislead; this compares like with like. |
+| bundle field / fit down-weighting / provenance | `wft/calib.py`, `wft/model.py`, `wft/reco.py` | unchanged, and measured to be a no-op (§0.2) |
+| seeding admission | `wft/seed.py` `seed_candidates` | **rewritten**: clusters are now FORMED from the clean strips instead of formed from all strips and then judged. Better defined, measured a wash — see the docstring's own warning. |
+| tests | `wft/tests/test_hot_mask.py` | 4 → 7 checks incl. the weld/split cases. Suite green (`test_model_regression` needs a bench cache not staged here; pre-existing). |
 
 ---
 
-## 3 · What was measured
+## 2 · The three tools, and what each is for
 
-Cluster 4141149 (lxplus condor, 7 jobs, D/run_145/stat090_0000, `--hot`
-carrying 42 x / 57 y hot channels, `--v-drift 42.6` verified to match the
-frozen bundle exactly). All 7 completed, no holds. Merged with
-`ntof_tracking/condor/merge_beam_tags.py` into
-`/home/dylan/x17/wft_beam145_hotmasked/analysis/` — **a directory dedicated
-to this comparison, never the frozen products' own location.**
+```bash
+# 1. label every trigger by the hot content of its raw cluster (~4 min, all arms)
+python -m sept26_prelim_analysis.hot_seed_strata --arm all --run run_145
 
-```
+# 2. the cut, under the falsification framework that was set before the numbers
+python -m sept26_prelim_analysis.k_robustness --run run_145
+
+# 3. only if you re-reconstruct: compare like with like, never in aggregate
 python -m sept26_prelim_analysis.compare_hotmasked_rerun \
-    --new /home/dylan/x17/wft_beam145_hotmasked/analysis/run_145/stat090_0000/mx17_D/events_prelim.parquet
+    --new .../events_prelim.parquet \
+    --strata /media/dylan/data/x17/sept26_prelim/hot_strata/hot_strata_run_145_D.parquet
 ```
-
-| | frozen (no wildcards) | hot-masked |
-|---|---:|---:|
-| events attempted | 46 218 | 33 393 (-28 %) |
-| both-plane fit converges | 72.6 % | 33.4 % |
-| quality_ok (both planes) | 67.4 % | 29.4 % |
-| median x_chi2/dof | 10.7 | 41.9 |
-| median x_n_strips | 42 | 32 |
-
-Of the 33 393 events common to both tables: **0 gained a good fit, 16 152
-lost one**. Splitting the hot-masked table by whether a window touches a
-flagged strip (42-59 % of attempted windows do, per plane — far more than
-the raw per-channel hot fraction, because a typical cluster is wide enough to
-cross one somewhere in D): flagged windows both_ok 36.2 %, clean windows
-17.7 % (clean windows are ALSO down from baseline — see §4.2, this is not
-purely a fit-weighting effect).
 
 ---
 
-## 4 · Two candidate causes — both are constants that were guessed
+## 3 · What the condor run actually measured (the original §3, reinterpreted)
 
-### 4.1 `HOT_NOISE_INFLATION = 10.0` (`wft/model.py`) is probably too weak
+Cluster 4141149, D/run_145/stat090_0000, 7 tags, `--hot` carrying 42 x / 57 y
+channels. Merged into `/home/dylan/x17/wft_beam145_hotmasked/analysis/`.
 
-Windows that touch a flagged strip show chi2/dof 45.6 against 6.6 for windows
-that do not (`compare_hotmasked_rerun.py`'s split). A hot channel's actual
-amplitude excursion is evidently large enough that inflating its noise by
-only 10x still lets it pull real chi2 weight — recall from
-`HANDOFF_D_NOISY_CHANNELS.md` §2.1 that these are NOT small signals, they are
-wide, dilute deposits with the SAME median charge as a normal strip (0.94x),
-just spread over more strips. A single flagged sample's raw residual can
-plausibly be many times a normal strip's even after a 10x haircut.
+| | frozen | hot-masked | reading |
+|---|---:|---:|---|
+| events attempted | 46 218 | 33 393 | the 29 % all-hot population, mostly |
+| both-plane fit converges | 72.6 % | 33.4 % | **a population shift, not a failure** |
+| median x_chi2/dof | 10.7 | 41.9 | the 1.27 stratum is gone; 22–25 is what real D tracks cost |
+| median x_n_strips | 42 | 32 | toward A's 25 — §3.3 criterion, met |
 
-**How to find the right number, locally, without condor**: pull the raw
-window for a handful of hot-touching events (see §5.1) and directly compare,
-at a few candidate `HOT_NOISE_INFLATION` values, how much of the chi2 each
-hot row contributes vs. a clean row in the same window. `wm.chi2_plane`
-already returns the profiled `q`; `wm.model_waveforms(...)` gives the
-per-strip model prediction, so `(W - model) / noise` per row is directly
-inspectable. Scan `HOT_NOISE_INFLATION` (try 10, 30, 100, 300) against a
-FIXED small set of real windows and look for where the hot rows' residual
-stops dominating chi2, rather than guessing another round number blind.
-
-### 4.2 The seeding admission rule may be discarding real tracks
-
-`seed_candidates` currently rejects a candidate cluster when its CLEAN strip
-count is below `min_strips` (5 for beam). But `HANDOFF_D_NOISY_CHANNELS.md`
-item 1 says "never seed on a flagged channel" — read most naturally as: a
-cluster that exists ONLY because of flagged strips should not seed. A real
-5-6 strip cluster that merely grazes 1-2 hot strips now loses its seed
-ENTIRELY once bumped below `min_strips` on the clean count alone, rather than
-being admitted (with its hot strips still present as members, still
-down-weighted in the fit per §4.1) — which is arguably the OPPOSITE of "a
-track should never be lost because it crossed a bad channel." This is the
-more likely driver of the 46 218 -> 33 393 drop in attempted events, and
-probably also explains why even CLEAN windows (no flagged strip at all) show
-a lower both_ok than baseline: a real track's x-plane cluster can lose its
-seed to this rule while its y-plane cluster (reported with
-`x_n_flagged_strips`/`y_n_flagged_strips` == 0, since THAT plane's cluster
-had no hot strips) never gets attempted at all because the whole event never
-made it into `wanted`.
-
-**A concrete, ready-to-try fix** (`wft/seed.py::seed_candidates`, in the loop
-building `out`):
-
-```python
-# current:
-if clean_counts[c] < min_strips:
-    continue
-# candidate: reject only a cluster that is ENTIRELY flagged strips
-if clean_counts[c] < 1:
-    continue
-```
-
-This still satisfies "never seed on a flagged channel ALONE" (an all-hot
-blob has `clean_counts == 0` and is still rejected) while no longer
-penalizing a real cluster for merely including a hot strip among several
-clean ones. **Test this locally against the SAME small event set as §4.1
-before touching condor** — it changes which events even reach the fit, so it
-needs its own check independent of the noise-inflation tuning.
+**The local harness is exact, which is why none of this needed condor.** Run
+with the unmasked bundle over 3 600 triggers it reproduces the frozen products
+*bit for bit*: `x_ok` agrees on 100.0 %, and `x_p0`, `x_tan_theta` and `x_chi2`
+are identical to the last digit on 99.8 % of fitted events (the remainder is
+NNLS tie-breaking, |Δ| < 4e-10 on χ² and 0 on the geometry). A configuration
+takes ~5 minutes on 8 cores against ~15 minutes of condor round-trip, and it
+can be diffed per event, which the condor run could not.
 
 ---
 
-## 5 · Order of work for the next session
+## 4 · The two candidate causes, both now answered
 
-**Do not iterate via condor again until a local pass has a plausible
-setting.** A condor cycle is ~15 min of wall-clock per iteration; a local
-check on a handful of events is seconds. Dylan's own words on this: test
-event by event, locally.
+### 4.1 `HOT_NOISE_INFLATION = 10.0` — **NO. It is irrelevant.**
 
-### 5.1 Build a few real windows locally, no condor needed
+Scanned at 10 / 30 / 100 over one fixed set of 3 600 real triggers
+(`WFT_HOT_NOISE_INFLATION`). Identical to three decimals everywhere. The
+original argument — "windows touching a flagged strip show χ²/dof 45.6 against
+6.6" — was reading the stratum effect, not a weighting effect: those windows
+have a worse χ²/dof because of *what is in them*, and inflating the noise on a
+handful of rows in a 30-strip window cannot move a median.
 
-The raw data run_145/D needs is already staged locally — `combined_hits_root`
-AND `decoded_root` both exist under
-`/media/dylan/data/x17/beam_july/runs/run_145/stat090_0000/`. Nothing here
-needs EOS or lxplus:
+### 4.2 The seeding admission rule — **right mechanism, no gain.**
 
-```python
-from ntof_tracking import wft_beam as wb
-from wft.calib import CalibrationBundle
-from wft import model as wm
+It is the driver: 48 % of D's x-planes lose every candidate, and 31 % of them
+because the baseline cluster is entirely hot (correctly rejected). The rule is
+now the better-defined one — cluster the CLEAN strips, so a hot band can never
+weld a noise column onto a real track, and a band narrower than the 12 mm gap
+threshold is crossed for free (D's x 448–461 is 14 strips; y 44–63 is 20 and
+does split). Tested both ways in `test_hot_mask.py`.
 
-cal = CalibrationBundle.load(
-    '/media/dylan/data/x17/beam_july/analysis/wft/run_145/stat090_0000/'
-    'mx17_D/calib_bundle_hotmasked')   # already built, from apply_hot_wildcards.py
-wm.use_calibration(cal)
-
-cfg = wb.beam_config('D', 'run_145', 'stat090_0000')
-cfg.file_tags = ['260805_14H06_000']   # one tag is plenty for this
-# reconstruct_subrun (or its internals -- see wft_beam._stream_windows /
-# wft.reco._stream_windows) yields (event_id, windows-dict, ...) per event;
-# pick a few event_ids known to have flagged strips (compare_hotmasked_rerun's
-# merged table already has x_n_flagged_strips/y_n_flagged_strips per event --
-# load the already-merged hot-masked table and filter on those columns to
-# find good candidates FAST, then re-extract just those events' windows).
-```
-
-`ntof_tracking/wft_beam.py`'s `--limit-per-tag` (also on `run_beam_job.py`,
-built for exactly this: "smoke-testing the stack on a login node") is the
-other route — a local `reconstruct_subrun` call over ~50-200 events finishes
-in well under a minute and gives a fresh `events_prelim.parquet` to compare
-against the merged one already at
-`/home/dylan/x17/wft_beam145_hotmasked/analysis/run_145/stat090_0000/mx17_D/events_prelim.parquet`
-for the SAME event_ids — no condor needed for that comparison either, since
-that table already has every event this local subset would also cover.
-
-### 5.2 Tune §4.1 and §4.2 against that small local set
-
-Scan `HOT_NOISE_INFLATION` and try the `seed.py` admission change from §4.2,
-independently and together, checking against the local sample's
-both_ok/chi2-per-dof (`compare_hotmasked_rerun.py`'s `summarize()` works on
-any `events_prelim.parquet`, condor-produced or local).
-
-### 5.3 Only once local numbers look right: re-run the full condor cluster
-
-Same recipe as this session: `apply_hot_wildcards.py` (rebuild the bundle
-with the new `HOT_NOISE_INFLATION`/admission code — note `HOT_NOISE_INFLATION`
-is a module constant in `wft/model.py`, not a bundle field, so a code change
-+ recommit is needed, not just a bundle rebuild), `--export-json`,
-`make_beam_package.py --hot ... `, rsync, `condor_submit`, `merge_beam_tags.py`,
-`compare_hotmasked_rerun.py`. Compare against §3.3's full criteria list
-(angle-scale spread, head-on excess, cluster width, A/C unchanged, gated
-count up) — this session only checked convergence rate and chi2/dof, which
-was enough to catch the regression but is not the full HANDOFF_D_NOISY_
-CHANNELS.md §3.3 acceptance bar.
+But measured against the old rule on the same 3 600 triggers it is a wash, and
+against no mask at all it is worse wherever it changes the seed. **Do not
+re-run condor to install it.**
 
 ---
 
-## 6 · Where everything is
+## 5 · What this does NOT settle
+
+- **Whether the all-hot triggers contain any real tracks.** They are 29 % of
+  D's sample and every piece of evidence says the *cluster* is noise, but a
+  real particle could have crossed the chamber in the same window and been
+  lost in it. Nothing here tests that; the scintillator tag would.
+- **A-y.** It has its own hot connector-8 run (448–460, 21.7 % of the plane's
+  hits) that this session found but did not chase. `no_hotstrip` on x alone is
+  a no-op there by construction, so A is unaffected either way — but A-y is
+  not clean, and anything that uses A's y angles should know that.
+- **The other runs.** Everything above is run_145. The classification is per
+  run condition (CLAUDE.md) and has to be rebuilt per run.
+
+---
+
+## 6 · Done, and what is left
+
+**DONE — `no_hotstrip` is the production default (2026-09-08).**
+`k_arm.coincident_tracks(..., drop_hotstrip=True)` applies it, before the
+charge window (a noise column carries charge like a track — median 0.94× — so
+leaving them in would set the percentiles the sample is then cut on). It
+propagates to everything that reads that sample: the angle scale, and through
+it `source_imaging` and the S2/S4 chain. D re-certifies PROVISIONAL at
+**k = 1.767**, spread 9.0 %, reproducibility **2.9 %** (was 1.757 / 10.3 % /
+5.9 %). A, B and C are bit-identical — the cut removes literally nothing there.
+
+`rerun_chain.sh` runs `noisy_channels` and `hot_seed_strata` **first** now,
+ahead of `k_arm`. They used to run last; leaving them there would have
+calibrated on the previous run's strata.
+
+**(a) Rebuild the strata for the other runs** once their full passes exist.
+`hot_seed_strata.py --arm all --run <run>`, ~4 minutes each. The
+classification is per run condition (CLAUDE.md) — a run_145 strata table used
+on another run is a silent error, and `dropped_events` returns `{}` rather
+than guessing if the table is absent.
+
+---
+
+### The October list
+
+**(b) Candidate ranking, which is the real reason seeding does not help.**
+Today `seed_candidates` ranks clusters by strip count, and the old rule and the
+new one only change *what gets counted* — neither changes the ranking's
+premise. So when the mask makes a real track's cluster smaller than a
+competing one, the seed moves, and §0.3 measures what that costs
+(χ²/dof 13.1 → 20.6). The fit already computes `_candidate_score` (a
+plausibility flag plus Δχ² against "no signal") and is already offered 5
+candidates per plane — ranking on that instead would sidestep the strip-count
+premise entirely and would be testable in the same 5-minute local loop this
+session used. **This is a study, not a constant**, which is why it is not a
+one-line change.
+
+**(c) Whether `mostly-hot` should be cut too.** Another 22 % of D. They still
+contain real tracks — fitted p0 spread across the whole plane, IQR 308 mm,
+against 142 mm for the all-hot pile-up — and cutting them moves the angle
+scale by a rounding amount. Not worth the sample for the preliminary; worth
+revisiting if D's angle *resolution* ever matters.
+
+**(d) Whether the all-hot triggers hide real tracks.** Every piece of evidence
+says the *cluster* is noise, so cutting it is right for the angle scale. But a
+real particle could have crossed D in the same window and been lost inside
+one — which would make this a 29 % efficiency hole in D rather than a clean
+cut. The scintillator tag decides it: do all-hot triggers carry a wall+plastic
+coincidence at the rate real tracks do? Nothing here tests that.
+
+**(e) A-y.** Its own hot connector-8 run (448–460, 21.7 % of the plane's hits),
+found this session and not chased. `DROP_PLANES = ('x',)` means A is untouched
+either way, but A-y is not clean and anything using A's y angles should know.
+
+**(f) The physical fix.** Hot and dead are the same connector fault in the same
+places, on D and now A-y. Nothing in software recovers 55.6 % of a plane's hits
+being noise.
+
+---
+
+## 7 · Where everything is
 
 | | |
 |---|---|
 | git commit with the wildcard mechanism | `a77c262` |
 | the frozen baseline (untouched) | `/media/dylan/data/x17/sept26_prelim/fullpass/run_145/stat090_0000/mx17_D/events_prelim.parquet` |
-| the re-derived baseline bundle (verified match) | `/media/dylan/data/x17/beam_july/analysis/wft/run_145/stat090_0000/mx17_D/calib_bundle_prelim` |
-| the hot-masked bundle used for the condor run | `.../mx17_D/calib_bundle_hotmasked` |
-| condor package (local copy) | `/home/dylan/x17/wft_beam145_hotmasked/` |
-| condor package (on lxplus, still there) | `lxplus:~/wft_beam145_hotmasked/` |
-| raw per-tag condor outputs, pulled back | `/home/dylan/x17/wft_beam145_hotmasked/results/*.tar.gz` |
-| the merged hot-masked table from this session's run | `/home/dylan/x17/wft_beam145_hotmasked/analysis/run_145/stat090_0000/mx17_D/events_prelim.parquet` |
-| local raw data (combined_hits + decoded_root) | `/media/dylan/data/x17/beam_july/runs/run_145/stat090_0000/` |
 | hot-channel classification (source of truth) | `<out>/noisy_channels/noisy_channels_run_145.csv` |
+| **per-trigger strata, all four arms** | `<out>/hot_strata/hot_strata_run_145_<arm>.parquet` |
+| **k under every variant incl. `no_hotstrip`** | `<out>/kcal/k_robustness_run_145.csv` |
+| the condor hot-masked table (kept, for reference) | `/home/dylan/x17/wft_beam145_hotmasked/analysis/run_145/stat090_0000/mx17_D/events_prelim.parquet` |
+| condor package (local + lxplus) | `/home/dylan/x17/wft_beam145_hotmasked/`, `lxplus:~/wft_beam145_hotmasked/` |
+| local raw data (combined_hits + decoded_root) | `/media/dylan/data/x17/beam_july/runs/run_145/stat090_0000/` |
