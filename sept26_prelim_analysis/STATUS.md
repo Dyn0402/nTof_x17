@@ -133,6 +133,47 @@ linked from the X17 hub, with the board's log carrying each result.
 > B's position information is real and **better than D's**, which is a chamber
 > being used for tracking. B's efficiency is measured on **hits, not tracks**.
 
+> ### Chamber D has ~130 dead channels; A is clean; the "acceptance hole" was mine
+>
+> **2026-09-08, and this corrects an explanation I committed confidently and
+> wrongly.** I read the central gap in the filtered hit maps as the
+> reconstruction blanking normal-incidence tracks via
+> `wft.reco.TAN_MIN_SLOPE = 0.08`. It is not. The gate is *"time-coincident AND
+> both members plausible"* — `slope_reliable` is recorded and never gates
+> anything — and the gaps are present before any selection is applied. The
+> occupancy projected on x, no cuts, normalised to its own median:
+>
+> | | x = −8 | +8 | +22 | +38 | |
+> |---|---:|---:|---:|---:|---|
+> | A | 0.93 | 1.03 | 1.12 | 0.95 | flat |
+> | C | 0.94 | 0.34 | 0.15 | 0.43 | already there |
+> | D | 2.17 | 0.01 | 0.07 | 0.03 | already there |
+>
+> **It is dead readout channels, on connector boundaries:**
+>
+> | arm | dead runs (≥8 ch, <20 % of median) | x_local | connector |
+> |---|---|---|---|
+> | A | **none** | | |
+> | C | ch 227–236 (10) | +15…+22 mm | 3 |
+> | D | ch 183–212 (30) | +34…+57 mm | 2–3 |
+> | D | ch 219–227 (9) | +22…+29 mm | 3 |
+> | D | ch 234–255 (22) | +0…+17 mm | 3 |
+> | D | ch 27–63 (37) | +150…+178 mm | 0 |
+>
+> **D has ~130 dead channels of 512 — a quarter of its x plane** — the same
+> class of fault as chamber A's connector-8 outage in run_79 (CLAUDE.md). That
+> is the 13.9 % dead area the 2D map showed, diluted there because D's y plane
+> is healthy.
+>
+> A's dip is real, appears only once the scintillator cuts are applied, and is
+> **unexplained**. Stated as unexplained rather than given the nearest
+> plausible story, which is what went wrong the first time.
+>
+> D's angle scale is nonetheless sound: re-measured with the outer ring
+> excluded it moves 2 % and the estimator spread improves, because the pointing
+> coincidence already strips the junk (D goes from 44.1 % of fitted clusters in
+> the ring to 6.8 % of the k sample).
+
 **Next, in order:**
 
 1. **Chamber B.** The only chamber still without angles. Four suspects have now
