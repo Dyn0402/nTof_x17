@@ -385,7 +385,7 @@ def measure_dt_xy(events, bundle_path, hyper, v, sample=200):
 # ---------------------------------------------------------------------- main
 def calibrate(cfg, run_key, n_events=400, n_train=180, jobs=12, out=None,
               seed_bundle=None, maxiter=130, v_fixed=None, fix_hyper=None,
-              share_mode='delay'):
+              share_mode='delay', template='measure'):
     out = out or cfg.out_dir('wft', 'calib_bundle')
     work = cfg.out_dir('wft', 'calib_work')
     cache_path = os.path.join(work, 'calib_cache.pkl')
@@ -396,7 +396,29 @@ def calibrate(cfg, run_key, n_events=400, n_train=180, jobs=12, out=None,
     else:
         events = build_cache(cfg, n_events, out_path=cache_path)
 
-    grid, tmpl = measure_templates(events)
+    # template='seed' reuses the seed bundle's impulse response instead of
+    # measuring a new one. Needed for BEAM data, where measure_templates cannot
+    # run: it assumes a bench-length waveform, and the beam window is 20
+    # samples of 60 ns. Two things break on it -- the peak must land in
+    # [6, ns-12], a 3-sample slot at ns=20 that only ~4 % of strips hit, and the
+    # baseline it subtracts (grid < -250 ns) is reached by only a third of them,
+    # so the subtraction is NaN and poisons the whole template.
+    #
+    # Reusing the seed's is not a new assumption: the template is the DREAM
+    # electronics impulse response, a property of the readout chain rather than
+    # the chamber or the gas, and every beam bundle's provenance already records
+    # `not_revalidated: template (assumed same DREAM shaping)`.
+    if template == 'seed':
+        if not seed_bundle:
+            raise SystemExit("template='seed' needs --seed-bundle")
+        _s = CalibrationBundle.load(seed_bundle)
+        grid, tmpl = _s.grid, _s.tmpl
+        print(f'[calib] reusing the seed bundle template ({len(grid)} points); '
+              f'measure_templates skipped')
+    elif template == 'measure':
+        grid, tmpl = measure_templates(events)
+    else:
+        raise SystemExit(f"template must be 'measure' or 'seed', not {template!r}")
 
     # provisional bundle: measured template, seed kernel — the hyper fit refines it
     seed = (CalibrationBundle.load(seed_bundle) if seed_bundle else None)
@@ -471,6 +493,10 @@ def main(argv=None):
                     help='sharing-kernel form: delay = legacy delayed copy; '
                          'lp = RC-dispersed copy (H4-measured structure, '
                          'tau_s becomes the RC constant)')
+    ap.add_argument('--template', default='measure', choices=('measure', 'seed'),
+                    help="'seed' reuses the seed bundle's impulse response "
+                         'instead of measuring one -- required on beam data, '
+                         'whose 20-sample window measure_templates cannot use')
     ap.add_argument('--out', default=None)
     args = ap.parse_args(argv)
     fix_hyper = None
@@ -489,7 +515,7 @@ def main(argv=None):
     calibrate(cfg, args.run_key, n_events=args.events, n_train=args.train,
               jobs=args.jobs, out=args.out, seed_bundle=args.seed_bundle,
               maxiter=args.maxiter, v_fixed=args.fix_v, fix_hyper=fix_hyper,
-              share_mode=args.share_mode)
+              share_mode=args.share_mode, template=args.template)
 
 
 if __name__ == '__main__':
