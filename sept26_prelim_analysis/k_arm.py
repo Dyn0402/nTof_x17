@@ -351,12 +351,20 @@ def build(run: str, subruns, merged_dir: str) -> dict:
     from pathlib import Path
     from ntof_tracking.reco import geometry as G
 
+    # The imaging summary is OPTIONAL, and only supplies the scale-free source
+    # position reported alongside as a geometry cross-check.  Every estimator
+    # is computed here now, so requiring it would make the calibration depend
+    # on a step it no longer uses -- which is exactly what broke the chain on
+    # the first sub-run reconstructed after the refactor.
     imgs = {}
     for sub in subruns:
-        p = paths.require(paths.out('kcal') / f'{run}_{sub}' / 'imaging_summary.json',
-                          f'target imaging for {sub} -- run '
-                          f'ntof_tracking.run145_target_imaging first')
-        imgs[sub] = {r['arm']: r for r in json.load(open(p))['results']}
+        p = paths.out('kcal') / f'{run}_{sub}' / 'imaging_summary.json'
+        if os.path.exists(p):
+            imgs[sub] = {r['arm']: r for r in json.load(open(p))['results']}
+        else:
+            imgs[sub] = {}
+            print(f'  [k] {sub}: no imaging summary -- the scale-free source '
+                  f'position will be absent for it (estimators unaffected)')
 
     # The focus estimator is re-derived here, per sub-run, on the coincident
     # sample -- see focus_scan for why the imaging's k_opt is not used.
@@ -366,8 +374,6 @@ def build(run: str, subruns, merged_dir: str) -> dict:
     scans, samples = {}, {}
     for sub in subruns:
         for a in ARMS:
-            if a not in imgs[sub]:
-                continue
             try:
                 S = coincident_tracks(run, sub, a, merged_dir)
             except FileNotFoundError as exc:
@@ -386,7 +392,7 @@ def build(run: str, subruns, merged_dir: str) -> dict:
         per_sub = {s: samples[(a, s)] for s in subruns if (a, s) in samples}
         if not per_sub:
             arms[a] = dict(k=None, verdict='NO DATA',
-                           reason='arm absent from every imaging summary')
+                           reason='no sub-run yielded a measurable sample')
             continue
         r = combine(per_sub)
         r['source_check'] = source_check(
