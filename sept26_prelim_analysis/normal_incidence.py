@@ -214,6 +214,105 @@ def measured_rates(run: str, subruns, tan_min: float = None) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+def efficiency_vs_incidence(run: str, subruns) -> pd.DataFrame:
+    """Does the chamber respond less often to a track arriving head-on?
+
+    This is the systematic the toy/data disagreement points at, measured
+    directly and WITHOUT the Micromegas -- which is the only way it can be
+    measured, since the thing under test is whether the Micromegas responds.
+
+    The trick is that the tag already contains the angle.  A wall+plastic
+    coincidence in one arm says a particle from the target crossed that arm,
+    and the wall GROUP that fired says roughly where: a particle reaching the
+    wall at u_w came in at
+
+        tan ~ (u_w - foot) / (d_perp + wall_depth)
+
+    The four groups sit at u ~ -159, -59, +41, +141 mm, so they sample
+    tan ~ -0.5, -0.2, +0.1, +0.4 -- and **one of them lands inside the
+    head-on band while the others do not**.  Comparing the chamber's response
+    rate across groups is therefore an efficiency-versus-incidence measurement
+    with an entirely external abscissa.
+
+    The confound is real and is reported next to the result: the four groups
+    also sit at four different places on the chamber, so a response difference
+    could be the surface rather than the angle.  The dead/hot maps say how much
+    of each group's footprint is compromised, and chamber A -- which has no
+    dead channels at all -- is the clean test.
+    """
+    from sept26_prelim_analysis import efficiency as EF
+    from sept26_prelim_analysis import chamber_b as CB
+    from ntof_tracking import run145_target_imaging as TI
+
+    gu = CB.wall_group_u(run)
+    fullpass = str(paths.out('fullpass') / run)
+    rows = []
+    for arm in AC.ARMS:
+        tag = EF.tagged_events(run, subruns, arm)
+        if tag.empty:
+            continue
+        resp = EF.chamber_response(run, subruns, arm, fullpass)
+        j = tag.merge(resp, on=['subrun', 'event_id'], how='left')
+        j['seeded'] = j.seeded.fillna(False).astype(bool)
+        j['tracked'] = j.tracked.fillna(False).astype(bool)
+        # single-group tags only: with two groups lit the incidence is ambiguous
+        j = j[j.wall_groups.map(len) == 1].copy()
+        if j.empty:
+            continue
+        j['grp'] = j.wall_groups.map(lambda s: next(iter(s)))
+        foot = TI.PINWHEEL[arm]
+        for g, h in j.groupby('grp'):
+            if g not in gu[arm] or len(h) < 200:
+                continue
+            tan = (gu[arm][g] - foot) / (CB.D_PERP_MM + CB.WALL_DEPTH_MM)
+            rows.append(dict(
+                arm=arm, grp=int(g), u_wall=gu[arm][g], tan_expected=tan,
+                head_on=bool(abs(tan) < 0.08), n_tagged=int(len(h)),
+                p_seeded=float(h.seeded.mean()),
+                p_tracked=float(h.tracked.mean())))
+    R = pd.DataFrame(rows)
+    if R.empty:
+        return R
+    # normalise each arm to its own best group, so the comparison is within a
+    # chamber and the absolute efficiency differences do not confuse it
+    R['p_tracked_rel'] = R.groupby('arm').p_tracked.transform(
+        lambda x: x / x.max())
+    return R
+
+
+def head_on_dip(EI: pd.DataFrame) -> pd.DataFrame:
+    """The head-on group against its two positional NEIGHBOURS.
+
+    This is what controls the confound.  The four wall groups sample four
+    incidences, but they also sample four places on the chamber, so a bare
+    ranking cannot separate angle from surface.  The head-on group is the
+    interior one, with a neighbour on each side: if the dip were the surface it
+    would interpolate between them, and if it is the angle it will sit below
+    both.  Reported for seeding and for tracking separately, because the two
+    answer different questions -- did the chamber see the particle, and did the
+    fit return a usable track.
+    """
+    rows = []
+    for arm, g in EI.groupby('arm'):
+        h = g[g.head_on]
+        if h.empty:
+            continue
+        k = int(h.grp.iloc[0])
+        nb = g[g.grp.isin((k - 1, k + 1))]
+        if len(nb) < 2:
+            continue
+        rows.append(dict(
+            arm=arm, grp=k, n_head_on=int(h.n_tagged.iloc[0]),
+            seed_head_on=float(h.p_seeded.iloc[0]),
+            seed_neighbours=float(nb.p_seeded.mean()),
+            seed_ratio=float(h.p_seeded.iloc[0] / nb.p_seeded.mean()),
+            track_head_on=float(h.p_tracked.iloc[0]),
+            track_neighbours=float(nb.p_tracked.mean()),
+            track_ratio=float(h.p_tracked.iloc[0] / nb.p_tracked.mean()),
+            below_both=bool(h.p_tracked.iloc[0] < nb.p_tracked.min())))
+    return pd.DataFrame(rows)
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split('\n')[1])
     ap.add_argument('--run', default='run_145')
@@ -242,6 +341,8 @@ def main() -> int:
     acc, thrown, legs = throw(ch, a.n, offset=offset)
     C = curves(acc, thrown)
     M = measured_rates(a.run, subs)
+    EI = efficiency_vs_incidence(a.run, subs)
+    HD = head_on_dip(EI)
     # The cross-check: the toy predicts a per-leg unreliable fraction from
     # geometry alone, and the data records one.  Nothing is tuned between them.
     X = legs.merge(M[['arm', 'frac_either_pointing',
@@ -256,6 +357,8 @@ def main() -> int:
     od = paths.out('angle')
     C.to_csv(od / f'normal_incidence_{a.run}.csv', index=False)
     M.to_csv(od / f'slope_reliable_measured_{a.run}.csv', index=False)
+    EI.to_csv(od / f'efficiency_vs_incidence_{a.run}.csv', index=False)
+    HD.to_csv(od / f'head_on_dip_{a.run}.csv', index=False)
     X.to_csv(od / f'slope_reliable_crosscheck_{a.run}.csv', index=False)
     json.dump(dict(schema=SCHEMA, run=a.run, subruns=subs, n_thrown=a.n,
                    tan_min_slope=WR.TAN_MIN_SLOPE,
@@ -286,6 +389,19 @@ def main() -> int:
     cols = [c for c in ('intra', 'perpendicular', 'opposing', 'all')
             if c in piv.columns]
     print((100 * piv[cols]).round(1).dropna(how='all').to_string())
+    print('\nEFFICIENCY vs INCIDENCE -- abscissa from the fired wall group, '
+          'no Micromegas in it')
+    if len(EI):
+        print(EI[['arm', 'grp', 'tan_expected', 'head_on', 'n_tagged',
+                  'p_seeded', 'p_tracked', 'p_tracked_rel']]
+              .round(3).to_string(index=False))
+    if len(HD):
+        print('\nTHE HEAD-ON GROUP AGAINST ITS TWO POSITIONAL NEIGHBOURS')
+        print(HD.round(3).to_string(index=False))
+        print(f'  below BOTH neighbours in {int(HD.below_both.sum())} of '
+              f'{len(HD)} chambers; median tracking ratio '
+              f'{HD.track_ratio.median():.2f}, seeding ratio '
+              f'{HD.seed_ratio.median():.2f}')
     print(f'\nwrote -> {od}')
     return 0
 
