@@ -54,6 +54,37 @@ Six things, in rough order of how much they matter.
 Everything is published: <https://dylan-neff.web.cern.ch/x17/reco-funnel/>,
 linked from the X17 hub, with the board's log carrying each result.
 
+> ### ⚠ CERN access is down, and I caused a connection storm against it
+>
+> **2026-09-08 03:20.** `ssh lxplus` began refusing with `Permission denied
+> (publickey,keyboard-interactive)` despite a valid, forwardable Kerberos
+> ticket (`Flags: FPRA`, renewable to 09-12). No `ControlPersist` master was
+> alive, so §N1's stale-master recipe does not apply.
+>
+> **The campaign census had no back-off, and turned that into 1 318 failed
+> connection attempts in about a minute** before I stopped it by hand. On a
+> staging failure the worker released its claim and immediately took the next
+> sub-run; a systemic failure fails every sub-run, so eight workers walked the
+> worklist as fast as they could. That is abusive to shared CERN
+> infrastructure, and it was my bug. `campaign_census.sh` now backs off and
+> aborts after five consecutive staging failures.
+>
+> It is **not established** whether the auth failure caused the storm or the
+> storm tripped a rate limit — the timing does not separate them. Assume the
+> latter is possible and stay off lxplus until a single probe succeeds:
+>
+> ```
+> timeout 90 ssh -o BatchMode=yes -o ConnectTimeout=30 lxplus 'echo SSH_OK'
+> ```
+>
+> **Do not retry in a loop.** One probe per attempt. If it still fails, a fresh
+> `kinit dneff@CERN.CH` is the first thing to try, and it may simply need time.
+> Nothing local is blocked: run_145 is complete and every product is on disk.
+> The overnight cron now probes once and does local-only work if it fails.
+>
+> Census progress when stopped: **6 of 293 sub-runs done** (run_79), all
+> correct — finished sub-runs are skipped on restart, so nothing is lost.
+
 **Next, in order:**
 
 1. **Chamber B.** The only chamber still without angles. Four suspects have now
