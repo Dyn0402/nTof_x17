@@ -56,7 +56,27 @@ linked from the X17 hub, with the board's log carrying each result.
 
 **Next, in order:**
 
-1. **Chamber B.** The only chamber still without angles. Its focus objective
+1. **Chamber B.** The only chamber still without angles. Four suspects have now
+   been eliminated, so what is left is the detector or its kernel:
+
+   | suspect | test | verdict |
+   |---|---|---|
+   | too few tracks | subsample A and D to B's 412 | **no** — they recover k to ±0.03–0.06 |
+   | scan grid too narrow | open it to k = 6 | **no** — B peaks at 2.10 and 4.45 in its two sub-runs |
+   | the charge window | vary it 25–75 → 0–100 | **no** — A, C, D move less than a plateau width; only B jumps |
+   | wall/plastic readout order reversed for the Z-view pair | try all four orderings per chamber | **no** — ascending/ascending wins in all four (A 44.8 %, B 20.5 %, C 35.6 %, D 15.0 %; every reversal collapses to 2–6 %) |
+
+   The conditional funnel says B's loss is diffuse, not one stage — and the one
+   place the chambers split into pairs is pointing confirmation per gated
+   track: **A 35.9 % and C 28.9 % against B 10.1 % and D 11.6 %**. That split is
+   {X-view} vs {Z-view}, which is what motivated the readout-order test above;
+   it survives the test, so it is a real detector difference. B's remaining
+   distinction from D is simply yield — 824 confirmed tracks against D's 1 865,
+   412 against 933 after the charge window — and since 412 is demonstrably
+   enough for A and D, B's individual tracks must carry less angle information.
+   That points at the bench-transferred sharing kernel (B: kY 5.40,
+   sigma_s 172 ns) not describing B in the beam. **The next step is a
+   beam-side kernel refit for B**, the way the other bundles were made. Its focus objective
    never turns over across the whole scan grid (k = 0.60–2.55) and its k jumps
    1.35 → 2.30 depending on the charge window, so this is a detector question,
    not a fitting one. B also has the fewest tracks by far (1 258

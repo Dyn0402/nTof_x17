@@ -51,10 +51,15 @@ done_count () { ls "$OUT"/census_run_*_stat090_*.csv 2>/dev/null \
                  | grep -cE 'census_run_[0-9]+_stat090_[0-9]{4}\.csv$'; }
 
 if [ "${1:-}" = "--status" ]; then
+  d=$(done_count)
   echo "sample:    $TOTAL sub-runs"
-  echo "done:      $(done_count)"
-  echo "claimed:   $(ls "$WORK" 2>/dev/null | wc -l)"
-  tail -5 "$LOG" 2>/dev/null
+  echo "done:      $d  ($(awk -v a=$d -v b=$TOTAL 'BEGIN{printf "%.1f", 100*a/b}') %)"
+  echo "in flight: $(ls "$WORK" 2>/dev/null | wc -l)"
+  echo
+  # candidate_filter's numpy warnings go to the same log, so filter for the
+  # progress lines rather than tailing raw -- this is the line Dylan reads.
+  grep -E '^\[.*\] (w[0-9]+ .*(start|done|FAILED)|campaign census)' "$LOG" \
+    2>/dev/null | tail -8
   exit 0
 fi
 
