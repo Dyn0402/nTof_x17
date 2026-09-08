@@ -68,6 +68,23 @@ fi
 
 mkdir -p "$WORK" "$OUT"
 
+# A claim is a directory held for the life of a worker, so a killed run leaves
+# claims behind and those sub-runs would be skipped forever on restart -- the
+# claim blocks re-claiming and the census it should have written never appears.
+# Clear any claim with no finished census and no live process: nothing else can
+# be holding one, because this script is the only thing that makes them and it
+# is not running yet.
+if ! pgrep -f 'campaign_census\.sh' | grep -qv "^$$\$"; then
+  n=0
+  for c in "$WORK"/*; do
+    [ -d "$c" ] || continue
+    b=$(basename "$c")
+    r=${b%_stat090_*}; sub=stat090_${b##*_stat090_}
+    [ -s "$OUT/census_${r}_${sub}.csv" ] || { rmdir "$c" 2>/dev/null && n=$((n+1)); }
+  done
+  [ "$n" -gt 0 ] && echo "cleared $n stale claim(s) from a previous run" | tee -a "$LOG"
+fi
+
 worker () {
   local id=$1
   local fails=0
