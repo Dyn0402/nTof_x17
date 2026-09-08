@@ -339,7 +339,16 @@ Four single-tag censuses, ~8,200 triggers each, spanning six weeks
 
 **116, 145 and 162 agree to a few percent** — inside the ~10 % single-tag
 sampling error, which is measured rather than assumed: run_145's one-tag census
-gives INTER 1.006 % against 1.114 % for all seven tags. So **run_145 is
+gives INTER 1.006 % against 1.114 % for all seven tags.
+
+**The campaign census's first full sub-run confirms both the method and the
+anomaly.** run_79/`stat090_0006`, 14 tags and 109 272 triggers — 13× the spot
+check — gives INTER 2.00 %, INTRA 5.40 %, BUSY 2.56 %, NONE 73.82 %, against
+the single-tag 1.86 / 5.73 / 2.64 / 72.95 %. Everything agrees to ~7 %, so the
+single-tag comparison above is sound, and run_79's excess is real at full
+statistics rather than a small-sample effect. Its INTER events also carry a
+median 409 clean strips against run_145's 162, which is the same noisier state
+seen in the per-arm rates. So **run_145 is
 representative of the bulk**, and the class partition is stable across the
 production period.
 
