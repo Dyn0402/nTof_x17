@@ -122,8 +122,30 @@ linked from the X17 hub, with the board's log carrying each result.
    position and angle are not independent — the very relation `k_arm.py`
    already exploits. A calibration could pin on the target the same way,
    fitting the kernel against `tan = (u − foot)/d_perp` instead of a reference
-   ray. `refit_B_beam.py` holds the harness and the argument; it refuses to run
-   with that explanation rather than failing on an import. Its focus objective
+   ray.
+
+   **That selector now exists** — `beam_cache.py`, 2026-09-08. It produces a
+   cache in exactly `build_cache`'s format from the target constraint, and
+   `refit_B_beam.py --use-beam-cache` drops it in where `calibrate()` looks, so
+   the fit is runnable. Validated on run_145: it builds for all four arms, and
+   its truth independently reproduces `k_arm`'s per-track estimator, because it
+   is the same relation — median `tan_reco/tan_target` is 1/k to a few percent
+   (A 0.804 → k 1.24, C 0.600 → 1.67, D 0.544 → 1.84, B 0.403 → 2.48).
+
+   Two things it cannot do, and they are the remaining work:
+
+   * **kY cannot be fitted.** The capsule is a 10 mm point in XZ but 80.2 mm
+     long along y, so d(tan_x) = 0.043 (21–34 % per track, 1.6–2.5 % on a
+     180-event mean) while d(tan_y) = 0.171 — 85 % per track, comparable to the
+     angle itself. `hypers_to_fit()` returns the shared kernel only. For
+     chamber B, whose kY of 5.40 is itself one of the suspects, that is a real
+     limitation.
+   * **The acceptance test is not written.** The truth derives from `p0`, from
+     a fit made with the bundle being replaced, so a result must be shown to be
+     a **fixed point**: fit → re-reconstruct → re-fit, and require the hypers to
+     stop moving. `k_arm` did exactly this for the angle scale (8–21 % of rows
+     moved, k changed by less than a grid step). Until that runs, any bundle
+     from this cache is a candidate and must not be installed. Its focus objective
    never turns over across the whole scan grid (k = 0.60–2.55) and its k jumps
    1.35 → 2.30 depending on the charge window, so this is a detector question,
    not a fitting one. B also has the fewest tracks by far (1 258
