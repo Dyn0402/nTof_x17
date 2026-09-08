@@ -509,6 +509,34 @@ were saturating the machine, so they are upper bounds. At 25.6 M triggers the
 campaign census is ~210–360 core-hours loaded, and the earlier ~135 estimate
 looks right for an idle machine.
 
+## Stage 3 — the track database, rebuilt on the full pass
+
+`stage3_fullpass/tracks_run_145_stat090_{0000,0001,0002}.parquet`, built
+2026-09-08. **240 065 track segments, 116 839 gated**, across all three
+sub-runs — against 4 216 / 2 263 for the old allowlist-based table, a factor of
+52.
+
+It was rebuilt because the old one described the wrong sample. Stage 2 keeps
+`INTER`/`INTRA`/`IMPLIED` whole and prescales `SINGLE`/`NONE` to 5 %/1 %, so a
+track table built on it has the *prescale's* composition, not the campaign's:
+
+| class | full pass | old (allowlist) | stage-1 census |
+|---|---:|---:|---:|
+| NONE | 70.1 % | 12.2 % | 78.2 % |
+| SINGLE | 21.7 % | 18.1 % | 16.7 % |
+| INTRA | 5.2 % | **34.1 %** | 2.5 % |
+| INTER | 2.2 % | **26.6 %** | 1.1 % |
+
+The full pass tracks the census, with the residual excess in `INTER`/`INTRA`
+being the real fact that those events are likelier to yield a gated track —
+which is what they are selected for. The old table is kept: it is the right
+sample for studying the stage-2 selection itself, and nothing else.
+
+Consistency checks, all exact: the gated count matches the funnel's 116 839
+and every per-arm count matches too (A 25 550, B 15 208, C 23 340, D 52 741).
+The null discipline holds — A, C and D carry finite angles on 100 % of gated
+rows and **B on 0 %**, because B has no certified angle scale.
+
 ## The two-chamber rate, measured against a control — and it is null
 
 `pairs.py`. An X17 at 16.8 MeV has a minimum opening angle of 109 deg, so its
