@@ -63,11 +63,19 @@ linked from the X17 hub, with the board's log carrying each result.
    pointing-confirmed against A's 5 909) and sub-run 0001 leaves under 200 in
    the charge window. Start from the funnel: B is the chamber with the lowest
    lift (1.15×) and the weakest pointing confirmation (16.1 %).
-2. **Sub-run 0002**, then re-run the whole chain over all three sub-runs.
+2. ~~Sub-run 0002~~ — **done 2026-09-08 02:15**, all four arms rc=0, and the
+   whole chain re-run over all three sub-runs (189 724 triggers). `run_145` is
+   complete.
 3. **The B–D pair direction.** With D certified, D-track/B-trigger is
    measurable; its mirror needs B. Until then the X17 topology has one
    measurable channel and a half.
-4. Campaign stage-1 census pass (~135 core-hours), then stage 2 (~760).
+4. **Campaign stage-1 census — RUNNING** since 2026-09-08 02:33
+   (`campaign_census.sh`, 8 workers, streamed and resumable). 293 sub-runs,
+   25.6 M triggers. Honest sizing: `candidate_filter` is single-process at
+   20–30 events/s, so this is **17–25 h wall**, a multi-night job rather than
+   an overnight one. It skips any sub-run whose census exists, so stopping and
+   restarting is free — `bash campaign_census.sh --status` for progress, and
+   just re-run it to continue. Then stage 2 (~760 core-hours).
 5. Stage 1's time base (flash t0 per bunch) → unblocks `t_since_flash_ns` and
    `e_neutron_keV`, and with them any energy-differential statement.
 
