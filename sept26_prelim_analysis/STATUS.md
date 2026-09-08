@@ -85,33 +85,43 @@ linked from the X17 hub, with the board's log carrying each result.
 > Census progress when stopped: **6 of 293 sub-runs done** (run_79), all
 > correct — finished sub-runs are skipped on restart, so nothing is lost.
 
-> ### Chamber B has no drift field. It is hardware, and B moves to hits.
+> ### Chamber B: no field-shaping rings. It is hardware, and B moves to hits.
 >
-> **Measured 2026-09-08 from `hv_monitor.csv`, run_145, 10 921 samples.**
-> Dylan's hypothesis, and the monitor settles it:
+> **CORRECTED 2026-09-08 by Dylan.** My first reading of the HV monitor was
+> wrong and is kept here because the wrong version is the tempting one.
 >
-> | arm | drift v0 | drift vmon | **drift imon** | resist imon |
+> | arm | drift v0 | drift vmon | drift imon | resist imon |
 > |---|---:|---:|---:|---:|
 > | A | 700.0 | 699.8 | 0.180 µA | 0.088 µA |
 > | **B** | 700.0 | 699.8 | **0.000 µA** | **2.136 µA** |
 > | C | 700.0 | 699.8 | 0.180 µA | 0.013 µA |
 > | D | 700.0 | 700.0 | 0.180 µA | 0.800 µA |
 >
-> B's drift channel draws **exactly zero in 99.7 % of samples** while A, C and D
-> sit pinned at 0.180 µA with zero variance. The supply holds 699.8 V because
-> there is no load: **the drift electrode is an open circuit.** A second
-> anomaly comes with it — B's resistive channel draws 2.136 µA, 24× A's.
+> I read B's zero drift current as an open circuit — the cathode unpowered.
+> **It is not.** A, C and D ground their degrader rings through three ~1 GΩ
+> resistors in series, and *that chain is what draws the current*:
+> 700 V / 0.180 µA = **3.89 GΩ = 3 × 1.30 GΩ**, which is the divider and
+> nothing else. **B simply has no ring chain**, so zero current is exactly what
+> it should read, and the monitor says nothing about whether B's cathode is at
+> voltage. It should be.
 >
-> **This retires the sharing-kernel explanation entirely.** Every calibration
-> avenue chased for B — the ref-free selector, the ensemble idea, an external
-> reference — was aimed at the wrong thing. With no drift field there is no
-> time–depth ladder to calibrate, and no reference of any precision would have
-> helped.
+> The physics that follows is different and better. The degrader rings are what
+> make the drift field *uniform*; without them the field between cathode and
+> mesh fringes badly, so drift lines are distorted and there is **no clean
+> time ↔ depth ladder** even with the cathode powered. That explains everything
+> B does — the angle-scale estimators that never agree, the focus objective
+> that never turns over, the plateau spanning the whole scan grid — without
+> requiring an unpowered cathode. B's resistive channel drawing 2.136 µA
+> against A's 0.088 is a separate anomaly and still unexplained.
 >
-> **B is still a good hit detector, and that is where it goes.** Position needs
-> no drift field, only the amplification stage. Tested by asking whether B's
-> cluster position predicts which wall segment fired, using no angle at all (a
-> target-pointing particle at chamber position u reaches the wall at 1.41 u):
+> **It still retires the sharing-kernel explanation.** Everything chased for B
+> overnight was aimed at the reconstruction when the answer was in the
+> detector's field cage.
+>
+> **B is a good hit detector, and that is where it goes** — on its own
+> processing chain, with its own metrics, before recombining with the others.
+> Position needs only the amplification stage. Asking whether B's cluster
+> position predicts which wall segment fired, using no angle at all:
 >
 > | arm | segment match | shuffled | lift |
 > |---|---:|---:|---:|
@@ -121,8 +131,7 @@ linked from the X17 hub, with the board's log carrying each result.
 > | D | 48.6 % | 29.3 % | 1.66 |
 >
 > B's position information is real and **better than D's**, which is a chamber
-> being used for tracking. So B contributes position and timing to pair finding
-> and acceptance; it contributes no angle, and its angle columns stay null.
+> being used for tracking. B's efficiency is measured on **hits, not tracks**.
 
 **Next, in order:**
 
