@@ -213,6 +213,75 @@ linked from the X17 hub, with the board's log carrying each result.
 > once — and that is why theirs shows in the raw occupancy while A's needs the
 > scintillator cut to appear.
 
+## HANDOFF — the state on 2026-09-08
+
+**Published, both linked from <https://dylan-neff.web.cern.ch/x17/>:**
+
+| page | what it is |
+|---|---|
+| [`x17/reco-funnel/`](https://dylan-neff.web.cern.ch/x17/reco-funnel/) | the reconstruction chain end to end, the angle scale, the two-chamber rate |
+| [`x17/detector-response/`](https://dylan-neff.web.cern.ch/x17/detector-response/) | efficiency, hit maps, dead channels, the plastic trigger acceptance |
+| [`x17/analysis.html`](https://dylan-neff.web.cern.ch/x17/analysis.html) | the board: pipeline, open questions, dated log |
+
+Both reports are **generated** (`make_funnel_report.py`,
+`make_response_report.py`) — re-run the analysis and then the maker, never edit
+the HTML.
+
+**Run 145 is complete**: three sub-runs, 189 724 triggers, full waveform pass
+with no prescale, everything downstream rebuilt on it.
+
+| | A | B | C | D |
+|---|---|---|---|---|
+| angle scale k | 1.266 | **none** | 1.616 | 1.757 |
+| efficiency | 24.2 % (tracks) | 17.5 % (**hits**) | 17.1 % (tracks) | 13.3 % (tracks) |
+| dead channels | 0 | — | 10 | **~130 of 512** |
+| state | healthy | field cage broken | healthy | badly compromised surface, sound angle scale |
+
+**The four things a new session must not re-derive:**
+
+1. **Chamber B has no field-shaping ring chain**, so no uniform drift field and
+   no time↔depth ladder. It is a **hit detector**: position and timing only,
+   angle columns null, efficiency quoted on hits. Its zero drift current is
+   *expected* (that current is the degrader divider, 3 × 1.30 GΩ) and is not
+   evidence of anything.
+2. **The two-lobe structure in every hit map is the trigger**, not the
+   detectors — the gap between the two plastic bars, predicted from the Geant
+   geometry with nothing tuned. Dead channels sit on top of it in C and D.
+3. **`k` is applied, never assumed.** An arm without a certified scale gets NaN
+   angles, not k = 1. Positions never depend on v.
+4. **The Y plane carries the same in-plane sign flip as X** — this was wrong
+   until 2026-09-08 and mirrored every vertical component.
+
+**Blocked on Dylan's hold** ("hold off on any large processing over all runs
+until I understand the results of the local tests"): the campaign stage-1
+census (11 of 293 sub-runs done, resumable via `campaign_census.sh`), and the
+`t_since_flash_ns` slim patch, which needs the slims regenerated.
+
+**Deferred to October** — see the list below, principally whether the
+scintillator tag really means a charged particle crossed the MM.
+
+**Package map** (`sept26_prelim_analysis/`):
+
+```
+freeze_sample     stage 0: the frozen run/sub-run sample
+candidate_filter  stage 1: one class per trigger from combined_hits + slim
+allowlist         stage 2: which (event, arm) pairs get reconstructed
+merge_fullpass    puts the flat CERN pass into the per-sub-run layout
+build_tracks      stage 3: one row per 3D segment; applies k, nulls what it cannot
+k_arm             the in-situ angle scale, three estimators + verdict
+funnel            trigger -> track -> n_TOF confirmation, per chamber
+pairs             the controlled two-chamber rate, with its systematic
+efficiency        scintillator-tagged, accidental-corrected
+hit_maps          occupancy, relative, by angle, and the purity ladder
+plastic_acceptance the trigger's own acceptance from the Geant geometry
+neutron_energy    tof -> E_n, and the slim patch that unblocks it
+beam_cache        ref-free training cache (built, measured, does NOT work)
+refit_B_beam      the beam-calibration harness (kept as the record of why not)
+make_*_report     the two published pages
+rerun_chain.sh    everything downstream of the pass, in dependency order
+campaign_census.sh streamed, resumable stage-1 over the campaign — ON HOLD
+```
+
 **Next, in order:**
 
 1. **Chamber B.** The only chamber still without angles. Four suspects have now
