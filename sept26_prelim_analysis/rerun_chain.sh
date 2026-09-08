@@ -14,6 +14,9 @@
 #   pair_physics    S4a: X17 and IPC birth spectra, validated against Geant4
 #   acceptance      S4b: the geometric toy, thrown flat in opening angle
 #   opening_angle   S4c: the measured spectrum against the folded expectation
+#   k_robustness    is k a property of the chamber, or of the sample?
+#   normal_incidence what a head-on track costs the opening angle
+#   chamber_b       B on its own chain, as the hit detector it is
 #   rsync           -> lxplus:/eos/user/d/dneff/www/x17/<page>/
 #
 # Each step must succeed before the next runs: a report built on a half-updated
@@ -53,6 +56,11 @@ step "acceptance"   $PY -W ignore -m sept26_prelim_analysis.acceptance --run "$R
 step "opening angle" $PY -W ignore -m sept26_prelim_analysis.opening_angle --run "$RUN" --subruns "$SUBRUNS"
 step "angle figures" $PY -W ignore -m sept26_prelim_analysis.make_angle_figures --run "$RUN"
 step "angle report"  $PY -W ignore -m sept26_prelim_analysis.make_angle_report --run "$RUN"
+
+# --- detector studies: no page of their own, products only ----------------- #
+step "k robustness"  $PY -W ignore -m sept26_prelim_analysis.k_robustness --run "$RUN" --subruns "$SUBRUNS"
+step "normal incid"  $PY -W ignore -m sept26_prelim_analysis.normal_incidence --run "$RUN" --subruns "$SUBRUNS"
+step "chamber B"     $PY -W ignore -m sept26_prelim_analysis.chamber_b --run "$RUN" --subruns "$SUBRUNS"
 
 echo; echo "=== publish  $(date -Is)"
 cp "$OUT/report.html" "$OUT/index.html"
