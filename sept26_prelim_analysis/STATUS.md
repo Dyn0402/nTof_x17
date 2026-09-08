@@ -75,8 +75,24 @@ linked from the X17 hub, with the board's log carrying each result.
    412 against 933 after the charge window — and since 412 is demonstrably
    enough for A and D, B's individual tracks must carry less angle information.
    That points at the bench-transferred sharing kernel (B: kY 5.40,
-   sigma_s 172 ns) not describing B in the beam. **The next step is a
-   beam-side kernel refit for B**, the way the other bundles were made. Its focus objective
+   sigma_s 172 ns) not describing B in the beam.
+
+   **A beam-side refit is not a re-run — it is development.** `wft.calibrate`
+   cannot fit on beam data at all: `build_cache` is **ref-pinned**, selecting
+   its training events along the M3 reference corridor and fitting the model
+   against per-event reference track parameters. The beam has no reference
+   telescope. This also settles what the bundles are: **all four are bench
+   transfers, and none has ever been fitted on beam data** — arm C's
+   `"fitted": "wft.calibrate"` describes its parent *bench* fit, alongside
+   `"transferred": "template + sharing kernel + w0/kw (bench)"`.
+
+   What would make it possible is a **ref-free training selector**. The beam
+   has a constraint the bench does not: the source is a point 234.6 mm away, so
+   position and angle are not independent — the very relation `k_arm.py`
+   already exploits. A calibration could pin on the target the same way,
+   fitting the kernel against `tan = (u − foot)/d_perp` instead of a reference
+   ray. `refit_B_beam.py` holds the harness and the argument; it refuses to run
+   with that explanation rather than failing on an import. Its focus objective
    never turns over across the whole scan grid (k = 0.60–2.55) and its k jumps
    1.35 → 2.30 depending on the charge window, so this is a detector question,
    not a fitting one. B also has the fewest tracks by far (1 258
