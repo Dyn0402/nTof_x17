@@ -13,7 +13,45 @@ the ~1 900 the plan budgeted**; 28 condor jobs turned `stat090_0000` into the
 first **track database — 4 216 segments, 2 263 gated**. Next: the in-situ angle
 scale, which every angle in that table is currently missing.
 
-Last updated **2026-09-08**.
+Last updated **2026-09-08** (S1-S4 complete).
+
+> ## S1-S4 are DONE and published -- 2026-09-08
+>
+> All four workstreams of PLAN.md §10 ran end to end on run_145 and shipped a
+> generated page. `rerun_chain.sh` now rebuilds and republishes all four in
+> dependency order.
+>
+> | | result | page |
+> |---|---|---|
+> | **S1** | the scintillators are a **filter** (three boolean roles, three branches) and nothing else. The wall is read at **both ends**, and that gives position along its 500 mm bars to **σ_y < 53 mm** -- 9× better than which group fired. Both estimators agree with each other at r = −0.69 to −0.83 in all four chambers, **B included**, with no Micromegas in the argument. | [`x17/scintillators/`](https://dylan-neff.web.cern.ch/x17/scintillators/) |
+> | **S2** | the capsule is at **X = −8.4, Z = −4.1 mm**, 9.3 mm off the beam axis and **inside its own r = 10 mm bore**, chamber-to-chamber spread ±0.6 mm. y is +22 mm and much weaker (σ_y 44-109 mm). | [`x17/source-imaging/`](https://dylan-neff.web.cern.ch/x17/source-imaging/) |
+> | **S3** | v falls monotonically **down the gas line** at the same 700 V in every chamber: 33.6 → 26.4 → 24.2 µm/ns = **0.37 / 0.67 / 0.77 % H₂O**. O₂, air and N₂ are all excluded. | folded into [`x17/reco-funnel/`](https://dylan-neff.web.cern.ch/x17/reco-funnel/) |
+> | **S4** | the pair generator reproduces the full Geant4 sim to **KS = 0.003**; the acceptance toy collapses 6× across the middle; and **the measured pairs follow the event-mixed shape** (χ²/dof 1.8-3.1) rather than any pair spectrum (6.7 and worse). | [`x17/opening-angle/`](https://dylan-neff.web.cern.ch/x17/opening-angle/) |
+>
+> ### Three corrections this phase forced
+>
+> 1. **Chamber D was never 40 mm off axis.** The −48/−36/−36 mm came from a
+>    cached `imaging_summary.json` that went stale under the y sign fix. The
+>    identical estimator on the current reconstruction gives −10.0/−9.6/−6.1,
+>    and −4.3 ± 0.5 with the charge window. `k_arm` now **computes** the
+>    crossing instead of reading it; `make_funnel_report` reads that.
+> 2. **Chamber B does contribute an alignment point.** The crossing needs no
+>    angle scale, only where the reconstructed angle is zero, so B gives Z at
+>    ±2 mm. Z is cross-checked, not single-sided.
+> 3. **N₂ cannot explain any chamber's drift velocity.** 5 % N₂ reaches only
+>    35.2 µm/ns, above all three.
+>
+> ### The three things S1-S4 leave open, in priority order
+>
+> 1. **The accidental normalisation for pairs.** The mixed sample carries no
+>    rate and the Poisson product over-predicts by 2-4× because the trigger
+>    correlates the arms. A **control chamber**, as `pairs.py` already uses for
+>    the two-chamber rate, is the highest-value next step for the spectrum.
+> 2. **Chamber D's sign flip against the wall**, degenerate between D's two
+>    wall ends swapped and D's MM y plane mirrored. Needs an external fact --
+>    the cabling map or the y strip mapping order. **A question for Dylan.**
+> 3. **The common y offset (+22 mm) and the common X offset (~9 mm)**, both
+>    degenerate between a real target position and a shared convention. D8.
 
 > ## The next phase is planned: PLAN.md §10, workstreams S1-S4
 >
