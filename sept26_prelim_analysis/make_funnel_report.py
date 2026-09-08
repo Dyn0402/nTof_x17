@@ -331,11 +331,20 @@ def k_table(cal: dict, img: dict) -> str:
     """The angle scale per chamber: three estimators, the spread, the verdict."""
     if not cal:
         return '<p class="note">no <code>k_arm_&lt;run&gt;.json</code> staged.</p>'
+    # From the CALIBRATION, not from imaging_summary.json.  That file is a
+    # cache nothing re-derives, and on 2026-09-08 it went stale under the y
+    # sign fix: chamber D read -48 mm here for a day while the current
+    # reconstruction said -10.  k_arm now computes the crossing from the
+    # sample it already has, and this reads that.
     src = {}
-    for r in (img or {}).get('results', []):
-        p = r.get('pointing_x_coincident', {})
-        src[r['arm']] = (p.get('source_measured_axis'),
-                         p.get('source_measured_mm'), p.get('zero_crossing_err'))
+    for a, v in (cal or {}).get('arms', {}).items():
+        sc = v.get('source_check') or {}
+        vals = [d for d in sc.values() if d.get('mm') == d.get('mm')]
+        if not vals:
+            continue
+        src[a] = (vals[0].get('axis'),
+                  float(np.mean([d['mm'] for d in vals])),
+                  float(np.sqrt(sum(d['err'] ** 2 for d in vals)) / len(vals)))
     def num(x, fmt='.2f'):
         return (f'<td class="n">{x:{fmt}}</td>' if x is not None and x == x
                 else '<td class="n">&mdash;</td>')
@@ -500,12 +509,13 @@ def build_html(F: pd.DataFrame, meta: dict, img: dict, cal: dict,
     kk = [float(v) for v in (cal.get('apply') or {}).values()]
     kmin, kmax = (min(kk), max(kk)) if kk else (float('nan'), float('nan'))
     n_cal = len(cal.get('apply') or {})
-    ac = {r['arm']: r for r in img['results']} if img else {}
-
     def src(a):
-        p = ac.get(a, {}).get('pointing_x_coincident', {})
-        return p.get('source_measured_mm', float('nan')), \
-            p.get('zero_crossing_err', float('nan'))
+        sc = (cal.get('arms', {}).get(a, {}) or {}).get('source_check') or {}
+        vals = [d for d in sc.values() if d.get('mm') == d.get('mm')]
+        if not vals:
+            return float('nan'), float('nan')
+        return (float(np.mean([d['mm'] for d in vals])),
+                float(np.sqrt(sum(d['err'] ** 2 for d in vals)) / len(vals)))
 
     a_s, a_e = src('A')
     c_s, c_e = src('C')
@@ -665,7 +675,9 @@ genuine result: the zero crossing of the pointing band,
 intercept and the slope together, so it is <b>invariant under the angle
 scale</b> &mdash; it cannot be produced, or improved, by tuning drift velocities.
 A and C measure the same global axis and land at {a_s:+.1f} &plusmn; {a_e:.1f} mm
-and {c_s:+.1f} &plusmn; {c_e:.1f} mm against a surveyed 0.</p>
+and {c_s:+.1f} &plusmn; {c_e:.1f} mm against a surveyed 0. The full picture,
+including what the chamber-to-chamber difference is worth as alignment, is on
+the <a href="../source-imaging/">source-imaging page</a>.</p>
 <div class="caution"><b>Only {cal_list} have their angles filled in.</b> In the
 track table {uncal_list} carr{uncal_verb} <code>NaN</code> for every
 angle-derived column &mdash; direction, target pointing, scintillator

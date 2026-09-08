@@ -334,15 +334,27 @@ def combine(per_sub: dict) -> dict:
                 v_insitu=V_BUNDLE_PRIOR / k if k else None)
 
 
-def source_check(recs: list) -> dict:
-    """The scale-free source position per sub-run -- a geometry check, not k."""
+def source_check(run: str, arm: str, samples: dict) -> dict:
+    """The scale-free source position per sub-run -- a geometry check, not k.
+
+    COMPUTED HERE, from the same samples the estimators run on.  It used to be
+    READ from ``imaging_summary.json``, and on 2026-09-08 that quietly went
+    stale: the y in-plane sign fix changed which tracks are pointing-coincident
+    (the coincidence predicts a v on the wall and the plastic), the sample
+    shrank by 30-45 %, and chamber D's crossing moved from -48 mm to -10 mm
+    while the report kept quoting -48. A cached number from a file nothing
+    re-derives is a trap; recomputing costs nothing here because the sample is
+    already in memory.
+    """
+    from sept26_prelim_analysis import source_imaging as SI
     out = {}
-    for sub, rec in recs:
-        p = rec.get('pointing_x_coincident', {})
-        out[sub] = dict(axis=p.get('source_measured_axis'),
-                        mm=p.get('source_measured_mm'),
-                        err=p.get('zero_crossing_err'),
-                        n=p.get('n'))
+    for sub, S in sorted(samples.items()):
+        c = SI.crossing(S['xl'], S['tx'],
+                        dict(foot=S['foot_x'], lo=LEVER_WINDOW_MM[0],
+                             hi=LEVER_WINDOW_MM[1]))
+        ax, mm = ((None, float('nan')) if not np.isfinite(c['x0'])
+                  else SI.to_global(run, arm, c['x0']))
+        out[sub] = dict(axis=ax, mm=mm, err=c['err'], n=c['n'])
     return out
 
 
@@ -371,7 +383,7 @@ def build(run: str, subruns, merged_dir: str) -> dict:
     cfg = _json.loads((Path(str(paths.root('runs'))) / run
                        / 'run_config.json').read_text())
     trs = G.detector_transforms(cfg)
-    scans, samples = {}, {}
+    scans, samples, raw = {}, {}, {}
     for sub in subruns:
         for a in ARMS:
             try:
@@ -386,6 +398,7 @@ def build(run: str, subruns, merged_dir: str) -> dict:
             sc = focus_scan(S, trs[f'mx17_{a}'])
             scans[(a, sub)] = sc
             samples[(a, sub)] = estimators(S, sc)
+            raw[(a, sub)] = S
 
     arms = {}
     for a in ARMS:
@@ -396,10 +409,9 @@ def build(run: str, subruns, merged_dir: str) -> dict:
             continue
         r = combine(per_sub)
         r['source_check'] = source_check(
-            [(s, imgs[s][a]) for s in subruns if a in imgs[s]])
+            run, a, {s: raw[(a, s)] for s in subruns if (a, s) in raw})
         r['n_coincident'] = int(sum(
-            imgs[s][a].get('pointing_x_coincident', {}).get('n', 0)
-            for s in subruns if a in imgs[s]))
+            raw[(a, s)]['n_coincident'] for s in subruns if (a, s) in raw))
         # The focus scan's plateau: how wide a range of k the data cannot
         # distinguish.  A wide plateau is the honest reason an arm is not
         # certified even when the three point estimates happen to agree.

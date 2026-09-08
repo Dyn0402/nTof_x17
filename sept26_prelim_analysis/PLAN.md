@@ -599,10 +599,30 @@ Each chamber measures **one** transverse coordinate, the one along its own
 
 | chamber | u_hat | measures | run_145 |
 |---|---|---|---|
-| A | +x | global **X** | −7.67 ± 0.41, −7.68 ± 0.40, −8.58 ± 0.36 mm |
-| C | −x | global **X** | −11.54 ± 0.72, −10.62 ± 0.58, −11.34 ± 0.59 mm |
-| B | +z | global **Z** | *no field cage — nothing* |
-| D | −z | global **Z** | −48.1 ± 13.1, −35.9 ± 7.0, −35.6 ± 10.5 mm |
+| A | +x | global **X** | −7.86 ± 0.31 mm |
+| C | −x | global **X** | −8.97 ± 0.41 mm |
+| B | +z | global **Z** | −3.82 ± 1.97 mm *(one sub-run; see below)* |
+| D | −z | global **Z** | −4.33 ± 0.52 mm |
+
+> **MEASURED 2026-09-08, and it corrects this table's first version.** The
+> numbers here were read from a cached `imaging_summary.json` written the day
+> before, which said D was **−48 / −36 / −36 mm** — 40 mm off axis. That cache
+> went stale under the y in-plane sign fix: the fix changed which tracks are
+> pointing-coincident (the coincidence predicts a *v* on the wall and the
+> plastic) and the sample shrank 30–45 %. Re-running the *identical* estimator
+> on the current reconstruction gives D at **−10.0 / −9.6 / −6.1 mm**, and
+> −4.3 ± 0.5 with the charge window the angle scale already uses. `k_arm` now
+> computes the crossing from the sample in memory instead of reading the file.
+>
+> **And chamber B does contribute.** The crossing asks only where the
+> reconstructed angle is zero — where the track is perpendicular to the plane —
+> which a distorted but symmetric field still puts in the right place. B has no
+> *slope* and never will, but it gives one Z point at ±2 mm, so **Z is
+> cross-checked after all**. Everything below about "Z is measured once and the
+> answer is not believable" is retracted: the source is at
+> **X = −8.4, Z = −4.1 mm, 9.3 mm from the beam axis, inside the r = 10 mm
+> bore**, with a chamber-to-chamber alignment spread of ±0.6 mm.
+> Published: <https://dylan-neff.web.cern.ch/x17/source-imaging/>
 
 **X is the measurable one, and it is measured twice.** A and C look at the same
 number from opposite sides, so
@@ -730,8 +750,11 @@ down the line. Two exclusions come free and must be stated with the number:
   and they attach at η = 2–4 cm⁻¹, which would strip the cathode-side charge to
   a per-cent of the anode side. `garfield_sim/attachment_run58.py` measured the
   opposite on real data — flat-to-rising amplitude across the full 30 mm.
-- **N₂ can explain A and cannot explain C or D**: 5 % N₂ only reaches 35.2, and
-  N₂ has no natural source that does not also bring O₂.
+- **N₂ cannot explain any of them.** The ladder tops out at 5 % N₂ =
+  35.2 µm/ns, which is *above every chamber here* — so N₂ does not reach even
+  the driest, and it has no natural source that does not also bring O₂.
+  (This corrects the first version of this line, which said N₂ could account
+  for A; the inversion returning NaN is what caught it.)
 
 **Caveats that go on the figure, not in a footnote:** the in-situ v is
 `v_prior / k` and `k` is the angle scale, whose focus objective is flat over
