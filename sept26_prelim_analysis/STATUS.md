@@ -85,6 +85,45 @@ linked from the X17 hub, with the board's log carrying each result.
 > Census progress when stopped: **6 of 293 sub-runs done** (run_79), all
 > correct — finished sub-runs are skipped on restart, so nothing is lost.
 
+> ### Chamber B has no drift field. It is hardware, and B moves to hits.
+>
+> **Measured 2026-09-08 from `hv_monitor.csv`, run_145, 10 921 samples.**
+> Dylan's hypothesis, and the monitor settles it:
+>
+> | arm | drift v0 | drift vmon | **drift imon** | resist imon |
+> |---|---:|---:|---:|---:|
+> | A | 700.0 | 699.8 | 0.180 µA | 0.088 µA |
+> | **B** | 700.0 | 699.8 | **0.000 µA** | **2.136 µA** |
+> | C | 700.0 | 699.8 | 0.180 µA | 0.013 µA |
+> | D | 700.0 | 700.0 | 0.180 µA | 0.800 µA |
+>
+> B's drift channel draws **exactly zero in 99.7 % of samples** while A, C and D
+> sit pinned at 0.180 µA with zero variance. The supply holds 699.8 V because
+> there is no load: **the drift electrode is an open circuit.** A second
+> anomaly comes with it — B's resistive channel draws 2.136 µA, 24× A's.
+>
+> **This retires the sharing-kernel explanation entirely.** Every calibration
+> avenue chased for B — the ref-free selector, the ensemble idea, an external
+> reference — was aimed at the wrong thing. With no drift field there is no
+> time–depth ladder to calibrate, and no reference of any precision would have
+> helped.
+>
+> **B is still a good hit detector, and that is where it goes.** Position needs
+> no drift field, only the amplification stage. Tested by asking whether B's
+> cluster position predicts which wall segment fired, using no angle at all (a
+> target-pointing particle at chamber position u reaches the wall at 1.41 u):
+>
+> | arm | segment match | shuffled | lift |
+> |---|---:|---:|---:|
+> | A | 78.0 % | 30.2 % | 2.58 |
+> | C | 62.1 % | 29.2 % | 2.13 |
+> | **B** | **49.7 %** | 27.4 % | **1.82** |
+> | D | 48.6 % | 29.3 % | 1.66 |
+>
+> B's position information is real and **better than D's**, which is a chamber
+> being used for tracking. So B contributes position and timing to pair finding
+> and acceptance; it contributes no angle, and its angle columns stay null.
+
 **Next, in order:**
 
 1. **Chamber B.** The only chamber still without angles. Four suspects have now
