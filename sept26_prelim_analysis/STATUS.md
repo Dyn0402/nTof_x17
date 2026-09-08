@@ -159,9 +159,36 @@ linked from the X17 hub, with the board's log carrying each result.
    seven-parameter kernel.** A ref-free calibration needs truth that is
    independent of the waveform fit, and the target is not.
 
-   So chamber B needs either an external reference in the beam (the
-   scintillators are the only candidate, and the wall's 100 mm segments are
-   coarse) or to stay tagging-only. The two limitations below stand regardless:
+   **And no external reference in the beam is good enough either** — measured,
+   not asserted. A calibration needs truth independent of the waveform, so the
+   candidates are the scintillators, and their granularity settles it (uniform
+   segments, σ = half-width/√3):
+
+   | external pair | lever | d(tan) |
+   |---|---:|---:|
+   | target + wall group | 331 mm | **0.089** |
+   | target + plastic bar | 421 mm | 0.138 |
+   | wall + plastic | 90 mm | 0.720 |
+
+   The best is 0.089 — **twice as coarse as the circular target truth that
+   already failed**, and 70 % of a typical |tan| in chamber B. The wall's u
+   granularity is 100 mm because `detn` resolves 4 groups of 4 bars; its 8
+   values are those groups × top/bottom, and the parity is a *y* distinction,
+   not a finer u one.
+
+   **So chamber B stays tagging-only for the preliminary.** Its kernel cannot
+   be calibrated from beam data with any reference that exists. Two avenues
+   remain, both new method development rather than re-runs:
+
+   * **An ensemble calibration** instead of per-event truth. The target already
+     pins one number from a distribution; a kernel might be pinned the same way
+     by matching distributions the kernel controls — cluster width, χ²/dof, the
+     residual structure across strips — rather than event by event.
+   * **The wall's top/bottom amplitude ratio** should give position along the
+     bar, which is the y handle the capsule's 80 mm length denies. That would
+     bear on kY only, not the shared kernel.
+
+   The two limitations below stand regardless:
 
    * **kY cannot be fitted.** The capsule is a 10 mm point in XZ but 80.2 mm
      long along y, so d(tan_x) = 0.043 (21–34 % per track, 1.6–2.5 % on a

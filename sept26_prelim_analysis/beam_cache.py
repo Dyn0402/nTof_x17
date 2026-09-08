@@ -54,6 +54,43 @@ must be checked rather than argued:
      require the hypers to stop moving.  Until that is run, a bundle from this
      cache is a candidate and nothing more.
 
+WHAT HAPPENED WHEN IT WAS RUN (2026-09-08).  It works mechanically and has no
+power.  chi2 improved by 0.028 % on 60 training events and 0.080 % on 180,
+against the 23-27 % the bench ref-pinned fits achieve on the same seven
+parameters; at 180 the optimiser wandered to c1 = 0.743, tau_s = 1.9 ns and
+sigma_s = 5 ns for that 0.08 %.  The reason is the circularity above surfacing
+as powerlessness rather than as a wrong answer: the chi2 can be satisfied by
+moving the track instead of by getting the kernel right, because the truth is a
+function of the fit's own p0.  **The target constrains one number -- the
+position-angle relation, which is what k_arm measures -- not a seven-parameter
+kernel.**
+
+AND NO EXTERNAL REFERENCE IN THE BEAM IS GOOD ENOUGH EITHER.  A calibration
+needs truth independent of the waveform, so the candidates are the
+scintillators, and their granularity settles it (uniform segments, so sigma =
+half-width/sqrt(3)):
+
+    pair                      lever     d(tan)
+    target + wall group       331 mm     0.089
+    target + plastic bar      421 mm     0.138
+    wall + plastic             90 mm     0.720
+
+The best of them is 0.089, twice as coarse as the circular target truth that
+already failed, and 70 % of a typical |tan| in chamber B.  The wall's u
+granularity is 100 mm because detn resolves 4 groups of 4 bars; its 8 values
+are those 4 groups x top/bottom, and the parity is a y distinction, not a finer
+u one.
+
+SO: this module stands as a working, validated selector and as the measurement
+that the approach cannot calibrate a kernel.  The remaining avenue is a
+DIFFERENT KIND of calibration -- ensemble rather than per-event.  The target
+already pins one number from a distribution; a kernel might be pinned the same
+way, by matching distributions the kernel controls (cluster width, chi2/dof,
+the residual structure across strips) rather than by per-event truth.  That is
+new method development.  A second, smaller idea: the wall's top/bottom
+amplitude ratio should give position along the bar, which is the y handle the
+capsule's 80 mm length denies -- useful for kY, useless for the shared kernel.
+
     python -m sept26_prelim_analysis.beam_cache --arm B --report
     python -m sept26_prelim_analysis.beam_cache --arm B --build --events 400
 """
