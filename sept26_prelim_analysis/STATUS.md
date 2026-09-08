@@ -132,7 +132,36 @@ linked from the X17 hub, with the board's log carrying each result.
    is the same relation — median `tan_reco/tan_target` is 1/k to a few percent
    (A 0.804 → k 1.24, C 0.600 → 1.67, D 0.544 → 1.84, B 0.403 → 2.48).
 
-   Two things it cannot do, and they are the remaining work:
+   **And it does not work — measured, 2026-09-08.** The fit runs end to end and
+   has no power:
+
+   | | χ² improvement |
+   |---|---:|
+   | beam, target-pinned, 60 training events | 0.028 % |
+   | beam, target-pinned, 180 training events | 0.080 % |
+   | bench, ref-pinned (all four bundles) | **23–27 %** |
+
+   Three orders of magnitude less traction, and the training-set size is not
+   the explanation. At 180 events the optimiser wandered to c1 = 0.743 (seed
+   0.0513), tau_s = 1.9 ns (134), sigma_s = 5 ns (172) for that 0.08 % — a long
+   walk for nothing, which is what a flat landscape looks like. That c1 puts
+   **238 % of the charge on the neighbours** and still passes the `c2 < c1`
+   gate, which only catches inversion; `evaluate()` now checks
+   2(c1+c2) < 1 as well, and reports χ² traction against the bench's 23–27 %.
+
+   **Why**, and it is the circularity surfacing as powerlessness rather than as
+   a wrong answer: the bench truth is a reference ray measured *outside* the
+   waveform, so the model must reproduce a given track with the right kernel.
+   The target truth is `tan = (u − foot)/d_perp` with `u` from the fit's own
+   `p0`, so the χ² can be satisfied by moving the track instead of by getting
+   the kernel right. **The target constrains one number — the relation between
+   position and angle, which is exactly what `k_arm` measures — not a
+   seven-parameter kernel.** A ref-free calibration needs truth that is
+   independent of the waveform fit, and the target is not.
+
+   So chamber B needs either an external reference in the beam (the
+   scintillators are the only candidate, and the wall's 100 mm segments are
+   coarse) or to stay tagging-only. The two limitations below stand regardless:
 
    * **kY cannot be fitted.** The capsule is a 10 mm point in XZ but 80.2 mm
      long along y, so d(tan_x) = 0.043 (21–34 % per track, 1.6–2.5 % on a
