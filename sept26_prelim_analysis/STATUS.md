@@ -49,14 +49,34 @@ Last updated **2026-09-08** (S1-S4 complete).
 > | **(b) the normal-incidence hole** | **does not exist.** `TAN_MIN_SLOPE` sets a flag and gates nothing in this chain — verified in `wft/reco.py`/`wft/compat.py` (no caller passes `require_slope=True`, and every caller is a June bench package) and in the data (23-30 % of gated tracks carry the flag False and are all still there). The real cost is **resolution**: if a reliable slope were ever required on both planes of both legs it would take **~50 % of pairs**, near-flat across topologies. `normal_incidence.py`. |
 > | **(c) chamber B** | characterised in **both** in-plane coordinates with no angle anywhere. Position information real (lift 1.45×) but **not better than D** — that claim is withdrawn above. What separates B is **charge density: 0.45× A's**, the widest and most dilute clusters of the four, which is what a fringing field predicts. `chamber_b.py`. |
 >
-> **One new systematic on S4, from (b).** The acceptance toy predicts the
-> per-leg head-on fraction from geometry alone and lands within ~25 % for A and
-> C — but the data has *fewer* head-on tracks than geometry allows, in both.
-> The natural reading is that **reconstruction efficiency depends on incidence**
-> (a head-on track deposits on few strips in a short time) while
-> `acceptance.py` applies efficiency independent of angle. That biases the whole
-> opening-angle acceptance and is not yet corrected. D goes the other way
-> (1.33× after its hot cells are masked) and the residual is unexplained.
+> **One new systematic on S4, from (b) — and it is now measured, not inferred.**
+> The acceptance toy predicts the per-leg head-on fraction from geometry alone
+> and lands within ~25 % for A and C, but the data has *fewer* head-on tracks
+> than geometry allows. That pointed at an incidence-dependent reconstruction
+> efficiency, and `normal_incidence.efficiency_vs_incidence` measures it
+> **without using the Micromegas at all**: the fired wall group supplies the
+> abscissa, since the four groups sample tan = −0.53, −0.23, **+0.08**, +0.38
+> and the third is head-on. The head-on group is *interior*, with a neighbour
+> either side, so a surface effect would interpolate between them:
+>
+> | arm | seeding vs neighbours | tracking vs neighbours | below both? |
+> |---|---:|---:|:--:|
+> | A | 1.01 | 0.84 | yes |
+> | B | 0.93 | 0.86 | yes |
+> | C | 0.96 | 0.67 | yes |
+> | D | 0.98 | 0.76 | yes |
+>
+> **Below both neighbours in 4 of 4 chambers, median tracking ratio 0.80 — and
+> seeding is flat at 0.97.** The chamber sees the head-on particle; the fit is
+> what fails to return a gated track, which is the mechanism expected when a
+> charge column arrives at every strip at once.
+>
+> **`acceptance.py` applies efficiency independent of incidence, so it
+> over-counts head-on legs by roughly the reciprocal of those ratios** — a real,
+> θ-dependent bias on the opening-angle acceptance. Not corrected: correcting it
+> needs the efficiency map to become 2D in (position, incidence), which is more
+> than run_145 supports. D's own head-on surplus (1.33× after hot cells) is
+> separate and stays unexplained.
 
 > ### The three things S1-S4 leave open, in priority order
 >
