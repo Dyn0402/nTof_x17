@@ -78,6 +78,19 @@ Last updated **2026-09-08** (S1-S4 complete).
 > than run_145 supports. D's own head-on surplus (1.33× after hot cells) is
 > separate and stays unexplained.
 
+> ### Two handoff documents, written 2026-09-08
+>
+> | | |
+> |---|---|
+> | [`HANDOFF_ACCIDENTAL_TIMING.md`](HANDOFF_ACCIDENTAL_TIMING.md) | the scintillator timing test of the S4 null. **Half done already**: in two-arm events one arm is the trigger (median \|Δt\| 7 ns, against a 5.2 ns single-arm reference) and **the other fires at a random time — median 171 ns, 47 % beyond 200 ns**. True-coincidence fraction **≤ 6 ± 3 %**. Also finds the accept window is mis-centred, and that `is_control` is an unused flat accidental sample. |
+> | [`HANDOFF_D_NOISY_CHANNELS.md`](HANDOFF_D_NOISY_CHANNELS.md) | identify D's noisy channels and make them reconstruction wildcards. They are **not discharges** (median charge ratio 0.94) but wide, dilute, low-density clusters; they are **whole x columns spanning the full plane height**, i.e. bad channels not bad regions; and they sit on the **49.8 mm connector boundaries** — the same fault class as D's dead runs. |
+>
+> **`source_imaging.vertices` had a latent bug, now fixed**: the pair frames
+> carried only `key`, the *first* track's event id, so a mixed pair silently
+> claimed its second track belonged to the first one's event. They now carry
+> `key1` and `key2`. No published number changed — nothing downstream read
+> `key` — but the timing study reads it, and it burned an hour.
+
 > ### The three things S1-S4 leave open, in priority order
 >
 > 1. **The accidental normalisation for pairs.** The mixed sample carries no

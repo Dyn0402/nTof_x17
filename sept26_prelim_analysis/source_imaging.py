@@ -578,8 +578,15 @@ def _vertex_frame(t: pd.DataFrame, pr: pd.DataFrame, mixed: bool):
     V, sep = _dca_two_lines(p1, d1, p2, d2)
     dot = np.einsum('ij,ij->i', d1, d2).clip(-1, 1)
     a1, a2 = a.arm.to_numpy(), b.arm.to_numpy()
+    # BOTH keys, not just the first.  In the mixed sample the two tracks come
+    # from DIFFERENT triggers, so a single `key` column silently claims the
+    # second track belongs to the first one's event -- which is exactly the
+    # trap a downstream timing study fell into on 2026-09-08.
+    swap = a1 > a2
+    k1 = np.where(swap, b.key.to_numpy(), a.key.to_numpy())
+    k2 = np.where(swap, a.key.to_numpy(), b.key.to_numpy())
     return pd.DataFrame(dict(
-        key=a.key.to_numpy(),
+        key=a.key.to_numpy(), key1=k1, key2=k2,
         arm1=np.minimum(a1, a2), arm2=np.maximum(a1, a2),
         topology=np.where(a1 == a2, 'intra', 'inter'),
         vx=V[:, 0], vy=V[:, 1], vz=V[:, 2],
