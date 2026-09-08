@@ -30,10 +30,17 @@ acceptance and none of which this module hides:
   * **Not uniform.**  It varies across the chamber, and acceptance needs the
     variation, not the average.  :func:`efficiency_map` bins it in the in-plane
     coordinate.
-  * **Not the same as tracking.**  Chamber B has no drift field (STATUS.md), so
-    for B the meaningful efficiency is the HIT efficiency -- did the chamber
-    register a cluster -- not the track efficiency.  Both are reported, and for
-    B only the first means anything.
+  * **Not the same as tracking.**  Chamber B has no field-shaping ring chain
+    and therefore no clean drift field (STATUS.md), so for B the meaningful
+    efficiency is the HIT efficiency -- did the chamber register a cluster --
+    and its track efficiency is meaningless. ``headline()`` returns the hit
+    number for B and the track number for A, C and D, so a caller cannot pick
+    up the wrong one by accident.
+  * **The tag may not mean what it says.**  Chamber A comes out at 63 % where
+    80-90 % is expected, and a neutron or gamma converting in the PCB would
+    fire the scintillators with no charged particle having crossed the gas --
+    inflating the denominator and pushing the efficiency down, which is the
+    direction of the discrepancy. Deferred to October (STATUS.md).
 
     python -m sept26_prelim_analysis.efficiency --run run_145
 """
@@ -197,6 +204,23 @@ def measure(run: str, subruns, fullpass: str) -> tuple:
     return pd.DataFrame(rows), pd.DataFrame(maps)
 
 
+#: Chambers whose efficiency must be read from HITS, not tracks -- B has no
+#: uniform drift field, so a "track" in B is not a track.
+HITS_ONLY = ('B',)
+
+
+def headline(E: pd.DataFrame) -> pd.DataFrame:
+    """The efficiency each chamber should actually be quoted at."""
+    out = []
+    for _, r in E.iterrows():
+        hits = r.arm in HITS_ONLY
+        out.append(dict(arm=r.arm, basis='hits' if hits else 'tracks',
+                        efficiency=r.eff_hit_corr if hits else r.eff_track_corr,
+                        p0=r.p0_hit if hits else r.p0_track,
+                        n_tagged=int(r.n_tagged)))
+    return pd.DataFrame(out)
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split('\n')[1])
     ap.add_argument('--run', default='run_145')
@@ -238,6 +262,13 @@ def main() -> int:
     piv = M.pivot(index='arm', columns='u_mid',
                   values='eff_track_given_seed') * 100
     print('   ' + piv.round(1).to_string().replace('\n', '\n   '))
+    H = headline(E)
+    H.to_csv(od / f'efficiency_headline_{a.run}.csv', index=False)
+    print('\nHeadline efficiency per chamber -- B on HITS, the rest on TRACKS,')
+    print('because B has no uniform drift field and its tracks are not tracks.\n')
+    print(f'{"arm":>3} {"basis":>8} {"efficiency":>11} {"p0":>8}')
+    for _, r in H.iterrows():
+        print(f'{r.arm:>3} {r.basis:>8} {100 * r.efficiency:>10.1f}% {100 * r.p0:>7.1f}%')
     print(f'\nwrote {od}')
     return 0
 

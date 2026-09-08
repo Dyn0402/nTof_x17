@@ -295,6 +295,20 @@ linked from the X17 hub, with the board's log carrying each result.
    capture flood. That last is an inference until one bunch's `tflash` is read
    from the raw files.
 
+
+**Deferred to October** (added 2026-09-08):
+
+* **Is the scintillator tag really "a charged particle crossed the MM"?** The
+  efficiency below uses wall AND plastic as truth, and chamber A comes out at
+  63 % where 80–90 % is expected. A neutron or gamma passing through the MM and
+  converting in the PCB would fire the scintillators without a charged particle
+  having crossed the gas — inflating the denominator and pushing the measured
+  efficiency down, which is the direction of the discrepancy. Needs a study of
+  the conversion probability and, if it matters, a tag that is not
+  scintillator-only.
+* **Chamber B's resistive channel draws 2.136 µA against A's 0.088** — 24×,
+  unexplained, and separate from the missing ring chain.
+
 ### N0 · Land on the machine — ✅ done
 
 Kerberos ticket live (`dneff@CERN.CH`, renewable to 12 Sep), `ssh lxplus`
