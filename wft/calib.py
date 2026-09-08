@@ -107,6 +107,18 @@ class CalibrationBundle:
     # either direction. Per run condition like everything else here.
     dead: Dict[str, list] = field(default_factory=dict)
 
+    # --- hot-channel wildcard (HANDOFF_D_NOISY_CHANNELS.md, 2026-09-08):
+    # channels firing far above their local occupancy neighbourhood --
+    # unlike ``dead``, these DO carry signal (coherent/correlated noise fit as
+    # a wide, dilute cluster), so they are not censored. Dylan's spec: never
+    # seed on one (wft.seed.seed_candidates/seeds_from_hits), keep it in the
+    # fit down-weighted (wft.model.prep_plane inflates its noise), cap its
+    # influence (HOT_NOISE_INFLATION bounds how far), never drop a track for
+    # having crossed one. Measured from raw combined_hits occupancy, per
+    # (detector, run condition) like everything else here --
+    # sept26_prelim_analysis/noisy_channels.py.
+    hot: Dict[str, list] = field(default_factory=dict)
+
     # --- per-plane angle-mapping constants (9dd7d6e, restored 2026-08-13).
     # The fitted width w maps to a tangent as  tan = (w*1e3 - w0[p]) / (kw[p]*v)
     # -- w0 is the zero-angle width offset and kw the scale, both measured from
@@ -157,6 +169,8 @@ class CalibrationBundle:
                     t0_prior_sigma=float(self.t0_prior_sigma),
                     dead={p: [int(c) for c in ch]
                           for p, ch in self.dead.items()},
+                    hot={p: [int(c) for c in ch]
+                        for p, ch in self.hot.items()},
                     w0={p: float(v) for p, v in self.w0.items()},
                     kw={p: float(v) for p, v in self.kw.items()},
                     pitch_mm=self.pitch_mm, sample_ns=self.sample_ns,
@@ -183,6 +197,8 @@ class CalibrationBundle:
                    t0_prior_sigma=m.get('t0_prior_sigma', 0.0),
                    dead={p: [int(c) for c in ch]
                          for p, ch in m.get('dead', {}).items()},
+                   hot={p: [int(c) for c in ch]
+                       for p, ch in m.get('hot', {}).items()},
                    w0={p: float(v) for p, v in (m.get('w0') or {}).items()},
                    kw={p: float(v) for p, v in (m.get('kw') or {}).items()},
                    pitch_mm=m.get('pitch_mm', 0.78),

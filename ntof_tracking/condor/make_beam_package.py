@@ -15,6 +15,11 @@ Builds <dest>/:
     jobs.txt         arm,tag,extra
     beam_reco.sub, run_beam_wrapper.sh, run_beam_job.py, log/
 
+``--hot`` ships a hot-channel wildcard JSON (sept26_prelim_analysis/
+apply_hot_wildcards.py --export-json) the same way ``--allow`` ships a stage-2
+allowlist; each job merges only its own arm's entry into the seeded bundle's
+``hot`` field (HANDOFF_D_NOISY_CHANNELS.md).
+
 Then:
     rsync -av <dest>/ lxplus:~/wft_beam145/
     ssh lxplus 'cd ~/wft_beam145 && condor_submit beam_reco.sub'
@@ -59,6 +64,12 @@ def main():
                     help='pinned for every arm, as the published run_145 '
                          'bundles were (V_DRIFT_MAGBOLTZ, not the per-arm '
                          'prior) — so the kernel is the only thing that moved.')
+    ap.add_argument('--hot', default=None,
+                    help='hot-channel wildcard JSON (sept26_prelim_analysis/'
+                         'apply_hot_wildcards.py --export-json), '
+                         '{arm: {plane: [channels]}}. Ships with the package; '
+                         'each job applies only its own arm\'s entry '
+                         '(HANDOFF_D_NOISY_CHANNELS.md).')
     ap.add_argument('--allow-dirty', action='store_true')
     a = ap.parse_args()
 
@@ -131,6 +142,18 @@ def main():
               f'({c["n_arm_events"] / c["n_arm_events_full_reco"]:.2%} of a full '
               f'reco); prescale {allow_doc["policy"]["control_prescale"]}')
 
+    # ---- hot-channel wildcards
+    hot_name, hot_doc = None, None
+    if a.hot:
+        hot_doc = json.load(open(a.hot))
+        hot_name = os.path.basename(a.hot)
+        shutil.copy2(a.hot, os.path.join(a.dest, hot_name))
+        for arm in arms:
+            h = hot_doc.get(arm, {})
+            nx, ny = len(h.get('x', [])), len(h.get('y', []))
+            if nx or ny:
+                print(f'hot wildcards {hot_name}: arm {arm} -> x={nx} y={ny}')
+
     # ---- jobs
     jobs = os.path.join(a.dest, 'jobs.txt')
     n_jobs, n_skip, n_ev = 0, 0, 0
@@ -146,6 +169,8 @@ def main():
                         continue
                     n_ev += n
                     extra += f' --allow {allow_name}'
+                if hot_name is not None:
+                    extra += f' --hot {hot_name}'
                 f.write(f'{arm},{tag},{extra}\n')
                 n_jobs += 1
     print(f'jobs.txt: {n_jobs} jobs of {len(arms) * len(tags)} '
@@ -166,6 +191,14 @@ def main():
             sys.exit(f'FATAL: cannot find the allowfile default in {p}')
         open(p, 'w').write(txt.replace(old, f'  allowfile             = , {allow_name}\n'))
         print(f'beam_reco.sub: transfers {allow_name}')
+    if hot_name:
+        p = os.path.join(a.dest, 'beam_reco.sub')
+        txt = open(p).read()
+        old = '  hotfile               =\n'
+        if old not in txt:
+            sys.exit(f'FATAL: cannot find the hotfile default in {p}')
+        open(p, 'w').write(txt.replace(old, f'  hotfile               = , {hot_name}\n'))
+        print(f'beam_reco.sub: transfers {hot_name}')
     os.chmod(os.path.join(a.dest, 'run_beam_wrapper.sh'), 0o755)
     print('package at', a.dest)
     print(f'  rsync -av {a.dest}/ lxplus:~/{os.path.basename(a.dest)}/')

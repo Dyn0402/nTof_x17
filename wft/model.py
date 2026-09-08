@@ -47,6 +47,14 @@ regression-tested against the R&D code (``tests/test_model_regression.py``).
 
 Calibration is module-global state, set once per process by
 ``use_calibration()``; worker processes set it in their initializer.
+
+Two channel wildcards ride the same bundle (``prep_plane``): ``DEAD``
+channels are censored samples (no signal in either direction, dropped from
+the chi2 like a saturated one); ``HOT`` channels DO carry signal (coherent or
+correlated noise fit as a cluster -- HANDOFF_D_NOISY_CHANNELS.md) and stay in
+the fit, just down-weighted by inflating their noise (``HOT_NOISE_INFLATION``)
+rather than dropped, so a real track that happens to cross one is not
+penalised for the crossing.
 """
 from __future__ import annotations
 
@@ -74,6 +82,16 @@ UK = (np.arange(K) + 0.5) * DT
 HYPER: dict | None = None
 SHARE_MODE = 'delay'      # 'delay' | 'lp' — see module docstring
 DEAD: dict = {}           # per-plane dead-channel arrays (T1.3); see prep_plane
+HOT: dict = {}            # per-plane hot-channel arrays; see prep_plane
+#: How far a hot channel's noise is inflated in the chi2 (HANDOFF_D_NOISY_
+#: CHANNELS.md item 3: "cap their influence... a per-channel weight in the
+#: NNLS design matrix"). Deliberately finite, unlike DEAD's 1e9: a hot
+#: channel DOES carry signal and stays in the fit (rows are not censored --
+#: `sat` is untouched), just down-weighted by 1/HOT_NOISE_INFLATION**2 in the
+#: chi2 sum, so it cannot dominate but a real track crossing it is not
+#: penalised for the crossing. Not yet tuned against a re-reconstruction --
+#: first cut, see the module docstring / HANDOFF_D_NOISY_CHANNELS.md Sec. 4.
+HOT_NOISE_INFLATION = 10.0
 
 _smear_cache: dict = {}
 _lp_cache: dict = {}
@@ -84,11 +102,13 @@ T0_STEP = 5.0             # t0 quantisation for the cached time tensors
 def use_calibration(cal: CalibrationBundle) -> None:
     """Install a calibration bundle as the model's calibration."""
     global CAL, TGRID, TMPL, GAIN, DT_XY, PITCH, SNS, SAT, DT, K, UK, HYPER, \
-        SHARE_MODE, DEAD
+        SHARE_MODE, DEAD, HOT
     check_kernel_ordering(cal.hyper, where=f'bundle {cal.detector}/{cal.run_key}')
     CAL = cal
     DEAD = {p: np.asarray(sorted(ch), dtype=int)
             for p, ch in getattr(cal, 'dead', {}).items() if len(ch)}
+    HOT = {p: np.asarray(sorted(ch), dtype=int)
+          for p, ch in getattr(cal, 'hot', {}).items() if len(ch)}
     TGRID = np.asarray(cal.grid, float)
     TMPL = {p: np.asarray(cal.tmpl[p], float) for p in ('x', 'y')}
     GAIN = {p: np.asarray(cal.gain[p], float) for p in ('x', 'y')}
@@ -299,7 +319,14 @@ def prep_plane(P, plane):
     connection reads baseline, not zero charge, so their rows are excluded
     from the fit and the dof exactly like saturated samples, and their noise
     is inflated so the one-sided saturation penalty cannot pull on them
-    either: no information in either direction."""
+    either: no information in either direction.
+
+    Hot channels (bundle ``hot``, HANDOFF_D_NOISY_CHANNELS.md) are NOT
+    censored -- they carry real signal, just noise/correlated-noise-shaped
+    signal, and a real track can cross one. Their rows stay live in the fit
+    (``sat`` untouched) with noise inflated by a bounded
+    ``HOT_NOISE_INFLATION`` rather than to 1e9, so they are down-weighted --
+    capped influence, not zero -- and cannot pull the fit on their own."""
     W = np.asarray(P['W'], dtype=np.float64).copy()
     ch = np.asarray(P['ch'], dtype=int)
     g = GAIN[plane][ch]
@@ -312,6 +339,11 @@ def prep_plane(P, plane):
         if rows.any():
             sat[rows] = True
             noise[rows] = 1e9
+    h = HOT.get(plane)
+    if h is not None and len(h):
+        rows = np.isin(ch, h)
+        if rows.any():
+            noise[rows] *= HOT_NOISE_INFLATION
     return W, noise, np.asarray(P['pos'], dtype=np.float64), sat
 
 

@@ -17,6 +17,7 @@
 #   k_robustness    is k a property of the chamber, or of the sample?
 #   normal_incidence what a head-on track costs the opening angle
 #   chamber_b       B on its own chain, as the hit detector it is
+#   noisy_channels  D's hot/dead/noisy strips, from raw hits (HANDOFF_D_NOISY_CHANNELS.md)
 #   rsync           -> lxplus:/eos/user/d/dneff/www/x17/<page>/
 #
 # Each step must succeed before the next runs: a report built on a half-updated
@@ -61,6 +62,7 @@ step "angle report"  $PY -W ignore -m sept26_prelim_analysis.make_angle_report -
 step "k robustness"  $PY -W ignore -m sept26_prelim_analysis.k_robustness --run "$RUN" --subruns "$SUBRUNS"
 step "normal incid"  $PY -W ignore -m sept26_prelim_analysis.normal_incidence --run "$RUN" --subruns "$SUBRUNS"
 step "chamber B"     $PY -W ignore -m sept26_prelim_analysis.chamber_b --run "$RUN" --subruns "$SUBRUNS"
+step "noisy channels" $PY -W ignore -m sept26_prelim_analysis.noisy_channels --run "$RUN" --subruns "$SUBRUNS"
 
 echo; echo "=== publish  $(date -Is)"
 cp "$OUT/report.html" "$OUT/index.html"

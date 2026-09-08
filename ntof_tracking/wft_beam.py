@@ -333,7 +333,8 @@ def read_hits_tag(path: str, feus) -> 'pd.DataFrame':
 def seeds_from_hits_beam(df, pos_maps, feu_x, feu_y,
                          busy=BUSY_PLANE_HITS,
                          n_candidates=N_CANDIDATES_BEAM,
-                         min_strips=MIN_STRIPS_BEAM) -> Dict[int, dict]:
+                         min_strips=MIN_STRIPS_BEAM,
+                         hot: Optional[Dict[str, object]] = None) -> Dict[int, dict]:
     """Beam seeds: {eventId: {'x': [Seed], 'y': [Seed], 'n_hits', 'spark'}}.
 
     Same contract and the same clustering as `wft.seed.seeds_from_hits` -- only
@@ -348,12 +349,17 @@ def seeds_from_hits_beam(df, pos_maps, feu_x, feu_y,
         SPAN to decide that a deposit is not a drift column is a detection
         question (which clusters to fit), not a geometry one -- the fit still
         gets only channels.
+
+    ``hot``: optional ``{'x': [...], 'y': [...]}`` channel numbers -- typically
+    ``cal.hot`` -- passed through to ``seed_candidates`` (HANDOFF_D_NOISY_
+    CHANNELS.md's wildcard spec, item 1: never seed on a flagged channel).
     """
     from wft import seed as wseed
     df = wseed.apply_significance_floor(df, wseed.SIG_REL_FLOOR)
     out: Dict[int, dict] = {}
     if len(df) == 0:
         return out
+    hot = hot or {}
     for eid, g in df.groupby('eventId', sort=False):
         rec = {'x': [], 'y': [], 'n_hits': int(len(g)), 'spark': False}
         for plane, feu in (('x', feu_x), ('y', feu_y)):
@@ -364,7 +370,8 @@ def seeds_from_hits_beam(df, pos_maps, feu_x, feu_y,
             cands = wseed.seed_candidates(pos_maps[feu][ch], ch,
                                           gp['amplitude'].to_numpy(),
                                           min_strips=min_strips,
-                                          n_candidates=n_candidates)
+                                          n_candidates=n_candidates,
+                                          hot=hot.get(plane))
             smp = dict(zip(ch, gp['max_sample'].to_numpy()))
             keep = []
             for s in cands:
@@ -462,7 +469,7 @@ def reconstruct_subrun(cfg: BeamConfig, bundle_path: str, out_path: str,
                 print(f'[wft-beam]   {tag}: no hits file, skipped')
                 continue
             hits = read_hits_tag(hp, (feu_x, feu_y))
-            seeds = seeds_from_hits_beam(hits, pos_maps, feu_x, feu_y)
+            seeds = seeds_from_hits_beam(hits, pos_maps, feu_x, feu_y, hot=cal.hot)
             del hits
             wanted = set(seeds)
             if allow_events is not None:

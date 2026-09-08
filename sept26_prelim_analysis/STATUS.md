@@ -91,12 +91,159 @@ Last updated **2026-09-08** (S1-S4 complete).
 > `key1` and `key2`. No published number changed — nothing downstream read
 > `key` — but the timing study reads it, and it burned an hour.
 
+> ### HANDOFF_ACCIDENTAL_TIMING.md, item (a) done — the true-coincidence
+> fraction is measured — 2026-09-08
+>
+> Redone per the handoff's own §4(a): unbiased hit choice instead of
+> "closest to dt_ns = 0" (sec 3.1's own bias, which the first pass carried),
+> the full ±1000 ns range, and an unbinned two-component MLE fit against
+> `is_control` (sec 2.2's unused accidental control) instead of matching one
+> summary statistic to a single-parameter fold. New module
+> `accidental_timing.py`.
+>
+> **f = 29 % [17, 40] overall, 42 % [26, 58] opposing (A–C, the signal
+> topology), 16 % [0, 32] perpendicular** — well above the first pass's
+> 6 ± 3 % upper bound, and topology-ordered the way a real source predicts
+> (opposing carries ~2.7× the perpendicular fraction). The direction reversal
+> is methodological, not a sign the stated bias was wrong about its own
+> direction: both numbers are on record and the difference is explained on
+> the page rather than quietly superseded.
+>
+> Also delivered: item (c), the accept window's purity/width trade-off — the
+> production window (−100, +60) ns sits at 88 % peak/pedestal purity where a
+> centred (−20, +20) reaches 95 % — **not applied**, since `DT_WINDOW` is
+> shared by `candidate_filter.py`/`efficiency.py`/`scintillators.py` and
+> changing it touches the stage-1/stage-2 production chain, on Dylan's hold.
+> One more finding from the same pass: under the production window, a
+> wall+plastic "coincidence" is nearly automatic — only 1 of 147 216
+> single-active-arm events fails to show one, because the window is wide
+> enough that the plastic family's own accidental rate lands something in it
+> almost every time. The peak's own core (−30, +30) ns is what recovers a
+> real "coincidence vs. one element" comparison.
+>
+> Still open, in the handoff's own order: item (b), feeding f back into the
+> opening-angle spectrum — the measured f covers only the 16 % of real
+> inter-chamber pairs that carry a two-arm scintillator tag at all, so
+> applying it to the rest needs an unchecked representativeness assumption,
+> not done here; item (d), intra-chamber pairs (needs the wall's along-bar
+> position to separate two legs in one arm, untested); item (e), the
+> Micromegas `t0` cross-check (needs (a) fixed first, since `t0` carries the
+> drift depth). `HANDOFF_ACCIDENTAL_TIMING.md` updated with the full result
+> and the next-session priority list. Published:
+> <https://dylan-neff.web.cern.ch/x17/accidental-timing/>
+
+> ### HANDOFF_D_NOISY_CHANNELS.md, steps 1-3 done — 2026-09-08
+>
+> `noisy_channels.py` is the standalone per-strip classifier the handoff's
+> §4 asked for, built and run on run_145 **before touching the
+> reconstruction**. Per (arm, plane, channel) from raw `combined_hits` —
+> honest, pre-fit occupancy, not `events_prelim.x_p0/y_p0` like
+> `k_robustness.hot_cells`/`source_imaging.dead_ranges` — with a local
+> (64-channel = one connector) median so the plane's own illumination lobes
+> are not flagged. Three classes: `dead`/`hot` from occupancy alone,
+> `noisy` from a hits-level cluster-shape check (`wft.seed`'s production
+> significance-floor + gap clustering — no waveform fit).
+>
+> **Confirms the handoff's finding independently, at channel granularity**:
+> hot-channel fraction lands within a point of `k_robustness`'s 2D-cell
+> numbers on every chamber (A 1.4/3.1 % x/y, B 0/0.2 %, C 0/0 %, D 8.2/11.1 %
+> — vs. k_robustness's A 2.1, B 1.5, C 1.9, D 10.75 %), **with HOT_FACTOR = 5
+> reused unchanged from k_robustness** — nothing was fit to make the numbers
+> agree. D's flagged channels carry 56-70 % of its own hits despite being
+> 8-11 % of the plane (echoes the handoff's 80.6 %-of-clusters-in-10.8 %-of-
+> plane), and the widest single band is 14 channels sitting exactly on the
+> 448-462 connector boundary. The `noisy` shape class is real but small
+> (0-2 % of channels) and not yet validated the way `hot` is.
+>
+> **A second tuning pass found and fixed two real bugs in the shape (`noisy`)
+> pass, both upstream of this module.** (1) The DAQ's `eventId` resets every
+> subrun, so concatenating subruns and grouping on `eventId` alone silently
+> merges unrelated events — `noisy_channels.py` now carries a `subrun` column
+> and groups on `(subrun, eventId)` everywhere. (2) Raw `combined_hits` is
+> dominated by a documented ~1.2-1.3 MHz coherent-band noise residual
+> (`ntof_tracking.reco.noise.py`) that `wft.seed`'s own significance floor
+> does not remove — it is relative to the event's own max, and a coherent
+> band shares one amplitude scale across hundreds of strips at once. One
+> inspected A-x "track-like" event had hits over channels 57-509 at near-
+> uniform amplitude, and the 12 mm gap threshold merged all of it into one
+> supercluster. Before both fixes the median hits-level cluster width on
+> clean A-x was 45-110 strips (nearly a quarter of the plane); after running
+> hits through `noise.flag_noise` (the existing production filter) and
+> restricting to track-like events (`{arm}_trk_x/y >= 1` from
+> `candidate_filter`'s own per-plane classification), it is 18 — physically
+> sane, and the flagged `noisy` sets got smaller and tighter (A-x: 9 scattered
+> channels → 2; D-y: 7 bands → 3). `dead`/`hot` were unaffected — they only
+> ever used the full, unselected occupancy. **Even after the fix, `noisy` stays
+> the weaker class**: its flagged count is sensitive to its own threshold
+> (27 → 2 → 0 channels on A-x across a modest (width, density) factor sweep),
+> and on D-x — the plane the handoff's own shape evidence is actually about —
+> it flags nothing at any threshold tried, because `hot` already accounts for
+> the shape-anomalous channels there. Read `noisy` as "worth a second look",
+> not validated the way `hot` is (which matches `k_robustness`'s independent
+> measurement to ~1 point on every chamber, unchanged by this pass).
+> `load_hits` now costs ~15 min for the default 3 subruns (`noise.flag_noise`
+> is an unvectorized per-event pass) — was ~1 min before the fix.
+>
+> Output: `<out>/noisy_channels/noisy_channels_run_145.csv` (per-channel) and
+> `noisy_channels_summary_run_145.csv` (per arm/plane), wired into
+> `rerun_chain.sh`.
+
+> ### §3.2/§4 step 4 done — the `hot` wildcard is wired into `wft/`, not yet re-run — 2026-09-08
+>
+> `dead` already had exactly this plumbing (T1.3): `CalibrationBundle.dead` ->
+> `wft.model.DEAD` -> `prep_plane` censors those rows entirely. Dylan's spec
+> for `hot` is different on purpose — a hot channel DOES carry signal, so it
+> must stay in the fit, just capped — which meant a second, parallel
+> mechanism rather than reusing `dead`'s:
+>
+> | spec item | where | mechanism |
+> |---|---|---|
+> | never seed on a flagged channel | `wft/seed.py` `seed_candidates` | ranking + the `min_strips` admission test now use the CLEAN (non-hot) strip count, not the raw one — a cluster made entirely of hot strips can't outrank or become a seed. Membership is untouched: a hot strip inside a real cluster stays in `Seed.channels`, so gap-clustering still bridges across it and a track is never split or lost for crossing one. Threaded through `wft.reco.reconstruct_run` and `ntof_tracking.wft_beam.seeds_from_hits_beam`/`reconstruct_subrun` (`cal.hot`). |
+> | keep it in the fit, down-weighted | `wft/model.py` `prep_plane` | `HOT` (mirrors `DEAD`, from `cal.hot`) inflates that row's noise by `HOT_NOISE_INFLATION` (10x, **not tuned yet** — first cut) instead of `DEAD`'s 1e9; `sat` is left alone, so the row keeps its dof, unlike `dead`. |
+> | cap its influence | same `HOT_NOISE_INFLATION` | bounded, not infinite, by construction — the row survives, its pull on the NNLS profile is 1/100 of an unflagged row's. |
+> | record it | `wft/reco.py` `PlaneFit.n_flagged_strips` | dead+hot channels in the fit window, per plane, in every track row (including the null-fit row, so the column is never missing). |
+>
+> `CalibrationBundle` gained a `hot` field (mirrors `dead`, same save/load
+> round-trip). All locally verified, no condor needed: `wft/tests/
+> test_hot_mask.py` (new, 4 checks — down-weighted-not-censored, bundle
+> round-trip, an all-hot cluster is rejected as a seed, a track crossing one
+> hot strip stays one cluster with all its channels) plus the full existing
+> suite, **23/23 passing** (`.venv/bin/python -m pytest wft/tests/`).
+>
+> `sept26_prelim_analysis/apply_hot_wildcards.py` builds the concrete D/
+> run_145 case: it re-derives `calib_bundle_prelim` (the exact bundle the
+> frozen tracks were built from — that bundle itself lived on a condor worker
+> and is gone, but `wft_beam.make_bundle` is a pure function of the bench
+> source bundle + `run_config.json`, and the script verifies the re-derived
+> hyper/v_drift/sat_adc against the frozen run's own `events_prelim.meta.json`
+> before trusting it — **caught a real staleness bug in the process**:
+> `wft_beam.V_DRIFT_PRIOR['D']` is now 36.0 µm/ns, but the frozen run_145/D
+> reco actually used 42.6 — the table moved after that reco ran, and
+> re-deriving without checking would have silently shipped a bundle that
+> differs from baseline in v_drift AND hot channels at once, confounding any
+> comparison), attaches the 42 x / 57 y hot channels from
+> `noisy_channels.py`, and writes `calib_bundle_hotmasked` alongside the
+> untouched baseline — never overwriting it, since a bundle is per detector
+> **and** per run condition.
+>
+> **Not done, deliberately**: actually launching the re-reconstruction. That
+> needs `ntof_tracking.wft_beam reco` on lxplus/condor — remote compute with
+> real wall-clock cost — so it was left as an explicit next step rather than
+> triggered automatically. Once run, compare against the frozen `run_145/D`
+> track table on the success criteria HANDOFF_D_NOISY_CHANNELS.md §3.3 already
+> declared (angle-scale spread toward ~0.056 without discarding 22 % of the
+> sample; the head-on excess closes; cluster width falls toward A's 25; A/C
+> must not move; gated-track COUNT goes up, not down).
+
 > ### The three things S1-S4 leave open, in priority order
 >
-> 1. **The accidental normalisation for pairs.** The mixed sample carries no
->    rate and the Poisson product over-predicts by 2-4× because the trigger
->    correlates the arms. A **control chamber**, as `pairs.py` already uses for
->    the two-chamber rate, is the highest-value next step for the spectrum.
+> 1. ~~The accidental normalisation for pairs.~~ **MEASURED 2026-09-08** — not
+>    via a control chamber in the end, but directly from scintillator timing:
+>    f = 29 % [17, 40] true-coincidence overall, 42 % [26, 58] opposing,
+>    16 % [0, 32] perpendicular (see `HANDOFF_ACCIDENTAL_TIMING.md` above).
+>    **Not yet folded into the S4 spectrum itself** — the tagged subsample is
+>    only 16 % of real inter-chamber pairs, so that is a new, smaller open
+>    item rather than this one closed outright.
 > 2. **Chamber D's sign flip against the wall**, degenerate between D's two
 >    wall ends swapped and D's MM y plane mirrored. Needs an external fact --
 >    the cabling map or the y strip mapping order. **A question for Dylan.**

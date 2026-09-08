@@ -18,7 +18,7 @@ data is already on EOS at CERN; only the ~1 MB/tag parquet travels.
 
     python3 run_beam_job.py <arm> <tag> [--run run_145] [--subrun stat090_0000]
                             [--bundle-name calib_bundle_r06] [--v-drift 42.6]
-                            [--jobs 8]
+                            [--jobs 8] [--allow allow.json] [--hot hot.json]
 """
 import argparse
 import os
@@ -67,6 +67,32 @@ def stamp_provenance(bundle_dir, bench_origin):
         json.dump(b, f, indent=1)
 
 
+def apply_hot(bundle_dir, hot_path, arm):
+    """Merge this arm's hot-channel wildcards (sept26_prelim_analysis/
+    noisy_channels.py, via apply_hot_wildcards.py --export-json) into the
+    seeded bundle's ``hot`` field, in place.
+
+    ``hot_path`` is the shared, all-arms JSON the package ships
+    (``{'D': {'x': [...], 'y': [...]}, ...}``); a worker only ever wants its
+    own arm out of it. Missing/empty for this arm is not an error -- most
+    arms have none (HANDOFF_D_NOISY_CHANNELS.md: D is the one this was built
+    for), and the job must still run cleanly with `hot: {}`.
+    """
+    import json
+    doc = json.load(open(hot_path))
+    hot = doc.get(arm, {})
+    p = os.path.join(bundle_dir, 'bundle.json')
+    b = json.load(open(p))
+    b['hot'] = hot
+    b.setdefault('provenance', {})['hot_wildcards'] = dict(
+        source='sept26_prelim_analysis/noisy_channels.py',
+        shipped_as=os.path.basename(hot_path),
+        n_hot_x=len(hot.get('x', [])), n_hot_y=len(hot.get('y', [])))
+    with open(p, 'w') as f:
+        json.dump(b, f, indent=1)
+    return hot
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('arm')
@@ -89,6 +115,12 @@ def main():
                          'the listed events of this arm are fitted. Relative '
                          'names resolve beside this script (condor drops the '
                          'transferred files in the scratch dir).')
+    ap.add_argument('--hot', default=None,
+                    help='hot-channel wildcard JSON, shipped with the job '
+                         '(sept26_prelim_analysis/apply_hot_wildcards.py '
+                         '--export-json). {arm: {plane: [channels]}} -- this '
+                         'job reads only its own arm out of it. Relative '
+                         'names resolve beside this script, same as --allow.')
     a = ap.parse_args()
 
     sys.path.insert(0, CODE)
@@ -131,6 +163,17 @@ def main():
                                                     'calib_bundle_prelim'),
                             v_drift=a.v_drift, run=a.run, sub_run=a.subrun)
     stamp_provenance(bundle, bench_origin)
+
+    if a.hot:
+        hp = a.hot if os.path.isabs(a.hot) else os.path.join(HERE, a.hot)
+        if not os.path.isfile(hp):
+            sys.exit(f'FATAL: --hot {a.hot} not found at {hp}. It must be in '
+                     'transfer_input_files, or the job would silently run '
+                     'with no hot wildcards.')
+        applied = apply_hot(bundle, hp, a.arm)
+        print(f'[job] hot wildcards {hp}: arm {a.arm} -> '
+             f'x={len(applied.get("x", []))} y={len(applied.get("y", []))}',
+             flush=True)
 
     # The bench absolute-time table must not ride along on a beam run (see
     # wft_beam.make_bundle). Assert it here too: this is a worker, nobody reads

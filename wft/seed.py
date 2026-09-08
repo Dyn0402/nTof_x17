@@ -53,14 +53,28 @@ def apply_significance_floor(df: pd.DataFrame, rel: float = SIG_REL_FLOOR) -> pd
 def seed_candidates(pos: np.ndarray, channels: np.ndarray, amps: np.ndarray,
                     gap_mm: float = GAP_THRESHOLD_MM,
                     min_strips: int = MIN_STRIPS,
-                    n_candidates: int = 1) -> list:
-    """Spatial clusters of one plane, ranked by strip count.
+                    n_candidates: int = 1, hot=None) -> list:
+    """Spatial clusters of one plane, ranked by CLEAN (non-``hot``) strip
+    count.
 
     ``n_candidates > 1`` returns the runners-up as well, so the caller can let
     the waveform fit decide which cluster is the muon. That matters: "largest
     cluster wins" picks the wrong charge in ~5 % of events, and when it does,
     the true track sits a median of 37 mm outside the fit window (measured on
     det3 — see mx_june_wft/DET3_GATE_2026-07-29.md).
+
+    ``hot`` (HANDOFF_D_NOISY_CHANNELS.md's wildcard spec, item 1: "never seed
+    on a flagged channel") is a set/array of channel numbers that must not, by
+    themselves, qualify a cluster as a seed. Ranking and the ``min_strips``
+    admission test both use the CLEAN count only, so a cluster made entirely
+    of hot strips (a noise column self-clustering) cannot outrank or displace
+    a real candidate and cannot become a seed on its own. Cluster MEMBERSHIP
+    is untouched: a hot strip inside a real track's cluster stays in
+    ``Seed.channels`` and still reaches the fit -- gap-clustering still
+    bridges across it, so a track is never split or lost for having crossed
+    one. It arrives at the fit down-weighted instead (``wft.model.prep_plane``
+    reads the same bundle's ``hot`` list), which is where its influence is
+    actually capped (item 3).
     """
     good = np.isfinite(pos)
     pos, channels, amps = pos[good], channels[good], amps[good]
@@ -69,13 +83,16 @@ def seed_candidates(pos: np.ndarray, channels: np.ndarray, amps: np.ndarray,
     o = np.argsort(pos)
     pos, channels, amps = pos[o], channels[o], amps[o]
     lab = np.concatenate([[0], np.cumsum(np.diff(pos) > gap_mm)])
-    counts = np.bincount(lab)
-    order = np.argsort(counts)[::-1][:max(1, n_candidates)]
+    n_labels = int(lab.max()) + 1 if len(lab) else 0
+    hot_mask = (np.isin(channels, list(hot)) if hot is not None and len(hot)
+               else np.zeros(len(channels), bool))
+    clean_counts = np.bincount(lab[~hot_mask], minlength=n_labels)
+    order = np.argsort(clean_counts)[::-1][:max(1, n_candidates)]
     out = []
     for c in order:
-        m = lab == c
-        if m.sum() < min_strips:
+        if clean_counts[c] < min_strips:
             continue
+        m = lab == c
         out.append(Seed(channels=channels[m].astype(np.int64),
                         n_strips=int(m.sum()), n_dropped=int((~m).sum()),
                         amp_sum=float(amps[m].sum()), n_raw=int(len(pos))))
@@ -84,21 +101,27 @@ def seed_candidates(pos: np.ndarray, channels: np.ndarray, amps: np.ndarray,
 
 def seed_plane(pos: np.ndarray, channels: np.ndarray, amps: np.ndarray,
                gap_mm: float = GAP_THRESHOLD_MM,
-               min_strips: int = MIN_STRIPS) -> Optional[Seed]:
-    """Largest spatial cluster of one plane, from already-floored hits."""
-    c = seed_candidates(pos, channels, amps, gap_mm, min_strips, 1)
+               min_strips: int = MIN_STRIPS, hot=None) -> Optional[Seed]:
+    """Largest (clean-strip-ranked) spatial cluster of one plane, from
+    already-floored hits."""
+    c = seed_candidates(pos, channels, amps, gap_mm, min_strips, 1, hot=hot)
     return c[0] if c else None
 
 
 def seeds_from_hits(df_hits: pd.DataFrame, pos_maps: Dict[int, np.ndarray],
                     feu_x: int, feu_y: int, rel_floor: float = SIG_REL_FLOOR,
                     spark_veto: Optional[int] = SPARK_VETO_HITS,
-                    n_candidates: int = N_CANDIDATES) -> Dict[int, dict]:
+                    n_candidates: int = N_CANDIDATES,
+                    hot: Optional[Dict[str, object]] = None) -> Dict[int, dict]:
     """Build per-event seeds for both planes from a combined hits DataFrame.
 
+    ``hot``: optional ``{'x': [...], 'y': [...]}`` channel numbers, passed to
+    ``seed_candidates`` (see there — "never seed on a flagged channel").
+    Typically ``cal.hot`` off the calibration bundle in use.
+
     Returns {eventId: {'x': [Seed], 'y': [Seed], 'n_hits': int,
-                       'spark': bool}} — a list per plane, ranked by strip
-    count, for the waveform fit to choose between (see
+                       'spark': bool}} — a list per plane, ranked by (clean)
+    strip count, for the waveform fit to choose between (see
     wft.reco.fit_plane_candidates).
     """
     df = df_hits[df_hits['feu'].isin((feu_x, feu_y))]
@@ -106,6 +129,7 @@ def seeds_from_hits(df_hits: pd.DataFrame, pos_maps: Dict[int, np.ndarray],
     out: Dict[int, dict] = {}
     if len(df) == 0:
         return out
+    hot = hot or {}
     counts = df.groupby('eventId').size()
     for eid, g in df.groupby('eventId'):
         n_hits = int(counts.loc[eid])
@@ -119,6 +143,7 @@ def seeds_from_hits(df_hits: pd.DataFrame, pos_maps: Dict[int, np.ndarray],
                 ch = gp['channel'].to_numpy().astype(int)
                 rec[plane] = seed_candidates(pos_maps[feu][ch], ch,
                                              gp['amplitude'].to_numpy(),
-                                             n_candidates=n_candidates)
+                                             n_candidates=n_candidates,
+                                             hot=hot.get(plane))
         out[int(eid)] = rec
     return out

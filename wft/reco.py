@@ -80,6 +80,8 @@ class PlaneFit:
     slope_reliable: bool
     quality_ok: bool
     n_candidates: int = 1        # candidate clusters fitted for this plane
+    n_flagged_strips: int = 0    # of n_strips, how many are dead/hot wildcards
+                                  # (HANDOFF_D_NOISY_CHANNELS.md item 4)
 
 
 def _profile_summary(q: np.ndarray) -> tuple:
@@ -228,6 +230,10 @@ def fit_plane(P, plane: str, cal: CalibrationBundle, hyper: Optional[dict] = Non
            / (cal.kw.get(plane, 1.0) * cal.v_drift))
     ep, ew, et = _errors(P, plane, r, hyper, t0_prior=t0_prior)
     q_sum, q_u50, q_u90, q_uend = _profile_summary(r['q'])
+    ch = np.asarray(P['ch'], dtype=int)
+    flagged = np.concatenate([wm.DEAD.get(plane, np.array([], dtype=int)),
+                              wm.HOT.get(plane, np.array([], dtype=int))])
+    n_flagged = int(np.isin(ch, flagged).sum()) if len(flagged) else 0
     return PlaneFit(
         p0=float(r['p0']), w=float(r['w']), t0=float(r['t0']),
         tan_theta=float(tan), theta_deg=float(np.degrees(np.arctan(tan))),
@@ -240,7 +246,8 @@ def fit_plane(P, plane: str, cal: CalibrationBundle, hyper: Optional[dict] = Non
         q_sum=q_sum, q_u50=q_u50, q_u90=q_u90, q_uend=q_uend,
         n_strips=int(W.shape[0]), n_seed=int(n_seed), n_dropped=int(n_dropped),
         slope_reliable=bool(abs(tan) >= TAN_MIN_SLOPE),
-        quality_ok=bool(r['chi2'] / max(r['dof'], 1) < CHI2DOF_BAD))
+        quality_ok=bool(r['chi2'] / max(r['dof'], 1) < CHI2DOF_BAD),
+        n_flagged_strips=n_flagged)
 
 
 # --- candidate-cluster selection -------------------------------------------
@@ -455,7 +462,8 @@ def row_from_fits(event_id: int, fits: Dict[str, Optional[PlaneFit]],
                       'p0_err', 'w_err', 'tan_err', 't0_err', 'q_sum', 'q_u50',
                       'q_u90', 'q_uend'):
                 row[f'{plane}_{k}'] = np.nan
-            for k in ('dof', 'n_strips', 'n_seed', 'n_dropped', 'n_candidates'):
+            for k in ('dof', 'n_strips', 'n_seed', 'n_dropped', 'n_candidates',
+                     'n_flagged_strips'):
                 row[f'{plane}_{k}'] = 0
             row[f'{plane}_slope_reliable'] = False
             row[f'{plane}_quality_ok'] = False
@@ -550,7 +558,7 @@ def reconstruct_run(cfg, cal: CalibrationBundle, out_path: str,
         print(f'[wft] {cal.summary()}')
         print(f'[wft] hits -> seeds ...', flush=True)
     hits = _load_hits(cfg)
-    seeds = wseed.seeds_from_hits(hits, pos_maps, feu_x, feu_y)
+    seeds = wseed.seeds_from_hits(hits, pos_maps, feu_x, feu_y, hot=cal.hot)
     del hits
     wanted = set(seeds)
     if event_filter is not None:
