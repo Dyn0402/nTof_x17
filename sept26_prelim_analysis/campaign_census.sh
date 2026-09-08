@@ -57,7 +57,15 @@ if [ "${1:-}" = "--status" ]; then
   d=$(done_count)
   echo "sample:    $TOTAL sub-runs"
   echo "done:      $d  ($(awk -v a=$d -v b=$TOTAL 'BEGIN{printf "%.1f", 100*a/b}') %)"
-  echo "in flight: $(ls "$WORK" 2>/dev/null | wc -l)"
+  # A claim is never removed on success, so counting claims counts finished
+  # sub-runs too. In flight = claimed AND no census written.
+  inf=0
+  for c in "$WORK"/*; do
+    [ -d "$c" ] || continue
+    b=$(basename "$c"); r=${b%_stat090_*}; sub=stat090_${b##*_stat090_}
+    [ -s "$OUT/census_${r}_${sub}.csv" ] || inf=$((inf+1))
+  done
+  echo "in flight: $inf"
   echo
   # candidate_filter's numpy warnings go to the same log, so filter for the
   # progress lines rather than tailing raw -- this is the line Dylan reads.
