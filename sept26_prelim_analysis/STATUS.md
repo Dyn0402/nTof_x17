@@ -221,8 +221,31 @@ linked from the X17 hub, with the board's log carrying each result.
    an overnight one. It skips any sub-run whose census exists, so stopping and
    restarting is free — `bash campaign_census.sh --status` for progress, and
    just re-run it to continue. Then stage 2 (~760 core-hours).
-5. Stage 1's time base (flash t0 per bunch) → unblocks `t_since_flash_ns` and
-   `e_neutron_keV`, and with them any energy-differential statement.
+5. **The time base is already calibrated — the gap is one slim branch.**
+   Investigated 2026-09-08 and it is not a measurement problem:
+
+   * `ntof_processing/flash_timing` measures `t_flash(bunch) = tof_PKUP + C`,
+     C ≈ −1708 ns per channel, good to **0.5 ns** run-to-run within an epoch
+     and **3.2 ns** per bunch.
+   * `ntof_dream_merge.ntof_io.read_bunches` already returns
+     `t_since_flash_ns = tof − tflash` against a **repaired** tflash.
+   * `slim.py` **computes** it — it matches DREAM to n_TOF on exactly that
+     quantity — and then does not write it. The slim carries `tof` and the
+     match residual `dt_ns` but neither `tflash` nor `BunchNumber`, so
+     t_since_flash cannot be reconstructed from a slim file.
+
+   `sept26_prelim_analysis/neutron_energy.py` has the relativistic conversion
+   (19.5 m EAR2 flight path, cross-checked to 1e-14) and `slim_patch()` states
+   the three-line fix. **Applying it needs the slims regenerated, so it needs
+   EOS.** Resolution once filled: dE/E = 0.001 % at 1 eV, 0.084 % at 10 keV,
+   0.84 % at 1 MeV, 2.7 % at 10 MeV.
+
+   The slim window is *not* the limitation: all three detector families share a
+   tof floor of 1.00408e6 ns and ceiling of 7.505e7 ns, and taking the floor as
+   the flash gives 2.4 MeV down to 0.36 meV — with the busiest bins at
+   40–125 meV, the thermal peak, where run_55 independently found the ³He(n,p)
+   capture flood. That last is an inference until one bunch's `tflash` is read
+   from the raw files.
 
 ### N0 · Land on the machine — ✅ done
 
