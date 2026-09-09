@@ -16,6 +16,8 @@
 #   pair_physics    S4a: X17 and IPC birth spectra, validated against Geant4
 #   acceptance      S4b: the geometric toy, thrown flat in opening angle
 #   opening_angle   S4c: the measured spectrum against the folded expectation
+#   ipc_born        S4d: the Born multipole IPC continuum, self-validated
+#   ipc_channels    S4d: which multipoles the >1 ms window actually makes
 #   k_robustness    is k a property of the chamber, or of the sample?
 #   normal_incidence what a head-on track costs the opening angle
 #   chamber_b       B on its own chain, as the hit detector it is
@@ -66,6 +68,14 @@ step "opening angle" $PY -W ignore -m sept26_prelim_analysis.opening_angle --run
 step "angle figures" $PY -W ignore -m sept26_prelim_analysis.make_angle_figures --run "$RUN"
 step "angle report"  $PY -W ignore -m sept26_prelim_analysis.make_angle_report --run "$RUN"
 
+# --- S4d: what the IPC continuum should look like -------------------------- #
+# No run dependence at all -- these are nuclear physics, not data -- so they
+# sit after the angle page they are the companion to, and cost seconds.
+step "ipc born"     $PY -W ignore -m sept26_prelim_analysis.ipc_born --al --write
+step "ipc channels" $PY -W ignore -m sept26_prelim_analysis.ipc_channels --write
+step "ipc figures"  $PY -W ignore -m sept26_prelim_analysis.make_ipc_figures
+step "ipc report"   $PY -W ignore -m sept26_prelim_analysis.make_ipc_report
+
 # --- detector studies: no page of their own, products only ----------------- #
 step "k robustness"  $PY -W ignore -m sept26_prelim_analysis.k_robustness --run "$RUN" --subruns "$SUBRUNS"
 step "normal incid"  $PY -W ignore -m sept26_prelim_analysis.normal_incidence --run "$RUN" --subruns "$SUBRUNS"
@@ -75,7 +85,8 @@ echo; echo "=== publish  $(date -Is)"
 cp "$OUT/report.html" "$OUT/index.html"
 BASE=/media/dylan/data/x17/sept26_prelim
 for pair in "funnel:reco-funnel" "scint:scintillators" \
-            "imaging:source-imaging" "angle:opening-angle"; do
+            "imaging:source-imaging" "angle:opening-angle" \
+            "ipc:ipc-continuum"; do
   dir=${pair%%:*}; slug=${pair##*:}
   [ -f "$BASE/$dir/report.html" ] || continue
   cp "$BASE/$dir/report.html" "$BASE/$dir/index.html"

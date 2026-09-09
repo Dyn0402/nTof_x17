@@ -26,7 +26,27 @@ Note (the plan, published): <https://dylan-neff.web.cern.ch/notes/x17-prelim-pla
 | `make_note.py` | builds `report.html` — the published progress page. The prose lives in the script; there is no template to keep in sync. |
 | `report.html` | generated, committed so the page can be republished without a rebuild |
 
-Nothing else exists yet. What each stage will add is in `PLAN.md` §3.
+The analysis modules are added stage by stage; `PLAN.md` §3 says what each
+stage contributes, and `rerun_chain.sh` is the executable answer to "what runs
+in what order".
+
+### The expected-IPC modules
+
+These four are the exception to everything else in the package: they take **no
+run and no data**, because they are nuclear physics rather than measurement.
+They run in seconds and publish `/x17/ipc-continuum/`.
+
+| | |
+|---|---|
+| `ipc_born.py` | the Born (one-photon-exchange) internal-pair continuum, one closed-form curve per multipole. Self-validating: `validate()` checks it against Wilkinson's published E0 energy-sharing law and against the same E0 distribution derived as a contact operator, and `main()` exits non-zero if either fails. |
+| `ipc_channels.py` | the reaction side — which multipoles the >1 ms (<2 eV) window actually makes, what the `2.1e-3` IPC/capture in the rate table really is, and the first-look aluminium comparison. Every input is a named constant with its source in the comment. |
+| `make_ipc_figures.py` | four figures into `sept26_prelim/ipc/figures/` |
+| `make_ipc_report.py` | `report.html` + `index.html` into `sept26_prelim/ipc/` |
+
+**`pair_physics.py` is superseded by these for the IPC half** — its four-ansatz
+band spans a factor of 38 in the fraction above 109°, none of which is
+irreducible at Z = 2. Its X17 half is exact two-body kinematics and stands.
+The wiring of the two-channel model into `opening_angle.py` is **not done**.
 
 ## Building the note
 

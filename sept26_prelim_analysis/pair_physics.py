@@ -3,6 +3,22 @@
 """
 pair_physics.py -- the opening-angle distribution an e+e- pair is born with.
 
+SUPERSEDED FOR IPC, 2026-09-09 -- USE :mod:`ipc_born` INSTEAD.  Everything
+below about the IPC continuum is an ansatz carried as a four-variant band, and
+that band spans a factor of 38 in the fraction above 109 deg.  None of that
+spread is irreducible: at Z = 2 and 20.6 MeV the Born calculation is essentially
+exact (alpha*Z = 0.015) and gives one closed-form curve per multipole --
+4.6 % above 109 deg for M1, 9.4 % for E1, 11.4 % for E0, against the 11.8 % the
+`geant` variant here produces for neither reason.  `ipc_born` is validated
+against Wilkinson's published E0 law; this module is validated against a Geant4
+generator that makes the same two guesses it does, which is not the same thing.
+See ``sept26_prelim/ipc/report.html`` and <https://dylan-neff.web.cern.ch/x17/ipc-continuum/>.
+
+The X17 half of this module is NOT superseded -- a 16.8 MeV boson from a
+20.58 MeV transition is exact two-body kinematics and :func:`x17_angles` is
+right.  What is still open is wiring the two-channel (E0 + M1) IPC model into
+`opening_angle.py` in place of :data:`VARIANTS`.
+
 WHY THIS EXISTS SEPARATELY FROM THE ACCEPTANCE.  The measured spectrum is
 ``physics(theta) x acceptance(theta)``.  The acceptance is ours -- our geometry,
 our dead channels, our efficiency -- and we can measure it.  The physics is not

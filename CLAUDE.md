@@ -94,6 +94,18 @@ from the control-room browser with no file-system access.
   pass `M3_MIN_NCLUS` explicitly to every `M3RefTracking(...)` call; the class
   default is shared with other packages.
 - Detector-local frame: x/y from the strip maps, z = drift depth from the mesh.
+- **The expected IPC spectrum comes from `sept26_prelim_analysis/ipc_born.py`,
+  not from `pair_physics.py` and not from `IPC/capture = 2.1e-3`.** That
+  2.1e-3 (the rate tables, the INTC proposal, `mpgd26/make_x17_rate.py`) is
+  Viviani et al.'s ratio at E_n = 0.17–2 MeV, where a p-wave 1⁻ resonance
+  dominates. Below ~2 eV — which is every neutron after the 1 ms flash veto —
+  that resonance is gone and only two s-wave channels are open: 1⁺(³S₁)→0⁺ M1,
+  which is the measured 55 μb (n,γ), and 0⁺(¹S₀)→0⁺ E0, which **emits no real
+  photon at all** and so is not bounded by the (n,γ) cross section. The E0
+  continuum is far broader in opening angle (11 % above 109° against M1's
+  4.6 %), so the mix changes the X17-region background, not just its
+  normalisation. Full argument and validation:
+  <https://dylan-neff.web.cern.ch/x17/ipc-continuum/>.
 - Anything calibrated (kernel, template, v, gap map) is per detector **and** per
   run condition. A bundle used outside its conditions is a silent error.
 - **The sharing kernel must have c2 < c1**, always: the ±2 strip is reached only
