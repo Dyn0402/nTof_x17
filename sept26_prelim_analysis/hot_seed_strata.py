@@ -100,6 +100,37 @@ def strata_path(run: str, arm: str):
 
 
 @lru_cache(maxsize=None)
+def strata_available(run: str, arm: str) -> bool:
+    """Has the strata table been built for this (run, arm)?
+
+    Callers must distinguish this from ``dropped_events`` coming back empty.
+    Both give "0 triggers dropped", and they mean opposite things:
+
+        available, 0 dropped   -- the chamber is clean (A, B and C are)
+        NOT available          -- the cut did not run at all
+
+    The classification is per run condition (CLAUDE.md), so a run whose
+    ``noisy_channels``/``hot_seed_strata`` steps have not been run gets no cut.
+    That is legal, and it is exactly the kind of thing that reads later as
+    "chamber D was clean in that run". ``rerun_chain.sh`` builds the strata
+    ahead of ``k_arm``; a chain that does not must either add them or accept an
+    uncut sample knowingly.
+    """
+    return strata_path(run, arm).exists()
+
+
+@lru_cache(maxsize=None)
+def warn_if_unavailable(run: str, arm: str) -> bool:
+    """Say once, per (run, arm), that the cut is not being applied."""
+    if strata_available(run, arm):
+        return True
+    print(f'  [hot] {run}/{arm}: no strata table -- the hot-channel cut is NOT '
+          f'applied. Build it with "python -m sept26_prelim_analysis.'
+          f'hot_seed_strata --arm all --run {run}" (needs noisy_channels first).')
+    return False
+
+
+@lru_cache(maxsize=None)
 def dropped_events(run: str, arm: str) -> dict:
     """``{subrun: set(event_id)}`` -- the triggers the analysis throws away.
 
