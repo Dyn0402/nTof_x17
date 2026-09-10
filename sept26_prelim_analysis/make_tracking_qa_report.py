@@ -431,6 +431,12 @@ from its own arm's median <em>and</em> is shifted by at least
 several statistics agree so closely across runs that their across-run spread
 collapses, and a z alone then flags every run that differs at all. Runs with
 the most flags: {", ".join(f"{esc(r)} ({n})" for r, n in top_runs.head(5).items())}.</p>
+<p class="sub"><b>run_145 has no per-tag granularity in this table.</b> Its
+tracks were built from an already-merged August table and carry the literal
+tag <code>prelim</code>, so it has no timestamp, contributes nothing to the
+tag-level drift test, and is ordered here by run number rather than by clock.
+The condor full pass writes run_145 per tag like every other run, so this
+resolves when the table is rebuilt on it.</p>
 
 <h2>What drifts, and what merely stepped</h2>
 {drift_table(dr)}

@@ -488,10 +488,20 @@ def build(src: str | None, out_dir, hist_vars: list[str], z_cut: float,
     per_tag['t'] = tag_time(per_tag['tag'])
     per_tag = per_tag.sort_values(['arm', 't', 'tag'])
 
-    # run start time, so the per-run table can also be read as a series
+    # run start time, so the per-run table can also be read as a series.
+    # NOT the sort key: run_145's rows in the August blind pass carry the
+    # literal tag `prelim` (they were built from an already-merged table), so
+    # its timestamp is unknown and it would sort to the end of a time axis.
+    # Run NUMBER is monotonic in time across this campaign, so it orders the
+    # table and `t_start` stays as information.
     tmin = per_tag.groupby('run', observed=True)['t'].min().rename('t_start')
     per_run = per_run.merge(tmin, left_on='run', right_index=True, how='left')
-    per_run = per_run.sort_values(['arm', 't_start'])
+    per_run['run_no'] = per_run['run'].astype(str).str.split('_').str[-1].astype(int)
+    per_run = per_run.sort_values(['arm', 'run_no'])
+    n_untagged = int((per_tag['t'].isna()).sum())
+    if n_untagged:
+        print(f'  [qa] {n_untagged} (run, tag) row(s) have no parseable '
+              f'timestamp and are excluded from the drift test')
 
     o = outliers(per_run, per_arm, z_cut=z_cut, effect_cut=effect_cut)
     dr = drift(per_tag)

@@ -193,7 +193,7 @@ def fig_outlier_map(per_run: pd.DataFrame, out, top: int = 14):
     keep = []
     for ax, arm in zip(axes, ARMS):
         sub = per_run[per_run.arm == arm].copy()
-        sub = sub.sort_values('t_start')
+        sub = sub.sort_values('run_no' if 'run_no' in sub else 't_start')
         Z = []
         for c in cols:
             x = pd.to_numeric(sub[c], errors='coerce')
@@ -234,7 +234,7 @@ def fig_pathology(per_run: pd.DataFrame, out):
     fig, axes = plt.subplots(len(keys), 1, figsize=(fs.SLIDE[0], 2.0 * len(keys)),
                              sharex=True, constrained_layout=True)
     axes = np.atleast_1d(axes)
-    d = per_run.sort_values('t_start')
+    d = per_run.sort_values('run_no' if 'run_no' in per_run else 't_start')
     order = [r for r in dict.fromkeys(d.run)]
     xi = {r: i for i, r in enumerate(order)}
     for ax, k in zip(axes, keys):
