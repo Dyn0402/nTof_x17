@@ -282,7 +282,10 @@ def outliers(per_run: pd.DataFrame, per_arm: pd.DataFrame,
     Returned long: one row per flagged (arm, run, variable), sorted by effect.
     """
     stat_cols = [f'{n}_p50' for n in VARS]
-    frac_cols = [f'frac_{f}' for f in FLAGS] + list(PATHOLOGY)
+    # `tan_sane` is not a tracking result: it is false for every track of a run
+    # whose arm never certified a `k`, so scanning it just re-lists which runs
+    # got calibrated. It stays in the tables and out of the outlier hunt.
+    frac_cols = [f'frac_{f}' for f in FLAGS if f != 'tan_sane'] + list(PATHOLOGY)
     cols = [c for c in stat_cols + frac_cols if c in per_run.columns]
     ref = per_arm.set_index('arm')
     # Small-integer counts: their median moves in steps of 1 and their IQR is

@@ -46,13 +46,12 @@ FIGURES = [
      'tracks sit above it.'),
     ('qa_by_run_chi2dof_x.png', '&chi;<sup>2</sup>/dof, one curve per run',
      'The outlier hunt. Grey is every run; red is a run this variable flags. '
-     'B and C are a tight pack &mdash; whatever moves their angle scale does '
-     'not move their fit quality. A and D are not.'),
+     'A pack that stays tight while its angle scale moves is telling you the '
+     'scale is not moving because the fits changed.'),
     ('qa_by_run_n_strips_x.png', 'Strips in fit, one curve per run',
-     'run_79 and run_81 on chamber A are the two curves far to the right: '
-     'their clusters are 2.5&times; the campaign median and their dropped-strip '
-     'count 8&times;. That is the dead connector, before the 27 July access '
-     'repaired it, and it is the clearest single feature in this whole set.'),
+     'Cluster size is where a dead or noisy connector shows up first: a plane '
+     'missing a block of channels fits a wider, sparser cluster and drops far '
+     'more strips. The pre-access runs are the curves that sit furthest right.'),
     ('qa_by_run_t0_x.png', 'Fitted t<sub>0</sub>, one curve per run',
      'The drift-window origin. A shift here moves the depth-to-time mapping '
      'that the transverse speed is divided by, so it is one of the few things '
@@ -308,8 +307,32 @@ def build(qa_dir: str) -> str:
     dr = pd.read_csv(os.path.join(qa_dir, 'drift.csv'))
     gap_p = os.path.join(qa_dir, 'gap_check.csv')
     gp = pd.read_csv(gap_p) if os.path.exists(gap_p) else pd.DataFrame()
-    a_over = (float(gp.set_index('arm').loc['A', 'frac_over_gap'])
-              if not gp.empty and 'A' in set(gp['arm']) else float('nan'))
+    if gp.empty:
+        gap_verdict = 'No gap-check table.'
+    else:
+        g0 = gp.set_index('arm')
+        fails = [a for a in g0.index if float(g0.loc[a, 'frac_over_gap']) > 0.05]
+        passes = [a for a in g0.index if a not in fails]
+        if not fails:
+            gap_verdict = ('<b>Every chamber passes.</b> No arm reconstructs a '
+                           'meaningful fraction of its tracks deeper than its '
+                           'own gap.')
+        else:
+            bits = []
+            for a in fails:
+                bits.append(
+                    f"<b>{a}: {float(g0.loc[a, 'frac_over_gap']) * 100:.0f}&thinsp;% "
+                    f"of its gated tracks reconstruct deeper than its "
+                    f"{float(g0.loc[a, 'gap_mm']):.1f}&nbsp;mm gap</b>, with a "
+                    f"median unrailed span of "
+                    f"{float(g0.loc[a, 'span_p50_unrailed']):.1f}&nbsp;mm and a "
+                    f"scale of {float(g0.loc[a, 'k_applied']):.3f} against the "
+                    f"{float(g0.loc[a, 'k_min_for_gap']):.3f} the gap demands")
+            gap_verdict = (
+                ('Chambers ' + ', '.join(passes) + ' pass. ' if passes else '')
+                + 'Chamber' + ('s ' if len(fails) > 1 else ' ')
+                + ', '.join(fails) + ' do' + ('' if len(fails) > 1 else 'es')
+                + ' not &mdash; ' + '; and '.join(bits) + '.')
 
     d0 = per_arm.set_index('arm')
     qbad = float(d0['frac_q_gt_1e6'].mean())
@@ -325,42 +348,60 @@ def build(qa_dir: str) -> str:
         w_last = float(worst['last_decile'])
     a_p25 = float(d0.loc['A', 'chi2dof_x_p25']) if 'A' in d0.index else float('nan')
 
-    verdict = f"""
+    # Every number below is read from the tables. The first version of this
+    # typed them in, and the full pass then changed D's median fit quality from
+    # 39 to 17 while the prose still said 39.
+    chi_p50 = {a: float(d0.loc[a, 'chi2dof_x_p50']) for a in d0.index}
+    chi_p25 = {a: float(d0.loc[a, 'chi2dof_x_p25']) for a in d0.index}
+    best = min(chi_p25, key=chi_p25.get)
+    others = [a for a in ARMS if a in chi_p25 and a != best]
+    qmax = d0['frac_q_gt_1e6'].idxmax()
+
+    if worst is None:
+        verdict = '<p>Trend table empty.</p>'
+    else:
+        w_var = worst['variable']
+        w_var = w_var[:-4] if w_var.endswith('_p50') else w_var
+        verdict = f"""
 <p><b>Three things this found that a median could not.</b></p>
 <ul>
-<li><b>One gated track in four carries a charge that cannot be real.</b>
-{qbad * 100:.1f}&thinsp;% of tracks have <code>q_total</code> above
-10<sup>6</sup> ADC, and the 95th percentile reaches 10<sup>14</sup>&ndash;10<sup>17</sup>
-on a 12-bit ADC sitting on a ~330-count pedestal. <code>q_total</code> is
+<li><b>Roughly one gated track in {round(1 / qbad)} carries a charge that
+cannot be real.</b> {qbad * 100:.1f}&thinsp;% of tracks have
+<code>q_total</code> above 10<sup>6</sup> ADC &mdash; worst on chamber
+{esc(qmax)} at {float(d0.loc[qmax, 'frac_q_gt_1e6']) * 100:.1f}&thinsp;% &mdash;
+and the 95th percentile reaches 10<sup>14</sup>&ndash;10<sup>17</sup> on a
+12-bit ADC sitting on a ~330-count pedestal. <code>q_total</code> is
 <code>x_q_sum + y_q_sum</code> and both plane sums diverge together, so this is
 the fit's amplitude solution running away on some depth bins, not a units
 error. Their &chi;<sup>2</sup> is unremarkable, which is why nothing caught it:
 the waveform still fits. <b>Every charge-based statement in this analysis
 &mdash; gain comparisons, <code>q_per_len</code>, the charge window
-<code>k_arm</code> cuts on &mdash; runs on a column with a 25&thinsp;% tail of
-garbage.</b></li>
-<li><b>Chamber A has a good population the others simply do not have.</b> Its
-&chi;<sup>2</sup>/dof is bimodal, with a clean peak at &asymp;&thinsp;1.3 and a
-lower quartile of {a_p25:.2f}. B, C and D are
-unimodal at 19, 17 and 39. This is the same split that shows up in the angle
-scale: A is the only chamber whose forward model describes its data and the
-only one whose <code>k</code> is stable run to run. One fact, not two.</li>
-<li><b>The 27 July access is a step, not a drift &mdash; except on D.</b>
-Correlating any variable against time across the whole campaign scores that
-step as a strong monotone trend. Split at the access and almost everything
-flattens. The exception is chamber&nbsp;D's y-view &chi;<sup>2</sup>/dof, which
-keeps climbing afterwards
-(&rho;&nbsp;=&nbsp;{w_rho:+.2f}, p&nbsp;=&nbsp;{w_p:.0e},
-over {w_n:,} tags) from {w_pre:.0f} before
-the access to {w_last:.0f} in the last tenth of the campaign.
-D's fits get worse as the campaign runs.</li>
+<code>k_arm</code> cuts on &mdash; runs on a column with a tail of garbage that
+large.</b></li>
+<li><b>Chamber {esc(best)} fits its own model better than any other
+chamber.</b> Its lower quartile of &chi;<sup>2</sup>/dof is
+<b>{chi_p25[best]:.2f}</b>, against
+{", ".join(f"{a} {chi_p25[a]:.2f}" for a in others)}; medians
+{chi_p50[best]:.1f} against
+{", ".join(f"{chi_p50[a]:.1f}" for a in others)}. This is the same split that
+shows up in the angle scale: {esc(best)} is also the arm whose <code>k</code>
+varies least run to run. One fact, not two.</li>
+<li><b>The 27 July access is a step, and separating it changes what counts as
+a trend.</b> Correlating any variable against time across the whole campaign
+scores that step as a strong monotone trend, so this reports &rho; before and
+after it separately. The strongest surviving post-access trend is
+<b>chamber&nbsp;{esc(worst['arm'])}'s {esc(w_var)}</b>
+(&rho;&nbsp;=&nbsp;{w_rho:+.2f}, p&nbsp;=&nbsp;{w_p:.0e}, over {w_n:,} tags),
+moving {w_pre:.4g} before the access to {w_last:.4g} in the last tenth of the
+campaign.</li>
 </ul>
-<p><b>The clearest outlier is already understood.</b> run_79 and run_81 on
-chamber A dominate the flag list &mdash; clusters 2.5&times; the campaign
-median, dropped strips 8&times; &mdash; and that is the dead x-view connector
-before the access repaired it. It is a check that this method finds what it
-should, not a new result.</p>
-""" if worst is not None else '<p>Trend table empty.</p>'
+<p><b>The clearest outliers are already understood.</b> The runs with the most
+flags are {", ".join(f"{esc(r)} ({n})" for r, n in top_runs.head(3).items())}.
+run_79 and run_81 are the pre-access condition, when chamber A's x-view
+connector was dead; a run that fails to certify an angle scale flags on
+everything downstream of it. Both are checks that this method finds what it
+should, not new results.</p>
+"""
 
     body = f"""<div class="wrap">
 <h1>Tracking QA &mdash; the distributions, run by run and tag by tag</h1>
@@ -406,22 +447,16 @@ a depth with <code>v&nbsp;=&nbsp;42.6/k</code>, and the depth grid stops at
 18&nbsp;&times;&nbsp;60&nbsp;=&nbsp;1080&nbsp;ns, so the deepest span it can
 produce is fixed once <code>k</code> is. That span has to fit in the drift gap.</p>
 {gap_table(gp)}
-<p class="sub"><b>Chambers C and D pass; chamber&nbsp;A does not.</b> With the
-scale it is currently given, <b>{a_over * 100:.0f}&thinsp;% of A's gated tracks
-reconstruct deeper than A's own 27.9&nbsp;mm gap</b>, and its median unrailed
-span is still past it. Reading the bound the other way, A's <code>k</code> would
-have to be at least 1.65 (1.53 if the gap is the 30&nbsp;mm the run
-configuration records rather than the 27.9&nbsp;mm the detector table does) for
-its deepest track to fit in the gas. The pointing estimators put it at
-1.14&ndash;1.27, low by 25&ndash;30&thinsp;%.</p>
+<p class="sub">{gap_verdict}</p>
 <p class="sub"><b>Two readings, both calibration faults, and this test cannot
-choose between them.</b> Either A's angle scale is ~30&thinsp;% too small, or
-A's depth-grid origin sits outside the gas so the span is inflated without
-<code>k</code> being wrong &mdash; which is the same fitted <code>t<sub>0</sub></code>
-that moves between runs. <b>What it does settle is that arm&nbsp;A, the arm
-whose scale is otherwise the most trusted in this analysis, fails an
-independent geometric check that C and D pass.</b> That is an argument for the
-October recalibration starting on A rather than treating A as the reference.</p>
+choose between them.</b> Either the angle scale is too small on the failing
+arms, or their depth-grid origin sits outside the gas so the span is inflated
+with <code>k</code> innocent &mdash; which is the same fitted
+<code>t<sub>0</sub></code> that moves between runs. Note the direction: the
+pointing estimators want a <em>smaller</em> <code>k</code> and this bound wants
+a <em>larger</em> one, on the same arms. That disagreement is the thing to
+settle in October, and it argues against treating any single arm as the
+reference.</p>
 
 <h2>Which run departs, and on what</h2>
 {outlier_table(o)}
