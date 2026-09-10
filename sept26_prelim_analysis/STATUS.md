@@ -4,16 +4,503 @@
 Plan of record: [`PLAN.md`](PLAN.md). Board:
 <https://dylan-neff.web.cern.ch/x17/analysis.html>.
 
-**One line:** **stages 0-3 all run end to end on run_145,** the last of them on
-condor at CERN. Sample frozen
-at 36 runs / 293 sub-runs / 25.60 M triggers; the candidate filter classifies
-every trigger at **5.8 core-hours per million**; the stage-2 allowlist cuts the
-reconstruction to **4.1 % of a full pass — ~760 core-hours campaign-wide, not
-the ~1 900 the plan budgeted**; 28 condor jobs turned `stat090_0000` into the
-first **track database — 4 216 segments, 2 263 gated**. Next: the in-situ angle
-scale, which every angle in that table is currently missing.
+**One line:** **the whole campaign is now reconstructed blind** — 12 929 condor
+jobs over 36 runs / 293 sub-runs / 25.27 M triggers, **47.8 M events, 9.5x the
+allowlist pass**, in `<out>/reco_fullpass`. The allowlist was retired because
+it kept only **12.8 %** of the triggers that reconstruct into a two-track
+event. **The blocker is no longer statistics, it is the angle scale.** With
+six runs now calibrated, `k` is measured to vary run to run: the four
+calibration-pass runs cluster to ±2 % while **run_145, whose `k` every
+calibrated angle in the track table currently carries, sits 13-17 % high on C,
+7-14 % on D and 8-11 % on A**. The sampling explanation was tested and
+excluded. Decision 2026-09-10: **push the full pass through with per-run `k`,
+and defer a real per-detector recalibration to October** — meanwhile open up
+the per-track tracking distributions run by run and tag by tag to find what
+drifts. **Do not build an opening-angle spectrum on a borrowed `k` for C or D.**
 
-Last updated **2026-09-08** (S1-S4 complete).
+Last updated **2026-09-10** (the FULL pass is complete; the angle scale is the blocker).
+
+> **START HERE:** [`HANDOFF_FULLPASS_2026-09-10.md`](HANDOFF_FULLPASS_2026-09-10.md)
+> — why the full pass happened, what it produced, and the run_86 test that now
+> blocks the opening angle. The entries below are the working record behind it.
+
+> ## FULL PASS LAUNCHED -- Dylan's call, 2026-09-09 21:10 CEST
+>
+> The timing check below argued the full pass was roughly break-even on shape
+> significance. **Dylan overrode it: "not worth missing anything."** Recorded
+> so the reasoning on both sides survives -- the check stands, the decision is
+> to reconstruct everything anyway.
+>
+> | | |
+> |---|---|
+> | jobs | **12 932** = 3 233 (run, sub-run, tag) x 4 arms |
+> | cost | ~1.2 core-h/job, **~16 000 core-hours** (~20x the allowlist pass's 760) |
+> | EOS out | `/eos/user/d/dneff/x17/sept26_fullpass` (NOT the allowlist pass's dir) |
+> | local out | `<out>/reco_fullpass` -- **`<out>/fullpass` already holds the ALLOWLIST pass** despite its name; unpacking on top would replace a known sample with a superset and lose the comparison |
+> | driver | `overnight_fullpass_2026-09-09.sh`, resumable (skips what is on EOS) |
+>
+> ## The run_86 test came back, and it FALSIFIES the borrowed k -- 2026-09-10
+>
+> The 14-hour run_86 local full pass finished at 07:26 and **its `k_arm` step
+> never ran**: `unattended_2026-09-09.sh` called `k_arm.py --out <dir>`, and
+> that flag does not exist. Worse, `k_arm` has NO `--out` -- it always writes
+> `paths.out('kcal')/k_arm_<run>.json` -- so the "fix" of dropping the flag
+> would have **overwritten run_86's calibration-pass file**, the exact trap
+> that deleted run_145's published calibration on 2026-09-09. Re-run by hand
+> with the calibration-pass result copied aside first; both now coexist as
+> `k_arm_run_86.{fullpass,calibpass}.json` and `k_arm_run_86.json` is restored
+> to the calibration-pass content it had, so nothing downstream moved.
+>
+> | arm | r86 FULL | r86 calib | full/calib | r145 FULL | **r86/r145** |
+> |---|---:|---:|---:|---:|---:|
+> | A | 1.2294 | 1.1840 | +3.8 % | 1.2662 | **-2.9 %** |
+> | B | 1.5664 | -- | -- | 2.1421 | -26.9 % (never certifies) |
+> | C | 1.1560 | 1.3500 | **-14.4 %** | 1.6163 | **-28.5 %** |
+> | D | 1.3413 | -- | -- | 1.7667 | **-24.1 %** |
+>
+> **The method hypothesis fails on its own terms.** It predicted the full pass
+> would sit ~6 % ABOVE the calibration pass on both arms. A moves +3.8 %,
+> **C moves -14.4 %** -- opposite direction, larger size. There is no single
+> method offset.
+>
+> **And with the method now MATCHED -- both are full passes -- k still differs
+> between the two runs by 24-29 % on C and D**, while A agrees to 2.9 %. run_86
+> and run_145 are on the same side of the 27 July access. This is `PLAN.md`'s
+> own stated falsifier arriving: *if `k` varies strongly run to run, one bundle
+> is wrong.* **Applying run_145's k campaign-wide is not supported for C or D.**
+> C is half of the A-C opposing pair, which is the signal topology.
+>
+> **Three caveats, none of which rescue the borrowed k.** Every run_86 verdict
+> is PROVISIONAL with the focus scan flat over 30-37 %, so the estimator is
+> weak; the within-run estimator spread is 8-15 %, below the 24-29 % gap but
+> not negligible; and **run_86 has no hot-strata table, so its hot-channel cut
+> was NOT applied** -- on run_145 that cut moved D's k by 3.65 % and removed
+> 22.4 % of D's coincident sample, so D's comparison is partly confounded and
+> C's is not.
+>
+> **What this changes.** The full pass just made per-run `k` affordable for all
+> 36 runs, and this says it is also necessary. `campaign_tracks --k-from
+> run_145` stamps `k_source`, so nothing already built is silently wrong -- but
+> 83 % of the current track table's calibrated angles rest on a scale this test
+> does not support for two of the three usable arms.
+>
+> Also corrected: the "run_86 calibration-pass k (A 1.184, C 1.350)" quoted
+> below was **never certified** -- that file's `apply` is `{}` and both arms
+> read NOT CALIBRATED. They are raw fit values, not measurements.
+
+> ## Per-track tracking QA -- three things the medians were hiding -- 2026-09-10
+>
+> New: `tracking_qa.py`, `make_tracking_qa_figures.py`,
+> `make_tracking_qa_report.py`. Every tracking number quoted before this was a
+> campaign median. These profile the DISTRIBUTIONS at three levels -- per arm,
+> per (run, arm) and per (tag, arm), ~3 150 tags, each a few minutes of beam --
+> in quantiles, never means, because `q_total` reaches 1e34 in this table.
+> Report at `<out>/tracking_qa/report.html`.
+>
+> **1. One gated track in four carries a charge that cannot be real.**
+> **25.6 %** of tracks have `q_total` > 1e6 ADC and the p95 reaches
+> **1e14-1e17** on a 12-bit ADC over a ~330-count pedestal. `q_total` is
+> `x_q_sum + y_q_sum` and both plane sums diverge together, so it is the fit's
+> amplitude solution running away on some depth bins, not a units error. Their
+> chi2 is unremarkable, which is why nothing caught it -- the waveform still
+> fits. **Every charge-based statement in this analysis runs on a column with a
+> 25 % tail of garbage**: gain comparisons, `q_per_len`, and the charge
+> percentile window `k_arm` itself cuts on.
+>
+> | | A | B | C | D |
+> |---|---:|---:|---:|---:|
+> | charge > 1e6 ADC | 0.282 | 0.265 | 0.197 | 0.281 |
+> | chi2/dof > 100 | 0.019 | 0.050 | 0.052 | **0.260** |
+> | >= 200 strips in one track | 0.035 | **0.113** | 0.038 | 0.000 |
+>
+> **2. Chamber A has a good population the others do not have at all.** A's
+> chi2/dof is BIMODAL -- a clean peak at ~1.3 and a lower quartile of **1.65**
+> -- against B 9.7, C 7.0, D 7.7. Same split as the angle scale: A is the only
+> arm whose forward model describes its data and the only one whose `k` is
+> stable. One fact, not two.
+>
+> **3. The 27 July access is a STEP, not a drift -- except on D.** A Spearman
+> across the whole campaign scores that step as a strong trend; split at the
+> access and almost everything flattens. `drift()` now reports both rhos and
+> the difference between them is the result. The survivor is **chamber D's
+> y-view chi2/dof, rho = +0.33 after the access over 2 796 tags, p = 7e-74**,
+> climbing 33 (pre-access) -> 70 (post) -> **81** (last tenth). **D's fits get
+> worse as the campaign runs.** Nothing else exceeds rho_post 0.20.
+>
+> The step itself reproduces the known hardware: A's dropped strips 41.5 -> 5
+> and its chi2/dof 8.5 -> 5.3 across the access, which is the dead x-view
+> connector being repaired. run_79 and run_81 dominate the outlier list for
+> exactly that reason -- a check that the method finds what it should.
+>
+> ## A geometric bound on k, and arm A FAILS IT -- 2026-09-10
+>
+> `tracking_qa.gap_check`. This owes nothing to the pointing estimators and so
+> checks them. `drift_len_mm = t_end * v` with `v = 42.6/k`, and the depth grid
+> stops at 18 x 60 = **1080 ns**, so the deepest span the reconstruction can
+> produce is fixed once `k` is -- and it has to fit in the drift gap:
+>
+>     k  >=  1080 * 0.0426 / gap_mm
+>
+> | arm | gap | k applied | v | deepest possible | span p50 | p50 unrailed | **past the gap** | k needed |
+> |---|---:|---:|---:|---:|---:|---:|---:|---:|
+> | A | 27.9 | 1.266 | 33.6 | 36.3 | 34.3 | 28.3 | **0.741** | **1.649** |
+> | B | 30.5 | -- | -- | -- | -- | -- | -- | 1.508 |
+> | C | 30.0 | 1.616 | 26.4 | 28.5 | 26.9 | 23.7 | 0.000 | 1.534 |
+> | D | 30.0 | 1.767 | 24.1 | 26.0 | 26.0 | 23.1 | 0.000 | 1.534 |
+>
+> **C and D pass. A does not: 74 % of its gated tracks reconstruct deeper than
+> its own gap, and its median UNRAILED span is still past it.** A's `k` would
+> have to be >= 1.649 (>= 1.534 on the 30 mm the run config records instead of
+> the 27.9 mm `BEAM_DETS` carries) for its deepest track to fit in the gas. The
+> pointing estimators say 1.14-1.27 -- **low by 25-30 %**.
+>
+> **Two readings, both calibration faults, and this test cannot choose.**
+> Either A's angle scale is ~30 % too small, or A's depth-grid origin sits
+> outside the gas and the span is inflated with `k` innocent -- and that is the
+> same fitted `t0` whose median moves ~58 ns (one full sample period) between
+> runs on D. What it does settle: **arm A, the arm this analysis has been
+> treating as its reference, fails an independent geometric check that C and D
+> pass.** October should start on A, not assume A.
+>
+> **What this does NOT do: it does not explain the run-to-run `k` scatter.**
+> Nothing in the per-run distributions moves in a way that tracks it. The
+> charge blow-up and D's degradation are real and are, on this evidence, not
+> the cause.
+
+> ## The angle scale varies RUN TO RUN, and it is not the sample -- 2026-09-10
+>
+> The run_86-vs-run_145 test above framed this as two runs disagreeing. With
+> the four other calibrated runs read off `<out>/kcal`, the picture is sharper
+> and worse: **run_145 is the outlier, and the other runs agree with each
+> other.**
+>
+> | arm | run_104 | run_124 | run_156 | run_162 | run_86 full | **run_145** |
+> |---|---:|---:|---:|---:|---:|---:|
+> | A | 1.175 | 1.154 | 1.167 | 1.141 | 1.229 | **1.266** |
+> | C | 1.425 | 1.375 | 1.375 | 1.383 | 1.156 | **1.616** |
+> | D | -- | 1.550 | 1.650 | 1.553 | 1.341 | **1.767** |
+>
+> **The sampling explanation was tested and does not hold.** run_145's `k` came
+> from its blind FULL pass; the other four came from the prescaled CALIBRATION
+> pass (`<out>/fullpass_calib`, SINGLE at 0.25), so the samples were not
+> comparable and that was the obvious suspect. Both trees exist for run_145, so
+> the test is direct: take run_145's full-pass pointing-coincident sample,
+> restrict it to the event ids the calibration pass actually kept, re-run the
+> same estimators.
+>
+> | arm | full pass, band | restricted to the calib selection | shift |
+> |---|---:|---:|---:|
+> | A | 1.306 | 1.298 | -0.6 % |
+> | C | 1.786 | 1.755 | -1.7 % |
+> | D | 1.914 | 1.841 | -3.8 % |
+>
+> The selection buys 2-4 %. The gap is 13-17 %. **The scatter is real.**
+>
+> **Nothing else in the chain is per-run, by construction.** Verified rather
+> than assumed:
+>
+> | input | scope | varies run to run? |
+> |---|---|---|
+> | wft bundle (`c1`, `c2/c1`, `kY`, `tau_s`, `sigma_s`, `sigma_p0`, `Dp`, `w0`, `kw`, `dt_xy`, `t0_abs`, `dead`) | per ARM, one bundle for all 36 runs | no -- byte-identical |
+> | `v_drift` | pinned to 42.6 um/ns on `run_beam_job.py`'s command line | no -- the bundle's own `v` is discarded |
+> | gas, target, detector centres and orientations, DREAM `sample_period`/`n_samples`/`latency` | `run_config.json` | **no** -- identical run_79 -> run_162 |
+> | `k` | per RUN, per arm, measured in situ | **YES -- this is the whole problem** |
+> | hot-strip strata, imaging summary | per run | exist for **run_145 only** |
+>
+> So there is no known physical reason for `k` to move 15 %, and the one
+> physical variable not yet checked is the **drift HV**: `hv_monitor.csv` is
+> written per sub-run but only run_145's is mirrored locally. Pull the rest
+> from EOS -- they are small, and it is the cheapest remaining discriminator.
+>
+> **Where the October effort should start: arm A works and the others do not.**
+> Median reduced chi-squared on gated campaign tracks --
+>
+> | arm | chi2/dof x | chi2/dof y | strips in fit |
+> |---|---:|---:|---:|
+> | A | 6.0 | 5.9 | 22 |
+> | B | 19.1 | 16.3 | 46 |
+> | C | 16.8 | 16.5 | 37 |
+> | D | 38.6 | 55.0 | 31 |
+>
+> **A is the only arm whose forward model describes its data, and the only arm
+> whose `k` is stable.** That is one fact, not two.
+>
+> **Arm C is also on a different bundle generation from every other arm** --
+> `calib_bundle_lp`, not `calib_bundle_r06` -- and its diffusion parameters are
+> an order of magnitude off the fleet:
+>
+> | | A | B | **C** | D |
+> |---|---:|---:|---:|---:|
+> | `sigma_p0` | 0.425 | 0.393 | **0.039** | 0.434 |
+> | `Dp` | 0.0144 | 0.0151 | **0.0016** | 0.0153 |
+> | `c2/c1` | 0.60 | 0.60 | **0.82** | 0.60 |
+>
+> Those two set how much cluster widening the fit attributes to diffusion; if
+> they are too small the model must explain the width with the transverse speed
+> `w`, which is exactly what becomes the angle. C's clusters span 37 strips
+> while its bundle carries almost no diffusion. **Candidate mechanism,
+> UNTESTED** -- it is a hypothesis for October, not a result.
+>
+> **The decision, 2026-09-10 (Dylan).** Do not stop for this. Push the full
+> pass through with per-run `k` where it certifies, build per-track tracking
+> QA distributions run by run and tag by tag to look for outliers and drift,
+> and take the real per-detector calibration up in October.
+
+> **THE FULL PASS IS DONE -- 2026-09-10 07:19.** 22:27 to 06:31 on condor, then
+> a 48-minute pull and unpack. **12 929 of 12 932 outputs, 0 problems on
+> unpack, all 293 sub-runs present** in `<out>/reco_fullpass` (28 GB).
+>
+> | arm | full pass | allowlist pass | ratio |
+> |---|---:|---:|---:|
+> | A | 9 458 115 | 1 096 449 | 8.6x |
+> | B | 9 377 791 | 1 175 912 | 8.0x |
+> | C | 9 573 426 | 1 362 793 | 7.0x |
+> | D | 19 356 728 | 1 406 033 | 13.8x |
+> | **all** | **47 766 060** | **5 041 187** | **9.5x** |
+>
+> The only 3 missing jobs are arms A/C/D of the corrupt tag (arm B of it ran).
+> They were released once, failed identically, and were retired as
+> deterministic -- so campaign-wide this pass retired 3 jobs and lost nothing
+> else.
+>
+> **Next, and NOT done because it is a calibration decision:** `k_arm` per run
+> on the new reco, then `campaign_tracks --fullpass <out>/reco_fullpass`. The
+> sample is now large enough to measure the angle scale per run instead of
+> borrowing run_145's, which is what the 4-7 % systematic rests on.
+>
+> **Smoke gate PASSED, 22:27 CEST, and it was exact.** Four jobs (one per arm,
+> run_145/stat090_0000 tag 000) reproduced the August blind pass **event for
+> event** -- A 3233, B 3098, C 3256, D 6690 -- so the jobs are fitting the
+> whole tag and no allowlist survives anywhere in the path. Wall clock 33-41
+> min for A/B/C and 76 min for D (it seeds ~2x as often); memory 733-977 MB
+> against the 2 GB request. **12 928 jobs then went in as cluster 4172031.**
+> Tarballs are ~1.5-1.8 MB, so ~22 GB on EOS and ~40 GB unpacked locally
+> (164 GB free).
+>
+> **The corrupt file is three files, not one -- correcting the entry below.**
+> The campaign-pass note says the only data loss found campaign-wide was one
+> `decoded_root` file, `run_104/stat090_0016` tag `260730_11H29_000` FEU 03.
+> The full pass reads every arm of every tag and found **FEUs 02, 03 and 07 of
+> that same tag all empty** -- full size on EOS (75-85 MB), zero ROOT keys, the
+> identical signature. Arms A, C and D held on it; arm B ran fine. The
+> allowlist pass saw only FEU 03 because it never asked the other two arms for
+> that tag. One tag of one sub-run is still the whole of the campaign's data
+> loss; it is three quarters of that tag rather than one quarter.
+>
+> **And a bug in the driver's own watch loop, found the same way.** Held jobs
+> count as queued, so `wait until the queue is empty` never exits once a
+> deterministic failure holds -- the loop would have spun until morning with
+> the pass finished. Fixed to wait on running-plus-idle only, with a release
+> pass and then an explicit record-and-clear of whatever stays held. The submit
+> step also now refuses to run while anything is in the queue, because a job
+> that is RUNNING has no EOS tarball yet and the done-list alone would submit a
+> second copy of everything in flight.
+>
+> New: `--full-pass` in `condor/make_stage2_campaign.py`, plus
+> `stage2_fullpass.sub` and `run_stage2_fullpass_wrapper.sh`. The allowlist
+> path is untouched, so the existing pass stays reproducible.
+>
+> **Three things done differently from the allowlist pass, each for a measured
+> reason.** Tags come from the **stage-1 candidate tables** (one row per
+> trigger, so their distinct tags are the sub-run's tags) rather than from the
+> allowlist, which only lists tags the filter selected. `JobFlavour` is
+> **workday (8 h)**, not longlunch: these jobs are ~20x longer, a median near
+> 40 min with a tail that would run past 2 h, and a job killed on the flavour
+> limit is held and retried into the same limit. stderr is **sharded by run**
+> into ~36 directories, because AFS caps entries per directory and a flat
+> 22k-file log dir already degraded the shared schedd once.
+>
+> **Unchanged, and still the open question:** every arm is still seeded from
+> its run_145 bundle with `v_drift` pinned at 42.6 um/ns, and the angle scale
+> is still run_145's borrowed `k` with its 4-7 % systematic. The full pass
+> multiplies statistics; it does not touch either.
+
+> ## The stage-1 filter keeps an eighth of the real pairs -- and a full pass
+> would not obviously help -- 2026-09-09
+>
+> **Asked because the campaign gave 8.2x run_145's A-C pairs, not the 50x the
+> plan projected.** The cause is not stage 2, which behaved identically
+> everywhere: every campaign run converts its `INTER` triggers into two-track
+> events at 2.1-3.9 %, and run_145's own `INTER` triggers convert at 1.8 %. The
+> difference is entirely **which events stage 1 offered it.**
+>
+> **Measured against run_145's blind full pass, the one run that has one.** Of
+> the 595 triggers the full pass turns into two gated, angle-calibrated tracks
+> within 30 mm of the axis, stage 1 put only **76 (12.8 %)** into the classes
+> `allowlist.py` reconstructs in full. 355 sat in `NONE` and 161 in `SINGLE`,
+> drawn at 1 % and 5 %.
+>
+> | stage-1 rule | triggers selected | two-track events captured |
+> |---|---:|---:|
+> | current (`INTER`/`INTRA`/`IMPLIED`) | 3.80 % | **12.8 %** |
+> | `n_arms_loose >= 2` | 13.77 % | 47.7 % |
+> | `n_arms_loose >= 1` | 57.77 % | 89.2 % |
+>
+> **No cheap retune closes it** -- 89 % capture costs 58 % of all triggers,
+> which is a full pass in all but name. The earlier 98.3 % seeding number is
+> not in tension: it measures whether stage 2 can see what stage 1 *chose*, and
+> says nothing about what stage 1 discarded.
+>
+> ### The scintillator timing check -- and it argues AGAINST the full pass
+>
+> `accidental_timing.fit_by_stage1_class` (new), the same unbinned two-component
+> MLE as the published `f`, split by whether stage 1 would have kept the event.
+> The two-arm-tagged sample is small (76 pairs, 65 of them missed), so the
+> **non-parametric cross-check carries the result** -- no KDE, no template fit:
+>
+> | population | n | median \|dt\| | within 30 ns |
+> |---|---:|---:|---:|
+> | prompt template (both arms born together) | -- | 15.2 ns | 0.82 |
+> | **stage-1 selected** | 11 | 18.8 ns | **0.82** |
+> | **stage-1 missed** | 65 | 33.0 ns | **0.46** |
+> | accidental template | -- | -- | 0.37 |
+>
+> The pairs stage 1 keeps are **prompt**. The ones it misses are **not**:
+> 46 % within 30 ns is inconsistent with pure prompt at p = 8e-11 and only
+> marginally above pure accidental (p = 0.09). The two differ at p = 0.02
+> (Mann-Whitney) / p = 0.03 (Fisher). Implied true-coincidence fraction of the
+> missed population **0.20**, independently reproduced by the MLE at
+> **f = 0.19 [0.07, 0.31]** (1.6 sigma from zero) against the pooled
+> f = 0.29 [0.17, 0.40].
+>
+> **So a blind full pass buys ~6.6x more inter-chamber pairs of which ~80 % are
+> not coincidences.** Folding both fractions through run_145's 61 selected and
+> 405 missed inter pairs: true pairs rise 2.3-3.1x, purity falls 0.8 -> 0.27,
+> and **S/sqrt(S+B) moves by 0.93x** -- i.e. roughly break-even, spanning
+> 0.57-1.29x across the missed-side interval. **~18 000 core-hours (760 bought
+> 4.1 % of the arm fits) for no clear gain in shape significance.**
+>
+> **The weak link is n = 11 on the selected side, and it is fixable for free.**
+> The campaign already reconstructed `NONE` and `SINGLE` at 1 % / 5 % in all
+> four arms and carries 151x run_145's `INTER`, so repeating this split
+> campaign-wide needs no new reconstruction -- only pointing the slim read at
+> the exported parquet instead of `read_slim`'s ROOT. **Do that before deciding
+> on a full pass.**
+>
+> Not yet done: the accidental-timing page still shows the pooled fit only; the
+> new `fit_by_stage1_class_run_145.csv` is written but not published.
+
+> ## THE CAMPAIGN PASS IS DONE -- 2026-09-09
+>
+> | pass | result |
+> |---|---|
+> | stage-1 census | **293/293 sub-runs** |
+> | stage-2 reco | **12,705** condor outputs |
+> | calibration pass | **1,040** outputs (SINGLE prescale 0.25 vs the main 0.05) |
+> | n_TOF slim | **293/293**, 9.6 GB local parquet |
+> | **tracks** | **2,111,162 segments, 1,137,029 gated, 843 MB**, 287 sub-runs |
+>
+> 324 transient condor holds released, **0 retired as deterministic**, so the
+> only data loss found campaign-wide is one corrupt `decoded_root` file
+> (`run_104/stat090_0016` tag `260730_11H29_000` FEU 03 -- full size on EOS,
+> zero ROOT keys).
+>
+> ### The angle scale: run_145's k, campaign-wide, with a stated systematic
+>
+> `campaign_tracks --k-from run_145` applies A=1.2662, C=1.6163, D=1.7667 to
+> every run and stamps **`k_source`** on every row, so a borrowed scale can
+> never be read back as a per-run measurement. 1,750,293 of 2,111,162 segments
+> (83 %) carry a calibrated angle; B never certifies anywhere.
+>
+> **Why one k rather than per-run:** the calibration pass measured k on six
+> runs spanning 27 Jul - 10 Aug. Arm A's spread is **3.7 %**, but the SAME run
+> (run_145) measured from the calibration pass instead of its full pass differs
+> by **-6.5 %**. The method-to-method offset is larger than the run-to-run
+> drift, and every run's A sits below the full-pass value rather than
+> scattering about it -- the signature of a systematic, not of drift. So k does
+> not meaningfully drift, the estimator is sample-dependent, and the price of
+> one k campaign-wide is a **~4-7 % systematic on the angle scale**.
+>
+> **This is being tested, not assumed.** run_86 (8.9 days before run_145, same
+> side of the 27 Jul access) has been downloaded in full (37 GB, 4 sub-runs)
+> and `unattended_2026-09-09.sh` is running a LOCAL FULL PASS on it to produce
+> its full-pass k. If that sits ~6 % above run_86's calibration-pass k
+> (A 1.184, C 1.350) the offset is method; if it lands near it, run_145 is the
+> outlier and using its k everywhere is wrong.
+>
+> ### Two errors made and fixed the same day, recorded because both were silent
+>
+> 1. **The published run_145 calibration was deleted** -- the calibration loop
+>    ran `rm -f k_arm_<run>.json` per run and included run_145, overwriting
+>    certified values with an uncertified calibration-pass result. The first
+>    `--k-from` rebuild consequently produced **0 calibrated angles**. Restored
+>    from the full pass, reproducing A=1.2662, C=1.6163, D=1.7667 exactly.
+> 2. **run_145 was double-counted.** It carried BOTH its original full-pass
+>    `events_prelim.candidates.parquet` and the campaign per-tag files, and
+>    `build_tracks.load_reco` globs `events_*.candidates.parquet`, matching
+>    both. 192 campaign per-tag files removed, keeping the full pass (a strict
+>    superset). Its segment count rising 74,187 -> 78,403 was this bug, NOT the
+>    campaign adding tags as first reported.
+
+> ## The campaign pass -- IN FLIGHT on condor, 2026-09-09
+>
+> **The overnight run of 2026-09-08/09 did not happen.** The `/loop` that was
+> supposed to carry it re-arms only if `ScheduleWakeup` is the last action of
+> each turn, and on the first tick it was not called, so the loop died after
+> one iteration. Stage 1 was still 11/293 and no condor job had ever been
+> submitted. Recorded because the failure is invisible from the products.
+>
+> **Stage 1 moved from the desktop to condor.** `campaign_census.sh` streams
+> each sub-run from EOS and runs locally -- its own header puts that at 17-25 h,
+> "a multi-night job". The data is already at CERN and `paths.py` resolves every
+> root through an environment variable, so the *unmodified* CLI runs on a worker
+> at 29.3 ev/s (~1.2 h per sub-run), all sub-runs in parallel.
+>
+> | pass | cluster | jobs | state |
+> |---|---|---|---|
+> | stage 1 census | 4141478, 4141479 | 282 | running |
+> | n_TOF slim -> parquet | 4141481 | 293 | queued |
+> | stage 2 reco | not yet submitted | ~7 800 | package built + smoke-tested |
+>
+> New, in `sept26_prelim_analysis/condor/`: `make_stage1_package.py`,
+> `make_stage2_campaign.py`, the two wrappers and submit files, and
+> `fetch_stage1.sh` / `fetch_stage2.sh`. Plus `slim_export.py`.
+>
+> **Four bugs the smoke tests caught before they reached the fleet:** xrootd
+> needs `root://host//eos` (a single slash is read as a relative path and
+> refused); `ntof_tracking.reco.io` resolves through
+> `common/beam_july_paths.py::X17_BEAM_JULY`, which wants the PARENT of `runs/`,
+> not `runs/` itself; rsync of `lxplus:~/dir` expands `~` LOCALLY; and the
+> LCG_105 pyarrow is built without the zstd codec, so the slim export writes
+> snappy.
+>
+> **The one calibration assumption, stated because it is not free.** Stage 2
+> seeds every arm from its run_145 bundle with `v_drift` PINNED at 42.6 um/ns
+> (Magboltz), exactly as the published run_145 bundles were -- so no run_145 gas
+> fit travels into another run, and the whole in-sample set is one noise
+> configuration and one gas mixture (Ar/Iso 90/10, 36 runs, checked in
+> `sample.csv`). Per-run gas variation is absorbed downstream by `k_arm`.
+> **The falsifier: if `k` varies strongly run to run, one bundle is wrong and
+> stage 2 must be re-cut by condition.** Nothing in this pass tests that; it has
+> to come from the campaign `k_arm` output.
+>
+> ### Tight scintillator coincidence -- built, and it found something
+>
+> `tight_coincidence.py` + `make_tight_figures.py`, downstream only: the
+> production `DT_WINDOW` is UNCHANGED, so the window stays re-tunable offline
+> without another campaign pass. A pair is coincident when each arm is within
+> +-30 ns of its own trigger AND the two arms are within 20 ns of each other.
+>
+> **The cut ENRICHES a single-particle background.** On run_145, 5 of the 20
+> survivors are opposing-chamber (A-C) pairs above 170 deg -- one particle
+> crossing the target and punching through both opposite chambers, which is
+> perfectly time-coincident *because it is one particle*. 8 of the 11 tight
+> opposing pairs are above 150 deg, against 25 % of the loose sample. This is
+> `HANDOFF_ACCIDENTAL_TIMING.md` sec 5's D12 caveat arriving in the data.
+> Flagged as `back_to_back` / `tight_pair`, never silently dropped -- it is also
+> the cleanest back-to-back calibration line available.
+> **Any X17 statement from a timing-coincident sample needs this veto first.**
+>
+> Two things run_145 cannot settle, both waiting on campaign statistics: at
+> n = 20 the shape is indistinguishable from both nulls (chi2/dof 1.32 against
+> the loose sample, 1.23 against event-mixed); and the topology asymmetry the
+> cut predicts -- it should bite harder on perpendicular, where the accidental
+> fraction is higher -- is NOT visible (0.262 against 0.265).
+>
+> One known non-independence, recorded not fixed: `source_imaging.vertices`
+> gives a multi-track event one row per track combination, so those rows share
+> a single scintillator tag. Two such events in run_145's 76; campaign-wide it
+> has to be handled before the tagged pairs are treated as independent.
 
 > ## S1-S4 are DONE and published -- 2026-09-08
 >
@@ -425,6 +912,115 @@ Last updated **2026-09-08** (S1-S4 complete).
 > **lxplus is reachable again** -- single probe 2026-09-08, `SSH_OK` on
 > lxplus942, ticket renewable to 13 Sep. The connection-storm warning below
 > stands as a lesson; the block it describes is lifted.
+
+> ## A second beam: NFS/GANIL at 1-40 MeV, and there is a quiet window -- 2026-09-09
+>
+> Asked as a separate question: what do the same two backgrounds look like at a
+> MeV neutron beam? New: `ganil_background.py`, `endf.py` (a 40-line MF=3
+> reader), `make_ganil_figures.py`, `make_ganil_report.py`, `GANIL_NOTES.md`,
+> and the ENDF/B-VIII.0 MF=3 records for Al-27, C-12 and He-3 in
+> `data/nuclear/`. Publishes `/x17/ganil-background/`.
+>
+> **The excitation stops being a constant.** `E_x = 20.578 + 0.749 E_n`, so it
+> runs 21.3-50.6 MeV and the X17 minimum opening angle slides **104 deg -> 39
+> deg**. 109 deg is a property of 20.58 MeV, not of the boson.
+>
+> **Which is a handle, not only a loss.** E_n is measured per event, so the
+> signal becomes a *correlation*: theta_peak tracking a known function of a
+> measured quantity. The gas continuum follows it (same excitation); the
+> capsule background does not follow it at all. n_TOF cannot have this.
+>
+> **Three numbers that all favour MeV.**
+>
+> | | thermal | 2 MeV |
+> |---|---|---|
+> | radiative captures per neutron entering the cell | 1.0e-8 | 2.9e-6 (**280x**) |
+> | (n,p) two-prongs per radiative capture | 9.7e7 | 8.9e3 (**10^4** better) |
+> | capsule wide-angle pairs per gas pair | 10^4-10^6 | **3** |
+>
+> The first is not because (n,gamma) rises -- it barely moves -- but because
+> the 5333 b (n,p) that consumes every thermal neutron and makes nothing
+> collapses to under a barn.
+>
+> **And there is a quiet window below 2.29 MeV.** The capsule's two strongest
+> inelastic lines (843.8 and 1014.5 keV in 27Al) are BELOW the 1.022 MeV pair
+> threshold, and the first level that is not -- 2.211 MeV -- needs a 2.29 MeV
+> neutron to open. `quiet_band()` computes that edge from the evaluation rather
+> than taking it as given. Above 4.8 MeV the 12C 4.44 MeV level (460 mb, E2, in
+> the fibre which outweighs the aluminium) ends it.
+>
+> **Recommendation: run below 2.29 MeV.** Four to five decades of capsule
+> background removed by choosing the beam energy, no change to the apparatus,
+> and the X17 angle stays at 98-104 deg so the same acceptance applies.
+>
+> **A hard stop at 20 MeV, from both directions.** ENDF/B-VIII.0 and TENDL-2021
+> both end 3He(n,gamma) there, AND the Al/C discrete inelastic levels are zeroed
+> above it in favour of the MT=91 continuum. The study runs 1-20 MeV and says
+> so. Running above that needs a cross section that does not exist yet.
+>
+> **What the page deliberately does not do is quote a signal rate.** At
+> E_x = 21-51 MeV the compound is above the 20.21 and 21.01 MeV states the
+> anomaly is reported for, so the X17 branching there is a model statement. The
+> background is calculable; the signal is not.
+
+> ## The IPC expectation is now a spectrum, and the aluminium is costed -- 2026-09-09
+>
+> Two things asked for and both delivered; a third fell out and is the largest
+> open number on the page.
+>
+> **The deliverable is the curve, not a threshold.** `ipc_born.grid_spectrum()`
+> returns dN/dtheta by quadrature rather than by sampling -- reproducible to the
+> last digit, validated against the sampled version in total variation over the
+> whole 0-180 deg range (a new row in `validate()`, 0.3 % at 1 deg bins). Every
+> table on the page is now a spectrum with a running "beyond this bin" column,
+> so the reader picks the threshold. The old "fraction beyond 90/109/130 deg"
+> tables are gone.
+>
+> **It does not depend on neutron energy inside the window.** Four things could
+> make it, and two of them cancel *exactly*: the E0:M1 mix and the Al-to-3He
+> capture ratio are both ratios of 1/v s-wave channels. The transition energy
+> gains (3/4)E_n, which at the top of the window is 1.5 eV on 20.58 MeV, and
+> folding that through moves the spectrum by **2e-9** in total variation between
+> 1 ms and 1 s. **One template covers the whole window**, which frees
+> time-of-flight binning to be spent on backgrounds that do vary.
+>
+> **Aluminium, from the actual capture scheme.** 215 prompt lines with absolute
+> partial cross sections (IAEA PGAA) on the EGAF level scheme, both staged in
+> `data/nuclear/`. Three results, and the first two say the old estimate was
+> looking at the wrong lines:
+>
+> 1. The two hard primaries are **M1, not E1** -- 7724.0 keV feeds the 3+ ground
+>    state of 28Al and 7693.4 keV the 2+ at 30.6 keV, both positive parity
+>    against a 2+/3+ capture state. Assuming E1 overstated them by 3.0x.
+> 2. **72 % of the wide-angle yield comes from the 2-5 MeV primaries**, which
+>    *are* E1 (they feed the negative-parity levels). The 7724 keV line is the
+>    tallest single contributor at 13 %, and the group beats it three to one.
+>    So the Al pair background is a 2-4 MeV background, trivially separable by
+>    energy and barely separable by angle.
+> 3. Per capture the two sources are the same problem -- 2.2e-4 wide-angle pairs
+>    per capsule capture against 2.8e-4 per 3He radiative capture. The entire
+>    difficulty is that there are 10^4-10^6 times more capsule captures.
+>
+> **And the wall is not only aluminium.** The same machinery over 12C(n,g)
+> puts carbon at 11 % of the wall's captures and **14 % of its wide-angle
+> pairs** -- per capture it is worse than aluminium, because both its strong
+> primaries (4945 keV to the 1/2- ground state, 1262 keV to the 3/2- at 3685)
+> are E1 and soft. Everything downstream now runs on the capsule, both species.
+>
+> **The largest open number is not nuclear.** The 500 atm 3He cell has an
+> optical depth of ~150 to (n,p) at thermal, so it absorbs essentially every
+> neutron entering it -- but `calculation_tables/results_3He` computes its
+> radiative captures with what looks like a thin-target formula. If that reading
+> is right, **every expected IPC and X17 yield in that table, and in the INTC
+> proposal quoting it, is high by ~2 orders of magnitude.** The report gives the
+> Al:3He comparison three ways rather than picking one. **A question for whoever
+> produced the table.**
+>
+> New: `ipc_aluminium.py`, `data/nuclear/` (+README), `IPC_MISSING.md` -- the
+> standing list of the eight gaps, ordered by how much each could move the
+> answer, with `ipc_aluminium.missing()` as its machine-readable twin so the
+> report renders it and it cannot drift. Three new figures. `ipc_channels.py`
+> lost its aluminium section to the new module.
 
 ---
 
@@ -2030,6 +2626,31 @@ order of magnitude until re-measured.
 ---
 
 ## Log
+
+**2026-09-09 (GANIL)** — a second, separate analysis: the same 3He and capsule
+pair backgrounds at a 1-40 MeV neutron beam (NFS at GANIL). Section above for
+the detail. The three headlines: the 4He excitation becomes a variable so the
+X17 opening angle slides 104->39 deg, which is a discriminant rather than a loss
+because E_n is measured per event; the gas converts ~280x more of its neutrons
+into radiative capture than at thermal, and the (n,p) two-prong load falls 10^4;
+and below 2.29 MeV the capsule cannot make a pair at all, because its two
+strongest inelastic lines are under the pair threshold. Recommendation: run
+below 2.29 MeV. Both nuclear-data libraries stop at 20 MeV, which caps the study
+rather than the facility.
+
+**2026-09-09 (IPC)** — the expected internal-pair spectrum, done as a spectrum,
+plus the aluminium capsule from its real capture scheme. Section above for the
+detail. The three headlines: the prediction is one curve for the whole >1 ms
+window (2e-9 total variation between 1 ms and 1 s, and two of the four possible
+energy dependences cancel exactly because they are ratios of 1/v channels); the
+capsule's wide-angle background is made by the 2-5 MeV E1 primaries and not by
+the 7.7 MeV ones, which are M1 (and 14 % of it is carbon fibre, not aluminium);
+and per capture the capsule and the gas are equally
+dangerous, so the whole problem is that there are 10^4-10^6 times more capsule
+captures. Along the way: `results_3He` appears to compute 3He radiative captures
+without self-shielding in a cell that is optically thick to thermal neutrons,
+which would be worth ~10^2 on every expected yield the experiment quotes — not
+confirmed, and it is a question for the table's author, not a finding.
 
 **2026-09-07 (latest+1, Ubuntu)** — stage 2 ran at CERN and stage 3 exists.
 Two corrections and one thing that has to be fixed before any physics.
