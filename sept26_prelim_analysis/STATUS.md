@@ -9,11 +9,13 @@ jobs over 36 runs / 293 sub-runs / 25.27 M triggers, **47.8 M events, 9.5x the
 allowlist pass**, in `<out>/reco_fullpass`. The allowlist was retired because
 it kept only **12.8 %** of the triggers that reconstruct into a two-track
 event. **The blocker is no longer statistics, it is the angle scale.** With
-six runs now calibrated, `k` is measured to vary run to run: the four
-calibration-pass runs cluster to ±2 % while **run_145, whose `k` every
-calibrated angle in the track table currently carries, sits 13-17 % high on C,
-7-14 % on D and 8-11 % on A**. The sampling explanation was tested and
-excluded. Decision 2026-09-10: **push the full pass through with per-run `k`,
+all 36 runs calibrated alike on the full pass, `k` varies run to run --
+but **not randomly**. The spread is one contiguous 48-hour block, **runs
+128-147 (3-5 Aug)**, where all three arms rise together (A +2.3 %, C +7.8 %,
+D +7.3 %) and **run_145 -- whose `k` every calibrated angle in the current
+track table borrows -- sits at its peak**. **It is not a drift-velocity
+change:** the drift HV never moved and the k-independent drift end time rises
+~1 % against the ~7 % a real velocity drop demands. Decision 2026-09-10: **push the full pass through with per-run `k`,
 and defer a real per-detector recalibration to October** — meanwhile open up
 the per-track tracking distributions run by run and tag by tag to find what
 drifts. **Do not build an opening-angle spectrum on a borrowed `k` for C or D.**
@@ -87,6 +89,78 @@ Last updated **2026-09-10** (the FULL pass is complete; the angle scale is the b
 > Also corrected: the "run_86 calibration-pass k (A 1.184, C 1.350)" quoted
 > below was **never certified** -- that file's `apply` is `{}` and both arms
 > read NOT CALIBRATED. They are raw fit values, not measurements.
+
+> ## CORRECTION: all 36 runs calibrated alike, and the scatter is ONE 48-HOUR BLOCK -- 2026-09-10
+>
+> **This supersedes the "13-17 %" in the section below.** That figure compared
+> run_145's FULL pass against four runs measured on the prescaled CALIBRATION
+> pass. `fullpass_chain_2026-09-10.sh` has now run `k_arm` on the condor full
+> pass for every run -- **35 of 36 certified at least one arm** -- so the
+> comparison is finally like for like.
+>
+> | arm | n runs | min | median | max | p10-p90 spread | run_145 vs the rest |
+> |---|---:|---:|---:|---:|---:|---:|
+> | A | 32 | 1.2055 | 1.2260 | 1.2848 | **3.4 %** | +3.3 % |
+> | B | 6 | 1.8405 | 2.0098 | 2.4000 | 27.8 % | -- |
+> | C | 30 | 1.3866 | 1.4497 | 1.6165 | **13.2 %** | +11.5 % |
+> | D | 34 | 1.5650 | 1.6104 | 1.8000 | **9.8 %** | +9.9 % |
+>
+> **And the scatter is not scatter.** Nearly all of C's and D's spread is one
+> CONTIGUOUS BLOCK -- **runs 128 through 147, 3 August 17:26 to 5 August 17:34**
+> -- in which all three arms rise together:
+>
+> | arm | outside the block | inside | shift |
+> |---|---|---|---:|
+> | A | 1.2221 (n=23, 1.2055-1.2400) | 1.2499 (n=9, 1.2141-1.2848) | **+2.3 %** |
+> | C | 1.4349 (n=22, 1.3866-1.4819) | 1.5472 (n=8, 1.5103-1.6165) | **+7.8 %** |
+> | D | 1.6023 (n=26, 1.5650-1.6637) | 1.7194 (n=8, 1.6500-1.8000) | **+7.3 %** |
+>
+> **C's inside and outside ranges do not overlap at all.** Both edges of the
+> block fall in beam-off gaps (run_124 -> run_126 is ~18 h; run_147 -> run_150
+> is ~43 h). **run_145 sits at the peak of it** -- which is why borrowing its
+> `k` looked so wrong, and why run_86 (27 July, outside) looked so different.
+>
+> ## ...and the excursion is NOT a drift-velocity change -- 2026-09-10
+>
+> The obvious reading is gas: water slows the drift, `k = v_assumed/v_true`
+> rises, and A moves least because A was the dry line (`V_DRIFT_PRIOR`). Three
+> checks, and it does not hold.
+>
+> **1. The high voltage never moved.** Pulled `hv_monitor.csv` per sub-run from
+> `/eos/experiment/ntof/data/x17/july_beam/runs` for 14 runs spanning the
+> block: drift **700 V on all four chambers** and mesh **540/540/524/520**,
+> bit-identical from run_104 to run_162. The field is not the cause.
+>
+> **2. The drift END TIME barely moves, and it is the one observable that
+> cannot lie about this.** `drift_t_end_ns` is read straight off the waveform
+> fit and `k` never touches it. A genuine 7-8 % fall in `v_true` must raise it
+> by 7-8 %. Measured on unrailed gated tracks:
+>
+> | arm | outside | inside | shift |
+> |---|---:|---:|---:|
+> | A | 830.6 ns | 835.6 ns | **+0.6 %** |
+> | C | 884.4 ns | 891.8 ns | **+0.8 %** |
+> | D | 915.0 ns | 924.0 ns | **+1.0 %** |
+>
+> One percent, against the seven the `k` shift demands. **The gas hypothesis
+> is falsified.**
+>
+> **3. The scale-free source position moves less than a millimetre, and
+> incoherently** -- A +0.19 mm, C +0.54 mm, D -0.83 mm, C and D in opposite
+> directions while their `k` moved the same way. Not that either.
+>
+> **What DID move: the illumination.** Chamber A's median `x_local` steps from
+> **+3.4 mm to +7.6 mm** inside exactly that window (C +1.1 mm, D -0.9 mm),
+> while the raw angular distribution is flat to 0.3-2.5 %. So the excursion
+> lives in the pointing geometry the estimator reads, not in the chamber.
+> **Correlation, not mechanism -- this is a lead for October, not a result.**
+>
+> **The consequence, and it is not small.** If the excursion is an estimator
+> artefact rather than a velocity change, then **applying per-run `k` inside
+> runs 128-147 injects an ~8 % angle error rather than removing one.** The
+> build now running stamps `k_source` on every row, so this is recoverable
+> either way -- but the block is the first thing to settle before any
+> opening-angle spectrum is drawn from those nine runs.
 
 > ## Per-track tracking QA -- three things the medians were hiding -- 2026-09-10
 >
