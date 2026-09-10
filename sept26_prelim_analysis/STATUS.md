@@ -90,6 +90,81 @@ Last updated **2026-09-10** (the FULL pass is complete; the angle scale is the b
 > below was **never certified** -- that file's `apply` is `{}` and both arms
 > read NOT CALIBRATED. They are raw fit values, not measurements.
 
+> ## The track database is REBUILT on the full pass, with per-run k -- 2026-09-10
+>
+> `fullpass_chain_2026-09-10.sh` finished 10:14. **`<out>/stage3_fullpass`,
+> 11.4 GB, 292 sub-runs** (the corrupt tag's sub-run skipped, as designed).
+>
+> | | full pass | allowlist pass | ratio |
+> |---|---:|---:|---:|
+> | track segments | **29 159 045** | 2 111 162 | 13.8x |
+> | gated | **14 263 041** | 1 137 029 | 12.5x |
+> | calibrated | 22 758 421 | 1 750 293 | -- |
+> | file tags | 3 232 | 3 150 | run_145 now tagged properly |
+>
+> **Every run carries its OWN k** (`k_source` = `self`), not run_145's. 35 of
+> 36 runs certified at least one arm; run_126 certified none.
+>
+> **The full pass is a CLEANER sample, and that retires a number quoted all
+> week.** The allowlist selected busy multi-arm events, which are the hard ones
+> to fit. Median chi2/dof, allowlist -> full pass:
+>
+> | arm | chi2/dof x | chi2/dof y | p25 x | frac chi2 > 100 |
+> |---|---|---|---|---|
+> | A | 6.0 -> **6.3** | 5.9 -> 5.0 | 1.65 -> 1.55 | 0.018 -> 0.007 |
+> | B | 19.1 -> **14.9** | 16.3 -> 14.1 | 9.70 -> 7.12 | 0.050 -> 0.031 |
+> | C | 16.8 -> **12.2** | 16.5 -> 11.9 | 6.95 -> 4.82 | 0.052 -> 0.032 |
+> | D | 38.6 -> **16.9** | 55.0 -> 21.6 | 7.67 -> 2.64 | 0.260 -> 0.145 |
+>
+> **"Arm D fits at chi2/dof 39" was largely an allowlist selection effect.**
+> D is still the worst arm, at 16.9, not 38.6. A is unchanged, which is what
+> you would expect of the arm whose model already described its data.
+>
+> **The charge blow-up got WORSE, not better**: `frac_q_gt_1e6` 0.282 -> 0.295
+> on A, 0.265 -> 0.314 on B, **0.281 -> 0.362 on D**. Campaign-wide **29.3 %**.
+> It is not a selection artefact and it is not going away.
+>
+> ## The geometric bound now fails on C as well as A -- 2026-09-10
+>
+> Re-run on the full pass with per-run `k`, `gap_check` flips C from pass to
+> fail, because C's per-run `k` (1.436) is well below the borrowed run_145
+> value (1.616) that had been holding its span inside the gap:
+>
+> | arm | gap | k applied | deepest possible | median unrailed span | **past the gap** | k the gap demands |
+> |---|---:|---:|---:|---:|---:|---:|
+> | A | 27.9 | 1.229 | 37.4 | 29.3 | **0.678** | **1.649** |
+> | B | 30.5 | 1.959 | 23.5 | 19.4 | 0.000 | 1.508 |
+> | C | 30.0 | 1.436 | 32.0 | 27.2 | **0.400** | **1.534** |
+> | D | 30.0 | 1.613 | 28.5 | 24.6 | 0.000 | 1.534 |
+>
+> **Note the DIRECTION, which is the whole point.** The pointing estimators
+> want a SMALLER `k` on A and C; this bound wants a LARGER one. They disagree
+> in a fixed direction on the two arms that fail, and agree on the two that
+> pass. **That disagreement, not the run-to-run scatter, is the sharpest single
+> statement available about the calibration -- and it argues against treating
+> any one arm as the reference in October.**
+>
+> ## What the bigger sample says about drift -- 2026-09-10
+>
+> Post-access Spearman on ~2 980 tags per arm, all far past any plausible
+> multiple-comparison threshold:
+>
+> | arm | variable | rho after the access | pre -> last tenth |
+> |---|---|---:|---|
+> | D | chi2dof_y | **+0.57** | 20.1 -> 29.5 |
+> | B | t0_y | +0.57 | 96.7 -> 96.0 (dips to 89 mid-campaign) |
+> | B | t0_x | +0.55 | 83.0 -> 86.0 |
+> | C | frac_gated | **-0.53** | 0.461 -> 0.473 |
+> | A | chi2dof_x | **+0.48** | 5.12 -> 6.67 |
+>
+> **D's y-view degradation is confirmed and stronger on the bigger sample**,
+> and **A now shows the same thing** (chi2/dof x climbing 5.1 -> 6.7 through
+> the campaign) where the small sample showed nothing. Both fits get worse with
+> time; neither the HV nor the DAQ configuration changed.
+>
+> Report: `<out>/tracking_qa_fullpass/report.html`. The allowlist-pass QA is
+> kept beside it at `<out>/tracking_qa/` for the comparison above.
+
 > ## CORRECTION: all 36 runs calibrated alike, and the scatter is ONE 48-HOUR BLOCK -- 2026-09-10
 >
 > **This supersedes the "13-17 %" in the section below.** That figure compared
