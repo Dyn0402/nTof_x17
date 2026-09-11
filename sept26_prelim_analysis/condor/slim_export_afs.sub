@@ -1,0 +1,31 @@
+# n_TOF slim -> narrow parquet, one job per sub-run.
+# Cheap: the slim is 50-90 MB per sub-run and the conversion is ~1 min, so
+# "espresso" (20 min) is ample and schedules almost immediately.
+# 27 MB out per sub-run measured on run_145/stat090_0000 -> ~8 GB campaign-wide.
+if ! defined jobfile
+  jobfile               = jobs.txt
+endif
+universe                = vanilla
+executable              = run_slim_wrapper.sh
+arguments               = "$(run) $(subrun)"
+transfer_input_files    = code.tar.gz, PROVENANCE.txt
+should_transfer_files   = YES
+when_to_transfer_output = ON_EXIT
+transfer_output_files   = slim_$(run)_$(subrun).tar.gz
+# Output stays on AFS and the DRAIN keeps it there safely. This pass makes
+# ~8.8 GB of tarballs against a 10 GB volume, which filled the quota to 100 %
+# on 2026-09-09 and held jobs -- but the fix for that is draining every few
+# minutes (only ~10-20 jobs' worth, a few hundred MB, is ever resident), not
+# writing to EOS from the access point. See EOS_WRITE_TEST.md.
+initialdir              = .
+output                  = log/slim_$(run)_$(subrun).out
+error                   = log/slim_$(run)_$(subrun).err
+log                     = log/slim.log
+request_cpus            = 1
+request_memory          = 4000MB
+request_disk            = 2000MB
++JobFlavour             = "espresso"
+MY.SendCredential       = true
+on_exit_hold            = (ExitBySignal == True) || (ExitCode != 0)
+max_retries             = 2
+queue run,subrun from $(jobfile)

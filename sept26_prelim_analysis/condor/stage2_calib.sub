@@ -1,0 +1,42 @@
+# Campaign stage-2 waveform reco -- one job per (run, sub-run, arm, file tag).
+# Sizing measured on run_145/stat090_0000 (28 jobs, median 2.3 min, max 5.7):
+# these are SHORT jobs, so "longlunch" (2 h) is already generous headroom and
+# schedules far better than "workday" for ~8 000 of them.
+if ! defined jobfile
+  jobfile               = jobs.txt
+endif
+universe                = vanilla
+executable              = run_stage2_wrapper.sh
+arguments               = "$(arm) $(tag) $(outname) $(extra)"
+transfer_input_files    = code.tar.gz, bundles.tar.gz, allowlists.tar.gz, run_beam_job.py, PROVENANCE.txt
+should_transfer_files   = YES
+when_to_transfer_output = ON_EXIT
+# The job xrdcp's its tarball to EOS itself; condor returns only this marker.
+# Naming it explicitly also stops HTCondor returning the whole scratch dir,
+# which here would include the staged waveforms. See EOS_WRITE_TEST.md.
+transfer_output_files   = ""
+initialdir              = .
+# AFS caps entries PER DIRECTORY; a 22k-file log dir degraded the shared
+# schedd on 2026-09-09. stdout goes nowhere (the EOS product and the
+# wrapper exit code carry everything), and no marker is transferred back.
+# Only stderr is kept, one file per job, for diagnosis.
+output                  = /dev/null
+error                   = log/$(outname).err
+log                     = log/calib.log
+# SIZED FROM MEASURED USAGE, 2026-09-09. The first submission asked for 8 CPUs
+# and got a 24 GB slot, because this pool allocates ~3 GB of memory PER CORE
+# regardless of request_memory -- so cores are the only lever on slot size.
+# Measured usage of a real job: 876 MB memory, 350 MB disk, ~6-8 min.
+# At 8 CPUs only 226 of 5214 slots matched and 6 jobs ran against 5514 idle;
+# 2 CPUs asks for a 6 GB slot instead of 24 GB and matches far more machines.
+# Jobs get slower individually and finish sooner in aggregate.
+request_cpus            = 2
+request_memory          = 2000MB
+request_disk            = 3000MB
+environment             = "RECO_JOBS=2 EOS_STAGE2_OUT=/eos/user/d/dneff/x17/sept26_calib"
++JobFlavour             = "longlunch"
+MY.SendCredential       = true
+on_exit_hold            = (ExitBySignal == True) || (ExitCode != 0)
+max_retries             = 2
+# $(extra) absorbs the rest of the line, so it MUST be last.
+queue arm,tag,outname,extra from $(jobfile)

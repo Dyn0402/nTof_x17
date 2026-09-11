@@ -1,0 +1,52 @@
+# CAMPAIGN stage-2 waveform reco, FULL PASS -- one job per (run, sub-run, arm,
+# file tag), fitting every event the beam seeder finds rather than the stage-1
+# allowlist's ~4 %.
+#
+# WHY. Measured against run_145's blind full pass, the stage-1 filter keeps only
+# 12.8 % of the triggers that reconstruct into a two-track event; the rest sit
+# in NONE/SINGLE and reached stage 2 at 1 % / 5 %. Dylan's call, 2026-09-09:
+# run the whole thing rather than risk missing pairs. STATUS.md carries the
+# measurement and the scintillator-timing caveat that argued the other way.
+#
+# SIZING. 3 233 (run, sub-run, tag) x 4 arms = 12 932 jobs, ~7 800 triggers per
+# tag, ~49 % of arm-events seed. At the allowlist pass's measured 1.16 core-s
+# per fit that is ~1.2 core-hours per job and ~16 000 core-hours in total --
+# ~20x the 760 the allowlist pass cost.
+if ! defined jobfile
+  jobfile               = jobs.txt
+endif
+universe                = vanilla
+executable              = run_stage2_fullpass_wrapper.sh
+arguments               = "$(arm) $(tag) $(outname) $(extra)"
+# No allowlists.tar.gz: that is the whole difference from stage2_campaign.sub.
+transfer_input_files    = code.tar.gz, bundles.tar.gz, run_beam_job.py, PROVENANCE.txt
+should_transfer_files   = YES
+when_to_transfer_output = ON_EXIT
+# The job xrdcp's its tarball to EOS itself; condor returns nothing. See
+# EOS_WRITE_TEST.md -- the access point has no EOS mount, so an output remap
+# to EOS runs the job and then holds it.
+transfer_output_files   = ""
+initialdir              = .
+# AFS caps entries PER DIRECTORY and a flat 22k-file log dir degraded the
+# shared schedd on 2026-09-09, so stderr is sharded by run: ~36 directories of
+# a few hundred files each. The packager creates them.
+output                  = /dev/null
+error                   = log/$(logdir)/$(outname).err
+log                     = log/stage2_fullpass.log
+# 2 CPUs, not 8: this pool allocates ~3 GB per core regardless of
+# request_memory, so cores are the only lever on slot size and an 8-CPU ask
+# matched 226 of 5214 slots. Jobs are individually slower and finish sooner in
+# aggregate.
+request_cpus            = 2
+request_memory          = 2000MB
+request_disk            = 4000MB
+environment             = "RECO_JOBS=2 EOS_STAGE2_OUT=/eos/user/d/dneff/x17/sept26_fullpass"
+# "workday" (8 h), not the allowlist pass's "longlunch" (2 h): these jobs are
+# ~20x longer, a median near 40 min with a tail that would run past 2 h. A job
+# killed on the flavour limit is held and retried into the same limit.
++JobFlavour             = "workday"
+MY.SendCredential       = true
+on_exit_hold            = (ExitBySignal == True) || (ExitCode != 0)
+max_retries             = 2
+# $(extra) absorbs the rest of the line, so it MUST be last.
+queue arm,tag,outname,logdir,extra from $(jobfile)
