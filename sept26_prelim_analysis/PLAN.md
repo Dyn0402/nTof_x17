@@ -410,16 +410,23 @@ produces every figure. The spectrum's statistics change; nothing else does.
 
 ## 7 · Figures
 
-Every figure is built for a **projected slide**, not a page:
+Ordinary, good-looking scientific figures — the kind that read well in the HTML
+report and drop into a note or a paper without being resized:
 
-- 16:9, generated at a fixed size, minimum font size readable from the back of a
-  room (base ≥ 18 pt at final size, axis labels larger)
-- one message per figure; the message is the title
+- **shape follows the data**, not a frame. A single panel is about 3:2 and
+  ~7 in wide; a map wants to be square, a long time series wants to be wide.
+  Nothing is pinned to a slide's aspect ratio
+- **type at document size** — `figstyle.BASE_PT` is 10.5 pt, the size text is
+  meant to be read at. Figures are made at the width they will be shown, so the
+  type scale survives; scaling a saved PNG in a document is what breaks it
+- **light ink, heavy data** — thin spines, a faint grid behind the data, muted
+  ticks, a title that names the message without shouting it
+- one message per figure; the message is the title, kept to one line
 - a `Preliminary` badge on anything that touches the reconstruction — the
   convention `ntof_run_report` already holds itself to
-- a shared style module in this package so every figure in the deck matches
-- exported PNG at presentation resolution **and** the underlying numbers as CSV
-  beside it, so a figure can be rebuilt without rerunning the analysis
+- a shared style module (`figstyle.py`) so every figure in the package matches
+- exported PNG at 200 dpi **and** the underlying numbers as CSV beside it, so a
+  figure can be rebuilt without rerunning the analysis
 
 ---
 
@@ -499,6 +506,19 @@ unblocks it**.
   before any LS amplitude is used as energy. The +9.1 % `√(A_top·A_bot)`
   variation on the wall bars is the same question in its milder form, and is
   also unresolved.
+- **D16 — Cross-check Micromegas track t0 against scintillator timing.** The
+  forward-model fit gives a t0 per track from the drift-time ladder; compare
+  it to the scintillator hit time on the same event as an independent timing
+  cross-check. Useful both as a sanity check on v_drift/t0 (D9) and as a
+  second handle on the accidental-timing measurement above, which currently
+  uses scintillator-only pairs.
+- **D17 — Plastic scintillator ringing: design the timing algorithms around
+  it, don't discover it later.** The plastics are known to ring; whatever
+  timing estimator (rising edge, CFD, matched filter) feeds D16, D11, or the
+  accidental-fraction work above needs to be built and tested against ringing
+  waveforms from the start, not patched after the fact — the same lesson the
+  strip-time aggregation bug (see `RECONSTRUCTION_BASIS.md`) already taught
+  once on the Micromegas side.
 
 ### Physics
 
@@ -511,6 +531,17 @@ unblocks it**.
   by §2.1. Either bring them in with their own calibration, or record the loss.
 - **D15 — Pile-up within a bunch.** ~112 triggers per bunch; the `BUSY` class is
   vetoed wholesale this week and its contents never examined.
+- **D18 — Accidental-timing study, per detector, with full statistics.** The
+  arm1−arm2 scintillator-timing separation
+  (<https://dylan-neff.web.cern.ch/x17/accidental-timing/>) is reported
+  pooled across detectors this week because the current sample (16 % of pairs
+  carrying a two-arm scintillator tag) is too thin to split further. Once full
+  statistics land, remake the timing plots per detector — there may be
+  per-detector time shifts (cable length, PMT/electronics offsets) that need
+  their own calibration before pooling is valid again, and pooling an
+  uncalibrated offset would smear the separation the same way the strip-time
+  aggregation bug smeared position (`RECONSTRUCTION_BASIS.md`). *Unblocked
+  by* D17 (ringing-robust timing) and higher statistics.
 
 ---
 
@@ -815,6 +846,31 @@ own angular correlation. So:
 3. quote the difference as the **dominant modelling systematic**, as a band on
    the expectation and never as a single curve.
 
+> **SUPERSEDED 2026-09-09 — steps 2 and 3 are done, and step 3's answer is
+> different.** `ipc_born.py` does the Born multipole calculation, one exact
+> curve per multipole, and `ipc_channels.py` says which multipoles the <2 eV
+> window makes: M1 from the 1⁺ channel and E0 from the 0⁺ one, in a ratio whose
+> only uncertainty is the E0 pair width. So the modelling systematic is no
+> longer "the spread between four ansätze" (a factor of 38) — it is **one
+> physical parameter, the E0 fraction, spanning 6–52 %**, and the intra-chamber
+> control sample can measure it. The expectation folded into the opening-angle
+> page should be `ipc_channels.thermal_spectrum()`, not `pair_physics.VARIANTS`.
+> **WIRED IN 2026-09-10** — `campaign_angle.py` folds it, per topology, with
+> M1 and E0 kept separate so a fit can float the mix. `opening_angle.py` is
+> unchanged and stays the single-run module; the campaign entry point is
+> the new one.
+>
+> Two things that were not in this plan and change what the page has to show.
+> **The prediction is time-independent** — the same curve from 1 ms to 1 s,
+> to 2×10⁻⁹ in total variation — so time-of-flight binning is free to be spent
+> on backgrounds that do vary, and the intra-chamber normalisation can use the
+> whole window. **And the aluminium capsule is a second component, not a
+> footnote:** `ipc_aluminium.py` puts it at 10⁴–10⁶ times the gas's wide-angle
+> pair yield, in a spectrum whose shape differs from the gas's by about a factor
+> of two. The categories below split IPC from X17; nothing in them splits gas
+> from capsule. The one handle that would — total pair energy, 20.6 MeV against
+> 2–4 MeV — is not measured in this setup. See `IPC_MISSING.md`.
+
 **The categories**, split identically in data and in the expectation, because a
 shape comparison is only as good as the topology it is made in:
 
@@ -836,6 +892,90 @@ the campaign pass is what turns this from a shape check into a measurement —
 and S4's job this week is to prove the machinery and **state the yield the
 campaign needs**, exactly as S2 does for the vertex.
 
+> **ARRIVED 2026-09-10.** The full pass gives **14 594 A–C pairs**
+> campaign-wide against the ~11 450 projected here, and **571** survive the
+> tight coincidence. Statistics are no longer the limit. What replaced it:
+> **nothing fits** — χ²/dof 13–85 with one free normalisation, the
+> event-mixed accidental template still the best description — and the
+> leading suspect is the acceptance, run_145's, borrowed, with efficiency
+> applied independently of incidence. `<out>/angle_campaign/report.html`.
+
+> **THE ACCEPTANCE IS PER RUN NOW, AND THE CAPSULE IS FOLDED IN — 2026-09-10.**
+> Three things this section had been carrying as open:
+>
+> 1. **"the acceptance is run_145's, borrowed"** — no longer, and it never
+>    mattered much. `campaign_efficiency.py` measures the tagged efficiency in
+>    all 36 runs (p10–p90 6.2 % on A, 9.9 % on C, 10.5 % on D) and
+>    `campaign_acceptance.py` throws the toy per run with its own efficiency,
+>    dead ranges and measured source offset. run_145's curve was within 1.5 % of
+>    the campaign median. **The real defect is narrower:** the efficiency map
+>    stops at |u| = 160 mm and `acceptance.Chambers` turns that edge into a
+>    zero, so 7–11 % of accepted legs get zero efficiency in the treatment every
+>    published number used.
+> 2. **"applies efficiency independently of incidence"** — measured, and it is
+>    real but small in effect. The head-on wall group tracks at 0.68–0.86 of its
+>    neighbours in 100 % of runs, yet applying that as a factor on each leg's own
+>    incidence lands on a flat efficiency to within 1 %.
+> 3. **"nothing in them splits gas from capsule"** — `campaign_fold.py` does.
+>    The capsule continuum folds on a **wall** vertex distribution and beats the
+>    gas in every topology and selection (coincident perpendicular χ²/dof 7.4
+>    against 11.0). On the acceptance-corrected perpendicular sample it
+>    describes everything below 109° at χ²/dof 4.5 and leaves a **2.16×, 5.0σ**
+>    excess above it.
+>
+> **And the sharpest new statement needs no model at all:** divided by their own
+> acceptance the three topologies imply birth medians of 37.6°, 81.7° and
+> 112.5°, when one source and one physics feed all three. Report:
+> `<out>/fold_campaign/report.html`.
+
+> **D1/D2 IS MEASURED, AND THE INTRA CONTROL IS CONSISTENT WITH ACCIDENTALS —
+> 2026-09-10.** `det_a_intra.py` takes one chamber and one topology and checks
+> each step against data before building the next.
+>
+> **The double-track finding efficiency at small separations** — listed here as
+> a known omission since the plan was written — is now measured in situ, as
+> real over event-mixed against in-plane separation. **No intra-A pair is
+> reconstructed below 20 mm apart; 56 of 296 218 survive below 40 mm where
+> ~12 400 are expected; the depletion is still visible at 200 mm.**
+> `acceptance.py` has none of this, so it accepts a 10 mm pair at full
+> efficiency. Folding it in moves the capsule's folded median from 19.0° to
+> 24.6°. It applies to the **intra topology only** — two legs in different
+> chambers are reconstructed independently — which is precisely the sample this
+> section makes the background normalisation.
+>
+> **And that normalisation sample shows no pair signal.** Its opening-angle
+> distribution matches two arm-A tracks that never shared a trigger (31.1°
+> against 32.4°; 49.2° against 47.4° once both legs have a usable slope), and
+> the event-mixed shape beats every folded continuum by 10–50× in χ²/dof.
+> The one thing that survives: on the slope-selected pairs the two legs
+> converge on the beam axis at **2.06 ± 0.29** times the mixed rate, 4.4σ.
+>
+> **Two traps this exposed.** The campaign's intra control is the 30 mm-pointing
+> subset — 2.7 % of the intra-A pairs that exist — applied silently inside
+> `source_imaging._track_table`. And `Δt₀` between two legs is **not** a
+> coincidence selector: its peak lives entirely below `TAN_MIN_SLOPE`, the
+> scintillators do not see it, and its prompt fraction is not identifiable
+> (0.23–0.67 across five equally good models).
+
 **Deliverables:** `x17/opening-angle/` — the four categories in data, the
 acceptance per category, the folded expectation with its IPC band, the raw and
 corrected spectra side by side, and the statistics projection.
+
+> **MEASURED 2026-09-08 — the accidental fraction, directly and without event
+> mixing.** The opening-angle page above compares the raw shape because the
+> two candidate accidental normalisations both failed (the mixed sample is a
+> shape with no rate; the Poisson product over-predicts 2–4×). A third route
+> works: the scintillators are prompt by construction, so arm1−arm2
+> scintillator timing on the real inter-chamber pairs directly separates true
+> coincidence from accidental, with no acceptance model and no mixed sample.
+> `accidental_timing.py`, `HANDOFF_ACCIDENTAL_TIMING.md`:
+>
+> **f = 29 % [17, 40] overall, 42 % [26, 58] opposing (A–C), 16 % [0, 32]
+> perpendicular** — topology-ordered the way a real source predicts, and well
+> above the naive first pass (6 ± 3 %, since retracted as biased). **Not yet
+> folded into the spectrum above**: f is measured only on the 16 % of pairs
+> carrying a two-arm scintillator tag, so using it to correct the full sample
+> needs a representativeness check not yet done. That is the next step, ahead
+> of the campaign pass, since it turns this section's raw-shape comparison
+> into a background-subtracted one. Published:
+> <https://dylan-neff.web.cern.ch/x17/accidental-timing/>

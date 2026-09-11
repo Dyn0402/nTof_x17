@@ -4,7 +4,40 @@
 Plan of record: [`PLAN.md`](PLAN.md). Board:
 <https://dylan-neff.web.cern.ch/x17/analysis.html>.
 
-**One line:** **the whole campaign is now reconstructed blind** — 12 929 condor
+**One line:** **every arm-A track now points back at the scintillators behind
+it, and the wall says the arm-A angle scale is 33 % out.** 2 498 384 gated
+tracks over 31 runs, extrapolated to the SiPM wall and the plastic bars: 39 %
+of the confirmable ones point at a channel that fired against a 0.7 % accidental
+floor, 65 % on the beam-pointing tracks, and 68 % of those are confirmed by both
+layers at once. Two things fell out of it that nothing else in the chain could
+see. **The wall's surveyed group boundaries appear to move with the track's own
+slope** — 32.5 mm per unit tan, which only an angle-scale error produces — and
+the plastic, at 1.96x the lever arm, measures 1.99x the shift and the same
+eps = +33 %. **And a fifth of the arm-A track table lands outside the chamber in
+v**, 14 % of all tracks piled in one 20 mm window where the fitted y rails; the
+scintillators confirm those at 7 % against 46 % inside. Report:
+`<out>/det_a_scint/report.html`.
+
+Before that: **the detector-A intra-chamber control is consistent with
+accidentals.** 296 218 intra-A pairs whose opening-angle distribution matches
+two tracks that never shared a trigger (31.1 deg against 32.4; 49.2 against 47.4
+where the angle is measured), with one positive surviving: on the
+slope-selected pairs the two legs converge on the beam axis at 2.06 +- 0.29
+times the mixed rate, 4.4 sigma. Report: `<out>/det_a_intra/report.html`.
+
+And before that: **the acceptance is now per run, and it was not the fault.**
+The scintillator-tagged efficiency is measured in all 36 runs and moves by
+6-10 % p10-p90; run_145's borrowed acceptance was within 1.5 % of the campaign
+median. What *is* wrong with it is smaller and more specific: the efficiency map
+stops at |u| = 160 mm and the code turns that edge into a zero, cutting
+7-11 % of accepted legs. **Folding the aluminium capsule continuum in beats the
+helium gas in every topology** (coincident perpendicular chi2/dof 7.4 vs 11.0)
+and, on the acceptance-corrected perpendicular sample, describes everything
+below 109 deg at chi2/dof 4.5 -- leaving a **2.2x, 5 sigma excess above it**
+that the accidental template covers. Report:
+`<out>/fold_campaign/report.html`. The angle scale remains the open blocker.
+
+Previously: **the whole campaign is now reconstructed blind** — 12 929 condor
 jobs over 36 runs / 293 sub-runs / 25.27 M triggers, **47.8 M events, 9.5x the
 allowlist pass**, in `<out>/reco_fullpass`. The allowlist was retired because
 it kept only **12.8 %** of the triggers that reconstruct into a two-track
@@ -20,11 +53,431 @@ and defer a real per-detector recalibration to October** — meanwhile open up
 the per-track tracking distributions run by run and tag by tag to find what
 drifts. **Do not build an opening-angle spectrum on a borrowed `k` for C or D.**
 
-Last updated **2026-09-10** (the FULL pass is complete; the angle scale is the blocker).
+Last updated **2026-09-10** (arm-A tracks are now confirmed positionally against the scintillators, and the wall measures the angle scale; the FULL pass is complete; per-run capsule imaging says the geometry is sound and the angle scale is the fault; the campaign opening-angle spectra exist).
 
 > **START HERE:** [`HANDOFF_FULLPASS_2026-09-10.md`](HANDOFF_FULLPASS_2026-09-10.md)
 > — why the full pass happened, what it produced, and the run_86 test that now
 > blocks the opening angle. The entries below are the working record behind it.
+
+> ## DETECTOR A -> SCINTILLATORS: A PER-TRACK POSITIONAL CONFIRMATION, AND THE WALL MEASURES THE ANGLE SCALE -- 2026-09-10
+>
+> New: `det_a_scint.py`, `make_det_a_scint_figures.py`,
+> `make_det_a_scint_report.py`, `det_a_scint_chain_2026-09-10.sh`. Report at
+> `<out>/det_a_scint/report.html`; per-track tables under
+> `<out>/det_a_scint/tracks/`, one parquet per run.
+>
+> **What the analysis had before this, and why none of it was enough.**
+> `wall_A`/`plastic_A` in the track table are PER-TRIGGER stage-1 booleans, so a
+> track on the far side of the chamber from the fired bar carries the same flag
+> as one pointing at it -- `det_a_intra`'s `tag_A` is this.
+> `build_tracks.predictions` has been writing `pred_sipm_bar`/`pred_plastic`
+> into all 586 track files and **nothing ever compared them with the slim**.
+> `run145_target_imaging.pointing_coincidence` does compare them, but in the x
+> plane only: no v check, no residual, and used as a purity cut.
+>
+> **THE CONFIRMATION.** 2 498 384 gated arm-A tracks, 31 runs, extrapolated in
+> 3D to each layer at positions read from the DAQ's own `run_config.json`.
+>
+> | selection | wall | floor | plastic | floor | both layers |
+> |---|---:|---:|---:|---:|---:|
+> | all | 39.0 % | 0.70 % | 53.3 % | 3.7 % | 43.8 % |
+> | fiducial | 46.3 % | | 54.4 % | | 44.8 % |
+> | beam-pointing | 64.9 % | 0.31 % | 75.8 % | 1.2 % | **68.2 %** |
+>
+> **Every control window is the SAME WIDTH as the signal window it controls**,
+> and the first version of this module got that wrong: a 700 ns control against
+> a 160 ns signal window made the plastic's confirmation rate (59 %) equal its
+> apparent floor (58 %). Two independent floors are quoted and they agree --
+> the slim's own `is_control` sample and a pre-trigger window. **Pre-trigger,
+> not post:** the wall's `dt_ns` is flat outside one 100 ns peak but the
+> **plastic decays for the best part of a microsecond after the trigger** (27 154
+> hits in (0,100) falling through 6 223 at +400, still ~15 % above pedestal at
+> +900), so a +400 ns control sits in a real tail and reports 21 % where the
+> truth is 5 %. In the control windows the "match" lands on the predicted one of
+> four wall groups 28 % of the time and one of two plastic bars 53 % -- chance,
+> exactly, which is what validates the floor.
+>
+> ## THE WALL MEASURES THE ANGLE SCALE, INDEPENDENTLY OF THE IMAGING
+>
+> The wall's group boundaries are surveyed and fixed. Fit where each boundary
+> APPEARS to sit, separately in bins of the track's own in-plane slope:
+> **the boundary moves at 32.5 +- 5.4 mm per unit tan**, on a rigid offset of
+> 1.6 +- 1.5 mm. Only an angle scale does that -- a survey error, a swapped
+> read-out order or a plane-fit bias shifts every bin alike and lands in the
+> intercept. Dividing by the 97.4 mm lever arm:
+>
+> **eps = +33.4 +- 5.5 %, i.e. the wall prefers k(arm A) x 1.33.**
+>
+> **The decisive check is the second lever arm.** The plastic sits 190.6 mm
+> past the strip plane against the wall's 97.4, a ratio of **1.96**; it measures
+> **64.6 mm per unit tan, a ratio of 1.99**, and returns eps = +33.9 +- 8.2 %.
+> Two layers, two levers, one number. It holds on every selection that does not
+> cut on the direction: 33.4 (all), 31.3 (fiducial), 31.4 (slope), 30.2
+> (fiducial+slope). **The `pointing` cut must NOT be used for it** -- that cut is
+> computed FROM the reconstructed direction, so it selects on tan correlated
+> with position, and it duly returns +17.7 +- 11.3 at chi2/dof 83.
+>
+> **What it is not.** One arm, one axis (the wall's u), one estimator, and the
+> wall fit has chi2/dof 17.8 so the shift is not perfectly linear in tan (the
+> quoted error is inflated to cover it). **It is not a replacement calibration
+> and must not be applied as one.** It is an independent handle on the standing
+> angle-scale blocker, from a direction the target imaging cannot see, and it
+> says arm A's tangents are too large -- the same sign the imaging's k > 1
+> already implies, but a much larger size.
+>
+> ## A FIFTH OF THE ARM-A TRACK TABLE LANDS OUTSIDE THE CHAMBER
+>
+> Found by drawing the wall projection, which carries a hard horizontal stripe
+> at v ~ -195 mm that no part of the apparatus sits at. **The fitted y position
+> rails just outside the active area.** Arm A is 340 mm tall, so |v| <= 170 is
+> all of it:
+>
+> | where the track lands | tracks | of all | wall confirms | plastic |
+> |---|---:|---:|---:|---:|
+> | inside the active area | 2 015 612 | 80.7 % | 46.0 % | 54.0 % |
+> | outside it in v | 482 772 | **19.3 %** | 7.7 % | 21.7 % |
+> | in the v rail alone | 348 234 | **13.9 %** | **6.6 %** | 15.3 % |
+>
+> and the railed tracks' accidental floor goes the other way (1.06 % against
+> 0.63 %), which is what a population of junk in busier triggers looks like.
+> **Reported, not cut** -- whether a railed y should fail the 3D gate is a
+> decision for `wft`, not for a confirmation study. But the "all" row of every
+> table in this analysis is diluted by it, which is why a `fiducial` selection
+> is now carried beside it.
+>
+> ## Two more things worth keeping
+>
+> **The position tolerance is 15.5 mm, not the 1.8 mm the fit errors claim.**
+> The formal plane-fit error extrapolated to the wall is a floor: it carries the
+> plane fit alone, not the angle scale, not scattering, not the survey. The
+> width that matters is how sharply the fired group switches across a boundary,
+> and that is measurable on single-track single-group events. The plateaux sit
+> at 0.80-0.91, not 1.0 -- the wall's own single-group inefficiency and
+> cross-talk, which no amount of pointing removes.
+>
+> **run_126, run_154 and run_156 are excluded and their tracks are not lost.**
+> Their stage-3 tables were built before their `k_arm_<run>.json` existed, so
+> `angle_calibrated` is false and every direction is null. The module **refuses
+> them by name**: projecting a null direction lands on no channel and arrives at
+> the far end as a confirmation rate of exactly 0.0 %, which is the one wrong
+> answer that looks like a measurement. **Rebuilding stage 3 for those three
+> returns ~370 000 tracks, 13 % more than this page has.**
+>
+> Re-running: `det_a_scint --from-tracks` rebuilds every summary from the stored
+> per-track tables without re-reading the 10 GB slim.
+
+> ## DETECTOR A, INTRA-CHAMBER: THE INTRA CONTROL IS CONSISTENT WITH ACCIDENTALS -- 2026-09-10
+>
+> New: `det_a_intra.py`, `make_det_a_figures.py`, `make_det_a_report.py`,
+> `det_a_chain_2026-09-10.sh`. Report at `<out>/det_a_intra/report.html`.
+> A deliberately narrow pass: one chamber, one topology, every step checked
+> against data before the next was built.
+>
+> **296 218 intra-A pairs over 31 runs**, against 1 773 525 event-mixed. The
+> existing campaign product holds **7 915** intra-A pairs -- and they are
+> exactly this module's `pointing` selection. **The campaign's intra-chamber
+> control IS the 30 mm-pointing subset, 2.7 % of the intra-A pairs that
+> exist**, and the cut is applied silently inside
+> `source_imaging._track_table`.
+>
+> **THE HEADLINE IS A NULL.** The measured opening-angle distribution is the
+> same as the distribution of two arm-A tracks that never shared a trigger:
+>
+> | selection | n | median | event-mixed median |
+> |---|---:|---:|---:|
+> | all pairs | 296 218 | 31.1 deg | 32.4 deg |
+> | both legs slope-reliable | 55 399 | 49.2 deg | 47.4 deg |
+>
+> and the event-mixed shape beats **every** folded continuum by 10-50x in
+> chi2/dof (all pairs: 911 mixed against 9 776 Al capsule, 10 137 3He E0;
+> slope: 202 against 10 793 and 7 933).
+>
+> **THE ONE POSITIVE RESULT.** On the slope-selected pairs the two legs
+> converge on the beam axis (lines within 30 mm of each other, within 20 mm of
+> the axis) at **2.06 +- 0.29 times the event-mixed rate -- 74 pairs against
+> ~36 expected, 4.4 sigma**. On the full sample there is nothing (0.92 +-
+> 0.07). It appears only where the direction is actually measured, which is
+> where it should. The mixed sample is not separation-matched, so 2.06 is a
+> **lower** bound.
+>
+> ## Three things that had to be established first, and all three are new
+>
+> **1. The two-track resolution, measured in situ, and it is missing from
+> `acceptance.py` entirely.** Real over event-mixed: **0 pairs below 20 mm,
+> 56 of 296 218 below 40 mm** of radial separation where ~12 400 are expected.
+> `acceptance.py` treats the two legs as independently reconstructed, so it
+> accepts a pair 10 mm apart at full efficiency. Folding the measured loss in
+> moves the capsule's folded median from **19.0 to 24.7 deg** against 31.1
+> observed; it does not change any conclusion.
+>
+> **And the loss is a CROSS, not a disc** -- found only after the figures were
+> made legible. On the map of real over mixed against (|du|, |dv|) the whole
+> first row and the whole first column sit at **0.00-0.03** of the plateau
+> whatever the other coordinate does: a pair 12 mm apart in u and 300 mm apart
+> in v is lost as completely as one 12 mm apart in both. Two independent strip
+> planes, and the fit needs both. **A radial efficiency passes those pairs**,
+> so the correction is measured once per view (the other held above 100 mm) and
+> applied as the product eff(|du|) x eff(|dv|). Per view: 0.005 at 0-20 mm,
+> 0.38 (u) / 0.51 (v) at 20-40, complete from 40. The separable product is
+> tested against the 2D map, rms residual 0.19 over 169 cells -- it reproduces
+> the cross and leaves the leg-to-leg correlation behind, which is not an
+> efficiency.
+> This is `PLAN.md`'s own D1/D2 and it is now measured. It applies to the
+> intra topology only -- two legs in different chambers are reconstructed
+> independently -- which is exactly the sample PLAN sec S4 uses as the
+> background normalisation.
+>
+> **2. The in-chamber `dt0` peak is not usable as a coincidence.** `t0` is the
+> charge arrival at the mesh, so two legs born together share it; the
+> difference shows a clear peak on a broad pedestal. Three tests:
+>
+> - **the prompt fraction is not identifiable** -- five two-component models
+>   with near-identical likelihood return 0.23 to 0.67;
+> - **the scintillators do not see it** -- arm-A tagged pairs have the SMALLER
+>   prompt-to-off-time ratio, 1.41 against 1.69;
+> - **it lives entirely below `wft.reco.TAN_MIN_SLOPE`** -- ratio 1.84 in the
+>   lowest |tan| bin, **0.97-1.15 above the threshold, consistent with no peak
+>   at all**. (`x_slope_reliable & y_slope_reliable` is exactly
+>   `min|tan| >= 0.08`; verified.)
+>
+> **The obvious explanation is falsified.** A slope-less fit whose `t0`
+> collapses onto its prior would do this -- but single-track `t0` is *widest*
+> for the low-slope tracks (sd 293 ns against 105 ns). Origin left open.
+> **Operationally it does not matter:** on the pairs whose angle is a
+> measurement, there is no prompt excess to select on.
+>
+> **3. A two-dimensional efficiency map for A, in the toy's own frame.**
+> Measured per run off the exported slim, stable campaign-wide (p10-p90 6.2 %).
+> **And a frame bug: `efficiency.py` bins in `local_x - PINWHEEL`, the lever
+> from the beam-axis foot, while `acceptance.Chambers.cross` returns the offset
+> from the PLANE CENTRE.** For arm A those differ by 16.35 mm, so the published
+> 1-D map is indexed 0.4 bins away from the toy that consumes it. Not fixed in
+> `acceptance.py`; `det_a_intra` builds its map in the plane-centre frame.
+>
+> ## Two bugs worth remembering
+>
+> **The figures in this entry and the one below were unreadable, and the cause
+> is a trap in `figstyle`.** `figstyle.title` sets the headline on an AXES with
+> `loc='left'`. On a single full-width axes that is fine. On a two- or
+> three-panel figure the headline is several times wider than the panel it is
+> anchored to, so it runs off the canvas -- and `savefig(bbox_inches='tight')`,
+> which the house rcParams turn on, then EXPANDS the saved image sideways to
+> contain it. Measured: a two-panel `WIDE` figure that should be 2133 x 800 px
+> came out **3262 x 680**, aspect 2.7:1 -> 4.8:1, and a report that scales the
+> image to its column width was left with panels a third of their intended
+> height. New `figstyle.fig_title(fig, ...)` anchors the headline to the
+> FIGURE, wraps it to the canvas width, and lays the panels out itself; call it
+> last and do not call `tight_layout` at all. **Use it for every multi-panel
+> figure.** The earlier reports (`angle_campaign`, `imaging_campaign`,
+> `tracking_qa_fullpass`) were checked and are unaffected -- aspects 1.05-2.11.
+>
+> `pandas.Series.to_numpy()` may return a VIEW of the frame's buffer. An
+> in-place `&=` on it silently overwrote the `mixed` column mid-run, so the
+> census and the saved parquet disagreed about which pairs were real. Every
+> mask in `det_a_intra.select` is now `copy=True`. Audited: no other module in
+> this package does in-place boolean ops on a `to_numpy()` result.
+>
+> **Re-run with** `bash sept26_prelim_analysis/det_a_chain_2026-09-10.sh`
+> (~15 min; the second pass throws N pairs per run once the two-track
+> resolution has been measured on the pooled sample).
+
+> ## THE ACCEPTANCE IS PER-RUN NOW, AND THE BORROWING WAS NOT THE FAULT -- 2026-09-10
+>
+> New: `campaign_efficiency.py`, `campaign_acceptance.py`, `campaign_fold.py`,
+> `make_fold_figures.py`, `make_fold_report.py`,
+> `acceptance_fold_chain_2026-09-10.sh`. Report at
+> `<out>/fold_campaign/report.html`. Nothing was written into
+> `<out>/efficiency` or `<out>/angle` -- the published single-run products stay
+> put for the comparison.
+>
+> **The scintillator-tagged efficiency is now measured in all 36 runs** (off
+> the exported n_TOF slim, validated to give the identical tag set to the ROOT
+> slim on run_145 arm A) and it barely moves:
+>
+> | arm | runs | median | p10-p90 | run_145 vs median |
+> |---|---:|---:|---:|---:|
+> | A | 34 | 23.9 % | **6.2 %** | **+1.3 %** |
+> | B (hits) | 34 | 16.5 % | 60.7 % | +6.2 % |
+> | C | 34 | 16.9 % | **9.9 %** | **+1.5 %** |
+> | D | 34 | 13.1 % | **10.5 %** | **+1.3 %** |
+>
+> The acceptance curve's own run-to-run shape scatter has a median cv of
+> **0.029**, and run_145's curve differs from the pair-weighted campaign one by
+> 5 % in integral and 2-5 % rms in shape. **`campaign_angle`'s
+> `acceptance_source = run_145 (BORROWED)` was worth ~1.5 % on the efficiency
+> scale.** It is not why nothing fits.
+>
+> **The head-on dip is real, campaign-wide, and smaller in effect than it
+> looks.** The head-on wall group's tracking rate over its two positional
+> neighbours: A 0.833, B 0.861, C 0.675, D 0.726, **below both neighbours in
+> 100 % of run-arm pairs on A, C and D**. But entering it into the toy as a
+> factor on the leg's own incidence lands almost exactly on a flat efficiency
+> -- the band is narrow in |tan| and a pair from a 20 mm source averages over
+> it. Three variants (`flat`, `u_map`, `incidence`), and **`u_map` -- what every
+> published number so far used -- is the outlier**: perpendicular fraction above
+> 109 deg 0.1999 against 0.2305 (flat) and 0.2290 (incidence).
+>
+> **Why: the map has an edge and the code turns it into a cut.** The measured
+> map spans |u| <= 160 mm (the scintillators stop covering beyond ~150) while
+> the active area runs to 190. `acceptance.Chambers.efficiency` interpolates
+> with `left=nan, right=nan` and the NaN becomes a zero, so **7.4-10.8 % of
+> accepted legs are given zero efficiency** in `u_map`. Reproduced rather than
+> corrected, because it is what the published numbers did; measured by
+> `campaign_acceptance.edge_cost`.
+>
+> ## THE ALUMINIUM CAPSULE FITS BETTER THAN THE GAS, AND STILL LEAVES A TAIL
+>
+> `ipc_aluminium.capsule_spectrum` and `shape_comparison` folded through the
+> per-run acceptance, capsule components on a **wall** vertex distribution (the
+> skin of the He-3 polycone, where an Al pair is actually born; 2 % in integral,
+> nothing in shape) and gas components on the gas volume.
+>
+> | | median at birth | frac > 109 deg |
+> |---|---:|---:|
+> | Al capsule, after the wall | **50.6 deg** | **0.125** |
+> | 3He gas M1+E0, after the wall | 36.9 deg | 0.065 |
+>
+> Single-shape chi2/dof on the coincident sample, capsule against gas:
+> **opposing 27.5 vs 41.6, perpendicular 7.4 vs 11.0** -- the capsule wins in
+> every topology and every selection. The event-mixed accidental template still
+> wins overall (12.9 opposing, 2.1 perpendicular).
+>
+> **The sharpest result is the corrected spectrum, and it needs no model.**
+> Dividing the data by its own acceptance, the three topologies imply
+> **completely different birth spectra** -- medians 37.6, 81.7 and 112.5 deg --
+> when one source and one physics feed all three and a correct acceptance would
+> collapse them onto one curve.
+>
+> **Where there IS agreement.** Perpendicular is the only topology whose
+> acceptance does not decide the answer. Normalising below 109 deg only, on the
+> coincident sample:
+>
+> | birth model | chi2/dof below 109 | data/model above 109 |
+> |---|---:|---:|
+> | **Al capsule (after wall)** | **4.5** | **2.16x (5.0 sigma)** |
+> | 3He gas E0 only | 4.8 | 2.49x |
+> | 3He gas M1+E0 | 6.2 | 3.14x |
+>
+> So **the aluminium accounts for the bulk of the continuum and not for the
+> wide-angle tail**, and the tail is where the accidentals and the residual
+> single-particle background live. The two-component fit (capsule + event-mixed)
+> reaches chi2/dof **1.40** on the coincident perpendicular sample -- but at an
+> accidental share of **0.70 [0.61, 0.80]** against the timing measurement's
+> **0.16 [0.00, 0.32]**, and on opposing it runs to the f = 1 boundary. Two
+> independent handles on the same quantity disagree.
+>
+> **What this does not do:** it does not identify the pairs as aluminium. Only
+> the total pair energy separates a 2-4 MeV capsule pair from a 20.6 MeV gas
+> pair and this setup does not measure it. The after-wall curves also carry a
+> Highland Gaussian that is untrustworthy for 18 % of the capsule weight.
+>
+> **Re-run with** `bash sept26_prelim_analysis/acceptance_fold_chain_2026-09-10.sh`
+> (~25 min, mostly the 8 M-pair-per-run throws). `campaign_acceptance
+> --summarise-only` re-derives the summary tables without re-throwing.
+
+> ## PER-RUN CAPSULE IMAGING: the geometry is SOUND -- 2026-09-10
+>
+> New: `campaign_imaging.py`, `make_campaign_imaging_figures.py`,
+> `make_campaign_imaging_report.py`. Report at
+> `<out>/imaging_campaign/report.html`.
+>
+> **The pointing crossing is scale-free** -- multiplying every angle by `k`
+> scales the band's slope and intercept together and leaves
+> `-intercept/slope` untouched -- so it is the one geometric observable the
+> angle-scale problem cannot touch. Run once per run on the condor full pass,
+> **33 of 36 runs post-access**:
+>
+> | | value | spread over 33 runs |
+> |---|---:|---:|
+> | capsule X (mean of A and C) | **-9.32 mm** | **+-0.30 mm** |
+> | A-C alignment (half their difference) | +1.04 mm | +-0.27 mm |
+> | capsule Z (D alone) | -3.45 mm | +-0.83 mm |
+>
+> Per arm the run-to-run sd is A 0.30, C 0.49, D 0.83, B 1.63 mm. **Divide by
+> each arm's own sub-run spread and every ratio is BELOW 1** (A 0.59, B 0.66,
+> C 0.71, D 0.99): the runs do not differ from each other by more than one
+> run's sub-runs differ among themselves. **On this observable there is no
+> run-to-run effect at all**, against an angle scale whose p10-p90 is
+> A 3.4 %, C 10.7 %, D 9.6 % over the same runs.
+>
+> **What that settles.** The alignment, the frame, the in-plane signs, the
+> pointing sample and the track finding are reproducible campaign-wide. The
+> fault is in the depth-to-length conversion alone. It does NOT make `k`
+> right -- `gap_check` still fails on A and C.
+>
+> **A scale-free observable DOES move inside the 128-147 block, slightly.**
+> C's crossing +0.50 mm (1.26 sd, p = 0.011), D's -0.77 mm (p = 0.055), and the
+> A-C alignment tightens by 0.35 mm (p = 0.021). Sub-millimetre against an 8 %
+> shift in `k`, so the excursion is not mostly geometric -- but it is not
+> purely an estimator artefact either. **Crossing against `k` is correlated on
+> C (rho +0.48, p = 0.012) and D (rho -0.37, p = 0.043)** and `k` cancels
+> algebraically, so a third thing moved and changed both. Same lead as the
+> `x_local` step; still a lead, not a mechanism.
+>
+> **The y half is badly wrong and it is NOT new.** `target_y_mm` carries `k`,
+> and against the polycone forward model every chamber sits 15-27 mm off in
+> median with an IQR 2.3-5.6x the model's. Run-to-run sd under 1 mm on A and C,
+> so the failure is campaign-wide and stable -- either the polycone acceptance
+> model or the y reconstruction, and this does not separate them. run_145's
+> published `y_compare` had exactly these numbers; nobody had checked it was
+> universal.
+>
+> ## THE CAMPAIGN OPENING-ANGLE SPECTRA EXIST -- 2026-09-10
+>
+> New: `campaign_angle.py`, `make_campaign_angle_figures.py`,
+> `make_campaign_angle_report.py`. Report at
+> `<out>/angle_campaign/report.html`. Pairs also censused directly off the
+> track table: **68 542 real pairs**, A-C **14 594** (PLAN sec S4 projected
+> ~11 450 from run_145's 229 x 50).
+>
+> | topology | all pairs | tagged | tight | tight_pair | median | >109 deg |
+> |---|---:|---:|---:|---:|---:|---:|
+> | intra | 19 707 | -- | -- | -- | 38.7 | 0.000 |
+> | perpendicular | 29 617 | 2 290 | 503 | **503** | 87.7 | 0.252 |
+> | opposing | 13 405 | 3 027 | 949 | **571** | 144.1 | 0.955 |
+>
+> (Pre-access run_79/81 excluded; 62 729 pairs enter, 1 074 tight_pair.)
+>
+> **Four things this makes plain, none of them a signal.**
+>
+> **1. The topology decides the angle before the physics does.** Opposing
+> produces nothing below ~90 deg and intra nothing above ~110. "Fraction above
+> 109 deg" is a statement about the chambers first: every folded model predicts
+> 1.000 for opposing and 0.000 for intra.
+>
+> **2. The back-to-back single particle is 12 % of opposing pairs and the
+> TIGHT CUT ENRICHES IT TO 40 %.** One particle through both chambers is
+> perfectly time-coincident because it is one particle, so a cut built to
+> remove accidentals raises its share 3.4x -- and it lands inside the X17
+> region. `tight_coincidence` already flags it; `opening_angle.py` does not
+> know about it at all.
+>
+> **3. Nothing fits.** On the tight opposing sample chi2/dof is 29 (M1),
+> 38 (thermal M1+E0), 85 (E0), 29 (X17) and **13 for the event-mixed
+> accidental template** -- the accidental shape is still the best description,
+> as the S4 null said on 1/10 the sample. With one free normalisation, chi2/dof
+> of this size is what a WRONG ACCEPTANCE looks like, and the acceptance here
+> is run_145's, borrowed, applying efficiency independently of incidence when
+> the measured head-on tracking ratio is 0.80.
+>
+> **4. The intra control has no timing cut and cannot have one.** Both legs in
+> one chamber means one arm and no `t1 - t2`, so the mutual half of the tight
+> cut does not exist for it. Comparing intra (uncut) against opposing (cut) is
+> not like for like -- and PLAN sec S4 makes intra the background
+> normalisation.
+>
+> **Two bugs fixed on the way.** `source_imaging._pairs_real` returned an
+> object-dtype empty frame and `_vertex_frame` a column-less one, so any run
+> with no calibrated pairs (run_126, run_143, run_156) crashed every campaign
+> consumer instead of contributing nothing. `campaign_imaging` now also drops a
+> sub-run missing any arm's merged table rather than failing the run --
+> `run_104/stat090_0016`, the corrupt tag, is the only one.
+>
+> **Re-run both with** `bash sept26_prelim_analysis/campaign_qa_chain_2026-09-10.sh`
+> (after `fullpass_chain_2026-09-10.sh`). It archives the previous
+> tight-coincidence campaign products before overwriting them, and it does
+> **not** pass `--campaign` to `tight_coincidence` -- that flag points at
+> `<out>/stage3_campaign`, the allowlist pass.
 
 > ## FULL PASS LAUNCHED -- Dylan's call, 2026-09-09 21:10 CEST
 >
@@ -1454,7 +1907,8 @@ pairs             the controlled two-chamber rate, with its systematic
 efficiency        scintillator-tagged, accidental-corrected
 hit_maps          occupancy, relative, by angle, and the purity ladder
 plastic_acceptance the trigger's own acceptance from the Geant geometry
-neutron_energy    tof -> E_n, and the slim patch that unblocks it
+neutron_energy    time since flash -> E_n, and the resolution it delivers
+trigger_time      the per-trigger flash time out of the slim, into stage 3
 beam_cache        ref-free training cache (built, measured, does NOT work)
 refit_B_beam      the beam-calibration harness (kept as the record of why not)
 make_*_report     the two published pages
@@ -1598,8 +2052,40 @@ campaign_census.sh streamed, resumable stage-1 over the campaign — ON HOLD
    an overnight one. It skips any sub-run whose census exists, so stopping and
    restarting is free — `bash campaign_census.sh --status` for progress, and
    just re-run it to continue. Then stage 2 (~760 core-hours).
-5. **The time base is already calibrated — the gap is one slim branch.**
-   Investigated 2026-09-08 and it is not a measurement problem:
+5. **The time base — DONE 2026-09-11. There was no gap.** Every one of the
+   29.16 M tracks now carries `t_since_flash_ns` and `e_neutron_keV`.
+
+   The slim's `events` tree already held the trigger's time since the gamma
+   flash, under two names nothing downstream read: **`t_dream_ns`** (the DREAM
+   clock, `trigger_timestamp_ns` minus the burst's first trigger, and the first
+   trigger of a burst *is* the flash trigger) and **`t_pred_ns`** (the same
+   instant on the n_TOF time base through the segment's own fitted clock,
+   per-bunch correction included). `slim.py` writes `ev['t_since_flash_ns']`
+   out as `t_dream_ns` and that rename is the whole of why this sat open for a
+   month. Stage 3 is filled from `t_pred_ns`.
+
+   **No slim was regenerated and no reprocessing was asked for.** The pull was
+   one 90 s pass over the 292 slims on EOS for their `events` trees (380 MB),
+   then a local backfill. `sept26_prelim_analysis/trigger_time.py` has the
+   evidence, the extractor and the backfill; `build_tracks` now fills the two
+   columns natively, so `NOT_POPULATED` is empty.
+
+   **And it corrects a number that was on the board.** `neutron_energy.py`
+   inferred the window as "2.4 MeV down to 0.36 meV" by taking the hits' `tof`
+   floor of 1.00408e6 ns to be the flash. The real offset is `tflash`, a
+   per-tree cable delay of **~11.6 µs** — recovered directly as
+   `tof − (t_pred_ns + dt_ns)`, 11.60–11.65 µs per detector tree with a 5–14 ns
+   spread, which also closes the loop that the hits and the triggers share one
+   flash reference. So the window is **2.0 eV down to 0.44 meV**, median 31 meV,
+   the thermal peak. That is what `../CLAUDE.md` says independently and what
+   the E0/M1 argument in `ipc_born.py` rests on. **There is no resonance
+   region in this dataset and no cut can make one.**
+
+   Resolution over this window is irrelevant to any cut: dE/E is 1e-5 at 1 eV.
+   Where it would have mattered — 0.84 % at 1 MeV — there is no data.
+
+   ~~The 2026-09-08 investigation, kept because its three upstream facts are
+   right and only its conclusion was wrong:~~
 
    * `ntof_processing/flash_timing` measures `t_flash(bunch) = tof_PKUP + C`,
      C ≈ −1708 ns per channel, good to **0.5 ns** run-to-run within an epoch
@@ -1613,16 +2099,18 @@ campaign_census.sh streamed, resumable stage-1 over the campaign — ON HOLD
 
    `sept26_prelim_analysis/neutron_energy.py` has the relativistic conversion
    (19.5 m EAR2 flight path, cross-checked to 1e-14) and `slim_patch()` states
-   the three-line fix. **Applying it needs the slims regenerated, so it needs
-   EOS.** Resolution once filled: dE/E = 0.001 % at 1 eV, 0.084 % at 10 keV,
-   0.84 % at 1 MeV, 2.7 % at 10 MeV.
+   the three-line fix. ~~**Applying it needs the slims regenerated, so it needs
+   EOS.**~~ **It did not — see above; `slim_patch()` is marked superseded and
+   must not be applied.** Resolution once filled: dE/E = 0.001 % at 1 eV,
+   0.084 % at 10 keV, 0.84 % at 1 MeV, 2.7 % at 10 MeV.
 
-   The slim window is *not* the limitation: all three detector families share a
-   tof floor of 1.00408e6 ns and ceiling of 7.505e7 ns, and taking the floor as
-   the flash gives 2.4 MeV down to 0.36 meV — with the busiest bins at
-   40–125 meV, the thermal peak, where run_55 independently found the ³He(n,p)
-   capture flood. That last is an inference until one bunch's `tflash` is read
-   from the raw files.
+   ~~The slim window is *not* the limitation: all three detector families share
+   a tof floor of 1.00408e6 ns and ceiling of 7.505e7 ns, and taking the floor
+   as the flash gives 2.4 MeV down to 0.36 meV~~ — **wrong, the offset is
+   `tflash` ≈ 11.6 µs and the top of the window is 2.0 eV** — with the busiest
+   bins at 40–125 meV, the thermal peak, where run_55 independently found the
+   ³He(n,p) capture flood. ~~That last is an inference until one bunch's
+   `tflash` is read from the raw files.~~ `tflash` is now measured.
 
 
 **Deferred to October** (added 2026-09-08):
@@ -1741,7 +2229,8 @@ blocker, and it did not exist when the plan was written.
   than returning a path that does not exist, and carries the CERN-side paths as
   strings so scripts spell EOS the same way. `python paths.py` prints what
   resolves and what exists.
-- **`figstyle.py`** — one 16:9 canvas, 18 pt base, the Okabe-Ito four-chamber
+- **`figstyle.py`** — ordinary document figure sizes (~3:2 single panel,
+  10.5 pt type, light ink), the Okabe-Ito four-chamber
   palette **re-validated for this package** (ALL CHECKS PASS; the two warnings
   are discharged by `det_style` always returning a marker with its colour, and
   by direct labelling). `save()` **refuses to write a PNG without its CSV** —
@@ -1756,8 +2245,9 @@ blocker, and it did not exist when the plan was written.
 Two small modules, before any analysis code, because everything else imports
 them:
 
-- `figstyle.py` — the shared presentation matplotlib style. 16:9 at a fixed
-  figure size, base font ≥ 18 pt at final size, a `preliminary(ax)` badge
+- `figstyle.py` — the shared matplotlib style. Normal document figure sizes
+  and 10.5 pt type (shape follows the data, nothing is pinned to a slide
+  frame), a `preliminary(ax)` badge
   helper, and a `save(fig, path)` that writes the PNG **and** the numbers as
   CSV beside it. Every figure in the deck comes through this.
 - `paths.py` — machine-aware data roots, so no script hard-codes
@@ -1797,7 +2287,7 @@ Two things to settle first, both raised by today's staging:
 | 4 · database | **RUNS** | `build_tracks.py` — 4 216 segments / 2 263 gated for `stat090_0000`. `k_arm` is **measured and applied** (A 1.25, C 1.58; B and D uncertified, angles null). `t_since_flash` and `e_neutron` remain declared nulls | re-certify D, diagnose B; then the time base |
 | 5 · scint positions | **todo** | `../ntof_processing/quality_metrics.py` A1/A2 has both estimators and their caveats | recalibrate λ and the Δt scale against MM tracks |
 | 6 · pairs & spectrum | **todo** | nothing | after 4 |
-| — · figures | **scaffolded** | `figstyle.py` (validated palette, 16:9, PNG+CSV enforced) and `paths.py` | build them as each stage lands |
+| — · figures | **scaffolded** | `figstyle.py` (validated palette, document sizing, PNG+CSV enforced) and `paths.py` | build them as each stage lands |
 
 The board carries the same eleven stages with their full descriptions; this
 table is the short form. Keep the two in step by moving the board stage
@@ -1829,6 +2319,31 @@ and nothing needs redoing after the move — everything written today is in git.
 sub-run of `decoded_root` (6–7 GB) does not. This blocks nothing until N3's
 waveform step, and it is the only thing in this file that has to be fixed on
 the laptop rather than at CERN. See [C1](#c1--the-link-is-no-longer-the-bottleneck-so-the-disk-is).
+
+**B3 · The acceptance is run_145-only, and it now blocks the spectrum — open,
+2026-09-10.** The campaign opening-angle spectra exist and no folded model
+describes them (chi2/dof 13–85 with one free normalisation). The leading
+suspect is not the physics but `acceptance.py`, which runs only on run_145
+because it needs an efficiency map, and `efficiency.py` has been run only
+there. It also applies efficiency independently of incidence when the measured
+head-on tracking ratio is 0.80 — a real theta-dependent bias in exactly the
+variable being fitted. **A campaign acceptance needs a per-run efficiency
+measurement, and that is the next piece of real work on S4.**
+
+---
+
+## Deferred, on purpose
+
+**D-QA1 · A detailed run-by-run / tag-by-tag QA page — deferred 2026-09-10,
+Dylan's request.** `<out>/tracking_qa_fullpass/report.html` and the two new
+campaign pages (`imaging_campaign`, `angle_campaign`) each answer one question
+across runs. What does not exist is the browsable page: pick a run, or a tag,
+and see *its* distributions — chi2/dof, strips, charge, t0, drift span, the
+crossing, the pair yield — against the campaign band, with the outliers
+clickable. `tracking_qa.py` already writes `per_run.csv` and `per_tag.csv`
+(~3 150 tags), so the data is there and this is a presentation job, not an
+analysis one. **Wanted for the control-room browser, after the acceptance work,
+not before it.**
 
 ---
 
