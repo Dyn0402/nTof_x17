@@ -67,7 +67,7 @@ STAGES = [
     ("Backgrounds", "todo",
      "one normalised shape per component, and their sum against the raw spectrum"),
     ("The preliminary picture", "todo",
-     "the summary figures, sized for a projected slide, and this page finished"),
+     "the summary figures and this page finished"),
 ]
 
 # (what, value, measured on).  value None -> rendered as "not measured yet".
