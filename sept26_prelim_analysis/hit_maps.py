@@ -201,13 +201,13 @@ def fig_tiers(run: str, subruns, fullpass: str, out):
     plt = _plt()
     S = pd.concat([selection_tiers(run, subruns, a, fullpass) for a in ARMS],
                   ignore_index=True)
-    with plt.rc_context({'font.size': fs.BASE_PT * 0.58,
-                         'axes.titlesize': fs.BASE_PT * 0.62,
-                         'axes.labelsize': fs.BASE_PT * 0.58,
-                         'xtick.labelsize': fs.BASE_PT * 0.48,
-                         'ytick.labelsize': fs.BASE_PT * 0.48}):
+    with plt.rc_context({'font.size': fs.BASE_PT * 0.72,
+                         'axes.titlesize': fs.BASE_PT * 0.77,
+                         'axes.labelsize': fs.BASE_PT * 0.72,
+                         'xtick.labelsize': fs.BASE_PT * 0.59,
+                         'ytick.labelsize': fs.BASE_PT * 0.59}):
         fig, axes = plt.subplots(len(ARMS), len(TIERS),
-                                 figsize=(fs.BANNER[0], 3.05 * len(ARMS)),
+                                 figsize=(fs.BANNER[0], 2.2 * len(ARMS)),
                                  constrained_layout=True)
         rows = []
         for r, a in enumerate(ARMS):
@@ -219,7 +219,7 @@ def fig_tiers(run: str, subruns, fullpass: str, out):
                 if t == 'target' and not bool(s.has_target.iloc[0]):
                     ax.text(0.5, 0.5, 'no angle\n(no drift field)',
                             transform=ax.transAxes, ha='center', va='center',
-                            color=fs.MUTED, fontsize=fs.BASE_PT * 0.5)
+                            color=fs.MUTED, fontsize=fs.BASE_PT * 0.62)
                     ax.set_xticks([]); ax.set_yticks([])
                     ax.set_title(f'{a}   —', color=fs.DET_COLOR[a], pad=4)
                     rows.append(dict(arm=a, tier=t, n=0, frac=np.nan))
@@ -241,10 +241,10 @@ def fig_tiers(run: str, subruns, fullpass: str, out):
             axes[0, c].set_title(f'{TIER_LABEL[t]}\n' +
                                  axes[0, c].get_title(),
                                  color=fs.INK, pad=4,
-                                 fontsize=fs.BASE_PT * 0.55)
+                                 fontsize=fs.BASE_PT * 0.68)
         fig.suptitle('Occupancy down the purity ladder — percentages are of '
                      'that chamber\'s fitted clusters',
-                     fontsize=fs.BASE_PT * 0.78)
+                     fontsize=fs.BASE_PT * 0.96)
         fs.preliminary(axes[0, 0], loc='lower left')
         fs.save(fig, out / 'hitmap_tiers', data=pd.DataFrame(rows))
 
@@ -271,12 +271,12 @@ def _panel(ax, H, vmin, vmax, cmap, title, colour, log=False):
 def fig_occupancy(P: pd.DataFrame, out, relative: bool = False):
     """Cluster occupancy per chamber, raw or divided by the chamber's mean."""
     plt = _plt()
-    with plt.rc_context({'font.size': fs.BASE_PT * 0.7,
-                         'axes.titlesize': fs.BASE_PT * 0.85,
-                         'axes.labelsize': fs.BASE_PT * 0.72,
-                         'xtick.labelsize': fs.BASE_PT * 0.6,
-                         'ytick.labelsize': fs.BASE_PT * 0.6}):
-        fig, axes = plt.subplots(1, 4, figsize=(fs.BANNER[0], 5.4),
+    with plt.rc_context({'font.size': fs.BASE_PT * 0.86,
+                         'axes.titlesize': fs.BASE_PT * 0.98,
+                         'axes.labelsize': fs.BASE_PT * 0.89,
+                         'xtick.labelsize': fs.BASE_PT * 0.74,
+                         'ytick.labelsize': fs.BASE_PT * 0.74}):
+        fig, axes = plt.subplots(1, 4, figsize=(fs.BANNER[0], 3.89),
                                  constrained_layout=True)
         rows = []
         for ax, a in zip(axes, ARMS):
@@ -305,10 +305,10 @@ def fig_occupancy(P: pd.DataFrame, out, relative: bool = False):
                          label='occupancy / chamber mean')
             fig.suptitle('Relative occupancy — structure, not rate. '
                          'Blue is under-responding, red over.',
-                         fontsize=fs.BASE_PT * 0.9)
+                         fontsize=fs.BASE_PT * 0.98)
         else:
             fig.suptitle('Cluster occupancy on each chamber surface '
-                         '(both planes fitted)', fontsize=fs.BASE_PT * 0.9)
+                         '(both planes fitted)', fontsize=fs.BASE_PT * 0.98)
         fs.preliminary(axes[0], loc='lower left')
         name = 'hitmap_relative' if relative else 'hitmap_occupancy'
         fs.save(fig, out / name, data=pd.DataFrame(rows))
@@ -318,13 +318,13 @@ def fig_by_angle(P: pd.DataFrame, out):
     """Occupancy in bands of |tan| -- what acceptance is differential in."""
     plt = _plt()
     arms = [a for a in ARMS if a not in HITS_ONLY]
-    with plt.rc_context({'font.size': fs.BASE_PT * 0.62,
-                         'axes.titlesize': fs.BASE_PT * 0.72,
-                         'axes.labelsize': fs.BASE_PT * 0.62,
-                         'xtick.labelsize': fs.BASE_PT * 0.52,
-                         'ytick.labelsize': fs.BASE_PT * 0.52}):
+    with plt.rc_context({'font.size': fs.BASE_PT * 0.77,
+                         'axes.titlesize': fs.BASE_PT * 0.89,
+                         'axes.labelsize': fs.BASE_PT * 0.77,
+                         'xtick.labelsize': fs.BASE_PT * 0.64,
+                         'ytick.labelsize': fs.BASE_PT * 0.64}):
         fig, axes = plt.subplots(len(arms), len(TAN_BANDS),
-                                 figsize=(fs.BANNER[0], 3.1 * len(arms)),
+                                 figsize=(fs.BANNER[0], 2.25 * len(arms)),
                                  constrained_layout=True)
         rows = []
         for r, a in enumerate(arms):
@@ -348,7 +348,7 @@ def fig_by_angle(P: pd.DataFrame, out):
             axes[r, 0].set_ylabel('y local  [mm]')
         fig.suptitle('Occupancy by track angle, each panel relative to its own '
                      'mean — chamber B excluded (no drift field, no angle)',
-                     fontsize=fs.BASE_PT * 0.8)
+                     fontsize=fs.BASE_PT * 0.98)
         fs.preliminary(axes[0, 0], loc='lower left')
         fs.save(fig, out / 'hitmap_by_angle', data=pd.DataFrame(rows))
 

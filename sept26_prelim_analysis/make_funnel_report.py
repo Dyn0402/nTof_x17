@@ -380,121 +380,12 @@ def k_table(cal: dict, img: dict) -> str:
 
 
 # --------------------------------------------------------------------- the page
-# Design notes.  The project already has a validated visual system --
-# figstyle.py's Okabe-Ito chamber palette on a #fbfcfe surface, with the mx17
-# purple as the one accent -- and a detector that changes colour between the
-# slides and the web report is a detector the reader has to re-learn.  So the
-# palette here is figstyle's, extended rather than replaced:
-#
-#   * neutrals carry a slight violet bias toward the mx17 accent (#1b2430 ->
-#     hue-shifted slates) so the greys read as chosen, not defaulted;
-#   * IBM Plex Sans / Plex Mono -- an instrumentation face, drawn for technical
-#     documentation, and the mono is what carries every count, unit and channel
-#     name.  Real fallback stacks: the control-room browser may be offline.
-#   * `tabular-nums` everywhere digits stack, because the whole page is columns
-#     of counts that must line up to be comparable at a glance.
-FONT_LINK = ('<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
-             '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?'
-             'family=IBM+Plex+Mono:wght@400;500;600&'
-             'family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">')
-
-CSS = """
-:root{
-  --bg:#fbfafd; --panel:#ffffff; --ink:#1e1b28; --ink-2:#5f5a70; --ink-3:#8f8aa0;
-  --line:#e6e2ee; --accent:#8a3f8f; --warn:#a86a1e; --good:#0072B2;
-  --caution-bg:#fdf5e9; --caution-line:#e6cfa6; --focus:#8a3f8f;
-  --sans:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
-}
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#14121a; --panel:#1c1926; --ink:#ece9f4; --ink-2:#aaa3bd; --ink-3:#7d7691;
-  --line:#2e2a3b; --accent:#c98fce; --warn:#e0a95f; --good:#5aa9dd;
-  --caution-bg:#241c14; --caution-line:#4a3a22; --focus:#c98fce;
-}}
-:root[data-theme="dark"]{
-  --bg:#14121a; --panel:#1c1926; --ink:#ece9f4; --ink-2:#aaa3bd; --ink-3:#7d7691;
-  --line:#2e2a3b; --accent:#c98fce; --warn:#e0a95f; --good:#5aa9dd;
-  --caution-bg:#241c14; --caution-line:#4a3a22; --focus:#c98fce;
-}
-*{box-sizing:border-box}
-body{background:var(--bg);color:var(--ink);font-family:var(--sans);
-  font-size:15px;line-height:1.62;margin:0;padding:0 20px 72px;
-  -webkit-font-smoothing:antialiased}
-.wrap{max-width:1180px;margin:0 auto}
-:focus-visible{outline:2px solid var(--focus);outline-offset:2px;border-radius:3px}
-@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
-
-header{padding:44px 0 14px;border-bottom:2px solid var(--ink);margin-bottom:28px}
-.eyebrow{font-family:var(--mono);font-size:11.5px;font-weight:500;
-  text-transform:uppercase;letter-spacing:.14em;color:var(--ink-3);
-  display:flex;flex-wrap:wrap;gap:8px 18px;margin-bottom:14px;align-items:center}
-h1{font-size:31px;line-height:1.16;margin:0 0 10px;font-weight:600;
-  letter-spacing:-.02em;text-wrap:balance;max-width:22ch}
-.sub{color:var(--ink-2);font-size:13.5px;margin:0;font-family:var(--mono);
-  line-height:1.75}
-.badge{display:inline-block;background:var(--accent);color:#fff;font-size:10.5px;
-  font-weight:600;letter-spacing:.14em;padding:3px 9px;border-radius:3px;
-  font-family:var(--mono)}
-h2{font-size:21px;margin:52px 0 8px;letter-spacing:-.015em;font-weight:600;
-  text-wrap:balance;display:flex;align-items:baseline;gap:14px}
-h2 .n{font-family:var(--mono);font-size:13px;font-weight:500;color:var(--accent);
-  letter-spacing:.06em;flex:none}
-p{margin:10px 0;max-width:78ch}
-.lede{font-size:17px;line-height:1.58;max-width:70ch;margin:20px 0 4px}
-.note{color:var(--ink-2);font-size:13.5px;max-width:80ch;line-height:1.6}
-code{font-family:var(--mono);font-size:12.5px;background:var(--panel);
-  border:1px solid var(--line);border-radius:3px;padding:1px 5px}
-b{font-weight:600}
-
-.panel{background:var(--panel);border:1px solid var(--line);border-radius:8px;
-  padding:20px 22px;margin:18px 0}
-.caution{background:var(--caution-bg);border-left:3px solid var(--warn);
-  padding:16px 20px;margin:22px 0;font-size:14px;max-width:82ch}
-.caution b{color:var(--warn);font-weight:600}
-
-.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
-  gap:1px;margin:22px 0;background:var(--line);border:1px solid var(--line);
-  border-radius:8px;overflow:hidden}
-.card{background:var(--panel);padding:16px 18px}
-.card .v{font-family:var(--mono);font-size:27px;font-weight:600;
-  letter-spacing:-.03em;line-height:1.1;font-variant-numeric:tabular-nums}
-.card .l{font-size:12px;color:var(--ink-2);margin-top:5px;line-height:1.4}
-
-.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:16px 0}
-table.t{border-collapse:collapse;width:100%;font-size:13.5px;min-width:680px}
-table.t th,table.t td{border-bottom:1px solid var(--line);padding:9px 12px;
-  text-align:left;vertical-align:top}
-table.t thead th{font-family:var(--mono);font-size:11px;text-transform:uppercase;
-  letter-spacing:.1em;color:var(--ink-3);font-weight:500;
-  border-bottom:1.5px solid var(--ink-3)}
-table.t td.n,table.t thead th:not(:first-child){text-align:right}
-table.t td.n{font-family:var(--mono);font-variant-numeric:tabular-nums;
-  font-weight:500;white-space:nowrap}
-table.t th.s{font-weight:500;white-space:normal;max-width:30ch}
-table.t .why{display:block;font-weight:400;color:var(--ink-3);font-size:11.5px;
-  line-height:1.4;margin-top:2px}
-table.t .u{font-family:var(--sans);font-weight:400;text-transform:none;
-  letter-spacing:0;font-size:10.5px}
-table.t tbody tr:last-child td,table.t tbody tr:last-child th{border-bottom:none}
-
-.legend{margin-top:14px;font-family:var(--mono);font-size:11.5px;
-  color:var(--ink-2);display:flex;flex-wrap:wrap;gap:6px 20px}
-.legend .k{white-space:nowrap;display:inline-flex;align-items:center}
-.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;
-  margin-right:6px}
-ul{margin:10px 0;padding-left:20px;max-width:80ch}li{margin:6px 0}
-figure{margin:22px 0;padding:0}
-figure img{display:block;width:100%;height:auto;border:1px solid var(--line);
-  border-radius:8px;background:#fbfcfe}
-figcaption{font-size:12.5px;color:var(--ink-2);margin-top:9px;max-width:82ch;
-  line-height:1.55}
-figcaption .src{font-family:var(--mono);font-size:11px;color:var(--ink-3);
-  text-decoration:none;white-space:nowrap;margin-left:4px}
-figcaption .src:hover{color:var(--accent);text-decoration:underline}
-footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
-  color:var(--ink-3);font-size:12px;font-family:var(--mono);line-height:1.8}
-svg text{font-family:var(--mono);font-variant-numeric:tabular-nums}
-"""
+# The visual system moved to report_style.py, so that every report in the
+# package -- not just this one -- wears it.  These two names are re-exported
+# because a dozen modules already import them from here; new code should import
+# HEAD from report_style instead.
+from sept26_prelim_analysis.report_style import (  # noqa: E402,F401
+    CSS, FONT_LINK, HEAD, SCRIPT)
 
 
 def build_html(F: pd.DataFrame, meta: dict, img: dict, cal: dict,
@@ -550,8 +441,7 @@ def build_html(F: pd.DataFrame, meta: dict, img: dict, cal: dict,
         gas_ladder_words = gas_h2o_words = '&mdash;'
 
     return f"""<title>Run 145 Reconstruction Funnel</title>
-{FONT_LINK}
-<style>{CSS}</style>
+{HEAD}
 <div class="wrap">
 <header>
   <div class="eyebrow"><span class="badge">PRELIMINARY</span>

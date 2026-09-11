@@ -55,11 +55,11 @@ def _plt():
     return plt
 
 
-def _scaled(plt, f: float = 0.72):
-    """figstyle's type scale is sized for a FULL-SLIDE figure.  A multi-panel
-    figure at the same scale fills its panels with text, so step the scale down
-    for the duration of one figure -- here, not globally, so a single-panel
-    figure elsewhere in the deck is unaffected."""
+def _scaled(plt, f: float = 0.85):
+    """figstyle's type scale is set for a single panel.  A multi-panel figure
+    at the same scale fills its panels with text, so step the scale down for
+    the duration of one figure -- here, not globally, so a single-panel figure
+    elsewhere is unaffected."""
     return plt.rc_context({'font.size': fs.BASE_PT * f,
                            'axes.titlesize': fs.BASE_PT * f * 1.18,
                            'axes.labelsize': fs.BASE_PT * f * 1.08,
@@ -83,7 +83,7 @@ def fig_k_scan(cal: dict, out):
 
 
 def _fig_k_scan(plt, cal: dict, out):
-    fig, axes = plt.subplots(1, 4, figsize=(fs.BANNER[0], 4.6), sharey=True,
+    fig, axes = plt.subplots(1, 4, figsize=(fs.BANNER[0], 3.31), sharey=True,
                              constrained_layout=True)
     rows = []
     for ax, a in zip(axes, ARMS):
@@ -124,13 +124,13 @@ def _fig_k_scan(plt, cal: dict, out):
                     mew=1.5, zorder=5)
             ax.annotate(name, (x, y), textcoords='offset points',
                         xytext=(7, dy), ha='left',
-                        fontsize=fs.BASE_PT * 0.55, color=fs.MUTED,
+                        fontsize=fs.BASE_PT * 0.68, color=fs.MUTED,
                         arrowprops=dict(arrowstyle='-', lw=0.7,
                                         color=fs.LINE, shrinkA=0, shrinkB=2))
         vc = VERDICT_COLOR.get(v.get('verdict', 'NO DATA'))
         ax.set_title(f'chamber {a}', color=col, pad=8)
         ax.text(0.5, 0.04, v.get('verdict', ''), transform=ax.transAxes,
-                ha='center', fontsize=fs.BASE_PT * 0.6, color=vc,
+                ha='center', fontsize=fs.BASE_PT * 0.74, color=vc,
                 fontweight='bold')
         ax.set_xlabel('angle scale $k$')
         ax.set_xlim(grid[0], grid[-1])
@@ -139,10 +139,10 @@ def _fig_k_scan(plt, cal: dict, out):
             rows.append(dict(arm=a, k=k_, frac_within_30mm=f_,
                              n_coincident=n))
     axes[0].set_ylabel('coincident tracks pointing\nwithin 30 mm of the axis')
-    axes[0].legend(loc='lower left', fontsize=fs.BASE_PT * 0.55, frameon=False,
+    axes[0].legend(loc='lower left', fontsize=fs.BASE_PT * 0.68, frameon=False,
                    bbox_to_anchor=(0.0, 0.06))
     fig.suptitle('The angle scale peaks in A, C and D — and never turns over in B',
-                 fontsize=fs.BASE_PT * 0.95)
+                 fontsize=fs.BASE_PT * 0.98)
     fs.preliminary(axes[3], loc='upper left')
     fs.save(fig, out / 'k_scan', data=pd.DataFrame(rows))
 
@@ -166,7 +166,7 @@ def _fig_k_summary(plt, cal: dict, out, gas: dict = None):
     """
     from sept26_prelim_analysis import gas_chain as gc
 
-    fig, ax = plt.subplots(figsize=(fs.WIDE[0] * 0.62, 4.9),
+    fig, ax = plt.subplots(figsize=(fs.WIDE[0] * 0.62, 3.53),
                            constrained_layout=True)
     v_prior = cal['v_bundle']
     chain = gas['chain'] if gas else None
@@ -182,7 +182,7 @@ def _fig_k_summary(plt, cal: dict, out, gas: dict = None):
                        zorder=0, lw=0)
             ax.annotate('no drift field\n(no ring chain)\n— not a velocity',
                         (i, v_prior * 0.60), ha='center', va='center',
-                        fontsize=fs.BASE_PT * 0.55, color=fs.BAND_DEAD,
+                        fontsize=fs.BASE_PT * 0.68, color=fs.BAND_DEAD,
                         linespacing=1.35)
             rows.append(dict(position=i + 1, arm=a, v_insitu_um_ns=float('nan'),
                              v_lo=float('nan'), v_hi=float('nan'), k=k,
@@ -194,14 +194,14 @@ def _fig_k_summary(plt, cal: dict, out, gas: dict = None):
                     fmt=fs.DET_MARKER[a], ms=12, color=fs.DET_COLOR[a],
                     mfc=fs.DET_COLOR[a], mew=2, capsize=6, lw=2, zorder=5)
         ax.annotate(f'{val:.1f}', (i, val), textcoords='offset points',
-                    xytext=(16, 3), fontsize=fs.BASE_PT * 0.78,
+                    xytext=(16, 3), fontsize=fs.BASE_PT * 0.96,
                     color=fs.DET_COLOR[a], fontweight='bold')
         h2o = (chain.loc[chain.arm == a, 'h2o_pct'].iloc[0]
                if chain is not None else float('nan'))
         if np.isfinite(h2o):
             ax.annotate(f'{h2o:.2f} % H\u2082O', (i, lo),
                         textcoords='offset points', xytext=(0, -19),
-                        ha='center', fontsize=fs.BASE_PT * 0.58,
+                        ha='center', fontsize=fs.BASE_PT * 0.72,
                         color=fs.MUTED)
         rows.append(dict(position=i + 1, arm=a, v_insitu_um_ns=val,
                          v_lo=lo, v_hi=hi, k=k, verdict=v.get('verdict'),
@@ -218,7 +218,7 @@ def _fig_k_summary(plt, cal: dict, out, gas: dict = None):
     ax.annotate(f'Magboltz, clean Ar/iso 90/10:  {v_prior:.1f}',
                 (len(gc.CHAIN) - 0.5, v_prior), textcoords='offset points',
                 xytext=(-4, 8), ha='right', color=fs.COPPER,
-                fontsize=fs.BASE_PT * 0.62)
+                fontsize=fs.BASE_PT * 0.77)
 
     # --- the gas line itself, drawn under the axis ------------------------- #
     ymin = 12.0
@@ -228,11 +228,11 @@ def _fig_k_summary(plt, cal: dict, out, gas: dict = None):
                 arrowprops=dict(arrowstyle='-|>', color=fs.MUTED, lw=2.2,
                                 shrinkA=0, shrinkB=0), zorder=1)
     ax.annotate('gas in', (-0.44, yline), textcoords='offset points',
-                xytext=(0, 9), ha='left', fontsize=fs.BASE_PT * 0.55,
+                xytext=(0, 9), ha='left', fontsize=fs.BASE_PT * 0.68,
                 color=fs.MUTED)
     ax.annotate('exhaust', (len(gc.CHAIN) - 0.62, yline),
                 textcoords='offset points', xytext=(0, 9), ha='right',
-                fontsize=fs.BASE_PT * 0.55, color=fs.MUTED)
+                fontsize=fs.BASE_PT * 0.68, color=fs.MUTED)
 
     ax.set_xticks(xs)
     ax.set_xticklabels([f'{a}' for a in gc.CHAIN])
@@ -261,7 +261,7 @@ def _fig_k_summary(plt, cal: dict, out, gas: dict = None):
     ax.annotate(f'all four cathodes at 700 V \u2192 E = {E:.0f} V/cm, '
                 f'so the ladder is gas and not field',
                 (-0.42, 16.4), ha='left', va='bottom',
-                fontsize=fs.BASE_PT * 0.58, color=fs.MUTED)
+                fontsize=fs.BASE_PT * 0.72, color=fs.MUTED)
     fs.preliminary(ax, loc='upper right')
     fs.save(fig, out / 'k_summary', data=pd.DataFrame(rows))
 
@@ -275,7 +275,7 @@ def fig_det_status(F: pd.DataFrame, out):
 
 
 def _fig_det_status(plt, F: pd.DataFrame, out):
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(fs.WIDE[0], 5.2),
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(fs.WIDE[0], 3.74),
                                    constrained_layout=True)
     xs = np.arange(len(F))
     w = 0.38
@@ -288,11 +288,11 @@ def _fig_det_status(plt, F: pd.DataFrame, out):
             color=[fs.DET_COLOR[a] for a in F.arm], edgecolor='none')
     for i, (_, r) in enumerate(F.iterrows()):
         ax1.annotate(f'{100 * r.seed_eff:.0f}', (i - w / 2, r.seed_eff),
-                     ha='center', va='bottom', fontsize=fs.BASE_PT * 0.68,
+                     ha='center', va='bottom', fontsize=fs.BASE_PT * 0.84,
                      color=fs.MUTED)
         t = r.n_track_events / r.n_triggers
         ax1.annotate(f'{100 * t:.0f}', (i + w / 2, t), ha='center',
-                     va='bottom', fontsize=fs.BASE_PT * 0.68, color=fs.INK)
+                     va='bottom', fontsize=fs.BASE_PT * 0.84, color=fs.INK)
     ax1.set_xticks(xs)
     ax1.set_xticklabels(F.arm)
     ax1.set_ylabel('fraction of DAQ triggers')
@@ -309,7 +309,7 @@ def _fig_det_status(plt, F: pd.DataFrame, out):
         ax2.annotate(f'{r.lift:.2f}×', (i, max(r.coinc_frac,
                                                r.ctrl_coinc_frac)),
                      textcoords='offset points', xytext=(0, 12), ha='center',
-                     fontsize=fs.BASE_PT * 0.78, fontweight='bold',
+                     fontsize=fs.BASE_PT * 0.96, fontweight='bold',
                      color=fs.DET_COLOR[r.arm])
     ax2.set_xticks(xs)
     ax2.set_xticklabels(F.arm)
@@ -330,7 +330,7 @@ def fig_det_evidence(F: pd.DataFrame, out):
 
 
 def _fig_det_evidence(plt, F: pd.DataFrame, out):
-    fig, ax = plt.subplots(figsize=(fs.QUARTER[0], 4.4),
+    fig, ax = plt.subplots(figsize=(fs.QUARTER[0], 3.17),
                            constrained_layout=True)
     keys = [('wal_and_pss', 'wall AND plastic', '#0072B2'),
             ('wal_only', 'wall only', '#56B4E9'),
@@ -347,7 +347,7 @@ def _fig_det_evidence(plt, F: pd.DataFrame, out):
             if v_ > 0.075:
                 ax.annotate(f'{100 * v_:.0f}', (l_ + v_ / 2, y), ha='center',
                             va='center', color='white', fontweight='bold',
-                            fontsize=fs.BASE_PT * 0.72)
+                            fontsize=fs.BASE_PT * 0.89)
         left = left + vals
     ax.set_yticks(ys)
     ax.set_yticklabels([f'{a}' for a in F.arm])
@@ -357,7 +357,7 @@ def _fig_det_evidence(plt, F: pd.DataFrame, out):
     ax.set_xticks(np.linspace(0, 1, 6))
     ax.set_xticklabels([f'{int(100 * t)}' for t in np.linspace(0, 1, 6)])
     ax.set_title('What n_TOF saw, in the same chamber, in time')
-    ax.legend(fontsize=fs.BASE_PT * 0.65, frameon=False, ncol=2,
+    ax.legend(fontsize=fs.BASE_PT * 0.8, frameon=False, ncol=2,
               loc='lower center', bbox_to_anchor=(0.5, -0.42))
     fs.preliminary(ax)
     fs.save(fig, out / 'det_evidence',
@@ -424,7 +424,7 @@ def fig_opening(out):
 
     plt = _plt()
     with _scaled(plt, 0.8):
-        fig, ax = plt.subplots(figsize=(fs.WIDE[0], 4.8),
+        fig, ax = plt.subplots(figsize=(fs.WIDE[0], 3.46),
                                constrained_layout=True)
         bins = np.arange(0, 181, 7.5)
         # opposing pairs are the signal topology; perpendicular are the control
@@ -446,7 +446,7 @@ def fig_opening(out):
         ax.axvline(109, color=fs.BAND_SIGNAL, lw=2, ls=':')
         ax.annotate('X17 minimum, 109\u00b0', (109, ax.get_ylim()[1] * 0.94),
                     textcoords='offset points', xytext=(7, 0),
-                    color=fs.BAND_SIGNAL, fontsize=fs.BASE_PT * 0.6)
+                    color=fs.BAND_SIGNAL, fontsize=fs.BASE_PT * 0.74)
         ax.set_xlabel('opening angle between the two tracks  [deg]')
         ax.set_ylabel('normalised')
         ax.set_xlim(0, 180)
@@ -454,7 +454,7 @@ def fig_opening(out):
         ax.set_title('Geometry check: opposing chambers give large opening '
                      'angles, perpendicular ones ~90\u00b0')
         ax.legend(frameon=False, loc='upper left',
-                  fontsize=fs.BASE_PT * 0.62)
+                  fontsize=fs.BASE_PT * 0.77)
         fs.preliminary(ax, loc='upper right')
         fs.save(fig, out / 'opening_angle',
                 data=m[['subrun', 'event_id', 'pair', 'open_deg']])

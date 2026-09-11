@@ -766,7 +766,7 @@ def figure_arm_rates(masked: pd.DataFrame, unmasked: pd.DataFrame,
         import figstyle                                  # type: ignore
 
     figstyle.use()
-    fig, ax = figstyle.slide(figsize=figstyle.WIDE)
+    fig, ax = figstyle.figure(figsize=figstyle.WIDE)
 
     x = np.arange(len(ARMS))
     w = 0.36
@@ -784,9 +784,9 @@ def figure_arm_rates(masked: pd.DataFrame, unmasked: pd.DataFrame,
 
     for i, (u, m) in enumerate(zip(um, ms)):
         ax.text(x[i] - w / 2, u + 0.15, f'{u:.1f}', ha='center', va='bottom',
-                fontsize=figstyle.BASE_PT * 0.8, color=figstyle.MUTED)
+                fontsize=figstyle.BASE_PT * 0.98, color=figstyle.MUTED)
         ax.text(x[i] + w / 2, m + 0.15, f'{m:.1f}', ha='center', va='bottom',
-                fontsize=figstyle.BASE_PT * 0.8, color=figstyle.INK,
+                fontsize=figstyle.BASE_PT * 0.98, color=figstyle.INK,
                 fontweight='bold')
 
     ax.set_xticks(x)

@@ -76,7 +76,7 @@ def _set_x(ax, var: str):
 def fig_reference(qa_dir, per_arm: pd.DataFrame, out):
     """The campaign distribution per arm: what every later panel is read against."""
     plt = _plt()
-    fig, axes = plt.subplots(2, 2, figsize=(fs.SLIDE[0], 8.4),
+    fig, axes = plt.subplots(2, 2, figsize=(fs.FULL[0], 6.05),
                              constrained_layout=True)
     tables = {}
     for ax, var in zip(axes.flat, HEADLINE):
@@ -94,11 +94,11 @@ def fig_reference(qa_dir, per_arm: pd.DataFrame, out):
                     lw=2.2, label=arm)
         _set_x(ax, var)
         ax.set_ylabel('fraction of tracks')
-        ax.legend(frameon=False, fontsize=fs.BASE_PT * 0.55, ncol=4,
+        ax.legend(frameon=False, fontsize=fs.BASE_PT * 0.68, ncol=4,
                   loc='upper right')
     n = {r['arm']: int(r['n_tracks']) for _, r in per_arm.iterrows()}
     fig.suptitle('What normal looks like, per chamber',
-                 fontsize=fs.BASE_PT * 1.45, fontweight='bold')
+                 fontsize=fs.BASE_PT * 1.15, fontweight='bold')
     fs.note(fig, 'gated tracks, whole campaign:  '
                  + '   '.join(f'{a} {n.get(a, 0):,}' for a in ARMS))
     return fs.save(fig, os.path.join(out, 'qa_reference'),
@@ -110,7 +110,7 @@ def fig_by_run(qa_dir, var: str, flagged: set, out):
     plt = _plt()
     h = _hist(qa_dir, var)
     h = h[h.arm != 'ALL']
-    fig, axes = plt.subplots(2, 2, figsize=(fs.SLIDE[0], 8.4),
+    fig, axes = plt.subplots(2, 2, figsize=(fs.FULL[0], 6.05),
                              constrained_layout=True)
     for ax, arm in zip(axes.flat, ARMS):
         fs.strip(ax)
@@ -130,11 +130,11 @@ def fig_by_run(qa_dir, var: str, flagged: set, out):
             ax.text(0.98, 0.94, '  '.join(x.replace('run_', '') for x in
                                           hot_here[:6]),
                     transform=ax.transAxes, ha='right', va='top',
-                    fontsize=fs.BASE_PT * 0.5, color=fs.TRACK)
+                    fontsize=fs.BASE_PT * 0.62, color=fs.TRACK)
         _set_x(ax, var)
         ax.set_ylabel('fraction')
     fig.suptitle(f'{VARS[var][1]} — one curve per run',
-                 fontsize=fs.BASE_PT * 1.3, fontweight='bold')
+                 fontsize=fs.BASE_PT * 1.1, fontweight='bold')
     fs.note(fig, 'red: a run this variable flags as an outlier for that arm '
                  '(robust z ≥ 3.5 and ≥ 0.15 IQR of shift)')
     return fs.save(fig, os.path.join(out, f'qa_by_run_{var}'), data=h)
@@ -150,7 +150,7 @@ def fig_timeline(per_tag: pd.DataFrame, specs, out, min_tracks=50):
     plt = _plt()
     d = per_tag[per_tag.n_tracks >= min_tracks].copy()
     d['t'] = pd.to_datetime(d['t'])
-    fig, axes = plt.subplots(len(specs), 1, figsize=(fs.SLIDE[0], 3.1 * len(specs)),
+    fig, axes = plt.subplots(len(specs), 1, figsize=(fs.FULL[0], 2.25 * len(specs)),
                              sharex=True, constrained_layout=True)
     axes = np.atleast_1d(axes)
     keep = []
@@ -163,8 +163,8 @@ def fig_timeline(per_tag: pd.DataFrame, specs, out, min_tracks=50):
         ax.plot(s['t'], s[mid], color=fs.DET_COLOR[arm], lw=1.2)
         if VARS[var][2]:
             ax.set_yscale('log')
-        ax.set_ylabel(VARS[var][1], fontsize=fs.BASE_PT * 0.8)
-        ax.set_title(f'chamber {arm}', loc='left', fontsize=fs.BASE_PT * 0.85,
+        ax.set_ylabel(VARS[var][1], fontsize=fs.BASE_PT * 0.98)
+        ax.set_title(f'chamber {arm}', loc='left', fontsize=fs.BASE_PT * 0.98,
                      color=fs.DET_COLOR[arm], fontweight='bold')
         keep.append(s[['arm', 'run', 'tag', 't', lo, mid, hi, 'n_tracks']]
                     .assign(variable=var))
@@ -174,9 +174,9 @@ def fig_timeline(per_tag: pd.DataFrame, specs, out, min_tracks=50):
                    lw=1.4, ls='--', zorder=0)
     axes[0].text(pd.Timestamp('2026-07-27 13:00'),
                  axes[0].get_ylim()[1], ' 27 Jul access', color=fs.COPPER,
-                 va='top', fontsize=fs.BASE_PT * 0.55)
+                 va='top', fontsize=fs.BASE_PT * 0.68)
     axes[-1].set_xlabel('file tag timestamp')
-    fig.suptitle('What drifts, tag by tag', fontsize=fs.BASE_PT * 1.3,
+    fig.suptitle('What drifts, tag by tag', fontsize=fs.BASE_PT * 1.1,
                  fontweight='bold')
     fs.note(fig, f'line: per-tag median.  band: p25–p75.  '
                  f'tags with ≥ {min_tracks} gated tracks only')
@@ -188,7 +188,7 @@ def fig_outlier_map(per_run: pd.DataFrame, out, top: int = 14):
     """Runs down, variables across, robust z as colour: the index."""
     plt = _plt()
     cols = [f'{v}_p50' for v in VARS if f'{v}_p50' in per_run.columns]
-    fig, axes = plt.subplots(1, 4, figsize=(fs.SLIDE[0], 7.2), sharey=False,
+    fig, axes = plt.subplots(1, 4, figsize=(fs.FULL[0], 5.18), sharey=False,
                              constrained_layout=True)
     keep = []
     for ax, arm in zip(axes, ARMS):
@@ -206,10 +206,10 @@ def fig_outlier_map(per_run: pd.DataFrame, out, top: int = 14):
         im = ax.imshow(Z, aspect='auto', cmap='RdBu_r', vmin=-8, vmax=8)
         ax.set_xticks(range(len(cols)))
         ax.set_xticklabels([c[:-4] for c in cols], rotation=90,
-                           fontsize=fs.BASE_PT * 0.42)
+                           fontsize=fs.BASE_PT * 0.52)
         ax.set_yticks(range(len(sub)))
         ax.set_yticklabels([r.replace('run_', '') for r in sub.run],
-                           fontsize=fs.BASE_PT * 0.40)
+                           fontsize=fs.BASE_PT * 0.49)
         ax.set_title(arm, color=fs.DET_COLOR[arm], fontweight='bold',
                      fontsize=fs.BASE_PT)
         ax.grid(False)
@@ -217,7 +217,7 @@ def fig_outlier_map(per_run: pd.DataFrame, out, top: int = 14):
                     .assign(arm=arm, run=list(sub.run)))
     fig.colorbar(im, ax=axes, shrink=0.55, label='robust z of the run median')
     fig.suptitle('Which run departs, and on what',
-                 fontsize=fs.BASE_PT * 1.3, fontweight='bold')
+                 fontsize=fs.BASE_PT * 1.1, fontweight='bold')
     fs.note(fig, 'runs in time order, top to bottom.  z clipped at ±8.  '
                  'colour is departure from the ARM\'s own median, so a globally '
                  'poor chamber does not colour every row')
@@ -231,7 +231,7 @@ def fig_pathology(per_run: pd.DataFrame, out):
     keys = ['frac_chi2_gt_100', 'frac_chi2_gt_1000', 'frac_tanerr_gt_0p1',
             'frac_q_gt_1e6', 'frac_strips_ge_200']
     keys = [k for k in keys if k in per_run.columns]
-    fig, axes = plt.subplots(len(keys), 1, figsize=(fs.SLIDE[0], 2.0 * len(keys)),
+    fig, axes = plt.subplots(len(keys), 1, figsize=(fs.FULL[0], 1.45 * len(keys)),
                              sharex=True, constrained_layout=True)
     axes = np.atleast_1d(axes)
     d = per_run.sort_values('run_no' if 'run_no' in per_run else 't_start')
@@ -243,16 +243,16 @@ def fig_pathology(per_run: pd.DataFrame, out):
             s = d[d.arm == arm]
             ax.plot([xi[r] for r in s.run], s[k].to_numpy(float), 'o-',
                     color=fs.DET_COLOR[arm], ms=4.5, lw=1.3, label=arm)
-        ax.set_ylabel(k.replace('frac_', ''), fontsize=fs.BASE_PT * 0.65)
+        ax.set_ylabel(k.replace('frac_', ''), fontsize=fs.BASE_PT * 0.8)
         ax.set_ylim(bottom=0)
-    axes[0].legend(frameon=False, ncol=4, fontsize=fs.BASE_PT * 0.55,
+    axes[0].legend(frameon=False, ncol=4, fontsize=fs.BASE_PT * 0.68,
                    loc='upper left')
     axes[-1].set_xticks(range(len(order)))
     axes[-1].set_xticklabels([r.replace('run_', '') for r in order],
-                             rotation=90, fontsize=fs.BASE_PT * 0.45)
+                             rotation=90, fontsize=fs.BASE_PT * 0.56)
     axes[-1].set_xlabel('run, in time order')
     fig.suptitle('Fits that returned a number that cannot be right',
-                 fontsize=fs.BASE_PT * 1.3, fontweight='bold')
+                 fontsize=fs.BASE_PT * 1.1, fontweight='bold')
     fs.note(fig, 'fraction of that run\'s gated tracks.  a 12-bit DREAM cluster '
                  'cannot hold 1e6 ADC, and a 512-strip plane cannot give a '
                  '200-strip track a meaningful angle')

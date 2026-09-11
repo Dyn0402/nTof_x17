@@ -69,7 +69,7 @@ def bands(run, subruns, merged):
 def fig_pointing_bands(B, T, DT, out):
     plt = _plt()
     with _scaled(plt, 0.68):
-        fig, axes = plt.subplots(1, 4, figsize=(fs.WIDE[0], 4.7), sharey=True,
+        fig, axes = plt.subplots(1, 4, figsize=(fs.WIDE[0], 3.38), sharey=True,
                                  constrained_layout=True)
         rows = []
         edges = np.arange(-140, 141, 20.0)
@@ -113,7 +113,7 @@ def fig_pointing_bands(B, T, DT, out):
         axes[0].set_ylabel('reconstructed  tan $\\theta$')
         fig.suptitle('The pointing band, and the crossing that locates the '
                      'source — no angle scale anywhere in it',
-                     fontsize=fs.BASE_PT * 0.9)
+                     fontsize=fs.BASE_PT * 0.98)
         fs.preliminary(axes[-1], loc='upper left')
         fs.save(fig, out / 'pointing_bands', data=pd.DataFrame(rows))
 
@@ -123,14 +123,14 @@ def fig_source_map(C, meta, out):
     plt = _plt()
     from ntof_tracking.reco import geometry as G
     with _scaled(plt, 0.78):
-        fig, ax = plt.subplots(figsize=(fs.QUARTER[0] * 1.05, 5.2),
+        fig, ax = plt.subplots(figsize=(fs.QUARTER[0] * 1.05, 3.74),
                                constrained_layout=True)
         th = np.linspace(0, 2 * np.pi, 200)
         ax.plot(G.HE3_R_MAX * np.cos(th), G.HE3_R_MAX * np.sin(th), '-',
                 color=fs.INK, lw=2, zorder=6)
         ax.annotate('He-3 capsule bore, r = 10 mm', (0, G.HE3_R_MAX),
                     textcoords='offset points', xytext=(0, 7), ha='center',
-                    fontsize=fs.BASE_PT * 0.55, color=fs.INK)
+                    fontsize=fs.BASE_PT * 0.68, color=fs.INK)
         ax.plot([0], [0], '+', color=fs.INK, ms=14, mew=2, zorder=6)
         rows = []
         seen = {'X': 0, 'Z': 0}
@@ -143,14 +143,14 @@ def fig_source_map(C, meta, out):
                 ax.annotate(f'{r.arm}', (r.mm, 27 - 4.5 * seen['X']),
                             ha='center',
                             color=col, fontweight='bold',
-                            fontsize=fs.BASE_PT * 0.65)
+                            fontsize=fs.BASE_PT * 0.8)
             else:
                 ax.axhline(r.mm, color=col, lw=2, zorder=4)
                 ax.axhspan(r.mm - e, r.mm + e, color=col, alpha=0.20, lw=0)
                 ax.annotate(f'{r.arm}', (27 - 5.0 * seen['Z'], r.mm),
                             va='center',
                             color=col, fontweight='bold',
-                            fontsize=fs.BASE_PT * 0.65)
+                            fontsize=fs.BASE_PT * 0.8)
             seen[r.axis] += 1
             rows.append(dict(arm=r.arm, axis=r.axis, mm=r.mm,
                              err_stat=r.err_stat, err_repro=r.err_repro))
@@ -162,7 +162,7 @@ def fig_source_map(C, meta, out):
             ax.annotate(f'({sx:+.1f}, {sz:+.1f}) mm', (sx, sz),
                         textcoords='offset points', xytext=(13, -24),
                         color=fs.ACCENT, fontweight='bold',
-                        fontsize=fs.BASE_PT * 0.62)
+                        fontsize=fs.BASE_PT * 0.77)
         ax.set_xlim(-30, 30)
         ax.set_ylim(-30, 30)
         ax.set_aspect('equal')
@@ -170,7 +170,7 @@ def fig_source_map(C, meta, out):
         ax.set_ylabel('global Z  [mm]   ← B and D measure this')
         ax.set_title('The source sits inside the bore, and every chamber\n'
                      'agrees to about a millimetre',
-                     fontsize=fs.BASE_PT * 0.78)
+                     fontsize=fs.BASE_PT * 0.96)
         fs.preliminary(ax, loc='lower left')
         fs.save(fig, out / 'source_map', data=pd.DataFrame(rows))
 
@@ -179,7 +179,7 @@ def fig_source_y(curves, Y, out):
     plt = _plt()
     arms = [a for a in ARMS if a in curves]
     with _scaled(plt, 0.72):
-        fig, axes = plt.subplots(1, len(arms), figsize=(fs.WIDE[0] * 0.82, 4.4),
+        fig, axes = plt.subplots(1, len(arms), figsize=(fs.WIDE[0] * 0.82, 3.17),
                                  sharey=True, constrained_layout=True)
         axes = np.atleast_1d(axes)
         bins = np.arange(-300, 301, 15.0)
@@ -200,11 +200,11 @@ def fig_source_y(curves, Y, out):
                         f'width {r.width_ratio:.1f}× model\n'
                         f'$\\sigma_y$ ≈ {r.implied_sigma_mm:.0f} mm',
                         (0.03, 0.96), xycoords='axes fraction', va='top',
-                        fontsize=fs.BASE_PT * 0.52, linespacing=1.5)
+                        fontsize=fs.BASE_PT * 0.64, linespacing=1.5)
             far = float(np.mean(np.abs(obs) > 190))
             ax.annotate(f'{far:.0%} beyond ±190 mm', (0.97, 0.62),
                         xycoords='axes fraction', ha='right',
-                        fontsize=fs.BASE_PT * 0.48, color=fs.MUTED)
+                        fontsize=fs.BASE_PT * 0.59, color=fs.MUTED)
             ax.set_xlabel('y at closest approach  [mm]')
             ax.set_xlim(-300, 300)
             rows.append(dict(arm=arm, **{k: r[k] for k in
@@ -212,11 +212,11 @@ def fig_source_y(curves, Y, out):
                                           'offset_mm', 'width_ratio',
                                           'implied_sigma_mm')}))
         axes[0].set_ylabel('normalised')
-        axes[0].legend(frameon=False, fontsize=fs.BASE_PT * 0.5,
+        axes[0].legend(frameon=False, fontsize=fs.BASE_PT * 0.62,
                        loc='center right')
         fig.suptitle('y has no zero crossing, so it is a distribution against '
                      'a model — and the model is much narrower',
-                     fontsize=fs.BASE_PT * 0.86)
+                     fontsize=fs.BASE_PT * 0.98)
         # Not on the last panel: chamber D's distribution is broad enough to
         # run underneath the badge there.
         fs.preliminary(axes[min(1, len(axes) - 1)], loc='upper right')
@@ -226,7 +226,7 @@ def fig_source_y(curves, Y, out):
 def fig_vertex_null(real, mixed, VS, out):
     plt = _plt()
     with _scaled(plt, 0.74):
-        fig, axes = plt.subplots(1, 2, figsize=(fs.WIDE[0] * 0.75, 4.4),
+        fig, axes = plt.subplots(1, 2, figsize=(fs.WIDE[0] * 0.75, 3.17),
                                  constrained_layout=True)
         rows = []
         for ax, topo in zip(axes, ('intra', 'inter')):
@@ -241,21 +241,21 @@ def fig_vertex_null(real, mixed, VS, out):
             ax.axvline(10, color=fs.INK, lw=1.6, ls='--')
             ax.annotate('capsule bore', (10, ax.get_ylim()[1] * 0.92),
                         textcoords='offset points', xytext=(6, 0),
-                        fontsize=fs.BASE_PT * 0.52, color=fs.INK)
+                        fontsize=fs.BASE_PT * 0.64, color=fs.INK)
             g = VS[VS.topology == topo]
             if len(g):
                 s = g.iloc[0]
                 ax.annotate(f'lift {s.lift:.2f}×\n'
                             f'excess {s.excess_sigma:+.1f}$\\sigma$',
                             (0.97, 0.62), xycoords='axes fraction', ha='right',
-                            fontsize=fs.BASE_PT * 0.56, linespacing=1.5)
+                            fontsize=fs.BASE_PT * 0.69, linespacing=1.5)
             ax.set_title(f'{topo}-chamber pairs')
             ax.set_xlabel('vertex distance from the beam axis  [mm]')
-            ax.legend(frameon=False, fontsize=fs.BASE_PT * 0.52)
+            ax.legend(frameon=False, fontsize=fs.BASE_PT * 0.64)
             rows.append(dict(topology=topo, n_real=len(r), n_mixed=len(x)))
         axes[0].set_ylabel('normalised')
         fig.suptitle('Two-track vertices do not yet concentrate on the capsule '
-                     'more than chance does', fontsize=fs.BASE_PT * 0.88)
+                     'more than chance does', fontsize=fs.BASE_PT * 0.98)
         fs.preliminary(axes[-1], loc='upper right')
         fs.save(fig, out / 'vertex_null', data=pd.DataFrame(rows))
 

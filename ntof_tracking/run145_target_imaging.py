@@ -182,7 +182,8 @@ def _wall_seg_u(g):
     return min(u) - SIPM_BAR_W / 2, max(u) + SIPM_BAR_W / 2
 
 
-def pointing_coincidence(slim_path, arm, df, sel, foot_x=None):
+def pointing_coincidence(slim_path, arm, df, sel, foot_x=None,
+                         slim_df=None):
     """Boolean mask over df rows: the track extrapolates to a wall segment AND
     a plastic bar that BOTH have an in-time slim hit in this arm.
 
@@ -191,11 +192,23 @@ def pointing_coincidence(slim_path, arm, df, sel, foot_x=None):
         u_wall(structure) = x_local + tan*STRIPS_TO_WALL - foot_x
         u_plastic(MM)     = x_local + tan*STRIPS_TO_PLASTIC
     with foot_x the local x of the perpendicular foot (= the pinwheel; the
-    structure is centred on the beam axis, the plastics on the MM)."""
-    import uproot
-    t = uproot.open(slim_path)['hits']
-    a = t.arrays(['eventId', 'det', 'detn', 'dt_ns', 'is_control'],
-                 library='np')
+    structure is centred on the beam axis, the plastics on the MM).
+
+    ``slim_df`` is an already-loaded slim (``slim_export.read_export``) to use
+    INSTEAD of opening ``slim_path``. Added 2026-09-09 for the campaign pass:
+    the slim ROOT files stay at CERN and only the parquet export comes home, so
+    every caller that has the frame can pass it here rather than the analysis
+    needing 25 GB of ROOT locally. The five columns used are identical in both,
+    and ``slim_path`` is ignored when this is given -- default None keeps the
+    original ROOT behaviour for every existing caller."""
+    if slim_df is not None:
+        a = {c: slim_df[c].to_numpy()
+             for c in ('eventId', 'det', 'detn', 'dt_ns', 'is_control')}
+    else:
+        import uproot
+        t = uproot.open(slim_path)['hits']
+        a = t.arrays(['eventId', 'det', 'detn', 'dt_ns', 'is_control'],
+                     library='np')
     it = ((a['is_control'] == 0) & (a['dt_ns'] >= DT_WINDOW[0])
           & (a['dt_ns'] <= DT_WINDOW[1]))
     wal = a['det'] == WAL_CODE[arm]

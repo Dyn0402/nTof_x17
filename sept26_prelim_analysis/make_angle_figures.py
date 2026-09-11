@@ -59,7 +59,7 @@ def _scaled(plt, f=0.72):
 def fig_physics(S, V, geant, out):
     plt = _plt()
     with _scaled(plt, 0.76):
-        fig, ax = plt.subplots(figsize=(fs.WIDE[0] * 0.72, 4.9),
+        fig, ax = plt.subplots(figsize=(fs.WIDE[0] * 0.72, 3.53),
                                constrained_layout=True)
         th = S.index.to_numpy()
         ipc = [c for c in S.columns if c.startswith('IPC')]
@@ -84,7 +84,7 @@ def fig_physics(S, V, geant, out):
         ax.axvline(X17_MIN, color=fs.INK, lw=1.4, ls=':')
         ax.annotate('109°, the X17 kinematic minimum', (X17_MIN, 0.030),
                     textcoords='offset points', xytext=(7, 0),
-                    fontsize=fs.BASE_PT * 0.55, color=fs.INK)
+                    fontsize=fs.BASE_PT * 0.68, color=fs.INK)
         ax.set_yscale('log')
         ax.set_ylim(1e-4, 0.12)
         ax.set_xlim(0, 180)
@@ -93,13 +93,13 @@ def fig_physics(S, V, geant, out):
         ax.set_ylabel('normalised  dN/d$\\theta$')
         ax.set_title('What a pair is born with — and the toy reproduces the '
                      'full simulation')
-        ax.legend(frameon=False, fontsize=fs.BASE_PT * 0.55, loc='lower left')
+        ax.legend(frameon=False, fontsize=fs.BASE_PT * 0.68, loc='lower left')
         if len(V):
             ax.annotate('KS vs Geant4:  '
                         + ',  '.join(f'{r.channel} {r.ks:.3f}'
                                      for r in V.itertuples()),
                         (0.985, 0.965), xycoords='axes fraction', ha='right',
-                        va='top', fontsize=fs.BASE_PT * 0.52, color=fs.MUTED)
+                        va='top', fontsize=fs.BASE_PT * 0.64, color=fs.MUTED)
         fs.preliminary(ax, loc='upper left')
         fs.save(fig, out / 'angle_physics', data=S.reset_index())
 
@@ -107,7 +107,7 @@ def fig_physics(S, V, geant, out):
 def fig_acceptance(A, out):
     plt = _plt()
     with _scaled(plt, 0.76):
-        fig, ax = plt.subplots(figsize=(fs.WIDE[0] * 0.72, 4.9),
+        fig, ax = plt.subplots(figsize=(fs.WIDE[0] * 0.72, 3.53),
                                constrained_layout=True)
         rows = []
         for t in TOPO:
@@ -117,7 +117,7 @@ def fig_acceptance(A, out):
             rows.append(g.assign(topology=t))
         ax.axvspan(110, 140, color=fs.ACCENT, alpha=0.10, lw=0, zorder=0)
         ax.annotate('X17 signal region\n110–140°', (125, 0.30), ha='center',
-                    color=fs.ACCENT, fontsize=fs.BASE_PT * 0.56,
+                    color=fs.ACCENT, fontsize=fs.BASE_PT * 0.69,
                     linespacing=1.4)
         ax.set_xlim(0, 180)
         ax.set_xticks(np.arange(0, 181, 30))
@@ -125,8 +125,8 @@ def fig_acceptance(A, out):
         ax.set_ylabel('acceptance  [%]')
         ax.set_title('The acceptance collapses across the middle, and the '
                      'signal region sits on its rising edge',
-                     fontsize=fs.BASE_PT * 0.74)
-        ax.legend(frameon=False, fontsize=fs.BASE_PT * 0.56,
+                     fontsize=fs.BASE_PT * 0.91)
+        ax.legend(frameon=False, fontsize=fs.BASE_PT * 0.69,
                   loc='upper center', bbox_to_anchor=(0.42, 1.0))
         fs.preliminary(ax, loc='upper right')
         fs.save(fig, out / 'angle_acceptance', data=pd.concat(rows))
@@ -136,7 +136,7 @@ def fig_spectrum(real, mixed, E, out, bins=np.arange(0, 181, 15.0)):
     plt = _plt()
     mid = 0.5 * (bins[:-1] + bins[1:])
     with _scaled(plt, 0.66):
-        fig, axes = plt.subplots(1, 3, figsize=(fs.WIDE[0], 4.7),
+        fig, axes = plt.subplots(1, 3, figsize=(fs.WIDE[0], 3.38),
                                  constrained_layout=True)
         rows = []
         for ax, t in zip(axes, TOPO):
@@ -167,18 +167,18 @@ def fig_spectrum(real, mixed, E, out, bins=np.arange(0, 181, 15.0)):
                         zorder=6, label=f'measured  (n={n})')
             ax.axvline(X17_MIN, color=fs.INK, lw=1.2, ls=':')
             ax.set_title(TOPO_LABEL[t], color=TOPO_COLOR[t], fontweight='600',
-                         fontsize=fs.BASE_PT * 0.62)
+                         fontsize=fs.BASE_PT * 0.77)
             ax.set_xlabel('opening angle  [deg]')
             ax.set_xlim(0, 180)
             ax.set_xticks(np.arange(0, 181, 45))
-            ax.legend(frameon=False, fontsize=fs.BASE_PT * 0.48,
+            ax.legend(frameon=False, fontsize=fs.BASE_PT * 0.59,
                       loc='upper left')
             for i, v in enumerate(obs):
                 rows.append(dict(topology=t, theta=mid[i], n_obs=int(v),
                                  n_mixed=int(mx[i])))
         axes[0].set_ylabel('pairs per 15° bin')
         fig.suptitle('The measured pairs follow the accidental shape, '
-                     'not a pair spectrum', fontsize=fs.BASE_PT * 0.88)
+                     'not a pair spectrum', fontsize=fs.BASE_PT * 0.98)
         fs.preliminary(axes[-1], loc='upper right')
         fs.save(fig, out / 'angle_spectrum', data=pd.DataFrame(rows))
 
@@ -187,7 +187,7 @@ def fig_summary(R, C, out):
     """Fraction above 109 deg: data against every model, per topology."""
     plt = _plt()
     with _scaled(plt, 0.76):
-        fig, ax = plt.subplots(figsize=(fs.WIDE[0] * 0.72, 4.7),
+        fig, ax = plt.subplots(figsize=(fs.WIDE[0] * 0.72, 3.38),
                                constrained_layout=True)
         cols = [c for c in R.columns if c.startswith('frac_')
                 and c not in ('frac_obs',)]
@@ -223,7 +223,7 @@ def fig_summary(R, C, out):
         ax.set_ylabel('fraction of pairs above 109°')
         ax.set_title('The model-light test — and the accidentals sit on top '
                      'of the data')
-        ax.legend(frameon=False, fontsize=fs.BASE_PT * 0.58, loc='center left')
+        ax.legend(frameon=False, fontsize=fs.BASE_PT * 0.72, loc='center left')
         fs.preliminary(ax, loc='upper left')
         fs.save(fig, out / 'angle_summary', data=pd.DataFrame(rows))
 

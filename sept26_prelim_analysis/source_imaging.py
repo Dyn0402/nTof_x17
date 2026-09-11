@@ -502,8 +502,19 @@ def _dca_two_lines(p1, d1, p2, d2):
     return 0.5 * (q1 + q2), np.linalg.norm(q1 - q2, axis=1)
 
 
-def _track_table(run: str, subruns, dca_max: float) -> pd.DataFrame:
-    src = paths.out('stage3_fullpass')
+def _track_table(run: str, subruns, dca_max: float, src=None) -> pd.DataFrame:
+    """Gated, angle-calibrated tracks for one run.
+
+    ``src`` defaults to ``<out>/stage3_fullpass`` -- where the run_145 pass
+    wrote -- and the campaign pass passes ``<out>/stage3_campaign`` instead.
+    Parameterised rather than repointed so the published run_145 products stay
+    exactly where the published numbers were computed from.
+
+    NOTE the ``angle_calibrated`` filter below: a run with no
+    ``k_arm_<run>.json`` contributes NOTHING here, silently. That is why
+    `k_arm` has to run before `build_tracks` in the campaign chain, not after.
+    """
+    src = paths.out('stage3_fullpass') if src is None else src
     cols = ['event_id', 'arm', 'gated', 'bunch', 'angle_calibrated',
             'p0_x', 'p0_y', 'p0_z', 'd_x', 'd_y', 'd_z', 'dca_axis_mm']
     out = []
@@ -527,7 +538,12 @@ def _pairs_real(t: pd.DataFrame) -> pd.DataFrame:
         for i, j in itertools.combinations(g.index, 2):
             L.append(i)
             R.append(j)
-    return pd.DataFrame(dict(i=L, j=R))
+    # dtype pinned: an empty list gives an OBJECT column, and `_pairs_mixed`
+    # then indexes a numpy array with it and raises.  A run whose k_arm never
+    # certified has no calibrated tracks and so no pairs at all -- run_126 --
+    # so the empty case is normal campaign-wide, not a staging failure.
+    return pd.DataFrame(dict(i=np.asarray(L, dtype=np.int64),
+                             j=np.asarray(R, dtype=np.int64)))
 
 
 def _pairs_mixed(t: pd.DataFrame, real: pd.DataFrame, seed=5) -> pd.DataFrame:
@@ -546,6 +562,9 @@ def _pairs_mixed(t: pd.DataFrame, real: pd.DataFrame, seed=5) -> pd.DataFrame:
     # tracks are not drawn from the same distribution as a lone one -- mixing
     # against the full pool makes the null look better than the data and the
     # lift come out below 1, which is what happened the first time.
+    if real.empty:
+        return pd.DataFrame(dict(i=np.zeros(0, np.int64),
+                                 j=np.zeros(0, np.int64)))
     used = np.unique(np.concatenate([real.i.to_numpy(), real.j.to_numpy()]))
     tp = t.loc[used]
     pools = {a: g.index.to_numpy() for a, g in tp.groupby('arm')}
@@ -566,9 +585,21 @@ def _pairs_mixed(t: pd.DataFrame, real: pd.DataFrame, seed=5) -> pd.DataFrame:
     return pd.DataFrame(dict(i=L, j=R))
 
 
+#: The columns :func:`_vertex_frame` produces.  Named once so the EMPTY frame
+#: carries them too: a run that yielded no pairs used to come back as a bare
+#: ``DataFrame()``, and every consumer that filters on ``topology`` then died
+#: on an AttributeError instead of seeing an empty sample.
+VERTEX_COLUMNS = ('key', 'key1', 'key2', 'arm1', 'arm2', 'topology',
+                  'vx', 'vy', 'vz', 'v_r', 'sep_mm', 'open_deg', 'mixed')
+
+
 def _vertex_frame(t: pd.DataFrame, pr: pd.DataFrame, mixed: bool):
     if pr.empty:
-        return pd.DataFrame()
+        return pd.DataFrame({c: pd.Series(dtype='float64'
+                                          if c in ('vx', 'vy', 'vz', 'v_r',
+                                                   'sep_mm', 'open_deg')
+                                          else 'object')
+                             for c in VERTEX_COLUMNS})
     a = t.loc[pr.i.to_numpy()]
     b = t.loc[pr.j.to_numpy()]
     p1 = a[['p0_x', 'p0_y', 'p0_z']].to_numpy()
@@ -594,14 +625,15 @@ def _vertex_frame(t: pd.DataFrame, pr: pd.DataFrame, mixed: bool):
         open_deg=np.degrees(np.arccos(dot)), mixed=mixed))
 
 
-def vertices(run: str, subruns, dca_max: float = 30.0, seed: int = 5):
+def vertices(run: str, subruns, dca_max: float = 30.0, seed: int = 5,
+             src=None):
     """Two-track vertices, and the event-mixed null built to match them.
 
     Returns (real, mixed).  Both come from one track table and one pairing
     rule, so the only difference between them is whether the two tracks shared
     a trigger -- which is the whole point of a control.
     """
-    t = _track_table(run, subruns, dca_max)
+    t = _track_table(run, subruns, dca_max, src=src)
     real = _pairs_real(t)
     mix = _pairs_mixed(t, real, seed)
     return _vertex_frame(t, real, False), _vertex_frame(t, mix, True)
@@ -643,9 +675,17 @@ def main() -> int:
     ap.add_argument('--subruns',
                     default='stat090_0000,stat090_0001,stat090_0002')
     ap.add_argument('--dca', type=float, default=30.0)
+    # The merged reco tree.  The default is the ALLOWLIST pass, which is where
+    # the published run_145 numbers were computed and must stay; the condor
+    # FULL pass is `<out>/reco_fullpass`, and `campaign_imaging.py` passes it.
+    # Named rather than switched so a product can never be half one pass and
+    # half the other without the meta sidecar saying so.
+    ap.add_argument('--merged', default=None,
+                    help='merged reco tree for this run; default '
+                         '<out>/fullpass/<run> (the ALLOWLIST pass)')
     a = ap.parse_args()
     subs = [s for s in a.subruns.split(',') if s]
-    merged = str(paths.out('fullpass') / a.run)
+    merged = a.merged or str(paths.out('fullpass') / a.run)
 
     T = transverse(a.run, subs, merged)
     C = combine_axis(T, 'baseline')
@@ -670,6 +710,7 @@ def main() -> int:
                         **{f'{k}_{w}': v[i] for k, v in curves.items()
                            for i, w in enumerate(('obs', 'pred'))})
     json.dump(dict(schema=SCHEMA, run=a.run, subruns=subs, dca_max=a.dca,
+                   merged=merged,
                    verdict=axis_verdict(C),
                    verdict_robust=axis_verdict(Csym)),
               open(od / f'imaging_{a.run}.meta.json', 'w'), indent=1,

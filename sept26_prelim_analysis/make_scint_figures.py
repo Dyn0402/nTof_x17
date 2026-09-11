@@ -70,7 +70,7 @@ def fig_roles(aud: pd.DataFrame, cal: pd.DataFrame, out):
          'log amplitude ratio along the bar'),
     ]
     with _scaled(plt, 0.78):
-        fig, ax = plt.subplots(figsize=(fs.WIDE[0] * 0.72, 4.9),
+        fig, ax = plt.subplots(figsize=(fs.WIDE[0] * 0.72, 3.53),
                                constrained_layout=True)
         y = np.arange(len(rows))[::-1]
         h = 0.34
@@ -85,7 +85,7 @@ def fig_roles(aud: pd.DataFrame, cal: pd.DataFrame, out):
                         edgecolor=col, lw=1.6 if new else 0, zorder=3)
                 ax.annotate(f'{val:.0f} mm', (val, i + off),
                             textcoords='offset points', xytext=(7, 0),
-                            va='center', fontsize=fs.BASE_PT * 0.52,
+                            va='center', fontsize=fs.BASE_PT * 0.64,
                             color=col, fontweight='bold' if new else 'normal')
         ax.set_yticks(y)
         ax.set_yticklabels([r[0] for r in rows])
@@ -101,7 +101,7 @@ def fig_roles(aud: pd.DataFrame, cal: pd.DataFrame, out):
         h2 = ax.barh([-9], [0], color=fs.ACCENT, alpha=0.6,
                      label='along the bar  (v = beam axis, y)')
         ax.legend(frameon=False, loc='lower right',
-                  fontsize=fs.BASE_PT * 0.6)
+                  fontsize=fs.BASE_PT * 0.74)
         ax.set_ylim(-0.7, len(rows) - 0.3)
         fs.preliminary(ax, loc='upper right')
         fs.save(fig, out / 'scint_roles',
@@ -115,7 +115,7 @@ def fig_along_bar(m: pd.DataFrame, cal: pd.DataFrame, out):
     plt = _plt()
     arms = [a for a in ARMS if a in set(m.arm)]
     with _scaled(plt, 0.7):
-        fig, axes = plt.subplots(1, len(arms), figsize=(fs.WIDE[0], 4.6),
+        fig, axes = plt.subplots(1, len(arms), figsize=(fs.WIDE[0], 3.31),
                                  sharey=True, constrained_layout=True)
         axes = np.atleast_1d(axes)
         edges = np.arange(-250, 251, 50.0)
@@ -152,7 +152,7 @@ def fig_along_bar(m: pd.DataFrame, cal: pd.DataFrame, out):
                         f'r = {c.lr_corr:+.2f}\n'
                         f'$\\sigma_y$ < {c.lr_resid_mm:.0f} mm',
                         (0.03, 0.03), xycoords='axes fraction',
-                        va='bottom', fontsize=fs.BASE_PT * 0.52,
+                        va='bottom', fontsize=fs.BASE_PT * 0.64,
                         color=fs.INK, linespacing=1.5)
             ax.set_xlabel('track y at the wall  [mm]')
             ax.set_xlim(-260, 260)
@@ -160,7 +160,7 @@ def fig_along_bar(m: pd.DataFrame, cal: pd.DataFrame, out):
         axes[0].set_ylabel('log( A$_1$ / A$_2$ ),  group offset removed')
         fig.suptitle('The wall does measure position along its bars '
                      '— and chamber D reads it backwards',
-                     fontsize=fs.BASE_PT * 0.9)
+                     fontsize=fs.BASE_PT * 0.98)
         fs.preliminary(axes[-1], loc='upper right')
         fs.save(fig, out / 'wall_along_bar', data=pd.DataFrame(rows))
 
@@ -172,7 +172,7 @@ def fig_selfcheck(pairs: pd.DataFrame, sc: pd.DataFrame, out):
     g0 = pairs[pairs.physical]
     arms = [a for a in ARMS if a in set(g0.arm)]
     with _scaled(plt, 0.7):
-        fig, axes = plt.subplots(1, len(arms), figsize=(fs.WIDE[0], 4.4),
+        fig, axes = plt.subplots(1, len(arms), figsize=(fs.WIDE[0], 3.17),
                                  sharey=True, constrained_layout=True)
         axes = np.atleast_1d(axes)
         rows = []
@@ -195,7 +195,7 @@ def fig_selfcheck(pairs: pd.DataFrame, sc: pd.DataFrame, out):
                          fontweight='600')
             ax.annotate(f'r = {r:+.2f}\nn = {len(g):,}',
                         (0.03, 0.03), xycoords='axes fraction', va='bottom',
-                        fontsize=fs.BASE_PT * 0.54, color=fs.INK,
+                        fontsize=fs.BASE_PT * 0.67, color=fs.INK,
                         linespacing=1.5)
             ax.set_xlabel('$\\Delta t$, group-centred  [ns]')
             rows.append(dict(arm=arm, n=len(g), corr=r,
@@ -203,7 +203,7 @@ def fig_selfcheck(pairs: pd.DataFrame, sc: pd.DataFrame, out):
         axes[0].set_ylabel('log( A$_1$ / A$_2$ ),  group-centred')
         fig.suptitle('Delay and attenuation agree with each other in all four '
                      'chambers — including B, which has no tracks',
-                     fontsize=fs.BASE_PT * 0.88)
+                     fontsize=fs.BASE_PT * 0.98)
         fs.preliminary(axes[-1], loc='upper right')
         fs.save(fig, out / 'wall_selfcheck', data=pd.DataFrame(rows))
 

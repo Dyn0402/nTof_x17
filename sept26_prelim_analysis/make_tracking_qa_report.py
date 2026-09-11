@@ -32,6 +32,10 @@ if REPO not in sys.path:
 
 from sept26_prelim_analysis import paths            # noqa: E402
 from sept26_prelim_analysis.tracking_qa import VARS, ARMS, PATHOLOGY  # noqa: E402
+# The stylesheet is the package-wide one; this report used to carry a second,
+# near-identical copy, which is how the two drifted apart.  .tile/.tiles/
+# .verdict/.tbl-wrap/table.num are all still styled there.
+from sept26_prelim_analysis.report_style import HEAD  # noqa: E402
 
 ARM_COLOR = {'A': '#0072B2', 'B': '#D55E00', 'C': '#009E73', 'D': '#CC79A7'}
 
@@ -229,77 +233,33 @@ def tiles(meta: dict, per_arm: pd.DataFrame, o: pd.DataFrame,
         for v, k, s in items) + '</div>'
 
 
-def figures_html(qa_dir: str) -> str:
+def figures_html(qa_dir: str, embed: bool = False) -> str:
+    """The figure blocks.
+
+    ``embed`` inlines each PNG as a ``data:`` URI instead of linking it.
+    Relative links are right for the DAQ Analysis tab, which serves the whole
+    directory; a note published to the personal site is a SINGLE file with no
+    `figures/` beside it, so there the images have to travel inside it.
+    """
+    import base64
     out = []
     for name, title, cap in FIGURES:
-        if not os.path.exists(os.path.join(qa_dir, 'figures', name)):
+        path = os.path.join(qa_dir, 'figures', name)
+        if not os.path.exists(path):
             continue
+        if embed:
+            with open(path, 'rb') as f:
+                b64 = base64.b64encode(f.read()).decode('ascii')
+            src = f'data:image/png;base64,{b64}'
+        else:
+            src = f'figures/{name}'
         out.append(
-            f'<figure><img src="figures/{name}" alt="{esc(title)}">'
+            f'<figure><img src="{src}" alt="{esc(title)}">'
             f'<figcaption><b>{title}.</b> {cap}</figcaption></figure>')
     return '\n'.join(out)
 
 
-CSS = """
-:root { color-scheme: light dark;
-  --bg:#fbfbfa; --surface:#ffffff; --line:#e3e2df;
-  --ink:#14140f; --ink2:#55534c; --ink3:#87857c;
-  --warn:#a8600f; --warnbg:#a8600f14; }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
-  --bg:#15151a; --surface:#1c1c22; --line:#33333c;
-  --ink:#f2f2ef; --ink2:#b6b4ab; --ink3:#87857c;
-  --warn:#e0a44c; --warnbg:#e0a44c1a; } }
-:root[data-theme="dark"] {
-  --bg:#15151a; --surface:#1c1c22; --line:#33333c;
-  --ink:#f2f2ef; --ink2:#b6b4ab; --ink3:#87857c;
-  --warn:#e0a44c; --warnbg:#e0a44c1a; }
-* { box-sizing:border-box; }
-body { margin:0; padding:28px 22px 64px; background:var(--bg); color:var(--ink);
-  font:15px/1.62 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-  -webkit-font-smoothing:antialiased; }
-.wrap { max-width:1080px; margin:0 auto; }
-h1 { font-size:1.62rem; line-height:1.25; margin:0 0 6px; letter-spacing:-.01em; }
-h2 { font-size:1.12rem; margin:38px 0 12px; padding-bottom:7px;
-  border-bottom:1px solid var(--line); letter-spacing:-.005em; }
-h3 { font-size:.98rem; margin:22px 0 8px; }
-.sub { color:var(--ink2); margin:0 0 22px; font-size:.94rem; }
-p { margin:0 0 12px; }
-ul { margin:0 0 14px; padding-left:20px; }
-li { margin:0 0 6px; }
-code { font:.86em ui-monospace,SFMono-Regular,Menlo,monospace;
-  background:var(--surface); border:1px solid var(--line); border-radius:4px;
-  padding:1px 5px; }
-.verdict { background:var(--warnbg); border:1px solid var(--warn);
-  border-left-width:4px; border-radius:8px; padding:16px 18px; margin:0 0 26px; }
-.verdict b { color:var(--warn); }
-.tiles { display:grid; gap:12px; margin:0 0 20px;
-  grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); }
-.tile { background:var(--surface); border:1px solid var(--line);
-  border-radius:8px; padding:14px 16px; }
-.tile-v { font-size:1.5rem; font-weight:650; letter-spacing:-.02em;
-  font-variant-numeric:tabular-nums; }
-.tile-k { color:var(--ink2); font-size:.85rem; margin-top:3px; }
-.tile-s { color:var(--ink3); font-size:.78rem; margin-top:2px; }
-.tbl-wrap { overflow-x:auto; margin:0 0 14px; }
-table { border-collapse:collapse; width:100%; font-size:.87rem;
-  background:var(--surface); border:1px solid var(--line); border-radius:8px; }
-th,td { padding:7px 11px; text-align:left; border-bottom:1px solid var(--line);
-  white-space:nowrap; }
-th { color:var(--ink2); font-weight:600; font-size:.8rem; }
-tbody tr:last-child td { border-bottom:0; }
-table.num td+td, table.num th+th { text-align:right;
-  font-variant-numeric:tabular-nums; }
-figure { margin:0 0 26px; background:var(--surface); border:1px solid var(--line);
-  border-radius:8px; padding:10px; }
-figure img { width:100%; height:auto; display:block; border-radius:4px; }
-figcaption { color:var(--ink2); font-size:.85rem; margin-top:9px;
-  padding:0 4px 2px; }
-footer { color:var(--ink3); font-size:.8rem; margin-top:44px;
-  border-top:1px solid var(--line); padding-top:14px; }
-"""
-
-
-def build(qa_dir: str) -> str:
+def build(qa_dir: str, embed: bool = False) -> str:
     meta = json.load(open(paths.require(
         os.path.join(qa_dir, 'tracking_qa.meta.json'), 'tracking_qa meta')))
     per_arm = pd.read_csv(os.path.join(qa_dir, 'per_arm.csv'))
@@ -482,7 +442,7 @@ with a large all-tag &rho; and a small post-access &rho; stepped once at the
 access and then held. One with both is genuinely drifting.</p>
 
 <h2>The figures</h2>
-{figures_html(qa_dir)}
+{figures_html(qa_dir, embed)}
 
 <h2>What this does not rule out</h2>
 <ul>
@@ -512,18 +472,25 @@ Tables beside this file; every figure ships the CSV it was drawn from.
 
     return (f'<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n'
             f'<meta name="viewport" content="width=device-width, initial-scale=1">\n'
+            f'<meta name="color-scheme" content="light dark">\n'
             f'<title>Tracking QA &mdash; run by run, tag by tag</title>\n'
-            f'<style>{CSS}</style>\n</head>\n<body>\n{body}\n</body>\n</html>\n')
+            f'{HEAD}\n</head>\n<body>\n{body}\n</body>\n</html>\n')
 
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split('\n')[1])
     ap.add_argument('--qa-dir', default=None, help='default <out>/tracking_qa')
+    ap.add_argument('--embed', action='store_true',
+                    help='inline the figures as data: URIs, for a single-file '
+                         'note; the default relative links are right for the '
+                         'DAQ Analysis tab, which serves the directory')
+    ap.add_argument('--out', default=None,
+                    help='default <qa-dir>/report.html')
     a = ap.parse_args()
     qa = a.qa_dir or str(paths.out('tracking_qa'))
-    out = os.path.join(qa, 'report.html')
+    out = a.out or os.path.join(qa, 'report.html')
     with open(out, 'w') as f:
-        f.write(build(qa))
+        f.write(build(qa, embed=a.embed))
     print(f'  -> {out}')
     return 0
 

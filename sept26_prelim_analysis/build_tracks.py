@@ -46,6 +46,8 @@ except ImportError:                                     # run as a script
     sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
     from sept26_prelim_analysis import paths
 
+from sept26_prelim_analysis import trigger_time
+
 from ntof_tracking.reco import geometry as G
 
 ARMS = ('A', 'B', 'C', 'D')
@@ -91,12 +93,16 @@ TAN_SANE = 1.0
 #: Columns the current inputs cannot support.  Present in the schema (so the
 #: table's shape does not change when they arrive) and null, with the reason
 #: carried into the sidecar rather than left for a reader to guess.
-NOT_POPULATED = {
-    't_since_flash_ns': 'needs the stage-1 time base (flash t0 per bunch), '
-                        'which is not written yet -- board stage 1 is todo',
-    'e_neutron_keV': 'follows from t_since_flash and the EAR2 flight path; '
-                     'blocked on the same time base',
-}
+#:
+#: **Empty since 2026-09-11.**  It held ``t_since_flash_ns`` and
+#: ``e_neutron_keV``, described as blocked on a slim regeneration.  They were
+#: not blocked: the slim's ``events`` tree already carries the trigger's time
+#: since the gamma flash as ``t_dream_ns`` (DREAM clock) and ``t_pred_ns``
+#: (n_TOF base, the segment's own fitted clock).
+#: :mod:`sept26_prelim_analysis.trigger_time` has the evidence and does the
+#: join.  The dict stays because the next column that cannot be supported
+#: should be declared the same way.
+NOT_POPULATED: dict[str, str] = {}
 
 #: Angle-derived columns.  They are populated only for an arm carrying a
 #: certified ``k`` (:mod:`sept26_prelim_analysis.k_arm`); for any other arm they
@@ -404,8 +410,10 @@ def build_arm(reco_dir: Path, arm: str, tr: G.DetTransform,
 
 
 def attach_context(tracks: pd.DataFrame, stage1: Path | None,
-                   allow: Path | None) -> pd.DataFrame:
-    """Join the stage-1 class and n_TOF flags, and the stage-2 selection reason.
+                   allow: Path | None, run: str | None = None,
+                   subrun: str | None = None) -> tuple[pd.DataFrame, dict]:
+    """Join the stage-1 class and n_TOF flags, the stage-2 selection reason,
+    and the trigger's time since the gamma flash.
 
     A track with no class is a track from an event stage 1 never classified --
     it should not exist, so it is flagged rather than dropped.
@@ -431,7 +439,17 @@ def attach_context(tracks: pd.DataFrame, stage1: Path | None,
         tracks = tracks.merge(al.rename(columns={'eventId': 'event_id',
                                                  'reason': 'select_reason'}),
                               on=['event_id', 'arm'], how='left')
-    return tracks
+    # The time base. Its product is per sub-run and keyed on event_id, which is
+    # unique only within one -- so it is joined here, where the sub-run is
+    # known, and never on a combined frame.
+    tprov = {}
+    if run and subrun:
+        try:
+            tracks, tprov = trigger_time.attach(tracks, run, subrun)
+        except FileNotFoundError as exc:
+            tprov = dict(filled=False, why=str(exc))
+            print(f'  [t] no time since flash: {exc}')
+    return tracks, tprov
 
 
 ORDER = (
@@ -484,7 +502,7 @@ def build(run: str, subrun: str, reco_dir: Path, stage1: Path | None = None,
         raise FileNotFoundError(f'no reco for any arm under {reco_dir}')
 
     tracks = pd.concat(frames, ignore_index=True)
-    tracks = attach_context(tracks, stage1, allow)
+    tracks, tprov = attach_context(tracks, stage1, allow, run, subrun)
     for c, _why in NOT_POPULATED.items():
         if c not in tracks.columns:
             tracks[c] = np.nan
@@ -509,6 +527,7 @@ def build(run: str, subrun: str, reco_dir: Path, stage1: Path | None = None,
                       pinwheel=G.PINWHEEL,
                       mm_dist_x=G.MM_DIST_X, mm_dist_z=G.MM_DIST_Z),
         not_populated=NOT_POPULATED,
+        trigger_time=tprov,
         k_arm=dict(applied=k_arm,
                    uncalibrated=[a_ for a_ in prov if a_ not in k_arm],
                    angle_derived_null_for_uncalibrated=list(ANGLE_DERIVED),
@@ -575,9 +594,15 @@ def main() -> int:
           f'(tag, event)s; {meta["n_gated"]:,} gated')
     if meta['by_class']:
         print('  by event class:', meta['by_class'])
-    print('\n  null by construction:')
-    for c, why in NOT_POPULATED.items():
-        print(f'    {c:<20} {why}')
+    if NOT_POPULATED:
+        print('\n  null by construction:')
+        for c, why in NOT_POPULATED.items():
+            print(f'    {c:<20} {why}')
+    t = meta.get('trigger_time') or {}
+    if t.get('n_with_time'):
+        print(f'\n  time since flash: {t["n_with_time"]:,} of {t["n_tracks"]:,} '
+              f'tracks, {t["t_ms"]["min"]:.3f}-{t["t_ms"]["max"]:.3f} ms '
+              f'({t["e_eV"]["max"]:.2f} eV down to {t["e_eV"]["min"] * 1e3:.2f} meV)')
     return 0
 
 

@@ -165,12 +165,12 @@ def fig_expected(dead_edge_mm: float, n_src: int, out):
     subs = ['stat090_0000', 'stat090_0001', 'stat090_0002']
     fp = str(paths.out('fullpass') / 'run_145')
     rows = []
-    with plt.rc_context({'font.size': fs.BASE_PT * 0.62,
-                         'axes.titlesize': fs.BASE_PT * 0.7,
-                         'axes.labelsize': fs.BASE_PT * 0.62,
-                         'xtick.labelsize': fs.BASE_PT * 0.52,
-                         'ytick.labelsize': fs.BASE_PT * 0.52}):
-        fig, axes = plt.subplots(2, 4, figsize=(fs.BANNER[0], 7.4),
+    with plt.rc_context({'font.size': fs.BASE_PT * 0.77,
+                         'axes.titlesize': fs.BASE_PT * 0.86,
+                         'axes.labelsize': fs.BASE_PT * 0.77,
+                         'xtick.labelsize': fs.BASE_PT * 0.64,
+                         'ytick.labelsize': fs.BASE_PT * 0.64}):
+        fig, axes = plt.subplots(2, 4, figsize=(fs.BANNER[0], 5.33),
                                  constrained_layout=True)
         for c, arm in enumerate(ARMS):
             cu, cv, A = acceptance_map(arm, dead_edge_mm=dead_edge_mm,
@@ -217,7 +217,7 @@ def fig_expected(dead_edge_mm: float, n_src: int, out):
         fig.suptitle(f'Trigger acceptance from the plastic geometry '
                      f'(dead edge {dead_edge_mm:.0f} mm) — top: predicted; '
                      f'bottom: measured, with the 20/50/80 % contours over it',
-                     fontsize=fs.BASE_PT * 0.78)
+                     fontsize=fs.BASE_PT * 0.96)
         fs.preliminary(axes[0, 0], loc='lower left')
         fs.save(fig, out / 'plastic_acceptance', data=pd.DataFrame(rows))
 

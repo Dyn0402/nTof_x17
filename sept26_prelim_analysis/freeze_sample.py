@@ -302,7 +302,7 @@ def timeline(df: pd.DataFrame, out_dir: Path):
     import numpy as np
 
     figstyle.use()
-    fig, ax = figstyle.slide(figsize=figstyle.BANNER)
+    fig, ax = figstyle.figure(figsize=figstyle.BANNER)
 
     d = df[df.minutes.notna()].copy()
     d['day'] = pd.to_datetime(d.t_start, unit='s').dt.floor('D')
@@ -318,7 +318,7 @@ def timeline(df: pd.DataFrame, out_dir: Path):
            label=f'in the sample ({grp["kept"].sum():.0f} h)')
     ax.bar(x, grp['cut'], bottom=grp['kept'], color=figstyle.LINE, width=0.78,
            label=f'cut ({grp["cut"].sum():.0f} h)')
-    # At 18 pt a "05 Aug" label is ~5 % of the frame, so more than ~9 of them
+    # A "05 Aug" label is ~5 % of the frame wide, so more than ~9 of them
     # collide. Stride to that budget rather than to a fixed every-third-day.
     stride = max(1, -(-len(grp) // 9))
     ax.set_xticks(x[::stride])

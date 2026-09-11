@@ -18,10 +18,12 @@
 #   opening_angle   S4c: the measured spectrum against the folded expectation
 #   ipc_born        S4d: the Born multipole IPC continuum, self-validated
 #   ipc_channels    S4d: which multipoles the >1 ms window actually makes
+#   ipc_aluminium   S4d: the capsule's own pair continuum, line by line
+#   ganil_background S4e: the same two backgrounds at 1-40 MeV neutrons
 #   k_robustness    is k a property of the chamber, or of the sample?
 #   normal_incidence what a head-on track costs the opening angle
 #   chamber_b       B on its own chain, as the hit detector it is
-#   rsync           -> lxplus:/eos/user/d/dneff/www/x17/<page>/
+#   publish_x17.sh  -> lxplus:/eos/user/d/dneff/www/x17/<slug>/
 #
 # noisy_channels and hot_seed_strata moved to the FRONT on 2026-09-08: the
 # hot-channel cut they define is applied by k_arm.coincident_tracks, so it now
@@ -35,7 +37,6 @@ cd "$(dirname "$0")/.."
 PY=.venv/bin/python
 RUN=${RUN:-run_145}
 SUBRUNS=${SUBRUNS:-stat090_0000,stat090_0001,stat090_0002}
-OUT=/media/dylan/data/x17/sept26_prelim/funnel
 
 step () {  # step <name> <command...>
   echo; echo "=== $1  $(date -Is)"
@@ -70,11 +71,19 @@ step "angle report"  $PY -W ignore -m sept26_prelim_analysis.make_angle_report -
 
 # --- S4d: what the IPC continuum should look like -------------------------- #
 # No run dependence at all -- these are nuclear physics, not data -- so they
-# sit after the angle page they are the companion to, and cost seconds.
+# sit after the angle page they are the companion to.  Seconds each, except
+# the aluminium module and the report that calls it (~4 min, wall smearing).
 step "ipc born"     $PY -W ignore -m sept26_prelim_analysis.ipc_born --al --write
 step "ipc channels" $PY -W ignore -m sept26_prelim_analysis.ipc_channels --write
+step "ipc aluminium" $PY -W ignore -m sept26_prelim_analysis.ipc_aluminium --write
 step "ipc figures"  $PY -W ignore -m sept26_prelim_analysis.make_ipc_figures
 step "ipc report"   $PY -W ignore -m sept26_prelim_analysis.make_ipc_report
+
+# --- S4e: the same background at a MeV neutron beam ------------------------ #
+# Also data-free: ENDF/B-VIII.0 cross sections plus the same Born pair physics.
+step "ganil bkg"     $PY -W ignore -m sept26_prelim_analysis.ganil_background --write
+step "ganil figures" $PY -W ignore -m sept26_prelim_analysis.make_ganil_figures
+step "ganil report"  $PY -W ignore -m sept26_prelim_analysis.make_ganil_report
 
 # --- detector studies: no page of their own, products only ----------------- #
 step "k robustness"  $PY -W ignore -m sept26_prelim_analysis.k_robustness --run "$RUN" --subruns "$SUBRUNS"
@@ -82,21 +91,11 @@ step "normal incid"  $PY -W ignore -m sept26_prelim_analysis.normal_incidence --
 step "chamber B"     $PY -W ignore -m sept26_prelim_analysis.chamber_b --run "$RUN" --subruns "$SUBRUNS"
 
 echo; echo "=== publish  $(date -Is)"
-cp "$OUT/report.html" "$OUT/index.html"
-BASE=/media/dylan/data/x17/sept26_prelim
-for pair in "funnel:reco-funnel" "scint:scintillators" \
-            "imaging:source-imaging" "angle:opening-angle" \
-            "ipc:ipc-continuum"; do
-  dir=${pair%%:*}; slug=${pair##*:}
-  [ -f "$BASE/$dir/report.html" ] || continue
-  cp "$BASE/$dir/report.html" "$BASE/$dir/index.html"
-  rsync -a --delete -e "ssh -o BatchMode=yes -o ConnectTimeout=25" \
-        "$BASE/$dir/index.html" "$BASE/$dir/figures" \
-        "lxplus:/eos/user/d/dneff/www/x17/$slug/" || {
-    echo "!! rsync failed for $slug -- the local products are still good"
-    exit 1; }
-  code=$(curl -sS -o /dev/null -w '%{http_code}' \
-         "https://dylan-neff.web.cern.ch/x17/$slug/" || echo 000)
-  echo "live: $slug HTTP $code"
-done
+# The directory-to-URL registry lives in publish_x17.sh, because the campaign
+# reports are built by other chains and had no way to go live from here.
+# Named explicitly: this chain rebuilds the run_145 pages, so it publishes
+# those and leaves the campaign ones to whichever chain rebuilt them.
+sept26_prelim_analysis/publish_x17.sh \
+    reco-funnel scintillators source-imaging opening-angle \
+    ipc-continuum ganil-background || exit 1
 echo "=== done $(date -Is)"

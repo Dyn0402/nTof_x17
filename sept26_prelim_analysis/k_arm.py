@@ -179,14 +179,27 @@ def coincident_tracks(run: str, sub: str, arm: str, merged_dir: str,
                                    'events_prelim.parquet'),
                       f'merged full-pass table for {arm}/{sub}')
     df = pd.read_parquet(p)
-    d = os.path.join(str(paths.root('runs')), run, sub, 'ntof_hits')
-    slim = sorted(f for f in os.listdir(d) if f.endswith('.root'))
-    if not slim:
-        raise FileNotFoundError(f'no slim n_TOF file under {d}')
+    # The slim: the parquet export first, the ROOT as fallback. Campaign-wide
+    # only the export comes home (slim_export.py), and it carries the same five
+    # columns pointing_coincidence reads. Preferring it means the campaign and
+    # the single-run case run identical code.
+    slim_df, slim_path = None, None
+    try:
+        from sept26_prelim_analysis.slim_export import read_export
+        slim_df = read_export(run, [sub])
+    except (ImportError, FileNotFoundError):
+        d = os.path.join(str(paths.root('runs')), run, sub, 'ntof_hits')
+        slim = sorted(f for f in os.listdir(d) if f.endswith('.root'))
+        if not slim:
+            raise FileNotFoundError(
+                f'no slim for {run}/{sub}: neither a parquet export nor a '
+                f'ROOT file under {d}')
+        slim_path = os.path.join(d, slim[0])
     sel = (df['x_ok'].to_numpy() & df['y_ok'].to_numpy()
            & (df['n_tracks'].to_numpy() > 0))
-    coin, _ = TI.pointing_coincidence(os.path.join(d, slim[0]), arm, df, sel,
-                                      foot_x=TI.PINWHEEL[arm])
+    coin, _ = TI.pointing_coincidence(slim_path, arm, df, sel,
+                                      foot_x=TI.PINWHEEL[arm],
+                                      slim_df=slim_df)
     # Both planes carry the same in-plane sign (build_tracks.IN_PLANE_SIGN_Y,
     # measured 2026-09-07).  The focus objective is the miss distance in the XZ
     # projection and is blind to the y sign for these chambers -- which is
@@ -197,9 +210,13 @@ def coincident_tracks(run: str, sub: str, arm: str, merged_dir: str,
     # Before the charge window, not after: a noise column carries charge like
     # a track (median 0.94x, HANDOFF_D_NOISY_CHANNELS.md Sec. 2.1), so leaving
     # them in would set the percentiles this sample is then cut on.
-    n_hotstrip = 0
+    n_hotstrip, hotstrip_applied = 0, False
     if drop_hotstrip:
-        from sept26_prelim_analysis.hot_seed_strata import dropped_events
+        from sept26_prelim_analysis.hot_seed_strata import (
+            dropped_events, warn_if_unavailable)
+        # "0 dropped" means two opposite things -- a clean chamber, or a run
+        # whose strata were never built. Carry which, and say so once.
+        hotstrip_applied = warn_if_unavailable(run, arm)
         bad = dropped_events(run, arm).get(sub)
         if bad:
             drop = m & np.isin(df['event_id'].to_numpy(), list(bad))
@@ -219,7 +236,7 @@ def coincident_tracks(run: str, sub: str, arm: str, merged_dir: str,
         # positions -- k_robustness's hot-strip variant needs the trigger id
         event_id=g['event_id'].to_numpy()[keep],
         n_coincident=int(m.sum()), q_lo=float(lo), q_hi=float(hi),
-        n_hotstrip=n_hotstrip)
+        n_hotstrip=n_hotstrip, hotstrip_applied=hotstrip_applied)
 
 
 def band_k(S: dict) -> float:
@@ -444,9 +461,14 @@ def build(run: str, subruns, merged_dir: str) -> dict:
             raw[(a, s)]['n_coincident'] for s in subruns if (a, s) in raw))
         # how many triggers the hot-channel cut removed to get there, so the
         # sidecar says what this k was measured on rather than leaving it to
-        # be re-derived (0 on every chamber but D)
+        # be re-derived (0 on every chamber but D) -- and WHETHER the cut ran
+        # at all, because a run with no strata table also reports 0 and means
+        # something else entirely (hot_seed_strata.strata_available)
         r['n_hotstrip_dropped'] = int(sum(
             raw[(a, s)].get('n_hotstrip', 0) for s in subruns if (a, s) in raw))
+        r['hotstrip_applied'] = all(
+            raw[(a, s)].get('hotstrip_applied', False)
+            for s in subruns if (a, s) in raw)
         # The focus scan's plateau: how wide a range of k the data cannot
         # distinguish.  A wide plateau is the honest reason an arm is not
         # certified even when the three point estimates happen to agree.
