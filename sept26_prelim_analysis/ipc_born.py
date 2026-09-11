@@ -87,6 +87,7 @@ each the reaction makes -- see :mod:`ipc_channels` for the reaction side, and
 from __future__ import annotations
 
 import argparse
+import functools
 import os
 import sys
 
@@ -247,6 +248,134 @@ def shape(d: pd.DataFrame, bins=None) -> np.ndarray:
     return h / (h.sum() * width)
 
 
+# --------------------------------------------------------------------------- #
+# the spectrum itself, without Monte-Carlo noise
+# --------------------------------------------------------------------------- #
+#: The default opening-angle axis for every dN/dtheta this package reports.
+#: 1 deg from 0 to 180 -- fine enough that the E0 peak and the M1 forward rise
+#: are both resolved, coarse enough that a 180-row CSV is readable.
+THETA_BINS = np.arange(0.0, 181.0, 1.0)
+THETA_MID = 0.5 * (THETA_BINS[1:] + THETA_BINS[:-1])
+
+
+@functools.lru_cache(maxsize=4096)
+def _grid_cached(kind, w, bkey, n_m, n_c):
+    return _grid_spectrum(kind, w, np.frombuffer(bkey, dtype=float), n_m, n_c)
+
+
+def grid_spectrum(kind: str, w: float = E_TRANSITION, bins=None,
+                  n_m: int = 1400, n_c: int = 1400) -> np.ndarray:
+    """Cached front end -- see :func:`_grid_spectrum` for the calculation.
+
+    The aluminium and GANIL modules ask for the same (multipole, transition
+    energy) pair once per neutron energy and there are two hundred of them, so
+    without this the energy scan spends its whole life re-integrating curves it
+    has already integrated.  Keyed on the bin edges too, because a different
+    axis is a different answer.
+    """
+    if bins is None:
+        bins = THETA_BINS
+    b = np.ascontiguousarray(np.asarray(bins, float))
+    # a copy, so a caller that scales the result in place cannot poison the
+    # cache for everyone else
+    return _grid_cached(kind, float(w), b.tobytes(), n_m, n_c).copy()
+
+
+def _grid_spectrum(kind: str, w: float = E_TRANSITION, bins=None,
+                   n_m: int = 1400, n_c: int = 1400) -> np.ndarray:
+    """Normalised ``dN/dtheta`` for one multipole, by quadrature, not sampling.
+
+    Same master formula as :func:`sample`, evaluated on a deterministic
+    ``(ln M, cos theta*)`` grid instead of a random one.  Two reasons this
+    exists rather than reusing ``sample``:
+
+    * **it is the spectrum, and the spectrum is now the deliverable.**  A
+      Monte-Carlo dN/dtheta wobbles at the percent level bin to bin, which is
+      invisible in a >109 deg integral and very visible in a plotted curve or a
+      published CSV.  The grid version is reproducible to the last digit.
+    * :mod:`ipc_aluminium` needs one of these per gamma line -- 215 of them.
+      At 2e6 samples each that is a minute of noise; on a grid it is a second
+      and exact.
+
+    Returns the density on ``bins`` (default :data:`THETA_BINS`), normalised so
+    that ``sum(y * width) == 1``.
+    """
+    if bins is None:
+        bins = THETA_BINS
+    if w <= 2 * M_E:
+        return np.zeros(len(bins) - 1)
+    # MIDPOINT cells, not endpoints.  Both endpoints are singular in the map
+    # to the lab angle -- M = W gives k = 0 and theta = 180 deg for every
+    # cos(theta*) at once, so an endpoint rule dumps a whole grid row into the
+    # last bin and inflates it by an order of magnitude.  Midpoints avoid the
+    # measure-zero lines entirely and need no special-casing.
+    lo = 2 * M_E * (1 + 1e-12)
+    edges = np.linspace(np.log(lo), np.log(w), n_m + 1)
+    lnm = 0.5 * (edges[1:] + edges[:-1])
+    dlnm = np.diff(edges)[:, None]
+    M = np.exp(lnm)[:, None]
+    cedges = np.linspace(-1.0, 1.0, n_c + 1)
+    cs = (0.5 * (cedges[1:] + cedges[:-1]))[None, :]
+    dcs = np.diff(cedges)[None, :]
+    k = np.sqrt(np.clip(w ** 2 - M ** 2, 0.0, None))
+    s_t, s_l, bstar = _lepton_tensors(M, cs)
+    n_t, n_l = nuclear_factors(kind, k, M, w)
+    # cell weights in both directions, times dM^2 = 2 M^2 dlnM
+    weight = ((n_t * s_t + n_l * s_l) / M ** 4 * k * bstar
+              * 2 * M ** 2 * dlnm * dcs)
+
+    ss = np.sqrt(np.clip(1 - cs ** 2, 0, None))
+    e_star = M / 2.0
+    p_star = e_star * bstar
+    gam = w / M
+    bet = k / w
+    pz1 = gam * (p_star * cs + bet * e_star)
+    pz2 = gam * (-p_star * cs + bet * e_star)
+    px1, px2 = p_star * ss, -p_star * ss
+    dot = px1 * px2 + pz1 * pz2
+    theta = np.degrees(np.arccos(np.clip(
+        dot / np.hypot(px1, pz1) / np.hypot(px2, pz2), -1, 1)))
+
+    h, _ = np.histogram(theta.ravel(), bins=bins,
+                        weights=np.clip(weight, 0, None).ravel())
+    width = np.diff(bins)
+    tot = (h * 1.0).sum()
+    return h / (tot * width) if tot > 0 else h
+
+
+def spectrum_table(y, bins=None) -> pd.DataFrame:
+    """A dN/dtheta density as the table that gets published.
+
+    One row per bin: the density, the fraction of pairs the bin holds, and the
+    running fraction *above* the bin.  The last column is the only place a
+    ``fraction beyond X degrees`` number should ever come from -- reading it off
+    a table beats quoting three hand-picked thresholds, because the reader
+    picks the threshold.
+    """
+    if bins is None:
+        bins = THETA_BINS
+    width = np.diff(bins)
+    frac = np.asarray(y, float) * width
+    return pd.DataFrame(dict(
+        theta_lo=bins[:-1], theta_hi=bins[1:],
+        theta_mid=0.5 * (bins[1:] + bins[:-1]),
+        density=y, frac_in_bin=frac,
+        frac_above=frac.sum() - np.cumsum(frac),
+    ))
+
+
+def frac_above(y, deg: float, bins=None) -> float:
+    """Fraction of a density ``y`` beyond ``deg``, by interpolating the table.
+
+    The tables and figures carry the whole spectrum; this is here so that a
+    single number quoted in prose is read off the *same* object the figure
+    plots, rather than recomputed from a separate sample.
+    """
+    t = spectrum_table(y, bins)
+    return float(np.interp(deg, t.theta_hi, t.frac_above))
+
+
+@functools.lru_cache(maxsize=4096)
 def alpha_pair(kind: str, w: float = E_TRANSITION, npts: int = 4000) -> float:
     """Pairs per photon for this multipole, Born, Z -> 0.
 
@@ -355,6 +484,18 @@ def validate(n: int = 4_000_000, w: float = E_TRANSITION) -> pd.DataFrame:
         check='E0: energy sharing vs Wilkinson p+p-(E+E- - m^2)',
         quantity='max |ratio - 1| over the spectrum',
         a=float(np.max(np.abs(ratio[2:-2] - 1))), b=0.0, tol=0.02))
+
+    # the quadrature spectrum against the sampled one, over the WHOLE curve
+    # rather than at one threshold -- total variation distance, which is the
+    # largest fraction of pairs any reshuffling of the two could disagree on.
+    for kind in ('E0', 'M1'):
+        ymc = shape(sample(kind, n, w, seed=33), THETA_BINS)
+        yg = grid_spectrum(kind, w, THETA_BINS)
+        tv = float(0.5 * np.abs(yg - ymc).sum() * np.diff(THETA_BINS)[0])
+        rows.append(dict(
+            check=f'{kind}: quadrature spectrum vs sampled spectrum',
+            quantity='total variation distance over 1 deg bins, 0-180',
+            a=tv, b=0.0, tol=0.01))
 
     # the soft limit that fixes alpha_pair's normalisation
     for kind in ('M1', 'E1'):

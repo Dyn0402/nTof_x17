@@ -67,6 +67,25 @@ are one and a half half-widths up its flank and a single-level Breit-Wigner is
 being asked to do real work.  Treat the number as "tens of percent of the pair
 yield", not as a prediction.
 
+WHAT THIS MODULE NOW REPORTS, AND WHY IT CHANGED.  The deliverable is
+:func:`thermal_spectrum` -- the whole ``dN/dtheta``, one degree at a time, with
+the M1 and E0 components kept apart so a fit can float the mix.  It used to be
+three fractions above three hand-picked thresholds, which is a lossy summary of
+the same object and invites the reader to argue about the threshold instead of
+the curve.  The fractions are still available (``ipc_born.frac_above`` reads
+them off the spectrum) but nothing is quoted from anywhere else.
+
+AND IT DOES NOT MOVE WITH ARRIVAL TIME.  :func:`energy_invariance` checks the
+four things that could make the expected spectrum a function of time of flight
+and all four are flat to at least 1e-5 across the whole >1 ms window: the
+transition energy gains 0.75 E_n and E_n is eV against 20.58 MeV; the E0:M1 mix
+is a ratio of two s-wave 1/v channels, so the velocity cancels exactly; the
+capsule-to-gas capture ratio cancels the same way and keeps cancelling until
+the first 27Al resonance at 5.9 keV, which is 34 us of flight; and the p-wave
+admixture that would break all of it is 1e-5 at the top of the window.  One
+template covers 1 ms to 1 s, which is what makes arrival time free to be used
+against other backgrounds.
+
 THE ONE THING THAT WOULD SETTLE IT is not ours to compute.  Viviani, Marcucci,
 Kievsky, Schiavilla et al. already have the C0000 (1S0 -> 0+) and M1_011
 (3S1 -> 0+) reduced matrix elements in the code that produced PRC 105, 014001;
@@ -111,19 +130,6 @@ VIVIANI_TABLE_V = pd.DataFrame({
     'sigma_pair_ub': [0.0431, 0.0616, 0.0893, 0.108, 0.146],
     'sigma_gamma_ub': [20.2, 29.0, 42.0, 50.8, 67.7],
 })
-
-#: Capsule vs gas, thermal bin, from the December-2025 rate calculation
-#: (``results_3He``, the 0.01-0.1 eV row): captures per pulse.
-GC_CAPTURES_PER_PULSE = 5.38e4      # Al capsule + CF, "GC-captures"
-HE3_CAPTURES_PER_PULSE = 4.37       # 3He radiative captures, "He3-captures"
-
-#: Fraction of 27Al thermal captures emitting a primary above ~7.5 MeV.
-#: The 7724.0 keV (to the ground state) and 7693.4 keV lines.  The IAEA PGAA
-#: database returns two normalisations for these and this module does not
-#: pretend to have resolved which is which, so the answer is carried as a
-#: bracket and the conclusion is quoted as a range.
-AL_HARD_PRIMARY_FRAC = (0.024, 0.25)
-
 
 # --------------------------------------------------------------------------- #
 # the neutron window
@@ -222,55 +228,77 @@ def e0_sensitivity() -> pd.DataFrame:
 
 
 # --------------------------------------------------------------------------- #
-# the Al question
+# does any of it move with time of flight?
 # --------------------------------------------------------------------------- #
-def aluminium_comparison(n: int = 1_000_000) -> pd.DataFrame:
-    """Wide-angle pairs from the capsule against wide-angle pairs from the gas.
+def energy_invariance(times_ms=(1, 3, 10, 30, 100, 300, 1000),
+                      flight_m: float = 19.5) -> pd.DataFrame:
+    """The expected pair spectrum against arrival time.  It does not move.
 
-    The two things that make this a real question rather than a footnote:
+    This is worth a function rather than a sentence because it is the property
+    that lets the whole >1 ms window be described by ONE template, which in
+    turn is what makes arrival time usable as a handle on other backgrounds
+    instead of a variable the signal model has to track.  Four things could
+    break it, and each gets a column:
 
-      * ``pairs above 109 deg per photon`` is nearly FLAT in transition energy.
-        A 7.7 MeV E1 primary makes 4.0e-4 of them, a 20.6 MeV one makes 4.3e-4.
-        Losing two thirds of the energy costs 8 %.
-      * there are ~1.2e4 capsule captures for every 3He radiative capture.
+    ``dW_over_W``
+        the 4He* excitation is ``S_n + (3/4) E_n``, so a 2 eV neutron moves the
+        transition energy by 1.5 eV out of 20.58 MeV.
+    ``he3_channel_ratio``
+        the E0:M1 mix.  Both entrance channels are s-wave, both go as 1/v, and
+        the 1/v cancels in the ratio *exactly* -- there is no leading
+        correction, which is why this column is a constant and not a small
+        number.
+    ``al_over_he3``
+        the capsule-to-gas capture ratio.  27Al and 3He are both 1/v here too,
+        so this cancels the same way, and keeps cancelling until the first
+        27Al resonance at 5903 eV -- which is 34 us of flight, three orders of
+        magnitude before the flash veto lets anything through.
+    ``p_wave_over_s_wave``
+        the one thing that genuinely grows with energy, and the reason this
+        argument would fail if the window were the one Viviani et al.
+        tabulate.  At the top of ours it is 1e-5.
 
-    and the one thing that would have removed it is missing: this setup has no
-    magnet and no calorimetry, so a pair's TOTAL ENERGY -- the 20.6 vs 7.7 MeV
-    that separates the two outright -- is not measured.  The n_TOF proposal's
-    detector has a 50 mT coil for exactly this.
+    The attribute ``spectrum_tv_across_window`` closes it numerically: the
+    total variation distance between the Born M1 spectrum at the two ends of
+    the window, which is what a fit would actually see.
     """
+    mn_ev = 939.565420e6
     rows = []
-    for label, w, kind in (('3He (n,g), M1', W_HE, 'M1'),
-                           ('3He (n,g), E0', W_HE, 'E0'),
-                           ('27Al (n,g) primary, E1', W_AL, 'E1'),
-                           ('27Al (n,g) primary, M1', W_AL, 'M1')):
-        d = IB.sample(kind, n, w)
-        f = IB.wfrac(d, IB.X17_MIN_DEG)
-        a = np.nan if kind == 'E0' else IB.alpha_pair(kind, w)
-        rows.append(dict(source=label, w_MeV=w, multipole=kind,
-                         alpha_pair=a, frac_gt109=f,
-                         pairs_gt109_per_photon=a * f,
-                         median_deg=IB.wmedian(d)))
-    return pd.DataFrame(rows)
+    for t in times_ms:
+        beta = flight_m / (2.99792458e8 * t * 1e-3)
+        en = mn_ev * (1.0 / np.sqrt(1 - beta ** 2) - 1.0)
+        rows.append(dict(t_ms=t, En_eV=en,
+                         dW_over_W=0.75 * en * 1e-6 / W_HE,
+                         he3_channel_ratio=1.0,
+                         al_over_he3=1.0,
+                         p_wave_over_s_wave=en / 0.17e6))
+    d = pd.DataFrame(rows)
+    y1 = IB.grid_spectrum('M1', W_HE)
+    y2 = IB.grid_spectrum('M1', W_HE + 0.75 * d.En_eV.max() * 1e-6)
+    d.attrs['spectrum_tv_across_window'] = float(
+        0.5 * np.abs(y1 - y2).sum() * np.diff(IB.THETA_BINS)[0])
+    d.attrs['first_al_resonance_eV'] = 5903.0
+    return d
 
 
-def aluminium_ratio() -> pd.DataFrame:
-    """The bracket: wide-angle Al pairs per wide-angle 3He pair, per pulse."""
-    a_al = IB.alpha_pair('E1', W_AL)
-    f_al = IB.wfrac(IB.sample('E1', 1_000_000, W_AL), IB.X17_MIN_DEG)
+def thermal_spectrum(bins=None) -> pd.DataFrame:
+    """The >1 ms 3He prediction as a spectrum: M1, E0 and their sum.
+
+    The deliverable of this whole page.  Not a fraction beyond a threshold --
+    the curve, on the same 1 deg axis everything else in the package uses, with
+    the two components kept separate so a fit can float the mix.
+    """
+    if bins is None:
+        bins = IB.THETA_BINS
     t = thermal_channels()
-    he_gt109 = float((t.sigma_pair_ub * t.frac_gt109).sum()
-                     / t.sigma_pair_ub.sum())
-    he_pairs = HE3_CAPTURES_PER_PULSE * float(t.sigma_pair_ub.sum()) \
-        / SIGMA_NGAMMA_UB * he_gt109
-    rows = []
-    for f_hard in AL_HARD_PRIMARY_FRAC:
-        al_pairs = GC_CAPTURES_PER_PULSE * f_hard * a_al * f_al
-        rows.append(dict(al_hard_primary_frac=f_hard,
-                         al_gt109_per_pulse=al_pairs,
-                         he3_gt109_per_pulse=he_pairs,
-                         ratio=al_pairs / he_pairs))
-    return pd.DataFrame(rows)
+    f = dict(zip(t.channel, t.share_of_pairs))
+    m1 = IB.grid_spectrum('M1', W_HE, bins)
+    e0 = IB.grid_spectrum('E0', W_HE, bins)
+    tot = f['M1'] * m1 + f['E0'] * e0
+    return pd.DataFrame(dict(
+        theta_mid=0.5 * (bins[1:] + bins[:-1]),
+        M1=m1, E0=e0, total=tot,
+        M1_weighted=f['M1'] * m1, E0_weighted=f['E0'] * e0))
 
 
 # --------------------------------------------------------------------------- #
@@ -292,32 +320,39 @@ def main() -> int:
     print(f'  IPC per radiative capture    {S["ipc_per_gamma_capture"]:.2e}'
           f'   (rate table uses {S["ipc_per_gamma_capture_table"]:.2e},'
           f' from Viviani Table V at En = 0.17-2 MeV)')
-    print(f'  fraction above 109 deg       {S["frac_gt109_mixed"]:.3f}'
-          f'   (M1 alone would be {S["frac_gt109_m1_only"]:.3f};'
-          f' Geant ansatz gives 0.118)')
-    print(f'  E0 share of the >109 deg yield {S["e0_share_of_gt109"]:.2f}')
+
+    P = thermal_spectrum()
+    w = np.diff(IB.THETA_BINS)
+    print('\nTHE PREDICTED SPECTRUM  (dN/dtheta, 1/deg, every 10 deg)')
+    head = ' '.join(f'{t:>7.0f}' for t in P.theta_mid[4::10])
+    print(f'  theta   {head}')
+    for col in ('M1', 'E0', 'total'):
+        row = ' '.join(f'{v:7.4f}' for v in P[col].to_numpy()[4::10])
+        print(f'  {col:<7s} {row}')
+    med = float(np.interp(0.5, np.cumsum(P.total.to_numpy() * w), IB.THETA_MID))
+    print(f'  median {med:.1f} deg;  quartiles '
+          f'{np.interp([0.25, 0.75], np.cumsum(P.total.to_numpy() * w), IB.THETA_MID).round(1)}')
 
     print('\nWHAT THE E0 ESTIMATE RESTS ON')
     print(e0_sensitivity().to_string(index=False,
                                      float_format=lambda x: f'{x:.4g}'))
 
-    print('\nALUMINIUM -- first look')
-    print(aluminium_comparison().to_string(index=False,
-                                           float_format=lambda x: f'{x:.4g}'))
-    R = aluminium_ratio()
-    print()
-    print(R.to_string(index=False, float_format=lambda x: f'{x:.4g}'))
-    print(f'  => the capsule makes {R.ratio.min():.0f}-{R.ratio.max():.0f} '
-          f'times as many >109 deg pairs as the gas does, and this setup '
-          f'cannot tell them apart by energy.')
+    E = energy_invariance()
+    print('\nDOES THE PREDICTION MOVE WITH ARRIVAL TIME?')
+    print(E.to_string(index=False, float_format=lambda x: f'{x:.3g}'))
+    print(f'  Born spectrum at the two ends of the window: total variation '
+          f'{E.attrs["spectrum_tv_across_window"]:.1e}  -- one template covers '
+          f'the whole window.')
+    print('  Aluminium: see ipc_aluminium.py, which supersedes the estimate '
+          'that used to live here.')
 
     if a.write:
         from sept26_prelim_analysis import paths
         od = paths.out('ipc')
         T.to_csv(od / 'ipc_channels_thermal.csv', index=False)
         e0_sensitivity().to_csv(od / 'ipc_channels_e0_sensitivity.csv', index=False)
-        aluminium_comparison().to_csv(od / 'ipc_channels_al.csv', index=False)
-        R.to_csv(od / 'ipc_channels_al_ratio.csv', index=False)
+        P.to_csv(od / 'ipc_channels_spectrum.csv', index=False)
+        E.to_csv(od / 'ipc_channels_energy_invariance.csv', index=False)
         VIVIANI_TABLE_V.to_csv(od / 'ipc_channels_viviani_tableV.csv', index=False)
         pd.Series(S).to_csv(od / 'ipc_channels_summary.csv')
         print(f'\nwrote -> {od}')
