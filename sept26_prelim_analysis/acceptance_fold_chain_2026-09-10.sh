@@ -26,9 +26,11 @@
 #   bash sept26_prelim_analysis/acceptance_fold_chain_2026-09-10.sh
 set -euo pipefail
 
-cd "$(dirname "$0")/../.."
+cd "$(dirname "$0")/.."
 PY=.venv/bin/python
-OUT=${X17_SEPT26_OUT:-/media/dylan/data/x17/sept26_prelim}
+# The tree comes from paths.py, so a chain and the Python it calls cannot
+# disagree about where it is; $X17_ROOT / $X17_SEPT26_OUT still move both.
+OUT=$($PY -m sept26_prelim_analysis.paths --path out) || exit 1
 LOG=$OUT/acceptance_fold_chain_2026-09-10.log
 JOBS=${JOBS:-6}
 N=${N:-8000000}

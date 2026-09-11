@@ -30,12 +30,20 @@ worse", which is answerable. Pass ``--strata`` the parquet written by
 from __future__ import annotations
 
 import argparse
+import os
+import sys
 
 import numpy as np
 import pandas as pd
 
-FROZEN_DEFAULT = ('/media/dylan/data/x17/sept26_prelim/fullpass/run_145/'
-                  'stat090_0000/mx17_D/events_prelim.parquet')
+REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if REPO not in sys.path:
+    sys.path.insert(0, REPO)
+
+from sept26_prelim_analysis import paths  # noqa: E402
+
+FROZEN_DEFAULT = str(paths.spell('out', 'fullpass', 'run_145', 'stat090_0000',
+                                 'mx17_D', 'events_prelim.parquet'))
 
 
 def summarize(df: pd.DataFrame, label: str) -> dict:

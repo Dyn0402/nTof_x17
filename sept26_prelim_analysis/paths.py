@@ -3,10 +3,11 @@
 """
 paths.py -- where this analysis reads and writes, on whichever machine.
 
-No script in this package hard-codes ``/media/dylan/data/x17``.  Everything
-resolves through here, so moving the tree (or running on the desktop, or on a
-condor worker with the data staged somewhere else) is one environment variable
-rather than a sweep of edits.
+No script in this package hard-codes ``/media/dylan/data/x17`` -- **not the
+Python and not the shell**.  Everything resolves through here, so moving the
+tree (to the desktop, to a condor worker with the data staged elsewhere, to a
+Windows drive letter) is one environment variable rather than a sweep of edits.
+The only remaining occurrence of the literal is the laptop default below.
 
 Resolution, for each root, in order:
 
@@ -20,16 +21,28 @@ staged should say exactly that, at the top, not fail three functions deep on an
 empty glob.  The one exception is :func:`out`, which *does* create -- output
 directories are ours to make.
 
+Three resolvers, differing only in what they do about absence, which is the
+whole point: :func:`root` raises (an input to read), :func:`out` creates (a
+directory to write), :func:`spell` does neither (a path being *named* -- an
+argparse default, a module constant some later glob will resolve).
+
 The CERN-side paths are here too, as strings rather than ``Path``.  They are
 not mounted on this machine; they exist so that a script that builds an
 ``rsync``/``xrdcp`` command or a condor job spells them the same way as every
 other script.
 
-    python -m sept26_prelim_analysis.paths      # what resolves, and what exists
+    python -m sept26_prelim_analysis.paths           # what resolves, and what exists
+    python -m sept26_prelim_analysis.paths --path out  # ONE root, for a shell script
+
+The second form is why no chain script spells a path of its own.  A bash chain
+resolves its output root by asking this module, so moving the tree is still one
+environment variable and not a sweep of edits across the ``.sh`` files too.
 """
 from __future__ import annotations
 
+import argparse
 import os
+import sys
 from pathlib import Path
 
 # --------------------------------------------------------------------------- #
@@ -50,14 +63,25 @@ _ROOTS = {
 }
 
 
-def root(name: str = 'x17') -> Path:
-    """Resolve one root, or raise saying which variable would fix it.
+def spell(name: str = 'x17', *parts: str) -> Path:
+    """Where a root resolves to, joined with ``parts`` -- created nor checked.
 
-    >>> root('out')                    # doctest: +SKIP
-    PosixPath('/media/dylan/data/x17/sept26_prelim')
+    The three resolvers differ only in what they do about absence, and the
+    difference is the whole point:
+
+    ``root``   an input this process is about to READ.  Raises, naming the
+               variable that would fix it.
+    ``out``    a directory this process is about to WRITE.  Creates it.
+    ``spell``  a path being NAMED -- an argparse default, a module constant
+               that some later glob will resolve.  Creating a directory there
+               would be a lie about what has been produced, and raising at
+               import time would be premature: the caller may never use it.
+
+    >>> spell('out', 'fullpass', 'run_145')        # doctest: +SKIP
+    PosixPath('/media/dylan/data/x17/sept26_prelim/fullpass/run_145')
     """
     try:
-        env, rel, what = _ROOTS[name]
+        env, rel, _ = _ROOTS[name]
     except KeyError:
         raise KeyError(f'unknown root {name!r}; known: {", ".join(_ROOTS)}') from None
 
@@ -67,9 +91,19 @@ def root(name: str = 'x17') -> Path:
     elif rel is None:
         p = _DEFAULTS[env]
     else:
-        p = root('x17') / rel
+        p = spell('x17') / rel
+    return p.joinpath(*parts)
 
+
+def root(name: str = 'x17') -> Path:
+    """Resolve one root, or raise saying which variable would fix it.
+
+    >>> root('out')                    # doctest: +SKIP
+    PosixPath('/media/dylan/data/x17/sept26_prelim')
+    """
+    p = spell(name)
     if not p.is_dir():
+        env, _, what = _ROOTS[name]
         raise FileNotFoundError(
             f'{name} root ({what}) does not exist: {p}\n'
             f'  set ${env} to point at it, or stage the tree there.')
@@ -97,9 +131,7 @@ def out(*parts: str) -> Path:
     The one function here that creates.  Output directories are ours; input
     trees are not.
     """
-    env = os.environ.get('X17_SEPT26_OUT')
-    base = Path(env).expanduser() if env else _DEFAULTS['X17_ROOT'] / 'sept26_prelim'
-    p = base.joinpath(*parts)
+    p = spell('out', *parts)
     p.mkdir(parents=True, exist_ok=True)
     return p
 
@@ -144,7 +176,38 @@ def eos_subrun(run: str, subrun: str, kind: str = '') -> str:
     return f'{base}/{kind}' if kind else base
 
 
-if __name__ == '__main__':
+def _cli(argv=None) -> int:
+    """The command line: a report by default, one resolved path on request."""
+    ap = argparse.ArgumentParser(
+        prog='python -m sept26_prelim_analysis.paths',
+        description='Resolve the roots this analysis reads and writes.')
+    ap.add_argument(
+        '--path', metavar='ROOT', choices=sorted(_ROOTS),
+        help='print ONE resolved root and exit, nothing else on stdout -- the '
+             'entry point for shell scripts, so a chain spells a path the same '
+             'way the Python does.  "out" is created; an input root is not, and '
+             'a missing one is one line on stderr and a non-zero exit.  '
+             f'One of: {", ".join(sorted(_ROOTS))}.')
+    a = ap.parse_args(argv)
+
+    if a.path:
+        try:
+            print(out() if a.path == 'out' else root(a.path))
+        except OSError as exc:
+            if isinstance(exc, FileNotFoundError) and a.path != 'out':
+                # root() already names the variable and the path it tried.
+                print(exc, file=sys.stderr)
+            else:
+                # `out` creates, so it is where an unwritable or nonexistent
+                # parent surfaces.  One line, not a traceback: the shell caller
+                # is about to exit on our status anyway.
+                env = _ROOTS[a.path][0]
+                print(f'cannot use the {a.path} root: {exc}\n'
+                      f'  set ${env} (or $X17_ROOT) to somewhere that exists '
+                      f'and is writable.', file=sys.stderr)
+            return 1
+        return 0
+
     print('local roots')
     for name, (env, rel, what) in _ROOTS.items():
         mark, detail = 'OK     ', ''
@@ -162,3 +225,8 @@ if __name__ == '__main__':
     for k, v in (('EOS_JULY', EOS_JULY), ('EOS_NTOF_DONE', EOS_NTOF_DONE),
                  ('EOS_USER', EOS_USER), ('LXPLUS', LXPLUS)):
         print(f'  {k:<14} {v}')
+    return 0
+
+
+if __name__ == '__main__':
+    raise SystemExit(_cli())

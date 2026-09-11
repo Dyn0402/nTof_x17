@@ -27,10 +27,11 @@ REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if REPO not in sys.path:
     sys.path.insert(0, REPO)
 
-OUT = Path('/media/dylan/data/x17/sept26_prelim/event_mixing')
-FIG = OUT / 'figures'
-SRC = Path('/media/dylan/data/x17/sept26_prelim')
-FIG.mkdir(parents=True, exist_ok=True)
+from sept26_prelim_analysis import paths  # noqa: E402
+
+SRC = paths.spell('out')            # read from
+OUT = paths.out('event_mixing')     # write to
+FIG = paths.figures('event_mixing')
 
 INK, MUTED, GRID = '#1e2530', '#6b7684', '#dfe3e8'
 REAL, MIXED = '#1b3a6b', '#c86a1e'

@@ -23,23 +23,26 @@
 set -u
 cd "$(dirname "$0")/.."
 PY=.venv/bin/python
-RUNS=/media/dylan/data/x17/beam_july/runs
+# The tree comes from paths.py, so a chain and the Python it calls cannot
+# disagree about where it is; $X17_ROOT / $X17_SEPT26_OUT still move both.
+BASE=$($PY -m sept26_prelim_analysis.paths --path out)  || exit 1
+RUNS=$($PY -m sept26_prelim_analysis.paths --path runs) || exit 1
 EOS=/eos/experiment/ntof/data/x17/july_beam/runs
-OUT=/media/dylan/data/x17/sept26_prelim/stage1
-WORK=/media/dylan/data/x17/sept26_prelim/stage1/.claims
-LOG=/media/dylan/data/x17/sept26_prelim/stage1/campaign.log
+OUT=$BASE/stage1
+WORK=$OUT/.claims
+LOG=$OUT/campaign.log
 SSH="ssh -o BatchMode=yes -o ConnectTimeout=25"
 WORKERS=${WORKERS:-8}
 #: consecutive staging failures a worker tolerates before it gives up.
 #: Small on purpose -- see the back-off comment in worker().
 MAX_FAILS=${MAX_FAILS:-5}
-LIST=/media/dylan/data/x17/sept26_prelim/stage1/campaign_worklist.txt
+LIST=$OUT/campaign_worklist.txt
 
 # ---------------------------------------------------------------- the worklist
 if [ ! -s "$LIST" ]; then
   $PY -W ignore -c "
 import pandas as pd
-s = pd.read_csv('/media/dylan/data/x17/sept26_prelim/stage0/sample.csv')
+s = pd.read_csv('$BASE/stage0/sample.csv')
 k = s[s.in_sample]
 for _, r in k.sort_values(['run', 'subrun']).iterrows():
     print(f'run_{r[\"run\"]} {r[\"subrun\"]}')

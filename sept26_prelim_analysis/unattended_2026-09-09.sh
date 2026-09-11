@@ -18,7 +18,9 @@
 set -u
 cd "$(dirname "$0")/.."
 PY=.venv/bin/python
-OUT=/media/dylan/data/x17/sept26_prelim
+# The tree comes from paths.py, so a chain and the Python it calls cannot
+# disagree about where it is; $X17_ROOT / $X17_SEPT26_OUT still move both.
+OUT=$($PY -m sept26_prelim_analysis.paths --path out) || exit 1
 R86=$OUT/fullpass_r86/run_86
 JOBS=${JOBS:-14}
 log () { echo "[$(date -Is)] $*"; }
@@ -53,10 +55,10 @@ $PY -W ignore -m sept26_prelim_analysis.k_arm --run run_86 --subruns "$SUBS" \
     --merged "$R86" --out "$OUT/kcal_r86" 2>&1 | tail -25
 
 log "=== STEP 4: the comparison"
-$PY -W ignore - <<'PYEOF'
+OUT="$OUT" $PY -W ignore - <<'PYEOF'
 import json, os
 from pathlib import Path
-out = Path('/media/dylan/data/x17/sept26_prelim')
+out = Path(os.environ['OUT'])      # resolved once, by paths.py, above
 rows = []
 for label, p in (('run_86 FULL pass',  out/'kcal_r86'/'k_arm_run_86.json'),
                  ('run_86 calib pass', out/'kcal'/'k_arm_run_86.json'),

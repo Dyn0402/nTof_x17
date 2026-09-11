@@ -12,7 +12,13 @@
 # checked, and one tag of ~90 MB measures them well enough to say whether the
 # class partition is stable across six weeks.
 set -u
-DEST=/media/dylan/data/x17/beam_july/runs
+
+# Where the runs go comes from paths.py, so this and stage 1 cannot disagree;
+# $X17_ROOT / $X17_RUNS move both. Resolved in a subshell so a staging script
+# does not change the caller's working directory.
+REPO=$(cd "$(dirname "$0")/.." && pwd)
+DEST=$(cd "$REPO" && .venv/bin/python -m sept26_prelim_analysis.paths --path runs)
+[ -n "$DEST" ] || exit 1
 EOS=/eos/experiment/ntof/data/x17/july_beam/runs
 SSH="ssh -o BatchMode=yes -o ConnectTimeout=25"
 SUB=stat090_0000

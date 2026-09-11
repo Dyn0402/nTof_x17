@@ -22,8 +22,14 @@ set -u
 # A bare relative path is already relative to the remote home.
 PREFIX=${PREFIX:-stage1}
 REMOTE=${REMOTE:-lxplus:sept26_stage1}
-LOCALPKG=${LOCALPKG:-/home/dylan/x17/sept26_stage1}
-OUT=${OUT:-/media/dylan/data/x17/sept26_prelim/stage1}
+# The tree comes from paths.py, so this and the chains cannot disagree about
+# where it is; $X17_ROOT / $X17_SEPT26_OUT move both. A subshell: a fetch script
+# has no business changing the caller's working directory.
+REPO=$(cd "$(dirname "$0")/../.." && pwd)
+x17_path () { (cd "$REPO" && .venv/bin/python -m sept26_prelim_analysis.paths --path "$1"); }
+LOCALPKG=${LOCALPKG:-$(x17_path x17)/sept26_stage1}
+OUT=${OUT:-$(x17_path out)/stage1}
+[ -n "$LOCALPKG" ] && [ -n "$OUT" ] || exit 1
 SSH="ssh -o BatchMode=yes -o ConnectTimeout=25"
 mkdir -p "$LOCALPKG/tarballs" "$OUT"
 

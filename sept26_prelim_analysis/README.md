@@ -120,4 +120,25 @@ are the ones this analysis is most likely to break:
 |---|---|
 | **Ubuntu laptop** | where this analysis runs. Repo `~/PycharmProjects/nTof_x17`, python `.venv/bin/python`, data `/media/dylan/data/x17/`. Has working `kinit` / `ssh lxplus`. |
 | **lxplus + condor** | where the reconstruction runs, because the waveforms are on EOS and the link home is the bottleneck. `ntof_tracking/condor/`. |
-| **Windows box** | the plan was written here, and that is all it is good for. No Kerberos, no lxplus, and `/d/x17/beam_july/runs` holds only run_55. |
+| **Windows box** | the plan was written here. No Kerberos and no lxplus, but the data disk is NTFS, so the products and every `report.html` read directly off it. |
+
+### Running it somewhere else
+
+Nothing in this package spells a data path of its own -- not the Python, and
+since 2026-09-11 not the shell either. `paths.py` resolves every root, and the
+chain scripts ask it rather than repeating a literal:
+
+```bash
+OUT=$($PY -m sept26_prelim_analysis.paths --path out) || exit 1
+```
+
+So one variable moves the whole tree, on either OS:
+
+```bash
+export X17_ROOT=/mnt/d/x17          # WSL, say, or a second disk
+export X17_SEPT26_OUT=/somewhere/else   # just this analysis's output
+python -m sept26_prelim_analysis.paths  # what resolves, and what exists
+```
+
+A root that is missing or unwritable is one line on stderr and a non-zero exit,
+at the top of the run, not an empty glob forty seconds in.

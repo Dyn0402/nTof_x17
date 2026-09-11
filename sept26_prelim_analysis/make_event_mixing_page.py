@@ -12,14 +12,21 @@ Figures come from `explain_event_mixing.py`; run that first.
 from __future__ import annotations
 
 import datetime as dt
+import os
+import sys
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
 
-SRC = Path('/media/dylan/data/x17/sept26_prelim')
-OUT = SRC / 'event_mixing'
-OUT.mkdir(parents=True, exist_ok=True)
+REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if REPO not in sys.path:
+    sys.path.insert(0, REPO)
+
+from sept26_prelim_analysis import paths  # noqa: E402
+
+SRC = paths.spell('out')            # read from
+OUT = paths.out('event_mixing')     # write to
 
 
 # --------------------------------------------------------------------------- #

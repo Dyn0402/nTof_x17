@@ -420,6 +420,9 @@ if __name__ == '__main__':
     ax.axvspan(110, 140, color=BAND_SIGNAL, alpha=0.10, zorder=0)
     preliminary(ax)
     note(fig, 'figstyle.py self-test - no data, no physics')
-    out = Path(os.environ.get('X17_SEPT26_OUT',
-                              '/media/dylan/data/x17/sept26_prelim')) / 'figstyle_smoke'
+    # Imported here, not at module scope: figstyle is a style module that every
+    # figure script imports, so it must not drag the data tree in behind it.
+    # Only this self-test needs somewhere to write.
+    from sept26_prelim_analysis import paths
+    out = paths.out() / 'figstyle_smoke'
     save(fig, out, data=NO_DATA)

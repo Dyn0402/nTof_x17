@@ -73,7 +73,7 @@ SCHEMA = 'sept26_prelim/funnel/1'
 #: NOT the stage-2 filtered output: the funnel is the one product that must be
 #: free of the hits-based selection.
 FULLPASS = os.environ.get(
-    'X17_FULLPASS', '/media/dylan/data/x17/sept26_prelim/fullpass/run_145')
+    'X17_FULLPASS') or str(paths.spell('out', 'fullpass', 'run_145'))
 
 #: slim n_TOF detector families, by ``det`` code (config.SCINT_TREES order).
 FAMILY = {**{i: 'WAL' for i in range(0, 4)},

@@ -22,7 +22,10 @@
 set -u
 cd "$(dirname "$0")/.."
 PY=.venv/bin/python
-OUT=/media/dylan/data/x17/sept26_prelim
+X17=$($PY -m sept26_prelim_analysis.paths --path x17) || exit 1
+# The tree comes from paths.py, so a chain and the Python it calls cannot
+# disagree about where it is; $X17_ROOT / $X17_SEPT26_OUT still move both.
+OUT=$($PY -m sept26_prelim_analysis.paths --path out) || exit 1
 
 step () { echo; echo "=== $1  $(date -Is)"; shift; if ! "$@"; then echo "!! FAILED: $*"; exit 1; fi; }
 
@@ -36,7 +39,7 @@ if [ "${SKIP_FETCH:-0}" != "1" ]; then
   # run/subrun/arm/tag name.
   step "fetch calib" env \
       REMOTE=lxplus:/eos/user/d/dneff/x17/sept26_calib \
-      LOCALPKG=/home/dylan/x17/sept26_calib \
+      LOCALPKG="$X17/sept26_calib" \
       OUT="$OUT/fullpass_calib" \
       bash sept26_prelim_analysis/condor/fetch_stage2.sh
 fi

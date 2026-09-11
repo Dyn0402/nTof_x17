@@ -39,8 +39,8 @@ from sept26_prelim_analysis import paths  # noqa: E402
 
 ARMS = ('A', 'B', 'C', 'D')
 FLAT = os.environ.get(
-    'X17_FULLPASS_FLAT',
-    '/media/dylan/data/x17/beam_july/analysis/wft_beam145/extracted/out')
+    'X17_FULLPASS_FLAT') or str(paths.spell(
+        'analysis', 'wft_beam145', 'extracted', 'out'))
 TAG_SUBRUN = {'260805_14H06': 'stat090_0000',
               '260805_15H07': 'stat090_0001',
               '260805_16H07': 'stat090_0002'}

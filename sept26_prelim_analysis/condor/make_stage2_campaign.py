@@ -43,6 +43,8 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(os.path.dirname(HERE))
 sys.path.insert(0, REPO)
 
+from sept26_prelim_analysis import paths  # noqa: E402
+
 CODE_PATHS = ['sept26_prelim_analysis', 'ntof_tracking', 'wft', 'common',
               'mx17_m1_map.csv', 'mx17_m4_map.csv']
 EXCLUDES = ['__pycache__', '*.pyc', '.venv', '.git', '*.parquet', '*.root',
@@ -67,13 +69,15 @@ def tags_from_stage1(stage1_dir, run, sub):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument('--dest', default='/home/dylan/x17/sept26_stage2')
+    # Defaults are SPELLED, not resolved -- argparse builds them on every run,
+    # --help included.
+    ap.add_argument('--dest', default=str(paths.spell('x17', 'sept26_stage2')))
     ap.add_argument('--sample',
-                    default='/media/dylan/data/x17/sept26_prelim/stage0/sample.csv')
+                    default=str(paths.spell('out', 'stage0', 'sample.csv')))
     ap.add_argument('--stage1',
-                    default='/media/dylan/data/x17/sept26_prelim/stage1')
+                    default=str(paths.spell('out', 'stage1')))
     ap.add_argument('--stage2-out',
-                    default='/media/dylan/data/x17/sept26_prelim/stage2')
+                    default=str(paths.spell('out', 'stage2')))
     ap.add_argument('--arms', default='A,B,C,D')
     ap.add_argument('--build-allowlists', action='store_true',
                     help='(re)build the per-sub-run allowlists from stage 1 '

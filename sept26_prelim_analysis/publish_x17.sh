@@ -21,7 +21,13 @@
 # being served; nothing outside x17/<slug>/ is ever touched.
 set -u
 
-BASE=${BASE:-/media/dylan/data/x17/sept26_prelim}
+# The tree comes from paths.py, so this script and the chains that build the
+# reports cannot disagree about where they are; $X17_ROOT / $X17_SEPT26_OUT
+# move both. Resolved in a subshell: a publish script has no business changing
+# the caller's working directory.
+REPO=$(cd "$(dirname "$0")/.." && pwd)
+BASE=${BASE:-$(cd "$REPO" && .venv/bin/python -m sept26_prelim_analysis.paths --path out)}
+[ -n "$BASE" ] || exit 1
 DEST=${DEST:-lxplus:/eos/user/d/dneff/www/x17}
 DRY=${DRY:-}
 

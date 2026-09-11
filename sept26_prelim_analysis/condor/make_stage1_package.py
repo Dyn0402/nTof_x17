@@ -41,6 +41,8 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(os.path.dirname(HERE))
 sys.path.insert(0, REPO)
 
+from sept26_prelim_analysis import paths  # noqa: E402
+
 #: Everything candidate_filter imports, transitively. ntof_tracking.reco.io /
 #: noise / segments, the sept26 package itself, and the strip maps under common.
 CODE_PATHS = ['sept26_prelim_analysis', 'ntof_tracking', 'wft', 'common',
@@ -52,11 +54,14 @@ EXCLUDES = ['__pycache__', '*.pyc', '.venv', '.git', '*.parquet', '*.root',
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument('--dest', default='/home/dylan/x17/sept26_stage1')
+    # Defaults are SPELLED, not resolved: argparse builds them on every run,
+    # including --help, and neither creating a staging directory nor raising on
+    # an unstaged tree is something --help should do.
+    ap.add_argument('--dest', default=str(paths.spell('x17', 'sept26_stage1')))
     ap.add_argument('--sample',
-                    default='/media/dylan/data/x17/sept26_prelim/stage0/sample.csv')
+                    default=str(paths.spell('out', 'stage0', 'sample.csv')))
     ap.add_argument('--done-dir',
-                    default='/media/dylan/data/x17/sept26_prelim/stage1',
+                    default=str(paths.spell('out', 'stage1')),
                     help='sub-runs with a census CSV here are already done and '
                          'get no job -- this is what makes the pass resumable')
     ap.add_argument('--all', action='store_true',
