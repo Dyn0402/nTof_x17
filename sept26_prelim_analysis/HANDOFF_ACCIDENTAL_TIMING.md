@@ -1,10 +1,64 @@
-# HANDOFF — the two-track pairs are accidentals, and the scintillator timing says so directly
+# HANDOFF — the two-track pairs' true-coincidence fraction, now measured
 
-**Written 2026-09-08. Local work on run_145 only; nothing here needs EOS or a
-campaign pass, and the measurement below is already half done.**
+**Written 2026-09-08; item (a) and (c) below completed the same day, redone
+properly (unbiased hit choice, the full ±1000 ns range, an unbinned
+two-component fit) rather than the biased first pass this file originally
+reported. Local work on run_145 only; nothing here needs EOS or a campaign
+pass.**
 
 Companions: [`PLAN.md`](PLAN.md) §10 S4, [`STATUS.md`](STATUS.md),
-<https://dylan-neff.web.cern.ch/x17/opening-angle/>.
+<https://dylan-neff.web.cern.ch/x17/opening-angle/>,
+<https://dylan-neff.web.cern.ch/x17/accidental-timing/> (this work, published).
+
+---
+
+## 0 · Redone 2026-09-08 — read this first, then §1–3 for how it was built
+
+**The title changed because the number did.** §2.3 below reported a first
+pass at **f ≈ 6 ± 3 %**, explicitly an upper bound because the hit choice
+("closest to dt_ns = 0") was known-biased *toward* finding coincidence
+(§3.1). Redone with `accidental_timing.py` — a random (unbiased) hit choice,
+the full ±1000 ns range, and an unbinned two-component MLE fit against
+`is_control` instead of matching one summary statistic to a single-parameter
+fold:
+
+| topology | pairs | f | 68 % interval |
+|---|---:|---:|---|
+| all inter-chamber | 76 | **29 %** | [17, 40] % |
+| opposing (A–C, the signal topology) | 42 | **42 %** | [26, 58] % |
+| perpendicular | 34 | **16 %** | [0, 32] % |
+
+**Higher, not lower, than the first pass — and the reversal is methodological,
+not a sign the stated bias direction was wrong.** Removing a bias that pulls
+toward coincidence should, if anything, pull f down; what actually moved the
+number is comparing the full arm1−arm2 *shape* against two data-derived
+templates in one fit, rather than matching a single "fraction within 20 ns"
+statistic through an approximate fold. Both numbers are on record; §3 has the
+figure and the fit. **The topology ordering is itself evidence for real
+physics**: opposing (where an X17 or IPC pair actually lands) carries ~2.7×
+the perpendicular fraction, which an accidental floor would not produce.
+
+**Item (c) delivered too, as a recommendation, not a code change.** The
+production accept window (−100, +60) ns sits at 88 % peak/pedestal purity; a
+centred (−20, +20) ns window reaches 95 %+. `window_scan`/`recommend_window`
+in `accidental_timing.py` have the full trade-off curve. **Not applied** —
+`DT_WINDOW` is shared by `candidate_filter.py`, `efficiency.py` and
+`scintillators.py`, so changing it touches the stage-1/stage-2 production
+chain, which is on Dylan's hold.
+
+**One more finding from the same pass, not anticipated below.** Under the
+*production* window, a wall+plastic "coincidence" is nearly automatic: only 1
+of 147 216 single-active-arm events fails to show one, because 160 ns is wide
+enough that the plastic family's own high accidental rate lands something in
+it almost every time. §2.1's "peak is a factor ~30 over pedestal" is still
+right, but at that width it barely discriminates a real coincidence from one
+element firing alone — the peak's own core (−30, +30) ns is what recovers a
+real "both fire vs. one fires" comparison (see the published page).
+
+**What is now the priority list for the next session** — §4 below, updated:
+items (a) and (c) are done; (b), (d) and (e) are not, and (b) is now the
+highest-value one, since it is what turns this into a corrected S4 spectrum
+rather than a number sitting beside it.
 
 ---
 
@@ -122,33 +176,52 @@ no `key2` column, regenerate it.
 
 ## 4 · What to do, in order
 
-**(a) Redo §2.3 properly and turn it into a measured accidental fraction.**
-Unbiased hit choice (§3.1), the full ±1000 ns, and a two-component fit — prompt
-(shape taken from the single-arm tagged events, which is the trigger's own
-resolution function) plus accidental (shape taken from `is_control`, §2.2) —
-with the prompt fraction floating. That yields **f, the true-pair fraction, with
-an error**, per topology and per arm pair. *This is the number S4 is missing.*
+**(a) Redo §2.3 properly and turn it into a measured accidental fraction. —
+DONE 2026-09-08.** Unbiased hit choice (§3.1), the full ±1000 ns, and an
+unbinned two-component MLE fit — prompt (bootstrap difference of two draws
+from the single-arm reference) plus accidental (one draw from the reference,
+one from `is_control`, §2.2, both restricted to the tagging window) — in
+`accidental_timing.py`. Result: **f = 29 % [17, 40] overall, 42 % [26, 58]
+opposing, 16 % [0, 32] perpendicular** (§0). One methodological choice made to
+get there, carried forward: the strict wall-AND-plastic tag leaves only 8 of
+464 real inter-chamber pairs with both arms tagged (too few to fit), so the
+fit uses a looser wall-OR-plastic tag (76 pairs, 16 % of the sample) — every
+number above is on that looser tag, stated in the published page.
 
-**(b) Feed f back into the opening angle.** The S4 page currently subtracts
-nothing and says so. With f measured, the accidental component can be
-subtracted with the mixed sample supplying the shape and f the normalisation,
-and the spectrum becomes a measurement rather than a shape check.
+**(b) Feed f back into the opening angle. — NOT DONE, now the top priority.**
+The S4 page still subtracts nothing. The complication found while chasing (a):
+f above is measured only on the 16 % of pairs that carry a two-arm
+scintillator tag at all, so applying it to the full spectrum needs either (i)
+a check that the tagged subsample is representative in opening angle — a
+first look (near-zero |Δt| vs far, n = 30 vs 23) saw no significant shape
+difference but is not a test at that n — or (ii) a fit that uses the tag as a
+per-pair weight/selection rather than a blanket normalisation. Either way this
+is where the campaign statistics (§5) start to matter: 76 tagged pairs is
+enough to measure f, not enough to slice it finely against open_deg.
 
-**(c) Re-optimise the accept window** (§2.1) on the peak/pedestal ratio, and
-check what it does to the efficiency and to the stage-1 class census. Expect
-a purity gain; verify it is not an efficiency loss.
+**(c) Re-optimise the accept window** (§2.1) on the peak/pedestal ratio. —
+**Recommendation DONE 2026-09-08, NOT APPLIED.** `window_scan`/
+`recommend_window` in `accidental_timing.py`: production (−100, +60) ns sits
+at 88 % purity, a centred (−20, +20) ns reaches 95 %+. Not installed anywhere
+— `DT_WINDOW` is shared across `candidate_filter.py`, `efficiency.py` and
+`scintillators.py`, i.e. the production stage-1/stage-2 chain, on Dylan's
+hold. What checking it against the efficiency and the stage-1 class census
+would take is unchanged from the original ask below, and is still undone.
 
-**(d) Repeat on the intra-chamber pairs.** They were excluded from §2.3 because
-both legs share one arm and therefore one scintillator, so the two-arm
-formulation does not apply. The wall's **along-bar** position
+**(d) Repeat on the intra-chamber pairs. — NOT DONE.** They were excluded from
+§2.3/§0 because both legs share one arm and therefore one scintillator, so the
+two-arm formulation does not apply. The wall's **along-bar** position
 (`scintillators.py`, σ_y < 53 mm) may separate two legs within one arm well
-enough to give each its own time — untested.
+enough to give each its own time — untested, and unlike (a)/(c) this is new
+method development, not a rerun of an existing one.
 
-**(e) Only then, the Micromegas timing.** `t0` differences between two tracks
-contain the drift-depth difference, which is why the scintillators come first.
-Once (a) fixes the scale, the MM `t0` becomes a *cross-check* with much larger
-statistics, since it needs no scintillator tag — and 80 % of pairs have no
-second-arm tag at all.
+**(e) Only then, the Micromegas timing. — NOT DONE, and now unblocked.** `t0`
+differences between two tracks contain the drift-depth difference, which is
+why the scintillators came first. (a) is now fixed, so the MM `t0` can become
+a *cross-check* with much larger statistics, since it needs no scintillator
+tag — recall 84 % of real inter-chamber pairs have no two-arm tag at all
+(§0), which is exactly the population a `t0`-based check would reach that
+this handoff's method cannot.
 
 ---
 
@@ -162,10 +235,16 @@ of S4 depends on.
 survive. A prompt two-arm pair could still be an external conversion or a
 single particle scattering between arms (D12).
 
-**Statistics.** 93 pairs with both arms tagged in run_145 gives f to ±3 %. The
-campaign is ~50× — about 4 600 tagged pairs, so f to a few tenths of a per
-cent. **This test does not need the campaign to be worth doing, but it becomes
-decisive with it.**
+**Statistics — MEASURED 2026-09-08, not the ±3 % this section originally
+projected.** The 76 (loose-tag) pairs actually fit give f to a 68 % interval
+of roughly ±11 points, not ±3 % — the unbinned shape fit is a harder problem
+than the single-statistic fold this section was written against, and 8/464
+pairs pass the *strict* tag, an order of magnitude below the "93" this
+section assumed. The campaign is ~50× run_145; scaling the loose-tag count
+gives ~3 800 tagged pairs, which is what would bring the per-topology
+interval down to a few points. **This test does not need the campaign to be
+worth doing, but it becomes decisive with it** — that conclusion survives
+the revised numbers.
 
 ---
 
@@ -179,3 +258,7 @@ decisive with it.**
 | the pair lists, now with `key1`/`key2` | `<out>/angle/pairs_run_145.parquet` and `pairs_mixed_run_145.parquet` |
 | how pairs are built and mixed | `source_imaging.vertices` |
 | the spectrum this feeds | `opening_angle.py`, `make_angle_report.py` |
+| **this handoff's own analysis (§0, new 2026-09-08)** | `accidental_timing.py` |
+| single-arm hit classes, window scan, two-arm pairs, the fit | `<out>/accidental_timing/*.csv`, `*.parquet`, `*.meta.json` |
+| figures + report | `<out>/accidental_timing/figures/`, `<out>/accidental_timing/report.html` |
+| published | <https://dylan-neff.web.cern.ch/x17/accidental-timing/> |

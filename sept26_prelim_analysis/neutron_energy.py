@@ -7,7 +7,29 @@ Stage 3's ``e_neutron_keV`` is a declared null.  This is the conversion it
 needs, plus the resolution that conversion actually delivers, so that when the
 column is filled nobody has to guess how much of a spectrum is real.
 
-THE CHAIN, AND WHERE IT IS BROKEN.  Three of the four pieces already exist:
+RESOLVED 2026-09-11 -- READ THIS BEFORE THE REST OF THIS DOCSTRING.  The two
+sections below marked [SUPERSEDED] were wrong, and both are corrected in
+``trigger_time.py``:
+
+  * **Nothing was broken.**  The slim's ``events`` tree already carries the
+    trigger's time since the flash, as ``t_dream_ns`` (DREAM clock) and
+    ``t_pred_ns`` (n_TOF base, the segment's own fitted clock).  `slim_patch`
+    below would have written a THIRD copy of the same number on the hit side.
+    Stage 3 is filled from ``t_pred_ns``; no slim was regenerated.
+  * **The window reaches 2.0 eV, not 2.4 MeV.**  The inference below took the
+    hits' ``tof`` floor of 1.00408e6 ns to be the flash.  It is not: the offset
+    between ``tof`` and the flash is ``tflash``, a per-tree cable delay of
+    ~11.6 us, measured directly in ``trigger_time`` as
+    ``tof - (t_pred_ns + dt_ns)``.  So the earliest neutron the acquisition
+    admits is 2.0 eV and the latest 0.44 meV, with the bulk at the thermal
+    peak -- which is what ``../CLAUDE.md`` says independently and what the
+    E0/M1 argument in ``ipc_born.py`` rests on.  There is no resonance region
+    in this dataset.
+
+The conversion and the resolution table below are unaffected and are what
+``trigger_time`` calls.
+
+[SUPERSEDED] THE CHAIN, AND WHERE IT IS BROKEN.  Three of the four pieces already exist:
 
   flight path      19.5 m, EAR2 (``MX17_Simulation/dead_time_sim.py``,
                    ``neutron_energy_vs_flight_time.py``)
@@ -31,6 +53,7 @@ So this is not a measurement problem.  It is one branch, and the patch is three
 lines in ``pass2_hits`` (see :func:`slim_patch`).  Applying it needs the slims
 regenerated, which needs EOS.
 
+[SUPERSEDED -- the offset is tflash ~ 11.6 us, not 1.004 ms; see above]
 WHAT THE WINDOW COVERS -- inferred, with corroboration, not read.  ``tflash``
 is not in the slim, but all three detector families share the same tof floor at
 1.00408e6 ns and the same ceiling at 7.505e7 ns, which is an acquisition window
@@ -136,8 +159,18 @@ def resolution_table(energies_eV=(1e-2, 1e0, 1e2, 1e4, 1e6, 1e7),
 
 
 def slim_patch() -> str:
-    """The three-line change that unblocks this, as a statement of intent."""
+    """[SUPERSEDED 2026-09-11] The patch that was thought to unblock this.
+
+    Kept because it is quoted in STATUS and on the board, and a reader who
+    follows either needs to land here and be told it was unnecessary --
+    ``t_since_flash`` was already in the slim under another name.  See
+    :mod:`sept26_prelim_analysis.trigger_time`.  Do not apply it.
+    """
     return """\
+[SUPERSEDED -- NOT APPLIED, NOT NEEDED. The slim's events tree already carries
+this as t_dream_ns / t_pred_ns. See sept26_prelim_analysis/trigger_time.py.]
+
+
 ntof_processing/slim_pipeline/slim.py, pass2_hits():
 
   1. add 't_since_flash_ns' to the `cols` dict initialiser (~line 424)
@@ -180,7 +213,10 @@ def main() -> int:
                f'{r["energy_eV"] / 1e3:.0f} keV' if r['energy_eV'] < 1e6 else
                f'{r["energy_eV"] / 1e6:.0f} MeV')
         print(f'  {lab:>12} {r["t_ns"]:>12.1f} {100 * r["dE_over_E"]:>9.3f} %')
-    print('\n--- what is missing ---')
+    print('\n--- the time base: RESOLVED 2026-09-11 ---')
+    print('t_since_flash is in the slim events tree as t_pred_ns; stage 3 is\n'
+          'filled from it by sept26_prelim_analysis.trigger_time. The window\n'
+          'reaches 2.0 eV, not the 2.4 MeV this module used to infer.\n')
     print(slim_patch())
     return 0
 
