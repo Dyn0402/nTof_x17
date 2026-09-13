@@ -1,0 +1,721 @@
+topology,pair,metric,x,value,err
+intra,A–A (mixed),n_strips_min,10.5,0.009349336702463677,
+intra,A–A (mixed),n_strips_min,11.5,0.24624131396083385,
+intra,A–A (mixed),n_strips_min,12.5,0.09071383449147188,
+intra,A–A (mixed),n_strips_min,13.5,0.12040429564118763,
+intra,A–A (mixed),n_strips_min,14.5,0.07176247631080228,
+intra,A–A (mixed),n_strips_min,15.5,0.03322804801010739,
+intra,A–A (mixed),n_strips_min,16.5,0.05773847125710676,
+intra,A–A (mixed),n_strips_min,17.5,0.08085912823752368,
+intra,A–A (mixed),n_strips_min,18.5,0.013771320277953253,
+intra,A–A (mixed),n_strips_min,19.5,0.03398610233733418,
+intra,A–A (mixed),n_strips_min,20.5,0.01958307012002527,
+intra,A–A (mixed),n_strips_min,21.5,0.007454200884396715,
+intra,A–A (mixed),n_strips_min,22.5,0.04156664560960202,
+intra,A–A (mixed),n_strips_min,23.5,0.015666456096020215,
+intra,A–A (mixed),n_strips_min,24.5,0.006064434617814277,
+intra,A–A (mixed),n_strips_min,25.5,0.023499684144030322,
+intra,A–A (mixed),n_strips_min,26.5,0.014782059380922299,
+intra,A–A (mixed),n_strips_min,27.5,0.005432722678458623,
+intra,A–A (mixed),n_strips_min,28.5,0.022109917877447885,
+intra,A–A (mixed),n_strips_min,29.5,0.011370814908401769,
+intra,A–A (mixed),n_strips_min,30.5,0.004421983575489577,
+intra,A–A (mixed),n_strips_min,31.5,0.012507896399241946,
+intra,A–A (mixed),n_strips_min,32.5,0.007833228048010107,
+intra,A–A (mixed),n_strips_min,33.5,0.0020214782059380923,
+intra,A–A (mixed),n_strips_min,34.5,0.011370814908401769,
+intra,A–A (mixed),n_strips_min,35.5,0.007580543272267846,
+intra,A–A (mixed),n_strips_min,36.5,0.0010107391029690461,
+intra,A–A (mixed),n_strips_min,37.5,0.00505369551484523,
+intra,A–A (mixed),n_strips_min,38.5,0.004295641187618446,
+intra,A–A (mixed),n_strips_min,39.5,0.0008843967150979153,
+intra,A–A (mixed),n_strips_min,40.5,0.0032849020846494,
+intra,A–A (mixed),n_strips_min,41.5,0.0030322173089071384,
+intra,A–A (mixed),n_strips_min,42.5,0.0003790271636133923,
+intra,A–A (mixed),n_strips_min,43.5,0.0029058749210360076,
+intra,A–A (mixed),n_strips_min,44.5,0.001137081490840177,
+intra,A–A (mixed),n_strips_min,45.5,0.0006317119393556538,
+intra,A–A (mixed),n_strips_min,46.5,0.0017687934301958306,
+intra,A–A (mixed),n_strips_min,47.5,0.001137081490840177,
+intra,A–A (mixed),n_strips_min,48.5,0.00012634238787113077,
+intra,A–A (mixed),n_strips_min,49.5,0.0005053695514845231,
+intra,A–A (mixed),n_strips_min,50.5,0.0005053695514845231,
+intra,A–A (mixed),n_strips_min,51.5,0.00012634238787113077,
+intra,A–A (mixed),n_strips_min,52.5,0.0003790271636133923,
+intra,A–A (mixed),n_strips_min,53.5,0.00025268477574226153,
+intra,A–A (mixed),n_strips_min,54.5,0.0,
+intra,A–A (mixed),n_strips_min,55.5,0.00012634238787113077,
+intra,A–A (mixed),n_strips_min,56.5,0.0,
+intra,A–A (mixed),n_strips_min,57.5,0.0,
+intra,A–A (mixed),n_strips_min,58.5,0.0,
+intra,A–A (mixed),n_strips_min,59.5,0.00025268477574226153,
+intra,A–A (mixed),n_strips_min,60.5,0.0,
+intra,A–A (mixed),n_strips_min,61.5,0.0,
+intra,A–A (mixed),n_strips_min,62.5,0.00012634238787113077,
+intra,A–A (mixed),n_strips_min,63.5,0.0,
+intra,A–A (mixed),n_strips_min,64.5,0.00012634238787113077,
+intra,A–A (mixed),n_strips_min,65.5,0.0,
+intra,A–A (mixed),n_strips_min,66.5,0.0,
+intra,A–A (mixed),n_strips_min,67.5,0.0,
+intra,A–A (mixed),n_strips_min,68.5,0.0,
+intra,A–A (mixed),n_strips_min,69.5,0.0,
+intra,A–A,n_strips_min,10.5,0.010612760581174984,0.0011579471118018548
+intra,A–A,n_strips_min,11.5,0.10309538850284271,0.0036090604818915227
+intra,A–A,n_strips_min,12.5,0.04485154769425142,0.0023804729856496238
+intra,A–A,n_strips_min,13.5,0.051168667087807956,0.00254259150947544
+intra,A–A,n_strips_min,14.5,0.025647504737839544,0.0018001019392008852
+intra,A–A,n_strips_min,15.5,0.015792798483891344,0.0014125508385974667
+intra,A–A,n_strips_min,16.5,0.04409349336702464,0.002360270586515402
+intra,A–A,n_strips_min,17.5,0.15350600126342387,0.004403897677304706
+intra,A–A,n_strips_min,18.5,0.009854706253948199,0.0011158257569586667
+intra,A–A,n_strips_min,19.5,0.046999368288060644,0.0024368037298781947
+intra,A–A,n_strips_min,20.5,0.024005053695514846,0.0017415096338711587
+intra,A–A,n_strips_min,21.5,0.012886923562855339,0.0012759955702289422
+intra,A–A,n_strips_min,22.5,0.07593177511054959,0.0030973217112144694
+intra,A–A,n_strips_min,23.5,0.02969046114971573,0.001936792130986215
+intra,A–A,n_strips_min,24.5,0.014276689829437776,0.0013430380053991978
+intra,A–A,n_strips_min,25.5,0.05142135186355022,0.00254886178165913
+intra,A–A,n_strips_min,26.5,0.03183828174352495,0.0020056232301184514
+intra,A–A,n_strips_min,27.5,0.012255211623499684,0.0012443282124821357
+intra,A–A,n_strips_min,28.5,0.043967150979153505,0.002356886684292815
+intra,A–A,n_strips_min,29.5,0.027668982943777638,0.0018696965997408391
+intra,A–A,n_strips_min,30.5,0.007959570435881238,0.0010028116150592257
+intra,A–A,n_strips_min,31.5,0.030701200252684777,0.001969482914481351
+intra,A–A,n_strips_min,32.5,0.01667719519898926,0.0014515635240778342
+intra,A–A,n_strips_min,33.5,0.005685407454200884,0.00084753050315848
+intra,A–A,n_strips_min,34.5,0.023752368919772584,0.0017323195452687414
+intra,A–A,n_strips_min,35.5,0.01794061907770057,0.0015055433086308256
+intra,A–A,n_strips_min,36.5,0.0030322173089071384,0.0006189487663381372
+intra,A–A,n_strips_min,37.5,0.013392293114339862,0.0013007744966502845
+intra,A–A,n_strips_min,38.5,0.009349336702463677,0.001086838315482328
+intra,A–A,n_strips_min,39.5,0.002147820593809223,0.0005209230101854278
+intra,A–A,n_strips_min,40.5,0.006443461781427669,0.0009022651204728807
+intra,A–A,n_strips_min,41.5,0.008970309538850285,0.0010645798829028881
+intra,A–A,n_strips_min,42.5,0.001137081490840177,0.0003790271636133923
+intra,A–A,n_strips_min,43.5,0.004295641187618446,0.0007366963859564499
+intra,A–A,n_strips_min,44.5,0.0030322173089071384,0.0006189487663381372
+intra,A–A,n_strips_min,45.5,0.0010107391029690461,0.00035735023685991036
+intra,A–A,n_strips_min,46.5,0.0032849020846494,0.0006442223011488041
+intra,A–A,n_strips_min,47.5,0.0016424510423247,0.00045553395773392157
+intra,A–A,n_strips_min,48.5,0.00025268477574226153,0.00017867511842995518
+intra,A–A,n_strips_min,49.5,0.0012634238787113076,0.00039952971069720527
+intra,A–A,n_strips_min,50.5,0.002274162981680354,0.0005360253552898654
+intra,A–A,n_strips_min,51.5,0.00012634238787113077,0.00012634238787113077
+intra,A–A,n_strips_min,52.5,0.0010107391029690461,0.00035735023685991036
+intra,A–A,n_strips_min,53.5,0.0008843967150979153,0.0003342705383530753
+intra,A–A,n_strips_min,54.5,0.0005053695514845231,0.00025268477574226153
+intra,A–A,n_strips_min,55.5,0.00025268477574226153,0.00017867511842995518
+intra,A–A,n_strips_min,56.5,0.0007580543272267846,0.0003094743831690686
+intra,A–A,n_strips_min,57.5,0.00025268477574226153,0.00017867511842995518
+intra,A–A,n_strips_min,58.5,0.00025268477574226153,0.00017867511842995518
+intra,A–A,n_strips_min,59.5,0.0006317119393556538,0.0002825101677194933
+intra,A–A,n_strips_min,60.5,0.0,0.0
+intra,A–A,n_strips_min,61.5,0.00012634238787113077,0.00012634238787113077
+intra,A–A,n_strips_min,62.5,0.0003790271636133923,0.00021883143494237235
+intra,A–A,n_strips_min,63.5,0.0,0.0
+intra,A–A,n_strips_min,64.5,0.00012634238787113077,0.00012634238787113077
+intra,A–A,n_strips_min,65.5,0.00012634238787113077,0.00012634238787113077
+intra,A–A,n_strips_min,66.5,0.0,0.0
+intra,A–A,n_strips_min,67.5,0.00025268477574226153,0.00017867511842995518
+intra,A–A,n_strips_min,68.5,0.0,0.0
+intra,A–A,n_strips_min,69.5,0.0,0.0
+intra,C–C (mixed),n_strips_min,10.5,0.0001945525291828794,
+intra,C–C (mixed),n_strips_min,11.5,0.14513618677042803,
+intra,C–C (mixed),n_strips_min,12.5,0.0715953307392996,
+intra,C–C (mixed),n_strips_min,13.5,0.10642023346303502,
+intra,C–C (mixed),n_strips_min,14.5,0.07081712062256809,
+intra,C–C (mixed),n_strips_min,15.5,0.03949416342412451,
+intra,C–C (mixed),n_strips_min,16.5,0.048832684824902724,
+intra,C–C (mixed),n_strips_min,17.5,0.038910505836575876,
+intra,C–C (mixed),n_strips_min,18.5,0.01906614785992218,
+intra,C–C (mixed),n_strips_min,19.5,0.04416342412451362,
+intra,C–C (mixed),n_strips_min,20.5,0.02217898832684825,
+intra,C–C (mixed),n_strips_min,21.5,0.017509727626459144,
+intra,C–C (mixed),n_strips_min,22.5,0.029766536964980543,
+intra,C–C (mixed),n_strips_min,23.5,0.01926070038910506,
+intra,C–C (mixed),n_strips_min,24.5,0.008560311284046693,
+intra,C–C (mixed),n_strips_min,25.5,0.02509727626459144,
+intra,C–C (mixed),n_strips_min,26.5,0.026264591439688716,
+intra,C–C (mixed),n_strips_min,27.5,0.009727626459143969,
+intra,C–C (mixed),n_strips_min,28.5,0.026070038910505838,
+intra,C–C (mixed),n_strips_min,29.5,0.019455252918287938,
+intra,C–C (mixed),n_strips_min,30.5,0.006031128404669261,
+intra,C–C (mixed),n_strips_min,31.5,0.027431906614785992,
+intra,C–C (mixed),n_strips_min,32.5,0.015175097276264591,
+intra,C–C (mixed),n_strips_min,33.5,0.00894941634241245,
+intra,C–C (mixed),n_strips_min,34.5,0.024319066147859923,
+intra,C–C (mixed),n_strips_min,35.5,0.018287937743190662,
+intra,C–C (mixed),n_strips_min,36.5,0.0031128404669260703,
+intra,C–C (mixed),n_strips_min,37.5,0.014591439688715954,
+intra,C–C (mixed),n_strips_min,38.5,0.010700389105058366,
+intra,C–C (mixed),n_strips_min,39.5,0.003696498054474708,
+intra,C–C (mixed),n_strips_min,40.5,0.008754863813229572,
+intra,C–C (mixed),n_strips_min,41.5,0.005447470817120622,
+intra,C–C (mixed),n_strips_min,42.5,0.004474708171206225,
+intra,C–C (mixed),n_strips_min,43.5,0.008754863813229572,
+intra,C–C (mixed),n_strips_min,44.5,0.007003891050583658,
+intra,C–C (mixed),n_strips_min,45.5,0.0003891050583657588,
+intra,C–C (mixed),n_strips_min,46.5,0.004280155642023347,
+intra,C–C (mixed),n_strips_min,47.5,0.0048638132295719845,
+intra,C–C (mixed),n_strips_min,48.5,0.0011673151750972762,
+intra,C–C (mixed),n_strips_min,49.5,0.0031128404669260703,
+intra,C–C (mixed),n_strips_min,50.5,0.003696498054474708,
+intra,C–C (mixed),n_strips_min,51.5,0.0007782101167315176,
+intra,C–C (mixed),n_strips_min,52.5,0.0009727626459143969,
+intra,C–C (mixed),n_strips_min,53.5,0.0017509727626459145,
+intra,C–C (mixed),n_strips_min,54.5,0.0007782101167315176,
+intra,C–C (mixed),n_strips_min,55.5,0.0011673151750972762,
+intra,C–C (mixed),n_strips_min,56.5,0.0021400778210116734,
+intra,C–C (mixed),n_strips_min,57.5,0.0005836575875486381,
+intra,C–C (mixed),n_strips_min,58.5,0.0007782101167315176,
+intra,C–C (mixed),n_strips_min,59.5,0.0011673151750972762,
+intra,C–C (mixed),n_strips_min,60.5,0.0003891050583657588,
+intra,C–C (mixed),n_strips_min,61.5,0.0011673151750972762,
+intra,C–C (mixed),n_strips_min,62.5,0.0015564202334630351,
+intra,C–C (mixed),n_strips_min,63.5,0.0005836575875486381,
+intra,C–C (mixed),n_strips_min,64.5,0.0005836575875486381,
+intra,C–C (mixed),n_strips_min,65.5,0.0011673151750972762,
+intra,C–C (mixed),n_strips_min,66.5,0.0005836575875486381,
+intra,C–C (mixed),n_strips_min,67.5,0.0013618677042801556,
+intra,C–C (mixed),n_strips_min,68.5,0.0015564202334630351,
+intra,C–C (mixed),n_strips_min,69.5,0.0017509727626459145,
+intra,C–C,n_strips_min,10.5,0.0,0.0
+intra,C–C,n_strips_min,11.5,0.04066147859922179,0.002812613286926257
+intra,C–C,n_strips_min,12.5,0.021206225680933853,0.0020311880367530253
+intra,C–C,n_strips_min,13.5,0.03754863813229572,0.0027028101146789503
+intra,C–C,n_strips_min,14.5,0.020038910505836578,0.0019744925223914825
+intra,C–C,n_strips_min,15.5,0.017509727626459144,0.0018456873502928285
+intra,C–C,n_strips_min,16.5,0.02840466926070039,0.002350787154395831
+intra,C–C,n_strips_min,17.5,0.023735408560311283,0.002148902921631763
+intra,C–C,n_strips_min,18.5,0.011284046692607004,0.001481667919428776
+intra,C–C,n_strips_min,19.5,0.04474708171206226,0.0029505351922379575
+intra,C–C,n_strips_min,20.5,0.026459143968871595,0.002268852877371712
+intra,C–C,n_strips_min,21.5,0.018287937743190662,0.0018862567538584939
+intra,C–C,n_strips_min,22.5,0.052334630350194554,0.0031908987289604525
+intra,C–C,n_strips_min,23.5,0.032101167315175094,0.0024990724861216206
+intra,C–C,n_strips_min,24.5,0.011867704280155641,0.0015195038279974035
+intra,C–C,n_strips_min,25.5,0.042607003891050585,0.002879114511079522
+intra,C–C,n_strips_min,26.5,0.036575875486381325,0.002667569883424531
+intra,C–C,n_strips_min,27.5,0.015175097276264591,0.0017182414136824606
+intra,C–C,n_strips_min,28.5,0.04571984435797665,0.00298243379703422
+intra,C–C,n_strips_min,29.5,0.030933852140077822,0.0024532140492059323
+intra,C–C,n_strips_min,30.5,0.011673151750972763,0.0015069974109756486
+intra,C–C,n_strips_min,31.5,0.05175097276264591,0.003173055725739317
+intra,C–C,n_strips_min,32.5,0.029766536964980543,0.002406481882656222
+intra,C–C,n_strips_min,33.5,0.01614785992217899,0.0017724578947751555
+intra,C–C,n_strips_min,34.5,0.04105058365758755,0.0028260387249676943
+intra,C–C,n_strips_min,35.5,0.04221789883268483,0.0028659377164700845
+intra,C–C,n_strips_min,36.5,0.008754863813229572,0.0013050980413422898
+intra,C–C,n_strips_min,37.5,0.019649805447470817,0.00195522872006243
+intra,C–C,n_strips_min,38.5,0.023151750972762647,0.0021223175320302947
+intra,C–C,n_strips_min,39.5,0.015953307392996108,0.001761748081349692
+intra,C–C,n_strips_min,40.5,0.01614785992217899,0.0017724578947751555
+intra,C–C,n_strips_min,41.5,0.014202334630350194,0.0016622575379995196
+intra,C–C,n_strips_min,42.5,0.00894941634241245,0.0013195194519698965
+intra,C–C,n_strips_min,43.5,0.014202334630350194,0.0016622575379995196
+intra,C–C,n_strips_min,44.5,0.016926070038910505,0.0018146651854258396
+intra,C–C,n_strips_min,45.5,0.004474708171206225,0.0009330411523954706
+intra,C–C,n_strips_min,46.5,0.007392996108949416,0.001199302335207972
+intra,C–C,n_strips_min,47.5,0.01264591439688716,0.0015685326358557488
+intra,C–C,n_strips_min,48.5,0.003696498054474708,0.0008480348139184191
+intra,C–C,n_strips_min,49.5,0.006420233463035019,0.0011176191919334685
+intra,C–C,n_strips_min,50.5,0.008171206225680934,0.0012608444938536692
+intra,C–C,n_strips_min,51.5,0.0015564202334630351,0.0005502776507288308
+intra,C–C,n_strips_min,52.5,0.0019455252918287938,0.0006152291167642762
+intra,C–C,n_strips_min,53.5,0.006809338521400778,0.0011509882846497308
+intra,C–C,n_strips_min,54.5,0.003696498054474708,0.0008480348139184191
+intra,C–C,n_strips_min,55.5,0.005836575875486381,0.0010656080885314515
+intra,C–C,n_strips_min,56.5,0.004085603112840467,0.0008915516916256497
+intra,C–C,n_strips_min,57.5,0.002723735408560311,0.0007279489079326735
+intra,C–C,n_strips_min,58.5,0.002723735408560311,0.0007279489079326735
+intra,C–C,n_strips_min,59.5,0.0038910505836575876,0.0008700653608948598
+intra,C–C,n_strips_min,60.5,0.0013618677042801556,0.0005147376091565351
+intra,C–C,n_strips_min,61.5,0.002723735408560311,0.0007279489079326735
+intra,C–C,n_strips_min,62.5,0.0029182879377431907,0.0007534987054878243
+intra,C–C,n_strips_min,63.5,0.0009727626459143969,0.0004350326804474299
+intra,C–C,n_strips_min,64.5,0.0021400778210116734,0.0006452577413142801
+intra,C–C,n_strips_min,65.5,0.002723735408560311,0.0007279489079326735
+intra,C–C,n_strips_min,66.5,0.0001945525291828794,0.0001945525291828794
+intra,C–C,n_strips_min,67.5,0.0019455252918287938,0.0006152291167642762
+intra,C–C,n_strips_min,68.5,0.0019455252918287938,0.0006152291167642762
+intra,C–C,n_strips_min,69.5,0.0019455252918287938,0.0006152291167642762
+intra,D–D (mixed),n_strips_min,10.5,0.0,
+intra,D–D (mixed),n_strips_min,11.5,0.025007718431614697,
+intra,D–D (mixed),n_strips_min,12.5,0.02562519296079037,
+intra,D–D (mixed),n_strips_min,13.5,0.03164556962025317,
+intra,D–D (mixed),n_strips_min,14.5,0.03056498919419574,
+intra,D–D (mixed),n_strips_min,15.5,0.04631058968817536,
+intra,D–D (mixed),n_strips_min,16.5,0.05047854276011115,
+intra,D–D (mixed),n_strips_min,17.5,0.04260574251312133,
+intra,D–D (mixed),n_strips_min,18.5,0.052485334979932075,
+intra,D–D (mixed),n_strips_min,19.5,0.07440568076566842,
+intra,D–D (mixed),n_strips_min,20.5,0.06097560975609756,
+intra,D–D (mixed),n_strips_min,21.5,0.04353195430688484,
+intra,D–D (mixed),n_strips_min,22.5,0.08567459092312442,
+intra,D–D (mixed),n_strips_min,23.5,0.04878048780487805,
+intra,D–D (mixed),n_strips_min,24.5,0.021457239888854583,
+intra,D–D (mixed),n_strips_min,25.5,0.059895029330040137,
+intra,D–D (mixed),n_strips_min,26.5,0.023618400740969436,
+intra,D–D (mixed),n_strips_min,27.5,0.03920963260265514,
+intra,D–D (mixed),n_strips_min,28.5,0.07193578264896573,
+intra,D–D (mixed),n_strips_min,29.5,0.006329113924050633,
+intra,D–D (mixed),n_strips_min,30.5,0.012658227848101266,
+intra,D–D (mixed),n_strips_min,31.5,0.03102809509107749,
+intra,D–D (mixed),n_strips_min,32.5,0.021302871256560666,
+intra,D–D (mixed),n_strips_min,33.5,0.006946588453226305,
+intra,D–D (mixed),n_strips_min,34.5,0.031336832355665326,
+intra,D–D (mixed),n_strips_min,35.5,0.007564062982401976,
+intra,D–D (mixed),n_strips_min,36.5,0.0035504785427601113,
+intra,D–D (mixed),n_strips_min,37.5,0.004013584439641865,
+intra,D–D (mixed),n_strips_min,38.5,0.002315529484408768,
+intra,D–D (mixed),n_strips_min,39.5,0.010497066995986416,
+intra,D–D (mixed),n_strips_min,40.5,0.005557270762581044,
+intra,D–D (mixed),n_strips_min,41.5,0.001234949058351343,
+intra,D–D (mixed),n_strips_min,42.5,0.013121333744983019,
+intra,D–D (mixed),n_strips_min,43.5,0.0043223217042297,
+intra,D–D (mixed),n_strips_min,44.5,0.0007718431614695894,
+intra,D–D (mixed),n_strips_min,45.5,0.0009262117937635072,
+intra,D–D (mixed),n_strips_min,46.5,0.001389317690645261,
+intra,D–D (mixed),n_strips_min,47.5,0.0,
+intra,D–D (mixed),n_strips_min,48.5,0.0,
+intra,D–D (mixed),n_strips_min,49.5,0.0,
+intra,D–D (mixed),n_strips_min,50.5,0.00015436863229391788,
+intra,D–D (mixed),n_strips_min,51.5,0.0,
+intra,D–D (mixed),n_strips_min,52.5,0.0,
+intra,D–D (mixed),n_strips_min,53.5,0.0,
+intra,D–D (mixed),n_strips_min,54.5,0.0,
+intra,D–D (mixed),n_strips_min,55.5,0.0,
+intra,D–D (mixed),n_strips_min,56.5,0.0,
+intra,D–D (mixed),n_strips_min,57.5,0.0,
+intra,D–D (mixed),n_strips_min,58.5,0.0,
+intra,D–D (mixed),n_strips_min,59.5,0.00015436863229391788,
+intra,D–D (mixed),n_strips_min,60.5,0.00030873726458783575,
+intra,D–D (mixed),n_strips_min,61.5,0.0,
+intra,D–D (mixed),n_strips_min,62.5,0.0,
+intra,D–D (mixed),n_strips_min,63.5,0.0,
+intra,D–D (mixed),n_strips_min,64.5,0.0,
+intra,D–D (mixed),n_strips_min,65.5,0.0,
+intra,D–D (mixed),n_strips_min,66.5,0.0,
+intra,D–D (mixed),n_strips_min,67.5,0.00030873726458783575,
+intra,D–D (mixed),n_strips_min,68.5,0.0,
+intra,D–D (mixed),n_strips_min,69.5,0.0,
+intra,D–D,n_strips_min,10.5,0.0,0.0
+intra,D–D,n_strips_min,11.5,0.051713491818462486,0.0028254098823283615
+intra,D–D,n_strips_min,12.5,0.051867860450756406,0.002829623769654733
+intra,D–D,n_strips_min,13.5,0.06097560975609756,0.0030680158867477294
+intra,D–D,n_strips_min,14.5,0.0595862920654523,0.003032862411915483
+intra,D–D,n_strips_min,15.5,0.056344550787280026,0.0029492085789661624
+intra,D–D,n_strips_min,16.5,0.07270762581043531,0.003350190554833391
+intra,D–D,n_strips_min,17.5,0.04615622105588144,0.0026692831839750823
+intra,D–D,n_strips_min,18.5,0.05912318616857055,0.003021053687987176
+intra,D–D,n_strips_min,19.5,0.06097560975609756,0.0030680158867477294
+intra,D–D,n_strips_min,20.5,0.06020376659462797,0.003048536223854816
+intra,D–D,n_strips_min,21.5,0.02979314603272615,0.002144557577871226
+intra,D–D,n_strips_min,22.5,0.0665328805186786,0.0032047760870680293
+intra,D–D,n_strips_min,23.5,0.028558196974374808,0.00209964039961955
+intra,D–D,n_strips_min,24.5,0.012503859215807349,0.001389317690645261
+intra,D–D,n_strips_min,25.5,0.03843778944118555,0.0024358959305433004
+intra,D–D,n_strips_min,26.5,0.012812596480395184,0.0014063651712170884
+intra,D–D,n_strips_min,27.5,0.03998147576412473,0.0024843280239936834
+intra,D–D,n_strips_min,28.5,0.06483482556344551,0.0031636155498485944
+intra,D–D,n_strips_min,29.5,0.005711639394874961,0.0009389877323708274
+intra,D–D,n_strips_min,30.5,0.006174745291756715,0.0009763129546676071
+intra,D–D,n_strips_min,31.5,0.023464032108675516,0.0019031843170635924
+intra,D–D,n_strips_min,32.5,0.012195121951219513,0.0013720584157634439
+intra,D–D,n_strips_min,33.5,0.00509416486569929,0.0008867802788728046
+intra,D–D,n_strips_min,34.5,0.0405989502933004,0.002503438521183522
+intra,D–D,n_strips_min,35.5,0.003859215807347947,0.0007718431614695894
+intra,D–D,n_strips_min,36.5,0.0004631058968817536,0.0002673743142279835
+intra,D–D,n_strips_min,37.5,0.002624266748996604,0.0006364781762299568
+intra,D–D,n_strips_min,38.5,0.0009262117937635072,0.0003781243814114199
+intra,D–D,n_strips_min,39.5,0.0086446434084594,0.0011551890666174564
+intra,D–D,n_strips_min,40.5,0.0035504785427601113,0.0007403259529658411
+intra,D–D,n_strips_min,41.5,0.0007718431614695894,0.00034517875540286967
+intra,D–D,n_strips_min,42.5,0.0020067922198209326,0.0005565840190589671
+intra,D–D,n_strips_min,43.5,0.00509416486569929,0.0008867802788728046
+intra,D–D,n_strips_min,44.5,0.004939796233405372,0.0008732408535801761
+intra,D–D,n_strips_min,45.5,0.00015436863229391788,0.00015436863229391788
+intra,D–D,n_strips_min,46.5,0.0004631058968817536,0.0002673743142279835
+intra,D–D,n_strips_min,47.5,0.0,0.0
+intra,D–D,n_strips_min,48.5,0.0,0.0
+intra,D–D,n_strips_min,49.5,0.0,0.0
+intra,D–D,n_strips_min,50.5,0.0,0.0
+intra,D–D,n_strips_min,51.5,0.0,0.0
+intra,D–D,n_strips_min,52.5,0.00015436863229391788,0.00015436863229391788
+intra,D–D,n_strips_min,53.5,0.0,0.0
+intra,D–D,n_strips_min,54.5,0.0,0.0
+intra,D–D,n_strips_min,55.5,0.0,0.0
+intra,D–D,n_strips_min,56.5,0.0,0.0
+intra,D–D,n_strips_min,57.5,0.0,0.0
+intra,D–D,n_strips_min,58.5,0.0,0.0
+intra,D–D,n_strips_min,59.5,0.0,0.0
+intra,D–D,n_strips_min,60.5,0.0,0.0
+intra,D–D,n_strips_min,61.5,0.0,0.0
+intra,D–D,n_strips_min,62.5,0.0,0.0
+intra,D–D,n_strips_min,63.5,0.0,0.0
+intra,D–D,n_strips_min,64.5,0.0,0.0
+intra,D–D,n_strips_min,65.5,0.0,0.0
+intra,D–D,n_strips_min,66.5,0.0,0.0
+intra,D–D,n_strips_min,67.5,0.0,0.0
+intra,D–D,n_strips_min,68.5,0.0,0.0
+intra,D–D,n_strips_min,69.5,0.0,0.0
+perpendicular,A–D (mixed),n_strips_min,10.5,0.00563570784490532,
+perpendicular,A–D (mixed),n_strips_min,11.5,0.14669747520288548,
+perpendicular,A–D (mixed),n_strips_min,12.5,0.067797565374211,
+perpendicular,A–D (mixed),n_strips_min,13.5,0.0838029756537421,
+perpendicular,A–D (mixed),n_strips_min,14.5,0.06357078449053201,
+perpendicular,A–D (mixed),n_strips_min,15.5,0.03702660054102795,
+perpendicular,A–D (mixed),n_strips_min,16.5,0.05911857529305681,
+perpendicular,A–D (mixed),n_strips_min,17.5,0.07534941388638414,
+perpendicular,A–D (mixed),n_strips_min,18.5,0.026318755635707843,
+perpendicular,A–D (mixed),n_strips_min,19.5,0.04874887285843102,
+perpendicular,A–D (mixed),n_strips_min,20.5,0.030714607754733995,
+perpendicular,A–D (mixed),n_strips_min,21.5,0.01904869251577998,
+perpendicular,A–D (mixed),n_strips_min,22.5,0.05979486023444545,
+perpendicular,A–D (mixed),n_strips_min,23.5,0.028234896302975654,
+perpendicular,A–D (mixed),n_strips_min,24.5,0.011947700631199279,
+perpendicular,A–D (mixed),n_strips_min,25.5,0.0343214607754734,
+perpendicular,A–D (mixed),n_strips_min,26.5,0.02248647430117223,
+perpendicular,A–D (mixed),n_strips_min,27.5,0.01882326420198377,
+perpendicular,A–D (mixed),n_strips_min,28.5,0.03854824165915239,
+perpendicular,A–D (mixed),n_strips_min,29.5,0.012454914337240757,
+perpendicular,A–D (mixed),n_strips_min,30.5,0.0063119927862939585,
+perpendicular,A–D (mixed),n_strips_min,31.5,0.02254283137962128,
+perpendicular,A–D (mixed),n_strips_min,32.5,0.013638412984670875,
+perpendicular,A–D (mixed),n_strips_min,33.5,0.004170423805229937,
+perpendicular,A–D (mixed),n_strips_min,34.5,0.01814697926059513,
+perpendicular,A–D (mixed),n_strips_min,35.5,0.007270063119927863,
+perpendicular,A–D (mixed),n_strips_min,36.5,0.00140892696122633,
+perpendicular,A–D (mixed),n_strips_min,37.5,0.005184851217312894,
+perpendicular,A–D (mixed),n_strips_min,38.5,0.003832281334535618,
+perpendicular,A–D (mixed),n_strips_min,39.5,0.004621280432822362,
+perpendicular,A–D (mixed),n_strips_min,40.5,0.004677637511271416,
+perpendicular,A–D (mixed),n_strips_min,41.5,0.0028742110009017134,
+perpendicular,A–D (mixed),n_strips_min,42.5,0.005353922452660054,
+perpendicular,A–D (mixed),n_strips_min,43.5,0.0037759242560865647,
+perpendicular,A–D (mixed),n_strips_min,44.5,0.0010707844905320108,
+perpendicular,A–D (mixed),n_strips_min,45.5,0.000563570784490532,
+perpendicular,A–D (mixed),n_strips_min,46.5,0.0009580703336339045,
+perpendicular,A–D (mixed),n_strips_min,47.5,0.0002254283137962128,
+perpendicular,A–D (mixed),n_strips_min,48.5,0.0002254283137962128,
+perpendicular,A–D (mixed),n_strips_min,49.5,0.00033814247069431923,
+perpendicular,A–D (mixed),n_strips_min,50.5,0.0003944995491433724,
+perpendicular,A–D (mixed),n_strips_min,51.5,0.00016907123534715962,
+perpendicular,A–D (mixed),n_strips_min,52.5,0.000563570784490532,
+perpendicular,A–D (mixed),n_strips_min,53.5,0.0002254283137962128,
+perpendicular,A–D (mixed),n_strips_min,54.5,0.0,
+perpendicular,A–D (mixed),n_strips_min,55.5,0.0002254283137962128,
+perpendicular,A–D (mixed),n_strips_min,56.5,0.00016907123534715962,
+perpendicular,A–D (mixed),n_strips_min,57.5,0.0,
+perpendicular,A–D (mixed),n_strips_min,58.5,5.63570784490532e-05,
+perpendicular,A–D (mixed),n_strips_min,59.5,5.63570784490532e-05,
+perpendicular,A–D (mixed),n_strips_min,60.5,5.63570784490532e-05,
+perpendicular,A–D (mixed),n_strips_min,61.5,0.0,
+perpendicular,A–D (mixed),n_strips_min,62.5,0.0001127141568981064,
+perpendicular,A–D (mixed),n_strips_min,63.5,0.0,
+perpendicular,A–D (mixed),n_strips_min,64.5,0.0,
+perpendicular,A–D (mixed),n_strips_min,65.5,0.0,
+perpendicular,A–D (mixed),n_strips_min,66.5,0.0,
+perpendicular,A–D (mixed),n_strips_min,67.5,5.63570784490532e-05,
+perpendicular,A–D (mixed),n_strips_min,68.5,0.0,
+perpendicular,A–D (mixed),n_strips_min,69.5,0.0001127141568981064,
+perpendicular,A–D,n_strips_min,10.5,0.001972497745716862,0.0003334129724470027
+perpendicular,A–D,n_strips_min,11.5,0.21939810640216412,0.0035163384783152606
+perpendicular,A–D,n_strips_min,12.5,0.1003155996393147,0.0023777077445591736
+perpendicular,A–D,n_strips_min,13.5,0.1346370604147881,0.0027545873331492193
+perpendicular,A–D,n_strips_min,14.5,0.09687781785392245,0.002336610960508102
+perpendicular,A–D,n_strips_min,15.5,0.057315148782687106,0.0017972518844794833
+perpendicular,A–D,n_strips_min,16.5,0.06836113615870153,0.0019628127555532007
+perpendicular,A–D,n_strips_min,17.5,0.05855500450856627,0.0018165871800367673
+perpendicular,A–D,n_strips_min,18.5,0.02062669071235347,0.0010781743952721478
+perpendicular,A–D,n_strips_min,19.5,0.03308160504959423,0.0013654239674916273
+perpendicular,A–D,n_strips_min,20.5,0.02096483318304779,0.0010869759649451032
+perpendicular,A–D,n_strips_min,21.5,0.006199278629395852,0.0005910780253438636
+perpendicular,A–D,n_strips_min,22.5,0.03584310189359784,0.001421271439688739
+perpendicular,A–D,n_strips_min,23.5,0.036688458070333635,0.0014379340421746024
+perpendicular,A–D,n_strips_min,24.5,0.011215058611361586,0.0007950144262661116
+perpendicular,A–D,n_strips_min,25.5,0.020457619477006313,0.0010737465556389567
+perpendicular,A–D,n_strips_min,26.5,0.006537421100090171,0.0006069843109935193
+perpendicular,A–D,n_strips_min,27.5,0.009975202885482417,0.0007497821627395216
+perpendicular,A–D,n_strips_min,28.5,0.016681695220919748,0.0009696038398379877
+perpendicular,A–D,n_strips_min,29.5,0.005353922452660054,0.0005493008535171868
+perpendicular,A–D,n_strips_min,30.5,0.002197926059513075,0.00035194984210991874
+perpendicular,A–D,n_strips_min,31.5,0.011496844003606854,0.0008049400843713763
+perpendicular,A–D,n_strips_min,32.5,0.007551848512173129,0.0006523803484439937
+perpendicular,A–D,n_strips_min,33.5,0.0020852119026149685,0.0003428067251069781
+perpendicular,A–D,n_strips_min,34.5,0.004508566275924256,0.0005040730337014856
+perpendicular,A–D,n_strips_min,35.5,0.0014652840396753833,0.00028736584274080166
+perpendicular,A–D,n_strips_min,36.5,0.0014652840396753833,0.00028736584274080166
+perpendicular,A–D,n_strips_min,37.5,0.001690712353471596,0.000308680431416347
+perpendicular,A–D,n_strips_min,38.5,0.001352569882777277,0.00027609217118836543
+perpendicular,A–D,n_strips_min,39.5,0.000281785392245266,0.0001260182584253714
+perpendicular,A–D,n_strips_min,40.5,0.000563570784490532,0.00017821673017179776
+perpendicular,A–D,n_strips_min,41.5,0.0009017132551848512,0.0002254283137962128
+perpendicular,A–D,n_strips_min,42.5,0.0024797114517583407,0.00037383056699226777
+perpendicular,A–D,n_strips_min,43.5,0.0002254283137962128,0.0001127141568981064
+perpendicular,A–D,n_strips_min,44.5,0.0001127141568981064,7.970094467837551e-05
+perpendicular,A–D,n_strips_min,45.5,0.0,0.0
+perpendicular,A–D,n_strips_min,46.5,5.63570784490532e-05,5.63570784490532e-05
+perpendicular,A–D,n_strips_min,47.5,5.63570784490532e-05,5.63570784490532e-05
+perpendicular,A–D,n_strips_min,48.5,0.0,0.0
+perpendicular,A–D,n_strips_min,49.5,5.63570784490532e-05,5.63570784490532e-05
+perpendicular,A–D,n_strips_min,50.5,0.0,0.0
+perpendicular,A–D,n_strips_min,51.5,0.0,0.0
+perpendicular,A–D,n_strips_min,52.5,5.63570784490532e-05,5.63570784490532e-05
+perpendicular,A–D,n_strips_min,53.5,0.0,0.0
+perpendicular,A–D,n_strips_min,54.5,0.0,0.0
+perpendicular,A–D,n_strips_min,55.5,0.0,0.0
+perpendicular,A–D,n_strips_min,56.5,0.0,0.0
+perpendicular,A–D,n_strips_min,57.5,0.0,0.0
+perpendicular,A–D,n_strips_min,58.5,0.0,0.0
+perpendicular,A–D,n_strips_min,59.5,0.0,0.0
+perpendicular,A–D,n_strips_min,60.5,0.0,0.0
+perpendicular,A–D,n_strips_min,61.5,0.0,0.0
+perpendicular,A–D,n_strips_min,62.5,0.0,0.0
+perpendicular,A–D,n_strips_min,63.5,0.0,0.0
+perpendicular,A–D,n_strips_min,64.5,0.0,0.0
+perpendicular,A–D,n_strips_min,65.5,0.0,0.0
+perpendicular,A–D,n_strips_min,66.5,0.0,0.0
+perpendicular,A–D,n_strips_min,67.5,0.0001127141568981064,7.970094467837551e-05
+perpendicular,A–D,n_strips_min,68.5,5.63570784490532e-05,5.63570784490532e-05
+perpendicular,A–D,n_strips_min,69.5,0.0,0.0
+perpendicular,C–D (mixed),n_strips_min,10.5,9.285913269570062e-05,
+perpendicular,C–D (mixed),n_strips_min,11.5,0.08728758473395859,
+perpendicular,C–D (mixed),n_strips_min,12.5,0.049958213390286936,
+perpendicular,C–D (mixed),n_strips_min,13.5,0.07577305227969171,
+perpendicular,C–D (mixed),n_strips_min,14.5,0.05822267620020429,
+perpendicular,C–D (mixed),n_strips_min,15.5,0.04382951063237069,
+perpendicular,C–D (mixed),n_strips_min,16.5,0.058315535332899994,
+perpendicular,C–D (mixed),n_strips_min,17.5,0.03881511746680286,
+perpendicular,C–D (mixed),n_strips_min,18.5,0.03185068251462531,
+perpendicular,C–D (mixed),n_strips_min,19.5,0.05385829696350636,
+perpendicular,C–D (mixed),n_strips_min,20.5,0.036122202618627544,
+perpendicular,C–D (mixed),n_strips_min,21.5,0.02692914848175318,
+perpendicular,C–D (mixed),n_strips_min,22.5,0.061658464109945216,
+perpendicular,C–D (mixed),n_strips_min,23.5,0.03686507568019315,
+perpendicular,C–D (mixed),n_strips_min,24.5,0.017086080416008915,
+perpendicular,C–D (mixed),n_strips_min,25.5,0.03630792088401894,
+perpendicular,C–D (mixed),n_strips_min,26.5,0.021821896183489647,
+perpendicular,C–D (mixed),n_strips_min,27.5,0.026464852818274678,
+perpendicular,C–D (mixed),n_strips_min,28.5,0.04949391772680843,
+perpendicular,C–D (mixed),n_strips_min,29.5,0.009193054136874362,
+perpendicular,C–D (mixed),n_strips_min,30.5,0.006778716686786145,
+perpendicular,C–D (mixed),n_strips_min,31.5,0.028879190268362893,
+perpendicular,C–D (mixed),n_strips_min,32.5,0.015693193425573404,
+perpendicular,C–D (mixed),n_strips_min,33.5,0.008635899340700158,
+perpendicular,C–D (mixed),n_strips_min,34.5,0.03147924598384251,
+perpendicular,C–D (mixed),n_strips_min,35.5,0.01355743337357229,
+perpendicular,C–D (mixed),n_strips_min,36.5,0.0035286470424366234,
+perpendicular,C–D (mixed),n_strips_min,37.5,0.008171603677221655,
+perpendicular,C–D (mixed),n_strips_min,38.5,0.005292970563654935,
+perpendicular,C–D (mixed),n_strips_min,39.5,0.008450181075308757,
+perpendicular,C–D (mixed),n_strips_min,40.5,0.007614448881047451,
+perpendicular,C–D (mixed),n_strips_min,41.5,0.0032500696443495216,
+perpendicular,C–D (mixed),n_strips_min,42.5,0.0147646020986164,
+perpendicular,C–D (mixed),n_strips_min,43.5,0.00900733587148296,
+perpendicular,C–D (mixed),n_strips_min,44.5,0.0030643513789581204,
+perpendicular,C–D (mixed),n_strips_min,45.5,0.0013000278577398087,
+perpendicular,C–D (mixed),n_strips_min,46.5,0.0023214783173925156,
+perpendicular,C–D (mixed),n_strips_min,47.5,0.0009285913269570063,
+perpendicular,C–D (mixed),n_strips_min,48.5,0.0003714365307828025,
+perpendicular,C–D (mixed),n_strips_min,49.5,0.00018571826539140124,
+perpendicular,C–D (mixed),n_strips_min,50.5,0.0006500139288699043,
+perpendicular,C–D (mixed),n_strips_min,51.5,0.00046429566347850313,
+perpendicular,C–D (mixed),n_strips_min,52.5,0.002228619184696815,
+perpendicular,C–D (mixed),n_strips_min,53.5,0.0003714365307828025,
+perpendicular,C–D (mixed),n_strips_min,54.5,0.0,
+perpendicular,C–D (mixed),n_strips_min,55.5,0.0003714365307828025,
+perpendicular,C–D (mixed),n_strips_min,56.5,9.285913269570062e-05,
+perpendicular,C–D (mixed),n_strips_min,57.5,0.00018571826539140124,
+perpendicular,C–D (mixed),n_strips_min,58.5,0.0,
+perpendicular,C–D (mixed),n_strips_min,59.5,0.00027857739808710187,
+perpendicular,C–D (mixed),n_strips_min,60.5,0.0008357321942613056,
+perpendicular,C–D (mixed),n_strips_min,61.5,0.00027857739808710187,
+perpendicular,C–D (mixed),n_strips_min,62.5,0.00018571826539140124,
+perpendicular,C–D (mixed),n_strips_min,63.5,0.0,
+perpendicular,C–D (mixed),n_strips_min,64.5,9.285913269570062e-05,
+perpendicular,C–D (mixed),n_strips_min,65.5,9.285913269570062e-05,
+perpendicular,C–D (mixed),n_strips_min,66.5,0.0,
+perpendicular,C–D (mixed),n_strips_min,67.5,0.00027857739808710187,
+perpendicular,C–D (mixed),n_strips_min,68.5,0.0,
+perpendicular,C–D (mixed),n_strips_min,69.5,0.0003714365307828025,
+perpendicular,C–D,n_strips_min,10.5,0.0,0.0
+perpendicular,C–D,n_strips_min,11.5,0.1666821431887826,0.003934203763453405
+perpendicular,C–D,n_strips_min,12.5,0.08682328907048008,0.0028394251743747156
+perpendicular,C–D,n_strips_min,13.5,0.13362429194911318,0.0035225325913995098
+perpendicular,C–D,n_strips_min,14.5,0.09211625963413501,0.0029246941680794174
+perpendicular,C–D,n_strips_min,15.5,0.05822267620020429,0.0023251897159529975
+perpendicular,C–D,n_strips_min,16.5,0.07391586962577769,0.0026198785364780174
+perpendicular,C–D,n_strips_min,17.5,0.04949391772680843,0.0021438195525332335
+perpendicular,C–D,n_strips_min,18.5,0.042715201040022285,0.0019916065177386214
+perpendicular,C–D,n_strips_min,19.5,0.04104373665149968,0.0019522514663969392
+perpendicular,C–D,n_strips_min,20.5,0.029250626799145696,0.0016480861128515972
+perpendicular,C–D,n_strips_min,21.5,0.013278855975485188,0.0011104337211534402
+perpendicular,C–D,n_strips_min,22.5,0.034636456495496334,0.0017934077366355248
+perpendicular,C–D,n_strips_min,23.5,0.03185068251462531,0.001719775204517795
+perpendicular,C–D,n_strips_min,24.5,0.015321756894790603,0.0011927971565294019
+perpendicular,C–D,n_strips_min,25.5,0.024514811031664963,0.0015087823204821174
+perpendicular,C–D,n_strips_min,26.5,0.01197882811774538,0.0010546770072987787
+perpendicular,C–D,n_strips_min,27.5,0.011514532454266877,0.0010340355395728519
+perpendicular,C–D,n_strips_min,28.5,0.021914755316185346,0.0014265290645126953
+perpendicular,C–D,n_strips_min,29.5,0.005478688829046337,0.0007132645322563476
+perpendicular,C–D,n_strips_min,30.5,0.0050143931655678336,0.0006823724791855822
+perpendicular,C–D,n_strips_min,31.5,0.011607391586962577,0.0010381966651962994
+perpendicular,C–D,n_strips_min,32.5,0.009935927198439966,0.000960542337523317
+perpendicular,C–D,n_strips_min,33.5,0.0018571826539140125,0.0004152786660785198
+perpendicular,C–D,n_strips_min,34.5,0.0045500975020893305,0.0006500139288699043
+perpendicular,C–D,n_strips_min,35.5,0.0015786052558269105,0.0003828680124076201
+perpendicular,C–D,n_strips_min,36.5,0.0013000278577398087,0.00034744705978028984
+perpendicular,C–D,n_strips_min,37.5,0.0039000835732194263,0.000601795960479883
+perpendicular,C–D,n_strips_min,38.5,0.0006500139288699043,0.00024568217207397074
+perpendicular,C–D,n_strips_min,39.5,0.0015786052558269105,0.0003828680124076201
+perpendicular,C–D,n_strips_min,40.5,0.0016714643885226111,0.00039396793454538813
+perpendicular,C–D,n_strips_min,41.5,0.0019500417866097131,0.0004255340045459968
+perpendicular,C–D,n_strips_min,42.5,0.008450181075308757,0.0008858196688800683
+perpendicular,C–D,n_strips_min,43.5,0.00027857739808710187,0.0001608367357757338
+perpendicular,C–D,n_strips_min,44.5,9.285913269570062e-05,9.285913269570062e-05
+perpendicular,C–D,n_strips_min,45.5,0.00027857739808710187,0.0001608367357757338
+perpendicular,C–D,n_strips_min,46.5,9.285913269570062e-05,9.285913269570062e-05
+perpendicular,C–D,n_strips_min,47.5,0.00018571826539140124,0.00013132264484846273
+perpendicular,C–D,n_strips_min,48.5,0.0,0.0
+perpendicular,C–D,n_strips_min,49.5,9.285913269570062e-05,9.285913269570062e-05
+perpendicular,C–D,n_strips_min,50.5,0.0,0.0
+perpendicular,C–D,n_strips_min,51.5,0.0,0.0
+perpendicular,C–D,n_strips_min,52.5,9.285913269570062e-05,9.285913269570062e-05
+perpendicular,C–D,n_strips_min,53.5,0.0,0.0
+perpendicular,C–D,n_strips_min,54.5,0.0,0.0
+perpendicular,C–D,n_strips_min,55.5,9.285913269570062e-05,9.285913269570062e-05
+perpendicular,C–D,n_strips_min,56.5,0.0,0.0
+perpendicular,C–D,n_strips_min,57.5,0.0,0.0
+perpendicular,C–D,n_strips_min,58.5,0.0,0.0
+perpendicular,C–D,n_strips_min,59.5,0.0,0.0
+perpendicular,C–D,n_strips_min,60.5,0.0,0.0
+perpendicular,C–D,n_strips_min,61.5,0.0,0.0
+perpendicular,C–D,n_strips_min,62.5,0.0,0.0
+perpendicular,C–D,n_strips_min,63.5,0.0,0.0
+perpendicular,C–D,n_strips_min,64.5,0.0,0.0
+perpendicular,C–D,n_strips_min,65.5,9.285913269570062e-05,9.285913269570062e-05
+perpendicular,C–D,n_strips_min,66.5,0.0,0.0
+perpendicular,C–D,n_strips_min,67.5,9.285913269570062e-05,9.285913269570062e-05
+perpendicular,C–D,n_strips_min,68.5,0.0,0.0
+perpendicular,C–D,n_strips_min,69.5,9.285913269570062e-05,9.285913269570062e-05
+opposing,A–C (mixed),n_strips_min,10.5,0.004662895581715334,
+opposing,A–C (mixed),n_strips_min,11.5,0.19163736431738265,
+opposing,A–C (mixed),n_strips_min,12.5,0.08584314325026754,
+opposing,A–C (mixed),n_strips_min,13.5,0.11221525760587066,
+opposing,A–C (mixed),n_strips_min,14.5,0.07139581103806758,
+opposing,A–C (mixed),n_strips_min,15.5,0.03829689649900627,
+opposing,A–C (mixed),n_strips_min,16.5,0.053890842378841154,
+opposing,A–C (mixed),n_strips_min,17.5,0.07040207919278398,
+opposing,A–C (mixed),n_strips_min,18.5,0.014829536768078275,
+opposing,A–C (mixed),n_strips_min,19.5,0.036309432808439075,
+opposing,A–C (mixed),n_strips_min,20.5,0.01949243234979361,
+opposing,A–C (mixed),n_strips_min,21.5,0.010243082097538603,
+opposing,A–C (mixed),n_strips_min,22.5,0.043112673903072926,
+opposing,A–C (mixed),n_strips_min,23.5,0.017352086836875096,
+opposing,A–C (mixed),n_strips_min,24.5,0.008332059318147072,
+opposing,A–C (mixed),n_strips_min,25.5,0.025531264332670847,
+opposing,A–C (mixed),n_strips_min,26.5,0.02079192783977985,
+opposing,A–C (mixed),n_strips_min,27.5,0.006115272894052897,
+opposing,A–C (mixed),n_strips_min,28.5,0.02576058706619783,
+opposing,A–C (mixed),n_strips_min,29.5,0.01643479590276716,
+opposing,A–C (mixed),n_strips_min,30.5,0.004892218315242318,
+opposing,A–C (mixed),n_strips_min,31.5,0.02018040055037456,
+opposing,A–C (mixed),n_strips_min,32.5,0.010472404831065586,
+opposing,A–C (mixed),n_strips_min,33.5,0.0037456046476073996,
+opposing,A–C (mixed),n_strips_min,34.5,0.01513530041278092,
+opposing,A–C (mixed),n_strips_min,35.5,0.012459868521632778,
+opposing,A–C (mixed),n_strips_min,36.5,0.002828313713499465,
+opposing,A–C (mixed),n_strips_min,37.5,0.009325791163430668,
+opposing,A–C (mixed),n_strips_min,38.5,0.007338327472863476,
+opposing,A–C (mixed),n_strips_min,39.5,0.002904754624675126,
+opposing,A–C (mixed),n_strips_min,40.5,0.005350863782296285,
+opposing,A–C (mixed),n_strips_min,41.5,0.0052744228711206235,
+opposing,A–C (mixed),n_strips_min,42.5,0.001070172756459257,
+opposing,A–C (mixed),n_strips_min,43.5,0.0032869591805534323,
+opposing,A–C (mixed),n_strips_min,44.5,0.003516281914080416,
+opposing,A–C (mixed),n_strips_min,45.5,0.0012230545788105794,
+opposing,A–C (mixed),n_strips_min,46.5,0.002828313713499465,
+opposing,A–C (mixed),n_strips_min,47.5,0.0025989909799724814,
+opposing,A–C (mixed),n_strips_min,48.5,7.644091117566121e-05,
+opposing,A–C (mixed),n_strips_min,49.5,0.0015288182235132244,
+opposing,A–C (mixed),n_strips_min,50.5,0.001834581868215869,
+opposing,A–C (mixed),n_strips_min,51.5,0.0005350863782296285,
+opposing,A–C (mixed),n_strips_min,52.5,0.0011466136676349182,
+opposing,A–C (mixed),n_strips_min,53.5,0.0013759364011619018,
+opposing,A–C (mixed),n_strips_min,54.5,0.0003822045558783061,
+opposing,A–C (mixed),n_strips_min,55.5,0.00030576364470264486,
+opposing,A–C (mixed),n_strips_min,56.5,0.0006879682005809509,
+opposing,A–C (mixed),n_strips_min,57.5,7.644091117566121e-05,
+opposing,A–C (mixed),n_strips_min,58.5,0.00015288182235132243,
+opposing,A–C (mixed),n_strips_min,59.5,0.0006115272894052897,
+opposing,A–C (mixed),n_strips_min,60.5,0.0,
+opposing,A–C (mixed),n_strips_min,61.5,0.0006115272894052897,
+opposing,A–C (mixed),n_strips_min,62.5,0.0007644091117566122,
+opposing,A–C (mixed),n_strips_min,63.5,0.00015288182235132243,
+opposing,A–C (mixed),n_strips_min,64.5,0.00030576364470264486,
+opposing,A–C (mixed),n_strips_min,65.5,7.644091117566121e-05,
+opposing,A–C (mixed),n_strips_min,66.5,0.00015288182235132243,
+opposing,A–C (mixed),n_strips_min,67.5,7.644091117566121e-05,
+opposing,A–C (mixed),n_strips_min,68.5,0.00022932273352698363,
+opposing,A–C (mixed),n_strips_min,69.5,0.00015288182235132243,
+opposing,A–C,n_strips_min,10.5,0.009172909341079345,0.0008373682273431678
+opposing,A–C,n_strips_min,11.5,0.1302553126433267,0.003155445259218819
+opposing,A–C,n_strips_min,12.5,0.046858278550680324,0.001892588045121533
+opposing,A–C,n_strips_min,13.5,0.06260510625286654,0.002187599452874818
+opposing,A–C,n_strips_min,14.5,0.03699740100902003,0.0016817000458645467
+opposing,A–C,n_strips_min,15.5,0.023773123375630638,0.0013480501520064514
+opposing,A–C,n_strips_min,16.5,0.04028436018957346,0.001754814291889466
+opposing,A–C,n_strips_min,17.5,0.07911634306680936,0.002459212344006331
+opposing,A–C,n_strips_min,18.5,0.01200122305457881,0.0009578018717429803
+opposing,A–C,n_strips_min,19.5,0.04464149212658615,0.0018472780879979472
+opposing,A–C,n_strips_min,20.5,0.022244305152117415,0.0013039842615220898
+opposing,A–C,n_strips_min,21.5,0.012536309432808439,0.0009789213021606557
+opposing,A–C,n_strips_min,22.5,0.06550986087754165,0.0022377742192790776
+opposing,A–C,n_strips_min,23.5,0.02652499617795444,0.0014239364019413819
+opposing,A–C,n_strips_min,24.5,0.01200122305457881,0.0009578018717429803
+opposing,A–C,n_strips_min,25.5,0.03737960556489833,0.0016903641941213867
+opposing,A–C,n_strips_min,26.5,0.0330989145390613,0.0015906323227858747
+opposing,A–C,n_strips_min,27.5,0.010319523008714264,0.0008881631278567689
+opposing,A–C,n_strips_min,28.5,0.042348264791316315,0.0017992053655312367
+opposing,A–C,n_strips_min,29.5,0.023773123375630638,0.0013480501520064514
+opposing,A–C,n_strips_min,30.5,0.007720532028741783,0.0007682216496805451
+opposing,A–C,n_strips_min,31.5,0.03722672374254701,0.0016869038748443595
+opposing,A–C,n_strips_min,32.5,0.018040055037456048,0.0011743075596802642
+opposing,A–C,n_strips_min,33.5,0.006573918361106865,0.0007088838476911561
+opposing,A–C,n_strips_min,34.5,0.026754318911481424,0.0014300784997607176
+opposing,A–C,n_strips_min,35.5,0.019415991438617948,0.0012182676540673618
+opposing,A–C,n_strips_min,36.5,0.003669163736431738,0.0005295981677324193
+opposing,A–C,n_strips_min,37.5,0.017275645925699433,0.001149158873136593
+opposing,A–C,n_strips_min,38.5,0.010548845742241247,0.0008979773830049481
+opposing,A–C,n_strips_min,39.5,0.0027518728023238036,0.00045864546705396726
+opposing,A–C,n_strips_min,40.5,0.010625286653416909,0.0009012250514104568
+opposing,A–C,n_strips_min,41.5,0.009784436630484636,0.0008648301864382175
+opposing,A–C,n_strips_min,42.5,0.00252255006879682,0.00043911960300703474
+opposing,A–C,n_strips_min,43.5,0.009172909341079345,0.0008373682273431678
+opposing,A–C,n_strips_min,44.5,0.006115272894052897,0.0006837082946032074
+opposing,A–C,n_strips_min,45.5,0.0022167864240941752,0.00041164690468846536
+opposing,A–C,n_strips_min,46.5,0.006573918361106865,0.0007088838476911561
+opposing,A–C,n_strips_min,47.5,0.00504510013759364,0.0006210088980764379
+opposing,A–C,n_strips_min,48.5,0.0008408500229322734,0.0002535258210025531
+opposing,A–C,n_strips_min,49.5,0.002981195535850787,0.00047737333728775405
+opposing,A–C,n_strips_min,50.5,0.0033634000917290934,0.0005070516420051062
+opposing,A–C,n_strips_min,51.5,0.00022932273352698363,0.00013239954193310481
+opposing,A–C,n_strips_min,52.5,0.001452377312337563,0.0003331982069668762
+opposing,A–C,n_strips_min,53.5,0.002828313713499465,0.0004649719102811664
+opposing,A–C,n_strips_min,54.5,0.0003822045558783061,0.00017092707365080185
+opposing,A–C,n_strips_min,55.5,0.0016817000458645467,0.00035853965447358427
+opposing,A–C,n_strips_min,56.5,0.001452377312337563,0.0003331982069668762
+opposing,A–C,n_strips_min,57.5,0.0003822045558783061,0.00017092707365080185
+opposing,A–C,n_strips_min,58.5,0.0007644091117566122,0.00024172738573370887
+opposing,A–C,n_strips_min,59.5,0.001452377312337563,0.0003331982069668762
+opposing,A–C,n_strips_min,60.5,0.00022932273352698363,0.00013239954193310481
+opposing,A–C,n_strips_min,61.5,0.0006115272894052897,0.00021620754660955438
+opposing,A–C,n_strips_min,62.5,0.0009937318452835958,0.0002756116247870348
+opposing,A–C,n_strips_min,63.5,0.0003822045558783061,0.00017092707365080185
+opposing,A–C,n_strips_min,64.5,0.00045864546705396726,0.00018724122785378214
+opposing,A–C,n_strips_min,65.5,0.0008408500229322734,0.0002535258210025531
+opposing,A–C,n_strips_min,66.5,7.644091117566121e-05,7.644091117566121e-05
+opposing,A–C,n_strips_min,67.5,0.0005350863782296285,0.0002022436409619776
+opposing,A–C,n_strips_min,68.5,0.0007644091117566122,0.00024172738573370887
+opposing,A–C,n_strips_min,69.5,0.0009937318452835958,0.0002756116247870348

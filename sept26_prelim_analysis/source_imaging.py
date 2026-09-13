@@ -502,13 +502,20 @@ def _dca_two_lines(p1, d1, p2, d2):
     return 0.5 * (q1 + q2), np.linalg.norm(q1 - q2, axis=1)
 
 
-def _track_table(run: str, subruns, dca_max: float, src=None) -> pd.DataFrame:
+def _track_table(run: str, subruns, dca_max: float, src=None,
+                 extra_cols=()) -> pd.DataFrame:
     """Gated, angle-calibrated tracks for one run.
 
     ``src`` defaults to ``<out>/stage3_fullpass`` -- where the run_145 pass
     wrote -- and the campaign pass passes ``<out>/stage3_campaign`` instead.
     Parameterised rather than repointed so the published run_145 products stay
     exactly where the published numbers were computed from.
+
+    ``extra_cols`` reads further stage-3 columns alongside the ones the
+    pairing needs, for a caller that wants per-track QUALITY on the pairs this
+    selection makes (`pair_qa.py`).  It only ever ADDS columns, so the rows --
+    and therefore every pair built from them -- are the same sample with or
+    without it.
 
     NOTE the ``angle_calibrated`` filter below: a run with no
     ``k_arm_<run>.json`` contributes NOTHING here, silently. That is why
@@ -517,6 +524,7 @@ def _track_table(run: str, subruns, dca_max: float, src=None) -> pd.DataFrame:
     src = paths.out('stage3_fullpass') if src is None else src
     cols = ['event_id', 'arm', 'gated', 'bunch', 'angle_calibrated',
             'p0_x', 'p0_y', 'p0_z', 'd_x', 'd_y', 'd_z', 'dca_axis_mm']
+    cols += [c for c in extra_cols if c not in cols]
     out = []
     for sub in subruns:
         p = paths.require(src / f'tracks_{run}_{sub}.parquet',

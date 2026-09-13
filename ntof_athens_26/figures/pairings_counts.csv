@@ -1,0 +1,253 @@
+topology,pair,theta_deg,value,err,n,norm
+intra,A–A,2.5,274.0,16.55294535724685,274,counts
+intra,A–A,7.5,222.0,14.89966442575134,222,counts
+intra,A–A,12.5,412.0,20.29778313018444,412,counts
+intra,A–A,17.5,625.0,25.0,625,counts
+intra,A–A,22.5,795.0,28.19574435974337,795,counts
+intra,A–A,27.5,1000.0,31.622776601683793,1000,counts
+intra,A–A,32.5,1162.0,34.08812109811862,1162,counts
+intra,A–A,37.5,924.0,30.397368307141328,924,counts
+intra,A–A,42.5,693.0,26.324893162176366,693,counts
+intra,A–A,47.5,468.0,21.633307652783937,468,counts
+intra,A–A,52.5,388.0,19.697715603592208,388,counts
+intra,A–A,57.5,374.0,19.339079605813716,374,counts
+intra,A–A,62.5,265.0,16.278820596099706,265,counts
+intra,A–A,67.5,166.0,12.884098726725126,166,counts
+intra,A–A,72.5,77.0,8.774964387392123,77,counts
+intra,A–A,77.5,45.0,6.708203932499369,45,counts
+intra,A–A,82.5,19.0,4.358898943540674,19,counts
+intra,A–A,87.5,6.0,2.449489742783178,6,counts
+intra,A–A,92.5,0.0,0.0,0,counts
+intra,A–A,97.5,0.0,0.0,0,counts
+intra,A–A,102.5,0.0,0.0,0,counts
+intra,A–A,107.5,0.0,0.0,0,counts
+intra,A–A,112.5,0.0,0.0,0,counts
+intra,A–A,117.5,0.0,0.0,0,counts
+intra,A–A,122.5,0.0,0.0,0,counts
+intra,A–A,127.5,0.0,0.0,0,counts
+intra,A–A,132.5,0.0,0.0,0,counts
+intra,A–A,137.5,0.0,0.0,0,counts
+intra,A–A,142.5,0.0,0.0,0,counts
+intra,A–A,147.5,0.0,0.0,0,counts
+intra,A–A,152.5,0.0,0.0,0,counts
+intra,A–A,157.5,0.0,0.0,0,counts
+intra,A–A,162.5,0.0,0.0,0,counts
+intra,A–A,167.5,0.0,0.0,0,counts
+intra,A–A,172.5,0.0,0.0,0,counts
+intra,A–A,177.5,0.0,0.0,0,counts
+intra,C–C,2.5,55.0,7.416198487095663,55,counts
+intra,C–C,7.5,135.0,11.61895003862225,135,counts
+intra,C–C,12.5,229.0,15.132745950421556,229,counts
+intra,C–C,17.5,237.0,15.394804318340652,237,counts
+intra,C–C,22.5,271.0,16.46207763315433,271,counts
+intra,C–C,27.5,297.0,17.233687939614086,297,counts
+intra,C–C,32.5,334.0,18.275666882497067,334,counts
+intra,C–C,37.5,360.0,18.973665961010276,360,counts
+intra,C–C,42.5,420.0,20.493901531919196,420,counts
+intra,C–C,47.5,475.0,21.79449471770337,475,counts
+intra,C–C,52.5,460.0,21.447610589527216,460,counts
+intra,C–C,57.5,432.0,20.784609690826528,432,counts
+intra,C–C,62.5,390.0,19.748417658131498,390,counts
+intra,C–C,67.5,338.0,18.384776310850235,338,counts
+intra,C–C,72.5,273.0,16.522711641858304,273,counts
+intra,C–C,77.5,207.0,14.38749456993816,207,counts
+intra,C–C,82.5,136.0,11.661903789690601,136,counts
+intra,C–C,87.5,72.0,8.48528137423857,72,counts
+intra,C–C,92.5,17.0,4.123105625617661,17,counts
+intra,C–C,97.5,2.0,1.4142135623730951,2,counts
+intra,C–C,102.5,0.0,0.0,0,counts
+intra,C–C,107.5,0.0,0.0,0,counts
+intra,C–C,112.5,0.0,0.0,0,counts
+intra,C–C,117.5,0.0,0.0,0,counts
+intra,C–C,122.5,0.0,0.0,0,counts
+intra,C–C,127.5,0.0,0.0,0,counts
+intra,C–C,132.5,0.0,0.0,0,counts
+intra,C–C,137.5,0.0,0.0,0,counts
+intra,C–C,142.5,0.0,0.0,0,counts
+intra,C–C,147.5,0.0,0.0,0,counts
+intra,C–C,152.5,0.0,0.0,0,counts
+intra,C–C,157.5,0.0,0.0,0,counts
+intra,C–C,162.5,0.0,0.0,0,counts
+intra,C–C,167.5,0.0,0.0,0,counts
+intra,C–C,172.5,0.0,0.0,0,counts
+intra,C–C,177.5,0.0,0.0,0,counts
+intra,D–D,2.5,69.0,8.306623862918075,69,counts
+intra,D–D,7.5,249.0,15.7797338380595,249,counts
+intra,D–D,12.5,319.0,17.86057109949175,319,counts
+intra,D–D,17.5,318.0,17.832554500127006,318,counts
+intra,D–D,22.5,368.0,19.183326093250876,368,counts
+intra,D–D,27.5,400.0,20.0,400,counts
+intra,D–D,32.5,563.0,23.727621035409346,563,counts
+intra,D–D,37.5,625.0,25.0,625,counts
+intra,D–D,42.5,522.0,22.847319317591726,522,counts
+intra,D–D,47.5,491.0,22.15851980616034,491,counts
+intra,D–D,52.5,448.0,21.166010488516726,448,counts
+intra,D–D,57.5,557.0,23.600847442411894,557,counts
+intra,D–D,62.5,412.0,20.29778313018444,412,counts
+intra,D–D,67.5,373.0,19.313207915827967,373,counts
+intra,D–D,72.5,300.0,17.320508075688775,300,counts
+intra,D–D,77.5,179.0,13.379088160259652,179,counts
+intra,D–D,82.5,129.0,11.357816691600547,129,counts
+intra,D–D,87.5,101.0,10.04987562112089,101,counts
+intra,D–D,92.5,44.0,6.6332495807108,44,counts
+intra,D–D,97.5,10.0,3.1622776601683795,10,counts
+intra,D–D,102.5,1.0,1.0,1,counts
+intra,D–D,107.5,0.0,0.0,0,counts
+intra,D–D,112.5,0.0,0.0,0,counts
+intra,D–D,117.5,0.0,0.0,0,counts
+intra,D–D,122.5,0.0,0.0,0,counts
+intra,D–D,127.5,0.0,0.0,0,counts
+intra,D–D,132.5,0.0,0.0,0,counts
+intra,D–D,137.5,0.0,0.0,0,counts
+intra,D–D,142.5,0.0,0.0,0,counts
+intra,D–D,147.5,0.0,0.0,0,counts
+intra,D–D,152.5,0.0,0.0,0,counts
+intra,D–D,157.5,0.0,0.0,0,counts
+intra,D–D,162.5,0.0,0.0,0,counts
+intra,D–D,167.5,0.0,0.0,0,counts
+intra,D–D,172.5,0.0,0.0,0,counts
+intra,D–D,177.5,0.0,0.0,0,counts
+perpendicular,A–D,2.5,0.0,0.0,0,counts
+perpendicular,A–D,7.5,0.0,0.0,0,counts
+perpendicular,A–D,12.5,2.0,1.4142135623730951,2,counts
+perpendicular,A–D,17.5,10.0,3.1622776601683795,10,counts
+perpendicular,A–D,22.5,47.0,6.855654600401044,47,counts
+perpendicular,A–D,27.5,143.0,11.958260743101398,143,counts
+perpendicular,A–D,32.5,308.0,17.549928774784245,308,counts
+perpendicular,A–D,37.5,497.0,22.293496809607955,497,counts
+perpendicular,A–D,42.5,666.0,25.80697580112788,666,counts
+perpendicular,A–D,47.5,679.0,26.057628441590765,679,counts
+perpendicular,A–D,52.5,692.0,26.30589287593181,692,counts
+perpendicular,A–D,57.5,855.0,29.24038303442689,855,counts
+perpendicular,A–D,62.5,968.0,31.11269837220809,968,counts
+perpendicular,A–D,67.5,1039.0,32.2335229225724,1039,counts
+perpendicular,A–D,72.5,1040.0,32.2490309931942,1040,counts
+perpendicular,A–D,77.5,973.0,31.192947920964443,973,counts
+perpendicular,A–D,82.5,924.0,30.397368307141328,924,counts
+perpendicular,A–D,87.5,1353.0,36.78314831549904,1353,counts
+perpendicular,A–D,92.5,1198.0,34.61213659975356,1198,counts
+perpendicular,A–D,97.5,822.0,28.6705423736629,822,counts
+perpendicular,A–D,102.5,844.0,29.0516780926679,844,counts
+perpendicular,A–D,107.5,721.0,26.851443164195103,721,counts
+perpendicular,A–D,112.5,797.0,28.231188426986208,797,counts
+perpendicular,A–D,117.5,695.0,26.362852652928137,695,counts
+perpendicular,A–D,122.5,643.0,25.357444666211933,643,counts
+perpendicular,A–D,127.5,502.0,22.40535650240808,502,counts
+perpendicular,A–D,132.5,451.0,21.236760581595302,451,counts
+perpendicular,A–D,137.5,391.0,19.77371993328519,391,counts
+perpendicular,A–D,142.5,236.0,15.362291495737216,236,counts
+perpendicular,A–D,147.5,151.0,12.288205727444508,151,counts
+perpendicular,A–D,152.5,73.0,8.54400374531753,73,counts
+perpendicular,A–D,157.5,23.0,4.795831523312719,23,counts
+perpendicular,A–D,162.5,1.0,1.0,1,counts
+perpendicular,A–D,167.5,0.0,0.0,0,counts
+perpendicular,A–D,172.5,0.0,0.0,0,counts
+perpendicular,A–D,177.5,0.0,0.0,0,counts
+perpendicular,C–D,2.5,0.0,0.0,0,counts
+perpendicular,C–D,7.5,0.0,0.0,0,counts
+perpendicular,C–D,12.5,0.0,0.0,0,counts
+perpendicular,C–D,17.5,9.0,3.0,9,counts
+perpendicular,C–D,22.5,42.0,6.48074069840786,42,counts
+perpendicular,C–D,27.5,108.0,10.392304845413264,108,counts
+perpendicular,C–D,32.5,154.0,12.409673645990857,154,counts
+perpendicular,C–D,37.5,233.0,15.264337522473747,233,counts
+perpendicular,C–D,42.5,341.0,18.466185312619388,341,counts
+perpendicular,C–D,47.5,388.0,19.697715603592208,388,counts
+perpendicular,C–D,52.5,419.0,20.46948949045872,419,counts
+perpendicular,C–D,57.5,413.0,20.322401432901575,413,counts
+perpendicular,C–D,62.5,395.0,19.87460691435179,395,counts
+perpendicular,C–D,67.5,444.0,21.071307505705477,444,counts
+perpendicular,C–D,72.5,530.0,23.021728866442675,530,counts
+perpendicular,C–D,77.5,539.0,23.2163735324878,539,counts
+perpendicular,C–D,82.5,585.0,24.186773244895647,585,counts
+perpendicular,C–D,87.5,641.0,25.317977802344327,641,counts
+perpendicular,C–D,92.5,618.0,24.859605789312106,618,counts
+perpendicular,C–D,97.5,616.0,24.819347291981714,616,counts
+perpendicular,C–D,102.5,697.0,26.40075756488817,697,counts
+perpendicular,C–D,107.5,662.0,25.729360660537214,662,counts
+perpendicular,C–D,112.5,614.0,24.779023386727733,614,counts
+perpendicular,C–D,117.5,493.0,22.20360331117452,493,counts
+perpendicular,C–D,122.5,427.0,20.663978319771825,427,counts
+perpendicular,C–D,127.5,296.0,17.204650534085253,296,counts
+perpendicular,C–D,132.5,366.0,19.131126469708992,366,counts
+perpendicular,C–D,137.5,288.0,16.97056274847714,288,counts
+perpendicular,C–D,142.5,229.0,15.132745950421556,229,counts
+perpendicular,C–D,147.5,129.0,11.357816691600547,129,counts
+perpendicular,C–D,152.5,62.0,7.874007874011811,62,counts
+perpendicular,C–D,157.5,15.0,3.872983346207417,15,counts
+perpendicular,C–D,162.5,14.0,3.7416573867739413,14,counts
+perpendicular,C–D,167.5,2.0,1.4142135623730951,2,counts
+perpendicular,C–D,172.5,0.0,0.0,0,counts
+perpendicular,C–D,177.5,0.0,0.0,0,counts
+opposing,A–C,2.5,0.0,0.0,0,counts
+opposing,A–C,7.5,0.0,0.0,0,counts
+opposing,A–C,12.5,0.0,0.0,0,counts
+opposing,A–C,17.5,0.0,0.0,0,counts
+opposing,A–C,22.5,0.0,0.0,0,counts
+opposing,A–C,27.5,0.0,0.0,0,counts
+opposing,A–C,32.5,0.0,0.0,0,counts
+opposing,A–C,37.5,0.0,0.0,0,counts
+opposing,A–C,42.5,0.0,0.0,0,counts
+opposing,A–C,47.5,0.0,0.0,0,counts
+opposing,A–C,52.5,0.0,0.0,0,counts
+opposing,A–C,57.5,0.0,0.0,0,counts
+opposing,A–C,62.5,0.0,0.0,0,counts
+opposing,A–C,67.5,0.0,0.0,0,counts
+opposing,A–C,72.5,0.0,0.0,0,counts
+opposing,A–C,77.5,0.0,0.0,0,counts
+opposing,A–C,82.5,0.0,0.0,0,counts
+opposing,A–C,87.5,3.0,1.7320508075688772,3,counts
+opposing,A–C,92.5,37.0,6.082762530298219,37,counts
+opposing,A–C,97.5,120.0,10.954451150103322,120,counts
+opposing,A–C,102.5,179.0,13.379088160259652,179,counts
+opposing,A–C,107.5,311.0,17.635192088548397,311,counts
+opposing,A–C,112.5,488.0,22.090722034374522,488,counts
+opposing,A–C,117.5,678.0,26.038433132583073,678,counts
+opposing,A–C,122.5,834.0,28.879058156387302,834,counts
+opposing,A–C,127.5,846.0,29.086079144497972,846,counts
+opposing,A–C,132.5,860.0,29.32575659723036,860,counts
+opposing,A–C,137.5,1165.0,34.132096331752024,1165,counts
+opposing,A–C,142.5,1251.0,35.369478367654786,1251,counts
+opposing,A–C,147.5,1234.0,35.12833614050059,1234,counts
+opposing,A–C,152.5,1065.0,32.63433774416144,1065,counts
+opposing,A–C,157.5,856.0,29.257477676655586,856,counts
+opposing,A–C,162.5,793.0,28.160255680657446,793,counts
+opposing,A–C,167.5,822.0,28.6705423736629,822,counts
+opposing,A–C,172.5,934.0,30.56141357987225,934,counts
+opposing,A–C,177.5,606.0,24.61706725018234,606,counts
+opposing,A–C (back-to-back cut),2.5,0.0,,0,counts
+opposing,A–C (back-to-back cut),7.5,0.0,,0,counts
+opposing,A–C (back-to-back cut),12.5,0.0,,0,counts
+opposing,A–C (back-to-back cut),17.5,0.0,,0,counts
+opposing,A–C (back-to-back cut),22.5,0.0,,0,counts
+opposing,A–C (back-to-back cut),27.5,0.0,,0,counts
+opposing,A–C (back-to-back cut),32.5,0.0,,0,counts
+opposing,A–C (back-to-back cut),37.5,0.0,,0,counts
+opposing,A–C (back-to-back cut),42.5,0.0,,0,counts
+opposing,A–C (back-to-back cut),47.5,0.0,,0,counts
+opposing,A–C (back-to-back cut),52.5,0.0,,0,counts
+opposing,A–C (back-to-back cut),57.5,0.0,,0,counts
+opposing,A–C (back-to-back cut),62.5,0.0,,0,counts
+opposing,A–C (back-to-back cut),67.5,0.0,,0,counts
+opposing,A–C (back-to-back cut),72.5,0.0,,0,counts
+opposing,A–C (back-to-back cut),77.5,0.0,,0,counts
+opposing,A–C (back-to-back cut),82.5,0.0,,0,counts
+opposing,A–C (back-to-back cut),87.5,3.0,,3,counts
+opposing,A–C (back-to-back cut),92.5,37.0,,37,counts
+opposing,A–C (back-to-back cut),97.5,120.0,,120,counts
+opposing,A–C (back-to-back cut),102.5,179.0,,179,counts
+opposing,A–C (back-to-back cut),107.5,311.0,,311,counts
+opposing,A–C (back-to-back cut),112.5,488.0,,488,counts
+opposing,A–C (back-to-back cut),117.5,678.0,,678,counts
+opposing,A–C (back-to-back cut),122.5,834.0,,834,counts
+opposing,A–C (back-to-back cut),127.5,846.0,,846,counts
+opposing,A–C (back-to-back cut),132.5,860.0,,860,counts
+opposing,A–C (back-to-back cut),137.5,1165.0,,1165,counts
+opposing,A–C (back-to-back cut),142.5,1251.0,,1251,counts
+opposing,A–C (back-to-back cut),147.5,1234.0,,1234,counts
+opposing,A–C (back-to-back cut),152.5,1065.0,,1065,counts
+opposing,A–C (back-to-back cut),157.5,856.0,,856,counts
+opposing,A–C (back-to-back cut),162.5,793.0,,793,counts
+opposing,A–C (back-to-back cut),167.5,822.0,,822,counts
+opposing,A–C (back-to-back cut),172.5,0.0,,0,counts
+opposing,A–C (back-to-back cut),177.5,0.0,,0,counts
