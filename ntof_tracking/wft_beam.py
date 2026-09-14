@@ -334,7 +334,10 @@ def seeds_from_hits_beam(df, pos_maps, feu_x, feu_y,
                          busy=BUSY_PLANE_HITS,
                          n_candidates=N_CANDIDATES_BEAM,
                          min_strips=MIN_STRIPS_BEAM,
-                         hot: Optional[Dict[str, object]] = None) -> Dict[int, dict]:
+                         hot: Optional[Dict[str, object]] = None,
+                         local_mm: Optional[float] = None,
+                         local_mode: Optional[str] = None,
+                         split_gap_mm: Optional[float] = None) -> Dict[int, dict]:
     """Beam seeds: {eventId: {'x': [Seed], 'y': [Seed], 'n_hits', 'spark'}}.
 
     Same contract and the same clustering as `wft.seed.seeds_from_hits` -- only
@@ -355,33 +358,57 @@ def seeds_from_hits_beam(df, pos_maps, feu_x, feu_y,
     CHANNELS.md's wildcard spec, item 1: never seed on a flagged channel).
     """
     from wft import seed as wseed
-    df = wseed.apply_significance_floor(df, wseed.SIG_REL_FLOOR)
+    lm = wseed.SIG_FLOOR_LOCAL_MM if local_mm is None else local_mm
+    rescue = wseed.local_floor_rescues(lm, local_mode)
+    sg = wseed.SPLIT_GAP_MM if split_gap_mm is None else split_gap_mm
+    pos = wseed.strip_positions(df, pos_maps) if lm else None
+    loc = None
+    if rescue:
+        loc = wseed.apply_significance_floor(df, wseed.SIG_REL_FLOOR, local_mm=lm, pos=pos)
+        loc = {int(e): g for e, g in loc.groupby('eventId', sort=False)}
+    df = wseed.apply_significance_floor(df, wseed.SIG_REL_FLOOR,
+                                        local_mm=0.0 if rescue else lm,
+                                        pos=None if rescue else pos)
     out: Dict[int, dict] = {}
     if len(df) == 0:
         return out
     hot = hot or {}
+    feu_of = {'x': feu_x, 'y': feu_y}
+
+    def plane_seeds(gp, plane):
+        """(every cluster, the ones that survive the isochronous veto)."""
+        ch = gp['channel'].to_numpy().astype(int)
+        cands = wseed.seed_candidates(pos_maps[feu_of[plane]][ch], ch,
+                                      gp['amplitude'].to_numpy(),
+                                      min_strips=min_strips,
+                                      n_candidates=n_candidates,
+                                      hot=hot.get(plane))
+        if sg:
+            cands = wseed.split_seeds(cands, pos_maps[feu_of[plane]], sg, min_strips)
+        smp = dict(zip(ch, gp['max_sample'].to_numpy()))
+        keep = []
+        for s in cands:
+            m = np.array([smp.get(int(c), np.nan) for c in s.channels],
+                         dtype=float)
+            m = m[np.isfinite(m)]
+            span = (m.max() - m.min()) if len(m) else 0.0
+            if s.n_strips >= WIDE_STRIPS and span < ISOCHRONOUS_SPAN:
+                continue
+            keep.append(s)
+        return cands, keep
+
     for eid, g in df.groupby('eventId', sort=False):
         rec = {'x': [], 'y': [], 'n_hits': int(len(g)), 'spark': False}
-        for plane, feu in (('x', feu_x), ('y', feu_y)):
+        for plane, feu in feu_of.items():
             gp = g[g['feu'] == feu]
             if len(gp) == 0 or len(gp) > busy:
                 continue
-            ch = gp['channel'].to_numpy().astype(int)
-            cands = wseed.seed_candidates(pos_maps[feu][ch], ch,
-                                          gp['amplitude'].to_numpy(),
-                                          min_strips=min_strips,
-                                          n_candidates=n_candidates,
-                                          hot=hot.get(plane))
-            smp = dict(zip(ch, gp['max_sample'].to_numpy()))
-            keep = []
-            for s in cands:
-                m = np.array([smp.get(int(c), np.nan) for c in s.channels],
-                             dtype=float)
-                m = m[np.isfinite(m)]
-                span = (m.max() - m.min()) if len(m) else 0.0
-                if s.n_strips >= WIDE_STRIPS and span < ISOCHRONOUS_SPAN:
-                    continue
-                keep.append(s)
+            cands, keep = plane_seeds(gp, plane)
+            if loc is not None:
+                gl = loc[int(eid)]
+                keep = wseed.rescue_candidates(keep, cands,
+                                               plane_seeds(gl[gl['feu'] == feu], plane)[1],
+                                               pos_maps[feu], n_candidates)
             rec[plane] = keep
         if rec['x'] or rec['y']:
             out[int(eid)] = rec
@@ -517,6 +544,7 @@ def reconstruct_subrun(cfg: BeamConfig, bundle_path: str, out_path: str,
 def _write_meta(df, out_path, cal, cfg, bundle_path, feu_x, feu_y, tags_done,
                 n_seeded, pad_strips, partial=False, allow_acct=None,
                 allow_meta=None):
+    from wft import seed as wseed
     meta = dict(n_events=int(len(df)), n_seeded=int(n_seeded),
                 status='PRELIMINARY' + (' (PARTIAL: run still going)'
                                         if partial else ''),
@@ -543,11 +571,15 @@ def _write_meta(df, out_path, cal, cfg, bundle_path, feu_x, feu_y, tags_done,
                                n_candidates=N_CANDIDATES_BEAM,
                                wide_strips=WIDE_STRIPS,
                                isochronous_span=ISOCHRONOUS_SPAN,
+                               sig_floor_local_mm=wseed.SIG_FLOOR_LOCAL_MM,
+                               sig_floor_local_mode=wseed.SIG_FLOOR_LOCAL_MODE,
+                               split_gap_mm=wseed.SPLIT_GAP_MM,
                                pad_strips=pad_strips),
                 reco_config=dict(model_frac=float(os.environ.get('WFT_MODEL_FRAC', 0)),
                                  prescan=os.environ.get('WFT_PRESCAN', '0'),
                                  pair_select=os.environ.get('WFT_PAIR_SELECT', '0'),
-                                 chi2dof_bad=os.environ.get('WFT_CHI2DOF_BAD', '300')))
+                                 chi2dof_bad=os.environ.get('WFT_CHI2DOF_BAD', '300'),
+                                 xy_pairing=(cal.xy_pairing or {}).get('features')))
     # The selection this table was fitted under, and what it cost at the seeder.
     # `n_missing` is the number that must not be lost: allowlisted events the
     # beam seeder produced no cluster for. They are a real stage-1 -> stage-2

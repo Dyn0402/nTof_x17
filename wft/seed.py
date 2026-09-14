@@ -15,13 +15,18 @@ production gap threshold, largest cluster kept
 from __future__ import annotations
 
 import os
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import Dict, Optional
 
 import numpy as np
 import pandas as pd
 
 SIG_REL_FLOOR = 0.10       # per-plane, relative to that plane's strongest strip
+#: Judge each strip against the strongest strip within this many mm instead of
+#: the whole plane; 0 = whole plane. A plane-wide floor lets a brighter track
+#: anywhere in the plane push a fainter one under MIN_STRIPS
+#: (sept26_prelim_analysis/intra_bench.py, floor study).
+SIG_FLOOR_LOCAL_MM = float(os.environ.get('WFT_SIG_FLOOR_LOCAL_MM', 0.0))
 GAP_THRESHOLD_MM = 12.0    # production spatial clustering gap
 MIN_STRIPS = 3
 SPARK_VETO_HITS = 50       # full-detector discharge: drop the event
@@ -45,19 +50,117 @@ class Seed:
     n_dropped: int          # strips in competing clusters
     amp_sum: float
     n_raw: int              # strips before the significance floor
+    rescued: bool = False   # added by a rescue-mode local floor, not a production seed
 
 
-def apply_significance_floor(df: pd.DataFrame, rel: float = SIG_REL_FLOOR) -> pd.DataFrame:
+def apply_significance_floor(df: pd.DataFrame, rel: float = SIG_REL_FLOOR,
+                             local_mm: Optional[float] = None,
+                             pos: Optional[np.ndarray] = None) -> pd.DataFrame:
     """Keep strips with significance >= rel x that plane's strongest strip in
     that event (the 2026-07-25 fix: coherent noise otherwise inflates
-    multiplicity, steals cluster membership and fakes the spark veto)."""
+    multiplicity, steals cluster membership and fakes the spark veto).
+
+    ``local_mm`` > 0 compares each strip with the strongest strip within
+    +-local_mm of it instead (``pos``: one position per row, required).
+    None = ``SIG_FLOOR_LOCAL_MM``."""
     if not rel or 'significance' not in df.columns:
         return df
     sig = df['significance'].to_numpy()
     if not np.isfinite(sig).any():
         return df
-    mx = df.groupby(['eventId', 'feu'])['significance'].transform('max')
-    return df[sig >= rel * mx.to_numpy()].copy()
+    local_mm = SIG_FLOOR_LOCAL_MM if local_mm is None else local_mm
+    if not local_mm:
+        mx = df.groupby(['eventId', 'feu'])['significance'].transform('max')
+        return df[sig >= rel * mx.to_numpy()].copy()
+    if pos is None:
+        raise ValueError('a local significance floor needs one strip position per row')
+    pos = np.asarray(pos, float)
+    keep = np.zeros(len(df), bool)
+    for idx in df.groupby(['eventId', 'feu']).indices.values():
+        ii = idx[np.isfinite(pos[idx])]
+        if not len(ii):
+            continue
+        ii = ii[np.argsort(pos[ii])]
+        p, s = pos[ii], sig[ii]
+        lo = np.searchsorted(p, p - local_mm, 'left')
+        hi = np.searchsorted(p, p + local_mm, 'right')
+        mx = np.array([np.nanmax(s[a:b]) for a, b in zip(lo, hi)])
+        keep[ii] = s >= rel * mx
+    return df[keep].copy()
+
+
+#: 'rescue' (default): seeds come from the plane-wide floor exactly as before,
+#: and a cluster that only the local floor finds, away from every plane-wide
+#: cluster, is added as an extra candidate flagged ``rescued`` -- no existing
+#: seed can widen or move. 'replace': the local floor replaces the plane-wide
+#: one; it widens real single-track clusters and loses 1.4-7.3 % of production
+#: tracks on run_145 (wft/MULTITRACK_2026-09-14.md), so it is kept for study only.
+SIG_FLOOR_LOCAL_MODE = os.environ.get('WFT_SIG_FLOOR_LOCAL_MODE', 'rescue')
+
+
+def local_floor_rescues(local_mm: Optional[float], mode: Optional[str] = None) -> bool:
+    mode = SIG_FLOOR_LOCAL_MODE if mode is None else mode
+    if mode not in ('replace', 'rescue'):
+        raise ValueError(f"local floor mode must be 'replace' or 'rescue', got {mode!r}")
+    return bool(local_mm) and mode == 'rescue'
+
+
+def rescue_candidates(keep: list, blockers: list, extra: list, pos_map: np.ndarray,
+                      n_candidates: int) -> list:
+    """``keep`` plus each ``extra`` cluster whose position range overlaps no
+    ``blockers`` cluster, up to ``n_candidates`` in total."""
+    spans = [(np.nanmin(pos_map[s.channels]), np.nanmax(pos_map[s.channels])) for s in blockers]
+    out = list(keep)
+    for s in extra:
+        if len(out) >= n_candidates:
+            break
+        q = pos_map[s.channels]
+        lo, hi = np.nanmin(q), np.nanmax(q)
+        if all(hi < a or lo > b for a, b in spans):
+            out.append(replace(s, rescued=True))
+    return out
+
+
+#: Re-cluster each seed cluster at this smaller gap and, when it breaks into two
+#: or more parts of at least ``min_strips``, offer the parts instead; 0 = off.
+#: STUDY ONLY -- do not enable in production. It separates tracks 12-24 mm apart
+#: on the overlay bench, but on real run_145 triggers it replaces 11-27 % of
+#: production tracks (wft/MULTITRACK_2026-09-14.md): real clusters have holes.
+SPLIT_GAP_MM = float(os.environ.get('WFT_SPLIT_GAP_MM', 0.0))
+
+
+def split_seeds(seeds: list, pos_map: np.ndarray, gap_mm: float,
+                min_strips: int = MIN_STRIPS) -> list:
+    out = []
+    for s in seeds:
+        ch = np.asarray(s.channels, dtype=np.int64)
+        p = pos_map[ch]
+        ok = np.isfinite(p)
+        ch, p = ch[ok], p[ok]
+        o = np.argsort(p)
+        ch, p = ch[o], p[o]
+        lab = _cluster_labels(p, gap_mm)
+        n_lab = int(lab.max()) + 1 if len(lab) else 0
+        parts = [m for m in (lab == k for k in range(n_lab)) if m.sum() >= min_strips]
+        if len(parts) < 2:
+            out.append(s)
+            continue
+        for m in parts:
+            out.append(Seed(channels=ch[m], n_strips=int(m.sum()),
+                            n_dropped=s.n_dropped + int((~m).sum()),
+                            amp_sum=float('nan'), n_raw=s.n_raw))
+    return out
+
+
+def strip_positions(df: pd.DataFrame, pos_maps: Dict[int, np.ndarray]) -> np.ndarray:
+    """Strip position [mm] of every hit row, NaN where the map has none."""
+    p = np.full(len(df), np.nan)
+    feu = df['feu'].to_numpy()
+    ch = df['channel'].to_numpy().astype(int)
+    for f, m in pos_maps.items():
+        s = feu == f
+        p[s] = m[ch[s]]
+    return p
 
 
 def _cluster_labels(pos: np.ndarray, gap_mm: float) -> np.ndarray:
@@ -212,7 +315,8 @@ def seeds_from_hits(df_hits: pd.DataFrame, pos_maps: Dict[int, np.ndarray],
                     feu_x: int, feu_y: int, rel_floor: float = SIG_REL_FLOOR,
                     spark_veto: Optional[int] = SPARK_VETO_HITS,
                     n_candidates: int = N_CANDIDATES,
-                    hot: Optional[Dict[str, object]] = None) -> Dict[int, dict]:
+                    hot: Optional[Dict[str, object]] = None,
+                    local_mm: Optional[float] = None) -> Dict[int, dict]:
     """Build per-event seeds for both planes from a combined hits DataFrame.
 
     ``hot``: optional ``{'x': [...], 'y': [...]}`` channel numbers, passed to
@@ -225,7 +329,15 @@ def seeds_from_hits(df_hits: pd.DataFrame, pos_maps: Dict[int, np.ndarray],
     wft.reco.fit_plane_candidates).
     """
     df = df_hits[df_hits['feu'].isin((feu_x, feu_y))]
-    df = apply_significance_floor(df, rel_floor)
+    lm = SIG_FLOOR_LOCAL_MM if local_mm is None else local_mm
+    if SPLIT_GAP_MM:
+        raise NotImplementedError('split seeding is implemented in the beam seeder '
+                                  '(ntof_tracking.wft_beam.seeds_from_hits_beam) only')
+    if local_floor_rescues(lm):
+        raise NotImplementedError('the rescue floor mode is implemented in the beam seeder '
+                                  '(ntof_tracking.wft_beam.seeds_from_hits_beam) only')
+    df = apply_significance_floor(df, rel_floor, local_mm=lm,
+                                  pos=strip_positions(df, pos_maps) if lm else None)
     out: Dict[int, dict] = {}
     if len(df) == 0:
         return out

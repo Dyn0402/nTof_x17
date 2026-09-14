@@ -76,6 +76,10 @@ python -m wft.cli info   &lt;table.parquet&gt;</pre></div>
 <tr><td><code>MIN_STRIPS</code></td><td>seed</td><td class="num">3</td><td>minimum cluster size</td></tr>
 <tr><td><code>SPARK_VETO_HITS</code></td><td>seed</td><td class="num">50</td><td>full-detector discharge</td></tr>
 <tr><td><code>N_CANDIDATES</code></td><td>seed</td><td class="num">3</td><td>clusters offered to the fit</td></tr>
+<tr><td><code>SIG_FLOOR_LOCAL_MM</code></td><td>seed</td><td class="num">0</td><td>local significance floor width; 0 = plane-wide only (env <code>WFT_SIG_FLOOR_LOCAL_MM</code>)</td></tr>
+<tr><td><code>SIG_FLOOR_LOCAL_MODE</code></td><td>seed</td><td class="num">rescue</td><td>local floor only adds clusters; <code>replace</code> is study-only</td></tr>
+<tr><td><code>SPLIT_GAP_MM</code></td><td>seed</td><td class="num">0</td><td>study only: re-cluster seeds at a smaller gap; loses real tracks</td></tr>
+<tr><td><code>xy_pairing</code></td><td>bundle</td><td class="num">{}</td><td>x/y charge-feature calibration for re-pairing time-degenerate tracks</td></tr>
 <tr><td><code>N_PED_EVENTS</code></td><td>io</td><td class="num">300</td><td>events used for pedestal and noise</td></tr>
 <tr><td><code>CNS_BLOCK</code></td><td>io</td><td class="num">64</td><td>common-mode block = one Dream chip</td></tr>
 <tr><td><code>pad_strips</code></td><td>reco</td><td class="num">3</td><td>window pad; must be ≥ 2 (§26)</td></tr>

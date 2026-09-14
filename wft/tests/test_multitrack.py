@@ -32,12 +32,12 @@ class Cal:
     dt_xy = {0: -18.8}
 
 
-def fit(t0, dchi2, plausible=True, p0=100.0):
+def fit(t0, dchi2, plausible=True, p0=100.0, q_sum=2e4):
     """A real PlaneFit (candidate_rows needs asdict) with the selector's
     attributes attached the way fit_plane_candidates attaches them."""
     f = PlaneFit(p0=p0, w=0.005, t0=t0, tan_theta=0.14, theta_deg=8.0,
                  chi2=500.0, dof=400, p0_err=0.4, w_err=1e-3, tan_err=0.03,
-                 t0_err=15.0, q_sum=2e4, q_u50=350.0, q_u90=600.0,
+                 t0_err=15.0, q_sum=q_sum, q_u50=350.0, q_u90=600.0,
                  q_uend=700.0, n_strips=8, n_seed=6, n_dropped=0,
                  slope_reliable=True, quality_ok=True, n_candidates=2)
     f._plausible, f._dchi2 = plausible, dchi2
@@ -79,6 +79,92 @@ def test_double_counting_guard():
     pairs = wr.select_tracks({'x': xs, 'y': ys}, 0, Cal())
     check('non-coincident second pair not gated',
           sum(g for *_ij, g in pairs) == 1)
+
+
+def test_time_degenerate_pairing():
+    print('time-coincident tracks: pairing follows summed dchi2 rank, not geometry')
+    # Without an xy_pairing calibration. The overlay bench
+    # (sept26_prelim_analysis/intra_bench.py) measures ~75 % swaps when the two
+    # planes rank the tracks differently; test_charge_pairing is the fix.
+    xs = [fit(400.0, 800.0, p0=100.0), fit(405.0, 600.0, p0=250.0)]
+    ys = [fit(418.8, 500.0, p0=50.0), fit(423.8, 700.0, p0=300.0)]
+    pairs = wr.select_tracks({'x': xs, 'y': ys}, 0, Cal())
+    check('both pairs gated', len(pairs) == 2 and all(g for *_ij, g in pairs))
+    check('planes rank differently -> x0 pairs with y1 (strongest with strongest)',
+          [(i, j) for i, j, _ in pairs] == [(0, 1), (1, 0)],
+          f'got {[(i, j) for i, j, _ in pairs]}')
+    ys = [fit(418.8, 700.0, p0=50.0), fit(423.8, 500.0, p0=300.0)]
+    pairs = wr.select_tracks({'x': xs, 'y': ys}, 0, Cal())
+    check('planes rank alike -> x0 pairs with y0',
+          [(i, j) for i, j, _ in pairs] == [(0, 0), (1, 1)],
+          f'got {[(i, j) for i, j, _ in pairs]}')
+
+
+PAIRING = {'features': ['lq'], 'median': {'lq': 0.0}, 'rsig': {'lq': 0.3}}
+
+
+def test_charge_pairing():
+    print('xy_pairing: time-degenerate tracks re-paired by x/y charge')
+    xs = [fit(400.0, 800.0, q_sum=3e4), fit(405.0, 600.0, q_sum=1e4)]
+    ys = [fit(418.8, 500.0, q_sum=3e4), fit(423.8, 700.0, q_sum=1e4)]
+    pairs = wr.select_tracks({'x': xs, 'y': ys}, 0, Cal(), pairing=PAIRING)
+    check('bright x pairs with bright y despite the dchi2 ranks',
+          [(i, j) for i, j, _ in pairs] == [(0, 0), (1, 1)],
+          f'got {[(i, j) for i, j, _ in pairs]}')
+    check('both still gated', len(pairs) == 2 and all(g for *_ij, g in pairs))
+    check('x members and order unchanged', [i for i, _j, _g in pairs] == [0, 1])
+
+    xs = [fit(400.0, 800.0, q_sum=3e4), fit(900.0, 600.0, q_sum=1e4)]
+    ys = [fit(418.8, 700.0, q_sum=1e4), fit(918.8, 500.0, q_sum=3e4)]
+    pairs = wr.select_tracks({'x': xs, 'y': ys}, 0, Cal(), pairing=PAIRING)
+    check('time-separated tracks are never re-paired',
+          [(i, j) for i, j, _ in pairs] == [(0, 0), (1, 1)],
+          f'got {[(i, j) for i, j, _ in pairs]}')
+
+    pairs = wr.select_tracks({'x': [fit(400.0, 800.0, q_sum=3e4)],
+                              'y': [fit(418.8, 700.0, q_sum=1e4)]}, 0, Cal(),
+                             pairing=PAIRING)
+    check('a single track is untouched', len(pairs) == 1 and pairs[0] == (0, 0, True))
+
+    from wft.calib import check_xy_pairing
+    for bad in ({'features': ['lq'], 'median': {'lq': 0.0}, 'rsig': {'lq': 0.0}},
+                {'features': ['nope'], 'median': {'nope': 0.0}, 'rsig': {'nope': 1.0}},
+                {'features': [], 'median': {}, 'rsig': {}}):
+        try:
+            check_xy_pairing(bad)
+            refused = False
+        except ValueError:
+            refused = True
+        check(f'unusable calibration refused ({bad["features"]})', refused)
+
+
+def test_rescued_candidates():
+    print('rescued candidates add tracks, never replace one')
+    xs = [fit(400.0, 500.0)]
+    ys = [fit(418.8, 500.0), fit(420.0, 900.0)]
+    check('without the flag the stronger y wins pair 0',
+          wr.select_tracks({'x': xs, 'y': ys}, 0, Cal())[0][:2] == (0, 1))
+    ys[1]._rescued = True
+    check('flagged as rescued it cannot take pair 0',
+          wr.select_tracks({'x': xs, 'y': ys}, 0, Cal())[0][:2] == (0, 0))
+
+    xs = [fit(400.0, 800.0), fit(405.0, 600.0)]
+    ys = [fit(418.8, 700.0), fit(423.8, 900.0)]
+    ys[1]._rescued = True
+    pairs = wr.select_tracks({'x': xs, 'y': ys}, 0, Cal())
+    check('a rescued candidate still forms a further gated track',
+          [(i, j, g) for i, j, g in pairs] == [(0, 0, True), (1, 1, True)],
+          f'got {pairs}')
+
+    xs = [fit(400.0, 800.0)]
+    ys = [fit(80.0, 700.0), fit(418.8, 100.0)]
+    ys[1]._rescued = True
+    pairs = wr.select_tracks({'x': xs, 'y': ys}, 0, Cal())
+    check('an ungated production pair 0 is kept over a gated rescued one',
+          pairs == [(0, 0, False)], f'got {pairs}')
+    rows = wr.candidate_rows(1, {'x': xs, 'y': ys}, pairs)
+    check('the side table records the flag',
+          [r['rescued'] for r in rows if r['plane'] == 'y'] == [False, True])
 
 
 def test_single_and_empty():
@@ -123,6 +209,9 @@ def test_candidate_rows():
 if __name__ == '__main__':
     test_double_track()
     test_double_counting_guard()
+    test_time_degenerate_pairing()
+    test_charge_pairing()
+    test_rescued_candidates()
     test_single_and_empty()
     test_candidate_rows()
     print('\n' + ('ALL PASS' if not FAILS else f'FAILURES: {FAILS}'))

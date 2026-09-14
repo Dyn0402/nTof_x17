@@ -81,6 +81,23 @@ def check_kernel_ordering(hyper: dict, where: str = '') -> None:
         f'set {C2_GATE_ENV}=1.')
 
 
+XY_FEATURES = ('lq', 'u50', 'u90', 't0')
+
+
+def check_xy_pairing(p: dict, where: str = '') -> None:
+    """Raise unless ``p`` is empty or a usable x/y pairing calibration:
+    ``features`` from XY_FEATURES, each with a ``median`` and a positive ``rsig``."""
+    if not p:
+        return
+    feats = list(p.get('features') or [])
+    med, sig = p.get('median') or {}, p.get('rsig') or {}
+    bad = [k for k in feats if k not in XY_FEATURES or k not in med
+           or not float(sig.get(k, 0.0)) > 0]
+    if not feats or bad:
+        raise ValueError(f'unusable xy_pairing calibration{" in " + where if where else ""}: '
+                         f'features {feats}, bad {bad}')
+
+
 @dataclass
 class CalibrationBundle:
     """Per-detector, per-condition calibration for the forward model."""
@@ -131,6 +148,12 @@ class CalibrationBundle:
     w0: Dict[str, float] = field(default_factory=dict)
     kw: Dict[str, float] = field(default_factory=dict)
 
+    # --- x/y pairing of time-degenerate tracks (2026-09-14): median and robust
+    # width of each x-minus-y feature (``XY_FEATURES``) on clean single tracks
+    # of this detector and condition, and which features to use. Empty = pair
+    # by summed dchi2 rank only (wft.reco.select_tracks).
+    xy_pairing: Dict[str, object] = field(default_factory=dict)
+
     # --- geometry / DAQ ---
     pitch_mm: float = 0.78
     sample_ns: float = 60.0
@@ -161,6 +184,7 @@ class CalibrationBundle:
             prov['note'] = note
         self.provenance = prov
         check_kernel_ordering(self.hyper, where=path)
+        check_xy_pairing(self.xy_pairing, where=path)
         meta = dict(hyper={k: float(v) for k, v in self.hyper.items()},
                     v_drift=float(self.v_drift),
                     dt_xy={str(k): float(v) for k, v in self.dt_xy.items()},
@@ -173,6 +197,7 @@ class CalibrationBundle:
                         for p, ch in self.hot.items()},
                     w0={p: float(v) for p, v in self.w0.items()},
                     kw={p: float(v) for p, v in self.kw.items()},
+                    xy_pairing=self.xy_pairing,
                     pitch_mm=self.pitch_mm, sample_ns=self.sample_ns,
                     n_depth_bins=self.n_depth_bins, sat_adc=self.sat_adc,
                     share_mode=self.share_mode,
@@ -188,6 +213,7 @@ class CalibrationBundle:
             m = json.load(f)
         z = np.load(os.path.join(path, 'arrays.npz'))
         check_kernel_ordering(m['hyper'], where=path)
+        check_xy_pairing(m.get('xy_pairing') or {}, where=path)
         return cls(hyper=m['hyper'], v_drift=m['v_drift'],
                    grid=z['grid'], tmpl={'x': z['tmpl_x'], 'y': z['tmpl_y']},
                    gain={'x': z['gain_x'], 'y': z['gain_y']},
@@ -201,6 +227,7 @@ class CalibrationBundle:
                        for p, ch in m.get('hot', {}).items()},
                    w0={p: float(v) for p, v in (m.get('w0') or {}).items()},
                    kw={p: float(v) for p, v in (m.get('kw') or {}).items()},
+                   xy_pairing=m.get('xy_pairing') or {},
                    pitch_mm=m.get('pitch_mm', 0.78),
                    sample_ns=m.get('sample_ns', 60.0),
                    n_depth_bins=m.get('n_depth_bins', 18),

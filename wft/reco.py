@@ -20,7 +20,7 @@ from typing import Dict, Optional
 
 import numpy as np
 
-from .calib import CalibrationBundle
+from .calib import CalibrationBundle, check_xy_pairing
 from . import model as wm
 
 # ---------------------------------------------------------------- quality
@@ -307,6 +307,7 @@ def fit_plane_candidates(windows: list, plane: str, cal: CalibrationBundle,
         n_ok += 1
         plausible, dchi2 = _candidate_score(P, plane, fit)
         fit._plausible, fit._dchi2 = plausible, dchi2
+        fit._rescued = bool(getattr(s, 'rescued', False))
         key = (1 if plausible else 0, dchi2)
         ranked.append((key, fit))
         if best_key is None or key > best_key:
@@ -323,7 +324,8 @@ DT_XY_TOL_NS = 120.0     # how far t0x - t0y may sit from the measured offset
 
 
 def select_tracks(cand_fits: Dict[str, list], ftst_diff: Optional[int],
-                  cal: CalibrationBundle, max_tracks: int = 3) -> list:
+                  cal: CalibrationBundle, max_tracks: int = 3,
+                  pairing: Optional[dict] = None) -> list:
     """Disjoint time-coincident (x, y) candidate pairs, ranked — the
     multi-track generalisation of :func:`select_pair`.
 
@@ -337,6 +339,20 @@ def select_tracks(cand_fits: Dict[str, list], ftst_diff: Optional[int],
     by construction, but its fragments rarely both pass the column-duration
     plausibility window, and a noise cluster has no reason to be coincident
     at all.
+
+    Candidates flagged ``_rescued`` (seeded only by a rescue-mode local floor,
+    ``wft.seed.SIG_FLOOR_LOCAL_MODE``) rank below every production combination,
+    so pair 0 is select_pair's choice among the production candidates and a
+    rescued candidate can only add a further track, never replace one.
+
+    ``pairing`` (a bundle's ``xy_pairing``) re-assigns y partners among gated
+    tracks that are time-degenerate. Summed dchi2 alone pairs the strongest x
+    with the strongest y, which is wrong whenever the two planes rank the
+    tracks differently (sept26_prelim_analysis/intra_bench.py). Only y members
+    move: every x member, the track order, every gate decision and any event
+    with a single gated track are unchanged.
+
+    Both are described, with their validation, in wft/MULTITRACK_2026-09-14.md.
 
     Returns ``[(ix, iy, gated)]`` indices into ``cand_fits['x']/['y']``;
     the event's track count is ``sum(gated)``.
@@ -352,7 +368,10 @@ def select_tracks(cand_fits: Dict[str, list], ftst_diff: Optional[int],
                      + int(getattr(fy, '_plausible', True)))
             dchi2 = (getattr(fx, '_dchi2', 0.0) or 0.0) + \
                 (getattr(fy, '_dchi2', 0.0) or 0.0)
-            combos.append(((coincident, plaus, dchi2), i, j))
+            # a combination using a rescued candidate ranks below every
+            # production one, so rescue can add tracks but never replace one
+            prod = int(not (getattr(fx, '_rescued', False) or getattr(fy, '_rescued', False)))
+            combos.append(((prod, coincident, plaus, dchi2), i, j))
     # stable sort on the key alone: ties keep x-major order, which is the
     # combo select_pair's strict > would have kept
     combos.sort(key=lambda c: c[0], reverse=True)
@@ -360,15 +379,66 @@ def select_tracks(cand_fits: Dict[str, list], ftst_diff: Optional[int],
     for key, i, j in combos:
         if i in used_x or j in used_y:
             continue
-        gated = key[0] == 1 and key[1] == 2
+        gated = key[1] == 1 and key[2] == 2
         if out and not gated:
-            break        # keys descend: no later combo can pass the gate
+            continue
         out.append((i, j, gated))
         used_x.add(i)
         used_y.add(j)
         if len(out) >= max_tracks:
             break
+    if pairing and sum(1 for *_ij, g in out if g) >= 2:
+        out = _repair_pairs(out, cand_fits, pairing, dt)
     return out
+
+
+def _gate(fx, fy, dt: float) -> bool:
+    return (abs((fx.t0 - fy.t0) - dt) <= DT_XY_TOL_NS
+            and bool(getattr(fx, '_plausible', True))
+            and bool(getattr(fy, '_plausible', True)))
+
+
+def xy_pair_cost(fx, fy, pairing: dict, dt: float) -> float:
+    """How unlike an x and a y candidate are, in units of the spread of the
+    same x-minus-y quantity on clean single tracks."""
+    f = dict(lq=np.log(max(fx.q_sum, 1.0) / max(fy.q_sum, 1.0)),
+             u50=fx.q_u50 - fy.q_u50, u90=fx.q_u90 - fy.q_u90,
+             t0=(fx.t0 - fy.t0) - dt)
+    cost = 0.0
+    for k in pairing['features']:
+        z = (f[k] - pairing['median'][k]) / pairing['rsig'][k]
+        cost += min(z * z, 25.0) if np.isfinite(z) else 25.0
+    return cost
+
+
+def _repair_pairs(out: list, cand_fits: Dict[str, list], pairing: dict, dt: float) -> list:
+    """Swap the y partners of two gated tracks when both swapped combinations
+    also pass the gate and cost less."""
+    xs, ys = cand_fits['x'], cand_fits['y']
+    out = list(out)
+    for _ in range(len(out)):
+        changed = False
+        for a in range(len(out)):
+            for b in range(a + 1, len(out)):
+                ia, ja, ga = out[a]
+                ib, jb, gb = out[b]
+                if not (ga and gb and _gate(xs[ia], ys[jb], dt) and _gate(xs[ib], ys[ja], dt)):
+                    continue
+                keep = xy_pair_cost(xs[ia], ys[ja], pairing, dt) + xy_pair_cost(xs[ib], ys[jb], pairing, dt)
+                swap = xy_pair_cost(xs[ia], ys[jb], pairing, dt) + xy_pair_cost(xs[ib], ys[ja], pairing, dt)
+                if swap < keep:
+                    out[a], out[b] = (ia, jb, True), (ib, ja, True)
+                    changed = True
+        if not changed:
+            break
+    return out
+
+
+def load_pairing(path: str) -> dict:
+    with open(path) as f:
+        p = json.load(f)
+    check_xy_pairing(p, where=path)
+    return p
 
 
 def candidate_rows(event_id: int, all_fits: Dict[str, list],
@@ -392,6 +462,7 @@ def candidate_rows(event_id: int, all_fits: Dict[str, list],
             row.update(asdict(f))
             row['plausible'] = bool(getattr(f, '_plausible', True))
             row['dchi2'] = float(getattr(f, '_dchi2', np.nan))
+            row['rescued'] = bool(getattr(f, '_rescued', False))
             tid, gated = track_of.get((plane, rank), (-1, False))
             row['track_id'], row['track_gated'] = int(tid), bool(gated)
             row['isochronous'] = bool(np.isfinite(f.q_uend)
@@ -482,15 +553,18 @@ def row_from_fits(event_id: int, fits: Dict[str, Optional[PlaneFit]],
 
 
 # --------------------------------------------------------------- the driver
-def _worker_init(bundle_path):
-    global _CAL
+def _worker_init(bundle_path, pairing_path=None):
+    """``pairing_path`` overrides the bundle's ``xy_pairing`` (for A/B runs)."""
+    global _CAL, _PAIRING
     _CAL = CalibrationBundle.load(bundle_path)
     wm.use_calibration(_CAL)
+    _PAIRING = load_pairing(pairing_path) if pairing_path else (_CAL.xy_pairing or None)
 
 
 PAIR_SELECT = os.environ.get('WFT_PAIR_SELECT', '0') == '1'
 EMIT_CANDIDATES = os.environ.get('WFT_EMIT_CANDIDATES', '1') == '1'
 MAX_TRACKS = 3
+_PAIRING: Optional[dict] = None
 
 
 def _worker_fit(payload):
@@ -520,7 +594,8 @@ def _worker_fit(payload):
         except Exception:
             pass
     try:
-        pairs = select_tracks(all_fits, ftst_diff, _CAL, max_tracks=MAX_TRACKS)
+        pairs = select_tracks(all_fits, ftst_diff, _CAL, max_tracks=MAX_TRACKS,
+                              pairing=_PAIRING)
     except Exception:
         pairs = []
     row = row_from_fits(eid, fits, n_hits, spark)
@@ -613,10 +688,12 @@ def reconstruct_run(cfg, cal: CalibrationBundle, out_path: str,
                          feu_x=feu_x, feu_y=feu_y),
                 selection=dict(sig_rel_floor=wseed.SIG_REL_FLOOR,
                                gap_mm=wseed.GAP_THRESHOLD_MM,
+                               sig_floor_local_mm=wseed.SIG_FLOOR_LOCAL_MM,
                                spark_veto=wseed.SPARK_VETO_HITS,
                                pad_strips=pad_strips,
                                event_filter=bool(event_filter)),
                 multi_track=dict(emit_candidates=EMIT_CANDIDATES,
+                                 xy_pairing=(cal.xy_pairing or {}).get('features'),
                                  max_tracks=MAX_TRACKS,
                                  n_candidate_rows=len(cand_rows),
                                  n_events_multitrack=int(
