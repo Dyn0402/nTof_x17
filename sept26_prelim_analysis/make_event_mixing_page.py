@@ -11,8 +11,11 @@ Figures come from `explain_event_mixing.py`; run that first.
 """
 from __future__ import annotations
 
+import argparse
+import base64
 import datetime as dt
 import os
+import re
 import sys
 from pathlib import Path
 
@@ -653,11 +656,36 @@ stage&nbsp;1.</p>
 """
 
 
+def embed(html: str) -> str:
+    """Inline every figures/*.png as a data URI.
+
+    The copy that goes to the notes site has to be one file -- the site
+    publishes a single HTML document per note and has nowhere to put a
+    figures/ directory. The copy in the analysis output directory keeps the
+    relative links, because the DAQ Analysis tab serves them path-wise.
+    """
+    def sub(m):
+        rel = m.group(1)
+        b = (OUT / rel).read_bytes()
+        return 'src="data:image/png;base64,' + base64.b64encode(b).decode() + '"'
+    return re.sub(r'src="(figures/[\w.]+\.png)"', sub, html)
+
+
 def main() -> int:
+    ap = argparse.ArgumentParser(description='build the event-mixing explainer page')
+    ap.add_argument('--embed', type=Path, default=None,
+                    help='also write a standalone copy with the figures '
+                         'inlined as data URIs (for the notes site)')
+    a = ap.parse_args()
+
     n = gather()
+    html = build(n)
     p = OUT / 'report.html'
-    p.write_text(build(n), encoding='utf-8')
+    p.write_text(html, encoding='utf-8')
     print('wrote', p, f'({p.stat().st_size/1024:.0f} kB)')
+    if a.embed:
+        a.embed.write_text(embed(html), encoding='utf-8')
+        print('wrote', a.embed, f'({a.embed.stat().st_size/1024:.0f} kB, standalone)')
     return 0
 
 
