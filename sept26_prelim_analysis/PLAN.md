@@ -463,6 +463,12 @@ unblocks it**.
   *Safe because* they are flagged (`quality_ok = False`) and counted, so they
   are a measured loss rather than a silent one. *Unblocked by* model work in
   `wft/model.py`.
+  **2026-09-14: measured, and no longer safe to call small.** The overlay bench
+  puts production recovery of a same-chamber pair at 47 % (A) / 39 % (C) beyond
+  24 mm and ~0 below 12 mm, and on data `det_a_intra` sees 0 real intra-A pairs
+  below 20 mm where ~12 400 are expected. Design and acceptance criteria:
+  [`HANDOFF_JOINT_TWO_TRACK_FIT.md`](HANDOFF_JOINT_TWO_TRACK_FIT.md); it gates
+  the October re-pass ([`OCTOBER_2026.md`](OCTOBER_2026.md)).
 - **D2 — Simulate the double-track finding efficiency.** Push Geant4 pairs
   through the response sim and the full chain and measure what we miss, by
   opening angle and by track separation. *The single most valuable October

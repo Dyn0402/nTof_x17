@@ -53,11 +53,45 @@ and defer a real per-detector recalibration to October** — meanwhile open up
 the per-track tracking distributions run by run and tag by tag to find what
 drifts. **Do not build an opening-angle spectrum on a borrowed `k` for C or D.**
 
-Last updated **2026-09-14** (two tracks in one chamber: a truth bench and two opt-in reconstruction fixes, below; and on 2026-09-10: arm-A tracks are now confirmed positionally against the scintillators, and the wall measures the angle scale; the FULL pass is complete; per-run capsule imaging says the geometry is sound and the angle scale is the fault; the campaign opening-angle spectra exist).
+Last updated **2026-09-14** (**the re-pass is pushed to OCTOBER** and [`OCTOBER_2026.md`](OCTOBER_2026.md) is the standing list — two-track recovery is the gating item; two tracks in one chamber: a truth bench and two opt-in reconstruction fixes, below; and on 2026-09-10: arm-A tracks are now confirmed positionally against the scintillators, and the wall measures the angle scale; the FULL pass is complete; per-run capsule imaging says the geometry is sound and the angle scale is the fault; the campaign opening-angle spectra exist).
 
 > **START HERE:** [`HANDOFF_FULLPASS_2026-09-10.md`](HANDOFF_FULLPASS_2026-09-10.md)
 > — why the full pass happened, what it produced, and the run_86 test that now
 > blocks the opening angle. The entries below are the working record behind it.
+>
+> **AND NEXT:** [`OCTOBER_2026.md`](OCTOBER_2026.md) — the re-pass is deferred to
+> October, and this is what has to be true before it runs.
+
+> ## THE RE-PASS IS PUSHED TO OCTOBER, AND TWO-TRACK RECOVERY IS WHAT GATES IT -- 2026-09-14
+>
+> Dylan's call: no re-reconstruction in September. The standing list is
+> [`OCTOBER_2026.md`](OCTOBER_2026.md); the joint-fit design is
+> [`HANDOFF_JOINT_TWO_TRACK_FIT.md`](HANDOFF_JOINT_TWO_TRACK_FIT.md).
+>
+> **Why the order matters.** The re-pass costs ~8-12 h of condor plus a day of
+> chain, so it happens ONCE. Everything that wants to ride it must be validated
+> first -- and the biggest such item is two-track recovery, which is currently
+> two fixes that are written, validated and **switched off**, plus a joint
+> two-track fit that does not exist.
+>
+> - **Production recovers both tracks of a same-chamber pair >= 24 mm apart in
+>   47 % (A) / 39 % (C)**; 18 / 17 % at 12-24 mm; ~0 below 12 mm. Causes measured
+>   separately: x/y swaps, a plane-wide significance floor, and merging at the
+>   12 mm seed gap (entry below).
+> - **Pairing + rescue floor take >= 24 mm to 71 % / 66 % and lose no production
+>   track** -- but they are not in the chain: bundles need `xy_pairing`,
+>   `wft_beam.make_bundle` has no merge step for it, condor needs the env var,
+>   and the smoke gate has to be rewritten (it currently demands event counts
+>   identical to the August pass, and these changes add tracks by design).
+> - **Below 12 mm needs a joint two-track fit (D1), which is unwritten.** That is
+>   where small-opening-angle pairs live -- and on data `det_a_intra` sees **0
+>   real intra-A pairs below 20 mm and 56 below 40 mm where ~12 400 are
+>   expected**, a loss `acceptance.py` does not model at all.
+> - **The same-chamber vertex tests stay blind until this lands.** Their
+>   sensitivity is set by leg resolution, not statistics, so re-running them on
+>   the current reconstruction buys nothing.
+> - **The angle scale (O6) is independent and still the blocker for any quoted
+>   opening angle.** Run it in parallel, not after.
 
 > ## TWO TRACKS IN ONE CHAMBER: A TRUTH BENCH, AND TWO FIXES THAT MOVE NO SINGLE TRACK -- 2026-09-14
 >

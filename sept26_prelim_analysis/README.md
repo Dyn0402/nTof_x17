@@ -23,6 +23,7 @@ Note (the plan, published): <https://dylan-neff.web.cern.ch/notes/x17-prelim-pla
 |---|---|
 | `PLAN.md` | the plan of record. Read fully before writing analysis code here. |
 | `STATUS.md` | live status, blockers, decisions, benchmarks, the log, and the ordered next steps |
+| `OCTOBER_2026.md` | what October has to do and in what order, with September's two-track findings behind it. The campaign re-pass is deferred to October and runs **once**, so everything that wants to ride it is validated first. |
 | `make_note.py` | builds `report.html` — the published progress page. The prose lives in the script; there is no template to keep in sync. |
 | `report.html` | generated, committed so the page can be republished without a rebuild |
 | `report_style.py` | the one stylesheet every report in the package wears — `HEAD` is fonts + CSS + the small progressive-enhancement script, and goes straight into a report's `<head>`. Element-first, so a generator that emits plain `<main>`, `<table>`, `<p class="lede">` is already styled. |

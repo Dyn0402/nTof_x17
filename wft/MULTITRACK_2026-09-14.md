@@ -9,6 +9,11 @@ whose seeds the change touches loses **no** production track. With both options 
 
 Nothing here is switched on in the production chain yet. How to do that is §5.
 
+**Deferred to October (decided 2026-09-14).** The campaign re-pass runs once, after the
+joint two-track fit for < 12 mm is built and tested, so these switches go on with it
+rather than on their own: `sept26_prelim_analysis/OCTOBER_2026.md`, and
+`sept26_prelim_analysis/HANDOFF_JOINT_TWO_TRACK_FIT.md` for the fit.
+
 Companions: the problem statement and plan, `sept26_prelim_analysis/HANDOFF_INTRA_TWO_TRACK_RECO.md`
 (§10 is the progress record); the bench, `sept26_prelim_analysis/intra_bench.py`; the earlier
 multi-track work this builds on, `MULTITRACK_2026-08-12.md`.

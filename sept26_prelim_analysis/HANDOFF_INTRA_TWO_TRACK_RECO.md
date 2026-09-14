@@ -315,3 +315,7 @@ a fainter track (~16 % of tracks ≥ 24 mm).
 two-track fit for < 12 mm, where no gap separates the tracks. (3) Production: bundles need `xy_pairing`, condor
 needs `WFT_SIG_FLOOR_LOCAL_MM=16` / `WFT_SIG_FLOOR_LOCAL_MODE=rescue`, then a full re-pass. Unit tests:
 `wft/tests/test_multitrack.py`, `test_seed_and_select.py`.
+
+**Scheduled 2026-09-14: all of it is October, and the re-pass runs once.** (2) is designed in
+[`HANDOFF_JOINT_TWO_TRACK_FIT.md`](HANDOFF_JOINT_TWO_TRACK_FIT.md) and gates the pass; the ordered list,
+with (1) and (3) and everything else riding the same pass, is [`OCTOBER_2026.md`](OCTOBER_2026.md).
