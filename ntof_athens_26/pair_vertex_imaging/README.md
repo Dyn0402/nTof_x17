@@ -228,6 +228,14 @@ agreeing pairs sit.
 Handoff for the reconstruction work:
 `sept26_prelim_analysis/HANDOFF_INTRA_TWO_TRACK_RECO.md`.
 
+**Follow-up, 2026-09-14.** The handoff's truth bench (`sept26_prelim_analysis/intra_bench.py`)
+separated the causes: x/y swaps, a significance floor relative to the whole plane that erases a
+fainter partner, and merging under the 12 mm seed gap — while found tracks fit like single ones,
+so the widened fits above are busier events, not the fit. Two opt-in `wft` fixes take same-chamber
+pairs ≥ 24 mm apart from 47/39 % to 71/66 % (A/C) without moving a production track
+(`wft/MULTITRACK_2026-09-14.md`). They are not in the track table yet, so the numbers in this
+section are still production reconstruction.
+
 ```bash
 python -m pair_vertex_imaging.intra_vertex --jobs 8          # pairs + tests, ~1 min
 python -m pair_vertex_imaging.intra_vertex --multiplicity    # the quality study

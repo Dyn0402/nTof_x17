@@ -79,6 +79,33 @@ the ³He rate table appears to compute radiative captures without self-shielding
 in a cell that is optically thick, which would be worth ~10² on every expected
 yield the experiment quotes.
 
+### The two-track overlay bench
+
+Answers `HANDOFF_INTRA_TWO_TRACK_RECO.md`: how well does the reconstruction recover
+two tracks in one chamber, and does a change to it help without moving single
+tracks? Writes `<out>/intra_bench/`, one subdirectory per variant, each with its
+own `report.html`. The results and verdicts are in the handoff's §10 and in
+`../wft/MULTITRACK_2026-09-14.md`.
+
+| | |
+|---|---|
+| `intra_bench.py` | `build` sums two clean single-track run_145 triggers of one chamber on the second donor's signal strips, merges their hits, and runs the production seeder and fit; truth is each donor's frozen fit. `floor` is the hits-only study of the significance floor. `derive` scores a build (outcome per donor, pairing rules, the same score on real two-track chambers). `calib-pairing` writes the per-arm `xy_pairing` calibration from the run's other sub-runs. `floor-ab` re-fits every production trigger whose seeds a seeding change touches and compares with the frozen pass — the single-track check. `compare` puts variants side by side on the same donor pairs. `--variant` with `--pairing`, `--local-mm`, `--local-mode`, `--split-gap` names an A/B run so the production baseline is never overwritten. |
+| `make_intra_bench_report.py` | `report.html` + five figures for the baseline or `--variant`. |
+
+```bash
+M="-m sept26_prelim_analysis.intra_bench"
+.venv/bin/python $M build --jobs 14 && .venv/bin/python $M floor && .venv/bin/python $M derive
+.venv/bin/python $M calib-pairing
+.venv/bin/python $M build --variant pairing_rescue16_ranked --pairing --local-mm 16 --local-mode rescue
+.venv/bin/python $M derive --variant pairing_rescue16_ranked
+.venv/bin/python $M floor-ab --local-mm 16 --local-mode rescue
+.venv/bin/python $M compare pairing_rescue16_ranked
+.venv/bin/python -m sept26_prelim_analysis.make_intra_bench_report --variant pairing_rescue16_ranked
+```
+
+A build of both arms is ~15 min at 14 workers; a `floor-ab` pass 10–40 min depending on
+how many triggers the change touches.
+
 ## Building the note
 
 ```bash

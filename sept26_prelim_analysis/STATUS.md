@@ -53,11 +53,39 @@ and defer a real per-detector recalibration to October** — meanwhile open up
 the per-track tracking distributions run by run and tag by tag to find what
 drifts. **Do not build an opening-angle spectrum on a borrowed `k` for C or D.**
 
-Last updated **2026-09-10** (arm-A tracks are now confirmed positionally against the scintillators, and the wall measures the angle scale; the FULL pass is complete; per-run capsule imaging says the geometry is sound and the angle scale is the fault; the campaign opening-angle spectra exist).
+Last updated **2026-09-14** (two tracks in one chamber: a truth bench and two opt-in reconstruction fixes, below; and on 2026-09-10: arm-A tracks are now confirmed positionally against the scintillators, and the wall measures the angle scale; the FULL pass is complete; per-run capsule imaging says the geometry is sound and the angle scale is the fault; the campaign opening-angle spectra exist).
 
 > **START HERE:** [`HANDOFF_FULLPASS_2026-09-10.md`](HANDOFF_FULLPASS_2026-09-10.md)
 > — why the full pass happened, what it produced, and the run_86 test that now
 > blocks the opening angle. The entries below are the working record behind it.
+
+> ## TWO TRACKS IN ONE CHAMBER: A TRUTH BENCH, AND TWO FIXES THAT MOVE NO SINGLE TRACK -- 2026-09-14
+>
+> New: `intra_bench.py`, `make_intra_bench_report.py`. `wft` gains two opt-in
+> changes, both off by default: x/y pairing of time-degenerate tracks by charge
+> (`select_tracks(pairing=)`, bundle field `xy_pairing`) and a rescue-mode local
+> significance floor (`WFT_SIG_FLOOR_LOCAL_MM`). Record of what changed and how it
+> was validated: [`../wft/MULTITRACK_2026-09-14.md`](../wft/MULTITRACK_2026-09-14.md);
+> progress against the handoff: `HANDOFF_INTRA_TWO_TRACK_RECO.md` §10; reports
+> `<out>/intra_bench/<variant>/report.html` (`pairing_rescue16_ranked` is the one to read).
+>
+> - **Production reconstruction recovers both tracks of a same-chamber pair ≥ 24 mm
+>   apart in 47 % (A) / 39 % (C)** of overlays of two clean run_145 single tracks.
+>   Three causes, now measured separately: x/y swaps of time-degenerate tracks; a
+>   significance floor relative to the brightest strip of the *whole plane*, which
+>   erases a fainter track anywhere in it (~16 % of tracks); and merging under the
+>   12 mm seed gap. Once found, a separated track fits like a single one, so the
+>   handoff's H2b does not explain the data's widened fits — busier events (H3) do.
+> - **Pairing by charge + rescue floor: 71 % (A) / 66 % (C).** Re-fitting every
+>   production trigger of run_145 stat090_0000 whose seeds the floor touches loses
+>   **0** production tracks (99.6 % bit-identical, none moved > 0.1 mm), and 279 / 406
+>   triggers gain a track.
+> - **Rejected by that same single-track check:** a local floor *replacing* the
+>   plane-wide one (loses 1.4–7.3 % of production tracks) and splitting seed clusters
+>   at 6 or 8 mm (11–27 %), despite both helping on the bench.
+> - **Not in the production chain.** It needs `xy_pairing` in the bundles, the env var
+>   on condor and a re-pass (MULTITRACK §5). Tracks < 12 mm apart still come out as one;
+>   that needs a joint two-track fit.
 
 > ## DETECTOR A -> SCINTILLATORS: A PER-TRACK POSITIONAL CONFIRMATION, AND THE WALL MEASURES THE ANGLE SCALE -- 2026-09-10
 >
@@ -1172,7 +1200,7 @@ Last updated **2026-09-10** (arm-A tracks are now confirmed positionally against
 > | | |
 > |---|---|
 > | [`HANDOFF_ACCIDENTAL_TIMING.md`](HANDOFF_ACCIDENTAL_TIMING.md) | the scintillator timing test of the S4 null. **Half done already**: in two-arm events one arm is the trigger (median \|Δt\| 7 ns, against a 5.2 ns single-arm reference) and **the other fires at a random time — median 171 ns, 47 % beyond 200 ns**. True-coincidence fraction **≤ 6 ± 3 %**. Also finds the accept window is mis-centred, and that `is_control` is an unused flat accidental sample. |
-> | [`HANDOFF_INTRA_TWO_TRACK_RECO.md`](HANDOFF_INTRA_TWO_TRACK_RECO.md) | **added 2026-09-13.** recover two tracks in one chamber (A–A, C–C). A second track in the chamber makes **both** tracks 3–4× worse in y at the capsule (A 41 → 139 mm, C 48 → 170 mm) with 2–3× the strips, and the damage **grows** with the tracks' separation; tracks within the 12 mm seed gap come out as one. `select_tracks` pairs time-coincident candidates by rank of χ² improvement. Proposes a waveform-overlay truth bench. Analysis: `ntof_athens_26/pair_vertex_imaging/`. |
+> | [`HANDOFF_INTRA_TWO_TRACK_RECO.md`](HANDOFF_INTRA_TWO_TRACK_RECO.md) | **added 2026-09-13.** recover two tracks in one chamber (A–A, C–C). A second track in the chamber makes **both** tracks 3–4× worse in y at the capsule (A 41 → 139 mm, C 48 → 170 mm) with 2–3× the strips, and the damage **grows** with the tracks' separation; tracks within the 12 mm seed gap come out as one. `select_tracks` pairs time-coincident candidates by rank of χ² improvement. Proposes a waveform-overlay truth bench. Analysis: `ntof_athens_26/pair_vertex_imaging/`. **2026-09-14: the bench is built and two opt-in fixes pass the single-track check — §10 of the handoff and `../wft/MULTITRACK_2026-09-14.md`.** |
 > | [`HANDOFF_D_NOISY_CHANNELS.md`](HANDOFF_D_NOISY_CHANNELS.md) | identify D's noisy channels and make them reconstruction wildcards. They are **not discharges** (median charge ratio 0.94) but wide, dilute, low-density clusters; they are **whole x columns spanning the full plane height**, i.e. bad channels not bad regions; and they sit on the **49.8 mm connector boundaries** — the same fault class as D's dead runs. |
 >
 > **`source_imaging.vertices` had a latent bug, now fixed**: the pair frames

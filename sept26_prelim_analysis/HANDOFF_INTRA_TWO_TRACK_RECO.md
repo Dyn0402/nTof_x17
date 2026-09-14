@@ -287,3 +287,31 @@ On data:
 | reproduce | `X17_ROOT=D:/x17 python -m pair_vertex_imaging.intra_vertex --jobs 8` then `--multiplicity` (from `ntof_athens_26/`) |
 | the reconstruction | `wft/seed.py`, `wft/reco.py`, `wft/model.py`, `wft/tests/test_multitrack.py` |
 | stage-3 tracks | `<out>/stage3_fullpass/tracks_<run>_<subrun>.parquet` |
+
+---
+
+## 10 · Progress, 2026-09-14
+
+The §5 bench exists: `intra_bench.py` (`build`, `floor`, `derive`, `calib-pairing`, `floor-ab`, `compare`,
+`--variant`) and `make_intra_bench_report.py --variant`; outputs under `<out>/intra_bench/`. Donors are clean
+single tracks of run_145 stat090_0000, A and C; the harness reproduces the frozen fits bit-for-bit.
+
+**What the bench found in production reco.** Beyond 24 mm both tracks come back correctly paired in 47 % (A) /
+39 % (C). H1 confirmed (x/y swaps, ~75 % when the planes rank the tracks differently); H2a confirmed; **H2b not
+reproduced** (found tracks fit like singles, so the data's widened fits are H3); and a mechanism not in §4: the
+seed significance floor is 10 % of the brightest strip of the *whole plane*, so a brighter partner anywhere erases
+a fainter track (~16 % of tracks ≥ 24 mm).
+
+**Fixes, all opt-in, defaults bit-identical to production:**
+
+| change | where | bench, both tracks ≥ 24 mm | single-track A/B (every changed production trigger re-fitted) | verdict |
+|---|---|---|---|---|
+| x/y pairing by charge (A) / charge + profile (C) for time-degenerate gated tracks | `wft.reco.select_tracks(pairing=)`, bundle `xy_pairing` | swaps 24 → 14 % (A), 23 → 7 % (C) | single tracks untouched by construction | **keep** |
+| local significance floor, *replace* | `wft.seed` / `wft_beam`, `local_mm` | 70 % (A), 63 % (C) | loses 1.9 / 7.3 % of production tracks (16 mm), 1.4 / 5.1 % (40 mm) | rejected |
+| local floor, *rescue* (plane-wide seeds kept, local-only clusters added, ranked below production pairs) | `local_mode='rescue'` | with pairing: **71 % (A), 66 % (C)** | **0 tracks lost**, 99.6 % bit-identical, +279 / +406 events gain a track | **keep** |
+| split seed clusters at 6 / 8 mm | `split_gap_mm` | 12–18 mm: 8 → 48 % (A), 5 → 44 % (C) | loses 15 / 27 % (6 mm), 11 / 16 % (8 mm) | rejected as a replacement |
+
+**Next.** (1) Split as *additive* candidates ranked below production pairs, the way rescue passed. (2) A joint
+two-track fit for < 12 mm, where no gap separates the tracks. (3) Production: bundles need `xy_pairing`, condor
+needs `WFT_SIG_FLOOR_LOCAL_MM=16` / `WFT_SIG_FLOOR_LOCAL_MODE=rescue`, then a full re-pass. Unit tests:
+`wft/tests/test_multitrack.py`, `test_seed_and_select.py`.
