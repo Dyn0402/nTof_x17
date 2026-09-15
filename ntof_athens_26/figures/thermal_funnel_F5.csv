@@ -1,0 +1,7 @@
+panel,label,node_ids,frac_of_parent,count,mc_count,per_neutron,source,highlighted
+main,e⁺e⁻ pair made in the capsule,F5.pair_near_capsule,0.09683037269244166,11.909519999999999,2780.0,2.78e-06,geant4,True
+main,anything else,F5.capture_outside_capsule + F5.compton_capsule_capture + F5.conv_structure_capsule_capture + F5.mixed + F5.other,0.9031696273075583,111.08412000000001,25930.0,2.593e-05,geant4,False
+zoom,Compton from a capsule-capture γ,F5.compton_capsule_capture,0.849055148476668,94.316544,22016.0,2.2016e-05,geant4,False
+zoom,capsule γ converting in structure,F5.conv_structure_capsule_capture,0.07485537986887775,8.315244,1941.0,1.941e-06,geant4,False
+zoom,γ from a capture outside,F5.capture_outside_capsule,0.029733898958735055,3.302964,771.0,7.71e-07,geant4,False
+zoom,"mixed, neutron-induced, other",F5.neutron_induced + F5.mixed + F5.other + F5.activation,0.046355572695719244,5.149368,1202.0,1.202e-06,geant4,False

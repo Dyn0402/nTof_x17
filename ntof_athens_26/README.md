@@ -274,19 +274,80 @@ script with their sources.
 | figure | what it is |
 |---|---|
 | `thermal_branching` | **why the gas self-shields.** (a) ³He cross sections, which all rise as 1/v. (b) σ(n,γ)/σ(n,p), **1.0×10⁻⁸ at 25 meV against 8.8×10⁻⁵ at 1 MeV**. (c) ³He(n,γ) per energy decade over **30 days at slide 39's flux** (1.93×10⁴ pulses/day), thin-target against self-shielded. For 0.01–1 eV: **3.5×10⁶ → 2.9×10⁴ ⁴He\***, ≈ 130 IPC pairs made. That is ×120 analytic; the Geant4 thermal note gives ×50–100. The 30-day bins are also in `thermal_branching_30d.csv`. No footnote, on purpose — this is the audience-facing version. |
-| `thermal_pair_sources` | **interim, to be replaced** by the five-step funnel in [`HANDOFF_THERMAL_ACCOUNTING.md`](HANDOFF_THERMAL_ACCOUNTING.md), built from Geant4 truth on the Linux box. (a) expected per neutron entering the capsule: wall pairs outnumber ³He pairs **6×10⁴–8×10⁵ : 1**; (b) Geant4 trigger provenance, **96 % of trigger legs aluminium**; (c) measured true-coincidence fraction of our two-arm pairs, 29 % [17, 40] overall. |
+| `thermal_pair_sources` | **superseded** by the funnel below; kept for its panel (c), the measured true-coincidence fraction of our two-arm pairs, 29 % [17, 40] overall. |
 
-**The funnel that replaces `thermal_pair_sources`**
-(`HANDOFF_THERMAL_ACCOUNTING.md`, for the Linux box). One figure and one
-diagram per step:
+### The funnel: where the thermal neutrons go (`thermal_funnel_F1`–`F5`)
 
-- **F1** ³He(n,p), which we cannot see, against (n,γ).
-- **F2** capture γ that touch no detector against those that make a charged particle.
-- **F3** pair production in or near the capsule against charged particles made elsewhere.
-- **F4** the capsule pairs by source reaction, with internal pair creation added analytically because Geant4 does not simulate it.
-- **F5** separately, what fires a trigger leg.
+```bash
+../.venv/bin/python make_thermal_funnel_figures.py           # all five, from the contract
+../.venv/bin/python make_thermal_funnel_figures.py --only F4
+```
 
-The contract is `data/thermal_accounting/accounting.json`.
+Built 2026-09-15 as scoped in [`HANDOFF_THERMAL_ACCOUNTING.md`](HANDOFF_THERMAL_ACCOUNTING.md).
+Each figure is a diagram (drawn to scale from the fans slide's survey, tracks
+illustrative) and one split of its parent, with the segment the next figure
+opens up in copper. The numbers come only from
+`data/thermal_accounting/accounting.json` (+ `F1.csv`…`F5.csv`), the contract,
+which is in git. The diagrams need run_145's `run_config.json`, and F1 needs
+`gas_np_positions_nose.npz`, which is gitignored and read from the data disk
+when there is no repo copy.
+
+**Staged for the Windows box:** `X17_ROOT/sept26_prelim/athens_thermal_accounting/`
+holds the contract, the gas histogram, all 225 per-file reduction parts, the
+rendered figures, and a README on regenerating either.
+
+**Where the contract comes from.** `MX17_Full_Geant/scripts/thermal_accounting.py`:
+`reduce` per ROOT file on condor (cluster 4278922, 225 jobs:
+`neutrons_thermal_trig_2cm_nose` 10⁹ neutrons, `pairs_thermal_trig_2cm_nose`,
+`neutrons_thermal_bias1e5_2cm_nose`; parts in
+`/eos/user/d/dneff/x17/thermal_accounting/parts/`), then `merge` locally. No
+Geant4 rerun was needed: the stored per-hit birth truth (creator process,
+volume, vertex, parent) plus the event's capture volume is enough. Counts are
+per 30 days at slide 39's flux (5.21×10⁶ neutrons/pulse on the cell, 1 meV-2 eV
+iso-lethargic tail of the 1-10 eV bin), so they agree with `thermal_branching`.
+
+| step | split (full statistics) |
+|---|---|
+| **F1** per neutron entering the capsule (gun r < 11.5 mm, 90.1 % of the beam) | ³He(n,p) **92.5 %** · (n,γ) **0.81 %** · scatters off the wall and escapes 6.6 % · other 0.13 %. The (n,γ): Al 61 %, CFRP 3.2 %, scattered out and captured elsewhere 35 % (87 % of those in the scintillators), ³He 1.3×10⁻⁴ % (analytic). |
+| **F2** per capture | a charged particle ≥ 1 keV in a drift gap within 100 ms: **2.1 %** (Al 91 % of those). |
+| **F3** per capture with charge in a gap | e⁺e⁻ made in the capsule **15.3 %** · Compton e⁻ made in the capsule **64.5 %** · made elsewhere 18.8 % (chamber windows/PCB, the gas, air) · other 1.4 %. |
+| **F4** capsule pairs with a lepton in a gap | ²⁷Al external **84.5 %** · ²⁷Al internal (analytic) **15.1 %** · CFRP 0.32 % · capture elsewhere 0.02 % · ³He internal 1.1×10⁻⁴ %, **104 per 30 days** in a gap. |
+| **F5** per prompt trigger leg (123 /pulse; legacy emulation 124, `trigger_provenance` 122) | e⁺e⁻ made in the capsule **9.7 %** · Compton from a capsule-capture γ 76.7 % · capsule γ converting in the structure 6.8 % · capture outside the capsule 2.7 % · mixed 4.2 %. Legs in two arms: 0.11 /pulse (26 events), 92 % two γ of one capture. |
+
+**F1's gas is the self-shielding, measured.** The ³He in F1's capsule is shaded
+by where the (n,p) actually happens: a |z| < 1 mm section through the axis,
+from 8.3×10⁷ absorptions in 10 files of the nose-first campaign
+(`data/thermal_accounting/gas_np_positions_nose.npz`, log relative density,
+with a magnified inset of the dome). Half the (n,p) happen within 0.19 mm of the
+gas surface, 90 % within 0.9 mm, 99 % within 3.4 mm, so F1 can introduce the
+self-shielding on its own. It replaces the valve-first, one-file
+`fig_gas_absorption` of `MX17_Full_Geant/docs/report`.
+
+**Things this turned up that the handoff did not expect.**
+- **²⁸Al decays are half the drift-gas hits.** Geant4 tracks radioactive decay
+  to completion, so β decays arrive seconds to hours after the capture. They
+  are cut by the 100 ms prompt window and reported apart: 3.8 % of captures
+  put charge in a gap *only* that way, more than the 2.1 % prompt. They make
+  essentially no trigger legs (0.04 /pulse), so `trigger_provenance` stands.
+- **The 6.6 % that escape are wall scatters, not misses.** Even inside the
+  10 mm gas bore 5.2 % escape: the 5.5 mm Al nose plus the wrap scatter them
+  before the gas. `ipc_aluminium.bookkeeping`'s 99.97 % (n,p) is single-pass.
+  The ×10⁵-biased run gives ³He(n,γ) = 9.6×10⁻⁹ per entering neutron against
+  the analytic 1.03×10⁻⁸ for the same reason.
+- **The sim's carbon fibre is mostly a hydrogen absorber.** 2.07 % H by mass
+  makes ~96 % of CFRP captures ¹H(n,γ) (2.22 MeV), which `ipc_aluminium`'s
+  carbon-only wrap does not have. Its internal pairs (4.5×10⁻⁴ per capture)
+  outweigh carbon's in F4. Whether the real binder has that much H is not known.
+- **"Near the capsule" must be the logical volumes.** A 30 mm sphere about the
+  capsule origin keeps only 39 % of the capsule pairs: the captures sit in the
+  nose, ~30 mm upstream.
+
+**What it does not settle.** Internal pairs borrow the detector acceptance of
+external Al pairs (44 %) and, for ³He, of the generator's IPC pairs (72 %). The
+sim follows one neutron per event, so it has no accidentals, and its trigger
+rate is 2.1× below the data. Only fractions are safe on F5. Nothing here says
+whether the *data's* prompt pairs are aluminium: no total pair energy is
+measured.
 
 **Why the ratio and not the cross section.** Once the optical depth is ~150
 the cell absorbs every neutron whatever σ is, so a radiative capture happens

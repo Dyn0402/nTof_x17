@@ -1,5 +1,20 @@
 # HANDOFF — where the thermal neutrons go, step by step (for the Linux box)
 
+> **Outcome, 2026-09-15 (Linux box): done, both deliverables.** No rerun was
+> needed: the existing nose-first campaign's per-hit birth truth was enough.
+> The reduction is `MX17_Full_Geant/scripts/thermal_accounting.py`, run on condor
+> over all 10⁹ neutrons. The contract is `data/thermal_accounting/accounting.json`
+> + `F1…F5.csv`, and the figures are `make_thermal_funnel_figures.py` →
+> `figures/thermal_funnel_F1…F5`. The numbers, the definitions as implemented, and
+> four findings this plan did not anticipate are in `README.md` under
+> "The funnel". The findings: ²⁸Al decay hits, wall scattering instead of misses,
+> the CFRP's hydrogen, and a 30 mm sphere being the wrong "near the capsule".
+> Corrections to this plan: the all-E1 bracket is 2.67×10⁻³ with Al and C
+> weighted (2.69×10⁻³ is Al alone); "0.8–1.8 pair-tags per pulse" was a looser
+> trigger menu, and this one gives 0.11; there is no `sept26_prelim_analysis/geometry.py`,
+> so the capsule is drawn from `ntof_tracking/reco/geometry.py` and the STEP profiles
+> in `DetectorConstruction.cc`.
+
 **Written 2026-09-14 on the Windows box, for a session on the Linux box that has
 `~/CLionProjects/MX17_Full_Geant` and its outputs.** Nothing here has been run.
 The Windows side has no Geant4 outputs; every Geant4 number below is quoted

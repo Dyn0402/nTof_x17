@@ -1,0 +1,27 @@
+id,parent,label,mc_count,weight,frac_of_parent,frac_err,per_neutron,per_pulse,per30d_ratetable,per30d_sim,source,note,on_slide
+F5.legs,,"trigger legs, prompt (wall ∧ plastic, 0.5 MIP, 20 ns)",28710,28710,,,2.871e-05,122.99363999999998,96021185.29526986,71176419.468,geant4,legacy event-level emulation: 124.4 legs/pulse (no time window); delayed legs 0.04/pulse,True
+F5.legs_delayed,,trigger legs from delayed decays (≥ 100 ms),9,9,,,9e-09,0.03855599999999999,30100.685045539136,22312.3572,geant4,,False
+F5.capture_outside_capsule,F5.legs,capture_outside_capsule,771,771,0.02685475444096134,0.0009540756878480361,7.71e-07,3.302964,2578625.3522345196,1911425.2667999999,geant4,,True
+F5.capture_outside_capsule.ncapture_elsewhere,F5.capture_outside_capsule,ncapture_elsewhere,771,771,1.0,0.0,7.71e-07,3.302964,2578625.3522345196,1911425.2667999999,geant4,,False
+F5.compton_capsule_capture,F5.legs,compton_capsule_capture,22016,22016,0.7668408220132358,0.0024955270030385334,2.2016e-05,94.316544,73632964.66250996,54580984.0128,geant4,,True
+F5.compton_capsule_capture.al27,F5.compton_capsule_capture,al27,21975,21975,0.9981377180232558,0.0002905686431497251,2.1975e-05,94.14089999999999,73495839.31952474,54479338.83,geant4,,False
+F5.compton_capsule_capture.cfrp,F5.compton_capsule_capture,cfrp,41,41,0.001862281976744186,0.0002905686431497235,4.1e-08,0.175644,137125.34298523387,101645.1828,geant4,,False
+F5.conv_structure_capsule_capture,F5.legs,conv_structure_capsule_capture,1941,1941,0.06760710553814002,0.0014817640463042879,1.941e-06,8.315244,6491714.408154607,4812031.7028,geant4,,True
+F5.conv_structure_capsule_capture.air,F5.conv_structure_capsule_capture,air,82,82,0.0422462648119526,0.004565709947733998,8.2e-08,0.351288,274250.68597046775,203290.3656,geant4,,False
+F5.conv_structure_capsule_capture.chamber,F5.conv_structure_capsule_capture,chamber,1344,1344,0.6924265842349304,0.010474866503871026,1.344e-06,5.757695999999999,4495035.633467178,3331978.6752,geant4,,False
+F5.conv_structure_capsule_capture.drift_gas,F5.conv_structure_capsule_capture,drift_gas,25,25,0.01287995878413189,0.0025593486587123355,2.5e-08,0.10709999999999999,83613.01401538649,61978.77,geant4,,False
+F5.conv_structure_capsule_capture.scint_wrap_vessel,F5.conv_structure_capsule_capture,scint_wrap_vessel,3,3,0.0015455950540958269,0.0008916598482141901,3e-09,0.012851999999999999,10033.56168184638,7437.4524,geant4,,False
+F5.conv_structure_capsule_capture.scintillator,F5.conv_structure_capsule_capture,scintillator,487,487,0.25090159711488924,0.009840300948726519,4.87e-07,2.086308,1628781.513019729,1207346.4396,geant4,,False
+F5.mixed,F5.legs,mixed,1195,1195,0.04162312783002438,0.0011787424457380539,1.195e-06,5.11938,3996702.069935474,2962585.206,geant4,,True
+F5.other,F5.legs,other,7,7,0.00024381748519679554,9.214311219736667e-05,7e-09,0.029987999999999997,23411.643924308217,17354.0556,geant4,,True
+F5.other.unresolved_ionisation,F5.other,unresolved_ionisation,7,7,1.0,0.0,7e-09,0.029987999999999997,23411.643924308217,17354.0556,geant4,,False
+F5.pair_near_capsule,F5.legs,pair_near_capsule,2780,2780,0.09683037269244166,0.001745315186391755,2.78e-06,11.909519999999999,9297767.15851098,6892039.223999999,geant4,,True
+F5.pair_near_capsule.al27,F5.pair_near_capsule,al27,2778,2778,0.9992805755395684,0.0005085268924212262,2.778e-06,11.900951999999998,9291078.117389748,6887080.9224,geant4,,False
+F5.pair_near_capsule.cfrp,F5.pair_near_capsule,cfrp,2,2,0.0007194244604316547,0.0005085268924212435,2e-09,0.008568,6689.041121230919,4958.3016,geant4,,False
+F5.pairtags,,"pair-tags: prompt legs in two arms, one event",26,26,,,2.6e-08,0.11138399999999998,86957.53457600196,64457.9208,geant4,with |Δt| ≤ 20 ns: 0.111/pulse. One neutron per event: the sim cannot make an accidental from two neutrons.,True
+F5.pairtags.bucket.capture_outside_capsule,F5.pairtags,capture_outside_capsule,2,2,0.07692307692307693,0.05225894003744288,2e-09,0.008568,6689.041121230919,4958.3016,geant4,,False
+F5.pairtags.bucket.compton_capsule_capture,F5.pairtags,compton_capsule_capture,20,20,0.7692307692307693,0.08262863931224225,2e-08,0.08567999999999999,66890.41121230919,49583.015999999996,geant4,,False
+F5.pairtags.bucket.mixed_buckets,F5.pairtags,mixed_buckets,3,3,0.11538461538461539,0.06265626800161944,3e-09,0.012851999999999999,10033.56168184638,7437.4524,geant4,,False
+F5.pairtags.bucket.pair_near_capsule,F5.pairtags,pair_near_capsule,1,1,0.038461538461538464,0.037714641372727696,1e-09,0.004284,3344.5205606154595,2479.1508,geant4,,False
+F5.pairtags.relation.genuine_pair,F5.pairtags,genuine_pair,2,2,0.07692307692307693,0.05225894003744288,2e-09,0.008568,6689.041121230919,4958.3016,geant4,,True
+F5.pairtags.relation.two_ancestries_same_capture,F5.pairtags,two_ancestries_same_capture,24,24,0.9230769230769231,0.052258940037442865,2.4e-08,0.10281599999999999,80268.49345477104,59499.6192,geant4,,True
