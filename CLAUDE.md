@@ -106,6 +106,17 @@ from the control-room browser with no file-system access.
   4.6 %), so the mix changes the X17-region background, not just its
   normalisation. Full argument and validation:
   <https://dylan-neff.web.cern.ch/x17/ipc-continuum/>.
+- **Take positions from pointing, not from the shape of a distribution.** A fit
+  to the shape of a track-position distribution (an acceptance ray trace, a
+  profile fit) is dominated by each chamber's own efficiency along that axis,
+  dead strips and noisy columns; a pointing estimator (the band crossing: the
+  correlation of angle with position) is not. Measured 2026-09-14 on the
+  capsule height: per 100 % efficiency tilt, 0.3–3.7 mm for the band crossing
+  against 32–65 mm for the ray trace. So chamber-to-chamber differences in a
+  shape fit are not alignment, and when two such estimators are combined only
+  the part common to all chambers means anything. Evidence and the mistake it
+  came from: `capsule_y.py --sensitivity` and the Outcome box of
+  `sept26_prelim_analysis/HANDOFF_CAPSULE_Y.md`.
 - Anything calibrated (kernel, template, v, gap map) is per detector **and** per
   run condition. A bundle used outside its conditions is a silent error.
 - **The sharing kernel must have c2 < c1**, always: the ±2 strip is reached only
