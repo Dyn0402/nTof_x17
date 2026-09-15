@@ -1,0 +1,12 @@
+panel,item,value,value_hi,unit,source,value_lo,n_pairs
+a,"³He(n,p) → p + t",0.999746494246528,0.999746494246528,per neutron entering the capsule,"ipc_aluminium / ipc_born, analytic",,
+a,"capsule-wall captures (²⁷Al, ¹²C → 7.7 MeV γ cascade)",0.0014430246298095394,0.01729903536977492,per neutron entering the capsule,"ipc_aluminium / ipc_born, analytic",,
+a,e⁺e⁻ from the wall,3.035379924023721e-06,3.638825255070081e-05,per neutron entering the capsule,"ipc_aluminium / ipc_born, analytic",,
+a,"³He(n,γ) → ⁴He*",1.0310530130050447e-08,1.0310530130050447e-08,per neutron entering the capsule,"ipc_aluminium / ipc_born, analytic",,
+a,e⁺e⁻ from ³He  (IPC),4.809431104058796e-11,4.809431104058796e-11,per neutron entering the capsule,"ipc_aluminium / ipc_born, analytic",,
+b,SiPM-wall singles,2063.0,0.8,per pulse ; aluminium fraction,"ntof_run_report/make_report.py section 6, quoting MX17_Full_Geant (trigger_provenance, al_pair_background/VERDICT.md, docs/report/thermal_note.pdf)",,
+b,plastic singles,942.0,0.57,per pulse ; aluminium fraction,"ntof_run_report/make_report.py section 6, quoting MX17_Full_Geant (trigger_provenance, al_pair_background/VERDICT.md, docs/report/thermal_note.pdf)",,
+b,arm coincidence (one trigger leg),205.0,0.96,per pulse ; aluminium fraction,"ntof_run_report/make_report.py section 6, quoting MX17_Full_Geant (trigger_provenance, al_pair_background/VERDICT.md, docs/report/thermal_note.pdf)",,
+c,all two-arm pairs,0.29,0.4,prompt (true-coincidence) fraction,"sept26_prelim_analysis/HANDOFF_ACCIDENTAL_TIMING.md section 0 -- run_145, unbinned two-component fit to the arm1-arm2 scintillator dt, 68 % intervals",0.17,76.0
+c,opposing  (A–C),0.42,0.58,prompt (true-coincidence) fraction,"sept26_prelim_analysis/HANDOFF_ACCIDENTAL_TIMING.md section 0 -- run_145, unbinned two-component fit to the arm1-arm2 scintillator dt, 68 % intervals",0.26,42.0
+c,perpendicular,0.16,0.32,prompt (true-coincidence) fraction,"sept26_prelim_analysis/HANDOFF_ACCIDENTAL_TIMING.md section 0 -- run_145, unbinned two-component fit to the arm1-arm2 scintillator dt, 68 % intervals",0.0,34.0

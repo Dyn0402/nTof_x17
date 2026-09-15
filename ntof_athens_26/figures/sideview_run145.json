@@ -1,0 +1,75 @@
+{
+ "A": {
+  "funnel": {
+   "coincident": 9181,
+   "hotstrip_dropped": 0,
+   "charge_window": 4591,
+   "slope_measured": 4371,
+   "not_noisy_column": 4367,
+   "inside_active_v": 4344,
+   "y_slope_measured": 3726,
+   "not_noisy_y_column": 3726,
+   "drawn": 3726
+  },
+  "y_crossing": {
+   "n": 3726,
+   "mm": 30.69810670325831,
+   "err": 0.7930917072834728,
+   "scale": 0.7242174617647456
+  },
+  "median_y_at_target_mm": 30.420107049726198
+ },
+ "C": {
+  "funnel": {
+   "coincident": 6740,
+   "hotstrip_dropped": 0,
+   "charge_window": 3368,
+   "slope_measured": 3185,
+   "not_noisy_column": 3185,
+   "inside_active_v": 3175,
+   "y_slope_measured": 2481,
+   "not_noisy_y_column": 2481,
+   "drawn": 2481
+  },
+  "y_crossing": {
+   "n": 2481,
+   "mm": 32.59153034721784,
+   "err": 2.0795014677814008,
+   "scale": 0.3901423887850926
+  },
+  "median_y_at_target_mm": 24.282271695196172
+ },
+ "D": {
+  "funnel": {
+   "coincident": 6141,
+   "hotstrip_dropped": 589,
+   "charge_window": 2774,
+   "slope_measured": 2480,
+   "not_noisy_column": 2438,
+   "inside_active_v": 2342,
+   "y_slope_measured": 1697,
+   "not_noisy_y_column": 1593,
+   "drawn": 1593
+  },
+  "y_crossing": {
+   "n": 1593,
+   "mm": 34.14300427380711,
+   "err": 2.1698478596992805,
+   "scale": 0.426443335464577
+  },
+  "median_y_at_target_mm": 27.38934746088772
+ },
+ "gas_centroid_y_mm": 0.8,
+ "noisy_y_columns": {
+  "A": 5,
+  "C": 4,
+  "D": 14
+ },
+ "capsule_y_calibration": {
+  "capsule_gas_centroid_y_mm": 31.273242287648397,
+  "err_mm": 0.7012611295944663,
+  "shift_applied_to_cad_mm": 30.473242287648397,
+  "nominal_cad_centroid_y_mm": 0.8,
+  "method": "inverse-variance mean of the A, C, D y band crossings"
+ }
+}

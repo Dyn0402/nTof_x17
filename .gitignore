@@ -218,3 +218,6 @@ ntof_processing/flash_timing/data/
 *.gif
 *.npz
 *.parquet
+
+# Office lock files (created while a .pptx/.docx/.xlsx is open)
+~$*
