@@ -374,6 +374,22 @@ def chi2_plane(plane, W, noise, pos, sat, p0, w, t0, hyper, censor=True,
     if snap_t0:
         t0 = round(t0 / T0_STEP) * T0_STEP
     M = build_matrix(plane, pos, p0, w, t0, hyper)
+    chi, q = _solve_nnls(M, W, noise, sat, censor)
+    if q is None:
+        return np.inf, None
+    if t0_prior is not None:
+        chi += ((t0 - t0_prior[0]) / t0_prior[1]) ** 2
+    return chi, q
+
+
+def _solve_nnls(M, W, noise, sat, censor=True):
+    """(chi2, q) for a design matrix of any width: the charge profile solved by
+    NNLS with the per-strip noise weighting, saturated samples censored.
+
+    Factored out of :func:`chi2_plane` so the two-track model (:func:`chi2_plane_two`)
+    uses exactly the same weighting, censoring and dead/hot handling rather than a
+    second copy of it. Numerics are unchanged — ``tests/test_model_regression.py``
+    pins them."""
     ok = ~sat.reshape(-1)
     if not ok.any():
         return np.inf, None
@@ -381,7 +397,7 @@ def chi2_plane(plane, W, noise, pos, sat, p0, w, t0, hyper, censor=True,
     A = (M * Wt[:, None])[ok]
     y = (W / noise[:, None]).reshape(-1)[ok]
     try:
-        q, rn = nnls(A, y, maxiter=50 * K)
+        q, rn = nnls(A, y, maxiter=50 * M.shape[1])
     except Exception:
         return np.inf, None
     chi = rn * rn
@@ -390,13 +406,236 @@ def chi2_plane(plane, W, noise, pos, sat, p0, w, t0, hyper, censor=True,
         pen = np.maximum(0.0, W[sat] - model[sat]) / np.repeat(
             noise, NSAMP).reshape(W.shape)[sat]
         chi += float((pen ** 2).sum())
-    if t0_prior is not None:
-        chi += ((t0 - t0_prior[0]) / t0_prior[1]) ** 2
     return chi, q
 
 
 def model_waveforms(plane, pos, p0, w, t0, q, hyper):
     return (build_matrix(plane, pos, p0, w, t0, hyper) @ q).reshape(len(pos), NSAMP)
+
+
+# ------------------------------------------------------- two tracks, one plane
+# Nothing in the forward model assumes one track except build_matrix being
+# called once: the charge profile is already a free non-negative vector, so a
+# second track is a second block of columns in the SAME linear solve.
+#
+#     W  ~  M(theta_a) qa + M(theta_b) qb ,   qa, qb >= 0
+#
+# The outer parameters are (p0, w, t0) per track, 6 in all (5 with t0 tied).
+# Design and acceptance criteria: sept26_prelim_analysis/HANDOFF_JOINT_TWO_TRACK_FIT.md.
+
+#: Below this the two tracks are not distinguishable and the charge split
+#: between their (identical) column blocks is arbitrary. Transverse: a
+#: charge-weighted r.m.s. over the drift column, so two tracks that CROSS in
+#: this plane still count as separated (a mid-column distance would call them
+#: degenerate at the crossing). Temporal: one depth bin, since two tracks at
+#: the same place but a bin apart in time are resolved by the profile alone.
+TWO_MIN_SEP_MM = 1.2          # ~1.5 strip pitches
+TWO_MIN_DT_NS = 60.0          # one depth bin
+#: Backstop only. The end-to-end failure -- two straight lines fitting ONE
+#: track's column by taking half of it each in depth -- is handled by measuring
+#: the separation *where both children have charge* (see
+#: :func:`two_track_separation`), not by a threshold on the overlap itself. A
+#: threshold there is a bad instrument: with the same quantity in the
+#: optimiser's barrier the fit parks exactly on it, and the guard then decides
+#: genuine 15 mm pairs on the fourth decimal (measured 2026-09-16).
+TWO_MIN_OVERLAP = 0.05
+#: Multiplicative barrier on the collapsed basin. Scale-free on purpose: chi2
+#: here runs 1e3-1e5 and an additive constant would be a threshold in disguise.
+#: It is optimisation hygiene only -- the real protection is the ``guards_ok``
+#: verdict that ``wft.reco.fit_plane_two`` applies to the result.
+TWO_BARRIER = 2.0
+
+
+def two_track_separation(pa, pb, wgt=None) -> float:
+    """R.m.s. transverse distance between two tracks over the drift column [mm],
+    weighted by ``wgt`` -- one weight per depth bin.
+
+    The weight is what makes this the right question. Weighted by the depths
+    where BOTH children carry charge, it is large for two tracks side by side
+    (including two that cross: the crossing is one depth out of eighteen) and
+    zero for one track cut in half end to end, where there is no depth at which
+    both children exist. A zero-sum weight therefore returns 0 -- not a fallback
+    to the unweighted r.m.s., which is exactly the number the end-to-end failure
+    makes look enormous."""
+    d = (pa[0] - pb[0]) + (pa[1] - pb[1]) * UK
+    if wgt is None:
+        return float(np.sqrt(np.mean(d * d)))
+    w = np.asarray(wgt, float)[:len(d)]
+    s = w.sum()
+    return float(np.sqrt((w * d * d).sum() / s)) if s > 0 else 0.0
+
+
+def two_track_distinguishability(pa, pb, wgt=None) -> float:
+    """How far apart the two tracks are, in units of the resolvability floor;
+    < 1 means the pair is degenerate. Transverse and temporal separation add
+    in quadrature: either one alone is enough."""
+    sep = two_track_separation(pa, pb, wgt)
+    dt = abs(pa[2] - pb[2])
+    return float(np.hypot(sep / TWO_MIN_SEP_MM, dt / TWO_MIN_DT_NS))
+
+
+def constrained_bins(t0: float) -> np.ndarray:
+    """Which depth bins the DAQ window actually constrains, for a track at t0.
+
+    A bin whose charge arrives after the last sample contributes an almost-zero
+    column, so NNLS is free to park an arbitrary amount of charge in it -- which
+    it does: run_145 tracks carry fitted ``q_sum`` up to 1e26, and ``q_uend``
+    reads the last bin for nearly every track. That is a property of the
+    production model, not of this fit, but any guard built on the charge profile
+    has to look only where the profile means something."""
+    last = float(TS[-1]) if len(TS) else 0.0
+    arr = t0 + UK
+    return (arr >= -0.5 * SNS) & (arr <= last)
+
+
+def profile_overlap(qa, qb, bins=None) -> float:
+    """How much of the drift column the two children share, 0 to 1: the
+    histogram intersection of their normalised charge profiles. Two real
+    coincident tracks each cross the whole gap and overlap almost completely;
+    two halves of one column do not overlap at all."""
+    qa, qb = _masked(qa, bins), _masked(qb, bins)
+    sa, sb = qa.sum(), qb.sum()
+    if sa <= 0 or sb <= 0:
+        return 0.0
+    return float(np.minimum(qa / sa, qb / sb).sum())
+
+
+def _masked(q, bins=None) -> np.ndarray:
+    q = np.asarray(q, float)
+    return q if bins is None else q * np.asarray(bins, float)[:len(q)]
+
+
+def common_weight(qa, qb, bins=None) -> np.ndarray:
+    """Per depth bin, how much of the column the two children SHARE: the
+    pointwise minimum of their normalised charge profiles. Zero everywhere for
+    one track cut in half end to end."""
+    ma, mb = _masked(qa, bins), _masked(qb, bins)
+    sa, sb = ma.sum(), mb.sum()
+    return (np.minimum(ma / sa, mb / sb) if sa > 0 and sb > 0
+            else np.zeros_like(ma))
+
+
+def build_matrix_two(plane, pos, pa, pb, hyper):
+    """(strip x sample, 2K) design matrix of two straight tracks."""
+    return np.hstack([build_matrix(plane, pos, pa[0], pa[1], pa[2], hyper),
+                      build_matrix(plane, pos, pb[0], pb[1], pb[2], hyper)])
+
+
+def chi2_plane_two(plane, W, noise, pos, sat, pa, pb, hyper, censor=True,
+                   snap_t0=True):
+    """chi2 of the two-track model, both charge profiles profiled out together.
+
+    ``pa``/``pb`` are ``(p0, w, t0)``. Returns ``(chi2, qa, qb)``. Setting
+    ``qb = 0`` reproduces the one-track model exactly, so chi2 here can never
+    exceed the one-track chi2 at the same ``pa`` — which is what makes
+    ``dchi2 = chi2_one - chi2_two`` a model-selection statistic and not a fit
+    artefact."""
+    if snap_t0:
+        pa = (pa[0], pa[1], round(pa[2] / T0_STEP) * T0_STEP)
+        pb = (pb[0], pb[1], round(pb[2] / T0_STEP) * T0_STEP)
+    M = build_matrix_two(plane, pos, pa, pb, hyper)
+    chi, q = _solve_nnls(M, W, noise, sat, censor)
+    if q is None:
+        return np.inf, None, None
+    return chi, q[:K], q[K:]
+
+
+def _two_pack(pa, pb, tie_t0):
+    return (np.array([pa[0], pa[1], pb[0], pb[1], 0.5 * (pa[2] + pb[2])])
+            if tie_t0 else np.array([pa[0], pa[1], pa[2], pb[0], pb[1], pb[2]]))
+
+
+def _two_unpack(v, tie_t0):
+    if tie_t0:
+        return (v[0], v[1], v[4]), (v[2], v[3], v[4])
+    return (v[0], v[1], v[2]), (v[3], v[4], v[5])
+
+
+_TWO_SIMPLEX_FREE = np.array([[0, 0, 0, 0, 0, 0], [0.4, 0, 0, 0, 0, 0],
+                              [0, 1.5e-3, 0, 0, 0, 0], [0, 0, 20, 0, 0, 0],
+                              [0, 0, 0, 0.4, 0, 0], [0, 0, 0, 0, 1.5e-3, 0],
+                              [0, 0, 0, 0, 0, 20]], float)
+_TWO_SIMPLEX_TIED = np.array([[0, 0, 0, 0, 0], [0.4, 0, 0, 0, 0],
+                              [0, 1.5e-3, 0, 0, 0], [0, 0, 0.4, 0, 0],
+                              [0, 0, 0, 1.5e-3, 0], [0, 0, 0, 0, 20]], float)
+
+
+#: How many of the offered starting points are actually refined. All of them
+#: are scored first (one chi2 each, ~1 ms); Nelder-Mead, which costs a few
+#: hundred of those, runs only on the best few.
+TWO_N_REFINE = 2
+
+
+def fit_plane_two_raw(W, noise, pos, sat, plane, starts, hyper=None,
+                      wgt=None, maxiter=220, maxiter_polish=140,
+                      n_refine=TWO_N_REFINE, bins=None):
+    """Fit two tracks to one prepared plane window from several starting points.
+
+    ``starts``: list of ``(pa, pb, tie_t0)``. All are scored, the best
+    ``n_refine`` are refined by Nelder-Mead on (p0, w, t0) per track — 6
+    parameters, or 5 with ``tie_t0`` — with the collapsed basin held off by a
+    multiplicative barrier, and the winner is polished once more. Returns the
+    best result as a dict, or None.
+
+    The caller prepares the window (``prep_plane``) once and passes it in: the
+    two-track fit is always a SECOND look at a window a one-track fit has
+    already seen, so re-preparing it here would be waste."""
+    _require_cal()
+    hyper = hyper or HYPER
+    dof = int((~sat).sum())
+
+    def obj(v, tie_t0):
+        pa, pb = _two_unpack(v, tie_t0)
+        c, qa, qb = chi2_plane_two(plane, W, noise, pos, sat, pa, pb, hyper,
+                                   snap_t0=False)
+        if not np.isfinite(c):
+            return np.inf
+        # the barrier measures exactly what the guard will: separation at the
+        # depths where both children have charge. One quantity, so the
+        # optimiser is not pushed onto a threshold the guard then rules on.
+        d = two_track_distinguishability(pa, pb, common_weight(qa, qb, bins))
+        return c * (1.0 + TWO_BARRIER * (1.0 - d) ** 2) if d < 1.0 else c
+
+    scored = sorted((obj(_two_pack(pa, pb, tie), tie), i, (pa, pb, tie))
+                    for i, (pa, pb, tie) in enumerate(starts))
+    nfev = len(starts)
+    best = None
+    for c0, _i, (pa, pb, tie) in scored[:max(1, n_refine)]:
+        if not np.isfinite(c0):
+            continue
+        v0 = _two_pack(pa, pb, tie)
+        simplex = v0 + (_TWO_SIMPLEX_TIED if tie else _TWO_SIMPLEX_FREE)
+        r = minimize(obj, v0, args=(tie,), method='Nelder-Mead',
+                     options=dict(xatol=1e-3, fatol=0.3, maxiter=maxiter,
+                                  initial_simplex=simplex))
+        nfev += r.nfev
+        if best is None or r.fun < best[0]:
+            best = (float(r.fun), r.x, tie)
+    if best is None:
+        return None
+    r = minimize(obj, best[1], args=(best[2],), method='Nelder-Mead',
+                 options=dict(xatol=5e-4, fatol=0.15, maxiter=maxiter_polish))
+    nfev += r.nfev
+    pa, pb = _two_unpack(r.x, best[2])
+    chi, qa, qb = chi2_plane_two(plane, W, noise, pos, sat, pa, pb, hyper,
+                                 snap_t0=False)
+    if qa is None:
+        return None
+    # label order: the track at the smaller position in the middle of the drift
+    # column is 'a'. Mid-column rather than at the mesh because crossing tracks
+    # swap order at the mesh but rarely at mid-column.
+    u_mid = 0.5 * K * DT
+    if pa[0] + pa[1] * u_mid > pb[0] + pb[1] * u_mid:
+        pa, pb, qa, qb = pb, pa, qb, qa
+    # the guards are measured on the FITTED profiles, not the parent's: the
+    # separation that matters is the one at the depths where both tracks have
+    # charge, and that is also what makes an end-to-end pair fail.
+    common = common_weight(qa, qb, bins)
+    return dict(chi2=float(chi), dof=dof, tie_t0=bool(best[2]), nfev=int(nfev),
+                pa=tuple(float(x) for x in pa), pb=tuple(float(x) for x in pb),
+                qa=qa, qb=qb, overlap=profile_overlap(qa, qb, bins),
+                sep=two_track_separation(pa, pb, common),
+                dist=two_track_distinguishability(pa, pb, common))
 
 
 # --------------------------------------------------------------------- fits

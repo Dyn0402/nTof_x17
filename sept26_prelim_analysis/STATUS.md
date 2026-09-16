@@ -53,7 +53,7 @@ and defer a real per-detector recalibration to October** — meanwhile open up
 the per-track tracking distributions run by run and tag by tag to find what
 drifts. **Do not build an opening-angle spectrum on a borrowed `k` for C or D.**
 
-Last updated **2026-09-14** (**the re-pass is pushed to OCTOBER** and [`OCTOBER_2026.md`](OCTOBER_2026.md) is the standing list — two-track recovery is the gating item; two tracks in one chamber: a truth bench and two opt-in reconstruction fixes, below; and on 2026-09-10: arm-A tracks are now confirmed positionally against the scintillators, and the wall measures the angle scale; the FULL pass is complete; per-run capsule imaging says the geometry is sound and the angle scale is the fault; the campaign opening-angle spectra exist).
+Last updated **2026-09-16** (**the joint two-track fit exists and recovers pairs below 12 mm for the first time** — see the box below; 2026-09-14: **the re-pass is pushed to OCTOBER** and [`OCTOBER_2026.md`](OCTOBER_2026.md) is the standing list — two-track recovery is the gating item; two tracks in one chamber: a truth bench and two opt-in reconstruction fixes, below; and on 2026-09-10: arm-A tracks are now confirmed positionally against the scintillators, and the wall measures the angle scale; the FULL pass is complete; per-run capsule imaging says the geometry is sound and the angle scale is the fault; the campaign opening-angle spectra exist).
 
 > **START HERE:** [`HANDOFF_FULLPASS_2026-09-10.md`](HANDOFF_FULLPASS_2026-09-10.md)
 > — why the full pass happened, what it produced, and the run_86 test that now
@@ -61,6 +61,25 @@ Last updated **2026-09-14** (**the re-pass is pushed to OCTOBER** and [`OCTOBER_
 >
 > **AND NEXT:** [`OCTOBER_2026.md`](OCTOBER_2026.md) — the re-pass is deferred to
 > October, and this is what has to be true before it runs.
+
+> ## THE JOINT TWO-TRACK FIT EXISTS -- 2026-09-16
+>
+> O1 of [`OCTOBER_2026.md`](OCTOBER_2026.md), off by default. Two tracks that
+> share one seed cluster now get a 2K-column joint fit, a min-marginal-chi2
+> statistic, and a guard on the separation where both children carry charge. On
+> the overlay bench (coincident, on top of pairing + rescue) pairs **below 12 mm
+> are recovered for the first time — 18 % (A) / 37 % (C), from 0** — and 12–24 mm
+> rises to 43 / 45 %, with ≥ 24 mm unchanged. Real clean single muons split at
+> ≤ 0.66 %; events without a split are bit-identical to 99.8 / 99.1 %. The bench
+> caught two defects synthetics could not (corroboration without a count
+> mismatch; a split that loses the event a track) — both fixed.
+>
+> **Compute is not a constraint (Dylan's decision):** condor is effectively
+> unlimited and a month-long re-pass is fine. The fit's own trigger, built to save
+> compute, discards two thirds of the recoverable pairs at 0–6 mm, so removing it
+> is next. Record: [`../wft/TWO_TRACK_FIT_2026-09-16.md`](../wft/TWO_TRACK_FIT_2026-09-16.md);
+> working log and to-do: [`TWO_TRACK_FIT_LOG.md`](TWO_TRACK_FIT_LOG.md); report:
+> `<out>/two_track/report.html`.
 
 > ## THE RE-PASS IS PUSHED TO OCTOBER, AND TWO-TRACK RECOVERY IS WHAT GATES IT -- 2026-09-14
 >
@@ -3353,6 +3372,12 @@ order of magnitude until re-measured.
 ---
 
 ## Log
+
+**2026-09-16 (joint two-track fit)** — O1 built and measured; box at the top.
+Decision recorded: **compute is not a constraint** for the reconstruction — the
+handoff's "≤ +50 % core time" criterion is withdrawn, and choices made to save
+compute (the per-plane trigger, selected-candidates-only, the optimiser budget)
+are to be revisited for effectiveness. Detail: `TWO_TRACK_FIT_LOG.md`.
 
 **2026-09-09 (GANIL)** — a second, separate analysis: the same 3He and capsule
 pair backgrounds at a 1-40 MeV neutron beam (NFS at GANIL). Section above for

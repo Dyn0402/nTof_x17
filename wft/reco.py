@@ -308,6 +308,7 @@ def fit_plane_candidates(windows: list, plane: str, cal: CalibrationBundle,
         plausible, dchi2 = _candidate_score(P, plane, fit)
         fit._plausible, fit._dchi2 = plausible, dchi2
         fit._rescued = bool(getattr(s, 'rescued', False))
+        fit._win = i                      # which window this fit came from
         key = (1 if plausible else 0, dchi2)
         ranked.append((key, fit))
         if best_key is None or key > best_key:
@@ -318,6 +319,546 @@ def fit_plane_candidates(windows: list, plane: str, cal: CalibrationBundle,
     for _k, f in ranked:
         f.n_candidates = n_ok
     return (best, [f for _k, f in ranked]) if return_all else best
+
+
+# ======================================================================== #
+# The joint two-track fit
+#
+# Two tracks closer than the 12 mm seed gap share one cluster, so they share
+# one window and are fitted as one compromise line. Below 12 mm that costs
+# ~100 % of pairs and at 12-24 mm 62-65 % (intra_bench); small-opening-angle
+# pairs -- conversions, low-angle IPC -- are exactly the population it eats.
+#
+# The fix is not to split the seed (that was tried and it breaks real single
+# tracks: wft/MULTITRACK_2026-09-14.md §3.2) but to offer the window a second
+# track and let chi2 decide. Design: HANDOFF_JOINT_TWO_TRACK_FIT.md.
+#
+# CONTRACT. A split REPLACES its parent -- it cannot be additive the way the
+# rescue floor is, because the two children occupy the parent's strips and
+# counting both would count the charge twice. So:
+#   * with WFT_TWO_TRACK_FIT off (the default) the output is bit-identical;
+#   * a candidate whose split is not accepted comes out bit-identical;
+#   * the parent is kept in the candidates side table flagged ``split_replaced``
+#     so downstream can undo any split;
+#   * the false-split rate on clean single tracks is measured and bounded.
+# ======================================================================== #
+
+#: Master switch. Off = production, candidate for candidate.
+TWO_TRACK = os.environ.get('WFT_TWO_TRACK_FIT', '0') == '1'
+#: Accept the split when the statistic (``fit_plane_two``'s ``fstat``: the
+#: SMALLER of the two children's marginal chi2 improvements, in units of the
+#: one-track fit's own chi2/dof) exceeds this. NOT a Wilks number: chi2/dof is
+#: 1.4-6.8 on clean single tracks here and 5-12 across the full pass, so a
+#: threshold from the asymptotic distribution would split almost everything.
+#: Chosen from the efficiency-vs-false-split curve of
+#: sept26_prelim_analysis/two_track_synth.py and `intra_bench split-probe`.
+TWO_TRACK_F = float(os.environ.get('WFT_TWO_TRACK_F', '300.0'))
+#: The same threshold when the other plane resolves two time-coincident
+#: plausible candidates where THIS plane resolves fewer (see
+#: :func:`_cross_plane_mismatch`). Two tracks must show in both views, so a
+#: count mismatch is real external evidence that this plane has merged them and
+#: the bar can be lower. Without the mismatch half of that condition the
+#: discount fires on the easy case and destroys correct tracks.
+TWO_TRACK_F_CORROB = float(os.environ.get('WFT_TWO_TRACK_F_CORROB', '120.0'))
+#: Candidates per plane the fit is attempted on, best-ranked first.
+TWO_TRACK_MAX_TRY = 2
+#: Trigger: the window's charge is wider than one track of the fitted |tan| and
+#: column duration can cover, by more than this margin [mm]. Measured on clean
+#: single tracks -- `intra_bench split-probe`.
+TWO_TRACK_WIDTH_MARGIN = float(os.environ.get('WFT_TWO_TRACK_WIDTH_MM', '6.0'))
+#: Strip significance that counts as carrying charge, for the width trigger.
+TWO_TRACK_SIG = 5.0
+#: Do the two tracks share a t0?
+#:
+#:   'tied' (default) -- yes, one t0 for both. Two prompt tracks from one vertex
+#:       reach the mesh together to within a few ns, and that is the hypothesis
+#:       the same-chamber vertex test is about. It also removes a degeneracy
+#:       that costs more than it buys: the plane chi2 has near-degenerate minima
+#:       one depth bin apart (chi2_plane's docstring -- only ~35 % of free fits
+#:       land in the physical one), and with a free second t0 the fit walks into
+#:       them. Measured on synthetics 2026-09-16: free t0 splits perfectly
+#:       modelled SINGLE tracks at 200 ns offsets and reaches fstat 100+.
+#:   'free' -- also offer a free second t0. A STUDY OPTION, not a fallback:
+#:       nothing measured so far gives it an advantage. Two co-located parallel
+#:       tracks are degenerate at any offset (the profile absorbs it), and on a
+#:       time-offset pair with opposite slopes the TIED fit scores higher
+#:       (test_two_track.test_free_t0_mode_reaches_a_time_offset_pair).
+TWO_TRACK_T0 = os.environ.get('WFT_TWO_TRACK_T0', 'tied')
+#: t0 offsets, relative to the parent's, at which the residual is scanned for a
+#: second track [ns]. One depth bin apart; wider only when t0 is free.
+T0_RESID_SCAN = np.arange(-60.0, 60.1, 60.0)
+T0_RESID_SCAN_FREE = np.arange(-180.0, 180.1, 60.0)
+#: Trigger: the largest per-strip coherent positive residual the one-track fit
+#: leaves, in sigma after de-scaling by the fit's own chi2/dof. Calibrated on
+#: clean single tracks -- `intra_bench split-probe`.
+TWO_TRACK_RESID_Z = float(os.environ.get('WFT_TWO_TRACK_RESID_Z', '8.0'))
+#: Only reconsider candidates the selector actually chose (members of a pair
+#: from :func:`select_tracks`). Measured on 13 071 real run_145 candidates:
+#: this is 25 % of them and holds 42 % of the splits, the rest being extra
+#: clusters in already-busy events -- four candidates a plane, 45 strips,
+#: chi2/dof 13. The default was set to save compute, which is no longer a
+#: constraint (2026-09-16): whether those other splits are real pairs is
+#: unmeasured, and this is on the to-do (wft/TWO_TRACK_FIT_2026-09-16.md §8).
+#: Set WFT_TWO_TRACK_ALL_CANDIDATES=1 to reconsider every candidate.
+TWO_TRACK_SELECTED_ONLY = os.environ.get('WFT_TWO_TRACK_ALL_CANDIDATES', '0') != '1'
+
+
+def _plane_extent(W, noise, pos, sig=TWO_TRACK_SIG) -> float:
+    """Transverse extent of the window's significant charge [mm]."""
+    amp = np.asarray(W).max(axis=1) / np.asarray(noise)
+    live = amp > sig
+    if live.sum() < 2:
+        return 0.0
+    p = np.asarray(pos)[live]
+    return float(p.max() - p.min())
+
+
+def one_track_width(fit: PlaneFit) -> float:
+    """How wide a window ONE track of this fit can fill [mm]: the transverse
+    travel across its own charge column, plus the charge spread and the
+    sharing kernel's reach.
+
+    Weak on its own, and worth knowing why: a one-track fit of a MERGED window
+    buys width by inflating |w|, so it can "explain" an extent it has no charge
+    for (measured on synthetics: a 30 mm pair reads |tan| 1.2 and the trigger
+    misses it). Kept as a secondary trigger; the residual is the primary one."""
+    u = fit.q_uend if np.isfinite(fit.q_uend) else 0.0
+    return abs(fit.w) * u + 4.0 * wm.PITCH + 2.0 * float(
+        (wm.HYPER or {}).get('sigma_p0', 0.4))
+
+
+def two_track_probe(P, plane: str, fit: PlaneFit, hyper) -> Optional[dict]:
+    """Everything the trigger and the joint fit both need, computed once: the
+    prepared window, the parent's chi2 and charge profile, and the residual it
+    leaves.
+
+    The residual is the trigger that matters. A second track the one-track
+    model does not cover shows as a run of strips with large *coherent
+    positive* residual, and that is exactly the question "does one track
+    explain this window" — unlike the strip count, which a steeper fit can
+    fake, and unlike chi2/dof, which busy events raise on their own."""
+    W, noise, pos, sat = wm.prep_plane(P, plane)
+    if W.shape[1] != wm.NSAMP:
+        wm.set_nsamp(W.shape[1])
+        W, noise, pos, sat = wm.prep_plane(P, plane)
+    chi_one, q_one = wm.chi2_plane(plane, W, noise, pos, sat, fit.p0, fit.w,
+                                   fit.t0, hyper, snap_t0=False)
+    if q_one is None or not np.isfinite(chi_one):
+        return None
+    dof = max(int((~sat).sum()), 1)
+    R = W - (wm.build_matrix(plane, pos, fit.p0, fit.w, fit.t0, hyper) @ q_one
+             ).reshape(W.shape)
+    # per-strip coherent positive residual, in sigma, de-scaled by the fit's own
+    # chi2/dof so that a merely imperfect model does not look like a track
+    z = residual_z(R, noise, sat, chi_one / dof)
+    return dict(W=W, noise=noise, pos=pos, sat=sat, chi_one=float(chi_one),
+                q_one=q_one, dof=dof, resid_z=float(np.max(z)) if len(z) else 0.0,
+                extent_mm=_plane_extent(W, noise, pos),
+                width_mm=one_track_width(fit))
+
+
+def two_track_triggers(probe: dict, other_two: bool = False) -> dict:
+    """Which of the handoff §4 triggers fire for one candidate.
+
+    The triggers exist to save compute, which is no longer a constraint
+    (2026-09-16), and they are measured to be the largest loss at small
+    separation: on synthetic coincident pairs 0-6 mm apart the fit alone
+    recovers 57 % but this plane's trigger fires on only 25 % of them, leaving
+    16 %. Two tracks a few mm apart leave little residual and no excess width.
+    Attempting on every candidate is item 1 of the to-do
+    (sept26_prelim_analysis/TWO_TRACK_FIT_LOG.md)."""
+    return dict(residual=bool(probe['resid_z'] > TWO_TRACK_RESID_Z),
+                width=bool(probe['extent_mm'] >
+                           probe['width_mm'] + TWO_TRACK_WIDTH_MARGIN),
+                cross_plane=bool(other_two),
+                resid_z=float(probe['resid_z']),
+                extent_mm=float(probe['extent_mm']),
+                width_mm=float(probe['width_mm']))
+
+
+def residual_z(R, noise, sat, chi_scale: float = 1.0) -> np.ndarray:
+    """Per-strip coherent positive residual, in sigma, de-scaled by the fit's
+    own chi2/dof. Large on a run of strips = charge one track does not cover."""
+    live = ~sat
+    n_live = np.maximum(live.sum(axis=1), 1)
+    z = (R * live).sum(axis=1) / (np.asarray(noise) * np.sqrt(n_live))
+    return z / np.sqrt(max(chi_scale, 1.0))
+
+
+def _scan_positions(R, noise, pos, sat, lo, hi) -> np.ndarray:
+    """Where in the window to look for a second track.
+
+    The zero-slope stage costs one NNLS per position, so scanning every strip of
+    a 60-strip window is most of the fit's price. The missing charge is not
+    everywhere: it is on the strips with coherent positive residual. Scan those
+    and one strip either side, and fall back to the whole window when the
+    residual is featureless (nothing to lose then -- there is no second track)."""
+    z = residual_z(R, noise, sat)
+    if len(z) and np.isfinite(z).any() and z.max() > 1.0:
+        keep = z >= max(1.0, 0.3 * z.max())
+        idx = np.flatnonzero(keep)
+        idx = np.unique(np.concatenate([idx - 1, idx, idx + 1]))
+        idx = idx[(idx >= 0) & (idx < len(pos))]
+        if 0 < len(idx) < len(pos):
+            return np.unique(np.asarray(pos, float)[idx])
+    return np.arange(lo, hi + 1e-9, wm.PITCH)
+
+
+def _scan_residual(R, noise, pos, sat, plane, hyper, t0_centre, t0_hints=(),
+                   p0_half=2.0, p0_step=0.5, w_step_mult=2, t0_grid=None):
+    """Best single track in a residual, found the way ``_global_start`` finds a
+    track in the data: (p0, t0) at zero slope where the residual is, then
+    (p0, w) around the winner. Waveform samples only — CLAUDE.md: hits never
+    set a position, an angle or a depth.
+
+    Returns ``(chi2, (p0, w, t0), q)``."""
+    def chi(p0, w, t0):
+        return wm.chi2_plane(plane, R, noise, pos, sat, p0, w, t0, hyper)[0]
+
+    lo, hi = float(np.min(pos)), float(np.max(pos))
+    p0s = _scan_positions(R, noise, pos, sat, lo, hi)
+    # +-180 ns, one depth bin apart. Narrower and a second track more than a
+    # bin out of time is unreachable -- including the whole accidental class,
+    # two tracks on the same strips at different times, which nothing else can
+    # separate (test_two_track.test_time_separated_tracks_at_one_position).
+    grid = T0_RESID_SCAN if t0_grid is None else t0_grid
+    t0s = sorted({round(float(t), 1) for t in
+                  list(t0_centre + np.asarray(grid)) + list(t0_hints)})
+    best = (np.inf, float(t0_centre), lo)
+    for t0 in t0s:
+        for p0 in p0s:
+            c = chi(p0, 0.0, t0)
+            if c < best[0]:
+                best = (c, float(t0), float(p0))
+    _c, t0b, p0b = best
+    ws = np.arange(-W_SCAN_HALF, W_SCAN_HALF + 1e-9, w_step_mult * W_SCAN_STEP)
+    # p0 is the position AT THE MESH but the zero-slope stage finds the charge
+    # CENTROID, and on an inclined track those differ by w x half the drift
+    # column -- up to 10 mm at |tan| = 0.4. Re-centre the scan per slope (the
+    # P0_SHEAR trick, doc §21.1) instead of widening the box: same grid, no
+    # extra cost. Without it the second track is missed whenever it is the
+    # steeper one (measured on synthetics, 2026-09-16).
+    u_mid = 0.5 * wm.K * wm.DT
+    best2 = (np.inf, p0b, 0.0)
+    for p0 in np.arange(p0b - p0_half, p0b + p0_half + 1e-9, p0_step):
+        for w in ws:
+            p0m = p0 - w * u_mid
+            c = chi(p0m, w, t0b)
+            if c < best2[0]:
+                best2 = (c, float(p0m), float(w))
+    th = (best2[1], best2[2], t0b)
+    c, q = wm.chi2_plane(plane, R, noise, pos, sat, th[0], th[1], th[2], hyper)
+    return float(c), th, q
+
+
+def _two_track_starts(W, noise, pos, sat, plane, parent_r, hyper, t0_hints=(),
+                      n_alt: int = 2, t0_mode: str = None):
+    """Starting points for the joint fit, by alternating matching pursuit.
+
+    A merged window's one-track fit is a compromise line that belongs to
+    neither track, so using it as track a's start and only searching for b
+    leaves the optimiser in a bad basin (measured on synthetics: the second
+    track is missed above ~9 mm separation). Instead alternate — subtract one
+    track's model, re-find the other in what is left, repeat — which costs only
+    one-track solves and lands both tracks near their own charge. The joint
+    Nelder-Mead then has to move them a little, not find them.
+
+    Symmetric splits of the one-track solution are kept as fallback starts for
+    a residual the first fit has already absorbed (two tracks a strip apart).
+    """
+    free = (t0_mode or TWO_TRACK_T0) == 'free'
+    grid = T0_RESID_SCAN_FREE if free else T0_RESID_SCAN
+    pa = (parent_r['p0'], parent_r['w'], parent_r['t0'])
+    qa = parent_r['q']
+    pb, qb = None, None
+    for _ in range(max(1, n_alt)):
+        R = W - (wm.build_matrix(plane, pos, pa[0], pa[1], pa[2], hyper) @ qa
+                 ).reshape(W.shape)
+        _c, pb, qb = _scan_residual(R, noise, pos, sat, plane, hyper, pa[2],
+                                    t0_hints=t0_hints, t0_grid=grid)
+        if qb is None or not np.isfinite(_c):
+            break
+        R = W - (wm.build_matrix(plane, pos, pb[0], pb[1], pb[2], hyper) @ qb
+                 ).reshape(W.shape)
+        _c, pa2, qa2 = _scan_residual(R, noise, pos, sat, plane, hyper, pb[2],
+                                      t0_hints=t0_hints, t0_grid=grid)
+        if qa2 is None or not np.isfinite(_c):
+            break
+        pa, qa = pa2, qa2
+    starts = []
+    if pb is not None:
+        starts.append((pa, pb, not free))
+        if free and abs(pb[2] - pa[2]) < wm.DT:
+            starts.append((pa, pb, True))
+    p0, w, t0 = parent_r['p0'], parent_r['w'], parent_r['t0']
+    for d in (2.0, 5.0, 10.0):
+        starts.append(((p0 - 0.5 * d, w, t0), (p0 + 0.5 * d, w, t0), True))
+    return starts
+
+
+def _two_errors(W, noise, pos, sat, plane, pa, pb, chi0, dof, hyper,
+                dp=0.05, dw=2e-4, dt=2.0):
+    """1-sigma (p0, w, t0) per child from the curvature of the JOINT chi2 —
+    one child's parameter moved, everything else held. Same scaling by
+    sqrt(chi2/dof) as the single-track :func:`_errors`."""
+    def chi(a, b):
+        return wm.chi2_plane_two(plane, W, noise, pos, sat, a, b, hyper,
+                                 snap_t0=False)[0]
+
+    scale = max(chi0 / max(dof, 1), 1.0)
+    out = []
+    for k, (u, v) in enumerate(((pa, pb), (pb, pa))):
+        e = []
+        for i, h in ((0, dp), (1, dw), (2, dt)):
+            up, dn = list(u), list(u)
+            up[i] += h
+            dn[i] -= h
+            args = (lambda z: (tuple(z), v)) if k == 0 else (lambda z: (v, tuple(z)))
+            d2 = (chi(*args(up)) - 2 * chi0 + chi(*args(dn))) / h ** 2
+            e.append(float(np.sqrt(2 * scale / d2)) if d2 > 0 else np.nan)
+        out.append(tuple(e))
+    return out
+
+
+def _child_fit(P, plane, cal, r, which: str, hyper, chi_alone: float) -> PlaneFit:
+    """One child of a joint fit as an ordinary :class:`PlaneFit`.
+
+    ``chi2``/``dof`` are the JOINT fit's — the two children share one window
+    and one solve, and pretending otherwise would let a downstream chi2/dof cut
+    see a quality the fit does not have."""
+    p0, w, t0 = r['pa'] if which == 'a' else r['pb']
+    q = r['qa'] if which == 'a' else r['qb']
+    ep, ew, et = r['err_a'] if which == 'a' else r['err_b']
+    tan = (w * 1e3 - cal.w0.get(plane, 0.0)) / (cal.kw.get(plane, 1.0) * cal.v_drift)
+    q_sum, q_u50, q_u90, q_uend = _profile_summary(q)
+    ch = np.asarray(P['ch'], dtype=int)
+    flagged = np.concatenate([wm.DEAD.get(plane, np.array([], dtype=int)),
+                              wm.HOT.get(plane, np.array([], dtype=int))])
+    f = PlaneFit(
+        p0=float(p0), w=float(w), t0=float(t0), tan_theta=float(tan),
+        theta_deg=float(np.degrees(np.arctan(tan))),
+        chi2=float(r['chi2']), dof=int(r['dof']),
+        p0_err=float(np.hypot(ep, FLOOR_P0_MM)) if np.isfinite(ep) else FLOOR_P0_MM,
+        w_err=float(ew) if np.isfinite(ew) else np.nan,
+        tan_err=float(np.hypot(ew * 1e3 / cal.v_drift, FLOOR_TAN))
+        if np.isfinite(ew) else FLOOR_TAN,
+        t0_err=float(et) if np.isfinite(et) else np.nan,
+        q_sum=q_sum, q_u50=q_u50, q_u90=q_u90, q_uend=q_uend,
+        n_strips=int(np.asarray(P['W']).shape[0]), n_seed=0, n_dropped=0,
+        slope_reliable=bool(abs(tan) >= TAN_MIN_SLOPE),
+        quality_ok=bool(r['chi2'] / max(r['dof'], 1) < CHI2DOF_BAD),
+        n_flagged_strips=int(np.isin(ch, flagged).sum()) if len(flagged) else 0)
+    f._chi_alone = float(chi_alone)
+    return f
+
+
+def fit_plane_two(P, plane: str, cal: CalibrationBundle, parent: PlaneFit,
+                  hyper: Optional[dict] = None, t0_hints=(),
+                  f_thresh: float = None, probe: Optional[dict] = None,
+                  t0_mode: str = None) -> Optional[dict]:
+    """Try two tracks on a window a one-track fit has already seen.
+
+    ``parent`` is that one-track fit; ``probe`` the :func:`two_track_probe`
+    the trigger already computed, so the window is prepared once per candidate.
+    Returns None when the window is not re-fittable, else a dict with the two
+    children, the statistic and every guard's verdict — ``accepted`` says
+    whether the caller should use them.
+    """
+    hyper = hyper or cal.hyper
+    probe = probe or two_track_probe(P, plane, parent, hyper)
+    if probe is None:
+        return None
+    W, noise, pos, sat = probe['W'], probe['noise'], probe['pos'], probe['sat']
+    chi_one, q_one = probe['chi_one'], probe['q_one']
+    parent_r = dict(p0=parent.p0, w=parent.w, t0=parent.t0, q=q_one)
+    # guards and the barrier look only at depth bins the DAQ window constrains
+    bins = wm.constrained_bins(parent.t0)
+    wgt = np.asarray(q_one, float) * bins[:len(q_one)]
+    wgt = wgt * (wgt > 0.05 * wgt.max()) if wgt.max() > 0 else None
+    starts = _two_track_starts(W, noise, pos, sat, plane, parent_r, hyper,
+                               t0_hints=t0_hints, t0_mode=t0_mode)
+    r = wm.fit_plane_two_raw(W, noise, pos, sat, plane, starts, hyper=hyper,
+                             wgt=wgt, bins=bins)
+    if r is None:
+        return None
+    dof = int((~sat).sum())
+    chi_two = float(r['chi2'])
+    r['err_a'], r['err_b'] = _two_errors(W, noise, pos, sat, plane, r['pa'],
+                                         r['pb'], chi_two, dof, hyper)
+    # chi2 with only ONE of the two children, its own profile re-solved. Two
+    # uses: each child's dchi2 on exactly the definition an ordinary candidate
+    # gets (chi_null - its own best one-track chi2), and the MARGINAL
+    # improvement each child brings to the pair.
+    chi_null = float(((W / noise[:, None]) ** 2)[~sat].sum())
+    alone = []
+    for p in (r['pa'], r['pb']):
+        c, _q = wm.chi2_plane(plane, W, noise, pos, sat, p[0], p[1], p[2],
+                              hyper, snap_t0=False)
+        alone.append(float(c) if np.isfinite(c) else chi_null)
+    # The statistic. NOT the total chi2 improvement: that is large whenever the
+    # second block absorbs anything at all, including noise, and it is the
+    # reason a plain dchi2 threshold splits single tracks. Each child must be
+    # individually necessary, so the statistic is the SMALLER of the two
+    # marginal improvements -- chi2 without that child minus chi2 with both --
+    # in units of the one-track fit's own chi2/dof, because chi2/dof here is
+    # 1.4-6.8 on clean single tracks and 5-12 across the full pass.
+    marg_a = alone[1] - chi_two          # what a adds to b
+    marg_b = alone[0] - chi_two          # what b adds to a
+    scale = max(chi_one / max(dof, 1), 1e-9)
+    dchi2 = float(chi_one - chi_two)
+    fstat = float(min(marg_a, marg_b) / scale)
+    fa = _child_fit(P, plane, cal, r, 'a', hyper, alone[0])
+    fb = _child_fit(P, plane, cal, r, 'b', hyper, alone[1])
+    qtot = fa.q_sum + fb.q_sum
+    qfrac = min(fa.q_sum, fb.q_sum) / qtot if qtot > 0 else 0.0
+    plaus = [bool(np.isfinite(f.q_uend) and U_MIN_NS <= f.q_uend <= U_MAX_NS
+                  and abs(f.tan_theta) < TAN_MAX) for f in (fa, fb)]
+    thr = TWO_TRACK_F if f_thresh is None else f_thresh
+    guards = dict(distinguishable=bool(r['dist'] >= 1.0),
+                  column_shared=bool(r['overlap'] >= wm.TWO_MIN_OVERLAP),
+                  both_plausible=bool(plaus[0] and plaus[1]))
+    guards_ok = all(guards.values())
+    accepted = bool(fstat >= thr and guards_ok)
+    for i, f in enumerate((fa, fb)):
+        f._plausible = plaus[i]
+        f._dchi2 = float(chi_null - alone[i])
+        f._rescued = False
+        f._split_child = True
+        f._split_dchi2 = dchi2
+        f._split_f = fstat
+    return dict(children=[fa, fb], profiles=(r['qa'], r['qb']),
+                chi2_one=float(chi_one), chi2_two=chi_two,
+                chi2_a_alone=alone[0], chi2_b_alone=alone[1],
+                dchi2=dchi2, marg_a=float(marg_a), marg_b=float(marg_b),
+                fstat=fstat, f_total=float(dchi2 / scale), dof=dof,
+                sep=float(r['sep']), dist=float(r['dist']),
+                overlap=float(r['overlap']),
+                tie_t0=bool(r['tie_t0']), nfev=int(r['nfev']),
+                qfrac=float(qfrac), threshold=float(thr),
+                guards_ok=bool(guards_ok), accepted=accepted, **guards)
+
+
+def _n_gated(all_fits: Dict[str, list], ftst_diff, cal=None) -> int:
+    """How many gated tracks the selector would report for these candidates."""
+    try:
+        pairs = select_tracks(all_fits, ftst_diff, cal or _CAL,
+                              max_tracks=MAX_TRACKS, pairing=_PAIRING)
+    except Exception:
+        return 0
+    return int(sum(1 for _i, _j, g in pairs if g))
+
+
+def _n_plausible(fits: list) -> int:
+    return sum(1 for f in (fits or []) if f is not None
+               and bool(getattr(f, '_plausible', True)))
+
+
+def _cross_plane_mismatch(this: list, other: list) -> bool:
+    """Does the OTHER plane resolve two time-coincident plausible candidates
+    where this plane resolves fewer? Handoff §4 trigger 2.
+
+    The count *mismatch* is the whole of it, and leaving the second half out was
+    a real defect: with only "the other plane has two", a pair that both planes
+    already resolve — two tracks 24 mm apart, the easy case — corroborates
+    itself, takes the lower threshold, and splits one of the two correct
+    candidates. Measured on the overlay bench 2026-09-16: 91–97 % of the splits
+    accepted at ≥ 24 mm were "corroborated" that way, and they cost 10 points of
+    both-tracks-found where production was already right. With the mismatch
+    required, only 7 % of them survive."""
+    ok = [f for f in (other or []) if f is not None
+          and bool(getattr(f, '_plausible', True))]
+    if len(ok) < 2 or _n_plausible(this) >= len(ok):
+        return False
+    return any(abs(ok[i].t0 - ok[j].t0) <= DT_XY_TOL_NS
+               for i in range(len(ok)) for j in range(i + 1, len(ok)))
+
+
+def resolve_two_tracks(all_fits: Dict[str, list], windows: Dict[str, list],
+                       cal: CalibrationBundle, ftst_diff=None,
+                       max_try: int = TWO_TRACK_MAX_TRY,
+                       selected: Optional[Dict[str, set]] = None) -> tuple:
+    """Offer the merged-looking candidates of both planes a second track.
+
+    Runs AFTER the ordinary per-plane candidate fits, so the one-track answer
+    is always available and a candidate whose split is refused is untouched.
+    Accepted children replace their parent in the plane's ranked list; the
+    parent is returned separately for the side table.
+
+    Returns ``(all_fits, splits, replaced)``: the possibly-rewritten ranked
+    lists, one record per attempt (provenance, and the bench's input), and the
+    parents a split displaced, per plane, for the candidates side table."""
+    splits = []
+    replaced = {'x': [], 'y': []}
+    if not TWO_TRACK:
+        return all_fits, splits, replaced
+    out = {p: list(all_fits.get(p) or []) for p in ('x', 'y')}
+    if selected is None and TWO_TRACK_SELECTED_ONLY:
+        try:
+            pre = select_tracks(all_fits, ftst_diff, cal, max_tracks=MAX_TRACKS)
+        except Exception:
+            pre = []
+        selected = {'x': {i for i, _j, _g in pre}, 'y': {j for _i, j, _g in pre}}
+    for plane in ('x', 'y'):
+        other = 'y' if plane == 'x' else 'x'
+        wins = windows.get(plane) or []
+        fits = out[plane]
+        corrob = _cross_plane_mismatch(all_fits.get(plane), all_fits.get(other))
+        hints = []
+        if corrob:
+            dt = cal.dt_xy.get(int(ftst_diff), -18.8) if ftst_diff is not None else -18.8
+            s = 1.0 if plane == 'x' else -1.0
+            hints = [f.t0 + s * dt for f in (all_fits.get(other) or [])[:2]
+                     if f is not None]
+        thr = TWO_TRACK_F_CORROB if corrob else TWO_TRACK_F
+        tried = 0
+        for rank, f in enumerate(list(fits)):
+            if f is None or tried >= max_try:
+                continue
+            if selected is not None and rank not in selected.get(plane, set()):
+                continue
+            iw = getattr(f, '_win', None)
+            if iw is None or iw >= len(wins):
+                continue
+            P = wins[iw]
+            try:
+                probe = two_track_probe(P, plane, f, cal.hyper)
+            except Exception:
+                probe = None
+            if probe is None:
+                continue
+            trig = two_track_triggers(probe, other_two=corrob)
+            if not (trig['residual'] or trig['width'] or trig['cross_plane']):
+                continue
+            tried += 1
+            try:
+                r = fit_plane_two(P, plane, cal, f, t0_hints=hints,
+                                  f_thresh=thr, probe=probe,
+                                  t0_mode=TWO_TRACK_T0)
+            except Exception:
+                r = None
+            if r is None:
+                continue
+            rec = dict(plane=plane, rank=int(rank), corroborated=bool(corrob),
+                       **{k: v for k, v in r.items()
+                          if k not in ('children', 'profiles')},
+                       **{f'trig_{k}': v for k, v in trig.items()})
+            splits.append(rec)
+            if r['accepted']:
+                ca, cb = r['children']
+                ca.n_seed = cb.n_seed = f.n_seed
+                ca.n_dropped = cb.n_dropped = f.n_dropped
+                ca._win = cb._win = iw
+                f._split_replaced = True
+                replaced[plane].append(f)
+                i = next(k for k, g in enumerate(out[plane]) if g is f)
+                out[plane][i:i + 1] = [ca, cb]
+        out[plane].sort(key=lambda g: (1 if getattr(g, '_plausible', True) else 0,
+                                       getattr(g, '_dchi2', 0.0) or 0.0),
+                        reverse=True)
+        n = len(out[plane])
+        for g in out[plane]:
+            g.n_candidates = n
+    return out, splits, replaced
 
 
 DT_XY_TOL_NS = 120.0     # how far t0x - t0y may sit from the measured offset
@@ -443,11 +984,16 @@ def load_pairing(path: str) -> dict:
 
 def candidate_rows(event_id: int, all_fits: Dict[str, list],
                    pairs: Optional[list] = None,
-                   ftst: Optional[dict] = None) -> list:
+                   ftst: Optional[dict] = None,
+                   replaced: Optional[Dict[str, list]] = None) -> list:
     """One dict per fitted candidate cluster — the full ranked list that
     :func:`row_from_fits` reduces to a single winner. ``pairs`` (from
     :func:`select_tracks`) stamps each candidate with the track it belongs
-    to; ``track_id`` -1 = not part of any selected pair."""
+    to; ``track_id`` -1 = not part of any selected pair.
+
+    ``replaced``: one-track parents a joint two-track fit displaced. They are
+    written with ``rank`` -1 and ``split_replaced`` true, so the split can be
+    undone downstream without re-reconstructing (HANDOFF_JOINT_TWO_TRACK_FIT §0.1)."""
     track_of = {}
     for tid, (ix, iy, gated) in enumerate(pairs or []):
         track_of[('x', ix)] = (tid, gated)
@@ -455,14 +1001,19 @@ def candidate_rows(event_id: int, all_fits: Dict[str, list],
     rows = []
     for plane in ('x', 'y'):
         f_ftst = (ftst or {}).get(plane)
-        for rank, f in enumerate(all_fits.get(plane) or []):
+        live = list(all_fits.get(plane) or [])
+        for rank, f in enumerate(live + list((replaced or {}).get(plane) or [])):
             if f is None:
                 continue
+            rank = rank if rank < len(live) else -1
             row = {'event_id': int(event_id), 'plane': plane, 'rank': int(rank)}
             row.update(asdict(f))
             row['plausible'] = bool(getattr(f, '_plausible', True))
             row['dchi2'] = float(getattr(f, '_dchi2', np.nan))
             row['rescued'] = bool(getattr(f, '_rescued', False))
+            row['split_child'] = bool(getattr(f, '_split_child', False))
+            row['split_replaced'] = bool(getattr(f, '_split_replaced', False))
+            row['split_dchi2'] = float(getattr(f, '_split_dchi2', np.nan))
             tid, gated = track_of.get((plane, rank), (-1, False))
             row['track_id'], row['track_gated'] = int(tid), bool(gated)
             row['isochronous'] = bool(np.isfinite(f.q_uend)
@@ -553,12 +1104,25 @@ def row_from_fits(event_id: int, fits: Dict[str, Optional[PlaneFit]],
 
 
 # --------------------------------------------------------------- the driver
-def _worker_init(bundle_path, pairing_path=None):
-    """``pairing_path`` overrides the bundle's ``xy_pairing`` (for A/B runs)."""
+#: Module globals a worker may be started with. Everything here is otherwise an
+#: environment variable read at import, which a forked worker cannot be told
+#: about after the fact -- so an A/B harness passes them here instead.
+WORKER_OPTS = ('TWO_TRACK', 'TWO_TRACK_F', 'TWO_TRACK_F_CORROB', 'TWO_TRACK_T0',
+               'TWO_TRACK_RESID_Z', 'TWO_TRACK_WIDTH_MARGIN', 'TWO_TRACK_MAX_TRY',
+               'TWO_TRACK_SELECTED_ONLY')
+
+
+def _worker_init(bundle_path, pairing_path=None, opts=None):
+    """``pairing_path`` overrides the bundle's ``xy_pairing`` (for A/B runs);
+    ``opts`` overrides the :data:`WORKER_OPTS` module globals (likewise)."""
     global _CAL, _PAIRING
     _CAL = CalibrationBundle.load(bundle_path)
     wm.use_calibration(_CAL)
     _PAIRING = load_pairing(pairing_path) if pairing_path else (_CAL.xy_pairing or None)
+    for k, v in (opts or {}).items():
+        if k not in WORKER_OPTS:
+            raise KeyError(f'not a worker option: {k!r}; known: {WORKER_OPTS}')
+        globals()[k] = v
 
 
 PAIR_SELECT = os.environ.get('WFT_PAIR_SELECT', '0') == '1'
@@ -588,6 +1152,31 @@ def _worker_fit(payload):
     ftst_diff = (ftst['x'] - ftst['y']
                  if ftst.get('x') is not None and ftst.get('y') is not None
                  else None)
+    splits, replaced = [], {}
+    if TWO_TRACK:
+        try:
+            kept = all_fits
+            all_fits, splits, replaced = resolve_two_tracks(
+                all_fits, wins, _CAL, ftst_diff)
+            # A SPLIT MAY NOT COST THE EVENT A TRACK. It replaces its parent, so
+            # if the two children then fail to pair with the other plane the
+            # event ends up with fewer gated tracks than before -- measured at
+            # 0.2 % (A) / 0.8 % (C) of real triggers before this guard. The fit
+            # exists to find tracks; a split that loses one is wrong whatever
+            # its chi2 says, so the whole event reverts to the unsplit answer.
+            if any(replaced.values()) and _n_gated(kept, ftst_diff) > \
+                    _n_gated(all_fits, ftst_diff):
+                for f in [g for v in replaced.values() for g in v]:
+                    f._split_replaced = False
+                for r in splits:
+                    r['accepted'] = False
+                    r['reverted_lost_track'] = True
+                all_fits, replaced = kept, {'x': [], 'y': []}
+            for plane in ('x', 'y'):
+                if replaced.get(plane) and all_fits.get(plane):
+                    fits[plane] = all_fits[plane][0]
+        except Exception:
+            splits, replaced = [], {}
     if PAIR_SELECT:
         try:
             fits = select_pair(all_fits, ftst_diff, _CAL)
@@ -603,8 +1192,12 @@ def _worker_fit(payload):
     for plane in ('x', 'y'):
         f = ftst.get(plane)
         row[f'{plane}_ftst'] = int(f) if f is not None else -1
+    if TWO_TRACK:
+        row['n_splits'] = int(sum(1 for r in splits if r['accepted']))
     if EMIT_CANDIDATES:
-        row['_cand'] = candidate_rows(eid, all_fits, pairs, ftst)
+        row['_cand'] = candidate_rows(eid, all_fits, pairs, ftst, replaced)
+    if splits:
+        row['_splits'] = [dict(event_id=int(eid), **r) for r in splits]
     return row
 
 
@@ -646,7 +1239,7 @@ def reconstruct_run(cfg, cal: CalibrationBundle, out_path: str,
         print(f'[wft] {len(seeds):,} seeded events, {len(wanted):,} to reconstruct',
               flush=True)
 
-    rows, cand_rows = [], []
+    rows, cand_rows, split_rows = [], [], []
     with ProcessPoolExecutor(max_workers=jobs, initializer=_worker_init,
                              initargs=(bundle_path,)) as pool:
         for payloads in _stream_windows(cfg, pos_maps, seeds, wanted, pad_strips,
@@ -655,6 +1248,7 @@ def reconstruct_run(cfg, cal: CalibrationBundle, out_path: str,
                 continue
             for r in pool.map(_worker_fit, payloads, chunksize=8):
                 cand_rows.extend(r.pop('_cand', []))
+                split_rows.extend(r.pop('_splits', []))
                 rows.append(r)
             if verbose:
                 print(f'[wft]   {len(rows):,} events reconstructed', flush=True)
@@ -662,6 +1256,10 @@ def reconstruct_run(cfg, cal: CalibrationBundle, out_path: str,
     df = pd.DataFrame(rows).sort_values('event_id').reset_index(drop=True)
     os.makedirs(os.path.dirname(out_path), exist_ok=True)
     df.to_parquet(out_path, index=False)
+    if split_rows:
+        pd.DataFrame(split_rows).sort_values(['event_id', 'plane']).reset_index(
+            drop=True).to_parquet(out_path.replace('.parquet', '.splits.parquet'),
+                                  index=False)
     cand_path = out_path.replace('.parquet', '.candidates.parquet')
     if cand_rows:
         pd.DataFrame(cand_rows).sort_values(
@@ -695,6 +1293,14 @@ def reconstruct_run(cfg, cal: CalibrationBundle, out_path: str,
                 multi_track=dict(emit_candidates=EMIT_CANDIDATES,
                                  xy_pairing=(cal.xy_pairing or {}).get('features'),
                                  max_tracks=MAX_TRACKS,
+                                 two_track_fit=TWO_TRACK,
+                                 two_track_f=TWO_TRACK_F if TWO_TRACK else None,
+                                 two_track_f_corrob=(TWO_TRACK_F_CORROB
+                                                     if TWO_TRACK else None),
+                                 two_track_width_mm=(TWO_TRACK_WIDTH_MARGIN
+                                                     if TWO_TRACK else None),
+                                 n_splits=int(sum(r['accepted'] for r in split_rows)),
+                                 n_split_attempts=len(split_rows),
                                  n_candidate_rows=len(cand_rows),
                                  n_events_multitrack=int(
                                      (df['n_tracks'] >= 2).sum())

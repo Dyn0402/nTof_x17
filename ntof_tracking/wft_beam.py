@@ -479,6 +479,13 @@ def reconstruct_subrun(cfg: BeamConfig, bundle_path: str, out_path: str,
             pd.DataFrame(cand_rows).sort_values(
                 ['event_id', 'plane', 'rank']).reset_index(drop=True).to_parquet(
                 path.replace('.parquet', '.candidates.parquet'), index=False)
+        # one row per joint two-track ATTEMPT (wft/TWO_TRACK_FIT_2026-09-16.md),
+        # accepted or not: the statistic, the guards and which trigger fired.
+        # Empty unless WFT_TWO_TRACK_FIT is on.
+        if split_rows:
+            pd.DataFrame(split_rows).sort_values(
+                ['event_id', 'plane']).reset_index(drop=True).to_parquet(
+                path.replace('.parquet', '.splits.parquet'), index=False)
         # the sidecar goes with EVERY checkpoint: a table without its bundle
         # metadata is unusable downstream (v_drift lives there, and it is the
         # angle scale), and a half-finished run is exactly when that bites
@@ -487,7 +494,7 @@ def reconstruct_subrun(cfg: BeamConfig, bundle_path: str, out_path: str,
                     allow_acct=allow_acct, allow_meta=allow_meta)
         return d
 
-    rows, cand_rows, n_seeded, done = [], [], 0, []
+    rows, cand_rows, split_rows, n_seeded, done = [], [], [], 0, []
     with ProcessPoolExecutor(max_workers=jobs, initializer=wreco._worker_init,
                              initargs=(bundle_path,)) as pool:
         for tag in tags:
@@ -525,6 +532,7 @@ def reconstruct_subrun(cfg: BeamConfig, bundle_path: str, out_path: str,
                 continue
             for r in pool.map(wreco._worker_fit, payloads, chunksize=8):
                 cand_rows.extend(r.pop('_cand', []))
+                split_rows.extend(r.pop('_splits', []))
                 rows.append(r)
             done.append(tag)
             if verbose:
@@ -545,6 +553,7 @@ def _write_meta(df, out_path, cal, cfg, bundle_path, feu_x, feu_y, tags_done,
                 n_seeded, pad_strips, partial=False, allow_acct=None,
                 allow_meta=None):
     from wft import seed as wseed
+    from wft import reco as wreco
     meta = dict(n_events=int(len(df)), n_seeded=int(n_seeded),
                 status='PRELIMINARY' + (' (PARTIAL: run still going)'
                                         if partial else ''),
@@ -579,7 +588,18 @@ def _write_meta(df, out_path, cal, cfg, bundle_path, feu_x, feu_y, tags_done,
                                  prescan=os.environ.get('WFT_PRESCAN', '0'),
                                  pair_select=os.environ.get('WFT_PAIR_SELECT', '0'),
                                  chi2dof_bad=os.environ.get('WFT_CHI2DOF_BAD', '300'),
-                                 xy_pairing=(cal.xy_pairing or {}).get('features')))
+                                 xy_pairing=(cal.xy_pairing or {}).get('features'),
+                                 two_track_fit=wreco.TWO_TRACK,
+                                 two_track=dict(
+                                     f=wreco.TWO_TRACK_F,
+                                     f_corrob=wreco.TWO_TRACK_F_CORROB,
+                                     t0=wreco.TWO_TRACK_T0,
+                                     resid_z=wreco.TWO_TRACK_RESID_Z,
+                                     width_mm=wreco.TWO_TRACK_WIDTH_MARGIN,
+                                     selected_only=wreco.TWO_TRACK_SELECTED_ONLY,
+                                     n_splits=int(df['n_splits'].sum())
+                                     if 'n_splits' in df else 0)
+                                 if wreco.TWO_TRACK else None))
     # The selection this table was fitted under, and what it cost at the seeder.
     # `n_missing` is the number that must not be lost: allowlisted events the
     # beam seeder produced no cluster for. They are a real stage-1 -> stage-2

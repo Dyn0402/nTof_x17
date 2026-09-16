@@ -1,8 +1,14 @@
 # HANDOFF — a joint two-track fit for tracks that share one seed cluster
 
-**Written 2026-09-14.** Nothing in this document has been implemented. It is the
-case for the fit, a design, and the checks it has to pass. It picks up where
-`HANDOFF_INTRA_TWO_TRACK_RECO.md` §10 and `wft/MULTITRACK_2026-09-14.md` stopped.
+**Written 2026-09-14.** The design, the case for the fit, and the checks it has
+to pass. It picks up where `HANDOFF_INTRA_TWO_TRACK_RECO.md` §10 and
+`wft/MULTITRACK_2026-09-14.md` stopped.
+
+> **Implemented 2026-09-16.** The fit exists, is off by default, and has been
+> measured on synthetics and on real run_145 triggers. What was built, what the
+> measurements changed about the design, and what is still open: §12 below,
+> `wft/TWO_TRACK_FIT_2026-09-16.md` (the record) and
+> `TWO_TRACK_FIT_LOG.md` (the working log, with every measurement).
 
 > **Branch note.** The code this refers to (`intra_bench.py`, the rescue floor,
 > `select_tracks(pairing=)`, `MULTITRACK_2026-09-14.md`) is on `origin/main`
@@ -258,7 +264,8 @@ On real triggers (single-track A/B, run_145 stat090_0000):
 - accepted splits on triggers whose frozen fit is a clean single track (the donor
   selection): ≤ 1 %. For scale, 08-12 measured 1.0–1.5 % of real single muons
   already reporting `n_tracks ≥ 2`, and many were real second particles;
-- the change adds ≤ 50 % to an arm job's core time (§10).
+- ~~the change adds ≤ 50 % to an arm job's core time (§10).~~ **Withdrawn
+  2026-09-16: compute is not a constraint.**
 
 ---
 
@@ -286,6 +293,10 @@ On real triggers (single-track A/B, run_145 stat090_0000):
 ---
 
 ## 10 · Cost, and what the condor re-pass will take
+
+> **Superseded as a constraint, 2026-09-16.** Dylan: treat condor as effectively
+> unlimited — a re-pass that takes a month is fine. The numbers below are kept for
+> sizing only; nothing in the algorithm should be traded for them.
 
 **Measured on the 2026-09-09 full pass** (HANDOFF_FULLPASS §3–4, STATUS 2026-09-09/10):
 12 932 jobs = 3 233 tags × 4 arms, `workday`, 2 CPUs, ~1.2 core-h/job, ~16 000
@@ -341,3 +352,55 @@ core-hours. Median job 32 min, p90 50, max 53; D 76 min in the smoke gate.
 | tests | `wft/tests/test_multitrack.py`, `wft/tests/test_seed_and_select.py` |
 | condor | `sept26_prelim_analysis/condor/stage2_fullpass.sub`, `run_stage2_fullpass_wrapper.sh`, `overnight_fullpass_2026-09-09.sh` |
 | after condor | `sept26_prelim_analysis/fullpass_chain_2026-09-10.sh` |
+
+
+---
+
+## 12 · Progress, 2026-09-16
+
+**Written, measured, off by default.** Record: `wft/TWO_TRACK_FIT_2026-09-16.md`;
+working log and to-do: `TWO_TRACK_FIT_LOG.md`; report: `<out>/two_track/report.html`.
+
+On the overlay bench, on top of x/y pairing + the rescue floor, time-coincident
+pairs, both found *and correctly paired*:
+
+| separation, both views | production | + pairing & rescue | **+ joint fit** |
+|---|---:|---:|---:|
+| **< 12 mm**, A / C | 0 / 0 % | 0 / 0 % | **18 / 37 %** |
+| **12–24 mm** | 21 / 15 % | 38 / 29 % | **43 / 45 %** |
+| ≥ 24 mm | 44 / 37 % | 73.3 / 67.8 % | 72.8 / 67.8 % |
+
+That clears §8's 12–24 mm bar on C (45 % against split seeding's 44 %) and misses
+it on A (43 % against 48 %); 6–12 mm is below the "half of pairs" target.
+Real clean single muons split at 0.25–0.37 % (A) / 0–0.66 % (C), inside the ≤ 1 %
+criterion. Events with no accepted split are bit-identical to 99.8 % / 99.1 %.
+
+**Four things the measurements changed about §3–§6**, each a measurement:
+
+1. **The starts.** A merged window's one-track fit belongs to neither track;
+   searching only for track *b* from it missed it above ~9 mm. Replaced by
+   alternating matching pursuit (§5's residual-driven start, run both ways and
+   iterated). The residual scan also needs the p0–slope shear.
+2. **The statistic** is the *smaller* of the two marginal Δχ², not the total.
+   §6's Δχ² is large whenever the second block absorbs anything at all.
+3. **The guard** is the separation measured at the depths where *both* children
+   carry charge. §3's minimum-separation guard does not catch the failure that
+   actually matters — one track cut in half end to end — and §6's `q_sum`
+   fraction is unusable because unconstrained depth bins carry runaway charge.
+4. **t0 tied by default.** §3 proposed choosing between tied and free by Δχ²;
+   free walks into the one-depth-bin degenerate minima and splits perfectly
+   modelled single tracks, and nothing measured gives it an advantage.
+
+**§8's cost criterion is withdrawn (Dylan, 2026-09-16): compute is not a
+constraint** — condor is effectively unlimited and a month-long re-pass is
+acceptable; the goal is the most effective algorithm. For the record, the fit as
+built adds +115 % (A) / +223 % (C) to an arm job. Several choices made to keep
+that down are now the first things to undo; the largest, the per-plane trigger,
+is measured to discard two thirds of the recoverable pairs at 0–6 mm. The list is
+`wft/TWO_TRACK_FIT_2026-09-16.md` §8 and the log's to-do.
+
+**Two decisions of §0 answered by the work:** the contract is "a split replaces
+its parent, the parent stays in the sidecar at `rank` −1, and a split that would
+cost the event a track is reverted"; and the fit should ship in the same re-pass
+as pairing and the rescue floor, since the bench numbers above are only reachable
+on top of them.
