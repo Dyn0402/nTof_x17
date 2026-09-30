@@ -44,6 +44,7 @@ from matplotlib.patches import Circle, FancyArrowPatch   # noqa: E402
 HERE = os.path.dirname(os.path.abspath(__file__))
 FIG = os.path.join(HERE, 'figures')
 FONT = {'family': 'DejaVu Sans'}
+_trapz = getattr(np, 'trapezoid', None) or np.trapz     # numpy 2 renamed it
 
 # ---- palette: scenes_x17.palette('light') and style.COL ------------------- #
 P = dict(page='#ffffff', ink='#141b24', muted='#5d6874', halo='#ffffff',
@@ -150,7 +151,7 @@ def al_pair_shape(theta_deg):
     conv = (t / 5.0 ** 2) * np.exp(-t / 5.0)                 # wall conversions
     th = np.radians(t)
     ipc = np.sin(th) / (1.04 - np.cos(th)) ** 1.3            # internal pairs
-    ipc /= np.trapz(ipc, t)
+    ipc /= _trapz(ipc, t)
     return 0.85 * conv + 0.15 * ipc
 
 
@@ -305,7 +306,7 @@ def spectrum_panel(fig, ax, halo):
                 fontsize=sfs(8.0), linespacing=1.3,
                 arrowprops=dict(arrowstyle='-|>', color=P['muted'], lw=1.2,
                                 shrinkA=3, shrinkB=3), **note)
-    return {k: float(np.trapz(v, theta)) for k, v in comp.items()}
+    return {k: float(_trapz(v, theta)) for k, v in comp.items()}
 
 
 def draw():

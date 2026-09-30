@@ -318,11 +318,13 @@ def branching() -> dict:
     ax.stairs(d30.ng_shielded, edges, color=P.COPPER, lw=2.6, baseline=None)
     ax.set_ylim(1e2, 1e8)
     ax.set_ylabel(f'³He(n,γ) per {DAYS} days, per energy decade')
-    P.title(ax, 'A black cell: every neutron → a proton',
-            f'{DAYS} days at slide 39’s flux · '
+    # kept inside the axes' own width (2026-09-30, Dylan): with savefig's tight
+    # bbox a title that overhangs the right spine widens the whole canvas, and
+    # the three panels then stop short of the slide's right edge
+    P.title(ax, 'A black cell: n → p', f'{DAYS} days · '
             + f'{ppd:,.0f} pulses/day'.replace(',', ' '))
     y_thin, y_sh = float(d30.ng_thin.iloc[0]), float(d30.ng_shielded.iloc[0])
-    P.end_label(ax, 1.3e-4, y_thin * 5.0, 'thin target (slide 39)', P.MUTED)
+    P.end_label(ax, 1.3e-4, y_thin * 5.0, 'thin target', P.MUTED)
     P.end_label(ax, 1.3e-4, y_sh / 4.0, 'self-shielded', P.COPPER)
     x_arrow = np.sqrt(d30.E_lo_eV.iloc[0] * d30.E_hi_eV.iloc[0])
     ax.annotate('', xy=(x_arrow, y_sh), xytext=(x_arrow, y_thin),
