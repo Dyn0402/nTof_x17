@@ -1,14 +1,67 @@
 # ntof_athens_26 — the Athens talk
 
 The n_TOF conversion of the MPGD2026 deck. `slides/ntof_athens_talk.pptx` is the
-deck; the scripts in this directory build figures for it, and the
+full deck; the scripts in this directory build figures for it, and the
 subdirectories are studies the figures raised.
+
+## The 15-minute deck (`slides/ntof_athens_talk_15min.pptx`) — 2026-09-30
+
+**This is the deck given in Athens on 1 October.** A copy of the full deck, cut
+to 15 minutes and re-ordered as a story; the full deck is untouched and is
+still the source for anything cut. Edited in PowerPoint by hand (Dylan) and via
+PowerPoint COM from PowerShell (Claude); there is no generator — do not rebuild
+it from anything.
+
+The story, as sections:
+
+1. **X17 and how to see it** — ATOMKI, capture on ³He, the opening angle.
+2. **Micromegas + the EAR2 setup** — TPC operation, resolution, the capsule and
+   the layer-by-layer build-up, photos.
+3. **Plan A: the MeV neutrons** — 79 % of the X17 rate is in the MeV; DREAM
+   saturates on the γ flash (the detector recovers in 2 µs, DREAM in 5 ms);
+   the switch to thermals; every volt of gain costs ms of beam.
+4. **Plan B: the problem with thermals** — (n,p) dominates, the ³He
+   self-shields, what is left of the thermal X17 rate (callout: 4.4 → 0.07
+   X17/day in 0.01–0.1 eV, ≈ 100 → ≈ 2 X17 made over the campaign's 436 373
+   pulses — the X17 column of `mpgd26/data/x17_rate_3He.txt` and
+   `figures/x17_rate_1_physics_thermal_corrected.csv`), and the ²⁷Al pairs
+   (callout: ≈ 10⁸ per 30 days, a demonstrator for a future X17 measurement).
+5. **What we measured** — run statistics, the capsule image (x, y), the
+   pair-topology hint, Conclusions, and a thank-you/acknowledgements slide.
+
+Backup follows (B1…), then a hidden **"Cut for the 15-minute version"** section
+holding every slide dropped from the main flow.
+
+Figures made for it:
+
+| figure | builder | note |
+|---|---|---|
+| `figures/al_pair_outlook` (Conclusions) | `make_conclusion_figure.py` | find the pairs → histogram the angle, split intra / neighbouring / facing. The topology acceptance is ray-traced on the station (chamber B excluded); the Al opening-angle shape is a **sketch**, and the slide says so. It shows true pairs only — the data's facing-chamber class is mostly two γ of one capture, which this does not draw. |
+| `figures/thermal_branching` (the (n,p) slide) | `make_thermal_sim_figures.py` `branching()` | right-panel title shortened 2026-09-30 so the tight bbox no longer shrinks the panels |
+| `figures/x17_vs_wall_energy` (**not in the deck yet**) | `make_highE_background_figure.py` | X17 vs the Al + C wall pairs per neutron, 1 meV → 20 MeV, above the X17 minimum angle. Wall pairs per X17: ~10⁶ at thermal, ~50 at 0.1–2 MeV, back above 10³ once the Al/C inelastic lines above pair threshold open at 2.3 MeV. Reuses `sept26_prelim_analysis/ganil_background.py`; the unstaged ²⁷Al (n,γ) resonance region below 845 keV is bridged by hand; internal pairs only. Candidate backup slide for "plan A could still work". |
+
+Open points noted while cutting, not resolved:
+
+- The deck has no slide saying what a future MeV run needs (a flash-tolerant
+  readout); the Conclusions bullet "blocked by the DAQ, not the detector" and
+  the figure above are the evidence for one.
+- The (n,p) slide's "134 IPC pairs per 30 days" (thermal study) and the rate
+  figure's self-shielded bins (≈ 65 IPC over the campaign) differ by ~1.5×;
+  two methods, same story.
+
+Running the builders on the Windows machine: anaconda's numpy predates
+`np.trapezoid`, which `sept26_prelim_analysis` uses — the new scripts shim it;
+for `make_thermal_sim_figures.py` run
+`python -c "import numpy as np; np.trapezoid = np.trapz; import make_thermal_sim_figures as M; M.branching()"`
+with the repo and `mpgd26/` on `PYTHONPATH`. `mpgd26/scenes_x17.py` cannot be
+imported there (it pulls in PyVista), which is why `make_conclusion_figure.py`
+is standalone.
 
 ## What is here
 
 | where | what | entry point |
 |---|---|---|
-| this directory | the deck's figure builders: the overhead fans and the side view, opening-angle topology, pair quality, in-situ performance (sections below) | this README |
+| this directory | the deck's figure builders: the overhead fans and the side view, opening-angle topology, pair quality, in-situ performance, and the 15-minute deck's Conclusions and energy-dependence figures (sections below) | this README |
 | `chi2_bimodality/` | why chamber A's worst-view χ²/dof is double-humped; holds `HANDOFF_T0_PRIOR.md` and `HANDOFF_CHANNEL_MASKS.md` | `chi2_bimodality/README.md` |
 | `xy_t0/` | what the two planes agree on, and what `dt_xy` is | `xy_t0/README.md` |
 | `channel_masks/` | whether the hot/dead channel classification is hardware or occupancy | `channel_masks/README.md` |
