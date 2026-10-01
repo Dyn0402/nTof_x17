@@ -38,7 +38,7 @@ Figures made for it:
 |---|---|---|
 | `figures/al_pair_outlook` (Conclusions) | `make_conclusion_figure.py` | find the pairs → histogram the angle, split intra / neighbouring / facing. The topology acceptance is ray-traced on the station (chamber B excluded); the Al opening-angle shape is a **sketch**, and the slide says so. It shows true pairs only — the data's facing-chamber class is mostly two γ of one capture, which this does not draw. |
 | `figures/thermal_branching` (the (n,p) slide) | `make_thermal_sim_figures.py` `branching()` | right-panel title shortened 2026-09-30 so the tight bbox no longer shrinks the panels |
-| `figures/x17_vs_wall_energy` (**not in the deck yet**) | `make_highE_background_figure.py` | X17 vs the Al + C wall pairs per neutron, 1 meV → 20 MeV, above the X17 minimum angle. Wall pairs per X17: ~10⁶ at thermal, ~50 at 0.1–2 MeV, back above 10³ once the Al/C inelastic lines above pair threshold open at 2.3 MeV. Reuses `sept26_prelim_analysis/ganil_background.py`; the unstaged ²⁷Al (n,γ) resonance region below 845 keV is bridged by hand; internal pairs only. Candidate backup slide for "plan A could still work". |
+| `figures/x17_vs_wall_energy` (backup slide **B29**, after B28) | `make_highE_background_figure.py` | X17 vs the Al + C wall pairs per neutron, 1 meV → 20 MeV, above the X17 minimum angle. Wall pairs per X17: ~10⁶ at thermal, ~50 at 0.1–2 MeV, back above 10³ once the Al/C inelastic lines above pair threshold open at 2.3 MeV. Reuses `sept26_prelim_analysis/ganil_background.py`; the unstaged ²⁷Al (n,γ) resonance region below 845 keV is bridged by hand; internal pairs only. Candidate backup slide for "plan A could still work". |
 
 Open points noted while cutting, not resolved:
 
