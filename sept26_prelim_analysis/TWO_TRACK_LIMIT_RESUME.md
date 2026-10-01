@@ -28,9 +28,11 @@ When done:
     .venv/bin/python sept26_prelim_analysis/condor/two_track/merge_two_track.py --pkg ~/x17/two_track_ladder_condor
     ssh lxplus 'condor_q 4348153 -totals; condor_q 4348153 -hold -af HoldReason'
     cat ~/x17/sept26_prelim/intra_bench/split_ab_ladder_{A,C}_7tags/summary_ladder.csv
+    .venv/bin/python -m sept26_prelim_analysis.make_two_track_limit_report   # 'Operating point' section
 
-Read it against the bench ROC (`two_track_limit/report/figures/r3_roc.csv`,
-fixed_f0): the lowest F whose real-trigger clean-single split rate is ≤ 0.66 %
+The report's "Operating point" section does the reading: the real-trigger
+ladder next to the bench ROC (`r3_scan`, fixed_f0, whose grid now includes the
+ladder's 1000/2000/4800): the lowest F whose real-trigger clean-single split rate is ≤ 0.66 %
 with no event losing a track gives the operating point. Its entry at the
 matched F must equal `split_ab_fixed_<arm>_7tags`.
 

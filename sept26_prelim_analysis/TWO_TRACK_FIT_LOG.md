@@ -890,3 +890,13 @@ primary, and the primary equals the condor 7-tag run (n_tracks, n_splits,
 n_attempts). Primary at 300 (3 events split, 2 gaining a track): the ladder entry at
 300 equals the primary, track by track including `recovered`. Its 2400 entry
 equals the primary-2400 run. Outputs are under `intra_bench/split_ab_ladder_smoke{,300}_C/`.
+
+Readout prepared while the cluster runs. `make_two_track_limit_report` now has
+an **Operating point** section with the split-ab ladder per chamber next to the
+bench at the same F. It picks the lowest F meeting the contract (point estimate;
+90 % Clopper–Pearson upper limit shown) and flags a pick at the bottom of the
+ladder. The bench scan grid (`two_track_limit.SCAN_F`) gained 1000, 2000 and 4800
+to match the ladder. Rescanned offline; every existing point is identical. New
+bench points, fixed chain, singles split / pairs resolved: A 1000 1.0 / 67.5 %,
+2000 0.0 / 60.4 %; C 1000 3.5 / 70.5 %, 2000 2.0 / 60.9 %, 4800 0.0 / 40.0 %.
+The stale "split-ab not run on the fixed chain" caveats are replaced.

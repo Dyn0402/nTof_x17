@@ -421,6 +421,148 @@ def validation_html() -> str:
 
 
 # --------------------------------------------------------------------------- #
+# the operating point: the split-ab F rescan against the bench
+# --------------------------------------------------------------------------- #
+CONTRACT_CLEAN_SPLIT = 0.0066           # clean single muons split, at most
+LADDER_VARIANT = 'split_ab_ladder_{arm}_7tags'
+
+
+def _cp_upper(k: int, n: int, cl: float = 0.90) -> float:
+    """One-sided Clopper-Pearson upper limit on k/n."""
+    from scipy.stats import beta
+    return 1.0 if k >= n else float(beta.ppf(cl, k + 1, n - k))
+
+
+def ladder_table(L: dict) -> pd.DataFrame:
+    """Per (arm, F): the real-trigger contract (split-ab ladder, all seven tags)
+    next to the bench (fixed_f0 scan, real overlays). Empty without a ladder."""
+    from sept26_prelim_analysis import intra_bench as ib
+    rows = []
+    for arm in ARMS:
+        f = ib.out_dir(LADDER_VARIANT.format(arm=arm)) / 'summary_ladder.csv'
+        if not f.exists():
+            continue
+        rows.append(pd.read_csv(f))
+    if not rows:
+        return pd.DataFrame()
+    D = pd.concat(rows, ignore_index=True)
+    D['clean_split_ul90'] = [_cp_upper(int(r.clean_singles_split), int(r.clean_singles))
+                             for r in D.itertuples()]
+    D['passes'] = ((D.frac_clean_split <= CONTRACT_CLEAN_SPLIT)
+                   & (D.events_fewer_tracks == 0))
+    if 'scan' in L:
+        Sc = L['scan'][L['scan'].variant == 'fixed_f0']
+        b = Sc.groupby(['arm', 'F']).apply(lambda g: pd.Series(dict(
+            bench_fsr=g[g.n_true == 1].split.mean(),
+            bench_eff=g[g.n_true == 2].found.mean())), include_groups=False).reset_index()
+        D = D.merge(b.astype({'F': float}), on=['arm', 'F'], how='left')
+    return D
+
+
+def ladder_pick(D: pd.DataFrame) -> dict:
+    """Per chamber, the lowest F that meets the contract on real triggers."""
+    out = {}
+    for arm, g in D.groupby('arm'):
+        ok = g[g.passes]
+        if len(ok):
+            out[arm] = float(ok.F.min())
+    return out
+
+
+def fig_ladder(D: pd.DataFrame, pick: dict, matched: dict, od: Path):
+    import matplotlib.pyplot as plt
+    arms = [a for a in ARMS if a in set(D.arm)]
+    fig, axes = plt.subplots(2, len(arms), figsize=(9.6, 5.4), sharex=True,
+                             squeeze=False)
+    for j, arm in enumerate(arms):
+        g = D[D.arm == arm].sort_values('F')
+        c = fs.DET_COLOR[arm]
+        top, bot = axes[0, j], axes[1, j]
+        for ax in (top, bot):
+            fs.strip(ax)
+            ax.set_xscale('log')
+            for F, ls, lab in ((matched.get(arm), ':', 'matched'), (pick.get(arm), '-', 'pick')):
+                if F is not None:
+                    ax.axvline(F, color=fs.MUTED, lw=0.9, ls=ls)
+        top.fill_between(g.F, 100 * g.frac_clean_split, 100 * g.clean_split_ul90,
+                         color=c, alpha=0.15, lw=0)
+        top.plot(g.F, 100 * g.frac_clean_split, color=c, marker='o', ms=4, lw=1.5)
+        top.axhline(100 * CONTRACT_CLEAN_SPLIT, color=fs.COPPER, lw=1.0, ls='--')
+        top.annotate('contract', (g.F.max(), 100 * CONTRACT_CLEAN_SPLIT),
+                     textcoords='offset points', xytext=(-4, 4), ha='right',
+                     color=fs.MUTED, fontsize=fs.BASE_PT * 0.8)
+        top.set_ylim(0, 300 * CONTRACT_CLEAN_SPLIT)   # 0-2 %: the band may run off the top
+        top.set_title(f'chamber {arm}', loc='left', fontsize=fs.BASE_PT, color=fs.INK)
+        if 'bench_eff' in g:
+            h = g.dropna(subset=['bench_eff'])
+            bot.plot(h.F, 100 * h.bench_eff, color=c, marker='D', ms=4, lw=1.5)
+        bot.set_ylim(0, 80)
+        bot.set_xlabel('split threshold F')
+        bot.set_xticks([300, 600, 1000, 2000, 4800])
+        bot.set_xticklabels(['300', '600', '1000', '2000', '4800'])
+        bot.minorticks_off()
+    axes[0, 0].set_ylabel('clean singles split\non real triggers [%]')
+    axes[1, 0].set_ylabel('real pairs resolved\non the bench [%]')
+    fs.preliminary(axes[0, -1], 'upper right')
+    fig.tight_layout()
+    fs.save(fig, od / 'ladder_operating_point', data=D)
+
+
+def ladder_html(L: dict, od: Path) -> str:
+    D = ladder_table(L)
+    if not len(D):
+        return ('<section><h2>Operating point · the F rescan on real triggers</h2>'
+                '<p>Not yet merged (<code>merge_two_track.py --pkg '
+                '~/x17/two_track_ladder_condor</code>).</p></section>')
+    pick = ladder_pick(D)
+    matched = L.get('pick', {})
+    fig_ladder(D, pick, matched, od)
+    lo = D.groupby('arm').F.min()
+    verdict = '; '.join(
+        f'chamber {a}: F&nbsp;=&nbsp;{pick[a]:g}' + (
+            f' (matched {matched[a]:g})' if a in matched else '') + (
+            ', the bottom of the ladder, so the true minimum may be lower'
+            if pick[a] == lo[a] else '')
+        for a in ARMS if a in pick) or 'no F on the ladder meets the contract'
+    rows = []
+    for r in D.sort_values(['arm', 'F']).itertuples():
+        mark = ' &larr; pick' if pick.get(r.arm) == r.F else (
+            ' (matched)' if matched.get(r.arm) == r.F else '')
+        rows.append(tr([r.arm, f'{r.F:g}{mark}',
+                        f'{r.clean_singles_split}/{r.clean_singles} '
+                        f'({_pct(r.frac_clean_split, 2)}, &le;&nbsp;{_pct(r.clean_split_ul90, 2)})',
+                        r.events_fewer_tracks, r.clean_tracks_lost,
+                        f'{r.not_recovered}/{r.prod_gated_tracks}', r.events_split,
+                        r.events_more_tracks,
+                        _pct(getattr(r, 'bench_fsr', np.nan), 1),
+                        _pct(getattr(r, 'bench_eff', np.nan))]))
+    return ('<section><h2>Operating point · the F rescan on real triggers</h2>'
+            f'<p><b>Lowest F meeting the contract on real triggers: {verdict}.</b> '
+            'The contract: clean single muons split &le;&nbsp;0.66&nbsp;% and no event '
+            'losing a track. The upper limit in brackets is one-sided 90&nbsp;% '
+            'Clopper&ndash;Pearson. The pick uses the point estimate, as the contract '
+            'is written.</p>'
+            '<p><code>split-ab</code> of the fixed chain, all seven tags, one condor pass '
+            '(cluster 4348153). Every F is replayed exactly from the same attempts '
+            '(<code>wft.reco.two_track_ladder</code>): attempts and their statistic do not '
+            'depend on the threshold, only acceptance does. Bench columns: the fixed chain '
+            'on real overlays at the same F (<code>r3_scan</code>, 600 single donors per '
+            'view, all pairs 0&ndash;24&nbsp;mm). Those donors are split more readily than '
+            'clean singles on real triggers, which is why the two false-split '
+            'columns differ.</p>'
+            + figure_html('ladder_operating_point',
+                          'Top: clean single muons split on real triggers against the split '
+                          'threshold F (band: 90&nbsp;% upper limit; dashed: the contract). '
+                          'Bottom: real overlay pairs resolved on the bench at the same F. '
+                          'Dotted: the threshold matched on bench donors; solid: the pick.')
+            + table(['chamber', 'F', 'clean singles split', 'events losing a track',
+                     'clean tracks lost', 'production tracks not recovered', 'events split',
+                     'events gaining a track', 'bench singles split', 'bench pairs resolved'],
+                    rows)
+            + '</section>')
+
+
+# --------------------------------------------------------------------------- #
 # the page
 # --------------------------------------------------------------------------- #
 def synth_table(S: pd.DataFrame, arm: str, tan: float) -> str:
@@ -602,6 +744,7 @@ def build() -> Path:
                    '(<code>two_track_limit real</code>).</p></section>')
 
     sec.append(validation_html())
+    sec.append(ladder_html(L, fd))
     sec.append(
         '<section><h2>What this does not rule out</h2><ul>'
         '<li><b>The toy is one plane, equal charges, tied t0.</b> Unequal charges, '
@@ -614,13 +757,16 @@ def build() -> Path:
         '<li><b>The ideal fit is ideal only in its search.</b> It still uses the forward '
         'model, so any shared model error (kernel, template, v<sub>drift</sub> prior) is in '
         'both the twin and the fit.</li>'
-        '<li><b>The matched false-split rate is measured on 600 overlay donors per view</b>, '
-        'one sub-run, and counts accepted splits, not extra tracks. The contract&rsquo;s '
-        'own measure is <code>split-ab</code> on real triggers, which has not been run on '
-        'the fixed chain.</li>'
-        '<li><b>The fixes are opt-in and not yet validated on the contract</b> '
-        '(<code>split-ab</code> on real triggers, the full overlay bench, no production '
-        'track lost). Until then they change nothing.</li>'
+        '<li><b>The contract is measured on one sub-run</b> (run_145 stat090_0000, seven '
+        'tags). Its clean-single sample is small: 0.66&nbsp;% of C&rsquo;s 1&nbsp;057 is 7 '
+        'events, so neighbouring F values are not statistically distinct. The pick is a '
+        'threshold, not a measurement of the false-split rate.</li>'
+        '<li><b>Real triggers have no truth.</b> <code>split-ab</code> bounds the cost of '
+        'a threshold (singles split, tracks lost). The gain (pairs resolved) comes only '
+        'from the overlay bench.</li>'
+        '<li><b>The fixes are opt-in.</b> They pass the contract, but nothing in production '
+        'uses them until the bundles and condor environment carry them and the full pass is '
+        'rerun.</li>'
         '<li><b>Donor truth is a fit.</b> A donor whose single-track fit is wrong gives a '
         'wrong label; the twin inherits it too.</li>'
         '</ul></section>')

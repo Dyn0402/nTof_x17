@@ -668,7 +668,8 @@ def real(arms, per_bin: int, n_null: int, jobs: int, seed: int, planes='xy',
 
 
 #: thresholds scanned offline; the corroborated one is kept at production's ratio
-SCAN_F = (0, 25, 50, 100, 150, 200, 300, 400, 600, 800, 1200, 1600, 2400, 3200, 5000)
+SCAN_F = (0, 25, 50, 100, 150, 200, 300, 400, 600, 800, 1000, 1200, 1600, 2000, 2400, 3200,
+          4800, 5000)
 F_CORROB_RATIO = 120.0 / 300.0
 
 
