@@ -849,3 +849,44 @@ statistics: at F = 2400, C's fixed chain splits 207 events (46 gaining a track)
 where current splits 913 (300). Both chains are inside the contract, so the
 open question is unchanged: is F = 2400 leaving real C pairs on the table, or
 are current's extra C splits false? That needs an F rescan on split-ab C.
+
+### 2026-10-01 — the C threshold question, and a one-pass F rescan on real triggers
+
+**The question.** At its matched F = 2400 (matched on 600 overlay *donors*),
+C's fixed chain splits 207 of 22 788 real triggers where current production
+splits 913, and its clean-single false-split rate on real triggers is 0.47 %,
+under the 0.66 % contract. The donor match said 1.2 % at 2400. So real clean
+singles are split less often than donors at the same F, and the bench ROC
+(`r3_roc.csv`, fixed C: F 1200 → 69 % of pairs resolved, 2400 → 58 %) says a
+lower F buys real efficiency. The rescan finds the lowest F that still meets
+the contract on real triggers.
+
+**How: one pass, every F.** In `resolve_two_tracks` neither the set of attempts
+nor any attempt's `fstat` depends on the threshold. The loop runs over the
+pre-split candidate list, `tried` counts every attempt, and `corrob` is taken
+from the input fits. Only acceptance does. So
+`wft.reco.two_track_ladder` (worker option `TWO_TRACK_F_LADDER=F1,F2,...`)
+keeps each attempt's two children. For every F of the ladder it rebuilds the
+candidate lists from the unsplit ones, accepting `fstat ≥ F` (`≥ 0.4 F` when
+corroborated) with guards passed, and applies the same lost-track revert as the
+worker. It then runs the selector. It builds new lists and touches no attribute
+the primary output reads, so the primary answer is unchanged. split-ab writes
+`events_ladder` / `tracks_ladder` / `summary_ladder.csv` and now also
+`attempts.parquet` (every attempt's record, which was previously dropped).
+
+Check built into the run: the primary F stays the matched one, so the ladder
+entry at the primary F must reproduce `split_ab_fixed_<arm>_7tags` event for
+event.
+
+Package: `make_two_track_package.py --ladder` → `~/x17/two_track_ladder_condor`
+(staged at `lxplus:~/two_track_ladder/`, results in the shared EOS results
+dir). Ladder F = 300, 400, 600, 800, 1000, 1200, 1600, 2000, 2400, 3200, 4800;
+both chambers, 7 tags × 8 shards. Merge with
+`merge_two_track.py --pkg ~/x17/two_track_ladder_condor`.
+
+Smoke check, run locally before submission (C, tag 000, shard 0/60, 52 triggers). The replay is
+exact in both directions. Primary at 2400: the ladder entry at 2400 equals the
+primary, and the primary equals the condor 7-tag run (n_tracks, n_splits,
+n_attempts). Primary at 300 (3 events split, 2 gaining a track): the ladder entry at
+300 equals the primary, track by track including `recovered`. Its 2400 entry
+equals the primary-2400 run. Outputs are under `intra_bench/split_ab_ladder_smoke{,300}_C/`.

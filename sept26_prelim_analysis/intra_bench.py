@@ -1165,7 +1165,7 @@ def split_ab(arms, jobs: int, limit_tags: int = 1, f_thresh: float | None = None
     from wft.calib import CalibrationBundle
 
     od = out_dir(f'split_ab_{variant}' if variant else 'split_ab')
-    ev_rows, tr_rows = [], []
+    ev_rows, tr_rows, at_rows, el_rows, tl_rows = [], [], [], [], []
     for arm in arms:
         rd = reco_dir(arm)
         bundle = str(paths.require(rd / 'calib_bundle_prelim', f'arm {arm} bundle'))
@@ -1206,7 +1206,9 @@ def split_ab(arms, jobs: int, limit_tags: int = 1, f_thresh: float | None = None
                     e = int(r['event_id'])
                     cn = pd.DataFrame(r.pop('_cand', []))
                     sp = r.pop('_splits', [])
+                    lad = r.pop('_ladder', None)
                     n_acc = int(sum(x['accepted'] for x in sp))
+                    at_rows += [dict(arm=arm, tag=tag, **x) for x in sp]
                     ev_rows.append(dict(arm=arm, tag=tag, event_id=e,
                                         n_tracks_prod=int(prod_n.get(e, 0)),
                                         n_tracks_new=int(r.get('n_tracks', 0)),
@@ -1225,12 +1227,58 @@ def split_ab(arms, jobs: int, limit_tags: int = 1, f_thresh: float | None = None
                                        dtan_x=nx.tan_theta - px.tan_theta,
                                        dtan_y=ny.tan_theta - py.tan_theta)
                         tr_rows.append(row)
+                    for L in lad or []:         # the F rescan (wft.reco.two_track_ladder)
+                        el_rows.append(dict(arm=arm, tag=tag, event_id=e, F=L['F'],
+                                            F_corrob=L['F_corrob'],
+                                            n_tracks_prod=int(prod_n.get(e, 0)),
+                                            n_tracks_new=L['n_tracks'], n_splits=L['n_splits'],
+                                            reverted=L['reverted'],
+                                            clean_single=(tag, e) in clean))
+                        for px, py in _gated_tracks(pc.get(e)):
+                            ok = any(abs(gx - px.p0) < MATCH_MM and abs(gy - py.p0) < MATCH_MM
+                                     for gx, gy, _tx, _ty in L['gated'])
+                            tl_rows.append(dict(arm=arm, tag=tag, event_id=e, F=L['F'],
+                                                split=L['n_splits'] > 0,
+                                                clean_single=(tag, e) in clean, recovered=ok))
                 print(f'[split-ab] {arm} {tag}: {len(todo):,} triggers, '
                       f'{time.time() - t0:.0f} s', flush=True)
     E, T = pd.DataFrame(ev_rows), pd.DataFrame(tr_rows)
     E.to_parquet(od / 'events.parquet', index=False)
     T.to_parquet(od / 'tracks.parquet', index=False)
+    if at_rows:
+        pd.DataFrame(at_rows).to_parquet(od / 'attempts.parquet', index=False)
     split_ab_summary(E, T, od)
+    if el_rows:
+        EL, TL = pd.DataFrame(el_rows), pd.DataFrame(tl_rows)
+        EL.to_parquet(od / 'events_ladder.parquet', index=False)
+        TL.to_parquet(od / 'tracks_ladder.parquet', index=False)
+        split_ab_ladder_summary(EL, TL, od)
+
+
+def split_ab_ladder_summary(EL: pd.DataFrame, TL: pd.DataFrame, od: Path) -> pd.DataFrame:
+    """The contract table at every F of the ladder (``--worker-opt
+    TWO_TRACK_F_LADDER=...``): one row per (arm, F)."""
+    rows = []
+    for (arm, F), e in EL.groupby(['arm', 'F']):
+        t = TL[(TL.arm == arm) & (TL.F == F)]
+        cs = e[e.clean_single]
+        tc = t[t.clean_single]
+        rows.append(dict(
+            arm=arm, F=F, F_corrob=float(e.F_corrob.iloc[0]), triggers=len(e),
+            events_split=int((e.n_splits > 0).sum()),
+            frac_events_split=float((e.n_splits > 0).mean()),
+            events_reverted=int(e.reverted.sum()),
+            clean_singles=len(cs), clean_singles_split=int((cs.n_splits > 0).sum()),
+            frac_clean_split=float((cs.n_splits > 0).mean()) if len(cs) else np.nan,
+            prod_gated_tracks=len(t), not_recovered=int((~t.recovered).sum()),
+            clean_tracks_lost=int((~tc.recovered).sum()),
+            events_more_tracks=int((e.n_tracks_new > e.n_tracks_prod).sum()),
+            events_fewer_tracks=int((e.n_tracks_new < e.n_tracks_prod).sum())))
+    S = pd.DataFrame(rows)
+    S.to_csv(od / 'summary_ladder.csv', index=False)
+    pd.set_option('display.width', 260)
+    print(S.round(4).to_string(index=False))
+    return S
 
 
 def split_ab_summary(E: pd.DataFrame, T: pd.DataFrame, od: Path) -> pd.DataFrame:

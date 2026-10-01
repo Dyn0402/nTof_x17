@@ -12,7 +12,26 @@ off, output is production's.
 All 147 jobs of cluster 4334051 returned and are merged; **A and C both pass
 the split-ab contract on all seven tags** (C fixed: 0.47 % clean singles split,
 no event loses a track, 466 → 234 production tracks not recovered). Report
-regenerated. Next is step 1–2 under "Next" below.
+regenerated. Step 2 under "Next" (fixed + profc bench) was already done
+(log, 2026-09-30). Step 1, the F rescan on split-ab, is SUBMITTED. See the
+next section.
+
+## F rescan on real triggers — submitted 2026-10-01
+
+One pass of split-ab of the fixed chain, both chambers, all 7 tags × 8 shards
+(112 jobs), with `TWO_TRACK_F_LADDER` replaying every F in
+300…4800 exactly (`wft.reco.two_track_ladder`; log entry 2026-10-01).
+Package `~/x17/two_track_ladder_condor` (`make_two_track_package.py --ladder`),
+staged at `lxplus:~/two_track_ladder/`, same EOS inputs and results dir.
+When done:
+
+    .venv/bin/python sept26_prelim_analysis/condor/two_track/merge_two_track.py --pkg ~/x17/two_track_ladder_condor
+    cat ~/x17/sept26_prelim/intra_bench/split_ab_ladder_{A,C}_7tags/summary_ladder.csv
+
+Read it against the bench ROC (`two_track_limit/report/figures/r3_roc.csv`,
+fixed_f0): the lowest F whose real-trigger clean-single split rate is ≤ 0.66 %
+with no event losing a track gives the operating point. Its entry at the
+matched F must equal `split_ab_fixed_<arm>_7tags`.
 
 ## Status 2026-10-01 08:45 (superseded)
 

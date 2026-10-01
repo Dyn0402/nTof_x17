@@ -15,6 +15,9 @@ Builds <dest>/:
     jobs.txt             kind arm tag outname flavour extra...
     two_track.sub, run_two_track_wrapper.sh, run_two_track_job.py, log/
 
+(--ladder: only the split-ab F rescan, into ~/x17/two_track_ladder_condor;
+stage it at lxplus:~/two_track_ladder/, results share the EOS results dir.)
+
 Then:
     xrdcp <dest>/inputs.tar.gz root://eosuser.cern.ch//eos/user/d/dneff/x17/two_track_limit/
     rsync -av --exclude inputs.tar.gz <dest>/ lxplus:~/two_track_limit/
@@ -53,6 +56,11 @@ BENCH = ('--pairing --local-mm 16 --local-mode rescue --two-track --two-track-t0
 #: (TWO_TRACK_FIT_LOG, 2026-09-30): (F, F_corroborated)
 MATCHED_F = {'A': (1200, 480), 'C': (2400, 960)}
 SPLITAB_SHARDS = 8
+#: the split-ab F rescan (--ladder): every F replayed in one pass by
+#: wft.reco.two_track_ladder; corroborated F at the matched 0.4 ratio. The
+#: primary F stays the matched one, so the ladder's entry there must reproduce
+#: split_ab_fixed_<arm>_7tags exactly.
+LADDER_F = (300, 400, 600, 800, 1000, 1200, 1600, 2000, 2400, 3200, 4800)
 
 
 def job_list(tags, have_local):
@@ -80,10 +88,30 @@ def job_list(tags, have_local):
     return rows
 
 
+def ladder_job_list(tags):
+    """split-ab of the fixed chain, every tag and shard, with the F ladder on."""
+    lad = ','.join(str(f) for f in LADDER_F)
+    rows = []
+    for arm, (f, fc) in MATCHED_F.items():
+        for tag in tags:
+            for i in range(SPLITAB_SHARDS):
+                rows.append(('splitab', arm, tag,
+                             f'splitab_ladder_{arm}_{tag}_s{i}of{SPLITAB_SHARDS}', 'tomorrow',
+                             f'--pairing --variant ladder_{arm} --shard {i}/{SPLITAB_SHARDS} '
+                             f'--worker-opt TWO_TRACK_F={f} --worker-opt TWO_TRACK_F_CORROB={fc} '
+                             f'--worker-opt TWO_TRACK_F_LADDER={lad} {FIX}'))
+    return rows
+
+
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument('--dest', default=str(paths.spell('x17', 'two_track_condor')))
+    ap.add_argument('--dest', default=None,
+                    help='default ~/x17/two_track_condor (~/x17/two_track_ladder_condor with --ladder)')
+    ap.add_argument('--ladder', action='store_true',
+                    help='only the split-ab F rescan of the fixed chain (LADDER_F)')
     a = ap.parse_args()
+    a.dest = a.dest or str(paths.spell('x17', 'two_track_ladder_condor' if a.ladder
+                                       else 'two_track_condor'))
     os.makedirs(os.path.join(a.dest, 'log'), exist_ok=True)
 
     # ---- code, from the working tree
@@ -124,7 +152,7 @@ def main():
                   if re.fullmatch(r'\d{6}_\d{2}H\d{2}_\d{3}', t))
     have = {p.name for p in (out / 'intra_bench').iterdir()
             if (p / 'build.meta.json').exists()}
-    rows = job_list(tags, have)
+    rows = ladder_job_list(tags) if a.ladder else job_list(tags, have)
     with open(os.path.join(a.dest, 'jobs.txt'), 'w') as f:
         for r in rows:
             f.write(' '.join(r) + '\n')

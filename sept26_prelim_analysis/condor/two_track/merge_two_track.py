@@ -11,7 +11,10 @@ merge_two_track.py -- bring the two-track condor results home and merge them.
                                          build.meta.json (tags, shard count)
      split-ab split_ab_<variant>_7tags/  events, tracks, summary.csv (the same
                                          split_ab_summary as a local run), plus
-                                         summary_by_tag.csv
+                                         summary_by_tag.csv; attempts, and with
+                                         the F ladder events_/tracks_ladder +
+                                         summary_ladder.csv
+   --pkg ~/x17/two_track_ladder_condor merges the F rescan.
    Incomplete variants are merged anyway and marked (``complete: false``).
 """
 import argparse
@@ -90,7 +93,16 @@ def main():
                           ignore_index=True)
             E.to_parquet(od / 'events.parquet', index=False)
             T.to_parquet(od / 'tracks.parquet', index=False)
+            for name in ('attempts', 'events_ladder', 'tracks_ladder'):
+                parts = [pd.read_parquet(os.path.join(d, f'{name}.parquet')) for _t, d in dirs
+                         if os.path.exists(os.path.join(d, f'{name}.parquet'))]
+                if parts:
+                    pd.concat(parts, ignore_index=True).to_parquet(od / f'{name}.parquet',
+                                                                    index=False)
             ib.split_ab_summary(E, T, od)
+            if (od / 'events_ladder.parquet').exists():
+                ib.split_ab_ladder_summary(pd.read_parquet(od / 'events_ladder.parquet'),
+                                           pd.read_parquet(od / 'tracks_ladder.parquet'), od)
             rows = []
             (od / '_tmp').mkdir(exist_ok=True)
             for tag, e in E.groupby('tag'):

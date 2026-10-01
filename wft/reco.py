@@ -425,6 +425,14 @@ TWO_TRACK_GRID_DT = (-60.0, 0.0, 60.0)
 TWO_TRACK_GRID_MAX_MM = 14.0
 TWO_TRACK_GRID_KEEP = 3
 
+#: Threshold ladder, for the split-ab F rescan (TWO_TRACK_LIMIT_RESUME.md):
+#: comma-separated F values, '' = off. Neither the attempts nor their fstat
+#: depend on the threshold -- only acceptance does -- so one pass replays every
+#: F exactly (:func:`two_track_ladder`). The corroborated threshold scales with
+#: F at the primary run's TWO_TRACK_F_CORROB / TWO_TRACK_F ratio. The primary
+#: output is untouched.
+TWO_TRACK_F_LADDER = os.environ.get('WFT_TWO_TRACK_F_LADDER', '')
+
 
 def _plane_extent(W, noise, pos, sig=TWO_TRACK_SIG) -> float:
     """Transverse extent of the window's significant charge [mm]."""
@@ -838,7 +846,8 @@ def _cross_plane_mismatch(this: list, other: list) -> bool:
 def resolve_two_tracks(all_fits: Dict[str, list], windows: Dict[str, list],
                        cal: CalibrationBundle, ftst_diff=None,
                        max_try: int = TWO_TRACK_MAX_TRY,
-                       selected: Optional[Dict[str, set]] = None) -> tuple:
+                       selected: Optional[Dict[str, set]] = None,
+                       attempts: Optional[list] = None) -> tuple:
     """Offer the merged-looking candidates of both planes a second track.
 
     Runs AFTER the ordinary per-plane candidate fits, so the one-track answer
@@ -848,7 +857,10 @@ def resolve_two_tracks(all_fits: Dict[str, list], windows: Dict[str, list],
 
     Returns ``(all_fits, splits, replaced)``: the possibly-rewritten ranked
     lists, one record per attempt (provenance, and the bench's input), and the
-    parents a split displaced, per plane, for the candidates side table."""
+    parents a split displaced, per plane, for the candidates side table.
+
+    ``attempts``, when a list, also collects every attempt WITH its two
+    children, accepted or not -- the input of :func:`two_track_ladder`."""
     splits = []
     replaced = {'x': [], 'y': []}
     if not TWO_TRACK:
@@ -905,6 +917,9 @@ def resolve_two_tracks(all_fits: Dict[str, list], windows: Dict[str, list],
                           if k not in ('children', 'profiles')},
                        **{f'trig_{k}': v for k, v in trig.items()})
             splits.append(rec)
+            if attempts is not None:
+                attempts.append(dict(plane=plane, parent=f, win=iw,
+                                     children=r['children'], rec=rec))
             if r['accepted']:
                 ca, cb = r['children']
                 ca.n_seed = cb.n_seed = f.n_seed
@@ -921,6 +936,60 @@ def resolve_two_tracks(all_fits: Dict[str, list], windows: Dict[str, list],
         for g in out[plane]:
             g.n_candidates = n
     return out, splits, replaced
+
+
+def two_track_ladder(kept: Dict[str, list], attempts: list, ftst_diff,
+                     ladder) -> list:
+    """Replay the accept/reject of every attempt at each F of ``ladder``.
+
+    ``kept`` is the one-track candidate lists (before any split), ``attempts``
+    what :func:`resolve_two_tracks` collected. For each F: replace the parent of
+    every attempt with ``fstat >= F`` (``F_corrob`` when corroborated) and its
+    guards passed by its two children, apply the same lost-track revert as
+    :func:`_worker_fit`, and run the selector. Builds new lists and touches no
+    attribute the primary output reads, so the primary answer is unchanged.
+
+    Returns one dict per F: n_splits, reverted, n_tracks, and the gated tracks
+    as (x p0, y p0, x tan, y tan)."""
+    ratio = TWO_TRACK_F_CORROB / TWO_TRACK_F if TWO_TRACK_F else 0.4
+    n_kept = None
+    out_rows = []
+    for F in ladder:
+        Fc = F * ratio
+        acc = [a for a in attempts
+               if a['rec']['guards_ok']
+               and a['rec']['fstat'] >= (Fc if a['rec']['corroborated'] else F)]
+        fits = {p: list(kept.get(p) or []) for p in ('x', 'y')}
+        for a in acc:
+            ca, cb = a['children']
+            ca.n_seed = cb.n_seed = a['parent'].n_seed
+            ca.n_dropped = cb.n_dropped = a['parent'].n_dropped
+            ca._win = cb._win = a['win']
+            lst = fits[a['plane']]
+            i = next(k for k, g in enumerate(lst) if g is a['parent'])
+            lst[i:i + 1] = [ca, cb]
+        for p in ('x', 'y'):
+            fits[p].sort(key=lambda g: (1 if getattr(g, '_plausible', True) else 0,
+                                        getattr(g, '_dchi2', 0.0) or 0.0),
+                         reverse=True)
+        reverted = False
+        if acc:
+            if n_kept is None:
+                n_kept = _n_gated(kept, ftst_diff)
+            if n_kept > _n_gated(fits, ftst_diff):
+                fits, reverted = kept, True
+        try:
+            pairs = select_tracks(fits, ftst_diff, _CAL, max_tracks=MAX_TRACKS,
+                                  pairing=_PAIRING)
+        except Exception:
+            pairs = []
+        gated = [(float(fits['x'][i].p0), float(fits['y'][j].p0),
+                  float(fits['x'][i].tan_theta), float(fits['y'][j].tan_theta))
+                 for i, j, g in pairs if g]
+        out_rows.append(dict(F=float(F), F_corrob=float(Fc),
+                             n_splits=0 if reverted else len(acc),
+                             reverted=reverted, n_tracks=len(gated), gated=gated))
+    return out_rows
 
 
 DT_XY_TOL_NS = 120.0     # how far t0x - t0y may sit from the measured offset
@@ -1230,7 +1299,8 @@ def row_from_fits(event_id: int, fits: Dict[str, Optional[PlaneFit]],
 #: about after the fact -- so an A/B harness passes them here instead.
 WORKER_OPTS = ('TWO_TRACK', 'TWO_TRACK_F', 'TWO_TRACK_F_CORROB', 'TWO_TRACK_T0',
                'TWO_TRACK_RESID_Z', 'TWO_TRACK_WIDTH_MARGIN', 'TWO_TRACK_MAX_TRY',
-               'TWO_TRACK_SELECTED_ONLY', 'TWO_TRACK_SCALE', 'TWO_TRACK_SEARCH')
+               'TWO_TRACK_SELECTED_ONLY', 'TWO_TRACK_SCALE', 'TWO_TRACK_SEARCH',
+               'TWO_TRACK_F_LADDER')
 
 
 def _worker_init(bundle_path, pairing_path=None, opts=None):
@@ -1273,12 +1343,13 @@ def _worker_fit(payload):
     ftst_diff = (ftst['x'] - ftst['y']
                  if ftst.get('x') is not None and ftst.get('y') is not None
                  else None)
-    splits, replaced = [], {}
+    splits, replaced, attempts, ladder = [], {}, None, None
     if TWO_TRACK:
         try:
             kept = all_fits
+            attempts = [] if TWO_TRACK_F_LADDER else None
             all_fits, splits, replaced = resolve_two_tracks(
-                all_fits, wins, _CAL, ftst_diff)
+                all_fits, wins, _CAL, ftst_diff, attempts=attempts)
             # A SPLIT MAY NOT COST THE EVENT A TRACK. It replaces its parent, so
             # if the two children then fail to pair with the other plane the
             # event ends up with fewer gated tracks than before -- measured at
@@ -1297,7 +1368,14 @@ def _worker_fit(payload):
                 if replaced.get(plane) and all_fits.get(plane):
                     fits[plane] = all_fits[plane][0]
         except Exception:
-            splits, replaced = [], {}
+            splits, replaced, attempts = [], {}, None
+        if attempts is not None:
+            try:
+                ladder = two_track_ladder(
+                    kept, attempts, ftst_diff,
+                    [float(v) for v in str(TWO_TRACK_F_LADDER).split(',') if v.strip()])
+            except Exception:
+                ladder = None
     if PAIR_SELECT:
         try:
             fits = select_pair(all_fits, ftst_diff, _CAL)
@@ -1319,6 +1397,8 @@ def _worker_fit(payload):
         row['_cand'] = candidate_rows(eid, all_fits, pairs, ftst, replaced)
     if splits:
         row['_splits'] = [dict(event_id=int(eid), **r) for r in splits]
+    if ladder is not None:
+        row['_ladder'] = ladder
     return row
 
 
