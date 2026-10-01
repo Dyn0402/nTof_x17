@@ -427,7 +427,9 @@ def fig_two_readouts_op():
 # 3. The same flash down both chains
 # --------------------------------------------------------------------------- #
 
-def fig_two_chains():
+def fig_two_chains(first_crossing=False, name='status_flash_two_chains'):
+    """first_crossing: mark where the mean trace FIRST dips under 4 mV (~1 us)
+    instead of where it is back under for good (2.0 us)."""
     mm = mm_mean_trace()
     dr = dream_flash_event()
     if mm is None or dr is None:
@@ -474,11 +476,17 @@ def fig_two_chains():
     ax.set_zorder(axd.get_zorder() + 1)
     ax.patch.set_visible(False)
 
+    if first_crossing:
+        below = np.where((t_mm > 0) & (mm['mv'] < MM_THRESH_MV))[0]
+        rec_ns = t_mm[below[0]] * 1e3 if len(below) else np.nan
     if np.isfinite(rec_ns):
         x = rec_ns / 1e3
+        label = ('first under threshold\n~1 µs after its own peak'
+                 if first_crossing else
+                 f'back under threshold\n{x:.1f} µs after its own peak')
         ax.plot([x], [MM_THRESH_MV], marker='v', ms=10,
                 color=P.DET_COLOR['C'], zorder=6)
-        ax.annotate(f'back under threshold\n{x:.1f} µs after its own peak',
+        ax.annotate(label,
                     xy=(x, MM_THRESH_MV), xytext=(1.35, 19.0),
                     fontsize=10.5, color=P.DET_COLOR['C'], fontweight='bold',
                     va='center', zorder=6,
@@ -500,7 +508,7 @@ def fig_two_chains():
             'one event', transform=ax.transAxes, ha='left', va='bottom',
             fontsize=11, color=P.MUTED)
     fig.tight_layout()
-    save(fig, 'status_flash_two_chains')
+    save(fig, name)
 
 
 # --------------------------------------------------------------------------- #
@@ -738,6 +746,8 @@ FIGURES = {
     'railing': fig_railing,
     'two_readouts_op': fig_two_readouts_op,
     'two_chains': fig_two_chains,
+    'two_chains_1us': lambda: fig_two_chains(
+        first_crossing=True, name='status_flash_two_chains_1us'),
     'charge_ladder': fig_charge_ladder,
     'deadtime_detA': fig_deadtime_detA,
     'eff_recovery': fig_eff_recovery,
