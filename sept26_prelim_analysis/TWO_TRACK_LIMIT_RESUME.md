@@ -7,7 +7,14 @@ The report is `~/x17/sept26_prelim/two_track_limit/report/report.html`
 Nothing is committed. Every production change is opt-in, and with the switches
 off, output is production's.
 
-## Status 2026-10-01 08:45
+## Status 2026-10-01 evening — validation COMPLETE
+
+All 147 jobs of cluster 4334051 returned and are merged; **A and C both pass
+the split-ab contract on all seven tags** (C fixed: 0.47 % clean singles split,
+no event loses a track, 466 → 234 production tracks not recovered). Report
+regenerated. Next is step 1–2 under "Next" below.
+
+## Status 2026-10-01 08:45 (superseded)
 
 Condor cluster 4334051: everything done except 36 `split-ab fixed_C` shards
 (C events are busier, ~14 h per shard). **Chamber A passes the contract on all

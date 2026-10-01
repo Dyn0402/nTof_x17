@@ -820,14 +820,14 @@ Offset pairs unchanged or slightly up; noise controls A 97–98 %, C 94 %.
 `--pairing`** (`two_track_scratch/contract.py` →
 `intra_bench/contract_fixed_vs_current.csv`):
 
-| | A current | A fixed | C current (8 056 trig.) | C fixed |
+| | A current | A fixed | C current | C fixed |
 |---|---:|---:|---:|---:|
-| triggers | 22 434 | 22 434 | 8 056 | 8 056 |
-| clean singles split | 6/1804 (0.33 %) | **9/1804 (0.50 %)** | 2/407 | **1/407** |
+| triggers | 22 434 | 22 434 | 22 788 | 22 788 |
+| clean singles split | 6/1804 (0.33 %) | **9/1804 (0.50 %)** | 7/1057 (0.66 %) | **5/1057 (0.47 %)** |
 | events losing a track | 0 | **0** | 0 | **0** |
-| clean tracks lost | 1 | 0 | 0 | 1 |
-| tracks not recovered | 485 | **405** | 154 | **76** |
-| events split / gaining a track | 272 / 85 | 346 / 70 | 304 / 101 | 80 / 15 |
+| clean tracks lost | 1 | 0 | 3 | 3 |
+| tracks not recovered | 485 | **405** | 466 | **234** |
+| events split / gaining a track | 272 / 85 | 346 / 70 | 913 / 300 | 207 / 46 |
 
 **A passes**: 0.50 % against the contract's ≤ 0.66 %; 9 vs 6 is within
 fluctuation (0–2 per tag in both chains); no event loses a track; 80 more
@@ -838,3 +838,14 @@ track), yet it resolves more pairs on the bench. Current production's C splits
 (4 % of real triggers, 913 events over seven tags) deserve a look: the bench
 says a lower threshold is affordable in C. The remaining 36 C shards are
 running (C events are busier, ~14 h per shard).
+
+**2026-10-01 evening — C complete (56/56 shards), C passes.** All 147 jobs of
+cluster 4334051 returned; merged and the contract rerun (table above now holds
+the full seven tags for both chains). C fixed: clean singles split 5/1057
+(0.47 %) against current's 7/1057, no event loses a track, 232 more production
+tracks kept (466 → 234 not recovered). The 3 clean tracks lost are the same
+count as current production. The pattern of the partial result holds at full
+statistics: at F = 2400, C's fixed chain splits 207 events (46 gaining a track)
+where current splits 913 (300). Both chains are inside the contract, so the
+open question is unchanged: is F = 2400 leaving real C pairs on the table, or
+are current's extra C splits false? That needs an F rescan on split-ab C.
