@@ -488,7 +488,7 @@ def fig_two_chains():
     # neither crosses the rail lines, a trace, or the other's arrow
     ax.annotate('this baseline carries no noise —\nthe channel is still dead,'
                 ' for another 5 ms',
-                xy=(4.6, 1.5), xytext=(2.0, 46.0), fontsize=10.5,
+                xy=(4.6, 1.5), xytext=(1.8, 46.0), fontsize=10.5,
                 color=P.DET_COLOR['A'], fontweight='bold', va='top', zorder=6,
                 arrowprops=dict(arrowstyle='->', color=P.DET_COLOR['A'],
                                 lw=1.2))
