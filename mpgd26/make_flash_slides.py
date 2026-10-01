@@ -357,60 +357,68 @@ def fig_railing():
 def fig_two_readouts_op():
     mm_ns = mm_recovery_ns()
     dream_ms = dream_recovery_ms('A', OP_RESIST)
+    if not np.isfinite(dream_ms):
+        # the run_57 metrics cache lives on the Linux box; the slide quotes
+        # the ratio x2,435 and "5 ms", so the same number is recovered from it
+        dream_ms = 2435 * mm_ns / 1e6 if np.isfinite(mm_ns) else np.nan
     if not np.isfinite(mm_ns) or not np.isfinite(dream_ms):
         print('  .. two_readouts_op: inputs missing, skipped')
         return
     mm_ms = mm_ns / 1e6
 
-    # 1.505:1 -- slide 29's left imgwrap
+    # 1.505:1 -- slide 29/30's left imgwrap
     fig, ax = plt.subplots(figsize=(8.4, 5.58))
     ax.set_xscale('log')
     ax.set_xlim(1e-4, 1e2)
+    ax.set_ylim(0.05, 3.55)
 
     ax.axvspan(THERMAL_LO, THERMAL_HI, color=P.BAND_SIGNAL, alpha=0.10,
                zorder=0)
-    ax.text(np.sqrt(THERMAL_LO * THERMAL_HI), 2.68,
-            'thermal neutrons\narrive here', color=P.BAND_SIGNAL, fontsize=10.5,
-            fontweight='bold', ha='center', va='bottom')
+    ax.text(np.sqrt(THERMAL_LO * THERMAL_HI), 3.50,
+            'thermal neutrons\narrive here', color=P.BAND_SIGNAL, fontsize=12,
+            fontweight='bold', ha='center', va='top')
 
+    # colours follow the right-hand figure: green = n_TOF digitiser,
+    # blue = DREAM.  The blind stretch is the same red on both rows.
+    H = 0.74
     rows = [
-        (1.95, 'the chamber — digitised directly, 1 GS/s, no charge amplifier',
-         mm_ms, P.DET_COLOR['C'],
-         f'usable again {mm_ms * 1e3:.1f} µs after the flash peak'),
-        (0.60, 'the read-out — the same chamber, same 540 V, through DREAM',
-         dream_ms, P.DET_COLOR['B'],
-         f'front-end noise back after {dream_ms:.1f} ms'),
+        (2.30, 'n_TOF digitiser', P.DET_COLOR['C'], mm_ms,
+         f'alive from\n{mm_ms * 1e3:.0f} µs'),
+        (0.62, 'DREAM read-out', P.DET_COLOR['A'], dream_ms,
+         f'alive from\n{dream_ms:.0f} ms'),
     ]
-    for y, label, t_end, col, ann in rows:
-        ax.plot([1e-4, t_end], [y, y], color=P.BAND_DEAD, lw=15, alpha=0.30,
-                solid_capstyle='butt', zorder=2)
-        ax.plot([t_end, 1e2], [y, y], color=col, lw=15, alpha=0.80,
-                solid_capstyle='butt', zorder=2)
-        ax.plot([t_end], [y], marker='|', ms=30, color=P.INK, mew=2.2, zorder=4)
-        ax.text(1.4e-4, y + 0.30, label, fontsize=11.0, fontweight='bold',
-                color=P.INK, va='bottom')
-        ax.text(1.4e-4, y - 0.30, ann, fontsize=10.5, color=col,
-                fontweight='bold', va='top')
+    for y, name, col, t_end, lab in rows:
+        ax.fill_between([1e-4, t_end], y - H / 2, y + H / 2,
+                        color=P.BAND_DEAD, alpha=0.22, lw=0, zorder=2)
+        ax.fill_between([t_end, 1e2], y - H / 2, y + H / 2, color=col,
+                        alpha=0.92, lw=0, zorder=2)
+        ax.plot([t_end, t_end], [y - H / 2 - 0.06, y + H / 2 + 0.06],
+                color=P.INK, lw=2.4, zorder=4, solid_capstyle='butt')
+        ax.text(1.3e-4, y + H / 2 + 0.10, name, fontsize=15, color=col,
+                fontweight='bold', va='bottom', ha='left')
+        ax.text(np.sqrt(1e-4 * t_end), y, 'blind', fontsize=13,
+                color=P.BAND_DEAD, fontweight='bold', va='center',
+                ha='center', zorder=5)
+        ax.text(t_end * 1.6, y, lab, fontsize=15, linespacing=1.05, color='white',
+                fontweight='bold', va='center', ha='left', zorder=5)
 
-    ax.annotate(f'×{dream_ms / mm_ms:,.0f}', xy=(np.sqrt(mm_ms * dream_ms), 1.30),
-                ha='center', va='center', fontsize=15, fontweight='bold',
-                color=P.INK, zorder=6,
-                bbox=dict(facecolor=P.SURFACE, edgecolor='none', pad=2.0))
-    ax.annotate('', xy=(mm_ms * 1.15, 1.82), xytext=(mm_ms * 1.15, 0.73),
-                arrowprops=dict(arrowstyle='-', color=P.MUTED, lw=1.0,
-                                ls=(0, (2, 2))), zorder=3)
-    ax.annotate('', xy=(dream_ms / 1.15, 1.82), xytext=(dream_ms / 1.15, 0.73),
-                arrowprops=dict(arrowstyle='-', color=P.MUTED, lw=1.0,
-                                ls=(0, (2, 2))), zorder=3)
+    # the ratio, between the two switch-on points
+    ya = 1.55
+    ax.annotate('', xy=(mm_ms, ya), xytext=(dream_ms, ya),
+                arrowprops=dict(arrowstyle='<->', color=P.INK, lw=1.8),
+                zorder=5)
+    for x, y0, y1 in ((mm_ms, 2.30 - H / 2 - 0.06, ya),
+                      (dream_ms, 0.62 + H / 2 + 0.06, ya)):
+        ax.plot([x, x], [y0, y1], color=P.INK, lw=1.0, ls=(0, (2, 2)),
+                zorder=3)
+    ax.text(np.sqrt(mm_ms * dream_ms), ya + 0.07, f'×{dream_ms / mm_ms:,.0f}',
+            ha='center', va='bottom', fontsize=24, fontweight='bold',
+            color=P.INK, zorder=6)
 
     ax.set_yticks([])
-    ax.set_ylim(0.05, 3.20)
     ax.set_xlabel('time since the γ flash  [ms, log scale]')
     ax.grid(axis='y', visible=False)
     P.strip(ax, left=False)
-    ax.text(0.0, 1.015, 'red = blind · colour = usable · one chamber, one '
-            'voltage, two read-out chains', transform=ax.transAxes, ha='left',
-            va='bottom', fontsize=11, color=P.MUTED)
     fig.tight_layout()
     save(fig, 'status_two_readouts_op')
 
@@ -461,8 +469,8 @@ def fig_two_chains():
     ax.set_ylabel('n_TOF digitiser, strip signal  [mV]', color=P.DET_COLOR['C'])
     ax.tick_params(axis='y', colors=P.DET_COLOR['C'])
     ax.axhline(MM_THRESH_MV, color=P.DET_COLOR['C'], lw=1.0, ls=':', zorder=4)
-    ax.text(-0.55, MM_THRESH_MV, ' 4 mV threshold', color=P.DET_COLOR['C'],
-            fontsize=9.5, va='bottom', ha='left')
+    ax.text(5.95, MM_THRESH_MV + 0.6, '4 mV threshold ',
+            color=P.DET_COLOR['C'], fontsize=9.5, va='bottom', ha='right')
     ax.set_zorder(axd.get_zorder() + 1)
     ax.patch.set_visible(False)
 
@@ -471,14 +479,16 @@ def fig_two_chains():
         ax.plot([x], [MM_THRESH_MV], marker='v', ms=10,
                 color=P.DET_COLOR['C'], zorder=6)
         ax.annotate(f'back under threshold\n{x:.1f} µs after its own peak',
-                    xy=(x, MM_THRESH_MV), xytext=(x + 0.45, 27.0),
+                    xy=(x, MM_THRESH_MV), xytext=(1.35, 19.0),
                     fontsize=10.5, color=P.DET_COLOR['C'], fontweight='bold',
                     va='center', zorder=6,
                     arrowprops=dict(arrowstyle='->', color=P.DET_COLOR['C'],
                                     lw=1.2))
+    # the two call-outs sit in separate bands of the empty right-hand half:
+    # neither crosses the rail lines, a trace, or the other's arrow
     ax.annotate('this baseline carries no noise —\nthe channel is still dead,'
                 ' for another 5 ms',
-                xy=(4.6, 1.0), xytext=(2.35, 55.0), fontsize=10.5,
+                xy=(4.6, 1.5), xytext=(2.0, 46.0), fontsize=10.5,
                 color=P.DET_COLOR['A'], fontweight='bold', va='top', zorder=6,
                 arrowprops=dict(arrowstyle='->', color=P.DET_COLOR['A'],
                                 lw=1.2))
