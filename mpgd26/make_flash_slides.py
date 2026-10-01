@@ -378,6 +378,12 @@ def fig_two_readouts_op():
             'thermal neutrons\narrive here', color=P.BAND_SIGNAL, fontsize=12,
             fontweight='bold', ha='center', va='top')
 
+    # where the X17 statistics are highest: 0.1-10 MeV neutrons
+    ax.axvspan(MEV_LO_MS, MEV_HI_MS, color=P.INK, alpha=0.12,
+               zorder=0)
+    ax.text(np.sqrt(MEV_LO_MS * MEV_HI_MS), 3.50, 'MeV', color=P.INK,
+            fontsize=12, fontweight='bold', ha='center', va='top')
+
     # colours follow the right-hand figure: green = n_TOF digitiser,
     # blue = DREAM.  The blind stretch is the same red on both rows.
     H = 0.74
@@ -401,19 +407,6 @@ def fig_two_readouts_op():
                 ha='center', zorder=5)
         ax.text(t_end * 1.6, y, lab, fontsize=15, linespacing=1.05, color='white',
                 fontweight='bold', va='center', ha='left', zorder=5)
-
-    # the ratio, between the two switch-on points
-    ya = 1.55
-    ax.annotate('', xy=(mm_ms, ya), xytext=(dream_ms, ya),
-                arrowprops=dict(arrowstyle='<->', color=P.INK, lw=1.8),
-                zorder=5)
-    for x, y0, y1 in ((mm_ms, 2.30 - H / 2 - 0.06, ya),
-                      (dream_ms, 0.62 + H / 2 + 0.06, ya)):
-        ax.plot([x, x], [y0, y1], color=P.INK, lw=1.0, ls=(0, (2, 2)),
-                zorder=3)
-    ax.text(np.sqrt(mm_ms * dream_ms), ya + 0.07, f'×{dream_ms / mm_ms:,.0f}',
-            ha='center', va='bottom', fontsize=24, fontweight='bold',
-            color=P.INK, zorder=6)
 
     ax.set_yticks([])
     ax.set_xlabel('time since the γ flash  [ms, log scale]')
