@@ -16,7 +16,7 @@ regenerated. Step 2 under "Next" (fixed + profc bench) was already done
 (log, 2026-09-30). Step 1, the F rescan on split-ab, is SUBMITTED. See the
 next section.
 
-## F rescan on real triggers — submitted 2026-10-01
+## F rescan on real triggers — submitted 2026-10-01 22:15, cluster 4348153
 
 One pass of split-ab of the fixed chain, both chambers, all 7 tags × 8 shards
 (112 jobs), with `TWO_TRACK_F_LADDER` replaying every F in
@@ -26,6 +26,7 @@ staged at `lxplus:~/two_track_ladder/`, same EOS inputs and results dir.
 When done:
 
     .venv/bin/python sept26_prelim_analysis/condor/two_track/merge_two_track.py --pkg ~/x17/two_track_ladder_condor
+    ssh lxplus 'condor_q 4348153 -totals; condor_q 4348153 -hold -af HoldReason'
     cat ~/x17/sept26_prelim/intra_bench/split_ab_ladder_{A,C}_7tags/summary_ladder.csv
 
 Read it against the bench ROC (`two_track_limit/report/figures/r3_roc.csv`,
