@@ -1,0 +1,30 @@
+# Two-track validation (TWO_TRACK_LIMIT_RESUME.md) -- one job per line of
+# jobs.txt: kind, arm, file tag, output name, job flavour, intra_bench args.
+# Built by make_two_track_package.py; submit from the package directory:
+#   condor_submit two_track.sub
+if ! defined jobfile
+  jobfile               = jobs.txt
+endif
+universe                = vanilla
+executable              = run_two_track_wrapper.sh
+arguments               = "$(kind) $(arm) $(tag) $(outname) $(extra)"
+transfer_input_files    = code.tar.gz, run_two_track_job.py, PROVENANCE.txt
+should_transfer_files   = YES
+when_to_transfer_output = ON_EXIT
+transfer_output_files   = done_$(outname).txt
+initialdir              = .
+output                  = log/$(outname).out
+error                   = log/$(outname).err
+log                     = log/two_track.log
+# 2 CPUs: this pool allocates ~3 GB per core whatever request_memory says, and
+# an 8-CPU ask matches few slots (stage2_fullpass.sub, 2026-09-09).
+request_cpus            = 2
+request_memory          = 6000MB
+request_disk            = 10000MB
+environment             = "RECO_JOBS=2"
++JobFlavour             = "$(flavour)"
+MY.SendCredential       = true
+on_exit_hold            = (ExitBySignal == True) || (ExitCode != 0)
+max_retries             = 1
+# $(extra) absorbs the rest of the line, so it MUST be last.
+queue kind,arm,tag,outname,flavour,extra from $(jobfile)

@@ -49,6 +49,13 @@ MATCH_MM = 3.0
 N_SANITY = 8
 N_NOISE_PER_CELL = 20
 SCHEMA = 'sept26_prelim/intra_bench/2'
+#: 'add' sums b's waveforms onto a's on b's whole region, so b's strips carry two
+#: triggers' noise. 'replace' substitutes b's waveforms wherever a has no charge
+#: and adds only on the strips both regions share. Doubled noise on a clean
+#: single track's own strips moves its t0 by ~one sample in ~60 % of fits and
+#: loses 17-23 % of tracks (TWO_TRACK_FIT_LOG, 2026-09-29), so 'add' handicaps
+#: donor b relative to real events.
+OVERLAY_MODES = ('add', 'replace')
 
 DONOR_COLS = ['tag', 'event_id', 'x_p0', 'y_p0', 'x_t0', 'y_t0', 'x_ftst', 'y_ftst',
               'x_tan_theta', 'y_tan_theta', 'x_dchi2', 'y_dchi2', 'x_n_strips',
@@ -128,12 +135,16 @@ class TagData:
     """One file tag of one arm: hits, waveforms of the events needed, seeds."""
 
     def __init__(self, arm, tag, cfg, cal, pos, eids, rng, local_mm: float = 0.0,
-                 local_mode: str = 'rescue', split_gap_mm: float = 0.0):
+                 local_mode: str = 'rescue', split_gap_mm: float = 0.0,
+                 overlay: str = 'add'):
         from ntof_tracking import wft_beam as wb
         from wft import io as wio
         self.arm, self.tag, self.cfg, self.cal, self.pos = arm, tag, cfg, cal, pos
         self.local_mm, self.local_mode = float(local_mm), local_mode
         self.split_gap_mm = float(split_gap_mm)
+        if overlay not in OVERLAY_MODES:
+            raise ValueError(f'overlay must be one of {OVERLAY_MODES}: {overlay!r}')
+        self.overlay = overlay
         self.feu = {'x': cfg.MX17_FEU_X, 'y': cfg.MX17_FEU_Y}
         self.hits = wb.read_hits_tag(wb.hits_file_for_tag(cfg, tag),
                                      tuple(self.feu.values()))
@@ -165,7 +176,9 @@ class TagData:
 
     def payload(self, oid: int, a: int, b: int | None, mode: str):
         """``mode``: 'single' (a alone), 'overlay' (a + b's signal strips),
-        'noise' (a + a charge-free trigger's waveforms on b's strips)."""
+        'noise' (a + a charge-free trigger's waveforms on b's strips). Under
+        ``overlay='replace'`` both put b's (or the empty's) waveforms *in place
+        of* a's on the strips outside a's own region."""
         from ntof_tracking import wft_beam as wb
         from wft import io as wio
         W, H = {}, [self.hits_by[a]]
@@ -178,7 +191,13 @@ class TagData:
             src = self.wf[p][b] if mode == 'overlay' else self.wf[p][e]
             if src.shape != W[p].shape:
                 raise ValueError(f'sample count differs: {a} vs {b if e is None else e}')
-            W[p][reg] += src[reg]
+            if self.overlay == 'replace':
+                own = np.isin(reg, self.region(a, p))
+                W[p][reg[own]] += src[reg[own]]
+                W[p][reg[~own]] = src[reg[~own]]
+                H[0] = H[0][~((H[0].feu == feu) & H[0].channel.isin(reg[~own]))]
+            else:
+                W[p][reg] += src[reg]
             if mode == 'overlay':
                 hb = self.hits_by[b]
                 H.append(hb[(hb.feu == feu) & hb.channel.isin(reg)])
@@ -209,6 +228,27 @@ class TagData:
         return (oid, wins, used, sd['n_hits'], False, ftst), dict(seeds=ext, empty=e)
 
 
+def parse_worker_opts(items) -> dict:
+    """``KEY=VALUE`` strings -> ``wft.reco`` worker options, values typed:
+    bool (true/false), int, float (incl. inf/-inf), else str."""
+    out = {}
+    for it in items or []:
+        k, v = it.split('=', 1)
+        lv = v.strip().lower()
+        if lv in ('true', 'false'):
+            val = lv == 'true'
+        else:
+            try:
+                val = int(v)
+            except ValueError:
+                try:
+                    val = float(v)
+                except ValueError:
+                    val = v
+        out[k.strip()] = val
+    return out
+
+
 def seed_region(seeds, order: np.ndarray) -> np.ndarray:
     rank = np.flatnonzero(np.isin(order, np.concatenate([c.channels for c in seeds])))
     lo = max(0, rank.min() - REGION_MARGIN)
@@ -225,7 +265,13 @@ def _seed_of(ext, p0):
 
 def build(arms, jobs: int, per_cell: int, seed: int, variant: str = '',
           pairing: bool = False, local_mm: float = 0.0, local_mode: str = 'rescue',
-          split_gap_mm: float = 0.0, two_track: dict | None = None) -> None:
+          split_gap_mm: float = 0.0, two_track: dict | None = None,
+          overlay: str = 'add', worker_opts: dict | None = None,
+          pairing_tag: str = '', only_tag: str = '') -> None:
+    """``only_tag``: build one file tag's overlays only (a condor shard). Pairs
+    and overlay ids are exactly those of the unsharded build -- skipped tags
+    still advance the id counter -- but the noise-control rows draw their empty
+    triggers from a per-tag generator, so those differ from an unsharded run."""
     from ntof_tracking import wft_beam as wb
     from wft import io as wio
     from wft import reco as wr
@@ -241,6 +287,8 @@ def build(arms, jobs: int, per_cell: int, seed: int, variant: str = '',
                     TWO_TRACK_F_CORROB=two_track['f_corrob'],
                     TWO_TRACK_T0=two_track['t0_mode'],
                     TWO_TRACK_RESID_Z=two_track['resid_z'])
+    if worker_opts:
+        opts = dict(opts or {}, **worker_opts)
     oid = 0
     t_start = time.time()
     for arm in arms:
@@ -255,16 +303,22 @@ def build(arms, jobs: int, per_cell: int, seed: int, variant: str = '',
               f'({P.groupby("cls").size().to_dict()})', flush=True)
         noise_rows = P.groupby(['cls', 'sbin'], group_keys=False).head(N_NOISE_PER_CELL)
         Dk = D.set_index(['tag', 'event_id'])
-        pairing_path = (str(paths.require(out_dir() / f'xy_pairing_{arm}.json',
+        ptag = f'_{pairing_tag}' if pairing_tag else ''
+        pairing_path = (str(paths.require(out_dir() / f'xy_pairing_{arm}{ptag}.json',
                                           'x/y pairing calibration (run calib-pairing)'))
                         if pairing else None)
         with ProcessPoolExecutor(max_workers=jobs, initializer=wr._worker_init,
                                  initargs=(bundle, pairing_path, opts)) as pool:
             for tag, pt in P.groupby('tag'):
                 san = D[D.tag == tag].event_id.head(N_SANITY).tolist()
+                if only_tag and tag != only_tag:
+                    oid += len(san) + len(pt) + int(pt.index.isin(noise_rows.index).sum())
+                    continue
+                trng = (np.random.default_rng([seed, ord(arm), int(tag.replace('_', '')[-3:])])
+                        if only_tag else rng)
                 td = TagData(arm, tag, cfg, cal, pos, set(pt.a_eid) | set(pt.b_eid) | set(san),
-                             rng, local_mm=local_mm, local_mode=local_mode,
-                             split_gap_mm=split_gap_mm)
+                             trng, local_mm=local_mm, local_mode=local_mode,
+                             split_gap_mm=split_gap_mm, overlay=overlay)
                 todo = [('single', int(e), None, None) for e in san]
                 for r in pt.itertuples():
                     todo.append(('overlay', int(r.a_eid), int(r.b_eid), r))
@@ -324,7 +378,9 @@ def build(arms, jobs: int, per_cell: int, seed: int, variant: str = '',
         match_mm=MATCH_MM, n_overlays=int(len(Mdf)),
         variant=variant or 'production', xy_pairing=bool(pairing), sig_floor_local_mm=float(local_mm),
         sig_floor_local_mode=local_mode, split_gap_mm=float(split_gap_mm),
-        two_track=two_track, n_split_attempts=len(SPL),
+        two_track=two_track, overlay=overlay,
+        worker_opts={k: str(v) for k, v in (worker_opts or {}).items()},
+        pairing_tag=pairing_tag, only_tag=only_tag, n_split_attempts=len(SPL),
         n_splits=int(sum(r['accepted'] for r in SPL)),
         minutes=round((time.time() - t_start) / 60, 1),
         built=time.strftime('%Y-%m-%dT%H:%M:%S')), indent=1))
@@ -1093,7 +1149,8 @@ def split_probe_summary() -> None:
 
 
 def split_ab(arms, jobs: int, limit_tags: int = 1, f_thresh: float | None = None,
-             pairing: bool = False) -> None:
+             pairing: bool = False, worker_opts: dict | None = None,
+             variant: str = '', only_tag: str = '', shard: tuple = (0, 1)) -> None:
     """The contract check: re-reconstruct real triggers with the joint fit ON and
     match every production gated track against the frozen pass.
 
@@ -1107,7 +1164,7 @@ def split_ab(arms, jobs: int, limit_tags: int = 1, f_thresh: float | None = None
     from wft import reco as wr
     from wft.calib import CalibrationBundle
 
-    od = out_dir('split_ab')
+    od = out_dir(f'split_ab_{variant}' if variant else 'split_ab')
     ev_rows, tr_rows = [], []
     for arm in arms:
         rd = reco_dir(arm)
@@ -1123,7 +1180,10 @@ def split_ab(arms, jobs: int, limit_tags: int = 1, f_thresh: float | None = None
         opts = dict(TWO_TRACK=True)
         if f_thresh is not None:
             opts['TWO_TRACK_F'] = f_thresh
+        opts.update(worker_opts or {})
         tags = wb.subrun_tags(cfg)[:limit_tags] if limit_tags else wb.subrun_tags(cfg)
+        if only_tag:
+            tags = [only_tag]
         with ProcessPoolExecutor(max_workers=jobs, initializer=wr._worker_init,
                                  initargs=(bundle, pairing_path, opts)) as pool:
             for tag in tags:
@@ -1137,6 +1197,8 @@ def split_ab(arms, jobs: int, limit_tags: int = 1, f_thresh: float | None = None
                 hits = wb.read_hits_tag(wb.hits_file_for_tag(cfg, tag), (fx, fy))
                 seeds = wb.seeds_from_hits_beam(hits, pos, fx, fy, hot=cal.hot, local_mm=0.0)
                 todo = set(int(e) for e in prod_n.index) & set(seeds)
+                if shard[1] > 1:            # a condor shard: every n-th event id
+                    todo = {e for e in todo if e % shard[1] == shard[0]}
                 t0 = time.time()
                 for r in pool.map(wr._worker_fit,
                                   wb._windows_for_tag(cfg, tag, pos, seeds, todo, PAD),
@@ -1168,6 +1230,12 @@ def split_ab(arms, jobs: int, limit_tags: int = 1, f_thresh: float | None = None
     E, T = pd.DataFrame(ev_rows), pd.DataFrame(tr_rows)
     E.to_parquet(od / 'events.parquet', index=False)
     T.to_parquet(od / 'tracks.parquet', index=False)
+    split_ab_summary(E, T, od)
+
+
+def split_ab_summary(E: pd.DataFrame, T: pd.DataFrame, od: Path) -> pd.DataFrame:
+    """The contract table from split-ab's events and tracks (also used to merge
+    condor shards)."""
     rows = []
     for arm, e in E.groupby('arm'):
         t = T[T.arm == arm]
@@ -1194,6 +1262,7 @@ def split_ab(arms, jobs: int, limit_tags: int = 1, f_thresh: float | None = None
     pd.set_option('display.width', 260)
     pd.set_option('display.max_columns', 40)
     print(S.round(4).to_string(index=False))
+    return S
 
 
 def compare(variants) -> None:
@@ -1243,6 +1312,13 @@ def main() -> int:
                    help='model-selection threshold (default: wft.reco.TWO_TRACK_F)')
     b.add_argument('--two-track-f-corrob', type=float, default=None,
                    help='threshold when the other plane resolves two candidates')
+    b.add_argument('--worker-opt', action='append', default=[],
+                   help='extra wft.reco worker option KEY=VALUE (repeatable)')
+    b.add_argument('--only-tag', default='', help='build one file tag only (condor shard)')
+    b.add_argument('--pairing-tag', default='',
+                   help='with --pairing: use xy_pairing_<arm>_<tag>.json')
+    b.add_argument('--overlay', default='add', choices=list(OVERLAY_MODES),
+                   help="'replace' keeps b's strips at one trigger's noise")
     b.add_argument('--two-track-t0', default='tied', choices=['tied', 'free'])
     b.add_argument('--two-track-resid-z', type=float, default=None,
                    help='residual trigger, in sigma (default: wft.reco.TWO_TRACK_RESID_Z)')
@@ -1271,12 +1347,18 @@ def main() -> int:
     sa.add_argument('--tags', type=int, default=1, help='file tags to re-reconstruct (0 = all)')
     sa.add_argument('--two-track-f', type=float, default=None)
     sa.add_argument('--pairing', action='store_true')
+    sa.add_argument('--worker-opt', action='append', default=[],
+                    help='extra wft.reco worker option KEY=VALUE (repeatable)')
+    sa.add_argument('--variant', default='', help='writes split_ab_<variant>/')
+    sa.add_argument('--only-tag', default='', help='one file tag only (condor shard)')
+    sa.add_argument('--shard', default='0/1', help='i/n: only event ids with id %% n == i')
     cm = sub.add_parser('compare')
     cm.add_argument('variants', nargs='+')
     a = ap.parse_args()
     if a.cmd == 'build':
-        if (a.pairing or a.local_mm or a.split_gap or a.two_track) and not a.variant:
-            ap.error('--pairing / --local-mm / --split-gap / --two-track need --variant, so the '
+        if (a.pairing or a.local_mm or a.split_gap or a.two_track
+                or a.overlay != 'add' or a.worker_opt) and not a.variant:
+            ap.error('--pairing / --local-mm / --split-gap / --two-track / --overlay need --variant, so the '
                      'production baseline is not overwritten')
         tt = None
         if a.two_track:
@@ -1288,7 +1370,8 @@ def main() -> int:
                       resid_z=(a.two_track_resid_z if a.two_track_resid_z is not None
                                else _wr.TWO_TRACK_RESID_Z))
         build(a.arms, a.jobs, a.per_cell, a.seed, a.variant, a.pairing, a.local_mm, a.local_mode,
-              a.split_gap, tt)
+              a.split_gap, tt, a.overlay, parse_worker_opts(a.worker_opt), a.pairing_tag,
+              a.only_tag)
     elif a.cmd == 'floor':
         floor_study(a.arms, a.pairs_per_tag, a.seed)
     elif a.cmd == 'derive':
@@ -1304,7 +1387,12 @@ def main() -> int:
     elif a.cmd == 'split-probe-summary':
         split_probe_summary()
     elif a.cmd == 'split-ab':
-        split_ab(a.arms, a.jobs, a.tags, a.two_track_f, a.pairing)
+        wo = parse_worker_opts(a.worker_opt)
+        if wo and not a.variant:
+            ap.error('--worker-opt needs --variant, so the split-ab baseline is not overwritten')
+        i, n = (int(x) for x in a.shard.split('/'))
+        split_ab(a.arms, a.jobs, a.tags, a.two_track_f, a.pairing, wo, a.variant,
+                 a.only_tag, (i, n))
     else:
         compare(a.variants)
     return 0

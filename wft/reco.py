@@ -234,7 +234,7 @@ def fit_plane(P, plane: str, cal: CalibrationBundle, hyper: Optional[dict] = Non
     flagged = np.concatenate([wm.DEAD.get(plane, np.array([], dtype=int)),
                               wm.HOT.get(plane, np.array([], dtype=int))])
     n_flagged = int(np.isin(ch, flagged).sum()) if len(flagged) else 0
-    return PlaneFit(
+    f = PlaneFit(
         p0=float(r['p0']), w=float(r['w']), t0=float(r['t0']),
         tan_theta=float(tan), theta_deg=float(np.degrees(np.arctan(tan))),
         chi2=float(r['chi2']), dof=int(r['dof']),
@@ -248,6 +248,8 @@ def fit_plane(P, plane: str, cal: CalibrationBundle, hyper: Optional[dict] = Non
         slope_reliable=bool(abs(tan) >= TAN_MIN_SLOPE),
         quality_ok=bool(r['chi2'] / max(r['dof'], 1) < CHI2DOF_BAD),
         n_flagged_strips=n_flagged)
+    f._q = np.asarray(r['q'], float)     # the depth profile, for x/y pairing
+    return f
 
 
 # --- candidate-cluster selection -------------------------------------------
@@ -401,6 +403,27 @@ TWO_TRACK_RESID_Z = float(os.environ.get('WFT_TWO_TRACK_RESID_Z', '8.0'))
 #: unmeasured, and this is on the to-do (wft/TWO_TRACK_FIT_2026-09-16.md §8).
 #: Set WFT_TWO_TRACK_ALL_CANDIDATES=1 to reconsider every candidate.
 TWO_TRACK_SELECTED_ONLY = os.environ.get('WFT_TWO_TRACK_ALL_CANDIDATES', '0') != '1'
+#: Where the split statistic's chi2/dof scale comes from. 'one' (production):
+#: the parent one-track fit's -- which on a real pair already holds the second
+#: track's unexplained charge, so fstat ~ dchi2 / (1 + dchi2/dof) can never
+#: exceed ~dof, and a narrow window (a close vertical pair: ~12 strips x 20
+#: samples) cannot reach TWO_TRACK_F = 300 however clear the pair is
+#: (two_track_limit.py, 2026-09-29). 'two': the two-track fit's, which equals
+#: the parent's on a true single and is not inflated by the thing being tested.
+TWO_TRACK_SCALE = os.environ.get('WFT_TWO_TRACK_SCALE', 'one')
+#: How the joint fit is started. 'starts' (production): alternating pursuit from
+#: the one-track parent plus three symmetric splits, best two refined. On close
+#: pairs the parent is a slanted compromise line and the refinement falls into
+#: an "X" of two crossing children, chi2 hundreds above the true pair (27/27
+#: synthetic misses, two_track_limit.py 2026-09-30). 'grid': additionally scan
+#: every pair of parallel lines on a strip-step grid (common slope, tied t0),
+#: profiles by NNLS, and refine the best TWO_TRACK_GRID_KEEP of them with a
+#: long Nelder-Mead. Costs 2-10 k chi2 evaluations per attempt.
+TWO_TRACK_SEARCH = os.environ.get('WFT_TWO_TRACK_SEARCH', 'starts')
+TWO_TRACK_GRID_TANS = np.round(np.arange(-0.4, 0.401, 0.1), 3)
+TWO_TRACK_GRID_DT = (-60.0, 0.0, 60.0)
+TWO_TRACK_GRID_MAX_MM = 14.0
+TWO_TRACK_GRID_KEEP = 3
 
 
 def _plane_extent(W, noise, pos, sig=TWO_TRACK_SIG) -> float:
@@ -596,6 +619,34 @@ def _two_track_starts(W, noise, pos, sat, plane, parent_r, hyper, t0_hints=(),
     return starts
 
 
+def _grid_starts(W, noise, pos, sat, plane, parent_r, hyper):
+    """The best TWO_TRACK_GRID_KEEP pairs of parallel lines on a strip-step
+    grid of the window (common slope, tied t0 near the parent's), each scored
+    by the joint NNLS. See TWO_TRACK_SEARCH."""
+    v = _v_mm_per_ns()
+    ps = np.sort(np.asarray(pos, float))
+    scored = []
+    for tq in TWO_TRACK_GRID_TANS:
+        w = float(tq) * v
+        for dt in TWO_TRACK_GRID_DT:
+            t0 = parent_r['t0'] + dt
+            for i in range(len(ps)):
+                for j in range(i + 1, len(ps)):
+                    if ps[j] - ps[i] > TWO_TRACK_GRID_MAX_MM:
+                        break
+                    pa, pb = (ps[i], w, t0), (ps[j], w, t0)
+                    c = wm.chi2_plane_two(plane, W, noise, pos, sat, pa, pb, hyper,
+                                          snap_t0=False)[0]
+                    if np.isfinite(c):
+                        scored.append((c, pa, pb))
+    scored.sort(key=lambda z: z[0])
+    return [(pa, pb, True) for _c, pa, pb in scored[:TWO_TRACK_GRID_KEEP]]
+
+
+def _v_mm_per_ns() -> float:
+    return float(wm.CAL.v_drift) * 1e-3
+
+
 def _two_errors(W, noise, pos, sat, plane, pa, pb, chi0, dof, hyper,
                 dp=0.05, dw=2e-4, dt=2.0):
     """1-sigma (p0, w, t0) per child from the curvature of the JOINT chi2 —
@@ -649,6 +700,7 @@ def _child_fit(P, plane, cal, r, which: str, hyper, chi_alone: float) -> PlaneFi
         quality_ok=bool(r['chi2'] / max(r['dof'], 1) < CHI2DOF_BAD),
         n_flagged_strips=int(np.isin(ch, flagged).sum()) if len(flagged) else 0)
     f._chi_alone = float(chi_alone)
+    f._q = np.asarray(q, float)
     return f
 
 
@@ -677,8 +729,16 @@ def fit_plane_two(P, plane: str, cal: CalibrationBundle, parent: PlaneFit,
     wgt = wgt * (wgt > 0.05 * wgt.max()) if wgt.max() > 0 else None
     starts = _two_track_starts(W, noise, pos, sat, plane, parent_r, hyper,
                                t0_hints=t0_hints, t0_mode=t0_mode)
-    r = wm.fit_plane_two_raw(W, noise, pos, sat, plane, starts, hyper=hyper,
-                             wgt=wgt, bins=bins)
+    if TWO_TRACK_SEARCH not in ('starts', 'grid'):
+        raise ValueError(f'TWO_TRACK_SEARCH must be starts or grid: {TWO_TRACK_SEARCH!r}')
+    if TWO_TRACK_SEARCH == 'grid':
+        starts = _grid_starts(W, noise, pos, sat, plane, parent_r, hyper) + starts
+        r = wm.fit_plane_two_raw(W, noise, pos, sat, plane, starts, hyper=hyper,
+                                 wgt=wgt, bins=bins, n_refine=TWO_TRACK_GRID_KEEP + 2,
+                                 maxiter=3000, maxiter_polish=2000)
+    else:
+        r = wm.fit_plane_two_raw(W, noise, pos, sat, plane, starts, hyper=hyper,
+                                 wgt=wgt, bins=bins)
     if r is None:
         return None
     dof = int((~sat).sum())
@@ -704,7 +764,9 @@ def fit_plane_two(P, plane: str, cal: CalibrationBundle, parent: PlaneFit,
     # 1.4-6.8 on clean single tracks and 5-12 across the full pass.
     marg_a = alone[1] - chi_two          # what a adds to b
     marg_b = alone[0] - chi_two          # what b adds to a
-    scale = max(chi_one / max(dof, 1), 1e-9)
+    if TWO_TRACK_SCALE not in ('one', 'two'):
+        raise ValueError(f'TWO_TRACK_SCALE must be one or two: {TWO_TRACK_SCALE!r}')
+    scale = max((chi_one if TWO_TRACK_SCALE == 'one' else chi_two) / max(dof, 1), 1e-9)
     dchi2 = float(chi_one - chi_two)
     fstat = float(min(marg_a, marg_b) / scale)
     fa = _child_fit(P, plane, cal, r, 'a', hyper, alone[0])
@@ -945,11 +1007,70 @@ def xy_pair_cost(fx, fy, pairing: dict, dt: float) -> float:
     f = dict(lq=np.log(max(fx.q_sum, 1.0) / max(fy.q_sum, 1.0)),
              u50=fx.q_u50 - fy.q_u50, u90=fx.q_u90 - fy.q_u90,
              t0=(fx.t0 - fy.t0) - dt)
+    if 'lqc' in pairing['features']:
+        cx, cy = constrained_charge(fx), constrained_charge(fy)
+        f['lqc'] = (np.log(max(cx, 1.0) / max(cy, 1.0))
+                    if np.isfinite(cx) and np.isfinite(cy) else np.nan)
     cost = 0.0
     for k in pairing['features']:
         z = (f[k] - pairing['median'][k]) / pairing['rsig'][k]
         cost += min(z * z, 25.0) if np.isfinite(z) else 25.0
+    pr = pairing.get('prof')
+    if pr:
+        d = profile_distance(fx, fy, dt, float(pr.get('sigma_bins', 1.0)))
+        cost += float(pr['weight']) * (min(d / float(pr['scale']), 25.0)
+                                       if np.isfinite(d) else 25.0)
     return cost
+
+
+def _constrained_profile(f) -> Optional[np.ndarray]:
+    """The depth profile with the bins the DAQ window does not constrain set
+    to zero (wft.model.constrained_bins): those hold whatever NNLS parked there."""
+    q = getattr(f, '_q', None)
+    if q is None:
+        return None
+    q = np.asarray(q, float).copy()
+    q[~wm.constrained_bins(f.t0)[:len(q)]] = 0.0
+    return q
+
+
+def constrained_charge(f) -> float:
+    """Fitted charge over the constrained depth bins only (nan without a profile)."""
+    q = _constrained_profile(f)
+    return float(q.sum()) if q is not None else np.nan
+
+
+def profile_distance(fx, fy, dt: float, sigma_bins: float = 1.0) -> float:
+    """How unlike the depth profiles of an x and a y candidate are.
+
+    Both views sample the same charge column, so one track's x and y profiles
+    agree up to gain and noise. Each is resampled on a common absolute-time
+    grid (y moved into x's frame by the measured offset ``dt``; comparing bin k
+    with bin k fails, because t0 slides by whole bins along the t0 <-> q
+    degeneracy), smoothed by ``sigma_bins``, normalised, and compared with a
+    chi2-like distance. On clean coincident donor pairs of run_145 this, added
+    to the charge ratio, raises correct keep/swap decisions from 87.4 to 91.6 %
+    (A) and 89.1 to 92.8 % (C), held-out (TWO_TRACK_FIT_LOG, 2026-09-30).
+    Opt-in: used only when the pairing calibration carries a ``prof`` block."""
+    from scipy.ndimage import gaussian_filter1d
+    qx, qy = _constrained_profile(fx), _constrained_profile(fy)
+    if qx is None or qy is None:
+        return np.nan
+    ref = fx.t0 - 2 * wm.DT
+    grid = ref + (np.arange(len(qx) + 6) + 0.5) * wm.DT
+
+    def on_grid(q, t0):
+        u = t0 + (np.arange(len(q)) + 0.5) * wm.DT
+        return np.interp(grid, u, q, left=0.0, right=0.0)
+
+    px, py = on_grid(qx, fx.t0), on_grid(qy, fy.t0 + dt)
+    if sigma_bins > 0:
+        px, py = gaussian_filter1d(px, sigma_bins), gaussian_filter1d(py, sigma_bins)
+    sx, sy = px.sum(), py.sum()
+    if sx <= 0 or sy <= 0:
+        return np.nan
+    px, py = px / sx, py / sy
+    return float(np.sum((px - py) ** 2 / (px + py + 0.01)))
 
 
 def _repair_pairs(out: list, cand_fits: Dict[str, list], pairing: dict, dt: float) -> list:
@@ -1109,7 +1230,7 @@ def row_from_fits(event_id: int, fits: Dict[str, Optional[PlaneFit]],
 #: about after the fact -- so an A/B harness passes them here instead.
 WORKER_OPTS = ('TWO_TRACK', 'TWO_TRACK_F', 'TWO_TRACK_F_CORROB', 'TWO_TRACK_T0',
                'TWO_TRACK_RESID_Z', 'TWO_TRACK_WIDTH_MARGIN', 'TWO_TRACK_MAX_TRY',
-               'TWO_TRACK_SELECTED_ONLY')
+               'TWO_TRACK_SELECTED_ONLY', 'TWO_TRACK_SCALE', 'TWO_TRACK_SEARCH')
 
 
 def _worker_init(bundle_path, pairing_path=None, opts=None):

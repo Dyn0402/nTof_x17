@@ -81,7 +81,10 @@ def check_kernel_ordering(hyper: dict, where: str = '') -> None:
         f'set {C2_GATE_ENV}=1.')
 
 
-XY_FEATURES = ('lq', 'u50', 'u90', 't0')
+#: 'lqc' is 'lq' over the depth bins the DAQ window constrains only; 'lq' uses
+#: the full q_sum, which NNLS inflates to 1e6-1e26 on 12-33 % of run_145 tracks
+#: (bins arriving after the last sample; wft.model.constrained_bins)
+XY_FEATURES = ('lq', 'lqc', 'u50', 'u90', 't0')
 
 
 def check_xy_pairing(p: dict, where: str = '') -> None:
