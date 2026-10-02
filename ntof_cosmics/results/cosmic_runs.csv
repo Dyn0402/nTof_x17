@@ -1,0 +1,48 @@
+run,era,start,subruns,hours,events,rate_hz,decoded_subruns,hv,hv_points,latency,n_samples,noise,a_x_conn8_dead,ntof_beam,ntof_beam_interior,edge_subruns,interior_subruns,usable_hours,usable_events,clean_subruns,clean_hours,clean_events,ntof_quiet_h,ntof_beam_h,category
+54,pre_production,2026-07-18 16:31,4,0.74,114756,42.8,4,other,1,35,32,quiet,False,0,0,0,0,0.74,114756,4,0.74,114756,0.0,0.0,pre-production (fixed HV)
+59,pre_production,2026-07-20 16:23,1,0.63,58261,25.8,1,other,1,35,32,quiet,False,10,0,1,0,0.63,58261,0,0.0,0,0.0,0.16,pre-production (fixed HV)
+68,pre_production,2026-07-23 14:54,6,1.18,52795,12.4,6,other,6,35,32,ambiguous,True,0,0,0,0,1.18,52795,6,1.18,52795,0.0,0.0,pre-production (HV scan/ladder)
+72,pre_production,2026-07-24 10:24,5,1.24,111888,25.2,5,other,3,35,32,noisy,True,0,0,0,0,1.24,111888,5,1.24,111888,0.0,0.12,pre-production (HV scan/ladder)
+73,pre_production,2026-07-24 16:00,4,0.7,68557,27.1,4,other,3,35,32,noisy,True,66,38,0,1,0.52,47075,3,0.52,47075,0.0,0.43,pre-production (HV scan/ladder)
+74,pre_production,2026-07-24 17:12,2,0.47,41753,24.9,2,other,2,35,32,noisy,True,0,0,0,0,0.47,41753,2,0.47,41753,0.0,0.08,pre-production (HV scan/ladder)
+80,production_point,2026-07-27 10:08,5,1.2,108840,25.3,5,production,1,27,20,noisy,True,0,0,0,0,1.2,108840,5,1.2,108840,0.0,0.03,"production point, clean"
+83,production_point,2026-07-27 14:23,1,0.23,22428,27.2,1,production,1,27,20,noisy,False,10,0,1,0,0.23,22428,0,0.0,0,0.0,0.02,"production point, beam at the edges only"
+85,production_point,2026-07-27 15:14,2,0.34,30714,25.4,2,production,1,27,20,noisy,False,2,0,1,0,0.34,30714,1,0.25,22800,0.0,0.0,"production point, beam at the edges only"
+87,production_point,2026-07-28 00:40,1,0.04,4662,29.9,1,production,1,27,20,noisy,False,7,0,1,0,0.04,4662,0,0.0,0,0.0,0.05,"production point, beam at the edges only"
+89,production_point,2026-07-28 05:37,22,5.54,493227,24.8,22,production,1,27,20,noisy,False,0,0,0,0,5.54,493227,22,5.54,493227,0.0,0.0,"production point, clean"
+91,production_point,2026-07-28 11:28,2,0.29,36790,35.5,2,production,1,27,20,noisy,False,0,0,0,0,0.29,36790,2,0.29,36790,0.0,0.17,"production point, clean"
+93,production_point,2026-07-28 11:51,1,0.04,5913,43.5,1,production,1,27,20,noisy,False,0,0,0,0,0.04,5913,1,0.04,5913,0.0,0.05,"production point, clean"
+95,production_point,2026-07-28 13:09,1,0.01,1010,22.0,1,production,1,27,20,noisy,False,0,0,0,0,0.01,1010,1,0.01,1010,0.0,0.0,"production point, clean"
+97,production_point,2026-07-28 17:52,1,0.02,2104,32.9,1,production,1,27,20,noisy,False,8,0,1,0,0.02,2104,0,0.0,0,0.0,0.03,"production point, beam at the edges only"
+99,production_point,2026-07-28 19:17,1,0.17,16430,26.7,1,production,1,27,20,noisy,False,6,0,1,0,0.17,16430,0,0.0,0,0.0,0.02,"production point, beam at the edges only"
+101,production_point,2026-07-29 10:16,1,0.21,19724,26.2,1,production,1,27,20,noisy,False,6,0,1,0,0.21,19724,0,0.0,0,0.0,0.0,"production point, beam at the edges only"
+103,production_point,2026-07-29 14:25,20,4.85,433491,24.8,20,production,1,27,20,noisy,False,6,0,1,0,4.85,433491,19,4.79,427188,4.28,0.43,"production point, beam at the edges only"
+105,production_point,2026-07-30 11:49,4,0.82,73672,25.1,4,production,1,27,20,noisy,False,7,0,1,0,0.82,73672,3,0.76,67555,0.0,0.0,"production point, beam at the edges only"
+107,production_point,2026-07-30 23:42,2,0.32,29934,26.1,2,production,1,27,20,noisy,False,17,0,1,0,0.32,29934,1,0.25,22688,0.0,0.0,"production point, beam at the edges only"
+109,production_point,2026-07-31 05:58,1,0.03,3802,39.6,1,production,1,27,20,noisy,False,10,0,1,0,0.03,3802,0,0.0,0,0.0,0.05,"production point, beam at the edges only"
+111,production_point,2026-07-31 09:09,3,0.68,62070,25.5,3,production,1,27,20,noisy,False,11,0,1,0,0.68,62070,2,0.5,45562,0.69,0.0,"production point, beam at the edges only"
+113,production_point,2026-07-31 12:52,1,0.13,12484,27.4,1,production,1,27,20,noisy,False,6,0,1,0,0.13,12484,0,0.0,0,0.0,0.13,"production point, beam at the edges only"
+115,production_point,2026-07-31 16:57,1,0.14,13766,27.6,1,production,1,27,20,noisy,False,11,0,1,0,0.14,13766,0,0.0,0,0.0,0.02,"production point, beam at the edges only"
+117,production_point,2026-08-01 22:17,1,0.18,16921,26.8,1,production,1,27,20,noisy,False,12,0,1,0,0.18,16921,0,0.0,0,0.0,0.07,"production point, beam at the edges only"
+119,production_point,2026-08-02 18:59,9,2.11,193947,25.5,9,production,1,27,20,noisy,False,8,0,1,0,2.11,193947,8,2.02,184178,0.0,0.02,"production point, beam at the edges only"
+121,production_point,2026-08-02 21:28,1,0.13,13284,28.1,1,production,1,27,20,noisy,False,11,0,1,0,0.13,13284,0,0.0,0,0.08,0.0,"production point, beam at the edges only"
+123,production_point,2026-08-02 22:37,1,0.24,22226,26.2,1,production,1,27,20,noisy,False,0,0,0,0,0.24,22226,1,0.24,22226,0.0,0.25,"production point, clean"
+125,production_point,2026-08-03 16:25,1,0.15,14118,26.2,1,production,1,27,20,noisy,False,9,0,1,0,0.15,14118,0,0.0,0,0.05,0.08,"production point, beam at the edges only"
+127,production_point,2026-08-03 16:52,3,0.55,50278,25.3,3,production,1,27,20,noisy,False,6,0,1,0,0.55,50278,2,0.5,45327,0.0,0.13,"production point, beam at the edges only"
+129,production_point,2026-08-03 17:59,1,0.13,12716,26.4,1,production,1,27,20,noisy,False,4,0,1,0,0.13,12716,0,0.0,0,0.0,0.15,"production point, beam at the edges only"
+131,production_point,2026-08-03 22:32,1,0.0,285,23.8,1,production,1,27,20,noisy,False,6,0,1,0,0.0,285,0,0.0,0,0.0,0.0,"production point, beam at the edges only"
+133,production_point,2026-08-04 09:24,24,6.05,539691,24.8,24,production,1,27,20,noisy,False,0,0,0,0,6.05,539691,24,6.05,539691,0.0,0.0,"production point, clean"
+134,production_point,2026-08-04 16:50,11,2.77,245269,24.6,11,production,1,27,20,noisy,False,3,0,1,0,2.77,245269,10,2.52,222816,0.0,0.0,"production point, beam at the edges only"
+136,production_point,2026-08-04 20:30,1,0.07,6234,26.3,1,production,1,27,20,noisy,False,3,0,1,0,0.07,6234,0,0.0,0,0.0,0.08,"production point, beam at the edges only"
+138,production_point,2026-08-04 20:41,6,1.29,114062,24.6,6,production,1,27,20,noisy,False,12,0,1,0,1.29,114062,5,1.26,110806,0.42,0.26,"production point, beam at the edges only"
+140,production_point,2026-08-05 08:58,3,0.72,64697,24.8,3,production,1,27,20,noisy,False,11,0,1,0,0.72,64697,2,0.5,44656,0.0,0.0,"production point, beam at the edges only"
+142,production_point,2026-08-05 10:38,7,1.73,153799,24.7,7,production,1,27,20,noisy,False,11,0,1,0,1.73,153799,6,1.51,134215,0.0,0.0,"production point, beam at the edges only"
+144,production_point,2026-08-05 13:48,2,0.27,24427,25.1,2,production,1,27,20,noisy,False,3,0,1,0,0.27,24427,1,0.25,22396,0.0,0.3,"production point, beam at the edges only"
+146,production_point,2026-08-05 17:12,2,0.35,32717,25.7,2,production,1,27,20,noisy,False,10,0,1,0,0.35,32717,1,0.25,22504,0.0,0.05,"production point, beam at the edges only"
+148,production_point,2026-08-06 14:40,1,0.0,0,0.0,0,production,1,27,20,noisy,False,0,0,0,0,0.0,0,1,0.0,0,0.0,0.0,empty
+149,production_point,2026-08-06 14:51,87,21.79,1936312,24.7,87,production,1,27,20,noisy,False,0,0,0,0,21.79,1936312,87,21.79,1936312,8.64,0.0,"production point, clean"
+151,production_point,2026-08-07 16:42,7,1.57,140780,25.0,7,production,1,27,20,noisy,False,15,0,1,0,1.57,140780,6,1.51,135403,0.0,0.0,"production point, beam at the edges only"
+153,production_point,2026-08-08 00:06,3,0.54,49338,25.4,3,production,1,27,20,noisy,False,13,0,1,0,0.54,49338,2,0.5,45051,0.25,0.0,"production point, beam at the edges only"
+155,production_point,2026-08-08 08:08,2,0.28,25744,25.8,2,production,1,27,20,noisy,False,14,0,1,0,0.28,25744,1,0.25,22669,0.0,0.0,"production point, beam at the edges only"
+157,production_point,2026-08-09 08:02,1,0.12,12916,29.3,1,production,1,27,20,noisy,False,22,0,1,0,0.12,12916,0,0.0,0,0.0,0.0,"production point, beam at the edges only"
+159,production_point,2026-08-09 13:58,6,1.51,137349,25.3,6,production,1,27,20,noisy,False,11,0,1,0,1.51,137349,5,1.26,114207,0.73,0.0,"production point, beam at the edges only"

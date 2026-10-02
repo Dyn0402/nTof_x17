@@ -34,6 +34,9 @@ check the migration status table in `RECONSTRUCTION_BASIS.md` first.
   beam 224715). n_TOF keeps running *other* experiments, so new runs on the DAQ
   page and under `/eos/experiment/ntof/` are not ours: identify ours by **run
   title**, never by recency or run-number proximity.
+- `ntof_cosmics/` — the 47 beam-off cosmic runs (inventory) and the
+  through-going-particle background; `clock_match.py` puts beam-off DREAM
+  triggers on the n_TOF clock (~10 ns) with no flash. Entry point: its README.
 - `ntof_pedestal_qa/` — the DREAM pedestal history of the n_TOF campaign, per
   channel and per chip. Two of its findings are campaign-wide and are listed
   under "Two n_TOF conditions" below; read them before comparing anything

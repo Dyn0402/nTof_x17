@@ -1,0 +1,547 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>n_TOF beam-off cosmic runs</title><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap"><style>
+:root{
+  color-scheme:light dark;
+  --bg:#fbfafc; --bg-2:#f3f1f6; --panel:#ffffff; --panel-2:#faf9fc;
+  --ink:#1c1a24; --ink-2:#565064; --ink-3:#8b8599;
+  --line:#e5e1ec; --line-2:#d3cddf;
+  --accent:#7d3a86; --accent-2:#a15fa8; --accent-wash:#7d3a860e;
+  --warn:#9c6414; --warn-wash:#9c641412; --warn-line:#e2c795;
+  --good:#0d6a8c; --good-wash:#0d6a8c12;
+  --shadow:0 1px 2px #1c1a240a, 0 6px 20px -12px #1c1a2426;
+  --sans:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --col:74ch;         /* the reading column */
+  --page:1120px;      /* the widest a figure or table may go */
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#131118; --bg-2:#1a1822; --panel:#1b1924; --panel-2:#201d2b;
+  --ink:#eceaf3; --ink-2:#a9a3ba; --ink-3:#7c7591;
+  --line:#2d2939; --line-2:#3b3650;
+  --accent:#c98fce; --accent-2:#d7a9db; --accent-wash:#c98fce14;
+  --warn:#e0a95f; --warn-wash:#e0a95f14; --warn-line:#5a4526;
+  --good:#67b6d8; --good-wash:#67b6d814;
+  --shadow:0 1px 2px #0006, 0 8px 24px -14px #000a;
+}}
+:root[data-theme="dark"]{
+  --bg:#131118; --bg-2:#1a1822; --panel:#1b1924; --panel-2:#201d2b;
+  --ink:#eceaf3; --ink-2:#a9a3ba; --ink-3:#7c7591;
+  --line:#2d2939; --line-2:#3b3650;
+  --accent:#c98fce; --accent-2:#d7a9db; --accent-wash:#c98fce14;
+  --warn:#e0a95f; --warn-wash:#e0a95f14; --warn-line:#5a4526;
+  --good:#67b6d8; --good-wash:#67b6d814;
+  --shadow:0 1px 2px #0006, 0 8px 24px -14px #000a;
+}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:74px}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *{transition:none!important;animation:none!important}
+}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);
+  font-size:15.5px;line-height:1.65;margin:0;padding:0;
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+  font-variant-numeric:tabular-nums}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:4px}
+
+/* --- the page column ---------------------------------------------------- */
+/* main and .wrap are the same thing; older reports use one, newer the other. */
+main,.wrap{max-width:var(--page);margin:0 auto;padding:0 24px 96px;
+  display:block}
+main>*,.wrap>*{max-width:var(--col)}
+/* the wide things -- anything with its own frame -- get the full page */
+main>figure,main>table,main>.scroll,main>.cards,main>.tiles,main>.panel,
+main>.grid,main>.figrow,main>.tbl-wrap,main>hr,main>footer,main>header,
+.wrap>figure,.wrap>table,.wrap>.scroll,.wrap>.cards,.wrap>.tiles,.wrap>.panel,
+.wrap>.grid,.wrap>.figrow,.wrap>.tbl-wrap,.wrap>hr,.wrap>footer,.wrap>header{
+  max-width:none}
+
+/* --- the sticky bar and the contents rail (both built by SCRIPT) --------- */
+.topbar{position:sticky;top:0;z-index:40;background:color-mix(in srgb,var(--bg) 86%,transparent);
+  backdrop-filter:saturate(1.6) blur(10px);-webkit-backdrop-filter:saturate(1.6) blur(10px);
+  border-bottom:1px solid var(--line)}
+.topbar-in{max-width:var(--page);margin:0 auto;padding:9px 24px;
+  display:flex;align-items:center;gap:14px}
+.topbar .who{font-family:var(--mono);font-size:11px;font-weight:500;
+  letter-spacing:.13em;text-transform:uppercase;color:var(--ink-3);
+  white-space:nowrap}
+.topbar .now{font-size:13px;color:var(--ink-2);overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
+.topbar .now b{color:var(--ink);font-weight:600}
+.themer{appearance:none;background:var(--panel);color:var(--ink-2);
+  border:1px solid var(--line-2);border-radius:999px;cursor:pointer;
+  font-family:var(--mono);font-size:11px;letter-spacing:.06em;padding:4px 11px;
+  white-space:nowrap;transition:color .15s,border-color .15s}
+.themer:hover{color:var(--accent);border-color:var(--accent-2)}
+
+.toc{display:none}
+@media (min-width:1560px){
+  /* Sized from the gutter that is actually there, so it never runs off the
+     right edge on a 1600-wide window. */
+  .toc{display:block;position:fixed;top:96px;left:calc(50% + var(--page)/2 + 28px);
+    width:min(220px,calc(50vw - var(--page)/2 - 46px));
+    max-height:calc(100vh - 140px);overflow-y:auto;
+    font-size:12.5px;line-height:1.45;border-left:1px solid var(--line);
+    padding-left:14px}
+  .toc h6{margin:0 0 9px;font-family:var(--mono);font-size:10px;font-weight:500;
+    letter-spacing:.15em;text-transform:uppercase;color:var(--ink-3)}
+  .toc a{display:block;padding:4px 0;color:var(--ink-2);text-decoration:none;
+    border-left:2px solid transparent;margin-left:-16px;padding-left:14px;
+    transition:color .15s,border-color .15s}
+  .toc a:hover{color:var(--ink)}
+  .toc a.on{color:var(--accent);border-left-color:var(--accent);font-weight:500}
+}
+
+/* --- headings ----------------------------------------------------------- */
+h1{font-size:clamp(28px,3.4vw,36px);line-height:1.14;margin:46px 0 14px;
+  font-weight:600;letter-spacing:-.024em;text-wrap:balance;max-width:26ch}
+h2{font-size:21.5px;margin:64px 0 4px;letter-spacing:-.016em;font-weight:600;
+  text-wrap:balance;padding-top:16px;border-top:1px solid var(--line);
+  scroll-margin-top:78px;display:flex;align-items:baseline;gap:13px;
+  position:relative}
+h2 .n{font-family:var(--mono);font-size:13px;font-weight:500;color:var(--accent);
+  letter-spacing:.06em;flex:none}
+h3{font-size:16.5px;margin:34px 0 4px;font-weight:600;letter-spacing:-.008em;
+  scroll-margin-top:78px;position:relative}
+h4{font-size:13px;margin:26px 0 4px;font-family:var(--mono);font-weight:500;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
+/* the quiet anchor SCRIPT hangs off every heading */
+.anch{position:absolute;left:-.95em;width:.95em;color:var(--ink-3);
+  text-decoration:none;opacity:0;font-weight:400;transition:opacity .15s;
+  line-height:inherit}
+h2:hover .anch,h3:hover .anch,.anch:focus{opacity:.65}
+.anch:hover{color:var(--accent)}
+
+/* --- prose -------------------------------------------------------------- */
+p{margin:13px 0}
+a{color:var(--accent);text-decoration-thickness:1px;text-underline-offset:2px}
+a:hover{color:var(--accent-2)}
+ul,ol{margin:13px 0;padding-left:22px}
+li{margin:7px 0}
+li::marker{color:var(--ink-3)}
+b,strong{font-weight:600}
+i,em{font-style:italic}
+hr{border:0;border-top:1px solid var(--line);margin:44px 0}
+small{font-size:12.5px;color:var(--ink-2)}
+sub,sup{font-size:.72em}
+code{font-family:var(--mono);font-size:.86em;background:var(--bg-2);
+  border:1px solid var(--line);border-radius:4px;padding:.08em .28em;
+  word-break:break-word}
+a code{color:inherit}
+pre{background:var(--panel);border:1px solid var(--line);border-radius:9px;
+  padding:15px 17px;overflow-x:auto;font-size:12.5px;line-height:1.6}
+pre code{background:none;border:0;padding:0;font-size:inherit}
+
+/* The opening paragraph: .lede and .deck are the same promise, and both
+   reports' authors reached for a different word.  Style both. */
+.lede,.deck{font-size:18px;line-height:1.56;margin:22px 0 6px;color:var(--ink);
+  max-width:66ch;letter-spacing:-.004em}
+.note,.prov{color:var(--ink-2);font-size:13.5px;line-height:1.62}
+.prov{font-family:var(--mono);font-size:12px}
+
+/* --- the answer, up top ------------------------------------------------- */
+/* .verdict is the newer reports' name, .caution the older one's warning box. */
+.verdict{background:linear-gradient(var(--accent-wash),var(--accent-wash)),var(--panel);
+  border:1px solid var(--line);border-left:3px solid var(--accent);
+  border-radius:4px 10px 10px 4px;padding:20px 24px;margin:26px 0 34px;
+  box-shadow:var(--shadow);max-width:84ch}
+.verdict>:first-child{margin-top:0}.verdict>:last-child{margin-bottom:0}
+.verdict p{max-width:72ch}
+.verdict b{font-weight:600}
+.caution,.warn{background:linear-gradient(var(--warn-wash),var(--warn-wash)),var(--panel);
+  border:1px solid var(--warn-line);border-left:3px solid var(--warn);
+  border-radius:4px 10px 10px 4px;padding:16px 20px;margin:24px 0;font-size:14.5px}
+.caution b,.warn b{color:var(--warn);font-weight:600}
+.caution>:first-child,.warn>:first-child{margin-top:0}
+.caution>:last-child,.warn>:last-child{margin-bottom:0}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;
+  padding:20px 22px;margin:20px 0;box-shadow:var(--shadow)}
+.panel>:first-child{margin-top:0}.panel>:last-child{margin-bottom:0}
+
+/* --- number cards ------------------------------------------------------- */
+.cards,.tiles{display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(196px,1fr));
+  gap:1px;margin:26px 0;background:var(--line);border:1px solid var(--line);
+  border-radius:10px;overflow:hidden;box-shadow:var(--shadow)}
+.card,.tile{background:var(--panel);padding:17px 19px;border:0}
+.card .v,.tile-v{font-family:var(--mono);font-size:26px;font-weight:600;
+  letter-spacing:-.032em;line-height:1.12;font-variant-numeric:tabular-nums;
+  display:block}
+.card .l,.tile-k{font-size:12.5px;color:var(--ink-2);margin-top:6px;
+  line-height:1.42;display:block}
+.tile-s{font-size:11.5px;color:var(--ink-3);margin-top:3px;display:block;
+  font-family:var(--mono)}
+
+/* --- tables ------------------------------------------------------------- */
+/* Bare <table> is styled: the generators emit it and should not have to
+   remember a class.  .t and .num stay as no-ops for the older reports. */
+.scroll,.tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:20px 0;
+  border:1px solid var(--line);border-radius:10px;background:var(--panel);
+  box-shadow:var(--shadow)}
+.scroll>table,.tbl-wrap>table{border:0;border-radius:0;margin:0;box-shadow:none;
+  min-width:100%}
+table{border-collapse:collapse;width:100%;font-size:13.5px;margin:20px 0;
+  background:var(--panel);border:1px solid var(--line);border-radius:10px}
+caption{caption-side:top;text-align:left;font-size:12.5px;color:var(--ink-2);
+  padding:0 0 9px;font-family:var(--mono)}
+th,td{padding:9px 14px;text-align:left;vertical-align:top;
+  border-bottom:1px solid var(--line)}
+thead th{position:sticky;top:0;z-index:1;background:var(--panel-2);
+  font-family:var(--mono);font-size:10.5px;text-transform:uppercase;
+  letter-spacing:.11em;color:var(--ink-3);font-weight:500;white-space:nowrap;
+  border-bottom:1.5px solid var(--line-2)}
+thead th .u{font-family:var(--sans);font-weight:400;text-transform:none;
+  letter-spacing:0;font-size:10.5px}
+tbody tr:nth-child(even) td,tbody tr:nth-child(even)>th{background:var(--panel-2)}
+tbody tr:hover td,tbody tr:hover>th{background:var(--accent-wash)}
+tbody tr:last-child td,tbody tr:last-child th{border-bottom:0}
+tbody th{font-weight:500}
+td.n,th.n,td.num,thead th.n{text-align:right;font-family:var(--mono);
+  font-variant-numeric:tabular-nums;font-weight:500;white-space:nowrap}
+table.num td+td,table.num th+th{text-align:right;
+  font-variant-numeric:tabular-nums}
+th.s{font-weight:500;white-space:normal;max-width:34ch}
+.why{display:block;font-weight:400;color:var(--ink-3);font-size:11.5px;
+  line-height:1.42;margin-top:3px}
+tfoot td,tfoot th{font-size:12px;color:var(--ink-2);border-top:1.5px solid var(--line-2);
+  border-bottom:0}
+/* pandas .to_html() output, when a report takes the shortcut */
+table.dataframe{font-size:13px}
+table.dataframe th{text-align:left}
+table.dataframe tbody th{font-family:var(--mono);font-size:12px;color:var(--ink-2)}
+table.dataframe td{text-align:right;font-family:var(--mono);
+  font-variant-numeric:tabular-nums}
+
+.legend{margin-top:15px;font-family:var(--mono);font-size:11.5px;
+  color:var(--ink-2);display:flex;flex-wrap:wrap;gap:7px 22px}
+.legend .k{white-space:nowrap;display:inline-flex;align-items:center}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;
+  margin-right:7px}
+
+/* --- figures ------------------------------------------------------------ */
+figure{margin:30px 0;padding:0}
+figure a{display:block;border-radius:10px;overflow:hidden;
+  border:1px solid var(--line);background:#fff;box-shadow:var(--shadow);
+  transition:border-color .16s,box-shadow .16s}
+figure a:hover{border-color:var(--line-2);
+  box-shadow:0 2px 4px #1c1a2412,0 14px 34px -18px #1c1a2440}
+figure img{display:block;width:100%;height:auto;background:#fff}
+figure>img{border:1px solid var(--line);border-radius:10px;
+  box-shadow:var(--shadow)}
+figcaption{font-size:13px;color:var(--ink-2);margin-top:11px;max-width:80ch;
+  line-height:1.58}
+figcaption b{color:var(--ink);font-weight:600}
+figcaption .src{font-family:var(--mono);font-size:11px;color:var(--ink-3);
+  text-decoration:none;white-space:nowrap;border:1px solid var(--line);
+  border-radius:999px;padding:1px 8px;margin-left:5px;
+  display:inline-block;transition:color .15s,border-color .15s}
+figcaption .src:hover{color:var(--accent);border-color:var(--accent-2)}
+.figrow{display:grid;gap:22px;margin:30px 0;
+  grid-template-columns:repeat(auto-fit,minmax(340px,1fr))}
+.figrow figure{margin:0}
+svg text{font-family:var(--mono);font-variant-numeric:tabular-nums}
+
+/* --- odds and ends the reports reach for -------------------------------- */
+/* a headline number standing alone on its own line */
+.big{font-size:1.32em;font-weight:600;margin:1.05em 0;letter-spacing:-.015em;
+  font-variant-numeric:tabular-nums}
+.badge{display:inline-block;background:var(--accent);color:#fff;font-size:10.5px;
+  font-weight:600;letter-spacing:.13em;padding:3px 9px;border-radius:999px;
+  font-family:var(--mono);text-transform:uppercase}
+.eyebrow{font-family:var(--mono);font-size:11.5px;font-weight:500;
+  text-transform:uppercase;letter-spacing:.14em;color:var(--ink-3);
+  display:flex;flex-wrap:wrap;gap:8px 18px;margin-bottom:14px;align-items:center}
+/* .sub means two things in this package: the mono strap line under the title
+   (funnel, tracking QA) and a small prose aside under a table (fold).  The
+   first is the one that wants the mono, and it is the one next to the h1. */
+.sub{color:var(--ink-2);font-size:13.5px;line-height:1.6;margin:10px 0}
+h1+.sub,header .sub{font-family:var(--mono);font-size:13px;line-height:1.75;
+  margin:0}
+header{padding:44px 0 16px;border-bottom:2px solid var(--ink);margin-bottom:30px}
+header h1{margin-top:0}
+
+/* --- the colophon ------------------------------------------------------- */
+footer,.foot{margin-top:64px;padding-top:18px;border-top:1px solid var(--line);
+  color:var(--ink-3);font-size:12px;font-family:var(--mono);line-height:1.85;
+  max-width:none}
+footer code,.foot code{background:none;border:0;padding:0;color:var(--ink-2);
+  word-break:break-all}
+
+/* --- narrow ------------------------------------------------------------- */
+@media (max-width:640px){
+  body{font-size:15px}
+  main,.wrap{padding:0 16px 72px}
+  .topbar-in{padding:8px 16px}
+  h1{margin-top:30px}
+  h2{margin-top:46px}
+  .lede,.deck{font-size:16.5px}
+  .verdict{padding:16px 18px}
+  th,td{padding:8px 11px}
+}
+
+/* --- print -------------------------------------------------------------- */
+@media print{
+  :root{--bg:#fff;--panel:#fff;--panel-2:#fff;--ink:#000;--ink-2:#333;
+    --ink-3:#666;--line:#ccc;--line-2:#999;--shadow:none;--accent-wash:transparent}
+  .topbar,.toc,.anch{display:none!important}
+  body{font-size:10.5pt}
+  main,.wrap{max-width:none;padding:0}
+  figure,table,.verdict,.panel,.cards{break-inside:avoid;box-shadow:none}
+  h2,h3{break-after:avoid}
+  a{color:inherit;text-decoration:none}
+}
+</style><script>
+(function(){
+  'use strict';
+  var D = document;
+
+  function ready(fn){
+    if (D.readyState !== 'loading') fn();
+    else D.addEventListener('DOMContentLoaded', fn);
+  }
+
+  // A cell is numeric if what it holds is a number, possibly signed, with the
+  // usual decorations: thousands commas, a unit, a +-, a percent, an en dash
+  // for "no value".  Deliberately strict -- a run name like run_145 must not
+  // be dragged to the right.
+  var NUMISH = /^[+\u2212\u00b1\-]?[\d,]+(\.\d+)?([\s\u00a0\u2009]*(%|\u00b1[\s\u00a0\u2009]*[\d.,]+|[a-z\u00b5\u03c3\u00b0/]{1,8}))?$/i;
+  function numeric(s){
+    s = (s || '').trim();
+    if (!s || s === '\u2014' || s === '\u2013') return false;
+    return NUMISH.test(s);
+  }
+
+  function fixTables(){
+    var tables = D.querySelectorAll('main table, .wrap table');
+    Array.prototype.forEach.call(tables, function(t){
+      // Give it a scroll frame so a wide table never widens the page.
+      var p = t.parentNode;
+      if (!p || !(p.classList.contains('scroll') || p.classList.contains('tbl-wrap'))){
+        var box = D.createElement('div');
+        box.className = 'scroll';
+        p.insertBefore(box, t);
+        box.appendChild(t);
+      }
+      // Right-align the columns that are actually numbers.  Only touch cells
+      // that carry no class of their own -- a report that said td.n or th.s
+      // has already decided.
+      var rows = t.tBodies.length ? t.tBodies[0].rows : [];
+      if (!rows.length) return;
+      var ncol = 0;
+      Array.prototype.forEach.call(rows, function(r){
+        ncol = Math.max(ncol, r.cells.length);
+      });
+      for (var c = 0; c < ncol; c++){
+        var seen = 0, num = 0, free = [];
+        for (var i = 0; i < rows.length; i++){
+          var cell = rows[i].cells[c];
+          if (!cell) continue;
+          var txt = cell.textContent;
+          if (!txt.trim()) continue;
+          seen++;
+          // A cell the generator already called .n counts as a number without
+          // being re-read; only unclassed cells are ours to relabel.
+          if (cell.classList.contains('n') || cell.classList.contains('num')) num++;
+          else if (!cell.className){ free.push(cell); if (numeric(txt)) num++; }
+        }
+        // A column is a number column when essentially all of it is numbers.
+        if (seen >= 2 && num >= seen - 1 && num > 0){
+          free.forEach(function(cell){ cell.classList.add('n'); });
+          // The header has to move with the column, or the label sits over
+          // empty space while the digits hug the far edge.
+          if (t.tHead) Array.prototype.forEach.call(t.tHead.rows, function(hr){
+            var h = hr.cells[c];
+            if (h && !h.className && h.colSpan === 1) h.classList.add('n');
+          });
+        }
+      }
+    });
+  }
+
+  function slug(s){
+    return (s || '').toLowerCase().replace(/[^\w\s-]/g, '')
+                    .trim().replace(/\s+/g, '-').slice(0, 48) || 'section';
+  }
+
+  // Headings get a stable id and a quiet anchor, so a number in a report can
+  // be linked to from the board or from a message.
+  function fixHeadings(){
+    var seen = {};
+    var hs = D.querySelectorAll('main h2, main h3, .wrap h2, .wrap h3');
+    Array.prototype.forEach.call(hs, function(h){
+      if (!h.id){
+        var base = slug(h.textContent), id = base, k = 2;
+        while (seen[id] || D.getElementById(id)) { id = base + '-' + (k++); }
+        h.id = id;
+      }
+      seen[h.id] = 1;
+      if (!h.querySelector('.anch')){
+        var a = D.createElement('a');
+        a.className = 'anch';
+        a.href = '#' + h.id;
+        a.setAttribute('aria-hidden', 'true');
+        a.tabIndex = -1;
+        a.textContent = '\u00a7';
+        h.insertBefore(a, h.firstChild);
+      }
+    });
+    return hs;
+  }
+
+  function theme(){
+    var KEY = 'x17-report-theme';
+    var order = ['auto', 'light', 'dark'];
+    var cur = 'auto';
+    try { cur = localStorage.getItem(KEY) || 'auto'; } catch (e) {}
+    var btn = D.createElement('button');
+    btn.className = 'themer';
+    btn.type = 'button';
+    function paint(){
+      if (cur === 'auto') D.documentElement.removeAttribute('data-theme');
+      else D.documentElement.setAttribute('data-theme', cur);
+      btn.textContent = ({auto: 'auto', light: 'light', dark: 'dark'})[cur];
+      btn.setAttribute('aria-label', 'colour theme: ' + cur);
+    }
+    btn.addEventListener('click', function(){
+      cur = order[(order.indexOf(cur) + 1) % order.length];
+      try { localStorage.setItem(KEY, cur); } catch (e) {}
+      paint();
+    });
+    paint();
+    return btn;
+  }
+
+  function topbar(hs){
+    var h1 = D.querySelector('h1');
+    var bar = D.createElement('div');
+    bar.className = 'topbar';
+    var inner = D.createElement('div');
+    inner.className = 'topbar-in';
+    var who = D.createElement('span');
+    who.className = 'who';
+    who.textContent = 'x17 \u00b7 n_TOF 2026';
+    var now = D.createElement('span');
+    now.className = 'now';
+    now.innerHTML = '<b>' + (h1 ? h1.textContent.trim() : D.title) + '</b>';
+    inner.appendChild(who);
+    inner.appendChild(now);
+    inner.appendChild(theme());
+    bar.appendChild(inner);
+    D.body.insertBefore(bar, D.body.firstChild);
+
+    // Once past the title, the bar says which section you are in.
+    if (!hs.length) return;
+    var title = now.innerHTML;
+    var last = null;
+    var io = ('IntersectionObserver' in window) ? null : undefined;
+    window.addEventListener('scroll', function(){
+      var y = window.scrollY + 90, at = null;
+      Array.prototype.forEach.call(hs, function(h){
+        if (h.tagName === 'H2' && h.getBoundingClientRect().top + window.scrollY <= y) at = h;
+      });
+      var txt = at ? '<b>' + at.textContent.replace('\u00a7', '').trim() + '</b>' : title;
+      if (txt !== last){ now.innerHTML = txt; last = txt; }
+      var id = at ? at.id : null;
+      Array.prototype.forEach.call(D.querySelectorAll('.toc a'), function(a){
+        a.classList.toggle('on', a.getAttribute('href') === '#' + id);
+      });
+    }, {passive: true});
+  }
+
+  function toc(hs){
+    var h2 = Array.prototype.filter.call(hs, function(h){ return h.tagName === 'H2'; });
+    if (h2.length < 3) return;
+    var nav = D.createElement('nav');
+    nav.className = 'toc';
+    nav.setAttribute('aria-label', 'Contents');
+    var html = '<h6>Contents</h6>';
+    h2.forEach(function(h){
+      html += '<a href="#' + h.id + '">' +
+              h.textContent.replace('\u00a7', '').trim() + '</a>';
+    });
+    nav.innerHTML = html;
+    D.body.appendChild(nav);
+  }
+
+  ready(function(){
+    try { fixTables(); } catch (e) {}
+    var hs = [];
+    try { hs = fixHeadings(); } catch (e) {}
+    try { toc(hs); } catch (e) {}
+    try { topbar(hs); } catch (e) {}
+  });
+})();
+</script></head><body><main>
+<p class="eyebrow">n_TOF EAR2 · X17 · ntof_cosmics</p>
+<h1>The beam-off cosmic runs: what we have</h1>
+
+<div class="verdict"><p><b>41 cosmic runs at the production operating
+point hold 57.6 h and 5.18 M scintillator-singles triggers</b>,
+all decoded on EOS, all under the post-23-July noise condition, and all with the
+run_79 HV and readout — only the trigger differs. 35.2 h of it never saw an
+n_TOF pulse. Everywhere else the beam sits only at run edges (beam loss and beam
+return around the auto-substituted cosmic run), so an event-level veto around
+the pulse times leaves the whole sample usable. Beam inside the cosmic running:
+run_73.
+<b>For 15.1 h, n_TOF was recording PS-timed triggers with no protons
+on target</b>, which gives a random-trigger view of the scintillators during the
+cosmic running. Most of it is in run_149 and run_103.</p></div>
+
+<h2>Headline</h2>
+<ul>
+<li>Trigger: scintillator singles (per-sector wall×plastic), veto open, no PS
+gate. Rate 25.0 Hz at the production point, stable run to run.
+<b>One arm is enough to trigger</b>, so a particle through two arms is a
+subset still to be counted, not the sample.</li>
+<li><b>run_80 still has chamber A x connector 8 dead</b> (channels 448–511 of
+FEU 3, live again from run_83): mask it, or drop run_80 (1.2 h)
+from any A-x study.</li>
+<li>Readout identical to run_79: no zero suppression, latency 27, 20 samples ×
+60 ns. HV resist A540/B540/C525/D520, drift 700 on all four.</li>
+<li>Pre-production (run_54–74): 5.0 h at
+other HV and timing (latency 35, 32 samples), mostly resist ladders. Useful for
+gain studies, not as a background reference for the production data.</li>
+<li>run_148 is empty.</li>
+</ul>
+
+<h2>By category</h2>
+<table><thead><tr><th>category</th><th>runs</th><th>subruns</th><th>hours</th><th>events</th><th>usable_hours</th><th>ntof_quiet_h</th></tr></thead><tbody><tr><td>empty</td><td>1</td><td>1</td><td>0.0</td><td>0</td><td>0.0</td><td>0.0</td></tr><tr><td>pre-production (HV scan/ladder)</td><td>4</td><td>17</td><td>3.59</td><td>274993</td><td>3.41</td><td>0.0</td></tr><tr><td>pre-production (fixed HV)</td><td>2</td><td>5</td><td>1.37</td><td>173017</td><td>1.37</td><td>0.0</td></tr><tr><td>production point, beam at the edges only</td><td>32</td><td>107</td><td>22.45</td><td>2034162</td><td>22.45</td><td>6.5</td></tr><tr><td>production point, clean</td><td>8</td><td>143</td><td>35.16</td><td>3144009</td><td>35.16</td><td>8.64</td></tr></tbody></table>
+
+<h2>Which runs to use</h2>
+<p><b>Background reference at the production point:</b> the five longest,
+which make up 41.0 of the 57.6 h —
+run_149 (21.8 h), run_133 (6.0 h), run_89 (5.5 h), run_103 (4.8 h), run_134 (2.8 h).
+PLAN §S4 named run_83 and run_146; they are 0.2 h and 0.35 h and both have
+beam at an edge, so they are a poor choice.</p>
+<p><b>With an n_TOF random-trigger companion:</b>
+run_149 (8.64 h), run_103 (4.28 h), run_159 (0.73 h), run_111 (0.69 h), run_138 (0.42 h), run_153 (0.25 h), run_121 (0.08 h), run_125 (0.05 h).
+These are the only places a cosmic scintillator time (and hence
+arm-to-arm time of flight) could exist. That depends on two things not yet
+checked: that cosmic triggers land inside n_TOF acquisition windows, and that the
+DREAM↔n_TOF clock join can be carried across a run with no flash to lock on.</p>
+
+<h2>Per run</h2>
+<table><thead><tr><th>run</th><th>start</th><th>category</th><th>subruns</th><th>hours</th><th>events</th><th>rate_hz</th><th>noise</th><th>a_x_conn8_dead</th><th>ntof_beam</th><th>ntof_beam_interior</th><th>usable_hours</th><th>ntof_quiet_h</th></tr></thead><tbody><tr><td>54</td><td>2026-07-18 16:31</td><td>pre-production (fixed HV)</td><td>4</td><td>0.74</td><td>114756</td><td>42.8</td><td>quiet</td><td>False</td><td>0</td><td>0</td><td>0.74</td><td>0.0</td></tr><tr><td>59</td><td>2026-07-20 16:23</td><td>pre-production (fixed HV)</td><td>1</td><td>0.63</td><td>58261</td><td>25.8</td><td>quiet</td><td>False</td><td>10</td><td>0</td><td>0.63</td><td>0.0</td></tr><tr><td>68</td><td>2026-07-23 14:54</td><td>pre-production (HV scan/ladder)</td><td>6</td><td>1.18</td><td>52795</td><td>12.4</td><td>ambiguous</td><td>True</td><td>0</td><td>0</td><td>1.18</td><td>0.0</td></tr><tr><td>72</td><td>2026-07-24 10:24</td><td>pre-production (HV scan/ladder)</td><td>5</td><td>1.24</td><td>111888</td><td>25.2</td><td>noisy</td><td>True</td><td>0</td><td>0</td><td>1.24</td><td>0.0</td></tr><tr><td>73</td><td>2026-07-24 16:00</td><td>pre-production (HV scan/ladder)</td><td>4</td><td>0.7</td><td>68557</td><td>27.1</td><td>noisy</td><td>True</td><td>66</td><td>38</td><td>0.52</td><td>0.0</td></tr><tr><td>74</td><td>2026-07-24 17:12</td><td>pre-production (HV scan/ladder)</td><td>2</td><td>0.47</td><td>41753</td><td>24.9</td><td>noisy</td><td>True</td><td>0</td><td>0</td><td>0.47</td><td>0.0</td></tr><tr><td>80</td><td>2026-07-27 10:08</td><td>production point, clean</td><td>5</td><td>1.2</td><td>108840</td><td>25.3</td><td>noisy</td><td>True</td><td>0</td><td>0</td><td>1.2</td><td>0.0</td></tr><tr><td>83</td><td>2026-07-27 14:23</td><td>production point, beam at the edges only</td><td>1</td><td>0.23</td><td>22428</td><td>27.2</td><td>noisy</td><td>False</td><td>10</td><td>0</td><td>0.23</td><td>0.0</td></tr><tr><td>85</td><td>2026-07-27 15:14</td><td>production point, beam at the edges only</td><td>2</td><td>0.34</td><td>30714</td><td>25.4</td><td>noisy</td><td>False</td><td>2</td><td>0</td><td>0.34</td><td>0.0</td></tr><tr><td>87</td><td>2026-07-28 00:40</td><td>production point, beam at the edges only</td><td>1</td><td>0.04</td><td>4662</td><td>29.9</td><td>noisy</td><td>False</td><td>7</td><td>0</td><td>0.04</td><td>0.0</td></tr><tr><td>89</td><td>2026-07-28 05:37</td><td>production point, clean</td><td>22</td><td>5.54</td><td>493227</td><td>24.8</td><td>noisy</td><td>False</td><td>0</td><td>0</td><td>5.54</td><td>0.0</td></tr><tr><td>91</td><td>2026-07-28 11:28</td><td>production point, clean</td><td>2</td><td>0.29</td><td>36790</td><td>35.5</td><td>noisy</td><td>False</td><td>0</td><td>0</td><td>0.29</td><td>0.0</td></tr><tr><td>93</td><td>2026-07-28 11:51</td><td>production point, clean</td><td>1</td><td>0.04</td><td>5913</td><td>43.5</td><td>noisy</td><td>False</td><td>0</td><td>0</td><td>0.04</td><td>0.0</td></tr><tr><td>95</td><td>2026-07-28 13:09</td><td>production point, clean</td><td>1</td><td>0.01</td><td>1010</td><td>22.0</td><td>noisy</td><td>False</td><td>0</td><td>0</td><td>0.01</td><td>0.0</td></tr><tr><td>97</td><td>2026-07-28 17:52</td><td>production point, beam at the edges only</td><td>1</td><td>0.02</td><td>2104</td><td>32.9</td><td>noisy</td><td>False</td><td>8</td><td>0</td><td>0.02</td><td>0.0</td></tr><tr><td>99</td><td>2026-07-28 19:17</td><td>production point, beam at the edges only</td><td>1</td><td>0.17</td><td>16430</td><td>26.7</td><td>noisy</td><td>False</td><td>6</td><td>0</td><td>0.17</td><td>0.0</td></tr><tr><td>101</td><td>2026-07-29 10:16</td><td>production point, beam at the edges only</td><td>1</td><td>0.21</td><td>19724</td><td>26.2</td><td>noisy</td><td>False</td><td>6</td><td>0</td><td>0.21</td><td>0.0</td></tr><tr><td>103</td><td>2026-07-29 14:25</td><td>production point, beam at the edges only</td><td>20</td><td>4.85</td><td>433491</td><td>24.8</td><td>noisy</td><td>False</td><td>6</td><td>0</td><td>4.85</td><td>4.28</td></tr><tr><td>105</td><td>2026-07-30 11:49</td><td>production point, beam at the edges only</td><td>4</td><td>0.82</td><td>73672</td><td>25.1</td><td>noisy</td><td>False</td><td>7</td><td>0</td><td>0.82</td><td>0.0</td></tr><tr><td>107</td><td>2026-07-30 23:42</td><td>production point, beam at the edges only</td><td>2</td><td>0.32</td><td>29934</td><td>26.1</td><td>noisy</td><td>False</td><td>17</td><td>0</td><td>0.32</td><td>0.0</td></tr><tr><td>109</td><td>2026-07-31 05:58</td><td>production point, beam at the edges only</td><td>1</td><td>0.03</td><td>3802</td><td>39.6</td><td>noisy</td><td>False</td><td>10</td><td>0</td><td>0.03</td><td>0.0</td></tr><tr><td>111</td><td>2026-07-31 09:09</td><td>production point, beam at the edges only</td><td>3</td><td>0.68</td><td>62070</td><td>25.5</td><td>noisy</td><td>False</td><td>11</td><td>0</td><td>0.68</td><td>0.69</td></tr><tr><td>113</td><td>2026-07-31 12:52</td><td>production point, beam at the edges only</td><td>1</td><td>0.13</td><td>12484</td><td>27.4</td><td>noisy</td><td>False</td><td>6</td><td>0</td><td>0.13</td><td>0.0</td></tr><tr><td>115</td><td>2026-07-31 16:57</td><td>production point, beam at the edges only</td><td>1</td><td>0.14</td><td>13766</td><td>27.6</td><td>noisy</td><td>False</td><td>11</td><td>0</td><td>0.14</td><td>0.0</td></tr><tr><td>117</td><td>2026-08-01 22:17</td><td>production point, beam at the edges only</td><td>1</td><td>0.18</td><td>16921</td><td>26.8</td><td>noisy</td><td>False</td><td>12</td><td>0</td><td>0.18</td><td>0.0</td></tr><tr><td>119</td><td>2026-08-02 18:59</td><td>production point, beam at the edges only</td><td>9</td><td>2.11</td><td>193947</td><td>25.5</td><td>noisy</td><td>False</td><td>8</td><td>0</td><td>2.11</td><td>0.0</td></tr><tr><td>121</td><td>2026-08-02 21:28</td><td>production point, beam at the edges only</td><td>1</td><td>0.13</td><td>13284</td><td>28.1</td><td>noisy</td><td>False</td><td>11</td><td>0</td><td>0.13</td><td>0.08</td></tr><tr><td>123</td><td>2026-08-02 22:37</td><td>production point, clean</td><td>1</td><td>0.24</td><td>22226</td><td>26.2</td><td>noisy</td><td>False</td><td>0</td><td>0</td><td>0.24</td><td>0.0</td></tr><tr><td>125</td><td>2026-08-03 16:25</td><td>production point, beam at the edges only</td><td>1</td><td>0.15</td><td>14118</td><td>26.2</td><td>noisy</td><td>False</td><td>9</td><td>0</td><td>0.15</td><td>0.05</td></tr><tr><td>127</td><td>2026-08-03 16:52</td><td>production point, beam at the edges only</td><td>3</td><td>0.55</td><td>50278</td><td>25.3</td><td>noisy</td><td>False</td><td>6</td><td>0</td><td>0.55</td><td>0.0</td></tr><tr><td>129</td><td>2026-08-03 17:59</td><td>production point, beam at the edges only</td><td>1</td><td>0.13</td><td>12716</td><td>26.4</td><td>noisy</td><td>False</td><td>4</td><td>0</td><td>0.13</td><td>0.0</td></tr><tr><td>131</td><td>2026-08-03 22:32</td><td>production point, beam at the edges only</td><td>1</td><td>0.0</td><td>285</td><td>23.8</td><td>noisy</td><td>False</td><td>6</td><td>0</td><td>0.0</td><td>0.0</td></tr><tr><td>133</td><td>2026-08-04 09:24</td><td>production point, clean</td><td>24</td><td>6.05</td><td>539691</td><td>24.8</td><td>noisy</td><td>False</td><td>0</td><td>0</td><td>6.05</td><td>0.0</td></tr><tr><td>134</td><td>2026-08-04 16:50</td><td>production point, beam at the edges only</td><td>11</td><td>2.77</td><td>245269</td><td>24.6</td><td>noisy</td><td>False</td><td>3</td><td>0</td><td>2.77</td><td>0.0</td></tr><tr><td>136</td><td>2026-08-04 20:30</td><td>production point, beam at the edges only</td><td>1</td><td>0.07</td><td>6234</td><td>26.3</td><td>noisy</td><td>False</td><td>3</td><td>0</td><td>0.07</td><td>0.0</td></tr><tr><td>138</td><td>2026-08-04 20:41</td><td>production point, beam at the edges only</td><td>6</td><td>1.29</td><td>114062</td><td>24.6</td><td>noisy</td><td>False</td><td>12</td><td>0</td><td>1.29</td><td>0.42</td></tr><tr><td>140</td><td>2026-08-05 08:58</td><td>production point, beam at the edges only</td><td>3</td><td>0.72</td><td>64697</td><td>24.8</td><td>noisy</td><td>False</td><td>11</td><td>0</td><td>0.72</td><td>0.0</td></tr><tr><td>142</td><td>2026-08-05 10:38</td><td>production point, beam at the edges only</td><td>7</td><td>1.73</td><td>153799</td><td>24.7</td><td>noisy</td><td>False</td><td>11</td><td>0</td><td>1.73</td><td>0.0</td></tr><tr><td>144</td><td>2026-08-05 13:48</td><td>production point, beam at the edges only</td><td>2</td><td>0.27</td><td>24427</td><td>25.1</td><td>noisy</td><td>False</td><td>3</td><td>0</td><td>0.27</td><td>0.0</td></tr><tr><td>146</td><td>2026-08-05 17:12</td><td>production point, beam at the edges only</td><td>2</td><td>0.35</td><td>32717</td><td>25.7</td><td>noisy</td><td>False</td><td>10</td><td>0</td><td>0.35</td><td>0.0</td></tr><tr><td>148</td><td>2026-08-06 14:40</td><td>empty</td><td>1</td><td>0.0</td><td>0</td><td>0.0</td><td>noisy</td><td>False</td><td>0</td><td>0</td><td>0.0</td><td>0.0</td></tr><tr><td>149</td><td>2026-08-06 14:51</td><td>production point, clean</td><td>87</td><td>21.79</td><td>1936312</td><td>24.7</td><td>noisy</td><td>False</td><td>0</td><td>0</td><td>21.79</td><td>8.64</td></tr><tr><td>151</td><td>2026-08-07 16:42</td><td>production point, beam at the edges only</td><td>7</td><td>1.57</td><td>140780</td><td>25.0</td><td>noisy</td><td>False</td><td>15</td><td>0</td><td>1.57</td><td>0.0</td></tr><tr><td>153</td><td>2026-08-08 00:06</td><td>production point, beam at the edges only</td><td>3</td><td>0.54</td><td>49338</td><td>25.4</td><td>noisy</td><td>False</td><td>13</td><td>0</td><td>0.54</td><td>0.25</td></tr><tr><td>155</td><td>2026-08-08 08:08</td><td>production point, beam at the edges only</td><td>2</td><td>0.28</td><td>25744</td><td>25.8</td><td>noisy</td><td>False</td><td>14</td><td>0</td><td>0.28</td><td>0.0</td></tr><tr><td>157</td><td>2026-08-09 08:02</td><td>production point, beam at the edges only</td><td>1</td><td>0.12</td><td>12916</td><td>29.3</td><td>noisy</td><td>False</td><td>22</td><td>0</td><td>0.12</td><td>0.0</td></tr><tr><td>159</td><td>2026-08-09 13:58</td><td>production point, beam at the edges only</td><td>6</td><td>1.51</td><td>137349</td><td>25.3</td><td>noisy</td><td>False</td><td>11</td><td>0</td><td>1.51</td><td>0.73</td></tr></tbody></table>
+<p>Per sub-run, with HV and the n_TOF runs overlapping each one:
+<code>cosmic_subruns.csv</code> (273 rows).</p>
+
+<h2>What this does not establish</h2>
+<ul>
+<li><b>Beam flags are minute-resolution.</b> They come from the per-minute
+<code>beam_class</code> log (n_TOF-destined pulses only). A sub-run shorter than
+about 6 min has almost no "interior", so <code>edge</code> on a short sub-run is
+weak evidence. run_157's 22 pulses in 7 min (0.031 Hz residual beam, found by the
+flash-charge study) are exactly that case. An analysis must veto by pulse
+time, not by this flag.</li>
+<li><b>Configured HV, not measured.</b> The <code>hv_monitor.csv</code> per
+sub-run is on EOS and was not read; a trip would not show here.</li>
+<li><b>"n_TOF quiet" is inferred from file size</b> (bytes per bunch, a gap of
+two decades between beam and no-beam runs), confirmed against
+<code>beam_state</code> only for 224706. Whether n_TOF's windows contain any of
+our cosmic triggers is not checked.</li>
+<li>No tracking has been run on any of this; nothing here says how many
+triggers carry a track, let alone a through-going one.</li>
+</ul>
+</main></body></html>

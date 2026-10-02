@@ -220,6 +220,18 @@ denominator, so the current numbers are lower bounds).
 
 ---
 
+### O9 — The through-going-particle background, from the beam-off runs
+
+Added 2026-10-02. **`ntof_cosmics/README.md` is the entry point.** The 41
+production-point cosmic runs (57.6 h, 5.2 M triggers, all decoded) have never
+been read, and PLAN §S4's choice of run_83/run_146 for the cosmic rate is a
+poor one (0.6 h between them). Use run_149 first. Framing: any straight
+single particle crossing the set-up is **one** background, whatever its source.
+Its handles are collinearity (calibrate the 170° `BACK_TO_BACK_DEG` on data),
+**the capsule vertex** (through-goers have no reason to point at the capsule
+beyond acceptance), and arm-to-arm time of flight (only where n_TOF was
+recording with no protons: run_149, run_103).
+
 ## 4 · Sequencing
 
 ```
