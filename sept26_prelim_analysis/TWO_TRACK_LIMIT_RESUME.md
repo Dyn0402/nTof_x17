@@ -174,3 +174,7 @@ On another machine, point `X17_ROOT` (or `X17_SEPT26_OUT`) at a copy; see
 
 **Superseded:** the local validation chain `two_track_validate.sh` is kept for
 reference; condor replaced it.
+
+## Relative angle of the pairs (2026-10-02)
+
+Dylan asked what relative angle the modelled pairs have. The answer is `pair_angle.py`, with six slides in the deck (`make_pair_angle_slides.py`). State and next steps: `HANDOFF.md` at the repo root.

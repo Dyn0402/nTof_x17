@@ -620,6 +620,8 @@ def build(out: Path) -> Path:
     s_bench(D, BC)
     s_contract(D, C)
     s_operating(D, L)
+    from sept26_prelim_analysis import make_pair_angle_slides as PS
+    PS.add_slides(D)
     s_close(D)
     meta = dict(title='Two tracks in one plane: the real limit, and how close we get',
                 summary='Physical limit ~1 strip pitch, real-track limit 2–3 mm; an opt-in fixed chain triples A’s '
