@@ -153,6 +153,14 @@ and rerunning the last two commands.
 
 ## Next
 
+**Picked up in [`HANDOFF_TRACKING_2026-10-02.md`](HANDOFF_TRACKING_2026-10-02.md):**
+tracking first (run_149/cos_0000), the clock match scaled up alongside it.
+**First tracks (2026-10-02 evening):** `cosmic_tracks.py`, report
+`results/tracking/report.html`. Only 74–77 % of clean A–C through-goers pass
+the 170° cut, and a capsule-free slope check says the borrowed k reads A ~8 %
+shallow and C ~12 % steep (~40 events). The rest of run_149 is on condor;
+progress and next steps in the handoff §5.
+
 - **Clock match, the rest of it:** a smooth drift model (absorbs the slow
   δ_b); several n_TOF runs per sub-run (cos_0001 straddles 224678/224679, so key
   by (run, bunch)); recover the psTime = 0 bunches from the 0.5009 s grid; show

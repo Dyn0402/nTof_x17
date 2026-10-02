@@ -97,6 +97,12 @@ def main():
                          'from the stage-1 candidate tables, which cover every '
                          'trigger, so the job list is complete by construction '
                          'rather than limited to what the filter selected.')
+    ap.add_argument('--tags-json', default=None,
+                    help='JSON {run: {subrun: [file tags]}}. With --full-pass, '
+                         'the sub-runs and tags come from HERE instead of the '
+                         'stage-0 sample and the stage-1 tables -- for runs '
+                         'that have neither (the beam-off cosmics: no n_TOF '
+                         'slim, so no stage 1; ntof_cosmics/).')
     ap.add_argument('--done-list', default=None,
                     help='file of outnames already on EOS (one per line, with '
                          'or without .tar.gz). Those get no job, which is what '
@@ -109,9 +115,17 @@ def main():
     import pandas as pd
     from sept26_prelim_analysis import allowlist as AL
 
-    s = pd.read_csv(a.sample)
-    want = [(f'run_{r["run"]}', r['subrun'])
-            for _, r in s[s.in_sample].sort_values(['run', 'subrun']).iterrows()]
+    given_tags = None
+    if a.tags_json:
+        if not a.full_pass:
+            sys.exit('FATAL: --tags-json needs --full-pass (an allowlist pass '
+                     'takes its tags from the allowlists)')
+        given_tags = json.load(open(a.tags_json))
+        want = sorted((r, x) for r, xs in given_tags.items() for x in xs)
+    else:
+        s = pd.read_csv(a.sample)
+        want = [(f'run_{r["run"]}', r['subrun'])
+                for _, r in s[s.in_sample].sort_values(['run', 'subrun']).iterrows()]
     if a.subset:
         sub = json.load(open(a.subset))
         keep = {(r, x) for r, xs in sub.items() for x in xs}
@@ -150,7 +164,10 @@ def main():
                     '--transform', 's,^allow,allow,', '-C', a.dest, 'allow'],
                    check=True)
     print(f'allowlists.tar.gz  {len(have)}/{len(want)} sub-runs')
-    if a.full_pass:
+    if given_tags is not None:
+        have = list(want)
+        print(f'FULL PASS          {len(have)} sub-run(s) from {a.tags_json}')
+    elif a.full_pass:
         # A full pass needs no allowlist, but it still needs the sub-run list.
         # Stage 1 is what says a sub-run exists and is readable, so the
         # candidate table -- not the allowlist -- is the gate here.
@@ -205,7 +222,8 @@ def main():
     skipped_done = 0
     for run, sub in have:
         if a.full_pass:
-            all_tags = tags_from_stage1(a.stage1, run, sub)
+            all_tags = (sorted(given_tags[run][sub]) if given_tags is not None
+                        else tags_from_stage1(a.stage1, run, sub))
             sel = {arm: {t: [1] for t in all_tags} for arm in arms}
         else:
             sel = AL.load(os.path.join(adir, f'allowlist_{run}_{sub}.json'))

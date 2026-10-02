@@ -62,3 +62,37 @@ proposed, but Dylan has not picked any yet.
 - `python -m sept26_prelim_analysis.make_qsum_runaway_deck`, then
   `python3 ~/PycharmProjects/dylan-cern-site/scripts/add-note.py <out>/qsum_runaway/deck/qsum-runaway.html --slug qsum-runaway --force --deploy`.
 - `<out>` = `/media/dylan/data/x17/sept26_prelim` (`python -m sept26_prelim_analysis.paths`).
+
+## Beam-off cosmics: tracking — updated 2026-10-02 (dylan-MS-7C84)
+
+**Goal:** track the beam-off cosmic runs through the campaign reco to measure
+the through-going background (170° cut, capsule DCA, arm-to-arm Δt).
+
+**Done:**
+- run_149/cos_0000 reconstructed (condor 4354841) and tracked with k borrowed
+  from run_147 and run_150; report `ntof_cosmics/results/tracking/report.html`.
+- Headline (~40 clean events): only 74–77 % of clean A–C through-goers pass
+  170°; a capsule-free slope check says the borrowed k reads A ~8 % shallow,
+  C ~12 % steep.
+
+**In progress / where it stopped:**
+- condor cluster **4355060** (1,028 jobs, the other 86 sub-runs of run_149)
+  running on lxplus; tarballs land in `/eos/user/d/dneff/x17/cosmics_fullpass`.
+- Pooling across sub-runs is not written yet.
+
+**Next steps:** see `ntof_cosmics/HANDOFF_TRACKING_2026-10-02.md` §5 (fetch/
+build/analyse loop, then pool, re-measure slope ratios, redo 170° with cosmic k).
+
+**Gotchas / decisions:**
+- **Never write to `/media/dylan/data`** while Dylan's backup is running (and
+  in general check free space): `~/x17` symlinks there and every `paths.out`
+  default resolves there. `cosmic_tracks.py` refuses `/media` outputs.
+- Never run `k_arm` on cosmic runs (no `--out`, overwrites kcal/ silently).
+
+**Key files & commands:**
+- `ntof_cosmics/cosmic_tracks.py` — fetch / build / analyse
+- `ntof_cosmics/make_tracking_report.py` — the report
+- `sept26_prelim_analysis/condor/make_stage2_campaign.py --full-pass --tags-json <json>`
+  — packaging; the tag lists used are in `ntof_cosmics/results/tracking/condor/`.
+  Package dest must be off `/media`; after building, edit the shipped
+  `stage2_fullpass.sub` EOS_STAGE2_OUT to `cosmics_fullpass`.
