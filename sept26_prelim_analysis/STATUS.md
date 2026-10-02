@@ -62,6 +62,16 @@ Last updated **2026-09-16** (**the joint two-track fit exists and recovers pairs
 > **AND NEXT:** [`OCTOBER_2026.md`](OCTOBER_2026.md) — the re-pass is deferred to
 > October, and this is what has to be true before it runs.
 
+> ## TWO-TRACK FIXES PASS THE CONTRACT -- 2026-10-02
+>
+> The fixed two-track chain (`WFT_TWO_TRACK_SCALE=two`, `..._SEARCH=grid`, no
+> trigger) plus profile x/y pairing passes split-ab on real triggers in A and C:
+> clean singles split 0.50 / 0.47 %, no event losing a track, and 485 → 405 /
+> 466 → 234 production tracks not recovered. It roughly triples A's < 12 mm
+> pairs on the bench (19 → 58 %). The F threshold is being rescanned on real
+> triggers (condor 4348153). Still opt-in. Handoff:
+> [`TWO_TRACK_LIMIT_RESUME.md`](TWO_TRACK_LIMIT_RESUME.md).
+
 > ## THE JOINT TWO-TRACK FIT EXISTS -- 2026-09-16
 >
 > O1 of [`OCTOBER_2026.md`](OCTOBER_2026.md), off by default. Two tracks that

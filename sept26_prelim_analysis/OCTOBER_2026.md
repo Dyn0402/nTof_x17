@@ -120,6 +120,14 @@ because their sensitivity is set by the leg resolution, not by the statistics.
 
 ### O1 — Implement and test the joint two-track fit ⭐ **the gating item**
 
+> **Update 2026-10-02.** The two-track limit study is done and its fixes are
+> validated. The fixed chain plus profile x/y pairing passes the split-ab contract
+> on real triggers in A and C, all seven tags. Bench, coincident pairs: A < 12 mm
+> 19 → 58 %, 12–24 mm 48 → 79 %; C 36 → 49 %, 57 → 69 %. A one-pass F rescan on
+> real triggers (condor 4348153) is running to set each chamber's threshold.
+> After that, shipping it is a decision. Handoff:
+> [`TWO_TRACK_LIMIT_RESUME.md`](TWO_TRACK_LIMIT_RESUME.md).
+
 **Written and measured 2026-09-16** — off by default, not in the production
 chain. Record: `../wft/TWO_TRACK_FIT_2026-09-16.md`; working log with every
 measurement that shaped it: `TWO_TRACK_FIT_LOG.md`; report:
