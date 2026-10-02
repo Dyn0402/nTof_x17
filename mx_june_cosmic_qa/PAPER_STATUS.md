@@ -1,4 +1,61 @@
-# June cosmic det3 micro-TPC paper — readiness audit (2026-07-10)
+# MX17 detector paper — status
+
+## 2026-10-02 re-audit — read this first
+
+**Scope changed:** the paper is now the **June cosmic bench + det4 in the SPS H4
+beam**. n_TOF results are a separate paper. Slide-note version of this section,
+with the figures: <https://dylan-neff.web.cern.ch/notes/mx17-detector-paper-status.html>,
+built by `make_paper_status_deck.py` from the files named below.
+
+**State:** the analyses are done but no outline or manuscript exists. Order-of-work
+step 6 ("start the paper skeleton") was never begun. Everything paper-related is in
+this repo (`~/fleetcheck` is an identical clone). **Every position, angle and v_drift
+number in the July audit below is superseded.** It predates two changes: the
+waveform-first rebase landing fleet-wide, and the c2 > c1 retirement
+(`../mx_june_wft/RETIRE_C2GTC1_2026-08-21.md`, all bundles → `calib_bundle_r06`).
+Take numbers from `../mx_june_wft/FLEET_DIGEST.md` and the SPS reports, never from
+the tables below.
+
+| proposed section | state | backed by |
+|---|---|---|
+| 1 Detector & resistive design | ready | PLAN_38 charge balance (QA-level) |
+| 2 Sharing kernel, measured head-on | ready (form open) | `sps_beam_test_26/analysis/sharing_kernel`, `angled_kernel`: c2/c1 = 0.42–0.47 at three fields; ±1 delay ~49 ns, survives 25.6° rotation; τ and c2 are bounds (window) |
+| 3 Waveform forward-model reco | ready | `waveform_first_threading/WAVEFORM_FIRST_THREADING.md` |
+| 4 Cosmic performance | **re-quote** | FLEET_DIGEST (r06): σ_θ 1.15–2.51°, better than hits on every plane (×1.03–2.2; halved on det3); within-5 mm 93/92/42/75/57 % (det3/2/4/6/7) |
+| 5 Intrinsic resolution | ready | `sps_beam_test_26/analysis/spatial_resolution`: det4 176 ± 10 µm = 0.30 × pitch, reference fitted out. Answers PLAN_37: the bench 0.6–0.7 mm is M3 pointing ⊕ ~1.1 mrad multiple scattering (arithmetic, not a measurement) |
+| 6 Gas: v(E), attachment, gap | **open** | six det3 drift-scan tier-B rows never re-run on r06; PLAN_40 not done |
+| 7 Timing | **open** | PLAN_42's 33 ns is hits-based; waveform port pending |
+| 8 Operations: HV, sparks, edge | ready | topics 6 and 5 (efficiency turn-on). The −3° edge angle tilt is hits-derived → re-check |
+
+July topics retired as sections: 2 (unsharing) and 3 (hybrid tracking). The forward
+model replaces both. Topic 1's hits sharing constants are replaced by the SPS kernel.
+det6's X plane is **not** dead (wft σ_θ 2.2°). det4's bench numbers reflect its
+62 % non-amplifying area (`sps_beam_test_26/det4_sps_assessment/`).
+
+**Where the r06 numbers physically live (checked 2026-10-02):**
+- **In git:** `FLEET_DIGEST.md` (8-19) is the only written record of the golden r06 values.
+- **On lxplus:** `~/wft_campaign_r06/` holds 152 condor result tarballs (8-21, events.parquet per sub-run × detector).
+  `~/wft_campaign/` holds the pre-fix 8-13 run.
+- **On this machine** (`/media/dylan/data/x17` = `~/x17`): the r06 bundles are present, but the golden-key reco
+  products (events, angles, efficiency JSONs) date from 8-05 on earlier bundles.
+- **Missing:** the per-key r06 products behind FLEET_DIGEST and the SUPERSEDED_c2gtc1 manifest. They were made on another machine.
+
+**Before quoting anything:**
+1. Pull `~/wft_campaign_r06` and run `collect_results.py --promote`.
+2. Re-run `mx_june_wft/01–04` on the five golden keys.
+3. Check that `digest.py` reproduces FLEET_DIGEST.md.
+4. Run the tier-B rows locally.
+
+**Decisions before writing:**
+- Freeze r06 as it stands, or build the per-plane c2/c1 ratio first. r06 costs up to +0.13° on Y.
+- Keep production on the lp-vs-delay branch?
+- Chamber set: det3 + det2 headline, det6/7 as the board-C/D contrast, det4 via SPS.
+- Journal.
+- Outline from `mpgd26/slides/RUNNING_ORDER.md` (its figure scripts exist).
+
+---
+
+# (July audit, kept as written) June cosmic det3 micro-TPC paper — readiness audit (2026-07-10)
 
 > **2026-07-28 — the paper is being rebased onto the waveform-first
 > reconstruction** (decision of 7-28; see `../RECONSTRUCTION_BASIS.md`). Any
