@@ -55,6 +55,25 @@ drifts. **Do not build an opening-angle spectrum on a borrowed `k` for C or D.**
 
 Last updated **2026-09-14** (**the re-pass is pushed to OCTOBER** and [`OCTOBER_2026.md`](OCTOBER_2026.md) is the standing list — two-track recovery is the gating item; two tracks in one chamber: a truth bench and two opt-in reconstruction fixes, below; and on 2026-09-10: arm-A tracks are now confirmed positionally against the scintillators, and the wall measures the angle scale; the FULL pass is complete; per-run capsule imaging says the geometry is sound and the angle scale is the fault; the campaign opening-angle spectra exist).
 
+> ## THE SCINTILLATOR STACK, CALIBRATED FROM THE MM TRACKS -- 2026-10-02
+>
+> New: `scint_stack.py` (per-track extraction, all arms, every wall end / plastic bar / liquid,
+> prompt + same-width pre-trigger window, emulated hardware trigger), `scint_stack_ana.py`,
+> `make_scint_stack_figures.py`, `make_scint_stack_report.py`. Report:
+> `<out>/scint_stack/report.html`. 13.27 M gated tracks, 34 runs.
+>
+> - **MM trust:** ~1/3 of tracks are out of time (own t0 outside a per-arm window) and no
+>   prompt scintillator can confirm them; chamber D has 41 % of its tracks in unconfirmed cells.
+> - **Extrapolation uses raw tangents x a scale fitted to the scintillator boundaries** (not k).
+>   A: wall 0.735 / plastic 0.708 vs 1/k 0.812. Best predictor, NOT an angle calibration.
+> - **Unbiased (another arm triggered, > 10 ms) wall efficiency** A 91 / C 81 / D 77 %; the
+>   self-triggered sample reads 89-98 % because the trigger needs the wall.
+> - **Liquids:** A and D respond almost only near their +u edge (smooth gradient, not a bar
+>   shadow); C only above ~8 MeVee plastic deposits; B uniform. Answers the July srccal question.
+> - **Wall v from ln(top/bottom): ~48 mm** (upper limit); timing useless; D ends reversed.
+> - **Both ends:** not demanded today (hardware sums the ends). Cheap offline (loses <1 %, 2 %
+>   on A unbiased) but removes only 7-57 % of accidentals; use a >= +-40 ns window.
+
 > **START HERE:** [`HANDOFF_FULLPASS_2026-09-10.md`](HANDOFF_FULLPASS_2026-09-10.md)
 > — why the full pass happened, what it produced, and the run_86 test that now
 > blocks the opening angle. The entries below are the working record behind it.
