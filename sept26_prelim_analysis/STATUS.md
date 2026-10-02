@@ -62,6 +62,40 @@ Last updated **2026-09-14** (**the re-pass is pushed to OCTOBER** and [`OCTOBER_
 > **AND NEXT:** [`OCTOBER_2026.md`](OCTOBER_2026.md) — the re-pass is deferred to
 > October, and this is what has to be true before it runs.
 
+> ## THE LARGE-q_sum TRACKS ARE AN UNREGULARISED-NNLS DEFECT, AND THE LATE ONES HAVE WRONG GEOMETRY -- 2026-10-02
+>
+> New: `qsum_runaway.py` (`census`, `refit`), `make_qsum_runaway_figures.py`,
+> `make_qsum_runaway_report.py`. Report: `<out>/qsum_runaway/report.html`.
+> This follows up the 2026-09-10 "one gated track in four has an impossible charge" entry.
+>
+> **Mechanism.** In a runaway fit, all but ~1e-7 of q_sum sits in depth bins
+> whose design-matrix column is ~0 inside the data window. NNLS fills those bins
+> without bound at no chi2 cost, and the product q·column stays finite, which is why
+> chi2 looked normal. There are two routes. **Time** (71 % of runaways): the window is
+> 20 × 60 ns (last sample at 1140 ns) and the depth grid spans 1080 ns after t0,
+> so for late tracks the deep bins peak after readout stops. **Space** (29 %): the
+> fitted slope carries the deep bins past the edge of the strip window.
+>
+> **Consequence: the test is a refit with the unobservable columns removed from each NNLS solve.**
+> It runs on 3 181 plane fits, run_145 tag 000, all four arms.
+>
+> | class | med abs dtan | abs dtan > 0.05 | t0 moved | flat prod → guarded |
+> |---|---:|---:|---:|---:|
+> | normal, t0 ≤ 300 | 0.000 | 2 % | 5 % | 12.5 → 12.6 % |
+> | normal, t0 > 300 | 0.040 | 47 % | 64 % | 4 → 4 % |
+> | runaway, space | 0.003 | 33 % | 34 % | 0 → 1 % |
+> | runaway, time | **0.201** | **65 %** | **82 %** | **37 → 8 %** |
+>
+> **Every late track's geometry depends on bins the data cannot constrain,
+> whether or not q_sum crossed 1e6.** That is 17.0 % of gated tracks and 9.8 % of
+> scint-coincident ones (campaign census). The rate is flat across the 27 July access.
+> The early class keeps its geometry in the median, but has a 33 % tail beyond 0.05 in tan.
+> **Caveats:** the guarded fit is a probe, not the answer, and is worse on chi2 for
+> the late class. No external reference was used. The space class includes
+> coherent-ringing windows (the report's example is one) in an unmeasured fraction.
+> Now: treat q_sum and q_total as unusable, and flag t0 > 300 tracks before any angle or
+> pointing work. October: `OCTOBER_2026.md` O10.
+
 > ## THE RE-PASS IS PUSHED TO OCTOBER, AND TWO-TRACK RECOVERY IS WHAT GATES IT -- 2026-09-14
 >
 > Dylan's call: no re-reconstruction in September. The standing list is

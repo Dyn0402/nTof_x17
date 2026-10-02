@@ -232,6 +232,25 @@ Its handles are collinearity (calibrate the 170° `BACK_TO_BACK_DEG` on data),
 beyond acceptance), and arm-to-arm time of flight (only where n_TOF was
 recording with no protons: run_149, run_103).
 
+### O10 — Stop the NNLS filling depth bins the window cannot see
+
+Added 2026-10-02 (`qsum_runaway.py`; report `<out>/qsum_runaway/report.html`).
+The q_sum > 1e6 tail is one defect. `chi2_plane`'s NNLS is unregularised,
+and the 18 × 60 ns depth grid always spans 1080 ns after t0, but the window
+ends at 1140 ns. So for any late track, the deep bins peak after the last
+sample, and their columns are 1e-6..1e-17. NNLS fills them without limit.
+The same happens when the slope walks deep bins off the strip window. **The
+late (t0 > 300 ns) class is wrong in geometry, not just charge.** Removing
+those bins moves tan by a median 0.20 and t0 in 82 % of fits, and dissolves
+the flat-track pile-up (37 % → 8 %). That class is 17 % of gated tracks and
+9.8 % of scint-coincident ones. Late tracks *below* the 1e6 threshold
+move too, so the class boundary is t0, not q_sum. Options: truncate the
+grid per fit to bins whose pulse peaks inside the window, or add a
+depth-continuity prior to the NNLS. Either way, store `q_obs`. The guarded
+fit used in the study is a probe and is worse on chi2 for the late class.
+Validate any fix against an external pointing reference (`det_a_scint`) before it
+rides the re-pass. Same edge as the `q_uend` railing item.
+
 ## 4 · Sequencing
 
 ```
