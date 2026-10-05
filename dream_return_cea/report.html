@@ -1,0 +1,74 @@
+<!doctype html><html lang=en><head><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'><title>DREAM Pedestal Check</title><style>
+:root{--bg:#fff;--ink:#0b0b0b;--ink2:#52514e;--muted:#898781;--line:#e1e0d9;--band:#f7f6f2;--good:#0ca30c}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#16161a;--ink:#ecebe6;--ink2:#b8b7b0;--muted:#8d8c86;--line:#34343a;--band:#1e1e23}}
+body{background:var(--bg);color:var(--ink);font:15px/1.55 system-ui,-apple-system,Segoe UI,sans-serif;margin:0}
+main{max-width:1080px;margin:0 auto;padding:28px 16px 60px}
+h1{font-size:1.6rem;margin:0 0 4px}h2{font-size:1.15rem;margin:34px 0 8px}
+.sub{color:var(--ink2);margin:0 0 20px}
+.verdict{border-left:4px solid var(--good);background:var(--band);padding:12px 16px;font-size:1.05rem}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:16px 0}
+.tile{background:var(--band);padding:10px 12px;border-radius:6px}.tile b{display:block;font-size:1.4rem}
+.tile span{color:var(--ink2);font-size:.85rem}
+.tw{overflow-x:auto}table{border-collapse:collapse;font-size:.88rem;width:100%}
+th,td{padding:5px 8px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+th{color:var(--ink2);font-weight:600}td:first-child,th:first-child{text-align:left}
+figure{margin:20px 0}img{max-width:100%;background:#fff;border-radius:4px}
+figcaption{color:var(--ink2);font-size:.9rem;margin-top:6px}code{font-size:.88em}
+li{margin:4px 0}
+</style></head><body><main>
+<h1>DREAM DAQ back at CEA — pedestal check</h1>
+<p class="sub">5 October 2026, 13:27–13:40 · MX17 DREAM readout, one pedestal run per FEU ·
+source <code>~/Desktop/ped_validation_5-10-26</code></p>
+<p class="verdict"><b>All nine FEUs read out, every channel alive.</b> Each FEU was enabled on its own and took a
+32-sample pedestal run; the FEU ID read back from every data stream is
+the one the configuration assigns to that slot, no event or sample was lost, and the
+noise is the same on all 9 cards to within 3 %.</p>
+
+<div class="tiles">
+<div class="tile"><b>9 / 9</b><span>FEUs read out, IDs match cfg</span></div>
+<div class="tile"><b>4,608 / 4,608</b><span>channels within ½–2× their FEU's median noise</span></div>
+<div class="tile"><b>3.01 ADC</b><span>median raw σ</span></div>
+<div class="tile"><b>2.44 ADC</b><span>median σ after common-noise subtraction</span></div>
+<div class="tile"><b>9,546</b><span>pedestal events, 0 missing</span></div>
+</div>
+
+<h2>What was taken</h2>
+<p>The run-control cfg (<code>ped_val.cfg</code>) lists nine FEU slots; for each run
+only one <code>Sys Topo Feu N</code> line was active. A file named
+<code>_feuN_</code> is therefore slot <i>N</i>, whose hardware identity is the cfg's
+<code>Feu N Feu_RunCtrl_Id</code>. That identity was checked independently against
+the FEU ID the decoder reads from the data headers. Clock settings as in the cfg:
+<code>RdClk_Div 4.0</code>, <code>WrClk_Div 2.0</code>.
+Slot 9 (ID 121) is the ninth card, outside the eight-FEU n_TOF readout.</p>
+<ul><li>13:36 — feu9: <code>FeuCtrl_Open failed</code>; the retry succeeded.</li></ul>
+
+<h2>Per FEU</h2>
+<div class="tw"><table>
+<tr><th>slot</th><th>cfg FEU ID</th><th>ID in data</th><th>start</th><th>file closed</th>
+<th>events</th><th>samples</th><th>pedestal</th><th>raw σ</th><th>sub σ</th><th>CM rms</th><th>outliers</th></tr>
+<tr><td>feu1</td><td>32</td><td>✓ 32</td><td>13:27</td><td>13:28:02</td><td>1059</td><td>100.0 %</td><td>315</td><td>3.08</td><td>2.50</td><td>1.86</td><td>0</td></tr><tr><td>feu2</td><td>71</td><td>✓ 71</td><td>13:29</td><td>13:29:42</td><td>1060</td><td>100.0 %</td><td>290</td><td>2.99</td><td>2.43</td><td>1.86</td><td>0</td></tr><tr><td>feu3</td><td>98</td><td>✓ 98</td><td>13:30</td><td>13:30:42</td><td>1059</td><td>100.0 %</td><td>299</td><td>2.97</td><td>2.43</td><td>1.83</td><td>0</td></tr><tr><td>feu4</td><td>99</td><td>✓ 99</td><td>13:31</td><td>13:32:12</td><td>1059</td><td>100.0 %</td><td>285</td><td>3.02</td><td>2.43</td><td>1.86</td><td>0</td></tr><tr><td>feu5</td><td>106</td><td>✓ 106</td><td>13:32</td><td>13:33:08</td><td>1063</td><td>100.0 %</td><td>297</td><td>2.96</td><td>2.42</td><td>1.77</td><td>0</td></tr><tr><td>feu6</td><td>31</td><td>✓ 31</td><td>13:33</td><td>13:34:08</td><td>1063</td><td>100.0 %</td><td>305</td><td>3.05</td><td>2.45</td><td>1.81</td><td>0</td></tr><tr><td>feu7</td><td>69</td><td>✓ 69</td><td>13:34</td><td>13:34:54</td><td>1063</td><td>100.0 %</td><td>290</td><td>3.00</td><td>2.42</td><td>1.85</td><td>0</td></tr><tr><td>feu8</td><td>70</td><td>✓ 70</td><td>13:35</td><td>13:35:48</td><td>1061</td><td>100.0 %</td><td>290</td><td>3.01</td><td>2.42</td><td>1.80</td><td>0</td></tr><tr><td>feu9</td><td>121</td><td>✓ 121</td><td>13:40</td><td>13:40:30</td><td>1059</td><td>100.0 %</td><td>280</td><td>3.01</td><td>2.44</td><td>1.87</td><td>0</td></tr></table></div>
+<p class="sub">Medians over the FEU's 512 channels, in ADC. <i>sub σ</i> is the channel
+noise after subtracting, per DREAM chip and per sample, the median of the chip's 64
+baseline-subtracted channels; <i>CM rms</i> is the per-chip size of that common
+mode. Same definitions as the n_TOF pedestal history (<code>ntof_pedestal_qa</code>).
+Pedestals span 194–453 ADC. Baselines and raw σ agree
+with the firmware's own <code>_ped.aux</code> to
+better than 0.05 ADC on every channel.</p>
+
+<h2>Figures</h2>
+<figure><img src="figures/01_all_pedestals.png" alt="Every channel of all nine FEUs side by side. Top: pedestal baseline. Bottom: noise before (orange) and after (blue) common-noise subtraction. The saw-tooth inside each FEU repeats every 64 channels — one DREAM chip — and is the same on every card."><figcaption>Every channel of all nine FEUs side by side. Top: pedestal baseline. Bottom: noise before (orange) and after (blue) common-noise subtraction. The saw-tooth inside each FEU repeats every 64 channels — one DREAM chip — and is the same on every card.</figcaption></figure>
+<figure><img src="figures/02_timeline.png" alt="When each FEU was taken (top) and its median noise with the 5–95 % range of its channels (bottom). The red cross is the first feu9 attempt, which could not open the FEU; the retry four minutes later worked."><figcaption>When each FEU was taken (top) and its median noise with the 5–95 % range of its channels (bottom). The red cross is the first feu9 attempt, which could not open the FEU; the retry four minutes later worked.</figcaption></figure>
+<figure><img src="figures/03_per_feu_noise.png" alt="Noise distribution of each FEU&#x27;s 512 channels, before and after common-noise subtraction."><figcaption>Noise distribution of each FEU's 512 channels, before and after common-noise subtraction.</figcaption></figure>
+
+<h2>What this does not show</h2>
+<ul>
+<li>That the analogue chain responds to charge — a pedestal run has no signal. A
+pulser or source run is the test for gain and for dead preamplifier inputs that
+still produce a baseline.</li>
+<li>Anything about the detectors, cables or the TCM trigger path beyond the constant
+pedestal trigger used here; the runs record no detector HV and these noise levels
+should not be compared with the n_TOF pedestals, which were taken with chambers
+attached and a different write clock.</li>
+<li>All nine FEUs running together — each was read out alone.</li>
+</ul>
+</main></body></html>
