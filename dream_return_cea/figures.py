@@ -187,6 +187,63 @@ def fig_per_feu(rows):
     return _save(fig, "03_per_feu_noise")
 
 
+# Crate layout as photographed 5 Oct 2026 (mx17_daq_feus.jpg), left to right.
+# Chamber letters are the tape above the cards; the orange card's red ID
+# sticker is illegible in the photo, its ID is the one its data stream carries.
+CRATE = [(1, "D"), (2, "D"), (3, "A"), (4, "A"), (5, "B"), (6, "B"),
+         (7, "C"), (8, "C"), (9, "")]
+
+
+def fig_crate(rows):
+    """Front view of the crate with each FEU's ID, legible."""
+    from matplotlib.patches import Circle, FancyBboxPatch, Rectangle
+    ids = {r["slot"]: r["feu_id"] for r in rows}
+    W, H, gap = 1.0, 9.0, 0.08
+    BEIGE, BEIGE_EDGE = "#e9e2c3", "#b9b08a"
+    ORANGE, ORANGE_EDGE = "#ef8a1f", "#b8650f"
+    fig, ax = plt.subplots(figsize=(9, 5.4))
+    ax.set_aspect("equal")
+    ax.axis("off")
+    ax.grid(False)
+    for i, (slot, det) in enumerate(CRATE):
+        x = i * (W + gap)
+        orange = slot == 9
+        ax.add_patch(FancyBboxPatch((x, 0), W, H, boxstyle="round,pad=0,rounding_size=0.06",
+                                    fc=ORANGE if orange else BEIGE,
+                                    ec=ORANGE_EDGE if orange else BEIGE_EDGE, lw=1.2))
+        for k in range(4):                       # 8 connectors, two staggered columns
+            y0 = 0.9 + k * 1.75
+            ax.add_patch(Rectangle((x + 0.2, y0), 0.16, 1.35, fc="#1c1c1c", lw=0))
+            ax.add_patch(Rectangle((x + 0.62, y0 + 0.25), 0.16, 1.35, fc="#1c1c1c", lw=0))
+        ax.add_patch(Circle((x + W / 2, H - 0.75), 0.44,
+                            fc="#e05a4f" if orange else "#7fcf86", ec="white", lw=1.5))
+        ax.text(x + W / 2, H - 0.75, str(ids[slot]), ha="center", va="center",
+                fontsize=13 if ids[slot] < 100 else 10.5, fontweight="bold", color=INK)
+        ax.text(x + W / 2, H + 0.45, det, ha="center", va="bottom", fontsize=14,
+                color="#c4302b", fontweight="bold")
+        ax.text(x + W / 2, -0.35, f"feu{slot}", ha="center", va="top",
+                fontsize=9, color=INK2)
+    # TCM and the empty slots to its right
+    x = len(CRATE) * (W + gap)
+    ax.add_patch(Rectangle((x, 0), 1.3, H, fc="#2b2b2b", ec="#111", lw=1))
+    ax.text(x + 0.65, H / 2, "TCM", ha="center", va="center", color="white",
+            fontsize=11, fontweight="bold", rotation=90)
+    x += 1.3 + gap
+    ax.add_patch(Rectangle((x, 0), 3.2, H, fc="#eceef0", ec="#c3c7cc", lw=1))
+    ax.text(x + 1.6, H / 2, "empty", ha="center", va="center", color=MUTED, fontsize=10)
+    ax.text(-0.2, H + 0.45, "chamber", ha="right", va="bottom", fontsize=9, color=INK2)
+    ax.text(-0.2, -0.35, "cfg slot", ha="right", va="top", fontsize=9, color=INK2)
+    ax.set_xlim(-1.6, x + 3.4)
+    ax.set_ylim(-1.2, H + 1.4)
+    fig.suptitle("MX17 DREAM crate, front view — FEU IDs left to right",
+                 x=0.03, ha="left", fontsize=12, fontweight="bold")
+    fig.text(0.03, 0.025, "ID stickers as on the cards (green); the orange card's red "
+             "sticker is illegible in the photo, its ID is read from its data stream.",
+             fontsize=8, color=INK2)
+    fig.subplots_adjust(left=0.01, right=0.99, top=0.92, bottom=0.06)
+    return _save(fig, "04_crate_feu_ids")
+
+
 def _save(fig, name):
     os.makedirs(FIG, exist_ok=True)
     path = os.path.join(FIG, name + ".png")
@@ -198,7 +255,7 @@ def _save(fig, name):
 def main():
     rows, ctx = P.load()
     for p in (fig_overview(rows), fig_timeline(rows, ctx["failed"]),
-              fig_per_feu(rows)):
+              fig_per_feu(rows), fig_crate(rows)):
         print(p)
 
 
