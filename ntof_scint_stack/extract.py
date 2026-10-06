@@ -85,14 +85,17 @@ MV_PER_ADC = 0.0306
 
 #: The hardware trigger, emulated: per arm, (the largest top+bottom SUM of a
 #: wall group) >= WALL_THR AND (the larger plastic bar) >= PLAS_THR, in mV, in
-#: the prompt window; DREAM fires on the OR over arms.  The values are the
-#: discriminator thresholds READ BACK from the N1081B boards on run_79
-#: (`ntof_dream_merge.dream_trigger`, 2026-07-26).  Every production run states
-#: it ran 'at the run_67 optimum', but the per-sub-run n1081b_config.json files
-#: are not on this machine, so this is the run_79 setting assumed campaign-wide
-#: -- labelled as an emulation wherever it is used.
-WALL_THR = {'A': 25.0, 'B': 35.0, 'C': 34.0, 'D': 36.0}
-PLAS_THR = {'A': 118.0, 'B': 139.0, 'C': 157.0, 'D': 134.0}
+#: the prompt window; DREAM fires on the OR over arms.  The values are MEASURED
+#: from the data (`checks.trigger`, 2026-10-06): on triggers no other arm could
+#: have fired, the 0.5 % low edge of this arm's wall sum and plastic, rounded
+#: down, over 59 sub-runs (two per run).  They are flat to ~1 mV run to run
+#: across the whole campaign (D's wall edge sits ~5 mV higher on run_135-143).
+#: The discriminator values read back on run_79 (`ntof_dream_merge.
+#: dream_trigger`) were wall 25/35/34/36 and plastic 118/139/157/134: the
+#: plastic edges sit 3-6 mV BELOW those and C's wall edge 4 mV above, so the
+#: read-back set missed ~2 % of real triggers.
+WALL_THR = {'A': 26.0, 'B': 35.0, 'C': 38.0, 'D': 37.0}
+PLAS_THR = {'A': 112.0, 'B': 136.0, 'C': 151.0, 'D': 130.0}
 
 TRACK_COLS = [
     'subrun', 'event_id', 'arm', 'track_id', 'gated',

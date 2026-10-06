@@ -37,6 +37,20 @@ from ntof_scint_stack.ana import (  # noqa: E402
     WALL_EDGES, WALL_HALF_V)
 
 ARMS = ('A', 'B', 'C', 'D')
+#: Where each liquid's PMT is, in the map frame (+u = right when looking from
+#: behind the wall toward the target, +v = up).  From the Geant4 model, which
+#: carries the 2026-07-17/18 survey (`MX17_Full_Geant/include/SimConfig.hh`,
+#: `ls_rot_deg` = -90 on A/D: horizontal, neck + PMT along +u; 0 on B/C:
+#: vertical, PMT up).  The beam data agree independently: A and D respond
+#: 10-20x more on their +u half, B and C show no u gradient.  The vessel is a
+#: 451 mm slab, a 90 mm funnel down to a 50 mm neck, PMT half-inserted.
+LIQ_PMT = {'A': '+u', 'B': '+v', 'C': '+v', 'D': '+u'}
+#: The plastic bars' PMTs: on top (+v) on every arm, as reported by Dylan
+#: 2026-10-06.  NOT in the Geant model (it has bare bars) and not testable on
+#: this data: the response is flat in v to +-8 % and trigger-cut.
+PLAS_PMT = '+v'
+#: liquid vessel funnel (from the slab edge) and neck, mm
+LS_FUNNEL, LS_NECK_HALF = 90.0, 25.0
 ARM_COL = {'A': sd.BLUE, 'B': sd.GREY, 'C': sd.GREEN, 'D': sd.PURPLE}
 #: the comparison chains, one colour each on every slide
 VAR_COL = {'k_only': sd.GREY, 'capsule': sd.ORANGE, 'used': sd.BLUE,
@@ -44,11 +58,14 @@ VAR_COL = {'k_only': sd.GREY, 'capsule': sd.ORANGE, 'used': sd.BLUE,
 VAR_NAME = {'k_only': 'bare imaging k', 'capsule': 'k, shrunk to the capsule',
             'used': 'k, calibrated on the wall',
             'old': 'free scale (2 Oct)'}
-#: which sample each map is drawn from, and why (repeated in the Details)
-MAP_SAMPLE = {('wall', 'eff'): 'unbiased', ('plas', 'eff'): 'unbiased',
-              ('liq_walltag', 'eff'): 'all_late',
-              ('wall', 'gain'): 'all_late', ('plas', 'gain'): 'all_late',
-              ('liq_walltag', 'gain'): 'all_late'}
+#: which sample each map is drawn from, and why (repeated in the Details).
+#: The main maps are the ``_full`` whole-face ones on every late trigger: the
+#: arm's own trigger biases their level (and stamps the plastic's outline on
+#: them) but they carry ~30x the statistics of the unbiased sample, which has
+#: its own slide.
+MAP_SAMPLE = {('wall_full', 'eff'): 'all_late', ('wall_full', 'gain'): 'all_late',
+              ('plas_full', 'eff'): 'all_late', ('plas_full', 'gain'): 'all_late',
+              ('liq_full', 'eff'): 'all_late', ('liq_full', 'gain'): 'all_late'}
 SAMPLE_WORDS = {
     'unbiased': f'events another arm triggered, > {LATE_MS:.0f} ms after the flash',
     'all_late': f'every trigger > {LATE_MS:.0f} ms after the flash'}
@@ -106,8 +123,41 @@ def rebin_eff(M, f=2, min_n=20):
     return R
 
 
-def outline(P, layer, g):
+PMT_FILL = '#8f98a3'
+
+
+def _pmt_glyph(P, edge, half_w, length, neck_half, axis, tip, u0=0.0):
+    """A light guide / funnel from a detector edge, narrowing to the PMT.
+
+    ``axis`` '+u' or '+v'; ``edge`` the detector's edge coordinate on that
+    axis, ``half_w`` its half-width across it.  Drawn as far as the panel."""
+    if axis == '+u':
+        xs = [edge, edge + length, edge + length + 60, edge + length + 60,
+              edge + length, edge]
+        ys = [half_w, neck_half, neck_half, -neck_half, -neck_half, -half_w]
+    else:
+        ys = [edge, edge + length, edge + length + 60, edge + length + 60,
+              edge + length, edge]
+        xs = [-half_w, -neck_half, -neck_half, neck_half, neck_half, half_w]
+        xs = [x + u0 for x in xs]
+    xr, yr = P.xs, P.ys
+    xs = [min(max(x, xr[0]), xr[1]) for x in xs]
+    ys = [min(max(y, yr[0]), yr[1]) for y in ys]
+    P.raw(sd.poly([P.X(x) for x in xs], [P.Y(y) for y in ys], PMT_FILL,
+                  fill=PMT_FILL, tip=tip))
+    mid = min(edge + 0.6 * length, 0.5 * (edge + xr[1] if axis == '+u'
+                                          else edge + yr[1]))
+    if axis == '+u':
+        P.raw(sd.T(P.X(mid) + 6, P.Y(0), 'PMT', 17, '#ffffff', weight=700,
+                   rot=-90, tip=tip))
+    else:
+        P.raw(sd.T(P.X(0.5 * (xs[2] + xs[3])), P.Y(mid) + 6, 'PMT', 17,
+                   '#ffffff', weight=700, tip=tip))
+
+
+def outline(P, layer, g, arm=None):
     """Detector edges and channel boundaries in the map's own frame."""
+    layer = layer.split('_')[0]
     if layer == 'wall':
         P.rect(WALL_EDGES[0], WALL_EDGES[-1], -WALL_HALF_V, WALL_HALF_V,
                sd.INK, 2, tip='SiPM wall: 16 bars of 25 mm, read out as four '
@@ -119,12 +169,22 @@ def outline(P, layer, g):
         for b in (1, 2):
             c = g[f'plas_u_{b}']
             side = 'L' if b == 1 else 'R'
+            _pmt_glyph(P, PLAS_HALF_V, PLAS_HALF_U, 60, 22, PLAS_PMT,
+                       f'plastic bar {b}: light guide and PMT on top (as '
+                       'reported; not in the Geant model)', u0=c)
             P.rect(c - PLAS_HALF_U, c + PLAS_HALF_U, -PLAS_HALF_V, PLAS_HALF_V,
                    sd.INK, 2, tip=f'plastic bar {b} ({side}): 200 x 300 x 20 mm '
-                   'PVT, one PMT')
+                   'PVT, one PMT, on top')
     else:
+        ax = LIQ_PMT.get(arm, '+v')
+        _pmt_glyph(P, LS_HALF_U if ax == '+u' else LS_HALF_V,
+                   LS_HALF_V if ax == '+u' else LS_HALF_U, LS_FUNNEL,
+                   LS_NECK_HALF, ax,
+                   f'liquid {arm}: 90 mm funnel to the 50 mm neck and the PMT, '
+                   + ('to the right (+u) looking from behind'
+                      if ax == '+u' else 'on top') + ' (Geant4 / 17 July survey)')
         P.rect(-LS_HALF_U, LS_HALF_U, -LS_HALF_V, LS_HALF_V, sd.INK, 2,
-               tip='liquid cell, 451 x 451 mm, one photodetector')
+               tip='liquid cell, 451 x 451 mm, one PMT')
         # the plastic's footprint on the cell, at its surveyed u (unprojected)
         lo = g['plas_u_1'] - PLAS_HALF_U - g['u_ls']
         hi = g['plas_u_2'] + PLAS_HALF_U - g['u_ls']
@@ -136,7 +196,8 @@ def outline(P, layer, g):
 
 def heat_panel(M, col, layer, arm, g, vmin, vmax, cmap, fmt_tip, w, h, ml,
                show_x, show_y, title):
-    rng = 262
+    # the liquid panels reach further, to show the funnel and the PMT
+    rng = 360 if layer.startswith('liq') else 262
     P = sd.Plot(w, h, x=(-rng, rng), y=(-rng, rng),
                 margin=(4, 6, 40 if show_x else 6, ml), title=title)
     if show_x:
@@ -152,12 +213,13 @@ def heat_panel(M, col, layer, arm, g, vmin, vmax, cmap, fmt_tip, w, h, ml,
         cells.append((r.x - b / 2, r.x + b / 2, r.y - b / 2, r.y + b / 2,
                       float(v), fmt_tip(r)))
     P.cells(cells, vmin, vmax, cmap, gap=0.6)
-    outline(P, layer, g)
+    outline(P, layer, g, arm)
     return P.svg(f'{layer} map, chamber {arm}')
 
 
 def heat_slide(D, sid, short, ttl, sub, layer, G, EM, GM, notes, eff_max=1.0,
-               eff_ticks=None, eff_label='efficiency', gain_rel=(0.6, 1.4)):
+               eff_ticks=None, eff_label='efficiency', gain_rel=(0.6, 1.4),
+               eff_min=0.0):
     """Two rows x four arms: efficiency (top), response relative to the arm
     median (bottom), each row with its colour bar."""
     side, ml = 262, 62
@@ -176,7 +238,7 @@ def heat_slide(D, sid, short, ttl, sub, layer, G, EM, GM, notes, eff_max=1.0,
                     f'efficiency {100 * r.eff:.1f} ± {100 * r.err:.1f} %\n'
                     f'{int(r.k_on)} of {int(r.n)} tagged tracks lit it '
                     f'({int(r.k_off)} in the pre-trigger window)')
-        top.append(heat_panel(me, 'eff', layer, arm, g, 0, eff_max,
+        top.append(heat_panel(me, 'eff', layer, arm, g, eff_min, eff_max,
                               sd.VIRIDIS, tip_e, side + lm + 6, side + 44, lm,
                               False, i == 0, f'chamber {arm}'))
         mg = GM[(GM.arm == arm) & (GM.layer == layer) & (GM['sample'] == sg)
@@ -190,13 +252,16 @@ def heat_slide(D, sid, short, ttl, sub, layer, G, EM, GM, notes, eff_max=1.0,
             return (f'chamber {arm} · u {r.x:+.0f}, v {r.y:+.0f} mm\n'
                     f'median {r.med:,.0f} {unit} = {r.rel:.2f} × the face '
                     f'median ({med:,.0f} {unit})\n{int(r.n)} hits')
-        mt = (f'{arm} · median {med:,.0f} {unit}' if np.isfinite(med)
-              else f'{arm} · no data')
+        if unit == 'keVee' and np.isfinite(med) and med >= 1000:
+            mt = f'{arm} · median {med / 1e3:.2f} MeVee'
+        else:
+            mt = (f'{arm} · median {med:,.0f} {unit}' if np.isfinite(med)
+                  else f'{arm} · no data')
         bot.append(heat_panel(mg, 'rel', layer, arm, g, *gain_rel, sd.DIVERGE,
                               tip_g, side + lm + 6, side + 84, lm, True,
                               i == 0, mt))
     et = eff_ticks or [(0, '0'), (0.5, '0.5'), (1, '1')]
-    cb1 = sd.colorbar(170, side + 30, 0, eff_max, et, eff_label)
+    cb1 = sd.colorbar(170, side + 30, eff_min, eff_max, et, eff_label)
     gt = [(gain_rel[0], f'{gain_rel[0]:.1f}'), (1, '1'),
           (gain_rel[1], f'{gain_rel[1]:.1f}')]
     cb2 = sd.colorbar(170, side + 30, *gain_rel, gt, 'response ÷ median',
@@ -207,6 +272,137 @@ def heat_slide(D, sid, short, ttl, sub, layer, G, EM, GM, notes, eff_max=1.0,
             + sd.row(*bot, cb2, gap=4, align='center') + '</div>')
     D.slide(sid, body, notes, short=short)
     return info
+
+
+def samples_slide(D, FN, EM, eff):
+    """Where the statistics go, and the two checks behind the sample choice
+    (`checks.py`): the trigger emulation and the time cut."""
+    ck = paths.spell('scint') / 'checks'
+    TA = (pd.read_csv(ck / 'trigger_arms.csv')
+          if (ck / 'trigger_arms.csv').exists() else None)
+    LS = (pd.read_csv(ck / 'late_scan.csv')
+          if (ck / 'late_scan.csv').exists() else None)
+    steps = list(dict.fromkeys(FN.step))
+    trs = []
+    for st in steps:
+        r = [st.replace('LATE_MS', f'{LATE_MS:.0f} ms')]
+        for a in ARMS:
+            n = FN[(FN.arm == a) & (FN.step == st)].n
+            r.append(f'{int(n.iloc[0]):,}' if len(n) else '–')
+        trs.append(r)
+    nmap = {a: int(FN[(FN.arm == a) & FN.step.str.startswith('>')].n.iloc[0])
+            for a in ARMS}
+    # the unbiased TAGS the whole-wall map is built on (not the events)
+    nunb = {a: eff(a, 'wall', 'wany_tol_full', 'unbiased')[2] for a in ARMS}
+    tab = sd.table(['', *ARMS], trs, 22,
+                   align=['left'] + ['right'] * 4)
+    one = (f'{pc(TA.frac_1_arms.iloc[0], 1)}' if TA is not None else '~98 %')
+    two = (f'{pc(TA.frac_2_arms.iloc[0], 1)}' if TA is not None else '~0.2 %')
+    side = []
+    if LS is not None:
+        L = LS[(LS['sample'] == 'all') & (LS.layer == 'wall')]
+        bins = sorted(L.lo_ms.unique())
+        P = sd.Plot(640, 440, x=(-0.5, len(bins) - 0.5), y=(0.3, 1.0),
+                    xlabel='time since the flash, ms (bin start)',
+                    ylabel='wall | plastic, net',
+                    title='Earlier than 10 ms the efficiency has not converged')
+        P.xticks([(i, f'{b:g}') for i, b in enumerate(bins)])
+        P.yticks([(v, f'{v:.1f}') for v in (0.4, 0.6, 0.8, 1.0)])
+        for a in ARMS:
+            q = L[L.arm == a].set_index('lo_ms').reindex(bins)
+            ok = q.n.to_numpy() >= 100
+            xs = [i for i in range(len(bins)) if ok[i]]
+            ys = [float(q.eff.iloc[i]) for i in xs]
+            P.line(xs, ys, ARM_COL[a], w=2.5, r=5,
+                   tips=[f'{a}, {bins[i]:g} ms: {100 * q.eff.iloc[i]:.1f} %, '
+                         f'{int(q.n.iloc[i]):,} tags, accidental tags '
+                         f'{100 * q.c.iloc[i]:.0f} %' for i in xs])
+        P.vline(bins.index(LATE_MS) - 0.5, sd.MUT, '6 5', 2, 'cut')
+        side.append(P.svg('wall efficiency against time since the flash'))
+        side.append(sd.legend([(a, ARM_COL[a]) for a in ARMS], 20))
+    body = (sd.title(
+        f'The maps use every late trigger, {min(nmap.values()) / 1e3:.0f}k–'
+        f'{max(nmap.values()) / 1e3:.0f}k tracks per arm; the unbiased sample '
+        f'has {min(nunb.values()) / 1e3:.1f}k–{max(nunb.values()) / 1e3:.1f}k tags',
+        f'{one} of triggers fire exactly one arm and {two} two, so “another arm '
+        'triggered” is rare by nature, not by the emulation')
+        + sd.row(sd.col(tab, gap=10), sd.col(*side, gap=6), gap=40))
+    D.slide('samples', body, f"""
+<p><b>Coverage.</b> Every reconstructed track of the stage-3 full pass is read:
+all production runs but the two before the 27 July access (run_79, run_81).
+The table follows one arm's tracks down to the maps, each step cumulative; the
+indented line is the late sample inside the plastic's footprint, which the
+plastic and liquid maps need.</p>
+<p><b>The unbiased sample.</b> The trigger is wall-sum AND plastic in any arm,
+so on an event an arm triggered itself its own wall and plastic fired by
+construction. A trigger-free measurement needs another arm to have fired the
+trigger, and the beam's triggers are almost all single-arm: on two sub-runs of
+every run the emulation gives {one} of triggers to exactly one arm,
+{two} to two and the rest to none. Arm D's chamber reconstructs far
+more tracks on events the other arms triggered (about a third of its late
+tracks, against 4–18 % on A, B, C), which is why its unbiased sample is larger;
+whether those are real particles is not yet checked.</p>
+<p><b>The trigger emulation is measured, not assumed.</b> On triggers no other
+arm could have fired, an arm's wall-group sum and plastic must sit above the real
+discriminator; the 0.5 % low edge of each is taken as the threshold. The edges
+are flat to ~1 mV across the campaign. The run_79 read-back values had the plastic
+3–6 mV too high and C's wall 4 mV too low.</p>
+<p><b>The time cut stays at {LATE_MS:.0f} ms.</b> Right: the wall's efficiency
+given the plastic, net of accidental channels and of accidental tags, in bins of
+time since the flash. Before {LATE_MS:.0f} ms up to half the tags are accidental,
+the corrected value has not converged, and the bins hold under 15 % of the late
+statistics, so moving the cut earlier would add little and bias what it adds.
+Even 10–20 ms reads a few per cent below the rest. Source: `checks.py`.</p>""",
+            short='samples')
+
+
+def unbiased_slide(D, G, EM, eff, weak):
+    """The trigger-free shape: wall and plastic, unbiased sample, 100 mm."""
+    side, ml = 262, 62
+    rows = []
+    for layer, label in (('wall_full', 'wall'), ('plas_full', 'plastic')):
+        pans = []
+        for i, arm in enumerate(ARMS):
+            lm = ml if i == 0 else 10
+            me = rebin_eff(EM[(EM.arm == arm) & (EM.layer == layer)
+                              & (EM['sample'] == 'unbiased')])
+
+            def tip_e(r, arm=arm):
+                return (f'chamber {arm} · u {r.x:+.0f}, v {r.y:+.0f} mm\n'
+                        f'efficiency {100 * r.eff:.1f} ± {100 * r.err:.1f} %\n'
+                        f'{int(r.k_on)} of {int(r.n)} tagged tracks lit it')
+            pans.append(heat_panel(me, 'eff', layer, arm, G.loc[arm], 0, 1,
+                                   sd.VIRIDIS, tip_e, side + lm + 6,
+                                   side + (84 if layer == 'plas_full' else 44),
+                                   lm, layer == 'plas_full', i == 0,
+                                   f'{arm} · {label}'))
+        rows.append(pans)
+    cb = sd.colorbar(170, side + 30, 0, 1, [(0, '0'), (0.5, '0.5'), (1, '1')],
+                     'efficiency')
+    weak_txt = (', '.join(f'{a} g{k} ({pc(e)})' for e, a, k in weak)
+                or 'none below 75 %')
+    pu = [eff(a, 'plas', 'pm', 'unbiased')[0] for a in ARMS]
+    body = (sd.title(f'Trigger-free: weak wall groups {weak_txt}; the plastic '
+                     f'answers {pc(min(pu))}–{pc(max(pu))}',
+                     f'{SAMPLE_WORDS["unbiased"]} · 100 mm cells · '
+                     'top: wall given a plastic bar · bottom: plastic given the wall')
+            + '<div style="display:flex;flex-direction:column;gap:6px">'
+            + sd.row(*rows[0], cb, gap=4, align='end')
+            + sd.row(*rows[1], gap=4, align='center') + '</div>')
+    D.slide('map-unbiased', body, f"""
+<p>The same whole-face maps as the previous slides, on the events another arm
+triggered: there this arm's wall and plastic were not required by the trigger,
+so a weak group or a corner that does not answer shows at its true level.
+It is a few thousand tracks per arm (D more: see the samples slide), hence
+100 mm cells, one wall group wide; cells with fewer than 20 tracks are empty.</p>
+<p><b>Wall</b> (top): of tracks for which a plastic bar fired, the share that
+lit the predicted wall group. The weak-group list in the title uses the interior
+of each group (2 σ from its boundaries) and arms A, C, D.</p>
+<p><b>Plastic</b> (bottom): of tracks that lit the wall at both ends, the share
+that lit the predicted bar. Without the trigger this is ~55 %: sub-MeV electrons
+stop in the 3 mm wall and its wrapping. So the level is the beam's energy
+spectrum, and the map's <i>shape</i> is the detector.</p>""",
+            short='unbiased')
 
 
 def stack_diagram(G, lam_a):
@@ -566,83 +762,125 @@ chamber (the trust mask removes most of its tracks), and B's slopes are the
 poorest. The plastic and liquid equivalents are in the long report.</p>""",
             short='wall edges')
 
-    # ------------------------------------------------------------- 5-7 maps
-    weak = sorted(((eff(a, 'wall', f'wany_g{k}', 'unbiased')[0], a, k)
-                   for a in 'ACD' for k in range(4)))
-    weak = [w for w in weak if w[0] < 0.75]
-    weak_txt = ', '.join(f'{a} g{k} ({pc(e)})' for e, a, k in weak)
+    # ------------------------------------------------------------- 5 samples
+    samples_slide(D, rd('funnel'), EM, eff)
+
+    # ------------------------------------------------------------- 6-8 maps
     gr = {}
     for a in ARMS:
         gg = np.array([gain(a, 'wall', f'g{k}') for k in range(4)])
         gr[a] = gg / np.nanmedian(gg)
     lo_a, lo_k = min(((a, k) for a in ARMS for k in range(4)),
                      key=lambda x: gr[x[0]][x[1]])
+    nw = {a: eff(a, 'wall', 'wany_tol_full', 'all_late') for a in ARMS}
     heat_slide(
         D, 'map-wall', 'wall maps',
-        f'SiPM walls: weak groups {weak_txt}; {lo_a} g{lo_k} answers at '
-        f'{gr[lo_a][lo_k]:.2f} of its neighbours',
-        'top: efficiency given the plastic fired (unbiased, 100 mm cells) · '
-        'bottom: MIP response √(top × bottom)·cosθ ÷ the face median (25 mm cells)',
-        'wall', G, EM, GM, f"""
-<p><b>Efficiency</b> (top): of tracks the plastic confirms (the predicted bar
-fired), the share for which the predicted wall group fired at either end, net of
-the pre-trigger rate. Sample: {SAMPLE_WORDS['unbiased']} — on events an arm
-triggered itself its wall fired by construction, so that sample cannot show a
-hole (it reads 89–98 %). The unbiased sample is a few per cent of tracks, hence
-50 mm cells; empty cells have fewer than 30 tags. The plastic covers |v| ≤ 150 mm,
-which is why the map does not reach the wall's ±250 mm.</p>
-<p><b>Response</b> (bottom): the geometric mean of the two ends times cosθ —
-for an exponentially attenuating bar it does not depend on where along the bar
-the light was made, so it is the scintillator's own MIP response. Both ends lit,
-neither saturated, track interior to its group and confirmed by the plastic.
-Sample: {SAMPLE_WORDS['all_late']}. Medians (the response is a Landau). Each face
-is divided by its own median, printed in the panel title, so the colour shows
-uniformity; the arms differ in absolute gain (WALA ~30 % below the others, as on
-the July bench).</p>""")
+        f'SiPM walls over the whole face: {lo_a} g{lo_k} answers at '
+        f'{gr[lo_a][lo_k]:.2f} of its neighbours; '
+        f'{min(n[2] for n in nw.values()) / 1e3:.0f}k–'
+        f'{max(n[2] for n in nw.values()) / 1e3:.0f}k tracks per arm',
+        'top: P(predicted group fired | a plastic bar fired), every late trigger, '
+        '25 mm cells · bottom: MIP response √(top × bottom)·cosθ ÷ the face median',
+        'wall_full', G, EM, GM, f"""
+<p><b>Sample.</b> {SAMPLE_WORDS['all_late']}, single tracks, in time and in a
+trusted chamber cell. On most of these events the arm triggered itself, which
+needs a wall group and a plastic bar above threshold: the level is biased toward
+1 and the plastic's 400 × 300 mm footprint is printed on the map (above and below
+it, |v| &gt; 150 mm, a wall hit had to come with a plastic hit from elsewhere).
+What the map shows reliably is a channel that does not answer where its
+neighbours do. The trigger-free shape is on the unbiased slide.</p>
+<p><b>Efficiency</b> (top): the predicted wall group fired at either end, net of
+the pre-trigger rate and of accidental tags. Within 2 σ of an internal group
+boundary either neighbour counts, so the map covers the whole wall instead of
+losing a ±{2 * cal['A']['sig_w']:.0f} mm band around every boundary. 25 mm cells;
+empty cells have fewer than 30 tracks.</p>
+<p><b>Response</b> (bottom): the geometric mean of the two ends times cosθ, from
+the group that answered. For an exponentially attenuating bar this does not
+depend on where along the bar the light was made, so it is the scintillator's
+own MIP response. Both ends lit, neither saturated. Medians (the response is a
+Landau). Each face is divided by its own median, printed in the panel title,
+so the colour shows uniformity; the arms differ in absolute gain (WALA ~30 %
+below the others, as on the July bench).</p>""",
+        eff_min=0.5, eff_ticks=[(0.5, '0.5'), (0.75, '0.75'), (1, '1')])
     heat_slide(
         D, 'map-plas', 'plastic maps',
-        f'Plastic: no holes — ≥ {100 * min(eff(a, "plas", "pm", "all_late")[0] for a in ARMS):.1f} % '
-        'on its own triggers; the unbiased ~55 % is particles stopping in the wall',
-        'top: P(bar fired | wall fired at both ends), unbiased, 100 mm cells · '
-        'bottom: deposit keVee·cosθ ÷ the face median, every late trigger, 25 mm',
-        'plas', G, EM, GM, f"""
-<p><b>Efficiency</b> here is a response probability for the beam's own spectrum:
-of particles that crossed the 3 mm wall (both ends lit), the share that also
-lit the predicted plastic bar. About two in five do not — sub-MeV electrons stop
-in the wall and its wrapping — so the level is the energy spectrum and the map's
-<i>shape</i> is the detector: a dead corner or a light-guide shadow would show as
-a hole in an otherwise flat face. Within 1.5 edge widths of the L/R gap either
-bar counts. Sample: {SAMPLE_WORDS['unbiased']}.</p>
+        f'Plastic over the whole face: no holes, ≥ '
+        f'{100 * min(eff(a, "plas", "pm_full", "all_late")[0] for a in ARMS):.1f} % '
+        'on every late trigger',
+        'top: P(bar fired | wall fired at both ends), every late trigger, 25 mm · '
+        'bottom: deposit keVee·cosθ ÷ the face median',
+        'plas_full', G, EM, GM, f"""
+<p><b>Sample.</b> {SAMPLE_WORDS['all_late']}. The trigger needs a plastic bar,
+so on self-triggered events the level reads near 1 by construction; the map can
+still show a corner or a light-guide shadow that does not answer. The unbiased
+level (~55 %, particles that stop in the wall) is on the unbiased slide.</p>
+<p><b>Efficiency</b>: of tracks whose predicted wall group fired at both ends
+(either neighbour near a group boundary), the share that also lit the predicted
+plastic bar. Within 1.5 edge widths of the L/R gap either bar counts. No margin
+from the outer edges: the fall-off there is the extrapolation's resolution
+(σ ≈ {min(cal[a]['sig_p'] for a in ARMS):.0f}–{max(cal[a]['sig_p'] for a in ARMS):.0f} mm
+at the plastic).</p>
 <p><b>Response</b>: the predicted bar's amplitude × cosθ, in keVee from the
-28 July two-source calibration, on every late trigger (the unbiased sample is
-too small for a map). The trigger needs a plastic bar above ~0.9 MIP, so on
-self-triggered events the spectrum is cut just below its own median: the level
-is biased up, roughly evenly over the face, and the map is divided by its own
-median. A bar brighter near its PMT shows as a gradient along u.</p>""")
+28 July two-source calibration. The trigger needs a plastic bar above ~0.9 MIP,
+so on self-triggered events the spectrum is cut just below its own median: the
+level is biased up, roughly evenly over the face, and the map is divided by its
+own median. A bar brighter near its PMT shows as a gradient along u.</p>""",
+        eff_min=0.5, eff_ticks=[(0.5, '0.5'), (0.75, '0.75'), (1, '1')])
+    def halves(arm):
+        """Liquid net firing on the PMT half of the cell against the far
+        half (|coordinate| > 75 mm), from the whole-face late map."""
+        M = EM[(EM.arm == arm) & (EM.layer == 'liq_full')
+               & (EM['sample'] == 'all_late')]
+        c = M.x if LIQ_PMT[arm] == '+u' else M.y
+
+        def r(m):
+            n = M.n[m].sum()
+            return (M.k_on[m].sum() - M.k_off[m].sum()) / max(n, 1)
+        return r(c > 75), r(c < -75)
+    hv = {a: halves(a) for a in ARMS}
+    hor = [a for a in ARMS if LIQ_PMT[a] == '+u']
+    ver = [a for a in ARMS if LIQ_PMT[a] != '+u']
+    rat = {a: hv[a][0] / hv[a][1] if hv[a][1] > 0 else np.inf for a in ARMS}
     li = heat_slide(
         D, 'map-liq', 'liquid maps',
-        f'Liquids: A and D light up only toward +u, C barely at all '
-        f'({pc(eff("C", "liq", "lf_walltag", "all_late")[0], 1)}), B evenly',
+        f'Liquids: {" and ".join(hor)} (PMT to the side) answer '
+        f'{min(rat[a] for a in hor):.0f}–{max(rat[a] for a in hor):.0f}× more '
+        f'on their PMT half; {" and ".join(ver)} (PMT on top) do not',
         'tagged by the wall alone (both ends), so the whole cell is mapped · '
         'white dashed: the plastic in front · every trigger > 10 ms, 50 mm cells',
-        'liq_walltag', G, EM, GM, f"""
-<p>The liquid is in no trigger, so the late sample is not biased by it and has
-ten times the statistics of the unbiased one. Tag: the predicted wall group lit
-at both ends. Probe: the liquid fired. The tag no longer needs the plastic,
-so the map covers the whole 451 × 451 mm cell — inside the dashed box a particle
-crossed 20 mm of PVT first (which stops electrons below ~4 MeV), outside it did
-not. Coordinates are relative to the cell centre.</p>
+        'liq_full', G, EM, GM, f"""
+<p>The liquid is in no trigger, so the late sample is not biased by it. Tag:
+the predicted wall group lit at both ends (either neighbour near a group
+boundary). Probe: the liquid fired. The tag does not need the plastic, so the
+map covers the whole 451 × 451 mm cell — inside the dashed box a particle crossed
+20 mm of PVT first (which stops electrons below ~4 MeV), outside it did not.
+Coordinates are relative to the cell centre.</p>
 <p>The <b>response</b> row is the liquid's amplitude ÷ its face median, in keVee
 where the 28 July calibration has a liquid edge (A, B, D) and in mV for C, which
 has none. No path-length correction: what reaches the liquid is not a straight
 continuation of the MM track.</p>
-<p>The question this answers is the one the July source runs left open: LIQ A
-and D answered to one side only. The beam data say the same thing over the whole
-face — a smooth rise toward +u rather than a step at the bar gap, so a
-light-collection pattern (a photodetector near the +u edge, or a bubble/air gap
-at −u) rather than a shadow. The cell drawings would settle which.</p>""",
+<p><b>The PMTs</b> (grey: the 90 mm funnel narrowing to the 50 mm neck that
+holds the PMT) are drawn where the Geant4 model puts them, from the 17–18 July
+survey: vessels horizontal with the PMT to the right (+u, looking from behind
+the wall) on {' and '.join(hor)}, vertical with the PMT on top on
+{' and '.join(ver)}. The data agree independently.</p>
+<p><b>Horizontal vessels answer near their PMT.</b> Net firing on the PMT half
+of the cell (|u| &gt; 75 mm) against the far half:
+{'; '.join(f'{a} {pc(hv[a][0], 1)} vs {pc(hv[a][1], 1)}' for a in hor)} — a smooth
+rise toward the PMT, not a step at the plastic's bar gap. This is the
+one-sided response the July source runs saw, now explained by where the PMT is.
+<b>The vertical vessels do not:</b> top half against bottom half,
+{'; '.join(f'{a} {pc(hv[a][0], 2)} vs {pc(hv[a][1], 2)}' for a in ver)}, if anything
+lower near the PMT. Why light collection falls so steeply with distance on
+the horizontal vessels and not on the vertical ones is open.</p>""",
         eff_max=0.2, eff_ticks=[(0, '0'), (0.1, '0.1'), (0.2, '0.2')],
         gain_rel=(0.5, 1.5))
+
+    # ------------------------------------------------------------- 9 unbiased
+    weak = sorted(((eff(a, 'wall', f'wany_g{k}', 'unbiased')[0], a, k)
+                   for a in 'ACD' for k in range(4)))
+    weak = [w for w in weak if w[0] < 0.75]
+    unbiased_slide(D, G, EM, eff, weak)
 
     # ------------------------------------------------------------- 8 liquid
     rowsb = []
@@ -795,12 +1033,14 @@ rises together; nothing in the scintillator responses moves with it.</p>""",
         ('The plastic L/R gap is 20–30 mm off on B, C, D.', 'Same size on three '
          'arms under every predictor (6 mm on A): a survey or config entry, '
          'not a fit artefact. Worth a check of the as-built drawing.'),
-        ('Trigger thresholds are run_79’s.', 'The emulated trigger that defines '
-         'the unbiased sample uses thresholds read back on run_79; the per-sub-run '
-         'n1081b configs are not on this machine.'),
-        ('Liquid gradient: cause unknown.', 'Light collection is a hypothesis; '
-         'the cell drawing would test it. Liquid “efficiency” is punch-through × '
-         'efficiency for this beam.'),
+        ('Arm D’s extra unbiased tracks.', 'A third of D’s late tracks sit on '
+         'events another arm triggered (A–C: 4–18 %). Real particles or chamber '
+         'pick-up is not yet checked; D’s unbiased maps lean on them.'),
+        ('Liquids: why only the horizontal ones?', 'A and D (PMT to the side) '
+         'answer near their PMT; B and C (PMT on top) do not. The cause is open. '
+         'Liquid “efficiency” is punch-through × efficiency for this beam.'),
+        ('Plastic PMT positions are as reported.', 'On top for every bar; the '
+         'Geant model has bare bars and this data cannot place them.'),
         ('MIP-clean efficiencies need the cosmics.', 'Run_149 is now '
          'reconstructed (87 sub-runs); joining it to the scintillators is the '
          'next pass.'),

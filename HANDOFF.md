@@ -99,19 +99,26 @@ build/analyse loop, then pool, re-measure slope ratios, redo 170° with cosmic k
 
 ## Scintillator stack mapped by the MM tracks — updated 2026-10-06 (dylan-MS-7C84)
 
+**Resume:** scint-stack maps done (whole-face, PMTs drawn); next: why vertical liquids don't answer near their PMT, arm D's extra unbiased tracks.
+
 **Goal:** characterise every scintillator (efficiency and response heat maps), on the single-track imaging calibration.
 
 **Done:**
-- Code moved to `ntof_scint_stack/` (extract, ana, make_figures, make_report, make_deck); data to `/media/dylan/data/x17/scint_stack/` (`paths.spell('scint')`). The 2 Oct pass is kept there as `*_v1_freescale`.
-- Calibration: per-run imaging `k` (tanx = k·tan_raw), with the extrapolation `u + L(α a + λ k tan) − δ` fitted on the wall group boundaries held at the survey. α ≈ 0, λ 0.59–0.76, wall δ 1–6 mm. Details in `ntof_scint_stack/README.md`.
-- Slide note published: https://dylan-neff.web.cern.ch/notes/scint-stack.html. Report regenerated.
-- slidedoc gained `Plot.cells`, `Plot.rect`, `seq_color`, `colorbar` (heat maps) — uncommitted in dylan-cern-site, alongside another session's arrow-key change there.
-
-**Findings to follow up:** the 2 Oct "A is k×1.10" compared against 1/k (wrong direction); the wall prefers λ·k (shallower than k), the same direction as the cosmic review; plastic L/R gap 20–31 mm off the config on B/C/D; wall middle boundary 12–16 mm high on B/C/D; D tracks beyond −170 mm at the wall light group 2, not group 0; the k block moves the wall's λ·k by about half of k's rise.
+- Code in `ntof_scint_stack/`; data `/media/dylan/data/x17/scint_stack/` (`paths.spell('scint')`). Calibration: per-run imaging `k` (tanx = k·tan_raw), extrapolation `u + L(α a + λ k tan) − δ` fitted on the wall group edges; α ≈ 0, λ 0.59–0.76. README has it.
+- **Statistics (this session):** coverage was always the whole full pass (34 runs, 13.3 M gated tracks; run_79/81 excluded). The thin sample was the *unbiased* tag (another arm triggered): ~99 % of triggers fire one arm. Main maps now `*_full` layers on `all_late` (every late trigger, whole face, boundary-tolerant `_tol` probes, 25 mm): 134k–934k tracks/arm vs 2–9k unbiased. Unbiased shape is its own slide (100 mm).
+- `checks.py`: trigger thresholds MEASURED (0.5 % low edge of each arm's own triggers, flat to ~1 mV campaign-wide; now in `extract.WALL_THR/PLAS_THR`; run_79 read-back had plastic 3–6 mV high). Time-cut scan: LATE_MS stays 10 ms (earlier = <15 % more stats, efficiency not converged).
+- `ana` writes `funnel` (cut flow per arm); deck has a samples slide.
+- **PMTs drawn on the maps.** Liquids from Geant4 (`MX17_Full_Geant/include/SimConfig.hh` `ls_rot_deg`, 17–18 July survey): A, D horizontal with PMT at +u; B, C vertical, PMT up. Dylan recalled B right / D top; Geant AND the data (A/D answer 12–23× more on the +u half, B/C no u gradient) disagree — told Dylan; switch is `make_deck.LIQ_PMT`. Plastic PMTs on top (Dylan's report; not in Geant, not testable).
+- Slide note republished: https://dylan-neff.web.cern.ch/notes/scint-stack.html; long report regenerated.
 
 **Next steps:**
-1. Join run_149 cosmic tracks to the slim → MIP-clean efficiencies (wait for the cosmic-tracking session's pooling).
-2. Check the plastic bar placement and D wall group-0/2 cabling against the as-built drawings.
-3. Per-sub-run `n1081b_config.json` to replace the run_79 trigger emulation.
+1. Why the vertical liquids (B, C) show no rise toward their PMT (C: 0.07 % top vs 0.34 % bottom) while A, D do.
+2. Arm D: a third of its late tracks sit on other-arm triggers (A–C 4–18 %) — real particles or chamber pick-up? D's unbiased maps rely on them.
+3. Join run_149 cosmic tracks to the slim → MIP-clean efficiencies.
+4. Plastic bar placement / D wall group-0/2 cabling against the as-built drawings.
 
-**Key commands:** see `ntof_scint_stack/README.md`.
+**Gotchas / decisions:**
+- Self-triggered maps read near 1 by construction (trigger = wall-sum AND plastic); they show holes, not levels. Quote unbiased numbers.
+- Dead end: loosening LATE_MS below 10 ms (`checks.late_scan`): not worth it.
+
+**Key commands:** extract → ana → checks → make_figures → make_report → make_deck → add-note (see `ntof_scint_stack/README.md`).

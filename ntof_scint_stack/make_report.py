@@ -204,7 +204,8 @@ p10&ndash;p90 = {pc(sp.min(), 1)}&ndash;{pc(sp.max(), 1)} across the campaign, t
 leaves 3.0&ndash;3.4&nbsp;MeVee in the plastic on every arm, an independent check of the source energy scale.</li>
 <li><b>The liquids are the surprise.</b> LIQ&nbsp;A and D respond almost only near their +u edge (behind the R
 plastic bar: 9&thinsp;% against 0.2&ndash;1&thinsp;% behind the L bar), with a smooth gradient across the cell
-rather than a step at the bar gap &mdash; a light-collection pattern, not a shadow. LIQ&nbsp;C answers only
+rather than a step at the bar gap. Their PMTs are there: A and D are horizontal vessels with the PMT at +u
+(Geant4 model, 17&ndash;18 July survey), while the vertical B and C (PMT on top) show no rise toward it. LIQ&nbsp;C answers only
 to deposits above ~8&nbsp;MeVee in the plastic ({pc(lc_hi.eff, 0)} there, ~0.1&thinsp;% below): alive, but
 with a threshold or gain far off. LIQ&nbsp;B is roughly uniform. This is the beam-data answer to the open
 question from the July source runs.</li>
@@ -265,7 +266,7 @@ B, C and D (6&nbsp;mm on A) under every predictor.</p>
 <p>Tag and probe on single in-time tracks in good cells, <b>more than 10&nbsp;ms after the flash</b> (before
 that the plastic's accidental rate reaches 10&ndash;20&thinsp;% per track and half the tags are themselves
 accidental). The quoted sample is <b>unbiased</b>: another arm satisfied the emulated hardware trigger
-(wall-sum and plastic thresholds read back from the boards on run_79, assumed campaign-wide). The
+(wall-sum and plastic thresholds measured from the data as the low edges of each arm's own triggers, flat across the campaign &mdash; <code>checks.py</code>). The
 self-triggered numbers are shown because their difference from the unbiased ones is the trigger bias.</p>
 {eff_tab}
 <p>Plastic given wall is ~57&thinsp;% unbiased: two particles in five that cross the 3&nbsp;mm wall leave nothing
@@ -324,14 +325,14 @@ half as much as k on C and D, which settles neither reading. Chamber D's tracks 
 light group 2 rather than group 0 (chamber edge or cabling).</li>
 <li><b>The unbiased sample is small</b> (a few thousand tags per arm; 178 on B), so its maps are coarse and B's
 numbers are rough. Chamber B's tracks point poorly at the wall in any case.</li>
-<li><b>The trigger thresholds are run_79's</b>, assumed for every run; the per-sub-run board configs are not on
-this machine.</li>
+<li><b>Arm D's unbiased sample is a third of its late tracks</b> (A&ndash;C: 4&ndash;18&thinsp;%): its chamber
+reconstructs many tracks on events another arm triggered. Whether they are real particles is not yet checked.</li>
 <li><b>Chamber D's wall profile is distorted by chamber D</b> (its centre and its u &lt; &minus;180 mm region), and
 July's analog duplication short on WALD may add to it. D's ends-reversed sign is either the wall cabling or a
 mirrored y plane; this data cannot tell which.</li>
-<li><b>The liquid gradient's cause is a hypothesis</b> (light collection falling with distance from a
-photodetector near the +u edge). The cell geometry and readout drawing would settle it. Liquid responses
-are punch-through probabilities times efficiency; the two are not separated.</li>
+<li><b>Why only the horizontal liquids answer near their PMT</b> (A, D; PMT at +u) while the vertical ones
+(B, C; PMT on top) do not is open. Liquid responses are punch-through probabilities times efficiency; the two
+are not separated.</li>
 <li><b>Plastic and liquid "efficiencies" are response probabilities</b> for the beam's own spectrum. A clean
 MIP efficiency would need the cosmic runs: run_149 now has MM reconstruction, not yet joined to the slim.</li>
 </ul>

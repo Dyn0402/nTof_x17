@@ -603,6 +603,16 @@ def predict(t: pd.DataFrame, g: dict, cal: dict, sig: dict,
     P['grp'] = grp
     P['d_edge_w'] = np.min(np.abs(uw[:, None] - WALL_EDGES[None, :]), 1)
     P['on_w'] = (grp >= 0) & (np.abs(P.v_w) <= WALL_HALF_V)
+    # within 2 sigma of an INTERNAL group boundary the prediction does not
+    # choose a group: the neighbour across that boundary may answer instead
+    # (the `_tol` columns), as the plastic's L/R gap already does.  This is
+    # what lets the maps cover the whole wall instead of cutting a 2-sigma
+    # band out on each side of every boundary.
+    inner = WALL_EDGES[1:-1]
+    ie = np.argmin(np.abs(uw[:, None] - inner[None, :]), 1)
+    near = (np.abs(uw - inner[ie]) < 2 * sig['wall_u']) & (grp >= 0)
+    nbr = np.where(grp <= ie, ie + 1, ie)
+    P['nbr_w'] = np.where(near, nbr, -1)
 
     up = P.u_p.to_numpy()
     bar = np.where(up < g['plas_gap'], 1, 2)
@@ -626,6 +636,8 @@ def predict(t: pd.DataFrame, g: dict, cal: dict, sig: dict,
         e1 = np.zeros(len(t), bool)
         e2 = np.zeros(len(t), bool)
         oth = np.zeros(len(t), bool)
+        n1 = np.zeros(len(t), bool)
+        n2 = np.zeros(len(t), bool)
         for gg in range(4):
             f1 = t[f'w{2 * gg + 1}_amp_{w}'].notna().to_numpy()
             f2 = t[f'w{2 * gg + 2}_amp_{w}'].notna().to_numpy()
@@ -633,10 +645,19 @@ def predict(t: pd.DataFrame, g: dict, cal: dict, sig: dict,
             e1 |= m & f1
             e2 |= m & f2
             oth |= (grp != gg) & (f1 | f2)
+            mn = P.nbr_w.to_numpy() == gg
+            n1 |= mn & f1
+            n2 |= mn & f2
         P[f'e1_{w}'], P[f'e2_{w}'] = e1, e2
         P[f'wany_{w}'] = e1 | e2
         P[f'wboth_{w}'] = e1 & e2
         P[f'woth_{w}'] = oth
+        P[f'wany_tol_{w}'] = e1 | e2 | n1 | n2
+        P[f'wboth_tol_{w}'] = (e1 & e2) | (n1 & n2)
+        # either plastic bar, wherever the track points: the tag for the
+        # whole-wall map, which cannot ask the track to predict a bar
+        P[f'pany_{w}'] = (t[f'p1_amp_{w}'].notna().to_numpy()
+                          | t[f'p2_amp_{w}'].notna().to_numpy())
         f1 = t[f'p1_amp_{w}'].notna().to_numpy()
         f2 = t[f'p2_amp_{w}'].notna().to_numpy()
         strict = np.where(bar == 1, f1, f2) & on_p
@@ -661,6 +682,22 @@ def predict(t: pd.DataFrame, g: dict, cal: dict, sig: dict,
             arr[m] = t[col].to_numpy()[m]
     P['a1'], P['a2'], P['t1'], P['t2'] = a1, a2, t1, t2
     P['wsat'] = (np.nan_to_num(s1) > 0) | (np.nan_to_num(s2) > 0)
+    # the group that ANSWERED, for the whole-wall response map: the predicted
+    # one when both its ends fired, else the neighbour across a nearby
+    # boundary when both of ITS ends fired
+    nb = P.nbr_w.to_numpy()
+    h1, h2, hs = (np.full(len(t), np.nan) for _ in range(3))
+    for gg in range(4):
+        m = nb == gg
+        h1[m] = t[f'w{2 * gg + 1}_amp_on'].to_numpy()[m]
+        h2[m] = t[f'w{2 * gg + 2}_amp_on'].to_numpy()[m]
+        hs[m] = np.fmax(np.nan_to_num(t[f'w{2 * gg + 1}_sat_on'].to_numpy()[m]),
+                        np.nan_to_num(t[f'w{2 * gg + 2}_sat_on'].to_numpy()[m]))
+    own = np.isfinite(a1) & np.isfinite(a2)
+    use_n = ~own & np.isfinite(h1) & np.isfinite(h2)
+    P['a1h'] = np.where(own, a1, np.where(use_n, h1, np.nan))
+    P['a2h'] = np.where(own, a2, np.where(use_n, h2, np.nan))
+    P['wsat_h'] = np.where(own, P.wsat.to_numpy(), np.nan_to_num(hs) > 0)
     P['pa'] = np.where(bar == 1, t.p1_amp_on, t.p2_amp_on)
     P['pt'] = np.where(bar == 1, t.p1_dt_on, t.p2_dt_on)
     P['psat'] = np.nan_to_num(np.where(bar == 1, t.p1_sat_on, t.p2_sat_on)) > 0
@@ -1091,6 +1128,36 @@ def efficiencies(t: pd.DataFrame, P: pd.DataFrame, sig: dict, g: dict
                               t_on, t_off, A('lf_on'), A('lf_off'))
             rows.append(dict(layer='liq', probe=f'lf_behind_bar{bar}',
                              sample=samp, **r))
+        # --- THE WHOLE-FACE MAPS, the main look.  No edge margins; the
+        # boundary-tolerant probes instead (`predict`).  On ``all_late`` the
+        # arm's own trigger already demanded a wall group and a plastic bar,
+        # so these read near 1 wherever the trigger could fire and carry the
+        # plastic's outline; what they show is the statistics, and any hole
+        # a channel leaves.  The unbiased versions are the true shape.
+        parent = sm & A('on_w')
+        r, m, c, q = tag_probe(parent, A('pany_on'), A('pany_off'),
+                               A('wany_tol_on'), A('wany_tol_off'))
+        rows.append(dict(layer='wall', probe='wany_tol_full', sample=samp,
+                         **r))
+        M = eff_map(A('u_w')[m], A('v_w')[m], A('wany_tol_on')[m],
+                    A('wany_tol_off')[m], fb * BIN['wall'], WALL_EDGES[0],
+                    -WALL_HALF_V, c, q)
+        maps.append(M.assign(layer='wall_full', sample=samp))
+        parent = sm & A('on_p') & A('on_w')
+        r, m, c, q = tag_probe(parent, A('wboth_tol_on'), A('wboth_tol_off'),
+                               A('pm_on'), A('pm_off'))
+        rows.append(dict(layer='plas', probe='pm_full', sample=samp, **r))
+        M = eff_map(A('u_p')[m], A('v_p')[m], A('pm_on')[m], A('pm_off')[m],
+                    fb * BIN['plas'], g['plas_lo'], -PLAS_HALF_V, c, q)
+        maps.append(M.assign(layer='plas_full', sample=samp))
+        parent = sm & A('on_l') & A('on_w')
+        r, m, c, q = tag_probe(parent, A('wboth_tol_on'), A('wboth_tol_off'),
+                               A('lf_on'), A('lf_off'))
+        rows.append(dict(layer='liq', probe='lf_full', sample=samp, **r))
+        M = eff_map(A('u_l')[m] - g['u_ls'], A('v_l')[m] - g['v_ls'],
+                    A('lf_on')[m], A('lf_off')[m], fb * BIN['ls'], -LS_HALF_U,
+                    -LS_HALF_V, c, q)
+        maps.append(M.assign(layer='liq_full', sample=samp))
     return pd.DataFrame(rows), pd.concat(maps, ignore_index=True)
 
 
@@ -1242,6 +1309,29 @@ def gains(t, P, sig, g, ecal, arm) -> tuple:
                         A_('v_l')[ml2] - g['v_ls'], El[ml2], fb * BIN['ls'],
                         -LS_HALF_U, -LS_HALF_V)
         maps.append(M.assign(layer='liq_walltag',
+                             quantity='liq_' + lunit.lower(), unit=lunit,
+                             sample=samp))
+        # the WHOLE-FACE response maps (see `efficiencies`): no edge
+        # margins, the wall from the group that answered
+        Gh = np.sqrt(A_('a1h') * A_('a2h')) * A_('cos_w')
+        mw = (sm & A_('on_w') & np.isfinite(Gh) & ~A_('wsat_h')
+              & A_('pany_on'))
+        M = _median_map(A_('u_w')[mw], A_('v_w')[mw], Gh[mw],
+                        fb * BIN['wall'], WALL_EDGES[0], -WALL_HALF_V)
+        maps.append(M.assign(layer='wall_full', quantity='wall_gm',
+                             unit='mV', sample=samp))
+        mp = (sm & A_('pms_on') & ~A_('psat') & A_('wboth_tol_on')
+              & ~A_('amb_p'))
+        M = _median_map(A_('u_p')[mp], A_('v_p')[mp], E[mp],
+                        fb * BIN['plas'], g['plas_lo'], -PLAS_HALF_V)
+        maps.append(M.assign(layer='plas_full', quantity='plas_kevee',
+                             unit='keVee', sample=samp))
+        ml3 = (sm & A_('lf_on') & ~A_('lsat') & A_('wboth_tol_on')
+               & A_('on_l') & A_('on_w'))
+        M = _median_map(A_('u_l')[ml3] - g['u_ls'],
+                        A_('v_l')[ml3] - g['v_ls'], El[ml3], fb * BIN['ls'],
+                        -LS_HALF_U, -LS_HALF_V)
+        maps.append(M.assign(layer='liq_full',
                              quantity='liq_' + lunit.lower(), unit=lunit,
                              sample=samp))
         sat_base = sm & A_('lf_on')
@@ -1438,6 +1528,26 @@ def both_ends(t, P, sig, cal: pd.DataFrame) -> tuple:
     return S, pd.DataFrame(Pr)
 
 
+def funnel(t: pd.DataFrame, P: pd.DataFrame) -> pd.DataFrame:
+    """How many tracks survive each step to the maps, cumulatively."""
+    steps = [('gated tracks', np.ones(len(t), bool)),
+             ('single track in the arm', (t.n_trk == 1).to_numpy()),
+             ('in time, trusted chamber cell', t.good.to_numpy()),
+             ('points at the wall', P.on_w.to_numpy()),
+             ('> LATE_MS after the flash', t.late.to_numpy()),
+             ('another arm triggered', t.other_hw.to_numpy())]
+    m = np.ones(len(t), bool)
+    rows = []
+    for name, s in steps:
+        m = m & s
+        rows.append(dict(step=name, n=int(m.sum())))
+        if name.startswith('>'):
+            # side branch: the late sample inside the plastic's footprint
+            pl = int((m & P.on_p.to_numpy()).sum())
+    rows.insert(5, dict(step='... and points at the plastic too', n=pl))
+    return pd.DataFrame(rows)
+
+
 def accidental_rates(t: pd.DataFrame) -> pd.DataFrame:
     """Per group: how often the pre-trigger window lights one end vs both.
 
@@ -1607,6 +1717,7 @@ def run_arm(arm: str) -> dict:
     BS, BP = both_ends(tg, Pg, sig, WC)
     AR = accidental_rates(t)
     RR = by_run(tg, Pg, sig, ecal, arm)
+    FN = funnel(t, P)
     log.append(f'   done [{time.time() - t0:.0f} s]')
 
     tabs = dict(scales=S, pointing=PF, lam_run=SR, confirm=CS, confirm_quality=CQ,
@@ -1614,7 +1725,7 @@ def run_arm(arm: str) -> dict:
                 edge_profile=EP,
                 liq_vs_plas=LV, gain_map=GM, wall_atten=AT, gain=GS,
                 wallpos_cal=WC, wallpos_res=WR, both_ends=BS, both_ends_v=BP,
-                accidental=AR, by_run=RR)
+                accidental=AR, by_run=RR, funnel=FN)
     for name, df in tabs.items():
         df = df.assign(arm=arm) if 'arm' not in df.columns else df
         df.to_parquet(od / f'{name}_{arm}.parquet', index=False)

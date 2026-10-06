@@ -15,6 +15,7 @@ on 2026-10-06.
 ```bash
 PYTHONPATH=. .venv/bin/python -m ntof_scint_stack.extract --jobs 8   # ~3 min, per-track tables
 PYTHONPATH=. .venv/bin/python -m ntof_scint_stack.ana --jobs 4       # ~9 min
+PYTHONPATH=. .venv/bin/python -m ntof_scint_stack.checks              # trigger edges, time-cut scan
 PYTHONPATH=. .venv/bin/python -m ntof_scint_stack.make_figures
 PYTHONPATH=. .venv/bin/python -m ntof_scint_stack.make_report
 PYTHONPATH=. .venv/bin/python -m ntof_scint_stack.make_deck          # the slide note
@@ -44,7 +45,20 @@ than with the bare `k` or with `k` shrunk toward the capsule.
   predictor calibration, not an angle-scale measurement. A boundary fit
   regresses on a noisy slope. The cosmic review of 2026-10-06 points the same
   way, with a smaller effect.
-- The unbiased tag sample (another arm triggered, > 10 ms) is only a few
-  thousand tracks per arm. The deck rebins its maps to 100 mm, and the grids are
-  aligned to the channel edges (`ana.efficiencies`, `ana.gains`) so that this works.
+- **Coverage is the whole full pass** (34 runs, all but the pre-access run_79/81).
+  The thin part is the *unbiased* tag sample (another arm triggered, > 10 ms):
+  a few thousand tracks per arm on A–C, because 97.7 % of triggers fire exactly
+  one arm (`checks.trigger`). So the **main maps are the `*_full` layers on
+  `all_late`** — every late trigger, whole face, boundary-tolerant probes
+  (`predict`'s `_tol` columns), 25 mm cells, ~30× the statistics, level biased
+  by the arm's own trigger. The unbiased maps are a separate slide, rebinned
+  to 100 mm; the grids are aligned to the channel edges so that this works.
+- **The emulated trigger thresholds are measured** (`extract.WALL_THR/PLAS_THR`,
+  2026-10-06): the 0.5 % low edge of each arm's own triggers, flat to ~1 mV
+  over the campaign. The run_79 read-back had the plastic 3–6 mV high.
+- **`LATE_MS` stays at 10 ms** (`checks.late_scan`): earlier bins hold < 15 %
+  of the late statistics and their accidental-corrected efficiency has not
+  converged. Loosening it buys nothing.
+- Arm D's unbiased sample is ~15× the others' (a third of its late tracks sit
+  on events another arm triggered). Not yet understood.
 - `tan_err` in the track tables is a constant placeholder. Don't split on it.
