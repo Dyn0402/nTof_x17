@@ -357,6 +357,102 @@ def set_w0kw(work: Path, arm: str, label: str, bundle: str) -> dict:
 
 
 # --------------------------------------------------------------------------- #
+# The t0 prior, measured in situ.  The bench found the free fit's chi2 has
+# near-degenerate t0 minima one depth bin (60 ns) apart and that t0 trades
+# against the slope; only ~35 % of free fits landed in the right one without
+# the external-clock prior (T1.1).  `make_bundle` drops that prior for n_TOF
+# (the bench table belongs to the bench trigger).  For a scintillator-triggered
+# cosmic the true t0 per ftst phase should be sharp, so measure it here with
+# the geometry pinned to the truth.
+def v_geom(work: Path, arm: str, label: str = 'prod') -> dict:
+    """Per-plane geometric v under a bundle's kernel: slope of the TRAIN free
+    fits' w against the true tan, |t| 0.1-0.5 (S8: never the ref-pinned v)."""
+    T = pd.read_parquet(work / 'truth.parquet')
+    T = T[(T.arm == arm) & T.train]
+    M = T.merge(pd.read_parquet(work / f'reco_{label}_{arm}.parquet'), on=['subrun', 'event_id'])
+    out = {}
+    for ax in 'xy':
+        t, w = M[f'tan_{ax}'].to_numpy(), M[f'{ax}_w'].to_numpy() * 1e3
+        m = np.isfinite(w) & (np.abs(t) > 0.1) & (np.abs(t) < 0.5)
+        out[ax] = float(np.polyfit(t[m], w[m], 1)[0])
+    return out
+
+
+def _t0_one(payload):
+    from wft import model as wm
+    key, vg = payload
+    ev = _HEV[key]
+    out = {}
+    for plane in ('x', 'y'):
+        P = ev[plane]
+        W = np.asarray(P['W'])
+        if W.shape[1] != wm.NSAMP:
+            wm.set_nsamp(W.shape[1])
+        Wp, noise, pos, sat = wm.prep_plane(P, plane)
+        w = ev[f'tan_{plane}'] * vg[plane] * 1e-3
+        p0r = ev[f'ref_mesh_{plane}']
+        b = (np.inf, p0r, 0.0)
+        for p0 in p0r + np.arange(-0.6, 0.61, 0.1):
+            for t0 in np.arange(-300.0, 451.0, 10.0):
+                c = wm.chi2_plane(plane, Wp, noise, pos, sat, p0, w, t0, wm.HYPER)[0]
+                if c < b[0]:
+                    b = (c, float(p0), float(t0))
+        out[plane] = dict(t0=b[2], p0=b[1], ftst=int(ev.get(f'ftst_{plane}', -1)))
+    return key, out
+
+
+def t0meas(work: Path, arm: str, bundle: str, label: str, jobs: int) -> pd.DataFrame:
+    from concurrent.futures import ProcessPoolExecutor
+    cache_path = work / f'cache_{arm}.pkl'
+    with open(cache_path, 'rb') as f:
+        E = pickle.load(f)
+    keys = sorted(E)
+    vg = v_geom(work, arm, label)
+    rows = []
+    with ProcessPoolExecutor(max_workers=jobs, initializer=_hinit,
+                             initargs=(str(cache_path), bundle, keys)) as pool:
+        for key, o in pool.map(_t0_one, [(k, vg) for k in keys], chunksize=4):
+            for plane, d in o.items():
+                rows.append(dict(key=key, plane=plane, train=E[key]['train'],
+                                 tan=E[key][f'tan_{plane}'], **d))
+    D = pd.DataFrame(rows)
+    D.to_parquet(work / f't0meas_{label}_{arm}.parquet', index=False)
+    mad = lambda v: float(1.4826 * np.median(np.abs(v - np.median(v))))  # noqa: E731
+    for plane, g in D[D.train].groupby('plane'):
+        print(f'[t0 {arm}{plane}] v_geom {vg[plane]:.2f}; per ftst: ' + ', '.join(
+            f'{f}: {np.median(h.t0):+.0f} (MAD {mad(h.t0):.0f}, n={len(h)})'
+            for f, h in g.groupby('ftst')))
+    return D
+
+
+def mkbundle(work: Path, arm: str, src: str, label: str, v: float | None,
+             t0_label: str | None, sigma: float, hyper: str | None = None) -> str:
+    """A production-kernel bundle with an explicit v and, optionally, the
+    in-situ t0 prior (median truth-pinned t0 per plane and ftst, TRAIN only)."""
+    from wft.calib import CalibrationBundle
+    cal = CalibrationBundle.load(src)
+    if v:
+        cal.v_drift = float(v)
+    cal.w0, cal.kw = {}, {}
+    if hyper:
+        for kv in hyper.split(','):
+            k_, v_ = kv.split('=')
+            cal.hyper[k_] = float(v_)
+    if t0_label:
+        D = pd.read_parquet(work / f't0meas_{t0_label}_{arm}.parquet')
+        D = D[D.train]
+        cal.t0_abs = {p: {int(f): float(np.median(h.t0)) for f, h in g.groupby('ftst') if len(h) >= 5}
+                      for p, g in D.groupby('plane')}
+        cal.t0_prior_sigma = float(sigma)
+    cal.provenance = dict(cal.provenance)
+    cal.provenance.update(insitu=f'insitu_calib mkbundle {label}: v={cal.v_drift}, '
+                                 f't0 prior {t0_label} sigma={sigma if t0_label else 0}')
+    out = _guard(work / 'bundles' / f'{label}_{arm}')
+    cal.save(str(out), note=f'insitu {label}')
+    return str(out)
+
+
+# --------------------------------------------------------------------------- #
 def reco(work: Path, arm: str, bundle: str, label: str, jobs: int, split: str = 'all'):
     """The production driver on the truth events, under `bundle`."""
     from ntof_tracking import wft_beam as WB
@@ -422,7 +518,13 @@ def score(work: Path, arm: str, label: str, split: str = 'test') -> dict:
 # --------------------------------------------------------------------------- #
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split('\n')[1])
-    ap.add_argument('step', choices=('truth', 'cache', 'profile', 'reco', 'score', 'hyper', 'w0kw'))
+    ap.add_argument('step', choices=('truth', 'cache', 'profile', 'reco', 'score', 'hyper', 'w0kw',
+                                     't0meas', 'mkbundle', 'corridor', 'implied', 'joint', 'dtxy'))
+    ap.add_argument('--table', default=None)
+    ap.add_argument('--hyper', default=None, help='override hypers, e.g. Dp=0.03,sigma_p0=0.2')
+    ap.add_argument('--v', type=float, default=None)
+    ap.add_argument('--t0-label', default=None)
+    ap.add_argument('--sigma', type=float, default=5.0)
     ap.add_argument('--maxiter', type=int, default=250)
     ap.add_argument('--ratio', type=float, default=0.6)
     ap.add_argument('--work', required=True)
@@ -449,12 +551,160 @@ def main() -> int:
         reco(work, a.arm, bundle, a.label, a.jobs, a.split)
     elif a.step == 'hyper':
         hyper_fit(work, a.arm, bundle, a.label, a.jobs, a.maxiter, a.ratio)
+    elif a.step == 'corridor':
+        corridor_fit(work, a.arm, bundle, a.label, a.jobs)
+    elif a.step == 'joint':
+        joint_fit(work, a.arm, bundle, a.label, a.jobs)
+    elif a.step == 'dtxy':
+        set_dt_xy(work, a.arm, a.t0_label, bundle)
+    elif a.step == 'implied':
+        print(implied_v(work, a.arm, a.table).round(3).to_string())
+    elif a.step == 't0meas':
+        t0meas(work, a.arm, bundle, a.label, a.jobs)
+    elif a.step == 'mkbundle':
+        print(mkbundle(work, a.arm, bundle, a.label, a.v, a.t0_label, a.sigma, a.hyper))
     elif a.step == 'w0kw':
         set_w0kw(work, a.arm, a.label, bundle)
     elif a.step == 'score':
         print(json.dumps(score(work, a.arm, a.label, a.split if a.split != 'all' else 'test'), indent=1))
     return 0
 
+
+
+
+# --------------------------------------------------------------------------- #
+# Window test: the PRODUCTION fit function (`wft.reco.fit_plane`) on the wide
+# truth-corridor windows of the cache instead of the seed-cluster windows.
+# Isolates the seeder/window from the model.  Uses truth only to place the
+# window, never in the fit.
+def _wfit_one(payload):
+    from wft import reco as wreco
+    key, = payload
+    ev = _HEV[key]
+    out = {}
+    for plane in ('x', 'y'):
+        f = wreco.fit_plane(ev[plane], plane, wreco._CAL)
+        out[plane] = (np.nan, np.nan, np.nan) if f is None else (f.w, f.t0, f.p0)
+    return key, out
+
+
+def _winit(cache_path, bundle_path, keys):
+    from wft import reco as wreco
+    _hinit(cache_path, bundle_path, keys)
+    wreco._worker_init(bundle_path)
+    # A/B knob for the coarse slope scan's half-range [mm/ns]
+    if os.environ.get('INSITU_W_SCAN_HALF'):
+        wreco.W_SCAN_HALF = float(os.environ['INSITU_W_SCAN_HALF'])
+
+
+def corridor_fit(work: Path, arm: str, bundle: str, label: str, jobs: int, split: str = 'all'):
+    from concurrent.futures import ProcessPoolExecutor
+    cache_path = work / f'cache_{arm}.pkl'
+    with open(cache_path, 'rb') as f:
+        E = pickle.load(f)
+    keys = sorted(k for k, e in E.items() if split == 'all' or e['train'] == (split == 'train'))
+    rows = []
+    with ProcessPoolExecutor(max_workers=jobs, initializer=_winit,
+                             initargs=(str(cache_path), bundle, keys)) as pool:
+        for key, o in pool.map(_wfit_one, [(k,) for k in keys], chunksize=4):
+            sub, eid = key.split(':')
+            r = dict(subrun=sub, event_id=int(eid))
+            for plane, (w, t0, p0) in o.items():
+                r[f'{plane}_w'], r[f'{plane}_t0'], r[f'{plane}_p0'] = w, t0, p0
+            rows.append(r)
+    R = pd.DataFrame(rows)
+    R.to_parquet(work / f'corr_{label}_{arm}.parquet', index=False)
+    return R
+
+
+def implied_v(work: Path, arm: str, table: str, split: str = 'test') -> pd.DataFrame:
+    """|w| / |tan_true| in bins of |tan_true| -- flat for an honest
+    reconstruction (the bench's implied-v flatness test) -- plus the head-on
+    scatter of w (in tan units at the core v)."""
+    T = pd.read_parquet(work / 'truth.parquet')
+    T = T[T.arm == arm]
+    if split != 'all':
+        T = T[T.train == (split == 'train')]
+    M = T.merge(pd.read_parquet(work / table), on=['subrun', 'event_id'])
+    rows = []
+    for ax in 'xy':
+        t, w = M[f'tan_{ax}'].to_numpy(), M[f'{ax}_w'].to_numpy() * 1e3
+        ok = np.isfinite(w)
+        t, w = t[ok], w[ok]
+        core = (np.abs(t) > 0.15) & (np.abs(t) < 0.45)
+        vc = float(np.median(w[core] / t[core]))
+        for lo, hi in ((0, 0.04), (0.04, 0.08), (0.08, 0.12), (0.12, 0.2), (0.2, 0.3), (0.3, 0.45), (0.45, 0.7)):
+            m = (np.abs(t) >= lo) & (np.abs(t) < hi)
+            if m.sum() < 5:
+                continue
+            r = (w[m] / vc - t[m])
+            rows.append(dict(axis=ax, lo=lo, hi=hi, n=int(m.sum()), v_core=vc,
+                             implied_v=float(np.median(w[m] / t[m])) if lo >= 0.08 else np.nan,
+                             sigma_tan=float(1.4826 * np.median(np.abs(r - np.median(r)))),
+                             tail=float((np.abs(r) > 0.15).mean()),
+                             sign_ok=float((np.sign(w[m]) == np.sign(t[m])).mean())))
+    return pd.DataFrame(rows)
+
+
+
+# --------------------------------------------------------------------------- #
+# Joint test: per-plane production fits, then `wft.model.fit_joint` seeded
+# from them -- ONE charge profile shared by x and y (per-plane scale) and t0
+# tied through the x-y offset.  X and Y read the same ionisation column at the
+# same times, so independent per-plane t0s (production) are a freedom the
+# physics does not have; measured here, the truth-pinned t0x - t0y scatters by
+# 89 ns (MAD) even at equal ftst.
+def _jfit_one(payload):
+    from wft import reco as wreco
+    from wft import model as wm
+    key, = payload
+    ev = _HEV[key]
+    f = {p: wreco.fit_plane(ev[p], p, wreco._CAL) for p in ('x', 'y')}
+    out = dict(key=key)
+    for p in ('x', 'y'):
+        out[f'{p}_w_sep'] = f[p].w if f[p] else np.nan
+    if f['x'] is None or f['y'] is None:
+        return out
+    fd = int(ev.get('ftst_x', 0)) - int(ev.get('ftst_y', 0))
+    try:
+        r = wm.fit_joint(ev['x'], ev['y'], fd, f['x'].p0, f['x'].w, f['y'].p0, f['y'].w, f['x'].t0)
+        out.update(x_w=r['wx'], y_w=r['wy'], x_p0=r['p0x'], y_p0=r['p0y'], t0=r['t0'],
+                   chi2=r['chi2'], dof=r['dof'])
+    except Exception:
+        pass
+    return out
+
+
+def joint_fit(work: Path, arm: str, bundle: str, label: str, jobs: int, split: str = 'test'):
+    from concurrent.futures import ProcessPoolExecutor
+    cache_path = work / f'cache_{arm}.pkl'
+    with open(cache_path, 'rb') as f:
+        E = pickle.load(f)
+    keys = sorted(k for k, e in E.items() if split == 'all' or e['train'] == (split == 'train'))
+    rows = []
+    with ProcessPoolExecutor(max_workers=jobs, initializer=_winit,
+                             initargs=(str(cache_path), bundle, keys)) as pool:
+        for o in pool.map(_jfit_one, [(k,) for k in keys], chunksize=2):
+            sub, eid = o.pop('key').split(':')
+            rows.append(dict(subrun=sub, event_id=int(eid), **o))
+    R = pd.DataFrame(rows)
+    R.to_parquet(work / f'joint_{label}_{arm}.parquet', index=False)
+    return R
+
+
+def set_dt_xy(work: Path, arm: str, t0_label: str, bundle: str):
+    """In-situ x-y t0 offset per ftst difference, from the truth-pinned t0s."""
+    from wft.calib import CalibrationBundle
+    D = pd.read_parquet(work / f't0meas_{t0_label}_{arm}.parquet')
+    x, y = D[D.plane == 'x'].set_index('key'), D[D.plane == 'y'].set_index('key')
+    J = x[['t0', 'ftst']].join(y[['t0', 'ftst']], lsuffix='_x', rsuffix='_y').dropna()
+    J = J[J.index.isin(D[D.train].key)]
+    dt = {int(k): float(np.median(g.t0_x - g.t0_y)) for k, g in
+          J.groupby(J.ftst_x - J.ftst_y) if len(g) >= 10}
+    cal = CalibrationBundle.load(bundle)
+    cal.dt_xy = dt
+    cal.save(bundle, note=f'in-situ dt_xy from {t0_label}')
+    print(f'[dt_xy {arm}] {dt}')
 
 if __name__ == '__main__':
     raise SystemExit(main())

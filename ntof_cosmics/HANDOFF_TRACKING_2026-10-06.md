@@ -481,3 +481,77 @@ Next, in order:
    (different trigger path) and redo the beam/cosmic comparison of §7c with it.
 3. Widen `W_SCAN_HALF` (it covers only |tan| ≤ 0.56 at A's v); beam tracks
    exceed that.
+
+---
+
+## 9 · Head-on solved (seeder), readout ruled out, C kernel open (2026-10-06/07)
+
+Work dir is now **durable**: `~/scratch/ntof_insitu` (17 GB waveforms, caches,
+reco tables; `fetch.sh`, `subs.txt` there). New: **`seed_test.py`**, and
+`insitu_calib.py` steps `t0meas`, `mkbundle --hyper`, `dtxy`, `corridor`,
+`joint`, `implied`. Bench scripts `degrade.py`, `degrade_crop.py` and
+`noise_inject.py` are in the work dir.
+
+**The head-on failure was the seeder, not the fit.**
+- Beam seeder minimum `MIN_STRIPS_BEAM = 5`; bench `wft.seed.MIN_STRIPS = 3`.
+  At n_TOF S/N a near-normal track has only 3–4 strips over threshold.
+- Same triggers (clusters in both A and C), same bundle and fit, min 5 → 3:
+  - one-track A–C pairs 945 → **1,570**;
+  - A x true |tan| 0.02–0.08: 34 → 205 tracks, σ_tan 0.18–0.22 → **0.03–0.06**;
+  - C x 0.04–0.08: σ 0.24–0.44 → 0.06–0.08;
+  - core unchanged.
+- Only |tan| < 0.02 remains poor (σ ~0.15).
+- The |j| distribution still dips below 0.04 (≈50 vs ≈85 per 0.02), so some
+  loss remains.
+- **This loss applies to beam data too**: capsule tracks have a 16 % quantile
+  of |tan| 0.07–0.12.
+
+**Ruled out, with bench M3 truth.** Bench det3 events, production fit, bench
+bundle (`degrade*.py`, `noise_inject.py`). Head-on and linearity stay fine
+under all of:
+- S/N ÷ 3 and ÷ 8;
+- cropped to 20 samples starting at bench sample 6/7/8;
+- real n_TOF noise injected.
+
+So n_TOF's 7–10× lower S/N (brightest strip 40–57σ against 300–440σ),
+framing and noise character are **not** the cause. Also ruled out on n_TOF
+data: fit window/seeder pad (truth-corridor windows give identical results);
+the w-scan range (0.021 → 0.035: no change); Dp scan (small-angle push only).
+
+**t0.** Per-plane t0 is unconstrained in the free fit: truth-pinned t0x − t0y
+scatters by 89 ns even at equal ftst. It moves (t0, p0) together. Fitted-t0
+late tracks read 4–12 % steeper, but a t0 prior from these medians would be
+arbitrary. The joint x–y fit (`wft.model.fit_joint`, unused in production)
+flattens A y slightly and improves core σ to ~0.024. Head-on is unchanged.
+
+**Remaining response (seed min 3; implied v = w/tan_true, µm/ns):**
+
+| plane | 0.10–0.15 | 0.20–0.25 | 0.35–0.45 | 0.45–0.60 |
+|---|---|---|---|---|
+| A x | 40.2 | 38.2 | 36.7 | 32.3 |
+| A y | 38.9 | 38.3 | 37.8 | 36.1 |
+| C x | 30.9 | 28.3 | 26.2 | 21.9 |
+| C y | 30.1 | 27.5 | 25.2 | 24.5 |
+
+- A y is flat; A x is mildly S-shaped.
+- C is the problem chamber. It runs the old det6 lp kernel. Swapping in the
+  det3 r06 kernel flattens it partly (C x 32.3 → 27.9) but its core tails stay
+  10–17 % (A 4–7 %).
+
+**Recipe so far (to validate before shipping):**
+1. seeder minimum 3;
+2. per-plane geometric v from free fits against the A–C line (A ≈ 38.6/37.7,
+   C ≈ 28.4/27.7 with the r06 kernel), never the 42.6 prior and never the
+   ref-pinned v;
+3. joint x–y fit as an option to evaluate.
+
+**Next:**
+1. Run seed min 3 on a beam sub-run (run_145/147). Check junk/purity (gate
+   pass rates, χ²/dof, isochronous deposits) and the near-normal capsule-track
+   yield. `MIN_STRIPS_BEAM = 5` was set for beam junk ("a column, not a
+   single-strip deposit").
+2. C: in-situ kernel work. Fit only the kernel (template, v and diffusion
+   fixed) with a free-fit-closure objective, or start from r06. Then the
+   residual A x S-shape.
+3. Then a campaign re-pass (condor) with the new seeder, v and bundles, and
+   redo §7c's beam/cosmic comparison on it.
