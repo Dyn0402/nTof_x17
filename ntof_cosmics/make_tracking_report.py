@@ -130,8 +130,10 @@ def figures(run, sub, S, P, T) -> list[tuple[str, str]]:
                 'Each chamber\'s reconstructed track slope against the slope of '
                 'the straight line through the two chambers\' track points: a '
                 'capsule-free angle-scale check. A lies above the diagonal in '
-                'both projections and C below it, so the borrowed k is too small '
-                'for A and too large for C. C\'s x slope also scatters (corr '
+                'both projections, so its tans read too large and the borrowed k '
+                'is too LARGE for A (s/j = k_borrowed/k_true); C sits near or below '
+                'it. The pooled run_149 analysis (pooled/report.html) shows the '
+                'ratio also depends on angle. C\'s x slope also scatters (corr '
                 f"{sc.set_index(['arm', 'axis'])['corr'][('C', 'x')]:.2f}), which "
                 'the median ratio is robust to and the least-squares ratio is '
                 'not.'))
@@ -247,7 +249,10 @@ as on the beam-on sample.</li>
 <h2>Angle scale without the capsule</h2>
 <p>Track slope ÷ slope of the line through both chambers' track points, on
 clean A–C through-goers, for |joined slope| &gt; 0.1. A ratio of 1 means the
-borrowed k is right; k<sub>true</sub> ≈ k<sub>borrowed</sub> × ratio.</p>
+borrowed k is right; the ratio is k<sub>borrowed</sub> / k<sub>true</sub>, so
+above 1 means the tan reads too large. <b>Superseded</b> by the pooled run_149
+analysis, <code>pooled/report.html</code>: the ratio depends on angle, so no
+single k<sub>true</sub> exists.</p>
 <table><thead><tr><th>arm</th><th>axis</th><th>n</th><th>median (147)</th>
 <th>median (150)</th><th>LSQ (150)</th><th>corr (150)</th></tr></thead>
 <tbody>{slope_rows}</tbody></table>
@@ -260,10 +265,10 @@ borrowed k is right; k<sub>true</sub> ≈ k<sub>borrowed</sub> × ratio.</p>
 <li><b>~40 clean events.</b> Every percentage above has a ±7 % binomial error
 or worse. The other 86 sub-runs of run_149 (cluster 4355060) take this to
 ~3 500.</li>
-<li><b>The 170° efficiency includes the angle-scale error.</b> If A is ~10 %
-too shallow and C ~10 % too steep, the opening angle of a straight line is
-smeared by that alone; once k is fixed the fraction above 170° should rise.
-Re-measure with a cosmic-derived k before moving the cut.</li>
+<li><b>The 170° efficiency includes the angle-scale error.</b> A's tans read
+~10 % too large under the borrowed k, and the response is angle-dependent
+(pooled/report.html), so a straight line's opening angle is smeared by that
+alone. Do not move the cut until the angle response is settled.</li>
 <li><b>"Clean" is a selection on line agreement</b>, so it favours pairs where
 the two chambers agree and pulls the slope ratios toward 1. The departures
 above are therefore if anything understated. The unclean tail (lines missing

@@ -1,5 +1,13 @@
 # HANDOFF — pooled run_149 cosmic tracks: the capsule-free angle scale, then validate on beam
 
+> **⚠ Read §7 first (review, 2026-10-06 afternoon).** Several statements in
+> §0–§2 below are wrong and are kept only as the record. The slope ratio is
+> s/j = k_borrowed / k_true, **not** k_true ≈ k_borrowed × ratio. So A's tans
+> read ~10 % too **large** (not "too shallow"), and step 4's `--k-scale A=1.10`
+> would double the error. The ratio is not flat in angle (step 1 answered: stop,
+> do not apply). The C "estimator problem" is not regression dilution. Beam
+> tracks are not near-normal. Results: `results/tracking/pooled/report.html`.
+
 **Written 2026-10-06.** Continues [`HANDOFF_TRACKING_2026-10-02.md`](HANDOFF_TRACKING_2026-10-02.md)
 (read its §0, §1b and §5 first — this file does not repeat them). Entry point
 for the package: [`README.md`](README.md). Live note:
@@ -305,3 +313,117 @@ It ran at ~1 sub-run per minute (87 in ~90 min), 0 failures.
 - Not "A should be rescaled by 1.10 in the beam analysis". That needs steps 1
   and 5.
 - Not anything about B and D.
+
+---
+
+## 7 · Review and steps 1–2, 2026-10-06 afternoon
+
+Code: **`angle_response.py`** (sample, response, resolution, flag test, beam
+test) and **`make_pooled_report.py`** → `results/tracking/pooled/report.html`
++ `figures/` (each PNG has its CSV beside it). Reproduce:
+
+    .venv/bin/python -W ignore ntof_cosmics/angle_response.py      # ~10 s, needs the per-sub-run tables + campaign track table
+    .venv/bin/python -W ignore ntof_cosmics/make_pooled_report.py
+
+### 7a · Corrections to §0–§2
+
+- **Direction.** s = k_b·tan_raw and j is truth, so s/j = k_b/k_true. Under a
+  single-k summary (sep < 20 mm, |j| > 0.1): k_A = 1.110–1.119, k_C = 1.50 (x)
+  and 1.63 (y), the same under either borrowed k to < 0.01. Beam k_arm is A
+  1.22–1.24, C 1.45–1.53. "The k choice moves the ratio by ~0.02" is just
+  ratio ∝ k_b. It is **not** a systematic: `raw = s/k_b` agrees to 1e-15 across
+  the two tables.
+- **Regression dilution (step 2) does not apply.** The lever arm is 469 mm, so
+  σ_j ≈ 0.002, and least squares handles the noise in s. Least squares and the
+  median differ because the ratio trends with |j|. Deming/Theil–Sen would not
+  settle C. The trend does.
+- **Angle overlap.** Beam pointing tracks have |tan| at 16/50/84 % of
+  0.07–0.18 / 0.23–0.31 / 0.42–0.58 (A, C; x and y). That is the cosmic range,
+  so the angle-range worry in §1 does not apply.
+
+### 7b · Step 1 answered: the ratio is not flat. Stop, do not apply.
+
+Primary selection: one gated track per arm, sep < 60 mm. The 20 mm cut and
+no cut agree. raw/true per unit |tan| (sub-run bootstrap):
+
+| | A x | A y | C x | C y |
+|---|---|---|---|---|
+| trend | −0.28 ± 0.02 | −0.09 ± 0.02 | −0.34 ± 0.02 | −0.23 ± 0.02 |
+
+A gradient plus a small outward offset (~0.02 raw) describes it. That is why
+k_arm's band k > track k in **every** arm and run (A 1.29/1.24, C 1.71/1.53,
+D 1.87/1.73, B 2.67/2.17). So k is not purely a drift-velocity number, and
+`build_tracks`' `v_insitu = v/k` carries an angle effect into depth. The drift
+span of through-goers (all cross the full gap) gives A ≈ 39 µm/ns and C ≈
+34 µm/ns. That is indicative only (5 % threshold, 60 ns bins, 13–21 % railed).
+
+### 7c · Beam test (step 5, first half): the cosmic response does NOT transfer
+
+This uses k_arm's pointing-coincident sample, rebuilt from the campaign table
+(`coinc_this_arm` + charge window + lever window); it reproduces k_arm per
+sub-run to ~3 %. The local `k_arm.coincident_tracks` finds only ~10 % of
+condor's sample: the slim export differs, not debugged. Runs 145/147/150/152:
+
+- The beam response is **much steeper** than the cosmic one. A x raw/true goes
+  1.01 → 0.71 over |tan| 0.1 → 0.5 (cosmic 0.95 → 0.88); C x 0.89 → 0.46
+  (cosmic 0.74 → 0.60). They meet only at |tan| ≈ 0.15–0.22.
+- It is a shift of the whole distribution in each bin, not a contamination
+  tail.
+- Cosmic-corrected beam tans leave k_arm's band/track at 1.14–1.18 / 1.10–1.13
+  in A and 1.06–1.18 / 0.90–1.03 in C, not 1.
+- What has been ruled out:
+  - A's position: the cosmic ratio varies 3–7 % over the lever range, with no
+    trend.
+  - Charge: ~5 % lowest-to-highest quartile, in both samples.
+- Partly explained: C reads ~9–10 % lower for outward-going tracks, and every
+  beam track is outward.
+- Untested candidates: the particle (low-energy Compton electrons vs MIP
+  muons; the beam ratio scatter is 2–3× the cosmic one), and the beam truth
+  model (lever/234.6 assumes a line source on the axis at the pinwheel foot).
+
+**This is the open question now.** By §2 step 5's own rule the disagreement is
+the result. No correction ships, and neither k (cosmic or beam) is a validated
+single number.
+
+### 7d · Near normal incidence, and the `slope_reliable` flag
+
+- Per-track σ_tan against the joined line, after the cosmic correction:
+  - |tan| 0.12–0.45: 0.027–0.058
+  - |tan| < 0.04: 0.24–0.41
+  - |tan| 0.04–0.08: 0.09–0.30
+- `tan_err` is a constant (0.022 A / 0.026 C); pulls run 1.3 in the core and
+  9–16 near normal.
+- `wft` `slope_reliable` (|raw tan| ≥ `TAN_MIN_SLOPE` = 0.08) is set on the
+  *reconstructed* tan. The fit pushes near-normal tracks away from zero, so
+  64–90 % of truly near-normal gated tracks are flagged reliable, and the median
+  true |tan| of "unreliable" tracks is 0.09–0.12. `det_a_intra`'s `slope`
+  selection rests on this flag.
+- Straightness (step 3, partial): of 2,327 clean crossings (sep < 10 mm), 1.9 %
+  (A) and 1.5 % (C) have a second gated track. All of them are ≥ 6 cm away and
+  share no view, so they are second particles, not ghosts or splits.
+
+### 7e · Revised next steps
+
+1. **Why beam ≠ cosmic** (blocks every angle calibration):
+   - Test the beam truth model: is the response curve stable under a tighter
+     pointing / capsule selection, and per y-band?
+   - Test the particle: Geant4 Compton electrons through the forward model, or
+     beam tracks split by q_per_len / chi2.
+   - C outward vs inward is already measured on cosmics.
+2. **Replace the single k by a binned response** wherever opening angles
+   matter: `k_arm` in |tan| bins on beam data, the same table as
+   `beam_response.csv`. This is for the beam analysis and its truth caveat
+   applies. Then reconsider `v_insitu = v/k`.
+3. **Near-normal:** find a flag that works against truth (chi2/dof, n_strips,
+   the x/y q_uend asymmetry), because `slope_reliable` does not.
+4. **For the same-chamber two-track work** (worktree `nTof_x17_tt`):
+   - add a near-normal case to the `pair_angle` oracle (it sits at tan 0.3);
+   - build an angle-dependent σ(|tan|) error model from `resolution.csv`;
+   - consider cosmic donors with joined-line truth for the intra bench. That
+     needs the run_149 waveforms, which are on EOS, not local.
+5. Unchanged from §2 step 6: run_133/134 (the 128–147 block), B/D (needs
+   horizontal cosmics), the 170° cut (deferred until the angle response is
+   settled), and the clock match at scale.
+
+Not done: the live note (`make_deck.py`) and the X17 board were **not**
+updated; both are outward-facing and wait for Dylan.

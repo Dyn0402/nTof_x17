@@ -14,6 +14,10 @@ the timing direction, and the beam-off runs have never been read.
 | `make_report.py` | `results/report.html` from those CSVs |
 | `clock_match.py` | beam-off DREAM triggers onto the n_TOF clock, staged (coarse → drift → κ → per-bunch δ_b, leave-one-out) → `results/clock_match/` |
 | `make_clock_report.py` | `results/clock_match/report.html` + figures |
+| `cosmic_tracks.py` | per-sub-run fetch / build (borrowed k) / analyse of the full-pass reco → `results/tracking/k_<run>/` |
+| `pool_tracking.py` | pools the per-sub-run pairs of a run (bootstrap over sub-runs) → `results/tracking/pooled/` |
+| `angle_response.py` | the A/C angle response against the joined A–C line, resolution vs angle, `slope_reliable` test, beam test → `results/tracking/pooled/` |
+| `make_pooled_report.py` | `results/tracking/pooled/report.html` + figures; current state in `HANDOFF_TRACKING_2026-10-06.md` §7 |
 | `make_deck.py` | the slide note, live at <https://dylan-neff.web.cern.ch/notes/beam-off-cosmics.html> → `results/deck/beam-off-cosmics.html` |
 
 Inputs: `dylan-cern-site/data/x17-runs.json` and `x17-match.json`; the local
