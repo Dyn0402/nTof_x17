@@ -1,6 +1,6 @@
 # Two-track limit — where it stands and how to resume
 
-**Updated 2026-10-02.** This is the handoff. The task is
+**Updated 2026-10-07.** This is the handoff. The task is
 `HANDOFF_TWO_TRACK_LIMIT.md`. The full record, with every measurement, is
 `TWO_TRACK_FIT_LOG.md` (entries 2026-09-29 → 2026-10-01). The report is
 `~/x17/sept26_prelim/two_track_limit/report/report.html`, built by
@@ -9,6 +9,15 @@
 Everything is committed and pushed on branch `two-track-joint-fit`. Every
 production change is **opt-in**. With the switches off, output is production's,
 bit for bit.
+
+> **Same-chamber pairs have a second thread.** Branch `beam-off-cosmics`
+> measures single-track angles against through-going cosmics (run_149). It found
+> that the production bundles' v = 42.6 prior is wrong (in situ: A ≈ 38, C ≈ 28
+> µm/ns), and that the beam seeder's 5-strip minimum loses head-on tracks. Both
+> change what this study calibrated on. In particular, **F = 1200 / 2400 was set
+> on the v = 42.6 bundles and must be re-derived on new bundles.** Map, and how
+> the two threads constrain each other:
+> [`SAME_CHAMBER_PAIRS.md`](SAME_CHAMBER_PAIRS.md).
 
 ## In one paragraph
 
@@ -19,9 +28,11 @@ far from both. The **fixed chain** (`WFT_TWO_TRACK_SCALE=two`,
 pairing** closes much of the gap. On the full overlay bench, coincident pairs:
 A < 12 mm goes 19 → 58 % and 12–24 mm goes 48 → 79 %; C goes 36 → 49 % and
 57 → 69 %. It **passes the split-ab contract on real triggers in both chambers,
-all seven tags**. One question is still open: is C's threshold (F = 2400) too
-strict? A one-pass rescan of F on real triggers is running on condor to answer
-it.
+all seven tags**. The F rescan on real triggers (merged 2026-10-07) answers
+the last open question: C's threshold is **not** too strict. The bench-matched
+F (A 1200, C 2400) is already the lowest meeting the contract in both chambers;
+one step lower fails (A 1000: 0.83 %, C 2000: 0.76 % clean singles split).
+What remains is Dylan's ship decision.
 
 ## Where it stands
 
@@ -31,8 +42,8 @@ it.
 | Fixed chain at matched F, overlay bench, 7 tags | done — cluster 4334051 |
 | Fixed + profc pairing, overlay bench, 7 tags | done — cluster 4334051 |
 | split-ab contract, fixed vs current, 7 tags | **done, A and C pass** — cluster 4334051 |
-| F rescan on real triggers (split-ab ladder) | **running** — cluster 4348153, submitted 2026-10-01 22:15 |
-| Choose operating F per chamber | waiting on the rescan |
+| F rescan on real triggers (split-ab ladder) | **done** — cluster 4348153, merged 2026-10-07; ladder reproduces the fixed runs exactly at A 1200 / C 2400 |
+| Choose operating F per chamber | **A 1200, C 2400** (pick = matched) |
 | Ship to production (bundles, condor env, re-pass) | **Dylan's decision**, not started |
 
 ### The contract result (cluster 4334051, merged 2026-10-01)
@@ -54,7 +65,7 @@ production does. It is inside the contract with room to spare. The bench says a
 lower F buys pairs: C fixed resolves 58 % at F = 2400, 69 % at 1200 and 70 % at
 1000. The rescan measures how low F can go on real triggers.
 
-### The F rescan (cluster 4348153, running)
+### The F rescan (cluster 4348153, merged 2026-10-07)
 
 This is one pass of split-ab of the fixed chain: A and C, 7 tags × 8 event
 shards, 112 jobs. C shards take about 14 h. Every F in

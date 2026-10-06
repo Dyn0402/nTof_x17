@@ -38,6 +38,10 @@ check the migration status table in `RECONSTRUCTION_BASIS.md` first.
   channel and per chip. Two of its findings are campaign-wide and are listed
   under "Two n_TOF conditions" below; read them before comparing anything
   across 23 July or using chamber A in run_79.
+- **Same-chamber pair reconstruction** spans two branches (two-track separation on
+  `two-track-joint-fit`; single-track angle truth and the seeder on
+  `beam-off-cosmics`). Map of both, and how they constrain each other:
+  `sept26_prelim_analysis/SAME_CHAMBER_PAIRS.md`.
 - `common/` — strip maps, active area, shared config.
 - Bench data: `/media/dylan/data/x17/cosmic_bench` (mirror at
   `~/x17/cosmic_bench`); waveforms in `<run>/<subrun>/decoded_root`.

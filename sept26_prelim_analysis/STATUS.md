@@ -55,6 +55,14 @@ drifts. **Do not build an opening-angle spectrum on a borrowed `k` for C or D.**
 
 Last updated **2026-09-16** (**the joint two-track fit exists and recovers pairs below 12 mm for the first time** — see the box below; 2026-09-14: **the re-pass is pushed to OCTOBER** and [`OCTOBER_2026.md`](OCTOBER_2026.md) is the standing list — two-track recovery is the gating item; two tracks in one chamber: a truth bench and two opt-in reconstruction fixes, below; and on 2026-09-10: arm-A tracks are now confirmed positionally against the scintillators, and the wall measures the angle scale; the FULL pass is complete; per-run capsule imaging says the geometry is sound and the angle scale is the fault; the campaign opening-angle spectra exist).
 
+> ## SAME-CHAMBER PAIRS: TWO THREADS ON TWO BRANCHES -- 2026-10-07
+>
+> Two-track separation (`two-track-joint-fit`, worktree `nTof_x17_tt`) and single-track
+> angle truth from beam-off cosmics (`beam-off-cosmics`) are the two halves of reconstructing
+> a pair in one chamber. They share the seeder and the bundles, so each invalidates the
+> other's calibration. Read [`SAME_CHAMBER_PAIRS.md`](SAME_CHAMBER_PAIRS.md) first.
+> 2026-10-07: the two-track F rescan confirms A 1200 / C 2400 (on the old v = 42.6 bundles).
+
 > **START HERE:** [`HANDOFF_FULLPASS_2026-09-10.md`](HANDOFF_FULLPASS_2026-09-10.md)
 > — why the full pass happened, what it produced, and the run_86 test that now
 > blocks the opening angle. The entries below are the working record behind it.

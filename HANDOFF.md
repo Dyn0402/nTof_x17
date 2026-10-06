@@ -1,6 +1,10 @@
 # Handoff
 
-## Two-track limit: relative angle of the pairs — updated 2026-10-02 (dylan-MS-7C84)
+> **Read first:** `sept26_prelim_analysis/SAME_CHAMBER_PAIRS.md`. This branch
+> is one of two threads on same-chamber pairs; the other (single-track angle
+> truth, the seeder, v) lives on `beam-off-cosmics`.
+
+## Two-track limit: relative angle of the pairs — updated 2026-10-07 (dylan-MS-7C84)
 
 **Goal:** answer Dylan's question about the two-track slide note: what relative angle do the modelled pairs have, does angle help to separate them, and what angle do real pairs have? Answer it from data, and add slides to `notes/two-track-limit.html`.
 
@@ -20,23 +24,23 @@
   - IPC toy: 5.2 % of same-chamber M1 pairs (0.4 % of E0) are within 12 mm.
   - Side finding: the fixed chain resolves only 76 % of diverging chamber-A pairs at 3–12 mm, against ~97 % for the ideal fit. Suspected cause: the grid search seeds only parallel line pairs. Not tested.
 
-**In progress / where it stopped:**
-- `pair_angle oracle --n 40 --jobs 15` is running under nohup on dylan-MS-7C84 (it was at 1200/3760 jobs at about 18:50; ETA about 20:30).
-  - It writes `pair_angle/r5_oracle.partial.parquet` every 200 jobs and `r5_oracle.parquet` at the end.
-  - It is not resumable: if it dies, rerun it whole (about 2 h on a shared machine).
+**Update 2026-10-07:**
+- The oracle finished (2 Oct 19:43): `r5_oracle.parquet`; the angle-oracle slide is filled in.
+- F-rescan cluster 4348153 merged (A and C, 56/56 shards each). The ladder reproduces the fixed runs exactly at A 1200 / C 2400.
+- Result: pick = matched in both chambers. A 1000 fails (0.83 %); C 2000 fails (0.76 %). So C's threshold is not too strict.
+- The operating slide's title and callout are now computed from the ladder ("Real triggers confirm the matched thresholds").
+- Deck and report rebuilt. **Not yet republished.**
 
 **Next steps:**
-1. When `r5_oracle.parquet` exists, check the table: `python -m sept26_prelim_analysis.pair_angle table`.
-2. Rebuild the deck: `python -m sept26_prelim_analysis.make_two_track_deck`. Render it and look at the `angle-oracle` slide; its title is computed from the table.
-3. Republish: `python3 ~/PycharmProjects/dylan-cern-site/scripts/add-note.py ~/x17/sept26_prelim/two_track_limit/report/two-track-limit.html --slug two-track-limit --force --deploy`.
-4. Optionally, add a relative-tan dimension to the fixed chain's grid search (`WFT_TWO_TRACK_SEARCH=grid` in `wft/reco.py`) and re-run the R3 split.
+1. Republish: `python3 ~/PycharmProjects/dylan-cern-site/scripts/add-note.py ~/x17/sept26_prelim/two_track_limit/report/two-track-limit.html --slug two-track-limit --force --deploy`.
+2. Optionally, add a relative-tan dimension to the fixed chain's grid search (`WFT_TWO_TRACK_SEARCH=grid` in `wft/reco.py`) and re-run the R3 split. This targets the 76 % vs ~97 % gap on diverging A pairs at 3–12 mm.
+3. Ship decision (Dylan): bundles with profc pairing, fixed-chain env + F on condor, rescue floor, full re-pass.
 
 **Gotchas / decisions:**
 - Divergence on real pairs is 30 mm × |Δtan| from the two donors' fits. It carries about ±1.9 mm of measurement error, so the <1 and 1–3 mm classes are blurred.
 - The fitted tan is compressed (pointing slope 1/294 in A x and 1/387 in C x, against the geometric 1/235). The common-vertex line uses the geometric value.
 - The oracle threshold is R2's own 99th percentile on its tan 0.3, view-x singles (A 25.1, C 29.1), so the new curves are directly comparable with R2.
 - The IPC toy ignores capsule size, the pinwheel offsets, dead strips and efficiency. It is a prior, not a measurement.
-- The F-rescan ladder (cluster 4348153) was still not merged locally; see `sept26_prelim_analysis/TWO_TRACK_LIMIT_RESUME.md`.
 - This work sits in the git worktree `~/PycharmProjects/nTof_x17_tt`. The main checkout is on `beam-off-cosmics`.
 
 **Key files & commands:**

@@ -550,16 +550,34 @@ def s_operating(D, L):
         sub = f'Lowest F meeting the contract on real triggers: {state}. Bench curves for the gain.'
         legend = [('bench: pairs resolved', GREEN), ('bench: single donors split', GREY, 'dash'),
                   ('real triggers: clean singles split', RED)]
-        status = sd.callout(f'Picked by point estimate, with the 90 % CL upper limit in the tooltip. '
-                            'Neighbouring F values are not statistically distinct.', RED, 24)
+        # the step just below each pick: what loosening it would buy and cost
+        below = []
+        for a, f in sorted(pick.items()):
+            h = Dl[(Dl.arm == a) & (Dl.F < f)].sort_values('F')
+            b = bench[bench.arm == a].set_index('F').eff
+            if len(h) and f in b.index and h.F.iloc[-1] in b.index:
+                r = h.iloc[-1]
+                below.append(f'{a} at F = {r.F:g} splits {100 * r.frac_clean_split:.2f} % of clean singles '
+                             f'(bench pairs {100 * b[f]:.0f} → {100 * b[r.F]:.0f} %)')
+        if pick == matched:
+            title = 'Real triggers confirm the matched thresholds'
+            answer = ('No: the bench-matched F is already the lowest that meets the contract. '
+                      + '; '.join(below) + ', both over 0.66 %.')
+        else:
+            title = 'Real triggers move the operating point'
+            answer = ('Matched on the bench: ' + ', '.join(f'{a} {f}' for a, f in matched.items())
+                      + '. ' + '; '.join(below) + '.')
+        status = sd.callout(f'<b>Is C’s threshold too strict?</b> {answer} Picked by point estimate; '
+                            'neighbouring F values are not statistically distinct.', RED, 24)
     else:
         sub = (f'The real-trigger rescan (condor cluster {LADDER_CLUSTER}) is still running; '
                'the bench shows what a lower F would buy.')
         legend = [('bench: pairs resolved', GREEN), ('bench: single donors split', GREY, 'dash')]
+        title = 'Open question: is C’s threshold too strict?'
         status = sd.callout(f'<b>Pending.</b> One split-ab pass replays every F from 300 to 4800 exactly. '
                             'This slide fills in when it is merged: the real-trigger false-split curve goes '
                             'on top of these, against the 0.66 % contract.', GOLD, 24)
-    body = sd.title('Open question: is C’s threshold too strict?', sub)
+    body = sd.title(title, sub)
     body += sd.legend(legend) + sd.row(*panels, gap=44) + status
     D.slide('operating', body, f'''
 <p>Sources: bench, <code>r3_scan.parquet</code> (fixed_f0); real triggers, <code>split_ab_ladder_{{A,C}}_7tags/summary_ladder.csv</code>.</p>
