@@ -63,39 +63,51 @@ proposed, but Dylan has not picked any yet.
   `python3 ~/PycharmProjects/dylan-cern-site/scripts/add-note.py <out>/qsum_runaway/deck/qsum-runaway.html --slug qsum-runaway --force --deploy`.
 - `<out>` = `/media/dylan/data/x17/sept26_prelim` (`python -m sept26_prelim_analysis.paths`).
 
-## Beam-off cosmics: tracking — updated 2026-10-02 (dylan-MS-7C84)
+## Beam-off cosmics: angle response + in-situ reco — updated 2026-10-06 (dylan-MS-7C84)
 
-**Goal:** track the beam-off cosmic runs through the campaign reco to measure
-the through-going background (170° cut, capsule DCA, arm-to-arm Δt).
+**Resume:** Fix the chamber reco with the A–C cosmic line as truth. Next: beam purity check of seeder min 3 (run_145/147).
+
+**Goal:** a reconstruction that measures angles correctly in all cases (head-on included) at n_TOF, so that
+same-chamber coincident pairs can be reconstructed. run_149 through-goers give truth: the line through
+chambers A and C.
 
 **Done:**
-- run_149/cos_0000 reconstructed (condor 4354841) and tracked with k borrowed
-  from run_147 and run_150; report `ntof_cosmics/results/tracking/report.html`.
-- Headline (~40 clean events): only 74–77 % of clean A–C through-goers pass
-  170°; a capsule-free slope check says the borrowed k reads A ~8 % shallow,
-  C ~12 % steep.
+- Pooled run_149 (87 sub-runs). The old handoff's slope ratio was inverted: s/j = k_b/k_true, so A's tans
+  read ~10 % too LARGE. Report: `ntof_cosmics/results/tracking/pooled/report.html`.
+- The bulk angle-scale error is `wft_beam.make_bundle` replacing the bench v (fitted with the kernel)
+  with the 42.6 prior. The in-situ geometric v is A 38.6/37.7 and C ≈ 28 µm/ns.
+- **Head-on failure = beam seeder `MIN_STRIPS_BEAM = 5`** (bench uses 3). With min 3: A–C pairs +66 %,
+  near-normal tracks ×5, near-normal σ_tan 0.2 → 0.03–0.06 (`ntof_cosmics/seed_test.py`).
+- Ruled out with bench M3 truth: S/N ÷8, n_TOF 20-sample framing, real n_TOF noise. Also ruled out:
+  the template, ZS, the fit window, the w-scan range, the t0 prior.
 
 **In progress / where it stopped:**
-- condor cluster **4355060** (1,028 jobs, the other 86 sub-runs of run_149)
-  running on lxplus; tarballs land in `/eos/user/d/dneff/x17/cosmics_fullpass`.
-- Pooling across sub-runs is not written yet.
+- Nothing running. Remaining non-linearity: A x is mildly S-shaped; chamber C (old det6 lp kernel) is
+  non-linear with 10–17 % core tails.
 
-**Next steps:** see `ntof_cosmics/HANDOFF_TRACKING_2026-10-02.md` §5 (fetch/
-build/analyse loop, then pool, re-measure slope ratios, redo 170° with cosmic k).
+**Next steps:**
+1. Seeder min 3 on a beam sub-run (run_145/147): gate pass rates, χ²/dof, junk and isochronous
+   deposits, near-normal capsule-track yield. The 5-strip minimum was chosen for beam junk.
+2. In-situ kernel for chamber C (start from r06; objective = free-fit closure vs truth, not the
+   ref-pinned χ²).
+3. Campaign re-pass (condor) with seeder 3, geometric v and new bundles. Then redo the beam/cosmic
+   comparison.
 
 **Gotchas / decisions:**
-- **Never write to `/media/dylan/data`** while Dylan's backup is running (and
-  in general check free space): `~/x17` symlinks there and every `paths.out`
-  default resolves there. `cosmic_tracks.py` refuses `/media` outputs.
-- Never run `k_arm` on cosmic runs (no `--out`, overwrites kcal/ silently).
+- Never use the ref-pinned fitted v (χ²(v) valley, ANALYSIS_STATE S8); take v from free fits against truth.
+- Near-normal tracks are under-represented in any sep-selected sample (circular). Judge head-on
+  on one-track-per-arm events with no sep cut.
+- No writes to `/media/dylan/data`. Work dir `~/scratch/ntof_insitu` (17 GB of run_149 A/C
+  waveforms, caches, bench test scripts `degrade*.py`, `noise_inject.py`). Durable, outside the repo.
+- Never run `k_arm` on cosmic runs (it overwrites kcal/).
 
 **Key files & commands:**
-- `ntof_cosmics/cosmic_tracks.py` — fetch / build / analyse
-- `ntof_cosmics/make_tracking_report.py` — the report
-- `sept26_prelim_analysis/condor/make_stage2_campaign.py --full-pass --tags-json <json>`
-  — packaging; the tag lists used are in `ntof_cosmics/results/tracking/condor/`.
-  Package dest must be off `/media`; after building, edit the shipped
-  `stage2_fullpass.sub` EOS_STAGE2_OUT to `cosmics_fullpass`.
+- `ntof_cosmics/HANDOFF_TRACKING_2026-10-06.md` §7–9: full record and numbers.
+- `ntof_cosmics/insitu_calib.py`: truth / cache / profile / hyper / reco / score / t0meas / mkbundle /
+  corridor / joint / implied. `WFT_BEAM_BASE=~/scratch/ntof_insitu/beam/`; `--work ~/scratch/ntof_insitu`.
+- `ntof_cosmics/seed_test.py --work ~/scratch/ntof_insitu --subs ~/scratch/ntof_insitu/subs.txt --min 3`
+- `ntof_cosmics/angle_response.py`, `make_pooled_report.py`: the pooled report.
+- If the work dir is gone: `~/scratch/ntof_insitu/fetch.sh` (needs `kinit`), then `insitu_calib.py truth --subs`, then `cache`.
 
 ## Scintillator stack mapped by the MM tracks — updated 2026-10-06 (dylan-MS-7C84)
 
