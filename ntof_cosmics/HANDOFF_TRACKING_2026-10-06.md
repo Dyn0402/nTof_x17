@@ -427,3 +427,57 @@ single number.
 
 Not done: the live note (`make_deck.py`) and the X17 board were **not**
 updated; both are outward-facing and wait for Dylan.
+
+---
+
+## 8 · In-situ calibration against the A–C line (2026-10-06 evening, unfinished)
+
+Harness: **`insitu_calib.py`** (truth → cache → profile / hyper / reco / score).
+Its `reco` step reproduces production bit-for-bit (60 events, Δtan = 0). The
+work dir was the session scratchpad (`.../scratchpad/insitu`, with 17 GB of A/C
+waveforms from 14 run_149 sub-runs). **It will not survive.** To refetch,
+use `fetch.sh` logic: FEUs 03/04/07/08 decoded_root + combined_hits_root for
+the 14 truth-richest sub-runs, then `truth --subs`, then `cache`. 815 events
+per arm; 1/3 train.
+
+Established:
+
+1. **The bulk angle-scale error is the v substitution, not physics.** The bench
+   fitted v together with the kernel (det3 36.6, det6 26.7). `wft_beam.make_bundle`
+   keeps the kernel but swaps v for the 42.6 prior. In-situ free-fit w/tan_true
+   gives A 37.5 (x) / 35.7 (y) and C 25.8 / 25.4, i.e. the bench values;
+   42.6/36.6 ≈ 1.16 and 42.6/26.7 ≈ 1.60 are most of k_arm.
+2. **The fit finds its χ² minimum** (within 0.2 µm/ns), but under the production
+   bundle the minimum is off the truth: Δχ²(truth) is 28–220 scaled units,
+   against a statistical width < 0.5 µm/ns. That is a systematic mismatch.
+3. **A ref-pinned in-situ hyper refit is NOT the fix.** For A it gives
+   v 39.2, Dp 0.031, τ_s 413, σ_s 105 and halves χ². Held out, x improves
+   (median tan/true 1.025, σ 0.028–0.036) but y gets worse (kw_y 0.79,
+   non-linear). The fitted v = 39.2 is the known χ²(v)-valley bias
+   (ANALYSIS_STATE S8): use the geometric v from free fits, never the
+   ref-pinned one. The C fit (kY 0.39, τ_s 30) looks degenerate; unchecked.
+4. **Ruled out:**
+   - zero suppression: off, full 512-channel readout;
+   - template / shaping: the 600 fC vs 200 fC CSA range was suspected, but
+     angle-matched strip FWHM is only 2–5 % narrower, explained by the faster v;
+   - fixed per-channel gain pattern;
+   - the search/optimiser.
+5. **Prime remaining suspect: the dropped t0 prior.** The bench showed t0
+   trades against slope, with near-degenerate t0 minima 60 ns apart; only ~35 %
+   of free fits land right without the external-clock prior (T1.1). The n_TOF
+   bundles drop `t0_abs`/`t0_prior_sigma`. Cosmic t0 ≈ −40 ns, so the leading
+   edge is outside the window. This plausibly drives both the residual angle
+   trend (implied v 40 → 37 over |tan| 0.15–0.5, 3× the bench) and the head-on
+   failure.
+
+Next, in order:
+
+1. Measure t0 per (plane, ftst) from truth-pinned fits (profile machinery,
+   production hypers, v = 37.5/35.7). Build a bundle with `t0_abs` +
+   `t0_prior_sigma = 5` and the geometric v, then `reco` → `score` on the test
+   split. Check the angle trend and the head-on bins.
+2. If that closes, the in-situ recipe is: bench kernel, geometric v and w0/kw
+   from free fits against the A–C line, in-situ t0 prior. Then the beam t0 prior
+   (different trigger path) and redo the beam/cosmic comparison of §7c with it.
+3. Widen `W_SCAN_HALF` (it covers only |tan| ≤ 0.56 at A's v); beam tracks
+   exceed that.
