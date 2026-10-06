@@ -97,26 +97,21 @@ build/analyse loop, then pool, re-measure slope ratios, redo 170° with cosmic k
   Package dest must be off `/media`; after building, edit the shipped
   `stage2_fullpass.sub` EOS_STAGE2_OUT to `cosmics_fullpass`.
 
-## Scintillator stack calibrated from MM tracks — updated 2026-10-02 (dylan-MS-7C84)
+## Scintillator stack mapped by the MM tracks — updated 2026-10-06 (dylan-MS-7C84)
 
-**Goal:** use MM tracks (not trusted blindly) to walk back through wall → plastic → liquid per arm: efficiency and gain maps, wall top/bottom position, liquid behaviour, and whether a both-ends veto is worthwhile.
+**Goal:** characterise every scintillator (efficiency and response heat maps), on the single-track imaging calibration.
 
 **Done:**
-- Pipeline: `scint_stack.py` (track×hit join, 34 runs, 13.3 M tracks) → `scint_stack_ana.py` (two-pass: slope scale from scintillator edges → t0 window → chamber cell mask → products) → `make_scint_stack_figures.py` (22 figs) → `make_scint_stack_report.py`.
-- Report: `/media/dylan/data/x17/sept26_prelim/scint_stack/report.html`; STATUS.md entry "THE SCINTILLATOR STACK, CALIBRATED FROM THE MM TRACKS -- 2026-10-02".
-- Headlines: unbiased wall eff (given plastic) A .91 B .66 C .81 D .77; plastic-given-wall ~.56 (range-out, not inefficiency); through-going plastic 3.0–3.4 MeVee all arms; wall ln-ratio position σ ≈ 48–75 mm, dt useless; D wall ends reversed; LIQ A/D answer near +u edge (light collection), LIQ C only >8 MeVee; both-ends cut: real hits keep both 98–99.96 %, removes only 7–57 % of accidentals → offline cut only, window ≥ ±40 ns.
+- Code moved to `ntof_scint_stack/` (extract, ana, make_figures, make_report, make_deck); data to `/media/dylan/data/x17/scint_stack/` (`paths.spell('scint')`). The 2 Oct pass is kept there as `*_v1_freescale`.
+- Calibration: per-run imaging `k` (tanx = k·tan_raw), with the extrapolation `u + L(α a + λ k tan) − δ` fitted on the wall group boundaries held at the survey. α ≈ 0, λ 0.59–0.76, wall δ 1–6 mm. Details in `ntof_scint_stack/README.md`.
+- Slide note published: https://dylan-neff.web.cern.ch/notes/scint-stack.html. Report regenerated.
+- slidedoc gained `Plot.cells`, `Plot.rect`, `seq_color`, `colorbar` (heat maps) — uncommitted in dylan-cern-site, alongside another session's arrow-key change there.
 
-**In progress / where it stopped:** finished; nothing mid-edit.
+**Findings to follow up:** the 2 Oct "A is k×1.10" compared against 1/k (wrong direction); the wall prefers λ·k (shallower than k), the same direction as the cosmic review; plastic L/R gap 20–31 mm off the config on B/C/D; wall middle boundary 12–16 mm high on B/C/D; D tracks beyond −170 mm at the wall light group 2, not group 0; the k block moves the wall's λ·k by about half of k's rise.
 
 **Next steps:**
-1. Reconcile arm-A wall slope scale (k ×1.10) with det_a_scint's +33 %.
-2. Get per-sub-run `n1081b_config.json` to replace the run_79 threshold emulation.
-3. MIP-clean efficiencies from cosmic runs once they have MM reco.
+1. Join run_149 cosmic tracks to the slim → MIP-clean efficiencies (wait for the cosmic-tracking session's pooling).
+2. Check the plastic bar placement and D wall group-0/2 cabling against the as-built drawings.
+3. Per-sub-run `n1081b_config.json` to replace the run_79 trigger emulation.
 
-**Gotchas / decisions:**
-- Unbiased sample = other arm fired emulated hw trigger AND t_since_flash > 10 ms; earlier, accidentals dominate (tag-contamination correction c/q in `tag_probe`).
-- Fitted slope scale is a best predictor (shrunk by slope noise), not an angle calibration; v uses the u scale (plastic v-edge fit gave nonsense, s=−1.33).
-- Plastic outer margin fixed 25 mm + tolerant L/R gap match; a 2σ margin left B/C/D empty.
-
-**Key files & commands:**
-- `PYTHONPATH=. .venv/bin/python sept26_prelim_analysis/scint_stack.py` (~2.5 min, 8 jobs) → `scint_stack_ana.py` (~7 min, 4 jobs) → `make_scint_stack_figures.py` → `make_scint_stack_report.py`; outputs under `/media/dylan/data/x17/sept26_prelim/scint_stack/`.
+**Key commands:** see `ntof_scint_stack/README.md`.

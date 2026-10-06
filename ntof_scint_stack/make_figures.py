@@ -6,7 +6,7 @@ make_scint_stack_figures.py -- the figures for the scintillator-stack report.
 Reads only what `scint_stack_ana` wrote under ``<out>/scint_stack/ana``; every
 PNG is written beside the CSV behind it (`figstyle.save`).
 
-    python -m sept26_prelim_analysis.make_scint_stack_figures
+    python -m ntof_scint_stack.make_figures
 """
 from __future__ import annotations
 
@@ -26,7 +26,7 @@ if REPO not in sys.path:
 
 from sept26_prelim_analysis import figstyle as fs  # noqa: E402
 from sept26_prelim_analysis import paths  # noqa: E402
-from sept26_prelim_analysis.scint_stack_ana import (  # noqa: E402
+from ntof_scint_stack.ana import (  # noqa: E402
     LS_HALF_U, LS_HALF_V, MM_HALF_U, MM_HALF_V, PLAS_HALF_V, WALL_EDGES,
     WALL_HALF_V)
 
@@ -34,11 +34,11 @@ ARMS = ('A', 'B', 'C', 'D')
 
 
 def ana() -> Path:
-    return paths.out('scint_stack') / 'ana'
+    return paths.spell('scint') / 'ana'
 
 
 def figdir() -> Path:
-    d = paths.out('scint_stack') / 'figures'
+    d = paths.spell('scint') / 'figures'
     d.mkdir(parents=True, exist_ok=True)
     return d
 
@@ -48,7 +48,7 @@ def rd(name):
 
 
 def geo():
-    G = pd.read_csv(paths.out('scint_stack') / 'geometry.csv')
+    G = pd.read_csv(paths.spell('scint') / 'geometry.csv')
     return G.drop_duplicates('arm').set_index('arm')
 
 
@@ -232,38 +232,42 @@ def _lab(lo, hi):
 
 
 def fig_scales():
+    """Edge width at the wall for each extrapolation, and the free fit's
+    lambda against the campaign k.  The 2 Oct free raw-tan scale is drawn
+    beside them for comparison."""
+    P = rd('pointing')
+    P = P[(P.fit_pass == 2) & (P.layer == 'wall') & (P.axis == 'u')]
     S = rd('scales')
+    S = S[(S.fit_pass == 2) & (S.layer == 'wall') & (S.axis == 'u')]
     fig, ax = fs.figure(figsize=fs.FIG)
-    x = np.arange(len(ARMS))
+    vs = (('old', 'free raw-tan scale (2 Oct)', '#c99318'),
+          ('k_only', 'bare imaging k', '#7d8796'),
+          ('capsule', 'k, shrunk toward the capsule', '#c8601a'),
+          ('used', 'k, calibrated on the wall (used)', '#1f5fa8'))
+    rows = []
     for i, arm in enumerate(ARMS):
-        st = fs.det_style(arm)
-        d = S[(S.arm == arm) & (S.axis == 'u')]
-        for lay, dx, mk in (('wall', -0.12, 'o'), ('plas', 0.12, 's')):
-            for fp, fill in ((1, 'none'), (2, st['color'])):
-                r = d[(d.layer == lay) & (d.fit_pass == fp)]
-                if not len(r):
-                    continue
-                ax.errorbar(i + dx, r.s.iloc[0], yerr=r.s_err.iloc[0],
-                            marker=mk, mfc=fill, mec=st['color'],
-                            color=st['color'], ms=7, mew=1.2, ls='none')
-        ik = d.inv_k.iloc[0]
-        if np.isfinite(ik):
-            ax.hlines(ik, i - 0.3, i + 0.3, color=fs.MUTED, lw=1.4)
-    ax.set_xticks(x)
+        for j, (v, lab, c) in enumerate(vs):
+            if v == 'old':
+                sg = float(S[S.arm == arm].sigma.iloc[0])
+            else:
+                sg = float(P[(P.arm == arm) & (P.variant == v)].sigma.iloc[0])
+            ax.bar(i - 0.3 + 0.2 * j, sg, 0.18, color=c,
+                   label=lab if i == 0 else None)
+            rows.append(dict(arm=arm, variant=v, sigma=sg))
+    for i, arm in enumerate(ARMS):
+        r = P[(P.arm == arm) & (P.variant == 'used')].iloc[0]
+        ax.text(i, 1.0, f'α {r.alpha:+.2f}\nλ {r.lam:.2f}', ha='center',
+                va='bottom', fontsize=8, color='white')
+    ax.set_xticks(range(len(ARMS)))
     ax.set_xticklabels([f'chamber {a}' for a in ARMS])
-    ax.set_ylabel('scale s on tan_raw that best predicts the layer')
-    from matplotlib.lines import Line2D
-    h = [Line2D([], [], marker='o', ls='none', color=fs.INK, label='wall (97 mm)'),
-         Line2D([], [], marker='s', ls='none', color=fs.INK,
-                label='plastic (190 mm)'),
-         Line2D([], [], marker='o', ls='none', mfc='none', color=fs.INK,
-                label='open: every track'),
-         Line2D([], [], color=fs.MUTED, label='1/k, campaign median')]
-    ax.legend(handles=h, fontsize=8.5, loc='upper left')
+    ax.set_ylabel('wall edge width, mm (smaller = sharper)')
+    ax.legend(fontsize=8, loc='upper left', ncol=2)
+    ax.set_ylim(0, 30)
     fs.preliminary(ax)
-    fs.title(ax, 'The scale that points tracks at the scintillators',
-             'filled: in-time tracks in good chamber cells; B has no k')
-    fs.save(fig, figdir() / 'scales', data=S)
+    fs.title(ax, 'How sharply each extrapolation finds the wall groups',
+             'u_wall = u + L (α a_capsule + λ k tan_raw) − δ; single in-time '
+             'tracks, good cells')
+    fs.save(fig, figdir() / 'scales', data=pd.DataFrame(rows))
 
 
 def fig_edges():

@@ -9,7 +9,7 @@ Generated, never hand-written: every number is read back from what
 together.  Figures are referenced relatively (``figures/x.png``) so the page
 works from disk and from the DAQ page's ``/analysis_file`` route.
 
-    python -m sept26_prelim_analysis.make_scint_stack_report
+    python -m ntof_scint_stack.make_report
 """
 from __future__ import annotations
 
@@ -29,14 +29,14 @@ if REPO not in sys.path:
 
 from sept26_prelim_analysis import paths  # noqa: E402
 from sept26_prelim_analysis.report_style import HEAD  # noqa: E402
-from sept26_prelim_analysis.scint_stack_ana import MM_HALF_V  # noqa: E402
+from ntof_scint_stack.ana import MM_HALF_V  # noqa: E402
 
 ARMS = ('A', 'B', 'C', 'D')
 
 
 def figure(name: str, caption: str) -> str:
     csv = (f'<a class="src" href="figures/{name}.csv">numbers &#8599;</a>'
-           if (paths.out('scint_stack') / 'figures' / f'{name}.csv').exists()
+           if (paths.spell('scint') / 'figures' / f'{name}.csv').exists()
            else '')
     return (f'<figure><a href="figures/{name}.png">'
             f'<img src="figures/{name}.png" alt="{_h.escape(caption)}"></a>'
@@ -60,6 +60,7 @@ def build(d: Path) -> str:
     rd = lambda n: pd.read_parquet(A / f'{n}.parquet')  # noqa: E731
     meta = json.loads((A / 'meta.json').read_text())
     S, E, G, W, R = rd('scales'), rd('eff'), rd('gain'), rd('wallpos_cal'), rd('wallpos_res')
+    PF = rd('pointing')
     B, AC, RB, M, CM = rd('both_ends'), rd('accidental'), rd('by_run'), rd('mask'), rd('confirm_map')
     C, L = rd('confirm'), rd('liq_vs_plas')
     ext = json.loads((d / 'extract.meta.json').read_text())
@@ -137,15 +138,27 @@ def build(d: Path) -> str:
                 '<th>accidentals<br>removed</th><th>accidental rate<br>per group, 160 ns</th>'
                 '<th>of which<br>one-ended</th></tr></thead>' f'<tbody>{rows}</tbody></table>')
 
+    def pf(arm, layer, axis, var, col):
+        r = PF[(PF.arm == arm) & (PF.layer == layer) & (PF.axis == axis)
+               & (PF.variant == var) & (PF.fit_pass == 2)]
+        return r[col].iloc[0] if len(r) else np.nan
+
     rows = ''
     for arm in ARMS:
-        w1, w2, p2 = sc(arm, 'wall', 1), sc(arm, 'wall'), sc(arm, 'plas')
-        rows += (f'<tr><td>{arm}</td><td>{f(w2.inv_k, 3)}</td><td>{f(w1.s, 3)}</td><td>{f(w2.s, 3)} &plusmn; {f(w2.s_err, 3)}</td>'
-                 f'<td>{f(p2.s, 3)} &plusmn; {f(p2.s_err, 3)}</td><td>{f(w2.sigma, 0)} / {f(p2.sigma, 0)}</td>'
+        c = meta['cal'][arm]
+        rows += (f'<tr><td>{arm}</td><td>{f(meta["k_median"][arm], 3)}</td>'
+                 f'<td>{f(c["alpha"], 3)}</td><td>{f(c["lam"], 3)}</td>'
+                 f'<td>{f(c["lam"] * meta["k_median"][arm], 3)}</td>'
+                 f'<td>{c["off_w"]:+.1f}</td><td>{pf(arm, "wall", "u", "per_boundary", "offset")}</td>'
+                 f'<td>{f(pf(arm, "wall", "u", "used", "sigma"), 1)} / {f(pf(arm, "wall", "u", "k_only", "sigma"), 1)} / '
+                 f'{f(pf(arm, "wall", "u", "capsule", "sigma"), 1)} / {f(sc(arm, "wall").sigma, 1)}</td>'
+                 f'<td>{c["off_p"]:+.1f}</td><td>{f(c["lam_v"], 2)}</td>'
                  f'<td>{pc(meta["frac_intime"][arm], 0)}</td><td>{pc(mk[arm][0], 0)} + {pc(mk[arm][1], 0)}</td>'
                  f'<td>{pc(meta["frac_good"][arm], 0)}</td></tr>')
-    scale_tab = ('<table><thead><tr><th>arm</th><th>1/k</th><th>wall s,<br>every track</th><th>wall s,<br>good</th>'
-                 '<th>plastic s,<br>good</th><th>edge width<br>wall / plastic, mm</th><th>in time</th>'
+    scale_tab = ('<table><thead><tr><th>arm</th><th>median k</th><th>&alpha;</th><th>&lambda;</th>'
+                 '<th>&lambda;&middot;k</th><th>wall &delta;, mm</th><th>per-boundary &delta;, mm</th>'
+                 '<th>wall edge width, mm<br>used / bare k / capsule / 2 Oct</th><th>plastic &delta;, mm</th>'
+                 '<th>&lambda;<sub>v</sub></th><th>in time</th>'
                  '<th>masked: v rail +<br>unconfirmed cells</th><th>kept<br>("good")</th></tr></thead>'
                  f'<tbody>{rows}</tbody></table>')
 
@@ -160,13 +173,21 @@ def build(d: Path) -> str:
     oot = 1 - np.mean([meta['frac_intime'][a] for a in ARMS])
 
     body = f"""
-<header><p class="eyebrow">n_TOF 2026 &middot; sept26_prelim_analysis &middot; scint_stack</p>
+<header><p class="eyebrow">n_TOF 2026 &middot; ntof_scint_stack</p>
 <h1>The scintillator stack, calibrated from the tracks that point at it</h1>
 <p class="deck">{i(ext['n_tracks'])} gated MM tracks on all four arms, {ext['n_runs']} runs, each walked back
 through the SiPM wall, the plastic and the liquid. Efficiency and gain on every layer's face, a position
 along the wall bars from its two ends, and whether to demand both ends.</p></header>
 
 <div class="verdict"><h2>Verdict</h2><ul>
+<li><b>Calibration (6 October): the tracks are on the single-track imaging calibration</b> &mdash; each run's own
+k from <code>kcal</code>, the one the Athens capsule image used &mdash; and the extrapolation's coefficients are
+calibrated on the SiPM wall's group boundaries held at the survey. The wall then sits within
+{max(abs(meta['cal'][a]['off_w']) for a in 'ACD'):.0f}&nbsp;mm of the survey on A, C and D. The best predictor carries
+{min(meta['cal'][a]['lam'] for a in 'ACD'):.2f}&ndash;{max(meta['cal'][a]['lam'] for a in 'ACD'):.2f} of k&middot;tan forward with
+no pull toward the capsule: the scintillators prefer a shallower slope than k, in the direction of the 6 October cosmic
+review (true A k &asymp; 1.11 vs beam 1.22). That calibrates the extrapolation; it does not measure the angle scale.
+Slide note: <a href="https://dylan-neff.web.cern.ch/notes/scint-stack.html">scint-stack</a>.</li>
 <li><b>The tracks point at the scintillators well enough to calibrate them, after two cuts the MM data
 needs anyway.</b> {pc(oot, 0)} of tracks crossed the chamber at another time than the trigger (their own t0 falls outside a 300&ndash;425&nbsp;ns
 wide in-time window) and no prompt scintillator can confirm them; and part of each
@@ -221,15 +242,23 @@ the wall. A scintillator cannot tell those from a fake track, and nothing here c
 {figure('confirm_map', 'Confirmation of in-time tracks over each chamber, relative to the arm median; red outline = masked. The faint vertical stripes on A and C are the wall-group boundaries projected back onto the chamber, not chamber defects. D masks a quarter of its cells, which hold most of its tracks.')}
 {figure('quality', 'Confirmation against track properties. Tracks with no y slope at all ([&minus;0.03, 0.03)) and high chi2 are the least confirmed.')}
 
-<h3>The extrapolation scale</h3>
-<p>The angle scale <code>k</code> is the analysis's standing open question, so the extrapolation does not borrow
-it. Each layer's scale <i>s</i> on the raw tangent is fitted from the scintillators' own fixed boundaries
-(the three internal wall-group edges; the plastic L/R gap) by how the apparent boundary moves with the
-track's slope &mdash; a pointing estimator. It is the scale that best <i>predicts</i> where a track lands,
-which is what this page needs; it is shrunk by slope noise (the longer lever always fits lower) and is
-<b>not</b> a measurement of the physical angle scale.</p>
+<h3>The extrapolation</h3>
+<p>Every slope is the imaging calibration, m = k&middot;tan_raw (the stage-3 <code>tanx</code>, each run's own k;
+runs without one take the arm's campaign median). The crossing at a layer a lever L past the strips is predicted as
+u + L(&alpha;&middot;a + &lambda;&middot;m) &minus; &delta;, with a = (u &minus; u<sub>capsule</sub>)/w<sub>strip</sub> the slope from the
+imaged capsule centre. &alpha;, &lambda; and the wall alignment &delta; are fitted to which wall group fires, at the
+three internal group boundaries held at the survey; the plastic (one boundary) takes them and fits only its own
+&delta;; &lambda;<sub>v</sub> is scanned against the wall's own ln(top/bottom) position. The table carries the
+special cases beside the fit: bare k (&alpha;=0, &lambda;=1), the capsule-shrinkage form (&alpha;=1&minus;&lambda;, what
+"k is right, the slopes are noisy" predicts), and the 2 October free raw-tan scale.</p>
+<p><b>Correction to 2 October.</b> That pass compared its fitted scale with 1/k. The tables define
+tanx = k&middot;tan_raw, so the imaging scale is k itself; its "arm A is k&times;1.10" compared against the wrong number.</p>
 {scale_tab}
-{figure('scales', 'Fitted scales, every track (open) and in-time tracks in good cells (filled), against the campaign 1/k.')}
+<p>On B, C and D the per-boundary fit puts the middle boundary (&minus;25&nbsp;mm) 12&ndash;16&nbsp;mm high, as the 2 October
+fit did; on A the three agree. The plastic L/R gap sits 20&ndash;31&nbsp;mm from its <code>run_config.json</code> position on
+B, C and D (6&nbsp;mm on A) under every predictor.</p>
+{figure('scales', 'Wall edge width per extrapolation, per arm; the used predictor is the sharpest on A, C and D.')}
+
 {figure('edges', 'With the fitted scale: which wall group fires (top), which plastic bar (middle), and how often the liquid fires (bottom), against the predicted crossing. Dotted lines are the survey.')}
 
 <h2 id="eff">Efficiency</h2>
@@ -288,11 +317,11 @@ in stage 1 and the efficiency, with a top&ndash;bottom window of &plusmn;40&nbsp
 
 <h2 id="not">What this does not rule out</h2>
 <ul>
-<li><b>The extrapolation scale is not an angle calibration.</b> It is a best predictor, shrunk by slope noise;
-it moved 10&ndash;20&thinsp;% between the full and the cleaned sample, and the two levers differ by 4&ndash;21&thinsp;%. It
-says arm A's tangents predict best at 0.74 of raw (k&times;1.10), the same sign as <code>det_a_scint</code>'s +33&thinsp;% but a third
-of its size; the two estimators are not reconciled here. The per-run scale scatters by &plusmn;7&thinsp;%, more than
-the k-block, so the scintillators cannot adjudicate the k-block.</li>
+<li><b>The extrapolation calibration is not an angle calibration.</b> The wall prefers &lambda;&middot;k with
+&lambda; well below 1 and no pull toward the capsule; a boundary fit regresses on a noisy slope and cannot separate a
+k that reads steep from a non-pointing admixture. Through the 3&ndash;5 Aug k block the wall's &lambda;&middot;k rises about
+half as much as k on C and D, which settles neither reading. Chamber D's tracks beyond &minus;170&nbsp;mm at the wall
+light group 2 rather than group 0 (chamber edge or cabling).</li>
 <li><b>The unbiased sample is small</b> (a few thousand tags per arm; 178 on B), so its maps are coarse and B's
 numbers are rough. Chamber B's tracks point poorly at the wall in any case.</li>
 <li><b>The trigger thresholds are run_79's</b>, assumed for every run; the per-sub-run board configs are not on
@@ -304,14 +333,14 @@ mirrored y plane; this data cannot tell which.</li>
 photodetector near the +u edge). The cell geometry and readout drawing would settle it. Liquid responses
 are punch-through probabilities times efficiency; the two are not separated.</li>
 <li><b>Plastic and liquid "efficiencies" are response probabilities</b> for the beam's own spectrum. A clean
-MIP efficiency would need the cosmic runs, which have no MM reconstruction yet.</li>
+MIP efficiency would need the cosmic runs: run_149 now has MM reconstruction, not yet joined to the slim.</li>
 </ul>
 
 <h2 id="repro">Reproducing this</h2>
-<pre><code>python -m sept26_prelim_analysis.scint_stack --jobs 8          # ~3 min, per-track tables
-python -m sept26_prelim_analysis.scint_stack_ana --jobs 4      # ~7 min
-python -m sept26_prelim_analysis.make_scint_stack_figures
-python -m sept26_prelim_analysis.make_scint_stack_report</code></pre>
+<pre><code>python -m ntof_scint_stack.extract --jobs 8          # ~3 min, per-track tables
+python -m ntof_scint_stack.ana --jobs 4      # ~7 min
+python -m ntof_scint_stack.make_figures
+python -m ntof_scint_stack.make_report</code></pre>
 <p class="prov">Schema <code>{ext['schema']}</code> / <code>{meta['schema']}</code>. Input: <code>stage3_fullpass</code>
 track tables and the exported n_TOF slim; pre-access runs 79/81 excluded. Built {dt.date.today().isoformat()}.</p>
 """
@@ -321,7 +350,7 @@ track tables and the exported n_TOF slim; pre-access runs 79/81 excluded. Built 
 
 
 def main() -> int:
-    d = paths.out('scint_stack')
+    d = paths.spell('scint')
     out = d / 'report.html'
     out.write_text(build(d))
     print(f'wrote -> {out}')

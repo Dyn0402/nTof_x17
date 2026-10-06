@@ -44,8 +44,8 @@ and equal to the slim's own ``is_control`` level.  The plastic decays for
 ~1 us AFTER the trigger, so a post-trigger control would be wrong.  The
 liquid's pre-trigger side is checked rather than assumed (`scint_stack_ana`).
 
-    python -m sept26_prelim_analysis.scint_stack --runs run_145
-    python -m sept26_prelim_analysis.scint_stack --jobs 8
+    python -m ntof_scint_stack.extract --runs run_145
+    python -m ntof_scint_stack.extract --jobs 8
 """
 from __future__ import annotations
 
@@ -70,7 +70,7 @@ from sept26_prelim_analysis.campaign_imaging import (  # noqa: E402
     PRE_ACCESS_RUNS, run_number)
 from sept26_prelim_analysis.det_a_scint import layer_geometry  # noqa: E402
 
-SCHEMA = 'sept26_prelim/scint_stack/4'
+SCHEMA = 'ntof_scint_stack/4'
 ARMS = ('A', 'B', 'C', 'D')
 #: ``det`` codes: wall 0-3, plastic 4-7, liquid 8-11, in A B C D order.
 WAL, PSS, LIQ = 0, 4, 8
@@ -298,7 +298,7 @@ def main() -> int:
                    key=run_number))
     if not a.include_pre_access:
         runs = [r for r in runs if r not in PRE_ACCESS_RUNS]
-    od = paths.out('scint_stack')
+    od = paths.spell('scint')
     (od / 'tracks').mkdir(parents=True, exist_ok=True)
     G = geometry_table(runs)
     G.to_csv(od / 'geometry.csv', index=False)

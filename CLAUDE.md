@@ -37,6 +37,10 @@ check the migration status table in `RECONSTRUCTION_BASIS.md` first.
 - `ntof_cosmics/` — the 47 beam-off cosmic runs (inventory) and the
   through-going-particle background; `clock_match.py` puts beam-off DREAM
   triggers on the n_TOF clock (~10 ns) with no flash. Entry point: its README.
+- `ntof_scint_stack/` — every SiPM wall, plastic and liquid mapped (efficiency,
+  response) by the MM tracks that point at them; output in
+  `/media/dylan/data/x17/scint_stack/`. Its README has the track-extrapolation
+  calibration (note: stage-3 `tanx = k · tan_raw`, not `/ k`).
 - `ntof_pedestal_qa/` — the DREAM pedestal history of the n_TOF campaign, per
   channel and per chip. Two of its findings are campaign-wide and are listed
   under "Two n_TOF conditions" below; read them before comparing anything

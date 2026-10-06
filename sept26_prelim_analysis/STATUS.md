@@ -55,6 +55,18 @@ drifts. **Do not build an opening-angle spectrum on a borrowed `k` for C or D.**
 
 Last updated **2026-09-14** (**the re-pass is pushed to OCTOBER** and [`OCTOBER_2026.md`](OCTOBER_2026.md) is the standing list — two-track recovery is the gating item; two tracks in one chamber: a truth bench and two opt-in reconstruction fixes, below; and on 2026-09-10: arm-A tracks are now confirmed positionally against the scintillators, and the wall measures the angle scale; the FULL pass is complete; per-run capsule imaging says the geometry is sound and the angle scale is the fault; the campaign opening-angle spectra exist).
 
+> ## THE SCINTILLATOR STACK, ON THE IMAGING CALIBRATION -- 2026-10-06
+>
+> Moved to its own package, `ntof_scint_stack/` (output `/media/dylan/data/x17/scint_stack/`).
+> Tracks now extrapolate on the per-run imaging k (**stage-3 `tanx = k * tan_raw`** -- the
+> 2 Oct entry below compared its scale with 1/k, the wrong direction), with
+> u + L(alpha a_capsule + lambda k tan) - delta fitted on the wall's group boundaries at the
+> survey: alpha ~ 0, lambda 0.59-0.76, wall offset 1-6 mm. The wall prefers a shallower slope
+> than k (same direction as the 6 Oct cosmic review); a predictor calibration, not an angle
+> measurement. Heat maps of all twelve counters: https://dylan-neff.web.cern.ch/notes/scint-stack.html
+> New: plastic L/R gap 20-31 mm off config on B/C/D; D tracks beyond -170 mm at the wall light
+> group 2 not group 0; LIQ A/D fire ~9 % behind the R bar vs <= 1 % behind L, LIQ C 0.2 %.
+
 > ## THE SCINTILLATOR STACK, CALIBRATED FROM THE MM TRACKS -- 2026-10-02
 >
 > New: `scint_stack.py` (per-track extraction, all arms, every wall end / plastic bar / liquid,

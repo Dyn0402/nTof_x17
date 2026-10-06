@@ -60,6 +60,7 @@ _ROOTS = {
     'runs':       ('X17_RUNS',        'beam_july/runs',    'DREAM runs, per run/sub-run'),
     'analysis':   ('X17_ANALYSIS',    'beam_july/analysis', 'staged products pulled from CERN'),
     'out':        ('X17_SEPT26_OUT',  'sept26_prelim',     'THIS analysis writes here'),
+    'scint':      ('X17_SCINT_OUT',   'scint_stack',       'the scintillator-stack study (ntof_scint_stack)'),
 }
 
 

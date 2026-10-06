@@ -26,8 +26,8 @@ prompt and a same-width pre-trigger window) and turns them into:
   6. **whether to demand both wall ends**, with the cost and the gain measured.
   7. **stability**, run by run.
 
-    python -m sept26_prelim_analysis.scint_stack_ana            # all arms
-    python -m sept26_prelim_analysis.scint_stack_ana --arms A
+    python -m ntof_scint_stack.ana            # all arms
+    python -m ntof_scint_stack.ana --arms A
 """
 from __future__ import annotations
 
@@ -53,7 +53,7 @@ from sept26_prelim_analysis import paths  # noqa: E402
 from sept26_prelim_analysis.campaign_imaging import (  # noqa: E402
     in_block, run_number)
 
-SCHEMA = 'sept26_prelim/scint_stack_ana/1'
+SCHEMA = 'ntof_scint_stack_ana/1'
 ARMS = ('A', 'B', 'C', 'D')
 WINS = ('on', 'off')
 
@@ -86,6 +86,19 @@ MASK_FRAC = 0.5
 #: Energy scale: the 2026-07-28 two-source calibration, mV per keVee.
 SRCCAL = Path(REPO) / 'mx_july_beam_qa' / 'calib' / 'srccal_energy_calib.json'
 
+# --- the track calibration: the IMAGING one ---------------------------------
+#: The capsule, global X Y Z in mm, as the single-track imaging measured it
+#: (scale-free band crossings, 33 runs, `<out>/imaging_campaign/per_arm.csv`):
+#: X = mean of A (-8.30) and C (-10.33), Z from D (-3.45), Y = +31.3 (the
+#: Athens side view, A C D combined).  Each arm's (u, v) of it follows from
+#: the arm's axes (`ntof_tracking.reco.geometry.U_HAT`: A +X, B +Z, C -X,
+#: D -Z; v is +Y on every arm).
+CAPSULE_XYZ = (-9.3, 31.3, -3.45)
+CAPSULE_UV = {'A': (CAPSULE_XYZ[0], CAPSULE_XYZ[1]),
+              'B': (CAPSULE_XYZ[2], CAPSULE_XYZ[1]),
+              'C': (-CAPSULE_XYZ[0], CAPSULE_XYZ[1]),
+              'D': (-CAPSULE_XYZ[2], CAPSULE_XYZ[1])}
+
 TRACK_COLS = ['run', 'subrun', 'event_id', 'arm', 'n_trk', 'u_mm', 'v_mm',
               'tan_raw_x', 'tan_raw_y', 'k_arm', 'x_slope_reliable',
               'y_slope_reliable', 'chi2dof_x', 'chi2dof_y', 'x_n_strips',
@@ -96,7 +109,7 @@ TRACK_COLS = ['run', 'subrun', 'event_id', 'arm', 'n_trk', 'u_mm', 'v_mm',
 
 
 def out_dir() -> Path:
-    return paths.out('scint_stack')
+    return paths.spell('scint')
 
 
 def load_arm(arm: str) -> pd.DataFrame:
@@ -127,6 +140,13 @@ def load_arm(arm: str) -> pd.DataFrame:
     d['late'] = d.t_since_flash_ns.to_numpy() > LATE_MS * 1e6
     d['unb'] = d.other_hw.to_numpy() & d.late.to_numpy()
     d['self_hw'] = d[f'hw_{arm}'].to_numpy()
+    # THE IMAGING CALIBRATION.  The track tables carry each run's own k
+    # (`<out>/kcal`, tan_true = k * tan_raw -- the stage-3 ``tanx`` IS
+    # k * tan_raw_x).  A run with no k for this arm takes the arm's campaign
+    # median, flagged in ``k_fill``.
+    d['k_fill'] = d.k_arm.isna()
+    kr = d.groupby('run').k_arm.median().dropna()
+    d['k_eff'] = d.k_arm.fillna(float(kr.median()) if len(kr) else np.nan)
     return d
 
 
@@ -318,6 +338,215 @@ def fit_scales(t: pd.DataFrame, g: dict) -> pd.DataFrame:
     return R
 
 
+# --------------------------------------------------------------------------- #
+# 1b. the extrapolation actually used: imaging k, calibrated on the wall
+# --------------------------------------------------------------------------- #
+def pointing(t: pd.DataFrame, g: dict, arm: str) -> tuple:
+    """(a_x, m_x, a_y, m_y): the capsule direction and the measured slope.
+
+    ``a`` is the slope a track would have if it came straight from the
+    capsule's centre (`CAPSULE_UV`, ``w_strip`` from the survey); ``m`` is
+    the imaging-calibrated slope, ``k * tan_raw`` (the stage-3 ``tanx``).
+
+    The crossing at a layer a lever ``L`` past the strips is predicted as
+
+        u_layer = u + L (alpha a + lam m) - delta
+
+    -- the general linear predictor in the two slopes a track has, with the
+    layer's alignment ``delta``.  Three special cases mean something:
+
+      * alpha = 0, lam = 1:   the bare imaging calibration;
+      * alpha = 1 - lam:      the imaging k exact, and the measured slope
+                              shrunk toward the capsule direction by its noise
+                              (the Bayes predictor for a pointing population);
+      * alpha = 0, lam < 1:   the imaging k reads steeper than the tracks fly.
+
+    `fit_pointing` fits alpha, lam and delta on the wall's three internal
+    group boundaries, with the boundaries AT THE SURVEY, and reports all
+    three cases beside the free fit (2026-10-06: the free fit lands on the
+    third, alpha ~ 0 and lam 0.65-0.8, on A, C and D).
+    """
+    uc, vc = CAPSULE_UV[arm]
+    w = g['w_strip']
+    ax = (t.u_mm.to_numpy() - uc) / w
+    ay = (t.v_mm.to_numpy() - vc) / w
+    k = t.k_eff.to_numpy()
+    return ax, k * t.tan_raw_x.to_numpy(), ay, k * t.tan_raw_y.to_numpy()
+
+
+def _nll_lin(p, x0, a, m, y, bidx, bpos, L, nb):
+    """Rising edges vs crossing x0 + L (alpha a + lam m); ``nb`` offsets."""
+    al, lam, lsig, alo, ahi = p[:5]
+    dl = p[5:5 + nb]
+    x = x0 + L * (al * a + lam * m) - bpos[bidx] - dl[bidx if nb > 1 else 0]
+    P = _sig(alo) + (_sig(ahi) - _sig(alo)) * ndtr(x / np.exp(lsig))
+    P = np.clip(P, 1e-9, 1 - 1e-9)
+    return -np.sum(np.where(y, np.log(P), np.log(1 - P)))
+
+
+def _fit_lin(x0, a, m, y, bidx, bpos, L, nb, mode='free', al=0.0, lam=1.0):
+    """(alpha, lam, lam_err, sigma, offsets, nll).
+
+    mode 'free'     alpha and lam both fitted;
+         'fixed'    alpha, lam held at the given values (only width/floors/
+                    offsets fitted);
+         'capsule'  alpha tied to 1 - lam, lam fitted.
+    """
+    args = (x0, a, m, y, bidx, bpos, L, nb)
+    rest0 = np.r_[np.log(15), -3, 3, np.zeros(nb)]
+    if mode == 'free':
+        p, _ = _fit(lambda q, *A_: _nll_lin(q, *A_), np.r_[0.0, 0.7, rest0],
+                    args)
+        # the error on lam, profiling alpha and the rest
+        h = 0.01
+
+        def prof(ds):
+            return minimize(lambda q: _nll_lin(np.r_[q[0], p[1] + ds, q[1:]],
+                                               *args),
+                            np.r_[p[0], p[2:]], method='L-BFGS-B').fun
+        f0 = _nll_lin(p, *args)
+        c = (prof(-h) + prof(h) - 2 * f0) / h ** 2
+        err = 1 / np.sqrt(c) if c > 0 else np.nan
+    elif mode == 'capsule':
+        r = minimize(lambda q: _nll_lin(np.r_[1 - q[0], q], *args),
+                     np.r_[0.7, rest0], method='L-BFGS-B')
+        p, err = np.r_[1 - r.x[0], r.x], np.nan
+    else:
+        r = minimize(lambda q: _nll_lin(np.r_[al, lam, q], *args), rest0,
+                     method='L-BFGS-B')
+        p, err = np.r_[al, lam, r.x], np.nan
+    return (float(p[0]), float(p[1]), err, float(np.exp(p[2])),
+            p[5:5 + nb], float(_nll_lin(p, *args)))
+
+
+def _wall_edge_sample(one, g, arm):
+    """Single tracks with exactly one wall group lit, near one of the three
+    internal boundaries: (x0, a, m, y, boundary index)."""
+    ax, mx, _ay, _my = pointing(one, g, arm)
+    u = one.u_mm.to_numpy()
+    L = g['L_wall']
+    F = wall_groups_fired(one)
+    lit1 = (F.sum(1) == 1) & np.isfinite(mx)
+    gf = np.argmax(F, 1)
+    X, Aa, M, Y, B = [], [], [], [], []
+    for b in range(3):
+        ub = WALL_EDGES[b + 1]
+        m = (lit1 & np.isin(gf, [b, b + 1])
+             & (np.abs(u + L * 0.7 * mx - ub) < 90))
+        X.append(u[m]), Aa.append(ax[m]), M.append(mx[m])
+        Y.append(gf[m] == b + 1), B.append(np.full(m.sum(), b))
+    return tuple(map(np.concatenate, (X, Aa, M, Y, B)))
+
+
+def fit_pointing(t: pd.DataFrame, g: dict, arm: str) -> pd.DataFrame:
+    """The extrapolation, fitted on the wall's internal boundaries at the
+    survey, on single tracks.
+
+    WALL     'used' (alpha, lam, one common offset); 'k_only' (alpha 0,
+             lam 1); 'capsule' (alpha = 1 - lam); 'per_boundary' (alpha,
+             lam and one offset per boundary -- the check: with the right
+             predictor the three offsets agree).
+    PLASTIC  one boundary (the L/R gap) cannot separate alpha from lam, so
+             'used' carries the wall's alpha and lam and fits only the
+             plastic's own offset -- its placement relative to the chamber.
+             'k_only' beside it.
+    V        `fit_lam_v`, against the wall's own ln(a1/a2) position.
+
+    ``sigma`` is the fitted edge width, the extrapolation's resolution at
+    that layer: smaller is better.
+    """
+    one = t[t.n_trk == 1]
+    rows = []
+    L = g['L_wall']
+    X, Aa, M, Y, B = _wall_edge_sample(one, g, arm)
+    bp = WALL_EDGES[1:4]
+    for var, nb, mode in (('used', 1, 'free'), ('k_only', 1, 'fixed'),
+                          ('capsule', 1, 'capsule'),
+                          ('per_boundary', 3, 'free')):
+        al, lam, e, sg, off, nll = _fit_lin(X, Aa, M, Y, B, bp, L, nb, mode)
+        rows.append(dict(layer='wall', axis='u', variant=var, alpha=al,
+                         lam=lam, lam_err=e, sigma=sg, nll=nll, n=len(X),
+                         lever=L, offset=json.dumps(np.round(off, 2).tolist())))
+    al_w, lam_w = rows[0]['alpha'], rows[0]['lam']
+    # plastic L/R gap
+    L = g['L_plas']
+    ax, mx, _ay, _my = pointing(one, g, arm)
+    u = one.u_mm.to_numpy()
+    P1 = one.p1_amp_on.notna().to_numpy()
+    P2 = one.p2_amp_on.notna().to_numpy()
+    m = ((P1 ^ P2) & np.isfinite(mx)
+         & (np.abs(u + L * (al_w * ax + lam_w * mx) - g['plas_gap']) < 120))
+    for var, a0, l0 in (('used', al_w, lam_w), ('k_only', 0.0, 1.0)):
+        al, lam, e, sg, off, nll = _fit_lin(
+            u[m], ax[m], mx[m], P2[m], np.zeros(m.sum(), int),
+            np.array([g['plas_gap']]), L, 1, 'fixed', a0, l0)
+        rows.append(dict(layer='plas', axis='u', variant=var, alpha=al,
+                         lam=lam, lam_err=e, sigma=sg, nll=nll,
+                         n=int(m.sum()), lever=L,
+                         offset=json.dumps([round(float(off[0]), 2)])))
+    rows += fit_lam_v(one, g, arm, al_w, lam_w,
+                      json.loads(rows[0]['offset'])[0])
+    return pd.DataFrame(rows).assign(arm=arm)
+
+
+def fit_lam_v(one: pd.DataFrame, g: dict, arm: str, al_u: float,
+              lam_u: float, off_u: float) -> list:
+    """``lam`` in v (alpha_v = 0, as the wall finds in u), scanned against
+    the wall's ln(a1/a2) position: the value whose predicted v the amplitude
+    ratio follows most tightly.  The capsule-prior form (alpha = 1 - lam) is
+    scanned beside it."""
+    ax, mx, ay, my = pointing(one, g, arm)
+    L = g['L_wall']
+    uw = one.u_mm.to_numpy() + L * (al_u * ax + lam_u * mx) - off_u
+    grp = np.digitize(uw, WALL_EDGES) - 1
+    d_edge = np.min(np.abs(uw[:, None] - WALL_EDGES[None, :]), 1)
+    a1 = np.full(len(one), np.nan)
+    a2 = a1.copy()
+    for gg in range(4):
+        mm = grp == gg
+        a1[mm] = one[f'w{2 * gg + 1}_amp_on'].to_numpy()[mm]
+        a2[mm] = one[f'w{2 * gg + 2}_amp_on'].to_numpy()[mm]
+    lr = np.log(a1 / a2)
+    v = one.v_mm.to_numpy()
+    ok = (np.isfinite(lr) & np.isfinite(my) & (d_edge > 25)
+          & (grp >= 0) & (grp < 4) & (np.abs(v) < MM_HALF_V - 5))
+    grid = np.round(np.arange(0.0, 1.61, 0.1), 2)
+    out = []
+    for var, tied in (('used', False), ('capsule', True)):
+        res = []
+        for lam in grid:
+            al = (1 - lam) if tied else 0.0
+            vw = v + L * (al * ay + lam * my)
+            res.append(np.mean([_robust_line(vw[ok & (grp == gg)],
+                                             lr[ok & (grp == gg)])[2]
+                                for gg in range(4)]))
+        res = np.array(res)
+        i = int(np.argmin(res))
+        lo, hi = max(i - 2, 0), min(i + 3, len(grid))
+        c = np.polyfit(grid[lo:hi], res[lo:hi], 2)
+        best = -c[1] / (2 * c[0]) if c[0] > 0 else grid[i]
+        best = float(np.clip(best, grid[0], grid[-1]))
+        out.append(dict(layer='wall', axis='v', variant=var,
+                        alpha=(1 - best) if tied else 0.0, lam=best,
+                        lam_err=np.nan, sigma=float(np.min(res)), nll=np.nan,
+                        n=int(ok.sum()), lever=L,
+                        offset=json.dumps(dict(grid=grid.tolist(),
+                                               lr_rms=np.round(res, 5).tolist()))))
+    return out
+
+
+def _pointing_cal(PF: pd.DataFrame) -> dict:
+    """The numbers `predict` uses, from `fit_pointing`'s 'used' rows."""
+    u = PF[PF.variant == 'used'].set_index(['layer', 'axis'])
+    return dict(alpha=float(u.loc[('wall', 'u'), 'alpha']),
+                lam=float(u.loc[('wall', 'u'), 'lam']),
+                lam_v=float(u.loc[('wall', 'v'), 'lam']),
+                off_w=json.loads(u.loc[('wall', 'u'), 'offset'])[0],
+                off_p=json.loads(u.loc[('plas', 'u'), 'offset'])[0],
+                sig_w=float(u.loc[('wall', 'u'), 'sigma']),
+                sig_p=float(u.loc[('plas', 'u'), 'sigma']))
+
+
 def scale_by_run(t: pd.DataFrame, g: dict, s_all: float) -> pd.DataFrame:
     """The wall's u scale fitted run by run, beside each run's own 1/k.
 
@@ -344,26 +573,29 @@ def scale_by_run(t: pd.DataFrame, g: dict, s_all: float) -> pd.DataFrame:
 # --------------------------------------------------------------------------- #
 # 2. prediction and match, per track
 # --------------------------------------------------------------------------- #
-def predict(t: pd.DataFrame, g: dict, sc: dict, sig: dict) -> pd.DataFrame:
-    """Crossings on every layer, the predicted channel, and what fired."""
-    tx, ty = t.tan_raw_x.to_numpy(), t.tan_raw_y.to_numpy()
+def predict(t: pd.DataFrame, g: dict, cal: dict, sig: dict,
+            arm: str) -> pd.DataFrame:
+    """Crossings on every layer, the predicted channel, and what fired.
+
+    Slopes are the imaging calibration, with the predictor's coefficients
+    calibrated on the wall (`pointing`, `fit_pointing`), and each layer's
+    measured alignment offset taken off.  The liquid has no boundary a track
+    can fix: same slopes, no offset.
+    """
+    ax, mx, ay, my = pointing(t, g, arm)
+    txw = txp = cal['alpha'] * ax + cal['lam'] * mx
+    ty = cal['lam_v'] * my
     u, v = t.u_mm.to_numpy(), t.v_mm.to_numpy()
-    # v uses each layer's u scale: the slope scale is the drift-time scale,
-    # common to the two strip planes; `fit_v_from_wall` checks it.
-    su_w, su_p = sc['wall_u'], sc['plas_u']
-    sv_w, sv = su_w, su_p
     P = pd.DataFrame(index=t.index)
-    P['u_w'] = u + g['L_wall'] * su_w * tx
-    P['v_w'] = v + g['L_wall'] * sv_w * ty
-    P['u_p'] = u + g['L_plas'] * su_p * tx
-    P['v_p'] = v + g['L_plas'] * sv * ty
-    # the liquid sits 58 mm past the plastic; the plastic's scale is the
-    # nearest measured one, and at 451 mm across the cell it is not critical.
-    P['u_l'] = u + g['L_ls'] * su_p * tx
-    P['v_l'] = v + g['L_ls'] * sv * ty
+    P['u_w'] = u + g['L_wall'] * txw - cal['off_w']
+    P['v_w'] = v + g['L_wall'] * ty
+    P['u_p'] = u + g['L_plas'] * txp - cal['off_p']
+    P['v_p'] = v + g['L_plas'] * ty
+    P['u_l'] = u + g['L_ls'] * txp
+    P['v_l'] = v + g['L_ls'] * ty
     # path-length factor through each layer (cos of the angle to its normal)
-    P['cos_w'] = 1 / np.sqrt(1 + (su_w * tx) ** 2 + (sv_w * ty) ** 2)
-    P['cos_p'] = 1 / np.sqrt(1 + (su_p * tx) ** 2 + (sv * ty) ** 2)
+    P['cos_w'] = 1 / np.sqrt(1 + txw ** 2 + ty ** 2)
+    P['cos_p'] = 1 / np.sqrt(1 + txp ** 2 + ty ** 2)
 
     uw = P.u_w.to_numpy()
     grp = np.digitize(uw, WALL_EDGES) - 1
@@ -802,7 +1034,7 @@ def efficiencies(t: pd.DataFrame, P: pd.DataFrame, sig: dict, g: dict
             rows.append(dict(layer='wall', probe=probe, sample=samp, **r))
             if probe == 'wany':
                 M = eff_map(A('u_w')[m], A('v_w')[m], A('wany_on')[m],
-                            A('wany_off')[m], fb * BIN['wall'], -250, -275,
+                            A('wany_off')[m], fb * BIN['wall'], WALL_EDGES[0], -WALL_HALF_V,
                             c, q)
                 maps.append(M.assign(layer='wall', sample=samp))
         for gg in range(4):
@@ -816,7 +1048,7 @@ def efficiencies(t: pd.DataFrame, P: pd.DataFrame, sig: dict, g: dict
                                A('pm_on'), A('pm_off'))
         rows.append(dict(layer='plas', probe='pm', sample=samp, **r))
         M = eff_map(A('u_p')[m], A('v_p')[m], A('pm_on')[m], A('pm_off')[m],
-                    fb * BIN['plas'], -250, -175, c, q)
+                    fb * BIN['plas'], g['plas_lo'], -PLAS_HALF_V, c, q)
         maps.append(M.assign(layer='plas', sample=samp))
         for bar in (1, 2):
             r, *_ = tag_probe(parent & (A('bar') == bar) & ~A('amb_p'),
@@ -831,9 +1063,27 @@ def efficiencies(t: pd.DataFrame, P: pd.DataFrame, sig: dict, g: dict
         r, m, c, q = tag_probe(parent, t_on, t_off, A('lf_on'), A('lf_off'))
         rows.append(dict(layer='liq', probe='lf', sample=samp, **r))
         M = eff_map(A('u_l')[m] - g['u_ls'], A('v_l')[m] - g['v_ls'],
-                    A('lf_on')[m], A('lf_off')[m], fb * BIN['ls'], -250, -250,
+                    A('lf_on')[m], A('lf_off')[m], fb * BIN['ls'], -LS_HALF_U, -LS_HALF_V,
                     c, q)
         maps.append(M.assign(layer='liq', sample=samp))
+        # --- liquid, tagged by the WALL ALONE (both ends), over the whole
+        # cell.  The plastic covers 400 x 300 mm of the liquid's 451 x 451:
+        # outside it a particle reaches the liquid with no 20 mm of PVT in
+        # front, so the cell's response there is not a punch-through.
+        parent = sm & in_l & in_w
+        r, m, c, q = tag_probe(parent, A('wboth_on'), A('wboth_off'),
+                               A('lf_on'), A('lf_off'))
+        rows.append(dict(layer='liq', probe='lf_walltag', sample=samp, **r))
+        M = eff_map(A('u_l')[m] - g['u_ls'], A('v_l')[m] - g['v_ls'],
+                    A('lf_on')[m], A('lf_off')[m], fb * BIN['ls'], -LS_HALF_U, -LS_HALF_V,
+                    c, q)
+        maps.append(M.assign(layer='liq_walltag', sample=samp))
+        for where, wm in (('behind_plastic', A('on_p')),
+                          ('beside_plastic', ~A('on_p'))):
+            r, *_ = tag_probe(parent & wm, A('wboth_on'), A('wboth_off'),
+                              A('lf_on'), A('lf_off'))
+            rows.append(dict(layer='liq', probe=f'lf_walltag_{where}',
+                             sample=samp, **r))
         # the liquid's two halves, behind plastic bar 1 and bar 2 -- the
         # July source runs saw LIQA and LIQD answer to one bar only
         for bar in (1, 2):
@@ -941,7 +1191,7 @@ def gains(t, P, sig, g, ecal, arm) -> tuple:
         mw = (sm & A_('wboth_on') & ~A_('wsat')
               & (A_('d_edge_w') > 2 * sig['wall_u']) & A_('pm_on'))
         M = _median_map(A_('u_w')[mw], A_('v_w')[mw], G[mw],
-                        fb * BIN['wall'], -250, -275)
+                        fb * BIN['wall'], WALL_EDGES[0], -WALL_HALF_V)
         maps.append(M.assign(layer='wall', quantity='wall_gm', unit='mV',
                              sample=samp))
         for gg in range(4):
@@ -954,11 +1204,11 @@ def gains(t, P, sig, g, ecal, arm) -> tuple:
         mp = (sm & A_('pms_on') & ~A_('psat') & A_('wboth_on')
               & (A_('d_edge_p') > PLAS_MARGIN) & ~A_('amb_p'))
         M = _median_map(A_('u_p')[mp], A_('v_p')[mp], E[mp],
-                        fb * BIN['plas'], -250, -175)
+                        fb * BIN['plas'], g['plas_lo'], -PLAS_HALF_V)
         maps.append(M.assign(layer='plas', quantity='plas_kevee',
                              unit='keVee', sample=samp))
         mt = mp & A_('lf_on')
-        M = _median_map(A_('u_p')[mt], A_('v_p')[mt], E[mt], 50.0, -250, -175)
+        M = _median_map(A_('u_p')[mt], A_('v_p')[mt], E[mt], 50.0, g['plas_lo'], -PLAS_HALF_V)
         maps.append(M.assign(layer='plas', quantity='plas_kevee_through',
                              unit='keVee', sample=samp))
         for bar in (1, 2):
@@ -983,9 +1233,17 @@ def gains(t, P, sig, g, ecal, arm) -> tuple:
         ml = (sm & A_('lf_on') & ~A_('lsat') & A_('wboth_on') & A_('pm_on')
               & A_('on_l'))
         M = _median_map(A_('u_l')[ml] - g['u_ls'], A_('v_l')[ml] - g['v_ls'],
-                        El[ml], fb * BIN['ls'], -250, -250)
+                        El[ml], fb * BIN['ls'], -LS_HALF_U, -LS_HALF_V)
         maps.append(M.assign(layer='liq', quantity='liq_' + lunit.lower(),
                              unit=lunit, sample=samp))
+        # the same with the wall alone as tag, over the whole cell
+        ml2 = (sm & A_('lf_on') & ~A_('lsat') & A_('wboth_on') & A_('on_l'))
+        M = _median_map(A_('u_l')[ml2] - g['u_ls'],
+                        A_('v_l')[ml2] - g['v_ls'], El[ml2], fb * BIN['ls'],
+                        -LS_HALF_U, -LS_HALF_V)
+        maps.append(M.assign(layer='liq_walltag',
+                             quantity='liq_' + lunit.lower(), unit=lunit,
+                             sample=samp))
         sat_base = sm & A_('lf_on')
         rows.append(dict(sample=samp, layer='liq', channel='cell',
                          n=int(ml.sum()), unit=lunit,
@@ -1239,6 +1497,55 @@ def by_run(t, P, sig, ecal, arm) -> pd.DataFrame:
 
 
 # --------------------------------------------------------------------------- #
+def _fmt(cal):
+    return ('alpha %.3f lam %.3f lam_v %.2f; offsets wall %+.1f plas %+.1f; '
+            'edge widths %.1f / %.1f mm' % (cal['alpha'], cal['lam'],
+                                            cal['lam_v'], cal['off_w'],
+                                            cal['off_p'], cal['sig_w'],
+                                            cal['sig_p']))
+
+
+def lam_by_run(t: pd.DataFrame, g: dict, arm: str) -> pd.DataFrame:
+    """The wall predictor, run by run, beside each run's own k.
+
+    If the scintillators saw the k-block (runs 128-147: k up 2-8 % on every
+    arm), the effective slope scale lam * k would stay flat while k rose,
+    i.e. lam would fall with k.  If k's movement is real pointing, lam is
+    flat.  alpha is held at the campaign value so lam is comparable.
+    """
+    al_all = None
+    X, Aa, M, Y, B = _wall_edge_sample(t[t.n_trk == 1], g, arm)
+    al_all = _fit_lin(X, Aa, M, Y, B, WALL_EDGES[1:4], g['L_wall'], 1)[0]
+    rows = []
+    for run, r in t[t.n_trk == 1].groupby('run'):
+        if len(r) < 20000:
+            continue
+        X, Aa, M, Y, B = _wall_edge_sample(r, g, arm)
+        try:
+            r0 = minimize(lambda q: _nll_lin(np.r_[al_all, q], X, Aa, M, Y, B,
+                                             WALL_EDGES[1:4], g['L_wall'], 1),
+                          np.r_[0.7, np.log(15), -3, 3, 0.0],
+                          method='L-BFGS-B')
+            h = 0.01
+
+            def prof(ds, r0=r0, X=X, Aa=Aa, M=M, Y=Y, B=B):
+                return minimize(lambda q: _nll_lin(
+                    np.r_[al_all, r0.x[0] + ds, q], X, Aa, M, Y, B,
+                    WALL_EDGES[1:4], g['L_wall'], 1), r0.x[1:],
+                    method='L-BFGS-B').fun
+            c = (prof(-h) + prof(h) - 2 * r0.fun) / h ** 2
+        except Exception:
+            continue
+        k = float(r.k_eff.median())
+        rows.append(dict(run=run, rn=run_number(run), k_block=in_block(run),
+                         lam=float(r0.x[0]),
+                         lam_err=1 / np.sqrt(c) if c > 0 else np.nan,
+                         sigma=float(np.exp(r0.x[1])), offset=float(r0.x[4]),
+                         n=len(X), k=k, eff_scale=float(r0.x[0]) * k,
+                         alpha=al_all, k_fill=bool(r.k_fill.any())))
+    return pd.DataFrame(rows).sort_values('rn')
+
+
 def _scales(S):
     sc = {'wall_u': float(S[(S.layer == 'wall') & (S.axis == 'u')].s.iloc[0]),
           'plas_u': float(S[(S.layer == 'plas') & (S.axis == 'u')].s.iloc[0]),
@@ -1262,26 +1569,33 @@ def run_arm(arm: str) -> dict:
     t = load_arm(arm)
     log = [f'{arm}: {len(t):,} tracks loaded [{time.time() - t0:.0f} s]']
 
+    # pass 1: every single track
     S1 = fit_scales(t, g).assign(arm=arm, fit_pass=1)
-    sc, sig = _scales(S1)
-    P = predict(t, g, sc, sig)
+    F1 = fit_pointing(t, g, arm).assign(fit_pass=1)
+    cal = _pointing_cal(F1)
+    sig = {'wall_u': cal['sig_w'], 'plas_u': cal['sig_p']}
+    P = predict(t, g, cal, sig, arm)
     TP, (lo, hi) = t0_window(t, P, sig)
     t['intime'] = (t.t0 >= lo) & (t.t0 < hi)
     M = chamber_mask(t, P, sig)
     t['mm_ok'] = apply_mask(t, M)
     t['good'] = t.intime & t.mm_ok
-    log.append(f'   pass 1 scales {sc} widths {sig}; t0 window [{lo:.0f}, '
+    log.append(f'   pass 1 {_fmt(cal)}; t0 window [{lo:.0f}, '
                f'{hi:.0f}) ns keeps {t.intime.mean():.1%}; mask keeps '
                f'{t.mm_ok.mean():.1%}; good {t.good.mean():.1%} '
                f'[{time.time() - t0:.0f} s]')
 
+    # pass 2: the tracks the scintillators can confirm
     S2 = fit_scales(t[t.good], g).assign(arm=arm, fit_pass=2)
-    sc, sig = _scales(S2)
-    log.append(f'   pass 2 scales {sc} widths {sig} [{time.time() - t0:.0f} s]')
+    F2 = fit_pointing(t[t.good], g, arm).assign(fit_pass=2)
+    cal = _pointing_cal(F2)
+    sig = {'wall_u': cal['sig_w'], 'plas_u': cal['sig_p']}
+    log.append(f'   pass 2 {_fmt(cal)} [{time.time() - t0:.0f} s]')
     S = pd.concat([S1, S2], ignore_index=True)
-    SR = scale_by_run(t[t.good], g, sc['wall_u']).assign(arm=arm)
+    PF = pd.concat([F1, F2], ignore_index=True)
+    SR = lam_by_run(t[t.good], g, arm)
 
-    P = predict(t, g, sc, sig)
+    P = predict(t, g, cal, sig, arm)
     CS, CQ, CM = confirmation(t, P, sig)
     G = t.good.to_numpy()
     EP = edge_profiles(t[G].reset_index(drop=True), P[G].reset_index(drop=True))
@@ -1295,7 +1609,7 @@ def run_arm(arm: str) -> dict:
     RR = by_run(tg, Pg, sig, ecal, arm)
     log.append(f'   done [{time.time() - t0:.0f} s]')
 
-    tabs = dict(scales=S, scale_run=SR, confirm=CS, confirm_quality=CQ,
+    tabs = dict(scales=S, pointing=PF, lam_run=SR, confirm=CS, confirm_quality=CQ,
                 confirm_map=CM, t0_profile=TP, mask=M, eff=ES, eff_map=EM,
                 edge_profile=EP,
                 liq_vs_plas=LV, gain_map=GM, wall_atten=AT, gain=GS,
@@ -1306,7 +1620,9 @@ def run_arm(arm: str) -> dict:
         df.to_parquet(od / f'{name}_{arm}.parquet', index=False)
     WS.assign(arm=arm).to_parquet(od / f'wallpos_sample_{arm}.parquet',
                                   index=False)
-    return dict(arm=arm, log=log, n=len(t), scales=sc, sigmas=sig,
+    return dict(arm=arm, log=log, n=len(t), cal=cal, sigmas=sig,
+                frac_k_fill=float(t.k_fill.mean()),
+                k_median=float(t.k_eff.median()),
                 t0_window=[lo, hi], frac_intime=float(t.intime.mean()),
                 frac_mm_ok=float(t.mm_ok.mean()), frac_good=float(t.good.mean()))
 
@@ -1337,7 +1653,10 @@ def main() -> int:
     (out_dir() / 'ana' / 'meta.json').write_text(json.dumps(dict(
         schema=SCHEMA, arms=arms,
         n_tracks={r['arm']: r['n'] for r in res},
-        scales={r['arm']: r['scales'] for r in res},
+        cal={r['arm']: r['cal'] for r in res},
+        frac_k_fill={r['arm']: r['frac_k_fill'] for r in res},
+        k_median={r['arm']: r['k_median'] for r in res},
+        capsule_xyz=CAPSULE_XYZ,
         sigmas={r['arm']: r['sigmas'] for r in res},
         t0_window={r['arm']: r['t0_window'] for r in res},
         frac_intime={r['arm']: r['frac_intime'] for r in res},
