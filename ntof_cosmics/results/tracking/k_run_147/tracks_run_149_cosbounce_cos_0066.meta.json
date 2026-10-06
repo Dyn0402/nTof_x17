@@ -1,0 +1,188 @@
+{
+ "schema": "sept26_prelim/tracks/1",
+ "run": "run_149",
+ "subrun": "cosbounce_cos_0066",
+ "built": "2026-10-06T06:35:10+00:00",
+ "reco_dir": "/home/dylan/PycharmProjects/nTof_x17/ntof_cosmics/results/tracking/reco/run_149/cosbounce_cos_0066",
+ "stage1": null,
+ "allowlist": null,
+ "n_tracks": 7388,
+ "n_gated": 2473,
+ "n_events": 6276,
+ "by_arm": {
+  "A": 2307,
+  "B": 464,
+  "C": 2028,
+  "D": 2589
+ },
+ "by_class": {},
+ "geometry": {
+  "in_plane_sign": -1.0,
+  "strip_map_half": 199.29,
+  "drift_gap_mm": 30.0,
+  "pinwheel": {
+   "D": 15.5,
+   "B": 15.75,
+   "A": 16.35,
+   "C": 17.3
+  },
+  "mm_dist_x": 204.0,
+  "mm_dist_z": 204.5
+ },
+ "not_populated": {},
+ "trigger_time": {
+  "filled": false,
+  "why": "no trigger-time product at /media/dylan/data/x17/sept26_prelim/trigtime/trigtime_run_149_cosbounce_cos_0066.parquet -- run \"python -m sept26_prelim_analysis.trigger_time extract --run run_149 --subrun cosbounce_cos_0066\" where the slims are"
+ },
+ "k_arm": {
+  "applied": {
+   "A": 1.2423295183099483,
+   "C": 1.532585851414496,
+   "D": 1.7289610025777478
+  },
+  "uncalibrated": [
+   "B"
+  ],
+  "angle_derived_null_for_uncalibrated": [
+   "tanx",
+   "tany",
+   "d_x",
+   "d_y",
+   "d_z",
+   "path_len_mm",
+   "q_per_len",
+   "drift_len_mm",
+   "dca_axis_mm",
+   "target_x_mm",
+   "target_y_mm",
+   "target_z_mm",
+   "in_bore",
+   "angle_to_beam_deg",
+   "pred_sipm_bar",
+   "pred_plastic",
+   "pred_ls",
+   "pred_n_cross",
+   "pred_sipm_s_mm"
+  ],
+  "source": "sept26_prelim_analysis.k_arm",
+  "rule": "tan_true = k * tan_reco; v_insitu = v_prior / k. An arm with no certified k gets NaN angles, never k=1."
+ },
+ "provenance": {
+  "A": {
+   "arm": "A",
+   "v_drift_prior_um_ns": 42.6,
+   "k_arm": 1.2423295183099483,
+   "v_drift_um_ns": 34.29041922625535,
+   "angle_calibrated": true,
+   "n_depth_bins": 18,
+   "frac_drift_railed": 0.1612,
+   "n_tags": 3,
+   "bundles": [
+    "/pool/condor/dir_3852505/out/mx17_A/calib_bundle_prelim",
+    "/pool/condor/dir_491470/out/mx17_A/calib_bundle_prelim",
+    "/pool/condor/dir_943029/out/mx17_A/calib_bundle_prelim"
+   ],
+   "code_commit": [
+    "unknown"
+   ],
+   "angle_constants_applied": [
+    true
+   ],
+   "allowlist": [
+    "{}"
+   ],
+   "seeding": {
+    "n_allowed": 0,
+    "n_seeded": 0,
+    "n_missing": 0
+   }
+  },
+  "B": {
+   "arm": "B",
+   "v_drift_prior_um_ns": 42.6,
+   "k_arm": null,
+   "v_drift_um_ns": NaN,
+   "angle_calibrated": false,
+   "n_depth_bins": 18,
+   "frac_drift_railed": 0.5603,
+   "n_tags": 3,
+   "bundles": [
+    "/pool/condor/dir_2103152/out/mx17_B/calib_bundle_prelim",
+    "/pool/condor/dir_2650177/out/mx17_B/calib_bundle_prelim",
+    "/pool/condor/dir_2652094/out/mx17_B/calib_bundle_prelim"
+   ],
+   "code_commit": [
+    "unknown"
+   ],
+   "angle_constants_applied": [
+    true
+   ],
+   "allowlist": [
+    "{}"
+   ],
+   "seeding": {
+    "n_allowed": 0,
+    "n_seeded": 0,
+    "n_missing": 0
+   }
+  },
+  "C": {
+   "arm": "C",
+   "v_drift_prior_um_ns": 42.6,
+   "k_arm": 1.532585851414496,
+   "v_drift_um_ns": 27.796158995388378,
+   "angle_calibrated": true,
+   "n_depth_bins": 18,
+   "frac_drift_railed": 0.2022,
+   "n_tags": 3,
+   "bundles": [
+    "/pool/condor/dir_12644/out/mx17_C/calib_bundle_prelim",
+    "/pool/condor/dir_304702/out/mx17_C/calib_bundle_prelim",
+    "/pool/condor/dir_311222/out/mx17_C/calib_bundle_prelim"
+   ],
+   "code_commit": [
+    "unknown"
+   ],
+   "angle_constants_applied": [
+    true
+   ],
+   "allowlist": [
+    "{}"
+   ],
+   "seeding": {
+    "n_allowed": 0,
+    "n_seeded": 0,
+    "n_missing": 0
+   }
+  },
+  "D": {
+   "arm": "D",
+   "v_drift_prior_um_ns": 42.6,
+   "k_arm": 1.7289610025777478,
+   "v_drift_um_ns": 24.63907510723879,
+   "angle_calibrated": true,
+   "n_depth_bins": 18,
+   "frac_drift_railed": 0.3326,
+   "n_tags": 3,
+   "bundles": [
+    "/pool/condor/dir_1310173/out/mx17_D/calib_bundle_prelim",
+    "/pool/condor/dir_2692436/out/mx17_D/calib_bundle_prelim",
+    "/pool/condor/dir_314851/out/mx17_D/calib_bundle_prelim"
+   ],
+   "code_commit": [
+    "unknown"
+   ],
+   "angle_constants_applied": [
+    true
+   ],
+   "allowlist": [
+    "{}"
+   ],
+   "seeding": {
+    "n_allowed": 0,
+    "n_seeded": 0,
+    "n_missing": 0
+   }
+  }
+ }
+}
