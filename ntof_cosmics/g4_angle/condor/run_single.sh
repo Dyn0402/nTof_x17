@@ -9,4 +9,8 @@ S=${_CONDOR_SCRATCH_DIR:-/tmp/$USER.$$}; mkdir -p $S; cd $S
 ( set +u; source /cvmfs/sft.cern.ch/lcg/views/LCG_106/x86_64-el9-gcc13-opt/setup.sh
   python3 /afs/cern.ch/user/d/dneff/condor/mx17_angle_scale/reduce_gap_wall.py "$S/${TAG}_t0.root" "$S/$TAG.parquet" --arms 2 )
 cp "$S/$TAG.parquet" "$OUT/$TAG.parquet"
+# keep the step-level ROOT on EOS, and leave nothing large in the scratch dir:
+# condor copies leftovers back to the AFS submit dir (2026-10-07 quota incident)
+mkdir -p "$OUT/../single_root" && cp "$S/${TAG}_t0.root" "$OUT/../single_root/"
+rm -f "$S"/*.root "$S"/*.parquet
 echo done

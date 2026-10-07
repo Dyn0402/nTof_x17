@@ -1,0 +1,35 @@
+executable = /afs/cern.ch/user/d/dneff/condor/mx17_digi_steps/run_steps.sh
+arguments = $(inp) $(outp)
+output = /afs/cern.ch/user/d/dneff/condor/mx17_digi_steps/logs/$(tag).out
+error = /afs/cern.ch/user/d/dneff/condor/mx17_digi_steps/logs/$(tag).err
+log = /afs/cern.ch/user/d/dneff/condor/mx17_digi_steps/logs/steps.log
++JobFlavour = "longlunch"
+request_cpus = 1
+request_memory = 8000
+requirements = (OpSysAndVer =?= "AlmaLinux9")
+queue inp,outp,tag from (
+/eos/experiment/ntof/data/x17/full_sim/neutrons_thermal_trig_2cm_nose/neutron_bg_job000_t0.root, /eos/experiment/ntof/data/x17/full_sim/angle_scale/steps_nose/s000.parquet, s000
+/eos/experiment/ntof/data/x17/full_sim/neutrons_thermal_trig_2cm_nose/neutron_bg_job001_t0.root, /eos/experiment/ntof/data/x17/full_sim/angle_scale/steps_nose/s001.parquet, s001
+/eos/experiment/ntof/data/x17/full_sim/neutrons_thermal_trig_2cm_nose/neutron_bg_job002_t0.root, /eos/experiment/ntof/data/x17/full_sim/angle_scale/steps_nose/s002.parquet, s002
+/eos/experiment/ntof/data/x17/full_sim/neutrons_thermal_trig_2cm_nose/neutron_bg_job003_t0.root, /eos/experiment/ntof/data/x17/full_sim/angle_scale/steps_nose/s003.parquet, s003
+/eos/experiment/ntof/data/x17/full_sim/neutrons_thermal_trig_2cm_nose/neutron_bg_job004_t0.root, /eos/experiment/ntof/data/x17/full_sim/angle_scale/steps_nose/s004.parquet, s004
+/eos/experiment/ntof/data/x17/full_sim/neutrons_thermal_trig_2cm_nose/neutron_bg_job005_t0.root, /eos/experiment/ntof/data/x17/full_sim/angle_scale/steps_nose/s005.parquet, s005
+/eos/experiment/ntof/data/x17/full_sim/neutrons_thermal_trig_2cm_nose/neutron_bg_job006_t0.root, /eos/experiment/ntof/data/x17/full_sim/angle_scale/steps_nose/s006.parquet, s006
+/eos/experiment/ntof/data/x17/full_sim/neutrons_thermal_trig_2cm_nose/neutron_bg_job007_t0.root, /eos/experiment/ntof/data/x17/full_sim/angle_scale/steps_nose/s007.parquet, s007
+/eos/experiment/ntof/data/x17/full_sim/neutrons_thermal_trig_2cm_nose/neutron_bg_job008_t0.root, /eos/experiment/ntof/data/x17/full_sim/angle_scale/steps_nose/s008.parquet, s008
+/eos/experiment/ntof/data/x17/full_sim/neutrons_thermal_trig_2cm_nose/neutron_bg_job009_t0.root, /eos/experiment/ntof/data/x17/full_sim/angle_scale/steps_nose/s009.parquet, s009
+/eos/experiment/ntof/data/x17/full_sim/neutrons_thermal_trig_2cm_nose/neutron_bg_job010_t0.root, /eos/experiment/ntof/data/x17/full_sim/angle_scale/steps_nose/s010.parquet, s010
+/eos/experiment/ntof/data/x17/full_sim/neutrons_thermal_trig_2cm_nose/neutron_bg_job011_t0.root, /eos/experiment/ntof/data/x17/full_sim/angle_scale/steps_nose/s011.parquet, s011
+/eos/experiment/ntof/data/x17/full_sim/neutrons_thermal_trig_2cm_nose/neutron_bg_job012_t0.root, /eos/experiment/ntof/data/x17/full_sim/angle_scale/steps_nose/s012.parquet, s012
+/eos/experiment/ntof/data/x17/full_sim/neutrons_thermal_trig_2cm_nose/neutron_bg_job013_t0.root, /eos/experiment/ntof/data/x17/full_sim/angle_scale/steps_nose/s013.parquet, s013
+/eos/experiment/ntof/data/x17/full_sim/neutrons_thermal_trig_2cm_nose/neutron_bg_job014_t0.root, /eos/experiment/ntof/data/x17/full_sim/angle_scale/steps_nose/s014.parquet, s014
+/eos/experiment/ntof/data/x17/full_sim/neutrons_thermal_trig_2cm_nose/neutron_bg_job015_t0.root, /eos/experiment/ntof/data/x17/full_sim/angle_scale/steps_nose/s015.parquet, s015
+/eos/experiment/ntof/data/x17/full_sim/neutrons_thermal_trig_2cm_nose/neutron_bg_job016_t0.root, /eos/experiment/ntof/data/x17/full_sim/angle_scale/steps_nose/s016.parquet, s016
+/eos/experiment/ntof/data/x17/full_sim/neutrons_thermal_trig_2cm_nose/neutron_bg_job017_t0.root, /eos/experiment/ntof/data/x17/full_sim/angle_scale/steps_nose/s017.parquet, s017
+/eos/experiment/ntof/data/x17/full_sim/neutrons_thermal_trig_2cm_nose/neutron_bg_job018_t0.root, /eos/experiment/ntof/data/x17/full_sim/angle_scale/steps_nose/s018.parquet, s018
+/eos/experiment/ntof/data/x17/full_sim/neutrons_thermal_trig_2cm_nose/neutron_bg_job019_t0.root, /eos/experiment/ntof/data/x17/full_sim/angle_scale/steps_nose/s019.parquet, s019
+/eos/experiment/ntof/data/x17/full_sim/neutrons_thermal_trig_2cm_nose/neutron_bg_job020_t0.root, /eos/experiment/ntof/data/x17/full_sim/angle_scale/steps_nose/s020.parquet, s020
+/eos/experiment/ntof/data/x17/full_sim/neutrons_thermal_trig_2cm_nose/neutron_bg_job021_t0.root, /eos/experiment/ntof/data/x17/full_sim/angle_scale/steps_nose/s021.parquet, s021
+/eos/experiment/ntof/data/x17/full_sim/neutrons_thermal_trig_2cm_nose/neutron_bg_job022_t0.root, /eos/experiment/ntof/data/x17/full_sim/angle_scale/steps_nose/s022.parquet, s022
+/eos/experiment/ntof/data/x17/full_sim/neutrons_thermal_trig_2cm_nose/neutron_bg_job023_t0.root, /eos/experiment/ntof/data/x17/full_sim/angle_scale/steps_nose/s023.parquet, s023
+)

@@ -1012,3 +1012,150 @@ reconstruction and not the beam environment (§10e).
    - (c) the in-beam muon test and the cosmic wall test on C (and D);
    - (d) the 10–20 ms dip (0.77): split by wall-group population/charge in time;
    - (e) the clock match for run_103 (4.3 h of n_TOF recording).
+
+
+## 12 · Capsule estimators on Geant4 (2026-10-07, late) — **conclusion SUPERSEDED by §13**
+
+> §13 digitised the same Geant4 tracks through the production reco and applied k_arm's *reco*
+> charge window. Most of the falling response below is the estimator on this population, not the
+> reconstruction. The reco follows the electrons' ideal line as well as it follows muons. The
+> comparison here applied the charge window to G4 edep, not to reco q_sum, and had no failed fits.
+> The tables below are correct; the "Reading" is not.
+
+`ntof_cosmics/g4_angle/capsule_estimator.py [--data]` → `/media/dylan/data/x17/ntof_cosmics/g4_angle/capsule_estimator.csv`.
+
+**Why.** §10g closed the *wall* gap as electron scattering, but the wall estimator is population-dominated
+(ideal 0.59). Before adopting `is2` for beam (§11 step 1), I checked k_arm's own capsule estimators on the
+same Geant4 beam-capture population (`neutrons_thermal_trig_2cm_nose`, ideal edep-weighted gap line).
+- Sim geometry: 1 GeV μ guns from the capsule give u_mesh = 16.3 + 234.6·tan. That is the data's D_PERP; foot 16.3 mm.
+- The same lever window (30–130 mm) and the same charge window (25–75 %) as k_arm.
+
+**Result.** With an ideal reconstruction the capsule estimators are unbiased on beam electrons:
+
+| | band | track | response 0.10 → 0.40–0.50 (median tan / tan_expected) |
+|---|---|---|---|
+| G4 ideal A, reaches wall | 1.02 | 0.97 | 1.05 → 0.98 (flat) |
+| G4 ideal C, reaches wall | 1.02 | 0.97 | 1.06 → 0.97 (flat) |
+| G4 ideal, full gap, no wall requirement | 1.03–1.04 | 0.88–0.89 | flat (0.95–1.09) |
+| G4 ideal, KE > 2 MeV | 1.01 | 0.98–1.00 | flat |
+| data run_145 `is2_A` (cosmic-closing bundle) | 1.19 | 1.14 | 1.04 → 0.73 |
+| data run_145 `is2_C` | 1.19 | 1.09 | 1.07 → 0.71 |
+| data campaign production raw A (> 10 ms) | 1.26 | 1.23 | 1.00 → 0.71 |
+| data campaign production raw C | 1.62 | 1.47 | 0.93 → 0.56 |
+
+- The data response falls by ~30 % between |tan| 0.10 and 0.45.
+- It falls the same at 10–20, 30–60 and > 60 ms, so a late non-capsule population does not drive it. It
+  also falls the same in every split: χ² above/below median, q/len, full gap, railed, slope_reliable.
+- The simulated population doesn't make it fall even with no wall selection at all, so it isn't dilution
+  by the physical population either.
+- On cosmics the same `is2_A` bundle is flat to ±3 % against the A–C line (§10b).
+
+**Reading.**
+- The reconstruction compresses beam-electron angles increasingly with angle; on muons it doesn't.
+- The cosmic in-situ scale is the right scale for *muons*, and for beam near |tan| ≈ 0.1. At |tan| 0.3–0.45
+  it under-reads beam electrons by 20–27 %.
+- §10g still stands for the wall (scattering after the gap). But "the cosmic in-situ scale stands for beam"
+  is **not** established, and §11 step 1 (adopt `is2` for beam) should not go ahead as a flat scale.
+
+**Not ruled out:**
+1. A data population absent from the sim, flat in time, e.g. electrons from captures in the arm structure,
+   not the capsule. The fall would then be dilution after all.
+2. Sim/data mismatch in the source: an extended capsule-Al source (D_eff ≈ 330 mm at the wall, §10c) vs
+   the point-ish sim.
+
+**What would close it:**
+- the `wft`-digitised Geant4 tracks through the real reconstruction (§11 5a) — now the decisive test,
+  not optional;
+- the response vs angle by the strip-cluster width at fixed angle (scattered or curled electron segments).
+
+
+## 13 · Digitised Geant4 through the production reco: the reco does not compress electrons (2026-10-07, night)
+
+Package `ntof_cosmics/g4_digi/` (outputs `/media/dylan/data/x17/ntof_cosmics/g4_digi/`).
+
+**What the digitiser does** (`digitise.py`, docstring has the detail):
+- DriftGas steps become Poisson electrons. Each drifts with the bundle's own diffusion pair and gets a
+  Polya gain.
+- Electrons land on the nearest strip of the run's map. The bundle's impulse template and resistive
+  kernel are applied (wft.model's own pieces), then the per-channel gain.
+- The signal is added to the raw ADC of a real quiet run_145 trigger on the same FEUs, clipped at the
+  rail, then gets FeuReader's exact pedestal and 64-channel common-mode subtraction.
+- Hits are emulated (5σ, σ from the real hit finder's amplitude/significance).
+- Then the unchanged production path: `seeds_from_hits_beam` (min 3) → `extract_window` →
+  `wft.reco._worker_fit`.
+
+The response model is the fit model. What the test isolates is what the model lacks:
+- non-straight ionisation;
+- fluctuations;
+- real noise and CNS;
+- seeding and window truncation.
+
+It does not test model-vs-chamber mismatch; that part is calibrated on cosmics.
+
+**Inputs:**
+- Step files from `extract_steps.py`, on EOS under `full_sim/angle_scale/steps_nose/` (100 files) and
+  `steps_single/`.
+- Charge scale set so the reco median x_q_sum matches the data's (A 1553 → 11.8 ADC/e; C 1585 → 10.8).
+  The y/x split comes from data (A 0.88, C 0.69).
+- t0 is sampled from the data's is2 fitted t0.
+- Sample: the (event, arm) groups with a full-gap track whose own track reaches the wall (the sim
+  analogue of the pointing coincidence).
+
+**Gates (synthetic straight muons, 2000 per arm).** reco/true, flat:
+- A: x 0.98 (= 1/kw_x), easing to 0.95 at |tan| 0.5; y 1.00.
+- C: x 1.00, easing to 0.98; y 1.035 (= 1/kw_y).
+- Capsule band/track on A: 1.02 / 1.01.
+- 18–23 % wrong-sign x fits at |tan| > 0.35. The data's `sign_ok` is 0.87–0.91 there.
+
+**Result 1: against the ideal gap line, electrons reconstruct like muons** (`analyse.py`):
+
+| x, reco / ideal | 0.10–0.30 | 0.35–0.45 | 0.45–0.55 |
+|---|---|---|---|
+| A muons (gate) | 0.98 | 0.96 | 0.95 |
+| A G4 beam electrons | 0.97–0.98 | 0.96–0.97 | 0.94 |
+| C muons (gate) | 1.00 | 0.99 | 0.98 |
+| C G4 beam electrons | 0.99–1.00 | 0.98–0.99 | 0.97 |
+
+**Result 2: like-for-like capsule view** (`compare_data.py`: k_arm's selection, *reco* q_sum window
+25–75 %, reco position, lever 30–130 mm; bootstrap errors). These are the 24-file sample numbers; the
+100-file reruns `g4_*_is2_full` are in progress.
+
+| | band | track | r 0.1–0.2 | r 0.2–0.3 | r 0.3–0.4 | r 0.4–0.55 |
+|---|---|---|---|---|---|---|
+| A G4 ideal line | 1.090 ± .015 | 1.004 | 1.02 | 0.98 | 0.93 | 0.87 |
+| A G4 → reco | 1.141 ± .016 | 1.030 | 0.98 | 0.94 | 0.89 | 0.84 |
+| A data is2 | 1.194 ± .009 | 1.143 | 0.94 | 0.86 | 0.81 | 0.75 |
+| C G4 ideal line | 1.038 ± .012 | 0.974 | 1.00 | 1.00 | 0.98 | 0.95 |
+| C G4 → reco | 1.057 ± .013 | 0.974 | 1.00 | 1.01 | 0.95 | 0.92 |
+| C data is2 | 1.187 ± .011 | 1.088 | 1.00 | 0.90 | 0.86 | 0.78 |
+
+**Reading:**
+- §12's "the reco compresses beam electrons 20–27 %" is wrong.
+  - Against the ideal line, the reco is as good on beam electrons as on muons, within 1–2 %.
+  - Most of the falling capsule response is the estimator on this population: the reco-charge window
+    selects angle-correlated tracks, plus angular spread and failed fits. Even the ideal line in the
+    same selection falls to 0.87 on A.
+- **A significant residual remains.** In the data the capsule estimators read 5–13 % higher (band A
+  +0.05, C +0.13) and the response 8–12 % lower at |tan| > 0.2 than the full simulation, on both arms.
+  That is 3–6σ statistical.
+- Not in the simulation:
+  - (a) a population that doesn't point at the capsule: hall die-away captures in the arms' structure,
+    §10f; data capsule k is flat 10 → 60 ms, which weighs against it unless the early window is
+    already die-away-dominated;
+  - (b) model-vs-chamber mismatch that is larger for electron tracks than for muons;
+  - (c) source/geometry: the sim capture vertices are capsule-Al.
+- **Consequence for §11 step 1:** the cosmic in-situ scale is supported for beam electrons to within a
+  ~5–10 % systematic. The capsule estimators are not truth for beam either way.
+  - Any beam-angle truth needs this forward model, not a raw estimator.
+  - The adoption decision is Dylan's.
+- Still to do:
+  - the 100-file reruns;
+  - single-gun trends (`steps_single/`, e.g. 2 MeV tan 0.1–0.5, 5 MeV 0.1/0.5);
+  - the data split by early/late on run_145 with is2;
+  - prod-bundle (v 42.6) reruns, to check that the simulation reproduces production's k_arm 1.27/1.62;
+  - a non-quiet overlay (busy triggers) as a systematic.
+
+**lxplus (2026-10-07):** the single-gun jobs had filled the AFS quota. Their ROOT files were left in
+condor scratch and copied back, and 19 jobs went on hold. The ROOT files are now on EOS
+`full_sim/angle_scale/single_root/` (16 kept; the 20 that failed transfer are lost). The job scripts are
+fixed to leave nothing in scratch. The general rule and the `lxstore` tool are in `~/.claude/CLAUDE.md`.

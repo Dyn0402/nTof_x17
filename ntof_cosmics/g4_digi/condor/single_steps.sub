@@ -1,0 +1,27 @@
+executable = /afs/cern.ch/user/d/dneff/condor/mx17_digi_steps/run_steps.sh
+arguments = $(inp) $(outp)
+output = /afs/cern.ch/user/d/dneff/condor/mx17_digi_single.logs/$(tag).out
+error = /afs/cern.ch/user/d/dneff/condor/mx17_digi_single.logs/$(tag).err
+log = /afs/cern.ch/user/d/dneff/condor/mx17_digi_single.logs/steps.log
++JobFlavour = "longlunch"
+request_cpus = 1
+request_memory = 8000
+requirements = (OpSysAndVer =?= "AlmaLinux9")
+queue inp,outp,tag from (
+/eos/experiment/ntof/data/x17/full_sim/angle_scale/single_root/single_em_1MeV_tan0.0_t0.root, /eos/experiment/ntof/data/x17/full_sim/angle_scale/steps_single/em_1MeV_tan0.0.parquet, em_1MeV_tan0.0
+/eos/experiment/ntof/data/x17/full_sim/angle_scale/single_root/single_em_1MeV_tan0.1_t0.root, /eos/experiment/ntof/data/x17/full_sim/angle_scale/steps_single/em_1MeV_tan0.1.parquet, em_1MeV_tan0.1
+/eos/experiment/ntof/data/x17/full_sim/angle_scale/single_root/single_em_1MeV_tan0.2_t0.root, /eos/experiment/ntof/data/x17/full_sim/angle_scale/steps_single/em_1MeV_tan0.2.parquet, em_1MeV_tan0.2
+/eos/experiment/ntof/data/x17/full_sim/angle_scale/single_root/single_em_1MeV_tan0.3_t0.root, /eos/experiment/ntof/data/x17/full_sim/angle_scale/steps_single/em_1MeV_tan0.3.parquet, em_1MeV_tan0.3
+/eos/experiment/ntof/data/x17/full_sim/angle_scale/single_root/single_em_1MeV_tan0.4_t0.root, /eos/experiment/ntof/data/x17/full_sim/angle_scale/steps_single/em_1MeV_tan0.4.parquet, em_1MeV_tan0.4
+/eos/experiment/ntof/data/x17/full_sim/angle_scale/single_root/single_em_1MeV_tan0.5_t0.root, /eos/experiment/ntof/data/x17/full_sim/angle_scale/steps_single/em_1MeV_tan0.5.parquet, em_1MeV_tan0.5
+/eos/experiment/ntof/data/x17/full_sim/angle_scale/single_root/single_em_2MeV_tan0.0_t0.root, /eos/experiment/ntof/data/x17/full_sim/angle_scale/steps_single/em_2MeV_tan0.0.parquet, em_2MeV_tan0.0
+/eos/experiment/ntof/data/x17/full_sim/angle_scale/single_root/single_em_2MeV_tan0.1_t0.root, /eos/experiment/ntof/data/x17/full_sim/angle_scale/steps_single/em_2MeV_tan0.1.parquet, em_2MeV_tan0.1
+/eos/experiment/ntof/data/x17/full_sim/angle_scale/single_root/single_em_2MeV_tan0.3_t0.root, /eos/experiment/ntof/data/x17/full_sim/angle_scale/steps_single/em_2MeV_tan0.3.parquet, em_2MeV_tan0.3
+/eos/experiment/ntof/data/x17/full_sim/angle_scale/single_root/single_em_2MeV_tan0.4_t0.root, /eos/experiment/ntof/data/x17/full_sim/angle_scale/steps_single/em_2MeV_tan0.4.parquet, em_2MeV_tan0.4
+/eos/experiment/ntof/data/x17/full_sim/angle_scale/single_root/single_em_2MeV_tan0.5_t0.root, /eos/experiment/ntof/data/x17/full_sim/angle_scale/steps_single/em_2MeV_tan0.5.parquet, em_2MeV_tan0.5
+/eos/experiment/ntof/data/x17/full_sim/angle_scale/single_root/single_em_3MeV_tan0.3_t0.root, /eos/experiment/ntof/data/x17/full_sim/angle_scale/steps_single/em_3MeV_tan0.3.parquet, em_3MeV_tan0.3
+/eos/experiment/ntof/data/x17/full_sim/angle_scale/single_root/single_em_3MeV_tan0.4_t0.root, /eos/experiment/ntof/data/x17/full_sim/angle_scale/steps_single/em_3MeV_tan0.4.parquet, em_3MeV_tan0.4
+/eos/experiment/ntof/data/x17/full_sim/angle_scale/single_root/single_em_5MeV_tan0.1_t0.root, /eos/experiment/ntof/data/x17/full_sim/angle_scale/steps_single/em_5MeV_tan0.1.parquet, em_5MeV_tan0.1
+/eos/experiment/ntof/data/x17/full_sim/angle_scale/single_root/single_em_5MeV_tan0.5_t0.root, /eos/experiment/ntof/data/x17/full_sim/angle_scale/steps_single/em_5MeV_tan0.5.parquet, em_5MeV_tan0.5
+/eos/experiment/ntof/data/x17/full_sim/angle_scale/single_root/single_mum_1000MeV_tan0.2_t0.root, /eos/experiment/ntof/data/x17/full_sim/angle_scale/steps_single/mum_tan0.2.parquet, mum_tan0.2
+)
