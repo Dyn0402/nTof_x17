@@ -66,6 +66,9 @@ chambers A and C on run_149 beam-off through-going cosmics.
   at large angle halves. Chamber C: the r06 kernels (det7 marginally best)
   improve linearity a little (x 1.07 → 0.92 across |tan| 0.08–0.6, from
   1.12 → 0.89), but C's 8–13 % core tails are **not** from the kernel.
+  With the in-situ bundles, A and C agree on beam (capsule k 1.19/1.14 and
+  1.19/1.09, from 1.29/1.24 and 1.77/1.54): the chamber-to-chamber differences
+  were calibration.
 - **Seeder minimum 3 (opt-in `WFT_BEAM_MIN_STRIPS=3`)** recovers head-on
   tracks: on cosmics, near-normal ×5 and σ_tan 0.2 → 0.03–0.06. On beam
   (run_145, `ntof_cosmics/results/seed_beam/report.html`):
@@ -78,9 +81,9 @@ chambers A and C on run_149 beam-off through-going cosmics.
   tan = 0.89 × production raw for A. They also give an effective source
   distance of ≈ 330 mm instead of 234.6 mm, which is exactly the factor
   k_arm's capsule assumption carries. The capsule-pointing k (1.27, applied in
-  stage 3) is therefore not trustworthy. **Still open:** beam 0.89 vs cosmics
-  1.11. The t0 100–300 ns class reads 1.05, which points at the t0–p0 trade.
-  Tracking handoff §10c.
+  stage 3) is therefore not trustworthy. **Still open:** beam reads 20–33 %
+  shallower than cosmics in both A and C (scint-stack λ·k). It is not t0, not
+  partial tracks, not fit quality, not charge. Tracking handoff §10c.
 
 ## T3 — late tracks (`beam-off-cosmics`)
 
@@ -140,9 +143,10 @@ combined split-ab contract → re-pass → downstream.
 
 1. **Beam (0.89) vs cosmics (1.11) for the same chamber.** The capsule number
    (1.27) is explained: its point-source assumption fails (D_eff ≈ 330 mm).
-   The scintillators, binned in u, are dilution-free. What remains is a 25 %
-   beam/cosmic difference, with a t0 dependence (100–300 ns class 1.05). Until
-   it is settled, no beam opening angle carries a calibrated uncertainty.
+   The scintillators, binned in u, are dilution-free. What remains is a 20–33 %
+   beam/cosmic difference, the same in A and C, and independent of t0, drift
+   length, fit quality and charge. Until it is settled, no beam opening angle
+   carries a calibrated uncertainty.
    Tests: tracking handoff §10c.
 2. **Which x/y pairing is right in busy events?** Min 3 re-pairs 5–13 % of
    production's tracks, and timing and charge cannot arbitrate. Run T1's

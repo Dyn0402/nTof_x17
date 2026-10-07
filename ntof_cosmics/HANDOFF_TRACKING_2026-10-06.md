@@ -646,6 +646,13 @@ estimators: band/track **1.19 / 1.14** (production raw: 1.29 / 1.24). The
 response still falls with angle, 1.05 at |tan| 0.10 to 0.73 at 0.50, while on
 cosmics the same bundle is flat.
 
+Chamber C with its in-situ bundle (`is2_C`: r06 det7 kernel, v 28.7, robust
+kw x 1.001 / y 0.957, seeder 3) reads capsule band/track **1.19 / 1.09**
+(production raw 1.77 / 1.54). **With in-situ bundles A and C agree on beam**
+(1.19/1.14 and 1.19/1.09). C's large excess over A was entirely calibration;
+what remains is common to both chambers. Table: `~/scratch/ntof_insitu/kbeam_AC.txt`
+and `beamseed/compare/run_145/stat090_0000/kbeam_*`.
+
 The capsule-free test, wall-edge shift against tan (`det_a_scint.edge_vs_tan`,
 threshold lowered for one sub-run), says the opposite. In-situ tans are about
 18 % **too large** (k_ratio 1.16–1.19). The sign was checked by rescaling the
@@ -727,10 +734,25 @@ Possible explanations, with what has been tried:
 
     **The beam/cosmic gap is systematic across chambers.** Beam tracks read
     20–33 % shallower at the wall than the cosmic calibration predicts.
+  - **Ruled out as the cause of the beam/cosmic gap** (A, wall scale in
+    sub-samples; campaign stack tables joined to stage 3):
+    - **t0 / the t0–p0 trade:** flat at 0.88–0.89 in every bin from −400 to
+      +100 ns, cosmic-like t0 (−40..0) included. The earlier "100–300 ns reads
+      1.05" was a thin, unstable edge fit.
+    - **partial tracks:** drift length 20–28 mm 0.895, full gap 0.901,
+      railed 0.910.
+    - **fit quality:** χ²/dof < 5 gives 0.880.
+    - **charge:** 0.883–0.891.
+    - (x_n_strips > 15 reads 1.01, but strip count rises with |tan|, so that
+      cut selects on angle and the estimator is not valid there.)
+    - D_eff drifts with t0 (382 → 315 mm from early to late) while the scale
+      does not; not understood.
   - **What remains open is beam vs cosmics:** 0.89 (scintillators, beam) against
     1.11 (A–C line, cosmics), a 25 % difference that §7c already saw as the
-    "steeper beam response". Candidates: the particle (low-energy electrons vs
-    muons), or the wall/plastic lever arms. The two-lever agreement makes a
+    "steeper beam response". Remaining candidates: the particle (low-energy
+    electrons vs muons — a Geant4 forward-model test), the cosmic truth itself
+    (the A–C line uses the chambers' own p0; an A/C position bias ∝ tan would
+    tilt it), or the wall/plastic lever arms. The two-lever agreement makes a
     single survey error unlikely, but both levers come from one survey.
 - **Tests to run next:**
   1. ~~The edge test binned in u~~ — **done** above (0.89, dilution excluded).

@@ -110,9 +110,9 @@ Last updated **2026-09-14** (**the re-pass is pushed to OCTOBER** and [`OCTOBER_
 >   angles therefore rest on a k that the scintillators contradict. This is the
 >   "33 % out" of 2026-09-10, now with the mechanism located in the capsule
 >   assumption rather than in the wall.
-> - **Still open:** beam (0.89) vs cosmics (1.11) for the same chamber, a 25 %
->   difference. The t0 100–300 ns class reads 1.05, so the t0–p0 trade is the
->   lead.
+> - **Still open:** beam reads 20–33 % shallower than cosmics, the same in A
+>   and C (A 0.89 vs 1.11). It is not t0, drift length, fit quality or charge.
+>   With in-situ bundles, A and C agree on beam (capsule k 1.19 each).
 > - The two-track F rescan confirms A 1200 / C 2400, but on the old v = 42.6
 >   bundles; re-derive it on new ones.
 
