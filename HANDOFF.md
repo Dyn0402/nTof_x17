@@ -65,7 +65,9 @@ proposed, but Dylan has not picked any yet.
 
 ## Beam-off cosmics: angle response + in-situ reco — updated 2026-10-06 (dylan-MS-7C84)
 
-**Resume:** Fix the chamber reco with the A–C cosmic line as truth. Next: beam purity check of seeder min 3 (run_145/147).
+**Read first:** `sept26_prelim_analysis/SAME_CHAMBER_PAIRS.md` (both same-chamber threads, on both branches) and `ntof_cosmics/HANDOFF_TRACKING_2026-10-06.md` §10 (2026-10-07 night).
+
+**Resume (updated 2026-10-07 morning):** the seeder min 3 passes on beam (+40–52 % confirmed tracks). In-situ A/C bundles close on cosmics and agree with each other on beam. The capsule-pointing k is refuted by the scintillator walls (D_eff ≈ 330 mm). **Open: beam reads 20–33 % shallower than cosmics in both chambers.** Next: the cosmic wall test (run_149 slim needed), Geant4 electrons, then T1 recalibration on the new bundles.
 
 **Goal:** a reconstruction that measures angles correctly in all cases (head-on included) at n_TOF, so that
 same-chamber coincident pairs can be reconstructed. run_149 through-goers give truth: the line through

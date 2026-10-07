@@ -759,8 +759,12 @@ Possible explanations, with what has been tried:
   2. Why D_eff ≈ 330 mm: the same u-binned edge test per run and per t0 class
      (in-time vs late), and per charge (MIP vs low-energy). Is it a population
      not from the axis, or a property of all tracks?
-  3. Run_149 cosmics that fire A's wall: the edge test with **true** tan (A–C
-     line) against reco tan. If the measured-tan version reads ε > 0 and the
-     true-tan version reads 0, the edge test's bias is proven.
+  3. **(Now the decisive test.)** Run_149 cosmics that fire A's wall: the
+     u-binned edge test (`wall_edge_scale.py`), plus the A–C line's own
+     prediction at the wall. If cosmics read 1.11 at the wall, then beam really
+     differs from cosmics, which points at the particle. If they read 0.89,
+     the A–C truth or the levers are off. Needs the run_149 slim: beam-off
+     triggers go on the n_TOF clock with `clock_match.py` first, then
+     `slim_export` (it reads the n_TOF processing's slim ROOT).
   4. Electron scattering in Geant4 (`MX17_Full_Geant`): σ(tan) between the gap
      and the wall for the beam's electron spectrum.
