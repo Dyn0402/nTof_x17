@@ -590,6 +590,11 @@ Note: `seeds_from_hits_beam` binds `min_strips` at definition time, so patching
 | near-normal confirmed excess | 74 → 264 | 14 → 71 |
 | events with ≥ 2 gated tracks | 621 → 1 504 | 580 → 1 091 |
 
+Chamber D (no near-normal truth, but the same test): gated 16 259 → 23 164,
+confirmed excess 1 991 → 2 790 (+40 %), gained tracks confirm at 78 % of
+production's rate. B was not run: it has no angle scale, so its tracks cannot be
+extrapolated (run it with `reco --min 3 --arms B` if the counts are wanted).
+
 - **Nothing is lost as a particle.** 952 (A) / 357 (C) production gated tracks
   have no min-3 track within 2 mm, but nearly all of them reappear: at least one
   view's fit survives in a gated min-3 track, **re-paired** with another
@@ -606,3 +611,75 @@ Note: `seeds_from_hits_beam` binds `min_strips` at definition time, so patching
 **Verdict:** min 3 is a net gain, but it must be validated together with T1's
 `xy_pairing` (the re-pairing above is exactly its problem) through the
 split-ab contract, not shipped alone.
+
+### 10b · An in-situ bundle for A that closes on cosmic truth
+
+`WFT_BEAM_MIN_STRIPS` is now an opt-in env switch in `wft_beam` (default 5,
+production unchanged). The driver passes it explicitly, so a condor job must
+carry it in its environment. `seed_test.py` was updated to match.
+
+Recipe (scripts `~/scratch/ntof_insitu/recipe_A.sh`, `recipe_A2.sh`):
+production kernel, `mkbundle --v 38.0`, seeder 3, then the new
+`insitu_calib.py kwmed` step. It sets kw = median w/(v·tan_true) over |tan|
+0.15–0.45 on the TRAIN third, with w0 = 0. **`w0kw` (least squares) is pulled
+by the tails** and over-corrected A y by 7 %. Bundle:
+`~/scratch/ntof_insitu/bundles/is2_A` (kw x 1.020, y 0.993).
+
+Held-out cosmic test, median reco/true per |tan| bin (σ = MAD of reco − true):
+
+| | 0.08–0.15 | 0.15–0.25 | 0.25–0.35 | 0.35–0.45 | 0.45–0.60 |
+|---|---|---|---|---|---|
+| prod x | 0.968 σ.026 | 0.937 σ.033 | 0.900 σ.053 | 0.876 σ.065 | 0.888 σ.110 |
+| is2 x | 1.057 σ.029 | 1.027 σ.026 | 0.990 σ.029 | 0.964 σ.041 | 0.970 σ.072 |
+| prod y | 0.988 σ.025 | 0.903 σ.034 | 0.901 σ.052 | 0.899 σ.066 | 0.889 σ.090 |
+| is2 y | 1.104 σ.033 | 1.005 σ.025 | 1.001 σ.033 | 1.004 σ.036 | 1.000 σ.043 |
+
+y is flat at 1.00, x keeps a ±3 % S-shape, and the resolution at large angle
+halves. The truth sample (§8) was selected from min-5 production tracks, so it
+has almost no near-normal events; head-on is judged on `seed_test`'s sample.
+
+### 10c · On beam the in-situ A bundle does NOT read k = 1, and the two beam truths disagree
+
+run_145 stat090_0000 A was re-reconstructed with `is2_A` at seeder 3 (label
+`is2`, built with `--k-one`). `seed_beam_test.py kbeam` measures k_arm's capsule
+estimators: band/track **1.19 / 1.14** (production raw: 1.29 / 1.24). The
+response still falls with angle, 1.05 at |tan| 0.10 to 0.73 at 0.50, while on
+cosmics the same bundle is flat.
+
+The capsule-free test, wall-edge shift against tan (`det_a_scint.edge_vs_tan`,
+threshold lowered for one sub-run), says the opposite. In-situ tans are about
+18 % **too large** (k_ratio 1.16–1.19). The sign was checked by rescaling the
+tans: the edge fit reaches 1 at s ≈ 0.82–0.85.
+
+**Three answers for A's true tan, in units of production raw tan:**
+- the scintillator edges, campaign (2.5 M tracks): wall ε 0.334 ± 0.055 and
+  plastic 0.339 ± 0.082 → true ≈ 0.67 × 1.266 = **0.85**;
+- the cosmic A–C line: **1.11**;
+- capsule pointing (k_arm): **1.24–1.29**.
+
+Possible explanations, with what has been tried:
+- **A depth-reference bias of the track position** (p0 shifts by c·tan when the
+  fitted t0 is off, §9). Alone it reconciles one sub-run with s ≈ 1.07 and
+  c ≈ 23 mm. The campaign's two levers (wall 97.4, plastic 190.6 mm) give
+  m(L) = L(1 − s) + c·s → s = 0.66 ± 0.18, **c = −1 ± ~25 mm**: no support,
+  but not excluded. A t0 split on one sub-run is too thin to say.
+- **Regression dilution with beam-specific angular noise (current favourite).**
+  The edge test bins in the measured tan, so noise pulls it toward "too large".
+  The capsule band regresses the measured tan on a precise u, so it is
+  unaffected by noise but flattened by non-capsule tracks, which pulls it toward
+  "too small". The truth sits between, where cosmics put it. Low-energy
+  electrons scatter far more than cosmic muons, which would make this
+  beam-only. Against it: the campaign's `slope` and `fiducial` selections barely
+  change ε, so reconstruction resolution is not the driver; scattering would
+  have to be.
+- **Tests to run next:**
+  1. The edge test binned in a precise variable. Bin in u at the strips and
+     compare the predicted vs fired group as a function of u, which is
+     regression-free.
+  2. The capsule band on scintillator-confirmed tracks only: are both layers
+     fired at the predicted groups?
+  3. Run_149 cosmics that fire A's wall: the edge test with **true** tan (A–C
+     line) against reco tan. If the measured-tan version reads ε > 0 and the
+     true-tan version reads 0, the edge test's bias is proven.
+  4. Electron scattering in Geant4 (`MX17_Full_Geant`): σ(tan) between the gap
+     and the wall for the beam's electron spectrum.

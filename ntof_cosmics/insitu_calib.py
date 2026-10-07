@@ -364,6 +364,60 @@ def set_w0kw(work: Path, arm: str, label: str, bundle: str) -> dict:
 # (the bench table belongs to the bench trigger).  For a scintillator-triggered
 # cosmic the true t0 per ftst phase should be sharp, so measure it here with
 # the geometry pinned to the truth.
+def set_kw_median(work: Path, arm: str, label: str, bundle: str) -> dict:
+    """Robust per-plane angle scale from the TRAIN free fits: kw = median of
+    w / (v * tan_true) over |tan_true| 0.15-0.45, and w0 = 0.  `set_w0kw`'s
+    least-squares line is pulled by the 10-30 % tails (A y: kw 0.936 against a
+    held-out median of ~1.0, 2026-10-07), so this is the one to use until the
+    tails are understood.  The outward offset (w ~ a*sign + b*t) is NOT removed:
+    it shows as a ratio rising toward small |tan|."""
+    from wft.calib import CalibrationBundle
+    T = pd.read_parquet(work / 'truth.parquet')
+    T = T[(T.arm == arm) & T.train]
+    M = T.merge(pd.read_parquet(work / f'reco_{label}_{arm}.parquet'), on=['subrun', 'event_id'])
+    cal = CalibrationBundle.load(bundle)
+    kw = {}
+    for ax in 'xy':
+        t, w = M[f'tan_{ax}'].to_numpy(), M[f'{ax}_w'].to_numpy() * 1e3
+        m = np.isfinite(w) & (np.abs(t) > 0.15) & (np.abs(t) < 0.45)
+        kw[ax] = float(np.median(w[m] / t[m]) / cal.v_drift)
+    cal.w0, cal.kw = {'x': 0.0, 'y': 0.0}, kw
+    cal.save(bundle, note=f'kw (median) from {label} train free fits')
+    print(f'[kwmed {arm}] kw {kw} (v {cal.v_drift})')
+    return kw
+
+
+CMP_BINS = ((0.0, 0.08), (0.08, 0.15), (0.15, 0.25), (0.25, 0.35), (0.35, 0.45), (0.45, 0.6))
+
+
+def compare_tables(work: Path, arm: str, labels) -> pd.DataFrame:
+    """Kernel/bundle comparison on equal footing: each table's per-plane scale
+    from the TRAIN third (median w/tan_true, |tan| 0.15-0.45), applied to the
+    TEST two thirds; per |tan_true| bin the median ratio, the MAD resolution and
+    the tail beyond 0.15.  Independent of the bundle's own v and w0/kw."""
+    T = pd.read_parquet(work / 'truth.parquet')
+    T = T[T.arm == arm]
+    rows = []
+    mad = lambda v: float(1.4826 * np.median(np.abs(v - np.median(v)))) if len(v) else np.nan  # noqa: E731
+    for lab in labels:
+        M = T.merge(pd.read_parquet(work / f'reco_{lab}_{arm}.parquet'), on=['subrun', 'event_id'])
+        for ax in 'xy':
+            t, w = M[f'tan_{ax}'].to_numpy(), M[f'{ax}_w'].to_numpy() * 1e3
+            ok = np.isfinite(w)
+            tr = ok & M.train.to_numpy() & (np.abs(t) > 0.15) & (np.abs(t) < 0.45)
+            vk = float(np.median(w[tr] / t[tr]))
+            te = ok & ~M.train.to_numpy()
+            tc = w / vk
+            for lo, hi in CMP_BINS:
+                m = te & (np.abs(t) >= lo) & (np.abs(t) < hi)
+                rows.append(dict(label=lab, arm=arm, axis=ax, lo=lo, hi=hi, n=int(m.sum()), v_scale=vk,
+                                 ratio=float(np.median(tc[m] / t[m])) if lo > 0 and m.any() else np.nan,
+                                 sigma=mad(tc[m] - t[m]),
+                                 tail=float((np.abs(tc[m] - t[m]) > 0.15).mean()) if m.any() else np.nan,
+                                 n_fit=int(te.sum()), n_test=int((~M.train).sum())))
+    return pd.DataFrame(rows)
+
+
 def v_geom(work: Path, arm: str, label: str = 'prod') -> dict:
     """Per-plane geometric v under a bundle's kernel: slope of the TRAIN free
     fits' w against the true tan, |t| 0.1-0.5 (S8: never the ref-pinned v)."""
@@ -519,7 +573,8 @@ def score(work: Path, arm: str, label: str, split: str = 'test') -> dict:
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split('\n')[1])
     ap.add_argument('step', choices=('truth', 'cache', 'profile', 'reco', 'score', 'hyper', 'w0kw',
-                                     't0meas', 'mkbundle', 'corridor', 'implied', 'joint', 'dtxy'))
+                                     't0meas', 'mkbundle', 'corridor', 'implied', 'joint', 'dtxy',
+                                     'kwmed', 'cmp'))
     ap.add_argument('--table', default=None)
     ap.add_argument('--hyper', default=None, help='override hypers, e.g. Dp=0.03,sigma_p0=0.2')
     ap.add_argument('--v', type=float, default=None)
@@ -535,6 +590,7 @@ def main() -> int:
     ap.add_argument('--n', type=int, default=0)
     ap.add_argument('--split', default='all', choices=('all', 'train', 'test'))
     ap.add_argument('--subs', default=None, help='file with one sub-run per line')
+    ap.add_argument('--labels', nargs='+', default=None, help='cmp: reco tables to compare')
     a = ap.parse_args()
     work = _guard(a.work)
     work.mkdir(parents=True, exist_ok=True)
@@ -563,6 +619,15 @@ def main() -> int:
         t0meas(work, a.arm, bundle, a.label, a.jobs)
     elif a.step == 'mkbundle':
         print(mkbundle(work, a.arm, bundle, a.label, a.v, a.t0_label, a.sigma, a.hyper))
+    elif a.step == 'cmp':
+        D = compare_tables(work, a.arm, a.labels)
+        D.to_csv(work / f'cmp_{a.arm}_{"_".join(a.labels)}.csv', index=False)
+        with pd.option_context('display.width', 250):
+            print(D.pivot_table(index=['axis', 'lo'], columns='label', values=['ratio', 'sigma', 'tail'])
+                  .round(3).to_string())
+            print(D.groupby('label')[['v_scale', 'n_fit', 'n_test']].first().to_string())
+    elif a.step == 'kwmed':
+        set_kw_median(work, a.arm, a.label, bundle)
     elif a.step == 'w0kw':
         set_w0kw(work, a.arm, a.label, bundle)
     elif a.step == 'score':

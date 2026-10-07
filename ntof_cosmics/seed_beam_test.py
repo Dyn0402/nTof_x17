@@ -62,12 +62,16 @@ def tags_of(run, sub, arm, want=None) -> list[str]:
     return tags
 
 
-def reco(work: Path, run: str, sub: str, min_strips: int, arms, want, jobs: int):
+def reco(work: Path, run: str, sub: str, min_strips: int, arms, want, jobs: int,
+         bundles: dict | None = None, label: str | None = None):
+    """``bundles`` {arm: path} replaces the full pass's bundle (default: the
+    full pass's own); ``label`` names the output dir (default m<min>)."""
     from ntof_tracking import wft_beam as WB
+    label = label or f'm{min_strips}'
     for arm in arms:
-        bundle = str(prod_dir(run, sub, arm) / 'calib_bundle_prelim')
+        bundle = (bundles or {}).get(arm) or str(prod_dir(run, sub, arm) / 'calib_bundle_prelim')
         for tag in tags_of(run, sub, arm, want):
-            out = work / f'm{min_strips}' / run / sub / f'mx17_{arm}' / f'events_{tag}.parquet'
+            out = work / label / run / sub / f'mx17_{arm}' / f'events_{tag}.parquet'
             if out.exists():
                 continue
             out.parent.mkdir(parents=True, exist_ok=True)
@@ -119,14 +123,19 @@ def verify(work: Path, run, sub, arm, tag):
     return int(bool(bad))
 
 
-def build(work: Path, run, sub, min_strips):
+def build(work: Path, run, sub, min_strips, label: str | None = None, k_one: bool = False):
     """Stage-3 tracks from a reco dir. ``min_strips`` 0 = the production reco
-    itself (reco_fullpass), built with today's code so both sides match."""
+    itself (reco_fullpass), built with today's code so both sides match.
+    ``k_one``: an in-situ bundle carries its own v and w0/kw, so its tans need
+    no k -- build with k = 1 (B stays uncalibrated either way)."""
     from sept26_prelim_analysis import build_tracks as BT
     meta = json.loads((STAGE3 / f'tracks_{run}_{sub}.meta.json').read_text())
     k = dict(meta['k_arm']['applied'])
-    rdir = FULLPASS / run / sub if min_strips == 0 else work / f'm{min_strips}' / run / sub
-    odir = work / ('prod' if min_strips == 0 else f'm{min_strips}') / run / sub / 'tracks'
+    if k_one:
+        k = {a: 1.0 for a in k}
+    label = label or ('prod' if min_strips == 0 else f'm{min_strips}')
+    rdir = FULLPASS / run / sub if min_strips == 0 and label == 'prod' else work / label / run / sub
+    odir = work / label / run / sub / 'tracks'
     odir.mkdir(parents=True, exist_ok=True)
     tracks, _ = BT.build(run, sub, rdir, stage1=Path(meta['stage1']), allow=None,
                          out_dir=odir, k_arm=k)
@@ -267,9 +276,59 @@ def scint(work: Path, run, sub, m=3, arms=('A', 'C', 'D')):
         print(R.round(3).to_string(index=False)); print(); print(PR.round(3).to_string(index=False))
 
 
+R_EDGES = np.array([0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50, 0.60])
+
+
+def kbeam(work: Path, run, sub, labels, arms=('A', 'C')):
+    """Beam angle response against capsule pointing -- `k_arm`'s sample
+    (gated, this arm's scintillators in coincidence, its charge and lever
+    windows), true tan = lever / D_PERP, x view.  For each table: raw/true per
+    |true tan| bin and k_arm's band and track estimators on the RAW tans.  A
+    bundle whose v and w0/kw are right reads 1 everywhere."""
+    from ntof_tracking import run145_target_imaging as TI
+    from sept26_prelim_analysis import k_arm as K
+    rows, ks = [], []
+    for lab in labels:
+        f = work / lab / run / sub / 'tracks' / 'tracks.parquet'
+        if not f.exists():
+            print(f'{lab}: no tracks'); continue
+        t = pd.read_parquet(f)
+        for arm in arms:
+            g = t[(t.arm == arm) & t.gated & t.coinc_this_arm.astype(bool) & (t.x_q_sum > 0)
+                  & np.isfinite(t.tan_raw_x)].copy()
+            if not len(g):
+                continue
+            lo, hi = np.percentile(g.x_q_sum, K.CHARGE_WINDOW)
+            g = g[(g.x_q_sum >= lo) & (g.x_q_sum <= hi)]
+            g['lev'] = g.x_local - TI.PINWHEEL[arm]
+            g = g[(g.lev.abs() > K.LEVER_WINDOW_MM[0]) & (g.lev.abs() < K.LEVER_WINDOW_MM[1])
+                  & (g.tan_raw_x.abs() > 1e-3)]
+            te = (g.lev / K.D_PERP_MM).to_numpy()
+            a, fr = np.abs(te), g.tan_raw_x.to_numpy() * np.sign(te)
+            for lo_, hi_ in zip(R_EDGES[:-1], R_EDGES[1:]):
+                m = (a >= lo_) & (a < hi_)
+                if m.sum() < 30:
+                    continue
+                rows.append(dict(label=lab, arm=arm, lo=lo_, hi=hi_, n=int(m.sum()),
+                                 ratio_med=float(np.median(fr[m] / a[m])),
+                                 sign_ok=float((fr[m] > 0).mean())))
+            S = dict(xl=g.x_local.to_numpy(), tx=g.tan_raw_x.to_numpy(),
+                     foot_x=float(TI.PINWHEEL[arm]))
+            ks.append(dict(label=lab, arm=arm, n=len(g), band=K.band_k(S), track=K.track_k(S)))
+    od = work / 'compare' / run / sub
+    od.mkdir(parents=True, exist_ok=True)
+    R, KK = pd.DataFrame(rows), pd.DataFrame(ks)
+    tag = '_'.join(labels)
+    R.to_csv(od / f'kbeam_response_{tag}.csv', index=False)
+    KK.to_csv(od / f'kbeam_k_{tag}.csv', index=False)
+    with pd.option_context('display.width', 250):
+        print(KK.round(3).to_string(index=False)); print()
+        print(R.pivot_table(index=['arm', 'lo'], columns='label', values='ratio_med').round(3).to_string())
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument('step', choices=['reco', 'verify', 'build', 'compare', 'scint'])
+    ap.add_argument('step', choices=['reco', 'verify', 'build', 'compare', 'scint', 'kbeam'])
     ap.add_argument('--work', default=str(WORK))
     ap.add_argument('--run', default='run_145')
     ap.add_argument('--sub', default='stat090_0000')
@@ -279,17 +338,24 @@ def main() -> int:
     ap.add_argument('--tags', nargs='*', default=None)
     ap.add_argument('--tag', default='000')
     ap.add_argument('--jobs', type=int, default=15)
+    ap.add_argument('--bundles', default=None, help='A=path,C=path: replace the full-pass bundles')
+    ap.add_argument('--label', default=None, help='output dir name (default m<min> / prod)')
+    ap.add_argument('--k-one', action='store_true', help='build with k = 1 (in-situ bundles)')
+    ap.add_argument('--labels', nargs='+', default=['prod', 'm3'])
     a = ap.parse_args()
+    bundles = dict(kv.split('=', 1) for kv in a.bundles.split(',')) if a.bundles else None
     work = _guard(a.work)
     if a.step == 'reco':
-        reco(work, a.run, a.sub, a.min, a.arms, a.tags, a.jobs)
+        reco(work, a.run, a.sub, a.min, a.arms, a.tags, a.jobs, bundles, a.label)
     elif a.step == 'verify':
         tag = tags_of(a.run, a.sub, a.arm, [a.tag])[0]
         return verify(work, a.run, a.sub, a.arm, tag)
     elif a.step == 'build':
-        build(work, a.run, a.sub, a.min)
+        build(work, a.run, a.sub, a.min, a.label, a.k_one)
     elif a.step == 'compare':
         compare(work, a.run, a.sub, a.min)
+    elif a.step == 'kbeam':
+        kbeam(work, a.run, a.sub, a.labels, tuple(a.arms) if a.arms != list(ARMS) else ('A', 'C'))
     elif a.step == 'scint':
         scint(work, a.run, a.sub, a.min, tuple(a.arms))
     return 0

@@ -66,8 +66,10 @@ def run(work: Path, sub: str, min_strips: int, jobs: int) -> pd.DataFrame:
         allow = allowlist(sub)
         allow_p.parent.mkdir(parents=True, exist_ok=True)
         allow_p.write_text(json.dumps({t: sorted(v) for t, v in allow.items()}))
-    orig = WB.seeds_from_hits_beam
+    orig, orig_min = WB.seeds_from_hits_beam, WB.MIN_STRIPS_BEAM
+    # the driver passes MIN_STRIPS_BEAM explicitly (WFT_BEAM_MIN_STRIPS), so set both
     WB.seeds_from_hits_beam = functools.partial(orig, min_strips=min_strips)
+    WB.MIN_STRIPS_BEAM = min_strips
     rdir = IC._guard(work / 'seedtest' / f'm{min_strips}' / sub)
     try:
         for arm in ARMS:
@@ -83,7 +85,7 @@ def run(work: Path, sub: str, min_strips: int, jobs: int) -> pd.DataFrame:
                 WB.reconstruct_subrun(cfg, bundle, str(out), jobs=jobs,
                                       allow_events={tag: ids}, verbose=False)
     finally:
-        WB.seeds_from_hits_beam = orig
+        WB.seeds_from_hits_beam, WB.MIN_STRIPS_BEAM = orig, orig_min
     k = CT._k('run_150')
     tracks, _ = BT.build(RUN, sub, rdir, stage1=None, allow=None,
                          out_dir=rdir / 'tracks', k_arm={a: k[a] for a in ARMS})

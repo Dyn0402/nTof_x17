@@ -304,7 +304,11 @@ def make_bundle(arm: str, out: Optional[str] = None, v_drift: Optional[float] = 
 # candidates) were tuned on cosmics with ~6 strips in one cluster; run_79's
 # median event has 19-44 hits per plane and its p99 is the full plane.
 BUSY_PLANE_HITS = 150      # after the significance floor: flash/discharge veto
-MIN_STRIPS_BEAM = 5        # a column, not a single-strip deposit
+# a column, not a single-strip deposit.  WFT_BEAM_MIN_STRIPS overrides it (opt-in,
+# default unchanged): at n_TOF S/N a near-normal track has only 3-4 strips over
+# threshold, and 5 loses most head-on tracks -- ntof_cosmics/HANDOFF_TRACKING_
+# 2026-10-06.md §9-10, sept26_prelim_analysis/SAME_CHAMBER_PAIRS.md.
+MIN_STRIPS_BEAM = int(os.environ.get('WFT_BEAM_MIN_STRIPS', 5))
 N_CANDIDATES_BEAM = 5
 WIDE_STRIPS = 10           # >= this many strips AND
 ISOCHRONOUS_SPAN = 3       #   < this many samples of time span = not a column
@@ -496,7 +500,8 @@ def reconstruct_subrun(cfg: BeamConfig, bundle_path: str, out_path: str,
                 print(f'[wft-beam]   {tag}: no hits file, skipped')
                 continue
             hits = read_hits_tag(hp, (feu_x, feu_y))
-            seeds = seeds_from_hits_beam(hits, pos_maps, feu_x, feu_y, hot=cal.hot)
+            seeds = seeds_from_hits_beam(hits, pos_maps, feu_x, feu_y, hot=cal.hot,
+                                         min_strips=MIN_STRIPS_BEAM)
             del hits
             wanted = set(seeds)
             if allow_events is not None:
