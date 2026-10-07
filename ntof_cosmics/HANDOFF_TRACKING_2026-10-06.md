@@ -884,3 +884,48 @@ gain and the full beam-on noise. Beam particles read ~20 % below (0.92 vs 1.15 a
 2. Beam particles split by what they are: q_per_len tails, n_strips, chamber position (|u|
    matched to the muons' range).
 3. Same in-beam muon test for C, where the beam/cosmic gap was 0.67–0.71.
+
+### 10f · Cosmic A–C rate, activation, the late-trigger clock, and the Geant4 angle test (2026-10-07 night)
+
+**A–C cosmic rate makes sense** (`ntof_cosmics/ac_cosmic_rate.py`).
+- At EAR2 the beam is vertical (global y), so A–C through-goers are near-horizontal.
+- Monte Carlo inputs: Chirkin-corrected I₀cos²θ*, I₀ = 70 m⁻²s⁻¹sr⁻¹, open sky; run_149 geometry;
+  measured active area; gate |tan| < 0.6; wall∧plastic trigger on A or C.
+
+| | expected | observed (run_149) |
+|---|---|---|
+| A–C through-goers, 100 % efficient chambers | **578 /h** | **189 /h** clean (sep < 60), 228 /h all single A–C pairs |
+| zenith median | 74.4° | 73.6° |
+
+The zenith histograms agree bin by bin. Implied ε_A·ε_C ≈ 0.33–0.39 (≈ 0.6 per chamber), in line with
+the bench's 40–65 %. Building shielding would raise the implied efficiency somewhat.
+
+**Activation (minutes and longer) is negligible.**
+- Beam-off sub-runs starting 3–7 min after the last n_TOF pulse run at 24.7–25.4 Hz, the same as 20 h
+  later (slow-control beam_class logs).
+- Regressing rate on decay-weighted proton history (²⁸Al, ⁶⁶Cu, ⁴¹Ar — the gas is Ar/iso 90/10,
+  ⁵⁶Mn, ²⁴Na) gives ≤ 0.2 Hz, against ≈ 110–600 Hz of late triggers with tracks during beam.
+- Note: Geant4 DOES include RadioactiveDecay (²⁸Al shows up), but every analysis cuts t < 100 ms.
+
+**The late-trigger clock** (`ntof_cosmics/late_trigger_clock.py`).
+- At ≥ 30 ms the trigger rate is a single exponential, T½ = 23.5 ± 0.8 ms (C, χ² 65/50) and
+  24.1 ± 1.3 ms (A).
+- Direct beam captures in a thin 1/v absorber would fall ~t⁻⁴, a local T½ of 7–12 ms. The evaluated
+  EAR2 flux has ~nothing below 2.5 meV, i.e. after ~28 ms.
+- ¹²B (20.2 ms, ¹²C(n,p) by flash neutrons) is disfavoured as the main component: Δχ² = 125 on C with
+  T fixed. No common isotope sits at 23.5 ms.
+- Best reading: the die-away of thermalised neutrons in the EAR2 hall (τ ≈ 34 ms; ¹⁴N capture in air
+  alone gives ~60 ms, leakage shortens it). The late triggers are then captures of AMBIENT neutrons
+  all around the setup, not beam captures in the capsule. That is consistent with D_eff ≈ 330 mm.
+  **This population is absent from the Geant4 beam campaign.**
+
+**Geant4 angle test (submitted 2026-10-07, condor clusters 4402864 / 4402865).**
+- Code: `ntof_cosmics/g4_angle/` (`reduce_gap_wall.py`, `condor/`). Lxplus job dir
+  `~/condor/mx17_angle_scale/`; output `/eos/experiment/ntof/data/x17/full_sim/angle_scale/{single,neutrons_nose}/`.
+- Truth-level "reconstruction": an edep-weighted line u(w) through all DriftGas steps of the arm.
+  It is compared with where the dominant gap track first hits the SiPM wall (mesh → wall lever 97.4 mm,
+  the same as data).
+- (a) single e⁻ 1/2/3/5/8 MeV and μ⁻ 1 GeV from the capsule centre into arm A (sim arm 2),
+  tan_u 0–0.5, 20k each;
+- (b) the 100 files of `neutrons_thermal_trig_2cm_nose` (beam captures).
+- Built with the lxplus checkout at 3d97437 (the build that produced the nose campaign).

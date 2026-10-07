@@ -1,0 +1,47 @@
+executable = /afs/cern.ch/user/d/dneff/condor/mx17_angle_scale/run_single.sh
+arguments = $(part) $(E) $(phi) $(n) $(seed) $(tag) $(out)
+output = /afs/cern.ch/user/d/dneff/condor/mx17_angle_scale/logs/$(tag).out
+error = /afs/cern.ch/user/d/dneff/condor/mx17_angle_scale/logs/$(tag).err
+log = /afs/cern.ch/user/d/dneff/condor/mx17_angle_scale/logs/single.log
++JobFlavour = "workday"
+request_cpus = 1
+request_memory = 2048
+requirements = (OpSysAndVer =?= "AlmaLinux9")
+queue part,E,phi,n,seed,tag,out from (
+e-, 1, 90.0000, 20000, 1001, single_em_1MeV_tan0.0, /eos/experiment/ntof/data/x17/full_sim/angle_scale/single
+e-, 1, 84.2894, 20000, 1002, single_em_1MeV_tan0.1, /eos/experiment/ntof/data/x17/full_sim/angle_scale/single
+e-, 1, 78.6901, 20000, 1003, single_em_1MeV_tan0.2, /eos/experiment/ntof/data/x17/full_sim/angle_scale/single
+e-, 1, 73.3008, 20000, 1004, single_em_1MeV_tan0.3, /eos/experiment/ntof/data/x17/full_sim/angle_scale/single
+e-, 1, 68.1986, 20000, 1005, single_em_1MeV_tan0.4, /eos/experiment/ntof/data/x17/full_sim/angle_scale/single
+e-, 1, 63.4349, 20000, 1006, single_em_1MeV_tan0.5, /eos/experiment/ntof/data/x17/full_sim/angle_scale/single
+e-, 2, 90.0000, 20000, 1007, single_em_2MeV_tan0.0, /eos/experiment/ntof/data/x17/full_sim/angle_scale/single
+e-, 2, 84.2894, 20000, 1008, single_em_2MeV_tan0.1, /eos/experiment/ntof/data/x17/full_sim/angle_scale/single
+e-, 2, 78.6901, 20000, 1009, single_em_2MeV_tan0.2, /eos/experiment/ntof/data/x17/full_sim/angle_scale/single
+e-, 2, 73.3008, 20000, 1010, single_em_2MeV_tan0.3, /eos/experiment/ntof/data/x17/full_sim/angle_scale/single
+e-, 2, 68.1986, 20000, 1011, single_em_2MeV_tan0.4, /eos/experiment/ntof/data/x17/full_sim/angle_scale/single
+e-, 2, 63.4349, 20000, 1012, single_em_2MeV_tan0.5, /eos/experiment/ntof/data/x17/full_sim/angle_scale/single
+e-, 3, 90.0000, 20000, 1013, single_em_3MeV_tan0.0, /eos/experiment/ntof/data/x17/full_sim/angle_scale/single
+e-, 3, 84.2894, 20000, 1014, single_em_3MeV_tan0.1, /eos/experiment/ntof/data/x17/full_sim/angle_scale/single
+e-, 3, 78.6901, 20000, 1015, single_em_3MeV_tan0.2, /eos/experiment/ntof/data/x17/full_sim/angle_scale/single
+e-, 3, 73.3008, 20000, 1016, single_em_3MeV_tan0.3, /eos/experiment/ntof/data/x17/full_sim/angle_scale/single
+e-, 3, 68.1986, 20000, 1017, single_em_3MeV_tan0.4, /eos/experiment/ntof/data/x17/full_sim/angle_scale/single
+e-, 3, 63.4349, 20000, 1018, single_em_3MeV_tan0.5, /eos/experiment/ntof/data/x17/full_sim/angle_scale/single
+e-, 5, 90.0000, 20000, 1019, single_em_5MeV_tan0.0, /eos/experiment/ntof/data/x17/full_sim/angle_scale/single
+e-, 5, 84.2894, 20000, 1020, single_em_5MeV_tan0.1, /eos/experiment/ntof/data/x17/full_sim/angle_scale/single
+e-, 5, 78.6901, 20000, 1021, single_em_5MeV_tan0.2, /eos/experiment/ntof/data/x17/full_sim/angle_scale/single
+e-, 5, 73.3008, 20000, 1022, single_em_5MeV_tan0.3, /eos/experiment/ntof/data/x17/full_sim/angle_scale/single
+e-, 5, 68.1986, 20000, 1023, single_em_5MeV_tan0.4, /eos/experiment/ntof/data/x17/full_sim/angle_scale/single
+e-, 5, 63.4349, 20000, 1024, single_em_5MeV_tan0.5, /eos/experiment/ntof/data/x17/full_sim/angle_scale/single
+e-, 8, 90.0000, 20000, 1025, single_em_8MeV_tan0.0, /eos/experiment/ntof/data/x17/full_sim/angle_scale/single
+e-, 8, 84.2894, 20000, 1026, single_em_8MeV_tan0.1, /eos/experiment/ntof/data/x17/full_sim/angle_scale/single
+e-, 8, 78.6901, 20000, 1027, single_em_8MeV_tan0.2, /eos/experiment/ntof/data/x17/full_sim/angle_scale/single
+e-, 8, 73.3008, 20000, 1028, single_em_8MeV_tan0.3, /eos/experiment/ntof/data/x17/full_sim/angle_scale/single
+e-, 8, 68.1986, 20000, 1029, single_em_8MeV_tan0.4, /eos/experiment/ntof/data/x17/full_sim/angle_scale/single
+e-, 8, 63.4349, 20000, 1030, single_em_8MeV_tan0.5, /eos/experiment/ntof/data/x17/full_sim/angle_scale/single
+mu-, 1000, 90.0000, 20000, 1031, single_mum_1000MeV_tan0.0, /eos/experiment/ntof/data/x17/full_sim/angle_scale/single
+mu-, 1000, 84.2894, 20000, 1032, single_mum_1000MeV_tan0.1, /eos/experiment/ntof/data/x17/full_sim/angle_scale/single
+mu-, 1000, 78.6901, 20000, 1033, single_mum_1000MeV_tan0.2, /eos/experiment/ntof/data/x17/full_sim/angle_scale/single
+mu-, 1000, 73.3008, 20000, 1034, single_mum_1000MeV_tan0.3, /eos/experiment/ntof/data/x17/full_sim/angle_scale/single
+mu-, 1000, 68.1986, 20000, 1035, single_mum_1000MeV_tan0.4, /eos/experiment/ntof/data/x17/full_sim/angle_scale/single
+mu-, 1000, 63.4349, 20000, 1036, single_mum_1000MeV_tan0.5, /eos/experiment/ntof/data/x17/full_sim/angle_scale/single
+)
