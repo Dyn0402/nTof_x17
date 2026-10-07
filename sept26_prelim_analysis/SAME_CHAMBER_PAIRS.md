@@ -55,20 +55,32 @@ record), `ntof_cosmics/README.md`. Pooled report
 `ntof_cosmics/results/tracking/pooled/report.html`. Truth: the line joining
 chambers A and C on run_149 beam-off through-going cosmics.
 
-**State (2026-10-07):**
+**State (2026-10-07 morning):**
 - **The bulk angle-scale error is a calibration substitution, not physics.**
-  `wft_beam.make_bundle` keeps the bench kernel but replaces the bench drift
-  velocity (fitted together with the kernel) with the 42.6 µm/ns prior.
-  The geometric in-situ v is A ≈ 38.6 / 37.7 and C ≈ 28 µm/ns.
-- **Head-on tracks were lost by the beam seeder.** `MIN_STRIPS_BEAM = 5`, but at
-  n_TOF S/N a near-normal track has only 3–4 strips over threshold.
-  - With min 3 on cosmics: near-normal tracks ×5, σ_tan 0.2 → 0.03–0.06.
-  - Beam purity of min 3: being measured on run_145 stat090_0000
-    (`ntof_cosmics/seed_beam_test.py`; §10 of the tracking handoff).
-- Still open:
-  - chamber C runs the old det6 lp kernel: non-linear response with 10–17 % core tails;
-  - A x is mildly S-shaped;
-  - the cosmic angle response does not transfer to beam (§7c).
+  `wft_beam.make_bundle` keeps the bench kernel but replaces the bench v with
+  the 42.6 prior. Only the scale is affected: the fitted speed w does not
+  depend on the bundle's v.
+- **The in-situ recipe closes on cosmic truth.** Chamber A: production kernel,
+  per-plane robust kw (`insitu_calib.py kwmed`), seeder 3. On held-out events
+  y is flat at 1.00 for |tan| 0.15–0.6, x is within ±3 %, and the resolution
+  at large angle halves. Chamber C: the r06 kernels (det7 marginally best)
+  improve linearity a little (x 1.07 → 0.92 across |tan| 0.08–0.6, from
+  1.12 → 0.89), but C's 8–13 % core tails are **not** from the kernel.
+- **Seeder minimum 3 (opt-in `WFT_BEAM_MIN_STRIPS=3`)** recovers head-on
+  tracks: on cosmics, near-normal ×5 and σ_tan 0.2 → 0.03–0.06. On beam
+  (run_145, `ntof_cosmics/results/seed_beam/report.html`):
+  - scintillator-confirmed tracks +45 % (A), +52 % (C), +40 % (D);
+  - no particle lost, but 5–13 % of production x/y pairings are **re-paired**
+    in busy events (a T1 `xy_pairing` question);
+  - no close fake pairs made.
+- **Beam angles: the capsule estimator is what fails.** The SiPM-wall
+  boundaries, binned in strip position (no dilution, no capsule), give true
+  tan = 0.89 × production raw for A. They also give an effective source
+  distance of ≈ 330 mm instead of 234.6 mm, which is exactly the factor
+  k_arm's capsule assumption carries. The capsule-pointing k (1.27, applied in
+  stage 3) is therefore not trustworthy. **Still open:** beam 0.89 vs cosmics
+  1.11. The t0 100–300 ns class reads 1.05, which points at the t0–p0 trade.
+  Tracking handoff §10c.
 
 ## T3 — late tracks (`beam-off-cosmics`)
 
@@ -113,12 +125,30 @@ Everything below must be validated **before** it, and it all rides together:
 
 | change | thread | validated by | state |
 |---|---|---|---|
-| seeder min 3 | T2 | cosmic truth (done); beam purity on run_145 | running |
-| geometric v per plane | T2 | free fits vs the A–C line | measured A, C; B, D need another truth |
-| C kernel (in situ, or r06) | T2 | free-fit closure vs truth | open |
+| seeder min 3 (`WFT_BEAM_MIN_STRIPS=3`) | T2 | cosmic truth; beam purity on run_145 | **passed** (+40–52 % confirmed tracks); re-pairing → validate with T1's xy_pairing |
+| in-situ v + robust kw per plane | T2 | held-out cosmic truth | **A closes** (`is2_A`); C built (`is2_C`, r06k7); B, D need another truth |
+| C kernel | T2 | free-fit closure vs truth | r06k7 adopted; tails not kernel-driven |
+| beam angle scale | T2 | scintillator edges (u-binned) vs cosmics | capsule k refuted (D_eff 330 mm); beam 0.89 vs cosmic 1.11 **open** |
 | xy pairing + rescue floor | T1 | split-ab, bench | passed |
 | fixed two-track chain, F per chamber | T1 | split-ab + F ladder | passed at A 1200 / C 2400 on old bundles |
 | late-t0 depth grid fix | T3 | refit vs external pointing | proposed |
 
 Order: merge the branches → T2 bundles → T1 recalibration on them → one
 combined split-ab contract → re-pass → downstream.
+
+## Open questions, in priority order (2026-10-07)
+
+1. **Beam (0.89) vs cosmics (1.11) for the same chamber.** The capsule number
+   (1.27) is explained: its point-source assumption fails (D_eff ≈ 330 mm).
+   The scintillators, binned in u, are dilution-free. What remains is a 25 %
+   beam/cosmic difference, with a t0 dependence (100–300 ns class 1.05). Until
+   it is settled, no beam opening angle carries a calibrated uncertainty.
+   Tests: tracking handoff §10c.
+2. **Which x/y pairing is right in busy events?** Min 3 re-pairs 5–13 % of
+   production's tracks, and timing and charge cannot arbitrate. Run T1's
+   `xy_pairing` together with min 3 through split-ab.
+3. **Chamber C's core tails** (8–13 %) are not from the kernel. Candidates are
+   the x/y noise, dead or hot strips, and the outward-going sign effect (§7c).
+4. **Near-normal reconstructed tracks confirm at only 6–23 %** on the
+   scintillators. They may be mostly mis-measured angles, or the pointing may
+   miss.
