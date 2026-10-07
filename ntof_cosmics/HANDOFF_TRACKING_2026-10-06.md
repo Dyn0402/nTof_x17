@@ -929,3 +929,54 @@ the bench's 40–65 %. Building shielding would raise the implied efficiency som
   tan_u 0–0.5, 20k each;
 - (b) the 100 files of `neutrons_thermal_trig_2cm_nose` (beam captures).
 - Built with the lxplus checkout at 3d97437 (the build that produced the nose campaign).
+
+### 10g · Geant4 result: the beam/cosmic wall gap is electron scattering, not reconstruction (2026-10-07 night)
+
+`ntof_cosmics/g4_angle/analyze.py` → `/media/dylan/data/x17/ntof_cosmics/g4_angle/report.html`
+(inputs pulled from EOS `full_sim/angle_scale/`).
+
+**Method.** The data's own outer-pair u-binned wall estimator is applied to Geant4 tracks.
+- The reconstruction is replaced by its ideal: an edep-weighted line through the true DriftGas
+  ionisation.
+- Virtual group boundaries are placed at u = ±100 mm on the wall plane (sim mesh → wall lever 97.4 mm,
+  as in data).
+
+**Beam-capture population** (`neutrons_thermal_trig_2cm_nose`): 45 626 gap tracks reaching the wall;
+91 % e⁻, KE in the gap 2.0 / 3.1 / 4.6 MeV quartiles.
+
+| sample | true / raw (ideal reco) | D_eff |
+|---|---|---|
+| A (sim arm 2) | **0.60** | 405 mm |
+| C (sim arm 3) | **0.59** | 411 mm |
+| dominant-track line only | 0.59 | 410 mm |
+| KE > 4 MeV | 0.92 | 260 mm |
+| KE 2–4 MeV | 0.63 | 385 mm |
+| KE < 2 MeV | ≈ 0 (no correlation) | — |
+| μ 1 GeV (single) | 1.000 | — |
+
+**Verdict.**
+- With a PERFECT reconstruction, the wall estimator reads well below 1 for few-MeV electrons and
+  exactly 1 for muons, and it depends strongly on energy.
+- The data's beam/muon ratio (~0.80: 0.89–0.92 against 1.10–1.15) sits inside the simulated range.
+  The beam/cosmic gap is therefore what electron scattering between the gap and the wall (gas, mesh,
+  PCB, air, SiPM container) does to this estimator.
+- **The wall cannot be used as angle truth for beam electrons without a forward model.** The
+  cosmic in-situ scale (A–C line, confirmed by cosmics at the wall, 1.11–1.15) stands as the
+  reconstruction's scale, and §10e showed the beam environment does not move it.
+
+**Single particles** (capsule centre → arm A, fixed gun angles):
+- The gap fit against the gun direction has slope 0.80 at 5 MeV and 0.90 at 8 MeV (all full-gap
+  tracks).
+- Per-angle wall/gap ratios carry wall-edge truncation: fixed guns aim near the wall's outer edge at
+  large angle. Read them for trend only.
+
+**Open / next.**
+1. The data number (0.92 vs sim 0.59) depends on the real population's energy mix and on how the real
+   fit weights scattered charge. The late data population is ambient hall-neutron captures (§10f),
+   absent from the sim. A digitised forward model through `wft` would close it, but it is not needed
+   for the conclusion.
+2. **X17 consequence to check:** few-MeV electrons' gap angle is compressed relative to their emission
+   direction (~10 % at 8 MeV in the ideal fit). The pair/opening-angle simulation should include this,
+   if it does not already go through the same physics.
+3. The early 10–20 ms transient (0.77) is still unexplained. It is now best read as a population/energy
+   change, consistent with this energy dependence.
