@@ -32,7 +32,7 @@
 - Deck and report rebuilt. **Not yet republished.**
 
 **Next steps:**
-1. Republish: `python3 ~/PycharmProjects/dylan-cern-site/scripts/add-note.py ~/x17/sept26_prelim/two_track_limit/report/two-track-limit.html --slug two-track-limit --force --deploy`.
+1. ~~Republish~~ done 2026-10-07 16:10: the deck now also carries the same-chamber context slides (`make_same_chamber_slides.py`: origin, timeline, chain map, bench progression, pairing, the T2 thread, the join), and its beam-angle-scale slides say the gap is explained (electron scattering, Geant4; cosmic in-situ scale stands). Live at https://dylan-neff.web.cern.ch/notes/two-track-limit.html.
 2. Optionally, add a relative-tan dimension to the fixed chain's grid search (`WFT_TWO_TRACK_SEARCH=grid` in `wft/reco.py`) and re-run the R3 split. This targets the 76 % vs ~97 % gap on diverging A pairs at 3–12 mm.
 3. Ship decision (Dylan): bundles with profc pairing, fixed-chain env + F on condor, rescue floor, full re-pass.
 
