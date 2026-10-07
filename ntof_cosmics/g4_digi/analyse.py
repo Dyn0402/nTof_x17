@@ -24,7 +24,16 @@ FOOT_SIM = {'A': 16.35, 'C': 16.4}
 
 
 def load(label: str) -> pd.DataFrame:
-    R = pd.read_parquet(OUT / f'{label}.parquet')
+    """<label>.parquet, or the condor parts <label>/*.parquet concatenated."""
+    f = OUT / f'{label}.parquet'
+    if f.exists():
+        R = pd.read_parquet(f)
+    else:
+        import glob
+        parts = sorted(glob.glob(str(OUT / label / '*.parquet')))
+        if not parts:
+            raise FileNotFoundError(f'{f} and {OUT / label}/*.parquet')
+        R = pd.concat([pd.read_parquet(p) for p in parts], ignore_index=True)
     for c in ('x_ok', 'y_ok', 'x_quality_ok', 'y_quality_ok'):
         if c in R:
             R[c] = R[c].astype(object).fillna(False).astype(bool)

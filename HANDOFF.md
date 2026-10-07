@@ -91,13 +91,19 @@ be reconstructed; decide whether the cosmic in-situ scale (`is2_A`/`is2_C`) is t
   - `lxstore` tool and rule in `~/.claude/CLAUDE.md`.
 
 **In progress / where it stopped:**
-- **Local background job** `ntof_cosmics/g4_digi/run_full.sh`: the 100-file reruns, ~15k events per arm, A then C,
-  ~1 h each.
-  - Output: `/media/dylan/data/x17/ntof_cosmics/g4_digi/g4_{A,C}_is2_full.parquet` (logs alongside).
-  - It dies if the machine reboots. Restart: `bash ntof_cosmics/g4_digi/run_full.sh`.
+- **Condor cluster 4404719 on lxplus** (submitted 2026-10-07; the local reruns were stopped for an OS switch).
+  - 200 jobs: arms A and C × 100 nose step files, `is2` bundles.
+  - Each writes `/eos/experiment/ntof/data/x17/full_sim/angle_scale/digi/g4_{A,C}_is2_full/sNNN.parquet`.
+  - Job dir `~/condor/mx17_g4_digi/` (code.tar.gz, bundles, is2_t0.parquet, digi.sub, logs/). Check with
+    `condor_q 4404719` and `ls .../digi/g4_A_is2_full | wc -l`.
+  - Rebuild the package: see `ntof_cosmics/g4_digi/condor/run_digi_job.sh`. code.tar.gz = wft, ntof_tracking
+    (`__init__`, `wft_beam`, `run145_target_imaging`), common, mx17_m1_map.csv, ntof_cosmics/g4_digi.
 
 **Next steps:**
-1. `PYTHONPATH=. .venv/bin/python ntof_cosmics/g4_digi/compare_data.py --sim-a g4_A_is2_full --sim-c g4_C_is2_full`.
+1. Pull and compare:
+   `rsync -a lxplus:/eos/experiment/ntof/data/x17/full_sim/angle_scale/digi/ /media/dylan/data/x17/ntof_cosmics/g4_digi/`,
+   then `PYTHONPATH=. .venv/bin/python ntof_cosmics/g4_digi/compare_data.py --sim-a g4_A_is2_full --sim-c g4_C_is2_full`
+   (`analyse.load` concatenates `<label>/*.parquet`).
    Update §13's table with the full-stat numbers.
 2. Chase the residual:
    - is2 data on run_145 split early/late (a non-capsule population?);

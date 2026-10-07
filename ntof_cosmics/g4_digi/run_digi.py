@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import argparse
 import glob
+import os
 import sys
 from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
@@ -23,9 +24,11 @@ import pandas as pd
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from ntof_cosmics.g4_digi import digitise as DG  # noqa: E402
 
-OUT = Path('/media/dylan/data/x17/ntof_cosmics/g4_digi')
-BUNDLES = Path.home() / 'scratch' / 'ntof_insitu' / 'bundles'
-IS2_TRACKS = Path.home() / 'scratch/ntof_insitu/beamseed/is2/run_145/stat090_0000/tracks/tracks.parquet'
+# all overridable for condor (condor/run_digi_job.sh sets them)
+OUT = Path(os.environ.get('G4DIGI_OUT', '/media/dylan/data/x17/ntof_cosmics/g4_digi'))
+BUNDLES = Path(os.environ.get('G4DIGI_BUNDLES', Path.home() / 'scratch' / 'ntof_insitu' / 'bundles'))
+IS2_TRACKS = Path(os.environ.get('G4DIGI_IS2_TRACKS', Path.home() / 'scratch/ntof_insitu/beamseed/is2/run_145/stat090_0000/tracks/tracks.parquet'))
+REDUCED = Path(os.environ.get('G4DIGI_REDUCED', '/media/dylan/data/x17/ntof_cosmics/g4_angle/neutrons_nose'))
 D_PERP = 234.6
 FOOT = {'A': 16.35, 'C': 17.3}
 # beam conditions (is2 on run_145 stat090_0000, coincident gated tracks):
@@ -123,7 +126,7 @@ def main() -> int:
             # had a full-gap track whose own track reaches the wall: the sim
             # analogue of the data's pointing coincidence
             red = []
-            for f in sorted(glob.glob('/media/dylan/data/x17/ntof_cosmics/g4_angle/neutrons_nose/r*.parquet')):
+            for f in sorted(glob.glob(str(REDUCED / 'r*.parquet'))):
                 r = pd.read_parquet(f, columns=['eventID', 'arm', 'w_lo', 'w_hi', 'wall_same_track'])
                 r['file'] = 'neutron_bg_job' + Path(f).stem[1:]
                 red.append(r[r.arm == a.g4_arm])
