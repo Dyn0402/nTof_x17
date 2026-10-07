@@ -30,6 +30,19 @@ verifies that; it must be done on the campaign `k_arm` output.
     ../../.venv/bin/python sept26_prelim_analysis/condor/make_stage2_campaign.py
     rsync -av <dest>/ lxplus:~/sept26_stage2/
     ssh lxplus 'cd ~/sept26_stage2 && condor_submit stage2_campaign.sub'
+
+VERSIONED RE-PASS WITH IN-SITU BUNDLES (ntof_cosmics/HANDOFF_TRACKING_2026-10-06.md
+§11 step 1, §13).  `--insitu A=<dir>,C=<dir>` ships those bundles instead of
+the bench-seeded ones, each with its OWN v_drift (read from the bundle, not
+the 42.6 pin).  `run_beam_job.py` seeds from them through `make_bundle`, which
+keeps the kernel and kw and replaces only the run's DAQ constants.
+`--min-strips` goes into the job environment (WFT_BEAM_MIN_STRIPS; the seeder
+reads it at import).  `--version` gives the pass its own dest and its own EOS
+directory, so it can never overwrite the production full pass:
+
+    .venv/bin/python sept26_prelim_analysis/condor/make_stage2_campaign.py --full-pass \
+        --arms A,C --insitu A=~/scratch/ntof_insitu/bundles/is2_A,C=~/scratch/ntof_insitu/bundles/is2_C \
+        --min-strips 3 --version is2_v1
 """
 import argparse
 import hashlib
@@ -103,6 +116,15 @@ def main():
                          'stage-0 sample and the stage-1 tables -- for runs '
                          'that have neither (the beam-off cosmics: no n_TOF '
                          'slim, so no stage 1; ntof_cosmics/).')
+    ap.add_argument('--insitu', default=None,
+                    help='ARM=<bundle dir>[,ARM=<dir>]: ship these in-situ bundles '
+                         'for those arms, each with its own v_drift (not the pin)')
+    ap.add_argument('--min-strips', type=int, default=None,
+                    help='beam seeder minimum (WFT_BEAM_MIN_STRIPS in the job '
+                         'environment); default: the code default (5)')
+    ap.add_argument('--version', default=None,
+                    help='tag for a re-pass: dest <x17>/sept26_stage2_<version>, '
+                         'EOS /eos/user/d/dneff/x17/sept26_fullpass_<version>')
     ap.add_argument('--done-list', default=None,
                     help='file of outnames already on EOS (one per line, with '
                          'or without .tar.gz). Those get no job, which is what '
@@ -110,6 +132,21 @@ def main():
                          'safe to re-run to pick up failures.')
     a = ap.parse_args()
     arms = a.arms.split(',')
+    insitu = {}
+    if a.insitu:
+        for kv in a.insitu.split(','):
+            arm, d = kv.split('=', 1)
+            insitu[arm] = os.path.expanduser(d)
+    eos_out = '/eos/user/d/dneff/x17/sept26_fullpass'
+    if a.version:
+        if not a.full_pass:
+            sys.exit('FATAL: --version is for a full re-pass (--full-pass)')
+        if a.dest == str(paths.spell('x17', 'sept26_stage2')):
+            a.dest = str(paths.spell('x17', f'sept26_stage2_{a.version}'))
+        eos_out = f'{eos_out}_{a.version}'
+    elif insitu or a.min_strips:
+        sys.exit('FATAL: --insitu / --min-strips change the reco: give the pass a --version '
+                 'so it cannot land in the production directory')
     os.makedirs(os.path.join(a.dest, 'log'), exist_ok=True)
 
     import pandas as pd
@@ -185,9 +222,9 @@ def main():
     from ntof_tracking.wft_beam import BEAM_DETS
     bdir = os.path.join(a.dest, 'bundles')
     shutil.rmtree(bdir, ignore_errors=True)
-    names = {}
+    names, vd = {}, {}
     for arm in arms:
-        src = BEAM_DETS[arm]['bundle']
+        src = insitu.get(arm, BEAM_DETS[arm]['bundle'])
         if not os.path.isdir(src):
             sys.exit(f'FATAL: arm {arm} bundle missing: {src}')
         b = json.load(open(os.path.join(src, 'bundle.json')))
@@ -205,9 +242,10 @@ def main():
         shutil.copytree(src, os.path.join(bdir, f'mx17_{arm}',
                                           os.path.basename(src)))
         names[arm] = os.path.basename(src)
+        vd[arm] = float(b['v_drift']) if arm in insitu else V_DRIFT_PINNED
     subprocess.run(['tar', 'czf', os.path.join(a.dest, 'bundles.tar.gz'),
                     '-C', a.dest, 'bundles'], check=True)
-    print(f'bundles.tar.gz     {names}')
+    print(f'bundles.tar.gz     {names}  v_drift {vd}')
 
 
     done = set()
@@ -244,7 +282,7 @@ def main():
                 extra = (f'--run {run} --subrun {sub} '
                          f'{allow}'
                          f'--bundle-name {names[arm]} '
-                         f'--v-drift {V_DRIFT_PINNED}')
+                         f'--v-drift {vd[arm]}')
                 # AFS caps directory entries and a flat 22k-file log dir
                 # degraded the shared schedd once already, so stderr is
                 # sharded by run -- ~36 directories of a few hundred.
@@ -278,7 +316,12 @@ def main():
                 f'code.tar.gz   sha256 {h}\n'
                 f'source        WORKING TREE, not `git archive`\n'
                 f'bundles       {json.dumps(names)}\n'
-                f'v_drift       {V_DRIFT_PINNED} um/ns, PINNED for every arm\n'
+                f'in-situ       {json.dumps(insitu) if insitu else "(none)"}\n'
+                f'v_drift       {json.dumps(vd)} um/ns '
+                f'({"in-situ arms carry their own" if insitu else "PINNED for every arm"})\n'
+                f'min_strips    {a.min_strips if a.min_strips else "code default"}\n'
+                f'version       {a.version or "(production)"}\n'
+                f'EOS output    {eos_out}\n'
                 f'sub-runs      {len(have)} of {len(want)}\n'
                 f'jobs          {len(rows)}\n\n'
                 f'uncommitted under the shipped code paths:\n'
@@ -291,6 +334,16 @@ def main():
             ('stage2_campaign.sub', 'run_stage2_wrapper.sh'))
     for fn in ship:
         shutil.copy(os.path.join(HERE, fn), os.path.join(a.dest, fn))
+    if a.version or a.min_strips:
+        # the job environment carries the EOS target and the seeder minimum
+        sp = os.path.join(a.dest, ship[0])
+        txt = open(sp).read()
+        old = 'EOS_STAGE2_OUT=/eos/user/d/dneff/x17/sept26_fullpass"'
+        if old not in txt:
+            sys.exit(f'FATAL: {ship[0]} environment line not found; cannot redirect EOS output')
+        new = f'EOS_STAGE2_OUT={eos_out}' + (f' WFT_BEAM_MIN_STRIPS={a.min_strips}' if a.min_strips else '') + '"'
+        open(sp, 'w').write(txt.replace(old, new))
+        print(f'{ship[0]}  environment -> {new[:-1]}')
     os.chmod(os.path.join(a.dest, ship[1]), 0o755)
     if a.full_pass:
         for run, _ in have:

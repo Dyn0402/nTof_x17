@@ -1187,7 +1187,7 @@ It does not test model-vs-chamber mismatch; that part is calibrated on cosmics.
 - **Production-bundle reruns** (cluster 4405795, `g4_{A,C}_fp145_full`). is2 physics is reconstructed
   with the production run_145 bundles (`calib_bundle_prelim`, v 42.6; C on det6 `lp`). This uses the
   new `--sim-bundle`.
-  - Sim reproduces production roughly: band A 1.264 vs data 1.287; C 1.604 vs 1.770.
+  - Sim reproduces production roughly: band A 1.266 vs data 1.287; C 1.605 vs 1.770 (100 files).
   - data/sim is A 1.018 (is2: 1.036), C 1.103 (is2: 1.097).
   - **C's ~10 % is the same under two different kernels (r06-det7 and lp)**, so it is not the
     kernel or the fit model.
