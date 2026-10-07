@@ -86,13 +86,35 @@ Last updated **2026-09-14** (**the re-pass is pushed to OCTOBER** and [`OCTOBER_
 > - **Both ends:** not demanded today (hardware sums the ends). Cheap offline (loses <1 %, 2 %
 >   on A unbiased) but removes only 7-57 % of accidentals; use a >= +-40 ns window.
 
-> ## SAME-CHAMBER PAIRS: TWO THREADS ON TWO BRANCHES -- 2026-10-07
+> ## RECONSTRUCTION FROM COSMIC TRUTH, AND THE BEAM ANGLE SCALE -- 2026-10-07
 >
-> Two-track separation (`two-track-joint-fit`, worktree `nTof_x17_tt`) and single-track
-> angle truth from beam-off cosmics (`beam-off-cosmics`) are the two halves of reconstructing
-> a pair in one chamber. They share the seeder and the bundles, so each invalidates the
-> other's calibration. Read [`SAME_CHAMBER_PAIRS.md`](SAME_CHAMBER_PAIRS.md) first.
-> 2026-10-07: the two-track F rescan confirms A 1200 / C 2400 (on the old v = 42.6 bundles).
+> Same-chamber pairs have two threads on two branches (two-track separation on
+> `two-track-joint-fit`; single-track truth on `beam-off-cosmics`), sharing the
+> seeder and the bundles. Map: [`SAME_CHAMBER_PAIRS.md`](SAME_CHAMBER_PAIRS.md).
+> Full record: `../ntof_cosmics/HANDOFF_TRACKING_2026-10-06.md` §10.
+>
+> - **Seeder minimum 3 (`WFT_BEAM_MIN_STRIPS=3`, opt-in) passes on beam.** On
+>   run_145, scintillator-confirmed tracks rise +45 / 52 / 40 % (A / C / D) and
+>   no particle is lost. 5–13 % of production x/y pairings are re-paired in busy
+>   events, so validate it with `xy_pairing`.
+>   Report: `../ntof_cosmics/results/seed_beam/report.html`.
+> - **In-situ bundles close on cosmics.** A: y flat at 1.00 and x within ±3 %
+>   (`is2_A`: v 38, robust kw). C: r06 det7 kernel, a little more linear, but
+>   the tails are not from the kernel.
+> - **The beam angle scale: the capsule estimator is wrong, by the factor
+>   k_arm carries.** Binned in strip position (no dilution, no capsule), the
+>   SiPM-wall boundaries give true tan = **0.89 × production raw** for A,
+>   robust in charge. They also give an effective source distance of
+>   **≈ 330 mm, not the capsule's 234.6**, and 330/234.6 = 1.41 is the factor
+>   between the stage-3 k (1.27) and the wall. The campaign's arm-A opening
+>   angles therefore rest on a k that the scintillators contradict. This is the
+>   "33 % out" of 2026-09-10, now with the mechanism located in the capsule
+>   assumption rather than in the wall.
+> - **Still open:** beam (0.89) vs cosmics (1.11) for the same chamber, a 25 %
+>   difference. The t0 100–300 ns class reads 1.05, so the t0–p0 trade is the
+>   lead.
+> - The two-track F rescan confirms A 1200 / C 2400, but on the old v = 42.6
+>   bundles; re-derive it on new ones.
 
 > **START HERE:** [`HANDOFF_FULLPASS_2026-09-10.md`](HANDOFF_FULLPASS_2026-09-10.md)
 > — why the full pass happened, what it produced, and the run_86 test that now

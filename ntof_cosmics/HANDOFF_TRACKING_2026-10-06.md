@@ -672,12 +672,57 @@ Possible explanations, with what has been tried:
   beam-only. Against it: the campaign's `slope` and `fiducial` selections barely
   change ε, so reconstruction resolution is not the driver; scattering would
   have to be.
+- **Dilution is RULED OUT, and the capsule estimator is what fails (2026-10-07,
+  later that night).** The wall test can be binned in the precisely measured
+  strip position instead of the measured tan:
+  - Where the fired group switches across a surveyed boundary U_b, half the
+    tracks cross on each side. So at that strip position u_b the median TRUE
+    tan is (U_b − u_b + foot)/L, and it is compared with the median raw reco
+    tan of the same tracks. No tan binning, no capsule.
+  - Campaign, 31 runs, 990 k single-track single-group events, each run's tans
+    de-k'd with its own stage-3 k:
+
+    | boundary | u_b [mm] | true tan | raw reco tan | true/raw |
+    |---|---|---|---|---|
+    | 0\|1 | −82.6 ± 1.2 | −0.267 | −0.294 | **0.909** |
+    | 1\|2 | −0.5 ± 1.2 | −0.084 | −0.081 | 1.03 (no lever) |
+    | 2\|3 | +71.9 ± 0.9 | +0.200 | +0.229 | **0.874** |
+
+  - Solving both outer boundaries with a free rigid wall offset: true/raw =
+    **0.893**, offset 0.4 mm. So the beam scale from the scintillators is
+    **0.89 × production raw** whether binned in tan (0.85) or in u (0.89).
+    Dilution is small.
+  - The same edges give the effective source distance directly, tan-free and
+    foot-free: the two outer edges are 9 % farther apart than a point source at
+    234.6 mm predicts, so **D_eff ≈ 330 mm**. Particles reaching A's wall are
+    less divergent than radial tracks from the axis. 330/234.6 = 1.41 is
+    exactly the factor between capsule k (1.27) and the wall (0.89). The
+    capsule estimator (k_arm, and so the campaign's stage-3 k) assumes D = 234.6
+    and inherits the whole factor.
+  - Split (offset-free two-boundary combination; joined to the campaign track
+    table):
+
+    | class | n | true/raw | D_eff |
+    |---|---|---|---|
+    | all | 990 664 | 0.894 | 331 mm |
+    | t0 ≤ 100 ns | 864 605 | 0.891 | 331 mm |
+    | 100 < t0 ≤ 300 ns | 72 956 | **1.052** | **250 mm** |
+    | q_per_len below / above median | 329 k each | 0.892 / 0.883 | 341 / 332 mm |
+
+    The result does not depend on charge. The 100–300 ns t0 class reads close to
+    the capsule geometry and to cosmics. Its fitted t0 is where the t0–p0 trade
+    (§9) would move the position reference, so the t0 dependence is the next
+    thing to chase. (t0 > 300: fit fails, too few tracks at the edges.)
+  - **What remains open is beam vs cosmics:** 0.89 (scintillators, beam) against
+    1.11 (A–C line, cosmics), a 25 % difference that §7c already saw as the
+    "steeper beam response". Candidates: the particle (low-energy electrons vs
+    muons), or the wall/plastic lever arms. The two-lever agreement makes a
+    single survey error unlikely, but both levers come from one survey.
 - **Tests to run next:**
-  1. The edge test binned in a precise variable. Bin in u at the strips and
-     compare the predicted vs fired group as a function of u, which is
-     regression-free.
-  2. The capsule band on scintillator-confirmed tracks only: are both layers
-     fired at the predicted groups?
+  1. ~~The edge test binned in u~~ — **done** above (0.89, dilution excluded).
+  2. Why D_eff ≈ 330 mm: the same u-binned edge test per run and per t0 class
+     (in-time vs late), and per charge (MIP vs low-energy). Is it a population
+     not from the axis, or a property of all tracks?
   3. Run_149 cosmics that fire A's wall: the edge test with **true** tan (A–C
      line) against reco tan. If the measured-tan version reads ε > 0 and the
      true-tan version reads 0, the edge test's bias is proven.
