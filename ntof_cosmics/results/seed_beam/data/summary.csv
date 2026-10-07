@@ -1,0 +1,5 @@
+arm,events_prod,events_m3,gated_prod,gated_m3,lost,gained,gained_scint,nearnormal_prod,nearnormal_m3,nearnormal_scint_bore_prod,nearnormal_scint_bore_m3,events_2gated_prod,events_2gated_m3
+A,11671,17016,7497,12978,952,6433,1997,1183,2986,6,40,712,2008
+B,10911,0,5234,0,5234,0,0,492,0,0,0,607,0
+C,14289,19049,7089,10812,357,4080,1963,136,483,4,32,658,1323
+D,33542,0,16259,0,16259,0,0,1731,0,3,0,1468,0

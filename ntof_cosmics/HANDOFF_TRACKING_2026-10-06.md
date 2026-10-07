@@ -555,3 +555,54 @@ flattens A y slightly and improves core σ to ~0.024. Head-on is unchanged.
    residual A x S-shape.
 3. Then a campaign re-pass (condor) with the new seeder, v and bundles, and
    redo §7c's beam/cosmic comparison on it.
+
+---
+
+## 10 · The 3-strip seeder on beam data, and the C kernel (2026-10-07 night)
+
+**Read first:** `sept26_prelim_analysis/SAME_CHAMBER_PAIRS.md`. This tracking
+work (T2) and the two-track separation work (T1, branch `two-track-joint-fit`)
+share the seeder and the bundles.
+
+### 10a · Beam purity of seeder min 3 (§9 next step 1)
+
+Code: **`seed_beam_test.py`** (`reco` / `verify` / `build` / `compare` /
+`scint`) and **`make_seed_beam_report.py`** →
+`results/seed_beam/report.html`. Work dir `~/scratch/ntof_insitu/beamseed`.
+Sample: run_145 stat090_0000, all 7 tags, every trigger. Reconstruction uses
+the full pass's own saved bundle per arm, and only `MIN_STRIPS_BEAM` changes.
+- `verify`: a local min-5 re-run reproduces production on A tag 000 to 99.8 %
+  of fits (5/2288 x, 1/2657 y; laptop-vs-condor minimum flips).
+- `build --min 0` (production reco, today's code) reproduces the stage-3 gated
+  counts exactly (A 7 497, C 7 089), which is also T1's split-ab baseline.
+
+Note: `seeds_from_hits_beam` binds `min_strips` at definition time, so patching
+`MIN_STRIPS_BEAM` alone only relabels the sidecar. The test patches both.
+
+**Results (A, C):**
+
+| | A prod → min 3 | C prod → min 3 |
+|---|---|---|
+| seeded events / tag | ~3 230 → ~3 860 | |
+| gated tracks | 7 497 → 12 978 | 7 089 → 10 812 |
+| wall-confirmed minus accidentals | 2 957 → **4 289 (+45 %)** | 2 212 → **3 352 (+52 %)** |
+| gained tracks' wall confirmation (prod) | 23.8 % (42.5 %) | 31.9 % (35.2 %) |
+| near-normal confirmed excess | 74 → 264 | 14 → 71 |
+| events with ≥ 2 gated tracks | 621 → 1 504 | 580 → 1 091 |
+
+- **Nothing is lost as a particle.** 952 (A) / 357 (C) production gated tracks
+  have no min-3 track within 2 mm, but nearly all of them reappear: at least one
+  view's fit survives in a gated min-3 track, **re-paired** with another
+  partner. Only 22 (A) / 5 (C) vanish entirely. They are busy events (median 2
+  candidates per plane), junk-heavy (47 % q_sum > 1e6 in A, 43 % late), and the
+  re-pairing is a tie on |t0x − t0y| and on the x/y charge ratio. The min-3
+  tracks shared with production confirm *better* than production (A 47.9 %
+  vs 42.5 %).
+- Gained tracks are later (t0 > 300 ns: 31 % vs 17 %) and less confirmed, so
+  they are real but dirtier.
+- Two-track events: every pair is still ≥ 24 mm apart (median ~210 mm). Min 3
+  neither makes close fake pairs nor recovers close pairs.
+
+**Verdict:** min 3 is a net gain, but it must be validated together with T1's
+`xy_pairing` (the re-pairing above is exactly its problem) through the
+split-ab contract, not shipped alone.

@@ -19,6 +19,13 @@ the timing direction, and the beam-off runs have never been read.
 | `angle_response.py` | the A/C angle response against the joined A–C line, resolution vs angle, `slope_reliable` test, beam test → `results/tracking/pooled/` |
 | `make_pooled_report.py` | `results/tracking/pooled/report.html` + figures; current state in `HANDOFF_TRACKING_2026-10-06.md` §7 |
 | `make_deck.py` | the slide note, live at <https://dylan-neff.web.cern.ch/notes/beam-off-cosmics.html> → `results/deck/beam-off-cosmics.html` |
+| `insitu_calib.py` | in-situ calibration harness against the A–C line (truth / cache / profile / hyper / reco / score / t0meas / mkbundle / corridor / joint / implied); work dir `~/scratch/ntof_insitu` — `HANDOFF_TRACKING_2026-10-06.md` §8–9 |
+| `seed_test.py` | beam seeder minimum 5 vs 3 on run_149 cosmics, scored against the A–C line (§9) |
+| `seed_beam_test.py` | the same seeder change on a **beam** sub-run (run_145): reproduces the full pass, then lost / gained / junk / near-normal yield (§10) |
+
+**Same-chamber pairs:** this package's tracking work (single-track angle truth, head-on) is one of
+two threads toward reconstructing two tracks in one chamber; the other is the two-track separation work
+on branch `two-track-joint-fit`. How they fit together: `../sept26_prelim_analysis/SAME_CHAMBER_PAIRS.md`.
 
 Inputs: `dylan-cern-site/data/x17-runs.json` and `x17-match.json`; the local
 `run_config.json` mirror; the `beam_class_*.csv` slow-control logs, copied to

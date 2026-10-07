@@ -37,6 +37,10 @@ check the migration status table in `RECONSTRUCTION_BASIS.md` first.
 - `ntof_cosmics/` — the 47 beam-off cosmic runs (inventory) and the
   through-going-particle background; `clock_match.py` puts beam-off DREAM
   triggers on the n_TOF clock (~10 ns) with no flash. Entry point: its README.
+- **Same-chamber pair reconstruction** spans two branches (two-track separation on
+  `two-track-joint-fit`; single-track angle truth and the seeder on
+  `beam-off-cosmics`). Map of both, and how they constrain each other:
+  `sept26_prelim_analysis/SAME_CHAMBER_PAIRS.md`.
 - `ntof_scint_stack/` — every SiPM wall, plastic and liquid mapped (efficiency,
   response) by the MM tracks that point at them; output in
   `/media/dylan/data/x17/scint_stack/`. Its README has the track-extrapolation

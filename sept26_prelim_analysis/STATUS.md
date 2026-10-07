@@ -86,6 +86,14 @@ Last updated **2026-09-14** (**the re-pass is pushed to OCTOBER** and [`OCTOBER_
 > - **Both ends:** not demanded today (hardware sums the ends). Cheap offline (loses <1 %, 2 %
 >   on A unbiased) but removes only 7-57 % of accidentals; use a >= +-40 ns window.
 
+> ## SAME-CHAMBER PAIRS: TWO THREADS ON TWO BRANCHES -- 2026-10-07
+>
+> Two-track separation (`two-track-joint-fit`, worktree `nTof_x17_tt`) and single-track
+> angle truth from beam-off cosmics (`beam-off-cosmics`) are the two halves of reconstructing
+> a pair in one chamber. They share the seeder and the bundles, so each invalidates the
+> other's calibration. Read [`SAME_CHAMBER_PAIRS.md`](SAME_CHAMBER_PAIRS.md) first.
+> 2026-10-07: the two-track F rescan confirms A 1200 / C 2400 (on the old v = 42.6 bundles).
+
 > **START HERE:** [`HANDOFF_FULLPASS_2026-09-10.md`](HANDOFF_FULLPASS_2026-09-10.md)
 > — why the full pass happened, what it produced, and the run_86 test that now
 > blocks the opening angle. The entries below are the working record behind it.

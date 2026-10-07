@@ -251,6 +251,17 @@ fit used in the study is a probe and is worse on chi2 for the late class.
 Validate any fix against an external pointing reference (`det_a_scint`) before it
 rides the re-pass. Same edge as the `q_uend` railing item.
 
+### O11 — Same-chamber pairs: two threads, one re-pass
+
+Added 2026-10-07. The two-track separation work (O1–O3, branch
+`two-track-joint-fit`) and the single-track angle work on beam-off cosmics
+(O6/O9, branch `beam-off-cosmics`: the v substitution, the 5-strip beam seeder
+that loses head-on tracks, chamber C's kernel) touch the same seeder and the
+same bundles. **A change in either invalidates the other's calibration** (T1's
+F thresholds were set on the v = 42.6 bundles; the seeder minimum shares
+`N_CANDIDATES_BEAM` with the rescue floor). Map, interactions and the join
+order: [`SAME_CHAMBER_PAIRS.md`](SAME_CHAMBER_PAIRS.md).
+
 ## 4 · Sequencing
 
 ```
@@ -292,6 +303,8 @@ for the next one.
 | [`HANDOFF_INTRA_TWO_TRACK_RECO.md`](HANDOFF_INTRA_TWO_TRACK_RECO.md) | the problem statement, the measured symptoms, and §10's progress record |
 | [`../wft/MULTITRACK_2026-09-14.md`](../wft/MULTITRACK_2026-09-14.md) | the two shipped-but-off fixes, their validation, and how to switch them on |
 | [`../wft/MULTITRACK_2026-08-12.md`](../wft/MULTITRACK_2026-08-12.md) | the three tiers of multi-track work; tier 3 is D1 |
+| [`SAME_CHAMBER_PAIRS.md`](SAME_CHAMBER_PAIRS.md) | **O11.** Both same-chamber threads (two branches), how they constrain each other, the join order |
+| `../ntof_cosmics/HANDOFF_TRACKING_2026-10-06.md` | O6/O9 on beam-off cosmics: angle truth from the A–C line, the seeder, v, the C kernel |
 | [`PLAN.md`](PLAN.md) §9 | the D1–D15 deferred register |
 | [`STATUS.md`](STATUS.md) | the live log |
 | `intra_bench.py`, `make_intra_bench_report.py` | the bench; reports at `<out>/intra_bench/<variant>/report.html` |
