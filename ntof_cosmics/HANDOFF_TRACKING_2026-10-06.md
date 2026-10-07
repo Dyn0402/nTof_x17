@@ -713,6 +713,20 @@ Possible explanations, with what has been tried:
     the capsule geometry and to cosmics. Its fitted t0 is where the t0–p0 trade
     (§9) would move the position reference, so the t0 dependence is the next
     thing to chase. (t0 > 300: fit fails, too few tracks at the edges.)
+  - Reproducible: `ntof_cosmics/wall_edge_scale.py` (from the scint-stack
+    per-track tables; validated on A only, where it reproduces the
+    det_a_scint number exactly) → `results/wall_edge_scale/`. The scint-stack
+    package's own edge likelihood (`ana.fit_pointing`, λ as a fraction of
+    k·tan) gives the same A value, λk = 0.703 × 1.266 = 0.89, and covers C and D:
+
+    | arm | wall λ (pass 1–2) | stage-3 k | beam true/raw | cosmic true/raw | beam/cosmic |
+    |---|---|---|---|---|---|
+    | A | 0.70–0.64 | 1.27 | 0.81–0.89 | 1.11 | 0.73–0.80 |
+    | C | 0.66–0.63 | 1.62 | 1.01–1.06 | 1.50 (x) | 0.67–0.71 |
+    | D | 0.68–0.59 | 1.77 | 1.04–1.20 | — | — |
+
+    **The beam/cosmic gap is systematic across chambers.** Beam tracks read
+    20–33 % shallower at the wall than the cosmic calibration predicts.
   - **What remains open is beam vs cosmics:** 0.89 (scintillators, beam) against
     1.11 (A–C line, cosmics), a 25 % difference that §7c already saw as the
     "steeper beam response". Candidates: the particle (low-energy electrons vs
