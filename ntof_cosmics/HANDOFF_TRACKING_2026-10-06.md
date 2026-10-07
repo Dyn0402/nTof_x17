@@ -1118,7 +1118,7 @@ It does not test model-vs-chamber mismatch; that part is calibrated on cosmics.
 
 **Result 2: like-for-like capsule view** (`compare_data.py`: k_arm's selection, *reco* q_sum window
 25–75 %, reco position, lever 30–130 mm; bootstrap errors). These are the 24-file sample numbers; the
-100-file reruns `g4_*_is2_full` are in progress.
+100-file reruns `g4_*_is2_full` are running on condor (cluster 4404719; output on EOS `full_sim/angle_scale/digi/`).
 
 | | band | track | r 0.1–0.2 | r 0.2–0.3 | r 0.3–0.4 | r 0.4–0.55 |
 |---|---|---|---|---|---|---|
