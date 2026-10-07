@@ -8,6 +8,7 @@ x_q_sum, lever 30-130 mm, reco position, raw reco tan).  Bootstrap errors.
 HANDOFF_TRACKING_2026-10-06.md §13.
 
     PYTHONPATH=. .venv/bin/python ntof_cosmics/g4_digi/compare_data.py [--sim-a g4_A_is2] [--sim-c g4_C_is2]
+        [--data is2|prod|<tracks.parquet>] [--out compare_data.csv]
 """
 from __future__ import annotations
 
@@ -20,6 +21,9 @@ import pandas as pd
 from ntof_cosmics.g4_digi import analyse as A
 
 DATA = Path.home() / 'scratch/ntof_insitu/beamseed/is2/run_145/stat090_0000/tracks/tracks.parquet'
+#: run_145 stat090_0000 tracks per reco: the in-situ bundles, and the production pass (v 42.6)
+DATAS = {'is2': DATA,
+         'prod': Path.home() / 'scratch/ntof_insitu/beamseed/prod/run_145/stat090_0000/tracks/tracks.parquet'}
 E = [0.10, 0.20, 0.30, 0.40, 0.55]
 PINWHEEL = {'A': 16.35, 'C': 17.3}
 
@@ -49,9 +53,11 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument('--sim-a', default='g4_A_is2')
     ap.add_argument('--sim-c', default='g4_C_is2')
+    ap.add_argument('--data', default='is2', help='is2 | prod | a tracks.parquet')
+    ap.add_argument('--out', default='compare_data.csv')
     a = ap.parse_args()
     rng = np.random.default_rng(3)
-    t = pd.read_parquet(DATA)
+    t = pd.read_parquet(DATAS.get(a.data, a.data))
     rows = []
     for arm, lab in (('A', a.sim_a), ('C', a.sim_c)):
         R = A.load(lab)
@@ -67,9 +73,9 @@ def main() -> int:
         lo, hi = np.percentile(g.x_q_sum, [25, 75])
         g = g[g.x_q_sum.between(lo, hi)]
         c, s, n = stats((g.x_local - PINWHEEL[arm]).to_numpy(), g.tan_raw_x.to_numpy(), rng)
-        rows.append(dict(arm=arm, sample='data run_145 (is2)', n=n, **c, **{f'{k}_err': v for k, v in s.items()}))
+        rows.append(dict(arm=arm, sample=f'data run_145 ({a.data})', n=n, **c, **{f'{k}_err': v for k, v in s.items()}))
     T = pd.DataFrame(rows)
-    T.to_csv(A.OUT / 'compare_data.csv', index=False)
+    T.to_csv(A.OUT / a.out, index=False)
     cols = ['band', 'track'] + [f'r{lo:.2f}' for lo in E[:-1]]
     with pd.option_context('display.width', 250):
         show = T[['arm', 'sample', 'n']].copy()
@@ -78,7 +84,7 @@ def main() -> int:
         for lo in E[:-1]:
             show[f'wrong{lo:.2f}'] = T[f'w{lo:.2f}'].round(2)
         print(show.to_string(index=False))
-    print(f'-> {A.OUT / "compare_data.csv"}')
+    print(f'-> {A.OUT / a.out}')
     return 0
 
 

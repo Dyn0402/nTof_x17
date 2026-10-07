@@ -217,23 +217,60 @@ def emulate_hits(W: np.ndarray, hf_noise: np.ndarray, feu: int, eid: int) -> pd.
 _ST: dict = {}
 
 
-def worker_init(bundle_path: str, state: dict, min_strips: int):
+_SIM_KEYS = ('TMPL', 'TGRID', 'GAIN', 'HYPER', 'SHARE_MODE', 'DT_XY', '_smear_cache', '_lp_cache')
+
+
+def worker_init(bundle_path: str, state: dict, min_strips: int, sim_bundle_path: str | None = None):
+    """``sim_bundle_path``: the chamber the signal is generated with (template,
+    kernel, diffusion, gain, dt_xy), when it is not the reco bundle -- e.g. the
+    in-situ bundle as the physics and the production bundle as the reco."""
     os.environ['WFT_BEAM_MIN_STRIPS'] = str(min_strips)
     from wft import reco as wreco
     from wft import model as wm
+    _ST.clear()
+    if sim_bundle_path:
+        wreco._worker_init(sim_bundle_path)
+        wm.set_nsamp(state['n_sample'])
+        _ST['sim'] = {k: getattr(wm, k) for k in _SIM_KEYS}
+        _ST['sim']['_smear_cache'], _ST['sim']['_lp_cache'] = {}, {}
+        _ST['sim']['HYPER'] = dict(wm.HYPER)
     wreco._worker_init(bundle_path)
     wm.set_nsamp(state['n_sample'])
-    _ST.clear()
     _ST.update(state)
     _ST['min_strips'] = min_strips
+
+
+class _SimModel:
+    """Swap the simulation bundle's wft.model state in for signal generation."""
+
+    def __enter__(self):
+        from wft import model as wm
+        self.saved = None
+        if 'sim' in _ST:
+            self.saved = {k: getattr(wm, k) for k in _SIM_KEYS}
+            for k, v in _ST['sim'].items():
+                setattr(wm, k, v)
+        return self
+
+    def __exit__(self, *exc):
+        from wft import model as wm
+        if self.saved is not None:
+            for k, v in self.saved.items():
+                setattr(wm, k, v)
+        return False
 
 
 def digitise_event(steps: pd.DataFrame, ov: dict, t0: float, adc_per_e: float,
                    xy_split: float, v_true: float, rng, pos_offset=(0.0, 0.0)):
     """One event's two planes: (W_x, W_y) as (512, ns) CNS'd ADC, plus truth."""
+    with _SimModel():
+        return _digitise_event(steps, ov, t0, adc_per_e, xy_split, v_true, rng, pos_offset)
+
+
+def _digitise_event(steps, ov, t0, adc_per_e, xy_split, v_true, rng, pos_offset):
     from wft import model as wm
-    from wft.reco import _CAL
     hyper = dict(wm.HYPER)
+    dt_xy = wm.DT_XY
     el = electrons(steps, rng, v_true, hyper)
     W = {}
     for p in 'xy':
@@ -244,8 +281,8 @@ def digitise_event(steps: pd.DataFrame, ov: dict, t0: float, adc_per_e: float,
             from ntof_tracking.run145_target_imaging import STRIP_MAP_HALF
             coord = STRIP_MAP_HALF - (el['u'] if p == 'x' else el['v']) + pos_offset[p == 'y']
             share = xy_split if p == 'x' else 1.0 - xy_split
-            t0p = t0 if p == 'x' else t0 - _CAL.dt_xy.get(str(int(ov['ftst_x'] - ov['ftst_y'])),
-                                                          _CAL.dt_xy.get(int(ov['ftst_x'] - ov['ftst_y']), -18.8))
+            t0p = t0 if p == 'x' else t0 - dt_xy.get(str(int(ov['ftst_x'] - ov['ftst_y'])),
+                                                     dt_xy.get(int(ov['ftst_x'] - ov['ftst_y']), -18.8))
             sig = plane_waveform(p, coord, el['t'], el['g'] * adc_per_e * share,
                                  _ST['pos_maps'][p], t0p, hyper)
             sig *= wm.GAIN[p][:, None]

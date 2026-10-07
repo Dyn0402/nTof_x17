@@ -57,14 +57,16 @@ def ac_pairs(t: pd.DataFrame) -> pd.DataFrame:
     out['sep'] = sep
     out['jdca'] = _axis_dca(P1, J)[0]
     out['jx'] = (P2[:, 0] - P1[:, 0]) / (P2[:, 2] - P1[:, 2])   # A's local x sign is +1 (corr 0.89)
+    out['jy'] = (P2[:, 1] - P1[:, 1]) / (P2[:, 2] - P1[:, 2])   # sign fixed per sample in scale()
     out['vert_deg'] = np.degrees(np.arccos(np.abs(J[:, 1])))
     out['ms'] = a.t_since_flash_ns.to_numpy() / 1e6 if 't_since_flash_ns' in a else np.nan
     return out
 
 
-def scale(d: pd.DataFrame) -> dict:
-    d = d[(d.tan_raw_x.abs() > 0.1) & (d.tan_raw_x.abs() < 0.6)]
-    j, r = d.jx.to_numpy(), d.tan_raw_x.to_numpy()
+def scale(d: pd.DataFrame, view: str = 'x') -> dict:
+    d = d[(d[f'tan_raw_{view}'].abs() > 0.1) & (d[f'tan_raw_{view}'].abs() < 0.6)]
+    j, r = d[f'j{view}'].to_numpy(), d[f'tan_raw_{view}'].to_numpy()
+    j = j * np.sign(np.corrcoef(j, r)[0, 1])   # local-vs-global sign (x: +1)
     rng = np.random.default_rng(0)
     bs = [np.median((j / r)[rng.integers(0, len(d), len(d))]) for _ in range(200)]
     return dict(n=len(d), median_ratio=float(np.median(j / r)), err=float(np.std(bs)),
@@ -81,12 +83,13 @@ def main() -> int:
     B.to_parquet(OUT / 'pairs_beam.parquet', index=False)
     C.to_parquet(OUT / 'pairs_run149.parquet', index=False)
     rows = []
-    for sp in (60, 20, 10):
-        rows.append(dict(sample='run_149 (beam off)', ms='-', sep_max=sp,
-                         **scale(C[(C.sep < sp) & (C.jdca > JDCA_MIN)])))
-        for lo, hi in ((10, 20), (20, 80), (40, 80)):
-            rows.append(dict(sample='beam runs', ms=f'{lo}-{hi}', sep_max=sp,
-                             **scale(B[(B.sep < sp) & (B.jdca > JDCA_MIN) & (B.ms >= lo) & (B.ms < hi)])))
+    for view in 'xy':
+        for sp in (60, 20, 10):
+            rows.append(dict(view=view, sample='run_149 (beam off)', ms='-', sep_max=sp,
+                             **scale(C[(C.sep < sp) & (C.jdca > JDCA_MIN)], view)))
+            for lo, hi in ((10, 20), (20, 80), (40, 80)):
+                rows.append(dict(view=view, sample='beam runs', ms=f'{lo}-{hi}', sep_max=sp,
+                                 **scale(B[(B.sep < sp) & (B.jdca > JDCA_MIN) & (B.ms >= lo) & (B.ms < hi)], view)))
     R = pd.DataFrame(rows)
     R.to_csv(OUT / 'scales.csv', index=False)
     print(R.round(3).to_string(index=False))

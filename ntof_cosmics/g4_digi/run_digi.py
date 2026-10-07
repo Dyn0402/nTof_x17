@@ -52,10 +52,10 @@ def _line(w, x, q):
     return float(b), float(mx + b * (DG.W_MESH - mw))
 
 
-def run(jobs_list, bundle, state, min_strips, n_jobs):
+def run(jobs_list, bundle, state, min_strips, n_jobs, sim_bundle=None):
     rows = []
     with ProcessPoolExecutor(max_workers=n_jobs, initializer=DG.worker_init,
-                             initargs=(str(bundle), state, min_strips)) as pool:
+                             initargs=(str(bundle), state, min_strips, sim_bundle and str(sim_bundle))) as pool:
         for i, r in enumerate(pool.map(DG.run_one, jobs_list, chunksize=4)):
             rows.append(r)
             if (i + 1) % 200 == 0:
@@ -75,7 +75,9 @@ def main() -> int:
     ap.add_argument('--steps', nargs='*', default=None, help='g4 step parquet(s) (extract_steps.py)')
     ap.add_argument('--g4-arm', type=int, default=2, help='sim arm id (2 = A, 3 = C)')
     ap.add_argument('--adc-per-e', type=float, default=None)
-    ap.add_argument('--v-true', type=float, default=None, help='default: bundle v')
+    ap.add_argument('--sim-bundle', default=None,
+                    help='bundle the signal is generated with (default: --bundle); e.g. is2 physics, prod reco')
+    ap.add_argument('--v-true', type=float, default=None, help='default: the sim bundle v')
     ap.add_argument('--min-strips', type=int, default=3)
     ap.add_argument('--jobs', type=int, default=14)
     ap.add_argument('--label', default=None)
@@ -87,10 +89,14 @@ def main() -> int:
     from wft.calib import CalibrationBundle
     bpath = Path(a.bundle) if Path(a.bundle).is_dir() else BUNDLES / a.bundle
     cal = CalibrationBundle.load(str(bpath))
-    v_true = a.v_true or cal.v_drift
+    spath = None
+    if a.sim_bundle:
+        spath = Path(a.sim_bundle) if Path(a.sim_bundle).is_dir() else BUNDLES / a.sim_bundle
+    v_true = a.v_true or (CalibrationBundle.load(str(spath)).v_drift if spath else cal.v_drift)
     from ntof_tracking import wft_beam as WB
     tag = a.tag or WB.subrun_tags(WB.beam_config(a.arm, a.run, a.sub))[0]
-    print(f'overlay: {a.run}/{a.sub} tag {tag}; bundle {bpath.name} (v {cal.v_drift}, kw {cal.kw})')
+    print(f'overlay: {a.run}/{a.sub} tag {tag}; bundle {bpath.name} (v {cal.v_drift}, kw {cal.kw}); '
+          f'sim {spath.name if spath else bpath.name}, v_true {v_true}')
     ov = DG.Overlay(a.arm, a.run, a.sub, tag)
     print(f'  {len(ov.events)} quiet overlay triggers, {ov.n_sample} samples')
     state = ov.state()
@@ -155,7 +161,7 @@ def main() -> int:
                              t0=float(rng.choice(t0s)), adc_per_e=adc, xy_split=XY_SPLIT, v_true=v_true,
                              seed=int(rng.integers(1 << 31)), truth=truth))
     print(f'{len(jobs)} events, adc/e {adc:.2f}, v_true {v_true}')
-    R = run(jobs, bpath, state, a.min_strips, a.jobs)
+    R = run(jobs, bpath, state, a.min_strips, a.jobs, spath)
     OUT.mkdir(parents=True, exist_ok=True)
     lab = a.label or f'{a.mode}_{a.arm}_{bpath.name}'
     R.to_parquet(OUT / f'{lab}.parquet', index=False)
