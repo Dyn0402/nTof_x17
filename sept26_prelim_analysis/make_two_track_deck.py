@@ -76,39 +76,44 @@ G = dict(
 # --------------------------------------------------------------------------- #
 # slides
 # --------------------------------------------------------------------------- #
-def s_cover(D, B, C):
-    def b(arm, var, band):
-        r = B[(B.arm == arm) & (B.variant == var)]
-        return float(r[band].iloc[0])
-    lt = '&lt; 12 mm'
-    a0, a1 = b('A', 'before', lt), b('A', 'fixed + profile pairing', lt)
-    c0, c1 = b('C', 'before', lt), b('C', 'fixed + profile pairing', lt)
+def s_cover(D, PG, C):
+    from sept26_prelim_analysis.make_same_chamber_slides import pct
+
+    def e(arm, step):
+        return pct(*PG[arm][step]['&lt; 12 mm'])
+    a0, a1 = e('A', 'production'), e('A', 'profc')
+    c0, c1 = e('C', 'production'), e('C', 'profc')
     cc = C.set_index(['arm', 'chain'])
-    ta = (f'Overlay bench, all seven file tags, condor cluster 4334051.\n'
-          f'A 12–24 mm: {100 * b("A", "before", "12–24 mm"):.0f} → '
-          f'{100 * b("A", "fixed + profile pairing", "12–24 mm"):.0f} %')
-    tc = (f'C 12–24 mm: {100 * b("C", "before", "12–24 mm"):.0f} → '
-          f'{100 * b("C", "fixed + profile pairing", "12–24 mm"):.0f} %')
+    tip = ('Overlay bench, coincident pairs, both found and correctly x/y-paired.\n'
+           'Production → fixed chain + profile pairing (slide “Bench progression”).')
     nc = (f'Clean singles split: A {100 * cc.loc[("A", "fixed"), "frac_clean_split"]:.2f} %, '
           f'C {100 * cc.loc[("C", "fixed"), "frac_clean_split"]:.2f} % (≤ 0.66 %). No event loses a track.')
     nums = ''.join([
-        sd.bignum(f'{100 * a0:.0f} → {100 * a1:.0f}%', 'Chamber A, &lt; 12 mm', DBLUE,
-                  'Production → fixed chain + profile pairing, at a threshold matched to production’s '
-                  'false-split rate.', tip=ta),
-        sd.bignum(f'{100 * c0:.0f} → {100 * c1:.0f}%', 'Chamber C, &lt; 12 mm', '#f0a36b',
-                  'Same comparison. C is held back by a stricter matched threshold (F = 2400).', tip=tc),
-        sd.bignum('passes', 'The real-trigger contract', DGREEN, nc, tip=G['contract'])])
-    body = (sd.kicker('run_145 stat090_0000 · chambers A and C · 2 Oct 2026')
-            + '<h1 style="font-size:84px;font-weight:600;line-height:1.08;letter-spacing:-2px;width:1600px">'
+        sd.bignum(f'{a0} → {a1}%', 'Chamber A, &lt; 12 mm', DBLUE,
+                  'Coincident pairs found and paired: production → the opt-in chain.', tip=tip, size=64),
+        sd.bignum(f'{c0} → {c1}%', 'Chamber C, &lt; 12 mm', '#f0a36b',
+                  'Held back by a stricter threshold (F = 2400).', tip=tip, size=64),
+        sd.bignum('passes', 'Real-trigger contract', DGREEN,
+                  'At F = 1200 (A) / 2400 (C), confirmed by a rescan. Set on the old bundles.',
+                  tip=nc + '\n' + G['contract'], size=64),
+        sd.bignum('explained', 'Beam angle scale', DGREEN,
+                  'The walls read the electrons’ scattering, not the reconstruction: the cosmic scale stands.',
+                  tip='T2 (beam-off cosmics), Geant4: see the last section. Adopting it for beam awaits a decision.',
+                  size=64)])
+    body = (sd.kicker('run_145 · chambers A and C · run_149 cosmics · updated 7 Oct 2026')
+            + '<h1 style="font-size:80px;font-weight:600;line-height:1.08;letter-spacing:-2px;width:1640px">'
               'Two tracks in one plane: the limit is a strip pitch, and an opt-in chain gets most of the way there</h1>'
+            + f'<p style="font-size:30px;color:{DMUT};width:1500px;line-height:1.35">The single-track reconstruction '
+              'under it (seeder, drift velocity, angle scale) turned out to need fixing too, and is being '
+              'recalibrated against cosmic truth.</p>'
             + '<div style="flex:1"></div>'
-            + f'<p style="font-size:28px;color:{DMUT}">Coincident pairs closer than 12 mm, found <i>and</i> '
-              'correctly x/y-paired, on the real-overlay bench.</p>'
-            + f'<div style="display:flex;gap:64px">{nums}</div>')
+            + f'<div style="display:flex;gap:56px">{nums}</div>')
     D.slide('cover', body, f'''
+<p><b>The question</b> (Sept 2026): same-chamber coincident pairs came out of the reconstruction badly or not at all. What is the best that could be done in principle (a toy), how far is the reconstruction from it, and what explains the difference?</p>
 <p>Three limits are compared throughout. The <b>physical limit</b> is what a perfect analysis could resolve if the forward model were exact: about one strip pitch. The <b>real-track limit</b> is the same ideal fit on real tracks, where the forward model is imperfect: about 2–3 mm. <b>Production</b> is the current wft.reco chain, which was far from both.</p>
 <p>The <b>fixed chain</b> is four opt-in switches: <code>WFT_TWO_TRACK_SCALE=two</code>, <code>WFT_TWO_TRACK_SEARCH=grid</code>, no trigger, and every candidate tried. <b>Profile pairing</b> is the x/y pairing calibration <code>xy_pairing_*_profc.json</code>. With all switches off, output is production’s, bit for bit.</p>
-<p>Not yet decided: the operating threshold F per chamber (a real-trigger rescan, condor cluster {LADDER_CLUSTER}, is running), and whether to ship to the production re-pass.</p>''',
+<p><b>How the note runs:</b> where it started and how the work unfolded (slides 2–4); the problem and the first truth bench (5–7); the limit ladder: toy, synthetic planes, real overlays (8–12); the fixed chain, its progression, the contract and the operating threshold (13–16); x/y pairing; the relative angle of the pairs; then the single-track thread (in-situ bundle, seeder, beam angle scale) and what has to ride the one re-pass.</p>
+<p>Decided: the operating threshold, A F = 1200 and C F = 2400 (real-trigger rescan, condor cluster {LADDER_CLUSTER}). Explained (7 Oct pm): the beam/cosmic angle-scale gap is electron scattering between the gap and the wall (Geant4), so the cosmic in-situ scale is the angle truth. Not decided: shipping, which now waits on the new bundles and on adopting that scale for beam.</p>''',
             dark=True, short='Answer')
 
 
@@ -349,7 +354,7 @@ def s_roc(D, F):
 <tr><td>A</td><td>fixed</td><td>1000</td><td>1.0 %</td><td>68 %</td></tr>
 <tr><td>C</td><td>production</td><td>300</td><td>1.7 %</td><td>46 %</td></tr>
 <tr><td>C</td><td>fixed</td><td>2400</td><td>1.2 %</td><td>58 %</td></tr></table>
-<p>The fixed chain at F = 0 splits 40–50 % of singles: it is the threshold, not the chain, that controls false splits. These are overlay donors; on real triggers the false-split rate is lower (slide “Contract”), which is why the rescan may allow a lower F.</p>''',
+<p>The fixed chain at F = 0 splits 40–50 % of singles: it is the threshold, not the chain, that controls false splits. These are overlay donors; on real triggers the false-split rate is lower (slide “Contract”), so a real-trigger rescan was run to see whether a lower F would do. It would not (slide “Operating point”).</p>''',
             foot='R3 · r3_roc.csv (r3_scan.parquet). Hover a point for its F.', short='Equal false-split rate')
 
 
@@ -370,9 +375,9 @@ def s_chain(D):
            dict(label='Scale from 2-track fit', sub='2nd track no longer dilutes fstat', color=GREEN,
                 tip='The fstat scale is taken from the two-track fit, so the second track’s charge no longer '
                     'dilutes the statistic.'),
-           dict(label='F matched', sub='A 1200 · C 2400 (rescan running)', color=PURPLE,
+           dict(label='F matched', sub='A 1200 · C 2400 (rescan confirms)', color=PURPLE,
                 tip='The lowest F whose false-split rate on real singles does not exceed production’s at 300. '
-                    'Bench runs use A 1200; the R3 scan picks A 1000.'),
+                    'Bench runs use A 1200; the R3 overlay scan picks A 1000; the real-trigger rescan confirms A 1200, C 2400.'),
            dict(label='+ profile pairing', sub='depth-profile term in the x/y cost', color=GREEN, tip=G['profc'])]
     lab = lambda t, c: f'<p style="font-size:28px;font-weight:600;color:{c};width:200px;align-self:center">{t}</p>'
     body = sd.title('The fixed chain: four opt-in switches and a pairing calibration',
@@ -391,62 +396,6 @@ def s_chain(D):
 <p>Worker options for a condor job (as in <code>make_two_track_package.py</code>): <code>TWO_TRACK_SCALE=two</code>, <code>TWO_TRACK_SEARCH=grid</code>, <code>TWO_TRACK_RESID_Z=-inf</code>, <code>TWO_TRACK_MAX_TRY=99</code>, <code>TWO_TRACK_SELECTED_ONLY=false</code>, <code>TWO_TRACK_F</code> and <code>TWO_TRACK_F_CORROB</code> = 0.4 F.</p>
 <p>Profile pairing needs bundles carrying <code>xy_pairing_{A,C}_profc.json</code> (constrained depth-profile term, calibrated on stat090_0001 so it is out of sample for the bench, stat090_0000). The first, unconstrained calibration was in-sample and is superseded.</p>''',
             short='The fixed chain')
-
-
-def bench_counts():
-    """bench_table() with the number of coincident pairs per band, for tooltips."""
-    from sept26_prelim_analysis import intra_bench as ib
-    import numpy as np
-    base, out = ib.out_dir(), []
-    for arm in R.ARMS:
-        for lab, tmpl in R.BENCH_VARIANTS:
-            d = base / tmpl.format(arm=arm)
-            if not (d / 'overlays.parquet').exists():
-                continue
-            M = pd.read_parquet(d / 'overlays.parquet')
-            C = pd.read_parquet(d / 'candidates.parquet')
-            Dn = pd.read_parquet(d / 'donors.parquet' if (d / 'donors.parquet').exists() else base / 'donors.parquet')
-            S = ib.score(M, C, Dn)
-            o = S[(S['mode'] == 'overlay') & (S.cls == 'coincident') & (S.arm == arm)]
-            ev = o.groupby('oid').agg(sx=('sep_x', 'first'), sy=('sep_y', 'first'), both=('track_found', 'all'))
-            sep = np.minimum(ev.sx, ev.sy)
-            for lo, hi, b in R.BENCH_BANDS:
-                m = (sep >= lo) & (sep < hi)
-                out.append(dict(arm=arm, variant=lab, band=b, eff=float(ev.both[m].mean()), n=int(m.sum()),
-                                k=int(ev.both[m].sum())))
-    return pd.DataFrame(out)
-
-
-def s_bench(D, BC):
-    cols = {'before': GREY, 'fixed': '#7fbf9c', 'fixed + profile pairing': GREEN}
-    panels = []
-    bands = [b for _l, _h, b in R.BENCH_BANDS]
-    for arm in ('A', 'C'):
-        P = sd.Plot(810, 560, x=(-0.5, 2.5), y=(0, 1), title=f'chamber {arm}',
-                    ylabel='pairs found and x/y-paired' if arm == 'A' else '', margin=(24, 30, 80, 104))
-        P.yticks(PCT_TICKS)
-        for i, b in enumerate(bands):
-            P.raw(sd.T(P.X(i), P.y0 + P.ph + 36, b.replace('&lt;', '<').replace('&ge;', '≥'), 23, INK))
-            for j, (v, c) in enumerate(cols.items()):
-                r = BC[(BC.arm == arm) & (BC.variant == v) & (BC.band == b)]
-                if not len(r):
-                    continue
-                r = r.iloc[0]
-                P.vbar((P.X(i) + (j - 1) * 64,), r.eff, 56, c, label=f'{100 * r.eff:.0f}',
-                       tip=f'{v}, {b.replace("&lt;", "<").replace("&ge;", "≥")}\n{r.k}/{r.n} coincident pairs '
-                           f'({100 * r.eff:.1f} %)')
-        panels.append(P.svg(f'bench {arm}'))
-    body = sd.title('At event level, close pairs in A triple; C gains most at 12–24 mm',
-                    f'Full {sd.term("overlay bench", G["overlay"])}, coincident pairs, both donors found <i>and</i> '
-                    'correctly x/y-paired. All seven file tags (condor cluster 4334051).')
-    body += sd.legend([('production (before)', GREY, 'box'), ('fixed chain', '#7fbf9c', 'box'),
-                       ('fixed + profile pairing', GREEN, 'box')]) + sd.row(*panels, gap=44)
-    D.slide('bench', body, '''
-<p>“Before” is the bench’s best production configuration (<code>pairing_rescue16_two_final_replace</code>: x/y pairing with the rescue floor). The fixed chain runs at its matched thresholds, A F = 1200, C F = 2400, corroborated at 0.4 F.</p>
-<p>At ≥ 24 mm the tracks do not overlap; what remains lost there is x/y pairing, which profile pairing helps in A (85 → 89 %) and leaves flat in C. Below 12 mm C is held back by its strict threshold: the overlay scan says C resolves 58 % at F = 2400, 69 % at 1200 and 70 % at 1000, which is what the real-trigger rescan is testing.</p>
-<p>Parallel, co-located tracks are degenerate at any Δt and stay lost; they must be carried as inefficiency.</p>''',
-            foot='intra_bench variants pairing_rescue16_two_final_replace, fixed_{A,C}_replace, fixed_{A,C}_replace_profc. '
-                 'Hover a bar for k/n.', short='Event-level bench')
 
 
 def s_contract(D, C):
@@ -499,7 +448,7 @@ def s_contract(D, C):
     D.slide('contract', body, '''
 <p>Real triggers are re-reconstructed with each chain and matched to the frozen full pass, on the <b>same triggers</b> for both chains, both with x/y re-pairing (which alone moves ~5 % of unsplit events against the frozen pass, which was reconstructed without it).</p>
 <p>The contract is clean single muons split ≤ 0.66 % (production’s own rate on C) and no event losing a track. The sample is small: 0.66 % of C’s 1 057 clean singles is 7 events, so neighbouring thresholds are not statistically distinct.</p>
-<p>C’s fixed chain at F = 2400 splits far fewer real events than production (207 vs 913) and recovers twice as many of production’s own tracks: inside the contract with room to spare. That room is what the F rescan measures. Real triggers have no truth: split-ab bounds the cost of a threshold, while the gain comes only from the overlay bench.</p>''',
+<p>C’s fixed chain at F = 2400 splits far fewer real events than production (207 vs 913) and recovers twice as many of production’s own tracks: inside the contract with room to spare. The F rescan measured that room: one step lower (F = 2000) already fails. Real triggers have no truth: split-ab bounds the cost of a threshold, while the gain comes only from the overlay bench.</p>''',
             foot='contract_fixed_vs_current.csv · condor cluster 4334051 · seven file tags of run_145 stat090_0000.',
             short='Contract')
 
@@ -594,12 +543,14 @@ def s_close(D):
         ('Parallel co-located tracks', 'Degenerate at any Δt. They stay lost and must be carried as inefficiency.'),
         ('The toy is one plane', 'Equal charges, tied t0, no second view: the x/y pairing loss is not in R1–R2.'),
         ('Donor truth is a fit', 'A donor whose single-track fit is wrong gives a wrong label, and its twin inherits it.'),
+        ('Near normal, and B, D', 'The oracle and bench sit at tan ≈ 0.3; capsule pairs near the axis are near normal. Chambers B and D are untested.'),
     ]
     rows_ = ''.join(f'<div style="display:flex;gap:28px;padding:16px 0;border-top:1px solid #333b4a">'
                     f'<p style="font-size:28px;font-weight:600;width:470px">{a}</p>'
                     f'<p style="font-size:24px;color:{DMUT};flex:1;line-height:1.35">{b}</p></div>' for a, b in items)
-    dec = [('Operating F per chamber', 'From the rescan: the lowest F meeting the contract. A threshold choice, not a measurement.'),
-           ('Ship or not', 'Bundles with profc pairing, the fixed-chain switches and F in the condor environment, the rescue floor, and a full re-pass.'),
+    dec = [('Next, in order', 'Cosmic wall test (beam vs cosmic scale) · T2 bundles · T1 bench and F ladder on them · one combined split-ab with seeder 3 · re-pass.'),
+           ('Ship or not', 'Bundles with profc pairing, the fixed-chain switches and F, seeder 3 and the rescue floor in the condor environment, then one re-pass.'),
+           ('Worth trying', 'A relative-tan dimension in the grid search (diverging pairs at 3–12 mm: 76 % vs ~97 % ideal); a near-normal oracle case; cosmic donors with true angles.'),
            ('Flagged, outside this task', 'q_sum &gt; 10⁶ on 12–33 % of stage-3 tracks from unconstrained depth bins: their charge-derived quantities are meaningless.')]
     drows = ''.join(f'<div style="display:flex;flex-direction:column;gap:6px;padding:16px 0;border-top:1px solid #333b4a">'
                     f'<p style="font-size:28px;font-weight:600;color:{DBLUE}">{a}</p>'
@@ -610,7 +561,8 @@ def s_close(D):
             f'<div style="flex:1;display:flex;flex-direction:column;gap:8px">'
             f'<h2 style="font-size:52px;font-weight:600">Decisions</h2>{drows}</div></div>')
     D.slide('close', body, '''
-<p>Handoff: <code>sept26_prelim_analysis/TWO_TRACK_LIMIT_RESUME.md</code>. Full record: <code>TWO_TRACK_FIT_LOG.md</code> (2026-09-29 → 2026-10-01). Long-form report with every table: <code>~/x17/sept26_prelim/two_track_limit/report/report.html</code>.</p>
+<p>The operating F is decided (A 1200, C 2400): one step lower fails the contract in both chambers. It was set on the v = 42.6 bundles and has to be re-derived once the in-situ bundles exist.</p>
+<p>Handoffs: <code>sept26_prelim_analysis/SAME_CHAMBER_PAIRS.md</code> (the map, both branches), <code>TWO_TRACK_LIMIT_RESUME.md</code> (T1), <code>ntof_cosmics/HANDOFF_TRACKING_2026-10-06.md</code> §7–10 (T2). Full T1 record: <code>TWO_TRACK_FIT_LOG.md</code>. Long-form report with every table: <code>~/x17/sept26_prelim/two_track_limit/report/report.html</code>.</p>
 <p>Dropped, with reasons in the log: a fractional model error ε (no gain at a fixed false-split rate) and a looser 1.2 mm guard (it blocks 42 % of false splits on real singles).</p>''',
             dark=True, short='Caveats & decisions')
 
@@ -619,31 +571,43 @@ def s_close(D):
 def build(out: Path) -> Path:
     F = figdir()
     L = R.load()
-    BC = bench_counts()
-    B = BC.pivot_table(index=['arm', 'variant'], columns='band', values='eff').reset_index()
+    from sept26_prelim_analysis import make_same_chamber_slides as SC
     from sept26_prelim_analysis import intra_bench as ib
+    PG = SC.progression()
     C = pd.read_csv(ib.out_dir() / 'contract_fixed_vs_current.csv')
     C = C[C.tag == 'all']
     D = sd.Deck('Two-Track Limit',
                 'Two tracks in one micro-TPC plane: the physical limit, the real-track limit, production, '
-                'and an opt-in chain that passes the real-trigger contract (run_145, chambers A and C).')
-    s_cover(D, B, C)
+                'an opt-in chain that passes the real-trigger contract, and the single-track recalibration under it.')
+    s_cover(D, PG, C)
+    SC.s_origin(D)
+    SC.s_timeline(D)
+    SC.s_pipeline(D)
     s_problem(D)
+    SC.s_decomp(D)
+    SC.s_noise(D, PG)
     s_r1(D, F)
     s_synth(D, F)
     s_null(D, F)
     s_real(D, F)
     s_roc(D, F)
     s_chain(D)
-    s_bench(D, BC)
+    SC.s_progress(D, PG)
     s_contract(D, C)
     s_operating(D, L)
+    SC.s_pairing(D)
     from sept26_prelim_analysis import make_pair_angle_slides as PS
     PS.add_slides(D)
+    SC.s_threads(D)
+    SC.s_insitu(D)
+    SC.s_seeder(D)
+    SC.s_beamscale(D)
+    SC.s_join(D)
     s_close(D)
     meta = dict(title='Two tracks in one plane: the real limit, and how close we get',
-                summary='Physical limit ~1 strip pitch, real-track limit 2–3 mm; an opt-in fixed chain triples A’s '
-                        'close-pair efficiency and passes the real-trigger contract. F rescan pending.',
+                summary='Physical limit ~1 strip pitch, real-track limit 2–3 mm; an opt-in chain takes close pairs from '
+                        '0 to ~50 % and passes the real-trigger contract at F = 1200 / 2400. The single-track '
+                        'seeder, drift velocity and angle scale under it are being recalibrated on cosmics.',
                 tags='X17,reconstruction,two-track', date=dt.date.today().isoformat())
     return D.write(out, meta, footer=f'Built {dt.datetime.now():%Y-%m-%d %H:%M} by '
                                      'nTof_x17/sept26_prelim_analysis/make_two_track_deck.py with slidedoc.py.')
