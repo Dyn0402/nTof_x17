@@ -1175,8 +1175,76 @@ It does not test model-vs-chamber mismatch; that part is calibrated on cosmics.
   equally. Something y-specific is much larger in data: the y kernel/scale on electrons, the y source
   extent, or the y lever window running into the active edge (data x0 is 33 / 44 mm). This has not been
   checked yet.
-- Script snippets (not yet in the package): the time / pointing splits and the y band were run ad hoc
-  with `compare_data.stats` and `TI._robust_line`. They should be folded into `compare_data.py` if kept.
+- **The band is a source-distribution estimator as much as a scale one.** In the sim, with the TRUE
+  source position at the capsule plane held fixed (any quartile), the band is 1.00 ± 0.02 (x) and
+  0.96–1.05 (y): the reco is right. It rises steadily with source width: A x 1.005 (3 mm rms) → 1.068
+  (26 mm) → 1.09 (all, long tails). The 1.07–1.14 of the full sim sample is the spread of the source
+  times the acceptance. So the data/sim residual can be a source mismatch as well as a scale one.
+  Against a simply broader source in x: the data's x miss distribution has fewer tails than the sim's
+  (> 50 mm: A 0.12 vs 0.17).
+- **The charge dependence is flat.** The data/sim ratio is constant across charge quintiles in x and y,
+  so charge-dependent sharing does not drive it.
+- **Production-bundle reruns** (cluster 4405795, `g4_{A,C}_fp145_full`). is2 physics is reconstructed
+  with the production run_145 bundles (`calib_bundle_prelim`, v 42.6; C on det6 `lp`). This uses the
+  new `--sim-bundle`.
+  - Sim reproduces production roughly: band A 1.264 vs data 1.287; C 1.604 vs 1.770.
+  - data/sim is A 1.018 (is2: 1.036), C 1.103 (is2: 1.097).
+  - **C's ~10 % is the same under two different kernels (r06-det7 and lp)**, so it is not the
+    kernel or the fit model.
+- **The per-run gas drift is real, and in-beam muons confirm it** (`inbeam_through_goers.py`, which now
+  carries C's tans and the y view). Sep < 15 mm, 20–80 ms, median true/raw on production raw tans:
+
+  | | run_149 (beam off) | 79–98 | 100–124 | 128–147 | 150–162 |
+  |---|---|---|---|---|---|
+  | A x muons | 1.091 ± .005 | 1.04 ± .04 | 1.04 ± .02 | 1.06 ± .03 | 1.08 ± .03 |
+  | A y muons | 1.106 ± .004 | 1.00 ± .04 | 1.04 ± .02 | 1.07 ± .03 | 1.02 ± .03 |
+  | C x muons | 1.470 ± .007 | 1.27 ± .04 | 1.25 ± .03 | 1.41 ± .04 | 1.31 ± .04 |
+  | C y muons | 1.611 ± .007 | 1.40 ± .04 | 1.42 ± .03 | 1.58 ± .05 | 1.39 ± .04 |
+  | k_arm band A / C (median) | — | 1.26 / 1.59 | 1.26 / 1.63 | 1.29 / 1.73 | 1.26 / 1.59 |
+
+  - Production's k_arm band varies per run by A ±1.2 %, C ±3.8 %, D ±4.3 %, coherently. It peaks at
+    runs 135–147 and drops by run_150. C muons give 128–147 / 150–162 = 1.08 ± .05 (x); k_arm gives 1.09.
+    The capsule band tracks the scale *ratio* between runs, so the source distribution is stable run to run.
+  - **The muons do not support the band's residual.** The sep cut interacts with the mis-scaled
+    production tans (run_149 C x moves 1.44 → 1.53 from sep < 20 to < 4 mm), so only ratios at equal
+    cut mean anything. At sep ≤ 10 mm, runs 128–147 (run_145's period) read true/raw 3–5 % *below*
+    run_149 on A x and C x (± 3–8 %), and equal on C y. That is consistent with no environment shift
+    at ~± 4 %. If anything, is2 on beam makes tans slightly too large. The capsule band says too
+    small, by 3.6 % (A) and 10 % (C): about 2σ (A) and 3σ (C) against the muons. That points the
+    residual at the band's source and population modelling (hypotheses a/c), not at the scale. It is
+    not proven; it needs more in-beam muon statistics (pool all periods after the gas correction).
+  - Muon statistics per period are thin (n ≈ 50–250 at sep < 10).
+  - **Pooled, gas-normalised to run_145.** Each in-beam muon's raw tan is scaled by k_run / k_145
+    (k_arm band), then everything 20–80 ms is pooled. true/raw relative to run_149, i.e. what is2
+    reads on run_145 beam muons:
+
+    | | sep < 10 | sep < 6 |
+    |---|---|---|
+    | A x | 0.992 ± .016 | 0.991 ± .019 |
+    | A y | 0.959 ± .013 | 0.971 ± .020 |
+    | C x | 0.957 ± .018 | 0.945 ± .024 |
+    | C y | 0.967 ± .016 | 0.964 ± .026 |
+
+    So is2 reads beam-period muons right to 1–4 % (tans slightly too large, if anything). The capsule
+    band's data/sim residual claims the opposite sign: +3.6 % (A), +10 % (C). That is ~3σ (A x) and
+    ~7σ (C x) away. **The band residual is not an angle-scale error.** It belongs to the source and
+    population model that the band depends on.
+- **y stays open.** With the same cuts, the y residual is ~3× the x one. In-beam muons read y like
+  x within errors, so it is beam-particle or source specific, and only in y. The sim's source is
+  already wider in v (80 mm, 10–90 %) than in u (53 mm), so v is probably the capsule's long axis.
+  An under-modelled source along that axis would hit y hardest.
+- Code: `residual_checks.py` (time / miss / yview / charge / source; output
+  `residual_checks.txt`), `compare_data.py --data prod`, `run_digi.py --sim-bundle`.
+
+**Consequence for adopting is2 (§11 step 1):**
+- The scale truth for beam should be the **in-beam muons** (A–C line), not the capsule band. The band
+  needs a source model that the residual shows we do not have to better than ~10 %.
+- A per-run (or per-period) correction is needed. The gas moves C's scale by up to ±7 % across the
+  campaign. The relative per-run k_arm band (k_run / k_ref) tracks it, as the muons confirm.
+- Proposed calibration (Dylan's decision): is2 bundles × per-run relative factor (k_arm band ratio to
+  a reference run) × the pooled in-beam-muon normalisation (A x 0.99, A y 0.96–0.97, C x 0.95–0.96,
+  C y 0.97; ± 1.5–2.5 %). The muons are muons, so for electrons this assumes the reco does not tell
+  them apart. §13 Result 1 tested that against the ideal line (1–2 %).
 
 **lxplus (2026-10-07):** the single-gun jobs had filled the AFS quota. Their ROOT files were left in
 condor scratch and copied back, and 19 jobs went on hold. The ROOT files are now on EOS
