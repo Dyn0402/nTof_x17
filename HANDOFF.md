@@ -131,7 +131,7 @@ finished; outputs on EOS `full_sim/angle_scale/` and local `/media/dylan/data/x1
    - a Geant4 flash run (> 13.6 MeV neutrons, RadioactiveDecay kept to 100 ms) to bound ¹²B;
    - the in-beam muon and cosmic wall tests on C and D;
    - the 10–20 ms dip.
-6. X17 board: no entry yet for 2026-10-07 pm results (`x17-board` skill).
+6. ~~X17 board~~ done (log entry 2026-10-07). The two-track note (T1 worktree) now carries the T2 slides with the gap explained, and `SAME_CHAMBER_PAIRS.md` is updated on both branches.
 
 **Gotchas / decisions:**
 - **Never quote the wall scale (0.89/0.92) or capsule k_arm as the beam angle truth.** Both are set
