@@ -70,10 +70,12 @@ from ntof_dream_merge.dream_trigger import (load_thresholds,  # noqa: E402
 
 RUNS = Path('/media/dylan/data/x17/beam_july/runs')
 NTOF = Path('/media/dylan/data/x17/beam_july/ntof_data')
+DREAM_TS = Path('/media/dylan/data/x17/beam_july/dream_ts')
 OUT = HERE / 'results' / 'clock_match'
 
 TICK_NS = 10            # DREAM timestamp granularity
 SEARCH_S = 60.0         # +- around the log-anchored guess
+SPAN_PAD_S = 15.0       # straddling sub-runs: DREAM kept within this of the n_TOF run
 
 
 # --------------------------------------------------------------------------- #
@@ -98,7 +100,17 @@ def dream_triggers(run: str, subrun: str, feu: str = '01') -> dict:
     files = sorted(glob.glob(str(RUNS / run / subrun / 'decoded_root'
                                  / f'*_{feu}.root')))
     if not files:
-        raise FileNotFoundError(f'no decoded FEU {feu} for {run}/{subrun}')
+        # timestamps-only extract made on lxplus (scratchpad dream_ts.py:
+        # eventId + timestamp of every FEU-01 entry), so the 330 MB decoded
+        # files need not be pulled just for the clock
+        z = DREAM_TS / run / f'ts_{subrun}.npz'
+        if not z.exists():
+            raise FileNotFoundError(f'no decoded FEU {feu} or {z} for {run}/{subrun}')
+        a = np.load(z)
+        eid = a['eventId'].astype(np.int64)
+        t_ns = a['timestamp'].astype(np.int64) * TICK_NS
+        o = np.argsort(t_ns, kind='stable')
+        return dict(eventId=eid[o], t_ns=t_ns[o])
     eid, ts = [], []
     for f in files:
         a = uproot.open(f)['nt'].arrays(['eventId', 'timestamp'], library='np')
@@ -397,6 +409,16 @@ def main() -> None:
           f'{cand["t"].size} singles; PSS shift '
           f'{ {k: round(v, 1) for k, v in pss_shift.items()} } ns')
 
+    # a sub-run can straddle two n_TOF runs (cos_0001: 224678 then 224679):
+    # keep only the DREAM triggers that can fall inside THIS run's bunches
+    # (S, the log -> n_TOF offset, is 6-11 s), so the coarse slice is not
+    # taken from the part the other n_TOF run recorded
+    span = (td > psb.min() - SPAN_PAD_S * 1e9) & (td < psb.max() + SPAN_PAD_S * 1e9)
+    if not span.all():
+        print(f'           {span.sum()} of {td.size} DREAM triggers inside this '
+              f'n_TOF run\'s span (+-{SPAN_PAD_S:g} s)')
+        td = td[span]
+        dr = {k: v[span] for k, v in dr.items()}
     c1 = coarse(td, t_n, a.slice_s)
     print(f"1 coarse   S = {c1['S_ns'] / 1e9:+.7f} s  (1 ms peak "
           f"{c1['steps'][0]['peak']} over median {c1['steps'][0]['median_bin']:.0f})")

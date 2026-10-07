@@ -267,9 +267,9 @@ It ran at ~1 sub-run per minute (87 in ~90 min), 0 failures.
   a modified `sept26_prelim_analysis/paths.py`, and untracked
   `ntof_scint_stack/` files — **none of them from this work.** Commit with a
   pathspec: `git commit -- ntof_cosmics`, never a bare `git commit -a`.
-- **No writes to `/media/dylan/data`** (`~/x17` is a symlink to it; every
-  `paths.out` default resolves there). `cosmic_tracks.py` refuses any output
-  path under `/media`; new scripts must do the same (reuse `CT._guard`).
+- ~~No writes to `/media/dylan/data`~~ — **lifted by Dylan 2026-10-07**: the data
+  disk may be used (check free space first; it was 69 GB free). The `_guard`
+  helpers are now no-ops.
 - **The noise-floor and chamber-A-connector conditions do not touch these
   runs** (beam-off, run_149 is August); but if you ever compare against beam
   runs 69–79, read "Two n_TOF conditions" in CLAUDE.md first.
@@ -768,3 +768,62 @@ Possible explanations, with what has been tried:
      `slim_export` (it reads the n_TOF processing's slim ROOT).
   4. Electron scattering in Geant4 (`MX17_Full_Geant`): σ(tan) between the gap
      and the wall for the beam's electron spectrum.
+
+### 10d · The cosmic wall test: the beam/cosmic gap is REAL (2026-10-07 afternoon)
+
+The decisive test of §10c item 3 is done. Code: `ntof_cosmics/cosmic_wall_scale.py`
+(build / ana / report). Output and `report.html`:
+`/media/dylan/data/x17/ntof_cosmics/cosmic_wall_scale/` (the data disk is now allowed, see §4).
+
+**Plumbing**
+- `clock_match.py` now runs on every run_149 sub-run that n_TOF recorded: cos_0000–0034 ×
+  n_TOF 224678–224687, 41 pairs, 88–99 % matched, core residual 9–18 ns.
+  - Two changes. DREAM timestamps fall back to a timestamps-only extract
+    (`/media/dylan/data/x17/beam_july/dream_ts/run_149/ts_<sub>.npz`, made on lxplus with LCG_106
+    uproot), so the 330 MB decoded files are not needed.
+  - Sub-runs that straddle two n_TOF runs keep only the DREAM triggers within `SPAN_PAD_S` = 15 s
+    of that run's bunches. cos_0000 reproduces exactly.
+- n_TOF partials for 224679–687 are in `beam_july/ntof_data/`.
+- A's wall channels are read in ±50 ns around the matched singles time, on triggers from ANY arm.
+  The WALA dt peak is within 2 ns of 0 for A-, B-, C- and D-triggered events, so raw tof is
+  effectively on a common zero for these trees.
+- Yield: n_TOF records only ~16 % of the time, so 4 886 A tracks; 3 088 single x-plane tracks.
+  Only 17 have A–C truth, too few for a truth-scale wall fit.
+
+**Estimator.** The u-binned median test (`wall_edge_scale`) needs a pointing source, so it is
+useless on cosmics. The edge likelihood `ntof_scint_stack.ana.fit_wall_u` (s in u + L·s·tan, set
+by edge sharpness) is the right tool for cosmics. **It is NOT valid on beam**: there tan ≈ (u−u_c)/D,
+so s is degenerate with the per-boundary offsets. It returns 0.52 at > 20 ms where the u-binned
+test gives 0.92. Do not quote fit_wall_u numbers for beam.
+
+**Result (arm A, L = 97.4 mm)**
+
+| sample | estimator | true / raw |
+|---|---|---|
+| cosmics, x-plane single tracks (3 088) | edge likelihood, profile minimum | **1.15** (ΔNLL to 0.89 = 85) |
+| same | sub-run bootstrap | 1.15 (68 % 1.12–1.19) |
+| cosmics, beam `gated` selection (1 358) | edge likelihood | 1.13 ± 0.03 |
+| cosmics, by \|tan\| 0–0.15 / 0.15–0.3 / 0.3–0.6 | edge likelihood | 0.96 ± 0.11 / 1.09 ± 0.02 / 1.18 ± 0.03 |
+| cosmics | A–C line (§7) | 1.11 |
+| beam, campaign | u-binned | 0.89 |
+| beam, 10–15 / 15–20 / 20–30 / 30–45 / 45–80 ms after flash | u-binned | 0.77 / 0.87 / 0.91 / 0.93 / 0.92 |
+
+**Verdict.** On cosmics, A's wall agrees with the A–C line (1.15 vs 1.11), so the wall survey,
+the lever arms and the A–C truth are mutually consistent. **The beam reads steeper than cosmics,
+for real:** about 20 % on the late-time plateau, more at 10–20 ms.
+
+New observation: the beam scale has a **flash transient** (0.77 → 0.92 between 10 and 20 ms,
+flat after). The scint-stack/wall_edge_scale campaign average (0.89) mixes it in.
+
+**What is left as the cause (beam-specific, in the chamber):**
+1. **Beam-on coherent noise.** The §9 noise injection used run_149 (beam-OFF) noise blocks. Beam CM
+   wander is 10–20× beam-off (ZS study). Rerun `~/scratch/ntof_insitu/noise_inject.py` with the
+   noise bank built from a run_145 sub-run (signal-free windows), against bench M3 truth. It is cheap
+   and decisive for this candidate.
+2. **The particle.** Low-energy electrons vs muons: a Geant4 forward-model test (MX17_Full_Geant).
+3. **The 10–20 ms transient.** Flash space charge or baseline recovery. Split the beam scale by
+   time on C and D too (`beam_reference()` covers A only).
+
+Caveat: the cosmic scale rises with |tan|, and beam large-|tan| tracks sit at large |u|, so the two
+samples weight angle and position differently. The plateau gap (0.92 vs 1.09 at |tan| 0.15–0.3, the
+range of the beam boundary tans) is about 15 %, not 25 %.

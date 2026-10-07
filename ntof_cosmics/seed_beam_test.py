@@ -18,8 +18,7 @@ k_arm, so a min-3 track is gated exactly as a production track would be.
     python ntof_cosmics/seed_beam_test.py compare --min 3
     python ntof_cosmics/seed_beam_test.py scint --min 3 --arms A C D
 
-Outputs go under ``--work`` (default ~/scratch/ntof_insitu/beamseed); nothing
-is written to /media/dylan/data.
+Outputs go under ``--work`` (default ~/scratch/ntof_insitu/beamseed).
 """
 from __future__ import annotations
 
@@ -44,10 +43,7 @@ ARMS = ('A', 'B', 'C', 'D')
 
 
 def _guard(p) -> Path:
-    p = Path(p).expanduser().resolve()
-    if str(p).startswith('/media/dylan/data'):
-        raise SystemExit(f'refusing to write under /media/dylan/data: {p}')
-    return p
+    return Path(p).expanduser().resolve()
 
 
 def prod_dir(run, sub, arm) -> Path:

@@ -34,7 +34,7 @@ foot)/234.6, x view only (the capsule is 80 mm long in y).  Two tests:
     (gradient) and track (median ratio) estimators.  If the cosmic response is
     the beam's response, both come out at 1 and agree with each other.
 
-Nothing is written outside ``results/tracking/pooled/`` (`CT._guard`).
+Nothing is written outside ``results/tracking/pooled/``.
 
     python ntof_cosmics/angle_response.py            # build sample + all tables
     python ntof_cosmics/angle_response.py --no-beam  # cosmics only

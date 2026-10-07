@@ -20,7 +20,7 @@ chamber's own fitted p0 is the reference mesh position (positions do not depend
 on v or k).  The local sign convention is the reconstruction's own: chosen so
 that the fitted tan correlates positively with the truth, per arm and plane.
 
-STEPS (each writes under --work, a scratch dir off /media):
+STEPS (each writes under --work):
 
   truth    clean A-C events of the fetched sub-runs -> truth.parquet
   cache    waveform windows along each truth corridor, per arm, in the format
@@ -66,10 +66,7 @@ PROD_BUNDLE = CT.OUT / 'reco' / RUN / 'cosbounce_cos_0000' / 'mx17_{arm}' / 'cal
 
 
 def _guard(p) -> Path:
-    p = Path(p)
-    if str(p.resolve()).startswith('/media/'):
-        sys.exit(f'FATAL: {p} is on /media')
-    return p
+    return Path(p)
 
 
 # --------------------------------------------------------------------------- #

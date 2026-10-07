@@ -22,6 +22,7 @@ the timing direction, and the beam-off runs have never been read.
 | `insitu_calib.py` | in-situ calibration harness against the A–C line (truth / cache / profile / hyper / reco / score / t0meas / mkbundle / corridor / joint / implied); work dir `~/scratch/ntof_insitu` — `HANDOFF_TRACKING_2026-10-06.md` §8–9 |
 | `seed_test.py` | beam seeder minimum 5 vs 3 on run_149 cosmics, scored against the A–C line (§9) |
 | `seed_beam_test.py` | the same seeder change on a **beam** sub-run (run_145): reproduces the full pass, then lost / gained / junk / near-normal yield (§10) |
+| `cosmic_wall_scale.py` | the SiPM-wall angle scale on run_149 cosmics (clock-matched to n_TOF 224678–687) against the beam's: build / ana / report → `/media/dylan/data/x17/ntof_cosmics/cosmic_wall_scale/report.html`; cosmics 1.15, beam 0.89–0.92, gap real (`HANDOFF_TRACKING_2026-10-06.md` §10d) |
 
 **Same-chamber pairs:** this package's tracking work (single-track angle truth, head-on) is one of
 two threads toward reconstructing two tracks in one chamber; the other is the two-track separation work

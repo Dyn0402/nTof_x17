@@ -52,10 +52,7 @@ MATCH_NS = 50.0
 
 
 def _guard(p: Path) -> Path:
-    """Refuse the data disk: it is shared with other large writes."""
-    if str(p.resolve()).startswith('/media/'):
-        sys.exit(f'FATAL: {p} resolves onto /media -- this package writes '
-                 'only under ntof_cosmics/results or an explicit scratch dir')
+    """Output-path hook (the data disk is allowed since 2026-10-07)."""
     return p
 
 
@@ -295,7 +292,7 @@ def main() -> int:
     a = ap.parse_args()
     if a.step == 'fetch':
         if a.tarballs is None:
-            sys.exit('--tarballs is required (a scratch dir off /media)')
+            sys.exit('--tarballs is required')
         return 0 if fetch(a.run, a.subrun, a.tarballs) else 1
     for k in a.k_from.split(','):
         if a.step == 'build':
