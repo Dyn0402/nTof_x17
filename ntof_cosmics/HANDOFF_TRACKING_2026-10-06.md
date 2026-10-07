@@ -1117,17 +1117,19 @@ It does not test model-vs-chamber mismatch; that part is calibrated on cosmics.
 | C G4 beam electrons | 0.99–1.00 | 0.98–0.99 | 0.97 |
 
 **Result 2: like-for-like capsule view** (`compare_data.py`: k_arm's selection, *reco* q_sum window
-25–75 %, reco position, lever 30–130 mm; bootstrap errors). These are the 24-file sample numbers; the
-100-file reruns `g4_*_is2_full` are running on condor (cluster 4404719; output on EOS `full_sim/angle_scale/digi/`).
+25–75 %, reco position, lever 30–130 mm; bootstrap errors). Full statistics: the 100-file reruns
+`g4_{A,C}_is2_full` (condor cluster 4404719, 2026-10-08; ~4800 tracks per arm, 4× the 24-file sample).
 
 | | band | track | r 0.1–0.2 | r 0.2–0.3 | r 0.3–0.4 | r 0.4–0.55 |
 |---|---|---|---|---|---|---|
-| A G4 ideal line | 1.090 ± .015 | 1.004 | 1.02 | 0.98 | 0.93 | 0.87 |
-| A G4 → reco | 1.141 ± .016 | 1.030 | 0.98 | 0.94 | 0.89 | 0.84 |
+| A G4 ideal line | 1.108 ± .007 | 1.014 | 0.96 | 0.94 | 0.92 | 0.90 |
+| A G4 → reco | 1.153 ± .007 | 1.038 | 0.94 | 0.91 | 0.89 | 0.84 |
 | A data is2 | 1.194 ± .009 | 1.143 | 0.94 | 0.86 | 0.81 | 0.75 |
-| C G4 ideal line | 1.038 ± .012 | 0.974 | 1.00 | 1.00 | 0.98 | 0.95 |
-| C G4 → reco | 1.057 ± .013 | 0.974 | 1.00 | 1.01 | 0.95 | 0.92 |
-| C data is2 | 1.187 ± .011 | 1.088 | 1.00 | 0.90 | 0.86 | 0.78 |
+| C G4 ideal line | 1.069 ± .007 | 0.997 | 0.99 | 0.99 | 0.97 | 0.92 |
+| C G4 → reco | 1.082 ± .007 | 0.988 | 0.99 | 0.99 | 0.95 | 0.90 |
+| C data is2 | 1.187 ± .010 | 1.088 | 1.00 | 0.90 | 0.86 | 0.78 |
+
+(24-file numbers, superseded: A reco band 1.141 ± .016, C 1.057 ± .013; the shifts are within 1–2σ.)
 
 **Reading:**
 - §12's "the reco compresses beam electrons 20–27 %" is wrong.
@@ -1137,7 +1139,8 @@ It does not test model-vs-chamber mismatch; that part is calibrated on cosmics.
     same selection falls to 0.87 on A.
 - **A significant residual remains.** In the data the capsule estimators read 5–13 % higher (band A
   +0.05, C +0.13) and the response 8–12 % lower at |tan| > 0.2 than the full simulation, on both arms.
-  That is 3–6σ statistical.
+  At full statistics the band residual is A +0.041 (3.6σ), C +0.105 (7.7σ); response at |tan| 0.2–0.55
+  is 5–10 % lower in data on both arms (3–7σ per bin).
 - Not in the simulation:
   - (a) a population that doesn't point at the capsule: hall die-away captures in the arms' structure,
     §10f; data capsule k is flat 10 → 60 ms, which weighs against it unless the early window is
@@ -1154,6 +1157,26 @@ It does not test model-vs-chamber mismatch; that part is calibrated on cosmics.
   - the data split by early/late on run_145 with is2;
   - prod-bundle (v 42.6) reruns, to check that the simulation reproduces production's k_arm 1.27/1.62;
   - a non-quiet overlay (busy triggers) as a systematic.
+
+**Chasing the residual (2026-10-08, full statistics; data is2 run_145 vs `g4_*_is2_full`):**
+- **Time since flash: no trend.** The data band is 15–30 ms A 1.16 / C 1.19, 30–60 ms 1.19 / 1.16,
+  > 60 ms 1.17 / 1.10. Below 15 ms it is noisy (± 0.1–0.3). A late die-away population does not explain it.
+- **No excess non-pointing population.** The x miss at the capsule plane, `lever − D·tan_raw`, is
+  *narrower* in data than in the sim: median |miss| A 15 vs 17 mm, C 16 vs 16; fraction > 50 mm A 0.10 vs
+  0.15, C 0.11 vs 0.15. Hypothesis (a) is disfavoured.
+- **The residual survives in the pointing core.** With |miss| < 40 mm on both sides, the band is A 1.134
+  data vs 1.069 sim reco, and C 1.118 vs 1.032. That is the same +6–9 % as with no cut. It is a scale on
+  tan-vs-lever: either the angle scale is wrong for electrons (b), or D is wrong (c). The two are
+  degenerate in one view. Both arms move the same way, so a displaced capsule (opposite signs on A and C)
+  is disfavoured. A chamber stand-off common to both arms (~15–20 mm on D = 234.6) is not.
+- **The y view does not share it.** I fitted the band with its own zero crossing, so no y foot is needed.
+  Data y band A 1.44 ± .03, C 1.74 ± .08. Sim reco y: A 1.14, C 1.06; sim ideal y: A 1.12, C 1.09. The y
+  residual is 3–7× the x one. That argues against a pure common-D error, which would hit both views
+  equally. Something y-specific is much larger in data: the y kernel/scale on electrons, the y source
+  extent, or the y lever window running into the active edge (data x0 is 33 / 44 mm). This has not been
+  checked yet.
+- Script snippets (not yet in the package): the time / pointing splits and the y band were run ad hoc
+  with `compare_data.stats` and `TI._robust_line`. They should be folded into `compare_data.py` if kept.
 
 **lxplus (2026-10-07):** the single-gun jobs had filled the AFS quota. Their ROOT files were left in
 condor scratch and copied back, and 19 jobs went on hold. The ROOT files are now on EOS
