@@ -827,3 +827,60 @@ flat after). The scint-stack/wall_edge_scale campaign average (0.89) mixes it in
 Caveat: the cosmic scale rises with |tan|, and beam large-|tan| tracks sit at large |u|, so the two
 samples weight angle and position differently. The plateau gap (0.92 vs 1.09 at |tan| 0.15–0.3, the
 range of the beam boundary tans) is about 15 %, not 25 %.
+
+### 10e · Is it gain / the beam environment? No — muons under beam read like muons (2026-10-07 evening)
+
+Dylan's question: the chambers recover gain after the flash, so is the scale a function of gain?
+Three tests, all chamber A.
+
+**1. Charge.** The q_per_len medians (gated A tracks):
+
+| population | median q_per_len |
+|---|---|
+| run_149 cosmics, all gated | 221–245 |
+| run_149 A–C through-goers | 165–177 |
+| muons in beam runs (A–C through-goers, 20–80 ms) | 115–121 |
+| beam particles at the wall, 20–80 ms | 98 |
+| beam particles at the wall, 10–12.5 ms | 106 |
+
+- So the gain IS lower under beam: the same muon selection loses about 34 %.
+- But it does not recover between 10 and 80 ms. Muon q is flat at 115–121. Beam-particle q falls
+  slightly (106 → 98), the wrong way for gain recovery.
+
+**2. Scale vs charge on beam.** u-binned wall scale in q_per_len quintiles:
+- 20–80 ms: flat at 0.915–0.933 across a factor ~3 in q.
+- 10–20 ms: no monotonic trend.
+- Run by run (25 runs), corr(q, scale) = 0.4, over a q range of only 93–105.
+
+**3. The decisive one: cosmic muons crossing A and C DURING beam runs**
+(`ntof_cosmics/inbeam_through_goers.py` → `/media/dylan/data/x17/ntof_cosmics/inbeam_through_goers/`).
+- Selection: one gated track each in A and C, lines within `sep`, joined line > 60 mm from the axis.
+- Beam runs at 20–80 ms (0–10 ms is flash-correlated junk).
+- Estimator: median(A–C line tan / raw tan) over 0.1 < |raw| < 0.6.
+
+| sep cut | run_149 (beam off) | beam runs 20–80 ms | beam runs 40–80 ms | beam runs 10–20 ms |
+|---|---|---|---|---|
+| < 60 mm | 1.050 | 0.930 | 0.958 | 0.861 |
+| < 20 mm | 1.080 | 1.024 ± 0.010 | 1.035 ± 0.015 | 0.975 ± 0.017 |
+| < 10 mm | 1.102 | 1.061 ± 0.016 | 1.085 ± 0.018 | 1.011 ± 0.027 |
+
+The beam-run values climb toward run_149 as the cut tightens (accidental A–C coincidences dilute
+the loose cuts). At sep < 10 mm, muons under beam read **2–4 % below beam-off**, with 34 % less
+gain and the full beam-on noise. Beam particles read ~20 % below (0.92 vs 1.15 at the wall).
+
+**Verdict.**
+- Gain, beam-on noise and steady space charge do NOT drive the ~20 % beam gap. A small (≤ 5 %)
+  environment effect is allowed, and the 10–20 ms muons hint at one (~1.0).
+- The beam/cosmic difference belongs to the **beam particles**: their kind, energy, or where and
+  how they cross the chamber.
+- The planned beam-on noise injection is superseded: the in-beam muons already carry that noise.
+- The 0.77 → 0.92 transient in beam particles comes with D_eff 450 → 330 mm, so it looks like a
+  population change (neutron energy changes with time since the flash), not recovery.
+
+**Next:**
+1. Geant4 forward model of the beam electrons (MX17_Full_Geant): the true chamber-gap tan against
+   the reconstructed one, with the real material between gap and wall. Scattering inside the gap
+   for ~MeV electrons is the lead.
+2. Beam particles split by what they are: q_per_len tails, n_strips, chamber position (|u|
+   matched to the muons' range).
+3. Same in-beam muon test for C, where the beam/cosmic gap was 0.67–0.71.

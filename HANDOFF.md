@@ -67,7 +67,7 @@ proposed, but Dylan has not picked any yet.
 
 **Read first:** `sept26_prelim_analysis/SAME_CHAMBER_PAIRS.md` (both same-chamber threads, on both branches) and `ntof_cosmics/HANDOFF_TRACKING_2026-10-06.md` §10 (2026-10-07 night).
 
-**Resume (updated 2026-10-07 afternoon):** the cosmic wall test is done (§10d): cosmics at A's wall read 1.15 × raw, matching the A–C line (1.11); beam reads 0.89–0.92. **The beam/cosmic gap is real and beam-specific**, with a 10–20 ms flash transient on top. Next: beam-on noise injection, then Geant4 electrons.
+**Resume (updated 2026-10-07 afternoon):** the cosmic wall test is done (§10d): cosmics at A's wall read 1.15 × raw, matching the A–C line (1.11); beam reads 0.89–0.92. **The beam/cosmic gap is real and beam-specific**, with a 10–20 ms flash transient on top. Then (§10e): cosmic muons crossing A–C *during beam runs* read like beam-off muons (within 2–5 %) despite 34 % lower gain and beam noise ⇒ **not gain / environment — the beam particles themselves**. Next: Geant4 electrons; in-beam muon test on C.
 
 **Earlier resume (2026-10-07 morning):** the seeder min 3 passes on beam (+40–52 % confirmed tracks). In-situ A/C bundles close on cosmics and agree with each other on beam. The capsule-pointing k is refuted by the scintillator walls (D_eff ≈ 330 mm). **Open: beam reads 20–33 % shallower than cosmics in both chambers.** Next: the cosmic wall test (run_149 slim needed), Geant4 electrons, then T1 recalibration on the new bundles.
 
@@ -101,8 +101,7 @@ chambers A and C.
 
 **Next steps:**
 1. ~~Cosmic wall test~~ — DONE 2026-10-07 (`cosmic_wall_scale.py`, tracking handoff §10d): gap is real.
-   Next in its place: **beam-on noise injection** (noise_inject.py with a run_145 noise bank; the
-   §9 test used beam-off noise only).
+   Gain/noise then excluded by in-beam muons (§10e, `inbeam_through_goers.py`); noise injection superseded.
 2. Geant4 electron check of the beam angle scale (multiple scattering / low-energy electrons).
 3. Combined split-ab: seeder min 3 + T1 `xy_pairing`; then re-derive T1's F on the in-situ bundles.
 4. Optional: B at min 3 (needs an angle scale for B). Then the campaign re-pass (O4).
