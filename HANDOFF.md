@@ -63,7 +63,7 @@ proposed, but Dylan has not picked any yet.
   `python3 ~/PycharmProjects/dylan-cern-site/scripts/add-note.py <out>/qsum_runaway/deck/qsum-runaway.html --slug qsum-runaway --force --deploy`.
 - `<out>` = `/media/dylan/data/x17/sept26_prelim` (`python -m sept26_prelim_analysis.paths`).
 
-## Beam-off cosmics: angle response + in-situ reco — updated 2026-10-06 (dylan-MS-7C84)
+## Beam-off cosmics: angle response + in-situ reco — updated 2026-10-07 (dylan-MS-7C84)
 
 **Read first:** `sept26_prelim_analysis/SAME_CHAMBER_PAIRS.md` (both same-chamber threads, on both branches) and `ntof_cosmics/HANDOFF_TRACKING_2026-10-06.md` §10 (2026-10-07 night).
 
@@ -83,17 +83,27 @@ chambers A and C.
 - Ruled out with bench M3 truth: S/N ÷8, n_TOF 20-sample framing, real n_TOF noise. Also ruled out:
   the template, ZS, the fit window, the w-scan range, the t0 prior.
 
+- 2026-10-07: seeder min 3 checked on beam (run_145 stat090_0000, `seed_beam_test.py`, report
+  `ntof_cosmics/results/seed_beam/report.html`): scint-confirmed +45/52/40 % (A/C/D), nothing lost,
+  5–13 % x/y re-pairings in busy events. Opt-in `WFT_BEAM_MIN_STRIPS=3` (default stays 5).
+- In-situ bundles `is2_A` (v 38, robust kw via `insitu_calib.py kwmed`) closes on held-out cosmics;
+  `is2_C` (det7 r06 kernel, v 28.7) built. On beam, capsule k A 1.19/1.14, C 1.19/1.09 (were
+  1.29/1.24, 1.77/1.54) — chambers now agree (`~/scratch/ntof_insitu/kbeam_AC.txt`).
+- `wall_edge_scale.py`: SiPM-wall edges binned in u give true = 0.89 × raw for A, D_eff ≈ 330 mm,
+  so the capsule-pointing k_arm is refuted. Beam/cosmic 20–33 % gap ruled out as t0, drift length,
+  χ², charge. Record: tracking handoff §10.
+
 **In progress / where it stopped:**
-- Nothing running. Remaining non-linearity: A x is mildly S-shaped; chamber C (old det6 lp kernel) is
-  non-linear with 10–17 % core tails.
+- Nothing running, nothing half-done. Open question: why beam reads 20–33 % shallower than cosmics
+  in both A and C.
 
 **Next steps:**
-1. Seeder min 3 on a beam sub-run (run_145/147): gate pass rates, χ²/dof, junk and isochronous
-   deposits, near-normal capsule-track yield. The 5-strip minimum was chosen for beam junk.
-2. In-situ kernel for chamber C (start from r06; objective = free-fit closure vs truth, not the
-   ref-pinned χ²).
-3. Campaign re-pass (condor) with seeder 3, geometric v and new bundles. Then redo the beam/cosmic
-   comparison.
+1. Cosmic wall test: `clock_match` + `slim_export` for run_149, then `wall_edge_scale.py` on it —
+   decides whether the gap is beam-specific or a wall/geometry artefact. (Writes a slim under the
+   data area — check with Dylan first.)
+2. Geant4 electron check of the beam angle scale (multiple scattering / low-energy electrons).
+3. Combined split-ab: seeder min 3 + T1 `xy_pairing`; then re-derive T1's F on the in-situ bundles.
+4. Optional: B at min 3 (needs an angle scale for B). Then the campaign re-pass (O4).
 
 **Gotchas / decisions:**
 - Never use the ref-pinned fitted v (χ²(v) valley, ANALYSIS_STATE S8); take v from free fits against truth.
