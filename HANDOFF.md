@@ -65,62 +65,103 @@ proposed, but Dylan has not picked any yet.
 
 ## Beam-off cosmics: angle response + in-situ reco — updated 2026-10-07 (dylan-MS-7C84)
 
-**Read first:** `sept26_prelim_analysis/SAME_CHAMBER_PAIRS.md` (both same-chamber threads, on both branches) and `ntof_cosmics/HANDOFF_TRACKING_2026-10-06.md` §10 (2026-10-07 night).
+**Resume:** beam/cosmic angle gap SOLVED (electron scattering, Geant4). Next: adopt the cosmic in-situ scale, then T1 + seeder min 3.
 
-**Resume (updated 2026-10-07 afternoon):** the cosmic wall test is done (§10d): cosmics at A's wall read 1.15 × raw, matching the A–C line (1.11); beam reads 0.89–0.92. **The beam/cosmic gap is real and beam-specific**, with a 10–20 ms flash transient on top. Then (§10e): cosmic muons crossing A–C *during beam runs* read like beam-off muons (within 2–5 %) despite 34 % lower gain and beam noise ⇒ **not gain / environment — the beam particles themselves**. Then (§10f–g): A–C cosmic rate matches the muon flux (ε≈0.6/chamber); activation ≥ minutes negligible; late triggers follow a 23.5 ms exponential (hall neutron die-away, not ¹²B); **Geant4 with an ideal reconstruction puts the wall estimator at 0.59 for the beam-capture electrons (0.92 above 4 MeV, 1.00 for muons) ⇒ the beam/cosmic gap is electron scattering, not reco; the cosmic 1.11 scale stands.** Next: X17 opening-angle compression check; optional wft-digitised forward model.
+**Read first:**
+- `ntof_cosmics/HANDOFF_TRACKING_2026-10-06.md` §10d–10g (record, numbers) and §11 (next steps in detail).
+- `sept26_prelim_analysis/SAME_CHAMBER_PAIRS.md` (how this thread feeds same-chamber pairs).
+- Slide note: https://dylan-neff.web.cern.ch/notes/beam-off-cosmics.html. Section 2 (slides 12–22) is
+  2026-10-07, built by `ntof_cosmics/make_deck.py` + `deck_angle.py`.
 
-**Earlier resume (2026-10-07 morning):** the seeder min 3 passes on beam (+40–52 % confirmed tracks). In-situ A/C bundles close on cosmics and agree with each other on beam. The capsule-pointing k is refuted by the scintillator walls (D_eff ≈ 330 mm). **Open: beam reads 20–33 % shallower than cosmics in both chambers.** Next: the cosmic wall test (run_149 slim needed), Geant4 electrons, then T1 recalibration on the new bundles.
+**Goal:** a reconstruction that measures angles correctly in all cases (head-on included) at n_TOF, so
+same-chamber coincident pairs can be reconstructed. Truth: run_149 cosmic through-goers (the A–C line).
 
-**Goal:** a reconstruction that measures angles correctly in all cases (head-on included) at n_TOF, so that
-same-chamber coincident pairs can be reconstructed. run_149 through-goers give truth: the line through
-chambers A and C.
+**Done (2026-10-07):**
+- Clock match on all of run_149's n_TOF overlap.
+  - cos_0000–0034 × n_TOF 224678–687: 43 pairs, 93 % matched, core MAD 8–23 ns.
+  - DREAM timestamps come from an lxplus extract; straddling sub-runs are trimmed.
+- Cosmic wall test (`cosmic_wall_scale.py`): cosmics at A's wall read 1.15 × raw (bootstrap 1.12–1.19),
+  matching the A–C line (1.11). Beam reads 0.89 campaign-wide, 0.91–0.93 after 20 ms, and 0.77–0.87 at
+  10–20 ms. The gap is real.
+- In-beam muons (`inbeam_through_goers.py`): A–C through-goers in beam runs read within 2–5 % of
+  beam-off muons, although under beam their gain is ~1/3 lower. So gain, beam noise and space charge
+  are not the cause.
+- Geant4 (`g4_angle/`, condor): the data's wall estimator with an IDEAL reconstruction gives:
 
-**Done:**
-- Pooled run_149 (87 sub-runs). The old handoff's slope ratio was inverted: s/j = k_b/k_true, so A's tans
-  read ~10 % too LARGE. Report: `ntof_cosmics/results/tracking/pooled/report.html`.
-- The bulk angle-scale error is `wft_beam.make_bundle` replacing the bench v (fitted with the kernel)
-  with the 42.6 prior. The in-situ geometric v is A 38.6/37.7 and C ≈ 28 µm/ns.
-- **Head-on failure = beam seeder `MIN_STRIPS_BEAM = 5`** (bench uses 3). With min 3: A–C pairs +66 %,
-  near-normal tracks ×5, near-normal σ_tan 0.2 → 0.03–0.06 (`ntof_cosmics/seed_test.py`).
-- Ruled out with bench M3 truth: S/N ÷8, n_TOF 20-sample framing, real n_TOF noise. Also ruled out:
-  the template, ZS, the fit window, the w-scan range, the t0 prior.
+  | population | wall estimator |
+  |---|---|
+  | beam-capture electrons (median 3 MeV) | 0.59 |
+  | electrons > 4 MeV | 0.92 |
+  | electrons 2–4 MeV | 0.63 |
+  | muons | 1.00 |
 
-- 2026-10-07: seeder min 3 checked on beam (run_145 stat090_0000, `seed_beam_test.py`, report
-  `ntof_cosmics/results/seed_beam/report.html`): scint-confirmed +45/52/40 % (A/C/D), nothing lost,
-  5–13 % x/y re-pairings in busy events. Opt-in `WFT_BEAM_MIN_STRIPS=3` (default stays 5).
-- In-situ bundles `is2_A` (v 38, robust kw via `insitu_calib.py kwmed`) closes on held-out cosmics;
-  `is2_C` (det7 r06 kernel, v 28.7) built. On beam, capsule k A 1.19/1.14, C 1.19/1.09 (were
-  1.29/1.24, 1.77/1.54) — chambers now agree (`~/scratch/ntof_insitu/kbeam_AC.txt`).
-- `wall_edge_scale.py`: SiPM-wall edges binned in u give true = 0.89 × raw for A, D_eff ≈ 330 mm,
-  so the capsule-pointing k_arm is refuted. Beam/cosmic 20–33 % gap ruled out as t0, drift length,
-  χ², charge. Record: tracking handoff §10.
+  **The beam/cosmic gap is electron scattering between the gap and the wall.** The wall is not angle
+  truth for beam electrons, and the cosmic in-situ scale stands.
+- Dylan's questions, answered on slides 19–21 and 17:
+  - The A–C cosmic rate matches the muon flux: 578/h expected, 189/h observed, ε ≈ 0.57/chamber,
+    zenith shape matches (`ac_cosmic_rate.py`).
+  - Activation with T½ ≥ minutes is ≤ 0.2 Hz (`activation_bound.py`).
+  - The late triggers (> 30 ms) are one T½ = 23.5 ± 0.8 ms exponential, not beam captures (t⁻⁴) and not
+    ¹²B (20.2 ms disfavoured, Δχ² 125). Best reading: thermal-neutron die-away in the hall
+    (`late_trigger_clock.py`).
+  - Gain is lower under beam, but the angle scale doesn't follow it.
+- The no-writes-to-/media rule is lifted (Dylan); the `_guard`s are no-ops.
 
-**In progress / where it stopped:**
-- Nothing running, nothing half-done. Open question: why beam reads 20–33 % shallower than cosmics
-  in both A and C.
+**In progress / where it stopped:** nothing running, nothing half-done. Condor clusters 4402864/4402865
+finished; outputs on EOS `full_sim/angle_scale/` and local `/media/dylan/data/x17/ntof_cosmics/g4_angle/`.
 
-**Next steps:**
-1. ~~Cosmic wall test~~ — DONE 2026-10-07 (`cosmic_wall_scale.py`, tracking handoff §10d): gap is real.
-   Gain/noise then excluded by in-beam muons (§10e, `inbeam_through_goers.py`); noise injection superseded.
-2. Geant4 electron check of the beam angle scale (multiple scattering / low-energy electrons).
-3. Combined split-ab: seeder min 3 + T1 `xy_pairing`; then re-derive T1's F on the in-situ bundles.
-4. Optional: B at min 3 (needs an angle scale for B). Then the campaign re-pass (O4).
+**Next steps (detail in tracking handoff §11):**
+1. **Decide and adopt the beam angle calibration:** the cosmic in-situ scale (bundles `is2_A`, `is2_C`)
+   for beam; retire the wall- and capsule-based k as truth.
+   - Check what stage 3 / `k_arm` currently apply on the campaign and what changes downstream
+     (opening angles, 170° cut, T1).
+   - Needs Dylan's OK before touching campaign products.
+2. **X17 opening-angle check:** the ideal gap line reads electrons shallower than their emission
+   direction (median gap/gun 0.73 at 5 MeV, 0.91 at 8 MeV).
+   - Check that the pair/IPC simulation used for the opening-angle spectrum carries this physics,
+     i.e. comes from Geant4 hits, not from truth directions.
+3. **Combined split-ab:** seeder min 3 + T1 `xy_pairing`, then re-derive T1's F on the in-situ bundles.
+   Then the campaign re-pass (O4).
+4. **Ambient thermal-neutron source in Geant4** (capture vertices in the arms' structure, τ ≈ 34 ms):
+   the late-trigger population is missing from every sim. It matters for backgrounds, the wall maps and
+   the data's exact 0.92.
+5. Optional:
+   - a `wft`-digitised forward model of Geant4 electron tracks (closes the data's 0.92 against the
+     ideal fit);
+   - a Geant4 flash run (> 13.6 MeV neutrons, RadioactiveDecay kept to 100 ms) to bound ¹²B;
+   - the in-beam muon and cosmic wall tests on C and D;
+   - the 10–20 ms dip.
+6. X17 board: no entry yet for 2026-10-07 pm results (`x17-board` skill).
 
 **Gotchas / decisions:**
-- Never use the ref-pinned fitted v (χ²(v) valley, ANALYSIS_STATE S8); take v from free fits against truth.
-- Near-normal tracks are under-represented in any sep-selected sample (circular). Judge head-on
-  on one-track-per-arm events with no sep cut.
-- Writing to `/media/dylan/data` is allowed (Dylan, 2026-10-07; mind free space). Work dir `~/scratch/ntof_insitu` (17 GB of run_149 A/C
-  waveforms, caches, bench test scripts `degrade*.py`, `noise_inject.py`). Durable, outside the repo.
-- Never run `k_arm` on cosmic runs (it overwrites kcal/).
+- **Never quote the wall scale (0.89/0.92) or capsule k_arm as the beam angle truth.** Both are set
+  by electron scattering and population, not by the reconstruction.
+- Two wall estimators:
+  - beam needs the u-binned median test (`wall_edge_scale`);
+  - cosmics need the edge likelihood (`ntof_scint_stack.ana.fit_wall_u`);
+  - `fit_wall_u` is degenerate on beam: it returns 0.52 at > 20 ms.
+- A–C through-goers in beam runs need sep < 10–20 mm; looser cuts are diluted by accidentals.
+- Geant4 HitTree: cut t < 1e8 ns (RadioactiveDecay). Single guns aimed near the wall's outer edge carry
+  wall-edge truncation; use them for trends only.
+- The lxplus MX17_Full_Geant checkout is at 3d97437 (07-23 build, the one that made the nose campaign);
+  local is ahead (23c5b5d).
+- Still valid from earlier:
+  - never use the ref-pinned v;
+  - never run `k_arm` on cosmic runs (it overwrites kcal/);
+  - the work dir `~/scratch/ntof_insitu` holds the run_149 waveforms (refetch with its `fetch.sh`,
+    needs kinit).
 
 **Key files & commands:**
-- `ntof_cosmics/HANDOFF_TRACKING_2026-10-06.md` §7–9: full record and numbers.
-- `ntof_cosmics/insitu_calib.py`: truth / cache / profile / hyper / reco / score / t0meas / mkbundle /
-  corridor / joint / implied. `WFT_BEAM_BASE=~/scratch/ntof_insitu/beam/`; `--work ~/scratch/ntof_insitu`.
-- `ntof_cosmics/seed_test.py --work ~/scratch/ntof_insitu --subs ~/scratch/ntof_insitu/subs.txt --min 3`
-- `ntof_cosmics/angle_response.py`, `make_pooled_report.py`: the pooled report.
-- If the work dir is gone: `~/scratch/ntof_insitu/fetch.sh` (needs `kinit`), then `insitu_calib.py truth --subs`, then `cache`.
+- `ntof_cosmics/clock_match.py --run run_149 --subrun <sub> --ntof <run>`
+  - n_TOF partials: `/media/dylan/data/x17/beam_july/ntof_data/`
+  - DREAM ts: `.../dream_ts/run_149/`
+- `ntof_cosmics/cosmic_wall_scale.py build|ana|report` → `/media/dylan/data/x17/ntof_cosmics/cosmic_wall_scale/`
+- `ntof_cosmics/inbeam_through_goers.py`, `ac_cosmic_rate.py`, `late_trigger_clock.py`, `activation_bound.py`
+- `ntof_cosmics/g4_angle/`:
+  - `reduce_gap_wall.py` + `condor/` (lxplus job dir `~/condor/mx17_angle_scale/`);
+  - `analyze.py` → `/media/dylan/data/x17/ntof_cosmics/g4_angle/report.html`.
+- Slides: `.venv/bin/python ntof_cosmics/make_deck.py`, then
+  `python3 ~/PycharmProjects/dylan-cern-site/scripts/add-note.py ntof_cosmics/results/deck/beam-off-cosmics.html --slug beam-off-cosmics --force --deploy`
 
 ## Scintillator stack mapped by the MM tracks — updated 2026-10-06 (dylan-MS-7C84)
 

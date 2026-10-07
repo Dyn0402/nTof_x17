@@ -777,7 +777,7 @@ The decisive test of §10c item 3 is done. Code: `ntof_cosmics/cosmic_wall_scale
 
 **Plumbing**
 - `clock_match.py` now runs on every run_149 sub-run that n_TOF recorded: cos_0000–0034 ×
-  n_TOF 224678–224687, 41 pairs, 88–99 % matched, core residual 9–18 ns.
+  n_TOF 224678–224687, 43 pairs (42 new + cos_0000), 88–99 % matched, 93 % overall, core residual 9–18 ns.
   - Two changes. DREAM timestamps fall back to a timestamps-only extract
     (`/media/dylan/data/x17/beam_july/dream_ts/run_149/ts_<sub>.npz`, made on lxplus with LCG_106
     uproot), so the 330 MB decoded files are not needed.
@@ -980,3 +980,35 @@ the bench's 40–65 %. Building shielding would raise the implied efficiency som
    if it does not already go through the same physics.
 3. The early 10–20 ms transient (0.77) is still unexplained. It is now best read as a population/energy
    change, consistent with this energy dependence.
+
+
+## 11 · Next steps after 2026-10-07 (in order)
+
+The beam angle question is closed. Beam/cosmic wall gap = electron scattering (§10g), not the
+reconstruction and not the beam environment (§10e).
+
+1. **Adopt the cosmic in-situ calibration for beam angles.**
+   - Bundles: `is2_A` (v 38, robust kw) and `is2_C` (det7 r06 kernel, v 28.7), seeder min 3.
+   - Inventory what the campaign applies now (stage-3 `k_arm`, the capsule-pointing k) and every
+     consumer (opening angle, `tight_coincidence` 170° cut, `det_a_intra`'s `slope_reliable`, T1's F).
+   - Make the switch a re-pass with an explicit version tag, not an overwrite.
+   - Ask Dylan before writing campaign products.
+2. **X17 opening angle.** Single-electron Geant4 (ideal fit): median gap tan / gun tan is 0.73 at 5 MeV
+   and 0.91 at 8 MeV, before any reconstruction.
+   - Find whether the opening-angle templates (IPC/X17 pairs) come from Geant4 hits through the reco
+     (then included) or from truth directions (then missing).
+   - X17 electrons are ~8–10 MeV, so expect a few-% compression.
+3. **Same-chamber pairs:** the combined split-ab (seeder min 3 + T1 `xy_pairing`), then T1's F on the
+   in-situ bundles; then the campaign re-pass (OCTOBER_2026 O4).
+4. **The late population.** Triggers after ~30 ms follow one 23.5 ms exponential (A 24.1, C 23.5):
+   ambient thermal neutrons in the hall, not beam captures.
+   - Add an ambient-neutron mode to MX17_Full_Geant: capture vertices in the arms' Al frames, PCB and
+     plastics, time ∝ exp(−t/34 ms).
+   - Then: the late background and its share of the wall maps, and the data's 0.92 against simulation.
+5. **Optional closures:**
+   - (a) `wft`-digitise Geant4 DriftGas hits and reconstruct, to replace the ideal fit;
+   - (b) a Geant4 flash run (> 13.6 MeV n) with RadioactiveDecay kept to 100 ms, to bound ¹²B (up to
+     ~20–30 % of the late clock is not excluded);
+   - (c) the in-beam muon test and the cosmic wall test on C (and D);
+   - (d) the 10–20 ms dip (0.77): split by wall-group population/charge in time;
+   - (e) the clock match for run_103 (4.3 h of n_TOF recording).

@@ -38,6 +38,8 @@ WALL_U, WALL_V = (-225.0, 175.0), 250.0      # structure frame (ana.WALL_EDGES),
 PLAS_HALF_U, PLAS_HALF_V = 100.0, 150.0
 TAN_MAX = 0.6
 R_DISK = 900.0                  # mm
+ZEN_BINS = np.arange(50, 90.01, 2.5)
+OUT = HERE / 'results' / 'ac_rate'
 
 
 def cos_star(c):
@@ -104,7 +106,9 @@ def simulate(n=4_000_000, seed=1):
     trig = hit['A']['trig'] | hit['C']['trig']
     gated = both & hit['A']['gate'] & hit['C']['gate']
     zen = np.degrees(np.arccos(c))
-    return dict(rate_both=float(w[both].sum()), rate_both_trig=float(w[both & trig].sum()),
+    acc = gated & trig
+    hz, _ = np.histogram(zen[acc], bins=ZEN_BINS, weights=w[acc])
+    return dict(zen_hist_hz=hz.tolist(),rate_both=float(w[both].sum()), rate_both_trig=float(w[both & trig].sum()),
                 rate_gated_trig=float(w[gated & trig].sum()),
                 zen_median=_wmedian(zen[gated & trig], w[gated & trig]),
                 n_acc=int((gated & trig).sum()),
@@ -118,19 +122,26 @@ def observed():
     C = ac_pairs(T)
     inv = pd.read_csv(HERE / 'results' / 'cosmic_subruns.csv')
     sec = float(inv[inv.run == 149].seconds.sum())
-    return dict(hours=sec / 3600, n_pairs=len(C), n_sep60=int((C.sep < 60).sum()),
+    ho, _ = np.histogram(C[C.sep < 60].vert_deg, bins=ZEN_BINS)
+    return dict(zen_hist=ho.tolist(), hours=sec / 3600, n_pairs=len(C), n_sep60=int((C.sep < 60).sum()),
                 rate_pairs_hz=len(C) / sec, rate_sep60_hz=float((C.sep < 60).sum() / sec),
                 zen_median=float(np.median(C[C.sep < 60].vert_deg)))
 
 
 def main() -> int:
     sims = [simulate(seed=s) for s in (1, 2)]
-    m = {k: float(np.mean([x[k] for x in sims])) for k in sims[0]}
+    m = {k: (np.mean([x[k] for x in sims], axis=0).tolist() if k == 'zen_hist_hz'
+             else float(np.mean([x[k] for x in sims]))) for k in sims[0]}
     o = observed()
+    OUT.mkdir(parents=True, exist_ok=True)
+    (OUT / 'summary.json').write_text(json.dumps(dict(expected=m, observed=o, zen_bins=ZEN_BINS.tolist(),
+                                                      I0=I0), indent=1))
     print('expected (open-sky flux, 100 % chamber efficiency):')
     for k, v in m.items():
+        if isinstance(v, list):
+            continue
         print(f'  {k:16s} {v:.4g}' + ('  /h ' + f'{v * 3600:.0f}' if 'rate' in k else ''))
-    print('observed run_149:', json.dumps({k: round(v, 4) for k, v in o.items()}))
+    print('observed run_149:', json.dumps({k: round(v, 4) for k, v in o.items() if not isinstance(v, list)}))
     print(f'implied eps_A x eps_C (gated, sep<60) = {o["rate_sep60_hz"] / m["rate_gated_trig"]:.2f}; '
           f'(all A-C single pairs) = {o["rate_pairs_hz"] / m["rate_gated_trig"]:.2f}')
     return 0

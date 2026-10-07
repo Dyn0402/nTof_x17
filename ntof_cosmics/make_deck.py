@@ -144,8 +144,9 @@ def s_cover(D, run, S):
               'Beam-off cosmics can be put on the n_TOF clock to ~10 ns — so straight-through '
               'particles can be studied with their scintillator times</h1>'
             + '<div style="flex:1"></div>'
-            + f'<p style="font-size:28px;color:{DMUT}">First sub-run: run_149 cosbounce_cos_0000 ↔ n_TOF 224678. '
-              'This note grows as the rest of the cosmic sample is matched.</p>'
+            + f'<p style="font-size:28px;color:{DMUT}">Section 1 (2 Oct): the clock match, shown on run_149 cos_0000 ↔ '
+              'n_TOF 224678 and now run on all of run_149 (slide 14). Section 2 (7 Oct): the beam angle scale, '
+              'and four questions.</p>'
             + f'<div style="display:flex;gap:64px">{nums}</div>')
     D.slide('cover', body, '''
 <p><b>Why cosmics now.</b> The ILL feasibility study (<code>x17_facility_search/ill/</code>) found cosmics a substantial background there, with two handles: the arm-to-arm time of flight and collinearity. At n_TOF, <code>sept26_prelim_analysis/tight_coincidence.py</code> already vetoes opposing pairs above 170° (<code>BACK_TO_BACK_DEG</code>), 40 % of the tight opposing sample, but nothing used the timing direction, and the beam-off runs were cut at stage 0 and never read.</p>
@@ -624,39 +625,11 @@ def s_gotchas(D, S):
             short='Gotchas')
 
 
-def s_close(D):
-    items = [
-        ('One sub-run', 'run_149 cos_0000 ↔ 224678 only. S is per sub-run; k and κ should transfer but are not yet shown to.'),
-        ('Single-trigger bunches', '418 triggers alone in their window are placed only to ~30 µs, and leave the denominator.'),
-        ('A straight drift line', 'The slow δ_b wander is curvature it misses; a smooth model would tighten stage 4.'),
-        ('92 % against 96 %', 'The gap to the beam-on efficiency is not yet understood.'),
-        ('No tracking yet', 'Nothing here says how many cosmic triggers carry a track, or a track in two arms.'),
-    ]
-    rows_ = ''.join(f'<div style="display:flex;gap:28px;padding:16px 0;border-top:1px solid #333b4a">'
-                    f'<p style="font-size:28px;font-weight:600;width:400px">{a}</p>'
-                    f'<p style="font-size:24px;color:{DMUT};flex:1;line-height:1.35">{b}</p></div>' for a, b in items)
-    nxt = [('Match all of it', 'Sub-runs spanning two n_TOF runs; psTime=0 recovery; then run_149 and run_103 (~13 h with n_TOF).'),
-           ('Track the cosmic runs', 'Production tracking on run_149 first: two-arm crossings, opening angle, capsule DCA.'),
-           ('The three handles', 'Calibrate the 170° cut on data; the capsule-DCA shape of through-goers; the arm-to-arm Δt sign.')]
-    nrows = ''.join(f'<div style="display:flex;flex-direction:column;gap:6px;padding:16px 0;border-top:1px solid #333b4a">'
-                    f'<p style="font-size:28px;font-weight:600;color:{DBLUE}">{a}</p>'
-                    f'<p style="font-size:24px;color:{DMUT};line-height:1.35">{b}</p></div>' for a, b in nxt)
-    body = (f'<div style="display:flex;gap:80px">'
-            f'<div style="flex:1.2;display:flex;flex-direction:column;gap:8px">'
-            f'<h2 style="font-size:52px;font-weight:600">What this does not rule out</h2>{rows_}</div>'
-            f'<div style="flex:1;display:flex;flex-direction:column;gap:8px">'
-            f'<h2 style="font-size:52px;font-weight:600">Next</h2>{nrows}</div></div>')
-    D.slide('close', body, '''
-<p>Entry point: <code>ntof_cosmics/README.md</code>. The October list carries this as item O9 (<code>sept26_prelim_analysis/OCTOBER_2026.md</code>).</p>
-<p>Data staged locally for the first sub-run: <code>/media/dylan/data/x17/beam_july/runs/run_149/cosbounce_cos_0000/decoded_root/*_01.root</code>, <code>.../ntof_data/run224678.parts/</code>, <code>run_149/*/n1081b_config.json</code> and <code>run_149/dream_daq.log</code>.</p>''',
-            dark=True, short='Caveats & next')
-
-
 # --------------------------------------------------------------------------- #
 def build(out: Path) -> Path:
     run, S, pairs, drift, db = load()
     lat = beam_on_latency()
-    D = sd.Deck('Beam-off cosmics on the n_TOF clock',
+    D = sd.Deck('Beam-off cosmics: n_TOF clock and the beam angle scale',
                 'The beam-off cosmic runs of the n_TOF X17 campaign: what exists, why straight-through '
                 'particles matter, and matching DREAM cosmic triggers to n_TOF without beam.')
     s_cover(D, run, S)
@@ -670,11 +643,25 @@ def build(out: Path) -> Path:
     s_delta(D, S, db)
     s_result(D, S, pairs)
     s_gotchas(D, S)
-    s_close(D)
-    meta = dict(title='Beam-off cosmics on the n_TOF clock',
-                summary=(f'57.6 h of production-point cosmics, never analysed; matched to n_TOF without beam: '
-                         f'{100 * S["efficiency_loo"]:.0f} % of in-window triggers within ±{S["window_ns"]:g} ns, '
-                         f'{S["res_core_mad_ns"]:.0f} ns core. First sub-run; growing.'),
+    import deck_angle as DA
+    o = DA.load()
+    DA.s_section(D, o)
+    DA.s_method(D)
+    DA.s_clockall(D, o)
+    DA.s_cosmic_wall(D, o)
+    DA.s_beam_time(D, o)
+    DA.s_gain(D, o)
+    DA.s_geant(D, o)
+    DA.s_rate(D, o)
+    DA.s_source(D, o)
+    DA.s_isotopes(D, o)
+    DA.s_close(D)
+    meta = dict(title='Beam-off cosmics: n_TOF clock and the beam angle scale',
+                summary=(f'Beam-off cosmics matched to n_TOF without beam ({100 * S["efficiency_loo"]:.0f} % within '
+                         f'±{S["window_ns"]:g} ns), then used to settle the beam angle scale: cosmics at A\'s wall read '
+                         f'{o["cw_sum"]["s_best"]:.2f}, beam {o["cw_sum"]["beam_all"]:.2f}; in-beam muons and Geant4 show '
+                         f'the gap is electron scattering, not reconstruction. Plus: gain, the A–C cosmic rate, the late-'
+                         f'trigger clock, activation.'),
                 tags='X17,backgrounds,cosmics,timing', date=dt.date.today().isoformat())
     return D.write(out, meta, footer=f'Built {dt.datetime.now():%Y-%m-%d %H:%M} by nTof_x17/ntof_cosmics/'
                                      'make_deck.py with slidedoc.py.')

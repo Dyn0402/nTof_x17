@@ -51,10 +51,22 @@ def fit(ms, lo=20.0, hi=80.0, fixT=None):
     return p, np.sqrt(np.diag(cv)), chi, len(c) - len(p), c, h, f
 
 
+OUT = __import__('pathlib').Path(__file__).resolve().parent / 'results' / 'late_clock'
+
+
 def main() -> int:
+    import json
+    OUT.mkdir(parents=True, exist_ok=True)
+    summ = {}
     for arm in (None, 'A', 'C'):
         ms = load(arm)
         lab = arm or 'all arms'
+        e = np.arange(1, 80.01, 1.0)
+        h, _ = np.histogram(ms, e)
+        pf, ef, chif, ndff, *_ = fit(ms, lo=20.0)
+        px, _ex, chix, ndfx, *_ = fit(ms, lo=20.0, fixT=T_12B)
+        summ[lab] = dict(edges=e.tolist(), hist=h.tolist(), free=dict(p=pf.tolist(), err=ef.tolist(), chi2=chif, ndf=ndff),
+                         fixed_12B=dict(p=px.tolist(), chi2=chix, ndf=ndfx))
         for lo in (20.0, 30.0):
             p, e, chi, ndf, *_ = fit(ms, lo=lo)
             print(f'{lab:8s} {lo:.0f}-80 ms  free T: T1/2 = {p[3]:.1f} ± {e[3]:.1f} ms, power n = {p[1]:.1f}, '
@@ -63,6 +75,7 @@ def main() -> int:
             p, e, chi, ndf, *_ = fit(ms, lo=lo, fixT=T_12B)
             print(f'{"":8s} {lo:.0f}-80 ms  T fixed 20.2: chi2/ndf {chi:.0f}/{ndf}, const share at 70 ms '
                   f'= {p[3] / (p[0] * (70 / 30) ** -p[1] + p[2] * 2 ** (-40 / T_12B) + p[3]):.2f}')
+    (OUT / 'summary.json').write_text(json.dumps(summ))
     return 0
 
 
