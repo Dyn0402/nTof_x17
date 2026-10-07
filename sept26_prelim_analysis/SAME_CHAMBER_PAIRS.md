@@ -81,9 +81,21 @@ chambers A and C on run_149 beam-off through-going cosmics.
   tan = 0.89 × production raw for A. They also give an effective source
   distance of ≈ 330 mm instead of 234.6 mm, which is exactly the factor
   k_arm's capsule assumption carries. The capsule-pointing k (1.27, applied in
-  stage 3) is therefore not trustworthy. **Still open:** beam reads 20–33 %
-  shallower than cosmics in both A and C (scint-stack λ·k). It is not t0, not
-  partial tracks, not fit quality, not charge. Tracking handoff §10c.
+  stage 3) is therefore not trustworthy.
+- **The beam/cosmic gap is electron scattering (2026-10-07 pm).** Beam reads
+  20–33 % shallower at the walls than cosmics, in A and C alike. Three tests
+  settle why (tracking handoff §10d–10g):
+  - cosmics that fire A's wall read **1.15** × raw (bootstrap 1.12–1.19), the
+    A–C line's 1.11 (`ntof_cosmics/cosmic_wall_scale.py`);
+  - A–C muons inside beam runs read within 2–5 % of beam-off ones, at ~1/3
+    lower gain (`inbeam_through_goers.py`): not gain, noise or space charge;
+  - Geant4 with an **ideal** reconstruction (`ntof_cosmics/g4_angle/`): the
+    wall estimator reads 1.00 on muons but 0.59 on capture electrons (0.92
+    above 4 MeV). The wall sees where a scattered electron lands, not its
+    direction in the gap.
+  So neither the beam wall scale nor the capsule k is angle truth for beam
+  electrons; **the cosmic in-situ scale stands**. Adopting it for beam
+  (stage 3 / `k_arm`) is the pending decision.
 
 ## T3 — late tracks (`beam-off-cosmics`)
 
@@ -131,7 +143,7 @@ Everything below must be validated **before** it, and it all rides together:
 | seeder min 3 (`WFT_BEAM_MIN_STRIPS=3`) | T2 | cosmic truth; beam purity on run_145 | **passed** (+40–52 % confirmed tracks); re-pairing → validate with T1's xy_pairing |
 | in-situ v + robust kw per plane | T2 | held-out cosmic truth | **A closes** (`is2_A`); C built (`is2_C`, r06k7); B, D need another truth |
 | C kernel | T2 | free-fit closure vs truth | r06k7 adopted; tails not kernel-driven |
-| beam angle scale | T2 | scintillator edges (u-binned) vs cosmics | capsule k refuted (D_eff 330 mm); beam 0.89 vs cosmic 1.11 **open** |
+| beam angle scale | T2 | cosmic A–C line; cosmic wall test; Geant4 | gap = electron scattering; **adopt the cosmic in-situ scale** (needs a decision) |
 | xy pairing + rescue floor | T1 | split-ab, bench | passed |
 | fixed two-track chain, F per chamber | T1 | split-ab + F ladder | passed at A 1200 / C 2400 on old bundles |
 | late-t0 depth grid fix | T3 | refit vs external pointing | proposed |
@@ -141,13 +153,13 @@ combined split-ab contract → re-pass → downstream.
 
 ## Open questions, in priority order (2026-10-07)
 
-1. **Beam (0.89) vs cosmics (1.11) for the same chamber.** The capsule number
-   (1.27) is explained: its point-source assumption fails (D_eff ≈ 330 mm).
-   The scintillators, binned in u, are dilution-free. What remains is a 20–33 %
-   beam/cosmic difference, the same in A and C, and independent of t0, drift
-   length, fit quality and charge. Until it is settled, no beam opening angle
-   carries a calibrated uncertainty.
-   Tests: tracking handoff §10c.
+1. **Adopt the cosmic in-situ scale for beam?** The beam (0.89) vs cosmic
+   (1.11) gap is explained: electron scattering between the gap and the wall
+   (Geant4, ideal reco). Check what stage 3 / `k_arm` apply on the campaign
+   and what moves downstream (opening angles, the 170° cut, T1), then decide.
+   Related: the ideal gap line reads electrons shallower than their emission
+   (gap/gun 0.73 at 5 MeV), so the X17 opening-angle spectrum must come from
+   Geant4 hits, not truth directions. Tracking handoff §11.
 2. **Which x/y pairing is right in busy events?** Min 3 re-pairs 5–13 % of
    production's tracks, and timing and charge cannot arbitrate. Run T1's
    `xy_pairing` together with min 3 through split-ab.
