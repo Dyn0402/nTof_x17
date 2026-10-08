@@ -1278,3 +1278,49 @@ Dylan's decision (adopting is2 for beam).
 condor scratch and copied back, and 19 jobs went on hold. The ROOT files are now on EOS
 `full_sim/angle_scale/single_root/` (16 kept; the 20 that failed transfer are lost). The job scripts are
 fixed to leave nothing in scratch. The general rule and the `lxstore` tool are in `~/.claude/CLAUDE.md`.
+
+## 14 · Re-pass readiness review, and B/D feasibility (2026-10-08)
+
+**Slide note:** <https://dylan-neff.web.cern.ch/notes/ac-insitu-angles.html> (`make_insitu_deck.py`, reads
+`results/repass_readiness/` from **`repass_readiness.py all`**).
+
+**New, blocks the is2_v1 launch: the raw-tan plausibility cut.** `wft.reco._candidate_score` requires
+|fit.tan_theta| < `TAN_MAX` = 0.6 in the bundle's RAW tan. Raw ∝ 1/v, so on the v = 42.6 bundles it meant
+0.6 × k_arm true (A 0.76, C 0.97); on is2 it means ~0.58. Smoke sub-run (run_145 stat090_0000):
+- C: 42 % of quality-OK candidates fail on angle alone (production 15 %). Gated C 10,812 (m3) → 6,239 (is2).
+- Scintillator-confirmed (wall minus accidentals): A 2,957 / 4,289 / 4,255 and C 2,212 / 3,352 / 3,024
+  (production / m3 / is2). So C loses 10 % of confirmed tracks against m3, and purity rises 0.35 → 0.51.
+- The smoke test only compared condor with local is2. The §10a purity test used the PRODUCTION bundle.
+  Neither caught this.
+- Decide: keep ≈ 0.58 true as the acceptance (the cosmic truth covers only |tan| < 0.6), or make TAN_MAX a
+  bundle-carried true-angle cut and validate 0.6–1.0. For that: g4_digi guns, and corner-cutting cosmics
+  (A–D/C–D lines obey tan₁·tan₂ = 1, so both chambers sit at |tan| ≈ 1).
+- `TAN_MIN_SLOPE` (0.08) and `FLOOR_TAN` shift by the same factor (minor).
+
+**Also found:**
+- Cosmic closure as delivered (raw × each chain's run_145 k): is2 A −6/+8 % over |tan| 0.08–0.6.
+- C x is non-linear, 1.03 → 0.89.
+- Near-normal (< 0.08) overread is 13–67 % in both chains.
+- Per track, the re-pass makes A's tans 12–15 % shallower and C x ~10 %; C y is unchanged.
+- run_126 has no k in either chain (production k_arm never certified it).
+- is2_v1 is an interim, angle-only pass: no T1 xy_pairing, no T3 late-t0 fix.
+
+**Proposed before launch:**
+1. TAN_MAX decision and validation.
+2. A beam yield gate for the real bundles on other periods.
+3. A pilot pass, one sub-run per run.
+4. Decide interim vs combined (T1) re-pass.
+
+**B/D feasibility** (`bd_feasibility.py all` → `results/bd_feasibility/report.html`;
+`cosmic_wall_scale.py --arm D` → `.../cosmic_wall_scale/arm_D/`):
+- **D x has a cosmic truth: its own wall.** s = 1.525 × production raw (bootstrap 1.50–1.56, 3,391
+  single x tracks; the profile grid was widened for non-A arms). Implied v ≈ 28 µm/ns against the r06 det7
+  bundle's 36.6, so D needs its own in-situ v. Capsule k 1.77 = 1.16 × this, like A (1.14).
+- The per-|tan| bins are unusable. D's one-sided dead channels are unmasked in the fit.
+- D y has no truth.
+- **B is nearly blind to cosmics.** It lights on 12.7 % of the crossings D predicts, against C 64.6 % on
+  A's (accidental baseline subtracted). Its reco keeps 3.1 % (C 51 %). B's cosmic clusters are 4–5 hits,
+  ~5 strips wide.
+- On beam (scintillator-tagged) B's hit efficiency is comparable to the others.
+- So B–D lines would give at most O(3k) lines campaign-wide even with a B hit-mode position.
+- B's HV in run_149 has not been checked.

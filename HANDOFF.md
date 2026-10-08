@@ -65,61 +65,64 @@ proposed, but Dylan has not picked any yet.
 
 ## Beam-off cosmics: angle response + in-situ reco — updated 2026-10-08 (dylan-MS-7C84)
 
-**Resume:** The in-situ re-pass (is2_v1, A and C) is built, smoke-tested and staged on lxplus. It is **not
-submitted**: whether to adopt is2 for beam is Dylan's decision.
+**Resume:** is2_v1 re-pass staged, NOT launched. A raw-tan gate cut (TAN_MAX) needs Dylan's decision first; then the B/D options.
 
-**Read first:** `ntof_cosmics/HANDOFF_TRACKING_2026-10-06.md` §13: "Chasing the residual", then "Consequence for
-adopting is2", then "The in-situ re-pass is built". §10g and §11 still hold; §12 is superseded.
+**Read first:** `ntof_cosmics/HANDOFF_TRACKING_2026-10-06.md` §14 (today), then §13. §10g and §11 still hold; §12 is
+superseded. Slide note of the review: <https://dylan-neff.web.cern.ch/notes/ac-insitu-angles.html>.
 
 **Goal:** a reconstruction that measures angles correctly at n_TOF, head-on included, so same-chamber pairs can be
 reconstructed.
 
-**Findings (2026-10-08):**
-- Full-stat g4_digi: data/sim band residual A +3.6 %, C +10 %.
-  - It is not time, charge, a non-pointing population or the kernel. C is the same under r06-det7 and lp.
-  - The band depends on the source model: about 1.00 at fixed source, rising with source width.
-- Production's per-run k_arm band varies with the gas: A ±1.2 %, C ±3.8 %, D ±4.3 %. In-beam muons confirm it.
-- In-beam A–C muons, pooled and gas-normalised: is2 reads beam-period muons right to 1–4 %. Its tans are
-  slightly too large, if anything.
-  - So **the band residual is not an angle-scale error** (~3σ A, ~7σ C).
-  - The in-beam muons are the scale truth for beam.
-- The y-view residual (3–4× x) is still open. The likely cause is an under-modelled source along the capsule's long axis.
+**Done (2026-10-08):**
+- Review before the re-pass, built from data:
+  - `repass_readiness.py all` → `ntof_cosmics/results/repass_readiness/`;
+  - `make_insitu_deck.py` → 15-slide note, published.
+- Cosmic closure as delivered: is2 A is right to −6/+8 %; production A is 11–25 % steep. C x is non-linear (1.03 → 0.89).
+- In-beam muons: is2 is right to 1–4 %.
+- **New blocker:** `wft.reco.TAN_MAX = 0.6` acts on the bundle's RAW tan.
+  - True-angle reach: production A 0.76 / C 0.97; is2 ≈ 0.58.
+  - Smoke sub-run, C: gated tracks −42 % against m3 (the production bundle with the 3-strip seeder); scintillator-confirmed tracks −10 %.
+  - The smoke test compared condor with local only, so it could not catch this.
+- B/D feasibility: `bd_feasibility.py all` → `ntof_cosmics/results/bd_feasibility/report.html`.
+  - **D x truth = D's own wall on cosmics:** 1.525 × production raw (bootstrap 1.50–1.56). Implied v ≈ 28, not 36.6.
+    Ran with `cosmic_wall_scale.py --arm D`, a new option; A's outputs are unchanged.
+  - **B is nearly blind to cosmics:** it lights on 12.7 % of the crossings D predicts (C: 64.6 %), and its reco keeps 3 %.
+    So B–D lines are not a practical truth for D. Under beam, B's hit efficiency is comparable to the other chambers.
 
-**Re-pass prepared (not launched):**
-- k: `sept26_prelim_analysis/k_insitu.py --version is2_v1` → `/media/dylan/data/x17/sept26_prelim/kcal_is2_v1/`.
-  - k = muon norm (A 0.976, C 0.962) × band(run)/band(run_145).
-  - B and D get no k.
-- Reco: `make_stage2_campaign.py --full-pass --arms A,C --insitu … --min-strips 3 --version is2_v1`.
-- Smoke cluster 4405910 (run_145 stat090_0000) matches the local is2 reco: identical events, 99.5 % of fits
-  bit-close. The remainder are multi-candidate flips.
-- Stage 3 with `--kcal` works.
-- Package: lxplus `~/sept26_stage2_is2_v1` (6466 jobs, ≈4300 CPU-h, ~14 GB on EOS). Launch:
-  `condor_submit stage2_fullpass.sub`.
+**In progress / where it stopped:** nothing half-done. Dylan will choose among the options later.
 
-**Next steps:**
-1. Dylan: adopt is2 for beam? If yes, launch the package and run stage 3 into `stage3_is2_v1`, never into
-   production. The systematic is ±2–3 % from the norm, plus the x/y spread (A 3 %).
-2. y-view residual: model the source along the capsule's long axis (v).
-3. Busy-overlay systematic and single-gun trends (`steps_single/`), both optional.
-4. Seeder min 3 against T1's `xy_pairing`, plus the consumers in §11 (opening angle, 170° cut, `slope_reliable`, F).
+**Next steps (Dylan's choices, in the note's order):**
+1. TAN_MAX: keep ≈ 0.58 true as the stated acceptance, OR make it a bundle-carried true-angle cut and validate
+   |tan| 0.6–1.0. Validate with g4_digi guns and corner-cutting cosmics: A–D/C–D lines obey tan₁·tan₂ = 1, so both sit at |tan| ≈ 1.
+   Then re-run the smoke sub-run.
+2. A yield gate for the real is2 bundles on other periods (run_86, run_110, run_156). Use `seed_beam_test` scint/compare.
+3. A pilot pass: one sub-run per run.
+4. Interim (is2_v1 alone) vs combined with T1's `xy_pairing`. Then launch: `cd ~/sept26_stage2_is2_v1 && condor_submit stage2_fullpass.sub`.
+   Stage 3 goes into `stage3_is2_v1`, never into production.
+5. D: an in-situ bundle with v ≈ 28, iterated to wall s = 1.
+   - Needs D waveforms (FEU 01/02) for the clock-matched run_149 sub-runs.
+   - Mask the dead channels in the wall fit.
+   - y has no truth: carry x's scale with a 3–5 % systematic.
+6. B: check B's HV in run_149 before concluding that the chamber is blind. Otherwise keep B as the hit-mode tag.
 
 **Gotchas / decisions:**
+- Any constant in raw-tan units changes meaning when v changes: TAN_MAX, and also `TAN_MIN_SLOPE` and `FLOOR_TAN`.
+  When bundles change, compare yields against production, not only condor against local.
+- `cosmic_wall_scale` (`fit_wall_u`) is valid on cosmics only; it is degenerate on beam. D's per-|tan| bins are unusable.
 - Never use the capsule band as the beam scale. Its only legitimate use is the run-to-run ratio (gas).
-- The muon scale depends on the sep cut, so compare only at equal cuts.
-- Never quote the wall (0.89/0.92) as beam truth.
-- Never run `k_arm` on cosmic runs.
-- Never use the ref-pinned v.
-- Production C used `calib_bundle_prelim` (det6 lp, v 42.6), not r06k_C. Local copies are in
-  `~/scratch/ntof_insitu/bundles/fp145_{A,C}`.
+- The muon scale depends on the sep cut, so compare only at equal cuts. Never quote the wall (0.89/0.92) as beam truth.
+- Never run `k_arm` on cosmic runs. Never use the ref-pinned v.
+- run_126 has no k in either chain.
+- Production C used `calib_bundle_prelim` (det6 lp, v 42.6). Local copies are in `~/scratch/ntof_insitu/bundles/fp145_{A,C}`.
 - lxplus: AFS is for code only. Check `lxstore status` before and after a large submission.
 
 **Key files & commands:**
-- `ntof_cosmics/g4_digi/`:
-  - `digitise.py`, `run_digi.py --sim-bundle`;
-  - `compare_data.py --data is2|prod`;
-  - `residual_checks.py`.
-- `ntof_cosmics/inbeam_through_goers.py pooled` → `/media/dylan/data/x17/ntof_cosmics/inbeam_through_goers/pooled_norm.csv`.
-- `sept26_prelim_analysis/k_insitu.py`, `campaign_tracks.py --kcal --arms`, `condor/make_stage2_campaign.py --version`.
+- `ntof_cosmics/repass_readiness.py all` (needs the smoke products in `sept26_prelim/smoke_is2_v1` and
+  `~/scratch/ntof_insitu`), then `make_insitu_deck.py`, then
+  `python3 ~/PycharmProjects/dylan-cern-site/scripts/add-note.py ntof_cosmics/results/deck/ac-insitu-angles.html --slug ac-insitu-angles --force --deploy`.
+- `ntof_cosmics/bd_feasibility.py all`; `cosmic_wall_scale.py build|ana --arm D` → `/media/dylan/data/x17/ntof_cosmics/cosmic_wall_scale/arm_D/`.
+- `ntof_cosmics/g4_digi/`; `inbeam_through_goers.py pooled`; `sept26_prelim_analysis/k_insitu.py`;
+  `condor/make_stage2_campaign.py --version`.
 
 ## Scintillator stack mapped by the MM tracks — updated 2026-10-06 (dylan-MS-7C84)
 

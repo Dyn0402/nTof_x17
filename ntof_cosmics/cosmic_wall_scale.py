@@ -159,8 +159,8 @@ def build() -> pd.DataFrame:
         t = t.merge(trig[['event_id', 'ntof_arm', 'ntof', 'bunch', 'tof', 'res']],
                     on='event_id', how='inner')
         T.append(t)
-        print(f'{sub}: {len(trig)} matched triggers ({(trig.ntof_arm == ARM).sum()} on arm A), '
-              f'{t.event_id.nunique()} with an A track, {t.gated.sum()} gated', flush=True)
+        print(f'{sub}: {len(trig)} matched triggers ({(trig.ntof_arm == ARM).sum()} on arm {ARM}), '
+              f'{t.event_id.nunique()} with an {ARM} track, {t.gated.sum()} gated', flush=True)
     H = pd.concat(H, ignore_index=True)
     pk = peaks(H)
     print('WALA dt peak per triggering arm (ns, peak count, hits):', pk)
@@ -174,19 +174,19 @@ def build() -> pd.DataFrame:
         t = t.merge(truth, on=['subrun', 'event_id'], how='left', suffixes=('', '_true'))
         T2.append(t)
     T = pd.concat(T2, ignore_index=True)
-    print(f'{T.tan_x.notna().sum()} A tracks with A-C truth')
+    print(f'{T.tan_x.notna().sum()} {ARM} tracks with A-C truth')
     OUT.mkdir(parents=True, exist_ok=True)
     keep = ['subrun', 'event_id', 'ntof_arm', 'gated', 'x_quality_ok', 'x_plausible',
             'y_quality_ok', 'n_trk', 'n_trk_x', 'u_mm', 'x_local', 'y_local', 'tan_raw_x',
             'tan_raw_y', 'x_t0', 'y_t0', 'q_per_len', 'chi2dof_x', 'x_n_strips',
             'x_slope_reliable', 'ntof', 'bunch', 'tof', 'res', 'tan_x', 'tan_y', 'sep_mm'] + \
         [f'w{n}_amp_on' for n in range(1, 9)]
-    T[keep].to_parquet(OUT / 'tracks_A.parquet', index=False)
-    H.to_parquet(OUT / 'wall_hits_A.parquet', index=False)
+    T[keep].to_parquet(OUT / f'tracks_{ARM}.parquet', index=False)
+    H.to_parquet(OUT / f'wall_hits_{ARM}.parquet', index=False)
     for arm, g in H.groupby('trig_arm'):
         hist, e = np.histogram(g.dt - pk[arm][0], bins=40, range=(-200, 200))
         print(f'{arm}-triggered: WALA dt - peak, 10 ns bins -200..200:', ' '.join(map(str, hist)))
-    print(f'wrote {OUT}/tracks_A.parquet ({len(T)} tracks)')
+    print(f'wrote {OUT}/tracks_{ARM}.parquet ({len(T)} tracks)')
     return T
 
 
@@ -261,7 +261,7 @@ def ana() -> int:
     offset degeneracy that makes it unusable on beam."""
     geo = layer_geometry(RUN, ARM)
     L = geo['w_wall'] - geo['w_strip']
-    d = pd.read_parquet(OUT / 'tracks_A.parquet')
+    d = pd.read_parquet(OUT / f'tracks_{ARM}.parquet')
     sels = {'gated (beam selection)': d.gated,
             'x plane only (quality + |tan_x| < 0.6)': d.x_quality_ok & d.x_plausible}
     rows = []
@@ -275,7 +275,7 @@ def ana() -> int:
             rows.append(scales(x[mm], L, 'tan_raw_x', lab) | dict(selection=lab, sample=samp))
     R = pd.DataFrame(rows)
     x = _cosmic_singles(d, sels['x plane only (quality + |tan_x| < 0.6)'])
-    P = profile(x, L, np.round(np.arange(0.70, 1.501, 0.025), 3))
+    P = profile(x, L, np.round(np.arange(0.70, (1.501 if ARM == 'A' else 2.301), 0.025), 3))
     subs = x.subrun.unique()
     rng = np.random.default_rng(0)
     boot = [SA.fit_wall_u(pd.concat([x[x.subrun == s] for s in rng.choice(subs, len(subs))]),
@@ -385,7 +385,13 @@ differently.</li>
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument('step', choices=['build', 'ana', 'report'])
+    ap.add_argument('--arm', default='A', choices=list('ABCD'),
+                    help='chamber whose own wall is used; arms other than A write to OUT/arm_<X>/')
     a = ap.parse_args()
+    global ARM, OUT
+    ARM = a.arm
+    if ARM != 'A':
+        OUT = OUT / f'arm_{ARM}'
     if a.step == 'build':
         build()
         return 0
