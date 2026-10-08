@@ -1246,6 +1246,34 @@ It does not test model-vs-chamber mismatch; that part is calibrated on cosmics.
   C y 0.97; ± 1.5–2.5 %). The muons are muons, so for electrons this assumes the reco does not tell
   them apart. §13 Result 1 tested that against the ideal line (1–2 %).
 
+**The in-situ re-pass is built and smoke-tested, NOT launched (2026-10-08 night).** Launching it is
+Dylan's decision (adopting is2 for beam).
+- Calibration: `sept26_prelim_analysis/k_insitu.py --version is2_v1` →
+  `/media/dylan/data/x17/sept26_prelim/kcal_is2_v1/k_arm_run_N.json` (36 runs).
+  - k_eff(arm, run) = norm(arm) × band(run)/band(run_145). norm = in-beam muons at sep < 10, mean of
+    x and y: A 0.976, C 0.962. Examples: run_110 A 0.934 / C 0.844; run_145 A 0.976 / C 0.962.
+  - B and D get no k. Their angles stay null in the re-pass, and are not silently borrowed.
+  - One scalar per (arm, run), so the x–y difference of the norm (A 0.033, C 0.010) is a systematic,
+    not a correction.
+- Reco: `make_stage2_campaign.py --full-pass --arms A,C --insitu A=…/is2_A,C=…/is2_C --min-strips 3
+  --version is2_v1`. It has its own dest and EOS directory (`/eos/user/d/dneff/x17/sept26_fullpass_is2_v1`),
+  carries per-arm v from the bundle (A 38.0, C 28.7), and sets WFT_BEAM_MIN_STRIPS=3 in the job environment.
+- **Smoke test** (cluster 4405910: run_145 stat090_0000, 14 jobs, all exit 0, scratch clean):
+  - Against the local is2 reco of the same sub-run, events, fit success and candidate counts are
+    identical. 99.5 % of fits agree to < 1e-4 in tan.
+  - The 0.3 % that differ (|Δtan| > 0.05) are all multi-candidate events where the chosen candidate
+    flips between machines (floating point). Medians agree to 1e-4.
+  - Stage 3 (`campaign_tracks --kcal …/kcal_is2_v1 --arms A,C`) gives 19,190 / 19,335 segments
+    (local 19,195 / 19,336). tan/tan_raw is 0.9756 (A) / 0.9623 (C), and v/k is 38.9 / 29.8.
+  - Products: `/media/dylan/data/x17/sept26_prelim/smoke_is2_v1/{fullpass,stage3}`.
+- **Full package: staged at lxplus `~/sept26_stage2_is2_v1` (copy in
+  `/media/dylan/data/x17/sept26_prelim/pkg_is2_v1`).** 6466 jobs, 293 sub-runs, A and C. Built from
+  afa9fcb with a clean tree. Expect ~40 min per job (≈ 4300 CPU-h) and ~14 GB on EOS.
+  - To launch: `cd ~/sept26_stage2_is2_v1 && condor_submit stage2_fullpass.sub`.
+  - Then pull to a versioned fullpass dir, and run `campaign_tracks --fullpass <it> --kcal
+    …/kcal_is2_v1 --arms A,C --out …/stage3_is2_v1`.
+  - Never write into the production `fullpass`/`stage3_campaign`.
+
 **lxplus (2026-10-07):** the single-gun jobs had filled the AFS quota. Their ROOT files were left in
 condor scratch and copied back, and 19 jobs went on hold. The ROOT files are now on EOS
 `full_sim/angle_scale/single_root/` (16 kept; the 20 that failed transfer are lost). The job scripts are
