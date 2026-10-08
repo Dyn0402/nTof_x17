@@ -80,3 +80,26 @@ Universal: Y's ±2 reach is 2.4–3.5× X's on every chamber, and delayed by
 ~150–250 ns more. X's one-sidedness is chamber-dependent (clear on det3 and on
 det4 in H4, consistent with zero elsewhere) — a per-chamber, not a universal,
 term.  This table is model-free and is Paper II §1 material as it stands.
+
+### 5b · H4 baseline: det4's production kernel, gas refit only (run_71 RAW, head-on)
+
+| plateau | sigma_p0 | Dp | X ±1 / ±2 vs data | Y ±1 / ±2 vs data | timing |
+|---|---|---|---|---|---|
+| raw700 (243 V/cm) | **0.145 mm** | 0.0135 | +9σ / +20σ | 0σ / +5σ | X ±2 +150 ns late; Y copies 70–90 ns early |
+| raw450 | 0.050 mm | 0.0195 | +10…15σ / +20σ | +7σ / +12σ | same |
+
+With a sharp reference (telescope; p0 profiled) sigma_p0 lands at the H4
+diffusion bound (< 0.16 mm), against 0.26–0.45 mm in every bench fit — the bench
+value carries M3's pointing error.  Even with the gas refit, the production
+kernel over-shares on X and has the wrong timing on both views: the gas cannot
+absorb the kernel's shape.  This is the bar each arm's kernel must clear in H4.
+
+### 5c · First arm refits (training chi2; NOT the judge)
+
+Freed per view, the Y ratio runs to its 0.95 cap on every chamber, and past 1
+where allowed (diag: det4 2.59, det7 1.16; det6 0.66); the X ratio goes low
+(det7 0.001, det6 0.10, det2 0.32, det3-mf05 0.12; det4 0.61 is the exception).
+Chi2 gains over the control g06 are 0.3–1 %.  Note the control itself — r06's
+global 0.6, refitted on the deterministic objective — already beats production
+on the held-out bench (det3: s68 −0.02…−0.03 deg), so per-view effects are
+measured against g06, not against production.
