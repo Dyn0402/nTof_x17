@@ -144,7 +144,8 @@ def _k_for(run: str, k_from: str | None, kcal: str | None = None):
     return k, ('self' if src_run == run else src_run)
 
 
-def _one(run: str, sub: str, reco: str, out_dir: str, k_from=None, kcal=None):
+def _one(run: str, sub: str, reco: str, out_dir: str, k_from=None, kcal=None,
+         tan_max_true=None):
     """One sub-run, in its own process. Returns (run, sub, n, err)."""
     from sept26_prelim_analysis import build_tracks as BT
     try:
@@ -154,7 +155,8 @@ def _one(run: str, sub: str, reco: str, out_dir: str, k_from=None, kcal=None):
         tracks, meta = BT.build(run, sub, Path(reco),
                                 stage1=s1 if s1.exists() else None,
                                 allow=al if al.exists() else None,
-                                out_dir=Path(out_dir), k_arm=k)
+                                out_dir=Path(out_dir), k_arm=k,
+                                tan_max_true=tan_max_true)
         return run, sub, int(meta['n_tracks']), int(meta['n_gated']), ksrc, None
     except Exception:                                          # noqa: BLE001
         return run, sub, 0, 0, 'none', traceback.format_exc(limit=3)
@@ -173,6 +175,11 @@ def main() -> int:
                     help='directory of k_arm_<run>.json to apply instead of '
                          '<out>/kcal (a versioned re-pass, e.g. <out>/kcal_is2_v1 '
                          'from k_insitu.py)')
+    ap.add_argument('--tan-max-true', type=float, default=None,
+                    help='stage-3 angular acceptance in TRUE tan (build_tracks '
+                         '--tan-max-true): `gated` gains |tanx|,|tany| below it, '
+                         'the reco gate stays as `gated_reco`. For a re-pass '
+                         'whose stage 2 ran with a wide WFT_TAN_MAX.')
     ap.add_argument('--arms', default=None,
                     help='comma list: the arms this pass reconstructed. Others are '
                          'not reported as incomplete (a re-pass of A,C only).')
@@ -230,7 +237,8 @@ def main() -> int:
         print(f'building {len(work)} sub-run(s) on {a.jobs} process(es)')
         ok = fail = nocal = 0
         with ProcessPoolExecutor(max_workers=a.jobs) as ex:
-            futs = [ex.submit(_one, run, sub, reco, str(out), a.k_from, a.kcal)
+            futs = [ex.submit(_one, run, sub, reco, str(out), a.k_from, a.kcal,
+                              a.tan_max_true)
                     for run, sub, reco in work]
             for f in as_completed(futs):
                 run, sub, n, ng, ksrc, err = f.result()
@@ -263,6 +271,7 @@ def main() -> int:
 
     meta = dict(n_subruns=len(parts), n_tracks=int(len(df)),
                 n_gated=int(df.gated.sum()) if 'gated' in df else None,
+                stage3_tan_max_true=a.tan_max_true,
                 n_calibrated=int(df.angle_calibrated.sum())
                 if 'angle_calibrated' in df else None,
                 runs=sorted(df.run.unique().tolist()) if 'run' in df else [],

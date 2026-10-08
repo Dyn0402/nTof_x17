@@ -257,7 +257,11 @@ def fit_plane(P, plane: str, cal: CalibrationBundle, hyper: Optional[dict] = Non
 # explains best (chi2 improvement over "no signal").
 U_MIN_NS = 250.0
 U_MAX_NS = 1100.0
-TAN_MAX = 0.6
+# In the bundle's RAW tan (true = raw x k), so its true-angle reach moves with
+# the bundle's v.  WFT_TAN_MAX overrides it (read at import, like
+# WFT_BEAM_MIN_STRIPS): a versioned re-pass sets it wide and applies the
+# angular acceptance as a true-angle cut at stage 3 (build_tracks --tan-max-true).
+TAN_MAX = float(os.environ.get('WFT_TAN_MAX', 0.6))
 
 
 def _candidate_score(P, plane, fit: PlaneFit) -> tuple:

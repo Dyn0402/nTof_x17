@@ -549,6 +549,7 @@ def reconstruct_subrun(cfg: BeamConfig, bundle_path: str, out_path: str,
 def _write_meta(df, out_path, cal, cfg, bundle_path, feu_x, feu_y, tags_done,
                 n_seeded, pad_strips, partial=False, allow_acct=None,
                 allow_meta=None):
+    from wft import reco as wreco
     from wft import seed as wseed
     meta = dict(n_events=int(len(df)), n_seeded=int(n_seeded),
                 status='PRELIMINARY' + (' (PARTIAL: run still going)'
@@ -584,7 +585,8 @@ def _write_meta(df, out_path, cal, cfg, bundle_path, feu_x, feu_y, tags_done,
                                  prescan=os.environ.get('WFT_PRESCAN', '0'),
                                  pair_select=os.environ.get('WFT_PAIR_SELECT', '0'),
                                  chi2dof_bad=os.environ.get('WFT_CHI2DOF_BAD', '300'),
-                                 xy_pairing=(cal.xy_pairing or {}).get('features')))
+                                 xy_pairing=(cal.xy_pairing or {}).get('features'),
+                                 tan_max_raw=wreco.TAN_MAX))
     # The selection this table was fitted under, and what it cost at the seeder.
     # `n_missing` is the number that must not be lost: allowlisted events the
     # beam seeder produced no cluster for. They are a real stage-1 -> stage-2

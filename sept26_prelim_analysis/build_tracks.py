@@ -116,6 +116,17 @@ ANGLE_DERIVED = (
     'pred_ls', 'pred_n_cross', 'pred_sipm_s_mm',
 )
 
+#: The reco's own plausibility cut, ``wft.reco.TAN_MAX``, is in the bundle's
+#: RAW tan, so its true-angle reach is ``TAN_MAX x k`` and moves with each
+#: bundle's v (0.6 raw = 0.76 true on production A, 0.51 on is2 C).  A
+#: versioned re-pass runs that cut wide and applies the angular acceptance
+#: here instead, in TRUE tan: ``tan_max_true`` turns on ``in_acceptance``
+#: (|tanx| and |tany| below it) and makes ``gated = gated_reco & in_acceptance``.
+#: ``gated_reco`` keeps the reco's own gate, so the cut stays measurable.
+#: An arm with no certified k has no true angle, so nothing of it is in the
+#: acceptance.  HANDOFF_TRACKING_2026-10-06.md §14-15.
+TAN_MAX_RAW_DEFAULT = 0.6
+
 SCHEMA = 'sept26_prelim/tracks/1'
 
 
@@ -348,7 +359,8 @@ def predictions(df: pd.DataFrame) -> pd.DataFrame:
 # --------------------------------------------------------------------------- #
 def build_arm(reco_dir: Path, arm: str, tr: G.DetTransform,
               run: str, subrun: str,
-              k: float | None = None) -> tuple[pd.DataFrame, dict]:
+              k: float | None = None,
+              tan_max_true: float | None = None) -> tuple[pd.DataFrame, dict]:
     cand, metas = load_reco(reco_dir, arm)
     df = pair_rows(cand)
     df['run'], df['subrun'], df['arm'] = run, subrun, arm
@@ -371,6 +383,27 @@ def build_arm(reco_dir: Path, arm: str, tr: G.DetTransform,
     # the direction on two different calibrations.
     v_insitu = v / float(k) if k else np.nan
     df = local_and_global(df, tr, k=k)
+    df['gated_reco'] = df['gated']
+    tmr = {(m.get('reco_config') or {}).get('tan_max_raw') for m in metas.values()}
+    if len(tmr) > 1:
+        raise ValueError(f'arm {arm}: tags disagree on the reco TAN_MAX {sorted(tmr, key=str)}')
+    tan_max_raw = next(iter(tmr)) if tmr else None
+    # sidecars older than 2026-10-08 do not record it: they ran the code default
+    tan_max_raw = float(tan_max_raw) if tan_max_raw is not None else TAN_MAX_RAW_DEFAULT
+    reach = tan_max_raw * float(k) if k else np.nan
+    if tan_max_true is not None:
+        with np.errstate(invalid='ignore'):
+            acc = ((np.abs(df['tanx'].to_numpy(float)) < tan_max_true)
+                   & (np.abs(df['tany'].to_numpy(float)) < tan_max_true))
+        df['in_acceptance'] = acc
+        df['gated'] = df['gated_reco'].to_numpy() & acc
+        if k and reach < tan_max_true:
+            # the reco already threw away everything above `reach`, so a
+            # wider cut here would claim an acceptance the product lacks
+            raise ValueError(
+                f'arm {arm}: stage-3 acceptance |tan| < {tan_max_true} true is '
+                f'wider than the reco cut ({tan_max_raw} raw x k {float(k):.3f} '
+                f'= {reach:.3f} true); re-run stage 2 wider (WFT_TAN_MAX)')
     df = drift_extent(df, v_insitu, n_depth_bins=nbins)
     df = pointing(df)
     df = predictions(df)
@@ -386,6 +419,12 @@ def build_arm(reco_dir: Path, arm: str, tr: G.DetTransform,
     prov = dict(
         arm=arm, v_drift_prior_um_ns=v, k_arm=(float(k) if k else None),
         v_drift_um_ns=v_insitu, angle_calibrated=bool(k), n_depth_bins=nbins,
+        acceptance=dict(
+            reco_tan_max_raw=tan_max_raw,
+            reco_tan_max_true=(round(float(reach), 4) if k else None),
+            stage3_tan_max_true=tan_max_true,
+            n_gated_reco=int(df['gated_reco'].sum()),
+            n_gated=int(df['gated'].sum())),
         frac_drift_railed=round(float(df['drift_railed'].mean()), 4),
         n_tags=len(metas),
         bundles=sorted({m['calibration'] for m in metas.values()}),
@@ -458,7 +497,7 @@ ORDER = (
     + ['x_local', 'y_local', 'tanx', 'tany', 'drift_t_end_ns', 'drift_len_mm',
        'path_len_mm', 'drift_railed']
     + [f'p0_{k}' for k in 'xyz'] + [f'd_{k}' for k in 'xyz']
-    + ['gated', 'x_quality_ok', 'y_quality_ok', 'x_plausible', 'y_plausible',
+    + ['gated', 'gated_reco', 'in_acceptance', 'x_quality_ok', 'y_quality_ok', 'x_plausible', 'y_plausible',
        'chi2dof_x', 'chi2dof_y', 'x_n_strips', 'y_n_strips',
        'x_slope_reliable', 'y_slope_reliable', 'x_isochronous',
        'y_isochronous', 'tan_sane', 'n_cand_x', 'n_cand_y', 'x_rank', 'y_rank']
@@ -476,7 +515,8 @@ ORDER = (
 
 def build(run: str, subrun: str, reco_dir: Path, stage1: Path | None = None,
           allow: Path | None = None, out_dir: Path | None = None,
-          k_arm: dict | None = None, write: bool = True):
+          k_arm: dict | None = None, write: bool = True,
+          tan_max_true: float | None = None):
     base = str(paths.root('runs')) + '/'
     cfg = json.loads((Path(base) / run / 'run_config.json').read_text())
     trs = G.detector_transforms(cfg)
@@ -487,7 +527,7 @@ def build(run: str, subrun: str, reco_dir: Path, stage1: Path | None = None,
         k = k_arm.get(arm)
         try:
             df, p = build_arm(Path(reco_dir), arm, trs[G.DET_NAME[arm]],
-                              run, subrun, k=k)
+                              run, subrun, k=k, tan_max_true=tan_max_true)
         except FileNotFoundError as exc:
             print(f'  arm {arm}: skipped -- {exc}')
             continue
@@ -517,6 +557,7 @@ def build(run: str, subrun: str, reco_dir: Path, stage1: Path | None = None,
         reco_dir=str(reco_dir), stage1=str(stage1) if stage1 else None,
         allowlist=str(allow) if allow else None,
         n_tracks=int(len(tracks)), n_gated=int(tracks['gated'].sum()),
+        stage3_tan_max_true=tan_max_true,
         n_events=int(tracks.groupby(['tag', 'event_id']).ngroups),
         by_arm={a: int((tracks['arm'] == a).sum()) for a in ARMS},
         by_class=(tracks['event_class'].value_counts().to_dict()
@@ -566,6 +607,11 @@ def main() -> int:
                     help='k_arm_<run>.json from sept26_prelim_analysis.k_arm. '
                          'Only arms it certifies are applied; the rest get '
                          'null angles. Default: <out>/kcal/k_arm_<run>.json')
+    ap.add_argument('--tan-max-true', type=float, default=None,
+                    help='angular acceptance in TRUE tan, applied to `gated` '
+                         '(the reco gate stays as `gated_reco`). For a re-pass '
+                         'run with a wide WFT_TAN_MAX; refused if wider than '
+                         'the reco cut x k.')
     a = ap.parse_args()
 
     s1 = a.stage1 or paths.out('stage1') / f'candidates_{a.run}_{a.subrun}.parquet'
@@ -589,7 +635,7 @@ def main() -> int:
 
     print(f'{a.run}/{a.subrun}')
     tracks, meta = build(a.run, a.subrun, a.reco, stage1=s1, allow=al,
-                         out_dir=a.out, k_arm=k)
+                         out_dir=a.out, k_arm=k, tan_max_true=a.tan_max_true)
     print(f'\n  {meta["n_tracks"]:,} segments in {meta["n_events"]:,} '
           f'(tag, event)s; {meta["n_gated"]:,} gated')
     if meta['by_class']:

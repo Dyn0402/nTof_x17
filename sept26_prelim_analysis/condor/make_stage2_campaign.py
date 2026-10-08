@@ -37,12 +37,16 @@ the bench-seeded ones, each with its OWN v_drift (read from the bundle, not
 the 42.6 pin).  `run_beam_job.py` seeds from them through `make_bundle`, which
 keeps the kernel and kw and replaces only the run's DAQ constants.
 `--min-strips` goes into the job environment (WFT_BEAM_MIN_STRIPS; the seeder
-reads it at import).  `--version` gives the pass its own dest and its own EOS
+reads it at import).  `--tan-max` does the same for wft.reco.TAN_MAX
+(WFT_TAN_MAX, RAW tan): the is2 re-pass runs it wide (1.0) and applies the
+angular acceptance as a true-angle cut at stage 3 (build_tracks
+--tan-max-true), because a raw cut's true reach moves with each bundle's v
+(HANDOFF_TRACKING §14-15).  `--version` gives the pass its own dest and its own EOS
 directory, so it can never overwrite the production full pass:
 
     .venv/bin/python sept26_prelim_analysis/condor/make_stage2_campaign.py --full-pass \
         --arms A,C --insitu A=~/scratch/ntof_insitu/bundles/is2_A,C=~/scratch/ntof_insitu/bundles/is2_C \
-        --min-strips 3 --version is2_v1
+        --min-strips 3 --tan-max 1.0 --version is2_v1
 """
 import argparse
 import hashlib
@@ -122,6 +126,9 @@ def main():
     ap.add_argument('--min-strips', type=int, default=None,
                     help='beam seeder minimum (WFT_BEAM_MIN_STRIPS in the job '
                          'environment); default: the code default (5)')
+    ap.add_argument('--tan-max', type=float, default=None,
+                    help='wft.reco.TAN_MAX in RAW tan (WFT_TAN_MAX in the job '
+                         'environment); default: the code default (0.6)')
     ap.add_argument('--version', default=None,
                     help='tag for a re-pass: dest <x17>/sept26_stage2_<version>, '
                          'EOS /eos/user/d/dneff/x17/sept26_fullpass_<version>')
@@ -144,8 +151,8 @@ def main():
         if a.dest == str(paths.spell('x17', 'sept26_stage2')):
             a.dest = str(paths.spell('x17', f'sept26_stage2_{a.version}'))
         eos_out = f'{eos_out}_{a.version}'
-    elif insitu or a.min_strips:
-        sys.exit('FATAL: --insitu / --min-strips change the reco: give the pass a --version '
+    elif insitu or a.min_strips or a.tan_max:
+        sys.exit('FATAL: --insitu / --min-strips / --tan-max change the reco: give the pass a --version '
                  'so it cannot land in the production directory')
     os.makedirs(os.path.join(a.dest, 'log'), exist_ok=True)
 
@@ -320,6 +327,7 @@ def main():
                 f'v_drift       {json.dumps(vd)} um/ns '
                 f'({"in-situ arms carry their own" if insitu else "PINNED for every arm"})\n'
                 f'min_strips    {a.min_strips if a.min_strips else "code default"}\n'
+                f'tan_max_raw   {a.tan_max if a.tan_max else "code default (0.6)"}\n'
                 f'version       {a.version or "(production)"}\n'
                 f'EOS output    {eos_out}\n'
                 f'sub-runs      {len(have)} of {len(want)}\n'
@@ -334,14 +342,15 @@ def main():
             ('stage2_campaign.sub', 'run_stage2_wrapper.sh'))
     for fn in ship:
         shutil.copy(os.path.join(HERE, fn), os.path.join(a.dest, fn))
-    if a.version or a.min_strips:
-        # the job environment carries the EOS target and the seeder minimum
+    if a.version or a.min_strips or a.tan_max:
+        # the job environment carries the EOS target, the seeder minimum and TAN_MAX
         sp = os.path.join(a.dest, ship[0])
         txt = open(sp).read()
         old = 'EOS_STAGE2_OUT=/eos/user/d/dneff/x17/sept26_fullpass"'
         if old not in txt:
             sys.exit(f'FATAL: {ship[0]} environment line not found; cannot redirect EOS output')
-        new = f'EOS_STAGE2_OUT={eos_out}' + (f' WFT_BEAM_MIN_STRIPS={a.min_strips}' if a.min_strips else '') + '"'
+        new = (f'EOS_STAGE2_OUT={eos_out}' + (f' WFT_BEAM_MIN_STRIPS={a.min_strips}' if a.min_strips else '')
+               + (f' WFT_TAN_MAX={a.tan_max}' if a.tan_max else '') + '"')
         open(sp, 'w').write(txt.replace(old, new))
         print(f'{ship[0]}  environment -> {new[:-1]}')
     os.chmod(os.path.join(a.dest, ship[1]), 0o755)
