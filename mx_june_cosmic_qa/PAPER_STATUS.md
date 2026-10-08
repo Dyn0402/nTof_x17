@@ -1,11 +1,17 @@
 # MX17 detector paper — status
 
+> **2026-10-08: split into two companion papers** (I: detector & performance;
+> II: reconstruction, with a hits-vs-waveforms comparison). The plan, outlines
+> and work list are in **`PAPER_PLAN.md`**, which supersedes the "proposed
+> section" table and the decisions list below. The slide note at the same
+> address is now built by `make_paper_plan_deck.py`.
+
 ## 2026-10-02 re-audit — read this first
 
 **Scope changed:** the paper is now the **June cosmic bench + det4 in the SPS H4
 beam**. n_TOF results are a separate paper. Slide-note version of this section,
 with the figures: <https://dylan-neff.web.cern.ch/notes/mx17-detector-paper-status.html>,
-built by `make_paper_status_deck.py` from the files named below.
+built (until 10-08) by `make_paper_status_deck.py`, now `make_paper_plan_deck.py` from the files named below.
 
 **State:** the analyses are done but no outline or manuscript exists. Order-of-work
 step 6 ("start the paper skeleton") was never begun. Everything paper-related is in
