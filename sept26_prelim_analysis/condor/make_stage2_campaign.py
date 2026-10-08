@@ -132,6 +132,10 @@ def main():
     ap.add_argument('--two-sided', action='store_true',
                     help='WFT_TWO_SIDED=1 in the job environment: the two-sided '
                          'slope search of wft.reco (HANDOFF_TRACKING §17)')
+    ap.add_argument('--flavour', default=None,
+                    help='condor +JobFlavour for the shipped .sub (e.g. testmatch, '
+                         '3 days). The two-sided search is >=15x slower per fit, '
+                         'so its jobs outgrow "workday" (HANDOFF_TRACKING §19)')
     ap.add_argument('--version', default=None,
                     help='tag for a re-pass: dest <x17>/sept26_stage2_<version>, '
                          'EOS /eos/user/d/dneff/x17/sept26_fullpass_<version>')
@@ -332,6 +336,7 @@ def main():
                 f'min_strips    {a.min_strips if a.min_strips else "code default"}\n'
                 f'tan_max_raw   {a.tan_max if a.tan_max else "code default (0.6)"}\n'
                 f'two_sided     {"ON (WFT_TWO_SIDED=1)" if a.two_sided else "off"}\n'
+                f'flavour       {a.flavour or "as in the .sub"}\n'
                 f'version       {a.version or "(production)"}\n'
                 f'EOS output    {eos_out}\n'
                 f'sub-runs      {len(have)} of {len(want)}\n'
@@ -358,6 +363,14 @@ def main():
                + (' WFT_TWO_SIDED=1' if a.two_sided else '') + '"')
         open(sp, 'w').write(txt.replace(old, new))
         print(f'{ship[0]}  environment -> {new[:-1]}')
+    if a.flavour:
+        sp = os.path.join(a.dest, ship[0])
+        txt = open(sp).read()
+        lines = [ln for ln in txt.splitlines() if ln.startswith('+JobFlavour')]
+        if len(lines) != 1:
+            sys.exit(f'FATAL: {ship[0]} has {len(lines)} +JobFlavour lines; cannot set the flavour')
+        open(sp, 'w').write(txt.replace(lines[0], f'+JobFlavour             = "{a.flavour}"'))
+        print(f'{ship[0]}  +JobFlavour -> {a.flavour}')
     os.chmod(os.path.join(a.dest, ship[1]), 0o755)
     if a.full_pass:
         for run, _ in have:
