@@ -34,7 +34,9 @@ BASE = ('c1', 'kY', 'tau_s', 'sigma_s', 'sigma_p0', 'Dp')
 STEP = dict(c1=0.03, kY=0.30, tau_s=20.0, sigma_s=10.0, sigma_p0=0.05, Dp=0.003,
             c2_over_c1=0.1, c2_over_c1_x=0.1, c2_over_c1_y=0.1, cX=0.3,
             c1_asym_x=0.2, sigma_p0_x=0.05, sigma_p0_y=0.05, tau_y_fac=0.3)
-LO = dict(c1=0.05, kY=0.3, tau_s=30.0, sigma_s=1.0, sigma_p0=0.10, Dp=0.001,
+# sigma_p0 floor 0.03 (19_ratio_recal used 0.10, but det6's production
+# bundle sits at 0.039 -- a seed outside the box rejects every step)
+LO = dict(c1=0.05, kY=0.3, tau_s=30.0, sigma_s=1.0, sigma_p0=0.03, Dp=0.001,
           c2_over_c1=0.0, c2_over_c1_x=0.0, c2_over_c1_y=0.0, cX=0.3,
           c1_asym_x=-0.95, sigma_p0_x=0.03, sigma_p0_y=0.03, tau_y_fac=0.3)
 HI = dict(c1=0.60, kY=6.0, tau_s=400.0, sigma_s=400.0, sigma_p0=1.50, Dp=0.100,
@@ -215,6 +217,12 @@ def main():
         h.update({k: float(q) for k, q in zip(free, x)})
         return h
 
+    for k in free:                       # a seed outside the box would
+        lo_k, hi_k = LO[k], hi[k]        # make every step a rejection
+        if not (lo_k <= start[k] <= hi_k):
+            print(f'[recal {a.arm}] WARNING seed {k}={start[k]:.4g} outside '
+                  f'[{lo_k}, {hi_k}] -- clipped', flush=True)
+            start[k] = float(min(max(start[k], lo_k), hi_k))
     x0 = np.array([start[k] for k in free], float)
     print(f'[recal {a.arm}] {a.bundle}\n  v={v:.2f} train={len(train)} '
           f'free={list(free)} fixed={fixed}', flush=True)
