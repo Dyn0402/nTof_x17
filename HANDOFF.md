@@ -142,41 +142,44 @@ reconstructed.
 
 ## Calorimetry feasibility + MM dE/dx — updated 2026-10-08 (dylan-MS-7C84)
 
-**Resume:** planning done (`ntof_calorimetry/PLAN.md`), nothing run; next = §6 step 1, plastic MIP scale on run_149 cosmics.
+**Resume:** plan executed and closed (C1, C2, C3, C4, M1, M2), results in `ntof_calorimetry/PLAN.md`; slide note on the site. Only open: C1.4 and the bar thickness.
 
-**Goal:** find out what energy information the n_TOF data can give, given dead liquids (D6/D7 in
-`sept26_prelim_analysis/PLAN.md`). Also test MM dE/dx as a concept for future iterations, on cosmics first.
+**Goal:** find what energy information the n_TOF data can give, and test MM dE/dx as a concept.
 
-**Done:**
-- `ntof_calorimetry/PLAN.md` covers:
-  - the inventory;
-  - the X17 kinematics table;
-  - feasibility steps C1–C5 (scintillators) and M0–M5 (MM dE/dx), each with a stop ("kill") criterion;
-  - the package layout, the order of work, and limits.
-- Key framing: the LS is one ~18 mm LAB cell (21.2 mm vessel), so the stack is a range telescope, not a
-  calorimeter. Wall + plastic stop ~5 MeV electrons (est.).
-- X17 soft leg at θ_open ≥ 140° has T = 3.9–4.8 MeV (exact two-body), so it stops in the plastic. X17
-  then gives an energy-vs-angle line where IPC gives a continuum.
-- Per-leg threshold (≳2.5 MeVee): every X17 leg is ≥ 3.9 MeV, while ²⁸Al β ends at 2.86 MeV.
+**Done (all in `ntof_calorimetry/`, report `/media/dylan/data/x17/calorimetry/report.html`):**
+- C1 plastic: the srccal keVee line reads the cosmic MIP at 0.76–0.97 of Bichsel 3.41 MeV (Geant4
+  agrees: 3.375). New MIP-anchored scale `c1/calib_plastic_e.json` (4–7 %). Trigger threshold
+  2.1–2.9 MeVee. Linear to 1.45 MIP.
+- C4 liquids: MIP = 20–28 mV against a 16–18 mV n_TOF ZS threshold, so the liquids are threshold-limited.
+  Their source scale is ×5–7 wrong. Usable: A u≥0 at 65–86 %, D u≥50 at 50–70 %.
+- In-beam A–C through-goers at ≥10 ms reach the liquid at 0.10 of the cosmic expectation, so they are
+  mostly not penetrating.
+- M1/M2: raw road charge (`mm_charge.py`). FWHM/MPV ~1, and a 2-MIP flag reaches only 40 % at 10 %
+  mistag, so this line is KILLED.
+- C2 (condor 4409644): 1.2 MeV is lost before the plastic, and half of 4 MeV electrons reach it.
+- C3 (condor 4409645, 10^7 pair sim, IPC reweighted to ipc_born): plastic energy gives a Z² gain over
+  θ_open of 1.05–1.08, so KILLED. The true soft-leg T would give ×2.5–4: a design lesson.
 
-**In progress / where it stopped:** nothing half-done. Dylan asked for planning only; the analysis runs later.
+**In progress / where it stopped:** nothing half-done. All condor jobs finished; outputs are on EOS
+`full_sim/calorimetry/` and pulled to `<calo>/c2`, `<calo>/c3`.
 
-**Next steps:**
-1. C1.1: plastic MIP MPV × cosθ on run_149/run_103 cosmics (slim join exists in
-   `ntof_cosmics/cosmic_wall_scale.py`) + in-beam through-goers. The measured 3.0–3.4 MeVee is against
-   ~3.6–4 MeV expected (est.); this decides the scale.
-2. C4: liquid MIP efficiency maps on the same cosmic sample (A/C via A–C line).
-3. M1 + M2: raw road charge from `decoded_root` (condor), then the Landau / path / depth / gain map /
-   resolution on run_149.
+**Next steps (optional):**
+1. Measure a plastic bar (20 vs 25 mm). 25 mm would move the MIP scale by 21 %.
+2. C1.4 gain vs time since flash: needs an in-beam energy reference (H-capture Compton edge?).
+3. Tell the through-going-background owner that beam through-goers are not penetrating.
 
 **Gotchas / decisions:**
-- Do NOT use `q_sum`/`q_total`/`q_per_len` for dE/dx (NNLS runaway, O10). Use a raw pedestal- and
-  CM-subtracted road sum, with path = 30 mm·secθ (not `drift_len_mm`, which rails).
-- IPC must come from `ipc_born.py`. Check which generator `pairs_thermal_trig_2cm_nose` used and
-  re-weight it.
-- Do not edit `wft/reco.py`, `build_tracks.py`, `campaign_tracks.py`, `make_stage2_campaign.py` from
-  this package: the is2_v1 session owns those.
+- Beam through-goers are not a MIP sample. Use run_149 cosmics (clock-matched) for scintillator MIPs.
+- Plastic MIP fits need per-event truncation at the trigger threshold (A's threshold is at 0.85–0.9 of
+  the peak) and a σ/MPV prior.
+- C3 metric: fine 2D bins on the IPC MC fake gains. Use coarse bins, pool bins with <10 MC events, and
+  check the split halves.
+- An apparent attachment fall in C was a selection artefact (per-track normalisation on in-window
+  tracks).
+- `pkill -f <pattern>` and `pgrep` loops match their own shell command line: don't.
 
 **Key files & commands:**
-- `ntof_calorimetry/PLAN.md` — the plan (§6 = order and decision points)
-- outputs planned at `/media/dylan/data/x17/calorimetry/`; G4 at `/eos/experiment/ntof/data/x17/full_sim/calorimetry/`
+- `ntof_calorimetry/README.md` — run order; `PLAN.md` — the plan plus "Results so far"
+- `ntof_calorimetry/condor/` — C2/C3 submitters and reducer (deployed at
+  `/afs/cern.ch/user/d/dneff/condor/calorimetry/scripts`)
+- `PYTHONPATH=. .venv/bin/python -m ntof_calorimetry.make_report`
