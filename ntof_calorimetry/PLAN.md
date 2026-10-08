@@ -474,3 +474,29 @@ truncated Landau(x)Gauss), `scint_ecal.py` (C1), `liquid_salvage.py` (C4),
   0.10 +- 0.04 (A) / 0.04 (C) of the position-matched cosmic expectation. They
   are mostly **not penetrating muons**, which matters for the through-going
   background picture (`ntof_cosmics/README.md`).
+- **Plastic thickness is a single-point dependency.** 20 mm per the Geant4
+  geometry (`SimConfig.hh`, corrected 2026-07-20 from 2.5). The run_config
+  text and `pss_mip_calib` still say 2.5 cm. At 25 mm the MIP is 4.30 MeV,
+  the MIP-anchored scale drops 21 %, and the source line reads 23-40 % low.
+  Measure a bar.
+- **M1 done** (`mm_charge.py`): the raw road charge over the waveform reco's
+  own corridor, all 20 samples, with the common mode taken from each block's
+  channels OUTSIDE the road (the stock CNS eats a steep track's charge). The
+  off-road control averages -0.06 % of the signal. Inputs: the 14 run_149
+  sub-runs whose waveforms the in-situ work staged in
+  `~/scratch/ntof_insitu/beam/run_149` (A, C only).
+- **M2 done; the kill condition is met.** Whole-gap FWHM/MPV 0.95
+  (sigma_eq 40 %), truncated means 47 % (no gain: shaping and the kernel
+  correlate samples). Best-case 2-MIP flag is ~40 % efficient at 10 % 1-MIP
+  mis-tag. The 2-MIP line stops; M3 is not run. Chamber C (v = 28 um/ns)
+  needs > 1.1 us for the gap, so its deep charge falls off the 1.2 us window
+  on ~94 % of tracks; only the plateau estimator covers it. Gain spread per
+  40 mm cell: 19 % on A, 39 % on C. **No attachment visible** with the
+  unbiased (absolute, all-track) depth profile; a per-track-normalised
+  in-window version faked a 3x fall on C.
+- **C2/C3 staged, not submitted:** `condor/submit_c2.py` (single e-/e+,
+  0.5-16 MeV, 2 angles) and `condor/submit_c3_reduce.py` (the pair sim ->
+  per-event-arm deposits), both through `condor/reduce_edep.py` (prompt hits,
+  t < 1e8 ns). They run on lxplus against
+  `/afs/cern.ch/work/d/dneff/git/MX17_Full_Geant`. Test the reducer on a
+  200-event file first: it has not been run on real sim output.

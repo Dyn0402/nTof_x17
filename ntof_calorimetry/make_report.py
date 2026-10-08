@@ -29,7 +29,7 @@ from ntof_calorimetry.mip_sample import OUT  # noqa: E402
 from ntof_scint_stack.extract import PLAS_THR  # noqa: E402
 from sept26_prelim_analysis import figstyle as FS  # noqa: E402
 
-C1, C4, FIG = OUT / 'c1', OUT / 'c4', OUT / 'figures'
+C1, C4, M2, FIG = OUT / 'c1', OUT / 'c4', OUT / 'm2', OUT / 'figures'
 E_MIP = 3.41
 BARS = ['PSSA1', 'PSSA2', 'PSSC1', 'PSSC2', 'PSSD1', 'PSSD2']
 
@@ -42,7 +42,59 @@ def _load() -> dict:
     t['calib'] = json.loads((C1 / 'calib_plastic_e.json').read_text())
     t['spec'] = pd.read_parquet(C1 / 'mip_spectra.parquet')
     t['liq'] = pd.read_parquet(C4 / 'liquid_tagged.parquet')
+    if (M2 / 'summary.json').exists():
+        t.update({f'm2_{k}': pd.read_csv(M2 / f'{k}.csv') for k in
+                  ('resolution', 'two_mip', 'vs_path', 'depth', 'gain_map')})
+        t['m2_summary'] = json.loads((M2 / 'summary.json').read_text())
+        t['m2_sel'] = pd.read_parquet(M2 / 'dedx_selected.parquet')
     return t
+
+
+def fig_m2(t) -> None:
+    S, R = t['m2_sel'], t['m2_resolution']
+    rng = np.random.default_rng(3)
+    fig, ax = FS.figure(FS.FIG)
+    edges = np.linspace(0, 5, 101)
+    rows = []
+    for arm, est, ls in (('A', 'q_whole', '-'), ('A', 'q_plat', '--'), ('C', 'q_plat', ':')):
+        m = float(R[(R.arm == arm) & (R.estimator == est)].mpv.iloc[0])
+        x = S[(S.arm == arm) & S[est].notna()]
+        v = x[est].to_numpy() / m
+        n, _ = np.histogram(v, edges)
+        st = FS.det_style(arm)
+        lab = f'{arm}, {"whole gap" if est == "q_whole" else "plateau"}'
+        ax.stairs(n / n.sum(), edges, color=st['color'], lw=1.5, ls=ls, label=f'1 muon: {lab}')
+        rows += [dict(series=f'1mip_{arm}_{est}', lo=a, f=b) for a, b in zip(edges[:-1], n / n.sum())]
+        if est == 'q_whole':
+            Q, p = x[est].to_numpy() * x.path_mm.to_numpy(), x.path_mm.to_numpy()
+            i, j = rng.integers(0, len(v), (2, 20000))
+            two = (Q[i] + Q[j] * p[i] / p[j]) / p[i] / m
+            n2, _ = np.histogram(two, edges)
+            ax.stairs(n2 / n2.sum(), edges, color=FS.INK, lw=1.3, label='2 muons (summed real tracks), A whole gap')
+            rows += [dict(series='2mip_A', lo=a, f=b) for a, b in zip(edges[:-1], n2 / n2.sum())]
+            cut = np.quantile(v, 0.9)
+            ax.axvline(cut, color=FS.COPPER, lw=1.0, ls=':')
+            ax.text(cut + 0.05, ax.get_ylim()[1] * 0.9 if ax.get_ylim()[1] > 0 else 0.03,
+                    '10 % 1-muon\nmis-tag', color=FS.COPPER, fontsize=8, va='top')
+    ax.set_xlabel('road charge per mm of path / MPV')
+    ax.set_ylabel('fraction')
+    ax.legend(fontsize=8)
+    FS.title(ax, 'One 30 mm gap cannot tell one MIP from two',
+             'run_149 cosmics; the 2-muon sample is a best case (no reco or ZS effects)')
+    FS.save(fig, FIG / 'm2_landau', data=pd.DataFrame(rows))
+
+    Z = t['m2_depth']
+    fig, ax = FS.figure(FS.HALF)
+    for arm in 'AC':
+        d = Z[(Z.arm == arm) & (Z.depth_mm >= 0) & (Z.depth_mm <= 40)]
+        st = FS.det_style(arm)
+        ax.plot(d.depth_mm, d.frac / d.frac.max(), color=st['color'], marker=st['marker'], ms=4,
+                label=f'{st["label"]} (v = {"34" if arm == "A" else "28"} um/ns)')
+    ax.set_xlabel('drift depth of the sample, mm')
+    ax.set_ylabel('mean road charge per sample / peak')
+    ax.legend(fontsize=8)
+    FS.title(ax, 'No attachment visible on either chamber', 'all tracks, absolute charge, each depth from every window covering it')
+    FS.save(fig, FIG / 'm2_depth', data=Z)
 
 
 def fig_ladder(t) -> None:
@@ -376,8 +428,17 @@ cosmic efficiency of its 50 mm cell. Observed / expected:</p>
 (-100, +60) ns window, and their amplitudes match the cosmic ones (medians 26-30 mV in every
 run). A timing loss and a beam-only gain change are both ruled out.</p>
 
+{m2_section(t)}
+
 <h2>What this does not rule out</h2>
 <ul>
+<li><b>The bar thickness.</b> 20 mm PVT, per the Geant4 geometry
+(<code>SimConfig.hh</code>: "2.0 cm PVT ... corrected 2026-07-20, was 2.5"). The run_config
+descriptions still say 20&times;30&times;2.5 cm, and so did <code>pss_mip_calib</code>. At
+25 mm the expected MIP is 4.30 MeV, not 3.41. The MIP-anchored mV/MeVee would then drop by
+20 %, and the source line would read 23-40 % low instead of 3-24 %. The direction of every
+conclusion is unchanged, but the absolute scale depends on this one number. A caliper on a
+bar settles it.</li>
 <li><b>The MIP anchor rests on a calculation.</b> The Bichsel thin-layer MPV is taken as
 good to ~3 %, and Birks to ~2 % (both inside the quoted 4-7 %). The C2 Geant4 response
 replaces the calculation, and should come out within that.</li>
@@ -406,11 +467,65 @@ they are conversion pairs, Compton pairs or chance alignments is open.</li>
 <li>C4 liquid salvage: <b>done</b>. Liquids are threshold-limited (gain against ZS);
 usable as a hard-leg tag on A u &ge; 0 (65-86 %) and D u &ge; 50 (50-70 %). C3 should size
 that subset.</li>
-<li>Next in the plan's order: M1/M2 (raw road charge, cosmic dE/dx) and C2 (Geant4
-electron response).</li>
+<li>M1 raw road charge: <b>done</b> (<code>mm_charge.py</code>). M2 cosmic dE/dx: <b>done,
+kill condition met</b> &mdash; the 2-MIP line stops here (M3 not run: its statistical best
+case is already ~40 % at 10 % mis-tag). M4: only the gain-monitor use survives.</li>
+<li>Next: C2 (Geant4 single-electron response, condor on lxplus), then C3.</li>
 </ul>
 </body></html>"""
     return out
+
+
+def m2_section(t) -> str:
+    if 'm2_summary' not in t:
+        return ''
+    R, T, S = t['m2_resolution'], t['m2_two_mip'], t['m2_summary']
+    rA = R[(R.arm == 'A') & (R.estimator == 'q_whole')].iloc[0]
+    rAt = R[(R.arm == 'A') & (R.estimator == 'q_trunc_t')].iloc[0]
+    rC = R[(R.arm == 'C') & (R.estimator == 'q_plat')].iloc[0]
+    e10 = T[(T.mistag == 0.1)].eff_2mip
+    rr = R[['arm', 'estimator', 'n', 'mpv', 'fwhm_over_mpv', 'sigma_eq', 'tail_gt2', 'q16', 'q84']]
+    tt = T[['arm', 'estimator', 'mistag', 'eff_2mip']]
+    gs = S['gain_map_spread']
+    return f"""<h2>M1-M2 &mdash; MM dE/dx on cosmics</h2>
+<div class="verdict"><p><b>Verdict: the plan's kill condition is met.</b> The raw road
+charge of one 30 mm gap has FWHM/MPV &asymp; {rA.fwhm_over_mpv:.2f} (&sigma;<sub>eq</sub>
+{rA.sigma_eq * 100:.0f} %) on A for the whole gap, and {rAt.sigma_eq * 100:.0f} % for the
+truncated mean over depth samples. Truncation does not help: shaping and the resistive
+kernel correlate neighbouring samples. Even in the best case (two real tracks' charges
+added, no reconstruction or ZS losses), a cut keeping 10 % of single muons flags only
+<b>{e10.min() * 100:.0f}-{e10.max() * 100:.0f} %</b> of two-muon tracks. That is not a 2-MIP
+flag, so the 2-MIP line stops: M3 is not run. What the charge <i>can</i> do is monitor
+gain per 40 mm cell: the spread is {gs['A'] * 100:.0f} % on A and {gs['C'] * 100:.0f} % on C.</p></div>
+<p><b>Estimator</b> (<code>mm_charge.py</code>): the sum over the strips on each track's own
+corridor (from the waveform reco: p0 + depth &times; tan, depth -3 to 33 mm, &plusmn;5 mm),
+over all 20 samples, of the pedestal-subtracted ADC. The common mode is taken per sample
+from each 64-channel block's channels <i>outside</i> the road; the stock CNS would subtract
+part of a steep track's own charge. An off-road control road of the same width averages
+{S['ctrl']['A']['ctrl_med'] * 100:+.2f} % of the signal (IQR {S['ctrl']['A']['ctrl_iqr'] * 100:.1f} %).
+Q<sub>x</sub>/Q<sub>y</sub> = {S['xy']['A']['qx_over_qy']:.2f}. Sample: 14 run_149
+sub-runs with waveforms on disk, {S['n_sel']['A']:,} A and {S['n_sel']['C']:,} C tracks.
+<b>Arm C drifts at 28 &micro;m/ns</b>, so 30 mm takes ~1.1 &micro;s and its deep charge
+falls off the 1.2 &micro;s window. Its whole-gap Q is truncated on ~94 % of tracks, and only
+the plateau estimator (per-sample charge inside the drift / depth per sample) covers it:
+&sigma;<sub>eq</sub> {rC.sigma_eq * 100:.0f} %.</p>
+<img src="figures/m2_landau.png" alt="dE/dx distributions">
+{_tab(rr, {'n': '{:.0f}', 'mpv': '{:.0f}', 'fwhm_over_mpv': '{:.2f}', 'sigma_eq': '{:.2f}', 'tail_gt2': '{:.2f}', 'q16': '{:.2f}', 'q84': '{:.2f}'})}
+{_tab(tt, {'eff_2mip': '{:.2f}', 'mistag': '{:.2f}'})}
+<img src="figures/m2_depth.png" alt="charge vs depth" style="max-width:520px">
+<p class="cap">Mean road charge per 60 ns sample against the drift depth that sample
+corresponds to. Each depth bin includes every track whose window covers it. On both chambers
+the shape is the drift integrated by the shaper; C (28 &micro;m/ns) peaks earlier in depth
+than A (34 &micro;m/ns), and it falls no faster afterwards. So attachment in C's wet gas
+(B/C/D took ~0.8 % H<sub>2</sub>O in July) is not visible at this precision. An earlier
+version of this plot normalised each track and used only C's in-window tracks. That
+minority subset (early t0) produced a ~3&times; fall with depth, which was a selection
+artefact.</p>
+<p>The cos&theta; scaling holds: the plateau charge per mm of depth grows as sec&theta;
+(A: 1.06 &rarr; 1.24 against sec 1.06 &rarr; 1.24) and flattens only in the steepest bin.
+A against C on the same muon: Spearman {S['same_muon']['spearman']:.2f}
+(n = {S['same_muon']['n']}), small. The two chambers measure nearly independently.</p>
+"""
 
 
 def main() -> int:
@@ -420,6 +535,8 @@ def main() -> int:
     fig_spectra(t)
     fig_path(t)
     fig_liquid(t)
+    if 'm2_summary' in t:
+        fig_m2(t)
     (OUT / 'report.html').write_text(report(t))
     print(f'wrote {OUT / "report.html"}')
     return 0
