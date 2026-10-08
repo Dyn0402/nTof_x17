@@ -108,8 +108,99 @@ def summary():
     return R
 
 
+# Runs whose wall rate dips in BOTH chains (a scintillator condition, not the
+# reco): kept out of the per-angle confirmation so they do not dilute a bin.
+WALL_DIP = {'run_110', 'run_114', 'run_132', 'run_162', 'run_126'}
+TAN_BINS = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.9]
+
+
+def bins():
+    """Net wall confirmation (match - off-time control) per |true tan| bin,
+    per view, over the run/arms both chains can extrapolate.  A mirrored fit
+    sends the extrapolation to the wrong tile, so mirrors show up here as a
+    loss at 0.3-0.6.  Caveat: the chains' k differ (~0.95 vs 1.23 on A), so a
+    true-tan bin holds different raw-angle tracks in each."""
+    rows = []
+    for arm in ARMS:
+        have = {c: {f.stem.split('scint_')[1].rsplit('_', 1)[0]
+                    for f in (CACHE / c).glob(f'scint_*_{arm}.parquet')} for c in CHAINS}
+        runs = sorted((have['prod'] & have['pilot']) - WALL_DIP)
+        for chain in CHAINS:
+            S = pd.concat([pd.read_parquet(CACHE / chain / f'scint_{r}_{arm}.parquet') for r in runs])
+            S = S[S.on_wall.astype(bool)]
+            for v in ('tanx', 'tany'):
+                b = pd.cut(S[v].abs(), TAN_BINS)
+                for iv, g in S.groupby(b, observed=True):
+                    rows.append(dict(arm=arm, view=v, chain=chain, lo=iv.left, hi=iv.right, n=len(g),
+                                     n_runs=len(runs), net=float(g.match_wall.mean() - g.match_wall_ctrl.mean())))
+    B = pd.DataFrame(rows)
+    B.to_csv(OUT / 'confirm_by_tan.csv', index=False)
+    print(B.pivot_table(index=['arm', 'view', 'lo'], columns='chain', values=['n', 'net']).round(3))
+    return B
+
+
+INSITU = Path.home() / 'scratch' / 'ntof_insitu'
+
+
+def cosmic():
+    """Track by track on the A-C cosmic truth: is2w (one-sided) against is2ts
+    (two-sided), 0.2 <= |true tan| < 0.5.  For the tracks the search changes
+    (|d tan_raw| > 0.01): chi2 and t0 change, and raw/true before and after."""
+    T = pd.read_parquet(INSITU / 'truth.parquet')
+    T = T[~T.train]
+    rows = []
+    for arm in ARMS:
+        W = pd.read_parquet(INSITU / f'reco_is2w_s3_{arm}.parquet')
+        S = pd.read_parquet(INSITU / f'reco_is2ts_s3_{arm}.parquet')
+        M = T[T.arm == arm].merge(W, on=['subrun', 'event_id']).merge(
+            S, on=['subrun', 'event_id'], suffixes=('_w', '_s'))
+        for ax in 'xy':
+            t, w, s = M[f'tan_{ax}'], M[f'{ax}_tan_theta_w'], M[f'{ax}_tan_theta_s']
+            m = (t.abs() >= 0.2) & (t.abs() < 0.5) & np.isfinite(w) & np.isfinite(s)
+            ch = m & ((s - w).abs() > 0.01)
+            dc = (M[f'{ax}_chi2_s'] - M[f'{ax}_chi2_w'])[ch]
+            dt = (M[f'{ax}_t0_s'] - M[f'{ax}_t0_w'])[ch]
+            ew, es = (w - t).abs()[ch], (s - t).abs()[ch]
+            rows.append(dict(arm=arm, view=ax, n=int(m.sum()), changed=int(ch.sum()),
+                             sign_flips=int((np.sign(s) != np.sign(w))[ch].sum()),
+                             dchi2_med=float(dc.median()), frac_chi2_lower=float((dc < 0).mean()),
+                             dt0_med_ns=float(dt.median()),
+                             ratio_truth_w=float((w / t)[ch].median()), ratio_truth_s=float((s / t)[ch].median()),
+                             abs_err_w=float(ew.median()), abs_err_s=float(es.median()),
+                             frac_closer=float((es < ew).mean())))
+    C = pd.DataFrame(rows)
+    C.to_csv(OUT / 'cosmic_two_sided_changed.csv', index=False)
+    print(C.round(3).to_string(index=False))
+    return C
+
+
+RR = Path(__file__).resolve().parent / 'results' / 'repass_readiness'
+
+
+def valley():
+    """Synthetic steep muons (mirror_chi2.py): right-sign two-sided fits
+    against the refit from the true side.  Where t0 disagrees by > 30 ns, does
+    it cost chi2 or angle?  (A flat p0-t0 valley costs neither.)"""
+    rows = []
+    for arm in ARMS:
+        d = pd.read_parquet(RR / f'mirror_ts_{arm}.parquet')
+        d = d[(np.sign(d.ts_raw) == np.sign(d.tan_u)) & (d.tan_u.abs() > 0.3)]
+        ddt = d.ts_t0 - d.t0_right
+        big = d[ddt.abs() > 30]
+        dc = big.ts_chi2 - big.chi2_right
+        rows.append(dict(arm=arm, n=len(d), n_t0_off_30ns=len(big), frac=len(big) / len(d),
+                         dchi2_med=float(dc.median()), dchi2_p90=float(dc.quantile(0.9)),
+                         dof_med=float(big.dof.median()), frac_earlier=float((ddt[ddt.abs() > 30] < 0).mean()),
+                         raw_ratio_ts_over_right=float((big.ts_raw / big.raw_right).median()),
+                         dp0_med_mm=float((big.ts_p0 - big.p0_right).abs().median())))
+    V = pd.DataFrame(rows)
+    V.to_csv(OUT / 'synthetic_t0_valley.csv', index=False)
+    print(V.round(3).to_string(index=False))
+    return V
+
+
 if __name__ == '__main__':
     ap = argparse.ArgumentParser()
-    ap.add_argument('step', choices=('match', 'summary'))
+    ap.add_argument('step', choices=('match', 'summary', 'bins', 'cosmic', 'valley'))
     a = ap.parse_args()
-    {'match': match, 'summary': summary}[a.step]()
+    {'match': match, 'summary': summary, 'bins': bins, 'cosmic': cosmic, 'valley': valley}[a.step]()
