@@ -1357,3 +1357,42 @@ outputs `steep_{A,C}_is2_*.parquet` in the g4_digi dir):
 **Recommendation for Dylan:** stage-2 TAN_MAX wide (1.0 raw), angular acceptance as a true-angle cut at stage 3
 (build_tracks `gated`), initially ≈ 0.6 true until the mirrors are understood. Needs: a TAN_MAX override in the package
 (env or bundle field), the stage-3 cut, rebuild package, then the pilot (check 3).
+
+## 16 · TAN_MAX decided; pilot submitted (2026-10-08, evening)
+
+**Decision (Dylan):** wide stage 2 (TAN_MAX 1.0 raw), angular acceptance as a TRUE-tan cut at stage 3, ≈ 0.6 until
+the mirror fits are understood.
+
+**Code (7cd9db7):**
+- `wft.reco.TAN_MAX` reads `WFT_TAN_MAX` at import. The sidecar records `reco_config.tan_max_raw`; older sidecars have
+  no field and `build_tracks` assumes 0.6.
+- `make_stage2_campaign --tan-max` adds it to the job environment.
+- `build_tracks` / `campaign_tracks --tan-max-true X`:
+  - new columns `gated_reco` (the reco's gate) and `in_acceptance`;
+  - `gated = gated_reco & in_acceptance`;
+  - per-arm `acceptance` block in the sidecar;
+  - REFUSES X > tan_max_raw × k, the reco's own reach.
+  - Arms with no k have no true angle, so none of their tracks are in the acceptance.
+- **Validated on run_86, tags 000+003:** the env override is identical to the monkeypatched is2w run (rows, gated,
+  tans to 1e-4). Products are in `~/scratch/ntof_insitu/yieldgate/is2e`. Gated at 0.6 true: A 3,490 / C 1,915, against
+  3,471 / 1,762 for the staged 0.6-raw chain.
+
+**Packages** (built at 7cd9db7 from a clean tree; env `WFT_BEAM_MIN_STRIPS=3 WFT_TAN_MAX=1.0`, EOS
+`/eos/user/d/dneff/x17/sept26_fullpass_is2_v1`):
+- **Pilot** — one sub-run per run (36 runs, the first sub-run of each; list in
+  `/media/dylan/data/x17/sept26_prelim/pilot_subset_is2_v1.json`):
+  - 702 jobs, **SUBMITTED as condor cluster 4409382** from lxplus `~/sept26_stage2_is2_v1_pilot`;
+  - local copy `…/sept26_prelim/pkg_is2_v1_pilot`.
+- **Full** — 6,466 jobs, staged NOT submitted at lxplus `~/sept26_stage2_is2_v1`; local copy `…/pkg_is2_v1`.
+  - The pilot writes to the same EOS directory, so give the full pass `--done-list`: rebuild with it, or filter
+    jobs.txt.
+- **Old 0.6-raw package** (afa9fcb), moved aside on both sides: `~/sept26_stage2_is2_v1_tanmax06_superseded` (lxplus)
+  and `pkg_is2_v1_tanmax06_superseded` (local).
+
+**Next:**
+1. When the pilot lands, pull it to a versioned fullpass dir. Then run `campaign_tracks --fullpass <it> --kcal
+   /media/dylan/data/x17/sept26_prelim/kcal_is2_v1 --arms A,C --tan-max-true 0.6 --out …/stage3_is2_v1_pilot`.
+   Compare against production per run: confirmed and gated yields, the late fraction, `gated_reco` vs `gated`.
+   Note: run_126 has no k.
+2. Mirror fits: the χ² of the mirror vs the true solution on the steep synthetic events (§15 check 1).
+3. Then decide on the full launch.

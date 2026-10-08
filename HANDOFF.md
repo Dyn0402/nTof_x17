@@ -65,66 +65,54 @@ proposed, but Dylan has not picked any yet.
 
 ## Beam-off cosmics: angle response + in-situ reco — updated 2026-10-08 (dylan-MS-7C84)
 
-**Resume:** is2_v1 re-pass staged, NOT launched; checks 1–2 done (§15). Next: Dylan's TAN_MAX decision → stage-3 cut → pilot.
+**Resume:** is2_v1 PILOT running (condor 4409382, 702 jobs, TAN_MAX 1.0 raw). Next: stage 3 with --tan-max-true 0.6, compare to prod.
 
-**Update 2026-10-08 pm:** next steps in order: (1) Dylan decides the cut (rec: wide stage-2 1.0 raw + true-angle cut ≈0.6 at stage 3); (2) add a TAN_MAX override to the package + the stage-3 `gated` cut in build_tracks; (3) rebuild package, run the pilot (one sub-run/run); (4) measure χ² of mirror vs true solutions on the steep synthetic events. Status: pre-launch checks 1–2 done (§15, `ntof_cosmics/results/yield_gate/report.html`): no per-period surprise (is2 +39–49 % A / +32–39 % C confirmed over production); widening TAN_MAX adds mostly unconfirmed tracks; synthetic muons show 13–40 % mirror (wrong-sign) fits at |tan| ≥ 0.3. Recommended: wide stage-2 cut + true-angle cut at stage 3. Pilot (check 3) waits on that decision.
-
-**Read first:** `ntof_cosmics/HANDOFF_TRACKING_2026-10-06.md` §14 (today), then §13. §10g and §11 still hold; §12 is
-superseded. Slide note of the review: <https://dylan-neff.web.cern.ch/notes/ac-insitu-angles.html>.
+**Read first:** `ntof_cosmics/HANDOFF_TRACKING_2026-10-06.md` §16 (today, evening), then §15, §14 and §13. §10g and §11 still
+hold; §12 is superseded. Slide note of the review: <https://dylan-neff.web.cern.ch/notes/ac-insitu-angles.html>.
 
 **Goal:** a reconstruction that measures angles correctly at n_TOF, head-on included, so same-chamber pairs can be
 reconstructed.
 
 **Done (2026-10-08):**
-- Review before the re-pass, built from data:
-  - `repass_readiness.py all` → `ntof_cosmics/results/repass_readiness/`;
-  - `make_insitu_deck.py` → 15-slide note, published.
-- Cosmic closure as delivered: is2 A is right to −6/+8 %; production A is 11–25 % steep. C x is non-linear (1.03 → 0.89).
-- In-beam muons: is2 is right to 1–4 %.
-- **New blocker:** `wft.reco.TAN_MAX = 0.6` acts on the bundle's RAW tan.
-  - True-angle reach: production A 0.76 / C 0.97; is2 ≈ 0.58.
-  - Smoke sub-run, C: gated tracks −42 % against m3 (the production bundle with the 3-strip seeder); scintillator-confirmed tracks −10 %.
-  - The smoke test compared condor with local only, so it could not catch this.
-- B/D feasibility: `bd_feasibility.py all` → `ntof_cosmics/results/bd_feasibility/report.html`.
-  - **D x truth = D's own wall on cosmics:** 1.525 × production raw (bootstrap 1.50–1.56). Implied v ≈ 28, not 36.6.
-    Ran with `cosmic_wall_scale.py --arm D`, a new option; A's outputs are unchanged.
-  - **B is nearly blind to cosmics:** it lights on 12.7 % of the crossings D predicts (C: 64.6 %), and its reco keeps 3 %.
-    So B–D lines are not a practical truth for D. Under beam, B's hit efficiency is comparable to the other chambers.
+- Readiness review (§14), pre-launch checks 1–2 (§15, `ntof_cosmics/results/yield_gate/report.html`).
+- **Dylan's decision:** stage 2 at TAN_MAX 1.0 raw; acceptance as a true-tan cut at stage 3, ≈ 0.6 for now.
+- **Implemented (7cd9db7):**
+  - `WFT_TAN_MAX` env override, recorded in the sidecar;
+  - `make_stage2_campaign --tan-max`;
+  - `build_tracks`/`campaign_tracks --tan-max-true` (`gated_reco`, `in_acceptance`; refuses a cut wider than the reco's
+    reach).
+  - Validated on run_86: the env override is identical to the patched wide run.
+- Packages rebuilt at 7cd9db7. **Pilot submitted:** lxplus `~/sept26_stage2_is2_v1_pilot`, cluster 4409382, one sub-run
+  per run (36 runs). Output goes to EOS `/eos/user/d/dneff/x17/sept26_fullpass_is2_v1`.
+- Full package (6,466 jobs) staged NOT submitted at lxplus `~/sept26_stage2_is2_v1`. The old 0.6-raw package is moved to
+  `*_tanmax06_superseded`.
 
-**In progress / where it stopped:** nothing half-done. Dylan will choose among the options later.
+**In progress / where it stopped:** pilot jobs on condor (~40 min each). Nothing local half-done.
 
-**Next steps (Dylan's choices, in the note's order):**
-1. TAN_MAX: keep ≈ 0.58 true as the stated acceptance, OR make it a bundle-carried true-angle cut and validate
-   |tan| 0.6–1.0. Validate with g4_digi guns and corner-cutting cosmics: A–D/C–D lines obey tan₁·tan₂ = 1, so both sit at |tan| ≈ 1.
-   Then re-run the smoke sub-run.
-2. A yield gate for the real is2 bundles on other periods (run_86, run_110, run_156). Use `seed_beam_test` scint/compare.
-3. A pilot pass: one sub-run per run.
-4. Interim (is2_v1 alone) vs combined with T1's `xy_pairing`. Then launch: `cd ~/sept26_stage2_is2_v1 && condor_submit stage2_fullpass.sub`.
-   Stage 3 goes into `stage3_is2_v1`, never into production.
-5. D: an in-situ bundle with v ≈ 28, iterated to wall s = 1.
-   - Needs D waveforms (FEU 01/02) for the clock-matched run_149 sub-runs.
-   - Mask the dead channels in the wall fit.
-   - y has no truth: carry x's scale with a 3–5 % systematic.
-6. B: check B's HV in run_149 before concluding that the chamber is blind. Otherwise keep B as the hit-mode tag.
+**Next steps:**
+1. Check the pilot: `condor_q 4409382`, holds, `lxstore status`.
+2. Pull it to a versioned fullpass dir. Run `campaign_tracks --fullpass <it> --kcal …/kcal_is2_v1 --arms A,C
+   --tan-max-true 0.6 --out …/stage3_is2_v1_pilot`.
+3. Compare against production per run: confirmed yield (scint wall), gated, `gated_reco` vs `gated`, late fraction.
+4. Mirror-fit χ² (mirror vs true solution) on the steep synthetic muons.
+5. Full launch decision. Give it `--done-list` so the pilot's jobs are skipped.
+6. Still open: D in-situ bundle (v ≈ 28); B's HV in run_149; interim vs `xy_pairing` (§14 list).
 
 **Gotchas / decisions:**
-- Any constant in raw-tan units changes meaning when v changes: TAN_MAX, and also `TAN_MIN_SLOPE` and `FLOOR_TAN`.
-  When bundles change, compare yields against production, not only condor against local.
-- `cosmic_wall_scale` (`fit_wall_u`) is valid on cosmics only; it is degenerate on beam. D's per-|tan| bins are unusable.
-- Never use the capsule band as the beam scale. Its only legitimate use is the run-to-run ratio (gas).
-- The muon scale depends on the sep cut, so compare only at equal cuts. Never quote the wall (0.89/0.92) as beam truth.
-- Never run `k_arm` on cosmic runs. Never use the ref-pinned v.
-- run_126 has no k in either chain.
-- Production C used `calib_bundle_prelim` (det6 lp, v 42.6). Local copies are in `~/scratch/ntof_insitu/bundles/fp145_{A,C}`.
-- lxplus: AFS is for code only. Check `lxstore status` before and after a large submission.
+- Raw-tan constants (TAN_MAX, `TAN_MIN_SLOPE`, `FLOOR_TAN`, `W_SCAN_HALF`) change meaning with v.
+  Compare yields against production, not only condor against local.
+- Sidecars before 7cd9db7 have no `tan_max_raw`; `build_tracks` assumes 0.6 for them. So the old is2w products
+  (`yieldgate/is2w`) would be refused at `--tan-max-true 0.6`. Use `yieldgate/is2e` instead.
+- Arms without k (B, D) get `in_acceptance` False when a stage-3 cut is set.
+- Never use the capsule band as the beam scale. Never run `k_arm` on cosmics. run_126 has no k.
+- lxplus SSH goes through a mux master. If it hangs, retry, or `kinit`.
 
 **Key files & commands:**
-- `ntof_cosmics/repass_readiness.py all` (needs the smoke products in `sept26_prelim/smoke_is2_v1` and
-  `~/scratch/ntof_insitu`), then `make_insitu_deck.py`, then
-  `python3 ~/PycharmProjects/dylan-cern-site/scripts/add-note.py ntof_cosmics/results/deck/ac-insitu-angles.html --slug ac-insitu-angles --force --deploy`.
-- `ntof_cosmics/bd_feasibility.py all`; `cosmic_wall_scale.py build|ana --arm D` → `/media/dylan/data/x17/ntof_cosmics/cosmic_wall_scale/arm_D/`.
-- `ntof_cosmics/g4_digi/`; `inbeam_through_goers.py pooled`; `sept26_prelim_analysis/k_insitu.py`;
-  `condor/make_stage2_campaign.py --version`.
+- `wft/reco.py` (TAN_MAX), `sept26_prelim_analysis/build_tracks.py` (`TAN_MAX_RAW_DEFAULT`, `--tan-max-true`),
+  `sept26_prelim_analysis/condor/make_stage2_campaign.py --tan-max`.
+- Package rebuild: `make_stage2_campaign.py --full-pass --arms A,C --insitu A=~/scratch/ntof_insitu/bundles/is2_A,C=~/scratch/ntof_insitu/bundles/is2_C
+  --min-strips 3 --tan-max 1.0 --version is2_v1 --dest <dir> [--subset …/pilot_subset_is2_v1.json] [--done-list …]`.
+- `ntof_cosmics/yield_gate.py`, `repass_readiness.py`, `bd_feasibility.py`, `g4_digi/steep_check.py`.
 
 ## Scintillator stack mapped by the MM tracks — updated 2026-10-06 (dylan-MS-7C84)
 
