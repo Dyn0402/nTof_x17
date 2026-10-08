@@ -65,7 +65,9 @@ proposed, but Dylan has not picked any yet.
 
 ## Beam-off cosmics: angle response + in-situ reco — updated 2026-10-08 (dylan-MS-7C84)
 
-**Resume:** is2_v1 re-pass staged, NOT launched. A raw-tan gate cut (TAN_MAX) needs Dylan's decision first; then the B/D options.
+**Resume:** is2_v1 re-pass staged, NOT launched; checks 1–2 done (§15). Next: Dylan's TAN_MAX decision → stage-3 cut → pilot.
+
+**Update 2026-10-08 pm:** next steps in order: (1) Dylan decides the cut (rec: wide stage-2 1.0 raw + true-angle cut ≈0.6 at stage 3); (2) add a TAN_MAX override to the package + the stage-3 `gated` cut in build_tracks; (3) rebuild package, run the pilot (one sub-run/run); (4) measure χ² of mirror vs true solutions on the steep synthetic events. Status: pre-launch checks 1–2 done (§15, `ntof_cosmics/results/yield_gate/report.html`): no per-period surprise (is2 +39–49 % A / +32–39 % C confirmed over production); widening TAN_MAX adds mostly unconfirmed tracks; synthetic muons show 13–40 % mirror (wrong-sign) fits at |tan| ≥ 0.3. Recommended: wide stage-2 cut + true-angle cut at stage 3. Pilot (check 3) waits on that decision.
 
 **Read first:** `ntof_cosmics/HANDOFF_TRACKING_2026-10-06.md` §14 (today), then §13. §10g and §11 still hold; §12 is
 superseded. Slide note of the review: <https://dylan-neff.web.cern.ch/notes/ac-insitu-angles.html>.

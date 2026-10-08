@@ -1324,3 +1324,36 @@ fixed to leave nothing in scratch. The general rule and the `lxstore` tool are i
 - On beam (scintillator-tagged) B's hit efficiency is comparable to the others.
 - So B–D lines would give at most O(3k) lines campaign-wide even with a B hit-mode position.
 - B's HV in run_149 has not been checked.
+
+## 15 · Pre-launch checks 1 and 2 (2026-10-08, afternoon)
+
+**Report:** `ntof_cosmics/results/yield_gate/report.html` (`yield_gate.py summary` regenerates tables, scan and report;
+check 1 table from `g4_digi/steep_check.py` → `results/repass_readiness/steep_muons.csv`). Check 3 (pilot) NOT run: it
+should use whichever cut is chosen.
+
+**Check 2, yield gate (`yield_gate.py`)** — tags 000+003 of stat090_0000 for run_86, run_110, run_156 (decoded + combined
+hits for 110/156 pulled from EOS to `beam_july/runs/`; work products in `~/scratch/ntof_insitu/yieldgate/`). Chains: prod
+(full pass, rebuilt, with the k production delivers = run_145's on every run, from `stage3_campaign`), is2 (staged:
+is2 bundles, seeder 3, TAN_MAX 0.6 raw, kcal_is2_v1), is2w (TAN_MAX 1.0 raw).
+- No per-period surprise. Confirmed (wall excess) is2/prod: A +39/+39/+49 %, C +39/+37/+32 % (run_145 smoke: +44/+37).
+  C gated 0.84–0.87 × prod (purity 0.34 → 0.50–0.53). Near-normal ×2.6 (A), ×8 (C). Late fraction up 3–6 points.
+- The staged cut reaches only 0.51 true on C (per-run k 0.84–0.86) and 0.56–0.57 on A.
+- is2w over is2: confirmed A +8 %, C +21 %; gated A +21 %, C +76 %. Added tracks are 9–20 % wall-confirmed vs 0.37/0.52.
+  Track-matched on run_86: the gained tracks are 93–98 % at |tan| > 0.5, wall rate 0.17 (shared 0.39/0.54).
+- A post-hoc 0.6 cut on is2w reproduces the real 0.6 chain to < 1 % (3,594/2,583 vs 3,623/2,607 confirmed): the
+  candidate re-ranking a wide cut causes is negligible, so the acceptance can be applied at stage 3.
+- `stage3_fullpass` has no A/C k for run_156 (never certified); production uses `stage3_campaign` (run_145's k).
+
+**Check 1, steep synthetic muons** (`run_digi.py muons --tan-u 0 1.1 --tan-max … [--w-scan-half …]`, 1500/arm, seed 7,
+outputs `steep_{A,C}_is2_*.parquet` in the g4_digi dir):
+- Right-sign fits measure steep tracks: raw/true 0.98 → 0.93 (A, to 0.9), 0.99–0.97 (C, to 1.1).
+- **Mirror fits**: 13–40 % of fits at |tan| ≥ 0.3 have the wrong sign (A mean 22 %, C 31 %), |raw| 1.2–4× |true|, half the
+  q_sum, earlier t0, same strips, single candidate. Doubling `W_SCAN_HALF` (0.021 → 0.042 mm/ns) slightly INCREASES
+  them, so it is not a missed start basin. χ² of mirror vs true solution NOT measured (next: refit the mirrored events
+  from the true start, compare χ²). Inside the 0.3–0.6 acceptance these bias angles today, independent of TAN_MAX.
+- TAN_MAX 0.6 on C: gated efficiency ≈ 0 above true 0.7; on A the survivors at 0.6–1.0 are biased low (0.89 → 0.67).
+- `W_SCAN_HALF` is another physical-w constant: its tan reach is 0.55 (A) / 0.73 (C) on is2 bundles.
+
+**Recommendation for Dylan:** stage-2 TAN_MAX wide (1.0 raw), angular acceptance as a true-angle cut at stage 3
+(build_tracks `gated`), initially ≈ 0.6 true until the mirrors are understood. Needs: a TAN_MAX override in the package
+(env or bundle field), the stage-3 cut, rebuild package, then the pilot (check 3).

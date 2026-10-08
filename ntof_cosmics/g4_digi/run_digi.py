@@ -82,6 +82,13 @@ def main() -> int:
     ap.add_argument('--jobs', type=int, default=14)
     ap.add_argument('--label', default=None)
     ap.add_argument('--seed', type=int, default=1)
+    ap.add_argument('--tan-u', nargs=2, type=float, default=None, metavar=('LO', 'HI'),
+                    help='muons: |tan_u| uniform in [LO, HI] (random sign), u at the mesh uniform over '
+                         '+-150 mm instead of pointing at the capsule (steep tracks would miss the plane)')
+    ap.add_argument('--tan-max', type=float, default=None,
+                    help='override wft.reco.TAN_MAX (raw-tan plausibility cut) in the forked workers')
+    ap.add_argument('--w-scan-half', type=float, default=None,
+                    help='override wft.reco.W_SCAN_HALF (start-scan slope range, mm/ns; step kept)')
     ap.add_argument('--select', default='wall', choices=['wall', 'fullgap', 'none'],
                     help='g4: wall = full gap + own track reaches the wall (default)')
     a = ap.parse_args()
@@ -109,9 +116,14 @@ def main() -> int:
         # ~224 electrons per vertical MIP: 2.7 clusters/mm x 29.9 mm x 2.77
         adc = a.adc_per_e or Q_X_MEDIAN[a.arm] / (224 * XY_SPLIT)
         for i in range(a.n):
-            tu = rng.uniform(-0.55, 0.55)
-            tv = rng.uniform(-0.3, 0.3)
-            u0 = FOOT[a.arm] + D_PERP * tu + rng.normal(0, 5)
+            if a.tan_u:
+                tu = rng.uniform(*a.tan_u) * rng.choice((-1, 1))
+                tv = rng.uniform(-0.3, 0.3)
+                u0 = rng.uniform(-150, 150)
+            else:
+                tu = rng.uniform(-0.55, 0.55)
+                tv = rng.uniform(-0.3, 0.3)
+                u0 = FOOT[a.arm] + D_PERP * tu + rng.normal(0, 5)
             v0 = rng.uniform(-60, 60)
             st = DG.straight_steps(rng, u0, v0, tu, tv)
             o = ov.events[i % len(ov.events)]
@@ -161,6 +173,14 @@ def main() -> int:
                              t0=float(rng.choice(t0s)), adc_per_e=adc, xy_split=XY_SPLIT, v_true=v_true,
                              seed=int(rng.integers(1 << 31)), truth=truth))
     print(f'{len(jobs)} events, adc/e {adc:.2f}, v_true {v_true}')
+    if a.tan_max is not None:
+        # the pool forks, so the workers inherit the patched module global
+        from wft import reco as wreco
+        wreco.TAN_MAX = a.tan_max
+    if a.w_scan_half is not None:
+        from wft import reco as wreco
+        wreco.W_SCAN_HALF = a.w_scan_half
+    print(f'TAN_MAX {__import__("wft.reco", fromlist=["x"]).TAN_MAX} (raw)')
     R = run(jobs, bpath, state, a.min_strips, a.jobs, spath)
     OUT.mkdir(parents=True, exist_ok=True)
     lab = a.label or f'{a.mode}_{a.arm}_{bpath.name}'
