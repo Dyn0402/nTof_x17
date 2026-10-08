@@ -151,3 +151,44 @@ reconstructed.
 - Dead end: loosening LATE_MS below 10 ms (`checks.late_scan`): not worth it.
 
 **Key commands:** extract → ana → checks → make_figures → make_report → make_deck → add-note (see `ntof_scint_stack/README.md`).
+
+## Calorimetry feasibility + MM dE/dx — updated 2026-10-08 (dylan-MS-7C84)
+
+**Resume:** planning done (`ntof_calorimetry/PLAN.md`), nothing run; next = §6 step 1, plastic MIP scale on run_149 cosmics.
+
+**Goal:** find out what energy information the n_TOF data can give, given dead liquids (D6/D7 in
+`sept26_prelim_analysis/PLAN.md`). Also test MM dE/dx as a concept for future iterations, on cosmics first.
+
+**Done:**
+- `ntof_calorimetry/PLAN.md` covers:
+  - the inventory;
+  - the X17 kinematics table;
+  - feasibility steps C1–C5 (scintillators) and M0–M5 (MM dE/dx), each with a stop ("kill") criterion;
+  - the package layout, the order of work, and limits.
+- Key framing: the LS is one ~18 mm LAB cell (21.2 mm vessel), so the stack is a range telescope, not a
+  calorimeter. Wall + plastic stop ~5 MeV electrons (est.).
+- X17 soft leg at θ_open ≥ 140° has T = 3.9–4.8 MeV (exact two-body), so it stops in the plastic. X17
+  then gives an energy-vs-angle line where IPC gives a continuum.
+- Per-leg threshold (≳2.5 MeVee): every X17 leg is ≥ 3.9 MeV, while ²⁸Al β ends at 2.86 MeV.
+
+**In progress / where it stopped:** nothing half-done. Dylan asked for planning only; the analysis runs later.
+
+**Next steps:**
+1. C1.1: plastic MIP MPV × cosθ on run_149/run_103 cosmics (slim join exists in
+   `ntof_cosmics/cosmic_wall_scale.py`) + in-beam through-goers. The measured 3.0–3.4 MeVee is against
+   ~3.6–4 MeV expected (est.); this decides the scale.
+2. C4: liquid MIP efficiency maps on the same cosmic sample (A/C via A–C line).
+3. M1 + M2: raw road charge from `decoded_root` (condor), then the Landau / path / depth / gain map /
+   resolution on run_149.
+
+**Gotchas / decisions:**
+- Do NOT use `q_sum`/`q_total`/`q_per_len` for dE/dx (NNLS runaway, O10). Use a raw pedestal- and
+  CM-subtracted road sum, with path = 30 mm·secθ (not `drift_len_mm`, which rails).
+- IPC must come from `ipc_born.py`. Check which generator `pairs_thermal_trig_2cm_nose` used and
+  re-weight it.
+- Do not edit `wft/reco.py`, `build_tracks.py`, `campaign_tracks.py`, `make_stage2_campaign.py` from
+  this package: the is2_v1 session owns those.
+
+**Key files & commands:**
+- `ntof_calorimetry/PLAN.md` — the plan (§6 = order and decision points)
+- outputs planned at `/media/dylan/data/x17/calorimetry/`; G4 at `/eos/experiment/ntof/data/x17/full_sim/calorimetry/`
