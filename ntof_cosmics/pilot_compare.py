@@ -199,8 +199,44 @@ def valley():
     return V
 
 
+def same():
+    """The same physical track in both chains (single-track events, track
+    point within 3 mm, both on the wall): wall confirmation with each chain's
+    own direction, binned by the PILOT's |true tan|.  This removes the k
+    difference from the per-angle comparison (pilot/prod true tan on matched
+    tracks: A 0.85, C 0.90 x / 1.01 y) and asks which scale points at the
+    tile that fired."""
+    rows = []
+    for arm in ARMS:
+        parts = []
+        for f in sorted((CACHE / 'prod').glob(f'scint_*_{arm}.parquet')):
+            run = f.stem.split('scint_')[1].rsplit('_', 1)[0]
+            if run in WALL_DIP:
+                continue
+            p = pd.read_parquet(f)
+            n = pd.read_parquet(CACHE / 'pilot' / f.name)
+            m = p[p.n_trk == 1].merge(n[n.n_trk == 1], on=['run', 'subrun', 'event_id'], suffixes=('_p', '_n'))
+            m = m[((m.u_mm_p - m.u_mm_n).abs() < 3) & ((m.v_mm_p - m.v_mm_n).abs() < 3)
+                  & m.on_wall_p.astype(bool) & m.on_wall_n.astype(bool)]
+            parts.append(m)
+        M = pd.concat(parts)
+        t = np.maximum(M.tanx_n.abs(), M.tany_n.abs())
+        for iv, d in M.groupby(pd.cut(t, TAN_BINS[:7]), observed=True):
+            rows.append(dict(arm=arm, lo=iv.left, hi=iv.right, n=len(d),
+                             scale_x=float((d.tanx_n / d.tanx_p).median()),
+                             scale_y=float((d.tany_n / d.tany_p).median()),
+                             net_prod=float(d.match_wall_p.mean() - d.match_wall_ctrl_p.mean()),
+                             net_pilot=float(d.match_wall_n.mean() - d.match_wall_ctrl_n.mean()),
+                             only_prod=float((d.match_wall_p & ~d.match_wall_n).mean()),
+                             only_pilot=float((d.match_wall_n & ~d.match_wall_p).mean())))
+    S = pd.DataFrame(rows)
+    S.to_csv(OUT / 'same_track_confirm.csv', index=False)
+    print(S.round(3).to_string(index=False))
+    return S
+
+
 if __name__ == '__main__':
     ap = argparse.ArgumentParser()
-    ap.add_argument('step', choices=('match', 'summary', 'bins', 'cosmic', 'valley'))
+    ap.add_argument('step', choices=('match', 'summary', 'bins', 'cosmic', 'valley', 'same'))
     a = ap.parse_args()
-    {'match': match, 'summary': summary, 'bins': bins, 'cosmic': cosmic, 'valley': valley}[a.step]()
+    {'match': match, 'summary': summary, 'bins': bins, 'cosmic': cosmic, 'valley': valley, 'same': same}[a.step]()

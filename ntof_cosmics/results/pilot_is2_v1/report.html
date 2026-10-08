@@ -1,0 +1,632 @@
+<!doctype html><html><head><meta charset="utf-8"><title>is2_v1 pilot</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>body{font-family:'IBM Plex Sans',Helvetica,Arial,sans-serif;max-width:1050px;margin:32px auto;padding:0 16px;color:#1c2230;background:#f5f3ee;line-height:1.45}
+h1{font-size:30px} h2{font-size:22px;margin-top:34px} .v{border-left:6px solid #2f8a5b;padding:6px 16px;background:#fffdf9}
+.w{border-left:6px solid #c99318;padding:6px 16px;background:#fffdf9} table.t{border-collapse:collapse;font-size:14px;margin:8px 0}
+table.t td,table.t th{padding:4px 10px;border-bottom:1px solid #d8d3c8;text-align:right} code{font-size:13px}
+img{max-width:100%} .scroll{overflow-x:auto}</style></head><body>
+<h1>is2_v1 pilot against production</h1>
+<p>Generated 2026-10-09 00:45 by <code>ntof_cosmics/make_pilot_report.py</code>. HANDOFF_TRACKING §16, §18, §19.</p>
+
+<div class="v"><p><b>Yield: the pilot works.</b> Inside the same |true tan| &lt; 0.6, it confirms <b>A ×1.55</b> and
+<b>C ×1.69</b> as many tracks on the scintillator wall as production (per run A 1.51–1.71,
+C 1.62–1.81), over the run/arms both chains can extrapolate. Stage 3 built all 36 sub-runs, none failed;
+run_126 has no k.</p></div>
+<div class="w"><p><b>A's apparent loss at 0.3–0.6 is the angle scale, not mirrors.</b> Binned by each chain's own angle, A's pilot
+confirms fewer tracks than production above 0.3. But for the <i>same</i> track the pilot's angle is ×0.85 production's on A
+(C ×0.90 x / ×1.01 y): the two k disagree, and the same tracks fall in a lower bin. Compared track by track, the pilot's direction
+confirms on the wall at least as often as production's in every bin, and where they disagree the pilot wins ~2:1 — the wall mildly
+prefers the in-situ scale. Mirrors among the tracks only the pilot finds are tested by the two-sided run below (run_86: pending).</p>
+<p><b>A's −1.5 % with the two-sided search is the search correcting fits, not a new bias.</b> On the A–C cosmic truth the tracks it
+changes read high before (×1.06 of truth) and ×1.01–1.03 after, with χ² lower on 95–99 % of them and t0 100–150 ns earlier: the
+late-t0 slide of §17, now on data. A two-sided pass therefore needs its k rescaled by its own cosmic closure.</p></div>
+
+<h2>What was compared</h2>
+<p><b>Pilot</b>: first sub-run of each of 36 runs (condor 4409382, 702 jobs), is2 in-situ bundles, seeder min 3, stage 2 at TAN_MAX 1.0 raw
+with the one-sided search, stage 3 with <code>kcal_is2_v1</code> and a 0.6 true-tan acceptance (<code>stage3_is2_v1_pilot</code>).
+<b>Production</b>: <code>stage3_fullpass</code>, the same sub-runs, TAN_MAX 0.6 raw, its own per-run k. It has no k for
+10 run/arms (e.g. run_81 A, run_156 A and C): those drop out of the ratios.
+<i>Confirmed</i> = SiPM-wall matches minus the same-width off-time control, on gated tracks that extrapolate onto the wall
+(<code>det_a_scint.match_run</code>).</p>
+<div class="scroll"><table class="dataframe t">
+  <thead>
+    <tr style="text-align: right;">
+      <th>arm</th>
+      <th>chain</th>
+      <th>gated</th>
+      <th>gated_acc</th>
+      <th>confirmed</th>
+      <th>confirmed_acc</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>A</td>
+      <td>pilot</td>
+      <td>506070</td>
+      <td>506070</td>
+      <td>156426</td>
+      <td>156426</td>
+    </tr>
+    <tr>
+      <td>A</td>
+      <td>prod</td>
+      <td>310398</td>
+      <td>255708</td>
+      <td>107954</td>
+      <td>100778</td>
+    </tr>
+    <tr>
+      <td>C</td>
+      <td>pilot</td>
+      <td>262185</td>
+      <td>262185</td>
+      <td>105553</td>
+      <td>105553</td>
+    </tr>
+    <tr>
+      <td>C</td>
+      <td>prod</td>
+      <td>288698</td>
+      <td>147778</td>
+      <td>76097</td>
+      <td>62370</td>
+    </tr>
+  </tbody>
+</table></div>
+<p>Run/arms where both chains have a k.</p>
+
+<h2>Per run</h2>
+<img src="figures/confirmed_ratio_by_run.png" alt="pilot over production confirmed tracks per run">
+<p>The wall rate itself dips in runs 110, 114, 132 and 162 in both chains (a scintillator condition); the ratio does not.</p>
+
+<h2>Wall confirmation by angle</h2>
+<img src="figures/confirm_by_tan.png" alt="net wall confirmation per true-tan bin, pilot vs production">
+<div class="scroll"><table class="dataframe t">
+  <thead>
+    <tr style="text-align: right;">
+      <th>arm</th>
+      <th>view</th>
+      <th>|tan| from</th>
+      <th>net pilot</th>
+      <th>net prod</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>A</td>
+      <td>tanx</td>
+      <td>0.000</td>
+      <td>0.204</td>
+      <td>0.110</td>
+    </tr>
+    <tr>
+      <td>A</td>
+      <td>tanx</td>
+      <td>0.100</td>
+      <td>0.653</td>
+      <td>0.730</td>
+    </tr>
+    <tr>
+      <td>A</td>
+      <td>tanx</td>
+      <td>0.200</td>
+      <td>0.545</td>
+      <td>0.660</td>
+    </tr>
+    <tr>
+      <td>A</td>
+      <td>tanx</td>
+      <td>0.300</td>
+      <td>0.468</td>
+      <td>0.575</td>
+    </tr>
+    <tr>
+      <td>A</td>
+      <td>tanx</td>
+      <td>0.400</td>
+      <td>0.277</td>
+      <td>0.467</td>
+    </tr>
+    <tr>
+      <td>A</td>
+      <td>tanx</td>
+      <td>0.500</td>
+      <td>0.149</td>
+      <td>0.271</td>
+    </tr>
+    <tr>
+      <td>A</td>
+      <td>tanx</td>
+      <td>0.600</td>
+      <td></td>
+      <td>0.145</td>
+    </tr>
+    <tr>
+      <td>A</td>
+      <td>tanx</td>
+      <td>0.700</td>
+      <td></td>
+      <td>0.117</td>
+    </tr>
+    <tr>
+      <td>A</td>
+      <td>tany</td>
+      <td>0.000</td>
+      <td>0.230</td>
+      <td>0.190</td>
+    </tr>
+    <tr>
+      <td>A</td>
+      <td>tany</td>
+      <td>0.100</td>
+      <td>0.641</td>
+      <td>0.719</td>
+    </tr>
+    <tr>
+      <td>A</td>
+      <td>tany</td>
+      <td>0.200</td>
+      <td>0.565</td>
+      <td>0.658</td>
+    </tr>
+    <tr>
+      <td>A</td>
+      <td>tany</td>
+      <td>0.300</td>
+      <td>0.456</td>
+      <td>0.583</td>
+    </tr>
+    <tr>
+      <td>A</td>
+      <td>tany</td>
+      <td>0.400</td>
+      <td>0.261</td>
+      <td>0.448</td>
+    </tr>
+    <tr>
+      <td>A</td>
+      <td>tany</td>
+      <td>0.500</td>
+      <td>0.173</td>
+      <td>0.250</td>
+    </tr>
+    <tr>
+      <td>A</td>
+      <td>tany</td>
+      <td>0.600</td>
+      <td></td>
+      <td>0.183</td>
+    </tr>
+    <tr>
+      <td>A</td>
+      <td>tany</td>
+      <td>0.700</td>
+      <td></td>
+      <td>0.176</td>
+    </tr>
+    <tr>
+      <td>C</td>
+      <td>tanx</td>
+      <td>0.000</td>
+      <td>0.277</td>
+      <td>0.125</td>
+    </tr>
+    <tr>
+      <td>C</td>
+      <td>tanx</td>
+      <td>0.100</td>
+      <td>0.658</td>
+      <td>0.576</td>
+    </tr>
+    <tr>
+      <td>C</td>
+      <td>tanx</td>
+      <td>0.200</td>
+      <td>0.661</td>
+      <td>0.603</td>
+    </tr>
+    <tr>
+      <td>C</td>
+      <td>tanx</td>
+      <td>0.300</td>
+      <td>0.562</td>
+      <td>0.511</td>
+    </tr>
+    <tr>
+      <td>C</td>
+      <td>tanx</td>
+      <td>0.400</td>
+      <td>0.384</td>
+      <td>0.322</td>
+    </tr>
+    <tr>
+      <td>C</td>
+      <td>tanx</td>
+      <td>0.500</td>
+      <td>0.196</td>
+      <td>0.192</td>
+    </tr>
+    <tr>
+      <td>C</td>
+      <td>tanx</td>
+      <td>0.600</td>
+      <td></td>
+      <td>0.122</td>
+    </tr>
+    <tr>
+      <td>C</td>
+      <td>tanx</td>
+      <td>0.700</td>
+      <td></td>
+      <td>0.100</td>
+    </tr>
+    <tr>
+      <td>C</td>
+      <td>tany</td>
+      <td>0.000</td>
+      <td>0.350</td>
+      <td>0.324</td>
+    </tr>
+    <tr>
+      <td>C</td>
+      <td>tany</td>
+      <td>0.100</td>
+      <td>0.678</td>
+      <td>0.578</td>
+    </tr>
+    <tr>
+      <td>C</td>
+      <td>tany</td>
+      <td>0.200</td>
+      <td>0.619</td>
+      <td>0.547</td>
+    </tr>
+    <tr>
+      <td>C</td>
+      <td>tany</td>
+      <td>0.300</td>
+      <td>0.521</td>
+      <td>0.418</td>
+    </tr>
+    <tr>
+      <td>C</td>
+      <td>tany</td>
+      <td>0.400</td>
+      <td>0.385</td>
+      <td>0.283</td>
+    </tr>
+    <tr>
+      <td>C</td>
+      <td>tany</td>
+      <td>0.500</td>
+      <td>0.248</td>
+      <td>0.175</td>
+    </tr>
+    <tr>
+      <td>C</td>
+      <td>tany</td>
+      <td>0.600</td>
+      <td></td>
+      <td>0.132</td>
+    </tr>
+    <tr>
+      <td>C</td>
+      <td>tany</td>
+      <td>0.700</td>
+      <td></td>
+      <td>0.123</td>
+    </tr>
+  </tbody>
+</table></div>
+
+<h2>The same track in both chains</h2>
+<p>Single-track events, track point within 3 mm in both chains, both on the wall; binned by the pilot's |true tan|. <i>scale</i> =
+pilot/production true tan; <i>only_*</i> = the fraction confirmed with one chain's direction and not the other's.</p>
+<div class="scroll"><table class="dataframe t">
+  <thead>
+    <tr style="text-align: right;">
+      <th>arm</th>
+      <th>lo</th>
+      <th>hi</th>
+      <th>n</th>
+      <th>scale_x</th>
+      <th>scale_y</th>
+      <th>net_prod</th>
+      <th>net_pilot</th>
+      <th>only_prod</th>
+      <th>only_pilot</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>A</td>
+      <td>0.000</td>
+      <td>0.100</td>
+      <td>16484</td>
+      <td>0.484</td>
+      <td>0.020</td>
+      <td>0.125</td>
+      <td>0.125</td>
+      <td>0.000</td>
+      <td>0.000</td>
+    </tr>
+    <tr>
+      <td>A</td>
+      <td>0.100</td>
+      <td>0.200</td>
+      <td>22846</td>
+      <td>0.849</td>
+      <td>0.877</td>
+      <td>0.786</td>
+      <td>0.788</td>
+      <td>0.003</td>
+      <td>0.005</td>
+    </tr>
+    <tr>
+      <td>A</td>
+      <td>0.200</td>
+      <td>0.300</td>
+      <td>42625</td>
+      <td>0.849</td>
+      <td>0.872</td>
+      <td>0.750</td>
+      <td>0.759</td>
+      <td>0.009</td>
+      <td>0.018</td>
+    </tr>
+    <tr>
+      <td>A</td>
+      <td>0.300</td>
+      <td>0.400</td>
+      <td>37220</td>
+      <td>0.849</td>
+      <td>0.870</td>
+      <td>0.710</td>
+      <td>0.718</td>
+      <td>0.009</td>
+      <td>0.016</td>
+    </tr>
+    <tr>
+      <td>A</td>
+      <td>0.400</td>
+      <td>0.500</td>
+      <td>23025</td>
+      <td>0.849</td>
+      <td>0.867</td>
+      <td>0.547</td>
+      <td>0.553</td>
+      <td>0.005</td>
+      <td>0.011</td>
+    </tr>
+    <tr>
+      <td>A</td>
+      <td>0.500</td>
+      <td>0.600</td>
+      <td>17078</td>
+      <td>0.849</td>
+      <td>0.862</td>
+      <td>0.316</td>
+      <td>0.321</td>
+      <td>0.007</td>
+      <td>0.012</td>
+    </tr>
+    <tr>
+      <td>C</td>
+      <td>0.000</td>
+      <td>0.100</td>
+      <td>1998</td>
+      <td>0.006</td>
+      <td>0.003</td>
+      <td>0.169</td>
+      <td>0.174</td>
+      <td>0.007</td>
+      <td>0.012</td>
+    </tr>
+    <tr>
+      <td>C</td>
+      <td>0.100</td>
+      <td>0.200</td>
+      <td>8748</td>
+      <td>0.878</td>
+      <td>0.943</td>
+      <td>0.752</td>
+      <td>0.760</td>
+      <td>0.010</td>
+      <td>0.019</td>
+    </tr>
+    <tr>
+      <td>C</td>
+      <td>0.200</td>
+      <td>0.300</td>
+      <td>18521</td>
+      <td>0.900</td>
+      <td>0.998</td>
+      <td>0.792</td>
+      <td>0.800</td>
+      <td>0.006</td>
+      <td>0.015</td>
+    </tr>
+    <tr>
+      <td>C</td>
+      <td>0.300</td>
+      <td>0.400</td>
+      <td>15301</td>
+      <td>0.907</td>
+      <td>1.017</td>
+      <td>0.738</td>
+      <td>0.750</td>
+      <td>0.010</td>
+      <td>0.022</td>
+    </tr>
+    <tr>
+      <td>C</td>
+      <td>0.400</td>
+      <td>0.500</td>
+      <td>8486</td>
+      <td>0.907</td>
+      <td>1.011</td>
+      <td>0.597</td>
+      <td>0.606</td>
+      <td>0.010</td>
+      <td>0.019</td>
+    </tr>
+    <tr>
+      <td>C</td>
+      <td>0.500</td>
+      <td>0.600</td>
+      <td>6193</td>
+      <td>0.914</td>
+      <td>1.006</td>
+      <td>0.368</td>
+      <td>0.373</td>
+      <td>0.010</td>
+      <td>0.014</td>
+    </tr>
+  </tbody>
+</table></div>
+
+<h2>run_86: one-sided (is2e) against two-sided (is2ts)</h2>
+<p>Tags 000+003 of stat090_0000, same bundles, TAN_MAX 1.0, same k (<code>kcal_is2_v1</code>); only the search differs.</p>
+<div class="scroll"><p><i>The run_86 two-sided yield gate has not finished; re-run this script when it has.</i></p></div>
+
+<h2>The two-sided search on the cosmic A–C truth, track by track</h2>
+<p>is2w (one-sided, TAN_MAX 1.0) against is2ts, 0.2 ≤ |true tan| &lt; 0.5; <i>changed</i> = |Δ raw tan| &gt; 0.01.</p>
+<div class="scroll"><table class="dataframe t">
+  <thead>
+    <tr style="text-align: right;">
+      <th>arm</th>
+      <th>view</th>
+      <th>n</th>
+      <th>changed</th>
+      <th>sign_flips</th>
+      <th>dchi2_med</th>
+      <th>frac_chi2_lower</th>
+      <th>dt0_med_ns</th>
+      <th>ratio_truth_w</th>
+      <th>ratio_truth_s</th>
+      <th>abs_err_w</th>
+      <th>abs_err_s</th>
+      <th>frac_closer</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>A</td>
+      <td>x</td>
+      <td>340</td>
+      <td>38</td>
+      <td>3</td>
+      <td>-153.314</td>
+      <td>0.947</td>
+      <td>-152.156</td>
+      <td>1.064</td>
+      <td>1.015</td>
+      <td>0.033</td>
+      <td>0.037</td>
+      <td>0.500</td>
+    </tr>
+    <tr>
+      <td>A</td>
+      <td>y</td>
+      <td>420</td>
+      <td>103</td>
+      <td>16</td>
+      <td>-312.387</td>
+      <td>0.990</td>
+      <td>-118.448</td>
+      <td>1.067</td>
+      <td>1.014</td>
+      <td>0.045</td>
+      <td>0.025</td>
+      <td>0.670</td>
+    </tr>
+    <tr>
+      <td>C</td>
+      <td>x</td>
+      <td>340</td>
+      <td>66</td>
+      <td>8</td>
+      <td>-850.429</td>
+      <td>0.985</td>
+      <td>-101.819</td>
+      <td>0.988</td>
+      <td>1.043</td>
+      <td>0.059</td>
+      <td>0.036</td>
+      <td>0.576</td>
+    </tr>
+    <tr>
+      <td>C</td>
+      <td>y</td>
+      <td>420</td>
+      <td>111</td>
+      <td>15</td>
+      <td>-565.774</td>
+      <td>0.991</td>
+      <td>-120.000</td>
+      <td>1.052</td>
+      <td>1.030</td>
+      <td>0.051</td>
+      <td>0.033</td>
+      <td>0.658</td>
+    </tr>
+  </tbody>
+</table></div>
+
+<h2>A's early t0 on synthetic muons is a flat valley</h2>
+<p>Right-sign two-sided fits against the refit from the true side (<code>mirror_ts_*.parquet</code>, §17), |true tan| &gt; 0.3. Where the
+two t0 differ by &gt; 30 ns the χ² differs by a few units in ~570 dof and the angle not at all: the early t0 moves p0, not the slope.</p>
+<div class="scroll"><table class="dataframe t">
+  <thead>
+    <tr style="text-align: right;">
+      <th>arm</th>
+      <th>n</th>
+      <th>n_t0_off_30ns</th>
+      <th>frac</th>
+      <th>dchi2_med</th>
+      <th>dchi2_p90</th>
+      <th>dof_med</th>
+      <th>frac_earlier</th>
+      <th>raw_ratio_ts_over_right</th>
+      <th>dp0_med_mm</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>A</td>
+      <td>1055</td>
+      <td>636</td>
+      <td>0.603</td>
+      <td>5.943</td>
+      <td>61.193</td>
+      <td>580.000</td>
+      <td>0.651</td>
+      <td>1.000</td>
+      <td>1.793</td>
+    </tr>
+    <tr>
+      <td>C</td>
+      <td>1045</td>
+      <td>557</td>
+      <td>0.533</td>
+      <td>7.546</td>
+      <td>138.676</td>
+      <td>560.000</td>
+      <td>0.528</td>
+      <td>1.000</td>
+      <td>1.419</td>
+    </tr>
+  </tbody>
+</table></div>
+
+<h2>What this does not rule out</h2>
+<ul>
+<li>Which k is right is not settled by the wall: it is coarse, and prefers the pilot only mildly. The A–C cosmic truth (is2 closes to ~0.97) is the stronger argument.</li>
+<li>The same-track test only covers tracks both chains find in the same place; it says nothing about the tracks only the pilot finds.</li>
+<li>Production lacks k for several run/arms; the ratios skip them, so they cover 27 of 36 runs per arm.</li>
+<li>The cosmic truth stops near |tan| 0.5; nothing here tests 0.5–1 on data except the wall confirmation.</li>
+<li>Wall confirmation is a purity proxy with its own angle-dependent extrapolation error.</li>
+<li>Only the first sub-run of each run; within-run variation is untested.</li>
+</ul>
+</body></html>
