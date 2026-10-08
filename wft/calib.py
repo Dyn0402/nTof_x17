@@ -52,11 +52,15 @@ def _git_commit(path: str) -> str:
 C2_GATE_ENV = 'WFT_ALLOW_INVERTED_KERNEL'
 
 
-def effective_c2(hyper: dict) -> float:
-    """The +-2 amplitude the model will actually use. MUST mirror
-    build_matrix: when the bundle carries ``c2_over_c1`` the stored ``c2``
-    (0.0) is ignored and the ratio is applied to c1."""
-    r = hyper.get('c2_over_c1')
+def effective_c2(hyper: dict, plane: str | None = None) -> float:
+    """The +-2 amplitude the model will actually use, on the BASE c1 (before
+    the per-plane kY/cX scaling, which multiplies c1 and c2 alike and so
+    cannot change the ordering). MUST mirror build_matrix: when the bundle
+    carries ``c2_over_c1`` (or, for ``plane``, ``c2_over_c1_<plane>``) the
+    stored ``c2`` (0.0) is ignored and the ratio is applied to c1."""
+    r = hyper.get(f'c2_over_c1_{plane}') if plane else None
+    if r is None:
+        r = hyper.get('c2_over_c1')
     return float(r) * float(hyper['c1']) if r is not None else float(hyper['c2'])
 
 
@@ -65,7 +69,8 @@ def check_kernel_ordering(hyper: dict, where: str = '') -> None:
     bundle deliberately -- the only legitimate use is a report *about* the
     defect, and it must say so."""
     c1 = float(hyper.get('c1', 0.0))
-    c2 = effective_c2(hyper)
+    # judged per view: a per-view ratio can be inverted on one plane only
+    c2 = max(effective_c2(hyper, p) for p in ('x', 'y'))
     if c1 <= 0 or c2 <= c1:
         return
     if os.environ.get(C2_GATE_ENV):
@@ -303,6 +308,10 @@ class CalibrationBundle:
         r = h.get('c2_over_c1')
         c2 = float(r) * h['c1'] if r is not None else h['c2']
         c2s = f"c2={c2:.3f}" + (f" (={r:g}xc1)" if r is not None else '')
+        rp = {p: h.get(f'c2_over_c1_{p}') for p in ('x', 'y')}
+        if any(v is not None for v in rp.values()):
+            c2s = 'c2/c1 per view ' + ', '.join(
+                f'{p}={effective_c2(h, p) / h["c1"]:.3g}' for p in ('x', 'y'))
         return (f"{self.detector or '?'} / {self.run_key or '?'} "
                 f"[{self.share_mode}]: "
                 f"v={self.v_drift:.2f} um/ns, c1={h['c1']:.3f}, {c2s}, "

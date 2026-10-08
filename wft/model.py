@@ -291,7 +291,11 @@ def build_matrix(plane, pos, p0, w, t0, hyper):
     # refit is the physically motivated test arm (handoff T1.2).
     kY = hyper.get('kY', 1.0) if plane == 'y' else hyper.get('cX', 1.0)
     c1, c2 = hyper['c1'] * kY, hyper['c2'] * kY
-    r = hyper.get('c2_over_c1')
+    # Per-view ratio (2026-10-09): ``c2_over_c1_<plane>`` overrides the global
+    # key on that plane only.  The head-on +-2/+-1 pattern differs by view in
+    # sign, not just size -- Y wants MORE delayed +-2 than r06 draws, X less
+    # (sps_beam_test_26/analysis/plane_ratio).  Absent keys = old behaviour.
+    r = hyper.get(f'c2_over_c1_{plane}', hyper.get('c2_over_c1'))
     if r is not None:
         # SLAVE c2 TO c1.  The +-2 strip is reached only through the +-1
         # strip, so c2 < c1 always -- yet the shipped bundles carry c2 > c1 on
@@ -306,13 +310,21 @@ def build_matrix(plane, pos, p0, w, t0, hyper):
         # Applied to the BASE hypers, before the per-plane kY/cX scaling, so
         # the ratio is plane-independent.  No existing bundle carries the key.
         c2 = float(r) * c1
-    F = strip_fractions(pos, p0, w, hyper['sigma_p0'], hyper['Dp'])
+    # ``sigma_p0_<plane>`` (optional) gives each view its own prompt lateral
+    # spread; absent = the shared sigma_p0.
+    F = strip_fractions(pos, p0, w, hyper.get(f'sigma_p0_{plane}',
+                                              hyper['sigma_p0']), hyper['Dp'])
     n = len(pos)
     M = np.empty((n, NSAMP, K))
     np.multiply(F[:, None, :], H0[None, :, :], out=M)
+    # ``c1_asym_<plane>`` (optional, default 0) makes the +-1 copy one-sided:
+    # strip j takes (1 + a) c1 from strip j+1 and (1 - a) c1 from strip j-1.
+    # The H4 X view is one-sided (+1 0.27 vs -1 0.43 of the centre) in both
+    # mounts and at every field, so it is the board, not a tilt.
+    a = float(hyper.get(f'c1_asym_{plane}', 0.0))
     Fs = np.zeros_like(F)
-    Fs[1:] = F[:-1]
-    Fs[:-1] += F[1:]
+    Fs[1:] = (1.0 - a) * F[:-1]
+    Fs[:-1] += (1.0 + a) * F[1:]
     M += (c1 * Fs)[:, None, :] * H1[None, :, :]
     if c2 > 0:
         Fs2 = np.zeros_like(F)
