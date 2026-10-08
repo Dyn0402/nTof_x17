@@ -1446,3 +1446,45 @@ constrained scan and from the truth.
 **Decision for Dylan:** port `two_sided_fit` into `wft.reco.fit_plane`, behind an env flag recorded in the sidecar,
 validate it on data, and hold the full launch for it? Or launch is2_v1 as staged and fold the fix into the T1
 combined re-pass?
+
+## 18 · Two-sided search in `wft.reco`; first data check on the cosmic A–C truth (2026-10-08, late)
+
+**Code (4d49be0):** `two_sided_fit` from §17 is ported as `wft.reco._two_sided`, behind `WFT_TWO_SIDED=1` (default
+off). It is recorded as `reco_config.two_sided` in the stage-2 sidecar. Also added: `make_stage2_campaign --two-sided`,
+yield_gate chain `is2ts` (is2w + two-sided) and steep_check variant `tm1.2_ts`. On synthetic data the wrong sign goes
+from 14–40 % to 0–1.4 % at |tan| ≥ 0.3, and gated efficiency for C at 0.5–0.6 goes from 0.41 to 0.76.
+
+**Cosmic A–C closure, with and without the search** (93dafc3,
+`results/repass_readiness/cosmic_closure_two_sided.csv`). Labels: `is2_s3`, `is2w_s3` (TAN_MAX 1.0) and `is2ts_s3`
+(TAN_MAX 1.0 + two-sided). There are 547 matched tracks; `lo` is the lower edge of the |tan| bin. This was produced
+by an ad-hoc variant of `repass_readiness.py` (the committed script writes `cosmic_closure.csv`); the exact command
+was not recorded.
+- At |tan| < 0.3 the search changes nothing beyond small-n noise (is2w is identical to is2 almost everywhere).
+- Wrong sign falls where the mirror basin lives. Between is2 and is2ts:
+  - A y: 3.7 → 1.2 % (0.25), 5.5 → 0.6 % (0.35), 7.3 → 2.4 % (0.45);
+  - C y: 3.1 → 0.6 % (0.25);
+  - C x: 4.0 → 2.0 % (0.25).
+  - A x is unchanged.
+- C x at 0.45 (n = 18): ratio 0.889 → 0.931, σ 0.097 → 0.068.
+- **A reads ~1–1.5 % lower with the search** at 0.25–0.45. The changes are x 0.966/0.941 → 0.962/0.928 and y
+  0.976/0.979/0.975 → 0.967/0.964/0.957. This matches the §17 open item (A's early t0 and raw/true ~2 % low).
+  C does not shift, except y at 0.35 (0.986 → 0.964).
+- The cosmic truth stops near |tan| 0.5, so it cannot test the 0.5–1 range where the gain is largest. Beam yield and
+  the corner-cutting lines are still needed.
+
+**Not finished:** the run_86 beam `yield_gate.py reco` for chain `is2ts` started at 17:52 and died with the session.
+`~/scratch/ntof_insitu/yieldgate/is2ts/run_86/stat090_0000` is empty, and `reco_is2ts.log` holds only its header.
+Re-run it.
+
+**Pilot status (18:15):** cluster 4409382 had 2 of 702 jobs running, 0 held, and 700 outputs in
+`/eos/user/d/dneff/x17/sept26_fullpass_is2_v1`. This pilot uses the OLD one-sided search.
+
+**Next:**
+1. Re-run the is2ts reco on run_86 (`yield_gate.py reco --runs run_86`, chain is2ts), then `build` and `summary`.
+   Compare confirmed/gated yield and purity against is2e.
+2. Once the pilot finishes: run stage 3 as in §16 next step 1. Mirrors at 0.3–0.6 will be present; quantify them
+   against production.
+3. A's −1.5 % shift with the search: find out whether the early-t0 basin is real, e.g. with a t0 prior or by refitting
+   from the truth start on the cosmic sample.
+4. Decide (Dylan): launch is2_v1 as staged with the one-sided search, or rebuild the package `--two-sided` (version
+   is2_v2?) and hold the launch.

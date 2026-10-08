@@ -65,10 +65,15 @@ proposed, but Dylan has not picked any yet.
 
 ## Beam-off cosmics: angle response + in-situ reco — updated 2026-10-08 (dylan-MS-7C84)
 
-**Resume:** is2_v1 PILOT running (condor 4409382, 702 jobs, TAN_MAX 1.0 raw). Next: stage 3 with --tan-max-true 0.6, compare to prod.
+**Resume:** pilot 4409382 nearly done (700/702). Re-run run_86 is2ts yield gate; then stage 3 on pilot; decide 2-sided.
 
-**Read first:** `ntof_cosmics/HANDOFF_TRACKING_2026-10-06.md` §16 (today, evening), then §15, §14 and §13. §10g and §11 still
-hold; §12 is superseded. Slide note of the review: <https://dylan-neff.web.cern.ch/notes/ac-insitu-angles.html>.
+**Read first:** `ntof_cosmics/HANDOFF_TRACKING_2026-10-06.md` §18 and §17 (two-sided search), §16 (pilot), then §15,
+§14, §13. §10g and §11 still hold; §12 is superseded. Slide note of the review:
+<https://dylan-neff.web.cern.ch/notes/ac-insitu-angles.html>.
+
+**lxplus jobs left running (2026-10-08 18:15):** condor cluster 4409382 (is2_v1 pilot, one-sided search), with 2 of
+702 still running, 0 held, and 700 outputs in `/eos/user/d/dneff/x17/sept26_fullpass_is2_v1`. Check it with
+`condor_q 4409382` and `lxstore status`. `lxstore status` timed out over ssh at wrap-up, so the quota is unchecked.
 
 **Goal:** a reconstruction that measures angles correctly at n_TOF, head-on included, so same-chamber pairs can be
 reconstructed.
@@ -86,16 +91,23 @@ reconstructed.
   per run (36 runs). Output goes to EOS `/eos/user/d/dneff/x17/sept26_fullpass_is2_v1`.
 - Full package (6,466 jobs) staged NOT submitted at lxplus `~/sept26_stage2_is2_v1`. The old 0.6-raw package is moved to
   `*_tanmax06_superseded`.
+- **Later (§17–18):**
+  - mirror fits shown to be a missed basin;
+  - two-sided search ported to `wft.reco` behind `WFT_TWO_SIDED` (4d49be0);
+  - cosmic A–C closure with/without it (93dafc3): wrong sign down at 0.25–0.45, A ~1.5 % lower.
 
-**In progress / where it stopped:** pilot jobs on condor (~40 min each). Nothing local half-done.
+**In progress / where it stopped:**
+- The pilot is on condor.
+- The run_86 beam `yield_gate.py reco` for chain is2ts died with the session (empty output): re-run it.
 
 **Next steps:**
+0. Re-run the is2ts yield gate on run_86 and compare it to is2e (§18 next step 1).
 1. Check the pilot: `condor_q 4409382`, holds, `lxstore status`.
 2. Pull it to a versioned fullpass dir. Run `campaign_tracks --fullpass <it> --kcal …/kcal_is2_v1 --arms A,C
    --tan-max-true 0.6 --out …/stage3_is2_v1_pilot`.
 3. Compare against production per run: confirmed yield (scint wall), gated, `gated_reco` vs `gated`, late fraction.
 4. Mirror-fit χ² (mirror vs true solution) on the steep synthetic muons.
-5. Full launch decision. Give it `--done-list` so the pilot's jobs are skipped.
+5. Full launch decision, now including: one-sided as staged, or rebuild with `--two-sided` (§18)? Give it `--done-list` so the pilot's jobs are skipped.
 6. Still open: D in-situ bundle (v ≈ 28); B's HV in run_149; interim vs `xy_pairing` (§14 list).
 
 **Gotchas / decisions:**
