@@ -33,7 +33,8 @@ EDGES = np.round(np.arange(0.0, 1.11, 0.1), 2)
 
 
 #: (label suffix, TAN_MAX raw, W_SCAN_HALF mm/ns)
-VARIANTS = (('tm0.6', 0.6, 0.021), ('tm1.2', 1.2, 0.021), ('tm1.2_ws042', 1.2, 0.042))
+VARIANTS = (('tm0.6', 0.6, 0.021), ('tm1.2', 1.2, 0.021), ('tm1.2_ws042', 1.2, 0.042),
+            ('tm1.2_ts', 1.2, 0.021))     # + WFT_TWO_SIDED=1 (§17)
 
 
 def table(arm: str, suffix: str, tm: float, ws: float) -> pd.DataFrame:

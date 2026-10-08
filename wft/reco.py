@@ -51,6 +51,22 @@ T0_ABS: Optional[dict] = None
 # cost. Off by default pending its A/B (bench variant 'p0shear').
 P0_SHEAR = False
 
+# Two-sided start search (HANDOFF_TRACKING §17). _global_start scans t0 only at
+# w = 0 and w only at that t0; a steep track's charge pins neither, so 13-38 %
+# of fits at |tan| >= 0.3 land in the mirror basin (wrong sign, |tan| 1.2-4x)
+# at a chi2 worse by a median 3,300-5,200, and right-sign fits run t0-late with
+# angle (p0 slides 1-8 mm along the track). With WFT_TWO_SIDED=1 every plane
+# fit also searches each slope sign on its own -- (p0, t0) at a few |tan|, then
+# (p0, w) over that sign's half at the best t0, then the same Nelder-Mead --
+# and keeps the lowest chi2. Steep synthetic muons: wrong sign 13-29 % -> 0-3 %
+# at |tan| 0.3-0.6, nothing changes below 0.3. ~3,500 extra chi2 evaluations
+# per candidate. Read at import, recorded in the stage-2 sidecar.
+TWO_SIDED = os.environ.get('WFT_TWO_SIDED', '0') == '1'
+TS_PROBE_TAN = (0.15, 0.4, 0.8)        # raw |tan| of the (p0, t0) stage
+TS_TAN_LO, TS_TAN_HI, TS_TAN_STEP = 0.05, 1.6, 0.05
+TS_P0_HALF, TS_P0_STEP = 6.0, 0.5      # mm around the window's charge centroid
+TS_T0_HALF, TS_T0_STEP = 240.0, 40.0   # ns around the one-sided fit's t0
+
 RECO_COLUMNS = [
     'event_id', 'n_hits', 'spark',
     # per plane p in (x, y): p0, w, t0, tan, errors, chi2, dof, profile, flags
@@ -191,6 +207,42 @@ def _global_start(P, plane, p0_seed, t0_seed, hyper, t0_prior=None):
     return best2[1], best2[2], t0b
 
 
+def _two_sided(P, plane, r, cal: CalibrationBundle, hyper, t0_prior=None) -> dict:
+    """Re-search each slope sign separately from the one-sided fit ``r`` and
+    return the lowest-chi2 fit_plane_raw result (``r`` itself if neither side
+    beats it). See TWO_SIDED."""
+    W, noise, pos, sat = wm.prep_plane(P, plane)
+    v, kw, w0 = cal.v_drift, cal.kw.get(plane, 1.0), cal.w0.get(plane, 0.0)
+
+    def to_w(tan):
+        return (tan * kw * v + w0) * 1e-3
+
+    def chi(p0, w, t0):
+        return wm.chi2_plane(plane, W, noise, pos, sat, p0, w, t0, hyper,
+                             t0_prior=t0_prior)[0]
+
+    shear = 15000.0 / v                     # half the drift column [ns]
+    amp = np.maximum(W.max(axis=1), 0.0)
+    p_c = float((pos * amp).sum() / amp.sum()) if amp.sum() > 0 else float(r['p0'])
+    p0s = p_c + np.arange(-TS_P0_HALF, TS_P0_HALF + 1e-9, TS_P0_STEP)
+    t0s = (np.array([float(t0_prior[0])]) if t0_prior is not None else
+           np.arange(r['t0'] - TS_T0_HALF, r['t0'] + TS_T0_HALF + 1e-9, TS_T0_STEP))
+    tans = np.arange(TS_TAN_LO, TS_TAN_HI + 1e-9, TS_TAN_STEP)
+    best = r
+    for sgn in (1.0, -1.0):
+        ws_probe = [to_w(sgn * t) for t in TS_PROBE_TAN]
+        c1 = min((chi(p - w * shear, w, t0), t0)
+                 for t0 in t0s for p in p0s for w in ws_probe)
+        t0b = c1[1]
+        c2 = min((chi(p - w * shear, w, t0b), p - w * shear, w)
+                 for p in p0s for w in (to_w(sgn * t) for t in tans))
+        rs = wm.fit_plane_raw(P, plane, c2[1], c2[2], t0b, hyper=hyper,
+                              t0_prior=t0_prior)
+        if rs is not None and np.isfinite(rs['chi2']) and rs['chi2'] < best['chi2']:
+            best = rs
+    return best
+
+
 def t0_prior_for(cal: CalibrationBundle, plane: str, ftst) -> Optional[tuple]:
     """(t0_pred, sigma) for one plane of one event, or None if the prior is
     not calibrated/enabled. t0_pred is the bundle's per-ftst-class prediction
@@ -223,6 +275,8 @@ def fit_plane(P, plane: str, cal: CalibrationBundle, hyper: Optional[dict] = Non
                          t0_prior=t0_prior)
     if r is None or not np.isfinite(r['chi2']):
         return None
+    if TWO_SIDED:
+        r = _two_sided(P, plane, r, cal, hyper, t0_prior=t0_prior)
     # Per-plane angle mapping (9dd7d6e; reverted by f9e18d2, restored 8-13).
     # w0/kw are measured from free fits of reference tracks; dropping the w0
     # term is the fleet angle bias, arctan(w0_plane/v) detector by detector.

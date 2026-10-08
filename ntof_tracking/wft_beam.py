@@ -586,7 +586,8 @@ def _write_meta(df, out_path, cal, cfg, bundle_path, feu_x, feu_y, tags_done,
                                  pair_select=os.environ.get('WFT_PAIR_SELECT', '0'),
                                  chi2dof_bad=os.environ.get('WFT_CHI2DOF_BAD', '300'),
                                  xy_pairing=(cal.xy_pairing or {}).get('features'),
-                                 tan_max_raw=wreco.TAN_MAX))
+                                 tan_max_raw=wreco.TAN_MAX,
+                                 two_sided=wreco.TWO_SIDED))
     # The selection this table was fitted under, and what it cost at the seeder.
     # `n_missing` is the number that must not be lost: allowlisted events the
     # beam seeder produced no cluster for. They are a real stage-1 -> stage-2

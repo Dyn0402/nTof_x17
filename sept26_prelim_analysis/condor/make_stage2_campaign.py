@@ -129,6 +129,9 @@ def main():
     ap.add_argument('--tan-max', type=float, default=None,
                     help='wft.reco.TAN_MAX in RAW tan (WFT_TAN_MAX in the job '
                          'environment); default: the code default (0.6)')
+    ap.add_argument('--two-sided', action='store_true',
+                    help='WFT_TWO_SIDED=1 in the job environment: the two-sided '
+                         'slope search of wft.reco (HANDOFF_TRACKING §17)')
     ap.add_argument('--version', default=None,
                     help='tag for a re-pass: dest <x17>/sept26_stage2_<version>, '
                          'EOS /eos/user/d/dneff/x17/sept26_fullpass_<version>')
@@ -328,6 +331,7 @@ def main():
                 f'({"in-situ arms carry their own" if insitu else "PINNED for every arm"})\n'
                 f'min_strips    {a.min_strips if a.min_strips else "code default"}\n'
                 f'tan_max_raw   {a.tan_max if a.tan_max else "code default (0.6)"}\n'
+                f'two_sided     {"ON (WFT_TWO_SIDED=1)" if a.two_sided else "off"}\n'
                 f'version       {a.version or "(production)"}\n'
                 f'EOS output    {eos_out}\n'
                 f'sub-runs      {len(have)} of {len(want)}\n'
@@ -342,7 +346,7 @@ def main():
             ('stage2_campaign.sub', 'run_stage2_wrapper.sh'))
     for fn in ship:
         shutil.copy(os.path.join(HERE, fn), os.path.join(a.dest, fn))
-    if a.version or a.min_strips or a.tan_max:
+    if a.version or a.min_strips or a.tan_max or a.two_sided:
         # the job environment carries the EOS target, the seeder minimum and TAN_MAX
         sp = os.path.join(a.dest, ship[0])
         txt = open(sp).read()
@@ -350,7 +354,8 @@ def main():
         if old not in txt:
             sys.exit(f'FATAL: {ship[0]} environment line not found; cannot redirect EOS output')
         new = (f'EOS_STAGE2_OUT={eos_out}' + (f' WFT_BEAM_MIN_STRIPS={a.min_strips}' if a.min_strips else '')
-               + (f' WFT_TAN_MAX={a.tan_max}' if a.tan_max else '') + '"')
+               + (f' WFT_TAN_MAX={a.tan_max}' if a.tan_max else '')
+               + (' WFT_TWO_SIDED=1' if a.two_sided else '') + '"')
         open(sp, 'w').write(txt.replace(old, new))
         print(f'{ship[0]}  environment -> {new[:-1]}')
     os.chmod(os.path.join(a.dest, ship[1]), 0o755)

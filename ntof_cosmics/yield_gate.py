@@ -16,6 +16,8 @@ C, in three chains:
              (exactly the staged package), k = kcal_is2_v1
     is2w     the same with TAN_MAX widened to --wide raw (default 1.0), to
              see what the raw-tan plausibility cut costs on each period
+    is2ts    is2w + the two-sided slope search (wft.reco.TWO_SIDED,
+             HANDOFF_TRACKING §17)
 
 Per (run, arm, chain): gated tracks, scintillator-confirmed tracks (wall
 match minus the same-width off-time control, det_a_scint.match_run),
@@ -57,6 +59,7 @@ TAGS = ('000', '003')
 ARMS = ('A', 'C')
 TAN_MAX = 0.6
 NEAR_NORMAL = 0.08
+ACC_TRUE = 0.6          # the stage-3 true-tan acceptance of the is2_v1 re-pass
 
 
 def _tags(run):
@@ -68,14 +71,14 @@ def reco(runs, wide: float, jobs: int, chains):
     for run in runs:
         for chain in chains:
             tm = TAN_MAX if chain == 'is2' else wide
-            # the pool forks, so the workers inherit the patched module global
-            orig = wreco.TAN_MAX
-            wreco.TAN_MAX = tm
+            # the pool forks, so the workers inherit the patched module globals
+            orig = wreco.TAN_MAX, wreco.TWO_SIDED
+            wreco.TAN_MAX, wreco.TWO_SIDED = tm, chain == 'is2ts'
             try:
-                print(f'== {run} {chain} (TAN_MAX {tm} raw)', flush=True)
+                print(f'== {run} {chain} (TAN_MAX {tm} raw, two-sided {wreco.TWO_SIDED})', flush=True)
                 SBT.reco(WORK, run, SUB, 3, ARMS, list(TAGS), jobs, BUNDLES, chain)
             finally:
-                wreco.TAN_MAX = orig
+                wreco.TAN_MAX, wreco.TWO_SIDED = orig
 
 
 def _prod_view(run) -> Path:
@@ -139,6 +142,7 @@ def summary(runs, chains):
                 w = S[S.on_wall]
                 nn = (G.tan_raw_x.abs() < NEAR_NORMAL) & (G.tan_raw_y.abs() < NEAR_NORMAL)
                 tt = np.maximum(G.tanx.abs(), G.tany.abs())
+                wa = w[np.maximum(w.tanx.abs(), w.tany.abs()) < ACC_TRUE]
                 rows.append(dict(
                     run=run, arm=arm, chain=chain, k=k[arm], tan_max_raw=tm,
                     true_reach=tm * k[arm], gated=len(G),
@@ -146,6 +150,9 @@ def summary(runs, chains):
                     wall_rate=float(w.match_wall.mean()), wall_ctrl=float(w.match_wall_ctrl.mean()),
                     near_normal=int(nn.sum()), late_frac=float((np.maximum(G.x_t0, G.y_t0) > 300).mean()),
                     true_tan_gt_0p58=int((tt > 0.58).sum()),
+                    gated_acc=int((tt < ACC_TRUE).sum()),
+                    confirmed_acc=int(wa.match_wall.sum() - wa.match_wall_ctrl.sum()),
+                    wall_rate_acc=float(wa.match_wall.mean()),
                     quality_ok=int(base.sum()),
                     fail_tan_frac=float((base & (r >= tm)).sum() / max(base.sum(), 1))))
     R = pd.DataFrame(rows)
@@ -153,6 +160,7 @@ def summary(runs, chains):
     P = R[R.chain == 'prod'].set_index(['run', 'arm'])
     R['gated_vs_prod'] = R.gated / R.set_index(['run', 'arm']).index.map(P.gated)
     R['confirmed_vs_prod'] = R.confirmed / R.set_index(['run', 'arm']).index.map(P.confirmed)
+    R['confirmed_acc_vs_prod'] = R.confirmed_acc / R.set_index(['run', 'arm']).index.map(P.confirmed_acc)
     R.to_csv(OUT / 'yield_gate.csv', index=False)
     with pd.option_context('display.width', 250, 'display.max_columns', 30):
         print(R.round(3).to_string(index=False))
