@@ -39,7 +39,7 @@ TAN_BINS = (0.0, 0.05, 0.1, 0.2, 0.3, 0.45, 0.7)
 _EV = None
 
 
-def _init(cache, bundle):
+def _init(cache, bundle, model_frac=0.0):
     global _EV
     os.environ.setdefault('WFT_ALLOW_INVERTED_KERNEL', '1')   # diag arms only
     from wft.calib import CalibrationBundle
@@ -47,7 +47,7 @@ def _init(cache, bundle):
     with open(cache, 'rb') as f:
         _EV = pickle.load(f)
     wm.use_calibration(CalibrationBundle.load(bundle))
-    wm.MODEL_FRAC = float(os.environ.get('WFT_MODEL_FRAC', 0.0))
+    wm.MODEL_FRAC = float(model_frac)
 
 
 def _geo(payload):
@@ -138,10 +138,11 @@ def main():
     ap.add_argument('--jobs', type=int, default=8)
     ap.add_argument('--nboot', type=int, default=1000)
     ap.add_argument('--out', required=True)
-    ap.add_argument('--model-frac', type=float, default=0.0,
-                    help='reco-side chi2 weighting for the free fits')
+    ap.add_argument('--model-frac', type=float, default=None,
+                    help='override the reco-side chi2 weighting for every '
+                         'arm; default: each arm uses the MODEL_FRAC it was '
+                         'calibrated with (production 0)')
     a = ap.parse_args()
-    os.environ['WFT_MODEL_FRAC'] = str(a.model_frac)
 
     from wft import calibrate as wc
     from wft.calib import CalibrationBundle
@@ -158,9 +159,13 @@ def main():
 
     arms = {'production': {k: float(q) for k, q in cal.hyper.items()
                            if k != 'kTauY'}}
+    mfs = {'production': 0.0 if a.model_frac is None else a.model_frac}
     for p in a.arms:
         r = json.load(open(p))
-        arms[r['arm']] = {k: float(q) for k, q in r['hyper'].items()}
+        name = os.path.basename(p)[:-5].replace('arm_', '') if p.endswith('.json') else r['arm']
+        arms[name] = {k: float(q) for k, q in r['hyper'].items()}
+        mfs[name] = (float(r.get('model_frac', 0.0)) if a.model_frac is None
+                     else a.model_frac)
 
     starts = a.starts.split(',')
     rows, resid = {}, {}
@@ -168,11 +173,11 @@ def main():
         t0 = time.time()
         os.environ.setdefault('WFT_ALLOW_INVERTED_KERNEL', '1')
         from wft import model as _wm
-        _wm.MODEL_FRAC = a.model_frac
+        _wm.MODEL_FRAC = mfs[name]
         t0abs, _ = wc.measure_t0_abs(train, a.bundle, h, v)
-        rows[name] = dict(hyper=h)
+        rows[name] = dict(hyper=h, model_frac=mfs[name])
         with ProcessPoolExecutor(a.jobs, initializer=_init,
-                                 initargs=(a.cache, a.bundle)) as pool:
+                                 initargs=(a.cache, a.bundle, mfs[name])) as pool:
             for st in starts:
                 got = {'x': {}, 'y': {}}
                 for e, o in pool.map(_geo, [(e, h, v, t0abs, st) for e in held],
