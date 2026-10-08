@@ -200,7 +200,10 @@ def main():
     if 'c2_over_c1' not in fixed and 'c2_over_c1' not in free:
         # per-view arms: drop the global so only the per-view keys act
         start.pop('c2_over_c1', None)
-    start['c2'] = 0.0
+    # a slaved kernel ignores the stored c2; an unslaved one (det4/det6
+    # production) must KEEP it, or the +-2 copy silently vanishes
+    if any(k.startswith('c2_over_c1') for k in start):
+        start['c2'] = 0.0
 
     def expand(x):
         h = dict(start)
