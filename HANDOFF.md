@@ -142,7 +142,7 @@ reconstructed.
 
 ## Calorimetry feasibility + MM dE/dx — updated 2026-10-08 (dylan-MS-7C84)
 
-**Resume:** plan executed and closed (C1, C2, C3, C4, M1, M2), results in `ntof_calorimetry/PLAN.md`; slide note on the site. Only open: C1.4 and the bar thickness.
+**Resume:** plan executed and closed; note https://dylan-neff.web.cern.ch/notes/calorimetry.html (`ntof_calorimetry/make_deck.py`). Open: C1.4 + bar thickness.
 
 **Goal:** find what energy information the n_TOF data can give, and test MM dE/dx as a concept.
 
