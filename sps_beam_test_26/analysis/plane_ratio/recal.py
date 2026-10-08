@@ -77,6 +77,7 @@ def _init_worker(cache, bundle, k_bins, t0_lo, t0_hi, p0_profile):
     from wft import calibrate as wc
     from wft import model as wm
     wc._init_hyper(cache, bundle)
+    wm.MODEL_FRAC = float(os.environ.get('WFT_MODEL_FRAC', 0.0))
     if k_bins:
         wm.set_depth_bins(k_bins)
     _OPT['t0_grid'] = np.arange(t0_lo, t0_hi + 1.0, 20.0)
@@ -156,6 +157,9 @@ def main():
     ap.add_argument('--depth-bins', type=int, default=None)
     ap.add_argument('--t0-lo', type=float, default=120.0)
     ap.add_argument('--t0-hi', type=float, default=960.0)
+    ap.add_argument('--model-frac', type=float, default=0.0,
+                    help='fractional model-error term in the chi2 weights '
+                         '(wft.model.MODEL_FRAC); 0 = production weighting')
     ap.add_argument('--p0-profile', action='store_true',
                     help='profile p0 per event instead of pinning it to the '
                          'reference (cold objective only)')
@@ -167,6 +171,7 @@ def main():
                     help='cold = deterministic global t0 profile (default); '
                          'warm = wft.calibrate._event_chi2, path-dependent')
     a = ap.parse_args()
+    os.environ['WFT_MODEL_FRAC'] = str(a.model_frac)
 
     if a.arm.startswith('diag_'):
         os.environ['WFT_ALLOW_INVERTED_KERNEL'] = '1'
@@ -256,6 +261,7 @@ def main():
                                     fatol=c0 * 1e-5, maxiter=a.maxiter))
     h = expand(res.x)
     out = dict(arm=a.arm, objective=a.objective, p0_profile=a.p0_profile,
+               model_frac=a.model_frac,
                depth_bins=a.depth_bins, hyper=h, v=v, chi2=float(res.fun), chi2_seed=float(c0),
                n_train=len(train), n_eval=n[0], converged=bool(res.success),
                message=str(res.message), free=list(free), bundle=a.bundle,

@@ -104,6 +104,12 @@ HOT: dict = {}            # per-plane hot-channel arrays; see prep_plane
 #: 10 is kept because nothing argues for anything else.
 #: ``WFT_HOT_NOISE_INFLATION`` overrides it, which is how that scan is run.
 HOT_NOISE_INFLATION = float(os.environ.get('WFT_HOT_NOISE_INFLATION', 10.0))
+#: Fractional model-error term in the chi2 weights, sigma^2 = noise^2 +
+#: (MODEL_FRAC * W)^2.  0 (default) = the production weighting, bit-identical.
+#: Settable via ``WFT_MODEL_FRAC`` so calibration workers and reco agree.  The
+#: archived RC-ladder model ran production at 0.03; 0.05 was the bench's best
+#: (RECO_BENCH_2026-07-29 §3: Y sigma_theta 1.12 -> 1.05, implied-v 2.8 -> 1.0).
+MODEL_FRAC = float(os.environ.get('WFT_MODEL_FRAC', 0.0))
 
 _smear_cache: dict = {}
 _lp_cache: dict = {}
@@ -389,9 +395,21 @@ def chi2_plane(plane, W, noise, pos, sat, p0, w, t0, hyper, censor=True,
     ok = ~sat.reshape(-1)
     if not ok.any():
         return np.inf, None
-    Wt = np.repeat(1.0 / noise, NSAMP)
-    A = (M * Wt[:, None])[ok]
-    y = (W / noise[:, None]).reshape(-1)[ok]
+    if MODEL_FRAC <= 0:
+        # production path, expression-for-expression unchanged
+        Wt = np.repeat(1.0 / noise, NSAMP)
+        A = (M * Wt[:, None])[ok]
+        y = (W / noise[:, None]).reshape(-1)[ok]
+    else:
+        # fractional model-error term in quadrature (ported 2026-10-09 from
+        # the archived RC-ladder model): percent-level template mismatch on
+        # bright samples otherwise dominates the chi2 (bench chi2/dof ~800),
+        # and a kernel fitted on it patches the template instead of
+        # describing the sharing.
+        Wt = (1.0 / np.sqrt(noise[:, None] ** 2 +
+                            (MODEL_FRAC * np.maximum(W, 0.0)) ** 2)).reshape(-1)
+        A = (M * Wt[:, None])[ok]
+        y = (W.reshape(-1) * Wt)[ok]
     try:
         q, rn = nnls(A, y, maxiter=50 * K)
     except Exception:

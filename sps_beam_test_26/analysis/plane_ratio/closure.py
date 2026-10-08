@@ -46,6 +46,7 @@ def _init(bundle, hyper, v, p0_free=False, k_bins=None, t0_rng=(150.0, 900.0)):
     os.environ.setdefault('WFT_ALLOW_INVERTED_KERNEL', '1')   # diag arms
     cal = CalibrationBundle.load(bundle)
     wm.use_calibration(cal)
+    wm.MODEL_FRAC = float(os.environ.get('WFT_MODEL_FRAC', 0.0))
     if k_bins:
         wm.set_depth_bins(k_bins)
     _G['t0_rng'] = t0_rng
@@ -165,11 +166,13 @@ def main():
                     help='charge-basis length K (beam gas: the column is ~2 us)')
     ap.add_argument('--t0-lo', type=float, default=150.0)
     ap.add_argument('--t0-hi', type=float, default=900.0)
+    ap.add_argument('--model-frac', type=float, default=0.0)
     ap.add_argument('--p0-free', action='store_true',
                     help='profile p0 per event instead of pinning it to M3')
     ap.add_argument('--arm-json', default=None,
                     help='take the hypers from a recal.py output')
     a = ap.parse_args()
+    os.environ['WFT_MODEL_FRAC'] = str(a.model_frac)
     hyper = {}
     if a.arm_json:
         hyper.update({k: float(q) for k, q in json.load(open(a.arm_json))['hyper'].items()})

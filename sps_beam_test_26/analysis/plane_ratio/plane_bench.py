@@ -47,6 +47,7 @@ def _init(cache, bundle):
     with open(cache, 'rb') as f:
         _EV = pickle.load(f)
     wm.use_calibration(CalibrationBundle.load(bundle))
+    wm.MODEL_FRAC = float(os.environ.get('WFT_MODEL_FRAC', 0.0))
 
 
 def _geo(payload):
@@ -137,7 +138,10 @@ def main():
     ap.add_argument('--jobs', type=int, default=8)
     ap.add_argument('--nboot', type=int, default=1000)
     ap.add_argument('--out', required=True)
+    ap.add_argument('--model-frac', type=float, default=0.0,
+                    help='reco-side chi2 weighting for the free fits')
     a = ap.parse_args()
+    os.environ['WFT_MODEL_FRAC'] = str(a.model_frac)
 
     from wft import calibrate as wc
     from wft.calib import CalibrationBundle
@@ -163,6 +167,8 @@ def main():
     for name, h in arms.items():
         t0 = time.time()
         os.environ.setdefault('WFT_ALLOW_INVERTED_KERNEL', '1')
+        from wft import model as _wm
+        _wm.MODEL_FRAC = a.model_frac
         t0abs, _ = wc.measure_t0_abs(train, a.bundle, h, v)
         rows[name] = dict(hyper=h)
         with ProcessPoolExecutor(a.jobs, initializer=_init,

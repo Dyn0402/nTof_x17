@@ -111,6 +111,7 @@ def main():
                            'implied-v unchanged (|tan_ref| >= 0.08 bins)',
                'planes': {}}
     LT5 = 0.0875                              # tan(5 deg)
+    per_event = {}                            # for PAIRED arm comparisons
     fig, axs = plt.subplots(2, 2, figsize=(13, 9))
     for i, plane in enumerate(('x', 'y')):
         eids = [e for e in idx.index if e in ref and idx.loc[e, f'{plane}_ok']]
@@ -121,6 +122,10 @@ def main():
 
         finite = np.isfinite(tan_fit) & np.isfinite(tan_ref)
         use = finite                              # full coverage (see docstring)
+        per_event.update({f'{plane}_eid': np.asarray(eids, np.int64)[use],
+                          f'{plane}_tan_ref': tan_ref[use],
+                          f'{plane}_tan_fit': tan_fit[use],
+                          f'{plane}_w': w[use]})
         use_rel = rel & finite                    # old gated selection
         dth_all = (np.degrees(np.arctan(tan_fit[use]))
                    - np.degrees(np.arctan(tan_ref[use])))
@@ -193,6 +198,7 @@ def main():
     fig.savefig(os.path.join(out_dir, 'angles.png'), dpi=110)
     with open(os.path.join(out_dir, 'angular_resolution.json'), 'w') as f:
         json.dump(summary, f, indent=1)
+    np.savez_compressed(os.path.join(out_dir, 'per_event.npz'), **per_event)
     print(f'\nwrote {out_dir}')
 
 
