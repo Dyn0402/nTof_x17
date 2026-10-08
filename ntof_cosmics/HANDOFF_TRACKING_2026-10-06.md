@@ -1396,3 +1396,53 @@ the mirror fits are understood.
    Note: run_126 has no k.
 2. Mirror fits: the χ² of the mirror vs the true solution on the steep synthetic events (§15 check 1).
 3. Then decide on the full launch.
+
+## 17 · Mirror fits are a missed basin; a two-sided search fixes them (2026-10-08, night)
+
+**Script:** `g4_digi/mirror_chi2.py` (outputs in `results/repass_readiness/`: `mirror_chi2_{A,C}.parquet`,
+`mirror_ts_{A,C}.parquet`, `mirror_chi2_summary.csv`, `mirror_two_sided_summary.csv`; `mirror_chi2.py summary`
+reprints both). It re-digitises the §15 steep muons (`run_digi.setup`, now shared: `parser()`/`setup()`/`main()`;
+same seed 7, 1500/arm, TAN_MAX 1.2). It reproduces `steep_*_is2_tm1.2` exactly (raw and χ² identical on all
+1486 A / 1449 C fits). x view only.
+
+**χ² of mirror vs the true side:** each chosen x window is refitted with the slope held on the true side, from a
+constrained scan and from the truth.
+- On mirrors the right side is better in 96 % (A) and 99 % (C) of events, by a median Δχ² of −3,300 (A) and −5,200 (C),
+  i.e. −5 to −9 per dof. Refitted, they read raw/true 0.94 / 0.98. **Not a degeneracy: the search misses the basin.**
+- **Right-sign production fits have a late t0** that grows with angle: A +7 / +40 / +100 / +130 / +170 ns at |tan|
+  0.2–0.3 / 0.3–0.45 / 0.45–0.6 / 0.6–0.8 / 0.8–1.1 (C similar).
+  - At 0.3–0.45 it costs no χ²: the p0–t0 slide valley. From 0.45 up it is a real miss (A −100 χ² at 0.45–0.6).
+  - The slide drags p0 along the track by a median 1.1–1.7 mm at 0.45–0.6 and 3–8 mm above 0.6.
+- Why: `_global_start` scans t0 only at w = 0, then w only at that t0. A steep track's charge pins neither.
+
+**Truth-free fix, `two_sided_fit` (prototype in `mirror_chi2.py`, NOT in `wft`):**
+- Per slope sign:
+  - (p0, t0) at |raw| 0.15 / 0.4 / 0.8;
+  - then (p0, w) over that sign's half (|raw| 0.05–1.6) at the best t0, p0 shear-centred;
+  - then the production Nelder-Mead.
+- Keep the lowest χ² of {production, + side, − side}.
+- Cost: ~3,500 extra χ² evaluations per plane candidate, several seconds.
+
+| \|true tan\| | wrong sign A (prod → ts) | wrong sign C | tan res A | tan res C | p0 res A [mm] | p0 res C [mm] | t0 bias A / C [ns] |
+|---|---|---|---|---|---|---|---|
+| 0.1–0.3 | ≤ 0.8 % → 0 | ≤ 0.8 % → 0 | unchanged | unchanged | 0.26–0.45 → 0.31–0.42 | unchanged | ~0 change |
+| 0.30–0.45 | 13.1 → 3.0 % | 15.0 → 0.0 % | 0.024 → 0.019 | 0.020 → 0.014 | 1.15 → 0.78 | 0.93 → 0.46 | +30 → −10 / +30 → 0 |
+| 0.45–0.60 | 17.9 → 1.4 % | 29.2 → 0.5 % | 0.047 → 0.039 | 0.045 → 0.020 | 3.7 → 1.8 | 3.3 → 0.84 | +72 → −51 / +54 → −7 |
+| 0.60–0.80 | 25.9 → 1.1 % | 37.8 → 0.4 % | 0.124 → 0.064 | 0.107 → 0.036 | 7.8 → 1.6 | 7.7 → 1.4 | +104 → −15 / +91 → 0 |
+| 0.80–1.10 | 25.3 → 1.3 % | 34.3 → 0.8 % | 0.345 → 0.120 | 0.224 → 0.063 | 13.3 → 2.6 | 11.4 → 2.1 | +125 → −40 / +141 → −5 |
+
+- Right-sign raw/true (ts): A 0.97 / 0.95 / 0.94 / 0.92, C 0.99 / 0.98 / 0.98 / 0.97 at 0.3–0.45 / … / 0.8–1.1.
+- **Open on A:** a residual early t0 (−51 ns at 0.45–0.6, the truth-start refit gets −7) and a raw/true ~2 % lower
+  than production's right-sign fits.
+
+**What this does not establish:**
+- The synthetic signal IS the fit model. So this shows a search failure, not how real steep tracks behave.
+- Real-data validation is still needed: the A–C cosmic truth and the corner-cutting lines (|tan| ≈ 1), beam yield and
+  purity, near-normal.
+- The y view is not tested.
+- The pilot (cluster 4409382) and the staged full pass use the OLD search. Mirrors inside the 0.3–0.6 acceptance
+  bias their angles today, independent of TAN_MAX.
+
+**Decision for Dylan:** port `two_sided_fit` into `wft.reco.fit_plane`, behind an env flag recorded in the sidecar,
+validate it on data, and hold the full launch for it? Or launch is2_v1 as staged and fold the fix into the T1
+combined re-pass?

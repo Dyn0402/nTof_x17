@@ -63,7 +63,7 @@ def run(jobs_list, bundle, state, min_strips, n_jobs, sim_bundle=None):
     return pd.DataFrame(rows)
 
 
-def main() -> int:
+def parser() -> argparse.ArgumentParser:
     ap = argparse.ArgumentParser()
     ap.add_argument('mode', choices=['muons', 'g4'])
     ap.add_argument('--arm', default='A')
@@ -91,8 +91,13 @@ def main() -> int:
                     help='override wft.reco.W_SCAN_HALF (start-scan slope range, mm/ns; step kept)')
     ap.add_argument('--select', default='wall', choices=['wall', 'fullgap', 'none'],
                     help='g4: wall = full gap + own track reaches the wall (default)')
-    a = ap.parse_args()
+    return ap
 
+
+def setup(a):
+    """Overlay, bundles and the per-event job list for parsed args ``a``:
+    (jobs, bundle path, sim bundle path or None, overlay state).  Shared with
+    mirror_chi2.py, which re-digitises the same events."""
     from wft.calib import CalibrationBundle
     bpath = Path(a.bundle) if Path(a.bundle).is_dir() else BUNDLES / a.bundle
     cal = CalibrationBundle.load(str(bpath))
@@ -173,6 +178,12 @@ def main() -> int:
                              t0=float(rng.choice(t0s)), adc_per_e=adc, xy_split=XY_SPLIT, v_true=v_true,
                              seed=int(rng.integers(1 << 31)), truth=truth))
     print(f'{len(jobs)} events, adc/e {adc:.2f}, v_true {v_true}')
+    return jobs, bpath, spath, state
+
+
+def main() -> int:
+    a = parser().parse_args()
+    jobs, bpath, spath, state = setup(a)
     if a.tan_max is not None:
         # the pool forks, so the workers inherit the patched module global
         from wft import reco as wreco
