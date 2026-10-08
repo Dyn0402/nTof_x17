@@ -1,7 +1,11 @@
 # ntof_calorimetry — what energy information the n_TOF data can give, and MM dE/dx
 
-**Plan written 2026-10-08. Nothing here has been run yet.** Numbers marked
-*(est.)* are hand estimates: textbook ranges and stopping powers for PVT and Ar.
+**Plan written 2026-10-08.** Steps 1-2 (C1.1, C1.3, C4) ran the same day:
+see **Results so far** at the end, and the generated report
+`/media/dylan/data/x17/calorimetry/report.html`.
+
+Numbers below marked *(est.)* are the plan's original hand estimates. They are
+hand estimates: textbook ranges and stopping powers for PVT and Ar.
 Phase C2 replaces them with Geant4. Kinematic numbers are exact: two-body decay,
 m_X = 16.9 MeV, Q = 20.578 MeV.
 
@@ -434,3 +438,39 @@ scope: is the scale right, and is any liquid alive. Do them first.
 - O10 (NNLS guard / `q_obs`) and the two-track threads (`SAME_CHAMBER_PAIRS.md`)
   are the neighbours. M3's separation-vs-distance result belongs in
   `SAME_CHAMBER_PAIRS.md` when it exists.
+
+---
+
+## Results so far (2026-10-08)
+
+Code: `mip_sample.py` (samples + layer crossings), `landau.py` (Bichsel MPV,
+truncated Landau(x)Gauss), `scint_ecal.py` (C1), `liquid_salvage.py` (C4),
+`make_report.py`. Outputs under `paths.spell('calo')`.
+
+- **C1.1: the plastic keVee scale under-reads at the MIP by 3-24 %**
+  (production line reads cosmic MIP at 0.76-0.97 of the Bichsel Delta_p
+  3.41 MeV). Cause: the line through the 477/699 keVee edges extrapolated x5.
+  The Y-88 1.6 MeV edge falls below it by the same amount on A and D. The
+  response is linear in path to 1.45 MIP (~5 MeV). **Not a kill.** Product:
+  `c1/calib_plastic_e.json`, MIP-anchored mV/MeVee per bar, 4-7 %, beam-off
+  cosmics. Trigger thresholds on that scale: 2.1-2.9 MeVee. Arm B not
+  measured.
+- **Fit gotcha:** on A the trigger threshold is at 0.85-0.9 of the MIP peak.
+  Fit with per-event truncation at thr x cos (`landau.fit_trunc`) and a
+  sigma/MPV prior; a free fit runs to a low-MPV, wide-sigma solution.
+- **C1.3:** `satuflag` is never set. Clipping starts at >= 15 MeVee. Irrelevant.
+- **C1.4 blocked:** the beam plastic peak rises ~10 % from 10 to 80 ms, but
+  the beam through-goers do not penetrate (below), so population and gain
+  cannot be separated. An in-beam energy reference is needed: 28Al endpoint
+  (C1.2), or the H-capture Compton edge.
+- **C4: the liquids are threshold-limited, not dead.** MIP in 18 mm LAB =
+  20-28 mV (6-9 mV/MeV, i.e. 0.13-0.19 of the source scale). The n_TOF ZS
+  threshold of 16-18 mV is therefore 1.8-2.8 MeV. The source "edges" were not
+  Compton edges (LIQA Cs = Y-88 amplitude). MIP efficiency: A 56 % (65-86 % on
+  u >= 0, the PMT half), D 36 % (50-70 % at u >= 50), C 14 % (falls toward its
+  top-mounted PMT: a bubble?). B not measured. The signal was never recorded,
+  so reprocessing recovers nothing.
+- **By-product:** in-beam A-C "through-goers" at >= 10 ms reach the liquid at
+  0.10 +- 0.04 (A) / 0.04 (C) of the position-matched cosmic expectation. They
+  are mostly **not penetrating muons**, which matters for the through-going
+  background picture (`ntof_cosmics/README.md`).
