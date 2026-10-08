@@ -187,6 +187,11 @@ def main():
                 resid[(name, st)] = got
                 rows[name][st] = {p: metrics(np.array(list(got[p].values())))
                                   for p in ('x', 'y')}
+                # per-event (eid, tan_ref, tan_fit, p0_ref, p0_fit) so any two
+                # arms from different jobs can be PAIRED afterwards
+                rows[name].setdefault('events', {})[st] = {
+                    p: [[int(e)] + [round(float(x), 6) for x in tup[:4]]
+                        for e, tup in got[p].items()] for p in ('x', 'y')}
                 for p in ('x', 'y'):
                     q = rows[name][st][p]
                     print(f'{name:13} {st:5} {p}: s68 {q["s68_deg"]:.3f} '
