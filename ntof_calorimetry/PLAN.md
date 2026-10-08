@@ -494,9 +494,28 @@ truncated Landau(x)Gauss), `scint_ecal.py` (C1), `liquid_salvage.py` (C4),
   40 mm cell: 19 % on A, 39 % on C. **No attachment visible** with the
   unbiased (absolute, all-track) depth profile; a per-track-normalised
   in-window version faked a 3x fall on C.
-- **C2/C3 staged, not submitted:** `condor/submit_c2.py` (single e-/e+,
-  0.5-16 MeV, 2 angles) and `condor/submit_c3_reduce.py` (the pair sim ->
-  per-event-arm deposits), both through `condor/reduce_edep.py` (prompt hits,
-  t < 1e8 ns). They run on lxplus against
-  `/afs/cern.ch/work/d/dneff/git/MX17_Full_Geant`. Test the reducer on a
-  200-event file first: it has not been run on real sim output.
+- **Bichsel MPV checked against Geant4:** the full-sim muons in 2 cm PVT
+  (`MX17_Full_Geant/analysis/mip_2cm`) peak at 3.375 +- 0.025 MeV against 3.41.
+- **C2 done** (condor 4409644, `g4_response.py`, `c2/response.csv`). An
+  electron reaching the plastic has lost a median **1.2 MeV** upstream
+  (capsule + MM + wall + passive; the plan's estimate was 0.5-1), with
+  sigma ~0.3 MeV. P(a bar takes > 0.3 MeV) is 27 % at 3 MeV, 50 % at 4 MeV
+  and 76 % at 6 MeV. Stopped legs read E ~ T - 1.2 MeV. The liquid
+  punch-through reaches 50 % at ~9 MeV.
+- **C3 done: kill (b) and (c).** Condor 4409645 reduced the 10^7-event pair
+  sim; the IPC was reweighted to ipc_born M1 / E0 in (theta, y).
+  Z^2(theta x E_low) / Z^2(theta) = **1.08 (M1) / 1.05 (E0)** with the
+  realistic plastic energy; 1.10 / 1.07 with the true deposit; 1.13 / 1.09
+  with a perfect wall + plastic; **2.5 / 4.0 with the true soft-leg T**. The
+  information exists, but the upstream material destroys it: only 21 % of
+  the selected wide-angle X17 pairs have both legs in the plastic. A
+  both-leg threshold keeps X17 and IPC at the same rate and costs 80 % of the
+  signal. Nothing ships beyond the trigger's own threshold.
+  **Lesson for the next design:** measure the soft leg before ~1 MeV of
+  material, with a calorimetric first layer.
+- **Gotcha (C3 metric):** a fine 2D grid on ~30k effective IPC MC events made
+  the SMEARED energy look worth more than the true one. Use coarse bins, pool
+  bins with < 10 MC events, and check the two MC halves against each other.
+- Open from the plan, not pursued: C1.2 (²⁸Al endpoint; the trigger
+  threshold sits at the endpoint), C1.4 (needs an in-beam energy reference),
+  C1.5 face maps (exist in the scint stack), M3/M4 (killed by M2).

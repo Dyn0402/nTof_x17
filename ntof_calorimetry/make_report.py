@@ -42,6 +42,11 @@ def _load() -> dict:
     t['calib'] = json.loads((C1 / 'calib_plastic_e.json').read_text())
     t['spec'] = pd.read_parquet(C1 / 'mip_spectra.parquet')
     t['liq'] = pd.read_parquet(C4 / 'liquid_tagged.parquet')
+    if (OUT / 'c2' / 'response.csv').exists():
+        t['c2'] = pd.read_csv(OUT / 'c2' / 'response.csv')
+    if (OUT / 'c3' / 'summary.json').exists():
+        t['c3'] = json.loads((OUT / 'c3' / 'summary.json').read_text())
+        t['c3_thr'] = pd.read_csv(OUT / 'c3' / 'thresholds.csv')
     if (M2 / 'summary.json').exists():
         t.update({f'm2_{k}': pd.read_csv(M2 / f'{k}.csv') for k in
                   ('resolution', 'two_mip', 'vs_path', 'depth', 'gain_map')})
@@ -430,6 +435,8 @@ run). A timing loss and a beam-only gain change are both ruled out.</p>
 
 {m2_section(t)}
 
+{c23_section(t)}
+
 <h2>What this does not rule out</h2>
 <ul>
 <li><b>The bar thickness.</b> 20 mm PVT, per the Geant4 geometry
@@ -439,9 +446,10 @@ descriptions still say 20&times;30&times;2.5 cm, and so did <code>pss_mip_calib<
 20 %, and the source line would read 23-40 % low instead of 3-24 %. The direction of every
 conclusion is unchanged, but the absolute scale depends on this one number. A caliper on a
 bar settles it.</li>
-<li><b>The MIP anchor rests on a calculation.</b> The Bichsel thin-layer MPV is taken as
-good to ~3 %, and Birks to ~2 % (both inside the quoted 4-7 %). The C2 Geant4 response
-replaces the calculation, and should come out within that.</li>
+<li><b>The MIP anchor is a calculation, checked once.</b> The Bichsel MPV (3.41 MeV) agrees
+with Geant4: muons through the full-sim 2 cm bar (<code>MX17_Full_Geant/analysis/mip_2cm</code>,
+20k events) peak at 3.375 &plusmn; 0.025 MeV deposited. Neither includes Birks quenching or
+light collection, taken as good to ~2 % for a MIP against Compton electrons.</li>
 <li><b>Nonlinearity between 0.7 and 3.4 MeV.</b> The path check covers 3.4-5 MeV. Below
 the MIP, only the source edges constrain the response, and they disagree with each other.
 The 3-5 MeV soft-leg range is covered; 1-3 MeV (the <sup>28</sup>Al and capture-Compton
@@ -470,10 +478,113 @@ that subset.</li>
 <li>M1 raw road charge: <b>done</b> (<code>mm_charge.py</code>). M2 cosmic dE/dx: <b>done,
 kill condition met</b> &mdash; the 2-MIP line stops here (M3 not run: its statistical best
 case is already ~40 % at 10 % mis-tag). M4: only the gain-monitor use survives.</li>
-<li>Next: C2 (Geant4 single-electron response, condor on lxplus), then C3.</li>
+<li>C2 single-electron response: <b>done</b>. C3 pair sensitivity: <b>done, kill
+(b)/(c)</b>; the energy adds 5-8 % to Z<sup>2</sup>. The calorimetry line ends here for
+this dataset.</li>
 </ul>
 </body></html>"""
     return out
+
+
+def fig_c2(t) -> None:
+    R = t['c2']
+    R = R[(R.theta == 90) & (R.phi == 0)]
+    fig, axs = plt.subplots(1, 2, figsize=FS.WIDE)
+    for ax in axs:
+        FS.strip(ax)
+    for p, ls in (('e-', '-'), ('e+', '--')):
+        d = R[R.particle == p].sort_values('T')
+        axs[0].plot(d['T'], d.p_plas, color=FS.DET_COLOR['A'], ls=ls, marker='o', ms=3.5,
+                    label=f'{p}: a bar takes > 0.3 MeV')
+        axs[0].plot(d['T'], d.p_liq, color=FS.DET_COLOR['C'], ls=ls, marker='^', ms=3.5,
+                    label=f'{p}: liquid takes > 1 MeV')
+        axs[1].fill_between(d['T'], d.plas_q16, d.plas_q84, color=FS.DET_COLOR['A'], alpha=0.12 if p == 'e-' else 0.0, lw=0)
+        axs[1].plot(d['T'], d.plas_med, color=FS.DET_COLOR['A'], ls=ls, marker='o', ms=3.5, label=f'{p}: plastic deposit')
+    axs[1].plot([0, 16], [0, 16], color=FS.MUTED, lw=0.8, ls=':')
+    axs[1].plot([1.2, 7.2], [0, 6], color=FS.COPPER, lw=1.0, ls=':', label='T - 1.2 MeV')
+    for ax in axs:
+        ax.axvspan(3.9, 4.8, color=FS.BAND_SIGNAL, alpha=0.08, lw=0)
+        ax.set_xlabel('kinetic energy at the capsule, MeV')
+    axs[0].set_ylabel('probability')
+    axs[1].set_ylabel('MeV deposited (median, 16-84 %)')
+    axs[1].set_ylim(0, 7)
+    axs[0].legend(fontsize=7.5)
+    axs[1].legend(fontsize=7.5, loc='upper left')
+    FS.fig_title(fig, 'Half of the X17 soft legs never reach the plastic',
+                 'Geant4, one arm, from the capsule centre at normal incidence; band = X17 soft leg at >= 140 deg')
+    FS.save(fig, FIG / 'c2_response', data=R)
+
+
+def c23_section(t) -> str:
+    if 'c3' not in t or 'c2' not in t:
+        return ''
+    C = t['c3']['results']
+    R = t['c2']
+    r = R[(R.theta == 90) & (R.phi == 0) & (R.particle == 'e-')].set_index('T')
+    rows = []
+    for k in ('M1', 'E0'):
+        for v, lab in (('true_soft_T', 'ideal: the true soft-leg T'),
+                       ('true_wall_plus_plastic', 'true wall + plastic deposit'),
+                       ('true_deposit', 'true plastic deposit'),
+                       ('smeared', 'plastic deposit, resolution applied')):
+            g = C[k][v]
+            rows.append(dict(ipc=k, observable=lab, gain=g['gain'],
+                             half_a=g['gain_half_a'], half_b=g['gain_half_b']))
+    G = pd.DataFrame(rows)
+    sm = (C['M1']['smeared']['gain'], C['E0']['smeared']['gain'])
+    m = t['c3']['model']
+    thr = t['c3_thr']
+    th = thr[thr.e_cut.isin([0.5, 2.0, 3.0])].pivot_table(index='e_cut', columns='ipc',
+                                                           values=['eff_x17', 'eff_ipc']).round(3)
+    th.columns = [f'{a} ({b})' for a, b in th.columns]
+    th = th.reset_index()
+    return f"""<h2>C2-C3 &mdash; what the plastic energy is worth against IPC</h2>
+<div class="verdict"><p><b>Verdict: kill (b) and (c); ship nothing beyond the trigger
+threshold.</b> Adding the realistic plastic energy of the softer leg to the opening angle
+raises the Asimov Z<sup>2</sup> for X17 against the IPC continuum by only
+<b>{(sm[1] - 1) * 100:.0f}-{(sm[0] - 1) * 100:.0f} %</b> (E0 and M1 IPC respectively), which
+is under the plan's 10 % line. The information exists: the <i>true</i> soft-leg energy
+would multiply Z<sup>2</sup> by {C['M1']['true_soft_T']['gain']:.1f} (M1) to
+{C['E0']['true_soft_T']['gain']:.1f} (E0). The stack destroys it. A soft leg loses ~1.2 MeV
+before the plastic (capsule, chamber, wall, passive layers). Of the X17 soft legs at
+&ge; 140&deg; (3.9-4.8 MeV), only about half reach the plastic at all. Only
+{C['M1']['frac_both_plastic_x17'] * 100:.0f} % of selected wide-angle X17 pairs have both
+legs in the plastic. A perfectly calibrated SiPM wall would add only
+{(C['E0']['true_wall_plus_plastic']['gain'] - 1) * 100:.0f}-{(C['M1']['true_wall_plus_plastic']['gain'] - 1) * 100:.0f} %.</p></div>
+<p><b>C2.</b> Single e<sup>-</sup>/e<sup>+</sup> from the capsule centre through one arm of
+the production geometry (the build that made the pair sim), 20k per point
+(<code>condor/submit_c2.py</code>, cluster 4409644). For electrons that reach the plastic,
+the energy missing from the scored layers is a median {r.loc[4.5, 'miss_med']:.2f} MeV at
+4.5 MeV (16-84 %: {r.loc[4.5, 'miss_q16']:.2f}-{r.loc[4.5, 'miss_q84']:.2f}). So a stopped
+soft leg reads E &asymp; T &minus; 1.2 MeV with &sigma; &asymp; 0.3 MeV from upstream
+straggling alone. Below 6 MeV, &ge; 95 % of electrons that reach the plastic stop there.
+Liquid punch-through reaches 50 % at ~9 MeV. The plastic MIP plateau in the same runs is
+3.8-4.1 MeV (median, normal incidence), consistent with the 3.4 MeV MPV of C1.</p>
+<img src="figures/c2_response.png" alt="single-electron response">
+<p><b>C3.</b> The pair sim <code>pairs_thermal_trig_2cm_nose</code> (10<sup>7</sup> events,
+X17 + IPC 50/50, thermal capture vertices), reduced per event and arm on condor (cluster
+4409645). The IPC is <b>reweighted</b> from the sim's 1/M ansatz to <code>ipc_born</code> pure
+M1 and pure E0 in (opening angle, energy split); the true mix is unknown, so the two bracket
+it. Event model: the two leptons point into two different arms, and both drift gaps see
+charge. The trigger is wall &ge; {m['WALL_MIN']} MeV and plastic &ge; {m['PLAS_TRIG']} MeV in
+some arm. Plastic resolution is {m['RES']:.2f}&radic;(E&middot;3.41 MeV), the C1 MIP width.
+The angle is smeared by {m['SIG_THETA']:.0f}&deg;, and the cut is &theta; &ge;
+{m['THETA_MIN']:.0f}&deg;. Metric: Z<sup>2</sup> = &Sigma; s<sup>2</sup>/b over (&theta;,
+E<sub>low</sub>) against &theta; alone, which does not depend on normalisation when
+S &laquo; B. Background bins with &lt; 10 MC events are pooled. Each gain is also computed
+on the two halves of the IPC MC, which agree.</p>
+{_tab(G, {'gain': '{:.3f}', 'half_a': '{:.3f}', 'half_b': '{:.3f}'})}
+<p><b>(a) A per-leg threshold</b> requiring both legs in the plastic keeps X17 and IPC at
+the same rate (both ~20 % at 0.5 MeV), and costs 80 % of the signal:</p>
+{_tab(th)}
+<p>The low-energy backgrounds a threshold targets (<sup>28</sup>Al &beta;, capture-&gamma;
+Comptons) are already removed on the triggering arm, whose threshold is 2.1-2.9 MeVee. Their
+rate on the <i>other</i> leg is a beam-data question, and calorimetry cannot do better than
+the plastic hit itself there. <b>Design lesson for a next iteration:</b> the
+soft-leg energy is worth a factor 2.5-4 in Z<sup>2</sup>, but only if it is measured before
+~1.2 MeV of material. That means a thin capsule and chamber, and a calorimetric first layer
+(the wall) rather than an aluminium-wrapped trigger layer.</p>
+"""
 
 
 def m2_section(t) -> str:
@@ -537,6 +648,8 @@ def main() -> int:
     fig_liquid(t)
     if 'm2_summary' in t:
         fig_m2(t)
+    if 'c2' in t:
+        fig_c2(t)
     (OUT / 'report.html').write_text(report(t))
     print(f'wrote {OUT / "report.html"}')
     return 0
