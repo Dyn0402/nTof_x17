@@ -73,7 +73,7 @@ def main():
     grid = np.array(D['grid'])
     data = {}
     for V, E in zip(D['volts'], D['E_Vcm']):
-        if E < a.emin or E < G.E.min():
+        if E < a.emin or E < G.E.min() - 1.0:          # 34.7 V/cm sits on the 35 V/cm node
             continue
         r = D[str(V)][a.view]
         data[float(E)] = (grid, np.array(r['stack']), np.maximum(np.nan_to_num(np.array(r['band']), nan=1.0), 0.004))

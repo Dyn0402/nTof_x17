@@ -22,7 +22,7 @@ KEYS = ('v', 'eta', 'DL', 'DT')
 
 
 class GasGrid:
-    def __init__(self, gas, source='air_hs'):
+    def __init__(self, gas, source='air_hs', smooth=True):
         self.gas = gas
         T = {}
         for p in glob.glob(os.path.join(RES, source, f'magboltz_{gas}_w*_a*.json')):
@@ -43,6 +43,24 @@ class GasGrid:
             for e, vals in d.items():
                 self.cube[np.searchsorted(self.W, w), np.searchsorted(self.A, a), np.searchsorted(self.E, e)] = vals
         self.complete = float(np.isfinite(self.cube[..., 0]).mean())
+        self.raw = self.cube.copy()
+        if smooth:
+            self._smooth_eta()
+
+    def _smooth_eta(self):
+        """Magboltz's attachment coefficient is a rare-process Monte Carlo estimate: even at 3e8
+        collisions it scatters +-10-15 % between neighbouring fields, while the physical eta(E) is
+        smooth.  Per mixture, replace eta by a quadratic fit of log eta against log E (and D_L, D_T
+        by a quadratic in log E); v is left as computed (it converges)."""
+        lE = np.log(self.E)
+        for i in range(len(self.W)):
+            for j in range(len(self.A)):
+                for q in (1, 2, 3):
+                    y = self.cube[i, j, :, q]
+                    ok = np.isfinite(y) & (y > 0)
+                    if ok.sum() >= 4:
+                        c = np.polyfit(lE[ok], np.log(y[ok]), 2)
+                        self.cube[i, j, ok, q] = np.exp(np.polyval(c, lE[ok]))
 
     def _lin(self, X, x):
         i = int(np.clip(np.searchsorted(X, x) - 1, 0, len(X) - 2))

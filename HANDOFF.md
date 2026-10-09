@@ -2,16 +2,13 @@
 
 ## Detector model basics (cloud_basics) — updated 2026-10-09 (dylan-MS-7C84)
 
-**Resume (10-09 late, dylan-Yoga):** Dylan asked for: gas compositions shown as model curves matching data, the same for
-the bench, all open questions, the X model. State:
-- High-stat Magboltz grid RUNNING: condor 4410759 (697: beam/co2/bench fine grids) + 4410787 (120: bench 35/60/104/174 V/cm);
-  watcher pulls into `cloud_basics/results/air_hs/`. When complete: `beam_comp_fit.py --source air_hs`,
-  `driftscan_fit.py --source air_hs --emin 30`, `bench_fit.py --source air_hs`, then figures/report.
-- Coarse-grid results: beam 1.55 % water + 0.070 % air (k=0, no gap spread); bench det3 drift scan (6 fields, §21)
-  0.95 % water, NO air, k +0.1, gap spread 1.5 mm -- one composition fits 104-382 V/cm. 92 V/cm beam eta shape open.
-- Open questions closed: faint excess = missing-sample selection (§19); 0.7 us ripple = trigger-locked pickup (§20).
-- X: snapping rejected (snap_test); X footprint tails real (footprint_test) -> wft lor_frac_x/lor_gamma_x (47 tests);
-  benches RUNNING condor 4410788 (`~/cloud_basics_condor/lor/bench`) -> compare_bench.py.
+**Resume (10-10, dylan-Yoga):** DONE: gas compositions as model curves (FINDINGS §24-26, report F9-F13, notes/mx17-beam-attachment).
+Beam run_71 1.51 % water + 0.078 % air (163 ppm O2), all 3 fields x 2 views fit on the high-stat grid (eta smoothed in E);
+run_63 blocks 230 -> 147 ppm O2 over the night; CO2 period ~290 ppm; bench det3 6-field drift scan 0.95 % water, no air (<~10 ppm).
+One physics model, setup-specific effective shapers. X: snapping rejected, footprint tails real but resolution-neutral (§23).
+Next: det4 X deficit vs amplification stripes; det7 bench rising plateau; three-body O2 attachment scale (ppm is model-dependent).
+Data note: re-extracted run_71 cache lives only in the laptop job tmp (regenerate: extract_det4_only.py run71_raw --cm masked --keep 12);
+det3 drift-scan decoded_root pulled to ~/x17/cosmic_bench/det3/mx17_det3_saturday_scan_6-27-26/.
 
 **Goal:** Dylan (10-09): get a physically sound, consistent detector model *before* publishing or re-passing; solve as many
 consistency problems as possible and converge on one model over the coming weeks. Re-pass is ON HOLD until then.

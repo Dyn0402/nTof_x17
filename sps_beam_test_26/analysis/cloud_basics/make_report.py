@@ -53,8 +53,9 @@ def main():
     PL = (('raw700', 243), ('raw450', 150), ('raw275', 92))
 
     rates = [F[l]['r'] * 1e4 for l, _ in PL]
-    afp0 = os.path.join(RES, 'air_fit_beam.json')
-    AB = J(afp0)['best'] if os.path.exists(afp0) else dict(water_pct=np.nan, air_pct=np.nan, o2_ppm=np.nan)
+    cfp0 = os.path.join(a.out, 'compositions.json')
+    _b = J(cfp0)['beam'] if os.path.exists(cfp0) else dict(water=np.nan, air=np.nan, o2_ppm=np.nan)
+    AB = dict(water_pct=_b['water'], air_pct=_b['air'], o2_ppm=_b['o2_ppm'])
     # O2 equivalent: Magboltz Ar/CF4/iso + 1.7 % H2O + 0.1 % O2, eta*v at each field
     MB = {p['E_Vcm']: p for p in J(os.path.join(RES, 'magboltz_beam_w1p7_o0p1.json'))['points']}
     ppm = [1000 * F[l]['r'] / (MB[Ev]['eta_per_cm'] * MB[Ev]['v_true_um_ns'] * 1e-4) for l, Ev in PL]
@@ -146,47 +147,72 @@ def main():
          '(their big clusters were preferentially early); the toy reproduces mid and bright.'),
     ]
     air_html = ''
-    afp = os.path.join(RES, 'air_fit_beam.json')
-    if os.path.exists(afp):
-        Af = J(afp); b = Af['best']
-        mv = {int(k): x for k, x in Af['measured_v'].items()}; mr = {int(k): x for k, x in Af['measured_r'].items()}
-        pr = {int(k): x for k, x in Af['pred'].items()}
-        rows = []
-        for Ef in sorted(set(mv) | set(mr)):
-            rows.append([f'{Ef} V/cm',
-                         f'{mv[Ef][0]:.2f}' if Ef in mv else '—', f'{pr[Ef][0]:.2f}' if Ef in mv else '—',
-                         f'{mr[Ef][0] * 1e4:.2f}' if Ef in mr else '—', f'{pr[Ef][1] * 1e4:.2f}' if Ef in mr else '—'])
-        h2o_air_room = 0.05     # H2O/O2 in room air at ~40 % RH, 22 C (1.0 kPa / 21 kPa)
-        air_html = f'''
-<h2>Air model: how much water and how much air</h2>
-<p>Magboltz on a grid of water (0–3 %) × air (0–2 %; N<sub>2</sub>/O<sub>2</sub>/Ar 78.08/20.95/0.93) for
-Ar/CF<sub>4</sub>/iso 88/10/2 at 720.8 Torr (condor 4410646, <code>air_fit.py</code>). Fitted together to the drift
-velocity measured at four fields (run_63 ladder slopes; the run_71 drift end over 30 mm) and the loss rate at
-three (run_71 RAW): <b>water {b["water_pct"]:.2f} % [{b["water_68"][0]:.2f}, {b["water_68"][1]:.2f}], air
-{b["air_pct"]:.3f} % [{b["air_68"][0]:.3f}, {b["air_68"][1]:.3f}] = {b["o2_ppm"]:.0f} ppm O<sub>2</sub></b>,
-χ² {b["chi2"]:.1f} / {b["ndf"]} (errors: v 3 %, r 10 %).</p>
-{table(['field', 'v measured [µm/ns]', 'v model', 'r measured [e-4/ns]', 'r model'], rows)}
-<figure><img src="figures/f8_air_model.png" alt="air model" loading="lazy"><figcaption><b>The air model.</b>
-Left: water alone sets v(E) and fits all four fields to 1 %. Middle: air sets the loss rate; the Magboltz
-curve's jitter between neighbouring fields (±15–20 %) is Monte Carlo noise at this statistics setting, as large
-as the apparent field-shape tension, so that tension is not established. Right: χ² contours.</figcaption></figure>
+    cfp = os.path.join(a.out, 'compositions.json')
+    if os.path.exists(cfp):
+        Cm = J(cfp); bm = Cm['beam']; zs = Cm['zs_arms']; co2 = Cm['co2_period']
+        DSf = J(os.path.join(RES, 'driftscan_fit_air_hs_x.json')); BCf = J(os.path.join(RES, 'beam_comp_fit_air_hs.json'))
+        BFf = J(os.path.join(RES, 'bench_fit_x_free.json'))
+        rows = [['run_63 25.6°, 142 V/cm (ZS)', 'Aug 3 00:22–00:30', f'({zs["r63_d425"]["water_68"][0]:.1f}–{zs["r63_d425"]["water_68"][1]:.1f})',
+                 f'{zs["r63_d425"]["air"]:.3f}', f'{zs["r63_d425"]["o2_ppm"]:.0f}', f'{zs["r63_d425"]["chi2"]:.0f} / {zs["r63_d425"]["n"]}',
+                 f'{zs["r63_d425"]["chi2_noair"]:.0f}'],
+                ['run_63 25.6°, 108 V/cm (ZS)', 'Aug 3 00:30–00:37', f'({zs["r63_d325"]["water_68"][0]:.1f}–{zs["r63_d325"]["water_68"][1]:.1f})',
+                 f'{zs["r63_d325"]["air"]:.3f}', f'{zs["r63_d325"]["o2_ppm"]:.0f}', f'{zs["r63_d325"]["chi2"]:.0f} / {zs["r63_d325"]["n"]}',
+                 f'{zs["r63_d325"]["chi2_noair"]:.0f}'],
+                ['run_63 flat, 243 V/cm (ZS)', 'Aug 3 01:00–01:54', f'{zs["r63_flat700"]["water"]:.2f}', f'{zs["r63_flat700"]["air"]:.3f}',
+                 f'{zs["r63_flat700"]["o2_ppm"]:.0f}', f'{zs["r63_flat700"]["chi2"]:.0f} / {zs["r63_flat700"]["n"]}',
+                 f'{zs["r63_flat700"]["chi2_noair"]:.0f}'],
+                ['<b>run_71 RAW, 3 fields × 2 views + ladder v</b>', 'Aug 3 05:22–05:52', f'<b>{bm["water"]:.2f}</b>', f'<b>{bm["air"]:.3f}</b>',
+                 f'<b>{bm["o2_ppm"]:.0f}</b>', f'{sum(bm["chi2"].values()):.0f} / {55 * len(bm["chi2"])}',
+                 f'{sum(bm["chi2_noair"].values()):.0f}'],
+                ['run_56 flat, CO<sub>2</sub> gas (ZS 5σ, rough)', 'Aug 1 15:47', f'{co2["water"]:.2f}', f'{co2["air"]:.3f}',
+                 f'{co2["o2_ppm"]:.0f} ({co2["o2_range"][0]:.0f}–{co2["o2_range"][1]:.0f})', '—', '—'],
+                ['<b>bench det3, 6 fields (35–382 V/cm)</b>', 'Jun 27', f'<b>{DSf["water"]:.2f}</b>', '<b>0</b>', '<b>≲ 2 (stat.), ≲ 10</b>',
+                 f'{sum(v["chi2"] for v in DSf["per_field"].values()):.0f} / {sum(v["n"] for v in DSf["per_field"].values())}', '—']]
+        for d in ('det2', 'det4', 'det7'):
+            f = BFf[d]
+            rows.append([f'bench {d}, {f["E"]:.0f} V/cm', 'Jun', f'{f["water"]:.2f}', f'≤ {max(f["air_68"][1], 0.005):.3f}',
+                         f'≤ {max(f["air_68"][1] * 2095, 10):.0f}', f'{f["chi2"]:.0f} / {f["n"]}', '—'])
+        air_html = f"""
+<h2>Gas compositions, shown as model curves on the data</h2>
+<p>One physics model for both setups (<code>predict.current_field</code>): uniform ionisation over the gap, drift with
+Magboltz v, η and D<sub>L</sub> for the gas (high-statistics grid, condor 4410759/4410787, 3e8 collisions; η smoothed in E
+because Magboltz's attachment Monte Carlo still scatters ±10–15 % between neighbouring fields), an optional linear
+drift-field profile and gap spread (geometry), a parametric shaper and trigger jitter. <b>No free loss rate</b>: the loss
+follows from the composition. Shared across every field and view of a dataset: composition, geometry, shaper. Free per
+stack: amplitude and t0. Gases: beam Ar/CF<sub>4</sub>/iso 88/10/2 (CO<sub>2</sub> period Ar/CO<sub>2</sub>/iso 95/3/2),
+bench Ar/iso 95/5; water and air (N<sub>2</sub>/O<sub>2</sub>/Ar 78.08/20.95/0.93) replace argon.</p>
+@@COMP_TABLE@@
+<figure><img src="figures/f9_beam_composition.png" alt="beam composition" loading="lazy"><figcaption><b>Beam.</b> run_71 RAW,
+both views at three fields and the drift velocity at four, all from one composition. Grey dotted: the same gas without
+air. Residuals in units of the bootstrap error.</figcaption></figure>
+<figure><img src="figures/f10_bench_driftscan.png" alt="bench drift scan" loading="lazy"><figcaption><b>Bench, one gas fill,
+six fields.</b> det3 on 6-27. The same model with no air describes all six fields; grey dotted: the same gas with
+0.04 % air added (84 ppm O<sub>2</sub>, half the beam's), which the low fields reject (χ² up to ×13).</figcaption></figure>
+<figure><img src="figures/f11_bench_chambers.png" alt="bench chambers" loading="lazy"><figcaption><b>Bench, four chambers at
+their operating field.</b> det4 X head-on only (its amplification stripes run across X). det7 fits poorly (χ² 191/86): its
+plateau rises ~8 %, which needs a field gradient beyond what det3's drift scan supports or a gap different from its
+marginal 27.5 mm; it wants no air either way.</figcaption></figure>
+<figure><img src="figures/f13_zs_arms.png" alt="ZS arms" loading="lazy"><figcaption><b>The night before run_71.</b> Zero-suppressed
+run_63 blocks, composition fitted per block (ZS distortion from RAW run_71 at the nearest field, additive; +1 % systematic).
+The run_71 composition (dashed) does not describe them: the gas changed over hours.</figcaption></figure>
+<figure><img src="figures/f12_composition_map.png" alt="composition map" loading="lazy"><figcaption><b>The compositions.</b>
+Beam points carry 68 % ranges (the rotated blocks cannot pin the water: no drift end in the window); bench points are upper
+limits on O<sub>2</sub>.</figcaption></figure>
 <ul>
-<li><b>Water and O<sub>2</sub> cannot come from one bulk air leak.</b> The gas carries
-H<sub>2</sub>O/O<sub>2</sub> ≈ {b["water_pct"] / (b["o2_ppm"] * 1e-4):.0f}; room air carries ≈ {h2o_air_room}. A leak
-supplying the water would bring ~{b["water_pct"] / h2o_air_room * 0.2095:.0f} % O<sub>2</sub> and stop every
-signal. A bulk leak of ~{b["air_pct"]:.2f} % air can supply the O<sub>2</sub>; the water needs another path.
-Diffusion (permeation) through polymer tubing fits both at once — water permeates most tubing polymers far
-faster than O<sub>2</sub> — and scales inversely with the gas flow: check the line's tubing material, length
-and flow at H4.</li>
-<li><b>The CO<sub>2</sub> period</b> (run_56, Aug 1; ZS, drift field assumed 243 V/cm, v = 12.33 µm/ns from
-run_57) needs ≈ 1.6 % water — the same as the CF<sub>4</sub> period two days later — and a loss rate of
-3.4–5.2 × 10<sup>−4</sup>/ns ≈ 0.13–0.18 % air (270–385 ppm O<sub>2</sub>): about twice the O<sub>2</sub>
-with the same water.</li>
-<li>Three-body O<sub>2</sub> attachment with H<sub>2</sub>O or isobutane as the third body is not well
-modelled in Magboltz, so the ppm scale carries a model uncertainty of a factor of a few in either direction;
-the water fraction (from v) does not — but it assumes the nominal drift field and a 30 mm gap (det4's own
-gap measurement is not usable, RECONSTRUCTION_BASIS); a field 10 % below nominal would read as less water.</li>
-</ul>'''
+<li><b>Bench and beam are explained by the same model.</b> The beam gas carries 1.5–1.6 % water and 150–230 ppm O<sub>2</sub>
+(falling through the night of Aug 2–3; ~290 ppm two days earlier in the CO<sub>2</sub> gas). The bench gas carries 0.6–1.0 %
+water and ≲ 10 ppm O<sub>2</sub>. The bench null is not an insensitivity: at its low fields the bench rejects even half the
+beam's air.</li>
+<li><b>The water and the O<sub>2</sub> do not come in together as room air.</b> Room air carries H<sub>2</sub>O/O<sub>2</sub>
+≈ 0.05; the beam gas ≈ 100, the bench gas ≥ 1000. A leak that supplied the water would bring percent-level O<sub>2</sub>
+and stop every signal. Water enters on both setups by another route (permeation through tubing, or wet gas); the O<sub>2</sub>
+is specific to the beam line and varied over hours, as air ingress would.</li>
+<li><b>Caveats.</b> The O<sub>2</sub> scale inherits Magboltz's three-body attachment (H<sub>2</sub>O and isobutane as third
+bodies are not well modelled): a factor of a few in absolute ppm, not in the beam/bench contrast or the time trend. The water
+fractions assume the nominal drift fields and the measured (bench) or nominal 30 mm (beam) gaps. The fitted shapers are
+effective responses (they include the ion tail), different on bench and beam although the DREAM settings are identical.</li>
+</ul>"""
+        air_html = air_html.replace('@@COMP_TABLE@@', table(['dataset', 'when', 'water [%]', 'air [%]', 'O<sub>2</sub> [ppm]', 'χ² / points', 'χ² with no air'], rows))
 
     fig_html = ''.join(
         f'<figure><img src="figures/{f}" alt="{html.escape(t)}" loading="lazy">'
@@ -206,11 +232,13 @@ and 92 V/cm — the same per unit <i>time</i> while the depth reached differs by
 no undershoot when the drift ends, and independent (within ~2σ) of beam rate, spill phase, position and local
 gain. Of the mechanisms tested — readout high-pass, a per-depth (field/geometry) loss, resistive-layer charging,
 space charge, alignment and zero-suppression artefacts — only electrons removed from the drifting cloud
-(attachment) fits all of it. The rate is what Magboltz gives for
-{min(ppm):.0f}–{max(ppm):.0f} ppm O<sub>2</sub> in this gas. Fitted jointly with the drift velocity (below), the
-beam gas carries <b>{AB["water_pct"]:.2f} % water and {AB["air_pct"]:.3f} % air ({AB["o2_ppm"]:.0f} ppm O<sub>2</sub>)</b>
-— but water and O<sub>2</sub> in that ratio cannot both come from one bulk air leak; diffusion through the gas
-tubing can supply both.</p>
+(attachment) fits all of it.</p>
+<p><b>The gas compositions, as model curves on the data.</b> One physics model — Magboltz drift and attachment for
+the actual gas, the measured geometry and electronics, <i>no free loss rate</i> — describes run_71 at three fields
+in both views with <b>{AB["water_pct"]:.2f} % water and {AB["air_pct"]:.3f} % air ({AB["o2_ppm"]:.0f} ppm O<sub>2</sub>)</b>,
+the run_63 blocks of the night before with 150–230 ppm O<sub>2</sub> (falling over hours), and the bench (det3 at six
+fields, 35–382 V/cm) with <b>0.95 % water and no air (≲ 10 ppm O<sub>2</sub>)</b>; the bench rejects even half the beam's air.
+Water and O<sub>2</sub> are not in room-air proportion on either setup: the O<sub>2</sub> is specific to the beam line.</p>
 <p>It is <b>not</b> what earlier passes claimed: §11's field-ordered "spike" and §13's 5× O<sub>2</sub> spread were
 threshold-alignment artefacts, and every earlier stack counted the FEU's dropped RAW samples as zeros (worth
 ~6 % of fake late loss).</p>
@@ -267,33 +295,53 @@ while the loss per ns does not change.</p>
 {table(['', 'faint', 'mid', 'bright', 'all'], t_toy)}
 <p>Toy: Poisson clusters with a 1/n² size tail, per-electron survival e<sup>−rt</sup>, per-event gain
 scatter, the measured template, random sampling phase; split exactly like the data. Mid and bright agree with
-r = 1.9 × 10<sup>−4</sup>/ns; the data's faint tercile loses less than the toy (≈ 3.5σ at 243 V/cm, also at 150, not at
-92) — open.</p>
+r = 1.9 × 10<sup>−4</sup>/ns. The data's faint tercile first read 3.5σ above the toy: that was a selection artefact —
+classifying by a sum over <i>present</i> samples put events that had lost readout packets on their high-signal part in
+the faint class. Classified by the per-event mean over present samples, normalised by the local gain, the terciles agree
+with the toy within 2σ (0.837 / 0.790 / 0.757 against 0.808 / 0.799 / 0.732; <code>faint_test.py</code>).</p>
 
 {air_html}
 
 <h2>The bench</h2>
-<p>The bench head-on drift lasts only ~800 ns, so a beam-like 2 × 10<sup>−4</sup>/ns would remove ~15 % over the
-whole drift — comparable to the template/diffusion systematics of a forward fit on so short a box (the X fit
-moves by ±2 × 10<sup>−4</sup>/ns between ±4 and ±7 strip sums; <code>bench_trig.py</code>). The bench therefore does
-<b>not</b> provide a precise null on the head-on stack. The template-free ladder (F5, right) is flat to ±5 % from
-6 to 20 mm in both views on det2/3/6/7 and det4 Y — no beam-like loss, at modest significance.</p>
+<p>At the operating field the bench drift lasts only ~800 ns, too short for a single-field null: a forward fit of the
+plateau cannot separate a small loss from the electronics undershoot or a field gradient. The det3 <b>drift scan</b>
+(6-27, 100–1100 V = 35–382 V/cm, pulled from EOS, <code>bench_driftscan.py</code>) removes that: at 35 and 104 V/cm the
+plateau stays flat to ±2 % over 1.2 µs of drift, and one composition with no air fits all six fields (F10). The same
+fits exclude the field gradients the single-field fits had wandered to. The template-free bench ladder (F5) is flat to
+±5 % from 6 to 20 mm in both views — consistent.</p>
+
+<h2>The X view (for the model, not the gas)</h2>
+<ul>
+<li><b>No snapping to the resistive strips</b> (<code>snap_test.py</code>): X charge centroids show no 0.80 mm (resistive
+pitch) periodicity on any chamber (Rayleigh power 0.2–1.7, ~1 for noise); Y shows the 0.78 mm readout non-linearity
+strongly (12–40). Snapping is below ~10 %.</li>
+<li><b>X's footprint has tails beyond the depth mixture</b> (<code>footprint_test.py</code>), present in the median event
+(not only δ-electrons); a pseudo-Voigt (10–35 % Lorentzian, γ 0.5–0.9 mm) describes them. Implemented as opt-in wft keys
+(<code>lor_frac_x</code>, <code>lor_gamma_x</code>), bit-identical when absent. It does <b>not</b> change the X angle
+resolution (benched paired against production on all five chambers, within errors).</li>
+<li>The remaining X deficit is det4's: its amplification stripes run across X, which a uniform-gain model cannot represent.
+That is the next hypothesis, not tested here.</li>
+</ul>
 
 <h2>What this does not rule out</h2>
 <ul>
 <li><b>Which gas is responsible.</b> The observable fixes η·v; Magboltz says water alone attaches nothing and
 O<sub>2</sub> does, but Magboltz's three-body O<sub>2</sub> attachment with H<sub>2</sub>O / isobutane as third body is
-not well modelled, so the ppm scale is uncertain by a factor of a few (the air fit inherits this).</li>
-<li><b>The field shape of the loss rate.</b> The data are flat in field; the Magboltz curve rises from 92 to
-243 V/cm, but jitters by ±15–20 % between neighbouring fields at the statistics used, so the tension needs a
-higher-statistics Magboltz run before it means anything.</li>
+not well modelled, so the ppm scale is uncertain by a factor of a few. The beam/bench contrast and the time trend do
+not depend on it.</li>
+<li><b>Magboltz η is smoothed in field.</b> Even at 3e8 collisions its attachment estimate scatters ±10–15 % between
+neighbouring fields; the fits use a quadratic in log E per mixture. With that, the 92 V/cm stacks fit (χ² 76 and
+73 / 55); with the raw values they would not.</li>
+<li><b>The shapers are effective.</b> Fitted per setup (they include the gas-dependent ion tail), not the literal DREAM
+CR-RC<sup>n</sup>; the DREAM settings are the same on bench and beam.</li>
+<li><b>det7</b> (bench) fits poorly at its single field (a rising plateau); its composition is the least certain.</li>
 <li><b>A time-dependent loss inside the amplification stage</b> that is independent of gain, rate and position,
 identical in both views and leaves no undershoot. None is known; it is the residual alternative.</li>
-<li><b>Whether the O<sub>2</sub> level drifted</b> over the campaign: the rotated run_63 block reads a little more
-loss than the flat blocks; ZS selection systematics (±0.05) cover the difference.</li>
-<li><b>The CO<sub>2</sub> period</b> is measured on ZS data only (no RAW, no ladder locally); its loss is larger but
-its absolute value carries the ZS caveats above.</li>
-<li><b>The faint-tercile excess</b> and the <b>ZS ~0.7 µs ripple</b> in the rotated mount are unexplained.</li>
+<li><b>The CO<sub>2</sub> period</b> is measured on ZS data only (no RAW, no ladder locally, drift field assumed 243 V/cm);
+its O<sub>2</sub> (≈ 290 ppm) is rough.</li>
+<li><b>The ~0.7 µs ripple</b> in the lower-drift-voltage runs is a trigger-locked coherent pickup (it is on signal-free
+strips in RAW too); it oscillates around zero and cannot make a loss. Its source (likely the drift HV network ringing)
+is not confirmed.</li>
 </ul>
 '''
     css = '''

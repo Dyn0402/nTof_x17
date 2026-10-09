@@ -32,6 +32,13 @@ def R(C, h):
     return float(S[(T >= 2400) & (T < 2700)].mean() / S[(T >= 1080) & (T <= 1260)].mean())
 
 
+def curve(C, h):
+    M = np.nanmean(C, axis=0)
+    M = M - np.nanmean(M[:, H.PRE], axis=1, keepdims=True)
+    S = np.nansum(M[H.KEEP - h:H.KEEP + h + 1], axis=0)
+    return S / S[(T >= 1080) & (T <= 1260)].mean()
+
+
 def main():
     ev, ch, s, amp, lead, plat, tw = H.load(sys.argv[1])
     pcode = np.full(len(plat), -1, np.int8)
@@ -46,9 +53,13 @@ def main():
             C -= np.nanmean(C[:, :, H.PRE], axis=2, keepdims=True)      # per-event, per-strip baseline
             sig = float(np.nanstd(C[:, :, H.PRE]))
             row = {'sigma_adc': sig, 'raw': R(C, h)}
+            row['curve_raw_x2'] = curve(C, 2).tolist() if v == 'x' else None
             for k in (4, 5):
                 Z = np.where(np.isnan(C), np.nan, np.where(C > k * sig, C, 0.0))
                 row[f'zs{k}'] = R(Z, h)
+                if v == 'x':
+                    # per-sample ZS distortion of the X +-2 shape (to dress model curves for ZS data)
+                    row[f'curve_zs{k}_x2'] = curve(Z, 2).tolist()
             res[lab][v] = row
             print(f'{lab} ({E} V/cm) {v}±{h}: noise {sig:.1f} ADC   R raw {row["raw"]:.3f}   '
                   f'ZS4 {row["zs4"]:.3f}   ZS5 {row["zs5"]:.3f}')

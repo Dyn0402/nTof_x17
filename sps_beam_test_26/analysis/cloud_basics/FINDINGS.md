@@ -551,4 +551,64 @@ plateau RISING by ~10 %. With a field gradient, the electronics undershoot and a
 single-field bench fits are degenerate (they push k and air to their limits). The drift scan (§21)
 removes the gradient. The air bound comes from §21 and the bench ladder, not from these fits.
 
+## 23 · X model: no snapping; the footprint tails are real but do not limit resolution
+
+- `snap_test.py` (bench big caches, |tan| < 0.05). X centroids show no 0.80 mm (resistive-pitch)
+  periodicity: Rayleigh power 0.2–1.7, where ~1 is noise. Y shows the 0.78 mm readout DNL at 12–40.
+  Snapping is < ~10 %.
+- `footprint_test.py`: head-on X profiles have tails beyond the depth mixture (σ0² + D²z) on all
+  five chambers. Half of the tail is in the MEDIAN event (det3 at ±3 strips: 0.0053 against a mixture of
+  0.0018), so it is not only δ-electrons. A pseudo-Voigt (η 0.10–0.36, γ 0.53–0.91 mm) improves χ²
+  by 17–37 %.
+- `wft/model.py`: opt-in `lor_frac_<plane>`, `lor_gamma_<plane>` on the physical kernel's prompt
+  landing; bit-identical when absent (47 tests). Benches rcm / rcmlor / rcmlor2 (condor 4410788,
+  `results/compare_bench_lor.json`): X scaled s68 is within errors on every chamber (det2 −0.021 ± 0.023,
+  det3 0.000 ± 0.020, det6 −0.010 ± 0.048, det7 −0.04 ± 0.05, det4 +0.18 ± 0.05); Y is unchanged.
+  The tails are real but they are not the X deficit.
+- What remains is det4's X: its amplification stripes run across X, which a uniform-gain model
+  cannot represent. Next hypothesis, untested.
+
+## 24 · High-statistics Magboltz: η needs smoothing in E; then the beam fits at all three fields
+
+Grid: condor 4410759 (697) + 4410787 (120), 3e8 collisions per (mixture, field), `results/air_hs/`.
+Even at 3e8 collisions the attachment estimate scatters ±10–15 % between neighbouring fields (η·v at
+75/92/108 V/cm = 1.36/1.66/1.42e-4/ns), so `gasmodel.GasGrid` smooths η, D_L and D_T per mixture
+(quadratic in log E); v is left as computed. The coarse grid's v was also off by ~4 % from interpolating
+across its 1.0 → 1.7 % water step. Smoothed, η·v(E) is flat from 75 to 150 V/cm and rises at 243.
+
+## 25 · Gas compositions as model curves (`beam_comp_fit.py`, `driftscan_fit.py`, `bench_fit.py`, `make_comp_figures.py`)
+
+One physics model for both setups: `predict.current_field` (uniform ionisation, Magboltz v/η/D_L,
+optional linear field profile k and gap spread), a parametric shaper, trigger jitter. No free loss rate.
+Shared per dataset: composition, geometry, shaper. Free per stack: amplitude and t0.
+
+| dataset | water | air | O2 | χ² |
+|---|---|---|---|---|
+| run_63 25.6°, 142 V/cm, Aug 3 00:22 (ZS) | (1.4–1.7) | 0.110 % | 230 ppm | 69/55 |
+| run_63 25.6°, 108 V/cm, 00:30 (ZS) | (1.4–1.7) | 0.095 % | 199 ppm | 41/55 |
+| run_63 flat, 243 V/cm, 01:00–01:54 (ZS) | 1.59 % | 0.070 % | 147 ppm | 57/55 |
+| run_71 RAW, 3 fields × X/Y + ladder v, 05:22 | 1.51 % | 0.078 % | 163 ppm | 560/330 (92 V/cm 76, 73) |
+| run_56 CO2 gas, Aug 1 (ZS 5σ, rough) | 1.56 % | 0.139 % | 291 (257–355) ppm | — |
+| bench det3, 6 fields 35–382 V/cm | 0.95 % | 0 | ≲ 2 (stat.) / ≲ 10 ppm | 579/546 |
+| bench det2 / det4 / det7 (one field) | 0.95 / 0.60 / 0.70 % | ≤ 0.005 / 0.025 / 0.005 % | | 50 / 55 / 191 per 86 |
+
+- The bench needs no air at any field; the same gas with 0.04 % air (half the beam's) is rejected at
+  low field (χ² ×2.5–13).
+- The beam O2 fell through the night of Aug 2–3 (230 → 147–163 ppm) and was ~2× higher on Aug 1 in the
+  CO2 gas. The water is ~1.5–1.6 % throughout. The run_71 composition does not describe run_63 (χ² 136–1196).
+- H2O/O2 ≈ 100 on the beam and ≥ 1000 on the bench, against 0.05 for room air: the water does not come
+  with the O2. The O2 is specific to the beam line and varies over hours.
+- ZS arms use an ADDITIVE ZS distortion (zero suppression removes negative samples, so a ratio fails
+  past the drift end), from RAW run_71 at the nearest field, with a 1 % systematic.
+- Effective shapers: fitted per setup (they include the gas-dependent ion tail); the DREAM settings
+  are identical (register 1 0x081F 0xD023, RdClk_Div 6 on both).
+- det7 (bench) fits poorly (rising plateau); bench single-field gradients are limited to |k| ≤ 0.1, the
+  size the det3 drift scan supports.
+
+## 26 · Report
+
+`make_figures.py` → `make_comp_figures.py` → `make_report.py --inline …` →
+`~/x17/cosmic_bench/cloud_basics/attachment/report.html`, published as
+notes/mx17-beam-attachment.
+
 _(sections appended as results land)_

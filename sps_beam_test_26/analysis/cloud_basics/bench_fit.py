@@ -32,7 +32,7 @@ import predict as P                                          # noqa: E402
 CH = {'det2': (347.0, 30.6), 'det3': (347.0, 27.9), 'det4': (208.0, 30.0), 'det7': (243.0, 27.5)}
 WIN = (-200.0, 1500.0)
 SG = (0.0, 0.75, 1.5, 2.25, 3.0)                 # gap spread [mm]
-KS = (-0.4, -0.3, -0.2, -0.1, 0.0, 0.1, 0.2, 0.3, 0.4)   # field gradient
+KS = (-0.1, 0.0, 0.1)   # field gradient: the det3 drift scan (6 fields) supports |k| <= 0.1 (FINDINGS §21)
 BEAM_SHAPER = (8.886, 40.73, 0.062, 2438.0)
 _CUR = {}
 
