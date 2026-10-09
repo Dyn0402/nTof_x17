@@ -25,7 +25,30 @@ MIX = {
     'beam_w1p7_o0p2':  (720.8, [('ar', 86.1), ('cf4', 10.0), ('ic4h10', 2.0), ('h2o', 1.7), ('o2', 0.2)]),
     'bench_w0p5_o0p05': (745.83, [('ar', 94.45), ('ic4h10', 5.0), ('h2o', 0.5), ('o2', 0.05)]),
 }
-FIELDS = (60, 92, 100, 150, 200, 243, 250, 300, 400)
+FIELDS = (60, 75, 92, 100, 108, 142, 150, 200, 243, 250, 300, 400)
+
+# air ingress grid: '<base>_w<water %>_a<air %>' with 'p' for the decimal point,
+# e.g. beam_w1p7_a0p05.  Air is N2/O2/Ar 78.08/20.95/0.93; water and air both
+# replace argon.  Magboltz takes at most six gases: base (3) + h2o + n2 + o2.
+BASES = {
+    'beam':  (720.8, [('ar', 88.0), ('cf4', 10.0), ('ic4h10', 2.0)]),     # Ar/CF4/iso, CERN
+    'co2':   (720.8, [('ar', 95.0), ('co2', 3.0), ('ic4h10', 2.0)]),      # Ar/CO2/iso, CERN
+    'bench': (745.83, [('ar', 95.0), ('ic4h10', 5.0)]),                   # Ar/iso, Saclay
+}
+AIR = (('n2', 78.08), ('o2', 20.95), ('ar', 0.93))
+
+
+def air_mix(tag):
+    base, w, a = tag.split('_')
+    w = float(w[1:].replace('p', '.')); a = float(a[1:].replace('p', '.'))
+    p, comp = BASES[base]
+    frac = dict(comp)
+    frac['ar'] -= w + a
+    for g, f in AIR:
+        frac[g] = frac.get(g, 0.0) + a * f / 100.0
+    if w > 0:
+        frac['h2o'] = w
+    return p, [(g, f) for g, f in frac.items() if f > 0]
 # amplification region: ~450-560 V over the 150 um gap
 AMP_FIELDS = (25000, 30000, 35000, 40000)
 
@@ -34,7 +57,7 @@ def main(tag, amp=False):
     import ROOT
     ROOT.gROOT.SetBatch(True)
     import Garfield  # noqa
-    p, comp = MIX[tag]
+    p, comp = MIX[tag] if tag in MIX else air_mix(tag)
     g = ROOT.Garfield.MediumMagboltz()
     args = []
     for n, f in comp:

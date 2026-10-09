@@ -2,12 +2,14 @@
 
 ## Detector model basics (cloud_basics) — updated 2026-10-09 (dylan-MS-7C84)
 
-**Resume (10-09 evening, dylan-Yoga):** beam decline = O2 attachment ≈ 150–200 ppm after all (FINDINGS §14 corrects §13): the
-§11 spike/field-ordered drop was THRESHOLD-ALIGNMENT bias; trigger-aligned stacks (`spike_test.py`) decline identically in time at
-all fields, no electronics undershoot. Bench control redone trigger-aligned (§15, `bench_trig.py`): X shows no decline (≲ 20 ppm).
-RC refits 4410535 running (JobPrio 20). Benches are AUTOMATED: lxplus `~/cloud_basics_condor/rc/auto_bench_rc.sh` queues one
-paired job per chamber (rcm+rcf3+rcf4x+rcfD vs production; payload_bench_rc.tar.gz md5 4a6cb154, wft = this branch, smoke-tested)
-once its 3 refits land → `rc/bench/bench_rc_<det>.json`. Then `compare_bench.py --start blind` on them; fix X deficit.
+**Resume (10-09 night, dylan-Yoga):** attachment observable REBUILT from raw samples (FINDINGS §16, report
+`~/x17/cosmic_bench/cloud_basics/attachment/report.html`): every beam dataset loses late charge in X AND Y; run_71 RAW
+r = 1.81/1.79/1.87e-4/ns at 243/150/92 V/cm (per TIME), no undershoot, flat in rate/spill/gain. Earlier stacks zero-filled
+dropped RAW packets (~6 % fake). Bench is only a weak null (800 ns drift). Next: air model — Magboltz air grid condor
+4410646 (lxplus `~/cloud_basics_condor/att/magboltz_{beam,co2,bench}_w*_a*.json`) → joint fit of water+air to v(E) and r(E).
+RC refits 4410535 + auto benches (`rc/auto_bench_rc.sh`) still running; then compare_bench.py; fix X deficit.
+Re-extracted run_71 cache (masked CM, ±12) lives only in the laptop job tmp — regenerate with
+`extract_det4_only.py run71_raw --cm masked --keep 12` (~10 min, ~8 GB RAM).
 
 **Goal:** Dylan (10-09): get a physically sound, consistent detector model *before* publishing or re-passing; solve as many
 consistency problems as possible and converge on one model over the coming weeks. Re-pass is ON HOLD until then.

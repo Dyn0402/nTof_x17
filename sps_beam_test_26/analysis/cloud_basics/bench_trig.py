@@ -31,7 +31,7 @@ from scipy.optimize import least_squares
 HERE = os.path.dirname(os.path.abspath(__file__))
 SAMPLE_NS = 60.0
 GAP_MM = 30.0
-HALF = 4
+HALF = int(os.environ.get("BENCH_HALF", 4))   # strips either side; Y needs ~7 to hold its RC spread
 GRID = np.arange(-300.0, 1800.0, 20.0)
 
 
@@ -109,7 +109,7 @@ def main():
             print(f'{det} {view}: n={n:4d}  v={v:.1f}  T_fit={sol.x[2]:4.0f} ns (30mm/v {T:.0f})  '
                   f'r = {r * 1e4:+.2f} +- {er * 1e4:.2f} e-4/ns -> {500 * r / rate500:+5.0f} +- {500 * er / rate500:.0f} ppm O2   '
                   f'rms free/r=0 {out[det][view]["rms_free"]:.4f}/{out[det][view]["rms_r0"]:.4f}')
-    json.dump(out, open(os.path.join(HERE, 'results', 'bench_trig.json'), 'w'))
+    json.dump(out, open(os.path.join(HERE, 'results', f'bench_trig{"" if HALF == 4 else f"_h{HALF}"}.json'), 'w'))
 
 
 if __name__ == '__main__':

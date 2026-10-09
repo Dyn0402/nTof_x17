@@ -332,6 +332,9 @@ agrees (det2 Y −0.10/−0.30, det6 Y −0.27/−0.70, det4 X +0.09).
 
 ## 14 · The leading spike is the alignment; the decline is field-flat in time (≈ 150–200 ppm O2)
 
+> Direction confirmed by §16, numbers superseded: `spike_test.py` filled the FEU's dropped RAW samples
+> with zeros (~6 % fake late loss) and used the block-median common mode. Use §16's rates.
+
 `spike_test.py` → `results/spike_test.json`. run_71 RAW, 20 000 events per plateau,
 9-strip X and Y sums centred on the **uRWELL prediction** (not on the pulse). Two
 stacks: **trig**, where time is the DREAM sample index (the window opens on the
@@ -384,6 +387,10 @@ Spike = stack peak / level 360 ns after the peak:
 
 ## 15 · Bench control redone on the trigger: still no attachment (X), Y reads the RC spread
 
+> Overstated (§16): with ±7-strip sums the bench X fits move by up to ±2e-4/ns. An 800 ns bench drift
+> cannot null a 2e-4/ns loss on a head-on forward fit. The template-free bench ladder is the better
+> control, and it is only modestly significant.
+
 `bench_trig.py` → `results/bench_trig.json`. The five golden big caches (EOS
 `plane_ratio/inputs`), each view used where it is head-on itself (|tan| < 0.03),
 9-strip sum centred on the M3 prediction, events placed by the trigger
@@ -411,5 +418,45 @@ A·[X template ⊗ box(0, T)·e^(−r t)](t − t0), with A, t0, T and r free.
 - Side observation: fitted T is 1–14 % longer than 30 mm / v_bundle (det4 996 vs
   878 ns). The box carries no longitudinal diffusion, so some of that is the
   end-of-drift smearing. Not chased here.
+
+## 16 · The late-charge observable, rebuilt from the raw samples (report: `make_report.py`)
+
+Dylan (10-09 evening): four reversals already; be sure the observable is there in every dataset claimed,
+in BOTH views, and show it. Report: `/home/dylan/x17/cosmic_bench/cloud_basics/attachment/report.html`
+(`make_figures.py` then `make_report.py`).
+
+**Two artefacts in every earlier beam stack.** (1) RAW run_71 loses 20–25 % of samples in ~5-sample
+packets (present fraction 0.80 early → 0.75 late). Zero-filling them adds ~6 % fake late loss.
+`headon_stack.py` keeps them NaN and averages each strip-sample over the events that have it.
+(2) The cached run_71 waveforms used a block-median common mode at ±4 strips. Re-extracted with
+`extract_det4_only.py --cm masked --keep 12` (new `--keep` option; stripes JSON fallback). The block CM
+turns out to bias R by < 1 %.
+
+**run_71 RAW (clean):** X (±2) and Y (±8, where its RC spread is contained) agree. R =
+level(2.4–2.7 µs)/level(1.08–1.26 µs) = 0.769 / 0.757 / 0.755 in X at 243 / 150 / 92 V/cm. Forward fit
+(box·e^(−rt) ⊗ the det3 bench template, `template_det3_x.json`): r = 1.81 ± 0.09, 1.79 ± 0.04,
+1.87 ± 0.04 e-4/ns, the same in time while depth differs ~3× (a per-depth loss is excluded at > 9σ at
+92 V/cm). Undershoot after the 243 V/cm drift end: −0.002 (X), +0.004 (Y), against −0.30 for a readout
+high-pass with the same sag.
+
+**Discriminators** (`headon_split.py`, `gain_vs_loss.py`, `split_toy.py`). Flat in beam rate and in
+spill phase. Flat against local gain over ×1.4–2.8 (det4 stripes): charging would give a slope of
+≈ −0.23, the fits give −0.004 … +0.13. Bright events lose more, which is a selection effect attachment
+itself creates; the toy at r = 1.9e-4/ns matches the mid and bright terciles and overall R (0.768). The
+faint tercile loses less than the toy (≈ 3.5σ at 243 V/cm): open.
+
+**Other datasets.** `ladder_profile.py`: the run_63 25.64° Y ladder is template-free and censoring-proof
+(quantiles with an unfired strip = 0). It falls monotonically with depth at 142/108/75 V/cm
+(0.043 / 0.054 / 0.045 per mm; per ns 3.3 / 3.2 / 1.8e-4, which reads ~30 % steep from ZS and peak
+estimators). `zs_timestack.py`: every ZS arm loses late charge in both views (run_63 flat and rotated,
+run_56 CO2). R is selection-dependent at ±0.05 (all events vs the middle 60 %), and ZS Y reads low from
+censoring. `zs_emulate.py`: RAW run_71 emulated at ZS 4σ gives X ±1 0.736, matching run_63 flat's real
+ZS 0.734. CO2 loses more (R_X 0.49–0.58).
+
+**Bench.** The ladder (`bench_ladder.py`) is flat to ±5 % over 6–20 mm in both views (det4 X excluded:
+its stripes run across X). That gives no beam-like loss at modest significance only (see the §15 note).
+
+**O2 equivalent** (Magboltz, 1.7 % water): 131 / 154 / 164 ppm at 243 / 150 / 92 V/cm. Air grid
+(N2/O2/Ar, water 0–3 %, three gases): condor 4410646.
 
 _(sections appended as results land)_
