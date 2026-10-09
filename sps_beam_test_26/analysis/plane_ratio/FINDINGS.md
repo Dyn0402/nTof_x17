@@ -187,3 +187,44 @@ to X and wants Y higher.
 Gate (full reco, golden keys) running: candidate `calib_bundle_pvy95` =
 production hypers with c2_over_c1_y = 0.95 (X unchanged), against
 `calib_bundle_prodt0` = production hypers with the SAME t0 re-measurement.
+
+### 5g · Diagnostic: Y past the c2 < c1 gate (pinned, production hypers, NOT shippable)
+
+Y Δs68 head-on vs production [deg]: y = 0.95 / 1.2 / 1.6
+
+| chamber | 0.95 | 1.2 | 1.6 |
+|---|---|---|---|
+| det2 | −0.146 ± 0.036 | −0.161 ± 0.039 | −0.167 ± 0.048 |
+| det3 | −0.070 ± 0.023 | −0.124 ± 0.027 | **−0.168 ± 0.031** |
+| det7 | −0.164 ± 0.041 | −0.194 ± 0.046 | −0.193 ± 0.059 |
+| det4 | −0.078 ± 0.028 | −0.078 ± 0.034 | −0.030 ± 0.044 |
+| det6 | +0.061 | +0.014 | −0.025 (flat) |
+
+(all-angle: det3 −0.036 / −0.056 / −0.061; det7 −0.025 / −0.058 / −0.103.)
+
+**The hyper-level c2 < c1 gate is the binding constraint on det2/3/7.**  In this
+representation the prompt sigma_p0 already carries most of the observed ±1, so
+the *delayed* ±2 copy can exceed the *delayed* ±1 copy while the observable
+±2/±1 stays 0.36–0.54 (5a) — the physical ordering (±2 reached only through
+±1) is a statement about the observable, which every arm respects.  Whether to
+move the gate from the hyper to the observable is Dylan's call; the shippable
+candidate stays at y = 0.95.
+
+Refit arms in this batch confirm 5e: freeing more hypers is no better than
+pinning (det3 pv_all/pv_sp worse head-on; det4 pv_sp_pp Y −0.11/−0.18 vs prod is
+the one strong refit, det7 pv_all Y −0.135 vs its (bad) control).
+
+### 6 · FULL-RECO GATE: pvy95 (production hypers, c2_over_c1_y = 0.95) vs prodt0
+
+Golden keys, full matched sample, same code, paired bootstrap on identical
+events; prodt0 = production hypers with the same t0 re-measurement (and it
+reproduces shipped production within errors — `prodref` rows in
+`<wft>/plane_ratio/gate_pvy95.json`).
+
+| key | Y s68 | Y s68 \|θ\|<5° | Y implied-v spread | X | within 5 mm / core σ |
+|---|---|---|---|---|---|
+| sat_det3 | 1.227 → **1.187** (−0.040 ± 0.007, 5.4σ) | 1.429 → **1.327** (−0.101 ± 0.013, 7.7σ) | 0.017 → 0.008 | ±0.001 | 93.39 → 93.42 % / 0.446 → 0.449 mm |
+| o22_long_det2 | 1.711 → **1.648** (−0.063 ± 0.018, 3.5σ) | 2.056 → **1.938** (−0.118 ± 0.024, 5.0σ) | 0.074 → 0.060 | ±0.001 | 91.97 → 92.06 % / 0.439 → 0.435 mm |
+
+This undoes most of what r06 cost on Y (R06_GATE: det3 Y +0.061, head-on
+1.22 → 1.43; det2 Y +0.122) while keeping r06's X and the physical ordering.
