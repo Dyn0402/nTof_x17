@@ -41,7 +41,7 @@ Section and item states: `ready` (analysis done, write it), `requote`
 | 2 | Setups: cosmic bench (M3) and SPS H4 (uRWELL telescope) | ready | MICROTPC_RUNBOOK.md, sps_beam_test_26/analysis/README.md |
 | 3 | Operation: HV, gain, sparks | ready | topic 6: optima 480/480/440 V, sparks non-propagating, no post-spark dead time (PLAN_39), spark waveforms |
 | 4 | Efficiency, maps, edge turn-on | partial | efficiency stands (hits detection); the −3° edge tilt is a hits angle → D4 |
-| 5 | Gas: v(E), attachment, gap topography | open | six det3 drift-scan rows not on r06 (D2); PLAN_40 skeptic tests (D5) |
+| 5 | Gas: v(E), attachment, gap topography | partial | 10-10 cloud_basics §16–25: compositions from waveforms, one physics model, no free loss rate. Bench det3 drift scan (6 fields): 0.95 % water, no air (≲ 10 ppm O2). Beam run_71: 1.51 % water + 163 ppm O2 (attachment, measured in X and Y); run_63 230→147 ppm overnight. Report: notes/mx17-beam-attachment. r06 (D2) still to tie in |
 | 6 | Timing | open | PLAN_42's 33 ns is from hit times; waveform port (D3) |
 | 7 | Tracking performance on cosmics (with II's reco) | requote | FLEET_DIGEST r06: σ_θ 1.15–2.51°, within-5 mm 93/92/42/75/57 %; needs C1 |
 | 8 | Intrinsic resolution: det4 at SPS, and the bench decomposed | ready | spatial_resolution: 176 ± 10 µm = 0.30 × pitch; bench = M3 ⊕ scattering (arithmetic, D6 optional) |
@@ -79,10 +79,10 @@ Section and item states: `ready` (analysis done, write it), `requote`
 | R9 | calibration protocol | II | Calibration protocol and its traps: template, kernel + v hyperfit, per detector and condition, check_kernel_ordering, never v from a prior | partial | S | – | In pieces across WAVEFORM_FIRST_THREADING §15, RETIRE_C2GTC1, insitu findings. |
 | R10 | cost table | II | Cost table: time per plane, per tier | open | S | – | |
 | D1 | re-quote cosmics | I | Re-quote cosmic performance from the reproduced r06 products | requote | S | C1 | Per-row bundle labels (det4 lp_t0p, det6 lp). |
-| D2 | v(E) on r06 | I | Drift velocity v(E) and gas fit on r06: six det3 drift-scan rows, locally | open | M | C1 | Needs the hits-chain alignment and event cache, so not on condor. |
+| D2 | v(E) on r06 | I | Drift velocity v(E) and gas fit on r06: six det3 drift-scan rows, locally | partial | M | C1 | 10-10: the six det3 drift-scan rows are fitted from waveforms (cloud_basics/driftscan_fit.py, trigger-placed stacks, no M3): one composition, v 2.5–37.8 µm/ns over 35–382 V/cm. Still open: the same rows reconstructed with r06 for the paper's v(E) points. |
 | D3 | timing on waveforms | I | Time resolution ported to waveforms (PLAN_42) | open | M | – | Hits gave σ_t 33 ns. |
 | D4 | edge angle tilt | I | Edge / fringe-field angle tilt re-measured with wft angles | open | S | C1 | The −3° is a hits angle. |
-| D5 | gas skeptic tests | I | Gas skeptic tests (PLAN_40): water sets v, O₂ sets λ; gap topography | open | M | D2 | |
+| D5 | gas skeptic tests | I | Gas skeptic tests (PLAN_40): water sets v, O₂ sets λ; gap topography | partial | M | D2 | 10-10 cloud_basics §16–25: water from v, O2 from the loss (per time, not depth; no undershoot; X=Y; flat in rate/gain); gap spread and field profile fitted (bench det3 1.5 mm, k≈0.1). Open: three-body O2 attachment scale (ppm model-dependent). |
 | D6 | bench resolution split | I | Bench resolution decomposed: M3 kink (2.6 mrad measured) or a scattering sim of the bench stack | open | M | – | Optional; turns the arithmetic into a result. |
 | D7 | write ready sections | I | Write the ready sections: design, setups, HV / sparks, charge balance, SPS 176 µm, det4 stripes | ready | M | – | Start from the MPGD26 figure scripts. |
 | V1 | VMM emulation | II | Full VMM emulation (shaper, peak/time, threshold, neighbour logic, dead time) in g4_digi | deferred | L | R4 | Left open for a later version or a follow-up. |

@@ -332,6 +332,9 @@ def build_matrix_rc(plane, pos, p0, w, t0, hyper):
     both views with the X template, the clean electronics response -- Y's
     measured template already carries RC undershoot; 'own' or 0 = each view
     its own).  ``rc_drain`` (ns, optional) lets the strip's charge decay.
+    ``lor_frac_<plane>`` / ``lor_gamma_<plane>`` (optional, mm): a fraction of each prompt landing spread
+    as a Lorentzian of half-width gamma instead of the Gaussian (pseudo-Voigt footprint tails, measured
+    on X, cloud_basics FINDINGS §23); absent or 0 = bit-identical.  Resolution-neutral on the bench.
     """
     t0q = round(t0 / T0_STEP) * T0_STEP
     tp = 'x' if hyper.get('rc_tmpl', 'x') in ('x', 1, 1.0) else plane
