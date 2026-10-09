@@ -103,3 +103,54 @@ Chi2 gains over the control g06 are 0.3–1 %.  Note the control itself — r06'
 global 0.6, refitted on the deterministic objective — already beats production
 on the held-out bench (det3: s68 −0.02…−0.03 deg), so per-view effects are
 measured against g06, not against production.
+
+### 5d · First held-out benches (aggregate.py; 2000 held-out events; blind / ref start)
+
+Paired Δs68 [deg], negative = better. "ctl" = against the same recipe with
+r06's single ratio (the per-view effect alone).
+
+| arm | X vs ctl (all / head-on) | Y vs ctl (all / head-on) |
+|---|---|---|
+| det4 pv | +0.00 ± 0.03 / −0.00 ± 0.03 | **−0.03…−0.055 ± 0.025 / −0.06…−0.09 ± 0.04** |
+| det4 diag (Y ratio 2.6) | −0.04…−0.06 ± 0.025 / 0.00 | −0.055 ± 0.027 / −0.07…−0.10 ± 0.04 |
+| det3 pv_mf05 | −0.03…−0.05 ± 0.02 / −0.01…−0.04 | −0.01…+0.01 ± 0.02 / ±0.05 |
+| det6 diag | −0.01…−0.03 ± 0.04 | +0.02…+0.03 ± 0.03 |
+
+- MODEL_FRAC 0.05 calibration+reco is clearly WORSE than production (det3 Y
+  +0.30…+0.46 deg; det4 Y +0.04…+0.25) despite an 8–10 % lower training chi2.
+  Closed at 0.05.
+- det4: the refit control g06 is 0.13–0.16 deg WORSE than production on X
+  (production det4 = lp_t0p, unslaved c2 = 0.67 c1, fitted on another cache).
+  Any candidate must beat what ships on its own chamber, not just its control.
+
+### 5e · Second batch: refitting the ratio is unreliable; p0-profiling; H4 carry-over
+
+Per-view effect against its own control (blind start, Δs68 deg):
+
+| chamber | pv X (all / head-on) | pv Y (all / head-on) |
+|---|---|---|
+| det2 | −0.004 ± 0.010 / −0.011 ± 0.015 | −0.017 ± 0.019 / −0.016 ± 0.024 |
+| det3 | +0.017 ± 0.013 / **+0.060 ± 0.020** | **+0.040 ± 0.015 / +0.118 ± 0.026** |
+| det4 | +0.002 ± 0.026 / −0.004 ± 0.028 | −0.030 ± 0.025 / −0.064 ± 0.038 |
+| det6 | −0.025 ± 0.044 / −0.050 ± 0.066 | +0.017 ± 0.035 / +0.033 ± 0.045 |
+
+The freed-ratio refit is NOT a reliable improvement: det3 gets worse (its refit
+walked to sigma_s ≈ 280 ns), det4 slightly better, det2/det6 neutral.  The 180-
+event bench chi2 cannot pin the per-view ratio; the freedom is spent elsewhere.
+
+p0-profiled calibration barely moves the bench sigma_p0 (det3 0.42 → 0.39, det2
+→ 0.36, det4 0.38–0.44, det7 0.43), so **M3 pointing error is a minor part of
+it**; the bench/beam gap (≈ 0.4 vs 0.12–0.15 mm) is mostly the gas (Ar/iso 95/5
+vs Ar/CF4/iso).  It does rescue det7's control on Y (+0.195 → +0.010 vs
+production) and det6 pv_pp beats production on both views (X −0.08, Y −0.12).
+
+H4 carry-over (kernel fixed, gas refit, head-on closure; Σ pull² over 16
+observables): production 3150 (700 V) / 2906 (450 V); bench-refit g06 11345 /
+10504; pv 13489 / 13140 — pv overshoots Y ±2 by +50σ on the beam.  Bench-
+refitted kernels carry bench gas physics; the carry-over mixes kernel and gas
+and is a weaker judge than hoped.
+
+**Next (running):** the per-view ratios PINNED from the measurement on the
+production hypers, no refit — x ∈ {0.1, 0.2, 0.3, 0.6}, y ∈ {0.6, 0.8, 0.95},
+all five chambers.  The smoke test of that form (det3, x 0.2 / y 0.9) gave
+Y head-on −0.07 ± 0.035 deg against production.
