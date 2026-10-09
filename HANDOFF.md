@@ -2,15 +2,16 @@
 
 ## Detector model basics (cloud_basics) — updated 2026-10-09 (dylan-MS-7C84)
 
-**Resume (10-09 night, dylan-Yoga):** attachment observable REBUILT from raw samples (FINDINGS §16, report
-`~/x17/cosmic_bench/cloud_basics/attachment/report.html`): every beam dataset loses late charge in X AND Y; run_71 RAW
-r = 1.81/1.79/1.87e-4/ns at 243/150/92 V/cm (per TIME), no undershoot, flat in rate/spill/gain. Earlier stacks zero-filled
-dropped RAW packets (~6 % fake). Bench is only a weak null (800 ns drift). Air model DONE (§18): 1.55 % water + 0.070 % air
-(147 ppm O2), CO2 period ~2x O2 with same water; H2O/O2 ~106 => water not from the same leak (permeation?). Next: higher-stat
-Magboltz for the r(E) shape; check H4 line tubing/flow.
-RC refits DONE (FINDINGS §17): refitting does not close X (rc_D_x → 0; Dp free = σ0/Dd degeneracy); next for X = resistive-strip snapping model.
-Re-extracted run_71 cache (masked CM, ±12) lives only in the laptop job tmp — regenerate with
-`extract_det4_only.py run71_raw --cm masked --keep 12` (~10 min, ~8 GB RAM).
+**Resume (10-09 late, dylan-Yoga):** Dylan asked for: gas compositions shown as model curves matching data, the same for
+the bench, all open questions, the X model. State:
+- High-stat Magboltz grid RUNNING: condor 4410759 (697: beam/co2/bench fine grids) + 4410787 (120: bench 35/60/104/174 V/cm);
+  watcher pulls into `cloud_basics/results/air_hs/`. When complete: `beam_comp_fit.py --source air_hs`,
+  `driftscan_fit.py --source air_hs --emin 30`, `bench_fit.py --source air_hs`, then figures/report.
+- Coarse-grid results: beam 1.55 % water + 0.070 % air (k=0, no gap spread); bench det3 drift scan (6 fields, §21)
+  0.95 % water, NO air, k +0.1, gap spread 1.5 mm -- one composition fits 104-382 V/cm. 92 V/cm beam eta shape open.
+- Open questions closed: faint excess = missing-sample selection (§19); 0.7 us ripple = trigger-locked pickup (§20).
+- X: snapping rejected (snap_test); X footprint tails real (footprint_test) -> wft lor_frac_x/lor_gamma_x (47 tests);
+  benches RUNNING condor 4410788 (`~/cloud_basics_condor/lor/bench`) -> compare_bench.py.
 
 **Goal:** Dylan (10-09): get a physically sound, consistent detector model *before* publishing or re-passing; solve as many
 consistency problems as possible and converge on one model over the coming weeks. Re-pass is ON HOLD until then.
