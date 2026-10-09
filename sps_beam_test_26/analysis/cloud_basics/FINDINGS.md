@@ -497,4 +497,58 @@ the run_71 drift end (14.50 at 243 V/cm, 30 mm gap); r comes from §16. Errors: 
 - Model caveat (unchanged): three-body O2 attachment with H2O or isobutane as the third body, so the
   ppm scale is uncertain by a factor of a few.
 
+## 19 · The faint-tercile excess was a missing-sample selection artefact (`faint_test.py`)
+
+The §16 per-event charge split classified events by Σ over PRESENT samples. Events that lost
+packets on their high-signal part were classed faint: the faint class had 73–74 % of samples
+present, the bright class 79–80 %. Among faint events that still had their 1.08–1.26 µs reference,
+the reference was biased low and R high. The class also tracked the event's own baseline noise
+(pre-level +3…+8 ADC faint, −2…−9 bright). Classified by the per-event mean over present samples,
+with a baseline taken from separate pre-trigger samples and normalised by the local (position-cell)
+gain, sample presence no longer tracks class. At 243 V/cm the data give 0.837 ± 0.018 /
+0.790 ± 0.014 / 0.757 ± 0.014 against the toy (r = 1.9e-4/ns, no gain scatter) 0.808 / 0.799 /
+0.732: +1.6σ, −0.5σ, +1.8σ. The faint-to-bright spread is 0.080 (data) against 0.076 (toy).
+Resolved: what remains is the attachment selection effect.
+
+## 20 · The ~0.7 µs ripple is a trigger-locked coherent pickup (`ripple_test.py`)
+
+RAW run_71, strips 9–12 away from the track (no signal), averaged at fixed sample index:
+- **Y:** a reproducible pattern with a 690 ns period at 150 and 92 V/cm, ±0.3–0.6 ADC per strip
+  (half-vs-half correlation 0.49–0.69). It is absent at 700 V drift.
+- **X:** a smaller trigger-locked pattern (rms 0.2 ADC, correlation 0.87–0.93) with a sharp feature
+  at samples 32–34 (the 2.04 µs bump in wide X sums).
+
+The pickup is locked to the trigger (it survives averaging), so it is excited by the event or the
+trigger itself. It appears at the lower drift voltages, the same as in the rotated run_63 blocks
+(425/325 V). Hypothesis: the drift HV network ringing. It oscillates around zero, so it cannot
+make a monotonic loss; it inflates the Y χ².
+
+## 21 · Bench drift scan (det3, 6-27, 35–382 V/cm): no attachment, no field gradient (`bench_driftscan.py`)
+
+Six sub-runs (100–1100 V drift, resist 490 V, 15 min each) pulled from EOS
+(`june_tests/Run/mx17_det3_saturday_scan_6-27-26`). Straight from decoded_root with a masked
+common mode; one cluster ≤ 12 mm; all strips in the cluster ±3 mm summed; events placed by the det3
+bundle's `t0_abs[ftst]`. 1700–2500 events per field and view; X and Y agree.
+- **35 and 104 V/cm: the plateau after the peak is flat to ±2 % out to 2 µs**, i.e. 1.2 µs of drift.
+  A beam-like 1.9e-4/ns would remove ~14 % over that span.
+- **No field gradient.** A gradient acts through dv/dE, which is largest at low field in Ar/iso, so
+  the k ≈ −0.3 that single-field bench fits wanted would tilt the 35/104 V/cm plateaus strongly. That
+  k was the plateau degeneracy (undershoot ↔ gradient ↔ air), not geometry.
+- **Drift ends inside the window** at 243/312/382 V/cm: T ≈ 1.2 / 0.9 / 0.7 µs, v ≈ 23 / 31 / 40 µm/ns
+  over 27.9 mm. At 174 V/cm a slow fall begins by 2 µs, plausibly the shortest (dished-cathode)
+  columns ending first.
+- Low-field bench Magboltz for the ppm bound: condor 4410787 (35/60/104/174 V/cm).
+- The bench gain scan (resist 425–525 V at 1000 V drift) is in the same run and can test
+  gain-dependent effects on the bench.
+
+## 22 · Bench gas from single-field stacks: water fits, air is degenerate there (`bench_stack.py`, `bench_fit.py`)
+
+All-strip, trigger-placed stacks (any |tan| ≤ 0.2 with the ladder contained; det4 X head-on only,
+because its amplification stripes run across X): 1200–2800 events per view. With gap spread
+profiled, det2 and det3 fit well (χ² 38 and 36 / 86) at 0.90 and 1.00 % water and no air. That
+water agrees with RECONSTRUCTION_BASIS ("v 36.6 matches Ar/iso + 0.8 % H2O"). det4 and det7 show a
+plateau RISING by ~10 %. With a field gradient, the electronics undershoot and air all free, the
+single-field bench fits are degenerate (they push k and air to their limits). The drift scan (§21)
+removes the gradient. The air bound comes from §21 and the bench ladder, not from these fits.
+
 _(sections appended as results land)_

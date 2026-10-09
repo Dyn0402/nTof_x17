@@ -53,7 +53,7 @@ def air_mix(tag):
 AMP_FIELDS = (25000, 30000, 35000, 40000)
 
 
-def main(tag, amp=False):
+def main(tag, amp=False, fields=None, ncoll=5):
     import ROOT
     ROOT.gROOT.SetBatch(True)
     import Garfield  # noqa
@@ -66,9 +66,9 @@ def main(tag, amp=False):
     g.SetTemperature(293.15)
     g.SetPressure(p)
     pts = []
-    for E in (AMP_FIELDS if amp else FIELDS):
+    for E in (fields or (AMP_FIELDS if amp else FIELDS)):
         g.SetFieldGrid(E, E, 1, False)
-        g.GenerateGasTable(5)
+        g.GenerateGasTable(ncoll)
         vx, vy, vz = (ctypes.c_double() for _ in range(3))
         g.ElectronVelocity(0, 0, -E, 0, 0, 0, vx, vy, vz)
         dl, dt = ctypes.c_double(), ctypes.c_double()
@@ -83,10 +83,15 @@ def main(tag, amp=False):
                         lambda_mm=(10.0 / eta.value) if eta.value > 0 else None))
         print(tag, pts[-1], flush=True)
     out = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'results',
-                       f'magboltz_{tag}{"_amp" if amp else ""}.json')
+                       f'magboltz_{tag}{"_amp" if amp else ""}'
+                       f'{f"_E{fields[0]:g}_c{ncoll}" if fields and len(fields) == 1 else ""}.json')
     os.makedirs(os.path.dirname(out), exist_ok=True)
-    json.dump(dict(tag=tag, pressure_torr=p, comp=comp, points=pts), open(out, 'w'), indent=1)
+    json.dump(dict(tag=tag, pressure_torr=p, comp=comp, ncoll=ncoll, points=pts), open(out, 'w'), indent=1)
 
 
 if __name__ == '__main__':
-    main(sys.argv[1], amp=len(sys.argv) > 2 and sys.argv[2] == 'amp')
+    # magboltz_drift.py <tag> [amp]                      -- the FIELDS list, 5e7 collisions
+    # magboltz_drift.py <tag> E=<field> [c=<ncoll>]      -- one field, high statistics (one condor job)
+    kw = dict(a.split('=', 1) for a in sys.argv[2:] if '=' in a)
+    main(sys.argv[1], amp='amp' in sys.argv[2:],
+         fields=[float(kw['E'])] if 'E' in kw else None, ncoll=int(kw.get('c', 5)))
