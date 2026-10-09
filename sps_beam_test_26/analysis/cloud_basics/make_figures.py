@@ -295,6 +295,43 @@ def main():
         style(ax)
     fig.tight_layout(); fig.savefig(os.path.join(fd, 'f7_discriminators.png'), dpi=140); plt.close(fig)
 
+    # ---------------- F8: the air model (air_fit.py), if it has been run
+    afp = os.path.join(RES, 'air_fit_beam.json')
+    if os.path.exists(afp):
+        import air_fit as AF
+        Af = J('air_fit_beam.json'); b = Af['best']
+        Gr = AF.load_grid('beam'); Wg = np.array(sorted({k[0] for k in Gr})); Ag = np.array(sorted({k[1] for k in Gr}))
+        Es = np.linspace(60, 260, 81)
+        fig, axs = plt.subplots(1, 3, figsize=(13.5, 4.2))
+        for (w, x, ls, nm) in ((b['water_pct'], b['air_pct'], '-', f'best: {b["water_pct"]:.2f} % H$_2$O, {b["air_pct"]:.3f} % air'),
+                               (b['water_pct'], 0.0, ':', 'same water, no air'),
+                               (0.0, b['air_pct'], '--', 'same air, dry')):
+            pr = np.array([AF.interp(Gr, Wg, Ag, w, x, E) for E in Es])
+            axs[0].plot(Es, pr[:, 0], color=INK if ls == '-' else NEUTRAL, ls=ls, lw=1.6, label=nm)
+            if x > 0:
+                axs[1].plot(Es, pr[:, 1] * 1e4, color=INK if ls == '-' else NEUTRAL, ls=ls, lw=1.6, label=nm)
+        mv = {int(k): x for k, x in Af['measured_v'].items()}; mr = {int(k): x for k, x in Af['measured_r'].items()}
+        axs[0].errorbar(list(mv), [x[0] for x in mv.values()], yerr=[0.03 * x[0] for x in mv.values()], fmt='o',
+                        color=FIELD_C[243], ms=7, capsize=0, label='measured (ladder / drift end)')
+        axs[1].errorbar(list(mr), [x[0] * 1e4 for x in mr.values()], yerr=[0.1 * x[0] * 1e4 for x in mr.values()],
+                        fmt='o', color=FIELD_C[150], ms=7, capsize=0, label='measured (run_71 RAW)')
+        axs[0].set_ylim(0, 25); axs[0].set_xlabel('drift field [V/cm]'); axs[0].set_ylabel('drift velocity [µm/ns]')
+        axs[0].set_title('v(E): water sets it', fontsize=11, loc='left', color=INK)
+        axs[1].set_ylim(0, 4); axs[1].set_xlabel('drift field [V/cm]'); axs[1].set_ylabel('loss rate η·v [10$^{-4}$/ns]')
+        axs[1].set_title('loss rate: air sets it; field shape in tension', fontsize=11, loc='left', color=INK)
+        ch = np.array(Af['chi2']); wsg = np.array(Af['grid_water']); asg = np.array(Af['grid_air'])
+        cs = axs[2].contour(asg * 0.2095e4, wsg, ch - ch.min(), levels=[2.30, 6.18, 11.8], colors=[INK, INK2, NEUTRAL])
+        axs[2].clabel(cs, fmt={2.30: '1σ', 6.18: '2σ', 11.8: '3σ'}, fontsize=8)
+        axs[2].plot(b['o2_ppm'], b['water_pct'], '+', color=INK, ms=12)
+        axs[2].set_xlim(0, 400); axs[2].set_ylim(1.2, 1.9)
+        axs[2].set_xlabel('O$_2$ from air [ppm]'); axs[2].set_ylabel('water [%]')
+        axs[2].set_title(f'χ² = {b["chi2"]:.1f} / {b["ndf"]}', fontsize=11, loc='left', color=INK)
+        for ax in axs[:2]:
+            ax.legend(frameon=False, fontsize=7.5)
+        for ax in axs:
+            style(ax)
+        fig.tight_layout(); fig.savefig(os.path.join(fd, 'f8_air_model.png'), dpi=140); plt.close(fig)
+
     json.dump(fits, open(os.path.join(a.out, 'fits.json'), 'w'), indent=1)
     for lab, E in PLAT:
         f = fits[lab]

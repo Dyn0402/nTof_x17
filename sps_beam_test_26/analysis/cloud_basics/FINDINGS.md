@@ -475,4 +475,26 @@ its stripes run across X). That gives no beam-like loss at modest significance o
 - **Next for X:** HANDOFF step 3 (charge snapping to the 550 µm resistive-strip centres, which a
   Gaussian footprint cannot represent).
 
+## 18 · Air model: 1.55 % water + 0.07 % air; the water cannot come from the same leak
+
+Magboltz grid (condor 4410646, `results/air/`): water 0–3 % (bench 0–1 %) × air 0–2 % (N2/O2/Ar
+78.08/20.95/0.93, replacing Ar) for the CF4, CO2 and bench gases. `air_fit.py` fits v(E) and r(E)
+together. v comes from the run_63 ladder slopes (7.77 / 5.83 / 4.04 µm/ns at 142 / 108 / 75 V/cm) and
+the run_71 drift end (14.50 at 243 V/cm, 30 mm gap); r comes from §16. Errors: v 3 %, r 10 %.
+
+- **CF4 period: water 1.55 % [1.53, 1.58], air 0.070 % [0.065, 0.075] = 147 ppm O2**, χ² 12.6 / 5.
+  v fits all four fields to 1 %; air does not move v at these levels.
+- **The loss rate's field shape is not established.** The data are flat (1.87 / 1.79 / 1.81e-4/ns)
+  and the model rises (1.29 / 1.75 / 2.18), but the Magboltz η jitters ±15–20 % between neighbouring
+  fields at `GenerateGasTable(5)`. Rerun at higher statistics before reading anything into it.
+- **CO2 period** (run_56 ZS; drift field assumed 243 V/cm; v = 12.33 from run_57): water ≈ 1.60 %, the
+  same, and r ≈ 3.4–5.2e-4/ns, i.e. 0.13–0.18 % air (270–385 ppm O2), about twice the CF4 period's O2.
+- **Water/O2 ≈ 106 in the gas against ≈ 0.05 in room air.** A bulk leak large enough to supply the
+  water would bring ~6 % O2. A 0.07 % air leak can supply the O2, but the water needs another path.
+  Permeation through polymer tubing fits both: H2O permeates far faster than O2, and both scale as
+  1/flow. To check: tubing material and length and the flow on our H4 line. To keep in mind: the
+  water-from-v figure assumes the nominal drift field and a 30 mm gap.
+- Model caveat (unchanged): three-body O2 attachment with H2O or isobutane as the third body, so the
+  ppm scale is uncertain by a factor of a few.
+
 _(sections appended as results land)_

@@ -5,8 +5,9 @@
 **Resume (10-09 night, dylan-Yoga):** attachment observable REBUILT from raw samples (FINDINGS §16, report
 `~/x17/cosmic_bench/cloud_basics/attachment/report.html`): every beam dataset loses late charge in X AND Y; run_71 RAW
 r = 1.81/1.79/1.87e-4/ns at 243/150/92 V/cm (per TIME), no undershoot, flat in rate/spill/gain. Earlier stacks zero-filled
-dropped RAW packets (~6 % fake). Bench is only a weak null (800 ns drift). Next: air model — Magboltz air grid condor
-4410646 (lxplus `~/cloud_basics_condor/att/magboltz_{beam,co2,bench}_w*_a*.json`) → joint fit of water+air to v(E) and r(E).
+dropped RAW packets (~6 % fake). Bench is only a weak null (800 ns drift). Air model DONE (§18): 1.55 % water + 0.070 % air
+(147 ppm O2), CO2 period ~2x O2 with same water; H2O/O2 ~106 => water not from the same leak (permeation?). Next: higher-stat
+Magboltz for the r(E) shape; check H4 line tubing/flow.
 RC refits DONE (FINDINGS §17): refitting does not close X (rc_D_x → 0; Dp free = σ0/Dd degeneracy); next for X = resistive-strip snapping model.
 Re-extracted run_71 cache (masked CM, ±12) lives only in the laptop job tmp — regenerate with
 `extract_det4_only.py run71_raw --cm masked --keep 12` (~10 min, ~8 GB RAM).

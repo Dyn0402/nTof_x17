@@ -53,6 +53,8 @@ def main():
     PL = (('raw700', 243), ('raw450', 150), ('raw275', 92))
 
     rates = [F[l]['r'] * 1e4 for l, _ in PL]
+    afp0 = os.path.join(RES, 'air_fit_beam.json')
+    AB = J(afp0)['best'] if os.path.exists(afp0) else dict(water_pct=np.nan, air_pct=np.nan, o2_ppm=np.nan)
     # O2 equivalent: Magboltz Ar/CF4/iso + 1.7 % H2O + 0.1 % O2, eta*v at each field
     MB = {p['E_Vcm']: p for p in J(os.path.join(RES, 'magboltz_beam_w1p7_o0p1.json'))['points']}
     ppm = [1000 * F[l]['r'] / (MB[Ev]['eta_per_cm'] * MB[Ev]['v_true_um_ns'] * 1e-4) for l, Ev in PL]
@@ -143,6 +145,49 @@ def main():
          'Right: split by each event\'s total charge — attachment itself makes bright events read lower '
          '(their big clusters were preferentially early); the toy reproduces mid and bright.'),
     ]
+    air_html = ''
+    afp = os.path.join(RES, 'air_fit_beam.json')
+    if os.path.exists(afp):
+        Af = J(afp); b = Af['best']
+        mv = {int(k): x for k, x in Af['measured_v'].items()}; mr = {int(k): x for k, x in Af['measured_r'].items()}
+        pr = {int(k): x for k, x in Af['pred'].items()}
+        rows = []
+        for Ef in sorted(set(mv) | set(mr)):
+            rows.append([f'{Ef} V/cm',
+                         f'{mv[Ef][0]:.2f}' if Ef in mv else '—', f'{pr[Ef][0]:.2f}' if Ef in mv else '—',
+                         f'{mr[Ef][0] * 1e4:.2f}' if Ef in mr else '—', f'{pr[Ef][1] * 1e4:.2f}' if Ef in mr else '—'])
+        h2o_air_room = 0.05     # H2O/O2 in room air at ~40 % RH, 22 C (1.0 kPa / 21 kPa)
+        air_html = f'''
+<h2>Air model: how much water and how much air</h2>
+<p>Magboltz on a grid of water (0–3 %) × air (0–2 %; N<sub>2</sub>/O<sub>2</sub>/Ar 78.08/20.95/0.93) for
+Ar/CF<sub>4</sub>/iso 88/10/2 at 720.8 Torr (condor 4410646, <code>air_fit.py</code>). Fitted together to the drift
+velocity measured at four fields (run_63 ladder slopes; the run_71 drift end over 30 mm) and the loss rate at
+three (run_71 RAW): <b>water {b["water_pct"]:.2f} % [{b["water_68"][0]:.2f}, {b["water_68"][1]:.2f}], air
+{b["air_pct"]:.3f} % [{b["air_68"][0]:.3f}, {b["air_68"][1]:.3f}] = {b["o2_ppm"]:.0f} ppm O<sub>2</sub></b>,
+χ² {b["chi2"]:.1f} / {b["ndf"]} (errors: v 3 %, r 10 %).</p>
+{table(['field', 'v measured [µm/ns]', 'v model', 'r measured [e-4/ns]', 'r model'], rows)}
+<figure><img src="figures/f8_air_model.png" alt="air model" loading="lazy"><figcaption><b>The air model.</b>
+Left: water alone sets v(E) and fits all four fields to 1 %. Middle: air sets the loss rate; the Magboltz
+curve's jitter between neighbouring fields (±15–20 %) is Monte Carlo noise at this statistics setting, as large
+as the apparent field-shape tension, so that tension is not established. Right: χ² contours.</figcaption></figure>
+<ul>
+<li><b>Water and O<sub>2</sub> cannot come from one bulk air leak.</b> The gas carries
+H<sub>2</sub>O/O<sub>2</sub> ≈ {b["water_pct"] / (b["o2_ppm"] * 1e-4):.0f}; room air carries ≈ {h2o_air_room}. A leak
+supplying the water would bring ~{b["water_pct"] / h2o_air_room * 0.2095:.0f} % O<sub>2</sub> and stop every
+signal. A bulk leak of ~{b["air_pct"]:.2f} % air can supply the O<sub>2</sub>; the water needs another path.
+Diffusion (permeation) through polymer tubing fits both at once — water permeates most tubing polymers far
+faster than O<sub>2</sub> — and scales inversely with the gas flow: check the line's tubing material, length
+and flow at H4.</li>
+<li><b>The CO<sub>2</sub> period</b> (run_56, Aug 1; ZS, drift field assumed 243 V/cm, v = 12.33 µm/ns from
+run_57) needs ≈ 1.6 % water — the same as the CF<sub>4</sub> period two days later — and a loss rate of
+3.4–5.2 × 10<sup>−4</sup>/ns ≈ 0.13–0.18 % air (270–385 ppm O<sub>2</sub>): about twice the O<sub>2</sub>
+with the same water.</li>
+<li>Three-body O<sub>2</sub> attachment with H<sub>2</sub>O or isobutane as the third body is not well
+modelled in Magboltz, so the ppm scale carries a model uncertainty of a factor of a few in either direction;
+the water fraction (from v) does not — but it assumes the nominal drift field and a 30 mm gap (det4's own
+gap measurement is not usable, RECONSTRUCTION_BASIS); a field 10 % below nominal would read as less water.</li>
+</ul>'''
+
     fig_html = ''.join(
         f'<figure><img src="figures/{f}" alt="{html.escape(t)}" loading="lazy">'
         f'<figcaption><b>{html.escape(t)}.</b> {c}</figcaption></figure>' for f, t, c in figs)
@@ -162,7 +207,10 @@ no undershoot when the drift ends, and independent (within ~2σ) of beam rate, s
 gain. Of the mechanisms tested — readout high-pass, a per-depth (field/geometry) loss, resistive-layer charging,
 space charge, alignment and zero-suppression artefacts — only electrons removed from the drifting cloud
 (attachment) fits all of it. The rate is what Magboltz gives for
-{min(ppm):.0f}–{max(ppm):.0f} ppm O<sub>2</sub> in this gas (with the 1.7 % water); air is the obvious carrier and is being modelled next.</p>
+{min(ppm):.0f}–{max(ppm):.0f} ppm O<sub>2</sub> in this gas. Fitted jointly with the drift velocity (below), the
+beam gas carries <b>{AB["water_pct"]:.2f} % water and {AB["air_pct"]:.3f} % air ({AB["o2_ppm"]:.0f} ppm O<sub>2</sub>)</b>
+— but water and O<sub>2</sub> in that ratio cannot both come from one bulk air leak; diffusion through the gas
+tubing can supply both.</p>
 <p>It is <b>not</b> what earlier passes claimed: §11's field-ordered "spike" and §13's 5× O<sub>2</sub> spread were
 threshold-alignment artefacts, and every earlier stack counted the FEU's dropped RAW samples as zeros (worth
 ~6 % of fake late loss).</p>
@@ -222,6 +270,8 @@ scatter, the measured template, random sampling phase; split exactly like the da
 r = 1.9 × 10<sup>−4</sup>/ns; the data's faint tercile loses less than the toy (≈ 3.5σ at 243 V/cm, also at 150, not at
 92) — open.</p>
 
+{air_html}
+
 <h2>The bench</h2>
 <p>The bench head-on drift lasts only ~800 ns, so a beam-like 2 × 10<sup>−4</sup>/ns would remove ~15 % over the
 whole drift — comparable to the template/diffusion systematics of a forward fit on so short a box (the X fit
@@ -233,10 +283,10 @@ moves by ±2 × 10<sup>−4</sup>/ns between ±4 and ±7 strip sums; <code>bench
 <ul>
 <li><b>Which gas is responsible.</b> The observable fixes η·v; Magboltz says water alone attaches nothing and
 O<sub>2</sub> does, but Magboltz's three-body O<sub>2</sub> attachment with H<sub>2</sub>O / isobutane as third body is
-not well modelled, so the ppm scale is uncertain by a factor of a few. Air (N<sub>2</sub>/O<sub>2</sub>) is being
-simulated: condor 4410646.</li>
-<li><b>Mild field-shape tension.</b> Magboltz O<sub>2</sub> expects ~17 % less loss per ns at 92 than at 243 V/cm;
-the data have it equal or slightly larger.</li>
+not well modelled, so the ppm scale is uncertain by a factor of a few (the air fit inherits this).</li>
+<li><b>The field shape of the loss rate.</b> The data are flat in field; the Magboltz curve rises from 92 to
+243 V/cm, but jitters by ±15–20 % between neighbouring fields at the statistics used, so the tension needs a
+higher-statistics Magboltz run before it means anything.</li>
 <li><b>A time-dependent loss inside the amplification stage</b> that is independent of gain, rate and position,
 identical in both views and leaves no undershoot. None is known; it is the residual alternative.</li>
 <li><b>Whether the O<sub>2</sub> level drifted</b> over the campaign: the rotated run_63 block reads a little more
