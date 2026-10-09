@@ -37,6 +37,9 @@ def table(head, rows, cls=''):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--out', default=OUT)
+    ap.add_argument('--inline', default='',
+                    help='also write this self-contained copy with the figures embedded as data: URIs '
+                         '(for the offline notes site)')
     a = ap.parse_args()
     F = J(os.path.join(a.out, 'fits.json'))
     H = J(os.path.join(RES, 'headon_masked_k12.json'))
@@ -275,6 +278,19 @@ code{font-size:.85em}
     out = os.path.join(a.out, 'report.html')
     open(out, 'w').write(page)
     print('wrote', out)
+    if a.inline:
+        import base64
+        import re
+
+        def emb(m):
+            b = base64.b64encode(open(os.path.join(a.out, m.group(1)), 'rb').read()).decode()
+            return f'src="data:image/png;base64,{b}"'
+        desc = ('det4 at the SPS: every beam dataset loses late drift charge in both views, '
+                'per unit time, with no readout undershoot; bench and discriminators.')
+        inl = re.sub(r'src="(figures/[^"]+)"', emb, page).replace(
+            '<title>', f'<meta name="description" content="{desc}"><title>', 1)
+        open(a.inline, 'w').write(inl)
+        print('wrote', a.inline, f'({len(inl) / 1e6:.1f} MB)')
 
 
 if __name__ == '__main__':
