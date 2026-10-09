@@ -5,7 +5,9 @@
 **Resume (10-09 evening, dylan-Yoga):** beam decline = O2 attachment ≈ 150–200 ppm after all (FINDINGS §14 corrects §13): the
 §11 spike/field-ordered drop was THRESHOLD-ALIGNMENT bias; trigger-aligned stacks (`spike_test.py`) decline identically in time at
 all fields, no electronics undershoot. Open: redo the bench no-attachment control trigger-aligned (caches on desktop drive only).
-RC refits 4410535 running (JobPrio 20); when they land: bench refits vs production/rcm; fix X deficit.
+RC refits 4410535 running (JobPrio 20). Benches are AUTOMATED: lxplus `~/cloud_basics_condor/rc/auto_bench_rc.sh` queues one
+paired job per chamber (rcm+rcf3+rcf4x+rcfD vs production; payload_bench_rc.tar.gz md5 4a6cb154, wft = this branch, smoke-tested)
+once its 3 refits land → `rc/bench/bench_rc_<det>.json`. Then `compare_bench.py --start blind` on them; fix X deficit.
 
 **Goal:** Dylan (10-09): get a physically sound, consistent detector model *before* publishing or re-passing; solve as many
 consistency problems as possible and converge on one model over the coming weeks. Re-pass is ON HOLD until then.
