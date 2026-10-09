@@ -382,4 +382,34 @@ Spike = stack peak / level 360 ns after the peak:
   the model: a per-run attachment length on beam. For 150–200 ppm, λ = 1/η ≈ 45–65 mm
   at 243 V/cm (35–50 % of the cathode-end charge lost) and ≈ 19–26 mm at 92 V/cm.
 
+## 15 · Bench control redone on the trigger: still no attachment (X), Y reads the RC spread
+
+`bench_trig.py` → `results/bench_trig.json`. The five golden big caches (EOS
+`plane_ratio/inputs`), each view used where it is head-on itself (|tan| < 0.03),
+9-strip sum centred on the M3 prediction, events placed by the trigger
+(t = sample·60 ns − the bundle's `t0_abs[view][ftst]`). The bench drift (~800 ns)
+is too short against the shaping to read a slope, so the stack is fitted forward:
+A·[X template ⊗ box(0, T)·e^(−r t)](t − t0), with A, t0, T and r free.
+
+| chamber | n (x/y) | X: r [1e-4/ns] → O2 [ppm] | Y: r → O2 | rms X / Y |
+|---|---|---|---|---|
+| det2 | 268/409 | −1.00 ± 0.31 → −83 ± 26 | +0.21 ± 0.58 → +18 ± 48 | 0.020 / 0.039 |
+| det3 | 431/577 | −0.36 ± 0.31 → −25 ± 22 | +4.14 ± 0.81 → +286 ± 56 | 0.018 / 0.055 |
+| det4 | 383/545 | −0.48 ± 0.31 → −31 ± 20 | +1.26 ± 0.54 → +83 ± 35 | 0.025 / 0.047 |
+| det7 | 217/293 | −0.35 ± 0.18 → −24 ± 12 | +2.36 ± 0.87 → +163 ± 60 | 0.011 / 0.061 |
+
+(det6 skipped: its `calib_bundle_lp` has no `t0_abs`.)
+
+- **X, the clean view, has no decline on any chamber** (r ≤ 0, fits at 1–2.5 % of
+  peak): O2-equivalent ≲ 20 ppm, against **125–215 ppm in the beam X view (§14)**.
+  The §10 conclusion survives the alignment change; the beam gas carries roughly
+  10× more attaching contamination than the bench gas. The small negative r is a
+  template/end-of-drift systematic of order −30 ppm.
+- **Y reads positive with 2–5× worse residuals.** This is the same Y-faster-than-X
+  pattern as on the beam: Y's RC spread carries late charge out of the ±4 sum, and
+  the X template has no RC term. It is not attachment, which would hit both views.
+- Side observation: fitted T is 1–14 % longer than 30 mm / v_bundle (det4 996 vs
+  878 ns). The box carries no longitudinal diffusion, so some of that is the
+  end-of-drift smearing. Not chased here.
+
 _(sections appended as results land)_
