@@ -126,7 +126,7 @@ def gate_rows():
     rows = []
     for det, (key, sub) in DETS.items():
         W = ANA + sub + '/wft/plane_ratio/'
-        for cand, base in (('pvy95k', 'prodref'), ('pvy95', 'prodt0')):
+        for cand, base in (('pvy95', 'prodt0'),):
             p = W + f'gate_{cand}.json'
             if os.path.exists(p):
                 g = json.load(open(p))
@@ -148,7 +148,7 @@ def fig_gate(rows, out):
     ax.axhline(0, color=MUTED, lw=0.8)
     ax.set_xticks(x, [r[0] for r in rows])
     ax.set_ylabel('Δ s68 (Y), candidate − control  [deg]')
-    ax.legend(loc='lower right')
+    ax.legend(loc='lower center', ncol=2, bbox_to_anchor=(0.5, 1.0))
     fig.tight_layout()
     fig.savefig(os.path.join(out, 'figures', 'gate_y.png'), dpi=150)
     plt.close(fig)
@@ -206,8 +206,9 @@ code{{font-size:13px}}
 <div class="verdict"><b>Verdict.</b> Give the Y view its own ±2 copy ratio,
 c2/c1 = 0.95 (the most the c2 &lt; c1 gate allows), and leave X and every other
 calibration constant at production. In the full reconstruction of the golden
-keys this improves the Y angle resolution on {n_better} of {len(rows)} chambers
-— by 0.04–0.08° overall and 0.08–0.13° for near-vertical tracks — with X,
+keys this improves the Y angle resolution significantly on {n_better} of {len(rows)} chambers
+(det2/3/7: 0.04–0.08° overall, 0.10–0.13° for near-vertical tracks, 5–8σ; det4
+and det6 smaller and only against w0/kw-refreshed controls) — with X,
 efficiency and position unchanged. Refitting the per-view ratio inside the bench
 calibration does <i>not</i> work: the bench χ² is model-error dominated and
 spends the freedom elsewhere. The ratio has to be pinned.</div>
@@ -238,6 +239,16 @@ det2/3/7 keep improving there.</figcaption></figure>
 <figcaption>Paired per event, full matched sample. Control = production hypers with the same
 t0/w0 treatment.</figcaption></figure>
 <table><tr><th>key</th><th>arms</th><th>Y s68 [deg]</th><th>Y s68, |θ|&lt;5°</th><th>X Δ s68</th><th>within 5 mm %</th></tr>{g_rows}</table>
+
+<h2>Re-pass (staged, not submitted)</h2>
+<p><code>/home/dylan/x17/cosmic_bench/condor_campaign_pvy95/</code>, code at the commit in
+<code>FREEZE_COMMIT.txt</code>: the r06 campaign row for row (156 jobs, same matched lists), with
+<b>det2, det3, det7 → <code>calib_bundle_pvy95</code></b> (115 rows). det4 stays on
+<code>lp_t0p</code>, det6 on <code>lp</code>. Their candidates also gain in Y against matched controls
+(det4 head-on −0.077 ± 0.029, det6 −0.035 ± 0.026), but adopting them would also refresh their
+w0/kw, which removes the shipped angle bias (det4 +0.08/+0.04°, det6 Y +0.19°) at the cost of
+spread — the R06_GATE §4 decision that is still open. On det2/3/7 the shipped w0/kw were already
+fresh, so the Y ratio is the only change.</p>
 
 <h2>4 · What else was learned</h2>
 <ul>

@@ -228,3 +228,35 @@ reproduces shipped production within errors — `prodref` rows in
 
 This undoes most of what r06 cost on Y (R06_GATE: det3 Y +0.061, head-on
 1.22 → 1.43; det2 Y +0.122) while keeping r06's X and the physical ordering.
+
+### 6b · Gate, remaining chambers, and the w0/kw confound
+
+| key | candidate vs control | Y s68 | Y s68 \|θ\|<5° |
+|---|---|---|---|
+| g_det7_long | pvy95 vs prodt0 | 1.961 → **1.879** (−0.082 ± 0.014, 5.9σ) | 2.160 → **2.027** (−0.133 ± 0.019, 7.1σ) |
+| g_det4 | pvy95 vs prodt0 | −0.021 ± 0.019 | −0.077 ± 0.029 (2.6σ) |
+| g_det6_long | pvy95 vs prodt0 | −0.027 ± 0.018 | −0.035 ± 0.026 |
+
+det4 and det6 ship with old w0/kw: the shipped products carry an angle bias
+(det4 +0.08/+0.04°, det6 Y +0.19°) that every re-measured arm removes, at the
+cost of spread (R06_GATE §4: "trades a bias for spread", Dylan's call, not
+taken). That is why `prodref` (as shipped) beats `prodt0` by up to 0.19° on det6
+Y and why det4 pvy95k (production t0 kept) looks worse than shipped production.
+The per-view effect is only measurable against a w0/kw-refreshed control.
+
+**Decision taken for the staged re-pass:** override det2/3/7 only (their r06
+w0/kw were already fresh, so the Y ratio is the only change); det4/det6 stay
+on production pending the w0/kw decision.
+
+## 7 · Status at 05:00
+
+- Re-pass STAGED, NOT SUBMITTED: `/home/dylan/x17/cosmic_bench/condor_campaign_pvy95/`
+  (README_SUBMIT.md). Row-for-row identical to the r06 campaign except
+  115 rows r06 → pvy95.
+- Report: `/home/dylan/x17/cosmic_bench/plane_ratio/report.html` (make_report.py).
+- Decisions for Dylan: (1) submit the re-pass; (2) the c2 < c1 gate on the hyper
+  vs on the observable (Y keeps improving to 1.6 on det2/3/7); (3) the det4/det6
+  w0/kw refresh, which would let them take the Y ratio too.
+- Not done: the H4 25.6° known-angle resolution test (needs ZS censoring in the
+  fit path); per-view tau on the beam; det4 pvy95k vs a t0-kept, w0/kw-
+  refreshed control.
