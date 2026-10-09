@@ -2,9 +2,10 @@
 
 ## Detector model basics (cloud_basics) — updated 2026-10-09 (dylan-MS-7C84)
 
-**Resume (10-09 evening, dylan-Yoga):** attachment DONE, negative (FINDINGS §13: water η = 0; O2 needs 40 ppm at 243 but
-150–220 ppm at 150/92 V/cm in one 30-min block, so not attachment). RC refits 4410535 still IDLE, now JobPrio 20 (ahead of
-is2_v2). When they land: bench refits vs production/rcm; fix X deficit. Beam-decline mechanism open: test leading spike first.
+**Resume (10-09 evening, dylan-Yoga):** beam decline = O2 attachment ≈ 150–200 ppm after all (FINDINGS §14 corrects §13): the
+§11 spike/field-ordered drop was THRESHOLD-ALIGNMENT bias; trigger-aligned stacks (`spike_test.py`) decline identically in time at
+all fields, no electronics undershoot. Open: redo the bench no-attachment control trigger-aligned (caches on desktop drive only).
+RC refits 4410535 running (JobPrio 20); when they land: bench refits vs production/rcm; fix X deficit.
 
 **Goal:** Dylan (10-09): get a physically sound, consistent detector model *before* publishing or re-passing; solve as many
 consistency problems as possible and converge on one model over the coming weeks. Re-pass is ON HOLD until then.

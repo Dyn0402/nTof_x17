@@ -298,7 +298,12 @@ agrees (det2 Y −0.10/−0.30, det6 Y −0.27/−0.70, det4 X +0.09).
 - Refits of the physical constants only (per-view σ0, D_rc_y; + D_rc_x; + Dp):
   condor 4410535, `recal.py --free ... --seed-json arm_<det>_rcm.json`.
 
-## 13 · Magboltz attachment does not reproduce the beam decline (condor 4410533)
+## 13 · ~~Magboltz attachment does not reproduce the beam decline~~ — CORRECTED by §14 (threshold-aligned stacks)
+
+> The Magboltz numbers below stand. The data side does not: the §11 stacks are
+> threshold-aligned, and that alignment creates a field-ordered spike and early drop
+> (§14). In trigger-aligned stacks the decline is field-independent in time, and one
+> O2 level of ≈ 130–240 ppm fits it.
 
 `att_compare.py` → `results/att_compare.json`. Gas Ar/CF4/iso + 1.7 % H2O at
 720.8 Torr, with 0 / 0.05 / 0.1 / 0.2 % O2.
@@ -324,5 +329,57 @@ agrees (det2 Y −0.10/−0.30, det6 Y −0.27/−0.70, det4 X +0.09).
   because it alone explains the field ordering of the early drop. The 243 V/cm
   step at ≈ 1.4 µs (0.93 → 0.76) is not exponential either.
 - The bench result stands: no attachment (§10).
+
+## 14 · The leading spike is the alignment; the decline is field-flat in time (≈ 150–200 ppm O2)
+
+`spike_test.py` → `results/spike_test.json`. run_71 RAW, 20 000 events per plateau,
+9-strip X and Y sums centred on the **uRWELL prediction** (not on the pulse). Two
+stacks: **trig**, where time is the DREAM sample index (the window opens on the
+beam trigger, which is asynchronous to the 60 ns clock, so this smears by one
+sample and cannot create structure), and **thrN**, the §11 method (aligned where
+X crosses N ADC).
+
+Spike = stack peak / level 360 ns after the peak:
+
+| field | trig | thr30 | thr60 (§11) | thr120 |
+|---|---|---|---|---|
+| 243 V/cm | 1.110 | 1.150 | 1.057 | 1.440 |
+| 150 V/cm | 1.063 | 1.160 | 1.092 | 1.605 |
+|  92 V/cm | 1.099 | 1.193 | 1.251 | 1.932 |
+
+- **The field-ordered spike is made by the alignment.** It grows with the threshold
+  (up to ×1.9 at 92 V/cm) and is absent from the trigger stacks, which show the same
+  ≈ 1.06–1.11 peak at every field. At low v the drift current per ns is small, so a
+  fixed threshold is crossed when a large ionisation cluster arrives; the
+  alignment then puts that cluster at t = 0 in every event. This is the same class
+  of error as the §10 stacking sag. The "primary ionisation in the amplification
+  gap" hypothesis is no longer needed. It was also too small: a ~150 µm gap holds
+  ≈ 0.5 % of a 30 mm column's primaries, at ~1/ln G of the gain, so ≈ 0.05 %.
+- **Trigger-aligned, the X stacks are near-identical at all three fields** from the
+  peak to 2.6 µs (0.99 → 0.71), with the same rise. So the decline depends on time,
+  not depth — which is what Magboltz predicts for O2 (η·v is field-flat, §13).
+- Exponential slopes (baseline = first 5 samples), converted with the 0.1 % O2 rate:
+
+| window [ns] | 243 X / Y [ppm] | 150 X / Y | 92 X / Y |
+|---|---|---|---|
+| 1260–2580 | 143 / 167 | 188 / 229 | 180 / 225 |
+| 1500–2580 | 141 / 161 | 209 / 233 | 216 / 242 |
+| 1260–2100 | 125 / 156 | 155 / 239 | 132 / 210 |
+
+  One O2 level of **≈ 150–200 ppm** (with 1.7 % H2O, which itself attaches nothing)
+  describes all three fields within ±25 %, against the 5× spread of §13. Residual
+  tension: Magboltz expects 243 V/cm to decline ≈ 20 % *faster* than 92 V/cm per
+  ns; the data have it 5–20 % slower.
+- **Not the electronics:** a high-pass that removes 30 % of a long current pulse
+  leaves an undershoot of ≈ −0.3 of the peak when the current stops. At 243 V/cm the
+  drift ends inside the window and the X stack settles at **−0.02** of the peak.
+- **Y declines 15–25 % faster than X** in every window, which fits Y's RC spread
+  carrying charge out of the ±4 sum at late times (§11). The X rate is the cleaner
+  attachment measure.
+- **Open:** the bench "no attachment" control (§10, §11) used threshold-aligned
+  stacks too. It needs redoing trigger-aligned, with the scintillator t0 and ftst,
+  on the five golden big caches (on the desktop data drive, not on the laptop). For
+  the model: a per-run attachment length on beam. For 150–200 ppm, λ = 1/η ≈ 45–65 mm
+  at 243 V/cm (35–50 % of the cathode-end charge lost) and ≈ 19–26 mm at 92 V/cm.
 
 _(sections appended as results land)_
