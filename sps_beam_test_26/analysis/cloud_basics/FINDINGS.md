@@ -102,7 +102,7 @@ and late in the pulse ±2 can approach ±1, which is what the data show.
 - DREAM shaping is the same on bench and beam (peaking 180 ns,
   `M70V_FLAT_ANALYSIS.md`); the electronics are not the difference.
 
-## 5 · The beam gas lost the deep charge
+## 5 · ~~The beam gas lost the deep charge~~ — RETRACTED (§10: stacking artefact)
 
 Head-on pulses (`pulse_shapes.py`, figures/pulse_shapes.png): the bench pulse is a
 flat-topped box of ~800 ns (gap / v, uniform ionisation). The beam pulse is a
@@ -149,7 +149,7 @@ Drift diffusion is the gas-dependent term, and water changes it by up to ×2.5.
 The bench chambers' measured v (34–40 µm/ns; det6 26.7) put them at ~0.1–0.6 %
 water (det6 ~0.9 %) at 250 V/cm, i.e. D_T 470–340 (det6 290) µm/√cm.
 
-## 8 · The bench also loses deep charge, and Y's template is contaminated
+## 8 · ~~The bench also loses deep charge~~ (RETRACTED, §10), and Y's template is contaminated
 
 The X template (bundle `tmpl_x`) is clean electronics: unipolar, −2 % undershoot.
 A uniform head-on track through it would give a flat-topped pulse to ~600 ns;
@@ -161,7 +161,7 @@ The Y template has a −7…−9 % undershoot X lacks; DREAM is the same for bot
 so that undershoot is charge leaving along the resistive strip. Y's "impulse
 response" in every bundle carries part of the RC spreading.
 
-## 9 · Bench fit with the physics written out (`bench_attach.py`)
+## 9 · ~~Bench fit with attachment~~ — SUPERSEDED by §10 (fitted the stacking artefact)
 
 h = X template (both views), I(u) = exp(−u/λ) over T = 30 mm / v, footprint
 σ0² + 2·Dd·u (+ 2·D_rc·s on Y), per-view amplitude and time offset.
@@ -183,5 +183,61 @@ h = X template (both views), I(u) = exp(−u/λ) over T = 30 mm / v, footprint
   det4 has the strongest attachment, so the least deep charge to measure Dd on).
 - None of these fits uses the copy kernel; the production `c1/c2/kY/tau_s/sigma_s`
   description is replaced by σ0, Dd (Magboltz) and one D_rc per chamber.
+
+## 10 · Correction: there is no attachment; the sag was my stacking
+
+Dylan: we had excluded attachment (`mx_june_wft/GAP_STUDY_2026-07-30.md`: X
+NNLS charge profiles of contained tracks flat to the cathode, tau_att 22 us /
+infinite; memory `gas-water-synthesis`: η ≈ 0 on waveform evidence). Correct.
+
+- **Template-free test** (`charge_vs_depth.py`): inclined X tracks
+  (|tan| 0.15–0.35), each strip's integrated charge against its depth segment.
+  Flat within ±5–10 % from 2 to ~22 mm on all five chambers; the fall in the
+  last few mm is the gap end (det3's known 27.9 mm column). No attachment.
+- **The cause of the "sag":** §1–§9 stacks normalised each event to its own
+  maximum and aligned it on 50 % of that maximum. Ionisation along a track is
+  clustered (Landau), so the maximum sits on the largest cluster and, on
+  average, less charge follows it: a uniform track stacks into a burst + decay.
+  Stronger on the beam, where slow drift puts fewer clusters per sample.
+- **Unbiased stacking** (`pulse_unbiased.py`; now the default in
+  `rc_diffusion.stack`): no normalisation, aligned on a fixed 60 ADC threshold,
+  plain mean. Bench head-on pulses are flat-topped and match box(30 mm / v) ⊗
+  X template (det7 to ±0.02 everywhere; det3 short = its 27.9 mm gap). The beam
+  pulse has a long plateau across the ~2 µs drift but declines 0.98 → 0.56 over
+  1.2 µs; whether that is charge loss in the wet beam gas or spread beyond the
+  5-strip sum needs the template-free test on the 25.6° beam data. Open.
+- **What survives:** the RC fits (§3) and the decomposition (§2) are linear
+  relations that hold event by event, so stacking cannot fake them. Re-run on
+  the unbiased stacks: beam Y D_rc 2.0–2.15e-4 (unchanged), bench Y D_rc
+  5–9e-4, X D_rc ≈ 0 everywhere.
+- **What does not:** every σ0 / Dd number in §6, §9 (attenuation λ fitted the
+  artefact).
+
+Redone on unbiased stacks, uniform charge, X template as the electronics
+(`bench_attach.py`, `results/bench_uniform.json`):
+
+| chamber | σ0 (Dd free) | Dd free → D_T [µm/√cm] | Magboltz Ar/iso dry | Y D_rc |
+|---|---|---|---|---|
+| det2 | 0.42 | 499 | 488–499 | 4.2e-4 |
+| det3 | 0.41 | 463 | | 2.8e-4 |
+| det4 | 0.44 | 505 | | 2.8e-4 |
+| det7 | 0.56 | 507 | | 5.7e-4 |
+| det6 | 0.35 | 356 (det6's slow v: ~0.5 % water) | | 7.9e-4 |
+
+**The fitted drift diffusion matches dry Magboltz on four of five chambers with
+nothing tuned.** The water estimate from the bundle v in §7 (0.1–0.6 %) was too
+high (the bundle v is itself kernel-dependent, cf. GAP_STUDY's v_geom).
+
+Leading-edge prompt footprint (first charge, unbiased stack, r1 → equivalent σ):
+bench X det2 0.43, det3 0.47, det4 0.50, det6 0.28, det7 0.41–0.46; beam det4 X
+0.42–0.51, Y 0.36–0.38. det4 bench ≈ beam. The beam forward fit with the bench
+template (`beam_fit.py`) does NOT close (rms 2–3× the bench; parameters jump
+between plateaus; v at the two lower fields is window-floored), so beam σ0 is
+quoted from the template-free leading edge only.
+
+The beam's X > Y prompt width (0.42–0.51 vs 0.36–0.38) is consistent with the
+board: Y strips are L5, X strips L6, one layer deeper below the pads, so X's
+induced footprint should be wider. Per-view σ0 is therefore physical, but
+expected to be a fixed geometry ratio, not a free per-chamber knob.
 
 _(sections appended as results land)_

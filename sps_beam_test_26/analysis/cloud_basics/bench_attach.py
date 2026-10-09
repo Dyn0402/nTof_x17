@@ -30,6 +30,9 @@ BUNDLE = {'det2': 'mx17_2/calib_bundle_r06', 'det3': 'mx17_3/calib_bundle_r06',
           'det4': 'mx17_4/calib_bundle_lp', 'det6': 'mx17_6/calib_bundle_lp',
           'det7': 'mx17_7/calib_bundle_r06'}
 GAP = 30.0
+# uniform charge along the track (no attachment); the attenuated form is kept
+# only to show it was fitting the stacking artefact (FINDINGS §10)
+UNIFORM = os.environ.get('CB_ATTACH', '0') != '1'
 
 
 def template(det):
@@ -91,6 +94,8 @@ def main():
             x0 = [0.4, 4e-4, 800.0, 0.02, 0.02, 0.0, 0.0] + ([2e-4] if lab == 'Dd_free' else [])
             lo = [0.02, 0, 50, 1e-4, 1e-4, -600, -600] + ([0] if lab == 'Dd_free' else [])
             hi = [1.5, 0.01, 1e5, 10, 10, 600, 600] + ([0.005] if lab == 'Dd_free' else [])
+            if UNIFORM:                     # no attenuation: lambda pinned at 1e6 ns
+                x0[2], lo[2], hi[2] = 1e6 - 1, 1e6 - 2, 1e6
             # coarse start for the time offset: the model's 50 % rise onto the data's (-300 grid start)
             best = None
             for d0 in (100.0, 200.0, 300.0, 400.0):
@@ -111,7 +116,8 @@ def main():
             print(f'{name} {lab:12s}: sig0 {sig0:.3f}±{e[0]:.3f}  Dd {Dd:.2e}'
                   f'{"±%.1e" % e[7] if lab == "Dd_free" else "":9s} Drc {Drc:.2e}  lambda {lam:.0f} ns '
                   f'(= {lam * v * 1e-3:.0f} mm)  rms {q["rms"]:.4f}', flush=True)
-    json.dump(out, open(f'{HERE}/results/bench_attach.json', 'w'), indent=1, default=float)
+    tag = 'uniform' if UNIFORM else 'attach'
+    json.dump(out, open(f'{HERE}/results/bench_{tag}.json', 'w'), indent=1, default=float)
 
 
 if __name__ == '__main__':

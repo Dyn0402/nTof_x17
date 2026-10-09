@@ -40,7 +40,21 @@ OFFS = np.arange(-4, 5)
 U = np.linspace(-PITCH / 2, PITCH / 2, 41)
 
 
-def stack(ev, plane, tan_max=0.03):
+THR_ADC = 60.0
+
+
+def stack(ev, plane, tan_max=0.03, unbiased=None):
+    """Head-on (offset, time) stack.  Default (unbiased): per event NOT
+    normalised, aligned on the first crossing of THR_ADC by the 9-strip sum,
+    plain mean -- a uniform track stacks to a flat top.  unbiased=False: the
+    original stacking (normalised to the event's peak, aligned on 50 % of it,
+    trimmed mean), which leans every event on its largest ionisation cluster
+    and makes a uniform track look front-loaded (retracted 'attachment',
+    FINDINGS §10).  The linear relations fitted here hold per event, so the
+    RC fits survive either stacking; anything that assumes a charge profile
+    needs the unbiased one."""
+    if unbiased is None:
+        unbiased = os.environ.get('CB_STACK', 'unbiased') == 'unbiased'
     rows = []
     for e in ev.values():
         if plane not in e or abs(e[f'tan_{plane}']) > tan_max:
@@ -50,12 +64,20 @@ def stack(ev, plane, tan_max=0.03):
         if ic < 4 or ic > len(W) - 5:
             continue
         s = W[ic - 4:ic + 5].sum(0)
-        ipk = int(np.argmax(s)); half = 0.5 * s[ipk]
-        k = next((k for k in range(ipk, 0, -1) if s[k - 1] < half <= s[k]), None)
-        if k is None or s[ipk] <= 0:
-            continue
-        t = (np.arange(len(s)) - (k - 1 + (half - s[k - 1]) / (s[k] - s[k - 1]))) * SAMPLE_NS
-        rows.append([np.interp(GRID, t, W[ic + o] / s[ipk], left=np.nan, right=np.nan)
+        if unbiased:
+            k = next((k for k in range(1, len(s)) if s[k - 1] < THR_ADC <= s[k]), None)
+            if k is None or k < 3:
+                continue
+            t = (np.arange(len(s)) - (k - 1 + (THR_ADC - s[k - 1]) / (s[k] - s[k - 1]))) * SAMPLE_NS
+            norm = 1.0
+        else:
+            ipk = int(np.argmax(s)); half = 0.5 * s[ipk]
+            k = next((k for k in range(ipk, 0, -1) if s[k - 1] < half <= s[k]), None)
+            if k is None or s[ipk] <= 0:
+                continue
+            t = (np.arange(len(s)) - (k - 1 + (half - s[k - 1]) / (s[k] - s[k - 1]))) * SAMPLE_NS
+            norm = s[ipk]
+        rows.append([np.interp(GRID, t, W[ic + o] / norm, left=np.nan, right=np.nan)
                      for o in OFFS])
     R = np.array(rows)
     M = np.full((len(OFFS), len(GRID)), np.nan)
@@ -63,7 +85,9 @@ def stack(ev, plane, tan_max=0.03):
         for j in range(len(GRID)):
             col = R[:, i, j]; col = col[np.isfinite(col)]
             if len(col) > 0.6 * len(R):
-                M[i, j] = trim_mean(col, 0.2)
+                M[i, j] = col.mean() if unbiased else trim_mean(col, 0.2)
+    if unbiased:
+        M /= np.nanmax(np.nansum(M, axis=0))
     return len(R), M
 
 
