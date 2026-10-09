@@ -154,3 +154,36 @@ and is a weaker judge than hoped.
 production hypers, no refit — x ∈ {0.1, 0.2, 0.3, 0.6}, y ∈ {0.6, 0.8, 0.95},
 all five chambers.  The smoke test of that form (det3, x 0.2 / y 0.9) gave
 Y head-on −0.07 ± 0.035 deg against production.
+
+### 5f · PINNED per-view ratios on the production hypers (no refit) — the clean result
+
+Held-out bench, blind start, Δs68 [deg] against production (negative = better),
+Y ratio 0.95 with X left at production:
+
+| chamber | Y all | Y head-on (\|θ\| < 5°) | X all |
+|---|---|---|---|
+| det2 | −0.041 ± 0.022 | **−0.146 ± 0.033** | 0.000 |
+| det3 | **−0.036 ± 0.012** | **−0.070 ± 0.022** | 0.000 |
+| det4 | −0.032 ± 0.023 | −0.078 ± 0.031 | −0.016 ± 0.014 (x 0.6 vs prod 0.67) |
+| det7 | −0.025 ± 0.026 | **−0.164 ± 0.040** | 0.000 |
+| det6 | +0.027 ± 0.04 | +0.061 ± 0.057 | −0.03 ± 0.04 (x 0.6 vs prod 0.82) |
+
+Monotonic in the Y ratio (0.6 → 0.8 → 0.95) on det2/3/4/7.  det6 (whose
+production is a different representation: sigma_p0 0.039 mm, c1 0.064, c2 free
+at 0.82) is neutral.  **Lowering X's ratio does NOT help reconstruction**
+(det3 head-on +0.04 ± 0.016, det7 all +0.04 ± 0.02 at x 0.2) — the measured
+X pattern (little ±2) does not translate into a lower X copy ratio in this
+representation, where X's sharing is carried by the prompt sigma_p0.
+
+H4 det4 head-on closure (Σ pull², 700 V): production 3150; pin x0.2/y0.6 2340;
+x0.1/y0.95 2612; x0.2/y0.95 2705; x0.6/y0.95 3422.  On the beam a LOW X ratio
+is right (X ±2 pull +19σ → +2…+7σ), matching the model-free measurement, while
+Y fits best at 0.6 and 0.95 overshoots ±2 (+5σ → +17σ).  Every variant leaves
+Y's copies 13–15σ too EARLY on the beam.  So the in-model ratio is not a pure
+board constant: it trades against the gas-dependent prompt spread and the copy
+timing.  The beam says X's ratio should be low; the bench reco is indifferent
+to X and wants Y higher.
+
+Gate (full reco, golden keys) running: candidate `calib_bundle_pvy95` =
+production hypers with c2_over_c1_y = 0.95 (X unchanged), against
+`calib_bundle_prodt0` = production hypers with the SAME t0 re-measurement.
