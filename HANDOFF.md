@@ -7,7 +7,7 @@
 r = 1.81/1.79/1.87e-4/ns at 243/150/92 V/cm (per TIME), no undershoot, flat in rate/spill/gain. Earlier stacks zero-filled
 dropped RAW packets (~6 % fake). Bench is only a weak null (800 ns drift). Next: air model — Magboltz air grid condor
 4410646 (lxplus `~/cloud_basics_condor/att/magboltz_{beam,co2,bench}_w*_a*.json`) → joint fit of water+air to v(E) and r(E).
-RC refits 4410535 + auto benches (`rc/auto_bench_rc.sh`) still running; then compare_bench.py; fix X deficit.
+RC refits DONE (FINDINGS §17): refitting does not close X (rc_D_x → 0; Dp free = σ0/Dd degeneracy); next for X = resistive-strip snapping model.
 Re-extracted run_71 cache (masked CM, ±12) lives only in the laptop job tmp — regenerate with
 `extract_det4_only.py run71_raw --cm masked --keep 12` (~10 min, ~8 GB RAM).
 

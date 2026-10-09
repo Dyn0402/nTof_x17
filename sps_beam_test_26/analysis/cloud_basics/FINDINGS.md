@@ -459,4 +459,20 @@ its stripes run across X). That gives no beam-like loss at modest significance o
 **O2 equivalent** (Magboltz, 1.7 % water): 131 / 154 / 164 ppm at 243 / 150 / 92 V/cm. Air grid
 (N2/O2/Ar, water 0–3 %, three gases): condor 4410646.
 
+## 17 · RC refits (condor 4410535): refitting does not close X
+
+`recal.py` arms seeded from rcm, benched paired against production (`run_bench_rc.sh`, outputs
+`~/x17/cosmic_bench/cloud_basics/bench_rc/`, `compare_bench.py --start blind` →
+`results/compare_bench_rc.json`).
+
+- **rc_D_x fits to zero** (0–1.2e-5 against rc_D_y 3.6–5.9e-4 mm²/ns), so rcf4x ≡ rcf3. X has no
+  resistive spread, as the board requires.
+- **Freeing Dp (rcfD) brings back the §6 degeneracy.** Dp drops to 0.013–0.022 (Magboltz ~0.03) and
+  σ0 inflates to 0.45–0.59 (X) / 0.47–0.75 (Y), for a 1–2 % χ² gain. The fit is using the footprint to
+  absorb a model deficiency.
+- **Resolution is the same as rcm (no refit).** Y is better on all five chambers. X is neutral on
+  det2/3 and better on det6/7, and det4 X is still worse (rcf3 +0.16 ± 0.05°, rcfD +0.07 ± 0.04°).
+- **Next for X:** HANDOFF step 3 (charge snapping to the 550 µm resistive-strip centres, which a
+  Gaussian footprint cannot represent).
+
 _(sections appended as results land)_
