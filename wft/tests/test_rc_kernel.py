@@ -81,3 +81,30 @@ def test_absent_keys_untouched():
     assert 'rc_D_y' not in BASE
     b = wm.build_matrix('y', POS, 0.1, 0.02, 200.0, dict(BASE))
     assert np.array_equal(a, b)
+
+
+# ---- induced-footprint tails (pseudo-Voigt, cloud_basics FINDINGS §23)
+WIDE = (np.arange(81) - 40) * wm.PITCH
+
+
+def test_lor_absent_or_zero_is_bit_identical():
+    h = dict(BASE, rc_D_y=5e-4)
+    a = wm.build_matrix('x', POS, 0.1, 0.02, 200.0, h)
+    b = wm.build_matrix('x', POS, 0.1, 0.02, 200.0, dict(h, lor_frac_x=0.0, lor_gamma_x=0.8))
+    assert np.array_equal(a, b)
+
+
+def test_lor_conserves_charge_and_widens_tails():
+    h = dict(BASE, rc_D_y=5e-4)
+    a = wm.build_matrix('x', WIDE, 0.0, 0.0, 200.0, h).reshape(len(WIDE), wm.NSAMP, wm.K)
+    b = wm.build_matrix('x', WIDE, 0.0, 0.0, 200.0,
+                        dict(h, lor_frac_x=0.2, lor_gamma_x=0.8)).reshape(len(WIDE), wm.NSAMP, wm.K)
+    # over a +-31 mm window the Lorentzian keeps all but ~1 % of its 20 % share
+    assert np.allclose(a.sum(0), b.sum(0), rtol=0.01, atol=1e-6)
+    qa, qb = a.sum((1, 2)), b.sum((1, 2))
+    c = 40
+    assert qb[c + 3] > 3 * qa[c + 3] and qb[c + 4] > 3 * qa[c + 4]
+    # Y untouched by X keys
+    ya = wm.build_matrix('y', POS, 0.1, 0.02, 200.0, h)
+    yb = wm.build_matrix('y', POS, 0.1, 0.02, 200.0, dict(h, lor_frac_x=0.2, lor_gamma_x=0.8))
+    assert np.array_equal(ya, yb)

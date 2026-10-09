@@ -344,6 +344,14 @@ def build_matrix_rc(plane, pos, p0, w, t0, hyper):
     var0 = s0 ** 2 + hyper['Dp'] ** 2 * UK + half ** 2 / 3.0       # (K,)
     D = float(hyper.get(f'rc_D_{plane}', 0.0))
     F0 = _fractions_sig(pos, pc, np.sqrt(var0))                   # prompt landing
+    eta = float(hyper.get(f'lor_frac_{plane}', 0.0))
+    if eta > 0:
+        # induced-footprint tails (cloud_basics FINDINGS §23): a fraction eta of each landing
+        # spread as a Lorentzian of half-width gamma, instead of the Gaussian -- pseudo-Voigt
+        gam = float(hyper[f'lor_gamma_{plane}'])
+        a_hi = np.arctan((pos[:, None] + PITCH / 2 - pc[None, :]) / gam)
+        a_lo = np.arctan((pos[:, None] - PITCH / 2 - pc[None, :]) / gam)
+        F0 = (1.0 - eta) * F0 + eta * (a_hi - a_lo) / np.pi
     n = len(pos)
     M = np.einsum('ik,tk->itk', F0, Hs[0])
     if D > 0:
