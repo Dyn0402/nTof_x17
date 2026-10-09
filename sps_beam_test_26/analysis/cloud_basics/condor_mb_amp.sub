@@ -1,0 +1,10 @@
+executable = condor_mb.sh
+arguments = $(tag) amp
+transfer_input_files = magboltz_drift.py, setup_garfield.sh, /afs/cern.ch/user/d/dneff/work/garfield_install/garfield-927e5c21.tar.gz
+should_transfer_files = YES
+when_to_transfer_output = ON_EXIT
+output = log/mbamp_$(tag).out
+error = log/mbamp_$(tag).err
+log = log/mb.log
++JobFlavour = "workday"
+queue tag in (bench_dry bench_w1 beam_dry beam_w1p7)
