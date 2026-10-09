@@ -65,69 +65,61 @@ proposed, but Dylan has not picked any yet.
 
 ## Beam-off cosmics: angle response + in-situ reco — updated 2026-10-09 (dylan-MS-7C84)
 
-**Resume:** is2_v2 (two-sided) full pass running as condor 4410513 (6,466 jobs, testmatch). Watch it; then kcal_is2_v2 + stage 3.
-
-**Latest:** `ntof_cosmics/HANDOFF_TRACKING_2026-10-06.md` §19 (pilot vs production, two-sided on run_86, launch) and
-`ntof_cosmics/results/pilot_is2_v1/report.html`. The is2_v1 pilot and the staged is2_v1 full package are superseded.
-
-**Read first:** `ntof_cosmics/HANDOFF_TRACKING_2026-10-06.md` §18 and §17 (two-sided search), §16 (pilot), then §15,
-§14, §13. §10g and §11 still hold; §12 is superseded. Slide note of the review:
-<https://dylan-neff.web.cern.ch/notes/ac-insitu-angles.html>.
-
-**lxplus jobs left running (2026-10-08 18:15):** condor cluster 4409382 (is2_v1 pilot, one-sided search), with 2 of
-702 still running, 0 held, and 700 outputs in `/eos/user/d/dneff/x17/sept26_fullpass_is2_v1`. Check it with
-`condor_q 4409382` and `lxstore status`. `lxstore status` timed out over ssh at wrap-up, so the quota is unchecked.
+**Resume:** is2_v2 two-sided full pass on condor 4410513 (multi-day). When it lands: pull, kcal_is2_v2, stage 3, compare.
 
 **Goal:** a reconstruction that measures angles correctly at n_TOF, head-on included, so same-chamber pairs can be
 reconstructed.
 
-**Done (2026-10-08):**
-- Readiness review (§14), pre-launch checks 1–2 (§15, `ntof_cosmics/results/yield_gate/report.html`).
-- **Dylan's decision:** stage 2 at TAN_MAX 1.0 raw; acceptance as a true-tan cut at stage 3, ≈ 0.6 for now.
-- **Implemented (7cd9db7):**
-  - `WFT_TAN_MAX` env override, recorded in the sidecar;
-  - `make_stage2_campaign --tan-max`;
-  - `build_tracks`/`campaign_tracks --tan-max-true` (`gated_reco`, `in_acceptance`; refuses a cut wider than the reco's
-    reach).
-  - Validated on run_86: the env override is identical to the patched wide run.
-- Packages rebuilt at 7cd9db7. **Pilot submitted:** lxplus `~/sept26_stage2_is2_v1_pilot`, cluster 4409382, one sub-run
-  per run (36 runs). Output goes to EOS `/eos/user/d/dneff/x17/sept26_fullpass_is2_v1`.
-- Full package (6,466 jobs) staged NOT submitted at lxplus `~/sept26_stage2_is2_v1`. The old 0.6-raw package is moved to
-  `*_tanmax06_superseded`.
-- **Later (§17–18):**
-  - mirror fits shown to be a missed basin;
-  - two-sided search ported to `wft.reco` behind `WFT_TWO_SIDED` (4d49be0);
-  - cosmic A–C closure with/without it (93dafc3): wrong sign down at 0.25–0.45, A ~1.5 % lower.
+**Read first:** `ntof_cosmics/HANDOFF_TRACKING_2026-10-06.md` §19 (latest: pilot vs production, two-sided on run_86,
+launch), then §18/§17 (two-sided search), §16 (pilot), §15–§13. Report: `ntof_cosmics/results/pilot_is2_v1/report.html`.
+Slide note of the review: <https://dylan-neff.web.cern.ch/notes/ac-insitu-angles.html>.
 
-**In progress / where it stopped:**
-- The pilot is on condor.
-- The run_86 beam `yield_gate.py reco` for chain is2ts died with the session (empty output): re-run it.
+**Running on lxplus — condor cluster 4410513 (is2_v2, Dylan's call 2026-10-09):**
+- Two-sided slope search (`WFT_TWO_SIDED=1`), TAN_MAX 1.0 raw, min 3 strips, in-situ bundles is2_A/is2_C, arms A,C,
+  JobFlavour testmatch (72 h). 6,466 jobs. Built at 939dc2b (clean tree).
+- Output: EOS `/eos/user/d/dneff/x17/sept26_fullpass_is2_v2`. Package: lxplus `~/sept26_stage2_is2_v2`
+  (logs in `log/<run>/`), local copy `/media/dylan/data/x17/sept26_prelim/pkg_is2_v2`.
+- Expected ~20 h median, up to ~55 h per job, so the whole pass will take days (6,466 jobs × ~20 h, queue-limited).
+- **State at wrap-up (2026-10-09 afternoon):** 1,723 running, 4,426 idle, ~315 done, 2 held. AFS quota 29 %.
+- **The 2 held jobs (procs 1748/1749) are run_104 `stat090_0016`, A and C.** Both fail on input: the decoded ROOT
+  files (`…260730_11H29_000_03.root`, `…_07.root`) are empty (no `nt` tree), so this is not a reco bug and a re-run
+  won't help. Check whether production also lacks this sub-run, then `condor_rm 4410513.1748 4410513.1749`.
 
 **Next steps:**
-0. Re-run the is2ts yield gate on run_86 and compare it to is2e (§18 next step 1).
-1. Check the pilot: `condor_q 4409382`, holds, `lxstore status`.
-2. Pull it to a versioned fullpass dir. Run `campaign_tracks --fullpass <it> --kcal …/kcal_is2_v1 --arms A,C
-   --tan-max-true 0.6 --out …/stage3_is2_v1_pilot`.
-3. Compare against production per run: confirmed yield (scint wall), gated, `gated_reco` vs `gated`, late fraction.
-4. Mirror-fit χ² (mirror vs true solution) on the steep synthetic muons.
-5. Full launch decision, now including: one-sided as staged, or rebuild with `--two-sided` (§18)? Give it `--done-list` so the pilot's jobs are skipped.
-6. Still open: D in-situ bundle (v ≈ 28); B's HV in run_149; interim vs `xy_pairing` (§14 list).
+1. Check `condor_q 4410513 -totals`, `condor_q 4410513 -hold -af ProcId HoldReason` and `lxstore status`. A hold for
+   anything other than the run_104 empty input → read `~/sept26_stage2_is2_v2/log/<run>/<tag>.err`. Re-run failures
+   with a new package built with `--done-list`.
+2. When done: pull with `fetch_stage2.sh` (REMOTE=lxplus:/eos/user/d/dneff/x17/sept26_fullpass_is2_v2, plus LOCALPKG
+   and OUT) into `/media/dylan/data/x17/sept26_prelim/fullpass_is2_v2`.
+3. Make `kcal_is2_v2` = kcal_is2_v1 × (A 1.009, C 1.003) (the two-sided cosmic-closure shift), or re-derive.
+4. Stage 3: `campaign_tracks --fullpass …/fullpass_is2_v2 --kcal …/kcal_is2_v2 --arms A,C --tan-max-true 0.6
+   --out …/stage3_is2_v2`. Consider a wider cut: two-sided purity held to 0.6–0.8 on run_86.
+5. Compare with production `stage3_fullpass` (not `stage3_campaign`, which has ~1/15 of the statistics) using
+   `ntof_cosmics/pilot_compare.py` (repoint PILOT; steps match/summary/bins/same) and regenerate the report with
+   `make_pilot_report.py`.
+6. Still open: which k is right on A (in-situ is 0.85× production on the same tracks; board question); D in-situ
+   bundle (v ≈ 28); B's HV in run_149.
+
+**Key results (details §19):**
+- Pilot is2_v1 (one-sided): confirmed yield 1.5–1.8× production per run in |true tan| < 0.6; its directions win
+  2:1 on the same tracks. A's per-bin deficit is the k difference, not mirrors.
+- run_86 one- vs two-sided: confirmed A 1,283 → 1,255, C 1,026 → 1,053; gated A 4,045 → 2,612, C 2,879 → 1,870;
+  wall purity A 0.38 → 0.59, C 0.49 → 0.66. CPU ~20×.
 
 **Gotchas / decisions:**
 - Raw-tan constants (TAN_MAX, `TAN_MIN_SLOPE`, `FLOOR_TAN`, `W_SCAN_HALF`) change meaning with v.
-  Compare yields against production, not only condor against local.
-- Sidecars before 7cd9db7 have no `tan_max_raw`; `build_tracks` assumes 0.6 for them. So the old is2w products
-  (`yieldgate/is2w`) would be refused at `--tan-max-true 0.6`. Use `yieldgate/is2e` instead.
-- Arms without k (B, D) get `in_acceptance` False when a stage-3 cut is set.
+- Sidecars before 7cd9db7 have no `tan_max_raw`; `build_tracks` assumes 0.6 for them.
+- Arms without k (B, D, and 9 run/arms in stage3_fullpass) get `in_acceptance` False / are skipped.
 - Never use the capsule band as the beam scale. Never run `k_arm` on cosmics. run_126 has no k.
+- `yield_gate.py summary`'s report step throws KeyError without the is2 chain; the CSV is written first.
+- Superseded: is2_v1 pilot (cluster 4409382, `sept26_fullpass_is2_v1`) and the staged one-sided `~/sept26_stage2_is2_v1`.
 - lxplus SSH goes through a mux master. If it hangs, retry, or `kinit`.
 
 **Key files & commands:**
-- `wft/reco.py` (TAN_MAX), `sept26_prelim_analysis/build_tracks.py` (`TAN_MAX_RAW_DEFAULT`, `--tan-max-true`),
-  `sept26_prelim_analysis/condor/make_stage2_campaign.py --tan-max`.
-- Package rebuild: `make_stage2_campaign.py --full-pass --arms A,C --insitu A=~/scratch/ntof_insitu/bundles/is2_A,C=~/scratch/ntof_insitu/bundles/is2_C
-  --min-strips 3 --tan-max 1.0 --version is2_v1 --dest <dir> [--subset …/pilot_subset_is2_v1.json] [--done-list …]`.
-- `ntof_cosmics/yield_gate.py`, `repass_readiness.py`, `bd_feasibility.py`, `g4_digi/steep_check.py`.
+- `sept26_prelim_analysis/condor/make_stage2_campaign.py --full-pass --arms A,C --insitu A=…/is2_A,C=…/is2_C
+  --min-strips 3 --tan-max 1.0 --two-sided --flavour testmatch --version is2_v2 --dest <dir> [--done-list …]`.
+- `wft/reco.py` (TAN_MAX, two-sided), `sept26_prelim_analysis/build_tracks.py` (`--tan-max-true`).
+- `ntof_cosmics/pilot_compare.py`, `make_pilot_report.py`, `yield_gate.py`.
 
 ## Scintillator stack mapped by the MM tracks — updated 2026-10-06 (dylan-MS-7C84)
 

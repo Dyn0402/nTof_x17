@@ -1525,3 +1525,8 @@ C 6,300–8,500 vs 375–400). `yield_gate.py summary`'s report step fails witho
 2. Make `kcal_is2_v2` = kcal_is2_v1 × (A 1.009, C 1.003), or re-derive properly; then stage 3 with `--tan-max-true`
    (0.6 or wider: the two-sided purity holds to 0.6–0.8 on run_86) and `pilot_compare`-style checks on the full pass.
 3. Open: which k is right on A (in-situ 0.85× production on the same tracks); is2_v1 pilot products are superseded.
+
+**Status at wrap-up (2026-10-09 afternoon):** 4410513 has 1,723 running, 4,426 idle, ~315 done, 2 held; AFS 29 %.
+Both held jobs (procs 1748/1749) are run_104 `stat090_0016` A/C, and they fail on empty decoded ROOT input (no `nt` tree
+in `…260730_11H29_000_03.root`/`_07.root`). That is not a reco failure, so `condor_rm` them after checking that
+production lacks this sub-run too. Resume from HANDOFF.md.
