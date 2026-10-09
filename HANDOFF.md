@@ -2,7 +2,9 @@
 
 ## Detector model basics (cloud_basics) — updated 2026-10-09 (dylan-MS-7C84)
 
-**Resume:** fetch Magboltz O2 attachment (condor 4410533) + RC refits (4410535), bench refits vs production/rcm; fix X deficit.
+**Resume (10-09 evening, dylan-Yoga):** attachment DONE, negative (FINDINGS §13: water η = 0; O2 needs 40 ppm at 243 but
+150–220 ppm at 150/92 V/cm in one 30-min block, so not attachment). RC refits 4410535 still IDLE, now JobPrio 20 (ahead of
+is2_v2). When they land: bench refits vs production/rcm; fix X deficit. Beam-decline mechanism open: test leading spike first.
 
 **Goal:** Dylan (10-09): get a physically sound, consistent detector model *before* publishing or re-passing; solve as many
 consistency problems as possible and converge on one model over the coming weeks. Re-pass is ON HOLD until then.

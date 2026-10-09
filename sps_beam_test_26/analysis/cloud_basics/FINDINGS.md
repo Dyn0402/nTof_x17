@@ -298,4 +298,31 @@ agrees (det2 Y −0.10/−0.30, det6 Y −0.27/−0.70, det4 X +0.09).
 - Refits of the physical constants only (per-view σ0, D_rc_y; + D_rc_x; + Dp):
   condor 4410535, `recal.py --free ... --seed-json arm_<det>_rcm.json`.
 
+## 13 · Magboltz attachment does not reproduce the beam decline (condor 4410533)
+
+`att_compare.py` → `results/att_compare.json`. Gas Ar/CF4/iso + 1.7 % H2O at
+720.8 Torr, with 0 / 0.05 / 0.1 / 0.2 % O2.
+
+- **Water alone attaches nothing:** η = 0 at every field. The "enhanced by the
+  run_71 water" in §11 has no Magboltz support. Any loss must come from O2, or
+  from something that is not attachment.
+- **O2's rate per unit time hardly depends on field.** η·v per 0.1 % O2 is
+  13.8 / 11.6 / 11.4 ×10⁻⁴ ns⁻¹ at 243 / 150 / 92 V/cm, so at fixed time it is
+  slightly *faster* at high field. The data's early drop is the other way round
+  (−5 / −9 / −20 % by 600 ns), and in size and field trend it matches the leading
+  spike of §11 (5 → 20 %). Taken at 300 ns the reference sits on the spike's
+  tail, so the "drop by 600 ns" is mostly the spike decaying, not loss.
+- **After the spike (660–1300 ns)** the log-slopes (X/Y wide sums) need
+  **34–43 ppm O2 at 243 V/cm** but **143–216 ppm at 150 and 92 V/cm**. All three
+  plateaus are one 30-min block of run_71 (05:22–05:52, `RAW_RUN71_STATUS.md`,
+  one gas fill), so a single O2 level cannot produce both. Attachment can be at
+  most a small part of the decline, bounded by the 243 V/cm plateau (≲ 40 ppm,
+  ≈ 5 % per µs).
+- The decline is still common to X and Y, so it is in the arriving charge (§11),
+  but its mechanism is open. The leading spike (§11 hypothesis: primary
+  ionisation inside the amplification gap) is now the first thing to test,
+  because it alone explains the field ordering of the early drop. The 243 V/cm
+  step at ≈ 1.4 µs (0.93 → 0.76) is not exponential either.
+- The bench result stands: no attachment (§10).
+
 _(sections appended as results land)_
