@@ -63,9 +63,12 @@ proposed, but Dylan has not picked any yet.
   `python3 ~/PycharmProjects/dylan-cern-site/scripts/add-note.py <out>/qsum_runaway/deck/qsum-runaway.html --slug qsum-runaway --force --deploy`.
 - `<out>` = `/media/dylan/data/x17/sept26_prelim` (`python -m sept26_prelim_analysis.paths`).
 
-## Beam-off cosmics: angle response + in-situ reco — updated 2026-10-08 (dylan-MS-7C84)
+## Beam-off cosmics: angle response + in-situ reco — updated 2026-10-09 (dylan-MS-7C84)
 
-**Resume:** pilot 4409382 nearly done (700/702). Re-run run_86 is2ts yield gate; then stage 3 on pilot; decide 2-sided.
+**Resume:** is2_v2 (two-sided) full pass running as condor 4410513 (6,466 jobs, testmatch). Watch it; then kcal_is2_v2 + stage 3.
+
+**Latest:** `ntof_cosmics/HANDOFF_TRACKING_2026-10-06.md` §19 (pilot vs production, two-sided on run_86, launch) and
+`ntof_cosmics/results/pilot_is2_v1/report.html`. The is2_v1 pilot and the staged is2_v1 full package are superseded.
 
 **Read first:** `ntof_cosmics/HANDOFF_TRACKING_2026-10-06.md` §18 and §17 (two-sided search), §16 (pilot), then §15,
 §14, §13. §10g and §11 still hold; §12 is superseded. Slide note of the review:

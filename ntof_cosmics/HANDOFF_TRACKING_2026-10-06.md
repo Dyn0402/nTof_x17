@@ -1488,3 +1488,40 @@ Re-run it.
    from the truth start on the cosmic sample.
 4. Decide (Dylan): launch is2_v1 as staged with the one-sided search, or rebuild the package `--two-sided` (version
    is2_v2?) and hold the launch.
+
+## 19 · Pilot results, two-sided on beam, is2_v2 launched (2026-10-09)
+
+**Report:** `ntof_cosmics/results/pilot_is2_v1/report.html` (`make_pilot_report.py`; tables from `pilot_compare.py`
+steps `match summary bins same cosmic valley`).
+
+**Pilot (cluster 4409382, one-sided) against production.** Pulled to `sept26_prelim/fullpass_is2_v1_pilot`; stage 3 in
+`stage3_is2_v1_pilot` (kcal_is2_v1, A,C, `--tan-max-true 0.6`): 36 built, 0 failed, run_126 has no k.
+- Baseline is `stage3_fullpass`, NOT `stage3_campaign`: the latter is the early low-statistics campaign (~1/15 of the
+  events). `stage3_fullpass` has no k for 9 run/arms (run_81 A, run_98 C, run_118 C, run_124 C, run_126, run_143 C,
+  run_154 A, run_156 A+C); they drop out of the ratios.
+- Wall-confirmed, |true tan| < 0.6 in both: pilot/prod A 1.51–1.71, C 1.62–1.81 per run.
+- Per |true tan| bin A's pilot confirms fewer than production at 0.3–0.6. **This is the k, not mirrors:** on the same
+  tracks pilot/prod true tan is A 0.85, C 0.90 x / 1.01 y (constant over runs: in-situ v vs pinned v). Track by track
+  the pilot's direction confirms at least as often in every bin (disagreements ~2:1 for the pilot).
+- Wall rate dips in runs 110, 114, 132, 162 in both chains (scintillators, not reco).
+
+**A's −1.5 % with two-sided (§18 item 3) is a correction.** Cosmic A–C truth, is2w vs is2ts, 0.2–0.5: the search
+changes 10–25 % of tracks; χ² lower on 95–99 %, t0 100–150 ns earlier, raw/true on the changed A tracks 1.065 → 1.015.
+On synthetic muons the residual early t0 is a flat p0–t0 valley (Δχ² ~+6 in ~570 dof, angle ratio 1.000, p0 1.8 mm).
+k rescale for a two-sided pass from the cosmic closure (n-weighted 0.1–0.5): A ×1.009, C ×1.003 (inside norm_err).
+
+**run_86, is2e (one-sided) vs is2ts (two-sided), same bundles and k:** confirmed A 1,283 → 1,255, C 1,026 → 1,053;
+gated A 4,045 → 2,612, C 2,879 → 1,870; wall rate in acceptance A 0.38 → 0.59, C 0.49 → 0.66. Same real tracks, 35–40 %
+less junk. Per-bin table `results/yield_gate/confirm_by_tan_run86.csv`. **Cost ~20×** (A 6,700 s vs 290 s per tag,
+C 6,300–8,500 vs 375–400). `yield_gate.py summary`'s report step fails without the is2 chain (CSV is written first).
+
+**Launched (Dylan, 2026-10-09 morning): is2_v2.** `make_stage2_campaign --flavour` added (939dc2b). Package built at
+939dc2b, clean tree: two-sided, TAN_MAX 1.0, min 3, testmatch (72 h), 6,466 jobs, EOS
+`/eos/user/d/dneff/x17/sept26_fullpass_is2_v2`, lxplus `~/sept26_stage2_is2_v2`, local `sept26_prelim/pkg_is2_v2`.
+**Condor cluster 4410513.** Expected median ~20 h, longest ~55 h per job.
+
+**Next:**
+1. Watch 4410513: holds (flavour kills), `lxstore status`. Re-run failures with `--done-list`.
+2. Make `kcal_is2_v2` = kcal_is2_v1 × (A 1.009, C 1.003), or re-derive properly; then stage 3 with `--tan-max-true`
+   (0.6 or wider: the two-sided purity holds to 0.6–0.8 on run_86) and `pilot_compare`-style checks on the full pass.
+3. Open: which k is right on A (in-situ 0.85× production on the same tracks); is2_v1 pilot products are superseded.
