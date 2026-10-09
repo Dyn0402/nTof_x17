@@ -240,4 +240,62 @@ board: Y strips are L5, X strips L6, one layer deeper below the pads, so X's
 induced footprint should be wider. Per-view σ0 is therefore physical, but
 expected to be a fixed geometry ratio, not a free per-chamber knob.
 
+## 11 · The beam decline is common to X and Y (Dylan: attachment would hit both views)
+
+`beam_xy_pulse.py`, run_71 head-on in BOTH views, unbiased stacks, t from the X
+threshold, strip sums ±0/±1/±2/±4. Wide (±4) sums, each / its value at 300 ns:
+
+| field | view | 600 | 900 | 1200 | 1500 | 1800 | 2100 ns |
+|---|---|---|---|---|---|---|---|
+| 243 V/cm | X | 0.945 | 0.967 | 0.926 | 0.779 | 0.765 | 0.453 |
+| | Y | 0.920 | 0.962 | 0.906 | 0.736 | 0.730 | 0.445 |
+| 150 V/cm | X | 0.910 | 0.876 | 0.785 | 0.730 | 0.711 | 0.654 |
+| | Y | 0.909 | 0.855 | 0.760 | 0.748 | 0.681 | 0.659 |
+| 92 V/cm | X | 0.797 | 0.801 | 0.756 | 0.769 | 0.678 | 0.571 |
+| | Y | 0.805 | 0.792 | 0.730 | 0.763 | 0.653 | 0.587 |
+
+- Same in both views: in the arriving charge, not a readout effect. The
+  earlier "X decline" was X alone on a narrower sum.
+- Y's narrow sums fall faster than its wide ones (the RC spread carrying charge
+  outward); X's do not. Spreading changes the narrow sums, never the totals.
+- Field-dependent at fixed time (by 600 ns: −5 % at 243, −9 % at 150, −20 % at
+  92 V/cm), so not electronics (the electronics see a flat current until the
+  drift ends, identically at every field). Loss faster at low field = O2
+  attachment, enhanced by the run_71 water. Magboltz check (1.7 % H2O +
+  0.05–0.2 % O2): condor 4410533.
+- Leading spike growing at low field (5 → 20 %): hypothesis = primary
+  ionisation inside the amplification gap, relatively larger as v (and the
+  drift current) falls. Untested.
+- Bench control (`beam_xy_pulse.py det3 det4 det7`, both views head-on, n 40–85):
+  X and Y wide sums agree and stay flat to the drift end. Bench: no attachment.
+- Still to do: template-free charge per strip against depth on the 25.6° beam
+  runs (raw files deleted locally, ZS; needs a re-pull and censoring care).
+
+## 12 · Physical kernel, held-out bench (no refit; constants from §10)
+
+`make_rc_arms.py` → `plane_bench.py` (2000 held-out events) → `compare_bench.py`
+(paired, SCALE-CORRECTED s68 = after dividing each arm's tan by its own slope;
+negative = better). rcm: Dp from the head-on fit; rcmd: Dp from dry Magboltz.
+Blind start:
+
+| chamber | Y all | Y head-on | X all | X head-on | slope X / Y (prod → rcm) |
+|---|---|---|---|---|---|
+| det3 | **−0.090 ± 0.018** | **−0.136 ± 0.031** | +0.005 ± 0.018 | +0.010 ± 0.026 | 0.99→0.96 / 1.00→0.97 |
+| det2 | **−0.154 ± 0.034** | **−0.362 ± 0.050** | +0.004 ± 0.023 | −0.026 ± 0.030 | 0.97→0.94 / 1.00→0.95 |
+| det7 | **−0.117 ± 0.046** | **−0.278 ± 0.066** | −0.025 ± 0.055 | **−0.161 ± 0.054** | 0.98→0.95 / 1.01→0.97 |
+| det4 | **−0.145 ± 0.047** | **−0.204 ± 0.059** | **+0.164 ± 0.049** | +0.008 ± 0.060 | 0.94→0.86 / 0.98→0.91 |
+| det6 | **−0.546 ± 0.065** | **−0.897 ± 0.091** | **−0.369 ± 0.049** | **−0.500 ± 0.072** | 0.92→0.89 / 0.92→0.87 |
+
+rcmd (pure Magboltz diffusion) is within errors of rcm everywhere. The ref start
+agrees (det2 Y −0.10/−0.30, det6 Y −0.27/−0.70, det4 X +0.09).
+
+- Y improves on every chamber with no fitted kernel constant.
+- X: neutral on det2/3, better on det6/7, WORSE on det4 overall; X χ²/dof is
+  worse than production everywhere (det3 61 → 84, det2 110 → 189). The model's X
+  is missing something production's small X copies were absorbing.
+- Every rc arm reads angles 3–8 % flat (production kw would absorb it); the
+  bundle v was calibrated under the old kernel.
+- Refits of the physical constants only (per-view σ0, D_rc_y; + D_rc_x; + Dp):
+  condor 4410535, `recal.py --free ... --seed-json arm_<det>_rcm.json`.
+
 _(sections appended as results land)_

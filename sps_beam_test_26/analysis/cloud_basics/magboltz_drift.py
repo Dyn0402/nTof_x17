@@ -19,8 +19,13 @@ MIX = {
     'beam_w0p5':   (720.8, [('ar', 87.5), ('cf4', 10.0), ('ic4h10', 2.0), ('h2o', 0.5)]),
     'beam_w1p7':   (720.8, [('ar', 86.3), ('cf4', 10.0), ('ic4h10', 2.0), ('h2o', 1.7)]),
     'beam_w3':     (720.8, [('ar', 85.0), ('cf4', 10.0), ('ic4h10', 2.0), ('h2o', 3.0)]),
+    # oxygen (air ingress) on top of the run_71 water: attachment test
+    'beam_w1p7_o0p05': (720.8, [('ar', 86.25), ('cf4', 10.0), ('ic4h10', 2.0), ('h2o', 1.7), ('o2', 0.05)]),
+    'beam_w1p7_o0p1':  (720.8, [('ar', 86.2), ('cf4', 10.0), ('ic4h10', 2.0), ('h2o', 1.7), ('o2', 0.1)]),
+    'beam_w1p7_o0p2':  (720.8, [('ar', 86.1), ('cf4', 10.0), ('ic4h10', 2.0), ('h2o', 1.7), ('o2', 0.2)]),
+    'bench_w0p5_o0p05': (745.83, [('ar', 94.45), ('ic4h10', 5.0), ('h2o', 0.5), ('o2', 0.05)]),
 }
-FIELDS = (60, 100, 150, 200, 250, 300, 400)
+FIELDS = (60, 92, 100, 150, 200, 243, 250, 300, 400)
 # amplification region: ~450-560 V over the 150 um gap
 AMP_FIELDS = (25000, 30000, 35000, 40000)
 
@@ -45,8 +50,14 @@ def main(tag, amp=False):
         g.ElectronVelocity(0, 0, -E, 0, 0, 0, vx, vy, vz)
         dl, dt = ctypes.c_double(), ctypes.c_double()
         g.ElectronDiffusion(0, 0, -E, 0, 0, 0, dl, dt)
-        pts.append(dict(E_Vcm=E, v_um_ns=abs(vz.value) * 1e3,
-                        DT_um_rtcm=dt.value * 1e4, DL_um_rtcm=dl.value * 1e4))
+        eta = ctypes.c_double()
+        g.ElectronAttachment(0, 0, -E, 0, 0, 0, eta)
+        # v_um_ns kept in the original (Garfield cm/ns x 1e3 = 10 um/ns) units for
+        # continuity with the first batch; v_true_um_ns is the real value
+        pts.append(dict(E_Vcm=E, v_um_ns=abs(vz.value) * 1e3, v_true_um_ns=abs(vz.value) * 1e4,
+                        DT_um_rtcm=dt.value * 1e4, DL_um_rtcm=dl.value * 1e4,
+                        eta_per_cm=eta.value,
+                        lambda_mm=(10.0 / eta.value) if eta.value > 0 else None))
         print(tag, pts[-1], flush=True)
     out = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'results',
                        f'magboltz_{tag}{"_amp" if amp else ""}.json')

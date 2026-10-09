@@ -33,15 +33,21 @@ sys.path.insert(0, REPO)
 BASE = ('c1', 'kY', 'tau_s', 'sigma_s', 'sigma_p0', 'Dp')
 STEP = dict(c1=0.03, kY=0.30, tau_s=20.0, sigma_s=10.0, sigma_p0=0.05, Dp=0.003,
             c2_over_c1=0.1, c2_over_c1_x=0.1, c2_over_c1_y=0.1, cX=0.3,
-            c1_asym_x=0.2, sigma_p0_x=0.05, sigma_p0_y=0.05, tau_y_fac=0.3)
+            c1_asym_x=0.2, sigma_p0_x=0.05, sigma_p0_y=0.05, tau_y_fac=0.3,
+            rc_D_y=1e-4, rc_D_x=1e-4)
 # sigma_p0 floor 0.03 (19_ratio_recal used 0.10, but det6's production
 # bundle sits at 0.039 -- a seed outside the box rejects every step)
 LO = dict(c1=0.05, kY=0.3, tau_s=30.0, sigma_s=1.0, sigma_p0=0.03, Dp=0.001,
           c2_over_c1=0.0, c2_over_c1_x=0.0, c2_over_c1_y=0.0, cX=0.3,
-          c1_asym_x=-0.95, sigma_p0_x=0.03, sigma_p0_y=0.03, tau_y_fac=0.3)
+          c1_asym_x=-0.95, sigma_p0_x=0.03, sigma_p0_y=0.03, tau_y_fac=0.3,
+          rc_D_y=0.0, rc_D_x=0.0)
 HI = dict(c1=0.60, kY=6.0, tau_s=400.0, sigma_s=400.0, sigma_p0=1.50, Dp=0.100,
           c2_over_c1=0.95, c2_over_c1_x=0.95, c2_over_c1_y=0.95, cX=6.0,
-          c1_asym_x=0.95, sigma_p0_x=1.50, sigma_p0_y=1.50, tau_y_fac=4.0)
+          c1_asym_x=0.95, sigma_p0_x=1.50, sigma_p0_y=1.50, tau_y_fac=4.0,
+          rc_D_y=0.005, rc_D_x=0.005)
+# rc_D_y: the physical RC-diffusion kernel (wft.model.build_matrix_rc,
+# cloud_basics/FINDINGS.md).  Its arms are run with --seed-json <rc arm> and
+# --free, e.g. --free sigma_p0_x,sigma_p0_y,rc_D_y (Dp pinned from the seed).
 
 #: arm -> (free hypers, fixed extras, seed overrides, upper-bound overrides)
 ARMS = {

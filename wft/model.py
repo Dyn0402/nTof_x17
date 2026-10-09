@@ -143,6 +143,7 @@ def use_calibration(cal: CalibrationBundle) -> None:
     _smear_cache.clear()
     _lp_cache.clear()
     _tt_cache.clear()
+    _rc_cache.clear()
     set_nsamp(NSAMP)
 
 
@@ -163,6 +164,7 @@ def set_nsamp(ns: int) -> None:
     TS = np.arange(NSAMP) * SNS
     _smear_cache.clear()
     _tt_cache.clear()
+    _rc_cache.clear()
 
 
 def set_depth_bins(k: int) -> None:
@@ -172,6 +174,7 @@ def set_depth_bins(k: int) -> None:
     K = int(k)
     UK = (np.arange(K) + 0.5) * DT
     _tt_cache.clear()
+    _rc_cache.clear()
 
 
 def _require_cal():
@@ -279,9 +282,87 @@ def strip_fractions(pos, p0, w, sigma_p0, Dp):
     return 0.5 * (erf(hi) - erf(lo))                  # (n_strip, K)
 
 
+#: Time-since-landing edges [ns] for the RC-diffusion kernel: each interval's
+#: increment of the strip fractions is applied as one impulse at its midpoint.
+#: Fine early (where the spread changes fastest), coarse late.
+RC_EDGES = np.array([0.0, 30, 60, 100, 150, 220, 300, 400, 550, 750, 1000,
+                     1400, 2000, 3000])
+_rc_cache: dict = {}
+
+
+def _rc_tensors(plane: str, t0q: float, tmpl_plane: str):
+    """(n_s, NSAMP, K) impulse responses delayed by each RC interval midpoint
+    (index 0 = no delay, the prompt landing)."""
+    key = (plane, tmpl_plane, t0q, NSAMP, K, float(UK[0]))
+    hit = _rc_cache.get(key)
+    if hit is not None:
+        return hit
+    tmpl = TMPL[tmpl_plane]
+    shifts = np.r_[0.0, 0.5 * (RC_EDGES[:-1] + RC_EDGES[1:])]
+    base = TS[:, None] - (t0q + UK[None, :])
+    Hs = np.stack([np.interp(base - s, TGRID, tmpl, left=0, right=0) for s in shifts])
+    if len(_rc_cache) > 2048:
+        _rc_cache.clear()
+    _rc_cache[key] = Hs
+    return Hs
+
+
+def _fractions_sig(pos, pc, sig):
+    """strip_fractions with an explicit width per depth bin (sig: (K,))."""
+    z = 1.0 / (np.sqrt(2) * sig)[None, :]
+    hi = (pos[:, None] + PITCH / 2 - pc[None, :]) * z
+    lo = (pos[:, None] - PITCH / 2 - pc[None, :]) * z
+    return 0.5 * (erf(hi) - erf(lo))
+
+
+def build_matrix_rc(plane, pos, p0, w, t0, hyper):
+    """Physical kernel (cloud_basics/FINDINGS.md, 2026-10-09).
+
+    Charge drifting for u lands with a Gaussian footprint of width
+    sigma_p0 (prompt: avalanche + induction, a readout constant) and
+    Dp^2 u (drift diffusion; Dp^2 = D_T^2 v from Magboltz).  On the view ALONG
+    the resistive strips (Y) it then spreads as a 1-D RC line,
+    sigma^2 += 2 rc_D_<plane> s (s = time since landing); across them (X)
+    rc_D_x = 0.  The readout sees each increment of the charge above a strip
+    through the electronics.  No discrete copies: c1, c2, kY, tau_s and
+    sigma_s are not used.
+
+    Keys: ``rc_D_y`` (mm^2/ns, enables this kernel), ``rc_D_x`` (default 0),
+    ``sigma_p0_<plane>`` / ``sigma_p0``, ``Dp``, ``rc_tmpl`` ('x' or 1 = drive
+    both views with the X template, the clean electronics response -- Y's
+    measured template already carries RC undershoot; 'own' or 0 = each view
+    its own).  ``rc_drain`` (ns, optional) lets the strip's charge decay.
+    """
+    t0q = round(t0 / T0_STEP) * T0_STEP
+    tp = 'x' if hyper.get('rc_tmpl', 'x') in ('x', 1, 1.0) else plane
+    Hs = _rc_tensors(plane, t0q, tp)                              # (ns, NSAMP, K)
+    ua = np.arange(K) * DT
+    pa, pb = p0 + w * ua, p0 + w * (ua + DT)
+    pc = 0.5 * (pa + pb)
+    half = 0.5 * np.abs(pb - pa)
+    s0 = float(hyper.get(f'sigma_p0_{plane}', hyper['sigma_p0']))
+    var0 = s0 ** 2 + hyper['Dp'] ** 2 * UK + half ** 2 / 3.0       # (K,)
+    D = float(hyper.get(f'rc_D_{plane}', 0.0))
+    F0 = _fractions_sig(pos, pc, np.sqrt(var0))                   # prompt landing
+    n = len(pos)
+    M = np.einsum('ik,tk->itk', F0, Hs[0])
+    if D > 0:
+        drain = float(hyper.get('rc_drain', 0.0))
+        Fprev = F0
+        for j, s in enumerate(RC_EDGES[1:]):
+            Fj = _fractions_sig(pos, pc, np.sqrt(var0 + 2.0 * D * s))
+            if drain > 0:
+                Fj = Fj * np.exp(-s / drain)
+            M += np.einsum('ik,tk->itk', Fj - Fprev, Hs[j + 1])
+            Fprev = Fj
+    return M.reshape(n * NSAMP, K)
+
+
 def build_matrix(plane, pos, p0, w, t0, hyper):
     """Design matrix: column k = the (strip, sample) waveform produced by unit
     charge in depth bin k, sharing and impulse response included."""
+    if 'rc_D_y' in hyper:
+        return build_matrix_rc(plane, pos, p0, w, t0, hyper)
     t0q = round(t0 / T0_STEP) * T0_STEP
     if abs(t0 - t0q) > 1e-9:
         tmpl, _sm = _templates(plane, hyper['sigma_s'])
