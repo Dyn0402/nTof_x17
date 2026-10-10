@@ -18,6 +18,7 @@ Per (run, arm):
 
 Usage:  pilot_compare.py match   (wall matching, cached per run/arm/chain)
         pilot_compare.py summary
+        pilot_compare.py <step> --version is2_v2   (the full two-sided re-pass)
 """
 import argparse
 import json
@@ -38,6 +39,25 @@ ARMS = ('A', 'C')
 ACC_TRUE = 0.6
 LATE_NS = 300
 CHAINS = {'prod': PROD, 'pilot': PILOT}
+
+
+def _configure(version):
+    """Point the module at a full re-pass instead of the is2_v1 pilot.  The
+    re-pass keeps the 'pilot' chain key; its sub-runs are every one with a
+    track table in BOTH stage3_<version> and production, so an incomplete
+    stage 3 compares like with like."""
+    global PILOT, SUBSET, OUT, CACHE, CHAINS
+    PILOT = ROOT / f'stage3_{version}'
+    have = lambda d: {p.stem[len('tracks_'):] for p in d.glob('tracks_run_*_stat090_*.parquet')}
+    both = have(PILOT) & have(PROD)
+    SUBSET = {}
+    for rs in sorted(both):
+        run, sub = rs.split('_stat090_')
+        SUBSET.setdefault(run, []).append(f'stat090_{sub}')
+    OUT = Path(__file__).resolve().parent / 'results' / f'fullpass_{version}'
+    CACHE = ROOT / f'fullpass_{version}_compare'
+    CHAINS = {'prod': PROD, 'pilot': PILOT}
+    print(f'{version}: {len(both)} sub-runs in {len(SUBSET)} runs common to both chains')
 
 
 def _subs(run):
@@ -238,5 +258,9 @@ def same():
 if __name__ == '__main__':
     ap = argparse.ArgumentParser()
     ap.add_argument('step', choices=('match', 'summary', 'bins', 'cosmic', 'valley', 'same'))
+    ap.add_argument('--version', default=None,
+                    help='compare a full re-pass (stage3_<version>, e.g. is2_v2) instead of the is2_v1 pilot')
     a = ap.parse_args()
+    if a.version:
+        _configure(a.version)
     {'match': match, 'summary': summary, 'bins': bins, 'cosmic': cosmic, 'valley': valley, 'same': same}[a.step]()
