@@ -1,8 +1,17 @@
 # Handoff
 
-## Detector model basics (cloud_basics) — updated 2026-10-09 (dylan-MS-7C84)
+## Detector model basics (cloud_basics) — updated 2026-10-10 (dylan-Yoga)
 
-**Resume (10-10, dylan-Yoga):** DONE: gas compositions as model curves (FINDINGS §24-26, report F9-F13, notes/mx17-beam-attachment).
+**Resume:** attachment settled + written up twice; next is det4 X vs amplification stripes (or det7 bench plateau).
+
+**10-10 pm (dylan-Yoga):** slide-note version published, notes/mx17-attachment-slides (24 slides, built by
+`cloud_basics/make_attachment_deck.py`, commit 8fd794a): observable + four-mechanism fingerprints first, then a beam/bench
+consistency section (shared-vs-differing setup table, bench drift scan, model-free overlay, loss rate vs field, ledger).
+Honest caveat found while building it: the bench's model-free late/early ratio moves −4..+2 % because its own no-air model
+falls 3–5 % (response tail + diffusion), so the bench O2 limit rests on the composition fits, not that ratio. The long-form
+report notes/mx17-beam-attachment is unchanged. Slide cross-refs are `§§<id>§§` tokens resolved at build.
+
+**10-10 am (dylan-Yoga):** DONE: gas compositions as model curves (FINDINGS §24-26, report F9-F13, notes/mx17-beam-attachment).
 Beam run_71 1.51 % water + 0.078 % air (163 ppm O2), all 3 fields x 2 views fit on the high-stat grid (eta smoothed in E);
 run_63 blocks 230 -> 147 ppm O2 over the night; CO2 period ~290 ppm; bench det3 6-field drift scan 0.95 % water, no air (<~10 ppm).
 One physics model, setup-specific effective shapers. X: snapping rejected, footprint tails real but resolution-neutral (§23).
