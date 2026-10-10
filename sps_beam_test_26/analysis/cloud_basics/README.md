@@ -63,7 +63,13 @@ make_comp_figures.py     # F9-F13, compositions.json  (compositions as model cur
 make_report.py --inline /tmp/mx17-beam-attachment.html   # report.html (+ self-contained copy for the notes site)
 python3 ~/PycharmProjects/dylan-cern-site/scripts/add-note.py /tmp/mx17-beam-attachment.html \
     --tags "X17, beam test, micromegas, gas, attachment" --force --deploy
+make_attachment_deck.py  # the same study as a slide note (observable explained first, beam/bench consistency);
+                         # writes <OUT>/mx17-attachment-slides.html, every chart redrawn from results/*.json
+python3 ~/PycharmProjects/dylan-cern-site/scripts/add-note.py \
+    ~/x17/cosmic_bench/cloud_basics/attachment/mx17-attachment-slides.html --slug mx17-attachment-slides --force --deploy
 ```
+Slide cross-references in the deck are written `§§<slide id>§§` and resolved at build time, so adding a
+slide renumbers them.
 
 ### X / kernel benches (lxplus condor)
 `make_rc_arms.py`, `run_bench_rc.sh` + `condor_bench_rc.sub` + `auto_bench_rc.sh` (RC refits, §17);
