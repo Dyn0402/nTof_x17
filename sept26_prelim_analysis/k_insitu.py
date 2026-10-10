@@ -21,6 +21,7 @@ directory so the production calibration is never touched.
 - Runs with no production k_arm band for an arm get no k for it (null angles).
 
     python -m sept26_prelim_analysis.k_insitu --version is2_v1 [--ref 145] [--sep 10]
+    python -m sept26_prelim_analysis.k_insitu --version is2_v2 --search-scale A=1.009,C=1.003
     python -m sept26_prelim_analysis.campaign_tracks --fullpass <reco_is2_v1> \\
         --kcal <out>/kcal_is2_v1 --out <out>/stage3_is2_v1
 """
@@ -58,7 +59,14 @@ def main() -> int:
     ap.add_argument('--version', required=True, help='re-pass tag, e.g. is2_v1')
     ap.add_argument('--ref', type=int, default=145, help='run the muon norm is gas-normalised to')
     ap.add_argument('--sep', type=int, default=10, help='pooled_norm.csv sep cut to use')
+    ap.add_argument('--search-scale', default='',
+                    help='per-arm factor on norm for a re-pass whose slope search differs from the one '
+                         'norm was measured with, e.g. A=1.009,C=1.003 for the two-sided search '
+                         '(cosmic A-C closure, HANDOFF_TRACKING §19)')
     a = ap.parse_args()
+    search = {kv.split('=')[0]: float(kv.split('=')[1]) for kv in a.search_scale.split(',') if kv}
+    if set(search) - set(INSITU_ARMS):
+        raise SystemExit(f'--search-scale arms must be in {INSITU_ARMS}')
 
     N = pd.read_csv(NORM_CSV)
     N = N[N.sep_max == a.sep]
@@ -81,13 +89,18 @@ def main() -> int:
             if b.get(arm) is None or ref.get(arm) is None or not np.isfinite(b[arm]):
                 continue
             gas = float(b[arm]) / float(ref[arm])
-            apply[arm] = norm[arm] * gas
+            apply[arm] = norm[arm] * search.get(arm, 1.0) * gas
             arms[arm] = dict(k=apply[arm], norm=norm[arm], norm_err=norm_err[arm],
                              norm_view_spread=view_spread[arm], gas_ratio=gas,
                              band_run=float(b[arm]), band_ref=float(ref[arm]))
+            if search:
+                arms[arm]['search_scale'] = search.get(arm, 1.0)
+        formula = 'k = norm(arm) x band(run)/band(ref); tan = k * tan_raw (build_tracks)'
+        if search:
+            formula = formula.replace('norm(arm) x', 'norm(arm) x search_scale(arm) x')
         doc = dict(schema='sept26_prelim/k_insitu/1', run=run, version=a.version,
                    apply=apply, arms=arms, ref_run=f'run_{a.ref}', sep_max=a.sep,
-                   formula='k = norm(arm) x band(run)/band(ref); tan = k * tan_raw (build_tracks)',
+                   formula=formula,
                    norm_source=str(NORM_CSV), built=stamp,
                    note='for tracks reconstructed with the in-situ bundles ONLY; '
                         'B and D have no in-situ bundle and get no k')
