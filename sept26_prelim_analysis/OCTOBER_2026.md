@@ -220,6 +220,48 @@ denominator, so the current numbers are lower bounds).
 
 ---
 
+### O9 — The through-going-particle background, from the beam-off runs
+
+Added 2026-10-02. **`ntof_cosmics/README.md` is the entry point.** The 41
+production-point cosmic runs (57.6 h, 5.2 M triggers, all decoded) have never
+been read, and PLAN §S4's choice of run_83/run_146 for the cosmic rate is a
+poor one (0.6 h between them). Use run_149 first. Framing: any straight
+single particle crossing the set-up is **one** background, whatever its source.
+Its handles are collinearity (calibrate the 170° `BACK_TO_BACK_DEG` on data),
+**the capsule vertex** (through-goers have no reason to point at the capsule
+beyond acceptance), and arm-to-arm time of flight (only where n_TOF was
+recording with no protons: run_149, run_103).
+
+### O10 — Stop the NNLS filling depth bins the window cannot see
+
+Added 2026-10-02 (`qsum_runaway.py`; report `<out>/qsum_runaway/report.html`).
+The q_sum > 1e6 tail is one defect. `chi2_plane`'s NNLS is unregularised,
+and the 18 × 60 ns depth grid always spans 1080 ns after t0, but the window
+ends at 1140 ns. So for any late track, the deep bins peak after the last
+sample, and their columns are 1e-6..1e-17. NNLS fills them without limit.
+The same happens when the slope walks deep bins off the strip window. **The
+late (t0 > 300 ns) class is wrong in geometry, not just charge.** Removing
+those bins moves tan by a median 0.20 and t0 in 82 % of fits, and dissolves
+the flat-track pile-up (37 % → 8 %). That class is 17 % of gated tracks and
+9.8 % of scint-coincident ones. Late tracks *below* the 1e6 threshold
+move too, so the class boundary is t0, not q_sum. Options: truncate the
+grid per fit to bins whose pulse peaks inside the window, or add a
+depth-continuity prior to the NNLS. Either way, store `q_obs`. The guarded
+fit used in the study is a probe and is worse on chi2 for the late class.
+Validate any fix against an external pointing reference (`det_a_scint`) before it
+rides the re-pass. Same edge as the `q_uend` railing item.
+
+### O11 — Same-chamber pairs: two threads, one re-pass
+
+Added 2026-10-07. The two-track separation work (O1–O3, branch
+`two-track-joint-fit`) and the single-track angle work on beam-off cosmics
+(O6/O9, branch `beam-off-cosmics`: the v substitution, the 5-strip beam seeder
+that loses head-on tracks, chamber C's kernel) touch the same seeder and the
+same bundles. **A change in either invalidates the other's calibration** (T1's
+F thresholds were set on the v = 42.6 bundles; the seeder minimum shares
+`N_CANDIDATES_BEAM` with the rescue floor). Map, interactions and the join
+order: [`SAME_CHAMBER_PAIRS.md`](SAME_CHAMBER_PAIRS.md).
+
 ## 4 · Sequencing
 
 ```
@@ -261,6 +303,8 @@ for the next one.
 | [`HANDOFF_INTRA_TWO_TRACK_RECO.md`](HANDOFF_INTRA_TWO_TRACK_RECO.md) | the problem statement, the measured symptoms, and §10's progress record |
 | [`../wft/MULTITRACK_2026-09-14.md`](../wft/MULTITRACK_2026-09-14.md) | the two shipped-but-off fixes, their validation, and how to switch them on |
 | [`../wft/MULTITRACK_2026-08-12.md`](../wft/MULTITRACK_2026-08-12.md) | the three tiers of multi-track work; tier 3 is D1 |
+| [`SAME_CHAMBER_PAIRS.md`](SAME_CHAMBER_PAIRS.md) | **O11.** Both same-chamber threads (two branches), how they constrain each other, the join order |
+| `../ntof_cosmics/HANDOFF_TRACKING_2026-10-06.md` | O6/O9 on beam-off cosmics: angle truth from the A–C line, the seeder, v, the C kernel |
 | [`PLAN.md`](PLAN.md) §9 | the D1–D15 deferred register |
 | [`STATUS.md`](STATUS.md) | the live log |
 | `intra_bench.py`, `make_intra_bench_report.py` | the bench; reports at `<out>/intra_bench/<variant>/report.html` |

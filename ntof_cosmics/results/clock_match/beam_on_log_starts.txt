@@ -1,0 +1,50 @@
+run_79 2026-07-26 18:07:19,774 INFO: Subrun started: stat090_0000  run_time=60.0min
+run_79 2026-07-26 19:07:43,304 INFO: Subrun started: stat090_0001  run_time=60.0min
+run_79 2026-07-26 20:08:07,607 INFO: Subrun started: stat090_0002  run_time=60.0min
+run_79 2026-07-26 21:08:32,865 INFO: Subrun started: stat090_0003  run_time=60.0min
+Mx17_stat090_0000_datrun_260726_18H07_000_feu-combined_hits.root
+Mx17_stat090_0001_datrun_260726_19H07_000_feu-combined_hits.root
+Mx17_stat090_0002_datrun_260726_20H08_000_feu-combined_hits.root
+Mx17_stat090_0003_datrun_260726_21H08_000_feu-combined_hits.root
+run_86 2026-07-27 15:35:55,271 INFO: Subrun started: stat090_0000  run_time=60.0min
+run_86 2026-07-27 16:36:17,514 INFO: Subrun started: stat090_0001  run_time=60.0min
+run_86 2026-07-27 17:36:57,400 INFO: Subrun started: stat090_0002  run_time=60.0min
+run_86 2026-07-27 18:37:19,806 INFO: Subrun started: stat090_0003  run_time=60.0min
+Mx17_stat090_0000_datrun_260727_15H35_000_feu-combined_hits.root
+Mx17_stat090_0001_datrun_260727_16H36_000_feu-combined_hits.root
+Mx17_stat090_0002_datrun_260727_17H36_000_feu-combined_hits.root
+Mx17_stat090_0003_datrun_260727_18H37_000_feu-combined_hits.root
+run_96 2026-07-28 13:37:18,057 INFO: Subrun started: stat090_0000  run_time=60.0min
+run_96 2026-07-28 14:37:39,878 INFO: Subrun started: stat090_0001  run_time=60.0min
+run_96 2026-07-28 15:38:07,472 INFO: Subrun started: stat090_0002  run_time=60.0min
+run_96 2026-07-28 16:38:30,531 INFO: Subrun started: stat090_0003  run_time=60.0min
+Mx17_stat090_0000_datrun_260728_13H37_000_feu-combined_hits.root
+Mx17_stat090_0001_datrun_260728_14H37_000_feu-combined_hits.root
+Mx17_stat090_0002_datrun_260728_15H38_000_feu-combined_hits.root
+Mx17_stat090_0003_datrun_260728_16H38_000_feu-combined_hits.root
+run_120 2026-08-02 21:08:45,584 INFO: Subrun started: stat090_0000  run_time=60.0min
+Mx17_stat090_0000_datrun_260802_21H08_000_feu-combined_hits.root
+run_130 2026-08-03 18:08:32,950 INFO: Subrun started: stat090_0000  run_time=60.0min
+run_130 2026-08-03 19:09:04,093 INFO: Subrun started: stat090_0001  run_time=60.0min
+run_130 2026-08-03 20:09:35,333 INFO: Subrun started: stat090_0002  run_time=60.0min
+run_130 2026-08-03 21:10:03,816 INFO: Subrun started: stat090_0003  run_time=60.0min
+Mx17_stat090_0000_datrun_260803_18H08_000_feu-combined_hits.root
+Mx17_stat090_0001_datrun_260803_19H09_000_feu-combined_hits.root
+Mx17_stat090_0002_datrun_260803_20H09_000_feu-combined_hits.root
+Mx17_stat090_0003_datrun_260803_21H10_000_feu-combined_hits.root
+run_132 2026-08-03 22:33:35,208 INFO: Subrun started: stat090_0000  run_time=60.0min
+run_132 2026-08-03 23:34:05,062 INFO: Subrun started: stat090_0001  run_time=60.0min
+run_132 2026-08-04 00:34:28,865 INFO: Subrun started: stat090_0002  run_time=60.0min
+run_132 2026-08-04 01:34:57,183 INFO: Subrun started: stat090_0003  run_time=60.0min
+Mx17_stat090_0000_datrun_260803_22H33_000_feu-combined_hits.root
+Mx17_stat090_0001_datrun_260803_23H34_000_feu-combined_hits.root
+Mx17_stat090_0002_datrun_260804_00H34_000_feu-combined_hits.root
+Mx17_stat090_0003_datrun_260804_01H34_000_feu-combined_hits.root
+run_139 2026-08-04 22:01:20,096 INFO: Subrun started: stat090_0000  run_time=60.0min
+run_139 2026-08-04 23:01:57,508 INFO: Subrun started: stat090_0001  run_time=60.0min
+run_139 2026-08-05 00:02:24,887 INFO: Subrun started: stat090_0002  run_time=60.0min
+run_139 2026-08-05 01:02:53,332 INFO: Subrun started: stat090_0003  run_time=60.0min
+Mx17_stat090_0000_datrun_260804_22H01_000_feu-combined_hits.root
+Mx17_stat090_0001_datrun_260804_23H01_000_feu-combined_hits.root
+Mx17_stat090_0002_datrun_260805_00H02_000_feu-combined_hits.root
+Mx17_stat090_0003_datrun_260805_01H02_000_feu-combined_hits.root

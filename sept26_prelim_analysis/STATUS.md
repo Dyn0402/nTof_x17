@@ -55,12 +55,107 @@ drifts. **Do not build an opening-angle spectrum on a borrowed `k` for C or D.**
 
 Last updated **2026-09-14** (**the re-pass is pushed to OCTOBER** and [`OCTOBER_2026.md`](OCTOBER_2026.md) is the standing list — two-track recovery is the gating item; two tracks in one chamber: a truth bench and two opt-in reconstruction fixes, below; and on 2026-09-10: arm-A tracks are now confirmed positionally against the scintillators, and the wall measures the angle scale; the FULL pass is complete; per-run capsule imaging says the geometry is sound and the angle scale is the fault; the campaign opening-angle spectra exist).
 
+> ## THE SCINTILLATOR STACK, ON THE IMAGING CALIBRATION -- 2026-10-06
+>
+> Moved to its own package, `ntof_scint_stack/` (output `/media/dylan/data/x17/scint_stack/`).
+> Tracks now extrapolate on the per-run imaging k (**stage-3 `tanx = k * tan_raw`** -- the
+> 2 Oct entry below compared its scale with 1/k, the wrong direction), with
+> u + L(alpha a_capsule + lambda k tan) - delta fitted on the wall's group boundaries at the
+> survey: alpha ~ 0, lambda 0.59-0.76, wall offset 1-6 mm. The wall prefers a shallower slope
+> than k (same direction as the 6 Oct cosmic review); a predictor calibration, not an angle
+> measurement. Heat maps of all twelve counters: https://dylan-neff.web.cern.ch/notes/scint-stack.html
+> New: plastic L/R gap 20-31 mm off config on B/C/D; D tracks beyond -170 mm at the wall light
+> group 2 not group 0; LIQ A/D fire ~9 % behind the R bar vs <= 1 % behind L, LIQ C 0.2 %.
+
+> ## THE SCINTILLATOR STACK, CALIBRATED FROM THE MM TRACKS -- 2026-10-02
+>
+> New: `scint_stack.py` (per-track extraction, all arms, every wall end / plastic bar / liquid,
+> prompt + same-width pre-trigger window, emulated hardware trigger), `scint_stack_ana.py`,
+> `make_scint_stack_figures.py`, `make_scint_stack_report.py`. Report:
+> `<out>/scint_stack/report.html`. 13.27 M gated tracks, 34 runs.
+>
+> - **MM trust:** ~1/3 of tracks are out of time (own t0 outside a per-arm window) and no
+>   prompt scintillator can confirm them; chamber D has 41 % of its tracks in unconfirmed cells.
+> - **Extrapolation uses raw tangents x a scale fitted to the scintillator boundaries** (not k).
+>   A: wall 0.735 / plastic 0.708 vs 1/k 0.812. Best predictor, NOT an angle calibration.
+> - **Unbiased (another arm triggered, > 10 ms) wall efficiency** A 91 / C 81 / D 77 %; the
+>   self-triggered sample reads 89-98 % because the trigger needs the wall.
+> - **Liquids:** A and D respond almost only near their +u edge (smooth gradient, not a bar
+>   shadow); C only above ~8 MeVee plastic deposits; B uniform. Answers the July srccal question.
+> - **Wall v from ln(top/bottom): ~48 mm** (upper limit); timing useless; D ends reversed.
+> - **Both ends:** not demanded today (hardware sums the ends). Cheap offline (loses <1 %, 2 %
+>   on A unbiased) but removes only 7-57 % of accidentals; use a >= +-40 ns window.
+
+> ## RECONSTRUCTION FROM COSMIC TRUTH, AND THE BEAM ANGLE SCALE -- 2026-10-07
+>
+> Same-chamber pairs have two threads on two branches (two-track separation on
+> `two-track-joint-fit`; single-track truth on `beam-off-cosmics`), sharing the
+> seeder and the bundles. Map: [`SAME_CHAMBER_PAIRS.md`](SAME_CHAMBER_PAIRS.md).
+> Full record: `../ntof_cosmics/HANDOFF_TRACKING_2026-10-06.md` §10.
+>
+> - **Seeder minimum 3 (`WFT_BEAM_MIN_STRIPS=3`, opt-in) passes on beam.** On
+>   run_145, scintillator-confirmed tracks rise +45 / 52 / 40 % (A / C / D) and
+>   no particle is lost. 5–13 % of production x/y pairings are re-paired in busy
+>   events, so validate it with `xy_pairing`.
+>   Report: `../ntof_cosmics/results/seed_beam/report.html`.
+> - **In-situ bundles close on cosmics.** A: y flat at 1.00 and x within ±3 %
+>   (`is2_A`: v 38, robust kw). C: r06 det7 kernel, a little more linear, but
+>   the tails are not from the kernel.
+> - **The beam angle scale: the capsule estimator is wrong, by the factor
+>   k_arm carries.** Binned in strip position (no dilution, no capsule), the
+>   SiPM-wall boundaries give true tan = **0.89 × production raw** for A,
+>   robust in charge. They also give an effective source distance of
+>   **≈ 330 mm, not the capsule's 234.6**, and 330/234.6 = 1.41 is the factor
+>   between the stage-3 k (1.27) and the wall. The campaign's arm-A opening
+>   angles therefore rest on a k that the scintillators contradict. This is the
+>   "33 % out" of 2026-09-10, now with the mechanism located in the capsule
+>   assumption rather than in the wall.
+> - **Still open:** beam reads 20–33 % shallower than cosmics, the same in A
+>   and C (A 0.89 vs 1.11). It is not t0, drift length, fit quality or charge.
+>   With in-situ bundles, A and C agree on beam (capsule k 1.19 each).
+> - The two-track F rescan confirms A 1200 / C 2400, but on the old v = 42.6
+>   bundles; re-derive it on new ones.
+
 > **START HERE:** [`HANDOFF_FULLPASS_2026-09-10.md`](HANDOFF_FULLPASS_2026-09-10.md)
 > — why the full pass happened, what it produced, and the run_86 test that now
 > blocks the opening angle. The entries below are the working record behind it.
 >
 > **AND NEXT:** [`OCTOBER_2026.md`](OCTOBER_2026.md) — the re-pass is deferred to
 > October, and this is what has to be true before it runs.
+
+> ## THE LARGE-q_sum TRACKS ARE AN UNREGULARISED-NNLS DEFECT, AND THE LATE ONES HAVE WRONG GEOMETRY -- 2026-10-02
+>
+> New: `qsum_runaway.py` (`census`, `refit`), `make_qsum_runaway_figures.py`,
+> `make_qsum_runaway_report.py`. Report: `<out>/qsum_runaway/report.html`.
+> This follows up the 2026-09-10 "one gated track in four has an impossible charge" entry.
+>
+> **Mechanism.** In a runaway fit, all but ~1e-7 of q_sum sits in depth bins
+> whose design-matrix column is ~0 inside the data window. NNLS fills those bins
+> without bound at no chi2 cost, and the product q·column stays finite, which is why
+> chi2 looked normal. There are two routes. **Time** (71 % of runaways): the window is
+> 20 × 60 ns (last sample at 1140 ns) and the depth grid spans 1080 ns after t0,
+> so for late tracks the deep bins peak after readout stops. **Space** (29 %): the
+> fitted slope carries the deep bins past the edge of the strip window.
+>
+> **Consequence: the test is a refit with the unobservable columns removed from each NNLS solve.**
+> It runs on 3 181 plane fits, run_145 tag 000, all four arms.
+>
+> | class | med abs dtan | abs dtan > 0.05 | t0 moved | flat prod → guarded |
+> |---|---:|---:|---:|---:|
+> | normal, t0 ≤ 300 | 0.000 | 2 % | 5 % | 12.5 → 12.6 % |
+> | normal, t0 > 300 | 0.040 | 47 % | 64 % | 4 → 4 % |
+> | runaway, space | 0.003 | 33 % | 34 % | 0 → 1 % |
+> | runaway, time | **0.201** | **65 %** | **82 %** | **37 → 8 %** |
+>
+> **Every late track's geometry depends on bins the data cannot constrain,
+> whether or not q_sum crossed 1e6.** That is 17.0 % of gated tracks and 9.8 % of
+> scint-coincident ones (campaign census). The rate is flat across the 27 July access.
+> The early class keeps its geometry in the median, but has a 33 % tail beyond 0.05 in tan.
+> **Caveats:** the guarded fit is a probe, not the answer, and is worse on chi2 for
+> the late class. No external reference was used. The space class includes
+> coherent-ringing windows (the report's example is one) in an unmeasured fraction.
+> Now: treat q_sum and q_total as unusable, and flag t0 > 300 tracks before any angle or
+> pointing work. October: `OCTOBER_2026.md` O10.
 
 > ## THE RE-PASS IS PUSHED TO OCTOBER, AND TWO-TRACK RECOVERY IS WHAT GATES IT -- 2026-09-14
 >

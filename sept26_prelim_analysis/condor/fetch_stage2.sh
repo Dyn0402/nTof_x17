@@ -18,7 +18,13 @@
 # merge sub-runs, which is worse.
 #
 # Idempotent: re-unpacking a tarball overwrites with identical content.
+#
+# PRUNE=1 deletes each tarball once it has unpacked cleanly and records its
+# name in $LOCALPKG/unpacked.list, which later pulls exclude; EOS keeps the
+# master copy. For a disk that cannot hold the tarballs AND the unpacked tree
+# (is2_v2: 13 GB packed, ~15 GB unpacked, ~15 GB more for stage 3).
 set -u
+PRUNE=${PRUNE:-0}
 # EOS, not AFS: the stage-2 jobs xrdcp their own tarballs there, because the
 # access point cannot write to EOS and AFS home is only 10 GB.
 # See EOS_WRITE_TEST.md.
@@ -33,17 +39,20 @@ OUT=${OUT:-$(x17_path out)/fullpass}
 [ -n "$LOCALPKG" ] && [ -n "$OUT" ] || exit 1
 SSH="ssh -o BatchMode=yes -o ConnectTimeout=25"
 mkdir -p "$LOCALPKG/tarballs" "$OUT"
+DONE_LIST="$LOCALPKG/unpacked.list"
+touch "$DONE_LIST"
 
 if [ "${1:-}" = "--status" ]; then
   echo "tarballs at CERN : $($SSH lxplus "ls ${REMOTE#*:}/run_*.tar.gz 2>/dev/null | wc -l")"
   echo "tarballs pulled  : $(ls "$LOCALPKG/tarballs"/run_*.tar.gz 2>/dev/null | wc -l)"
+  echo "pruned (PRUNE=1) : $(wc -l < "$DONE_LIST")"
   echo "sub-runs unpacked: $(find "$OUT" -mindepth 2 -maxdepth 2 -type d 2>/dev/null | wc -l)"
   exit 0
 fi
 
 echo "=== pulling $(date -Is)"
 rsync -a --info=stats1 -e "$SSH" \
-      --include='run_*.tar.gz' --exclude='*' \
+      --exclude-from="$DONE_LIST" --include='run_*.tar.gz' --exclude='*' \
       "$REMOTE/" "$LOCALPKG/tarballs/" || { echo "!! rsync failed"; exit 1; }
 
 echo "=== unpacking"
@@ -63,6 +72,7 @@ for t in "$LOCALPKG/tarballs"/run_*.tar.gz; do
   # strip the leading out/ so mx17_<arm>/ lands directly under the sub-run
   tar xzf "$t" -C "$d" --strip-components=1 || { echo "!! bad tarball: $t"; bad=$((bad+1)); continue; }
   n=$((n+1))
+  if [ "$PRUNE" = 1 ]; then basename "$t" >> "$DONE_LIST"; rm -f "$t"; fi
 done
 echo "unpacked $n tarball(s), $bad problem(s) -> $OUT"
 echo "sub-runs present: $(find "$OUT" -mindepth 2 -maxdepth 2 -type d 2>/dev/null | wc -l)"

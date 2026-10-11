@@ -116,7 +116,7 @@ def _condition(run: str) -> str:
         return 'unknown'
     return 'pre_access_27jul' if n <= LAST_PRE_ACCESS_RUN else 'post_access_27jul'
 
-def _k_for(run: str, k_from: str | None):
+def _k_for(run: str, k_from: str | None, kcal: str | None = None):
     """The angle scale to use for `run`, and where it came from.
 
     `k_from` pins every run to one run's certified k. That is the 2026-09-09
@@ -129,9 +129,12 @@ def _k_for(run: str, k_from: str | None):
 
     Returns (k dict, source string). The source is stamped on every row so a
     borrowed k can never be read back as a per-run measurement.
+
+    `kcal` reads the JSONs from another calibration directory (a versioned
+    re-pass: `k_insitu.py` writes <out>/kcal_<version>/).
     """
     src_run = k_from or run
-    kf = paths.out('kcal') / f'k_arm_{src_run}.json'
+    kf = (Path(kcal) if kcal else paths.out('kcal')) / f'k_arm_{src_run}.json'
     if not kf.exists():
         return {}, 'none'
     cal = json.loads(kf.read_text())
@@ -141,17 +144,19 @@ def _k_for(run: str, k_from: str | None):
     return k, ('self' if src_run == run else src_run)
 
 
-def _one(run: str, sub: str, reco: str, out_dir: str, k_from=None):
+def _one(run: str, sub: str, reco: str, out_dir: str, k_from=None, kcal=None,
+         tan_max_true=None):
     """One sub-run, in its own process. Returns (run, sub, n, err)."""
     from sept26_prelim_analysis import build_tracks as BT
     try:
         s1 = paths.out('stage1') / f'candidates_{run}_{sub}.parquet'
         al = paths.out('stage2') / f'allowlist_{run}_{sub}.parquet'
-        k, ksrc = _k_for(run, k_from)
+        k, ksrc = _k_for(run, k_from, kcal)
         tracks, meta = BT.build(run, sub, Path(reco),
                                 stage1=s1 if s1.exists() else None,
                                 allow=al if al.exists() else None,
-                                out_dir=Path(out_dir), k_arm=k)
+                                out_dir=Path(out_dir), k_arm=k,
+                                tan_max_true=tan_max_true)
         return run, sub, int(meta['n_tracks']), int(meta['n_gated']), ksrc, None
     except Exception:                                          # noqa: BLE001
         return run, sub, 0, 0, 'none', traceback.format_exc(limit=3)
@@ -166,6 +171,18 @@ def main() -> int:
                     help='apply this run\'s certified k to EVERY run (e.g. '
                          'run_145). Stamped in k_source so a borrowed scale is '
                          'never mistaken for a per-run measurement.')
+    ap.add_argument('--kcal', default=None,
+                    help='directory of k_arm_<run>.json to apply instead of '
+                         '<out>/kcal (a versioned re-pass, e.g. <out>/kcal_is2_v1 '
+                         'from k_insitu.py)')
+    ap.add_argument('--tan-max-true', type=float, default=None,
+                    help='stage-3 angular acceptance in TRUE tan (build_tracks '
+                         '--tan-max-true): `gated` gains |tanx|,|tany| below it, '
+                         'the reco gate stays as `gated_reco`. For a re-pass '
+                         'whose stage 2 ran with a wide WFT_TAN_MAX.')
+    ap.add_argument('--arms', default=None,
+                    help='comma list: the arms this pass reconstructed. Others are '
+                         'not reported as incomplete (a re-pass of A,C only).')
     ap.add_argument('--rebuild', action='store_true',
                     help='rebuild sub-runs whose track table is already newer '
                          'than its inputs')
@@ -186,6 +203,8 @@ def main() -> int:
             if not any((s / f'mx17_{arm}').is_dir() for arm in ARMS):
                 continue
             bad = incomplete_arms(r.name, s.name, s)
+            if a.arms:
+                bad = {k: v for k, v in bad.items() if k in a.arms.split(',')}
             if bad and not a.allow_partial:
                 partial.append((r.name, s.name, bad))
                 continue
@@ -218,7 +237,8 @@ def main() -> int:
         print(f'building {len(work)} sub-run(s) on {a.jobs} process(es)')
         ok = fail = nocal = 0
         with ProcessPoolExecutor(max_workers=a.jobs) as ex:
-            futs = [ex.submit(_one, run, sub, reco, str(out), a.k_from)
+            futs = [ex.submit(_one, run, sub, reco, str(out), a.k_from, a.kcal,
+                              a.tan_max_true)
                     for run, sub, reco in work]
             for f in as_completed(futs):
                 run, sub, n, ng, ksrc, err = f.result()
@@ -243,13 +263,15 @@ def main() -> int:
     df = pd.concat(frames, ignore_index=True)
     if 'run' in df.columns:
         df['condition'] = df['run'].map(_condition).astype('category')
-        df['k_source'] = (a.k_from if a.k_from else 'self')
+        df['k_source'] = (a.k_from if a.k_from else
+                          (f'self:{Path(a.kcal).name}' if a.kcal else 'self'))
         df['k_source'] = df['k_source'].astype('category')
     dest = out / 'tracks_campaign.parquet'
     df.to_parquet(dest, index=False, compression='snappy')
 
     meta = dict(n_subruns=len(parts), n_tracks=int(len(df)),
                 n_gated=int(df.gated.sum()) if 'gated' in df else None,
+                stage3_tan_max_true=a.tan_max_true,
                 n_calibrated=int(df.angle_calibrated.sum())
                 if 'angle_calibrated' in df else None,
                 runs=sorted(df.run.unique().tolist()) if 'run' in df else [],
