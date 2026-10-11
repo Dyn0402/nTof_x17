@@ -75,4 +75,5 @@ def main():
     json.dump(out, open(f'{HERE}/results/decompose_tmax{int(a.tmax)}.json', 'w'), indent=1)
 
 
-main()
+if __name__ == '__main__':
+    main()

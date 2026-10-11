@@ -1,8 +1,16 @@
 # Handoff
 
-## Detector model basics (cloud_basics) — updated 2026-10-10 (dylan-Yoga)
+## Detector model basics (cloud_basics) — updated 2026-10-11 (dylan-MS-7C84)
 
-**Resume:** attachment settled + written up twice; next is det4 X vs amplification stripes (or det7 bench plateau).
+**Resume:** attachment ACCEPTED by Dylan (10-11). SPS→bench transfer answered (FINDINGS §27, notes/mx17-sps-to-bench):
+the beam O2 does not spoil the SPS readout constants. Next: bench det4 arm with D_rc pinned to the beam 2.2e-4 (paired
+compare_bench vs rcm); settle the bench D_T (v(E) says ~1 % water/270, widths look dry/480); then freeze the physical kernel.
+Older queue: det4 X vs amplification stripes, det7 bench plateau.
+
+**10-11 (dylan-MS-7C84):** `attach_transfer.py` injection toy (SPS measurement code on known events, run_71 loss on/off,
+paired): footprint/D_rc/c2-c1 shift ≤ 7 %, decompose b1 −27 %. Toy realistic at 243 V/cm only. `rc_drift.py` (RC fit +
+Magboltz drift diffusion): beam det4 Y D_rc 2.08/2.08/1.94e-4 over 3 fields → 2.2e-4 ±10 % loss-corrected. Bench D_rc moves
+by a third with the assumed D_T (σ0 with it): degenerate; det4 bench/beam 1.5–2.7× unexplained. `width_tan_split.py` inconclusive.
 
 **10-10 pm (dylan-Yoga):** slide-note version published, notes/mx17-attachment-slides (24 slides, built by
 `cloud_basics/make_attachment_deck.py`, commit 8fd794a): observable + four-mechanism fingerprints first, then a beam/bench

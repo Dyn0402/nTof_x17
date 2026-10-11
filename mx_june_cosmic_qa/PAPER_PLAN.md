@@ -41,7 +41,7 @@ Section and item states: `ready` (analysis done, write it), `requote`
 | 2 | Setups: cosmic bench (M3) and SPS H4 (uRWELL telescope) | ready | MICROTPC_RUNBOOK.md, sps_beam_test_26/analysis/README.md |
 | 3 | Operation: HV, gain, sparks | ready | topic 6: optima 480/480/440 V, sparks non-propagating, no post-spark dead time (PLAN_39), spark waveforms |
 | 4 | Efficiency, maps, edge turn-on | partial | efficiency stands (hits detection); the −3° edge tilt is a hits angle → D4 |
-| 5 | Gas: v(E), attachment, gap topography | partial | 10-10 cloud_basics §16–25: compositions from waveforms, one physics model, no free loss rate. Bench det3 drift scan (6 fields): 0.95 % water, no air (≲ 10 ppm O2). Beam run_71: 1.51 % water + 163 ppm O2 (attachment, measured in X and Y); run_63 230→147 ppm overnight. Report: notes/mx17-beam-attachment. r06 (D2) still to tie in |
+| 5 | Gas: v(E), attachment, gap topography | partial | 10-10 cloud_basics §16–25: compositions from waveforms, one physics model, no free loss rate. Bench det3 drift scan (6 fields): 0.95 % water, no air (≲ 10 ppm O2). Beam run_71: 1.51 % water + 163 ppm O2 (attachment, measured in X and Y); run_63 230→147 ppm overnight. Report: notes/mx17-beam-attachment. 10-11 §27: the beam O2 does not spoil the SPS readout constants (footprint, D_rc, c2/c1 ≤ 7 % in an injection test; notes/mx17-sps-to-bench). r06 (D2) still to tie in |
 | 6 | Timing | open | PLAN_42's 33 ns is from hit times; waveform port (D3) |
 | 7 | Tracking performance on cosmics (with II's reco) | requote | FLEET_DIGEST r06: σ_θ 1.15–2.51°, within-5 mm 93/92/42/75/57 %; needs C1 |
 | 8 | Intrinsic resolution: det4 at SPS, and the bench decomposed | ready | spatial_resolution: 176 ± 10 µm = 0.30 × pitch; bench = M3 ⊕ scattering (arithmetic, D6 optional) |
@@ -51,7 +51,7 @@ Section and item states: `ready` (analysis done, write it), `requote`
 
 | § | section | state | backed by |
 |---|---|---|---|
-| 1 | Signal formation on resistive strips: the sharing kernel, measured head-on | ready | SPS sharing_kernel + angled_kernel: c2/c1 0.42–0.47, ±1 delay ~49 ns, gain-invariant 1–3 % (run_66); c2 < c1 is required. **10-09: the 0.45 is Y's; X ±2/±1 ≈ 0.15–0.20 on all five chambers vs Y 0.36–0.54 (model-free, plane_ratio)** |
+| 1 | Signal formation on resistive strips: the sharing kernel, measured head-on | ready | SPS sharing_kernel + angled_kernel: c2/c1 0.42–0.47, ±1 delay ~49 ns, gain-invariant 1–3 % (run_66); c2 < c1 is required. **10-09: the 0.45 is Y's; X ±2/±1 ≈ 0.15–0.20 on all five chambers vs Y 0.36–0.54 (model-free, plane_ratio)**. 10-11: attachment-proof (cross-relation cancels the arrival current; toy c2/c1 0 %); det4 D_rc 2.2e-4 ±10 % on the beam; the bench D_rc is degenerate with drift diffusion (FINDINGS §27) |
 | 2 | Why hit times fail: the estimator-independent ladder compression | partial | WAVEFORM_FIRST_THREADING §3 (det3): every estimator compresses 20–30 %; fleet extension R1 |
 | 3 | The forward model and its calibration | ready | WAVEFORM_FIRST_THREADING §4, §9, §15; wft/ package; calibration protocol R9 |
 | 4 | The physics floor: diffusion, not electronics | partial | toy closure §12: 0.02° electronics, ~1° from 0.3 mm centroid jitter; re-run on the production model R6 |

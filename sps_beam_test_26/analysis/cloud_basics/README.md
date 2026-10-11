@@ -1,6 +1,6 @@
 # cloud_basics — detector-model basics: footprint, diffusion, resistive spread, gas
 
-The narrative and every number live in **`FINDINGS.md`** (§1–26, dated, with retractions marked).
+The narrative and every number live in **`FINDINGS.md`** (§1–27, dated, with retractions marked).
 The report is generated: `~/x17/cosmic_bench/cloud_basics/attachment/report.html`, published as
 <https://dylan-neff.web.cern.ch/notes/mx17-beam-attachment.html>.
 
@@ -15,6 +15,11 @@ The report is generated: `~/x17/cosmic_bench/cloud_basics/attachment/report.html
   - CO2 period: ~290 ppm.
   - Bench det3, six fields: 0.95 % water, no air (≲ 10 ppm O2).
   - Water and O2 are not in room-air proportion.
+- **SPS constants on the bench** (§27, 2026-10-11; notes/mx17-sps-to-bench): the beam O2 does not spoil
+  them. Injection test of the SPS measurement code with the run_71 loss on/off: footprint, D_rc, c2/c1
+  move ≤ 7 %; only the decompose b1/τ split moves (−27 %). det4 D_rc ≈ 2.2e-4 ±10 % (beam, loss- and
+  diffusion-corrected). On the bench D_rc and σ0 are degenerate with the assumed drift diffusion, and
+  det4 bench sits 1.5–2.7× its beam D_rc: open.
 - **Open questions closed:** the faint-tercile excess was a missing-sample selection artefact (§19); the
   0.7 µs ripple is a trigger-locked pickup (§20).
 - **X model** (§17, §23): refits, resistive-strip snapping and footprint tails all fail to close X;
@@ -70,6 +75,14 @@ python3 ~/PycharmProjects/dylan-cern-site/scripts/add-note.py \
 ```
 Slide cross-references in the deck are written `§§<slide id>§§` and resolved at build time, so adding a
 slide renumbers them.
+
+### SPS → bench transfer (§27)
+| script | what |
+|---|---|
+| `attach_transfer.py --nev 3000 --seeds 4 --workers 14` | injection toy → `results/attach_transfer.json` (~10 min on 14 cores) |
+| `rc_drift.py` | RC fit with drift diffusion written in (beam + bench, D_T arms) → `results/rc_drift.json` (~40 min, single core) |
+| `width_tan_split.py` | bench width growth split by reference \|tan\| → `results/width_tan_split.json` (inconclusive) |
+| `make_transfer_deck.py` | slide note `~/x17/cosmic_bench/cloud_basics/transfer/mx17-sps-to-bench.html`; publish with `add-note.py … --slug mx17-sps-to-bench --force --deploy` |
 
 ### X / kernel benches (lxplus condor)
 `make_rc_arms.py`, `run_bench_rc.sh` + `condor_bench_rc.sub` + `auto_bench_rc.sh` (RC refits, §17);

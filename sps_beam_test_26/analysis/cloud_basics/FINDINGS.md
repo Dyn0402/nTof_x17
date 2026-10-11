@@ -611,4 +611,70 @@ Shared per dataset: composition, geometry, shaper. Free per stack: amplitude and
 `~/x17/cosmic_bench/cloud_basics/attachment/report.html`, published as
 notes/mx17-beam-attachment.
 
+## 27 · Does the beam attachment contaminate the SPS model constants? (2026-10-11)
+
+Dylan accepted §16–26 (beam gas: O2 attachment, ~150–230 ppm, per run; bench gas: moisture only) and
+asked whether the attachment spoils the det4 model constants measured at SPS, so that they no longer
+apply on the (attachment-free) cosmic bench. Slide note: notes/mx17-sps-to-bench (`make_transfer_deck.py`).
+
+**Answer: no, for every constant the bench model takes; yes, for the prompt/delayed split nobody uses
+any more.**
+
+- **Why, in principle.** Head-on, every strip sees the same drive C(t) (arrival current x electronics)
+  through its own lateral transfer n_d. Attachment only changes C. The cross-relation
+  n_0 (x) W_d = n_d (x) W_0 (sharing_kernel) and the RC fit W_o = S (x) dF_o/ds with S the measured
+  strip sum (§3) both cancel C. The leading-edge widths are taken before any loss acts. The exception
+  is a depth-dependent footprint (drift diffusion), which lets the changed depth weights back in.
+- **Injection test** (`attach_transfer.py`, `results/attach_transfer.json`): the SPS measurement code
+  itself (rc_diffusion stack + fit, neighbour_vs_time, decompose, fit_kernel cascade/delay) on toy
+  head-on events with known σ0 (X 0.45, Y 0.37 mm) and D_rc (2.1e-4), beam gas from Magboltz at the
+  run_71 composition, attachment on/off with common random numbers, 4 x 3000 events per case. Toy vs
+  run_71 at 243 V/cm: X σ0 0.52 vs 0.54, Y D_rc 2.4 vs 2.1e-4, delay c2/c1 0.43 vs 0.47, cascade c
+  0.62 vs 0.66, b1 0.27 vs 0.22. Shifts at the run_71 level (η·v 2.2e-4/ns) / at 2x:
+
+| constant | shift, run_71 O2 | 2x |
+|---|---|---|
+| X leading-edge width | −2 ± 2 % | −4 % |
+| X σ0 (RC fit) | +2 % | +4 % |
+| Y leading-edge width | −4 % | −10 % |
+| Y σ0 (RC fit) | +7 % | +11 % |
+| Y D_rc | −6 % | −12 % |
+| Y c2/c1 (delay form) | 0 % | +1 % |
+| Y cascade c | −6 % | −10 % |
+| Y delayed fraction b1 (decompose) | −27 % | −51 % |
+| Y delay τ (decompose) | +11 ± 5 % | +36 % |
+
+  (4 seeds, paired; errors ≤ 1 % unless given.)
+  Halving D_T still leaves D_rc at −4 %, so drift diffusion is not the only path; Y's RC spread carrying late
+  charge outside the ±4-strip source sum is the other. **The toy is not realistic below 243 V/cm** (its
+  widths grow with falling field, run_71's shrink); the per-field gain match made no difference (the
+  9-strip peak is set by the largest cluster, ~1000 ADC at every field in both). The shifts are quoted
+  at 243 V/cm; the loss per unit time is the same at all three fields.
+- **Beam D_rc with drift diffusion in the fit** (`rc_drift.py`, Magboltz D_T and v at the run_71
+  composition, arrival origin t_a fitted): det4 Y D_rc 2.08 / 2.08 / 1.94e-4 at 243 / 150 / 92 V/cm
+  (2.23 / 2.26 / 2.11 without the D_T term); σ0 Y 0.39–0.43, X 0.52–0.53 mm. t_a runs to its bound: the
+  data want less depth growth than Magboltz. Loss-corrected (÷ 0.94): **det4 D_rc ≈ 2.2e-4 mm²/ns ±10 %**.
+- **Bench, same fit, three D_T arms** (none / 275 ≈ 1 % water from v(E) / 480 dry), Y D_rc [1e-4]:
+  det2 6.9 / 6.0 / 4.4, det3 5.3 / 4.4 / 3.6, det4 5.5 / 4.6 / 3.0, det6 6.4 / 5.3 / 3.5, det7 9.0 /
+  8.0 / 6.2, with σ0_y moving 0.07–0.92 mm across the arms. **On the bench D_rc and σ0 are degenerate
+  with the drift diffusion assumed**; the beam (2–3x less drift spread) is where they are measured
+  cleanly. X rms prefers the dry arm on det2/3/4/6/7, Y is flat between wet and dry: the bench D_T
+  question (v(E) says ~1 % water, widths look dry) is open and now matters for the bench model.
+  `width_tan_split.py` (model-free width growth split by reference |tan|, to test an inclination leak)
+  was too noisy to decide (det2/det3 ~240 µm/√cm, det4/det6 negative).
+- **det4 bench vs beam D_rc: 1.5–2.7x**, under every D_T assumption. Not attachment (none on the bench;
+  the correction goes the other way) and not drift diffusion within its range (toy bench-gas leak
+  +3…+17 %). Open: resistive-layer conditions (temperature, humidity, five weeks apart), the bench Y
+  selection, or a term both fits lack.
+
+**What the bench model takes from SPS:** the structure (Y continuous RC spread, X none, no discrete
+copies, c2 < c1 automatic; the prompt footprint is readout, one σ0 per view per chamber; X wider than Y
+by board geometry; sharing shape gain-invariant 1–3 %), and det4's numbers (D_rc ≈ 2.2e-4 ±10 %,
+σ0 leading edge X 0.42–0.51 / Y 0.36–0.38 mm). **Not:** the H4 gas (v, D_T, η), the beam bundles (old
+copy kernel, H4 v/Dp), the decompose b1/τ, or the 176 µm resolution as a bench number (a beam-condition
+result; the loss removes ~18 % of the charge at 243 V/cm, so ≲ 10 % pessimistic if statistics-limited).
+
+Next: a bench det4 arm with D_rc pinned at the beam value (paired compare_bench vs the bench-fitted
+rcm); settle the bench D_T; then freeze the physical kernel.
+
 _(sections appended as results land)_
