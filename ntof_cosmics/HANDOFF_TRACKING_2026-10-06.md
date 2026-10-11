@@ -1596,3 +1596,14 @@ at the chamber edges. Geometrically a capsule track cannot exceed |tan x| ≈ 0.
 ~150 mm at D 234.6); y could reach ~0.75. So 0.6–0.8 is background (non-capsule particles, which the wall still
 confirms) or badly mis-measured, not signal acceptance. Even 0.5–0.6 is mostly non-pointing in data (sim reco at
 0.5–0.6 misses by 24 mm, data 64–72).
+
+**The wall over the whole campaign at 0.8** (`pilot_compare … --version is2_v2 --tag _acc08`, results in
+`results/fullpass_is2_v2_acc08/`): 0.6 → 0.8 adds gated A +15.5 %, C +18.6 % but wall-confirmed only A +5.3 %
+(1,542,705 → 1,623,837), C +7.6 % (1,257,534 → 1,352,526). Net confirmation per bin at 0.6–0.7 / 0.7–0.8:
+A x 0.21 / 0.16, y 0.25 / 0.19; C x 0.28 / 0.21, y 0.29 / 0.23 (core 0.1–0.4: 0.60–0.75). Real particles on the
+wall, not from the capsule (focus above).
+
+**Decision (Dylan asked for the widest scan):** 0.8 true is the widest the current stage 2 allows (C run_88 reach
+0.843). It is measured and it adds background, not acceptance, so **no wider stage-2 pass**. `stage3_is2_v2` now stores
+the 0.8 superset as `gated`; the analysis cut stays 0.6 (`gated_reco` & both |tan| < 0.6), or tighter: data at
+0.5–0.6 already points poorly. The 0.6 tables in `results/fullpass_is2_v2/` remain the headline comparison.
