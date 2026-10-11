@@ -1557,3 +1557,42 @@ campaign parquet had 269 sub-runs. On 10-11 the 101 missing tarballs were pulled
 
 **Still open:** which k is right on A (the wall still prefers in-situ only mildly); a wider `--tan-max-true` (0.8?) on
 this pass; D in-situ bundle; B's HV in run_149.
+
+## 21 · The capsule focus, and the steep tracks (2026-10-11, evening)
+
+Dylan asked whether better calibration tightens the capsule image. The standard image (`source_imaging`,
+`campaign_imaging`) cannot test k: the band's zero crossing is scale-free by design. The k-sensitive version is the
+**focus scan**: rescale every gated track's x tan by s and take the median miss at the beam axis.
+`ntof_cosmics/capsule_focus.py` (any stage-3 chain, s 0.6–1.4 in 0.025, per |tan| bin, shuffled-angle null) →
+`results/capsule_focus/focus_<label>.csv`. Post-access runs only, own |true tan| < 0.6 (or 0.8).
+
+**The estimator, calibrated on Geant4** (g4_*_is2_full, the same miss in the planar form): with the TRUE sim angles
+the focus is sharpest at s 0.975–1.025 in |tan| 0.1–0.4 (0.95–0.975 pooled); with the sim reco angles 1.00–1.025.
+The floor is a median miss of 15–16 mm (source extent + scattering). So, unlike the band (§13, biased 1.005 → 1.09
+by source width), the focus is close to unbiased in the sim: ±~3 %.
+
+**Data, sharpest s per |tan| bin (0.1–0.2 / 0.2–0.3 / 0.3–0.4 / 0.4–0.5):**
+
+| chain | A | C |
+|---|---|---|
+| production | 0.925 / 0.925 / 0.900 / 0.850 | 1.050 / 0.975 / 1.000 / 0.875 |
+| is2_v2 | 1.050 / 1.050 / 1.075 / 1.075 | 1.075 / 1.125 / 1.075 / 1.050 |
+
+- **is2_v2's image is tighter than production's in every core bin, at its own k**: median miss A 16.8 / 17.8 /
+  20.8 mm vs 18.3 / 19.8 / 23.8; C 18.3 / 19.3 / 21.3 / 25.8 vs 22.3 / 21.3 / 26.3 / 45.8; f10 up 7–30 %. It is
+  1–3 mm off the sim floor at low angle. Refocusing to its best s gains only 0.5–2 mm more.
+- **But the capsule wants is2_v2's angles ~5–7 % larger on A and ~5–12 % larger on C.** Production's own focus says
+  production is ~7.5 % steep on A and right on C; with the same-track ratios (A 0.86, C 0.90 x) that predicts is2_v2
+  at A 1.08 / C 1.11, as measured. So the capsule puts the true A scale at ~0.93 × production, between production
+  and in-situ (0.86). This is the §13 band residual (A +3.6 %, C +10 %) again, now from an estimator the sim says
+  is not source-width-biased. In-beam muons say the opposite sign (is2 tans 1–4 % too large). Unresolved tension of
+  ~6–10 %; it is the k decision on A.
+
+**Steep tracks carry no capsule pointing.** is2_v2 rebuilt at `--tan-max-true 0.8` (in place, lossless: `gated`
+at 0.6 = `gated_reco` & both |tan| < 0.6; 6,320,929 gated, +17 %). Median x miss vs the shuffled null, A / C:
+0.4–0.5 31.8 / 28.3 (null 103 / 101); 0.5–0.6 72.3 / 64.3 (102 / 102); **0.6–0.7 111 / 109 and 0.7–0.8 130 / 144 —
+worse than the null (93–99)**. Split by view: tracks steep only in y (x fine) still miss by 85–89 mm (core 26.5) and sit
+at the chamber edges. Geometrically a capsule track cannot exceed |tan x| ≈ 0.64 on these chambers (active edge
+~150 mm at D 234.6); y could reach ~0.75. So 0.6–0.8 is background (non-capsule particles, which the wall still
+confirms) or badly mis-measured, not signal acceptance. Even 0.5–0.6 is mostly non-pointing in data (sim reco at
+0.5–0.6 misses by 24 mm, data 64–72).

@@ -41,7 +41,7 @@ LATE_NS = 300
 CHAINS = {'prod': PROD, 'pilot': PILOT}
 
 
-def _configure(version):
+def _configure(version, tag=''):
     """Point the module at a full re-pass instead of the is2_v1 pilot.  The
     re-pass keeps the 'pilot' chain key; its sub-runs are every one with a
     track table in BOTH stage3_<version> and production, so an incomplete
@@ -54,8 +54,8 @@ def _configure(version):
     for rs in sorted(both):
         run, sub = rs.split('_stat090_')
         SUBSET.setdefault(run, []).append(f'stat090_{sub}')
-    OUT = Path(__file__).resolve().parent / 'results' / f'fullpass_{version}'
-    CACHE = ROOT / f'fullpass_{version}_compare'
+    OUT = Path(__file__).resolve().parent / 'results' / f'fullpass_{version}{tag}'
+    CACHE = ROOT / f'fullpass_{version}{tag}_compare'
     CHAINS = {'prod': PROD, 'pilot': PILOT}
     print(f'{version}: {len(both)} sub-runs in {len(SUBSET)} runs common to both chains')
 
@@ -260,7 +260,9 @@ if __name__ == '__main__':
     ap.add_argument('step', choices=('match', 'summary', 'bins', 'cosmic', 'valley', 'same'))
     ap.add_argument('--version', default=None,
                     help='compare a full re-pass (stage3_<version>, e.g. is2_v2) instead of the is2_v1 pilot')
+    ap.add_argument('--tag', default='',
+                    help='suffix for the output and cache dirs, e.g. _acc08 for a stage 3 rebuilt wider')
     a = ap.parse_args()
     if a.version:
-        _configure(a.version)
+        _configure(a.version, a.tag)
     {'match': match, 'summary': summary, 'bins': bins, 'cosmic': cosmic, 'valley': valley, 'same': same}[a.step]()
