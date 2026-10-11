@@ -1530,3 +1530,30 @@ C 6,300–8,500 vs 375–400). `yield_gate.py summary`'s report step fails witho
 Both held jobs (procs 1748/1749) are run_104 `stat090_0016` A/C, and they fail on empty decoded ROOT input (no `nt` tree
 in `…260730_11H29_000_03.root`/`_07.root`). That is not a reco failure, so `condor_rm` them after checking that
 production lacks this sub-run too. Resume from HANDOFF.md.
+
+## 20 · is2_v2 full pass against production (2026-10-11)
+
+**Report:** `ntof_cosmics/results/fullpass_is2_v2/report.html` (`make_fullpass_report.py --version is2_v2`; tables from
+`pilot_compare.py {match,summary,bins,same} --version is2_v2`, cache `sept26_prelim/fullpass_is2_v2_compare`). `cosmic`
+and `valley` do not depend on the pass and stay in the pilot report.
+
+**Pass complete.** Condor 4410513 finished: 6,464 of 6,466 tarballs on EOS (3 jobs retried after an EOS write error,
+all fine). The two missing are run_104 `stat090_0016` A/C, empty decoded input; production has no A/C there either
+(only B), so nothing is lost.
+
+**Gotcha, now fixed:** the 10-10 stage 3 ran while condor was still finishing. `campaign_tracks` correctly SKIPPED 23
+incomplete sub-runs (run_156/158/162 tails, plus run_79/0007, run_86/0007, run_96/0001 = the EOS retries), and the
+campaign parquet had 269 sub-runs. On 10-11 the 101 missing tarballs were pulled and stage 3 re-run (idempotent):
+**292 sub-runs, 15,696,402 segments, 5,410,792 gated, 0 failed.** Partial log kept as
+`stage3_is2_v2_partial_20261010.log`. `kcal_is2_v2` was unaffected: it is built from production bands, not from the pass.
+
+**Result (|true tan| < 0.6 in both, run/arms both chains calibrate):**
+- Wall-confirmed is2_v2/prod: **A ×1.49 (1.43–1.51 per run), C ×1.82 (1.73–1.95)**; no run/arm below 1.
+- Gated in acceptance ×1.21 (A), ×1.46 (C); confirmed per gated A 0.410 → 0.506, C 0.438 → 0.545.
+- Per |true tan| bin (own angle), is2_v2 is above production in **all 24** bin/views up to 0.6. The pilot's A deficit
+  at 0.3–0.6 is gone with the two-sided search.
+- Same track: scale A 0.86 x / 0.87 y, C 0.90 / 1.01 (the k difference, unchanged from the pilot); where only one
+  direction confirms, is2_v2 wins A 12,458 : 6,114, C 7,832 : 3,227.
+
+**Still open:** which k is right on A (the wall still prefers in-situ only mildly); a wider `--tan-max-true` (0.8?) on
+this pass; D in-situ bundle; B's HV in run_149.
