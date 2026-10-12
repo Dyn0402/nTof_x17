@@ -10,12 +10,12 @@ import json, os, sys
 import numpy as np
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
-from bench_attach import BUNDLES, BUNDLE
+from bench_attach import BUNDLE, bundle_dir
 OUT = sys.argv[1] if len(sys.argv) > 1 else '/home/dylan/x17/cosmic_bench/cloud_basics/arms'
 U = json.load(open(f'{HERE}/results/bench_uniform.json'))
 P = json.load(open(f'{HERE}/results/bench_pinned.json'))
-for det, b in BUNDLE.items():
-    base = json.load(open(f'{BUNDLES}/{b}/bundle.json'))['hyper']
+for det in BUNDLE:
+    base = json.load(open(f'{bundle_dir(det)}/bundle.json'))['hyper']
     base = {k: float(v) for k, v in base.items() if k != 'kTauY'}
     f = U[det]['Dd_free']
     for tag, Dd in (('rcm', f['Dd']), ('rcmd', P[det]['dry']['Dd'])):

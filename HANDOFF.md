@@ -1,11 +1,18 @@
 # Handoff
 
-## Detector model basics (cloud_basics) — updated 2026-10-11 (dylan-MS-7C84)
+## Detector model basics (cloud_basics) — updated 2026-10-12 (dylan-MS-7C84)
 
-**Resume:** attachment ACCEPTED by Dylan (10-11). SPS→bench transfer answered (FINDINGS §27, notes/mx17-sps-to-bench):
-the beam O2 does not spoil the SPS readout constants. Next: bench det4 arm with D_rc pinned to the beam 2.2e-4 (paired
-compare_bench vs rcm); settle the bench D_T (v(E) says ~1 % water/270, widths look dry/480); then freeze the physical kernel.
+**Resume:** det4 pinned-D_rc arm DONE (FINDINGS §28): beam 2.2e-4 costs nothing on the bench (stack rms +0.3 %,
+held-out Y +0.01–0.03 ± 0.02–0.03°); §27's 1.5–2.7× was rc_drift's assumed D_T — the joint X+Y fit pins Dd (X has no
+RC) at ≈ dry on det2/3/4/7. Bench drift fields were wrong in bench_pinned (all 250 V/cm; really 347/208/243) —
+`bench_water_e.py`; still 0.4–0.6 % water from v vs dry widths. Tight |tan|<0.01 brings bench σ0 to the beam 0.37.
+Next: decide the bench D_T source (Magboltz water D_T, or a non-diffusion X growth term); then freeze the kernel
+(det4 D_rc from beam, others bench; Dd from joint fit; σ0 from tight-|tan| stack) and run the full gate.
 Older queue: det4 X vs amplification stripes, det7 bench plateau.
+
+**10-12 (dylan-MS-7C84):** `bench_pinrc.py` (joint fit with pins + `--profile`), `bench_tanscan.py`, `bench_water_e.py`,
+`compare_bench.py --base`. bench_attach's bundle path now resolves next to each plane_ratio cache (old one was session
+scratch). Bench outputs `/home/dylan/x17/cosmic_bench/cloud_basics/bench_pin/` (arms in `arms/arm_det4_rc{f,p,pw,pd}.json`).
 
 **10-11 (dylan-MS-7C84):** `attach_transfer.py` injection toy (SPS measurement code on known events, run_71 loss on/off,
 paired): footprint/D_rc/c2-c1 shift ≤ 7 %, decompose b1 −27 %. Toy realistic at 243 V/cm only. `rc_drift.py` (RC fit +

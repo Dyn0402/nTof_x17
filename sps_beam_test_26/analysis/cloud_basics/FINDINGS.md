@@ -677,4 +677,65 @@ result; the loss removes ~18 % of the charge at 243 V/cm, so ≲ 10 % pessimisti
 Next: a bench det4 arm with D_rc pinned at the beam value (paired compare_bench vs the bench-fitted
 rcm); settle the bench D_T; then freeze the physical kernel.
 
+## 28 · det4 takes the beam D_rc on the bench; the joint X+Y fit is not degenerate (2026-10-12)
+
+The §27 next step: a bench det4 arm with D_rc pinned at the beam 2.2e-4. Done with the model the
+production-candidate arm (rcm, §12) came from — `bench_attach.py`'s unbiased head-on fit over X and Y
+together (X-template electronics, uniform arrival over T = gap/v, σ² = σ0² + 2·Dd·u + 2·D_rc·s on Y) —
+in `bench_pinrc.py`, and benched with `plane_bench.py` (2000 held-out events, paired).
+
+**det4: the beam D_rc costs nothing, in the stack or in reconstruction.**
+
+| det4 arm | σ0 | Dd [1e-4] | D_rc [1e-4] | stack rms |
+|---|---|---|---|---|
+| rcf (all free; = rcm refitted) | 0.464 | 4.04 | 2.57 | 0.01635 |
+| rcp (beam D_rc, Dd free) | 0.457 | 4.28 | **2.2** | 0.01639 |
+| rcpd (beam D_rc, dry Dd) | 0.458 | 4.25 | 2.2 | 0.01639 |
+| rcpw (beam D_rc, wet Dd) | 0.591 | 1.95 | 2.2 | 0.01725 |
+
+Paired against rcf (scale-corrected s68, blind / ref start): rcp Y +0.027 ± 0.027 / +0.008 ± 0.019°,
+X −0.008 ± 0.026 / 0.000 ± 0.020°; rcpd likewise (Y +0.039 ± 0.027 / +0.007 ± 0.020). Every RC arm is
+−0.12…−0.20° on Y and +0.12…+0.19° on X against production, as in §12 (results
+`compare_bench_pinrc_det4_*.json`). The reconstruction cannot tell 2.2 from 2.6e-4.
+
+**Why §27 saw 1.5–2.7×.** `rc_drift.py` fits Y alone with D_T assumed. It is not biased: on toy stacks
+from this model (known D_rc, dry Dd) it returns D_rc within 2–8 % *when given the true D_T*. The
+spread came from the D_T assumptions (none / wet). The joint fit settles D_T itself because X has no RC
+term, so X's width growth is drift diffusion alone: profiling D_rc over 1–7.5e-4 (Dd refitted) the
+rms has a single minimum on every chamber and rises 6–23 % at 1e-4 (8–37 % at 7.5e-4, except det6 whose minimum is there) (`bench_pinrc.py --profile`,
+`results/bench_pinrc_profile_<det>.json`). With dry Dd, det4 bench is 2.57 (joint) / 3.04 (rc_drift)
+against 2.2 ± 0.22 beam: **1.2–1.4×, and the stack rms is flat between 2.2 and 3.0e-4.** det4 can carry
+its beam D_rc.
+
+**The other chambers do differ from det4** (profile, D_rc free → cost of pinning 2.2e-4):
+det2 4.2e-4 (+6.5 % rms), det3 2.8e-4 (+1.5 %), det6 7.9e-4 (+13 %), det7 5.7e-4 (+9 %). D_rc is per
+chamber; only det4 has a beam measurement.
+
+**Bench drift diffusion.** Free Dd per chamber against Magboltz at each run's real field
+(`bench_water_e.py`): det2 4.97 (wet 4.11 / dry 4.67), det3 3.93 (2.43 / 4.27), det4 4.04 (2.07 / 3.96),
+det6 1.69 (1.03 / 3.09), det7 4.69 (2.26 / 4.24) e-4 mm²/ns. Dry fits det2/3/4/7; det6 sits between,
+nearer wet. Two candidate explanations tested:
+
+- *Field.* `bench_pinned.py` inverted v → water at 250 V/cm for all chambers. The runs were at drift
+  1000 V (det2, det3) = 347 V/cm, 700 V (det6, det7) = 243 V/cm and 600 V (det4) = 208 V/cm. At the real
+  field (air_hs grid) det2 goes to ~0.1 % water (its v sits at the dry value), det4 0.60 → 0.43 %,
+  det3 0.48 → 0.59 %, det6/det7 unchanged. A real correction, but it does not reconcile det3/4/7.
+  `bench_pinned.json` is left as it was: its own fits predate the unbiased stacks and re-running them
+  now puts the box model at its bounds.
+- *Inclination leak.* Tightening the head-on cut from 0.05 to 0.01 (`bench_tanscan.py`) leaves Dd flat
+  (det3 3.95 → 3.54, det4 3.98 → 4.30, det7 4.28 → 5.72 e-4) and D_rc flat. The leak goes into **σ0**
+  instead: det4 0.497 → 0.365, det3 0.442 → 0.372 mm, i.e. down to det4's beam Y leading-edge width
+  (0.36–0.38). So the footprint transfers too once the inclination is cut out, and the σ0 in the arms
+  (|tan| < 0.03) carries ~0.1 mm of track walk.
+
+So the bench D_T tension is now: v(E) (bundle v, and det3's six-field scan, §25) says 0.4–0.6 %
+water, while the X width growth says Magboltz dry, on 4 of 5 chambers. Left: Magboltz's D_T for
+small water admixtures, or an X width term that grows with drift time and is not diffusion. The beam
+(§27: t_a at its bound, *less* depth growth than wet Magboltz) leans the other way, which argues
+against a missing Magboltz D_T term common to both.
+
+**For the physical kernel:** det4 can take D_rc = 2.2e-4 from the beam; the other chambers keep their
+bench D_rc; Dd per chamber from the joint fit (≈ dry), not from v; σ0 should be measured on the
+tight-|tan| stack. None of these choices moves det4's held-out resolution by more than ±0.04°.
+
 _(sections appended as results land)_
