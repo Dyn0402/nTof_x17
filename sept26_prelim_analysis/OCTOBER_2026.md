@@ -94,8 +94,12 @@ because their sensitivity is set by the leg resolution, not by the statistics.
 
 ## 2 · What is NOT established
 
-- **The joint two-track fit has not been written, let alone tested.** Design and
-  acceptance criteria: [`HANDOFF_JOINT_TWO_TRACK_FIT.md`](HANDOFF_JOINT_TWO_TRACK_FIT.md).
+- **The joint two-track fit is written and measured (2026-09-16) but not shipped,
+  and not yet run on data.** Design and acceptance criteria:
+  [`HANDOFF_JOINT_TWO_TRACK_FIT.md`](HANDOFF_JOINT_TWO_TRACK_FIT.md); what it does
+  and what it cannot do: [`TWO_TRACK_FIT_LOG.md`](TWO_TRACK_FIT_LOG.md). Two
+  parallel tracks on the same strips are a model degeneracy and stay lost at any
+  time offset — that has to be carried as inefficiency, not fixed.
 - **Everything above is one sub-run and two chambers** (run_145 stat090_0000, A
   and C). B and D are untested, and D's hot-channel seeding has never been
   combined with the rescue floor.
@@ -116,6 +120,28 @@ because their sensitivity is set by the leg resolution, not by the statistics.
 
 ### O1 — Implement and test the joint two-track fit ⭐ **the gating item**
 
+> **Update 2026-10-02.** The two-track limit study is done and its fixes are
+> validated. The fixed chain plus profile x/y pairing passes the split-ab contract
+> on real triggers in A and C, all seven tags. Bench, coincident pairs: A < 12 mm
+> 19 → 58 %, 12–24 mm 48 → 79 %; C 36 → 49 %, 57 → 69 %. A one-pass F rescan on
+> real triggers (condor 4348153) is running to set each chamber's threshold.
+> After that, shipping it is a decision. Handoff:
+> [`TWO_TRACK_LIMIT_RESUME.md`](TWO_TRACK_LIMIT_RESUME.md).
+
+**Written and measured 2026-09-16** — off by default, not in the production
+chain. Record: `../wft/TWO_TRACK_FIT_2026-09-16.md`; working log with every
+measurement that shaped it: `TWO_TRACK_FIT_LOG.md`; report:
+`<out>/two_track/report.html`. What remains of O1 is the campaign-side work
+below (steps 3–5) and the decisions in the handoff's §0.
+
+On the overlay bench (coincident, on top of pairing + rescue) it recovers pairs
+below 12 mm for the first time — **18 % (A) / 37 % (C), from 0** — and lifts
+12–24 mm to 43 / 45 % without moving ≥ 24 mm; clean single muons split at
+≤ 0.66 %. **Compute is not a constraint (Dylan, 2026-09-16):** a re-pass may take
+a month, and the remaining O1 work is about effectiveness — first, dropping the
+per-plane trigger, which on synthetics discards two thirds of what the fit
+recovers at 0–6 mm. Ordered list: `TWO_TRACK_FIT_LOG.md` → *To do*.
+
 `HANDOFF_JOINT_TWO_TRACK_FIT.md` is the design: a 2K-column NNLS with 6 outer
 parameters (5 with tied t0), a trigger set so it runs only on candidates that
 look merged, and a calibrated 1-vs-2 model-selection threshold. **This is D1.**
@@ -131,7 +157,8 @@ Build in this order — each step is a gate, not a formality:
    matched against the frozen pass. *The rescue floor passed this; replace-mode
    and split seeding died on it. Assume any new change dies here until it does
    not.*
-4. **Cost benchmark** — trigger rate × per-attempt cost. This sets the condor bill.
+4. **Cost benchmark** — trigger rate × per-attempt cost. *Done as a record
+   (+115 % A / +223 % C); no longer a gate — compute is not a constraint.*
 5. Only then, data.
 
 **Two decisions to settle first** (handoff §0): the single-track contract has to
