@@ -97,7 +97,36 @@ from sept26_prelim_analysis.campaign_imaging import (  # noqa: E402
     PRE_ACCESS_RUNS, condition, in_block, run_number, subruns_of)
 
 SCHEMA = 'sept26_prelim/det_a_intra/1'
-ARM = 'A'
+#: The chamber analysed.  A by default (the module's original scope); ``--arm C``
+#: runs the same analysis on chamber C.  Set through the environment so worker
+#: processes see it however they are started.  The pair columns keep their
+#: historical ``_A`` names (``wall_A``, ``tag_A``, ...): they hold the ANALYSED
+#: arm's own scintillator flags, whichever arm that is.
+ARM = os.environ.get('DET_INTRA_ARM', 'A')
+#: Stage-3 acceptance in TRUE tan, applied on top of ``gated_reco`` when the
+#: table carries a wider stored superset (is2_v2 stores 0.8; the analysis cut is
+#: 0.6, HANDOFF_TRACKING §21).  Unset: the table's own ``gated``.
+TAN_MAX_TRUE = float(os.environ.get('DET_INTRA_TAN_MAX', 'nan'))
+#: Where the beam axis is taken to be for the pointing and vertex selections:
+#: ``nominal`` = the line (0, y, 0) stage 3 used for ``dca_axis_mm``;
+#: ``measured`` = each run's imaging crossing (`_offset`, the same point the
+#: acceptance toy throws from).  The source sits at x ~ -9.5 mm (§22), about one
+#: capsule radius off the nominal axis.
+AXIS = os.environ.get('DET_INTRA_AXIS', 'nominal')
+#: Drop late tracks, t0 > this (ns, either plane), before pairing.  The late
+#: class's depth bins fall outside the window and the NNLS fills them without
+#: limit (STATUS 2026-10-02, OCTOBER O10): its geometry is wrong, and on is2_v2
+#: a fifth of gated arm-A tracks sit FLAT (tan ~ 0) with t0 on the 60 ns grid
+#: (450 / 510 / 570 ns).  Two of them in one trigger make a 0-deg "pair" with
+#: dt0 = 0 exactly, which swamps the spectrum.  SAME_CHAMBER_PAIRS.md item 5.
+#: Unset: no cut (the 2026-09-10 behaviour).
+T0_MAX = float(os.environ.get('DET_INTRA_T0_MAX', 'nan'))
+#: Per-leg SiPM-wall confirmation (`det_a_scint.match_run`: the track's
+#: extrapolation lands on a wall group that fired in time), and its off-time
+#: control.  Production's intra-A pair legs confirm at ~9 % net against ~41 %
+#: for its tracks at large (run_145): most "pairs" are not two particles, so the
+#: pair sample that means something is the one where BOTH legs confirm.
+WALL = os.environ.get('DET_INTRA_WALL', '0') == '1'
 #: Pointing cut, the same 30 mm the campaign chain applies inside
 #: `source_imaging._track_table` -- named here rather than buried.
 DCA_MAX = 30.0
@@ -122,6 +151,17 @@ SELECTIONS = ('all', 'mixed', 'slope', 'slope+mixed', 'prompt',
               'slope+prompt', 'slope+offtime', 'vertex', 'slope+vertex',
               'slope+vertex+mixed', 'pointing', 'slope+pointing',
               'pointing+mixed', 'slope+pointing+mixed')
+#: Added when the wall confirmation is on (``--wall``): both legs confirmed,
+#: its event-mixed null, the off-time accidental control, and the cuts on top.
+WALL_SELECTIONS = ('onwall', 'wall', 'wall+mixed', 'wallctrl', 'wallctrl+mixed',
+                   'wall+prompt', 'wall+offtime', 'wall+slope',
+                   'wall+slope+mixed', 'wall+vertex', 'wall+vertex+mixed',
+                   'wall+pointing', 'wall+pointing+mixed',
+                   'diffgrp', 'diffgrp+mixed', 'wall2', 'wall2+mixed',
+                   'wall2ctrl', 'wall2+prompt', 'wall2+offtime', 'wall2+slope',
+                   'wall2+vertex', 'wall2+vertex+mixed')
+if WALL:
+    SELECTIONS = SELECTIONS + WALL_SELECTIONS
 #: A pair counts as vertexed if its two lines approach each other inside
 #: ``VERTEX_DCA_MM`` and do so within ``VERTEX_R_MM`` of the beam axis -- the
 #: same 20/30 mm `source_imaging.vertex_summary` uses, so the two are readable
@@ -144,7 +184,13 @@ TRACK_COLS = [
 ]
 
 
-def tracks(run: str, subruns, src: Path) -> pd.DataFrame:
+def _own_flags(cols):
+    """TRACK_COLS with the analysed arm's scintillator flags in place of A's."""
+    m = {f'{f}_A': f'{f}_{ARM}' for f in ('wall', 'plastic', 'coinc')}
+    return [m.get(c, c) for c in cols]
+
+
+def tracks(run: str, subruns, src: Path) -> pd.DataFrame:  # noqa: C901
     """Gated, angle-calibrated arm-A tracks for one run.
 
     No pointing cut: it is applied later as a named selection, because on this
@@ -155,8 +201,18 @@ def tracks(run: str, subruns, src: Path) -> pd.DataFrame:
     for sub in subruns:
         p = paths.require(src / f'tracks_{run}_{sub}.parquet',
                           f'stage-3 tracks for {run}/{sub}')
-        d = pd.read_parquet(p, columns=TRACK_COLS)
-        out.append(d[(d.arm == ARM) & d.gated & d.angle_calibrated]
+        cols = _own_flags(TRACK_COLS)
+        if np.isfinite(TAN_MAX_TRUE):
+            cols = cols + ['gated_reco']
+        d = pd.read_parquet(p, columns=cols).rename(
+            columns={f'{f}_{ARM}': f'{f}_A' for f in ('wall', 'plastic', 'coinc')})
+        g = d.gated.astype('boolean').fillna(False).astype(bool)
+        if np.isfinite(TAN_MAX_TRUE):
+            g = (d.gated_reco.astype('boolean').fillna(False).astype(bool)
+                 & (d.tanx.abs() < TAN_MAX_TRUE) & (d.tany.abs() < TAN_MAX_TRUE))
+        if np.isfinite(T0_MAX):
+            g = g & (d.x_t0 <= T0_MAX) & (d.y_t0 <= T0_MAX)
+        out.append(d[(d.arm == ARM) & g & d.angle_calibrated]
                    .assign(subrun=sub))
     t = pd.concat(out, ignore_index=True)
     # The per-trigger scintillator flags are NULL for any sub-run whose stage-1
@@ -169,6 +225,26 @@ def tracks(run: str, subruns, src: Path) -> pd.DataFrame:
         if c in t.columns:
             t[c] = t[c].astype('boolean').fillna(False).astype(bool)
     t['t0'] = 0.5 * (t.x_t0 + t.y_t0)
+    if WALL:
+        from sept26_prelim_analysis import det_a_scint as DS
+        M, _ = DS.match_run(run, subruns, src, None, DS.layer_geometry(run, ARM))
+        M = M[['subrun', 'event_id', 'u_mm', 'on_wall', 'match_wall',
+               'match_wall_ctrl', 'match_wall_core', 'match_wall_ctrl_core',
+               'grp_pred']].rename(columns={'u_mm': 'x_local'})
+        t = t.merge(M, on=['subrun', 'event_id', 'x_local'], how='left')
+        for c in ('on_wall', 'match_wall', 'match_wall_ctrl', 'match_wall_core',
+                  'match_wall_ctrl_core'):
+            t[c] = t[c].astype('boolean').fillna(False).astype(bool)
+        t['grp_pred'] = t.grp_pred.fillna(-1).astype(int)
+    if AXIS == 'measured':
+        # distance of closest approach to the MEASURED axis, the line
+        # (X0, y, Z0); the stored dca_axis_mm is to (0, y, 0)
+        X0, _, Z0 = _AXIS_OFFSET.get(run, (0.0, 0.0, 0.0))
+        px, pz = t.p0_x.to_numpy(float) - X0, t.p0_z.to_numpy(float) - Z0
+        dx, dz = t.d_x.to_numpy(float), t.d_z.to_numpy(float)
+        n2 = dx * dx + dz * dz
+        s_ = -(px * dx + pz * dz) / np.where(n2 > 0, n2, np.nan)
+        t['dca_axis_mm'] = np.hypot(px + s_ * dx, pz + s_ * dz)
     t['slope_ok'] = t.x_slope_reliable & t.y_slope_reliable
     t['key'] = t.subrun + ':' + t.event_id.astype(str)
     return t.reset_index(drop=True)
@@ -266,13 +342,15 @@ def pairs(t: pd.DataFrame, run: str = '', with_mixed: bool = True
     dv = (a.y_local - b.y_local).to_numpy()
     V, dca = _dca(a[['p0_x', 'p0_y', 'p0_z']].to_numpy(float), d1,
                   b[['p0_x', 'p0_y', 'p0_z']].to_numpy(float), d2)
+    X0, _, Z0 = (_AXIS_OFFSET.get(run, (0.0, 0.0, 0.0)) if AXIS == 'measured'
+                 else (0.0, 0.0, 0.0))
     P = pd.DataFrame(dict(
         run=run or a.get('run', ''), subrun=a.subrun.to_numpy(),
         event_id=a.event_id.to_numpy(), mixed=is_mixed,
         open_deg=np.degrees(np.arccos(cos)),
         du_mm=du, dv_mm=dv, sep_plane_mm=np.hypot(du, dv),
         vx_mm=V[:, 0], vy_mm=V[:, 1], vz_mm=V[:, 2],
-        v_r_mm=np.hypot(V[:, 0], V[:, 2]), dca_pair_mm=dca,
+        v_r_mm=np.hypot(V[:, 0] - X0, V[:, 2] - Z0), dca_pair_mm=dca,
         u1=a.x_local.to_numpy(), v1=a.y_local.to_numpy(),
         u2=b.x_local.to_numpy(), v2=b.y_local.to_numpy(),
         dt0_ns=(a.t0 - b.t0).to_numpy(),
@@ -305,6 +383,22 @@ def pairs(t: pd.DataFrame, run: str = '', with_mixed: bool = True
     # dt0 be read as an accidental template it is not (see `_mixed_index`)
     for c in ('dt0_ns', 'dt0_x_ns', 'dt0_y_ns', 'dt_end_ns'):
         P.loc[P.mixed, c] = np.nan
+    if WALL:
+        P['onwall'] = (a.on_wall & b.on_wall).to_numpy()
+        P['wall'] = (a.match_wall & b.match_wall).to_numpy()
+        P['wallctrl'] = (a.match_wall_ctrl & b.match_wall_ctrl).to_numpy()
+        P['n_legs_wall'] = (a.match_wall.astype(int)
+                            + b.match_wall.astype(int)).to_numpy()
+        # TWO particles certified: the wall is four 100 mm groups, so one real
+        # particle plus a junk leg beside it confirms "both legs" in the same
+        # group.  Legs predicted in DIFFERENT groups, each clear of a group
+        # boundary (`_core`), with both groups fired, need two particles.
+        diff = ((a.grp_pred != b.grp_pred) & (a.grp_pred >= 0)
+                & (b.grp_pred >= 0)).to_numpy()
+        P['wall2'] = diff & (a.match_wall_core & b.match_wall_core).to_numpy()
+        P['wall2ctrl'] = diff & (a.match_wall_ctrl_core
+                                 & b.match_wall_ctrl_core).to_numpy()
+        P['diffgrp'] = diff
     P['prompt'] = (P.dt0_ns.abs() <= PROMPT_NS) & ~P.mixed
     P['offtime'] = ((P.dt0_ns.abs() > OFFTIME_NS[0])
                     & (P.dt0_ns.abs() <= OFFTIME_NS[1]) & ~P.mixed)
@@ -342,6 +436,9 @@ def select(P: pd.DataFrame, name: str) -> np.ndarray:
             m &= P.pointing.to_numpy()
         elif part == 'vertex':
             m &= P.vertex.to_numpy()
+        elif part in ('wall', 'wallctrl', 'onwall', 'wall2', 'wall2ctrl',
+                      'diffgrp'):
+            m &= P[part].to_numpy()
         else:
             raise KeyError(f'unknown selection component {part!r}')
     return m
@@ -719,10 +816,10 @@ def tag_test(P: pd.DataFrame) -> pd.DataFrame:
     """
     real = ~P.mixed.to_numpy()
     rows = []
-    for name, m in (('tagged (wall AND plastic A)', real & P.tag_A.to_numpy()),
+    for name, m in ((f'tagged (wall AND plastic {ARM})', real & P.tag_A.to_numpy()),
                     ('untagged', real & ~P.tag_A.to_numpy()),
-                    ('wall A only', real & (P.wall_A & ~P.plastic_A).to_numpy()),
-                    ('plastic A only', real & (P.plastic_A & ~P.wall_A).to_numpy())):
+                    (f'wall {ARM} only', real & (P.wall_A & ~P.plastic_A).to_numpy()),
+                    (f'plastic {ARM} only', real & (P.plastic_A & ~P.wall_A).to_numpy())):
         g = P[m]
         if len(g) < 50:
             continue
@@ -750,7 +847,9 @@ def vertex_excess(P: pd.DataFrame) -> pd.DataFrame:
     and an uncorrelated one would not.
     """
     rows = []
-    for name, base in (('all', ''), ('slope', 'slope')):
+    for name, base in (('all', ''), ('slope', 'slope'))\
+            + ((('wall', 'wall'), ('wall+slope', 'wall+slope'),
+                ('wall2', 'wall2')) if WALL else ()):
         r = P[select(P, base or 'all')]
         m = P[select(P, (base + '+mixed') if base else 'mixed')]
         if len(r) < 50 or len(m) < 50:
@@ -862,7 +961,8 @@ def dt_sep_profile(P: pd.DataFrame) -> pd.DataFrame:
 # --------------------------------------------------------------------------- #
 # the n_TOF timing, read from the slim
 # --------------------------------------------------------------------------- #
-WAL_A, PSS_A = 0, 4                     # det codes, `efficiency.WAL_CODE`
+from sept26_prelim_analysis.efficiency import WAL_CODE as _WAL_CODE  # noqa: E402
+WAL_A, PSS_A = _WAL_CODE[ARM], _WAL_CODE[ARM] + 4   # the analysed arm's codes
 
 
 def ntof_timing(run: str, subruns, P: pd.DataFrame,
@@ -886,7 +986,7 @@ def ntof_timing(run: str, subruns, P: pd.DataFrame,
     bins = np.arange(-window, window + 1, step)
     mid = 0.5 * (bins[:-1] + bins[1:])
     rows = []
-    for fam, code in (('wall A', WAL_A), ('plastic A', PSS_A)):
+    for fam, code in ((f'wall {ARM}', WAL_A), (f'plastic {ARM}', PSS_A)):
         d = slim[slim.det == code]
         m_pair = in_pair[slim.det.to_numpy() == code]
         for name, sel in (('pair triggers', (d.is_control == 0).to_numpy()
@@ -916,11 +1016,18 @@ def _response(run: str, subruns, reco: Path) -> pd.DataFrame:
     out = []
     for sub in subruns:
         p = reco / run / sub / f'mx17_{ARM}' / 'events_prelim.parquet'
-        if not p.exists():
-            raise FileNotFoundError(f'no merged full pass for {ARM}/{sub}: {p}')
-        out.append(pd.read_parquet(
-            p, columns=['event_id', 'x_ok', 'y_ok', 'n_tracks',
-                        'x_p0', 'y_p0']).assign(subrun=sub))
+        cols = ['event_id', 'x_ok', 'y_ok', 'n_tracks', 'x_p0', 'y_p0']
+        if p.exists():
+            out.append(pd.read_parquet(p, columns=cols).assign(subrun=sub))
+            continue
+        # a re-pass (is2_v2) is not merged per sub-run: its per-tag tables,
+        # one row per event each, concatenate to the same thing
+        tags = sorted(q for q in p.parent.glob('events_*.parquet')
+                      if not q.name.endswith('.candidates.parquet'))
+        if not tags:
+            raise FileNotFoundError(f'no full pass for {ARM}/{sub}: {p.parent}')
+        out.append(pd.concat([pd.read_parquet(q, columns=cols) for q in tags],
+                             ignore_index=True).assign(subrun=sub))
     return pd.concat(out, ignore_index=True)
 
 
@@ -1239,11 +1346,20 @@ def one_run(run: str, src: str, reco: str, slim_dir: str | None,
         src = Path(src)
         reco = Path(reco)
         subs, dropped = subruns_of(reco, run)
+        if not subs and (reco / run).is_dir():
+            # an A,C-only re-pass has no four-arm merged tables: take the
+            # sub-runs where this arm has per-tag reco output
+            subs = sorted(p.name for p in (reco / run).iterdir()
+                          if p.name.startswith('stat090_')
+                          and any((p / f'mx17_{ARM}').glob('events_*[0-9].parquet')))
+            dropped = {}
         if not subs:
             return run, None, None, None, 'no usable sub-runs'
         have = [s for s in subs if (src / f'tracks_{run}_{s}.parquet').exists()]
         if not have:
             return run, None, None, None, 'no stage-3 tracks'
+        if AXIS == 'measured':
+            _AXIS_OFFSET[run] = _offset(run, imaging_csv)
         t = tracks(run, have, src)
         P = pairs(t, run)
         if len(P):
@@ -1255,6 +1371,13 @@ def one_run(run: str, src: str, reco: str, slim_dir: str | None,
         H['n_pairs'] = int((~P.mixed).sum()) if len(P) else 0
         H['n_mixed'] = int(P.mixed.sum()) if len(P) else 0
         H['n_subruns'] = len(have)
+        H['n_tracks'] = int(len(t))
+        H['n_tracks_multi'] = int(t.key.duplicated(keep=False).sum())
+        if WALL:
+            # the single-track baseline the pair legs are read against
+            H['n_trk_onwall'] = int(t.on_wall.sum())
+            H['n_trk_wall'] = int(t.match_wall.sum())
+            H['n_trk_wallctrl'] = int(t.match_wall_ctrl.sum())
         H['subruns'] = have
         H['offset_mm'] = list(_offset(run, imaging_csv))
         H['dropped_subruns'] = dropped
@@ -1282,6 +1405,10 @@ def one_throw(run: str, subruns, reco: str, M_csv: str, eff: float,
         return run, None, traceback.format_exc(limit=3)
 
 
+#: run -> (X, 0, Z) of the measured axis, filled per worker when AXIS == 'measured'
+_AXIS_OFFSET: dict = {}
+
+
 def _offset(run: str, imaging_csv: str) -> tuple:
     """(X, 0, Z) mm from the campaign pointing crossings, campaign median if absent."""
     PR = pd.read_csv(imaging_csv)
@@ -1305,7 +1432,36 @@ def main() -> int:
     ap.add_argument('--n', type=int, default=4_000_000)
     ap.add_argument('--jobs', type=int, default=6)
     ap.add_argument('--include-pre-access', action='store_true')
+    ap.add_argument('--arm', default=ARM, choices=('A', 'B', 'C', 'D'))
+    ap.add_argument('--tan-max-true', type=float, default=TAN_MAX_TRUE,
+                    help='true-tan cut on gated_reco, for a table storing a wider '
+                         'superset as `gated` (is2_v2: 0.6)')
+    ap.add_argument('--axis', default=AXIS, choices=('nominal', 'measured'))
+    ap.add_argument('--wall', action='store_true', default=WALL,
+                    help='per-leg SiPM-wall confirmation and the both-legs selections')
+    ap.add_argument('--t0-max', type=float, default=T0_MAX,
+                    help='drop tracks with x_t0 or y_t0 above this, ns (300: the '
+                         'late NNLS-runaway class)')
+    ap.add_argument('--acc-reco', default=None,
+                    help='merged four-arm reco the acceptance toy reads plane '
+                         'occupancy from (default --reco). An A,C-only re-pass '
+                         'has none: give reco_fullpass, whose dead/hot strips are '
+                         'the same detector')
+    ap.add_argument('--out', default=None,
+                    help='output directory (default <out>/det_a_intra)')
     a = ap.parse_args()
+    # module state the workers read: re-exec through the environment if the
+    # arm or cuts differ from what this import saw, so every helper (and every
+    # worker, forked or spawned) agrees
+    want = dict(DET_INTRA_ARM=a.arm, DET_INTRA_TAN_MAX=str(a.tan_max_true),
+                DET_INTRA_AXIS=a.axis, DET_INTRA_T0_MAX=str(a.t0_max),
+                DET_INTRA_WALL='1' if a.wall else '0')
+    if ((a.arm, str(a.tan_max_true), a.axis, str(a.t0_max), a.wall)
+            != (ARM, str(TAN_MAX_TRUE), AXIS, str(T0_MAX), WALL)):
+        os.environ.update(want)
+        os.execv(sys.executable, [sys.executable, '-m',
+                                  'sept26_prelim_analysis.det_a_intra']
+                 + sys.argv[1:])
 
     src = Path(paths.require(a.src, 'the stage-3 track table'))
     reco = Path(paths.require(a.reco, 'the full-pass reco tree'))
@@ -1316,7 +1472,8 @@ def main() -> int:
                    key=run_number))
     if not a.include_pre_access:
         runs = [r for r in runs if r not in PRE_ACCESS_RUNS]
-    print(f'detector {ARM}, intra-chamber pairs -- {len(runs)} run(s)\n')
+    print(f'detector {ARM}, intra-chamber pairs -- {len(runs)} run(s); '
+          f'tan cut {TAN_MAX_TRUE}, axis {AXIS}, t0 max {T0_MAX}\n')
 
     args = (str(src), str(reco), a.slim, pr)
     results = []
@@ -1347,7 +1504,8 @@ def main() -> int:
     M = pd.concat(MM, ignore_index=True)
     H = pd.DataFrame(HH)
 
-    od = paths.out('det_a_intra')
+    od = Path(a.out) if a.out else paths.out('det_a_intra')
+    od.mkdir(parents=True, exist_ok=True)
     # the two-track resolution, measured on the pooled sample, THEN thrown.
     # Per axis, because the loss is a cross and not a disc; the radial curve is
     # kept beside it because it is what the first version of this page used.
@@ -1375,9 +1533,14 @@ def main() -> int:
         print(f'  separable model vs the 2D map: rms residual {rms:.3f} over '
               f'{len(SEP)} cells')
 
-    targs = [(h['run'], h['subruns'], str(reco), str(od / 'eff_map_2d.csv'),
+    acc_reco = Path(a.acc_reco) if a.acc_reco else reco
+    targs = [(h['run'], h['subruns'], str(acc_reco), str(od / 'eff_map_2d.csv'),
               float(h['efficiency']), h['offset_mm'], a.n,
-              str(od / 'two_track_efficiency_axis.csv')) for h in HH]
+              str(od / 'two_track_efficiency_axis.csv')
+              if not (EU.empty or EV.empty) else '') for h in HH]
+    if EU.empty or EV.empty:
+        print('  !! two-track resolution not measurable on this sample (too few '
+              'real pairs per bin): the toy is thrown WITHOUT it')
     print(f'\nthrowing {a.n:,} pairs per run through the measured acceptance\n')
     if a.jobs <= 1:
         tres = [one_throw(*t) for t in targs]
@@ -1451,15 +1614,27 @@ def main() -> int:
                 'slope+offtime': 'slope+mixed',
                 'pointing': 'pointing+mixed',
                 'slope+pointing': 'slope+pointing+mixed'}
-    C = pd.concat([compare(S, F[F.acceptance == acc], sel,
-                           mixed_of=MIXED_OF.get(sel))
-                   .assign(acceptance=acc)
-                   for sel, acc in PAIRING.items()]
-                  + [compare(S, F[F.acceptance == 'acc'], sel,
-                             mixed_of=MIXED_OF.get(sel))
-                     .assign(acceptance='acc')
-                     for sel in ('all', 'slope')],
-                  ignore_index=True)
+    # the core tables first: a fold that fails on a thin selection must not
+    # take the measured pairs down with it
+    P.to_parquet(od / 'pairs.parquet', index=False)
+    H.to_csv(od / 'headline_per_run.csv', index=False)
+    K.to_csv(od / 'census.csv', index=False)
+    S.to_csv(od / 'spectra.csv', index=False)
+    VX.to_csv(od / 'vertex_excess.csv', index=False)
+    try:
+        C = pd.concat([compare(S, F[F.acceptance == acc], sel,
+                               mixed_of=MIXED_OF.get(sel))
+                       .assign(acceptance=acc)
+                       for sel, acc in PAIRING.items()]
+                      + [compare(S, F[F.acceptance == 'acc'], sel,
+                                 mixed_of=MIXED_OF.get(sel))
+                         .assign(acceptance='acc')
+                         for sel in ('all', 'slope')],
+                      ignore_index=True)
+    except KeyError as e:
+        print(f'  !! folded comparison skipped ({e}): a selection is too thin')
+        C = pd.DataFrame(columns=['selection', 'model', 'chi2dof', 'median_pred',
+                                  'median_obs', 'acceptance'])
 
     # the n_TOF timing, on one representative run: the slim read is the
     # expensive part and the shape is a property of the trigger, not the run
@@ -1488,6 +1663,10 @@ def main() -> int:
     N.to_csv(od / 'ntof_timing.csv', index=False)
     json.dump(dict(
         schema=SCHEMA, arm=ARM, src=str(src), reco=str(reco),
+        acc_reco=str(a.acc_reco or reco),
+        tan_max_true=TAN_MAX_TRUE, axis=AXIS, t0_max=T0_MAX, wall=WALL,
+        axis_offsets=({r: list(_offset(r, pr)) for r in sorted(set(P.run))}
+                      if AXIS == 'measured' else None),
         runs=sorted(set(P.run)), n_runs=int(P.run.nunique()),
         n_pairs=int((~P.mixed).sum()), n_mixed=int(P.mixed.sum()),
         n_throw=a.n, vertex_r_mm=VERTEX_R_MM, vertex_dca_mm=VERTEX_DCA_MM,
@@ -1515,7 +1694,7 @@ def main() -> int:
               f'{r.p90_open_deg:>6.1f}d {r.frac_vertex:>9.3f} '
               f'{r.median_dca_pair_mm:>7.1f}mm')
 
-    if not D.empty:
+    if not D.empty and 'sample' in D.columns:
         print('\nthe in-chamber clock: five two-component fits to dt0, '
               'all-pairs sample\n')
         print(f'{"model":>20} {"prompt f":>9} {"nll":>10} {"chi2/dof":>9}')
