@@ -84,6 +84,16 @@ slide renumbers them.
 | `width_tan_split.py` | bench width growth split by reference \|tan\| → `results/width_tan_split.json` (inconclusive) |
 | `make_transfer_deck.py` | slide note `~/x17/cosmic_bench/cloud_basics/transfer/mx17-sps-to-bench.html`; publish with `add-note.py … --slug mx17-sps-to-bench --force --deploy` |
 
+### X width excess (§29; report `~/x17/cosmic_bench/cloud_basics/xwidth/report.html`)
+| script | what |
+|---|---|
+| `headon_cache.py <key> [--subrun S --base DIR]` | every head-on reference event of a run → `xwidth/caches/headon_<key>.pkl`; `--subrun` = ref-only (M3 through the key's alignment), for the det3 scan sub-runs (EOS `cosmic_bench/june_tests/Run/`) |
+| `x_width.py [--keys …]` | X-only head-on fit per dataset (σ0, Dd, T free), terciles in position → `results/x_width.json` |
+| `x_width_map.py` | model-free early/late X width and fits in position quintiles (det3 pooled, det4) → `results/x_width_map.json` |
+| `x_width_beam.py` | template-free X fit, beam run_71 + bench calibration → `results/x_width_beam.json` |
+| `make_iso_jobs.py [--ext]`, `iso_fit.py` | Magboltz Ar/iso × water grid (condor 4440949/4440956 → `results/iso/`); joint v + D_T fit → `results/iso_fit.json` |
+| `make_xwidth_report.py` | figures + report.html |
+
 ### X / kernel benches (lxplus condor)
 `make_rc_arms.py`, `run_bench_rc.sh` + `condor_bench_rc.sub` + `auto_bench_rc.sh` (RC refits, §17);
 `make_lor_arms.py`, `run_bench_lor.sh` + `condor_bench_lor.sub` (footprint tails, §23);

@@ -1,8 +1,18 @@
 # Handoff
 
-## Detector model basics (cloud_basics) — updated 2026-10-12 (dylan-MS-7C84)
+## Detector model basics (cloud_basics) — updated 2026-10-12 pm (dylan-MS-7C84)
 
-**Resume:** det4 pinned-D_rc arm DONE (FINDINGS §28): beam 2.2e-4 costs nothing on the bench (stack rms +0.3 %,
+**Resume (pm):** X width excess studied (FINDINGS §29, report `~/x17/cosmic_bench/cloud_basics/xwidth/report.html`).
+It is on every bench dataset (5 chambers, 8 runs + det3 drift/gain scans): D_T 400–520 vs 95/5-wet-from-v 270–325, i.e.
++300–430 µm/√cm in quadrature. It is gain-independent and present over the whole area; only the early (prompt) width
+grows at the edges. No Ar/iso/water mix fits det3's v(E) and D_T(E) together (χ² 90/36). The beam X (template-free)
+is also above Magboltz, +286 at 92 V/cm. Open: Magboltz's water model vs a non-gas depth term; a dry-gas bench run decides.
+**Pending:** condor 4440956 (Magboltz iso 0.5–1.5 %, water to 1.5 %). When it lands: `scp 'lxplus:cloud_basics_condor/att/magboltz_benchi*'
+cloud_basics/results/iso/ && python iso_fit.py && python make_xwidth_report.py`, update the §29 χ² line.
+Scan sub-run waveforms were pulled to job scratch only (re-pull with rsync, see §29); caches are kept.
+Branch bench-pin-rc is 40+ commits ahead of main (the whole cloud_basics line) and has not been merged: decide.
+
+**Resume (am):** det4 pinned-D_rc arm DONE (FINDINGS §28): beam 2.2e-4 costs nothing on the bench (stack rms +0.3 %,
 held-out Y +0.01–0.03 ± 0.02–0.03°); §27's 1.5–2.7× was rc_drift's assumed D_T — the joint X+Y fit pins Dd (X has no
 RC) at ≈ dry on det2/3/4/7. Bench drift fields were wrong in bench_pinned (all 250 V/cm; really 347/208/243) —
 `bench_water_e.py`; still 0.4–0.6 % water from v vs dry widths. Tight |tan|<0.01 brings bench σ0 to the beam 0.37.

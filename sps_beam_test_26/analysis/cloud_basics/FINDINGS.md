@@ -738,4 +738,68 @@ against a missing Magboltz D_T term common to both.
 bench D_rc; Dd per chamber from the joint fit (≈ dry), not from v; σ0 should be measured on the
 tight-|tan| stack. None of these choices moves det4's held-out resolution by more than ±0.04°.
 
-_(sections appended as results land)_
+## 29 · The X width excess: every dataset, not the gas, everywhere on the chamber (2026-10-12)
+
+Dylan asked whether the X widening that Magboltz cannot explain (§28) holds on every dataset, what it
+could be, and whether it depends on position. Report: `~/x17/cosmic_bench/cloud_basics/xwidth/report.html`
+(`make_xwidth_report.py`).
+
+**Data.** `headon_cache.py` builds every head-on reference event of a run (|tan| < 0.06 in either
+view, no 3000-event cap). It has a ref-only mode (`--subrun`) that takes the M3 rays through another
+sub-run's alignment, and on the det3 long run it reproduces the hits-chain reference exactly. Caches
+are in `~/x17/cosmic_bench/cloud_basics/xwidth/caches/`:
+- 10 bench runs on 5 chambers;
+- det3's 6-27 drift scan (6 fields) and two amplification scans (18 sub-runs at 347 V/cm), pulled
+  from EOS `cosmic_bench/june_tests/Run/`.
+
+The fit is `x_width.py`, X only, so there is no RC term and the width growth is all depth: bench_attach's
+model, with σ0, Dd, T, amplitude and offset free and bootstrap errors. It is vectorised (`predict_x`, 90×
+faster), and its last slice is fractional so that T can be fitted; `bench_attach.predict` rounds T to
+whole 30 ns slices. D_T = σ_drift(gap)/√gap, which barely depends on v, so v enters only through the
+composition inferred from it.
+
+- **Every bench dataset, the same excess.** X D_T is 400–520 µm/√cm on det2/3/4/6/7, on every run
+  (det3 5 runs, det7 2, det2 2). Magboltz Ar/iso 95/5 with the water that each run's v needs
+  (0.6–1.0 %) gives 270–325. In quadrature the extra is **D_x ≈ 300–430 µm/√cm on every chamber**
+  (det6, the wettest, the lowest). det6 and det7 ran in the same gas at the same field with v 35 %
+  apart: D_T moves the way water says (399 vs 475), but both sit ~+300 in quadrature above it.
+  Dropped: g_det6_longer (σ0 at its bound) and det3's 6-22 runs (T at its bound).
+- **Not gain.** det3 at 347 V/cm, mesh 425–505 V: D_T flat at 404–496 (mean ≈ 450). σ0 rises 0.3 →
+  0.5 mm with gain. Above 505 V the stacks saturate (σ0 0.6–0.9, D_T meaningless).
+- **Not the gas at any composition tried** (`iso_fit.py`, Magboltz grid condor 4440949:
+  Ar/iso 2–8 % × water 0–1 % × 7 fields). Less isobutane is the one knob that makes a gas both slow and
+  hot, and on a single-field chamber an iso-poor gas (≈2 %, 0.4 % water on det7) can match both
+  numbers. det3's five fields cannot be matched: v alone χ² 24/17 (iso 8 %, 0.85 % water), D_T
+  alone 12.5/17 (iso 2 %), **both 90/36**. The best joint point misses v at 243 V/cm by ~20 %. The
+  extended grid (iso 0.5–1.5 %, water to 1.5 %; condor 4440956) was still running at commit time.
+- **The beam has it too.** `x_width_beam.py` uses rc_drift's template-free X model, since no beam
+  template is on disk; on the bench it reads 5–12 % below the template fit. det4 run_71: D_T 202 / 240 /
+  372 (± 20) at 243 / 150 / 92 V/cm, against Magboltz 163 / 193 / 237. That is +118 / +143 / +286 in
+  quadrature. At 92 V/cm it is above the thermal floor (234), which no beam-gas composition can exceed
+  by much. (§27's "t_a at its bound, less growth than Magboltz" was the Y fit with D_T assumed.) Caveat:
+  at 92 V/cm the drift time is 3× the window, and t_a and dd2 trade off.
+- **Position** (`x_width_map.py`; det3 pooled long run + gain scan ≤ 505 V, 3574 head-on events; det4
+  683). Model-free second moment of the stack, early (0–240 ns) vs late (600–900 ns):
+  - The growth is positive in every quintile across and along the strips (det3 0.10–0.41 mm², pooled
+    0.26 ± 0.03). Its scatter is ~2σ, with no hot spot, and det4 agrees within its errors.
+  - **What depends on position is the early width.** On det3 it is 0.43–0.52 mm² in the middle and
+    0.75–0.95 mm² in the outer quintiles, in both directions. The free fit puts this in σ0. At the
+    edges the growth reads low, partly because the ±4-strip window truncates a wide cluster.
+- **Per depth, not per time.** Across chambers with v from 25 to 37 µm/ns, D_x is about constant per
+  unit depth. A constant per unit time would give det6 1.16× det7's D_x; the data give 0.86 ± 0.11
+(det6 295 ± 24, det7 345 ± 30), ~2.7σ statistical only. Bench vs beam per time: 4e-4 vs ~2e-5 mm²/ns,
+so not one per-time term either.
+
+So the excess is depth-correlated, lands at the anode (no X undershoot, rc_D_x → 0, §17), is
+independent of gain and position, and appears on two gases and two particle sources. It is not drift
+diffusion at the composition v implies. Two readings remain, and the data in hand cannot separate them:
+1. **Magboltz's water model.** Water slows the drift as Magboltz says but cools the transverse energy
+   less than it says. Both setups are wet.
+2. **A non-gas term linear in depth** that nothing in the current model has.
+
+The decisive measurement is a bench run in fresh, dry gas, which takes water out of the question.
+A cheaper check is the bench drift scan's Y view, where Dd is shared with the RC term.
+
+**For the kernel:** keep Dd from the X stack (≈ dry), not from v (§28's choice stands). Do not
+carry a v-derived water fraction into D_T.
+
