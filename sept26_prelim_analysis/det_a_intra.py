@@ -231,6 +231,9 @@ def tracks(run: str, subruns, src: Path) -> pd.DataFrame:  # noqa: C901
         M = M[['subrun', 'event_id', 'u_mm', 'on_wall', 'match_wall',
                'match_wall_ctrl', 'match_wall_core', 'match_wall_ctrl_core',
                'grp_pred']].rename(columns={'u_mm': 'x_local'})
+        # a run with no k matches nothing and comes back with object columns
+        M['x_local'] = pd.to_numeric(M.x_local, errors='coerce').astype(float)
+        M['event_id'] = M.event_id.astype(t.event_id.dtype)
         t = t.merge(M, on=['subrun', 'event_id', 'x_local'], how='left')
         for c in ('on_wall', 'match_wall', 'match_wall_ctrl', 'match_wall_core',
                   'match_wall_ctrl_core'):

@@ -55,6 +55,17 @@ drifts. **Do not build an opening-angle spectrum on a borrowed `k` for C or D.**
 
 Last updated **2026-09-16** (**the joint two-track fit exists and recovers pairs below 12 mm for the first time** — see the box below; 2026-09-14: **the re-pass is pushed to OCTOBER** and [`OCTOBER_2026.md`](OCTOBER_2026.md) is the standing list — two-track recovery is the gating item; two tracks in one chamber: a truth bench and two opt-in reconstruction fixes, below; and on 2026-09-10: arm-A tracks are now confirmed positionally against the scintillators, and the wall measures the angle scale; the FULL pass is complete; per-run capsule imaging says the geometry is sound and the angle scale is the fault; the campaign opening-angle spectra exist).
 
+> ## SAME-CHAMBER PAIRS ON THE RE-PASS: THE JUNK GOES, THE REAL PAIRS STAY, AND THEY SHARE A VERTEX -- 2026-10-12
+>
+> Re-pass is2_v2 at the capsule-focus k (×1.12, Dylan's call; the muon/capsule tension stays
+> open). `det_a_intra` now takes `--arm C`, re-pass inputs, `--t0-max`, `--axis measured`
+> and `--wall`; report `<out>/same_chamber/report.html`. Production's same-chamber pair legs
+> confirm on the wall at 7–9 % (tracks at large 33–44 %): most production pairs are junk. Pairs
+> certified as two particles (legs on different, fired wall groups) number the same in both
+> chains (A 1,166 vs 1,095; C 748 vs 755). On the re-pass the pairs meet on the measured
+> axis ×2.14 ± 0.19 (A) / ×1.67 ± 0.18 (C) more often than event-mixed pairs; production
+> shows none in A. Detail: `SAME_CHAMBER_PAIRS.md`, "Results on the is2_v2 re-pass".
+
 > ## SAME-CHAMBER PAIRS: TWO THREADS ON TWO BRANCHES -- 2026-10-07
 >
 > Two-track separation (`two-track-joint-fit`, worktree `nTof_x17_tt`) and single-track

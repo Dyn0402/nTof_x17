@@ -1,6 +1,6 @@
 # Same-chamber coincident pairs — the map of the work
 
-**Written 2026-10-07. This file is on both branches, with the same content, on purpose.**
+**Written 2026-10-07; both branches merged into main 2026-10-12 (`69c83b6`).**
 Read it first if you are working on reconstructing two tracks in one chamber,
 on either branch. It says what each thread has established, where its record
 is, and how the threads constrain each other. Update it on whichever branch you
@@ -102,6 +102,45 @@ chambers A and C on run_149 beam-off through-going cosmics.
 Tracks with t0 > 300 ns have deep depth bins that the 20-sample window cannot
 see, and the unregularised NNLS fills them. Their geometry is unreliable: 17 %
 of gated tracks. Record: STATUS 2026-10-02, OCTOBER O10, `qsum_runaway.py`.
+
+## Results on the is2_v2 re-pass (2026-10-12)
+
+**Report:** `<out>/same_chamber/report.html` (`make_same_chamber_report.py`). Inputs are
+`det_a_intra --arm A|C --t0-max 300 --axis measured --wall` (the re-pass also
+`--tan-max-true 0.6`), outputs in `~/x17_local/same_chamber/{prod,cf,is2}_{A,C}`.
+
+**The k used (Dylan, 2026-10-12): the capsule-focus k.** `kcal_is2_v2_cf` = kcal_is2_v2 ×
+1.12 on A and C (HANDOFF_TRACKING §22, s = 1.12 with the source offset fitted). The stage-3
+table is `~/x17_local/stage3_is2_v2_cf` (root disk: the data disk had 3.8 GB free). The 12 %
+tension with the in-beam muons stays **open**: every angle is also shown at the muon k
+(`stage3_is2_v2`).
+
+- **Most of production's same-chamber pairs are not two particles.** Their legs confirm on
+  the SiPM wall 7 % (A) / 9 % (C) of the time, against 44 % / 33 % for its tracks in
+  general. The re-pass keeps 41 k / 6.7 k pairs against production's 182 k / 147 k.
+- **One cut is required before any pair work: t0 ≤ 300 ns.** A fifth of gated is2_v2 A
+  tracks are flat (tan ≈ 0) with t0 on the 60 ns grid (450/510/570). Two in one trigger
+  make a 0° pair with Δt0 = 0 exactly. Uncut, they were 41 % of the re-pass pairs (T3).
+- **Wall "both legs confirmed" does not certify two particles.** The wall is four 100 mm
+  groups, so a junk leg beside a real one confirms in the same group. `wall2` (legs in
+  different groups, each clear of a boundary, both fired) does. It counts the same in both
+  chains: A 1,166 re-pass (33 runs) vs 1,095 production (31), C 748 vs 755 (33 vs 28).
+  Off-time accidentals 11 / 0. **The re-pass removes junk and keeps the real pairs.**
+- **Common vertex on the axis, re-pass only:** lines within 30 mm of each other and 20 mm of
+  the measured axis, real over event-mixed, all pairs **A ×2.14 ± 0.19, C ×1.67 ± 0.18**;
+  wall2 ×2.51 ± 0.46 in both. Production's all-pairs sample shows none in A (×0.94). It is
+  not duplicates: no vertexed leg pair is within 5 mm in either view or under 5°. It grows
+  with opening angle (A ×1.6 at 10–25°, ×3.3 above 40°). The muon k gives the same.
+- **The in-chamber Δt0 does not separate real pairs.** With the late class cut, all pairs
+  and wall2 pairs share the prompt core (A 51 % vs 56 % within ±75 ns).
+- **Two-track separation on the re-pass:** the loss is now confined below ~20 mm in either
+  view (production: below ~40 mm). The T1 fixes were off in this pass.
+- Median opening angle of wall2 pairs at the capsule-focus k: A 29°, C 28° (mixed null 27°
+  / 29°). No folded acceptance for wall2 yet, so no physics model is compared.
+
+**Next:** fold the wall2 acceptance and compare models; T1 on the in-situ bundles (re-derive
+F, then split-ab) so the < 20 mm pairs come back; the vertexed pairs' opening-angle spectrum
+once there are more of them.
 
 ## How the threads constrain each other
 

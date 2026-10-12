@@ -66,7 +66,8 @@ def load(src: Path) -> dict:
             P = pd.read_parquet(d / 'pairs.parquet', columns=PAIR_COLS)
             H = pd.read_csv(d / 'headline_per_run.csv')
             meta = json.loads((d / 'det_a_intra.meta.json').read_text())
-            out[(ch, arm)] = dict(P=P, H=H, meta=meta)
+            VX = pd.read_csv(d / 'vertex_excess.csv')
+            out[(ch, arm)] = dict(P=P, H=H, meta=meta, VX=VX)
     return out
 
 
@@ -90,7 +91,14 @@ def headline(D: dict) -> pd.DataFrame:
         vr = float(W.vertex.mean()) if len(W) else np.nan
         mvx = M[M.wall2]
         vm = float(mvx.vertex.mean()) if len(mvx) else np.nan
+        vx = x['VX'].set_index('selection')
+        va = vx.loc['all'] if 'all' in vx.index else None
         rows.append(dict(
+            vx_all_ratio=float(va.ratio) if va is not None else np.nan,
+            vx_all_err=float(va.err) if va is not None else np.nan,
+            vx_all_sigma=float(va.excess_sigma) if va is not None else np.nan,
+            vx_all_k=int(va.k_real) if va is not None else 0,
+            vx_all_exp=float(va.rate_mixed * va.n_real) if va is not None else np.nan,
             chain=ch, arm=arm, runs=int(H.run.nunique()), tracks=n_trk,
             tracks_in_multi=int(H.n_tracks_multi.sum()),
             trk_wall_net=trk_wall / n_trk if n_trk else np.nan,
@@ -227,6 +235,61 @@ def fig_open(D: dict, fd: Path):
     return fs.save(fig, fd / 'opening_angle', data=pd.DataFrame(dict(open_deg=mid, **data)))
 
 
+def fig_vertex(D: dict, fd: Path):
+    """How often the two lines meet on the axis, real over event-mixed."""
+    fig, ax = fs.figure(fs.FIG)
+    rows = []
+    sels = ('all', 'wall2')
+    labels = {'all': 'all pairs', 'wall2': 'two particles'}
+    chains = [c for c in ('prod', 'cf', 'is2') if any(k[0] == c for k in D)]
+    xt, xl = [], []
+    i = 0
+    for arm in ARMS:
+        for sel in sels:
+            for j, ch in enumerate(chains):
+                if (ch, arm) not in D:
+                    continue
+                v = D[(ch, arm)]['VX'].set_index('selection')
+                if sel not in v.index:
+                    continue
+                r = v.loc[sel]
+                x = i + (j - (len(chains) - 1) / 2) * 0.22
+                st = CH_STYLE[ch]
+                YMAX = 5.0
+                if r.ratio > YMAX:
+                    ax.annotate(f'{r.ratio:.1f} ± {r.err:.1f}', (x, YMAX), xytext=(-9, -1),
+                                textcoords='offset points', ha='right', va='top',
+                                fontsize=fs.BASE_PT * 0.75, color=st['color'],
+                                arrowprops=None)
+                    ax.plot(x, YMAX * 0.985, marker='^', ms=6, color=st['color'],
+                            mfc='white', mew=1.4, ls='')
+                else:
+                    ax.errorbar(x, r.ratio, yerr=r.err, fmt=fs.DET_MARKER[arm], ms=6,
+                                color=st['color'], mec=st['color'], mew=1.4,
+                                mfc=st['color'] if ch != 'prod' else 'white')
+                rows.append(dict(arm=arm, selection=sel, chain=ch, k_real=int(r.k_real),
+                                 n_real=int(r.n_real), k_mixed=int(r.k_mixed),
+                                 n_mixed=int(r.n_mixed), ratio=r.ratio, err=r.err,
+                                 sigma=r.excess_sigma))
+            xt.append(i)
+            xl.append(f'{arm}: {labels[sel]}')
+            i += 1
+    ax.axhline(1, color=fs.LINE, lw=1)
+    ax.set_xticks(xt, xl)
+    ax.set_ylabel('vertex rate, real / event-mixed')
+    ax.set_ylim(0, 5.0)
+    from matplotlib.lines import Line2D
+    ax.legend(handles=[Line2D([], [], color=CH_STYLE[c]['color'], marker='o', ls='',
+                              mec=CH_STYLE[c]['color'], mew=1.4,
+                              mfc=CH_STYLE[c]['color'] if c != 'prod' else 'white',
+                              label=CHAINS[c]) for c in chains],
+              frameon=False, fontsize=fs.BASE_PT * 0.85, loc='upper left')
+    fs.title(ax, 'On the re-pass, same-chamber pairs meet on the axis 2x more than chance',
+             'lines within 30 mm of each other and 20 mm of the measured axis; ratio to tracks from different triggers')
+    fs.preliminary(ax, 'lower right')
+    return fs.save(fig, fd / 'vertex_excess', data=pd.DataFrame(rows))
+
+
 def fig_sep(D: dict, fd: Path, chain='cf'):
     """Separation in the two views: real/mixed, where the reco merges two tracks."""
     fig, axs = fs.figure(fs.WIDE, ncols=2, sharey=True)
@@ -250,7 +313,7 @@ def fig_sep(D: dict, fd: Path, chain='cf'):
         ax.legend(frameon=False, fontsize=fs.BASE_PT * 0.8)
         fs.preliminary(ax, 'lower right')
     axs[0].set_ylabel('real / event-mixed (shape)')
-    fs.fig_title(fig, 'Below ~40 mm in either view the reconstruction sees one track',
+    fs.fig_title(fig, 'Below ~20 mm in either view the reconstruction sees one track',
                  f'{CHAINS[chain]}, all pairs; the joint two-track fit (off in this pass) targets this')
     return fs.save(fig, fd / f'separation_{chain}', data=pd.DataFrame(dict(sep_mm=mid, **data)))
 
@@ -302,6 +365,18 @@ def build(src: Path, out: Path) -> Path:
                  'in-chamber clock does not separate real pairs from the rest. '
                  'Its accidental pedestal is not flat, and the prompt fraction is '
                  'not identifiable from the shape (det_a_intra.dt0_models).'))
+    figs.append((fig_vertex(D, fd), 'Common vertex on the axis',
+                 'The fraction of pairs whose two reconstructed lines pass within 30 mm '
+                 'of each other at a point within 20 mm of the measured beam axis, over '
+                 'the same fraction for event-mixed pairs (tracks from different '
+                 'triggers, which share no vertex). Production: open markers; it shows '
+                 'no excess on its full pair sample, which junk dominates, and its '
+                 'two-particle ratios rest on 13 and 11 vertexed pairs (arrows: off '
+                 'scale, value printed). The re-pass '
+                 'shows one in both chambers and both selections. None of the vertexed '
+                 'real pairs are duplicates (no legs within 5 mm in either view, none '
+                 'under 5 deg). The excess grows with opening angle (A: x1.6 at 10-25 '
+                 'deg, x3.3 above 40 deg), as a real common vertex should.'))
     figs.append((fig_open(D, fd), 'Opening angle',
                  'Two-particle pairs with the capsule-focus k (points, Poisson '
                  'errors) and with the in-beam-muon k (dotted; angles 12 % shallower). '
@@ -310,7 +385,7 @@ def build(src: Path, out: Path) -> Path:
                  'wall group apart) and no pair physics. Shapes only.'))
     figs.append((fig_sep(D, fd, 'cf'), 'Two-track separation',
                  'Real over event-mixed pair density against the separation in each '
-                 'view, shape-normalised, all pairs. The deficit below ~40 mm is the '
+                 'view, shape-normalised, all pairs. The deficit below ~20 mm is the '
                  'reconstruction merging two tracks that share a strip band in one '
                  'view. This pass ran with the two-track fixes switched off.'))
 
@@ -332,11 +407,18 @@ def build(src: Path, out: Path) -> Path:
         f'in general. The re-pass keeps {g(cfA,"pairs","{:,}")} / {g(cfC,"pairs","{:,}")}. '
         f'<b>Pairs certified as two particles</b> (legs on two different wall groups, both fired) '
         f'number about the same in both chains: {g(cfA,"pairs_wall","{:,}")} / '
-        f'{g(cfC,"pairs_wall","{:,}")} in the re-pass against {g(pA,"pairs_wall","{:,}")} / '
-        f'{g(pC,"pairs_wall","{:,}")} in production. So the re-pass removes junk and keeps the real '
-        f'pairs. Their off-time accidental count is {g(cfA,"pairs_wallctrl","{:,}")} / '
+        f'{g(cfC,"pairs_wall","{:,}")} in the re-pass ({g(cfA,"runs","{:d}")} / {g(cfC,"runs","{:d}")} runs) '
+        f'against {g(pA,"pairs_wall","{:,}")} / {g(pC,"pairs_wall","{:,}")} in production '
+        f'({g(pA,"runs","{:d}")} / {g(pC,"runs","{:d}")} runs: production has no k for the rest). '
+        f'So the re-pass removes junk and keeps the real pairs. Their off-time accidental count is {g(cfA,"pairs_wallctrl","{:,}")} / '
         f'{g(cfC,"pairs_wallctrl","{:,}")}. Their median opening angle at the capsule-focus k is '
-        f'{g(cfA,"wallp_open_med","{:.0f}")}° (A) / {g(cfC,"wallp_open_med","{:.0f}")}° (C).</p>')
+        f'{g(cfA,"wall_open_med","{:.0f}")}° (A) / {g(cfC,"wall_open_med","{:.0f}")}° (C). '
+        f'<b>And the re-pass pairs share a vertex on the beam axis</b> more often than chance: '
+        f'{g(cfA,"vx_all_k","{:,}")} pairs in A against {g(cfA,"vx_all_exp","{:,.0f}")} expected '
+        f'from event mixing (×{g(cfA,"vx_all_ratio","{:.2f}")} ± {g(cfA,"vx_all_err","{:.2f}")}), '
+        f'{g(cfC,"vx_all_k","{:,}")} against {g(cfC,"vx_all_exp","{:,.0f}")} in C '
+        f'(×{g(cfC,"vx_all_ratio","{:.2f}")} ± {g(cfC,"vx_all_err","{:.2f}")}). Production\'s '
+        f'pairs show none in A (×{g(pA,"vx_all_ratio","{:.2f}")}).</p>')
 
     t1 = table(T, ['chain_name', 'arm', 'runs', 'tracks', 'pairs', 'pairs_per_1k_trk',
                    'trk_wall_net', 'leg_wall', 'pairs_wall1', 'pairs_wall1ctrl',
@@ -405,7 +487,7 @@ code{{font-size:12.5px}} li{{margin:.3em 0}}
 <li><b>The angle scale.</b> Every opening angle carries the unresolved 12 % muon/capsule k tension. The capsule k is adopted here and the muon k is shown beside it.</li>
 <li><b>The two-particle selection is an acceptance cut.</b> It needs both legs on the wall, in different 100 mm groups, so it removes small-separation pairs and pushes the opening angle up. The event-mixed null carries the same cut, but no folded acceptance has been thrown for this selection, so no physics model is compared here.</li>
 <li><b>Real pairs the wall cannot certify</b> (same group, or off the wall) are still in the "all pairs" sample, mixed with junk. Their number is not known.</li>
-<li><b>Two tracks closer than ~40 mm in either view are not reconstructed.</b> The joint two-track fit and x/y pairing exist (now on main) but were off in this pass, and their thresholds must be recalibrated on the in-situ bundles before they ride a re-pass.</li>
+<li><b>Two tracks closer than ~20 mm in either view are not reconstructed.</b> The joint two-track fit and x/y pairing exist (now on main) but were off in this pass, and their thresholds must be recalibrated on the in-situ bundles before they ride a re-pass.</li>
 <li><b>Two particles does not mean from the capsule.</b> Only a few two-particle pairs vertex on the axis. A shower, or a through-going particle with a delta ray, is also two particles. The vertex rate against the mixed null is the handle, and its statistics are thin.</li>
 <li><b>Only A and C.</b> B and D have no in-situ bundle. The pre-access runs are excluded.</li>
 </ul>
