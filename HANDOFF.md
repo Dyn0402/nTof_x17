@@ -1,16 +1,67 @@
 # Handoff
 
-## Detector model basics (cloud_basics) — updated 2026-10-12 pm (dylan-MS-7C84)
+## X width excess (UNSOLVED, needs follow-up) — updated 2026-10-12 (dylan-MS-7C84)
 
-**Resume (pm):** X width excess studied (FINDINGS §29, report `~/x17/cosmic_bench/cloud_basics/xwidth/report.html`).
-It is on every bench dataset (5 chambers, 8 runs + det3 drift/gain scans): D_T 400–520 vs 95/5-wet-from-v 270–325, i.e.
-+300–430 µm/√cm in quadrature. It is gain-independent and present over the whole area; only the early (prompt) width
-grows at the edges. No Ar/iso/water mix fits det3's v(E) and D_T(E) together (χ² 90/36). The beam X (template-free)
-is also above Magboltz, +286 at 92 V/cm. Open: Magboltz's water model vs a non-gas depth term; a dry-gas bench run decides.
-**Done:** condor 4440956 folded in (170/175; 5 dry near-argon points unfinished). To refresh: `scp 'lxplus:cloud_basics_condor/att/magboltz_benchi*'
-cloud_basics/results/iso/ && python iso_fit.py && python make_xwidth_report.py` (det3 joint χ² 80/36).
-Scan sub-run waveforms were pulled to job scratch only (re-pull with rsync, see §29); caches are kept.
-Branch bench-pin-rc is 40+ commits ahead of main (the whole cloud_basics line) and has not been merged: decide.
+**Resume:** OPEN PROBLEM. Bench X widens ~dry-like while v says wet; no gas fits. Next: test it with a dry-gas bench run or det3 Y.
+
+**Goal:** explain why the X cluster width grows with drift depth faster than Magboltz allows. Until it is explained the
+detector model's drift diffusion is empirical (Dd fitted from X widths), and the re-pass stays on hold (Dylan, 10-09).
+
+**Established (FINDINGS §29; report `~/x17/cosmic_bench/cloud_basics/xwidth/report.html`):**
+- Every bench dataset shows it (5 chambers, 8 runs, det3 drift scan at 6 fields and 2 gain scans). X D_T is 400–520 µm/√cm.
+  Ar/iso 95/5 with the water each run's v needs (0.6–1.0 %) gives 270–325. The extra is +300–430 in quadrature.
+- It does not depend on gain (det3, 425–505 V). It is present over the whole active area, with no hot spot. Only the
+  early (prompt) width depends on position: ×~2 in ⟨x²⟩ at the edges. That is a separate edge/footprint effect.
+- It lands at the anode (no X undershoot, rc_D_x → 0, §17). It is not track inclination (§28), and δ-rays do not
+  grow with depth.
+- No Ar/iso/water mixture fits det3's v(E) and D_T(E) together: joint χ² 80/36 (grid iso 0.5–8 %, water 0–1.5 %).
+  An iso-poor gas (~1 %) can fit a single-field chamber (det4, det7), but not det6, and not det3's scan.
+- The beam has it too. det4 run_71 X, template-free fit: +118 / +143 / +286 in quadrature at 243 / 150 / 92 V/cm,
+  above the thermal floor at 92. This is indicative only: at that field the drift time is 3× the window.
+- It is closer to per-depth than per-time (det6/det7 ratio 0.86 ± 0.11 vs 1.16 per-time, ~2.7σ). Bench and beam
+  per-time differ ×20.
+
+**Hypotheses left, not separable with data in hand:**
+1. Magboltz's water model: water slows electrons as predicted but cools them transversely less. Both setups are wet.
+2. A non-gas lateral term linear in drift depth, not in any current model.
+3. (weaker) A contaminant other than water (N2, CO2, …), or isobutane depletion beyond what det3 allows.
+
+**Next steps (follow-up):**
+1. Decisive: a bench run in fresh, dry gas (new bottle, high flow, long flush), with a drift scan, one chamber.
+   If X D_T stays ~480 and v rises to dry, it is hypothesis 1 (Magboltz water). If the excess persists in dry gas,
+   it is hypothesis 2.
+2. Cheap: det3 drift-scan **Y** view (caches already hold Y). A joint X+Y fit per field: does Y's Dd agree with X's?
+3. Magboltz cross-check: the same mixtures in another code or another cross-section set (Biagi water vs LXCat), or
+   published Ar/iso/H2O D_T data.
+4. Beam: get a beam X template (re-extract the run_71 bundle) and redo `x_width_beam.py` with the template model.
+   Use the 25.6° runs (run_62/63) for a known-angle cross-check.
+5. Other contaminants: add N2 / CO2 / air columns to `make_iso_jobs.py` (no O2 on the bench, §21).
+6. The edge early-width effect is separate: worth a look on its own (frame/field distortion, footprint, M3 at the edges).
+
+**Decision for the kernel meanwhile:** take Dd from the X stack (≈ dry), not from v (§28). Never carry a v-derived water
+fraction into D_T.
+
+**Key files & commands** (`sps_beam_test_26/analysis/cloud_basics/`, run with `../../../.venv/bin/python`):
+- `headon_cache.py <key> [--subrun S --base DIR]` — head-on caches → `~/x17/cosmic_bench/cloud_basics/xwidth/caches/`
+  (kept). The det3 scan sub-run *waveforms* were only in job scratch (gone). Re-pull with
+  `rsync -a --exclude='long_run*' --include='*/' --include='decoded_root/***' --include='m3_tracking_root/***' --exclude='*'
+  lxplus:/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/Run/mx17_det3_saturday_scan_6-27-26/ <dir>/mx17_det3_saturday_scan_6-27-26/`
+  and copy run_config.json in. (/media is nearly full, so use the nvme.)
+- `x_width.py`, `x_width_map.py`, `x_width_beam.py` → `results/x_width*.json`
+- `make_iso_jobs.py [--ext]` + lxplus `~/cloud_basics_condor/att/condor_mb_iso{,ext}.sub` (condor 4440949, 4440956) →
+  `results/iso/`; `iso_fit.py` → `results/iso_fit.json`; `make_xwidth_report.py` → report.
+- Refresh after the last 5 Magboltz points (dry, near-pure argon) land:
+  `scp 'lxplus:cloud_basics_condor/att/magboltz_benchi*' results/iso/ && python iso_fit.py && python make_xwidth_report.py`
+
+**Gotchas:**
+- At ≳300 V/cm, v is not monotonic in water for 95/5. Inverting v → water there is ambiguous, so take the closest grid value.
+- det3 gap 27.9 mm (dished cathode): scale v ×27.9/30 and D_T ×√(30/27.9) against fits made with GAP = 30.
+- Stack v (GAP/T) runs ~10 % below bundle v on det2/4/7. D_T is ~insensitive (σ_drift/√gap), but the water inference is not.
+- Branch bench-pin-rc is 40+ commits ahead of main (the whole cloud_basics line) and has never been merged: Dylan to decide.
+
+## Detector model basics (cloud_basics) — updated 2026-10-12 (dylan-MS-7C84)
+
+**Resume (pm):** see the "X width excess (UNSOLVED)" section above. It is the open blocker for freezing the kernel.
 
 **Resume (am):** det4 pinned-D_rc arm DONE (FINDINGS §28): beam 2.2e-4 costs nothing on the bench (stack rms +0.3 %,
 held-out Y +0.01–0.03 ± 0.02–0.03°); §27's 1.5–2.7× was rc_drift's assumed D_T — the joint X+Y fit pins Dd (X has no

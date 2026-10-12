@@ -6,6 +6,11 @@ The report is generated: `~/x17/cosmic_bench/cloud_basics/attachment/report.html
 
 ## Where things stand (2026-10-10)
 
+- **OPEN PROBLEM (2026-10-12, §29): the X width excess.** On every bench dataset X widens with depth about as fast as
+  dry gas (D_T 400–520 µm/√cm), while v needs 0.6–1 % water (Magboltz 270–325). It does not depend on gain, it covers
+  the whole chamber, and no Ar/iso/water mix fits det3's v(E) and D_T(E). The beam X shows it too. Unexplained;
+  follow-up list in HANDOFF.md ("X width excess"). Meanwhile Dd comes from the X widths, not from v.
+
 - **Late drift charge is lost in the beam gas, in both views** (§16). It is attachment: the loss rate is
   the same per unit time at three fields, there is no undershoot, X = Y, and it is flat in rate, spill,
   position and gain.

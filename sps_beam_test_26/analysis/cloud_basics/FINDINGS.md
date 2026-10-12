@@ -740,6 +740,9 @@ tight-|tan| stack. None of these choices moves det4's held-out resolution by mor
 
 ## 29 · The X width excess: every dataset, not the gas, everywhere on the chamber (2026-10-12)
 
+> **Status: UNSOLVED, needs follow-up.** The mechanism is not identified. The follow-up list (dry-gas bench run, det3 Y,
+> a Magboltz cross-check, a beam template, other contaminants) is in HANDOFF.md, section "X width excess".
+
 Dylan asked whether the X widening that Magboltz cannot explain (§28) holds on every dataset, what it
 could be, and whether it depends on position. Report: `~/x17/cosmic_bench/cloud_basics/xwidth/report.html`
 (`make_xwidth_report.py`).
