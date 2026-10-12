@@ -65,7 +65,7 @@ proposed, but Dylan has not picked any yet.
 
 ## Beam-off cosmics: angle response + in-situ reco — updated 2026-10-12 (dylan-MS-7C84)
 
-**Resume:** A-scale: capsule focus wants is2 ×1.12 on A and C. Not geometry, not the kernel. Next: (s,dx) focus on the G4 sim.
+**Resume:** muons say is2 scale 1.00, capsule focus 1.12 (A and C). Next: measure in-beam muons directly in is2_v2.
 
 **Goal:** a reconstruction that measures angles correctly at n_TOF, head-on included, so same-chamber pairs can be
 reconstructed.
@@ -88,8 +88,15 @@ report `results/fullpass_is2_v2/report.html`) and §21 (capsule focus, 0.8 cut r
     C gets no gain (det7 constants make y +10 %). Raw scale moves < 2 %.
   - The opt-in RC kernel files (`wft/model.py`, `wft/calib.py` + tests) were brought from `mx17-paper-status` into
     main.
+- 10-12 (later): slide note updated with §19–22: https://dylan-neff.web.cern.ch/notes/ac-insitu-angles.html
+  (`ntof_cosmics/make_insitu_deck.py`, slides 13–21: is2_v2 pass, focus, steep tracks, scale by population,
+  the muon-vs-capsule tension, RC kernel, problems, next steps). c549bcf on main.
 
 **Next steps:**
+0. (Cheapest, proposed to Dylan, not started) Measure the in-beam A–C muons' scale directly in the is2_v2
+   stage-2/3 output instead of inferring it through production (the pooled norm in
+   `/media/dylan/data/x17/ntof_cosmics/inbeam_through_goers/pooled_norm.csv` was measured with the production bundle).
+   Muons at 1.00 ⇒ the 12 % is real; ~1.1 ⇒ it was the inference.
 1. Run `focus_offset` logic on the g4_digi sim chain (`g4_*_is2_full`) with the data's dx. Then vary the simulated
    source (capsule walls, material behind the axis) to see what turns muon-correct angles into s 1.12. Or find an
    electron-specific angle truth.
