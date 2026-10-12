@@ -138,7 +138,17 @@ tension with the in-beam muons stays **open**: every angle is also shown at the 
 - Median opening angle of wall2 pairs at the capsule-focus k: A 29°, C 28° (mixed null 27°
   / 29°). No folded acceptance for wall2 yet, so no physics model is compared.
 
-**Next:** fold the wall2 acceptance and compare models; T1 on the in-situ bundles (re-derive
+- **Physics (`same_chamber_physics.py`, report section "are there aluminium e⁺e⁻ pairs?"):**
+  the vertexed excess sits over the capsule (A: 73 of 91 excess pairs at y 0–75 mm, capsule
+  +3…+83). Folded through the detector, its opening angle fits multiple-scattered ²⁷Al
+  conversion pairs (A χ² 6.0/4) and two unrelated leptons (3.6/4) alike; the preference flips
+  with k. Unscattered conversion (Geant4 truth angle) is excluded (47/4). So: common-vertex
+  lepton pairs from the capsule, consistent with aluminium, but e⁺e⁻ vs two Compton electrons
+  of one capture is not separable without energy or charge. True common-vertex pairs are
+  ~0.7 % (A) / ~4 % (C) of all same-chamber pairs.
+
+**Next:** a Geant4 truth reduction of same-arm lepton pairs by origin (conversion / two
+Compton / Compton + Møller) to turn the excess into an e⁺e⁻ statement; fold the wall2 acceptance and compare models; T1 on the in-situ bundles (re-derive
 F, then split-ab) so the < 20 mm pairs come back; the vertexed pairs' opening-angle spectrum
 once there are more of them.
 

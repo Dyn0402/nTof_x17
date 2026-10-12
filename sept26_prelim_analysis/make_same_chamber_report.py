@@ -318,6 +318,71 @@ def fig_sep(D: dict, fd: Path, chain='cf'):
     return fs.save(fig, fd / f'separation_{chain}', data=pd.DataFrame(dict(sep_mm=mid, **data)))
 
 
+MODEL_STYLE = {'Al conversion': dict(color=fs.ACCENT, ls='-'),
+               'Al internal': dict(color=fs.COPPER, ls='--'),
+               'independent': dict(color=fs.MUTED, ls='-.'),
+               'Al conversion, no scattering': dict(color=fs.TRACK, ls=':')}
+MODEL_LABEL = {'Al conversion': '27Al γ conversion (Geant4, after scattering)',
+               'Al internal': '27Al internal pairs (after the wall)',
+               'independent': 'two leptons, unrelated directions',
+               'Al conversion, no scattering': '27Al conversion, no scattering'}
+
+
+def fig_physics_y(Y: pd.DataFrame, fd: Path):
+    """Where along the beam the common-vertex pairs sit."""
+    from sept26_prelim_analysis.same_chamber_physics import CAPSULE_V
+    fig, axs = fs.figure(fs.WIDE, ncols=2, sharey=False)
+    for ax, arm in zip(axs, ARMS):
+        g = Y[(Y.arm == arm) & (Y.chain == 'cf')]
+        ax.axvspan(*CAPSULE_V, color=fs.GRID, zorder=0, label='capsule (measured height)')
+        ax.step(g.mid, g.expected, where='mid', color=fs.MUTED, lw=1.3,
+                label='chance (event-mixed)')
+        ax.errorbar(g.mid, g.real, yerr=np.sqrt(g.real), fmt=fs.DET_MARKER[arm], ms=4.5,
+                    color=fs.DET_COLOR[arm], label='real pairs')
+        ax.set_xlabel('vertex position along the beam, y (mm)')
+        ax.set_title(f'chamber {arm}', loc='left', fontsize=fs.BASE_PT)
+        ax.legend(frameon=False, fontsize=fs.BASE_PT * 0.78, loc='upper left')
+        fs.preliminary(ax)
+    axs[0].set_ylabel('vertexed pairs / 25 mm')
+    fs.fig_title(fig, 'The excess common-vertex pairs come from the capsule',
+                 'pairs whose two lines meet within 20 mm of the axis; re-pass, capsule-focus k')
+    return fs.save(fig, fd / 'physics_vertex_y', data=Y)
+
+
+def fig_physics_open(E: pd.DataFrame, F: pd.DataFrame, C: pd.DataFrame, fd: Path):
+    """The excess opening angle against the folded source models."""
+    fig, axs = fs.figure(fs.WIDE, ncols=2, sharey=True)
+    for ax, arm in zip(axs, ARMS):
+        e = E[(E.arm == arm) & (E.chain == 'cf')]
+        tot = e.excess.sum()
+        ax.errorbar(e.mid, e.excess / tot, yerr=e.err / tot, fmt=fs.DET_MARKER[arm], ms=5,
+                    color=fs.DET_COLOR[arm], label=f'data excess ({tot:.0f} pairs)', zorder=5)
+        for model, st in MODEL_STYLE.items():
+            f = F[(F.arm == arm) & (F.model == model)]
+            v = f.vertexed.to_numpy()
+            c = C[(C.arm == arm) & (C.chain == 'cf') & (C.model == model)]
+            ax.step(f.mid, v / v.sum(), where='mid', lw=1.5, **st,
+                    label=MODEL_LABEL[model])
+            if len(c):
+                ax.text(0.98, 0.95 - 0.07 * list(MODEL_STYLE).index(model),
+                        f'χ² {c.chi2.iloc[0]:.1f}/{c.ndf.iloc[0]}', transform=ax.transAxes,
+                        ha='right', va='top', fontsize=fs.BASE_PT * 0.8, color=st['color'])
+        ax.axhline(0, color=fs.LINE, lw=0.8)
+        ax.set_xlabel('opening angle (deg)')
+        ax.set_title(f'chamber {arm}', loc='left', fontsize=fs.BASE_PT)
+        ax.legend(handles=[h for h in ax.get_legend_handles_labels()[0][-1:]],
+                  frameon=False, fontsize=fs.BASE_PT * 0.8, loc='upper left')
+        fs.preliminary(ax, 'lower right')
+    hs, ls_ = axs[0].get_legend_handles_labels()
+    fig.legend(hs[:-1], ls_[:-1], loc='lower center', ncol=2, frameon=False,
+               fontsize=fs.BASE_PT * 0.82, bbox_to_anchor=(0.5, -0.1))
+    axs[0].set_ylabel('fraction / 10°')
+    fs.fig_title(fig, 'Scattered Al pairs and unrelated lepton pairs both fit; unscattered pairs do not',
+                 'excess = vertexed real − chance, per angle bin; models folded through acceptance, '
+                 'two-track resolution, angular resolution and the vertex test')
+    return fs.save(fig, fd / 'physics_opening_angle', data=E)
+
+
 # --------------------------------------------------------------------------- #
 # the page
 # --------------------------------------------------------------------------- #
@@ -439,6 +504,58 @@ def build(src: Path, out: Path) -> Path:
                 'vertex rate real / mixed'],
                [None, None, '{:,}', '{:.0%}', '{:.0%}', '{:.1f}°',
                 '{:.1f}°', '{:.1f}°', '{:.0f} mm', '{:.0f} mm', '{:,}', '{:.2f}'])
+    phys_html = ''
+    ph = {k: out / f'physics_{k}.csv' for k in ('vertex_y', 'excess_spectrum',
+                                                'folded_models', 'compare')}
+    if all(p.exists() for p in ph.values()):
+        Y, E, F, C = (pd.read_csv(ph[k]) for k in ('vertex_y', 'excess_spectrum',
+                                                   'folded_models', 'compare'))
+        pfig = [(fig_physics_y(Y, fd), 'Vertex position along the beam',
+                 'Vertexed same-chamber pairs against the chance expectation from event '
+                 'mixing. The excess sits over the capsule, whose height is measured '
+                 'independently (capsule_y, +33 ± 3 mm). The vertex resolution along the beam '
+                 'has not been measured.'),
+                (fig_physics_open(E, F, C, fd), 'What the excess is',
+                 'The excess opening-angle spectrum (vertexed real pairs minus the chance '
+                 'rate, bin by bin) against four source shapes, each thrown from the capsule '
+                 'wall through the active area, the |tan| < 0.6 cut, the measured two-track '
+                 'and angular resolution and the same vertex test. Shape-only χ².')]
+        def mrow(arm, chain, model, col, fmt):
+            r = C[(C.arm == arm) & (C.chain == chain) & (C.model == model)]
+            return fmt.format(r[col].iloc[0]) if len(r) else '–'
+        ctab = '<table><thead><tr><th>model</th>' + ''.join(
+            f'<th>{a}, {CHAINS[c]}</th>' for a in ARMS for c in ('cf', 'is2')) + \
+            '<th>vertex efficiency A / C</th></tr></thead><tbody>'
+        for model in MODEL_STYLE:
+            ctab += f'<tr><td>{html.escape(MODEL_LABEL[model])}</td>' + ''.join(
+                '<td>' + mrow(a, c, model, 'chi2', '{:.1f}') + ' / ' + mrow(a, c, model, 'ndf', '{:d}')
+                + '</td>' for a in ARMS for c in ('cf', 'is2'))
+            ctab += ('<td>' + mrow('A', 'cf', model, 'frac_model_vertexed', '{:.2f}') + ' / '
+                     + mrow('C', 'cf', model, 'frac_model_vertexed', '{:.2f}') + '</td></tr>')
+        ctab += '</tbody></table>'
+        exA = E[(E.arm == 'A') & (E.chain == 'cf')].excess.sum()
+        exC = E[(E.arm == 'C') & (E.chain == 'cf')].excess.sum()
+        effA = C[(C.arm == 'A') & (C.chain == 'cf') & (C.model == 'Al conversion')].frac_model_vertexed.iloc[0]
+        effC = C[(C.arm == 'C') & (C.chain == 'cf') & (C.model == 'Al conversion')].frac_model_vertexed.iloc[0]
+        nA = T[(T.chain == 'cf') & (T.arm == 'A')].pairs.iloc[0]
+        nC = T[(T.chain == 'cf') & (T.arm == 'C')].pairs.iloc[0]
+        phys_html = f"""<h2>Physics: are there aluminium e⁺e⁻ pairs?</h2>
+<p class="verdict"><b>There are common-vertex lepton pairs from the capsule, and they look like what aluminium makes. But this setup cannot tell an e⁺e⁻ pair from two Compton electrons of the same capture.</b>
+The vertexed excess is {exA:.0f} pairs in A and {exC:.0f} in C, and it sits over the capsule. At the toy's vertex efficiency
+(~{effA:.2f} in A, ~{effC:.2f} in C) that is ~{exA / effA:.0f} / ~{exC / effC:.0f} true common-vertex pairs: about {100 * exA / effA / nA:.1f} % / {100 * exC / effC / nC:.0f} % of all same-chamber pairs.
+The rest are two particles from different sources sharing a trigger, plus leftover junk.
+Folded through the detector, the excess opening-angle spectrum fits multiple-scattered ²⁷Al conversion pairs and two leptons with unrelated directions about equally well. Which one fits better flips with the k: the capsule-focus k slightly favours unrelated leptons, the muon k favours conversion pairs.
+Internal pairs fit somewhat worse. <b>Unscattered</b> conversion pairs (the Geant4 truth angle, median 15°) are excluded: χ² ≈ 48/4 in A.
+So the multiple scattering in the capsule wall is visible in the data, as Geant4 predicts (truth median 22° → 46° at the chambers for all Al pairs).</p>
+<p>Geant4's thermal accounting (Athens funnel, F3) says that among captures putting charge in a drift gap, Compton electrons made in the capsule outnumber pair leptons about 4 : 1.
+For two leptons in one chamber the ratio is not in the accounting: it needs a truth reduction of the Geant4 trigger files that counts, per event, same-arm lepton pairs by origin (one conversion, two Compton electrons, Compton + Møller).
+That count, together with the per-pair trigger and readout livetime, would turn this excess into an e⁺e⁻ measurement or a limit.</p>
+{ctab}
+<p class="sub">χ² per model and chain (shape only, bins with real vertexed pairs). Toy: vertices on the capsule wall (r = 10 mm, measured height), 1 mm hit and measured tan resolution with tails, measured per-view two-track efficiency, det_a_intra's vertex test. <code>same_chamber_physics.py</code>.</p>
+""" + ''.join(
+            f'<figure><img src="figures/{p.name}" alt="{html.escape(t)}">'
+            f'<figcaption><b>{html.escape(t)}.</b> {html.escape(c)}</figcaption></figure>'
+            for p, t, c in pfig)
     fig_html = ''.join(
         f'<figure><img src="figures/{p.name}" alt="{html.escape(t)}">'
         f'<figcaption><b>{html.escape(t)}.</b> {html.escape(c)}</figcaption></figure>'
@@ -482,6 +599,7 @@ code{{font-size:12.5px}} li{{margin:.3em 0}}
 <p class="sub">Prompt = |Δt0| ≤ 75 ns. Line DCA = closest approach of the two reconstructed lines. Vertexed = the lines meet within 30 mm of each other and 20 mm of the measured axis.</p>
 <h2>Figures</h2>
 {fig_html}
+{phys_html}
 <h2>What this does not rule out</h2>
 <ul>
 <li><b>The angle scale.</b> Every opening angle carries the unresolved 12 % muon/capsule k tension. The capsule k is adopted here and the muon k is shown beside it.</li>
