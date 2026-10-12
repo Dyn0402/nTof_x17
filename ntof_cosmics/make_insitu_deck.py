@@ -134,7 +134,7 @@ def _core(o, arm, chain):
 
 
 # --------------------------------------------------------------------------- #
-def s_cover(D, o):
+def s_cover(D, o, v):
     n = o['norm'][o['norm'].sep_max == 10]
     dev = (1 - n.norm).abs()
     g = o['gate'].set_index(['arm', 'chain'])
@@ -145,24 +145,23 @@ def s_cover(D, o):
                   'muons crossing A and C during beam runs, the only angle truth that is not a model of the source.',
                   tip='pooled_norm.csv, sep < 10 mm: ' + ', '.join(
                       f'{r.arm} {r.view} {r.norm:.3f} ± {r.norm_err:.3f} (n {int(r.pooled_n)})' for r in n.itertuples())),
-        sd.bignum(f'{100 * pA:.0f} %', 'production\'s typical angle error, A', DRED,
-                  'production tans are too steep on cosmic truth; is2 closes A to '
-                  f'{100 * _core(o, "A", "is2_v1"):.0f} % and C to {100 * _core(o, "C", "is2_v1"):.0f} %.',
-                  tip='median |delivered/true − 1| over |tan| 0.08–0.6, x and y, held-out run_149 A–C tracks '
-                      '(repass_readiness.py cosmic).'),
-        sd.bignum(f'{g.loc[("C", "production"), "true_tan_reach"]:.2f} → {g.loc[("C", "is2_v1"), "true_tan_reach"]:.2f}',
-                  'C\'s angular reach under the re-pass', '#f0c060',
-                  'a fixed raw-tan cut in the fit changes meaning with v. Decide it before launching.',
-                  tip=f'TAN_MAX = 0.6 raw × k. Confirmed C tracks on run_145: m3 {sc.loc[("C", "m3"), "wall_excess"]:,} '
-                      f'→ is2_v1 {sc.loc[("C", "is2_v1"), "wall_excess"]:,}.')])
-    body = (sd.kicker('Chambers A and C · in-situ angle calibration · 8 Oct 2026')
+        sd.bignum(f'×{_sum_ratio(v, "A", "confirmed_acc"):.2f} / ×{_sum_ratio(v, "C", "confirmed_acc"):.2f}',
+                  'wall-confirmed tracks, is2_v2 ÷ production', DGREEN,
+                  'A / C over the whole campaign, |true tan| < 0.6: the two-sided re-pass.',
+                  tip='pilot_compare.py --version is2_v2: sums over run/arms both chains calibrate.'),
+        sd.bignum(f'×{_offset(v, "A").s_best:.2f}', 'what the capsule asks of is2 angles', '#f0c060',
+                  'on both arms, after the 9.5 mm source offset. The muons ask for ×1.00. Unresolved.',
+                  tip=f'joint (s, dx) focus fit, 20–80 ms, wall fired, |tan| 0.1–0.5: A {_offset(v, "A").s_best:.2f}, '
+                      f'C {_offset(v, "C").s_best:.2f}. Geant4 puts a correct scale at 0.975–1.025.')])
+    body = (sd.kicker('Chambers A and C · in-situ angle calibration · updated 12 Oct 2026')
             + '<h1 style="font-size:72px;font-weight:600;line-height:1.08;letter-spacing:-2px;width:1660px">'
-              'The in-situ calibration measures A and C angles to a few per cent; one cut in the fit '
-              'has to be settled before the campaign re-pass</h1>'
+              'The is2_v2 re-pass confirms 1.5–1.8× production\'s tracks; muons and the capsule '
+              'still disagree on the angle scale by 12 %</h1>'
             + '<div style="flex:1"></div>'
             + f'<div style="display:flex;gap:64px">{nums}</div>')
     D.slide('cover', body, '''
-<p><b>What this note is.</b> A review of the chamber A and C angle work on branch <code>beam-off-cosmics</code> (6–8 Oct), written before spending ~4300 CPU-h on the <code>is2_v1</code> campaign re-pass. It says how good the in-situ calibration is, which problems are still open, and which small checks are worth doing first. One new check, made for this note, found a cut in the fit whose meaning changes with the bundle (slide 11).</p>
+<p><b>Update, 12 Oct.</b> Slides 13–21 are new: the is2_v2 full pass against production, the capsule focus scan, the steep tracks, the population and offset tests of the focus scale, the muon-vs-capsule tension with what has been ruled out, the physical-kernel test, and the updated problems and next steps (HANDOFF_TRACKING §19–22). Slides 2–12 are the 8 Oct pre-launch review, kept as the record; slide 11's cut has since been resolved.</p>
+<p><b>What this note was.</b> A review of the chamber A and C angle work on branch <code>beam-off-cosmics</code> (6–8 Oct), written before spending ~4300 CPU-h on the <code>is2_v1</code> campaign re-pass. It says how good the in-situ calibration is, which problems are still open, and which small checks are worth doing first. One new check, made for this note, found a cut in the fit whose meaning changes with the bundle (slide 11).</p>
 <p><b>Sample.</b> Cosmic truth is run_149 (beam-off, 87 sub-runs, August), held-out split. Beam checks use run_145 stat090_0000 (the re-pass smoke sub-run, all 7 tags) and pooled in-beam muons from 36 production runs. Every production run is on the post-23-July (noisy) readout configuration, so the noise-floor boundary does not split this work.</p>
 <p>Full record: <code>ntof_cosmics/HANDOFF_TRACKING_2026-10-06.md</code> §7–13. Code for the new checks: <code>ntof_cosmics/repass_readiness.py</code>.</p>''',
             dark=True, short='Cover')
@@ -490,7 +489,7 @@ def s_gate(D, o):
         sd.callout('The cut is now what the bench meant (≈ 0.6 true), but the acceptance in angle shrinks, and '
                    'nothing has tested the reconstruction above |tan| 0.6. Decide the reach, then validate it.', GOLD, 23),
         _scan_plot(o), gap=18, w=640)
-    body = sd.title('A fixed raw-tan cut in the fit halves C\'s angular reach under the in-situ bundles',
+    body = sd.title('A fixed raw-tan cut halved C\'s reach; fixed by TAN_MAX 1.0 in the fit and a true-angle cut',
                     'wft.reco plausibility (|raw tan| < 0.6) in true-tan units, and what it does to tracks on the smoke sub-run.')
     body += sd.row(left, right, gap=48)
     D.slide('gate', body, '''
@@ -530,90 +529,440 @@ def s_shift(D, o):
             short='Per-track shift')
 
 
-def s_problems(D, o):
-    W = dict(stop=RED, before=GOLD, after=GREEN, open=GREY)
-    items = [
-        ('stop', 'Raw-tan plausibility cut', 'stage 2', 'C reach 0.97 → 0.58 true; −10 % confirmed C tracks', 'slide 11'),
-        ('before', 'is2 bundles never yield-tested on beam', 'stage 2', 'the §10a purity test used the production bundle', 'slide 11'),
-        ('before', 'Min-3 re-pairs 5–13 % of busy events', 'stage 2', 'x/y pairing arbitration is T1\'s xy_pairing; not in is2_v1', '§10a'),
-        ('open', 'Late tracks (t0 > 300 ns)', 'stage 2', '17 % of gated tracks have wrong geometry; 31 % of min-3 gains are late', 'T3 / O10'),
-        ('open', 'C x non-linearity, C core tails', 'stage 2', '1.03 → 0.89 across |tan|; tails 8–13 %, not the kernel', '§9'),
-        ('open', 'Near normal', 'stage 2 / flags', '|tan| < 0.02 σ 0.15; positive bias < 0.08; slope_reliable, tan_err', '§7d, §9'),
-        ('after', 'Muon norm inferred via production', 'stage 3', 're-derive from the re-pass\'s own in-beam muons', 'slide 8'),
-        ('after', 'x–y norm spread, per-period stats', 'stage 3', 'A 3 % x–y; n ≈ 50–250 muons per period', 'slide 8'),
-        ('open', 'y band residual (3× x)', 'model', 'source extent along the capsule\'s long axis', 'slide 10'),
-        ('open', 'B and D', 'all', 'no in-situ truth yet; angles null in is2_v1', 'next study'),
+# --------------------------------------------------------------------------- #
+# is2_v2 full pass, the capsule focus and the scale tension (§20–22, 10-11/12)
+# --------------------------------------------------------------------------- #
+FP = RES / 'fullpass_is2_v2'
+FOCUS = RES / 'capsule_focus'
+FSPLIT = RES / 'focus_split'
+
+#: §22's physical-kernel test (insitu_paired.py, 547 held-out run_149 events); the
+#: CSVs live in ~/scratch/ntof_insitu, outside the repo, so the table is logged here.
+RC = dict(src='§22 (recipe_rc.sh + insitu_paired.py; each label at its own TRAIN scale)', rows=[
+    ('A · rcm3 (det3 constants)', '+0.0003 ± 0.0016', '−0.0020 ± 0.0012 (−7 %)', '−0.011 / −0.015', '−0.101 → −0.062', '−1.9 %'),
+    ('C · rcm7 (det7 constants)', '+0.0007 ± 0.0016', '+0.0039 ± 0.0016 (+10 %)', '−0.017 / −0.025', '−0.107 → −0.060', '−0.7 %'),
+    ('C · rcm6 (det6 constants)', '+0.0002 ± 0.0015', '+0.0006 ± 0.0021', '+0.002 / −0.021', 'unchanged', '+0.7 %')])
+
+#: Geant4 calibration of the focus estimator (§21): sharpest s with the true / reco sim angles
+G4FOCUS = dict(true=(0.975, 1.025), reco=(1.00, 1.025), floor=(15, 16))
+
+#: capsule geometry used by stage 3 (beam axis to chamber), and the geometric x-reach of a capsule track
+D_AXIS, TANX_GEOM = 234.6, 0.64
+
+
+def load_v2() -> dict:
+    o = dict(pc=pd.read_csv(FP / 'pilot_compare.csv'), cbt=pd.read_csv(FP / 'confirm_by_tan.csv'),
+             st=pd.read_csv(FP / 'same_track_confirm.csv'),
+             pc08=pd.read_csv(RES / 'fullpass_is2_v2_acc08' / 'pilot_compare.csv'))
+    o['focus'] = pd.concat([pd.read_csv(FOCUS / f'focus_{c}.csv') for c in ('prod', 'is2_v2', 'is2_v2_acc08')])
+    o['split'] = pd.read_csv(FSPLIT / 'focus_split_is2_v2.csv')
+    o['off'] = pd.read_csv(FSPLIT / 'focus_offset_is2_v2.csv')
+    return o
+
+
+def _v2_ratio(o, arm, col='confirmed_acc_vs_prod'):
+    pc = o['pc']
+    q = pc[(pc.chain != 'prod') & (pc.arm == arm) & pc.calibrated]
+    prod = pc[(pc.chain == 'prod') & (pc.arm == arm) & pc.calibrated]
+    q = q[q.run.isin(prod.run)]
+    return q.sort_values('run')
+
+
+def _sum_ratio(o, arm, col):
+    pc = o['pc']
+    both = set(pc[(pc.chain == 'prod') & (pc.arm == arm) & pc.calibrated].run) & \
+        set(pc[(pc.chain != 'prod') & (pc.arm == arm) & pc.calibrated].run)
+    q = pc[(pc.arm == arm) & pc.run.isin(both)]
+    return q[q.chain != 'prod'][col].sum() / q[q.chain == 'prod'][col].sum()
+
+
+def _offset(o, who, lo=0.1, hi=0.5):
+    f = o['off']
+    return f[(f.who == who) & np.isclose(f.tan_lo, lo) & np.isclose(f.tan_hi, hi)].iloc[0]
+
+
+def s_fullpass(D, o, v):
+    rA, rC = _sum_ratio(v, 'A', 'confirmed_acc'), _sum_ratio(v, 'C', 'confirmed_acc')
+    runs = sorted(set(_v2_ratio(v, 'A').run) | set(_v2_ratio(v, 'C').run), key=lambda r: int(r.split('_')[1]))
+    nx = len(runs) + 1
+    P = sd.Plot(1080, 600, x=(0, nx), y=(0.8, 2.1), ylabel='is2_v2 ÷ production, wall-confirmed tracks',
+                xlabel='run (calibrated in both chains)', margin=(20, 24, 96, 104))
+    P.yticks([(t, f'{t:.1f}') for t in (0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0)])
+    P.hline(1.0, MUT, '6 5', 1.5, label='production', where='below')
+    ix = {r: i + 1 for i, r in enumerate(runs)}
+    P.xticks([(ix[r], r.split('_')[1]) for r in runs[::4]])
+    for arm, col, dx in (('A', BLUE, -0.18), ('C', ORANGE, 0.18)):
+        q = _v2_ratio(v, arm)
+        P.points([ix[r] + dx for r in q.run], q.confirmed_acc_vs_prod.tolist(), col, r=7,
+                 tips=[f'{arm} {r.run}: confirmed in acceptance {int(r.confirmed_acc):,} = '
+                       f'×{r.confirmed_acc_vs_prod:.2f} production; gated ×{r.gated_acc_vs_prod:.2f}; '
+                       f'wall rate {r.wall_rate:.2f}' for r in q.itertuples()])
+    P.text(nx - 0.5, 2.05, f'C ×{rC:.2f} overall', 24, ORANGE, 'end', 600)
+    P.text(nx - 0.5, 1.3, f'A ×{rA:.2f} overall', 24, BLUE, 'end', 600)
+    gA, gC = _sum_ratio(v, 'A', 'gated_acc'), _sum_ratio(v, 'C', 'gated_acc')
+    st = v['st']
+    right = sd.col(
+        sd.p(f'Every run, both arms, above 1. Gated tracks in acceptance rise only ×{gA:.2f} (A) and ×{gC:.2f} (C), '
+             'so the gain is purity as much as yield.', 24),
+        sd.p('Two changes made it: in-situ bundles (the right v, so the right k) and a ' +
+             sd.term('two-sided search', 'wft.reco tries both drift directions (t0 early and late) and keeps the better '
+                     'χ². Fixes the mirror basins; ~20× CPU. §17–18.') + '. The pilot\'s A deficit at |tan| 0.3–0.6 '
+             'disappeared with the second.', 24),
+        sd.callout('Same tracks, is2_v2 ÷ production tan: A 0.86 x / 0.87 y, C 0.90 / 1.01. That is the k difference, '
+                   'and it is what the rest of this note argues about.', GOLD, 23),
+        gap=18, w=540)
+    body = sd.title(f'The is2_v2 re-pass confirms ×{rA:.2f} (A) and ×{rC:.2f} (C) more tracks on the wall than production',
+                    'Full campaign, 292 sub-runs, |true tan| < 0.6 in both chains: scintillator-confirmed tracks per run.')
+    body += sd.row(P.svg('fullpass ratio'), right, gap=44)
+    D.slide('fullpass', body, '''
+<p><b>The pass.</b> is2_v2 = is2 bundles, seeder minimum 3, two-sided search, TAN_MAX 1.0 in the fit, stage 3 with <code>kcal_is2_v2</code> (= kcal_is2_v1 × A 1.009, C 1.003, the two-sided rescale from the cosmic closure) and a true-angle cut. Condor 4410513, 6,464 of 6,466 jobs; the two missing (run_104 stat090_0016 A/C) have empty decoded input and production has no A/C there either. Stage 3: 292 sub-runs, 15.7 M segments, 5.41 M gated at 0.6.</p>
+<p><b>Ratios</b> are sums over run/arms that both chains calibrate (production has no k for 9 run/arms). Per |true tan| bin, is2_v2 is above production in all 24 bin/views up to 0.6. Where only one chain's direction confirms a matched track, is2_v2 wins A 12,458 : 6,114, C 7,832 : 3,227.</p>
+<p>Report: <code>ntof_cosmics/results/fullpass_is2_v2/report.html</code> (<code>make_fullpass_report.py --version is2_v2</code>). Record: HANDOFF_TRACKING §20.</p>''',
+            foot='pilot_compare.py --version is2_v2 · wall-confirmed = SiPM wall/plastic hit minus off-time control',
+            short='is2_v2 vs production')
+
+
+def _focus_curve(o, chain, arm, lo, null=False):
+    f = o['focus']
+    q = f[(f.chain == chain) & (f.arm == arm) & np.isclose(f.tan_lo, lo) & (f.null == null)]
+    q = q[~np.isclose(q.tan_hi - q.tan_lo, 0.6) & ~np.isclose(q.tan_hi - q.tan_lo, 0.8)]
+    return q.sort_values('scale')
+
+
+def s_focus(D, v):
+    panels = []
+    for arm, col in (('A', BLUE), ('C', ORANGE)):
+        P = sd.Plot(800, 520, x=(0.75, 1.35), y=(14, 34), xlabel='scale s applied to every x tan',
+                    ylabel=f'{arm}: median miss at the beam axis [mm]' if arm == 'A' else '',
+                    title=f'chamber {arm}, |tan| 0.2–0.3', margin=(44, 24, 92, 96))
+        P.xticks([(t, f'{t:.2f}') for t in (0.8, 0.9, 1.0, 1.1, 1.2, 1.3)])
+        P.yticks([(t, str(t)) for t in (15, 20, 25, 30)])
+        P.band([G4FOCUS['true'][0], G4FOCUS['true'][1]], [14, 14], [34, 34], PURPLE, 0.10,
+               tip='Geant4, true sim angles: the focus is sharpest at s 0.975–1.025 (|tan| 0.1–0.4). The estimator\'s '
+                   'own bias with the simulated source.')
+        P.hline(G4FOCUS['floor'][0], PURPLE, '3 5', 1.5, label='sim floor 15–16 mm', anchor='start', where='above')
+        P.vline(1.0, MUT, '6 5', 1.5)
+        for chain, c, dash, name in (('prod', C_PROD, '8 6', 'production'), ('is2_v2', C_IS2, None, 'is2_v2')):
+            q = _focus_curve(v, chain, arm, 0.2)
+            q = q[(q.med_miss <= 34) & (q.scale >= 0.75) & (q.scale <= 1.35)]
+            P.line(q.scale.tolist(), q.med_miss.tolist(), c, 3.5, dash=dash, markers=False,
+                   tip=f'{name}, {arm}, |own tan| 0.2–0.3: median miss vs s (n {int(q.n.iloc[0]):,})')
+            b = q.loc[q.med_miss.idxmin()]
+            P.points([b.scale], [b.med_miss], c, r=9, marker='open',
+                     tips=[f'{name} {arm}: sharpest at s {b.scale:.3f}, median miss {b.med_miss:.1f} mm; '
+                           f'at s = 1: {float(q[np.isclose(q.scale, 1.0)].med_miss.iloc[0]):.1f} mm'])
+        panels.append(P.svg(f'focus {arm}'))
+    rows = []
+    for arm in 'AC':
+        for chain, name in (('prod', 'production'), ('is2_v2', 'is2_v2')):
+            cells = []
+            for lo in (0.1, 0.2, 0.3, 0.4):
+                q = _focus_curve(v, chain, arm, lo)
+                cells.append(f'{q.loc[q.med_miss.idxmin(), "scale"]:.3f}')
+            rows.append([f'{arm} {name}'] + cells)
+    tab = sd.table(['sharpest s', '0.1–0.2', '0.2–0.3', '0.3–0.4', '0.4–0.5'], rows, size=21)
+    body = sd.title('is2_v2 images the capsule more sharply than production, but sharpest at s ≈ 1.05–1.12',
+                    'Rescale every gated track\'s x tan by s; median distance from the beam axis at the capsule plane. '
+                    'Post-access runs.')
+    body += sd.row(*panels, gap=44)
+    body += sd.legend([('production', C_PROD, 'dash'), ('is2_v2', C_IS2), ('Geant4: estimator bias (true angles)', PURPLE),
+                       ('open circle: sharpest s', MUT, 'dot')], 22)
+    D.slide('focus', body, f'''
+<p><b>Why a focus scan.</b> The standard capsule image (the band\'s zero crossing) is scale-free by design, so it cannot test k. Rescaling every track\'s tan by s and asking where the image is sharpest can. <code>ntof_cosmics/capsule_focus.py</code>, s 0.6–1.4 in 0.025, per |own tan| bin, with a shuffled-angle null (median miss 56–100 mm).</p>
+<p><b>Calibrated on Geant4</b> (g4_*_is2_full): with the true sim angles the focus is sharpest at s 0.975–1.025, with the sim reco angles 1.00–1.025; the floor is a 15–16 mm median miss (source extent + scattering). Unlike the band (biased 1.005 → 1.09 by source width, §13), the focus is close to unbiased in the sim.</p>
+<p><b>Sharpest s per bin</b> (0.025 grid; finer fits on the next slide):</p>{tab}
+<p>Production\'s own focus says production is ~7.5 % steep on A and right on C. With the same-track ratios (A 0.86, C 0.90) that predicts is2_v2 at A 1.08, C 1.11, as measured: the two chains agree with each other about what the capsule wants.</p>''',
+            foot='capsule_focus.py · results/capsule_focus/focus_{prod,is2_v2}.csv',
+            short='Capsule focus')
+
+
+def s_steep(D, v):
+    f = v['focus']
+    P = sd.Plot(1040, 600, x=(0.0, 0.8), y=(0, 150), xlabel='|own x tan| bin (is2_v2, gated at 0.8 true)',
+                ylabel='median miss at the beam axis, s = 1 [mm]', margin=(20, 24, 96, 104))
+    P.xticks([(t, f'{t:.1f}') for t in (0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8)])
+    P.yticks([(t, str(t)) for t in (0, 25, 50, 75, 100, 125, 150)])
+    P.band([TANX_GEOM, 0.8], [0, 0], [150, 150], GREY, 0.12,
+           tip=f'A track from the capsule cannot reach |tan x| > {TANX_GEOM} on these chambers '
+               f'(active edge ~150 mm at D {D_AXIS} mm).')
+    P.text(0.72, 8, 'beyond capsule reach', 20, MUT, 'middle')
+    for arm, col in (('A', BLUE), ('C', ORANGE)):
+        xs, ys, ns, tips, tipn = [], [], [], [], []
+        for lo in np.arange(0.0, 0.8, 0.1):
+            q = f[(f.chain == 'is2_v2_acc08') & (f.arm == arm) & np.isclose(f.tan_lo, lo) & np.isclose(f.tan_hi, lo + 0.1)]
+            a = q[~q.null & np.isclose(q.scale, 1.0)]
+            n = q[q.null]
+            if not len(a):
+                continue
+            xs.append(lo + 0.05)
+            ys.append(float(a.med_miss.iloc[0]))
+            ns.append(float(n.med_miss.median()))
+            tips.append(f'{arm} |tan| {lo:.1f}–{lo + 0.1:.1f}: median miss {ys[-1]:.1f} mm (n {int(a.n.iloc[0]):,})')
+            tipn.append(f'{arm} |tan| {lo:.1f}–{lo + 0.1:.1f}, shuffled-angle null: {ns[-1]:.1f} mm')
+        P.line(xs, ys, col, 3.5, tips=tips)
+        P.line(xs, ns, col, 2.5, dash='8 6', marker='open', tips=tipn)
+    pcs = v['pc08']
+    right = sd.col(
+        sd.legend([('A', BLUE), ('C', ORANGE), ('dashed: shuffled-angle null', MUT, 'dash')], 22),
+        sd.p('Below 0.4 the image sits 15–25 mm from the axis, near the simulated floor. At 0.5–0.6 it is already '
+             '64–72 mm (sim reco: 24 mm); above 0.6 it is <b>worse than random</b>.', 24),
+        sd.p('Those steep tracks are real particles: the wall still confirms 16–29 % of them (0.60–0.75 in the core). '
+             'They are not from the capsule.', 24),
+        sd.callout('Decision (10-11): no wider stage-2 pass. The analysis cut stays 0.6 true, or tighter; '
+                   'stage3_is2_v2 keeps the 0.8 superset as gated.', GREEN, 23),
+        gap=18, w=560)
+    body = sd.title('Tracks steeper than |tan| 0.5 do not point at the capsule; above 0.6, worse than random',
+                    'is2_v2 rebuilt with the true-angle cut at 0.8: median x miss at the beam axis per |tan| bin, s = 1.')
+    body += sd.row(P.svg('steep'), right, gap=44)
+    D.slide('steep', body, '''
+<p><b>The 0.8 rebuild</b> is lossless: <code>gated</code> at 0.6 equals <code>gated_reco</code> &amp; both |tan| < 0.6. Opening to 0.8 adds gated A +15.5 %, C +18.6 %, but wall-confirmed only A +5.3 % (1,542,705 → 1,623,837) and C +7.6 % (1,257,534 → 1,352,526).</p>
+<p><b>Split by view.</b> Tracks steep only in y (x fine) still miss by 85–89 mm (core 26.5 mm) and sit at the chamber edges. y could reach ~0.75 geometrically, x only 0.64. So 0.6–0.8 is background (non-capsule particles) or badly mis-measured, not signal acceptance. 0.8 true is the widest the current stage 2 allows (C run_88 reach 0.843).</p>
+<p>Record: HANDOFF_TRACKING §21; wall tables <code>results/fullpass_is2_v2_acc08/</code>.</p>''',
+            foot='capsule_focus.py on stage3_is2_v2 at --tan-max-true 0.8',
+            short='Steep tracks')
+
+
+def s_split(D, v):
+    sp = v['split']
+    keep = ['all', 'ms 10-20', 'ms 20-80', 'y in capsule', 'y outside capsule', 'wall fired', 'wall not fired',
+            'chi2 < median', 'chi2 > median', 'q/len < median', 'q/len > median', '|tany| < 0.15', '|tany| > 0.15',
+            'tanx > 0', 'tanx < 0']
+    label = {'all': 'all gated', 'ms 10-20': '10–20 ms', 'ms 20-80': '20–80 ms', 'y in capsule': 'y inside capsule height',
+             'y outside capsule': 'y outside', 'wall fired': 'wall fired', 'wall not fired': 'wall not fired',
+             'chi2 < median': 'χ² < median', 'chi2 > median': 'χ² > median', 'q/len < median': 'charge/length low',
+             'q/len > median': 'charge/length high', '|tany| < 0.15': '|tan y| < 0.15', '|tany| > 0.15': '|tan y| > 0.15',
+             'tanx > 0': 'tan x > 0', 'tanx < 0': 'tan x < 0'}
+    rows = keep + ['fit_pos', 'fit_neg', 'fit']
+    label.update(fit_pos='tan x > 0, with dx fitted', fit_neg='tan x < 0, with dx fitted', fit='joint (s, dx) fit')
+    n = len(rows)
+    P = sd.Plot(1060, 700, x=(0.9, 1.32), y=(n + 0.5, 0.3), xlabel='sharpest s, |tan| 0.1–0.5', ylabel='',
+                margin=(10, 24, 80, 330))
+    P.xticks([(t, f'{t:.2f}') for t in (0.9, 1.0, 1.1, 1.2, 1.3)])
+    P.band([G4FOCUS['reco'][0] - 0.025, G4FOCUS['true'][1]], [0.3, 0.3], [n + 0.5, n + 0.5], PURPLE, 0.10,
+           tip='Geant4: where the estimator puts a correct scale (s 0.975–1.025)')
+    P.vline(1.0, MUT, '6 5', 1.5)
+    for i, r in enumerate(rows):
+        P.text(0.893, i + 1 + 0.15, label[r], 21, INK if not r.startswith('fit') else GREEN, 'end',
+               600 if r.startswith('fit') else 400)
+        if i in (len(keep) - 2, len(keep)):
+            P.raw(sd.line(P.x0 - 320, P.Y(i + 0.5), P.x0 + P.pw, P.Y(i + 0.5), sd.RULE, 1.5))
+    for arm, col, dy in (('A', BLUE, -0.15), ('C', ORANGE, 0.15)):
+        for i, r in enumerate(rows):
+            if r.startswith('fit'):
+                o = _offset(v, arm)
+                s = {'fit': o.s_best, 'fit_pos': o.s_pos_at_dx, 'fit_neg': o.s_neg_at_dx}[r]
+                t = f'{arm}, 20–80 ms, wall fired: s {s:.2f} at dx {o.dx_best:+.1f} mm (median miss {o.med_miss:.1f} mm, n {int(o.n):,})'
+                P.points([s], [i + 1 + dy], col, r=9, marker='diamond', tips=[t])
+                continue
+            q = sp[(sp.split == r) & (sp.arm == arm) & np.isclose(sp.tan_lo, 0.1) & np.isclose(sp.tan_hi, 0.5)]
+            if not len(q):
+                continue
+            q = q.iloc[0]
+            P.raw(sd.line(P.X(q.s_best - q.s_err), P.Y(i + 1 + dy), P.X(q.s_best + q.s_err), P.Y(i + 1 + dy), col, 2.5))
+            P.points([q.s_best], [i + 1 + dy], col, r=8,
+                     tips=[f'{arm} {label[r]}: s {q.s_best:.3f} ± {q.s_err:.3f}, median miss {q.med_miss:.1f} mm, n {int(q.n):,}'])
+    oA, oC = _offset(v, 'A'), _offset(v, 'C')
+    right = sd.col(
+        sd.legend([('A', BLUE), ('C', ORANGE), ('Geant4 unbiased band', PURPLE)], 22),
+        sd.p('Time since the flash, capsule height, wall, χ², charge, y angle: the same s, 1.08–1.13.', 24),
+        sd.p('Only the sign of tan x splits it, oppositely on A and C. Since A and C face opposite ways in global x, '
+             f'that is one displacement of the source: a joint fit gives dx = {oA.dx_best:+.1f} mm (A), '
+             f'{oC.dx_best:+.1f} mm (C), as the band-crossing image also finds (−9.3).', 24),
+        sd.callout(f'With dx fitted the halves agree and the miss falls to {oA.med_miss:.1f} mm, below the simulated '
+                   f'floor. But s stays {oA.s_best:.2f} (A) and {oC.s_best:.2f} (C).', RED, 23),
+        gap=18, w=520)
+    body = sd.title(f'The capsule wants s ≈ {oA.s_best:.2f} on both arms, in every population, after the source offset',
+                    'Sharpest s by population (focus_split.py) and the joint (s, dx) fit (focus_offset.py), is2_v2.')
+    body += sd.row(P.svg('split'), right, gap=40)
+    D.slide('split', body, f'''
+<p><b>Populations</b> are |own tan| 0.1–0.5, all post-access runs; s_err is the curvature error of a parabola near the minimum. 1–10 ms after the flash does not focus at all (median miss 58–82 mm: flash junk) and is not drawn; neither is "other arms too" (n ≈ 25 k, miss 72–76 mm).</p>
+<p><b>The joint fit</b> uses 20–80 ms, wall fired (1.86 M tracks), s and dx on a grid. Per |tan| bin: A 1.11 / 1.13 / 1.12 / 1.08, C 1.15 / 1.12 / 1.13 / 1.07 at 0.1–0.2 … 0.4–0.5. The fitted dx is stable at −8 … −10.5 mm.</p>
+<p><b>Side finding, not fixed:</b> <code>build_tracks.pointing()</code> computes <code>dca_axis_mm</code>, <code>target_*</code> and <code>in_bore</code> against the nominal axis (0, y, 0). The source sits ≈ −9.5 mm in x, about one capsule radius, so any cut on <code>in_bore</code> / <code>dca_axis_mm</code> selects off-centre.</p>
+<p>Record: HANDOFF_TRACKING §22. Results: <code>results/focus_split/</code>.</p>''',
+            short='Scale by population')
+
+
+def s_tension(D, o, v):
+    oA, oC = _offset(v, 'A'), _offset(v, 'C')
+    n = o['norm'][o['norm'].sep_max == 10].set_index(['arm', 'view'])
+    cc = o['cc']
+    rows = [
+        ('cosmic', 'Cosmic A–C line (run_149, held out)', 'closure of the bundle itself, |tan| 0.08–0.6'),
+        ('muons', 'In-beam muons, A–C (20–80 ms)', 'norm applied in k; inferred through production'),
+        ('g4', 'Geant4: focus estimator, simulated source', 'true / reco sim angles'),
+        ('focus', 'Capsule focus, joint (s, dx)', '20–80 ms, wall fired, |tan| 0.1–0.5'),
     ]
-    head = ('<div style="display:grid;grid-template-columns:40px 470px 190px 1fr 170px;gap:0 20px;'
+    P = sd.Plot(1080, 520, x=(0.85, 1.2), y=(len(rows) + 0.5, 0.4), xlabel='factor the truth asks for on is2 tans '
+                '(1 = is2 right)', margin=(10, 24, 84, 40))
+    P.xticks([(t, f'{t:.2f}') for t in (0.85, 0.9, 0.95, 1.0, 1.05, 1.1, 1.15, 1.2)])
+    P.vline(1.0, MUT, '6 5', 1.5)
+    for i, (key, lab, sub) in enumerate(rows):
+        P.text(0.853, i + 1 - 0.30, lab, 22, INK, 'start', 600)
+        P.text(0.853, i + 1 - 0.05, sub, 19, MUT, 'start')
+    for arm, col, dy in (('A', BLUE, 0.17), ('C', ORANGE, 0.32)):
+        y = 1 + dy
+        c = cc[(cc.arm == arm) & (cc.chain == 'is2_v1') & (cc.lo >= 0.08)]
+        vals = 1 / c.ratio
+        lo_, hi_ = float(vals.quantile(0.1)), float(vals.quantile(0.9))
+        P.raw(sd.line(P.X(lo_), P.Y(y), P.X(hi_), P.Y(y), col, 3))
+        P.points([float(vals.median())], [y], col, r=8,
+                 tips=[f'{arm}: true ÷ delivered over |tan| 0.08–0.6, x and y bins: median {vals.median():.3f}, '
+                       f'10–90 % {lo_:.3f}–{hi_:.3f} (is2_v1 bundle; is2_v2 rescale ×1.009 A, ×1.003 C)'])
+        y = 2 + dy
+        e = float(np.mean([n.loc[(arm, ax), 'norm_err'] for ax in 'xy']))
+        P.raw(sd.line(P.X(1 - e), P.Y(y), P.X(1 + e), P.Y(y), col, 3))
+        P.points([1.0], [y], col, r=8, tips=[f'{arm}: the pooled in-beam muon norm is built into k, so muons read 1 '
+                                             f'by construction; error ±{e:.3f} (x {n.loc[(arm, "x"), "norm"]:.3f}, '
+                                             f'y {n.loc[(arm, "y"), "norm"]:.3f} of run_149, n {int(n.loc[(arm, "x"), "pooled_n"])}/'
+                                             f'{int(n.loc[(arm, "y"), "pooled_n"])})'])
+        y = 4 + dy
+        s = oA.s_best if arm == 'A' else oC.s_best
+        P.points([s], [y], col, r=10, marker='diamond', tips=[f'{arm}: s {s:.2f} at dx {(oA if arm == "A" else oC).dx_best:+.1f} mm'])
+    P.raw(sd.line(P.X(G4FOCUS['true'][0]), P.Y(3.25), P.X(G4FOCUS['true'][1]), P.Y(3.25), PURPLE, 6))
+    P.points([1.0], [3.25], PURPLE, r=8, tips=['Geant4: sharpest s 0.975–1.025 with true angles, 1.00–1.025 with the '
+                                               'digitised reco angles (|tan| 0.1–0.4). §21.'])
+    P.raw(f'<rect x="{P.X(1.0):.1f}" y="{P.Y(4.02):.1f}" width="{P.X(1.12) - P.X(1.0):.1f}" height="{P.Y(4.47) - P.Y(4.02):.1f}" '
+          f'fill="{RED}" fill-opacity="0.08"/>')
+    P.text(1.06, 4.33, '≈ 12 %', 24, RED, 'middle', 600)
+    ex = [('Geometry (distances)', 'common error cancels; differential is antisymmetric A vs C, data symmetric'),
+          ('Source offset', f'real, dx {oA.dx_best:+.1f} mm; fixes the tan-sign split, not s'),
+          ('Depth origin (t0)', 'a 26 mm slide needs charge at 40 mm; measured mid-gap 12–14 mm: ≲ 1 %'),
+          ('Population', 'same s in every split (previous slide)'),
+          ('Sharing kernel', 'the physical RC kernel moves the raw scale < 2 % (next slide)')]
+    ex_html = ''.join(f'<div style="display:flex;gap:14px;align-items:baseline;padding:7px 0;border-top:1px solid {sd.RULE}">'
+                      f'<p style="font-size:22px;font-weight:600;width:210px;color:{GREEN}">✗ {a}</p>'
+                      f'<p style="font-size:20px;color:{MUT};flex:1;line-height:1.3">{b}</p></div>' for a, b in ex)
+    right = sd.col(sd.p('Ruled out as the cause', 24, INK, 600), f'<div>{ex_html}</div>',
+                   sd.callout('Left: a difference between beam electrons and muons, in the <b>vertex distribution</b> '
+                              '(data vs the simulated source) or the <b>angle response</b>.', RED, 23), gap=12, w=560)
+    body = sd.title('The open problem: muons say is2 is right, the capsule says its angles are 12 % too shallow',
+                    'What each angle truth asks of the is2 scale, chambers A and C.')
+    body += sd.row(P.svg('tension'), right, gap=40)
+    body += sd.legend([('A', BLUE), ('C', ORANGE), ('Geant4', PURPLE)], 22)
+    D.slide('tension', body, f'''
+<p><b>Reading the plot.</b> Each row is a truth, plotted as the factor it would apply to is2\'s delivered tans. The cosmic A–C line and the in-beam muons are both muons; the capsule focus is beam electrons (few MeV, mostly Compton electrons from capture gammas). The Geant4 row is the focus estimator run on simulated electrons through the same reco: it reads a correct scale as 1.00 ± 0.03.</p>
+<p><b>Equivalent statement.</b> s = 1.12 is the same as the tracks converging {(oA.s_best - 1) * D_AXIS:.0f} mm beyond the beam axis as seen from each chamber. Because that is on opposite sides for A and C, no single displaced source does it (that is the antisymmetric dx, which was fitted out); it would take a vertex distribution that is "far" from both chambers at once, or an electron angle response ~12 % shallower than the muons\'.</p>
+<p><b>History of the sign.</b> The band residual (§13) already had A +3.6 %, C +10 % on the same side, but the band is source-width biased. The focus is not (in the sim), so the residual is now a measurement, not an artefact of the estimator. The data image after the offset fit (11.6 mm) is tighter than the simulated floor (15–16 mm): the simulated source is wider than the real one, which is itself a data/sim difference.</p>
+<p><b>Why it matters.</b> Every opening angle, the 170° cut and T1\'s F thresholds scale with k. A 12 % scale error on both arms moves a 140° pair by several degrees.</p>''',
+            short='The tension')
+
+
+def s_kernel(D, o):
+    tab = sd.table(['arm (constants)', 'Δσ x, 0.08–0.6', 'Δσ y, 0.08–0.6', 'head-on Δσ x / y', 'x S-shape', 'raw scale'],
+                   [list(r) for r in RC['rows']], size=20, align=['left'] + ['right'] * 5,
+                   widths=[270, 170, 230, 160, 170, 100])
+    bars = sd.hbars([('A · rcm3', 1.9, BLUE, 'raw scale moves −1.9 %'),
+                     ('C · rcm7', 0.7, ORANGE, 'raw scale moves −0.7 %'),
+                     ('C · rcm6', 0.7, ORANGE, 'raw scale moves +0.7 %'),
+                     ('needed by the capsule', 12.0, RED, 'the focus asks for ×1.12')],
+                    13, width=620, h=30, label_w=300, fmt=lambda x: f'{x:.1f} %', size=23)
+    left = sd.col(sd.p('Change against the is2 bundle, paired bootstrap, 547 held-out run_149 A–C events '
+                       '(negative = better):', 24), tab,
+                  sd.p('|Change of raw angle scale| against what the capsule asks', 24, INK, 600), bars, gap=18, w=1060)
+    right = sd.col(
+        sd.p('The cloud_basics head-on constants (σ0, Dp, RC diffusion in y) dropped into the is2 bundles, no refit.', 24),
+        sd.p('A reproduces the bench: Y resolution −7 %, X neutral, a third of the x S-shape removed.', 24),
+        sd.p('C does not get det6\'s bench gain (−18 to −22 %): n_TOF signal-to-noise is 7–10× worse and C\'s gas wetter.', 24),
+        sd.callout('The detector model matters at n_TOF for A\'s y and head-on resolution and the S-shape, '
+                   'not for the scale question.', GREEN, 23), gap=18, w=540)
+    body = sd.title('The physical (RC) kernel sharpens A\'s y by 7 % and moves the angle scale by under 2 %',
+                    'Opt-in RC kernel from the detector-model work, on the n_TOF cosmic truth.')
+    body += sd.row(left, right, gap=48)
+    D.slide('kernel', body, f'''
+<p><b>Arms.</b> rcm3 / rcm7 / rcm6 = the is2 bundle plus cloud_basics §12 head-on constants of det3 / det7 / det6; seeder 3, TAN_MAX 1.0, two-sided. Each label is evaluated at its own TRAIN scale, so the comparison is of shape and resolution, and the "raw scale" column is how much the kernel moves the fit\'s v-scale.</p>
+<p><b>Not tested:</b> n_TOF-gas Dp (Magboltz 90/10 at the n_TOF fields), det6\'s own template (the rcm6 arm runs on is2_C\'s det7 template), the joint X+Y Dd, and any refit. Source: {RC["src"]}; scripts in <code>~/scratch/ntof_insitu/</code> (recipe_rc.sh), kernel code brought from <code>mx17-paper-status</code> (opt-in, off by default).</p>''',
+            short='RC kernel')
+
+
+def s_problems(D, o):
+    W = dict(key=RED, cheap=GOLD, done=GREEN, open=GREY)
+    items = [
+        ('key', 'Angle scale: in-beam muons vs capsule', 'stage 3 (k)', 'capsule asks ×1.12 on both arms; muons 1.00 ± 0.02', '§21–22'),
+        ('cheap', 'Muon norm still inferred via production', 'stage 3', 're-derive from is2_v2\'s own in-beam A–C muons', '§19'),
+        ('cheap', 'Source offset not in pointing()', 'stage 3', 'in_bore / dca_axis_mm use x = 0; source at −9.5 mm', '§22'),
+        ('done', 'Raw-tan plausibility cut', 'stage 2', 'TAN_MAX 1.0 in the fit; true-angle cut 0.6 (0.8 kept)', '§16, §21'),
+        ('done', 'is2 yield on beam; mirror basins', 'stage 2', 'two-sided search; confirmed ×1.49 A, ×1.82 C', '§17–20'),
+        ('open', 'Late tracks (t0 > 300 ns)', 'stage 2', 'wrong geometry on ~17 % of gated tracks', 'T3 / O10'),
+        ('open', 'C x non-linearity, C core tails', 'stage 2', '1.03 → 0.89 across |tan|; tails 8–13 %', '§9'),
+        ('open', 'Near normal', 'stage 2 / flags', '|tan| < 0.02 σ 0.15; bias below 0.08', '§7d, §9'),
+        ('open', 'RC kernel (A y −7 %, S-shape −⅓)', 'stage 2', 'opt-in; ride the next stage-2 pass', '§22'),
+        ('open', 'B and D', 'all', 'no in-situ truth; D bundle, B HV in run_149', '§20'),
+    ]
+    head = ('<div style="display:grid;grid-template-columns:40px 520px 190px 1fr 170px;gap:0 20px;'
             'font-size:21px;color:%s;padding:0 0 8px 0;border-bottom:2px solid %s">'
             '<p></p><p>problem</p><p>where it acts</p><p>size / what is known</p><p>record</p></div>') % (MUT, sd.RULE)
     rows = ''.join(
-        f'<div style="display:grid;grid-template-columns:40px 470px 190px 1fr 170px;gap:0 20px;align-items:center;'
+        f'<div style="display:grid;grid-template-columns:40px 520px 190px 1fr 170px;gap:0 20px;align-items:center;'
         f'padding:9px 0;border-bottom:1px solid {sd.RULE}">'
         f'<div style="width:22px;height:22px;border-radius:50%;background:{W[w]}"></div>'
-        f'<p style="font-size:24px;font-weight:600">{a}</p><p style="font-size:22px;color:{MUT}">{b}</p>'
+        f'<p style="font-size:24px;font-weight:600{";color:" + MUT if w == "done" else ""}">{a}</p>'
+        f'<p style="font-size:22px;color:{MUT}">{b}</p>'
         f'<p style="font-size:22px">{c}</p><p style="font-size:20px;color:{MUT}">{d}</p></div>'
         for w, a, b, c, d in items)
-    body = sd.title('One item blocks the launch; the rest either ride a later pass or are free afterwards',
-                    'Open problems in the A/C angle chain, by where a fix would have to act.')
-    body += sd.legend([('blocks the launch', RED, 'dot'), ('cheap to settle first', GOLD, 'dot'),
-                       ('free after the re-pass (stage 3)', GREEN, 'dot'), ('open, needs a later stage-2 pass', GREY, 'dot')], 22)
+    body = sd.title('One problem decides the k on both arms; the launch blockers are closed',
+                    'Open problems in the A/C angle chain after the is2_v2 pass, by where a fix would act.')
+    body += sd.legend([('the open question', RED, 'dot'), ('cheap, stage 3', GOLD, 'dot'),
+                       ('done', GREEN, 'dot'), ('open, needs a later stage-2 pass', GREY, 'dot')], 22)
     body += f'<div style="display:flex;flex-direction:column">{head}{rows}</div>'
     D.slide('problems', body, '''
-<p><b>The sorting rule.</b> Anything that changes stage 2 (the fit) costs a re-pass; anything in stage 3 (k, gates, flags) is a re-run of <code>campaign_tracks</code> over the stage-2 output, minutes to hours. The k itself (norm, gas ratio, x–y treatment) is all stage 3, so it can keep improving after launch.</p>
-<p><b>The interim question.</b> is2_v1 does not contain T1's x/y pairing and two-track chain, nor a fix for late tracks; OCTOBER_2026 §4 wants one combined re-pass (O4). Compute is not a constraint, so an interim pass is cheap. The real cost is building downstream products twice. Label it interim, and keep the consumers (opening angle, 170° cut, T1 F) on production until both have been compared.</p>''',
+<p><b>The sorting rule.</b> Anything that changes stage 2 (the fit) costs a re-pass (~20× CPU now, with the two-sided search); anything in stage 3 (k, gates, flags, pointing) is a re-run of <code>campaign_tracks</code> over the stage-2 output, minutes to hours. The scale question is stage 3: whichever truth wins, it changes k, not the fit.</p>
+<p><b>Closed since 8 Oct.</b> TAN_MAX was raised to 1.0 raw in the fit with a stage-3 true-angle cut (§16); the pilot and the full pass tested the is2 bundles on beam (§19–20); the two-sided search fixed the mirror basins (§17–18). The 8 Oct version of this slide had the plausibility cut as the one launch blocker.</p>''',
             short='Open problems')
 
 
-def s_studies(D, o):
+def s_next(D, o, v):
+    oA = _offset(v, 'A')
     cards = [
-        ('1 · Settle the plausibility cut', RED, 'hours',
-         'Make TAN_MAX a true-angle cut carried by the bundle (or decide 0.58 is the acceptance). Validate |tan| 0.6–1.0: '
-         'g4_digi muon guns at tan 0.6/0.8/1.0, plus scintillator confirmation on the smoke sub-run. Re-run the smoke.'),
-        ('2 · Yield gate, real bundles', GOLD, '< 1 h',
-         'seed_beam_test scint/compare with is2_A / is2_C on 2–3 sub-runs from other periods (run_86, run_110, run_156): '
-         'confirmed tracks, near-normal yield, late fraction. Make it a standing smoke gate.'),
-        ('3 · A pilot pass', GOLD, '~1 h on condor',
-         'One sub-run per run (36 sub-runs, ~800 jobs) through the package. Gives per-run yields, k sanity and the in-beam '
-         'muons reconstructed with is2 directly, before 6466 jobs.'),
-        ('4 · Decide interim vs combined', GOLD, 'decision',
-         'Either launch is2_v1 labelled interim, or first merge T1\'s xy_pairing (validated, opt-in) and run the combined '
-         'split-ab contract on is2 bundles, then launch once.'),
-        ('5 · Near-normal bias', GREY, '< 1 h',
-         'Quantify the < 0.08 overread on the 180° back-to-back peak (cosmic pairs), as a stage-3 correction or a flag.'),
-        ('6 · After launch, free', GREEN, 'stage 3',
-         'Re-derive the muon norm from is2-reconstructed in-beam muons; binned response for C x; σ(|tan|) for tan_err.'),
+        ('1 · Muons through is2_v2 directly', RED, '< 1 h, stage 3',
+         'The in-beam A–C muons are in the is2_v2 stage-2 output. Measure their scale there instead of inferring it '
+         'through production. If they still read 1.00, the tension is real; if they read ~1.1, it was the inference.'),
+        ('2 · Focus on the digitised sim, with the offset', RED, 'hours',
+         'g4_digi through the is2 bundles and the two-sided reco, then the joint (s, dx) fit with the data\'s −9.5 mm. '
+         'Does the estimator still read 1.00 there? Compare image widths: data 11.6 mm is tighter than the sim floor.'),
+        ('3 · Vary the simulated source', GOLD, '~1 day',
+         f'What vertex distribution makes a muon-correct reco focus at 1.12, i.e. converge ~{(oA.s_best - 1) * D_AXIS:.0f} mm '
+         'beyond the axis from both sides? Capsule walls, gamma conversions in the holder, structures behind the axis.'),
+        ('4 · An electron-specific truth', GOLD, 'days',
+         'Two-arm A–C pairs from one vertex: the depth where their lines cross moves with s, independent of the '
+         'source\'s x extent. Statistics are the risk (~20 inter-chamber pairs per sub-run).'),
+        ('5 · Meanwhile: carry it as a systematic', GREY, 'decision',
+         'Keep k from the muons (the only truth not a model of the source) and quote the capsule scale as an '
+         'alternate: ±6 % about the midpoint on opening angles, the 170° cut and T1\'s F.'),
+        ('6 · Cheap fixes, any time', GREEN, 'stage 3',
+         'Shift pointing()\'s axis to the measured source x; park the RC kernel and the late-t0 fix for the next '
+         'stage-2 pass rather than a pass of their own.'),
     ]
     html = ''.join(
         f'<div style="background:{sd.CARD};border:1px solid {sd.RULE};border-top:6px solid {c};border-radius:14px;'
         f'padding:22px 24px;display:flex;flex-direction:column;gap:10px">'
-        f'<div style="display:flex;justify-content:space-between;align-items:baseline"><p style="font-size:27px;font-weight:600">{t}</p>'
-        f'<p style="font-size:21px;color:{MUT}">{cost}</p></div>'
+        f'<div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px"><p style="font-size:26px;font-weight:600">{t}</p>'
+        f'<p style="font-size:20px;color:{MUT};white-space:nowrap">{cost}</p></div>'
         f'<p style="font-size:22px;line-height:1.35;color:{INK}">{d}</p></div>' for t, c, cost, d in cards)
-    body = sd.title('Before 4300 CPU-hours: three small checks and one decision',
-                    'In order. Items 1–3 use the existing smoke products and digitiser; none needs the full pass.')
+    body = sd.title('Where to go next: two cheap checks decide whether the 12 % is real',
+                    'In order. 1 and 2 test the two inferences each side rests on; 3 and 4 only if both hold.')
     body += f'<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px">{html}</div>'
-    D.slide('studies', body, '''
-<p><b>Why a pilot.</b> The smoke test proved condor reproduces the local reco; it did not test yields against production, other run periods or the k tables. One sub-run per run catches a per-period surprise (gas, noise, the run_79 connector-8 mask on A) at 1/8 of the cost and gives the is2-reconstructed in-beam muons that the norm currently infers.</p>
-<p><b>What is not on the list.</b> The y band residual (a simulation source-model question, no effect on stage 2), the late-t0 fix (T3, a separate study), and the C core tails: all real, none cheap, and none would change the decision to run an interim pass.</p>''',
-            short='Small studies')
+    D.slide('next', body, '''
+<p><b>Why this order.</b> Each side of the disagreement rests on one inferred step. The muon side: the norm was measured with the <i>production</i> bundle and carried to is2 assuming is2 raw = production raw × a constant, which the cosmic closure supports only to its own precision. The capsule side: "the focus is unbiased" was shown in Geant4 with the simulated source and without the offset the data turned out to have. Checks 1 and 2 remove those two steps, for an hour and a few hours.</p>
+<p><b>If both hold</b>, the difference is physics of the data, not of the estimators: either the vertex distribution (3) or electrons responding differently from muons in the real chamber, which only an electron truth (4) can show. Until then, option 5 keeps downstream work moving without choosing.</p>
+<p><b>What not to do.</b> Do not refit k on the capsule: that is the k_arm logic production used (A 1.27), and it is what the in-situ calibration replaced. A wider stage-2 pass is also off the table (§21: steep tracks are background).</p>''',
+            short='Where next')
 
 
 def s_close(D):
     items = [
-        ('Angles above |tan| 0.6', 'No truth there: cosmic A–C covers |tan| < 0.6. Whatever TAN_MAX becomes, that range rests on simulation.'),
-        ('Electrons ≠ muons in the real chamber', 'The digitiser tests noise, seeding and ionisation shape, not a chamber that differs from the fit model.'),
-        ('A source-model error in y', 'The y band residual is 3× x; attributed to the source, not shown.'),
-        ('Run-condition drift beyond gas', 'is2 was calibrated on run_149 (August). Kernel or diffusion changes would not be caught by a scalar k.'),
-        ('B and D', 'No in-situ truth; null angles. Perpendicular-pair topologies are absent from is2 tables.'),
+        ('Which scale is right on A and C', 'Muons and the capsule disagree by ~12 % on both arms; neither has been shown wrong.'),
+        ('Electrons ≠ muons in the real chamber', 'The digitiser reproduces muon-like response for electrons in the model, not in the chamber.'),
+        ('The source model', 'The data image is tighter than the simulated one and sits 9.5 mm off axis.'),
+        ('Angles above |tan| 0.6', 'No truth there; data at 0.5–0.6 already points poorly.'),
+        ('B and D', 'No in-situ truth; null angles.'),
     ]
     rows_ = ''.join(f'<div style="display:flex;gap:28px;padding:13px 0;border-top:1px solid #333b4a">'
                     f'<p style="font-size:26px;font-weight:600;width:400px">{a}</p>'
                     f'<p style="font-size:22px;color:{DMUT};flex:1;line-height:1.35">{b}</p></div>' for a, b in items)
-    nxt = [('Decide the plausibility cut', 'Keep 0.58 true, or move to a bundle-carried true-angle cut and validate 0.6–1.0.'),
-           ('Interim or combined pass', 'is2_v1 alone now, or after merging T1\'s xy_pairing.'),
-           ('Then a pilot', 'One sub-run per run before 6466 jobs.'),
-           ('B and D', 'Feasibility of in-situ truth for D (B–D lines) and of B as a hit-mode chamber: next study.')]
+    nxt = [('Run checks 1 and 2', 'is2_v2 in-beam muons directly; (s, dx) focus on the digitised sim.'),
+           ('Then decide k', 'Muons, capsule, or a bracket carried as a systematic downstream.'),
+           ('Fix pointing()', 'Use the measured source x for in_bore / dca_axis_mm.'),
+           ('Next stage-2 pass', 'Bundle the RC kernel (A), the late-t0 fix and T1\'s xy pairing into one.')]
     nrows = ''.join(f'<div style="display:flex;flex-direction:column;gap:6px;padding:13px 0;border-top:1px solid #333b4a">'
                     f'<p style="font-size:26px;font-weight:600;color:{DBLUE}">{a}</p>'
                     f'<p style="font-size:22px;color:{DMUT};line-height:1.35">{b}</p></div>' for a, b in nxt)
@@ -623,25 +972,35 @@ def s_close(D):
             f'<div style="flex:1;display:flex;flex-direction:column;gap:6px">'
             f'<h2 style="font-size:48px;font-weight:600">Decisions</h2>{nrows}</div></div>')
     D.slide('close', body, '''
-<p>Entry points: <code>ntof_cosmics/HANDOFF_TRACKING_2026-10-06.md</code> (§13 for the re-pass), the root <code>HANDOFF.md</code>, and <code>sept26_prelim_analysis/SAME_CHAMBER_PAIRS.md</code> for how this joins the two-track work. Regenerate this note with <code>ntof_cosmics/repass_readiness.py all</code> then <code>ntof_cosmics/make_insitu_deck.py</code>.</p>''',
+<p>Entry points: <code>ntof_cosmics/HANDOFF_TRACKING_2026-10-06.md</code> (§19–22 for this update), the root <code>HANDOFF.md</code>, and <code>sept26_prelim_analysis/SAME_CHAMBER_PAIRS.md</code> for how this joins the two-track work. Regenerate with <code>ntof_cosmics/make_insitu_deck.py</code> after <code>repass_readiness.py all</code>, <code>pilot_compare.py … --version is2_v2</code>, <code>capsule_focus.py</code>, <code>focus_split.py</code> and <code>focus_offset.py</code>.</p>''',
             dark=True, short='Decisions')
 
 
 def build(out: Path) -> Path:
     o = load()
-    D = sd.Deck('A and C angles: in-situ calibration before the re-pass',
-                'Chambers A and C on the in-situ (is2) angle calibration: how good it is, what is open, and what to check '
-                'before the campaign re-pass.')
-    for f in (s_cover, s_setup, s_v, s_closure, s_resolution, s_truth, s_digi, s_muons, s_gas, s_residual,
-              s_gate, s_shift, s_problems, s_studies):
+    v = load_v2()
+    D = sd.Deck('A and C angles: in-situ calibration and the is2_v2 re-pass',
+                'Chambers A and C on the in-situ (is2) angle calibration: how good it is, what the is2_v2 campaign '
+                're-pass gained, and the open disagreement between in-beam muons and the capsule on the angle scale.')
+    s_cover(D, o, v)
+    for f in (s_setup, s_v, s_closure, s_resolution, s_truth, s_digi, s_muons, s_gas, s_residual, s_gate, s_shift):
         f(D, o)
+    s_fullpass(D, o, v)
+    s_focus(D, v)
+    s_steep(D, v)
+    s_split(D, v)
+    s_tension(D, o, v)
+    s_kernel(D, o)
+    s_problems(D, o)
+    s_next(D, o, v)
     s_close(D)
-    g = o['gate'].set_index(['arm', 'chain'])
-    meta = dict(title='A and C angles: in-situ calibration before the re-pass',
-                summary=('The in-situ (is2) bundles close A within ±4 % on cosmic truth and read in-beam muons right to '
-                         '1–4 %; production was 10–20 % steep. Before the is2_v1 re-pass: a raw-tan cut in the fit cuts '
-                         f'C\'s angular reach from {g.loc[("C", "production"), "true_tan_reach"]:.2f} to '
-                         f'{g.loc[("C", "is2_v1"), "true_tan_reach"]:.2f}; open problems and the small checks to do first.'),
+    oA, oC = _offset(v, 'A'), _offset(v, 'C')
+    meta = dict(title='A and C angles: in-situ calibration and the is2_v2 re-pass',
+                summary=(f'The two-sided is2_v2 re-pass confirms ×{_sum_ratio(v, "A", "confirmed_acc"):.2f} (A) and '
+                         f'×{_sum_ratio(v, "C", "confirmed_acc"):.2f} (C) more tracks on the wall than production. '
+                         f'Open: the capsule focus asks for is2 angles ×{oA.s_best:.2f} (A) / ×{oC.s_best:.2f} (C) while '
+                         'in-beam muons read them right; geometry, source offset, depth origin and the kernel are ruled out. '
+                         'Next steps to settle it.'),
                 tags='X17,tracking,calibration', date=dt.date.today().isoformat())
     return D.write(out, meta, footer=f'Built {dt.datetime.now():%Y-%m-%d %H:%M} by nTof_x17/ntof_cosmics/'
                                      'make_insitu_deck.py with slidedoc.py.')
