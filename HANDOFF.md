@@ -63,9 +63,13 @@ proposed, but Dylan has not picked any yet.
   `python3 ~/PycharmProjects/dylan-cern-site/scripts/add-note.py <out>/qsum_runaway/deck/qsum-runaway.html --slug qsum-runaway --force --deploy`.
 - `<out>` = `/media/dylan/data/x17/sept26_prelim` (`python -m sept26_prelim_analysis.paths`).
 
-## Beam-off cosmics: angle response + in-situ reco — updated 2026-10-09 (dylan-MS-7C84)
+## Beam-off cosmics: angle response + in-situ reco — updated 2026-10-12 (dylan-MS-7C84)
 
-**Resume:** is2_v2 two-sided full pass on condor 4410513 (multi-day). When it lands: pull, kcal_is2_v2, stage 3, compare.
+**Resume:** read `ntof_cosmics/HANDOFF_TRACKING_2026-10-06.md` §20–§22. The is2_v2 pass is done and beats production
+(§20); the 0.6 cut stays (§21). §22: the capsule focus wants is2 angles ×1.12 on both arms, and that is NOT geometry.
+The source x offset is −9.5 mm, but it doesn't set s; the depth origin is fine. The physical kernel moves the scale
+< 2 % (A Y −7 %, C no gain). Open: electron vs muon (source model or response); stage-3 `pointing()` uses x = 0.
+Everything below this line is the 10-09 state, kept for reference.
 
 **Goal:** a reconstruction that measures angles correctly at n_TOF, head-on included, so same-chamber pairs can be
 reconstructed.

@@ -1607,3 +1607,62 @@ wall, not from the capsule (focus above).
 0.843). It is measured and it adds background, not acceptance, so **no wider stage-2 pass**. `stage3_is2_v2` now stores
 the 0.8 superset as `gated`; the analysis cut stays 0.6 (`gated_reco` & both |tan| < 0.6), or tighter: data at
 0.5–0.6 already points poorly. The 0.6 tables in `results/fullpass_is2_v2/` remain the headline comparison.
+
+## 22 · The capsule scale is not geometry; the physical kernel does not move it (2026-10-12)
+
+Two questions from Dylan: can a capsule-distance (geometry) error explain §21's focus at s 1.05–1.12, and how much
+does the detector-model work (cloud_basics, `mx17-paper-status`) change the n_TOF reco?
+
+**Geometry, algebra.** k comes from in-beam A–C muon lines (`k_insitu`, truth = Δx_global / L, L = D_A + D_C from
+the same run_config transforms as stage 3). Distance errors ε_A, ε_C give s_A ≈ 1 + (ε_A − ε_C)/2 and
+s_C ≈ 1 + (ε_C − ε_A)/2: a common distance error cancels, a differential one is antisymmetric. A beam-axis offset
+along z is antisymmetric too. **Correction to an easy mistake:** a common slide of the fitted p0 along the track (a
+depth-origin / t0 bias) does NOT cancel. Both chambers' p0 move the same way in global x, so the A–C line is blind
+to it, while the focus sees s = (D − δ)/D.
+
+**Data (`focus_split.py`, `focus_offset.py`, results in `results/focus_split/`).**
+- The sharpest s is stable across populations, A / C over |tan| 0.1–0.5: all 1.106 / 1.088; 10–20 ms 1.110 / 1.093;
+  20–80 ms 1.108 / 1.077 (median miss 14 mm, at the sim floor); capsule height inside / outside 1.100 / 1.092 vs
+  1.108 / 1.096; wall fired 1.101 / 1.086; χ² below median 1.099 / 1.090; |tan y| below / above 0.15, the same.
+  1–10 ms does not focus (miss 58–82 mm; flash junk).
+- **The tan-x sign halves disagree:** A 0.978 (tan > 0) / 1.266 (tan < 0), C 1.257 / 0.995. A and C have
+  opposite u in global x, so this is one global-x displacement. A joint (s, dx) fit (20–80 ms, wall fired) gives
+  **dx = −9.5 mm** (A −9.5, C −9.0; the band-crossing imaging has −9.3, `imaging_campaign`). The halves then
+  agree (1.11 / 1.11), the median miss falls 14 → 11.6 mm, **but s = 1.12 on both arms** (A 1.11–1.13 at
+  |tan| < 0.4, C 1.12–1.15; 1.07–1.08 at 0.4–0.5). The offset is real and was splitting the halves. It is not what
+  sets s.
+- **The depth origin is not it:** a 26 mm p0 slide (s 1.12) would put the median charge depth near 40 mm. Measured
+  x / y q_u50 × v: A 14.0 / 12.7 mm, C 12.8 / 12.0 mm, which is mid-gap. That allows ≲ 1–2 mm (≲ 1 % in s).
+- The gap bounds v (and hence the tan scale) only to ~±10 %. Unrailed drift_len p50 is A 31.2, C 29.2 mm for a
+  28–30 mm gap, and the end point includes the pulse tail.
+
+**So:** with geometry, population and depth origin excluded, the capsule focus wants is2_v2's angles ×1.12 on
+both arms, while in-beam muons say is2 is right to 1–4 %. Geant4 says the estimator is unbiased to ±3 % with the
+simulated source. What is left is a difference between beam electrons and muons, in either the vertex
+distribution (data vs the simulated source) or the angle response.
+
+**Side finding (not fixed):** `build_tracks.pointing()` computes `dca_axis_mm`, `target_*` and `in_bore` against
+the nominal axis (0, y, 0). The source is at x ≈ −9.5 mm, about one capsule radius. Anything that cuts on
+`in_bore` / `dca_axis_mm` is selecting off-centre.
+
+**Physical kernel on the n_TOF cosmic truth** (`~/scratch/ntof_insitu/recipe_rc.sh`; arms rcm3 / rcm7 / rcm6 =
+is2 bundle + cloud_basics §12 head-on constants σ0, Dp, rc_D_y, no refit; seeder 3, TAN_MAX 1.0, two-sided;
+paired bootstrap `insitu_paired.py`, each label at its own TRAIN scale, 547 test events):
+
+| arm | Δσ x (0.08–0.6) | Δσ y | head-on Δσ x / y | x S-shape | raw scale |
+|---|---|---|---|---|---|
+| A rcm3 (det3) | +0.0003 ± 0.0016 | **−0.0020 ± 0.0012 (−7 %)** | −0.011 / −0.015 (±0.011 / ±0.007) | −0.101 → −0.062 (±0.021) | −1.9 % |
+| C rcm7 (det7) | +0.0007 ± 0.0016 | **+0.0039 ± 0.0016 (+10 %)** | −0.017 / −0.025 (±0.016 / ±0.034) | −0.107 → −0.060 (±0.028) | −0.7 % |
+| C rcm6 (det6) | +0.0002 ± 0.0015 | +0.0006 ± 0.0021 | +0.002 / −0.021 (±0.008 / ±0.023) | unchanged | +0.7 % |
+
+- A reproduces the bench pattern (det3: Y −8 %, X neutral) and takes out about a third of the x S-shape.
+- C does not get det6's bench gain (−18 to −22 %). n_TOF signal-to-noise is 7–10× worse and C's gas is wetter
+  (v 28.7). The det6 arm also runs on is2_C's det7 template, not det6's own.
+- **The kernel moves the raw scale by < 2 %, so it cannot explain the 12 % capsule factor.** The detector-model
+  work matters at n_TOF for A's Y and head-on resolution and for the S-shape, not for the A-scale question.
+- Not tested: n_TOF-gas Dp (Magboltz 90/10 at the n_TOF fields), det6's own template, the joint X+Y Dd (§28), and
+  any refit (here constants are bench head-on values).
+
+**Next, if the scale question is pursued:** run the (s, dx) focus on the g4_digi sim chain with the data's source
+offset, and vary the sim source (capsule walls, structures behind the axis) to see what pushes a muon-correct scale
+to s 1.12. Or find a third, electron-specific angle truth.
