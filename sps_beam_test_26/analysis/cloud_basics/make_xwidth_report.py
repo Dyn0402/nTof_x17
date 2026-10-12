@@ -74,7 +74,7 @@ def fig_datasets(out, isof):
                       for det, k, _ in rows])
     ax.set_xlabel('X transverse diffusion  D_T  [µm/√cm]')
     ax.set_xlim(200, 600)
-    ax.legend(loc='upper left')
+    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.13), ncol=3, fontsize=fs.BASE_PT * 0.85)
     fs.title(ax, 'Every bench dataset spreads in X like dry gas, not like the wet gas its v implies',
              'D_T = σ_drift(gap)/√gap; Magboltz at each run\'s field, Ar/iso 95/5 with the water that gives that run\'s v')
     fig.savefig(f'{out}/figures/x_dt_datasets.png'); plt.close(fig)
@@ -276,7 +276,7 @@ strip sum as the drive, arrival onset t_a free; <code>x_width_beam.py</code>). O
 
 <h2>5 · What this does not rule out</h2>
 <ul>
-<li><b>A gas outside the grid.</b> Ar/iso {isolo:g}–8 % × water 0–1 % (to 1.5 % below 3 % iso). N2, CO2 or another
+<li><b>A gas outside the grid.</b> Ar/iso {isolo:g}–8 % × water 0–1 % (to 1.5 % at iso ≤ 3 %). N2, CO2 or another
 contaminant was not tried.</li>
 <li><b>The edges.</b> At the outer quintiles the early width is inflated and the measured growth drops. That is partly the
 ±4-strip moment window truncating a wide cluster, so the growth there is a lower bound.</li>

@@ -7,8 +7,8 @@ It is on every bench dataset (5 chambers, 8 runs + det3 drift/gain scans): D_T 4
 +300–430 µm/√cm in quadrature. It is gain-independent and present over the whole area; only the early (prompt) width
 grows at the edges. No Ar/iso/water mix fits det3's v(E) and D_T(E) together (χ² 90/36). The beam X (template-free)
 is also above Magboltz, +286 at 92 V/cm. Open: Magboltz's water model vs a non-gas depth term; a dry-gas bench run decides.
-**Pending:** condor 4440956 (Magboltz iso 0.5–1.5 %, water to 1.5 %). When it lands: `scp 'lxplus:cloud_basics_condor/att/magboltz_benchi*'
-cloud_basics/results/iso/ && python iso_fit.py && python make_xwidth_report.py`, update the §29 χ² line.
+**Done:** condor 4440956 folded in (170/175; 5 dry near-argon points unfinished). To refresh: `scp 'lxplus:cloud_basics_condor/att/magboltz_benchi*'
+cloud_basics/results/iso/ && python iso_fit.py && python make_xwidth_report.py` (det3 joint χ² 80/36).
 Scan sub-run waveforms were pulled to job scratch only (re-pull with rsync, see §29); caches are kept.
 Branch bench-pin-rc is 40+ commits ahead of main (the whole cloud_basics line) and has not been merged: decide.
 

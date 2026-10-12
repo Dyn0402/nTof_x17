@@ -766,12 +766,14 @@ composition inferred from it.
   Dropped: g_det6_longer (σ0 at its bound) and det3's 6-22 runs (T at its bound).
 - **Not gain.** det3 at 347 V/cm, mesh 425–505 V: D_T flat at 404–496 (mean ≈ 450). σ0 rises 0.3 →
   0.5 mm with gain. Above 505 V the stacks saturate (σ0 0.6–0.9, D_T meaningless).
-- **Not the gas at any composition tried** (`iso_fit.py`, Magboltz grid condor 4440949:
-  Ar/iso 2–8 % × water 0–1 % × 7 fields). Less isobutane is the one knob that makes a gas both slow and
-  hot, and on a single-field chamber an iso-poor gas (≈2 %, 0.4 % water on det7) can match both
-  numbers. det3's five fields cannot be matched: v alone χ² 24/17 (iso 8 %, 0.85 % water), D_T
-  alone 12.5/17 (iso 2 %), **both 90/36**. The best joint point misses v at 243 V/cm by ~20 %. The
-  extended grid (iso 0.5–1.5 %, water to 1.5 %; condor 4440956) was still running at commit time.
+- **Not the gas at any composition tried** (`iso_fit.py`; Magboltz grids condor 4440949 and 4440956:
+  Ar/iso 0.5–8 % × water 0–1 % (to 1.5 % at iso ≤ 3 %) × 7 fields, 384 points; 5 of the dry
+  near-pure-argon points had not finished and their columns are dropped). Less isobutane is the one
+  knob that makes a gas both slow and hot. On a single-field chamber an iso-poor gas (≈1 % iso,
+  0.7 % water) matches both numbers: det4 0.2/0, det7 4.0/2, but det6 still 9.1/0. det3's five fields
+  cannot be matched: v alone χ² 24/17, D_T alone 12/17, **both 80/36** (best at iso 1.5 %, water
+  0.94 %, which misses v at 243 V/cm). So isobutane depletion is not excluded chamber by chamber,
+  but it is excluded where the field scan exists.
 - **The beam has it too.** `x_width_beam.py` uses rc_drift's template-free X model, since no beam
   template is on disk; on the bench it reads 5–12 % below the template fit. det4 run_71: D_T 202 / 240 /
   372 (± 20) at 243 / 150 / 92 V/cm, against Magboltz 163 / 193 / 237. That is +118 / +143 / +286 in

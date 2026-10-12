@@ -53,8 +53,10 @@ def data():
 
 def main():
     G = grid()
-    isos = sorted({k[0] for k in G}); ws = sorted({k[1] for k in G}); Es = sorted({k[2] for k in G})
-    wf = np.linspace(0, 1.0, 41)
+    isos = sorted({k[0] for k in G}); Es = sorted({k[2] for k in G})
+    # per iso, the water values present at every field (an unfinished condor point drops its column)
+    W = {i: [w for w in sorted({k[1] for k in G if k[0] == i}) if all((i, w, E) in G for E in Es)] for i in isos}
+    isos = [i for i in isos if len(W[i]) >= 2]
     D = data()
     out = {}
     for det, rows in D.items():
@@ -62,12 +64,12 @@ def main():
         for lab in ('v', 'DT', 'both'):
             best = None
             for i in isos:
-                for w in wf:
+                for w in np.linspace(0, max(W[i]), 41):
                     c2 = 0.0
                     for d in rows:
                         E = min(Es, key=lambda e: abs(e - d['E']))
-                        vv = np.interp(w, ws, [G[(i, x, E)][0] for x in ws])
-                        dd = np.interp(w, ws, [G[(i, x, E)][1] for x in ws])
+                        vv = np.interp(w, W[i], [G[(i, x, E)][0] for x in W[i]])
+                        dd = np.interp(w, W[i], [G[(i, x, E)][1] for x in W[i]])
                         if lab in ('v', 'both'):
                             c2 += ((d['v'] - vv) / d['ve']) ** 2
                         if lab in ('DT', 'both'):
@@ -77,12 +79,12 @@ def main():
             res[lab] = dict(chi2=best[0], ndf=len(rows) * (2 if lab == 'both' else 1) - 2, iso=best[1], water=float(best[2]))
         # the D_T each composition predicts at the v-only best fit, per row
         i, w = res['v']['iso'], res['v']['water']
-        ws5 = sorted({k[1] for k in G if k[0] == 5.0})
+        ws5 = W[5.0]
         wf5 = np.linspace(0, max(ws5), 61)
         for d in rows:
             E = min(Es, key=lambda e: abs(e - d['E']))
-            d['DT_at_vfit'] = float(np.interp(w, ws, [G[(i, x, E)][1] for x in ws]))
-            d['v_at_vfit'] = float(np.interp(w, ws, [G[(i, x, E)][0] for x in ws]))
+            d['DT_at_vfit'] = float(np.interp(w, W[i], [G[(i, x, E)][1] for x in W[i]]))
+            d['v_at_vfit'] = float(np.interp(w, W[i], [G[(i, x, E)][0] for x in W[i]]))
             # the nominal gas: Ar/iso 95/5 with the water that best gives this row's v (v is not monotonic in
             # water at >~300 V/cm, so take the closest of the fine grid, not an inversion)
             v5 = np.interp(wf5, ws5, [G[(5.0, x, E)][0] for x in ws5])
@@ -94,7 +96,7 @@ def main():
         for d in rows:
             print(f'    {d["key"]:48s} E {d["E"]:3d} v {d["v"]:5.1f}±{d["ve"]:.1f} (v-fit {d["v_at_vfit"]:5.1f})  '
                   f'D_T {d["DT"]:4.0f}±{d["DTe"]:3.0f} (v-fit gas {d["DT_at_vfit"]:4.0f}; 95/5 + {d["water_95"]:.2f} % water {d["DT_at_v95"]:4.0f})')
-    json.dump(dict(grid_iso=isos, grid_water=ws, fields=Es, chambers=out), open(f'{HERE}/results/iso_fit.json', 'w'), indent=1)
+    json.dump(dict(grid_iso=isos, grid_water={str(k): v for k, v in W.items()}, fields=Es, chambers=out), open(f'{HERE}/results/iso_fit.json', 'w'), indent=1)
 
 
 if __name__ == '__main__':
