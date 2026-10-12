@@ -37,9 +37,9 @@ check the migration status table in `RECONSTRUCTION_BASIS.md` first.
 - `ntof_cosmics/` — the 47 beam-off cosmic runs (inventory) and the
   through-going-particle background; `clock_match.py` puts beam-off DREAM
   triggers on the n_TOF clock (~10 ns) with no flash. Entry point: its README.
-- **Same-chamber pair reconstruction** spans two branches (two-track separation on
-  `two-track-joint-fit`; single-track angle truth and the seeder on
-  `beam-off-cosmics`). Map of both, and how they constrain each other:
+- **Same-chamber pair reconstruction**: two-track separation (T1) and single-track
+  angle truth / the seeder (T2), both on main since 2026-10-12. Map of both, how they
+  constrain each other, and the latest results on the is2_v2 re-pass:
   `sept26_prelim_analysis/SAME_CHAMBER_PAIRS.md`.
 - `ntof_scint_stack/` — every SiPM wall, plastic and liquid mapped (efficiency,
   response) by the MM tracks that point at them; output in
@@ -49,10 +49,6 @@ check the migration status table in `RECONSTRUCTION_BASIS.md` first.
   channel and per chip. Two of its findings are campaign-wide and are listed
   under "Two n_TOF conditions" below; read them before comparing anything
   across 23 July or using chamber A in run_79.
-- **Same-chamber pair reconstruction** spans two branches (two-track separation on
-  `two-track-joint-fit`; single-track angle truth and the seeder on
-  `beam-off-cosmics`). Map of both, and how they constrain each other:
-  `sept26_prelim_analysis/SAME_CHAMBER_PAIRS.md`.
 - `common/` — strip maps, active area, shared config.
 - Bench data: `/media/dylan/data/x17/cosmic_bench` (mirror at
   `~/x17/cosmic_bench`); waveforms in `<run>/<subrun>/decoded_root`.

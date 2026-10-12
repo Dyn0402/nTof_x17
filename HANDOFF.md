@@ -1,5 +1,44 @@
 # Handoff
 
+## Same-chamber pairs on the is2_v2 re-pass (talk prep) — updated 2026-10-12 (dylan-MS-7C84)
+
+**Resume:** results and report done for Thursday's talk; next is the wall2 folded acceptance and T1 on the in-situ bundles.
+
+**Goal:** updated same-chamber (intra) pair results for Dylan's talk on Thu 2026-10-15, on the is2_v2 re-pass at
+the capsule-focus k.
+
+**Done:**
+- Merged `two-track-joint-fit` into main (`69c83b6`; wft_beam meta conflict resolved, wft tests 58 pass).
+- `kcal_is2_v2_cf` = kcal_is2_v2 × 1.12 (A and C; `k_insitu --search-scale A=1.13008,C=1.12336`). **Provisional
+  (Dylan's call): the 12 % muon-vs-capsule k tension is open** (HANDOFF_TRACKING §22).
+- Stage 3 at that k: `~/x17_local/stage3_is2_v2_cf` (14 GB, root disk; the data disk had 3.8 GB free). 292 sub-runs,
+  0 failed, 5.91 M gated at 0.8 true.
+- `det_a_intra` generalised (defaults reproduce the 09-10 output exactly on run_145): `--arm`, `--tan-max-true`,
+  `--t0-max`, `--axis measured`, `--wall` (wall / wall2 selections), `--acc-reco`, `--out`.
+- Six campaign runs in `~/x17_local/same_chamber/{prod,cf,is2}_{A,C}`; report
+  `/media/dylan/data/x17/sept26_prelim/same_chamber/report.html`. Results: `SAME_CHAMBER_PAIRS.md` "Results on the
+  is2_v2 re-pass".
+
+**Next steps:**
+1. Throw the folded acceptance for the wall2 selection, and compare the IPC models (`ipc_born.py`) on it.
+2. T1 on the in-situ bundles: re-derive F (split-ab ladder), then one combined contract, so < 20 mm pairs come back.
+3. Settle the k tension (direct is2_v2 in-beam muon check, beam-off-cosmics section step 0).
+4. Move the stage-3 cf table to the data disk once there is room, if it should live with the other products.
+
+**Gotchas / decisions:**
+- Always cut t0 > 300 ns before pairing: flat late tracks on the 60 ns t0 grid make 0° Δt0 = 0 pairs (41 % of
+  re-pass pairs uncut).
+- Wall "both legs" is not a two-particle test (4 × 100 mm groups). Use `wall2`.
+- Production has no k for run_126/154/156 (A) and run_98/118/124 (C): those runs drop out of the production chain.
+- run_126 has no k in the in-situ kcal either; it contributes nothing.
+- `det_a_intra --axis measured` takes each run's offset from `imaging_campaign/per_run.csv`.
+
+**Key files & commands:**
+- `D=/media/dylan/data/x17/sept26_prelim; python -m sept26_prelim_analysis.det_a_intra --arm A --tan-max-true 0.6
+  --t0-max 300 --axis measured --wall --jobs 3 --src ~/x17_local/stage3_is2_v2_cf --reco $D/fullpass_is2_v2
+  --acc-reco $D/reco_fullpass --out ~/x17_local/same_chamber/cf_A` (~25 min under load)
+- `python -m sept26_prelim_analysis.make_same_chamber_report` (defaults: `~/x17_local/same_chamber` → `<out>/same_chamber`)
+
 ## Large q_sum tracks (NNLS runaway) — updated 2026-10-02 (dylan-MS-7C84)
 
 **Goal:** explain the ~25–30 % of gated tracks with q_sum > 1e6 ADC (STATUS
