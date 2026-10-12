@@ -65,65 +65,53 @@ proposed, but Dylan has not picked any yet.
 
 ## Beam-off cosmics: angle response + in-situ reco — updated 2026-10-12 (dylan-MS-7C84)
 
-**Resume:** read `ntof_cosmics/HANDOFF_TRACKING_2026-10-06.md` §20–§22. The is2_v2 pass is done and beats production
-(§20); the 0.6 cut stays (§21). §22: the capsule focus wants is2 angles ×1.12 on both arms, and that is NOT geometry.
-The source x offset is −9.5 mm, but it doesn't set s; the depth origin is fine. The physical kernel moves the scale
-< 2 % (A Y −7 %, C no gain). Open: electron vs muon (source model or response); stage-3 `pointing()` uses x = 0.
-Everything below this line is the 10-09 state, kept for reference.
+**Resume:** A-scale: capsule focus wants is2 ×1.12 on A and C. Not geometry, not the kernel. Next: (s,dx) focus on the G4 sim.
 
 **Goal:** a reconstruction that measures angles correctly at n_TOF, head-on included, so same-chamber pairs can be
 reconstructed.
 
-**Read first:** `ntof_cosmics/HANDOFF_TRACKING_2026-10-06.md` §19 (latest: pilot vs production, two-sided on run_86,
-launch), then §18/§17 (two-sided search), §16 (pilot), §15–§13. Report: `ntof_cosmics/results/pilot_is2_v1/report.html`.
-Slide note of the review: <https://dylan-neff.web.cern.ch/notes/ac-insitu-angles.html>.
+**Read first:** `ntof_cosmics/HANDOFF_TRACKING_2026-10-06.md` §22 (latest), then §20 (is2_v2 full pass vs production,
+report `results/fullpass_is2_v2/report.html`) and §21 (capsule focus, 0.8 cut rejected). Earlier: §13–§19.
 
-**Running on lxplus — condor cluster 4410513 (is2_v2, Dylan's call 2026-10-09):**
-- Two-sided slope search (`WFT_TWO_SIDED=1`), TAN_MAX 1.0 raw, min 3 strips, in-situ bundles is2_A/is2_C, arms A,C,
-  JobFlavour testmatch (72 h). 6,466 jobs. Built at 939dc2b (clean tree).
-- Output: EOS `/eos/user/d/dneff/x17/sept26_fullpass_is2_v2`. Package: lxplus `~/sept26_stage2_is2_v2`
-  (logs in `log/<run>/`), local copy `/media/dylan/data/x17/sept26_prelim/pkg_is2_v2`.
-- Expected ~20 h median, up to ~55 h per job, so the whole pass will take days (6,466 jobs × ~20 h, queue-limited).
-- **State at wrap-up (2026-10-09 afternoon):** 1,723 running, 4,426 idle, ~315 done, 2 held. AFS quota 29 %.
-- **The 2 held jobs (procs 1748/1749) are run_104 `stat090_0016`, A and C.** Both fail on input: the decoded ROOT
-  files (`…260730_11H29_000_03.root`, `…_07.root`) are empty (no `nt` tree), so this is not a reco bug and a re-run
-  won't help. Check whether production also lacks this sub-run, then `condor_rm 4410513.1748 4410513.1749`.
+**Done:**
+- 10-10/11 (another session, no wrap-up at the time): is2_v2 condor 4410513 finished (6,464/6,466; the missing
+  run_104 stat090_0016 A/C have empty input, and production has no A/C there). Stage 3 is in
+  `/media/dylan/data/x17/sept26_prelim/stage3_is2_v2` (stores the 0.8 superset as `gated`; the analysis cut is 0.6).
+  Wall-confirmed vs production: A ×1.49, C ×1.82. Merged to main (f0c80cd).
+- 10-12 (§22):
+  - **Geometry ruled out for the capsule scale.** Distance errors cancel or push A and C oppositely. The source sits
+    at global x −9.5 mm (joint (s,dx) fit = imaging −9.3), but with it fitted s = 1.12 on both arms.
+  - **Depth origin ruled out:** median charge depth is at mid-gap. Note: a p0/t0 slide does NOT cancel against the
+    A–C truth.
+  - **Population ruled out:** s 1.08–1.14 across time window, capsule height, wall, χ², charge and |tan y| splits.
+  - **Physical RC kernel (cloud_basics) on the run_149 A–C truth:** A y resolution −7 %, x S-shape a third flatter.
+    C gets no gain (det7 constants make y +10 %). Raw scale moves < 2 %.
+  - The opt-in RC kernel files (`wft/model.py`, `wft/calib.py` + tests) were brought from `mx17-paper-status` into
+    main.
 
 **Next steps:**
-1. Check `condor_q 4410513 -totals`, `condor_q 4410513 -hold -af ProcId HoldReason` and `lxstore status`. A hold for
-   anything other than the run_104 empty input → read `~/sept26_stage2_is2_v2/log/<run>/<tag>.err`. Re-run failures
-   with a new package built with `--done-list`.
-2. When done: pull with `fetch_stage2.sh` (REMOTE=lxplus:/eos/user/d/dneff/x17/sept26_fullpass_is2_v2, plus LOCALPKG
-   and OUT) into `/media/dylan/data/x17/sept26_prelim/fullpass_is2_v2`.
-3. Make `kcal_is2_v2` = kcal_is2_v1 × (A 1.009, C 1.003) (the two-sided cosmic-closure shift), or re-derive.
-4. Stage 3: `campaign_tracks --fullpass …/fullpass_is2_v2 --kcal …/kcal_is2_v2 --arms A,C --tan-max-true 0.6
-   --out …/stage3_is2_v2`. Consider a wider cut: two-sided purity held to 0.6–0.8 on run_86.
-5. Compare with production `stage3_fullpass` (not `stage3_campaign`, which has ~1/15 of the statistics) using
-   `ntof_cosmics/pilot_compare.py` (repoint PILOT; steps match/summary/bins/same) and regenerate the report with
-   `make_pilot_report.py`.
-6. Still open: which k is right on A (in-situ is 0.85× production on the same tracks; board question); D in-situ
-   bundle (v ≈ 28); B's HV in run_149.
-
-**Key results (details §19):**
-- Pilot is2_v1 (one-sided): confirmed yield 1.5–1.8× production per run in |true tan| < 0.6; its directions win
-  2:1 on the same tracks. A's per-bin deficit is the k difference, not mirrors.
-- run_86 one- vs two-sided: confirmed A 1,283 → 1,255, C 1,026 → 1,053; gated A 4,045 → 2,612, C 2,879 → 1,870;
-  wall purity A 0.38 → 0.59, C 0.49 → 0.66. CPU ~20×.
+1. Run `focus_offset` logic on the g4_digi sim chain (`g4_*_is2_full`) with the data's dx. Then vary the simulated
+   source (capsule walls, material behind the axis) to see what turns muon-correct angles into s 1.12. Or find an
+   electron-specific angle truth.
+2. Decide whether stage 3 `pointing()` should use the measured axis (x ≈ −9.5 mm) instead of 0. Today
+   `dca_axis_mm` / `in_bore` are off-centre by about a capsule radius. Check who cuts on them before changing it.
+3. Physical kernel at n_TOF, if pursued: n_TOF-gas Dp (Magboltz 90/10 at 243/278 V/cm), det6's own template for C,
+   §28 joint Dd, then a refit. Only A's y and head-on resolution is likely to gain.
+4. Still open: D in-situ bundle (v ≈ 28); B's HV in run_149; adopting is2_v2 as production (Dylan).
 
 **Gotchas / decisions:**
-- Raw-tan constants (TAN_MAX, `TAN_MIN_SLOPE`, `FLOOR_TAN`, `W_SCAN_HALF`) change meaning with v.
-- Sidecars before 7cd9db7 have no `tan_max_raw`; `build_tracks` assumes 0.6 for them.
-- Arms without k (B, D, and 9 run/arms in stage3_fullpass) get `in_acceptance` False / are skipped.
-- Never use the capsule band as the beam scale. Never run `k_arm` on cosmics. run_126 has no k.
-- `yield_gate.py summary`'s report step throws KeyError without the is2 chain; the CSV is written first.
-- Superseded: is2_v1 pilot (cluster 4409382, `sept26_fullpass_is2_v1`) and the staged one-sided `~/sept26_stage2_is2_v1`.
-- lxplus SSH goes through a mux master. If it hangs, retry, or `kinit`.
+- `capsule_focus.py` assumes the axis at x = 0. Its tan-sign halves are dominated by the −9.5 mm offset; use
+  `focus_offset.py`. Exclude 1–10 ms (flash junk, miss 58–82 mm).
+- The physical kernel was compared at each label's own TRAIN scale (`insitu_paired.py`); raw scale shifts are in the
+  `cmp` v_scale column.
+- Bench chamber map at n_TOF: A = det3, B = det2, C = det6 (runs det7's r06 kernel in is2_C), D = det7.
+- Raw-tan constants (TAN_MAX etc.) change meaning with v. Never use the capsule band as the beam scale.
 
 **Key files & commands:**
-- `sept26_prelim_analysis/condor/make_stage2_campaign.py --full-pass --arms A,C --insitu A=…/is2_A,C=…/is2_C
-  --min-strips 3 --tan-max 1.0 --two-sided --flavour testmatch --version is2_v2 --dest <dir> [--done-list …]`.
-- `wft/reco.py` (TAN_MAX, two-sided), `sept26_prelim_analysis/build_tracks.py` (`--tan-max-true`).
-- `ntof_cosmics/pilot_compare.py`, `make_pilot_report.py`, `yield_gate.py`.
+- `ntof_cosmics/focus_split.py`, `focus_offset.py` → `ntof_cosmics/results/focus_split/` (CSVs + logs).
+- `ntof_cosmics/insitu_paired.py`, `~/scratch/ntof_insitu/recipe_rc.sh` (copy in `results/insitu_rc/`, with the
+  paired CSVs). Bundles `~/scratch/ntof_insitu/bundles/rcm{3_A,7_C,6_C}`, reco tables `reco_rcm*ts_s3_*.parquet`.
+- `python -m ntof_cosmics.focus_offset --src /media/dylan/data/x17/sept26_prelim/stage3_is2_v2` (~15 min, 1 core).
 
 ## Scintillator stack mapped by the MM tracks — updated 2026-10-06 (dylan-MS-7C84)
 
