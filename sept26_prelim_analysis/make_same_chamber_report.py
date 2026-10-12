@@ -383,6 +383,168 @@ def fig_physics_open(E: pd.DataFrame, F: pd.DataFrame, C: pd.DataFrame, fd: Path
     return fs.save(fig, fd / 'physics_opening_angle', data=E)
 
 
+def fig_tof(R: pd.DataFrame, F: pd.DataFrame, fd: Path):
+    """Fraction of tracked events with a second same-chamber track, vs time since the flash."""
+    fig, axs = fs.figure(fs.WIDE, ncols=2, sharey=True)
+    for ax, arm in zip(axs, ARMS):
+        r = R[R.arm == arm]
+        x = 0.5 * (r.lo + r.hi)
+        ax.errorbar(x, r.frac * 100, yerr=r.err * 100, fmt=fs.DET_MARKER[arm], ms=4,
+                    color=fs.DET_COLOR[arm], label='data')
+        f = F[F.arm == arm].iloc[0]
+        late = r[r.lo >= f.late_ms]
+        ax.plot(0.5 * (late.lo + late.hi), (f.a + f.b * late.rho) * 100, color=fs.INK, lw=1.3,
+                label='fit a + b·rate (12–75 ms)')
+        ax.axhline(f.a * 100, color=fs.ACCENT, lw=1.3, ls='--',
+                   label=f'rate-independent part a = {100 * f.a:.3f} ± {100 * f.a_err:.3f} %')
+        ax.axvspan(0, f.late_ms, color=fs.GRID, zorder=0)
+        ax.set_yscale('log')
+        ax.set_xlabel('time since the γ flash (ms)')
+        ax.set_title(f'chamber {arm}', loc='left', fontsize=fs.BASE_PT)
+        ax.legend(frameon=False, fontsize=fs.BASE_PT * 0.75, loc='upper right')
+        fs.preliminary(ax, 'lower left')
+    axs[0].set_ylabel('events with ≥ 2 tracks (%)')
+    fs.fig_title(fig, 'After 12 ms the pair fraction flattens: same-capture pairs, not pile-up',
+                 'shaded: flash and epithermal region, excluded; re-pass, capsule-focus k')
+    return fs.save(fig, fd / 'cmp_tof_fraction', data=R)
+
+
+def fig_g4_classes(T: pd.DataFrame, fd: Path):
+    """Geant4: what reconstructable same-chamber pairs are."""
+    fig, ax = fs.figure(fs.FIG)
+    t = T[T.cls != '(singles in acceptance)']
+    cls = (t.groupby('cls').acc.sum().sort_values().index.tolist())
+    y = np.arange(len(cls))
+    for k, arm in enumerate(ARMS):
+        tt = t[t.arm == arm].set_index('cls').reindex(cls)
+        share = tt.acc / tt.acc.sum()
+        ax.barh(y + (k - 0.5) * 0.38, share.fillna(0), 0.36, color=fs.DET_COLOR[arm],
+                label=f'chamber {arm}')
+        for yi, v in zip(y, share.fillna(0)):
+            if v > 0.02:
+                ax.text(v + 0.01, yi + (k - 0.5) * 0.38, f'{100 * v:.0f} %', va='center',
+                        fontsize=fs.BASE_PT * 0.75, color=fs.MUTED)
+    ax.set_yticks(y, cls)
+    ax.set_xlabel('share of reconstructable same-chamber pairs (triggered, after acceptance)')
+    ax.set_xlim(0, 1.0)
+    ax.legend(frameon=False, loc='lower right')
+    fs.title(ax, 'Geant4: four in five same-chamber pairs are one photon\'s e⁺e⁻',
+             '10⁹ thermal neutrons, nose-first capsule; ²⁷Al(n,γ) is 96 % of the triggers')
+    fs.preliminary(ax, 'upper right')
+    return fs.save(fig, fd / 'cmp_g4_classes', data=t)
+
+
+def fig_expect(X: pd.DataFrame, F: pd.DataFrame, fd: Path):
+    """Expected vs measured rate-independent pair fraction."""
+    fig, axs = fs.figure((10.5, 3.8), ncols=2, sharey=False)
+    for ax, arm in zip(axs, ARMS):
+        x = X[X.arm == arm].reset_index(drop=True)
+        lab = [f'{r.eps_source} (ε {r.eps:.2f}), {r.two_track}' for r in x.itertuples()]
+        y = np.arange(len(x))
+        ax.barh(y, x.predicted_frac * 100, 0.6, color=fs.GRID, edgecolor=fs.LINE)
+        f = F[F.arm == arm].iloc[0]
+        ax.axvspan((f.a - f.a_err) * 100, (f.a + f.a_err) * 100, color=fs.DET_COLOR[arm], alpha=0.25)
+        ax.axvline(f.a * 100, color=fs.DET_COLOR[arm], lw=2, label='data (rate-independent part)')
+        lab = [('digitised Geant4 through the reco' if r.eps_source.startswith('digitised') else
+                f'ε {r.eps:.2f} ({r.eps_source.split(",")[0]}), '
+                + ('bench recovery' if r.f_two < 1 else 'no two-track loss')) for r in x.itertuples()]
+        ax.set_yticks(y, lab, fontsize=fs.BASE_PT * 0.72)
+        ax.set_xlabel('pairs per tracked event (%)')
+        ax.set_title(f'chamber {arm}', loc='left', fontsize=fs.BASE_PT)
+        ax.legend(frameon=False, fontsize=fs.BASE_PT * 0.8, loc='lower right')
+        fs.preliminary(ax, 'upper right')
+    fs.fig_title(fig, 'Data has ~1/8 of the Geant4 prediction through the real reconstruction',
+                 'grey: Geant4 (e⁺e⁻-dominated) under each efficiency assumption; band: data ± 1σ')
+    return fs.save(fig, fd / 'cmp_expectation', data=X)
+
+
+def fig_cmp_open(O: pd.DataFrame, C: pd.DataFrame, fd: Path):
+    fig, axs = fs.figure(fs.WIDE, ncols=2, sharey=True)
+    for ax, arm in zip(axs, ARMS):
+        o = O[(O.arm == arm) & (O.chain == 'cf')]
+        k = o.correlated.to_numpy(); tot = k.sum()
+        ax.errorbar(o.mid, k / tot, yerr=o.err / tot, fmt=fs.DET_MARKER[arm], ms=5,
+                    color=fs.DET_COLOR[arm], label=f'data, correlated ({tot:.0f} pairs)', zorder=5)
+        for model, st, lab in (('g4_ee', dict(color=fs.ACCENT, ls='-'), 'Geant4 e⁺e⁻ (one γ)'),
+                               ('toy_conv', dict(color=fs.COPPER, ls='--'), 'Geant4 Al conversion angle, toy acceptance'),
+                               ('mixed', dict(color=fs.MUTED, ls='-.'), 'uncorrelated (event-mixed)')):
+            m = o[model].to_numpy(float)
+            c = C[(C.arm == arm) & (C.chain == 'cf') & (C.model == model)]
+            chi = f' — χ² {c.chi2.iloc[0]:.1f}/{c.ndf.iloc[0]}' if len(c) else ''
+            ax.step(o.mid, m / m.sum(), where='mid', lw=1.6, **st, label=lab + chi)
+            if model == 'g4_ee':
+                e = np.sqrt(o.g4_ee_var.to_numpy(float)) / m.sum()
+                ax.fill_between(o.mid, m / m.sum() - e, m / m.sum() + e, step='mid',
+                                color=fs.ACCENT, alpha=0.15, lw=0)
+        ax.axhline(0, color=fs.LINE, lw=0.8)
+        ax.set_xlabel('opening angle (deg)')
+        ax.set_title(f'chamber {arm}', loc='left', fontsize=fs.BASE_PT)
+        ax.legend(frameon=False, fontsize=fs.BASE_PT * 0.7, loc='upper right')
+        fs.preliminary(ax, 'lower right')
+    axs[0].set_ylabel('fraction / 10°')
+    fs.fig_title(fig, 'In A the correlated pairs open like Geant4\'s e⁺e⁻, not like unrelated tracks',
+                 'correlated = late real pairs − accidental share × late event-mixed shape; shapes only, Geant4 band = its statistics')
+    return fs.save(fig, fd / 'cmp_opening', data=O)
+
+
+def physics_section(out: Path, fd: Path) -> str:
+    need = ['cmp_tof_fraction', 'cmp_tof_fit', 'cmp_g4_classes', 'cmp_expectation',
+            'cmp_late_vertex', 'cmp_opening', 'cmp_opening_chi2', 'cmp_wall_double_ratio']
+    if not all((out / f'{n}.csv').exists() for n in need):
+        return ''
+    R, F, T, X, V, O, C, W = (pd.read_csv(out / f'{n}.csv') for n in need)
+    figs = [(fig_tof(R, F, fd), 'Pair fraction against time since the flash',
+             'The fraction of tracked events with a second track in the same chamber. Before ~10 ms it is '
+             'dominated by flash and epithermal junk. After 12 ms it is nearly flat while the event rate '
+             'falls 3.5×: pairs from one capture arrive with their own trigger and are a constant fraction, '
+             'two unrelated captures in one readout window scale with the rate. The fit separates the two.'),
+            (fig_g4_classes(T, fd), 'What Geant4 says the pairs are',
+             'Every two leptons of one simulated event crossing ≥ 20 mm of one drift gap, in triggered '
+             'events, weighted by the measured acceptance (|tan| < 0.6, resolution, two-track efficiency). '
+             'Two Compton electrons of two photons, the alternative that fitted as well as e⁺e⁻ yesterday, '
+             'are 3–9 %. Internal pairs (not in Geant4) add ~18 % on top of the conversions.'),
+            (fig_expect(X, F, fd), 'How many we should have seen',
+             'Geant4 pairs per single track in acceptance, times the per-track efficiency ε (three '
+             'estimates) and the two-track recovery of the overlay bench (47 % A / 39 % C), against the '
+             'measured rate-independent fraction.'),
+            (fig_cmp_open(O, C, fd), 'Opening angle of the correlated pairs',
+             'Data: late (≥ 12 ms) real pairs minus the fitted accidental share (38 % A / 37 % C) with '
+             'the late event-mixed shape. Geant4: one-photon e⁺e⁻ pairs through the same reconstruction '
+             'response (band: Geant4 statistics, ~80 effective pairs per arm). χ² includes both errors.')]
+    fA, fC = F[F.arm == 'A'].iloc[0], F[F.arm == 'C'].iloc[0]
+    def xr(arm, src, two):
+        r = X[(X.arm == arm) & (X.eps_source == src) & (X.two_track == two)]
+        return r.iloc[0]
+    bA = xr('A', 'digitised Geant4 through the reconstruction', 'measured (digitised)')
+    bC = xr('C', 'digitised Geant4 through the reconstruction', 'measured (digitised)')
+    rA, rC = X[X.arm == 'A'].data_over_g4, X[X.arm == 'C'].data_over_g4
+    def chi(arm, model):
+        r = C[(C.arm == arm) & (C.chain == 'cf') & (C.model == model)].iloc[0]
+        return f'{r.chi2:.1f}/{r.ndf}'
+    vA = V[(V.arm == 'A') & (V.chain == 'cf')].iloc[0]
+    vC = V[(V.arm == 'C') & (V.chain == 'cf')].iloc[0]
+    wA = W[(W.arm == 'A') & (W.chain == 'cf')].iloc[0]
+    body = f"""<h2>Physics: did we see the aluminium e⁺e⁻ pairs?</h2>
+<p class="verdict"><b>Same-capture pairs are there, with Geant4's e⁺e⁻ opening-angle shape in A, but at about one eighth of the rate Geant4 predicts.</b>
+After 12 ms the fraction of tracked events that hold a second track in the same chamber has a part that does not depend on the event rate:
+<b>{100 * fA.a:.3f} ± {100 * fA.a_err:.3f} % in A and {100 * fC.a:.3f} ± {100 * fC.a_err:.3f} % in C</b>, about {fA.correlated_pairs:,.0f} and {fC.correlated_pairs:,.0f} same-capture pairs.
+The two chambers agree.
+Geant4 says four in five reconstructable same-chamber pairs from a capture are the e⁺e⁻ of one ²⁷Al capture photon converting in the capsule wall.
+Geant4 events digitised and put through the real reconstruction measure the pair response directly: P(2 tracks | 2 leptons) = 0.16 (A) / 0.14 (C) against P(≥ 1 track | 1 lepton) = 0.54 / 0.45.
+With that response Geant4 predicts {100 * bA.predicted_frac:.2f} % (A) and {100 * bC.predicted_frac:.2f} % (C): <b>data/Geant4 = {bA.data_over_g4:.2f} and {bC.data_over_g4:.2f}</b>.
+The cruder efficiency brackets give {rA.min():.2f}–{rA.max():.2f} (A) and {rC.min():.2f}–{rC.max():.2f} (C).
+Even data's total late pair fraction, accidentals included (0.26 %), is ~4.6× below the digitised prediction, so the deficit does not hinge on the rate fit.
+In A the correlated pairs' opening angle prefers Geant4's e⁺e⁻ (χ² {chi('A', 'g4_ee')}) over unrelated tracks (χ² {chi('A', 'mixed')}). The difference sits mostly in the 0–10° and 40–50° bins, so it is a preference, not a separation. In C neither shape fits well (χ² {chi('C', 'g4_ee')} and {chi('C', 'mixed')}).</p>
+<p><b>Correction to yesterday's vertex result.</b> The ×2.14 (A) / ×1.67 (C) "common vertex on the axis" excess does not survive restricting to late tracks with a late-only event-mixed null. 77 % of A's pairs, and so most of its mixing pool, came from the first 12 ms. Late only: A ×{vA.ratio:.2f} ± {vA.ratio_err:.2f}, C ×{vC.ratio:.2f} ± {vC.ratio_err:.2f}. Geant4 explains why the vertex test is weak: the leptons scatter in the capsule wall, and a real e⁺e⁻ pair passes the test only 1.4–5 % of the time, barely above the chance rate of 2–3 %. The vertex figures above and the toy fits of the first physics pass rest on the early-dominated null; read them as superseded.</p>
+<p><b>Energy, through the wall.</b> P(both legs confirmed | correlated pair) / P(confirmed | single)² is {wA.data_double_ratio:.2f} in A against Geant4's {wA.g4_double_ratio:.2f} for e⁺e⁻. But event-mixed pairs give a similar value, so this is not a discriminant on this sample.</p>
+<p><b>What the factor ~8 could be — open.</b> Known effects make it smaller only modestly. The digitised sample used the one-sided search, not is2_v2's two-sided. The data's t0 ≤ 300 ns cut costs a pair ~0.8 more than a single. Internal pairs (not in Geant4) would make the prediction ~18 % <i>larger</i>. Candidates for the rest: Geant4's conversion yield, which scales with the capsule-wall material and thickness in the nose (unvalidated against the real capsule); a trigger or readout effect specific to two-lepton events; or a reconstruction loss the quiet-overlay digitisation does not reproduce in real busy events. Not resolved here.</p>
+"""
+    body += ''.join(f'<figure><img src="figures/{p.name}" alt="{html.escape(t)}">'
+                    f'<figcaption><b>{html.escape(t)}.</b> {html.escape(c)}</figcaption></figure>'
+                    for p, t, c in figs)
+    return body
+
+
 # --------------------------------------------------------------------------- #
 # the page
 # --------------------------------------------------------------------------- #
@@ -478,12 +640,9 @@ def build(src: Path, out: Path) -> Path:
         f'So the re-pass removes junk and keeps the real pairs. Their off-time accidental count is {g(cfA,"pairs_wallctrl","{:,}")} / '
         f'{g(cfC,"pairs_wallctrl","{:,}")}. Their median opening angle at the capsule-focus k is '
         f'{g(cfA,"wall_open_med","{:.0f}")}° (A) / {g(cfC,"wall_open_med","{:.0f}")}° (C). '
-        f'<b>And the re-pass pairs share a vertex on the beam axis</b> more often than chance: '
-        f'{g(cfA,"vx_all_k","{:,}")} pairs in A against {g(cfA,"vx_all_exp","{:,.0f}")} expected '
-        f'from event mixing (×{g(cfA,"vx_all_ratio","{:.2f}")} ± {g(cfA,"vx_all_err","{:.2f}")}), '
-        f'{g(cfC,"vx_all_k","{:,}")} against {g(cfC,"vx_all_exp","{:,.0f}")} in C '
-        f'(×{g(cfC,"vx_all_ratio","{:.2f}")} ± {g(cfC,"vx_all_err","{:.2f}")}). Production\'s '
-        f'pairs show none in A (×{g(pA,"vx_all_ratio","{:.2f}")}).</p>')
+        f'<b>Correction (2026-10-13):</b> the common-vertex excess quoted here first (×{g(cfA,"vx_all_ratio","{:.2f}")} A) '
+        f'comes from an event-mixed null dominated by the first 12 ms after the flash and does not survive a late-only analysis. '
+        f'See the physics section.</p>')
 
     t1 = table(T, ['chain_name', 'arm', 'runs', 'tracks', 'pairs', 'pairs_per_1k_trk',
                    'trk_wall_net', 'leg_wall', 'pairs_wall1', 'pairs_wall1ctrl',
@@ -504,58 +663,7 @@ def build(src: Path, out: Path) -> Path:
                 'vertex rate real / mixed'],
                [None, None, '{:,}', '{:.0%}', '{:.0%}', '{:.1f}°',
                 '{:.1f}°', '{:.1f}°', '{:.0f} mm', '{:.0f} mm', '{:,}', '{:.2f}'])
-    phys_html = ''
-    ph = {k: out / f'physics_{k}.csv' for k in ('vertex_y', 'excess_spectrum',
-                                                'folded_models', 'compare')}
-    if all(p.exists() for p in ph.values()):
-        Y, E, F, C = (pd.read_csv(ph[k]) for k in ('vertex_y', 'excess_spectrum',
-                                                   'folded_models', 'compare'))
-        pfig = [(fig_physics_y(Y, fd), 'Vertex position along the beam',
-                 'Vertexed same-chamber pairs against the chance expectation from event '
-                 'mixing. The excess sits over the capsule, whose height is measured '
-                 'independently (capsule_y, +33 ± 3 mm). The vertex resolution along the beam '
-                 'has not been measured.'),
-                (fig_physics_open(E, F, C, fd), 'What the excess is',
-                 'The excess opening-angle spectrum (vertexed real pairs minus the chance '
-                 'rate, bin by bin) against four source shapes, each thrown from the capsule '
-                 'wall through the active area, the |tan| < 0.6 cut, the measured two-track '
-                 'and angular resolution and the same vertex test. Shape-only χ².')]
-        def mrow(arm, chain, model, col, fmt):
-            r = C[(C.arm == arm) & (C.chain == chain) & (C.model == model)]
-            return fmt.format(r[col].iloc[0]) if len(r) else '–'
-        ctab = '<table><thead><tr><th>model</th>' + ''.join(
-            f'<th>{a}, {CHAINS[c]}</th>' for a in ARMS for c in ('cf', 'is2')) + \
-            '<th>vertex efficiency A / C</th></tr></thead><tbody>'
-        for model in MODEL_STYLE:
-            ctab += f'<tr><td>{html.escape(MODEL_LABEL[model])}</td>' + ''.join(
-                '<td>' + mrow(a, c, model, 'chi2', '{:.1f}') + ' / ' + mrow(a, c, model, 'ndf', '{:d}')
-                + '</td>' for a in ARMS for c in ('cf', 'is2'))
-            ctab += ('<td>' + mrow('A', 'cf', model, 'frac_model_vertexed', '{:.2f}') + ' / '
-                     + mrow('C', 'cf', model, 'frac_model_vertexed', '{:.2f}') + '</td></tr>')
-        ctab += '</tbody></table>'
-        exA = E[(E.arm == 'A') & (E.chain == 'cf')].excess.sum()
-        exC = E[(E.arm == 'C') & (E.chain == 'cf')].excess.sum()
-        effA = C[(C.arm == 'A') & (C.chain == 'cf') & (C.model == 'Al conversion')].frac_model_vertexed.iloc[0]
-        effC = C[(C.arm == 'C') & (C.chain == 'cf') & (C.model == 'Al conversion')].frac_model_vertexed.iloc[0]
-        nA = T[(T.chain == 'cf') & (T.arm == 'A')].pairs.iloc[0]
-        nC = T[(T.chain == 'cf') & (T.arm == 'C')].pairs.iloc[0]
-        phys_html = f"""<h2>Physics: are there aluminium e⁺e⁻ pairs?</h2>
-<p class="verdict"><b>There are common-vertex lepton pairs from the capsule, and they look like what aluminium makes. But this setup cannot tell an e⁺e⁻ pair from two Compton electrons of the same capture.</b>
-The vertexed excess is {exA:.0f} pairs in A and {exC:.0f} in C, and it sits over the capsule. At the toy's vertex efficiency
-(~{effA:.2f} in A, ~{effC:.2f} in C) that is ~{exA / effA:.0f} / ~{exC / effC:.0f} true common-vertex pairs: about {100 * exA / effA / nA:.1f} % / {100 * exC / effC / nC:.0f} % of all same-chamber pairs.
-The rest are two particles from different sources sharing a trigger, plus leftover junk.
-Folded through the detector, the excess opening-angle spectrum fits multiple-scattered ²⁷Al conversion pairs and two leptons with unrelated directions about equally well. Which one fits better flips with the k: the capsule-focus k slightly favours unrelated leptons, the muon k favours conversion pairs.
-Internal pairs fit somewhat worse. <b>Unscattered</b> conversion pairs (the Geant4 truth angle, median 15°) are excluded: χ² ≈ 48/4 in A.
-So the multiple scattering in the capsule wall is visible in the data, as Geant4 predicts (truth median 22° → 46° at the chambers for all Al pairs).</p>
-<p>Geant4's thermal accounting (Athens funnel, F3) says that among captures putting charge in a drift gap, Compton electrons made in the capsule outnumber pair leptons about 4 : 1.
-For two leptons in one chamber the ratio is not in the accounting: it needs a truth reduction of the Geant4 trigger files that counts, per event, same-arm lepton pairs by origin (one conversion, two Compton electrons, Compton + Møller).
-That count, together with the per-pair trigger and readout livetime, would turn this excess into an e⁺e⁻ measurement or a limit.</p>
-{ctab}
-<p class="sub">χ² per model and chain (shape only, bins with real vertexed pairs). Toy: vertices on the capsule wall (r = 10 mm, measured height), 1 mm hit and measured tan resolution with tails, measured per-view two-track efficiency, det_a_intra's vertex test. <code>same_chamber_physics.py</code>.</p>
-""" + ''.join(
-            f'<figure><img src="figures/{p.name}" alt="{html.escape(t)}">'
-            f'<figcaption><b>{html.escape(t)}.</b> {html.escape(c)}</figcaption></figure>'
-            for p, t, c in pfig)
+    phys_html = physics_section(out, fd)
     fig_html = ''.join(
         f'<figure><img src="figures/{p.name}" alt="{html.escape(t)}">'
         f'<figcaption><b>{html.escape(t)}.</b> {html.escape(c)}</figcaption></figure>'

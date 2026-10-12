@@ -1,6 +1,20 @@
 # Handoff
 
-## Same-chamber pairs on the is2_v2 re-pass (talk prep) — updated 2026-10-12 (dylan-MS-7C84)
+## Same-chamber pairs on the is2_v2 re-pass (talk prep) — updated 2026-10-13 (dylan-MS-7C84)
+
+**Overnight 10-12/13 (Dylan asked for physics comparisons: expected vs seen e⁺e⁻, robust observables):**
+results in `sept26_prelim_analysis/SAME_CHAMBER_PAIRS.md` "Physics: data vs Geant4"; report
+`/media/dylan/data/x17/sept26_prelim/same_chamber/report.html` (physics section rewritten).
+- The 10-12 vertex excess (×2.14 A) was an artefact of an early-time-dominated mixing null — corrected in report/docs.
+- Correlated same-chamber pairs: 0.15 % of late tracked events in A and C; Geant4 says ~78 % are Al e⁺e⁻;
+  data ≈ 1/8 of Geant4 through the digitised reconstruction — unresolved, the main open item.
+- Re-run chain: `same_arm_pairs.py` (condor, MX17_Full_Geant) → `python -m sept26_prelim_analysis.same_chamber_g4`
+  → `det_a_intra ... --tof-min-ms 12 --out ~/x17_local/same_chamber_late/<chain>_<arm>` →
+  `python -m sept26_prelim_analysis.same_chamber_compare [events]` → `make_same_chamber_report`.
+- `same_chamber_compare.DIGI` holds the digitised pair response (from g4_<arm>_is2_full joined to steps_nose truth).
+
+### Earlier (10-12)
+
 
 **Resume:** results and report done for Thursday's talk; next is the wall2 folded acceptance and T1 on the in-situ bundles.
 

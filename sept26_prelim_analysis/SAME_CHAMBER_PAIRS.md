@@ -147,6 +147,40 @@ tension with the in-beam muons stays **open**: every angle is also shown at the 
   of one capture is not separable without energy or charge. True common-vertex pairs are
   ~0.7 % (A) / ~4 % (C) of all same-chamber pairs.
 
+- **CORRECTION 2026-10-13 — the vertex excess above is an artefact.** 77 % of A's pairs
+  are in the first 12 ms (flash/epithermal junk), and the event-mixed pool comes from the
+  same triggers. With tracks ≥ 12 ms and late-only mixing (`det_a_intra --tof-min-ms 12`):
+  A ×1.00 ± 0.11, C ×1.38 ± 0.16 (muon k: 1.19 / 1.23). Geant4 says why the vertex test is
+  weak: wall scattering leaves real e⁺e⁻ passing it only 1.4–5 % of the time, chance 2–3 %.
+
+## Physics: data vs Geant4 (2026-10-13, overnight)
+
+**Records:** `same_chamber_g4.py` (Geant4 truth → reconstruction response),
+`same_chamber_compare.py` (data vs sim), report "Physics: did we see the aluminium e⁺e⁻
+pairs?". Geant4 truth: `MX17_Full_Geant/scripts/same_arm_pairs.py` over
+neutrons_thermal_trig_2cm_nose (10⁹ n), condor 4450421, parts
+`/eos/user/d/dneff/x17/same_arm_pairs/parts/` (local `~/x17_local/g4_same_arm/parts`).
+
+- **Correlated pairs exist:** after 12 ms the fraction of tracked events with a second
+  same-chamber track is flat while the rate falls 3.5×. Fit f = a + b·rate over 12–75 ms:
+  a = 0.154 ± 0.012 % (A), 0.157 ± 0.013 % (C), ~2,050 / 1,660 pairs; accidentals ~37 %.
+- **Geant4 says they are e⁺e⁻:** of reconstructable same-chamber pairs in triggered
+  events, 78 % (A) / 75 % (C) are one photon's conversion pair; two Compton electrons of
+  two photons 3–9 %; lepton + own delta 9–11 %.
+- **Rate: data ≈ 1/8 of Geant4.** Digitised Geant4 through the real reconstruction
+  (g4_digi, is2 bundles, one-sided): P(2 trk | 2 leptons) 0.16/0.14, P(≥1 | 1) 0.54/0.45.
+  Predicted 1.19 % (A) / 1.26 % (C); data/G4 = 0.13 / 0.12. Even total late pairs
+  (0.26 %) are 4.6× below. Efficiency brackets give 0.12–0.52. Unresolved.
+- **Shape:** A's correlated opening angle prefers Geant4 e⁺e⁻ (χ² 6.6/6) over unrelated
+  tracks (26/6), mostly from the 0–10° and 40–50° bins; C does not discriminate.
+- **Wall double ratio** (energy) 0.55 data vs 0.58–0.64 Geant4 e⁺e⁻ — but event-mixed
+  pairs give ~0.6 too, so not a discriminant.
+
+**Next for the factor ~8:** check Geant4's capsule (nose Al thickness, wrap) against the
+real capsule; rerun the digitised pair sample with is2_v2's two-sided search and the data
+cuts (t0 ≤ 300, |tan| < 0.6) applied to both tracks; look for a trigger/readout effect
+specific to two-lepton events (per-trigger rates by ToF).
+
 **Next:** a Geant4 truth reduction of same-arm lepton pairs by origin (conversion / two
 Compton / Compton + Møller) to turn the excess into an e⁺e⁻ statement; fold the wall2 acceptance and compare models; T1 on the in-situ bundles (re-derive
 F, then split-ab) so the < 20 mm pairs come back; the vertexed pairs' opening-angle spectrum

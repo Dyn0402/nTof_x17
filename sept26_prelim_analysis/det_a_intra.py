@@ -127,6 +127,11 @@ T0_MAX = float(os.environ.get('DET_INTRA_T0_MAX', 'nan'))
 #: for its tracks at large (run_145): most "pairs" are not two particles, so the
 #: pair sample that means something is the one where BOTH legs confirm.
 WALL = os.environ.get('DET_INTRA_WALL', '0') == '1'
+#: Keep only tracks at least this long after the gamma flash, ms.  The first
+#: ~10 ms are flash and epithermal junk: on is2_v2 they hold 77 % of the intra-A
+#: pairs, and since the event-mixed pool is drawn from the same triggers, they
+#: also set the null.  Unset: every track (the 2026-09-10 behaviour).
+TOF_MIN_MS = float(os.environ.get('DET_INTRA_TOF_MIN_MS', 'nan'))
 #: Pointing cut, the same 30 mm the campaign chain applies inside
 #: `source_imaging._track_table` -- named here rather than buried.
 DCA_MAX = 30.0
@@ -202,6 +207,8 @@ def tracks(run: str, subruns, src: Path) -> pd.DataFrame:  # noqa: C901
         p = paths.require(src / f'tracks_{run}_{sub}.parquet',
                           f'stage-3 tracks for {run}/{sub}')
         cols = _own_flags(TRACK_COLS)
+        if np.isfinite(TOF_MIN_MS):
+            cols = cols + ['t_since_flash_ns']
         if np.isfinite(TAN_MAX_TRUE):
             cols = cols + ['gated_reco']
         d = pd.read_parquet(p, columns=cols).rename(
@@ -212,6 +219,8 @@ def tracks(run: str, subruns, src: Path) -> pd.DataFrame:  # noqa: C901
                  & (d.tanx.abs() < TAN_MAX_TRUE) & (d.tany.abs() < TAN_MAX_TRUE))
         if np.isfinite(T0_MAX):
             g = g & (d.x_t0 <= T0_MAX) & (d.y_t0 <= T0_MAX)
+        if np.isfinite(TOF_MIN_MS):
+            g = g & (d.t_since_flash_ns >= TOF_MIN_MS * 1e6)
         out.append(d[(d.arm == ARM) & g & d.angle_calibrated]
                    .assign(subrun=sub))
     t = pd.concat(out, ignore_index=True)
@@ -1442,6 +1451,8 @@ def main() -> int:
     ap.add_argument('--axis', default=AXIS, choices=('nominal', 'measured'))
     ap.add_argument('--wall', action='store_true', default=WALL,
                     help='per-leg SiPM-wall confirmation and the both-legs selections')
+    ap.add_argument('--tof-min-ms', type=float, default=TOF_MIN_MS,
+                    help='keep tracks at least this long after the flash (ms)')
     ap.add_argument('--t0-max', type=float, default=T0_MAX,
                     help='drop tracks with x_t0 or y_t0 above this, ns (300: the '
                          'late NNLS-runaway class)')
@@ -1458,9 +1469,10 @@ def main() -> int:
     # worker, forked or spawned) agrees
     want = dict(DET_INTRA_ARM=a.arm, DET_INTRA_TAN_MAX=str(a.tan_max_true),
                 DET_INTRA_AXIS=a.axis, DET_INTRA_T0_MAX=str(a.t0_max),
-                DET_INTRA_WALL='1' if a.wall else '0')
-    if ((a.arm, str(a.tan_max_true), a.axis, str(a.t0_max), a.wall)
-            != (ARM, str(TAN_MAX_TRUE), AXIS, str(T0_MAX), WALL)):
+                DET_INTRA_WALL='1' if a.wall else '0',
+                DET_INTRA_TOF_MIN_MS=str(a.tof_min_ms))
+    if ((a.arm, str(a.tan_max_true), a.axis, str(a.t0_max), a.wall, str(a.tof_min_ms))
+            != (ARM, str(TAN_MAX_TRUE), AXIS, str(T0_MAX), WALL, str(TOF_MIN_MS))):
         os.environ.update(want)
         os.execv(sys.executable, [sys.executable, '-m',
                                   'sept26_prelim_analysis.det_a_intra']
@@ -1668,6 +1680,7 @@ def main() -> int:
         schema=SCHEMA, arm=ARM, src=str(src), reco=str(reco),
         acc_reco=str(a.acc_reco or reco),
         tan_max_true=TAN_MAX_TRUE, axis=AXIS, t0_max=T0_MAX, wall=WALL,
+        tof_min_ms=TOF_MIN_MS,
         axis_offsets=({r: list(_offset(r, pr)) for r in sorted(set(P.run))}
                       if AXIS == 'measured' else None),
         runs=sorted(set(P.run)), n_runs=int(P.run.nunique()),
