@@ -3,6 +3,15 @@
 **Written 2026-09-14.** Everything below is measured on run_145's condor full
 pass unless it says otherwise.
 
+> ## ⚠ CORRECTION 2026-10-13 — the height below is the stage-3 y MIRROR (`COORDINATES.md`, `Y_FLIP_AUDIT.md` #1)
+>
+> Stored y was mirrored from 2026-09-07 to 2026-10-13. In true y the band crossings are **A −31.1, C −35.6,
+> D −29.4: y_s ≈ −33 ± 3 mm, at the capsule's aluminium nose** (Geant4's nose by the same estimator: −28;
+> `capsule_pose`: the capsule sits ~4 mm below the Geant4 placement). **The CAD/Geant4 height is right to ~5 mm.
+> "The CAD +0.8 is wrong by ~30 mm" is retracted.** The ray-trace numbers (+39 / +31) are not a simple sign flip
+> (the scintillators are not y-symmetric) and need `capsule_y --campaign` rerun on the regenerated tables. The
+> method lessons below (pointing beats shape) stand.
+
 > ## Outcome — §4 was run the same day. Read this before §3–§6.
 >
 > Code: `capsule_y.py` (`--validate`, `--sensitivity`, `--campaign`), report

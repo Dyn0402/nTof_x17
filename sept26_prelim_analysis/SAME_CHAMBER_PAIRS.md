@@ -140,7 +140,8 @@ tension with the in-beam muons stays **open**: every angle is also shown at the 
 
 - **Physics (`same_chamber_physics.py`, report section "are there aluminium e⁺e⁻ pairs?"):**
   the vertexed excess sits over the capsule (A: 73 of 91 excess pairs at y 0–75 mm, capsule
-  +3…+83). Folded through the detector, its opening angle fits multiple-scattered ²⁷Al
+  +3…+83 — **both in the mirrored stage-3 y; in true y they are −75…0 and −33.5…+46.7**,
+  `Y_FLIP_AUDIT.md` #2). Folded through the detector, its opening angle fits multiple-scattered ²⁷Al
   conversion pairs (A χ² 6.0/4) and two unrelated leptons (3.6/4) alike; the preference flips
   with k. Unscattered conversion (Geant4 truth angle) is excluded (47/4). So: common-vertex
   lepton pairs from the capsule, consistent with aluminium, but e⁺e⁻ vs two Compton electrons

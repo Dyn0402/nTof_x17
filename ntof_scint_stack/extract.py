@@ -18,10 +18,11 @@ WHAT IS DIFFERENT FROM `det_a_scint`, AND WHY.
 calibrated direction is ``tan_raw / k_arm``, but `k_arm` is the open blocker
 (STATUS 2026-09-10: the wall measures arm A's tangents 33 % too large; C and
 D's `k` moves 24-29 % run to run) and arm B has no `k` at all.  Every track
-here carries ``u, v`` at the strip plane and ``tan_raw_x, tan_raw_y``; the
-crossing at a layer a lever ``L`` past the strips is
+here carries ``u, v`` at the strip plane and ``tan_raw_x, tan_v_raw`` (the y
+tan in the local frame, ``-tan_raw_y``; COORDINATES.md); the crossing at a
+layer a lever ``L`` past the strips is
 
-    u_layer = u + L * s_u * tan_raw_x,      v_layer = v + L * s_v * tan_raw_y
+    u_layer = u + L * s_u * tan_raw_x,      v_layer = v + L * s_v * tan_v_raw
 
 with the scale ``s`` fitted downstream FROM THE SCINTILLATORS
 (`scint_stack_ana.fit_scale`).  The frame was verified on run_145 against the
@@ -70,7 +71,7 @@ from sept26_prelim_analysis.campaign_imaging import (  # noqa: E402
     PRE_ACCESS_RUNS, run_number)
 from sept26_prelim_analysis.det_a_scint import layer_geometry  # noqa: E402
 
-SCHEMA = 'ntof_scint_stack/4'
+SCHEMA = 'ntof_scint_stack/5'   # 5: v in true y (up) + tan_v_raw, 2026-10-13
 ARMS = ('A', 'B', 'C', 'D')
 #: ``det`` codes: wall 0-3, plastic 4-7, liquid 8-11, in A B C D order.
 WAL, PSS, LIQ = 0, 4, 8
@@ -128,6 +129,11 @@ def hit_columns(win: str) -> list:
 def read_tracks(src: Path, run: str, sub: str) -> pd.DataFrame:
     p = src / f'tracks_{run}_{sub}.parquet'
     t = pd.read_parquet(p, columns=TRACK_COLS)
+    # true y whatever the stage-3 vintage (COORDINATES.md); tan_v_raw is the
+    # y tan in the local frame before k, the partner of y_local
+    from sept26_prelim_analysis.build_tracks import y_up, TAN_SIGN_Y
+    t = y_up(t, p)
+    t['tan_v_raw'] = TAN_SIGN_Y * t.tan_raw_y
     t = t[t.gated.astype('boolean').fillna(False)].drop(columns='gated')
     t['subrun'] = sub
     for c in ('x_slope_reliable', 'y_slope_reliable', 'drift_railed',
@@ -324,7 +330,7 @@ def main() -> int:
     R = R.sort_values('rn').drop(columns='rn')
     R.to_csv(od / 'extract_runs.csv', index=False)
     (od / 'extract.meta.json').write_text(json.dumps(dict(
-        schema=SCHEMA, windows=WINDOWS, mv_per_adc=MV_PER_ADC,
+        schema=SCHEMA, y_convention='up', windows=WINDOWS, mv_per_adc=MV_PER_ADC,
         n_runs=len(R), n_tracks=int(R.n_tracks.sum()),
         failed=R[R.error != ''].run.tolist()), indent=1))
     return int((R.error != '').any())

@@ -2,6 +2,11 @@
 
 **Read this before touching any sign, axis or strip-direction constant, and before quoting a height.**
 Written 2026-10-13, after stage-3 global y was found to have been mirrored since 2026-09-07.
+
+> **Status (2026-10-13): fixed in the code, branch `y-flip-fix` (see `Y_FLIP_AUDIT.md`).** New stage-3 tables
+> say `y_convention: "up"` in their sidecar (schema `sept26_prelim/tracks/2`). Tables built before the fix are
+> still mirrored until `Y_FIX_REGEN.sh` has run on the desktop. Read any stage-3 table through
+> `build_tracks.y_up(df, path)`, which reads the flag and handles both.
 Evidence: <https://dylan-neff.web.cern.ch/notes/y-orientation.html> (`ntof_cosmics/make_y_orientation_deck.py`).
 
 ## 1 · The global frame (EAR2)
@@ -38,8 +43,11 @@ The plane centre is at 199.29 mm (`STRIP_MAP_HALF`).
 - With the tan convention above, the correct mapping is:
   - **position NOT flipped:** `y_local = +(y_p0 − 199.29)`;
   - **tan y flipped:** `tan_y = −tan_y_raw · k`.
-- 2026-09-07 did the opposite (`IN_PLANE_SIGN_Y = −1` on the position, tan unflipped). That **mirrors global y**.
-  Fixing it in `build_tracks` and regenerating stage 3 is `HANDOFF_Y_FLIP_FIX.md`.
+- In code: `run145_target_imaging.IN_PLANE_SIGN_Y = +1`, `TAN_SIGN_Y = −1`, `local_y()`, `local_tan_y()`;
+  `build_tracks` imports them. The Geant4 digitiser maps simulated v to strip `HALF + v`.
+- 2026-09-07 → 2026-10-13 did the opposite (`IN_PLANE_SIGN_Y = −1` on the position, tan unflipped). That
+  **mirrored global y**. Fixed 2026-10-13 (`HANDOFF_Y_FLIP_FIX.md`, `Y_FLIP_AUDIT.md`).
+- Before 2026-09-07 neither was flipped: y positions were right but y directions were mirrored.
 
 ## 3 · Why the y error survived, and the rule that prevents a repeat
 
@@ -65,10 +73,11 @@ next to the constant.** For y, the facts on record are:
 | July hits analysis | no position flip | source "~3 cm low" | `mx_july_beam_qa/TRACKING_RUN55_ANALYSIS.md` |
 
 **After any change to a sign, a strip map or a frame:**
-1. Re-run `y_orientation_check.py cosmic`. The stored-higher arm must be hit **earlier**.
-2. Re-run the capsule y band crossing (`capsule_tof.py tof`). It must sit at the nose (≈ −30 mm), not at the valve.
-
-The fix session should turn these into an automated check.
+1. Re-run `y_orientation_check.py cosmic` then `verdict`. The stored-higher arm must be hit **earlier**
+   (`verdict` exits non-zero otherwise; `tests/test_y_convention.py` runs it where the data are staged).
+2. The capsule y band crossing must sit at the nose (≈ −30 mm), not at the valve. This is automatic:
+   `y_guard.late_y_crossing` runs in every `build_tracks.build` and on every combined table, and refuses to
+   write a table that reads > +3σ.
 
 ## 4 · What a y mirror does and does not change
 

@@ -10,7 +10,8 @@ reads the SHAPE of the v distribution, which a chamber's own eff(v), dead strips
 and noisy columns dominate: per 100 % efficiency tilt it moves 32-65 mm against
 0.3-3.7 mm for the band crossing (:func:`sensitivity`).  So:
 
-  * quote the HEIGHT from the band crossing (``band_mm``; ~+33 +- 3 mm, A and C);
+  * quote the HEIGHT from the band crossing (``band_mm``; ~-33 +- 3 mm in true y,
+    A and C -- it read +33 in the mirrored stage-3 y before 2026-10-13);
   * use the acceptance fit for what only it can do -- exclude a COMMON v-origin
     error (its gain to a frame offset is ~2.1, the band's is 1);
   * never read the per-chamber output of :func:`separate` (``delta``,

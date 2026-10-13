@@ -115,9 +115,11 @@ def noisy_columns(subs, col: str = 'x_local') -> pd.DataFrame:
     published.  ``col`` selects the view: ``x_local`` or ``y_local``."""
     from pair_vertex_imaging import z_image as ZI
     from ntof_tracking import run145_target_imaging as TI
-    t = pd.concat([pd.read_parquet(
-        paths.root('out') / 'stage3_fullpass' / f'tracks_{RUN}_{s}.parquet',
-        columns=['arm', 'gated', col, 'x_p0']) for s in subs])
+    from sept26_prelim_analysis.build_tracks import y_up
+    src = paths.root('out') / 'stage3_fullpass'
+    t = pd.concat([y_up(pd.read_parquet(src / f'tracks_{RUN}_{s}.parquet',
+                                        columns=['arm', 'gated', col, 'x_p0']),
+                        src / f'tracks_{RUN}_{s}.parquet') for s in subs])
     t = t[t.gated]
     if col != 'x_local':
         _, tab = ZI.hot_columns(t[col].to_numpy(float), t.arm.to_numpy(), RUN)

@@ -10,7 +10,8 @@ the data can say without a pair energy or a charge sign:
 
 1.  WHERE the vertices are along the beam (:func:`vertex_y`): the per-bin
     excess of real vertexed pairs over the event-mixed expectation, against
-    the measured capsule extent (`capsule_y`: centre +33 +- 3 mm, the CAD gas
+    the measured capsule extent (`capsule_y`: in true y ~4 mm below the CAD/Geant4
+    placement -- it read +33 before the 2026-10-13 y fix; the CAD gas
     profile -29.5..+50.7 shifted by it).
 
 2.  WHAT opening angles the excess has (:func:`excess_spectrum`), computed per
@@ -65,8 +66,11 @@ HALF_U, HALF_V = 190.0, 170.0
 #: the axis foot in the chamber's own u (geometry.PINWHEEL)
 U_AXIS = {'A': 16.35, 'C': 17.3}
 #: capsule extent along the beam in the data frame: the CAD gas profile
-#: (-29.5..+50.7) moved by the measured height (+32 relative to CAD's +0.8)
-CAPSULE_V = (-29.5 + 32.2, 50.7 + 32.2)
+#: (-29.5..+50.7) moved by the measured offset.  Until 2026-10-13 this was
+#: +32.2, the stage-3 y MIRROR, not a placement error (COORDINATES.md); in
+#: true y the capsule sits ~4 mm BELOW the Geant4 placement (capsule_pose).
+CAPSULE_SHIFT_MM = -4.0
+CAPSULE_V = (-29.5 + CAPSULE_SHIFT_MM, 50.7 + CAPSULE_SHIFT_MM)
 CAPSULE_R = 10.0
 TAN_MAX = 0.6
 VERTEX_R_MM, VERTEX_DCA_MM = 20.0, 30.0
@@ -78,8 +82,12 @@ Y_BINS = np.arange(-150.0, 151.0, 25.0)
 # data
 # --------------------------------------------------------------------------- #
 def _pairs(chain: str, arm: str) -> pd.DataFrame:
-    return pd.read_parquet(SRC / f'{chain}_{arm}' / 'pairs.parquet',
-                           columns=['mixed', 'vertex', 'open_deg', 'vy_mm', 'run'])
+    import pyarrow.parquet as pq
+    f = SRC / f'{chain}_{arm}' / 'pairs.parquet'
+    if 'y_up' not in pq.read_schema(f).names:
+        raise ValueError(f'{f} predates the 2026-10-13 y fix (vy_mm mirrored); rebuild it '
+                         'with det_a_intra on the regenerated stage 3 (Y_FLIP_AUDIT.md)')
+    return pd.read_parquet(f, columns=['mixed', 'vertex', 'open_deg', 'vy_mm', 'run'])
 
 
 def excess_spectrum(chain: str, arm: str, bins=OPEN_BINS) -> pd.DataFrame:

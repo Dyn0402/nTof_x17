@@ -116,7 +116,8 @@ def one_run(run: str, subruns, src: str, seed: int) -> tuple:
         out = []
         for sub in subruns:
             p = Path(src) / f'tracks_{run}_{sub}.parquet'
-            out.append(pd.read_parquet(p, columns=TRACK_COLS).assign(subrun=sub))
+            from sept26_prelim_analysis.build_tracks import y_up
+            out.append(y_up(pd.read_parquet(p, columns=TRACK_COLS), p).assign(subrun=sub))
         t = pd.concat(out, ignore_index=True)
         t = t[t.gated & t.angle_calibrated & t.arm.isin(ARMS)].reset_index(drop=True)
         if t.empty:

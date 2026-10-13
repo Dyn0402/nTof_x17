@@ -81,7 +81,11 @@ def sim_sel(arm, view='x'):
 
 
 def sim_pos(R, view):
-    return R.xl if view == 'x' else R.y_p0
+    return R.xl if view == 'x' else R.vl
+
+
+def sim_tan(R, view):
+    return R.x_tan_theta if view == 'x' else R.tan_v_reco
 
 
 def fmt(c, e):
@@ -126,7 +130,7 @@ def check_yview(t, rng):
             mg = ((g.xmiss < MISS_CUT) & (g.n_cand_y == 1)).to_numpy()
             mr = (R.xmiss < MISS_CUT).to_numpy()
             cd, ed, nd, _, rd = band(g[f'{view}_local'][mg], g[f'tan_raw_{view}'][mg], rng)
-            cs, es, ns, _, rs = band(sim_pos(R, view)[mr], R[f'{view}_tan_theta'][mr], rng)
+            cs, es, ns, _, rs = band(sim_pos(R, view)[mr], sim_tan(R, view)[mr], rng)
             print(f'  {arm} {view}: data {fmt(cd, ed)} (n {nd}) resp {np.round(rd, 2)} | '
                   f'sim {fmt(cs, es)} (n {ns}) resp {np.round(rs, 2)} | data/sim {cd / cs:.3f}')
 
@@ -138,7 +142,7 @@ def check_charge(t, rng):
             g, R = data_sel(t, arm, view), sim_sel(arm, view)
             g, R = g[g.xmiss < MISS_CUT], R[R.xmiss < MISS_CUT]
             for name, d, pos, tan in (('data', g, g[f'{view}_local'], g[f'tan_raw_{view}']),
-                                      ('sim ', R, sim_pos(R, view), R[f'{view}_tan_theta'])):
+                                      ('sim ', R, sim_pos(R, view), sim_tan(R, view))):
                 q = d[f'{view}_q_sum']
                 e = np.percentile(q, [0, 20, 40, 60, 80, 100])
                 out = []
@@ -154,7 +158,7 @@ def check_source(rng):
     for arm in 'AC':
         R = sim_sel(arm, 'y')
         for view, src in (('x', R.src_u), ('y', R.src_v)):
-            pos, tan = sim_pos(R, view), R[f'{view}_tan_theta']
+            pos, tan = sim_pos(R, view), sim_tan(R, view)
             q = np.percentile(src, [0, 25, 50, 75, 100])
             quart = []
             for lo, hi in zip(q[:-1], q[1:]):

@@ -110,7 +110,7 @@ if REPO not in sys.path:
 
 from sept26_prelim_analysis import paths  # noqa: E402
 from sept26_prelim_analysis.build_tracks import (  # noqa: E402
-    IN_PLANE_SIGN, IN_PLANE_SIGN_Y, STRIP_MAP_HALF)
+    IN_PLANE_SIGN, IN_PLANE_SIGN_Y, TAN_SIGN_Y, STRIP_MAP_HALF)
 
 D_PERP_MM = 234.6
 #: Window along the drift direction the training corridor spans, in mm, and the
@@ -228,9 +228,12 @@ def build(run: str, subrun: str, arm: str, merged_dir: str, n_events: int,
                 ev = events[eid]
                 # The corridor is built in the STRIP-MAP frame, so undo the
                 # in-plane sign that put ref_mesh into the local frame.
+                # x flips the position, y the tan (COORDINATES.md); both give
+                # tn is -tan_raw in both views, as it was before the y fix
                 sign = IN_PLANE_SIGN if plane == 'x' else IN_PLANE_SIGN_Y
+                tsign = 1.0 if plane == 'x' else TAN_SIGN_Y
                 p0 = sign * ev[f'ref_mesh_{plane}'] + STRIP_MAP_HALF
-                tn = sign * ev[f'tan_{plane}']
+                tn = -tsign * ev[f'tan_{plane}']
                 a, b = p0 + Z_LO * tn, p0 + Z_HI * tn
                 lo, hi = min(a, b) - PAD_MM, max(a, b) + PAD_MM
                 ch = np.where((pm >= lo) & (pm <= hi))[0]

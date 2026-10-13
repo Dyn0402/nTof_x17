@@ -143,6 +143,7 @@ class Masks:
         self.eu, self.ev, self.hot = hot_cells(x[ok], y[ok])
         self.dead = SI.dead_ranges(x[ok])
         self.sign = TI.IN_PLANE_SIGN
+        self.sign_y = TI.IN_PLANE_SIGN_Y
         self.half = TI.STRIP_MAP_HALF
         self.hot_frac = float(self.hot.sum()) / max(self.hot.size, 1)
         self.dead_mm = float(sum(b - a for a, b in self.dead))
@@ -160,7 +161,7 @@ class Masks:
         return dropped_events(run, arm)
 
     def _raw(self, xl, yl):
-        return self.sign * xl + self.half, self.sign * yl + self.half
+        return self.sign * xl + self.half, self.sign_y * yl + self.half
 
     def keep(self, xl, yl, variant: str, event_id=None,
              subrun: str = '') -> np.ndarray:

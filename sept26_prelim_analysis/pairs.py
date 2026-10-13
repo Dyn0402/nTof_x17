@@ -51,7 +51,7 @@ if REPO not in sys.path:
 
 from sept26_prelim_analysis import paths  # noqa: E402
 from sept26_prelim_analysis.build_tracks import (  # noqa: E402
-    IN_PLANE_SIGN, IN_PLANE_SIGN_Y, STRIP_MAP_HALF)
+    IN_PLANE_SIGN, IN_PLANE_SIGN_Y, TAN_SIGN_Y, STRIP_MAP_HALF)
 
 SCHEMA = 'sept26_prelim/pairs/1'
 ARMS = ('A', 'B', 'C', 'D')
@@ -118,7 +118,7 @@ def pointing_tracks(run: str, subruns, k_arm: dict, merged_dir: str) -> pd.DataF
             xl = IN_PLANE_SIGN * (df['x_p0'].to_numpy() - STRIP_MAP_HALF)
             yl = IN_PLANE_SIGN_Y * (df['y_p0'].to_numpy() - STRIP_MAP_HALF)
             tx = df['x_tan_theta'].to_numpy() * k
-            ty = df['y_tan_theta'].to_numpy() * k
+            ty = TAN_SIGN_Y * df['y_tan_theta'].to_numpy() * k
             tr = trs[f'mx17_{arm}']
             P0 = tr.local_to_global(xl, yl, np.zeros_like(xl))
             P1 = tr.local_to_global(xl - tx * 30.0, yl - ty * 30.0,

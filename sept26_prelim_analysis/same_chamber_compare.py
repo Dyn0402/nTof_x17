@@ -63,8 +63,9 @@ LATE_MS = 12.0
 #: chain, run_145; STATUS 2026-09-14): A 47 %, C 39 %
 F_TWO = {'A': 0.47, 'C': 0.39}
 OPEN_BINS = np.arange(0.0, 90.1, 10.0)
-#: the data frame has the capsule 32.2 mm higher than the CAD frame Geant4 uses
-CAPSULE_SHIFT_MM = 32.2
+#: the data's capsule relative to the CAD frame Geant4 uses.  It was +32.2
+#: until 2026-10-13: that was the stage-3 y mirror (COORDINATES.md).
+from sept26_prelim_analysis.same_chamber_physics import CAPSULE_SHIFT_MM  # noqa: E402
 HALF_MIP_EV = 0.5 * 0.4751e6
 #: The reconstruction's own response to Geant4 events (ntof_cosmics/g4_digi,
 #: g4_<arm>_is2_full: nose-campaign steps digitised into quiet run_145 triggers,
@@ -222,7 +223,11 @@ def late_vertex(chain: str = 'cf') -> pd.DataFrame:
 
 
 def late_pairs(chain: str, arm: str) -> pd.DataFrame:
-    return pd.read_parquet(LATE / f'{chain}_{arm}' / 'pairs.parquet',
+    import pyarrow.parquet as pq
+    f = LATE / f'{chain}_{arm}' / 'pairs.parquet'
+    if 'y_up' not in pq.read_schema(f).names:
+        raise ValueError(f'{f} predates the 2026-10-13 y fix (vy_mm mirrored); rebuild it')
+    return pd.read_parquet(f,
                            columns=['mixed', 'vertex', 'open_deg', 'vy_mm', 'n_legs_wall',
                                     'wall', 'wall2', 'onwall', 'prompt', 'sep_plane_mm'])
 

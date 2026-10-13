@@ -213,6 +213,8 @@ def tracks(run: str, subruns, src: Path) -> pd.DataFrame:  # noqa: C901
             cols = cols + ['gated_reco']
         d = pd.read_parquet(p, columns=cols).rename(
             columns={f'{f}_{ARM}': f'{f}_A' for f in ('wall', 'plastic', 'coinc')})
+        from sept26_prelim_analysis.build_tracks import y_up
+        d = y_up(d, p)                  # true y whatever the vintage (COORDINATES.md)
         g = d.gated.astype('boolean').fillna(False).astype(bool)
         if np.isfinite(TAN_MAX_TRUE):
             g = (d.gated_reco.astype('boolean').fillna(False).astype(bool)
@@ -1631,6 +1633,7 @@ def main() -> int:
                 'slope+pointing': 'slope+pointing+mixed'}
     # the core tables first: a fold that fails on a thin selection must not
     # take the measured pairs down with it
+    P['y_up'] = True                    # vy_mm etc. in true y (COORDINATES.md)
     P.to_parquet(od / 'pairs.parquet', index=False)
     H.to_csv(od / 'headline_per_run.csv', index=False)
     K.to_csv(od / 'census.csv', index=False)
@@ -1659,6 +1662,7 @@ def main() -> int:
                     Path(a.slim) if a.slim else None)
     N.insert(0, 'run', ref)
 
+    P['y_up'] = True                    # vy_mm etc. in true y (COORDINATES.md)
     P.to_parquet(od / 'pairs.parquet', index=False)
     MS.to_csv(od / 'eff_map_stability.csv', index=False)
     H.to_csv(od / 'headline_per_run.csv', index=False)

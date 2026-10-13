@@ -377,7 +377,7 @@ def fig_opening(out):
     from ntof_tracking import run145_target_imaging as TI
     from ntof_tracking.reco import geometry as G
     from sept26_prelim_analysis.build_tracks import (
-        IN_PLANE_SIGN, IN_PLANE_SIGN_Y, STRIP_MAP_HALF)
+        IN_PLANE_SIGN, IN_PLANE_SIGN_Y, TAN_SIGN_Y, STRIP_MAP_HALF)
 
     base = str(paths.out('fullpass') / 'run_145')
     runs = str(paths.root('runs'))
@@ -403,7 +403,7 @@ def fig_opening(out):
             xl = IN_PLANE_SIGN * (df.x_p0.to_numpy() - STRIP_MAP_HALF)
             yl = IN_PLANE_SIGN_Y * (df.y_p0.to_numpy() - STRIP_MAP_HALF)
             tx = df.x_tan_theta.to_numpy() * k
-            ty = df.y_tan_theta.to_numpy() * k
+            ty = TAN_SIGN_Y * df.y_tan_theta.to_numpy() * k
             tr = trs[f'mx17_{a}']
             P0 = tr.local_to_global(xl, yl, np.zeros_like(xl))
             P1 = tr.local_to_global(xl - tx * 30., yl - ty * 30.,
