@@ -40,6 +40,44 @@ pair-rate question). Handoff that started it: `sept26_prelim_analysis/HANDOFF_CA
 - `make_capsule_pose_report.py`, `make_capsule_pose_deck.py` (then `add-note.py … --slug capsule-pose --force --deploy`)
 - outputs `/media/dylan/data/x17/sept26_prelim/capsule_pose/`
 
+## Stage-3 y fix — updated 2026-10-14 (dylan-Yoga)
+
+**Resume:** y mirror fixed in code (main 9ea8b72); on the DESKTOP run `bash Y_FIX_REGEN.sh`, then fill Y_FLIP_AUDIT pending rows.
+
+**Goal:** HANDOFF_Y_FLIP_FIX.md — fix the 09-07 y mirror at the source, guard it, regenerate everything, audit, correct the record.
+
+**Done (2026-10-13, laptop; desktop was offline so no data was touched):**
+- Code: y keeps position, flips tan (`run145_target_imaging.IN_PLANE_SIGN_Y=+1`, `TAN_SIGN_Y=−1`); schema
+  `tracks/2`, sidecar `y_convention: "up"`; `build_tracks.stored_y_sign` / `y_up` for loaders.
+- Guard: `y_guard.late_y_crossing` in every build + combine (refuses a mirror); `y_orientation_check.py verdict`.
+- Every other sign encoder, the digitiser (`HALF + v`, `strip_v_sign`), scint stack (`tan_v_raw`, capsule y −31.3),
+  same-chamber shift (+32.2 → −4.0), flag-aware loaders. Full list: `Y_FLIP_AUDIT.md` §2.
+- `regen_stage3.py`: rebuild from sidecars, prove exact y mirror row-by-row, swap a directory all-or-nothing.
+- Tests: `sept26_prelim_analysis/tests/test_y_convention.py` 9 pass + 1 data test skipped; wft/pipeline 67 pass.
+- Errata: HANDOFF_CAPSULE_Y (capsule −33 ± 3 at the nose, "CAD 30 mm off" retracted), SAME_CHAMBER_PAIRS, Athens
+  README, scint B/C PMT question answered. Board log deployed.
+
+**Next steps:**
+1. Desktop: `git pull && bash Y_FIX_REGEN.sh` (logs in `<out>/y_fix_logs/`; `bash Y_FIX_REGEN.sh <step>` reruns one).
+   Order: tests → regen stage3 sets (cf, is2_v2, fullpass, campaign, pilot, cosmic k_run_147/150) → guards
+   (late crossing, cosmic verdict) → g4digi (~2 h) → capsule_tof/pose → capsule_y, focus_split, same-chamber ×6,
+   scint stack, pmt, y_image, overhead y, trackqa shards.
+2. Fill Y_FLIP_AUDIT.md "pending" rows and §4 run log from the logs/reports.
+3. Add a "fixed on 10-13, what moved" slide to `ntof_cosmics/make_y_orientation_deck.py`, republish it and the
+   same-chamber, capsule-pose, scint-stack, pair-vertex-y notes (`add-note.py --force --deploy`).
+4. Once all tables are `up`: delete `<dir>/pre_yfix/`, close the board question "Stage-3 y is mirrored…".
+
+**Gotchas / decisions:**
+- If a regen step fails on non-y columns (code drifted since the table was built), check `regen_yfix.csv`; only then
+  `--allow-drift`. y must always be an exact mirror. Nothing in a dir is replaced unless every table passes.
+- `y_guard` FAIL inside a build raises → that table fails → dir untouched. Don't override (`--allow-y-fail`) except to debug.
+- `capsule_y` ray-trace numbers and `pred_*`/`in_bore` are NOT pure sign flips; they come only from the rerun.
+- −4 mm same-chamber capsule shift is from capsule_pose, not a fresh fit.
+- Data disk is near full: `pre_yfix/` backups roughly double each stage-3 set until deleted — check `df -h` first
+  (stage3_fullpass ~10 GB); `--drop-backup` skips them.
+
+**Key files:** `Y_FIX_REGEN.sh`, `Y_FLIP_AUDIT.md`, `COORDINATES.md`, `sept26_prelim_analysis/{regen_stage3,y_guard,build_tracks}.py`.
+
 ## Same-chamber pairs + the y mirror — updated 2026-10-13 (dylan-MS-7C84)
 
 **Resume:** y mirror FIXED IN CODE 10-13 (branch y-flip-fix, merged); run `bash Y_FIX_REGEN.sh` on the desktop to regenerate the tables, then fill the pending rows of `Y_FLIP_AUDIT.md`; pairs 1:8 still open.
@@ -74,8 +112,7 @@ that stored global y is upside down.
   - neither reading explains 1 : 8 alone.
 
 **Next steps:**
-1. **`HANDOFF_Y_FLIP_FIX.md`**: fix build_tracks and the g4_digi digitiser (`STRIP_MAP_HALF − v` → `+ v`), add a
-   guard, regenerate stage 3, audit about 130 y consumers into `Y_FLIP_AUDIT.md`, and correct the published notes.
+1. The y fix is its own section below ("Stage-3 y fix"): code done, regeneration pending.
 2. The 1 : 8 pair rate:
    - re-digitise the Geant4 pairs with is2_v2;
    - Geant4 with delayed thermal neutrons on the capsule;
@@ -84,8 +121,7 @@ that stored global y is upside down.
    No vertex excess; no absolute heights until the fix is done.
 
 **Gotchas / decisions:**
-- Until the fix, mirror y on load (`p0_y`, `d_y`) and never quote a stored height. After the fix, remove those
-  load-time mirrors (`capsule_pose.py`), or they double-flip.
+- Read stage 3 through `build_tracks.y_up(df, path)` (flag-aware); `capsule_pose`'s own mirror is gone.
 - Pair work: t0 ≤ 300 and ToF ≥ 12 ms. Early-time mixing made the 10-12 artefact.
 - In-beam A–C straight lines are not muons (no timing direction). Use beam-off run_149 for anything that needs muons.
 - The wall mean-of-ends time is position-independent. Wall-group cable offsets contaminate u slopes, so fit with
