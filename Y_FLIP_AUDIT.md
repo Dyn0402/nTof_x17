@@ -30,7 +30,7 @@ regeneration:
 |---|---|---|---|
 | late (≥ 20 ms) A/C y band crossing < 0 at > 3σ, i.e. at the capsule nose | `y_guard.late_y_crossing` | in **every** `build_tracks.build` (refuses to write on a mirror unless `--allow-y-fail`), and on the combined table in `campaign_tracks` | ≈ −31 (A) / −35 (C) mm |
 | cosmic muons hit the truly higher arm first (run_149 A–C lines, wall mean-time) | `y_orientation_check.py verdict`, `test_cosmic_muons_hit_the_higher_arm_first` | `Y_FIX_REGEN.sh` steps `cosmic`, `verdict`, `tests_data` | stored-higher arm **earlier**, p ≪ 1e-3 (it was later, 88 % vs 7 %, p = 4e-11) |
-| the fix is an exact mirror of the 09-07 convention; both views obey strip(w) = p0 + tan_raw·k·w; y strip = HALF + global y | `tests/test_y_convention.py` | pytest (9 tests: 8 pass now, the data test skips until run_149 is rebuilt) | pass |
+| the fix is an exact mirror of the 09-07 convention; both views obey strip(w) = p0 + tan_raw·k·w; y strip = HALF + global y | `tests/test_y_convention.py` | pytest (10 tests: 9 pass now, the data test skips until run_149 is rebuilt) | pass |
 | each regenerated table is an exact y mirror of the old one, row by row | `regen_stage3.compare` | every stage-3 rebuild | `y` exact, x/z/gates identical; `pred_*`, `in_bore` counted |
 
 ## 2 · Code changed
@@ -99,7 +99,10 @@ Verdict classes (handoff §1.3): **U** unaffected · **Co** cosmetic (axis/label
 
 | step | result |
 |---|---|
-| tests (laptop, 2026-10-13) | 8 passed, 1 skipped (the run_149 data test) |
+| tests (laptop, 2026-10-13) | y convention: 9 passed, 1 skipped (the run_149 data test); wft + slim_pipeline + sept26: 67 passed |
+| code on main | 9ea8b72 (merge of `y-flip-fix`, 361719d) |
+| board | log entry + pair-vertex-y erratum, deployed 2026-10-13 |
+| y-orientation slide "fixed on, what moved" | **pending**: its generator needs ac149/eff_map/tof.csv (desktop) |
 | stage-3 regeneration (cf, is2_v2, fullpass, campaign, pilot, cosmic k_run_147/150) | **pending** — desktop offline |
 | guard: late crossing | **pending** |
 | guard: cosmic verdict | **pending** |
