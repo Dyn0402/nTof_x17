@@ -125,7 +125,7 @@ def s_cover(D, A, N):
     x10 = N['x17'].loc[10.0]
     body = (sd.kicker(f'n_TOF EAR2 · X17 · same-chamber pairs · {dt.date.today():%-d %b %Y}')
             + sd.title('<span style="color:#eef0f3">The &lt; 12 ms cut is not where the pairs went, '
-                       'aluminium e⁺e⁻ cannot vertex, and our y axis is upside down</span>')
+                       'aluminium e⁺e⁻ cannot vertex, and y now points up</span>')
             + sd.row(
                 sd.bignum(sd.pct(N['beam_lt12']), 'of the beam\'s own captures fall before 12 ms',
                           DBLUE, f'but {sd.pct(1 - N["cap_ge12_A"])} (A) / {sd.pct(1 - N["cap_ge12_C"])} (C) of '
@@ -139,9 +139,9 @@ def s_cover(D, A, N):
                 sd.bignum(f'{N["al_miss"]:.0f} vs {x10.miss_med:.0f} mm', 'miss at the vertex: Al leg vs X17 leg',
                           DGREEN, 'scattering ∝ 1/p: 2 MeV conversion leptons vs ~10 MeV X17 legs',
                           tip=f'p·β·θ = {N["al_pbt"]:.2f} MeV·rad, measured in Geant4 over 0.5-9 MeV'),
-                sd.bignum(f'−{abs(N["y_late_A"]):.0f} mm', 'source height, y corrected, vs −28 mm (Geant4 nose)',
-                          GOLD, 'the y strips count upward (low FEU channels at the bottom), so the 2026-09-07 '
-                                'software flip mirrored y: stage 3 stores +31', size=64),
+                sd.bignum(f'{N["y_late_A"]:+.0f} mm', 'source height vs −28 mm (Geant4 nose)',
+                          GOLD, 'stage 3 stored y mirrored from 7 Sep (+31 here) until the 14 Oct '
+                                'regeneration; the y strips count upward', size=64),
                 gap=44))
     notes = """
 <p>Answers to five questions from 2026-10-13, all on the is2_v2 re-pass at the capsule-focus k (stage3_is2_v2_cf),
@@ -456,9 +456,10 @@ def sideview_svg(N):
     out.append(sd.line(30, Y(0), W - 20, Y(0), RULE, 1.5))
     out.append(sd.T(W - 20, Y(0) - 8, 'y = 0', 18, MUT, 'end'))
     marks = [(N['g4_y'], PURPLE, f'Geant4 {N["g4_y"]:.0f}'),
-             (N['y_late_A'], BLUE, f'data +{N["y_late_A"]:.0f} (A) as is'),
-             (-N['y_late_A'], GREEN, f'data −{N["y_late_A"]:.0f} if y is flipped')]
-    for (v, c, lab), dy in zip(marks, (-14, 0, 22)):
+             (N['y_late_A'], BLUE, f'data {N["y_late_A"]:+.0f} (A)'),
+             (N['y_late_C'], ORANGE, f'data {N["y_late_C"]:+.0f} (C)'),
+             (-N['y_late_A'], GREY, f'before the y fix: {-N["y_late_A"]:+.0f}')]
+    for (v, c, lab), dy in zip(marks, (-30, -6, 18, 0)):
         out.append(sd.line(xs - 50, Y(v), xs + 70, Y(v), c, 5))
         out.append(sd.T(xs + 80, Y(v) + 7 + dy, lab, 20, c, 'start', 600))
     return sd.svg(W, H, ''.join(out), 'side view source height')
@@ -474,8 +475,8 @@ def s_capsule(D, A, N):
                                        'from the chamber-frame centre, toward the B–C corner, mostly B.', GOLD, 24),
                             sd.callout(f'Height: data {N["y_late_A"]:+.0f} (A) / {N["y_late_C"]:+.0f} (C) mm. Geant4\'s '
                                        f'centred, nose-first capsule gives {N["g4_y"]:.0f} mm by the same estimator '
-                                       '(truth −28): its captures sit in the nose. Stage 3 stores y mirrored (next '
-                                       'slide); corrected, the data sit at the nose too.', GREEN, 24),
+                                       '(truth −28): its captures sit in the nose, and so do the data. Until the 14 Oct '
+                                       'regeneration stage 3 stored y mirrored (next slide).', GREEN, 24),
                             w=520, gap=24), gap=28))
     notes = f"""
 <p><b>Transverse.</b> From <code>campaign_imaging</code> (per-run band crossings, post-access runs): A −8.3, C −10.3
@@ -496,20 +497,21 @@ delayed neutrons rather than beam (slide 2), so it is not yet settled. A pose fi
 the vertical axis. For x the pinwheel offset decided it; y has no such offset. The July hits-based analysis, which did
 not flip positions, put the source "~3 cm low, the bottom of the capsule". The 2026-09-14 capsule-height handoff then
 concluded that the CAD height was wrong by 30 mm. That conclusion and this flip are the same 60 mm.</p>
-<p>A global y mirror leaves every angle between tracks unchanged (opening angles, X17 included). It changes absolute
+<p>A global y mirror leaves every angle between tracks unchanged (opening angles, X17 included). It changed absolute
 heights: the source height, <code>target_y_mm</code>, the pair-vertex y window (<code>CAPSULE_V</code> in
-<code>same_chamber_physics</code>), the 32.2 mm shift used to compare with Geant4, and every v-map of the
-scintillators.</p>"""
+<code>same_chamber_physics</code>), the shift used to compare with Geant4 (+32.2 mm then, −4 mm now), and every
+v-map of the scintillators. Fixed in code on 13 Oct, every table regenerated on 14 Oct; this deck is on the fixed
+tables.</p>"""
     D.slide('capsule', body, notes, foot='imaging: campaign_imaging per_arm.csv · Geant4: g4_digi g4_{A,C}_is2_full '
                                          '(nose-first, centred) through the real reconstruction')
 
 
 def s_yflip(D, A, N):
     T = A['tilt']
-    t = T[(T.chain == 'is2_v2_cf') & (T.lo >= -40) & (T.hi <= 100)]
-    P = sd.Plot(800, 560, x=(-60, 120), y=(-18, -6), xlabel='track height at the axis, y as reconstructed (mm)',
+    t = T[(T.chain == 'is2_v2_cf') & (T.lo >= -100) & (T.hi <= 40)]
+    P = sd.Plot(800, 560, x=(-120, 60), y=(-18, -6), xlabel='track height at the axis (mm, +y up)',
                 ylabel='source x, band crossing (mm)', title='source x against height (tilt?)')
-    P.xticks([(v, str(v)) for v in (-60, -30, 0, 30, 60, 90, 120)])
+    P.xticks([(v, str(v)) for v in (-120, -90, -60, -30, 0, 30, 60)])
     P.yticks([(v, str(v)) for v in (-18, -15, -12, -9, -6)])
     for arm in 'AC':
         g = t[(t.arm == arm) & (t.err < 2)]
@@ -518,7 +520,7 @@ def s_yflip(D, A, N):
                tips=[f'{arm} y {lo:g}-{hi:g}: x = {c:.1f} ± {e:.1f} mm, n = {n:,}' for lo, hi, c, e, n in
                      zip(g.lo, g.hi, g.cross, g.err, g.n)])
         errbars(P, list(m), list(g.cross), list(g.err), ARM_COL[arm])
-    P.text(-55, -7, 'Geant4 (centred): flat within ±1 mm over its populated heights', 19, PURPLE)
+    P.text(-115, -7, 'Geant4 (centred): flat within ±1 mm over its populated heights', 19, PURPLE)
     # liquid B profile
     R = None
     if SCINT_EM.exists():
@@ -527,35 +529,38 @@ def s_yflip(D, A, N):
         R = (M.groupby('y').apply(lambda s: (s.k_on.sum() - s.k_off.sum()) / max(s.n.sum(), 1),
                                   include_groups=False))
         R = R[R.index.to_series().abs() < 220]
-    P2 = sd.Plot(760, 560, x=(-220, 220), y=(0, 0.07), xlabel='height on the liquid, as reconstructed (mm)',
+    P2 = sd.Plot(760, 560, x=(-220, 220), y=(0, 0.07), xlabel='height on the liquid (mm, +y up)',
                  ylabel='liquid B net firing', title='liquid B (PMT on top per the survey)')
     P2.xticks([(v, str(v)) for v in (-200, -100, 0, 100, 200)])
     P2.yticks([(v, f'{100 * v:.0f}%') for v in (0, 0.02, 0.04, 0.06)])
     if R is not None:
         P2.line(list(R.index), list(R.values), GREY, tips=[f'y {y:.0f} mm: {100 * v:.2f} %' for y, v in R.items()])
-    P2.text(150, 0.064, 'PMT side if y as is →', 19, MUT, 'end')
-    body = (sd.title('Stored y is upside down: liquid B agrees; and a ~3° x-vs-height shear',
+    P2.text(210, 0.064, 'PMT on top →', 19, MUT, 'end')
+    lo_x = {a: t[(t.arm == a) & (t.err < 2)].sort_values('lo') for a in 'AC'}
+    shear = ' · '.join(f'{a}: {g.cross.iloc[0]:.1f} mm at {g.lo.iloc[0]:+.0f}…{g.hi.iloc[0]:+.0f}, '
+                       f'{g.cross.iloc[-1]:.1f} mm at {g.lo.iloc[-1]:+.0f}…{g.hi.iloc[-1]:+.0f}'
+                       for a, g in lo_x.items() if len(g))
+    body = (sd.title('y was stored upside down until 14 Oct: liquid B now rises toward its PMT; a ~3° x-vs-height shear',
                      'left: A and C band crossings in bins of reconstructed height, ≥ 12 ms · right: '
                      'scint-stack whole-face late map')
             + sd.row(P.svg('x vs height'), P2.svg('liquid B vs height'), gap=56))
-    notes = """
-<p><b>Shear.</b> Both chambers, both chains (is2_v2 cf and production), show the source x moving from about −14 mm at
-the lowest reconstructed heights to −9.3 mm at +40…+60. The same estimator on Geant4's untilted capsule is flat
+    notes = f"""
+<p><b>Shear.</b> Both chambers, both chains (is2_v2 cf and production), show the source x moving with height
+({shear}). The same estimator on Geant4's untilted capsule is flat
 within ~1 mm, so it is not built in by the estimator. The slope is ≈ 0.05 (≈ 3°) and, since height is smeared by the
 resolution, the true slope is at least that. Two readings: the capsule is tilted in the x–y plane (the B side), or
-both chambers are rotated in their planes by the same angle; A–C cosmics are blind to the second. With y
-corrected (next paragraph), the top of the source is further toward −x (B) than the bottom, the opposite sense to a
-"bottom furthest out" tilt.</p>
+both chambers are rotated in their planes by the same angle; A–C cosmics are blind to the second. The top of the
+source is further toward −x (B) than the bottom, the opposite sense to a "bottom furthest out" tilt.</p>
 <p><b>Liquid B.</b> The horizontal liquids (A, D) answer 10–20× more on their PMT half. B, vertical with its PMT on top
-per the 17–18 July survey, rises steadily toward reconstructed −y, by ×2. With y flipped that is toward its PMT, like A
-and D. C has too few counts to say. This is the open "why don't the vertical liquids answer near their PMT" question
-of the scint-stack note, and a y flip would answer it.</p>
+per the 17–18 July survey, rises steadily toward +y, toward its PMT, by ×2, like A and D. Before the fix the map was
+mirrored and it seemed to rise away from its PMT: that was the open "why don't the vertical liquids answer near their
+PMT" question of the scint-stack note, closed by the fix. C has too few counts to say.</p>
 <p><b>Settled by the wiring (Dylan, 2026-10-13):</b> low FEU channels are at the bottom of each chamber.
 <code>mx17_m1_map.csv</code> puts y = 0.78 mm × channel, and each chamber's local y is global +y, so the raw strip
 coordinate already points up. <code>build_tracks.IN_PLANE_SIGN_Y = −1</code> then mirrors it. The correct fix in
-2026-09 was to flip tan y, not the position. Every stored height is mirrored: the source is at −31 (A) / −35 (C)
-mm, at the nose. The stage-3 fix is pending (Dylan's call); a pose fit is handed off in
-<code>HANDOFF_CAPSULE_POSE_FIT.md</code>.</p>"""
+2026-09 was to flip tan y, not the position. Fixed that way on 13 Oct; every stage-3 table was regenerated on
+14 Oct and proved an exact y mirror of the old one, row by row (<code>Y_FLIP_AUDIT.md</code>). The source is at
+{N['y_late_A']:+.0f} (A) / {N['y_late_C']:+.0f} (C) mm, at the nose.</p>"""
     D.slide('yflip', body, notes, foot='tilt: capsule_tof tilt (tilt.csv) · liquids: ntof_scint_stack eff_map, liq_full, all_late')
 
 
@@ -601,7 +606,7 @@ def s_pose(D, A, N):
         errbars(P2, list(t), list(g.peak_x), list(g.peak_err), ARM_COL[arm])
     b5 = B.loc[5]
     body = (sd.title('One compact source on the capsule nose, ~10 mm off the frame centre, at every ToF',
-                     'capsule_pose: ray trace (EAR2 flux × Lambda2D per energy) × Geant4 tracks, y mirrored · '
+                     'capsule_pose: ray trace (EAR2 flux × Lambda2D per energy) × Geant4 tracks, +y up · '
                      'beam off the frame, or capsule off the beam?')
             + sd.row(P.svg('pictures'), P2.svg('x vs ToF'), gap=56))
     notes = f"""
@@ -749,8 +754,6 @@ def s_close(D, A, N):
                  'per trigger, differs from Geant4.')
             + li('A busy-event two-track loss in data that the quiet digitisation lacks is still open.') + '</ul>')
     right = ('<ol style="font-size:27px;line-height:1.35;color:#eef0f3;padding-left:32px">'
-             + li('<b>Un-mirror y in stage 3</b> (flip tan y, not the position; wiring confirmed 10-13), and re-check every '
-                  'height: target_y, CAPSULE_V, the 32.2 mm G4 shift, scint v-maps.')
              + li('Re-digitise the Geant4 pairs with is2_v2 (two-sided search, t0 ≤ 300, |tan| &lt; 0.6 on both legs).')
              + li('Geant4 with delayed thermal neutrons on the capsule (isotropic or from below) to get the '
                   'pairs-per-trigger of the late population.')
@@ -774,7 +777,7 @@ def build(out: Path) -> Path:
     D.write(out, note_meta=dict(
         title='Same-chamber pairs vs Geant4: time window, vertexing, capsule position',
         summary='Why the < 12 ms window is dropped although the beam captures there; why aluminium e+e- pairs '
-                'cannot vertex and X17 pairs can; the capsule offset and the open y-orientation question; '
+                'cannot vertex and X17 pairs can; the capsule offset and the y orientation (fixed 14 Oct); '
                 'chamber A opening angle vs Geant4.',
         tags='X17,same-chamber pairs,Geant4', date=dt.date.today().isoformat()))
     return out

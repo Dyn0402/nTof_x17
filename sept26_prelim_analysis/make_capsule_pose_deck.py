@@ -190,7 +190,7 @@ def s_cover(D, A, N):
                           tip='A/C late band crossings −10.1 / −10.7, toy estimator offset removed; z from B/D'),
                 sd.bignum(f'{A["y_src"]:+.0f} mm', 'source height', DGREY,
                           'the nose: Geant4 puts it at −29 for the drawn capsule',
-                          tip='late y band crossing, y mirrored: A −31.3, C −34.6'),
+                          tip='late y band crossing, +y up: A −31.3, C −34.6'),
                 sd.bignum(f'≥ {100 * b5.gas_min:.0f} %', 'of the beam on the ³He, IF the beam is on the capsule', DGREEN,
                           'reading 1: the beam / frame is ~10 mm off the alignment'),
                 sd.bignum(f'{100 * N["gas_off_min"]:.0f}–{100 * N["gas_off_max"]:.0f} %',
@@ -200,8 +200,9 @@ def s_cover(D, A, N):
     notes = """
 <p>This note is the visual companion of <code>&lt;out&gt;/capsule_pose/report.html</code>
 (<code>capsule_pose.py</code>, <code>make_capsule_pose_report.py</code>). Everything uses the post-access runs,
-chambers A and C on the is2_v2 chain at the capsule-focus k, with stage-3 y mirrored on load (stage 3 stores y
-upside down; COORDINATES.md).</p>
+chambers A and C on the is2_v2 chain at the capsule-focus k, in true y (+y up). Stage 3 stored y mirrored from 7 Sep until
+the 14 Oct regeneration; this analysis already mirrored it back on load, so its numbers did not change
+(COORDINATES.md, Y_FLIP_AUDIT.md).</p>
 <p>An earlier version of the analysis called the source "the beam at x −10.3". That was retracted: the source is where
 the neutrons that illuminate the capsule are captured on aluminium, and it is the beam position only if the beam is the
 illumination and actually hits the capsule. The slides show why the two readings on the right both survive.</p>"""
@@ -278,7 +279,7 @@ meets Al, before the gas.</p>
 energy, as the Geant4 gun samples it): 50 % inside r = {A['r50']:.1f} mm, 90 % inside {A['r90']:.0f} mm,
 99 % inside {A['r99']:.0f} mm.</p>
 <p><b>The star</b> is the measured source: x from chambers A and C, z from B and D, height from the y band crossing
-(scale-free; stage-3 y mirrored back).</p>"""
+(scale-free; +y up).</p>"""
     D.slide('setup', body, notes, foot='geometry: run_config.json (survey), DetectorConstruction.cc polycones · '
                                        'beam: lamda2DvsEn_EAR2.root × fluxEAR2-Ph3')
 
@@ -380,7 +381,7 @@ crossing estimators measure.</p>
 <p>What is <b>not</b> there: a vertical ridge at the beam's x from captures along the beam line (¹⁴N(n,γ) in the air
 column gives 10.8 MeV γ at roughly the Al nose's rate per neutron), and a second spot near x = 0. Chamber C looks the
 same (image.csv).</p>"""
-    D.slide('image', body, notes, foot='capsule_pose image.csv (A); heights mirrored back to +y = up')
+    D.slide('image', body, notes, foot='capsule_pose image.csv (A); +y = up')
 
 
 def s_stable(D, A, N):
