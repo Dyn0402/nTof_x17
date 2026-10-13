@@ -119,7 +119,7 @@ def s_cover(D, A, N):
     x10 = N['x17'].loc[10.0]
     body = (sd.kicker(f'n_TOF EAR2 · X17 · same-chamber pairs · {dt.date.today():%-d %b %Y}')
             + sd.title('<span style="color:#eef0f3">The &lt; 12 ms cut is not where the pairs went, '
-                       'aluminium e⁺e⁻ cannot vertex, and the capsule height depends on which way is up</span>')
+                       'aluminium e⁺e⁻ cannot vertex, and our y axis is upside down</span>')
             + sd.row(
                 sd.bignum(sd.pct(N['beam_lt12']), 'of the beam\'s own captures fall before 12 ms',
                           DBLUE, f'but {sd.pct(1 - N["cap_ge12_A"])} (A) / {sd.pct(1 - N["cap_ge12_C"])} (C) of '
@@ -133,9 +133,9 @@ def s_cover(D, A, N):
                 sd.bignum(f'{N["al_miss"]:.0f} vs {x10.miss_med:.0f} mm', 'miss at the vertex: Al leg vs X17 leg',
                           DGREEN, 'scattering ∝ 1/p: 2 MeV conversion leptons vs ~10 MeV X17 legs',
                           tip=f'p·β·θ = {N["al_pbt"]:.2f} MeV·rad, measured in Geant4 over 0.5-9 MeV'),
-                sd.bignum(f'±{abs(N["y_late_A"]):.0f} mm', 'source height (data) vs −28 mm (Geant4 nose)',
-                          GOLD, 'the sign is the y-strip orientation, set in software on 2026-09-07 and never '
-                                'checked against hardware', size=64),
+                sd.bignum(f'−{abs(N["y_late_A"]):.0f} mm', 'source height, y corrected, vs −28 mm (Geant4 nose)',
+                          GOLD, 'the y strips count upward (low FEU channels at the bottom), so the 2026-09-07 '
+                                'software flip mirrored y: stage 3 stores +31', size=64),
                 gap=44))
     notes = """
 <p>Answers to five questions from 2026-10-13, all on the is2_v2 re-pass at the capsule-focus k (stage3_is2_v2_cf),
@@ -468,8 +468,8 @@ def s_capsule(D, A, N):
                                        'from the chamber-frame centre, toward the B–C corner, mostly B.', GOLD, 24),
                             sd.callout(f'Height: data {N["y_late_A"]:+.0f} (A) / {N["y_late_C"]:+.0f} (C) mm. Geant4\'s '
                                        f'centred, nose-first capsule gives {N["g4_y"]:.0f} mm by the same estimator '
-                                       '(truth −28): its captures sit in the nose. The data number has the '
-                                       'magnitude of the nose and the sign of the valve.', GREEN, 24),
+                                       '(truth −28): its captures sit in the nose. Stage 3 stores y mirrored (next '
+                                       'slide); corrected, the data sit at the nose too.', GREEN, 24),
                             w=520, gap=24), gap=28))
     notes = f"""
 <p><b>Transverse.</b> From <code>campaign_imaging</code> (per-run band crossings, post-access runs): A −8.3, C −10.3
@@ -478,11 +478,12 @@ def s_capsule(D, A, N):
 <code>GEOMETRY_COORDINATE_CONVENTION.md</code>: A +z, B −x, C −z, D +x. So the source is displaced toward B (−x)
 and slightly toward C (−z).</p>
 <p><b>What the offset means.</b> The imaging measures where captures happen relative to the chambers, not where the
-beam is. If the beam stayed centred on the chamber frame and the capsule sat 10 mm off it, the beam would graze the
-barrel wall: neutrons at r = 10–10.6 mm from the capsule axis run up to 40 mm along the aluminium, and the captures
-(and the measured height) would move up the barrel toward its middle. The data show the source at the same distance
-from y = 0 as the nose, not in the middle. So the nose is being hit, and beam and capsule are offset together
-relative to the chambers. The acceptance cost of 10 mm at 235 mm is a few percent, not a factor 8.</p>
+beam is. The beam is narrow at thermal energies (50 % within r = 2.5 mm, 90 % within 13 mm; Lambda2D). If it is
+centred on the chamber frame and the capsule sits 10 mm off it, only ~half the beam meets the capsule, the nose core
+gets ~5 %, and ~11 % grazes the barrel wall, where a ray can run 40 mm through aluminium. If beam and capsule are offset
+together, the nose is hit as in Geant4. The source height can tell these apart, but most capsule-pointing tracks are
+delayed neutrons rather than beam (slide 2), so it is not yet settled. A pose fit is handed off
+(<code>HANDOFF_CAPSULE_POSE_FIT.md</code>).</p>
 <p><b>Height and the y sign.</b> The y-strip direction was fixed in software on 2026-09-07
 (<code>build_tracks.IN_PLANE_SIGN_Y = −1</code>) by requiring corr(y, tan y) &gt; 0. That test cannot tell
 "positions flipped" from "tans flipped": both make the correlation positive, and they differ by exactly a mirror of
@@ -527,7 +528,7 @@ def s_yflip(D, A, N):
     if R is not None:
         P2.line(list(R.index), list(R.values), GREY, tips=[f'y {y:.0f} mm: {100 * v:.2f} %' for y, v in R.items()])
     P2.text(150, 0.064, 'PMT side if y as is →', 19, MUT, 'end')
-    body = (sd.title('Two checks on the vertical axis: a ~3° shear, and liquid B brighter at the "bottom"',
+    body = (sd.title('Stored y is upside down: liquid B agrees; and a ~3° x-vs-height shear',
                      'left: A and C band crossings in bins of reconstructed height, ≥ 12 ms · right: '
                      'scint-stack whole-face late map')
             + sd.row(P.svg('x vs height'), P2.svg('liquid B vs height'), gap=56))
@@ -536,15 +537,19 @@ def s_yflip(D, A, N):
 the lowest reconstructed heights to −9.3 mm at +40…+60. The same estimator on Geant4's untilted capsule is flat
 within ~1 mm, so it is not built in by the estimator. The slope is ≈ 0.05 (≈ 3°) and, since height is smeared by the
 resolution, the true slope is at least that. Two readings: the capsule is tilted in the x–y plane (the B side), or
-both chambers are rotated in their planes by the same angle; A–C cosmics are blind to the second. With y as
-reconstructed, the top of the source is nearer the axis than the bottom (your guess). If y is flipped, it is the
-other way round.</p>
+both chambers are rotated in their planes by the same angle; A–C cosmics are blind to the second. With y
+corrected (next paragraph), the top of the source is further toward −x (B) than the bottom, the opposite sense to a
+"bottom furthest out" tilt.</p>
 <p><b>Liquid B.</b> The horizontal liquids (A, D) answer 10–20× more on their PMT half. B, vertical with its PMT on top
 per the 17–18 July survey, rises steadily toward reconstructed −y, by ×2. With y flipped that is toward its PMT, like A
 and D. C has too few counts to say. This is the open "why don't the vertical liquids answer near their PMT" question
 of the scint-stack note, and a y flip would answer it.</p>
-<p><b>The hardware check that settles it:</b> on the mounted chambers, which end of the y view is strip 0 (connector
-side up or down)? Until then the absolute height is ±33 mm and every height-dependent number should say so.</p>"""
+<p><b>Settled by the wiring (Dylan, 2026-10-13):</b> low FEU channels are at the bottom of each chamber.
+<code>mx17_m1_map.csv</code> puts y = 0.78 mm × channel, and each chamber's local y is global +y, so the raw strip
+coordinate already points up. <code>build_tracks.IN_PLANE_SIGN_Y = −1</code> then mirrors it. The correct fix in
+2026-09 was to flip tan y, not the position. Every stored height is mirrored: the source is at −31 (A) / −35 (C)
+mm, at the nose. The stage-3 fix is pending (Dylan's call); a pose fit is handed off in
+<code>HANDOFF_CAPSULE_POSE_FIT.md</code>.</p>"""
     D.slide('yflip', body, notes, foot='tilt: capsule_tof tilt (tilt.csv) · liquids: ntof_scint_stack eff_map, liq_full, all_late')
 
 
@@ -672,12 +677,13 @@ def s_close(D, A, N):
                  'per trigger, differs from Geant4.')
             + li('A busy-event two-track loss in data that the quiet digitisation lacks is still open.') + '</ul>')
     right = ('<ol style="font-size:27px;line-height:1.35;color:#eef0f3;padding-left:32px">'
-             + li('<b>Check the y-strip orientation on the hardware</b> (photos: y connector up or down). Settles the '
-                  'source height and the liquid-B puzzle.')
+             + li('<b>Un-mirror y in stage 3</b> (flip tan y, not the position; wiring confirmed 10-13), and re-check every '
+                  'height: target_y, CAPSULE_V, the 32.2 mm G4 shift, scint v-maps.')
              + li('Re-digitise the Geant4 pairs with is2_v2 (two-sided search, t0 ≤ 300, |tan| &lt; 0.6 on both legs).')
              + li('Geant4 with delayed thermal neutrons on the capsule (isotropic or from below) to get the '
                   'pairs-per-trigger of the late population.')
-             + li('If the early window matters: capsule-pointing cut before pairing, with early-time mixing.') + '</ol>')
+             + li('Fit the capsule pose in the beam (handoff written 10-13): beam half off the capsule would put '
+                  'captures on the thin barrel wall and cut pairs per trigger.') + '</ol>')
     body = (sd.title('<span style="color:#eef0f3">What this does not rule out, and what to do next</span>')
             + sd.row(sd.col(sd.p('not ruled out', 26, DMUT), left, w=820),
                      sd.col(sd.p('next', 26, DMUT), right, w=780), gap=56))

@@ -282,3 +282,9 @@ vertex_truthline.csv, sep_loss.csv`).
   on top per survey) brightens toward reconstructed −y. All three favour a flipped y. Angles between tracks do not
   change under the mirror; absolute heights do (`target_y_mm`, `CAPSULE_V`, the 32.2 mm G4 shift, scint v-maps).
   Needs a hardware check (y connector up or down) before anything height-dependent is quoted.
+
+- **UPDATE later 10-13: y mirror confirmed.** Dylan: y strips wired low FEU channel at the bottom. The strip map gives
+  y = 0.78 × channel and local y = global +y, so `IN_PLANE_SIGN_Y = −1` mirrors y; the 09-07 fix should have flipped
+  tan y. Corrected source height −31 (A) / −35 (C) mm (Geant4 nose −28). Stage-3 fix pending Dylan. The capsule pose in
+  the beam is NOT settled: the beam is narrow (50 % within 2.5 mm), so a capsule 10 mm off a centred beam would put
+  ~half the beam off it and ~11 % grazing the barrel wall. Handoff: `HANDOFF_CAPSULE_POSE_FIT.md`.
