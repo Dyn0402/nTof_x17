@@ -1,57 +1,61 @@
 # Handoff
 
-## Same-chamber pairs on the is2_v2 re-pass (talk prep) — updated 2026-10-13 (dylan-MS-7C84)
+## Same-chamber pairs + the y mirror — updated 2026-10-13 (dylan-MS-7C84)
 
-**Overnight 10-12/13 (Dylan asked for physics comparisons: expected vs seen e⁺e⁻, robust observables):**
-results in `sept26_prelim_analysis/SAME_CHAMBER_PAIRS.md` "Physics: data vs Geant4"; report
-`/media/dylan/data/x17/sept26_prelim/same_chamber/report.html` (physics section rewritten).
-- The 10-12 vertex excess (×2.14 A) was an artefact of an early-time-dominated mixing null — corrected in report/docs.
-- Correlated same-chamber pairs: 0.15 % of late tracked events in A and C; Geant4 says ~78 % are Al e⁺e⁻;
-  data ≈ 1/8 of Geant4 through the digitised reconstruction — unresolved, the main open item.
-- Re-run chain: `same_arm_pairs.py` (condor, MX17_Full_Geant) → `python -m sept26_prelim_analysis.same_chamber_g4`
-  → `det_a_intra ... --tof-min-ms 12 --out ~/x17_local/same_chamber_late/<chain>_<arm>` →
-  `python -m sept26_prelim_analysis.same_chamber_compare [events]` → `make_same_chamber_report`.
-- `same_chamber_compare.DIGI` holds the digitised pair response (from g4_<arm>_is2_full joined to steps_nose truth).
+**Resume:** stage-3 y is mirrored; do HANDOFF_Y_FLIP_FIX.md (fix + audit) before more height work; pairs 1:8 still open.
 
-### Earlier (10-12)
+**Goal:** same-chamber (intra) pair physics against Geant4 for Dylan's Thu 2026-10-15 talk. Along the way we found
+that stored global y is upside down.
 
-
-**Resume:** results and report done for Thursday's talk; next is the wall2 folded acceptance and T1 on the in-situ bundles.
-
-**Goal:** updated same-chamber (intra) pair results for Dylan's talk on Thu 2026-10-15, on the is2_v2 re-pass at
-the capsule-focus k.
-
-**Done:**
-- Merged `two-track-joint-fit` into main (`69c83b6`; wft_beam meta conflict resolved, wft tests 58 pass).
-- `kcal_is2_v2_cf` = kcal_is2_v2 × 1.12 (A and C; `k_insitu --search-scale A=1.13008,C=1.12336`). **Provisional
-  (Dylan's call): the 12 % muon-vs-capsule k tension is open** (HANDOFF_TRACKING §22).
-- Stage 3 at that k: `~/x17_local/stage3_is2_v2_cf` (14 GB, root disk; the data disk had 3.8 GB free). 292 sub-runs,
-  0 failed, 5.91 M gated at 0.8 true.
-- `det_a_intra` generalised (defaults reproduce the 09-10 output exactly on run_145): `--arm`, `--tan-max-true`,
-  `--t0-max`, `--axis measured`, `--wall` (wall / wall2 selections), `--acc-reco`, `--out`.
-- Six campaign runs in `~/x17_local/same_chamber/{prod,cf,is2}_{A,C}`; report
-  `/media/dylan/data/x17/sept26_prelim/same_chamber/report.html`. Results: `SAME_CHAMBER_PAIRS.md` "Results on the
-  is2_v2 re-pass".
+**Done (10-12 → 10-13):**
+- Pair results on the is2_v2 re-pass at the capsule-focus k (`kcal_is2_v2_cf`, provisional):
+  - correlated pairs are 0.15 % of late events;
+  - Geant4 says ~78 % of them are Al e⁺e⁻;
+  - data ≈ 1/8 of Geant4;
+  - the 10-12 vertex excess was retracted.
+  - Record: `sept26_prelim_analysis/SAME_CHAMBER_PAIRS.md`; report `<out>/same_chamber/report.html`.
+- 10-13 follow-up (`capsule_tof.py`, `same_chamber_scatter.py`, deck `make_same_chamber_deck.py` →
+  notes/same-chamber-pairs.html):
+  - **Time window.** The < 12 ms cut is not where the pairs went. 87 % of beam captures fall before 12 ms, but 92 %
+    of capsule-pointing tracks come after it (delayed neutrons). Late data are as capsule-pure as Geant4.
+  - **Vertexing.** Al e⁺e⁻ cannot vertex: p·β·θ = 0.40 MeV·rad, a 33 mm miss, and only 2.3 % pass with perfect
+    tracks. X17 legs miss by 9–11 mm.
+  - **Expectation.** The expected count already includes the opening angle and the < 20 mm loss.
+- **The y mirror.** `build_tracks.IN_PLANE_SIGN_Y` flips the y position; it should flip tan y.
+  - Proven by cosmic-muon timing (run_149, p = 4e-11), 8/8 plastic PMT timing, liquid B, the capsule nose and the
+    wiring.
+  - `COORDINATES.md` (new) holds the frame and the rule. CLAUDE.md has a warning, build_tracks a warning comment.
+  - Slide note: notes/y-orientation.html (`ntof_cosmics/make_y_orientation_deck.py`); checks in
+    `ntof_cosmics/y_orientation_check.py`.
+- The capsule pose fit was done by another session (315a50d, `HANDOFF_CAPSULE_POSE_FIT.md` Outcome):
+  - the beam meets the nose;
+  - the beam–capsule offset is degenerate;
+  - the pose does not explain 1 : 8.
 
 **Next steps:**
-1. Throw the folded acceptance for the wall2 selection, and compare the IPC models (`ipc_born.py`) on it.
-2. T1 on the in-situ bundles: re-derive F (split-ab ladder), then one combined contract, so < 20 mm pairs come back.
-3. Settle the k tension (direct is2_v2 in-beam muon check, beam-off-cosmics section step 0).
-4. Move the stage-3 cf table to the data disk once there is room, if it should live with the other products.
+1. **`HANDOFF_Y_FLIP_FIX.md`**: fix build_tracks and the g4_digi digitiser (`STRIP_MAP_HALF − v` → `+ v`), add a
+   guard, regenerate stage 3, audit about 130 y consumers into `Y_FLIP_AUDIT.md`, and correct the published notes.
+2. The 1 : 8 pair rate:
+   - re-digitise the Geant4 pairs with is2_v2;
+   - Geant4 with delayed thermal neutrons on the capsule;
+   - check for a busy-event two-track loss.
+3. Talk on Thursday: present the pair fraction, Geant4's breakdown, chamber A's opening angle, and the 1 : 8 as open.
+   No vertex excess; no absolute heights until the fix is done.
 
 **Gotchas / decisions:**
-- Always cut t0 > 300 ns before pairing: flat late tracks on the 60 ns t0 grid make 0° Δt0 = 0 pairs (41 % of
-  re-pass pairs uncut).
-- Wall "both legs" is not a two-particle test (4 × 100 mm groups). Use `wall2`.
-- Production has no k for run_126/154/156 (A) and run_98/118/124 (C): those runs drop out of the production chain.
-- run_126 has no k in the in-situ kcal either; it contributes nothing.
-- `det_a_intra --axis measured` takes each run's offset from `imaging_campaign/per_run.csv`.
+- Until the fix, mirror y on load (`p0_y`, `d_y`) and never quote a stored height. After the fix, remove those
+  load-time mirrors (`capsule_pose.py`), or they double-flip.
+- Pair work: t0 ≤ 300 and ToF ≥ 12 ms. Early-time mixing made the 10-12 artefact.
+- In-beam A–C straight lines are not muons (no timing direction). Use beam-off run_149 for anything that needs muons.
+- The wall mean-of-ends time is position-independent. Wall-group cable offsets contaminate u slopes, so fit with
+  per-group offsets.
 
 **Key files & commands:**
-- `D=/media/dylan/data/x17/sept26_prelim; python -m sept26_prelim_analysis.det_a_intra --arm A --tan-max-true 0.6
-  --t0-max 300 --axis measured --wall --jobs 3 --src ~/x17_local/stage3_is2_v2_cf --reco $D/fullpass_is2_v2
-  --acc-reco $D/reco_fullpass --out ~/x17_local/same_chamber/cf_A` (~25 min under load)
-- `python -m sept26_prelim_analysis.make_same_chamber_report` (defaults: `~/x17_local/same_chamber` → `<out>/same_chamber`)
+- `python -m sept26_prelim_analysis.capsule_tof [beam|g4|tof|tilt]` → `<out>/capsule_tof/`
+- `python -m sept26_prelim_analysis.same_chamber_scatter` → `<out>/same_chamber/scatter_*.csv`
+- `python ntof_cosmics/y_orientation_check.py cosmic|pmt` → `ntof_cosmics/results/y_orientation/`
+- Decks: `python -m sept26_prelim_analysis.make_same_chamber_deck`, `python ntof_cosmics/make_y_orientation_deck.py`,
+  then `add-note.py <html> --slug same-chamber-pairs|y-orientation --force --deploy`
 
 ## Large q_sum tracks (NNLS runaway) — updated 2026-10-02 (dylan-MS-7C84)
 
