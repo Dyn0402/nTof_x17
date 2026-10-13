@@ -42,6 +42,8 @@ Fit a forward model of capture positions to the measured track pointing.
 **Hardware (Dylan, 2026-10-13):** the y strips were wired with low FEU channels at the bottom of each chamber and
 high channels at the top. +y is the beam direction (upward).
 
+**Confirmed independently (later 10-13):** beam-off cosmic muon timing (p = 4e-11) and plastic-PMT timing, `ntof_cosmics/y_orientation_check.py`.
+
 **Software:**
 - `mx17_m1_map.csv` gives `y_position_mm` = 0.78 × channel, so the raw strip coordinate `y_p0` increases upward.
 - `DetTransform.R` is a rotation about y only, so local y is global +y.

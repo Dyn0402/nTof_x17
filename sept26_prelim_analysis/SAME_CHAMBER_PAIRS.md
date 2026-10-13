@@ -288,3 +288,10 @@ vertex_truthline.csv, sep_loss.csv`).
   tan y. Corrected source height −31 (A) / −35 (C) mm (Geant4 nose −28). Stage-3 fix pending Dylan. The capsule pose in
   the beam is NOT settled: the beam is narrow (50 % within 2.5 mm), so a capsule 10 mm off a centred beam would put
   ~half the beam off it and ~11 % grazing the barrel wall. Handoff: `HANDOFF_CAPSULE_POSE_FIT.md`.
+- **y mirror: independent confirmations (later 10-13, `ntof_cosmics/y_orientation_check.py`).**
+  (1) Beam-off run_149 cosmics, 74 straight A–C muons with both walls on the n_TOF clock: the stored-higher arm is hit
+  *later* (88 % vs 7 %, p = 4×10⁻¹¹, step ±2.3 ns = 66 cm at c). Muons go down, so stored y points down.
+  (2) Plastic time − wall time vs stored v: all 8 bars later at stored-high v (+0.15…+0.47 ns/100 mm, 10–40σ), flat in
+  u; with the plastic PMTs on top that is the far end. (3) Liquid B firing ×2 toward stored −v (PMT up); horizontal A/D
+  answer 10–20× at their +u PMT side (control). Liquid timing is too noisy to use. Plus the wiring, Geant4's nose and the
+  July hits result. Nothing points the other way.
