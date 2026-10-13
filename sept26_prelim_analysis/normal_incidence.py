@@ -194,7 +194,7 @@ def measured_rates(run: str, subruns, tan_min: float = None) -> pd.DataFrame:
         if len(pt):
             M = KR.Masks(run, subruns, arm, merged)
             xl = TI.local_x(pt.x_p0.to_numpy())
-            yl = TI.IN_PLANE_SIGN * (pt.y_p0.to_numpy() - TI.STRIP_MAP_HALF)
+            yl = TI.local_y(pt.y_p0.to_numpy())
             keep = M.keep(xl, yl, 'no_hot')
             if keep.sum() > 100:
                 q = pt[keep]

@@ -260,6 +260,26 @@ class _SimModel:
         return False
 
 
+#: y strip coordinate = HALF + STRIP_V_SIGN * v.  Was -1 until 2026-10-13, to
+#: match the mirrored stage-3 convention; samples carry it as `strip_v_sign`
+#: (absent = -1) so readers can use :func:`y_view` on either vintage.
+STRIP_V_SIGN = +1.0
+
+
+def y_view(R: pd.DataFrame) -> tuple:
+    """(v, tan_v) of a digitised sample's reco, in the sim's own local frame.
+
+    Old samples (no ``strip_v_sign``) were digitised with y = HALF - v, so the
+    reco's raw y tan then followed tan_v; new ones follow -tan_v, as the
+    hardware does (the reco convention is tan_raw = -d(strip)/d(depth) in
+    both views once x's position flip is applied).
+    """
+    sg = (R['strip_v_sign'].to_numpy(float) if 'strip_v_sign' in R
+          else np.full(len(R), -1.0))
+    v = sg * (R['y_p0'].to_numpy(float) - 199.29)
+    return v, -sg * R['y_tan_theta'].to_numpy(float)
+
+
 def digitise_event(steps: pd.DataFrame, ov: dict, t0: float, adc_per_e: float,
                    xy_split: float, v_true: float, rng, pos_offset=(0.0, 0.0)):
     """One event's two planes: (W_x, W_y) as (512, ns) CNS'd ADC, plus truth."""
@@ -277,9 +297,11 @@ def _digitise_event(steps, ov, t0, adc_per_e, xy_split, v_true, rng, pos_offset)
         if el is None:
             sig = np.zeros((512, wm.NSAMP))
         else:
-            # strip-map position = HALF - local (build_tracks IN_PLANE_SIGN = -1)
+            # strip-map position: x = HALF - u (IN_PLANE_SIGN = -1), y = HALF + v
+            # (the y strips count upward; COORDINATES.md, fixed 2026-10-13)
             from ntof_tracking.run145_target_imaging import STRIP_MAP_HALF
-            coord = STRIP_MAP_HALF - (el['u'] if p == 'x' else el['v']) + pos_offset[p == 'y']
+            coord = (STRIP_MAP_HALF - el['u'] if p == 'x'
+                     else STRIP_MAP_HALF + STRIP_V_SIGN * el['v']) + pos_offset[p == 'y']
             share = xy_split if p == 'x' else 1.0 - xy_split
             t0p = t0 if p == 'x' else t0 - dt_xy.get(str(int(ov['ftst_x'] - ov['ftst_y'])),
                                                      dt_xy.get(int(ov['ftst_x'] - ov['ftst_y']), -18.8))
@@ -332,6 +354,7 @@ def run_one(job):
         r = dict(error=repr(err)[:200])
     r = r or {}
     r.update(job['truth'])
+    r['strip_v_sign'] = STRIP_V_SIGN
     return r
 
 

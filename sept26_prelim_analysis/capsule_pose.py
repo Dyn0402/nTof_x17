@@ -32,14 +32,15 @@ Model
   on all tracks and per height bin, and the y band crossing on the tracks that
   point within R_FOCUS of the source in x.
 
-The data are mirrored in y on load (the stage-3 y mirror,
-HANDOFF_CAPSULE_POSE_FIT.md section 2): p0_y -> -p0_y, d_y -> -d_y.
+The data are read in true y: capsule_tof.load undoes the 2026-09-07 stage-3
+mirror on tables that predate the fix (no ``y_convention`` flag) and leaves
+fixed tables alone (COORDINATES.md, Y_FLIP_AUDIT.md).
 
 Steps (CSV to <out>/capsule_pose/):
 
   beam      beam-on-capsule fractions and the Al capture split against offset
   closure   the toy at the Geant4 pose against Geant4 through the same estimators
-  data      the mirrored data's estimators per ToF window (A, C)
+  data      the data's estimators (true y) per ToF window (A, C)
   shear     x crossing against height: the data, and the toy's point-like nose
             source with its Geant4-library bootstrap spread
   early     source x against ToF by the shuffled-null excess peak, with the
@@ -364,7 +365,8 @@ def library(arm: str) -> pd.DataFrame:
     q = R.x_quality_ok & R.y_quality_ok & (R.x_tan_theta.abs() < 0.6) & (R.y_tan_theta.abs() < 0.6)
     R = R[q].copy()
     ur = -(R.x_p0.to_numpy(float) - HALF)
-    vr = -(R.y_p0.to_numpy(float) - HALF)
+    from ntof_cosmics.g4_digi.digitise import y_view
+    vr = y_view(R)[0]                    # sim local v (+y), either digitiser vintage
     # reco tan signs: the pair that focuses (as capsule_tof.g4)
     best = None
     for sx in (1.0, -1.0):
@@ -470,7 +472,7 @@ H_EDGES = np.arange(-110.0, 71.0, 20.0)
 def estimators(T: pd.DataFrame, per_height=True) -> dict:
     """x crossing (all tracks), y crossing (tracks within R_FOCUS in x), the
     height spread of focused tracks, and x crossings per height bin.  T has
-    pos, disp, p0_y, hgt in the TRUE (mirrored) frame."""
+    pos, disp, p0_y, hgt in the TRUE (+y up) frame."""
     xs, xe, n = CT.crossing(T.pos, T.disp)
     foc = T[np.abs(T.pos + T.disp - xs) < R_FOCUS]
     y0, ye, ny = CT.crossing(foc.p0_y, foc.hgt - foc.p0_y)
@@ -504,13 +506,9 @@ WINDOWS = {'late': (20.0, 75.0), 'mid': (12.0, 20.0), 'beam': (4.0, 12.0)}
 
 
 def load_data(src=CT.CF, arms=('A', 'C')) -> pd.DataFrame:
-    """capsule_tof.load with the stage-3 y mirror undone: true y = -stored y."""
-    d = CT.load(src, arms)
-    d['p0_y'] = -d.p0_y
-    d['d_y'] = -d.d_y
-    d['tany'] = -d.tany
-    d['hgt'] = -d.hgt
-    return d
+    """capsule_tof.load: true y whatever the table's vintage (it reads the
+    stage-3 ``y_convention`` flag and undoes the 2026-09-07 mirror if absent)."""
+    return CT.load(src, arms)
 
 
 def data_step(out: Path) -> pd.DataFrame:

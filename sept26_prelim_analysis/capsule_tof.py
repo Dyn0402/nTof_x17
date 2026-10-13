@@ -74,6 +74,10 @@ def load(src: Path, arms) -> pd.DataFrame:
           & d.angle_calibrated.astype('boolean').fillna(False).astype(bool)
           & (d.tanx.abs() < 0.6) & (d.tany.abs() < 0.6) & (d.x_t0 <= 300) & (d.y_t0 <= 300))
     d = d[ok].copy()
+    # true y whatever the table's vintage (COORDINATES.md): tables built before
+    # the 2026-10-13 fix store y mirrored and carry no y_convention flag
+    from sept26_prelim_analysis.build_tracks import y_up
+    d = y_up(d, src)
     d['ms'] = d.t_since_flash_ns / 1e6
     # crossing quantities in global coordinates
     pos = np.empty(len(d))
@@ -202,12 +206,13 @@ def g4(out: Path) -> pd.DataFrame:
         yv, ev, nv = crossing(v_t[ok], -tv[ok] * D_PLANE)
         rows.append(dict(arm=arm, kind='truth gap line', n=nu, u_cross=xu - foot, u_err=eu,
                          v_cross=yv, v_err=ev))
-        # reco (sign conventions as analyse.py: xl = -(x_p0 - HALF); the y
-        # plane is flipped too (build_tracks IN_PLANE_SIGN_Y))
+        # reco (sign conventions as analyse.py: xl = -(x_p0 - HALF); y via
+        # digitise.y_view, which knows the digitiser's vintage)
         q = R.x_quality_ok & R.y_quality_ok & (R.x_tan_theta.abs() < 0.6) & (R.y_tan_theta.abs() < 0.6)
         r = R[q]
         xl = -(r.x_p0.to_numpy(float) - HALF)
-        yl = -(r.y_p0.to_numpy(float) - HALF)
+        from ntof_cosmics.g4_digi.digitise import y_view
+        yl = y_view(r)[0]
         # reco tan sign: fit both and keep the one that focuses (|slope| ~ 1)
         best = None
         for sx in (1.0, -1.0):

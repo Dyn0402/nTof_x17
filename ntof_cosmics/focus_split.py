@@ -41,6 +41,8 @@ def load(src: Path, tan_max: float) -> pd.DataFrame:
     f = src / 'tracks_campaign.parquet'
     d = ds.dataset(f).to_table(columns=COLS, filter=(ds.field('arm').isin(['A', 'C'])
                                                     & ds.field('gated'))).to_pandas()
+    from sept26_prelim_analysis.build_tracks import y_up
+    d = y_up(d, f)                      # CAPSULE_Y is in true y (COORDINATES.md)
     d = d[d.angle_calibrated.astype('boolean').fillna(False).astype(bool)]
     d = d[~d.run.astype(str).isin(PRE_ACCESS)]
     d = d[(d.tanx.abs() < tan_max) & (d.tany.abs() < tan_max)].reset_index(drop=True)

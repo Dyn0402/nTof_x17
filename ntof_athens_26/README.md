@@ -259,6 +259,10 @@ beam (polycone −29.5 → +50.7 mm), so there is no point source in y; the fans
 narrow from 340 mm of plane to that column and no further. The per-track y blur
 is ~27 mm, comparable to the source itself.
 
+> **ERRATUM 2026-10-13.** The +31.3 / +33 mm below, and "the capsule sits ~30 mm up the beam", are the stage-3
+> y mirror (`../COORDINATES.md`, `../Y_FLIP_AUDIT.md` #1b). In true y the band crossing is −31.3 ± 0.7 mm, at the
+> capsule nose, and the CAD/Geant4 placement is right to ~5 mm. The figures shown in Athens carry the mirror.
+
 **The capsule is drawn at its measured height** (2026-09-14, after
 `HANDOFF_CAPSULE_Y.md` was run). The CAD polycone is shifted along the beam so its
 gas centroid sits at the inverse-variance mean of the three chambers' band

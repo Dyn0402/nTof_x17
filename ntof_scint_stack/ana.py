@@ -89,11 +89,12 @@ SRCCAL = Path(REPO) / 'mx_july_beam_qa' / 'calib' / 'srccal_energy_calib.json'
 # --- the track calibration: the IMAGING one ---------------------------------
 #: The capsule, global X Y Z in mm, as the single-track imaging measured it
 #: (scale-free band crossings, 33 runs, `<out>/imaging_campaign/per_arm.csv`):
-#: X = mean of A (-8.30) and C (-10.33), Z from D (-3.45), Y = +31.3 (the
-#: Athens side view, A C D combined).  Each arm's (u, v) of it follows from
+#: X = mean of A (-8.30) and C (-10.33), Z from D (-3.45), Y = -31.3 (the
+#: Athens side view, A C D combined; it read +31.3 in the mirrored stage-3 y
+#: before 2026-10-13, COORDINATES.md).  Each arm's (u, v) of it follows from
 #: the arm's axes (`ntof_tracking.reco.geometry.U_HAT`: A +X, B +Z, C -X,
 #: D -Z; v is +Y on every arm).
-CAPSULE_XYZ = (-9.3, 31.3, -3.45)
+CAPSULE_XYZ = (-9.3, -31.3, -3.45)
 CAPSULE_UV = {'A': (CAPSULE_XYZ[0], CAPSULE_XYZ[1]),
               'B': (CAPSULE_XYZ[2], CAPSULE_XYZ[1]),
               'C': (-CAPSULE_XYZ[0], CAPSULE_XYZ[1]),
@@ -122,10 +123,19 @@ def load_arm(arm: str) -> pd.DataFrame:
             cols += [f'{p}_amp_{w}', f'{p}_dt_{w}', f'{p}_sat_{w}']
         cols += [f'l_amp_{w}', f'l_dt_{w}', f'l_sat_{w}', f'l_area_{w}']
     out = []
+    import pyarrow.parquet as pq
     for f in sorted(glob.glob(str(out_dir() / 'tracks' / 'stack_run_*.parquet'))):
-        out.append(pd.read_parquet(f, columns=cols,
+        have = cols + (['tan_v_raw'] if 'tan_v_raw' in pq.read_schema(f).names else [])
+        out.append(pd.read_parquet(f, columns=have,
                                    filters=[('arm', '==', arm)]))
+    if len({'tan_v_raw' in o.columns for o in out}) > 1:
+        raise ValueError('scint-stack track files on both y conventions: re-run extract')
     d = pd.concat(out, ignore_index=True)
+    if 'tan_v_raw' not in d.columns:
+        # schema <= 4: built from the mirrored stage 3 (2026-09-07 .. 10-13).
+        # Undo it: v -> -v, and the partner tan of the true v is -tan_raw_y.
+        d['v_mm'] = -d.v_mm
+        d['tan_v_raw'] = -d.tan_raw_y
     for c in ('run', 'subrun', 'arm'):
         d[c] = d[c].astype(str)
     # the track's own time: where its drift times put the particle, ns from
@@ -293,7 +303,7 @@ def fit_v_from_wall(t: pd.DataFrame, g: dict, s_u: float) -> dict:
         a1[m] = one[f'w{2 * gg + 1}_amp_on'].to_numpy()[m]
         a2[m] = one[f'w{2 * gg + 2}_amp_on'].to_numpy()[m]
     lr = np.log(a1 / a2)
-    v, ty = one.v_mm.to_numpy(), one.tan_raw_y.to_numpy()
+    v, ty = one.v_mm.to_numpy(), one.tan_v_raw.to_numpy()
     ok = (np.isfinite(lr) & np.isfinite(ty) & (d_edge > 25)
           & (grp >= 0) & (grp < 4) & (np.abs(v) < MM_HALF_V - 5))
     grid = np.arange(-0.4, 1.81, 0.1)
@@ -371,7 +381,7 @@ def pointing(t: pd.DataFrame, g: dict, arm: str) -> tuple:
     ax = (t.u_mm.to_numpy() - uc) / w
     ay = (t.v_mm.to_numpy() - vc) / w
     k = t.k_eff.to_numpy()
-    return ax, k * t.tan_raw_x.to_numpy(), ay, k * t.tan_raw_y.to_numpy()
+    return ax, k * t.tan_raw_x.to_numpy(), ay, k * t.tan_v_raw.to_numpy()
 
 
 def _nll_lin(p, x0, a, m, y, bidx, bpos, L, nb):
@@ -808,7 +818,7 @@ def confirmation(t: pd.DataFrame, P: pd.DataFrame, sig: dict) -> tuple:
         q_total=t.q_total, dca_axis_mm=t.dca_axis_mm, v_mm=t.v_mm,
         n_trk=t.n_trk, drift_railed=t.drift_railed.astype(float),
         abs_tan_x=t.tan_raw_x.abs(), abs_tan_y=t.tan_raw_y.abs(),
-        pointing_y=t.tan_raw_y * np.sign(t.v_mm), t0=t.t0))
+        pointing_y=t.tan_v_raw * np.sign(t.v_mm), t0=t.t0))
     E_on = (P.wany_on | P.pm_on).to_numpy()
     E_off = (P.wany_off | P.pm_off).to_numpy()
     Q = []

@@ -33,7 +33,7 @@ pair-rate question). Handoff that started it: `sept26_prelim_analysis/HANDOFF_CA
 - The capture source is where the illuminating flux meets Al, not the beam. Never quote it as the beam position.
 - Band crossing is unusable < 10 ms (background); use the excess peak there. A–C agreement only excludes per-chamber errors.
 - Height shape/width cannot discriminate (uncalibrated y scale absorbs it). Scint wall shares the structure — no frame test.
-- Data are y-mirrored on load (`load_data`); after the stage-3 y fix (HANDOFF_Y_FLIP_FIX.md) remove that mirror.
+- Data were y-mirrored on load; since the 10-13 fix `load_data` reads the stage-3 `y_convention` flag instead (no double flip).
 
 **Key files & commands:**
 - `sept26_prelim_analysis/capsule_pose.py` — `python -m sept26_prelim_analysis.capsule_pose all` (scan ≈ 15 min)
@@ -42,7 +42,7 @@ pair-rate question). Handoff that started it: `sept26_prelim_analysis/HANDOFF_CA
 
 ## Same-chamber pairs + the y mirror — updated 2026-10-13 (dylan-MS-7C84)
 
-**Resume:** stage-3 y is mirrored; do HANDOFF_Y_FLIP_FIX.md (fix + audit) before more height work; pairs 1:8 still open.
+**Resume:** y mirror FIXED IN CODE 10-13 (branch y-flip-fix, merged); run `bash Y_FIX_REGEN.sh` on the desktop to regenerate the tables, then fill the pending rows of `Y_FLIP_AUDIT.md`; pairs 1:8 still open.
 
 **Goal:** same-chamber (intra) pair physics against Geant4 for Dylan's Thu 2026-10-15 talk. Along the way we found
 that stored global y is upside down.
@@ -233,7 +233,7 @@ report `results/fullpass_is2_v2/report.html`) and §21 (capsule focus, 0.8 cut r
 - Slide note republished: https://dylan-neff.web.cern.ch/notes/scint-stack.html; long report regenerated.
 
 **Next steps:**
-1. Why the vertical liquids (B, C) show no rise toward their PMT (C: 0.07 % top vs 0.34 % bottom) while A, D do.
+1. ~~Why the vertical liquids (B, C) show no rise toward their PMT (C: 0.07 % top vs 0.34 % bottom) while A, D do.~~ **Answered 2026-10-13: the stage-3 y mirror.** In true y C is 0.34 % top vs 0.07 % bottom, a rise toward the PMT like A and D (`Y_FLIP_AUDIT.md` #3; confirm on the regenerated scint stack).
 2. Arm D: a third of its late tracks sit on other-arm triggers (A–C 4–18 %) — real particles or chamber pick-up? D's unbiased maps rely on them.
 3. Join run_149 cosmic tracks to the slim → MIP-clean efficiencies.
 4. Plastic bar placement / D wall group-0/2 cabling against the as-built drawings.

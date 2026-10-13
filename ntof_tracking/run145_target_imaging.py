@@ -87,6 +87,27 @@ def local_x(x_p0):
     return IN_PLANE_SIGN * (np.asarray(x_p0, float) - STRIP_MAP_HALF)
 
 
+# The y view (../COORDINATES.md §2, fixed 2026-10-13). The y strip coordinate
+# already points UP (FEU channel 0 at the bottom of every chamber), so the
+# position is NOT flipped and, to keep the reco's tan convention
+# tan_raw = -d(strip)/d(depth) that x uses, the TAN is. External facts pinning
+# it: cosmic muons go down (run_149 wall timing), the plastic PMTs are on top,
+# the capsule nose sits at the bottom (y_orientation_check.py). 2026-09-07 to
+# 2026-10-13 had it the other way round (position flipped), which mirrored y.
+IN_PLANE_SIGN_Y = +1.0
+TAN_SIGN_Y = -1.0
+
+
+def local_y(y_p0):
+    """Strip-map coordinate -> local y (= global +y, up)."""
+    return IN_PLANE_SIGN_Y * (np.asarray(y_p0, float) - STRIP_MAP_HALF)
+
+
+def local_tan_y(y_tan_theta):
+    """Reco tan of the y plane -> local tan, same convention as x."""
+    return TAN_SIGN_Y * np.asarray(y_tan_theta, float)
+
+
 def plane_geometry(tr):
     """(perpendicular distance from the target to the strip plane,
     local x of the foot of that perpendicular).
@@ -334,20 +355,13 @@ def track_lines(df, tr, sel):
     which is what this analysis did until 2026-08-20 -- mirrors the track about
     the plane CENTRE, and the plane centre is 16 mm off the beam axis.
 
-    BOTH planes carry that sign. Until 2026-09-07 only x did: the 2026-08-20
-    measurement was made on the target image, which lives in the XZ projection
-    and is blind to the y sign, so y silently kept the raw strip direction.
-    Measured on the pointing-coincident sample of run_145, both sub-runs:
-    corr(y_local, tan_y) is negative in all four chambers unflipped and
-    positive in all four flipped, and the flip moves the median target height
-    from below the He-3 capsule to near its centre, roughly doubling the
-    fraction of tracks pointing into its y span (arm A 18.5 % -> 36.2 %). See
-    `sept26_prelim_analysis/build_tracks.py:IN_PLANE_SIGN_Y`.
+    The y view carries the opposite choice: position as read, tan flipped
+    (``local_y`` / ``local_tan_y``; ../COORDINATES.md).
     """
     xl = local_x(df['x_p0'].to_numpy()[sel])
-    yl = IN_PLANE_SIGN * (df['y_p0'].to_numpy()[sel] - STRIP_MAP_HALF)
+    yl = local_y(df['y_p0'].to_numpy()[sel])
     tx = df['x_tan_theta'].to_numpy()[sel]
-    ty = df['y_tan_theta'].to_numpy()[sel]
+    ty = local_tan_y(df['y_tan_theta'].to_numpy()[sel])
     P0 = tr.local_to_global(xl, yl, np.zeros_like(xl))
     P1 = tr.local_to_global(xl - tx * 30.0, yl - ty * 30.0,
                             np.full_like(xl, 30.0))
@@ -442,8 +456,9 @@ def run_arm(run, subrun, arm, trs, G, slim_path, slim_cut, out_dir, plots=True):
         m = (df[f'{plane}_ok'].to_numpy()
              & (np.abs(df[f'{plane}_tan_theta']) < TAN_SANE))
         u = (local_x(df['x_p0'].to_numpy()[m]) if plane == 'x'
-             else df['y_p0'].to_numpy()[m] - STRIP_MAP_HALF)
-        fit = pointing_fit(u, df[f'{plane}_tan_theta'].to_numpy()[m])
+             else local_y(df['y_p0'].to_numpy()[m]))
+        t = df[f'{plane}_tan_theta'].to_numpy()[m]
+        fit = pointing_fit(u, t if plane == 'x' else local_tan_y(t))
         if fit:
             fit['expected_slope'] = 1.0 / d_perp if plane == 'x' else None
             if plane == 'x':

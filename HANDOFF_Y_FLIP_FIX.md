@@ -1,5 +1,11 @@
 # HANDOFF — fix the stage-3 y mirror, and audit everything it touched
 
+> **STATUS 2026-10-13 (later): §2 done — the code fix, the guard (§2.4), the loaders (§2.3), the digitiser, the
+> tests. §3 is NOT done: the desktop, which holds every table, was offline. Run `bash Y_FIX_REGEN.sh` there; it
+> regenerates each table from its own sidecar, proves each one is an exact y mirror of the old, runs both guards and
+> every downstream rerun. §4 is `Y_FLIP_AUDIT.md` (table filled; "pending" entries come from that run). §6 errata are
+> written in the affected docs; notes, board and the y-orientation slide still need the regenerated numbers.**
+
 **Written 2026-10-13.** Read `COORDINATES.md` first; it has the frame, the sign conventions and the evidence. The slide
 note is <https://dylan-neff.web.cern.ch/notes/y-orientation.html>.
 

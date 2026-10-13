@@ -104,6 +104,15 @@ def _pairs(t: pd.DataFrame, a: str, b: str) -> pd.DataFrame:
 
 
 def build_beam() -> pd.DataFrame:
+    # the joined line comes from stage 3 and the position from the scint stack:
+    # both must be on one y convention (COORDINATES.md)
+    import json
+    from sept26_prelim_analysis.build_tracks import stored_y_sign
+    em = STACK.parent / 'extract.meta.json'
+    stack_up = em.is_file() and json.loads(em.read_text()).get('y_convention') == 'up'
+    if (stored_y_sign(CAMPAIGN) > 0) != stack_up:
+        raise ValueError('stage-3 campaign and scint-stack extract are on different y '
+                         'conventions: regenerate the older one (Y_FLIP_AUDIT.md)')
     T = pq.read_table(CAMPAIGN, columns=CAMP_COLS,
                       filters=[('gated', '==', True)]).to_pandas()
     for c in ('run', 'subrun', 'arm'):

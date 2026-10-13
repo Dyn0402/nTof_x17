@@ -162,6 +162,15 @@ def _one(run: str, sub: str, reco: str, out_dir: str, k_from=None, kcal=None,
         return run, sub, 0, 0, 'none', traceback.format_exc(limit=3)
 
 
+def _y_up(dest: Path) -> bool:
+    """A table built before the 2026-10-13 y fix is stale whatever its mtime."""
+    m = dest.with_name(dest.name.replace('.parquet', '.meta.json'))
+    try:
+        return json.loads(m.read_text()).get('y_convention') == 'up'
+    except (OSError, ValueError):
+        return False
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split('\n')[1])
     ap.add_argument('--fullpass', type=Path, default=None)
@@ -190,6 +199,9 @@ def main() -> int:
                     help='build sub-runs whose stage-2 output is incomplete. '
                          'OFF by default: a partial tag set produces a track '
                          'table that looks complete and is not.')
+    ap.add_argument('--k-source', default=None,
+                    help='the k_source label for the combined table (regen_stage3 '
+                         'passes the old table\'s, so a rebuild keeps its provenance)')
     ap.add_argument('--combine-only', action='store_true',
                     help='skip building; just concatenate what is already there')
     a = ap.parse_args()
@@ -214,7 +226,7 @@ def main() -> int:
             # Compared against the INPUTS, not just existence, so a sub-run
             # that gained tags since the last build is correctly rebuilt.
             dest = out / f'tracks_{r.name}_{s.name}.parquet'
-            if dest.exists() and not a.rebuild:
+            if dest.exists() and not a.rebuild and _y_up(dest):
                 newest = max((p.stat().st_mtime
                               for p in s.rglob('events_*.parquet')), default=0)
                 if dest.stat().st_mtime >= newest:
@@ -259,17 +271,30 @@ def main() -> int:
     if not parts:
         print('nothing to combine')
         return 1
+    conv = {json.loads(p.with_name(p.name.replace('.parquet', '.meta.json'))
+                       .read_text()).get('y_convention', 'mirrored')
+            for p in parts}
+    if len(conv) > 1:
+        print(f'!! refusing to combine: sub-run tables on y conventions {sorted(conv)} '
+              f'(COORDINATES.md); rebuild the stale ones')
+        return 1
     frames = [pd.read_parquet(p) for p in parts]
     df = pd.concat(frames, ignore_index=True)
     if 'run' in df.columns:
         df['condition'] = df['run'].map(_condition).astype('category')
-        df['k_source'] = (a.k_from if a.k_from else
+        df['k_source'] = (a.k_source if a.k_source else a.k_from if a.k_from else
                           (f'self:{Path(a.kcal).name}' if a.kcal else 'self'))
         df['k_source'] = df['k_source'].astype('category')
+    from sept26_prelim_analysis import y_guard
+    yg = y_guard.late_y_crossing(df)
+    y_guard.enforce(yg, f'{out} (combined)')
     dest = out / 'tracks_campaign.parquet'
     df.to_parquet(dest, index=False, compression='snappy')
 
+    from datetime import datetime, timezone
     meta = dict(n_subruns=len(parts), n_tracks=int(len(df)),
+                y_convention=conv.pop(), y_guard=yg,
+                built=datetime.now(timezone.utc).isoformat(timespec='seconds'),
                 n_gated=int(df.gated.sum()) if 'gated' in df else None,
                 stage3_tan_max_true=a.tan_max_true,
                 n_calibrated=int(df.angle_calibrated.sum())

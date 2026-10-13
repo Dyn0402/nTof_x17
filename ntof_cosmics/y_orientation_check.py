@@ -16,11 +16,43 @@ mean of a wall group's two ends, which cancels propagation along the bar):
            flat in u (control).  With the plastic PMTs on top (Dylan), the
            stored top is the far end => stored y points down.
 
-Run from the repo root:  python ntof_cosmics/y_orientation_check.py cosmic|pmt
+After 2026-10-13 (the fix) the expected result is the opposite: stored-higher
+hit EARLIER, stored-high plastic end EARLIER.  ``verdict`` evaluates the cosmic
+table and exits non-zero unless stored y points up.
+
+Run from the repo root:  python ntof_cosmics/y_orientation_check.py cosmic|verdict|pmt
 Outputs: ntof_cosmics/results/y_orientation/{ac149.parquet,pmt_timing.csv}
 """
 import sys
+
+
+def cosmic_verdict(path='ntof_cosmics/results/y_orientation/ac149.parquet'):
+    """The primary y guard: muons go down, so the truly higher arm is hit FIRST.
+
+    Straight A-C lines (dev < 15 deg, |dt| < 20 ns), split by stored dy = yA - yC
+    beyond +-20 mm.  Returns the fractions with A later in each half, the
+    Mann-Whitney p, and ``ok`` = stored-higher arm earlier at p < 1e-3.
+    """
+    import pandas as pd
+    from scipy.stats import mannwhitneyu
+    R = pd.read_parquet(path).dropna(subset=['tA', 'tC'])
+    R['dy'], R['dt'] = R.yA - R.yC, R.tA - R.tC
+    G = R[(R.dev1 < 15) & (R.dev2 < 15) & (R.dt.abs() < 20)]
+    up, dn = G[G.dy > 20], G[G.dy < -20]
+    p = float(mannwhitneyu(up.dt, dn.dt).pvalue)
+    f_up, f_dn = float((up.dt > 0).mean()), float((dn.dt > 0).mean())
+    return dict(n=int(len(G)), n_up=int(len(up)), n_dn=int(len(dn)),
+                a_later_when_a_higher=f_up, a_later_when_a_lower=f_dn, p=p,
+                ok=bool(f_up < f_dn and p < 1e-3), mirrored=bool(f_up > f_dn and p < 1e-3))
+
+
 step = sys.argv[1] if len(sys.argv) > 1 else 'cosmic'
+if step == 'verdict':
+    v = cosmic_verdict()
+    print(v)
+    print('stored y points UP' if v['ok'] else
+          'STORED Y IS MIRRORED' if v['mirrored'] else 'inconclusive')
+    sys.exit(0 if v['ok'] else 1)
 if step == 'cosmic':
     import sys, glob, numpy as np, pandas as pd, uproot
     sys.path.insert(0,'.')
@@ -69,7 +101,8 @@ if step == 'cosmic':
                      tA=a[1],tC=c[1],eA=a[2],eC=c[2]))
     R=pd.DataFrame(rows); R.to_parquet('ntof_cosmics/results/y_orientation/ac149.parquet')
     print('AC pairs with clock match',len(R),' both walls',R[['tA','tC']].notna().all(axis=1).sum())
-else:
+    print(cosmic_verdict())
+elif step == "pmt":
     import glob, numpy as np, pandas as pd, pyarrow.parquet as pq
     cols=['run','arm','u_mm','v_mm','t_since_flash_ns','x_t0','y_t0']
     for e in range(1,9): cols+= [f'w{e}_dt_on',f'w{e}_amp_on']

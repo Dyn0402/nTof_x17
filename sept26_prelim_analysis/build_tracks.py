@@ -64,35 +64,15 @@ STRIP_MAP_HALF = 199.29
 #: measurement that fixed it; this is the same constant, not a second opinion.
 IN_PLANE_SIGN = -1.0
 
-#: !!! WRONG — READ ../COORDINATES.md (2026-10-13).  This flips the y POSITION; the
-#: !!! wiring (FEU channel 0 at the bottom), cosmic-muon timing (run_149, p = 4e-11)
-#: !!! and the plastic PMT timing all show it should flip tan y instead.  As coded,
-#: !!! every stored global y is mirrored.  Fix + stage-3 regeneration:
-#: !!! ../HANDOFF_Y_FLIP_FIX.md.  The text below is the 2026-09-07 reasoning, kept
-#: !!! as the record of how a self-consistency test picked the wrong half of a
-#: !!! mirror ambiguity.
-#:
-#: **The Y plane needs the same flip, and until 2026-09-07 it did not get it.**
-#: The 2026-08-20 measurement was made on the target image, which lives in the
-#: XZ projection and is blind to the y sign -- so only x was ever measured and
-#: y silently kept the raw strip direction.
-#:
-#: Measured the same way the x sign was, on the pointing-coincident sample of
-#: run_145, both sub-runs: a track from the source arriving at ``y_local`` must
-#: move further from zero going outward, so ``corr(y_local, tan_y)`` has to be
-#: POSITIVE.  Unflipped it is negative in all four chambers and both sub-runs
-#: (A -0.63/-0.67, C -0.34/-0.39, D -0.19/-0.24, B -0.23/-0.08); flipped it is
-#: positive in all eight, and the implied angle scale from the y band lands in
-#: the same family as the x band's (A 1.46 vs 1.30, C 2.5 vs 1.8).  k_y runs
-#: systematically higher than k_x because the He-3 capsule is ~80 mm long along
-#: y (``geometry.HE3_GAS_Y``) and an extended source dilutes the band -- so k_y
-#: is an upper bound, not a competing measurement.
-#:
-#: What it broke: every 3D direction had a mirrored vertical component.
-#: ``dca_axis_mm`` is the XZ projection and barely notices, which is why this
-#: survived; ``target_y_mm``, ``angle_to_beam_deg``, the LS/plastic crossings
-#: and **any opening angle between two chambers** all did notice.
-IN_PLANE_SIGN_Y = -1.0
+#: The y view: position as read (the strip coordinate already points up),
+#: TAN flipped, so tan_y = -y_tan_theta * k.  The opposite choice (2026-09-07 ..
+#: 2026-10-13) mirrored global y.  Frame, evidence and the external facts that
+#: pin it: ../COORDINATES.md.  Same constants as run145_target_imaging.
+from ntof_tracking.run145_target_imaging import (   # noqa: E402
+    IN_PLANE_SIGN_Y, TAN_SIGN_Y)
+
+#: Written into every sidecar.  Loaders that once mirrored y on load key on it.
+Y_CONVENTION = 'up'
 
 #: Angle fits that railed.  |tan| > 1 is a 45 deg track in a 30 mm gap, which
 #: the acceptance does not contain; they are kept as rows and flagged.
@@ -135,7 +115,63 @@ ANGLE_DERIVED = (
 #: acceptance.  HANDOFF_TRACKING_2026-10-06.md §14-15.
 TAN_MAX_RAW_DEFAULT = 0.6
 
-SCHEMA = 'sept26_prelim/tracks/1'
+SCHEMA = 'sept26_prelim/tracks/2'   # 2: y_convention 'up' (2026-10-13)
+
+
+#: 2026-09-07 introduced the position flip that mirrored y; before it, y
+#: positions were right but tan y was not flipped (direction mirrored).
+_Y_MIRROR_FROM = '2026-09-07'
+
+
+def stored_y_sign(src) -> float:
+    """+1 if the stage-3 table(s) at ``src`` store y up, -1 if mirrored.
+
+    ``src`` is one ``tracks_*.parquet``, its ``.meta.json``, or a directory of
+    them.  Multiply ``p0_y``, ``d_y``, ``tany``, ``target_y_mm`` (and anything
+    derived from them) by the result to get true y.  Raises on a mix of
+    conventions and on a table older than 2026-09-07, whose y POSITION is right
+    but whose y DIRECTION is mirrored -- no single sign undoes that.
+    """
+    src = Path(src)
+    if src.is_dir():
+        metas = sorted(src.glob('tracks_run_*.meta.json'))
+    elif src.name.endswith('.meta.json'):
+        metas = [src]
+    else:
+        metas = [src.with_name(src.name.replace('.parquet', '.meta.json'))]
+    metas = [m for m in metas if m.is_file()]
+    # campaign_tracks' combined sidecar before 2026-10-13 carried neither a
+    # convention nor a build date: read the per-sub-run sidecars beside it
+    if (len(metas) == 1 and 'built' not in (j := json.loads(metas[0].read_text()))
+            and 'y_convention' not in j):
+        metas = sorted(metas[0].parent.glob('tracks_run_*.meta.json'))
+    if not metas:
+        raise FileNotFoundError(f'no stage-3 sidecar for {src}: cannot tell its y convention')
+    signs = set()
+    for m in metas:
+        meta = json.loads(m.read_text())
+        if meta.get('y_convention') == Y_CONVENTION:
+            signs.add(+1.0)
+        elif str(meta.get('built', '')) >= _Y_MIRROR_FROM:
+            signs.add(-1.0)
+        else:
+            raise ValueError(f'{m}: built {meta.get("built")} (before {_Y_MIRROR_FROM}); '
+                             'y direction mirrored with y position right -- rebuild it')
+    if len(signs) > 1:
+        raise ValueError(f'{src}: tables with both y conventions; regenerate the set')
+    return signs.pop()
+
+
+def y_up(df: pd.DataFrame, src) -> pd.DataFrame:
+    """``df`` (stage-3 rows read from ``src``) with every stored y made true y."""
+    s = stored_y_sign(src)
+    if s > 0:
+        return df
+    df = df.copy()
+    for c in ('p0_y', 'd_y', 'tany', 'target_y_mm', 'y_local'):
+        if c in df.columns:
+            df[c] = -df[c]
+    return df
 
 
 # --------------------------------------------------------------------------- #
@@ -221,7 +257,7 @@ def local_and_global(df: pd.DataFrame, tr: G.DetTransform,
     yl = IN_PLANE_SIGN_Y * (df['y_p0'].to_numpy(float) - STRIP_MAP_HALF)
     scale = np.nan if k is None else float(k)
     tx = df['x_tan_theta'].to_numpy(float) * scale
-    ty = df['y_tan_theta'].to_numpy(float) * scale
+    ty = TAN_SIGN_Y * df['y_tan_theta'].to_numpy(float) * scale
 
     P0 = tr.local_to_global(xl, yl, np.zeros_like(xl))
     P1 = tr.local_to_global(xl - tx * gap_mm, yl - ty * gap_mm,
@@ -524,7 +560,7 @@ ORDER = (
 def build(run: str, subrun: str, reco_dir: Path, stage1: Path | None = None,
           allow: Path | None = None, out_dir: Path | None = None,
           k_arm: dict | None = None, write: bool = True,
-          tan_max_true: float | None = None):
+          tan_max_true: float | None = None, allow_y_fail: bool = False):
     base = str(paths.root('runs')) + '/'
     cfg = json.loads((Path(base) / run / 'run_config.json').read_text())
     trs = G.detector_transforms(cfg)
@@ -558,9 +594,15 @@ def build(run: str, subrun: str, reco_dir: Path, stage1: Path | None = None,
     tracks = tracks[cols + [c for c in tracks.columns if c not in cols]]
     tracks = tracks.sort_values(['arm', 'tag', 'event_id', 'track_id'])
     tracks = tracks.reset_index(drop=True)
+    # The y orientation guard (y_guard.py): the late capsule crossing must sit at
+    # the nose, below zero.  A sub-run with too few late A/C tracks reads
+    # 'insufficient' and passes through; campaign_tracks re-checks the whole.
+    from sept26_prelim_analysis import y_guard
+    yg = y_guard.late_y_crossing(tracks)
+    y_guard.enforce(yg, f'{run}/{subrun}', allow_fail=allow_y_fail)
 
     meta = dict(
-        schema=SCHEMA, run=run, subrun=subrun,
+        schema=SCHEMA, y_convention=Y_CONVENTION, run=run, subrun=subrun,
         built=datetime.now(timezone.utc).isoformat(timespec='seconds'),
         reco_dir=str(reco_dir), stage1=str(stage1) if stage1 else None,
         allowlist=str(allow) if allow else None,
@@ -571,11 +613,13 @@ def build(run: str, subrun: str, reco_dir: Path, stage1: Path | None = None,
         by_class=(tracks['event_class'].value_counts().to_dict()
                   if 'event_class' in tracks else {}),
         geometry=dict(in_plane_sign=IN_PLANE_SIGN,
+                      in_plane_sign_y=IN_PLANE_SIGN_Y, tan_sign_y=TAN_SIGN_Y,
                       strip_map_half=STRIP_MAP_HALF,
                       drift_gap_mm=G.DRIFT_GAP,
                       pinwheel=G.PINWHEEL,
                       mm_dist_x=G.MM_DIST_X, mm_dist_z=G.MM_DIST_Z),
         not_populated=NOT_POPULATED,
+        y_guard=yg,
         trigger_time=tprov,
         k_arm=dict(applied=k_arm,
                    uncalibrated=[a_ for a_ in prov if a_ not in k_arm],
@@ -620,6 +664,8 @@ def main() -> int:
                          '(the reco gate stays as `gated_reco`). For a re-pass '
                          'run with a wide WFT_TAN_MAX; refused if wider than '
                          'the reco cut x k.')
+    ap.add_argument('--allow-y-fail', action='store_true',
+                    help='write even if the y guard reads a mirror (diagnostics only)')
     a = ap.parse_args()
 
     s1 = a.stage1 or paths.out('stage1') / f'candidates_{a.run}_{a.subrun}.parquet'
@@ -643,7 +689,8 @@ def main() -> int:
 
     print(f'{a.run}/{a.subrun}')
     tracks, meta = build(a.run, a.subrun, a.reco, stage1=s1, allow=al,
-                         out_dir=a.out, k_arm=k, tan_max_true=a.tan_max_true)
+                         out_dir=a.out, k_arm=k, tan_max_true=a.tan_max_true,
+                         allow_y_fail=a.allow_y_fail)
     print(f'\n  {meta["n_tracks"]:,} segments in {meta["n_events"]:,} '
           f'(tag, event)s; {meta["n_gated"]:,} gated')
     if meta['by_class']:

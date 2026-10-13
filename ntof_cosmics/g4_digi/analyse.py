@@ -38,6 +38,8 @@ def load(label: str) -> pd.DataFrame:
         if c in R:
             R[c] = R[c].astype(object).fillna(False).astype(bool)
     R['xl'] = -(R.x_p0 - HALF)
+    from ntof_cosmics.g4_digi.digitise import y_view
+    R['vl'], R['tan_v_reco'] = y_view(R)          # either digitiser vintage
     return R
 
 
@@ -47,7 +49,7 @@ def foot(R):
 
 def response(R: pd.DataFrame, plane: str, truth: str) -> pd.DataFrame:
     t = R[truth].to_numpy(float)
-    r = R[f'{plane}_tan_theta'].to_numpy(float)
+    r = R['x_tan_theta' if plane == 'x' else 'tan_v_reco'].to_numpy(float)
     ok = R[f'{plane}_ok'].to_numpy(bool) & np.isfinite(t) & np.isfinite(r)
     rows = []
     for lo, hi in zip(E[:-1], E[1:]):

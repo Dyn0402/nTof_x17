@@ -178,7 +178,7 @@ def selection_tiers(run: str, subruns, arm: str, fullpass: str) -> pd.DataFrame:
 
         # target: needs a real direction, so only where k exists
         if k:
-            ty = df.y_tan_theta.to_numpy() * k
+            ty = TI.local_tan_y(df.y_tan_theta.to_numpy()) * k
             P0 = tr.local_to_global(xl, yl, np.zeros_like(xl))
             P1 = tr.local_to_global(xl - tan * k * 30.0, yl - ty * 30.0,
                                     np.full_like(xl, 30.0))

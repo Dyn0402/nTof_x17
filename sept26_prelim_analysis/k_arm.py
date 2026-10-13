@@ -200,11 +200,10 @@ def coincident_tracks(run: str, sub: str, arm: str, merged_dir: str,
     coin, _ = TI.pointing_coincidence(slim_path, arm, df, sel,
                                       foot_x=TI.PINWHEEL[arm],
                                       slim_df=slim_df)
-    # Both planes carry the same in-plane sign (build_tracks.IN_PLANE_SIGN_Y,
-    # measured 2026-09-07).  The focus objective is the miss distance in the XZ
-    # projection and is blind to the y sign for these chambers -- which is
-    # exactly how the y error survived -- but the frame must still be right.
-    from sept26_prelim_analysis.build_tracks import IN_PLANE_SIGN_Y
+    # The y view: position as read, tan flipped (../COORDINATES.md).  The focus
+    # objective is the miss distance in the XZ projection and is blind to the y
+    # sign -- which is how the 2026-09-07 mirror survived -- but the frame must
+    # still be right for anyone reading yl/ty (capsule_y does).
     q = df['x_q_sum'].to_numpy()
     m = coin & sel & np.isfinite(q) & (q > 0)
     # Before the charge window, not after: a noise column carries charge like
@@ -228,9 +227,9 @@ def coincident_tracks(run: str, sub: str, arm: str, merged_dir: str,
     keep = (qs >= lo) & (qs <= hi)
     return dict(
         xl=TI.local_x(g['x_p0'].to_numpy())[keep],
-        yl=(IN_PLANE_SIGN_Y * (g['y_p0'].to_numpy() - TI.STRIP_MAP_HALF))[keep],
+        yl=TI.local_y(g['y_p0'].to_numpy())[keep],
         tx=g['x_tan_theta'].to_numpy()[keep],
-        ty=g['y_tan_theta'].to_numpy()[keep],
+        ty=TI.local_tan_y(g['y_tan_theta'].to_numpy())[keep],
         q=qs[keep], foot_x=TI.PINWHEEL[arm],
         # carried so a caller can join per-event products that are not
         # positions -- k_robustness's hot-strip variant needs the trigger id
