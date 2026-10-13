@@ -20,6 +20,18 @@ reconstruction in `wft/`.
 If an analysis you are about to write needs a position, an angle or a depth,
 check the migration status table in `RECONSTRUCTION_BASIS.md` first.
 
+## Coordinates: stage-3 global y is mirrored (found 2026-10-13)
+
+**+y is the beam direction, up.** Since 2026-09-07, `build_tracks.IN_PLANE_SIGN_Y = −1` has flipped the y
+*position*. It should have flipped *tan y*. As a result every stored height points down: `p0_y`, `d_y`,
+`target_y_mm`, vertex and capsule heights, and scintillator v-maps. Angles between tracks are unaffected. Until
+`HANDOFF_Y_FLIP_FIX.md` is done, mirror y on load (`p0_y → −p0_y`, `d_y → −d_y`) and never quote a stored height
+as is.
+
+**Never decide an axis sign from a self-consistency test.** corr(position, tan), A–C lines and band slopes are all
+blind to a global mirror. Pin every orientation to an external fact, such as cosmic muons going down or a PMT
+position, and write that fact next to the constant. Frame, conventions and the evidence: `COORDINATES.md`.
+
 ## Layout
 
 - `cosmic_bench_analysis/` — the original (hits-based) June cosmic analysis

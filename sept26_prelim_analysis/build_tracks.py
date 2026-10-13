@@ -64,6 +64,14 @@ STRIP_MAP_HALF = 199.29
 #: measurement that fixed it; this is the same constant, not a second opinion.
 IN_PLANE_SIGN = -1.0
 
+#: !!! WRONG — READ ../COORDINATES.md (2026-10-13).  This flips the y POSITION; the
+#: !!! wiring (FEU channel 0 at the bottom), cosmic-muon timing (run_149, p = 4e-11)
+#: !!! and the plastic PMT timing all show it should flip tan y instead.  As coded,
+#: !!! every stored global y is mirrored.  Fix + stage-3 regeneration:
+#: !!! ../HANDOFF_Y_FLIP_FIX.md.  The text below is the 2026-09-07 reasoning, kept
+#: !!! as the record of how a self-consistency test picked the wrong half of a
+#: !!! mirror ambiguity.
+#:
 #: **The Y plane needs the same flip, and until 2026-09-07 it did not get it.**
 #: The 2026-08-20 measurement was made on the target image, which lives in the
 #: XZ projection and is blind to the y sign -- so only x was ever measured and
