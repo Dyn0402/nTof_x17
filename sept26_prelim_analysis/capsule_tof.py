@@ -49,7 +49,9 @@ FLUX = Path.home() / 'CLionProjects/MX17_Full_Geant/data/fluxEAR2-Ph3_in_differe
 FLIGHT_M = 19.5
 PRE_ACCESS = ('run_79', 'run_81')
 TOF_EDGES_MS = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 20, 25, 30, 40, 50, 60, 75], float)
-Y_EDGES = np.arange(-60.0, 121.0, 20.0)
+#: height bins for `tilt`, in true y (+y up). Before the 2026-10-14 regeneration
+#: stage 3 was mirrored and these were -60..+120; mirrored with it.
+Y_EDGES = np.arange(-120.0, 61.0, 20.0)
 R_FOCUS = 15.0
 #: the plane's distance from the axis (geometry.MM_DIST_Z + W_STRIP)
 D_PLANE = 234.6
