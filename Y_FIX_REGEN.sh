@@ -34,7 +34,7 @@ df -h / /media/dylan/data | tee -a "$LOG/chain.log"
 # step() exits the chain on failure; s3() below adds a free-space check on /.
 
 # --- 0. the code: unit tests (convention, guard, loader flag, regen check)
-step tests      $PY -m pytest -q sept26_prelim_analysis/tests/test_y_convention.py
+step tests      $PY -m pytest -q sept26_prelim_analysis/tests/test_y_convention.py -k "not cosmic_muons"   # data test: tests_data, after `cosmic`
 
 # --- 1. stage 3, every live set (each rebuilt from its own sidecar).
 #        The data disk is full: staging and the pre_yfix backups go on / under
