@@ -251,3 +251,34 @@ combined split-ab contract → re-pass → downstream.
 4. **Near-normal reconstructed tracks confirm at only 6–23 %** on the
    scintillators. They may be mostly mis-measured angles, or the pointing may
    miss.
+
+## Follow-up 2026-10-13 (day): time window, vertexing, capsule position
+
+**Slide note:** <https://dylan-neff.web.cern.ch/notes/same-chamber-pairs.html>
+(`make_same_chamber_deck.py`). Code: `capsule_tof.py` (beam / g4 / tof / tilt →
+`<out>/capsule_tof/`), `same_chamber_scatter.py` (Geant4 truth → `<out>/same_chamber/scatter_*.csv,
+vertex_truthline.csv, sep_loss.csv`).
+
+- **The < 12 ms cut is not where the pairs went.** EAR2 flux × 1/v puts 87 % of the beam's own captures
+  before 12 ms (peak 5–6 ms), but 92 % (A) / 91 % (C) of the tracks that point at the capsule are after
+  12 ms, half after 30 ms. That late population is delayed neutrons, not direct beam. Before 10 ms only 6–25 %
+  of tracks point at the capsule (late: 46 % / 42 %), and the own wall fires for 25–75 % of them. The recorded
+  rate is roughly flat at 4–30 ms (DAQ throughput). The late data are at least as capsule-pure as Geant4 through the
+  reconstruction (31 % / 34 %), so the factor 8 is **not** non-capsule tracks in the denominator.
+- **Al e⁺e⁻ cannot vertex.** Geant4 truth: p·β·θ = 0.40 MeV·rad from 0.5 to 6 MeV (wall + ~23 cm of air).
+  The median conversion leg (2 MeV) is bent 9° and its line misses the vertex by 33 mm. With **perfect** gap lines
+  only 2.3 % of real same-chamber pairs pass the vertex test (chance 2–3 %); the midpoint lands 75 mm off.
+  X17 legs (8–10 MeV): 2.3–2.9°, 9–11 mm; 67–82 % have both legs within 20 mm.
+- **The expected count already includes opening angle and close-pair loss** (digitised Geant4 through the
+  real reco). 44 % / 43 % of Geant4 e⁺e⁻ are < 20 mm apart in a view; 20 % / 27 % more are at 20–40 mm, lost by
+  the one-sided pass that the digitised response used but kept by is2_v2. Re-digitising with is2_v2 raises the
+  prediction (data/G4 gets worse).
+- **Capsule position.** Source at x −9.3, z −3.8 mm (one capsule radius, toward B, a little toward C). A–C show a
+  ~3° x-vs-height shear that Geant4's centred capsule does not (tilt or common in-plane rotation). Height: the
+  data's y band crossing is +31 (A) / +35 (C) mm; Geant4's nose by the same estimator is −28.
+- **OPEN, important: the y-strip orientation.** `build_tracks.IN_PLANE_SIGN_Y = −1` (2026-09-07) flipped
+  positions to make corr(y, tan y) > 0; flipping tans instead does the same and differs by a global vertical
+  mirror. The July hits analysis (no flip) had the source "3 cm low"; Geant4 says the nose (−28); liquid B (PMT
+  on top per survey) brightens toward reconstructed −y. All three favour a flipped y. Angles between tracks do not
+  change under the mirror; absolute heights do (`target_y_mm`, `CAPSULE_V`, the 32.2 mm G4 shift, scint v-maps).
+  Needs a hardware check (y connector up or down) before anything height-dependent is quoted.
