@@ -10,8 +10,9 @@ Evidence: <https://dylan-neff.web.cern.ch/notes/y-orientation.html> (`ntof_cosmi
 - The frame is right-handed. In the top-down view, +z points right (east) and +x points up (north)
   (`MX17_Full_Geant/GEOMETRY_COORDINATE_CONVENTION.md`).
 - The arms: **A at +z, B at −x, C at −z, D at +x.**
-- Origin: the nominal capsule position and the chamber-frame centre. The real beam sits at x ≈ −10, z ≈ −4 mm
-  (`capsule_pose.py`).
+- Origin: the nominal capsule position and the chamber-frame centre (the surveyed station centre). The capture
+  source images at x ≈ −10, z ≈ −4 mm in this frame (`capsule_pose.py`). Whether that is the beam being off the frame
+  or the capsule being off a centred beam is NOT settled; see `<out>/capsule_pose/report.html`.
 - Each chamber has a local frame (u, v, w).
   - u is the x-view strip coordinate, v the y-view strip coordinate, w the drift depth.
   - `ntof_tracking/reco/geometry.py`: `U_HAT`, `W_HAT`, `DetTransform`.

@@ -154,6 +154,94 @@ def fig_shear(out: Path, S: pd.DataFrame, D: pd.DataFrame):
     plt.close(fig)
 
 
+def fig_early(out: Path, E: pd.DataFrame):
+    import matplotlib.pyplot as plt
+    fig, ax = fs.figure(fs.FIG)
+    D = E[E.kind == 'data']
+    rows = []
+    for arm, g in D.groupby('arm'):
+        st = fs.det_style(arm)
+        t = np.sqrt(g.lo * g.hi)
+        ax.errorbar(t, g.peak_x, g.peak_err, marker=st['marker'], color=st['color'], lw=1.2, capsize=0,
+                    label=f'{arm}: pointing-excess peak')
+        ok = g.band_err < 1.0
+        ax.plot(t[ok], g.band_x[ok], ls=':', color=st['color'], lw=1, label=f'{arm}: band crossing (where usable)')
+    M = E[(E.kind == 'mix') & (E.arm == 'A')].set_index('frac_at_plus10').peak_x
+    for f in (0.2, 0.5):
+        ax.axhline(M.loc[f], color=fs.MUTED, lw=0.7, ls='--')
+        ax.text(2.1, M.loc[f] + 0.15, f'{f:.0%} of tracks from a source 10 mm toward 0', fontsize=8, color=fs.MUTED)
+    ax.set_xscale('log')
+    ax.set_xticks([2, 5, 10, 20, 50])
+    ax.set_xticklabels(['2', '5', '10', '20', '50'])
+    ax.set_ylim(-14, -2)
+    ax.set_xlabel('time since the flash [ms]')
+    ax.set_ylabel('source x at the axis plane [mm]')
+    ax.set_title('Source x against ToF: the same at 4 ms as at 50 ms')
+    ax.legend(fontsize=8, loc='lower right', ncol=2)
+    fs.preliminary(ax, 'upper left')
+    fs.save(fig, out / 'figures' / 'early', data=E)
+    plt.close(fig)
+
+
+def fig_image(out: Path, I: pd.DataFrame):
+    import matplotlib.pyplot as plt
+    fig, axs = plt.subplots(1, 3, figsize=(9.6, 4.2), sharey=True)
+    g0 = I[I.arm == 'A']
+    for ax, w in zip(axs, ('beam', 'mid', 'late')):
+        g = g0[g0.window == w].pivot(index='h', columns='x', values='excess')
+        vmax = np.nanmax(g.values)
+        ax.pcolormesh(g.columns, g.index, g.values / vmax, cmap='magma_r', vmin=-0.1, vmax=1, shading='nearest')
+        ax.axvline(0, color=fs.COPPER, lw=0.8, ls='--')
+        ax.set_title({'beam': '4–12 ms (direct beam)', 'mid': '12–20 ms', 'late': '30–75 ms'}[w], fontsize=10)
+        ax.set_xlabel('x at the axis plane [mm]')
+        ax.grid(False)
+    axs[0].set_ylabel('height at the axis plane [mm]')
+    fs.save(fig, out / 'figures' / 'image', data=I)
+    plt.close(fig)
+
+
+def fig_alternatives(out: Path, Al: pd.DataFrame, late: pd.DataFrame):
+    """Source (x, y) predicted by each picture against the data.  A capsule
+    height change moves a model point straight up or down, so only the x
+    position and the height change it needs are fixed by the data."""
+    import matplotlib.pyplot as plt
+    fig, ax = fs.figure(fs.FIG)
+    A = Al[Al.window == 'late'].copy()
+    A['x'] = 0.5 * (A.x_cross_A + A.x_cross_C)
+    A['y'] = 0.5 * (A.y_cross_A + A.y_cross_C)
+    tail = A[A.case.str.contains('tail-lit')]
+    A = A[~A.case.str.contains('tail-lit')]
+    if len(tail):
+        ax.plot(tail.x, tail.y, marker='s', ms=5, color=fs.MUTED, lw=1, ls='--',
+                label='beam at 0 (×1), capsule 15–20 mm off: lit by the tail')
+        for _, r in tail.iterrows():
+            ax.annotate(f"{r.x_c:+.1f}", (r.x, r.y), fontsize=7, color=fs.MUTED, xytext=(3, -9), textcoords='offset points')
+    for case, g in A.groupby('case', sort=False):
+        g = g.sort_values('width_scale')
+        on = case.startswith('beam on')
+        col = fs.INK if on else (fs.ACCENT if '-10.3' in case else fs.COPPER)
+        shift = 0.0
+        if on:   # the beam-on-capsule family: carry it to the data's x
+            shift = 0.5 * (late.loc['A', 'x_cross'] + late.loc['C', 'x_cross']) - g.x.iloc[0]
+        ax.plot(g.x + shift, g.y, marker='o', ms=3.5, color=col, lw=1.1,
+                label=case + (' (moved to the data x)' if on else ''))
+        for _, r in g.iterrows():
+            ax.annotate(f"×{r.width_scale:g}", (r.x + shift, r.y), fontsize=7, color=col,
+                        xytext=(3, 3), textcoords='offset points')
+    for arm in ('A', 'C'):
+        st = fs.det_style(arm)
+        ax.plot(late.loc[arm, 'x_cross'], late.loc[arm, 'y_cross'], marker='*', ms=13, color=st['color'],
+                ls='none', label=f'data {arm}, late')
+    ax.set_xlabel('source x [mm]  (beam centred on the frame at 0)')
+    ax.set_ylabel('source height, y band crossing [mm]')
+    ax.set_title('Which pictures reach the data')
+    ax.legend(fontsize=7.5, loc='upper left')
+    ax.text(0.99, 0.02, 'a capsule height change moves a model point vertically', transform=ax.transAxes,
+            ha='right', fontsize=8, color=fs.MUTED)
+    fs.save(fig, out / 'figures' / 'alternatives', data=Al)
+    plt.close(fig)
+
+
 # --------------------------------------------------------------------------- #
 def table(df: pd.DataFrame, cols, heads, fmt) -> str:
     r = ['<table><thead><tr>' + ''.join(f'<th class="n">{h}</th>' for h in heads) + '</tr></thead><tbody>']
@@ -176,170 +264,232 @@ def build(d: Path) -> str:
     B = pd.read_csv(d / 'bound.csv')
     T = pd.read_csv(d / 'tof.csv')
     S = pd.read_csv(d / 'shear.csv')
+    E = pd.read_csv(d / 'early.csv')
+    Al = pd.read_csv(d / 'alternatives.csv')
+    H = pd.read_csv(d / 'halo.csv') if (d / 'halo.csv').exists() else None
+    PR = pd.read_csv(paths.out('imaging_campaign') / 'per_run.csv')
+
     st = S.groupby('arm')[['step_data', 'step_toy', 'step_toy_err']].first()
     st['sig'] = (st.step_data - st.step_toy) / st.step_toy_err
     sig_comb = float(abs(st.sig.sum()) / np.sqrt(len(st)))
     F0 = F[F.theta == 0].set_index('d')
-    xb, zb = float(F0.loc[0, 'x_beam']), float(F0.loc[0, 'z_beam'])
+    xs = 0.5 * (late.loc['A', 'x_cross'] + late.loc['C', 'x_cross'])
+    xs_corr = float(F0.loc[0, 'x_beam'])
+    zs = float(F0.loc[0, 'z_beam'])
     dy0 = float(F0.loc[0, 'dy_c'])
     ac = abs(late.loc['A', 'y_cross'] - late.loc['C', 'y_cross'])
-
     Bi = B.set_index('height_prior_mm')
-    b5, b10 = Bi.loc[5], Bi.loc[10]
-    d10 = float(F0.loc[10, 'dy_c']) if 10 in F0.index else np.nan
-    gas10 = float(F0.loc[10, 'gas']) if 10 in F0.index else np.nan
-    bar10 = float(F0.loc[10, 'al_barrel']) if 10 in F0.index else np.nan
-    al10 = float(F0.loc[10, 'al_per_ray'] / F0.loc[0, 'al_per_ray']) if 10 in F0.index else np.nan
-    tof_late = T[T.lo >= 20].groupby('arm').y_bgsub.agg(['min', 'max'])
-    tof_early = T[T.lo == 4].set_index('arm').y_bgsub
+    b5 = Bi.loc[5]
+    ED = E[E.kind == 'data'].set_index(['arm', 'lo'])
+    mixA = E[(E.kind == 'mix') & (E.arm == 'A')].set_index('frac_at_plus10').peak_x
+    slope = float((mixA.loc[0.5] - mixA.loc[0.0]) / 0.5)          # mm per unit fraction
+    bgA = E[(E.kind == 'bg') & (E.arm == 'A')].iloc[0]
+    bgC = E[(E.kind == 'bg') & (E.arm == 'C')].iloc[0]
+    bg_shift = max(abs(bgA.peak_x - bgA.peak_ref), abs(bgC.peak_x - bgC.peak_ref))
+    ref = {a: float(ED.loc[(a, 30.0), 'peak_x']) for a in ('A', 'C')}
+
+    def frac(arm, lo):   # 2-sigma upper limit on the fraction of a +10 mm source
+        sh = float(ED.loc[(arm, lo), 'peak_x']) - ref[arm]
+        return max(0.0, (sh + 2 * float(ED.loc[(arm, lo), 'peak_err'])) / slope)
+    f46 = {a: frac(a, 4.0) for a in ('A', 'C')}
+    f612 = {a: max(frac(a, lo) for lo in (6.0, 8.0, 10.0)) for a in ('A', 'C')}
+    post = PR[PR.condition.str.startswith('post')].groupby('arm').mm.agg(['median', 'std', 'min', 'max'])
+    pre = PR[PR.condition.str.startswith('pre')].groupby('arm').mm.median()
+
+    AlL = Al[Al.window == 'late'].copy()
+    AlL['x'] = 0.5 * (AlL.x_cross_A + AlL.x_cross_C)
+    AlL['y'] = 0.5 * (AlL.y_cross_A + AlL.y_cross_C)
+    AlL['dy_needed'] = 0.5 * (late.loc['A', 'y_cross'] + late.loc['C', 'y_cross']) - AlL.y
+    AlL['dx_off'] = AlL.x - xs
+    al0 = float(AlL[(AlL.case.str.startswith('beam on')) & (AlL.width_scale == 1)].al_per_ray.iloc[0])
+    AlL['al_rel'] = AlL.al_per_ray / al0
+    if H is not None:
+        H = H[H.window == 'late'].copy()
+        H['x'] = 0.5 * (H.x_cross_A + H.x_cross_C)
+        H['y'] = 0.5 * (H.y_cross_A + H.y_cross_C)
+        H['dy_needed'] = 0.5 * (late.loc['A', 'y_cross'] + late.loc['C', 'y_cross']) - H.y
+        H['al_rel'] = H.al_per_ray / al0
+        H['dx_off'] = H.x - xs
+    alt = pd.concat([AlL, H]) if H is not None else AlL
+    alt_tab = table(alt, ['case', 'width_scale', 'x', 'dx_off', 'y', 'dy_needed', 'gas', 'al_rel'],
+                    ['picture', 'flux width (× Lambda2D)', 'source x', 'x vs data', 'source y',
+                     'capsule move needed', 'beam into ³He', 'Al captures / neutron (rel.)'],
+                    [str, lambda v: f'{v:g}', lambda v: _f(v, 1, True), lambda v: _f(v, 1, True),
+                     lambda v: _f(v, 1, True), lambda v: _f(v, 0, True), lambda v: _f(v, 2), lambda v: _f(v, 3)])
 
     cl = C[(C.kind == 'reco') & C['sample'].isin(['geant4 capsule', 'toy nominal'])]
     cl_tab = table(cl, ['arm', 'sample', 'x_cross', 'y_cross', 'h_w68', 'f_focus'],
                    ['arm', 'sample', 'x crossing', 'y crossing', 'height w<sub>68</sub>', 'focus fraction'],
                    [str, str, lambda v: _f(v, 2, True), lambda v: _f(v, 2, True), _f, lambda v: _f(v, 2)])
-    dat = D[D.window.isin(['late', 'mid', 'beam', 'beam_bgsub'])]
-    dat_tab = table(dat, ['arm', 'window', 'n', 'x_cross', 'y_cross', 'f_focus', 'h_w68'],
-                    ['arm', 'window', 'tracks', 'x crossing', 'y crossing', 'focus fraction', 'height w<sub>68</sub>'],
-                    [str, str, lambda v: f'{int(v):,}', lambda v: _f(v, 1, True), lambda v: _f(v, 1, True),
-                     lambda v: _f(v, 2), _f])
+    ed = E[E.kind == 'data']
+    early_tab = table(ed, ['arm', 'lo', 'hi', 'n', 'peak_x', 'peak_err', 'band_x', 'band_err'],
+                      ['arm', 'from [ms]', 'to', 'tracks', 'excess peak x', '&plusmn;', 'band crossing', '&plusmn;'],
+                      [str, lambda v: f'{v:g}', lambda v: f'{v:g}', lambda v: f'{int(v):,}', lambda v: _f(v, 1, True),
+                       lambda v: _f(v, 1), lambda v: _f(v, 1, True), lambda v: _f(v, 1)])
     g0 = F[F.theta == 0].sort_values('d')
-    scan_tab = table(g0, ['d', 'y_cross_A', 'y_cross_C', 'dy_c', 'gas', 'al_nose', 'al_barrel', 'al_per_ray'],
-                     ['d [mm]', 'toy y, A', 'toy y, C', 'capsule move needed', 'beam into ³He',
-                      'Al: nose', 'Al: barrel', 'Al captures / neutron'],
+    scan_tab = table(g0, ['d', 'y_cross_A', 'y_cross_C', 'dy_c', 'gas', 'al_nose', 'al_barrel'],
+                     ['d [mm]', 'toy y, A', 'toy y, C', 'capsule move needed', 'beam into ³He', 'Al: nose', 'Al: barrel'],
                      [lambda v: f'{int(v)}', lambda v: _f(v, 1, True), lambda v: _f(v, 1, True),
-                      lambda v: _f(v, 1, True), lambda v: _f(v, 2), lambda v: _f(v, 2), lambda v: _f(v, 2),
-                      lambda v: f'{1e3 * v:.2f}&times;10<sup>&minus;3</sup>'])
+                      lambda v: _f(v, 1, True), lambda v: _f(v, 2), lambda v: _f(v, 2), lambda v: _f(v, 2)])
     b_tab = table(B, ['height_prior_mm', 'n_poses', 'd_tip_max', 'gas_min', 'barrel_max', 'al_rel_min'],
-                  ['capsule height known to &plusmn; [mm]', 'poses allowed', 'nose tip from beam, max [mm]',
+                  ['capsule height known to &plusmn; [mm]', 'poses allowed', 'nose tip from flux centre, max [mm]',
                    'beam into ³He, min', 'barrel share, max', 'Al captures / neutron, min (rel.)'],
                   [lambda v: f'{int(v)}', lambda v: f'{int(v)}', lambda v: _f(v, 0), lambda v: _f(v, 2),
                    lambda v: _f(v, 2), lambda v: _f(v, 2)])
+    best0 = AlL[~AlL.case.str.startswith('beam on')].copy()
+    best0['bad'] = best0.dx_off.abs()
+    near = best0[best0.dx_off.abs() < 2.0]
+    if H is not None:
+        hn = H[H.dx_off.abs() < 2.5]
+        near = pd.concat([near, hn])
+    dy_min = float(near.dy_needed.abs().min()) if len(near) else np.nan
 
     body = f"""
 <h1>Where the capsule sits in the beam</h1>
 <p class="sub">capsule_pose.py &middot; is2_v2 at the capsule-focus k, post-access runs, A and C &middot;
-y mirrored on load (stage-3 <code>IN_PLANE_SIGN_Y</code>) &middot; built {dt.date.today().isoformat()}</p>
+y mirrored on load &middot; beam: EAR2 Phase-3 flux &times; Lambda2D radial profile per energy (the Geant4 gun's
+recipe) &middot; built {dt.date.today().isoformat()}</p>
 
-<div class="verdict"><p><b>Verdict.</b> The beam neutrons that make the tracks are captured on the
-capsule's <b>nose</b>, not along its barrel. The capture point (the beam) sits at
-<b>x = {_f(xb, 1, True)}, z = {_f(zb, 1, True)}&nbsp;mm</b> in the chamber frame. The data's source height
-(late window, {_f(late.loc['A', 'y_cross'], 1, True)} A / {_f(late.loc['C', 'y_cross'], 1, True)} C) matches a
-beam on the capsule axis if the capsule sits <b>{_f(-dy0, 0)}&nbsp;mm lower</b> than in Geant4.</p>
-<p><b>Where the capsule's centre is relative to the beam is not determined.</b> The y crossing is
-degenerate between the capsule's height and how the beam meets it, and a tilt can carry the nose back into the
-beam however far the centre is off. Untilted, keeping the source at the data's height needs the capsule moved by
-{_f(F0.loc[7, 'dy_c'], 0, True)}&nbsp;mm at a 7&nbsp;mm offset and {_f(d10, 0, True)}&nbsp;mm at 10&nbsp;mm. <b>So
-the hypothesis of a capsule 1&nbsp;cm off the beam with the nose out needs it ~{_f(-d10, 0)}&nbsp;mm lower than
-drawn.</b></p>
-<p><b>What the data do bound are the consequences</b>, given a prior on the capsule height. If the capsule is
-within &plusmn;5&nbsp;mm of the Geant4 placement, then over every scanned pose that matches, <b>&ge; {_f(b5.gas_min * 100, 0)} % of the
-beam enters the ³He</b>, at most {_f(b5.barrel_max * 100, 0)} % of the Al captures are on the barrel, and the nose
-tip is within {_f(b5.d_tip_max, 0)}&nbsp;mm of the beam axis. At &plusmn;10&nbsp;mm anything is allowed, including a
-capsule nearly off the beam (³He share down to {_f(b10.gas_min, 2)}).</p>
-<p><b>A pose that cuts Al captures (and so pairs) by 8 has the capsule mostly out of the beam</b> (Al per neutron
-&ge; {_f(b5.al_rel_min, 2)}&times; nominal at &plusmn;5&nbsp;mm; {_f(b10.al_rel_min, 2)}&times; at &plusmn;10&nbsp;mm only
-with ~10 % of the beam on the ³He). Untilted at d = 10, Al captures stay at {_f(al10, 2)}&times; nominal (barrel
-grazing replaces the nose) while the ³He share falls to {_f(gas10, 2)}.</p></div>
-
-<h2>Headline numbers</h2>
+<div class="verdict"><p><b>What is measured.</b> The tracks image <b>one compact source</b>. It sits at
+<b>x {_f(xs_corr, 1, True)}, z {_f(zs, 1, True)}&nbsp;mm</b> in the chamber frame (A/C x corrected by the toy's
+estimator offset; B/D z uncorrected), at the height of the capsule nose (y {_f(late.loc['A', 'y_cross'], 1, True)} A /
+{_f(late.loc['C', 'y_cross'], 1, True)} C). The x is the same from 2&nbsp;ms to 75&nbsp;ms after the flash, in every run
+of the campaign, and on both sides of the 27 July access.</p>
+<p><b>What it means is not settled, and the earlier version of this report overstated it.</b> That version called the
+source "the beam". The source is where the illuminating neutrons meet aluminium. Its x is the beam's x only if the
+illumination is the narrow beam <i>and</i> it hits the capsule. The forward model says:</p>
 <ul>
-<li><b>Beam / capture position:</b> x {_f(xb, 1, True)} (A and C, corrected by the toy's
-{_f(F0.loc[0, 'x_cross_A'], 2, True)} / {_f(F0.loc[0, 'x_cross_C'], 2, True)} estimator offset), z {_f(zb, 1, True)}&nbsp;mm
-(B, D campaign crossings, uncorrected). The x crossing follows the <b>beam</b>, not the capsule axis: it moves by
-&lt; 1&nbsp;mm for any offset up to 10&nbsp;mm.</li>
-<li><b>Source height, late window (&ge; 20&nbsp;ms):</b> A {_f(late.loc['A', 'y_cross'], 1, True)}, C
-{_f(late.loc['C', 'y_cross'], 1, True)}&nbsp;mm. The toy at the Geant4 pose gives {_f(F0.loc[0, 'y_cross_A'], 1, True)} /
-{_f(F0.loc[0, 'y_cross_C'], 1, True)}. Flat from 20 to 75&nbsp;ms (A {_f(tof_late.loc['A', 'min'], 1)} to
-{_f(tof_late.loc['A', 'max'], 1)}, C {_f(tof_late.loc['C', 'min'], 1)} to {_f(tof_late.loc['C', 'max'], 1)}),
-so the late, delayed neutrons light the nose like the beam does. An isotropic thermal flux would put the source
-at y &asymp; +5 to +8 (it lights the whole Al body).</li>
-<li><b>A &minus; C height difference {_f(ac, 1)}&nbsp;mm</b> is the open issue from HANDOFF_CAPSULE_Y. It is
-carried as an uncertainty here.</li>
-<li><b>Earlier windows read lower:</b> {_f(tof_early.loc['A'], 0, True)} (A) / {_f(tof_early.loc['C'], 0, True)} (C) at
-4&ndash;6&nbsp;ms after background subtraction. The drop follows the purity drop, and no pose in the scan
-moves the beam-window source <i>down</i> relative to the late one (the wider high-energy beam grazes more barrel,
-which moves it <i>up</i>). Read it as an unsubtracted source on the beam line below the capsule, not as pose.</li>
-<li><b>x against height:</b> the data's x crossing steps by {_f(st.loc['A', 'step_data'], 1, True)} (A) /
-{_f(st.loc['C', 'step_data'], 1, True)}&nbsp;mm (C) toward &minus;x for tracks pointing above the nose. A point-like
-nose source through Geant4 gives {_f(st.loc['A', 'step_toy'], 1, True)} &plusmn; {_f(st.loc['A', 'step_toy_err'], 1)} /
-{_f(st.loc['C', 'step_toy'], 1, True)} &plusmn; {_f(st.loc['C', 'step_toy_err'], 1)}. That is a
-{_f(sig_comb, 1)}&sigma; combined hint of a second, higher source at more negative x, limited by the size of
-the Geant4 sample. It is not a capsule tilt: with a nose source the height spread (&plusmn;25&nbsp;mm) is
-kinematics, not geometry. Nor is it an in-plane rotation, which would give a straight line, not a step.</li>
+<li><b>A compact source at the nose needs a narrow flux centred within ~{_f(b5.d_tip_max, 0)}&nbsp;mm of the nose</b>
+(capsule within &plusmn;5&nbsp;mm of its drawn height). Any flux that only grazes the capsule lights the 0.6&nbsp;mm barrel
+along its length and lifts the source by 10&ndash;20&nbsp;mm.</li>
+<li><b>No Lambda2D-shaped beam centred on the chamber frame reproduces the data at the drawn height.</b> The ones
+that reach x &asymp; {_f(xs, 0)} (capsule ~13&ndash;18&nbsp;mm off; a flux &times;10 the Lambda2D width; or the beam's tail
+alone) all put the source {_f(dy_min, 0)}&ndash;25&nbsp;mm too high. They need the capsule that much lower than drawn,
+and they leave 1&ndash;15 % of the beam on the ³He.</li>
+<li><b>The direct-beam window shows no second source near x&nbsp;=&nbsp;0.</b> If the beam were centred on the frame and
+the capsule partly in it, the beam's own captures would sit near x&nbsp;&asymp;&nbsp;0. The pointing peak allows at most
+{_f(f46['A'] * 100, 0)} % (A) / {_f(f46['C'] * 100, 0)} % (C) of capsule tracks from there at 4&ndash;6&nbsp;ms and
+{_f(max(f612.values()) * 100, 0)} % at 6&ndash;12&nbsp;ms (2&sigma;; background alone moves the peak by up to
+{_f(bg_shift, 1)}&nbsp;mm, i.e. ~{_f(bg_shift / slope * 100, 0)} %).</li>
+</ul>
+<p><b>So there are two readings, and these data cannot choose between them:</b></p>
+<ol>
+<li><b>The flux is centred on the capsule</b>, ~{_f(abs(xs_corr), 0)}&nbsp;mm toward B and ~{_f(abs(zs), 0)}&nbsp;mm toward C
+from the frame centre. Then the beam is not where the frame says it is, or the frame's centre is not where it was
+aligned to the beam. The capsule then sits {_f(-dy0, 0)}&nbsp;mm below its drawn height, and if it is within &plusmn;5&nbsp;mm of it
+&ge; {_f(b5.gas_min * 100, 0)} % of the beam enters the ³He.</li>
+<li><b>The beam is centred on the frame (as aligned)</b>, and the capsule is 13&ndash;18&nbsp;mm toward B and
+&ge; {_f(dy_min, 0)}&nbsp;mm lower than drawn, lit by a beam broader than Lambda2D or by its tail. Then ³He captures,
+and so the IPC and X17 yields, are 1&ndash;15 % of nominal.</li>
+</ol>
+<p>The first is the economical reading of the tracks, but it contradicts the alignment. The second fits the alignment
+but needs two further surprises. <b>A survey or photo of the capsule against the beam axis, the capsule tip's height,
+and the beam spot size at the station would settle it.</b> Neither reading lets the pose explain the 1&nbsp;:&nbsp;8 pair
+rate on its own.</p></div>
+
+<h2>1 &middot; Every picture against the data</h2>
+<p>The beam is centred at x&nbsp;=&nbsp;0 unless the picture says otherwise. "Capsule move needed" is how far the capsule
+must move vertically to put the toy source at the data's height; the y crossing is degenerate with that, the x is not.
+Late window (&ge; 20&nbsp;ms).</p>
+{alt_tab}
+{figure('alternatives', 'Source (x, height) predicted by each picture, against the data (stars). Black: the flux centred on the capsule, at increasing width, moved to the data x. Purple, orange: a beam centred on the frame with the capsule 10.3 or 13 mm toward B.')}
+
+<h2>2 &middot; The direct-beam window (the test asked for)</h2>
+<p>Below ~10&nbsp;ms the band crossing is driven by background tracks and is unusable. The <b>pointing-excess peak</b>
+is not. It is the peak, in x at the axis plane, of the fraction of lines passing within 10&nbsp;mm minus the same
+with the angles shuffled among the tracks. Two calibrations:</p>
+<ul>
+<li><b>Response to a second source:</b> the late data mixed with a copy of themselves moved +10&nbsp;mm (an identical
+kernel). A fraction f of tracks from the moved copy shifts the peak by {_f(slope / 10, 1)}&nbsp;&times;&nbsp;f&nbsp;mm
+per mm of separation, linearly (early.csv, <i>mix</i>). A point
+source alone, through the toy, is read with gain 1 (&minus;5 &rarr; &minus;4.7, &minus;10 &rarr; &minus;9.7).</li>
+<li><b>Response to background:</b> late data diluted with the 1&ndash;2&nbsp;ms tracks (mostly background) to below the
+early purity: {_f(bgA.peak_x - bgA.peak_ref, 1, True)} (A), {_f(bgC.peak_x - bgC.peak_ref, 1, True)} (C)&nbsp;mm.</li>
+</ul>
+{early_tab}
+{figure('early', 'Source x against time since the flash: the pointing-excess peak (points) and, where it is usable, the band crossing (dotted). Dashed: where the peak would sit if 20 % or 50 % of the tracks came from a source 10 mm toward x = 0.')}
+<p>Only A at 4&ndash;6&nbsp;ms moves ({_f(float(ED.loc[('A', 4.0), 'peak_x']), 1, True)} against
+{_f(ref['A'], 1, True)}). C in the same bin does not ({_f(float(ED.loc[('C', 4.0), 'peak_x']), 1, True)}), so this is
+most likely background structure, not a source.</p>
+<p><b>What the test cannot show:</b> it needs the 4&ndash;12&nbsp;ms capsule tracks to be direct-beam captures. After
+~28&nbsp;ms the evaluated flux is empty, yet 46 % of tracks still point at the same spot. Whatever makes the late tracks
+(the &sect;10f "hall die-away" population) is present early too, and its share at 4&ndash;12&nbsp;ms is not known.
+That late population images the nose like a narrow beam, not the whole capsule like an isotropic hall flux
+(isotropic: y &asymp; +5 to +8). That is itself unexplained.</p>
+{figure('image', 'Pointing image of chamber A (lines at the axis plane minus the shuffled-angle null), normalised per panel. One compact spot at all times; no vertical ridge from a beam-line source (e.g. ¹⁴N captures in the air column) at x = 0 or elsewhere.')}
+
+<h2>3 &middot; Frame checks</h2>
+<ul>
+<li><b>A and C agree</b> ({_f(late.loc['A', 'x_cross'], 1, True)} / {_f(late.loc['C', 'x_cross'], 1, True)}). Their u axes
+point opposite ways in global x (U_HAT A = +x, C = &minus;x), so a strip-map offset, a tan bias or a yaw of either
+chamber would split them, as a wrong x sign splits them by twice the pinwheel (build_tracks, 2026-08-20). Only a
+<b>common</b> shift of the A&ndash;C pair against the beam survives. The same holds for B&ndash;D in z (&minus;4.1 / &minus;3.5).</li>
+<li><b>The frame's x/z origin is the surveyed station centre.</b> The chamber centres in run_config.json are the
+survey's pinwheel shifts (15.5&ndash;17.3&nbsp;mm along each arm's &minus;u; MX17_Full_Geant docs/HANDOFF_ARM_GEOMETRY.md).
+The source is ~10&nbsp;mm off that centre. Whether the centre is on the beam is what the alignment says and what these
+data cannot check.</li>
+<li><b>Stable over the campaign:</b> campaign-imaging crossings per run, post-access, A {_f(post.loc['A', 'median'], 1, True)}
+(s.d. {_f(post.loc['A', 'std'], 1)}), C {_f(post.loc['C', 'median'], 1, True)} ({_f(post.loc['C', 'std'], 1)}), D
+{_f(post.loc['D', 'median'], 1, True)} ({_f(post.loc['D', 'std'], 1)}); pre-access A {_f(pre.loc['A'], 1, True)},
+C {_f(pre.loc['C'], 1, True)}. The 27 July access did not move it. (The production chain reads A ~2&nbsp;mm closer to 0 than
+is2_v2; C agrees.)</li>
+<li><b>The scintillators do not test it.</b> The SiPM wall sits within 1&ndash;6&nbsp;mm of the survey (ntof_scint_stack),
+but wall and chambers share the structure, so a shift of the whole structure against the beam is invisible.</li>
+<li><b>The beam model is the Geant4 gun's:</b> energy from the Phase-3 flux in the window, radius from that energy's
+Lambda2D row, capture &prop; 1/v. Al captures by radius reproduce Geant4 bin by bin (51.7 vs 51.4 % inside 2&nbsp;mm,
+CFRP/Al 1.62 vs 1.57 %). Lambda2D is scored to r = 3&nbsp;cm at 19.5&nbsp;m; a halo beyond that, or a different station
+distance or collimator, is not in it.</li>
 </ul>
 
-<h2>Step 0: the y mirror</h2>
-<p>Every stage-3 table has global y mirrored (<code>build_tracks.IN_PLANE_SIGN_Y = &minus;1</code> flips the
-position where it should flip tan&nbsp;y; wiring confirmed 2026-10-13). This study undoes it on load:
-p0_y &rarr; &minus;p0_y, d_y &rarr; &minus;d_y. Under the mirror, the "capsule 30&nbsp;mm too high" of
-HANDOFF_CAPSULE_Y becomes the nose, a few millimetres below where Geant4 puts it. <b>Fixing stage 3 is Dylan's
-call</b> (handoff &sect;8 lists what moves).</p>
-
-<h2>Model and closure</h2>
-<p>Each beam ray is walked through the STEP polycones (CFRP, Al, gas; nose-first) at the pose. Al captures
-&Sigma;&nbsp;ds, scattering removes neutrons from the ray, and the 500&nbsp;bar ³He is black. The radial
-profile is Lambda2D, weighted by flux &times; 1/v over the window's energies. Tracks are the Geant4 nose-first
-run through the real reconstruction (g4_digi), each <i>translated</i> from its own capture point to a toy
-capture point. So the kinematics, the electron scattering (lines miss their vertex by ~40&nbsp;mm) and the
-reconstruction are Geant4's; only the capture point is modelled. The estimators are capsule_tof's band
-crossings.</p>
-<p>The first closure attempt failed: barrel-grazing captures came out at 2&times; Geant4's, because the toy had
-no neutron scattering. With scattering in the dome's CFRP (H, C; 1.5&nbsp;/cm, tuned on the Geant4
-radius distribution of Al captures) and in the Al, it closes:</p>
+<h2>4 &middot; Model and closure</h2>
+<p>Each ray is walked through the STEP polycones (CFRP, Al, gas; nose-first). Al captures &Sigma;&nbsp;ds, scattering
+removes neutrons from the ray, and the 500&nbsp;bar ³He is black. Tracks are the Geant4 nose-first run through the real
+reconstruction (g4_digi), each translated from its own capture point to a toy capture point. Without neutron
+scattering in the CFRP the barrel captures were 2&times; Geant4's; with it:</p>
 {cl_tab}
-<p>A shift of the capture points by (+5, +10)&nbsp;mm moves the crossings by (+4.9, +10.0) (closure.csv).</p>
 
-<h2>The data (y mirrored)</h2>
-{dat_tab}
-{figure('tof', 'Source height against ToF. Background subtraction uses the off-focus tracks of the same window, normalised to the shuffled-angle null; on the late window it reproduces the raw crossing to 0.2 mm.')}
-
-<h2>The scan</h2>
-<p>Everything is translation-equivariant, so only the beam&ndash;capsule offset d and the tilt are scanned. The
-absolute position is then whatever matches the data. The table is untilted, late window:</p>
+<h2>5 &middot; If the flux is centred on the capsule (reading 1): pose scan</h2>
+<p>Untilted, late window. "Capsule move needed" keeps the toy source at the data's height.</p>
 {scan_tab}
-{figure('captures', 'Where beam neutrons are captured on the Al (late-window profile; beam centre dashed). At d = 8&ndash;10 mm the core grazes the 0.6 mm barrel, and the capture height climbs the capsule.')}
-{figure('height_needed', 'Capsule height change needed to keep the toy source at the data height, against offset, for several tilts. Shaded: ±5 mm about the Geant4 placement, widened by half the A&minus;C difference.')}
-<p>A pose is allowed when the capsule move it needs is within the prior, widened by half the A&minus;C difference.
-The scan covers d 0&ndash;14&nbsp;mm and tilts 0&ndash;20&deg; in both senses. The geometry stays degenerate; the
-consequences do not:</p>
+{figure('captures', 'Where neutrons are captured on the Al for three offsets of a Lambda2D beam from the capsule axis (beam centre dashed).')}
+{figure('height_needed', 'Capsule height change needed against the offset between flux and capsule axis, for several tilts.')}
 {b_tab}
-{figure('consequences', 'Beam into the ³He (³He, IPC and X17 rate), Al captures per beam neutron relative to the centred capsule, and the barrel share, against offset (untilted).')}
-{figure('shear', 'x crossing against reconstructed height, late window. Grey: the toy with a point-like nose source, aligned to the data; its band is the Geant4-library bootstrap spread. Dashed: the source height.')}
+{figure('consequences', 'Beam into the ³He, Al captures per neutron (relative), and the barrel share, against offset (untilted).')}
 
-<h2>What this does not rule out</h2>
+<h2>6 &middot; The data</h2>
+{table(D[D.window.isin(['late', 'mid', 'beam', 'beam_bgsub'])], ['arm', 'window', 'n', 'x_cross', 'y_cross', 'f_focus', 'h_w68'],
+       ['arm', 'window', 'tracks', 'x crossing', 'y crossing', 'focus fraction', 'height w<sub>68</sub>'],
+       [str, str, lambda v: f'{int(v):,}', lambda v: _f(v, 1, True), lambda v: _f(v, 1, True), lambda v: _f(v, 2), _f])}
+{figure('tof', 'Source height against ToF (background-subtracted and raw). Flat after 20 ms; lower before, following the purity.')}
+<p><b>x against height.</b> The x crossing steps by {_f(st.loc['A', 'step_data'], 1, True)} (A) /
+{_f(st.loc['C', 'step_data'], 1, True)}&nbsp;mm (C) for tracks pointing above the nose, against
+{_f(st.loc['A', 'step_toy'], 1, True)} &plusmn; {_f(st.loc['A', 'step_toy_err'], 1)} / {_f(st.loc['C', 'step_toy'], 1, True)}
+&plusmn; {_f(st.loc['C', 'step_toy_err'], 1)} for a point source through Geant4: a {_f(sig_comb, 1)}&sigma; hint of a
+second, higher source, limited by the Geant4 sample.</p>
+{figure('shear', 'x crossing against reconstructed height, late window, with the toy point source and its library spread.')}
+<p><b>Height shape.</b> Background-subtracted, the late height distribution is wider than every toy (w<sub>68</sub> 32 / 34
+against 22&ndash;29&nbsp;mm). Once the uncalibrated y scale is tuned to the width, every picture gives the same skew as the
+data (0.00&ndash;0.05), so the shape does not discriminate.</p>
+
+<h2>7 &middot; What this does not rule out</h2>
 <ul>
-<li><b>A capsule ~{_f(-d10, 0)}&nbsp;mm lower than drawn, 1&nbsp;cm off the beam.</b> The y crossing is degenerate
-between capsule height and offset. The height spread would separate them (the barrel source is 40&nbsp;mm long),
-but the y angle scale is uncalibrated: the data's spread (w<sub>68</sub> {_f(late.loc['A', 'h_w68'], 0)} /
-{_f(late.loc['C', 'h_w68'], 0)}&nbsp;mm) exceeds every toy pose (22&ndash;31). So the spread measures the scale,
-not the source. <b>A survey or photo of the capsule tip's height against the chamber mid-plane settles d.</b></li>
-<li><b>The capsule offset direction.</b> Only the beam's x and z are measured; with a nose hit the capsule axis
-could be up to ~5&nbsp;mm away in any direction.</li>
-<li><b>Tilt.</b> A tilt alone barely moves anything when the beam is on the nose (10&deg; moves y by
-1&nbsp;mm). Combined with an offset it either brings the nose back into the beam (nose toward the beam) or
-lays the barrel across it (nose away). The second sense is the hypothesis, and it is the one that needs the
-largest height change.</li>
-<li><b>The second, higher source.</b> At {_f(sig_comb, 1)}&sigma; it is a hint, not a measurement. If real, it
-sits at more negative x than the nose capture. Candidates: the neck/valve and the upper body lit by
-room-return neutrons, with the capsule axis at more negative x than the beam (an offset toward B, as
-hypothesised but smaller); or support hardware. A Geant4 sample ~10&times; larger (the shear is library-limited)
-would settle whether it is there.</li>
-<li><b>Whatever pulls the early windows down</b> is not modelled. It is presumably beam-line material below
-the capsule, at the beam's x.</li>
-<li><b>B/D.</b> z comes from the campaign crossings with no Geant4 correction (no B/D reco sample exists);
-B has few tracks and D needs the hot-channel cleaning. So the beam's z is known to ~1&nbsp;mm, and the
-capsule-offset direction in z not at all.</li>
+<li><b>Either reading in the verdict.</b> The data fix the source; the beam&ndash;frame and capsule&ndash;beam relations need
+an outside measurement.</li>
+<li><b>A source that is not the capsule's aluminium:</b> a holder or fitting at the nose, lit by the hall flux. It would
+explain why the late, non-beam tracks image the nose and not the whole capsule.</li>
+<li><b>A beam spot unlike Lambda2D</b> at the station (distance, collimator, halo beyond 3&nbsp;cm).</li>
+<li><b>B/D are not modelled:</b> their z comes from the campaign crossings with no Geant4 correction.</li>
 </ul>
 
-<h2>Next</h2>
+<h2>8 &middot; Next</h2>
 <ul>
-<li>Dylan: the capsule's mounted height (tip against the chamber mid-plane), and how it is held. This is the
-one number that turns the table above into a measurement of d.</li>
-<li>Dylan: the stage-3 y-sign fix (<code>IN_PLANE_SIGN_Y</code> on tan, not position) and its regeneration.</li>
-<li>Optional: a 10&times; g4_digi sample (condor) to make the x-height step decisive.</li>
+<li>Dylan: how the beam centring was done (reference, tool), and whether it was checked against the capsule.</li>
+<li>Dylan: the capsule tip height against the chamber mid-plane, and how the capsule is held (anything massive near the nose?).</li>
+<li>The beam spot at the station (n_TOF beam-profile measurement, collimator in use, station distance).</li>
+<li>The stage-3 y-sign fix.</li>
 </ul>
-<p class="prov">Built by <code>make_capsule_pose_report.py</code> from <code>capsule_pose.py</code>
-(closure, data, tof, shear, scan, fit CSVs in this directory). Preliminary.</p>
+<p class="prov">Built by <code>make_capsule_pose_report.py</code> from <code>capsule_pose.py</code> (closure, data, tof,
+shear, early, image, alternatives, scan, fit CSVs here) and <code>imaging_campaign/per_run.csv</code>. Preliminary.</p>
 """
     return ('<!doctype html><html lang="en"><head><meta charset="utf-8">'
             '<meta name="viewport" content="width=device-width,initial-scale=1">'
@@ -363,6 +513,12 @@ def main() -> int:
         fig_consequences(d, F)
         fig_tof(d, pd.read_csv(d / 'tof.csv'))
         fig_shear(d, pd.read_csv(d / 'shear.csv'), late)
+        fig_early(d, pd.read_csv(d / 'early.csv'))
+        fig_image(d, pd.read_csv(d / 'image.csv'))
+        alt = pd.read_csv(d / 'alternatives.csv')
+        if (d / 'halo.csv').exists():
+            alt = pd.concat([alt, pd.read_csv(d / 'halo.csv')], ignore_index=True)
+        fig_alternatives(d, alt, late)
     (d / 'report.html').write_text(build(d), encoding='utf-8')
     print(f'wrote -> {d / "report.html"}')
     return 0

@@ -73,6 +73,8 @@ def load():
     A['pose_fit'] = rd(POSE, 'fit')
     A['pose_bound'] = rd(POSE, 'bound').set_index('height_prior_mm')
     A['pose_data'] = rd(POSE, 'data')
+    A['pose_early'] = rd(POSE, 'early')
+    A['pose_alt'] = pd.concat([rd(POSE, 'alternatives'), rd(POSE, 'halo')], ignore_index=True)
     return A
 
 
@@ -558,54 +560,69 @@ mm, at the nose. The stage-3 fix is pending (Dylan's call); a pose fit is handed
 
 
 def s_pose(D, A, N):
-    F, B = A['pose_fit'], A['pose_bound']
+    B = A['pose_bound']
     late = A['pose_data'][A['pose_data'].window == 'late'].set_index('arm')
-    P = sd.Plot(800, 560, x=(0, 14), y=(-50, 8), xlabel='beam offset from the capsule axis, d (mm)',
-                ylabel='capsule move needed (mm)', title='to keep the source at the data height')
-    P.xticks([(v, str(v)) for v in (0, 2, 4, 6, 8, 10, 12, 14)])
-    P.yticks([(v, str(v)) for v in (-50, -40, -30, -20, -10, 0)])
-    P.band([0, 14], [-5, -5], [5, 5], GREY, alpha=0.18, tip='±5 mm of the Geant4 placement')
-    for (th, ph), col, lab in (((0, 0), INK, 'untilted'), ((10, 0), PURPLE, '10°, nose away from beam'),
-                               ((10, 180), ORANGE, '10°, nose toward beam')):
-        g = F[(F.theta == th) & (F.phi == ph)].sort_values('d')
-        P.line(list(g.d), list(g.dy_c), col, tips=[f'{lab}, d = {d:g} mm: move {v:+.1f} mm, ³He share {q:.2f}, '
-                                                   f'barrel {b:.0%}' for d, v, q, b in
-                                                   zip(g.d, g.dy_c, g.gas, g.al_barrel)])
-    P.text(0.3, 4, '±5 mm of the Geant4 placement: grey', 18, MUT)
-    P.text(0.3, -44, 'purple: nose away (hypothesis) · orange: nose toward', 18, MUT)
-    g = F[F.theta == 0].sort_values('d')
-    a0 = float(g.al_per_ray.iloc[0])
-    P2 = sd.Plot(760, 560, x=(0, 14), y=(0, 1.1), xlabel='d (mm), untilted', ylabel='fraction',
-                 title='what the offset changes')
-    P2.xticks([(v, str(v)) for v in (0, 2, 4, 6, 8, 10, 12, 14)])
-    P2.yticks([(v, f'{v:.1f}') for v in (0, 0.2, 0.4, 0.6, 0.8, 1.0)])
-    P2.line(list(g.d), list(g.gas), BLUE, tips=[f'd {d:g}: {v:.0%} of the beam into the ³He' for d, v in zip(g.d, g.gas)])
-    P2.line(list(g.d), list(g.al_per_ray / a0), INK, tips=[f'd {d:g}: Al captures ×{v:.2f}' for d, v in
-                                                           zip(g.d, g.al_per_ray / a0)])
-    P2.line(list(g.d), list(g.al_barrel), RED, tips=[f'd {d:g}: {v:.0%} of Al captures on the barrel' for d, v in
-                                                     zip(g.d, g.al_barrel)])
-    P2.text(0.3, 0.08, 'blue ³He share · black Al captures / neutron · red barrel share', 17, MUT)
-    b5, b10 = B.loc[5], B.loc[10]
-    body = (sd.title('The beam meets the capsule on the nose; how far the centre is off depends on its height',
-                     f'capsule_pose: ray trace through the STEP polycones × Geant4 tracks, y mirrored; late data '
-                     f'{late.loc["A", "y_cross"]:+.1f} (A) / {late.loc["C", "y_cross"]:+.1f} (C) mm')
-            + sd.row(P.svg('height needed'), P2.svg('consequences'), gap=56))
+    E = A['pose_early']
+    Al = A['pose_alt']
+    Al = Al[Al.window == 'late'].copy()
+    Al['x'] = 0.5 * (Al.x_cross_A + Al.x_cross_C)
+    Al['y'] = 0.5 * (Al.y_cross_A + Al.y_cross_C)
+    xs = 0.5 * (late.loc['A', 'x_cross'] + late.loc['C', 'x_cross'])
+    P = sd.Plot(800, 560, x=(-14, 0), y=(-38, -6), xlabel='source x (mm), frame centre = 0',
+                ylabel='source height (mm)', title='which pictures reach the data')
+    P.xticks([(v, str(v)) for v in (-14, -12, -10, -8, -6, -4, -2, 0)])
+    P.yticks([(v, str(v)) for v in (-35, -30, -25, -20, -15, -10)])
+    for case, g in Al.groupby('case', sort=False):
+        g = g.sort_values('width_scale')
+        on = case.startswith('beam on')
+        tail = 'tail-lit' in case
+        col = INK if on else (GREY if tail else (PURPLE if '-10.3' in case else ORANGE))
+        x = g.x + (xs - g.x.iloc[0] if on else 0.0)
+        P.line(list(x), list(g.y), col, tips=[f'{case}, flux ×{w:g}: x {xx:+.1f}, y {yy:+.1f}, ³He share {q:.2f}'
+                                               for w, xx, yy, q in zip(g.width_scale, x, g.y, g.gas)])
+    for arm in 'AC':
+        P.points([late.loc[arm, 'x_cross']], [late.loc[arm, 'y_cross']], ARM_COL[arm], r=11,
+                 tips=[f'data {arm}, late: x {late.loc[arm, "x_cross"]:+.1f}, y {late.loc[arm, "y_cross"]:+.1f}'])
+    P.text(-13.7, -8, 'beam at 0, capsule off: purple 10.3 mm, orange 13, grey 15–20 (tail-lit)', 16, MUT)
+    P.text(-13.7, -36.5, 'black: flux on the capsule (moved to data x), ×1…×10 width', 16, MUT)
+    d = E[E.kind == 'data']
+    P2 = sd.Plot(760, 560, x=(0.3, 1.9), y=(-14, -4), xlabel='time since the flash (ms, log)',
+                 ylabel='source x (mm)', title='source x against ToF')
+    P2.xticks([(np.log10(v), str(v)) for v in (2, 5, 10, 20, 50)])
+    P2.yticks([(v, str(v)) for v in (-14, -12, -10, -8, -6, -4)])
+    mix = E[(E.kind == 'mix') & (E.arm == 'A')].set_index('frac_at_plus10').peak_x
+    P2.hline(float(mix.loc[0.2]), MUT, label='20 % from a source 10 mm toward 0')
+    P2.hline(float(mix.loc[0.5]), MUT, label='50 %')
+    for arm in 'AC':
+        g = d[d.arm == arm]
+        t = np.log10(np.sqrt(g.lo * g.hi))
+        P2.line(list(t), list(g.peak_x), ARM_COL[arm],
+                tips=[f'{arm} {lo:g}–{hi:g} ms: x {v:+.1f} ± {e:.1f}' for lo, hi, v, e in zip(g.lo, g.hi, g.peak_x, g.peak_err)])
+        errbars(P2, list(t), list(g.peak_x), list(g.peak_err), ARM_COL[arm])
+    b5 = B.loc[5]
+    body = (sd.title('One compact source on the capsule nose, ~10 mm off the frame centre, at every ToF',
+                     'capsule_pose: ray trace (EAR2 flux × Lambda2D per energy) × Geant4 tracks, y mirrored · '
+                     'beam off the frame, or capsule off the beam?')
+            + sd.row(P.svg('pictures'), P2.svg('x vs ToF'), gap=56))
     notes = f"""
-<p><b>Model.</b> Beam rays (Lambda2D profile, flux × 1/v) walked through the posed capsule; Al captures Σ ds,
-scattering removes neutrons, the ³He is black. Geant4 nose-first tracks through the real reconstruction are translated
-from their capture point to the toy's, and the data's band crossings applied. It closes on Geant4 to 0.4 mm in x and y,
-after adding neutron scattering in the dome's CFRP (without it barrel grazing was 2× Geant4's).</p>
-<p><b>Read-out.</b> The x crossing follows the beam, not the capsule axis: the beam is at x {F[(F.d == 0) & (F.theta == 0)].x_beam.iloc[0]:+.1f},
-z {F.z_beam.iloc[0]:+.1f} mm. The height climbs once the beam grazes the 0.6 mm barrel. Keeping it at the data's value
-needs the capsule ~25 mm lower than drawn at d = 10, untilted. A tilt with the nose toward the beam brings the nose back
-into it at any d, so d itself is not bounded. If the capsule is within ±5 mm of the Geant4 placement, ≥ {b5.gas_min:.0%} of
-the beam enters the ³He and ≤ {b5.barrel_max:.0%} of Al captures are on the barrel; at ±10 mm anything goes.</p>
-<p><b>Pairs.</b> At d = 10 (untilted) Al captures per neutron stay at ×{float(g[g.d == 10].al_per_ray.iloc[0]) / a0:.2f}:
-barrel grazing replaces the nose. A ×8 cut needs the capsule mostly out of the beam. The pose does not explain the 1 : 8.</p>
-<p><b>Shear.</b> The x crossing steps ~4 mm toward −x for tracks pointing above the nose. Against a point-like nose
-source through Geant4 that is a ~3.6σ hint of a second, higher source (library-limited); not a tilt, not a rotation.
+<p><b>Measured.</b> The tracks image one compact source at x {xs:+.1f}, z ≈ −3.6 mm in the chamber frame, at the
+nose's height ({late.loc['A', 'y_cross']:+.1f} A / {late.loc['C', 'y_cross']:+.1f} C). Its x is the same from 2 to 75 ms
+(the pointing-excess peak, background-robust where the band crossing is not), in every run, and before and after the
+27 July access. A and C agree although their u axes point opposite ways, so only a <i>common</i> shift of the pair
+against the beam could fake it.</p>
+<p><b>What it does not say.</b> The source is where the illuminating neutrons meet Al, not the beam. A compact source
+at the nose needs a narrow flux on the nose (within ~{b5.d_tip_max:.0f} mm, capsule within ±5 mm of its drawn height);
+grazing lights the 0.6 mm barrel and lifts the source 10–20 mm. A Lambda2D beam centred on the frame reaches x ≈ −10
+only with the capsule 13–18 mm off, a flux ×10 wider, or the tail alone, and then puts the source 14–25 mm too high
+(capsule that much lower than drawn; 1–15 % of the beam on the ³He). The direct-beam window shows no source near
+x = 0 (≤ 10–34 % at 4–6 ms, ≤ 5 % at 6–12 ms), but the share of direct-beam captures there is unknown: the
+late, after-the-flux population images the same spot.</p>
+<p><b>Two readings.</b> (1) The flux sits on the capsule, ~10 mm toward B from the frame centre: the beam is not
+where the frame says, or the frame is not where it was aligned (≥ {b5.gas_min:.0%} of the beam then enters the ³He).
+(2) The beam is centred as aligned and the capsule is far off it and lower than drawn (³He yield 1–15 %). Needs a survey
+or photo of capsule vs beam, the tip height, and the beam spot at the station. Neither explains the 1 : 8 alone.
 Report: <code>&lt;out&gt;/capsule_pose/report.html</code>.</p>"""
-    D.slide('pose', body, notes, foot='capsule_pose fit.csv / bound.csv (scan: d 0–14 mm, tilt 0–20° both senses, late window)')
+    D.slide('pose', body, notes, foot='capsule_pose early.csv, alternatives.csv, halo.csv, bound.csv')
 
 
 def s_expect(D, A, N):
@@ -737,8 +754,8 @@ def s_close(D, A, N):
              + li('Re-digitise the Geant4 pairs with is2_v2 (two-sided search, t0 ≤ 300, |tan| &lt; 0.6 on both legs).')
              + li('Geant4 with delayed thermal neutrons on the capsule (isotropic or from below) to get the '
                   'pairs-per-trigger of the late population.')
-             + li('Measure the capsule tip height against the chamber mid-plane: it is the one number that turns '
-                  'the pose scan into a beam–capsule offset (capsule_pose: nose hit; offset degenerate with height).') + '</ol>')
+             + li('Settle where the beam is: the capsule images ~10 mm off the frame centre at every ToF. '
+                  'Survey/photo of capsule vs beam axis, the capsule tip height, and the beam spot at the station.') + '</ol>')
     body = (sd.title('<span style="color:#eef0f3">What this does not rule out, and what to do next</span>')
             + sd.row(sd.col(sd.p('not ruled out', 26, DMUT), left, w=820),
                      sd.col(sd.p('next', 26, DMUT), right, w=780), gap=56))

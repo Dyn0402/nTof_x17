@@ -28,9 +28,10 @@ that stored global y is upside down.
   - Slide note: notes/y-orientation.html (`ntof_cosmics/make_y_orientation_deck.py`); checks in
     `ntof_cosmics/y_orientation_check.py`.
 - The capsule pose fit was done by another session (315a50d, `HANDOFF_CAPSULE_POSE_FIT.md` Outcome):
-  - the beam meets the nose;
-  - the beam–capsule offset is degenerate;
-  - the pose does not explain 1 : 8.
+  - one compact capture source on the nose, at frame x −10.3, z −3.6, at every ToF;
+  - revised 10-13 night: that is NOT established as the beam position. Either the beam/frame is ~10 mm off the
+    alignment, or the capsule is far off a centred beam and lower than drawn (³He yield 1–15 %); needs a survey;
+  - neither reading explains 1 : 8 alone.
 
 **Next steps:**
 1. **`HANDOFF_Y_FLIP_FIX.md`**: fix build_tracks and the g4_digi digitiser (`STRIP_MAP_HALF − v` → `+ v`), add a

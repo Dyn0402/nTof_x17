@@ -296,12 +296,10 @@ vertex_truthline.csv, sep_loss.csv`).
   answer 10–20× at their +u PMT side (control). Liquid timing is too noisy to use. Plus the wiring, Geant4's nose and the
   July hits result. Nothing points the other way.
 
-- **Capsule pose fit (10-13 evening, `capsule_pose.py`, report `<out>/capsule_pose/report.html`, deck slide `pose`).**
-  The beam meets the capsule on the **nose** (late y crossings −31.3 A / −34.6 C, flat 20–75 ms; toy at the Geant4
-  pose −28.6 / −29.4). The x crossing measures the beam: x −10.3, z −3.6 mm. The beam–capsule offset is degenerate
-  with the unmeasured capsule height (untilted d = 10 needs the capsule ~25 mm low) and with tilt. If the capsule
-  is within ±5 mm of the Geant4 placement, ≥ 87 % of the beam enters the ³He and ≤ 4 % of Al captures are on the
-  barrel. **The pose does not explain the 1 : 8**: d = 10 keeps Al captures per neutron at 0.95×. The x-vs-height
-  step (~4 mm) is a 3.6σ, library-limited hint of a second, higher source. Needed: the capsule tip height
-  (survey), the stage-3 y fix.
-
+- **Capsule pose fit (10-13 evening, revised; `capsule_pose.py`, report `<out>/capsule_pose/report.html`, deck slide
+  `pose`).** The tracks image **one compact source on the capsule nose** at x −10.3, z −3.6 mm (chamber frame), the same
+  from 2 to 75 ms, every run, both sides of the access. **It is not established that this is the beam position**
+  (an earlier version said so): the source is where the illuminating flux meets Al. Either the flux (beam) sits on the
+  capsule ~10 mm off the frame centre — the beam or the frame is not where the alignment says — or the beam is centred
+  and the capsule is 13–18 mm off it and ≥ 14 mm lower than drawn (³He yield 1–15 %). Settled only by an outside
+  survey/photo, the tip height and the beam spot. Neither reading explains the 1 : 8 on its own.

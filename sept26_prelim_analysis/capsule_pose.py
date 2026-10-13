@@ -42,6 +42,11 @@ Steps (CSV to <out>/capsule_pose/):
   data      the mirrored data's estimators per ToF window (A, C)
   shear     x crossing against height: the data, and the toy's point-like nose
             source with its Geant4-library bootstrap spread
+  early     source x against ToF by the shuffled-null excess peak, with the
+            peak's response to a second source and to background
+  image     2D pointing image (x, height) per ToF window
+  alternatives  a beam centred on the frame vs the beam on the capsule, for
+            illuminating fluxes 1-10x the Lambda2D width
   tof       background-subtracted y crossing against time since the flash
   scan      toy grid: beam-capsule offset d and tilt (theta, phi), per window
   fit       the capsule height each shape needs to match the data; the bound
@@ -143,35 +148,63 @@ def window_energy(lo_ms: float, hi_ms: float):
     return e(hi_ms), e(lo_ms)
 
 
-def radial_profile(window=(20.0, 75.0)):
-    """(r edges mm, pdf in r) of the beam: Lambda2D rows inside the window's
-    energies, weighted by the EAR2 flux x 1/v (captures in a thin absorber)."""
-    key = tuple(window)
-    if key in _PROFILE:
-        return _PROFILE[key]
+def _beam_tables():
+    """EAR2 flux (n / pulse per bin, Sabate-Gilarte Phase 3) and the Lambda2D
+    radial profile per energy row (n_TOF transport to 19.5 m), exactly as
+    X17PrimaryGenerator uses them: rows normalised to a CDF over r."""
+    if 'tables' in _PROFILE:
+        return _PROFILE['tables']
     import uproot
     v, ex, ey = uproot.open(LAMBDA)['Lambda2D'].to_numpy()
-    E = np.sqrt(ex[:-1] * ex[1:])
-    lo, hi = window_energy(*window)
+    rebin = 10                                   # 10 um -> 0.1 mm
+    v = v.reshape(v.shape[0], -1, rebin).sum(-1)
+    r_edges = ey[::rebin] * 10.0                 # cm -> mm
+    pop = v.sum(1) > 0
+    logE = np.log10(np.sqrt(ex[:-1] * ex[1:]))[pop]
+    cdf = np.cumsum(v[pop], 1)
+    cdf /= cdf[:, -1:]
     fv, fe = uproot.open(CT.FLUX)['flux_n_pulse_NOisolet_100bpd'].to_numpy()
-    fE = np.sqrt(fe[:-1] * fe[1:])
-    flux = np.interp(np.log(E), np.log(fE), fv, left=fv[0], right=0.0)  # per bin, smooth
-    m = (E >= lo) & (E <= hi) & (v.sum(1) > 0)
-    rows = v[m] / v[m].sum(1, keepdims=True)
-    w = flux[m] * np.sqrt(0.0253 / E[m])
-    w = w / w.sum() if w.sum() > 0 else np.ones(m.sum()) / m.sum()
-    pdf = (rows * w[:, None]).sum(0)
-    _PROFILE[key] = (ey * 10.0, pdf / pdf.sum())
-    return _PROFILE[key]
+    _PROFILE['tables'] = dict(logE=logE, cdf=cdf, r_edges=r_edges, f_lo=fe[:-1], f_hi=fe[1:], flux=fv)
+    return _PROFILE['tables']
+
+
+def sample_energy(n: int, rng, window):
+    """Neutron energies (eV) inside a ToF window, from the EAR2 flux (per bin,
+    log-uniform inside the bin).  The flux file starts at 1 meV (140 ms), so
+    windows reaching beyond that are clipped to 1 meV."""
+    T = _beam_tables()
+    lo, hi = window_energy(*window)
+    lo = max(lo, T['f_lo'][0])
+    m = (T['f_hi'] > lo) & (T['f_lo'] < hi) & (T['flux'] > 0)
+    b_lo, b_hi = np.maximum(T['f_lo'][m], lo), np.minimum(T['f_hi'][m], hi)
+    w = T['flux'][m] * np.log(b_hi / b_lo) / np.log(T['f_hi'][m] / T['f_lo'][m])
+    i = rng.choice(m.sum(), n, p=w / w.sum())
+    return b_lo[i] * (b_hi[i] / b_lo[i]) ** rng.random(n)
 
 
 def sample_beam(n: int, rng, window, centre=(0.0, 0.0), width_scale=1.0):
-    """n beam rays (x, z) from the radial profile."""
-    edges, pdf = radial_profile(window)
-    i = rng.choice(len(pdf), n, p=pdf)
-    r = (edges[i] + rng.random(n) * (edges[i + 1] - edges[i])) * width_scale
+    """n beam rays: energy from the flux in the window, radius from the
+    Lambda2D row nearest that energy (the Geant4 gun's recipe).  Returns
+    x, z, r (mm) and E (eV)."""
+    T = _beam_tables()
+    E = sample_energy(n, rng, window)
+    row = np.abs(np.log10(E)[:, None] - T['logE'][None, :]).argmin(1)
+    u = rng.random(n)
+    j = np.array([np.searchsorted(T['cdf'][k], uu) for k, uu in zip(row, u)])
+    re = T['r_edges']
+    r = (re[j] + rng.random(n) * (re[j + 1] - re[j])) * width_scale
     a = rng.random(n) * 2 * np.pi
-    return centre[0] + r * np.cos(a), centre[1] + r * np.sin(a), r
+    return centre[0] + r * np.cos(a), centre[1] + r * np.sin(a), r, E
+
+
+def radial_profile(window=(20.0, 75.0), n=400_000):
+    """(r edges mm, pdf) of the rays a window delivers, weighted by 1/v (what a
+    thin absorber captures) -- for tables and plots."""
+    rng = np.random.default_rng(3)
+    _, _, r, E = sample_beam(n, rng, window)
+    edges = np.arange(0, 30.01, 0.5)
+    h, _ = np.histogram(r, edges, weights=np.sqrt(0.0253 / E))
+    return edges, h / h.sum()
 
 
 # ---- capture points ------------------------------------------------------
@@ -214,7 +247,8 @@ def trace_rays(x, z, centre, axis, e_scale=1.0, chunk=2000):
         gas = m == 3
         first = np.where(gas.any(1), gas.argmax(1), len(ys))
         before = np.arange(len(ys))[None, :] < first[:, None]
-        sig = np.where(m == 2, SIG_AL, np.where(m == 1, SIG_CF, 0.0)) * e_scale
+        es = np.broadcast_to(np.asarray(e_scale, float), (n,))[idx][:, None]
+        sig = np.where(m == 2, SIG_AL, np.where(m == 1, SIG_CF, 0.0)) * es
         sig = sig * before
         att = np.where(m == 2, SCAT_AL, np.where(m == 1, SCAT_CF, 0.0)) + sig
         surv = np.exp(-(np.cumsum(att, 1) - att) * DY)
@@ -240,8 +274,9 @@ def beam_captures(pose: dict, n: int = 200_000, window=(20.0, 75.0), seed=0, wid
     rng = np.random.default_rng(seed)
     centre = np.array([pose['x_c'], pose['y_c'], pose['z_c']], float)
     axis = axis_of(pose.get('theta', 0.0), pose.get('phi', 0.0))
-    x, z, _ = sample_beam(n, rng, window, (pose['x_b'], pose['z_b']), width_scale)
-    t = trace_rays(x, z, centre, axis)
+    x, z, _, E = sample_beam(n, rng, window, (pose['x_b'], pose['z_b']), width_scale)
+    # capture is 1/v; scattering is energy-independent here
+    t = trace_rays(x, z, centre, axis, e_scale=np.sqrt(0.0253 / E))
     ok = t['w'] > 0
     C = pd.DataFrame(dict(x=x[ok], y=t['y'][ok], z=z[ok], w=t['w'][ok], s=t['s'][ok], mat=t['mat'][ok]))
     frac = dict(on_capsule=float(((t['w'] > 0) | t['gas']).mean()), gas=float(t['gas'].mean()),
@@ -704,6 +739,145 @@ def shear_step(out: Path, n_boot: int = 20) -> pd.DataFrame:
     return R
 
 
+# ---- background-robust x of the source, and the pointing image --------------
+X_GRID = np.arange(-60.0, 40.01, 1.0)
+EARLY_BINS = ((2, 4), (4, 6), (6, 8), (8, 10), (10, 12), (12, 15), (15, 20), (20, 30), (30, 75))
+
+
+def excess_profile(pos, disp, rng, n_shuffle=5, r=10.0):
+    """Fraction of lines passing within r of x (at the axis plane) minus the
+    same with the angles shuffled among the tracks, on X_GRID.  Shuffling keeps
+    the position and angle distributions and destroys pointing, so tracks that
+    point nowhere cancel; the peak is the source."""
+    cx = pos + disp
+    f = np.array([(np.abs(cx - g) < r).mean() for g in X_GRID])
+    f0 = np.zeros_like(f)
+    for _ in range(n_shuffle):
+        c0 = pos + rng.permutation(disp)
+        f0 += np.array([(np.abs(c0 - g) < r).mean() for g in X_GRID])
+    return f - f0 / n_shuffle
+
+
+def excess_peak(ex):
+    k = int(np.argmax(ex))
+    sl = slice(max(k - 6, 0), k + 7)
+    p = np.polyfit(X_GRID[sl], ex[sl], 2)
+    return float(-p[1] / (2 * p[0])) if p[0] < 0 else np.nan
+
+
+def early_step(out: Path, n_boot: int = 8) -> pd.DataFrame:
+    """The source x against ToF by the excess peak (background-robust; the band
+    crossing fails below ~10 ms), with two calibrations:
+      mix     late data mixed with a copy of itself moved +10 mm (identical
+              kernel): the peak's response to a second source near x = 0, i.e.
+              where a beam centred on the frame would put its own captures if
+              the capsule sat 10 mm off it;
+      bg      late data diluted by the 1-2 ms tracks (background-dominated) to
+              the early purity: what background alone does to the peak."""
+    d = load_data()
+    rng = np.random.default_rng(0)
+    rows = []
+    for arm, g in d.groupby('arm'):
+        for lo, hi in EARLY_BINS:
+            s = g[(g.ms >= lo) & (g.ms < hi)]
+            pos, disp = s.pos.to_numpy(), s.disp.to_numpy()
+            pk = excess_peak(excess_profile(pos, disp, rng))
+            bs = []
+            for b in range(n_boot):
+                i = rng.integers(0, len(s), len(s))
+                bs.append(excess_peak(excess_profile(pos[i], disp[i], rng, n_shuffle=2)))
+            xc = CT.crossing(s.pos, s.disp)
+            rows.append(dict(arm=arm, kind='data', lo=lo, hi=hi, n=len(s), peak_x=pk, peak_err=float(np.nanstd(bs)),
+                             band_x=xc[0], band_err=xc[1]))
+        late = g[g.ms >= 20]
+        a = late.sample(150_000, random_state=1)
+        b = late.drop(a.index).sample(150_000, random_state=2)
+        for f in (0.0, 0.1, 0.2, 0.3, 0.5, 0.7, 1.0):
+            nb = int(f * 100_000)
+            M = pd.concat([a.iloc[:100_000 - nb], b.iloc[:nb].assign(pos=lambda t: t.pos + 10.0)])
+            rows.append(dict(arm=arm, kind='mix', frac_at_plus10=f,
+                             peak_x=excess_peak(excess_profile(M.pos.to_numpy(), M.disp.to_numpy(), rng))))
+        bg = g[(g.ms >= 1) & (g.ms < 2)]
+        M = pd.concat([a.iloc[:40_000], bg])
+        rows.append(dict(arm=arm, kind='bg', peak_x=excess_peak(excess_profile(M.pos.to_numpy(), M.disp.to_numpy(), rng)),
+                         peak_ref=excess_peak(excess_profile(a.pos.to_numpy(), a.disp.to_numpy(), rng))))
+    R = pd.DataFrame(rows)
+    R.to_csv(out / 'early.csv', index=False)
+    return R
+
+
+IMG_X = np.arange(-60.0, 41.0, 4.0)
+IMG_H = np.arange(-240.0, 201.0, 20.0)
+
+
+def image_step(out: Path) -> pd.DataFrame:
+    """2D pointing image at the axis plane: (x, height) of every line minus the
+    shuffled-angle null (x and y angles shuffled together), per ToF window.
+    A beam-line source (e.g. 14N captures in the air column) would show as a
+    vertical ridge at the beam's x; the capsule as a compact spot."""
+    d = load_data()
+    rng = np.random.default_rng(0)
+    rows = []
+    for arm, g in d.groupby('arm'):
+        for name, (lo, hi) in (('beam', (4.0, 12.0)), ('mid', (12.0, 20.0)), ('late', (30.0, 75.0))):
+            s = g[(g.ms >= lo) & (g.ms < hi)]
+            pos, disp = s.pos.to_numpy(), s.disp.to_numpy()
+            p0y, dy = s.p0_y.to_numpy(), (s.hgt - s.p0_y).to_numpy()
+            H = np.histogram2d(p0y + dy, pos + disp, [IMG_H, IMG_X])[0]
+            H0 = np.zeros_like(H)
+            for _ in range(4):
+                k = rng.permutation(len(s))
+                H0 += np.histogram2d(p0y + dy[k], pos + disp[k], [IMG_H, IMG_X])[0]
+            E = (H - H0 / 4) / len(s)
+            for i in range(len(IMG_H) - 1):
+                for j in range(len(IMG_X) - 1):
+                    rows.append(dict(arm=arm, window=name, h=0.5 * (IMG_H[i] + IMG_H[i + 1]),
+                                     x=0.5 * (IMG_X[j] + IMG_X[j + 1]), excess=E[i, j]))
+    R = pd.DataFrame(rows)
+    R.to_csv(out / 'image.csv', index=False)
+    return R
+
+
+def alternatives_step(out: Path) -> pd.DataFrame:
+    """What a beam centred on the chamber frame predicts, against the beam on
+    the capsule: the source x and y for the capsule off a centred beam, as a
+    function of the illuminating flux's width (Lambda2D x width_scale), and the
+    same widths centred on the capsule."""
+    rows = []
+    cases = [(f'beam at 0, capsule at {xc:+.1f}', dict(NOMINAL, x_c=xc), ws)
+             for xc in (-10.3, -13.0) for ws in (1, 2, 3, 5, 10)]
+    cases += [('beam on the capsule axis', NOMINAL, ws) for ws in (1, 2, 3, 5, 10)]
+    for lab, pose, ws in cases:
+        for win in ('late', 'beam'):
+            C, fr = beam_captures(pose, n=150_000, window=WINDOWS[win], width_scale=ws)
+            r = dict(case=lab, x_c=pose['x_c'], width_scale=ws, window=win, **fr)
+            for arm in ('A', 'C'):
+                e = estimators(toy_tracks(arm, C, n=50_000), per_height=False)
+                r[f'x_cross_{arm}'], r[f'y_cross_{arm}'] = e['x_cross'], e['y_cross']
+            rows.append(r)
+            print(lab, ws, win, round(r['x_cross_A'], 1), round(r['y_cross_A'], 1), flush=True)
+    R = pd.DataFrame(rows)
+    R.to_csv(out / 'alternatives.csv', index=False)
+    return R
+
+
+def halo_step(out: Path) -> pd.DataFrame:
+    """A Lambda2D beam centred on the frame with the capsule so far off that
+    only the beam's tail reaches it (alternatives.csv columns)."""
+    rows = []
+    for xc in (-15.0, -17.5, -20.0):
+        for win in ('late', 'beam'):
+            C, fr = beam_captures(dict(NOMINAL, x_c=xc), n=400_000, window=WINDOWS[win])
+            r = dict(case=f'beam at 0, capsule at {xc:+.1f} (tail-lit)', x_c=xc, width_scale=1, window=win, **fr)
+            for arm in ('A', 'C'):
+                e = estimators(toy_tracks(arm, C, n=40_000), per_height=False)
+                r[f'x_cross_{arm}'], r[f'y_cross_{arm}'] = e['x_cross'], e['y_cross']
+            rows.append(r)
+    R = pd.DataFrame(rows)
+    R.to_csv(out / 'halo.csv', index=False)
+    return R
+
+
 def tof_step(out: Path) -> pd.DataFrame:
     """Background-subtracted y crossing against ToF (A, C)."""
     d = load_data()
@@ -724,14 +898,15 @@ def tof_step(out: Path) -> pd.DataFrame:
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split('\n')[1])
     ap.add_argument('step', nargs='?', default='all',
-                    choices=['beam', 'closure', 'data', 'tof', 'shear', 'scan', 'fit', 'all'])
+                    choices=['beam', 'closure', 'data', 'tof', 'shear', 'early', 'image', 'alternatives', 'halo', 'scan', 'fit', 'all'])
     a = ap.parse_args()
     out = paths.out('capsule_pose')
     out.mkdir(parents=True, exist_ok=True)
     pd.set_option('display.width', 250)
     pd.set_option('display.max_columns', 40)
     steps = (('beam', beam_step), ('closure', closure_step), ('data', data_step), ('tof', tof_step),
-             ('shear', shear_step), ('scan', scan_step), ('fit', fit_step))
+             ('shear', shear_step), ('early', early_step), ('image', image_step),
+             ('alternatives', alternatives_step), ('halo', halo_step), ('scan', scan_step), ('fit', fit_step))
     for name, fn in steps:
         if a.step in (name, 'all'):
             print(f'\n== {name}\n{fn(out).round(3).to_string(index=False)}', flush=True)

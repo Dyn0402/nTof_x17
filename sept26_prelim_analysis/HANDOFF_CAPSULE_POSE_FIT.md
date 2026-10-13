@@ -9,37 +9,35 @@ Read first:
 - `HANDOFF_CAPSULE_Y.md` (the earlier capsule-height work and its trap list).
 - CLAUDE.md: "Take positions from pointing, not from the shape of a distribution".
 
-> ## Outcome — run 2026-10-13 (evening). Read this first.
+> ## Outcome — 2026-10-13 (evening), revised the same night. Read this first.
 >
-> Code `capsule_pose.py` (beam / closure / data / tof / shear / scan / fit), report
-> `make_capsule_pose_report.py` → `<out>/capsule_pose/report.html`; one slide (`pose`) in
-> `make_same_chamber_deck.py`.
+> Code `capsule_pose.py` (beam / closure / data / tof / shear / early / image / alternatives / halo / scan / fit),
+> report `make_capsule_pose_report.py` → `<out>/capsule_pose/report.html`; deck slide `pose`.
 >
-> - **Toy closes on Geant4** to 0.4 mm in x and y (Geant4's own error 0.37), but only after adding neutron
->   *scattering* along each ray (CFRP 1.5 /cm, tuned on the Geant4 radius distribution of Al captures; Al
->   1.4 b). Without it barrel-grazing captures were 2× Geant4's. Tracks are Geant4 g4_digi tracks translated
->   from their capture point to the toy's, so kinematics and reco are Geant4's.
-> - **The beam meets the capsule on its nose.** Late (≥ 20 ms) y crossings, mirrored: A −31.3, C −34.6 mm;
->   flat from 20 to 75 ms. The toy at the Geant4 pose gives −28.6 / −29.4, so a beam on the axis needs the
->   capsule ~4 mm lower than Geant4 (A−C 3.3 mm still open). Isotropic illumination would give +5…+8.
-> - **The x crossing measures the beam, not the capsule axis**: beam at x −10.3, z −3.6 mm (chamber frame).
->   It moves < 1 mm for any offset up to 10 mm.
-> - **The beam–capsule offset is NOT determined.** The y crossing is degenerate with the (unmeasured) capsule
->   height, and a tilt with the nose toward the beam keeps the nose in the beam at any offset. Untilted, d = 10
->   (Dylan's hypothesis, nose out) needs the capsule ~25 mm lower than drawn. **What is bounded are the
->   consequences:** with the capsule within ±5 mm of the Geant4 placement, ≥ 87 % of the beam enters the ³He,
->   ≤ 4 % of Al captures are on the barrel, and the nose tip is ≤ 8 mm from the beam axis. At ±10 mm anything goes.
-> - **The pose does not explain the 1 : 8.** Untilted d = 10 keeps Al captures per neutron at 0.95× nominal
->   (barrel grazing replaces the nose) while the ³He share falls to 0.45. A ×8 cut needs the capsule mostly off the beam.
-> - **The x-vs-height "shear" is a step, not a slope**: ~4 mm toward −x for tracks pointing above the nose.
->   Against a point-like nose source through Geant4 that is a 3.6σ hint (combined A, C) of a second, higher
->   source at more negative x. It is limited by the Geant4 library (~10 k tracks/arm). It is not a capsule tilt
->   (the ±25 mm height spread is kinematics) and not an in-plane rotation (that would be linear).
-> - **Earlier windows read lower** (bg-subtracted 4–6 ms: −39 A / −45 C). No pose moves the beam window *down*
->   relative to the late one, so this is an unsubtracted beam-line source below the capsule, not pose.
-> - **Not done:** B/D modelling (z from campaign crossings, uncorrected); a Geant4 run with a fitted pose (no pose
->   to fit). **Needed from Dylan:** the capsule tip height against the chamber mid-plane (it turns the scan into a
->   measurement of d), the stage-3 y fix, optionally a 10× g4_digi sample for the step.
+> - **Model.** Rays get an energy from the EAR2 Phase-3 flux in the window and a radius from that energy's Lambda2D row
+>   (the Geant4 gun's recipe), capture ∝ 1/v. Neutron scattering in the CFRP/Al is needed for closure (without it barrel
+>   grazing is 2× Geant4). Al captures by radius then match Geant4 bin by bin; crossings close to 0.4 mm. Tracks are
+>   g4_digi tracks translated to the toy capture points.
+> - **Measured: one compact source** at x −10.3, z −3.6 mm (chamber frame), at the nose height (−31.3 A / −34.6 C,
+>   mirrored). Same x from 2 to 75 ms (pointing-excess peak; the band crossing is unusable below ~10 ms), in every run,
+>   before and after the 27 July access. A and C agree although their u axes are opposite, so only a *common* shift of
+>   the A–C pair against the beam could fake it; same for B–D in z.
+> - **RETRACTED: "the beam is at x −10.3".** The source is where the illuminating flux meets Al. A compact nose source
+>   needs a narrow flux centred within ~8 mm of the nose (capsule within ±5 mm of its drawn height). Every Lambda2D-like
+>   beam centred on the frame that reaches x ≈ −10 (capsule 13–18 mm off; flux ×10 wider; tail-lit) puts the source
+>   14–25 mm too high and leaves 1–15 % of the beam on the ³He. The direct-beam window shows no source near x = 0
+>   (2σ: ≤ 34 % A / 10 % C at 4–6 ms, ≤ 5 % at 6–12 ms), but the direct-beam share of those tracks is unknown: the
+>   after-the-flux late population images the same spot, which an isotropic hall flux would not (y +5…+8).
+> - **Two readings, not separable with these data:** (1) the flux is centred on the capsule ~10 mm toward B / 4 mm
+>   toward C from the frame centre, i.e. the beam is not where the frame says or the frame is not where it was aligned
+>   (Dylan: centred to mm; survey positions in run_config). Capsule ~4 mm below drawn; ≥ 85 % of the beam on the ³He.
+>   (2) The beam is centred as aligned and the capsule is 13–18 mm off it and ≥ 14 mm lower than drawn, lit by a
+>   broader-than-Lambda2D beam or its tail; ³He yield 1–15 % of nominal.
+> - **Not discriminating:** the height shape (the uncalibrated y scale absorbs it), the scintillators (they share the
+>   structure), the 2D pointing image (no beam-line ridge, e.g. ¹⁴N in air, is visible at any x).
+> - **x vs height step** ~4 mm, 3.6σ vs a point source (Geant4-library-limited): hint of a second, higher source.
+> - **Needed:** how the beam centring was done and against what; the capsule tip height and its holder; the beam spot
+>   at the station (collimator, distance, halo beyond Lambda2D's 3 cm). The stage-3 y fix is separate.
 
 ---
 
