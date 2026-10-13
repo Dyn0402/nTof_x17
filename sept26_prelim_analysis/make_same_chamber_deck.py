@@ -43,6 +43,7 @@ G4C = PURPLE
 SC = paths.out('same_chamber')
 CT = paths.out('capsule_tof')
 IMG = paths.out('imaging_campaign')
+POSE = paths.out('capsule_pose')
 SCINT_EM = Path('/media/dylan/data/x17/scint_stack/ana/eff_map.parquet')
 D_PLANE = 234.6
 SIGMA_TAN = 0.028          # pooled cosmic-truth core resolution, |tan| 0.08-0.4
@@ -69,6 +70,9 @@ def load():
               'cmp_late_vertex'):
         A[n] = rd(SC, n)
     A['img'] = rd(IMG, 'per_arm').set_index('arm')
+    A['pose_fit'] = rd(POSE, 'fit')
+    A['pose_bound'] = rd(POSE, 'bound').set_index('height_prior_mm')
+    A['pose_data'] = rd(POSE, 'data')
     return A
 
 
@@ -553,6 +557,57 @@ mm, at the nose. The stage-3 fix is pending (Dylan's call); a pose fit is handed
     D.slide('yflip', body, notes, foot='tilt: capsule_tof tilt (tilt.csv) · liquids: ntof_scint_stack eff_map, liq_full, all_late')
 
 
+def s_pose(D, A, N):
+    F, B = A['pose_fit'], A['pose_bound']
+    late = A['pose_data'][A['pose_data'].window == 'late'].set_index('arm')
+    P = sd.Plot(800, 560, x=(0, 14), y=(-50, 8), xlabel='beam offset from the capsule axis, d (mm)',
+                ylabel='capsule move needed (mm)', title='to keep the source at the data height')
+    P.xticks([(v, str(v)) for v in (0, 2, 4, 6, 8, 10, 12, 14)])
+    P.yticks([(v, str(v)) for v in (-50, -40, -30, -20, -10, 0)])
+    P.band([0, 14], [-5, -5], [5, 5], GREY, alpha=0.18, tip='±5 mm of the Geant4 placement')
+    for (th, ph), col, lab in (((0, 0), INK, 'untilted'), ((10, 0), PURPLE, '10°, nose away from beam'),
+                               ((10, 180), ORANGE, '10°, nose toward beam')):
+        g = F[(F.theta == th) & (F.phi == ph)].sort_values('d')
+        P.line(list(g.d), list(g.dy_c), col, tips=[f'{lab}, d = {d:g} mm: move {v:+.1f} mm, ³He share {q:.2f}, '
+                                                   f'barrel {b:.0%}' for d, v, q, b in
+                                                   zip(g.d, g.dy_c, g.gas, g.al_barrel)])
+    P.text(0.3, 4, '±5 mm of the Geant4 placement: grey', 18, MUT)
+    P.text(0.3, -44, 'purple: nose away (hypothesis) · orange: nose toward', 18, MUT)
+    g = F[F.theta == 0].sort_values('d')
+    a0 = float(g.al_per_ray.iloc[0])
+    P2 = sd.Plot(760, 560, x=(0, 14), y=(0, 1.1), xlabel='d (mm), untilted', ylabel='fraction',
+                 title='what the offset changes')
+    P2.xticks([(v, str(v)) for v in (0, 2, 4, 6, 8, 10, 12, 14)])
+    P2.yticks([(v, f'{v:.1f}') for v in (0, 0.2, 0.4, 0.6, 0.8, 1.0)])
+    P2.line(list(g.d), list(g.gas), BLUE, tips=[f'd {d:g}: {v:.0%} of the beam into the ³He' for d, v in zip(g.d, g.gas)])
+    P2.line(list(g.d), list(g.al_per_ray / a0), INK, tips=[f'd {d:g}: Al captures ×{v:.2f}' for d, v in
+                                                           zip(g.d, g.al_per_ray / a0)])
+    P2.line(list(g.d), list(g.al_barrel), RED, tips=[f'd {d:g}: {v:.0%} of Al captures on the barrel' for d, v in
+                                                     zip(g.d, g.al_barrel)])
+    P2.text(0.3, 0.08, 'blue ³He share · black Al captures / neutron · red barrel share', 17, MUT)
+    b5, b10 = B.loc[5], B.loc[10]
+    body = (sd.title('The beam meets the capsule on the nose; how far the centre is off depends on its height',
+                     f'capsule_pose: ray trace through the STEP polycones × Geant4 tracks, y mirrored; late data '
+                     f'{late.loc["A", "y_cross"]:+.1f} (A) / {late.loc["C", "y_cross"]:+.1f} (C) mm')
+            + sd.row(P.svg('height needed'), P2.svg('consequences'), gap=56))
+    notes = f"""
+<p><b>Model.</b> Beam rays (Lambda2D profile, flux × 1/v) walked through the posed capsule; Al captures Σ ds,
+scattering removes neutrons, the ³He is black. Geant4 nose-first tracks through the real reconstruction are translated
+from their capture point to the toy's, and the data's band crossings applied. It closes on Geant4 to 0.4 mm in x and y,
+after adding neutron scattering in the dome's CFRP (without it barrel grazing was 2× Geant4's).</p>
+<p><b>Read-out.</b> The x crossing follows the beam, not the capsule axis: the beam is at x {F[(F.d == 0) & (F.theta == 0)].x_beam.iloc[0]:+.1f},
+z {F.z_beam.iloc[0]:+.1f} mm. The height climbs once the beam grazes the 0.6 mm barrel. Keeping it at the data's value
+needs the capsule ~25 mm lower than drawn at d = 10, untilted. A tilt with the nose toward the beam brings the nose back
+into it at any d, so d itself is not bounded. If the capsule is within ±5 mm of the Geant4 placement, ≥ {b5.gas_min:.0%} of
+the beam enters the ³He and ≤ {b5.barrel_max:.0%} of Al captures are on the barrel; at ±10 mm anything goes.</p>
+<p><b>Pairs.</b> At d = 10 (untilted) Al captures per neutron stay at ×{float(g[g.d == 10].al_per_ray.iloc[0]) / a0:.2f}:
+barrel grazing replaces the nose. A ×8 cut needs the capsule mostly out of the beam. The pose does not explain the 1 : 8.</p>
+<p><b>Shear.</b> The x crossing steps ~4 mm toward −x for tracks pointing above the nose. Against a point-like nose
+source through Geant4 that is a ~3.6σ hint of a second, higher source (library-limited); not a tilt, not a rotation.
+Report: <code>&lt;out&gt;/capsule_pose/report.html</code>.</p>"""
+    D.slide('pose', body, notes, foot='capsule_pose fit.csv / bound.csv (scan: d 0–14 mm, tilt 0–20° both senses, late window)')
+
+
 def s_expect(D, A, N):
     S = A['sep_loss']
     rows = []
@@ -670,8 +725,8 @@ def s_close(D, A, N):
     left = ('<ul style="font-size:27px;line-height:1.35;color:#eef0f3;padding-left:28px">'
             + li('The 1 : 8 rate is still unexplained. The late data are as capsule-pure as Geant4, the expectation '
                  'already pays for opening angle and close-pair loss, and the transverse offset costs percent.')
-            + li('The ~3° shear could be a capsule tilt or a common in-plane rotation of A and C; A–C cosmics '
-                 'cannot tell them apart.')
+            + li('The x-vs-height step (~4 mm) is a ~3.6σ hint of a second, higher source; a 10× Geant4 '
+                 'digitised sample would settle it.')
             + li('Late capsule captures are delayed neutrons, not the simulated beam. If they land elsewhere on '
                  'the capsule than beam neutrons do, the Al thickness around them, and so the conversion yield '
                  'per trigger, differs from Geant4.')
@@ -682,8 +737,8 @@ def s_close(D, A, N):
              + li('Re-digitise the Geant4 pairs with is2_v2 (two-sided search, t0 ≤ 300, |tan| &lt; 0.6 on both legs).')
              + li('Geant4 with delayed thermal neutrons on the capsule (isotropic or from below) to get the '
                   'pairs-per-trigger of the late population.')
-             + li('Fit the capsule pose in the beam (handoff written 10-13): beam half off the capsule would put '
-                  'captures on the thin barrel wall and cut pairs per trigger.') + '</ol>')
+             + li('Measure the capsule tip height against the chamber mid-plane: it is the one number that turns '
+                  'the pose scan into a beam–capsule offset (capsule_pose: nose hit; offset degenerate with height).') + '</ol>')
     body = (sd.title('<span style="color:#eef0f3">What this does not rule out, and what to do next</span>')
             + sd.row(sd.col(sd.p('not ruled out', 26, DMUT), left, w=820),
                      sd.col(sd.p('next', 26, DMUT), right, w=780), gap=56))
@@ -695,7 +750,8 @@ def build(out: Path) -> Path:
     N = numbers(A)
     D = sd.Deck('Same-chamber pairs vs Geant4',
                 'time window, vertexing, capsule position and opening angle of the same-chamber pairs')
-    for f in (s_cover, s_tof, s_early, s_scatter, s_vertex, s_capsule, s_yflip, s_expect, s_opening, s_close):
+    for f in (s_cover, s_tof, s_early, s_scatter, s_vertex, s_capsule, s_yflip, s_pose, s_expect, s_opening,
+              s_close):
         f(D, A, N)
     out.parent.mkdir(parents=True, exist_ok=True)
     D.write(out, note_meta=dict(

@@ -295,3 +295,13 @@ vertex_truthline.csv, sep_loss.csv`).
   u; with the plastic PMTs on top that is the far end. (3) Liquid B firing ×2 toward stored −v (PMT up); horizontal A/D
   answer 10–20× at their +u PMT side (control). Liquid timing is too noisy to use. Plus the wiring, Geant4's nose and the
   July hits result. Nothing points the other way.
+
+- **Capsule pose fit (10-13 evening, `capsule_pose.py`, report `<out>/capsule_pose/report.html`, deck slide `pose`).**
+  The beam meets the capsule on the **nose** (late y crossings −31.3 A / −34.6 C, flat 20–75 ms; toy at the Geant4
+  pose −28.6 / −29.4). The x crossing measures the beam: x −10.3, z −3.6 mm. The beam–capsule offset is degenerate
+  with the unmeasured capsule height (untilted d = 10 needs the capsule ~25 mm low) and with tilt. If the capsule
+  is within ±5 mm of the Geant4 placement, ≥ 87 % of the beam enters the ³He and ≤ 4 % of Al captures are on the
+  barrel. **The pose does not explain the 1 : 8**: d = 10 keeps Al captures per neutron at 0.95×. The x-vs-height
+  step (~4 mm) is a 3.6σ, library-limited hint of a second, higher source. Needed: the capsule tip height
+  (survey), the stage-3 y fix.
+

@@ -9,6 +9,38 @@ Read first:
 - `HANDOFF_CAPSULE_Y.md` (the earlier capsule-height work and its trap list).
 - CLAUDE.md: "Take positions from pointing, not from the shape of a distribution".
 
+> ## Outcome — run 2026-10-13 (evening). Read this first.
+>
+> Code `capsule_pose.py` (beam / closure / data / tof / shear / scan / fit), report
+> `make_capsule_pose_report.py` → `<out>/capsule_pose/report.html`; one slide (`pose`) in
+> `make_same_chamber_deck.py`.
+>
+> - **Toy closes on Geant4** to 0.4 mm in x and y (Geant4's own error 0.37), but only after adding neutron
+>   *scattering* along each ray (CFRP 1.5 /cm, tuned on the Geant4 radius distribution of Al captures; Al
+>   1.4 b). Without it barrel-grazing captures were 2× Geant4's. Tracks are Geant4 g4_digi tracks translated
+>   from their capture point to the toy's, so kinematics and reco are Geant4's.
+> - **The beam meets the capsule on its nose.** Late (≥ 20 ms) y crossings, mirrored: A −31.3, C −34.6 mm;
+>   flat from 20 to 75 ms. The toy at the Geant4 pose gives −28.6 / −29.4, so a beam on the axis needs the
+>   capsule ~4 mm lower than Geant4 (A−C 3.3 mm still open). Isotropic illumination would give +5…+8.
+> - **The x crossing measures the beam, not the capsule axis**: beam at x −10.3, z −3.6 mm (chamber frame).
+>   It moves < 1 mm for any offset up to 10 mm.
+> - **The beam–capsule offset is NOT determined.** The y crossing is degenerate with the (unmeasured) capsule
+>   height, and a tilt with the nose toward the beam keeps the nose in the beam at any offset. Untilted, d = 10
+>   (Dylan's hypothesis, nose out) needs the capsule ~25 mm lower than drawn. **What is bounded are the
+>   consequences:** with the capsule within ±5 mm of the Geant4 placement, ≥ 87 % of the beam enters the ³He,
+>   ≤ 4 % of Al captures are on the barrel, and the nose tip is ≤ 8 mm from the beam axis. At ±10 mm anything goes.
+> - **The pose does not explain the 1 : 8.** Untilted d = 10 keeps Al captures per neutron at 0.95× nominal
+>   (barrel grazing replaces the nose) while the ³He share falls to 0.45. A ×8 cut needs the capsule mostly off the beam.
+> - **The x-vs-height "shear" is a step, not a slope**: ~4 mm toward −x for tracks pointing above the nose.
+>   Against a point-like nose source through Geant4 that is a 3.6σ hint (combined A, C) of a second, higher
+>   source at more negative x. It is limited by the Geant4 library (~10 k tracks/arm). It is not a capsule tilt
+>   (the ±25 mm height spread is kinematics) and not an in-plane rotation (that would be linear).
+> - **Earlier windows read lower** (bg-subtracted 4–6 ms: −39 A / −45 C). No pose moves the beam window *down*
+>   relative to the late one, so this is an unsubtracted beam-line source below the capsule, not pose.
+> - **Not done:** B/D modelling (z from campaign crossings, uncorrected); a Geant4 run with a fitted pose (no pose
+>   to fit). **Needed from Dylan:** the capsule tip height against the chamber mid-plane (it turns the scan into a
+>   measurement of d), the stage-3 y fix, optionally a 10× g4_digi sample for the step.
+
 ---
 
 ## 1 · The question
