@@ -1,5 +1,45 @@
 # Handoff
 
+## Capsule pose in the beam — updated 2026-10-13 (dylan-MS-7C84)
+
+**Resume:** source on the nose sits ~10 mm off the frame centre; get Dylan's hardware answers, then decide reading 1 vs 2.
+
+**Goal:** where the ³He capsule is relative to the beam and the chambers (it sets the ³He/IPC/X17 yield and feeds the 1 : 8
+pair-rate question). Handoff that started it: `sept26_prelim_analysis/HANDOFF_CAPSULE_POSE_FIT.md` (Outcome box = current state).
+
+**Done:**
+- `capsule_pose.py`: ray trace through the STEP polycones (Al, CFRP, black ³He, neutron scattering) × Geant4 g4_digi tracks
+  translated to toy capture points × the data's estimators. Beam = per-ray E from the EAR2 Phase-3 flux, r from that E's
+  Lambda2D row (Geant4 gun recipe). Closes on Geant4 (crossings 0.4 mm; Al captures by radius bin-by-bin).
+- Measured: ONE compact source at frame x −10.3, z −3.6, nose height (−31.3 A / −34.6 C, y mirrored), same x 2–75 ms
+  (shuffled-null pointing-excess peak; calibrated 1.0 mm per 10 % of a second source 10 mm away), every run, pre/post access.
+- "The beam is at x −10.3" was claimed, challenged by Dylan (beam centred between detectors to mm) and RETRACTED in report,
+  handoff, deck, COORDINATES.md and memory.
+- Two readings remain: (1) beam on the capsule, both ~10 mm off the frame centre (≥ 85 % of beam on ³He);
+  (2) beam centred, capsule 13–18 mm off and ≥ 14 mm below drawn (³He share 1–15 %). Lambda2D beam at 0 never fits at drawn height.
+- Report `<out>/capsule_pose/report.html`; slide note https://dylan-neff.web.cern.ch/notes/capsule-pose.html
+  (`make_capsule_pose_deck.py`); slide `pose` in the same-chamber note.
+
+**In progress / where it stopped:** nothing running; all products regenerated and committed (df37cd0 on main).
+
+**Next steps:**
+1. Get from Dylan: how the beam centring was done and against what; capsule tip height vs chamber mid-plane and how the
+   capsule is held (a holder at the nose?); beam spot at the station (collimator, distance, halo > 3 cm); a photo/survey.
+2. With those, fix the pose and redo the bound (`capsule_pose fit`) and consequences (³He share, Al nose/barrel split).
+3. Open puzzle: the ≥ 28 ms (after-the-flux) tracks image the nose like a narrow beam; an isotropic hall flux would give y +5.
+4. Optional: 10× g4_digi sample to settle the 3.6σ x-vs-height step (second, higher source?).
+
+**Gotchas / decisions:**
+- The capture source is where the illuminating flux meets Al, not the beam. Never quote it as the beam position.
+- Band crossing is unusable < 10 ms (background); use the excess peak there. A–C agreement only excludes per-chamber errors.
+- Height shape/width cannot discriminate (uncalibrated y scale absorbs it). Scint wall shares the structure — no frame test.
+- Data are y-mirrored on load (`load_data`); after the stage-3 y fix (HANDOFF_Y_FLIP_FIX.md) remove that mirror.
+
+**Key files & commands:**
+- `sept26_prelim_analysis/capsule_pose.py` — `python -m sept26_prelim_analysis.capsule_pose all` (scan ≈ 15 min)
+- `make_capsule_pose_report.py`, `make_capsule_pose_deck.py` (then `add-note.py … --slug capsule-pose --force --deploy`)
+- outputs `/media/dylan/data/x17/sept26_prelim/capsule_pose/`
+
 ## Same-chamber pairs + the y mirror — updated 2026-10-13 (dylan-MS-7C84)
 
 **Resume:** stage-3 y is mirrored; do HANDOFF_Y_FLIP_FIX.md (fix + audit) before more height work; pairs 1:8 still open.
