@@ -15,6 +15,7 @@ Speaker notes on both new slides carry the numbers and their provenance.
 
 ```bash
 bash ntof_italy_26/tools/make_figures.sh          # figures from dylan-cern-site notes + facility search
+.venv/Scripts/python.exe ntof_italy_26/make_lnl_plots.py   # the two linear LNL plots (n_TOF Plan A in the bars)
 .venv/Scripts/python.exe ntof_italy_26/make_italy_deck.py --src ntof_athens_26/slides/neff_x17_ntof_athens_26.pptx
 ```
 

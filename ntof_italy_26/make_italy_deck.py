@@ -140,6 +140,28 @@ def text(slide, x, y, w, h, paras, name, anchor=MSO_ANCHOR.TOP, align=PP_ALIGN.L
     return tb
 
 
+def bullets(slide, x, y, w, h, items, name, space_after=6):
+    """Bulleted list (the Athens orange triangle), one paragraph per item."""
+    from pptx.oxml.ns import qn
+    tb = text(slide, x, y, w, h, items, name, space_after=space_after)
+    for p in tb.text_frame.paragraphs:
+        pPr = p._p.get_or_add_pPr()
+        pPr.set('marL', '228600')
+        pPr.set('indent', '-228600')
+        buClr = pPr.makeelement(qn('a:buClr'), {})
+        buClr.append(buClr.makeelement(qn('a:srgbClr'), {'val': 'EB811B'}))
+        pPr.append(buClr)
+        pPr.append(pPr.makeelement(qn('a:buChar'), {'char': '▸'}))
+    return tb
+
+
+def crop_caption(src, dst, frac=0.12):
+    """The to-scale drawings carry their own caption line at the bottom; drop it."""
+    im = Image.open(src)
+    W, H = im.size
+    im.crop((0, int(0.06 * H), W, int((1 - frac) * H))).save(dst)
+
+
 def picture(slide, path, x, y, w=None, h=None, name=None):
     W, H = Image.open(path).size
     if w is not None and h is None:
@@ -174,40 +196,23 @@ def s_al(prs, template):
                        ('Plan A outlook bullets', 'TextBox 8'))
     set_frame(s, 'Plan C · What we found', 'The Al pairs are soft: few trigger, poor pointing', '24 / 27')
 
-    pic, w, h = picture(s, FIG / 'al_penetration.png', 0.6, 1.42, w=6.95, name='Al penetration plot')
-    y = 1.42 + h + 0.06
-    text(s, 0.6, y, 6.95, 0.42, [[
-        ('Geant4: a lepton from the capsule aimed at a plastic bar, by its energy. Shaded: leg spectra. '
-         'Al conversion legs have ~2 MeV at the gap; X17 legs 4–16 MeV.', 11, False, BODY)]], 'Al plot caption')
+    _, w, h = picture(s, FIG / 'al_vs_x17_stack.png', 0.6, 1.45, w=6.3, name='Al vs X17 in the stack')
+    picture(s, FIG / 'al_penetration.png', 7.15, 1.45, w=5.6, name='Al penetration plot')
 
-    cy = y + 0.55
-    card(s, 0.6, cy, 6.95, 7.02 - cy, 'Al outlook card')
-    text(s, 0.78, cy + 0.1, 6.6, 7.02 - cy - 0.2, [
-        [('Not a total loss: ', 14, True, ORANGE),
-         ('the double tracks are still there. A soft, close, same-chamber pair is the ', 13, False, INK),
-         ('hardest', 13, True, INK),
-         (' two-track case, so it tests the pair reconstruction. X17 legs (~10 MeV, opposite arms) are the easy one.',
-          13, False, INK)]], 'Al outlook text', anchor=MSO_ANCHOR.MIDDLE)
-
-    x0, wcol = 7.95, 4.8
-    blocks = [
-        ('11 %', ' vs 82 %', 'of leptons reach the trigger level: Al vs X17',
-         'Plastic ≥ 2.5 MeV. An Al pair fires the trigger itself only 8 % of the time (X17: 45 %); most are '
-         'recorded because a Compton electron of the same capture triggered.'),
-        ('~9°', ' → 33 mm', 'scattering on the way out spoils the pointing',
-         'A 2 MeV leg bends ~9° leaving the capsule and its line misses the vertex by 33 mm (an X17 leg: 9 mm). '
-         'Pairs pass a vertex test only at the chance rate (~2 %).'),
-        ('~3,700', ' pairs', 'correlated double tracks in the data',
-         '0.15 % of late events in A and C, flat while the rate falls ×3.5. Opening angle prefers Geant4 Al e⁺e⁻; '
-         'the rate is ~⅛ of the Geant4 expectation (under study).'),
-    ]
-    yb, step = 1.42, 1.88
-    for i, (big, small, label, detail) in enumerate(blocks):
-        yy = yb + i * step
-        text(s, x0, yy, wcol, 0.5, [[(big, 28, True, ORANGE, DISPLAY), (small, 18, True, ORANGE, DISPLAY)]],
+    stats = [('11 %', ' vs 82 %', 'of Al vs X17 leptons reach the trigger'),
+             ('33 mm', ' vs 9 mm', 'vertex miss per leg: Al vs X17 (scattering)'),
+             ('~3,700', '', 'correlated double tracks in the data')]
+    tw, gap, ys = 3.85, 0.3, 5.0
+    for i, (big, small, label) in enumerate(stats):
+        x = 0.6 + i * (tw + gap)
+        text(s, x, ys, tw, 0.5, [[(big, 28, True, ORANGE, DISPLAY), (small, 18, True, ORANGE, DISPLAY)]],
              f'Al stat {i + 1} number')
-        text(s, x0, yy + 0.52, wcol, 0.3, [[(label, 14, True, INK)]], f'Al stat {i + 1} label')
-        text(s, x0, yy + 0.84, wcol, 0.9, [[(detail, 11.5, False, BODY)]], f'Al stat {i + 1} detail')
+        text(s, x, ys + 0.55, tw, 0.3, [[(label, 13, False, INK)]], f'Al stat {i + 1} label')
+
+    card(s, 0.6, 6.2, 12.15, 0.78, 'Al outlook card')
+    text(s, 0.8, 6.2, 11.75, 0.78, [[('Not a total loss: ', 16, True, ORANGE),
+                                     ('the double tracks are there, and they are the hardest two-track case to test on',
+                                      16, False, INK)]], 'Al outlook text', anchor=MSO_ANCHOR.MIDDLE)
     notes(s, """The Al conversion pairs from the capsule are much softer than X17 legs: ~2 MeV at the drift gap against 4-16 MeV. Consequences:
 - Trigger: per lepton reaching a gap, 11 % of Al legs reach the plastic at trigger level (>= 2.5 MeV) against 82 % of X17 legs; 2.6 % vs 57 % reach the liquid. An Al pair can fire the trigger itself 7.7 % of the time (X17 pair: 45 %). Most recorded Al pairs ride on a Compton electron trigger from the same capture (76 % of trigger legs).
 - Pointing: p*beta*theta = 0.40 MeV rad; a median 2 MeV leg bends ~9 deg and misses the true vertex by 33 mm (X17 ~10 MeV: 2.3 deg, 9 mm). Same-chamber e+e- pass a DCA<30 mm vertex test at 2.3 % with perfect tracks, the event-mixed chance rate is 3.0 %.
@@ -251,59 +256,47 @@ def s_lnl(prs, template, num):
     set_frame(s, 'Outlook · LNL Legnaro', 'Next: repeat the ATOMKI measurement at LNL', '26 / 27')
     big, asb = num['cases']['big plastics|1'], num['cases']['as built|1']
 
-    # top left: what changes from n_TOF
-    rows = [['', 'n_TOF EAR2 2026 (ran)', 'LNL AN2000 / CN (proposed)'],
-            ['Reaction', 'n + ³He → ⁴He*', '⁷Li(p,e⁺e⁻)⁸Be: ATOMKI’s own'],
-            ['Precedent', 'none: a new channel', 'yes: ATOMKI 2016, Hanoi 2024'],
-            ['Beam', 'white n: the X17 edge moves 110°→66°', 'DC protons ~1.1 MeV: one edge, ~135°'],
-            ['Target', '500 bar capsule: σ₆₈ 14.5°', '1.5 µm Li₂O film: σ₆₈ 4.6°'],
-            ['Background', 'n capture on Al/C, 10⁴–10⁶ × ³He', 'the reaction’s own IPC (QED) + cosmics'],
-            ['Statistics', 'no X17 expected at thermals',
-             f'~{big["x17_per_day"]:.0f} X17 / day selected at 1 µA']]
-    table(s, 0.6, 1.40, 6.15, rows, [1.05, 2.45, 2.65], 'LNL vs nTOF table', size=10.5)
+    # top: the two facilities in two rows
+    rows = [['', 'n_TOF EAR2 2026', 'LNL AN2000 / CN'],
+            ['Reaction', 'n + ³He → ⁴He* → ⁴He e⁺e⁻', '⁷Li + p → ⁸Be* → ⁸Be e⁺e⁻'],
+            ['Beam', 'white neutron beam, meV – MeV', 'DC protons at one energy, E_p ≈ 1.1 MeV']]
+    table(s, 0.6, 1.38, 9.15, rows, [1.2, 3.75, 4.2], 'LNL vs nTOF table', size=12)
+    text(s, 0.6, 2.38, 9.15, 0.32, [[('ATOMKI’s own reaction, already measured', 13, True, PURPLE),
+                                     (' (ATOMKI 2016, Hanoi 2024): an independent re-measurement', 13, False, INK)]],
+         'LNL precedent')
 
-    # top right: 10 days of pairs
-    pic, w, h = picture(s, FIG / 'syst_spectra.png', 6.98, 1.36, w=5.77, name='LNL 10-day spectra')
-    text(s, 6.98, 1.36 + h + 0.03, 5.77, 0.42, [[
-        ('Statistics are plentiful; the fight is the background. ', 11, True, INK),
-        ('Geant4, 10 days at 1 µA, big plastics: S/B ≈ 8 %, so the background shape must be known to ~1 %. '
-         'An angle × energy-split × E_sum fit measures it from the signal-free regions.', 11, False, BODY)]],
-         'LNL spectra caption')
+    # the two plots, the main content
+    _, w, h = picture(s, FIG / 'lnl_rate_bars.png', 0.6, 2.8, h=4.25, name='X17 per day, n_TOF vs LNL')
+    picture(s, FIG / 'lnl_significance.png', 0.6 + w + 0.1, 2.8, h=4.25, name='LNL time to ATOMKI sensitivity')
 
-    # bottom left: rate and time to ATOMKI sensitivity
-    yb = 4.22
-    pic, w, h = picture(s, FIG / 'lnl_summary.png', 0.6, yb, w=6.15, name='LNL rate and significance')
-
-    # bottom right: big plastics card with the face-on arms to scale
-    cx, cw, ch = 6.98, 5.77, 1.98
-    card(s, cx, yb, cw, ch, 'Big plastics card', fill=WHITE, line=PURPLE)
-    hh = 1.62
-    _, w1, _ = picture(s, FIG / 'lnl_arm_ntof.png', cx + 0.1, yb + (ch - hh) / 2, h=hh, name='arm face-on, as built')
-    _, w2, _ = picture(s, FIG / 'lnl_arm_big.png', cx + 0.1 + w1 + 0.02, yb + (ch - hh) / 2, h=hh, name='arm face-on, big plastic')
-    tx = cx + 0.1 + w1 + w2 + 0.14
+    # right column: the big plastics, small, then the other options
+    rx, rw = 10.05, 2.7
+    text(s, rx, 1.38, rw, 0.3, [[('New: big plastics', 14, True, PURPLE)]], 'Big plastics head')
+    dw = (rw - 0.1) / 2
+    for k, (f, lab) in enumerate((('lnl_four_arms_ntof_crop.png', 'n_TOF: 20×30 bars'),
+                                  ('lnl_four_arms_big_crop.png', 'LNL: 75×75 plates'))):
+        _, _, dh = picture(s, FIG / f, rx + k * (dw + 0.1), 1.8, w=dw, name=f'four arms {k}')
+        text(s, rx + k * (dw + 0.1), 1.8 + dh + 0.02, dw, 0.22, [[(lab, 9, False, MUTE)]], f'four arms label {k}',
+             align=PP_ALIGN.CENTER)
     gain = num['pair_tag']['big plastics'] / num['pair_tag']['as built']
     ps = num['price_keur']['PS']['plates_keur']
-    text(s, tx, yb + 0.1, cx + cw - tx - 0.12, ch - 0.2, [
-        [('New: big plastics', 14, True, PURPLE)],
-        [('four 75 × 75 × 5 cm plates replace the 20 × 30 cm bars (red) and the liquid', 10.5, False, INK)],
-        [(f'×{gain:.0f}', 22, True, PURPLE, DISPLAY), (' trigger acceptance', 11, True, INK)],
-        [(f'{100 * num["pair_tag"]["as built"]:.1f} % → {100 * num["pair_tag"]["big plastics"]:.0f} % of X17 pairs', 10.5, False, INK)],
-        [(f'3σ in ~{big["days_3sigma"]:.0f} day, not ~{asb["days_3sigma"]:.0f}', 11, True, INK)],
-        [(f'≈ €{ps[1]:.0f}k (polystyrene, budgetary)', 10.5, False, BODY)],
-    ], 'Big plastics text', anchor=MSO_ANCHOR.MIDDLE, space_after=1)
+    text(s, rx, 3.15, rw, 0.95, [
+        [(f'×{gain:.0f}', 24, True, PURPLE, DISPLAY), (' trigger acceptance', 12, True, INK)],
+        [(f'3σ in ~{big["days_3sigma"]:.0f} day, not ~{asb["days_3sigma"]:.0f}', 11.5, False, INK)],
+        [(f'≈ €{ps[1]:.0f}k (budgetary)', 11.5, False, BODY)]], 'Big plastics text')
 
-    # bottom strip: the other facilities
-    text(s, cx, yb + ch + 0.1, cw, 7.05 - (yb + ch + 0.1), [
-        [('Also studied, all with neutrons on ³He: ', 10.5, True, INK),
-         ('ILL PF1B', 10.5, True, BODY), (' (cold beam; ~7× short of ATOMKI’s level in a 50-day cycle) · ', 10.5, False, BODY),
-         ('GANIL-NFS', 10.5, True, BODY), (' (fast n; sub-2 MeV flux unmeasured) · ', 10.5, False, BODY),
-         ('NCSR Demokritos', 10.5, True, BODY), (' (tandem MeV neutrons; first look).', 10.5, False, BODY)]],
-         'Other facilities', anchor=MSO_ANCHOR.MIDDLE)
+    text(s, rx, 4.55, rw, 0.3, [[('Other options, n + ³He', 14, True, INK)]], 'Other options head')
+    bullets(s, rx, 4.95, rw, 1.9, [
+        [('ILL PF1B', 11.5, True, INK), (': cold beam, ~7× short in a 50-day cycle', 11.5, False, BODY)],
+        [('GANIL-NFS', 11.5, True, INK), (': fast n, sub-2 MeV flux unmeasured', 11.5, False, BODY)],
+        [('Demokritos', 11.5, True, INK), (': tandem MeV neutrons, first look', 11.5, False, BODY)]],
+        'Other options')
     notes(s, f"""LNL: 7Li(p,e+e-)8Be at the 18.15 MeV resonance, the ATOMKI 2016 reaction, energy and target thickness (Li2O 300 ug/cm2, E_p = 1.04-1.10 MeV, 1 uA on the AN2000; ~4 uA on the CN). An exact re-measurement with an independent detector: the MX17 apparatus from n_TOF (Micromegas tracking points each lepton back to the target and rejects cosmics).
 Why it is a cleaner problem than n_TOF: no neutrons below E_p = 1.88 MeV, so no capture background; one proton energy fixes the X17 edge at 133-139 deg; a 1.5 um film instead of a 500 bar capsule (sigma68 4.6 deg vs 14.5 deg).
 Numbers (Geant4 of the full apparatus, calibrated n_TOF-anchored response, MM 15 deg + TOF, theta x |y| x E_sum fit with the background shape free, R = 5.8e-6, m = 16.7 MeV): of ~{big['produced_per_day']:.0f} X17 produced per day at 1 uA, {asb['x17_per_day']:.0f}/day selected with the n_TOF stack as built and {big['x17_per_day']:.0f}/day with big plastics (x{num['x17_gain']:.1f}). 3 sigma at the ATOMKI ratio: {asb['days_3sigma']:.0f} d as built (needs a repaired liquid scintillator) vs {big['days_3sigma']:.1f} d with big plastics; 5 sigma {big['days_5sigma']:.1f} d.
 The limit is signal/background, not statistics: one week at 1 uA with big plastics is ~750 X17 on ~10,700 IPC pairs in 130-172 deg. The energy split |y| takes S/B from 8 % to 19 %; the 3D fit measures the background shape in the signal-free parts of the plane. Open: scattering in the real LNL beam pipe and target chamber (3 sigma 1.0 -> 2.5 -> 6.8 d for sigma68 4.5 -> 9 -> 14 deg); bench-test a plate as a calorimeter.
 Big plastics: one 75x75x5 cm plate per arm replaces the two 20x30x2 cm bars and the liquid. Pairs triggered {100 * num['pair_tag']['as built']:.1f} % -> {100 * num['pair_tag']['big plastics']:.1f} % (x{num['trigger_gain']:.1f}). Price (trigger_scint/costs.py, budgetary, no labour/VAT): polystyrene plates EUR {ps[1]:.0f}k ({ps[0]:.0f}-{ps[2]:.0f}k), ~EUR {num['price_keur']['PS']['all_in_keur'][1]:.0f}k with the SiPM readout; PVT EUR {num['price_keur']['PVT']['plates_keur'][1]:.0f}k.
+Bar chart (make_lnl_plots.py): n_TOF Plan A = 33 X17/day produced at 0.1-10 MeV in the nominal 500 atm cell (mpgd26/data/x17_rate_3He.txt, X17/IPC = 2.5e-2, the Athens Plan A number), x 2.3 % both legs triggered for the n_TOF kinematics = 0.8/day. LNL = 920/day produced at R = 5.8e-6, 1 uA, x pair_tag 3.3 % (n_TOF stack) / 23 % (big plastics) = 30 / 213 per day. Each is "at the claimed strength" for its own nucleus, not the same coupling. Linear significance curves: Z = 3 sqrt(t / days_3sigma).
 Other facilities (x17_facility_search): ILL PF1B, cold beam, Geant4 done: one 50-day cycle reaches X17/IPC(M1) ~1.2e-2 at 3 sigma, ~7x short of the ATOMKI 8Be level. GANIL/SPIRAL-2 NFS: fast neutrons 1-40 MeV, the sub-2 MeV flux the physics wants is unmeasured. NCSR Demokritos: quasi-monoenergetic MeV neutrons from the tandem, first look only.
 Sources: x17_facility_search/lnl/FEASIBILITY_SIM.md, lnl/out/talk/numbers.json, lnl/out/syst/figures/syst_spectra.png; dylan-neff.web.cern.ch/notes/lnl-x17-feasibility.html (slides 3, 6, 8, 10).""")
     return s
@@ -326,6 +319,8 @@ def build(src: Path, out: Path):
     pairs_slide, planA, tmpl = S[41], S[42], S[42]
     assert 'sorting the pairs' in ''.join(sh.text_frame.text for sh in pairs_slide.shapes if sh.has_text_frame)
     assert 'Plan A after LS3' in ''.join(sh.text_frame.text for sh in planA.shapes if sh.has_text_frame)
+    for k in ('ntof', 'big'):
+        crop_caption(FIG / f'lnl_four_arms_{k}.png', FIG / f'lnl_four_arms_{k}_crop.png')
     num = json.loads((FIG / 'lnl_numbers.json').read_text(encoding='utf8'))
     al = s_al(prs, tmpl)
     lnl = s_lnl(prs, tmpl, num)
