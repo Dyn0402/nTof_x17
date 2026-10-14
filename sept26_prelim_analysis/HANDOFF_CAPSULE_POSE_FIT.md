@@ -39,8 +39,14 @@ Read first:
 >   the literature puts the beam on the pipe axis. So if the frame is centred on the pipe, the capsule is about
 >   16–18 mm off the beam axis and the ³He sees ~0.17–0.23 of the beam at 19.5 m.
 >   Report: `<out>/capsule_pose_ear2/report.html` (`make_pose2_report.py`).
+> - **Tilt azimuth: φ ≈ 135° (top toward −x and +z, i.e. toward B and A), 2026-10-14 afternoon.**
+>   `capsule_pose data_z` / `pose2z`: D's z crossing per height bin (production chain, wall-coincident, 25–75 ms; D is
+>   junk below 25 ms) rises ~4–5 mm from h −80 to 0, the same in every ToF slice ≥ 25 ms and every quarter of the runs.
+>   D's z for a pose = the A/C toy on the pose turned −90° about the beam. Best x+z χ²: 26 at φ 135, 34 at 180, 66 at 225.
+>   A ±3° in-plane rotation of D does not reorder them. B cannot test it (no drift field: its heights are smeared flat).
+>   Caveats: one chamber; the toy matches the sign of D's rise, not its shape below the nose; D also shifts with hit
+>   height on its plane (+30 mm/m), a D-specific effect. +z sign pinned by the arm layout (COORDINATES.md §1–2).
 > - **Not yet done:**
->   - B/D z-vs-height, to pin the tilt azimuth (φ 135 vs 225 = the z component's sign);
 >   - the 19.95 m beam;
 >   - more Geant4 track library, to tighten the shape χ²;
 >   - the late population's illumination. Direct beam at 20–75 ms is only 1.3 % of 4–12 ms in n_TOF's phase

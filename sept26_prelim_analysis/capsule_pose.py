@@ -70,7 +70,11 @@ from sept26_prelim_analysis import capsule_tof as CT
 
 G4ROOT = Path.home() / 'CLionProjects/MX17_Full_Geant'
 FLUX4 = Path(__file__).resolve().parents[1] / 'ear2_beam' / 'data' / 'Final_evaluated_flux_Phase4_EAR2.root'
-NOSE = Path('/media/dylan/data/x17/ntof_cosmics/g4_angle/neutrons_nose')
+#: the Geant4 track library: truth (reduce_gap_wall) and digitised reco.  The
+#: default is the July nose-first run (Lambda2D gun); POSE2_LIB=<tag> reads the
+#: real-EAR2-gun rerun, g4_angle/neutrons_<tag> and g4_digi/g4_<arm>_<tag>.
+LIB_TAG = os.environ.get('POSE2_LIB', '')
+NOSE = Path('/media/dylan/data/x17/ntof_cosmics/g4_angle') / (f'neutrons_{LIB_TAG}' if LIB_TAG else 'neutrons_nose')
 G4DIGI = CT.G4DIGI
 FLIGHT_M = CT.FLIGHT_M
 HALF = CT.HALF
@@ -351,7 +355,7 @@ def library(arm: str) -> pd.DataFrame:
     estimate cx, cy, cz in the chamber frame."""
     if arm in _LIB:
         return _LIB[arm]
-    parts = sorted(glob.glob(str(G4DIGI / f'g4_{arm}_is2_full' / '*.parquet')))
+    parts = sorted(glob.glob(str(G4DIGI / f'g4_{arm}_{LIB_TAG or "is2_full"}' / '*.parquet')))
     R = pd.concat([pd.read_parquet(p) for p in parts], ignore_index=True)
     for c in ('x_quality_ok', 'y_quality_ok'):
         R[c] = R[c].astype('boolean').fillna(False).astype(bool)
@@ -956,11 +960,95 @@ def pose2_step(out: Path) -> pd.DataFrame:
     return R.sort_values('chi2').head(15).drop(columns=['shear_A', 'shear_C'])
 
 
+#: D's z vs height: production chain (the only one with B/D), tracks that hit
+#: the fired wall segment.  Below 25 ms D's crossing is junk (-40 to -400 mm,
+#: noise in the x view); from 25 ms on every 5-15 ms window gives the same
+#: curve, so the window starts there rather than at the A/C 20 ms.
+Z_WINDOW = (25.0, 75.0)
+
+
+def data_z_step(out: Path) -> pd.DataFrame:
+    """z crossing per height bin for B and D (late, wall-coincident), the z
+    analogue of data_shear.csv.  B has ~3 k tracks and is reported only."""
+    d = CT.load(CT.FULLPASS, ('B', 'D'))
+    d = d[(d.ms >= Z_WINDOW[0]) & (d.ms < Z_WINDOW[1]) & d.wall]
+    rows = []
+    for arm, g in d.groupby('arm'):
+        e = estimators(g)
+        for hc, c, ce, k in e['shear']:
+            rows.append(dict(arm=arm, h=hc, z_cross=c, z_err=ce, n=k, z_all=e['x_cross'],
+                             y_cross=e['y_cross'], shear_slope=e.get('shear_slope', np.nan)))
+    R = pd.DataFrame(rows)
+    R.to_csv(out / 'data_shear_z.csv', index=False)
+    return R
+
+
+def _rot_pose(pose: dict) -> dict:
+    """The pose turned -90 deg about the beam axis, (x, z) -> (z, -x): the A/C
+    toy's x crossing of the turned pose is the z crossing of the original (the
+    capsule and beam are axisymmetric; the track response is A's/C's, not D's)."""
+    return dict(pose, x_c=pose['z_c'], z_c=-pose['x_c'], x_b=pose['z_b'], z_b=-pose['x_b'],
+                phi=(pose['phi'] - 90.0) % 360.0)
+
+
+def pose2z_step(out: Path) -> pd.DataFrame:
+    """z vs height for the pose2 grid, against D: the tilt azimuth.  The x fit
+    leaves phi 135 vs 225 open (top toward -x, and +z or -z); D's z shear is
+    the sign of that z component.  chi2_z: D's z-vs-height curve, shape only
+    (the pose's own z and y offsets removed), same bins and library spread as
+    pose2's x shape.  POSE2_ALPHA (deg, list) turns the stand-in chamber in
+    its plane: an in-plane rotation of D, the instrumental way to fake a z
+    shear."""
+    DZ = pd.read_csv(out / 'data_shear_z.csv')
+    dz = DZ[DZ.arm == 'D'].set_index('h')
+    SH = pd.read_csv(out / 'shear.csv') if (out / 'shear.csv').exists() else None
+    z_c = float(np.mean([v for v, _ in Z_BD.values()]))
+    x_b = float(os.environ.get('POSE2_XB', 0.0))
+    xcs = [float(v) for v in os.environ['POSE2_XC'].split(',')] if os.environ.get('POSE2_XC') else POSE2_XC
+    thetas = [float(v) for v in os.environ['POSE2_THETA'].split(',')] if os.environ.get('POSE2_THETA') else POSE2_THETA
+    phis = [float(v) for v in os.environ['POSE2_PHI'].split(',')] if os.environ.get('POSE2_PHI') else POSE2_PHI
+    poses = [(xc, 0.0, 0.0) for xc in xcs] + \
+            [(xc, th, ph) for xc in xcs for th in thetas if th > 0 for ph in phis]
+    alphas = [float(v) for v in os.environ['POSE2_ALPHA'].split(',')] if os.environ.get('POSE2_ALPHA') else (0.0,)
+    rows = []
+    for (xc, th, ph), al in [(p, a) for p in poses for a in alphas]:
+        pose = _rot_pose(dict(NOMINAL, x_c=xc, z_c=z_c, theta=th, phi=float(ph), x_b=x_b))
+        C, fr = beam_captures(pose, n=80_000, window=WINDOWS['late'])
+        r = dict(x_b=x_b, x_c=xc, z_c=z_c, theta=th, phi=ph, alpha=al, gas=fr['gas'], chi2_z=0.0, n_z=0)
+        curves = []
+        for arm in ('A', 'C'):
+            e = estimators(toy_tracks(arm, C, n=50_000, alpha_deg=al * U_SIGN[arm]))
+            H = e['shear']
+            sd = SH[SH.arm == arm].set_index('h').toy_sd if SH is not None else None
+            hb = H[:, 0] + (dz.y_cross.iloc[0] - e['y_cross'])
+            zb = H[:, 1] + (dz.z_all.iloc[0] - e['x_cross'])
+            curves.append((hb, zb, sd))
+            r[f'z_{arm}'] = e['x_cross']
+        # the two stand-ins averaged: one prediction for D
+        for h_d, zd, ze in zip(dz.index, dz.z_cross, dz.z_err):
+            if not (-70 <= h_d <= 30) or not np.isfinite(zd):
+                continue
+            zt = np.mean([np.interp(h_d, hb, zb) for hb, zb, _ in curves])
+            s = np.mean([float(sd.loc[h_d]) if sd is not None and h_d in sd.index else 1.0
+                         for _, _, sd in curves]) / np.sqrt(2)
+            r['chi2_z'] += (zt - zd) ** 2 / (ze ** 2 + s ** 2)
+            r['n_z'] += 1
+        hgrid = curves[0][0]
+        r['shear_z'] = ' '.join(f'{v:+.2f}' for v in np.mean([np.interp(hgrid, hb, zb) for hb, zb, _ in curves], 0))
+        rows.append(r)
+        print(xc, th, ph, al, round(r['chi2_z'], 1), flush=True)
+    R = pd.DataFrame(rows)
+    tag = ''.join(f"_{k[6:].lower()}{os.environ[k].replace(',', '_')}" for k in ('POSE2_XB', 'POSE2_XC', 'POSE2_ALPHA')
+                  if os.environ.get(k))
+    R.to_csv(out / f'pose2z{tag}.csv', index=False)
+    return R.sort_values('chi2_z').head(15).drop(columns=['shear_z'])
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split('\n')[1])
     ap.add_argument('step', nargs='?', default='all',
                     choices=['beam', 'closure', 'data', 'tof', 'shear', 'early', 'image', 'alternatives', 'halo', 'scan', 'fit',
-                             'pose2', 'all'])
+                             'pose2', 'data_z', 'pose2z', 'all'])
     ap.add_argument('--out', type=Path, default=None, help='output dir (default <out>/capsule_pose)')
     a = ap.parse_args()
     out = a.out or paths.out('capsule_pose')
@@ -969,7 +1057,8 @@ def main() -> int:
     pd.set_option('display.max_columns', 40)
     steps = (('beam', beam_step), ('closure', closure_step), ('data', data_step), ('tof', tof_step),
              ('shear', shear_step), ('early', early_step), ('image', image_step),
-             ('alternatives', alternatives_step), ('halo', halo_step), ('scan', scan_step), ('fit', fit_step), ('pose2', pose2_step))
+             ('alternatives', alternatives_step), ('halo', halo_step), ('scan', scan_step), ('fit', fit_step), ('pose2', pose2_step),
+             ('data_z', data_z_step), ('pose2z', pose2z_step))
     for name, fn in steps:
         if a.step in (name, 'all'):
             print(f'\n== {name}\n{fn(out).round(3).to_string(index=False)}', flush=True)
