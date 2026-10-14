@@ -188,7 +188,8 @@ def fit_trunc(e: np.ndarray, t: np.ndarray, hi: float, xi_ratio: float = XI_OVER
     def nll_of(ee, tt):
         def nll(p):
             m, ls = p
-            sg = np.exp(ls)
+            # capped: a runaway width makes `_langaus_grid`'s kernel (6 sigma) huge
+            sg = float(np.clip(np.exp(ls), 1e-4 * hi, hi))
             sc = xi_ratio * m
             loc = m - LANDAU_PEAK * sc
             f = _langaus_grid(grid, loc, sc, sg)

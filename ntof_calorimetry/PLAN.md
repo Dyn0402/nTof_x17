@@ -519,3 +519,44 @@ truncated Landau(x)Gauss), `scint_ecal.py` (C1), `liquid_salvage.py` (C4),
 - Open from the plan, not pursued: C1.2 (²⁸Al endpoint; the trigger
   threshold sits at the endpoint), C1.4 (needs an in-beam energy reference),
   C1.5 face maps (exist in the scint stack), M3/M4 (killed by M2).
+
+---
+
+## Reopened 2026-10-14: wall + plastic as a proof of concept for LNL
+
+Question (Dylan): does the scintillator stack measure energy, as an internal check
+(not the n_TOF physics)? Method: calibrate each layer ONCE on run_149 cosmic
+muons, then predict the beam's self-triggered 1-7 MeV electrons against Geant4
+with no further tuning. Code `wall_plastic.py` (outputs `OUT/wp/`), deck
+`make_wp_deck.py`, note <https://dylan-neff.web.cern.ch/notes/scint-calorimetry.html>.
+
+- **Wall MIP (new).** Sum of the two SiPM ends x cos: clean Landau, groups agree
+  to 1-7 %, MPV linear in path exactly as Bichsel (A 1.083/1.180/1.282 vs
+  1.081/1.191/1.292). Trigger threshold 0.28-0.29 MeV (~0.6 MIP).
+- **Geant4 inputs.** `MX17_Full_Geant/scripts/stack_edep.py` (condor 4453978,
+  97/100 files): TOTAL prompt deposit per wall strip / plastic bar (the old
+  same_arm_pairs own-track deposit misses the lepton's own deltas, ~20 % of the
+  plastic energy). A +-100/200 ns window around the lepton changes nothing.
+  Muon guns for the anchors: condor 4454427 (`wp_muons`).
+- **Anchor gotcha.** `fit_trunc` reports the Landau component's peak with xi
+  fixed; it MOVES with the Gaussian smearing (+2-3 % on the wall from Geant4's
+  bare width to the data's). So each counter's anchor = Geant4 muons smeared to
+  that counter's measured sigma/MPV, fitted by the same code (`anchors.csv`:
+  wall 0.471-0.474, plastic 3.445-3.458 MeV). Bare Geant4 muons give 0.462 /
+  3.398 (= Bichsel); `analysis/mip_2cm`'s 0.4751 / 3.3494 is another definition.
+- **Wall smearing gotcha.** The muon fit's Gaussian (0.16-0.22) double counts
+  on Geant4 (thin-layer straggling + cosmic path errors); fitted on the beam
+  electrons the extra smearing is 7 % (A) / 13 % (C) at a MIP.
+- **Results, rate-free plateau (>= 40 ms), data / Geant4:** plastic A1 1.05,
+  A2 1.03, C2 1.02, **C1 1.15** (pure gain offset: flat in energy, deficit
+  above threshold + excess above); wall 0.95 (A), 0.96 (C), shapes agree.
+  Geant4 L/R mapping pinned on A's bar ratio (1.063 data, 1.06-1.07 G4); C
+  mirrors (C bar 1 = G4 R).
+- **Rate:** plastic gain sags 3 % (A) / 5-8 % (C) at 12-15 ms vs the plateau;
+  the wall moves +1-2 % the other way.
+- **Stability:** electron medians move 0.5-0.6 % (plastic), 0.8 % (wall) rms over
+  25 production runs with one calibration.
+- **Plastic thickness:** 20 mm (25 mm would put the bars at ~1.27).
+- Open: why C1 reads 15 % high for electrons when muons and sources calibrate it
+  (agree on C1/C2 to 3 %); the wall's common ~5 %; face maps from predicted
+  crossings are flat to ~5 % but smeared ~50 mm.
