@@ -43,45 +43,45 @@ correct the record.
 
 **Key files:** `Y_FIX_REGEN.sh`, `Y_FLIP_AUDIT.md`, `COORDINATES.md`, `sept26_prelim_analysis/regen_stage3.py`.
 
-## Capsule pose in the beam — updated 2026-10-13 (dylan-MS-7C84)
+## Capsule pose in the beam — updated 2026-10-14 (dylan-MS-7C84)
 
-**Resume:** source on the nose sits ~10 mm off the frame centre; get Dylan's hardware answers, then decide reading 1 vs 2.
+**Resume:** pose2 refit on the real EAR2 beam done; Geant4 reruns (condor 4454431/2) running; then B/D z-vs-height for tilt azimuth.
 
-**Goal:** where the ³He capsule is relative to the beam and the chambers (it sets the ³He/IPC/X17 yield and feeds the 1 : 8
-pair-rate question). Handoff that started it: `sept26_prelim_analysis/HANDOFF_CAPSULE_POSE_FIT.md` (Outcome box = current state).
+**Goal:** where the ³He capsule is relative to the beam and chambers (sets ³He/IPC/X17 yield; feeds the 1 : 8 pair-rate question).
+Full state: Correction + Outcome boxes of `sept26_prelim_analysis/HANDOFF_CAPSULE_POSE_FIT.md`.
 
-**Done:**
-- `capsule_pose.py`: ray trace through the STEP polycones (Al, CFRP, black ³He, neutron scattering) × Geant4 g4_digi tracks
-  translated to toy capture points × the data's estimators. Beam = per-ray E from the EAR2 Phase-3 flux, r from that E's
-  Lambda2D row (Geant4 gun recipe). Closes on Geant4 (crossings 0.4 mm; Al captures by radius bin-by-bin).
-- Measured: ONE compact source at frame x −10.3, z −3.6, nose height (−31.3 A / −34.6 C, y mirrored), same x 2–75 ms
-  (shuffled-null pointing-excess peak; calibrated 1.0 mm per 10 % of a second source 10 mm away), every run, pre/post access.
-- "The beam is at x −10.3" was claimed, challenged by Dylan (beam centred between detectors to mm) and RETRACTED in report,
-  handoff, deck, COORDINATES.md and memory.
-- Two readings remain: (1) beam on the capsule, both ~10 mm off the frame centre (≥ 85 % of beam on ³He);
-  (2) beam centred, capsule 13–18 mm off and ≥ 14 mm below drawn (³He share 1–15 %). Lambda2D beam at 0 never fits at drawn height.
-- Report `<out>/capsule_pose/report.html`; slide note https://dylan-neff.web.cern.ch/notes/capsule-pose.html
-  (`make_capsule_pose_deck.py`); slide `pose` in the same-chamber note.
+**Done (10-14):**
+- Found the old beam model (`Lambda2D`) was the n_TOF resolution function, not a beam radius. All 10-13 "readings"
+  (beam on capsule vs capsule far off) are void. Real beam: `ear2_beam/` (phase-4 FLUKA phase space through the EAR2
+  collimation; matches PPACMon to 1-2 %; r50 10.5 mm, FWHM 22 mm at 19.5 m; on the pipe axis to 1-2 mm). Only 17-58 % of it
+  reaches the ³He depending on pose, not ≥ 85 %.
+- `capsule_pose pose2` refit (late window, A/C x crossings + x-vs-height shape). Report
+  `/media/dylan/data/x17/sept26_prelim/capsule_pose_ear2/report.html` (`make_pose2_report.py`):
+  - tilt robust: top leans toward −x by 7-15° (φ 135-225°); untilted χ² 46-67 vs 7-12 tilted; φ = 0 excluded;
+  - height robust: capsule 8-12 mm below drawn;
+  - sideways degenerate (beam vs capsule x). Beam centred on the pipe → capsule ~16-18 mm off axis, ³He sees ~0.17-0.23
+    (χ² 21 at xc −18). Beam −10 / capsule −15 fits best (χ² 8.3, ³He 0.58) but that preference is toy-library-limited.
 
-**In progress / where it stopped:** nothing running; all products regenerated and committed (df37cd0 on main).
+**In progress:**
+- Geant4 with the real gun: condor **4454431** (19.5 m, 100 jobs) and **4454432** (19.95 m, 50 jobs), submitted 10-14 12:28,
+  all running at wrap-up → `/eos/experiment/ntof/data/x17/full_sim/neutrons_thermal_ear2_L19p{5,95}` (dirs were not populated yet; check
+  `lxstore status` and `condor_q` on lxplus). Smoke test: ³He 0.448/n (was ~0.95), Al 0.0028 (was 0.0045).
 
 **Next steps:**
-1. Get from Dylan: how the beam centring was done and against what; capsule tip height vs chamber mid-plane and how the
-   capsule is held (a holder at the nose?); beam spot at the station (collimator, distance, halo > 3 cm); a photo/survey.
-2. With those, fix the pose and redo the bound (`capsule_pose fit`) and consequences (³He share, Al nose/barrel split).
-3. Open puzzle: the ≥ 28 ms (after-the-flux) tracks image the nose like a narrow beam; an isotropic hall flux would give y +5.
-4. Optional: 10× g4_digi sample to settle the 3.6σ x-vs-height step (second, higher source?).
+1. When the condor jobs finish: digitise, rebuild the g4 track library, rerun `pose2` (tightens shape χ²); expect the 1 : 8 pair-rate question to move since Geant4's ³He/Al captures per neutron were ×2-4 too high.
+2. B/D z-vs-height to fix tilt azimuth (135 vs 225 = sign of the z component).
+3. Redo at the 19.95 m beam.
+4. Late population (20-75 ms): direct beam there is only 1.3 % of 4-12 ms in n_TOF's phase space, yet late capsule tracks dominate; the fit assumes they are lit like the beam. Needs a physical explanation.
+5. Still needed from Dylan: collimator actually used (assumed standard 30 mm?), capsule tip height / holder, a survey or photo.
 
 **Gotchas / decisions:**
-- The capture source is where the illuminating flux meets Al, not the beam. Never quote it as the beam position.
-- Band crossing is unusable < 10 ms (background); use the excess peak there. A–C agreement only excludes per-chamber errors.
-- Height shape/width cannot discriminate (uncalibrated y scale absorbs it). Scint wall shares the structure — no frame test.
-- Data were y-mirrored on load; since the 10-13 fix `load_data` reads the stage-3 `y_convention` flag instead (no double flip).
+- Never quote the capture source as the beam position: it is where the flux meets Al.
+- The beam shape fit is poor pointing evidence unless tied to the pipe axis; literature puts the beam on the axis.
+- Superseded: the 10-13 model and its two readings; `capsule_pose_broad_beam.py` was a stopgap 30 mm Gaussian toy.
 
 **Key files & commands:**
-- `sept26_prelim_analysis/capsule_pose.py` — `python -m sept26_prelim_analysis.capsule_pose all` (scan ≈ 15 min)
-- `make_capsule_pose_report.py`, `make_capsule_pose_deck.py` (then `add-note.py … --slug capsule-pose --force --deploy`)
-- outputs `/media/dylan/data/x17/sept26_prelim/capsule_pose/`
+- `sept26_prelim_analysis/capsule_pose.py` (`pose2`, env `POSE2_XB/XC/THETA/PHI`), `make_pose2_report.py`, `ear2_beam/` (README)
+- outputs `/media/dylan/data/x17/sept26_prelim/capsule_pose_ear2/`
 
 ## Same-chamber pairs + the y mirror — updated 2026-10-13 (dylan-MS-7C84)
 
