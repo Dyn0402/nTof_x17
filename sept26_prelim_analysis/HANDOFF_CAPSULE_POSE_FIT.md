@@ -31,13 +31,14 @@ Read first:
 >   for 10 points; tilted it is 7–12. φ = 0 (top toward +x, nose outward, the original hypothesis) is excluded.
 > - **Height is robust.** Every good pose needs the capsule 8–12 mm lower than drawn (dy_c).
 > - **Sideways it is degenerate.** The x crossing mixes the beam and capsule positions. Best fits:
->   - beam 0 / capsule −16: χ² 23.7, ³He sees 0.23;
+>   - beam 0 / capsule −18: χ² 21.1, ³He sees 0.17 (−16: 23.7, 0.23; −20: 28.8);
 >   - beam −5 / capsule −15: 14.8, 0.42;
 >   - beam −10 / capsule −10: 12.1, 0.53;
 >   - beam −10 / capsule −15: **8.3**, 0.58.
 >   The shape mildly prefers the beam off the frame (Δχ² ≈ 15). That shape error is toy-library-limited, and
 >   the literature puts the beam on the pipe axis. So if the frame is centred on the pipe, the capsule is about
->   15 mm off the beam axis and the ³He sees ~0.2–0.25 of the beam at 19.5 m.
+>   16–18 mm off the beam axis and the ³He sees ~0.17–0.23 of the beam at 19.5 m.
+>   Report: `<out>/capsule_pose_ear2/report.html` (`make_pose2_report.py`).
 > - **Not yet done:**
 >   - B/D z-vs-height, to pin the tilt azimuth (φ 135 vs 225 = the z component's sign);
 >   - the 19.95 m beam;
