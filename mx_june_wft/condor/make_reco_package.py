@@ -129,10 +129,14 @@ def main():
     missing_gate = []
     for det, wft in GOLDEN_WFT.items():
         src = os.path.join(wft, BUNDLE[det])
-        if not os.path.isdir(src):
-            sys.exit(f'FATAL: frozen bundle missing: {src}')
-        shutil.copytree(src, os.path.join(bdir, det, BUNDLE[det]))
         ov = override.get(det)
+        # An overridden detector never runs its frozen bundle, so it need not
+        # exist here (the inverted det2/3/7 frozen bundles were retired
+        # 2026-08-21 and are not on every machine).  Others still must.
+        if os.path.isdir(src):
+            shutil.copytree(src, os.path.join(bdir, det, BUNDLE[det]))
+        elif not ov:
+            sys.exit(f'FATAL: frozen bundle missing: {src}')
         if ov:
             osrc = os.path.join(wft, ov)
             if not os.path.isdir(osrc):

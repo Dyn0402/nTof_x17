@@ -1,0 +1,12 @@
+# condor_mb_hs.sub -- high-statistics Magboltz, one (mixture, field) per job (run in lxplus ~/cloud_basics_condor/att)
+executable = condor_mb_hs.sh
+arguments = $(tag) $(field) $(ncoll)
+transfer_input_files = magboltz_drift.py, setup_garfield.sh, /afs/cern.ch/user/d/dneff/work/garfield_install/garfield-927e5c21.tar.gz
+should_transfer_files = YES
+when_to_transfer_output = ON_EXIT
+output = log/mbhs_$(tag)_$(field).out
+error = log/mbhs_$(tag)_$(field).err
+log = log/mbhs.log
++JobFlavour = "workday"
+priority = 20
+queue tag, field, ncoll from hs_jobs.txt

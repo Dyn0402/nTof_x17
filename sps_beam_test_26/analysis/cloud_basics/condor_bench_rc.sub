@@ -1,0 +1,21 @@
+# condor_bench_rc.sub -- one paired bench per chamber over all RC arms (run in lxplus ~/cloud_basics_condor/rc)
+universe                = vanilla
+executable              = run_bench_rc.sh
+arguments               = $(det) $(train)
+should_transfer_files   = YES
+when_to_transfer_output = ON_EXIT
+transfer_input_files    = payload_bench_rc.tar.gz, arm_$(det)_rcm.json, out/arm_$(det)_rcf3.json, out/arm_$(det)_rcf4x.json, out/arm_$(det)_rcfD.json
+transfer_output_files   = bench_rc_$(det).json
+transfer_output_remaps  = "bench_rc_$(det).json = bench/bench_rc_$(det).json"
+output                  = log/bench_rc_$(det).out
+error                   = log/bench_rc_$(det).err
+log                     = log/bench_rc.log
+request_cpus            = 8
+request_memory          = 8GB
+request_disk            = 4GB
+environment             = "OMP_NUM_THREADS=8"
++JobFlavour             = "tomorrow"
+priority                = 20
+max_retries             = 2
+requirements            = (OpSysAndVer =?= "AlmaLinux9")
+queue det, train from jobs_bench_rc.txt

@@ -73,13 +73,17 @@ def main():
                          'accounting, which is the only apples-to-apples '
                          'comparison (the old 09 script uses its own box and '
                          'event list)')
+    ap.add_argument('--out', default=None,
+                    help='output dir (default: the standard wft/efficiency); '
+                         'use it for candidate arms so the headline is untouched')
     ap.add_argument('--max-dropped', type=int, default=compat.MAX_DROPPED,
                     help='cluster-quality cut; -1 disables')
     args = ap.parse_args()
 
     cfg = get_config(args.run_key)
     table = args.table or os.path.join(cfg.OUT_BASE, 'wft', 'events.parquet')
-    out_dir = cfg.out_dir('wft', 'efficiency')
+    out_dir = args.out or cfg.out_dir('wft', 'efficiency')
+    os.makedirs(out_dir, exist_ok=True)
     R = args.r
 
     if args.source == 'hits':

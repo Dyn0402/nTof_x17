@@ -1,0 +1,27 @@
+# condor_bench_lor.sub -- one paired bench per chamber over the X footprint-tail arms (run in lxplus ~/cloud_basics_condor/lor)
+universe                = vanilla
+executable              = run_bench_lor.sh
+arguments               = $(det) $(train)
+should_transfer_files   = YES
+when_to_transfer_output = ON_EXIT
+transfer_input_files    = payload_bench_lor.tar.gz, arm_$(det)_rcm.json, arm_$(det)_rcmlor.json, arm_$(det)_rcmlor2.json
+transfer_output_files   = bench_lor_$(det).json
+transfer_output_remaps  = "bench_lor_$(det).json = bench/bench_lor_$(det).json"
+output                  = log/bench_lor_$(det).out
+error                   = log/bench_lor_$(det).err
+log                     = log/bench_lor.log
+request_cpus            = 8
+request_memory          = 8GB
+request_disk            = 4GB
+environment             = "OMP_NUM_THREADS=8"
++JobFlavour             = "tomorrow"
+priority                = 20
+max_retries             = 2
+requirements            = (OpSysAndVer =?= "AlmaLinux9")
+queue det, train from (
+det2 big_cache
+det3 calib_cache
+det4 calib_cache
+det6 big_cache
+det7 big_cache
+)
