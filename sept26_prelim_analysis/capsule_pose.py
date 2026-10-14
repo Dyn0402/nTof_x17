@@ -14,7 +14,7 @@ Model
   to the valve (s = +51) and points along +y when untilted.
 * Pose: capsule origin (x_c, y_c, z_c) in the chamber frame, tilt theta from +y
   toward azimuth phi (phi = 0 is +x, 90 deg is +z).  Beam along +y centred at
-  (x_b, z_b), radial profile from Lambda2D (lamda2DvsEn_EAR2.root) weighted by
+  (x_b, z_b), 2D profile + divergence from ear2_beam (n_TOF optical transport), weighted by
   flux x 1/v over the window's energies.
 * Captures: each beam ray is walked through the posed capsule; Al (and CFRP)
   capture per step Sigma ds (the Al is thin: 0.8 % per 5.5 mm nose), the gas is
@@ -47,7 +47,7 @@ Steps (CSV to <out>/capsule_pose/):
             peak's response to a second source and to background
   image     2D pointing image (x, height) per ToF window
   alternatives  a beam centred on the frame vs the beam on the capsule, for
-            illuminating fluxes 1-10x the Lambda2D width
+            illuminating fluxes 1-10x the transported EAR2 width
   tof       background-subtracted y crossing against time since the flash
   scan      toy grid: beam-capsule offset d and tilt (theta, phi), per window
   fit       the capsule height each shape needs to match the data; the bound
@@ -68,7 +68,7 @@ from sept26_prelim_analysis import paths
 from sept26_prelim_analysis import capsule_tof as CT
 
 G4ROOT = Path.home() / 'CLionProjects/MX17_Full_Geant'
-LAMBDA = G4ROOT / 'data/lamda2DvsEn_EAR2.root'
+FLUX4 = Path(__file__).resolve().parents[1] / 'ear2_beam' / 'data' / 'Final_evaluated_flux_Phase4_EAR2.root'
 NOSE = Path('/media/dylan/data/x17/ntof_cosmics/g4_angle/neutrons_nose')
 G4DIGI = CT.G4DIGI
 FLIGHT_M = CT.FLIGHT_M
@@ -150,22 +150,15 @@ def window_energy(lo_ms: float, hi_ms: float):
 
 
 def _beam_tables():
-    """EAR2 flux (n / pulse per bin, Sabate-Gilarte Phase 3) and the Lambda2D
-    radial profile per energy row (n_TOF transport to 19.5 m), exactly as
-    X17PrimaryGenerator uses them: rows normalised to a CDF over r."""
+    """EAR2 neutrons per pulse per energy bin, from the Phase-4 evaluated flux
+    (n_TOF 2021_Commissioning, Final_evaluated_flux_Phase4_EAR2.root:
+    E dN/dE per pulse, integrated over the whole beam -> x ln(hi/lo))."""
     if 'tables' in _PROFILE:
         return _PROFILE['tables']
     import uproot
-    v, ex, ey = uproot.open(LAMBDA)['Lambda2D'].to_numpy()
-    rebin = 10                                   # 10 um -> 0.1 mm
-    v = v.reshape(v.shape[0], -1, rebin).sum(-1)
-    r_edges = ey[::rebin] * 10.0                 # cm -> mm
-    pop = v.sum(1) > 0
-    logE = np.log10(np.sqrt(ex[:-1] * ex[1:]))[pop]
-    cdf = np.cumsum(v[pop], 1)
-    cdf /= cdf[:, -1:]
-    fv, fe = uproot.open(CT.FLUX)['flux_n_pulse_NOisolet_100bpd'].to_numpy()
-    _PROFILE['tables'] = dict(logE=logE, cdf=cdf, r_edges=r_edges, f_lo=fe[:-1], f_hi=fe[1:], flux=fv)
+    fv, fe = uproot.open(FLUX4)['h_flux_ear2'].to_numpy()
+    fv = fv * np.log(fe[1:] / fe[:-1])
+    _PROFILE['tables'] = dict(f_lo=fe[:-1], f_hi=fe[1:], flux=fv)
     return _PROFILE['tables']
 
 
@@ -183,26 +176,29 @@ def sample_energy(n: int, rng, window):
     return b_lo[i] * (b_hi[i] / b_lo[i]) ** rng.random(n)
 
 
+#: the beam model: the EAR2 optical-transport profile at the station
+#: (ear2_beam/).  Until 2026-10-14 this sampled a radius from Lambda2D, which is
+#: the n_TOF resolution function (lambda), not a profile -- ~5x too narrow.
+BEAM = dict(L=19.5, variant='july2021')
+
+
 def sample_beam(n: int, rng, window, centre=(0.0, 0.0), width_scale=1.0):
-    """n beam rays: energy from the flux in the window, radius from the
-    Lambda2D row nearest that energy (the Geant4 gun's recipe).  Returns
-    x, z, r (mm) and E (eV)."""
-    T = _beam_tables()
+    """n beam rays: energy from the flux in the window, position and slope from
+    the EAR2 transport profile (energy-independent below 1 keV).  Returns x, z
+    (mm), r (mm from the beam centre), E (eV) and the slopes sx, sz (rad).
+    width_scale stretches the profile about its centre (a nuisance scan)."""
+    from ear2_beam import beam as EB
     E = sample_energy(n, rng, window)
-    row = np.abs(np.log10(E)[:, None] - T['logE'][None, :]).argmin(1)
-    u = rng.random(n)
-    j = np.array([np.searchsorted(T['cdf'][k], uu) for k, uu in zip(row, u)])
-    re = T['r_edges']
-    r = (re[j] + rng.random(n) * (re[j + 1] - re[j])) * width_scale
-    a = rng.random(n) * 2 * np.pi
-    return centre[0] + r * np.cos(a), centre[1] + r * np.sin(a), r, E
+    x, z, sx, sz = EB.sample(n, rng, L=BEAM['L'], variant=BEAM['variant'])
+    x, z = x * width_scale, z * width_scale
+    return centre[0] + x, centre[1] + z, np.hypot(x, z), E, sx, sz
 
 
 def radial_profile(window=(20.0, 75.0), n=400_000):
     """(r edges mm, pdf) of the rays a window delivers, weighted by 1/v (what a
     thin absorber captures) -- for tables and plots."""
     rng = np.random.default_rng(3)
-    _, _, r, E = sample_beam(n, rng, window)
+    _, _, r, E, _, _ = sample_beam(n, rng, window)
     edges = np.arange(0, 30.01, 0.5)
     h, _ = np.histogram(r, edges, weights=np.sqrt(0.0253 / E))
     return edges, h / h.sum()
@@ -212,10 +208,13 @@ def radial_profile(window=(20.0, 75.0), n=400_000):
 DY = 0.1
 
 
-def trace_rays(x, z, centre, axis, e_scale=1.0, chunk=2000):
+def trace_rays(x, z, centre, axis, e_scale=1.0, chunk=2000, sx=None, sz=None):
     """Walk rays along +y.  Per ray: total capture probability in Al and CFRP
     before the gas, whether it reaches the gas, and one capture point (and its
-    local s and material) drawn along the path by weight."""
+    local s and material) drawn along the path by weight.  x, z are the ray's
+    position at the capsule origin's height; sx, sz its slopes (rad)."""
+    sx = np.zeros(len(x)) if sx is None else np.asarray(sx, float)
+    sz = np.zeros(len(x)) if sz is None else np.asarray(sz, float)
     st = float(np.hypot(axis[0], axis[2]))
     ys = np.arange(centre[1] - 37 - 60 * st, centre[1] + 53 + 60 * st, DY) + DY / 2
     n = len(x)
@@ -241,9 +240,10 @@ def trace_rays(x, z, centre, axis, e_scale=1.0, chunk=2000):
     for k in range(0, len(near), chunk):
         idx = near[k:k + chunk]
         P = np.empty((len(idx), len(ys), 3))
-        P[..., 0] = x[idx, None]
+        dy = ys[None, :] - centre[1]
+        P[..., 0] = x[idx, None] + sx[idx, None] * dy
         P[..., 1] = ys[None, :]
-        P[..., 2] = z[idx, None]
+        P[..., 2] = z[idx, None] + sz[idx, None] * dy
         m, s = material(P, centre, axis)
         gas = m == 3
         first = np.where(gas.any(1), gas.argmax(1), len(ys))
@@ -275,9 +275,9 @@ def beam_captures(pose: dict, n: int = 200_000, window=(20.0, 75.0), seed=0, wid
     rng = np.random.default_rng(seed)
     centre = np.array([pose['x_c'], pose['y_c'], pose['z_c']], float)
     axis = axis_of(pose.get('theta', 0.0), pose.get('phi', 0.0))
-    x, z, _, E = sample_beam(n, rng, window, (pose['x_b'], pose['z_b']), width_scale)
+    x, z, _, E, sx, sz = sample_beam(n, rng, window, (pose['x_b'], pose['z_b']), width_scale)
     # capture is 1/v; scattering is energy-independent here
-    t = trace_rays(x, z, centre, axis, e_scale=np.sqrt(0.0253 / E))
+    t = trace_rays(x, z, centre, axis, e_scale=np.sqrt(0.0253 / E), sx=sx, sz=sz)
     ok = t['w'] > 0
     C = pd.DataFrame(dict(x=x[ok], y=t['y'][ok], z=z[ok], w=t['w'][ok], s=t['s'][ok], mat=t['mat'][ok]))
     frac = dict(on_capsule=float(((t['w'] > 0) | t['gas']).mean()), gas=float(t['gas'].mean()),
@@ -839,7 +839,7 @@ def image_step(out: Path) -> pd.DataFrame:
 def alternatives_step(out: Path) -> pd.DataFrame:
     """What a beam centred on the chamber frame predicts, against the beam on
     the capsule: the source x and y for the capsule off a centred beam, as a
-    function of the illuminating flux's width (Lambda2D x width_scale), and the
+    function of the illuminating flux's width (EAR2 profile x width_scale), and the
     same widths centred on the capsule."""
     rows = []
     cases = [(f'beam at 0, capsule at {xc:+.1f}', dict(NOMINAL, x_c=xc), ws)
@@ -860,7 +860,7 @@ def alternatives_step(out: Path) -> pd.DataFrame:
 
 
 def halo_step(out: Path) -> pd.DataFrame:
-    """A Lambda2D beam centred on the frame with the capsule so far off that
+    """An EAR2 beam centred on the frame with the capsule so far off that
     only the beam's tail reaches it (alternatives.csv columns)."""
     rows = []
     for xc in (-15.0, -17.5, -20.0):
@@ -893,18 +893,76 @@ def tof_step(out: Path) -> pd.DataFrame:
     return R
 
 
+#: pose grid with the real (transported) EAR2 beam, centred on the frame
+POSE2_XC = (-6.0, -8.0, -10.0, -12.0, -14.0, -16.0)
+POSE2_THETA = (0.0, 2.0, 4.0, 7.0, 10.0, 15.0)
+POSE2_PHI = tuple(range(0, 360, 45))
+#: systematic on a chamber's x crossing (chain-to-chain, imaging_campaign vs is2_v2)
+SIG_X_SYS = 1.0
+
+
+def pose2_step(out: Path) -> pd.DataFrame:
+    """Capsule offset and tilt with the real beam (beam centred on the frame).
+    Per pose: the A/C x and y crossings, the x-vs-height curve with the pose's
+    own x and y offsets removed (so it tests the SHAPE: tilt, barrel share),
+    and the capture split.  chi2_x: crossings vs data (SIG_X_SYS); chi2_shape:
+    the curve vs data over the populated height bins, with the toy's
+    library spread from shear.csv.  The capsule height is not fitted: dy_c is
+    the shift the pose needs to put its y crossing on the data's."""
+    D = pd.read_csv(out / 'data.csv').set_index(['arm', 'window'])
+    DS = pd.read_csv(out / 'data_shear.csv')
+    SH = pd.read_csv(out / 'shear.csv') if (out / 'shear.csv').exists() else None
+    z_c = float(np.mean([v for v, _ in Z_BD.values()]))
+    rows = []
+    poses = [(xc, 0.0, 0.0) for xc in POSE2_XC] + \
+            [(xc, th, ph) for xc in POSE2_XC for th in POSE2_THETA[1:] for ph in POSE2_PHI]
+    for xc, th, ph in poses:
+        pose = dict(NOMINAL, x_c=xc, z_c=z_c, theta=th, phi=float(ph))
+        C, fr = beam_captures(pose, n=80_000, window=WINDOWS['late'])
+        r = dict(x_c=xc, z_c=z_c, theta=th, phi=ph, **fr, chi2_shape=0.0, n_shape=0)
+        for arm in ('A', 'C'):
+            d = D.loc[(arm, 'late')]
+            e = estimators(toy_tracks(arm, C, n=50_000))
+            r[f'x_{arm}'], r[f'y_{arm}'], r[f'w68_{arm}'] = e['x_cross'], e['y_cross'], e['h_w68']
+            H = e['shear']
+            ds = DS[(DS.arm == arm) & (DS.window == 'late')].set_index('h')
+            sd = SH[SH.arm == arm].set_index('h').toy_sd if SH is not None else None
+            # move the toy onto the data's crossings: compare shapes only
+            hb = H[:, 0] + (d.y_cross - e['y_cross'])
+            xb = H[:, 1] + (d.x_cross - e['x_cross'])
+            for h_d, xd, xe in zip(ds.index, ds.x_cross, ds.x_err):
+                if not (-70 <= h_d <= 30):          # populated bins only
+                    continue
+                xt = np.interp(h_d, hb, xb)
+                s2 = xe ** 2 + (float(sd.loc[h_d]) if sd is not None and h_d in sd.index else 1.0) ** 2
+                r['chi2_shape'] += (xt - xd) ** 2 / s2
+                r['n_shape'] += 1
+            r[f'shear_{arm}'] = ' '.join(f'{v:+.2f}' for v in xb)
+        r['chi2_x'] = sum(((r[f'x_{a}'] - D.loc[(a, 'late')].x_cross) / SIG_X_SYS) ** 2 for a in 'AC')
+        r['dy_c'] = float(np.mean([D.loc[(a, 'late')].y_cross - r[f'y_{a}'] for a in 'AC']))
+        rows.append(r)
+        print(xc, th, ph, round(r['x_A'], 2), round(r['y_A'], 2), round(r['chi2_x'], 1),
+              round(r['chi2_shape'], 1), round(fr['gas'], 3), flush=True)
+    R = pd.DataFrame(rows)
+    R['chi2'] = R.chi2_x + R.chi2_shape
+    R.to_csv(out / 'pose2.csv', index=False)
+    return R.sort_values('chi2').head(15).drop(columns=['shear_A', 'shear_C'])
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split('\n')[1])
     ap.add_argument('step', nargs='?', default='all',
-                    choices=['beam', 'closure', 'data', 'tof', 'shear', 'early', 'image', 'alternatives', 'halo', 'scan', 'fit', 'all'])
+                    choices=['beam', 'closure', 'data', 'tof', 'shear', 'early', 'image', 'alternatives', 'halo', 'scan', 'fit',
+                             'pose2', 'all'])
+    ap.add_argument('--out', type=Path, default=None, help='output dir (default <out>/capsule_pose)')
     a = ap.parse_args()
-    out = paths.out('capsule_pose')
+    out = a.out or paths.out('capsule_pose')
     out.mkdir(parents=True, exist_ok=True)
     pd.set_option('display.width', 250)
     pd.set_option('display.max_columns', 40)
     steps = (('beam', beam_step), ('closure', closure_step), ('data', data_step), ('tof', tof_step),
              ('shear', shear_step), ('early', early_step), ('image', image_step),
-             ('alternatives', alternatives_step), ('halo', halo_step), ('scan', scan_step), ('fit', fit_step))
+             ('alternatives', alternatives_step), ('halo', halo_step), ('scan', scan_step), ('fit', fit_step), ('pose2', pose2_step))
     for name, fn in steps:
         if a.step in (name, 'all'):
             print(f'\n== {name}\n{fn(out).round(3).to_string(index=False)}', flush=True)
