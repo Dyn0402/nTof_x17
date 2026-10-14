@@ -23,12 +23,18 @@ added after the build (``k_source`` from cosmic_tracks) are carried over.
     python -m sept26_prelim_analysis.regen_stage3 <stage3 dir> [--jobs 8] [--combine]
 
 ``--combine`` re-concatenates ``tracks_campaign.parquet`` afterwards with the
-same ``k_source`` label the old combined table had.
+same ``k_source`` label the old combined table had (in place: the old combined
+table is a concatenation of the backed-up sub-run tables, so it gets no backup).
+
+``--work DIR`` puts the staging area and the ``pre_yfix`` backup under
+``DIR/<parent>_<name>/`` instead of inside the stage-3 directory (for a full
+data disk) and leaves ``<dir>/pre_yfix`` as a symlink to the backup.
 """
 from __future__ import annotations
 
 import argparse
 import json
+import shutil
 import sys
 import traceback
 from concurrent.futures import ProcessPoolExecutor, as_completed
@@ -85,7 +91,15 @@ def compare(old: pd.DataFrame, new: pd.DataFrame) -> dict:
                 changed=changed)
 
 
-def one(table: str, allow_drift: bool = False) -> dict:
+def _work(src: Path, work: Path | None) -> tuple[Path, Path]:
+    """(staging dir, backup dir) for one stage-3 directory."""
+    if work is None:
+        return src / STAGING, src / 'pre_yfix'
+    w = work / f'{src.resolve().parent.name}_{src.resolve().name}'
+    return w / STAGING, w / 'pre_yfix'
+
+
+def one(table: str, allow_drift: bool = False, work: Path | None = None) -> dict:
     from sept26_prelim_analysis import build_tracks as BT
     p = Path(table)
     meta = json.loads(p.with_name(p.name.replace('.parquet', '.meta.json')).read_text())
@@ -110,8 +124,8 @@ def one(table: str, allow_drift: bool = False) -> dict:
     # and only if every table passed: a directory half on each convention is
     # the one state a reader that ignores the flag cannot survive.
     res['staged'] = True
-    st = p.parent / STAGING
-    st.mkdir(exist_ok=True)
+    st = _work(p.parent, work)[0]
+    st.mkdir(parents=True, exist_ok=True)
     new = new[[c for c in old.columns if c in new.columns]
               + [c for c in new.columns if c not in old.columns]]
     new.to_parquet(st / p.name, index=False)
@@ -123,18 +137,20 @@ def one(table: str, allow_drift: bool = False) -> dict:
     return res
 
 
-def swap(src: Path, names: list, drop_backup: bool) -> None:
+def swap(src: Path, names: list, drop_backup: bool, work: Path | None = None) -> None:
     """Move every old table to pre_yfix/ (or delete it) and the staged one in."""
-    st, bdir = src / STAGING, src / 'pre_yfix'
-    bdir.mkdir(exist_ok=True)
+    st, bdir = _work(src, work)
+    bdir.mkdir(parents=True, exist_ok=True)
+    if work is not None and not drop_backup and not (src / 'pre_yfix').exists():
+        (src / 'pre_yfix').symlink_to(bdir, target_is_directory=True)
     for n in names:
         m = n.replace('.parquet', '.meta.json')
         for f in (n, m):
             if drop_backup:
                 (src / f).unlink()
             else:
-                (src / f).rename(bdir / f)
-            (st / f).rename(src / f)
+                shutil.move(src / f, bdir / f)
+            shutil.move(st / f, src / f)
     st.rmdir()
 
 
@@ -148,12 +164,15 @@ def main() -> int:
                     help='replace even if non-y columns differ from the old table (code '
                          'changed since it was built); y must still be an exact mirror. '
                          'The differences are recorded in regen_yfix.csv and the sidecar.')
+    ap.add_argument('--work', type=Path, default=None,
+                    help='staging + pre_yfix backup go under WORK/<parent>_<name>/ '
+                         '(another disk); <dir>/pre_yfix becomes a symlink to it')
     a = ap.parse_args()
     tables = sorted(str(p) for p in a.src.glob('tracks_run_*.parquet'))
     print(f'{len(tables)} table(s) under {a.src}')
     rows = []
     with ProcessPoolExecutor(max_workers=a.jobs) as ex:
-        futs = {ex.submit(one, t, a.allow_drift): t for t in tables}
+        futs = {ex.submit(one, t, a.allow_drift, a.work): t for t in tables}
         for f in as_completed(futs):
             try:
                 r = f.result()
@@ -174,12 +193,12 @@ def main() -> int:
     staged = [r['table'] for r in rows if r.get('staged')]
     if n_fail:
         print(f'\n{n_fail} table(s) FAILED: NOTHING replaced in {a.src} (staged copies in '
-              f'{a.src / STAGING}; details in regen_yfix.csv). Fix, or --allow-drift if only '
+              f'{_work(a.src, a.work)[0]}; details in regen_yfix.csv). Fix, or --allow-drift if only '
               f'non-y columns differ.')
         return 1
-    swap(a.src, staged, a.drop_backup)
+    swap(a.src, staged, a.drop_backup, a.work)
     print(f'\nall {len(rows)} ok: {len(staged)} replaced, {len(rows) - len(staged)} already up'
-          f' (old tables in {a.src / "pre_yfix"})')
+          f' (old tables in {_work(a.src, a.work)[1]})')
     if a.combine and (a.src / 'tracks_campaign.parquet').exists():
         import pyarrow.parquet as pq
         ks = pq.read_table(a.src / 'tracks_campaign.parquet', columns=['k_source']).column(0)

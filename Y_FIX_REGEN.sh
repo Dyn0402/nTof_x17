@@ -31,17 +31,40 @@ WANT=("$@")
 
 df -h / /media/dylan/data | tee -a "$LOG/chain.log"
 
-# --- 0. the code: unit tests (convention, guard, loader flag, regen check)
-step tests      $PY -m pytest -q sept26_prelim_analysis/tests/test_y_convention.py
+# step() exits the chain on failure; s3() below adds a free-space check on /.
 
-# --- 1. stage 3, every live set (each rebuilt from its own sidecar)
-step s3_cf      $PY -m sept26_prelim_analysis.regen_stage3 "$HOME/x17_local/stage3_is2_v2_cf" --jobs $JOBS --combine
-step s3_is2v2   $PY -m sept26_prelim_analysis.regen_stage3 "$OUT/stage3_is2_v2"       --jobs $JOBS --combine
-step s3_full    $PY -m sept26_prelim_analysis.regen_stage3 "$OUT/stage3_fullpass"     --jobs $JOBS --combine
-step s3_camp    $PY -m sept26_prelim_analysis.regen_stage3 "$OUT/stage3_campaign"     --jobs $JOBS --combine
-step s3_pilot   $PY -m sept26_prelim_analysis.regen_stage3 "$OUT/stage3_is2_v1_pilot" --jobs $JOBS --combine
-step s3_cos147  $PY -m sept26_prelim_analysis.regen_stage3 ntof_cosmics/results/tracking/k_run_147 --jobs $JOBS
-step s3_cos150  $PY -m sept26_prelim_analysis.regen_stage3 ntof_cosmics/results/tracking/k_run_150 --jobs $JOBS
+# --- 0. the code: unit tests (convention, guard, loader flag, regen check)
+step tests      $PY -m pytest -q sept26_prelim_analysis/tests/test_y_convention.py -k "not cosmic_muons"   # data test: tests_data, after `cosmic`
+
+# --- 1. stage 3, every live set (each rebuilt from its own sidecar).
+#        The data disk is full: staging and the pre_yfix backups go on / under
+#        $WORK (<dir>/pre_yfix is a symlink there).  Largest sets first, while
+#        / has the room; each set needs its sub-run tables' size free on / plus
+#        a $SPARE_GB GB margin, or the chain stops before touching it.
+WORK=${WORK:-$HOME/x17_local/yfix_work}
+SPARE_GB=${SPARE_GB:-6}
+room() {                                   # room <stage3 dir>: enough space on / ?
+  local need free
+  need=$(du -s --block-size=1G --exclude=tracks_campaign.parquet --exclude=pre_yfix "$1" | cut -f1)
+  free=$(df --output=avail --block-size=1G "$HOME" | tail -1 | tr -d ' ')
+  echo "$1: sub-run tables ${need} GB, / free ${free} GB (margin ${SPARE_GB})"
+  [ "$free" -ge $((need + SPARE_GB)) ]
+}
+s3() {                                     # s3 <step> <dir> [--combine]
+  local n=$1 d=$2; shift 2
+  if [ ${#WANT[@]} -gt 0 ] && [[ ! " ${WANT[*]} " =~ " $n " ]]; then return 0; fi
+  if ! room "$d" | tee -a "$LOG/chain.log"; then
+    echo "!!! [$n] not enough room on / for staging + backup -- stopping" | tee -a "$LOG/chain.log"; exit 1
+  fi
+  step "$n" $PY -m sept26_prelim_analysis.regen_stage3 "$d" --jobs $JOBS --work "$WORK" "$@"
+}
+s3 s3_full    "$OUT/stage3_fullpass"     --combine
+s3 s3_is2v2   "$OUT/stage3_is2_v2"       --combine
+s3 s3_cf      "$HOME/x17_local/stage3_is2_v2_cf" --combine
+s3 s3_camp    "$OUT/stage3_campaign"     --combine
+s3 s3_pilot   "$OUT/stage3_is2_v1_pilot" --combine
+s3 s3_cos147  ntof_cosmics/results/tracking/k_run_147
+s3 s3_cos150  ntof_cosmics/results/tracking/k_run_150
 
 # --- 2. the guards on the regenerated tables
 step guard_cf   $PY -m sept26_prelim_analysis.y_guard "$HOME/x17_local/stage3_is2_v2_cf"
@@ -72,6 +95,18 @@ for ch in prod cf is2; do
          --wall --src "$SRC" $X --out "$HOME/x17_local/same_chamber/${ch}_$arm" --jobs 6
   done
 done
+# the late (>= 12 ms) pair sets same_chamber_compare reads (added 2026-10-14)
+for ch in cf is2; do
+  case $ch in
+    cf)  SRC="$HOME/x17_local/stage3_is2_v2_cf" ;;
+    is2) SRC="$OUT/stage3_is2_v2" ;;
+  esac
+  for arm in A C; do
+    step sc_late_${ch}_$arm $PY -m sept26_prelim_analysis.det_a_intra --arm $arm --t0-max 300 --axis measured \
+         --wall --src "$SRC" --tan-max-true 0.6 --tof-min-ms 12 \
+         --out "$HOME/x17_local/same_chamber_late/${ch}_$arm" --jobs 6
+  done
+done
 step sc_phys    $PY -m sept26_prelim_analysis.same_chamber_physics
 step sc_cmp     $PY -m sept26_prelim_analysis.same_chamber_compare
 step sc_rep     $PY -m sept26_prelim_analysis.make_same_chamber_report
@@ -82,6 +117,9 @@ step pmt        $PY ntof_cosmics/y_orientation_check.py pmt          # plastics:
 step y_image    $PY -m pair_vertex_imaging.y_image --jobs $JOBS
 step overhead_y $PY ntof_athens_26/make_overhead_figure.py --projection y
 step trackqa    $PY -m sept26_prelim_analysis.trackqa_shards --force
+step tracking_qa $PY -W ignore -m sept26_prelim_analysis.tracking_qa \
+     --src "$OUT/stage3_fullpass/tracks_campaign.parquet" --out "$OUT/tracking_qa_fullpass"
+step tqa_figs   $PY -W ignore -m sept26_prelim_analysis.make_tracking_qa_figures --qa-dir "$OUT/tracking_qa_fullpass"
 
 echo "=== done. Fill Y_FLIP_AUDIT.md 'after' columns from $LOG and the reports; then republish:" | tee -a "$LOG/chain.log"
 echo "    make_y_orientation_deck / make_same_chamber_deck / make_capsule_pose_deck -> add-note.py --force --deploy"

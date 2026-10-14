@@ -262,6 +262,11 @@ is ~27 mm, comparable to the source itself.
 > **ERRATUM 2026-10-13.** The +31.3 / +33 mm below, and "the capsule sits ~30 mm up the beam", are the stage-3
 > y mirror (`../COORDINATES.md`, `../Y_FLIP_AUDIT.md` #1b). In true y the band crossing is −31.3 ± 0.7 mm, at the
 > capsule nose, and the CAD/Geant4 placement is right to ~5 mm. The figures shown in Athens carry the mirror.
+>
+> **Regenerated 2026-10-14** on the fixed stage 3. The side view now compares the crossing with what the same
+> crossing reads on the drawn capsule in Geant4 (its nose, `CAD_CROSSING_Y = −27.8`), not with the gas centroid:
+> source −31.3 ± 0.7 mm (A −30.7, C −32.6, D −34.1), shift on the CAD **−3.5 mm**
+> (`sideview_run145.json` `capsule_y_calibration`). The paragraph below describes the old figure.
 
 **The capsule is drawn at its measured height** (2026-09-14, after
 `HANDOFF_CAPSULE_Y.md` was run). The CAD polycone is shifted along the beam so its

@@ -20,12 +20,13 @@ reconstruction in `wft/`.
 If an analysis you are about to write needs a position, an angle or a depth,
 check the migration status table in `RECONSTRUCTION_BASIS.md` first.
 
-## Coordinates: +y is up (stage-3 y was mirrored 2026-09-07 → 10-13; fixed in code)
+## Coordinates: +y is up (stage-3 y was mirrored 2026-09-07 → 10-13; fixed and regenerated 10-14)
 
-**+y is the beam direction, up.** The y view keeps its position and flips its tan (`COORDINATES.md`). Stage-3
-tables built before the fix are mirrored and have no `y_convention: "up"` in their sidecar. Until
-`Y_FIX_REGEN.sh` has regenerated them on the desktop, **read stage 3 through `build_tracks.y_up(df, path)`**,
-never quote a stored height without it, and see `Y_FLIP_AUDIT.md` for what moved.
+**+y is the beam direction, up.** The y view keeps its position and flips its tan (`COORDINATES.md`). Every live
+stage-3 set was regenerated on 2026-10-14 and carries `y_convention: "up"` in its sidecar; **the superseded
+`stage3_is2_v1_pilot` was not and is still mirrored**, as is any table without the flag. Read stage 3 through
+`build_tracks.y_up(df, path)`, which handles both. What moved: `Y_FLIP_AUDIT.md`. The capsule source (band
+crossing) is at −31 (A) / −35 (C) mm, the nose, where Geant4's capsule puts it (−28 by the same estimator).
 
 **Never decide an axis sign from a self-consistency test.** corr(position, tan), A–C lines and band slopes are all
 blind to a global mirror. Pin every orientation to an external fact, such as cosmic muons going down or a PMT

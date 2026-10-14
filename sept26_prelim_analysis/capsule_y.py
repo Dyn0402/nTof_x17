@@ -156,8 +156,10 @@ D_PERP_MM = 234.6
 
 #: Source-height grid the profile likelihood is scanned on, then refined.  The
 #: nominal is put ON the grid so the CAD answer's own likelihood is evaluated
-#: with the same model as the fitted one.
-Y0_GRID = np.sort(np.append(np.arange(-30.0, 90.1, 4.0), NOMINAL_Y0))
+#: with the same model as the fitted one.  Symmetric about 0 since the
+#: 2026-10-14 y-fix regeneration: the old -30..+90 had been sized around the
+#: mirrored answer (+33), and the true one (~ -33) sits near its lower edge.
+Y0_GRID = np.sort(np.append(np.arange(-90.0, 90.1, 4.0), NOMINAL_Y0))
 
 #: Ray-trace sampling.  The source quadrature is built ONCE per shape and reused
 #: at every y0, so the profile likelihood is smooth in y0 rather than carrying an

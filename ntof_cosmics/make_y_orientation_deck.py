@@ -3,7 +3,12 @@
 make_y_orientation_deck.py -- the evidence that stage-3 global y is mirrored,
 as a slide note for dylan-neff.web.cern.ch/notes (y-orientation).
 
-Reads:
+The evidence slides show the MIRRORED stored frame, so they read the frozen
+pre-fix copies in ntof_cosmics/results/y_orientation/pre_fix/ (taken 2026-10-14
+before Y_FIX_REGEN.sh overwrote the originals); the "fixed" slide reads the
+regenerated originals below.
+
+Reads (current = after the fix):
   ntof_cosmics/results/y_orientation/ac149.parquet   (y_orientation_check.py cosmic)
   ntof_cosmics/results/y_orientation/pmt_timing.csv  (y_orientation_check.py pmt)
   /media/dylan/data/x17/scint_stack/ana/eff_map.parquet (liquid firing maps)
@@ -33,20 +38,27 @@ from slidedoc import BLUE, ORANGE, RED, GOLD, PURPLE, GREY, GREEN, INK, MUT, RUL
 from sept26_prelim_analysis import paths                                    # noqa: E402
 
 RES = REPO / 'ntof_cosmics' / 'results' / 'y_orientation'
+PRE = RES / 'pre_fix'                    # the mirrored-frame inputs, frozen before the regen
 EM = Path('/media/dylan/data/x17/scint_stack/ana/eff_map.parquet')
 CT = paths.out('capsule_tof')
 ARM_COL = dict(A=BLUE, B=GREEN, C=ORANGE, D=PURPLE)
 
 
-def load():
-    R = pd.read_parquet(RES / 'ac149.parquet').dropna(subset=['tA', 'tC'])
+def ac_lines(path: Path) -> pd.DataFrame:
+    R = pd.read_parquet(path).dropna(subset=['tA', 'tC'])
     R['dy'], R['dt'] = R.yA - R.yC, R.tA - R.tC
-    G = R[(R.dev1 < 15) & (R.dev2 < 15) & (R.dt.abs() < 20)].copy()
-    P = pd.read_csv(RES / 'pmt_timing.csv')
-    M = pd.read_parquet(EM)
+    return R[(R.dev1 < 15) & (R.dev2 < 15) & (R.dt.abs() < 20)].copy()
+
+
+def load(pre: bool = True):
+    """Deck inputs: pre=True the frozen mirrored-frame copies, False the regenerated ones."""
+    d = PRE if pre else RES
+    G = ac_lines(d / 'ac149.parquet')
+    P = pd.read_csv(d / 'pmt_timing.csv')
+    M = pd.read_parquet(PRE / 'eff_map.parquet' if pre else EM)
     M = M[(M.layer == 'liq_full') & (M['sample'] == 'all_late')]
-    T = pd.read_csv(CT / 'tof.csv')
-    g4 = pd.read_csv(CT / 'g4.csv')
+    T = pd.read_csv((PRE if pre else CT) / 'tof.csv')
+    g4 = pd.read_csv((PRE if pre else CT) / 'g4.csv')
     mp = pd.read_csv(REPO / 'mx17_m1_map.csv')
     return G, P, M, T, g4, mp
 
@@ -244,6 +256,59 @@ the real reconstruction (g4_digi) reproduces its truth (−28). The 2026-09-14 c
     D.slide('liquid', body, notes, foot='scint stack eff_map (liq_full, all_late) · capsule_tof tof.csv / g4.csv')
 
 
+def _summary(G, P, M, T, g4) -> dict:
+    """The five orientation facts, by the same estimators, for one vintage of inputs."""
+    up, dn = G[G.dy > 20], G[G.dy < -20]
+    v = P[(P.coord == 'v_mm') & P.el.isin(['p1', 'p2'])]            # the 8 plastic bars
+    late = T[T.lo >= 20]
+    yc = {a: float(np.average(late[late.arm == a].y_cross, weights=1 / late[late.arm == a].y_err ** 2))
+          for a in 'AC'}
+    b = M[M.arm == 'B']
+    net = lambda s: (s.k_on.sum() - s.k_off.sum()) / max(s.n.sum(), 1)
+    return dict(cos_up=float((up.dt > 0).mean()), cos_dn=float((dn.dt > 0).mean()),
+                cos_p=float(mannwhitneyu(up.dt, dn.dt).pvalue), cos_n=len(G),
+                pmt_pos=int((v.slope_ns_per_100mm > 0).sum()), pmt_n=len(v),
+                pmt_lo=float(v.slope_ns_per_100mm.min()), pmt_hi=float(v.slope_ns_per_100mm.max()),
+                liqB_top=net(b[b.y > 50]), liqB_bot=net(b[b.y < -50]),
+                capA=yc['A'], capC=yc['C'],
+                g4=float(g4[g4.kind.str.startswith('reconstructed')].v_cross.mean()))
+
+
+def s_fixed(D, B, A, regen):
+    """Before (mirrored, frozen pre_fix inputs) vs after (regenerated) on the same estimators."""
+    f = lambda x: f'{x:+.0f}'
+    rows = [
+        ['cosmic muons: A later when A stored higher / lower',
+         f"{sd.pct(B['cos_up'])} / {sd.pct(B['cos_dn'])}", f"<b>{sd.pct(A['cos_up'])} / {sd.pct(A['cos_dn'])}</b>",
+         'stored-higher arm hit first'],
+        ['plastic bars later at stored-high y',
+         f"{B['pmt_pos']} / {B['pmt_n']}", f"<b>{A['pmt_pos']} / {A['pmt_n']}</b>", 'PMTs on top: 0 / 8'],
+        ['liquid B net firing, stored y > +50 / < −50',
+         f"{100 * B['liqB_top']:.1f} / {100 * B['liqB_bot']:.1f} %",
+         f"<b>{100 * A['liqB_top']:.1f} / {100 * A['liqB_bot']:.1f} %</b>", 'PMT on top: top > bottom'],
+        ['capsule source height, ≥ 20 ms (A / C, mm)',
+         f"{f(B['capA'])} / {f(B['capC'])}", f"<b>{f(A['capA'])} / {f(A['capC'])}</b>", 'nose: Geant4 −28'],
+        ['Geant4 through the digitiser + reco (mm)', f(B['g4']), f"<b>{f(A['g4'])}</b>", 'truth −28'],
+    ]
+    tab = sd.table(['orientation fact', 'before (stored, 09-07 → 10-13)', 'after (regenerated)', 'external fact'],
+                   rows, size=22, widths=[520, 300, 260, 300])
+    body = (sd.title('Fixed: y keeps its position, tan y flips. Every check now points up',
+                     f'code 13 Oct (main 9ea8b72), tables regenerated 14 Oct · same estimators as the slides above, '
+                     f'before = the frozen pre-fix inputs')
+            + sd.col(tab, sd.callout(regen, GREY, 22), gap=28))
+    notes = """
+<p><b>The fix.</b> <code>build_tracks.local_and_global</code> writes <code>y_local = +(y_p0 − 199.29)</code> and
+<code>tany = −tan_y_raw · k</code>. Against the 09-07 tables it is an exact global y mirror: <code>p0_y</code>,
+<code>d_y</code>, <code>tany</code>, <code>target_y_mm</code>, <code>y_local</code> change sign, and nothing else.
+Every stage-3 table was rebuilt from its own sidecar and checked row by row against the old one before it replaced
+it (<code>regen_stage3.py</code>). Sidecars carry <code>y_convention: "up"</code>. A guard in every build refuses a
+table whose late capsule y crossing is not below zero.</p>
+<p><b>What moved.</b> Heights only: the capsule sits at the nose where the CAD and Geant4 put it (to ~5 mm; the "CAD
+is 30 mm off" result was the mirror), the vertical liquids rise toward their PMT, vertex-y images flip. Angles between
+tracks, |tan|, x and z are unchanged by construction. Full list: <code>Y_FLIP_AUDIT.md</code>.</p>"""
+    D.slide('fixed', body, notes, foot='Y_FLIP_AUDIT.md · Y_FIX_REGEN.sh · ntof_cosmics/results/y_orientation/pre_fix/')
+
+
 def s_close(D):
     li = lambda t: f'<li style="margin-bottom:14px">{t}</li>'
     left = ('<ul style="font-size:27px;line-height:1.35;color:#eef0f3;padding-left:28px">'
@@ -255,13 +320,13 @@ def s_close(D):
             + li('<b>Possibly affected:</b> cuts on y windows (in-bore along y, capsule y ranges), the y-binned '
                  'shear, any y-asymmetric acceptance or efficiency correction.') + '</ul>')
     right = ('<ol style="font-size:27px;line-height:1.35;color:#eef0f3;padding-left:32px">'
-             + li('Fix <code>build_tracks</code>: position unflipped, tan y flipped; a regression test that pins the '
-                  'sign to the cosmic timing.')
-             + li('Regenerate stage 3 (all chains); audit every consumer of y.')
-             + li('Re-derive the capsule height and anything that used it.') + '</ol>')
+             + li('<b>Done 13 Oct:</b> <code>build_tracks</code> keeps the position and flips tan y; a guard in '
+                  'every build and a test pinned to the cosmic timing.')
+             + li('<b>Done 14 Oct:</b> every stage-3 set regenerated and proved an exact y mirror; consumers audited.')
+             + li('<b>Done 14 Oct:</b> capsule height, same-chamber vertices, scint maps re-derived.') + '</ol>')
     body = (sd.title('<span style="color:#eef0f3">What the mirror changes, and the fix</span>')
             + sd.row(sd.col(sd.p('scope', 26, '#a3abb9'), left, w=860),
-                     sd.col(sd.p('fix (handed off)', 26, '#a3abb9'), right, w=740), gap=56))
+                     sd.col(sd.p('the fix', 26, '#a3abb9'), right, w=740), gap=56))
     D.slide('close', body, '<p>Handoff: <code>HANDOFF_Y_FLIP_FIX.md</code> in the nTof_x17 repo root; the rule is in '
                            '<code>COORDINATES.md</code> and CLAUDE.md.</p>', dark=True)
 
@@ -269,20 +334,24 @@ def s_close(D):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--out', type=Path, default=Path('/media/dylan/data/x17/ntof_cosmics/y_orientation/y-orientation.html'))
+    ap.add_argument('--regen-note', default='', help='one line on the regeneration for the "fixed" slide')
     a = ap.parse_args()
-    G, P, M, T, g4, mp = load()
+    G, P, M, T, g4, mp = load(pre=True)
+    after = _summary(*[x for i, x in enumerate(load(pre=False)) if i != 5])
+    before = _summary(G, P, M, T, g4)
     D = sd.Deck('Stage-3 y is mirrored', 'evidence that the stored global y axis points down')
     s_cover(D, G)
     s_mechanism(D, mp)
     s_cosmic(D, G)
     s_plastic(D, P)
     s_liquid_capsule(D, M, T, g4)
+    s_fixed(D, before, after, a.regen_note)
     s_close(D)
     a.out.parent.mkdir(parents=True, exist_ok=True)
     D.write(a.out, note_meta=dict(
         title='Stage-3 global y is mirrored: the evidence',
-        summary='Cosmic-muon timing, plastic and liquid PMT positions, the strip wiring and the capsule nose all say '
-                'stored y points down; what it changes and the fix.',
+        summary='Cosmic-muon timing, plastic and liquid PMT positions, the strip wiring and the capsule nose all said '
+                'stored y pointed down; fixed 13 Oct, regenerated 14 Oct, every check now points up.',
         tags='X17,coordinates,tracking', date=dt.date.today().isoformat()))
     print('wrote', a.out)
 
