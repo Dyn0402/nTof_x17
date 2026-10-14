@@ -20,3 +20,5 @@ PYTHONPATH=. .venv/bin/python -m ntof_calorimetry.make_wp_deck        # notes/sc
 - The liquid keVee scale of the same file is wrong by ×5-7: it was never a
   Compton-edge calibration. Use the MIP scale in `c4/mip_scale.csv`.
 - In-beam through-goers are not a MIP sample: most do not penetrate the stack.
+
+**MM energy deposit per track (2026-10-14):** `heed_edep` → `mm_edep_sim` / `mm_edep_data` → `mm_edep_ana` → `mm_edep_combo`. Results and status: `MM_EDEP.md`.

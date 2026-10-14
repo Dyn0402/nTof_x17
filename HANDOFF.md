@@ -1,5 +1,41 @@
 # Handoff
 
+## MM energy deposit per track (dE/dx) — updated 2026-10-14 (dylan-MS-7C84)
+
+**Resume:** all sims done; run `mm_edep_ana` (A+C), fix beam k, rerun combo with measured σ, then report/slide note.
+
+**Goal:** Dylan's ask: how accurately a reconstructed track's energy deposit in the MM gap is measured, first in
+sim then on n_TOF data, and whether it helps the scintillators identify the track's energy. (The old M2 note only
+said 1 vs 2 MIPs don't separate; that was not the question.)
+
+**Done:** full record and numbers in `ntof_calorimetry/MM_EDEP.md`. Headlines: sim accuracy 10 % (A, contained) /
+16 % (C); data add a 1D-along-x gain structure (removable with an in-situ map) plus a random per-track gain jitter
+(σ 0.22–0.27 cosmics, 0.09 beam after map, from the truth-free halves test) → ~13–17 % beam, ~25 % cosmics.
+Cosmic map does not transfer to beam. MM unusable < ~9 ms after the flash. Data: tracks firing no scintillator
+carry +29 % MM charge (Geant4 predicts +15 %).
+
+**In progress / where it stopped:**
+- All four sims are on disk (`sim_{cosmic,beam}_{A,C}.parquet`); beam C finished at wrap-up, not yet analysed.
+- `mm_edep_ana.chamber('A')` ran (→ `<calo>/mm_edep/results/chamber_A.json`); `main()` (A+C) not yet run.
+- No report yet.
+
+**Next steps:**
+1. `PYTHONPATH=. .venv/bin/python -m ntof_calorimetry.mm_edep_ana` (A+C).
+2. Fix the beam calibration: use the beam sim's own `window_curve` / k for beam (see MM_EDEP.md "Known issues").
+3. `python -m ntof_calorimetry.mm_edep_combo <σ>` with the measured σ (≈0.15 beam); add data category table
+   (code for it is in the session, re-derive: stack_run_145 pulses vs WALL_THR/PLAS_THR, pointing at plastic).
+4. Investigate the data "none" excess being 2× Geant4 (second particles? out-of-time tracks?).
+5. `make_report` (report.html in `<calo>/mm_edep/`) and a slide note (slide-note skill), log on the x17 board.
+
+**Gotchas / decisions:**
+- Heed runs only on lxplus (desktop PyROOT is built for py3.10, system is 3.12). Reach lxplus only as `lxplus`.
+- Bundles' per-channel gains are all 1.0. χ² tracks charge, not quality. Don't `pkill -f` (kills own shell).
+- Disks: / and /media/dylan/data each have ~3.5 GB free.
+
+**Key files & commands:**
+- `ntof_calorimetry/{heed_edep,mm_edep_sim,mm_edep_data,mm_edep_ana,mm_edep_combo}.py`, `MM_EDEP.md`
+- outputs `/media/dylan/data/x17/calorimetry/{heed,mm_edep}/`
+
 ## Stage-3 y fix — updated 2026-10-14 (dylan-MS-7C84)
 
 **Resume:** DONE. Regenerated, audited and republished overnight 10-13→14. Remaining items are optional cleanup (below).
