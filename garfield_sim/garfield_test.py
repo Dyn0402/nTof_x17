@@ -111,8 +111,8 @@ try:
     E_test = 50000.   # 50 kV/cm — well into avalanche territory for Ar/CO2
     alpha = ctypes.c_double(0.)
     eta   = ctypes.c_double(0.)
-    gas.ElectronTownsend(E_test, 0., 0., 0., 0., alpha)
-    gas.ElectronAttachment(E_test, 0., 0., 0., 0., eta)
+    gas.ElectronTownsend(0., 0., -E_test, 0., 0., 0., alpha)
+    gas.ElectronAttachment(0., 0., -E_test, 0., 0., 0., eta)
     print(f"      At E = {E_test/1e3:.0f} kV/cm:")
     print(f"        Townsend α = {alpha.value:.1f} cm⁻¹")
     print(f"        Attachment η = {eta.value:.4f} cm⁻¹")
