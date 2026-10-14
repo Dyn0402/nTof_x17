@@ -81,43 +81,51 @@ correct the record.
 
 ## Capsule pose in the beam — updated 2026-10-14 (dylan-MS-7C84)
 
-**Resume:** pose2 refit on the real EAR2 beam done; Geant4 reruns (condor 4454431/2) running; then B/D z-vs-height for tilt azimuth.
+**Resume:** tilt azimuth done (φ≈135°) and 19.95 m refit done; next: condor steps+reduce on the finished EAR2-gun Geant4, then the library.
 
 **Goal:** where the ³He capsule is relative to the beam and chambers (sets ³He/IPC/X17 yield; feeds the 1 : 8 pair-rate question).
-Full state: Correction + Outcome boxes of `sept26_prelim_analysis/HANDOFF_CAPSULE_POSE_FIT.md`.
+Full state: Correction box of `sept26_prelim_analysis/HANDOFF_CAPSULE_POSE_FIT.md` (now includes the azimuth paragraph).
 
-**Done (10-14):**
-- Found the old beam model (`Lambda2D`) was the n_TOF resolution function, not a beam radius. All 10-13 "readings"
-  (beam on capsule vs capsule far off) are void. Real beam: `ear2_beam/` (phase-4 FLUKA phase space through the EAR2
-  collimation; matches PPACMon to 1-2 %; r50 10.5 mm, FWHM 22 mm at 19.5 m; on the pipe axis to 1-2 mm). Only 17-58 % of it
-  reaches the ³He depending on pose, not ≥ 85 %.
-- `capsule_pose pose2` refit (late window, A/C x crossings + x-vs-height shape). Report
-  `/media/dylan/data/x17/sept26_prelim/capsule_pose_ear2/report.html` (`make_pose2_report.py`):
-  - tilt robust: top leans toward −x by 7-15° (φ 135-225°); untilted χ² 46-67 vs 7-12 tilted; φ = 0 excluded;
-  - height robust: capsule 8-12 mm below drawn;
-  - sideways degenerate (beam vs capsule x). Beam centred on the pipe → capsule ~16-18 mm off axis, ³He sees ~0.17-0.23
-    (χ² 21 at xc −18). Beam −10 / capsule −15 fits best (χ² 8.3, ³He 0.58) but that preference is toy-library-limited.
+**Done:**
+- (earlier 10-14) real EAR2 beam (`ear2_beam/`); `pose2` refit: top leans toward −x 7–15°, capsule 8–12 mm below drawn,
+  sideways beam/capsule degenerate (beam centred → capsule ~16–18 mm off, ³He sees ~0.2; beam −10 → ~0.55).
+- **Tilt azimuth from D: φ ≈ 135°** (top toward −x and +z = toward B and A). `capsule_pose data_z` + `pose2z`:
+  D's z crossing (production chain, wall-coincident, 25–75 ms) rises ~4–5 mm from h −80 to 0, stable in every ToF slice
+  ≥ 25 ms and every quarter of runs. D below 25 ms is junk. Best x+z χ²: 26 (φ135) / 34 (180) / 66 (225).
+  A ±3° in-plane D rotation (`POSE2_ALPHA`) doesn't reorder. B can't test it (no drift field). The toy matches the
+  sign of D's rise, not its shape below the nose.
+- **19.95 m** (`POSE2_L=19.95`, out `capsule_pose_ear2_L19p95/`): same conclusions; φ135 best (χ² 29); beam-centred
+  family closer (35, ³He 0.23) vs beam −5/−10 (29, 0.34–0.41).
+- Reports regenerated: `/media/dylan/data/x17/sept26_prelim/capsule_pose_ear2{,_L19p95}/report.html`.
 
-**In progress:**
-- Geant4 with the real gun: condor **4454431** (19.5 m, 100 jobs) and **4454432** (19.95 m, 50 jobs), submitted 10-14 12:28,
-  all running at wrap-up → `/eos/experiment/ntof/data/x17/full_sim/neutrons_thermal_ear2_L19p{5,95}` (dirs were not populated yet; check
-  `lxstore status` and `condor_q` on lxplus). Smoke test: ³He 0.448/n (was ~0.95), Al 0.0028 (was 0.0045).
+**In progress / where it stopped:**
+- Geant4 with the real gun: condor 4454431 (19.5 m, 100) / 4454432 (19.95 m, 50): at wrap-up (14:20) all but 1 job done;
+  outputs `/eos/experiment/ntof/data/x17/full_sim/neutrons_thermal_ear2_L19p{5,95}/neutron_bg_jobNNN_t0.root` (~1.2 GB each).
+- Nothing local running.
 
 **Next steps:**
-1. When the condor jobs finish: digitise, rebuild the g4 track library, rerun `pose2` (tightens shape χ²); expect the 1 : 8 pair-rate question to move since Geant4's ³He/Al captures per neutron were ×2-4 too high.
-2. B/D z-vs-height to fix tilt azimuth (135 vs 225 = sign of the z component).
-3. Redo at the 19.95 m beam.
-4. Late population (20-75 ms): direct beam there is only 1.3 % of 4-12 ms in n_TOF's phase space, yet late capsule tracks dominate; the fit assumes they are lit like the beam. Needs a physical explanation.
-5. Still needed from Dylan: collimator actually used (assumed standard 30 mm?), capsule tip height / holder, a survey or photo.
+1. On lxplus, once `condor_q` is empty: copy `ntof_cosmics/g4_digi/condor/make_ear2_subs.sh` to lxplus, then
+   `bash make_ear2_subs.sh neutrons_thermal_ear2_L19p5 ear2_L19p5 && condor_submit steps_ear2_L19p5.sub && condor_submit reduce_ear2_L19p5.sub`
+   (same for L19p95). Outputs → `full_sim/angle_scale/{steps,neutrons}_ear2_L19p5/`. `lxstore status` before/after.
+2. Pull to `/media/dylan/data/x17/ntof_cosmics/g4_digi/steps_ear2_L19p5/` and `g4_angle/neutrons_ear2_L19p5/`
+   (local disks have only ~3.5 GB free each; steps ~0.4 GB/100 files), then `run_digi.py g4 --arm A/C ... --label g4_A_ear2_L19p5`
+   (template `ntof_cosmics/g4_digi/run_full.sh`, ~1 h/arm).
+3. `POSE2_LIB=ear2_L19p5` → rerun `shear`, `pose2`, `pose2z` (families below), regenerate report; check ³He/Al per n vs the 1:8 question.
+4. Late population (20–75 ms) illumination is still unexplained (direct beam there is 1.3 % of 4–12 ms).
+5. Still needed from Dylan: collimator used, capsule tip height/holder, survey/photo.
 
 **Gotchas / decisions:**
 - Never quote the capture source as the beam position: it is where the flux meets Al.
-- The beam shape fit is poor pointing evidence unless tied to the pipe axis; literature puts the beam on the axis.
-- Superseded: the 10-13 model and its two readings; `capsule_pose_broad_beam.py` was a stopgap 30 mm Gaussian toy.
+- D z only from wall-coincident tracks and ≥ 25 ms; the plain production D crossing is garbage (−27…−500).
+- D's crossing also moves with hit height on its plane (+30 mm/m, A/C +6–10): D-specific effect, flagged in the report.
+- +z sign is pinned by the arm layout (COORDINATES.md §1–2), not by self-consistency.
+- Don't `pgrep -f`/`pkill -f` a pattern that appears in your own waiter's command line (it matches itself).
 
 **Key files & commands:**
-- `sept26_prelim_analysis/capsule_pose.py` (`pose2`, env `POSE2_XB/XC/THETA/PHI`), `make_pose2_report.py`, `ear2_beam/` (README)
-- outputs `/media/dylan/data/x17/sept26_prelim/capsule_pose_ear2/`
+- `sept26_prelim_analysis/capsule_pose.py`: steps `pose2`, `data_z`, `pose2z`; env `POSE2_XB/XC/THETA/PHI/ALPHA/L/LIB`.
+  Families run: `POSE2_XB=0 POSE2_XC=-16,-18,-20`, `-5 / -10,-15`, `-10 / -10,-15,-20`.
+- `make_pose2_report.py` (`POSE2_OUT`, `POSE2_L` for the 19.95 m dir); merged table `pose2_xz.csv`.
+- `ntof_cosmics/g4_digi/condor/make_ear2_subs.sh`: condor subs for the new Geant4 files.
 
 ## Same-chamber pairs + the y mirror — updated 2026-10-13 (dylan-MS-7C84)
 

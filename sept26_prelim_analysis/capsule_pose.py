@@ -184,7 +184,8 @@ def sample_energy(n: int, rng, window):
 #: the beam model: the EAR2 optical-transport profile at the station
 #: (ear2_beam/).  Until 2026-10-14 this sampled a radius from Lambda2D, which is
 #: the n_TOF resolution function (lambda), not a profile -- ~5x too narrow.
-BEAM = dict(L=19.5, variant='july2021')
+#: POSE2_L: the capsule's flight length (19.5 m nominal; 19.95 m is the PPACMon station)
+BEAM = dict(L=float(os.environ.get('POSE2_L', 19.5)), variant='july2021')
 
 
 def sample_beam(n: int, rng, window, centre=(0.0, 0.0), width_scale=1.0):

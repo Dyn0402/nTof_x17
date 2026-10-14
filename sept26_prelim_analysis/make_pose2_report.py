@@ -4,11 +4,13 @@ make_pose2_report.py -- the capsule pose refit on the real EAR2 beam
 (capsule_pose pose2), as <out>/capsule_pose_ear2/report.html with figures/.
 
     python -m sept26_prelim_analysis.make_pose2_report
+    POSE2_L=19.95 POSE2_OUT=capsule_pose_ear2_L19p95 python -m sept26_prelim_analysis.make_pose2_report
 """
 from __future__ import annotations
 
 import datetime as dt
 import glob
+import os
 import sys
 from pathlib import Path
 
@@ -19,7 +21,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import figstyle as fs  # noqa: E402
 from sept26_prelim_analysis import paths  # noqa: E402
 
-OUT = paths.out('capsule_pose_ear2')
+OUT = paths.out(os.environ.get('POSE2_OUT', 'capsule_pose_ear2'))
+L_M = float(os.environ.get('POSE2_L', 19.5))
 FIG = OUT / 'figures'
 
 
@@ -147,6 +150,8 @@ def build():
         a_rng = f'{A.alpha.min():g} to {A.alpha.max():+g}°'
     else:
         tbl_alpha, a_rng = '<p>(not run)</p>', ''
+    rot_txt = (f'An in-plane rotation of D ({a_rng}) does not change that ordering.' if a_rng
+               else 'The D-rotation scan was run at 19.5 m only (capsule_pose_ear2/report.html).')
     b135 = perphi[perphi.phi == 135].chi2_xz.iloc[0]
     b180 = perphi[perphi.phi == 180].chi2_xz.iloc[0]
     b225 = perphi[perphi.phi == 225].chi2_xz.iloc[0]
@@ -166,7 +171,7 @@ def build():
 <meta name="viewport" content="width=device-width,initial-scale=1"><style>{css}</style></head><body>
 <h1>Capsule pose on the real EAR2 beam</h1>
 <p class="cap">Generated {dt.date.today().isoformat()} by <code>make_pose2_report.py</code> from <code>capsule_pose pose2</code>
-(beam: <code>ear2_beam</code>, capsule at 19.5 m; data: is2_v2 cf, late window 20–75 ms, A and C).</p>
+(beam: <code>ear2_beam</code>, capsule at {L_M:g} m; data: is2_v2 cf, late window 20–75 ms, A and C).</p>
 <div class="verdict"><p><b>Verdict.</b> With the real beam the old two "readings" are gone. Three things come out:
 <b>the capsule top leans toward −x by ~7–15°</b> (untilted shape χ² {unt.min():.0f}–{unt.max():.0f} for 10 points, tilted
 toward −x {til.min():.0f}–{np.percentile(til, 25):.0f}); <b>it sits ~8–12 mm lower than drawn</b> in every good pose; and
@@ -176,8 +181,7 @@ toward −x {til.min():.0f}–{np.percentile(til, 25):.0f}); <b>it sits ~8–12 
 <p><b>Tilt azimuth (chamber D, z vs height): φ ≈ 135°.</b> In D the capture source moves toward +z by ~5 mm from
 80 mm below the nose to its height, in every 5–15 ms slice from 25 to 75 ms and in every quarter of the runs. Adding that curve
 to the fit, the best pose leans toward −x <i>and</i> +z (toward B and A; south-east in the hall): best x+z χ² {b135:.0f} at
-φ 135°, against {b180:.0f} at 180° and {b225:.0f} at 225°. An in-plane rotation of D ({a_rng}) does not change that
-ordering. The +z sign is pinned by the surveyed arm layout (A at +z) and the x-view in-plane sign measured on the target image
+φ 135°, against {b180:.0f} at 180° and {b225:.0f} at 225°. {rot_txt} The +z sign is pinned by the surveyed arm layout (A at +z) and the x-view in-plane sign measured on the target image
 (COORDINATES.md), not by a self-consistency test.</p></div>
 <h2>Best pose per (beam x, capsule x)</h2>{tbl}
 <p class="cap">gas: fraction of the beam that reaches the ³He; dy_c: how far the capsule must move in height (mm) to put its
@@ -208,7 +212,7 @@ effect (y angle scale, alignment) is present, though the rotation scan says it d
 <li>The φ grid is 45° wide; φ is ~135° ± 25°, not measured to better than that.</li>
 <li>The late (20–75 ms) capsule tracks are ~100× more than the direct beam gives at those times (n_TOF phase space); the fit
 assumes they are lit like the beam. The 4–12 ms window alone is lower purity.</li>
-<li>The capsule at 19.95 m (broader beam) is not refitted; nor is the big collimator.</li>
+<li>Capsule distance: 19.5 m and 19.95 m are fitted separately (capsule_pose_ear2 and capsule_pose_ear2_L19p95); neither the big collimator nor a real-gun Geant4 library is in yet.</li>
 </ul></body></html>'''
     (OUT / 'report.html').write_text(page)
     print('wrote', OUT / 'report.html')
