@@ -95,6 +95,18 @@ for ch in prod cf is2; do
          --wall --src "$SRC" $X --out "$HOME/x17_local/same_chamber/${ch}_$arm" --jobs 6
   done
 done
+# the late (>= 12 ms) pair sets same_chamber_compare reads (added 2026-10-14)
+for ch in cf is2; do
+  case $ch in
+    cf)  SRC="$HOME/x17_local/stage3_is2_v2_cf" ;;
+    is2) SRC="$OUT/stage3_is2_v2" ;;
+  esac
+  for arm in A C; do
+    step sc_late_${ch}_$arm $PY -m sept26_prelim_analysis.det_a_intra --arm $arm --t0-max 300 --axis measured \
+         --wall --src "$SRC" --tan-max-true 0.6 --tof-min-ms 12 \
+         --out "$HOME/x17_local/same_chamber_late/${ch}_$arm" --jobs 6
+  done
+done
 step sc_phys    $PY -m sept26_prelim_analysis.same_chamber_physics
 step sc_cmp     $PY -m sept26_prelim_analysis.same_chamber_compare
 step sc_rep     $PY -m sept26_prelim_analysis.make_same_chamber_report
@@ -105,6 +117,9 @@ step pmt        $PY ntof_cosmics/y_orientation_check.py pmt          # plastics:
 step y_image    $PY -m pair_vertex_imaging.y_image --jobs $JOBS
 step overhead_y $PY ntof_athens_26/make_overhead_figure.py --projection y
 step trackqa    $PY -m sept26_prelim_analysis.trackqa_shards --force
+step tracking_qa $PY -W ignore -m sept26_prelim_analysis.tracking_qa \
+     --src "$OUT/stage3_fullpass/tracks_campaign.parquet" --out "$OUT/tracking_qa_fullpass"
+step tqa_figs   $PY -W ignore -m sept26_prelim_analysis.make_tracking_qa_figures --qa-dir "$OUT/tracking_qa_fullpass"
 
 echo "=== done. Fill Y_FLIP_AUDIT.md 'after' columns from $LOG and the reports; then republish:" | tee -a "$LOG/chain.log"
 echo "    make_y_orientation_deck / make_same_chamber_deck / make_capsule_pose_deck -> add-note.py --force --deploy"
