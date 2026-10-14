@@ -93,6 +93,12 @@ ACTIVE_U = 190.0             # MM_SIZE_U / 2
 #: here in the detector frame (`y_image`).  Not at zero, and not the thing the
 #: chambers actually see -- which is the point of the y figure.
 GAS_CENTROID_Y = 0.8
+#: What the y band crossing reads for the CAD capsule where it is drawn: the
+#: Geant4 nose-first capsule through the real reconstruction (g4_digi, is2;
+#: capsule_tof g4.csv, A -28.0 / C -27.6; truth -27.6 / -28.1).  The crossing
+#: images the NOSE, where the captures are, not the gas centroid, so this -- not
+#: GAS_CENTROID_Y -- is what the measurement is compared with (2026-10-14).
+CAD_CROSSING_Y = -27.8
 HIST_RANGE, HIST_BINS = (-160.0, 160.0), 90
 
 
@@ -689,13 +695,16 @@ def figure_y(arms, bars, sipm, out_base, norm=True):
 
     # THE CAPSULE HEIGHT IS A CALIBRATION.  Its placement along the beam was
     # never surveyed; the three chambers measure it.  Inverse-variance mean of
-    # their scale-free y band crossings, then the polycone is placed so its gas
-    # centroid sits there -- the same offset for every chamber.
+    # their scale-free y band crossings, compared with what the same crossing
+    # reads on the drawn CAD capsule in Geant4 (the nose, CAD_CROSSING_Y); the
+    # difference is the shift applied to the polycone, the same for every
+    # chamber.  (Until 2026-10-14 the crossing was taken as the gas centroid,
+    # and on the mirrored stage-3 y that gave +30.5 mm.)
     yc = np.array([arms[a]['y_crossing']['mm'] for a in ('A', 'C', 'D')])
     ye = np.array([arms[a]['y_crossing']['err'] for a in ('A', 'C', 'D')])
     w = 1.0 / ye ** 2
     y_meas, y_meas_err = float((w * yc).sum() / w.sum()), float(w.sum() ** -0.5)
-    y0 = y_meas - GAS_CENTROID_Y                  # shift applied to the CAD
+    y0 = y_meas - CAD_CROSSING_Y                  # shift applied to the CAD
     fig = plt.figure(figsize=(13.35, 6.22))
     wl = 0.545
     hl = wl * 13.35 / 6.22 * (2 * YLIM) / (2 * XLIM)
@@ -812,7 +821,7 @@ def figure_y(arms, bars, sipm, out_base, norm=True):
     leg.set_zorder(12)
     axY.grid(alpha=0.3)
     P.strip(axY)
-    axY.text(0.985, 0.94, 'inferred ³He Y position:\n' + '\n'.join(lines)
+    axY.text(0.985, 0.94, 'source (capsule nose) Y:\n' + '\n'.join(lines)
              + f'\ncombined:  {y_meas:+.1f} ± {y_meas_err:.1f} mm',
              transform=axY.transAxes, ha='right', va='top', fontsize=10.5,
              color=P.INK, linespacing=1.45, zorder=12,
@@ -827,10 +836,12 @@ def figure_y(arms, bars, sipm, out_base, norm=True):
 
     save(fig, out_base)
     pd.DataFrame(rows).to_csv(f'{out_base}.csv', index=False)
-    return dict(capsule_gas_centroid_y_mm=y_meas, err_mm=y_meas_err,
+    return dict(source_y_mm=y_meas, err_mm=y_meas_err,
                 shift_applied_to_cad_mm=y0,
+                cad_crossing_y_mm=CAD_CROSSING_Y,
                 nominal_cad_centroid_y_mm=GAS_CENTROID_Y,
-                method='inverse-variance mean of the A, C, D y band crossings')
+                method='inverse-variance mean of the A, C, D y band crossings, minus what the '
+                       'same crossing reads on the drawn capsule in Geant4 (its nose)')
 
 
 # ----------------------------------------------------------------------- main
