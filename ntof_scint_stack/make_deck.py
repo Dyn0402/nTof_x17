@@ -42,12 +42,15 @@ ARMS = ('A', 'B', 'C', 'D')
 #: carries the 2026-07-17/18 survey (`MX17_Full_Geant/include/SimConfig.hh`,
 #: `ls_rot_deg` = -90 on A/D: horizontal, neck + PMT along +u; 0 on B/C:
 #: vertical, PMT up).  The beam data agree independently: A and D respond
-#: 10-20x more on their +u half, B and C show no u gradient.  The vessel is a
+#: 10-20x more on their +u half, B and C show no u gradient; since the
+#: 2026-10-14 y fix B and C also rise toward +v (before it, stored y was
+#: mirrored and they seemed to fall toward their PMT).  The vessel is a
 #: 451 mm slab, a 90 mm funnel down to a 50 mm neck, PMT half-inserted.
 LIQ_PMT = {'A': '+u', 'B': '+v', 'C': '+v', 'D': '+u'}
 #: The plastic bars' PMTs: on top (+v) on every arm, as reported by Dylan
-#: 2026-10-06.  NOT in the Geant model (it has bare bars) and not testable on
-#: this data: the response is flat in v to +-8 % and trigger-cut.
+#: 2026-10-06.  NOT in the Geant model (it has bare bars).  The response is flat
+#: in v to +-8 % and trigger-cut, but the TIMING confirms it: all 8 bars fire
+#: earlier at high v (ntof_cosmics/y_orientation_check.py pmt, 2026-10-14).
 PLAS_PMT = '+v'
 #: liquid vessel funnel (from the slab edge) and neck, mm
 LS_FUNNEL, LS_NECK_HALF = 90.0, 25.0
@@ -841,11 +844,13 @@ own median. A bar brighter near its PMT shows as a gradient along u.</p>""",
     hor = [a for a in ARMS if LIQ_PMT[a] == '+u']
     ver = [a for a in ARMS if LIQ_PMT[a] != '+u']
     rat = {a: hv[a][0] / hv[a][1] if hv[a][1] > 0 else np.inf for a in ARMS}
+    ver_up = all(rat[a] > 1 for a in ver)
     li = heat_slide(
         D, 'map-liq', 'liquid maps',
         f'Liquids: {" and ".join(hor)} (PMT to the side) answer '
         f'{min(rat[a] for a in hor):.0f}–{max(rat[a] for a in hor):.0f}× more '
-        f'on their PMT half; {" and ".join(ver)} (PMT on top) do not',
+        f'on their PMT half; {" and ".join(ver)} (PMT on top) '
+        + (f'{min(rat[a] for a in ver):.1f}–{max(rat[a] for a in ver):.1f}× more' if ver_up else 'do not'),
         'tagged by the wall alone (both ends), so the whole cell is mapped · '
         'white dashed: the plastic in front · every trigger > 10 ms, 50 mm cells',
         'liq_full', G, EM, GM, f"""
@@ -869,10 +874,11 @@ of the cell (|u| &gt; 75 mm) against the far half:
 {'; '.join(f'{a} {pc(hv[a][0], 1)} vs {pc(hv[a][1], 1)}' for a in hor)} — a smooth
 rise toward the PMT, not a step at the plastic's bar gap. This is the
 one-sided response the July source runs saw, now explained by where the PMT is.
-<b>The vertical vessels do not:</b> top half against bottom half,
-{'; '.join(f'{a} {pc(hv[a][0], 2)} vs {pc(hv[a][1], 2)}' for a in ver)}, if anything
-lower near the PMT. Why light collection falls so steeply with distance on
-the horizontal vessels and not on the vertical ones is open.</p>""",
+<b>The vertical vessels {'do too, more weakly' if ver_up else 'do not'}:</b> top half against bottom half,
+{'; '.join(f'{a} {pc(hv[a][0], 2)} vs {pc(hv[a][1], 2)}' for a in ver)}. Until the
+2026-10-14 y fix, stored y was mirrored and these read the other way round,
+"lower near the PMT"; that was the y mirror (<code>Y_FLIP_AUDIT.md</code>), not the
+liquids.</p>""",
         eff_max=0.2, eff_ticks=[(0, '0'), (0.1, '0.1'), (0.2, '0.2')],
         gain_rel=(0.5, 1.5))
 
@@ -1036,11 +1042,14 @@ rises together; nothing in the scintillator responses moves with it.</p>""",
         ('Arm D’s extra unbiased tracks.', 'A third of D’s late tracks sit on '
          'events another arm triggered (A–C: 4–18 %). Real particles or chamber '
          'pick-up is not yet checked; D’s unbiased maps lean on them.'),
-        ('Liquids: why only the horizontal ones?', 'A and D (PMT to the side) '
-         'answer near their PMT; B and C (PMT on top) do not. The cause is open. '
-         'Liquid “efficiency” is punch-through × efficiency for this beam.'),
-        ('Plastic PMT positions are as reported.', 'On top for every bar; the '
-         'Geant model has bare bars and this data cannot place them.'),
+        ('Liquids: weaker gradient on the vertical ones.', 'A and D (PMT to the '
+         'side) answer 10–20× more near their PMT; B and C (PMT on top) only a few '
+         'times. (Before the 14 Oct y fix the vertical ones seemed to fall toward '
+         'the PMT: that was the stored-y mirror.) Liquid “efficiency” is '
+         'punch-through × efficiency for this beam.'),
+        ('Plastic PMT positions.', 'On top for every bar, as reported; the Geant '
+         'model has bare bars. The amplitude map cannot place them, but the timing '
+         'does: every bar fires earlier at high v.'),
         ('MIP-clean efficiencies need the cosmics.', 'Run_149 is now '
          'reconstructed (87 sub-runs); joining it to the scintillators is the '
          'next pass.'),
