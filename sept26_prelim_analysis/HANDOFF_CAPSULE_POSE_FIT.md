@@ -9,6 +9,32 @@ Read first:
 - `HANDOFF_CAPSULE_Y.md` (the earlier capsule-height work and its trap list).
 - CLAUDE.md: "Take positions from pointing, not from the shape of a distribution".
 
+> ## ⚠ Correction — 2026-10-14: the beam model was the resolution function
+>
+> `Lambda2D` in `lamda2DvsEn_EAR2.root` is the n_TOF **resolution function** (λ = moderation length in cm vs E;
+> axis title "lambda (cm)"; it sits beside `lamda2DvsEn_EAR2.root_sammyudr.txt`, a SAMMY user-defined-resolution
+> file, in `/afs/cern.ch/work/m/msabateg/public/n_TOF-files/`). It is **not** a radial beam profile, though
+> `MX17_Full_Geant/data/README.md`, the Geant4 neutron gun and this study all used it as one (r50 2.5 mm).
+> The measured EAR2 beam (PPACMon at 19.95 m, small collimator, post-2021 target; EPJA 2025, arXiv 2505.00042)
+> is **~30 mm FWHM, roughly Gaussian**, centred on the vacuum-pipe axis to ~1.3 mm (x) / <0.1 mm (y), with the
+> median drifting toward −x (their frame) with height.
+>
+> `capsule_pose_broad_beam.py` (→ `<out>/capsule_pose/broad_beam.csv`) reruns the toy with that beam:
+> - ³He gets **20–28 % of the beam for every pose** (26 % centred, 20 % at 10 mm off). Both readings' yield
+>   claims below (≥ 85 % / 1–15 %) are void. Geant4's beam-mode captures per neutron (³He and Al, ~95 % on
+>   the gas) are ~×3–4 too high; part of the same-chamber 1 : 8 may be this. Needs a Geant4 rerun with a
+>   broad gun (other material gets lit).
+> - The beam covers the whole capsule, so the **source x follows the lit nose, i.e. the capsule**, not the beam
+>   (beam at 0, capsule at −10.3 reads −7.7 / −8.7; a nose at ≈ −10…−13 fits the data).
+> - Source height: −17.5 untilted (barrel grazing 33 %), −20…−23 tilted 2–10°, against data −31 / −35 and the
+>   narrow-beam −28.6. At drawn height the broad beam reads 8–14 mm too high: capsule lower than drawn, or the
+>   barrel share is over-modelled. Degenerate as before.
+> - **x vs height:** untilted is flat; a tilt with the capsule top toward −x (φ = 180) gives the data's
+>   ~−4 mm step toward −x at the top (A and C), φ = 0 gives the opposite sign. Toy library-limited
+>   (bin s.d. 0.5–2 mm), so sign only. A z tilt (φ = 90) needs B/D z-vs-height.
+> - To do: real profile (n_TOF 2D map, which collimator we ran with), refit (x_c, z_c, height, θ, φ) with the
+>   shear in A/C and B/D, fix the Geant4 gun and data README, revise the deck.
+
 > ## Outcome — 2026-10-13 (evening), revised the same night. Read this first.
 >
 > Code `capsule_pose.py` (beam / closure / data / tof / shear / early / image / alternatives / halo / scan / fit),
