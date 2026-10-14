@@ -9,31 +9,44 @@ Read first:
 - `HANDOFF_CAPSULE_Y.md` (the earlier capsule-height work and its trap list).
 - CLAUDE.md: "Take positions from pointing, not from the shape of a distribution".
 
-> ## ⚠ Correction — 2026-10-14: the beam model was the resolution function
+> ## ⚠ Correction — 2026-10-14: the beam model was the resolution function. Refit on the real beam.
 >
-> `Lambda2D` in `lamda2DvsEn_EAR2.root` is the n_TOF **resolution function** (λ = moderation length in cm vs E;
-> axis title "lambda (cm)"; it sits beside `lamda2DvsEn_EAR2.root_sammyudr.txt`, a SAMMY user-defined-resolution
-> file, in `/afs/cern.ch/work/m/msabateg/public/n_TOF-files/`). It is **not** a radial beam profile, though
-> `MX17_Full_Geant/data/README.md`, the Geant4 neutron gun and this study all used it as one (r50 2.5 mm).
-> The measured EAR2 beam (PPACMon at 19.95 m, small collimator, post-2021 target; EPJA 2025, arXiv 2505.00042)
-> is **~30 mm FWHM, roughly Gaussian**, centred on the vacuum-pipe axis to ~1.3 mm (x) / <0.1 mm (y), with the
-> median drifting toward −x (their frame) with height.
+> **The beam.** `Lambda2D` (`lamda2DvsEn_EAR2.root`) is the n_TOF **resolution function**, not a beam radius:
+> - its axis is titled "lambda (cm)";
+> - it is `transport.cc`'s `HIST_LAMBDA`;
+> - it sits beside its SAMMY resolution export.
 >
-> `capsule_pose_broad_beam.py` (→ `<out>/capsule_pose/broad_beam.csv`) reruns the toy with that beam:
-> - ³He gets **20–28 % of the beam for every pose** (26 % centred, 20 % at 10 mm off). Both readings' yield
->   claims below (≥ 85 % / 1–15 %) are void. Geant4's beam-mode captures per neutron (³He and Al, ~95 % on
->   the gas) are ~×3–4 too high; part of the same-chamber 1 : 8 may be this. Needs a Geant4 rerun with a
->   broad gun (other material gets lit).
-> - The beam covers the whole capsule, so the **source x follows the lit nose, i.e. the capsule**, not the beam
->   (beam at 0, capsule at −10.3 reads −7.7 / −8.7; a nose at ≈ −10…−13 fits the data).
-> - Source height: −17.5 untilted (barrel grazing 33 %), −20…−23 tilted 2–10°, against data −31 / −35 and the
->   narrow-beam −28.6. At drawn height the broad beam reads 8–14 mm too high: capsule lower than drawn, or the
->   barrel share is over-modelled. Degenerate as before.
-> - **x vs height:** untilted is flat; a tilt with the capsule top toward −x (φ = 180) gives the data's
->   ~−4 mm step toward −x at the top (A and C), φ = 0 gives the opposite sign. Toy library-limited
->   (bin s.d. 0.5–2 mm), so sign only. A z tilt (φ = 90) needs B/D z-vs-height.
-> - To do: real profile (n_TOF 2D map, which collimator we ran with), refit (x_c, z_c, height, θ, φ) with the
->   shear in A/C and B/D, fix the Geant4 gun and data README, revise the deck.
+> The real beam comes from `ear2_beam/`: n_TOF's phase-4 FLUKA phase space through the EAR2 collimation.
+> - It matches the PPACMon beam-interception factors at 19.95 m to 1–2 %.
+> - At 19.5 m: r50 10.5 mm, FWHM 22 mm, sharp edge at r ≈ 22 mm. The old model had r50 2.5 mm.
+> - A centred 20 mm bore sees 0.46 of it (0.35 at 19.95 m).
+> - The beam sits on the pipe axis to 1–2 mm.
+> - The flux is now the Phase-4 one (×1.19 thermal).
+> - `capsule_pose.py` now samples `ear2_beam.beam` with the ray slopes.
+> - Everything below this box was computed on the old beam, and its two "readings" are void.
+>
+> **Refit** (`capsule_pose pose2`, `<out>/capsule_pose_ear2/pose2*.csv`; late window; A/C x crossings
+> σ_sys 1 mm; x-vs-height shape over the populated bins with the toy's library spread):
+> - **Tilt is robust.** The capsule top leans toward −x by ~7–15° (φ 135–225°). The untilted shape is χ² ≈ 46–67
+>   for 10 points; tilted it is 7–12. φ = 0 (top toward +x, nose outward, the original hypothesis) is excluded.
+> - **Height is robust.** Every good pose needs the capsule 8–12 mm lower than drawn (dy_c).
+> - **Sideways it is degenerate.** The x crossing mixes the beam and capsule positions. Best fits:
+>   - beam 0 / capsule −16: χ² 23.7, ³He sees 0.23;
+>   - beam −5 / capsule −15: 14.8, 0.42;
+>   - beam −10 / capsule −10: 12.1, 0.53;
+>   - beam −10 / capsule −15: **8.3**, 0.58.
+>   The shape mildly prefers the beam off the frame (Δχ² ≈ 15). That shape error is toy-library-limited, and
+>   the literature puts the beam on the pipe axis. So if the frame is centred on the pipe, the capsule is about
+>   15 mm off the beam axis and the ³He sees ~0.2–0.25 of the beam at 19.5 m.
+> - **Not yet done:**
+>   - B/D z-vs-height, to pin the tilt azimuth (φ 135 vs 225 = the z component's sign);
+>   - the 19.95 m beam;
+>   - more Geant4 track library, to tighten the shape χ²;
+>   - the late population's illumination. Direct beam at 20–75 ms is only 1.3 % of 4–12 ms in n_TOF's phase
+>     space, yet the data's late capsule tracks dominate. The fit assumes they are lit like the beam.
+> - **Geant4 rerun with the real gun:** condor 4454431 (capsule at 19.5 m) and 4454432 (19.95 m) →
+>   `full_sim/neutrons_thermal_ear2_L19p{5,95}`. Smoke test: ³He 0.448 per neutron (was ~0.95),
+>   Al 0.0028 (was 0.0045), air 0.0025.
 
 > ## Outcome — 2026-10-13 (evening), revised the same night. Read this first.
 >

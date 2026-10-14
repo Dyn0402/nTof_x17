@@ -58,6 +58,7 @@ Steps (CSV to <out>/capsule_pose/):
 from __future__ import annotations
 
 import argparse
+import os
 import glob
 from pathlib import Path
 
@@ -914,12 +915,16 @@ def pose2_step(out: Path) -> pd.DataFrame:
     SH = pd.read_csv(out / 'shear.csv') if (out / 'shear.csv').exists() else None
     z_c = float(np.mean([v for v, _ in Z_BD.values()]))
     rows = []
-    poses = [(xc, 0.0, 0.0) for xc in POSE2_XC] + \
-            [(xc, th, ph) for xc in POSE2_XC for th in POSE2_THETA[1:] for ph in POSE2_PHI]
+    xcs = [float(v) for v in os.environ['POSE2_XC'].split(',')] if os.environ.get('POSE2_XC') else POSE2_XC
+    x_b = float(os.environ.get('POSE2_XB', 0.0))      # beam centre (frame x); 0 = centred on the frame
+    thetas = [float(v) for v in os.environ['POSE2_THETA'].split(',')] if os.environ.get('POSE2_THETA') else POSE2_THETA
+    phis = [float(v) for v in os.environ['POSE2_PHI'].split(',')] if os.environ.get('POSE2_PHI') else POSE2_PHI
+    poses = [(xc, 0.0, 0.0) for xc in xcs] + \
+            [(xc, th, ph) for xc in xcs for th in thetas if th > 0 for ph in phis]
     for xc, th, ph in poses:
-        pose = dict(NOMINAL, x_c=xc, z_c=z_c, theta=th, phi=float(ph))
+        pose = dict(NOMINAL, x_c=xc, z_c=z_c, theta=th, phi=float(ph), x_b=x_b)
         C, fr = beam_captures(pose, n=80_000, window=WINDOWS['late'])
-        r = dict(x_c=xc, z_c=z_c, theta=th, phi=ph, **fr, chi2_shape=0.0, n_shape=0)
+        r = dict(x_b=x_b, x_c=xc, z_c=z_c, theta=th, phi=ph, **fr, chi2_shape=0.0, n_shape=0)
         for arm in ('A', 'C'):
             d = D.loc[(arm, 'late')]
             e = estimators(toy_tracks(arm, C, n=50_000))
@@ -945,7 +950,9 @@ def pose2_step(out: Path) -> pd.DataFrame:
               round(r['chi2_shape'], 1), round(fr['gas'], 3), flush=True)
     R = pd.DataFrame(rows)
     R['chi2'] = R.chi2_x + R.chi2_shape
-    R.to_csv(out / 'pose2.csv', index=False)
+    tag = ''.join(f"_{k[6:].lower()}{os.environ[k].replace(',', '_')}" for k in ('POSE2_XB', 'POSE2_XC')
+                  if os.environ.get(k))
+    R.to_csv(out / f'pose2{tag}.csv', index=False)
     return R.sort_values('chi2').head(15).drop(columns=['shear_A', 'shear_C'])
 
 
