@@ -637,7 +637,7 @@ def s_expect(D, A, N):
         g = S[(S.arm == arm) & (S.open_lo >= 0) & (S.open_hi <= 60)]
         for lo, hi, a, b_, n in zip(g.open_lo, g.open_hi, g.lt20, g.b20_40, g.n):
             rows.append((arm, lo, hi, a, b_, n))
-    P = sd.Plot(820, 520, x=(0, 60), y=(0, 1), xlabel='true opening angle (°)',
+    P = sd.Plot(820, 470, x=(0, 60), y=(0, 1), xlabel='true opening angle (°)',
                 ylabel='share of accepted e⁺e⁻ pairs', title='how close the two legs are in the gap')
     P.xticks([(v, str(v)) for v in (0, 15, 30, 45, 60)])
     P.yticks(PCT_TICKS := [(v / 100, f'{v}%') for v in (0, 25, 50, 75, 100)])
