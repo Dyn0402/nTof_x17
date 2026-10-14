@@ -677,4 +677,134 @@ result; the loss removes ~18 % of the charge at 243 V/cm, so ≲ 10 % pessimisti
 Next: a bench det4 arm with D_rc pinned at the beam value (paired compare_bench vs the bench-fitted
 rcm); settle the bench D_T; then freeze the physical kernel.
 
-_(sections appended as results land)_
+## 28 · det4 takes the beam D_rc on the bench; the joint X+Y fit is not degenerate (2026-10-12)
+
+The §27 next step: a bench det4 arm with D_rc pinned at the beam 2.2e-4. Done with the model the
+production-candidate arm (rcm, §12) came from — `bench_attach.py`'s unbiased head-on fit over X and Y
+together (X-template electronics, uniform arrival over T = gap/v, σ² = σ0² + 2·Dd·u + 2·D_rc·s on Y) —
+in `bench_pinrc.py`, and benched with `plane_bench.py` (2000 held-out events, paired).
+
+**det4: the beam D_rc costs nothing, in the stack or in reconstruction.**
+
+| det4 arm | σ0 | Dd [1e-4] | D_rc [1e-4] | stack rms |
+|---|---|---|---|---|
+| rcf (all free; = rcm refitted) | 0.464 | 4.04 | 2.57 | 0.01635 |
+| rcp (beam D_rc, Dd free) | 0.457 | 4.28 | **2.2** | 0.01639 |
+| rcpd (beam D_rc, dry Dd) | 0.458 | 4.25 | 2.2 | 0.01639 |
+| rcpw (beam D_rc, wet Dd) | 0.591 | 1.95 | 2.2 | 0.01725 |
+
+Paired against rcf (scale-corrected s68, blind / ref start): rcp Y +0.027 ± 0.027 / +0.008 ± 0.019°,
+X −0.008 ± 0.026 / 0.000 ± 0.020°; rcpd likewise (Y +0.039 ± 0.027 / +0.007 ± 0.020). Every RC arm is
+−0.12…−0.20° on Y and +0.12…+0.19° on X against production, as in §12 (results
+`compare_bench_pinrc_det4_*.json`). The reconstruction cannot tell 2.2 from 2.6e-4.
+
+**Why §27 saw 1.5–2.7×.** `rc_drift.py` fits Y alone with D_T assumed. It is not biased: on toy stacks
+from this model (known D_rc, dry Dd) it returns D_rc within 2–8 % *when given the true D_T*. The
+spread came from the D_T assumptions (none / wet). The joint fit settles D_T itself because X has no RC
+term, so X's width growth is drift diffusion alone: profiling D_rc over 1–7.5e-4 (Dd refitted) the
+rms has a single minimum on every chamber and rises 6–23 % at 1e-4 (8–37 % at 7.5e-4, except det6 whose minimum is there) (`bench_pinrc.py --profile`,
+`results/bench_pinrc_profile_<det>.json`). With dry Dd, det4 bench is 2.57 (joint) / 3.04 (rc_drift)
+against 2.2 ± 0.22 beam: **1.2–1.4×, and the stack rms is flat between 2.2 and 3.0e-4.** det4 can carry
+its beam D_rc.
+
+**The other chambers do differ from det4** (profile, D_rc free → cost of pinning 2.2e-4):
+det2 4.2e-4 (+6.5 % rms), det3 2.8e-4 (+1.5 %), det6 7.9e-4 (+13 %), det7 5.7e-4 (+9 %). D_rc is per
+chamber; only det4 has a beam measurement.
+
+**Bench drift diffusion.** Free Dd per chamber against Magboltz at each run's real field
+(`bench_water_e.py`): det2 4.97 (wet 4.11 / dry 4.67), det3 3.93 (2.43 / 4.27), det4 4.04 (2.07 / 3.96),
+det6 1.69 (1.03 / 3.09), det7 4.69 (2.26 / 4.24) e-4 mm²/ns. Dry fits det2/3/4/7; det6 sits between,
+nearer wet. Two candidate explanations tested:
+
+- *Field.* `bench_pinned.py` inverted v → water at 250 V/cm for all chambers. The runs were at drift
+  1000 V (det2, det3) = 347 V/cm, 700 V (det6, det7) = 243 V/cm and 600 V (det4) = 208 V/cm. At the real
+  field (air_hs grid) det2 goes to ~0.1 % water (its v sits at the dry value), det4 0.60 → 0.43 %,
+  det3 0.48 → 0.59 %, det6/det7 unchanged. A real correction, but it does not reconcile det3/4/7.
+  `bench_pinned.json` is left as it was: its own fits predate the unbiased stacks and re-running them
+  now puts the box model at its bounds.
+- *Inclination leak.* Tightening the head-on cut from 0.05 to 0.01 (`bench_tanscan.py`) leaves Dd flat
+  (det3 3.95 → 3.54, det4 3.98 → 4.30, det7 4.28 → 5.72 e-4) and D_rc flat. The leak goes into **σ0**
+  instead: det4 0.497 → 0.365, det3 0.442 → 0.372 mm, i.e. down to det4's beam Y leading-edge width
+  (0.36–0.38). So the footprint transfers too once the inclination is cut out, and the σ0 in the arms
+  (|tan| < 0.03) carries ~0.1 mm of track walk.
+
+So the bench D_T tension is now: v(E) (bundle v, and det3's six-field scan, §25) says 0.4–0.6 %
+water, while the X width growth says Magboltz dry, on 4 of 5 chambers. Left: Magboltz's D_T for
+small water admixtures, or an X width term that grows with drift time and is not diffusion. The beam
+(§27: t_a at its bound, *less* depth growth than wet Magboltz) leans the other way, which argues
+against a missing Magboltz D_T term common to both.
+
+**For the physical kernel:** det4 can take D_rc = 2.2e-4 from the beam; the other chambers keep their
+bench D_rc; Dd per chamber from the joint fit (≈ dry), not from v; σ0 should be measured on the
+tight-|tan| stack. None of these choices moves det4's held-out resolution by more than ±0.04°.
+
+## 29 · The X width excess: every dataset, not the gas, everywhere on the chamber (2026-10-12)
+
+> **Status: UNSOLVED, needs follow-up.** The mechanism is not identified. The follow-up list (dry-gas bench run, det3 Y,
+> a Magboltz cross-check, a beam template, other contaminants) is in HANDOFF.md, section "X width excess".
+
+Dylan asked whether the X widening that Magboltz cannot explain (§28) holds on every dataset, what it
+could be, and whether it depends on position. Report: `~/x17/cosmic_bench/cloud_basics/xwidth/report.html`
+(`make_xwidth_report.py`).
+
+**Data.** `headon_cache.py` builds every head-on reference event of a run (|tan| < 0.06 in either
+view, no 3000-event cap). It has a ref-only mode (`--subrun`) that takes the M3 rays through another
+sub-run's alignment, and on the det3 long run it reproduces the hits-chain reference exactly. Caches
+are in `~/x17/cosmic_bench/cloud_basics/xwidth/caches/`:
+- 10 bench runs on 5 chambers;
+- det3's 6-27 drift scan (6 fields) and two amplification scans (18 sub-runs at 347 V/cm), pulled
+  from EOS `cosmic_bench/june_tests/Run/`.
+
+The fit is `x_width.py`, X only, so there is no RC term and the width growth is all depth: bench_attach's
+model, with σ0, Dd, T, amplitude and offset free and bootstrap errors. It is vectorised (`predict_x`, 90×
+faster), and its last slice is fractional so that T can be fitted; `bench_attach.predict` rounds T to
+whole 30 ns slices. D_T = σ_drift(gap)/√gap, which barely depends on v, so v enters only through the
+composition inferred from it.
+
+- **Every bench dataset, the same excess.** X D_T is 400–520 µm/√cm on det2/3/4/6/7, on every run
+  (det3 5 runs, det7 2, det2 2). Magboltz Ar/iso 95/5 with the water that each run's v needs
+  (0.6–1.0 %) gives 270–325. In quadrature the extra is **D_x ≈ 300–430 µm/√cm on every chamber**
+  (det6, the wettest, the lowest). det6 and det7 ran in the same gas at the same field with v 35 %
+  apart: D_T moves the way water says (399 vs 475), but both sit ~+300 in quadrature above it.
+  Dropped: g_det6_longer (σ0 at its bound) and det3's 6-22 runs (T at its bound).
+- **Not gain.** det3 at 347 V/cm, mesh 425–505 V: D_T flat at 404–496 (mean ≈ 450). σ0 rises 0.3 →
+  0.5 mm with gain. Above 505 V the stacks saturate (σ0 0.6–0.9, D_T meaningless).
+- **Not the gas at any composition tried** (`iso_fit.py`; Magboltz grids condor 4440949 and 4440956:
+  Ar/iso 0.5–8 % × water 0–1 % (to 1.5 % at iso ≤ 3 %) × 7 fields, 384 points; 5 of the dry
+  near-pure-argon points had not finished and their columns are dropped). Less isobutane is the one
+  knob that makes a gas both slow and hot. On a single-field chamber an iso-poor gas (≈1 % iso,
+  0.7 % water) matches both numbers: det4 0.2/0, det7 4.0/2, but det6 still 9.1/0. det3's five fields
+  cannot be matched: v alone χ² 24/17, D_T alone 12/17, **both 80/36** (best at iso 1.5 %, water
+  0.94 %, which misses v at 243 V/cm). So isobutane depletion is not excluded chamber by chamber,
+  but it is excluded where the field scan exists.
+- **The beam has it too.** `x_width_beam.py` uses rc_drift's template-free X model, since no beam
+  template is on disk; on the bench it reads 5–12 % below the template fit. det4 run_71: D_T 202 / 240 /
+  372 (± 20) at 243 / 150 / 92 V/cm, against Magboltz 163 / 193 / 237. That is +118 / +143 / +286 in
+  quadrature. At 92 V/cm it is above the thermal floor (234), which no beam-gas composition can exceed
+  by much. (§27's "t_a at its bound, less growth than Magboltz" was the Y fit with D_T assumed.) Caveat:
+  at 92 V/cm the drift time is 3× the window, and t_a and dd2 trade off.
+- **Position** (`x_width_map.py`; det3 pooled long run + gain scan ≤ 505 V, 3574 head-on events; det4
+  683). Model-free second moment of the stack, early (0–240 ns) vs late (600–900 ns):
+  - The growth is positive in every quintile across and along the strips (det3 0.10–0.41 mm², pooled
+    0.26 ± 0.03). Its scatter is ~2σ, with no hot spot, and det4 agrees within its errors.
+  - **What depends on position is the early width.** On det3 it is 0.43–0.52 mm² in the middle and
+    0.75–0.95 mm² in the outer quintiles, in both directions. The free fit puts this in σ0. At the
+    edges the growth reads low, partly because the ±4-strip window truncates a wide cluster.
+- **Per depth, not per time.** Across chambers with v from 25 to 37 µm/ns, D_x is about constant per
+  unit depth. A constant per unit time would give det6 1.16× det7's D_x; the data give 0.86 ± 0.11
+(det6 295 ± 24, det7 345 ± 30), ~2.7σ statistical only. Bench vs beam per time: 4e-4 vs ~2e-5 mm²/ns,
+so not one per-time term either.
+
+So the excess is depth-correlated, lands at the anode (no X undershoot, rc_D_x → 0, §17), is
+independent of gain and position, and appears on two gases and two particle sources. It is not drift
+diffusion at the composition v implies. Two readings remain, and the data in hand cannot separate them:
+1. **Magboltz's water model.** Water slows the drift as Magboltz says but cools the transverse energy
+   less than it says. Both setups are wet.
+2. **A non-gas term linear in depth** that nothing in the current model has.
+
+The decisive measurement is a bench run in fresh, dry gas, which takes water out of the question.
+A cheaper check is the bench drift scan's Y view, where Dd is shared with the RC term.
+
+**For the kernel:** keep Dd from the X stack (≈ dry), not from v (§28's choice stands). Do not
+carry a v-derived water fraction into D_T.
+

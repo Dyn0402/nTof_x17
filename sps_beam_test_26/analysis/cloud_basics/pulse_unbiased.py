@@ -10,7 +10,7 @@ import os, pickle, sys, json
 import numpy as np
 HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, HERE)
 from width_vs_time import SOURCES, SAMPLE_NS
-from bench_attach import BUNDLES, BUNDLE
+from bench_attach import bundle_dir
 V = {'det2': 39.94, 'det3': 36.6, 'det4': 34.16, 'det6': 26.7, 'det7': 36.6, 'sps700': 14.0}
 GRID = np.arange(-300.0, 3300.0, 30.0)
 THR = 60.0
@@ -37,7 +37,7 @@ for name in ('det2', 'det3', 'det4', 'det6', 'det7', 'sps700', 'sps275'):
     line = f'{name:7s} n={n:4d} data: ' + ' '.join(f'{x:.2f}' for x in (m / pk)[(GRID % 150 == 0) & (GRID >= 0) & (GRID <= 1500)])
     print(line)
     if name.startswith('det'):
-        z = np.load(f'{BUNDLES}/{BUNDLE[name]}/arrays.npz'); g, h = z['grid'], z['tmpl_x']
+        z = np.load(f'{bundle_dir(name)}/arrays.npz'); g, h = z['grid'], z['tmpl_x']
         dt = g[1] - g[0]; T = 30000 / V[name]
         p = np.convolve(h, np.ones(int(T / dt)))
         tt = g[0] + np.arange(len(p)) * dt

@@ -1,0 +1,26 @@
+{
+ "tag": "benchi6_w0_a0",
+ "pressure_torr": 745.83,
+ "comp": [
+  [
+   "ar",
+   94.0
+  ],
+  [
+   "ic4h10",
+   6.0
+  ]
+ ],
+ "ncoll": 15,
+ "points": [
+  {
+   "E_Vcm": 312.0,
+   "v_um_ns": 4.208240945115507,
+   "v_true_um_ns": 42.08240945115507,
+   "DT_um_rtcm": 439.2330838125001,
+   "DL_um_rtcm": 253.07437650330903,
+   "eta_per_cm": 0.0,
+   "lambda_mm": null
+  }
+ ]
+}

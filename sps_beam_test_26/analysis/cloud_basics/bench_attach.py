@@ -25,7 +25,9 @@ HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, HERE)
 from width_vs_time import SOURCES
 from rc_diffusion import stack, F, GRID, OFFS, STEP
 
-BUNDLES = '/tmp/claude-1000/-home-dylan-PycharmProjects-nTof-x17/9071ba25-9a97-4e04-b80b-71e5850e28a6/scratchpad/prodbundles/bundles'
+# production bench bundles, next to each chamber's plane_ratio cache (the original run read a
+# scratch copy, mx17_<n>/<bundle>, which is gone); CB_BUNDLES=<dir> restores that layout
+BUNDLES = os.environ.get('CB_BUNDLES')
 BUNDLE = {'det2': 'mx17_2/calib_bundle_r06', 'det3': 'mx17_3/calib_bundle_r06',
           'det4': 'mx17_4/calib_bundle_lp', 'det6': 'mx17_6/calib_bundle_lp',
           'det7': 'mx17_7/calib_bundle_r06'}
@@ -35,8 +37,14 @@ GAP = 30.0
 UNIFORM = os.environ.get('CB_ATTACH', '0') != '1'
 
 
+def bundle_dir(det):
+    if BUNDLES:
+        return f'{BUNDLES}/{BUNDLE[det]}'
+    return os.path.join(os.path.dirname(os.path.dirname(SOURCES[det])), os.path.basename(BUNDLE[det]))
+
+
 def template(det):
-    z = np.load(f'{BUNDLES}/{BUNDLE[det]}/arrays.npz')
+    z = np.load(f'{bundle_dir(det)}/arrays.npz')
     g, h = z['grid'], z['tmpl_x']
     tg = np.arange(0, g[-1] - g[0], STEP)
     hh = np.interp(tg + g[0], g, h)

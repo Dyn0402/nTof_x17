@@ -8,7 +8,9 @@ dividing each arm's fitted tan by its own fitted slope (tan_fit vs tan_ref on
 the core) -- the spread at the right scale.  Paired bootstrap on the common
 events, negative = arm better.
 
-    compare_bench.py bench_det3_rc.json [...] [--start blind]
+    compare_bench.py bench_det3_rc.json [...] [--start blind] [--base det4_rcf]
+
+--base pairs every arm against that arm instead of production (labels still say prod).
 """
 import argparse, json, os
 import numpy as np
@@ -38,13 +40,14 @@ def main():
     ap.add_argument('--start', default='blind')
     ap.add_argument('--nboot', type=int, default=500)
     ap.add_argument('--json', default=None)
+    ap.add_argument('--base', default='production', help='arm to pair against')
     a = ap.parse_args()
     rng = np.random.default_rng(20261009)
     out = {}
     for f in a.files:
         r = json.load(open(f))
-        prod = r['production']['events'][a.start]
-        for arm in [k for k in r if k != 'production']:
+        prod = r[a.base]['events'][a.start]
+        for arm in [k for k in r if k != a.base]:
             ev = r[arm]['events'][a.start]
             for p in ('x', 'y'):
                 P, A = arrays(prod[p]), arrays(ev[p])

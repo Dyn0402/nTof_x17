@@ -6,6 +6,11 @@ The report is generated: `~/x17/cosmic_bench/cloud_basics/attachment/report.html
 
 ## Where things stand (2026-10-10)
 
+- **OPEN PROBLEM (2026-10-12, §29): the X width excess.** On every bench dataset X widens with depth about as fast as
+  dry gas (D_T 400–520 µm/√cm), while v needs 0.6–1 % water (Magboltz 270–325). It does not depend on gain, it covers
+  the whole chamber, and no Ar/iso/water mix fits det3's v(E) and D_T(E). The beam X shows it too. Unexplained;
+  follow-up list in HANDOFF.md ("X width excess"). Meanwhile Dd comes from the X widths, not from v.
+
 - **Late drift charge is lost in the beam gas, in both views** (§16). It is attachment: the loss rate is
   the same per unit time at three fields, there is no undershoot, X = Y, and it is flat in rate, spill,
   position and gain.
@@ -83,6 +88,16 @@ slide renumbers them.
 | `rc_drift.py` | RC fit with drift diffusion written in (beam + bench, D_T arms) → `results/rc_drift.json` (~40 min, single core) |
 | `width_tan_split.py` | bench width growth split by reference \|tan\| → `results/width_tan_split.json` (inconclusive) |
 | `make_transfer_deck.py` | slide note `~/x17/cosmic_bench/cloud_basics/transfer/mx17-sps-to-bench.html`; publish with `add-note.py … --slug mx17-sps-to-bench --force --deploy` |
+
+### X width excess (§29; report `~/x17/cosmic_bench/cloud_basics/xwidth/report.html`)
+| script | what |
+|---|---|
+| `headon_cache.py <key> [--subrun S --base DIR]` | every head-on reference event of a run → `xwidth/caches/headon_<key>.pkl`; `--subrun` = ref-only (M3 through the key's alignment), for the det3 scan sub-runs (EOS `cosmic_bench/june_tests/Run/`) |
+| `x_width.py [--keys …]` | X-only head-on fit per dataset (σ0, Dd, T free), terciles in position → `results/x_width.json` |
+| `x_width_map.py` | model-free early/late X width and fits in position quintiles (det3 pooled, det4) → `results/x_width_map.json` |
+| `x_width_beam.py` | template-free X fit, beam run_71 + bench calibration → `results/x_width_beam.json` |
+| `make_iso_jobs.py [--ext]`, `iso_fit.py` | Magboltz Ar/iso × water grid (condor 4440949/4440956 → `results/iso/`); joint v + D_T fit → `results/iso_fit.json` |
+| `make_xwidth_report.py` | figures + report.html |
 
 ### X / kernel benches (lxplus condor)
 `make_rc_arms.py`, `run_bench_rc.sh` + `condor_bench_rc.sub` + `auto_bench_rc.sh` (RC refits, §17);

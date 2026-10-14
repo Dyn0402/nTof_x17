@@ -41,7 +41,11 @@ AIR = (('n2', 78.08), ('o2', 20.95), ('ar', 0.93))
 def air_mix(tag):
     base, w, a = tag.split('_')
     w = float(w[1:].replace('p', '.')); a = float(a[1:].replace('p', '.'))
-    p, comp = BASES[base]
+    if base.startswith('benchi'):          # bench gas at another isobutane fraction: benchi3p5 = Ar/iso 96.5/3.5
+        iso = float(base[6:].replace('p', '.'))
+        p, comp = 745.83, [('ar', 100.0 - iso), ('ic4h10', iso)]
+    else:
+        p, comp = BASES[base]
     frac = dict(comp)
     frac['ar'] -= w + a
     for g, f in AIR:
