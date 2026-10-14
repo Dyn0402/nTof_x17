@@ -10,6 +10,8 @@ PYTHONPATH=. .venv/bin/python -m ntof_calorimetry.mip_sample cosmic   # ~40 min,
 PYTHONPATH=. .venv/bin/python -m ntof_calorimetry.scint_ecal          # C1, ~5 min
 PYTHONPATH=. .venv/bin/python -m ntof_calorimetry.liquid_salvage      # C4
 PYTHONPATH=. .venv/bin/python -m ntof_calorimetry.make_report
+PYTHONPATH=. .venv/bin/python -m ntof_calorimetry.wall_plastic        # wall + plastic vs beam e- and Geant4 (needs stack_edep.py output)
+PYTHONPATH=. .venv/bin/python -m ntof_calorimetry.make_wp_deck        # notes/scint-calorimetry
 ```
 
 **Gotchas**

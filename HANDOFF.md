@@ -285,9 +285,11 @@ report `results/fullpass_is2_v2/report.html`) and §21 (capsule focus, 0.8 cut r
 
 **Key commands:** extract → ana → checks → make_figures → make_report → make_deck → add-note (see `ntof_scint_stack/README.md`).
 
-## Calorimetry feasibility + MM dE/dx — updated 2026-10-08 (dylan-MS-7C84)
+## Calorimetry feasibility + MM dE/dx — updated 2026-10-14 (dylan-MS-7C84)
 
-**Resume:** plan executed and closed; note https://dylan-neff.web.cern.ch/notes/calorimetry.html (`ntof_calorimetry/make_deck.py`). Open: C1.4 + bar thickness.
+**Resume:** scintillator proof of concept done 2026-10-14 (wall + plastic, muon-calibrated, vs beam e⁻ and Geant4): https://dylan-neff.web.cern.ch/notes/scint-calorimetry.html (`ntof_calorimetry/make_wp_deck.py`). Earlier feasibility note: https://dylan-neff.web.cern.ch/notes/calorimetry.html (`make_deck.py`). Open: C1 +15 % electron offset, PMT bases for LNL.
+
+**Wall + plastic result (2026-10-14, `wall_plastic.py`, record in `PLAN.md` "Reopened"):** data ÷ Geant4 at ≥ 40 ms: plastic A1/A2/C2 1.05/1.03/1.02, **C1 1.15** (pure gain offset, cause unknown), wall A/C 0.95/0.96. Plastic is linear 3.4→8 MeV and is 20 mm thick; the wall measures dE/dx (~0.5 MeV flat), a 1-vs-2-particle tag. Plastic PMTs lose 3–8 % gain 12–25 ms after the flash (LNL: rate-proof bases or a pulser). Run-to-run stability 0.5–0.8 %. Geant4 side: `MX17_Full_Geant/scripts/stack_edep.py` on branch `lnl` (737e9a2, deliberately not merged to its main). Rebuild: `python -m ntof_calorimetry.wall_plastic`, then `python -m ntof_calorimetry.make_wp_deck`, then `add-note.py … --slug scint-calorimetry --force --deploy`. Outputs `/media/dylan/data/x17/calorimetry/wp/` (disk ~3.6 GB free).
 
 **Goal:** find what energy information the n_TOF data can give, and test MM dE/dx as a concept.
 
