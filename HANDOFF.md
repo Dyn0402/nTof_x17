@@ -262,6 +262,22 @@ Full state: Correction box of `sept26_prelim_analysis/HANDOFF_CAPSULE_POSE_FIT.m
   outputs `/eos/experiment/ntof/data/x17/full_sim/neutrons_thermal_ear2_L19p{5,95}/neutron_bg_jobNNN_t0.root` (~1.2 GB each).
 - Nothing local running.
 
+**2026-10-15 evening — new Geant4 build and biased library (supersedes the analog EAR2 extension for the toy):**
+- MX17_Full_Geant e3def59 (main): gas primary-ionization fix ported from MX17_Geant e17c72c + `--bias-capsule <f>`
+  (nCapture bias on He3Cap_Al only, weight 1/f). Validated locally (11.3.2) and on lxplus (11.2.1): ArIso 1.698 mg/cm3,
+  muon gas Edep new/old 0.906 / 0.897, PAI active; bias 20 gives x17 Al-capture library events, weighted rates unchanged.
+  Details: that repo's HANDOFF.md.
+- lxplus build: `/afs/cern.ch/work/d/dneff/git/MX17_Full_Geant_v2` (the ear2 clone stays for the running analog jobs).
+- **Submitted cluster 4467046**: 200 x 5M EAR2 neutrons, 19.5 m, `--bias-capsule 20`, ~25 min each, ~4 GB/file (Geant4
+  11.2 records LS showers in ~10x more steps than 11.3; biased capture gammas shower there), ~0.8 TB ->
+  `full_sim/neutrons_thermal_ear2_L19p5_bcap20`. Submit dir `~/condor/mx17_neutrons_ear2_L19p5_bcap20`. Worth ~1700
+  analog jobs for the library. Next: `make_ear2_subs.sh neutrons_thermal_ear2_L19p5_bcap20 ear2_L19p5_bcap20`
+  (reduce at 16 GB; may need more on these bigger files), pull, `run_ear2.sh ear2_L19p5_bcap20`, pool with
+  `POSE2_LIB=nose,ear2_L19p5,ear2_L19p5_bcap20`.
+- `run_digi.py` now sets ADC/e from the library's own reduction (median wall-reaching full-gap track; was a fixed 247 e-;
+  July 246.9 reproduced; ear2_L19p5 is 253-256, so its digitisation is ~3 % high in amplitude, harmless for pointing).
+- The 400-job analog extension (cluster 4465059, old gas) still runs; superseded for the toy by the biased run.
+
 **Next steps:**
 1. On lxplus, once `condor_q` is empty: copy `ntof_cosmics/g4_digi/condor/make_ear2_subs.sh` to lxplus, then
    `bash make_ear2_subs.sh neutrons_thermal_ear2_L19p5 ear2_L19p5 && condor_submit steps_ear2_L19p5.sub && condor_submit reduce_ear2_L19p5.sub`

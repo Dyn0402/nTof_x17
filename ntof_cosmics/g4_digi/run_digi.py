@@ -139,24 +139,29 @@ def setup(a):
         S = pd.concat([pd.read_parquet(f) for f in a.steps], ignore_index=True)
         S = S[S.armID == a.g4_arm]
         T = pd.read_parquet(OUT / 'g4_truth.parquet') if (OUT / 'g4_truth.parquet').exists() else None
+        keys = list(S.groupby(['file', 'eventID']).groups)
+        # the reduced tables (g4_angle/reduce_gap_wall) say which (event, arm)
+        # had a full-gap track whose own track reaches the wall: the sim
+        # analogue of the data's pointing coincidence
+        red = []
+        for f in sorted(glob.glob(str(REDUCED / 'r*.parquet'))):
+            r = pd.read_parquet(f, columns=['eventID', 'arm', 'w_lo', 'w_hi', 'wall_same_track', 'edep_gap'])
+            r['file'] = 'neutron_bg_job' + Path(f).stem[1:]
+            red.append(r[r.arm == a.g4_arm])
+        red = pd.concat(red)
+        full = red.w_hi - red.w_lo > 20
+        wall = full & red.wall_same_track.astype(object).fillna(False).astype(bool)
         adc = a.adc_per_e
         if adc is None:
-            # ~247 electrons per wall-reaching full-gap track (reduced tables, median)
-            adc = Q_X_MEDIAN[a.arm] / (247 * XY_SPLIT)
-        keys = list(S.groupby(['file', 'eventID']).groups)
+            # ADC per electron puts this library's median wall-reaching full-gap
+            # track on the data's median x charge.  Measured on the library's own
+            # reduction (was a fixed 247 e-, the July run's value: the EAR2 gun
+            # gives ~255 with the old gas, the 2026-10-15 gas fix ~10 % fewer)
+            n_med = float(red.edep_gap[wall].median()) / DG.W_ION
+            adc = Q_X_MEDIAN[a.arm] / (n_med * XY_SPLIT)
+            print(f'median wall-reaching full-gap track: {n_med:.1f} e- -> adc/e {adc:.2f}')
         if a.select != 'none':
-            # the reduced tables (g4_angle/reduce_gap_wall) say which (event, arm)
-            # had a full-gap track whose own track reaches the wall: the sim
-            # analogue of the data's pointing coincidence
-            red = []
-            for f in sorted(glob.glob(str(REDUCED / 'r*.parquet'))):
-                r = pd.read_parquet(f, columns=['eventID', 'arm', 'w_lo', 'w_hi', 'wall_same_track'])
-                r['file'] = 'neutron_bg_job' + Path(f).stem[1:]
-                red.append(r[r.arm == a.g4_arm])
-            red = pd.concat(red)
-            ok = red.w_hi - red.w_lo > 20
-            if a.select == 'wall':
-                ok &= red.wall_same_track.astype(object).fillna(False).astype(bool)
+            ok = wall if a.select == 'wall' else full
             good = set(zip(red.file[ok], red.eventID[ok]))
             keys = [k for k in keys if k in good]
             print(f'selection {a.select}: {len(keys)} (event, arm) groups')
