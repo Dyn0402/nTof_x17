@@ -11,7 +11,7 @@
 - `track_passport`: 15,444 run_145 tracks (12,818 with an MM deposit). Cosmic path length: MM sec^0.97/1.03 (Heed 1.07), wall sec^1.0/1.3. The MM tags tracks with several particles in the gap (AUC 0.84); the wall cannot (0.47). Data and Geant4 agree that MM and wall are uncorrelated. The track angle improves the plastic energy for steep tracks (1.40 → 1.07 MeV) and for multi-particle tracks (1.70 → 1.08 MeV). Capsule-vs-elsewhere AUC from the geometry is 0.75. Example cards for 12 data tracks are in the report.
 
 **Next steps:**
-1. Log the note on the x17 board (not done).
+1. (done 2026-10-15: logged on the x17 board as a log entry and an output.)
 2. Add time information: MM t0 vs scintillator pulse times per track (stack `*_dt_on`), as a fourth timing measurement.
 3. Get a Geant4 reduction with the liquid (`stack_edep.py` on branch `lnl`). Geant4 "through the plastic" is T > 6 MeV for now.
 4. The 2026-10-14 slow-tag AUCs (0.50/0.59/0.63) did not reproduce (now 0.74/0.66/0.80). Trace why.
