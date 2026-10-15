@@ -1,5 +1,36 @@
 # Handoff
 
+## Track passport demonstrator — updated 2026-10-15 (dylan-Yoga)
+
+**Resume:** Run `track_passport` once to generate `<calo>/passport/`, then `make_passport_report` — the code has never run end-to-end.
+
+**Goal:** One card per track showing everything the n_TOF set-up measures (tracking, MM gap dE/dx, wall, plastic, liquid, time since flash). A demonstrator of detection capability, not X17 physics. Four questions: P1 path length, P2 two particles, P3 energy (kNN, cross-validated), P4 origin (capsule vs elsewhere, Compton vs pair).
+
+**Done:**
+- `ntof_calorimetry/track_passport.py` and `ntof_calorimetry/make_passport_report.py` committed and pushed to `main` (acd65d8).
+- Both files compile (`py_compile`). Nothing has been executed.
+
+**In progress / where it stopped:**
+- Neither script has run. The `passport/` output directory does not exist yet. Nothing downstream (figures, `report.html`) has been generated.
+- The committed message says "not yet run end-to-end". Treat the numbers as unchecked until a run confirms them.
+
+**Next steps:**
+1. Run `python -m ntof_calorimetry.track_passport` (writes `<calo>/passport/`, including `passport_data.parquet`, `passport_sim.parquet`, `energy_sim_pred.parquet`). Fix whatever breaks.
+2. Run `python -m ntof_calorimetry.make_passport_report` to write `<calo>/passport/report.html` and figures.
+3. Check the numbers in the report against the sim and run_145 tables before using them.
+
+**Gotchas / decisions:**
+- The analysis uses run_145 (5 Aug, >= 12 ms, the arm's own trigger, single gated track) and the BEAM simulation (generated at the beam gain). Confirm the data and sim paths on this machine before running.
+- `make_passport_report` reads the parquet tables from `passport/` and does not regenerate them. Always run `track_passport` first.
+- Pushed straight to `main` at the user's request, without a verification run. The repo rule against merging unverified work was overridden on that basis.
+
+**Key files & commands:**
+- `ntof_calorimetry/track_passport.py` — analysis; writes the tables
+- `ntof_calorimetry/make_passport_report.py` — builds `report.html` and figures from those tables
+- `python -m ntof_calorimetry.track_passport` — step 1
+- `python -m ntof_calorimetry.make_passport_report` — step 2
+
+
 ## Pair event displays — updated 2026-10-15 (dylan-Yoga)
 
 **Resume:** 7 3D pair displays done and published; next: render more triggers / other runs if wanted (needs desktop stage 3).
