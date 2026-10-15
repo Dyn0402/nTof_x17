@@ -22,3 +22,9 @@ PYTHONPATH=. .venv/bin/python -m ntof_calorimetry.make_wp_deck        # notes/sc
 - In-beam through-goers are not a MIP sample: most do not penetrate the stack.
 
 **MM energy deposit per track (2026-10-14):** `heed_edep` → `mm_edep_sim` / `mm_edep_data` → `mm_edep_ana` → `mm_edep_combo`. Results and status: `MM_EDEP.md`.
+
+**Track passport (2026-10-15):** after `mm_edep_ana`, run `python -m ntof_calorimetry.track_passport` (~10 min) and
+then `python -m ntof_calorimetry.make_passport_report`. This combines every layer per track, and also holds the
+beam-sim MM calibration. Output: `<calo>/passport/report.html`. Summary in `MM_EDEP.md`.
+The pickles in `<calo>` were written with numpy 2. A numpy-1.26 venv cannot read them; re-save them through
+parquet in a numpy-2 env.

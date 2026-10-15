@@ -48,7 +48,7 @@ def fig_path() -> Path:
     for _, r in PC.iterrows():
         x, y = _arr(r.sec_med), _arr(r.dep_med)
         mk = 'o' if r.layer == 'MM gap' else 's'
-        ax.plot(x, y, mk, color=fs.DET_COLOR[r.arm], ms=6, mfc='none' if r.layer == 'wall' else fs.DET_COLOR[r.arm],
+        ax.plot(x, y, mk, color=fs.DET_COLOR[r.arm], ms=6, mew=1.4, mfc='none' if r.layer == 'wall' else fs.DET_COLOR[r.arm],
                 label=f'{r.arm} {r.layer}: {r.slope:.2f} ± {r.err:.2f}')
         rows += [dict(panel='cosmic', arm=r.arm, layer=r.layer, sec=a, rel=b) for a, b in zip(x, y)]
     xs = np.linspace(1.0, 1.45, 20)
@@ -67,9 +67,9 @@ def fig_path() -> Path:
             y = y / y[0]
             c = fs.DET_COLOR[r.arm]
             if r.source == 'data':
-                ax.plot(x, y, 'o', color=c, ms=5.5, label=f'{r.arm} data: {r.slope:.2f} ± {r.err:.2f}')
+                ax.plot(x, y, 'o', color=c, ms=5.5, label=f'{r.arm} data: {r.slope:.2f} ± {r.err:.2f} (sec<1.3: {r.slope_core:.2f})')
             else:
-                ax.plot(x, y, color=c, **G4_STYLE, label=f'{r.arm} Geant4: {r.slope:.2f} ± {r.err:.2f}')
+                ax.plot(x, y, color=c, **G4_STYLE, label=f'{r.arm} Geant4: {r.slope:.2f} ± {r.err:.2f} (sec<1.3: {r.slope_core:.2f})')
             rows += [dict(panel=ttl, arm=r.arm, layer=r.layer, source=r.source, sec=a, rel=b) for a, b in zip(x, y)]
         ax.plot(xs, xs, color=fs.MUTED, lw=1, ls='--')
         ax.set_xlabel('sec θ in the gap')
@@ -99,36 +99,37 @@ def fig_energy() -> Path:
 
 
 def fig_two_particles() -> Path:
+    """Median wall dE/dx in bins of the MM gap dE/dx, data vs Geant4, with
+    the error of the median: flat means the two do not see the same thing."""
     P = pd.read_parquet(PP / 'two_particles_points.parquet')
     edges = np.array([0, 0.7, 0.85, 1.0, 1.15, 1.3, 1.6, 2.0, 2.6, 10])
-    fig, axs = plt.subplots(1, 2, figsize=(9.6, 3.6))
+    fig, ax = plt.subplots(figsize=(6.8, 3.8))
     rows = []
-    for arm in TP.ARMS:
+    for k, arm in enumerate(TP.ARMS):
         for src in ('data', 'Geant4'):
             p = P[(P.arm == arm) & (P.source == src)]
             b = np.digitize(p.mm, edges)
-            xm = [p.mm[b == i].median() for i in range(1, len(edges)) if (b == i).sum() >= 25]
-            yw = [(p.wall[b == i] > 1.6).mean() for i in range(1, len(edges)) if (b == i).sum() >= 25]
-            ym = [p.wall[b == i].median() for i in range(1, len(edges)) if (b == i).sum() >= 25]
-            c = fs.DET_COLOR[arm]
-            kw = dict(marker='o', ls='none', ms=5.5, color=c) if src == 'data' else dict(color=c, **G4_STYLE)
-            axs[0].plot(xm, ym, label=f'{arm} {src}', **kw)
-            axs[1].plot(xm, yw, label=f'{arm} {src}', **kw)
-            rows += [dict(arm=arm, source=src, mm=a, wall_med=b_, p_wall_hi=c_) for a, b_, c_ in zip(xm, ym, yw)]
-            if src == 'Geant4':
-                for i in range(1, len(edges)):
-                    pass
-    axs[0].set_xscale('log')
-    axs[1].set_xscale('log')
-    axs[0].set_xlabel('MM gap dE/dx / median')
-    axs[1].set_xlabel('MM gap dE/dx / median')
-    axs[0].set_ylabel('median wall dE/dx / median')
-    axs[1].set_ylabel('P(wall > 1.6 × median)')
-    axs[0].set_title('Does the wall see what the MM sees?', fontsize=10, loc='left')
-    axs[1].set_title('Wall tail vs MM deposit', fontsize=10, loc='left')
-    axs[0].legend(fontsize=7.5, frameon=False)
+            for i in range(1, len(edges)):
+                v = p.wall[b == i]
+                if len(v) < 25:
+                    continue
+                rows.append(dict(arm=arm, source=src, mm=float(p.mm[b == i].median()), wall_med=float(v.median()),
+                                 err=float(1.2533 * v.std() / np.sqrt(len(v))), n=len(v)))
+    R = pd.DataFrame(rows)
+    for k, arm in enumerate(TP.ARMS):
+        c = fs.DET_COLOR[arm]
+        for src, off, kw in (('data', 0.985, dict(fmt='o', ms=5)), ('Geant4', 1.015, dict(fmt='s', ms=4, mfc='none', mew=1.2))):
+            r = R[(R.arm == arm) & (R.source == src)]
+            ax.errorbar(r.mm * off * (1 + 0.02 * k), r.wall_med, r.err, color=c, lw=1, capsize=0,
+                        label=f'{arm} {src}', **kw)
+    ax.axhline(1, color=fs.MUTED, lw=1, ls='--')
+    ax.set_xscale('log')
+    ax.set_xlabel('MM gap dE/dx / median')
+    ax.set_ylabel('median wall dE/dx / median')
+    ax.set_title('The wall does not follow the MM deposit, in data or Geant4', fontsize=10, loc='left')
+    ax.legend(fontsize=8, frameon=False, ncol=2)
     fig.tight_layout()
-    return fs.save(fig, FIG / 'two_particles', data=pd.DataFrame(rows))
+    return fs.save(fig, FIG / 'two_particles', data=R)
 
 
 def fig_multi_truth() -> Path:
@@ -181,7 +182,7 @@ def fig_predictions() -> Path:
         axs[2].stairs(he / he.sum(), eb, color=c, lw=1.4, label=arm)
     axs[0].set_xlabel('T at the gap  [MeV]')
     axs[1].set_xlabel('P(several particles in the gap)')
-    axs[2].set_xlabel('neutron energy from the time of flight  [meV]')
+    axs[2].set_xlabel('E_n from the time of flight  [meV]')
     axs[2].set_xscale('log')
     axs[0].set_ylabel('fraction of tracks')
     axs[0].set_title('Estimated electron energy', fontsize=10, loc='left')
@@ -259,7 +260,7 @@ def _tbl(df: pd.DataFrame, fmt: dict | None = None) -> str:
     h = '<table><thead><tr>' + ''.join(f'<th>{html.escape(str(c))}</th>' for c in df.columns) + '</tr></thead><tbody>'
     for _, r in df.iterrows():
         h += '<tr>' + ''.join(
-            f'<td>{(fmt[c].format(r[c]) if c in fmt and pd.notna(r[c]) else html.escape(str(r[c])))}</td>'
+            f'<td>{("—" if pd.isna(r[c]) else fmt[c].format(r[c]) if c in fmt else html.escape(str(r[c])))}</td>'
             for c in df.columns) + '</tr>'
     return h + '</tbody></table>'
 
@@ -311,6 +312,14 @@ def report() -> Path:
     tiles = ''.join(f'<div class="tile"><div class="k">{html.escape(k)}</div><div class="v">{html.escape(v)}</div>'
                     f'<div class="s">{html.escape(s)}</div></div>' for k, v, s in head)
     cls = pd.DataFrame(S['classes']).T.fillna(0).reset_index().rename(columns={'index': 'arm'})
+    # the low-energy class, data vs Geant4 (plastic below 0.8 MIP x sec: stopped early)
+    G4 = pd.read_parquet(PP / 'g4.parquet')
+    G4 = G4[G4.trig]
+    PD = pd.read_parquet(PP / 'passport_data.parquet')
+    lowT = pd.DataFrame([dict(arm=a, data=float((PD[PD.arm == a].e_plas_g4 < 0.8 * 3.4 * PD[PD.arm == a].sec).mean()),
+                              geant4=float((G4[G4.armL == a].e_plas < 0.8 * 3.4 * G4[G4.armL == a].sec).mean()),
+                              liquid_fired_data=float(PD[PD.arm == a].liq_fired.mean()))
+                         for a in TP.ARMS])
     cal_rows = pd.DataFrame([dict(arm=a, k_beam=c['k_beam'], sim_rsd=c['sim_rsd'], sim_bias=c['sim_bias'],
                                   data_over_sim=c['scale'], scale_err=c['scale_err'], sigma_extra=c['sigma_x'],
                                   sigma_total=c['sigma_total'], mip_keV=c['mip_keV'], n=c['n_data'])
@@ -350,8 +359,8 @@ the MM slope above 1.</p>
 <figure><img src="figures/path_length.png" alt="deposit vs sec theta"><figcaption>Median deposit in
 bins of sec θ, normalised to the first bin; the power-law slope is in the legend. Dashed: ∝ sec θ.</figcaption></figure>
 {_tbl(pd.concat([PC.assign(source='cosmic data')[['arm', 'layer', 'source', 'n', 'slope', 'err', 'expected']],
-                 PL[['arm', 'layer', 'source', 'n', 'slope', 'err']]]),
-      dict(slope='{:.2f}', err='{:.2f}', expected='{:.2f}'))}
+                 PL[['arm', 'layer', 'source', 'n', 'slope', 'err', 'slope_core', 'err_core']]]),
+      dict(slope='{:.2f}', err='{:.2f}', expected='{:.2f}', slope_core='{:.2f}', err_core='{:.2f}'))}
 
 <h2>3. MM gap deposit on beam electrons: the calibration</h2>
 <p>This closes the open item in MM_EDEP.md. The window curve and the ADC-per-keV constant k now come from
@@ -400,6 +409,11 @@ The neutron energy is shown for completeness. At ≥ 12 ms it is all sub-thermal
 <figure><img src="figures/predictions.png" alt="estimator outputs data vs Geant4"></figure>
 <p>Track classes in the data (fraction per arm):</p>
 {_tbl(cls, {c: '{:.3f}' for c in cls.columns if c != 'arm'})}
+<p>Two classes can be checked against Geant4 directly from the counters. The share of tracks whose plastic
+deposit is below 0.8 × MIP × sec θ (the lepton stopped early) agrees, including C's much larger share,
+which comes from the geometry. The liquid fires behind a few per cent of A's tracks and almost never behind
+C's: the C liquid's MIP is only ~1.3 × its ZS threshold.</p>
+{_tbl(lowT, dict(data='{:.3f}', geant4='{:.3f}', liquid_fired_data='{:.4f}'))}
 
 <h2>What this does not rule out</h2>
 <ul>
