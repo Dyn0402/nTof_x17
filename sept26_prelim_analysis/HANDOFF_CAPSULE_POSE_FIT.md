@@ -52,6 +52,11 @@ Read first:
 >   stable across ToF slices, run halves and wall-coincident tracks. The toy (`pose2d`) can't predict this curve (library
 >   sd 2–3 mm/bin), so it enters as a data reading, not a χ². Shape caveat: z moves below the source height, x above it.
 >   Deck: https://dylan-neff.web.cern.ch/notes/capsule-pose.html (slides pose, tilt-x, tilt-z, azimuth, sideways).
+> - **Hardware not modelled (Dylan, 2026-10-15):** the capsule hangs from a thin Al tube above it (a bit narrower than
+>   the top valve) that bends toward the A–D corner (+x, +z). Dylan thinks it sets the tilt. Not in Geant4 or the toy; not
+>   to be modelled for now, but check it first when a shape does not fit. Note: beam that misses the ³He (capsule off
+>   the beam) can reach the tube, which would add Al captures high up toward +x/+z. That matches the z drift's sign
+>   but is opposite to the x drift toward B.
 > - **Not yet done:**
 >   - the 19.95 m beam;
 >   - more Geant4 track library, to tighten the shape χ²;
