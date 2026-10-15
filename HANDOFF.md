@@ -2,7 +2,7 @@
 
 ## Track passport (tracking + MM dE/dx + scintillators per track) — updated 2026-10-15 (dylan-Yoga)
 
-**Resume:** both scripts ran end-to-end; the report is `/media/dylan/data/x17/calorimetry/passport/report.html`. Next, publish it as a note and decide what else the demonstrator should show (see Next steps).
+**Resume:** published 2026-10-15 as a 26-slide pedagogical note (principle → simulation → real detector): https://dylan-neff.web.cern.ch/notes/track-passport.html (`ntof_calorimetry/make_passport_deck.py`). The long report is `/media/dylan/data/x17/calorimetry/passport/report.html`.
 
 **Goal:** Dylan asked for as much information as possible about each track, from tracking and energy together. It is a demonstrator of the set-up, not X17 physics.
 
@@ -11,7 +11,7 @@
 - `track_passport`: 15,444 run_145 tracks (12,818 with an MM deposit). Cosmic path length: MM sec^0.97/1.03 (Heed 1.07), wall sec^1.0/1.3. The MM tags tracks with several particles in the gap (AUC 0.84); the wall cannot (0.47). Data and Geant4 agree that MM and wall are uncorrelated. The track angle improves the plastic energy for steep tracks (1.40 → 1.07 MeV) and for multi-particle tracks (1.70 → 1.08 MeV). Capsule-vs-elsewhere AUC from the geometry is 0.75. Example cards for 12 data tracks are in the report.
 
 **Next steps:**
-1. Publish the report (publish-note or slide-note) and log it on the x17 board.
+1. Log the note on the x17 board (not done).
 2. Add time information: MM t0 vs scintillator pulse times per track (stack `*_dt_on`), as a fourth timing measurement.
 3. Get a Geant4 reduction with the liquid (`stack_edep.py` on branch `lnl`). Geant4 "through the plastic" is T > 6 MeV for now.
 4. The 2026-10-14 slow-tag AUCs (0.50/0.59/0.63) did not reproduce (now 0.74/0.66/0.80). Trace why.
@@ -22,7 +22,8 @@
 - Beam electrons scatter between the gap and the wall, so the clean path-length test is the cosmic one.
 - Data counter energies are moved onto Geant4's scale (wall_plastic scale fits) before the kNN estimators are applied.
 
-**Key commands:** `PYTHONPATH=. .venv/bin/python -m ntof_calorimetry.track_passport` (~10 min), then `-m ntof_calorimetry.make_passport_report`.
+**Key commands:** `PYTHONPATH=. .venv/bin/python -m ntof_calorimetry.track_passport` (~10 min), then `-m ntof_calorimetry.make_passport_report` and `-m ntof_calorimetry.make_passport_deck`; republish with `python3 ~/PycharmProjects/dylan-cern-site/scripts/add-note.py /media/dylan/data/x17/calorimetry/passport/deck/track-passport.html --slug track-passport --force --deploy`. The deck caches the beam-calibration histograms in `passport/deck_cache_beamcal.pkl`; delete it after rerunning the analysis.
+- Site repo: pull before any add-note --deploy. A deploy from a stale tree pushes stale pages (the 15 Oct pair-display note had been deployed from the laptop uncommitted while origin was 11 commits ahead; committed now).
 
 ## Pair event displays — updated 2026-10-15 (dylan-Yoga)
 
