@@ -271,6 +271,14 @@ Full state: Correction box of `sept26_prelim_analysis/HANDOFF_CAPSULE_POSE_FIT.m
    then `bash ntof_cosmics/g4_digi/run_ear2.sh ear2_L19p5`. **It must have the reduction first:** run_digi selects events
    from `G4DIGI_REDUCED` (default: the old neutrons_nose), and with the wrong one it silently digitises 1 event.
    Note the new library is NOT bigger (~42 k events/arm, as the old one): it fixes the gun, not the toy's statistics.
+   **Library size (2026-10-15):** the toy uses capsule tracks with the capture within r < 8 mm (the nose); with the real
+   beam only 61 % of capsule captures are there (93 % with Lambda2D), so ear2_L19p5 gives 3.7 k (A) / 2.9 k (C) such
+   tracks vs 10.5 k / 8.7 k for the July library. Pool them: `POSE2_LIB=nose,ear2_L19p5` (valid: the toy translates each
+   track to its own capture point). Raw y-tan sign differs between digitiser vintages; library() resolves it per part
+   (both focus equally: corr v 0.74/0.85 vs 0.75/0.83). Pooled toy sd, x shear: 0.3-0.6 mm at -40..0 (was 0.4-1.6); A/C
+   depth 1.2-1.4 mm (was 2.1-2.3) vs data 0.15. `<out>/capsule_pose_ear2_pool/`. The 400-job extension adds ~5x the
+   ear2 part. For the depth curve to be toy-limited at the data's level needs ~100x: a capsule-Al nCapture bias or a
+   nose gamma gun in MX17_Full_Geant, not more neutron jobs.
    **Gas caveat (2026-10-15):** these EAR2 runs (build MX17_Full_Geant_ear2 @ 19a6a71, incl. the 400-job extension, cluster
    4465059) predate the primary-ionization fix (MX17_Geant e17c72c, not yet ported to MX17_Full_Geant): gas ~7 % too dense,
    95/5 used as a mass ratio, no PAI, so gas Edep and Edep/W primaries are ~+10 % high. Fine for pointing (the pose fit);

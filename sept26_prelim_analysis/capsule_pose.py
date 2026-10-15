@@ -76,8 +76,13 @@ FLUX4 = Path(__file__).resolve().parents[1] / 'ear2_beam' / 'data' / 'Final_eval
 #: the Geant4 track library: truth (reduce_gap_wall) and digitised reco.  The
 #: default is the July nose-first run (Lambda2D gun); POSE2_LIB=<tag> reads the
 #: real-EAR2-gun rerun, g4_angle/neutrons_<tag> and g4_digi/g4_<arm>_<tag>.
+#: POSE2_LIB may list several tags (comma-separated; '' or 'nose' = the July
+#: run): the libraries are pooled.  Valid because the toy translates each track
+#: to its own capture point, so the gun only sets which tracks exist, not where
+#: the toy puts them.
 LIB_TAG = os.environ.get('POSE2_LIB', '')
-NOSE = Path('/media/dylan/data/x17/ntof_cosmics/g4_angle') / (f'neutrons_{LIB_TAG}' if LIB_TAG else 'neutrons_nose')
+LIB_TAGS = [t if t != 'nose' else '' for t in LIB_TAG.split(',')]
+G4ANGLE = Path('/media/dylan/data/x17/ntof_cosmics/g4_angle')
 G4DIGI = CT.G4DIGI
 FLIGHT_M = CT.FLIGHT_M
 HALF = CT.HALF
@@ -359,7 +364,21 @@ def library(arm: str) -> pd.DataFrame:
     estimate cx, cy, cz in the chamber frame."""
     if arm in _LIB:
         return _LIB[arm]
-    parts = sorted(glob.glob(str(G4DIGI / f'g4_{arm}_{LIB_TAG or "is2_full"}' / '*.parquet')))
+    if len(LIB_TAGS) > 1:
+        Ls = [_library_one(arm, t) for t in LIB_TAGS]
+        L = pd.concat(Ls, ignore_index=True)
+        L.attrs.update(parts={t or 'nose': (len(x), x.attrs['sx'], x.attrs['sy']) for t, x in zip(LIB_TAGS, Ls)})
+        _LIB[arm] = L
+        return L
+    L = _library_one(arm, LIB_TAGS[0])
+    _LIB[arm] = L
+    return L
+
+
+def _library_one(arm: str, tag: str) -> pd.DataFrame:
+    """One digitised Geant4 run (tag '' = the July nose-first run)."""
+    NOSE = G4ANGLE / (f'neutrons_{tag}' if tag else 'neutrons_nose')
+    parts = sorted(glob.glob(str(G4DIGI / f'g4_{arm}_{tag or "is2_full"}' / '*.parquet')))
     R = pd.concat([pd.read_parquet(p) for p in parts], ignore_index=True)
     for c in ('x_quality_ok', 'y_quality_ok'):
         R[c] = R[c].astype('boolean').fillna(False).astype(bool)
@@ -397,7 +416,6 @@ def library(arm: str) -> pd.DataFrame:
     L['cx'], L['cz'] = L.vx, L.vz
     L['cy'] = _al_mid_y(r)
     L.attrs.update(sx=sx, sy=sy)
-    _LIB[arm] = L
     return L
 
 
