@@ -271,6 +271,10 @@ Full state: Correction box of `sept26_prelim_analysis/HANDOFF_CAPSULE_POSE_FIT.m
    then `bash ntof_cosmics/g4_digi/run_ear2.sh ear2_L19p5`. **It must have the reduction first:** run_digi selects events
    from `G4DIGI_REDUCED` (default: the old neutrons_nose), and with the wrong one it silently digitises 1 event.
    Note the new library is NOT bigger (~42 k events/arm, as the old one): it fixes the gun, not the toy's statistics.
+   **Gas caveat (2026-10-15):** these EAR2 runs (build MX17_Full_Geant_ear2 @ 19a6a71, incl. the 400-job extension, cluster
+   4465059) predate the primary-ionization fix (MX17_Geant e17c72c, not yet ported to MX17_Full_Geant): gas ~7 % too dense,
+   95/5 used as a mass ratio, no PAI, so gas Edep and Edep/W primaries are ~+10 % high. Fine for pointing (the pose fit);
+   NOT for absolute MM energy/charge without a ~0.9 scale.
    Old wording:
 2. Pull to `/media/dylan/data/x17/ntof_cosmics/g4_digi/steps_ear2_L19p5/` and `g4_angle/neutrons_ear2_L19p5/`
    (local disks have only ~3.5 GB free each; steps ~0.4 GB/100 files), then `run_digi.py g4 --arm A/C ... --label g4_A_ear2_L19p5`
