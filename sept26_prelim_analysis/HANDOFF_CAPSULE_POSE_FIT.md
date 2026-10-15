@@ -46,6 +46,12 @@ Read first:
 >   A ±3° in-plane rotation of D does not reorder them. B cannot test it (no drift field: its heights are smeared flat).
 >   Caveats: one chamber; the toy matches the sign of D's rise, not its shape below the nose; D also shifts with hit
 >   height on its plane (+30 mm/m), a D-specific effect. +z sign pinned by the arm layout (COORDINATES.md §1–2).
+> - **z tilt without D (2026-10-15):** `capsule_pose data_depth`. A and C see the source's z as a distance: their band
+>   slope is D_plane/(D_plane ∓ z_s), so ln|a_A| − ln|a_C| per height bin is z_s(h) up to a constant (the tan scale k
+>   cancels). Calibrated per bin by injection. Source moves +4.6 mm toward A from h −80 to −20 (D: +4.5), flat above,
+>   stable across ToF slices, run halves and wall-coincident tracks. The toy (`pose2d`) can't predict this curve (library
+>   sd 2–3 mm/bin), so it enters as a data reading, not a χ². Shape caveat: z moves below the source height, x above it.
+>   Deck: https://dylan-neff.web.cern.ch/notes/capsule-pose.html (slides pose, tilt-x, tilt-z, azimuth, sideways).
 > - **Not yet done:**
 >   - the 19.95 m beam;
 >   - more Geant4 track library, to tighten the shape χ²;

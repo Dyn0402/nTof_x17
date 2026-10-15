@@ -52,6 +52,9 @@ Steps (CSV to <out>/capsule_pose/):
   scan      toy grid: beam-capsule offset d and tilt (theta, phi), per window
   fit       the capsule height each shape needs to match the data; the bound
             on d for a given prior on that height
+  pose2 / pose2z  pose grid on the real EAR2 beam against the A/C x shape / D's z shape
+  data_depth / pose2d  the source's z against height from the A/C band slopes
+            (no D), and the pose grid against it
 
     python -m sept26_prelim_analysis.capsule_pose [beam|closure|data|scan|fit|all]
 """
@@ -1045,11 +1048,176 @@ def pose2z_step(out: Path) -> pd.DataFrame:
     return R.sort_values('chi2_z').head(15).drop(columns=['shear_z'])
 
 
+# ---- source depth from A and C alone: the z tilt without D --------------------
+# A line from a source at depth w along an arm's outward normal reaches the
+# plane (at P_n = +-D_PLANE) with disp = -(pos - x_s) P_n / (P_n - w): the band
+# slope |a| = D_PLANE / (D_PLANE -+ w_z), A at +z, C at -z.  A source that moves
+# toward +z with height steepens A's band and flattens C's, so
+# ln|a_A| - ln|a_C| against height is the source's z against height.  A tan
+# scale common to all heights cancels in it (k only sets the constant), as does
+# any height dependence A and C share.  The response is calibrated per bin by
+# moving every line of the sample (background too) by a known depth.
+DEPTH_INJECT = 5.0
+DEPTH_SLICES = (('late', 20.0, 75.0), ('20-30', 20.0, 30.0), ('30-45', 30.0, 45.0), ('45-75', 45.0, 75.0))
+
+
+def band_slope(pos, disp, n_iter=4, clip=3.0) -> float:
+    """The robust band slope a of disp = a (pos - x_s), as CT.crossing fits it."""
+    pos, disp = np.asarray(pos, float), np.asarray(disp, float)
+    keep = np.ones(len(pos), bool)
+    for _ in range(n_iter):
+        a, b = np.polyfit(pos[keep], disp[keep], 1)
+        r = disp - (a * pos + b)
+        keep = np.abs(r) < clip * 1.4826 * np.median(np.abs(r[keep]))
+    return float(np.polyfit(pos[keep], disp[keep], 1)[0])
+
+
+def depth_bins(T: pd.DataFrame, arm: str, n_boot: int = 0, seed: int = 0) -> pd.DataFrame:
+    """Per height bin: ln|a|, its bootstrap error, and the response
+    d ln|a| / d z_global (per mm) from shifting the lines by +-DEPTH_INJECT."""
+    pn = U_SIGN[arm] * D_PLANE
+    rng = np.random.default_rng(seed)
+    rows = []
+    for lo, hi in zip(H_EDGES[:-1], H_EDGES[1:]):
+        s = T[(T.hgt >= lo) & (T.hgt < hi)]
+        if len(s) < 300:
+            rows.append(dict(h=0.5 * (lo + hi), n=len(s)))
+            continue
+        pos, disp = s.pos.to_numpy(float), s.disp.to_numpy(float)
+        la = np.log(abs(band_slope(pos, disp)))
+        # every line moved by dz along global z: pos -> pos + disp dz / P_n
+        lp, lm = (np.log(abs(band_slope(pos + disp * dz / pn, disp)))
+                  for dz in (DEPTH_INJECT, -DEPTH_INJECT))
+        r = dict(h=0.5 * (lo + hi), n=len(s), ln_a=la, resp=(lp - lm) / (2 * DEPTH_INJECT))
+        if n_boot:
+            b = [np.log(abs(band_slope(pos[i], disp[i])))
+                 for i in (rng.integers(0, len(s), len(s)) for _ in range(n_boot))]
+            r['ln_a_err'] = float(np.std(b))
+        rows.append(r)
+    return pd.DataFrame(rows)
+
+
+def depth_curve(bA: pd.DataFrame, bC: pd.DataFrame) -> pd.DataFrame:
+    """The source's z (mm, up to a constant) per height bin from A and C."""
+    m = bA.merge(bC, on='h', suffixes=('_A', '_C'))
+    resp = m.resp_A - m.resp_C
+    m['z'] = (m.ln_a_A - m.ln_a_C) / resp
+    if 'ln_a_err_A' in m:
+        m['z_err'] = np.hypot(m.ln_a_err_A, m.ln_a_err_C) / resp.abs()
+    m['resp'] = resp
+    return m
+
+
+def data_depth_step(out: Path) -> pd.DataFrame:
+    """A/C source depth against height, for the late window and its ToF slices,
+    and the late window split into run halves and wall-coincident tracks."""
+    d = load_data()
+    rn = d.run.astype(str).str.extract(r'(\d+)')[0].astype(int)
+    runs = np.sort(rn.unique())
+    mid = runs[len(runs) // 2]
+    cuts = [(n, (d.ms >= lo) & (d.ms < hi)) for n, lo, hi in DEPTH_SLICES]
+    late = (d.ms >= 20) & (d.ms < 75)
+    cuts += [('runs<' + str(mid), late & (rn < mid)),
+             ('runs>=' + str(mid), late & (rn >= mid)),
+             ('wall', late & d.wall)]
+    rows = []
+    for name, m in cuts:
+        b = {arm: depth_bins(d[m & (d.arm == arm)], arm, n_boot=12) for arm in 'AC'}
+        rows.append(depth_curve(b['A'], b['C']).assign(slice=name))
+        print(name, flush=True)
+    R = pd.concat(rows, ignore_index=True)
+    R.to_csv(out / 'data_depth.csv', index=False)
+    return R[R.slice == 'late'][['h', 'n_A', 'n_C', 'z', 'z_err', 'resp']]
+
+
+#: the bins the depth shape is compared over (centres -60..+20, as pose2/pose2z)
+DEPTH_FIT = (-70.0, 30.0)
+
+
+def _depth_chi2(zt, zd, ze, zs):
+    """chi2 of two depth curves over the same bins after removing the best
+    common offset (the constant carries k_A / k_C, not geometry)."""
+    w = 1.0 / (ze ** 2 + zs ** 2)
+    off = np.sum(w * (zd - zt)) / np.sum(w)
+    return float(np.sum(w * (zd - zt - off) ** 2)), float(off)
+
+
+def depth_toy_sd(out: Path, n_boot: int = 12) -> pd.Series:
+    """The toy's depth curve spread per height bin over bootstrap replicas of
+    the Geant4 library (its limit), at the Geant4 shape; cached."""
+    f = out / 'depth_toy_sd.csv'
+    if f.exists():
+        return pd.read_csv(f).set_index('h').toy_sd
+    D = pd.read_csv(out / 'data.csv').set_index(['arm', 'window'])
+    C, _ = beam_captures(NOMINAL, n=150_000, window=WINDOWS['late'])
+    curves = []
+    L0 = {a: library(a) for a in 'AC'}
+    for b in range(n_boot):
+        rng = np.random.default_rng(200 + b)
+        bins = {}
+        for arm in 'AC':
+            _LIB[arm] = L0[arm].iloc[rng.integers(0, len(L0[arm]), len(L0[arm]))].reset_index(drop=True)
+            T = toy_tracks(arm, C, n=60_000, seed=b)
+            e = estimators(T, per_height=False)
+            T = T.assign(hgt=T.hgt + D.loc[(arm, 'late')].y_cross - e['y_cross'])
+            bins[arm] = depth_bins(T, arm)
+        curves.append(depth_curve(bins['A'], bins['C']).set_index('h').z)
+    for arm in 'AC':
+        _LIB[arm] = L0[arm]
+    c = pd.concat(curves, axis=1)
+    c = c.sub(c[(c.index >= DEPTH_FIT[0]) & (c.index <= DEPTH_FIT[1])].mean())
+    print(c.round(2).to_string())
+    S = c.std(axis=1).rename('toy_sd')
+    S.reset_index().to_csv(f, index=False)
+    return S
+
+
+def pose2d_step(out: Path) -> pd.DataFrame:
+    """The pose2 grid against the A/C depth curve: the z tilt from A and C
+    alone (no D).  Same captures and toy tracks as pose2 (same seeds); chi2_d
+    is the depth shape over DEPTH_FIT with the best offset removed."""
+    D = pd.read_csv(out / 'data.csv').set_index(['arm', 'window'])
+    DD = pd.read_csv(out / 'data_depth.csv')
+    dd = DD[(DD.slice == 'late') & DD.h.between(*DEPTH_FIT)].set_index('h')
+    SD = depth_toy_sd(out)
+    z_c = float(np.mean([v for v, _ in Z_BD.values()]))
+    x_b = float(os.environ.get('POSE2_XB', 0.0))
+    xcs = [float(v) for v in os.environ['POSE2_XC'].split(',')] if os.environ.get('POSE2_XC') else POSE2_XC
+    thetas = [float(v) for v in os.environ['POSE2_THETA'].split(',')] if os.environ.get('POSE2_THETA') else POSE2_THETA
+    phis = [float(v) for v in os.environ['POSE2_PHI'].split(',')] if os.environ.get('POSE2_PHI') else POSE2_PHI
+    poses = [(xc, 0.0, 0.0) for xc in xcs] + \
+            [(xc, th, ph) for xc in xcs for th in thetas if th > 0 for ph in phis]
+    rows = []
+    for xc, th, ph in poses:
+        pose = dict(NOMINAL, x_c=xc, z_c=z_c, theta=th, phi=float(ph), x_b=x_b)
+        C, fr = beam_captures(pose, n=80_000, window=WINDOWS['late'])
+        bins = {}
+        for arm in ('A', 'C'):
+            T = toy_tracks(arm, C, n=50_000)
+            e = estimators(T, per_height=False)
+            T = T.assign(hgt=T.hgt + D.loc[(arm, 'late')].y_cross - e['y_cross'])
+            bins[arm] = depth_bins(T, arm)
+        cur = depth_curve(bins['A'], bins['C']).set_index('h').z
+        zt = cur.reindex(dd.index).to_numpy()
+        ok = np.isfinite(zt)
+        chi2, off = _depth_chi2(zt[ok], dd.z.to_numpy()[ok], dd.z_err.to_numpy()[ok],
+                                SD.reindex(dd.index).fillna(1.0).to_numpy()[ok])
+        rows.append(dict(x_b=x_b, x_c=xc, z_c=z_c, theta=th, phi=ph, gas=fr['gas'], chi2_d=chi2,
+                         n_d=int(ok.sum()), d_off=off,
+                         depth=' '.join(f'{v:+.2f}' for v in cur.reindex(H_EDGES[:-1] + 10).to_numpy())))
+        print(xc, th, ph, round(chi2, 1), flush=True)
+    R = pd.DataFrame(rows)
+    tag = ''.join(f"_{k[6:].lower()}{os.environ[k].replace(',', '_')}" for k in ('POSE2_XB', 'POSE2_XC')
+                  if os.environ.get(k))
+    R.to_csv(out / f'pose2d{tag}.csv', index=False)
+    return R.sort_values('chi2_d').head(15).drop(columns=['depth'])
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split('\n')[1])
     ap.add_argument('step', nargs='?', default='all',
                     choices=['beam', 'closure', 'data', 'tof', 'shear', 'early', 'image', 'alternatives', 'halo', 'scan', 'fit',
-                             'pose2', 'data_z', 'pose2z', 'all'])
+                             'pose2', 'data_z', 'pose2z', 'data_depth', 'pose2d', 'all'])
     ap.add_argument('--out', type=Path, default=None, help='output dir (default <out>/capsule_pose)')
     a = ap.parse_args()
     out = a.out or paths.out('capsule_pose')
@@ -1059,7 +1227,7 @@ def main() -> int:
     steps = (('beam', beam_step), ('closure', closure_step), ('data', data_step), ('tof', tof_step),
              ('shear', shear_step), ('early', early_step), ('image', image_step),
              ('alternatives', alternatives_step), ('halo', halo_step), ('scan', scan_step), ('fit', fit_step), ('pose2', pose2_step),
-             ('data_z', data_z_step), ('pose2z', pose2z_step))
+             ('data_z', data_z_step), ('pose2z', pose2z_step), ('data_depth', data_depth_step), ('pose2d', pose2d_step))
     for name, fn in steps:
         if a.step in (name, 'all'):
             print(f'\n== {name}\n{fn(out).round(3).to_string(index=False)}', flush=True)

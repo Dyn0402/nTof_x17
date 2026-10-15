@@ -223,14 +223,29 @@ correct the record.
 
 **Key files:** `Y_FIX_REGEN.sh`, `Y_FLIP_AUDIT.md`, `COORDINATES.md`, `sept26_prelim_analysis/regen_stage3.py`.
 
-## Capsule pose in the beam — updated 2026-10-14 (dylan-MS-7C84)
+## Capsule pose in the beam — updated 2026-10-15 (dylan-MS-7C84)
 
-**Resume:** tilt azimuth done (φ≈135°) and 19.95 m refit done; next: condor steps+reduce on the finished EAR2-gun Geant4, then the library.
+**Resume:** 15 Oct: z tilt confirmed without D (A/C band-slope depth); deck rebuilt with pose/tilt visuals and
+published (https://dylan-neff.web.cern.ch/notes/capsule-pose.html). Next: the EAR2-gun Geant4 library (lxplus step 1 below).
 
 **Goal:** where the ³He capsule is relative to the beam and chambers (sets ³He/IPC/X17 yield; feeds the 1 : 8 pair-rate question).
 Full state: Correction box of `sept26_prelim_analysis/HANDOFF_CAPSULE_POSE_FIT.md` (now includes the azimuth paragraph).
 
-**Done:**
+**Done 2026-10-15:**
+- **A/C band-slope depth** (`capsule_pose data_depth` → `capsule_pose_ear2/data_depth.csv`): |band slope| = D/(D ∓ z_s) for
+  A/C, so ln|a_A| − ln|a_C| per height bin = source z per height (k cancels; response calibrated per bin by moving every
+  line ±5 mm in z: 0.0074/mm, 88 % of ideal). Source moves **+4.6 mm toward A (+z) from h −80 to −20**, flat above;
+  D gives +4.5 mm over the same range. Stable to ~0.4 mm in ToF 20–30/30–45/45–75, run halves, wall-coincident.
+  Systematics differ from D's (A/C-asymmetric tan scale vs height, not a D twist). No shared chamber.
+- `pose2d` (toy prediction of the depth curve per pose): **uninformative**, Geant4-library-limited (toy sd 2–3 mm per bin,
+  ~50 at −80; best χ²_d over φ varies by only 2.6). Kept as code; the deck uses the data reading, not this χ².
+- Caveat found: z moves *below* the source height, x drifts *above* it, so one rigid tilt doesn't fit both shapes. The lean's
+  direction is solid, but its size and shape aren't (bent holder / second source / height-dependent bias not excluded).
+- Deck `make_capsule_pose_deck.py` rebuilt on the real beam: new slides beam-fix, pose to scale (front/side/top with the
+  capture cloud and the fitted axis), tilt x, tilt z (D + A/C), azimuth (Δχ² vs φ + compass), sideways degeneracy.
+  Old-beam slides (captures/pictures/readings) dropped from the build, functions kept.
+
+**Done 2026-10-14:**
 - (earlier 10-14) real EAR2 beam (`ear2_beam/`); `pose2` refit: top leans toward −x 7–15°, capsule 8–12 mm below drawn,
   sideways beam/capsule degenerate (beam centred → capsule ~16–18 mm off, ³He sees ~0.2; beam −10 → ~0.55).
 - **Tilt azimuth from D: φ ≈ 135°** (top toward −x and +z = toward B and A). `capsule_pose data_z` + `pose2z`:
