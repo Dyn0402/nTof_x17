@@ -6,10 +6,17 @@ new slides near the end, and the meeting name, date and page numbers updated
 
 | slide | what | source |
 |---|---|---|
-| 43 (24 / 27) | **The Al pairs are soft: few trigger, poor pointing** — Al legs ~2 MeV vs X17 4–16 MeV; 11 % vs 82 % reach the trigger level; ~9° scattering → 33 mm vertex miss; but ~3,700 correlated same-chamber double tracks in the data (rate ~⅛ of Geant4, open) | status deck for 15 Oct (`sept26_prelim_analysis/make_status_oct15_deck.py`, notes/x17-status-2026-10-15) |
-| 45 (26 / 27) | **Next: repeat the ATOMKI measurement at LNL** — n_TOF vs LNL table, 10-day Geant4 spectra (S/B ≈ 8 %), X17/day and time-to-3σ, the big plastics (×7 trigger acceptance, ×7.8 X17/day, ~1 d vs ~17 d, ≈ €93k), other facilities in one line | `x17_facility_search/lnl/` (`out/talk/`, `out/syst/`), notes/lnl-x17-feasibility |
+| 35 (17 / 22) | **The Al pairs are soft: few trigger, poor pointing** — Al legs ~2 MeV vs X17 4–16 MeV; 11 % vs 82 % reach the trigger level; ~9° scattering → 33 mm vertex miss; but ~3,700 correlated same-chamber double tracks in the data (rate ~⅛ of Geant4, open) | status deck for 15 Oct (`sept26_prelim_analysis/make_status_oct15_deck.py`, notes/x17-status-2026-10-15) |
+| 36 (18 / 22) | **A cherry-picked pair event** — full-slide animated 3D display of run_145 trigger 24576 (same-chamber pair, chamber A, 42°, both legs on fired wall groups) | `sept26_prelim_analysis/pair_event_display.py`; GIF from dylan-neff.web.cern.ch/files/x17_pair_24576.gif |
+| 40 (21 / 22) | **Plan D? Repeat the ATOMKI measurement at LNL** — n_TOF vs LNL table, 10-day Geant4 spectra (S/B ≈ 8 %), X17/day and time-to-3σ, the big plastics (×7 trigger acceptance, ×7.8 X17/day, ~1 d vs ~17 d, ≈ €93k), other facilities in one line | `x17_facility_search/lnl/` (`out/talk/`, `out/syst/`), notes/lnl-x17-feasibility |
 
-Speaker notes on both new slides carry the numbers and their provenance.
+Speaker notes on the new slides carry the numbers and their provenance.
+
+**The deck was hand-edited after the build (2026-10-15)**: slides reordered (several
+main slides moved into Backup), the event-display slide added and every page number
+redone (22 main slides; backup B1–B36; the hidden "Cut for the 15-minute version"
+slides untouched). `make_italy_deck.py` does not reproduce that, so do not rebuild
+over the edited `.pptx`.
 
 ## Rebuild
 
