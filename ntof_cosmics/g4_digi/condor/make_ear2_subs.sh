@@ -5,9 +5,13 @@
 # Same scripts and naming as steps_nose / neutrons_nose, so run_digi and
 # capsule_pose.library read them unchanged.  Run on lxplus:
 #   bash make_ear2_subs.sh neutrons_thermal_ear2_L19p5 ear2_L19p5 && condor_submit steps_ear2_L19p5.sub && condor_submit reduce_ear2_L19p5.sub
+# Optional 3rd argument: the first job number to include (e.g. 100 for an extension run);
+# the subs are then named <kind>_<tag>_from<N>.sub.
 set -euo pipefail
 SIM=/eos/experiment/ntof/data/x17/full_sim/$1
 TAG=$2
+FROM=${3:-0}
+SUF=$([ "$FROM" -gt 0 ] && echo "_from$FROM" || true)
 OUT=/eos/experiment/ntof/data/x17/full_sim/angle_scale
 mkdir -p "$OUT/steps_$TAG" "$OUT/neutrons_$TAG" ~/condor/mx17_digi_steps/logs_$TAG ~/condor/mx17_angle_scale/logs_$TAG
 for kind in steps reduce; do
@@ -29,9 +33,10 @@ for kind in steps reduce; do
     echo 'queue inp,outp,tag from ('
     for f in "$SIM"/neutron_bg_job*_t0.root; do
       n=$(basename "$f" _t0.root); n=${n#neutron_bg_job}
+      [ $((10#$n)) -lt "$FROM" ] && continue
       echo "$f, $ODIR/$P$n.parquet, $P$n"
     done
     echo ')'
-  } > "${kind}_$TAG.sub"
-  echo "wrote ${kind}_$TAG.sub ($(grep -c _t0.root "${kind}_$TAG.sub") files)"
+  } > "${kind}_$TAG$SUF.sub"
+  echo "wrote ${kind}_$TAG$SUF.sub ($(grep -c _t0.root "${kind}_$TAG$SUF.sub") files)"
 done
