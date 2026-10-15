@@ -266,6 +266,12 @@ Full state: Correction box of `sept26_prelim_analysis/HANDOFF_CAPSULE_POSE_FIT.m
 1. On lxplus, once `condor_q` is empty: copy `ntof_cosmics/g4_digi/condor/make_ear2_subs.sh` to lxplus, then
    `bash make_ear2_subs.sh neutrons_thermal_ear2_L19p5 ear2_L19p5 && condor_submit steps_ear2_L19p5.sub && condor_submit reduce_ear2_L19p5.sub`
    (same for L19p95). Outputs → `full_sim/angle_scale/{steps,neutrons}_ear2_L19p5/`. `lxstore status` before/after.
+   (2026-10-15: submitted, clusters 4464994-7. Steps done; reduce needs ~12 GB, was held at 6 GB, re-requested 16 GB.)
+2. Pull to `/media/dylan/data/x17/ntof_cosmics/g4_digi/steps_ear2_L19p5/` and `g4_angle/neutrons_ear2_L19p5/`,
+   then `bash ntof_cosmics/g4_digi/run_ear2.sh ear2_L19p5`. **It must have the reduction first:** run_digi selects events
+   from `G4DIGI_REDUCED` (default: the old neutrons_nose), and with the wrong one it silently digitises 1 event.
+   Note the new library is NOT bigger (~42 k events/arm, as the old one): it fixes the gun, not the toy's statistics.
+   Old wording:
 2. Pull to `/media/dylan/data/x17/ntof_cosmics/g4_digi/steps_ear2_L19p5/` and `g4_angle/neutrons_ear2_L19p5/`
    (local disks have only ~3.5 GB free each; steps ~0.4 GB/100 files), then `run_digi.py g4 --arm A/C ... --label g4_A_ear2_L19p5`
    (template `ntof_cosmics/g4_digi/run_full.sh`, ~1 h/arm).
