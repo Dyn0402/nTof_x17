@@ -1,35 +1,28 @@
 # Handoff
 
-## Track passport demonstrator — updated 2026-10-15 (dylan-Yoga)
+## Track passport (tracking + MM dE/dx + scintillators per track) — updated 2026-10-15 (dylan-Yoga)
 
-**Resume:** Run `track_passport` once to generate `<calo>/passport/`, then `make_passport_report` — the code has never run end-to-end.
+**Resume:** both scripts ran end-to-end; the report is `/media/dylan/data/x17/calorimetry/passport/report.html`. Next, publish it as a note and decide what else the demonstrator should show (see Next steps).
 
-**Goal:** One card per track showing everything the n_TOF set-up measures (tracking, MM gap dE/dx, wall, plastic, liquid, time since flash). A demonstrator of detection capability, not X17 physics. Four questions: P1 path length, P2 two particles, P3 energy (kNN, cross-validated), P4 origin (capsule vs elsewhere, Compton vs pair).
+**Goal:** Dylan asked for as much information as possible about each track, from tracking and energy together. It is a demonstrator of the set-up, not X17 physics.
 
-**Done:**
-- `ntof_calorimetry/track_passport.py` and `ntof_calorimetry/make_passport_report.py` committed and pushed to `main` (acd65d8).
-- Both files compile (`py_compile`). Nothing has been executed.
-
-**In progress / where it stopped:**
-- Neither script has run. The `passport/` output directory does not exist yet. Nothing downstream (figures, `report.html`) has been generated.
-- The committed message says "not yet run end-to-end". Treat the numbers as unchecked until a run confirms them.
+**Done (results in `ntof_calorimetry/MM_EDEP.md`, "Track passport"):**
+- `mm_edep_ana` ran for A+C. The beam MM calibration is fixed (beam-sim k; sim bias −0.46 → 0.00), giving per-track σ = 0.16 (A) and 0.22 (C). Stage 4 was rerun at σ 0.16.
+- `track_passport`: 15,444 run_145 tracks (12,818 with an MM deposit). Cosmic path length: MM sec^0.97/1.03 (Heed 1.07), wall sec^1.0/1.3. The MM tags tracks with several particles in the gap (AUC 0.84); the wall cannot (0.47). Data and Geant4 agree that MM and wall are uncorrelated. The track angle improves the plastic energy for steep tracks (1.40 → 1.07 MeV) and for multi-particle tracks (1.70 → 1.08 MeV). Capsule-vs-elsewhere AUC from the geometry is 0.75. Example cards for 12 data tracks are in the report.
 
 **Next steps:**
-1. Run `python -m ntof_calorimetry.track_passport` (writes `<calo>/passport/`, including `passport_data.parquet`, `passport_sim.parquet`, `energy_sim_pred.parquet`). Fix whatever breaks.
-2. Run `python -m ntof_calorimetry.make_passport_report` to write `<calo>/passport/report.html` and figures.
-3. Check the numbers in the report against the sim and run_145 tables before using them.
+1. Publish the report (publish-note or slide-note) and log it on the x17 board.
+2. Add time information: MM t0 vs scintillator pulse times per track (stack `*_dt_on`), as a fourth timing measurement.
+3. Get a Geant4 reduction with the liquid (`stack_edep.py` on branch `lnl`). Geant4 "through the plastic" is T > 6 MeV for now.
+4. The 2026-10-14 slow-tag AUCs (0.50/0.59/0.63) did not reproduce (now 0.74/0.66/0.80). Trace why.
 
 **Gotchas / decisions:**
-- The analysis uses run_145 (5 Aug, >= 12 ms, the arm's own trigger, single gated track) and the BEAM simulation (generated at the beam gain). Confirm the data and sim paths on this machine before running.
-- `make_passport_report` reads the parquet tables from `passport/` and does not regenerate them. Always run `track_passport` first.
-- Pushed straight to `main` at the user's request, without a verification run. The repo rule against merging unverified work was overridden on that basis.
+- The desktop data are reachable from the laptop through Windows on the same disk: `ssh desktop-win` → `D:\x17\...` (Ubuntu `/media/dylan/data`). Copied to the laptop so far: `calorimetry/`, `sept26_prelim/{kcal,stage3_fullpass/tracks_run_145_*}`, `scint_stack/{tracks/stack_run_145,ana,geometry.csv}` and `ntof_cosmics/g4_angle/neutrons_nose`.
+- The desktop's pickles are numpy 2; the laptop venv has numpy 1.26 (the shim segfaults). The laptop copies were re-saved through parquet in a numpy-2 env, and the originals are kept as `*.pkl.np2`.
+- Beam electrons scatter between the gap and the wall, so the clean path-length test is the cosmic one.
+- Data counter energies are moved onto Geant4's scale (wall_plastic scale fits) before the kNN estimators are applied.
 
-**Key files & commands:**
-- `ntof_calorimetry/track_passport.py` — analysis; writes the tables
-- `ntof_calorimetry/make_passport_report.py` — builds `report.html` and figures from those tables
-- `python -m ntof_calorimetry.track_passport` — step 1
-- `python -m ntof_calorimetry.make_passport_report` — step 2
-
+**Key commands:** `PYTHONPATH=. .venv/bin/python -m ntof_calorimetry.track_passport` (~10 min), then `-m ntof_calorimetry.make_passport_report`.
 
 ## Pair event displays — updated 2026-10-15 (dylan-Yoga)
 
@@ -154,7 +147,7 @@ fraction into D_T.
 
 ## MM energy deposit per track (dE/dx) — updated 2026-10-14 (dylan-MS-7C84)
 
-**Resume:** all sims done; run `mm_edep_ana` (A+C), fix beam k, rerun combo with measured σ, then report/slide note.
+**Resume (2026-10-15):** steps 1–3 below are done (A+C ana, beam k fixed, combo at σ 0.16). The combination continues in the "Track passport" section above.
 
 **Goal:** Dylan's ask: how accurately a reconstructed track's energy deposit in the MM gap is measured, first in
 sim then on n_TOF data, and whether it helps the scintillators identify the track's energy. (The old M2 note only

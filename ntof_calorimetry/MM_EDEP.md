@@ -3,8 +3,9 @@
 Started 2026-10-14 (dylan-MS-7C84). Replaces the "2-MIP flag" framing of PLAN.md M2–M3:
 the question here is **how well the MM measures the energy a reconstructed track
 deposits in its 30 mm gap**, and whether that adds to the scintillators' picture
-of the track. Status: stages 1–4 have run on A cosmics and A beam; C beam sim and
-the report are still to do (HANDOFF.md).
+of the track. Status (2026-10-15): stages 1–4 have run on A and C, cosmics and beam. The beam calibration is fixed,
+and stage 4 was rerun with the measured σ. The per-track combination with every other layer is the
+**track passport** (`track_passport.py`, below).
 
 ## Chain
 
@@ -62,11 +63,46 @@ Sim noise is pessimistic for cosmics: data x/y spread 0.096 vs sim 0.132, noise 
   coarse kNN); slow-electron tag (T<1 MeV) among no-plastic tracks AUC wall 0.50 / MM 0.59 / both 0.63.
   **Rerun with the measured σ (≈0.15 beam, 0.25 cosmic) before quoting.**
 
+## Chamber C and the beam calibration (2026-10-15)
+
+- `mm_edep_ana.main()` A+C ran (`results/summary.json`). C: sim accuracy 16 % (cosmic, window-corrected),
+  cosmic fold σ_x 0.16–0.19 after the map; the halves test is undefined on C (almost no contained drifts).
+- **Beam k fixed** in `track_passport.mm_beam_calibration`: window curve and k from the *beam* sim,
+  data/sim scale from the fold after the beam self map. Beam sim bias −0.46 → **0.00**.
+  | | k_beam (ADC/keV) | sim σ | data/sim | σ_x (extra) | σ total | MIP (keV, normal) |
+  |---|---|---|---|---|---|---|
+  | A (contained) | 2471 | 0.096 | 1.226 ± 0.017 | 0.13 ± 0.03 | **0.16** | 5.68 |
+  | C (all) | 1233 | 0.224 | 1.163 ± 0.014 | 0.01 ± 0.04 | **0.22** | 5.65 |
+  Data median at normal incidence: 5.6 keV per 30 mm, matching Heed's MIP.
+  (`chamber()` itself still applies the cosmic k to beam; its `sim_beam.bias` −0.46 is that gain ratio.)
+- **Stage 4 rerun at σ = 0.16** (`results/combo_sigma016.txt`). The energy conclusions are unchanged:
+  the MM adds nothing at 4–16 MeV, and narrows the 1–3.5 MeV capsule singles (C2) from 1.7 to 0.45–0.8 MeV.
+  The slow-electron tag (T < 1 MeV, no plastic) now reads AUC wall 0.74 / MM 0.66 / both 0.80. The
+  2026-10-14 record (0.50 / 0.59 / 0.63) was not reproduced; the cause was not traced.
+
+## Track passport (2026-10-15)
+
+`track_passport.py` → `<calo>/passport/`, report `make_passport_report.py` → `passport/report.html`.
+On run_145 at ≥ 12 ms it uses A+C self-triggered single tracks: 15,444 tracks, 12,818 with an MM deposit.
+For each track it collects the direction, position and pointing, the MM keV, the wall, plastic and liquid
+MeV (on the Geant4 scale), and E_n from the time of flight. Geant4-trained kNN estimators add T at the gap,
+P(several particles in the gap) and P(conversion). An example card for each class is in the report.
+- **Path length (cosmics).** The MM deposit goes as sec^0.97 ± 0.10 (A) and 1.03 ± 0.05 (C); Heed
+  predicts 1.07. The wall goes as sec^1.00 ± 0.19 (A) and 1.29 ± 0.14 (C). On beam electrons the wall barely
+  follows the gap angle (data 0.5, Geant4 0.1): the electrons scatter before the wall.
+- **Several particles in the gap** (Geant4: 30 % of triggered tracks). The MM tags them (AUC 0.84); the wall
+  cannot (0.46–0.48). The MM–wall Spearman correlation is ~0 in both data and Geant4, and the "both high"
+  lift agrees: data 1.22/1.19, Geant4 1.28/1.40.
+- **Energy at the gap (Geant4, triggered).** w68 0.86 MeV from the plastic alone. Adding the track angle
+  takes sec ≥ 1.1 from 1.40 to 1.07 MeV and multi-particle tracks from 1.70 to 1.08 MeV; adding the MM takes
+  T < 3 MeV from 1.56 to 1.35 MeV.
+- **Origin.** Capsule vs elsewhere from the track geometry: AUC 0.75 (all gap tracks), 0.62 (triggered,
+  where 91 % are from the capsule). Conversion vs Compton: 0.65.
+- Data vs Geant4: the share of tracks below 0.8 MIP × sec in the plastic is 0.08 / 0.13 (A) and 0.28 / 0.33
+  (C). The estimator outputs (T̂, P(multi)) match Geant4's distributions. The C liquid almost never fires.
+
 ## Known issues
 
-- Beam sim was generated at 10.7 ADC/e but `chamber()` applies the **cosmic** k and window curve, so
-  `sim_beam.bias` = −0.46 is the gain ratio by design, and the beam fold `scale` 1.2 is relative to that.
-  Use a beam-sim k (`window_curve(Sb)`) for absolute keV on beam.
 - Sim reco t0 is +47 ns (spread 82) later than the input t0 → sim tracks are more truncated than data;
   compare in f_obs bins / contained tracks only.
 - Fold fits are on the core (ln within −0.7…+0.45 of the median); tails are reported separately.

@@ -262,7 +262,10 @@ def path_length(D: pd.DataFrame, G: pd.DataFrame) -> pd.DataFrame:
         for layer, src, x, y in tests:
             m = np.isfinite(x) & np.isfinite(y) & (y > 0)
             r = slope_loglog(x[m], y[m], SEC_EDGES)
+            mc = m & (x < 1.3)
+            rc = slope_loglog(x[mc], y[mc], SEC_EDGES)
             rows.append(dict(arm=arm, layer=layer, source=src, n=int(m.sum()), slope=r['slope'], err=r['err'],
+                             slope_core=rc['slope'], err_core=rc['err'],
                              sec_med=json.dumps(np.round(r['x'], 4).tolist()),
                              dep_med=json.dumps(np.round(r['y'], 4).tolist()), nbin=json.dumps(r['n'].tolist())))
     return pd.DataFrame(rows)
