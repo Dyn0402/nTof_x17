@@ -14,7 +14,7 @@ for kind in steps reduce; do
   if [ $kind = steps ]; then
     D=~/condor/mx17_digi_steps; EXE=$D/run_steps.sh; P=s; ODIR=$OUT/steps_$TAG; FLAV=longlunch; MEM=8000
   else
-    D=~/condor/mx17_angle_scale; EXE=$D/run_reduce.sh; P=r; ODIR=$OUT/neutrons_$TAG; FLAV=workday; MEM=6000
+    D=~/condor/mx17_angle_scale; EXE=$D/run_reduce.sh; P=r; ODIR=$OUT/neutrons_$TAG; FLAV=workday; MEM=16000   # the EAR2-gun files peak at ~12 GB
   fi
   {
     echo "executable = $EXE"
