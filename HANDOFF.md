@@ -1,5 +1,39 @@
 # Handoff
 
+## Pair event displays — updated 2026-10-15 (dylan-Yoga)
+
+**Resume:** 7 3D pair displays done and published; next: render more triggers / other runs if wanted (needs desktop stage 3).
+
+**Goal:** 3D GIF event displays of selected pair candidates for the 15 Oct meeting. Each shows TPC charge, tracks, the fired scintillators and the capsule at its inferred pose.
+
+**Done:**
+- `sept26_prelim_analysis/pair_event_display.py` (main d55b293), four steps:
+  - `candidates`: rebuilds run_145 stat090_0000 stage 3 from the is2_v2 reco, then pairs via `det_a_scint.match_run` + `det_a_intra.pairs` (both unchanged) plus two-arm A–C pairs;
+  - `render`: GIF + MP4 + PNG per trigger;
+  - `report`: report.html gallery;
+  - `note`: self-contained note version.
+- Rendered (in `/media/dylan/data/x17/sept26_prelim/pair_displays/gif/`):
+  - same-chamber `wall2`: A 24576, A 52903, C 4748, C 49942;
+  - two-arm: 38414, 23580, 18841.
+- Published: https://dylan-neff.web.cern.ch/notes/pair-event-displays.html (md5 checked).
+- 24576 for the slides: https://dylan-neff.web.cern.ch/files/x17_pair_24576.{gif,mp4,png}. The same files are in CERNBox at `/eos/user/d/dneff/x17/pair_displays/`.
+- A Google Doc of links, "X17 pair event display 24576 — GIF download links", is in My Drive. Drive got a link doc rather than the GIF because the connector only takes inline base64 and this laptop has no rclone or Drive mount.
+
+**Next steps:**
+1. For more events or runs, run on the desktop. Point the code at the real `stage3_is2_v2_cf` and the slim parquet (the script currently rebuilds stage 3 locally, for this one sub-run only).
+2. Waveforms for new triggers: `lxplus_cut_script()` in the module makes the lxplus cut script (LCG_105). Copy the npz files into `pair_displays/wf/`.
+
+**Gotchas / decisions:**
+- k here is the capsule-focus value: kcal_is2_v1 × (1.009, 1.003) × 1.12, giving A 1.103, C 1.081. The kcal JSONs are only on the desktop. Muon-scale angles are about 12 % smaller.
+- TPC charge comes from decoded_root, not hits. Depth = (t − 140 ns − t0)·v/k, where 140 ns is the bundle template peak. It lines up with the fitted tracks on all 7 events.
+- None of the 7 passes the vertex cut. Two-arm pairs at ≥170° are probably single through-going particles. C 4748 has Δt0 −281 ns. The page lists these per event.
+- pyvista off-screen needs `pl.render()` before `screenshot()`, or every frame is identical. A per-frame GIF palette makes the legend flicker, so the code builds one shared palette.
+- `eosexperiment.cern.ch` does not resolve off-site. Cut the files on lxplus instead.
+
+**Key files & commands:**
+- `PYTHONPATH=. .venv/bin/python -m sept26_prelim_analysis.pair_event_display render --events s:24576,t:38414` (s: = same-chamber, t: = two-arm)
+- outputs in `/media/dylan/data/x17/sept26_prelim/pair_displays/` (wf/ = cut waveforms, 111 MB)
+
 ## Repo merges and cleanup — updated 2026-10-14 (dylan-MS-7C84)
 
 **Resume:** `ntof_cosmics/results/yield_gate/cut_scan.csv` is truncated in the working tree (rows for run_110 and run_156 gone). Restore it from git or confirm it was meant to shrink before committing anything near it.
