@@ -61,7 +61,7 @@
 
 ## Repo merges and cleanup — updated 2026-10-14 (dylan-MS-7C84)
 
-**Resume:** `ntof_cosmics/results/yield_gate/cut_scan.csv` is truncated in the working tree (rows for run_110 and run_156 gone). Restore it from git or confirm it was meant to shrink before committing anything near it.
+**Resolved 2026-10-15:** `cut_scan.csv` was truncated by `yield_gate.py scan --runs run_86` (it rewrote the table with run_86 only). The committed table is correct: a full re-scan reproduces it exactly. The working copy was restored from git; `yield_gate.py` now keeps the other runs' rows on a subset run (branch `yield-gate-table-merge`). The cosmic analysis this table feeds is the is2_v1 check (see `ntof_cosmics/HANDOFF_TRACKING_2026-10-06.md` §15), superseded by is2_v2 (§19–20).
 
 **Goal:** get the x17 repo's branches merged into main and pushed, and clean up the leftover branches.
 
@@ -72,12 +72,10 @@
 - Local branches that were merged into main were deleted (beam-off-cosmics, same-chamber-oct, y-fix-regen, among others).
 
 **In progress / where it stopped:**
-- `cut_scan.csv` is modified and uncommitted. It is not ours to commit as-is.
 - Still attached and merged: bench-pin-rc, is2v2-compare, mx17-paper-status, two-track-joint-fit, worktree-capsule-scale-kernel, worktree-sps-attachment-transfer. The same branches exist in the `nTof_x17_paper` and `nTof_x17_tt` clones, which are checked out on them.
 
 **Next steps:**
-1. Decide on `cut_scan.csv`: restore with `git checkout -- ntof_cosmics/results/yield_gate/cut_scan.csv`, or regenerate it.
-2. Clean up the attached worktree branches once Dylan confirms (see the workspace handoff for the same question).
+1. Clean up the attached worktree branches once Dylan confirms (see the workspace handoff for the same question).
 
 **Gotchas / decisions:**
 - `beam-off-cosmics`, `same-chamber-oct` and `y-fix-regen` disappeared from the `nTof_x17_paper` and `nTof_x17_tt` clones during the sweep. The cause was not found. All three are ancestors of `main` in this repo, so no commits were lost.
