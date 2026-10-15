@@ -225,100 +225,69 @@ correct the record.
 
 ## Capsule pose in the beam — updated 2026-10-15 (dylan-MS-7C84)
 
-**Resume:** 15 Oct: z tilt confirmed without D (A/C band-slope depth); deck rebuilt with pose/tilt visuals and
-published (https://dylan-neff.web.cern.ch/notes/capsule-pose.html). Next: the EAR2-gun Geant4 library (lxplus step 1 below).
+**Resume:** biased, gas-fixed Geant4 library running (cluster 4467046); next: steps+reduce, digitise, pool, refit, rebuild deck.
 
-**Goal:** where the ³He capsule is relative to the beam and chambers (sets ³He/IPC/X17 yield; feeds the 1 : 8 pair-rate question).
-Full state: Correction box of `sept26_prelim_analysis/HANDOFF_CAPSULE_POSE_FIT.md` (now includes the azimuth paragraph).
+**Goal:** where the ³He capsule sits relative to the beam and the chambers (sets the ³He/IPC/X17 yield; feeds the 1 : 8
+pair-rate question). Full physics state: Correction box of `sept26_prelim_analysis/HANDOFF_CAPSULE_POSE_FIT.md`.
 
-**Done 2026-10-15:**
-- **A/C band-slope depth** (`capsule_pose data_depth` → `capsule_pose_ear2/data_depth.csv`): |band slope| = D/(D ∓ z_s) for
-  A/C, so ln|a_A| − ln|a_C| per height bin = source z per height (k cancels; response calibrated per bin by moving every
-  line ±5 mm in z: 0.0074/mm, 88 % of ideal). Source moves **+4.6 mm toward A (+z) from h −80 to −20**, flat above;
-  D gives +4.5 mm over the same range. Stable to ~0.4 mm in ToF 20–30/30–45/45–75, run halves, wall-coincident.
-  Systematics differ from D's (A/C-asymmetric tan scale vs height, not a D twist). No shared chamber.
-- `pose2d` (toy prediction of the depth curve per pose): **uninformative**, Geant4-library-limited (toy sd 2–3 mm per bin,
-  ~50 at −80; best χ²_d over φ varies by only 2.6). Kept as code; the deck uses the data reading, not this χ².
-- Caveat found: z moves *below* the source height, x drifts *above* it, so one rigid tilt doesn't fit both shapes. The lean's
-  direction is solid, but its size and shape aren't (bent holder / second source / height-dependent bias not excluded).
-- Deck `make_capsule_pose_deck.py` rebuilt on the real beam: new slides beam-fix, pose to scale (front/side/top with the
-  capture cloud and the fitted axis), tilt x, tilt z (D + A/C), azimuth (Δχ² vs φ + compass), sideways degeneracy.
-  Old-beam slides (captures/pictures/readings) dropped from the build, functions kept.
+**Where the result stands:**
+- Real EAR2 beam since 14 Oct (Lambda2D was the resolution function). Capsule ~1 cm below drawn; leans with its top
+  toward B and A (φ ≈ 135°, θ ~7–15°); sideways beam/capsule degenerate (³He sees 20–53 % of the beam).
+- z lean confirmed without D (15 Oct): A/C band-slope depth, `capsule_pose data_depth` (+4.6 mm toward A from h −80 to
+  −20; D +4.5); stable to ~0.4 mm across ToF slices / run halves / wall tracks.
+- Caveat: z moves below the source height, x above it; one rigid tilt fits neither shape well. Unmodelled hardware:
+  the thin Al hanger tube above the capsule bends toward the A–D corner (Dylan: likely sets the tilt). Not to be modelled
+  unless asked; check it first when a shape doesn't fit.
+- Deck (published): https://dylan-neff.web.cern.ch/notes/capsule-pose.html (`make_capsule_pose_deck.py`).
 
-**Done 2026-10-14:**
-- (earlier 10-14) real EAR2 beam (`ear2_beam/`); `pose2` refit: top leans toward −x 7–15°, capsule 8–12 mm below drawn,
-  sideways beam/capsule degenerate (beam centred → capsule ~16–18 mm off, ³He sees ~0.2; beam −10 → ~0.55).
-- **Tilt azimuth from D: φ ≈ 135°** (top toward −x and +z = toward B and A). `capsule_pose data_z` + `pose2z`:
-  D's z crossing (production chain, wall-coincident, 25–75 ms) rises ~4–5 mm from h −80 to 0, stable in every ToF slice
-  ≥ 25 ms and every quarter of runs. D below 25 ms is junk. Best x+z χ²: 26 (φ135) / 34 (180) / 66 (225).
-  A ±3° in-plane D rotation (`POSE2_ALPHA`) doesn't reorder. B can't test it (no drift field). The toy matches the
-  sign of D's rise, not its shape below the nose.
-- **19.95 m** (`POSE2_L=19.95`, out `capsule_pose_ear2_L19p95/`): same conclusions; φ135 best (χ² 29); beam-centred
-  family closer (35, ³He 0.23) vs beam −5/−10 (29, 0.34–0.41).
-- Reports regenerated: `/media/dylan/data/x17/sept26_prelim/capsule_pose_ear2{,_L19p95}/report.html`.
-
-**In progress / where it stopped:**
-- Geant4 with the real gun: condor 4454431 (19.5 m, 100) / 4454432 (19.95 m, 50): at wrap-up (14:20) all but 1 job done;
-  outputs `/eos/experiment/ntof/data/x17/full_sim/neutrons_thermal_ear2_L19p{5,95}/neutron_bg_jobNNN_t0.root` (~1.2 GB each).
-- Nothing local running.
-
-**2026-10-15 evening — new Geant4 build and biased library (supersedes the analog EAR2 extension for the toy):**
-- MX17_Full_Geant e3def59 (main): gas primary-ionization fix ported from MX17_Geant e17c72c + `--bias-capsule <f>`
-  (nCapture bias on He3Cap_Al only, weight 1/f). Validated locally (11.3.2) and on lxplus (11.2.1): ArIso 1.698 mg/cm3,
-  muon gas Edep new/old 0.906 / 0.897, PAI active; bias 20 gives x17 Al-capture library events, weighted rates unchanged.
-  Details: that repo's HANDOFF.md.
-- lxplus build: `/afs/cern.ch/work/d/dneff/git/MX17_Full_Geant_v2` (the ear2 clone stays for the running analog jobs).
-- **Submitted cluster 4467046**: 200 x 5M EAR2 neutrons, 19.5 m, `--bias-capsule 20`, ~25 min each, ~4 GB/file (Geant4
-  11.2 records LS showers in ~10x more steps than 11.3; biased capture gammas shower there), ~0.8 TB ->
-  `full_sim/neutrons_thermal_ear2_L19p5_bcap20`. Submit dir `~/condor/mx17_neutrons_ear2_L19p5_bcap20`. Worth ~1700
-  analog jobs for the library. Next: `make_ear2_subs.sh neutrons_thermal_ear2_L19p5_bcap20 ear2_L19p5_bcap20`
-  (reduce at 16 GB; may need more on these bigger files), pull, `run_ear2.sh ear2_L19p5_bcap20`, pool with
-  `POSE2_LIB=nose,ear2_L19p5,ear2_L19p5_bcap20`.
-- `run_digi.py` now sets ADC/e from the library's own reduction (median wall-reaching full-gap track; was a fixed 247 e-;
-  July 246.9 reproduced; ear2_L19p5 is 253-256, so its digitisation is ~3 % high in amplitude, harmless for pointing).
-- The 400-job analog extension (cluster 4465059, old gas) still runs; superseded for the toy by the biased run.
+**Running / where it stopped:**
+- **Cluster 4467046** on lxplus: 200 x 5M EAR2 neutrons, 19.5 m, `--bias-capsule 20`, built from MX17_Full_Geant e3def59
+  (gas primary-ionization fix + capsule-Al capture bias) in `/afs/cern.ch/work/d/dneff/git/MX17_Full_Geant_v2`.
+  ~25 min/job, ~4 GB/file (~0.8 TB) -> `/eos/experiment/ntof/data/x17/full_sim/neutrons_thermal_ear2_L19p5_bcap20/`.
+  Submit dir `~/condor/mx17_neutrons_ear2_L19p5_bcap20`. Worth ~1700 analog jobs for the library.
+- Analog extension (cluster 4465059, old gas) REMOVED at Dylan's request. Its 400 partial files were moved (not deleted)
+  to `full_sim/neutrons_thermal_ear2_L19p5/_killed_ext_2026-10-15/` (362 GB); delete only with Dylan's OK.
+- Analog EAR2 libraries done: 19.5 m digitised (`g4_digi/g4_{A,C}_ear2_L19p5/`); 19.95 m steps/reduce on EOS
+  (`full_sim/angle_scale/{steps,neutrons}_ear2_L19p95`), not pulled/digitised (old gas; low priority now).
+- Local background waiters die with this session; nothing local is running.
 
 **Next steps:**
-1. On lxplus, once `condor_q` is empty: copy `ntof_cosmics/g4_digi/condor/make_ear2_subs.sh` to lxplus, then
-   `bash make_ear2_subs.sh neutrons_thermal_ear2_L19p5 ear2_L19p5 && condor_submit steps_ear2_L19p5.sub && condor_submit reduce_ear2_L19p5.sub`
-   (same for L19p95). Outputs → `full_sim/angle_scale/{steps,neutrons}_ear2_L19p5/`. `lxstore status` before/after.
-   (2026-10-15: submitted, clusters 4464994-7. Steps done; reduce needs ~12 GB, was held at 6 GB, re-requested 16 GB.)
-2. Pull to `/media/dylan/data/x17/ntof_cosmics/g4_digi/steps_ear2_L19p5/` and `g4_angle/neutrons_ear2_L19p5/`,
-   then `bash ntof_cosmics/g4_digi/run_ear2.sh ear2_L19p5`. **It must have the reduction first:** run_digi selects events
-   from `G4DIGI_REDUCED` (default: the old neutrons_nose), and with the wrong one it silently digitises 1 event.
-   Note the new library is NOT bigger (~42 k events/arm, as the old one): it fixes the gun, not the toy's statistics.
-   **Library size (2026-10-15):** the toy uses capsule tracks with the capture within r < 8 mm (the nose); with the real
-   beam only 61 % of capsule captures are there (93 % with Lambda2D), so ear2_L19p5 gives 3.7 k (A) / 2.9 k (C) such
-   tracks vs 10.5 k / 8.7 k for the July library. Pool them: `POSE2_LIB=nose,ear2_L19p5` (valid: the toy translates each
-   track to its own capture point). Raw y-tan sign differs between digitiser vintages; library() resolves it per part
-   (both focus equally: corr v 0.74/0.85 vs 0.75/0.83). Pooled toy sd, x shear: 0.3-0.6 mm at -40..0 (was 0.4-1.6); A/C
-   depth 1.2-1.4 mm (was 2.1-2.3) vs data 0.15. `<out>/capsule_pose_ear2_pool/`. The 400-job extension adds ~5x the
-   ear2 part. For the depth curve to be toy-limited at the data's level needs ~100x: a capsule-Al nCapture bias or a
-   nose gamma gun in MX17_Full_Geant, not more neutron jobs.
-   **Gas caveat (2026-10-15):** these EAR2 runs (build MX17_Full_Geant_ear2 @ 19a6a71, incl. the 400-job extension, cluster
-   4465059) predate the primary-ionization fix (MX17_Geant e17c72c, not yet ported to MX17_Full_Geant): gas ~7 % too dense,
-   95/5 used as a mass ratio, no PAI, so gas Edep and Edep/W primaries are ~+10 % high. Fine for pointing (the pose fit);
-   NOT for absolute MM energy/charge without a ~0.9 scale.
-   Old wording:
-2. Pull to `/media/dylan/data/x17/ntof_cosmics/g4_digi/steps_ear2_L19p5/` and `g4_angle/neutrons_ear2_L19p5/`
-   (local disks have only ~3.5 GB free each; steps ~0.4 GB/100 files), then `run_digi.py g4 --arm A/C ... --label g4_A_ear2_L19p5`
-   (template `ntof_cosmics/g4_digi/run_full.sh`, ~1 h/arm).
-3. `POSE2_LIB=ear2_L19p5` → rerun `shear`, `pose2`, `pose2z` (families below), regenerate report; check ³He/Al per n vs the 1:8 question.
-4. Late population (20–75 ms) illumination is still unexplained (direct beam there is 1.3 % of 4–12 ms).
-5. Still needed from Dylan: collimator used, capsule tip height/holder, survey/photo.
+1. When 4467046 is done (`condor_q`; check holds): on lxplus `cd ~/condor && bash make_ear2_subs.sh
+   neutrons_thermal_ear2_L19p5_bcap20 ear2_L19p5_bcap20 && condor_submit steps_ear2_L19p5_bcap20.sub && condor_submit
+   reduce_ear2_L19p5_bcap20.sub`. Reduce peaked ~12 GB on 1.2 GB files; these are ~4 GB: test one job's memory first or
+   raise MEM in make_ear2_subs.sh. `lxstore status` before/after.
+2. Pull `angle_scale/steps_ear2_L19p5_bcap20` -> `/media/dylan/data/x17/ntof_cosmics/g4_digi/` and
+   `neutrons_ear2_L19p5_bcap20` -> `.../g4_angle/` (local disk has only ~3 GB free: check sizes; steps were 0.5 GB/100
+   analog files, biased will be larger), then `bash ntof_cosmics/g4_digi/run_ear2.sh ear2_L19p5_bcap20`.
+3. Pool: `POSE2_LIB=nose,ear2_L19p5,ear2_L19p5_bcap20`; rerun `capsule_pose shear`, `pose2` / `pose2z` / `pose2d`
+   (families: `POSE2_XB=0 POSE2_XC=-16,-18,-20`; `-5 / -10,-15`; `-10 / -10,-15`) into a new out dir with copies of
+   data*.csv (as `capsule_pose_ear2_pool/`); regenerate `make_pose2_report.py` and the deck (point POSE2 at the new dir).
+4. If the toy is still the limit, extend the biased run (more jobs, same sub with new seeds).
+5. Still needed from Dylan: collimator, capsule tip height/holder, survey/photo.
 
 **Gotchas / decisions:**
-- Never quote the capture source as the beam position: it is where the flux meets Al.
-- D z only from wall-coincident tracks and ≥ 25 ms; the plain production D crossing is garbage (−27…−500).
-- D's crossing also moves with hit height on its plane (+30 mm/m, A/C +6–10): D-specific effect, flagged in the report.
-- +z sign is pinned by the arm layout (COORDINATES.md §1–2), not by self-consistency.
-- Don't `pgrep -f`/`pkill -f` a pattern that appears in your own waiter's command line (it matches itself).
+- Library size: the toy uses capsule tracks captured within r < 8 mm; the real beam puts only 61 % there (93 % for
+  Lambda2D). Pooling libraries is valid (the toy translates each track to its own capture point); `library()` resolves
+  the reco tan signs per part (raw y-tan sign differs between digitiser vintages; both focus equally).
+- `run_digi` needs the run's own reduction (`G4DIGI_REDUCED`; `run_ear2.sh` sets it) or it silently digitises ~1 event.
+  ADC/e now comes from that reduction's median track (was fixed 247 e-); ear2_L19p5 was digitised with 247 (~3 % high
+  amplitude, harmless for pointing). Gas-fixed libraries will give ~10 % fewer e-.
+- `pose2d` (toy prediction of the A/C depth curve) is library-limited (pooled toy sd 1.2–1.4 mm vs data 0.15); the deck
+  uses the depth data reading, not its χ². Pooled x-shear toy sd 0.3–0.6 mm.
+- Geant4 11.2 (lxplus) records LS showers in ~10x more steps than 11.3: biased files are big. Not a port bug (cosmics
+  identical old/new).
+- uproot can't read EventTree's `capture_vol` char arrays; use PyROOT (`PYTHONPATH=~/Software/root_6_40/lib`,
+  `bytes(e.capture_vol)`), or the reduce parquet.
+- Never quote the capture source as the beam position; D z only from wall-coincident tracks ≥ 25 ms.
 
 **Key files & commands:**
-- `sept26_prelim_analysis/capsule_pose.py`: steps `pose2`, `data_z`, `pose2z`; env `POSE2_XB/XC/THETA/PHI/ALPHA/L/LIB`.
-  Families run: `POSE2_XB=0 POSE2_XC=-16,-18,-20`, `-5 / -10,-15`, `-10 / -10,-15,-20`.
-- `make_pose2_report.py` (`POSE2_OUT`, `POSE2_L` for the 19.95 m dir); merged table `pose2_xz.csv`.
-- `ntof_cosmics/g4_digi/condor/make_ear2_subs.sh`: condor subs for the new Geant4 files.
+- `sept26_prelim_analysis/capsule_pose.py` — steps `pose2`, `data_z`, `pose2z`, `data_depth`, `pose2d`; env
+  `POSE2_XB/XC/THETA/PHI/ALPHA/L/LIB` (LIB comma-list pools).
+- `sept26_prelim_analysis/make_capsule_pose_deck.py` → `<out>/capsule_pose/deck/capsule-pose.html`; publish with
+  `python3 ~/PycharmProjects/dylan-cern-site/scripts/add-note.py <html> --slug capsule-pose --force --deploy` (pull the
+  site repo first).
+- `ntof_cosmics/g4_digi/condor/make_ear2_subs.sh <simdir> <tag> [first_job]`, `ntof_cosmics/g4_digi/run_ear2.sh <tag>`.
+- MX17_Full_Geant: `--bias-capsule <f>`; its HANDOFF.md has the validation numbers.
 
 ## Same-chamber pairs + the y mirror — updated 2026-10-13 (dylan-MS-7C84)
 
