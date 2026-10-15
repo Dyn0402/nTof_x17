@@ -124,6 +124,18 @@ def build(runs, chains):
                 M.to_parquet(f, index=False)
 
 
+def _write_table(R: pd.DataFrame, path: Path, runs) -> None:
+    """Write R, keeping the rows of every run R does not recompute.  A run
+    subset (--runs run_86) used to overwrite the full table with only those
+    runs, which truncated results/yield_gate/cut_scan.csv on 2026-10-14."""
+    if path.exists():
+        old = pd.read_csv(path, float_precision='round_trip')
+        R = pd.concat([old[~old.run.isin(list(runs))], R], ignore_index=True)
+    order = {r: i for i, r in enumerate(RUNS)}
+    R = R.sort_values('run', key=lambda s: s.map(lambda r: order.get(r, len(order))), kind='stable')
+    R.to_csv(path, index=False)
+
+
 def summary(runs, chains):
     OUT.mkdir(parents=True, exist_ok=True)
     rows = []
@@ -156,12 +168,12 @@ def summary(runs, chains):
                     quality_ok=int(base.sum()),
                     fail_tan_frac=float((base & (r >= tm)).sum() / max(base.sum(), 1))))
     R = pd.DataFrame(rows)
-    R.to_csv(OUT / 'yield_gate.csv', index=False)
+    _write_table(R, OUT / 'yield_gate.csv', runs)
     P = R[R.chain == 'prod'].set_index(['run', 'arm'])
     R['gated_vs_prod'] = R.gated / R.set_index(['run', 'arm']).index.map(P.gated)
     R['confirmed_vs_prod'] = R.confirmed / R.set_index(['run', 'arm']).index.map(P.confirmed)
     R['confirmed_acc_vs_prod'] = R.confirmed_acc / R.set_index(['run', 'arm']).index.map(P.confirmed_acc)
-    R.to_csv(OUT / 'yield_gate.csv', index=False)
+    _write_table(R, OUT / 'yield_gate.csv', runs)
     with pd.option_context('display.width', 250, 'display.max_columns', 30):
         print(R.round(3).to_string(index=False))
     return R
@@ -191,7 +203,7 @@ def scan(runs):
                                  confirmed=int(w.match_wall.sum() - w.match_wall_ctrl.sum()),
                                  wall_rate=float(w.match_wall.mean())))
     R = pd.DataFrame(rows)
-    R.to_csv(OUT / 'cut_scan.csv', index=False)
+    _write_table(R, OUT / 'cut_scan.csv', runs)
     with pd.option_context('display.width', 200):
         print(R.pivot_table(index=['run', 'arm'], columns='cut_raw', values=['gated', 'confirmed']))
     return R
