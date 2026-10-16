@@ -740,8 +740,9 @@ tight-|tan| stack. None of these choices moves det4's held-out resolution by mor
 
 ## 29 · The X width excess: every dataset, not the gas, everywhere on the chamber (2026-10-12)
 
-> **Status: UNSOLVED, needs follow-up.** The mechanism is not identified. The follow-up list (dry-gas bench run, det3 Y,
+> **Status: UNSOLVED, needs follow-up.** The mechanism is not identified. The follow-up list (det3 Y,
 > a Magboltz cross-check, a beam template, other contaminants) is in HANDOFF.md, section "X width excess".
+> **No new data can be taken (the detectors are gone, 2026-10-16): the question must be settled with the data in hand.**
 
 Dylan asked whether the X widening that Magboltz cannot explain (§28) holds on every dataset, what it
 could be, and whether it depends on position. Report: `~/x17/cosmic_bench/cloud_basics/xwidth/report.html`
@@ -802,8 +803,10 @@ diffusion at the composition v implies. Two readings remain, and the data in han
    less than it says. Both setups are wet.
 2. **A non-gas term linear in depth** that nothing in the current model has.
 
-The decisive measurement is a bench run in fresh, dry gas, which takes water out of the question.
-A cheaper check is the bench drift scan's Y view, where Dd is shared with the RC term.
+No new data can be taken (the detectors are gone, 2026-10-16), so a dry-gas measurement is not an option.
+The checks left all use existing data or simulation: the bench drift scan's Y view, where Dd is shared with the RC
+term; a second Magboltz cross-section set and published Ar/iso/H2O D_T data; other contaminants in the grid; and the
+beam X with a proper template. If those cannot separate the two readings, it stays a stated limitation.
 
 **For the kernel:** keep Dd from the X stack (≈ dry), not from v (§28's choice stands). Do not
 carry a v-derived water fraction into D_T.

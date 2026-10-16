@@ -1,5 +1,14 @@
 # nTof_x17 — working notes for Claude
 
+## THE DATASET IS FINAL — we no longer have access to the detectors
+
+**No more data can be taken: not on the cosmic bench, not at SPS, not at n_TOF.** The chambers are
+gone (Dylan, 2026-10-16, after asking several times). Every open question must be answered with the
+data we already have, plus simulation (Magboltz, Garfield, Geant4) and the literature. **Never suggest
+a new run, a dry-gas run, a new scan, a re-measurement or a hardware check**, not in chat, not in a
+handoff, not in a report's "next steps". If a question cannot be answered from existing data, say
+so and write it down as a stated limitation.
+
 ## Reconstruction basis — read this before writing any analysis
 
 **Never reconstruct position, angle or drift depth from `combined_hits` times.**

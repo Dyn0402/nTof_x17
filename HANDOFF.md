@@ -87,7 +87,7 @@
 
 ## X width excess (UNSOLVED, needs follow-up) — updated 2026-10-12 (dylan-MS-7C84)
 
-**Resume:** OPEN PROBLEM. Bench X widens ~dry-like while v says wet; no gas fits. Next: test it with a dry-gas bench run or det3 Y.
+**Resume:** OPEN PROBLEM. Bench X widens ~dry-like while v says wet; no gas fits. Next: det3 Y joint fit, Magboltz cross-check, contaminants, beam X template. NO NEW DATA (detectors gone).
 
 **Goal:** explain why the X cluster width grows with drift depth faster than Magboltz allows. Until it is explained the
 detector model's drift diffusion is empirical (Dd fitted from X widths), and the re-pass stays on hold (Dylan, 10-09).
@@ -112,9 +112,7 @@ detector model's drift diffusion is empirical (Dd fitted from X widths), and the
 3. (weaker) A contaminant other than water (N2, CO2, …), or isobutane depletion beyond what det3 allows.
 
 **Next steps (follow-up):**
-1. Decisive: a bench run in fresh, dry gas (new bottle, high flow, long flush), with a drift scan, one chamber.
-   If X D_T stays ~480 and v rises to dry, it is hypothesis 1 (Magboltz water). If the excess persists in dry gas,
-   it is hypothesis 2.
+0. **No new data can be taken: the detectors are gone (2026-10-16).** A dry-gas run is not possible; work with what we have.
 2. Cheap: det3 drift-scan **Y** view (caches already hold Y). A joint X+Y fit per field: does Y's Dd agree with X's?
 3. Magboltz cross-check: the same mixtures in another code or another cross-section set (Biagi water vs LXCat), or
    published Ar/iso/H2O D_T data.
