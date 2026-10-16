@@ -811,3 +811,42 @@ beam X with a proper template. If those cannot separate the two readings, it sta
 **For the kernel:** keep Dd from the X stack (≈ dry), not from v (§28's choice stands). Do not
 carry a v-derived water fraction into D_T.
 
+
+## 30 · The X width excess is mostly ADC saturation (2026-10-16)
+
+> **Supersedes most of §29.** No new data can be taken (detectors gone); everything here is from the existing caches.
+
+At operating HV 30–85 % of the head-on bench events reach ~3500+ ADC on the leading strip (det3 long run 42 %,
+det4 30 %, det2/6/7 70–85 %). The det3 amplification scan at 347 V/cm showed the stack-fitted v flat at ~39 µm/ns
+(GAP-30 frame) from 425 to 485 V and falling once saturation sets in (36.5 at 495 V, 24 at 525 V). `unsat_width.py`
+refits every dataset with x_width.py's model on all events and on the events whose X window stays below 3500 ADC
+(`results/unsat_width.json`; `XW_MIN_EV=50` for det2/6/7).
+
+| dataset | n all → unsat | v all → unsat | X D_T all → unsat | Magboltz D_T at unsat v |
+|---|---|---|---|---|
+| det4 g_det4 (208 V/cm) | 683 → 476 | 29.6 → 31.8 | 448 → **339 ± 20** | 332 (0.51 % water) |
+| det2 o22_long (347) | 269 → 86 | 35.5 → 37.9 | 479 → **410 ± 48** | 425 (0.25 %) |
+| det6 g_det6_long (243) | 353 → 64 | 24.6 → 25.9 | 399 → **279 ± 88** | 272 (0.92 %) |
+| det6 g_det6_longer (243) | 120 → 87 | 28.1 → 28.1 | 290 → 271 ± 21 | 286 (0.82 %) |
+| det3 700 V (243) | 177 → 128 | 26.6 → 27.3 | 322 → **304 ± 36** | 281 (0.86 %) |
+| det3 long run (347) | 1133 → 654 | 36.7 → 38.3 | 435 → **373 ± 10** | 450 (0.14 %) / ~320 (0.85 % branch) |
+| det3 sat_det3 (347) | 968 → 539 | 37.5 → 38.4 | 423 → 372 ± 12 | as above |
+
+- **Saturation biases v low and D_T and σ0 high.** With it removed, X D_T agrees with Magboltz at the v-implied
+  water on det4, det2 and det6, and on det3 at 243 V/cm. The "excess on every chamber" of §29 was mostly this.
+- **det3 at 347 V/cm is ambiguous**: v is non-monotonic in water there (dry 38.8, 0.5 % 40.5, 0.95 % 35.8), so
+  v = 38.3 means ~0.1 % or ~0.85 %. On the 0.85 % branch (which det3's 700 V point supports) a residual of
+  ~+190 µm/√cm in quadrature remains. The 27.9 mm gap correction is not yet applied to these numbers.
+- det7: too few unsaturated events (79 % saturated) to fit; untested.
+- Ruled out on the way: a drift-field deficit (dry gas at a scaled or offset field cannot reproduce det3's steep
+  v(E) and would put D_T ≈ 490 at every field; χ² ≈ 44/5).
+
+**X/Y isotropy (`xy_isotropy.py`, `results/xy_isotropy.json`, unsaturated events, X and Y < 3500 ADC).** det3 drift
+scan 500–1100 V, D_rc shared across fields and profiled, per-field Dd_x, Dd_y. Profile minimum D_rc ≈ 3.6e-4; there
+y/x = 0.77–0.91 (0.89 ± 0.07 at 347 V/cm). The arms Dd_y = Dd_x (cost 0.4924), free (0.4894) and Dd_y = Magboltz
+(0.4949) are indistinguishable: **inconclusive**, Y's Dd stays degenerate with D_rc even across fields (y/x swings
+1.14 → 0.68 between D_rc 2.8 and 4.5e-4).
+
+**Consequence:** the saturated events must be cut (or the clipping modelled) wherever widths or v are fitted from
+stacks: bench_pinrc / bench_attach arms, driftscan_fit's 0.95 % composition (drift scan at 490 V, 28–41 % saturated),
+and the bundle v. The bench water fractions quoted so far are all from saturated samples.

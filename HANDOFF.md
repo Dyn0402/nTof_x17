@@ -85,7 +85,47 @@
 - `HANDOFF.md` — the two merged logs
 - `git worktree list` — attached branches
 
-## X width excess (UNSOLVED, needs follow-up) — updated 2026-10-12 (dylan-MS-7C84)
+## X width excess → mostly ADC saturation — updated 2026-10-16 (dylan-MS-7C84)
+
+**Resume:** X excess was mostly saturation (FINDINGS §30). Next: cut saturated events in every stack fit; det3 347 V/cm residual.
+
+**Goal:** explain the X drift-width excess (§29) so the detector-model kernel can be frozen. NO NEW DATA: the detectors are gone.
+
+**Done (2026-10-16):**
+- `unsat_width.py`: X width/v fits on unsaturated events (X window < 3500 ADC). Saturation (30–85 % of events at
+  operating HV) biases v low and D_T/σ0 high. Unsaturated: det4 339±20 vs Magboltz 332; det2 410±48 vs 425; det6 279±88
+  / 271±21 vs 272/286; det3 243 V/cm 304±36 vs 281. Excess gone there. Table in FINDINGS §30.
+- `xy_isotropy.py`: joint X+Y det3 drift-scan fit, shared D_rc profiled. Inconclusive (iso / free / Y=Magboltz equal
+  cost; Dd_y degenerate with D_rc). NOTE: I told Dylan in chat it showed "X-only" from the D_rc=4.5e-4 row; wrong, the
+  minimum is 3.6e-4 and it's inconclusive.
+- Field-deficit idea rejected (FINDINGS §30).
+- New slide note on the physical model: https://dylan-neff.web.cern.ch/notes/mx17-detector-model-slides.html
+  (`cloud_basics/make_model_deck.py`). Slides 4 and 18 still present the excess as unexplained: UPDATE them.
+- CLAUDE.md now opens with "THE DATASET IS FINAL" (no new data suggestions ever).
+
+**Next steps:**
+1. det3 347 V/cm: apply the 27.9 mm gap correction (v ×27.9/30, D_T ×√(30/27.9)), decide the water branch (0.1 vs
+   0.85 %), and see whether the ~+190 residual survives.
+2. Re-derive bench compositions with saturated events cut: driftscan_fit (det3 six fields, 490 V, 28–41 % saturated)
+   and bench_water_e; this may move the 0.95 % water.
+3. Redo the kernel arms (bench_pinrc / bench_attach joint fits) on unsaturated stacks; then freeze the kernel and gate.
+4. Update FINDINGS §29 header / README "where things stand", and slides 4 & 18 (rebuild with make_model_deck.py, republish).
+5. Optional: model the clipping instead of cutting (keeps statistics for det7, 79 % saturated).
+
+**Gotchas:**
+- Saturation proxy: event max ≥ 3500 ADC (the ceiling varies 3850–4150 with pedestal). Cut both views for joint fits.
+- Unsaturated selection keeps low-charge events; charge does not depend on depth, so it should not bias v or D_T,
+  but det6_longer's σ0 sits at its bound (0.02): treat it with care.
+- `x_width.py` MIN_EV is now `XW_MIN_EV` env (default 120).
+- The deck agent flagged: det4/det6 "_lp" bundles have no `share_mode` field, so wft runs them in delay mode. Check
+  whether that is intended (memory says share_lp was promoted for det4).
+
+**Key files & commands** (`sps_beam_test_26/analysis/cloud_basics/`, venv `../../../.venv/bin/python`):
+- `unsat_width.py [--keys ..] [--sat 3500]` → `results/unsat_width.json`
+- `xy_isotropy.py [--sat 3500]` → `results/xy_isotropy.json` (~30 min on 8 cores)
+- caches `~/x17/cosmic_bench/cloud_basics/xwidth/caches/` (on /media/dylan/data, which is 100 % full)
+
+## X width excess (UNSOLVED, superseded by the section above) — updated 2026-10-12 (dylan-MS-7C84)
 
 **Resume:** OPEN PROBLEM. Bench X widens ~dry-like while v says wet; no gas fits. Next: det3 Y joint fit, Magboltz cross-check, contaminants, beam X template. NO NEW DATA (detectors gone).
 
