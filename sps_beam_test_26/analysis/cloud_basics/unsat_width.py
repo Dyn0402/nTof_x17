@@ -11,6 +11,8 @@ on the waveform maximum; total charge does not depend on depth, so it cannot sel
     unsat_width.py [--keys k1,k2] [--sat 3500] [--nboot 20]
         -> results/unsat_width.json
     unsat_width.py --recompare     redo only the Magboltz comparison on the stored fits
+    --tan T changes the head-on cut (adds '@tan<T>').  A --sat other than 3500 stores the result under '<key>@sat<N>' (cut-stability scan); CB_CENTRE=ref
+    (stack centred on the M3 reference strip, rc_diffusion.stack) adds '@ref'.
 
 The fits are in the GAP = 30 frame.  The comparison ('gapcorr') rescales to each chamber's measured
 gap (GAP_STUDY, bench_fit.py: det2 30.6, det3 27.9, det7 27.5 mm): v x gap/30, D_T x sqrt(30/gap), and
@@ -64,7 +66,10 @@ def main():
     ap.add_argument('--nboot', type=int, default=20)
     ap.add_argument('--workers', type=int, default=14)
     ap.add_argument('--recompare', action='store_true')
+    ap.add_argument('--tan', type=float, default=None, help='head-on cut |tan_x| (x_width.TAN, default 0.03)')
     a = ap.parse_args()
+    if a.tan is not None:
+        xw.TAN = a.tan                      # before the pool forks
     out_path = f'{HERE}/results/unsat_width.json'
     out = json.load(open(out_path)) if os.path.exists(out_path) else {}
     if a.recompare:
@@ -92,7 +97,9 @@ def main():
                     continue
                 r[lab] = compare(xw.measure(pool, h, sub, T0, a.nboot), det, E)
                 show(key, lab, r[lab])
-            out[key] = r
+            tag = (('' if a.sat == 3500.0 else f'@sat{a.sat:.0f}') + ('@ref' if os.environ.get('CB_CENTRE') == 'ref' else '')
+                   + ('' if a.tan is None else f'@tan{a.tan:g}'))
+            out[key + tag] = r
             json.dump(out, open(out_path, 'w'), indent=1, default=float)
 
 

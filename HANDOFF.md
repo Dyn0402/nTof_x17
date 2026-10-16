@@ -132,46 +132,42 @@ Not X17 analysis; the notes live here because this repo is the one reachable fro
 - `HANDOFF.md` — the two merged logs
 - `git worktree list` — attached branches
 
-## X width excess: saturation at 208–243 V/cm, real at 347 V/cm — updated 2026-10-16 pm (dylan-Yoga)
+## X width excess: det3 real, det4/det7 estimator-limited — updated 2026-10-16 evening (dylan-Yoga)
 
-**Resume:** §31: after the saturation cut + det3 gap + invert branch fix, the excess survives only at 347 V/cm (det3 +241, 8 sd). Next: unsat fits of det3 900/1100 V on the desktop.
+**Resume:** FINDINGS §32: det3 excess ~+200 µm/√cm robust (fields, cuts); det4/det7 D_T falls with the amplitude cut (estimator bias ±100). Next: find the amplitude bias (toy), then the det3 position map.
 
 **Goal:** explain the X drift-width excess so the detector-model kernel can be frozen. NO NEW DATA: the detectors are gone.
 
-**Done 2026-10-16 am (desktop):** `unsat_width.py` — saturation (30–85 % of events) biases v low and D_T high (FINDINGS §30).
-`xy_isotropy.py` joint X+Y det3 scan: inconclusive. Slide note https://dylan-neff.web.cern.ch/notes/mx17-detector-model-slides.html
-(`make_model_deck.py`); slides 4 and 18 still say "unexplained".
-
-**Done 2026-10-16 pm (laptop, FINDINGS §31):**
-- Bug: `bench_water_e.invert` sorted v and interpolated; at 347 V/cm v(water) turns over (38.8 dry → 41.1 at 0.4 % → 35.1
-  at 1 %), so §30's 347 V/cm Magboltz column was wrong (det2 0.25 %/425 → really 0.81 %/328). Fixed: returns all branches.
-  `bench_water_e.json` regenerated: det3 bundle v is 0.90 % water (was 0.59 %), det2's is two-valued (0.12 / 0.60 %).
-- `unsat_width.py` now adds `gapcorr` (own gap: det2 30.6, det3 27.9, det7 27.5) with every branch, excess and pull;
-  `--recompare` redoes only that from the stored fits.
-- Result: excess gone at 208/243 V/cm (det4 +68, det6 +61/−92, det3 243 +164 at 1.3 sd). At 347 V/cm it stays: det3
-  +241 (8.2 sd), det3 HV-scan +213/+268 (2.4–2.9 sd), det2 +227 (1.5 sd). det3's gap-corrected v leaves only the wet
-  branch (0.96 %), consistent with the drift-scan composition. Field-dependent excess is the open question.
+**Done 2026-10-16** (am desktop §30, pm/evening laptop §31–32):
+- §30: saturation (30–85 % of events) biases v low and D_T high; cut events with window max ≥ 3500 ADC.
+- §31: `bench_water_e.invert` water-branch bug fixed (v non-monotonic in water at 347 V/cm); det3 27.9 mm gap applied.
+- §32: laptop caches built (det3 900/1100 V and long run, det4, det7 long/longer + 6 HV sub-runs pooled). det3: excess
+  at all of 243/312/347/382 V/cm, stable 3500→1500 ADC and |tan| 0.03→0.01. det4/det7: D_T falls steadily with the cut
+  and ends 2–3 sd below Magboltz, so their 3500-ADC "agreement" is a crossing, not a measurement.
+  Ref-centred stack (CB_CENTRE=ref) inflates every chamber: unusable as is. det7 gas dries over the night (0.72 → 0.56 %).
 
 **Next steps:**
-1. On the desktop (caches live there; the laptop has none):
-   `cd sps_beam_test_26/analysis/cloud_basics && XW_MIN_EV=50 ../../../.venv/bin/python unsat_width.py --keys sat_det3__drift_scan_resist_490V_drift_900V,sat_det3__drift_scan_resist_490V_drift_1100V,g_det7_long`
-   Does the excess grow with field (312, 382 V/cm)? If MIN_EV still blocks them, lower further or pool.
-2. Re-derive the det3 drift-scan composition (driftscan_fit) with saturated events cut; then a joint v(E)+D_T(E) gas fit
-   on unsaturated, gap-corrected points (iso_fit with the fixed inversion). Is the 347 V/cm excess a composition the grid
-   lacks (iso fraction, N2/CO2; see make_iso_jobs) — the turnover region is the most composition-sensitive?
-3. Redo kernel arms (bench_pinrc / bench_attach) on unsaturated stacks; freeze kernel; gate.
-4. Update make_model_deck.py slides 4 & 18 (now: saturation at low field, open at 347 V/cm), rebuild, republish.
-5. Optional: model the clipping instead of cutting (det7, 79 % saturated).
+1. Find the amplitude bias of the charge-centred stack. Toy: simulate head-on events with known Dd/σ0, Polya gain and
+   cluster statistics (and clipping at ~4000 ADC), push them through rc_diffusion.stack + x_width.fit_x, and see whether
+   D_T vs amplitude cut reproduces det4/det7's slope. Then correct it or pick an unbiased centring (e.g. the event's
+   charge centroid over all depths, or the fitted track line).
+2. det3 position map on unsaturated events (`x_width_map.py`): a dished cathode gives a transverse field that grows
+   with depth. Does the excess grow toward the dish centre/edge? (Candidate cause; chamber-specific.)
+3. Then the earlier queue: driftscan_fit composition on unsaturated events; kernel arms on unsaturated stacks; freeze
+   kernel (Dd per chamber from unsaturated stacks, ±100 µm/√cm systematic on det4/6/7); gate.
+4. Update make_model_deck.py slides 4 & 18 (now: saturation dominant; det3 excess real; det4/7 estimator-limited), rebuild, republish.
 
 **Gotchas:**
-- Saturation proxy: event max ≥ 3500 ADC (ceiling 3850–4150 with pedestal). Cut both views for joint fits.
-- Any v → water inversion at ≳300 V/cm must consider both branches (use `invert(...)['branches']`).
-- x_width.json (§29) "MB wet" column at 347 V/cm used the old invert: affected.
+- unsat_width.py writes one JSON: never run two at once. Keys: `<key>[@sat<N>][@ref][@tan<T>]`; `--recompare` re-does
+  only the Magboltz comparison. `--tan` sets x_width.TAN before the pool forks.
+- x_width.det_of / drift_hv resolve `<key>__<subrun>` caches (from headon_cache.py --subrun).
+- Any v → water inversion at ≳300 V/cm must use `invert(...)['branches']`.
+- `pkill -f` with a pattern that also matches your own shell's command line kills that shell: use pgrep + kill PIDs.
 - `o22_long_det3`/`o22_det3` fits sit at v 22.69 ± 0.00 (stuck at a bound): ignore them.
-- det6_longer σ0 at its bound (0.02). The det4/det6 "_lp" bundles have no `share_mode` (wft runs delay mode): check.
 
-**Key files:** `sps_beam_test_26/analysis/cloud_basics/` — `unsat_width.py [--recompare]` → `results/unsat_width.json`;
-`bench_water_e.py`; `xy_isotropy.py`; caches `~/x17/cosmic_bench/cloud_basics/xwidth/caches/` (desktop only).
+**Key files:** `sps_beam_test_26/analysis/cloud_basics/` — `unsat_width.py`, `x_width.py`, `rc_diffusion.py` (CB_CENTRE),
+`bench_water_e.py`, `headon_cache.py`. Caches: `~/x17/cosmic_bench/cloud_basics/xwidth/caches/` on both the desktop
+(original set) and now the laptop (the §32 set; det2/det6 not built here, they need event caches or ref-only).
 
 ## X width excess (UNSOLVED, superseded by the section above) — updated 2026-10-12 (dylan-MS-7C84)
 

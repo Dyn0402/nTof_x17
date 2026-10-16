@@ -57,15 +57,21 @@ V_SCAN = {500: 15.9, 700: 25.1, 900: 32.8, 1000: 35.3, 1100: 37.8}
 
 
 def det_of(key):
-    return 'det3' if key.startswith(SCAN) else KEYS[key]
+    """'<key>__<subrun>' (headon_cache.py --subrun) is the chamber of <key>."""
+    return 'det3' if key.startswith(SCAN) else KEYS[key.split('__')[0]]
 
 
 def drift_hv(key):
+    import re
     if key.startswith(SCAN):
-        import re
         return float(re.search(r'drift_(\d+)V', key).group(1))
+    if '__' in key and re.search(r'drift_(\d+)V', key.split('__')[1]):
+        return float(re.search(r'drift_(\d+)V', key.split('__')[1]).group(1))
     from qa_config import get_config
-    c = get_config(key)
+    import copy
+    c = copy.copy(get_config(key.split('__')[0]))
+    if '__' in key:
+        c.SUB_RUN = key.split('__')[1]
     rc = json.load(open(f'{c.BASE_PATH}{c.RUN}/run_config.json'))
     det = next(d for d in rc['detectors'] if d['name'] == c.DET_NAME)
     card, ch = det['hv_channels']['drift']

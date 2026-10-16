@@ -6,10 +6,10 @@ The report is generated: `~/x17/cosmic_bench/cloud_basics/attachment/report.html
 
 ## Where things stand (2026-10-10)
 
-- **X width excess (§29 → §30 → §31, 2026-10-16).** Most of it was ADC saturation (§30): on unsaturated events X D_T
-  matches Magboltz at the v-implied water at 208 and 243 V/cm (det4, det6, det3). At 347 V/cm ~+230 µm/√cm in
-  quadrature survives (det3 8 sd, det2 1.5 sd) once det3's 27.9 mm gap and a branch bug in `bench_water_e.invert`
-  are fixed (§31). Field-dependent; open. Follow-up in HANDOFF.md.
+- **X width excess (§29 → §32, 2026-10-16).** Saturation is the dominant bias (§30). Beyond it, det3 has a robust excess
+  of ~+200 µm/√cm in quadrature over Magboltz at 243–382 V/cm, stable against the amplitude and angle cuts (§32). On
+  det4/det7 the stacked width falls steadily as the amplitude cut tightens and crosses Magboltz, so their residual is
+  inside a ±100 µm/√cm estimator systematic. Two bugs fixed on the way (§31: water-branch inversion, det3 gap).
 
 - **Late drift charge is lost in the beam gas, in both views** (§16). It is attachment: the loss rate is
   the same per unit time at three fields, there is no undershoot, X = Y, and it is flat in rate, spill,

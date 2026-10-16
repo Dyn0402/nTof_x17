@@ -55,12 +55,19 @@ def stack(ev, plane, tan_max=0.03, unbiased=None):
     needs the unbiased one."""
     if unbiased is None:
         unbiased = os.environ.get('CB_STACK', 'unbiased') == 'unbiased'
+    # CB_CENTRE=ref: centre strip = the one nearest the M3 reference track, not the event's own
+    # charge maximum (which self-selects: narrow on small signals, wide on clipped ones; FINDINGS §32).
+    # A reference blur is constant in time, so it lands in sigma_0, not in the diffusion slope.
+    ref_centre = os.environ.get('CB_CENTRE', 'charge') == 'ref'
     rows = []
     for e in ev.values():
         if plane not in e or abs(e[f'tan_{plane}']) > tan_max:
             continue
         W = np.asarray(e[plane]['W'], float)
-        ic = int(np.argmax(W.sum(1)))
+        if ref_centre:
+            ic = int(np.argmin(np.abs(np.asarray(e[plane]['pos'], float) - e[f'ref_mesh_{plane}'])))
+        else:
+            ic = int(np.argmax(W.sum(1)))
         if ic < 4 or ic > len(W) - 5:
             continue
         s = W[ic - 4:ic + 5].sum(0)

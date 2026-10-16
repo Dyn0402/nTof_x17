@@ -854,7 +854,8 @@ and the bundle v. The bench water fractions quoted so far are all from saturated
 
 ## 31 · After the saturation cut the excess is gone at 208–243 V/cm but stays at 347 V/cm (2026-10-16, pm)
 
-> **Corrects §30's 347 V/cm rows.** Same fits (`results/unsat_width.json`), no refit; only the Magboltz comparison changed
+> **Corrects §30's 347 V/cm rows. Qualified by §32:** det4/det7's agreement at 3500 ADC depends on the cut.
+> Same fits (`results/unsat_width.json`), no refit; only the Magboltz comparison changed
 > (`unsat_width.py --recompare`). No new data (detectors gone).
 
 **A bug in the comparison.** `bench_water_e.invert` sorted Magboltz v and interpolated water against it. At 347 V/cm
@@ -890,3 +891,47 @@ goes away: only the wet branch remains, at 0.94–0.97 % water, the same as the 
   which live on the desktop (`~/x17/cosmic_bench/cloud_basics/xwidth/caches/`):
   `XW_MIN_EV=50 python unsat_width.py --keys sat_det3__drift_scan_resist_490V_drift_900V,sat_det3__drift_scan_resist_490V_drift_1100V,g_det7_long`.
 - §29's `x_width.json` "MB wet" column used the same `invert`; its 347 V/cm entries are affected the same way.
+
+## 32 · det3's excess is robust; det4 and det7 widths depend on the event amplitude (2026-10-16, evening, laptop)
+
+> **Qualifies §30 and §31.** Same model and stack as x_width.py (charge-centred unless stated), unsaturated events,
+> gap-corrected. New laptop caches: det3 drift scan 900 / 1100 V, det3 long run, det4, det7 long_run, longer_run and the
+> six det7 HV-scan sub-runs (480–505 V, pooled as `g_det7_long__hvpool_…`; ref-only via headon_cache.py --subrun).
+> Results in `results/unsat_width.json` under `<key>[@sat<N>][@ref][@tan<T>]`. No new data.
+
+**det3 at five drift fields.** Excess of D_T² over Magboltz at the v-implied water, in 10⁴ µm²/cm:
+243 V/cm 2.7 ± 2.3, 312 V/cm 5.5 ± 3.0 (n 69), 347 V/cm 5.8 ± 0.8, 382 V/cm 7.6 ± 2.9 (n 75). The water implied by
+v is 0.89–1.00 % at every field: the gas reading is self-consistent, and the D_T is ~+200–280 µm/√cm in quadrature
+above Magboltz at each one (500 V: v below the 1 %-water grid, not compared).
+
+**Cut stability: det3 holds, det4 and det7 do not.** D_T (µm/√cm) against the saturation cut on the window maximum:
+
+| cut (ADC) | 3500 | 3000 | 2500 | 2000 | 1500 | Magboltz |
+|---|---|---|---|---|---|---|
+| det3 long run (347 V/cm) | 387 ± 10 | 374 ± 16 | 391 ± 14 | 373 ± 21 | 359 ± 48 | ~300 |
+| det4 g_det4 (208) | 351 ± 21 | 329 ± 21 | 307 ± 21 | 270 ± 25 | 264 ± 26 | ~337 |
+| det7 longer_run (243) | 389 ± 28 | 361 ± 36 | 338 ± 41 | 306 ± 47 | 278 ± 55 | ~300 |
+| det7 long_run (243) | 383 ± 34 | 389 ± 45 | 404 ± 41 | 406 ± 80 | 307 ± 113 | ~335 |
+| det7 HV pool 480–505 V (243) | 320 ± 40 | 249 ± 47 | 237 ± 58 | 208 ± 66 | 141 ± 72 | ~325 |
+
+v is stable against the cut on every set. With |tan| < 0.01 instead of 0.03 the pattern is the same: det3 359 ± 24
+(3500) / 355 ± 32 (2000); det4 323 ± 22 / 239 ± 31. So:
+
+- **det3's excess is not a selection effect**: ~+200 µm/√cm in quadrature at every cut, both tan cuts and all fields
+  243–382 V/cm.
+- **On det4 and det7 the charge-centred D_T falls steadily as the amplitude cut tightens** and ends 2–3 sd *below*
+  Magboltz. Their §30/§31 "agreement with Magboltz" at 3500 ADC is where a falling curve happens to cross it, not a
+  measurement. The width estimator has an amplitude-dependent bias of order ±100 µm/√cm on these chambers.
+  Saturated events read wide; small ones read narrow. A plausible cause is the stack's centre strip, chosen per event as
+  its own charge maximum: on few-electron events that self-selects concentrated charge. Not proven.
+- **det7 gas drifts over the night:** v-implied water 0.72 % (longer_run, early) → 0.57 % (HV scan) → 0.56 %
+  (long_run, last 24 h), at the same HV.
+
+**Reference-centred stack (CB_CENTRE=ref, opt-in in rc_diffusion.stack): not usable.** Centring on the strip nearest the
+M3 track inflates D_T on every chamber (550–620 µm/√cm at |tan| < 0.03; det3 427, det4 560 at |tan| < 0.01). The
+reference error grows with depth (inclination, angle resolution, alignment), so it does not stay in σ0 as assumed.
+
+**Where this leaves the X width:** saturation is the dominant bias (it moves det7 D_T 546 → 383 and v 29 → 34). Beyond it,
+det3 shows a real, field-independent-within-errors excess of ~+200 µm/√cm. On det4/det7 the estimator's own amplitude
+dependence (~±100) is as large as any residual, so "Magboltz-like" and "det3-like" cannot be told apart there. For the
+kernel: take Dd per chamber from the unsaturated stack, and carry ±100 µm/√cm as a stated systematic on det4/det6/det7.
