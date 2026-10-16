@@ -170,30 +170,32 @@ Not X17 analysis; the notes live here because this repo is the one reachable fro
 - `HANDOFF.md` — the two merged logs
 - `git worktree list` — attached branches
 
-## X width excess: det3 real, det4/det7 estimator-limited — updated 2026-10-16 evening (dylan-Yoga)
+## X width excess: det3 real, det4/det7 data-limited — updated 2026-10-16 night (dylan-Yoga)
 
-**Resume:** FINDINGS §32: det3 excess ~+200 µm/√cm robust (fields, cuts); det4/det7 D_T falls with the amplitude cut (estimator bias ±100). Next: find the amplitude bias (toy), then the det3 position map.
+**Resume:** FINDINGS §33. The closure toy (xw_sim.py, condor 4474928) shows the estimator has NO amplitude bias, so det4/det7's
+fall with the cut is in their data and unexplained. det3's excess is not an artefact. Next: the det3 position map.
 
 **Goal:** explain the X drift-width excess so the detector-model kernel can be frozen. NO NEW DATA: the detectors are gone.
 
-**Done 2026-10-16** (am desktop §30, pm/evening laptop §31–32):
+**Done 2026-10-16** (am desktop §30, pm/evening laptop §31–32, night lxplus §33):
 - §30: saturation (30–85 % of events) biases v low and D_T high; cut events with window max ≥ 3500 ADC.
 - §31: `bench_water_e.invert` water-branch bug fixed (v non-monotonic in water at 347 V/cm); det3 27.9 mm gap applied.
-- §32: laptop caches built (det3 900/1100 V and long run, det4, det7 long/longer + 6 HV sub-runs pooled). det3: excess
-  at all of 243/312/347/382 V/cm, stable 3500→1500 ADC and |tan| 0.03→0.01. det4/det7: D_T falls steadily with the cut
-  and ends 2–3 sd below Magboltz, so their 3500-ADC "agreement" is a crossing, not a measurement.
-  Ref-centred stack (CB_CENTRE=ref) inflates every chamber: unusable as is. det7 gas dries over the night (0.72 → 0.56 %).
+- §32: det3 excess at all of 243/312/347/382 V/cm, stable 3500→1500 ADC and |tan| 0.03→0.01. det4/det7: D_T falls
+  ~100 with the cut. det7 gas dries over the night (0.72 → 0.56 %).
+- §33: toy on real layouts, tuned amplitude spectra, 9 arms × 100 replicas. Unsat closure D_T +3…+17, v ≤ −1.0; flat in
+  the cut in every arm (≤ 8). Plain clipping gives only a fraction of the data's saturation bias. The bundle lp crosstalk
+  adds +75…+90 (det3-sized, but det4/det7H overshoot). Centring on the TRUE track inflates +90…+135 (so most of §32's
+  ref-centred inflation is the method, not M3 error).
 
 **Next steps:**
-1. Find the amplitude bias of the charge-centred stack. Toy: simulate head-on events with known Dd/σ0, Polya gain and
-   cluster statistics (and clipping at ~4000 ADC), push them through rc_diffusion.stack + x_width.fit_x, and see whether
-   D_T vs amplitude cut reproduces det4/det7's slope. Then correct it or pick an unbiased centring (e.g. the event's
-   charge centroid over all depths, or the fitted track line).
-2. det3 position map on unsaturated events (`x_width_map.py`): a dished cathode gives a transverse field that grows
+1. det3 position map on unsaturated events (`x_width_map.py`): a dished cathode gives a transverse field that grows
    with depth. Does the excess grow toward the dish centre/edge? (Candidate cause; chamber-specific.)
-3. Then the earlier queue: driftscan_fit composition on unsaturated events; kernel arms on unsaturated stacks; freeze
-   kernel (Dd per chamber from unsaturated stacks, ±100 µm/√cm systematic on det4/6/7); gate.
-4. Update make_model_deck.py slides 4 & 18 (now: saturation dominant; det3 excess real; det4/7 estimator-limited), rebuild, republish.
+2. det4/det7 cut dependence, from existing data only: compare faint vs bright stacks directly (per-offset time profiles,
+   the σ0/Dd trade with T pinned), and the faint events' positions (gain map / edge). If unresolved, state ±100 µm/√cm
+   as a limitation.
+3. Then the earlier queue: kernel arms on unsaturated stacks; freeze kernel (Dd per chamber from unsaturated stacks,
+   ±100 µm/√cm systematic on det4/6/7); gate.
+4. Update make_model_deck.py slides 4 & 18 (saturation dominant; det3 excess real; det4/7 data-limited), rebuild, republish.
 
 **Gotchas:**
 - unsat_width.py writes one JSON: never run two at once. Keys: `<key>[@sat<N>][@ref][@tan<T>]`; `--recompare` re-does
@@ -202,6 +204,8 @@ Not X17 analysis; the notes live here because this repo is the one reachable fro
 - Any v → water inversion at ≳300 V/cm must use `invert(...)['branches']`.
 - `pkill -f` with a pattern that also matches your own shell's command line kills that shell: use pgrep + kill PIDs.
 - `o22_long_det3`/`o22_det3` fits sit at v 22.69 ± 0.00 (stuck at a bound): ignore them.
+- xw_sim: `prep` rebuilds inputs.pkl and wipes the tune, so run `tune --merge` after it (the tune_*.json are committed).
+  On lxplus a replica takes ~3 s. If `.bashrc: Permission denied` shows up there, the AFS token has expired: run `aklog`.
 
 **Key files:** `sps_beam_test_26/analysis/cloud_basics/` — `unsat_width.py`, `x_width.py`, `rc_diffusion.py` (CB_CENTRE),
 `bench_water_e.py`, `headon_cache.py`. Caches: `~/x17/cosmic_bench/cloud_basics/xwidth/caches/` on both the desktop

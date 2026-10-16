@@ -1,0 +1,3 @@
+# xw_sim.py: rebuildable inputs and the raw condor replicas (copy on EOS /eos/user/d/dneff/cloud_basics/xw_sim/)
+results/xw_sim/inputs.pkl
+results/xw_sim/out/

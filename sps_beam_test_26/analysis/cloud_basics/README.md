@@ -105,6 +105,8 @@ then against the r06 copy kernel and the held-out bench; writes
 | `x_width_beam.py` | template-free X fit, beam run_71 + bench calibration → `results/x_width_beam.json` |
 | `make_iso_jobs.py [--ext]`, `iso_fit.py` | Magboltz Ar/iso × water grid (condor 4440949/4440956 → `results/iso/`); joint v + D_T fit → `results/iso_fit.json` |
 | `make_xwidth_report.py` | figures + report.html |
+| `xw_sim.py prep / tune / run / collect` | closure toy of the X-width estimator on real layouts (§33): `prep` + `tune` local → `results/xw_sim/inputs.pkl`; `run` on condor; `collect` → `results/xw_sim.json` |
+| `make_xw_sim_jobs.py`, `run_xw_sim.sh`, `condor_xw_sim.sub` | lxplus `~/cloud_basics_condor/xwsim` (payload = xw_sim, x_width, rc_diffusion, bench_attach, width_vs_time .py + inputs.pkl); raw out on EOS `/eos/user/d/dneff/cloud_basics/xw_sim/` |
 
 ### X / kernel benches (lxplus condor)
 `make_rc_arms.py`, `run_bench_rc.sh` + `condor_bench_rc.sub` + `auto_bench_rc.sh` (RC refits, §17);

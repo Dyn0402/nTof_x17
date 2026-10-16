@@ -894,7 +894,9 @@ goes away: only the wet branch remains, at 0.94–0.97 % water, the same as the 
 
 ## 32 · det3's excess is robust; det4 and det7 widths depend on the event amplitude (2026-10-16, evening, laptop)
 
-> **Qualifies §30 and §31.** Same model and stack as x_width.py (charge-centred unless stated), unsaturated events,
+> **Qualifies §30 and §31. Qualified by §33:** the estimator has no amplitude bias (toy), so the det4/det7 cut
+> dependence below is in the data; the 'charge-max centring self-selects' guess is wrong.
+> Same model and stack as x_width.py (charge-centred unless stated), unsaturated events,
 > gap-corrected. New laptop caches: det3 drift scan 900 / 1100 V, det3 long run, det4, det7 long_run, longer_run and the
 > six det7 HV-scan sub-runs (480–505 V, pooled as `g_det7_long__hvpool_…`; ref-only via headon_cache.py --subrun).
 > Results in `results/unsat_width.json` under `<key>[@sat<N>][@ref][@tan<T>]`. No new data.
@@ -935,3 +937,51 @@ reference error grows with depth (inclination, angle resolution, alignment), so 
 det3 shows a real, field-independent-within-errors excess of ~+200 µm/√cm. On det4/det7 the estimator's own amplitude
 dependence (~±100) is as large as any residual, so "Magboltz-like" and "det3-like" cannot be told apart there. For the
 kernel: take Dd per chamber from the unsaturated stack, and carry ±100 µm/√cm as a stated systematic on det4/det6/det7.
+
+## 33 · Closure toy: the estimator has no amplitude bias; det4/det7's trend is in the data (2026-10-16, night, lxplus)
+
+> **Qualifies §32.** `xw_sim.py` (condor 4474928, 180 jobs, 100 replicas × 9 arms × 4 datasets, each replica the
+> data's own head-on statistics) → `results/xw_sim.json`; raw replicas on EOS `/eos/user/d/dneff/cloud_basics/xw_sim/`.
+> Simulation only, no new data.
+
+**The toy.** Synthetic head-on events on the real events' layouts (strip positions, channel noise, reference position and
+tan_x of every cache event): Fischle Ar clusters (2.8 /mm), Magboltz D_T and D_L at the v-implied water, Polya gain
+(θ = 0.5), the bundle's own X template, 60 ns sampling with random phase, noise with the data's lag-1 autocorrelation
+(0.71–0.85) and common-mode fraction (0.10–0.17), per-channel ADC ceilings drawn from the data's saturated maxima. The
+per-event gain spread is tuned so that the window-maximum quantiles and saturated fraction match the data (det3, det4:
+lognormal; det7: lognormal + 30 % faint events, since its spectrum is bimodal; det7R's faintest decile is still 2× too
+bright in the toy). Truth: v and σ0 = the data's unsat fit, D_T = Magboltz in the GAP-30 frame. Same `stack` + `fit_x`,
+same cuts.
+
+| D_T (µm/√cm), mean of 100 | truth | all events | 3500 | 2500 | 1500 | data 3500 → 1500 |
+|---|---|---|---|---|---|---|
+| det3 long run, base | 292 | 319 | 301 | 299 | 297 | 373 → 347 |
+| det4, base | 336 | 406 | 353 | 354 | 352 | **351 → 264** |
+| det7 longer_run, base | 289 | 328 | 298 | 294 | 290 | **373 → 267** |
+| det7 HV pool, base | 317 | 345 | 320 | 320 | 316 | **306 → 135** |
+
+Replica rms 7–24, so one data-sized sample scatters by about the data's bootstrap error. Arms (each against base, unsat cuts):
+no clipping, flat gain (no per-event spread), δ-ray extent (Katz-Penfold range), D_T truth ×0.75 / ×1.25: **all flat
+in the cut to ≤ 8 µm/√cm**, response linear (bias −1…+24 at every truth).
+
+- **The charge-centred stack + fit_x has no amplitude-dependent bias** for any ingredient modelled here. Closure on
+  unsaturated events: D_T +3…+17 high, v 0.0…−1.0 µm/ns, σ0 +0.0…+0.05 mm. The ~100 µm/√cm fall of det4/det7 with the
+  cut (§32) is therefore **a property of their data, not of the estimator**, and the §32 guess (charge-max centring
+  self-selects on faint events) is wrong. What in the data does it is not identified: not visible in v (flat with the
+  cut on all four sets, so not shallow partial tracks), and not in anything the toy contains.
+- **Plain clipping underpredicts the data's saturation bias by far:** all events vs unsat, toy +18…+53 D_T and −0.6…−1.9 v;
+  data +62 (det3) … +325 (det7H) and v down to 26–28 on det7. Real DREAM saturation does more than clip the sample
+  (recovery, baseline or neighbour effects; not modelled). The unsat cut remains necessary; the toy cannot be used to
+  correct saturated events.
+- **Neighbour copies read as drift diffusion.** The bundle lp crosstalk (c1 ≈ 0.05, c2 = 0.6 c1, τ 130–170 ns, with the
+  bundle σ_p0) raises the fitted D_T by +75…+90 µm/√cm, flat in the cut (≈ +240 in quadrature on det3). That is the size
+  of det3's excess: the 'share' arm gives det3 378 / 374 at 3500 / 1500 against the data's 373 / 347. But it does not
+  single out det3: all bundles have c1 ≈ 0.05, and the same arm overshoots det4 (426 vs 351) and det7H (399 vs 306) while matching det7R (372 vs 373),
+  and the arm's σ0 does not match det3's (0.445 vs 0.348). So it is a candidate mechanism with the right size,
+  not an explanation.
+- **Centring on the true track inflates D_T by +90…+135** (refc arm, perfect reference). Most of the §32
+  reference-centred inflation (430–620) is that, not the M3 reference error. Charge-max centring is the right choice.
+
+**Where this leaves the X width:** det3's ~+200 µm/√cm (quadrature) excess is not an estimator artefact (toy closure
++9). det4/det7's cut dependence is in the data and unexplained, so their D_T stays uncertain by ±100 µm/√cm. That is
+now a stated limitation of the data, not a bias that can be corrected.
