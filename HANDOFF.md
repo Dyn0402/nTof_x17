@@ -1,5 +1,43 @@
 # Handoff
 
+## Detector spec page for Stephan's review — updated 2026-10-16 (dylan-Yoga)
+
+**Resume:** page live with comments on; next: Dylan posts one test comment, sends Stephan the link, fold answers into spec.py + Geant4.
+
+**Goal (Dylan):** before publication, a visual, clickable page with every detail of the MX17 module as we model it,
+so Stephan can check it and answer the open questions directly on the site.
+
+**Done:**
+- Live: <https://dylan-neff.web.cern.ch/notes/mx17-detector-spec.html> (unlisted). Source `docs/detector_spec/`
+  (README there): side view of the full Geant4 stack, top view with zoom insets, the amplification region to scale,
+  17 open questions ranked by impact, all 97 numbers with a status (9 unknown, 31 assumed), the four chambers,
+  a glossary (calendering defined).
+- Questions asked as Dylan requested: resistive strip width/pitch (550/800 µm from memory, vs the 780 µm readout
+  pitch), strip thickness (10 µm?), sheet resistance, kapton + glue under the strips, mesh spec (19/48 µm is a
+  P2 placeholder) and calendering, window mylar 60 µm single/double aluminised and nm of Al, PCB stack-up,
+  field cage, the ~19 mm Y dead bands.
+- Comments: the budget page's Apps Script (`x17_facility_search/budget/feedback_apps_script.gs`) now routes
+  `page: "detector"` to a "Detector" tab of the v2 budget feedback sheet. Dylan redeployed it (same URL) on
+  2026-10-16; verified `?page=detector` answers and the budget GET is unchanged.
+
+**Next steps:**
+1. Dylan posts one test comment from the page, then deletes that row in the sheet's "Detector" tab; sends Stephan the link.
+2. When answers arrive: read the "Detector" tab (Drive `read_file_content`), update `docs/detector_spec/spec.py`
+   AND `MX17_Geant/shared/MX17ModuleGeometry.hh` (+ `design/NEEDED_INPUTS.md`), then
+   `python3 docs/detector_spec/build_page.py --publish`. Mark handled rows `status` = done.
+
+**Gotchas / decisions:**
+- Flagged on the page: Geant4 puts the L3 guard ring + 264 µm FR4 between the kapton and the pads; the response
+  model laminates kapton straight onto the pads. The FR4 thickness is a residual of the CAD's 1.70 mm board.
+- The page only POSTs after a GET returns `page: "detector"`; otherwise it falls back to mailto, so detector
+  comments can never land in the budget tab.
+- Not tested: a live POST (would write a real sheet row). Mock-backend test passed.
+- Side-view band heights are log-scaled; a true-scale bar sits beside it.
+
+**Key files & commands:**
+- `docs/detector_spec/spec.py` — all data; `template.html` — the page; `build_page.py [--publish]`.
+- `DETECTOR_FEEDBACK_ENDPOINT=http://127.0.0.1:8766/mock python3 docs/detector_spec/build_page.py` — mock test.
+
 ## UCLA disk rescue + reuse — updated 2026-10-16 (dylan-MS-7C84)
 
 **Resume:** rescue done and md5-verified on EOS; next: firmware check (Windows), then erase/test/reformat the disk.
