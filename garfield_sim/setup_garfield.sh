@@ -118,6 +118,14 @@ for _d in "$GARFIELD_INSTALL"/lib64/python*/site-packages \
 done
 export HEED_DATABASE="$GARFIELD_INSTALL/share/Heed/database"
 
+# Our headers must come before the LCG view's. LCG_109 ships its own Garfield
+# (78fe1bd3) in $MX17_LCG_VIEW/include, which is on ROOT_INCLUDE_PATH, so cling
+# otherwise builds the classes from those headers while running our library:
+# ComponentGrid is 688 bytes there and 720 here, the constructor writes past
+# the allocation, and the job aborts in malloc or hangs (lxplus/condor,
+# 2026-10-16). Harmless on the workstations, which have no second Garfield.
+export ROOT_INCLUDE_PATH="$GARFIELD_INSTALL/include${ROOT_INCLUDE_PATH:+:$ROOT_INCLUDE_PATH}"
+
 unset _gf_install _d
 
 echo "[setup_garfield] host=$(hostname -s)  ROOT $(root-config --version)  python $(python3 --version 2>&1 | awk '{print $2}')"
