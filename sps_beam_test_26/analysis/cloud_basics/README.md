@@ -110,6 +110,7 @@ then against the r06 copy kernel and the held-out bench; writes
 | `xw_tan.py [--split ref_mesh_x\|ref_mesh_y]` | X D_T in signed tan_x bins, data + toy: drift-field tilt δ (§34) → `results/xw_tan.json` |
 | `xw_amp.py` | exclusive amplitude terciles: fits free / T pinned / σ0+T pinned, model-free m2, positions, toy (§34) → `results/xw_amp.json` |
 | `xw_compress.py` | neighbour/peak ratio at the peak sample against peak ADC, data vs toy (§34) → `results/xw_compress.json` |
+| `make_xwidth_deck.py` | slide note of §30–34 + open questions → `~/x17/cosmic_bench/cloud_basics/xwidth/x-width-excess.html`; publish with `add-note.py … --slug x-width-excess --force --deploy` |
 
 ### X / kernel benches (lxplus condor)
 `make_rc_arms.py`, `run_bench_rc.sh` + `condor_bench_rc.sub` + `auto_bench_rc.sh` (RC refits, §17);

@@ -172,9 +172,7 @@ Not X17 analysis; the notes live here because this repo is the one reachable fro
 
 ## X width excess: done with the data we have — updated 2026-10-17 (dylan-Yoga)
 
-**Resume:** FINDINGS §34 closes the X-width investigation. det3's excess (+200–250 µm/√cm in quadrature) is unexplained
-and stated as a limitation. det4/det7 have an amplitude-dependent footprint (±100). Next: freeze the kernel with those
-systematics.
+**Resume:** §30–34 written up as a slide note (x-width-excess); next: fix the det4/det6 gap table, then freeze the kernel.
 
 **Goal:** explain the X drift-width excess so the detector-model kernel can be frozen. NO NEW DATA: the detectors are gone.
 
@@ -189,7 +187,13 @@ systematics.
   baseline. Model-free neighbour/peak ratio: on det4/det7 the core is narrower than linear below ~2000 ADC; det3
   follows the toy. No compression below the ceiling.
 
+- Slide note (14 slides, open consistency questions + ideas on slide 13): https://dylan-neff.web.cern.ch/notes/x-width-excess.html,
+  built by `cloud_basics/make_xwidth_deck.py` from results/*.json; rebuild + `add-note.py … --slug x-width-excess --force --deploy`.
+
 **Next steps:**
+0. Cheapest consistency fix first: unsat_width.GAP_STUDY uses 30 mm for det4/det6, but GAP_STUDY (K = 22) measured det6 27.85
+   (det4 25.55, amplitude-dominated). Put one gap table in one place, requote det6 (v −7 %, D_T +4 %), rebuild the deck.
+   The other open questions (det2 vs det3 at 347 V/cm, water per chamber/night, run_71 unsat cut, δ vs alignment) are on slide 13.
 1. Freeze the kernel: Dd per chamber from the unsaturated stack at the 3500 cut, with +100 µm/√cm (det3, unexplained)
    and ±100 µm/√cm (det4/det6/det7, amplitude-dependent footprint) as stated systematics. Then the kernel arms on
    unsaturated stacks, and the gate.
