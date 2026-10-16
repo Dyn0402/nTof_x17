@@ -1,5 +1,52 @@
 # Handoff
 
+## UCLA disk rescue + reuse — updated 2026-10-16 (dylan-MS-7C84)
+
+**Resume:** rescue done and md5-verified on EOS; next: firmware check (Windows), then erase/test/reformat the disk.
+
+**Goal:** get the 26 unreadable files off the failing UCLA NVMe (ADATA SX8200PNP, `/dev/nvme1n1p2`, NTFS),
+then decide whether the disk can be reused as scratch space for analysis files that have a copy elsewhere.
+Not X17 analysis; the notes live here because this repo is the one reachable from every machine.
+
+**Done:**
+- 26 files (26.67 GB) rescued, **1,028,096 B unreadable** (99.996 % recovered). Method: each file's NTFS cluster
+  runs (`ntfsinfo`) → a read-only device-mapper device → `ddrescue -d` (pass `-n`, then `-r3`).
+- Copied to `/eos/experiment/ntof/data/x17/research_old/ucla/<relpath>`. **All 26 match by name, size and md5.**
+- Records + scripts on EOS in `research_old/ucla/_rescue_2026-10-16/`: `damage_report.txt` (what each hole hit),
+  ddrescue `maps/`, `files.tsv`, `smart_before.txt`, the scripts, and the rescue's own `HANDOFF.md`.
+- Damage: all ROOT files open. Each hole costs whole compressed blocks (baskets), which wipes 1–2 branches over an
+  entry range: about 2.4–3 % of entries in the big Cooper-Frye trees, 22–34 % in the proton-only ones, and all of
+  one branch in the two small AMPT files. Dca_xy_QA files lose 1 and 5 objects of about 2,000. The text files lose 23 (11.5 GB CSV)
+  to 456 lines. Dylan declined partial-basket recovery (2026-10-16).
+
+**In progress / where it stopped:**
+- Disk is unmounted, untouched since the rescue. Nothing on it is known to be unbacked, but step 1 below is unchecked.
+- Staging copy (25 GB) still at `/media/dylan/data/ucla_rescue/` (the NTFS data disk, so visible from Windows).
+  `/media/dylan/data` has 5.6 GB free.
+
+**Next steps:**
+1. Mount the UCLA disk **read-only** and compare its top level with EOS `research_old/` (handoff listed Research/,
+   x17match, Saclay, mx17_response_sim, x17_resp). On Windows: don't let it run chkdsk/repair before this check.
+2. Firmware: drive is on 42B2S7JA; check ADATA SSD ToolBox (Windows) for a newer one.
+3. With Dylan's OK: erase the whole drive (`blkdiscard` / `nvme format`, or the ToolBox's secure erase), then do one full write+read
+   pass (`badblocks -wsv -t random -b 4096`) and note SMART "Media and Data Integrity Errors" before and after
+   (6,767 at 17:18 on 10-16). If the count doesn't move, reformat (ext4/btrfs, or NTFS if Windows needs it) and use it only for
+   data with a copy elsewhere. Check it monthly (scrub / full read + SMART). Retire it if errors appear on new data.
+4. With Dylan's OK: delete `/media/dylan/data/ucla_rescue/` (verified on EOS), then move `x17/sept26_fullpass` and
+   `x17/sept26_slim` back from `yoga:/media/dylan/data/x17_hold/` to `/media/dylan/data/x17/`, verify, remove from laptop.
+5. Later, only if Dylan agrees: delete the unreadable originals' remains from the old disk (moot if it's erased).
+
+**Gotchas / decisions:**
+- Diagnosis: wear 2 %, spare 100 %, all logged errors are unrecovered reads (status 0x281), and the bad files date
+  from 2022–23 → most likely charge loss on data left unused for years, not worn flash. An SSD replaces a bad spot only when it is rewritten,
+  so an erase should clear it. The error count rose during the rescue because of our own retries, not because the drive got worse.
+- Holes are 4 KiB-aligned and zero-filled in the rescued files; text holes collapse many lines into one NUL line.
+
+**Key files & commands:**
+- `~/x17_local/rescue/` (Ubuntu only; copy on EOS above): `rescue.sh pass1|pass2|finalize|status`, `parse_runs.py`,
+  `damage_report.py`, `HANDOFF.md`.
+- `sudo smartctl -a /dev/nvme1n1` — health; compare the media-error count.
+
 ## Track passport (tracking + MM dE/dx + scintillators per track) — updated 2026-10-15 (dylan-Yoga)
 
 **Resume:** published 2026-10-15 as a 26-slide pedagogical note (principle → simulation → real detector): https://dylan-neff.web.cern.ch/notes/track-passport.html (`ntof_calorimetry/make_passport_deck.py`). The long report is `/media/dylan/data/x17/calorimetry/passport/report.html`.
