@@ -81,6 +81,13 @@ python3 ~/PycharmProjects/dylan-cern-site/scripts/add-note.py \
 Slide cross-references in the deck are written `§§<slide id>§§` and resolved at build time, so adding a
 slide renumbers them.
 
+### The detector model as a slide note (2026-10-16)
+`make_model_deck.py`: the physical forward model step by step (drift, footprint, RC spread, template, gas, parameters),
+then against the r06 copy kernel and the held-out bench; writes
+`~/x17/cosmic_bench/cloud_basics/model_deck/mx17-detector-model-slides.html`. Publish with
+`add-note.py … --slug mx17-detector-model-slides --force --deploy`. Reads the production bundles from the data drive
+(embedded fallback copy of their hypers otherwise).
+
 ### SPS → bench transfer (§27)
 | script | what |
 |---|---|
