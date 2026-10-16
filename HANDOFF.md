@@ -170,32 +170,33 @@ Not X17 analysis; the notes live here because this repo is the one reachable fro
 - `HANDOFF.md` — the two merged logs
 - `git worktree list` — attached branches
 
-## X width excess: det3 real, det4/det7 data-limited — updated 2026-10-16 night (dylan-Yoga)
+## X width excess: done with the data we have — updated 2026-10-17 (dylan-Yoga)
 
-**Resume:** FINDINGS §33. The closure toy (xw_sim.py, condor 4474928) shows the estimator has NO amplitude bias, so det4/det7's
-fall with the cut is in their data and unexplained. det3's excess is not an artefact. Next: the det3 position map.
+**Resume:** FINDINGS §34 closes the X-width investigation. det3's excess (+200–250 µm/√cm in quadrature) is unexplained
+and stated as a limitation. det4/det7 have an amplitude-dependent footprint (±100). Next: freeze the kernel with those
+systematics.
 
 **Goal:** explain the X drift-width excess so the detector-model kernel can be frozen. NO NEW DATA: the detectors are gone.
 
-**Done 2026-10-16** (am desktop §30, pm/evening laptop §31–32, night lxplus §33):
-- §30: saturation (30–85 % of events) biases v low and D_T high; cut events with window max ≥ 3500 ADC.
-- §31: `bench_water_e.invert` water-branch bug fixed (v non-monotonic in water at 347 V/cm); det3 27.9 mm gap applied.
-- §32: det3 excess at all of 243/312/347/382 V/cm, stable 3500→1500 ADC and |tan| 0.03→0.01. det4/det7: D_T falls
-  ~100 with the cut. det7 gas dries over the night (0.72 → 0.56 %).
-- §33: toy on real layouts, tuned amplitude spectra, 9 arms × 100 replicas. Unsat closure D_T +3…+17, v ≤ −1.0; flat in
-  the cut in every arm (≤ 8). Plain clipping gives only a fraction of the data's saturation bias. The bundle lp crosstalk
-  adds +75…+90 (det3-sized, but det4/det7H overshoot). Centring on the TRUE track inflates +90…+135 (so most of §32's
-  ref-centred inflation is the method, not M3 error).
+**Done 2026-10-16/17** (§30 desktop, §31–32 laptop, §33 lxplus, §34 laptop):
+- §30–31: saturation biases v low and D_T high (cut at 3500 ADC); `invert` water-branch bug fixed; det3 gap 27.9 mm.
+- §32: det3 excess at every field, cut and |tan| cut; det4/det7 D_T falls ~100 with the amplitude cut.
+- §33: closure toy (xw_sim.py, condor 4474928): the estimator has no amplitude bias. Unsat closure D_T +3…+17.
+  Centring on the true track inflates by +90…+135.
+- §34: signed-tan scan: det3 shows no field tilt (δ ≈ +0.02 everywhere, floor still ~350 against the toy's 298); the
+  dish would need a 0.05 rad tilt spread, about 4× the map's steepest gradient. Amplitude terciles: det3 +57…+84 in
+  every tercile. det4/det7 classes differ in both directions; det7's faint tercile is edge/empty events. No residual
+  baseline. Model-free neighbour/peak ratio: on det4/det7 the core is narrower than linear below ~2000 ADC; det3
+  follows the toy. No compression below the ceiling.
 
 **Next steps:**
-1. det3 position map on unsaturated events (`x_width_map.py`): a dished cathode gives a transverse field that grows
-   with depth. Does the excess grow toward the dish centre/edge? (Candidate cause; chamber-specific.)
-2. det4/det7 cut dependence, from existing data only: compare faint vs bright stacks directly (per-offset time profiles,
-   the σ0/Dd trade with T pinned), and the faint events' positions (gain map / edge). If unresolved, state ±100 µm/√cm
-   as a limitation.
-3. Then the earlier queue: kernel arms on unsaturated stacks; freeze kernel (Dd per chamber from unsaturated stacks,
-   ±100 µm/√cm systematic on det4/6/7); gate.
-4. Update make_model_deck.py slides 4 & 18 (saturation dominant; det3 excess real; det4/7 data-limited), rebuild, republish.
+1. Freeze the kernel: Dd per chamber from the unsaturated stack at the 3500 cut, with +100 µm/√cm (det3, unexplained)
+   and ±100 µm/√cm (det4/det6/det7, amplitude-dependent footprint) as stated systematics. Then the kernel arms on
+   unsaturated stacks, and the gate.
+2. Update make_model_deck.py slides 4 & 18 (saturation dominant; det3 excess unexplained; det4/7 amplitude-dependent
+   footprint), rebuild, republish.
+3. Optional, from existing data: does the wft forward model (whose neighbour copies scale linearly) fit det4's
+   faint events worse than its bright ones? That would show whether the non-linearity is in the copies or in σ_p0.
 
 **Gotchas:**
 - unsat_width.py writes one JSON: never run two at once. Keys: `<key>[@sat<N>][@ref][@tan<T>]`; `--recompare` re-does
@@ -206,6 +207,8 @@ fall with the cut is in their data and unexplained. det3's excess is not an arte
 - `o22_long_det3`/`o22_det3` fits sit at v 22.69 ± 0.00 (stuck at a bound): ignore them.
 - xw_sim: `prep` rebuilds inputs.pkl and wipes the tune, so run `tune --merge` after it (the tune_*.json are committed).
   On lxplus a replica takes ~3 s. If `.bashrc: Permission denied` shows up there, the AFS token has expired: run `aklog`.
+- xw_tan/xw_amp/xw_compress run on the laptop's 8 cores in minutes (inputs.pkl + the head-on caches). Not on lxplus:
+  the caches are local.
 
 **Key files:** `sps_beam_test_26/analysis/cloud_basics/` — `unsat_width.py`, `x_width.py`, `rc_diffusion.py` (CB_CENTRE),
 `bench_water_e.py`, `headon_cache.py`. Caches: `~/x17/cosmic_bench/cloud_basics/xwidth/caches/` on both the desktop

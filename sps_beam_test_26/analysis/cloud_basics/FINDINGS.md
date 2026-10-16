@@ -940,7 +940,7 @@ kernel: take Dd per chamber from the unsaturated stack, and carry ±100 µm/√c
 
 ## 33 · Closure toy: the estimator has no amplitude bias; det4/det7's trend is in the data (2026-10-16, night, lxplus)
 
-> **Qualifies §32.** `xw_sim.py` (condor 4474928, 180 jobs, 100 replicas × 9 arms × 4 datasets, each replica the
+> **Qualifies §32. Followed by §34** (tilt, amplitude terciles, footprint vs amplitude). `xw_sim.py` (condor 4474928, 180 jobs, 100 replicas × 9 arms × 4 datasets, each replica the
 > data's own head-on statistics) → `results/xw_sim.json`; raw replicas on EOS `/eos/user/d/dneff/cloud_basics/xw_sim/`.
 > Simulation only, no new data.
 
@@ -985,3 +985,82 @@ in the cut to ≤ 8 µm/√cm**, response linear (bias −1…+24 at every truth
 **Where this leaves the X width:** det3's ~+200 µm/√cm (quadrature) excess is not an estimator artefact (toy closure
 +9). det4/det7's cut dependence is in the data and unexplained, so their D_T stays uncertain by ±100 µm/√cm. That is
 now a stated limitation of the data, not a bias that can be corrected.
+
+## 34 · det3 is not a tilted field; det4/det7's cut dependence is an amplitude-dependent footprint (2026-10-17, laptop)
+
+> Follows §33. `xw_tan.py` → `results/xw_tan.json`, `xw_amp.py` → `results/xw_amp.json`, `xw_compress.py` →
+> `results/xw_compress.json`. Existing caches and the §33 toy (same truth, same tuned amplitudes). No new data.
+
+**1. Field tilt / dished cathode (det3).** det3's charge column ends at 25.7–29.2 mm across the chamber (GAP_STUDY
+2026-07-30). A non-flat cathode tilts the drift field. In the X view that is an extra angle δ the M3 reference does not
+see, so the head-on width should be smallest at tan_x = −δ. Fit D_T² = a + b (tan + δ)² to D_T in six signed tan_x
+bins (−0.06…0.06, unsat):
+
+| | toy (vertical field) | data, b free | data, b = toy |
+|---|---|---|---|
+| det3 long run | δ −0.002 ± 0.004, floor 298 (truth 292) | δ +0.013 ± 0.010, floor 347 | δ +0.019 ± 0.013, floor 351 |
+| det4 | δ +0.005 ± 0.002, floor 341 (truth 336) | δ +0.003 ± 0.007, floor 331 | δ +0.003 ± 0.009, floor 337 |
+| det7 longer / HV pool | δ ≈ 0, floor 293 / 311 | no constraint (±60–130 per bin) | δ +0.014 ± 0.030 / +0.005 ± 0.017 |
+
+det3 by position (b = toy): δ = −0.004 ± 0.013 / +0.030 ± 0.026 / +0.038 ± 0.022 in x terciles,
++0.019 ± 0.029 / +0.026 ± 0.018 / +0.019 ± 0.016 in y terciles. That is one common δ ≈ +0.02, with no sign change
+across the chamber, and every tercile's floor above the toy's.
+
+- **A tilt does not remove det3's excess:** at the parabola's minimum the width is still ~350 against the toy's 298.
+- **The dish is too shallow to cause it.** Raising the floor from 298 to 350 by a spread of local tilts needs
+  σ_δ ≈ √((351² − 298²) / b) ≈ 0.05 rad. The GAP_STUDY map's steepest step is ~2 mm per ~80 mm bin (0.026 at the
+  cathode, about half that averaged over the drift), and the measured δ does not vary across the chamber. The dish
+  is ruled out at the level needed. The common δ ≈ +0.02 (1.3–1.5σ) could equally be a residual alignment angle.
+
+**2. Faint against bright (exclusive terciles of window max, unsat head-on).** D_T (free fit) against the toy:
+
+| | faint | middle | bright |
+|---|---|---|---|
+| det3 (edges 1813 / 2558) | 351 ± 29 / toy 294 | 380 ± 15 / 296 | 376 ± 18 / 300 |
+| det4 (460 / 1293) | 361 ± 30 / 350 | **250 ± 30 / 360** | 380 ± 25 / 355 |
+| det7 longer (180 / 1270) | empty events | 265 ± 33 / 288 | **406 ± 44 / 297** |
+| det7 HV pool (363 / 1714) | empty events | 196 ± 71 / 331 | 347 ± 30 / 320 |
+
+- det3's excess is the same in every tercile: +57…+84 over the toy, and the model-free growth (late − early second
+  moment) is larger too (0.20 / 0.15 against 0.11 mm² in the upper two terciles). It is amplitude-independent and in
+  the growth, not in σ0.
+- det4/det7 are not 'faint reads narrow'. det7's faint tercile is 70–74 % within 20 mm of the hit-area edge, with a
+  median charge of 60–360 ADC: reference tracks at or past the chamber edge, which carry no width. det7's bright
+  unsaturated events read wide (+109, 2.5σ on longer_run). det4's middle tercile reads narrow (−110, 3.5σ) with a
+  larger early width (m2 0.57 against the toy's 0.37 mm²; free σ0 0.42 against 0.35). With σ0 pinned it reads 315 ± 17.
+  So the cumulative cut moves D_T because the classes differ, in both directions.
+- Not a residual baseline: the strips' pre-onset ADC is the same in data and toy (−3.6…+0.6 on det4/det3), with no
+  positive offset on the outer strips.
+
+**3. The footprint itself depends on amplitude on det4/det7 (model-free).** At the leading strip's peak sample,
+r = (W[c−1] + W[c+1]) / 2W[c] against the peak ADC:
+
+| peak ADC | 200–500 | 500–1000 | 1000–1500 | 1500–2000 | 2000–2500 | 2500–3000 | 3000–3500 | ≥ 3500 |
+|---|---|---|---|---|---|---|---|---|
+| det3 data / toy | – | .43 / .43 | .41 / .42 | .41 / .43 | .39 / .42 | .41 / .41 | .34 / .41 | .50 / .44 |
+| det4 data / toy | .35 / .44 | .34 / .45 | .37 / .45 | .37 / .45 | .42 / .44 | .45 / .47 | .44 / .42 | .52 / .48 |
+| det7 HV data / toy | .02 / .34 | .11 / .38 | .17 / .36 | .17 / .37 | .35 / .40 | .33 / .39 | .26 / .40 | .51 / .42 |
+
+(errors: det3 ±0.02, det4 ±0.02–0.03, det7 ±0.06–0.13; det7 longer_run the same as HV pool)
+
+- **There is no compression below the ceiling:** r does not rise above the toy approaching 3500, so the bright-wide
+  det7 events are not a front-end non-linearity of this kind.
+- **On det4 and det7 the cluster core is narrower than a linear response at low amplitude, and reaches the toy only
+  at 2000–3000 ADC.** The ±1 neighbours of small signals are suppressed relative to the leading strip. Only the
+  chambers that show this have a cut-dependent D_T. det3's r follows the toy at every amplitude below 3000 ADC
+  (0.34 against 0.41 at 3000–3500, just under the cut), and det3's D_T is cut-stable. Likely candidates: an amplitude-dependent prompt footprint, or the neighbour-copy kernel not
+  scaling linearly. Which one cannot be decided from the head-on X data.
+- Above the ceiling every chamber reads r ≈ 0.50–0.52 against the toy's 0.42–0.48: real saturation widens more than
+  clipping, as in §33.
+
+**Where this leaves the X width (final with the data we have):**
+- **det3:** excess ~+60–80 µm/√cm in the frame (+200–250 in quadrature), present at every field, cut, amplitude
+  tercile and position. It is not the estimator (§33), not a field tilt or the dish (above), and not amplitude. It is
+  the same size as the bundle's neighbour copies would give (§33 'share' arm), but every chamber has those.
+  **Unexplained; a stated limitation.**
+- **det4/det7:** the response is non-linear at low amplitude, so a single σ0 + Dd describes them only for a given
+  amplitude mix. Their D_T depends on the selection by ±100 µm/√cm. That is a limitation of these chambers' response,
+  not an estimator bias, and cannot be corrected without a model of the footprint against amplitude.
+- **For the kernel:** take Dd per chamber from the unsaturated stack at the 3500 cut (the production amplitude mix),
+  with +100 µm/√cm (det3, unexplained excess) and ±100 µm/√cm (det4/det6/det7, amplitude dependence) as stated
+  systematics.
