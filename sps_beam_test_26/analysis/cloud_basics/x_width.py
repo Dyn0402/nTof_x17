@@ -48,7 +48,7 @@ KEYS = {'o22_long_det2': 'det2', 'o22_det2': 'det2',
         'g_det7_long': 'det7', 'g_det7_longer': 'det7'}
 V_BUNDLE = {'det2': 39.94, 'det3': 36.6, 'det4': 34.16, 'det6': 26.7, 'det7': 36.6}
 LAM = 1e6
-MIN_EV = 120
+MIN_EV = int(os.environ.get("XW_MIN_EV", 120))
 
 
 SCAN = 'sat_det3__'          # headon_cache.py --subrun caches of the det3 6-27 drift / amplification scans
