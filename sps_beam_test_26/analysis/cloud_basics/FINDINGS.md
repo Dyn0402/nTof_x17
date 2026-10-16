@@ -815,6 +815,7 @@ carry a v-derived water fraction into D_T.
 ## 30 · The X width excess is mostly ADC saturation (2026-10-16)
 
 > **Supersedes most of §29.** No new data can be taken (detectors gone); everything here is from the existing caches.
+> **Its 347 V/cm Magboltz column is wrong (water-branch bug, no gap correction): corrected in §31.**
 
 At operating HV 30–85 % of the head-on bench events reach ~3500+ ADC on the leading strip (det3 long run 42 %,
 det4 30 %, det2/6/7 70–85 %). The det3 amplification scan at 347 V/cm showed the stack-fitted v flat at ~39 µm/ns
@@ -850,3 +851,42 @@ y/x = 0.77–0.91 (0.89 ± 0.07 at 347 V/cm). The arms Dd_y = Dd_x (cost 0.4924)
 **Consequence:** the saturated events must be cut (or the clipping modelled) wherever widths or v are fitted from
 stacks: bench_pinrc / bench_attach arms, driftscan_fit's 0.95 % composition (drift scan at 490 V, 28–41 % saturated),
 and the bundle v. The bench water fractions quoted so far are all from saturated samples.
+
+## 31 · After the saturation cut the excess is gone at 208–243 V/cm but stays at 347 V/cm (2026-10-16, pm)
+
+> **Corrects §30's 347 V/cm rows.** Same fits (`results/unsat_width.json`), no refit; only the Magboltz comparison changed
+> (`unsat_width.py --recompare`). No new data (detectors gone).
+
+**A bug in the comparison.** `bench_water_e.invert` sorted Magboltz v and interpolated water against it. At 347 V/cm
+v(water) is not monotonic: 38.8 dry → 41.1 at 0.4 % → 35.1 at 1 %. A v below the dry value has only the wet solution,
+but the sort returned a low-water one with a dry-like D_T, so §30's "Magboltz D_T at unsat v" column was wrong at
+347 V/cm (det2 0.25 % / 425, really 0.81 % / 328; det3 long run 0.14 % / 450, really 0.78 % / 340). The fit at
+208/243 V/cm was unaffected (v monotonic there). `invert` now walks a 0.005 % water grid and returns every branch
+(`branches`, `ambiguous`). The same bug put det3's bundle v (36.6) at 0.59 % water in `bench_water_e.json`; it is
+0.90 %, the drift-scan composition (§25). det2's bundle v 39.94 is genuinely two-valued (0.12 % or 0.60 %).
+
+**The gap correction, now applied** (`gapcorr` in the JSON): v × gap/30, D_T × √(30/gap), gap from bench_fit.py
+(det2 30.6, det3 27.9, det7 27.5 mm; det4, det6 30). For det3 it takes v below dry, so the two-branch question of §30
+goes away: only the wet branch remains, at 0.94–0.97 % water, the same as the drift-scan composition fit.
+
+| dataset (unsaturated) | E V/cm | v (own gap) | X D_T | Magboltz at that v | excess in quadrature |
+|---|---|---|---|---|---|
+| det4 g_det4 | 208 | 31.8 ± 0.5 | 339 ± 20 | 332 (0.51 %) | +68 (0.3 sd) |
+| det6 g_det6_long / _longer | 243 | 25.9 / 28.1 | 279 ± 88 / 271 ± 21 | 272 / 286 | +61 / −92 |
+| det3 drift scan 700 V | 243 | 25.4 ± 0.7 | 316 ± 37 | 269 (0.94 %) | +164 (1.3 sd) |
+| det3 long run | 347 | 35.6 ± 0.3 | 387 ± 10 | 303 (0.97 %) | **+241 (8.2 sd)** |
+| det3 sat_det3 (overlaps long run) | 347 | 35.7 ± 0.4 | 386 ± 13 | 304 (0.96 %) | +238 (6.6 sd) |
+| det3 hv scan 445 / 465 V | 347 | 35.5 / 37.6 | 404 ± 35 / 388 ± 26 | 302 / 325 | +268 / +213 (2.9 / 2.4 sd) |
+| det2 o22_long | 347 | 38.6 ± 1.1 | 406 ± 48 | 337 (0.76 %) | +227 (1.5 sd) |
+
+- **The saturation cut removes the excess at 208 and 243 V/cm** (det4, det6; det3 at 243 is 1.3 sd).
+- **At 347 V/cm an excess of ~+230 µm/√cm in quadrature survives** on both chambers measured there: det3 at 8 sd,
+  det2 at 1.5 sd. So the excess left is field-dependent, which is what the data now has to explain. 347 V/cm is
+  where v(water) turns over, i.e. where the predicted D_T depends most on the composition.
+- Sensitivity: putting det3's field at V/2.79 cm (its own gap) instead of V/2.88 moves v(dry) to 35.8–41.0 and leaves
+  the det3 347 V/cm unsat v (35.6) just below Magboltz's range at 1 % water. The excess does not shrink.
+- Not yet fitted on unsaturated events: det3 drift scan 900 / 1100 V (312 / 382 V/cm; only saturated fits exist, below
+  MIN_EV), which would test whether the excess grows with field; det7 (79 % saturated). These need the head-on caches,
+  which live on the desktop (`~/x17/cosmic_bench/cloud_basics/xwidth/caches/`):
+  `XW_MIN_EV=50 python unsat_width.py --keys sat_det3__drift_scan_resist_490V_drift_900V,sat_det3__drift_scan_resist_490V_drift_1100V,g_det7_long`.
+- §29's `x_width.json` "MB wet" column used the same `invert`; its 347 V/cm entries are affected the same way.

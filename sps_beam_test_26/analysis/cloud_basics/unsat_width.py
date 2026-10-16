@@ -10,6 +10,11 @@ on the waveform maximum; total charge does not depend on depth, so it cannot sel
 
     unsat_width.py [--keys k1,k2] [--sat 3500] [--nboot 20]
         -> results/unsat_width.json
+    unsat_width.py --recompare     redo only the Magboltz comparison on the stored fits
+
+The fits are in the GAP = 30 frame.  The comparison ('gapcorr') rescales to each chamber's measured
+gap (GAP_STUDY, bench_fit.py: det2 30.6, det3 27.9, det7 27.5 mm): v x gap/30, D_T x sqrt(30/gap), and
+lists every water branch whose Magboltz v matches (v is not monotonic in water at 347 V/cm).
 """
 import argparse
 import json
@@ -27,6 +32,29 @@ KEYS = ['sat_det3__long_run_resist_490V_drift_1000V', 'sat_det3',
         'sat_det3__drift_scan_resist_490V_drift_900V', 'sat_det3__drift_scan_resist_490V_drift_1100V',
         'sat_det3__hv_scan_resist_445V_drift_1000V', 'sat_det3__hv_scan_resist_465V_drift_1000V',
         'o22_long_det2', 'g_det4', 'g_det6_long', 'g_det7_long', 'o22_long_det3']
+GAP_STUDY = {'det2': 30.6, 'det3': 27.9, 'det7': 27.5}           # bench_fit.py; det4/det6 -> 30
+
+
+def compare(m, det, E):
+    """Magboltz at the fitted v, in the GAP-30 frame and at the chamber's own gap."""
+    m['magboltz'] = xw.magboltz(m['v'], E)
+    gap = GAP_STUDY.get(det, xw.GAP)
+    v, dt, de = m['v'] * gap / xw.GAP, m['DT'] * np.sqrt(xw.GAP / gap), m['DT_err'] * np.sqrt(xw.GAP / gap)
+    mb = xw.magboltz(v, E)
+    for b in mb['branches']:
+        b['excess_quad'] = float(np.sign(dt - b['DT_um_rtcm']) * np.sqrt(abs(dt ** 2 - b['DT_um_rtcm'] ** 2)))
+        b['pull'] = float((dt - b['DT_um_rtcm']) / de)
+    m['gapcorr'] = dict(gap_mm=gap, v=float(v), v_err=float(m['v_err'] * gap / xw.GAP), DT=float(dt),
+                        DT_err=float(de), magboltz=mb)
+    return m
+
+
+def show(key, lab, m):
+    g = m['gapcorr']
+    br = ' | '.join(f'{b["water_pct"]:.2f} %: MB {b["DT_um_rtcm"]:3.0f}, excess {b["excess_quad"]:+4.0f} ({b["pull"]:+.1f} sd)'
+                    for b in g['magboltz']['branches']) or 'no Magboltz solution'
+    print(f'{key:46s} {lab:5s} n {m["n"]:4d}  gap {g["gap_mm"]:.1f}: v {g["v"]:5.2f}±{g["v_err"]:.2f}  '
+          f'D_T {g["DT"]:4.0f}±{g["DT_err"]:3.0f}  [dry v {g["magboltz"]["v_dry"]:.1f}]  {br}', flush=True)
 
 
 def main():
@@ -35,9 +63,17 @@ def main():
     ap.add_argument('--sat', type=float, default=3500.0)
     ap.add_argument('--nboot', type=int, default=20)
     ap.add_argument('--workers', type=int, default=14)
+    ap.add_argument('--recompare', action='store_true')
     a = ap.parse_args()
     out_path = f'{HERE}/results/unsat_width.json'
     out = json.load(open(out_path)) if os.path.exists(out_path) else {}
+    if a.recompare:
+        for key, r in out.items():
+            for lab in ('all', 'unsat'):
+                if lab in r:
+                    show(key, lab, compare(r[lab], r['det'], r['E_Vcm']))
+        json.dump(out, open(out_path, 'w'), indent=1, default=float)
+        return
     with ProcessPoolExecutor(a.workers) as pool:
         for key in a.keys.split(','):
             det = xw.det_of(key)
@@ -54,13 +90,8 @@ def main():
             for lab, sub in (('all', ev), ('unsat', uns)):
                 if sum(abs(e['tan_x']) < xw.TAN for e in sub.values()) < xw.MIN_EV:
                     continue
-                m = xw.measure(pool, h, sub, T0, a.nboot)
-                m['magboltz'] = xw.magboltz(m['v'], E)
-                r[lab] = m
-                mb = m['magboltz']
-                print(f'{key:46s} {lab:5s} n {m["n"]:4d}  v {m["v"]:5.2f}±{m["v_err"]:.2f}  sig0 {m["sig0"]:.3f}  '
-                      f'D_T {m["DT"]:4.0f}±{m["DT_err"]:3.0f}  [MB at that v: {mb["DT_um_rtcm"]:4.0f} @ '
-                      f'{mb["water_pct"]:.2f} %, dry v {mb["v_dry"]:.1f} D_T {mb["DT_dry"]:.0f}]', flush=True)
+                r[lab] = compare(xw.measure(pool, h, sub, T0, a.nboot), det, E)
+                show(key, lab, r[lab])
             out[key] = r
             json.dump(out, open(out_path, 'w'), indent=1, default=float)
 
