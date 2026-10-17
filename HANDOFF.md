@@ -75,6 +75,8 @@ Not X17 analysis; the notes live here because this repo is the one reachable fro
   matches; it also changes the fstab line to `defaults,nofail 0 0` (no boot hang if the disk dies). Log: `reuse_disk.log`.
 
 **In progress / where it stopped:**
+- Dylan is switching to Windows now to do the firmware (said at wrap-up 2026-10-17). On Windows the only step is
+  ADATA SSD ToolBox; `~/x17_local/rescue/` (script, logs) is on the Ubuntu partition and not visible there.
 - Next: Dylan boots Windows, updates firmware in ADATA SSD ToolBox (currently 42B2S7JA), then back on Ubuntu runs `test` (sudo, tmux, hours long). Not started.
 
 **Next steps:**
