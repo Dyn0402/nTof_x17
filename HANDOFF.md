@@ -66,14 +66,16 @@ Not X17 analysis; the notes live here because this repo is the one reachable fro
   `android/avd` (pixel_9_api34) + `gradle/` cache. `~/.bashrc` still points `ANDROID_AVD_HOME`/`GRADLE_USER_HOME`
   at `/media/ucla`: Gradle rebuilds its cache on the next build; recreate the AVD in Android Studio.
   Android builds fail while the disk is unmounted for the test.
-- Decisions: skip the firmware update (stays 42B2S7JA), erase from Linux, reformat **NTFS** (Windows access).
+- Decisions: erase from Linux, reformat **NTFS** (Windows access). Firmware: Dylan wants it updated (2026-10-17).
+  Do it on Windows with ADATA SSD ToolBox **before** `reuse_disk.sh test`, so the test runs on the new firmware.
+  The disk holds nothing needed now, so a failed flash loses no data. Record the new version here.
 - Wrote `~/x17_local/rescue/reuse_disk.sh` (checks the drive serial 2K34291HANDC first):
   `test` = SMART → umount → blkdiscard → `badblocks -wsv -t random` → blkdiscard → SMART;
   `format` = GPT + one NTFS partition "ucla" with the old serial `CE90B08890B07913`, so the fstab UUID still
   matches; it also changes the fstab line to `defaults,nofail 0 0` (no boot hang if the disk dies). Log: `reuse_disk.log`.
 
 **In progress / where it stopped:**
-- Waiting for Dylan to run `test` (needs sudo; run in tmux, hours long). Not started.
+- Next: Dylan boots Windows, updates firmware in ADATA SSD ToolBox (currently 42B2S7JA), then back on Ubuntu runs `test` (sudo, tmux, hours long). Not started.
 
 **Next steps:**
 1. After `test`: compare "Media and Data Integrity Errors" in `smart_pre_erase.txt` vs `smart_post_test.txt`
