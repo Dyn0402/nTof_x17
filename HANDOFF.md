@@ -38,9 +38,9 @@ so Stephan can check it and answer the open questions directly on the site.
 - `docs/detector_spec/spec.py` — all data; `template.html` — the page; `build_page.py [--publish]`.
 - `DETECTOR_FEEDBACK_ENDPOINT=http://127.0.0.1:8766/mock python3 docs/detector_spec/build_page.py` — mock test.
 
-## UCLA disk rescue + reuse — updated 2026-10-16 (dylan-MS-7C84)
+## UCLA disk rescue + reuse — updated 2026-10-17 (dylan-MS-7C84)
 
-**Resume:** rescue done and md5-verified on EOS; next: firmware check (Windows), then erase/test/reformat the disk.
+**Resume:** Dylan runs `sudo bash /home/dylan/x17_local/rescue/reuse_disk.sh test` (erase + full write/read test), then read `reuse_disk.log`; if the media-error count didn't move, run `... format`.
 
 **Goal:** get the 26 unreadable files off the failing UCLA NVMe (ADATA SX8200PNP, `/dev/nvme1n1p2`, NTFS),
 then decide whether the disk can be reused as scratch space for analysis files that have a copy elsewhere.
@@ -57,22 +57,30 @@ Not X17 analysis; the notes live here because this repo is the one reachable fro
   one branch in the two small AMPT files. Dca_xy_QA files lose 1 and 5 objects of about 2,000. The text files lose 23 (11.5 GB CSV)
   to 456 lines. Dylan declined partial-basket recovery (2026-10-16).
 
+**Done 2026-10-17:**
+- Whole disk compared with EOS `research_old/` by name and size: x17match (18,292 files), Saclay (91,464),
+  x17_resp (16), Research leftovers (31, = `ucla/`) all match; mx17_response_sim matches except the 13 tiny
+  `results_meshfield_nc1_20261016` logs Dylan said to drop. Other top-level items: chkdsk `found.000`, an old
+  mirror of `~/upgrade-kit` (the home copy is newer), Windows junk.
+- Deleted (Dylan's OK): staging `/media/dylan/data/ucla_rescue/` (data disk now 31 GB free) and the disk's
+  `android/avd` (pixel_9_api34) + `gradle/` cache. `~/.bashrc` still points `ANDROID_AVD_HOME`/`GRADLE_USER_HOME`
+  at `/media/ucla`: Gradle rebuilds its cache on the next build; recreate the AVD in Android Studio.
+  Android builds fail while the disk is unmounted for the test.
+- Decisions: skip the firmware update (stays 42B2S7JA), erase from Linux, reformat **NTFS** (Windows access).
+- Wrote `~/x17_local/rescue/reuse_disk.sh` (checks the drive serial 2K34291HANDC first):
+  `test` = SMART → umount → blkdiscard → `badblocks -wsv -t random` → blkdiscard → SMART;
+  `format` = GPT + one NTFS partition "ucla" with the old serial `CE90B08890B07913`, so the fstab UUID still
+  matches; it also changes the fstab line to `defaults,nofail 0 0` (no boot hang if the disk dies). Log: `reuse_disk.log`.
+
 **In progress / where it stopped:**
-- Disk is unmounted, untouched since the rescue. Nothing on it is known to be unbacked, but step 1 below is unchecked.
-- Staging copy (25 GB) still at `/media/dylan/data/ucla_rescue/` (the NTFS data disk, so visible from Windows).
-  `/media/dylan/data` has 5.6 GB free.
+- Waiting for Dylan to run `test` (needs sudo; run in tmux, hours long). Not started.
 
 **Next steps:**
-1. Mount the UCLA disk **read-only** and compare its top level with EOS `research_old/` (handoff listed Research/,
-   x17match, Saclay, mx17_response_sim, x17_resp). On Windows: don't let it run chkdsk/repair before this check.
-2. Firmware: drive is on 42B2S7JA; check ADATA SSD ToolBox (Windows) for a newer one.
-3. With Dylan's OK: erase the whole drive (`blkdiscard` / `nvme format`, or the ToolBox's secure erase), then do one full write+read
-   pass (`badblocks -wsv -t random -b 4096`) and note SMART "Media and Data Integrity Errors" before and after
-   (6,767 at 17:18 on 10-16). If the count doesn't move, reformat (ext4/btrfs, or NTFS if Windows needs it) and use it only for
-   data with a copy elsewhere. Check it monthly (scrub / full read + SMART). Retire it if errors appear on new data.
-4. With Dylan's OK: delete `/media/dylan/data/ucla_rescue/` (verified on EOS), then move `x17/sept26_fullpass` and
-   `x17/sept26_slim` back from `yoga:/media/dylan/data/x17_hold/` to `/media/dylan/data/x17/`, verify, remove from laptop.
-5. Later, only if Dylan agrees: delete the unreadable originals' remains from the old disk (moot if it's erased).
+1. After `test`: compare "Media and Data Integrity Errors" in `smart_pre_erase.txt` vs `smart_post_test.txt`
+   and check `badblocks_found.txt` is empty. Unchanged + empty → `sudo bash .../reuse_disk.sh format`. Otherwise retire it.
+2. Use it only for data with a copy elsewhere. Monthly: read everything back + check SMART; retire if errors on new data.
+3. When the laptop is on: move `x17/sept26_fullpass` + `x17/sept26_slim` back from `yoga:/media/dylan/data/x17_hold/`
+   to `/media/dylan/data/x17/` (29 GB; 31 GB free), verify names/sizes, then remove from the laptop.
 
 **Gotchas / decisions:**
 - Diagnosis: wear 2 %, spare 100 %, all logged errors are unrecovered reads (status 0x281), and the bad files date
