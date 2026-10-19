@@ -39,9 +39,9 @@
 
 export MX17_GARFIELD_PIN=927e5c21
 
-# LCG view used on lxplus and on condor workers (ROOT 6.38, gcc 14.3).
+# LCG view used on lxplus and on condor workers (ROOT 6.40.02, Geant4 11.4.1, gcc 14.3).
 # Only its ROOT/python/compiler runtime is used — never its Garfield.
-MX17_LCG_VIEW=/cvmfs/sft.cern.ch/lcg/views/LCG_109/x86_64-el9-gcc14-opt
+MX17_LCG_VIEW=/cvmfs/sft.cern.ch/lcg/views/LCG_110/x86_64-el9-gcc14-opt
 
 # ── Condor: unpack the shipped build ─────────────────────────────────────────
 # We ship our own pinned build rather than using the CVMFS Garfield. The
@@ -81,11 +81,16 @@ elif [ -d "$PWD/garfield/include/Garfield" ]; then
 
 elif [ -d /cvmfs/sft.cern.ch/lcg/views ]; then
     # lxplus interactive.
-    _gf_install=/afs/cern.ch/user/d/dneff/work/garfield_install/lcg109-${MX17_GARFIELD_PIN}
+    _gf_install=/afs/cern.ch/user/d/dneff/work/garfield_install/lcg110-${MX17_GARFIELD_PIN}p
     source "$MX17_LCG_VIEW/setup.sh"
 
+elif [ -d "$HOME/Software/garfield/install-r6404-g4114" ]; then
+    # desktop (dylan-MS-7C84): ROOT 6.40.04 + Geant4 11.4.3 (see docs/hep-stack in claude-skills).
+    source "$HOME/Software/root_6_40/bin/thisroot.sh"
+    _gf_install="$HOME/Software/garfield/install-r6404-g4114"
+
 elif [ -d "$HOME/Software/garfield/install" ]; then
-    # desktop (dylan-MS-7C84): local ROOT 6.30, gcc 11.4.
+    # desktop, old stack: local ROOT 6.30, gcc 11.4.
     source "$HOME/Software/root_6_30/bin/thisroot.sh"
     _gf_install="$HOME/Software/garfield/install"
 

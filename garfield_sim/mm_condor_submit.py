@@ -45,7 +45,7 @@ LOGS_DIR    = f"{LXPLUS_BASE}/logs"
 # unpacks it and is the only place that names a Garfield or LCG path.
 GARFIELD_PIN     = "927e5c21"
 GARFIELD_TARBALL = ("/afs/cern.ch/user/d/dneff/work/garfield_install/"
-                    f"garfield-{GARFIELD_PIN}.tar.gz")
+                    f"garfield-{GARFIELD_PIN}-lcg110.tar.gz")
 
 
 # ── Pressure helper ────────────────────────────────────────────────────────────
