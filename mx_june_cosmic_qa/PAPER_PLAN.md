@@ -29,6 +29,10 @@ tables here, then rebuild and republish:
     python mx_june_cosmic_qa/make_paper_plan_deck.py
     python ~/PycharmProjects/dylan-cern-site/scripts/add-note.py ~/x17/paper_status/mx17-detector-paper-status.html --slug mx17-detector-paper-status --force --deploy
 
+**Manuscripts (2026-10-19):** `papers/paper1/` and `papers/paper2/` hold the LaTeX outlines, with a figure
+manifest and the Overleaf sync; see `papers/README.md`. Keep each section's state box there in step with the
+tables here.
+
 Section and item states: `ready` (analysis done, write it), `requote`
 (values exist, must be reproduced before quoting), `partial`, `open`,
 `decision` (Dylan's call), `deferred`.

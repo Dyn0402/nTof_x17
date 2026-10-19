@@ -62,6 +62,8 @@ position, and write that fact next to the constant. Frame, conventions and the e
   angle truth / the seeder (T2), both on main since 2026-10-12. Map of both, how they
   constrain each other, and the latest results on the is2_v2 re-pass:
   `sept26_prelim_analysis/SAME_CHAMBER_PAIRS.md`.
+- `papers/` — the two MX17 companion papers (LaTeX), synced to Overleaf by `papers/overleaf.sh`;
+  figures come from `papers/<paper>/figures.toml` via `papers/make_figures.py`. Its README is the workflow.
 - `ntof_scint_stack/` — every SiPM wall, plastic and liquid mapped (efficiency,
   response) by the MM tracks that point at them; output in
   `/media/dylan/data/x17/scint_stack/`. Its README has the track-extrapolation

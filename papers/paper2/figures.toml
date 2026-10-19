@@ -1,0 +1,97 @@
+# Paper II figure manifest -- read by ../make_figures.py. Keys as in ../paper1/figures.toml.
+# Rule: nothing that shows a position, angle or depth from combined_hits times
+# may be "current" unless the figure's point is to show that failure (then say so in `note`).
+
+# --- 2 Signal formation -------------------------------------------------------
+
+[fig.sharing_cartoon]
+title = "Charge sharing on resistive strips"
+state = "current"
+source = "mx_june_cosmic_qa/engineer_package/figures/03-charge-sharing-schematic.pdf"
+note = "Check it shows c2 < c1 (the +-2 strip is reached only through +-1)."
+
+[fig.kernel_forms]
+title = "Sharing kernel measured head-on at SPS: +-1 and +-2 responses, X and Y"
+state = "placeholder"
+section_state = "ready"
+source = "sps_beam_test_26/analysis/sharing_kernel/figures/forms_y.png"
+producer = "cd sps_beam_test_26/analysis/sharing_kernel && ../../../.venv/bin/python make_figures.py"
+note = "Needs stacks_run71_raw.npz (not on the desktop). Y c2/c1 0.42-0.47; X +-2/+-1 0.15-0.20 (plane_ratio)."
+
+[fig.angled_kernel]
+title = "Kernel survives a 25.6 deg rotation"
+state = "current"
+source = "sps_beam_test_26/analysis/angled_kernel/figures/kernel_ab.png"
+producer = "cd sps_beam_test_26/analysis/angled_kernel && ../../../.venv/bin/python make_figures.py"
+
+# --- 3 Why hit times fail -----------------------------------------------------
+
+[fig.ladder_compression]
+title = "Drift-time ladder compressed 20-30 % by every hit-time estimator (det3)"
+state = "placeholder"
+section_state = "partial"
+producer = "cd mx_june_cosmic_qa/waveform_first_threading && ../../.venv/bin/python 05_estimator_compare.py"
+note = "WAVEFORM_FIRST_THREADING section 3; fleet extension is R1."
+
+[fig.event_waveforms]
+title = "One cosmic track: the strip waveforms"
+state = "current"
+source = "mx_june_cosmic_qa/stephan_cosmics/event_displays/event_display_waveforms.pdf"
+note = "Candidate opener for section 3. Check it carries no hits-derived track overlay."
+
+# --- 4 Forward model ----------------------------------------------------------
+
+[fig.forward_model]
+title = "The forward model: template x kernel x drift, fitted to every strip's waveform"
+state = "placeholder"
+section_state = "ready"
+producer = "cd mpgd26 && ../.venv/bin/python make_share.py"
+note = "mpgd26 make_share.py draws a model diagram; WAVEFORM_FIRST_THREADING sections 4, 9, 15."
+
+# --- 5 Physics floor ----------------------------------------------------------
+
+[fig.toy_floor]
+title = "Toy closure: electronics 0.02 deg, centroid jitter ~1 deg"
+state = "placeholder"
+section_state = "partial"
+producer = "cd mx_june_cosmic_qa/waveform_first_threading && ../../.venv/bin/python 18_toy_closure.py"
+note = "Script 18 used the R&D model (c2/c1 0.17); re-run on the production model and r06 kernel (R6)."
+
+# --- 6 Hits vs waveforms ------------------------------------------------------
+
+[fig.tiers_benchmark]
+title = "Same events, every tier: H0, H1, H2a/b, H2c (forward fit on hits), W"
+state = "placeholder"
+section_state = "open"
+aspect = 0.7
+note = "The core new result: R1-R5. sigma_theta vs angle, bias, implied-v flatness, threading."
+
+# --- 7 What a hit readout must record ----------------------------------------
+
+[fig.threshold_neighbours]
+title = "Hit threshold 3-7 sigma and +-1/+-2 neighbour readout"
+state = "placeholder"
+section_state = "open"
+note = "R4."
+
+# --- 8 Known angle ------------------------------------------------------------
+
+[fig.known_angle_geometry]
+title = "det4 rotated 25.6 deg at SPS"
+state = "current"
+source = "sps_beam_test_26/analysis/angled_kernel/figures/geometry.png"
+producer = "cd sps_beam_test_26/analysis/angled_kernel && ../../../.venv/bin/python make_figures.py"
+
+[fig.known_angle]
+title = "Reconstructed vs stage angle, hits and waveforms"
+state = "placeholder"
+section_state = "open"
+note = "R7. Reference-free angle truth."
+
+# --- 9 Fleet ------------------------------------------------------------------
+
+[fig.fleet]
+title = "Fleet: sigma_theta, bias and efficiency for five chambers, hits vs waveforms"
+state = "placeholder"
+section_state = "partial"
+note = "FLEET_DIGEST (r06) has H0 vs W on four metrics."
