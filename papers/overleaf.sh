@@ -27,15 +27,15 @@ link)
   git remote get-url "$remote" >/dev/null 2>&1 || git remote add "$remote" "$url"
   git fetch "$remote"
   split=$(git subtree split -q --prefix="$prefix")
-  if git rev-parse -q --verify "$remote/master" >/dev/null; then
+  if git rev-parse -q --verify "$remote/main" >/dev/null; then
     # A fresh Overleaf project has its own first commit: record it as a parent and keep our tree,
     # so the push is a fast-forward and nothing on either side is forced.
-    tip=$(git commit-tree "$split^{tree}" -p "$split" -p "$remote/master" \
+    tip=$(git commit-tree "$split^{tree}" -p "$split" -p "$remote/main" \
           -m "Link $prefix to Overleaf (replaces the blank project's files)")
   else
     tip=$split
   fi
-  git push "$remote" "$tip:refs/heads/master"
+  git push "$remote" "$tip:refs/heads/main"
   git fetch -q "$remote"
   # Join the two histories as `git subtree add` would (same tree, so nothing changes on disk);
   # later subtree pulls and splits find each other through this commit's trailers.
@@ -49,10 +49,10 @@ git-subtree-split: $tip")
   ;;
 pull)
   clean
-  git subtree pull -q --prefix="$prefix" "$remote" master -m "Merge Overleaf edits to $paper"
+  git subtree pull -q --prefix="$prefix" "$remote" main -m "Merge Overleaf edits to $paper"
   ;;
 push)
-  git subtree push -q --prefix="$prefix" "$remote" master
+  git subtree push -q --prefix="$prefix" "$remote" main
   ;;
 sync)
   "$0" pull "$paper" && "$0" push "$paper"
