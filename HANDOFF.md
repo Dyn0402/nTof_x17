@@ -2,8 +2,8 @@
 
 ## Detector model basics: dead strips, gap, saturation, X footprint — updated 2026-10-19 (dylan-MS-7C84)
 
-**Resume:** FINDINGS §35–38 (cloud_basics). Kernel freeze is ON HOLD (Dylan 10-19: not until everything else is
-solid). Waiting on `run_bench_s0.sh` for det2/det7/det6/det4 (narrow σ0_x arms); then requote §38 with all five.
+**Resume:** FINDINGS §35–38 (cloud_basics), all benches done. Kernel freeze is ON HOLD (Dylan 10-19: not until
+everything else is solid). Next: model the X sharing asymmetry (step 3), then masking in the toy (step 2).
 
 **Goal:** get the basics (dead areas, gain structure, saturation, drift gap, X footprint) to the best state the
 existing data allow. NO NEW DATA.
@@ -23,16 +23,17 @@ existing data allow. NO NEW DATA.
   resolution-neutral overall, head-on +0.04 ± 0.03°; residual left is the X sharing asymmetry.
 
 **Next steps:**
-1. When the s0 benches finish: `compare_bench.py ~/x17/cosmic_bench/cloud_basics/bench_s0/bench_<det>_s0.json`
-   for det2/4/6/7; update §38 table.
-2. Mask flagged channels (strip_gain_audit health lists) in rc_diffusion.stack and the xw_sim toy; requote
-   unsat widths (det6/det7 especially). det4: clean windows only.
+1. (done) s0 benches, all five: σ0_x 0.25 recovers most of the X χ², overall resolution neutral, det4's X
+   deficit +0.164 → +0.061°; head-on slightly prefers the wide footprint (det7, det3).
+2. Masking: done in rc_diffusion.stack (`unsat_width.py --mask`); det4 still cut-dependent with masking alone,
+   needs clean windows. Still to do: the xw_sim toy, and det6/det7 masked widths (det7 unsat sample too small here;
+   its HV-pool caches are on the laptop).
 3. Add an asymmetric X footprint (or c1_asym-like term) to build_matrix_rc and see if the stack σ0 (0.35)
    and the per-event σ0 (0.20–0.25) converge.
 4. Per-event censored width fit (forward model with σ0/Dd as hypers) so saturated events are used
    instead of dropped (70–85 % on det2/6/7).
 5. SPS run_71: map det4's dead/weak strips into the beam channel numbering and mask; requote beam σ0/X width.
-6. gap_extent on the det3 drift-scan sub-runs (field invariance; needs ref-only incl caches).
+6. (done, weak) gap_extent on the det3 drift scan: 900/1100 V consistent with 28.1 at ±0.7–1.1 mm.
 
 **Gotchas:**
 - gap_extent: use the window *integral* half-height (toy-closed); peak reads +0.6…+2.3 high. Events need

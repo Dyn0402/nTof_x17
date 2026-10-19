@@ -1190,8 +1190,26 @@ resolution is neutral. `chi2_split.py`, det3, 1000 held-out events, production /
   0.974–0.978, v-flatness spread 0.021 → 0.012–0.017. Y unchanged (−0.090 ± 0.019, head-on −0.136).
 - So on det3 a narrower X footprint fixes the fit quality and the angle scale at no cost overall and a small
   (1.5–2.4σ) cost head-on. The per-event fit wants σ0_x ≈ 0.20–0.25 where the head-on stacks measure
-  0.35–0.43: one of the two is reading the asymmetry/neighbour structure as width. det2/det4/det6/det7 benches
-  are running (same script).
+  0.35–0.43: one of the two is reading the asymmetry/neighbour structure as width.
+
+**All five chambers** (blind start, 2000 held-out, X view; ΔX = scale-corrected s68 against production, °; χ²/dof
+production / rcm / σ0_x 0.30 / 0.25 / 0.20):
+
+| | X χ²/dof | ΔX all: rcm → 0.25 | ΔX head-on: rcm → 0.25 | slope rcm → 0.25 |
+|---|---|---|---|---|
+| det3 | 61 / 84 / – / – / – (ref: 58 / 79 / 60 / 57 / 54) | +0.005 → +0.013 (±0.019) | +0.010 → +0.041 (±0.028) | 0.963 → 0.974 |
+| det2 | 110 / 189 / 145 / 133 / 125 | +0.004 → −0.010 (±0.025) | −0.026 → −0.025 (±0.03) | 0.941 → 0.948 |
+| det7 | 177 / 287 / 183 / 176 / 168 | −0.025 → +0.004 (±0.05) | −0.161 → −0.057 (±0.06) | 0.951 → 0.962 |
+| det6 | 216 / 327 / 288 / 265 / 252 | −0.369 → −0.373 (±0.05) | −0.500 → −0.487 (±0.07) | 0.885 → 0.893 |
+| det4 | 17 / 30 / 24 / 23 / 23 | **+0.164 → +0.061** (±0.05) | +0.008 → −0.061 (±0.05) | 0.861 → 0.891 |
+
+- Narrowing σ0_x to 0.20–0.25 recovers production's X χ² (det3, det7) or most of the gap (det2, det6, det4),
+  never costs overall resolution, and moves every angle slope toward 1 by 0.007–0.030.
+- **det4's X deficit (§12, §17, §23) is mostly gone** at σ0_x 0.25 (+0.164 → +0.061 ± 0.044).
+- Head-on, the wide footprint is worth something on det7 (−0.16 vs −0.06) and det3 (+0.01 vs +0.04): the
+  symmetric Gaussian is a compromise between the core (wants narrow) and the asymmetric neighbour structure.
+- Y untouched by these arms (same as rcm everywhere).
+- **Candidate for the kernel**, once the asymmetry is modelled: σ0_x ≈ 0.25 per-event, not the stack's 0.35–0.43.
 
 **§35 addendum — masking the flagged strips in the stacks** (`rc_diffusion.annotate_bad`, `unsat_width.py --mask`,
 keys `…@mask`): the flagged strips' samples are NaN in the stack (cells average over events that have them).
