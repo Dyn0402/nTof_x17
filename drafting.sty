@@ -1,0 +1,34 @@
+% drafting.sty -- outline-stage macros, shared by both MX17 papers (keep the two copies identical).
+% Set \draftnotesfalse in main.tex to hide every note, box and placeholder for a clean read.
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{drafting}[2026/10/19 MX17 paper drafting macros]
+\RequirePackage{xcolor}
+\RequirePackage{ifthen}
+\newif\ifdraftnotes \draftnotestrue
+\RequirePackage[colorinlistoftodos,textsize=scriptsize]{todonotes}
+\AtBeginDocument{\ifdraftnotes\else\renewcommand{\todo}[2][]{}\fi}
+\setlength{\marginparwidth}{2.6cm}
+
+\definecolor{st-ready}{HTML}{2E7D32}
+\definecolor{st-partial}{HTML}{EF6C00}
+\definecolor{st-open}{HTML}{C62828}
+\definecolor{st-requote}{HTML}{6A1B9A}
+\definecolor{st-deferred}{HTML}{616161}
+
+% \sectionstate{ready|partial|open|requote|deferred}{backed by: where the result lives}
+\newcommand{\sectionstate}[2]{\ifdraftnotes\par\noindent
+  \fcolorbox{st-#1}{st-#1!8}{\parbox{\dimexpr\linewidth-2\fboxsep-2\fboxrule}{\small
+  \textcolor{st-#1}{\textbf{\MakeUppercase{#1}}}\quad\textit{Backed by:} #2}}\par\medskip\fi}
+
+% \intent{what the section must establish} -- the outline-level sentence, kept until the prose replaces it
+\newcommand{\intent}[1]{\ifdraftnotes{\color{gray!70!black}\noindent\textit{Intent:} #1\par\medskip}\fi}
+
+% Asks to a named contributor, rendered inline so they are hard to miss
+\newcommand{\askStephan}[1]{\todo[inline,color=orange!30,caption={Stephan: #1}]{\textbf{Stephan:} #1}}
+\newcommand{\askDylan}[1]{\todo[inline,color=cyan!20,caption={Dylan: #1}]{\textbf{Dylan:} #1}}
+% Analysis still to do (PAPER_PLAN work-list id first, e.g. \analysis{D3}{port timing to waveforms})
+\newcommand{\analysis}[2]{\todo[color=red!20,caption={#1: #2}]{\textbf{#1} #2}}
+% A number that must be re-derived before it is quoted
+\newcommand{\requote}[1]{\ifdraftnotes\textcolor{st-requote}{#1\textsuperscript{\tiny RQ}}\else#1\fi}
+% Placeholder prose
+\newcommand{\tbw}[1]{\ifdraftnotes{\color{gray}[#1]}\fi}

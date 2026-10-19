@@ -1,0 +1,52 @@
+% MX17 Paper II -- reconstruction. Outline stage.
+% Journal and author list undecided (PAPER_PLAN C4): plain article for now; switch
+% the class (elsarticle for NIM A, jinst for JINST) once chosen.
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=2.2cm,marginparwidth=2.6cm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{siunitx}
+\usepackage{authblk}
+\usepackage[hidelinks]{hyperref}
+\usepackage{cleveref}
+\usepackage{drafting}
+% \draftnotesfalse   % uncomment for a clean read without notes
+
+\graphicspath{{figures/}}
+
+\title{Reconstructing micro-TPC tracks on resistive strips: why hit times fail, and a waveform forward model}
+\author{\tbw{author list -- undecided (C4)}}
+\date{Outline draft, \today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\tbw{Abstract written last. Key points: on resistive strips a per-strip hit time mixes in delayed copies of the
+neighbours' charge (sharing kernel measured head-on in the SPS beam), compressing the drift-time ladder by 20--30\,\%
+for every estimator; a forward model fitted to the waveforms removes the bias and improves $\sigma_\theta$ on every
+plane; how much a hit-based readout can recover, and what it must record.}
+\end{abstract}
+
+\ifdraftnotes
+\listoftodos[Open items]
+\clearpage
+\fi
+
+\input{sections/01_introduction}
+\input{sections/02_signal_formation}
+\input{sections/03_hits_fail}
+\input{sections/04_forward_model}
+\input{sections/05_physics_floor}
+\input{sections/06_hits_vs_waveforms}
+\input{sections/07_readout_requirements}
+\input{sections/08_known_angle}
+\input{sections/09_fleet_outlook}
+\input{sections/10_conclusions}
+
+\bibliographystyle{unsrt}
+\bibliography{refs}
+\end{document}

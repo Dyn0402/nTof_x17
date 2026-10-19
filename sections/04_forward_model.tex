@@ -1,0 +1,13 @@
+\section{The waveform forward model and its calibration}\label{sec:model}
+\sectionstate{ready}{\texttt{WAVEFORM\_FIRST\_THREADING.md} \S4, \S9, \S15; \texttt{wft/}; R9 (calibration protocol)}
+\intent{The model (per-plane pulse template, sharing kernel, drift and diffusion), the fit, and the calibration
+protocol with its traps: per detector and per run condition; kernel ordering enforced
+(\texttt{check\_kernel\_ordering}); $v$ from the kernel hyperfit, never from a Magboltz prior; cut units that move with $v$.}
+\analysis{R9}{collect the protocol and the traps from WFT \S15, RETIRE\_C2GTC1, the in-situ findings}
+\askDylan{C2: freeze r06, or the per-plane $c_2/c_1$ first? Delay vs lp kernel form?}
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.9\linewidth]{forward_model}
+  \caption{\tbw{The forward model.}}
+  \label{fig:forward_model}
+\end{figure}
