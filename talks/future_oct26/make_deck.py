@@ -286,15 +286,15 @@ def s_cover(D, L, AL):
         sd.bignum('176 µm', 'intrinsic resolution', sd.DBLUE,
                   'det4 in the SPS H4 beam: 0.30 × the strip pitch',
                   tip='sigma_det4 = 176 ± 10 µm from the uRWELL residuals at three pointing errors '
-                      '(spatial_resolution/results.json)'),
+                      '(spatial_resolution/results.json)', size=62),
         sd.bignum('93 % · 1.2°', 'best chamber on cosmics', sd.DBLUE,
-                  'det3: reconstructed within 5 mm; angle σ68, flat from 0 to 18°'),
-        sd.bignum(f'{AL["singles"] / 1e6:.1f} M · {AL["pairs"] / 1e3:.1f} k', 'Al singles · correlated pairs', sd.DGREEN,
+                  'det3: reconstructed within 5 mm; angle σ68, flat from 0 to 18°', size=62),
+        sd.bignum(f'{AL["singles"] / 1e6:.1f} M · {AL["pairs"] / 1e3:.1f}k', 'Al singles · correlated pairs', sd.DGREEN,
                   'n_TOF, chambers A + C, ≥ 12 ms; pairs come in at ⅛ of Geant4 (being worked on)',
                   tip=f'single tracks ≥ 12 ms: A {AL["A"]["singles"]:,}, C {AL["C"]["singles"]:,} · correlated '
-                      f'same-chamber pairs (rate fit): A {AL["A"]["pairs"]:,.0f}, C {AL["C"]["pairs"]:,.0f}'),
+                      f'same-chamber pairs (rate fit): A {AL["A"]["pairs"]:,.0f}, C {AL["C"]["pairs"]:,.0f}', size=62),
         sd.bignum(f'{L["bp1"]["days_3sigma"]:.1f} d', 'to 3σ at the ATOMKI ratio, LNL', sd.DGREEN,
-                  f'with four big plastics at 1 µA; {L["ab1"]["days_3sigma"]:.0f} d with the n_TOF stack as built'),
+                  f'with four big plastics at 1 µA; {L["ab1"]["days_3sigma"]:.0f} d with the n_TOF stack as built', size=62),
         gap=48)
     body = (sd.kicker('MX17 · status and the future of the X17 search · informal meeting, 19 Oct 2026')
             + sd.title('<span style="color:#eef0f3">The trackers work, and the scintillators measure energy. '
@@ -309,12 +309,12 @@ def s_cover(D, L, AL):
                 dark=True, size=24))
     notes = """
 <p><b>The question for the meeting.</b> The n_TOF run cannot see X17 (thermal neutrons only, after the γ-flash
-dead time; backup B2). Can this detector system search for X17 somewhere else, and what does it need?</p>
+dead time; backup B5). Can this detector system search for X17 somewhere else, and what does it need?</p>
 <p><b>Short answer.</b> The Micromegas TPCs track well (best chamber 93 % efficient, 1.2° angles, 176 µm
 intrinsic) and, in the beam, single tracks agree with Geant4 and image the target. The scintillators hold a muon
 energy scale that predicts electron spectra to 2–5 %. At LNL (⁷Li(p,e⁺e⁻)⁸Be, the ATOMKI reaction) the Geant4
 reach is 17 days to 3σ at the ATOMKI ratio as built and about a day with four large plastics. The neutron
-facilities are much harder (slide 12).</p>
+facilities are much harder (slide 11).</p>
 <p><b>What is still open.</b> At n_TOF the same-chamber Al e⁺e⁻ pairs come in at ⅛ of the Geant4 prediction
 while the singles agree; until that is understood, the two-track efficiency for soft, close pairs is not
 demonstrated (slide 7). X17 pairs are a far easier topology.</p>
@@ -349,7 +349,7 @@ det4 = "E", the SPS chamber.</p>
 <p><b>Bench geometry</b> (scenes_bench.py): scintillators at z −110 and 1420 mm, M3 at 24, 144, 1185, 1302 mm,
 test slots P1 232 and P2 702 mm. <b>SPS</b> (scenes_sps.py): uRWELL at 0 and 1370 mm, P2 fans at 320/630/940 mm,
 det4 in the ~25 cm between the last P2 and the back uRWELL.</p>"""
-    D.slide('b-setups', body, notes, short='B Setups')
+    D.slide('b-setups', body, notes, short='B4 Setups')
 
 
 def s_best(D):
@@ -436,7 +436,7 @@ def s_fleet(D):
     tab = sd.table(['chamber', 'within 5 mm', 'core σ_r', 'σθ X / Y', 'sparks', 'verdict', 'role / issue'],
                    rows, size=22, tips=tips, align=['left', 'right', 'right', 'right', 'right', 'left', 'left'])
     body = (sd.title('The fleet: two good chambers, two that need re-bulking, one that does not amplify over 62 % of its area',
-                     'June cosmic bench, waveform reconstruction (r06) · each chamber in its own frame (strips vertical) · reconstructed within 5 mm of the M3 track, 20 mm cells')
+                     'June cosmic bench, waveform reco (r06), own detector frame · reconstructed within 5 mm of the M3 track, 20 mm cells')
             + sd.row(*maps, cb, gap=10, align='end')
             + tab)
     notes = """
@@ -874,7 +874,7 @@ that goes through the plastic (the liquid fires). Right: a track with a high gas
 estimator tags as several particles in the gap, the signature a two-track candidate leaves when the tracks overlap.
 Energies and P(several) come from Geant4-trained estimators (model-dependent); the counters carry their measured
 resolutions (wall ~16–18 %, plastic ~4–7 % at the MIP), the gas deposit its per-track resolution.</p>"""
-    D.slide('b-passport', body, notes, short='B Passports', pad='72px 64px 72px')
+    D.slide('b-passport', body, notes, short='B2 Passports', pad='72px 64px 72px')
 
 
 def al_numbers():
@@ -908,61 +908,141 @@ def lnl_numbers():
     return dict(J=J, ab1=c['as built|1'], ab4=c['as built|4'], bp1=c['big plastics|1'], bp4=c['big plastics|4'])
 
 
+def lnl_setup_svg(w=500, h=400):
+    """The LNL set-up seen along the beam: the four MX17 arms around a thin Li film in a small CFRP chamber, with an
+    X17 pair (after x17_facility_search/lnl/deck/build_deck.setup_svg, big plastics drawn)."""
+    W, H = 860, 690
+    cx, cy = 430, 330
+    o = []
+    face, half = 150, 140
+    for ang in (0, 90, 180, 270):
+        a = math.radians(ang)
+        ux, uy = math.cos(a), math.sin(a)
+        vx, vy = -uy, ux
+
+        def pt(r, s_, ux=ux, uy=uy, vx=vx, vy=vy):
+            return cx + ux * r + vx * s_, cy + uy * r + vy * s_
+        for r0, r1, hh, col, tp in ((face, face + 22, half, BLUE, 'Micromegas TPC, 30 mm drift, faces at ±204 mm'),
+                                    (face + 30, face + 40, half, GOLD, 'SiPM wall, 20 bars, all read out'),
+                                    (face + 50, face + 80, 1.35 * half, PURPLE, 'big plastic, 75×75×5 cm (the upgrade)')):
+            q = [pt(r0, -hh), pt(r1, -hh), pt(r1, hh), pt(r0, hh)]
+            o.append(f'<polygon points="{" ".join(f"{x:.1f},{y:.1f}" for x, y in q)}" fill="{col}" fill-opacity="0.75"'
+                     f'{sd.tipattr(tp)}/>')
+    o.append(f'<circle cx="{cx}" cy="{cy}" r="40" fill="none" stroke="{MUT}" stroke-width="3"'
+             f'{sd.tipattr("thin target chamber: CFRP 0.4 mm, r ≈ 25 mm")}/>')
+    o.append(f'<circle cx="{cx}" cy="{cy}" r="11" fill="{RED}"{sd.tipattr("Li₂O film ~300 µg/cm², proton beam into the page")}/>')
+    for ang, lab in ((-160, 'e⁺'), (-20, 'e⁻')):
+        a = math.radians(ang)
+        x2, y2 = cx + 300 * math.cos(a), cy + 300 * math.sin(a)
+        o.append(sd.arrow(cx, cy, x2, y2, INK, 4))
+        o.append(sd.T(x2 + (20 if x2 > cx else -20), y2 - 8, lab, 32, INK, weight=600))
+    o.append(sd.T(cx, cy - 70, 'X17 → e⁺e⁻, ≥ 134°', 30, INK, weight=600))
+    o.append(sd.T(cx, H - 8, 'p beam into the page · ⁷Li(p,e⁺e⁻)⁸Be at 18.15 MeV', 28, MUT))
+    return (f'<svg width="{w}" height="{h}" viewBox="0 0 {W} {H}" xmlns="http://www.w3.org/2000/svg" role="img" '
+            f'aria-label="LNL set-up" style="overflow:visible">{"".join(o)}</svg>')
+
+
 def s_lnl(D, L):
     J = L['J']
-    P = sd.Plot(520, 560, x=(0, 4), y=(0.1, 100, 'log'), ylabel='days to 3σ at R(ATOMKI)', title='reach',
-                margin=(12, 16, 70, 100))
-    P.yticks([(0.1, '0.1'), (1, '1'), (10, '10'), (100, '100')])
-    P.xticks([(1, 'as built'), (3, 'big plastics')])
-    for x0, k1, k4, c in ((1, 'ab1', 'ab4', GREY), (3, 'bp1', 'bp4', GREEN)):
-        for dx, k, cur in ((-0.3, k1, 1), (0.3, k4, 4)):
-            v = L[k]['days_3sigma']
-            P.vbar(x0 + dx, v, 70, c, base=0.1, opacity=1.0 if cur == 1 else 0.55, label=f'{v:.1f} d',
-                   tip=f'{"as built" if k[0] == "a" else "big plastics"}, {cur} µA: {v:.2f} d to 3σ, {L[k]["days_5sigma"]:.1f} d to 5σ; '
-                       f'{L[k]["x17_per_day"]:.0f} X17/day in the 3D fit, {L[k]["bkg_per_day"]:.0f} background/day')
-    body = (sd.title(f'LNL: repeat ATOMKI on the same apparatus — 3σ at their ratio in {L["ab1"]["days_3sigma"]:.0f} days as built, '
-                     f'{L["bp1"]["days_3sigma"]:.0f} with big plastics',
-                     '⁷Li(p,e⁺e⁻)⁸Be at the 18.15 MeV resonance · Geant4 of the n_TOF apparatus, MM 15° + TOF, θ × |y| × E_sum fit')
-            + sd.row(
-                sd.col(sd.flow([dict(label='p, 1.03–1.10 MeV', sub='AN2000 DC 1 µA; CN ~4 µA', color=RED),
-                                dict(label='thin ⁷Li target', sub='Li₂O 300 µg/cm²', color=GOLD),
-                                dict(label='⁸Be* 18.15 MeV', sub='X17 → e⁺e⁻ vs IPC', color=BLUE)], size=21),
-                       sd.table(['', 'as built', 'big plastics'],
-                                [['pair trigger (Geant4)', sd.pct(J['pair_tag']['as built'], 1), sd.pct(J['pair_tag']['big plastics'], 1)],
-                                 ['X17 / day in the fit, 1 µA', f'{L["ab1"]["x17_per_day"]:.0f}', f'{L["bp1"]["x17_per_day"]:.0f}'],
-                                 ['X17 made / day, 1 µA', f'{L["ab1"]["produced_per_day"]:.0f}', f'{L["bp1"]["produced_per_day"]:.0f}'],
-                                 ['DREAM live', sd.pct(L['ab1']['live']), sd.pct(L['bp1']['live'])]], size=22),
-                       sd.p(f'For scale: ≈ 2 X17 were made in the whole n_TOF thermal window.', 21, MUT), gap=16, w=560),
-                sd.col(P.svg('LNL reach'), sd.p('solid: 1 µA (AN2000) · pale: 4 µA (CN)', 20, MUT,
-                                                  extra='padding-left:100px'), gap=0, w=520),
-                sd.col(sd.p('<b>Why it can work where n_TOF could not</b>', 24),
-                       sd.p('· DC beam, no γ flash: the DAQ is 91–98 % live up to 4 µA.', 21),
-                       sd.p('· ~900 X17 made per day at 1 µA, at the exact ATOMKI kinematics.', 21),
-                       sd.p('· The 3D fit (angle, energy split, E_sum) reads a background error that copies the X17 angle '
-                            'spectrum as 13–24 % of an X17, against 100 % for an angle-only fit.', 21),
-                       sd.p('<b>Risks</b>: scattering in the target chamber (1.0 d at 4.5° → 6.8 d at the n_TOF capsule\'s '
-                            '~14°), cosmics (MM-tracked veto), IPC shape (in-run controls, E_p scan).', 21, MUT),
-                       gap=12, w=520), gap=32))
+    MS = _lnl_maps()
+    O = FAC / 'lnl/out'
+    # statistics: X17 over a 30-day run, linear
+    d30 = 30
+    bars = [('n_TOF', 2.0, GREY, 'X17 made over the whole n_TOF thermal window (Athens rate tables): ≈ 2, before any acceptance'),
+            ('LNL as built', L['ab1']['x17_per_day'] * d30, ORANGE,
+             f'LNL, n_TOF stack as built, 1 µA: {L["ab1"]["x17_per_day"]:.0f} X17/day in the 3D fit × {d30} days'),
+            ('LNL big plastics', L['bp1']['x17_per_day'] * d30, PURPLE,
+             f'LNL, four 75×75×5 cm plastics, 1 µA: {L["bp1"]["x17_per_day"]:.0f} X17/day in the 3D fit × {d30} days')]
+    ymax = 1.15 * max(b[1] for b in bars)
+    S = sd.Plot(500, 290, x=(0, 3), y=(0, ymax), ylabel='X17 at the ATOMKI ratio', title=f'X17 in hand after {d30} days',
+                margin=(16, 12, 52, 96))
+    S.yticks([(v, f'{v:,.0f}') for v in (0, 1000, 2000, 3000, 4000)])
+    S.xticks([(i + 0.5, t_) for i, t_ in enumerate(('n_TOF', 'LNL', 'LNL + plates'))])
+    for i, (lab, v, c, tip) in enumerate(bars):
+        S.vbar(i + 0.5, v, 90, c, tip=tip, label=f'{v:,.0f}' if v > 10 else f'≈ {v:.0f}')
+    # opening-angle expectation, big plastics, one week
+    pr = MS['proj']
+    days = 7
+    th = pr[(pr.hw == 'big plastics') & (pr['var'] == 'theta')]
+    b = th[th.comp == 'bkg'].sort_values('lo')
+    x = th[th.comp == 'X17'].sort_values('lo')
+    edges = list(b.lo) + [float(b.hi.iloc[-1])]
+    tot = (b.per_day.to_numpy() + x.per_day.to_numpy()) * days
+    bk = b.per_day.to_numpy() * days
+    ym = float(tot.max() * 1.15)
+    A = sd.Plot(560, 610, x=(90, 180), y=(0, ym), xlabel='opening angle θ (°)', ylabel=f'pairs per 2°, {days} days',
+                title='the opening angle, big plastics', margin=(16, 16, 92, 104))
+    A.xticks([(v, f'{v}°') for v in (90, 110, 130, 150, 170)])
+    st = 100 if ym < 600 else 200
+    A.yticks([(v, f'{v:.0f}') for v in np.arange(0, ym, st)])
+    xs, ys = sd.step_xy(edges, list(bk))
+    A.raw(sd.poly([A.X(a) for a in [xs[0]] + xs + [xs[-1]]], [A.Y(0)] + [A.Y(y) for y in ys] + [A.Y(0)], GREY, 0, fill=GREY,
+                  tip=f'background (IPC M1 + E1, γ₁, cosmics), {bk.sum():,.0f} pairs in {days} days'), back=True)
+    xs, ys = sd.step_xy(edges, list(tot))
+    A.raw(sd.poly([A.X(a) for a in xs], [A.Y(y) for y in ys], RED, 3,
+                  tip=f'background + X17 at R(ATOMKI): {x.per_day.sum() * days:,.0f} X17 in {days} days'))
+    A.text(122, ym * 0.93, 'X17: a few % on top of IPC', 24, RED, weight=700)
+    A.text(122, ym * 0.87, 'so the IPC shape must be', 22, INK)
+    A.text(122, ym * 0.81, 'known and subtracted', 22, INK)
+    # 2D: S/B in theta x |y|
+    m = MS['maps']
+    g = m[(m.hw == 'big plastics') & (m.grid == 'fine') & (m.slice == 'window')]
+    csb = [(r.theta_lo, r.theta_hi, r.y_lo, r.y_hi, r.X17 / r.bkg if r.bkg * days >= 3 else float('nan'),
+            f'{r.theta_lo:.0f}–{r.theta_hi:.0f}°, |y| {r.y_lo:.2f}–{r.y_hi:.2f}: S/B {100 * r.X17 / r.bkg:.0f} % '
+            f'({r.X17 * days:.1f} X17, {r.bkg * days:.1f} background in {days} d)') for r in g.itertuples() if r.bkg > 0]
+    M = MS['mod'].heat('signal / background with the energy split', csb, 0, 0.4, MS['mod'].CM_SB, w=560, h=610)
+    M.text(95, 0.93, 'X17 = a line at fixed mass;', 22, INK, weight=700)
+    M.text(95, 0.86, 'a background error = a stripe', 22, INK, weight=700)
+    cb = sd.colorbar(100, 400, 0, 0.4, [(0, '0'), (0.2, '20 %'), (0.4, '≥ 40 %')], 'S/B', cmap=MS['mod'].CM_SB)
+    body = (sd.title('LNL: enough X17 in days; the IPC shape is the work',
+                     '⁷Li(p,e⁺e⁻)⁸Be at the 18.15 MeV resonance, 1 µA · Geant4 of the n_TOF apparatus, MM 15° + TOF, θ × |y| × E_sum fit')
+            + sd.row(sd.col(lnl_setup_svg(440, 330), S.svg('statistics'), gap=4),
+                     A.svg('opening angle'), sd.row(M.svg('S/B 2D'), cb, gap=0, align='center'), gap=20, align='end'))
+    rows = ''.join(f'<tr><td>{k}</td><td>{L[a]["days_3sigma"]:.1f}</td><td>{L[a]["days_5sigma"]:.1f}</td>'
+                   f'<td>{L[a]["x17_per_day"]:.0f}</td><td>{L[a]["bkg_per_day"]:,.0f}</td><td>{sd.pct(L[a]["live"])}</td></tr>'
+                   for k, a in (('as built, 1 µA', 'ab1'), ('as built, 4 µA', 'ab4'), ('big plastics, 1 µA', 'bp1'),
+                                ('big plastics, 4 µA', 'bp4')))
     notes = f"""
-<p><b>Source</b>: <code>x17_facility_search/lnl/</code>, FEASIBILITY_SIM.md §12–18, numbers from
-<code>lnl/out/talk/numbers.json</code> (Geant4 L1–L6 → <code>reach_geant.csv</code> column <code>days_3d</code>,
-pair tag from <code>acceptance_geant.csv</code>). R(ATOMKI) = 5.8×10⁻⁶; 5σ = 3σ × 25/9.</p>
-<p><b>Scenarios.</b> "As built": the n_TOF stack (two 20×30×2 cm plastics per arm, liquid read out). "Big plastics":
-four 75×75×5 cm plates behind all 20 SiPM bars. The arm energies carry the n_TOF-anchored response
-(<code>lnl_calo.py</code>).</p>
-<p><b>Pseudo-data check</b> (§17): one simulated week at R(ATOMKI), blinded, with truth differing from the fit model:
-r̂ = 0.87 ± 0.14 (6.1σ); errors honest up to a week, a wider fit needed at 30 days.</p>
-<p><b>Caveats.</b> Z ∝ √t is optimistic past ~a week unless the wider fit is used. "X17 per day" is inside the 3D fit
-after MM 15° + TOF, not just triggered. LNL's own ⁸Be spectrometer ran there in 2023–24.</p>"""
+<p><b>Reach</b> (<code>x17_facility_search/lnl/</code>, FEASIBILITY_SIM.md §12–18, <code>lnl/out/talk/numbers.json</code>):
+days to 3σ at R(ATOMKI) = 5.8×10⁻⁶ with the θ × |y| × E_sum fit. Pair trigger (Geant4): as built
+{sd.pct(J['pair_tag']['as built'], 1)}, big plastics {sd.pct(J['pair_tag']['big plastics'], 1)}. ~900 X17 made per day at 1 µA.</p>
+<table><tr><th></th><th>days to 3σ</th><th>to 5σ</th><th>X17/day in fit</th><th>background/day</th><th>DREAM live</th></tr>{rows}</table>
+<p><b>Left, bottom.</b> X17 at the ATOMKI ratio after 30 days at 1 µA, inside the fit, against the ≈ 2 X17 made in the whole
+n_TOF thermal window (before any acceptance). Why it works where n_TOF could not: DC beam, no γ flash, so the DAQ is
+91–98 % live up to 4 µA, at the exact ATOMKI kinematics.</p>
+<p><b>Middle.</b> The opening-angle distribution for one week with big plastics: grey = background (IPC M1 and E1,
+γ₁ pairs, cosmics after the MM-tracked veto), red = with X17 at R(ATOMKI) (m = 16.7 MeV) (<code>lnl/out/nd/maps/proj.csv</code>).
+In 1D the X17 is a few % of the counts at 125–155°: a background-shape error of a few % competes with the signal, so the IPC
+(and any other contamination) has to be known and subtracted very well. In-run controls: the E_p scan moves the X17 edge
+(~10° over the scanned energies), off-resonance points, symmetric pairs.</p>
+<p><b>Right.</b> S/B per cell of opening angle × energy split |y| (E_sum 14–19 MeV, 3° × 0.05 cells, cells with &lt; 3
+background pairs per week blank; dashed: where a 16.7 MeV X17 lands). The X17 follows the constant-mass curve; the IPC (a
+virtual photon of any mass) fills the plane. Impostor test: a background error that copies the X17 angle spectrum exactly
+reads as 100 % of an X17 in an angle-only fit and 13–24 % in the θ × |y| × E_sum fit, with χ² ≈ 20 left over. So the energy
+measurement makes the search resilient to background-modelling errors (LNL note, slides "2D counts" and "impostor").</p>
+<p><b>Pseudo-data check</b> (§17): one simulated week at R(ATOMKI), blinded, truth differing from the fit model:
+r̂ = 0.87 ± 0.14 (6.1σ); errors honest up to a week, a wider fit needed at 30 days. <b>Risks</b>: scattering in the target
+chamber (1.0 d at 4.5° → 6.8 d at the n_TOF capsule's ~14°), cosmics, IPC shape. LNL's own ⁸Be spectrometer ran there in
+2023–24. The drawing follows the LNL note's set-up slide (transverse, pinwheel offset not drawn); a 3D view is
+<code>lnl/viz/lnl_setup_3d.html</code>.</p>"""
     D.slide('lnl', body, notes, short='LNL')
+
+
+def _lnl_maps():
+    """lnl/deck/maps_slides: the theta x |y| maps and projections (lnl/out/nd/maps, lnl_nd_maps.py)."""
+    q = str(FAC / 'lnl/deck')
+    if q not in sys.path:
+        sys.path.insert(0, q)
+    import maps_slides as MSm
+    T = MSm.load(FAC / 'lnl/out')
+    return dict(mod=MSm, **T)
 
 
 def s_plastics(D, L):
     d = rd(FAC / 'lnl/out/plastics/days_vs_size.csv')
-    places = [(d.placement.str.startswith('where the bars'), BLUE, 'where the bars are now (R 41 cm)'),
-              (d.placement.str.startswith('right behind'), GREEN, 'right behind the SiPM wall (R 35 cm)'),
-              (d.placement.str.startswith('SiPM wall removed'), ORANGE, 'SiPM wall removed, behind the MM (R 26 cm)')]
-    P = sd.Plot(900, 640, x=(20, 120), y=(0.5, 100, 'log'), xlabel='side of a square plastic, 5 cm thick (cm)',
+    # only the placement that keeps the SiPM wall (trigger and tracking point) where the bars are now
+    places = [(d.placement.str.startswith('where the bars'), BLUE, 'plates where the bars are now (R 41 cm)')]
+    P = sd.Plot(980, 640, x=(20, 120), y=(0.5, 100, 'log'), xlabel='side of a square plastic, 5 cm thick (cm)',
                 ylabel='days to 3σ at R(ATOMKI), 1 µA', title='days to 3σ vs plastic size', margin=(12, 20, 92, 104))
     P.xticks([(v, str(v)) for v in (20, 40, 60, 80, 100, 120)])
     P.yticks([(0.5, '0.5'), (1, '1'), (2, '2'), (5, '5'), (10, '10'), (20, '20'), (50, '50'), (100, '100')])
@@ -978,7 +1058,8 @@ def s_plastics(D, L):
              tips=[f'Geant4 75×75×5 cm: {L["bp1"]["days_3sigma"]:.2f} d'])
     P.text(76.5, 1.25, 'Geant4 75×75', 20, INK)
     P.hline(L['ab1']['days_3sigma'], GREY, label=f'n_TOF stack as built: {L["ab1"]["days_3sigma"]:.0f} d (Geant4)')
-    leg = sd.legend([(lab, c) for _m, c, lab in places], size=20)
+    P.text(62, 60, f'×{L["ab1"]["days_3sigma"] / L["bp1"]["days_3sigma"]:.0f} faster with 75 cm plates', 26, BLUE, weight=700)
+    P.text(62, 45, 'flat beyond ~65 cm: the plate covers the cone', 22, INK)
     pr = L['J']['price_keur']
     cost = sd.table(['four plates', 'trigger acc.', 'cost (k€)'],
                     [['as built (2×20×30×2 cm)', '2.3 %', '0'],
@@ -988,19 +1069,9 @@ def s_plastics(D, L):
                      ['78×80×5 PVT, 2×3"', '14.5 %', f'{pr["PVT"]["plates_keur"][1]:.0f}']], size=21,
                     tips=['', '', 'acceptance only (no calorimetry)', '', 'polystyrene: ~70 % of PVT light, the cheap lever',
                           'cast PVT'])
-    body = (sd.title('Bigger plastics: the days to 3σ fall ×17 up to ~65 cm, then flatten; four 5 cm plates cost ~€93k',
+    body = (sd.title(f'Big plastics: ×{L["ab1"]["days_3sigma"] / L["bp1"]["days_3sigma"]:.0f} fewer days; four 5 cm plates ≈ €{pr["PS"]["plates_keur"][1]:.0f}k',
                      'geometric toy of the trigger leg anchored to Geant4 (lnl/plastic_size.py) · price model trigger_scint/costs.py')
-            + sd.row(sd.col(P.svg('days vs size'), leg, gap=6),
-                     sd.col(sd.p('<b>Prototype plate</b> (trigger_scint, optics toy)', 24),
-                            sd.p('78 × 80 × 5 cm polystyrene, fishtail guides, a 3" PMT at each end; read all 20 SiPM '
-                                 'bars (×1.4 on acceptance); FERS-5200 for the 160 SiPM ends (~€18k).', 21),
-                            sd.p('Toy: ~77 pe/MeV, 4 % non-uniformity with two ends, σt ≈ 124 ps at 5 MeV; ~15 %/√E, '
-                                 'about 5 % at a 10 MeV deposit.', 21, MUT),
-                            cost,
-                            sd.callout(f'All-in with the SiPM readout ~€{pr["PS"]["all_in_keur"][1]:.0f}k. Whole LNL run budget: '
-                                       'Lean €98k · Self-sufficient €174k · Upgrade €286k.', GREEN, 21),
-                            sd.p('Before buying: one plate on the cosmic bench (light yield, uniformity against an MM map, '
-                                 'linearity to 12 MeV).', 20, MUT), gap=12, w=660), gap=40))
+            + sd.row(P.svg('days vs size'), sd.col(sd.p('<b>Four plates, budget prices</b>', 24), cost, gap=12, w=620), gap=44, align='center'))
     notes = """
 <p><b>The curve</b> (<code>lnl/plastic_size.py</code>, an analytic stand-in for a Geant4 size scan): straight leptons
 from a 2 mm beam spot through the surveyed MM active area, Highland kicks in the MM and the SiPM wall, a leg must cross a
@@ -1010,10 +1081,17 @@ E_sum, MM 15° and TOF efficiencies are held at their Geant4 values, so it is ab
 would collide with their neighbours they are pushed back (beyond ~75 cm).</p>
 <p><b>Why it flattens:</b> past ~65–75 cm the plate covers the whole cone of leptons that crossed an MM (92 % of
 X17 leptons at 75×75); the SiPM wall (83 %) is then the cap. Removing the wall (orange) leaves a plastic-only leg and
-gains a little more.</p>
+gains a little more, but the wall stays: it is the trigger and a tracking point, so only the curve with the plates
+where the bars are now is drawn.</p>
+<p><b>Prototype plate</b> (trigger_scint, optics toy): 78 × 80 × 5 cm polystyrene, fishtail guides, a 3" PMT at each
+end; read all 20 SiPM bars (×1.4 on acceptance); FERS-5200 for the 160 SiPM ends (~€18k). Toy: ~77 pe/MeV, 4 %
+non-uniformity with two ends, σt ≈ 124 ps at 5 MeV; ~15 %/√E, about 5 % at a 10 MeV deposit. All-in with the SiPM
+readout ~€{allin:.0f}k. Whole LNL run budget: Lean €98k · Self-sufficient €174k · Upgrade €286k. Before buying: one
+plate on the cosmic bench (light yield, uniformity against an MM map, linearity to 12 MeV).</p>
 <p><b>Costs</b> (budgetary, EUR 2026, no labour/VAT): scintillator PVT 0.6 €/cm³, PS 0.25 €/cm³; PMT + divider 3" €3.3k;
 guides €0.8–1.5k; wrapping €1.5–5k per slab; HV + digitizer €1.4k per PMT. Get quotes (Eljen/Luxium PVT, Nuvia/Epic PS).
 Run budget: dylan-neff.web.cern.ch/facilities/budget.html (collaborator comments enabled).</p>"""
+    notes = notes.replace('{allin:.0f}', f'{pr["PS"]["all_in_keur"][1]:.0f}')
     D.slide('plastics', body, notes, short='Big plastics')
 
 
@@ -1076,20 +1154,25 @@ def ill_svg(w=1664, h=360):
     return sd.svg(w, h, ''.join(o), 'ILL target sketch')
 
 
-def s_facilities(D):
-    rows = [
-        ['<b>n_TOF EAR2</b> (done)', 'pulsed spallation, meV–GeV', 'MeV neutrons (79 % of the X17 rate) lost to the γ flash: DREAM '
-         'recovers in 5 ms; thermal ³He self-shields, (n,p) 92 %', '≈ 2 X17 made in the thermal window; Al pairs ~10⁸'],
-        ['<b>ILL PF1B</b>', 'cold reactor beam, ~10¹⁰ n/s absorbed', 'thermal s-wave only (no 1⁻ resonance); cosmics, MM occupancy, '
-         'DREAM 298 µs dead time; IPC floor', '3σ reach 5.3×10⁻³ per 50-day cycle: ×3.2 above the ⁸Be level (×1.3 even with no background)'],
-        ['<b>GANIL NFS</b>', 'pulsed fast n, d+Be, 1–40 MeV', 'the sub-2 MeV flux the physics wants is unmeasured (model 8–14 % of the peak '
-         'per MeV); ~10⁵ n/cm²/s at 0.2–2 MeV; wall pairs ~50 per X17', 'plan only; first ask: D(d,n) or lower-E deuterons'],
-    ]
-    tab = sd.table(['facility', 'beam', 'the wall', 'where we stand'], rows, size=19,
-                   align=['left', 'left', 'left', 'left'], widths=[220, 300, 680, 460])
-    body = (sd.title('Neutron facilities are hard: n_TOF lost its MeV neutrons, the ILL falls ×3 short per cycle, NFS is unmeasured',
+def s_facilities(D, L):
+    def card(name, beam, big, col, note, tip):
+        return sd.col(sd.p(f'<b>{name}</b>', 26), sd.p(beam, 20, MUT),
+                      sd.bignum(big, '', col, note, dark=False, size=50, tip=tip), gap=0, w=310)
+    cards = sd.row(
+        card('n_TOF EAR2', 'pulsed spallation, meV–GeV', '≈ 2 X17', RED, 'made in the thermal window: the MeV neutrons were lost to the γ flash',
+             '≈100 X17 made over 436,373 pulses with the full spectrum, ≈2 in the thermal window after the flash dead time'),
+        card('ILL PF1B', 'cold reactor beam', '> 50 d', ORANGE, 'one cycle stays ×1.3–3 above the ⁸Be level, even with a perfect detector',
+             '3σ reach 5.3×10⁻³ per 50-day cycle with every upgrade: ×3.2 above the ⁸Be ratio; ×1.3 with no background'),
+        card('Demokritos', 'Tandem, MeV neutrons', '?', GREY, 'MeV neutrons at the right energy, but the rate is expected to be too low',
+             'not yet studied in x17_facility_search: no flux fold or reach estimate exists'),
+        card('GANIL NFS', 'pulsed fast n, d+Be, 1–40 MeV', 'rate ✓ · E ✗', GOLD, 'good flux, but mostly above the physics window: needs a neutron-energy tag',
+             'sub-2 MeV flux ~10⁵ n/cm²/s at 50 µA (model, unmeasured); time-of-flight would have to tag each neutron\'s energy'),
+        card('LNL (for scale)', 'p on ⁷Li, DC, 1 µA', f'{L["bp1"]["days_3sigma"]:.0f}–{L["ab1"]["days_3sigma"]:.0f} d', GREEN,
+             'to 3σ at the ATOMKI ratio, big plastics / as built', 'Geant4, θ × |y| × E_sum fit'),
+        gap=26)
+    body = (sd.title('Neutron facilities: statistics are the wall',
                      'x17_facility_search · sketch: the ILL PF1B target region, to scale along the beam')
-            + tab + ill_svg(1664, 340))
+            + cards + ill_svg(1664, 340).replace('width="1664" height="340"', 'width="1400" height="286"', 1))
     notes = """
 <p><b>n_TOF</b>: mpgd26 / ntof_athens_26 (the Athens deck): the γ flash saturates DREAM (detector recovers in 2 µs, DREAM
 in 5 ms); every volt of gain costs ms of beam; the run moved to thermals, where (n,p) dominates and the ³He
@@ -1106,6 +1189,8 @@ beyond the +180 mm MM edge). The ⁴He "pre-chamber" is the flight tube from the
 no neutrons and scatters ~13× less than air; ~90 % of the air ¹⁴N(n,γ) is on that 300 mm path. A balloon around the
 whole cell is not worth it (⁴He permeates into the cell and the MM gas). Shading = capture density along the cell
 (schematic exponential with the G1 median).</p>
+<p><b>Demokritos</b> (NCSR Demokritos, Athens): a Tandem that makes quasi-monoenergetic MeV neutrons. Not studied in
+x17_facility_search yet: no flux fold and no reach, hence the "?"; the expectation is that the rate is too low.</p>
 <p><b>NFS</b> (ganil_nfs/README.md §7, §9): d+Be peaks at 17 MeV, measured only above 1.5 MeV; options: lower
 deuteron energy, D(d,n)³He monoenergetic (~2.45 MeV, may never have been built), ⁷Li(p,n) near threshold. The X17
 shoulder slides to 99° at 2 MeV and 66° at 14 MeV, into the IPC-rich region.</p>"""
@@ -1143,11 +1228,10 @@ def s_papers(D):
                    ('LNL reach and the 3D fit', *P_), ('ILL / NFS feasibility', *P_)], GREY)
     body = (sd.title('Papers: two detector companions now, an EAR2 demonstrator next, simulation possibly on its own',
                      'state per section from mx_june_cosmic_qa/PAPER_PLAN.md; LaTeX outlines in papers/paper1, paper2')
-            + sd.row(p1, p2, p3, p4, gap=24)
-            + sd.p('Order: I and II together (I cites II for every position, angle and drift velocity). III needs the pair '
-                   'rate question settled or stated as a limitation; IV carries the facility reach so III stays about the data.',
-                   22, MUT))
+            + sd.row(p1, p2, p3, p4, gap=24))
     notes = """
+<p><b>Order</b>: I and II together (I cites II for every position, angle and drift velocity). III needs the pair rate
+question settled or stated as a limitation; IV carries the facility reach so III stays about the data.</p>
 <p><b>Papers I and II</b> (decision 2026-10-08, PAPER_PLAN.md): the cosmic bench and SPS in both; post to arXiv on the
 same day as companions. Biggest open items: hits vs waveforms on the same events (R1–R5), timing on waveforms (D3),
 reproducing the r06 numbers for quoting (done for the golden keys, C1), the calibration freeze (on hold).</p>
@@ -1177,7 +1261,7 @@ swept across the face in 0.5 mm steps: <code>mpgd26/make_efficiency_map.gaussian
 <code>mx_june_wft/report/make_bench_effmaps.make_map</code>, the kernel of the MPGD26 efficiency slide. Pixel-to-pixel
 texture is counting noise (≈ 7 effective muons per kernel; independent-circle variance is 1.07× binomial away from
 the edges). The 20 mm cells of the fleet slide trade resolution for less noise.</p>"""
-    D.slide('b-kernel', body, notes, short='B Kernel maps')
+    D.slide('b-kernel', body, notes, short='B1 Kernel maps')
 
 
 def b_lessons(D):
@@ -1197,7 +1281,7 @@ def b_lessons(D):
                        widths=[700, 620, 340]))
     D.slide('b-lessons', body, """<p>Sources: scint-stack, calorimetry and status notes; trigger_scint/TRIGGER_OPTIONS.md;
 scattering-upgrade note; ntof_pedestal_qa (23 July step); x17_facility_search budget page (per-MM status);
-ill/FEASIBILITY_SIM.md §13 (DREAM dead time).</p>""", short='B1 Lessons')
+ill/FEASIBILITY_SIM.md §13 (DREAM dead time).</p>""", short='B3 Lessons')
 
 
 def b_scatter(D):
@@ -1218,7 +1302,7 @@ def b_scatter(D):
                                                           'The 109° shoulder returns: peak height ×0.22 → ×0.50, FWHM 37° → 11°.', BLUE, 22),
                                                sd.callout('m_ee alone degrades much faster (1.7 → 284 d); the 3D fit is robust.', GREY, 22),
                                                gap=18), gap=40))
-    D.slide('b-scatter', body, """<p>LNL FEASIBILITY_SIM.md §15; note scattering-upgrade (2026-10-06).</p>""", short='B3 Scattering')
+    D.slide('b-scatter', body, """<p>LNL FEASIBILITY_SIM.md §15; note scattering-upgrade (2026-10-06).</p>""", short='B6 Scattering')
 
 
 def b_lnlcalo(D):
@@ -1232,7 +1316,7 @@ def b_lnlcalo(D):
             + sd.callout('Impostor test: a background error that copies the X17 angle spectrum exactly reads as 100 % of an X17 in an '
                          'angle-only fit, 13–24 % in the θ × |y| × E_sum fit, with χ² ≈ 20 left over.', BLUE, 24))
     D.slide('b-lnlcalo', body, """<p>LNL FEASIBILITY_SIM.md §14 and §16. The "worst structure" rows put the same
-background-shape error on the events seen by every analysis.</p>""", short='B4 LNL energy')
+background-shape error on the events seen by every analysis.</p>""", short='B7 LNL energy')
 
 
 def b_ill(D):
@@ -1247,7 +1331,7 @@ def b_ill(D):
             + sd.callout('Remaining levers: X17 efficiency (energy containment, ×4 signal with a calorimeter), spin selection '
                          '(polarised n + ³He), more cycles. Feasible only with ~200 ps arm timing and a cosmic veto.', ORANGE, 24))
     D.slide('b-ill', body, """<p>Thermal capture at rest covers the s-wave half of the physics only; the reference ratio
-2.5×10⁻² would be a ~6–9σ effect in one cycle with timing + veto (ill/README.md).</p>""", short='B5 ILL reach')
+2.5×10⁻² would be a ~6–9σ effect in one cycle with timing + veto (ill/README.md).</p>""", short='B8 ILL reach')
 
 
 def b_budget(D):
@@ -1267,7 +1351,7 @@ def b_budget(D):
                                  21, MUT), gap=18), gap=40))
     D.slide('b-budget', body, """<p>Page: dylan-neff.web.cern.ch/facilities/budget.html (items in
 <code>budget/items.py</code>). The plates line excludes HV and digitizer, which are separate items.</p>""",
-            short='B6 Budget')
+            short='B9 Budget')
 
 
 def b_twotrack(D):
@@ -1282,7 +1366,7 @@ def b_twotrack(D):
             + sd.table(['', ''], rows, size=24, align=['left', 'left'])
             + sd.callout('X17 legs never share a chamber (opening ≥ 110°), so this matters for the Al-pair demonstrator and for '
                          'narrow IPC pairs, not for the X17 signal itself.', BLUE, 24))
-    D.slide('b-twotrack', body, '', short='B7 Two-track')
+    D.slide('b-twotrack', body, '', short='B10 Two-track')
 
 
 def b_flash(D):
@@ -1294,7 +1378,7 @@ def b_flash(D):
                                'full spectrum vs the thermal window (0.01–0.1 eV: 4.4 → 0.07 X17/day)', dark=False), gap=40)
             + sd.callout('At thermal energies only s-wave channels are open (M1, and E0 with no real photon), (n,p) takes 92 % of the '
                          'neutrons and the ³He self-shields. The ²⁷Al pairs (~10⁸ per 30 days) became the demonstrator.', BLUE, 24))
-    D.slide('b-flash', body, '', short='B2 Flash')
+    D.slide('b-flash', body, '', short='B5 Flash')
 
 
 def main():
@@ -1312,7 +1396,7 @@ def main():
     s_energy(D)
     s_lnl(D, L)
     s_plastics(D, L)
-    s_facilities(D)
+    s_facilities(D, L)
     s_papers(D)
     b_kernel(D)
     b_passport(D)

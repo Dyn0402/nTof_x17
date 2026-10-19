@@ -1,36 +1,22 @@
 # Handoff
 
-## Future-X17 meeting deck (19 Oct) — updated 2026-10-19 (dylan-MS-7C84)
+## Future-X17 meeting deck (19 Oct) — updated 2026-10-19 evening (dylan-MS-7C84)
 
-**Resume:** deck live; next: Dylan's feedback → trim main deck to ≤ 11 slides, rebuild, republish.
+**Resume:** Dylan's 19 Oct feedback is fully applied and republished
+(https://dylan-neff.web.cern.ch/notes/mx17-future-x17.html). Next: his review of the new version.
 
-**Goal:** a short slide note for the informal 19 Oct collaborator meeting: can the MX17 apparatus search for X17
-elsewhere (LNL first)? Detectors → n_TOF → where next → papers.
-
-**Done:**
-- `talks/future_oct26/make_deck.py` (slidedoc) → `/media/dylan/data/x17/future_oct26/mx17-future-x17.html`,
-  live at https://dylan-neff.web.cern.ch/notes/mx17-future-x17.html (site commit ae63480).
-- 13 main slides (cover, setups + timeline, best chamber, fleet maps, n_TOF expectation, scintillators/liquids,
-  singles, singles vs pairs, energy, LNL, big plastics, neutron facilities + ILL sketch, papers) + backup B1–B7.
-- Every chart reads upstream outputs: bench `<key>_rays.csv`, `mpgd26/data/angle_resolution.json`, SPS
-  `spatial_resolution/results.json`, scint_stack figures CSVs, capsule_pose `image.csv`, calorimetry `wp/` CSVs,
-  facility-search `lnl/out/talk/numbers.json` and `lnl/out/plastics/days_vs_size.csv`.
-
-**Next steps:**
-1. Dylan reviews; candidates to move to backup: slides 5, 6, 8 (or fold 6 into 9) — he asked for < 10–11.
-2. Rebuild + republish (commands below); commit the site repo after add-note.
-
-**Gotchas / decisions:**
-- Calorimetry framing: "scintillator energy scale works (14 Oct wall_plastic), n_TOF 2 cm stack is a range
-  telescope; 4–5 cm plates make it a calorimeter, resolution to be measured" — reconciles the 8 Oct "closed".
-- Liquid maps are from the 6 Oct scint-stack pass (before the y fix): v may be mirrored; PMT marked only on A/D (u side).
-- Fleet numbers are FLEET_DIGEST r06 (constants in the script); budget-page chamber efficiencies are hits-based.
-- Paper III/IV split is a proposal, not in PAPER_PLAN.md.
-- Layout checked by headless Chrome screenshots cropped per frame (frames found by scanning for non-page colour).
-
-**Key files & commands:**
-- `.venv/bin/python talks/future_oct26/make_deck.py`
-- `python3 ~/PycharmProjects/dylan-cern-site/scripts/add-note.py /media/dylan/data/x17/future_oct26/mx17-future-x17.html --slug mx17-future-x17 --force --deploy`
+- Generator `talks/future_oct26/make_deck.py`; feedback (verbatim) and the item-by-item log in
+  `talks/future_oct26/FEEDBACK_2026-10-19.md`. 12 main slides + B1–B10.
+- New inputs it reads: `sept26_prelim_analysis/make_status_oct15_deck` (load/numbers, pair_diagram),
+  `capsule_pose.load_data/library` (singles pointing height, cached in `<OUT>/cache/singles_height.csv`),
+  `ntof_scint_stack/make_deck.heat_panel`, `ntof_calorimetry/make_passport_deck` (passport tables — rsynced from
+  the laptop to `/media/dylan/data/x17/calorimetry/passport`), `mx_june_wft/report/make_bench_effmaps`
+  (detector frame + sliding kernel, PNGs cached in `<OUT>/img`), `x17_facility_search/lnl/deck/maps_slides`.
+- Render check: crop each `.frame` from a headless-Chrome screenshot using DOM rects (script pattern in the
+  FEEDBACK log); the frame has overflow:hidden, so look for clipped bottoms.
+- Rebuild + republish: `.venv/bin/python talks/future_oct26/make_deck.py` then
+  `python3 ~/PycharmProjects/dylan-cern-site/scripts/add-note.py /media/dylan/data/x17/future_oct26/mx17-future-x17.html --slug mx17-future-x17 --force --deploy`
+  and commit the site repo.
 
 ## Detector model basics: dead strips, gap, saturation, X footprint — updated 2026-10-19 (dylan-MS-7C84)
 
