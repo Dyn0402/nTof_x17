@@ -12,8 +12,8 @@
   `ntof_scint_stack/make_deck.heat_panel`, `ntof_calorimetry/make_passport_deck` (passport tables — rsynced from
   the laptop to `/media/dylan/data/x17/calorimetry/passport`), `mx_june_wft/report/make_bench_effmaps`
   (detector frame + sliding kernel, PNGs cached in `<OUT>/img`), `x17_facility_search/lnl/deck/maps_slides`.
-- Render check: crop each `.frame` from a headless-Chrome screenshot using DOM rects (script pattern in the
-  FEEDBACK log); the frame has overflow:hidden, so look for clipped bottoms.
+- Render check: `.venv/bin/python talks/future_oct26/render_check.py <html> <outdir>` crops each `.frame`;
+  the frame has overflow:hidden, so look for clipped bottoms.
 - Rebuild + republish: `.venv/bin/python talks/future_oct26/make_deck.py` then
   `python3 ~/PycharmProjects/dylan-cern-site/scripts/add-note.py /media/dylan/data/x17/future_oct26/mx17-future-x17.html --slug mx17-future-x17 --force --deploy`
   and commit the site repo.
