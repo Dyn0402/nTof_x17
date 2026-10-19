@@ -1137,6 +1137,10 @@ an artefact, superseded).
 - **det6's deep charge runs past the 32-sample window** (deep strips' last sample at 40–86 % of their peak), so
   its column is a lower limit. det3 6-22 (drift 8.9 µm/ns that night) likewise: excluded.
 - Not included: the M3 slope scale (gap ∝ 1/scale). Statistical errors only.
+- **Field invariance (det3 drift scan, weak):** the scan sub-runs have ~200 usable tracks each (waveforms pulled to
+  `/media/dylan/data/x17/cosmic_bench/det3_scan/`, `gap_extent.py build sat_det3 --subrun … --base …`). 1100 V
+  (382 V/cm): 28.04 ± 0.71 (half-height); 900 V: 27.5 ± 1.1 (erf; the half-height finder is unstable at this n);
+  700 V unusable (deep charge at the window end, as det6). Consistent with 28.1, not a precise test.
 
 **Effect on the width comparison** (`unsat_width.py --recompare`, no refit): det3 unchanged (+230 at 347 V/cm,
 7.8 sd). det7 (27.5 → 29.85) now sits on Magboltz at 0.43 % water (+88, 0.3 sd). det2 (30.6 → 31.45) becomes

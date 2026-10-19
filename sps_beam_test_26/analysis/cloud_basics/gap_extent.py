@@ -55,13 +55,24 @@ TAN_MAIN = (0.2, 0.8)            # below 0.2 a strip is >= 4 mm of depth and the
 FIT_Z = (-8.0, 42.0)
 
 
-def build(key, tan_min, tan_max):
+def build(key, tan_min, tan_max, subrun=None, base=None):
+    """subrun/base: another sub-run of the key's run (e.g. the det3 drift scan), reference from its own M3
+    rays through the key's alignment (headon_cache ref-only mode); cached as incl_<key>__<subrun>."""
+    import copy
     from qa_config import get_config, setup_paths
     setup_paths()
     cfg = get_config(key)
     sel = lambda tx, ty: tan_min <= abs(tx) <= tan_max or tan_min <= abs(ty) <= tan_max
-    # z window -3..33 mm along the track plus 5 mm in x; at tan >= 0.12 that reaches z ~ -45 / +75
-    ev = HC.build(cfg, tan_max=None, select=sel, z_lo=-8.0, z_hi=40.0)
+    # z window -8..40 mm along the track plus 5 mm in x
+    if subrun:
+        acfg, cfg = cfg, copy.copy(cfg)
+        cfg.SUB_RUN = subrun
+        if base:
+            cfg.BASE_PATH = base
+        ev = HC.build(cfg, tan_max=None, select=sel, z_lo=-8.0, z_hi=40.0, refonly=(acfg, cfg.m3_tracking_dir))
+        key = f'{key}__{subrun}'
+    else:
+        ev = HC.build(cfg, tan_max=None, select=sel, z_lo=-8.0, z_hi=40.0)
     os.makedirs(OUT, exist_ok=True)
     pickle.dump(ev, open(f'{OUT}/incl_{key}.pkl', 'wb'), protocol=4)
     print('wrote', f'{OUT}/incl_{key}.pkl', len(ev))
@@ -72,6 +83,8 @@ def bad_channels(key, plane):
     if not os.path.exists(path):
         return set()
     J = json.load(open(path))
+    if key not in J:
+        key = key.split('__')[0]                # a sub-run uses its parent run's strip health
     if key not in J:
         return set()
     h = J[key]['health'][plane]
@@ -231,9 +244,11 @@ def main():
     ap.add_argument('--tan-min', type=float, default=0.12)
     ap.add_argument('--tan-max', type=float, default=0.8)
     ap.add_argument('--nboot', type=int, default=30)
+    ap.add_argument('--subrun')
+    ap.add_argument('--base')
     a = ap.parse_args()
     if a.cmd == 'build':
-        build(a.key, a.tan_min, a.tan_max)
+        build(a.key, a.tan_min, a.tan_max, a.subrun, a.base)
     else:
         run_fit(a.keys.split(','), a.nboot)
 

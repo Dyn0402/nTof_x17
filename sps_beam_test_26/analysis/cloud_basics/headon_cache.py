@@ -23,7 +23,7 @@ sys.path[:0] = [REPO, os.path.join(REPO, 'mx_june_cosmic_qa'), os.path.join(REPO
 OUT = '/home/dylan/x17/cosmic_bench/cloud_basics/xwidth/caches'
 
 
-def ref_only(cfg, best, m3_dir, tan_max):
+def ref_only(cfg, best, m3_dir, tan_max, select=None):
     """Reference events straight from the M3 rays, through another sub-run's alignment (same run, no
     move): what attach_reference_positions does, without the hits chain -- so no has_x/has_y and no
     hit-residual cut; an empty window just fails the stack's threshold crossing."""
@@ -44,7 +44,7 @@ def ref_only(cfg, best, m3_dir, tan_max):
             continue
         t1, t2 = np.tan(ax), np.tan(ay)
         tx, ty = c * t1 + s * t2, -s * t1 + c * t2
-        if min(abs(tx), abs(ty)) >= tan_max:
+        if (not select(tx, ty)) if select else min(abs(tx), abs(ty)) >= tan_max:
             continue
         u, v = xr[e] - cx - best.x_offset, yr[e] - cy - best.y_offset
         events[int(e)] = dict(eid=int(e), tan_x=float(tx), tan_y=float(ty),
@@ -64,7 +64,7 @@ def build(cfg, tan_max, pad_mm=5.0, z_lo=-3.0, z_hi=33.0, res_cut_mm=10.0, veto=
     if refonly is not None:
         acfg, m3_dir = refonly
         best = cm.load_alignment(os.path.join(acfg.OUT_BASE, f'alignment_tpc_veto{veto}', 'alignment.json'))
-        return read_windows(cfg, ref_only(cfg, best, m3_dir, tan_max), pad_mm, z_lo, z_hi)
+        return read_windows(cfg, ref_only(cfg, best, m3_dir, tan_max, select), pad_mm, z_lo, z_hi)
 
     results = pickle.load(open(os.path.join(cfg.out_dir('cache'), f'event_results_veto{veto}.pkl'), 'rb'))
     best = cm.load_alignment(os.path.join(cfg.OUT_BASE, f'alignment_tpc_veto{veto}', 'alignment.json'))
