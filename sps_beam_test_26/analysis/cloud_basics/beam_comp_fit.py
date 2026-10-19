@@ -27,8 +27,12 @@ import gasmodel as M                                         # noqa: E402
 import predict as P                                          # noqa: E402
 from bench_fit import jitter                                  # noqa: E402
 
-GAP = 30.0
+GAP = 30.0                       # --gap; 30 mm until 2026-10-19
 WIN = (500.0, 3800.0)
+# drift voltages behind each field: the stacks were labelled V / 2.88 (700 V) or V / 3.0 cm (450, 275 V; the run_63
+# ladder blocks at 425 / 325 / 225 V).  fields() recomputes every E as V / GAP.
+STACK_V = {'raw700': 700.0, 'raw450': 450.0, 'raw275': 275.0}
+LADDER_HV = {425.0: 7.77, 325.0: 5.83, 225.0: 4.04}
 KS = (-0.1, -0.05, 0.0, 0.05, 0.1)
 SG = (0.0, 0.5, 1.0)
 LADDER_V = {142.0: 7.77, 108.0: 5.83, 75.0: 4.04}
@@ -57,8 +61,12 @@ def fit_stack(t, y, e, I, par, sj):
     return float(np.sum(sol.fun ** 2)), int(m.sum()), mod(sol.x, t), sol.x
 
 
+def ladder_v():
+    return {V / (GAP / 10.0): v for V, v in LADDER_HV.items()}
+
+
 def chi_v(G, comp):
-    return sum((G(comp[0], comp[1], E)['v'] - v) ** 2 / (V_ERR * v) ** 2 for E, v in LADDER_V.items())
+    return sum((G(comp[0], comp[1], E)['v'] - v) ** 2 / (V_ERR * v) ** 2 for E, v in ladder_v().items())
 
 
 def total(G, data, comp, k, sg, par, sj):
@@ -71,12 +79,20 @@ def total(G, data, comp, k, sg, par, sj):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--source', default='air')
+    ap.add_argument('--gap', type=float, default=None, help='drift gap [mm]; every E becomes V / gap (default: the '
+                    'old labels with 30 mm)')
     a = ap.parse_args()
+    global GAP
+    if a.gap is not None:
+        GAP = a.gap
     G = M.GasGrid('beam', a.source)
     H = json.load(open(os.path.join(HERE, 'results', 'headon_masked_k12.json')))
     t = np.array(H['t'])
     data = {}
-    for lab, E in (('raw700', 243.0), ('raw450', 150.0), ('raw275', 92.0)):
+    labels = (('raw700', 243.0), ('raw450', 150.0), ('raw275', 92.0))
+    if a.gap is not None:
+        labels = tuple((lab, round(STACK_V[lab] / (GAP / 10.0), 2)) for lab, _ in labels)
+    for lab, E in labels:
         for view, h in (('x', '2'), ('y', '8')):
             S = np.array(H[lab][view]['sum'][h]); y = S / S[(t >= 1080) & (t <= 1260)].mean()
             data[(E, view)] = (t, y, np.maximum(np.array(H[lab][view]['band'][h]), 0.005))
@@ -107,7 +123,8 @@ def main():
     out = dict(source=a.source, shaper=list(par), jitter=sj, k=k, gap_spread=sg, water=comp[0], air=comp[1],
                o2_ppm=comp[1] * 2095, water_68=[min(np.array(ws)[ok.any(1)]), max(np.array(ws)[ok.any(1)])],
                air_68=[min(np.array(as_)[ok.any(0)]), max(np.array(as_)[ok.any(0)])],
-               grid_w=ws, grid_a=as_, chi=chi.tolist(), ladder_v={str(E): [v, G(*comp, E)['v']] for E, v in LADDER_V.items()},
+               grid_w=ws, grid_a=as_, chi=chi.tolist(), ladder_v={str(E): [v, G(*comp, E)['v']] for E, v in (ladder_v() if a.gap else LADDER_V).items()},
+               gap=GAP, gap_mode='V/gap' if a.gap else 'labels',
                per_stack={})
     for (E, view), (tt, y, e) in data.items():
         c, n, mc, q = fit_stack(tt, y, e, cur(G, comp, E, k, sg), par, sj)
@@ -116,10 +133,12 @@ def main():
         out['per_stack'][f'{E}_{view}'] = dict(chi2=c, n=n, chi2_noair=c0, v=gp['v'], etav=gp['etav'], t0=q[1],
                                                curve=mc.tolist(), curve_noair=m0.tolist())
         print(f'  {E:5.0f} V/cm {view}: v {gp["v"]:5.2f}  eta*v {gp["etav"] * 1e4:.2f}e-4/ns  chi2 {c:.0f}/{n} (no air {c0:.0f})  t0 {q[1]:.0f}')
-    print('ladder v (meas, model):', {E: (v, round(G(*comp, E)['v'], 2)) for E, v in LADDER_V.items()})
+    print('ladder v (meas, model):', {round(E, 1): (v, round(G(*comp, E)['v'], 2)) for E, v in (ladder_v() if a.gap else LADDER_V).items()})
     print(f'best: water {comp[0]:.2f} % {out["water_68"]}, air {comp[1]:.3f} % {out["air_68"]} '
           f'({comp[1] * 2095:.0f} ppm O2), k {k:+.2f}, gap spread {sg:.1f} mm')
-    json.dump(out, open(os.path.join(HERE, 'results', f'beam_comp_fit_{a.source}.json'), 'w'))
+    out['chi2_total'] = float(chi.min())
+    tag = a.source + ('' if a.gap is None else f'_gap{a.gap:g}')
+    json.dump(out, open(os.path.join(HERE, 'results', f'beam_comp_fit_{tag}.json'), 'w'))
 
 
 if __name__ == '__main__':

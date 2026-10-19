@@ -44,16 +44,18 @@ THR_ADC = 60.0
 
 
 def annotate_bad(ev, key, path=None):
-    """Mark each event's dead/weak strips (results/strip_gain_audit.json health lists) as e[plane]['bad'],
+    """Mark each event's dead/weak strips (results/strip_gain_audit.json: head-on dead/weak + inclined-track holes) as e[plane]['bad'],
     which stack() then leaves out (FINDINGS §35).  Returns the number of events touched."""
     import json
     path = path or os.path.join(os.path.dirname(os.path.abspath(__file__)), 'results', 'strip_gain_audit.json')
-    H = json.load(open(path))[key]['health']
+    from strip_gain_audit import bad_set
+    A = json.load(open(path))[key]
+    bads = {p: bad_set(A, p) for p in ('x', 'y')}
     n = 0
     for e in ev.values():
         for p in ('x', 'y'):
             if p in e:
-                bad = set(H[p]['dead']) | set(H[p]['weak'])
+                bad = bads[p]
                 m = np.array([int(c) in bad for c in e[p]['ch']])
                 if m.any():
                     e[p]['bad'] = m; n += 1

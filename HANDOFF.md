@@ -19,51 +19,44 @@
   `python3 ~/PycharmProjects/dylan-cern-site/scripts/add-note.py /media/dylan/data/x17/future_oct26/mx17-future-x17.html --slug mx17-future-x17 --force --deploy`
   and commit the site repo.
 
-## Detector model basics: dead strips, gap, saturation, X footprint — updated 2026-10-19 (dylan-MS-7C84)
+## Detector model basics: dead strips, gap, v(E), saturation, X asymmetry — updated 2026-10-19 pm (dylan-MS-7C84)
 
-**Resume:** FINDINGS §35–38 (cloud_basics), all benches done. Kernel freeze is ON HOLD (Dylan 10-19: not until
-everything else is solid). Next: model the X sharing asymmetry (step 3), then masking in the toy (step 2).
+**Resume:** FINDINGS §35–42 + slide note <https://dylan-neff.web.cern.ch/notes/mx17-basics-oct19.html>
+(`cloud_basics/make_basics_deck.py`). Kernel freeze still ON HOLD. Next: Dylan's read of the note; then the
+amplitude-dependent template (saturation charge) and the D_rc-vs-delay test of the X asymmetry mechanism.
 
-**Goal:** get the basics (dead areas, gain structure, saturation, drift gap, X footprint) to the best state the
-existing data allow. NO NEW DATA.
-
-**Done 2026-10-19:**
-- §35 `strip_gain_audit.py`: strip-scale gain maps + dead/weak/hot strips per chamber + per-event flags.
-  det4's amplitude-dependent X width (§32–34) = its dead/weak strips (55 % of head-on windows); clean windows
-  are linear (r 0.43–0.48 = toy) and cut-stable at fixed σ0. det6 has 14 dead X channels in a connector
-  pattern; det7 4. Nothing in cloud_basics (or the SPS run_71 stacks) masks them yet.
-- §36 `gap_extent.py` + toy: timing-free drift gap from inclined tracks' charge extent. det3 28.10 ± 0.23,
-  det2 31.45 ± 0.38, det4 30.67 ± 0.41, det7 ~29.9 ± 1.0; det6 not measurable (window too short). One table
-  `gaps.py`, now used by unsat_width/bench_fit/driftscan_fit/iso_fit/xy_isotropy/make_xwidth_report.
-  det3's excess unchanged; det7 now on Magboltz.
-- §37 `sat_residual.py`, `chi2_split.py`: per-event censoring handles saturation (no recovery/neighbour
-  anomaly); saturated events' big χ² is brightness. The stack studies are what can't use saturated events.
-- §38: the RC model's worse X χ² is its footprint: σ0_x 0.25 gives production's χ² (det3 56 vs 57),
-  resolution-neutral overall, head-on +0.04 ± 0.03°; residual left is the X sharing asymmetry.
+**Done 2026-10-19 (pm):**
+- §39 inclined-track dead-strip test (`strip_gain_audit.holes`, `bad_set`): det7 ~20 more dead X channels (67–250);
+  masks now used by gap_extent and rc_diffusion. `gap_extent.py --satmask` keeps saturated events. gaps.py adopted
+  mean of the two selections: det3 28.08 ± 0.19, det2 31.12 ± 0.42, det4 30.48 ± 0.44, det7 29.44 ± 1.12.
+- §40 `vdrift_consistency.py`: det3 scan meshes (one water 0.955 %, χ² 4/5; timing+Magboltz gap 28.25 [27.75, 28.75]).
+  det2/det4 D_T-match gaps equal the timing-free ones; det3's D_T excess (+160…+260) is at every field. E = V/gap now
+  (was V/2.88 everywhere). Beam: ladder v is estimator-dependent (7.77 vs 10.0 µm/ns) → no det4 beam gap test.
+  `beam_comp_fit.py --gap` exists but its χ²(gap) is multi-minimum: do not use as a profiler.
+- §41 `sat_closure.py`: censoring keeps angle/position (resolution unchanged); charge 5–12 % low, not fixed by
+  `wft.model.SAT_SOLVE` (opt-in) → template amplitude dependence.
+- §42 X asymmetry: det3 model-free one-sided −1 copy delayed ~110 ns at the time-symmetric angle; no 31.2 mm beat;
+  det4 beam test band-dependent (gain-confounded, inconclusive). Hypothesis: resistive strip/pad offset + across-strip
+  RC (τ = (w/2)²/D_rc). Another session's quiet-event study is in `/media/dylan/data/x17/nb_asym_raw` (not mine).
 
 **Next steps:**
-1. (done) s0 benches, all five: σ0_x 0.25 recovers most of the X χ², overall resolution neutral, det4's X
-   deficit +0.164 → +0.061°; head-on slightly prefers the wide footprint (det7, det3).
-2. Masking: done in rc_diffusion.stack (`unsat_width.py --mask`); det4 still cut-dependent with masking alone,
-   needs clean windows. Still to do: the xw_sim toy, and det6/det7 masked widths (det7 unsat sample too small here;
-   its HV-pool caches are on the laptop).
-3. Add an asymmetric X footprint (or c1_asym-like term) to build_matrix_rc and see if the stack σ0 (0.35)
-   and the per-event σ0 (0.20–0.25) converge.
-4. Per-event censored width fit (forward model with σ0/Dd as hypers) so saturated events are used
-   instead of dropped (70–85 % on det2/6/7).
-5. SPS run_71: map det4's dead/weak strips into the beam channel numbering and mask; requote beam σ0/X width.
-6. (done, weak) gap_extent on the det3 drift scan: 900/1100 V consistent with 28.1 at ±0.7–1.1 mm.
+1. Amplitude-dependent X/Y pulse template from bright unclipped pulses; re-run `sat_closure.py` (target: charge bias ~0).
+2. X asymmetry: per-chamber delay vs 1/D_rc (det2, det6 need a time-symmetric sample at their own tilt);
+   hand the hypothesis to the simulation side; read nb_asym_raw's crosstalk result before any model term.
+3. det3's D_T excess: the one open bench inconsistency. Candidate checks: iso fraction (iso_fit.py grid), det3
+   amplification-region spread (σ0 vs D_T degeneracy at fixed σ0).
+4. Re-run unsat_width/bench_fit with E = V/gap (bench_fit.py CH still uses 347/208/243 V/cm).
+5. Older list still open: asymmetric X footprint in build_matrix_rc (wait for 2.), per-event censored width fit,
+   SPS run_71 det4 masking in beam channel numbering.
 
 **Gotchas:**
-- gap_extent: use the window *integral* half-height (toy-closed); peak reads +0.6…+2.3 high. Events need
-  ≥ 85 % charge in the column and total-charge normalisation, else a few mis-referenced events dominate.
-- gap_extent_toy's template peaks 510 ns after arrival: t0 = −30 ns matches the data's peak sample.
-- chi2_split per-event JSONs are MBs: they go to `~/x17/cosmic_bench/cloud_basics/chi2_split/`, not results/.
-- / (nvme) is at 100 % (2 GB free): keep outputs on /media/dylan/data (= ~/x17/cosmic_bench).
+- The head-on health test judges few channels on det2/6/7: always use `bad_set` (adds the inclined-track holes).
+- `xw_clean.py` clean subsets need `XW_MIN_EV=60` on det4.
+- `beam_comp_fit.py` without `--gap` keeps the old field labels; with `--gap` it writes `beam_comp_fit_<src>_gap<g>.json`.
+- / (nvme) is nearly full: outputs on /media/dylan/data (= ~/x17/cosmic_bench).
 
-**Key files:** `sps_beam_test_26/analysis/cloud_basics/{strip_gain_audit,xw_clean,gap_extent,gap_extent_toy,gaps,
-chi2_split,sat_residual}.py`; arms `~/x17/cosmic_bench/cloud_basics/arms/arm_<det>_rcms{20,25,30,35}.json`;
-bench driver `~/x17/cosmic_bench/cloud_basics/run_bench_s0.sh`.
+**Key files:** `cloud_basics/{strip_gain_audit,gainmap_export,gap_extent,gaps,vdrift_consistency,sat_closure,
+xasym_tests,xasym_samechannel,xasym_boundary,make_basics_deck}.py`; `wft/model.py` (SAT_SOLVE).
 
 ## Detector spec page for Stephan's review — updated 2026-10-16 (dylan-Yoga)
 

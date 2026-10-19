@@ -53,6 +53,7 @@ CONTAIN = 0.85
 TAN_BINS = (0.12, 0.2, 0.3, 0.45, 0.8)
 TAN_MAIN = (0.2, 0.8)            # below 0.2 a strip is >= 4 mm of depth and the neighbour tails dominate the edges
 FIT_Z = (-8.0, 42.0)
+SATMASK = False                  # set by --satmask
 
 
 def build(key, tan_min, tan_max, subrun=None, base=None):
@@ -87,11 +88,15 @@ def bad_channels(key, plane):
         key = key.split('__')[0]                # a sub-run uses its parent run's strip health
     if key not in J:
         return set()
-    h = J[key]['health'][plane]
-    return set(h['dead']) | set(h['weak'])
+    from strip_gain_audit import bad_set
+    return bad_set(J[key], plane)
 
 
-def profile(evs, plane, bad, qmode='int', tsign=0, tbin=TAN_MAIN, pitch=0.78):
+def profile(evs, plane, bad, qmode='int', tsign=0, tbin=TAN_MAIN, pitch=0.78, satmask=None):
+    """satmask=None: events with any sample >= SAT are dropped (the default).  satmask=True: they are kept and
+    only their clipped strips are left out of charge and exposure, like dead strips, with the event's
+    normalisation scaled by its fraction of good exposure."""
+    satmask = SATMASK if satmask is None else satmask
     S = np.zeros(len(ZG)); E = np.zeros(len(ZG)); n = 0
     for e in evs:
         if plane not in e:
@@ -100,7 +105,8 @@ def profile(evs, plane, bad, qmode='int', tsign=0, tbin=TAN_MAIN, pitch=0.78):
         if not (tbin[0] <= abs(tn) < tbin[1]) or (tsign and np.sign(tn) != tsign):
             continue
         W = np.asarray(e[plane]['W'], float)
-        if W.max() >= SAT:
+        clipped = W.max(1) >= SAT
+        if clipped.any() and not satmask:
             continue
         pos = np.asarray(e[plane]['pos'], float)
         z = (pos - e[f'ref_mesh_{plane}']) / tn
@@ -108,7 +114,7 @@ def profile(evs, plane, bad, qmode='int', tsign=0, tbin=TAN_MAIN, pitch=0.78):
         if z.min() > -6.0 or z.max() < 38.0:            # window must cover both edges with margin
             continue
         q = W.sum(1) if qmode == 'int' else W.max(1)
-        good = np.array([int(c) not in bad for c in e[plane]['ch']])
+        good = np.array([int(c) not in bad for c in e[plane]['ch']]) & ~clipped
         dens = q / dz
         lo, hi = z - dz / 2, z + dz / 2
         ov = np.clip(np.minimum(hi[:, None], ZG[None, :] + DZ / 2) - np.maximum(lo[:, None], ZG[None, :] - DZ / 2), 0, None) / DZ
@@ -122,6 +128,14 @@ def profile(evs, plane, bad, qmode='int', tsign=0, tbin=TAN_MAIN, pitch=0.78):
         if tot <= 0 or inside < CONTAIN * tot:
             continue
         norm = tot / 30.0                       # density / (total / 30 mm): plateau ~1 for a 30 mm column
+        if clipped.any():
+            # the clipped strips' share of the column is missing from tot: scale by the good fraction of the
+            # exposure inside the column (z 0-30)
+            col = np.clip(np.minimum(hi, 30.0) - np.maximum(lo, 0.0), 0, None)
+            fg = col[good].sum() / max(col.sum(), 1e-9)
+            if fg < 0.5:
+                continue
+            norm = norm / fg
         S += s / norm; E += x; n += 1
     with np.errstate(invalid='ignore', divide='ignore'):
         P = S / E
@@ -184,7 +198,7 @@ def boot(evs, plane, bad, nb, est=None, **kw):
     return float(np.std(g)) if g else np.nan
 
 
-def run_fit(keys, nb):
+def run_fit(keys, nb, suffix=''):
     path = f'{HERE}/results/gap_extent.json'
     out = json.load(open(path)) if os.path.exists(path) else {}
     for key in keys:
@@ -232,7 +246,7 @@ def run_fit(keys, nb):
                       'by tan ' + ' '.join(f'{t["gap"]:.2f}' for t in q['by_tan']), flush=True)
             r[plane] = R
         r['zgrid'] = [float(ZG[0]), DZ, len(ZG)]
-        out[key] = r
+        out[key + suffix] = r
         json.dump(out, open(path, 'w'), indent=1, default=float)
 
 
@@ -246,11 +260,15 @@ def main():
     ap.add_argument('--nboot', type=int, default=30)
     ap.add_argument('--subrun')
     ap.add_argument('--base')
+    ap.add_argument('--satmask', action='store_true', help='keep saturated events, masking only their clipped strips; '
+                    'results go to keys <key>@satmask')
     a = ap.parse_args()
     if a.cmd == 'build':
         build(a.key, a.tan_min, a.tan_max, a.subrun, a.base)
     else:
-        run_fit(a.keys.split(','), a.nboot)
+        global SATMASK
+        SATMASK = a.satmask
+        run_fit(a.keys.split(','), a.nboot, suffix='@satmask' if a.satmask else '')
 
 
 if __name__ == '__main__':
