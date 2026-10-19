@@ -53,8 +53,9 @@ def ref_only(cfg, best, m3_dir, tan_max):
     return events
 
 
-def build(cfg, tan_max, pad_mm=5.0, z_lo=-3.0, z_hi=33.0, res_cut_mm=10.0, veto=50, refonly=None):
-    """refonly = (alignment cfg, m3 tracking dir): take the reference from the rays alone (ref_only)."""
+def build(cfg, tan_max, pad_mm=5.0, z_lo=-3.0, z_hi=33.0, res_cut_mm=10.0, veto=50, refonly=None, select=None):
+    """refonly = (alignment cfg, m3 tracking dir): take the reference from the rays alone (ref_only).
+    select(tx, ty) -> bool replaces the head-on cut (gap_extent.py keeps inclined tracks)."""
     from wft import io as wio
     from qa_config import M3_CHI2_CUT, M3_MIN_NCLUS
     import cosmic_micro_tpc_analysis as cm
@@ -79,7 +80,7 @@ def build(cfg, tan_max, pad_mm=5.0, z_lo=-3.0, z_hi=33.0, res_cut_mm=10.0, veto=
             continue
         nref += 1
         tx, ty = cm._rotate_ref_tangents(r, best)
-        if min(abs(tx), abs(ty)) >= tan_max:
+        if (not select(tx, ty)) if select else min(abs(tx), abs(ty)) >= tan_max:
             continue
         events[int(r.event_id)] = dict(eid=int(r.event_id), tan_x=float(tx), tan_y=float(ty),
                                        ref_mesh_x=float(r.ref_mesh_x_mm), ref_mesh_y=float(r.ref_mesh_y_mm))

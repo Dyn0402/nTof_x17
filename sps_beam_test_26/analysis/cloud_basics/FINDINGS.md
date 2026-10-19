@@ -1064,3 +1064,127 @@ r = (W[c−1] + W[c+1]) / 2W[c] against the peak ADC:
 - **For the kernel:** take Dd per chamber from the unsaturated stack at the 3500 cut (the production amplitude mix),
   with +100 µm/√cm (det3, unexplained excess) and ±100 µm/√cm (det4/det6/det7, amplitude dependence) as stated
   systematics.
+
+## 35 · Dead strips and gain structure under the stacks; det4's amplitude dependence is its dead/weak strips (2026-10-19, desktop)
+
+> Qualifies §32–34 for det4. `strip_gain_audit.py` → `results/strip_gain_audit.json` (+ per-event flags
+> `gainflags_<key>.pkl` next to the head-on caches); `xw_clean.py` → `results/xw_clean.json`. Existing data only.
+
+Until now no cloud_basics fit masked anything: the stacks take the 9 strips around the charge maximum whatever
+they are, and the toy assumes uniform gain. The audit, per chamber:
+
+- **Gain map at strip scale across X** (wft events, Q = √(q_x q_y)/path at (x_p0, y_p0), kernel 2 mm across ×
+  15 mm along the X strips). Median |Δ ln g| over 3 mm at a head-on event: det2/det3 0.05–0.06, det6/det7
+  0.06–0.11, **det4 0.30** (q90 0.69; X-profile p90/p10 = 20 against 1.7–3.4 elsewhere).
+- **Strip health** (median peak ratio at ±1 from the cluster maximum, and the ±1 firing rate above 5σ, which
+  also works on saturated events): det3 one dead X strip (307), 8 % of head-on events have a dead/weak X strip
+  within ±4; det2 none; **det4 11 dead + 25 weak X strips, 55 % of events affected**; det6 14 dead X channels
+  in alternating pairs (52–60 even, 208/210, 222/224, 388–392: a connector pattern), 12 % affected; det7 4 dead
+  X (74, 76, 127, 269), 7 %. Y channels 7 and 9 are dead on both det6 and det7. det6/det7 show 60–80 X channels
+  with noise > 2× the chamber median (not acted on).
+
+**det4.** On det4 the amplitude cut is a position cut: head-on events with window max < 1000 ADC sit at local
+gain e^−0.66 with a bad strip in ±4 for 71 %; events above 3500 sit at e^+1.1 (48 %). With the ±2 neighbours
+healthy, the model-free r = (W[c−1]+W[c+1])/2W[c] is **0.43–0.48 at every amplitude**, the linear toy's
+0.44–0.47; with a dead/weak strip in ±2 it is 0.27–0.37. The §34 'non-linear footprint at low amplitude' is the
+dead/weak strips. With σ0 fixed the clean-window D_T is flat in the cut (σ0 = 0.35: 413 / 409 / 396 / 420 at
+3500 / 2500 / 2000 / 1500 ADC; all events fall 347 → 307). Free fits on clean events trade σ0 (0.43 → 0.51)
+against D_T (354 ± 32 → 280 ± 56), within errors.
+
+**det3** is unaffected: clean events give the same D_T (377 ± 12 against 373 ± 10 at 3500). **det7**: no
+unsaturated sample big enough on this machine (its HV-pool caches are on the laptop); its §34 faint tercile was
+already edge events. det7's dead strips now flagged; not refitted.
+
+**Consequences.** (1) det4's ±100 µm/√cm systematic of §34 is its dead strips, not its response: use clean
+windows (no dead/weak strip in ±4) for det4 widths. (2) Every stack and the toy should mask the flagged
+channels; det6/det7's were never masked. (3) The SPS det4 analyses (run_71: headon_stack, beam_xy_pulse,
+x_width_beam) do not mask either, and the 65–88 mm beam spot covers several of det4's 12 mm live bands and
+their edges; the beam widths/σ0 are open to the same bias (late/early charge ratios over wide sums are not).
+
+## 36 · The drift gap without timing: det3 28.1, det2 31.5, det4 30.7, det7 29.9 mm (2026-10-19, desktop)
+
+> `gap_extent.py` (caches `~/x17/cosmic_bench/cloud_basics/gap/incl_<key>.pkl`, every reference track with
+> 0.12 ≤ |tan| ≤ 0.8) → `results/gap_extent.json`; closure `gap_extent_toy.py`. The one gap table is now
+> `gaps.py`, used by unsat_width / bench_fit / driftscan_fit / iso_fit / xy_isotropy / make_xwidth_report.
+
+Every earlier gap was a time (T_end × v_geom), with a ±1 mm kernel systematic and a strong amplitude dependence
+(det4 +9 mm). Here no time enters: the X strip at x collects the ionisation from depth z = (x − x_mesh)/tan_ref
+over pitch/|tan|. Per-strip window integrals, spread over their z interval, stacked against z (dead/weak strips
+out of charge and exposure; events with any X sample ≥ 3500 dropped; each event must keep ≥ 85 % of its charge
+in z ∈ (−6, 36) and is normalised to its total; |tan| ≥ 0.2). The gap is the distance between the profile's
+half-height crossings: any symmetric blur (footprint, diffusion, reference error, strip interval, and a mixture
+of them over the tan range) leaves a step's half-height point in place, and an x_mesh offset moves both edges.
+
+**Closure** (toy: Fischle clusters, Polya gain, Magboltz-size diffusion, the bundle template timed to the data's
+peak sample, 60 ns sampling, noise, reference smear): G = 30 → 30.0–30.1 at v = 26–38 µm/ns, G = 27.9 → 27.75.
+The peak-sample version reads +0.6 to +2.3 mm high (blur-dependent): not used. Normalising events to their
+own plateau instead of their total let a few mis-referenced events dominate (a first pass read det3 30.2 —
+an artefact, superseded).
+
+| chamber (run) | gap [mm] | +tan / −tan | by \|tan\| 0.2–0.3 / 0.3–0.45 / ≥ 0.45 | timing column (K = 22) |
+|---|---|---|---|---|
+| det3 (6-27 sat) | **28.10 ± 0.23** (Y 28.87 ± 0.35) | 28.54 / 27.64 | 27.94 / 28.52 / – | 27.89 |
+| det2 (6-22 longer) | **31.45 ± 0.38** | 30.20 / 32.56 | 30.83 / 31.36 | 30.62 |
+| det4 (6-24) | **30.67 ± 0.41** (Y 30.14 ± 0.50) | 30.87 / 30.55 | 30.45 / 30.48 / 31.38 | 25.55 (amplitude) |
+| det7 (6-26 long / longer) | **30.08 ± 1.33 / 29.56 ± 1.51** | – | – | 27.51 |
+| det6 | not measurable (≥ 27.6) | | | 27.85 |
+
+- **det3's short gap is real** and now independent of any kernel: 28.1 ± 0.2 against 27.9 from timing. det2 −
+  det3 = +3.4 mm, as the timing contrast (+2.8 to +3.4). All measured chambers are within ~2 mm of the
+  mechanical 30.
+- det2's ±tan halves differ by 2.4 mm, a drift-field/reference tilt of ≈ 0.012 (the mean is first-order free
+  of it). det3's halves differ by 0.9 mm (δ ≈ 0.005).
+- **det6's deep charge runs past the 32-sample window** (deep strips' last sample at 40–86 % of their peak), so
+  its column is a lower limit. det3 6-22 (drift 8.9 µm/ns that night) likewise: excluded.
+- Not included: the M3 slope scale (gap ∝ 1/scale). Statistical errors only.
+
+**Effect on the width comparison** (`unsat_width.py --recompare`, no refit): det3 unchanged (+230 at 347 V/cm,
+7.8 sd). det7 (27.5 → 29.85) now sits on Magboltz at 0.43 % water (+88, 0.3 sd). det2 (30.6 → 31.45) becomes
+two-valued again: 0.09 % (−228) or 0.65 % (+188), both ~1 sd. det4 (30 → 30.67) +62 (0.3 sd).
+Water implied by v: det2 0.09/0.65, det3 0.93–0.97, det4 0.46, det7 0.43–0.61 %.
+
+## 37 · Saturation: censoring is adequate per event; the stacks are what cannot use saturated events (2026-10-19)
+
+> `chi2_split.py` (per-event χ² of plane_bench's held-out ref-start fits, summaries `results/chi2_split_*.json`,
+> per-event files `~/x17/cosmic_bench/cloud_basics/chi2_split/`), `sat_residual.py` → `results/sat_residual_det3.json`.
+
+- Production (and every wft arm) censors samples ≥ 3550 ADC with a one-sided penalty. On det3, saturated
+  events carry 4–6× the χ²/dof of unsaturated ones in every kernel (X: production 186 vs 32; Y 374 vs 68).
+- **That is brightness, not clipping.** Residuals (data − model, in units of the event's model peak, rcms25 arm)
+  stacked against the sample offset k from the end of the clipped run: the saturated strip reads +0.073 just
+  before the clip, +0.059 / +0.019 at k = +1 / +2 and −0.014 at k = +5. Bright *unsaturated* peak strips
+  (peak > 1500 ADC), around their peak, read +0.061 / +0.055 / +0.022 and −0.029: the same template mismatch at
+  high amplitude. The ±1 neighbours of a saturated strip fit no worse (−0.013…+0.011) than those of bright
+  unsaturated events (−0.05…+0.009). No recovery tail, baseline shift or neighbour pick-up shows after the clip.
+- So the per-event forward model treats saturation as well as the data allow; what is left is a fractional
+  template error that scales with amplitude (MODEL_FRAC in wft.model is the existing handle).
+- **The stack studies (§30–34) are a different matter**: a stack cannot censor, so they drop saturated events,
+  70–85 % of det2/det6/det7, and on a chamber with gain structure that cut selects low-gain regions (§35). The
+  way to use every event is a per-event censored width fit (the wft forward model, with σ0/Dd as the fitted
+  hypers) rather than stacks. Not done.
+- §33's 'data saturation bias 2–6× the toy's' is a property of the stacks (clipped samples averaged in), not of
+  the electronics' recovery: not resolved further.
+
+## 38 · The RC model's X χ² deficit is its footprint width (2026-10-19)
+
+§12/§17: the physical kernel's X χ²/dof is worse than production on every chamber (det3 58 → 79) while
+resolution is neutral. `chi2_split.py`, det3, 1000 held-out events, production / rcm / variants:
+
+- The deficit is uniform: ×1.2–1.4 on unsaturated, saturated, head-on, inclined and faint events alike. Not
+  saturation.
+- **Residual by strip offset (head-on, unsaturated)**: rcm under-predicts the centre strip (+4.1 σ per sample)
+  and over-predicts ±1 (−3.3 / −4.4): the model's footprint is too wide. Pseudo-Voigt tails (§23's rcmlor,
+  rcmlor2) make χ² worse (80 → 85 / 89).
+- **Narrowing σ0_x** (rcm keeps everything else): χ²/dof 80 (σ0_x 0.41) → 68 (0.35) → 60 (0.30) → 56 (0.25)
+  → 54 (0.20), against production 57; on saturated events 157 at 0.25 against production's 186. With 0.25 the
+  core residuals drop to +1.4 / −1.2 / −1.4; what is left is an **asymmetry** (−2: +1.2, +2: −2.0; production
+  shows the same sign), the internal X sharing asymmetry production carries as `c1_asym`. A symmetric footprint
+  cannot follow it.
+- **Resolution** (`run_bench_s0.sh` → `~/x17/cosmic_bench/cloud_basics/bench_s0/`, 2000 held-out, scale-corrected,
+  blind start, vs production): rcm X +0.005 ± 0.019 (head-on +0.010 ± 0.028); σ0_x 0.30 / 0.25 / 0.20:
+  +0.015 / +0.013 / +0.013 ± 0.019 overall, head-on +0.045 / +0.041 / +0.071 ± 0.03. Slope 0.963 (rcm) →
+  0.974–0.978, v-flatness spread 0.021 → 0.012–0.017. Y unchanged (−0.090 ± 0.019, head-on −0.136).
+- So on det3 a narrower X footprint fixes the fit quality and the angle scale at no cost overall and a small
+  (1.5–2.4σ) cost head-on. The per-event fit wants σ0_x ≈ 0.20–0.25 where the head-on stacks measure
+  0.35–0.43: one of the two is reading the asymmetry/neighbour structure as width. det2/det4/det6/det7 benches
+  are running (same script).

@@ -15,9 +15,10 @@ import os
 import re
 
 import numpy as np
+import gaps
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-SCAN_GAP = 27.9
+SCAN_GAP = gaps.gap('det3')          # 27.9 (timing) until 2026-10-19
 SATURATED = 505          # amplification-scan sub-runs above this saturate (x_width.py)
 
 

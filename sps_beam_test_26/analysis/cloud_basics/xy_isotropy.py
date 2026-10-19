@@ -33,6 +33,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 from rc_diffusion import stack, GRID
 from bench_attach import predict, template, GAP
+import gaps                                                 # noqa: E402
 
 CACHES = '/home/dylan/x17/cosmic_bench/cloud_basics/xwidth/caches'
 # drift HV -> cache; 100 V and 300 V are left out: their drift time outlasts the 3.6 us stack (x_width.py)
@@ -41,7 +42,7 @@ RUNS = {500: 'sat_det3__drift_scan_resist_490V_drift_500V',
         900: 'sat_det3__drift_scan_resist_490V_drift_900V',
         1000: 'sat_det3__long_run_resist_490V_drift_1000V',
         1100: 'sat_det3__drift_scan_resist_490V_drift_1100V'}
-GAP_DET3 = 27.9          # dished cathode (HANDOFF X-width gotchas); fits use GAP = 30, scaled when compared
+GAP_DET3 = gaps.gap('det3')   # 27.9 (timing) until 2026-10-19; dished cathode (HANDOFF X-width gotchas); fits use GAP = 30, scaled when compared
 WATER = 0.95             # det3 six-field composition fit, FINDINGS §25 (no air)
 DRC_GRID = [1.0e-4, 1.5e-4, 2.0e-4, 2.8e-4, 3.6e-4, 4.5e-4, 5.5e-4, 7.0e-4]
 LAM = 1e6

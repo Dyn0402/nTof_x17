@@ -25,8 +25,9 @@ sys.path.insert(0, HERE)
 import gasmodel as M                                         # noqa: E402
 import predict as P                                          # noqa: E402
 from bench_fit import jitter                                  # noqa: E402
+import gaps                                                  # noqa: E402
 
-GAP = 27.9
+GAP = gaps.gap('det3')          # 27.9 (timing) until 2026-10-19
 WIN = (-200.0, 1600.0)
 KS = (-0.2, -0.1, 0.0, 0.1, 0.2)
 SG = (0.0, 0.75, 1.5, 2.25)

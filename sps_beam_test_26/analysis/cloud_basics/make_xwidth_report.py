@@ -23,9 +23,10 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.abspath(os.path.join(HERE, '..', '..', '..'))
 sys.path[:0] = [HERE, os.path.join(REPO, 'sept26_prelim_analysis')]
 import figstyle as fs                                        # noqa: E402
+import gaps                                                  # noqa: E402
 
 R = f'{HERE}/results'
-SCAN_GAP = 27.9
+SCAN_GAP = gaps.gap('det3')          # 27.9 (timing) until 2026-10-19
 WET = fs.ACCENT          # Magboltz at the composition v asks for
 DRY = fs.COPPER          # dry 95/5
 DATA = fs.INK

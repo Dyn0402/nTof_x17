@@ -1,5 +1,50 @@
 # Handoff
 
+## Detector model basics: dead strips, gap, saturation, X footprint — updated 2026-10-19 (dylan-MS-7C84)
+
+**Resume:** FINDINGS §35–38 (cloud_basics). Kernel freeze is ON HOLD (Dylan 10-19: not until everything else is
+solid). Waiting on `run_bench_s0.sh` for det2/det7/det6/det4 (narrow σ0_x arms); then requote §38 with all five.
+
+**Goal:** get the basics (dead areas, gain structure, saturation, drift gap, X footprint) to the best state the
+existing data allow. NO NEW DATA.
+
+**Done 2026-10-19:**
+- §35 `strip_gain_audit.py`: strip-scale gain maps + dead/weak/hot strips per chamber + per-event flags.
+  det4's amplitude-dependent X width (§32–34) = its dead/weak strips (55 % of head-on windows); clean windows
+  are linear (r 0.43–0.48 = toy) and cut-stable at fixed σ0. det6 has 14 dead X channels in a connector
+  pattern; det7 4. Nothing in cloud_basics (or the SPS run_71 stacks) masks them yet.
+- §36 `gap_extent.py` + toy: timing-free drift gap from inclined tracks' charge extent. det3 28.10 ± 0.23,
+  det2 31.45 ± 0.38, det4 30.67 ± 0.41, det7 ~29.9 ± 1.0; det6 not measurable (window too short). One table
+  `gaps.py`, now used by unsat_width/bench_fit/driftscan_fit/iso_fit/xy_isotropy/make_xwidth_report.
+  det3's excess unchanged; det7 now on Magboltz.
+- §37 `sat_residual.py`, `chi2_split.py`: per-event censoring handles saturation (no recovery/neighbour
+  anomaly); saturated events' big χ² is brightness. The stack studies are what can't use saturated events.
+- §38: the RC model's worse X χ² is its footprint: σ0_x 0.25 gives production's χ² (det3 56 vs 57),
+  resolution-neutral overall, head-on +0.04 ± 0.03°; residual left is the X sharing asymmetry.
+
+**Next steps:**
+1. When the s0 benches finish: `compare_bench.py ~/x17/cosmic_bench/cloud_basics/bench_s0/bench_<det>_s0.json`
+   for det2/4/6/7; update §38 table.
+2. Mask flagged channels (strip_gain_audit health lists) in rc_diffusion.stack and the xw_sim toy; requote
+   unsat widths (det6/det7 especially). det4: clean windows only.
+3. Add an asymmetric X footprint (or c1_asym-like term) to build_matrix_rc and see if the stack σ0 (0.35)
+   and the per-event σ0 (0.20–0.25) converge.
+4. Per-event censored width fit (forward model with σ0/Dd as hypers) so saturated events are used
+   instead of dropped (70–85 % on det2/6/7).
+5. SPS run_71: map det4's dead/weak strips into the beam channel numbering and mask; requote beam σ0/X width.
+6. gap_extent on the det3 drift-scan sub-runs (field invariance; needs ref-only incl caches).
+
+**Gotchas:**
+- gap_extent: use the window *integral* half-height (toy-closed); peak reads +0.6…+2.3 high. Events need
+  ≥ 85 % charge in the column and total-charge normalisation, else a few mis-referenced events dominate.
+- gap_extent_toy's template peaks 510 ns after arrival: t0 = −30 ns matches the data's peak sample.
+- chi2_split per-event JSONs are MBs: they go to `~/x17/cosmic_bench/cloud_basics/chi2_split/`, not results/.
+- / (nvme) is at 100 % (2 GB free): keep outputs on /media/dylan/data (= ~/x17/cosmic_bench).
+
+**Key files:** `sps_beam_test_26/analysis/cloud_basics/{strip_gain_audit,xw_clean,gap_extent,gap_extent_toy,gaps,
+chi2_split,sat_residual}.py`; arms `~/x17/cosmic_bench/cloud_basics/arms/arm_<det>_rcms{20,25,30,35}.json`;
+bench driver `~/x17/cosmic_bench/cloud_basics/run_bench_s0.sh`.
+
 ## Detector spec page for Stephan's review — updated 2026-10-16 (dylan-Yoga)
 
 **Resume:** page live with comments on; next: Dylan posts one test comment, sends Stephan the link, fold answers into spec.py + Geant4.
@@ -184,7 +229,7 @@ Not X17 analysis; the notes live here because this repo is the one reachable fro
 
 ## X width excess: done with the data we have — updated 2026-10-17 (dylan-Yoga)
 
-**Resume:** §30–34 written up as a slide note (x-width-excess); next: fix the det4/det6 gap table, then freeze the kernel.
+**Resume:** superseded by the 2026-10-19 section above (gap table fixed via gap_extent; kernel freeze on hold).
 
 **Goal:** explain the X drift-width excess so the detector-model kernel can be frozen. NO NEW DATA: the detectors are gone.
 

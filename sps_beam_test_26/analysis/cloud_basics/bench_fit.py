@@ -10,8 +10,8 @@ of gap lengths (non-flat cathode), (x) a shared parametric shaper (x) a Gaussian
 jitter.  Per chamber: composition (water, air) scanned; field gradient k and gap spread
 profiled; amplitude, t0 and jitter fitted.  Shared over chambers: the shaper.
 
-Fields: 700 V <-> 243 V/cm (600 V 208, 1000 V 347).  Gaps: GAP_STUDY (det2 30.6,
-det3 27.9, det7 27.5 mm); det4's own is unusable -> 30.
+Fields: 700 V <-> 243 V/cm (600 V 208, 1000 V 347).  Gaps: gaps.py (timing-free, gap_extent.py; until
+2026-10-19 GAP_STUDY's det2 30.6, det3 27.9, det7 27.5, det4 30).
 
     bench_fit.py [--source air_hs] [--shaper beam|free]
 Output: results/bench_fit_<view>_<shaper>.json
@@ -28,8 +28,9 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import gasmodel as M                                         # noqa: E402
 import predict as P                                          # noqa: E402
+import gaps                                                  # noqa: E402
 
-CH = {'det2': (347.0, 30.6), 'det3': (347.0, 27.9), 'det4': (208.0, 30.0), 'det7': (243.0, 27.5)}
+CH = {d: (E, gaps.gap(d)) for d, E in (('det2', 347.0), ('det3', 347.0), ('det4', 208.0), ('det7', 243.0))}
 WIN = (-200.0, 1500.0)
 SG = (0.0, 0.75, 1.5, 2.25, 3.0)                 # gap spread [mm]
 KS = (-0.1, 0.0, 0.1)   # field gradient: the det3 drift scan (6 fields) supports |k| <= 0.1 (FINDINGS §21)
