@@ -1,9 +1,10 @@
 # Handoff
 
-## Future-X17 meeting deck (19 Oct) — updated 2026-10-19 evening (dylan-MS-7C84)
+## Future-X17 meeting deck (19 Oct) — updated 2026-10-19 (dylan-MS-7C84)
 
-**Resume:** Dylan's 19 Oct feedback is fully applied and republished
-(https://dylan-neff.web.cern.ch/notes/mx17-future-x17.html). Next: his review of the new version.
+**Resume:** 19 Oct feedback applied and republished (notes/mx17-future-x17); next: Dylan's review of it.
+
+- Live: https://dylan-neff.web.cern.ch/notes/mx17-future-x17.html
 
 - Generator `talks/future_oct26/make_deck.py`; feedback (verbatim) and the item-by-item log in
   `talks/future_oct26/FEEDBACK_2026-10-19.md`. 12 main slides + B1–B10.
