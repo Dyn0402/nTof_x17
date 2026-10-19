@@ -1,0 +1,133 @@
+# Paper I figure manifest -- read by ../make_figures.py.
+# One [fig.<id>] per figure; the .tex includes figures/<id> with no extension.
+#   state         current | superseded | placeholder
+#   source        repo-relative file to copy (current) or stamp (superseded)
+#   producer      shell command, run from the repo root, that (re)makes `source`
+#   section_state the PAPER_PLAN state of the section, shown on placeholders
+#   aspect        placeholder height / width (default 0.6)
+# Rule: nothing that shows a position, angle or depth from combined_hits times
+# may be "current" (RECONSTRUCTION_BASIS.md); mark it superseded.
+
+# --- 1 Introduction / 2 Design ------------------------------------------------
+
+[fig.chamber_stack]
+title = "MX17 module cross-section: window, drift, mesh, resistive strips, pad/strip readout"
+state = "placeholder"
+section_state = "partial"
+note = "Draw from docs/detector_spec/spec.py (the same numbers as the spec page and the Geant4 geometry). Several layers are still assumed: Stephan's answers to the spec-page questions fix them."
+producer = "python3 docs/detector_spec/build_page.py  # needs a PDF export of the side view"
+
+[fig.readout_layout]
+title = "Readout board: 512 x 512 pads on 0.78 mm pitch routed to X (L6) and Y (L5) strips; dead bands"
+state = "placeholder"
+section_state = "partial"
+note = "Photo or drawing from production (Stephan), plus the measured efficient area 399.4 x 359.9 mm."
+
+[fig.microtpc_principle]
+title = "Micro-TPC principle"
+state = "current"
+source = "mx_june_cosmic_qa/engineer_package/figures/02-microtpc-principle-schematic.pdf"
+producer = "see mx_june_cosmic_qa/engineer_package/figures/FIGURE_GUIDE.md (02)"
+
+# --- 3 Setups -----------------------------------------------------------------
+
+[fig.bench_setup]
+title = "Saclay cosmic bench"
+state = "current"
+source = "mx_june_cosmic_qa/engineer_package/figures/00-cosmic-bench-schematic.pdf"
+producer = "cd mx_june_cosmic_qa/engineer_package && ../../.venv/bin/python make_bench_diagram.py"
+note = "Swap for the mpgd26 bench_side render when its inputs are on this machine."
+
+[fig.sps_setup]
+title = "SPS H4: uRWELL references and det4 on the rail"
+state = "placeholder"
+section_state = "ready"
+source = "mpgd26/figures/sps_side_light_labelled.pdf"
+producer = "cd mpgd26 && ../.venv/bin/python make_figures.py"
+note = "The mpgd26 render exists as a script; its inputs are listed in mpgd26/slides/HANDOFF_offline_rebuild.md."
+
+# --- 4 Operation --------------------------------------------------------------
+
+[fig.hv_scan]
+title = "HV scan: efficiency and spark rate (det3)"
+state = "current"
+source = "mx_june_cosmic_qa/engineer_package/figures/30-det3A-hv-scan-efficiency-sparks.pdf"
+producer = "cd mx_june_cosmic_qa && ../.venv/bin/python 10_hv_scan_efficiency.py"
+note = "Detection efficiency from hits: allowed (QA)."
+
+[fig.spark_deadtime]
+title = "No dead time after a spark"
+state = "current"
+source = "mx_june_cosmic_qa/engineer_package/figures/44-det3A-spark-deadtime-null.pdf"
+producer = "cd mx_june_cosmic_qa && ../.venv/bin/python 39_spark_deadtime.py"
+
+# --- 5 Charge balance and efficiency -----------------------------------------
+
+[fig.charge_balance]
+title = "X/Y charge balance"
+state = "current"
+source = "mx_june_cosmic_qa/engineer_package/figures/61-xy-charge-balance-distribution.pdf"
+producer = "cd mx_june_cosmic_qa && ../.venv/bin/python 38b_charge_balance_report_figs.py"
+
+[fig.efficiency_map]
+title = "Efficiency map (det3)"
+state = "current"
+source = "mx_june_cosmic_qa/engineer_package/figures/20-det3A-efficiency-map.pdf"
+producer = "cd mx_june_cosmic_qa && ../.venv/bin/python 08_efficiency_maps.py"
+note = "July recipe; re-make from the r06 products (D1) before submission."
+
+[fig.edge_turnon]
+title = "Edge turn-on and fringe field"
+state = "superseded"
+source = "mx_june_cosmic_qa/engineer_package/figures/80-det3A-edge-fringe-dashboard.pdf"
+section_state = "partial"
+note = "The -3 deg edge tilt is a hits angle. Re-measure with wft angles (D4). The efficiency turn-on panel itself stands."
+
+# --- 6 Gas --------------------------------------------------------------------
+
+[fig.gas_vE]
+title = "Drift velocity v(E): six det3 drift-scan fields, waveform fit vs Magboltz"
+state = "placeholder"
+section_state = "partial"
+note = "cloud_basics/driftscan_fit.py has the composition fit; the r06 v(E) points are D2. Replaces the hits-era 70-det3A-drift-velocity-vs-magboltz."
+producer = "cd sps_beam_test_26/analysis/cloud_basics && ../../../.venv/bin/python driftscan_fit.py"
+
+[fig.attachment]
+title = "Attachment: charge loss vs drift time, bench (no O2) vs beam run_71 (163 ppm O2)"
+state = "placeholder"
+section_state = "partial"
+note = "From cloud_basics sections 16-27; report at ~/x17/cosmic_bench/cloud_basics/attachment/."
+
+# --- 7 Timing -----------------------------------------------------------------
+
+[fig.timing]
+title = "Time resolution"
+state = "superseded"
+source = "mx_june_cosmic_qa/engineer_package/figures/51-time-resolution-plane-to-plane.pdf"
+section_state = "open"
+note = "33 ns is from hit times. Port PLAN_42 to waveforms (D3)."
+
+# --- 8 Tracking and resolution ------------------------------------------------
+
+[fig.tracking_perf]
+title = "Cosmic tracking on r06: sigma_theta vs angle, within-5 mm efficiency, five chambers"
+state = "placeholder"
+section_state = "requote"
+note = "From the reproduced r06 products (C1 done 10-09; D1 to do). Reconstruction from Paper II."
+
+[fig.sps_resolution]
+title = "det4 intrinsic resolution at SPS: 176 +- 10 um = 0.30 x pitch"
+state = "placeholder"
+section_state = "ready"
+source = "sps_beam_test_26/analysis/spatial_resolution/figures/decomposition.png"
+producer = "cd sps_beam_test_26/analysis/spatial_resolution && ../../../.venv/bin/python make_figures.py"
+note = "make_figures.py needs residuals.npz (not on the desktop)."
+
+# --- 9 det4 stripes -----------------------------------------------------------
+
+[fig.det4_stripes]
+title = "det4: the non-amplifying stripes (62 % of the area)"
+state = "placeholder"
+section_state = "ready"
+producer = "cd sps_beam_test_26/det4_sps_assessment && ../../.venv/bin/python 14_board_map.py"
+note = "Board map from det4_sps_assessment. Stephan: production cause?"
