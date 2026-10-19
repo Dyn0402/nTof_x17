@@ -5,7 +5,7 @@ clean = no dead/weak X strip within +-4 of the cluster centre and |d ln g / dx| 
 centre.  If det4/det7's amplitude-dependent D_T (FINDINGS §32-34) comes from the gain structure under
 the window, it should vanish on clean events and concentrate in the rest.
 
-    xw_clean.py [--keys g_det4,...] [--grad 0.15] [--cuts 3500,2000]  -> results/xw_clean.json
+    xw_clean.py [--keys g_det4,...] [--grad 0.15] [--cuts 3500,2000] [--sig0-fix 0.35]  -> results/xw_clean.json
 """
 import argparse
 import json
@@ -38,6 +38,7 @@ def main():
     ap.add_argument('--cuts', default='3500,2000')
     ap.add_argument('--nboot', type=int, default=20)
     ap.add_argument('--workers', type=int, default=14)
+    ap.add_argument('--sig0-fix', type=float, help='pin sigma_0 (and T at T0) in the width fits; key suffix @s0<val>')
     a = ap.parse_args()
     path = f'{HERE}/results/xw_clean.json'
     out = json.load(open(path)) if os.path.exists(path) else {}
@@ -59,13 +60,13 @@ def main():
                     if n < xw.MIN_EV:
                         r[lab][f'unsat{cut:.0f}'] = dict(n=int(n))
                         continue
-                    m = xw.measure(pool, h, uns, T0, a.nboot)
+                    m = xw.measure(pool, h, uns, T0, a.nboot, sig0_fix=a.sig0_fix)
                     r[lab][f'unsat{cut:.0f}'] = m
                     print(f'{key:44s} {lab:5s} cut {cut:4.0f}: n {m["n"]:4d}  v {m["v"]:5.2f}±{m["v_err"]:.2f}  '
                           f'sig0 {m["sig0"]:.3f}±{m["sig0_err"]:.3f}  D_T {m["DT"]:4.0f}±{m["DT_err"]:3.0f}', flush=True)
                 rr = ' '.join(f'{q["lo"]}:{q["med"]:.2f}' for q in r[lab]['ratio'] if 'med' in q)
                 print(f'{"":44s} {lab:5s} r by peak ADC  {rr}', flush=True)
-            out[key + ('' if a.grad == 0.15 else f'@g{a.grad:g}')] = r
+            out[key + ('' if a.grad == 0.15 else f'@g{a.grad:g}') + ('' if a.sig0_fix is None else f'@s0{a.sig0_fix:g}')] = r
             json.dump(out, open(path, 'w'), indent=1, default=float)
 
 

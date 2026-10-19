@@ -110,6 +110,12 @@ HOT_NOISE_INFLATION = float(os.environ.get('WFT_HOT_NOISE_INFLATION', 10.0))
 #: archived RC-ladder model ran production at 0.03; 0.05 was the bench's best
 #: (RECO_BENCH_2026-07-29 §3: Y sigma_theta 1.12 -> 1.05, implied-v 2.8 -> 1.0).
 MODEL_FRAC = float(os.environ.get('WFT_MODEL_FRAC', 0.0))
+#: Censored samples in the charge solve itself (cloud_basics FINDINGS §41, opt-in).  Default: saturated samples are
+#: left out of the NNLS and only penalised afterwards, so the template fitted to the unclipped samples fills the
+#: peak -- angle and position come out as well as unclipped, but the charge of clipped strips reads 6-12 % low.
+#: With SAT_SOLVE the solve is repeated with every clipped sample the model falls below added as an observation
+#: AT the clip level (the active set of a one-sided bound, as in a Tobit fit) until none is below.
+SAT_SOLVE = bool(int(os.environ.get('WFT_SAT_SOLVE', 0)))
 
 _smear_cache: dict = {}
 _lp_cache: dict = {}
@@ -523,6 +529,26 @@ def _solve_nnls(M, W, noise, sat, censor=True):
     except Exception:
         return np.inf, None
     chi = rn * rn
+    if censor and SAT_SOLVE and sat.any():
+        # active set of the one-sided bound model >= clip on the censored samples
+        Wall = (np.repeat(1.0 / noise, NSAMP) if MODEL_FRAC <= 0 else
+                (1.0 / np.sqrt(noise[:, None] ** 2 + (MODEL_FRAC * np.maximum(W, 0.0)) ** 2)).reshape(-1))
+        Af, yf = M * Wall[:, None], W.reshape(-1) * Wall
+        sat1 = sat.reshape(-1)
+        act = np.zeros_like(sat1)
+        for _ in range(6):
+            below = sat1 & ((M @ q) < W.reshape(-1)) & ~act
+            if not below.any():
+                break
+            act |= below
+            use = ok | act
+            try:
+                q, rn = nnls(Af[use], yf[use], maxiter=50 * M.shape[1])
+            except Exception:
+                return np.inf, None
+        # chi2 over the unclipped samples only; the bound's residual enters through the penalty below
+        r = Af[ok] @ q - yf[ok]
+        chi = float(r @ r)
     if censor and sat.any():
         model = (M @ q).reshape(W.shape)
         pen = np.maximum(0.0, W[sat] - model[sat]) / np.repeat(

@@ -112,7 +112,49 @@ def health(ev, plane):
     weak = sorted(k for k, v in med.items() if DEAD_REL * ref <= v < WEAK_REL * ref)
     hot = sorted(k for k, v in noise.items() if v > 2.0 * nref)
     return dict(rel1_median=float(ref), n_judged=len(med), fire1_median=float(fref), n_fire_judged=len(frate), dead=dead, weak=weak, hot=hot,
-                rel1={str(k): v for k, v in med.items()}, noise_median=float(nref))
+                rel1={str(k): v for k, v in med.items()}, noise_median=float(nref),
+                fire1={str(k): v for k, v in frate.items()})
+
+
+def holes(ev, plane, nmin=8):
+    """Dead-strip test with inclined tracks (gap_extent caches): a channel whose two spatial neighbours both fire
+    (above 5 sigma) inside an event's track span should read about as much as they do; a dead one is a hole.
+    Returns the per-channel median peak / neighbours' mean and the channels below DEAD_REL x the median.  Covers far more channels than the
+    head-on +-1 test, saturated events included."""
+    inside = {}
+    for e in ev.values():
+        if plane not in e:
+            continue
+        W = np.asarray(e[plane]['W'], float)
+        pk = W.max(1)
+        fire = pk > 5.0 * np.maximum(np.asarray(e[plane]['noise'], float), 3.0)
+        idx = np.flatnonzero(fire)
+        if len(idx) < 4:
+            continue
+        # judged only where both spatial neighbours fire: a live strip between two firing ones fires too
+        # whatever the local gain; a dead one does not
+        for j in range(max(idx[0], 1), min(idx[-1], len(W) - 2) + 1):
+            if fire[j - 1] and fire[j + 1] and max(pk[j - 1], pk[j + 1]) < 3500:
+                # peak over the neighbours' mean: a noisy channel has a higher 5-sigma threshold and would
+                # look like a hole in a firing test; the ratio is noise-blind
+                inside.setdefault(int(e[plane]['ch'][j]), []).append(pk[j] / (0.5 * (pk[j - 1] + pk[j + 1])))
+    rate = {k: float(np.median(v)) for k, v in inside.items() if len(v) >= nmin}
+    ref = float(np.median(list(rate.values()))) if rate else float('nan')
+    dead = sorted(k for k, v in rate.items() if v < DEAD_REL * ref)
+    return dict(rate={str(k): v for k, v in rate.items()}, median=ref, n_judged=len(rate), dead=dead)
+
+
+INCL = os.path.expanduser('~/x17/cosmic_bench/cloud_basics/gap')
+INCL_KEY = {'sat_det3__long_run_resist_490V_drift_1000V': 'sat_det3'}
+
+
+def bad_set(entry, plane):
+    """Every flagged channel of one audit entry: head-on dead + weak, and inclined-track holes."""
+    h = entry['health'][plane]
+    out = set(h['dead']) | set(h['weak'])
+    if 'holes' in entry:
+        out |= set(entry['holes'][plane]['dead'])
+    return out
 
 
 def flags(ev, m, H):
@@ -161,14 +203,20 @@ def main():
                         dlng3mm_abs_quantiles=[float(q) for q in np.quantile(np.abs(d), [0.25, 0.5, 0.75, 0.9])],
                         frac_bad_x_in_window=float(np.mean(bx > 0)),
                         n_headon_x=len(hx),
-                        health={p: {k: v for k, v in H[p].items() if k != 'rel1'} for p in ('x', 'y')},
-                        rel1={p: H[p]['rel1'] for p in ('x', 'y')})
+                        health={p: {k: v for k, v in H[p].items() if k not in ('rel1', 'fire1')} for p in ('x', 'y')},
+                        rel1={p: H[p]['rel1'] for p in ('x', 'y')}, fire1={p: H[p]['fire1'] for p in ('x', 'y')})
         h = res[key]['health']
         print(f'{key:44s} map n {m["n"]:5d}  x-profile p90/p10 {res[key]["xprofile_p90_p10"]:5.2f}  '
               f'|dlng/3mm| q50/q90 {res[key]["dlng3mm_abs_quantiles"][1]:.2f}/{res[key]["dlng3mm_abs_quantiles"][3]:.2f}  '
               f'fire1 {h["x"]["fire1_median"]:.2f} (n {h["x"]["n_fire_judged"]})  X dead {h["x"]["dead"]} weak {len(h["x"]["weak"])} hot {len(h["x"]["hot"])} | Y dead {h["y"]["dead"]} weak '
               f'{len(h["y"]["weak"])} hot {len(h["y"]["hot"])}  | events with a bad X strip in +-4: {res[key]["frac_bad_x_in_window"]:.2f}',
               flush=True)
+        ip = f'{INCL}/incl_{INCL_KEY.get(key, key)}.pkl'
+        if os.path.exists(ip):
+            iev = pickle.load(open(ip, 'rb'))
+            res[key]['holes'] = {p: holes(iev, p) for p in ('x', 'y')}
+            hx = res[key]['holes']['x']
+            print(f'{"":44s} inclined-track holes: X judged {hx["n_judged"]}, dead {hx["dead"]}', flush=True)
         json.dump(res, open(path, 'w'), indent=1)
 
 

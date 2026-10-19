@@ -1218,3 +1218,104 @@ det3 unchanged (386 ± 10, +235 at 347 V/cm). det6_long 268 ± 99 (unchanged wit
 (unmasked 351 / 307 / 270 / 264, GAP-30 frame). Masking removes only the flagged strips; the gain falls over
 the band edges around them, so det4 widths need the clean-window selection (no flagged strip in ±4), which with
 σ0 fixed was flat. det7_long produced no masked fit (too few unsaturated events after masking).
+
+## 39 · Fuller dead-strip masks and saturated events in the gap; the adopted gaps (2026-10-19, pm)
+
+> `strip_gain_audit.holes` (inclined-track test), `bad_set`; `gap_extent.py fit --satmask` (keys `<key>@satmask`); `gaps.py`.
+
+- **The head-on health test judged only 31–85 of 512 X channels on det2/det6/det7** (most of their head-on events
+  saturate). New inclined-track test: every strip whose two spatial neighbours fire (unsaturated) should read about
+  their mean; median peak / neighbours' mean per channel, dead < 0.25 × the chamber median. Noise-blind (a first
+  firing-rate version flagged ~50 live, noisy det7 channels). Judges 190–500 channels. Agrees where both judge (det3
+  307; det6's 36–62 even / 208 / 224 / 388–392). New: **det7 ~20 dead X channels in 67–250**, det2 69/269, det3 39, det4
+  eight more. `bad_set` = head-on dead + weak + holes; used by gap_extent and rc_diffusion.annotate_bad.
+- det7's long-run gap with the new masks: 30.08 → 28.18 ± 1.55 (longer run 29.59, unchanged). det2/3/4 unchanged.
+- **`--satmask`** keeps events with saturated samples, masking only their clipped strips (charge and exposure;
+  normalisation scaled by the good fraction of the column 0–30 mm). det3 28.06 (vs 28.10), det2 30.83 ± 0.30 (vs 31.41,
+  148 → 328 tracks), det4 30.28 (vs 30.69), det7 30.50 / 29.82 (vs 28.18 / 29.59). det6 26.3 (still a lower limit).
+- **Adopted (gaps.py): the mean of the two selections, half the difference in quadrature**: det3 28.08 ± 0.19, det2
+  31.12 ± 0.42, det4 30.48 ± 0.44, det7 29.44 ± 1.12 (long + longer combined), det6 30 ± 2.
+- det4 clean-window D_T with σ0 pinned at 0.35 (and T at T0) reproduced and stored (`xw_clean.py --sig0-fix 0.35`,
+  XW_MIN_EV=60, key `g_det4@g99@s00.35`): clean 413 / 409 / 396 / 420, windows with a bad strip 282 / 277 / 266 / 278 at
+  3500 / 2500 / 2000 / 1500 ADC (GAP-30 frame). Both flat; the all-event cut dependence is their mix changing.
+
+## 40 · Drift velocity, gap and Magboltz mesh on the bench; the beam cannot test det4's gap (2026-10-19, pm)
+
+> `vdrift_consistency.py` → `results/vdrift_consistency.json`. Every earlier comparison used E = V / 2.88 cm for every
+> chamber; here E = V / gap, v = gap / T (T the unsaturated head-on stack's drift duration, bootstrap ⊕ 1.5 %).
+
+- **det3 drift scan (700 / 900 / 1100 V, the 1000 V long run and the two 1000 V amplification-scan points)**: at the
+  timing-free 28.08 mm one water fits all six, **0.955 % [0.935, 0.970], χ² 4.0 / 5** (pulls −0.7…+1.5). Profiling the
+  gap with the water refitted: **28.25 [27.75, 28.75] mm from timing + Magboltz alone**, against 28.08 ± 0.19 from the
+  charge extent. Water and gap are not degenerate because v(E) changes shape with water (steep at 250 V/cm at 1 %, flat
+  by 390).
+- **det3's D_T excess is at every field**: +163 / +241 / +233 / +260 / +235 / +262 µm/√cm in quadrature at 249–392 V/cm
+  over Magboltz at the scan's own water. A constant extra transverse spread per unit drift length on det3; not the gap,
+  not the field.
+- **Single-field chambers**: v gives the water (one per run), Magboltz gives D_T at it; the measured D_T falls as
+  √(30/gap), the Magboltz value rises with the assumed gap. They cross at det2 31.3 (timing-free 31.1), det4 30.5 (30.5),
+  det7 long 30.0 (29.4; longer 32.3, HV pool 27.2), det6 30.1 / 28.6 (unmeasured). det3 would need 30.8–31.1.
+  Shallow crossings, ±1–2 mm each.
+- Waters at E = V/gap: det2 0.56 %, det4 0.41 %, det7 0.43–0.60 % (long vs longer run 4σ apart in v), det6 0.77–0.86 %.
+  det6 and det7 ran side by side (6-26) and do not share a water, or det6's T is biased by its window-limited deep
+  charge. Consistent with per-chamber water ingress (2026-10-08 synthesis).
+- **Beam (det4 H4)**: `beam_comp_fit.py --gap` added (every E = V / gap; the labels mixed V/2.88 for 700 V with V/3.0
+  for the others). Its χ²(gap) jumps between local minima (t0 +400 vs −100 ns, water on the grid edge): not a gap
+  profiler. Cleaner: the run_63 ladder v (gap-free in principle) + Magboltz → v at 700 V → gap = v × T_end(run_71):
+  **28.6 mm whatever gap is assumed**, against the bench 30.48 ± 0.44. But the ladder v (7.77 / 5.83 / 4.04) is a ratio of
+  loss slopes per ns and per mm on strip peak times, and the peak-time ladder itself gives 10.0 µm/ns at 142 V/cm
+  (angled_kernel): a 25 % estimator spread (the time compression of RECONSTRUCTION_BASIS). **The beam carries no det4
+  gap information at the 1 mm level**, and the beam composition's low-field v constraint (3 % quoted) is weaker than
+  assumed. Not resolved.
+
+## 41 · Saturated pulses: a closure test by clipping unsaturated ones (2026-10-19, pm)
+
+> `sat_closure.py <det>` → `results/sat_closure_<det>.json`; `wft.model.SAT_SOLVE` (env `WFT_SAT_SOLVE`, opt-in, tests pass).
+
+Unsaturated bench events (window max 1500–3400 ADC; det3 742, det2 540 held-out) clipped at 0.4 / 0.6 × their own
+maximum (4–6-sample runs, as real ones), refitted with the production bundle, reference start:
+
+| det3, clip 0.4 / 0.6 | Δtan vs unclipped s68 | res vs M3 s68 (unclipped 0.0181) | charge vs unclipped |
+|---|---|---|---|
+| censored (production) | 0.0051 / 0.0028 | 0.0181 / 0.0180 | −12.1 / −6.1 % |
+| bound in the solve (SAT_SOLVE) | 0.0053 / 0.0030 | 0.0178 / 0.0178 | −10.0 / −4.9 % |
+| clipped taken as real | 0.0063 / 0.0037 | 0.0177 / 0.0179 | −25.9 / −10.3 % |
+| clipped strips dropped | 0.0271 / 0.0189 | 0.0324 / 0.0239 | +42 / +2 % (s68 125 / 28 %) |
+
+det2 the same (censored −11.5 / −5.8 %, resolution unchanged at 0.0207). **Production's censoring is the right
+treatment for angle and position** (it is the limit of "reconstruct from the slopes": the template fitted to the
+unclipped edges fills the peak, no invented error). The charge reads 5–12 % low and the in-solve bound recovers only
+1–3 points of it: the deficit is the template under-filling bright pulses (§37's +6–7 % peak residual), not the
+censoring. Next: an amplitude-dependent pulse template from bright unclipped pulses.
+
+## 42 · The X ±1 asymmetry: model-free evidence (2026-10-19, pm)
+
+> `xasym_tests.py`, `xasym_samechannel.py`, `xasym_boundary.py` → `results/xasym_*.json`. Raw waveform windows only.
+
+- **Not a walk.** The ±1 mean-time difference crosses zero at tan_ref ≈ −0.005 on det3 (its ±tan gap halves give the
+  same 0.005). There the timing is symmetric, yet aQ = (Q₋₁ − Q₊₁)/(Q₋₁ + Q₊₁) = **+0.165 ± 0.019** (head-on). The −1
+  minus +1 stacked pulse is 0.13 × the centre pulse **delayed ≈ 114 ns** (89 % of it); det4 bench 105 ns, det7 120 ns
+  (n 20). det2 at that angle is walk-dominated (its own tilt is 0.012).
+- Bench head-on aQ (uniform illumination, so gain-averaged): det3 +0.165 ± 0.019, det2 +0.08 ± 0.04, det4 +0.08 ± 0.04,
+  det7 +0.19 ± 0.07, det6 −0.02 ± 0.07. det3's varies 0.05–0.34 along x (25 mm bins, χ² 37 / 13 against flat).
+- **No 31.2 mm beat** (an 800 µm resistive pitch over 780 µm pads): periodogram power 0.4–7 at 31.2 mm against a null
+  mean of 2; no significant period in x or y.
+- **Beam det4**: cluster aQ follows position (−0.27 at 105 mm … +0.39 at 205 mm): det4's strip gains. The per-channel
+  test (each channel as −1 against as +1 neighbour, normalised to the ±3-strip cluster charge; a toy with symmetric
+  sharing and a ×3 uncorrelated gain spread gives −0.05…0.00) reads median +0.43 ± 0.08 over 56 channels, but it is
+  ≈ 0 over the whole 149–161 mm band and +0.4…+0.75 over 182–214 mm: same chip, different band, so not a chip property;
+  with det4's ×20 gain swings inside 12 mm bands the cluster normalisation is not gain-free. Inconclusive.
+- Channel numbers fall with +x in every 64-channel block on all chambers; spatial and electronic neighbours differ only
+  at chip edges. The det4 chip-edge clusters (aQ −0.31 / +0.39 / +0.27 / −0.02 over four strips) are gain-dominated.
+  Electronics crosstalk is not excluded here; another study (`/media/dylan/data/x17/nb_asym_raw`, quiet raw events) is on it.
+- **Candidate mechanism (hypothesis)**: the resistive strips offset by δ from the pad columns. Landed charge spreads
+  across its 550 µm strip in τ ≈ (w/2)² / D_rc = 95–270 ns (each chamber's RC D_rc); where the strip overlaps a
+  neighbouring pad only that side gains charge, late. Measured delays 105–120 ns: same order. Predicts delay ∝ 1/D_rc,
+  nothing in Y, a fixed sign and a size set by the print registration per board. Not a model term; production's
+  c1_asym stays effective.
+- **σ0_x (§38) in this light**: beyond the strip integration (the model's erf; alone σ = 0.225 mm) the prompt X
+  footprint is avalanche (≈ 25 µm) ⊕ induction through ≈ 70 µm onto 0.68 mm pads (≈ 0.05–0.1) ⊕ the 550 µm strip box
+  (0.16) ≈ 0.18–0.2 mm: the per-event 0.20–0.25 is the physical value. Y differs because along y the spread continues
+  (RC); across, it stops at the strip edges. The stacks' 0.35–0.43 add the one-sided copy and ~0.1 mm of track walk.
+
+Slide note: <https://dylan-neff.web.cern.ch/notes/mx17-basics-oct19.html> (`make_basics_deck.py`).
