@@ -207,42 +207,6 @@ def _effmaps():
     return BE
 
 
-def det_rays(arm):
-    """Per-ray table of a bench chamber in its own detector frame (u, v) and the active polygon.
-    The bench chambers sit at theta ~ 90 deg in the M3 frame, so detector y is bench x: strips run
-    vertically on these maps."""
-    BE = _effmaps()
-    d = rd(BENCH / f'{KEY[arm]}_rays.csv')
-    b = json.load(open(BENCH / f'{KEY[arm]}_box.json'))
-    (u, v), poly, th = BE.to_detector_frame(KEY[arm], d.x.to_numpy(float), d.y.to_numpy(float), b)
-    return d, u, v, poly, th
-
-
-def eff_map(arm, w, h, cell=20.0, xlabel=False, ylabel=False, title=None, nmin=8):
-    d, u, v, poly, th = det_rays(arm)
-    nx, ny = int(math.ceil(420 / cell)), int(math.ceil(420 / cell))
-    ix = np.clip((u // cell).astype(int), 0, nx - 1)
-    iy = np.clip((v // cell).astype(int), 0, ny - 1)
-    g = pd.DataFrame({'ix': ix, 'iy': iy, 'w': d.within.astype(int)}).groupby(['ix', 'iy']).w.agg(['sum', 'count'])
-    cells = []
-    for (i, j), r in g.iterrows():
-        if r['count'] < nmin:
-            continue
-        e = r['sum'] / r['count']
-        cells.append((i * cell, (i + 1) * cell, j * cell, (j + 1) * cell, e,
-                      f'{DET[arm]} ({arm}) cell x {i * cell:.0f}-{(i + 1) * cell:.0f}, y {j * cell:.0f}-{(j + 1) * cell:.0f} mm:\n'
-                      f'{int(r["sum"])}/{int(r["count"])} reconstructed within 5 mm = {100 * e:.0f} %'))
-    P = sd.Plot(w, h, x=(0, 400), y=(10, 390), xlabel='detector x (mm)' if xlabel else '',
-                ylabel='detector y (mm)' if ylabel else '', title=title,
-                margin=(8, 8, 56 if xlabel else 30, 70 if ylabel else 18))
-    P.xticks([(t, str(t)) for t in (0, 100, 200, 300, 400)])
-    P.yticks([(t, str(t) if ylabel else '') for t in (100, 200, 300)])
-    P.cells(cells, 0.0, 1.0)
-    pp = list(poly) + [poly[0]]
-    P.raw(sd.poly([P.X(a) for a, _ in pp], [P.Y(b_) for _, b_ in pp], INK, 1.5))
-    return P, float(d.within.mean()), len(d)
-
-
 def kernel_png(arm, sigma=4.0):
     """The MPGD26/Athens sliding-kernel map (Gaussian circle, sigma 4 mm, 0.5 mm steps) as a viridis
     PNG with transparent outside the active area; cached next to the deck.  Returns (data URI, extent)."""
@@ -289,8 +253,8 @@ def s_cover(D, L, AL):
                       '(spatial_resolution/results.json)', size=62),
         sd.bignum('93 % · 1.2°', 'best chamber on cosmics', sd.DBLUE,
                   'det3: reconstructed within 5 mm; angle σ68, flat from 0 to 18°', size=62),
-        sd.bignum(f'{AL["singles"] / 1e6:.1f} M · {AL["pairs"] / 1e3:.1f}k', 'Al singles · correlated pairs', sd.DGREEN,
-                  'n_TOF, chambers A + C, ≥ 12 ms; pairs come in at ⅛ of Geant4 (being worked on)',
+        sd.bignum(f'{AL["singles"] / 1e6:.1f} M · {AL["pairs"] / 1e3:.1f}k', 'Al singles · pairs in the data', sd.DGREEN,
+                  'reconstructed, n_TOF chambers A + C, ≥ 12 ms; pairs come in at ⅛ of Geant4 (being worked on)',
                   tip=f'single tracks ≥ 12 ms: A {AL["A"]["singles"]:,}, C {AL["C"]["singles"]:,} · correlated '
                       f'same-chamber pairs (rate fit): A {AL["A"]["pairs"]:,.0f}, C {AL["C"]["pairs"]:,.0f}', size=62),
         sd.bignum(f'{L["bp1"]["days_3sigma"]:.1f} d', 'to 3σ at the ATOMKI ratio, LNL', sd.DGREEN,
@@ -309,7 +273,7 @@ def s_cover(D, L, AL):
                 dark=True, size=24))
     notes = """
 <p><b>The question for the meeting.</b> The n_TOF run cannot see X17 (thermal neutrons only, after the γ-flash
-dead time; backup B5). Can this detector system search for X17 somewhere else, and what does it need?</p>
+dead time; backup B4). Can this detector system search for X17 somewhere else, and what does it need?</p>
 <p><b>Short answer.</b> The Micromegas TPCs track well (best chamber 93 % efficient, 1.2° angles, 176 µm
 intrinsic) and, in the beam, single tracks agree with Geant4 and image the target. The scintillators hold a muon
 energy scale that predicts electron spectra to 2–5 %. At LNL (⁷Li(p,e⁺e⁻)⁸Be, the ATOMKI reaction) the Geant4
@@ -349,7 +313,7 @@ det4 = "E", the SPS chamber.</p>
 <p><b>Bench geometry</b> (scenes_bench.py): scintillators at z −110 and 1420 mm, M3 at 24, 144, 1185, 1302 mm,
 test slots P1 232 and P2 702 mm. <b>SPS</b> (scenes_sps.py): uRWELL at 0 and 1370 mm, P2 fans at 320/630/940 mm,
 det4 in the ~25 cm between the last P2 and the back uRWELL.</p>"""
-    D.slide('b-setups', body, notes, short='B4 Setups')
+    D.slide('b-setups', body, notes, short='B3 Setups')
 
 
 def s_best(D):
@@ -384,18 +348,20 @@ def s_best(D):
                  tips=[f'{coord}, uRWELL pitch {r["pitch"]} mm: residual σ {1000 * r["sigma_res"]:.0f} ± {1000 * r["err"]:.0f} µm, '
                        f'pointing {1000 * r["pointing"]:.0f} µm → det4 {1000 * r["sigma_det4"]:.0f} µm (n = {r["n"]:,})' for r in z])
 
-    M, e3, n3 = eff_map('A', 470, 560, cell=15, xlabel=True, ylabel=True, title='det3 efficiency map')
+    M = kernel_map('A', 440, 560, xlabel=True, ylabel=True, title='det3 efficiency, σ 4 mm kernel')
+    km = kernel_png('A')[1]
+    e3, n3 = km['integrated'] / 100, km['n_rays']
     body = (sd.title('Micromegas TPC performance: the best chamber is 93 % efficient, 1.2° in angle, 176 µm intrinsic',
                      'det3 (n_TOF arm A) on the Saclay cosmic bench against the M3 telescope · det4 in the SPS H4 beam against uRWELLs')
-            + sd.row(P.svg('angle resolution'), M.svg('det3 efficiency'), Q.svg('SPS resolution'), gap=24)
-            + sd.row(sd.legend([('X plane / uRWELL x', BLUE, 'dot'), ('Y plane / uRWELL y', ORANGE, 'dot'),
-                                ('efficiency 0 → 100 %, 15 mm cells', sd.VIRIDIS[6][1], 'box')], size=22)))
+            + sd.row(P.svg('angle resolution'), sd.row(M.svg('det3 efficiency'), sd.colorbar(96, 420, 0, 1, [(0, '0'), (0.5, '50'), (1, '100 %')], 'within 5 mm'), gap=2, align='center'), Q.svg('SPS resolution'), gap=16)
+            + sd.row(sd.legend([('X plane / uRWELL x', BLUE, 'dot'), ('Y plane / uRWELL y', ORANGE, 'dot')], size=22)))
     notes = f"""
 <p><b>Left: angles.</b> σ68 of (reconstructed − M3 reference) track angle in bins of |reference angle|, det3
 (<code>sat_det3</code>, r06 bundle, waveform forward model). Flat from head-on, where a drift-time ladder has no lever
 arm, to 18°. The cosmic σ68 includes the M3 reference's own error and multiple scattering. Source
 <code>mpgd26/data/angle_resolution.json</code>.</p>
-<p><b>Middle: efficiency.</b> P(reconstructed within 5 mm of the M3 track) per 15 mm cell, <code>g_det3_wknd</code>,
+<p><b>Middle: efficiency.</b> P(reconstructed within 5 mm of the M3 track), Gaussian sliding kernel σ 4 mm in 0.5 mm
+steps (the MPGD26 / Athens map, <code>make_bench_effmaps.make_map</code>), <code>g_det3_wknd</code>,
 {n3:,} reference muons, overall {100 * e3:.1f} %. Detection alone (any hit) is ~100 %; the 5 mm requirement is what
 the tracking needs. Losses are sparks (~8 %) and far reconstructions.</p>
 <p><b>Right: intrinsic resolution.</b> det4 residuals to the uRWELL track in zones of different telescope pitch, so of
@@ -419,8 +385,9 @@ def s_fleet(D):
     maps = []
     tot = {}
     for i, a in enumerate('ABCDE'):
-        P, e, n = eff_map(a, 300 + (70 if i == 0 else 0), 330, cell=20, xlabel=False, ylabel=(i == 0))
-        tot[a] = (e, n)
+        P = kernel_map(a, 300 + (70 if i == 0 else 0), 330, xlabel=False, ylabel=(i == 0))
+        km = kernel_png(a)[1]
+        tot[a] = (km['integrated'] / 100, km['n_rays'])
         maps.append(sd.col(map_head(a), P.svg(f'{DET[a]} map'), gap=2))
     cb = sd.colorbar(120, 330, 0, 1, [(0, '0'), (0.5, '50'), (1, '100 %')], 'within 5 mm')
     rows = []
@@ -436,15 +403,16 @@ def s_fleet(D):
     tab = sd.table(['chamber', 'within 5 mm', 'core σ_r', 'σθ X / Y', 'sparks', 'verdict', 'role / issue'],
                    rows, size=22, tips=tips, align=['left', 'right', 'right', 'right', 'right', 'left', 'left'])
     body = (sd.title('The fleet: two good chambers, two that need re-bulking, one that does not amplify over 62 % of its area',
-                     'June cosmic bench, waveform reco (r06), own detector frame · reconstructed within 5 mm of the M3 track, 20 mm cells')
+                     'June cosmic bench, waveform reco (r06), own detector frame · within 5 mm of the M3 track, σ 4 mm kernel')
             + sd.row(*maps, cb, gap=10, align='end')
             + tab)
     notes = """
 <p><b>Maps</b>: per-ray tables of <code>mx_june_wft/report/make_bench_effmaps.py</code> (same datasets as the
-colleague PDF), binned here in 20 mm cells (cells with &lt; 8 muons left blank). Each map is in the chamber's own
+colleague PDF), with the sliding kernel of the MPGD26 / Athens efficiency slide (Gaussian, σ 4 mm, 0.5 mm steps;
+<code>make_bench_effmaps.make_map</code>). Pixel-to-pixel texture is counting noise (≈ 7 effective muons per
+kernel). Each map is in the chamber's own
 frame (<code>make_bench_effmaps.to_detector_frame</code>: the chambers sat at θ ≈ 90° on the bench, so detector y is
-bench x), which puts dead strips and connector patterns vertical; the outline is the active area. The smooth
-sliding-kernel version of the same maps is in the backup. <b>Table</b>: <code>mx_june_wft/FLEET_DIGEST.md</code> (r06, five golden keys; det3 there is
+bench x), which puts dead strips and connector patterns vertical; the outline is the active area. <b>Table</b>: <code>mx_june_wft/FLEET_DIGEST.md</code> (r06, five golden keys; det3 there is
 <code>sat_det3</code>, 93.3 %, the map uses <code>g_det3_wknd</code>, 93.1 %).</p>
 <p><b>What does not work, and why.</b> det6 (C): 14 dead X channels in a connector pattern, 22 % sparking events.
 det7 (D): sparks in 37 % of events; at n_TOF ~130 of its 512 X channels were dead. det4 (E): 62 % of the area does
@@ -465,23 +433,47 @@ def s_expect(D, AL):
              tip='what makes a trigger leg (wall ∧ plastic): Compton e⁻ of a capsule γ 76.7 %, e⁺e⁻ made in the '
                  'capsule 9.7 %, γ converting in the structure 6.8 %, capture outside 2.7 %, mixed 4.2 %'),
     ], size=22)
-    cartoon = AL['OC'].pair_diagram().replace('width="560" height="270"', 'width="860" height="415"', 1)
+    cartoon = AL['OC'].pair_diagram().replace('width="560" height="270"', 'width="800" height="386"', 1)
     sg, pg = AL['singles_g4'], AL['pairs_g4']
+    B = g4_breakdown(AL)
+    M_ = lambda v: f'{v / 1e6:.1f} M' if v >= 1e6 else (f'{v / 1e6:.2f} M' if v >= 1e5 else f'{v / 1e3:.0f} k')  # noqa: E731
+    lim = 3 * B['n_late'] / B['n_trig_g4']
+    tab_s = sd.table(['single tracks', *[f'<b style="color:{CH[a]}">{a}</b>' for a in 'ABCD']],
+                     [['in the gap (Geant4)', *[M_(B['singles'][a]) for a in 'ABCD']],
+                      ['reconstructed', M_(B['singles_reco']['A']), '–', M_(B['singles_reco']['C']), '–']],
+                     size=21, tips=['Geant4 track-like leptons (≥ 20 mm of gap) entering the gap with |tan| < 0.6, '
+                                    'in triggered events, scaled to the late sample (no detector efficiency)',
+                                    '× the digitised-reconstruction efficiency (A 0.54, C 0.45); B and D were not '
+                                    'reconstructed in production'])
+    opp = lambda k: '0' + (f' (&lt; {lim / 1e3:.0f} k)' if k == 'gap' else '')  # noqa: E731
+    tab_p = sd.table(['e⁺e⁻ pairs', 'same chamber', 'adjacent', 'opposite'],
+                     [['both legs in a gap', M_(B['pairs_gap']['same']), M_(B['pairs_gap']['adjacent']), opp('gap')],
+                      ['both reach the SiPM wall', M_(B['pairs_wall']['same']), M_(B['pairs_wall']['adjacent']), opp('wall')]],
+                     size=21, tips=[f'Geant4: e⁺e⁻ of one conversion, both legs track-like and in acceptance, in a '
+                                    f'triggered event, all four chambers ({B["pairs_gap_n"]["same"]} / {B["pairs_gap_n"]["adjacent"]} / '
+                                    f'0 simulated pairs; opposite: 95 % limit)',
+                                    'and each leg leaves ≥ ½ MIP in the 3 mm SiPM wall '
+                                    f'({B["pairs_wall_n"]["same"]} / {B["pairs_wall_n"]["adjacent"]} / 0 simulated)'])
     nums = sd.col(
-        sd.bignum(f'{sg / 1e6:.1f} M', 'single tracks expected', BLUE,
-                  'Compton electrons of the Al γ, chambers A + C, ≥ 12 ms', dark=False, size=64,
+        sd.bignum(f'{sg / 1e6:.1f} M', 'single tracks expected, A + C', BLUE,
+                  'Geant4 × the reconstruction efficiency × the late triggers', dark=False, size=50,
                   tip=f'Geant4 singles × the digitised-reconstruction efficiency, scaled to the data triggers: '
                       f'A {AL["A"]["singles_g4"]:,.0f}, C {AL["C"]["singles_g4"]:,.0f}'),
-        sd.bignum(f'{pg / 1e3:.0f} k', 'same-chamber e⁺e⁻ pairs expected', RED,
-                  'Geant4 pushed through the same reconstruction, close-pair losses included', dark=False, size=64,
+        tab_s,
+        sd.bignum(f'{pg / 1e3:.0f} k', 'same-chamber pairs expected, A + C', RED,
+                  'reconstructed as two tracks; close-pair losses included', dark=False, size=50,
                   tip=f'predicted pair fraction × tracked late events: A {AL["A"]["pairs_g4"]:,.0f}, C {AL["C"]["pairs_g4"]:,.0f}'),
-        gap=36, w=600)
+        tab_p,
+        gap=14, w=720)
     body = (sd.title('What n_TOF could show: Al-capture e⁺e⁻ pairs, the hardest version of the X17 signature',
                      'Geant4 thermal campaign (10⁹ n, nose-first capsule), digitised through the production reconstruction')
-            + flow
             + sd.row(sd.col(cartoon, sd.p('one arm, side view: a soft Al pair stops in the stack; an X17 leg goes through', 21, MUT),
-                            gap=6), nums, gap=60))
+                            gap=6), nums, gap=40))
     notes = """
+<p><b>The chain</b> (Geant4 thermal campaign, 10⁹ n, nose-first capsule): of the neutrons entering the capsule,
+³He(n,p) takes 92 % and (n,γ) 0.81 %; captures on the Al vessel are 61 % of the rest (7.72 MeV γ + cascades). A
+trigger leg (wall ∧ plastic) is a Compton e⁻ of a capsule γ 76.7 %, an e⁺e⁻ made in the capsule 9.7 %, a γ
+converting in the structure 6.8 %, capture outside 2.7 %, mixed 4.2 %.</p>
 <p><b>Why the Al pairs.</b> After the 1 ms flash veto every neutron is thermal; the trigger fires on the 7.72 MeV
 Al-capture γ of the capsule vessel (its Compton electrons). About one trigger leg in ten is an e⁺e⁻ made in the
 capsule. Those pairs are the proof-of-concept sample: ~2 MeV legs that scatter ~9° on the way out (p·β·θ =
@@ -498,7 +490,83 @@ same-chamber pairs (rate, opening angle) against Geant4 pushed through the same 
 <p>Sources: x17-status-2026-10-15 (<code>sept26_prelim_analysis/make_status_oct15_deck.py</code>,
 <code>same_chamber_compare.py</code> → <code>cmp_expectation.csv</code>, <code>cmp.meta.json</code>), Athens
 <code>thermal_accounting</code>.</p>"""
+    notes += f"""
+<p><b>The tables</b> (<code>g4_breakdown</code>, Geant4 per-lepton truth of <code>same_chamber_g4</code>, all four
+arms). They count what reaches the chambers, with no detector efficiency: a lepton is in the gap when it crosses
+≥ 20 mm of drift depth heading in with |tan| &lt; 0.6, in an event that fires the trigger (wall ∧ plastic in any arm).
+Counts per Geant4 trigger are scaled by {B['n_late'] / 1e6:.1f} M, the late-trigger count that turns Geant4 × the
+digitised efficiency into the 2.0 M above. <i>Reconstructed</i> is only known for A and C (digitised Geant4 through the
+production chain); B and D were not reconstructed in production. Pairs are the e⁺ and e⁻ of one conversion, by where
+the two legs land: same chamber, adjacent chambers (90° apart) or opposite chambers (180°, A–C or B–D). The 29 k is
+the reconstructed same-chamber number (any two leptons, 78 % e⁺e⁻, × the measured P(2 tracks | 2 leptons)), so it
+is not the first table cell × an efficiency. No Al pair reaches opposite chambers: 0 of {B['n_trig_g4']:,} simulated
+triggers (4 untriggered ones without the acceptance cut), &lt; {3 * B['n_late'] / B['n_trig_g4'] / 1e3:.0f} k at 95 %.
+That is the topology X17 populates. <i>Reaches the SiPM wall</i>: each leg leaves ≥ ½ MIP in the 3 mm wall. Geant4 has
+external conversions only; internal pairs add ~18 % (Athens accounting, below) with the same topology.
+Statistics: {B['pairs_gap_n']['same']} / {B['pairs_gap_n']['adjacent']} simulated pairs (±5 % / ±12 %).</p>"""
     D.slide('expect', body, notes, short='Expected at n_TOF')
+
+
+SCINT_SIGMA = 8.0   # mm; below the 12-17 mm (wall) / 30-60 mm (plastic) pointing resolution
+
+
+def scint_kernel_png(layer, arm, vmax=1.0, sigma=SCINT_SIGMA, step=2.0, min_w=30.0):
+    """The bench maps' sliding kernel on the scintillators: every late single track's crossing
+    (ntof_scint_stack.ana.map_tracks, cached in <OUT>/cache) weighted by a Gaussian of sigma mm;
+    efficiency = the net (accidental-subtracted) probe rate of ana.net with the tag's c, q.
+    Pixels with < min_w effective tracks are transparent.  Returns (data URI, extent, stats)."""
+    import base64
+    cache = OUT / 'img' / f'scint_{layer}_{arm}_s{sigma:g}.png'
+    meta = cache.with_suffix('.json')
+    if not cache.exists() or not meta.exists():
+        import matplotlib
+        matplotlib.use('Agg')
+        import matplotlib.pyplot as plt
+        from scipy.signal import fftconvolve
+        from ntof_scint_stack import ana
+        src = OUT / 'cache' / 'scint_map_tracks.parquet'
+        if not src.exists():
+            from concurrent.futures import ProcessPoolExecutor
+            with ProcessPoolExecutor(4) as ex:
+                pd.concat(list(ex.map(ana.map_tracks, 'ABCD')), ignore_index=True).to_parquet(src, index=False)
+        T = pd.read_parquet(src)
+        t = T[(T.layer == layer) & (T.arm == arm)]
+        x0, x1, y0, y1 = -270.0, 270.0, -270.0, 270.0
+        ex_ = np.arange(x0, x1 + step / 2, step)
+        ey_ = np.arange(y0, y1 + step / 2, step)
+        h = lambda w=None: np.histogram2d(t.u, t.v, bins=(ex_, ey_), weights=w)[0]  # noqa: E731
+        k = int(np.ceil(4 * sigma / step))
+        gx, gy = np.meshgrid(np.arange(-k, k + 1) * step, np.arange(-k, k + 1) * step, indexing='ij')
+        g = np.exp(-(gx ** 2 + gy ** 2) / (2 * sigma ** 2))
+        n = fftconvolve(h(), g, mode='same')
+        kon = fftconvolve(h(t.on.astype(float)), g, mode='same')
+        koff = fftconvolve(h(t.off.astype(float)), g, mode='same')
+        with np.errstate(divide='ignore', invalid='ignore'):
+            eff, _err = ana.net(kon, koff, n, float(t.c.iloc[0]), float(t.q.iloc[0]))
+        eff = np.where(n >= min_w, eff, np.nan)
+        rgba = plt.get_cmap('viridis')(np.clip(np.nan_to_num(eff.T[::-1], nan=0.0) / vmax, 0, 1))
+        rgba[..., 3] = np.isfinite(eff.T[::-1])
+        cache.parent.mkdir(parents=True, exist_ok=True)
+        plt.imsave(cache, rgba)
+        live = np.isfinite(eff)
+        meta.write_text(json.dumps(dict(extent=[x0, x1, y0, y1], n=int(len(t)), sigma=sigma,
+                                        p50=float(np.median(eff[live])), c=float(t.c.iloc[0]), q=float(t.q.iloc[0]))))
+    m = json.loads(meta.read_text())
+    return 'data:image/png;base64,' + base64.b64encode(cache.read_bytes()).decode(), m
+
+
+def scint_kernel_panel(SD, layer, arm, g, vmax, w, h, ml, title):
+    """heat_panel's frame and channel outlines (ntof_scint_stack.make_deck) around the kernel image."""
+    rng = 360 if layer.startswith('liq') else 262
+    P = sd.Plot(w, h, x=(-rng, rng), y=(-rng, rng), margin=(4, 6, 6, ml), title=title)
+    uri, m = scint_kernel_png(layer, arm, vmax)
+    x0, x1, y0, y1 = m['extent']
+    tip = (f'arm {arm}, {layer.split("_")[0]}: {m["n"]:,} late single tracks, Gaussian kernel σ {m["sigma"]:g} mm; '
+           f'median {100 * m["p50"]:.0f} %')
+    P.raw(f'<image href="{uri}" x="{P.X(x0):.1f}" y="{P.Y(y1):.1f}" width="{P.X(x1) - P.X(x0):.1f}" '
+          f'height="{P.Y(y0) - P.Y(y1):.1f}" preserveAspectRatio="none"{sd.tipattr(tip)}/>')
+    SD.outline(P, layer, g, arm)
+    return P.svg(f'{layer} kernel map, chamber {arm}')
 
 
 def s_scint(D):
@@ -507,7 +575,6 @@ def s_scint(D):
         sys.path.insert(0, str(REPO))
     from ntof_scint_stack import make_deck as SD
     G = SD.geo()
-    EM = SD.rd('eff_map')
     eff = rd(DATA / 'scint_stack/figures/eff_summary.csv')
 
     def unb(layer, probe, a):
@@ -517,36 +584,43 @@ def s_scint(D):
     groups = []
     side = 236
     for layer, vmax, head in (('wall_full', 1.0, 'SiPM wall'), ('plas_full', 1.0, 'plastic'), ('liq_full', 0.2, 'liquid')):
-        cells = []
-        for i, a in enumerate('ABCD'):
-            m = EM[(EM.arm == a) & (EM.layer == layer) & (EM['sample'] == 'all_late')]
-
-            def tip(r, a=a):
-                return (f'arm {a} · u {r.x:+.0f}, v {r.y:+.0f} mm\nefficiency {100 * r.eff:.1f} ± {100 * r.err:.1f} %\n'
-                        f'{int(r.k_on)} of {int(r.n)} tracks lit it')
-            ml = 10
-            cells.append(SD.heat_panel(m, 'eff', layer, a, G.loc[a], 0, vmax, sd.VIRIDIS, tip, side + ml, side + 30, ml,
-                                       False, False, f'arm {a}'))
+        cells = [scint_kernel_panel(SD, layer, a, G.loc[a], vmax, side + 10, side + 30, 10, f'arm {a}')
+                 for a in 'ABCD']
         grid = sd.col(sd.row(cells[0], cells[1], gap=4), sd.row(cells[2], cells[3], gap=4), gap=2)
         groups.append(sd.col(sd.p(f'<b>{head}</b>', 26), grid, gap=4))
     cb1 = sd.colorbar(96, 2 * side + 40, 0, 1, [(0, '0'), (0.5, '50'), (1, '100 %')], 'wall, plastic')
     cb2 = sd.colorbar(96, 2 * side + 40, 0, 0.2, [(0, '0'), (0.1, '10'), (0.2, '20 %')], 'liquid')
     wr = [unb('wall', 'wany', a) for a in 'ABCD']
+    grp = {a: [float(eff[(eff.layer == 'wall') & (eff.probe == f'wany_g{k}') & (eff['sample'] == 'all_late')
+                         & (eff.arm == a)].eff.iloc[0]) for k in range(4)] for a in 'ABCD'}
+    gmin = {a: min(v) for a, v in grp.items()}
+    grp_rng = lambda a: f'{100 * min(grp[a]):.0f}–{100 * max(grp[a]):.0f} %'  # noqa: E731
     body = (sd.title(f'Scintillators: walls {100 * min(wr):.0f}–{100 * max(wr):.0f} % and plastics ≥ 98 % efficient; '
                      f'the liquids answer mostly near their PMT',
-                     'every gated MM track walked out through wall → plastic → liquid · every trigger > 10 ms after the flash '
-                     '(biased by the arm\'s own trigger) · seen from behind')
-            + sd.row(groups[0], groups[1], cb1, groups[2], cb2, gap=14, align='end'))
+                     'MM tracks extrapolated through the stack · > 10 ms, own-trigger biased · σ 8 mm kernel · seen from behind')
+            + sd.row(groups[0], groups[1], cb1, groups[2], cb2, gap=14, align='end')
+            + sd.p(f'<b>Not the MM efficiency projected back:</b> each map is P(layer fires | an MM track points there), '
+                   f'so the chamber\'s own efficiency cancels; the wall\'s vertical bands are its four 100 mm SiPM read-out '
+                   f'groups (dashed), which answer {grp_rng("A")} on A but down to {100 * gmin["D"]:.0f} % on D.', 21, INK))
     rows = ''.join(f'<tr><td>{a}</td><td>{sd.pct(unb("wall", "wany", a))}</td><td>{sd.pct(unb("plas", "pm", a))}</td></tr>'
                    for a in 'ABCD')
     notes = f"""
 <p><b>Maps</b> (<code>ntof_scint_stack</code>, <code>ana/eff_map.parquet</code>, the <code>*_full</code> layers on
-<code>all_late</code>, net of accidentals): P(the layer fired | an MM track points at that cell), 25 mm cells, every
+<code>all_late</code>, net of accidentals): P(the layer fired | an MM track points there), drawn with the bench maps'
+sliding kernel: every late single track's crossing (<code>ana.map_tracks</code>) weighted by a Gaussian of σ
+{SCINT_SIGMA:g} mm, transparent where fewer than 30 effective tracks; the pointing resolution itself is 12–17 mm at the
+wall and 30–60 mm at the plastic, so the maps are no sharper than that. Every
 trigger &gt; 10 ms after the flash. The arm's own trigger required wall ∧ plastic, so these levels are biased high
 (the plastic most of all); they show <i>where</i> each counter works, not its unbiased efficiency. Panels drawn with
 <code>ntof_scint_stack/make_deck.heat_panel</code> (channel edges, bars and PMTs as in the scint-stack note).</p>
 <p><b>Unbiased efficiencies</b> (events another arm triggered, a few thousand tags per arm; B is rough):</p>
 <table><tr><th>arm</th><th>SiPM wall</th><th>plastic | wall</th></tr>{rows}</table>
+<p><b>The wall's structure.</b> Each map is conditional on an MM track, so the chamber's own efficiency divides out;
+what is left is the wall. Its 16 vertical 25 mm bars are read out as four 100 mm groups (dashed, a SiPM at each end),
+and the bands are those groups. Per group (late sample, own-trigger biased), group 0 → 3:
+{'; '.join(f'{a} ' + ' / '.join(f'{100 * v:.0f}' for v in grp[a]) + ' %' for a in 'ABCD')}.
+A is flat because all four of its groups answer; groups 0 and 2 are the weak ones on B, C and D. The fall at the
+outer edges is the pointing resolution (tracks predicted on the wall that in fact missed it).</p>
 <p>Plastic | wall is a response probability, not a hole: two in five particles that cross the 3 mm wall stop before
 the plastic. Self-triggered, the plastic is ≥ 98 % efficient.</p>
 <p><b>Liquids</b>: a muon gives 20–28 mV against a 16–18 mV readout threshold, so they are threshold-limited; A and D
@@ -623,7 +697,9 @@ def s_singles(D, AL):
         panels.append(P.svg(f'capsule image {a}'))
     body = (sd.title('Single tracks match Geant4 and image the capsule nose',
                      'n_TOF A and C, run_69 onward · grey: Geant4 through the same reconstruction · right: late tracks at the beam-axis plane')
-            + sd.row(sd.col(R.svg('single rate'), Q.svg('pointing'), gap=16),
+            + sd.row(sd.col(sd.legend([('Geant4 × reco', GREY, 'box'), ('data A', BLUE, 'box'),
+                                       ('data C', ORANGE, 'box')], 20),
+                            R.svg('single rate'), Q.svg('pointing'), gap=10),
                      sd.row(*panels, gap=12),
                      sd.col(sd.colorbar(110, 400, 0, 1, [(0, '0'), (0.5, '½'), (1, 'max')], 'excess'),
                             sd.legend([('band crossing', RED, 'dot'), ('capsule (Al, CFRP)', '#9aa3b2', 'line')], 20), gap=20),
@@ -874,7 +950,7 @@ that goes through the plastic (the liquid fires). Right: a track with a high gas
 estimator tags as several particles in the gap, the signature a two-track candidate leaves when the tracks overlap.
 Energies and P(several) come from Geant4-trained estimators (model-dependent); the counters carry their measured
 resolutions (wall ~16–18 %, plastic ~4–7 % at the MIP), the gas deposit its per-track resolution.</p>"""
-    D.slide('b-passport', body, notes, short='B2 Passports', pad='72px 64px 72px')
+    D.slide('b-passport', body, notes, short='B1 Passports', pad='72px 64px 72px')
 
 
 def al_numbers():
@@ -899,6 +975,59 @@ def al_numbers():
                       ratio_s=N['singles_ratio'][a], ratio_p=N['d_over_g4'][a])
     for k in ('singles', 'singles_g4', 'pairs', 'pairs_g4'):
         out[k] = out['A'][k] + out['C'][k]
+    return out
+
+
+#: Geant4 sim arm -> n_TOF chamber (A +z, C -z, D +x, B -x: ntof_athens_26 y_image W_X/W_Z)
+SIM_ARM = {2: 'A', 3: 'C', 0: 'D', 1: 'B'}
+
+
+def g4_breakdown(AL):
+    """Per chamber and per pair topology, from the Geant4 thermal campaign's per-lepton truth
+    (same_chamber_g4.load over MX17_Full_Geant same_arm_pairs.py parts): track-like leptons
+    (>= 20 mm of gap) entering the gap with |tan| < 0.6 in a triggered event, and e+e- of one
+    conversion by where the two legs land.  Counts per trigger scaled to the late sample:
+    n_late = the trigger count that turns Geant4 x the digitised efficiency into the slide's
+    expected singles (mean of A and C).  Cached."""
+    cache = OUT / 'cache' / 'g4_breakdown.json'
+    if cache.exists():
+        return json.loads(cache.read_text())
+    from sept26_prelim_analysis import same_chamber_g4 as SG
+    L, C = SG.load(Path.home() / 'x17_local' / 'g4_same_arm' / 'parts')
+    n_trig = C['trig.events']
+    T = L[(L.w_max - L.w_min) >= SG.TRACK_W_MM].copy()
+    T['acc'] = False
+    for arm in SIM_ARM:
+        R, _t, _r = SG.frame(L, arm)
+        m = (T.arm == arm).to_numpy()
+        d = np.c_[T.px0[m], T.py0[m], T.pz0[m]] @ R.T
+        T.loc[m, 'acc'] = ((np.abs(d[:, 0] / d[:, 2]) < SG.TAN_MAX) & (np.abs(d[:, 1] / d[:, 2]) < SG.TAN_MAX)
+                           & (d[:, 2] > 0))
+    T['trig'] = T.trig_arms != 0
+    T['wall'] = T.wall_eV >= SG.WALL_HALF_MIP_EV
+    J = json.load(open(Path.home() / 'x17_local' / 'g4_same_arm' / 'out' / 'g4_same_arm.json'))
+    n_late = float(np.mean([AL[a]['singles_g4'] / (J['summary'][a]['singles_per_trig'] * AL['N']['singles_eps_dig'][a])
+                            for a in 'AC']))
+    s = T[T.trig & T.acc]
+    out = dict(n_trig_g4=n_trig, n_late=n_late,
+               singles={SIM_ARM[a]: n_late * int((s.arm == a).sum()) / n_trig for a in SIM_ARM},
+               singles_reco={a: AL[a]['singles_g4'] for a in 'AC'})
+    rows = []
+    for (_f, _e, _p), g in T[T.op == 'conv'].groupby(['file', 'event', 'parent']):
+        if len(g) != 2 or set(g.particle) != {'e+', 'e-'}:
+            continue
+        a1, a2 = (int(v) for v in g.arm)
+        kind = 'same' if a1 == a2 else ('opposite' if {a1, a2} in ({0, 1}, {2, 3}) else 'adjacent')
+        rows.append(dict(kind=kind, trig=bool(g.trig.iloc[0]), acc=bool(g.acc.all()), wall=bool(g.wall.all())))
+    P = pd.DataFrame(rows)
+    q = P[P.trig & P.acc]
+    for lab, sel in (('gap', q), ('wall', q[q.wall])):
+        vc = sel.kind.value_counts()
+        out[f'pairs_{lab}'] = {k: n_late * int(vc.get(k, 0)) / n_trig for k in ('same', 'adjacent', 'opposite')}
+        out[f'pairs_{lab}_n'] = {k: int(vc.get(k, 0)) for k in ('same', 'adjacent', 'opposite')}
+    out['opp_any_gap_n'] = int(((P.kind == 'opposite') & P.trig).sum())
+    cache.parent.mkdir(parents=True, exist_ok=True)
+    cache.write_text(json.dumps(out, indent=1))
     return out
 
 
@@ -996,8 +1125,12 @@ def s_lnl(D, L):
     cb = sd.colorbar(100, 400, 0, 0.4, [(0, '0'), (0.2, '20 %'), (0.4, '≥ 40 %')], 'S/B', cmap=MS['mod'].CM_SB)
     body = (sd.title('LNL: enough X17 in days; the IPC shape is the work',
                      '⁷Li(p,e⁺e⁻)⁸Be at the 18.15 MeV resonance, 1 µA · Geant4 of the n_TOF apparatus, MM 15° + TOF, θ × |y| × E_sum fit')
-            + sd.row(sd.col(lnl_setup_svg(440, 330), S.svg('statistics'), gap=4),
-                     A.svg('opening angle'), sd.row(M.svg('S/B 2D'), cb, gap=0, align='center'), gap=20, align='end'))
+            + sd.row(sd.col(lnl_setup_svg(440, 300),
+                            sd.legend([('MM TPC', BLUE, 'box'), ('SiPM wall', GOLD, 'box'), ('big plastic', PURPLE, 'box')], 18),
+                            S.svg('statistics'), gap=4),
+                     sd.col(sd.legend([('background (IPC, γ₁, cosmics)', GREY, 'box'), ('+ X17', RED, 'line')], 18),
+                            A.svg('opening angle'), gap=4),
+                     sd.row(M.svg('S/B 2D'), cb, gap=0, align='center'), gap=20, align='end'))
     rows = ''.join(f'<tr><td>{k}</td><td>{L[a]["days_3sigma"]:.1f}</td><td>{L[a]["days_5sigma"]:.1f}</td>'
                    f'<td>{L[a]["x17_per_day"]:.0f}</td><td>{L[a]["bkg_per_day"]:,.0f}</td><td>{sd.pct(L[a]["live"])}</td></tr>'
                    for k, a in (('as built, 1 µA', 'ab1'), ('as built, 4 µA', 'ab4'), ('big plastics, 1 µA', 'bp1'),
@@ -1246,24 +1379,6 @@ ipc_born.py) and the facility reach (LNL 3D fit, ILL, NFS). Splitting it keeps I
 # =========================================================================== #
 # backup
 # =========================================================================== #
-def b_kernel(D):
-    maps = []
-    for i, a in enumerate('ABCDE'):
-        P = kernel_map(a, 300 + (70 if i == 0 else 0), 330, ylabel=(i == 0))
-        maps.append(sd.col(map_head(a), P.svg(f'{DET[a]} kernel map'), gap=2))
-    cb = sd.colorbar(120, 330, 0, 1, [(0, '0'), (0.5, '50'), (1, '100 %')], 'within 5 mm')
-    body = (sd.title('The fleet maps with the sliding kernel of the MPGD26 / Athens talks',
-                     'same muons as the fleet slide · Gaussian-weighted circle σ = 4 mm, swept in 0.5 mm steps · detector frame')
-            + sd.row(*maps, cb, gap=10, align='end'))
-    notes = """
-<p>Each pixel is the fraction of reference muons reconstructed within 5 mm under a Gaussian-weighted circle (σ = 4 mm)
-swept across the face in 0.5 mm steps: <code>mpgd26/make_efficiency_map.gaussian_sliding</code> through
-<code>mx_june_wft/report/make_bench_effmaps.make_map</code>, the kernel of the MPGD26 efficiency slide. Pixel-to-pixel
-texture is counting noise (≈ 7 effective muons per kernel; independent-circle variance is 1.07× binomial away from
-the edges). The 20 mm cells of the fleet slide trade resolution for less noise.</p>"""
-    D.slide('b-kernel', body, notes, short='B1 Kernel maps')
-
-
 def b_lessons(D):
     rows = [
         ['γ flash saturates DREAM (5 ms recovery); MeV neutrons lost', 'flash-tolerant, low-dead-time readout (DREAM 298 µs)', 'neutron facilities'],
@@ -1281,7 +1396,7 @@ def b_lessons(D):
                        widths=[700, 620, 340]))
     D.slide('b-lessons', body, """<p>Sources: scint-stack, calorimetry and status notes; trigger_scint/TRIGGER_OPTIONS.md;
 scattering-upgrade note; ntof_pedestal_qa (23 July step); x17_facility_search budget page (per-MM status);
-ill/FEASIBILITY_SIM.md §13 (DREAM dead time).</p>""", short='B3 Lessons')
+ill/FEASIBILITY_SIM.md §13 (DREAM dead time).</p>""", short='B2 Lessons')
 
 
 def b_scatter(D):
@@ -1302,7 +1417,7 @@ def b_scatter(D):
                                                           'The 109° shoulder returns: peak height ×0.22 → ×0.50, FWHM 37° → 11°.', BLUE, 22),
                                                sd.callout('m_ee alone degrades much faster (1.7 → 284 d); the 3D fit is robust.', GREY, 22),
                                                gap=18), gap=40))
-    D.slide('b-scatter', body, """<p>LNL FEASIBILITY_SIM.md §15; note scattering-upgrade (2026-10-06).</p>""", short='B6 Scattering')
+    D.slide('b-scatter', body, """<p>LNL FEASIBILITY_SIM.md §15; note scattering-upgrade (2026-10-06).</p>""", short='B5 Scattering')
 
 
 def b_lnlcalo(D):
@@ -1316,7 +1431,7 @@ def b_lnlcalo(D):
             + sd.callout('Impostor test: a background error that copies the X17 angle spectrum exactly reads as 100 % of an X17 in an '
                          'angle-only fit, 13–24 % in the θ × |y| × E_sum fit, with χ² ≈ 20 left over.', BLUE, 24))
     D.slide('b-lnlcalo', body, """<p>LNL FEASIBILITY_SIM.md §14 and §16. The "worst structure" rows put the same
-background-shape error on the events seen by every analysis.</p>""", short='B7 LNL energy')
+background-shape error on the events seen by every analysis.</p>""", short='B6 LNL energy')
 
 
 def b_ill(D):
@@ -1331,7 +1446,7 @@ def b_ill(D):
             + sd.callout('Remaining levers: X17 efficiency (energy containment, ×4 signal with a calorimeter), spin selection '
                          '(polarised n + ³He), more cycles. Feasible only with ~200 ps arm timing and a cosmic veto.', ORANGE, 24))
     D.slide('b-ill', body, """<p>Thermal capture at rest covers the s-wave half of the physics only; the reference ratio
-2.5×10⁻² would be a ~6–9σ effect in one cycle with timing + veto (ill/README.md).</p>""", short='B8 ILL reach')
+2.5×10⁻² would be a ~6–9σ effect in one cycle with timing + veto (ill/README.md).</p>""", short='B7 ILL reach')
 
 
 def b_budget(D):
@@ -1351,7 +1466,7 @@ def b_budget(D):
                                  21, MUT), gap=18), gap=40))
     D.slide('b-budget', body, """<p>Page: dylan-neff.web.cern.ch/facilities/budget.html (items in
 <code>budget/items.py</code>). The plates line excludes HV and digitizer, which are separate items.</p>""",
-            short='B9 Budget')
+            short='B8 Budget')
 
 
 def b_twotrack(D):
@@ -1366,7 +1481,7 @@ def b_twotrack(D):
             + sd.table(['', ''], rows, size=24, align=['left', 'left'])
             + sd.callout('X17 legs never share a chamber (opening ≥ 110°), so this matters for the Al-pair demonstrator and for '
                          'narrow IPC pairs, not for the X17 signal itself.', BLUE, 24))
-    D.slide('b-twotrack', body, '', short='B10 Two-track')
+    D.slide('b-twotrack', body, '', short='B9 Two-track')
 
 
 def b_flash(D):
@@ -1378,7 +1493,7 @@ def b_flash(D):
                                'full spectrum vs the thermal window (0.01–0.1 eV: 4.4 → 0.07 X17/day)', dark=False), gap=40)
             + sd.callout('At thermal energies only s-wave channels are open (M1, and E0 with no real photon), (n,p) takes 92 % of the '
                          'neutrons and the ³He self-shields. The ²⁷Al pairs (~10⁸ per 30 days) became the demonstrator.', BLUE, 24))
-    D.slide('b-flash', body, '', short='B5 Flash')
+    D.slide('b-flash', body, '', short='B4 Flash')
 
 
 def main():
@@ -1398,7 +1513,6 @@ def main():
     s_plastics(D, L)
     s_facilities(D, L)
     s_papers(D)
-    b_kernel(D)
     b_passport(D)
     b_lessons(D)
     s_setups(D)

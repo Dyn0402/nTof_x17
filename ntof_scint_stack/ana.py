@@ -1676,14 +1676,14 @@ def _scales(S):
     return sc, sig
 
 
-def run_arm(arm: str) -> dict:
-    """Two passes.  The first fits the scales on every single track, which is
-    enough to find the in-time window and the chamber cells whose tracks are
-    not real; the second refits on the tracks that are left, and every product
-    is built from that.  Both passes' scales are stored."""
+def calibrated(arm: str) -> tuple:
+    """The two-pass calibration chain shared by `run_arm` and `map_tracks`.
+
+    The first pass fits the scales on every single track, which is enough to
+    find the in-time window and the chamber cells whose tracks are not real;
+    the second refits on the tracks that are left.  Returns
+    (t, P, sig, g, cal, ecal, S1, S2, F1, F2, TP, (lo, hi), M, log, t0)."""
     t0 = time.time()
-    od = out_dir() / 'ana'
-    od.mkdir(parents=True, exist_ok=True)
     g = geometry(arm)
     ecal = energy_scale()
     t = load_arm(arm)
@@ -1711,11 +1711,43 @@ def run_arm(arm: str) -> dict:
     cal = _pointing_cal(F2)
     sig = {'wall_u': cal['sig_w'], 'plas_u': cal['sig_p']}
     log.append(f'   pass 2 {_fmt(cal)} [{time.time() - t0:.0f} s]')
+    P = predict(t, g, cal, sig, arm)
+    return t, P, sig, g, cal, ecal, S1, S2, F1, F2, TP, (lo, hi), M, log, t0
+
+
+def map_tracks(arm: str) -> pd.DataFrame:
+    """Per track, what the whole-face wall, plastic and liquid maps of `efficiencies`
+    bin (``*_full`` layers, ``all_late``): the crossing, the probe in the
+    prompt and pre-trigger windows, and the tag's accidental terms c, q as
+    columns.  For maps with a smooth kernel instead of 25 mm cells."""
+    t, P, sig, g, *_ = calibrated(arm)
+    G = t.good.to_numpy()
+    t, P = t[G].reset_index(drop=True), P[G].reset_index(drop=True)
+    A = lambda c: P[c].to_numpy()  # noqa: E731
+    sm = t.late.to_numpy() & (t.n_trk == 1).to_numpy()
+    out = []
+    for layer, parent, tag, probe, uv, d in (
+            ('wall_full', sm & A('on_w'), 'pany', 'wany_tol', ('u_w', 'v_w'), (0, 0)),
+            ('plas_full', sm & A('on_p') & A('on_w'), 'wboth_tol', 'pm', ('u_p', 'v_p'), (0, 0)),
+            ('liq_full', sm & A('on_l') & A('on_w'), 'wboth_tol', 'lf', ('u_l', 'v_l'),
+             (g['u_ls'], g['v_ls']))):
+        _r, m, c, q = tag_probe(parent, A(f'{tag}_on'), A(f'{tag}_off'),
+                                A(f'{probe}_on'), A(f'{probe}_off'))
+        out.append(pd.DataFrame(dict(layer=layer, arm=arm, u=A(uv[0])[m] - d[0],
+                                     v=A(uv[1])[m] - d[1], on=A(f'{probe}_on')[m],
+                                     off=A(f'{probe}_off')[m], c=c, q=q)))
+    return pd.concat(out, ignore_index=True)
+
+
+def run_arm(arm: str) -> dict:
+    """Two passes (`calibrated`); every product is built from the second."""
+    od = out_dir() / 'ana'
+    od.mkdir(parents=True, exist_ok=True)
+    t, P, sig, g, cal, ecal, S1, S2, F1, F2, TP, (lo, hi), M, log, t0 = calibrated(arm)
     S = pd.concat([S1, S2], ignore_index=True)
     PF = pd.concat([F1, F2], ignore_index=True)
     SR = lam_by_run(t[t.good], g, arm)
 
-    P = predict(t, g, cal, sig, arm)
     CS, CQ, CM = confirmation(t, P, sig)
     G = t.good.to_numpy()
     EP = edge_profiles(t[G].reset_index(drop=True), P[G].reset_index(drop=True))

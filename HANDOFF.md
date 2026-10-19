@@ -2,7 +2,9 @@
 
 ## Future-X17 meeting deck (19 Oct) — updated 2026-10-19 (dylan-MS-7C84)
 
-**Resume:** 19 Oct feedback applied and republished (notes/mx17-future-x17); next: Dylan's review of it.
+**Resume:** round-3 feedback (19 Oct evening) applied and republished; next: Dylan's review. Round 3 added
+`g4_breakdown` (slide 4 tables, cache `<OUT>/cache/g4_breakdown.json`) and scintillator kernel maps from
+`ntof_scint_stack.ana.map_tracks` (cache `<OUT>/cache/scint_map_tracks.parquet`, PNGs in `<OUT>/img`).
 
 - Live: https://dylan-neff.web.cern.ch/notes/mx17-future-x17.html
 
