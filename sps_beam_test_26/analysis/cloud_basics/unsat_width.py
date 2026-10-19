@@ -66,6 +66,7 @@ def main():
     ap.add_argument('--nboot', type=int, default=20)
     ap.add_argument('--workers', type=int, default=14)
     ap.add_argument('--recompare', action='store_true')
+    ap.add_argument('--mask', action='store_true', help='leave out strip_gain_audit\'s dead/weak strips (stores \'@mask\')')
     ap.add_argument('--tan', type=float, default=None, help='head-on cut |tan_x| (x_width.TAN, default 0.03)')
     a = ap.parse_args()
     if a.tan is not None:
@@ -88,6 +89,9 @@ def main():
             if key.startswith(xw.SCAN):
                 T0 = xw.GAP / (xw.V_SCAN[int(xw.drift_hv(key))] * 1e-3)
             E = xw.drift_hv(key) / 2.88
+            if a.mask:
+                import rc_diffusion
+                print(f'{key}: {rc_diffusion.annotate_bad(ev, key)} events with flagged strips masked', flush=True)
             uns = {k: e for k, e in ev.items() if e['x']['W'].max() < a.sat}
             r = dict(det=det, E_Vcm=E, sat_adc=a.sat,
                      frac_unsat=sum(abs(e['tan_x']) < xw.TAN for e in uns.values())
@@ -98,7 +102,7 @@ def main():
                 r[lab] = compare(xw.measure(pool, h, sub, T0, a.nboot), det, E)
                 show(key, lab, r[lab])
             tag = (('' if a.sat == 3500.0 else f'@sat{a.sat:.0f}') + ('@ref' if os.environ.get('CB_CENTRE') == 'ref' else '')
-                   + ('' if a.tan is None else f'@tan{a.tan:g}'))
+                   + ('' if a.tan is None else f'@tan{a.tan:g}') + ('@mask' if a.mask else ''))
             out[key + tag] = r
             json.dump(out, open(out_path, 'w'), indent=1, default=float)
 

@@ -43,6 +43,23 @@ U = np.linspace(-PITCH / 2, PITCH / 2, 41)
 THR_ADC = 60.0
 
 
+def annotate_bad(ev, key, path=None):
+    """Mark each event's dead/weak strips (results/strip_gain_audit.json health lists) as e[plane]['bad'],
+    which stack() then leaves out (FINDINGS §35).  Returns the number of events touched."""
+    import json
+    path = path or os.path.join(os.path.dirname(os.path.abspath(__file__)), 'results', 'strip_gain_audit.json')
+    H = json.load(open(path))[key]['health']
+    n = 0
+    for e in ev.values():
+        for p in ('x', 'y'):
+            if p in e:
+                bad = set(H[p]['dead']) | set(H[p]['weak'])
+                m = np.array([int(c) in bad for c in e[p]['ch']])
+                if m.any():
+                    e[p]['bad'] = m; n += 1
+    return n
+
+
 def stack(ev, plane, tan_max=0.03, unbiased=None):
     """Head-on (offset, time) stack.  Default (unbiased): per event NOT
     normalised, aligned on the first crossing of THR_ADC by the 9-strip sum,
@@ -64,13 +81,15 @@ def stack(ev, plane, tan_max=0.03, unbiased=None):
         if plane not in e or abs(e[f'tan_{plane}']) > tan_max:
             continue
         W = np.asarray(e[plane]['W'], float)
+        if 'bad' in e[plane]:                 # flagged dead/weak strips (strip_gain_audit, annotate_bad): no data there
+            W = W.copy(); W[e[plane]['bad']] = np.nan
         if ref_centre:
             ic = int(np.argmin(np.abs(np.asarray(e[plane]['pos'], float) - e[f'ref_mesh_{plane}'])))
         else:
-            ic = int(np.argmax(W.sum(1)))
-        if ic < 4 or ic > len(W) - 5:
+            ic = int(np.nanargmax(np.nansum(W, 1)))
+        if ic < 4 or ic > len(W) - 5 or not np.isfinite(W[ic]).all():
             continue
-        s = W[ic - 4:ic + 5].sum(0)
+        s = np.nansum(W[ic - 4:ic + 5], 0)
         if unbiased:
             k = next((k for k in range(1, len(s)) if s[k - 1] < THR_ADC <= s[k]), None)
             if k is None or k < 3:

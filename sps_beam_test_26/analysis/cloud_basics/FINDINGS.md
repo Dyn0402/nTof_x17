@@ -1188,3 +1188,11 @@ resolution is neutral. `chi2_split.py`, det3, 1000 held-out events, production /
   (1.5–2.4σ) cost head-on. The per-event fit wants σ0_x ≈ 0.20–0.25 where the head-on stacks measure
   0.35–0.43: one of the two is reading the asymmetry/neighbour structure as width. det2/det4/det6/det7 benches
   are running (same script).
+
+**§35 addendum — masking the flagged strips in the stacks** (`rc_diffusion.annotate_bad`, `unsat_width.py --mask`,
+keys `…@mask`): the flagged strips' samples are NaN in the stack (cells average over events that have them).
+det3 unchanged (386 ± 10, +235 at 347 V/cm). det6_long 268 ± 99 (unchanged within errors). **det4 widens**,
+347 → 378 ± 23 at 3500 ADC, and is still cut-dependent: 378 / 334 / 306 / 304 at 3500 / 2500 / 2000 / 1500
+(unmasked 351 / 307 / 270 / 264, GAP-30 frame). Masking removes only the flagged strips; the gain falls over
+the band edges around them, so det4 widths need the clean-window selection (no flagged strip in ±4), which with
+σ0 fixed was flat. det7_long produced no masked fit (too few unsaturated events after masking).
