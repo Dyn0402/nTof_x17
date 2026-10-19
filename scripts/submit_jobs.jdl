@@ -1,0 +1,20 @@
+universe   = vanilla
+executable = /usr/bin/python3
+
+output     = /afs/cern.ch/work/d/dneff/condor/run_processor/logs/$(run).out
+error      = /afs/cern.ch/work/d/dneff/condor/run_processor/logs/$(run).err
+log        = /afs/cern.ch/work/d/dneff/condor/run_processor/logs/condor.log
+
+transfer_input_files  = /afs/cern.ch/work/d/dneff/git/mm_strip_reconstruction/orchestrator/process_run.py
+should_transfer_files = YES
+when_to_transfer_output = ON_EXIT
+
+arguments  = process_run.py $(run)
+
+request_memory = 1 GB
+request_cpus   = 1
++JobFlavour    = "espresso"
+
+# --- Per-run queue entries ---
+run = run_88
+Queue

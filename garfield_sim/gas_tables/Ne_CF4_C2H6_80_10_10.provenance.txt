@@ -1,0 +1,35 @@
+Ne_CF4_C2H6_80_10_10_<pressure>.gas  (canonical name used by RUN_CONFIG)
+  = copy of the nColl=1 rung, grid 18000-52000 V/cm, 10 log-spaced points.
+  Generated 2026-08-01 by mm_gasgen_quick.sub (cluster 13324562).
+  Magboltz wall time 15.4 min (CERN) / 17.1 min (Saclay).
+
+  nColl=1 is LOW statistics for alpha (expect several %, vs ~1-2% at the
+  production nColl=10). It is used here because the avalanche is run with
+  AvalancheMicroscopic, which tracks on the cross sections rather than on this
+  table -- the table carries composition/P/T and gives alpha for the voltage-
+  window prediction. The nColl=3 and nColl=6 rungs are still running; when they
+  land, compare alpha against this file before deciding whether to redo anything.
+
+  DO NOT reuse for drift velocity or diffusion: the grid was cut to the
+  amplification range and does not cover drift fields.
+
+--- MEASURED 2026-08-01, replaces the caution above ---
+The nColl=1 statistics turned out to be far better than the "several %" feared.
+Two INDEPENDENT nColl=1 tables exist for CERN_450m -- the 10-point grid used
+here and the 4-point nc1p4 rung -- and their alpha values agree to:
+
+    V_mesh    nc1(10pt)   nc1(4pt)     diff
+      400        436.3      437.5     +0.28 %
+      450        521.1      524.1     +0.58 %
+      500        604.9      608.7     +0.63 %
+      550        690.2      687.5     -0.39 %
+      600        773.6      774.3     +0.09 %
+
+  rms difference 0.37 %  ->  per-table sigma(alpha) ~ 0.26 %
+
+Propagated: at G = 1e4 that is 2.4 % on gain, and with dlnG/dV = 0.018 /V
+(measured on the prescan, 500->520 V) it is 1.3 V on the equal-gain map.
+
+1.3 V is negligible next to the Penning bracket (r = 0.40-0.60), which moves the
+map by tens of volts. Regenerating at nColl=10 would NOT meaningfully improve
+this map. The grid restriction still stands: do not reuse for drift or diffusion.
