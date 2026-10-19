@@ -4,7 +4,7 @@ The two companion papers of `mx_june_cosmic_qa/PAPER_PLAN.md`, as LaTeX, at outl
 
 | dir | paper | Overleaf |
 |---|---|---|
-| `paper1/` | I. Detector & performance (cosmic bench + det4 at SPS) | not linked yet |
+| `paper1/` | I. Detector & performance (cosmic bench + det4 at SPS) | linked 2026-10-19 (`https://git.overleaf.com/6ad61186fe591228d14dac68`) |
 | `paper2/` | II. Reconstruction: why hit times fail, the waveform forward model, hits vs waveforms | not linked yet |
 
 PAPER_PLAN.md still owns the outline states and the work list. The `.tex` sections carry the same
