@@ -761,76 +761,120 @@ Source: x17-status-2026-10-15; <code>same_chamber_compare.py</code>, <code>cmp_*
     D.slide('pairs', body, notes, short='Singles vs pairs')
 
 
+def passport():
+    """ntof_calorimetry/make_passport_deck: the track-passport tables (passport/, mm_edep/results/)."""
+    if str(REPO) not in sys.path:
+        sys.path.insert(0, str(REPO))
+    from ntof_calorimetry import make_passport_deck as MP
+    return MP, MP.load()
+
+
+def spec_panel(g, lo, hi, w, h, xlabel, title, col, ymax=None, xt=None, ylabel=True, last=False, g4lab='Geant4'):
+    """Data points against the Geant4 histogram (no refit), each normalised over [lo, hi]."""
+    c = 0.5 * (g.lo + g.hi)
+    m = (c >= lo) & (c <= hi)
+    dn = g.data / g.data[m].sum()
+    sn = g.g4 / g.g4[m].sum()
+    ymax = ymax or float(max(dn[m].max(), sn[m].max()) * 1.25)
+    P = sd.Plot(w, h, x=(lo, hi), y=(0, ymax), xlabel=xlabel if last else '', ylabel='fraction per bin' if ylabel else '',
+                title=title, margin=(10, 14, 62 if last else 30, 92 if ylabel else 30))
+    P.xticks(xt)
+    P.yticks([(v, f'{v:.2f}' if ylabel else '') for v in np.linspace(0, ymax, 4)[:-1]])
+    sel = (g.lo >= lo) & (g.hi <= hi)
+    gi = g[sel]
+    xs, ys = sd.step_xy(list(gi.lo) + [float(gi.hi.iloc[-1])], list(sn[sel]))
+    P.raw(sd.poly([P.X(x) for x in xs], [P.Y(min(y, ymax)) for y in ys], G4C, 3,
+                  tip=f'{g4lab}, {int(g.g4.sum()):,} events, scale 1'))
+    mm = sel & (g.data > 0)
+    P.points(list(c[mm]), list(dn[mm]), col, r=4.5,
+             tips=[f'{lo_:.2f}-{hi_:.2f}: data {d:,}, {g4lab} {s_:,}' for lo_, hi_, d, s_ in
+                   zip(g.lo[mm], g.hi[mm], g.data[mm], g.g4[mm])])
+    return P, ymax
+
+
 def s_energy(D):
     Sp = rd(DATA / 'calorimetry/wp/spectra.csv')
     fits = rd(DATA / 'calorimetry/wp/scale_fits.csv')
-    panels = []
+    MP, t = passport()
+    bc = t['bc']
+    rows = []
     for i, a in enumerate('AC'):
+        last = i == 1
+        sc_p = float(fits[(fits.arm == a) & (fits['var'] == 'e_plas') & fits.subset.isna()].scale.iloc[0])
+        sc_w = float(fits[(fits.arm == a) & (fits['var'] == 'e_wall_fit') & fits.subset.isna()].scale.iloc[0])
         g = Sp[(Sp.arm == a) & (Sp['var'] == 'e_plas')]
-        c = 0.5 * (g.lo + g.hi)
-        m = (c >= 3) & (c <= 9)
-        dn = g.data / g.data[m].sum()
-        sn = g.g4 / g.g4[m].sum()
-        P = sd.Plot(470, 330, x=(2, 10), y=(0, 0.14), xlabel='plastic energy (MeV)' if i == 1 else '',
-                    ylabel='fraction / 0.25 MeV', title=f'arm {a} plastic vs Geant4 (no refit)',
-                    margin=(10, 16, 66 if i == 1 else 34, 96))
-        P.xticks([(v, str(v)) for v in range(2, 11, 2)])
-        P.yticks([(v, f'{v:.2f}') for v in (0, 0.05, 0.1)])
-        sel = (g.lo >= 2) & (g.hi <= 10)
-        gi = g[sel]
-        xs, ys = sd.step_xy(list(gi.lo) + [float(gi.hi.iloc[-1])], list(sn[sel]))
-        P.raw(sd.poly([P.X(x) for x in xs], [P.Y(min(y, 0.14)) for y in ys], G4C, 3,
-                      tip=f'Geant4, {int(g.g4.sum()):,} events, same trigger and resolution, scale 1'))
-        mm = sel & (g.data > 0)
-        P.points(list(c[mm]), list(dn[mm]), CH[a], r=5,
-                 tips=[f'{a} {lo:.2f}-{hi:.2f} MeV: data {d:,}, Geant4 {s}' for lo, hi, d, s in zip(g.lo[mm], g.hi[mm], g.data[mm], g.g4[mm])])
-        panels.append(P.svg(f'plastic {a}'))
-    # bar-by-bar scales, >= 40 ms
-    sc = []
-    for a in 'AC':
-        for b in (1, 2):
-            r = fits[(fits.arm == a) & (fits['var'] == 'e_plas') & (fits.subset == f'bar {b}, >= 40 ms')].iloc[0]
-            sc.append((f'plastic {a}{b}', r.scale, r.err, CH[a]))
-    for a in 'AC':
-        r = fits[(fits.arm == a) & (fits['var'] == 'e_wall_fit') & (fits.subset == '>= 40 ms')].iloc[0]
-        sc.append((f'wall {a}', r.scale, r.err, GOLD))
-    Q = sd.Plot(520, 560, x=(0.85, 1.2), y=(0, len(sc)), xlabel='data ÷ Geant4 energy scale', title='bar by bar, ≥ 40 ms',
-                margin=(10, 20, 92, 140))
-    Q.xticks([(v, f'{v:.2f}') for v in (0.9, 1.0, 1.1, 1.2)])
-    Q.band([0.95, 1.05], [0, 0], [len(sc), len(sc)], GREEN, 0.12, tip='±5 %')
-    Q.vline(1.0, G4C, '6 6', 2)
-    for k, (lab, s, e, col) in enumerate(sc):
-        y = len(sc) - k - 0.5
-        Q.raw(sd.line(Q.X(s - e), Q.Y(y), Q.X(s + e), Q.Y(y), col, 3))
-        Q.points([s], [y], col, r=9, tips=[f'{lab}: {s:.3f} ± {e:.3f}'])
-        Q.raw(sd.T(Q.x0 - 12, Q.Y(y) + 7, lab, 21, INK, 'end'))
-    body = (sd.title('The stack measures energy: calibrated on muons alone, the plastics predict electron spectra to 2–5 %',
-                     'self-triggered single tracks at n_TOF · spectra: both bars, all times · scales: per bar, ≥ 40 ms · Geant4 with the measured trigger and resolution')
-            + sd.row(sd.col(*panels, gap=4), Q.svg('scales'),
-                     sd.col(sd.callout('<b>Linear</b> from the muon\'s 3.4 MeV to stopping electrons at 3–8 MeV; '
-                                       '<b>stable</b> to 0.5–0.8 % run to run over the production period.', GREEN, 21),
-                            sd.callout('Bar C1 reads 1.15: a pure gain offset of unknown cause. Plastic PMTs lose 3–8 % gain '
-                                       '12–25 ms after the flash (rate-proof bases or a pulser next time).', ORANGE, 21),
-                            sd.callout('At n_TOF the 2 cm plastic stops only the soft leg (a range telescope). With 4–5 cm '
-                                       'plates the full stack is a calorimeter: the LNL E_sum and pair-mass fits rest on it. '
-                                       'Resolution: to be measured on a prototype plate.', BLUE, 21),
-                            sd.callout('MM charge: a gain monitor (19–39 % per 40 mm cell), not a dE/dx '
-                                       'or two-particle flag (FWHM/MPV 0.95).', GREY, 21), gap=16, w=560), gap=24))
-    notes = """
-<p><b>The test</b> (<code>ntof_calorimetry/wall_plastic.py</code>, note scint-calorimetry): calibrate the SiPM wall
-and each plastic bar on cosmic muons only (beam-off runs on the n_TOF clock, path from the MM track), then predict the
-beam-electron spectra with Geant4 of the full stack (total prompt deposit in the matched bar, smeared with the
-measured σ/MPV, the arm's trigger applied in MeV). Geant4 is drawn at scale 1.</p>
-<p><b>Scales</b> (Geant4 × s matches the data mean over 3–8 MeV, bootstrap errors): plastic A1/A2/C2 1.05/1.03/1.02,
-C1 1.15; wall A/C 0.95/0.96. Most of these electrons stop in the plastic (below ~6 MeV), so their deposit is their
-energy. A 25 mm bar (the run-config text) would put every scale at ×1.27 — excluded, so the 20 mm in Geant4 is
-right.</p>
-<p><b>Reconciling with the 8 Oct "calorimetry closed".</b> That closure was about what the n_TOF <i>stack</i> can do
-for X17 pairs: with 20 mm of plastic and ~1.2 MeV lost upstream, the soft-leg energy adds only 5–8 % to the
-significance, and the liquids are threshold-limited. The 14 Oct result above is about the <i>scintillators</i>: their
-energy scale works. For a future run, 4–5 cm plates contain the leptons and the LNL study's E_sum / m_ee fit assumes
-exactly this n_TOF-anchored response (as built it loses the mass fit, backup B4).</p>"""
+        P, ym = spec_panel(g, 2, 10, 560, 290 + (32 if last else 0), 'plastic energy (MeV)', f'arm {a} · plastic', CH[a],
+                           xt=[(v, str(v)) for v in range(2, 11, 2)], last=last)
+        P.text(6.2, ym * 0.85, f'data ÷ Geant4 = {sc_p:.2f}', 22, INK, weight=700)
+        g = Sp[(Sp.arm == a) & (Sp['var'] == 'e_wall_fit')]
+        W, ym = spec_panel(g, 0.25, 1.5, 520, 290 + (32 if last else 0), 'SiPM wall energy (MeV)', f'arm {a} · SiPM wall', CH[a],
+                           xt=[(v, f'{v:g}') for v in (0.25, 0.5, 0.75, 1.0, 1.25, 1.5)], ylabel=False, last=last)
+        W.text(0.8, ym * 0.85, f'data ÷ Geant4 = {sc_w:.2f}', 22, INK, weight=700)
+        b = bc[a]
+        e = np.asarray(b['edges'])
+        ymm = float(max(b['data'].max(), b['sim'].max()) * 1.25)
+        M = sd.Plot(520, 290 + (32 if last else 0), x=(1.5, 40, 'log'), y=(0, ymm),
+                    xlabel='MM gas deposit, keV per 30 mm at normal incidence' if last else '', title=f'arm {a} · Micromegas dE/dx',
+                    margin=(10, 14, 62 if last else 30, 30))
+        M.xticks([(v, f'{v:g}') for v in (2, 5, 10, 20, 40)])
+        M.yticks([(v, '') for v in np.linspace(0, ymm, 4)[:-1]])
+        xs, ys = sd.step_xy(list(e), list(b['sim']))
+        M.raw(sd.poly([M.X(x) for x in xs], [M.Y(min(y, ymm)) for y in ys], G4C, 3,
+                      tip=f'beam simulation (Heed through g4_digi and the reconstruction), {b["n_sim"]:,} tracks, median {b["med_sim"]:.2f} keV'))
+        cx = list(np.sqrt(e[1:] * e[:-1]))
+        M.points(cx, list(b['data']), CH[a], r=4.5,
+                 tips=[f'{lo:.1f}-{hi:.1f} keV: {100 * v:.1f} % of {b["n_data"]:,} data tracks' for lo, hi, v in zip(e[:-1], e[1:], b['data'])])
+        M.text(9, ymm * 0.85, f'median {b["med_data"]:.1f} keV = a MIP', 22, INK, weight=700)
+        rows.append(sd.row(P.svg(f'plastic {a}'), W.svg(f'wall {a}'), M.svg(f'mm {a}'), gap=20))
+    en = lambda f, s_: float(t['EN'][(t['EN'].features == f) & (t['EN'].subset == s_)].w68.iloc[0])  # noqa: E731
+    auc = float(t['TPt'][t['TPt'].source == 'Geant4'].auc_multi_mm.mean())
+    body = (sd.title('Every layer sits on Geant4\'s energy scale',
+                     'self-triggered single tracks at n_TOF (run_145 for the MM) · points: data · line: Geant4 with the measured '
+                     'trigger and resolution, not refitted')
+            + sd.col(*rows, gap=4))
+    notes = f"""
+<p><b>Scintillators</b> (<code>ntof_calorimetry/wall_plastic.py</code>, note scint-calorimetry): the SiPM wall and each
+plastic bar are calibrated on cosmic muons only (beam-off runs on the n_TOF clock, path from the MM track), then
+Geant4 of the full stack predicts the beam-electron spectra (total prompt deposit in the matched bar, smeared with the
+measured σ/MPV, the arm's trigger applied in MeV). Drawn at scale 1; the numbers on the plots are the data/Geant4
+scales over the whole spectrum. Per bar (≥ 40 ms): plastic A1/A2/C2 1.05/1.03/1.02, C1 1.15 (a pure gain offset of
+unknown cause); wall A/C 0.95/0.96. Linear from the muon's 3.4 MeV to stopping electrons at 3–8 MeV; stable to
+0.5–0.8 % run to run. A 25 mm bar (the run-config text) would put every scale at ×1.27, so the 20 mm in Geant4 is right.
+Plastic PMTs lose 3–8 % gain 12–25 ms after the flash.</p>
+<p><b>Micromegas dE/dx</b> (<code>mm_edep_*</code>, the track passport): the charge along each track, corrected for
+the readout window and for an in-situ gain map, in keV per 30 mm at normal incidence. The data median (5.6 keV)
+matches Heed's MIP; per-track resolution 16 % (A) / 22 % (C) in beam. The simulation is Heed ionisation through the
+full digitisation and reconstruction.</p>
+<p><b>What the MM adds</b> (Geant4-trained estimators, cross-validated): nothing for fast tracks (the gas is
+minimum-ionising), but for electrons below 3 MeV the energy width goes {en('plastic+wall+angle', 'T < 3 MeV'):.2f} →
+{en('plastic+wall+angle+MM', 'T < 3 MeV'):.2f} MeV with the MM; for tracks that never reach the plastic it halves the
+vertex-energy width of 1–3.5 MeV capsule electrons (1.7 → 0.45–0.8 MeV). It also tags tracks with several particles in
+the gap (AUC {auc:.2f}; the wall cannot: 0.46–0.48), which is what a two-track candidate needs. The track angle buys
+back the energy of steep tracks ({en('plastic', 'sec >= 1.1'):.1f} → {en('plastic+wall+angle', 'sec >= 1.1'):.1f} MeV).
+Event displays of a single-lepton and a several-particle track are in the backup.</p>
+<p><b>For the future.</b> At n_TOF the 2 cm plastic stops only the soft leg (a range telescope). With 4–5 cm plates the
+full stack is a calorimeter: the LNL E_sum and pair-mass fits rest on this n_TOF-anchored response (as built it loses
+the mass fit, backup). Resolution of a thick plate: to be measured on a prototype.</p>"""
     D.slide('energy', body, notes, short='Energy')
+
+
+def b_passport(D):
+    MP, t = passport()
+    EX = t['EX']
+    first = {}
+    for _, r in EX.iterrows():
+        first.setdefault(r.example, r)
+    cs = [MP._card(t, first[w]) for w in ('through the plastic', 'several particles') if w in first]
+    body = (sd.title('One lepton or several: what the stack records for each track',
+                     'real run_145 tracks, side view to scale; blue dots: the drift charge along the track; energies on the Geant4 scale')
+            + sd.row(*cs, gap=24))
+    notes = """
+<p>The track passport (<code>ntof_calorimetry/track_passport.py</code>, note track-passport). Left: a single lepton
+that goes through the plastic (the liquid fires). Right: a track with a high gas deposit that the Geant4-trained
+estimator tags as several particles in the gap, the signature a two-track candidate leaves when the tracks overlap.
+Energies and P(several) come from Geant4-trained estimators (model-dependent); the counters carry their measured
+resolutions (wall ~16–18 %, plastic ~4–7 % at the MIP), the gas deposit its per-track resolution.</p>"""
+    D.slide('b-passport', body, notes, short='B Passports', pad='72px 64px 72px')
 
 
 def al_numbers():
@@ -1271,6 +1315,7 @@ def main():
     s_facilities(D)
     s_papers(D)
     b_kernel(D)
+    b_passport(D)
     b_lessons(D)
     s_setups(D)
     b_flash(D)
