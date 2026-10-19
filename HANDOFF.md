@@ -818,39 +818,44 @@ outputs `/home/dylan/x17/cosmic_bench/cloud_basics/` (arms/, bench/); RC payload
 - condor: LCG_105 numpy cannot unpickle numpy-2 caches — use LCG_108. `TAG=$(test && echo)` under set -e kills scripts.
 - Condor working dir lxplus `~/plane_ratio_condor` (small JSON only), inputs on `/eos/user/d/dneff/plane_ratio/`.
 
-## MX17 papers (two-paper plan) — updated 2026-10-08 (dylan-MS-7C84)
+## MX17 papers (two-paper plan) — updated 2026-10-19 (dylan-MS-7C84)
 
-**Resume:** MX17 detector paper split into I (detector) + II (reco, hits vs waveforms); next: decide C2, then run C1 (reproduce r06).
+**Resume:** LaTeX outlines of Papers I+II are in `papers/`; next: Dylan sends 2 Overleaf git URLs, run `overleaf.sh link`.
 
-**Goal:** get two companion papers written: I, the MX17 chambers and their performance (June cosmic bench + det4 in SPS H4); II, the waveform forward-model reconstruction and how much a hit-based readout loses.
+**Goal:** get two companion papers written: I, the MX17 chambers and their performance (June cosmic bench + det4 in SPS H4); II, the waveform forward-model reconstruction and how much a hit-based readout loses. Stephan edits in Overleaf with tracked changes (production/design input for I).
 
 **Done:**
-- Plan written as tables in `mx_june_cosmic_qa/PAPER_PLAN.md`: both outlines, the work list (ids C/R/D/V, state, size, dependencies) and an n_TOF tripwire table.
-- `mx_june_cosmic_qa/make_paper_plan_deck.py` (renamed from `make_paper_status_deck.py`) parses those tables, plus WAVEFORM_FIRST_THREADING §3/§10, FLEET_DIGEST and the SPS JSONs, into a 17-slide note. It is published at https://dylan-neff.web.cern.ch/notes/mx17-detector-paper-status.html (same slug as the 10-02 status note). The site commit is 61e0680 in dylan-cern-site.
-- `PAPER_STATUS.md` points to PAPER_PLAN.md at the top.
+- 10-08: plan as tables in `mx_june_cosmic_qa/PAPER_PLAN.md` (outlines, work list C/R/D/V, n_TOF tripwires); slide note https://dylan-neff.web.cern.ch/notes/mx17-detector-paper-status.html via `make_paper_plan_deck.py`. C1 (reproduce r06) was done 10-09.
+- 10-19 (commit e6448d5, on main): `papers/paper1/`, `papers/paper2/` — LaTeX outlines, one file per section with a state box, intent, placeholder text (`\tbw`), `\askStephan`/`\askDylan` boxes, `\analysis{id}` margin notes, `\requote` numbers. Paper I has a new §2 "Design and construction" (incl. production & QA, Stephan's) seeded with the 17 spec-page questions. Both compile (12 / 8 pages, pdflatex+bibtex).
+- `papers/make_figures.py` + `figures.toml` per paper: figures/<id> is a copy (current), a faded "SUPERSEDED" stamp (hits-based: edge turn-on, timing) or a grey placeholder. 11 real figures, rest placeholders.
+- `papers/overleaf.sh link|pull|push|sync <paper>` (git subtree). Tested both ways on a local stand-in remote: link, Stephan-edit pull, local push, refusal when Overleaf is ahead. NOT yet run against real Overleaf.
+- Workflow documented in `papers/README.md`; pointers in CLAUDE.md layout and PAPER_PLAN.md.
 
 **In progress / where it stopped:**
-- No analysis started. Everything in the work list except R8 and D7 is open, partial or a decision.
+- Waiting on Dylan to create the two blank Overleaf projects and store a git token (Dylan has Overleaf premium).
 
 **Next steps:**
-1. Dylan decides C2: freeze r06, or build the per-plane c2/c1 ratio first. Decide before C1 finishes, so R1–R5 run once.
-2. C1: pull lxplus `~/wft_campaign_r06`, run `collect_results.py --promote`, re-run `mx_june_wft` 01–04 on the five golden keys, and check that `digest.py` reproduces `FLEET_DIGEST.md`.
-3. In parallel (no blockers): D7 (write the ready sections of I), D3 (timing on waveforms), R7 (SPS 25.6° known-angle test), R9 (calibration protocol), R10 (cost table).
-4. Then R1 (hit tiers H0/H1 on r06, all five chambers), R2/R3/R4, R5 (the benchmark).
-5. Whenever a work item changes state: edit PAPER_PLAN.md, rebuild the deck, and republish (commands below).
+1. Dylan: create blank projects "MX17 Paper I"/"MX17 Paper II", copy git URLs (Menu → Integrations → Git), make a token (Account Settings → Git integration), store it: `git config --global credential.https://git.overleaf.com.helper store` then one `git ls-remote <url>` (user `git`, password token).
+2. `papers/overleaf.sh link paper1 <url>` and `... paper2 <url>`; commit + push origin main (the link adds a merge commit). Then Dylan shares with Stephan as Editor, turns Track changes on, sets main.tex / pdfLaTeX.
+3. Dylan: send Stephan the spec page link and the Overleaf link (spec-page section of this file).
+4. Fill placeholders as figures appear: edit `figures.toml` (source + state = "current"), `make_figures.py`, commit, `overleaf.sh push`. Candidates needing data not on the desktop: sps_resolution (residuals.npz), kernel_forms (stacks_run71_raw.npz), sps_setup (mpgd26 inputs).
+5. Open decisions still blocking text: C2 (freeze r06 vs per-plane c2/c1, pvy95 re-pass staged), C4 (journal, author list; then switch document class from plain article).
+6. Analysis items as in PAPER_PLAN: D1 requote, D2, D3, D4, R1–R7, R9, R10.
 
 **Gotchas / decisions:**
-- Dylan's decisions (10-08): split into two papers. II compares hits taken from the DREAM waveforms (with and without a correction) against the waveform fit. Full VMM emulation (V1) is deferred; `ntof_cosmics/g4_digi` is where it would plug in.
-- The dependency is one-way: I cites II, so II goes first or the same day. The sharing kernel section lives in II.
-- The July tier benchmark (WAVEFORM_FIRST_THREADING §10) used the R&D model `forward_model2`. Its kernel was physical (`hyper_v2` c2/c1 ≈ 0.17), NOT the retired c2 > c1 kernel, but it is neither the packaged `wft/` nor r06. It is a prototype only: re-run it (R5) before quoting.
-- Dylan is waiting on the n_TOF MM reconstruction analysis before committing to the model. There are two watch items in the tripwire table (chamber C angle non-linearity; angle response with borrowed bundles, which looked like a transfer issue on A).
-- This branch lives in its own worktree (`~/PycharmProjects/nTof_x17_paper`) because the main checkout is on `beam-off-cosmics` with others' uncommitted changes.
+- Overleaf git carries plain text, not tracked changes/comments: accept/reject Stephan's changes in Overleaf before pulling; never push repo edits into a section with pending tracked changes. Figures are always safe to push.
+- overleaf.sh `link` joins histories with a commit carrying git-subtree trailers (a plain `git subtree merge` refuses unrelated histories — tried, failed). Never forces.
+- Paper figures are tracked despite the global `*.png` ignore (`!papers/*/figures/*.png` in .gitignore).
+- Unconfirmed in the text: gas mixtures per setup (bench Ar/iC4H10 95/5? SPS Ar/CF4/iC4H10 88/10/2?) — left as `\askDylan`. refs.bib has 5 entries from memory; replace with INSPIRE BibTeX. D_RC value in II §2 has no unit.
+- Section state boxes duplicate PAPER_PLAN states: change both.
+- Unrelated: uncommitted cloud_basics changes in the tree belong to another session; not touched.
 
 **Key files & commands:**
-- `mx_june_cosmic_qa/PAPER_PLAN.md` — the plan (edit the tables here)
-- `mx_june_cosmic_qa/make_paper_plan_deck.py` — the note generator
-- `python mx_june_cosmic_qa/make_paper_plan_deck.py && python ~/PycharmProjects/dylan-cern-site/scripts/add-note.py ~/x17/paper_status/mx17-detector-paper-status.html --slug mx17-detector-paper-status --force --deploy`
-- Inputs: `mx_june_wft/FLEET_DIGEST.md`, `waveform_first_threading/WAVEFORM_FIRST_THREADING.md`, `sps_beam_test_26/analysis/{sharing_kernel,angled_kernel,spatial_resolution}/`
+- `papers/README.md` — the workflow
+- `.venv/bin/python papers/make_figures.py all [--list|--run|--only id]`
+- `cd papers/paper1 && latexmk -pdf main.tex` (or pdflatex/bibtex)
+- `papers/overleaf.sh sync paper1`
+- `mx_june_cosmic_qa/PAPER_PLAN.md` — states and work list; `make_paper_plan_deck.py` + add-note.py to republish the status note
 
 ## Cosmic-bench efficiency + gain maps (A–E) — updated 2026-10-09 (dylan-MS-7C84)
 
