@@ -108,7 +108,7 @@ def setup(D):
     for i in range(23):
         x = L + 6 + i * 41
         s.append(f'<rect x="{x}" y="{yp}" width="36" height="10" fill="#b87333"/>')
-    s.append(sd.T(L, yp + 34, 'pads 0.68 mm on 0.78 mm, coupled to an X and a Y line below (FR4 layers)', 20, INK, 'start'))
+    s.append(sd.T(L, yp + 34, 'pads 0.68 mm on 0.78 mm, a checkerboard: alternate pads to the X and the Y lines', 20, INK, 'start'))
     yl = yp + 50
     s.append(f'<rect x="{L}" y="{yl}" width="{Rr - L}" height="10" fill="{BLUE}" fill-opacity="0.6"/>')
     s.append(f'<rect x="{L}" y="{yl + 18}" width="{Rr - L}" height="10" fill="{GREEN}" fill-opacity="0.6"/>')
@@ -706,7 +706,7 @@ def footprint_physics(D):
         x = 80 + i * 180
         s.append(f'<rect x="{x}" y="{yp}" width="157" height="26" fill="#b87333"/>')
         s.append(sd.T(x + 78, yp + 56, ['−2', '−1', '0', '+1', '+2'][i], 22, INK))
-    s.append(sd.T(80, yp + 96, 'pads 0.68 mm on 0.78 mm, each read by one X line', 20, INK, 'start'))
+    s.append(sd.T(80, yp + 96, 'pads 0.68 mm on 0.78 mm (checkerboard: alternate pads are X pads)', 20, INK, 'start'))
     s.append(f'<rect x="60" y="{yk}" width="900" height="24" fill="{GOLD}" fill-opacity="0.35"/>')
     s.append(sd.T(955, yk + 17, 'kapton + glue ≈ 70 µm', 18, INK, 'end'))
     off = -40                                                    # resistive strips shifted toward -x
@@ -780,7 +780,7 @@ def asym_evidence(D):
     Q.text(103, 0.8, 'det4 beam: A depends on the live band', 22, INK, weight=600)
     Q.text(150.5, -0.55, '≈ 0 here', 20, PURPLE)
     Q.text(186, 0.18, '+0.4…+0.75', 20, PURPLE)
-    D.slide('asym', sd.title('det3’s raw waveforms carry a one-sided, delayed X neighbour copy; det4’s beam is band-dependent',
+    D.slide('asym', sd.title('det3’s raw waveforms carry a one-sided, delayed X neighbour copy; det4’s beam is inconclusive',
                              'Left: det3 bench, stacked head-on ±1 pulses at the time-symmetric angle. Right: det4 at H4, each channel against itself') +
             sd.row(sd.col(P.svg('asym shapes'), leg, gap=4), Q.svg('A per channel'), gap=44), short='X asymmetry: data',
             foot='xasym_tests.py, xasym_samechannel.py, xasym_boundary.py → results/xasym_*.json; raw windows, no template or kernel',
@@ -806,6 +806,12 @@ def asym_evidence(D):
                 f'{X["det2"]["head_aQ"][0]:+.2f} ± {X["det2"]["head_aQ"][1]:.2f}, det4 {X["det4"]["head_aQ"][0]:+.2f} ± '
                 f'{X["det4"]["head_aQ"][1]:.2f}, det7 {X["det7"]["head_aQ"][0]:+.2f} ± {X["det7"]["head_aQ"][1]:.2f}, det6 '
                 f'{X["det6"]["head_aQ"][0]:+.2f} ± {X["det6"]["head_aQ"][1]:.2f}. Same sign on four of five; size per chamber.\n\n'
+                '<b>Independent check</b>: the raw-ADC study published the same day (notes/det3-x-asymmetry, NB_ASYM.md; no strip '
+                'map, no common mode, its own extractor) finds the same copy into the lower-position neighbour, on det3’s June-15 '
+                'build X view only (84 % of events against 50 % on every other board and view), strongest mid-board, changing '
+                'with drift field; it rules out the code and the FEU slot, and finds the one known board asymmetry (one-sided bus '
+                'traces under the checkerboard pads) ten times too weak. My bench det2/det4/det7 numbers above are 2–2.7σ and do '
+                'not contradict its 50 %.\n\n'
                 '<b>Not a pitch beat.</b> An 800 µm resistive pitch over 780 µm pads would modulate the asymmetry with a 31.2 mm '
                 'period; the periodogram has no peak there (power 0.4–7 against a null mean of 2) or anywhere else significant.\n\n'
                 '<b>Electronics crosstalk: not settled by these data.</b> Channel numbers fall with +x in every 64-channel block on '
@@ -817,12 +823,12 @@ def asym_evidence(D):
 
 def asym_mechanism(D):
     items = [
-        ('Established', 'det3: a one-sided X neighbour copy, delayed ~110 ns, in raw waveforms, 8σ; same sign on det2/4/7, '
-         'none on det6; Y symmetric.', INK),
+        ('Established', 'det3 (June-15 build): a one-sided X neighbour copy, delayed ~110 ns, in raw waveforms, 8σ, confirmed by '
+         'the independent raw-ADC note (det3-x-asymmetry); other boards at most 2–3σ; Y symmetric.', INK),
         ('Candidate mechanism', 'the resistive strips offset from the pad columns (slide 13, ③): Y’s RC spread, seen in X '
          'where a strip overlaps one neighbouring pad.', BLUE),
-        ('Tests that need no new data', 'delay ∝ 1/D_rc chamber by chamber; a stack-up simulation with a plausible δ; quiet-event '
-         'crosstalk (nb_asym_raw) of the same size would kill it.', PURPLE),
+        ('Tests that need no new data', 'a stack-up simulation with a plausible δ (the bus traces alone are ×10 too weak); the '
+         'copy’s delay against det3’s own D_rc at each drift field; why only one board (its print registration).', PURPLE),
         ('Not claimed', 'as a model term. Production’s c1_asym stays an effective parameter until those agree.', GREY)]
     body = (sd.title('A candidate explanation for the X asymmetry, offered to the simulation side',
                      'A hypothesis with tests, not a result') +

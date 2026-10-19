@@ -1307,7 +1307,9 @@ censoring. Next: an amplitude-dependent pulse template from bright unclipped pul
   with det4's ×20 gain swings inside 12 mm bands the cluster normalisation is not gain-free. Inconclusive.
 - Channel numbers fall with +x in every 64-channel block on all chambers; spatial and electronic neighbours differ only
   at chip edges. The det4 chip-edge clusters (aQ −0.31 / +0.39 / +0.27 / −0.02 over four strips) are gain-dominated.
-  Electronics crosstalk is not excluded here; another study (`/media/dylan/data/x17/nb_asym_raw`, quiet raw events) is on it.
+  Electronics crosstalk is not excluded here. The independent raw-ADC study of the same day (notes/det3-x-asymmetry,
+  NB_ASYM.md, `/media/dylan/data/x17/nb_asym_raw`) finds the copy on det3's June-15 build only (84 % vs 50 % elsewhere),
+  follows the board not the FEU, strongest mid-board, field-dependent; its bus-trace mechanism is ×10 too weak.
 - **Candidate mechanism (hypothesis)**: the resistive strips offset by δ from the pad columns. Landed charge spreads
   across its 550 µm strip in τ ≈ (w/2)² / D_rc = 95–270 ns (each chamber's RC D_rc); where the strip overlaps a
   neighbouring pad only that side gains charge, late. Measured delays 105–120 ns: same order. Predicts delay ∝ 1/D_rc,
