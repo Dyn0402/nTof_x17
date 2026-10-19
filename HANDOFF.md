@@ -2,24 +2,35 @@
 
 ## Future-X17 meeting deck (19 Oct) — updated 2026-10-19 (dylan-MS-7C84)
 
-**Resume:** round-3 feedback (19 Oct evening) applied and republished; next: Dylan's review. Round 3 added
-`g4_breakdown` (slide 4 tables, cache `<OUT>/cache/g4_breakdown.json`) and scintillator kernel maps from
-`ntof_scint_stack.ana.map_tracks` (cache `<OUT>/cache/scint_map_tracks.parquet`, PNGs in `<OUT>/img`).
+**Resume:** round 3 republished; Dylan says slides "look much better". Next: any further feedback, else done.
 
-- Live: https://dylan-neff.web.cern.ch/notes/mx17-future-x17.html
+**Goal:** informal-meeting deck on MX17 status and where to search for X17 next (LNL, neutron facilities).
 
-- Generator `talks/future_oct26/make_deck.py`; feedback (verbatim) and the item-by-item log in
-  `talks/future_oct26/FEEDBACK_2026-10-19.md`. 12 main slides + B1–B10.
-- New inputs it reads: `sept26_prelim_analysis/make_status_oct15_deck` (load/numbers, pair_diagram),
-  `capsule_pose.load_data/library` (singles pointing height, cached in `<OUT>/cache/singles_height.csv`),
-  `ntof_scint_stack/make_deck.heat_panel`, `ntof_calorimetry/make_passport_deck` (passport tables — rsynced from
-  the laptop to `/media/dylan/data/x17/calorimetry/passport`), `mx_june_wft/report/make_bench_effmaps`
-  (detector frame + sliding kernel, PNGs cached in `<OUT>/img`), `x17_facility_search/lnl/deck/maps_slides`.
-- Render check: `.venv/bin/python talks/future_oct26/render_check.py <html> <outdir>` crops each `.frame`;
-  the frame has overflow:hidden, so look for clipped bottoms.
-- Rebuild + republish: `.venv/bin/python talks/future_oct26/make_deck.py` then
-  `python3 ~/PycharmProjects/dylan-cern-site/scripts/add-note.py /media/dylan/data/x17/future_oct26/mx17-future-x17.html --slug mx17-future-x17 --force --deploy`
-  and commit the site repo.
+**Done:**
+- Rounds 1–3 of Dylan's 19 Oct feedback (verbatim + item log in `talks/future_oct26/FEEDBACK_2026-10-19.md`).
+- Round 3: slide 4 tables from Geant4 truth (`g4_breakdown`): singles per chamber A–D, e⁺e⁻ pairs same / adjacent /
+  opposite (opposite = 0, < 2 k at 95 %), and both-legs-reach-wall. Cover stat = data; slide 4 = Geant4 × digitised
+  reco eff. Kernel maps on slides 2–3; scint maps with a σ 8 mm kernel (slide 5) + one-line wall explanation
+  (MM efficiency cancels; bands = 4 SiPM read-out groups). Legends added (slide 6 bars, LNL slide); skill rule
+  "plots readable without hover" (claude-skills a0fe46e).
+- Live: https://dylan-neff.web.cern.ch/notes/mx17-future-x17.html (12 main slides + B1–B9).
+
+**Next steps:**
+1. Apply any further feedback from Dylan.
+
+**Gotchas / decisions:**
+- Geant4 sim arms: 2 = A (+z), 3 = C (−z), 0 = D (+x), 1 = B (−x). G4 has external conversions only (IPC ≈ +18 %).
+- `ntof_scint_stack/ana.py`: `calibrated()` was factored out of `run_arm` for `map_tracks`; map_tracks reproduces
+  eff_map counts exactly, but the full `ana` run was not re-run after the refactor.
+- Caches (delete to rebuild): `<OUT>/cache/{g4_breakdown.json,scint_map_tracks.parquet,singles_height.csv}`,
+  PNGs in `<OUT>/img`; OUT = /media/dylan/data/x17/future_oct26.
+- Open from round 2: Demokritos card is "?" (no study); pairs slide is vs ToF, not pointing origin (no per-leg directions).
+
+**Key files & commands:**
+- `talks/future_oct26/make_deck.py` — generator; `.venv/bin/python talks/future_oct26/make_deck.py`
+- `.venv/bin/python talks/future_oct26/render_check.py <html> <outdir>` — crops each frame; look for clipped bottoms
+- `python3 ~/PycharmProjects/dylan-cern-site/scripts/add-note.py /media/dylan/data/x17/future_oct26/mx17-future-x17.html --slug mx17-future-x17 --force --deploy`
+  then commit the site repo (branch `master`).
 
 ## Detector model basics: dead strips, gap, v(E), saturation, X asymmetry — updated 2026-10-19 pm (dylan-MS-7C84)
 
