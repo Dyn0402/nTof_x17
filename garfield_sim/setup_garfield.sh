@@ -89,8 +89,13 @@ elif [ -d "$HOME/Software/garfield/install" ]; then
     source "$HOME/Software/root_6_30/bin/thisroot.sh"
     _gf_install="$HOME/Software/garfield/install"
 
+elif [ -d "$HOME/garfield/install-r6404-g4114" ]; then
+    # laptop: ROOT 6.40.04 + Geant4 11.4.3 (see docs/hep-stack in claude-skills).
+    source "$HOME/Software/root_6_40_04/bin/thisroot.sh"
+    _gf_install="$HOME/garfield/install-r6404-g4114"
+
 elif [ -d "$HOME/garfield/install" ]; then
-    # laptop: local ROOT 6.36, gcc 13.3.
+    # laptop, old stack: ROOT 6.36, gcc 13.3. Kept until the new stack is verified.
     source "$HOME/Software/root_6_36_06/bin/thisroot.sh"
     _gf_install="$HOME/garfield/install"
 
