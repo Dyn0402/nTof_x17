@@ -1,5 +1,31 @@
 # Handoff
 
+## MX17 papers on Overleaf — updated 2026-10-19 (dylan-MS-7C84)
+
+**Resume:** Paper I is linked to Overleaf (git bridge). Next: share with Stephan + Track changes, then link Paper II.
+
+**Goal:** Overleaf as the editing/review home for the two MX17 papers, kept in step with `papers/<paper>/` by `papers/overleaf.sh` (git subtree).
+
+**Done:**
+- Created Overleaf project "MX17 Paper I" (id 6ad61186fe591228d14dac68) via Claude in Chrome (Dylan's browser "dyn040294").
+- `papers/overleaf.sh link paper1 https://git.overleaf.com/6ad61186fe591228d14dac68` done; repo and Overleaf `main` in step; pushed to origin main.
+- Git token stored by Dylan in `~/.git-credentials` (600, store helper for git.overleaf.com).
+
+**Next steps:**
+1. Overleaf, Paper I: Share, add Stephan as Editor; Review, Track changes on for everyone; settings: pdfLaTeX, main document `main.tex`. Check the project compiled and the files arrived.
+2. Create a blank "MX17 Paper II" project and `papers/overleaf.sh link paper2 <url>` (commit first; the script needs a clean tree).
+3. Delete `~/Desktop/overleaf_git_token.txt` (token already stored).
+
+**Gotchas / decisions:**
+- Overleaf's git bridge uses branch `main`, not `master`; `overleaf.sh` fixed (7dda16c).
+- GitHub Sync not used: it maps a whole repo root to a project, and the papers are subfolders of this monorepo. Direct git bridge is simpler.
+- The account shows "free plan" but has the Git integration section and token generation, and it works.
+- Did not link the UCLA/CERN institutional-account banners (account change, Dylan's call).
+- Tracked changes don't travel over git; accept/reject in Overleaf before `pull`.
+
+**Key files & commands:**
+- `papers/overleaf.sh` (pull / push / sync / link), `papers/README.md` (workflow)
+
 ## Future-X17 meeting deck (19 Oct) — updated 2026-10-19 (dylan-MS-7C84)
 
 **Resume:** round 3 republished; Dylan says slides "look much better". Next: any further feedback, else done.
