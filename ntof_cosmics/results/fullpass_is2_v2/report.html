@@ -1,0 +1,509 @@
+<!doctype html><html><head><meta charset="utf-8"><title>is2_v2 full pass</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>body{font-family:'IBM Plex Sans',Helvetica,Arial,sans-serif;max-width:1050px;margin:32px auto;padding:0 16px;color:#1c2230;background:#f5f3ee;line-height:1.45}
+h1{font-size:30px} h2{font-size:22px;margin-top:34px} .v{border-left:6px solid #2f8a5b;padding:6px 16px;background:#fffdf9}
+.w{border-left:6px solid #c99318;padding:6px 16px;background:#fffdf9} table.t{border-collapse:collapse;font-size:14px;margin:8px 0}
+table.t td,table.t th{padding:4px 10px;border-bottom:1px solid #d8d3c8;text-align:right} code{font-size:13px}
+img{max-width:100%} .scroll{overflow-x:auto}</style></head><body>
+<h1>is2_v2 full re-pass against production</h1>
+<p>Generated 2026-10-11 14:40 by <code>ntof_cosmics/make_fullpass_report.py --version is2_v2</code>
+from <code>pilot_compare.py … --version is2_v2</code>. Context: HANDOFF_TRACKING §16–§20; the one-sub-run pilot is
+<a href="../pilot_is2_v1/report.html">pilot_is2_v1/report.html</a>.</p>
+
+<div class="v"><p><b>Yield: the is2_v2 re-pass confirms more tracks on the wall than production on both arms.</b> Inside the same |true tan| &lt; 0.6, summed over the run/arms both chains calibrate, it confirms
+<b>A ×1.49</b> and <b>C ×1.82</b> as many tracks as production (per run A 1.43–1.51,
+0 of 32 run/arms below 1; C 1.73–1.95, 0 of 30 below 1),
+from ×1.21 (A) and ×1.46 (C) the gated tracks in acceptance.
+Confirmed per gated track in acceptance goes A 0.410 → 0.506,
+C 0.438 → 0.545.</p>
+<p>Stage 3 built all 292 sub-runs (15,696,402 segments, 5,410,792 gated) from 6,464 stage-2 jobs;
+the only two missing jobs are run_104 stat090_0016 A/C, whose decoded input is empty (production has no A/C there either).</p></div>
+<div class="w"><p><b>The same track, both directions:</b> where the two chains find the same single track on the wall, the re-pass's angle
+is ×0.86 x / ×0.87 y production's on A and ×0.90 / ×1.01
+on C (the k difference). Where only one direction confirms, the re-pass wins
+A 12458:6114, C 7832:3227; its net confirmation is
+at least production’s in every bin on A and
+at least production’s in every bin on C.</p>
+<p><b>Per angle bin</b>, each chain binned by its own angle, the re-pass's net confirmation is below production's in
+0 of 24 bin/views below 0.6 (the one-sided pilot had A below production above 0.3 on this view).</p></div>
+
+<h2>What was compared</h2>
+<p><b>is2_v2</b>: condor 4410513, two-sided slope search (<code>WFT_TWO_SIDED=1</code>), in-situ bundles is2_A/is2_C, seeder min 3,
+stage 2 at TAN_MAX 1.0 raw, stage 3 with <code>kcal_is2_v2</code> (in-situ norm × search scale A 1.009 / C 1.003 × production band ratio)
+and a 0.6 true-tan acceptance (<code>stage3_is2_v2</code>). <b>Production</b>: <code>stage3_fullpass</code>, one-sided, TAN_MAX 0.6 raw,
+its own per-run k. Every sub-run with a track table in both chains is compared. Run/arms without a production k drop out of
+the ratios: run_118 C, run_124 C, run_126 A, run_126 C, run_143 C, run_154 A, run_156 A, run_156 C, run_81 A, run_98 C. <i>Confirmed</i> = SiPM-wall matches minus the same-width off-time control on gated
+tracks that extrapolate onto the wall (<code>det_a_scint.match_run</code>).</p>
+<div class="scroll"><table class="dataframe t">
+  <thead>
+    <tr style="text-align: right;">
+      <th>arm</th>
+      <th>chain</th>
+      <th>gated</th>
+      <th>gated_acc</th>
+      <th>on_wall</th>
+      <th>confirmed</th>
+      <th>confirmed_acc</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>A</td>
+      <td>is2_v2</td>
+      <td>2707594</td>
+      <td>2707594</td>
+      <td>2646674</td>
+      <td>1369165</td>
+      <td>1369165</td>
+    </tr>
+    <tr>
+      <td>A</td>
+      <td>prod</td>
+      <td>2734797</td>
+      <td>2236754</td>
+      <td>2589997</td>
+      <td>984174</td>
+      <td>917073</td>
+    </tr>
+    <tr>
+      <td>C</td>
+      <td>is2_v2</td>
+      <td>1746524</td>
+      <td>1746524</td>
+      <td>1699483</td>
+      <td>952291</td>
+      <td>952291</td>
+    </tr>
+    <tr>
+      <td>C</td>
+      <td>prod</td>
+      <td>2335475</td>
+      <td>1196513</td>
+      <td>2165244</td>
+      <td>637829</td>
+      <td>524156</td>
+    </tr>
+  </tbody>
+</table></div>
+
+<h2>Per run</h2>
+<img src="figures/confirmed_ratio_by_run.png" alt="re-pass over production confirmed tracks per run">
+
+<h2>Wall confirmation by angle</h2>
+<img src="figures/confirm_by_tan.png" alt="net wall confirmation per true-tan bin, re-pass vs production">
+<p>Runs whose wall rate dips in both chains (110, 114, 126, 132, 162) are left out of the bins.</p>
+<div class="scroll"><table class="dataframe t">
+  <thead>
+    <tr style="text-align: right;">
+      <th>arm</th>
+      <th>view</th>
+      <th>|tan| from</th>
+      <th>net is2_v2</th>
+      <th>net prod</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>A</td>
+      <td>tanx</td>
+      <td>0.000</td>
+      <td>0.275</td>
+      <td>0.104</td>
+    </tr>
+    <tr>
+      <td>A</td>
+      <td>tanx</td>
+      <td>0.100</td>
+      <td>0.754</td>
+      <td>0.678</td>
+    </tr>
+    <tr>
+      <td>A</td>
+      <td>tanx</td>
+      <td>0.200</td>
+      <td>0.702</td>
+      <td>0.615</td>
+    </tr>
+    <tr>
+      <td>A</td>
+      <td>tanx</td>
+      <td>0.300</td>
+      <td>0.660</td>
+      <td>0.539</td>
+    </tr>
+    <tr>
+      <td>A</td>
+      <td>tanx</td>
+      <td>0.400</td>
+      <td>0.573</td>
+      <td>0.438</td>
+    </tr>
+    <tr>
+      <td>A</td>
+      <td>tanx</td>
+      <td>0.500</td>
+      <td>0.376</td>
+      <td>0.249</td>
+    </tr>
+    <tr>
+      <td>A</td>
+      <td>tanx</td>
+      <td>0.600</td>
+      <td></td>
+      <td>0.135</td>
+    </tr>
+    <tr>
+      <td>A</td>
+      <td>tanx</td>
+      <td>0.700</td>
+      <td></td>
+      <td>0.115</td>
+    </tr>
+    <tr>
+      <td>A</td>
+      <td>tany</td>
+      <td>0.000</td>
+      <td>0.339</td>
+      <td>0.183</td>
+    </tr>
+    <tr>
+      <td>A</td>
+      <td>tany</td>
+      <td>0.100</td>
+      <td>0.740</td>
+      <td>0.663</td>
+    </tr>
+    <tr>
+      <td>A</td>
+      <td>tany</td>
+      <td>0.200</td>
+      <td>0.720</td>
+      <td>0.617</td>
+    </tr>
+    <tr>
+      <td>A</td>
+      <td>tany</td>
+      <td>0.300</td>
+      <td>0.629</td>
+      <td>0.547</td>
+    </tr>
+    <tr>
+      <td>A</td>
+      <td>tany</td>
+      <td>0.400</td>
+      <td>0.453</td>
+      <td>0.417</td>
+    </tr>
+    <tr>
+      <td>A</td>
+      <td>tany</td>
+      <td>0.500</td>
+      <td>0.338</td>
+      <td>0.236</td>
+    </tr>
+    <tr>
+      <td>A</td>
+      <td>tany</td>
+      <td>0.600</td>
+      <td></td>
+      <td>0.167</td>
+    </tr>
+    <tr>
+      <td>A</td>
+      <td>tany</td>
+      <td>0.700</td>
+      <td></td>
+      <td>0.157</td>
+    </tr>
+    <tr>
+      <td>C</td>
+      <td>tanx</td>
+      <td>0.000</td>
+      <td>0.317</td>
+      <td>0.118</td>
+    </tr>
+    <tr>
+      <td>C</td>
+      <td>tanx</td>
+      <td>0.100</td>
+      <td>0.684</td>
+      <td>0.534</td>
+    </tr>
+    <tr>
+      <td>C</td>
+      <td>tanx</td>
+      <td>0.200</td>
+      <td>0.712</td>
+      <td>0.565</td>
+    </tr>
+    <tr>
+      <td>C</td>
+      <td>tanx</td>
+      <td>0.300</td>
+      <td>0.662</td>
+      <td>0.471</td>
+    </tr>
+    <tr>
+      <td>C</td>
+      <td>tanx</td>
+      <td>0.400</td>
+      <td>0.587</td>
+      <td>0.306</td>
+    </tr>
+    <tr>
+      <td>C</td>
+      <td>tanx</td>
+      <td>0.500</td>
+      <td>0.447</td>
+      <td>0.175</td>
+    </tr>
+    <tr>
+      <td>C</td>
+      <td>tanx</td>
+      <td>0.600</td>
+      <td></td>
+      <td>0.113</td>
+    </tr>
+    <tr>
+      <td>C</td>
+      <td>tanx</td>
+      <td>0.700</td>
+      <td></td>
+      <td>0.094</td>
+    </tr>
+    <tr>
+      <td>C</td>
+      <td>tany</td>
+      <td>0.000</td>
+      <td>0.440</td>
+      <td>0.307</td>
+    </tr>
+    <tr>
+      <td>C</td>
+      <td>tany</td>
+      <td>0.100</td>
+      <td>0.708</td>
+      <td>0.539</td>
+    </tr>
+    <tr>
+      <td>C</td>
+      <td>tany</td>
+      <td>0.200</td>
+      <td>0.685</td>
+      <td>0.509</td>
+    </tr>
+    <tr>
+      <td>C</td>
+      <td>tany</td>
+      <td>0.300</td>
+      <td>0.616</td>
+      <td>0.389</td>
+    </tr>
+    <tr>
+      <td>C</td>
+      <td>tany</td>
+      <td>0.400</td>
+      <td>0.531</td>
+      <td>0.264</td>
+    </tr>
+    <tr>
+      <td>C</td>
+      <td>tany</td>
+      <td>0.500</td>
+      <td>0.415</td>
+      <td>0.166</td>
+    </tr>
+    <tr>
+      <td>C</td>
+      <td>tany</td>
+      <td>0.600</td>
+      <td></td>
+      <td>0.124</td>
+    </tr>
+    <tr>
+      <td>C</td>
+      <td>tany</td>
+      <td>0.700</td>
+      <td></td>
+      <td>0.110</td>
+    </tr>
+  </tbody>
+</table></div>
+
+<h2>The same track in both chains</h2>
+<p>Single-track events, track point within 3 mm in both chains, both on the wall; binned by the re-pass's |true tan|.
+<i>scale</i> = re-pass/production true tan; <i>only_*</i> = the fraction confirmed with one chain's direction and not the other's.</p>
+<div class="scroll"><table class="dataframe t">
+  <thead>
+    <tr style="text-align: right;">
+      <th>arm</th>
+      <th>lo</th>
+      <th>hi</th>
+      <th>n</th>
+      <th>scale_x</th>
+      <th>scale_y</th>
+      <th>net_prod</th>
+      <th>net_is2_v2</th>
+      <th>only_prod</th>
+      <th>only_is2_v2</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>A</td>
+      <td>0.000</td>
+      <td>0.100</td>
+      <td>41942</td>
+      <td>0.404</td>
+      <td>0.023</td>
+      <td>0.215</td>
+      <td>0.215</td>
+      <td>0.001</td>
+      <td>0.001</td>
+    </tr>
+    <tr>
+      <td>A</td>
+      <td>0.100</td>
+      <td>0.200</td>
+      <td>151319</td>
+      <td>0.856</td>
+      <td>0.887</td>
+      <td>0.809</td>
+      <td>0.811</td>
+      <td>0.003</td>
+      <td>0.006</td>
+    </tr>
+    <tr>
+      <td>A</td>
+      <td>0.200</td>
+      <td>0.300</td>
+      <td>303621</td>
+      <td>0.855</td>
+      <td>0.878</td>
+      <td>0.770</td>
+      <td>0.780</td>
+      <td>0.009</td>
+      <td>0.018</td>
+    </tr>
+    <tr>
+      <td>A</td>
+      <td>0.300</td>
+      <td>0.400</td>
+      <td>239935</td>
+      <td>0.855</td>
+      <td>0.871</td>
+      <td>0.759</td>
+      <td>0.769</td>
+      <td>0.009</td>
+      <td>0.019</td>
+    </tr>
+    <tr>
+      <td>A</td>
+      <td>0.400</td>
+      <td>0.500</td>
+      <td>80501</td>
+      <td>0.855</td>
+      <td>0.871</td>
+      <td>0.738</td>
+      <td>0.745</td>
+      <td>0.006</td>
+      <td>0.013</td>
+    </tr>
+    <tr>
+      <td>A</td>
+      <td>0.500</td>
+      <td>0.600</td>
+      <td>20969</td>
+      <td>0.856</td>
+      <td>0.868</td>
+      <td>0.606</td>
+      <td>0.615</td>
+      <td>0.008</td>
+      <td>0.017</td>
+    </tr>
+    <tr>
+      <td>C</td>
+      <td>0.000</td>
+      <td>0.100</td>
+      <td>7182</td>
+      <td>0.029</td>
+      <td>0.010</td>
+      <td>0.250</td>
+      <td>0.248</td>
+      <td>0.011</td>
+      <td>0.010</td>
+    </tr>
+    <tr>
+      <td>C</td>
+      <td>0.100</td>
+      <td>0.200</td>
+      <td>69107</td>
+      <td>0.883</td>
+      <td>0.955</td>
+      <td>0.727</td>
+      <td>0.736</td>
+      <td>0.010</td>
+      <td>0.019</td>
+    </tr>
+    <tr>
+      <td>C</td>
+      <td>0.200</td>
+      <td>0.300</td>
+      <td>148539</td>
+      <td>0.905</td>
+      <td>1.004</td>
+      <td>0.755</td>
+      <td>0.764</td>
+      <td>0.005</td>
+      <td>0.014</td>
+    </tr>
+    <tr>
+      <td>C</td>
+      <td>0.300</td>
+      <td>0.400</td>
+      <td>116400</td>
+      <td>0.908</td>
+      <td>1.018</td>
+      <td>0.727</td>
+      <td>0.742</td>
+      <td>0.009</td>
+      <td>0.024</td>
+    </tr>
+    <tr>
+      <td>C</td>
+      <td>0.400</td>
+      <td>0.500</td>
+      <td>46774</td>
+      <td>0.905</td>
+      <td>1.010</td>
+      <td>0.671</td>
+      <td>0.686</td>
+      <td>0.009</td>
+      <td>0.024</td>
+    </tr>
+    <tr>
+      <td>C</td>
+      <td>0.500</td>
+      <td>0.600</td>
+      <td>17831</td>
+      <td>0.910</td>
+      <td>1.008</td>
+      <td>0.591</td>
+      <td>0.600</td>
+      <td>0.011</td>
+      <td>0.021</td>
+    </tr>
+  </tbody>
+</table></div>
+
+<h2>What this does not rule out</h2>
+<ul>
+<li>Which k is right on A is not settled by the wall: it is coarse, and the same-track preference is a few per mille of the tracks.
+The A–C cosmic truth is the stronger argument.</li>
+<li>The same-track test covers only tracks both chains find in the same place; it says nothing about the tracks only the re-pass finds.</li>
+<li>Wall confirmation is a purity proxy with its own angle-dependent extrapolation error, and confirmed-per-gated also carries
+the wall's acceptance.</li>
+<li>Nothing here tests |true tan| 0.5–1 on data except the wall; the cosmic truth stops near 0.5.</li>
+<li>B and D are not in the re-pass (no in-situ bundle).</li>
+</ul>
+</body></html>

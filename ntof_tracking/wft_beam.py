@@ -53,29 +53,45 @@ REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if REPO not in sys.path:
     sys.path.insert(0, REPO)
 
-BEAM_BASE = '/media/dylan/data/x17/beam_july/runs/'
-ANALYSIS_BASE = '/media/dylan/data/x17/beam_july/analysis/wft/'
-BENCH_ANALYSIS = '/media/dylan/data/x17/cosmic_bench/Analysis/'
+# Overridable so the same driver runs on other hosts (e.g. the desktop, where
+# the data lives under /media/ucla/x17match/) without editing this table.
+BEAM_BASE = os.environ.get('WFT_BEAM_BASE',
+                           '/media/dylan/data/x17/beam_july/runs/')
+ANALYSIS_BASE = os.environ.get('WFT_BEAM_ANALYSIS',
+                               '/media/dylan/data/x17/beam_july/analysis/wft/')
+BENCH_ANALYSIS = os.environ.get('WFT_BENCH_ANALYSIS',
+                                '/media/dylan/data/x17/cosmic_bench/Analysis/')
 
 # beam arm -> (bench detector, FEU x, FEU y, bench bundle to seed from).
 # Same table as mx_june_wft/bench/framing_compare.py, plus the bundle chosen in
 # mx_june_wft/HANDOFF_2026-07-30.md's fleet status table.
 BEAM_DETS = {
     'A': dict(bench='mx17_3', feu_x=3, feu_y=4,
+              # r06 (2026-08-19): c2 slaved to 0.6*c1. calib_bundle_lp2 carried
+              # c2/c1 = 1.14 -- an inverted ladder, physically impossible, since
+              # the +-2 strip is reached only through the +-1.
               bundle=BENCH_ANALYSIS + 'mx17_det3_saturday_scan_6-27-26/'
-                     'long_run_resist_490V_drift_1000V/mx17_3/wft/calib_bundle_lp2',
+                     'long_run_resist_490V_drift_1000V/mx17_3/wft/calib_bundle_r06',
               gap_mm=27.9),
     'B': dict(bench='mx17_2', feu_x=5, feu_y=6,
+              # NB the bench key here is o22_long_det2 (`longer_run`), NOT
+              # g_det2 (`long_run`) -- that collision is what hid det2's
+              # inversion for two days. lp carried c2/c1 = 1.53.
               bundle=BENCH_ANALYSIS + 'mx17_det2_det3_overnight_6-22-26/'
-                     'longer_run/mx17_2/wft/calib_bundle_lp',
+                     'longer_run/mx17_2/wft/calib_bundle_r06',
               gap_mm=30.5),
     'C': dict(bench='mx17_6', feu_x=7, feu_y=8,
+              # NOT moved to r06: det6's lp bundle is already physical
+              # (c2/c1 = 0.82), so there is nothing to correct here.
               bundle=BENCH_ANALYSIS + 'mx17_det6_det7_overnight_6-26-26/'
                      'long_run/mx17_6/wft/calib_bundle_lp',
               gap_mm=30.0),
     'D': dict(bench='mx17_7', feu_x=1, feu_y=2,
+              # calib_bundle_lp superseded det7's v36 in the 7-31 fleet rollout;
+              # r06 supersedes lp in turn -- lp carried c2/c1 = 1.75, the worst
+              # inversion in the fleet.
               bundle=BENCH_ANALYSIS + 'mx17_det6_det7_overnight_6-26-26/'
-                     'long_run/mx17_7/wft/calib_bundle_v36',
+                     'long_run/mx17_7/wft/calib_bundle_r06',
               gap_mm=30.0),
 }
 
@@ -159,21 +175,87 @@ def hits_file_for_tag(cfg: BeamConfig, tag: str) -> Optional[str]:
     return hits[0] if hits else None
 
 
+# ----------------------------------------------------------------- allowlist
+ALLOWLIST_SCHEMA = 'sept26_prelim/allowlist/1'
+
+
+def load_allowlist(path: str, arm: str) -> Dict[str, set]:
+    """One arm's slice of a stage-2 allowlist: ``{file tag: {event ids}}``.
+
+    Written by `sept26_prelim_analysis/allowlist.py` from the stage-1 class
+    table -- which events, in which arms, are worth the fit.  This reader is
+    deliberately a dozen lines and imports nothing: it runs on a condor worker,
+    which gets `code.tar.gz` (wft + ntof_tracking + common) and not the
+    analysis package.
+
+    An arm that appears nowhere in the document raises rather than returning
+    ``{}``.  Empty means "fit nothing", and a typo'd arm silently producing an
+    empty output table is the failure this exists to prevent.
+    """
+    with open(path) as f:
+        doc = json.load(f)
+    if doc.get('schema') != ALLOWLIST_SCHEMA:
+        raise ValueError(f'{path}: schema {doc.get("schema")!r}, '
+                         f'expected {ALLOWLIST_SCHEMA!r}')
+    if arm not in doc['events']:
+        raise KeyError(f'{path}: no entry for arm {arm!r} '
+                       f'(has {sorted(doc["events"])}). An allowlist with no '
+                       f'rows for this arm means the selection never chose it '
+                       f'-- do not run the job rather than run it empty.')
+    return {tag: set(int(e) for e in ids)
+            for tag, ids in doc['events'][arm].items()}
+
+
+def allowlist_header(path: str) -> dict:
+    """The allowlist's policy/provenance header, for the reco sidecar.
+
+    The events fitted are only interpretable next to the rule that chose them
+    (which classes, which prescale, which salt), so the rule travels into
+    ``.meta.json`` with the table.
+    """
+    with open(path) as f:
+        doc = json.load(f)
+    return {k: doc.get(k) for k in
+            ('schema', 'run', 'subrun', 'built', 'source', 'policy', 'counts')}
+
+
 # --------------------------------------------------------------------- bundle
 def make_bundle(arm: str, out: Optional[str] = None, v_drift: Optional[float] = None,
-                run: str = 'run_79', sub_run: str = 'stat090_0000') -> str:
-    """Seed a run_79 bundle from the bench bundle.
+                run: str = 'run_79', sub_run: str = 'stat090_0000',
+                keep_t0_prior: bool = False) -> str:
+    """Seed a beam bundle from the bench bundle.
 
     What transfers (PLAN_08 §2): the impulse template and the resistive-strip
     sharing kernel -- hardware properties of the same chambers. What does not:
     v_drift, the diffusion pair, and the DAQ constants. This routine transfers
-    the first group verbatim, replaces the DAQ constants with run_79's, and
-    puts a PRIOR (not a measurement) in v_drift; sigma_p0/Dp are left at the
-    bench values, which is the largest un-validated assumption in this chain.
+    the first group verbatim, replaces the DAQ constants with the beam run's,
+    and puts a PRIOR (not a measurement) in v_drift; sigma_p0/Dp are left at
+    the bench values, which is the largest un-validated assumption in this
+    chain.
+
+    ALSO dropped: `t0_abs` and `t0_prior_sigma`. Those are an ABSOLUTE arrival
+    time in the readout window, measured on the bench against its scintillator
+    trigger and its DAQ latency -- a property of the trigger, not of the
+    chamber. A beam run is triggered by n_TOF, so the bench table is a wrong
+    answer stated to +-5 ns, which at sigma = 5 is effectively a hard pin.
+    This matters because it is SILENT: it arrived only when the fleet moved to
+    the *_t0p bundles (r06 derives from calib_bundle_lp2_t0p), so a beam re-run
+    that changes nothing but the kernel would have quietly also acquired a
+    bench clock. Measured on run_145 tag 004: with the prior the fitted t0
+    sits at 236 +- 80 ns, pulled onto the bench's per-bin table (222-305);
+    without it the free fit medians 30 ns. Pass keep_t0_prior=True only once
+    an in-situ t0 calibration for THIS run exists.
     """
     from wft.calib import CalibrationBundle
     d = BEAM_DETS[arm]
     cal = CalibrationBundle.load(d['bundle'])
+    dropped_t0 = None
+    if not keep_t0_prior and (getattr(cal, 't0_abs', None)
+                              or getattr(cal, 't0_prior_sigma', 0)):
+        dropped_t0 = dict(t0_prior_sigma=cal.t0_prior_sigma,
+                          t0_abs_planes=sorted(cal.t0_abs))
+        cal.t0_abs = {}
+        cal.t0_prior_sigma = 0.0
     with open(f'{BEAM_BASE}{run}/run_config.json') as f:
         rc = json.load(f)
     daq = rc['dream_daq_info']
@@ -199,9 +281,19 @@ def make_bundle(arm: str, out: Optional[str] = None, v_drift: Optional[float] = 
         not_revalidated='sigma_p0, Dp (gas-dependent), template (assumed same '
                         'DREAM shaping), dt_xy',
         status='PRELIMINARY -- see ntof_tracking/TRACK_PLAN_08 phase 2')
+    if dropped_t0:
+        cal.provenance['dropped'] = (
+            't0_abs + t0_prior_sigma (bench absolute time vs the bench '
+            'scintillator trigger; this run is triggered by n_TOF, so the '
+            'bench table does not transfer)')
+        cal.provenance['dropped_t0_was'] = dropped_t0
+    elif keep_t0_prior:
+        cal.provenance['kept_t0_prior'] = (
+            'BENCH t0_abs/t0_prior_sigma kept on a beam run by explicit '
+            'request -- only defensible with an in-situ t0 for this run')
     out = out or os.path.join(ANALYSIS_BASE, run, sub_run, f'mx17_{arm}',
                               'calib_bundle_prelim')
-    cal.save(out, note=f'preliminary run_79 bundle for arm {arm}')
+    cal.save(out, note=f'preliminary {run} bundle for arm {arm}')
     print(cal.summary())
     print('wrote', out)
     return out
@@ -212,7 +304,11 @@ def make_bundle(arm: str, out: Optional[str] = None, v_drift: Optional[float] = 
 # candidates) were tuned on cosmics with ~6 strips in one cluster; run_79's
 # median event has 19-44 hits per plane and its p99 is the full plane.
 BUSY_PLANE_HITS = 150      # after the significance floor: flash/discharge veto
-MIN_STRIPS_BEAM = 5        # a column, not a single-strip deposit
+# a column, not a single-strip deposit.  WFT_BEAM_MIN_STRIPS overrides it (opt-in,
+# default unchanged): at n_TOF S/N a near-normal track has only 3-4 strips over
+# threshold, and 5 loses most head-on tracks -- ntof_cosmics/HANDOFF_TRACKING_
+# 2026-10-06.md §9-10, sept26_prelim_analysis/SAME_CHAMBER_PAIRS.md.
+MIN_STRIPS_BEAM = int(os.environ.get('WFT_BEAM_MIN_STRIPS', 5))
 N_CANDIDATES_BEAM = 5
 WIDE_STRIPS = 10           # >= this many strips AND
 ISOCHRONOUS_SPAN = 3       #   < this many samples of time span = not a column
@@ -241,7 +337,11 @@ def read_hits_tag(path: str, feus) -> 'pd.DataFrame':
 def seeds_from_hits_beam(df, pos_maps, feu_x, feu_y,
                          busy=BUSY_PLANE_HITS,
                          n_candidates=N_CANDIDATES_BEAM,
-                         min_strips=MIN_STRIPS_BEAM) -> Dict[int, dict]:
+                         min_strips=MIN_STRIPS_BEAM,
+                         hot: Optional[Dict[str, object]] = None,
+                         local_mm: Optional[float] = None,
+                         local_mode: Optional[str] = None,
+                         split_gap_mm: Optional[float] = None) -> Dict[int, dict]:
     """Beam seeds: {eventId: {'x': [Seed], 'y': [Seed], 'n_hits', 'spark'}}.
 
     Same contract and the same clustering as `wft.seed.seeds_from_hits` -- only
@@ -256,33 +356,63 @@ def seeds_from_hits_beam(df, pos_maps, feu_x, feu_y,
         SPAN to decide that a deposit is not a drift column is a detection
         question (which clusters to fit), not a geometry one -- the fit still
         gets only channels.
+
+    ``hot``: optional ``{'x': [...], 'y': [...]}`` channel numbers -- typically
+    ``cal.hot`` -- passed through to ``seed_candidates`` (HANDOFF_D_NOISY_
+    CHANNELS.md's wildcard spec, item 1: never seed on a flagged channel).
     """
     from wft import seed as wseed
-    df = wseed.apply_significance_floor(df, wseed.SIG_REL_FLOOR)
+    lm = wseed.SIG_FLOOR_LOCAL_MM if local_mm is None else local_mm
+    rescue = wseed.local_floor_rescues(lm, local_mode)
+    sg = wseed.SPLIT_GAP_MM if split_gap_mm is None else split_gap_mm
+    pos = wseed.strip_positions(df, pos_maps) if lm else None
+    loc = None
+    if rescue:
+        loc = wseed.apply_significance_floor(df, wseed.SIG_REL_FLOOR, local_mm=lm, pos=pos)
+        loc = {int(e): g for e, g in loc.groupby('eventId', sort=False)}
+    df = wseed.apply_significance_floor(df, wseed.SIG_REL_FLOOR,
+                                        local_mm=0.0 if rescue else lm,
+                                        pos=None if rescue else pos)
     out: Dict[int, dict] = {}
     if len(df) == 0:
         return out
+    hot = hot or {}
+    feu_of = {'x': feu_x, 'y': feu_y}
+
+    def plane_seeds(gp, plane):
+        """(every cluster, the ones that survive the isochronous veto)."""
+        ch = gp['channel'].to_numpy().astype(int)
+        cands = wseed.seed_candidates(pos_maps[feu_of[plane]][ch], ch,
+                                      gp['amplitude'].to_numpy(),
+                                      min_strips=min_strips,
+                                      n_candidates=n_candidates,
+                                      hot=hot.get(plane))
+        if sg:
+            cands = wseed.split_seeds(cands, pos_maps[feu_of[plane]], sg, min_strips)
+        smp = dict(zip(ch, gp['max_sample'].to_numpy()))
+        keep = []
+        for s in cands:
+            m = np.array([smp.get(int(c), np.nan) for c in s.channels],
+                         dtype=float)
+            m = m[np.isfinite(m)]
+            span = (m.max() - m.min()) if len(m) else 0.0
+            if s.n_strips >= WIDE_STRIPS and span < ISOCHRONOUS_SPAN:
+                continue
+            keep.append(s)
+        return cands, keep
+
     for eid, g in df.groupby('eventId', sort=False):
         rec = {'x': [], 'y': [], 'n_hits': int(len(g)), 'spark': False}
-        for plane, feu in (('x', feu_x), ('y', feu_y)):
+        for plane, feu in feu_of.items():
             gp = g[g['feu'] == feu]
             if len(gp) == 0 or len(gp) > busy:
                 continue
-            ch = gp['channel'].to_numpy().astype(int)
-            cands = wseed.seed_candidates(pos_maps[feu][ch], ch,
-                                          gp['amplitude'].to_numpy(),
-                                          min_strips=min_strips,
-                                          n_candidates=n_candidates)
-            smp = dict(zip(ch, gp['max_sample'].to_numpy()))
-            keep = []
-            for s in cands:
-                m = np.array([smp.get(int(c), np.nan) for c in s.channels],
-                             dtype=float)
-                m = m[np.isfinite(m)]
-                span = (m.max() - m.min()) if len(m) else 0.0
-                if s.n_strips >= WIDE_STRIPS and span < ISOCHRONOUS_SPAN:
-                    continue
-                keep.append(s)
+            cands, keep = plane_seeds(gp, plane)
+            if loc is not None:
+                gl = loc[int(eid)]
+                keep = wseed.rescue_candidates(keep, cands,
+                                               plane_seeds(gl[gl['feu'] == feu], plane)[1],
+                                               pos_maps[feu], n_candidates)
             rec[plane] = keep
         if rec['x'] or rec['y']:
             out[int(eid)] = rec
@@ -292,11 +422,22 @@ def seeds_from_hits_beam(df, pos_maps, feu_x, feu_y,
 # --------------------------------------------------------------------- driver
 def reconstruct_subrun(cfg: BeamConfig, bundle_path: str, out_path: str,
                        jobs: int = 6, limit_per_tag: Optional[int] = None,
-                       pad_strips: int = 3, verbose: bool = True):
+                       pad_strips: int = 3, verbose: bool = True,
+                       allow_events: Optional[Dict[str, set]] = None,
+                       allow_meta: Optional[dict] = None):
     """Reconstruct a beam sub-run tag by tag into one parquet table.
 
     Mirrors `wft.reco.reconstruct_run` (and reuses its worker), but streams the
     hits per file tag instead of concatenating the whole sub-run.
+
+    ``allow_events`` is ``{file tag: {event ids}}`` from `load_allowlist`.  When
+    given, only those triggers are fitted -- the stage-2 selection.  Seeding
+    still runs over the whole tag, because the seeder is cheap next to the fit
+    and because the count it produces is the denominator of the number that
+    matters: **how many allowlisted events the seeder could not seed**.  That
+    is the stage-1 -> stage-2 loss, it is per tag and per arm, and it goes in
+    the sidecar as ``allowlist.n_allowed/n_seeded/n_missing`` rather than being
+    left to be inferred later from a short table.
     """
     import pandas as pd
     from concurrent.futures import ProcessPoolExecutor
@@ -315,6 +456,22 @@ def reconstruct_subrun(cfg: BeamConfig, bundle_path: str, out_path: str,
         print(f'[wft-beam] {cal.summary()}')
         print(f'[wft-beam] {cfg.DET_NAME} {cfg.RUN}/{cfg.SUB_RUN}: '
               f'{len(tags)} file tag(s)', flush=True)
+    if allow_events is not None:
+        # A tag with no entry is a tag the selection chose nothing in -- legal,
+        # and different from a tag whose entry is missing because the allowlist
+        # was built for another sub-run. Say which, once, up front.
+        unknown = [t for t in tags if t not in allow_events]
+        if verbose:
+            n_al = sum(len(allow_events.get(t, ())) for t in tags)
+            print(f'[wft-beam] allowlist: {n_al:,} event(s) over '
+                  f'{len(tags) - len(unknown)}/{len(tags)} tag(s)'
+                  + (f'; not named for {unknown}' if unknown else ''), flush=True)
+        if len(unknown) == len(tags):
+            raise KeyError(
+                f'the allowlist names none of this sub-run\'s tags {tags} '
+                f'(it has {sorted(allow_events)[:4]}...) -- almost certainly '
+                f'an allowlist built for a different run/sub-run')
+    allow_acct = []
 
     def _write(rows, path, tags_done=()):
         d = pd.DataFrame(rows)
@@ -322,14 +479,26 @@ def reconstruct_subrun(cfg: BeamConfig, bundle_path: str, out_path: str,
             d = d.sort_values('event_id').reset_index(drop=True)
         os.makedirs(os.path.dirname(path), exist_ok=True)
         d.to_parquet(path, index=False)
+        if cand_rows:
+            pd.DataFrame(cand_rows).sort_values(
+                ['event_id', 'plane', 'rank']).reset_index(drop=True).to_parquet(
+                path.replace('.parquet', '.candidates.parquet'), index=False)
+        # one row per joint two-track ATTEMPT (wft/TWO_TRACK_FIT_2026-09-16.md),
+        # accepted or not: the statistic, the guards and which trigger fired.
+        # Empty unless WFT_TWO_TRACK_FIT is on.
+        if split_rows:
+            pd.DataFrame(split_rows).sort_values(
+                ['event_id', 'plane']).reset_index(drop=True).to_parquet(
+                path.replace('.parquet', '.splits.parquet'), index=False)
         # the sidecar goes with EVERY checkpoint: a table without its bundle
         # metadata is unusable downstream (v_drift lives there, and it is the
         # angle scale), and a half-finished run is exactly when that bites
         _write_meta(d, path, cal, cfg, bundle_path, feu_x, feu_y, tags_done,
-                    n_seeded, pad_strips, partial=len(tags_done) < len(tags))
+                    n_seeded, pad_strips, partial=len(tags_done) < len(tags),
+                    allow_acct=allow_acct, allow_meta=allow_meta)
         return d
 
-    rows, n_seeded, done = [], 0, []
+    rows, cand_rows, split_rows, n_seeded, done = [], [], [], 0, []
     with ProcessPoolExecutor(max_workers=jobs, initializer=wreco._worker_init,
                              initargs=(bundle_path,)) as pool:
         for tag in tags:
@@ -338,20 +507,38 @@ def reconstruct_subrun(cfg: BeamConfig, bundle_path: str, out_path: str,
                 print(f'[wft-beam]   {tag}: no hits file, skipped')
                 continue
             hits = read_hits_tag(hp, (feu_x, feu_y))
-            seeds = seeds_from_hits_beam(hits, pos_maps, feu_x, feu_y)
+            seeds = seeds_from_hits_beam(hits, pos_maps, feu_x, feu_y, hot=cal.hot,
+                                         min_strips=MIN_STRIPS_BEAM)
             del hits
             wanted = set(seeds)
+            if allow_events is not None:
+                allowed = allow_events.get(tag, set())
+                wanted &= allowed
+                allow_acct.append(dict(tag=tag, n_allowed=len(allowed),
+                                       n_seeded=len(wanted),
+                                       n_missing=len(allowed - set(seeds))))
+                if verbose:
+                    a = allow_acct[-1]
+                    print(f'[wft-beam]   {tag}: allowlist {a["n_allowed"]:,} -> '
+                          f'{a["n_seeded"]:,} seeded '
+                          f'({a["n_missing"]:,} not seeded)', flush=True)
+                if not wanted:
+                    done.append(tag)
+                    continue
             if limit_per_tag:
                 wanted = set(sorted(wanted)[:limit_per_tag])
             n_seeded += len(wanted)
-            if verbose:
+            if verbose and allow_events is None:
                 print(f'[wft-beam]   {tag}: {len(wanted):,} seeded events',
                       flush=True)
             payloads = _windows_for_tag(cfg, tag, pos_maps, seeds, wanted,
                                         pad_strips)
             if not payloads:
                 continue
-            rows.extend(pool.map(wreco._worker_fit, payloads, chunksize=8))
+            for r in pool.map(wreco._worker_fit, payloads, chunksize=8):
+                cand_rows.extend(r.pop('_cand', []))
+                split_rows.extend(r.pop('_splits', []))
+                rows.append(r)
             done.append(tag)
             if verbose:
                 print(f'[wft-beam]   {tag}: {len(payloads):,} windowed, '
@@ -368,7 +555,10 @@ def reconstruct_subrun(cfg: BeamConfig, bundle_path: str, out_path: str,
 
 
 def _write_meta(df, out_path, cal, cfg, bundle_path, feu_x, feu_y, tags_done,
-                n_seeded, pad_strips, partial=False):
+                n_seeded, pad_strips, partial=False, allow_acct=None,
+                allow_meta=None):
+    from wft import reco as wreco
+    from wft import seed as wseed
     meta = dict(n_events=int(len(df)), n_seeded=int(n_seeded),
                 status='PRELIMINARY' + (' (PARTIAL: run still going)'
                                         if partial else ''),
@@ -379,6 +569,13 @@ def _write_meta(df, out_path, cal, cfg, bundle_path, feu_x, feu_y, tags_done,
                             sat_adc=cal.sat_adc, n_depth_bins=cal.n_depth_bins,
                             conditions=cal.conditions,
                             provenance=cal.provenance),
+                # Same stamp as wft.reco.reconstruct_run: whether the fit
+                # applied the per-plane angle constants in-reco. Without it a
+                # post-hoc corrector cannot tell this table from a frozen-gen
+                # one and would double-apply. applied=False -> the angles are
+                # on the uncorrected mapping and need the post-hoc pass.
+                angle_constants=dict(applied=bool(cal.w0 or cal.kw),
+                                     w0=dict(cal.w0), kw=dict(cal.kw)),
                 run=dict(key=cfg.KEY, run=cfg.RUN, sub_run=cfg.SUB_RUN,
                          detector=cfg.DET_NAME, feu_x=feu_x, feu_y=feu_y,
                          file_tags=list(cfg.file_tags or [])),
@@ -388,11 +585,45 @@ def _write_meta(df, out_path, cal, cfg, bundle_path, feu_x, feu_y, tags_done,
                                n_candidates=N_CANDIDATES_BEAM,
                                wide_strips=WIDE_STRIPS,
                                isochronous_span=ISOCHRONOUS_SPAN,
+                               sig_floor_local_mm=wseed.SIG_FLOOR_LOCAL_MM,
+                               sig_floor_local_mode=wseed.SIG_FLOOR_LOCAL_MODE,
+                               split_gap_mm=wseed.SPLIT_GAP_MM,
                                pad_strips=pad_strips),
                 reco_config=dict(model_frac=float(os.environ.get('WFT_MODEL_FRAC', 0)),
                                  prescan=os.environ.get('WFT_PRESCAN', '0'),
                                  pair_select=os.environ.get('WFT_PAIR_SELECT', '0'),
-                                 chi2dof_bad=os.environ.get('WFT_CHI2DOF_BAD', '300')))
+                                 chi2dof_bad=os.environ.get('WFT_CHI2DOF_BAD', '300'),
+                                 xy_pairing=(cal.xy_pairing or {}).get('features'),
+                                 tan_max_raw=wreco.TAN_MAX,
+                                 two_sided=wreco.TWO_SIDED,
+                                 two_track_fit=wreco.TWO_TRACK,
+                                 two_track=dict(
+                                     f=wreco.TWO_TRACK_F,
+                                     f_corrob=wreco.TWO_TRACK_F_CORROB,
+                                     t0=wreco.TWO_TRACK_T0,
+                                     resid_z=wreco.TWO_TRACK_RESID_Z,
+                                     width_mm=wreco.TWO_TRACK_WIDTH_MARGIN,
+                                     selected_only=wreco.TWO_TRACK_SELECTED_ONLY,
+                                     n_splits=int(df['n_splits'].sum())
+                                     if 'n_splits' in df else 0)
+                                 if wreco.TWO_TRACK else None))
+    # The selection this table was fitted under, and what it cost at the seeder.
+    # `n_missing` is the number that must not be lost: allowlisted events the
+    # beam seeder produced no cluster for. They are a real stage-1 -> stage-2
+    # inefficiency, they are invisible in the output table (the rows simply are
+    # not there), and every efficiency downstream needs them.
+    if allow_acct is not None:
+        tot = {k: int(sum(a[k] for a in allow_acct))
+               for k in ('n_allowed', 'n_seeded', 'n_missing')} if allow_acct else \
+              dict(n_allowed=0, n_seeded=0, n_missing=0)
+        meta['allowlist'] = dict(
+            applied=True, per_tag=list(allow_acct), **tot,
+            seed_efficiency=round(tot['n_seeded'] / max(tot['n_allowed'], 1), 4),
+            header=allow_meta or {})
+    else:
+        meta['allowlist'] = dict(
+            applied=False,
+            note='no allowlist -- every seeded trigger of every tag was fitted')
     with open(out_path.replace('.parquet', '.meta.json'), 'w') as f:
         json.dump(meta, f, indent=1, default=str)
 
@@ -432,10 +663,12 @@ def _windows_for_tag(cfg, tag, pos_maps, seeds, wanted, pad_strips):
             rec['ftst_' + plane] = ftst
     payloads = []
     for eid, rec in buf.items():
-        fd = (rec['ftst_x'] - rec['ftst_y']
-              if 'ftst_x' in rec and 'ftst_y' in rec else None)
+        # per-plane ftst dict — wft.reco._worker_fit's contract since the
+        # 2026-08-11 t0-prior work (it derives ftst_diff itself; the old
+        # scalar here made every event with ftst_x != ftst_y fit as None)
+        ftst = {p: rec.get('ftst_' + p) for p in ('x', 'y')}
         payloads.append((eid, rec['w'], rec['s'], seeds[eid]['n_hits'],
-                         seeds[eid]['spark'], fd))
+                         seeds[eid]['spark'], ftst))
     return payloads
 
 
@@ -450,6 +683,9 @@ def main():
     b.add_argument('--run', default='run_79')
     b.add_argument('--subrun', default='stat090_0000')
     b.add_argument('--v-drift', type=float, default=None)
+    b.add_argument('--keep-t0-prior', action='store_true',
+                   help='keep the bench t0_abs/t0_prior_sigma. Off by '
+                        'default, and it should stay off: see make_bundle.')
     b.add_argument('--out', default=None)
 
     r = sub.add_parser('reco', help='reconstruct a beam sub-run')
@@ -462,11 +698,15 @@ def main():
     r.add_argument('--limit-per-tag', type=int, default=None)
     r.add_argument('--bundle', default=None)
     r.add_argument('--out', default=None)
+    r.add_argument('--allow', default=None,
+                   help='stage-2 allowlist JSON (sept26_prelim_analysis/'
+                        'allowlist.py). Only the listed events of this arm are '
+                        'fitted. Without it every seeded trigger is.')
 
     a = ap.parse_args()
     if a.cmd == 'bundle':
         make_bundle(a.det, out=a.out, v_drift=a.v_drift, run=a.run,
-                    sub_run=a.subrun)
+                    sub_run=a.subrun, keep_t0_prior=a.keep_t0_prior)
         return 0
     cfg = beam_config(a.det, a.run, a.subrun, n_tags=a.tags)
     bundle = a.bundle or os.path.join(ANALYSIS_BASE, a.run, a.subrun,
@@ -474,8 +714,10 @@ def main():
     if not os.path.isdir(bundle):
         bundle = make_bundle(a.det, run=a.run, sub_run=a.subrun)
     out = a.out or cfg.out_dir() + '/events_prelim.parquet'
+    allow = load_allowlist(a.allow, a.det) if a.allow else None
     reconstruct_subrun(cfg, bundle, out, jobs=a.jobs,
-                       limit_per_tag=a.limit_per_tag)
+                       limit_per_tag=a.limit_per_tag, allow_events=allow,
+                       allow_meta=allowlist_header(a.allow) if a.allow else None)
     return 0
 
 

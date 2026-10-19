@@ -215,6 +215,12 @@ ntof_processing/flash_timing/data/
 # 2026-08-04 (they were 250 MB of the 272 MB pack). Regenerate with the
 # analysis scripts; they stay on disk locally but are no longer tracked.
 *.png
+# ...except the paper figures, which Overleaf needs (papers/README.md)
+!papers/*/figures/*.png
 *.gif
 *.npz
 *.parquet
+
+# Office lock files (created while a .pptx/.docx/.xlsx is open)
+~$*
+pre_yfix

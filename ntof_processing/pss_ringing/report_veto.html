@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rejecting plastic after-pulses in the slim</title><style>
+:root { --ink:#20242b; --muted:#6b7280; --rule:#e3e5e8; --surface:#fcfcfb;
+        --accent:#0072B2; --warn:#D55E00; }
+* { box-sizing:border-box; }
+body { margin:0; padding:2.2rem 1.4rem 4rem; background:var(--surface);
+       color:var(--ink); font:16px/1.62 -apple-system,BlinkMacSystemFont,
+       "Segoe UI",Roboto,Helvetica,Arial,sans-serif; }
+main { max-width:60rem; margin:0 auto; }
+h1 { font-size:1.72rem; line-height:1.25; margin:0 0 .3rem; }
+h2 { font-size:1.16rem; margin:2.6rem 0 .7rem; padding-bottom:.3rem;
+     border-bottom:1px solid var(--rule); }
+h3 { font-size:1rem; margin:1.7rem 0 .5rem; }
+.sub { color:var(--muted); margin:0 0 1.6rem; font-size:.94rem; }
+.verdict { border-left:4px solid var(--accent); background:#f2f7fb;
+           padding:1rem 1.2rem; margin:1.4rem 0 1.8rem; border-radius:0 6px 6px 0; }
+.verdict p { margin:.45rem 0; }
+.nums { display:flex; flex-wrap:wrap; gap:.8rem; margin:1.3rem 0 1.6rem; }
+.num { flex:1 1 12rem; border:1px solid var(--rule); border-radius:8px;
+       padding:.75rem .9rem; background:#fff; }
+.num .v { font-size:1.42rem; font-weight:650; color:var(--accent);
+          font-variant-numeric:tabular-nums; }
+.num .k { font-size:.79rem; color:var(--muted); margin-top:.15rem; }
+table { border-collapse:collapse; width:100%; margin:.9rem 0 1.2rem;
+        font-size:.88rem; font-variant-numeric:tabular-nums; }
+th,td { text-align:right; padding:.42rem .6rem; border-bottom:1px solid var(--rule); }
+th:first-child,td:first-child { text-align:left; }
+thead th { color:var(--muted); font-weight:600; font-size:.8rem; }
+tbody tr:hover { background:#f5f7f9; }
+figure { margin:1.6rem 0; }
+figure img { width:100%; border:1px solid var(--rule); border-radius:6px; }
+figcaption { color:var(--muted); font-size:.86rem; margin-top:.5rem; }
+code { background:#f0f2f4; padding:.1rem .3rem; border-radius:3px;
+       font-size:.87em; }
+.scroll { overflow-x:auto; }
+ul { padding-left:1.2rem; } li { margin:.3rem 0; }
+@media (prefers-color-scheme: dark) {
+  :root { --ink:#e6e8ea; --muted:#9aa3ad; --rule:#333940; --surface:#16191d; }
+  .num, table { background:#1c2025; }
+  .verdict { background:#182430; }
+  code { background:#252a30; }
+  tbody tr:hover { background:#22272d; }
+  figure img { background:#fff; }
+}
+</style></head>
+<body><main>
+
+<h1>Rejecting plastic after-pulses in the slim</h1>
+<p class="sub">Companion to <a href="report.html">&ldquo;Do the n_TOF plastics
+ring?&rdquo;</a> &middot; measured on the reference pair
+run_79/stat090_0000 &times; 224572, 400 bunches, slimmed at &plusmn;3&nbsp;&micro;s</p>
+
+<div class="verdict">
+<p><strong>One per-hit flag, and one per-trigger metric.</strong></p>
+<p><strong>The flag &mdash; is this hit in the shadow of a bigger one?</strong>
+<code>amp_0 &lt; 0.05 &times; max(amp_0 on the same channel in the previous
+1000 ns)</code>. It removes <strong>99.5&nbsp;%</strong> of the
+150&ndash;1000&nbsp;ns excess and <strong>94.8&nbsp;%</strong> of
+the 25&ndash;150&nbsp;ns excess, for <strong>10.4&nbsp;%</strong>
+of the core &mdash; and the core it costs is entirely the small-amplitude end.</p>
+<p><strong>The metric &mdash; is the main peak where it should be?</strong> Per
+(DREAM trigger, arm) take the <strong>largest-amplitude</strong> plastic hit, not
+the earliest, and cut on its residual. On the arm the trigger was assigned to,
+<strong>89.5&nbsp;%</strong> land within
+&plusmn;25&nbsp;ns at a median of
+-5.6&nbsp;ns. Choosing the earliest hit
+instead gives a median of -589&nbsp;ns, because
+in a microsecond-wide window the earliest hit is usually an unrelated single.</p>
+<p><strong>If you cannot add a branch:</strong> <code>amp_0 &gt; 250</code>
+alone, computable from the slim exactly as it stands today, already removes
+95.7&nbsp;% of the late tail for the same core cost. It is
+worse only in the 25&ndash;150&nbsp;ns band
+(85.8&nbsp;% against 94.8&nbsp;%).</p>
+</div>
+
+<h2>The metric, in the form to implement</h2>
+<p>Per plastic hit, computed on the <strong>full n_TOF stream</strong> with a full
+1000&nbsp;ns of lookback &mdash; not on the slim, because an after-pulse whose
+parent sits just outside the slim window is exactly the case a slim-only
+recomputation gets wrong:</p>
+<pre><code>shadow  = amp_0 / max(amp_0 of same-channel hits in the previous T ns)   # 0 if none
+dt_prev = ns since that hit
+
+after-pulse candidate  <=>  shadow &lt; R          (R = 0.05, T = 1000 ns)
+usable plastic hit     <=>  not an after-pulse candidate</code></pre>
+<p><strong>Store <code>shadow</code> and <code>dt_prev</code>, do not store the
+boolean.</strong> Two float32 per hit is ~8&nbsp;B, about 18&nbsp;MB on a 74&nbsp;MB
+segment, and it lets an analysis re-tune R and T without re-slimming 21&nbsp;TB.
+A boolean freezes a choice that this study has only tuned on one segment.</p>
+
+<h2>The amplitude floor: the simpler alternative</h2>
+<p>Worth measuring first, because it needs no lookback and no new branch. It
+works at all because the background-subtracted <code>amp_0</code> spectra of the
+core and of the tail barely overlap &mdash; the core is a MIP peak, the tail is
+piled up near threshold:</p>
+<div class="scroll"><table>
+<thead><tr><th>amp_0 &gt;</th><th>core kept</th><th>25&ndash;150 ns removed</th>
+<th>150&ndash;1000 ns removed</th></tr></thead>
+<tbody><tr><td>100</td><td>98.0&nbsp;%</td><td>16.9&nbsp;%</td><td>18.3&nbsp;%</td></tr><tr><td>150</td><td>94.3&nbsp;%</td><td>50.8&nbsp;%</td><td>63.1&nbsp;%</td></tr><tr><td>200</td><td>91.5&nbsp;%</td><td>74.0&nbsp;%</td><td>87.9&nbsp;%</td></tr><tr><td>250</td><td>89.4&nbsp;%</td><td>85.8&nbsp;%</td><td>95.7&nbsp;%</td></tr><tr><td>300</td><td>88.1&nbsp;%</td><td>91.5&nbsp;%</td><td>97.6&nbsp;%</td></tr><tr><td>400</td><td>86.6&nbsp;%</td><td>95.8&nbsp;%</td><td>98.6&nbsp;%</td></tr><tr><td>600</td><td>85.5&nbsp;%</td><td>97.5&nbsp;%</td><td>99.0&nbsp;%</td></tr></tbody></table></div>
+<p class="sub">Core = background-subtracted plastic excess at |dt| &lt; 25&nbsp;ns
+(47,292 hits); the tails are 119,050 and 122,133.</p>
+
+<h2>The shadow flag on its own</h2>
+<div class="scroll"><table>
+<thead><tr><th>T [ns]</th><th>R</th><th>core kept</th>
+<th>25&ndash;150 removed</th><th>150&ndash;1000 removed</th>
+<th>control-window hits vetoed</th></tr></thead>
+<tbody><tr><td>100</td><td>0.02</td><td>97.3&nbsp;%</td><td>33.3&nbsp;%</td><td>-0.1&nbsp;%</td><td>2.9&nbsp;%</td></tr><tr><td>100</td><td>0.05</td><td>89.5&nbsp;%</td><td>66.2&nbsp;%</td><td>0.3&nbsp;%</td><td>11.5&nbsp;%</td></tr><tr><td>100</td><td>0.10</td><td>87.4&nbsp;%</td><td>68.6&nbsp;%</td><td>0.5&nbsp;%</td><td>17.2&nbsp;%</td></tr><tr><td>200</td><td>0.02</td><td>97.3&nbsp;%</td><td>47.3&nbsp;%</td><td>9.4&nbsp;%</td><td>4.9&nbsp;%</td></tr><tr><td>200</td><td>0.05</td><td>89.6&nbsp;%</td><td>95.2&nbsp;%</td><td>17.5&nbsp;%</td><td>19.2&nbsp;%</td></tr><tr><td>200</td><td>0.10</td><td>87.5&nbsp;%</td><td>97.9&nbsp;%</td><td>18.1&nbsp;%</td><td>27.5&nbsp;%</td></tr><tr><td>300</td><td>0.02</td><td>97.3&nbsp;%</td><td>47.2&nbsp;%</td><td>25.6&nbsp;%</td><td>6.4&nbsp;%</td></tr><tr><td>300</td><td>0.05</td><td>89.6&nbsp;%</td><td>95.0&nbsp;%</td><td>44.1&nbsp;%</td><td>23.9&nbsp;%</td></tr><tr><td>300</td><td>0.10</td><td>87.5&nbsp;%</td><td>97.8&nbsp;%</td><td>44.9&nbsp;%</td><td>33.7&nbsp;%</td></tr><tr><td>500</td><td>0.02</td><td>97.3&nbsp;%</td><td>47.2&nbsp;%</td><td>46.4&nbsp;%</td><td>8.3&nbsp;%</td></tr><tr><td>500</td><td>0.05</td><td>89.7&nbsp;%</td><td>94.9&nbsp;%</td><td>76.2&nbsp;%</td><td>29.9&nbsp;%</td></tr><tr><td>500</td><td>0.10</td><td>87.5&nbsp;%</td><td>97.7&nbsp;%</td><td>77.1&nbsp;%</td><td>41.5&nbsp;%</td></tr><tr><td>1000</td><td>0.02</td><td>97.4&nbsp;%</td><td>47.2&nbsp;%</td><td>62.5&nbsp;%</td><td>10.3&nbsp;%</td></tr><tr><td>1000</td><td>0.05</td><td>89.6&nbsp;%</td><td>94.8&nbsp;%</td><td>99.5&nbsp;%</td><td>35.0&nbsp;%</td></tr><tr><td>1000</td><td>0.10</td><td>87.5&nbsp;%</td><td>97.6&nbsp;%</td><td>100.2&nbsp;%</td><td>47.7&nbsp;%</td></tr></tbody></table></div>
+<p class="sub">The last column is the flag firing on the +100&nbsp;&micro;s
+accidental control, i.e. on hits that <em>cannot</em> be after-pulses of anything
+in the window. It runs far above the core loss because control hits are small
+random singles while core hits are MIPs &mdash; which is the same fact that makes
+the amplitude floor work. <strong>Lookback, not ratio, is what buys tail
+removal</strong>: at R = 0.05, T = 100&nbsp;ns removes
+0.3&nbsp;% of the late tail and
+T = 1000&nbsp;ns removes 99.5&nbsp;%.</p>
+
+<h2>Both together &mdash; and why the floor adds nothing on top</h2>
+<p>At equal core cost the shadow flag beats the amplitude floor
+(99.5&nbsp;% of the late tail against
+95.7&nbsp;%, 94.8&nbsp;% of the middle band
+against 85.8&nbsp;%), and combining them is not better than
+the flag alone &mdash; a floor of 150&nbsp;ADC on top gives
+99.1&nbsp;% / 95.3&nbsp;% at
+10.9&nbsp;% core cost. The two cuts are removing the same
+hits, because a hit small enough to be in the shadow of a MIP is a small hit.</p>
+<div class="scroll"><table>
+<thead><tr><th>amp_0 &gt;</th><th>T [ns]</th><th>R</th><th>core kept</th>
+<th>25&ndash;150 removed</th><th>150&ndash;1000 removed</th></tr></thead>
+<tbody><tr><td>150</td><td>300</td><td>0.02</td><td>94.1&nbsp;%</td><td>61.4&nbsp;%</td><td>69.2&nbsp;%</td></tr><tr><td>150</td><td>300</td><td>0.05</td><td>89.1&nbsp;%</td><td>95.3&nbsp;%</td><td>80.3&nbsp;%</td></tr><tr><td>150</td><td>1000</td><td>0.02</td><td>94.1&nbsp;%</td><td>61.4&nbsp;%</td><td>76.4&nbsp;%</td></tr><tr><td>150</td><td>1000</td><td>0.05</td><td>89.1&nbsp;%</td><td>95.3&nbsp;%</td><td>99.1&nbsp;%</td></tr><tr><td>200</td><td>300</td><td>0.02</td><td>91.4&nbsp;%</td><td>76.3&nbsp;%</td><td>89.0&nbsp;%</td></tr><tr><td>200</td><td>300</td><td>0.05</td><td>88.8&nbsp;%</td><td>95.4&nbsp;%</td><td>93.6&nbsp;%</td></tr><tr><td>200</td><td>1000</td><td>0.02</td><td>91.4&nbsp;%</td><td>76.3&nbsp;%</td><td>89.8&nbsp;%</td></tr><tr><td>200</td><td>1000</td><td>0.05</td><td>88.8&nbsp;%</td><td>95.4&nbsp;%</td><td>98.6&nbsp;%</td></tr><tr><td>250</td><td>300</td><td>0.02</td><td>89.4&nbsp;%</td><td>86.2&nbsp;%</td><td>95.8&nbsp;%</td></tr><tr><td>250</td><td>300</td><td>0.05</td><td>88.2&nbsp;%</td><td>95.6&nbsp;%</td><td>97.3&nbsp;%</td></tr><tr><td>250</td><td>1000</td><td>0.02</td><td>89.4&nbsp;%</td><td>86.2&nbsp;%</td><td>95.9&nbsp;%</td></tr><tr><td>250</td><td>1000</td><td>0.05</td><td>88.2&nbsp;%</td><td>95.6&nbsp;%</td><td>98.5&nbsp;%</td></tr></tbody></table></div>
+
+<figure>
+  <img src="figures/veto_dt.png" alt="DREAM residual before and after the veto">
+  <figcaption><strong>Left:</strong> the background-subtracted plastic residual
+  against the corrected DREAM prediction, before and after the veto. The core
+  survives; the late shoulder does not. <strong>Right:</strong> the same data at
+  1&nbsp;ns binning. The late side is <em>not</em> featureless: there is a bump at
+  70&ndash;90&nbsp;ns, where the 81&nbsp;ns echo lands once the parent&rsquo;s own
+  residual smears it. That refines
+  <code>slim_pipeline/config.py</code>&rsquo;s note that the tail &ldquo;falls
+  smoothly and monotonically with no discrete echoes&rdquo; &mdash; smooth at
+  5&nbsp;ns binning, not featureless.</figcaption>
+</figure>
+
+<figure>
+  <img src="figures/veto_roc.png" alt="Tail removed against genuine hits vetoed">
+  <figcaption><strong>What the shadow flag buys against what it costs.</strong>
+  Each curve is one lookback, each marker one ratio.</figcaption>
+</figure>
+
+<h2>The per-trigger metric</h2>
+<p>&ldquo;Is the main peak where it should be?&rdquo; &mdash; per (DREAM trigger,
+arm), pick one plastic hit and cut on its residual:</p>
+<div class="scroll"><table>
+<thead><tr><th>how the primary is chosen</th><th>(trigger, arm) pairs</th>
+<th>within &plusmn;25 ns</th><th>median residual [ns]</th></tr></thead>
+<tbody><tr><td>earliest hit</td><td>90,208</td><td>31.1&nbsp;%</td><td>-589.3</td></tr><tr><td>earliest unflagged</td><td>90,148</td><td>31.2&nbsp;%</td><td>-567.5</td></tr><tr><td>largest amplitude</td><td>90,208</td><td>42.4&nbsp;%</td><td>-5.5</td></tr><tr><td>largest, amp>250</td><td>86,650</td><td>44.0&nbsp;%</td><td>-5.3</td></tr><tr><td>largest, trigger arm</td><td>40,201</td><td>89.5&nbsp;%</td><td>-5.6</td></tr><tr><td>largest, arm & amp>250</td><td>40,201</td><td>89.5&nbsp;%</td><td>-5.6</td></tr></tbody></table></div>
+<p><strong>Choose the primary by amplitude, not by time.</strong> In a window
+several microseconds wide the earliest hit is almost always an unrelated single,
+which is why &ldquo;earliest&rdquo; sits at a median of
+-589&nbsp;ns. Restricting to the arm the trigger
+was actually assigned to is what turns this into a usable efficiency.</p>
+
+<h2>What this does not settle</h2>
+<ul>
+<li><strong>One segment, one run.</strong> Tuned on run_79/stat090_0000 &times;
+224572 over 400 bunches. The plastics&rsquo; singles rate varies across the
+campaign and the shadow flag&rsquo;s cost scales with it, so R and T should be
+re-checked on a high-rate and a low-rate segment before a campaign-wide number is
+quoted.</li>
+<li><strong>The 10.4&nbsp;% core loss is not all loss.</strong>
+Some of the small-amplitude core excess is genuinely correlated with the trigger
+and some of it may itself be after-pulsing that happens to land inside
+&plusmn;25&nbsp;ns (the effect turns on at 18&nbsp;ns). This study does not
+separate those.</li>
+<li><strong>No wall-side requirement is included.</strong> The metric above is
+plastic-only; combining it with the wall coincidence is the analysis&rsquo;s
+choice and is not measured here.</li>
+<li><strong>The amplitude floor is in ADC, not in MIPs.</strong> Per-channel gains
+differ, so 250 ADC is not the same physical threshold on all four arms. It
+should be set per channel off the MIP peak before it is used for a physics
+yield.</li>
+</ul>
+
+</main></body></html>

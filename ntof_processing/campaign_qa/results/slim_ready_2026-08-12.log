@@ -1,0 +1,38 @@
+  25/445
+  50/445
+  75/445
+  100/445
+  125/445
+  150/445
+  175/445
+  200/445
+  225/445
+  250/445
+  275/445
+  300/445
+  325/445
+  350/445
+  375/445
+  400/445
+  425/445
+
+# n_TOF X17 EAR2 2026 -- runs ready to slim
+# generated 2026-08-12 21:41 by campaign_qa/slim_ready.py
+# test: of the bunches with beam (PulseIntensity > 1e12), what fraction
+#       has a PKUP entry. READY at >= 98%. PKUP is used because
+#       it exists in every run and is lost with the raw file, unlike the
+#       detector trees, which appear only as they were commissioned.
+# source resolved as slim_pipeline.config.ntof_files does.
+
+## READY -- 444 runs
+224264-224339, 224341-224377, 224379-224394, 224398-224464, 224466-224474, 224476-224496, 224498-224525, 224527-224648
+224651-224718
+
+## NOT READY -- 1 runs
+  224526  INCOMPLETE  merged     1 file(s)  440/3313 beam bunches = 13.3 %
+
+## of the READY runs, 132 have no beam bunches at all
+# structurally fine, nothing to slim against protons.
+224264-224265, 224323-224325, 224330-224339, 224341-224344, 224379-224380, 224382-224394, 224398-224399, 224408-224449, 224472, 224476-224480, 224482-224487, 224495-224496, 224514-224515, 224535-224536, 224579, 224588-224596, 224608-224613, 224622, 224626-224627, 224651, 224658, 224665, 224678-224687, 224706, 224716-224718
+
+wrote slim_ready_2026-08-12.txt and slim_ready_2026-08-12.json

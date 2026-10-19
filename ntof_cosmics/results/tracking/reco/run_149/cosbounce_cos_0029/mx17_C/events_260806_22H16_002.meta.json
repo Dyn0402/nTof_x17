@@ -1,0 +1,101 @@
+{
+ "n_events": 722,
+ "n_seeded": 722,
+ "status": "PRELIMINARY",
+ "partial": false,
+ "tags_done": [
+  "260806_22H16_002"
+ ],
+ "calibration": "/pool/condor/dir_68559/out/mx17_C/calib_bundle_prelim",
+ "bundle": {
+  "detector": "mx17_6",
+  "run_key": "run_149/cosbounce_cos_0029/mx17_C",
+  "v_drift": 42.6,
+  "hyper": {
+   "c1": 0.06421625006215087,
+   "c2": 0.052821355443477686,
+   "kY": 3.328396529257833,
+   "tau_s": 104.77268431810501,
+   "sigma_s": 165.86279800047657,
+   "sigma_p0": 0.03880220595862752,
+   "Dp": 0.0016051365315218934,
+   "share_lp": 1.0,
+   "kTauY": 1.78
+  },
+  "sat_adc": 3700.0,
+  "n_depth_bins": 18,
+  "conditions": {
+   "run": "run_149",
+   "sub_run": "cosbounce_cos_0029",
+   "gas": "Ar/Iso 90/10",
+   "n_samples": 20,
+   "sample_ns": 60.0
+  },
+  "provenance": {
+   "code_commit": "unknown",
+   "note": "preliminary run_149 bundle for arm C",
+   "n_train": 180,
+   "chi2": 12760783.107674181,
+   "chi2_init": 17511700.64525696,
+   "fitted": "wft.calibrate",
+   "gain_map": "unit (not fitted)",
+   "seeded_from": "/pool/condor/dir_68559/bundles/mx17_C/calib_bundle_lp",
+   "transferred": "template + sharing kernel + w0/kw (bench)",
+   "replaced": "v_drift -> 42.6 um/ns (PRIOR: Magboltz 90/10 @233 V/cm / 07-19 water estimate, NOT measured in situ), sat_adc -> 3700.0, sample_ns/conditions -> run_79",
+   "not_revalidated": "sigma_p0, Dp (gas-dependent), template (assumed same DREAM shaping), dt_xy",
+   "status": "PRELIMINARY -- see ntof_tracking/TRACK_PLAN_08 phase 2",
+   "seeded_from_bench": "/media/dylan/data/x17/cosmic_bench/Analysis/mx17_det6_det7_overnight_6-26-26/long_run/mx17_6/wft/calib_bundle_lp",
+   "ran_on": "lxplus condor (ntof_tracking/condor/run_beam_job.py)"
+  }
+ },
+ "angle_constants": {
+  "applied": true,
+  "w0": {
+   "x": 0.06666500320501356,
+   "y": -0.5291494762497235
+  },
+  "kw": {
+   "x": 1.0373482980877604,
+   "y": 1.089138315449947
+  }
+ },
+ "run": {
+  "key": "run_149_cosbounce_cos_0029_mx17_C",
+  "run": "run_149",
+  "sub_run": "cosbounce_cos_0029",
+  "detector": "mx17_C",
+  "feu_x": 7,
+  "feu_y": 8,
+  "file_tags": [
+   "260806_22H16_002"
+  ]
+ },
+ "selection": {
+  "seeder": "ntof_tracking.wft_beam",
+  "busy_plane_hits": 150,
+  "min_strips": 5,
+  "n_candidates": 5,
+  "wide_strips": 10,
+  "isochronous_span": 3,
+  "sig_floor_local_mm": 0.0,
+  "sig_floor_local_mode": "rescue",
+  "split_gap_mm": 0.0,
+  "pad_strips": 3
+ },
+ "reco_config": {
+  "model_frac": 0.0,
+  "prescan": "0",
+  "pair_select": "0",
+  "chi2dof_bad": "300",
+  "xy_pairing": null
+ },
+ "allowlist": {
+  "applied": true,
+  "per_tag": [],
+  "n_allowed": 0,
+  "n_seeded": 0,
+  "n_missing": 0,
+  "seed_efficiency": 0.0,
+  "header": {}
+ }
+}

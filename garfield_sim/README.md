@@ -243,7 +243,7 @@ All three pass the upstream test suite (`ctest`: 22/22).
 
 ### HTCondor worker nodes
 Jobs do **not** read the AFS install — `setup_garfield.sh` unpacks a shipped
-`garfield-927e5c21.tar.gz` (6.7 MB) from the scratch directory, so nothing
+`garfield-927e5c21-lcg110.tar.gz` (6.7 MB) from the scratch directory, so nothing
 depends on the worker holding an AFS token. The `.sub` files and
 `mm_condor_submit.py` already list it in `transfer_input_files`.
 

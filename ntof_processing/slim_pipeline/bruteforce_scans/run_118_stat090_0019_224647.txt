@@ -1,0 +1,11 @@
+== brute force run_118/stat090_0019 x n_TOF 224647
+  pulse_match: no lock (AmbiguousLock: count margin 6 (< 10) and intensity correlation cannot separate the top locks (r_sig 2.54, need 3): )
+  1197 bursts, anchor 1785685020, lock none s
+  scanning 1 target burst(s) + 0 control(s)
+  window +-120 s: 81 beam bunches (0 empty pulses skipped)
+  bunches 1701-1781 (81)
+  tb offsets on 150 bunches [20 s]
+  75,786 candidates over 81 bunches [151 s]
+  burst     0 n=  14 [target]  -> bunch 1771 z 21.2 peak 32/14 lag -9631.0 us 2nd bunch 1762 frac 14% z 16.2 frac25 14% (ctl 0.0%) da +0 ns dk +0.0 ppm core 2 implied offset +85.529 s  NO_MATCH
+  -> bf/run_118_stat090_0019_224647.json
+  done in 152 s

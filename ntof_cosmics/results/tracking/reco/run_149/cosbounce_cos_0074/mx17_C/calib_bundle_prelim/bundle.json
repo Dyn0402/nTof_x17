@@ -1,0 +1,61 @@
+{
+ "hyper": {
+  "c1": 0.06421625006215087,
+  "c2": 0.052821355443477686,
+  "kY": 3.328396529257833,
+  "tau_s": 104.77268431810501,
+  "sigma_s": 165.86279800047657,
+  "sigma_p0": 0.03880220595862752,
+  "Dp": 0.0016051365315218934,
+  "share_lp": 1.0,
+  "kTauY": 1.78
+ },
+ "v_drift": 42.6,
+ "dt_xy": {
+  "-1": 26.57671693880104,
+  "5": 6.038720538720497
+ },
+ "t0_abs": {},
+ "t0_prior_sigma": 0.0,
+ "dead": {},
+ "hot": {},
+ "w0": {
+  "x": 0.06666500320501356,
+  "y": -0.5291494762497235
+ },
+ "kw": {
+  "x": 1.0373482980877604,
+  "y": 1.089138315449947
+ },
+ "xy_pairing": {},
+ "pitch_mm": 0.78,
+ "sample_ns": 60.0,
+ "n_depth_bins": 18,
+ "sat_adc": 3700.0,
+ "share_mode": "delay",
+ "detector": "mx17_6",
+ "run_key": "run_149/cosbounce_cos_0074/mx17_C",
+ "conditions": {
+  "run": "run_149",
+  "sub_run": "cosbounce_cos_0074",
+  "gas": "Ar/Iso 90/10",
+  "n_samples": 20,
+  "sample_ns": 60.0
+ },
+ "provenance": {
+  "code_commit": "unknown",
+  "note": "preliminary run_149 bundle for arm C",
+  "n_train": 180,
+  "chi2": 12760783.107674181,
+  "chi2_init": 17511700.64525696,
+  "fitted": "wft.calibrate",
+  "gain_map": "unit (not fitted)",
+  "seeded_from": "/pool/condor/dir_1335010/bundles/mx17_C/calib_bundle_lp",
+  "transferred": "template + sharing kernel + w0/kw (bench)",
+  "replaced": "v_drift -> 42.6 um/ns (PRIOR: Magboltz 90/10 @233 V/cm / 07-19 water estimate, NOT measured in situ), sat_adc -> 3700.0, sample_ns/conditions -> run_79",
+  "not_revalidated": "sigma_p0, Dp (gas-dependent), template (assumed same DREAM shaping), dt_xy",
+  "status": "PRELIMINARY -- see ntof_tracking/TRACK_PLAN_08 phase 2",
+  "seeded_from_bench": "/media/dylan/data/x17/cosmic_bench/Analysis/mx17_det6_det7_overnight_6-26-26/long_run/mx17_6/wft/calib_bundle_lp",
+  "ran_on": "lxplus condor (ntof_tracking/condor/run_beam_job.py)"
+ }
+}

@@ -1,0 +1,546 @@
+{
+ "ours": [
+  {
+   "run": 224707,
+   "files": [
+    "/eos/experiment/ntof/data/x17/reproc/prod_v12/224707/completed/224707/run224707_0001.root",
+    "/eos/experiment/ntof/data/x17/reproc/prod_v12/224707/completed/224707/run224707_0002.root",
+    "/eos/experiment/ntof/data/x17/reproc/prod_v12/224707/completed/224707/run224707_0003.root",
+    "/eos/experiment/ntof/data/x17/reproc/prod_v12/224707/completed/224707/run224707_0004.root",
+    "/eos/experiment/ntof/data/x17/reproc/prod_v12/224707/completed/224707/run224707_0005.root",
+    "/eos/experiment/ntof/data/x17/reproc/prod_v12/224707/completed/224707/run224707_0006.root"
+   ],
+   "bunches_total": 451,
+   "bunches_beam": 448,
+   "frac_empty": 0.006651884700665134,
+   "protons_1e12": 3144.309217951744,
+   "mean_intensity": 7018547361499.429,
+   "trees": {
+    "WALA": {
+     "hits": 4788871,
+     "beam_bunches_seen": 448,
+     "hits_per_1e12p": 1523.028006488354,
+     "tflash_mode_ns": 11605.0,
+     "flash_bad_pct": 0.0,
+     "tflash_zero_pct": 0.0,
+     "median_amp": 661.8349609375,
+     "median_tof_us": 1969.685720220588
+    },
+    "WALB": {
+     "hits": 4596657,
+     "beam_bunches_seen": 448,
+     "hits_per_1e12p": 1461.8972503583284,
+     "tflash_mode_ns": 11605.0,
+     "flash_bad_pct": 0.0,
+     "tflash_zero_pct": 0.0,
+     "median_amp": 901.9493408203125,
+     "median_tof_us": 1277.9104144814673
+    },
+    "WALC": {
+     "hits": 4934298,
+     "beam_bunches_seen": 448,
+     "hits_per_1e12p": 1569.2788647594543,
+     "tflash_mode_ns": 11605.0,
+     "flash_bad_pct": 0.0,
+     "tflash_zero_pct": 0.0,
+     "median_amp": 846.4324951171875,
+     "median_tof_us": 1358.7800390758784
+    },
+    "WALD": {
+     "hits": 4878107,
+     "beam_bunches_seen": 448,
+     "hits_per_1e12p": 1551.408166903407,
+     "tflash_mode_ns": 11605.0,
+     "flash_bad_pct": 0.0,
+     "tflash_zero_pct": 0.0,
+     "median_amp": 865.5757446289062,
+     "median_tof_us": 1468.6329083882463
+    },
+    "PSSA": {
+     "hits": 13941849,
+     "beam_bunches_seen": 448,
+     "hits_per_1e12p": 4433.994252347088,
+     "tflash_mode_ns": 11645.0,
+     "flash_bad_pct": 0.0,
+     "tflash_zero_pct": 0.0,
+     "median_amp": 124.27871704101562,
+     "median_tof_us": 736.9668541939546
+    },
+    "PSSB": {
+     "hits": 18825624,
+     "beam_bunches_seen": 448,
+     "hits_per_1e12p": 5987.205040941657,
+     "tflash_mode_ns": 11635.0,
+     "flash_bad_pct": 0.0,
+     "tflash_zero_pct": 0.0,
+     "median_amp": 149.8240966796875,
+     "median_tof_us": 629.8279068939459
+    },
+    "PSSC": {
+     "hits": 22486280,
+     "beam_bunches_seen": 448,
+     "hits_per_1e12p": 7151.421327018194,
+     "tflash_mode_ns": 11645.0,
+     "flash_bad_pct": 0.0,
+     "tflash_zero_pct": 0.0,
+     "median_amp": 124.80604553222656,
+     "median_tof_us": 1037.965229901929
+    },
+    "PSSD": {
+     "hits": 19993710,
+     "beam_bunches_seen": 448,
+     "hits_per_1e12p": 6358.697129992908,
+     "tflash_mode_ns": 11645.0,
+     "flash_bad_pct": 0.0,
+     "tflash_zero_pct": 0.0,
+     "median_amp": 131.38287353515625,
+     "median_tof_us": 1178.329549044292
+    },
+    "LIQA": {
+     "hits": 8469931,
+     "beam_bunches_seen": 448,
+     "hits_per_1e12p": 2693.733476225171,
+     "tflash_mode_ns": 11625.0,
+     "flash_bad_pct": 0.0,
+     "tflash_zero_pct": 0.0,
+     "median_amp": 206.31143188476562,
+     "median_tof_us": 202.56669393223726
+    },
+    "LIQB": {
+     "hits": 9435308,
+     "beam_bunches_seen": 448,
+     "hits_per_1e12p": 3000.757033096865,
+     "tflash_mode_ns": 11615.0,
+     "flash_bad_pct": 0.0,
+     "tflash_zero_pct": 0.0,
+     "median_amp": 301.91229248046875,
+     "median_tof_us": 200.22157842486425
+    },
+    "LIQC": {
+     "hits": 2411796,
+     "beam_bunches_seen": 448,
+     "hits_per_1e12p": 767.0352477518368,
+     "tflash_mode_ns": 11635.0,
+     "flash_bad_pct": 0.0,
+     "tflash_zero_pct": 0.0,
+     "median_amp": 136.7042236328125,
+     "median_tof_us": 80.56642985598167
+    },
+    "LIQD": {
+     "hits": 5746648,
+     "beam_bunches_seen": 448,
+     "hits_per_1e12p": 1827.6344982836845,
+     "tflash_mode_ns": 11625.0,
+     "flash_bad_pct": 0.0,
+     "tflash_zero_pct": 0.0,
+     "median_amp": 147.42987060546875,
+     "median_tof_us": 164.478
+    }
+   },
+   "offsets": {
+    "pssA": {
+     "peak_ns": -1.0,
+     "height": 3218,
+     "n": 216867
+    },
+    "liqA": {
+     "peak_ns": 1.0,
+     "height": 15069,
+     "n": 755581
+    },
+    "pssB": {
+     "peak_ns": -1.0,
+     "height": 3697,
+     "n": 283347
+    },
+    "liqB": {
+     "peak_ns": 1.0,
+     "height": 15896,
+     "n": 847763
+    },
+    "pssC": {
+     "peak_ns": 33.0,
+     "height": 3847,
+     "n": 286533
+    },
+    "liqC": {
+     "peak_ns": 1.0,
+     "height": 7607,
+     "n": 215504
+    },
+    "pssD": {
+     "peak_ns": -1.0,
+     "height": 3274,
+     "n": 260170
+    },
+    "liqD": {
+     "peak_ns": -1.0,
+     "height": 12103,
+     "n": 515593
+    }
+   }
+  },
+  {
+   "run": 224708,
+   "files": [
+    "/eos/experiment/ntof/data/x17/reproc/prod_v12/224708/completed/224708/run224708_0001.root",
+    "/eos/experiment/ntof/data/x17/reproc/prod_v12/224708/completed/224708/run224708_0002.root",
+    "/eos/experiment/ntof/data/x17/reproc/prod_v12/224708/completed/224708/run224708_0003.root",
+    "/eos/experiment/ntof/data/x17/reproc/prod_v12/224708/completed/224708/run224708_0004.root",
+    "/eos/experiment/ntof/data/x17/reproc/prod_v12/224708/completed/224708/run224708_0005.root",
+    "/eos/experiment/ntof/data/x17/reproc/prod_v12/224708/completed/224708/run224708_0006.root"
+   ],
+   "bunches_total": 135,
+   "bunches_beam": 135,
+   "frac_empty": 0.0,
+   "protons_1e12": 894.102367371264,
+   "mean_intensity": 6622980499046.4,
+   "trees": {
+    "WALA": {
+     "hits": 1397552,
+     "beam_bunches_seen": 135,
+     "hits_per_1e12p": 1563.0782905864796,
+     "tflash_mode_ns": 11605.0,
+     "flash_bad_pct": 0.0,
+     "tflash_zero_pct": 0.0,
+     "median_amp": 641.9764404296875,
+     "median_tof_us": 1989.9086558555462
+    },
+    "WALB": {
+     "hits": 1333508,
+     "beam_bunches_seen": 135,
+     "hits_per_1e12p": 1491.4489086083347,
+     "tflash_mode_ns": 11605.0,
+     "flash_bad_pct": 0.0,
+     "tflash_zero_pct": 0.0,
+     "median_amp": 873.2327880859375,
+     "median_tof_us": 1255.2605490447208
+    },
+    "WALC": {
+     "hits": 1426252,
+     "beam_bunches_seen": 135,
+     "hits_per_1e12p": 1595.1775233447827,
+     "tflash_mode_ns": 11605.0,
+     "flash_bad_pct": 0.0,
+     "tflash_zero_pct": 0.0,
+     "median_amp": 818.9691162109375,
+     "median_tof_us": 1376.0148742302936
+    },
+    "WALD": {
+     "hits": 1406761,
+     "beam_bunches_seen": 135,
+     "hits_per_1e12p": 1573.3780060732815,
+     "tflash_mode_ns": 11605.0,
+     "flash_bad_pct": 0.0,
+     "tflash_zero_pct": 0.0,
+     "median_amp": 838.5875854492188,
+     "median_tof_us": 1464.882939313086
+    },
+    "PSSA": {
+     "hits": 24393538,
+     "beam_bunches_seen": 135,
+     "hits_per_1e12p": 27282.712685035214,
+     "tflash_mode_ns": 11645.0,
+     "flash_bad_pct": 0.0,
+     "tflash_zero_pct": 0.0,
+     "median_amp": 96.19137573242188,
+     "median_tof_us": 28982.512764314815
+    },
+    "PSSB": {
+     "hits": 6902574,
+     "beam_bunches_seen": 135,
+     "hits_per_1e12p": 7720.116008969026,
+     "tflash_mode_ns": 11635.0,
+     "flash_bad_pct": 0.0,
+     "tflash_zero_pct": 0.0,
+     "median_amp": 139.37222290039062,
+     "median_tof_us": 1090.8981684865278
+    },
+    "PSSC": {
+     "hits": 6319831,
+     "beam_bunches_seen": 135,
+     "hits_per_1e12p": 7068.352831433423,
+     "tflash_mode_ns": 11645.0,
+     "flash_bad_pct": 0.0,
+     "tflash_zero_pct": 0.0,
+     "median_amp": 125.40423583984375,
+     "median_tof_us": 974.471
+    },
+    "PSSD": {
+     "hits": 223730995,
+     "beam_bunches_seen": 135,
+     "hits_per_1e12p": 250229.7311411756,
+     "tflash_mode_ns": 11645.0,
+     "flash_bad_pct": 0.7407407407407408,
+     "tflash_zero_pct": 0.0,
+     "median_amp": 97.20094299316406,
+     "median_tof_us": 37848.85626463812
+    },
+    "LIQA": {
+     "hits": 2469557,
+     "beam_bunches_seen": 135,
+     "hits_per_1e12p": 2762.0517405190467,
+     "tflash_mode_ns": 11625.0,
+     "flash_bad_pct": 0.0,
+     "tflash_zero_pct": 0.0,
+     "median_amp": 202.43380737304688,
+     "median_tof_us": 209.96524018890673
+    },
+    "LIQB": {
+     "hits": 2692684,
+     "beam_bunches_seen": 135,
+     "hits_per_1e12p": 3011.6059393922833,
+     "tflash_mode_ns": 11615.0,
+     "flash_bad_pct": 0.0,
+     "tflash_zero_pct": 0.0,
+     "median_amp": 299.887939453125,
+     "median_tof_us": 197.23861854798713
+    },
+    "LIQC": {
+     "hits": 672235,
+     "beam_bunches_seen": 135,
+     "hits_per_1e12p": 751.8546248528871,
+     "tflash_mode_ns": 11635.0,
+     "flash_bad_pct": 0.0,
+     "tflash_zero_pct": 0.0,
+     "median_amp": 136.18283081054688,
+     "median_tof_us": 79.92877028607967
+    },
+    "LIQD": {
+     "hits": 1631674,
+     "beam_bunches_seen": 135,
+     "hits_per_1e12p": 1824.929739082627,
+     "tflash_mode_ns": 11625.0,
+     "flash_bad_pct": 0.0,
+     "tflash_zero_pct": 0.0,
+     "median_amp": 147.20632934570312,
+     "median_tof_us": 162.58514471976835
+    }
+   },
+   "offsets": {
+    "pssA": {
+     "peak_ns": 1.0,
+     "height": 3283,
+     "n": 201566
+    },
+    "liqA": {
+     "peak_ns": 1.0,
+     "height": 13297,
+     "n": 706087
+    },
+    "pssB": {
+     "peak_ns": 1.0,
+     "height": 3327,
+     "n": 261753
+    },
+    "liqB": {
+     "peak_ns": -1.0,
+     "height": 14264,
+     "n": 772561
+    },
+    "pssC": {
+     "peak_ns": 1.0,
+     "height": 3293,
+     "n": 262440
+    },
+    "liqC": {
+     "peak_ns": 1.0,
+     "height": 6662,
+     "n": 191759
+    },
+    "pssD": {
+     "peak_ns": -1.0,
+     "height": 3077,
+     "n": 250385
+    },
+    "liqD": {
+     "peak_ns": 1.0,
+     "height": 10854,
+     "n": 468027
+    }
+   }
+  }
+ ],
+ "official": [
+  {
+   "run": 224672,
+   "files": [
+    "/eos/experiment/ntof/processing/official/completed/224672/run224672_0001.root",
+    "/eos/experiment/ntof/processing/official/completed/224672/run224672_0002.root",
+    "/eos/experiment/ntof/processing/official/completed/224672/run224672_0003.root",
+    "/eos/experiment/ntof/processing/official/completed/224672/run224672_0004.root",
+    "/eos/experiment/ntof/processing/official/completed/224672/run224672_0005.root",
+    "/eos/experiment/ntof/processing/official/completed/224672/run224672_0006.root"
+   ],
+   "bunches_total": 480,
+   "bunches_beam": 480,
+   "frac_empty": 0.0,
+   "protons_1e12": 3578.6120495104,
+   "mean_intensity": 7455441769813.333,
+   "trees": {
+    "WALA": {
+     "hits": 5282684,
+     "beam_bunches_seen": 480,
+     "hits_per_1e12p": 1476.1823653733964,
+     "tflash_mode_ns": 11605.0,
+     "flash_bad_pct": 0.0,
+     "tflash_zero_pct": 0.0,
+     "median_amp": 677.593505859375,
+     "median_tof_us": 1861.5082680017808
+    },
+    "WALB": {
+     "hits": 5133372,
+     "beam_bunches_seen": 480,
+     "hits_per_1e12p": 1434.458926807199,
+     "tflash_mode_ns": 11605.0,
+     "flash_bad_pct": 0.0,
+     "tflash_zero_pct": 0.0,
+     "median_amp": 906.458984375,
+     "median_tof_us": 1272.7667631509808
+    },
+    "WALC": {
+     "hits": 5497225,
+     "beam_bunches_seen": 480,
+     "hits_per_1e12p": 1536.1332617074518,
+     "tflash_mode_ns": 11605.0,
+     "flash_bad_pct": 0.0,
+     "tflash_zero_pct": 0.0,
+     "median_amp": 855.958984375,
+     "median_tof_us": 1345.9828003471075
+    },
+    "WALD": {
+     "hits": 5474437,
+     "beam_bunches_seen": 480,
+     "hits_per_1e12p": 1529.7654297981178,
+     "tflash_mode_ns": 11605.0,
+     "flash_bad_pct": 0.0,
+     "tflash_zero_pct": 0.0,
+     "median_amp": 867.5941772460938,
+     "median_tof_us": 1494.3043893215824
+    },
+    "PSSA": {
+     "hits": 15608488,
+     "beam_bunches_seen": 480,
+     "hits_per_1e12p": 4361.603824067893,
+     "tflash_mode_ns": 11645.0,
+     "flash_bad_pct": 0.0,
+     "tflash_zero_pct": 0.0,
+     "median_amp": 124.91490173339844,
+     "median_tof_us": 763.5282024594924
+    },
+    "PSSB": {
+     "hits": 20940736,
+     "beam_bunches_seen": 480,
+     "hits_per_1e12p": 5851.636251787885,
+     "tflash_mode_ns": 11635.0,
+     "flash_bad_pct": 0.0,
+     "tflash_zero_pct": 0.0,
+     "median_amp": 150.05642700195312,
+     "median_tof_us": 646.5610276910539
+    },
+    "PSSC": {
+     "hits": 24794602,
+     "beam_bunches_seen": 480,
+     "hits_per_1e12p": 6928.5526502913945,
+     "tflash_mode_ns": 11645.0,
+     "flash_bad_pct": 0.0,
+     "tflash_zero_pct": 0.0,
+     "median_amp": 124.56472778320312,
+     "median_tof_us": 1061.7103577433911
+    },
+    "PSSD": {
+     "hits": 22252789,
+     "beam_bunches_seen": 480,
+     "hits_per_1e12p": 6218.273646914162,
+     "tflash_mode_ns": 11645.0,
+     "flash_bad_pct": 0.0,
+     "tflash_zero_pct": 0.0,
+     "median_amp": 131.25865173339844,
+     "median_tof_us": 1212.2963220049962
+    },
+    "LIQA": {
+     "hits": 9467788,
+     "beam_bunches_seen": 480,
+     "hits_per_1e12p": 2645.6592301742558,
+     "tflash_mode_ns": 11625.0,
+     "flash_bad_pct": 0.0,
+     "tflash_zero_pct": 0.0,
+     "median_amp": 204.93783569335938,
+     "median_tof_us": 203.48730957602064
+    },
+    "LIQB": {
+     "hits": 10473560,
+     "beam_bunches_seen": 480,
+     "hits_per_1e12p": 2926.7100918169986,
+     "tflash_mode_ns": 11615.0,
+     "flash_bad_pct": 0.0,
+     "tflash_zero_pct": 0.0,
+     "median_amp": 300.2725524902344,
+     "median_tof_us": 200.55707300712203
+    },
+    "LIQC": {
+     "hits": 2721306,
+     "beam_bunches_seen": 480,
+     "hits_per_1e12p": 760.4361585862065,
+     "tflash_mode_ns": 11635.0,
+     "flash_bad_pct": 0.0,
+     "tflash_zero_pct": 0.0,
+     "median_amp": 135.95938110351562,
+     "median_tof_us": 82.87360722306403
+    },
+    "LIQD": {
+     "hits": 6429985,
+     "beam_bunches_seen": 480,
+     "hits_per_1e12p": 1796.7818000500233,
+     "tflash_mode_ns": 11625.0,
+     "flash_bad_pct": 0.0,
+     "tflash_zero_pct": 0.0,
+     "median_amp": 147.32130432128906,
+     "median_tof_us": 165.06068326647693
+    }
+   },
+   "offsets": {
+    "pssA": {
+     "peak_ns": 1.0,
+     "height": 3473,
+     "n": 227042
+    },
+    "liqA": {
+     "peak_ns": -1.0,
+     "height": 16059,
+     "n": 791511
+    },
+    "pssB": {
+     "peak_ns": -1.0,
+     "height": 3893,
+     "n": 296301
+    },
+    "liqB": {
+     "peak_ns": 1.0,
+     "height": 16542,
+     "n": 874572
+    },
+    "pssC": {
+     "peak_ns": -1.0,
+     "height": 3948,
+     "n": 299765
+    },
+    "liqC": {
+     "peak_ns": 1.0,
+     "height": 8173,
+     "n": 228249
+    },
+    "pssD": {
+     "peak_ns": 25.0,
+     "height": 3402,
+     "n": 273844
+    },
+    "liqD": {
+     "peak_ns": 1.0,
+     "height": 12900,
+     "n": 535227
+    }
+   }
+  }
+ ]
+}

@@ -1,0 +1,26 @@
+# Sweep every DREAM burst of one run for a mis-tagged gamma flash.
+#   condor_submit flash.sub run=run_124 -queue 1
+#   condor_submit flash.sub -queue run from dream_runs.txt
+universe                = vanilla
+executable              = flash_wrapper.sh
+arguments               = $(run) $(extra)
+should_transfer_files   = YES
+when_to_transfer_output = ON_EXIT
+transfer_input_files    = ntof_processing,ntof_dream_merge,ntof_july_analysis,common,mx_july_beam_qa
+transfer_output_files   = sweep
+transfer_output_remaps  = "sweep = sweep_$(run)"
+output                  = log/flash_$(run)_$(ClusterId).out
+error                   = log/flash_$(run)_$(ClusterId).err
+log                     = log/flash_$(run)_$(ClusterId).log
+request_cpus            = 1
+# The sweep holds one sub-run's per-event arrays at a time (~100k events),
+# never its hits: measured peak well under 1 GB. 4 GB is generous and keeps
+# the CPU allocation at one core.
+request_memory          = 4 GB
+# No staging, so only the sandbox: the package is a few MB.
+request_disk            = 2 GB
++JobFlavour             = "workday"
+max_retries             = 0
+requirements            = (OpSysAndVer =?= "AlmaLinux9")
+# Polite: 85 jobs each streaming a few GB off the DREAM EOS pool.
+max_materialize         = 12

@@ -1,0 +1,53 @@
+##### 224572  ours v12_liqpileup  vs  official v4  (LIQ detail)
+run 224572: ours run224572_0005.root covers bunches 798-997 (16 partials, official has 38)
+  official partials covering it: run224572_0011.root[798-877], run224572_0012.root[878-957], run224572_0013.root[958-1037]
+  comparing bunches 896-900 (5)
+  LIQA    85873 hits   DIFFERENT (values)   worst |d| = 1.05663e+08 (afast)
+        afast 3 (0.00 %, max 1.05663e+08)
+  LIQB    95653 hits   DIFFERENT (values)   worst |d| = 3.15074e+08 (afast)
+        afast 6 (0.01 %, max 3.15074e+08)
+  LIQC    24895 hits   DIFFERENT (values)   worst |d| = 1.37141e+06 (afast)
+        afast 5 (0.02 %, max 1.37141e+06)
+  LIQD    59799 hits   DIFFERENT (values)   worst |d| = 2.35997e+06 (afast)
+        afast 4 (0.01 %, max 2.35997e+06)
+wrote identity_224572_liq.json
+
+##### 224574  ours prod_v11  vs  official v4
+run 224574: ours run224574_0005.root covers bunches 801-1000 (16 partials, official has 38)
+  official partials covering it: run224574_0011.root[801-880], run224574_0012.root[881-960], run224574_0013.root[961-1040]
+  comparing bunches 899-903 (5)
+  WALA    42828 hits   IDENTICAL            worst |d| = 0 (-)
+  WALB    41400 hits   IDENTICAL            worst |d| = 0 (-)
+  WALC    44826 hits   IDENTICAL            worst |d| = 0 (-)
+  WALD    44937 hits   IDENTICAL            worst |d| = 0 (-)
+  PSSA   125651 hits   IDENTICAL            worst |d| = 0 (-)
+  PSSB   170487 hits   IDENTICAL            worst |d| = 0 (-)
+  PSSC   204990 hits   IDENTICAL            worst |d| = 0 (-)
+  PSSD   180759 hits   IDENTICAL            worst |d| = 0 (-)
+  LIQA    60793 vs   73743 hits   DIFFERENT (count)
+  LIQB    71755 vs   83210 hits   DIFFERENT (count)
+  LIQC    18459 vs   21277 hits   DIFFERENT (count)
+  LIQD    42602 vs   50786 hits   DIFFERENT (count)
+  SILI     2392 hits   IDENTICAL            worst |d| = 0 (-)
+  PKUP        5 hits   IDENTICAL            worst |d| = 0 (-)
+wrote identity_224574.json
+
+##### 224577  ours prod_v11  vs  official v4 (merged today)
+run 224577: ours run224577_0005.root covers bunches 801-1000 (17 partials, official has 42)
+  official partials covering it: run224577_0011.root[801-880], run224577_0012.root[881-960], run224577_0013.root[961-1040]
+  comparing bunches 899-903 (5)
+  WALA    48854 hits   IDENTICAL            worst |d| = 0 (-)
+  WALB    47805 hits   IDENTICAL            worst |d| = 0 (-)
+  WALC    52181 hits   IDENTICAL            worst |d| = 0 (-)
+  WALD    51726 hits   IDENTICAL            worst |d| = 0 (-)
+  PSSA   141182 hits   IDENTICAL            worst |d| = 0 (-)
+  PSSB   191902 hits   IDENTICAL            worst |d| = 0 (-)
+  PSSC   228155 hits   IDENTICAL            worst |d| = 0 (-)
+  PSSD   202945 hits   IDENTICAL            worst |d| = 0 (-)
+  LIQA    71160 vs   86293 hits   DIFFERENT (count)
+  LIQB    81750 vs   95319 hits   DIFFERENT (count)
+  LIQC    22021 vs   24834 hits   DIFFERENT (count)
+  LIQD    49472 vs   58914 hits   DIFFERENT (count)
+  SILI     2622 hits   IDENTICAL            worst |d| = 0 (-)
+  PKUP        5 hits   IDENTICAL            worst |d| = 0 (-)
+wrote identity_224577.json

@@ -1,0 +1,26 @@
+{
+ "tag": "bench_w0_a0",
+ "pressure_torr": 745.83,
+ "comp": [
+  [
+   "ar",
+   95.0
+  ],
+  [
+   "ic4h10",
+   5.0
+  ]
+ ],
+ "ncoll": 30,
+ "points": [
+  {
+   "E_Vcm": 208.0,
+   "v_um_ns": 4.114524293231807,
+   "v_true_um_ns": 41.14524293231808,
+   "DT_um_rtcm": 484.52715894221103,
+   "DL_um_rtcm": 293.2162842174275,
+   "eta_per_cm": 0.0,
+   "lambda_mm": null
+  }
+ ]
+}

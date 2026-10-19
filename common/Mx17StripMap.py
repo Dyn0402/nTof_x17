@@ -8,6 +8,12 @@ Created as nTof_x17/Mx17StripMap.py
 @author: Dylan Neff, dylan
 """
 
+# `str | Path` annotations below are PEP 604, which Python 3.9 evaluates at
+# import and rejects. The condor workers run LCG_105 = 3.9.12, so without this
+# every campaign job dies importing the strip map. Annotations only — no
+# runtime behaviour changes.
+from __future__ import annotations
+
 import csv
 from pathlib import Path
 from typing import Dict, Tuple, Optional

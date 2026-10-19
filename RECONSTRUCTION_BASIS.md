@@ -68,6 +68,16 @@ events; mesh σ ≈ 0.58 mm; ~70 % of medium-angle events thread < 1 mm over the
 full gap. Portable: det2 and det4 both calibrate and reconstruct with their own
 kernels.
 
+**Prior art**: `wft/REFERENCES.md`. The model is a re-derivation, not a
+borrowing, but the ingredients are twenty years old — Dixit et al. (2004) for
+charge dispersion on a resistive anode, Galan et al. (2012) for the
+resistive-strip transmission line, and the T2K ND280 ERAM analysis (Attié et
+al., 2023) for the simultaneous multi-channel waveform fit, which is the closest
+published method to ours. Credit them in any write-up; the part to claim is
+solving the drift-depth profile inside the fit, which is what turns a sharpened
+centroid into a micro-TPC. The µTPC literature this section argues against is
+the ATLAS NSW resistive-strip work — cite it as the foil.
+
 ## Consequences already known
 
 - **v_drift**: the hits ladder implies v = 47–50 µm/ns and the gap estimators

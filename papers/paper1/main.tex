@@ -1,0 +1,51 @@
+% MX17 Paper I -- detector & performance. Outline stage.
+% Journal and author list undecided (PAPER_PLAN C4): plain article for now; switch
+% the class (elsarticle for NIM A, jinst for JINST) once chosen.
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=2.2cm,marginparwidth=2.6cm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{siunitx}
+\usepackage{authblk}
+\usepackage[hidelinks]{hyperref}
+\usepackage{cleveref}
+\usepackage{drafting}
+% \draftnotesfalse   % uncomment for a clean read without notes
+
+\graphicspath{{figures/}}
+
+\title{The MX17 resistive-strip Micromegas micro-TPCs: design, operation and performance on cosmic rays and in the SPS H4 beam}
+\author{\tbw{author list -- undecided (C4)}}
+\date{Outline draft, \today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\tbw{Abstract written last. Key numbers: X/Y charge balance 0.49/0.53; no dead time after a spark;
+intrinsic resolution 176~\textmu m ($0.30\times$ pitch) in the SPS beam; cosmic angular resolution
+\requote{1.15--2.51\textdegree} with the waveform reconstruction of the companion paper.}
+\end{abstract}
+
+\ifdraftnotes
+\listoftodos[Open items]
+\clearpage
+\fi
+
+\input{sections/01_introduction}
+\input{sections/02_design}
+\input{sections/03_setups}
+\input{sections/04_operation}
+\input{sections/05_efficiency}
+\input{sections/06_gas}
+\input{sections/07_timing}
+\input{sections/08_tracking}
+\input{sections/09_det4_stripes}
+\input{sections/10_conclusions}
+
+\bibliographystyle{unsrt}
+\bibliography{refs}
+\end{document}

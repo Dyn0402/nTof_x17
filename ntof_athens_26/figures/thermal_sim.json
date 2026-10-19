@@ -1,0 +1,103 @@
+{
+  "geant4_quoted": {
+    "source": "ntof_run_report/make_report.py section 6, quoting MX17_Full_Geant (trigger_provenance, al_pair_background/VERDICT.md, docs/report/thermal_note.pdf)",
+    "np_over_ng_thermal": 100000000.0,
+    "shielding_factor": [
+      50,
+      100
+    ],
+    "ipc_per_pulse_thin_below_1keV": 0.0121,
+    "ipc_per_pulse_shielded": [
+      0.00011,
+      0.00023
+    ],
+    "al_capture_gamma_per_pulse": 4121,
+    "trigger_per_pulse": [
+      [
+        "SiPM-wall singles",
+        2063,
+        0.8
+      ],
+      [
+        "plastic singles",
+        942,
+        0.57
+      ],
+      [
+        "arm coincidence\n(one trigger leg)",
+        205,
+        0.96
+      ]
+    ],
+    "trigger_note": "10^9 EAR2-flux neutrons, nose-first geometry, 0.5 MIP threshold",
+    "per_day_produced": {
+      "Al(n,g) pairs": 5950000.0,
+      "3He IPC": 1.39,
+      "X17": 0.035
+    },
+    "per_day_mm_acceptance": {
+      "Al(n,g) pairs": 650000.0,
+      "3He IPC": 0.44,
+      "X17": 0.012
+    }
+  },
+  "measured_timing": {
+    "rows": [
+      [
+        "all two-arm pairs",
+        76,
+        0.29,
+        0.17,
+        0.4
+      ],
+      [
+        "opposing  (A\u2013C)",
+        42,
+        0.42,
+        0.26,
+        0.58
+      ],
+      [
+        "perpendicular",
+        34,
+        0.16,
+        0.0,
+        0.32
+      ]
+    ],
+    "source": "sept26_prelim_analysis/HANDOFF_ACCIDENTAL_TIMING.md section 0 -- run_145, unbinned two-component fit to the arm1-arm2 scintillator dt, 68 % intervals"
+  },
+  "branching": {
+    "sigma_np_thermal_b": 5315.995805241025,
+    "sigma_ng_thermal_b": 5.4980070045645146e-05,
+    "ratio_thermal": 96689505.86690065,
+    "ratio_1MeV": 11403.51126520007,
+    "mean_free_path_thermal_mm": 0.15958669087946664,
+    "optical_depth_on_axis_thermal": 251.81872389867323,
+    "shielding_factor_thermal": 167.92146700916376,
+    "shielding_factor_window_median": 151.69533823730558,
+    "ng_per_neutron_shielded_thermal": 1.0339777533903525e-08,
+    "ng_per_neutron_thin_thermal": 1.7362706120414734e-06
+  },
+  "pair_sources": {
+    "energy_eV": 0.031,
+    "he3_np_per_neutron": 0.999746494246528,
+    "he3_ng_per_neutron": 1.0310530130050447e-08,
+    "wall_captures_per_neutron": [
+      0.0014430246298095394,
+      0.01729903536977492
+    ],
+    "wall_pairs_per_capture": 0.0021034844875962733,
+    "he3_pairs_per_radiative_capture": 0.004664581785219287,
+    "wall_pairs_per_neutron": [
+      3.035379924023721e-06,
+      3.638825255070081e-05
+    ],
+    "he3_pairs_per_neutron": 4.809431104058796e-11,
+    "wall_to_he3_pair_ratio": [
+      63113.07633582878,
+      756602.0130736851
+    ],
+    "g4_mm_acceptance_ratio": 1477272.7272727273
+  }
+}

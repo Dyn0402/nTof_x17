@@ -1,0 +1,73 @@
+topology,pair,theta_deg,value,err,n,norm
+opposing,A–C,2.5,0.0,0.0,0,density
+opposing,A–C,7.5,0.0,0.0,0,density
+opposing,A–C,12.5,0.0,0.0,0,density
+opposing,A–C,17.5,0.0,0.0,0,density
+opposing,A–C,22.5,0.0,0.0,0,density
+opposing,A–C,27.5,0.0,0.0,0,density
+opposing,A–C,32.5,0.0,0.0,0,density
+opposing,A–C,37.5,0.0,0.0,0,density
+opposing,A–C,42.5,0.0,0.0,0,density
+opposing,A–C,47.5,0.0,0.0,0,density
+opposing,A–C,52.5,0.0,0.0,0,density
+opposing,A–C,57.5,0.0,0.0,0,density
+opposing,A–C,62.5,0.0,0.0,0,density
+opposing,A–C,67.5,0.0,0.0,0,density
+opposing,A–C,72.5,0.0,0.0,0,density
+opposing,A–C,77.5,0.0,0.0,0,density
+opposing,A–C,82.5,0.0,0.0,0,density
+opposing,A–C,87.5,4.5864546705396726e-05,2.6479908386620964e-05,3,density
+opposing,A–C,92.5,0.000565662742699893,9.299438205623329e-05,37,density
+opposing,A–C,97.5,0.001834581868215869,0.00016747364546863358,120,density
+opposing,A–C,102.5,0.0027365846200886716,0.00020454193793394975,179,density
+opposing,A–C,107.5,0.004754624675126128,0.0002696100304012903,311,density
+opposing,A–C,112.5,0.007460632930744534,0.000337726984167169,488,density
+opposing,A–C,117.5,0.010365387555419662,0.0003980803108482353,678,density
+opposing,A–C,122.5,0.01275034398410029,0.0004415083038738312,834,density
+opposing,A–C,127.5,0.012933802170921877,0.00044467327846656434,846,density
+opposing,A–C,132.5,0.01314783672221373,0.0004483375110415894,860,density
+opposing,A–C,137.5,0.017810732303929065,0.0005218177087869137,1165,density
+opposing,A–C,142.5,0.019125515976150437,0.0005407350308462741,1251,density
+opposing,A–C,147.5,0.018865616878153187,0.0005370484045329551,1234,density
+opposing,A–C,152.5,0.01628191408041584,0.0004989197025555947,1065,density
+opposing,A–C,157.5,0.013086683993273198,0.0004472936504610241,856,density
+opposing,A–C,162.5,0.01212352851245987,0.00043051912063380896,793,density
+opposing,A–C,167.5,0.012566885797278705,0.00043832047658863934,822,density
+opposing,A–C,172.5,0.014279162207613516,0.0004672284601723323,934,density
+opposing,A–C,177.5,0.00926463843449014,0.0003763502102152934,606,density
+opposing,A–C (back-to-back cut),2.5,0.0,,0,density
+opposing,A–C (back-to-back cut),7.5,0.0,,0,density
+opposing,A–C (back-to-back cut),12.5,0.0,,0,density
+opposing,A–C (back-to-back cut),17.5,0.0,,0,density
+opposing,A–C (back-to-back cut),22.5,0.0,,0,density
+opposing,A–C (back-to-back cut),27.5,0.0,,0,density
+opposing,A–C (back-to-back cut),32.5,0.0,,0,density
+opposing,A–C (back-to-back cut),37.5,0.0,,0,density
+opposing,A–C (back-to-back cut),42.5,0.0,,0,density
+opposing,A–C (back-to-back cut),47.5,0.0,,0,density
+opposing,A–C (back-to-back cut),52.5,0.0,,0,density
+opposing,A–C (back-to-back cut),57.5,0.0,,0,density
+opposing,A–C (back-to-back cut),62.5,0.0,,0,density
+opposing,A–C (back-to-back cut),67.5,0.0,,0,density
+opposing,A–C (back-to-back cut),72.5,0.0,,0,density
+opposing,A–C (back-to-back cut),77.5,0.0,,0,density
+opposing,A–C (back-to-back cut),82.5,0.0,,0,density
+opposing,A–C (back-to-back cut),87.5,5.1984058222145206e-05,,3,density
+opposing,A–C (back-to-back cut),92.5,0.0006411367180731242,,37,density
+opposing,A–C (back-to-back cut),97.5,0.0020793623288858083,,120,density
+opposing,A–C (back-to-back cut),102.5,0.0031017154739213307,,179,density
+opposing,A–C (back-to-back cut),107.5,0.00538901403569572,,311,density
+opposing,A–C (back-to-back cut),112.5,0.008456073470802287,,488,density
+opposing,A–C (back-to-back cut),117.5,0.011748397158204816,,678,density
+opposing,A–C (back-to-back cut),122.5,0.01445156818575637,,834,density
+opposing,A–C (back-to-back cut),127.5,0.01465950441864495,,846,density
+opposing,A–C (back-to-back cut),132.5,0.014902096690348293,,860,density
+opposing,A–C (back-to-back cut),137.5,0.020187142609599723,,1165,density
+opposing,A–C (back-to-back cut),142.5,0.02167735227863455,,1251,density
+opposing,A–C (back-to-back cut),147.5,0.021382775948709062,,1234,density
+opposing,A–C (back-to-back cut),152.5,0.01845434066886155,,1065,density
+opposing,A–C (back-to-back cut),157.5,0.014832784612718766,,856,density
+opposing,A–C (back-to-back cut),162.5,0.013741119390053716,,793,density
+opposing,A–C (back-to-back cut),167.5,0.014243631952867788,,822,density
+opposing,A–C (back-to-back cut),172.5,0.0,,0,density
+opposing,A–C (back-to-back cut),177.5,0.0,,0,density

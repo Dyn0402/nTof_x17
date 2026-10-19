@@ -1,0 +1,89 @@
+{
+ "hyper": {
+  "c1": 0.05072440589091014,
+  "kY": 5.6025677320854745,
+  "tau_s": 134.73353457258918,
+  "sigma_s": 52.1436467460136,
+  "sigma_p0": 0.43396124908228173,
+  "Dp": 0.015312720998327135,
+  "c2": 0.0,
+  "c2_over_c1": 0.6,
+  "share_lp": 1.0
+ },
+ "v_drift": 42.6,
+ "dt_xy": {
+  "3": 12.223940282591343,
+  "-3": 57.220461223399525
+ },
+ "t0_abs": {},
+ "t0_prior_sigma": 0.0,
+ "dead": {},
+ "hot": {},
+ "w0": {
+  "x": -0.025756465523423033,
+  "y": -0.2204769235624664
+ },
+ "kw": {
+  "x": 1.0277087211715095,
+  "y": 1.0044930507994896
+ },
+ "xy_pairing": {},
+ "pitch_mm": 0.78,
+ "sample_ns": 60.0,
+ "n_depth_bins": 18,
+ "sat_adc": 3700.0,
+ "share_mode": "delay",
+ "detector": "mx17_7",
+ "run_key": "run_149/cosbounce_cos_0050/mx17_D",
+ "conditions": {
+  "run": "run_149",
+  "sub_run": "cosbounce_cos_0050",
+  "gas": "Ar/Iso 90/10",
+  "n_samples": 20,
+  "sample_ns": 60.0
+ },
+ "provenance": {
+  "note": "preliminary run_149 bundle for arm D",
+  "n_train": 180,
+  "chi2": 110384878.86382589,
+  "chi2_init": 149035129.21013778,
+  "fitted": "mx_june_wft/19_ratio_recal.py",
+  "gain_map": "unit (not fitted)",
+  "derived_from": "calib_bundle_lp",
+  "fitted_by": "mx_june_wft/19_ratio_recal.py",
+  "c2_over_c1": 0.6,
+  "c2_slaved": true,
+  "w0_kw_stale": false,
+  "w0_kw_note": "w0/kw re-measured from events_r06.parquet (g_det7_long), a reco run with THIS bundle",
+  "superseded_hyper": {
+   "c1": 0.050871746757102,
+   "c2": 0.08885080917701021,
+   "kY": 2.5140268797716643,
+   "tau_s": 113.34940138052588,
+   "sigma_s": 109.40188230598959,
+   "sigma_p0": 0.45834246932368483,
+   "Dp": 0.013546001950306733,
+   "share_lp": 1.0,
+   "kTauY": 1.78
+  },
+  "evidence": "sps_beam_test_26/analysis/sharing_kernel -- the head-on beam measures c2/c1 = 0.45 +- 0.02 and near-vertical bench cosmics 0.63 +- 0.09; the shipped bundles carried > 1",
+  "chi2_source": 107412667.85453267,
+  "chi2_note": "chi2 is the ratio-pinned refit on n_train events; chi2_source is the free-ratio fit it is derived from, on the same events -- pinning the ratio costs fit quality and the two numbers say how much",
+  "seeded_from": "/pool/condor/dir_1364398/bundles/mx17_D/calib_bundle_r06",
+  "transferred": "template + sharing kernel + w0/kw (bench)",
+  "replaced": "v_drift -> 42.6 um/ns (PRIOR: Magboltz 90/10 @233 V/cm / 07-19 water estimate, NOT measured in situ), sat_adc -> 3700.0, sample_ns/conditions -> run_79",
+  "not_revalidated": "sigma_p0, Dp (gas-dependent), template (assumed same DREAM shaping), dt_xy",
+  "status": "PRELIMINARY -- see ntof_tracking/TRACK_PLAN_08 phase 2",
+  "dropped": "t0_abs + t0_prior_sigma (bench absolute time vs the bench scintillator trigger; this run is triggered by n_TOF, so the bench table does not transfer)",
+  "dropped_t0_was": {
+   "t0_prior_sigma": 0.0,
+   "t0_abs_planes": [
+    "x",
+    "y"
+   ]
+  },
+  "code_commit": "unknown",
+  "seeded_from_bench": "/media/dylan/data/x17/cosmic_bench/Analysis/mx17_det6_det7_overnight_6-26-26/long_run/mx17_7/wft/calib_bundle_r06",
+  "ran_on": "lxplus condor (ntof_tracking/condor/run_beam_job.py)"
+ }
+}

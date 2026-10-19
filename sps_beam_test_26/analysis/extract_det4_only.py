@@ -44,8 +44,8 @@ from det4_sps_map import POSITION_MM, VIEW, PITCH_MM      # noqa: E402
 
 ZS_BASELINE = 256.0
 BAND_MARGIN_MM = 2.0
-STRIPES = ("/home/dylan/PycharmProjects/nTof_x17/sps_beam_test_26/"
-           "det4_sps_assessment/stripes_g_det4.npz")
+STRIPES = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                       "det4_sps_assessment", "stripes_g_det4.npz")
 
 
 def main():
@@ -54,6 +54,10 @@ def main():
     ap.add_argument("--gate", default="600,3600")
     ap.add_argument("--max-events", type=int, default=60000)
     ap.add_argument("--out", default="")
+    ap.add_argument("--keep", type=int, default=4,
+                    help="strips either side of the leading strip to save, per "
+                         "view (the CM mask is widened to keep + 2 when larger "
+                         "than 10)")
     ap.add_argument("--cm", default="block", choices=("block", "masked", "none"),
                     help="common-mode handling for RAW: 'block' subtracts the "
                          "per-sample median of each 64-ch connector block "
@@ -72,6 +76,8 @@ def main():
     stage = D["stage"]
     raw = bool(D.get("raw"))
     suff = {"block": "", "masked": "_cmmasked", "none": "_nocm"}[args.cm]
+    if args.keep != 4:
+        suff += f"_keep{args.keep}"
     out = args.out or stage + f"wf_{args.dataset}_det4only{suff}.npz"
 
     # ---------------------------------------------------- read det4 hits
@@ -138,9 +144,13 @@ def main():
         L[cev[o2]] = cp[o2]; S[cev[o2]] = cn[o2]; Q[cev[o2]] = cmx[o2]
         lead[v], ncl[v], nst[v], qmax[v] = L, N, S, Q
 
-    J = np.load(STRIPES)
+    if os.path.exists(STRIPES):
+        bands = np.load(STRIPES)["bands"]
+    else:                                   # same bands, as written by the stripe finder
+        import json
+        bands = json.load(open(STRIPES[:-4] + ".json"))["bands_mm"]
     inband = np.zeros(n_ev, bool)
-    for lo, hi in J["bands"]:
+    for lo, hi in bands:
         inband |= (lead["x"] > lo + BAND_MARGIN_MM) & (lead["x"] < hi - BAND_MARGIN_MM)
 
     single = (ncl["x"] == 1) & (ncl["y"] == 1)
@@ -198,10 +208,10 @@ def main():
               f"median {np.median(ped_mean):.1f} ADC, "
               f"range {ped_mean.min():.0f}-{ped_mean.max():.0f}")
 
-    KEEP = 4          # strips either side of the leading strip, per view
+    KEEP = args.keep  # strips either side of the leading strip, per view
     SIDX = np.round(POSITION_MM / PITCH_MM).astype(int)
 
-    CM_MASK_HALF = 10                 # strips either side of a lead to exclude
+    CM_MASK_HALF = max(10, KEEP + 2)  # strips either side of a lead to exclude
     CM_BAD_CH = (510, 372)            # oscillating channels, never in the CM
 
     def correct_chunk(evs, chs, sms, ams):

@@ -1,0 +1,19 @@
+# condor_xw_sim.sub -- xw_sim.py closure replicas (run in lxplus ~/cloud_basics_condor/xwsim; jobs from make_xw_sim_jobs)
+universe                = vanilla
+executable              = run_xw_sim.sh
+arguments               = $(set) $(arm) $(seed0) $(nrep)
+should_transfer_files   = YES
+when_to_transfer_output = ON_EXIT
+transfer_input_files    = payload_xw_sim.tar.gz
+transfer_output_files   = sim_$(set)_$(arm)_$(seed0).json
+transfer_output_remaps  = "sim_$(set)_$(arm)_$(seed0).json = out/sim_$(set)_$(arm)_$(seed0).json"
+output                  = log/xw_$(set)_$(arm)_$(seed0).out
+error                   = log/xw_$(set)_$(arm)_$(seed0).err
+log                     = log/xw_sim.log
+request_cpus            = 1
+request_memory          = 2GB
+request_disk            = 1GB
++JobFlavour             = "microcentury"
+max_retries             = 2
+requirements            = (OpSysAndVer =?= "AlmaLinux9")
+queue set, arm, seed0, nrep from jobs_xw_sim.txt

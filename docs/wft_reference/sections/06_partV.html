@@ -27,6 +27,8 @@ between the two chains.</p>
 <tbody>
 <tr><td>significance floor</td><td>keep strips with significance ≥ <strong>10 %</strong> of that plane's strongest strip <em>in that event</em></td>
     <td>a relative floor, not absolute. Coherent noise otherwise inflates multiplicity, steals cluster membership and fakes the spark veto</td></tr>
+<tr><td>local floor <em>(opt-in, 2026-09-14)</em></td><td><code>WFT_SIG_FLOOR_LOCAL_MM</code> &gt; 0: judge each strip against the strongest strip within ± that many mm. In the default <code>rescue</code> mode the plane-wide seeds are kept and clusters only the local floor finds are <em>added</em>, ranked below every production candidate pair</td>
+    <td>the plane-wide floor lets a brighter track anywhere in the plane push a fainter one under the strip minimum — <code>wft/MULTITRACK_2026-09-14.md</code></td></tr>
 <tr><td>spark veto</td><td>drop the event if &gt; <strong>50</strong> strips fire</td>
     <td>a full-detector discharge is not a muon</td></tr>
 <tr><td>spatial clustering</td><td>split wherever the gap between adjacent strip positions exceeds <strong>12 mm</strong></td>

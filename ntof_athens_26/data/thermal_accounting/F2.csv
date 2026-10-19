@@ -1,0 +1,9 @@
+id,parent,label,mc_count,weight,frac_of_parent,frac_err,per_neutron,per_pulse,per30d_ratetable,per30d_sim,source,note,on_slide
+F2.gamma_only,F1.ncapture,γ only: nothing charged in a drift gap (prompt),7167332,7167332,0.9791846489757632,5.2768859134948954e-05,0.007952999164313546,,23971289238.757126,17768896861.6656,geant4,,True
+F2.charged_in_detector,F1.ncapture,"≥ 1 charged particle in a Micromegas drift gap (≥ 1 keV, prompt)",152362,152362,0.020815351024236806,5.276885913494894e-05,0.00016906358721392292,,509577841.6564926,377728374.1896,geant4,,True
+F2.tierB.charged_in_scint,F1.ncapture,tier B: ≥ 0.5 MIP charged in a SiPM-wall or plastic bar (prompt),256351,256351,0.03502209245359164,6.794903095992043e-05,0.00028445163259786793,,857371190.2343336,635532786.7307999,geant4,,False
+F2.delayed_only,F1.ncapture,"drift-gap charge only from delayed decays (≥ 100 ms, ²⁸Al β)",274493,274493,0.03750061136435485,7.022195922044056e-05,0.0003045823187219342,,918047482.2450194,680509540.5444,geant4,not in the prompt funnel; uncorrelated with the pulse in the data,False
+F2.by.he3.charged,F1.ncapture.he3,he3: charged in drift gap,0,0,0.0,0.0,0.0,,0.0,0.0,geant4,,False
+F2.by.al27.charged,F1.ncapture.wall_al,al27: charged in drift gap,137832,137832,0.03065640634640458,8.129897818699882e-05,0.00015294084058275307,,460981957.91075003,341706313.0656,geant4,,False
+F2.by.cfrp.charged,F1.ncapture.wall_cfrp,cfrp: charged in drift gap,2163,2163,0.009372562613744691,0.0002005789100108898,2.4001033009786905e-06,,7234197.972611239,5362403.1804,geant4,,False
+F2.by.capture_elsewhere.charged,F1.ncapture.elsewhere,capture_elsewhere: charged in drift gap,12367,12367,0.0047695887902514805,4.278687582718945e-05,1.3722643330191155e-05,,41361685.77313139,30659657.9436,geant4,,False

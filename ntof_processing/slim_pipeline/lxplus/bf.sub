@@ -1,0 +1,19 @@
+# Brute-force one DREAM sub-run's bursts against one n_TOF run.
+#   condor_submit bf.sub run=224581 drun=run_82 dsub=stat090_h2i5_0007 extra="--window-s 400" -queue 1
+universe                = vanilla
+executable              = bf_wrapper.sh
+arguments               = $(run) $(drun) $(dsub) $(extra)
+should_transfer_files   = YES
+when_to_transfer_output = ON_EXIT
+transfer_input_files    = ntof_processing,ntof_dream_merge,ntof_july_analysis,common,mx_july_beam_qa
+transfer_output_files   = bf
+transfer_output_remaps  = "bf = bf_$(drun)_$(dsub)_$(run)"
+output                  = log/bf_$(run)_$(ClusterId).out
+error                   = log/bf_$(run)_$(ClusterId).err
+log                     = log/bf_$(run)_$(ClusterId).log
+request_cpus            = 1
+request_memory          = 8 GB
+request_disk            = 60 GB
++JobFlavour             = "workday"
+max_retries             = 0
+requirements            = (OpSysAndVer =?= "AlmaLinux9")

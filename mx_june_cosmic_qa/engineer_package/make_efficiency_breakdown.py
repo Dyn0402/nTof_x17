@@ -24,6 +24,25 @@ Categories (from 09_efficiency_breakdown.py), % of active-area crossing muons:
 
 Output: figures/21-det3A-efficiency-breakdown.{png,pdf}
 Usage:  ../.venv/bin/python make_efficiency_breakdown.py
+
+⛔ **Do not re-run this without re-deriving BREAKDOWN_TXT first (2026-08-10).**
+Two things went stale under it:
+
+  * `BREAKDOWN_TXT` (`g_det3_wknd`) was last written by the 2026-07-25 rerun,
+    which is the run the det3 position regression broke — it reads 82.3 %, and
+    that run's `cache/event_results*.pkl` has no `.meta.json`, i.e. it predates
+    the 2026-07-25 relative-significance floor that fixed the regression
+    (`DET3_RECO_FIX_2026-07-25.md`). Re-running this script today would render a
+    figure captioned 82.3 %. Refresh the cache with
+    `03_alignment_and_tpc.py g_det3_wknd --refit` (+ `--no-veto`) and then `09`
+    before trusting the input, or point `BREAKDOWN_TXT` at a run that is current.
+  * Position on these detectors is no longer reconstructed from hit times at all
+    (`RECONSTRUCTION_BASIS.md`), so a within-5-mm efficiency belongs to the
+    waveform-first chain. The **conference** version of this figure is therefore
+    built by `mpgd26/make_efficiency_breakdown.py` from
+    `mx_june_wft/02_efficiency.py`'s JSON on `sat_det3`, and that is the one to
+    edit for the talk. This script is kept for the June engineer package, whose
+    surrounding text is all hit-chain vintage.
 """
 import os
 import re
@@ -104,14 +123,20 @@ def main():
 
     # headline annotation box: detected vs blind
     blind = cats['no_hit'][1] + cats['hit_no_reco'][1]
+    # NOTHING in this box may be a literal. It used to say "off the 88.8%" and
+    # "recovers to ~95%" while the bars were drawn from whatever was on disk;
+    # when the M3 recipe changed on 2026-07-14 the annotation and the bars
+    # disagreed by 4 points and the figure shipped that way. Every number here
+    # is now parsed from the same breakdown file the bars come from, and the
+    # 10 mm recovery -- which this file does not carry -- is simply not claimed.
     note = (f'The chamber produces a signal for {has_any:.1f}% of muons and '
             f'reconstructs a track point for {reco_all:.1f}%.\n'
             f'Genuine blindness (no signal at all) is only {cats["no_hit"][1]:.1f}%.  '
-            f'The two biggest "losses" off the 88.8% are NOT the chamber\n'
-            f'failing to see the muon: a {cats["spark"][1]:.1f}% spark coincidence '
-            f'(self-quenching, zero dead time after), and a {cats["reco_far"][1]:.1f}% '
-            f'edge / near-miss\nposition tail — almost all within 5–10 mm, so at a '
-            f'10 mm match the efficiency recovers to ~95%.')
+            f'The two biggest "losses" off the {cats["reco_near"][1]:.1f}% are NOT the '
+            f'chamber\nfailing to see the muon: a {cats["spark"][1]:.1f}% spark '
+            f'coincidence (self-quenching, zero dead time after), and a '
+            f'{cats["reco_far"][1]:.1f}% edge / near-miss\nposition tail — a position '
+            f'miss, not a detection failure.')
     ax.text(0.5, -0.30, note, transform=ax.transAxes, ha='center', va='top',
             fontsize=9.4, color='#333',
             bbox=dict(boxstyle='round,pad=0.6', facecolor='#f4f7fb',

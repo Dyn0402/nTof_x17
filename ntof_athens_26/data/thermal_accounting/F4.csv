@@ -1,0 +1,9 @@
+id,parent,label,mc_count,weight,frac_of_parent,frac_err,per_neutron,per_pulse,per30d_ratetable,per30d_sim,source,note,on_slide
+F4.capsule_pairs,F3.pair_near_capsule,capsule e⁺e⁻ pairs with ≥ 1 lepton in a drift gap: external (Geant4) + internal (analytic),,,,,3.0539063861779234e-05,,92048385.49417503,68231551.996977,geant4+analytic,,True
+F4.external.al27,F4.capsule_pairs,"²⁷Al(n,γ) → γ converts (external)",23259,23259,0.8451012291169157,0.005541319789340402,2.580860040566961e-05,,77790203.71935499,57662568.457200006,geant4,,True
+F4.external.cfrp,F4.capsule_pairs,"CFRP (n,γ) → γ converts (external)",35,35,0.0012717031264926286,0.00021495706162136038,3.8836622993182696e-08,,117058.2196215411,86770.278,geant4,13 of 35 from a γ ≤ 2.3 MeV (¹H-like),True
+F4.external.he3,F4.capsule_pairs,"³He(n,γ) → γ converts (external)",0,0,0.0,,0.0,,0.0,0.0,geant4,MC; ≈ 0 expected,True
+F4.external.capture_elsewhere,F4.capsule_pairs,"γ from a capture elsewhere, converting in the capsule",6,6,0.00021800625025587917,8.900067897739976e-05,6.6577067988313195e-09,,20067.12336369276,14874.9048,geant4,,True
+F4.internal.al27,F4.capsule_pairs,"²⁷Al(n,γ) internal pair creation",,,0.15149839552908476,,4.626619176019809e-06,,13945182.713410195,10336970.652001332,analytic,sim wall-Al captures x 0.0021/capture (M1; all-E1 x1.27) x acceptance 0.44224516570646283 borrowed from external Al pairs,True
+F4.internal.cfrp,F4.capsule_pairs,"CFRP (n,γ) internal pair creation: ¹H + ¹²C",,,0.0019095323111264525,,5.831532919562163e-08,,175769.3662881507,130290.35317653221,analytic,sim CFRP captures x (H share 0.963 x 0.000452 [84%] + C share 0.037 x 0.00216) x the Al acceptance 0.44224516570646283,True
+F4.internal.he3,F4.capsule_pairs,"³He(n,γ) internal pair creation (IPC)",,,1.1336661246935336e-06,,3.4621102179951606e-11,,104.35213646747788,77.35179913423825,analytic,"1.03e-08/n x 0.00466 x IPC drift-gap acceptance 0.7198229597100723 (pairs_thermal_trig_2cm_nose, 100 files)",True

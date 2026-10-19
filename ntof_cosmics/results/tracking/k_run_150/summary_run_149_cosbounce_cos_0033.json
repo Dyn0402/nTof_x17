@@ -1,0 +1,114 @@
+{
+ "run": "run_149",
+ "subrun": "cosbounce_cos_0033",
+ "k_from": "run_150",
+ "n_triggers": 22197,
+ "arms_calibrated": {
+  "A": true,
+  "B": true,
+  "C": true,
+  "D": true
+ },
+ "n_trig_ge1_track": 2198,
+ "n_trig_ge2_arms": 130,
+ "n_trig_per_arm": {
+  "A": 634,
+  "B": 226,
+  "C": 820,
+  "D": 651
+ },
+ "n_pairs": 147,
+ "trig_by_pair": {
+  "AC": 59,
+  "CD": 20,
+  "AD": 19,
+  "AB": 15,
+  "BC": 12,
+  "BD": 5
+ },
+ "open_deg_quantiles_opposing": {
+  "0.05": 130.8984274120967,
+  "0.16": 152.01485522587927,
+  "0.5": 174.39547521412484,
+  "0.84": 177.15072128736162,
+  "0.95": 178.3847706710542
+ },
+ "frac_opposing_above_170": 0.65625,
+ "n_beam_presel": 11,
+ "n_beam_presel_b2b": 7,
+ "n_opposing_clean": 38,
+ "frac_clean_above_170": 0.8421052631578947,
+ "open_deg_quantiles_clean": {
+  "0.05": 141.46218282974706,
+  "0.16": 170.41228161251829,
+  "0.5": 175.6116161481632,
+  "0.84": 177.76914605486084,
+  "0.95": 178.4967615014309
+ },
+ "slope_check": [
+  {
+   "arm": "A",
+   "axis": "x",
+   "n": 36,
+   "median_ratio": 1.1032136372298513,
+   "lsq_ratio": 0.9114237378551416,
+   "corr": 0.8028758206898368
+  },
+  {
+   "arm": "A",
+   "axis": "y",
+   "n": 37,
+   "median_ratio": 1.1048780149381976,
+   "lsq_ratio": 1.0500218220611677,
+   "corr": 0.9217072566369741
+  },
+  {
+   "arm": "C",
+   "axis": "x",
+   "n": 36,
+   "median_ratio": 0.9924583875081405,
+   "lsq_ratio": 0.8632650393228566,
+   "corr": 0.8316701996544487
+  },
+  {
+   "arm": "C",
+   "axis": "y",
+   "n": 37,
+   "median_ratio": 0.897495071829844,
+   "lsq_ratio": 0.8720066031394097,
+   "corr": 0.9828537176624462
+  },
+  {
+   "arm": "B",
+   "axis": "z",
+   "n": 0,
+   "median_ratio": NaN,
+   "lsq_ratio": -3.882313678891831,
+   "corr": NaN
+  },
+  {
+   "arm": "B",
+   "axis": "y",
+   "n": 1,
+   "median_ratio": 0.44930456267728147,
+   "lsq_ratio": 0.4493045626772815,
+   "corr": NaN
+  },
+  {
+   "arm": "D",
+   "axis": "z",
+   "n": 0,
+   "median_ratio": NaN,
+   "lsq_ratio": 4.885636325509453,
+   "corr": NaN
+  },
+  {
+   "arm": "D",
+   "axis": "y",
+   "n": 1,
+   "median_ratio": 1.2502633722123395,
+   "lsq_ratio": 1.2502633722123395,
+   "corr": NaN
+  }
+ ]
+}

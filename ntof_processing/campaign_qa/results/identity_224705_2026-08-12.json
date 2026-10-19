@@ -1,0 +1,160 @@
+{
+ "run": 224705,
+ "ours_partial": "run224705_0005.root",
+ "bunches": [
+  355,
+  359
+ ],
+ "trees": {
+  "WALA": {
+   "n_ours": 57051,
+   "n_official": 57051,
+   "max_abs_diff": 0.0,
+   "max_diff_column": "",
+   "differing_cells": 0,
+   "columns_differing": {},
+   "verdict": "IDENTICAL"
+  },
+  "WALB": {
+   "n_ours": 54796,
+   "n_official": 54796,
+   "max_abs_diff": 0.0,
+   "max_diff_column": "",
+   "differing_cells": 0,
+   "columns_differing": {},
+   "verdict": "IDENTICAL"
+  },
+  "WALC": {
+   "n_ours": 58911,
+   "n_official": 58911,
+   "max_abs_diff": 0.0,
+   "max_diff_column": "",
+   "differing_cells": 0,
+   "columns_differing": {},
+   "verdict": "IDENTICAL"
+  },
+  "WALD": {
+   "n_ours": 58336,
+   "n_official": 58336,
+   "max_abs_diff": 0.0,
+   "max_diff_column": "",
+   "differing_cells": 0,
+   "columns_differing": {},
+   "verdict": "IDENTICAL"
+  },
+  "PSSA": {
+   "n_ours": 168977,
+   "n_official": 168977,
+   "max_abs_diff": 0.0,
+   "max_diff_column": "",
+   "differing_cells": 0,
+   "columns_differing": {},
+   "verdict": "IDENTICAL"
+  },
+  "PSSB": {
+   "n_ours": 227914,
+   "n_official": 227914,
+   "max_abs_diff": 0.0,
+   "max_diff_column": "",
+   "differing_cells": 0,
+   "columns_differing": {},
+   "verdict": "IDENTICAL"
+  },
+  "PSSC": {
+   "n_ours": 271145,
+   "n_official": 271145,
+   "max_abs_diff": 0.0,
+   "max_diff_column": "",
+   "differing_cells": 0,
+   "columns_differing": {},
+   "verdict": "IDENTICAL"
+  },
+  "PSSD": {
+   "n_ours": 245348,
+   "n_official": 245348,
+   "max_abs_diff": 0.0,
+   "max_diff_column": "",
+   "differing_cells": 0,
+   "columns_differing": {},
+   "verdict": "IDENTICAL"
+  },
+  "LIQA": {
+   "n_ours": 103859,
+   "n_official": 103859,
+   "max_abs_diff": 76023996.0,
+   "max_diff_column": "afast",
+   "differing_cells": 4,
+   "columns_differing": {
+    "afast": {
+     "cells": 4,
+     "frac": 3.851375422447742e-05,
+     "max_abs": 76023996.0
+    }
+   },
+   "verdict": "DIFFERENT (values)"
+  },
+  "LIQB": {
+   "n_ours": 115074,
+   "n_official": 115074,
+   "max_abs_diff": 2875375.912109375,
+   "max_diff_column": "afast",
+   "differing_cells": 3,
+   "columns_differing": {
+    "afast": {
+     "cells": 3,
+     "frac": 2.6070180927055635e-05,
+     "max_abs": 2875375.912109375
+    }
+   },
+   "verdict": "DIFFERENT (values)"
+  },
+  "LIQC": {
+   "n_ours": 29709,
+   "n_official": 29709,
+   "max_abs_diff": 1076646.3740234375,
+   "max_diff_column": "afast",
+   "differing_cells": 6,
+   "columns_differing": {
+    "afast": {
+     "cells": 6,
+     "frac": 0.00020195900232252852,
+     "max_abs": 1076646.3740234375
+    }
+   },
+   "verdict": "DIFFERENT (values)"
+  },
+  "LIQD": {
+   "n_ours": 71193,
+   "n_official": 71193,
+   "max_abs_diff": 7420705.88671875,
+   "max_diff_column": "afast",
+   "differing_cells": 3,
+   "columns_differing": {
+    "afast": {
+     "cells": 3,
+     "frac": 4.213897433736463e-05,
+     "max_abs": 7420705.88671875
+    }
+   },
+   "verdict": "DIFFERENT (values)"
+  },
+  "SILI": {
+   "n_ours": 2916,
+   "n_official": 2916,
+   "max_abs_diff": 0.0,
+   "max_diff_column": "",
+   "differing_cells": 0,
+   "columns_differing": {},
+   "verdict": "IDENTICAL"
+  },
+  "PKUP": {
+   "n_ours": 5,
+   "n_official": 5,
+   "max_abs_diff": 0.0,
+   "max_diff_column": "",
+   "differing_cells": 0,
+   "columns_differing": {},
+   "verdict": "IDENTICAL"
+  }
+ }
+}

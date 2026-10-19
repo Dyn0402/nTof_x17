@@ -197,13 +197,20 @@ def merge_fragments(labels: np.ndarray, pos: np.ndarray, time: np.ndarray,
 
 
 def find_segments(g: pd.DataFrame, det: str, plane: str,
-                  eventId: int) -> List[dict]:
+                  eventId: int, measure: bool = True) -> List[dict]:
     """Cluster + fit + classify the CLEAN hits of one (event, det, plane).
 
     g: hits DataFrame slice (needs pos_mm, time, amplitude,
     time_over_threshold, clean). Returns a list of segment dicts (one per
     cluster with >= MIN_CLUSTER_HITS hits), each carrying its class, the
     robust fit, bench measurement (anchored fit) and the hit index list.
+
+    `measure=False` skips the bench measurement chain (`anchored_time_fit` and
+    `hit_features`) on 'track' clusters, leaving pattern recognition only. Use
+    it for candidate FINDING over many events, where the anchored fit is both
+    the dominant cost and unused -- and where, per RECONSTRUCTION_BASIS.md, the
+    geometry it produces would not be trusted anyway. The default keeps the
+    measurement, so every existing caller is unaffected.
     """
     gc = g[g['clean']]
     if len(gc) < MIN_CLUSTER_HITS:
@@ -240,7 +247,7 @@ def find_segments(g: pd.DataFrame, det: str, plane: str,
             seg.update({k: fit[k] for k in
                         ('slope_mm_ns', 'intercept_mm', 'r2',
                          'inlier_frac', 'res_rms_mm')})
-        if cls == 'track':
+        if cls == 'track' and measure:
             anch = mtpc.anchored_time_fit(p, t, a)
             if anch:
                 seg.update(anchor_pos_mm=anch['mesh_position_mm'],

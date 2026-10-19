@@ -1,0 +1,760 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light dark"><title>Pair vertices and the capsule image</title><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap"><style>
+:root{
+  color-scheme:light dark;
+  --bg:#fbfafc; --bg-2:#f3f1f6; --panel:#ffffff; --panel-2:#faf9fc;
+  --ink:#1c1a24; --ink-2:#565064; --ink-3:#8b8599;
+  --line:#e5e1ec; --line-2:#d3cddf;
+  --accent:#7d3a86; --accent-2:#a15fa8; --accent-wash:#7d3a860e;
+  --warn:#9c6414; --warn-wash:#9c641412; --warn-line:#e2c795;
+  --good:#0d6a8c; --good-wash:#0d6a8c12;
+  --shadow:0 1px 2px #1c1a240a, 0 6px 20px -12px #1c1a2426;
+  --sans:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --col:74ch;         /* the reading column */
+  --page:1120px;      /* the widest a figure or table may go */
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#131118; --bg-2:#1a1822; --panel:#1b1924; --panel-2:#201d2b;
+  --ink:#eceaf3; --ink-2:#a9a3ba; --ink-3:#7c7591;
+  --line:#2d2939; --line-2:#3b3650;
+  --accent:#c98fce; --accent-2:#d7a9db; --accent-wash:#c98fce14;
+  --warn:#e0a95f; --warn-wash:#e0a95f14; --warn-line:#5a4526;
+  --good:#67b6d8; --good-wash:#67b6d814;
+  --shadow:0 1px 2px #0006, 0 8px 24px -14px #000a;
+}}
+:root[data-theme="dark"]{
+  --bg:#131118; --bg-2:#1a1822; --panel:#1b1924; --panel-2:#201d2b;
+  --ink:#eceaf3; --ink-2:#a9a3ba; --ink-3:#7c7591;
+  --line:#2d2939; --line-2:#3b3650;
+  --accent:#c98fce; --accent-2:#d7a9db; --accent-wash:#c98fce14;
+  --warn:#e0a95f; --warn-wash:#e0a95f14; --warn-line:#5a4526;
+  --good:#67b6d8; --good-wash:#67b6d814;
+  --shadow:0 1px 2px #0006, 0 8px 24px -14px #000a;
+}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:74px}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *{transition:none!important;animation:none!important}
+}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);
+  font-size:15.5px;line-height:1.65;margin:0;padding:0;
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+  font-variant-numeric:tabular-nums}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:4px}
+
+/* --- the page column ---------------------------------------------------- */
+/* main and .wrap are the same thing; older reports use one, newer the other. */
+main,.wrap{max-width:var(--page);margin:0 auto;padding:0 24px 96px;
+  display:block}
+main>*,.wrap>*{max-width:var(--col)}
+/* the wide things -- anything with its own frame -- get the full page */
+main>figure,main>table,main>.scroll,main>.cards,main>.tiles,main>.panel,
+main>.grid,main>.figrow,main>.tbl-wrap,main>hr,main>footer,main>header,
+.wrap>figure,.wrap>table,.wrap>.scroll,.wrap>.cards,.wrap>.tiles,.wrap>.panel,
+.wrap>.grid,.wrap>.figrow,.wrap>.tbl-wrap,.wrap>hr,.wrap>footer,.wrap>header{
+  max-width:none}
+
+/* --- the sticky bar and the contents rail (both built by SCRIPT) --------- */
+.topbar{position:sticky;top:0;z-index:40;background:color-mix(in srgb,var(--bg) 86%,transparent);
+  backdrop-filter:saturate(1.6) blur(10px);-webkit-backdrop-filter:saturate(1.6) blur(10px);
+  border-bottom:1px solid var(--line)}
+.topbar-in{max-width:var(--page);margin:0 auto;padding:9px 24px;
+  display:flex;align-items:center;gap:14px}
+.topbar .who{font-family:var(--mono);font-size:11px;font-weight:500;
+  letter-spacing:.13em;text-transform:uppercase;color:var(--ink-3);
+  white-space:nowrap}
+.topbar .now{font-size:13px;color:var(--ink-2);overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
+.topbar .now b{color:var(--ink);font-weight:600}
+.themer{appearance:none;background:var(--panel);color:var(--ink-2);
+  border:1px solid var(--line-2);border-radius:999px;cursor:pointer;
+  font-family:var(--mono);font-size:11px;letter-spacing:.06em;padding:4px 11px;
+  white-space:nowrap;transition:color .15s,border-color .15s}
+.themer:hover{color:var(--accent);border-color:var(--accent-2)}
+
+.toc{display:none}
+@media (min-width:1560px){
+  /* Sized from the gutter that is actually there, so it never runs off the
+     right edge on a 1600-wide window. */
+  .toc{display:block;position:fixed;top:96px;left:calc(50% + var(--page)/2 + 28px);
+    width:min(220px,calc(50vw - var(--page)/2 - 46px));
+    max-height:calc(100vh - 140px);overflow-y:auto;
+    font-size:12.5px;line-height:1.45;border-left:1px solid var(--line);
+    padding-left:14px}
+  .toc h6{margin:0 0 9px;font-family:var(--mono);font-size:10px;font-weight:500;
+    letter-spacing:.15em;text-transform:uppercase;color:var(--ink-3)}
+  .toc a{display:block;padding:4px 0;color:var(--ink-2);text-decoration:none;
+    border-left:2px solid transparent;margin-left:-16px;padding-left:14px;
+    transition:color .15s,border-color .15s}
+  .toc a:hover{color:var(--ink)}
+  .toc a.on{color:var(--accent);border-left-color:var(--accent);font-weight:500}
+}
+
+/* --- headings ----------------------------------------------------------- */
+h1{font-size:clamp(28px,3.4vw,36px);line-height:1.14;margin:46px 0 14px;
+  font-weight:600;letter-spacing:-.024em;text-wrap:balance;max-width:26ch}
+h2{font-size:21.5px;margin:64px 0 4px;letter-spacing:-.016em;font-weight:600;
+  text-wrap:balance;padding-top:16px;border-top:1px solid var(--line);
+  scroll-margin-top:78px;display:flex;align-items:baseline;gap:13px;
+  position:relative}
+h2 .n{font-family:var(--mono);font-size:13px;font-weight:500;color:var(--accent);
+  letter-spacing:.06em;flex:none}
+h3{font-size:16.5px;margin:34px 0 4px;font-weight:600;letter-spacing:-.008em;
+  scroll-margin-top:78px;position:relative}
+h4{font-size:13px;margin:26px 0 4px;font-family:var(--mono);font-weight:500;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
+/* the quiet anchor SCRIPT hangs off every heading */
+.anch{position:absolute;left:-.95em;width:.95em;color:var(--ink-3);
+  text-decoration:none;opacity:0;font-weight:400;transition:opacity .15s;
+  line-height:inherit}
+h2:hover .anch,h3:hover .anch,.anch:focus{opacity:.65}
+.anch:hover{color:var(--accent)}
+
+/* --- prose -------------------------------------------------------------- */
+p{margin:13px 0}
+a{color:var(--accent);text-decoration-thickness:1px;text-underline-offset:2px}
+a:hover{color:var(--accent-2)}
+ul,ol{margin:13px 0;padding-left:22px}
+li{margin:7px 0}
+li::marker{color:var(--ink-3)}
+b,strong{font-weight:600}
+i,em{font-style:italic}
+hr{border:0;border-top:1px solid var(--line);margin:44px 0}
+small{font-size:12.5px;color:var(--ink-2)}
+sub,sup{font-size:.72em}
+code{font-family:var(--mono);font-size:.86em;background:var(--bg-2);
+  border:1px solid var(--line);border-radius:4px;padding:.08em .28em;
+  word-break:break-word}
+a code{color:inherit}
+pre{background:var(--panel);border:1px solid var(--line);border-radius:9px;
+  padding:15px 17px;overflow-x:auto;font-size:12.5px;line-height:1.6}
+pre code{background:none;border:0;padding:0;font-size:inherit}
+
+/* The opening paragraph: .lede and .deck are the same promise, and both
+   reports' authors reached for a different word.  Style both. */
+.lede,.deck{font-size:18px;line-height:1.56;margin:22px 0 6px;color:var(--ink);
+  max-width:66ch;letter-spacing:-.004em}
+.note,.prov{color:var(--ink-2);font-size:13.5px;line-height:1.62}
+.prov{font-family:var(--mono);font-size:12px}
+
+/* --- the answer, up top ------------------------------------------------- */
+/* .verdict is the newer reports' name, .caution the older one's warning box. */
+.verdict{background:linear-gradient(var(--accent-wash),var(--accent-wash)),var(--panel);
+  border:1px solid var(--line);border-left:3px solid var(--accent);
+  border-radius:4px 10px 10px 4px;padding:20px 24px;margin:26px 0 34px;
+  box-shadow:var(--shadow);max-width:84ch}
+.verdict>:first-child{margin-top:0}.verdict>:last-child{margin-bottom:0}
+.verdict p{max-width:72ch}
+.verdict b{font-weight:600}
+.caution,.warn{background:linear-gradient(var(--warn-wash),var(--warn-wash)),var(--panel);
+  border:1px solid var(--warn-line);border-left:3px solid var(--warn);
+  border-radius:4px 10px 10px 4px;padding:16px 20px;margin:24px 0;font-size:14.5px}
+.caution b,.warn b{color:var(--warn);font-weight:600}
+.caution>:first-child,.warn>:first-child{margin-top:0}
+.caution>:last-child,.warn>:last-child{margin-bottom:0}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;
+  padding:20px 22px;margin:20px 0;box-shadow:var(--shadow)}
+.panel>:first-child{margin-top:0}.panel>:last-child{margin-bottom:0}
+
+/* --- number cards ------------------------------------------------------- */
+.cards,.tiles{display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(196px,1fr));
+  gap:1px;margin:26px 0;background:var(--line);border:1px solid var(--line);
+  border-radius:10px;overflow:hidden;box-shadow:var(--shadow)}
+.card,.tile{background:var(--panel);padding:17px 19px;border:0}
+.card .v,.tile-v{font-family:var(--mono);font-size:26px;font-weight:600;
+  letter-spacing:-.032em;line-height:1.12;font-variant-numeric:tabular-nums;
+  display:block}
+.card .l,.tile-k{font-size:12.5px;color:var(--ink-2);margin-top:6px;
+  line-height:1.42;display:block}
+.tile-s{font-size:11.5px;color:var(--ink-3);margin-top:3px;display:block;
+  font-family:var(--mono)}
+
+/* --- tables ------------------------------------------------------------- */
+/* Bare <table> is styled: the generators emit it and should not have to
+   remember a class.  .t and .num stay as no-ops for the older reports. */
+.scroll,.tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:20px 0;
+  border:1px solid var(--line);border-radius:10px;background:var(--panel);
+  box-shadow:var(--shadow)}
+.scroll>table,.tbl-wrap>table{border:0;border-radius:0;margin:0;box-shadow:none;
+  min-width:100%}
+table{border-collapse:collapse;width:100%;font-size:13.5px;margin:20px 0;
+  background:var(--panel);border:1px solid var(--line);border-radius:10px}
+caption{caption-side:top;text-align:left;font-size:12.5px;color:var(--ink-2);
+  padding:0 0 9px;font-family:var(--mono)}
+th,td{padding:9px 14px;text-align:left;vertical-align:top;
+  border-bottom:1px solid var(--line)}
+thead th{position:sticky;top:0;z-index:1;background:var(--panel-2);
+  font-family:var(--mono);font-size:10.5px;text-transform:uppercase;
+  letter-spacing:.11em;color:var(--ink-3);font-weight:500;white-space:nowrap;
+  border-bottom:1.5px solid var(--line-2)}
+thead th .u{font-family:var(--sans);font-weight:400;text-transform:none;
+  letter-spacing:0;font-size:10.5px}
+tbody tr:nth-child(even) td,tbody tr:nth-child(even)>th{background:var(--panel-2)}
+tbody tr:hover td,tbody tr:hover>th{background:var(--accent-wash)}
+tbody tr:last-child td,tbody tr:last-child th{border-bottom:0}
+tbody th{font-weight:500}
+td.n,th.n,td.num,thead th.n{text-align:right;font-family:var(--mono);
+  font-variant-numeric:tabular-nums;font-weight:500;white-space:nowrap}
+table.num td+td,table.num th+th{text-align:right;
+  font-variant-numeric:tabular-nums}
+th.s{font-weight:500;white-space:normal;max-width:34ch}
+.why{display:block;font-weight:400;color:var(--ink-3);font-size:11.5px;
+  line-height:1.42;margin-top:3px}
+tfoot td,tfoot th{font-size:12px;color:var(--ink-2);border-top:1.5px solid var(--line-2);
+  border-bottom:0}
+/* pandas .to_html() output, when a report takes the shortcut */
+table.dataframe{font-size:13px}
+table.dataframe th{text-align:left}
+table.dataframe tbody th{font-family:var(--mono);font-size:12px;color:var(--ink-2)}
+table.dataframe td{text-align:right;font-family:var(--mono);
+  font-variant-numeric:tabular-nums}
+
+.legend{margin-top:15px;font-family:var(--mono);font-size:11.5px;
+  color:var(--ink-2);display:flex;flex-wrap:wrap;gap:7px 22px}
+.legend .k{white-space:nowrap;display:inline-flex;align-items:center}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;
+  margin-right:7px}
+
+/* --- figures ------------------------------------------------------------ */
+figure{margin:30px 0;padding:0}
+figure a{display:block;border-radius:10px;overflow:hidden;
+  border:1px solid var(--line);background:#fff;box-shadow:var(--shadow);
+  transition:border-color .16s,box-shadow .16s}
+figure a:hover{border-color:var(--line-2);
+  box-shadow:0 2px 4px #1c1a2412,0 14px 34px -18px #1c1a2440}
+figure img{display:block;width:100%;height:auto;background:#fff}
+figure>img{border:1px solid var(--line);border-radius:10px;
+  box-shadow:var(--shadow)}
+figcaption{font-size:13px;color:var(--ink-2);margin-top:11px;max-width:80ch;
+  line-height:1.58}
+figcaption b{color:var(--ink);font-weight:600}
+figcaption .src{font-family:var(--mono);font-size:11px;color:var(--ink-3);
+  text-decoration:none;white-space:nowrap;border:1px solid var(--line);
+  border-radius:999px;padding:1px 8px;margin-left:5px;
+  display:inline-block;transition:color .15s,border-color .15s}
+figcaption .src:hover{color:var(--accent);border-color:var(--accent-2)}
+.figrow{display:grid;gap:22px;margin:30px 0;
+  grid-template-columns:repeat(auto-fit,minmax(340px,1fr))}
+.figrow figure{margin:0}
+svg text{font-family:var(--mono);font-variant-numeric:tabular-nums}
+
+/* --- odds and ends the reports reach for -------------------------------- */
+/* a headline number standing alone on its own line */
+.big{font-size:1.32em;font-weight:600;margin:1.05em 0;letter-spacing:-.015em;
+  font-variant-numeric:tabular-nums}
+.badge{display:inline-block;background:var(--accent);color:#fff;font-size:10.5px;
+  font-weight:600;letter-spacing:.13em;padding:3px 9px;border-radius:999px;
+  font-family:var(--mono);text-transform:uppercase}
+.eyebrow{font-family:var(--mono);font-size:11.5px;font-weight:500;
+  text-transform:uppercase;letter-spacing:.14em;color:var(--ink-3);
+  display:flex;flex-wrap:wrap;gap:8px 18px;margin-bottom:14px;align-items:center}
+/* .sub means two things in this package: the mono strap line under the title
+   (funnel, tracking QA) and a small prose aside under a table (fold).  The
+   first is the one that wants the mono, and it is the one next to the h1. */
+.sub{color:var(--ink-2);font-size:13.5px;line-height:1.6;margin:10px 0}
+h1+.sub,header .sub{font-family:var(--mono);font-size:13px;line-height:1.75;
+  margin:0}
+header{padding:44px 0 16px;border-bottom:2px solid var(--ink);margin-bottom:30px}
+header h1{margin-top:0}
+
+/* --- the colophon ------------------------------------------------------- */
+footer,.foot{margin-top:64px;padding-top:18px;border-top:1px solid var(--line);
+  color:var(--ink-3);font-size:12px;font-family:var(--mono);line-height:1.85;
+  max-width:none}
+footer code,.foot code{background:none;border:0;padding:0;color:var(--ink-2);
+  word-break:break-all}
+
+/* --- narrow ------------------------------------------------------------- */
+@media (max-width:640px){
+  body{font-size:15px}
+  main,.wrap{padding:0 16px 72px}
+  .topbar-in{padding:8px 16px}
+  h1{margin-top:30px}
+  h2{margin-top:46px}
+  .lede,.deck{font-size:16.5px}
+  .verdict{padding:16px 18px}
+  th,td{padding:8px 11px}
+}
+
+/* --- print -------------------------------------------------------------- */
+@media print{
+  :root{--bg:#fff;--panel:#fff;--panel-2:#fff;--ink:#000;--ink-2:#333;
+    --ink-3:#666;--line:#ccc;--line-2:#999;--shadow:none;--accent-wash:transparent}
+  .topbar,.toc,.anch{display:none!important}
+  body{font-size:10.5pt}
+  main,.wrap{max-width:none;padding:0}
+  figure,table,.verdict,.panel,.cards{break-inside:avoid;box-shadow:none}
+  h2,h3{break-after:avoid}
+  a{color:inherit;text-decoration:none}
+}
+</style><script>
+(function(){
+  'use strict';
+  var D = document;
+
+  function ready(fn){
+    if (D.readyState !== 'loading') fn();
+    else D.addEventListener('DOMContentLoaded', fn);
+  }
+
+  // A cell is numeric if what it holds is a number, possibly signed, with the
+  // usual decorations: thousands commas, a unit, a +-, a percent, an en dash
+  // for "no value".  Deliberately strict -- a run name like run_145 must not
+  // be dragged to the right.
+  var NUMISH = /^[+\u2212\u00b1\-]?[\d,]+(\.\d+)?([\s\u00a0\u2009]*(%|\u00b1[\s\u00a0\u2009]*[\d.,]+|[a-z\u00b5\u03c3\u00b0/]{1,8}))?$/i;
+  function numeric(s){
+    s = (s || '').trim();
+    if (!s || s === '\u2014' || s === '\u2013') return false;
+    return NUMISH.test(s);
+  }
+
+  function fixTables(){
+    var tables = D.querySelectorAll('main table, .wrap table');
+    Array.prototype.forEach.call(tables, function(t){
+      // Give it a scroll frame so a wide table never widens the page.
+      var p = t.parentNode;
+      if (!p || !(p.classList.contains('scroll') || p.classList.contains('tbl-wrap'))){
+        var box = D.createElement('div');
+        box.className = 'scroll';
+        p.insertBefore(box, t);
+        box.appendChild(t);
+      }
+      // Right-align the columns that are actually numbers.  Only touch cells
+      // that carry no class of their own -- a report that said td.n or th.s
+      // has already decided.
+      var rows = t.tBodies.length ? t.tBodies[0].rows : [];
+      if (!rows.length) return;
+      var ncol = 0;
+      Array.prototype.forEach.call(rows, function(r){
+        ncol = Math.max(ncol, r.cells.length);
+      });
+      for (var c = 0; c < ncol; c++){
+        var seen = 0, num = 0, free = [];
+        for (var i = 0; i < rows.length; i++){
+          var cell = rows[i].cells[c];
+          if (!cell) continue;
+          var txt = cell.textContent;
+          if (!txt.trim()) continue;
+          seen++;
+          // A cell the generator already called .n counts as a number without
+          // being re-read; only unclassed cells are ours to relabel.
+          if (cell.classList.contains('n') || cell.classList.contains('num')) num++;
+          else if (!cell.className){ free.push(cell); if (numeric(txt)) num++; }
+        }
+        // A column is a number column when essentially all of it is numbers.
+        if (seen >= 2 && num >= seen - 1 && num > 0){
+          free.forEach(function(cell){ cell.classList.add('n'); });
+          // The header has to move with the column, or the label sits over
+          // empty space while the digits hug the far edge.
+          if (t.tHead) Array.prototype.forEach.call(t.tHead.rows, function(hr){
+            var h = hr.cells[c];
+            if (h && !h.className && h.colSpan === 1) h.classList.add('n');
+          });
+        }
+      }
+    });
+  }
+
+  function slug(s){
+    return (s || '').toLowerCase().replace(/[^\w\s-]/g, '')
+                    .trim().replace(/\s+/g, '-').slice(0, 48) || 'section';
+  }
+
+  // Headings get a stable id and a quiet anchor, so a number in a report can
+  // be linked to from the board or from a message.
+  function fixHeadings(){
+    var seen = {};
+    var hs = D.querySelectorAll('main h2, main h3, .wrap h2, .wrap h3');
+    Array.prototype.forEach.call(hs, function(h){
+      if (!h.id){
+        var base = slug(h.textContent), id = base, k = 2;
+        while (seen[id] || D.getElementById(id)) { id = base + '-' + (k++); }
+        h.id = id;
+      }
+      seen[h.id] = 1;
+      if (!h.querySelector('.anch')){
+        var a = D.createElement('a');
+        a.className = 'anch';
+        a.href = '#' + h.id;
+        a.setAttribute('aria-hidden', 'true');
+        a.tabIndex = -1;
+        a.textContent = '\u00a7';
+        h.insertBefore(a, h.firstChild);
+      }
+    });
+    return hs;
+  }
+
+  function theme(){
+    var KEY = 'x17-report-theme';
+    var order = ['auto', 'light', 'dark'];
+    var cur = 'auto';
+    try { cur = localStorage.getItem(KEY) || 'auto'; } catch (e) {}
+    var btn = D.createElement('button');
+    btn.className = 'themer';
+    btn.type = 'button';
+    function paint(){
+      if (cur === 'auto') D.documentElement.removeAttribute('data-theme');
+      else D.documentElement.setAttribute('data-theme', cur);
+      btn.textContent = ({auto: 'auto', light: 'light', dark: 'dark'})[cur];
+      btn.setAttribute('aria-label', 'colour theme: ' + cur);
+    }
+    btn.addEventListener('click', function(){
+      cur = order[(order.indexOf(cur) + 1) % order.length];
+      try { localStorage.setItem(KEY, cur); } catch (e) {}
+      paint();
+    });
+    paint();
+    return btn;
+  }
+
+  function topbar(hs){
+    var h1 = D.querySelector('h1');
+    var bar = D.createElement('div');
+    bar.className = 'topbar';
+    var inner = D.createElement('div');
+    inner.className = 'topbar-in';
+    var who = D.createElement('span');
+    who.className = 'who';
+    who.textContent = 'x17 \u00b7 n_TOF 2026';
+    var now = D.createElement('span');
+    now.className = 'now';
+    now.innerHTML = '<b>' + (h1 ? h1.textContent.trim() : D.title) + '</b>';
+    inner.appendChild(who);
+    inner.appendChild(now);
+    inner.appendChild(theme());
+    bar.appendChild(inner);
+    D.body.insertBefore(bar, D.body.firstChild);
+
+    // Once past the title, the bar says which section you are in.
+    if (!hs.length) return;
+    var title = now.innerHTML;
+    var last = null;
+    var io = ('IntersectionObserver' in window) ? null : undefined;
+    window.addEventListener('scroll', function(){
+      var y = window.scrollY + 90, at = null;
+      Array.prototype.forEach.call(hs, function(h){
+        if (h.tagName === 'H2' && h.getBoundingClientRect().top + window.scrollY <= y) at = h;
+      });
+      var txt = at ? '<b>' + at.textContent.replace('\u00a7', '').trim() + '</b>' : title;
+      if (txt !== last){ now.innerHTML = txt; last = txt; }
+      var id = at ? at.id : null;
+      Array.prototype.forEach.call(D.querySelectorAll('.toc a'), function(a){
+        a.classList.toggle('on', a.getAttribute('href') === '#' + id);
+      });
+    }, {passive: true});
+  }
+
+  function toc(hs){
+    var h2 = Array.prototype.filter.call(hs, function(h){ return h.tagName === 'H2'; });
+    if (h2.length < 3) return;
+    var nav = D.createElement('nav');
+    nav.className = 'toc';
+    nav.setAttribute('aria-label', 'Contents');
+    var html = '<h6>Contents</h6>';
+    h2.forEach(function(h){
+      html += '<a href="#' + h.id + '">' +
+              h.textContent.replace('\u00a7', '').trim() + '</a>';
+    });
+    nav.innerHTML = html;
+    D.body.appendChild(nav);
+  }
+
+  ready(function(){
+    try { fixTables(); } catch (e) {}
+    var hs = [];
+    try { hs = fixHeadings(); } catch (e) {}
+    try { toc(hs); } catch (e) {}
+    try { topbar(hs); } catch (e) {}
+  });
+})();
+</script></head><body><div class="topbar"><div class="topbar-in"><span class="eyebrow">n_TOF 2026 &middot; preliminary</span></div></div><div class="wrap"><h1>Why the pair vertex does not image the capsule, and the single tracks do</h1><p class="lede">The two results are not in conflict. One is an ensemble centroid over millions of tracks; the other is a per-event position built from two of them, with a gain. <code>ntof_athens_26/pair_vertex_imaging</code></p>
+<p class="verdict"><b>The impression is right, and the two results do not
+contradict each other &mdash; they are different measurements.</b> The
+single-track image is an <i>ensemble centroid</i>: the zero crossing of
+median(tan) against position, averaged over millions of tracks, whose error
+falls as 1/&radic;N and reaches a few tenths of a millimetre. The pair vertex
+is a <i>per-event position</i>, so it inherits the full per-track resolution
+with nothing averaging it down. On this campaign that resolution is
+44&nbsp;mm in chamber&nbsp;A,
+75&nbsp;mm in C and 114&nbsp;mm in
+D. There is no way to build a 10&nbsp;mm image out of that, one pair at a
+time.</p>
+
+<p>Three things then make it worse, and all three are measured below rather
+than argued.</p>
+
+<p><b>1. The pairing amplifies the legs&rsquo; error instead of averaging it.</b>
+Two lines in the transverse plane, each a known distance from the beam axis,
+meet at a point whose distance from the axis is fixed algebraically:
+<code>|c| = &radic;(e&#8321;&sup2;+e&#8322;&sup2;&minus;2e&#8321;e&#8322;cos&psi;)
+/ |sin&psi;|</code>. That identity holds in the data to 1e-16, so <b>the
+transverse pair vertex is a deterministic function of the two single-track
+pointings and carries no information they did not already have</b> &mdash; and
+1/|sin&psi;| is never below 1. Median amplification
+1.12 for perpendicular pairs,
+2.26 for intra and 2.86 for
+opposing, which is exactly the order the three classes come out in.</p>
+
+<p><b>2. The 3D closest approach spends transverse accuracy on a coordinate the
+source does not localise.</b> The capsule is 10&nbsp;mm across but 80&nbsp;mm
+long along the beam, so there is no y image to find; and the y view is not a
+pointing measurement in any case &mdash; its band slope is
+0.26 (A), 0.35 (C), 0.06 (D) where a point source gives 1. The two legs consequently disagree in y
+by a median of
+158&nbsp;mm,
+and the 3D fit slides both tracks along themselves to reconcile that, dragging
+the vertex off the transverse answer. <b>Dropping y outright halves it:</b>
+perpendicular 46&nbsp;&rarr;&nbsp;26&nbsp;mm,
+opposing 112&nbsp;&rarr;&nbsp;51&nbsp;mm.</p>
+
+<p><b>3. Nothing here is a geometry problem or a bug.</b> Replace both legs&rsquo;
+directions with directions that point exactly at a random point in the capsule,
+keeping their measured impact points, and every class returns
+7.1&nbsp;mm with 100.0% inside the bore &mdash;
+7.1&nbsp;mm being the median radius of a uniform 10&nbsp;mm
+disc, i.e. the capsule itself. The crossing geometry imposes no floor of its
+own; the whole of the loss is the per-track angle.</p>
+
+<p class="verdict"><b>What this means practically.</b> The pair vertex is not
+broken and it is not a second measurement of the target &mdash; it is the two
+legs&rsquo; own pointing, combined with a gain of 1&ndash;3. So it should be
+read as a track-quality variable, not as imaging, and the imaging claim should
+continue to rest on the band crossing. If a per-event vertex is wanted, it
+exists already: <b>at a 5&nbsp;mm per-leg cut the transverse crossing puts
+96.6% of perpendicular pairs inside the capsule</b>, against
+8.0% at the published 30&nbsp;mm cut &mdash; on
+946 pairs of 29,617. That is a real capsule image from pairs; it
+costs 96.8% of the sample and it is, by the algebra above, a
+restatement of the leg cut.</p>
+
+<p class="note">Sample: 62,729 real pairs and as many event-mixed, over
+33 runs of the condor full pass, built at a
+60&nbsp;mm leg ceiling so the published 30&nbsp;mm is one
+point on a scan. At that 30&nbsp;mm point the sample is
+<b>pair-for-pair identical to the published <code>pair_qa</code> table</b> on
+all ten arm pairs &mdash; median leg miss 8.5 and 20.8&nbsp;mm,
+median vertex 46&ndash;112&nbsp;mm.</p>
+
+<h2>What was measured, and on what</h2>
+<p>One pair table, rebuilt from the stage-3 tracks with the same selection
+<code>source_imaging</code> and <code>pair_qa</code> use &mdash; gated,
+angle-calibrated, a ceiling on each leg&rsquo;s miss distance &mdash; but with
+the ceiling left loose at 60&nbsp;mm so that it can be
+scanned, and with four quantities per pair where the published table keeps
+one:</p>
+
+<table class="t"><thead><tr><th>quantity</th><th>what it is</th>
+<th>what it isolates</th></tr></thead><tbody>
+<tr><td><code>v_r</code></td><td>radius of the 3D closest-approach midpoint of
+the two lines</td><td>the published quantity, and a mixture of everything
+below</td></tr>
+<tr><td><code>v_r_xz</code></td><td>the same, computed in the transverse plane
+only</td><td>uses the in-plane angles and nothing else &mdash; exactly the
+information the band crossing uses</td></tr>
+<tr><td><code>dy_cross</code></td><td>the two legs&rsquo; y, evaluated at that
+transverse crossing, subtracted</td><td>the y information, with the transverse
+information divided out</td></tr>
+<tr><td><code>sin_psi_xz</code></td><td>sine of the transverse crossing
+angle</td><td>the conditioning &mdash; how much the crossing multiplies
+whatever error the legs have</td></tr>
+</tbody></table>
+
+<p class="caution"><b>The event-mixed null does not mean here what it means in
+the opening-angle spectrum.</b> Mixing decorrelates the <i>trigger</i>, not the
+<i>origin</i>: two tracks from two different neutron captures in the same
+capsule both still came out of that capsule, so a mixed pair has a genuine
+common source and a working vertex detector would image it just as well. Real
+&asymp; mixed in the figures below is therefore <b>not</b> evidence that the
+imaging failed. It is the separate (and expected) statement that the vertex
+carries no information about whether the two legs shared a trigger.</p>
+
+<h2>The observation, per arm pair</h2>
+<table class="t"><thead><tr><th>class</th><th>arms</th><th>pairs</th><th>better leg</th><th>worse leg</th><th>v<sub>r</sub><sup>xz</sup></th><th>v<sub>r</sub> (3D)</th><th>sin&thinsp;&psi;</th><th>|dy|</th><th>3D inside 10 mm</th></tr></thead><tbody><tr><td>intra</td><td>A-A</td><td>7,915</td><td>8.2</td><td>19.9</td><td>43.3</td><td>107.1</td><td>0.40</td><td>173</td><td>2.6%</td></tr><tr><td>intra</td><td>B-B</td><td>174</td><td>7.3</td><td>20.8</td><td>39.2</td><td>111.0</td><td>0.51</td><td>197</td><td>1.1%</td></tr><tr><td>intra</td><td>C-C</td><td>5,140</td><td>9.0</td><td>21.6</td><td>35.2</td><td>94.2</td><td>0.56</td><td>156</td><td>2.6%</td></tr><tr><td>intra</td><td>D-D</td><td>6,478</td><td>8.6</td><td>20.5</td><td>38.3</td><td>122.9</td><td>0.42</td><td>178</td><td>2.4%</td></tr><tr><td>opposing</td><td>A-C</td><td>13,082</td><td>8.4</td><td>20.7</td><td>51.2</td><td>111.4</td><td>0.35</td><td>157</td><td>2.5%</td></tr><tr><td>opposing</td><td>B-D</td><td>323</td><td>9.9</td><td>22.7</td><td>45.5</td><td>124.8</td><td>0.46</td><td>216</td><td>1.5%</td></tr><tr><td>perpendicular</td><td>A-B</td><td>546</td><td>8.1</td><td>19.3</td><td>24.8</td><td>44.0</td><td>0.93</td><td>163</td><td>5.3%</td></tr><tr><td>perpendicular</td><td>A-D</td><td>17,744</td><td>8.2</td><td>20.8</td><td>25.7</td><td>44.4</td><td>0.89</td><td>154</td><td>4.1%</td></tr><tr><td>perpendicular</td><td>B-C</td><td>558</td><td>8.7</td><td>20.8</td><td>25.3</td><td>60.8</td><td>0.89</td><td>183</td><td>2.9%</td></tr><tr><td>perpendicular</td><td>C-D</td><td>10,769</td><td>8.3</td><td>21.0</td><td>26.1</td><td>47.2</td><td>0.90</td><td>160</td><td>4.4%</td></tr></tbody></table>
+<p>Medians, at the published 30&nbsp;mm leg cut. Every row has a vertex further
+from the beam axis than either of the two tracks that made it, and every row
+has the two legs disagreeing in y by more than the capsule is long.</p>
+
+<h3>Against the event-mixed null</h3>
+<table class="t"><thead><tr><th>class</th><th>arms</th><th>v<sub>r</sub><sup>xz</sup> real</th><th>mixed</th><th>v<sub>r</sub> real</th><th>mixed</th></tr></thead><tbody><tr><td>intra</td><td>A-A</td><td>43.3</td><td>48.8</td><td>107.1</td><td>116.8</td></tr><tr><td>intra</td><td>B-B</td><td>39.2</td><td>49.0</td><td>111.0</td><td>161.8</td></tr><tr><td>intra</td><td>C-C</td><td>35.2</td><td>43.8</td><td>94.2</td><td>109.9</td></tr><tr><td>intra</td><td>D-D</td><td>38.3</td><td>44.3</td><td>122.9</td><td>136.8</td></tr><tr><td>opposing</td><td>A-C</td><td>51.2</td><td>44.7</td><td>111.4</td><td>106.1</td></tr><tr><td>opposing</td><td>B-D</td><td>45.5</td><td>39.3</td><td>124.8</td><td>106.8</td></tr><tr><td>perpendicular</td><td>A-B</td><td>24.8</td><td>23.1</td><td>44.0</td><td>38.2</td></tr><tr><td>perpendicular</td><td>A-D</td><td>25.7</td><td>26.0</td><td>44.4</td><td>46.5</td></tr><tr><td>perpendicular</td><td>B-C</td><td>25.3</td><td>25.6</td><td>60.8</td><td>50.3</td></tr><tr><td>perpendicular</td><td>C-D</td><td>26.1</td><td>27.3</td><td>47.2</td><td>50.9</td></tr></tbody></table>
+
+<h2>1. The vertex is the two legs, combined with a gain</h2>
+<table class="t"><thead><tr><th>class</th><th>pairs</th><th>closed form, worst rel. residual</th><th>combined leg miss</th><th>gain (median)</th><th>gain (p90)</th><th>gain &gt; 5</th><th>v<sub>r</sub><sup>xz</sup></th></tr></thead><tbody><tr><td>intra</td><td>19,707</td><td>3.8e-13</td><td>19.1</td><td>2.26</td><td>9.01</td><td>20.8%</td><td>39.3</td></tr><tr><td>opposing</td><td>13,405</td><td>5.8e-12</td><td>18.3</td><td>2.86</td><td>26.38</td><td>35.7%</td><td>51.0</td></tr><tr><td>perpendicular</td><td>29,617</td><td>2.9e-13</td><td>21.8</td><td>1.12</td><td>1.72</td><td>0.0%</td><td>25.8</td></tr></tbody></table>
+<p>The combined leg miss is the same
+18.3&ndash;21.8&nbsp;mm in all three
+classes &mdash; it is set by the leg cut, which is the same for all three. What
+separates them is entirely the gain. That is why perpendicular pairs, whose
+crossing is nearly square, give the best vertex in the campaign and opposing
+pairs the worst, and it is a statement about geometry rather than about
+chambers A, C or D.</p>
+
+<h2>2. The single-track pointing, which is the input</h2>
+<table class="t"><thead><tr><th>chamber</th><th>gated tracks</th><th>median miss</th><th>null</th><th>inside 10 mm</th><th>null</th><th>excess over null, inside 10 mm</th></tr></thead><tbody><tr><td>A</td><td>2,498,384</td><td>43.8</td><td>86.6</td><td>17.9%</td><td>6.2%</td><td>65.3%</td></tr><tr><td>B</td><td>100,505</td><td>111.4</td><td>118.7</td><td>5.5%</td><td>4.0%</td><td>27.8%</td></tr><tr><td>C</td><td>2,103,327</td><td>74.7</td><td>100.9</td><td>11.9%</td><td>5.3%</td><td>55.3%</td></tr><tr><td>D</td><td>5,628,755</td><td>114.1</td><td>119.3</td><td>6.8%</td><td>3.4%</td><td>49.5%</td></tr></tbody></table>
+<p>The null shuffles <code>tan</code> among the tracks of one chamber. It keeps
+the impact points, the angular distribution and the acceptance, and destroys
+only the correlation between where a track landed and which way it was going
+&mdash; which is the whole of &ldquo;this track came from the capsule&rdquo;.
+So the difference between the two columns is the pointing information, in units
+anyone can check.</p>
+<p class="caution">There <i>is</i> real pointing information: chamber A&rsquo;s
+median miss is half its null and its 10&nbsp;mm fraction is
+2.88&times;
+it. But the last column is the one to keep: even inside 10&nbsp;mm, between a
+third and a half of the tracks are accounted for by a sample with no source in
+it at all. <b>Chamber D barely beats its own null</b>
+(114.1 against
+119.3&nbsp;mm), and a quarter of
+its x plane is dead, which is the structure visible in its panel.</p>
+
+<h2>3. Tighten the legs and the vertex follows them exactly</h2>
+<table class="t"><thead><tr><th>leg cut</th><th>pairs</th><th>combined leg miss</th><th>v<sub>r</sub><sup>xz</sup></th><th>inside 10 mm</th><th>v<sub>r</sub> (3D)</th><th>inside 10 mm</th></tr></thead><tbody><tr><td>5</td><td>946</td><td>3.9</td><td>4.3</td><td>96.6%</td><td>40.2</td><td>18.5%</td></tr><tr><td>10</td><td>3,615</td><td>7.9</td><td>8.7</td><td>65.5%</td><td>40.4</td><td>13.8%</td></tr><tr><td>15</td><td>7,892</td><td>11.7</td><td>12.9</td><td>30.0%</td><td>40.6</td><td>9.6%</td></tr><tr><td>20</td><td>13,405</td><td>15.5</td><td>17.1</td><td>17.7%</td><td>42.3</td><td>7.0%</td></tr><tr><td>30</td><td>29,617</td><td>23.6</td><td>25.8</td><td>8.0%</td><td>45.7</td><td>4.2%</td></tr><tr><td>40</td><td>49,693</td><td>30.7</td><td>34.0</td><td>4.8%</td><td>50.9</td><td>3.0%</td></tr><tr><td>60</td><td>106,353</td><td>46.4</td><td>51.5</td><td>2.2%</td><td>63.6</td><td>1.7%</td></tr></tbody></table>
+<p>Perpendicular pairs; the other two classes behave the same way with a larger
+gain. The transverse crossing is 0.86&times; the cut across the whole range and
+shows no sign of levelling off onto a source size &mdash; the signature of an
+estimator limited by its legs and by nothing else. <b>The 3D closest approach
+does not follow at all</b>: it improves by 36.7%
+while the legs improve by 11.96&times;,
+because it is limited by y and the y information does not improve with a cut
+that is blind to y.</p>
+
+<h2>4. The y view, and what it costs</h2>
+<p>The leg cut is a pure XZ quantity &mdash; <code>dca_axis_mm</code> is the
+closest approach of the line to the beam axis in projection and is blind to the
+y slope &mdash; so the y band below is an uncut measurement on this sample even
+though the x band is pinned at 1 by construction.</p>
+<table class="t"><thead><tr><th>chamber</th><th>tracks</th><th>x band slope &times; d&#8869;</th><th>y band slope &times; d&#8869;</th><th>irreducible y spread from the source length</th></tr></thead><tbody><tr><td>A</td><td>1,430,072</td><td>0.95</td><td>0.26</td><td>23.2</td></tr><tr><td>B</td><td>29,043</td><td>1.04</td><td>0.04</td><td>23.2</td></tr><tr><td>C</td><td>937,727</td><td>1.01</td><td>0.35</td><td>23.2</td></tr><tr><td>D</td><td>1,806,470</td><td>1.02</td><td>0.06</td><td>23.2</td></tr></tbody></table>
+<p>A point source at the perpendicular foot gives 1 in both. <b>The y view is
+not a pointing measurement</b>, and it could not fully be one even if the
+reconstruction were perfect: the capsule is 80&nbsp;mm long along y, so a track
+from it carries an irreducible
+23.2&nbsp;mm y spread at the lever arm. There is
+no y image to find and the 3D closest approach is spending transverse accuracy
+looking for one.</p>
+<table class="t"><thead><tr><th>|dy| at the crossing</th><th>pairs</th><th>of class</th><th>v<sub>r</sub><sup>xz</sup></th><th>v<sub>r</sub> (3D)</th><th>the drag</th><th>line separation</th></tr></thead><tbody><tr><td>0-25</td><td>2,542</td><td>8.6%</td><td>25.5</td><td>25.5</td><td>0.0</td><td>10.2</td></tr><tr><td>25-50</td><td>2,326</td><td>7.9%</td><td>25.3</td><td>25.9</td><td>1.6</td><td>31.2</td></tr><tr><td>50-100</td><td>4,759</td><td>16.1%</td><td>25.6</td><td>28.6</td><td>5.4</td><td>63.5</td></tr><tr><td>100-200</td><td>8,703</td><td>29.4%</td><td>25.4</td><td>42.8</td><td>19.2</td><td>121.1</td></tr><tr><td>200-400</td><td>9,564</td><td>32.3%</td><td>26.1</td><td>78.8</td><td>54.4</td><td>219.2</td></tr><tr><td>&gt;400</td><td>1,723</td><td>5.8%</td><td>27.9</td><td>136.9</td><td>110.1</td><td>365.3</td></tr></tbody></table>
+<p>The transverse answer is flat to within a millimetre across the whole range
+while the 3D one runs from 25.5
+to 136.9&nbsp;mm. The drag
+column is the median of v<sub>r</sub>&nbsp;&minus;&nbsp;v<sub>r</sub><sup>xz</sup>
+pair by pair, and it accounts for the entire difference between the two
+estimators with nothing left over.</p>
+
+<h2>5. The angle scale: it moves the vertex, and it is not the explanation</h2>
+<p>The band crossing is <code>&minus;intercept/slope</code>, so multiplying
+every angle by <i>s</i> scales the numerator and the denominator together and
+the crossing does not move. Over the whole scan it moves by
+0.0&nbsp;mm &mdash; that is not an approximation, it is the exact
+cancellation being displayed. The vertex uses the angle&rsquo;s magnitude and
+has no such protection: at <i>s</i> = 1.33, the factor the arm-A scintillator
+wall independently asks for, the perpendicular vertex goes from
+25.8
+to 54.9&nbsp;mm.</p>
+<p><b>So the angle scale matters to the vertex and not to the image, which is
+half the answer to the original question.</b> It is not, however, the cause of
+the failure: the scan has a minimum, and at that minimum the vertex is still
+25.4&nbsp;mm
+rather than 7.</p>
+<h3>Where the optimum sits, without the circularity</h3>
+<p>The pair sample was selected at a pointing cut evaluated at
+<i>s</i>&nbsp;=&nbsp;1, so its scale scan is biased toward finding its minimum
+there. The focus scan below is run on <b>every gated track with no pointing cut
+at all</b> and carries no such bias.</p>
+<table class="t"><thead><tr><th>s</th><th>chamber A</th><th>chamber B</th><th>chamber C</th><th>chamber D</th></tr></thead><tbody><tr><td>0.60</td><td>47.8</td><td>93.4</td><td>62.9</td><td>115.6</td></tr><tr><td>0.70</td><td>44.6</td><td>97.9</td><td>62.9</td><td>114.4</td></tr><tr><td>0.80</td><td>42.5</td><td>102.8</td><td>65.4</td><td>113.3</td></tr><tr><td>0.90</td><td>41.9</td><td>108.1</td><td>69.7</td><td>113.2</td></tr><tr><td>0.95</td><td>42.3</td><td>110.8</td><td>72.2</td><td>113.4</td></tr><tr><td>1.00</td><td>42.9</td><td>113.4</td><td>74.8</td><td>113.8</td></tr><tr><td>1.05</td><td>43.9</td><td>116.3</td><td>77.7</td><td>114.4</td></tr><tr><td>1.10</td><td>45.2</td><td>119.1</td><td>80.8</td><td>115.0</td></tr><tr><td>1.20</td><td>48.4</td><td>124.1</td><td>86.9</td><td>116.4</td></tr><tr><td>1.33</td><td>53.6</td><td>130.5</td><td>94.8</td><td>117.8</td></tr><tr><td>1.50</td><td>61.3</td><td>138.0</td><td>104.3</td><td>119.7</td></tr><tr><td>1.80</td><td>74.8</td><td>149.8</td><td>119.2</td><td>125.8</td></tr></tbody></table>
+<p class="caution">Median single-track miss [mm]. Chamber A prefers
+<i>s</i>&nbsp;&asymp;&nbsp;0.90, chamber C prefers <i>s</i>&nbsp;&le;&nbsp;0.7,
+chamber D is flat to within 2&nbsp;mm over 0.6&ndash;1.1 and chamber B has no
+minimum in range. <b>None of them asks for +33&nbsp;%.</b> That is a real
+tension with the wall measurement and this analysis does not resolve it: the
+wall is measured on the scintillator-confirmed sample and this scan runs on the
+gated one, where by the table in section&nbsp;2 roughly half the tracks are
+not from the target and dilute any focus. It is recorded here as an open
+question, not as a competing number &mdash; a diluted focus scan is the weaker
+of the two measurements.</p>
+
+<h2>6. The floor: what perfect angles would give</h2>
+<table class="t"><thead><tr><th>legs substituted</th><th>class</th><th>pairs</th><th>v<sub>r</sub><sup>xz</sup></th><th>v<sub>r</sub> (3D)</th><th>inside 10 mm</th><th>|dy|</th><th>line separation</th></tr></thead><tbody><tr><td>none</td><td>intra</td><td>19,707</td><td>39.3</td><td>108.7</td><td>4.7%</td><td>170</td><td>88.5</td></tr><tr><td>none</td><td>perpendicular</td><td>29,617</td><td>25.8</td><td>45.7</td><td>8.0%</td><td>157</td><td>127.1</td></tr><tr><td>none</td><td>opposing</td><td>13,405</td><td>51.0</td><td>111.7</td><td>3.5%</td><td>158</td><td>63.6</td></tr><tr><td>one</td><td>intra</td><td>19,707</td><td>32.2</td><td>82.8</td><td>13.3%</td><td>136</td><td>70.1</td></tr><tr><td>one</td><td>perpendicular</td><td>29,617</td><td>20.7</td><td>43.6</td><td>21.0%</td><td>154</td><td>125.8</td></tr><tr><td>one</td><td>opposing</td><td>13,405</td><td>42.5</td><td>93.9</td><td>10.9%</td><td>114</td><td>42.4</td></tr><tr><td>both</td><td>intra</td><td>19,707</td><td>7.1</td><td>7.1</td><td>100.0%</td><td>0</td><td>0.0</td></tr><tr><td>both</td><td>perpendicular</td><td>29,617</td><td>7.1</td><td>7.1</td><td>100.0%</td><td>0</td><td>0.0</td></tr><tr><td>both</td><td>opposing</td><td>13,405</td><td>7.1</td><td>7.1</td><td>100.0%</td><td>0</td><td>0.0</td></tr></tbody></table>
+<p><code>none</code> is the data. <code>one</code> replaces one leg&rsquo;s
+direction with a direction from a random capsule point to that leg&rsquo;s own
+measured impact point; <code>both</code> replaces both. Only the angle changes
+&mdash; the impact points, the acceptance and the pairing are the measured
+ones. With both legs substituted every class returns 7.0&nbsp;mm and 100&nbsp;%
+inside the bore, including the opposing class with its median gain of
+2.86: a gain multiplies an
+error, and with no error there is nothing to multiply. <b>The crossing geometry
+imposes no floor; the whole of the loss is the per-track angle.</b></p>
+
+
+<h2>Is what is left after the cut resolution, or background?</h2>
+<p>The leg scan says a tighter pointing cut sharpens the vertex. That is not
+the same statement as &ldquo;the sample is dirty&rdquo;: a pointing cut sharpens
+the vertex on a perfectly pure sample too, because it keeps the tracks whose
+angle happened to come out well. The question that separates the two is
+whether, <i>at a fixed pointing cut</i>, a scintillator-confirmed leg beats an
+unconfirmed one. <code>det_a_scint</code> supplies that for arm&nbsp;A.</p>
+<table class="t"><thead><tr><th>arm pair</th><th>arm-A leg</th><th>pairs</th><th>leg miss</th><th>sin&thinsp;&psi;</th><th>v<sub>r</sub><sup>xz</sup></th><th>inside 10 mm</th></tr></thead><tbody><tr><td>A-A</td><td>confirmed</td><td>76</td><td>13.8</td><td>0.13</td><td>90.2</td><td>1.3%</td></tr><tr><td>A-A</td><td>not confirmed</td><td>7,088</td><td>14.0</td><td>0.41</td><td>43.1</td><td>4.2%</td></tr><tr><td>A-B</td><td>not confirmed</td><td>522</td><td>14.0</td><td>0.93</td><td>25.0</td><td>9.2%</td></tr><tr><td>A-C</td><td>confirmed</td><td>986</td><td>13.3</td><td>0.15</td><td>78.2</td><td>3.0%</td></tr><tr><td>A-C</td><td>not confirmed</td><td>12,096</td><td>14.5</td><td>0.36</td><td>49.7</td><td>3.5%</td></tr><tr><td>A-D</td><td>confirmed</td><td>7,433</td><td>13.0</td><td>0.88</td><td>24.0</td><td>10.0%</td></tr><tr><td>A-D</td><td>not confirmed</td><td>10,311</td><td>15.5</td><td>0.91</td><td>26.7</td><td>6.8%</td></tr></tbody></table>
+<p><b>Read the A&ndash;D row and ignore the other two.</b> Confirming an arm-A
+leg selects tracks that point at arm&nbsp;A&rsquo;s own scintillator wall,
+which restricts their direction &mdash; and for A&ndash;A and A&ndash;C that
+restriction collapses the crossing angle (sin&thinsp;&psi; falls from
+0.36 to
+0.15 on A&ndash;C), so those rows
+compare two different geometries and their vertex numbers are not comparable.
+A&ndash;D is well conditioned either way
+(0.91 against 0.88), and there
+confirmation does help: 24.0
+against 26.7&nbsp;mm,
+10.0% inside the bore against
+6.8%. <b>Real, and
+far too small to be the explanation</b> &mdash; a 10&nbsp;% improvement in the
+median where a factor of three is needed. What survives the 30&nbsp;mm cut is
+mostly resolution, not background.</p>
+
+
+<h2>7. A separate question: can the vertex select pairs?</h2>
+<table class="t"><thead><tr><th>class</th><th>vertex cut</th><th>real</th><th>mixed</th><th>of real</th><th>of mixed</th><th>lift</th><th>&sigma;</th></tr></thead><tbody><tr><td>intra</td><td>5</td><td>249</td><td>226</td><td>1.3%</td><td>1.0%</td><td>1.28</td><td>+3.4</td></tr><tr><td>intra</td><td>10</td><td>922</td><td>898</td><td>4.7%</td><td>3.9%</td><td>1.19</td><td>+4.9</td></tr><tr><td>intra</td><td>20</td><td>3,470</td><td>3,476</td><td>17.6%</td><td>15.2%</td><td>1.16</td><td>+8.0</td></tr><tr><td>intra</td><td>30</td><td>7,351</td><td>7,512</td><td>37.3%</td><td>32.9%</td><td>1.14</td><td>+10.2</td></tr><tr><td>intra</td><td>50</td><td>11,780</td><td>12,031</td><td>59.8%</td><td>52.6%</td><td>1.14</td><td>+13.0</td></tr><tr><td>intra</td><td>80</td><td>14,691</td><td>15,189</td><td>74.5%</td><td>66.4%</td><td>1.12</td><td>+13.2</td></tr><tr><td>opposing</td><td>5</td><td>121</td><td>190</td><td>0.9%</td><td>1.2%</td><td>0.75</td><td>-3.6</td></tr><tr><td>opposing</td><td>10</td><td>468</td><td>680</td><td>3.5%</td><td>4.3%</td><td>0.81</td><td>-5.0</td></tr><tr><td>opposing</td><td>20</td><td>1,873</td><td>2,570</td><td>14.0%</td><td>16.2%</td><td>0.86</td><td>-7.0</td></tr><tr><td>opposing</td><td>30</td><td>4,078</td><td>5,314</td><td>30.4%</td><td>33.6%</td><td>0.91</td><td>-6.6</td></tr><tr><td>opposing</td><td>50</td><td>6,607</td><td>8,564</td><td>49.3%</td><td>54.1%</td><td>0.91</td><td>-8.0</td></tr><tr><td>opposing</td><td>80</td><td>8,522</td><td>10,990</td><td>63.6%</td><td>69.4%</td><td>0.92</td><td>-8.5</td></tr><tr><td>perpendicular</td><td>5</td><td>627</td><td>465</td><td>2.1%</td><td>1.8%</td><td>1.15</td><td>+3.2</td></tr><tr><td>perpendicular</td><td>10</td><td>2,368</td><td>1,861</td><td>8.0%</td><td>7.4%</td><td>1.08</td><td>+3.8</td></tr><tr><td>perpendicular</td><td>20</td><td>8,975</td><td>7,261</td><td>30.3%</td><td>28.8%</td><td>1.05</td><td>+4.7</td></tr><tr><td>perpendicular</td><td>30</td><td>19,834</td><td>16,342</td><td>67.0%</td><td>64.8%</td><td>1.03</td><td>+4.6</td></tr><tr><td>perpendicular</td><td>50</td><td>27,467</td><td>23,106</td><td>92.7%</td><td>91.6%</td><td>1.01</td><td>+2.0</td></tr><tr><td>perpendicular</td><td>80</td><td>29,199</td><td>24,705</td><td>98.6%</td><td>97.9%</td><td>1.01</td><td>+1.1</td></tr></tbody></table>
+<p>Intra pairs show a small but consistent lift of
+1.12&ndash;1.28,
+in the same direction as the 2.06&nbsp;&plusmn;&nbsp;0.29 that
+<code>det_a_intra</code> found on its slope-selected sample. <b>Opposing pairs
+sit below one</b> &mdash; a real A&ndash;C pair is <i>less</i> likely to have a
+tight vertex than a mixed one &mdash; which is the trigger talking, not the
+physics: the production trigger is single-arm, so an A-triggered event is
+already depleted in C tracks and the surviving ones are a different population.
+That is the same effect <code>pairs.py</code> was built to control for.</p>
+<p class="caution">A lift of 1 is <b>not</b> &ldquo;no signal&rdquo; and it is
+not &ldquo;the imaging failed&rdquo;. Both legs of a mixed pair still came out
+of the same capsule, so a perfect vertex detector would put mixed pairs on the
+capsule too. What this table says is narrower: the vertex cannot be used as a
+pair selection, and a cut on it removes signal and background alike.</p>
+
+<h2>What this does not rule out</h2>
+<ul>
+<li><b>It does not say the tracking is wrong.</b> Every test here is consistent
+with a reconstruction whose per-track angular resolution is what it is. The
+geometry checks out (the closed form to 1e-16, the ideal-leg substitution
+returning the source exactly), and nothing points at a sign, a frame or a
+pairing error.</li>
+<li><b>It does not measure the angular resolution itself.</b> The miss
+distance at the axis folds together the angle error, the real source size, any
+scattering in the chamber walls and the non-target background. Separating those
+needs a sample with an independent direction reference, which is what
+<code>det_a_scint</code>&rsquo;s wall-and-plastic lever arm is for and what a
+per-detector recalibration would produce.</li>
+<li><b>It does not settle the angle scale.</b> Section&nbsp;5 records that the
+gated sample's focus prefers <i>s</i>&nbsp;&le;&nbsp;1 while the wall prefers
+1.33, on two different samples, and leaves it open.</li>
+<li><b>It says nothing about the opening angle.</b> The opening angle is a
+difference of two directions and does not use the vertex at all, so none of
+this touches the campaign spectra. It does mean that a vertex cut cannot be
+used to clean them.</li>
+<li><b>Chamber B is in the tables for completeness only.</b> It has no
+field-shaping rings, no uniform drift field and no usable angle; its rows are
+printed so that they can be seen to be empty of information, not because they
+are a measurement.</li>
+</ul>
+
+<h2>The figures</h2>
+<figure><img src="observation.png" alt="The observation"><figcaption><b>The observation.</b> Per class, at the published 30&nbsp;mm leg cut. Pale grey is either leg&rsquo;s own miss distance at the beam axis; the coloured curve is the pair vertex computed in the transverse plane only; black is the published 3D closest approach, and the dotted black is the same thing on event-mixed pairs. <b>Both vertex curves sit further from the axis than the legs they were built from.</b> <span class="prov"><code>observation.pdf</code> for the slide.</span></figcaption></figure><figure><img src="pointing.png" alt="What one track actually knows"><figcaption><b>What one track actually knows.</b> The single-track miss distance at the beam axis, per chamber, over every gated track in the campaign &mdash; against a null built by shuffling <code>tan</code> among the tracks of that chamber, which keeps every marginal and destroys only the position&ndash;angle correlation that constitutes pointing. There is real information here and it is weak. <span class="prov"><code>pointing.pdf</code> for the slide.</span></figcaption></figure><figure><img src="conditioning.png" alt="The vertex is the legs, amplified"><figcaption><b>The vertex is the legs, amplified.</b> Left: the amplification 1/|sin&thinsp;&psi;| of the transverse crossing, per class. Right: the median vertex radius against it. The closed form holds to 1e-16, so the right-hand panel is not a fit &mdash; it is the identity being displayed. <span class="prov"><code>conditioning.pdf</code> for the slide.</span></figcaption></figure><figure><img src="leg_scan.png" alt="Tighten the legs and the vertex follows"><figcaption><b>Tighten the legs and the vertex follows.</b> The per-leg pointing cut scanned from 60&nbsp;mm down to 5&nbsp;mm. The transverse crossing tracks it linearly all the way down and never settles onto a source size of its own; the 3D closest approach barely moves at all. <span class="prov"><code>leg_scan.pdf</code> for the slide.</span></figcaption></figure><figure><img src="y_view.png" alt="Why the y view cannot be used"><figcaption><b>Why the y view cannot be used.</b> Left: the pointing band&rsquo;s slope in each view, in units where a point source at the perpendicular foot gives 1. The x band is pinned at 1 by the leg cut &mdash; that cut is a pure XZ quantity &mdash; and the y band, which nothing here cuts on, is a quarter of it at best. Right: the resulting y disagreement between the two legs. <span class="prov"><code>y_view.pdf</code> for the slide.</span></figcaption></figure><figure><img src="y_cost.png" alt="What it costs the 3D vertex"><figcaption><b>What it costs the 3D vertex.</b> The 3D closest approach is free to slide both tracks along themselves to reduce a y mismatch, and every millimetre it slides moves the vertex transversely too. Binned in |dy| the transverse answer does not move and the 3D one follows |dy| all the way. <span class="prov"><code>y_cost.pdf</code> for the slide.</span></figcaption></figure><figure><img src="scale.png" alt="The angle scale moves one estimator and not the other"><figcaption><b>The angle scale moves one estimator and not the other.</b> Left: the band crossing under a tan rescale &mdash; exactly flat, which is the property <code>source_imaging</code> was built around. Middle: the per-track miss on every gated track, with no pointing cut, so no circularity. Right: the vertex, which has no such protection. <span class="prov"><code>scale.pdf</code> for the slide.</span></figcaption></figure><figure><img src="floor.png" alt="The floor, and how far above it the data sits"><figcaption><b>The floor, and how far above it the data sits.</b> Each leg&rsquo;s direction replaced by one that points exactly at a random point in the capsule, keeping its measured impact point, so the substitution changes the angle and nothing else. With both legs substituted every class returns 7.0&nbsp;mm &mdash; the median radius of a uniform 10&nbsp;mm disc, i.e. the source itself. <span class="prov"><code>floor.pdf</code> for the slide.</span></figcaption></figure><figure><img src="lift.png" alt="And whether the vertex selects pairs at all"><figcaption><b>And whether the vertex selects pairs at all.</b> Real pairs over event-mixed ones, as a fraction of each sample, against the vertex cut. This is a different question from the imaging and it has a different answer, spelled out below. <span class="prov"><code>lift.pdf</code> for the slide.</span></figcaption></figure>
+<p class="prov">Built by <code>pair_vertex_imaging/make_report.py</code> from the tables in <code>D:\x17\sept26_prelim\pair_vertex</code>. Every number above is read from those CSVs; nothing in the prose is transcribed.</p></div></body></html>

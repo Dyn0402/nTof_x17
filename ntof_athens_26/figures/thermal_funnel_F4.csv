@@ -1,0 +1,6 @@
+panel,label,node_ids,frac_of_parent,count,mc_count,per_neutron,source,highlighted
+main,²⁷Al: γ converts in the wall,F4.external.al27,0.8451012291169157,77790203.71935499,23259.0,2.580860040566961e-05,geant4,False
+main,²⁷Al: internal pair,F4.internal.al27,0.15149839552908476,13945182.713410195,0.0,4.626619176019809e-06,analytic,False
+main,carbon fibre: ¹H + ¹²C,F4.external.cfrp + F4.internal.cfrp,0.003181235437619081,292827.58590969176,35.0,9.715195218880433e-08,analytic+geant4,False
+main,γ from a capture elsewhere,F4.external.capture_elsewhere,0.00021800625025587917,20067.12336369276,6.0,6.6577067988313195e-09,geant4,False
+main,"³He(n,γ): internal pair",F4.external.he3 + F4.internal.he3,1.1336661246935336e-06,104.35213646747788,0.0,3.4621102179951606e-11,analytic+geant4,False

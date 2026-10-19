@@ -1,0 +1,6 @@
+panel,label,node_ids,frac_of_parent,count,mc_count,per_neutron,source,highlighted
+main,γ only: no charge in a chamber,F2.gamma_only,0.9791846489757631,23971289238.757126,7167332.0,0.007952999164313546,geant4,False
+main,charge in a drift gap,F2.charged_in_detector,0.020815351024236803,509577841.6564926,152362.0,0.00016906358721392292,geant4,True
+zoom,²⁷Al vessel,F2.by.al27.charged,0.9046350139798638,460981957.91075003,137832.0,0.00015294084058275307,geant4,False
+zoom,carbon-fibre wrap,F2.by.cfrp.charged,0.014196453183864742,7234197.972611239,2163.0,2.4001033009786905e-06,geant4,False
+zoom,captured elsewhere,F2.by.capture_elsewhere.charged,0.08116853283627151,41361685.77313139,12367.0,1.3722643330191155e-05,geant4,False

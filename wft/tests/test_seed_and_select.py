@@ -68,6 +68,88 @@ def test_significance_floor():
           len(ws.apply_significance_floor(df, rel=0)) == 4)
 
 
+def test_local_floor():
+    print('local significance floor')
+    # a bright track at 0-3 mm, a faint one 200 mm away, and a weak strip
+    # 10 mm from the bright track
+    pos = np.array([0.0, 0.8, 1.6, 2.4, 3.2, 200.0, 200.8, 201.6, 202.4, 203.2, 10.0])
+    sig = np.array([100, 90, 80, 70, 60, 8, 7, 7, 6, 6, 5.0])
+    df = pd.DataFrame(dict(eventId=1, feu=7, channel=np.arange(len(pos)),
+                           amplitude=10 * sig, significance=sig))
+    g = ws.apply_significance_floor(df, rel=0.10, local_mm=0.0)
+    check('plane-wide floor drops the faint track', not ({5, 6, 7, 8, 9} & set(g.channel)))
+    loc = ws.apply_significance_floor(df, rel=0.10, local_mm=16.0, pos=pos)
+    check('local floor keeps the faint track', {5, 6, 7, 8, 9} <= set(loc.channel))
+    check('local floor still drops the weak strip beside the bright track',
+          10 not in set(loc.channel))
+    try:
+        ws.apply_significance_floor(df, rel=0.10, local_mm=16.0)
+        refused = False
+    except ValueError:
+        refused = True
+    check('a local floor without positions is refused', refused)
+    pm = {7: np.full(512, np.nan)}
+    pm[7][:len(pos)] = pos
+    check('strip_positions maps channels to positions',
+          np.allclose(ws.strip_positions(df, pm), pos))
+
+
+def test_rescue_floor():
+    print('local floor, rescue mode')
+    pm = np.arange(512) * 0.78
+
+    def seed(lo, hi):
+        ch = np.arange(lo, hi)
+        return ws.Seed(channels=ch, n_strips=len(ch), n_dropped=0, amp_sum=0.0, n_raw=0)
+    base = [seed(0, 10)]
+    extra = [seed(0, 13), seed(300, 308)]
+    out = ws.rescue_candidates(base, base, extra, pm, n_candidates=5)
+    check('existing seeds are kept exactly', out[0] is base[0])
+    check('a cluster overlapping an existing seed is not added',
+          not any(s is extra[0] for s in out))
+    check('a distant cluster is added', len(out) == 2
+          and np.array_equal(out[1].channels, extra[1].channels))
+    check('the added cluster is flagged rescued, the kept one is not',
+          out[1].rescued and not out[0].rescued)
+    check('the candidate cap holds', ws.rescue_candidates(base, base, extra, pm, 1) == base)
+    vetoed = [seed(100, 120)]
+    check('a cluster the veto removed still blocks a rescue',
+          ws.rescue_candidates([], vetoed, [seed(105, 118)], pm, 5) == [])
+    check('rescue needs a local width', not ws.local_floor_rescues(0.0, 'rescue'))
+    check('rescue mode selected', ws.local_floor_rescues(16.0, 'rescue'))
+    check('replace mode is not rescue', not ws.local_floor_rescues(16.0, 'replace'))
+    try:
+        ws.local_floor_rescues(16.0, 'sometimes')
+        refused = False
+    except ValueError:
+        refused = True
+    check('an unknown mode is refused', refused)
+
+
+def test_split_seeds():
+    print('split seeding')
+    pm = np.arange(512) * 0.78
+
+    def seed(ch):
+        ch = np.asarray(ch)
+        return ws.Seed(channels=ch, n_strips=len(ch), n_dropped=0, amp_sum=1.0, n_raw=len(ch))
+    # 12 + 11 strips with a 7.0 mm hole: one cluster at 8 mm, two at 6 mm
+    two = seed(list(range(0, 12)) + list(range(20, 31)))
+    out = ws.split_seeds([two], pm, gap_mm=6.0)
+    check('a cluster with a 7 mm hole splits at 6 mm', [s.n_strips for s in out] == [12, 11],
+          f'got {[s.n_strips for s in out]}')
+    check('the parts account for every strip', sorted(np.concatenate([s.channels for s in out]).tolist())
+          == sorted(two.channels.tolist()))
+    check('it does not split at 8 mm', ws.split_seeds([two], pm, gap_mm=8.0)[0] is two)
+    small = seed(list(range(0, 12)) + list(range(20, 23)))
+    check('a part below min_strips keeps the cluster whole',
+          ws.split_seeds([small], pm, gap_mm=6.0, min_strips=5)[0] is small)
+    check('...and splits once the part qualifies',
+          len(ws.split_seeds([small], pm, gap_mm=6.0, min_strips=3)) == 2)
+    solid = seed(range(40, 60))
+    check('an unbroken cluster is the same object', ws.split_seeds([solid], pm, gap_mm=4.0)[0] is solid)
+
+
 class _Fit:
     """Minimal stand-in for PlaneFit for the selector tests."""
     def __init__(self, t0, q_uend, tan, dchi2, plausible):
@@ -107,6 +189,9 @@ def test_plausibility_bounds():
 if __name__ == '__main__':
     test_clustering()
     test_significance_floor()
+    test_local_floor()
+    test_rescue_floor()
+    test_split_seeds()
     test_pair_selection()
     test_plausibility_bounds()
     print('\n' + ('ALL PASS' if not FAILS else f'FAILURES: {FAILS}'))

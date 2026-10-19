@@ -1,0 +1,120 @@
+{
+ "run": 224577,
+ "ours_partial": "run224577_0005.root",
+ "bunches": [
+  899,
+  903
+ ],
+ "trees": {
+  "WALA": {
+   "n_ours": 48854,
+   "n_official": 48854,
+   "max_abs_diff": 0.0,
+   "max_diff_column": "",
+   "differing_cells": 0,
+   "columns_differing": {},
+   "verdict": "IDENTICAL"
+  },
+  "WALB": {
+   "n_ours": 47805,
+   "n_official": 47805,
+   "max_abs_diff": 0.0,
+   "max_diff_column": "",
+   "differing_cells": 0,
+   "columns_differing": {},
+   "verdict": "IDENTICAL"
+  },
+  "WALC": {
+   "n_ours": 52181,
+   "n_official": 52181,
+   "max_abs_diff": 0.0,
+   "max_diff_column": "",
+   "differing_cells": 0,
+   "columns_differing": {},
+   "verdict": "IDENTICAL"
+  },
+  "WALD": {
+   "n_ours": 51726,
+   "n_official": 51726,
+   "max_abs_diff": 0.0,
+   "max_diff_column": "",
+   "differing_cells": 0,
+   "columns_differing": {},
+   "verdict": "IDENTICAL"
+  },
+  "PSSA": {
+   "n_ours": 141182,
+   "n_official": 141182,
+   "max_abs_diff": 0.0,
+   "max_diff_column": "",
+   "differing_cells": 0,
+   "columns_differing": {},
+   "verdict": "IDENTICAL"
+  },
+  "PSSB": {
+   "n_ours": 191902,
+   "n_official": 191902,
+   "max_abs_diff": 0.0,
+   "max_diff_column": "",
+   "differing_cells": 0,
+   "columns_differing": {},
+   "verdict": "IDENTICAL"
+  },
+  "PSSC": {
+   "n_ours": 228155,
+   "n_official": 228155,
+   "max_abs_diff": 0.0,
+   "max_diff_column": "",
+   "differing_cells": 0,
+   "columns_differing": {},
+   "verdict": "IDENTICAL"
+  },
+  "PSSD": {
+   "n_ours": 202945,
+   "n_official": 202945,
+   "max_abs_diff": 0.0,
+   "max_diff_column": "",
+   "differing_cells": 0,
+   "columns_differing": {},
+   "verdict": "IDENTICAL"
+  },
+  "LIQA": {
+   "n_ours": 71160,
+   "n_official": 86293,
+   "verdict": "DIFFERENT (hit count)"
+  },
+  "LIQB": {
+   "n_ours": 81750,
+   "n_official": 95319,
+   "verdict": "DIFFERENT (hit count)"
+  },
+  "LIQC": {
+   "n_ours": 22021,
+   "n_official": 24834,
+   "verdict": "DIFFERENT (hit count)"
+  },
+  "LIQD": {
+   "n_ours": 49472,
+   "n_official": 58914,
+   "verdict": "DIFFERENT (hit count)"
+  },
+  "SILI": {
+   "n_ours": 2622,
+   "n_official": 2622,
+   "max_abs_diff": 0.0,
+   "max_diff_column": "",
+   "differing_cells": 0,
+   "columns_differing": {},
+   "verdict": "IDENTICAL"
+  },
+  "PKUP": {
+   "n_ours": 5,
+   "n_official": 5,
+   "max_abs_diff": 0.0,
+   "max_diff_column": "",
+   "differing_cells": 0,
+   "columns_differing": {},
+   "verdict": "IDENTICAL"
+  }
+ }
+}

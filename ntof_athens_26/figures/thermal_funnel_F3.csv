@@ -1,0 +1,5 @@
+panel,label,node_ids,frac_of_parent,count,mc_count,per_neutron,source,highlighted
+main,e⁺e⁻ pair made in the capsule,F3.pair_near_capsule,0.15292527008046625,77927329.06234021,23300.0,2.5854094735461622e-05,geant4,True
+main,Compton e⁻ made in the capsule,F3.compton_near_capsule,0.6453052598416928,328833261.5197121,98320.0,0.00010909762207684922,geant4,False
+main,made elsewhere,F3.compton_elsewhere + F3.pair_elsewhere,0.1879799425053491,95790413.37658739,28641.0,3.1780563404221304e-05,geant4,False
+main,other,F3.neutron_induced + F3.other,0.01378952757249183,7026837.697853081,2101.0,2.331306997390767e-06,geant4,False

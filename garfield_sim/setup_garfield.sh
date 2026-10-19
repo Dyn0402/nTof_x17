@@ -29,11 +29,19 @@
 # Garfield or LCG path.
 # =============================================================================
 
+# ⚠ LOCAL PATCH ON TOP OF THE PIN (2026-08-08, laptop + desktop):
+# Source/ComponentGrid.cc — the 3D xyz/ijk loader parsed the active-region
+# flag but never stored it, and m_active was allocated before the header-line
+# mesh was known (segfault). Needed by the MX17 T6 mesh field map
+# (MX17_Geant/response/meshcell/FIELD_MAP_RUNBOOK.md, Decision 5). Any
+# rebuild or pin move MUST re-apply it until upstreamed — the symptom of
+# losing it is mesh transparency exactly 1.000 in gates_check.C.
+
 export MX17_GARFIELD_PIN=927e5c21
 
-# LCG view used on lxplus and on condor workers (ROOT 6.38, gcc 14.3).
+# LCG view used on lxplus and on condor workers (ROOT 6.40.02, Geant4 11.4.1, gcc 14.3).
 # Only its ROOT/python/compiler runtime is used — never its Garfield.
-MX17_LCG_VIEW=/cvmfs/sft.cern.ch/lcg/views/LCG_109/x86_64-el9-gcc14-opt
+MX17_LCG_VIEW=/cvmfs/sft.cern.ch/lcg/views/LCG_110/x86_64-el9-gcc14-opt
 
 # ── Condor: unpack the shipped build ─────────────────────────────────────────
 # We ship our own pinned build rather than using the CVMFS Garfield. The
@@ -73,16 +81,26 @@ elif [ -d "$PWD/garfield/include/Garfield" ]; then
 
 elif [ -d /cvmfs/sft.cern.ch/lcg/views ]; then
     # lxplus interactive.
-    _gf_install=/afs/cern.ch/user/d/dneff/work/garfield_install/lcg109-${MX17_GARFIELD_PIN}
+    _gf_install=/afs/cern.ch/user/d/dneff/work/garfield_install/lcg110-${MX17_GARFIELD_PIN}p
     source "$MX17_LCG_VIEW/setup.sh"
 
+elif [ -d "$HOME/Software/garfield/install-r6404-g4114" ]; then
+    # desktop (dylan-MS-7C84): ROOT 6.40.04 + Geant4 11.4.3 (see docs/hep-stack in claude-skills).
+    source "$HOME/Software/root_6_40/bin/thisroot.sh"
+    _gf_install="$HOME/Software/garfield/install-r6404-g4114"
+
 elif [ -d "$HOME/Software/garfield/install" ]; then
-    # desktop (dylan-MS-7C84): local ROOT 6.30, gcc 11.4.
+    # desktop, old stack: local ROOT 6.30, gcc 11.4.
     source "$HOME/Software/root_6_30/bin/thisroot.sh"
     _gf_install="$HOME/Software/garfield/install"
 
+elif [ -d "$HOME/garfield/install-r6404-g4114" ]; then
+    # laptop: ROOT 6.40.04 + Geant4 11.4.3 (see docs/hep-stack in claude-skills).
+    source "$HOME/Software/root_6_40_04/bin/thisroot.sh"
+    _gf_install="$HOME/garfield/install-r6404-g4114"
+
 elif [ -d "$HOME/garfield/install" ]; then
-    # laptop: local ROOT 6.36, gcc 13.3.
+    # laptop, old stack: ROOT 6.36, gcc 13.3. Kept until the new stack is verified.
     source "$HOME/Software/root_6_36_06/bin/thisroot.sh"
     _gf_install="$HOME/garfield/install"
 
@@ -109,6 +127,14 @@ for _d in "$GARFIELD_INSTALL"/lib64/python*/site-packages \
     [ -d "$_d" ] && export PYTHONPATH="$_d:$PYTHONPATH"
 done
 export HEED_DATABASE="$GARFIELD_INSTALL/share/Heed/database"
+
+# Our headers must come before the LCG view's. LCG_109 ships its own Garfield
+# (78fe1bd3) in $MX17_LCG_VIEW/include, which is on ROOT_INCLUDE_PATH, so cling
+# otherwise builds the classes from those headers while running our library:
+# ComponentGrid is 688 bytes there and 720 here, the constructor writes past
+# the allocation, and the job aborts in malloc or hangs (lxplus/condor,
+# 2026-10-16). Harmless on the workstations, which have no second Garfield.
+export ROOT_INCLUDE_PATH="$GARFIELD_INSTALL/include${ROOT_INCLUDE_PATH:+:$ROOT_INCLUDE_PATH}"
 
 unset _gf_install _d
 

@@ -1,0 +1,582 @@
+{
+ "calibration": {
+  "mv_per_count": {
+   "MMA": 0.0076927032470703125,
+   "MMB": 0.0076848907470703125
+  },
+  "baseline_mV": 200.0,
+  "neg_rail_mV": -252.0745,
+  "headroom_mV": 452.0745,
+  "termination_ohm": 50.0,
+  "fC_per_count_ns": {
+   "MMA": 0.15385406494140624,
+   "MMB": 0.15369781494140625
+  }
+ },
+ "runs": {
+  "224302": {
+   "n_bunch": 3067,
+   "live": "MMB",
+   "beam": true,
+   "dream": "run_12 (partial)",
+   "gas": "Ar/CF4/Iso 88/10/2",
+   "span": "2026-07-05 22:32 - 07-06 01:14",
+   "zs_threshold_mV": 4.0,
+   "peak_mV": {
+    "p1": 0.6071063690185546,
+    "p50": 151.99176919555663,
+    "p99": 329.22179548919684,
+    "max": 449.1664943847656
+   },
+   "charge_pC": {
+    "p50": 929.5208740234375,
+    "p99": 1388.501726074219
+   },
+   "railed_bunches": 4,
+   "railed_fraction": 0.0013042060645582002,
+   "headroom_used_p99": 0.7282467723554344,
+   "recovery_to_4mV_ns": {
+    "p50": 12900.0,
+    "p99": 14502.800000000007
+   },
+   "peak_time_ns": 12027.0,
+   "intensity_1e12": {
+    "p50": 8.45909595489502,
+    "frac_zero": 0.018258884903814804
+   },
+   "dedicated": {
+    "n": 1741,
+    "intensity": 8.502364158630371,
+    "peak_mV": 164.4259224243164,
+    "charge_pC": 950.7058715820312
+   },
+   "parasitic": {
+    "n": 1270,
+    "intensity": 4.135834693908691,
+    "peak_mV": 137.9207342376709,
+    "charge_pC": 912.149658203125
+   },
+   "charge_ratio_ded_par": 1.0422696133602236,
+   "intensity_ratio": 2.0557794950443156,
+   "zs_rate_per_bunch_per_ms": [
+    {
+     "t_lo_ms": 0.03,
+     "t_hi_ms": 0.05,
+     "rate": 2.8366481904140852
+    },
+    {
+     "t_lo_ms": 0.05,
+     "t_hi_ms": 0.1,
+     "rate": 3.2344310401043366
+    },
+    {
+     "t_lo_ms": 0.1,
+     "t_hi_ms": 0.2,
+     "rate": 2.399739158787088
+    },
+    {
+     "t_lo_ms": 0.2,
+     "t_hi_ms": 0.5,
+     "rate": 1.5194000652103032
+    },
+    {
+     "t_lo_ms": 0.5,
+     "t_hi_ms": 1.0,
+     "rate": 1.1222693185523314
+    },
+    {
+     "t_lo_ms": 1.0,
+     "t_hi_ms": 2.0,
+     "rate": 0.9960873818063254
+    },
+    {
+     "t_lo_ms": 2.0,
+     "t_hi_ms": 5.0,
+     "rate": 1.0020649929355505
+    },
+    {
+     "t_lo_ms": 5.0,
+     "t_hi_ms": 10.0,
+     "rate": 1.055102706227584
+    },
+    {
+     "t_lo_ms": 10.0,
+     "t_hi_ms": 20.0,
+     "rate": 0.4999673948483861
+    }
+   ],
+   "zs_first_block_ns": 30311.0,
+   "zs_blocks_per_bunch": 15.75285295076622
+  },
+  "224325": {
+   "n_bunch": 5277,
+   "live": "MMA",
+   "beam": false,
+   "dream": "none (gap between run_17 and run_18)",
+   "gas": "Ar/Iso 95/5",
+   "span": "2026-07-08 20:14 - 21:42",
+   "zs_threshold_mV": 0.01,
+   "peak_mV": {
+    "p1": 0.5384892272949219,
+    "p50": 0.7000359954833985,
+    "p99": 0.9077389831542969,
+    "max": 1.777014450073242
+   },
+   "charge_pC": {
+    "p50": 3.127699613571167,
+    "p99": 10.99555019378662
+   },
+   "railed_bunches": 0,
+   "railed_fraction": 0.0,
+   "headroom_used_p99": 0.002007941131725627,
+   "recovery_to_4mV_ns": {
+    "p50": NaN,
+    "p99": NaN
+   },
+   "peak_time_ns": 13379.0,
+   "intensity_1e12": {
+    "p50": 0.0,
+    "frac_zero": 1.0
+   },
+   "zs_rate_per_bunch_per_ms": [
+    {
+     "t_lo_ms": 0.03,
+     "t_hi_ms": 0.05,
+     "rate": 1.3833617585749478
+    },
+    {
+     "t_lo_ms": 0.05,
+     "t_hi_ms": 0.1,
+     "rate": 1.4098919840818647
+    },
+    {
+     "t_lo_ms": 0.1,
+     "t_hi_ms": 0.2,
+     "rate": 1.4705324995262459
+    },
+    {
+     "t_lo_ms": 0.2,
+     "t_hi_ms": 0.5,
+     "rate": 1.5021161013201947
+    },
+    {
+     "t_lo_ms": 0.5,
+     "t_hi_ms": 1.0,
+     "rate": 1.5277619859768807
+    },
+    {
+     "t_lo_ms": 1.0,
+     "t_hi_ms": 2.0,
+     "rate": 1.552776198597688
+    },
+    {
+     "t_lo_ms": 2.0,
+     "t_hi_ms": 5.0,
+     "rate": 1.582843787505527
+    },
+    {
+     "t_lo_ms": 5.0,
+     "t_hi_ms": 10.0,
+     "rate": 1.5991282925904868
+    },
+    {
+     "t_lo_ms": 10.0,
+     "t_hi_ms": 20.0,
+     "rate": 1.617093045290885
+    }
+   ],
+   "zs_first_block_ns": 30372.0,
+   "zs_blocks_per_bunch": 31.92761038468827
+  },
+  "224327": {
+   "n_bunch": 3444,
+   "live": "MMA",
+   "beam": true,
+   "dream": "run_18 (full)",
+   "gas": "Ar/Iso 95/5",
+   "span": "2026-07-09 00:34 - 03:38",
+   "zs_threshold_mV": 0.01,
+   "peak_mV": {
+    "p1": 0.8077338409423828,
+    "p50": 44.486902877807616,
+    "p99": 225.21911911041275,
+    "max": 452.87713285827635
+   },
+   "charge_pC": {
+    "p50": 278.09912109375,
+    "p99": 818.2109020996108
+   },
+   "railed_bunches": 1,
+   "railed_fraction": 0.00029036004645760743,
+   "headroom_used_p99": 0.4981902741924456,
+   "recovery_to_4mV_ns": {
+    "p50": 13570.0,
+    "p99": 20518.00000000003
+   },
+   "peak_time_ns": 12031.0,
+   "intensity_1e12": {
+    "p50": 4.164028644561768,
+    "frac_zero": 0.011033681765389082
+   },
+   "dedicated": {
+    "n": 1499,
+    "intensity": 8.50522518157959,
+    "peak_mV": 71.75753588867188,
+    "charge_pC": 406.3337707519531
+   },
+   "parasitic": {
+    "n": 1907,
+    "intensity": 4.142601013183594,
+    "peak_mV": 31.74009359741211,
+    "charge_pC": 232.5677947998047
+   },
+   "charge_ratio_ded_par": 1.7471626761638555,
+   "intensity_ratio": 2.053112321102658,
+   "zs_rate_per_bunch_per_ms": [
+    {
+     "t_lo_ms": 0.03,
+     "t_hi_ms": 0.05,
+     "rate": 13.138792102206736
+    },
+    {
+     "t_lo_ms": 0.05,
+     "t_hi_ms": 0.1,
+     "rate": 12.340301974448316
+    },
+    {
+     "t_lo_ms": 0.1,
+     "t_hi_ms": 0.2,
+     "rate": 11.39082462253194
+    },
+    {
+     "t_lo_ms": 0.2,
+     "t_hi_ms": 0.5,
+     "rate": 9.30603948896632
+    },
+    {
+     "t_lo_ms": 0.5,
+     "t_hi_ms": 1.0,
+     "rate": 6.830429732868757
+    },
+    {
+     "t_lo_ms": 1.0,
+     "t_hi_ms": 2.0,
+     "rate": 4.957026713124274
+    },
+    {
+     "t_lo_ms": 2.0,
+     "t_hi_ms": 5.0,
+     "rate": 4.657278358497871
+    },
+    {
+     "t_lo_ms": 5.0,
+     "t_hi_ms": 10.0,
+     "rate": 3.582404181184669
+    },
+    {
+     "t_lo_ms": 10.0,
+     "t_hi_ms": 20.0,
+     "rate": 2.996283391405343
+    }
+   ],
+   "zs_first_block_ns": 30259.0,
+   "zs_blocks_per_bunch": 75.02961672473867
+  }
+ },
+ "hv": {
+  "224302": [
+   {
+    "cls": "dedicated",
+    "drift_V": 800.0,
+    "resist_V": 525.0,
+    "n": 33,
+    "charge_pC": 485.7623291015625,
+    "peak_mV": 133.448127822876
+   },
+   {
+    "cls": "dedicated",
+    "drift_V": 800.0,
+    "resist_V": 527.0,
+    "n": 114,
+    "charge_pC": 648.24169921875,
+    "peak_mV": 129.32134149169923
+   },
+   {
+    "cls": "dedicated",
+    "drift_V": 800.0,
+    "resist_V": 530.0,
+    "n": 114,
+    "charge_pC": 784.700927734375,
+    "peak_mV": 150.88898737335205
+   },
+   {
+    "cls": "dedicated",
+    "drift_V": 800.0,
+    "resist_V": 532.0,
+    "n": 113,
+    "charge_pC": 960.7622680664062,
+    "peak_mV": 160.97540647888184
+   },
+   {
+    "cls": "dedicated",
+    "drift_V": 800.0,
+    "resist_V": 535.0,
+    "n": 114,
+    "charge_pC": 1074.4893798828125,
+    "peak_mV": 175.85335496520997
+   },
+   {
+    "cls": "dedicated",
+    "drift_V": 800.0,
+    "resist_V": 537.0,
+    "n": 111,
+    "charge_pC": 1148.996826171875,
+    "peak_mV": 196.4258074951172
+   },
+   {
+    "cls": "dedicated",
+    "drift_V": 800.0,
+    "resist_V": 540.0,
+    "n": 113,
+    "charge_pC": 950.1822509765625,
+    "peak_mV": 159.49990745544434
+   },
+   {
+    "cls": "parasitic",
+    "drift_V": 800.0,
+    "resist_V": 525.0,
+    "n": 25,
+    "charge_pC": 387.787109375,
+    "peak_mV": 99.52702006530761
+   },
+   {
+    "cls": "parasitic",
+    "drift_V": 800.0,
+    "resist_V": 527.0,
+    "n": 81,
+    "charge_pC": 570.7720336914062,
+    "peak_mV": 108.02650923156739
+   },
+   {
+    "cls": "parasitic",
+    "drift_V": 800.0,
+    "resist_V": 530.0,
+    "n": 83,
+    "charge_pC": 707.5944213867188,
+    "peak_mV": 134.30883558654784
+   },
+   {
+    "cls": "parasitic",
+    "drift_V": 800.0,
+    "resist_V": 532.0,
+    "n": 82,
+    "charge_pC": 887.8079833984375,
+    "peak_mV": 122.80071169281007
+   },
+   {
+    "cls": "parasitic",
+    "drift_V": 800.0,
+    "resist_V": 535.0,
+    "n": 83,
+    "charge_pC": 991.9041137695312,
+    "peak_mV": 133.47886738586425
+   },
+   {
+    "cls": "parasitic",
+    "drift_V": 800.0,
+    "resist_V": 537.0,
+    "n": 83,
+    "charge_pC": 1074.18115234375,
+    "peak_mV": 155.25016287231446
+   },
+   {
+    "cls": "parasitic",
+    "drift_V": 800.0,
+    "resist_V": 540.0,
+    "n": 85,
+    "charge_pC": 1000.2077026367188,
+    "peak_mV": 155.5959829559326
+   }
+  ],
+  "224327": [
+   {
+    "cls": "dedicated",
+    "drift_V": 600.0,
+    "resist_V": 465.0,
+    "n": 164,
+    "charge_pC": 108.52765655517578,
+    "peak_mV": 8.708140075683595
+   },
+   {
+    "cls": "dedicated",
+    "drift_V": 600.0,
+    "resist_V": 470.0,
+    "n": 255,
+    "charge_pC": 158.779541015625,
+    "peak_mV": 9.885123672485351
+   },
+   {
+    "cls": "dedicated",
+    "drift_V": 600.0,
+    "resist_V": 475.0,
+    "n": 254,
+    "charge_pC": 253.59011840820312,
+    "peak_mV": 22.901177566528318
+   },
+   {
+    "cls": "dedicated",
+    "drift_V": 600.0,
+    "resist_V": 480.0,
+    "n": 255,
+    "charge_pC": 449.57080078125,
+    "peak_mV": 84.06586108398437
+   },
+   {
+    "cls": "dedicated",
+    "drift_V": 800.0,
+    "resist_V": 480.0,
+    "n": 571,
+    "charge_pC": 614.1553955078125,
+    "peak_mV": 123.43711630249024
+   },
+   {
+    "cls": "parasitic",
+    "drift_V": 600.0,
+    "resist_V": 465.0,
+    "n": 209,
+    "charge_pC": 46.23545455932617,
+    "peak_mV": 4.43868977355957
+   },
+   {
+    "cls": "parasitic",
+    "drift_V": 600.0,
+    "resist_V": 470.0,
+    "n": 323,
+    "charge_pC": 75.76728820800781,
+    "peak_mV": 5.077184143066407
+   },
+   {
+    "cls": "parasitic",
+    "drift_V": 600.0,
+    "resist_V": 475.0,
+    "n": 323,
+    "charge_pC": 129.76512145996094,
+    "peak_mV": 10.154368286132813
+   },
+   {
+    "cls": "parasitic",
+    "drift_V": 600.0,
+    "resist_V": 480.0,
+    "n": 325,
+    "charge_pC": 270.97393798828125,
+    "peak_mV": 34.601779205322266
+   },
+   {
+    "cls": "parasitic",
+    "drift_V": 800.0,
+    "resist_V": 480.0,
+    "n": 727,
+    "charge_pC": 386.1553955078125,
+    "peak_mV": 97.72040934753419
+   }
+  ]
+ },
+ "linearity": {
+  "224302": [
+   {
+    "parasitic_charge_pC": 387.787109375,
+    "ratio": 1.2526520798601843
+   },
+   {
+    "parasitic_charge_pC": 570.7720336914062,
+    "ratio": 1.1357278579791603
+   },
+   {
+    "parasitic_charge_pC": 707.5944213867188,
+    "ratio": 1.1089699183842427
+   },
+   {
+    "parasitic_charge_pC": 887.8079833984375,
+    "ratio": 1.0821734947558224
+   },
+   {
+    "parasitic_charge_pC": 991.9041137695312,
+    "ratio": 1.0832593241290558
+   },
+   {
+    "parasitic_charge_pC": 1074.18115234375,
+    "ratio": 1.0696490286250928
+   },
+   {
+    "parasitic_charge_pC": 1000.2077026367188,
+    "ratio": 0.9499849366003875
+   }
+  ],
+  "224327": [
+   {
+    "parasitic_charge_pC": 46.23545455932617,
+    "ratio": 2.3472821363942797
+   },
+   {
+    "parasitic_charge_pC": 75.76728820800781,
+    "ratio": 2.09562127365202
+   },
+   {
+    "parasitic_charge_pC": 129.76512145996094,
+    "ratio": 1.954224028422371
+   },
+   {
+    "parasitic_charge_pC": 270.97393798828125,
+    "ratio": 1.65909239877044
+   },
+   {
+    "parasitic_charge_pC": 386.1553955078125,
+    "ratio": 1.590435878023067
+   }
+  ]
+ },
+ "conditions": {
+  "224302": {
+   "span": "2026-07-05 22:32 - 07-06 01:14 (2.70 h)",
+   "beam": "on: 1741 dedicated (8.50e12) + 1270 parasitic (4.14e12), 56 empty",
+   "dream": "run_12, covering only 00:07-01:14 (1256 of 3067 bunches); no DREAM run before that",
+   "gas": "Ar/CF4/Iso 88/10/2",
+   "trigger": "PS Pickup",
+   "hv": "drift 800 V fixed; amplification ladder 525 -> 540 V"
+  },
+  "224325": {
+   "span": "2026-07-08 20:14 - 21:42 (1.47 h)",
+   "beam": "OFF: PulseIntensity 0 for all 5277 bunches, PKUP flat, lsaCycle -1",
+   "dream": "none - falls in the gap between run_17 (ended 18:18) and run_18 (started 23:46)",
+   "gas": "Ar/Iso 95/5 (from the runs either side)",
+   "trigger": "n/a",
+   "hv": "not monitored during this window"
+  },
+  "224327": {
+   "span": "2026-07-09 00:34 - 03:38 (3.06 h)",
+   "beam": "on: 1499 dedicated (8.51e12) + 1907 parasitic (4.14e12), 38 empty",
+   "dream": "run_18, fully contained (23:46 07-08 -> 08:58 07-09)",
+   "gas": "Ar/Iso 95/5",
+   "trigger": "External TCM/N1081B: gamma flash on each 1.2 s cycle + random trigger within 30 ms after the flash",
+   "hv": "drift 600 then 800 V; amplification ladder 465 -> 480 V"
+  }
+ },
+ "integrity": {
+  "sample_type": "int16 (ntoflib ReaderStructACQC.h declares std::vector<int16_t>)",
+  "checked_samples": 56647470,
+  "samples_at_positive_rail": 0,
+  "samples_at_negative_rail_or_fill": 0,
+  "sample_to_sample_jumps_over_20000": 0,
+  "largest_jump_counts": 5883,
+  "railed_bunches": {
+   "224302": 4,
+   "224325": 0,
+   "224327": 1
+  },
+  "note": "A wrap would show as a >20000-count step between adjacent samples (the signature used in liq_study/adc_range_census.py). None occur."
+ },
+ "chamber_identity": {
+  "determinable": false,
+  "reason": "All four MX17 chambers step in lockstep: every HV state in run_18 is a joint (A,B,C,D) setting and each ladder spans the same 20 V, so the flash charge correlates identically with all four. The response does follow the common ladder exponentially, so the channel is on one of the four chambers - but which one cannot be decided from this data."
+ }
+}

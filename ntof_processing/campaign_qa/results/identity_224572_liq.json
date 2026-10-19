@@ -1,0 +1,70 @@
+{
+ "run": 224572,
+ "ours_partial": "run224572_0005.root",
+ "bunches": [
+  896,
+  900
+ ],
+ "trees": {
+  "LIQA": {
+   "n_ours": 85873,
+   "n_official": 85873,
+   "max_abs_diff": 105662855.0078125,
+   "max_diff_column": "afast",
+   "differing_cells": 3,
+   "columns_differing": {
+    "afast": {
+     "cells": 3,
+     "frac": 3.493531144830156e-05,
+     "max_abs": 105662855.0078125
+    }
+   },
+   "verdict": "DIFFERENT (values)"
+  },
+  "LIQB": {
+   "n_ours": 95653,
+   "n_official": 95653,
+   "max_abs_diff": 315073773.2109375,
+   "max_diff_column": "afast",
+   "differing_cells": 6,
+   "columns_differing": {
+    "afast": {
+     "cells": 6,
+     "frac": 6.272673099641413e-05,
+     "max_abs": 315073773.2109375
+    }
+   },
+   "verdict": "DIFFERENT (values)"
+  },
+  "LIQC": {
+   "n_ours": 24895,
+   "n_official": 24895,
+   "max_abs_diff": 1371412.6953125,
+   "max_diff_column": "afast",
+   "differing_cells": 5,
+   "columns_differing": {
+    "afast": {
+     "cells": 5,
+     "frac": 0.0002008435428800964,
+     "max_abs": 1371412.6953125
+    }
+   },
+   "verdict": "DIFFERENT (values)"
+  },
+  "LIQD": {
+   "n_ours": 59799,
+   "n_official": 59799,
+   "max_abs_diff": 2359974.984375,
+   "max_diff_column": "afast",
+   "differing_cells": 4,
+   "columns_differing": {
+    "afast": {
+     "cells": 4,
+     "frac": 6.689075068144953e-05,
+     "max_abs": 2359974.984375
+    }
+   },
+   "verdict": "DIFFERENT (values)"
+  }
+ }
+}

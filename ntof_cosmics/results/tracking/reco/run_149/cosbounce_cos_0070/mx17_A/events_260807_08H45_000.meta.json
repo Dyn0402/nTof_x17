@@ -1,0 +1,130 @@
+{
+ "n_events": 1141,
+ "n_seeded": 1141,
+ "status": "PRELIMINARY",
+ "partial": false,
+ "tags_done": [
+  "260807_08H45_000"
+ ],
+ "calibration": "/pool/condor/dir_2584135/out/mx17_A/calib_bundle_prelim",
+ "bundle": {
+  "detector": "mx17_3",
+  "run_key": "run_149/cosbounce_cos_0070/mx17_A",
+  "v_drift": 42.6,
+  "hyper": {
+   "c1": 0.05044881793305232,
+   "kY": 2.882516478692792,
+   "tau_s": 166.2856757836003,
+   "sigma_s": 9.14846258994074,
+   "sigma_p0": 0.42459410691288646,
+   "Dp": 0.014361194124279685,
+   "c2": 0.0,
+   "c2_over_c1": 0.6,
+   "share_lp": 1.0
+  },
+  "sat_adc": 3700.0,
+  "n_depth_bins": 18,
+  "conditions": {
+   "run": "run_149",
+   "sub_run": "cosbounce_cos_0070",
+   "gas": "Ar/Iso 90/10",
+   "n_samples": 20,
+   "sample_ns": 60.0
+  },
+  "provenance": {
+   "note": "preliminary run_149 bundle for arm A",
+   "n_train": 180,
+   "chi2": 110272024.30874074,
+   "chi2_init": 148425603.44393137,
+   "fitted": "mx_june_wft/19_ratio_recal.py",
+   "gain_map": "unit (not fitted)",
+   "parent_bundle": "calib_bundle_lp2",
+   "derived_from": "calib_bundle_lp2_t0p",
+   "fitted_by": "mx_june_wft/19_ratio_recal.py",
+   "c2_over_c1": 0.6,
+   "c2_slaved": true,
+   "w0_kw_stale": false,
+   "w0_kw_note": "w0/kw re-measured from events_r06.parquet (sat_det3), a reco run with THIS bundle",
+   "superseded_hyper": {
+    "c1": 0.050869112498533264,
+    "c2": 0.057975190717090536,
+    "kY": 2.875398097008505,
+    "tau_s": 145.52360430581592,
+    "sigma_s": 12.07138484224236,
+    "sigma_p0": 0.40871629542484494,
+    "Dp": 0.013415652753987053,
+    "share_lp": 1.0,
+    "kTauY": 1.78
+   },
+   "evidence": "sps_beam_test_26/analysis/sharing_kernel -- the head-on beam measures c2/c1 = 0.45 +- 0.02 and near-vertical bench cosmics 0.63 +- 0.09; the shipped bundles carried > 1",
+   "chi2_source": 106734684.48221907,
+   "chi2_note": "chi2 is the ratio-pinned refit on n_train events; chi2_source is the free-ratio fit it is derived from, on the same events -- pinning the ratio costs fit quality and the two numbers say how much",
+   "seeded_from": "/pool/condor/dir_2584135/bundles/mx17_A/calib_bundle_r06",
+   "transferred": "template + sharing kernel + w0/kw (bench)",
+   "replaced": "v_drift -> 42.6 um/ns (PRIOR: Magboltz 90/10 @233 V/cm / 07-19 water estimate, NOT measured in situ), sat_adc -> 3700.0, sample_ns/conditions -> run_79",
+   "not_revalidated": "sigma_p0, Dp (gas-dependent), template (assumed same DREAM shaping), dt_xy",
+   "status": "PRELIMINARY -- see ntof_tracking/TRACK_PLAN_08 phase 2",
+   "dropped": "t0_abs + t0_prior_sigma (bench absolute time vs the bench scintillator trigger; this run is triggered by n_TOF, so the bench table does not transfer)",
+   "dropped_t0_was": {
+    "t0_prior_sigma": 5.0,
+    "t0_abs_planes": [
+     "x",
+     "y"
+    ]
+   },
+   "code_commit": "unknown",
+   "seeded_from_bench": "/media/dylan/data/x17/cosmic_bench/Analysis/mx17_det3_saturday_scan_6-27-26/long_run_resist_490V_drift_1000V/mx17_3/wft/calib_bundle_r06",
+   "ran_on": "lxplus condor (ntof_tracking/condor/run_beam_job.py)"
+  }
+ },
+ "angle_constants": {
+  "applied": true,
+  "w0": {
+   "x": -0.04052933475681986,
+   "y": -0.17091824086162388
+  },
+  "kw": {
+   "x": 1.0012508279706234,
+   "y": 0.9899042547608466
+  }
+ },
+ "run": {
+  "key": "run_149_cosbounce_cos_0070_mx17_A",
+  "run": "run_149",
+  "sub_run": "cosbounce_cos_0070",
+  "detector": "mx17_A",
+  "feu_x": 3,
+  "feu_y": 4,
+  "file_tags": [
+   "260807_08H45_000"
+  ]
+ },
+ "selection": {
+  "seeder": "ntof_tracking.wft_beam",
+  "busy_plane_hits": 150,
+  "min_strips": 5,
+  "n_candidates": 5,
+  "wide_strips": 10,
+  "isochronous_span": 3,
+  "sig_floor_local_mm": 0.0,
+  "sig_floor_local_mode": "rescue",
+  "split_gap_mm": 0.0,
+  "pad_strips": 3
+ },
+ "reco_config": {
+  "model_frac": 0.0,
+  "prescan": "0",
+  "pair_select": "0",
+  "chi2dof_bad": "300",
+  "xy_pairing": null
+ },
+ "allowlist": {
+  "applied": true,
+  "per_tag": [],
+  "n_allowed": 0,
+  "n_seeded": 0,
+  "n_missing": 0,
+  "seed_efficiency": 0.0,
+  "header": {}
+ }
+}

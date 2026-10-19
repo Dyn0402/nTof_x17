@@ -1,0 +1,199 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>x/y t0 — what the two planes agree on</title><style>
+:root{--ink:#1b2430;--muted:#6a7583;--line:#d4d9e0;--surface:#fbfcfe;
+--accent:#8a3f8f;--copper:#d18a44;--red:#c0392b;
+--A:#0072B2;--B:#D55E00;--C:#009E73;--D:#CC79A7}
+*{box-sizing:border-box}
+body{margin:0;background:var(--surface);color:var(--ink);
+font:16px/1.62 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+.wrap{max-width:1080px;margin:0 auto;padding:40px 20px 90px}
+h1{font-size:31px;line-height:1.22;margin:0 0 6px}
+h2{font-size:21px;margin:46px 0 12px;padding-top:16px;border-top:1px solid var(--line)}
+h3{font-size:16px;margin:26px 0 8px;color:var(--muted);
+letter-spacing:.05em;text-transform:uppercase}
+p{margin:0 0 14px}
+.sub{color:var(--muted);font-size:15px;margin-bottom:26px}
+.verdict{background:#fff;border:1px solid var(--line);border-left:4px solid var(--accent);
+padding:20px 24px;border-radius:6px;margin:26px 0}
+.verdict p:last-child{margin-bottom:0}
+.warn{border-left-color:var(--copper)}
+.stop{border-left-color:var(--red)}
+.tiles{display:flex;flex-wrap:wrap;gap:12px;margin:22px 0}
+.tile{flex:1 1 160px;background:#fff;border:1px solid var(--line);
+border-radius:6px;padding:14px 16px}
+.tile .k{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.tile .v{font-size:26px;font-weight:650;margin-top:3px;font-variant-numeric:tabular-nums}
+.tile .n{font-size:12.5px;color:var(--muted);margin-top:2px}
+table{border-collapse:collapse;width:100%;margin:16px 0;font-size:14.5px;
+background:#fff;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+th,td{padding:7px 11px;text-align:right;border-bottom:1px solid var(--line)}
+th:first-child,td:first-child{text-align:left}
+thead th{background:#f2f4f7;font-weight:620;font-size:13px;
+text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+tbody tr:last-child td{border-bottom:none}
+td.num{font-variant-numeric:tabular-nums}
+figure{margin:26px 0}
+figure img{width:100%;border:1px solid var(--line);border-radius:6px;background:#fff}
+figcaption{font-size:13.5px;color:var(--muted);margin-top:8px}
+code{background:#eef1f5;padding:1px 5px;border-radius:3px;font-size:13.5px}
+.foot{margin-top:60px;padding-top:16px;border-top:1px solid var(--line);
+font-size:13px;color:var(--muted)}
+ul{margin:0 0 14px;padding-left:22px}li{margin-bottom:6px}
+@media (prefers-color-scheme:dark){
+:root{--ink:#e6e9ee;--muted:#9aa4b2;--line:#2b3440;--surface:#12171e}
+.verdict,.tile,table,figure img{background:#1a212a}
+thead th{background:#222b36}
+code{background:#222b36}}
+</style></head>
+<body><div class="wrap">
+
+<h1>The two planes agree to 60&nbsp;ns, and it is not the depth&nbsp;bin</h1>
+<p class="sub">What <code>dt_xy</code> is, what the x/y coincidence gate is worth, and why
+<code>HANDOFF_T0_PRIOR.md</code>&nbsp;§1 was reading a real number through a wrong mechanism.
+&nbsp;·&nbsp; 2,111,162 stage-3 tracks &nbsp;·&nbsp; 2026-09-12</p>
+
+<div class="verdict">
+<p><strong>The handoff's measurement stands; its diagnosis does not.</strong>
+The two planes of one chamber really do disagree on t<sub>0</sub> at the
+66.1–77.4&nbsp;ns level. But it is <strong>not</strong> the 60&nbsp;ns
+depth-bin degeneracy: a periodicity test that detects the known 5&nbsp;ns
+<code>T0_STEP</code> snap at 8.3&nbsp;σ finds nothing at 60&nbsp;ns
+(|σ|&nbsp;≤&nbsp;0.97). And it is not the x/y plane separation either — the
+handoff's own first check — because the residual does not vanish at normal
+incidence.</p>
+<p>What it is: the forward model's per-plane t<sub>0</sub> is <em>smoothly</em>
+uncertain at about 54.8–60.1&nbsp;ns, against a fitted
+<code>x_t0_err</code> that medians a few ns. Same scale as one depth bin — which
+is why the bin was a tempting explanation — but a broad uncertainty, not a
+two-minimum ambiguity, and it needs a different fix.</p>
+</div>
+
+<div class="tiles">
+<div class="tile"><div class="k">measured dt_xy used on</div><div class="v">10.9 %</div>
+<div class="n">of the campaign — 0 tracks on A, B, C</div></div>
+<div class="tile"><div class="k">dt_xy is linear in ftst</div><div class="v">-8.8…-7.7</div>
+<div class="n">ns per unit, all four arms (quantum -10.0)</div></div>
+<div class="tile"><div class="k">60 ns comb</div><div class="v">≤ 0.97 σ</div>
+<div class="n">control at 5 ns: 8.3 σ</div></div>
+<div class="tile"><div class="k">per-plane t<sub>0</sub></div><div class="v">~60.1 ns</div>
+<div class="n">reported error: a few ns</div></div>
+</div>
+
+<h2>1 · The census, exactly: the measured offset never ran on A, B or C</h2>
+<p>The handoff predicted "~100&nbsp;% miss on A and C from the parity argument" and
+asked for it to be confirmed rather than trusted. It is not approximately
+100&nbsp;%. <code>ftst</code> is a 6-phase counter; A, B and C only ever produce
+<strong>even</strong> <code>ftst_diff</code> and their bundle keys are
+<strong>odd</strong>, so the intersection is empty by construction — no statistics
+involved. Every one of those tracks ran on the hardcoded
+<code>-18.8</code>&nbsp;ns.</p>
+<table><thead><tr><th>arm</th><th>tracks</th><th>used measured dt</th><th>hit rate</th><th>bundle keys</th><th>ftst_diff in data</th></tr></thead><tbody><tr><td class="num">A</td><td class="num">454,180</td><td class="num">0</td><td class="num">0.0 %</td><td class="num">-5,1</td><td class="num">-4,-2,0,2,4</td></tr><tr><td class="num">B</td><td class="num">360,869</td><td class="num">0</td><td class="num">0.0 %</td><td class="num">-5,1</td><td class="num">-4,-2,0,2,4</td></tr><tr><td class="num">C</td><td class="num">632,629</td><td class="num">0</td><td class="num">0.0 %</td><td class="num">-1,5</td><td class="num">-4,-2,0,2,4</td></tr><tr><td class="num">D</td><td class="num">663,484</td><td class="num">229,532</td><td class="num">34.6 %</td><td class="num">-3,3</td><td class="num">-5,-3,-1,1,3,5</td></tr></tbody></table>
+
+<h2>2 · What dt_xy actually is — and it needs no bench</h2>
+<p>It is not a per-chamber constant to be looked up. The <em>whole</em>
+<code>x_t0&nbsp;−&nbsp;y_t0</code> distribution translates linearly with
+<code>ftst_diff</code>, by the same amount on all four arms. <code>ftst</code> has
+6 phases over a 60&nbsp;ns sample, so one
+unit is 10.0&nbsp;ns of readout phase — and that is what is
+measured, to within the known low bias of the estimator (the accidental pedestal
+does not shift with <code>ftst</code> and pulls the correlation peak toward zero).</p>
+<table><thead><tr><th>arm</th><th>measured ns/unit</th><th>one phase</th><th>fraction</th><th>max resid to the line</th><th>classes</th></tr></thead><tbody><tr><td class="num">A</td><td class="num">-8.77</td><td class="num">-10.0</td><td class="num">0.88</td><td class="num">3.0</td><td class="num">5</td></tr><tr><td class="num">B</td><td class="num">-8.35</td><td class="num">-10.0</td><td class="num">0.83</td><td class="num">0.6</td><td class="num">5</td></tr><tr><td class="num">C</td><td class="num">-7.67</td><td class="num">-10.0</td><td class="num">0.77</td><td class="num">5.4</td><td class="num">5</td></tr><tr><td class="num">D</td><td class="num">-8.31</td><td class="num">-10.0</td><td class="num">0.83</td><td class="num">12.1</td><td class="num">6</td></tr></tbody></table>
+<p>So <code>dt_xy</code> is a readout-clock effect with no chamber physics in it.
+The bench measured two <code>ftst_diff</code> classes per arm; on A, B and C neither
+of them occurs in beam data. <strong>The beam data measures it directly, for every
+class that actually happens.</strong></p>
+<figure><img src="dt_xy_law.png" alt="dt_xy linear in ftst_diff">
+<figcaption>Left: the offset against <code>ftst_diff</code>, four arms and the
+one-phase line. Right: where the bench keys sit against the classes the beam
+data produces — they never coincide except on D at ±3.</figcaption></figure>
+
+<h2>3 · The shape nobody had looked at</h2>
+<p>Drawn per <code>ftst</code> class, on unambiguous tracks with no gate, the x/y
+time difference is a <strong>~200&nbsp;ns-wide peak sitting on an accidental
+pedestal</strong>. Two planes seeing one track at the same instant would give a
+spike a few ns wide. This is the whole result, and no choice of offset changes it.</p>
+<figure><img src="xy_agreement.png" alt="x/y time difference per ftst class">
+<figcaption>True pairing (line) and the same tracks with a scrambled partner
+(grey). The shape slides left across each row — that is <code>dt_xy</code>. Its
+width within a panel is the t<sub>0</sub> resolution.</figcaption></figure>
+
+<h2>4 · Two mechanisms tested, two ruled out</h2>
+<h3>Not the depth-bin degeneracy</h3>
+<p><code>wft/model.py</code> says the χ² surface has near-degenerate minima
+60&nbsp;ns apart and that only ~35&nbsp;% of free fits land in the physical one.
+That predicts a <em>comb</em> in the residual at 60&nbsp;ns. There is none — and the
+test is not blind, because the same statistic finds the known 5&nbsp;ns
+<code>T0_STEP</code> snap at 8.3&nbsp;σ or better on every chamber.</p>
+<table><thead><tr><th>arm</th><th>tracks</th><th>|R| at 60 ns</th><th>null</th><th>60 ns σ</th><th>|R| at 5 ns</th><th>5 ns σ (control)</th></tr></thead><tbody><tr><td class="num">A</td><td class="num">16,877</td><td class="num">0.020</td><td class="num">0.012</td><td class="num">0.97</td><td class="num">0.081</td><td class="num">8.3</td></tr><tr><td class="num">C</td><td class="num">15,063</td><td class="num">0.009</td><td class="num">0.013</td><td class="num">-0.51</td><td class="num">0.172</td><td class="num">18.9</td></tr><tr><td class="num">D</td><td class="num">13,481</td><td class="num">0.010</td><td class="num">0.025</td><td class="num">-0.90</td><td class="num">0.169</td><td class="num">8.6</td></tr></tbody></table>
+<h3>Not the x/y plane separation</h3>
+<p>The handoff called this "the first thing to check and it could explain a large
+part of the table". It is real and it is small. A plane separation crossed by an
+inclined track must vanish at normal incidence; the lowest-inclination quintile
+already carries 65.7–70.3&nbsp;ns of half-width, and
+the full <code>tan θ</code> range adds about 10 on top.</p>
+<figure><img src="mechanism.png" alt="degeneracy and geometry tests">
+<figcaption>Left: the periodicity test with its positive control. Right: residual
+half-width against inclination — a trend, on a floor that geometry cannot explain.</figcaption></figure>
+
+<h2>5 · The gate is the metric — so §1's number is truncated and its test circular</h2>
+<div class="verdict stop">
+<p><code>wft.reco.select_tracks</code> sets <code>gated</code> from
+<code>|(t0x − t0y) − dt| ≤ 120.0 ns</code> AND both planes plausible.
+<strong>Zero of 2,111,162 gated tracks lie outside that window.</strong>
+The handoff measured the x/y residual on the gated sample, so it measured a
+distribution that had already been cut on — at ±120.0&nbsp;ns around a
+centre that was wrong by up to 84&nbsp;ns.</p>
+<p>The consequence for §3 step&nbsp;4 is direct: a prior that moved t<sub>0</sub> would
+move which tracks pass this cut, so the residual measured on the survivors would
+improve <em>partly by construction</em>. <strong>That target must be declared on the
+unselected population</strong> — where the half-widths are not 66/76/77 but
+106.9/133.4/141.8&nbsp;ns.</p>
+</div>
+<table><thead><tr><th>arm</th><th>tracks</th><th>gated</th><th>gated outside window</th><th>hw gated</th><th>hw all</th><th>hw ungated</th><th>within 20 ns of the cut</th></tr></thead><tbody><tr><td class="num">A</td><td class="num">454,180</td><td class="num">52.3 %</td><td class="num">0</td><td class="num">69.2</td><td class="num">106.9</td><td class="num">184.5</td><td class="num">12.0 %</td></tr><tr><td class="num">B</td><td class="num">360,869</td><td class="num">54.3 %</td><td class="num">0</td><td class="num">77.4</td><td class="num">127.0</td><td class="num">300.4</td><td class="num">14.9 %</td></tr><tr><td class="num">C</td><td class="num">632,629</td><td class="num">54.5 %</td><td class="num">0</td><td class="num">78.0</td><td class="num">133.4</td><td class="num">272.9</td><td class="num">15.0 %</td></tr><tr><td class="num">D</td><td class="num">663,484</td><td class="num">54.1 %</td><td class="num">0</td><td class="num">76.8</td><td class="num">141.8</td><td class="num">330.3</td><td class="num">14.6 %</td></tr></tbody></table>
+
+<h2>6 · What the coincidence test is worth</h2>
+<p>Against a scrambled pairing — same arm, same <code>ftst</code> class, someone
+else's <code>y_t0</code> — the window keeps most true pairs and about a third of
+accidental ones. That is an enhancement of 1.94–2.43×, bought for
+roughly 30&nbsp;% of the real tracks. Useful; not the discriminator
+<code>select_pair</code>'s docstring describes when it says it uses information
+"that single-plane selection cannot use".</p>
+<table><thead><tr><th>arm</th><th>keeps true</th><th>keeps scrambled</th><th>enhancement</th><th>signal hw [ns]</th><th>per-plane σ [ns]</th><th>fitted err [ns]</th><th>understated by</th></tr></thead><tbody><tr><td class="num">A</td><td class="num">73.4 %</td><td class="num">37.8 %</td><td class="num">1.94</td><td class="num">80.0</td><td class="num">56.6</td><td class="num">3.82</td><td class="num">14.8</td></tr><tr><td class="num">B</td><td class="num">70.9 %</td><td class="num">29.2 %</td><td class="num">2.43</td><td class="num">82.5</td><td class="num">58.3</td><td class="num">8.25</td><td class="num">7.1</td></tr><tr><td class="num">C</td><td class="num">67.1 %</td><td class="num">31.8 %</td><td class="num">2.11</td><td class="num">85.0</td><td class="num">60.1</td><td class="num">6.07</td><td class="num">9.9</td></tr><tr><td class="num">D</td><td class="num">67.0 %</td><td class="num">32.5 %</td><td class="num">2.06</td><td class="num">77.5</td><td class="num">54.8</td><td class="num">10.58</td><td class="num">5.2</td></tr></tbody></table>
+<figure><img src="gate.png" alt="the gate as metric and as discriminator">
+<figcaption>Left: the sample §1 measured, beside the distribution it was cut out
+of. Right: what the window keeps, true against scrambled.</figcaption></figure>
+
+<h2>7 · Does the right dt_xy fix §1? No.</h2>
+<p>Reproduction first: the shipped column lands on 66.1&nbsp;ns for A and the
+same three track counts as the handoff. Substituting the in-situ offset then moves
+the half-width by about a nanosecond. The wrong constant scatters the residual by
+~20–34&nbsp;ns across <code>ftst</code> classes, which is worth fixing on its own
+account, and it is small beside a 66.1–77.4&nbsp;ns spread.</p>
+<table><thead><tr><th>arm</th><th>dt subtracted</th><th>tracks</th><th>half-width [ns]</th><th>|res| &gt; 30 ns</th><th>|res| &gt; 60 ns</th><th>dt error sd [ns]</th></tr></thead><tbody><tr><td class="num">A</td><td class="num">as shipped</td><td class="num">16,877</td><td class="num">66.1</td><td class="num">67.6 %</td><td class="num">40.2 %</td><td class="num">19.8</td></tr><tr><td class="num">A</td><td class="num">in-situ dt</td><td class="num">16,877</td><td class="num">65.4</td><td class="num">64.3 %</td><td class="num">35.3 %</td><td class="num">19.8</td></tr><tr><td class="num">C</td><td class="num">as shipped</td><td class="num">15,063</td><td class="num">76.4</td><td class="num">72.6 %</td><td class="num">46.5 %</td><td class="num">19.7</td></tr><tr><td class="num">C</td><td class="num">in-situ dt</td><td class="num">15,063</td><td class="num">75.5</td><td class="num">71.1 %</td><td class="num">44.9 %</td><td class="num">19.7</td></tr><tr><td class="num">D</td><td class="num">as shipped</td><td class="num">13,481</td><td class="num">77.4</td><td class="num">72.8 %</td><td class="num">46.7 %</td><td class="num">34.3</td></tr><tr><td class="num">D</td><td class="num">in-situ dt</td><td class="num">13,481</td><td class="num">74.7</td><td class="num">70.7 %</td><td class="num">43.5 %</td><td class="num">34.3</td></tr></tbody></table>
+
+<h2>8 · What this does not settle</h2>
+<ul>
+<li><strong>The in-situ prior (handoff §3 step 3) is not built.</strong> This supplies
+the <code>dt_xy</code> law it would need and removes the reason to expect it to
+collapse the residual the way §1 hoped — a ~60 ns per-plane uncertainty is not
+something a better centre repairs.</li>
+<li><strong>The absolute level of <code>dt_insitu</code> is provisional.</strong> The
+<em>shape</em> (linear, -8.8…-7.7 ns per unit) is good to a few ns;
+the anchor is a median on a broad peak and the whole column can move ~10 ns
+together. No acceptance or efficiency number is re-derived from it here.</li>
+<li><strong>Nothing is re-reconstructed.</strong> Every number is read from the
+stage-3 track table. Deciding whether a t<sub>0</sub> prior helps needs the waveform
+path, which is not this.</li>
+<li><strong>Why the per-plane t<sub>0</sub> is uncertain at one bin is not answered.</strong>
+That it is smooth rather than combed rules out the two-minimum picture; it does not
+say what replaces it.</li>
+</ul>
+
+<p class="foot">Generated by <code>make_xy_t0_report.py</code> from
+<code>D:\x17\sept26_prelim\xy_t0</code>. Tables: <code>fallback_census</code>, <code>insitu_dt</code>,
+<code>insitu_law</code>, <code>residual_table</code>, <code>degeneracy_test</code>,
+<code>geometry_test</code>, <code>circularity</code>, <code>discrimination</code>.
+Every figure ships the CSV it was drawn from.</p>
+</div></body></html>

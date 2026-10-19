@@ -55,6 +55,20 @@ GAP_S = 0.5             # burst split, same convention as pulse_match
 MATCH_TOL_S = 0.05      # burst<->bunch accept window; ~10x the 5 ms residual MAD
                         # and ~1/24 of the 1.2 s PS basic period, so it cannot
                         # reach the neighbouring pulse
+PS_SPACING_S = 1.2      # PS basic period: the closest a WRONG lock can sit, so
+                        # a bootstrap that moves further than this changed lock
+# The DREAM-burst-to-PS-pulse offset. Measured on the 241 fitted segments of
+# the 2026-08-13 recovery campaign: median 0.8290 s, MAD 0.1 ms, full range
+# 0.8221-0.8396 s, n=241, no segment beyond +-11 ms of the median. Used ONLY to
+# confine the coarse scan; the shipped delta is still fitted from the matched
+# pairs. The band is ~10x the worst observed deviation and 1/12 of the pulse
+# spacing, so it cannot reach a neighbouring lock.
+DELTA_REF_S = 0.8290
+DELTA_BAND_S = 0.1
+# Below this many matched bursts the band holds no lock at all, and the offset
+# bootstrap has nothing to take a median over. Same margin-of-3 convention the
+# ambiguity guard uses.
+MIN_DELTA_MATCH = 3
 
 
 def dream_events(run: str, subrun: str) -> pd.DataFrame:
@@ -94,10 +108,20 @@ def dream_events(run: str, subrun: str) -> pd.DataFrame:
                              is_flash=is_flash, t_since_flash_ns=t - flash_t))
 
 
-def burst_epochs(run: str, subrun: str, events: pd.DataFrame | None = None):
+def burst_epochs(run: str, subrun: str, events: pd.DataFrame | None = None,
+                 accept_offset_s: float | None = None,
+                 accept_source: str = 'verified'):
     """(burst_id, wall-clock epoch of each burst's flash) using pulse_match's fit."""
     ev = dream_events(run, subrun) if events is None else events
-    mr = pm.match_subrun(run, subrun)
+    # `accept_offset_s` forces the burst-to-pulse lock instead of letting the
+    # count scan choose. It exists so a lock established by EVIDENCE -- a
+    # bunch-shift scan, or the coincidence arbiter -- can be applied, which
+    # until now had no path into the products at all.
+    # `accept_source` labels WHICH evidence, and is recorded as
+    # lock_chosen_by; the override result is cached, so the label outlives the
+    # run that made it.
+    mr = pm.match_subrun(run, subrun, accept_offset_s=accept_offset_s,
+                         accept_source=accept_source)
     if mr is None:
         raise RuntimeError(f'pulse_match has no result for {run}/{subrun}')
     anchor = pm._anchor_epoch(run, subrun)
@@ -107,7 +131,11 @@ def burst_epochs(run: str, subrun: str, events: pd.DataFrame | None = None):
     return flash['burst_id'].to_numpy(), epoch, mr
 
 
-def dream_event_to_bunch(run: str, subrun: str, ntof_run: int) -> pd.DataFrame:
+def dream_event_to_bunch(run: str, subrun: str, ntof_run: int,
+                         delta_hint_s: float | None = None,
+                         accept_offset_s: float | None = None,
+                         accept_source: str = 'verified',
+                         events: pd.DataFrame | None = None) -> pd.DataFrame:
     """
     The section-3 chain, end to end.
 
@@ -115,9 +143,23 @@ def dream_event_to_bunch(run: str, subrun: str, ntof_run: int) -> pd.DataFrame:
       eventId, burst_id, is_flash, t_since_flash_ns,
       BunchNumber, join_resid_s, bunch_intensity_e10, pulse_e10, pstime_recovered
     Events whose burst found no bunch get BunchNumber = -1.
+
+    `delta_hint_s` is the boundary-sliver recovery lever (2026-08-12,
+    ntof_processing/join_mislock/): a sub-run straddling an n_TOF run
+    boundary lost its minority side 26 of 26 times in the August campaign,
+    because this delta scan is under-determined against a truncated pulse
+    list. The DREAM and n_TOF clocks are the same on both sides of the
+    boundary, so the MAJORITY side's fitted delta (ev.attrs['delta_s'] of
+    the segment that worked) transfers: pass it here and the scan is
+    confined to hint +-0.5 s. Only transfer within the same DREAM sub-run.
     """
-    ev = dream_events(run, subrun)
-    bids, epoch, mr = burst_epochs(run, subrun, ev)
+    # `events` lets a caller that already has the frame -- the slim, which
+    # writes the burst census from it before attempting the join -- avoid a
+    # second read of the DREAM files, and lets the same frame serve both.
+    ev = dream_events(run, subrun) if events is None else events
+    bids, epoch, mr = burst_epochs(run, subrun, ev,
+                                   accept_offset_s=accept_offset_s,
+                                   accept_source=accept_source)
     pk = pkup_bunches(ntof_run)
     ps = pk['psTime_s']
 
@@ -128,13 +170,137 @@ def dream_event_to_bunch(run: str, subrun: str, ntof_run: int) -> pd.DataFrame:
         k = np.clip(np.searchsorted(ps, cand), 1, len(ps) - 1)
         return np.where(np.abs(ps[k - 1] - cand) <= np.abs(ps[k] - cand), k - 1, k)
 
-    best_n, best_delta = -1, 0.0
-    for delta in np.arange(-3.0, 3.0, 0.001):
+    def count(delta):
         k = assign(delta)
-        n = int((np.abs(ps[k] - (epoch - delta)) < MATCH_TOL_S).sum())
-        if n > best_n:
-            best_n, best_delta = n, float(delta)
-    delta = float(np.median(epoch - ps[assign(best_delta)]))
+        return int((np.abs(ps[k] - (epoch - delta)) < MATCH_TOL_S).sum())
+
+    # SEARCH BAND, not a pinned value: delta is still FITTED from the matched
+    # pairs below; only the range the coarse scan may look in is confined.
+    #
+    # The +-3 s scan spans five possible locks (the PS pulses are 1.2 s apart),
+    # which is what made this scan degenerate: "best 49 vs 49 matched bursts at
+    # a different lock" refused 6 of the first 20 candidates on the 2026-08-13
+    # unmatched campaign, a SECOND count-based tie downstream of pulse_match's.
+    # Measured across the 241 fitted segments of the 8-13 recovery, delta has
+    # median 0.8290 s, MAD 0.1 ms, full range 0.8221-0.8396 s, and not one
+    # segment sits beyond +-11 ms of the median. A +-0.1 s band is ~10x the
+    # worst observed deviation and cannot reach a neighbouring 1.2 s lock by
+    # construction, so the degeneracy is removed rather than adjudicated.
+    lo, hi = (DELTA_REF_S - DELTA_BAND_S, DELTA_REF_S + DELTA_BAND_S) \
+        if delta_hint_s is None else (delta_hint_s - 0.5, delta_hint_s + 0.5)
+    grid = np.arange(lo, hi, 0.001)
+    counts = np.fromiter((count(d) for d in grid), int, len(grid))
+    best_delta = float(grid[int(counts.argmax())])
+    best_n = int(counts.max())
+
+    # Ambiguity guard (2026-08-12): a second delta lock nearly as good as the
+    # winner means this scan is deciding by luck — the failure mode that cost
+    # the sliver class. Locks are >= one pulse spacing (1.2 s) apart, so
+    # anything beyond +-0.5 s of the winner is a different lock.
+    # NO OVERLAP IS A FIRST-CLASS ANSWER, not something inferred from where
+    # argmax happened to fall. If nothing in the band matches, `counts` is flat
+    # and `argmax` silently returns index 0 -- the same shape as the original
+    # `n > best_n` tie-break bug, and the band-edge guard below was catching it
+    # only as a side effect. Measured 2026-08-13: three segments "locked" at
+    # exactly grid index 0 (+0.7290 s = DELTA_REF_S - DELTA_BAND_S), all three
+    # on DREAM runs that produced no fitted segment anywhere in the 8-12
+    # campaign (run_126, run_137 among the six historically dark runs), which
+    # is what a segment with no real overlap looks like.
+    #
+    # Below this the median that bootstraps the offset has nothing to stand on
+    # anyway -- the same margin-of-3 convention the ambiguity guard uses.
+    if delta_hint_s is None and best_n < MIN_DELTA_MATCH:
+        raise RuntimeError(
+            f'{run}/{subrun} x n_TOF {ntof_run}: nothing to lock onto in the '
+            f'{DELTA_REF_S:+.4f} +-{DELTA_BAND_S:g} s delta band -- the best '
+            f'offset matches only {best_n} of {len(epoch)} bursts (need '
+            f'{MIN_DELTA_MATCH}). The scan is FLAT, so this is almost certainly '
+            f'no overlap between this DREAM sub-run and this n_TOF run rather '
+            f'than a lock this band cannot reach. Not the same as the band-edge '
+            f'refusal below, which means a real count outside the band.')
+
+    # With the confined band there is only one lock in range, so `far` is empty
+    # and this cannot fire -- the band removes the degeneracy instead of
+    # adjudicating it. Kept because it is the guard that matters again the
+    # moment anyone widens DELTA_BAND_S or passes a hint.
+    far = np.abs(grid - best_delta) > 0.5
+    second_n = int(counts[far].max()) if far.any() else 0
+    if delta_hint_s is None and far.any() and best_n - second_n < 3:
+        raise RuntimeError(
+            f'{run}/{subrun} x n_TOF {ntof_run}: the burst-to-pulse delta is '
+            f'ambiguous (best {best_n} vs {second_n} matched bursts at a '
+            f'different lock). If a segment of this sub-run against another '
+            f'n_TOF run fitted, pass its delta as delta_hint_s; otherwise '
+            f'diagnose before joining. Refusing the silent pick '
+            f'(ntof_processing/join_mislock/).')
+
+    # ONLY THE MATCHED PAIRS DEFINE THE OFFSET (fixed 2026-08-12). A burst
+    # whose pulse is not in this run's list -- every burst of the sub-run that
+    # falls outside the n_TOF run, which on a boundary sliver is the MAJORITY --
+    # still gets a nearest pulse, clipped to the first or last one, and
+    # contributes (epoch - ps[0]) instead of the offset. Taking the median over
+    # all bursts then walks the offset by however far the sub-run overhangs the
+    # run. Measured on run_79/stat090_0002 x 224573, 77 % overhang: the scan
+    # locks correctly at +0.790 s (247 bursts, bunches 1-247), this median
+    # returns -957.971 s, and the join ships 277 bursts on bunches 1-527 --
+    # every one of them paired with a pulse ~280 later than the one it belongs
+    # to. Invisible downstream: both sides sit on the 1.2 s grid, so the
+    # residuals stay at 8 ms and the intensity check is circular. This is the
+    # mystery class (ntof_processing/join_mislock/); the ridge that found it is
+    # cross_bunch_matrix.py.
+    # THE BAND'S OWN FAILURE MODE, made loud. If this segment's true delta lies
+    # outside the band, the scan cannot say so by finding a rival lock -- there
+    # is no rival in range. It would instead pin against an edge and hand back a
+    # confident wrong answer, which is precisely the class of silence the band
+    # is meant to remove. So refuse at the edge and say the band is suspect.
+    # DO NOT TIGHTEN THE 0.9 WITHOUT READING THIS. `counts` is FLAT-TOPPED over
+    # +-MATCH_TOL_S (0.05 s) around the true delta, because every offset inside
+    # the accept window matches the same bursts, so `argmax` returns the FIRST
+    # point of that plateau -- systematically ~0.05 s BELOW the true delta. The
+    # bootstrap median below is what recovers the real value. Measured on a
+    # synthetic train with delta exactly at the reference: best_delta +0.7800,
+    # i.e. 0.049 s low. At 0.9 * DELTA_BAND_S = 0.09 s the guard has ~2x margin
+    # over that; tightening it to 0.5 * DELTA_BAND_S = 0.05 would fire on
+    # EVERY segment, including perfectly good ones.
+    if delta_hint_s is None and abs(best_delta - DELTA_REF_S) > 0.9 * DELTA_BAND_S:
+        # THE COUNTS ARE THE DIAGNOSIS, so say them. An edge lock means one of
+        # two very different things and the numbers separate them instantly:
+        # a LARGE best_n at the edge is a real lock outside the band (the band
+        # is wrong); a best_n of a handful, equal to the count at the reference,
+        # is a FLAT scan -- nothing in this band matches at all, which is what a
+        # segment with no real overlap looks like. Measured 2026-08-13: three
+        # segments locked at exactly the lower edge, which is `argmax` returning
+        # index 0 of a flat array, not a lock.
+        n_ref = count(DELTA_REF_S)
+        raise RuntimeError(
+            f'{run}/{subrun} x n_TOF {ntof_run}: the delta scan locked at '
+            f'{best_delta:+.4f} s, at the edge of the {DELTA_REF_S:+.4f} '
+            f'+-{DELTA_BAND_S:g} s search band ({best_delta - DELTA_REF_S:+.4f} s '
+            f'from the reference, against a campaign worst of 10.6 ms over 241 '
+            f'segments). Matched bursts: {best_n} at the edge vs {n_ref} at the '
+            f'reference, of {len(epoch)} bursts. A large count at the edge means '
+            f'the band is wrong; a handful, equal at both, means the scan is '
+            f'FLAT and nothing in this band matches -- diagnose before joining '
+            f'rather than trusting an edge lock.')
+
+    k0 = assign(best_delta)
+    sel = np.abs((epoch - best_delta) - ps[k0]) < MATCH_TOL_S
+    if not sel.any():
+        raise RuntimeError(
+            f'{run}/{subrun} x n_TOF {ntof_run}: no burst matched a pulse at '
+            f'the best delta {best_delta:+.3f} s -- nothing to bootstrap the '
+            f'offset from. Refusing to join (ntof_processing/join_mislock/).')
+    delta = float(np.median((epoch - ps[k0])[sel]))
+    # The bootstrap REFINES the scan's lock; it may not move it. Anything past
+    # one pulse spacing is a different lock arrived at silently -- the shape the
+    # bug above had, and the only way it stayed invisible for a whole campaign.
+    if abs(delta - best_delta) > PS_SPACING_S:
+        raise RuntimeError(
+            f'{run}/{subrun} x n_TOF {ntof_run}: the offset bootstrap walked '
+            f'from the scan lock {best_delta:+.3f} s to {delta:+.3f} s '
+            f'({delta - best_delta:+.1f} s, over one {PS_SPACING_S} s pulse '
+            f'spacing). That is a different lock, not a refinement. Refusing '
+            f'to join (ntof_processing/join_mislock/).')
     k = assign(delta)
     resid = (epoch - delta) - ps[k]
     ok = np.abs(resid) < MATCH_TOL_S
@@ -149,10 +315,49 @@ def dream_event_to_bunch(run: str, subrun: str, ntof_run: int) -> pd.DataFrame:
     out = ev.merge(per_burst, on='burst_id', how='left')
     e10 = mr['event_e10']
     out['pulse_e10'] = [e10.get(int(e)) for e in out['eventId']]
+    # THE BURST MAP, kept rather than dropped at the merge. `per_burst` is the
+    # only place the burst->bunch assignment exists as a table; after this merge
+    # it survives only spread across events, and the UNMATCHED bursts (bunch -1)
+    # are then filtered out at slim.py's `BunchNumber > 0` and lost entirely.
+    # The pulse ledger needs exactly those to have a denominator, so ship all
+    # bursts, matched or not. Cheap: ~1000 rows per segment.
+    out.attrs['burst_map'] = dict(
+        burst_id=[int(v) for v in bids],
+        bunch=[int(v) for v in b_bunch],
+        resid_ms=[None if not m else float(r * 1e3)
+                  for m, r in zip(ok, resid)])
     out.attrs.update(delta_s=delta, pulse_match_offset_s=mr['offset_s'],
+                     # keep measuring the delta distribution for free, so the
+                     # search band above stays evidence-backed rather than
+                     # becoming folklore
+                     delta_minus_ref_s=float(delta - DELTA_REF_S),
                      n_bursts=len(bids), n_matched=int(ok.sum()),
                      resid_mad_s=float(np.median(np.abs(resid[ok] - np.median(resid[ok])))),
-                     ntof_run=ntof_run, run=run, subrun=subrun)
+                     ntof_run=ntof_run, run=run, subrun=subrun,
+                     # join provenance (2026-08-12): enough to tell a
+                     # recovered segment from an originally-clean one, and a
+                     # confident join from a lucky one, from the products
+                     delta_hint_s=delta_hint_s,
+                     delta_margin=int(best_n - second_n),
+                     pulse_match_margin=mr.get('lock_margin'),
+                     pulse_match_chosen_by=mr.get('lock_chosen_by'),
+                     pulse_match_r_sig=mr.get('lock_r_sig'),
+                     # MEASURED extent of the sub-run's beam-synchronised
+                     # triggering, so nothing downstream has to estimate it.
+                     # The coverage map's duration is file count x 47.1 s when
+                     # the DAQ recorded no stop time, and that estimator was
+                     # wrong three times on 2026-08-12 alone: it produced a
+                     # bogus +41 bunch-shift prediction, a false accusation
+                     # that a good product was silently corrupt, and the
+                     # campaign's only apparently-unexplained failure
+                     # (run_81/stat090_0001 x 224580: 31.3 min estimated
+                     # against 48.4 measured, which moved its overhang from
+                     # 0.311 to 0.559 and across the bootstrap threshold).
+                     # The overlap MINUTES were right every time; it is always
+                     # this denominator. With n_bursts and n_matched beside it,
+                     # both the burst and wall-clock overhangs are computable
+                     # from the product with no reconstruction.
+                     subrun_span_s=float(epoch.max() - epoch.min()))
     return out
 
 

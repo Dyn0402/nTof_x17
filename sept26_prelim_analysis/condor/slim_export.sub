@@ -1,0 +1,35 @@
+# n_TOF slim -> narrow parquet, one job per sub-run.
+# Cheap: the slim is 50-90 MB per sub-run and the conversion is ~1 min, so
+# "espresso" (20 min) is ample and schedules almost immediately.
+# 27 MB out per sub-run measured on run_145/stat090_0000 -> ~8 GB campaign-wide.
+if ! defined jobfile
+  jobfile               = jobs.txt
+endif
+universe                = vanilla
+executable              = run_slim_wrapper.sh
+arguments               = "$(run) $(subrun)"
+transfer_input_files    = code.tar.gz, PROVENANCE.txt
+should_transfer_files   = YES
+when_to_transfer_output = ON_EXIT
+# The JOB pushes its parquet to EOS with xrdcp and hands back only this marker
+# (a few hundred bytes). transfer_output_remaps to EOS is NOT usable: the
+# access point performs the transfer and has no EOS mount, so the job completes
+# and is then held. Measured, cluster 4141483 -- see EOS_WRITE_TEST.md.
+# Naming this explicitly also stops HTCondor returning the whole scratch dir.
+transfer_output_files   = ""
+initialdir              = .
+# AFS caps entries PER DIRECTORY; a 22k-file log dir degraded the shared
+# schedd on 2026-09-09. stdout goes nowhere (the EOS product and the
+# wrapper exit code carry everything), and no marker is transferred back.
+# Only stderr is kept, one file per job, for diagnosis.
+output                  = /dev/null
+error                   = log/slim_$(run)_$(subrun).err
+log                     = log/slim.log
+request_cpus            = 1
+request_memory          = 4000MB
+request_disk            = 2000MB
++JobFlavour             = "espresso"
+MY.SendCredential       = true
+on_exit_hold            = (ExitBySignal == True) || (ExitCode != 0)
+max_retries             = 2
+queue run,subrun from $(jobfile)

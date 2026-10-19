@@ -1,0 +1,19 @@
+base = /eos/experiment/ntof/data/x17/reproc/prod_v12
+
+    run parts  exp  contig  raw     hist badfiles  bunches  gaps      GB
+------------------------------------------------------------------------
+ 224688    44   44    True  173      ref        0     2910     0    33.2
+ 224689     5    5    True   19       ok        0      274     0     3.1
+ 224690    40   40    True  157       ok        0     2930     0    32.8
+ 224691    38   38    True  150       ok        0     2925     0    32.4
+ 224692    39   39    True  153       ok        0     3050     0    34.9
+ 224693    36   36    True  144       ok        0     2866     0    31.0
+ 224694    11   11    True   42       ok        0      840     0    10.3
+ 224695    35   35    True  140       ok        0     2695     0    30.8
+ 224696    36   36    True  141       ok        0     2739     0    31.6
+ 224697    39   39    True  154       ok        0     2800     0    31.6
+ 224698    40   40    True  159       ok        0     3023     0    31.9
+ 224699    38   38    True  149       ok        0     2967     0    31.3
+ 224700    57   57    True  225       ok        0     4494     0    49.0
+
+all runs: complete, contiguous, same UserInput, every partial reads.
