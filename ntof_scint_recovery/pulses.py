@@ -183,7 +183,9 @@ def histogram(P: dict) -> dict:
     it = np.digitize(P['t_us'], T_EDGES_US) - 1
     ia = np.clip(np.digitize(P['amp_mV'], A_EDGES) - 1, 0, nA - 1)
     iw = np.clip(np.digitize(P['width_ns'], W_EDGES) - 1, 0, nW - 1)
-    ich = np.array([ci.get((int(d), int(c)), -1) for d, c in zip(P['det'], P['detn'])])
+    ich = np.array([ci.get((int(d), int(c)), -1) for d, c in zip(P['det'], P['detn'])], dtype=int)
+    # a run with no scintillators (1-9 July) has no pulses: empty float arrays cannot index
+    it, ia, iw, cls = it.astype(int), ia.astype(int), iw.astype(int), cls.astype(int)
     ok = (it >= 0) & (it < nT) & (cls >= 0) & (ich >= 0)
     np.add.at(HA, (cls[ok], ich[ok], it[ok], ia[ok]), 1)
     np.add.at(HW, (cls[ok], ich[ok], it[ok], iw[ok]), 1)
