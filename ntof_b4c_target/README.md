@@ -3,6 +3,10 @@
 Prompted by Stephan (meeting 2026-10-19): do the early July runs hold other-target data,
 and could the B4C night give pairs on the scintillator triggers? **Answer: no pairs.**
 Report: `/media/dylan/data/x17/b4c_target/report.html` (`make_report.py`).
+Slide note: <https://dylan-neff.web.cern.ch/notes/b4c-target-pairs.html> (`make_b4c_deck.py`).
+
+Build order: `python -m ntof_b4c_target.expect` → `.deck_data` → `.make_report` / `.make_b4c_deck`;
+publish with `dylan-cern-site/scripts/add-note.py <OUT>/b4c-target-pairs.html --slug b4c-target-pairs --force --deploy`.
 
 ## The B4C runs (logbook 14–15 July, run configs, EOS)
 
@@ -57,6 +61,19 @@ Run: `python -m ntof_b4c_target.expect` then `python -m ntof_b4c_target.make_rep
   chambers lit: **0.03 in the whole exposure** (1.7 even at a 0.1 MIP plastic threshold).
   The leptons (≤ 11.45 MeV transitions) do not reach the plastics behind the LS vessels.
 - Disc diameter (Ø100 vs Ø50) barely matters: the beam ends at r ≈ 22 mm.
+
+## ³He comparison (same build, same thresholds; `he3_ref`, 2×10⁵ pairs each)
+
+Per pair, two legs + both chambers: ³He IPC M1 1.7×10⁻³, E0 6.6×10⁻³, X17 9.6×10⁻³, against
+5×10⁻⁶ averaged over the ¹¹B lines (only the 11.448 MeV line ever passes). Per pulse ³He(n,γ)
+makes 9.0×10⁻⁵ M1 pairs (44.8 % of beam neutrons absorbed in the gas, `neutrons_thermal_ear2_L19p5`),
+B4C 1.6 (×17,900). The capsule's own Al makes ~39 IPC pairs/pulse (15,160 captures × 2.56×10⁻³,
+lines taken as E1), i.e. the production data already hold ~24× more few-MeV pairs per pulse
+than the B4C night. Neither target's pairs are visible in the 1–30 ms gate.
+
+Geant4 capture-model check (3000 biased neutrons, `data/hp3k.json`, `pe3k.json`): ParticleHP
+puts 47 % of ¹⁰B(n,γ) cascades above Q; photon evaporation conserves energy but routes ~1/3 via a
+2.12 MeV level not seen in EGAF; the 478 keV line comes in 56 % of (n,α) instead of 94 %.
 
 ## Open
 

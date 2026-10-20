@@ -1,5 +1,41 @@
 # Handoff
 
+## B4C target (July) pair expectation — updated 2026-10-20 (dylan-Yoga)
+
+**Resume:** Done: B4C night (run_39/40) can't show pairs; deck live. Optional: free 185 GB of sim output, chase occupancy gap.
+
+**Goal:** Stephan (2026-10-19) asked whether the early-July non-³He targets, especially the B4C night on the
+scintillator trigger, could give pairs. Answer with existing data + Geant4.
+
+**Done:**
+- Inventory: B4C = run_38 (flash only), run_39 + run_40 (93 k scint triggers, 2635 pulses); "Marex" runs 25–37.
+- Geant4 (`MX17_Full_Geant` main, merged from `b4c-slab`): EAR2 beam on a 2.5 mm B4C disc (Ø100/Ø50), measured
+  EGAF ¹⁰B(n,γ) cascade, Born IPC per ¹¹B line, ³He reference pairs in the same geometry.
+- Result: 1.6 IPC pairs/pulse made, 0.03 triggered two-chamber pair events in the whole night; leptons of
+  ≤ 11.45 MeV transitions stop before the plastics. ³He capsule Al already makes ~24× more such pairs per pulse.
+- `ntof_b4c_target/` (README has everything), report `/media/dylan/data/x17/b4c_target/report.html`,
+  slide note https://dylan-neff.web.cern.ch/notes/b4c-target-pairs.html
+
+**In progress / where it stopped:** nothing half-done.
+
+**Next steps (optional):**
+1. Ask Dylan before deleting `/eos/experiment/ntof/data/x17/full_sim/b4c_july/ipc_r*` (148 GB step trees;
+   reduced parts in `/eos/user/d/dneff/scratch/b4c_sim/parts*` are all the analysis needs).
+2. Open: sim chamber occupancy (478 keV Compton electrons, ~1900 lit/arm/pulse) vs data's few % multi-chamber
+   fraction — criteria not matched. Would need the data criterion applied to the sim (or a 3 keV-like one to data).
+
+**Gotchas / decisions:**
+- Geant4 11.2 ParticleHP ¹⁰B(n,γ) is not energy-conserving; `/process/had/particle_hp/use_photo_evaporation true`
+  conserves but has the wrong branching → cascade generated from EGAF via `--gamma-lines E1+E2:w`.
+- Geant4 MT (-t >1) aborts with ROOT "gInterpreter not initialized" in this build: run -t 1.
+- lxplus can't push to GitHub (no creds): fetch the lxplus worktree branch over ssh from the desktop and push there.
+- Data multi-chamber fraction uses the hits-tree event count (71 k), not all 93 k triggers.
+
+**Key files & commands:**
+- `python -m ntof_b4c_target.expect` / `.deck_data` / `.make_report` / `.make_b4c_deck`
+- `ntof_b4c_target/lxplus/` — condor job + reduction scripts (cluster outputs under `full_sim/b4c_july/`)
+- lxplus build: `/afs/cern.ch/work/d/dneff/git/MX17_Full_Geant_b4c` (worktree, branch b4c-slab)
+
 ## MPGD2026 proceedings (JINST) — updated 2026-10-20 (dylan-Yoga)
 
 **Resume:** first draft is on Overleaf; Dylan says it "looks good to start". Next: fill the cyan `\askDylan` items, then polish.
