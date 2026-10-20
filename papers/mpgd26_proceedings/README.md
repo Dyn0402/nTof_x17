@@ -13,10 +13,11 @@ oral talk, MPGD2026, Prague, 3 Sept 2026. **Deadline: 17 January 2027**, submitt
 - `draft_preview.pdf` (gitignored, local only) was compiled locally with Times (`mathptmx`) in place of `newtx`, because this machine's TeX Live 2023
   cannot load the current newtx. Overleaf compiles the real thing, so expect small differences in line breaks.
 
-Overleaf project (Dylan's copy of the JINST template): https://www.overleaf.com/project/6ad72207b122b98dea142d04
-Link once, from a machine with the Overleaf git token:
+Overleaf project (Dylan's copy of the JINST template): https://www.overleaf.com/project/6ad72207b122b98dea142d04 ,
+linked 2026-10-20 with `papers/overleaf.sh` (remote `overleaf-mpgd26_proceedings`). Day to day:
 
-    papers/overleaf.sh link mpgd26_proceedings https://git.overleaf.com/6ad72207b122b98dea142d04
+    papers/overleaf.sh pull mpgd26_proceedings   # bring Overleaf edits in (commit your own first)
+    papers/overleaf.sh push mpgd26_proceedings   # send repo commits to Overleaf
 
-That replaces the template's files at the project's head with this folder; they stay in the Overleaf history.
-Then set `main.tex` as the main document.
+The template's own files (main.tex, biblio.bib) were replaced at the project's head and stay in its history;
+its jinstpub.sty, JHEP.bst and line numbers were adopted. Set `main.tex` as the main document in Overleaf if it isn't.
