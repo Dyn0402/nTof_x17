@@ -1,0 +1,35 @@
+#  condor_submit flash.sub -a 'runs=batch.txt'
+#
+# One job per n_TOF run, 2-6 raw files each (~3.5 GB apiece, read one at a time).
+# No trailing "# comment" on a value line: condor parses it into the value.
+
+universe                = vanilla
+executable              = flash_wrapper.sh
+arguments               = $(run)
+
+runs                    = runs.txt
+
+transfer_input_files    = ntof_processing, plan.csv
+should_transfer_files   = YES
+when_to_transfer_output = ON_EXIT
+transfer_output_files   = ""
+
+output                  = logs/flash_$(run).out
+error                   = logs/flash_$(run).err
+log                     = logs/flash.log
+
+request_cpus            = 1
+request_memory          = 2 GB
+request_disk            = 20 GB
+
++JobFlavour             = "workday"
+MY.WantOS               = "el9"
+
+# lets the worker write straight to EOS (verified for the waveform pull, 2026-08-12)
+MY.SendCredential       = true
+
+on_exit_remove          = (ExitCode =?= 0)
+max_retries             = 2
+requirements            = Machine =!= LastRemoteHost
+
+queue run from $(runs)
