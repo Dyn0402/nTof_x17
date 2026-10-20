@@ -48,6 +48,15 @@ NPRE = 200
 T_EDGES_US = np.concatenate([np.logspace(np.log10(0.1), 4, 101), [3e4, 3.2e4]])
 A_EDGES = np.logspace(np.log10(2), np.log10(2000), 91)
 W_EDGES = np.arange(0, 301, 3)
+RF_EDGES = np.concatenate([[0], np.logspace(-2, 1, 61)])      # residual rms / amplitude
+#: coincidence grids: coarse time, wall-bar dt and ln(A1/A2)
+TC_EDGES_US = np.concatenate([np.logspace(-1, 4, 26), [3e4, 3.2e4]])
+DT_EDGES = np.arange(-30, 31, 2.0)
+LR_EDGES = np.linspace(-3, 3, 61)
+SIG_PW = (-25.0, 5.0)        # plastic - wall, ns: the coincidence peak sits at -15..-5
+SIDE_PW = (60.0, 210.0)
+DT_BAR = 30.0
+ACC_SHIFT = 500
 
 
 def head_baseline(y: np.ndarray, chunk: int) -> np.ndarray:
@@ -99,6 +108,45 @@ def width(y: np.ndarray, i: int, amp: float, lim: int = 300) -> int:
     return b - a + 1
 
 
+_TMPL = None
+
+
+def templates():
+    """Per-family template and the least-squares projector for A*T + b0 + b1*t."""
+    global _TMPL
+    if _TMPL is None:
+        z = np.load(Path(__file__).with_name('templates.npz'))
+        _TMPL = {}
+        for fam in ('WAL', 'PSS', 'LIQ'):
+            t = z[f't_ns_{fam}'].astype(float)
+            X = np.stack([z[fam].astype(float), np.ones_like(t), t / 100.0], axis=1)
+            _TMPL[fam] = (int(-t[0]), int(t[-1]), X, np.linalg.pinv(X))
+    return _TMPL
+
+
+def fit_pulses(y: np.ndarray, pk: np.ndarray, fam: str, noise: float):
+    """Template fit of every peak in a segment: amplitude, chi2/ndf, local baseline
+    slope.  ``y`` is the signal relative to the PRE-FLASH baseline (pulse direction
+    +), so the local linear baseline is fitted, not assumed.  Peaks whose window
+    runs off the segment get NaN."""
+    pre, post, X, Xp = templates()[fam]
+    amp = np.full(len(pk), np.nan)
+    chi = np.full(len(pk), np.nan)
+    slope = np.full(len(pk), np.nan)
+    rf = np.full(len(pk), np.nan)
+    ok = (pk - pre >= 0) & (pk + post < len(y))
+    if ok.any():
+        idx = pk[ok][:, None] + np.arange(-pre, post + 1)[None, :]
+        Y = y[idx]                                   # (npk, L)
+        coef = Y @ Xp.T                              # (npk, 3)
+        res = Y - coef @ X.T
+        amp[ok] = coef[:, 0]
+        chi[ok] = (res ** 2).sum(axis=1) / (max(noise, 0.2) ** 2 * (X.shape[0] - 3))
+        slope[ok] = coef[:, 2]
+        rf[ok] = np.sqrt((res ** 2).mean(axis=1)) / np.maximum(np.abs(coef[:, 0]), 1e-3)
+    return amp, chi, rf
+
+
 def pulses_file(path: str, C: dict) -> dict:
     f = uproot.open(path)
     prov = json.loads(Path(path[:-5] + '_provenance.json').read_text())
@@ -108,7 +156,7 @@ def pulses_file(path: str, C: dict) -> dict:
     starts = np.r_[0, np.nonzero(np.diff(bb))[0] + 1]
     stops = np.r_[starts[1:], len(bb)]
     cols = {k: [] for k in ('run', 'bunch', 'det', 'detn', 't_us', 'amp_mV', 'width_ns', 'base_mV', 'in_head', 'ppp',
-                            'pk_amp')}
+                            'pk_amp', 'amp_fit', 'chi2', 'resfrac', 'n_neigh')}
     for e0, e1 in zip(starts, stops):
         a = f['blocks'].arrays(['bunch', 'det', 'detn', 'tof0', 'n', 'samples'], entry_start=e0, entry_stop=e1)
         bunch = int(a['bunch'][0])
@@ -139,6 +187,7 @@ def pulses_file(path: str, C: dict) -> dict:
                 if len(pre) < 1000:
                     continue
                 base0 = float(np.median(pre))
+                noise = float(np.std(pre)) * MV
                 segs = []
                 yh = pol * (xh - base0) * MV
                 bh = head_baseline(yh, CHUNK_NS[fam])
@@ -153,21 +202,31 @@ def pulses_file(path: str, C: dict) -> dict:
                     pk = find(r, fam)
                     if ih:
                         pk = pk[(t0 + pk - t_fl) > -1000]        # nothing before the flash but a few pre-flash
+                    if not len(pk):
+                        continue
                     wd = widths(r, pk)
-                    for i, wi in zip(pk, wd):
-                        amp = float(r[i])
-                        cols['run'].append(prov['run'])
-                        cols['bunch'].append(bunch)
-                        cols['det'].append(d)
-                        cols['detn'].append(int(ch))
-                        cols['t_us'].append((t0 + i - t_fl) / 1e3)
-                        cols['amp_mV'].append(amp)
-                        cols['width_ns'].append(int(wi))
-                        cols['base_mV'].append(float(b[i]))
-                        cols['in_head'].append(ih)
-                        cols['ppp'].append(ppp.get(bunch, np.nan))
-                        cols['pk_amp'].append(pk_amp)
-    return {k: np.array(v) for k, v in cols.items()}
+                    af, ch2, rfr = fit_pulses(y, pk, fam, noise)
+                    pre_, post_ = templates()[fam][:2]
+                    # other peaks inside this peak's fit window: pile-up flag
+                    lo = np.searchsorted(pk, pk - pre_)
+                    hi = np.searchsorted(pk, pk + post_, side='right')
+                    m = len(pk)
+                    cols['run'].append(np.full(m, prov['run']))
+                    cols['bunch'].append(np.full(m, bunch))
+                    cols['det'].append(np.full(m, d))
+                    cols['detn'].append(np.full(m, int(ch)))
+                    cols['t_us'].append((t0 + pk - t_fl) / 1e3)
+                    cols['amp_mV'].append(r[pk].astype(float))
+                    cols['width_ns'].append(wd)
+                    cols['base_mV'].append(b[pk].astype(float))
+                    cols['in_head'].append(np.full(m, ih))
+                    cols['ppp'].append(np.full(m, ppp.get(bunch, np.nan)))
+                    cols['pk_amp'].append(np.full(m, pk_amp))
+                    cols['amp_fit'].append(af)
+                    cols['chi2'].append(ch2)
+                    cols['resfrac'].append(rfr)
+                    cols['n_neigh'].append(hi - lo - 1)
+    return {k: (np.concatenate(v) if v else np.zeros(0)) for k, v in cols.items()}
 
 
 def histogram(P: dict) -> dict:
@@ -189,9 +248,95 @@ def histogram(P: dict) -> dict:
     ok = (it >= 0) & (it < nT) & (cls >= 0) & (ich >= 0)
     np.add.at(HA, (cls[ok], ich[ok], it[ok], ia[ok]), 1)
     np.add.at(HW, (cls[ok], ich[ok], it[ok], iw[ok]), 1)
+    # template-fit amplitude and shape mismatch, isolated pulses only (no neighbour in the fit window)
+    iso = ok & (P['n_neigh'] == 0) & np.isfinite(P['amp_fit'])
+    iaf = np.clip(np.digitize(P['amp_fit'], A_EDGES) - 1, 0, nA - 1)
+    irf = np.clip(np.digitize(P['resfrac'], RF_EDGES) - 1, 0, len(RF_EDGES) - 2)
+    HF = np.zeros((2, len(CHANNELS), nT, nA), np.float32)
+    HR = np.zeros((2, len(CHANNELS), nT, len(RF_EDGES) - 1), np.float32)
+    np.add.at(HF, (cls[iso], ich[iso], it[iso], iaf[iso]), 1)
+    np.add.at(HR, (cls[iso], ich[iso], it[iso], irf[iso]), 1)
     nb = {c: len({(r, b) for r, b, k in zip(P['run'], P['bunch'], cls) if k == c}) for c in (0, 1)}
-    return dict(HA=HA, HW=HW, t_edges_us=T_EDGES_US, a_edges=A_EDGES, w_edges=W_EDGES,
-                channels=np.array(CHANNELS), n_par=nb[0], n_ded=nb[1])
+    out = dict(HA=HA, HW=HW, HF=HF, HR=HR, t_edges_us=T_EDGES_US, a_edges=A_EDGES, w_edges=W_EDGES,
+               rf_edges=RF_EDGES, channels=np.array(CHANNELS), n_par=nb[0], n_ded=nb[1])
+    out.update(coincidences(P, cls))
+    return out
+
+
+def _amp(P):
+    a = P['amp_fit'].copy()
+    bad = ~np.isfinite(a)
+    a[bad] = P['amp_mV'][bad]
+    return a
+
+
+def coincidences(P: dict, cls: np.ndarray) -> dict:
+    """Coincidence histograms on the coarse time grid TC_EDGES_US.
+
+    ``PW_sig/PW_side`` (class, arm, plastic bar, t, amp): plastic pulses with a
+      wall pulse of the same arm at dt = t_plastic - t_wall in SIG_PW (signal) or
+      SIDE_PW (accidentals; scale by SIG/SIDE width ratio, stored as ``pw_side_scale``).
+    ``BAR_r/BAR_g`` (class, wall, bar, t, dt, ln(A1/A2) | geometric mean amp):
+      the two ends of a wall bar (detn 2g+1, 2g+2) within +-DT_BAR ns; ``*_acc`` the
+      same with end 2 shifted by +ACC_SHIFT ns (accidentals, same window).
+    """
+    amp = _amp(P)
+    key = (P['run'].astype(np.int64) * 10000 + P['bunch'].astype(np.int64)) * 10**8 \
+        + np.round(P['t_us'] * 1e3).astype(np.int64)            # ns, unique per (run, bunch)
+    itc = np.digitize(P['t_us'], TC_EDGES_US) - 1
+    nTC = len(TC_EDGES_US) - 1
+    nA = len(A_EDGES) - 1
+    good = (cls >= 0) & (itc >= 0) & (itc < nTC)
+    PWs = np.zeros((2, 4, 2, nTC, nA), np.float32)
+    PWb = np.zeros_like(PWs)
+    nDT, nR, nG = len(DT_EDGES) - 1, len(LR_EDGES) - 1, len(A_EDGES) - 1
+    BR = np.zeros((2, 4, 4, nTC, nDT, nR), np.float32)
+    BG = np.zeros((2, 4, 4, nTC, nDT, nG), np.float32)
+    BRa = np.zeros_like(BR)
+    BGa = np.zeros_like(BG)
+
+    def any_in(kw, kp, lo, hi):
+        a = np.searchsorted(kw, kp - hi)
+        b = np.searchsorted(kw, kp - lo, side='right')
+        return b > a
+
+    for arm in range(4):
+        w = good & (P['det'] == arm) & (amp > 10)
+        kw = np.sort(key[w])
+        for bar in (1, 2):
+            p = good & (P['det'] == 4 + arm) & (P['detn'] == bar) & (amp > 20)
+            kp = key[p]
+            ia = np.clip(np.digitize(amp[p], A_EDGES) - 1, 0, nA - 1)
+            for H, (lo, hi) in ((PWs, SIG_PW), (PWb, SIDE_PW)):
+                m = any_in(kw, kp, lo, hi)
+                np.add.at(H, (cls[p][m], arm, bar - 1, itc[p][m], ia[m]), 1)
+        for g in range(4):
+            e1 = good & (P['det'] == arm) & (P['detn'] == 2 * g + 1) & (amp > 10)
+            e2 = good & (P['det'] == arm) & (P['detn'] == 2 * g + 2) & (amp > 10)
+            if not e1.any() or not e2.any():
+                continue
+            o = np.argsort(key[e2])
+            k2, a2 = key[e2][o], amp[e2][o]
+            k1, a1 = key[e1], amp[e1]
+            for (HRr, HGg, shift) in ((BR, BG, 0), (BRa, BGa, ACC_SHIFT)):
+                kk = k2 + shift
+                j = np.clip(np.searchsorted(kk, k1), 1, len(kk) - 1)
+                jj = np.where(np.abs(kk[j] - k1) < np.abs(kk[j - 1] - k1), j, j - 1)
+                dt = (k1 - kk[jj]).astype(float)
+                m = np.abs(dt) <= DT_BAR
+                if not m.any():
+                    continue
+                idt = np.clip(np.digitize(dt[m], DT_EDGES) - 1, 0, nDT - 1)
+                lr = np.log(np.maximum(a1[m], 1e-3) / np.maximum(a2[jj][m], 1e-3))
+                ir = np.clip(np.digitize(lr, LR_EDGES) - 1, 0, nR - 1)
+                gm = np.sqrt(np.maximum(a1[m], 0) * np.maximum(a2[jj][m], 0))
+                ig = np.clip(np.digitize(gm, A_EDGES) - 1, 0, nG - 1)
+                c1, t1 = cls[e1][m], itc[e1][m]
+                np.add.at(HRr, (c1, arm, g, t1, idt, ir), 1)
+                np.add.at(HGg, (c1, arm, g, t1, idt, ig), 1)
+    return dict(PW_sig=PWs, PW_side=PWb, pw_side_scale=(SIG_PW[1] - SIG_PW[0]) / (SIDE_PW[1] - SIDE_PW[0]),
+                BAR_r=BR, BAR_g=BG, BAR_r_acc=BRa, BAR_g_acc=BGa,
+                tc_edges_us=TC_EDGES_US, dt_edges=DT_EDGES, lr_edges=LR_EDGES)
 
 
 def main(argv=None) -> int:
@@ -209,7 +354,8 @@ def main(argv=None) -> int:
             if H is None:
                 H = h
             else:
-                for k in ('HA', 'HW', 'n_par', 'n_ded'):
+                for k in ('HA', 'HW', 'HF', 'HR', 'n_par', 'n_ded', 'PW_sig', 'PW_side',
+                          'BAR_r', 'BAR_g', 'BAR_r_acc', 'BAR_g_acc'):
                     H[k] = H[k] + h[k]
         np.savez_compressed(a.out, **H)
         print(f'{n} files histogrammed ({H["n_par"]} par, {H["n_ded"]} ded bunches) -> {a.out}')

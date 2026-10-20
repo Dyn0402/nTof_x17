@@ -636,17 +636,179 @@ def wall_edge(D, PC):
     D.slide('wall_edge', body, notes, short='wall small pulses')
 
 
+# ------------------------------------------------------------------ the fixed-reference layer
+def coinc_curves():
+    f = out_dir('coinc') / 'coinc_curves.npz'
+    return dict(np.load(f)) if f.exists() else None
+
+
+def coinc_rows():
+    f = out_dir('coinc') / 'coinc_recovery.csv'
+    return {(r['what'], r['fam'], r['cls']): fnum(r['t_us']) for r in csv.DictReader(open(f))} if f.exists() else {}
+
+
+def fit_shape(D, K, KR):
+    tc = K['tc_us']
+    m = (tc >= 0.3) & (tc < 1e4)
+    panels = []
+    for fam in ('WAL', 'PSS', 'LIQ'):
+        ys = {c: K.get(f'{fam}_{c}_resfrac') for c in ('par', 'ded')}
+        top = 0.6 if fam == 'WAL' else 1.0
+        P = sd.Plot(530, 600, x=(0.3, 1e4, 'log'), y=(0, top), xlabel='time since the flash',
+                    ylabel='fit residual rms / amplitude' if fam == 'WAL' else '', title=FAM[fam], margin=(24, 20, 92, 96))
+        for c, y in ys.items():
+            if y is None:
+                continue
+            t = KR.get(('shape80', fam, c), math.nan)
+            t25 = KR.get(('shape', fam, c), math.nan)
+            P.line(tc[m].tolist(), clip(y[m], 0, top), CC[c], 3, markers=False,
+                   tip=f'{FAM[fam]} {CN[c]}: 80 % of the early excess misfit gone after {fmt_t(t)}; within +25 % of the 1–10 ms value after {fmt_t(t25)}')
+            if np.isfinite(t):
+                P.vline(t, CC[c], '8 5', 2.5)
+        P.xticks(tlog_ticks(0.3, 1e4)).yticks([(v, f'{v:.1f}') for v in np.arange(0, top + 1e-9, 0.2)])
+        panels.append(P.svg(fam))
+    tw = KR.get(('shape80', 'WAL', 'ded'), math.nan)
+    tp = KR.get(('shape80', 'PSS', 'ded'), math.nan)
+    tl = KR.get(('shape80', 'LIQ', 'ded'), math.nan)
+    sw = KR.get(('shape', 'WAL', 'ded'), math.nan)
+    body = (sd.title(f'Fitted on a local baseline, 80 % of the shape is back by ~{fmt_t(tp)} (plastics), ~{fmt_t(tw)} (walls), ~{fmt_t(tl)} (liquids)',
+                     f'Template fit of isolated pulses: median residual rms over amplitude, dedicated. The walls\' last 20 % takes until ~{fmt_t(sw)}')
+            + sd.row(*panels, gap=36)
+            + sd.legend([('parasitic', CC['par'], 'line'), ('dedicated', CC['ded'], 'line'),
+                         ('80 % of the early excess gone', sd.MUT, 'dash')]))
+    notes = ('<p>Recovered shape: the median misfit has lost 80 % of its early excess over the 1–10 ms value (robust to the '
+             'small bump the plastics show at 0.1–1 ms, which follows the capture-γ population). The tooltips also give the '
+             'stricter "within +25 % of the 1–10 ms value".</p><p>Templates: the median normalised shape of clean pulses 1–10 ms after the flash (one pulse in its ZS block, '
+             '30–300 mV), per family (<code>templates.py</code>, <code>templates.npz</code>). Every found pulse is refitted with '
+             'A·template + b₀ + b₁·t over [−150, +350] ns (walls), [−40, +120] (plastics), [−30, +100] (liquids), so the '
+             'steep flash tail enters as a local slope instead of biasing the amplitude. Isolated = no other pulse in the '
+             'window. The misfit floor of the plastics and liquids (~0.1) is the template aligned to the peak sample: '
+             'a 4–13 ns pulse is not resolved in 1 ns steps. This is the answer to "how far back into the tail can a '
+             'pulse be reconstructed": from the time its shape is the late-time shape.</p>')
+    D.slide('fit_shape', body, notes, short='template fit')
+
+
+def plastic_wall(D, K, KR):
+    tcc = K['tcc_us']
+    m = (tcc >= 1) & (tcc < 1e4)
+    panels = []
+    for c in ('par', 'ded'):
+        P = sd.Plot(810, 560, x=(1, 1e4, 'log'), y=(0, 1.6), xlabel='time since the flash',
+                    ylabel='plastic amplitude / 1–10 ms value', title=f'plastic pulses behind a wall hit, {CN[c]}')
+        P.band([1, 1e4], [0.9, 0.9], [1.1, 1.1], sd.GREEN, alpha=0.10)
+        for nm, col, lab in (('median', CC[c], 'median'), ('edge95', sd.PURPLE, 'upper edge (95 %)')):
+            y = K.get(f'pw_{c}_{nm}')
+            if y is None:
+                continue
+            mv = float(K[f'pw_{c}_{nm}_mV'])
+            ref = float(K[f'pw_{c}_{nm}_ref'])
+            P.line(tcc[m].tolist(), clip(y[m], 0, 1.6), col, 3.5, markers=True, r=5,
+                   tips=[f'{lab}: {v:.2f} × {mv:.0f} mV at {fmt_t(t)}' for t, v in zip(tcc[m], y[m])])
+            if np.isfinite(ref):
+                P.hline(min(ref, 1.58), col, '3 5', 2, tip=f'{lab} at 30–32 ms (cosmic muons): {ref:.2f}')
+        P.hline(1, sd.INK, None, 1.2)
+        P.xticks(tlog_ticks(1, 1e4)).yticks([(v, f'{v:.1f}') for v in (0, 0.5, 1.0, 1.5)])
+        panels.append(P.svg(c))
+    pur = K.get('pw_ded_purity')
+    tm = KR.get(('plastic_given_wall_median', 'PSS', 'ded'), math.nan)
+    te_ = KR.get(('plastic_given_wall_edge95', 'PSS', 'ded'), math.nan)
+    body = (sd.title(f'Behind a wall hit: the plastic median is back by {fmt_t(tm)}, its upper edge only by {fmt_t(te_)}',
+                     'Plastic pulses 5–25 ns after a wall pulse of the same arm, accidentals subtracted; median and upper edge over their 1–10 ms value')
+            + sd.row(*panels, gap=44)
+            + sd.legend([('median', sd.INK, 'line'), ('upper edge (95 %)', sd.PURPLE, 'line'),
+                         ('30–32 ms (cosmics)', sd.MUT, 'dash'), ('±10 %', sd.GREEN, 'box')]))
+    notes = ('<p>The plastic minus wall time difference peaks at −15…−5 ns in every arm. Signal window −25…+5 ns; '
+             'accidentals from +60…+210 ns, scaled by the width ratio. Requiring the wall selects particles that '
+             'crossed the wall first, which takes out most of the neutron recoils and capture γs that hit the '
+             'plastic alone. The population is still not fixed (no MIP peak in the beam window: the median is '
+             'far below the cosmic muons at 30–32 ms, dotted), so this is a cleaner, not a clean, reference.</p>'
+             + (f'<p>Signal purity (net / all in the window), dedicated, 1–10 ms: {np.nanmean(pur[:len(tcc)][(tcc > 1e3) & (tcc < 1e4)]):.0%}.</p>' if pur is not None else ''))
+    D.slide('plastic_wall', body, notes, short='plastic behind wall')
+
+
+def bar_ends(D, K, KR):
+    tcc = K['tcc_us']
+    m = (tcc >= 0.3) & (tcc < 1e4)
+    P = sd.Plot(1100, 600, x=(0.3, 1e4, 'log'), y=(-0.3, 0.3), xlabel='time since the flash',
+                ylabel='Δ ln(A₁/A₂) from its 1–10 ms value')
+    P.band([0.3, 1e4], [-0.05, -0.05], [0.05, 0.05], sd.GREEN, alpha=0.12, tip='±5 % gain imbalance between the two ends')
+    for c in ('par', 'ded'):
+        dr = K.get(f'bar_{c}_lnratio_drift')
+        if dr is None:
+            continue
+        for w in range(4):
+            for b in range(4):
+                P.line(tcc[m].tolist(), clip(dr[w, b][m], -0.3, 0.3), CC[c], 1.2, markers=False,
+                       tip=f'{DETS[w]} bar {b + 1}, {CN[c]}')
+        P.line(tcc[m].tolist(), clip(K[f'bar_{c}_lnratio_drift_all'][m], -0.3, 0.3), CC[c], 4, markers=False,
+               tip=f'median of the 16 bars, {CN[c]}')
+    P.hline(0, sd.INK, None, 1.2)
+    P.xticks(tlog_ticks(0.3, 1e4)).yticks([(v, f'{v:+.1f}' if v else '0') for v in (-0.3, -0.2, -0.1, 0, 0.1, 0.2, 0.3)])
+    dmax = KR.get(('bar_end_ratio_max_drift_after_2us', 'WAL', 'ded'), math.nan)
+    side = sd.col(sd.p('<b>Why this is a gain reference</b>', 26),
+                  sd.p('The two ends of a bar see the same particle. At a fixed position (fixed time difference '
+                       'between the ends) their amplitude ratio depends only on the two gains — not on what particle '
+                       'hit or how much light it made.', 23, sd.MUT),
+                  sd.p('A gain loss on <i>one</i> end moves this ratio. A loss common to both ends does not: that '
+                       'half is the next slide.', 23, sd.MUT), w=500)
+    body = (sd.title(f'The two ends of a wall bar recover together: their ratio moves ≤ {100 * (math.exp(dmax) - 1):.0f} % after 2 µs (median of 16 bars)',
+                     'Median ln(A₁/A₂) of coincident end pairs at fixed position (|Δt| ≤ 10 ns), against its 1–10 ms value; thin: each of the 16 bars')
+            + sd.row(P.svg('bar ends'), side, gap=44)
+            + sd.legend([('parasitic', CC['par'], 'line'), ('dedicated', CC['ded'], 'line'), ('±5 %', sd.GREEN, 'box')]))
+    notes = ('<p>End pairs: the nearest end-2 pulse within ±30 ns of each end-1 pulse (both above 10 mV); accidentals '
+             'from the same search with end 2 shifted by +500 ns, subtracted bin by bin. Ratio median per 2 ns bin of '
+             'Δt, minus its own 1–10 ms value, averaged over the bins with |Δt| ≤ 10 ns.</p>')
+    D.slide('bar_ends', body, notes, short='bar ends')
+
+
+def along_bar(D, K, KR):
+    tcc = K['tcc_us']
+    m = (tcc >= 0.3) & (tcc < 1e4)
+    panels = []
+    for c in ('par', 'ded'):
+        P = sd.Plot(810, 560, x=(2, 1e4, 'log'), y=(0.6, 1.3), xlabel='time since the flash',
+                    ylabel='√(A₁A₂) scale / 1–10 ms value', title=f'along the wall bars, {CN[c]}')
+        m = (tcc >= 2) & (tcc < 1e4)
+        P.band([2, 1e4], [0.9, 0.9], [1.1, 1.1], sd.GREEN, alpha=0.10)
+        for bn, col in (('end 1', sd.BLUE), ('centre', sd.INK), ('end 2', sd.RED)):
+            y = K.get(f'bar_{c}_gm_{bn}')
+            if y is None:
+                continue
+            t = KR.get((f'bar_gm90_{bn}', 'WAL', c), math.nan)
+            nn = K.get(f'bar_{c}_gm_{bn}_n')
+            P.line(tcc[m].tolist(), clip(y[m], 0.6, 1.3), col, 3, markers=True, r=4,
+                   tips=[f'{bn}, {fmt_t(tt)}: {v:.3f}' + (f' ({int(k):,} pairs)' if nn is not None else '')
+                         for tt, v, k in zip(tcc[m], y[m], (nn[m] if nn is not None else [0] * int(m.sum())))])
+        P.hline(1, sd.INK, None, 1.2)
+        P.xticks(tlog_ticks(2, 1e4)).yticks([(v, f'{v:.1f}') for v in (0.6, 0.8, 1.0, 1.2)])
+        panels.append(P.svg(c))
+    spr = KR.get(('bar_band_spread_after_3us', 'WAL', 'ded'), math.nan)
+    gmin = KR.get(('bar_gm_min_after_3us', 'WAL', 'ded'), math.nan)
+    body = (sd.title(f'Along the bar the recovery is the same within {100 * spr:.0f} %; all positions dip together to {gmin:.2f}',
+                     'Geometric mean of the two end amplitudes (position-independent light), 90 % quantile above 30 mV, in three position bands; after 3 µs, dedicated, in the title')
+            + sd.row(*panels, gap=44)
+            + sd.legend([('v < −300 mm', sd.BLUE, 'line'), ('|v| < 150 mm (centre)', sd.INK, 'line'),
+                         ('v > +300 mm', sd.RED, 'line')]))
+    notes = ('<p>Position v along the bar from the time difference between its two ends, converted per arm and bar with '
+             'the MM-track calibration of <code>ntof_scint_stack</code> (Δt = a + b·v, b ≈ −0.0136 ns/mm, i.e. ~74 mm/ns; '
+             'offsets a of −7…+6 ns, so raw Δt bins would mix positions between bars). √(A₁A₂) cancels the attenuation to first order, '
+             'so the three bands should agree when nothing depends on position. The scale still follows the particle '
+             'mix, as on the plastic slide; what this slide tests is whether the recovery differs ALONG the bar.</p>')
+    D.slide('along_bar', body, notes, short='along the bar')
+
+
 def plan(D):
-    steps = [('template fit on the tail', 'First pulse pass done (previous slides). Next: per-family templates with a local '
-              'exponential baseline, so the steep flash tail stops biasing width and amplitude.'),
-             ('a fixed amplitude reference', 'Plastic pulses in coincidence with the wall of the same arm (charged particles, '
-              'fixed dE/dx); the two ends of a wall bar at fixed position. Separates gain from particle mix.'),
-             ('earliest usable time', 'How far back into the flash tail pulses are still found with the right shape and '
-              'amplitude: the real recovery time, not the baseline one.'),
-             ('detector to detector', 'The 44 channels against each other: arms, the two ends of a bar, the PMTs.'),
-             ('position dependence', 'Along the wall bars from the top/bottom amplitude ratio and time difference; across '
-              'the stack from the MM tracks (DREAM triggers, ≥ 0.5 ms).')]
-    body = (sd.title('Next: is the early amplitude dip gain, or a different particle mix?',
+    steps = [('done: template fit, end ratio, along the bar', 'Shape back in µs; the two ends of a bar recover together; no '
+              'position dependence beyond 7 %. Slides 15–18.'),
+             ('a common-mode gain reference', 'The plastics\' upper edge behind a wall hit (what sets it: light or electronics?), '
+              'and pulse-height spectra of single-photoelectron / dark pulses if any clear the ZS threshold.'),
+             ('per channel', 'The same curves for each of the 44 channels: which ones are slow, and whether it follows the '
+              'arm, the bar or the PMT.'),
+             ('across the stack', 'MM tracks (DREAM triggers, from ~0.5 ms) matched to the flash_tail bunches: position '
+              'perpendicular to the bars, and a fixed-path-length reference.'),
+             ('the trigger path', 'Whether the analog sums feeding the discriminators see the wall undershoot: the trigger '
+              'rate against time since the flash, from the DREAM data.')]
+    body = (sd.title('Next: a common-mode gain reference, per-channel maps, the trigger path',
                      'The full analysis, on the same dataset')
             + sd.flow([dict(label=s, sub=t, color=sd.BLUE) for s, t in steps], size=24)
             + sd.row(sd.callout('The baseline is a necessary condition. A PMT or SiPM can be back on baseline with its gain '
@@ -661,9 +823,9 @@ def plan(D):
 
 def limits(D):
     items = [
-        ('Gain is not separated from the particle mix.', 'The plastic and liquid pulses are smaller in the first µs, but '
-         'the spectrum also changes with what arrives (recoils, capture γs, cosmics). The early dip is an upper bound '
-         'on the gain sag until a fixed reference is in.'),
+        ('A common gain sag is not separated from the particle mix.', 'A loss on one end of a wall bar is ruled out '
+         '(the end ratio moves ≤ 4 % after 2 µs). A loss common to both ends, and the plastics\' slow last ~15 % to '
+         '~0.5 ms, can still be gain or a changing particle mix: upper bounds, not measurements.'),
         ('A sample of the campaign.', '~40 bunches per run (2 raw files), 6 files for the divert-off runs and 224572. Ample '
          'for medians; thin for rare configurations.'),
         ('Pile-up on the plastics.', 'In the first ~100 µs the plastics are a continuous pulse train; their "baseline" there '
@@ -703,6 +865,13 @@ def main() -> int:
         shape(D, PC, PR)
         amplitude(D, PC, PR)
         wall_edge(D, PC)
+    K = coinc_curves()
+    if K is not None:
+        KR = coinc_rows()
+        fit_shape(D, K, KR)
+        plastic_wall(D, K, KR)
+        bar_ends(D, K, KR)
+        along_bar(D, K, KR)
     plan(D)
     limits(D)
     path = D.write(out_dir('deck') / 'scint-flash-recovery.html', note_meta=dict(

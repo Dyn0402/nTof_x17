@@ -118,6 +118,23 @@ the electronics, rather than the particles, its position is the gain reference. 
 coincidence into the condor reduction (pairs per time slice, both amplitudes) to get campaign statistics,
 and find out what sets the edge.
 
+## The fixed-reference layer, whole production set (`coinc_analysis.py`, v2 histograms, deck slides 15–18)
+
+Reprocessed all 242 runs with the template fit and the coincidence histograms (`pulses.py --hist`, v2 →
+`/eos/experiment/ntof/data/x17/flash_tail_pulsehist_v2`). Production runs: 3 004 parasitic + 4 073 dedicated bunches.
+
+- **Template fit** (`templates.py` → `templates.npz`: median shape of clean 1–10 ms pulses; fit A·T + b₀ + b₁t).
+  80 % of the early misfit excess is gone by ~6 µs (plastics), ~7.5 µs (walls), ~60 µs (liquids), dedicated.
+  The walls' last 20 % takes until ~0.1 ms. The plastic/liquid misfit floor (~0.1) is sub-sample alignment
+  of 4–13 ns pulses; a template with a fitted time shift would lower it.
+- **Plastic behind a wall hit** (−25…+5 ns, sideband subtracted): the median is back (±10 %) by ~13 µs, the
+  95 % upper edge only by ~0.5 ms (~0.85 from 10 µs to 0.1 ms). Still not a fixed population (no MIP peak).
+- **Wall bar ends**: the median over 16 bars of Δ ln(A₁/A₂) at fixed position stays within 4 % after 2 µs. So a
+  gain loss on ONE end is ruled out; a common loss is not tested by this.
+- **Along the bar** (Δt → mm with the scint_stack MM-track calibration, bands v < −300, |v| < 150, v > 300 mm):
+  the three bands agree within 7 % after 3 µs. All dip together to ~0.92 (parasitic) / 0.96 (dedicated) at
+  30–300 µs: either a common SiPM gain sag or the particle mix.
+
 ## The full analysis, step by step
 
 1. **Pulse model.** Fit per-family templates on clean late-time pulses (30–32 ms window, isolated, flat
