@@ -16,7 +16,7 @@ PYTHONPATH=. .venv/bin/python -m ntof_scint_recovery.make_report
 
 | | what | where |
 |---|---|---|
-| raw | seven 450 MB stream1 head chunks of 224572, ~2 complete bunches each (15 total), every sample incl. the unsuppressed flash head | `/media/dylan/data/x17/ntof_raw_224572/` |
+| raw | seven 450 MB stream1 head chunks of 224572, ~2 complete bunches each (14 complete, 11 dedicated), every sample incl. the unsuppressed flash head | `/media/dylan/data/x17/ntof_raw_224572/` |
 | PSA | our v12 reprocessing of 224572, 3018 bunches, every found pulse over 80 ms | `/media/dylan/data/x17/ntof_reproc/v12_liqpileup/` |
 | time base | `t_flash = tof_PKUP + C` | `ntof_processing/flash_timing/` |
 
@@ -34,7 +34,7 @@ They give different answers, and the report keeps them apart:
 
 - **Gain recovery is not measured.** There is no standard candle in the tail. The PSA amplitude
   median moves with the particle population.
-- **The walls undershoot** by 10–17 mV from ~30 µs to ~1 ms after the flash, after the diverted flash
+- **The walls undershoot** by 10–19 mV from ~30 µs to ~1 ms after the flash, after the diverted flash
   decays through the baseline. This was verified on individual traces. It is on the digitized signal;
   whether the trigger sum sees it is not known.
 - The plastics' head block runs 140–210 µs, because the pulse rate keeps them outside the ZS band.
