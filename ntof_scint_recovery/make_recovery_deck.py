@@ -1,0 +1,576 @@
+#!/usr/bin/env python3
+"""
+make_recovery_deck.py -- the slide note of the quick pass: example and average
+waveforms after the gamma flash, with the recovery time drawn on them and
+quoted per scintillator, always split by beam-pulse intensity.
+
+    .venv/bin/python -m ntof_scint_recovery.make_recovery_deck
+    python3 ~/PycharmProjects/dylan-cern-site/scripts/add-note.py \
+        <out>/deck/scint-flash-recovery.html --slug scint-flash-recovery --force --deploy
+
+Reads only the quick pass's outputs (out_dir('quick'): curves.npz, recovery.csv,
+recovery_by_run.csv, bunches.csv, examples.npz), so rerunning quick.py after more
+runs land moves every number and figure here.
+"""
+from __future__ import annotations
+
+import csv
+import datetime as dt
+import math
+import os
+import sys
+from pathlib import Path
+
+import numpy as np
+
+from ntof_scint_recovery.common import REPO, out_dir
+from ntof_scint_recovery.quick import DETS, DIVERT_OFF, EPOCHS, PRODUCTION_FROM
+
+sys.path.insert(0, os.path.expanduser(os.environ.get(
+    'SLIDEDOC_DIR', '~/PycharmProjects/dylan-cern-site/scripts')))
+import slidedoc as sd  # noqa: E402
+
+Q = out_dir('quick')
+FAM = {'WAL': 'SiPM wall', 'PSS': 'plastic', 'LIQ': 'liquid'}
+CC = {'par': sd.BLUE, 'ded': sd.ORANGE}
+CN = {'par': 'parasitic', 'ded': 'dedicated'}
+TOL = 3.0
+INVENTORY = REPO / 'ntof_processing/flash_pull/inputs/run_inventory_2026-10-20.csv'
+#: configuration changes worth marking on a time axis (CLAUDE.md, flash_timing/)
+EVENTS = [(dt.date(2026, 7, 22), 'wall gate delay 200→1000 ns'),
+          (dt.date(2026, 7, 23), 'DREAM clock 6→4, noise ×2')]
+D0 = dt.date(2026, 7, 1)
+
+
+# ------------------------------------------------------------------ data
+def rows(name):
+    return list(csv.DictReader(open(Q / name)))
+
+
+def fnum(x):
+    try:
+        return float(x)
+    except (TypeError, ValueError):
+        return math.nan
+
+
+def recovery():
+    R = {}
+    for r in rows('recovery.csv'):
+        R[(r['det'], r['ch'], r['cls'])] = {k: fnum(r[k]) for k in ('n', 't3mV_us', 't1mV_us')}
+    return R
+
+
+def by_run():
+    out = {}
+    for r in rows('recovery_by_run.csv'):
+        out.setdefault((r['det'], r['cls']), []).append((int(r['run']), fnum(r['t3mV_us']), fnum(r['t1mV_us'])))
+    return out
+
+
+def run_dates():
+    inv = list(csv.DictReader(open(INVENTORY)))
+    known = {}
+    for r in inv:
+        d = r['date']
+        if d and d not in ('', '-1') and len(d) == 7:
+            known[int(r['run'])] = dt.date(2000 + int(d[1:3]), int(d[3:5]), int(d[5:7]))
+    ks = sorted(known)
+
+    def date(run):
+        if run in known:
+            return known[run]
+        j = np.searchsorted(ks, run)
+        return known[ks[min(max(j - 1, 0), len(ks) - 1)]]
+    return date
+
+
+def fmt_t(us):
+    if not np.isfinite(us):
+        return '—'
+    if us < 10:
+        return f'{us:.1f} µs'
+    if us < 1000:
+        return f'{us:.0f} µs'
+    return f'{us / 1e3:.1f} ms'
+
+
+def fam_t(R, fam, cls, key='t3mV_us'):
+    v = [R[(d, 'all', cls)][key] for d in DETS if d.startswith(fam) and (d, 'all', cls) in R]
+    v = [x for x in v if np.isfinite(x)]
+    return (min(v), float(np.median(v)), max(v)) if v else (math.nan,) * 3
+
+
+# ------------------------------------------------------------------ plotting helpers
+def tlog_ticks(lo, hi):
+    labs = {0.1: '0.1 µs', 1: '1 µs', 10: '10 µs', 100: '100 µs', 1e3: '1 ms', 1e4: '10 ms', 3e4: '30 ms'}
+    return [(v, s) for v, s in labs.items() if lo <= v <= hi]
+
+
+def clip(v, lo, hi):
+    return [min(max(float(x), lo), hi) if np.isfinite(x) else None for x in v]
+
+
+def env_band(P, xs, lo, hi, color, ylo, yhi, alpha=0.55, tip=None):
+    P.band(xs, clip(lo, ylo, yhi), clip(hi, ylo, yhi), color, alpha=alpha, tip=tip)
+
+
+# ------------------------------------------------------------------ slides
+def cover(D, R, B):
+    live = [b for b in B if b['cls'] in ('par', 'ded') and int(b['n_live']) > 0]
+    nrun = len({int(b['run']) for b in live})
+    npar = sum(b['cls'] == 'par' for b in live)
+    nded = sum(b['cls'] == 'ded' for b in live)
+    tl = fam_t(R, 'LIQ', 'ded')[1]
+    tp = fam_t(R, 'PSS', 'ded')[1]
+    tw = fam_t(R, 'WAL', 'ded')[1]
+    rat = np.nanmedian([R[(d, 'all', 'ded')]['t3mV_us'] / R[(d, 'all', 'par')]['t3mV_us']
+                        for d in DETS if (d, 'all', 'ded') in R and (d, 'all', 'par') in R])
+    head = (f'Back within 3 mV of baseline after ~{fmt_t(tl)} (liquids), ~{fmt_t(tp)} (plastics) '
+            f'and ~{fmt_t(tw)} (SiPM walls), for dedicated pulses')
+    sub = (f'Dedicated pulses (twice the protons) take ×{rat:.1f} longer than parasitic; median over the 12 detectors, '
+           f'production configuration (runs ≥ {PRODUCTION_FROM})')
+    body = (sd.kicker('n_TOF EAR2 · X17 scintillators · γ-flash recovery, quick pass')
+            + sd.title(f'<span style="color:{sd.DINK}">{head}</span>', f'<span style="color:{sd.DMUT}">{sub}</span>')
+            + sd.row(sd.bignum(f'{nrun}', 'runs with scintillators', sd.DBLUE,
+                               'with beam and at least one live channel', tip='flash_pull plan, 2026-10-20'),
+                     sd.bignum(f'{npar + nded:,}', 'bunches of raw waveforms', sd.DGREEN,
+                               f'{npar:,} parasitic · {nded:,} dedicated'),
+                     sd.bignum('44', 'channels', sd.DGREY, '32 wall ends · 8 plastic ends · 4 liquids'),
+                     sd.bignum('0–10 ms', 'kept after every flash', sd.DRED, '+ 30–32 ms as a reference'), gap=56))
+    notes = ('<p>Quick pass: the baseline of every channel, measured on the raw samples, against time since the '
+             'flash. "Recovered" here means the median baseline is back within ±3 mV of its pre-flash level and '
+             'stays there to 10 ms. This is the electronics coming back. It does not yet say a pulse has its '
+             'full amplitude again; that is the full analysis (last slides).</p>'
+             '<p>Every number is split by beam-pulse intensity: parasitic (~4×10¹² protons) and dedicated '
+             '(~8.5×10¹²). Pooling them would quote a time that belongs to neither.</p>'
+             f'<p>Dataset: <code>/eos/experiment/ntof/data/x17/flash_tail</code> (<code>ntof_processing/flash_pull</code>). '
+             'Summaries: <code>ntof_scint_recovery/flash_summary.py</code>; this pass: <code>quick.py</code>.</p>')
+    D.slide('cover', body, notes, dark=True, short='cover')
+
+
+def timeline(D):
+    P = sd.Plot(1664, 520, x=(0.05, 4e4, 'log'), y=(0, 6), xlabel='time since the γ-flash at the detector', margin=(24, 40, 92, 40))
+    P.xticks(tlog_ticks(0.05, 4e4))
+    bands = [
+        (0.05, 0.7, 5.0, sd.GREY, 'wall blanking ~0.7 µs', 'The SiPM walls are switched off (divert gate) around the flash in every run except 224356–360, 224464, 224466.'),
+        (0.05, 18, 4.0, sd.PURPLE, 'unsuppressed head: the flash itself', 'The DAQ always keeps 30 µs from t = 0 un-zero-suppressed; the flash arrives ~11.6 µs in, so ~18 µs of it is after the flash.'),
+        (0.05, 1e4, 3.0, sd.GREEN, 'this dataset: every block, 0–10 ms', 'flash_pull keeps every zero-suppressed block of all 44 channels and PKUP.'),
+        (3e4, 3.2e4, 3.0, sd.GREEN, 'ref.', '30–32 ms: same bunch, far from the flash -- the full-amplitude reference.'),
+        (500, 4e4, 2.0, sd.BLUE, 'DREAM (MM) triggers', 'DREAM accepts triggers from ~0.5 ms; the MM tracks exist only there.'),
+        (1e3, 4e4, 1.0, sd.ORANGE, 'X17 physics: neutrons ≲ 2 eV', 'E ≈ (72.3 × 19.5 m / t[µs])² eV: 1 ms ↔ 2 eV.'),
+    ]
+    for lo, hi, y, c, lab, tp in bands:
+        P.rect(lo, hi, y - 0.35, y + 0.35, color=c, w=0, fill=c, tip=tp)
+        inside = P.X(hi) - P.X(lo) > 420
+        P.text(lo * 1.15 if inside else hi * 1.15, y - 0.12, lab, 22, sd.CARD if inside else c, 'start', 600)
+    for t_us, e in ((1, '2 MeV'), (10, '20 keV'), (100, '200 eV'), (1e3, '2 eV'), (1e4, '20 meV')):
+        P.text(t_us, 5.75, f'Eₙ {e}', 20, sd.MUT, 'middle')
+    P.vline(0.05, sd.INK, None, 3)
+    body = (sd.title('After the flash the detectors are blind, then recover: this dataset covers it all',
+                     'What happens when, on the bunch timeline (log scale); the neutron energy at each time is on top')
+            + P.svg('timeline')
+            + sd.p('Hover any dotted word, band or point for its definition and numbers.', 24, sd.MUT))
+    notes = ('<p>The flash time at each detector is t<sub>PKUP</sub> + C[detector], with C from '
+             '<code>ntof_processing/flash_timing</code> (walls, divert-off calibration) and run 224572 (plastics, '
+             'liquids). That is good to ~10 ns, which no result here resolves.</p>'
+             '<p>The pulse-shape (PSA) output and the earlier waveform pull both start too late for this: the PSA '
+             'gives hits, not baselines, and the waveform pull is ±5 µs around DREAM triggers, which start at ~0.5 ms.</p>')
+    D.slide('timeline', body, notes, short='timeline')
+
+
+def intensity(D, B):
+    ppp = np.array([fnum(b['ppp']) for b in B])
+    pk = np.array([fnum(b['pk_amp_mV']) for b in B])
+    cls = np.array([b['cls'] for b in B])
+    has = np.array([int(b['has_official']) for b in B]) == 1
+    P1 = sd.Plot(810, 560, x=(0, 10), y=(0, 1), xlabel='protons per pulse (×10¹²)', ylabel='bunches (fraction of max)',
+                 title='PulseIntensity, processed runs')
+    e = np.arange(0, 10.01, 0.25)
+    h, _ = np.histogram(ppp[has] / 1e12, e)
+    for i, v in enumerate(h):
+        c = CC['par'] if e[i] < 6.5 and e[i] >= 0.1 else CC['ded'] if e[i] >= 6.5 else sd.GREY
+        P1.vbar(e[i] + 0.125, v / max(h.max(), 1), 22, c, tip=f'{e[i]:.2f}–{e[i + 1]:.2f}×10¹²: {v} bunches')
+    P1.vline(6.5, sd.INK, '6 5', 2, label='cut 6.5')
+    P1.xticks([(v, str(v)) for v in range(0, 11, 2)]).yticks([(0, '0'), (0.5, '0.5'), (1, '1')])
+    P2 = sd.Plot(810, 560, x=(0, 1200), y=(0, 1), xlabel='PKUP flash amplitude (mV)', ylabel='bunches (fraction of max)',
+                 title='the same split seen by PKUP')
+    e2 = np.arange(0, 1201, 25)
+    tops = []
+    for c in ('par', 'ded'):
+        hh, _ = np.histogram(pk[has & (cls == c)], e2)
+        tops.append((c, hh))
+    mx = max(t[1].max() for t in tops) or 1
+    for c, hh in tops:
+        P2.line((e2[:-1] + 12.5).tolist(), (hh / mx).tolist(), CC[c], 3, markers=False,
+                tip=f'{CN[c]}: {int(hh.sum())} processed bunches')
+    hn, _ = np.histogram(pk[~has], e2)
+    if hn.sum():
+        P2.line((e2[:-1] + 12.5).tolist(), (hn / max(hn.max(), 1) * 0.5).tolist(), sd.GREY, 2.5, dash='6 5', markers=False,
+                tip=f'unprocessed runs: {int(hn.sum())} bunches, classified on this amplitude (scaled ×0.5)')
+    P2.xticks([(v, str(v)) for v in range(0, 1201, 300)]).yticks([(0, '0'), (0.5, '0.5'), (1, '1')])
+    n = {c: int((cls == c).sum()) for c in ('par', 'ded', 'none')}
+    body = (sd.title('Two beam intensities, cleanly separated: every result is split on them',
+                     f'{n["par"]:,} parasitic and {n["ded"]:,} dedicated bunches; {n["none"]} with no protons are dropped')
+            + sd.row(P1.svg('intensity histogram'), P2.svg('PKUP amplitude'), gap=44)
+            + sd.legend([('parasitic', CC['par'], 'box'), ('dedicated', CC['ded'], 'box'),
+                         ('unprocessed runs (PKUP only)', sd.GREY, 'dash')]))
+    notes = ('<p>Class: PulseIntensity from the official processed file (&lt; 10¹¹ none, &lt; 6.5×10¹² parasitic, '
+             'otherwise dedicated). The 31 runs n_TOF never processed have no PulseIntensity; their bunches are '
+             'classed on the PKUP flash amplitude in the product, cut midway between the two classes\' medians on '
+             'the processed bunches. The right panel shows that this separates the classes as cleanly as the '
+             'intensity does.</p>')
+    D.slide('intensity', body, notes, short='intensity split')
+
+
+def examples(D, R, X, fam):
+    run = int(X['run'])
+    dets = [d for d in DETS if d.startswith(fam)]
+    det = dets[0]
+    yr = {'WAL': (-25, 60), 'PSS': (-15, 60), 'LIQ': (-15, 60)}[fam]
+    lin = X['lin_edges_us']
+    lc = 0.5 * (lin[:-1] + lin[1:])
+    lg = X['log_edges_us']
+    gc = np.sqrt(lg[:-1] * lg[1:])
+    ymax = max(float(np.max(X[f'{c}_{det}_lin_hi'])) for c in ('par', 'ded') if f'{c}_{det}_lin_hi' in X)
+    ytop = 250 * math.ceil(ymax * 1.05 / 250)
+    P1 = sd.Plot(810, 580, x=(-3, 45), y=(-50, ytop), xlabel='time since the flash (µs)', ylabel='signal (mV, pulse direction up)',
+                 title='the flash')
+    P2 = sd.Plot(810, 580, x=(0.3, 1e4, 'log'), y=yr, xlabel='time since the flash', ylabel='signal (mV)',
+                 title='the recovery, zoomed to a few × threshold')
+    for c in ('ded', 'par'):
+        k = f'{c}_{det}'
+        if k + '_lin_lo' not in X:
+            continue
+        tip = f'{CN[c]} bunch {int(X[c + "_bunch"])}, {X[c + "_ppp"] / 1e12:.1f}×10¹² protons'
+        env_band(P1, lc.tolist(), X[k + '_lin_lo'], X[k + '_lin_hi'], CC[c], -50, ytop, alpha=0.35, tip=tip)
+        env_band(P2, gc.tolist(), X[k + '_log_lo'], X[k + '_log_hi'], CC[c], *yr, alpha=0.22, tip=tip)
+        if k + '_log_med' in X:
+            P2.line(gc.tolist(), clip(X[k + '_log_med'], *yr), CC[c], 3.5, markers=False,
+                    tip=f'{tip}: median of the samples in each column')
+        t = R.get((det, 'all', c), {}).get('t3mV_us', math.nan)
+        if np.isfinite(t):
+            P2.vline(t, CC[c], '8 5', 3, tip=f'{det} {CN[c]}: baseline within ±3 mV after {fmt_t(t)} (median over all bunches)')
+            P2.text(t * (1.12 if c == 'ded' else 0.89), yr[1] - 0.08 * (yr[1] - yr[0]), f'{fmt_t(t)}', 24, CC[c],
+                    'start' if c == 'ded' else 'end', 600)
+    for P in (P1, P2):
+        P.hline(0, sd.INK, None, 1.5)
+    P2.hline(3, sd.MUT, '4 4', 1.5).hline(-3, sd.MUT, '4 4', 1.5, label='±3 mV', where='below')
+    P1.xticks([(v, str(v)) for v in (0, 10, 20, 30, 40)]).yticks([(v, str(v)) for v in range(0, int(ytop) + 1, 250)])
+    P2.xticks(tlog_ticks(0.3, 1e4)).yticks([(v, str(v)) for v in range(-10, int(yr[1]) + 1, 10) if v >= yr[0]])
+    t_d = R.get((det, 'all', 'ded'), {}).get('t3mV_us', math.nan)
+    t_p = R.get((det, 'all', 'par'), {}).get('t3mV_us', math.nan)
+    what = {'WAL': 'the diverted flash clamps, decays, then undershoots the baseline',
+            'PSS': 'the PMT recovers in µs; a pulse train from the beam rides on it',
+            'LIQ': 'the PMT recovers fastest; pulses are back on a flat baseline in µs'}[fam]
+    body = (sd.title(f'{FAM[fam].capitalize()} {det[3]}: back within 3 mV after {fmt_t(t_p)} (parasitic), {fmt_t(t_d)} (dedicated)',
+                     f'One bunch of each intensity, raw samples, run {run}: {what}')
+            + sd.row(P1.svg('flash'), P2.svg('recovery'), gap=44)
+            + sd.legend([(f'parasitic bunch {int(X["par_bunch"])}', CC['par'], 'box'),
+                         (f'dedicated bunch {int(X["ded_bunch"])}', CC['ded'], 'box'),
+                         ('median of the samples', sd.INK, 'line'),
+                         ('recovery time (all bunches, this detector)', sd.MUT, 'dash')]))
+    notes = (f'<p>The band is the min-to-max envelope of the samples in each display column; a zero-suppression '
+             f'gap is drawn at 0 (the signal was inside the ZS band). Channel 1 of {det}. The vertical lines are '
+             f'the recovery time of {det} from every bunch of that class, not from this bunch.</p>'
+             '<p>Sign: up is the pulse direction for every family (walls are positive-going, plastics and liquids '
+             'negative-going on the ADC).</p>')
+    D.slide(f'ex_{fam}', body, notes, foot=f'Raw stream1 via flash_pull, run {run}; flash time from PKUP + C[detector]',
+            short=f'example {FAM[fam]}')
+
+
+def averages(D, C, fam_list=('WAL', 'PSS', 'LIQ')):
+    lin = C['lin_edges_us']
+    lcv = 0.5 * (lin[:-1] + lin[1:])
+    xm = (lcv >= -2) & (lcv <= 40)
+    lc = lcv[xm].tolist()
+    panels = []
+    for fam in fam_list:
+        dets = [d for d in DETS if d.startswith(fam)]
+        ys = {}
+        for c in ('par', 'ded'):
+            arr = [C[f'{d}_{c}_lin'] for d in dets if f'{d}_{c}_lin' in C]
+            if arr:
+                ys[c] = np.nanmean(arr, axis=0)[xm]
+        top = max(float(np.nanmax(v)) for v in ys.values()) if ys else 100
+        top = 100 * math.ceil(top * 1.1 / 100)
+        P = sd.Plot(530, 620, x=(-2, 40), y=(-30, top), xlabel='time since the flash (µs)',
+                    ylabel='mean signal (mV)' if fam == 'WAL' else '', title=FAM[fam], margin=(24, 20, 92, 96))
+        for c, y in ys.items():
+            n = int(sum(C.get(f'{d}_{c}_n', 0) for d in dets))
+            P.line(lc, clip(y, -30, top), CC[c], 3, markers=False, tip=f'{CN[c]}: mean of {n:,} channel-bunches')
+        P.hline(0, sd.INK, None, 1.2)
+        P.xticks([(v, str(v)) for v in (0, 10, 20, 30, 40)])
+        step = 100 if top <= 500 else 200 if top <= 1000 else 500
+        P.yticks([(v, str(v)) for v in range(0, int(top) + 1, step)])
+        panels.append(P.svg(fam))
+    tail = (lcv >= 3) & (lcv <= 20)
+    rat = {}
+    for fam in fam_list:
+        v = {}
+        for c in ('par', 'ded'):
+            arr = [C[f'{d}_{c}_lin'] for d in DETS if d.startswith(fam) and f'{d}_{c}_lin' in C]
+            v[c] = float(np.nanmean(np.nanmean(arr, axis=0)[tail])) if arr else np.nan
+        rat[fam] = v['ded'] / v['par']
+    rs = ', '.join(f'{FAM[f]} ×{rat[f]:.1f}' for f in fam_list)
+    body = (sd.title('The flash peak is clipped at the rail; its tail scales with the protons',
+                     f'Mean signal over every bunch and channel of each family, first 40 µs. Tail (3–20 µs), dedicated/parasitic: {rs}')
+            + sd.row(*panels, gap=36)
+            + sd.legend([('parasitic', CC['par'], 'line'), ('dedicated', CC['ded'], 'line')]))
+    notes = ('<p>Mean of the signal in 100 ns bins, ZS gaps counted as zero, over all channels of the family and all '
+             'bunches of the class. This is the average waveform: the flash, its tail and the pile-up current of '
+             'the beam-induced pulses on top.</p>'
+             '<p>Walls: the clamp of the diverted signal sits at a fixed level, so its height does not scale with '
+             'intensity; the tail after it does.</p>')
+    D.slide('averages', body, notes, short='average flash')
+
+
+def baselines(D, C, R):
+    tc = C['tc_us']
+    m = tc < 1e4
+    xs = tc[m].tolist()
+    panels = []
+    for fam in ('WAL', 'PSS', 'LIQ'):
+        dets = [d for d in DETS if d.startswith(fam)]
+        yr = (-20, 20)
+        P = sd.Plot(530, 640, x=(0.3, 1e4, 'log'), y=yr, xlabel='time since the flash',
+                    ylabel='baseline shift (mV)' if fam == 'WAL' else '', title=FAM[fam], margin=(24, 20, 92, 96))
+        P.band([0.3, 1e4], [-3, -3], [3, 3], sd.GREEN, alpha=0.10, tip='±3 mV: the recovery tolerance')
+        for c in ('par', 'ded'):
+            for d in dets:
+                k = f'{d}_{c}_shift'
+                if k not in C:
+                    continue
+                y = C[k][1][m]
+                t = R.get((d, 'all', c), {}).get('t3mV_us', math.nan)
+                P.line(xs, clip(y, *yr), CC[c], 2.2, markers=False,
+                       tip=f'{d} {CN[c]}: median baseline; within ±3 mV after {fmt_t(t)}')
+        P.hline(0, sd.INK, None, 1.2)
+        P.xticks(tlog_ticks(0.3, 1e4)[::1]).yticks([(v, str(v)) for v in (-20, -10, -3, 0, 3, 10, 20)])
+        panels.append(P.svg(fam))
+    body = (sd.title('The baseline comes back in µs on the liquids, 0.1 ms on the plastics, ~1 ms on the walls',
+                     'Median baseline shift of each detector against time since the flash; one line per detector')
+            + sd.row(*panels, gap=36)
+            + sd.legend([('parasitic', CC['par'], 'line'), ('dedicated', CC['ded'], 'line'),
+                         ('±3 mV', sd.GREEN, 'box')]))
+    notes = ('<p>Baseline shift: inside the unsuppressed flash block, the median of the samples in each time bin; '
+             'after it, the median of each zero-suppressed block\'s 200 leading samples (each block carries 259 '
+             'samples before its trigger). Medians over every bunch and channel of the detector. Clipped at ±20 mV '
+             'for display; the flash itself runs off the top.</p>'
+             '<p>On the plastics in the first ~100 µs the median includes pile-up of real pulses, so it is the '
+             'baseline a discriminator would see, not the amplifier\'s own. The walls\' negative excursion is a real '
+             'undershoot after the flash (checked on single traces in the first look).</p>')
+    D.slide('baselines', body, notes, short='baselines')
+
+
+def summary(D, R, BR):
+    P = sd.Plot(1100, 680, x=(1, 3e3, 'log'), y=(-0.6, 11.6), xlabel='recovery time: baseline back within ±3 mV',
+                margin=(24, 30, 92, 130))
+    P.xticks(tlog_ticks(1, 3e3) + [(3, '3 µs'), (30, '30 µs'), (300, '300 µs'), (3e3, '3 ms')])
+    P.yticks([(11 - i, d) for i, d in enumerate(DETS)])
+    for i, d in enumerate(DETS):
+        y = 11 - i
+        for c, dy, mk in (('par', 0.17, 'open'), ('ded', -0.17, 'circle')):
+            r = R.get((d, 'all', c))
+            if not r:
+                continue
+            per = [x[1] for x in BR.get((d, c), []) if np.isfinite(x[1])]
+            if len(per) >= 3:
+                lo, hi = np.percentile(per, [16, 84])
+                P.raw(sd.line(P.X(max(lo, 1)), P.Y(y + dy), P.X(min(hi, 3e3)), P.Y(y + dy), CC[c], 3))
+            tip = (f'{d} {CN[c]}: {fmt_t(r["t3mV_us"])} pooled ({int(r["n"]):,} channel-bunches); '
+                   f'±1 mV after {fmt_t(r["t1mV_us"])}' + (f'\nrun to run 16–84 %: {fmt_t(lo)} – {fmt_t(hi)} over {len(per)} runs' if len(per) >= 3 else ''))
+            P.points([r['t3mV_us']], [y + dy], CC[c], r=9, tips=[tip], marker=mk)
+    for yb in (3.5, 7.5):
+        P.raw(sd.line(P.x0, P.Y(yb), P.x0 + P.pw, P.Y(yb), sd.RULE, 2))
+    tab = [['', 'parasitic', 'dedicated']]
+    for fam in ('LIQ', 'PSS', 'WAL'):
+        a, b = fam_t(R, fam, 'par'), fam_t(R, fam, 'ded')
+        tab.append([FAM[fam], f'{fmt_t(a[0])} – {fmt_t(a[2])}', f'{fmt_t(b[0])} – {fmt_t(b[2])}'])
+    side = sd.col(sd.p('<b>Range over the four detectors</b>', 26),
+                  sd.table(tab[0], tab[1:], size=24),
+                  sd.p('Bars: run-to-run spread (16–84 %). Hover a point for the ±1 mV time.', 22, sd.MUT), w=520)
+    rr = np.nanmedian([R[(d, 'all', 'ded')]['t3mV_us'] / R[(d, 'all', 'par')]['t3mV_us']
+                       for d in DETS if (d, 'all', 'ded') in R and (d, 'all', 'par') in R])
+    body = (sd.title(f'Every scintillator recovers later at dedicated intensity: ×{rr:.1f} (median)',
+                     f'Baseline back within ±3 mV of its pre-flash level; production runs (≥ {PRODUCTION_FROM}), all bunches and channels')
+            + sd.row(P.svg('summary'), side, gap=44)
+            + sd.legend([('parasitic', CC['par'], 'open'), ('dedicated', CC['ded'], 'dot')]))
+    rows_ = ''.join(f'<tr><td>{d}</td>' + ''.join(
+        f'<td>{fmt_t(R.get((d, "all", c), {}).get(k, math.nan))}</td>' for c in ('par', 'ded') for k in ('t3mV_us', 't1mV_us'))
+        + '</tr>' for d in DETS)
+    notes = ('<table><tr><th>detector</th><th>par ±3 mV</th><th>par ±1 mV</th><th>ded ±3 mV</th><th>ded ±1 mV</th></tr>'
+             + rows_ + '</table>'
+             '<p>Pooled: the median baseline over every bunch and channel of the detector and class, then the first time '
+             'after which it stays within the tolerance out to 10 ms. Per run: the same on that run\'s ~20 bunches of '
+             'the class. 3 mV is a tenth of the lowest wall trigger threshold (26 mV) and ~5× the rms noise; 1 mV is '
+             '~1.5× the noise. Table: <code>recovery.csv</code>, per run: <code>recovery_by_run.csv</code>.</p>')
+    D.slide('summary', body, notes, short='recovery times')
+
+
+def stability(D, BR):
+    date = run_dates()
+    panels = []
+    for fam in ('WAL', 'PSS', 'LIQ'):
+        dets = [d for d in DETS if d.startswith(fam)]
+        P = sd.Plot(530, 640, x=(5, 42), y=(1, 3e3, 'log'), xlabel='day of July–Aug 2026 (from 1 July)',
+                    ylabel='recovery time (±3 mV)' if fam == 'WAL' else '', title=FAM[fam], margin=(24, 20, 92, 110))
+        for c in ('par', 'ded'):
+            per = {}
+            for d in dets:
+                for run, t3, _ in BR.get((d, c), []):
+                    if np.isfinite(t3):
+                        per.setdefault(run, []).append(t3)
+            xs, ys, tips = [], [], []
+            for run in sorted(per):
+                day = (date(run) - D0).days + 1
+                v = float(np.median(per[run]))
+                xs.append(day)
+                ys.append(min(max(v, 1), 3e3))
+                tips.append(f'run {run} ({date(run)}), {CN[c]}: {fmt_t(v)} (median of {len(per[run])} detectors)'
+                            + (' — divert OFF' if run in DIVERT_OFF else ''))
+            P.points(xs, ys, CC[c], r=5, tips=tips, marker='open' if c == 'par' else 'circle')
+            off = [(x, y) for x, y, r in zip(xs, ys, sorted(per)) if r in DIVERT_OFF]
+            if off and fam == 'WAL':
+                P.points([o[0] for o in off], [o[1] for o in off], sd.RED, r=9, marker='diamond')
+        for name, r0 in EPOCHS[1:]:
+            P.vline((date(r0) - D0).days + 1, sd.MUT, '5 5', 1.5, tip=f'{name} from run {r0} ({date(r0)})')
+        P.xticks([(v, str(v)) for v in (10, 20, 30, 40)]).yticks([(v, s) for v, s in tlog_ticks(1, 3e3)] + [(1, '1 µs')])
+        panels.append(P.svg(fam))
+    body = (sd.title(f'Flat from run {PRODUCTION_FROM} (14 July) to the end; three commissioning steps before it',
+                     'Recovery time per run (median of the family\'s detectors) against date; headline numbers use the flat part only')
+            + sd.row(*panels, gap=36)
+            + sd.legend([('parasitic', CC['par'], 'open'), ('dedicated', CC['ded'], 'dot'),
+                         ('wall divert off', sd.RED, 'dot'), ('step in the data (hover)', sd.MUT, 'dash')]))
+    notes = ('<p>Dashed lines: steps found in this data, every detector of a family moving at the same run. 224355: '
+             'walls 0.25 → 0.55 ms. 224401: walls → 0.83 ms, plastics 12 → 31 µs, the liquids first appear. 224450: '
+             'plastics 31 → 114 µs, liquids 20 → 8 µs. What changed (HV, gains, thresholds, cabling) is not in the '
+             'logs read for this note. From 224450 nothing moves, including across 22 July (wall gate delay 200 → '
+             '1000 ns) and 23 July (DREAM clock divider), so those are not marked.</p>'
+             '<p>Dates of the runs n_TOF never processed are taken from the nearest processed run.</p>')
+    D.slide('stability', body, notes, short='over the campaign')
+
+
+def divert(D, C, R):
+    tc = C['tc_us']
+    m = tc < 1e4
+    lin = C['lin_edges_us']
+    lcv = 0.5 * (lin[:-1] + lin[1:])
+    xm = (lcv >= -2) & (lcv <= 40)
+    lc = lcv[xm].tolist()
+    ep = 'prod'
+    have = f'WALA_ded_divoff_{ep}_lin' in C or f'WALA_par_divoff_{ep}_lin' in C
+    c = 'ded' if f'WALA_ded_divoff_{ep}_lin' in C else 'par'
+    P1 = sd.Plot(810, 580, x=(-2, 40), y=(-50, 1500), xlabel='time since the flash (µs)', ylabel='mean signal (mV)',
+                 title=f'the average wall flash ({CN[c]})')
+    P2 = sd.Plot(810, 580, x=(0.3, 1e4, 'log'), y=(-20, 20), xlabel='time since the flash', ylabel='baseline shift (mV)',
+                 title='the baseline recovery')
+    leg = []
+    if have:
+        for tag, col, name in (('divon', sd.GREY, 'divert on (production runs)'), ('divoff', sd.RED, 'divert off (224464, 224466)')):
+            arr = [C[f'{d}_{c}_{tag}_{ep}_lin'] for d in DETS[:4] if f'{d}_{c}_{tag}_{ep}_lin' in C]
+            sh = [C[f'{d}_{c}_{tag}_{ep}_shift'][1] for d in DETS[:4] if f'{d}_{c}_{tag}_{ep}_shift' in C]
+            if not arr:
+                continue
+            n = int(sum(C.get(f'{d}_{c}_{tag}_{ep}_n', 0) for d in DETS[:4]))
+            P1.line(lc, clip(np.nanmean(arr, axis=0)[xm], -50, 1500), col, 3, markers=False, tip=f'{name}: {n:,} channel-bunches')
+            ts = [R.get((d, f'{tag}_{ep}', c), {}).get('t3mV_us', math.nan) for d in DETS[:4]]
+            P2.line(tc[m].tolist(), clip(np.nanmedian(sh, axis=0)[m], -20, 20), col, 3, markers=False,
+                    tip=f'{name}: ±3 mV after {fmt_t(np.nanmedian(ts))} (median of the four walls)')
+            leg.append((name, col, 'line'))
+        t_on = np.nanmedian([R.get((d, f'divon_{ep}', c), {}).get('t3mV_us', math.nan) for d in DETS[:4]])
+        t_off = np.nanmedian([R.get((d, f'divoff_{ep}', c), {}).get('t3mV_us', math.nan) for d in DETS[:4]])
+        title_ = (f'The divert gate does not set the wall recovery: {fmt_t(t_off)} with it off, '
+                  f'{fmt_t(t_on)} with it on')
+    else:
+        title_ = 'Divert-off runs: pending (on tape)'
+    P1.hline(0, sd.INK, None, 1.2).xticks([(v, str(v)) for v in (0, 10, 20, 30, 40)]).yticks([(v, str(v)) for v in (0, 500, 1000, 1500)])
+    P2.band([0.3, 1e4], [-3, -3], [3, 3], sd.GREEN, alpha=0.10).hline(0, sd.INK, None, 1.2)
+    P2.xticks(tlog_ticks(0.3, 1e4)).yticks([(v, str(v)) for v in (-20, -10, -3, 0, 3, 10, 20)])
+    e2 = [(R.get((d, 'divoff_e2', c), {}).get('t3mV_us', math.nan), R.get((d, 'divon_e2', c), {}).get('t3mV_us', math.nan))
+          for d in DETS[:4]]
+    e2s = ', '.join(f'{d}: {fmt_t(a)} off / {fmt_t(b)} on' for d, (a, b) in zip(DETS[:4], e2))
+    body = (sd.title(title_, f'SiPM walls, all four, {CN[c]}: the two production-era divert-off runs against the other production runs')
+            + sd.row(P1.svg('divert flash'), P2.svg('divert baseline'), gap=44) + sd.legend(leg))
+    notes = (f'<p>The 10–11 July divert-off runs 224356–360 sit in a commissioning epoch, so they are compared with '
+             f'that epoch\'s divert-on runs (224355, 224361–224400) instead, {CN[c]}: {e2s}.</p>'
+             '<p>The divert (blanking) gate switches the wall SiPM signal off for ~1 µs around the flash. In seven '
+             'runs it was off (N1081B module 6 down on 10–11 July; again 16 July), so the walls recorded the '
+             'undiverted flash (<code>ntof_processing/FLASH_DIVERT_OFF_RUNS.md</code>). Comparing them says how '
+             'much of the wall recovery is the gate and how much the SiPMs and their amplifiers.</p>')
+    D.slide('divert', body, notes, short='wall divert off')
+
+
+def plan(D):
+    steps = [('pulse finding on the tail', 'Template fit on a running local baseline, per family; start where the quick pass '
+              'says the baseline is back, then walk earlier until fits fail.'),
+             ('amplitude vs time since flash', 'Per channel and intensity, the pulse-amplitude spectrum in log-time bins against '
+              'the same bunch\'s 30–32 ms window: a gain sag shows as a shifted edge or peak.'),
+             ('earliest usable time', 'How far back into the flash tail pulses are still found with the right shape and '
+              'amplitude: the real recovery time, not the baseline one.'),
+             ('detector to detector', 'The 44 channels against each other: arms, the two ends of a bar, the PMTs.'),
+             ('position dependence', 'Along the wall bars from the top/bottom amplitude ratio and time difference; across '
+              'the stack from the MM tracks (DREAM triggers, ≥ 0.5 ms).')]
+    body = (sd.title('Next: does a pulse have its full amplitude once it is visible again?',
+                     'The full analysis, on the same dataset')
+            + sd.flow([dict(label=s, sub=t, color=sd.BLUE) for s, t in steps], size=24)
+            + sd.row(sd.callout('The baseline is a necessary condition. A PMT or SiPM can be back on baseline with its gain '
+                                'still low; only the pulses can tell.', sd.BLUE, 26),
+                     sd.callout('Intensity stays a split, never a pool. So do the wall divert state and the 22 July '
+                                'gate change.', sd.ORANGE, 26), gap=32))
+    notes = ('<p>Inputs: the flash_tail products (raw blocks, 0–10 ms and 30–32 ms), the official PSA hits for '
+             'comparison, and the stage-3 MM tracks / scint_stack tables for the position step. The MM tracks exist '
+             'only on DREAM triggers, so position dependence can be studied from ~0.5 ms on, not in the first µs.</p>')
+    D.slide('plan', body, notes, short='next')
+
+
+def limits(D):
+    items = [
+        ('Gain is not measured yet.', 'A baseline back at zero says the electronics recovered, not that a pulse has its full '
+         'amplitude. The PMTs (plastics, liquids) can sag for hundreds of µs after the flash charge.'),
+        ('A sample of the campaign.', '~40 bunches per run (2 raw files), 6 files for the divert-off runs and 224572. Ample '
+         'for medians; thin for rare configurations.'),
+        ('Pile-up on the plastics.', 'In the first ~100 µs the plastics are a continuous pulse train; their "baseline" there '
+         'is what a discriminator sees, not the amplifier\'s.'),
+        ('The trigger path is not measured.', 'The undershoot is on the digitized signal. Whether the analog sum feeding '
+         'the wall/plastic discriminators sees it depends on where it is split off.'),
+        ('Time base to ~10 ns.', 'Per-detector flash offsets, not per channel: irrelevant at these times, not good enough '
+         'for anything inside the first 100 ns.'),
+    ]
+    cards = ''.join(sd.card(sd.p(f'<b>{a}</b>', 26, sd.DINK) + sd.p(b, 23, sd.DMUT), bg='#1e2430') for a, b in items[:3])
+    cards2 = ''.join(sd.card(sd.p(f'<b>{a}</b>', 26, sd.DINK) + sd.p(b, 23, sd.DMUT), bg='#1e2430') for a, b in items[3:])
+    body = (sd.title(f'<span style="color:{sd.DINK}">What this does not rule out</span>')
+            + f'<div style="display:flex;gap:28px">{cards}</div><div style="display:flex;gap:28px">{cards2}</div>')
+    D.slide('limits', body, '', dark=True, short='limits')
+
+
+def main() -> int:
+    C = dict(np.load(Q / 'curves.npz'))
+    R = recovery()
+    BR = by_run()
+    B = rows('bunches.csv')
+    X = dict(np.load(Q / 'examples.npz'))
+    D = sd.Deck('Scintillator flash recovery', 'How long the X17 scintillators take to recover after the n_TOF γ-flash')
+    cover(D, R, B)
+    timeline(D)
+    intensity(D, B)
+    for fam in ('WAL', 'PSS', 'LIQ'):
+        examples(D, R, X, fam)
+    averages(D, C)
+    baselines(D, C, R)
+    summary(D, R, BR)
+    stability(D, BR)
+    divert(D, C, R)
+    plan(D)
+    limits(D)
+    path = D.write(out_dir('deck') / 'scint-flash-recovery.html', note_meta=dict(
+        title='Scintillator recovery after the γ-flash',
+        summary='Quick pass: example and average waveforms of the 44 X17 scintillator channels after the n_TOF flash, '
+                'and the time each one takes to come back to baseline, split by beam intensity.',
+        tags='X17, n_TOF, scintillators', date=dt.date.today().isoformat()))
+    print(f'-> {path}')
+    return 0
+
+
+if __name__ == '__main__':
+    sys.exit(main())
