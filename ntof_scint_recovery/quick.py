@@ -53,12 +53,16 @@ DIVERT_OFF = (224356, 224357, 224358, 224359, 224360, 224464, 224466)
 #: From 224450 the recovery is flat to the end of the campaign, so the headline
 #: numbers use that configuration only -- pooling epochs would quote a time that
 #: belongs to none of them.  First run of each epoch:
+#: 224450-224487 (14-17 July): walls and liquids already flat, the plastics still move
+#: run to run (114 -> 43 -> 20 -> 126 us dedicated); from 224488 everything is flat.
 EPOCHS = (('commissioning 1', 0), ('commissioning 2', 224355), ('commissioning 3', 224401),
-          ('production', 224450))
-PRODUCTION_FROM = 224450
+          ('plastics settling', 224450), ('production', 224488))
+PRODUCTION_FROM = 224488
+#: the walls alone are flat from here (used for the divert-off comparison)
+WALLS_FLAT_FROM = 224450
 #: divert-off runs compared only with divert-on runs of their own epoch
 DIVERT_PAIRS = {'e2': ((224356, 224357, 224358, 224359, 224360), (224355, 224361, 224400)),
-                'prod': ((224464, 224466), (224450, 10**9))}
+                'prod': ((224464, 224466), (224450, 10**9))}   # against walls-flat runs
 T_MAX_US = 1e4
 MIN_BUNCHES = 5
 #: a channel saw the flash if its mean signal peaks above this in the first 60 us
@@ -179,7 +183,7 @@ def main(argv=None) -> int:
         if ep == 'e2':
             on_mask = np.isin(runs, (224355,)) | ((runs >= 224361) & (runs < 224401))
         else:
-            on_mask = (runs >= PRODUCTION_FROM) & ~np.isin(runs, DIVERT_OFF)
+            on_mask = (runs >= WALLS_FLAT_FROM) & ~np.isin(runs, DIVERT_OFF)
         off_mask = np.isin(runs, offr)
         for di, det in enumerate(DETS[:4]):
             cis = [i for i, c in enumerate(chans) if c[0] == di]

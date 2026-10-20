@@ -24,6 +24,7 @@ from pathlib import Path
 import numpy as np
 
 from ntof_scint_recovery.common import REPO, out_dir
+from ntof_scint_recovery.pulse_analysis import AMP_FLOOR as AMPF
 from ntof_scint_recovery.quick import DETS, DIVERT_OFF, EPOCHS, PRODUCTION_FROM
 
 sys.path.insert(0, os.path.expanduser(os.environ.get(
@@ -437,15 +438,17 @@ def stability(D, BR):
             P.vline((date(r0) - D0).days + 1, sd.MUT, '5 5', 1.5, tip=f'{name} from run {r0} ({date(r0)})')
         P.xticks([(v, str(v)) for v in (10, 20, 30, 40)]).yticks([(v, s) for v, s in tlog_ticks(1, 3e3)] + [(1, '1 µs')])
         panels.append(P.svg(fam))
-    body = (sd.title(f'Flat from run {PRODUCTION_FROM} (14 July) to the end; three commissioning steps before it',
+    body = (sd.title(f'Flat from run {PRODUCTION_FROM} ({date(PRODUCTION_FROM):%-d %B}) to the end; commissioning steps before it',
                      'Recovery time per run (median of the family\'s detectors) against date; headline numbers use the flat part only')
             + sd.row(*panels, gap=36)
             + sd.legend([('parasitic', CC['par'], 'open'), ('dedicated', CC['ded'], 'dot'),
                          ('wall divert off', sd.RED, 'dot'), ('step in the data (hover)', sd.MUT, 'dash')]))
     notes = ('<p>Dashed lines: steps found in this data, every detector of a family moving at the same run. 224355: '
              'walls 0.25 → 0.55 ms. 224401: walls → 0.83 ms, plastics 12 → 31 µs, the liquids first appear. 224450: '
-             'plastics 31 → 114 µs, liquids 20 → 8 µs. What changed (HV, gains, thresholds, cabling) is not in the '
-             'logs read for this note. From 224450 nothing moves, including across 22 July (wall gate delay 200 → '
+             'plastics 31 → 114 µs, liquids 20 → 8 µs, the walls enter the DAQ configuration. 224450–224487: walls and '
+             'liquids flat, the plastics still moving run to run (114 → 43 → 20 → 126 µs, dedicated). 224401 also moved '
+             'every plastic ZS threshold by 5 mV; 224355 changed no DAQ setting (so hardware: HV, gain, gate). '
+             'From 224488 nothing moves, including across 22 July (wall gate delay 200 → '
              '1000 ns) and 23 July (DREAM clock divider), so those are not marked.</p>'
              '<p>Dates of the runs n_TOF never processed are taken from the nearest processed run.</p>')
     D.slide('stability', body, notes, short='over the campaign')
@@ -490,7 +493,7 @@ def divert(D, C, R):
     e2 = [(R.get((d, 'divoff_e2', c), {}).get('t3mV_us', math.nan), R.get((d, 'divon_e2', c), {}).get('t3mV_us', math.nan))
           for d in DETS[:4]]
     e2s = ', '.join(f'{d}: {fmt_t(a)} off / {fmt_t(b)} on' for d, (a, b) in zip(DETS[:4], e2))
-    body = (sd.title(title_, f'SiPM walls, all four, {CN[c]}: the two production-era divert-off runs against the other production runs')
+    body = (sd.title(title_, f'SiPM walls, all four, {CN[c]}: divert-off runs 224464, 224466 against the other runs from 224450 (walls flat there)')
             + sd.row(P1.svg('divert flash'), P2.svg('divert baseline'), gap=44) + sd.legend(leg))
     notes = (f'<p>The 10–11 July divert-off runs 224356–360 sit in a commissioning epoch, so they are compared with '
              f'that epoch\'s divert-on runs (224355, 224361–224400) instead, {CN[c]}: {e2s}.</p>'
@@ -501,17 +504,149 @@ def divert(D, C, R):
     D.slide('divert', body, notes, short='wall divert off')
 
 
+# ------------------------------------------------------------------ the pulse layer
+def pulse_curves():
+    f = out_dir('pulses') / 'pulse_curves.npz'
+    return dict(np.load(f)) if f.exists() else None
+
+
+def pulse_rows():
+    f = out_dir('pulses') / 'pulse_recovery.csv'
+    return {(r['det'], r['cls']): {k: fnum(v) for k, v in r.items() if k not in ('det', 'cls')}
+            for r in csv.DictReader(open(f))} if f.exists() else {}
+
+
+def fam_mean(PC, fam, c, key):
+    arr = [PC[f'{d}_{c}_{key}'] for d in DETS if d.startswith(fam) and f'{d}_{c}_{key}' in PC]
+    return np.nanmean(arr, axis=0) if arr else None
+
+
+def shape(D, PC, PR):
+    tc = PC['tc_us']
+    m = (tc >= 0.3) & (tc < 1e4)
+    panels = []
+    for fam, yr in (('WAL', (0, 120)), ('PSS', (0, 30))):
+        P = sd.Plot(810, 560, x=(0.3, 1e4, 'log'), y=yr, xlabel='time since the flash',
+                    ylabel='median pulse width (ns, above half height)', title=FAM[fam])
+        for c in ('par', 'ded'):
+            y = fam_mean(PC, fam, c, 'w50')
+            t = np.nanmedian([PR.get((d, c), {}).get('t_width_us', math.nan) for d in DETS if d.startswith(fam)])
+            P.line(tc[m].tolist(), clip(y[m], *yr), CC[c], 3, markers=False,
+                   tip=f'{FAM[fam]} {CN[c]}: width within ±15 % of its 1–10 ms value after {fmt_t(t)} (median of 4 detectors)')
+            if np.isfinite(t):
+                P.vline(t, CC[c], '8 5', 2.5)
+        P.xticks(tlog_ticks(0.3, 1e4)).yticks([(v, str(v)) for v in range(yr[0], yr[1] + 1, 20 if fam == 'WAL' else 5)])
+        panels.append(P.svg(fam))
+    tw = np.nanmedian([PR.get((d, 'ded'), {}).get('t_width_us', math.nan) for d in DETS[:4]])
+    body = (sd.title(f'Wall pulses are narrow for the first ~{fmt_t(tw)}; plastic pulses have their shape within µs',
+                     'Median width of the pulses found, against time since the flash; production runs, mean of the four detectors')
+            + sd.row(*panels, gap=44)
+            + sd.legend([('parasitic', CC['par'], 'line'), ('dedicated', CC['ded'], 'line'),
+                         ('back within ±15 %', sd.MUT, 'dash')]))
+    notes = ('<p>Pulses from <code>pulses.py</code>: baseline from each ZS block\'s pre-samples, or a running median '
+             '(200–400 ns chunks) inside the unsuppressed flash block; peaks above 4 mV after smoothing. Width = samples '
+             'above half height. The liquids (~4 ns wide) are not shown: their width is at the 3 ns bin resolution of '
+             'the histograms.</p><p>The narrow early wall pulses could be the chunked baseline cutting their tails '
+             'on the steep flash decay, as much as a real shape change; a template fit with a local exponential '
+             'baseline will tell.</p>')
+    D.slide('pulse_shape', body, notes, short='pulse shape')
+
+
+def amplitude(D, PC, PR):
+    tc = PC['tc_us']
+    m = (tc >= 0.5) & (tc < 1e4)
+    panels = []
+    early = {}
+    for fam in ('WAL', 'PSS', 'LIQ'):
+        P = sd.Plot(530, 600, x=(0.5, 1e4, 'log'), y=(0, 1.6), xlabel='time since the flash',
+                    ylabel='amplitude scale / 1–10 ms value' if fam == 'WAL' else '', title=FAM[fam], margin=(24, 20, 92, 96))
+        P.band([0.5, 1e4], [0.9, 0.9], [1.1, 1.1], sd.GREEN, alpha=0.10, tip='±10 % of the 1–10 ms value')
+        for c in ('par', 'ded'):
+            y = fam_mean(PC, fam, c, 'gain')
+            ref = float(np.nanmean([PC[f'{d}_{c}_gain_ref'] for d in DETS if d.startswith(fam) and f'{d}_{c}_gain_ref' in PC]))
+            P.line(tc[m].tolist(), clip(y[m], 0, 1.6), CC[c], 3, markers=False,
+                   tip=f'{FAM[fam]} {CN[c]}: 90 % quantile of the pulses above {AMPF[fam]:.0f} mV, over its 1–10 ms value')
+            P.hline(min(ref, 1.6), CC[c], '3 5', 2, tip=f'{CN[c]}: the same at 30–32 ms (cosmics dominate): {ref:.2f}')
+            if c == 'ded':
+                early[fam] = float(np.nanmean(y[(tc > 1.5) & (tc < 3)]))
+        P.hline(1, sd.INK, None, 1.2)
+        P.xticks(tlog_ticks(0.5, 1e4)).yticks([(v, f'{v:.1f}') for v in (0, 0.5, 1.0, 1.5)])
+        panels.append(P.svg(fam))
+    body = (sd.title(f'Plastic and liquid pulses are ×{1 / early["PSS"]:.1f} and ×{1 / early["LIQ"]:.1f} smaller 2 µs after the flash; wall pulses are not',
+                     'The amplitude scale of the pulses found against time (dedicated 1.5–3 µs in the title). Gain, or a different particle mix: not yet separated')
+            + sd.row(*panels, gap=36)
+            + sd.legend([('parasitic', CC['par'], 'line'), ('dedicated', CC['ded'], 'line'),
+                         ('same scale at 30–32 ms', sd.MUT, 'dot'), ('±10 %', sd.GREEN, 'box')]))
+    rows_ = ''.join(f'<tr><td>{d}</td>' + ''.join(f'<td>{fmt_t(PR.get((d, c), {}).get(k, math.nan))}</td>'
+                                                  for c in ('par', 'ded') for k in ('t_amp90_us', 't_amp97_us')) + '</tr>'
+                    for d in DETS)
+    notes = ('<p>Scale = the 90 % quantile of the amplitudes above a floor (walls and liquids 30 mV, plastics 50 mV), '
+             'clear of the threshold and of the small-pulse population, interpolated in log amplitude; divided by its '
+             'own median over 1–10 ms. Production runs, live channels, mean of the four detectors.</p>'
+             '<p><b>Why this is not yet a gain measurement.</b> The spectrum\'s shape follows the particle mix: fast-'
+             'neutron recoils (quenched) in the first µs, capture γs from ~0.1 ms, cosmic muons at 30 ms. The dotted '
+             'lines show the same scale at 30–32 ms differing from 1–10 ms by −15 % (walls) to +35 % (plastics) with '
+             'no flash nearby -- that is population, not gain. So the early dip is an upper bound on the gain sag. '
+             'The fixed reference that separates them is next: plastic pulses in coincidence with the wall of the '
+             'same arm (charged particles crossing the stack, a fixed energy loss per cm), and for the walls the ratio '
+             'of the two ends of a bar at fixed position.</p>'
+             '<table><tr><th>detector</th><th>par 90 %</th><th>par 97 %</th><th>ded 90 %</th><th>ded 97 %</th></tr>'
+             + rows_ + '</table><p>Times after which the scale stays above 90 % / 97 % of its 1–10 ms value.</p>')
+    D.slide('amplitude', body, notes, short='pulse amplitude')
+
+
+def wall_edge(D, PC):
+    tc = PC['tc_us']
+    ae = PC['a_edges']
+    ac = np.sqrt(ae[1:] * ae[:-1])
+    dla = np.diff(np.log(ae))
+    sl = [(3, 10), (10, 100), (100, 1000), (1000, 1e4)]
+    cols = [sd.PURPLE, sd.RED, sd.GOLD, sd.GREEN]
+    panels = []
+    frac = {}
+    for c in ('par', 'ded'):
+        h = sum(PC[f'{d}_{c}_ha'] for d in DETS[:4])
+        P = sd.Plot(810, 560, x=(2, 1000, 'log'), y=(1e-3, 3, 'log'), xlabel='pulse amplitude (mV)',
+                    ylabel='pulses per log-amplitude (normalised above 30 mV)', title=f'SiPM walls, {CN[c]}')
+        norm_m = ac > 30
+        for (lo, hi), col in zip(sl, cols):
+            mm = (tc > lo) & (tc < hi)
+            sp = h[:100][mm].sum(axis=0)
+            y = sp / max(sp[norm_m].sum(), 1) / dla
+            P.line(ac.tolist(), [max(v, 1e-3) if v > 0 else None for v in y], col, 3, markers=False,
+                   tip=f'{fmt_t(lo)}–{fmt_t(hi)}: {int(sp.sum()):,} pulses')
+            frac[(c, lo)] = sp[(ac > 4) & (ac < 15)].sum() / max(sp[norm_m].sum(), 1)
+        sp = h[-1]
+        P.line(ac.tolist(), [max(v, 1e-3) if v > 0 else None for v in sp / max(sp[norm_m].sum(), 1) / dla], sd.INK, 2.5,
+               dash='7 5', markers=False, tip=f'30–32 ms: {int(sp.sum()):,} pulses')
+        P.xticks([(v, str(v)) for v in (2, 5, 10, 20, 50, 100, 200, 500, 1000)]).yticks(sd.log_ticks(-3, 0))
+        panels.append(P.svg(c))
+    r = frac[('ded', 1000)] / max(frac[('ded', 10)], 1e-9)
+    body = (sd.title(f'While the baseline undershoots, the walls lose their small pulses: ×{r:.1f} fewer 4–15 mV pulses at 10–100 µs',
+                     'Wall pulse-amplitude spectra in slices of time since the flash, normalised to the pulses above 30 mV')
+            + sd.row(*panels, gap=44)
+            + sd.legend([(f'{fmt_t(lo)}–{fmt_t(hi)}', col, 'line') for (lo, hi), col in zip(sl, cols)]
+                        + [('30–32 ms', sd.INK, 'dash')]))
+    notes = ('<p>A zero-suppressed block opens only when the signal crosses a fixed threshold relative to the '
+             'ORIGINAL baseline. While the baseline is 10–19 mV low (10 µs – 1 ms), a pulse must be that much larger to be '
+             'recorded at all: the effective threshold rises and the small pulses vanish. Above ~30 mV the spectra '
+             'agree. Ratio in the title: 4–15 mV pulses per pulse above 30 mV at 1–10 ms over the same at 10–100 µs, '
+             'dedicated.</p><p>If the hardware trigger (the sum of a bar\'s two ends, 26–38 mV) sees the same '
+             'undershoot, the wall trigger threshold rises by the same amount until ~1 ms.</p>')
+    D.slide('wall_edge', body, notes, short='wall small pulses')
+
+
 def plan(D):
-    steps = [('pulse finding on the tail', 'Template fit on a running local baseline, per family; start where the quick pass '
-              'says the baseline is back, then walk earlier until fits fail.'),
-             ('amplitude vs time since flash', 'Per channel and intensity, the pulse-amplitude spectrum in log-time bins against '
-              'the same bunch\'s 30–32 ms window: a gain sag shows as a shifted edge or peak.'),
+    steps = [('template fit on the tail', 'First pulse pass done (previous slides). Next: per-family templates with a local '
+              'exponential baseline, so the steep flash tail stops biasing width and amplitude.'),
+             ('a fixed amplitude reference', 'Plastic pulses in coincidence with the wall of the same arm (charged particles, '
+              'fixed dE/dx); the two ends of a wall bar at fixed position. Separates gain from particle mix.'),
              ('earliest usable time', 'How far back into the flash tail pulses are still found with the right shape and '
               'amplitude: the real recovery time, not the baseline one.'),
              ('detector to detector', 'The 44 channels against each other: arms, the two ends of a bar, the PMTs.'),
              ('position dependence', 'Along the wall bars from the top/bottom amplitude ratio and time difference; across '
               'the stack from the MM tracks (DREAM triggers, ≥ 0.5 ms).')]
-    body = (sd.title('Next: does a pulse have its full amplitude once it is visible again?',
+    body = (sd.title('Next: is the early amplitude dip gain, or a different particle mix?',
                      'The full analysis, on the same dataset')
             + sd.flow([dict(label=s, sub=t, color=sd.BLUE) for s, t in steps], size=24)
             + sd.row(sd.callout('The baseline is a necessary condition. A PMT or SiPM can be back on baseline with its gain '
@@ -526,8 +661,9 @@ def plan(D):
 
 def limits(D):
     items = [
-        ('Gain is not measured yet.', 'A baseline back at zero says the electronics recovered, not that a pulse has its full '
-         'amplitude. The PMTs (plastics, liquids) can sag for hundreds of µs after the flash charge.'),
+        ('Gain is not separated from the particle mix.', 'The plastic and liquid pulses are smaller in the first µs, but '
+         'the spectrum also changes with what arrives (recoils, capture γs, cosmics). The early dip is an upper bound '
+         'on the gain sag until a fixed reference is in.'),
         ('A sample of the campaign.', '~40 bunches per run (2 raw files), 6 files for the divert-off runs and 224572. Ample '
          'for medians; thin for rare configurations.'),
         ('Pile-up on the plastics.', 'In the first ~100 µs the plastics are a continuous pulse train; their "baseline" there '
@@ -561,6 +697,12 @@ def main() -> int:
     summary(D, R, BR)
     stability(D, BR)
     divert(D, C, R)
+    PC = pulse_curves()
+    if PC is not None:
+        PR = pulse_rows()
+        shape(D, PC, PR)
+        amplitude(D, PC, PR)
+        wall_edge(D, PC)
     plan(D)
     limits(D)
     path = D.write(out_dir('deck') / 'scint-flash-recovery.html', note_meta=dict(

@@ -36,7 +36,9 @@ All detectors of a family move together at these runs (`recovery_by_run.csv`):
 |---|---|
 | 224355 | walls 0.25 → 0.55 ms |
 | 224401 | walls → 0.83 ms; plastics 12 → 31 µs; liquids first appear |
-| **224450** (14 July) | plastics 31 → 114 µs; liquids 20 → 8 µs. **From here on, flat to the end** = "production" |
+| 224450 (14 July) | plastics 31 → 114 µs; liquids 20 → 8 µs; walls and liquids flat from here |
+| 224450–224487 | the plastics still move run to run (114 → 43 → 20 → 126 µs, dedicated) |
+| **224488** (17 July) | **everything flat to the end** = "production" (`PRODUCTION_FROM`) |
 
 Neither 22 July (wall gate delay 200 → 1000 ns) nor 23 July (DREAM clock divider) moves anything.
 `quick.EPOCHS` and `PRODUCTION_FROM` hold this.
@@ -57,7 +59,7 @@ partly depends on where the head block ends, and therefore on the ZS threshold. 
 this rather than a detector change. The template fit (step 1 below) removes the dependence.
 The PMT and SiPM HV history is not in these files: look in the e-log or the slow control.
 
-## Layer 1 results (production, ±3 mV, median of four detectors)
+## Layer 1 results (production, ±3 mV, median of four detectors; see the deck for the current numbers)
 
 Liquids ~5 µs (parasitic) / ~6 µs (dedicated); plastics ~25 / ~90 µs; walls ~0.5 / ~0.64 ms.
 Dedicated takes ×1.5 longer (median over detectors). The wall divert gate does not set the wall time:
@@ -82,6 +84,39 @@ block). Peaks above 4 mV after family-specific smoothing.
 4. **Wall position handle.** For 85–90 % of wall pulses the other end of the bar fires within 30 ns.
    Their Δt (rms 4–6 ns) and ln(A₁/A₂) (rms 0.6–0.7) correlate at −0.6 to −0.74, so either one places
    the hit along the bar.
+
+## Layer 2–3 on the whole production set (`pulse_analysis.py`, deck slides 12–14; numbers from the first 190-run pass)
+
+- **Pulse shape.** Wall pulses are narrow (45–65 ns against 75 ns) until ~6 µs (parasitic) / ~27 µs
+  (dedicated). Plastic widths are normal within a few µs. Liquid widths are below the histogram resolution.
+- **Amplitude scale** (the 90 % quantile of pulses above a floor, over its 1–10 ms value). Plastics:
+  ~0.5 at 2 µs, ~0.85–0.9 by 10 µs, 1.0 by ~1 ms. Liquids: ~0.65 at 2 µs, then 0.85 → 1.0 by ~1 ms.
+  Walls: never compressed. **Not a gain measurement yet**: the same scale at 30–32 ms differs from 1–10 ms
+  by −15 % (walls) to +35 % (plastics) with no flash nearby. That is the particle mix (cosmics there), and
+  the same can happen early (quenched fast-neutron recoils).
+- **Walls lose small pulses** while the baseline undershoots: 4–15 mV pulses per pulse above 30 mV are
+  ×3.9 fewer at 10–100 µs than at 1–10 ms (dedicated).
+
+### First try at a fixed reference: plastic pulses in coincidence with the wall of the same arm
+
+On 224712 (20 bunches, `pulses_v2` list): plastic minus wall Δt peaks at −15…−5 ns in every arm,
+5–7× the side level. With an accidental subtraction (signal −20…0 ns, side +50…+150 ns ÷ 5):
+
+| slice | net pairs | median plastic amp |
+|---|---|---|
+| 1–3 µs | 245 | 40 mV |
+| 3–10 µs | 905 | 61 mV |
+| 10–100 µs | 7 481 | 82 mV |
+| 0.1–1 ms | 14 089 | 79 mV |
+| 1–10 ms | 19 567 | 80 mV |
+| 30–32 ms (cosmics) | 81 | 177 mV |
+
+There is no MIP peak in the beam window: the coincident particles are mostly not minimum-ionising (the
+cosmics at 30–32 ms are). Above 10 µs the coincident spectrum is flat, with a sharp upper edge at
+~400–450 mV that is stable to 10 ms and sits lower at 3–10 µs. If that edge is set by the light yield or
+the electronics, rather than the particles, its position is the gain reference. Next: build the
+coincidence into the condor reduction (pairs per time slice, both amplitudes) to get campaign statistics,
+and find out what sets the edge.
 
 ## The full analysis, step by step
 
