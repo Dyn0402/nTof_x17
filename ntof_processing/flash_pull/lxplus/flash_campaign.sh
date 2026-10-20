@@ -3,7 +3,7 @@
 #
 #   ./flash_campaign.sh plan              # plan.csv + runs_disk.txt + tape batches
 #   ./flash_campaign.sh disk              # submit every run whose files are all on disk
-#   nohup ./flash_campaign.sh tape > tape.log 2>&1 &    # resumable
+#   nohup ./flash_campaign.sh tape > tape.log 2>&1 &    # resumable (tape_submitted.txt)
 #   ./flash_campaign.sh status            # products on EOS against the plan
 #
 # Recalled files go back to tape-only in under a day (measured 2026-08-13 for the
@@ -49,34 +49,41 @@ disk)
     condor_submit flash.sub -a "runs=$WORK/runs_disk.txt" | tee "$WORK/disk.submitted"
     ;;
 tape)
-    batches=("$WORK"/batch_*.txt)
-    request() {
-        [ -f "$1.requested" ] && return
-        tape_paths "$1" | xargs -r -n 100 xrdfs "$XRD" prepare -s > /dev/null
-        date -u > "$1.requested"; echo "[$(date -u +%T)] requested $(basename "$1")"
-    }
-    for i in "${!batches[@]}"; do
-        b=${batches[$i]}
-        [ -f "$b.submitted" ] && continue
-        request "$b"
-        t0=$(date +%s)
-        while :; do
-            want=$(tape_paths "$b" | wc -l)
-            on=$(tape_paths "$b" | xargs -r -n 100 xrdfs "$XRD" query prepare 0 2>/dev/null |
-                 tr -d ' \n' | grep -o '"online":true' | wc -l)
-            echo "[$(date -u +%T)] $(basename "$b"): $on / $want online"
-            [ "$on" -ge "$want" ] && break
-            if [ $(( $(date +%s) - t0 )) -gt "$MAX_WAIT" ]; then
-                echo "  giving up on $(basename "$b") after $MAX_WAIT s"; date -u > "$b.timeout"; continue 2
-            fi
-            sleep "$POLL"
+    # Per RUN, not per batch: a run is submitted the moment all its tape files are
+    # online, and the rest are recalled and polled.  A batch gate let three
+    # offline files hold back 160 runs whose files were already online (CTA's disk
+    # buffer still held most of the campaign on 2026-10-20).  Recall is
+    # requested only for what is offline, at most BATCH runs' worth at a time, so
+    # nothing sits staged for long before its job reads it.
+    touch "$WORK/tape_submitted.txt"
+    t0=$(date +%s)
+    while :; do
+        todo=$(comm -23 <(sort "$WORK/runs_tape.txt") <(sort "$WORK/tape_submitted.txt"))
+        [ -z "$todo" ] && { echo "all tape runs submitted"; break; }
+        ready=() waiting=()
+        for r in $todo; do
+            echo "$r" > "$WORK/one.txt"
+            want=$(tape_paths "$WORK/one.txt" | wc -l)
+            on=$(tape_paths "$WORK/one.txt" | xargs -r -n 100 xrdfs "$XRD" query prepare 0 2>/dev/null |
+                 tr -d ' \n' | grep -o '"online":true' | wc -l || true)
+            # `|| true`: with none online grep exits 1, pipefail carries it and
+            # set -e killed the driver silently on its first offline run
+            if [ "$on" -ge "$want" ]; then ready+=("$r"); else waiting+=("$r"); fi
         done
-        condor_submit flash.sub -a "runs=$b" > "$b.submitted"
-        cat "$b.submitted"
-        nxt=${batches[$((i + 1))]:-}
-        [ -n "$nxt" ] && request "$nxt"
+        if [ "${#ready[@]}" -gt 0 ]; then
+            printf '%s\n' "${ready[@]}" > "$WORK/ready_$(date +%s).txt"
+            condor_submit flash.sub -a "runs=$(ls -t "$WORK"/ready_*.txt | head -1)" | tail -1
+            printf '%s\n' "${ready[@]}" >> "$WORK/tape_submitted.txt"
+        fi
+        echo "[$(date -u +%T)] submitted ${#ready[@]}, waiting on ${#waiting[@]} runs"
+        [ "${#waiting[@]}" -eq 0 ] && continue
+        printf '%s\n' "${waiting[@]:0:$BATCH}" > "$WORK/recall.txt"
+        tape_paths "$WORK/recall.txt" | xargs -r -n 100 xrdfs "$XRD" prepare -s > /dev/null
+        if [ $(( $(date +%s) - t0 )) -gt "$MAX_WAIT" ]; then
+            echo "giving up after $MAX_WAIT s; still waiting: ${waiting[*]}"; exit 1
+        fi
+        sleep "$POLL"
     done
-    echo "all tape batches submitted"
     ;;
 status)
     planned=$(awk -F, 'FNR>1' plan.csv | wc -l)

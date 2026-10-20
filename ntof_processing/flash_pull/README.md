@@ -84,7 +84,10 @@ nohup ./flash_campaign.sh tape > tape.log 2>&1 &       # recall -> submit, batch
 
 - `run_inventory` decides "beam" from the official files. Run 224667 could not be read
   that way, but it is > 50 GB so it is in. 224405 is in for the same reason.
-- 57 early beam runs have no walls in their configuration. Their products hold PSS/LIQ/PKUP only.
+- **57 early beam runs (224266–224329, 1–9 July) have no scintillators in the DAQ at all**, only
+  SILI and PKUP. Their products hold PKUP only (checked on 224270: det 12 alone, and the
+  official file has no WAL/PSS/LIQ trees). So **242 runs carry scintillator data.** They stay in
+  the set because they are tiny, and PKUP-only is itself a statement about those runs.
 - Tape recalls lapse in under a day, so `flash_campaign.sh tape` requests one batch, waits
   until every file is online, submits, and requests the next. A job whose file went offline
   exits 5. Re-run `tape` (resumable: `*.requested` / `*.submitted` files under `campaign/`).
