@@ -26,6 +26,7 @@ import numpy as np
 from ntof_scint_recovery.common import REPO, out_dir
 from ntof_scint_recovery.pulse_analysis import AMP_FLOOR as AMPF
 from ntof_scint_recovery.quick import DETS, DIVERT_OFF, EPOCHS, PRODUCTION_FROM
+from ntof_scint_recovery.trig_analysis import WALL_THR
 
 sys.path.insert(0, os.path.expanduser(os.environ.get(
     'SLIDEDOC_DIR', '~/PycharmProjects/dylan-cern-site/scripts')))
@@ -720,7 +721,9 @@ def plastic_wall(D, K, KR):
     notes = ('<p>The plastic minus wall time difference peaks at −15…−5 ns in every arm. Signal window −25…+5 ns; '
              'accidentals from +60…+210 ns, scaled by the width ratio. Requiring the wall selects particles that '
              'crossed the wall first, which takes out most of the neutron recoils and capture γs that hit the '
-             'plastic alone. The population is still not fixed (no MIP peak in the beam window: the median is '
+             'plastic alone. The upper edge is set by the light, not the electronics: over each bar\'s own pulse scale it '
+             'is 1.19–1.36 across the 8 bars while the scales span 176–278 mV, so it follows each bar\'s gain. '
+             'The population is still not fixed (no MIP peak in the beam window: the median is '
              'far below the cosmic muons at 30–32 ms, dotted), so this is a cleaner, not a clean, reference.</p>'
              + (f'<p>Signal purity (net / all in the window), dedicated, 1–10 ms: {np.nanmean(pur[:len(tcc)][(tcc > 1e3) & (tcc < 1e4)]):.0%}.</p>' if pur is not None else ''))
     D.slide('plastic_wall', body, notes, short='plastic behind wall')
@@ -797,18 +800,145 @@ def along_bar(D, K, KR):
     D.slide('along_bar', body, notes, short='along the bar')
 
 
+# ------------------------------------------------------------------ per channel
+def channel_rows():
+    f = out_dir('channels') / 'channel_maps.csv'
+    return list(csv.DictReader(open(f))) if f.exists() else None
+
+
+def channel_map(D, CH):
+    by = {(r['det'], int(r['ch']), r['cls']): r for r in CH}
+    order = [(d, ch) for d in DETS for ch in sorted({int(r['ch']) for r in CH if r['det'] == d})]
+    cols = [('t_base3', 'par', 'baseline ±3 mV\nparasitic'), ('t_base3', 'ded', 'baseline ±3 mV\ndedicated'),
+            ('t_shape80', 'ded', 'pulse shape\n(80 %), dedicated'), ('t_amp90', 'ded', 'amplitude scale\n≥ 90 %, dedicated')]
+    n = len(order)
+    lo, hi = 0, 4                                   # log10 us: 1 us .. 10 ms
+    P = sd.Plot(1180, 700, x=(0, len(cols)), y=(n, 0), margin=(96, 20, 16, 120))
+    cells = []
+    for j, (k, c, lab) in enumerate(cols):
+        for i, (d, ch) in enumerate(order):
+            v = fnum(by.get((d, ch, c), {}).get(k))
+            lv = math.log10(v) if np.isfinite(v) and v > 0 else math.nan
+            cells.append((j + 0.04, j + 0.96, i + 0.06, i + 0.94, lv,
+                          f'{d}{ch} — {lab.replace(chr(10), " ")}: {fmt_t(v)}'))
+    P.cells(cells, lo, hi, missing=sd.RULE)
+    P.yticks([(i + 0.5, f'{d}{ch}' if not d.startswith('LIQ') else 'LIQ A–D') for i, (d, ch) in enumerate(order) if (ch == 1 and not d.startswith('LIQ')) or d == 'LIQA'])
+    for j, (_, _, lab) in enumerate(cols):
+        for li, line_ in enumerate(lab.split('\n')):
+            P.text(j + 0.5, -3.4 + 1.6 * li, line_, 20, sd.INK, 'middle')
+    for yb in (32, 40):
+        P.raw(sd.line(P.x0, P.Y(yb), P.x0 + P.pw, P.Y(yb), sd.INK, 2))
+    cb = sd.colorbar(140, 600, lo, hi, [(0, '1 µs'), (1, '10 µs'), (2, '100 µs'), (3, '1 ms'), (4, '10 ms')], label='time')
+    slow = sorted(((fnum(r['t_base3']), r['det'] + r['ch']) for r in CH if r['cls'] == 'ded' and r['det'].startswith('PSS')),
+                  reverse=True)[0]
+    body = (sd.title(f'Walls uniform, plastics not: slowest {slow[1]} at {fmt_t(slow[0])}',
+                     'Every recovery time of each of the 44 channels; production runs. Rows: 32 wall ends (A1–D8), 8 plastic bars, 4 liquids')
+            + sd.row(P.svg('channel map'), cb, gap=40, align='center'))
+    rows_ = ''.join(f"<tr><td>{r['det']}{r['ch']}</td><td>{r['cls']}</td><td>{fmt_t(fnum(r['t_base3']))}</td>"
+                    f"<td>{fnum(r['under_mV']):.1f}</td><td>{fmt_t(fnum(r['t_shape80']))}</td><td>{fmt_t(fnum(r['t_amp90']))}</td>"
+                    f"<td>{fnum(r['scale_mV']):.0f}</td></tr>" for r in CH)
+    notes = ('<p>Grey: not measurable (too few pulses). Definitions as on the earlier slides; per channel instead of per '
+             'detector. The amplitude-scale column inherits that measure\'s population caveat, which is why it scatters '
+             'on the plastics and liquids.</p><table><tr><th>channel</th><th>class</th><th>baseline ±3 mV</th>'
+             '<th>undershoot (mV)</th><th>shape 80 %</th><th>scale ≥ 90 %</th><th>scale (mV)</th></tr>' + rows_ + '</table>'
+             '<p><code>channel_maps.csv</code></p>')
+    D.slide('channels', body, notes, short='per channel')
+
+
+def undershoot_gain(D, CH):
+    panels = []
+    corr = {}
+    for c in ('par', 'ded'):
+        w = [r for r in CH if r['det'].startswith('WAL') and r['cls'] == c]
+        x = np.array([fnum(r['scale_mV']) for r in w])
+        y = np.array([-fnum(r['under_mV']) for r in w])
+        t = np.array([fnum(r['t_base3']) for r in w])
+        ok = np.isfinite(x) & np.isfinite(y)
+        corr[c] = (np.corrcoef(x[ok], y[ok])[0, 1], np.corrcoef(y[ok], t[ok])[0, 1], float(np.median(y[ok] / x[ok])))
+        P = sd.Plot(810, 560, x=(70, 130), y=(5, 25), xlabel="channel's pulse scale at 1–10 ms (mV)",
+                    ylabel='baseline undershoot depth (mV)', title=f'32 wall ends, {CN[c]}')
+        P.points(x[ok].tolist(), y[ok].tolist(), CC[c], r=9,
+                 tips=[f"{r['det']}{r['ch']}: scale {xi:.0f} mV, undershoot {yi:.1f} mV, baseline back after {fmt_t(ti)}"
+                       for r, xi, yi, ti in zip(w, x, y, t)])
+        b1, b0 = np.polyfit(x[ok], y[ok], 1)
+        P.line([70, 130], [b0 + b1 * 70, b0 + b1 * 130], sd.MUT, 2, dash='6 5', markers=False,
+               tip=f'fit: {b1:.3f} mV per mV of scale')
+        P.xticks([(v, str(v)) for v in range(70, 131, 10)]).yticks([(v, str(v)) for v in range(5, 26, 5)])
+        panels.append(P.svg(c))
+    body = (sd.title(f'The undershoot follows the channel\'s gain: ~{100 * corr["ded"][2]:.0f} % of its pulse scale, the same for every wall end',
+                     f'Wall baseline undershoot depth against the channel\'s pulse scale; correlation {corr["par"][0]:.2f} (parasitic), '
+                     f'{corr["ded"][0]:.2f} (dedicated). Deeper undershoots also recover later: correlation {corr["ded"][1]:.2f}')
+            + sd.row(*panels, gap=44)
+            + sd.legend([('one wall end (hover)', sd.INK, 'dot'), ('linear fit', sd.MUT, 'dash')]))
+    notes = ('<p>The undershoot is the AC-coupled response to the flash charge, and the flash charge goes through the '
+             'same gain as the pulses. So in units of each channel\'s own pulse size the undershoot is the same everywhere '
+             'and every wall end loses the same FRACTION of its small pulses (the effective threshold rises by ~10–15 % '
+             'of a typical pulse). Pulse scale: 90 % quantile above 30 mV at 1–10 ms; undershoot: the most negative '
+             'median baseline after 20 µs.</p>')
+    D.slide('undershoot_gain', body, notes, short='undershoot vs gain')
+
+
+# ------------------------------------------------------------------ the trigger path
+def trigger_slide(D):
+    f = out_dir('trigger_ana') / 'trig_curves.npz'
+    if not f.exists():
+        return
+    T = dict(np.load(f))
+    tq = T['tcq_us']
+    m = (tq >= 100) & (tq < 1e4)
+    thr = float(np.mean(list(WALL_THR.values())))
+    P = sd.Plot(1100, 600, x=(100, 1e4, 'log'), y=(-5, 40), xlabel='time since the flash',
+                ylabel='wall-sum undershoot (mV)')
+    P.band([100, 1e4], [26, 26], [38, 38], sd.GREY, alpha=0.18, tip='wall trigger thresholds, 26–38 mV (sum of a bar\'s two ends)')
+    for c in ('par', 'ded'):
+        P.line(tq[m].tolist(), clip(T[f'sum_undershoot_{c}_mV'][m], -5, 40), CC[c], 3.5, markers=False,
+               tip=f'{CN[c]}: 2 × the median per-end baseline undershoot')
+    ft = T['first_trigger_us']
+    q = np.percentile(ft, [1, 50, 99])
+    P.band([q[0], q[2]], [-5, -5], [40, 40], sd.BLUE, alpha=0.12,
+           tip=f'first DREAM trigger of a bunch: 1–99 % at {fmt_t(q[0])}–{fmt_t(q[2])} ({len(ft):,} bunches)')
+    P.vline(q[1], sd.BLUE, '6 5', 2.5, label='DREAM gate opens', tip=f'median first trigger {fmt_t(q[1])}')
+    P.hline(0, sd.INK, None, 1.2)
+    P.xticks(tlog_ticks(100, 1e4)).yticks([(v, str(v)) for v in (0, 10, 20, 30, 40)])
+    at = {c: float(np.interp(q[1], tq, T[f'sum_undershoot_{c}_mV'])) for c in ('par', 'ded')}
+    pe = T['prev_edges_us']
+    side = sd.col(sd.p('<b>Why it cannot bias the recorded triggers</b>', 26),
+                  sd.p(f'When the gate opens the sum is {at["ded"]:.1f} mV low (dedicated), {100 * at["ded"] / thr:.0f} % of '
+                       f'the mean threshold. Before that the undershoot is large, but DREAM records nothing.', 23, sd.MUT),
+                  sd.p('A direct turn-on measurement was tried (Details): DREAM\'s busy time after a trigger varies up to several '
+                       'ms, so live time cannot be reconstructed well enough for a mV-level test.', 23, sd.MUT), w=500)
+    body = (sd.title(f'DREAM opens at ~{fmt_t(q[1])}, when the wall-sum undershoot is down to {at["ded"]:.1f} mV: '
+                     f'any trigger bias is ≤ {100 * at["ded"] / thr:.0f} % of threshold',
+                     'Expected undershoot of the wall trigger sum (2 × the per-end median baseline) against the time DREAM records its first trigger')
+            + sd.row(P.svg('trigger'), side, gap=44)
+            + sd.legend([('parasitic', CC['par'], 'line'), ('dedicated', CC['ded'], 'line'),
+                         ('first DREAM trigger, 1–99 %', sd.BLUE, 'box'), ('thresholds 26–38 mV', sd.GREY, 'box')]))
+    rows_ = ''.join(f'<tr><td>{fmt_t(a)}–{fmt_t(b)}</td><td>{int(n):,}</td><td>{e:.2f}</td></tr>'
+                    for a, b, n, e in zip(pe[:-1], pe[1:], T['n_vs_prev'], T['eff_vs_prev']))
+    notes = ('<p>The question: do the analog sums feeding the wall discriminators see the 10–19 mV undershoot of the digitized '
+             'signal? It only matters while DREAM records, and DREAM\'s first trigger in a bunch comes at the time above. '
+             'Whatever the analog path does, the bias of the recorded triggers is bounded by the curve at that time.</p>'
+             '<p>Direct test, attempted: emulated wall-sum + plastic coincidences in the raw waveforms (both ends of a bar '
+             'within ±30 ns, template-fit amplitudes; plastic within −60…+100 ns), matched to DREAM triggers (t_pred − t in '
+             '−100…+40 ns; 95 % name the same arm). Efficiency of clearly-above-threshold candidates (wall and plastic '
+             '> 1.5× threshold) against time since the previous DREAM trigger:</p>'
+             '<table><tr><th>since previous trigger</th><th>candidates</th><th>efficiency</th></tr>' + rows_ + '</table>'
+             f'<p>Before a bunch\'s first trigger (gate just open, &lt; 1.05 ms): {float(T["eff_first_window"]):.2f} '
+             f'(n = {int(T["n_first_window"]):,}). DREAM is dead ~205 µs after a trigger and partly busy for several ms '
+             'after that, and some bunches are not recorded at all, so a threshold shift of 1–2 mV cannot be measured this '
+             'way. Code: <code>trigger_cand.py</code>, <code>trig_analysis.py</code>.</p>')
+    D.slide('trigger', body, notes, short='trigger path')
+
 def plan(D):
-    steps = [('done: template fit, end ratio, along the bar', 'Shape back in µs; the two ends of a bar recover together; no '
-              'position dependence beyond 7 %. Slides 15–18.'),
-             ('a common-mode gain reference', 'The plastics\' upper edge behind a wall hit (what sets it: light or electronics?), '
-              'and pulse-height spectra of single-photoelectron / dark pulses if any clear the ZS threshold.'),
-             ('per channel', 'The same curves for each of the 44 channels: which ones are slow, and whether it follows the '
-              'arm, the bar or the PMT.'),
-             ('across the stack', 'MM tracks (DREAM triggers, from ~0.5 ms) matched to the flash_tail bunches: position '
-              'perpendicular to the bars, and a fixed-path-length reference.'),
-             ('the trigger path', 'Whether the analog sums feeding the discriminators see the wall undershoot: the trigger '
-              'rate against time since the flash, from the DREAM data.')]
-    body = (sd.title('Next: a common-mode gain reference, per-channel maps, the trigger path',
+    steps = [('done', 'Template fit, plastic behind a wall hit, bar end ratio, along the bar, per-channel maps, '
+              'undershoot ∝ gain, trigger bias bounded (slides 15–21).'),
+             ('common-mode gain', 'Use the plastic upper edge per bar (it follows each bar\'s gain). Single-photoelectron '
+              'peaks: a ~3 mV candidate on the plastics, needs per-channel fits.'),
+             ('MM tracks (deferred)', 'They start with DREAM at ~1 ms, after nearly everything has recovered; only the '
+              'slow last 5–15 % is left to test. Needs the scint_stack track tables rebuilt (11 GB of stage 3).'),
+             ('a template with a time shift', 'Fit the sub-ns position too: lowers the plastic and liquid misfit floor and '
+              'sharpens the shape recovery of the fast detectors.')]
+    body = (sd.title('Next: a common-mode gain reference, the MM tracks, a sharper template',
                      'The full analysis, on the same dataset')
             + sd.flow([dict(label=s, sub=t, color=sd.BLUE) for s, t in steps], size=24)
             + sd.row(sd.callout('The baseline is a necessary condition. A PMT or SiPM can be back on baseline with its gain '
@@ -830,8 +960,8 @@ def limits(D):
          'for medians; thin for rare configurations.'),
         ('Pile-up on the plastics.', 'In the first ~100 µs the plastics are a continuous pulse train; their "baseline" there '
          'is what a discriminator sees, not the amplifier\'s.'),
-        ('The trigger path is not measured.', 'The undershoot is on the digitized signal. Whether the analog sum feeding '
-         'the wall/plastic discriminators sees it depends on where it is split off.'),
+        ('The trigger path is bounded, not measured.', 'DREAM opens at ~1 ms, when the wall sum is ≤ ~1.6 mV low, so '
+         'a bias is at most ~5 % of threshold. DREAM\'s variable busy time prevents measuring it directly.'),
         ('Time base to ~10 ns.', 'Per-detector flash offsets, not per channel: irrelevant at these times, not good enough '
          'for anything inside the first 100 ns.'),
     ]
@@ -872,6 +1002,11 @@ def main() -> int:
         plastic_wall(D, K, KR)
         bar_ends(D, K, KR)
         along_bar(D, K, KR)
+    CH = channel_rows()
+    if CH:
+        channel_map(D, CH)
+        undershoot_gain(D, CH)
+    trigger_slide(D)
     plan(D)
     limits(D)
     path = D.write(out_dir('deck') / 'scint-flash-recovery.html', note_meta=dict(

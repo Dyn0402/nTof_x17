@@ -135,6 +135,34 @@ Reprocessed all 242 runs with the template fit and the coincidence histograms (`
   the three bands agree within 7 % after 3 µs. All dip together to ~0.92 (parasitic) / 0.96 (dedicated) at
   30–300 µs: either a common SiPM gain sag or the particle mix.
 
+## Round 3 (2026-10-21): gain reference, per channel, trigger path (deck slides 19–21)
+
+- **The plastic upper edge is light, not electronics.** Behind a wall hit, the edge (95 %) over the bar's own
+  pulse scale is 1.19–1.36 across the 8 bars, while the scales span 176–278 mV (dedicated, 1–10 ms). So the
+  edge follows each bar's gain and is usable per bar as a gain reference, as long as the coincident
+  particles' energy distribution holds.
+- **Single-photoelectron peaks:** the plastics show a bump at ~2.5–4 mV above the noise in the quiet tails of
+  ZS blocks (local 224712 file), but its fitted position wanders 3.0–4.0 mV between time slices and is mixed with
+  real low-energy pulses. Not yet a clean reference: it needs per-channel fits and a cleaner sample. The walls show
+  none (a single SiPM photoelectron is under the noise); the liquids show only a weak shoulder.
+- **Per channel** (`channel_maps.py`, slide 19): walls uniform (baseline 0.55–0.75 ms; amplitude back within
+  ~3 µs except A6). Plastics: 48 µs (A1) to 300 µs (C1). Liquids C and D slower in shape (0.3–0.5 ms).
+- **The wall undershoot follows the channel's gain** (slide 20): depth vs pulse scale, correlation 0.73–0.74,
+  depth ≈ 10 % (parasitic) / 15 % (dedicated) of the channel's scale; deeper undershoots recover later
+  (correlation 0.80). In units of its own pulses every wall end loses the same fraction.
+- **Trigger path** (`trigger_cand.py` on condor → `flash_tail_trigger/`, `trig_analysis.py`, slide 21):
+  - **DREAM's gate opens at ~1.0 ms**: the first trigger of a bunch is at 992–1061 µs (1–95 %).
+  - The expected undershoot of the wall trigger sum is then ~1.6 mV, ≤ 5 % of the 26–38 mV thresholds, which
+    bounds any trigger bias.
+  - A direct turn-on measurement (emulated wall-sum + plastic candidates matched to DREAM triggers: 8.9 M
+    candidates, 121 runs with slims) fails. DREAM's dead time is ~205 µs after a trigger, but the busy state
+    lasts up to several ms (strong-candidate efficiency 0.2 at 0.3–1 ms, 0.46 at 2–5 ms, 0.76 beyond), and
+    some bunches aren't recorded. Before a bunch's first trigger the efficiency is 0.72.
+- **MM tracks: deferred.** They start with DREAM at ~1 ms, by which point only the slow last 5–15 % is left.
+  The scint_stack per-track tables are gone from the desktop and not on EOS. Rebuilding them needs the stage-3
+  full pass (`/eos/experiment/ntof/data/x17/desktop_scratch/x17_local/yfix_work/sept26_prelim_stage3_fullpass`,
+  11.4 GB) and the slims.
+
 ## The full analysis, step by step
 
 1. **Pulse model.** Fit per-family templates on clean late-time pulses (30–32 ms window, isolated, flat
