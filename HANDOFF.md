@@ -1,5 +1,43 @@
 # Handoff
 
+## MPGD2026 proceedings (JINST) — updated 2026-10-20 (dylan-Yoga)
+
+**Resume:** first draft is on Overleaf; Dylan says it "looks good to start". Next: fill the cyan `\askDylan` items, then polish.
+
+**Goal:** 5-page JINST proceedings for the MPGD2026 oral talk ("Searching for X17 at n_TOF with large-area Micromegas
+detectors in µTPC mode", 3 Sept 2026). **Deadline 17 Jan 2027**, submitted on jinst.sissa.it → "submit a proceedings contribution".
+Limit is 5 pages, excluding authors/affiliations, acknowledgements and references.
+
+**Done:**
+- `papers/mpgd26_proceedings/main.tex`: full draft on the official JINST template (jinstpub.sty, line numbers, `\notoc`).
+  It follows the talk: motivation → MX17 chamber + resistive-strip sharing → waveform forward fit → bench performance
+  (93.1 % on 21,953 muons, σ68 1.19°/1.23°, 33 ns, SPS 176 ± 35 µm) → n_TOF setup and campaign (41.8 M events, 17.9 TB,
+  436,373 pulses, 78.6 %) → γ flash (chamber usable again after 2.0 µs vs DREAM 5.0 ms, ×2.4e3) → thermal window →
+  preliminary capsule pointing (A and C converge ~9 mm off axis). 5 figures from `mpgd26/slides/assets/img/`, 11 refs.
+  Body is pages 2–6.
+- Linked to Overleaf: https://www.overleaf.com/project/6ad72207b122b98dea142d04 (remote `overleaf-mpgd26_proceedings`).
+- Overleaf git token is now on all three machines: laptop and Ubuntu desktop `~/.git-credentials`; Windows
+  `C:\Users\Dylan\.git-credentials` with a store helper scoped to git.overleaf.com (Credential Manager stays the default).
+
+**Next steps:**
+1. Dylan: affiliation and email, co-authors and collaboration wording, EUROLABS/other grant numbers, DREAM reference (two options in the bib).
+2. Decide the physics framing (see the `\askDylan` in §4). No absolute X17/IPC yields are quoted on purpose: the rate tables may be ~100× high (`sept26_prelim_analysis/IPC_MISSING.md`).
+3. Re-render `chamber_exploded.png` with larger labels for print; the other figures are slide-style plots and read fine.
+4. Check page count on Overleaf (real newtx fonts), and fix the one 7.5 pt overfull line in §2's forward-model paragraph.
+5. Before submission: remove all `\askDylan`/`% TODO Dylan`, then submit.
+
+**Gotchas / decisions:**
+- The laptop's TeX Live 2023 can't load the current newtx. For a local preview, copy the folder and swap the newtx lines in
+  jinstpub.sty for `\RequirePackage{mathptmx}` (same Times metrics). Never commit that swap; Overleaf compiles the real one.
+- `\askDylan{}` inside `\emailAdd`/`\affiliation` overflows TeX's input stack (mailto link), so those placeholders are plain text.
+- The capsule offset quoted (~9 mm) is the September per-run imaging (−9.3 ± 0.3 mm), which matches the talk's "~1 cm".
+- `figures/efficiency_breakdown.png` is copied but unused (spare, in case a figure is swapped).
+- Windows desktop ssh from the laptop: `ssh -o HostKeyAlias=desktop-win-lan dylan@192.168.0.89` (shared IP with Ubuntu).
+
+**Key files & commands:**
+- `papers/mpgd26_proceedings/main.tex`, `README.md` (workflow), `figures/`
+- `papers/overleaf.sh pull mpgd26_proceedings` / `push mpgd26_proceedings`
+
 ## MX17 papers on Overleaf — updated 2026-10-19 (dylan-MS-7C84)
 
 **Resume:** Paper I is linked to Overleaf (git bridge). Next: share with Stephan + Track changes, then link Paper II.
