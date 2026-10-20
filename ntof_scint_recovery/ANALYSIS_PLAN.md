@@ -1,0 +1,128 @@
+# Scintillator recovery after the γ-flash: analysis plan and state (2026-10-20)
+
+The question, from a collaborator: **how long do the scintillators take to recover after the n_TOF
+γ-flash?** Answered in three layers. Each layer is a stricter definition of "recovered".
+
+| layer | "recovered" means | status |
+|---|---|---|
+| 1. quick pass | the baseline is back within ±3 / ±1 mV of its pre-flash level | **done**: slide note <https://dylan-neff.web.cern.ch/notes/scint-flash-recovery.html> |
+| 2. pulses | pulses are found again with their normal shape | prototype `pulses.py`; histograms for every run running on condor |
+| 3. amplitude | a found pulse has its full amplitude (no gain sag) | first look below; the core of the full analysis |
+| 4. variation | layers 1–3 per channel, per bar end, and along the bar | handles demonstrated below |
+
+**Rules that hold throughout**
+- Always split by beam intensity: parasitic (~4×10¹² ppp) and dedicated (~8.5×10¹²).
+- Never pool across configuration epochs (below).
+- Count only live channels: some runs had whole families unpowered.
+
+## Data
+
+| | where | made by |
+|---|---|---|
+| raw blocks, 0–10 ms + 30–32 ms, ~40 bunches/run | `/eos/experiment/ntof/data/x17/flash_tail/<run>/` | `ntof_processing/flash_pull` |
+| per-bunch log-time baseline/mean traces | `/eos/.../flash_tail_summary/summary_<run>.npz` (local copy `out_dir('summaries')`) | `flash_summary.py` via `lxplus/summary.sub` |
+| pulse histograms (log t × amp, log t × width) per channel × class | `/eos/.../flash_tail_pulsehist/pulsehist_<run>.npz` | `pulses.py --hist` via `lxplus/pulsehist.sub` |
+| quick-pass tables, curves, examples | `out_dir('quick')` = `/media/dylan/data/x17/scint_stack/recovery/quick/` | `quick.py`, `examples.py` |
+
+The lxplus submit directory is `~/x17rec` (code rsynced from here; logs in `logs/`). 70 runs were still
+on the tape recall when this was written. When they land, rerun both condor steps for the new runs, then
+run `quick.py` and the deck again.
+
+## Configuration epochs (found in this data, causes not identified)
+
+All detectors of a family move together at these runs (`recovery_by_run.csv`):
+
+| from run | change |
+|---|---|
+| 224355 | walls 0.25 → 0.55 ms |
+| 224401 | walls → 0.83 ms; plastics 12 → 31 µs; liquids first appear |
+| **224450** (14 July) | plastics 31 → 114 µs; liquids 20 → 8 µs. **From here on, flat to the end** = "production" |
+
+Neither 22 July (wall gate delay 200 → 1000 ns) nor 23 July (DREAM clock divider) moves anything.
+`quick.EPOCHS` and `PRODUCTION_FROM` hold this.
+
+**What the DAQ settings say** (`DAQsettings` tree of the official files: ZS threshold, full scale, offset;
+no HV):
+
+- 224354 → 224355: **nothing changed**. The wall step is hardware (HV, SiPM gain or the gate), not recorded there.
+- 224381 → 224401: **every plastic ZS threshold moved by 5 mV**; the liquids were added (an old `LIQS` channel removed).
+- 224448 → 224450: the walls (32 channels) enter the DAQ configuration (224448 had only 12 channels).
+- Within production, ZS thresholds keep changing (e.g. liquids −1 → −16 mV between 224450 and 224712)
+  while the recovery times stay flat.
+
+Method caveat this exposes: the DAQ extends the unsuppressed head block while the signal is outside the ZS
+band. On the plastics that is 140–210 µs, which is where their recovery time falls. Inside the head the
+quick pass takes a per-bin median of all samples; after it, block pre-samples. So the plastics' number
+partly depends on where the head block ends, and therefore on the ZS threshold. The 224401 step may be
+this rather than a detector change. The template fit (step 1 below) removes the dependence.
+The PMT and SiPM HV history is not in these files: look in the e-log or the slow control.
+
+## Layer 1 results (production, ±3 mV, median of four detectors)
+
+Liquids ~5 µs (parasitic) / ~6 µs (dedicated); plastics ~25 / ~90 µs; walls ~0.5 / ~0.64 ms.
+Dedicated takes ×1.5 longer (median over detectors). The wall divert gate does not set the wall time:
+divert-off 224464/466 recover exactly like the other production runs.
+
+## Layer 2–3: first look at the pulses (one file, 224712, 20 bunches)
+
+`pulses.py`, baseline from block pre-samples (ZS blocks) or a 200–400 ns chunked running median (flash
+block). Peaks above 4 mV after family-specific smoothing.
+
+1. **The walls lose small pulses while the baseline undershoots.** Between ~10 µs and ~1 ms, 5–20 mV
+   wall pulses are missing. A ZS block opens only when the signal crosses a fixed threshold relative to
+   the original baseline, so a baseline 10–19 mV low raises the effective threshold by that much. This
+   is an efficiency loss the quick pass cannot see. It also matters for the hardware wall trigger (sum
+   of two ends, 26–38 mV), if the trigger path sees the same undershoot.
+2. **Plastics: the 99th-percentile amplitude climbs from ~80 mV at 1 µs to its ~300 mV plateau by ~10 µs.**
+   It then stays flat to 10 ms and matches the 30–32 ms reference. This is either a real gain recovery
+   over ~10 µs or the chunked baseline lagging in the steep tail. A template fit will tell.
+3. **Liquids: the low-amplitude feature jumps 10 → 23 mV at ~0.5 ms.** That is a change of population
+   (capture γs arriving), not gain. It shows why a spectrum's shape cannot be read as gain without a
+   fixed reference.
+4. **Wall position handle.** For 85–90 % of wall pulses the other end of the bar fires within 30 ns.
+   Their Δt (rms 4–6 ns) and ln(A₁/A₂) (rms 0.6–0.7) correlate at −0.6 to −0.74, so either one places
+   the hit along the bar.
+
+## The full analysis, step by step
+
+1. **Pulse model.** Fit per-family templates on clean late-time pulses (30–32 ms window, isolated, flat
+   baseline). Then refit pulses in the tail with template + local exponential baseline, so the steep
+   flash tail stops biasing amplitudes. Report χ²/ndf against time: the earliest time where the shape
+   is normal is "how far back pulses can be recovered".
+2. **Gain references, independent of the particle mix.** In order of preference:
+   - The **ratio of the two ends of a wall bar** for coincident pulses at fixed Δt (fixed position).
+     It is population-independent, and a sag on one end shows directly. A common sag on both ends would
+     not show, so pair it with the next one.
+   - A **fixed spectral feature**: the Compton edge of the 2.22 MeV H(n,γ) line in plastics and liquids
+     (thermal captures dominate ~0.1–20 ms), and the plastic ~100 mV peak if it proves stable. Its
+     position against time, divided by its position at 30–32 ms, is the gain.
+   - **Single-photoelectron / dark pulses**, if they are above the ZS threshold anywhere (check the
+     low-amplitude spectra at late times).
+   - The amplitude of **MM-tagged tracks** (`ntof_scint_stack` tables): through-going particles of known
+     path length, but only from ~0.5 ms (DREAM triggers) and thin statistics.
+3. **Effective threshold against time** (walls especially): the ZS/trigger threshold relative to the
+   local baseline, from the lowest-amplitude pulses found per time bin. Turn it into an efficiency loss
+   for a given spectrum.
+4. **Detector to detector.** All 44 channels against each other in layers 1–3: arms A–D, the two ends of
+   a bar, the eight PMTs. The quick pass already shows walls uniform to ~10 % and plastic B/C slower than A/D.
+5. **Position dependence.** Along each wall bar, bin coincident pairs in Δt (or ln A₁/A₂) and repeat
+   layers 1–3 per bin. Across the stack, use the MM tracks: from ~0.5 ms only, matched to flash_tail
+   bunches by (run, bunch) through the slim `events` tree. Calibrate Δt → mm from the bar length (edges of
+   the Δt distribution) or against the MM tracks.
+6. **Intensity scaling.** Two classes is two points. Within each class PulseIntensity spreads ~±5 %. Look
+   at whether recovery times scale with the flash charge (PKUP amplitude) bunch by bunch.
+
+Deliverables: extend the slide note (or a second note, "full analysis") with the template-fit recovery,
+gain against time per family, the wall efficiency loss, and the per-channel and along-bar maps. Plus a
+`report.html` per the repo rules.
+
+## What can bite
+
+- A spectrum's shape changes with the particle mix (prompt γ, fast neutrons, then capture γ). Never read a
+  shift in shape as gain without a fixed reference.
+- The plastics are a continuous pulse train in the first ~100 µs, so a baseline estimate there includes
+  pile-up.
+- The unprocessed runs have no PulseIntensity; they are classed on the PKUP flash amplitude
+  (`quick.classify`, cut ~650 mV), which separates as cleanly as the intensity does.
+- The 57 runs from 1–9 July have no scintillators (PKUP only).
+- Everything here is the digitized path. The analog trigger path may differ.

@@ -52,3 +52,23 @@ They give different answers, and the report keeps them apart:
 - **Tape only**: 224572 beyond the local chunks, and the divert-off runs 224356–360 and 224464/466.
   Recall per file with `ntof_processing/waveform_pull/lxplus/recall.sh` and read it the same day.
 - `wf_pull` (287 GB on EOS) is ±5 µs around DREAM triggers (≥ ~0.5 ms), so it has no flash tail.
+
+## The flash_tail analysis (2026-10-20)
+
+The first look above used one run. The real study runs on the raw-waveform dataset
+`/eos/experiment/ntof/data/x17/flash_tail` (`ntof_processing/flash_pull`), with every result split by beam
+intensity. Plan, state and findings: **[`ANALYSIS_PLAN.md`](ANALYSIS_PLAN.md)**.
+Slide note: <https://dylan-neff.web.cern.ch/notes/scint-flash-recovery.html>.
+
+```bash
+# on lxplus, ~/x17rec (code rsynced from here): per-run reductions, written to EOS
+condor_submit summary.sub   -a 'runs=runs.txt'    # flash_summary.py -> flash_tail_summary/
+condor_submit pulsehist.sub -a 'runs=runs.txt'    # pulses.py --hist -> flash_tail_pulsehist/
+# desktop
+rsync -a lxplus:/eos/experiment/ntof/data/x17/flash_tail_summary/ /media/dylan/data/x17/scint_stack/recovery/summaries/
+PYTHONPATH=. .venv/bin/python -m ntof_scint_recovery.quick
+PYTHONPATH=. .venv/bin/python -m ntof_scint_recovery.examples <a local flash_*.root>
+PYTHONPATH=. .venv/bin/python -m ntof_scint_recovery.make_recovery_deck
+python3 ~/PycharmProjects/dylan-cern-site/scripts/add-note.py \
+    /media/dylan/data/x17/scint_stack/recovery/deck/scint-flash-recovery.html --slug scint-flash-recovery --force --deploy
+```
