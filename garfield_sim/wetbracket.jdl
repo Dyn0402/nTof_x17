@@ -1,0 +1,145 @@
+executable          = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_job.sh
+request_cpus        = 1
+request_memory      = 2 GB
+request_disk        = 2 GB
++MaxRuntime         = 43200
+max_retries         = 2
+should_transfer_files = YES
+when_to_transfer_output = ON_EXIT
+MY.SendCredential   = true
+output              = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/logs/wetbr_$(ClusterId).$(ProcId).out
+error               = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/logs/wetbr_$(ClusterId).$(ProcId).err
+log                 = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/logs/wetbracket.clog
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/setup_garfield.sh,/afs/cern.ch/user/d/dneff/work/garfield_install/garfield-927e5c21.tar.gz,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ar_iC4H10_95_5_Saclay_160m.gas
+# A_dry_rp040 | 490V | batch 001
+arguments = --gas-file Ar_iC4H10_95_5_Saclay_160m.gas --gas-label A_dry_rp040 --pressure-label Saclay_160m --pressure-torr 745.8332 --penning-mode manual --penning-rP 0.40 --penning-gas ar --voltage 490.0 --events 200 --gap-cm 0.015 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs_wetbracket/A_dry_rp040_490V_b001.json --batch-id 001
+queue
+
+# A_dry_rp040 | 490V | batch 002
+arguments = --gas-file Ar_iC4H10_95_5_Saclay_160m.gas --gas-label A_dry_rp040 --pressure-label Saclay_160m --pressure-torr 745.8332 --penning-mode manual --penning-rP 0.40 --penning-gas ar --voltage 490.0 --events 200 --gap-cm 0.015 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs_wetbracket/A_dry_rp040_490V_b002.json --batch-id 002
+queue
+
+# A_dry_rp040 | 490V | batch 003
+arguments = --gas-file Ar_iC4H10_95_5_Saclay_160m.gas --gas-label A_dry_rp040 --pressure-label Saclay_160m --pressure-torr 745.8332 --penning-mode manual --penning-rP 0.40 --penning-gas ar --voltage 490.0 --events 200 --gap-cm 0.015 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs_wetbracket/A_dry_rp040_490V_b003.json --batch-id 003
+queue
+
+# A_dry_rp040 | 490V | batch 004
+arguments = --gas-file Ar_iC4H10_95_5_Saclay_160m.gas --gas-label A_dry_rp040 --pressure-label Saclay_160m --pressure-torr 745.8332 --penning-mode manual --penning-rP 0.40 --penning-gas ar --voltage 490.0 --events 200 --gap-cm 0.015 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs_wetbracket/A_dry_rp040_490V_b004.json --batch-id 004
+queue
+
+# A_dry_rp040 | 490V | batch 005
+arguments = --gas-file Ar_iC4H10_95_5_Saclay_160m.gas --gas-label A_dry_rp040 --pressure-label Saclay_160m --pressure-torr 745.8332 --penning-mode manual --penning-rP 0.40 --penning-gas ar --voltage 490.0 --events 200 --gap-cm 0.015 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs_wetbracket/A_dry_rp040_490V_b005.json --batch-id 005
+queue
+
+# A_dry_rp040 | 490V | batch 006
+arguments = --gas-file Ar_iC4H10_95_5_Saclay_160m.gas --gas-label A_dry_rp040 --pressure-label Saclay_160m --pressure-torr 745.8332 --penning-mode manual --penning-rP 0.40 --penning-gas ar --voltage 490.0 --events 200 --gap-cm 0.015 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs_wetbracket/A_dry_rp040_490V_b006.json --batch-id 006
+queue
+
+# A_dry_rp040 | 490V | batch 007
+arguments = --gas-file Ar_iC4H10_95_5_Saclay_160m.gas --gas-label A_dry_rp040 --pressure-label Saclay_160m --pressure-torr 745.8332 --penning-mode manual --penning-rP 0.40 --penning-gas ar --voltage 490.0 --events 200 --gap-cm 0.015 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs_wetbracket/A_dry_rp040_490V_b007.json --batch-id 007
+queue
+
+# A_dry_rp040 | 490V | batch 008
+arguments = --gas-file Ar_iC4H10_95_5_Saclay_160m.gas --gas-label A_dry_rp040 --pressure-label Saclay_160m --pressure-torr 745.8332 --penning-mode manual --penning-rP 0.40 --penning-gas ar --voltage 490.0 --events 200 --gap-cm 0.015 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs_wetbracket/A_dry_rp040_490V_b008.json --batch-id 008
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/setup_garfield.sh,/afs/cern.ch/user/d/dneff/work/garfield_install/garfield-927e5c21.tar.gz,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ar_iC4H10_H2O_94p5_5_0p5_Saclay_160m.gas
+# B_h2o05_rp040 | 490V | batch 001
+arguments = --gas-file Ar_iC4H10_H2O_94p5_5_0p5_Saclay_160m.gas --gas-label B_h2o05_rp040 --pressure-label Saclay_160m --pressure-torr 745.8332 --penning-mode manual --penning-rP 0.40 --penning-gas ar --voltage 490.0 --events 200 --gap-cm 0.015 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs_wetbracket/B_h2o05_rp040_490V_b001.json --batch-id 001
+queue
+
+# B_h2o05_rp040 | 490V | batch 002
+arguments = --gas-file Ar_iC4H10_H2O_94p5_5_0p5_Saclay_160m.gas --gas-label B_h2o05_rp040 --pressure-label Saclay_160m --pressure-torr 745.8332 --penning-mode manual --penning-rP 0.40 --penning-gas ar --voltage 490.0 --events 200 --gap-cm 0.015 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs_wetbracket/B_h2o05_rp040_490V_b002.json --batch-id 002
+queue
+
+# B_h2o05_rp040 | 490V | batch 003
+arguments = --gas-file Ar_iC4H10_H2O_94p5_5_0p5_Saclay_160m.gas --gas-label B_h2o05_rp040 --pressure-label Saclay_160m --pressure-torr 745.8332 --penning-mode manual --penning-rP 0.40 --penning-gas ar --voltage 490.0 --events 200 --gap-cm 0.015 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs_wetbracket/B_h2o05_rp040_490V_b003.json --batch-id 003
+queue
+
+# B_h2o05_rp040 | 490V | batch 004
+arguments = --gas-file Ar_iC4H10_H2O_94p5_5_0p5_Saclay_160m.gas --gas-label B_h2o05_rp040 --pressure-label Saclay_160m --pressure-torr 745.8332 --penning-mode manual --penning-rP 0.40 --penning-gas ar --voltage 490.0 --events 200 --gap-cm 0.015 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs_wetbracket/B_h2o05_rp040_490V_b004.json --batch-id 004
+queue
+
+# B_h2o05_rp040 | 490V | batch 005
+arguments = --gas-file Ar_iC4H10_H2O_94p5_5_0p5_Saclay_160m.gas --gas-label B_h2o05_rp040 --pressure-label Saclay_160m --pressure-torr 745.8332 --penning-mode manual --penning-rP 0.40 --penning-gas ar --voltage 490.0 --events 200 --gap-cm 0.015 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs_wetbracket/B_h2o05_rp040_490V_b005.json --batch-id 005
+queue
+
+# B_h2o05_rp040 | 490V | batch 006
+arguments = --gas-file Ar_iC4H10_H2O_94p5_5_0p5_Saclay_160m.gas --gas-label B_h2o05_rp040 --pressure-label Saclay_160m --pressure-torr 745.8332 --penning-mode manual --penning-rP 0.40 --penning-gas ar --voltage 490.0 --events 200 --gap-cm 0.015 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs_wetbracket/B_h2o05_rp040_490V_b006.json --batch-id 006
+queue
+
+# B_h2o05_rp040 | 490V | batch 007
+arguments = --gas-file Ar_iC4H10_H2O_94p5_5_0p5_Saclay_160m.gas --gas-label B_h2o05_rp040 --pressure-label Saclay_160m --pressure-torr 745.8332 --penning-mode manual --penning-rP 0.40 --penning-gas ar --voltage 490.0 --events 200 --gap-cm 0.015 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs_wetbracket/B_h2o05_rp040_490V_b007.json --batch-id 007
+queue
+
+# B_h2o05_rp040 | 490V | batch 008
+arguments = --gas-file Ar_iC4H10_H2O_94p5_5_0p5_Saclay_160m.gas --gas-label B_h2o05_rp040 --pressure-label Saclay_160m --pressure-torr 745.8332 --penning-mode manual --penning-rP 0.40 --penning-gas ar --voltage 490.0 --events 200 --gap-cm 0.015 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs_wetbracket/B_h2o05_rp040_490V_b008.json --batch-id 008
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/setup_garfield.sh,/afs/cern.ch/user/d/dneff/work/garfield_install/garfield-927e5c21.tar.gz,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ar_iC4H10_H2O_94_5_1_Saclay_160m.gas
+# C_h2o10_rp040 | 490V | batch 001
+arguments = --gas-file Ar_iC4H10_H2O_94_5_1_Saclay_160m.gas --gas-label C_h2o10_rp040 --pressure-label Saclay_160m --pressure-torr 745.8332 --penning-mode manual --penning-rP 0.40 --penning-gas ar --voltage 490.0 --events 200 --gap-cm 0.015 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs_wetbracket/C_h2o10_rp040_490V_b001.json --batch-id 001
+queue
+
+# C_h2o10_rp040 | 490V | batch 002
+arguments = --gas-file Ar_iC4H10_H2O_94_5_1_Saclay_160m.gas --gas-label C_h2o10_rp040 --pressure-label Saclay_160m --pressure-torr 745.8332 --penning-mode manual --penning-rP 0.40 --penning-gas ar --voltage 490.0 --events 200 --gap-cm 0.015 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs_wetbracket/C_h2o10_rp040_490V_b002.json --batch-id 002
+queue
+
+# C_h2o10_rp040 | 490V | batch 003
+arguments = --gas-file Ar_iC4H10_H2O_94_5_1_Saclay_160m.gas --gas-label C_h2o10_rp040 --pressure-label Saclay_160m --pressure-torr 745.8332 --penning-mode manual --penning-rP 0.40 --penning-gas ar --voltage 490.0 --events 200 --gap-cm 0.015 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs_wetbracket/C_h2o10_rp040_490V_b003.json --batch-id 003
+queue
+
+# C_h2o10_rp040 | 490V | batch 004
+arguments = --gas-file Ar_iC4H10_H2O_94_5_1_Saclay_160m.gas --gas-label C_h2o10_rp040 --pressure-label Saclay_160m --pressure-torr 745.8332 --penning-mode manual --penning-rP 0.40 --penning-gas ar --voltage 490.0 --events 200 --gap-cm 0.015 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs_wetbracket/C_h2o10_rp040_490V_b004.json --batch-id 004
+queue
+
+# C_h2o10_rp040 | 490V | batch 005
+arguments = --gas-file Ar_iC4H10_H2O_94_5_1_Saclay_160m.gas --gas-label C_h2o10_rp040 --pressure-label Saclay_160m --pressure-torr 745.8332 --penning-mode manual --penning-rP 0.40 --penning-gas ar --voltage 490.0 --events 200 --gap-cm 0.015 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs_wetbracket/C_h2o10_rp040_490V_b005.json --batch-id 005
+queue
+
+# C_h2o10_rp040 | 490V | batch 006
+arguments = --gas-file Ar_iC4H10_H2O_94_5_1_Saclay_160m.gas --gas-label C_h2o10_rp040 --pressure-label Saclay_160m --pressure-torr 745.8332 --penning-mode manual --penning-rP 0.40 --penning-gas ar --voltage 490.0 --events 200 --gap-cm 0.015 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs_wetbracket/C_h2o10_rp040_490V_b006.json --batch-id 006
+queue
+
+# C_h2o10_rp040 | 490V | batch 007
+arguments = --gas-file Ar_iC4H10_H2O_94_5_1_Saclay_160m.gas --gas-label C_h2o10_rp040 --pressure-label Saclay_160m --pressure-torr 745.8332 --penning-mode manual --penning-rP 0.40 --penning-gas ar --voltage 490.0 --events 200 --gap-cm 0.015 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs_wetbracket/C_h2o10_rp040_490V_b007.json --batch-id 007
+queue
+
+# C_h2o10_rp040 | 490V | batch 008
+arguments = --gas-file Ar_iC4H10_H2O_94_5_1_Saclay_160m.gas --gas-label C_h2o10_rp040 --pressure-label Saclay_160m --pressure-torr 745.8332 --penning-mode manual --penning-rP 0.40 --penning-gas ar --voltage 490.0 --events 200 --gap-cm 0.015 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs_wetbracket/C_h2o10_rp040_490V_b008.json --batch-id 008
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/setup_garfield.sh,/afs/cern.ch/user/d/dneff/work/garfield_install/garfield-927e5c21.tar.gz,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ar_iC4H10_95_5_Saclay_160m.gas
+# D_dry_auto | 490V | batch 001
+arguments = --gas-file Ar_iC4H10_95_5_Saclay_160m.gas --gas-label D_dry_auto --pressure-label Saclay_160m --pressure-torr 745.8332 --penning-mode auto --voltage 490.0 --events 200 --gap-cm 0.015 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs_wetbracket/D_dry_auto_490V_b001.json --batch-id 001
+queue
+
+# D_dry_auto | 490V | batch 002
+arguments = --gas-file Ar_iC4H10_95_5_Saclay_160m.gas --gas-label D_dry_auto --pressure-label Saclay_160m --pressure-torr 745.8332 --penning-mode auto --voltage 490.0 --events 200 --gap-cm 0.015 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs_wetbracket/D_dry_auto_490V_b002.json --batch-id 002
+queue
+
+# D_dry_auto | 490V | batch 003
+arguments = --gas-file Ar_iC4H10_95_5_Saclay_160m.gas --gas-label D_dry_auto --pressure-label Saclay_160m --pressure-torr 745.8332 --penning-mode auto --voltage 490.0 --events 200 --gap-cm 0.015 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs_wetbracket/D_dry_auto_490V_b003.json --batch-id 003
+queue
+
+# D_dry_auto | 490V | batch 004
+arguments = --gas-file Ar_iC4H10_95_5_Saclay_160m.gas --gas-label D_dry_auto --pressure-label Saclay_160m --pressure-torr 745.8332 --penning-mode auto --voltage 490.0 --events 200 --gap-cm 0.015 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs_wetbracket/D_dry_auto_490V_b004.json --batch-id 004
+queue
+
+# D_dry_auto | 490V | batch 005
+arguments = --gas-file Ar_iC4H10_95_5_Saclay_160m.gas --gas-label D_dry_auto --pressure-label Saclay_160m --pressure-torr 745.8332 --penning-mode auto --voltage 490.0 --events 200 --gap-cm 0.015 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs_wetbracket/D_dry_auto_490V_b005.json --batch-id 005
+queue
+
+# D_dry_auto | 490V | batch 006
+arguments = --gas-file Ar_iC4H10_95_5_Saclay_160m.gas --gas-label D_dry_auto --pressure-label Saclay_160m --pressure-torr 745.8332 --penning-mode auto --voltage 490.0 --events 200 --gap-cm 0.015 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs_wetbracket/D_dry_auto_490V_b006.json --batch-id 006
+queue
+
+# D_dry_auto | 490V | batch 007
+arguments = --gas-file Ar_iC4H10_95_5_Saclay_160m.gas --gas-label D_dry_auto --pressure-label Saclay_160m --pressure-torr 745.8332 --penning-mode auto --voltage 490.0 --events 200 --gap-cm 0.015 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs_wetbracket/D_dry_auto_490V_b007.json --batch-id 007
+queue
+
+# D_dry_auto | 490V | batch 008
+arguments = --gas-file Ar_iC4H10_95_5_Saclay_160m.gas --gas-label D_dry_auto --pressure-label Saclay_160m --pressure-torr 745.8332 --penning-mode auto --voltage 490.0 --events 200 --gap-cm 0.015 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs_wetbracket/D_dry_auto_490V_b008.json --batch-id 008
+queue
+

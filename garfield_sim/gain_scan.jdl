@@ -1,0 +1,1091 @@
+executable          = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_job.sh
+request_cpus        = 1
+request_memory      = 2GB
+request_disk        = 1GB
++MaxRuntime         = 7200
+max_retries         = 2
+should_transfer_files = YES
+when_to_transfer_output = ON_EXIT
+output              = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/logs/$(ClusterId).$(ProcId).out
+error               = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/logs/$(ClusterId).$(ProcId).err
+log                 = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/logs/condor.log
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 220V | batch 000
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 220.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_220V_b000.json --batch-id 000
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 220V | batch 001
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 220.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_220V_b001.json --batch-id 001
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 220V | batch 002
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 220.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_220V_b002.json --batch-id 002
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 220V | batch 003
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 220.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_220V_b003.json --batch-id 003
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 230V | batch 000
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 230.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_230V_b000.json --batch-id 000
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 230V | batch 001
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 230.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_230V_b001.json --batch-id 001
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 230V | batch 002
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 230.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_230V_b002.json --batch-id 002
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 230V | batch 003
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 230.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_230V_b003.json --batch-id 003
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 240V | batch 000
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 240.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_240V_b000.json --batch-id 000
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 240V | batch 001
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 240.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_240V_b001.json --batch-id 001
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 240V | batch 002
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 240.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_240V_b002.json --batch-id 002
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 240V | batch 003
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 240.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_240V_b003.json --batch-id 003
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 250V | batch 000
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 250.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_250V_b000.json --batch-id 000
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 250V | batch 001
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 250.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_250V_b001.json --batch-id 001
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 250V | batch 002
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 250.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_250V_b002.json --batch-id 002
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 250V | batch 003
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 250.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_250V_b003.json --batch-id 003
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 260V | batch 000
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 260.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_260V_b000.json --batch-id 000
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 260V | batch 001
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 260.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_260V_b001.json --batch-id 001
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 260V | batch 002
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 260.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_260V_b002.json --batch-id 002
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 260V | batch 003
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 260.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_260V_b003.json --batch-id 003
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 270V | batch 000
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 270.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_270V_b000.json --batch-id 000
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 270V | batch 001
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 270.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_270V_b001.json --batch-id 001
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 270V | batch 002
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 270.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_270V_b002.json --batch-id 002
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 270V | batch 003
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 270.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_270V_b003.json --batch-id 003
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 280V | batch 000
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 280.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_280V_b000.json --batch-id 000
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 280V | batch 001
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 280.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_280V_b001.json --batch-id 001
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 280V | batch 002
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 280.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_280V_b002.json --batch-id 002
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 280V | batch 003
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 280.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_280V_b003.json --batch-id 003
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 290V | batch 000
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 290.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_290V_b000.json --batch-id 000
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 290V | batch 001
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 290.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_290V_b001.json --batch-id 001
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 290V | batch 002
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 290.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_290V_b002.json --batch-id 002
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 290V | batch 003
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 290.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_290V_b003.json --batch-id 003
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 300V | batch 000
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 300.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_300V_b000.json --batch-id 000
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 300V | batch 001
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 300.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_300V_b001.json --batch-id 001
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 300V | batch 002
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 300.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_300V_b002.json --batch-id 002
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 300V | batch 003
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 300.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_300V_b003.json --batch-id 003
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 310V | batch 000
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 310.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_310V_b000.json --batch-id 000
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 310V | batch 001
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 310.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_310V_b001.json --batch-id 001
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 310V | batch 002
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 310.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_310V_b002.json --batch-id 002
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 310V | batch 003
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 310.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_310V_b003.json --batch-id 003
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 320V | batch 000
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 320.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_320V_b000.json --batch-id 000
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 320V | batch 001
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 320.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_320V_b001.json --batch-id 001
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 320V | batch 002
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 320.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_320V_b002.json --batch-id 002
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 320V | batch 003
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 320.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_320V_b003.json --batch-id 003
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 330V | batch 000
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 330.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_330V_b000.json --batch-id 000
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 330V | batch 001
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 330.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_330V_b001.json --batch-id 001
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 330V | batch 002
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 330.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_330V_b002.json --batch-id 002
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 330V | batch 003
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 330.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_330V_b003.json --batch-id 003
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 340V | batch 000
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 340.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_340V_b000.json --batch-id 000
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 340V | batch 001
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 340.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_340V_b001.json --batch-id 001
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 340V | batch 002
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 340.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_340V_b002.json --batch-id 002
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 340V | batch 003
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 340.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_340V_b003.json --batch-id 003
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 350V | batch 000
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 350.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_350V_b000.json --batch-id 000
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 350V | batch 001
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 350.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_350V_b001.json --batch-id 001
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 350V | batch 002
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 350.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_350V_b002.json --batch-id 002
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 350V | batch 003
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 350.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_350V_b003.json --batch-id 003
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 360V | batch 000
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 360.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_360V_b000.json --batch-id 000
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 360V | batch 001
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 360.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_360V_b001.json --batch-id 001
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 360V | batch 002
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 360.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_360V_b002.json --batch-id 002
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 360V | batch 003
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 360.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_360V_b003.json --batch-id 003
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 370V | batch 000
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 370.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_370V_b000.json --batch-id 000
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 370V | batch 001
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 370.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_370V_b001.json --batch-id 001
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 370V | batch 002
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 370.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_370V_b002.json --batch-id 002
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 370V | batch 003
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 370.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_370V_b003.json --batch-id 003
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 380V | batch 000
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 380.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_380V_b000.json --batch-id 000
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 380V | batch 001
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 380.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_380V_b001.json --batch-id 001
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 380V | batch 002
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 380.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_380V_b002.json --batch-id 002
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 380V | batch 003
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 380.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_380V_b003.json --batch-id 003
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 390V | batch 000
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 390.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_390V_b000.json --batch-id 000
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 390V | batch 001
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 390.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_390V_b001.json --batch-id 001
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 390V | batch 002
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 390.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_390V_b002.json --batch-id 002
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 390V | batch 003
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 390.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_390V_b003.json --batch-id 003
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 400V | batch 000
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 400.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_400V_b000.json --batch-id 000
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 400V | batch 001
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 400.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_400V_b001.json --batch-id 001
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 400V | batch 002
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 400.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_400V_b002.json --batch-id 002
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 400V | batch 003
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 400.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_400V_b003.json --batch-id 003
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 410V | batch 000
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 410.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_410V_b000.json --batch-id 000
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 410V | batch 001
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 410.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_410V_b001.json --batch-id 001
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 410V | batch 002
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 410.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_410V_b002.json --batch-id 002
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 410V | batch 003
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 410.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_410V_b003.json --batch-id 003
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 420V | batch 000
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 420.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_420V_b000.json --batch-id 000
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 420V | batch 001
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 420.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_420V_b001.json --batch-id 001
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 420V | batch 002
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 420.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_420V_b002.json --batch-id 002
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 420V | batch 003
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 420.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_420V_b003.json --batch-id 003
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 430V | batch 000
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 430.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_430V_b000.json --batch-id 000
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 430V | batch 001
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 430.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_430V_b001.json --batch-id 001
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 430V | batch 002
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 430.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_430V_b002.json --batch-id 002
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 430V | batch 003
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 430.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_430V_b003.json --batch-id 003
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 440V | batch 000
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 440.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_440V_b000.json --batch-id 000
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 440V | batch 001
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 440.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_440V_b001.json --batch-id 001
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 440V | batch 002
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 440.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_440V_b002.json --batch-id 002
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 440V | batch 003
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 440.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_440V_b003.json --batch-id 003
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 450V | batch 000
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 450.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_450V_b000.json --batch-id 000
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 450V | batch 001
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 450.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_450V_b001.json --batch-id 001
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 450V | batch 002
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 450.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_450V_b002.json --batch-id 002
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 450V | batch 003
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 450.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_450V_b003.json --batch-id 003
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 460V | batch 000
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 460.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_460V_b000.json --batch-id 000
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 460V | batch 001
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 460.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_460V_b001.json --batch-id 001
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 460V | batch 002
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 460.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_460V_b002.json --batch-id 002
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 460V | batch 003
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 460.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_460V_b003.json --batch-id 003
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 470V | batch 000
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 470.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_470V_b000.json --batch-id 000
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 470V | batch 001
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 470.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_470V_b001.json --batch-id 001
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 470V | batch 002
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 470.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_470V_b002.json --batch-id 002
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 470V | batch 003
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 470.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_470V_b003.json --batch-id 003
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 480V | batch 000
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 480.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_480V_b000.json --batch-id 000
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 480V | batch 001
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 480.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_480V_b001.json --batch-id 001
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 480V | batch 002
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 480.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_480V_b002.json --batch-id 002
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | Saclay_160m | 480V | batch 003
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_Saclay_160m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label Saclay_160m --pressure-torr 745.8282 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 480.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_Saclay_160m_480V_b003.json --batch-id 003
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 220V | batch 000
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 220.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_220V_b000.json --batch-id 000
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 220V | batch 001
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 220.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_220V_b001.json --batch-id 001
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 220V | batch 002
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 220.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_220V_b002.json --batch-id 002
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 220V | batch 003
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 220.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_220V_b003.json --batch-id 003
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 230V | batch 000
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 230.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_230V_b000.json --batch-id 000
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 230V | batch 001
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 230.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_230V_b001.json --batch-id 001
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 230V | batch 002
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 230.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_230V_b002.json --batch-id 002
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 230V | batch 003
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 230.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_230V_b003.json --batch-id 003
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 240V | batch 000
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 240.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_240V_b000.json --batch-id 000
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 240V | batch 001
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 240.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_240V_b001.json --batch-id 001
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 240V | batch 002
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 240.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_240V_b002.json --batch-id 002
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 240V | batch 003
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 240.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_240V_b003.json --batch-id 003
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 250V | batch 000
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 250.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_250V_b000.json --batch-id 000
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 250V | batch 001
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 250.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_250V_b001.json --batch-id 001
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 250V | batch 002
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 250.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_250V_b002.json --batch-id 002
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 250V | batch 003
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 250.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_250V_b003.json --batch-id 003
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 260V | batch 000
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 260.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_260V_b000.json --batch-id 000
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 260V | batch 001
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 260.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_260V_b001.json --batch-id 001
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 260V | batch 002
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 260.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_260V_b002.json --batch-id 002
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 260V | batch 003
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 260.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_260V_b003.json --batch-id 003
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 270V | batch 000
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 270.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_270V_b000.json --batch-id 000
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 270V | batch 001
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 270.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_270V_b001.json --batch-id 001
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 270V | batch 002
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 270.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_270V_b002.json --batch-id 002
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 270V | batch 003
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 270.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_270V_b003.json --batch-id 003
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 280V | batch 000
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 280.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_280V_b000.json --batch-id 000
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 280V | batch 001
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 280.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_280V_b001.json --batch-id 001
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 280V | batch 002
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 280.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_280V_b002.json --batch-id 002
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 280V | batch 003
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 280.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_280V_b003.json --batch-id 003
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 290V | batch 000
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 290.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_290V_b000.json --batch-id 000
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 290V | batch 001
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 290.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_290V_b001.json --batch-id 001
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 290V | batch 002
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 290.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_290V_b002.json --batch-id 002
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 290V | batch 003
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 290.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_290V_b003.json --batch-id 003
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 300V | batch 000
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 300.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_300V_b000.json --batch-id 000
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 300V | batch 001
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 300.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_300V_b001.json --batch-id 001
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 300V | batch 002
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 300.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_300V_b002.json --batch-id 002
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 300V | batch 003
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 300.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_300V_b003.json --batch-id 003
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 310V | batch 000
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 310.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_310V_b000.json --batch-id 000
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 310V | batch 001
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 310.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_310V_b001.json --batch-id 001
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 310V | batch 002
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 310.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_310V_b002.json --batch-id 002
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 310V | batch 003
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 310.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_310V_b003.json --batch-id 003
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 320V | batch 000
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 320.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_320V_b000.json --batch-id 000
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 320V | batch 001
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 320.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_320V_b001.json --batch-id 001
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 320V | batch 002
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 320.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_320V_b002.json --batch-id 002
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 320V | batch 003
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 320.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_320V_b003.json --batch-id 003
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 330V | batch 000
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 330.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_330V_b000.json --batch-id 000
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 330V | batch 001
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 330.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_330V_b001.json --batch-id 001
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 330V | batch 002
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 330.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_330V_b002.json --batch-id 002
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 330V | batch 003
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 330.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_330V_b003.json --batch-id 003
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 340V | batch 000
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 340.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_340V_b000.json --batch-id 000
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 340V | batch 001
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 340.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_340V_b001.json --batch-id 001
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 340V | batch 002
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 340.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_340V_b002.json --batch-id 002
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 340V | batch 003
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 340.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_340V_b003.json --batch-id 003
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 350V | batch 000
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 350.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_350V_b000.json --batch-id 000
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 350V | batch 001
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 350.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_350V_b001.json --batch-id 001
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 350V | batch 002
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 350.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_350V_b002.json --batch-id 002
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 350V | batch 003
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 350.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_350V_b003.json --batch-id 003
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 360V | batch 000
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 360.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_360V_b000.json --batch-id 000
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 360V | batch 001
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 360.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_360V_b001.json --batch-id 001
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 360V | batch 002
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 360.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_360V_b002.json --batch-id 002
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 360V | batch 003
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 360.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_360V_b003.json --batch-id 003
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 370V | batch 000
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 370.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_370V_b000.json --batch-id 000
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 370V | batch 001
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 370.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_370V_b001.json --batch-id 001
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 370V | batch 002
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 370.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_370V_b002.json --batch-id 002
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 370V | batch 003
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 370.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_370V_b003.json --batch-id 003
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 380V | batch 000
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 380.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_380V_b000.json --batch-id 000
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 380V | batch 001
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 380.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_380V_b001.json --batch-id 001
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 380V | batch 002
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 380.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_380V_b002.json --batch-id 002
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 380V | batch 003
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 380.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_380V_b003.json --batch-id 003
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 390V | batch 000
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 390.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_390V_b000.json --batch-id 000
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 390V | batch 001
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 390.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_390V_b001.json --batch-id 001
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 390V | batch 002
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 390.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_390V_b002.json --batch-id 002
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 390V | batch 003
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 390.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_390V_b003.json --batch-id 003
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 400V | batch 000
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 400.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_400V_b000.json --batch-id 000
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 400V | batch 001
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 400.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_400V_b001.json --batch-id 001
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 400V | batch 002
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 400.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_400V_b002.json --batch-id 002
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 400V | batch 003
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 400.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_400V_b003.json --batch-id 003
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 410V | batch 000
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 410.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_410V_b000.json --batch-id 000
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 410V | batch 001
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 410.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_410V_b001.json --batch-id 001
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 410V | batch 002
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 410.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_410V_b002.json --batch-id 002
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 410V | batch 003
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 410.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_410V_b003.json --batch-id 003
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 420V | batch 000
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 420.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_420V_b000.json --batch-id 000
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 420V | batch 001
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 420.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_420V_b001.json --batch-id 001
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 420V | batch 002
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 420.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_420V_b002.json --batch-id 002
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 420V | batch 003
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 420.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_420V_b003.json --batch-id 003
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 430V | batch 000
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 430.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_430V_b000.json --batch-id 000
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 430V | batch 001
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 430.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_430V_b001.json --batch-id 001
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 430V | batch 002
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 430.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_430V_b002.json --batch-id 002
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 430V | batch 003
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 430.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_430V_b003.json --batch-id 003
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 440V | batch 000
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 440.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_440V_b000.json --batch-id 000
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 440V | batch 001
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 440.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_440V_b001.json --batch-id 001
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 440V | batch 002
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 440.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_440V_b002.json --batch-id 002
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 440V | batch 003
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 440.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_440V_b003.json --batch-id 003
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 450V | batch 000
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 450.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_450V_b000.json --batch-id 000
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 450V | batch 001
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 450.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_450V_b001.json --batch-id 001
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 450V | batch 002
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 450.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_450V_b002.json --batch-id 002
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 450V | batch 003
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 450.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_450V_b003.json --batch-id 003
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 460V | batch 000
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 460.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_460V_b000.json --batch-id 000
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 460V | batch 001
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 460.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_460V_b001.json --batch-id 001
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 460V | batch 002
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 460.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_460V_b002.json --batch-id 002
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 460V | batch 003
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 460.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_460V_b003.json --batch-id 003
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 470V | batch 000
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 470.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_470V_b000.json --batch-id 000
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 470V | batch 001
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 470.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_470V_b001.json --batch-id 001
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 470V | batch 002
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 470.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_470V_b002.json --batch-id 002
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 470V | batch 003
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 470.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_470V_b003.json --batch-id 003
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 480V | batch 000
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 480.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_480V_b000.json --batch-id 000
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 480V | batch 001
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 480.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_480V_b001.json --batch-id 001
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 480V | batch 002
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 480.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_480V_b002.json --batch-id 002
+queue
+
+transfer_input_files = /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_condor_worker.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/mm_sim_core.py,/afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/gas_tables/Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas
+# Ne_CF4_C2H6_80_10_10_uRW50_rP060 | CERN_450m | 480V | batch 003
+arguments = --gas-file Ne_CF4_C2H6_80_10_10_hiE_CERN_450m.gas --gas-label Ne_CF4_C2H6_80_10_10_uRW50_rP060 --pressure-label CERN_450m --pressure-torr 720.8115 --penning-mode manual --penning-rP 0.6 --penning-gas ne --voltage 480.0 --events 100 --gap-cm 0.005 --output /afs/cern.ch/user/d/dneff/work/git/nTof_x17/garfield_sim/jobs/Ne_CF4_C2H6_80_10_10_uRW50_rP060_CERN_450m_480V_b003.json --batch-id 003
+queue
