@@ -11,7 +11,9 @@ RUN=${RUN:-run_58}
 EOSDIR=root://eospublic.cern.ch//eos/experiment/ntof/data/x17/july_beam/runs/${RUN}/${SUB}/combined_hits_root
 
 echo "START $(date '+%F %T') host $(hostname) subrun=$SUB scratch=$_CONDOR_SCRATCH_DIR"
-source /cvmfs/sft.cern.ch/lcg/views/LCG_105/x86_64-el9-gcc13-opt/setup.sh
+# Lock venv (2026-10-21), not the LCG_105 view: same numpy/pandas pins as the desktop.
+unset PYTHONPATH
+source /eos/user/d/dneff/venvs/ntof-lock-cvmfs/bin/activate
 python3 -c "import numpy,pandas,uproot;print('numpy',numpy.__version__,'pandas',pandas.__version__,'uproot',uproot.__version__)"
 
 LOCAL=$_CONDOR_SCRATCH_DIR/hits
