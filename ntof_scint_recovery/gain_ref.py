@@ -140,6 +140,33 @@ def main(argv=None) -> int:
                               n_cosmic=np.clip(hh, 0, None).sum(), mv_per_mevee=med / MIP_WALL_MEV))
     E = pd.DataFrame(erows)
     E.to_csv(o / 'energy_scale.csv', index=False)
+
+    # fine time grid (the singles' own log bins, x1.12): the plastic gain changes x2 between 3 and 5 µs,
+    # too fast for the coarse coincidence grid.  q99 of the template-fit amplitude (> 20 mV) per channel
+    # over its 1-10 ms value, median over channels, with the bootstrap-free error from the counts.
+    frows = []
+    plf = (tf > PLATEAU[0]) & (tf < PLATEAU[1])
+    for cls, cname in ((0, 'par'), (1, 'ded')):
+        for fam, dets in (('PSS', range(4, 8)), ('WAL', range(4)), ('LIQ', range(8, 12))):
+            cur, ns = [], []
+            for i, c in enumerate(chans):
+                if c[0] not in dets:
+                    continue
+                h = H['HF'][cls, i].astype(float).copy()
+                h[:, ae[:-1] < 20] = 0
+                if h.sum() < 1e4:
+                    continue
+                ref = quant(h[plf].sum(0), ae, 0.99)
+                cur.append([quant(h[k], ae, 0.99) / ref for k in range(100)])
+                ns.append(h[:100].sum(axis=1))
+            if not cur:
+                continue
+            C = np.array(cur)
+            n = np.array(ns).sum(axis=0)
+            for k in range(100):
+                frows.append(dict(fam=fam, cls=cname, t_us=tf[k], t_lo_us=te[k], t_hi_us=te[k + 1],
+                                  q99=np.nanmedian(C[:, k]), q99_rms=np.nanstd(C[:, k]), n=n[k]))
+    pd.DataFrame(frows).to_csv(o / 'gain_fine.csv', index=False)
     pd.set_option('display.width', 250)
     print(D[D.cls == 'ded'].round(3).to_string(index=False))
     print(E.round(2).to_string(index=False))

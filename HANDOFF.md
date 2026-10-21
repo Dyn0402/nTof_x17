@@ -1,5 +1,22 @@
 # Handoff
 
+## Scintillator flash recovery: reworked around the first µs — 2026-10-21 afternoon (dylan-MS-7C84)
+
+**Resume:** done; note republished at the same URL. Dylan: the headline is the **earliest reliable reconstruction**
+and the **residual energy / time / efficiency uncertainty after correcting** in the first few µs; full recovery is the
+appendix. Record: `ntof_scint_recovery/ANALYSIS_PLAN.md` "Round 6". 180/181 injection runs merged; the last one
+(still running at 15:30) changes nothing visible — remerge only if convenient (README commands).
+
+**Key numbers (dedicated):** reliable from 0.4 µs (plastic, 3.6 MeVee), 1.6 µs (liquid, 100 mV), 3.2 µs (wall, 4 MIP;
+1 MIP never). Plastic gain 0.33 at 2–3 µs → 1.0 by 11 µs, unmeasurable before 2 µs. After correction σE/E ~6–7 % at
+2–3 µs, 12–13 % at 5–20 µs (plastic 1 MIP); σt 0.14–0.5 ns plastics, 1–2 ns walls at 4 MIP. Plastic 90 % threshold
+2.5 MeVee at 2–3 µs (gain), walls 1.2–1.5 MeV.
+
+**Files:** `early.py`, `make_early_deck.py` (new), `gain_ref.py` (+ fine grid `gain_fine.csv`); outputs `out_dir('early')`.
+
+**Gotchas:** Geant4 cannot serve as an early gain candle (data spectrum 2× harder at all times); the deck's
+appendix reuses `make_reco_deck.py` functions — keep them.
+
 ## Scintillator flash recovery: the final analysis (reconstruction, bias, resolution) — 2026-10-21 (dylan-MS-7C84)
 
 **Resume:** headline done and live: <https://dylan-neff.web.cern.ch/notes/scint-flash-reconstruction.html>.

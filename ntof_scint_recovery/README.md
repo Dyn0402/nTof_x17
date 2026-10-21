@@ -73,7 +73,13 @@ python3 ~/PycharmProjects/dylan-cern-site/scripts/add-note.py \
     /media/dylan/data/x17/scint_stack/recovery/deck/scint-flash-recovery.html --slug scint-flash-recovery --force --deploy
 ```
 
-## The full analysis: reconstruction, bias, resolution (2026-10-21) — the headline
+## The full analysis: reconstruction, bias, resolution (2026-10-21)
+
+**The headline is the short term** (Round 6 in `ANALYSIS_PLAN.md`): `early.py` (after `gain_ref.py` and
+`inject_analysis.py`), `early.py --examples <local flash file>`, then `make_early_deck.py` builds the published note
+(`make_reco_deck.py` only supplies its appendix slides).
+
+### Full recovery (now the appendix)
 
 From when after the flash a pulse is reconstructed accurately, and its bias and resolution in amplitude,
 energy and time. Record: `ANALYSIS_PLAN.md` "Round 5". Slide note:
@@ -90,7 +96,9 @@ PYTHONPATH=. .venv/bin/python -m ntof_scint_recovery.inject_analysis
 PYTHONPATH=. .venv/bin/python -m ntof_scint_recovery.g4_mix_analysis
 PYTHONPATH=. .venv/bin/python -m ntof_scint_recovery.gain_ref
 PYTHONPATH=. .venv/bin/python -m ntof_scint_recovery.headline        # headline.csv, performance.csv, report.html
-PYTHONPATH=. .venv/bin/python -m ntof_scint_recovery.make_reco_deck
+PYTHONPATH=. .venv/bin/python -m ntof_scint_recovery.early
+PYTHONPATH=. .venv/bin/python -m ntof_scint_recovery.early --examples /media/dylan/data/x17/scint_stack/recovery/raw/flash_224712_0019.root
+PYTHONPATH=. .venv/bin/python -m ntof_scint_recovery.make_early_deck
 python3 ~/PycharmProjects/dylan-cern-site/scripts/add-note.py \
     /media/dylan/data/x17/scint_stack/recovery/deck/scint-flash-reconstruction.html --slug scint-flash-reconstruction --force --deploy
 ```

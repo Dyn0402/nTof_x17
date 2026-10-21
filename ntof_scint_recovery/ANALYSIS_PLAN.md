@@ -9,12 +9,49 @@ The question, from a collaborator: **how long do the scintillators take to recov
 | 2. pulses | pulses are found again with their normal shape | prototype `pulses.py`; histograms for every run running on condor |
 | 3. amplitude | a found pulse has its full amplitude (no gain sag) | first look below; the core of the full analysis |
 | 4. variation | layers 1–3 per channel, per bar end, and along the bar | handles demonstrated below |
-| **5. reconstruction (headline)** | a pulse is found and within 10 % of its true amplitude (≥ 90 %), gain back within 5 %; bias and resolution in mV, MeV and ns vs time | **done**: Round 5 below, <https://dylan-neff.web.cern.ch/notes/scint-flash-reconstruction.html> |
+| **6. short term (THE headline)** | earliest reliable reconstruction, corrections, residual energy / time / efficiency in the first µs | **done**: Round 6 below |
+| 5. full recovery (appendix) | a pulse is found and within 10 % of its true amplitude (≥ 90 %), gain back within 5 %; bias and resolution in mV, MeV and ns vs time | **done**: Round 5 below, <https://dylan-neff.web.cern.ch/notes/scint-flash-reconstruction.html> |
 
 **Rules that hold throughout**
 - Always split by beam intensity: parasitic (~4×10¹² ppp) and dedicated (~8.5×10¹²).
 - Never pool across configuration epochs (below).
 - Count only live channels: some runs had whole families unpowered.
+
+## Round 6 (2026-10-21 afternoon): THE HEADLINE IS THE SHORT TERM — earliest reliable reconstruction, corrections, residual uncertainties
+
+Dylan (2026-10-21): future data taking must measure **in the first few µs after the flash**; waiting 100s of µs for
+full recovery is not an option. So the key number is **the absolute earliest time each scintillator reliably
+reconstructs anything**; the biases then are unavoidable and are **corrected**; after correcting, quote the energy
+and time uncertainty and the efficiency (are small signals lost?). The Round-5 full-recovery times are the appendix.
+Slide note (reworked, same URL): <https://dylan-neff.web.cern.ch/notes/scint-flash-reconstruction.html>
+(`make_early_deck.py`); numbers `out_dir('early')/{early,thresholds,first}.csv` (`early.py`).
+
+**Definitions** (`early.py`): a pulse is *reconstructed* if found and within ±50 % of its pre-flash response.
+*Reliable* from t: ≥ 90 % reconstructed, σ68(A)/A ≤ 25 %, σ68(t) ≤ 1 ns (plastic, liquid) / 10 ns (wall), in every
+bin from t to 50 µs; no requirement on the bias (it is corrected). Correction = reconstruction response × gain; gain
+for the plastics from the **fine-grid** q99 of the singles (`gain_ref.py` → `gain_fine.csv`, ×1.12 bins, capped at 1),
+uncertainty |coincident − singles|/2 ⊕ 3 %; walls 1 ± |q99 − 1|; liquids none. Energy uncertainty after correction =
+σ68 (pile-up, not correctable) ⊕ correction uncertainty (gain ⊕ stat ⊕ half the change across a bin).
+
+**Results (dedicated; parasitic)**
+- **Earliest reliable time**: plastic ~1 MIP (3.6 MeVee) **0.4 µs** (1.0 µs), 7 MeVee 0.4, 14 MeVee 0.25; liquid 100 mV
+  **1.6 µs** (1.25), 200 mV 1.0 (0.5); wall 4 MIP (2 MeV per end) **3.2 µs** (2.5), 2 MIP never (3.2 µs);
+  1 MIP never at either intensity within 30 µs. Before: plastics/liquids saturated to ~0.2 µs; walls diverted to
+  ~0.65 µs and clipped to ~1.6 µs.
+- **Corrections**: reconstruction response within ±7 % (plastic from 0.4 µs, liquid 0.45 µs); walls 0.5–0.75 at 2–3.5 µs,
+  within 3 % from ~4.5 µs. Plastic gain (fine grid, dedicated): 0.33 at 2–3 µs, 0.43 / 0.61 / 0.76 / 0.86 / 0.95 at
+  3.5 / 4.5 / 5.6 / 7 / 9 µs, 1.0 by 11 µs (± 0.04–0.06); parasitic 0.56–0.73 at 2–3 µs, 0.9 by 4 µs. **Before 2 µs the
+  plastic gain is not measurable** (fast-neutron recoils; Geant4 is 2× softer than the data even where the gain is 1, so
+  it cannot be a candle — tried and dropped).
+- **Energy after correction** (σ/E, ~1 MIP plastic): 7 % at 2 µs, 6 % at 3, 12–13 % at 5–20 µs (the dense capture-γ
+  pile-up); walls 4 MIP 18 / 15 / 13 / 10 % at 3.5 / 4.5 / 7 / 20 µs, 2 MIP 40 → 20 %.
+- **Time** (σ68 after removing the median offset, < 0.05 ns plastics/liquids): plastic 0.2–0.5 ns from 0.4 µs, 0.14 ns
+  at 2 µs; liquid 0.1–0.3 ns from 2 µs; wall 4 MIP 1.7 → 0.9 ns at 3.5 → 10 µs, 2 MIP 3.5 → 1.7 ns.
+- **Small signals** (90 % efficiency): plastic 0.8 MeVee in amplitude terms at 1.5–3 µs, but **2.5 MeVee in energy at
+  2–3 µs** because of the gain sag, ~2.3–2.6 MeVee to 20 µs (pile-up); liquid 25 mV from ~5 µs; wall 1.2–1.5 MeV
+  (2.5–3 MIP) to 10 µs, 50 % at ~0.3–0.5 MIP from 4 µs.
+- **Implications** (slide 11): plastic energies before 2 µs need a gain monitor that works there; walls are pile-up
+  limited (faster shaping); everything scales with intensity.
 
 ## Round 5 (2026-10-21): THE HEADLINE — from when a pulse is reconstructed accurately, and how well
 
