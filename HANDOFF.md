@@ -5,7 +5,8 @@
 **Resume:** done; note republished at the same URL. Dylan: the headline is the **earliest reliable reconstruction**
 and the **residual energy / time / efficiency uncertainty after correcting** in the first few µs; full recovery is the
 appendix. Record: `ntof_scint_recovery/ANALYSIS_PLAN.md` "Round 6". 180/181 injection runs merged; the last one
-(still running at 15:30) changes nothing visible — remerge only if convenient (README commands).
+(condor cluster 4521469, still running at wrap-up) changes nothing visible — remerge only if convenient (README
+commands). Board log + output entry added 2026-10-21. Next: whatever Dylan asks after reading the reworked note.
 
 **Key numbers (dedicated):** reliable from 0.4 µs (plastic, 3.6 MeVee), 1.6 µs (liquid, 100 mV), 3.2 µs (wall, 4 MIP;
 1 MIP never). Plastic gain 0.33 at 2–3 µs → 1.0 by 11 µs, unmeasurable before 2 µs. After correction σE/E ~6–7 % at
