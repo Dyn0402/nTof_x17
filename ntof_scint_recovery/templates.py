@@ -60,24 +60,41 @@ def collect(path: str, acc: dict):
             acc.setdefault(f'{fam}_{d}_{detn[s]}', []).append(w)
 
 
+def refine(ws: np.ndarray, t: np.ndarray, n_iter: int = 3) -> tuple[np.ndarray, np.ndarray]:
+    """Sub-sample alignment: fit each pulse with A*T + B*T' (+ const), shift it by
+    delta = -B/A ns, re-median.  A peak-sample alignment alone broadens a 4-13 ns
+    template by up to a sample."""
+    T = np.median(ws, axis=0)
+    d = np.zeros(len(ws))
+    for _ in range(n_iter):
+        X = np.stack([T, np.gradient(T), np.ones_like(T)], axis=1)
+        coef = ws @ np.linalg.pinv(X).T
+        d = -coef[:, 1] / np.maximum(coef[:, 0], 1e-6)
+        d = np.clip(d, -1.5, 1.5)
+        al = np.array([np.interp(t + di, t, w) for w, di in zip(ws, d)])
+        T = np.median(al, axis=0)
+        T = T / T.max()
+    return T, d
+
+
 def main(argv=None) -> int:
     acc: dict = {}
     for p in (argv or sys.argv[1:]):
         collect(p, acc)
     out = {}
-    for k, v in acc.items():
-        v = np.array(v)
-        out[k] = np.median(v, axis=0).astype(np.float32)
-        out[k + '_n'] = len(v)
     for fam, (pre, post) in WIN.items():
+        t = np.arange(-pre, post + 1).astype(float)
+        ws = np.array(acc[fam])
+        T0 = np.median(ws, axis=0)
+        T, d = refine(ws, t)
+        out[fam] = T.astype(np.float32)
+        out[fam + '_peak_aligned'] = T0.astype(np.float32)
+        out[fam + '_n'] = len(ws)
         out[f't_ns_{fam}'] = np.arange(-pre, post + 1)
+        hm0, hm = t[T0 > 0.5], t[T > 0.5]
+        print(f'{fam}: {len(ws)} pulses, FWHM {hm0[-1] - hm0[0] + 1:.0f} ns (peak-aligned) -> {hm[-1] - hm[0] + 1:.0f} ns '
+              f'(sub-sample aligned), shift rms {d.std():.2f} ns')
     np.savez_compressed(OUT, **out)
-    for fam in WIN:
-        t = out[f't_ns_{fam}']
-        tp = out[fam]
-        hm = t[tp > 0.5]
-        print(f'{fam}: {out[fam + "_n"]} pulses, FWHM {hm[-1] - hm[0] + 1} ns, '
-              f'value at +{t[-1]} ns: {tp[-1]:.3f}, min {tp.min():.3f}')
     print(f'-> {OUT}')
     return 0
 

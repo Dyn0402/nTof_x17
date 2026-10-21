@@ -100,7 +100,8 @@ def med_from_hist(h, edges):
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split('\n\n')[0])
-    ap.add_argument('--hists', type=Path, default=out_dir('pulsehist_v2'))
+    ap.add_argument('--hists', type=Path, default=(out_dir('pulsehist_v3') if any(out_dir('pulsehist_v3').glob('*.npz'))
+                                                    else out_dir('pulsehist_v2')))
     ap.add_argument('--min-run', type=int, default=PRODUCTION_FROM)
     a = ap.parse_args(argv)
     H = load(a.hists, a.min_run)
@@ -157,6 +158,21 @@ def main(argv=None) -> int:
             out[f'pw_{c}_{nm}_mV'] = p0
             rows.append(dict(what=f'plastic_given_wall_{nm}', fam='PSS', cls=c, plateau=p0,
                              t_us=t_within(tcc[:nlc], v[:nlc] / p0, 0.9, 1.1)))
+    # the plastic upper edge per bar (it follows each bar's gain): the common-mode gain reference
+    for k, c in enumerate(CLS):
+        per = np.full((4, 2, nlc), np.nan)
+        for arm in range(4):
+            for bar in range(2):
+                net = np.clip(H['PW_sig'][k, arm, bar] - H['pw_side_scale'] * H['PW_side'][k, arm, bar], 0, None)
+                e = cond_quantile(net, ae, 20, 0.95, nmin=40)[:nlc]
+                per[arm, bar] = e / np.nanmedian(e[plc])
+        out[f'pw_{c}_edge_per_bar'] = per
+        mean = np.nanmean(per.reshape(8, -1), axis=0)
+        out[f'pw_{c}_edge_bar_mean'] = mean
+        for tt in (10, 100, 300):
+            j = int(np.argmin(np.abs(tcc[:nlc] - tt)))
+            rows.append(dict(what=f'plastic_edge_per_bar_at_{tt}us', fam='PSS', cls=c,
+                             plateau=float(np.nanstd(per.reshape(8, -1)[:, j])), t_us=float(mean[j])))
     # wall bars
     dte = H['dt_edges']
     dtc = 0.5 * (dte[:-1] + dte[1:])

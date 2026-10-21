@@ -33,6 +33,8 @@ sys.path.insert(0, os.path.expanduser(os.environ.get(
 import slidedoc as sd  # noqa: E402
 
 Q = out_dir('quick')
+#: categorical slots 1-4 for the four arms (slidedoc palette)
+ARM_COL_SD = (sd.BLUE, sd.ORANGE, sd.GREEN, sd.PURPLE)
 FAM = {'WAL': 'SiPM wall', 'PSS': 'plastic', 'LIQ': 'liquid'}
 CC = {'par': sd.BLUE, 'ded': sd.ORANGE}
 CN = {'par': 'parasitic', 'ded': 'dedicated'}
@@ -729,6 +731,43 @@ def plastic_wall(D, K, KR):
     D.slide('plastic_wall', body, notes, short='plastic behind wall')
 
 
+def plastic_edge_bars(D, K, KR):
+    tcc = K['tcc_us']
+    m = (tcc >= 3) & (tcc < 1e4)
+    panels = []
+    for c in ('par', 'ded'):
+        per = K.get(f'pw_{c}_edge_per_bar')
+        if per is None:
+            return
+        P = sd.Plot(810, 560, x=(3, 1e4, 'log'), y=(0.4, 1.2), xlabel='time since the flash',
+                    ylabel='upper edge / its 1–10 ms value', title=f'each plastic bar behind a wall hit, {CN[c]}')
+        P.band([3, 1e4], [0.95, 0.95], [1.05, 1.05], sd.GREEN, alpha=0.12)
+        for arm in range(4):
+            for bar in range(2):
+                P.line(tcc[m].tolist(), clip(per[arm, bar][m], 0.4, 1.2), ARM_COL_SD[arm], 1.6, markers=False,
+                       tip=f'PSS{"ABCD"[arm]} bar {bar + 1}')
+        P.line(tcc[m].tolist(), clip(K[f'pw_{c}_edge_bar_mean'][m], 0.4, 1.2), sd.INK, 4, markers=True, r=5,
+               tips=[f'mean of 8 bars, {fmt_t(t)}: {v:.2f}' for t, v in zip(tcc[m], K[f'pw_{c}_edge_bar_mean'][m])])
+        P.hline(1, sd.INK, None, 1.2)
+        P.xticks(tlog_ticks(3, 1e4)).yticks([(v, f'{v:.1f}') for v in (0.4, 0.6, 0.8, 1.0, 1.2)])
+        panels.append(P.svg(c))
+    e10 = KR.get(('plastic_edge_per_bar_at_10us', 'PSS', 'ded'), math.nan)
+    e100 = KR.get(('plastic_edge_per_bar_at_100us', 'PSS', 'ded'), math.nan)
+    e300 = KR.get(('plastic_edge_per_bar_at_300us', 'PSS', 'ded'), math.nan)
+    body = (sd.title(f'All 8 plastic bars follow one curve: their light edge is at {e10:.2f}, {e100:.2f}, {e300:.2f} of full at 10, 100, 300 µs',
+                     'Upper edge (95 %) of the plastic pulses behind a wall hit, each bar over its own 1–10 ms value; dedicated in the title')
+            + sd.row(*panels, gap=44)
+            + sd.legend([('arm A', ARM_COL_SD[0], 'line'), ('arm B', ARM_COL_SD[1], 'line'), ('arm C', ARM_COL_SD[2], 'line'),
+                         ('arm D', ARM_COL_SD[3], 'line'), ('mean of 8 bars', sd.INK, 'line'), ('±5 %', sd.GREEN, 'box')]))
+    notes = ('<p>The edge is set by the light, not the electronics: over each bar\'s own pulse scale it is 1.19–1.36 across the '
+             'bars while the scales span 176–278 mV. So each bar\'s curve is that bar\'s light-to-signal gain against time, '
+             'as far as the coincident particles\' energy distribution holds. Eight bars with different gains on four PMT '
+             'pairs following one curve within a few % is what a common recovery of the PMTs looks like; a change of particle '
+             'mix would give the same curve too, so the two are still not fully separated. Bar-to-bar spread (rms) at 10 / '
+             '100 / 300 µs is in <code>coinc_recovery.csv</code>.</p>')
+    D.slide('plastic_edge_bars', body, notes, short='plastic edge per bar')
+
+
 def bar_ends(D, K, KR):
     tcc = K['tcc_us']
     m = (tcc >= 0.3) & (tcc < 1e4)
@@ -929,16 +968,90 @@ def trigger_slide(D):
              'way. Code: <code>trigger_cand.py</code>, <code>trig_analysis.py</code>.</p>')
     D.slide('trigger', body, notes, short='trigger path')
 
+# ------------------------------------------------------------------ single photoelectrons
+def spe_slide(D):
+    f = out_dir('spe') / 'spe_curves.npz'
+    if not f.exists():
+        return
+    Z = dict(np.load(f))
+    R = list(csv.DictReader(open(out_dir('spe') / 'spe_channels.csv')))
+    acc = [r for r in R if r['accepted'] == 'True' and r['cls'] == 'ded' and r['det'].startswith('PSS')]
+    x = Z['x_mV']
+    tcc = Z['tcc_us']
+    P1 = sd.Plot(810, 560, x=(1, 9), y=(0, 1.05), xlabel='small-peak height (mV)', ylabel='peaks (fraction of max)',
+                 title='1–10 ms, quiet tails of ZS blocks, dedicated')
+    cols = (sd.BLUE, sd.ORANGE, sd.GREEN, sd.PURPLE, sd.RED, sd.GOLD, sd.GREY, sd.INK)
+    shown = [r for r in R if r['det'].startswith('PSS') and r['cls'] == 'ded']
+    for r, col in zip(shown, cols):
+        h = Z.get(f"{r['det']}{r['ch']}_ded_late")
+        if h is None:
+            continue
+        mm = (x >= 1) & (x <= 9)
+        y = h / max(h[mm].max(), 1)
+        lab = f"{r['det']}{r['ch']}" + (f": peak {fnum(r['mu']):.1f} mV" if r['accepted'] == 'True' else ': no clear peak')
+        P1.line(x[mm].tolist(), y[mm].tolist(), col, 2.5 if r['accepted'] == 'True' else 1.2,
+                dash=None if r['accepted'] == 'True' else '4 4', markers=False, tip=lab)
+    P1.xticks([(v, str(v)) for v in range(1, 10)]).yticks([(v, f'{v:.1f}') for v in (0, 0.5, 1.0)])
+    m = (tcc >= 3) & (tcc < 1e4)
+    P2 = sd.Plot(810, 560, x=(3, 1e4, 'log'), y=(0.6, 1.8), xlabel='time since the flash',
+                 ylabel='peak position / 1–10 ms value', title='the candidate peak against time')
+    P2.band([3, 1e4], [0.95, 0.95], [1.05, 1.05], sd.GREEN, alpha=0.12)
+    curves = []
+    for r, col in zip(acc, cols):
+        mu = Z.get(f"{r['det']}{r['ch']}_ded_mu")
+        if mu is None:
+            continue
+        mu = np.where((mu > 0.5) & (mu < 2.0), mu, np.nan)          # failed fits
+        curves.append(mu)
+        P2.line(tcc[m].tolist(), clip(mu[m], 0.6, 1.8), col, 2, markers=True, r=4,
+                tips=[f"{r['det']}{r['ch']}, {fmt_t(t)}: {v:.2f}" for t, v in zip(tcc[m], mu[m])])
+    if curves:
+        mean = np.nanmean(curves, axis=0)
+        P2.line(tcc[m].tolist(), clip(mean[m], 0.6, 1.8), sd.INK, 4, markers=False, tip='mean of the accepted channels')
+    P2.hline(1, sd.INK, None, 1.2)
+    P2.xticks(tlog_ticks(3, 1e4)).yticks([(v, f'{v:.1f}') for v in (0.6, 1.0, 1.4, 1.8)])
+    if curves:
+        mean = np.nanmean(curves, axis=0)
+        j100 = int(np.argmin(np.abs(tcc - 100)))
+        v100 = mean[j100]
+        if v100 > 1.05:
+            ttl = (f'The small-pulse peak sits HIGHER early (×{v100:.2f} at 100 µs) on {len(acc)} plastic bars: '
+                   f'rate-contaminated, not a clean gain reference')
+        else:
+            ttl = (f'A population-free reference on {len(acc)} plastic bars: the small-pulse peak sits at {v100:.2f} '
+                   f'of its late position at 100 µs')
+    else:
+        ttl = 'No usable single-photoelectron peak: the population-free reference is not available'
+    body = (sd.title(ttl, 'Small peaks in the quiet tails of zero-suppressed blocks: left, the late spectra; right, the fitted peak '
+                          'position against time (accepted channels, dedicated)')
+            + sd.row(P1.svg('spe spectra'), P2.svg('spe vs time'), gap=44)
+            + sd.legend([('accepted channel', sd.INK, 'line'), ('no clear peak', sd.MUT, 'dash'), ('±5 %', sd.GREEN, 'box')]))
+    rows_ = ''.join(f"<tr><td>{r['det']}{r['ch']}</td><td>{r['cls']}</td><td>{int(fnum(r['n_late'])):,}</td><td>{fnum(r['mu']):.2f} ± {fnum(r['mu_err']):.2f}</td>"
+                    f"<td>{fnum(r['sigma']):.2f}</td><td>{fnum(r['signif']):.1f}</td><td>{r['accepted']}</td></tr>"
+                    for r in R if r['det'][:3] in ('PSS', 'LIQ'))
+    notes = ('<p>Dark counts and single photoelectrons are the same population at every time since the flash, so the '
+             'position of their peak is a pure gain reference, unlike every spectrum of real pulses. Peaks are taken '
+             'from SPE_SKIP = 700 samples into each ZS block (the pulse that opened the block is ~260 samples in), smoothed '
+             'like the pulse finder, 0.5–10 mV. Fit: Gaussian + two falling exponentials over 1–9 mV. Accepted: peak at '
+             '1.5–6 mV, narrower than its position, > 5σ. Per time bin the width and the exponential slopes are fixed '
+             'to the late fit. Result: early the peak moves UP, not down, settling by ~1 ms: while the rate is high the '
+             'quiet tails are not quiet (multi-photoelectron and small real pulses pile into the fit), so this cannot '
+             'measure a gain sag; a sag would push the peak DOWN, so it is at least not evidence for a large one. The '
+             'walls show no peak (a SiPM photoelectron is below their noise; one wall end passing the cuts is excluded).</p><table><tr><th>channel</th><th>class</th><th>peaks 1–10 ms</th><th>peak (mV)</th>'
+             '<th>σ (mV)</th><th>significance</th><th>accepted</th></tr>' + rows_ + '</table>')
+    D.slide('spe', body, notes, short='photoelectrons')
+
+
 def plan(D):
-    steps = [('done', 'Template fit, plastic behind a wall hit, bar end ratio, along the bar, per-channel maps, '
-              'undershoot ∝ gain, trigger bias bounded (slides 15–21).'),
-             ('common-mode gain', 'Use the plastic upper edge per bar (it follows each bar\'s gain). Single-photoelectron '
-              'peaks: a ~3 mV candidate on the plastics, needs per-channel fits.'),
-             ('MM tracks (deferred)', 'They start with DREAM at ~1 ms, after nearly everything has recovered; only the '
-              'slow last 5–15 % is left to test. Needs the scint_stack track tables rebuilt (11 GB of stage 3).'),
-             ('a template with a time shift', 'Fit the sub-ns position too: lowers the plastic and liquid misfit floor and '
-              'sharpens the shape recovery of the fast detectors.')]
-    body = (sd.title('Next: a common-mode gain reference, the MM tracks, a sharper template',
+    steps = [('done', 'Template fit with sub-ns shift, plastic edge per bar, bar ends, along the bar, per channel, '
+              'undershoot ∝ gain, trigger bound, photoelectron test.'),
+             ('separate gain from mix', 'The plastic light edge (0.71 / 0.87 / 0.93 at 10 / 100 / 300 µs, all 8 bars together) '
+              'is the best common-mode reference; Geant4 of the coincident population would tell how much is mix.'),
+             ('MM tracks (deferred)', 'From ~1 ms only (DREAM), after nearly everything has recovered. Needs the scint_stack '
+              'track tables rebuilt from stage 3 (11 GB).'),
+             ('per-channel templates', 'The liquids\' shape metric is soft (60 → 133 µs between template versions): fit their '
+              'pulses with per-channel templates and a PSD-aware model.')]
+    body = (sd.title('Next: separate gain from particle mix on the plastics; the MM tracks; the liquids\' shape',
                      'The full analysis, on the same dataset')
             + sd.flow([dict(label=s, sub=t, color=sd.BLUE) for s, t in steps], size=24)
             + sd.row(sd.callout('The baseline is a necessary condition. A PMT or SiPM can be back on baseline with its gain '
@@ -1000,6 +1113,7 @@ def main() -> int:
         KR = coinc_rows()
         fit_shape(D, K, KR)
         plastic_wall(D, K, KR)
+        plastic_edge_bars(D, K, KR)
         bar_ends(D, K, KR)
         along_bar(D, K, KR)
     CH = channel_rows()
@@ -1007,6 +1121,7 @@ def main() -> int:
         channel_map(D, CH)
         undershoot_gain(D, CH)
     trigger_slide(D)
+    spe_slide(D)
     plan(D)
     limits(D)
     path = D.write(out_dir('deck') / 'scint-flash-recovery.html', note_meta=dict(

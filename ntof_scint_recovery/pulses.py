@@ -57,6 +57,12 @@ SIG_PW = (-25.0, 5.0)        # plastic - wall, ns: the coincidence peak sits at 
 SIDE_PW = (60.0, 210.0)
 DT_BAR = 30.0
 ACC_SHIFT = 500
+#: small-pulse (single-photoelectron candidate) histogram: peaks in the quiet tail of
+#: each ZS block (from SPE_SKIP samples on, well after the pulse that opened it)
+SPE_EDGES = np.arange(0.5, 10.01, 0.1)
+SPE_SKIP = 700
+SPE_SMOOTH = {'WAL': 16, 'PSS': 3, 'LIQ': 1}
+SPE_SEP = {'WAL': 150, 'PSS': 60, 'LIQ': 60}
 
 
 def head_baseline(y: np.ndarray, chunk: int) -> np.ndarray:
@@ -112,14 +118,16 @@ _TMPL = None
 
 
 def templates():
-    """Per-family template and the least-squares projector for A*T + b0 + b1*t."""
+    """Per-family template and the least-squares projector for A*T + B*T' + b0 + b1*t
+    (the derivative term absorbs a sub-ns time shift, delta = -B/A)."""
     global _TMPL
     if _TMPL is None:
         z = np.load(Path(__file__).with_name('templates.npz'))
         _TMPL = {}
         for fam in ('WAL', 'PSS', 'LIQ'):
             t = z[f't_ns_{fam}'].astype(float)
-            X = np.stack([z[fam].astype(float), np.ones_like(t), t / 100.0], axis=1)
+            T = z[fam].astype(float)
+            X = np.stack([T, np.gradient(T), np.ones_like(t), t / 100.0], axis=1)
             _TMPL[fam] = (int(-t[0]), int(t[-1]), X, np.linalg.pinv(X))
     return _TMPL
 
@@ -138,11 +146,11 @@ def fit_pulses(y: np.ndarray, pk: np.ndarray, fam: str, noise: float):
     if ok.any():
         idx = pk[ok][:, None] + np.arange(-pre, post + 1)[None, :]
         Y = y[idx]                                   # (npk, L)
-        coef = Y @ Xp.T                              # (npk, 3)
+        coef = Y @ Xp.T                              # (npk, 4)
         res = Y - coef @ X.T
         amp[ok] = coef[:, 0]
-        chi[ok] = (res ** 2).sum(axis=1) / (max(noise, 0.2) ** 2 * (X.shape[0] - 3))
-        slope[ok] = coef[:, 2]
+        chi[ok] = (res ** 2).sum(axis=1) / (max(noise, 0.2) ** 2 * (X.shape[0] - X.shape[1]))
+        slope[ok] = coef[:, 3]
         rf[ok] = np.sqrt((res ** 2).mean(axis=1)) / np.maximum(np.abs(coef[:, 0]), 1e-3)
     return amp, chi, rf
 
@@ -157,6 +165,9 @@ def pulses_file(path: str, C: dict) -> dict:
     stops = np.r_[starts[1:], len(bb)]
     cols = {k: [] for k in ('run', 'bunch', 'det', 'detn', 't_us', 'amp_mV', 'width_ns', 'base_mV', 'in_head', 'ppp',
                             'pk_amp', 'amp_fit', 'chi2', 'resfrac', 'n_neigh')}
+    from ntof_scint_recovery.flash_summary import CHANNELS
+    ci = {c: i for i, c in enumerate(CHANNELS)}
+    SPE = np.zeros((2, len(CHANNELS), len(TC_EDGES_US) - 1, len(SPE_EDGES) - 1), np.float32)
     for e0, e1 in zip(starts, stops):
         a = f['blocks'].arrays(['bunch', 'det', 'detn', 'tof0', 'n', 'samples'], entry_start=e0, entry_stop=e1)
         bunch = int(a['bunch'][0])
@@ -171,6 +182,9 @@ def pulses_file(path: str, C: dict) -> dict:
         b0 = np.median(x[:5000])
         t_pk = int(np.argmax(x - b0))
         pk_amp = float((x[t_pk] - b0) * MV)
+        pp = ppp.get(bunch, np.nan)
+        bcls = (1 if pp >= 6.5e12 else 0 if pp >= 1e11 else -1) if np.isfinite(pp) else \
+            (1 if pk_amp >= 650 else 0 if pk_amp >= 130 else -1)
         for d in range(12):
             fam = FAMILY[d]
             pol = 1 if d < 4 else -1
@@ -199,6 +213,17 @@ def pulses_file(path: str, C: dict) -> dict:
                     segs.append((int(tof0[s]), y, np.full(len(y), np.median(y[:NPRE])), False))
                 for t0, y, b, ih in segs:
                     r = y - b
+                    if not ih and bcls >= 0 and len(r) > SPE_SKIP + 50 and (d, int(ch)) in ci:
+                        z = r[SPE_SKIP:]
+                        zs = uniform_filter1d(z, SPE_SMOOTH[fam]) if SPE_SMOOTH[fam] > 1 else z
+                        mxs = maximum_filter1d(zs, 2 * SPE_SEP[fam] + 1)
+                        sp = np.nonzero((zs == mxs) & (zs > SPE_EDGES[0]) & (zs < SPE_EDGES[-1]))[0]
+                        if len(sp):
+                            tsp = (t0 + SPE_SKIP + sp - t_fl) / 1e3
+                            it_ = np.digitize(tsp, TC_EDGES_US) - 1
+                            ia_ = np.digitize(zs[sp], SPE_EDGES) - 1
+                            g_ = (it_ >= 0) & (it_ < SPE.shape[2])
+                            np.add.at(SPE, (bcls, ci[(d, int(ch))], it_[g_], ia_[g_]), 1)
                     pk = find(r, fam)
                     if ih:
                         pk = pk[(t0 + pk - t_fl) > -1000]        # nothing before the flash but a few pre-flash
@@ -226,7 +251,9 @@ def pulses_file(path: str, C: dict) -> dict:
                     cols['chi2'].append(ch2)
                     cols['resfrac'].append(rfr)
                     cols['n_neigh'].append(hi - lo - 1)
-    return {k: (np.concatenate(v) if v else np.zeros(0)) for k, v in cols.items()}
+    out = {k: (np.concatenate(v) if v else np.zeros(0)) for k, v in cols.items()}
+    out['_SPE'] = SPE
+    return out
 
 
 def histogram(P: dict) -> dict:
@@ -260,6 +287,9 @@ def histogram(P: dict) -> dict:
     out = dict(HA=HA, HW=HW, HF=HF, HR=HR, t_edges_us=T_EDGES_US, a_edges=A_EDGES, w_edges=W_EDGES,
                rf_edges=RF_EDGES, channels=np.array(CHANNELS), n_par=nb[0], n_ded=nb[1])
     out.update(coincidences(P, cls))
+    if '_SPE' in P:
+        out['SPE'] = P['_SPE']
+        out['spe_edges'] = SPE_EDGES
     return out
 
 
@@ -355,13 +385,13 @@ def main(argv=None) -> int:
                 H = h
             else:
                 for k in ('HA', 'HW', 'HF', 'HR', 'n_par', 'n_ded', 'PW_sig', 'PW_side',
-                          'BAR_r', 'BAR_g', 'BAR_r_acc', 'BAR_g_acc'):
+                          'BAR_r', 'BAR_g', 'BAR_r_acc', 'BAR_g_acc', 'SPE'):
                     H[k] = H[k] + h[k]
         np.savez_compressed(a.out, **H)
         print(f'{n} files histogrammed ({H["n_par"]} par, {H["n_ded"]} ded bunches) -> {a.out}')
         return 0
     parts = [pulses_file(p, C_FALLBACK) for p in a.products]
-    out = {k: np.concatenate([p[k] for p in parts]) for k in parts[0]}
+    out = {k: np.concatenate([p[k] for p in parts]) for k in parts[0] if not k.startswith('_')}
     if False:
         pass
     else:

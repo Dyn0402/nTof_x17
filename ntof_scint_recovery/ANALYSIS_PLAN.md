@@ -163,6 +163,26 @@ Reprocessed all 242 runs with the template fit and the coincidence histograms (`
   full pass (`/eos/experiment/ntof/data/x17/desktop_scratch/x17_local/yfix_work/sept26_prelim_stage3_fullpass`,
   11.4 GB) and the slims.
 
+## Round 4 (2026-10-21 night): sub-ns template, plastic edge per bar, photoelectrons (deck slides 17, 23)
+
+v3 reprocessing of the 181 production runs (`flash_tail_pulsehist_v3`): template fit with a derivative term (a
+sub-ns time shift), templates re-made with sub-sample alignment (`templates.py refine`), and a per-channel
+small-peak histogram from the quiet tails of ZS blocks (`SPE`).
+
+- **Sub-ns template:** the misfit floor moved only a little (plastics 0.119 → 0.106; liquids unchanged ~0.11). Shape
+  recovery (80 %, dedicated): plastics 7.5 µs, walls 9.4 µs, liquids 133 µs. The liquid number moved 60 → 133 µs
+  between template versions, so it is soft: it needs per-channel templates.
+- **Plastic light edge per bar** (behind a wall hit, each bar over its own 1–10 ms value; dedicated): 0.71 at
+  10 µs, 0.87 at 100 µs, 0.93 at 300 µs. All 8 bars agree within 2–7 % (rms). This is the best common-mode
+  reference we have. A change of particle mix would give the same curve, so it remains an upper bound on the
+  gain sag. Geant4 of the coincident population is the way to separate them.
+- **Photoelectron peak:** 6 of 8 plastic bars show an accepted peak at 2.6–4.5 mV (dedicated, 5–12 σ). Early on it
+  moves UP (×1.2–1.6 at 0.03–0.3 ms, settling by ~1 ms), the opposite of a gain sag. While the rate is high, the
+  "quiet" tails are not quiet (multi-photoelectron and small real pulses), so it cannot measure gain. It is at
+  least not evidence for a large sag. Walls: no peak (one wall end passing the cuts is excluded). Liquids: none.
+- Operational: some condor jobs of a cluster ran late; the log names are shared between passes, so judge
+  completion by the EOS file count (`xrdfs ls`), not by `condor_q` being empty or by `=== done` in the logs.
+
 ## The full analysis, step by step
 
 1. **Pulse model.** Fit per-family templates on clean late-time pulses (30–32 ms window, isolated, flat
