@@ -85,8 +85,8 @@ def cover(D, R):
         card('plastic scintillators', '#c9a4f0', [('big', f'{R["PSS"]:.1f} µs'), ('big', fmt_e(R['PSS'])),
                                                   ('s', 'after the flash · neutron energy'),
                                                   ('s', f'signal size known from {R["PSS_gain"]:.0f} µs · {fmt_e(R["PSS_gain"])}')]),
-        card('liquid scintillators', sd.DGREEN, [('big', 'not yet'), ('big', 'clear'),
-                                                 ('s', 'the test below does not settle it')]),
+        card('liquid scintillators', sd.DGREEN, [('big', 'not'), ('big', 'clear'),
+                                                 ('s', 'the liquid scintillators did not work as intended')]),
     ]
     body = (sd.kicker('n_TOF EAR2 · X17 · 2026 data')
             + sd.title(f'<span style="color:{sd.DINK}">X17 at n_TOF: when the scintillators recover from the γ-flash</span>',
@@ -128,19 +128,24 @@ def waveforms(D, X, R):
         t, y = X[f'{fam}_t'], X[f'{fam}_orig_max']
         P = sd.Plot(540, 560, x=(-0.5, 10.5), y=(-50, ymax), xlabel='time after the flash [µs]',
                     ylabel='signal [mV]' if fam == 'WAL' else '', title=FAMS[fam], margin=(24, 24, 92, 96))
+        if fam == 'WAL':
+            # the divert gate blanks the SiPM signal around the flash; it opens at ~0.6 µs
+            P.band([0, 0.6], [-50, -50], [ymax, ymax], sd.GREY, alpha=0.35)
+            P.text(0.3, ymax * 0.55, 'switched off', 20, sd.INK, 'middle', 600)
         if fam in R:
-            P.band([-0.5, R[fam]], [-50, -50], [ymax, ymax], sd.RED, alpha=0.07)
+            P.band([-0.5 if fam != 'WAL' else 0.6, R[fam]], [-50, -50], [ymax, ymax], sd.RED, alpha=0.07)
             P.vline(R[fam], sd.GREEN, None, 4)
             P.text(R[fam] + 0.3, ymax * 0.9, f'usable from {fmt_t(R[fam])}', 26, sd.GREEN, 'start', 600)
             P.text(R[fam] + 0.3, ymax * 0.8, f'neutrons below {fmt_e(R[fam])}', 22, sd.GREEN, 'start')
         else:
-            P.text(6.5, ymax * 0.9, 'not yet clear', 30, sd.GOLD, 'middle', 600)
+            P.text(6.5, ymax * 0.9, 'not clear', 30, sd.GOLD, 'middle', 600)
         P.line(t.tolist(), clip(y, -50, ymax), FCOL[fam], 2, markers=False)
         P.xticks([(v, f'{v:g}') for v in (0, 2, 4, 6, 8, 10)]).yticks([(v, f'{v:g}') for v in (0, ymax / 2, ymax)])
         panels.append(P.svg('w' + fam))
     body = (sd.title('One beam pulse: what the scintillators record in the first 10 µs')
             + sd.row(*panels, gap=24)
-            + say('The flash drives every scintillator to its limit; the wall is switched off for the first ~0.7 µs. '
+            + say('Time 0 is when the flash reaches the detectors. It drives every scintillator to its limit; the wall is switched '
+                  'off on purpose during the flash and switched back on at ~0.6 µs, when the leftover flash charge appears. '
                   'What follows is the tail of the flash plus a rain of real particles from the beam. The green lines mark '
                   'when each one can be read again; the rest of these slides show how we decided that.', 26, sd.MUT))
     D.slide('waveforms', body, '', short='waveforms')
