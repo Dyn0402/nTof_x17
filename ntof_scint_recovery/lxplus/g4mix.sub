@@ -1,0 +1,20 @@
+#  condor_submit g4mix.sub
+universe                = vanilla
+executable              = g4mix_job.sh
+arguments               = $(Process)
+transfer_input_files    = ntof_scint_recovery
+should_transfer_files   = YES
+when_to_transfer_output = ON_EXIT
+transfer_output_files   = ""
+output                  = logs/g4mix_$(Process).out
+error                   = logs/g4mix_$(Process).err
+log                     = logs/g4mix.log
+request_cpus            = 1
+request_memory          = 8 GB
+request_disk            = 2 GB
++JobFlavour             = "microcentury"
+MY.WantOS               = "el9"
+MY.SendCredential       = true
+on_exit_remove          = (ExitCode =?= 0)
+max_retries             = 2
+queue 100

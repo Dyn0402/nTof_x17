@@ -1,5 +1,35 @@
 # Handoff
 
+## Scintillator flash recovery: the final analysis (reconstruction, bias, resolution) — 2026-10-21 (dylan-MS-7C84)
+
+**Resume:** headline done and live: <https://dylan-neff.web.cern.ch/notes/scint-flash-reconstruction.html>.
+13 injection jobs (runs 224488–224513, cluster 4521469) were still running at 14:00. When they land: remerge, rerun
+`inject_analysis` → `headline` → `make_reco_deck`, republish (commands in `ntof_scint_recovery/README.md`).
+
+**Goal (Dylan):** the headline is *from when after the flash a pulse can be reconstructed accurately*, then its bias
+and energy/timing uncertainty against time since the flash, converted to energy; plus Geant4 for the particle mix.
+
+**Done** (record: `ntof_scint_recovery/ANALYSIS_PLAN.md` "Round 5"):
+- `inject.py`: pulses injected into the real head traces of 168 production runs (3 277 bunches) and reconstructed
+  (single- and multi-pulse template fit), with a pre-flash control and a clean/piled flag. `inject_analysis.py`.
+- `gain_ref.py`: detector gain from the spectrum quantiles (gain scales all, mix does not); energy scale per counter.
+- `g4_mix.py` on the existing `full_sim/neutrons_fullrange` (5e8 EAR2 n): particle mix and light vs time.
+- `headline.py` (+ report.html, performance.csv, occupancy model beyond the head block), `make_reco_deck.py` (11 slides).
+- **Headline (dedicated, ~1 MIP, ≥ 90 % within 10 % and plastic gain ≥ 0.95):** plastics ~160 µs (parasitic ~50),
+  liquids ~80 µs (~3), walls ~0.75 ms (~0.27 ms, pile-up model). Pulses are found and median-unbiased within a few
+  µs; the limit is pile-up with beam-induced pulses, plus a plastic PMT gain sag (0.38 / 0.68 / 0.92 at 3 / 5 / 10 µs).
+- The round-4 plastic edge deficit after ~20 µs is particle mix, not gain (q50 and q99 back, q75–q95 low).
+
+**Next steps:** remerge the 13 runs (above). Optional: a pile-up-aware wall reconstruction (deconvolution of the slow
+SiPM tail) would cut the wall time; Geant4 of the hall / in-beam γ would close the gain-vs-mix caveat.
+
+**Gotchas:**
+- `templates.npz` is gitignored by `*.npz` but needed: force-added.
+- Wall injections before ~0.65 µs sit in the divert window (flat trace): ignore them.
+- The prominence finder (`reco_multi`) is what defines "piled"; the plain finder fires on every ripple of a lagging baseline.
+- `pkill -f <pattern>` kills your own shell when the pattern is in the command line.
+- Local copies of every product: `/media/dylan/data/x17/scint_stack/recovery/{inject,gain,g4mix,reco,deck,pulsehist_v3,summaries}`.
+
 ## Scintillator recovery after the γ-flash — updated 2026-10-21 (dylan-Yoga)
 
 **Resume:** flash_tail dataset + 4 analysis rounds done, deck live; next: separate gain from particle mix on the plastics.

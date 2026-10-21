@@ -1,4 +1,4 @@
-# Scintillator recovery after the γ-flash: analysis plan and state (2026-10-20)
+# Scintillator recovery after the γ-flash: analysis plan and state (2026-10-21)
 
 The question, from a collaborator: **how long do the scintillators take to recover after the n_TOF
 γ-flash?** Answered in three layers. Each layer is a stricter definition of "recovered".
@@ -9,11 +9,73 @@ The question, from a collaborator: **how long do the scintillators take to recov
 | 2. pulses | pulses are found again with their normal shape | prototype `pulses.py`; histograms for every run running on condor |
 | 3. amplitude | a found pulse has its full amplitude (no gain sag) | first look below; the core of the full analysis |
 | 4. variation | layers 1–3 per channel, per bar end, and along the bar | handles demonstrated below |
+| **5. reconstruction (headline)** | a pulse is found and within 10 % of its true amplitude (≥ 90 %), gain back within 5 %; bias and resolution in mV, MeV and ns vs time | **done**: Round 5 below, <https://dylan-neff.web.cern.ch/notes/scint-flash-reconstruction.html> |
 
 **Rules that hold throughout**
 - Always split by beam intensity: parasitic (~4×10¹² ppp) and dedicated (~8.5×10¹²).
 - Never pool across configuration epochs (below).
 - Count only live channels: some runs had whole families unpowered.
+
+## Round 5 (2026-10-21): THE HEADLINE — from when a pulse is reconstructed accurately, and how well
+
+This is the final analysis Dylan asked for (2026-10-21). The headline is no longer "when is the baseline
+back" but **from when after the flash a pulse can be reconstructed accurately, and how biased and how well
+resolved (amplitude, energy, time) it is against time since the flash**. Slide note
+<https://dylan-neff.web.cern.ch/notes/scint-flash-reconstruction.html> (`make_reco_deck.py`); report
+`out_dir('reco')/report.html` (`headline.py`); every number in `out_dir('reco')/{headline,performance}.csv`.
+
+**Three independent pieces**
+
+1. **Injection** (`inject.py`, condor `lxplus/inject.sub` → `/eos/.../flash_tail_inject/`, one flash_tail file per
+   production run, all bunches; `inject_analysis.py`). Family-template pulses of known amplitude and sub-ns time are
+   added to the real unsuppressed head traces (walls to ~40–60 µs, plastics ~250 µs, liquids 100–200 µs after the
+   flash), clipped at saturation, and reconstructed: running-median baseline → peak finder → template fit with a
+   local linear baseline and a derivative term. Two reconstructions: the `pulses.py` single-pulse fit, and a
+   **multi-pulse** fit (prominence finder + joint fit of every neighbour; the one quoted). Control = the same
+   1.5–8 µs before the flash. Each injection is flagged clean/piled: piled if a real pulse ≥ 5 % of it lies within
+   the template body (217 / 42 / 18 ns).
+2. **Detector gain** (`gain_ref.py`). The injection cannot see a PMT/SiPM gain change. The amplitude spectra can:
+   a gain change scales **every quantile by the same factor**, a change of particle mix does not. Quantile ratios
+   q50…q99 over their 1–10 ms values, for plastic pulses behind a wall hit, plastic singles, wall bars.
+   Plastic gain = mean of the coincident and singles q99, ± half their difference.
+3. **Geant4** (`g4_mix.py` over the existing `full_sim/neutrons_fullrange` run, 5×10⁸ EAR2 neutrons;
+   `g4_mix_analysis.py`). Particle mix and deposit spectra vs time since the flash, Birks-quenched light.
+
+**Results (dedicated; parasitic in `headline.csv`)**
+
+- **What arrives** (Geant4): fast-neutron proton recoils dominate until ~1.5–2 µs (the ~1 µs bump on the
+  plastic/liquid traces is 2 MeV neutrons). From ~2 µs every deposit above 0.1 MeVee is e± from capture γ, and the
+  spectrum keeps one shape to ~1 ms (95 % at 1.99 MeVee, the H-capture Compton edge). Rates within ×2 of the data at
+  3–300 µs on the plastics, ×6 low after 1 ms; the data spectrum is harder (q95 behind a wall 4.6–5.3 MeVee vs ~2):
+  the hall and the in-beam γ are not simulated.
+- **Gain** (data): plastics 0.38 / 0.68 / 0.92 at 3 / 5 / 10 µs, within 5 % (± 4–5 %) from ~10–20 µs.
+  All quantiles drop together before ~10 µs (gain); after ~20 µs q50 and q99 are back while q75–q95 stay 10–20 %
+  low to ~0.3 ms (mix). This **replaces** the round-4 reading of the plastic light edge as an upper bound on gain:
+  most of that edge deficit after ~20 µs is mix. Walls: no sag resolved (q99 1.07 → 0.97, ±3–8 %). Liquids:
+  quantiles move ×1.4–2.9 at 2–100 µs; no gain reference.
+- **Reconstruction** (injection, multi-pulse, ~1 MIP = plastic 200 mV ≈ 3.6 MeVee, wall end 30 mV ≈ 1 MIP,
+  liquid 100 mV): found ≥ 99 % from ~1 µs (plastics, liquids), ≥ 95 % from ~5 µs (walls); median bias ≤ 1 %
+  from ~2 µs (plastics, liquids), ≤ 4 % from ~5 µs (walls). **The limit is pile-up with real beam-induced
+  pulses**: the fraction within 10 % is 0.90 at 2–3 µs on the plastics, falls to ~0.72 at 5–20 µs (the
+  capture-γ pulse train is densest there), and is back to 0.92 by 200 µs; liquids 0.87–0.92 from 5 µs; walls
+  ≤ 0.43 within the head (dedicated; 0.71 parasitic). Wall "noise" (high-pass rms) is 0.9 mV before the flash,
+  15 / 6 / 2.5 mV at 10 / 20 / 30 µs: unresolved small pulses.
+- **Beyond the head** (`occupancy_model`): good10 = exp(−a R(t)) with R the measured pulse rate, fitted on the
+  injection (residuals 0.02–0.05 at ~1 MIP) and carried to 10 ms. Walls reach 90 % within 10 % at ~0.75 ms
+  (dedicated) / ~0.27 ms (parasitic) for 1 MIP.
+- **Headline times, ~1 MIP, ≥ 90 % within 10 % and (plastics) gain ≥ 0.95**: plastics ~160 µs (parasitic ~50 µs),
+  liquids ~80 µs (~3 µs), walls ~0.75 ms* (~0.27 ms*), * from the model. Bigger pulses are earlier (plastic
+  7 MeVee 100 µs, 14 MeVee ~10 µs, gain-limited). The flash tail on its own (clean pulses) stops mattering within
+  0.5–8 µs for ≥ 1 MIP plastics and liquids.
+- **Energy and time resolution** (σ68, ~1 MIP, dedicated): plastic 0.12 / 0.43 / 0.41 / 0.14 / 0.06 MeVee at
+  2 / 10 / 20 / 100 / 200 µs (control 0.4 %); time 0.14–0.29 ns (control 0.07). Walls 0.2–0.3 MeV and 2.5–4.5 ns
+  at 5–50 µs (control 2 %, 0.4 ns). Full grid: `performance.csv`.
+- **Energy scale**: plastics 39–72 mV/MeVee (mean 56), muon calibration (6 bars) + 30–32 ms cosmics in this data
+  (B bars; in-situ/calibration 0.95); wall ends 22–31 mV per MIP (0.47 MeV in 3 mm).
+
+**What it does not rule out**: a slow change of the hard part of the data spectrum would read as gain (Geant4
+doesn't reproduce it); before ~2 µs gain and mix can't be separated; injection only inside the head block (the
+model beyond); family template (per-channel shapes cancel against the control); pile-up scales with the rate.
 
 ## Data
 

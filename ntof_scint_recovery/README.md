@@ -72,3 +72,28 @@ PYTHONPATH=. .venv/bin/python -m ntof_scint_recovery.make_recovery_deck
 python3 ~/PycharmProjects/dylan-cern-site/scripts/add-note.py \
     /media/dylan/data/x17/scint_stack/recovery/deck/scint-flash-recovery.html --slug scint-flash-recovery --force --deploy
 ```
+
+## The full analysis: reconstruction, bias, resolution (2026-10-21) — the headline
+
+From when after the flash a pulse is reconstructed accurately, and its bias and resolution in amplitude,
+energy and time. Record: `ANALYSIS_PLAN.md` "Round 5". Slide note:
+<https://dylan-neff.web.cern.ch/notes/scint-flash-reconstruction.html>.
+
+```bash
+# lxplus ~/x17rec (code rsynced from here)
+condor_submit inject.sub                       # inject.py per production run -> flash_tail_inject/
+condor_submit g4mix.sub                        # g4_mix.py over full_sim/neutrons_fullrange -> flash_tail_g4mix/
+python3 -m ntof_scint_recovery.inject --merge /eos/.../flash_tail_inject/inject_*.npz --out <merged>
+python3 -m ntof_scint_recovery.g4_mix --merge /eos/.../flash_tail_g4mix/g4mix_*.npz --out <merged>
+# desktop: merged files to out_dir('inject')/inject.npz and out_dir('g4mix')/g4mix_all.npz, pulsehist_v3/ synced
+PYTHONPATH=. .venv/bin/python -m ntof_scint_recovery.inject_analysis
+PYTHONPATH=. .venv/bin/python -m ntof_scint_recovery.g4_mix_analysis
+PYTHONPATH=. .venv/bin/python -m ntof_scint_recovery.gain_ref
+PYTHONPATH=. .venv/bin/python -m ntof_scint_recovery.headline        # headline.csv, performance.csv, report.html
+PYTHONPATH=. .venv/bin/python -m ntof_scint_recovery.make_reco_deck
+python3 ~/PycharmProjects/dylan-cern-site/scripts/add-note.py \
+    /media/dylan/data/x17/scint_stack/recovery/deck/scint-flash-reconstruction.html --slug scint-flash-reconstruction --force --deploy
+```
+
+`templates.npz` (the family templates) is force-added to git despite `*.npz` in `.gitignore`: the injection and
+the fit both need it.
