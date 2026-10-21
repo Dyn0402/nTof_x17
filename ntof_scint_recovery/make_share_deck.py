@@ -56,12 +56,19 @@ def first(MF, fam, cls, col):
     return float(MF[(MF.fam == fam) & (MF.cls == cls)][col].iloc[0])
 
 
-def times(MF):
-    """Recovery times shown everywhere: when a MIP is seen and the response is shown linear (usable_from), and
+def times(MF, M):
+    """Recovery time = when real signals have the same shape after full- and half-intensity pulses (the shape
+    test, linearity.py); with the fraction of MIPs seen at that moment and when it reaches 90 % (mip_eff.py), and
     when the plastic signal size is measured."""
-    return dict(WAL=first(MF, 'WAL', 'ded', 'usable_from_us'), WAL_par=first(MF, 'WAL', 'par', 'usable_from_us'),
-                PSS=first(MF, 'PSS', 'ded', 'usable_from_us'), PSS_par=first(MF, 'PSS', 'par', 'usable_from_us'),
-                PSS_gain=first(MF, 'PSS', 'ded', 'gain_from_us'))
+    R = dict(PSS_gain=first(MF, 'PSS', 'ded', 'gain_from_us'))
+    for fam in ('WAL', 'PSS'):
+        t = first(MF, fam, 'ded', 'linear_from_us')
+        g = M[(M.fam == fam) & (M.cls == 'ded') & (M.t_lo_us <= t * 1.01) & (M.t_hi_us > t * 1.01)]
+        R[fam] = t
+        R[f'{fam}_eff'] = float(g.found.iloc[0])
+        R[f'{fam}_90'] = first(MF, fam, 'ded', 'seen90_us')
+        R[f'{fam}_90par'] = first(MF, fam, 'par', 'seen90_us')
+    return R
 
 
 def say(text, size=TXT, color=sd.INK):
@@ -79,12 +86,15 @@ def card(name, col, lines, w=520):
 
 def cover(D, R):
     cards = [
-        card('SiPM walls', sd.DBLUE, [('big', f'{R["WAL"]:.0f} µs'), ('big', fmt_e(R['WAL'])),
+        card('SiPM walls', sd.DBLUE, [('big', f'{R["WAL"]:.1f} µs'), ('big', fmt_e(R['WAL'])),
                                       ('s', 'after the flash · neutron energy'),
-                                      ('s', f'half-intensity pulses: {R["WAL_par"]:.0f} µs · {fmt_e(R["WAL_par"])}')]),
+                                      ('s', f'but only ~{R["WAL_eff"]:.0%} of particles seen then: 90 % from '
+                                            f'{R["WAL_90"]:.0f} µs ({fmt_e(R["WAL_90"])}), limited by pile-up')]),
         card('plastic scintillators', '#c9a4f0', [('big', f'{R["PSS"]:.1f} µs'), ('big', fmt_e(R['PSS'])),
                                                   ('s', 'after the flash · neutron energy'),
-                                                  ('s', f'signal size known from {R["PSS_gain"]:.0f} µs · {fmt_e(R["PSS_gain"])}')]),
+                                                  ('s', f'~{R["PSS_eff"]:.0%} of particles seen then, 90 % from '
+                                                        f'{R["PSS_90"]:.1f} µs; signal size known from '
+                                                        f'{R["PSS_gain"]:.0f} µs ({fmt_e(R["PSS_gain"])})')]),
         card('liquid scintillators', sd.DGREEN, [('big', 'not'), ('big', 'clear'),
                                                  ('s', 'the liquid scintillators did not work as intended')]),
     ]
@@ -135,9 +145,13 @@ def waveforms(D, X, R):
         if fam in R:
             P.band([-0.5 if fam != 'WAL' else 0.6, R[fam]], [-50, -50], [ymax, ymax], sd.RED, alpha=0.07)
             P.vline(R[fam], sd.GREEN, None, 4)
-            P.text(R[fam] + 0.3, ymax * 0.9, f'usable from {fmt_t(R[fam])}', 26, sd.GREEN, 'start', 600)
-            P.text(R[fam] + 0.3, ymax * 0.8, f'neutrons below {fmt_e(R[fam])}', 22, sd.GREEN, 'start')
-        else:
+            x = R[fam] + 0.3 if fam == 'WAL' else 2.5
+            P.text(x, ymax * 0.9, f'back from {fmt_t(R[fam])}', 26, sd.GREEN, 'start', 600)
+            P.text(x, ymax * 0.8, f'neutrons below {fmt_e(R[fam])}', 22, sd.GREEN, 'start')
+        if fam in ('PSS', 'LIQ'):
+            P.raw(sd.arrow(P.X(2.4), P.Y(ymax * 0.55), P.X(1.25), P.Y(ymax * 0.36), sd.INK, 2.5, 14))
+            P.text(2.5, ymax * 0.55, 'fast neutrons (~2 MeV)', 21, sd.INK, 'start', 600)
+        if fam not in R:
             P.text(6.5, ymax * 0.9, 'not clear', 30, sd.GOLD, 'middle', 600)
         P.line(t.tolist(), clip(y, -50, ymax), FCOL[fam], 2, markers=False)
         P.xticks([(v, f'{v:g}') for v in (0, 2, 4, 6, 8, 10)]).yticks([(v, f'{v:g}') for v in (0, ymax / 2, ymax)])
@@ -146,8 +160,9 @@ def waveforms(D, X, R):
             + sd.row(*panels, gap=24)
             + say('Time 0 is when the flash reaches the detectors. It drives every scintillator to its limit; the wall is switched '
                   'off on purpose during the flash and switched back on at ~0.6 µs, when the leftover flash charge appears. '
-                  'What follows is the tail of the flash plus a rain of real particles from the beam. The green lines mark '
-                  'when each one can be read again; the rest of these slides show how we decided that.', 26, sd.MUT))
+                  'What follows is the tail of the flash plus a rain of real particles from the beam; the bump at ~1 µs on the '
+                  'plastic and liquid is the fast neutrons of the beam arriving. The green lines mark when each one '
+                  'responds normally again; the next slides show how we decided that.', 26, sd.MUT))
     D.slide('waveforms', body, '', short='waveforms')
 
 
@@ -259,7 +274,7 @@ def size(D, M, R):
             P.vline(R['PSS_gain'], sd.GREEN, '8 6', 3)
             P.text(R['PSS_gain'] * 1.08, 0.3, f'size known from {fmt_t(R["PSS_gain"])}', 22, sd.GREEN, 'start', 600)
         P.vline(R[fam], sd.GREEN, None, 4)
-        P.text(R[fam] * 1.08, 0.04 if fam == 'PSS' else 0.12, f'read from {fmt_t(R[fam])}', 22, sd.GREEN, 'start', 600)
+        P.text(R[fam] * 1.08, 0.04 if fam == 'PSS' else 0.12, f'back from {fmt_t(R[fam])}', 22, sd.GREEN, 'start', 600)
         for cls in ('ded', 'par'):
             g = M[(M.fam == fam) & (M.cls == cls) & (M.t_us >= x0) & (M.t_us <= 40)].sort_values('t_us')
             P.band(g.t_us.tolist(), clip(g.gain_lo, 0, 1.3), clip(g.gain_hi, 0, 1.3), COL[cls], alpha=0.25)
@@ -286,6 +301,8 @@ def seen(D, M, R):
         P.band([x0, R[fam]], [0, 0], [1, 1], sd.GREY, alpha=0.18)
         P.hline(0.9, sd.INK, '3 5', 1.5, label='90 %')
         P.vline(R[fam], sd.GREEN, None, 4)
+        P.text(R[fam] * 1.08, 0.3, f'back from {fmt_t(R[fam])}:', 22, sd.GREEN, 'start', 600)
+        P.text(R[fam] * 1.08, 0.22, f'{R[fam + "_eff"]:.0%} seen', 22, sd.GREEN, 'start', 600)
         for cls in ('ded', 'par'):
             g = M[(M.fam == fam) & (M.cls == cls) & (M.t_us >= x0) & (M.t_us <= 40)].sort_values('t_us')
             P.line(g.t_us.tolist(), clip(g.found, 0, 1), COL[cls], 4, r=4,
@@ -336,6 +353,59 @@ def precision(D, M, R):
     D.slide('precision', body, '', short='precision')
 
 
+def pileup(D, M, R):
+    """Why the wall lags: four bars share each read-out channel, so it sees four bars' worth of the beam's
+    particle rain.  The losses follow exp(-rate): the half-intensity curve is the full-intensity one to the
+    power 1/2, which the data confirm, so one bar per channel (a quarter of the rate) is the power 1/4."""
+    W, H = 760, 420
+    g = []
+    x0, y0, bw, bh = 120, 60, 520, 34
+    for i in range(16):
+        y = y0 + i * (bh * 0.55 + 2)
+        bh_ = bh * 0.55 - 3
+        g.append(f'<rect x="{x0}" y="{y:.0f}" width="{bw}" height="{bh_:.0f}" fill="{FCOL["WAL"]}" rx="2"/>')
+    for k in range(4):
+        ytop = y0 + 4 * k * (bh * 0.55 + 2)
+        hgt = 4 * (bh * 0.55 + 2) - 2
+        g.append(f'<rect x="{x0 - 6}" y="{ytop - 3:.0f}" width="{bw + 12}" height="{hgt + 6:.0f}" fill="none" '
+                 f'stroke="{sd.INK}" stroke-width="2.5" stroke-dasharray="7 5" rx="6"/>')
+        yc = ytop + hgt / 2
+        for side, xs in ((-1, x0 - 6), (1, x0 + bw + 6)):
+            xe = xs + side * 60
+            g.append(sd.line(xs, yc, xe, yc, sd.INK, 2.5))
+            g.append(f'<circle cx="{xe + side * 12}" cy="{yc:.0f}" r="12" fill="{sd.INK}"/>')
+    g.append(sd.T(x0 + bw / 2, y0 - 20, 'one SiPM wall: 16 bars, read out in 4 groups of 4', 24, sd.INK, 'middle', 600))
+    g.append(sd.T(x0 + bw / 2, y0 + 16 * (bh * 0.55 + 2) + 38, '● = one read-out channel (one at each end of a group)',
+                  21, sd.MUT, 'middle'))
+    cart = sd.svg(W, H, ''.join(g), 'wall read-out groups')
+    d = M[(M.fam == 'WAL') & (M.cls == 'ded') & (M.t_us >= 2.0) & (M.t_us <= 40)].sort_values('t_us')
+    p = M[(M.fam == 'WAL') & (M.cls == 'par') & (M.t_us >= 2.0) & (M.t_us <= 40)].sort_values('t_us')
+    P = sd.Plot(860, 560, x=(2.0, 40, 'log'), y=(0.6, 1), xlabel='time after the flash',
+                ylabel='wall particles seen', title='what reading each bar alone would give', margin=(24, 24, 92, 104))
+    P.band([2.0, R['WAL']], [0.6, 0.6], [1, 1], sd.GREY, alpha=0.18)
+    P.hline(0.9, sd.INK, '3 5', 1.5, label='90 %')
+    P.line(d.t_us.tolist(), clip(d.found, 0, 1), COL['ded'], 4, r=4)
+    P.line(p.t_us.tolist(), clip(p.found, 0, 1), COL['par'], 4, r=4)
+    P.line(p.t_us.tolist(), clip(d.found.to_numpy() ** 0.5, 0, 1), COL['par'], 2.5, dash='4 5', markers=False,
+           tip='predicted from the full-intensity curve, half the rate')
+    P.line(d.t_us.tolist(), clip(d.found.to_numpy() ** 0.25, 0, 1), sd.GREEN, 4, dash='10 6', markers=False,
+           tips=[f'{fmt_t(t)}: {v:.0%}' for t, v in zip(d.t_us, d.found.to_numpy() ** 0.25)])
+    P.xticks([v for v in TICKS if v[0] >= 2.0]).yticks([(v, f'{v:.0%}') for v in (0.6, 0.7, 0.8, 0.9, 1.0)])
+    e1 = float(d[(d.t_lo_us <= R['WAL'] * 1.01) & (d.t_hi_us > R['WAL'] * 1.01)].found.iloc[0])
+    body = (sd.title('The wall is held back by pile-up: four bars share each read-out channel')
+            + sd.row(cart, P.svg('pile'), gap=40, align='center')
+            + sd.legend([('full intensity, measured', COL['ded'], 'line'), ('half intensity, measured', COL['par'], 'line'),
+                         ('half intensity, predicted', COL['par'], 'dash'),
+                         ('full intensity, one bar per channel (estimate)', sd.GREEN, 'dash')], 22)
+            + say(f'Each channel collects the light of four bars, so it also collects four bars\' share of the many '
+                  'other particles the beam sends through the wall, and a small signal is often lost under them. Halving '
+                  'the beam intensity improves things exactly as expected for losses that come from this crowding (dashed '
+                  f'blue on solid blue). Reading each bar on its own channel would cut the crowding by four: at '
+                  f'{fmt_t(R["WAL"])} the wall would then see ~{e1 ** 0.25:.0%} of particles instead of {e1:.0%}. This '
+                  'assumes the particles spread evenly over the four bars.', 25, sd.MUT))
+    D.slide('pileup', body, '', short='pile-up')
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split('\n\n')[0])
     ap.add_argument('--plan', type=Path, default=None, help='the set-up drawing (png); default: regenerate')
@@ -347,7 +417,7 @@ def main(argv=None) -> int:
     S = pd.read_csv(lo / 'shape_tests.csv')
     S.attrs['MF'] = MF
     E = pd.read_csv(lo / 'shape_examples.csv')
-    R = times(MF)
+    R = times(MF, M)
     D = sd.Deck('X17 at n_TOF: when the scintillators recover from the γ-flash',
                 'When the X17 scintillators recover from the n_TOF γ-flash, in time and in neutron energy')
     cover(D, R)
@@ -358,6 +428,7 @@ def main(argv=None) -> int:
     mismatch(D, S, R)
     size(D, M, R)
     seen(D, M, R)
+    pileup(D, M, R)
     precision(D, M, R)
     path = D.write(out_dir('deck') / 'scint-flash-recovery-summary.html', note_meta=dict(
         title='X17 at n_TOF: when the scintillators recover from the γ-flash',
