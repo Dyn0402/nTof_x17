@@ -549,7 +549,7 @@ def shape_examples(D, E):
         d, p = g[g.cls == 'ded'].sort_values('a_mV'), g[g.cls == 'par'].sort_values('a_mV')
         P.line(d.a_mV.tolist(), d.frac.tolist(), CC['ded'], 3, markers=False, tip='dedicated')
         P.points(p.a_mV.tolist(), p.frac.tolist(), CC['par'], r=4, tips=None)
-        P.text(P.X(12), P.Y(float(g.frac.max()) * 1.05), f'parasitic × {g.scale.iloc[0]:.2f}; mismatch {g.max_abs.iloc[0]:.0%}',
+        P.text(12, float(g.frac.max()) * 1.05, f'parasitic × {g.scale.iloc[0]:.2f}; mismatch {g.max_abs.iloc[0]:.0%}',
                size=19, color=sd.GREEN if ok else sd.RED)
         P.xticks([(v, f'{v:g}') for v in (10, 30, 100, 300, 1000)]).yticks([])
         panels.append(P.svg(f'ex{fam}{t:.1f}'))
