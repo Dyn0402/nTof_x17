@@ -596,12 +596,12 @@ def bar_ends_slide(D, B):
     P2.yticks([(v, f'{v:g}') for v in (0, 3, 6, 9, 12)])
     body = (sd.title('Walls on real pulses: the two ends of a bar agree in amplitude and time from 2.5 µs',
                      'Both ends see the same light. At a fixed position the ratio of their amplitudes, and at a fixed ratio '
-                     'the spread of their time difference, against 20–60 µs. Median over 16 bars')
+                     'the spread of their time difference, against 20–60 µs. Median over 16 read-out groups (4 arms × 4 groups of 4 bars)')
             + sd.row(P1.svg('be1'), P2.svg('be2'), gap=40)
             + sd.legend([('dedicated', CC['ded'], 'line'), ('parasitic', CC['par'], 'line'), ('20–60 µs', sd.MUT, 'dash')]))
     notes = ('<p>The two ends of a bar have different SiPM gains and so ride on different flash tails. If the gain of the '
              'electronics depended on the tail level, their ratio at a fixed position would move while the tails decay. It '
-             'moves by ≤ 1 % from 2.5 µs (±3 % bar to bar), and by up to 4 % at 0.3–2 µs with a 7–24 % bar-to-bar scatter. '
+             'moves by ≤ 1 % from 2.5 µs (±3 % group to group), and by up to 4 % at 0.3–2 µs with a 7–24 % group-to-group scatter. '
              'The end-to-end time difference keeps its position within 0.2 ns from 2.5 µs; its spread is 3.3 / 2.8 ns at '
              '3 / 5 µs against 2.5 ns late, and 3.5–11 ns before 2.5 µs. This is the only test of timing on real pulses: '
              'the plastic timing is from the injection alone.</p>'

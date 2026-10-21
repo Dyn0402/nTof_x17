@@ -59,6 +59,17 @@ end from the bar-end coincidences, median 35 mV (26-41; the muon calibration's 2
 the gain. At gain 0.33 that triples it: plastic ~1 MIP sigma(E)/E at 2-3 µs is 16-20 %, not 6-7 % (Round 6 numbers
 below are superseded on that point).
 
+**Collaborator deck** (`make_share_deck.py`, <https://dylan-neff.web.cern.ch/notes/scint-flash-recovery-summary.html>):
+recovery = the shape-test time (wall 2.5 µs / 299 keV, ~82 % of MIPs seen then, 90 % from 4 µs; plastic 0.4 µs /
+9.4 MeV, ~83 %, 90 % from 0.8 µs, size known from 2 µs); liquids "not clear: did not work as intended".
+- **Pile-up / read-out**: each wall channel sums a group of 4 bars. The MIP losses follow exp(-rate): the
+  half-intensity efficiency equals the full-intensity one to the power 1/2 within ~1 % from 2.8 µs. So one bar per
+  channel (rate / 4) gives power 1/4: ~95 % instead of 82 % at 2.5 µs (assumes even occupancy over the 4 bars).
+- **The ~1 µs bump** on plastic and liquid traces is fast neutrons (~1.8 MeV at 1.0 µs), not a reflection
+  (`bump.py`, one local file): peak at 1.00 µs in 10 of 12 channels (liquid D 1.12; plastic B1 ded swamped);
+  ~37 discrete 3 ns pulses per liquid trace in 0.8-2 µs; liquids ded/par 1.9-2.1 (counting), plastics 0.22-1.0
+  (the early gain loss). Appendix slide of the collaborator deck.
+
 ## Round 6 (2026-10-21 afternoon): THE HEADLINE IS THE SHORT TERM — earliest reliable reconstruction, corrections, residual uncertainties
 
 Dylan (2026-10-21): future data taking must measure **in the first few µs after the flash**; waiting 100s of µs for

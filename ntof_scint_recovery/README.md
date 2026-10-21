@@ -102,6 +102,7 @@ PYTHONPATH=. .venv/bin/python -m ntof_scint_recovery.early --examples /media/dyl
 PYTHONPATH=. .venv/bin/python -m ntof_scint_recovery.linearity      # real-pulse linearity (needs pulsehist_v3)
 PYTHONPATH=. .venv/bin/python -m ntof_scint_recovery.mip_eff        # MIP efficiency / resolution (needs early, linearity)
 PYTHONPATH=. .venv/bin/python -m ntof_scint_recovery.make_early_deck
+PYTHONPATH=. .venv/bin/python -m ntof_scint_recovery.bump /media/dylan/data/x17/scint_stack/recovery/raw/flash_224712_0019.root  # the 1 µs bump (appendix)
 PYTHONPATH=. .venv/bin/python -m ntof_scint_recovery.make_share_deck   # short collaborator version, slug scint-flash-recovery-summary
 python3 ~/PycharmProjects/dylan-cern-site/scripts/add-note.py \
     /media/dylan/data/x17/scint_stack/recovery/deck/scint-flash-reconstruction.html --slug scint-flash-reconstruction --force --deploy

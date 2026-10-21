@@ -406,6 +406,48 @@ def pileup(D, M, R):
     D.slide('pileup', body, '', short='pile-up')
 
 
+def appendix_bump(D, B, Z):
+    """Appendix: the ~1 µs bump on the plastic and liquid traces is the beam's fast neutrons (bump.py)."""
+    panels = []
+    t = Z['t_us']
+    for key, ttl, ymax in (('LIQA1', 'liquid A: average trace', 800), ('PSSC1', 'plastic C: average trace', 800)):
+        P = sd.Plot(560, 520, x=(0, 4), y=(-20, ymax), xlabel='time after the flash [µs]',
+                    ylabel='average signal [mV]' if not panels else '', title=ttl, margin=(24, 24, 92, 96))
+        for cls in ('ded', 'par'):
+            y = np.convolve(Z[f'{key}_{cls}'], np.ones(20) / 20, 'same')
+            P.line(t[::10].tolist(), clip(y[::10], -20, ymax), COL[cls], 3, markers=False)
+        P.vline(1.0, sd.INK, '6 5', 2)
+        P.text(1.08, ymax * 0.92, f'1.0 µs = {fmt_e(1.0)} neutrons', 21, sd.INK, 'start', 600)
+        P.xticks([(v, f'{v:g}') for v in (0, 1, 2, 3, 4)]).yticks([(v, f'{v:g}') for v in (0, ymax / 2, ymax)])
+        panels.append(P.svg('b' + key))
+    d = B[B.cls == 'ded']
+    on_time = d[(d.peak_us > 0.95) & (d.peak_us < 1.05)]
+    liq = d[d.det.str.startswith('LIQ') & (d.n_pulses_one_trace > 10)]
+    lr = d[d.det.str.startswith('LIQ')].ded_over_par
+    pr = d[d.det.str.startswith('PSS')].ded_over_par
+    pts = sd.col(
+        say(f'<b>Same moment everywhere.</b> The bump peaks at 1.00 µs in {len(on_time)} of {len(d)} plastic and liquid '
+            'channels. An echo of the flash would arrive after a delay set by each channel\'s own cabling, and those '
+            'cables already differ.', 24),
+        say(f'<b>Made of separate particles.</b> On a single trace of a liquid it is ~{liq.n_pulses_one_trace.median():.0f} '
+            f'distinct pulses, each ~{liq.pulse_fwhm_ns.median():.0f} ns wide, on top of their own overlap, not a smooth '
+            'copy of the flash.', 24),
+        say(f'<b>Counts like particles.</b> On the liquids it is {lr[lr > 1.5].min():.1f}–{lr.max():.1f}× larger after a '
+            'full-intensity pulse than after a half-intensity one. On the plastics it is smaller '
+            f'(×{pr.min():.2f}–{pr.max():.2f}), because their signals shrink after a big flash (slide 7).', 24),
+        say('Its timing matches the fast neutrons of the n_TOF beam (around 1–2 MeV), which knock protons around '
+            'in the hydrogen-rich scintillators.', 24, sd.MUT),
+        gap=18, w=640)
+    body = (sd.kicker('Appendix', dark=False)
+            + sd.title('The bump at ~1 µs on the plastics and liquids: fast neutrons, not an echo')
+            + sd.row(sd.col(sd.row(*panels, gap=20),
+                            sd.legend([(NAME['ded'], COL['ded'], 'line'), (NAME['par'], COL['par'], 'line')], 22)),
+                     pts, gap=40)
+            + say('One run (224712), 12 full- and 8 half-intensity pulses. The two exceptions: liquid D peaks at 1.1 µs, and '
+                  'plastic B1 after full-intensity pulses, where the bump is too small to stand out.', 20, sd.MUT))
+    D.slide('appendix_bump', body, '', short='appendix: the 1 µs bump')
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split('\n\n')[0])
     ap.add_argument('--plan', type=Path, default=None, help='the set-up drawing (png); default: regenerate')
@@ -430,6 +472,7 @@ def main(argv=None) -> int:
     seen(D, M, R)
     pileup(D, M, R)
     precision(D, M, R)
+    appendix_bump(D, pd.read_csv(eo / 'bump.csv'), dict(np.load(eo / 'bump_traces.npz')))
     path = D.write(out_dir('deck') / 'scint-flash-recovery-summary.html', note_meta=dict(
         title='X17 at n_TOF: when the scintillators recover from the γ-flash',
         summary='Short, picture-first summary: when the X17 scintillators recover from the n_TOF γ-flash, as a time and '

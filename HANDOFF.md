@@ -29,103 +29,51 @@
 - `mx_july_beam_qa/srccal_runs.py` — run table (224591 row flagged)
 - `mx_july_beam_qa/SRCCAL_RESULTS_2026-07-28.md` — results, with the open warning at the top
 
-## Scintillator flash recovery: reworked around the first µs — 2026-10-21 afternoon (dylan-MS-7C84)
+## Scintillator flash recovery — updated 2026-10-21 (dylan-MS-7C84)
 
-**Resume:** done; note republished at the same URL. Dylan: the headline is the **earliest reliable reconstruction**
-and the **residual energy / time / efficiency uncertainty after correcting** in the first few µs; full recovery is the
-appendix. Record: `ntof_scint_recovery/ANALYSIS_PLAN.md` "Round 6". 180/181 injection runs merged; the last one
-(condor cluster 4521469, still running at wrap-up) changes nothing visible — remerge only if convenient (README
-commands). Board log + output entry added 2026-10-21. Next: whatever Dylan asks after reading the reworked note.
+**Resume:** done for now; two decks live. Next only if Dylan asks (wall per-bar read-out, liquids, plastic timing check).
 
-**Key numbers (dedicated):** reliable from 0.4 µs (plastic, 3.6 MeVee), 1.6 µs (liquid, 100 mV), 3.2 µs (wall, 4 MIP;
-1 MIP never). Plastic gain 0.33 at 2–3 µs → 1.0 by 11 µs, unmeasurable before 2 µs. After correction σE/E ~6–7 % at
-2–3 µs, 12–13 % at 5–20 µs (plastic 1 MIP); σt 0.14–0.5 ns plastics, 1–2 ns walls at 4 MIP. Plastic 90 % threshold
-2.5 MeVee at 2–3 µs (gain), walls 1.2–1.5 MeV.
+**Goal:** answer when the X17 scintillators recover from the n_TOF γ-flash (collaborator question, future data
+taking in the first µs), as a time and a neutron energy, with what efficiency and precision.
 
-**Files:** `early.py`, `make_early_deck.py` (new), `gain_ref.py` (+ fine grid `gain_fine.csv`); outputs `out_dir('early')`.
+**Done (record: `ntof_scint_recovery/ANALYSIS_PLAN.md`, Round 7 on top, then 6, 5, …):**
+- **Collaborator deck** (Dylan's "share" version, plain language, 10 slides + appendix):
+  <https://dylan-neff.web.cern.ch/notes/scint-flash-recovery-summary.html> (`make_share_deck.py`).
+  Recovery = shape-test time: **walls 2.5 µs / 299 keV** (~82 % of MIPs seen then, 90 % from 4 µs), **plastics
+  0.4 µs / 9.4 MeV** (~83 %, 90 % from 0.8 µs; signal size known only from 2 µs), **liquids "not clear: did not
+  work as intended"**. Slides: set-up (MPGD26 plan view), traces, the full/half-intensity idea, spectra, shape
+  mismatch, signal size, particles seen, pile-up (4 bars per wall channel; one bar per channel ≈ 95 % at 2.5 µs),
+  precision; appendix: the ~1 µs bump = fast neutrons (`bump.py`).
+- **Detailed note** <https://dylan-neff.web.cern.ch/notes/scint-flash-reconstruction.html> (`make_early_deck.py`):
+  MIP view, real-pulse linearity, what rests on injection; per-size results and long-time recovery as appendices.
+- New code: `linearity.py` (dedicated-vs-parasitic and vs-20–60 µs spectrum shape; wall bar ends),
+  `mip_eff.py` (MIP spectrum × gain × injected efficiency; gain bounds before 2 µs), `bump.py`, `make_share_deck.py`.
+- Bug fixed in `early.py`: gain uncertainty now relative in σ(E) (was absolute; ×3 understated at gain 0.33).
 
-**Gotchas:** Geant4 cannot serve as an early gain candle (data spectrum 2× harder at all times); the deck's
-appendix reuses `make_reco_deck.py` functions — keep them.
+**In progress / where it stopped:** nothing running. The last injection condor job (cluster 4521469) from the
+earlier round was never remerged; it changes nothing visible (README commands if wanted).
 
-## Scintillator flash recovery: the final analysis (reconstruction, bias, resolution) — 2026-10-21 (dylan-MS-7C84)
-
-**Resume:** headline done and live: <https://dylan-neff.web.cern.ch/notes/scint-flash-reconstruction.html>.
-13 injection jobs (runs 224488–224513, cluster 4521469) were still running at 14:00. When they land: remerge, rerun
-`inject_analysis` → `headline` → `make_reco_deck`, republish (commands in `ntof_scint_recovery/README.md`).
-
-**Goal (Dylan):** the headline is *from when after the flash a pulse can be reconstructed accurately*, then its bias
-and energy/timing uncertainty against time since the flash, converted to energy; plus Geant4 for the particle mix.
-
-**Done** (record: `ntof_scint_recovery/ANALYSIS_PLAN.md` "Round 5"):
-- `inject.py`: pulses injected into the real head traces of 168 production runs (3 277 bunches) and reconstructed
-  (single- and multi-pulse template fit), with a pre-flash control and a clean/piled flag. `inject_analysis.py`.
-- `gain_ref.py`: detector gain from the spectrum quantiles (gain scales all, mix does not); energy scale per counter.
-- `g4_mix.py` on the existing `full_sim/neutrons_fullrange` (5e8 EAR2 n): particle mix and light vs time.
-- `headline.py` (+ report.html, performance.csv, occupancy model beyond the head block), `make_reco_deck.py` (11 slides).
-- **Headline (dedicated, ~1 MIP, ≥ 90 % within 10 % and plastic gain ≥ 0.95):** plastics ~160 µs (parasitic ~50),
-  liquids ~80 µs (~3), walls ~0.75 ms (~0.27 ms, pile-up model). Pulses are found and median-unbiased within a few
-  µs; the limit is pile-up with beam-induced pulses, plus a plastic PMT gain sag (0.38 / 0.68 / 0.92 at 3 / 5 / 10 µs).
-- The round-4 plastic edge deficit after ~20 µs is particle mix, not gain (q50 and q99 back, q75–q95 low).
-
-**Next steps:** remerge the 13 runs (above). Optional: a pile-up-aware wall reconstruction (deconvolution of the slow
-SiPM tail) would cut the wall time; Geant4 of the hall / in-beam γ would close the gain-vs-mix caveat.
-
-**Gotchas:**
-- `templates.npz` is gitignored by `*.npz` but needed: force-added.
-- Wall injections before ~0.65 µs sit in the divert window (flat trace): ignore them.
-- The prominence finder (`reco_multi`) is what defines "piled"; the plain finder fires on every ripple of a lagging baseline.
-- `pkill -f <pattern>` kills your own shell when the pattern is in the command line.
-- Local copies of every product: `/media/dylan/data/x17/scint_stack/recovery/{inject,gain,g4mix,reco,deck,pulsehist_v3,summaries}`.
-
-## Scintillator recovery after the γ-flash — updated 2026-10-21 (dylan-Yoga)
-
-**Resume:** flash_tail dataset + 4 analysis rounds done, deck live; next: separate gain from particle mix on the plastics.
-
-**Goal:** answer a collaborator's question: how long the X17 scintillators (walls, plastics, liquids) take to recover
-after the n_TOF γ-flash. Always split by beam intensity (parasitic / dedicated) and by configuration epoch.
-
-**Done:**
-- **Dataset** `ntof_processing/flash_pull/`: raw blocks at tof 0–10 ms and 30–32 ms, 2–6 raw files per beam run,
-  299 runs, 630 files, ~0.5 TB at `/eos/experiment/ntof/data/x17/flash_tail/`. Bit-identical to `parse_acqc` and
-  closure-checked against the PSA hits. 57 runs from 1–9 July are PKUP-only.
-- **Analysis** `ntof_scint_recovery/`: quick pass (baseline), pulse finder + template fit, coincidences
-  (plastic | wall, wall bar ends, along the bar via the scint_stack MM calibration), per-channel maps, trigger
-  bound, photoelectron test. Plan, state and every number are in `ntof_scint_recovery/ANALYSIS_PLAN.md`.
-- **Slide note (23 slides):** <https://dylan-neff.web.cern.ch/notes/scint-flash-recovery.html>.
-- **Headline** (production runs ≥ 224488, dedicated, baseline within ±3 mV): liquids ~6 µs, plastics ~94 µs, walls
-  ~0.68 ms; parasitic ×1.5 faster. Pulse shape (80 %) back by ~7.5 µs (plastics) and ~9.4 µs (walls).
-  - The wall undershoot (10–19 mV) is ∝ channel gain (corr 0.74) and costs small pulses (×3.5 fewer 4–15 mV at 10–100 µs).
-  - Bar ends recover together (≤ 4 %); no position dependence beyond 7 %.
-  - The plastic light edge, all 8 bars together, is at 0.71 / 0.87 / 0.93 of full at 10 / 100 / 300 µs.
-  - DREAM opens at ~1.0 ms, so any trigger bias is ≤ 5 % of threshold.
-
-**In progress / where it stopped:** nothing running. All condor products are on EOS: `flash_tail_summary/`,
-`flash_tail_pulsehist{,_v2,_v3}/`, `flash_tail_trigger/`. Local copies are under
-`/media/dylan/data/x17/scint_stack/recovery/`.
-
-**Next steps:**
-1. Separate gain sag from particle mix on the plastics: simulate the population behind a wall hit (Geant4) and
-   compare the edge curve (slide 17).
-2. MM tracks (deferred): rebuild the scint_stack track tables from the stage-3 full pass on EOS
-   (`desktop_scratch/x17_local/yfix_work/sept26_prelim_stage3_fullpass`, 11.4 GB). The desktop data disk has ~7.7 GB free.
-3. Liquids: per-channel templates (their shape metric moved 60 → 133 µs between template versions).
+**Next steps (only if asked):**
+1. Wall per-bar read-out estimate assumes even occupancy over the 4 bars of a group; could check with MM tracks.
+2. Plastic timing is injection-only (no real-pulse check); liquids' linearity not established (ded/par 10–20 % off at all times).
+3. MeVee anchor (3.45 MeVee = median of ALL plastic coincidences) sits ~15 % below the through-going-muon median: revisit if MeVee numbers are reused.
 
 **Gotchas / decisions:**
-- Production = runs ≥ 224488 (17 July). Earlier runs are commissioning steps (224355, 224401, 224450; the plastics
-  settle last), so they are never pooled.
-- Count only live channels (a flash peak > 100 mV): whole families were unpowered in some runs.
-- Amplitude-spectrum shapes follow the particle mix: never read one as gain without a fixed reference.
-- DREAM is dead ~205 µs after a trigger and partly busy for several ms, so trigger efficiency can't be measured from the trigger list.
-- Condor: log names are shared between passes, and some jobs run late. Judge completion by `xrdfs ls` file
-  counts on EOS, not by `condor_q` being empty or `=== done` in the logs (cost a resubmit on 2026-10-21).
-- The photoelectron "peak" on the plastics moves UP early: rate contamination, not a gain reference.
+- Dylan: recovery time = shape test (ded vs par), quoted with the MIP efficiency at that moment; not the 90 % MIP time.
+- The ded/par shape test is the strong evidence (Dylan: "exactly what we needed"); the vs-20–60 µs test is invalid before ~2.5 µs (particle mix changes).
+- Plastic MIP spectrum: the wall–plastic coincidences have a 15–33 % low shoulder (clipping tracks); use the fitted through-going peak.
+- Wall t = 0 is right: the walls are gated off during the flash and reopen at ~0.6 µs (divert gate), t0 from the divert-off runs.
+- Wall channels are 4 read-out groups of 4 bars per arm (16 groups total), not 16 single bars.
+- slidedoc `Plot.text(x, y, …)` takes DATA coordinates, not pixels.
+- `templates.npz` is force-added despite `*.npz` in .gitignore. `pkill -f <pattern>` kills your own shell if the pattern is in the command.
+- Condor: judge completion by `xrdfs ls` file counts on EOS, not `condor_q`. Production = runs ≥ 224488; count only live channels.
+- Local products: `/media/dylan/data/x17/scint_stack/recovery/{inject,gain,g4mix,reco,early,linearity,deck,pulsehist_v3,summaries,raw}`.
 
-**Key files & commands:**
-- `ntof_processing/flash_pull/` — dataset tool. lxplus `~/x17flash`: `./flash_campaign.sh status`.
-- lxplus `~/x17rec` — condor submit dir (`summary.sub`, `pulsehist.sub`, `trig.sub`; code rsynced from the repo).
-- Desktop: `quick.py`, `pulse_analysis.py`, `coinc_analysis.py`, `channel_maps.py`, `trig_analysis.py`,
-  `spe_analysis.py`, then `make_recovery_deck.py`. Publish with
-  `python3 ~/PycharmProjects/dylan-cern-site/scripts/add-note.py <deck>.html --slug scint-flash-recovery --force --deploy`.
+**Key files & commands** (all in `ntof_scint_recovery/README.md`):
+- `python -m ntof_scint_recovery.{early,linearity,mip_eff}` then `make_early_deck` / `make_share_deck`
+- `python -m ntof_scint_recovery.bump <local flash_*.root>` (appendix numbers)
+- publish: `python3 ~/PycharmProjects/dylan-cern-site/scripts/add-note.py <deck>.html --slug <slug> --force --deploy`
+- dataset tool `ntof_processing/flash_pull/`; condor submit dir lxplus `~/x17rec`.
 
 ## B4C target (July) pair expectation — updated 2026-10-20 (dylan-Yoga)
 
