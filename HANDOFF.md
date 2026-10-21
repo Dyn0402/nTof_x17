@@ -1,5 +1,55 @@
 # Handoff
 
+## Scintillator recovery after the γ-flash — updated 2026-10-21 (dylan-Yoga)
+
+**Resume:** flash_tail dataset + 4 analysis rounds done, deck live; next: separate gain from particle mix on the plastics.
+
+**Goal:** answer a collaborator's question: how long the X17 scintillators (walls, plastics, liquids) take to recover
+after the n_TOF γ-flash. Always split by beam intensity (parasitic / dedicated) and by configuration epoch.
+
+**Done:**
+- **Dataset** `ntof_processing/flash_pull/`: raw blocks at tof 0–10 ms and 30–32 ms, 2–6 raw files per beam run,
+  299 runs, 630 files, ~0.5 TB at `/eos/experiment/ntof/data/x17/flash_tail/`. Bit-identical to `parse_acqc` and
+  closure-checked against the PSA hits. 57 runs from 1–9 July are PKUP-only.
+- **Analysis** `ntof_scint_recovery/`: quick pass (baseline), pulse finder + template fit, coincidences
+  (plastic | wall, wall bar ends, along the bar via the scint_stack MM calibration), per-channel maps, trigger
+  bound, photoelectron test. Plan, state and every number are in `ntof_scint_recovery/ANALYSIS_PLAN.md`.
+- **Slide note (23 slides):** <https://dylan-neff.web.cern.ch/notes/scint-flash-recovery.html>.
+- **Headline** (production runs ≥ 224488, dedicated, baseline within ±3 mV): liquids ~6 µs, plastics ~94 µs, walls
+  ~0.68 ms; parasitic ×1.5 faster. Pulse shape (80 %) back by ~7.5 µs (plastics) and ~9.4 µs (walls).
+  - The wall undershoot (10–19 mV) is ∝ channel gain (corr 0.74) and costs small pulses (×3.5 fewer 4–15 mV at 10–100 µs).
+  - Bar ends recover together (≤ 4 %); no position dependence beyond 7 %.
+  - The plastic light edge, all 8 bars together, is at 0.71 / 0.87 / 0.93 of full at 10 / 100 / 300 µs.
+  - DREAM opens at ~1.0 ms, so any trigger bias is ≤ 5 % of threshold.
+
+**In progress / where it stopped:** nothing running. All condor products are on EOS: `flash_tail_summary/`,
+`flash_tail_pulsehist{,_v2,_v3}/`, `flash_tail_trigger/`. Local copies are under
+`/media/dylan/data/x17/scint_stack/recovery/`.
+
+**Next steps:**
+1. Separate gain sag from particle mix on the plastics: simulate the population behind a wall hit (Geant4) and
+   compare the edge curve (slide 17).
+2. MM tracks (deferred): rebuild the scint_stack track tables from the stage-3 full pass on EOS
+   (`desktop_scratch/x17_local/yfix_work/sept26_prelim_stage3_fullpass`, 11.4 GB). The desktop data disk has ~7.7 GB free.
+3. Liquids: per-channel templates (their shape metric moved 60 → 133 µs between template versions).
+
+**Gotchas / decisions:**
+- Production = runs ≥ 224488 (17 July). Earlier runs are commissioning steps (224355, 224401, 224450; the plastics
+  settle last), so they are never pooled.
+- Count only live channels (a flash peak > 100 mV): whole families were unpowered in some runs.
+- Amplitude-spectrum shapes follow the particle mix: never read one as gain without a fixed reference.
+- DREAM is dead ~205 µs after a trigger and partly busy for several ms, so trigger efficiency can't be measured from the trigger list.
+- Condor: log names are shared between passes, and some jobs run late. Judge completion by `xrdfs ls` file
+  counts on EOS, not by `condor_q` being empty or `=== done` in the logs (cost a resubmit on 2026-10-21).
+- The photoelectron "peak" on the plastics moves UP early: rate contamination, not a gain reference.
+
+**Key files & commands:**
+- `ntof_processing/flash_pull/` — dataset tool. lxplus `~/x17flash`: `./flash_campaign.sh status`.
+- lxplus `~/x17rec` — condor submit dir (`summary.sub`, `pulsehist.sub`, `trig.sub`; code rsynced from the repo).
+- Desktop: `quick.py`, `pulse_analysis.py`, `coinc_analysis.py`, `channel_maps.py`, `trig_analysis.py`,
+  `spe_analysis.py`, then `make_recovery_deck.py`. Publish with
+  `python3 ~/PycharmProjects/dylan-cern-site/scripts/add-note.py <deck>.html --slug scint-flash-recovery --force --deploy`.
+
 ## B4C target (July) pair expectation — updated 2026-10-20 (dylan-Yoga)
 
 **Resume:** Done: B4C night (run_39/40) can't show pairs; deck live. Optional: free 185 GB of sim output, chase occupancy gap.
