@@ -6,7 +6,7 @@ Campaign (DAQ titles, all 2026-07-28, X17_measurement, beam off):
     224588  Y on AR, Cs on CR     11:31:06-11:37:41   607 triggers
     224589  Y on AL, Cs on CL     11:38:49-11:44:22   603
     224590  Y on BR, Cs on DR     11:46:58-11:53:32   612
-    224591  Y on BL, Cs on DL     11:55:24-12:02:04   621
+    224591  Y on BL, Cs on DL     11:55:24-12:02:04   621   <- OPEN: 544 triggers today (EOS file rewritten 2026-08-07); see SRCCAL_RESULTS warning
     224592  Y on CR, Cs on AR     12:02:54-12:09:25   605
     224593  Y on CL, Cs on AL     12:10:31-12:17:07   606
     224594  Y on DR, Cs on BR     12:17:20-12:22:56   607
