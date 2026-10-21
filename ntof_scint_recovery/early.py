@@ -22,8 +22,8 @@ Per family, intensity class, injected amplitude and time bin (pooled over live c
                  uncertainty = |coincident - singles| / 2 (coarse grid) ⊕ 3 % floor; walls 1 ± |q99 - 1|
                  (no sag resolved); liquids: no reference (reported as unknown);
 * ``sig_res``    σ68(A_fit/A)/median: the resolution, pile-up included (does not shrink with a correction);
-* ``sig_sys``    the residual after correcting resp x gain: stat ⊕ gain uncertainty ⊕ half the change of the
-                 correction across the time bin;
+* ``sig_sys``    the residual after correcting resp x gain, relative: stat ⊕ gain uncertainty / gain ⊕ half the
+                 change of the gain across the time bin / gain;
 * ``sig_E``      sig_res ⊕ sig_sys, times the energy: the energy uncertainty after correction;
 * ``t_bias``, ``sig_t``  median and σ68 of t_fit - t0 (ns), the median being a correctable offset;
 * ``thr50/90``   the amplitude (and energy, gain included) at which eff reaches 50 / 90 %: the smallest
@@ -142,7 +142,9 @@ def table(z) -> pd.DataFrame:
                     stat = 1.2533 * sig_res / np.sqrt(max(nfit, 1))
                     gt, ut = g(t), u(t)
                     dg = abs(g(t * 1.27) - g(t / 1.27)) / 4 if np.isfinite(gt) else np.nan
-                    sig_sys = np.sqrt(stat ** 2 + ut ** 2 + (0 if not np.isfinite(dg) else dg) ** 2) if np.isfinite(ut) else np.nan
+                    # gain terms are absolute (gain units): relative to the gain for an energy uncertainty
+                    sig_sys = (np.sqrt(stat ** 2 + (ut / gt) ** 2 + (0 if not np.isfinite(dg) else dg / gt) ** 2)
+                               if np.isfinite(ut) else np.nan)
                     sig_E_rel = np.hypot(sig_res, sig_sys) if np.isfinite(sig_sys) else np.nan
                     E = A / scale if np.isfinite(scale) else np.nan
                     rows.append(dict(fam=fam, cls=cls, amp_mV=A, E_true=E, t_lo_us=t_lo, t_hi_us=t_hi, t_us=t,

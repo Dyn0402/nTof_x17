@@ -75,9 +75,10 @@ python3 ~/PycharmProjects/dylan-cern-site/scripts/add-note.py \
 
 ## The full analysis: reconstruction, bias, resolution (2026-10-21)
 
-**The headline is the short term** (Round 6 in `ANALYSIS_PLAN.md`): `early.py` (after `gain_ref.py` and
-`inject_analysis.py`), `early.py --examples <local flash file>`, then `make_early_deck.py` builds the published note
-(`make_reco_deck.py` only supplies its appendix slides).
+**The headline is a MIP in the short term, quoted only where real pulses show a linear response** (Round 7 in
+`ANALYSIS_PLAN.md`): `early.py` (after `gain_ref.py` and `inject_analysis.py`), `linearity.py`, `mip_eff.py`,
+`early.py --examples <local flash file>`, then `make_early_deck.py` builds the published note (`make_reco_deck.py`
+only supplies its appendix slides).
 
 ### Full recovery (now the appendix)
 
@@ -98,6 +99,8 @@ PYTHONPATH=. .venv/bin/python -m ntof_scint_recovery.gain_ref
 PYTHONPATH=. .venv/bin/python -m ntof_scint_recovery.headline        # headline.csv, performance.csv, report.html
 PYTHONPATH=. .venv/bin/python -m ntof_scint_recovery.early
 PYTHONPATH=. .venv/bin/python -m ntof_scint_recovery.early --examples /media/dylan/data/x17/scint_stack/recovery/raw/flash_224712_0019.root
+PYTHONPATH=. .venv/bin/python -m ntof_scint_recovery.linearity      # real-pulse linearity (needs pulsehist_v3)
+PYTHONPATH=. .venv/bin/python -m ntof_scint_recovery.mip_eff        # MIP efficiency / resolution (needs early, linearity)
 PYTHONPATH=. .venv/bin/python -m ntof_scint_recovery.make_early_deck
 python3 ~/PycharmProjects/dylan-cern-site/scripts/add-note.py \
     /media/dylan/data/x17/scint_stack/recovery/deck/scint-flash-reconstruction.html --slug scint-flash-reconstruction --force --deploy

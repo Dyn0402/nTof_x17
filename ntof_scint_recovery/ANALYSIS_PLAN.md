@@ -9,13 +9,55 @@ The question, from a collaborator: **how long do the scintillators take to recov
 | 2. pulses | pulses are found again with their normal shape | prototype `pulses.py`; histograms for every run running on condor |
 | 3. amplitude | a found pulse has its full amplitude (no gain sag) | first look below; the core of the full analysis |
 | 4. variation | layers 1–3 per channel, per bar end, and along the bar | handles demonstrated below |
-| **6. short term (THE headline)** | earliest reliable reconstruction, corrections, residual energy / time / efficiency in the first µs | **done**: Round 6 below |
+| **7. MIP view + real-pulse linearity (THE headline)** | is the response still linear after the flash (real pulses only); MIP efficiency, energy and time from the measured MIP spectrum | **done**: Round 7 below |
+| 6. short term | earliest reliable reconstruction, corrections, residual energy / time / efficiency in the first µs | done, now appendix A: Round 6 below |
 | 5. full recovery (appendix) | a pulse is found and within 10 % of its true amplitude (≥ 90 %), gain back within 5 %; bias and resolution in mV, MeV and ns vs time | **done**: Round 5 below, <https://dylan-neff.web.cern.ch/notes/scint-flash-reconstruction.html> |
 
 **Rules that hold throughout**
 - Always split by beam intensity: parasitic (~4×10¹² ppp) and dedicated (~8.5×10¹²).
 - Never pool across configuration epochs (below).
 - Count only live channels: some runs had whole families unpowered.
+
+## Round 7 (2026-10-21 evening): REAL-PULSE LINEARITY AND THE MIP VIEW — supersedes the Round-6 headline
+
+Dylan (2026-10-21): the injection assumes linear superposition, so it is a best case: the real worry is whether the
+electronics are still linear after the flash. And the per-size series were unclear: fold with a MIP spectrum instead.
+Same note URL (`make_early_deck.py`). Numbers: `out_dir('linearity')` (`linearity.py`), `out_dir('early')/mip_*.csv`
+(`mip_eff.py`).
+
+**What rests on the injection**: efficiency per size, reconstruction response, pile-up spread, timing (plastics,
+liquids). **Real pulses only**: gain (spectrum scale), linearity (spectrum shape, wall bar ends), MIP spectrum.
+
+**Linearity on real pulses** (`linearity.py`, pulsehist_v3 `HF`, isolated template-fit amplitudes): fit each
+channel's spectrum as a scaled copy of a reference (cut applied consistently), keep the q50..q99 mismatch.
+- *ded vs par at the same time* (same particles, 2x flash): plastics a scaled copy within 1-8 % from **0.4 µs**
+  (scale 0.3-0.7: the dedicated gain is lower); walls 30-45 % off until 2.2 µs, within 2-5 % from **2.5 µs**;
+  liquids 10-20 % at every time to 60 µs (not a flash effect; linearity not established).
+- *vs own 20-60 µs*: valid only once the mix is capture-gamma (~2.5 µs); plastics within 10 % from 3 µs (ded).
+- *wall bar ends* at fixed position: amplitude ratio within 1 % and dt shift < 0.2 ns from 2.5 µs; dt68 3.3 / 2.8 /
+  2.5 ns at 3 / 5 µs / late; 3.5-11 ns before. The only real-pulse timing test.
+- Not excluded: a non-linearity equal at both intensities, or one a mix change cancels.
+
+**Gain before 2 µs** (new): bounded. Dedicated <= ded/par scale (parasitic gain <= 1), >= max(q99_ded, scale x
+q99_par): 0.20-0.32 at 0.5-0.8 µs, 0.21-0.64 at 0.8-1.6 µs. Walls: spectrum scale 1.05-1.18 vs 20-60 µs, but ded/par
+is ~1.1 to 60 µs too, so not taken as a gain (1 +- spread).
+
+**MIP spectrum**: cosmic window 30-32 ms. Plastics: wall-plastic coincidences have a 15-33 % low shoulder (tracks
+clipping the bar); the through-going peak is fitted (Landau x Gauss), median 216 mV (138-297 per bar). NB the
+MeVee scale anchors 3.45 MeVee to the median of ALL coincidences, ~15 % below the through-going median. Walls: per
+end from the bar-end coincidences, median 35 mV (26-41; the muon calibration's 28.5 mV is lower).
+
+**MIP results (dedicated; parasitic)** = MIP spectrum x gain x injected efficiency per size:
+- plastic: seen >= 90 % from **0.8 µs** (0.4), 98-99 % from 2 µs; within +-50 % 92 % (96 %); MIP pulse ~55 mV at
+  0.5-0.7 µs, ~70 mV at 2-3 µs; sigma(E)/E 20 % at 2-5 µs (pile-up 11-13 %, gain 15-17 %), 13 % (7 %) from 10 µs,
+  ~45-55 % before 2 µs (gain range); sigma(t) 0.4-0.5 ns at 2-5 µs.
+- wall end: seen >= 90 % from **4.0 µs** (3.2), 90-95 %; within +-50 % 64-77 % (80-87 %); sigma(E)/E 37-60 %
+  (13-26 %), sigma(t) 2.3-5 ns (0.9-2.3) from 4.5 µs.
+- liquids: no MIP reference; injection-only numbers in the appendix.
+
+**Bug fixed** (`early.py`): the gain uncertainty was added to sigma(E)/E in absolute gain units; it is now divided by
+the gain. At gain 0.33 that triples it: plastic ~1 MIP sigma(E)/E at 2-3 µs is 16-20 %, not 6-7 % (Round 6 numbers
+below are superseded on that point).
 
 ## Round 6 (2026-10-21 afternoon): THE HEADLINE IS THE SHORT TERM — earliest reliable reconstruction, corrections, residual uncertainties
 
