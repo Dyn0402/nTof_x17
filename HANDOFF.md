@@ -1,5 +1,34 @@
 # Handoff
 
+## July two-source calibration (srccal): run 224591 stale — updated 2026-10-21 (dylan-MS-7C84)
+
+**Resume:** Deferred. Run 224591 changed on EOS after the July caches were made; re-run srccal + srccalfit with the tracking pass.
+
+**Goal:** the July plastic-bar energy scale (Y-88 + Cs-137, `mx_july_beam_qa/SRCCAL_RESULTS_2026-07-28.md`).
+
+**Done:**
+- Tested all condor wrappers on the lock venv against their LCG_105 outputs (srccal 9 jobs, srccalfit, readpass run224401, run58). They match except the run 224591 count below. Wrappers switched (`2bb0b20`, `282fdd8`, `e4b8428`).
+- Found: run 224591's raw file on EOS was rewritten 2026-08-07. Trigger count 544 today, 621 in the July caches and `srccal_runs.py`. The venv and LCG_105 agree on 544. The BL and DL edge rates are about 14 % off for that run.
+- Recorded on the X17 board (open question, log entry, deferred re-run) and at the top of `SRCCAL_RESULTS_2026-07-28.md`.
+
+**In progress / where it stopped:**
+- Nothing running. The re-run is not started. The current caches for the new count are in `~/x17lockvenv_test/srccal/new/cache` on lxplus (outputs of the venv srccal jobs, cluster 4526323).
+
+**Next steps:**
+1. In the coming-months tracking pass: re-run srccal (`mx_july_beam_qa/lxplus/srccal.sub`) for the nine runs, then srccalfit, on the current EOS files.
+2. Update the hand-typed 621 in the `srccal_runs.py` table (the code reads the count from the file, so the table is documentation only) and the results markdown.
+3. Confirm whether 224591 feeds the energy calibration, or only the per-bar rates.
+
+**Gotchas / decisions:**
+- Run 224461 is gone from EOS; the July readpass caches are the only copy of its output.
+- The reference srccalfit output uses the July caches; the venv run matched it exactly on those caches, so the mismatch is only the input.
+- Dylan decided to defer the re-run; do not re-run until he asks.
+
+**Key files & commands:**
+- `mx_july_beam_qa/lxplus/srccal.sub`, `srccalfit.sub` — condor submit (run on lxplus in `~/x17qa`)
+- `mx_july_beam_qa/srccal_runs.py` — run table (224591 row flagged)
+- `mx_july_beam_qa/SRCCAL_RESULTS_2026-07-28.md` — results, with the open warning at the top
+
 ## Scintillator flash recovery: reworked around the first µs — 2026-10-21 afternoon (dylan-MS-7C84)
 
 **Resume:** done; note republished at the same URL. Dylan: the headline is the **earliest reliable reconstruction**
