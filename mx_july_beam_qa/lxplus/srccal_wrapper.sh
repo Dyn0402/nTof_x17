@@ -14,7 +14,9 @@
 set -eo pipefail
 RUN=$1
 echo "START $(date '+%F %T') host $(hostname) run $RUN scratch=$_CONDOR_SCRATCH_DIR"
-source /cvmfs/sft.cern.ch/lcg/views/LCG_105/x86_64-el9-gcc13-opt/setup.sh
+# Lock venv (2026-10-21), not the LCG_105 view: same numpy/scipy/matplotlib pins as the desktop.
+unset PYTHONPATH
+source /eos/user/d/dneff/venvs/ntof-lock-cvmfs/bin/activate
 python3 -c "import numpy,uproot;print('numpy',numpy.__version__,'uproot',uproot.__version__)"
 
 LOCAL=$_CONDOR_SCRATCH_DIR/run${RUN}.root
