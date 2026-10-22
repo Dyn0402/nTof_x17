@@ -1,5 +1,29 @@
 # Handoff
 
+## X asymmetry contingency plan — updated 2026-10-22 (dylan-Yoga)
+
+**Resume:** Decision gate 2026-10-23: one more day on the X asymmetry mechanism; if unsolved, execute XASYM_CONTINGENCY.md.
+
+**Goal:** a fallback for detector characterization, n_TOF and the papers if the X neighbour asymmetry stays unexplained.
+
+**Done:**
+- Sized the effect from existing results: production X carries K = −0.77 × the raw centroid map, i.e. ≤ 44 µm (det3)
+  / 116 µm (det2) per 50 mm cell after the board mean; X resolution unchanged ≤ 5 µm after correction + re-alignment.
+- Plan written: `sps_beam_test_26/analysis/cloud_basics/XASYM_CONTINGENCY.md`; slide note
+  <https://dylan-neff.web.cern.ch/notes/mx17-xasym-plan.html> (`make_xasym_plan_deck.py`, reads `wft/xasym_maps.json`).
+- Decision (if unsolved): freeze r06 symmetric kernel (lifts the kernel-freeze hold in the "Detector model basics"
+  section), `wft.xasym` as a ± systematic not nominal, write the asymmetry up as a measured property in paper 1.
+
+**Next steps:**
+1. 2026-10-23: last day on the mechanism (ledger: MX17_Geant `scratchpad/2026-10-19/asym_deck/FINDINGS.md`).
+2. If unsolved: the toy injection (aQ ≈ 0.165, ~110 ns one-sided ±1 into the paper-2 physics-floor toy, symmetric
+   reco) → the angle cost for paper 2. Then freeze r06 (paper 1 C2), σ0_x 0.25, n_TOF systematics per the plan.
+3. Update the plan/deck if the mechanism day changes any number; rerun the deck generator and republish (`--force`).
+
+**Gotchas / decisions:**
+- Chamber map A = det3 June-15 (mx17_3), B = det2, C = det6, D = det7. C has no correction (det6 map too sparse).
+- Angle cost is not measured yet; "a few hundredths of a degree" is an expectation from §38 only.
+
 ## July two-source calibration (srccal): run 224591 stale — updated 2026-10-21 (dylan-MS-7C84)
 
 **Resume:** Deferred. Run 224591 changed on EOS after the July caches were made; re-run srccal + srccalfit with the tracking pass.
