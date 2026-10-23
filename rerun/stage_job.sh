@@ -7,7 +7,7 @@ export RERUN_CODE_COMMIT=$(basename $CODE | sed 's/^code_//')
 export WFT_RND_DIR=/eos/user/d/dneff/x17rerun/regression/wft_model_sat_det3
 export MPLBACKEND=Agg
 W=${_CONDOR_SCRATCH_DIR:-/tmp/$USER/stage_$$}; mkdir -p $W
-env -u PYTHONPATH -u PYTHONHOME /eos/user/d/dneff/venvs/ntof-lock-cvmfs/bin/python $CODE/rerun/stage_job.py "$@" --work $W
+env -u PYTHONPATH -u PYTHONHOME /eos/user/d/dneff/venvs/ntof-lock-cvmfs/bin/python $CODE/rerun/stage_job.py --work $W "$@"
 rc=$?
 # condor copies whatever is left in the scratch dir back to AFS: leave nothing large behind
 rm -rf $W/bench $W/Analysis

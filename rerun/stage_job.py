@@ -35,14 +35,29 @@ sys.path[:0] = [REPO, HERE]
 import inputs  # noqa: E402
 
 
-def sync(src, dst):
-    """Copy files under src to dst when missing or different; returns the number copied."""
+def snapshot(top):
+    """{relative path: (size, mtime_ns)} of every file under top."""
+    out = {}
+    for root, _, files in os.walk(top):
+        for f in files:
+            p = os.path.join(root, f)
+            st = os.stat(p)
+            out[os.path.relpath(p, top)] = (st.st_size, st.st_mtime_ns)
+    return out
+
+
+def sync(src, dst, only=None):
+    """Copy files under src to dst when missing or different; returns the number copied.  only: restrict to these
+    relative paths (the push sends only what the stage wrote, so parallel stages of one row never overwrite each
+    other's outputs with the stale copies they pulled)."""
     n = 0
     if not os.path.isdir(src):
         return 0
     for root, _, files in os.walk(src):
         for f in files:
             s = os.path.join(root, f)
+            if only is not None and os.path.relpath(s, src) not in only:
+                continue
             d = os.path.join(dst, os.path.relpath(s, src))
             if os.path.exists(d) and os.path.getsize(d) == os.path.getsize(s) and filecmp.cmp(s, d, shallow=False):
                 continue
@@ -91,6 +106,7 @@ def main():
     rel = os.path.join(row['run'], row['subrun'], row['det'])
     n_in = sync(os.path.join(a.eos_analysis, rel), os.path.join(ana, rel))
     print(f'[stage] pulled {n_in} Analysis files for {rel}', flush=True)
+    before = snapshot(os.path.join(ana, rel))
 
     sys.path[:0] = [os.path.join(REPO, 'mx_june_cosmic_qa'), os.path.join(REPO, 'cosmic_bench_analysis')]
     import qa_config
@@ -130,13 +146,19 @@ def main():
         if isinstance(e.code, str):
             print(e.code, file=sys.stderr)
     dt = time.time() - t1
-    os.makedirs(os.path.join(ana, rel), exist_ok=True)
-    with open(os.path.join(ana, rel, 'STAGES.log'), 'a') as f:
-        f.write(json.dumps(dict(when=datetime.datetime.now().isoformat(timespec='seconds'), stage=what, args=rest,
-                                rc=rc, seconds=round(dt), code=commit, generation=a.gen,
-                                inputs=os.path.join(row['eos_run_dir'], row['subrun']))) + '\n')
+    # one record per stage run (a shared appended log loses lines when stages of one row run in parallel)
+    now = datetime.datetime.now()
+    logd = os.path.join(ana, rel, 'STAGES')
+    os.makedirs(logd, exist_ok=True)
+    tag = f"{now:%Y%m%dT%H%M%S}_{os.getpid()}_{os.path.basename(what).replace('.py', '')}"
+    after = snapshot(os.path.join(ana, rel))
+    written = sorted(k for k, v in after.items() if before.get(k) != v)
+    json.dump(dict(when=now.isoformat(timespec='seconds'), stage=what, args=rest, rc=rc, seconds=round(dt),
+                   code=commit, generation=a.gen, inputs=os.path.join(row['eos_run_dir'], row['subrun']),
+                   wrote=written), open(os.path.join(logd, tag + '.json'), 'w'), indent=1)
     if not a.no_sync:
-        n_out = sync(os.path.join(ana, rel), os.path.join(a.eos_analysis, rel))
+        changed = {k for k, v in snapshot(os.path.join(ana, rel)).items() if before.get(k) != v}
+        n_out = sync(os.path.join(ana, rel), os.path.join(a.eos_analysis, rel), only=changed)
         print(f'[stage] pushed {n_out} Analysis files to {os.path.join(a.eos_analysis, rel)}', flush=True)
     print(f'[stage] {what} rc={rc} in {dt:.0f} s', flush=True)
     sys.exit(rc)
