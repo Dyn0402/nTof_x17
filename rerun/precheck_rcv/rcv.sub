@@ -1,0 +1,19 @@
+universe                = vanilla
+executable              = run_rcv.sh
+arguments               = $(det) $(cache) $(tag) $(free)
+should_transfer_files   = YES
+when_to_transfer_output = ON_EXIT
+transfer_input_files    = payload.tar.gz, seed_$(det).json
+transfer_output_files   = arm_$(det)_$(tag).json
+transfer_output_remaps  = "arm_$(det)_$(tag).json = out/arm_$(det)_$(tag).json"
+output                  = log/$(det)_$(tag).out
+error                   = log/$(det)_$(tag).err
+log                     = log/rcv.log
+request_cpus            = 8
+request_memory          = 8GB
+request_disk            = 4GB
+environment             = "OMP_NUM_THREADS=8"
++JobFlavour             = "tomorrow"
+max_retries             = 2
+requirements            = (OpSysAndVer =?= "AlmaLinux9")
+queue det, cache, tag, free from jobs.txt

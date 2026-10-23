@@ -10,7 +10,7 @@ PY=/eos/user/d/dneff/venvs/ntof-lock-cvmfs/bin/python
 W=${_CONDOR_SCRATCH_DIR:-/tmp/$USER}/w; mkdir -p $W; cd $W
 for F in ${FEUS//./ }; do
   F2=$(printf %02d $F)
-  fdf=$(ls $RUN/$SUB/raw_daq_data/*_000_${F2}.fdf 2>/dev/null | head -1)
+  fdf=$(ls $RUN/$SUB/raw_daq_data/*_000_${F2}.fdf 2>/dev/null | grep -v pedestal | head -1)
   if [ -z "$fdf" ]; then echo "{\"error\":\"no fdf for FEU $F2\"}" > $OUT/${TAG}_f${F2}.json; continue; fi
   base=$(basename $fdf .fdf)
   old=$RUN/$SUB/decoded_root/$base.root

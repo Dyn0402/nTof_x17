@@ -1,0 +1,4 @@
+det4 calib_cache rcvk24 --depth-bins=24 sigma_p0_x,sigma_p0_y,rc_D_y,v
+det6 big_cache rcvk24 --depth-bins=24 sigma_p0_x,sigma_p0_y,rc_D_y,v
+det7 big_cache rcvk24 --depth-bins=24 sigma_p0_x,sigma_p0_y,rc_D_y,v
+det3 calib_cache rcvk24 --depth-bins=24 sigma_p0_x,sigma_p0_y,rc_D_y,v

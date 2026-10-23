@@ -1,0 +1,6 @@
+det2 big_cache rcv25 - 26,29,32,35,38,41,44,47
+det3 calib_cache rcv25 24 26,29,32,35,38,41,44,47
+det6 big_cache rcv25 - 17,20,23,26,29,32,35,38,41
+det6 big_cache rcv25 24 17,20,23,26,29,32,35,38,41
+det7 big_cache rcv25 - 26,29,32,35,38,41,44,47
+det7 big_cache rcv25 24 26,29,32,35,38,41,44,47
