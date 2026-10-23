@@ -25,6 +25,44 @@ import numpy as np
 N_PED_EVENTS = 300
 CNS_BLOCK = 64
 CHUNK = 400
+#: Signal-masked common mode (opt-in, 2026-10-23; rerun/CHECKS_2026-10-23.md C9).  The plain per-sample block median
+#: moves with the signal when a track fills a large part of a 64-channel block (bench clusters are ~17 strips wide at
+#: operating HV): on det7 the baseline error it puts on every strip of the block is 2.5-4 ADC at the pulse peak
+#: (median), 15-51 ADC at p90 and up to ~100 ADC elsewhere in the window -- 10-25 % of a neighbour's tail.  With
+#: CM_MASK = M > 0 the median is computed twice: once plain, then again without every channel that sits within M of
+#: a contiguous cluster (>= 2 adjacent channels above 5 sigma in 2 consecutive samples).  A block left with fewer than
+#: CM_MIN_KEEP channels keeps its plain median.  0 (default) = the plain median, bit-identical.
+CM_MASK = int(os.environ.get('WFT_CM_MASK', 0))
+CM_MIN_KEEP = 16
+CM_SIGMA = 5.0
+
+
+def masked_block_median(wfm: np.ndarray, noise: np.ndarray, mask_half: int = None) -> np.ndarray:
+    """(n_sample, 512) pedestal-subtracted window -> the same with the signal-masked block common mode removed."""
+    mask_half = CM_MASK if mask_half is None else mask_half
+    ns = wfm.shape[0]
+    nblk = 512 // CNS_BLOCK
+    blk = wfm.reshape(ns, nblk, CNS_BLOCK)
+    cms = np.median(blk, axis=2)
+    if mask_half <= 0:
+        return wfm - np.repeat(cms, CNS_BLOCK, axis=1)
+    wu = wfm - np.repeat(cms, CNS_BLOCK, axis=1)
+    above = wu > CM_SIGMA * np.maximum(noise, 1.0)[None, :]
+    persist = (above[1:] & above[:-1]).any(0)
+    sig = np.zeros(512, bool)
+    idx = np.flatnonzero(persist)
+    if len(idx) >= 2:
+        for g in np.split(idx, np.flatnonzero(np.diff(idx) > 1) + 1):
+            if len(g) >= 2:
+                sig[max(0, g[0] - mask_half):g[-1] + mask_half + 1] = True
+    if not sig.any():
+        return wu
+    keep = ~sig.reshape(nblk, CNS_BLOCK)
+    for b in range(nblk):
+        if keep[b].all() or keep[b].sum() < CM_MIN_KEEP:
+            continue
+        cms[:, b] = np.median(blk[:, b, keep[b]], axis=1)
+    return wfm - np.repeat(cms, CNS_BLOCK, axis=1)
 
 
 @dataclass
@@ -91,8 +129,11 @@ class FeuReader:
                 # mixes 32- and 37-sample events, so taking it from the pedestal
                 # events crashes the common-mode reshape partway through a file
                 ns = wfm.shape[0]
-                cms = np.median(wfm.reshape(ns, nblk, CNS_BLOCK), axis=2)
-                wfm -= np.repeat(cms, CNS_BLOCK, axis=1)
+                if CM_MASK > 0:
+                    wfm = masked_block_median(wfm, self.noise)
+                else:
+                    cms = np.median(wfm.reshape(ns, nblk, CNS_BLOCK), axis=2)
+                    wfm -= np.repeat(cms, CNS_BLOCK, axis=1)
                 yield int(arr['eventId'][j]), int(arr['ftst'][j]), wfm.T
 
 
