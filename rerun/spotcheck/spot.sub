@@ -1,0 +1,10 @@
+executable   = job.sh
+arguments    = $(run) $(sub) $(feus) $(tag)
+output       = log/$(tag).out
+error        = log/$(tag).err
+log          = log/spot.log
+request_cpus = 1
+request_memory = 4000
++JobFlavour  = "longlunch"
+should_transfer_files = NO
+queue run,sub,feus,tag from jobs.txt

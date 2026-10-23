@@ -34,17 +34,20 @@ BASE = ('c1', 'kY', 'tau_s', 'sigma_s', 'sigma_p0', 'Dp')
 STEP = dict(c1=0.03, kY=0.30, tau_s=20.0, sigma_s=10.0, sigma_p0=0.05, Dp=0.003,
             c2_over_c1=0.1, c2_over_c1_x=0.1, c2_over_c1_y=0.1, cX=0.3,
             c1_asym_x=0.2, sigma_p0_x=0.05, sigma_p0_y=0.05, tau_y_fac=0.3,
-            rc_D_y=1e-4, rc_D_x=1e-4)
+            rc_D_y=1e-4, rc_D_x=1e-4, v=1.0)
 # sigma_p0 floor 0.03 (19_ratio_recal used 0.10, but det6's production
 # bundle sits at 0.039 -- a seed outside the box rejects every step)
 LO = dict(c1=0.05, kY=0.3, tau_s=30.0, sigma_s=1.0, sigma_p0=0.03, Dp=0.001,
           c2_over_c1=0.0, c2_over_c1_x=0.0, c2_over_c1_y=0.0, cX=0.3,
           c1_asym_x=-0.95, sigma_p0_x=0.03, sigma_p0_y=0.03, tau_y_fac=0.3,
-          rc_D_y=0.0, rc_D_x=0.0)
+          rc_D_y=0.0, rc_D_x=0.0, v=10.0)
 HI = dict(c1=0.60, kY=6.0, tau_s=400.0, sigma_s=400.0, sigma_p0=1.50, Dp=0.100,
           c2_over_c1=0.95, c2_over_c1_x=0.95, c2_over_c1_y=0.95, cX=6.0,
           c1_asym_x=0.95, sigma_p0_x=1.50, sigma_p0_y=1.50, tau_y_fac=4.0,
-          rc_D_y=0.005, rc_D_x=0.005)
+          rc_D_y=0.005, rc_D_x=0.005, v=80.0)
+# ``v`` (um/ns) may be listed in --free: the drift velocity is then fitted with the kernel instead of held at the
+# seed bundle's value (a bundle calibrated under another kernel carries that kernel's v).  The ref-pinned
+# objective constrains it through the line's transverse speed w = tan_ref * v.
 # rc_D_y: the physical RC-diffusion kernel (wft.model.build_matrix_rc,
 # cloud_basics/FINDINGS.md).  Its arms are run with --seed-json <rc arm> and
 # --free, e.g. --free sigma_p0_x,sigma_p0_y,rc_D_y (Dp pinned from the seed).
@@ -203,6 +206,8 @@ def main():
         train = sorted(pickle.load(f).keys())[:a.n_train]
 
     start = dict(base)
+    if 'v' in free:
+        start['v'] = v
     start.pop('c2_over_c1', None)
     start.update(fixed)
     start.update(seed_over)
@@ -239,16 +244,18 @@ def main():
                              initargs=(a.cache, a.bundle, a.depth_bins, a.t0_lo,
                                        a.t0_hi, a.p0_profile)) as pool:
         def chi(h):
+            h = dict(h)
+            vv = h.pop('v', v)
             if a.objective == 'warm':
                 c = 0.0
                 for eid, tot, t0s in pool.map(
-                        wc._event_chi2, [(e, h, v, warm[e]) for e in train],
+                        wc._event_chi2, [(e, h, vv, warm[e]) for e in train],
                         chunksize=4):
                     c += tot
                     warm[eid] = t0s
                 return c
             return sum(t for _e, t in pool.map(
-                _event_chi2_cold, [(e, h, v) for e in train], chunksize=4))
+                _event_chi2_cold, [(e, h, vv) for e in train], chunksize=4))
 
         t0 = time.time()
         c0 = chi(expand(x0))
@@ -274,6 +281,7 @@ def main():
                        options=dict(initial_simplex=simplex, xatol=1e-3,
                                     fatol=c0 * 1e-5, maxiter=a.maxiter))
     h = expand(res.x)
+    v = h.pop('v', v)
     out = dict(arm=a.arm, objective=a.objective, p0_profile=a.p0_profile,
                model_frac=a.model_frac,
                depth_bins=a.depth_bins, hyper=h, v=v, chi2=float(res.fun), chi2_seed=float(c0),
@@ -285,7 +293,7 @@ def main():
     print(f'[recal {a.arm}] chi2 {c0:.6e} -> {res.fun:.6e} '
           f'({100 * (res.fun / c0 - 1):+.2f} %) after {n[0]} evals, '
           f'converged={res.success}')
-    print('  ' + ' '.join(f'{k}={h[k]:.4g}' for k in free))
+    print('  ' + ' '.join(f'{k}={(v if k == "v" else h[k]):.4g}' for k in free))
 
 
 if __name__ == '__main__':
