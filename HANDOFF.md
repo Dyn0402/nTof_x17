@@ -4,8 +4,8 @@
 
 **Resume:** Dylan answered the plan's four decisions (RERUN_PLAN §8). Done tonight: decoder audit + full June re-decode
 (C11), common-mode investigation (C10), hits regenerated (C12), M3 chain re-audited and hits CM decided on data (C13:
-production M3 rays stand; hits = plain CM `rr1_cm0`; wft masked CM has a spark guard). Next: W10 path layer → W11 gate
-→ W1/W12 calibration with the reference from the waveforms.
+production M3 rays stand; hits = plain CM `rr1_cm0`; wft masked CM has a spark guard). W10 path layer DONE (C14, rerun/RUNBOOK.md: any
+stage, any row, on condor, from EOS). Next: W11 gate → W1/W12 calibration with the reference from the waveforms.
 
 **Decided 10-23 evening (§8):** re-decode every June row (+ audit decoder and M3) — done; redo the calibration fully
 with the reference position from the waveforms (W1/W12); work the CM correction into the analysis; quote from the
@@ -26,8 +26,9 @@ an error bar); det6 fully analysed, quoting decided at writing.
 
 **Next steps:**
 1. DONE (C12/C13): hits = `rr1_cm0`; M3 production rays stand (judge: `rerun/m3_audit/judge.py`, reusable for any
-   reference or hits variant). `rr1_cm5` dirs on EOS are reference-only (could be deleted to save space — ask).
-2. W10 path layer (qa_config → EOS, `decoded_root_fa80c06`, `combined_hits_root_rr1_*`).
+   reference or hits variant). `rr1_cm5` deleted 10-23.
+2. W10 DONE: `rerun/inputs.py` + `rerun/stage_job.py` + `rerun/RUNBOOK.md`; code on lxplus is a git archive at
+   `~/x17rerun/code_<commit>`; dry-run outputs in `/eos/user/d/dneff/x17rerun/Analysis_dryrun/`.
 3. W11 gate: rebuild golden calibration caches with `WFT_CM_MASK=5` on the new decodes.
 4. W1/W12: calibrate with p0 profiled, align on waveforms, rebuild ref_mesh, iterate until v stable.
 5. W8 registry: exclude det3 6-27's 01H29 false start (on EOS; new products in `_false_start_01H29/`).
