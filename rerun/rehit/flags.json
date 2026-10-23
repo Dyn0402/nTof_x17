@@ -1,0 +1,702 @@
+{
+ "mx17_det1_det2_overnight_6-17-26/longer_run": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det1_det2_overnight_6-17-26/quick_run": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det1_det2_overnight_6-17-26/resist_450V_drift_1000V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det1_det2_overnight_6-17-26/resist_460V_drift_1000V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det1_det2_overnight_6-17-26/resist_470V_drift_1000V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det1_det2_overnight_6-17-26/resist_480V_drift_1000V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det1_det2_overnight_6-17-26/resist_490V_drift_1000V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det1_det2_overnight_6-17-26/resist_500V_drift_1000V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det1_det2_overnight_6-17-26/resist_510V_drift_1000V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det1_det2_overnight_6-17-26/resist_520V_drift_1000V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det2_det3_overnight_6-22-26/long_run": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det2_det3_overnight_6-22-26/longer_run": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det2_det3_overnight_6-22-26/resist_450V_drift_1000V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det2_det3_overnight_6-22-26/resist_455V_drift_1000V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det2_det3_overnight_6-22-26/resist_460V_drift_1000V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det2_det3_overnight_6-22-26/resist_465V_drift_1000V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det2_det3_overnight_6-22-26/resist_470V_drift_1000V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det2_det3_overnight_6-22-26/resist_475V_drift_1000V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det2_det3_overnight_6-22-26/resist_480V_drift_1000V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det2_det3_overnight_6-22-26/resist_485V_drift_1000V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det2_det3_overnight_6-22-26/resist_490V_drift_1000V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det2_det3_overnight_6-22-26/resist_495V_drift_1000V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det2_det3_overnight_6-22-26/resist_500V_drift_1000V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det2_det3_overnight_6-22-26/resist_505V_drift_1000V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det2_det3_overnight_6-22-26/resist_510V_drift_1000V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det2_det3_overnight_6-22-26/resist_515V_drift_1000V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det2_det3_overnight_6-22-26/resist_520V_drift_1000V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det2_det3_overnight_6-22-26/resist_525V_drift_1000V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det2_det3_overnight_6-22-26/short_run": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det3_day_6-25-26/long_run": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det3_p2_det1_overnight_6-27-26/long_run_p2_det1_sanity_check": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det3_quick_6-26-26/resist_530V_drift_1200V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det3_saturday_scan_6-27-26/drift_scan_resist_490V_drift_100V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det3_saturday_scan_6-27-26/drift_scan_resist_490V_drift_1100V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det3_saturday_scan_6-27-26/drift_scan_resist_490V_drift_300V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det3_saturday_scan_6-27-26/drift_scan_resist_490V_drift_500V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det3_saturday_scan_6-27-26/drift_scan_resist_490V_drift_700V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det3_saturday_scan_6-27-26/drift_scan_resist_490V_drift_900V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det3_saturday_scan_6-27-26/hv_scan2_resist_460V_drift_1000V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det3_saturday_scan_6-27-26/hv_scan2_resist_470V_drift_1000V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det3_saturday_scan_6-27-26/hv_scan2_resist_480V_drift_1000V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det3_saturday_scan_6-27-26/hv_scan2_resist_490V_drift_1000V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det3_saturday_scan_6-27-26/hv_scan2_resist_500V_drift_1000V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det3_saturday_scan_6-27-26/hv_scan2_resist_510V_drift_1000V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det3_saturday_scan_6-27-26/hv_scan2_resist_520V_drift_1000V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det3_saturday_scan_6-27-26/hv_scan_resist_425V_drift_1000V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det3_saturday_scan_6-27-26/hv_scan_resist_435V_drift_1000V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det3_saturday_scan_6-27-26/hv_scan_resist_445V_drift_1000V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det3_saturday_scan_6-27-26/hv_scan_resist_455V_drift_1000V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det3_saturday_scan_6-27-26/hv_scan_resist_465V_drift_1000V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det3_saturday_scan_6-27-26/hv_scan_resist_475V_drift_1000V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det3_saturday_scan_6-27-26/hv_scan_resist_485V_drift_1000V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det3_saturday_scan_6-27-26/hv_scan_resist_495V_drift_1000V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det3_saturday_scan_6-27-26/hv_scan_resist_505V_drift_1000V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det3_saturday_scan_6-27-26/hv_scan_resist_515V_drift_1000V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det3_saturday_scan_6-27-26/hv_scan_resist_525V_drift_1000V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det3_saturday_scan_6-27-26/long_run_resist_490V_drift_1000V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det3_det4_overnight_6-23-26/long_run": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det3_det4_overnight_6-23-26/longer_run": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det3_det4_overnight_6-23-26/resist_465V_drift_600V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det3_det4_overnight_6-23-26/resist_470V_drift_600V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det3_det4_overnight_6-23-26/resist_475V_drift_600V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det3_det4_overnight_6-23-26/resist_480V_drift_600V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det3_det4_overnight_6-23-26/resist_485V_drift_600V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det3_det4_overnight_6-23-26/resist_490V_drift_600V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det3_det4_overnight_6-23-26/resist_495V_drift_600V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det3_det4_overnight_6-23-26/resist_500V_drift_600V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det3_det4_overnight_6-23-26/resist_505V_drift_600V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det3_det4_overnight_6-23-26/resist_510V_drift_600V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det3_det4_overnight_6-23-26/resist_515V_drift_600V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det3_det4_overnight_6-23-26/resist_520V_drift_600V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det3_det4_overnight_6-23-26/resist_525V_drift_600V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det3_det4_overnight_6-23-26/short_run": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det4_day_6-24-26/long_run": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det6_det7_hv_scan_6-26-26/resist_det6_400V_det7_400V_drift_700V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det6_det7_hv_scan_6-26-26/resist_det6_405V_det7_405V_drift_700V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det6_det7_hv_scan_6-26-26/resist_det6_410V_det7_410V_drift_700V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det6_det7_hv_scan_6-26-26/resist_det6_415V_det7_415V_drift_700V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det6_det7_hv_scan_6-26-26/resist_det6_420V_det7_420V_drift_700V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det6_det7_hv_scan_6-26-26/resist_det6_425V_det7_425V_drift_700V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det6_det7_hv_scan_6-26-26/resist_det6_430V_det7_430V_drift_700V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det6_det7_hv_scan_6-26-26/resist_det6_435V_det7_435V_drift_700V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det6_det7_hv_scan_6-26-26/resist_det6_440V_det7_440V_drift_700V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det6_det7_hv_scan_6-26-26/resist_det6_445V_det7_445V_drift_700V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det6_det7_hv_scan_6-26-26/resist_det6_450V_det7_450V_drift_700V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det6_det7_hv_scan_6-26-26/resist_det6_465V_det7_465V_drift_700V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det6_det7_hv_scan_6-26-26/resist_det6_480V_det7_480V_drift_700V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det6_det7_hv_scan_6-26-26/resist_det6_485V_det7_485V_drift_700V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det6_det7_hv_scan_6-26-26/resist_det6_495V_det7_495V_drift_700V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det6_det7_hv_scan_6-26-26/resist_det6_500V_det7_500V_drift_700V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det6_det7_overnight_6-26-26/long_run": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det6_det7_overnight_6-26-26/longer_run": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det6_det7_overnight_6-26-26/resist_det6_505V_det7_480V_drift_700V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det6_det7_overnight_6-26-26/resist_det6_510V_det7_485V_drift_700V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det6_det7_overnight_6-26-26/resist_det6_515V_det7_490V_drift_700V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det6_det7_overnight_6-26-26/resist_det6_520V_det7_495V_drift_700V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det6_det7_overnight_6-26-26/resist_det6_525V_det7_500V_drift_700V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det6_det7_overnight_6-26-26/resist_det6_530V_det7_505V_drift_700V": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det6_det7_overnight_6-26-26/short_run": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ },
+ "mx17_det3_test_6-22-26/short_run": {
+  "03": "--tps 60 --mf 5",
+  "04": "--tps 60 --mf 5",
+  "06": "--tps 60 --mf 5",
+  "07": "--tps 60 --mf 5",
+  "08": "--tps 60 --mf 5"
+ }
+}

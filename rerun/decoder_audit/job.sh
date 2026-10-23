@@ -8,7 +8,7 @@ SUBDIR=$(dirname $(dirname $FDF)); SUB=$(basename $SUBDIR); RUN=$(basename $(dir
 FB=$(basename $FDF .fdf)
 DOUT=$SUBDIR/decoded_root_fa80c06
 AOUT=/eos/user/d/dneff/x17rerun/decode_audit/$RUN/$SUB
-mkdir -p $DOUT $AOUT
+for k in 1 2 3; do mkdir -p $DOUT $AOUT 2>/dev/null; [ -d $DOUT ] && [ -d $AOUT ] && break; sleep 5; done
 if [ -s $AOUT/$FB.json ] && [ -s $DOUT/$FB.root ]; then echo "done already"; exit 0; fi
 set +u; source /cvmfs/sft.cern.ch/lcg/views/LCG_110/x86_64-el9-gcc14-opt/setup.sh >/dev/null 2>&1; set -u
 DEC=$HOME/x17rerun/mm_strip_reconstruction/build/decoder/decode
@@ -21,4 +21,5 @@ env -u PYTHONPATH -u PYTHONHOME $PY $HOME/x17rerun/decoder_audit/audit_decode.py
 cp $FB.root $DOUT/$FB.root.part && mv $DOUT/$FB.root.part $DOUT/$FB.root
 [ $(stat -c %s $DOUT/$FB.root) -eq $(stat -c %s $FB.root) ] || { echo "copy size mismatch"; rm -rf $W; exit 1; }
 cp dec.log $AOUT/$FB.log; cp a.npz $AOUT/$FB.npz; cp a.json $AOUT/$FB.json
+[ -s $AOUT/$FB.json ] || { echo "output copy failed"; rm -rf $W; exit 1; }
 cd /; rm -rf $W

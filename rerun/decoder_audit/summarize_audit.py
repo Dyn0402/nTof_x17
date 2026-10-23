@@ -22,6 +22,17 @@ import numpy as np
 import uproot
 
 AUD = '/eos/user/d/dneff/x17rerun/decode_audit'
+def retry(fn, *a, n=5):
+    """EOS fuse throws transient EIO under load: retry, then give up with None."""
+    import time
+    for k in range(n):
+        try:
+            return fn(*a)
+        except OSError:
+            time.sleep(2 + 3 * k)
+    return None
+
+
 TAG = re.compile(r'_(\d{6}_\d\dH\d\d_\d{3})_(\d\d)\.fdf$')
 
 
@@ -37,7 +48,10 @@ def main():
         if not os.path.exists(j):
             out['missing_audit'].append(f)
             continue
-        r = json.load(open(j))
+        r = retry(lambda p: json.load(open(p)), j)
+        if r is None:
+            out['missing_audit'].append(f + ' (unreadable)')
+            continue
         ds = r.get('decode_stats') or {}
         rec = dict(identical=r['identical'], n=r['n_indep'], complete=r['complete_events'],
                    missing_in_span=r['eventid_missing_in_span'], closed_eventid=ds.get('closed_eventid'),
@@ -49,14 +63,21 @@ def main():
         if not r['identical']:
             out['not_identical'].append(f)
         m = TAG.search(os.path.basename(f))
-        if m and 'pedestal' not in f:
+        if m and '_datrun_' in os.path.basename(f):
             groups[(run, s, sub, m.group(1))][m.group(2)] = os.path.join(AUD, run, s, b + '.npz')
     for (run, s, sub, tag), feus in sorted(groups.items()):
         E = {}
         for feu, p in feus.items():
             if os.path.exists(p):
-                z = np.load(p)
-                E[feu] = (z['eventId'].astype(np.int64), z['complete'])
+                z = retry(lambda q: dict(np.load(q)), p)
+                if z is not None:
+                    # complete = the file's modal sample count and modal word count (a FEU with fewer than 8 DREAM
+                    # chips populated, e.g. the P2 board on FEU 06 of 6-27, is complete at 4 x 64 per sample)
+                    ns, nw = z['nsamp'], z['nwords']
+                    mns = np.bincount(ns).argmax() if len(ns) else 0
+                    mnw = np.bincount(nw).argmax() if len(nw) else 0
+                    comp = (ns == mns) & (z['smax'] == mns - 1) & (nw == mnw)
+                    E[feu] = (z['eventId'].astype(np.int64), comp)
         if not E:
             continue
         allids = np.unique(np.concatenate([e for e, _ in E.values()]))

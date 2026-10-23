@@ -1,0 +1,11 @@
+executable   = job.sh
+arguments    = $(sd) $(fnum) $(spec)
+output       = log/$(ProcId).out
+error        = log/$(ProcId).err
+log          = log/rehit.log
+request_cpus = 1
+request_memory = 3000
++JobFlavour  = "longlunch"
+should_transfer_files = NO
+max_materialize = 300
+queue sd,fnum,spec from jobs.txt

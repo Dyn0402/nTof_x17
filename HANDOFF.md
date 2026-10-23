@@ -1,36 +1,43 @@
 # Handoff
 
-## From-scratch re-run of bench + SPS on lxplus: PLAN — updated 2026-10-23 (dylan-Yoga)
+## From-scratch re-run of bench + SPS on lxplus: inputs done, CM investigated — updated 2026-10-23 evening (dylan-Yoga)
 
-**Resume:** plan + pre-run checks done (rerun/RERUN_PLAN.md, rerun/CHECKS_2026-10-23.md, note
-https://dylan-neff.web.cern.ch/notes/mx17-rerun-plan.html). Waiting on Dylan's four decisions (plan §8); then the
-work packages W1–W12, then the pass S0–S7.
+**Resume:** Dylan answered the plan's four decisions (RERUN_PLAN §8). Done tonight: decoder audit + full June re-decode
+(C11), common-mode investigation (C10), hits regenerated in two CM generations (condor 4543158). Next: Dylan's call on
+the hits CM (plan §9), then W10 path layer → W11 gate → W1/W12 calibration with the reference from the waveforms.
 
-**Goal (Dylan):** one consistent pass of every June bench + SPS det4 analysis on lxplus condor with the physical RC
-kernel, for n_TOF-agnostic detector papers; settle everything upstream first so it runs once.
+**Decided 10-23 evening (§8):** re-decode every June row (+ audit decoder and M3) — done; redo the calibration fully
+with the reference position from the waveforms (W1/W12); work the CM correction into the analysis; quote from the
+largest runs unless they show problems; per-chamber Dp with a consistency check (inconsistent → stated limitation with
+an error bar); det6 fully analysed, quoting decided at writing.
 
-**Decided 10-23:** RC kernel (supersedes the morning's "freeze r06"); keep EOS decoded/hits where a re-decode sample
-matches; all June rows + all SPS det4 + timing on waveforms; hits-vs-waveforms side project last; golden runs
-calibrate/quote, others are consistency checks.
+**Done tonight:**
+- C11: `rerun/decoder_audit/` — independent numpy decoder vs C++ fa80c06 on all 1278 June files: identical. ≤ 0.23 %
+  incomplete events; no M3 ray lacks its detector event; M3 reader cannot fuse → no re-tracking. New decodes in
+  `<subrun>/decoded_root_fa80c06/`, audit in `/eos/user/d/dneff/x17rerun/decode_audit/` (summary.json, per-file npz
+  with a `complete` flag).
+- C10: `rerun/cm_study/` — CM software-only on all June rows; FEU-wide + 9–20 ADC per chip; X/Y anti-correlated;
+  plain median biases ±5 neighbours −1…−25 %, masked ±5 ≤ 1 % (injection into real noise, all 5 chambers).
+- `wft.io.FeuReader` now skips events with a missing packet or fused (length ≠ n_sample·512), lists them in `.incomplete`.
+- mm_strip_reconstruction 36eb894 (main): `analyze_waveforms --cns-mask M` (0 = bit-identical, verified).
+- W9 re-hit: `rerun/rehit/` (make_jobs.py, job.sh); `hits_root_rr1_cm{0,5}`, `combined_hits_root_rr1_cm{0,5}` per
+  subrun; cm0 chain bit-identical to production on det6/det7 file 000.
 
-**Found (CHECKS):**
-- C3: five June nights decode differently with fa80c06 (RAW eventID split) incl. g_det4 (6-24): 0.1–0.4 % fused events.
-- C8: calibration `ref_mesh` comes from the HITS alignment (wft/calibrate.py ~63) → v biased 3–15 %; profiling p0
-  brings the RC v within 2–5 % of timing v. det4 needs K = 24; det6 genuinely slow (~20–26 µm/ns), window-limited.
-- C9: wft.io plain block-median common mode biased by wide clusters (up to ~100 ADC) → `WFT_CM_MASK` written (opt-in).
-- C6: `WFT_COL_GUARD` (opt-in) kills NNLS runaways fleet-wide, 98–99.5 % fits identical, σθ ±0.008° → default on.
-- TeX Live 2026 user-local on the laptop (~/texlive/2026, PATH in ~/.bashrc); all three papers compile.
-
-**Next steps:** Dylan's decisions (plan §8) → W10 path layer (qa_config → EOS) → W9 re-decode/re-hit → W11 gate →
-W1/W12 calibration iteration → W2/W5/W7 → code freeze → S0…
+**Next steps:**
+1. Check condor 4543158 (181 jobs) complete; compare rr1_cm0 with the old hits on the five re-decoded nights
+   (event counts), and cm0 vs cm5 (hits, efficiency on golden rows) for Dylan's hits-CM decision.
+2. W10 path layer (qa_config → EOS, `decoded_root_fa80c06`, `combined_hits_root_rr1_*`).
+3. W11 gate: rebuild golden calibration caches with `WFT_CM_MASK=5` on the new decodes.
+4. W1/W12: calibrate with p0 profiled, align on waveforms, rebuild ref_mesh, iterate until v stable.
+5. Open: det7 X chip 0 carries almost no CM (strips unconnected?) — check against dead-strip masks.
 
 **Gotchas:**
-- lxplus condor: query with `-name bigbird101.cern.ch`; logs only come back at job exit (use condor_tail).
-- Never change a running cluster's executable script on AFS (retries re-read it): new script name per variant.
-- `pgrep -f "<pattern>"` in an until-loop matches the loop's own shell: wait on output files instead.
-- The fdf glob `*_000_XX.fdf` also matches pedestal files: filter `pedestal`.
-- Work dirs: lxplus `~/x17rerun/{code_*,mm_strip_reconstruction(fa80c06 build),spotcheck,precheck_*}`; spot results
-  `/eos/user/d/dneff/x17rerun/spotcheck/decoded/`.
+- EOS fuse under ~300 concurrent jobs: transient EIO loading the venv, and racy `mkdir -p` (copies then fail silently).
+  Job scripts now retry mkdir and fail if outputs are missing; resubmit failures with max_materialize ~40.
+- The LCG setup script overwrites a shell variable named `BASE`.
+- Subruns can hold several acquisitions sharing a file number (det3_test 6-22): key on date_time_fnum, match the
+  pedestal by stamp. Per-subrun pedestals named `<run>_pedthr_<stamp>` share the data file's tag.
+- lxplus condor: `-name bigbird101.cern.ch`. Work dirs: `~/x17rerun/{decoder_audit,rehit,mmsr_36eb894(build),mm_strip_reconstruction(fa80c06)}`.
 
 ## X asymmetry contingency: IN FORCE — updated 2026-10-23 (dylan-Yoga)
 

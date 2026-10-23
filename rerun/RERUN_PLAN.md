@@ -33,6 +33,8 @@ work below is therefore about the upstream list; the downstream questions (§6) 
 | C6 | The unregularised depth-charge solve runs away on 0.2–2 % of bench fits; the column guard (opt-in, written) removes it on all five chambers with 98–99.5 % of fits bit-identical and σθ within 0.008° | guard on by default (W2) |
 | C7/C8 | **The calibration's reference position comes from the hits alignment** and biases the fitted v by 3–15 %. With the position profiled, the RC calibration's v comes within 2–5 % of the independent timing v (gap/T) on det2/3/4/7 (det4 needs K = 24); a +3–5 % residual is left for W1 | calibrate with the position profiled, reference rebuilt from the waveform alignment (W1, W12) |
 | C9 | **The reconstruction's common mode moves with wide clusters**: baseline error up to ~100 ADC on every strip of a 64-channel block, 10–25 % of a neighbour's tail | signal-masked common mode (opt-in, written), gated before the pass (W11) |
+| C10 | **Common mode** is removed only in software (all June rows RAW); FEU-wide plus 9–20 ADC per chip, X/Y anti-correlated; the plain median biases the far neighbours' charge low (−1…−25 % at ±5) | masked CM (W11) |
+| C11 | **Decoder audit**: fa80c06 = an independent decoder on all 1278 June files; ≤ 0.23 % incomplete events; no M3 ray lacks its detector event | June re-decoded (W9) |
 | C1/C2/C4 | Code and venv run on lxplus (tests pass); the decoder builds; all 38 registered SPS sub-runs have det4 raw on EOS (uRWELL hits missing for run_61 m100V and run_70) | — |
 
 det6 is slow by every v estimator (timing 25.9, RC 21.7–27.7 against det7's 36–37 on the same night and field): a
@@ -45,14 +47,14 @@ property of det6 (wetter, or a weaker effective field), not of the kernel. It ge
 | W1 | **RC calibration protocol**: σ0_x, σ0_y, D_rc,y and v per chamber, fitted together on the golden calibration run with the reference position profiled; Dp from the head-on fit; a bundle format for the RC kernel (templates, gains, masks, t0 table, w0/kw, K) | tooling exists (`recal.py`, v now free) | v stable across the iteration below and within the timing v's errors; det6/det7 explained; paired bench not worse than §12 on any plane |
 | W12 | **Reference geometry**: rebuild `ref_mesh` (calibration caches, matched lists) from the waveform alignment (`mx_june_wft/01_alignment.py`) instead of `alignment_tpc_veto50`; iterate calibrate → reco → align → calibrate | found | v changes < 0.5 % between iterations |
 | W2 | **Depth grid and solver**: K per dataset from the measured column (gap / v + margin, capped by the window); column guard on | guard written + tested | early fits bit-identical, runaway class gone, no χ² loss on long columns (det4, det6) |
-| W11 | **Signal-masked common mode** in `wft.io` | written, opt-in | golden caches rebuilt with it; resolution not worse, χ² better, σ0 and D_rc stable → default on |
+| W11 | **Signal-masked common mode**: investigated (C10): CM software-only on every June row; plain median takes 0.5–6 % off the ±3 neighbours and 1–25 % off the ±5; masked ±5 ≤ 1 %. `WFT_CM_MASK=5` for wft; `--cns-mask` in the analyzer (hits: Dylan's call, both generations made) | investigated, M = 5 chosen | golden caches rebuilt with it; resolution not worse, χ² better, σ0 and D_rc stable → default on |
 | W3 | **Channel layer**: final gain, dead and hot masks per chamber (`strip_gain_audit.bad_set`, incl. 10-19's inclined-track holes) | partly in bundles | one committed table per chamber, carried by every bundle |
 | W4 | **Template**: one X-derived electronics template for both views (`rc_tmpl='x'`); saturated samples censored | decided | charge results use unsaturated events (the template reads saturated charge 5–12 % low, §41) |
 | W5 | **t0 prior**: one policy for all chambers under the RC kernel | gate to run | gate on the golden keys |
 | W6 | **Angle constants w0/kw**: measured on the calibration run, applied to the others | in reco | ≈ 0 / 1 under W1; a large kw is a calibration failure, not a constant |
 | W7 | **Per-condition protocol**: what each row inherits and what it fits — HV scans: gain only; det3 drift scan: v and Dp per field, K per field, most columns overrun the window; SPS: beam gas (O₂, water), det4's beam D_rc 2.2e-4, attachment absorbed by the free charge profile | to write | a committed table |
 | W8 | **Run-quality registry** (§5) | draft | committed table read by every stage |
-| W9 | **Inputs**: re-decode the June rows with fa80c06 and re-make their hits (port the 7-24 driver `reprocess_cosmic_bench.py` to EOS paths, pinned analyzer); decode SPS FEU 03; matched lists on lxplus with the lock venv (the LCG_105 NClus bug is gone with it); M3 v2 coverage check | spot check done | every row has inputs with one decoder provenance |
+| W9 | **Inputs**: every June row re-decoded with fa80c06 into `decoded_root_fa80c06/` and audited against an independent decoder (C11: 1278/1278 identical; M3 rays consistent, no re-tracking); hits regenerated from them (`*_rr1_cm0`, `*_rr1_cm5`, condor 4543158); still to do: decode SPS FEU 03; matched lists on lxplus with the lock venv; incomplete events (audit npz) out of every efficiency denominator | decode done; re-hit running | every row has inputs with one decoder provenance |
 | W10 | **Software**: a path layer (`qa_config` hard-codes `/home/dylan/x17/cosmic_bench/<area>/`; EOS has `june_tests/<run>/`, the manifest's `eos_run_dir` maps them); every stage a condor wrapper in the repo; code-freeze commit; the model-regression test made portable | venv + tests pass on lxplus | a dry run of every stage on one row |
 
 ## 4 · Stages of the pass
@@ -106,3 +108,8 @@ dry-gas bench run, Stephan's unanswered geometry questions, det6's window-limite
 4. **det6: full analysis**, every number produced; what to quote is decided at writing time (det6 is known poor).
 5. C8: redo the calibration fully with the reference position from the waveforms. C9: investigate the common mode
    thoroughly and build the correction into the analysis.
+
+## 9 · Open after the evening of 2026-10-23
+
+- **Hits common mode** (decision for Dylan): plain median (production, `rr1_cm0`) or masked ±5 (`rr1_cm5`, +18–24 %
+  hits, mostly cluster edges). Hits are seeding, efficiency and QA only; compare efficiency on the golden rows first.
