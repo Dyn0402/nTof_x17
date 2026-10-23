@@ -4,7 +4,13 @@
 protocol with its traps: per detector and per run condition; kernel ordering enforced
 (\texttt{check\_kernel\_ordering}); $v$ from the kernel hyperfit, never from a Magboltz prior; cut units that move with $v$.}
 \analysis{R9}{collect the protocol and the traps from WFT \S15, RETIRE\_C2GTC1, the in-situ findings}
-\askDylan{C2: freeze r06, or the per-plane $c_2/c_1$ first? Delay vs lp kernel form?}
+\tbw{Frozen calibration (C2, 2026-10-23): r06, delay kernel, $c_2=0.6\,c_1$, symmetric in X, per-event
+$\sigma_{0,x}=0.25$\,mm (the physical prompt footprint: strip integration 0.225\,mm alone; the head-on stacks'
+0.35--0.43 also carry the asymmetric neighbour copy).}
+\tbw{Main known mismatch: the model is symmetric in X, the June boards are not~\cite{paperI}. It shows as the X
+$\chi^2$ structure and the $\sigma_{0,x}$ tension between per-event fits and stacks. Cost (toy, \S\ref{sec:floor}):
+$-0.05$\textdegree{} overall, $\mp0.19$\textdegree{} head-on, $+0.007$\textdegree{} on the resolution. Not modelled: no
+mechanism makes its size, so a term would be a free parameter per board and per run condition.}
 \begin{figure}[t]
   \centering
   \includegraphics[width=0.9\linewidth]{forward_model}

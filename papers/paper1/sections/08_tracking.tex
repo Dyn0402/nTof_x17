@@ -6,13 +6,30 @@ on cosmics for all five chambers, and the intrinsic resolution of det4 in the be
 \subsection{Cosmic rays}
 \tbw{$\sigma_\theta$ = \requote{1.15--2.51\textdegree}, better than hits on every plane; position residuals; bias; per chamber.}
 \analysis{D1}{re-quote from r06}
-\askDylan{C2: freeze r06 as it is, or the per-plane c2/c1 (pvy95 re-pass, staged)?}
+\tbw{Calibration (C2, decided 2026-10-23): r06, symmetric in X, per-event $\sigma_{0,x}=0.25$\,mm; the per-view Y ratio
+(pvy95, Y $-0.04$ to $-0.08$\textdegree) is not adopted and is mentioned as a known improvement.}
+\analysis{D1}{the requote runs with $\sigma_{0,x}=0.25$ added to the r06 bundles}
 \begin{figure}[t]
   \centering
   \includegraphics[width=0.85\linewidth]{tracking_perf}
   \caption{\tbw{Cosmic tracking performance, five chambers.}}
   \label{fig:trackperf}
 \end{figure}
+
+\subsection{A measured X neighbour asymmetry}\label{sec:xasym}
+\intent{Report it as a property of the June boards, not a reconstruction artefact, with its size and what it does
+and does not affect.}
+\tbw{Every June resistive print shows an X-only field of unequal $\pm1$ neighbours: smooth over the board, fixed per
+board, both signs, absent in Y. det3 head-on: $a_Q=(Q_{-1}-Q_{+1})/(Q_{-1}+Q_{+1})=+0.165\pm0.019$, the excess a copy of
+the centre pulse $0.13\times$ its size, $\approx$110\,ns late (det2 $+0.08$, det4 $+0.08$, det7 $+0.19$, det6 $-0.02$).
+Excluded: electronics and connectors (it follows the board, not the FEU), copper/bus coupling ($\times$10 too weak),
+track angle and walk (measured at the time-symmetric angle), the 800\,\textmu m strip/pad beat (no 31.2\,mm period),
+the bulk pillars. Leading hypothesis, unproven: resistive-strip registration against the pads; the strip mask was
+never obtained and the photographed film (761\,\textmu m) does not make the size. Effect: the production X position
+carries $K=-0.77\pm0.13$ times the raw centroid-bias map, $\le44$\,\textmu m (det3) and $\le116$\,\textmu m (det2) per
+50\,mm cell after the board mean; resolution unchanged within 5\,\textmu m after correction and re-alignment. The
+forward model of~\cite{paperII} is symmetric in X; the cost of that is quoted there.}
+\analysis{X1}{XASYM\_CONTINGENCY.md; cloud\_basics FINDINGS \S42--43; MX17\_Geant asym\_deck ledger}
 
 \subsection{Intrinsic resolution in the beam}
 \tbw{det4 at SPS: $176\pm10$\,\textmu m $=0.30\times$ pitch, reference fitted out. The bench 0.6--0.7\,mm is

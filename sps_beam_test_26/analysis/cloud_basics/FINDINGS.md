@@ -1321,3 +1321,40 @@ censoring. Next: an amplitude-dependent pulse template from bright unclipped pul
   (RC); across, it stops at the strip edges. The stacks' 0.35–0.43 add the one-sided copy and ~0.1 mm of track walk.
 
 Slide note: <https://dylan-neff.web.cern.ch/notes/mx17-basics-oct19.html> (`make_basics_deck.py`).
+
+## 43 · What the unmodelled X asymmetry costs the symmetric model: the toy injection (2026-10-23, laptop)
+
+> `xasym_toy.py` → `results/xasym_toy_det3.json`; the one check of `XASYM_CONTINGENCY.md`. The mechanism study closed
+> unexplained the same day (board log 2026-10-23), so the contingency is in force.
+
+det3, production model (`calib_bundle_r06`, symmetric X). Each of 400 calibration events is fitted ref-pinned for a
+realistic charge profile; waveforms are regenerated at the M3 truth with each strip's noise and the ADC ceiling, with
+and without §42's term (a copy of every strip's prompt pulse onto one neighbour, 0.13 × the strip's pulse, 114 ns
+late), and refitted with the production fit (blind start, 5 ns t0 prior at the truth). 2 noise seeds; arms paired
+event by event.
+
+- **Size check.** The injected −1 minus +1 pulse comes out 0.124 × the centre pulse (data 0.13). The head-on aQ it
+  adds (|tan| < 0.03, positive lobes, gain-corrected) is +0.118 on r06's footprint (σ0 0.42) and **+0.160 on the
+  per-event footprint σ0_x 0.25**, against the data's +0.165. So with the physical footprint the stacked pulse and aQ
+  agree; only if r06's footprint were the truth would the costs below need scaling by up to ×1.4.
+- **Closure** (no copy): angle bias +0.0004°, s68 0.018°; position 0 µm. The toy itself is clean.
+- **Angle** (r06 fit): median over the bench angle mix **−0.051 ± 0.005°** (copy to −x) / **+0.060 ± 0.004°** (to +x);
+  head-on (|tan| < 0.05) **∓0.19°**, turning over by |tan| ≈ 0.2–0.3 (+0.05…+0.08° there). Per-event spread
+  added 0.13° s68, i.e. +0.007° in quadrature on det3's 1.15°. §38's "a few hundredths" holds overall, not head-on.
+- **Position**, quoted at the charge-centroid time (at the mesh, p0 slides by w × 60 ns when t0 moves one depth bin,
+  which happens to half the fits at |tan| > 0.15 even in closure): a pull of **−67 / +58 µm** toward the copy side,
+  39 µm per-event spread, varying with angle (−12 µm at tan −0.2 to −100 µm at +0.2). The constant part is a board
+  offset the alignment absorbs; the angle-dependent part (±50 µm over ±0.2) is not.
+- **Footprint.** With σ0_x 0.25 as truth: fitting with 0.25 gives −0.043° overall, s68 0.16°, χ²/dof 6.6; fitting the
+  same events with r06's 0.42 gives −0.100°, s68 0.24°, χ²/dof 17.8. The head-on −0.19° is the same in both. So the
+  plan's per-event σ0_x 0.25 halves the overall angle cost and fits much better, but does not touch the head-on bias.
+- **χ²**: the copy alone takes closure χ²/dof 1.0 to 3.3–4.4, the same order as the data's X χ² excess (§38).
+- **n_TOF chamber A** (`sept26_prelim_analysis/xasym_pointing.py`, run_145, 7 784 scintillator-confirmed band tracks):
+  the capsule-band crossing moves +0.030 / +0.064 / +0.090 mm at session scale 0.44 / 1 / 1.57, and ≤ 0.003 mm once
+  the board mean is re-aligned, against its ±0.31 mm error. Chamber C's flat ±0.1 mm moves the A+C capsule X ±0.05 mm.
+  Beam tracks sit at |tan| 0.1–0.6, where the angle bias is ≤ 0.08°: small next to the 6–10 % A-scale tension.
+
+What it does not rule out: a real term that is not a delayed copy of the centre pulse (the toy matches the stacked
+pulse, not aQ); a different size on the other boards (det2 aQ +0.08, det7 +0.19, det6 −0.02); the head-on bias being
+partly absorbed in the data by the bundle's w0/kw (the bench's measured X bias is +0.00° on det3, which the toy
+cannot test because it has no calibration step).

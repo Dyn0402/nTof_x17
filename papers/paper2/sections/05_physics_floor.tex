@@ -3,6 +3,13 @@
 \intent{What limits the angle once the bias is gone: electronics contribute 0.02\textdegree; $\sim$1\textdegree{} comes from
 the 0.3\,mm jitter of the charge centroid (diffusion). The floor is physics, not readout.}
 \analysis{R6}{re-run the toy on the production model and the r06 kernel}
+\tbw{Unmodelled X asymmetry (\texttt{xasym\_toy.py}, cloud\_basics \S43): the measured one-sided $\pm1$ copy
+($0.13\times$, 114\,ns late) injected into det3 toys on the production model and refitted symmetric. Closure floor
+0.018\textdegree, no bias. With the copy: angle bias $-0.051\pm0.005$\textdegree{} over the bench angle mix,
+$\mp0.19$\textdegree{} at $|\tan\theta|<0.05$, turning over by $|\tan\theta|\approx0.2$; spread $+0.13$\textdegree{}
+($+0.007$\textdegree{} in quadrature on 1.15\textdegree); position pulled 60--70\,\textmu m toward the copy side.
+$\sigma_{0,x}=0.25$ halves the overall angle cost against 0.42 and cuts $\chi^2$/dof 17.8 $\to$ 6.6. On that footprint the
+injection reproduces the measured head-on $a_Q$ ($+0.160$ against $+0.165$).}
 \begin{figure}[t]
   \centering
   \includegraphics[width=0.7\linewidth]{toy_floor}

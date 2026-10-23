@@ -1,28 +1,41 @@
 # Handoff
 
-## X asymmetry contingency plan — updated 2026-10-22 (dylan-Yoga)
+## X asymmetry contingency: IN FORCE — updated 2026-10-23 (dylan-Yoga)
 
-**Resume:** Decision gate 2026-10-23: one more day on the X asymmetry mechanism; if unsolved, execute XASYM_CONTINGENCY.md.
+**Resume:** mechanism closed unexplained (board 10-23); the plan is in force and its toy check is done (§43). Next: the
+D1 requote on the desktop with `sigma_p0_x = 0.25` added to the r06 bundles, then the paper sections.
 
-**Goal:** a fallback for detector characterization, n_TOF and the papers if the X neighbour asymmetry stays unexplained.
+**Goal:** carry the unexplained X neighbour asymmetry through detector characterization, n_TOF and the papers as a
+measured property and a systematic, not a model term (`sps_beam_test_26/analysis/cloud_basics/XASYM_CONTINGENCY.md`,
+status table at its end).
 
-**Done:**
-- Sized the effect from existing results: production X carries K = −0.77 × the raw centroid map, i.e. ≤ 44 µm (det3)
-  / 116 µm (det2) per 50 mm cell after the board mean; X resolution unchanged ≤ 5 µm after correction + re-alignment.
-- Plan written: `sps_beam_test_26/analysis/cloud_basics/XASYM_CONTINGENCY.md`; slide note
-  <https://dylan-neff.web.cern.ch/notes/mx17-xasym-plan.html> (`make_xasym_plan_deck.py`, reads `wft/xasym_maps.json`).
-- Decision (if unsolved): freeze r06 symmetric kernel (lifts the kernel-freeze hold in the "Detector model basics"
-  section), `wft.xasym` as a ± systematic not nominal, write the asymmetry up as a measured property in paper 1.
+**Done 2026-10-23:**
+- Toy injection (`cloud_basics/xasym_toy.py`, FINDINGS §43, `results/xasym_toy_det3.json`): det3, production r06,
+  the measured copy (0.13 × centre, 114 ns late) injected and refitted symmetric, 400 events × 2 seeds. Angle −0.05°
+  overall, ∓0.19° head-on (|tan| < 0.05), +0.007° on the resolution; position pulled 60–70 µm toward the copy side
+  (mostly a board offset, ±50 µm with angle). σ0_x 0.25 halves the overall cost against 0.42 (χ²/dof 6.6 vs 17.8);
+  head-on unchanged. Head-on aQ the copy adds: +0.160 on σ0_x 0.25 (data +0.165), +0.118 on r06's footprint.
+- n_TOF chamber A (`sept26_prelim_analysis/xasym_pointing.py`, run_145): capsule crossing moves ≤ 0.09 mm, ≤ 0.003 mm
+  after re-alignment (crossing error ±0.31). C: flat ±0.1 mm → ±0.05 mm on the A+C capsule X.
+- C2 decided per the plan (PAPER_PLAN C2 = ready; X1 added; tripwire row added); paper1 §8 has the asymmetry
+  subsection outline, paper2 §4/§5 the mismatch + toy cost; pushed to Overleaf (paper1).
+- Deck republished with a toy slide: https://dylan-neff.web.cern.ch/notes/mx17-xasym-plan.html.
 
 **Next steps:**
-1. 2026-10-23: last day on the mechanism (ledger: MX17_Geant `scratchpad/2026-10-19/asym_deck/FINDINGS.md`).
-2. If unsolved: the toy injection (aQ ≈ 0.165, ~110 ns one-sided ±1 into the paper-2 physics-floor toy, symmetric
-   reco) → the angle cost for paper 2. Then freeze r06 (paper 1 C2), σ0_x 0.25, n_TOF systematics per the plan.
-3. Update the plan/deck if the mechanism day changes any number; rerun the deck generator and republish (`--force`).
+1. Desktop: D1 requote with `sigma_p0_x = 0.25` on the five golden keys (det3/det2/det7 r06; det4 lp_t0p, det6 lp):
+   copy each bundle to `calib_bundle_r06s25` with the key added, rerun mx_june_wft 01–04, rebuild FLEET_DIGEST. §38
+   predicts no overall resolution cost and slopes 0.007–0.030 closer to 1.
+2. Optional: the same toy on det2/det7 (their aQ 0.08 / 0.19) for the paper's per-chamber range; needs their caches
+   (desktop).
+3. n_TOF: apply `xasym.correct_x` in the vertexing/alignment rerun as the ± variation; the raw-ADC session scale for
+   chamber A is still unmeasured (bench range 0.44–1.57 used).
 
-**Gotchas / decisions:**
-- Chamber map A = det3 June-15 (mx17_3), B = det2, C = det6, D = det7. C has no correction (det6 map too sparse).
-- Angle cost is not measured yet; "a few hundredths of a degree" is an expectation from §38 only.
+**Gotchas:**
+- At |tan| > 0.15 the mesh p0 is not a usable position metric in toys: half the fits move t0 by one 60 ns bin and p0
+  slides by w × 60 ns even in closure. Compare positions at the charge-centroid time.
+- The laptop TeX lacks authblk/cleveref: the papers compile on Overleaf (or the desktop), not here.
+- The desktop was offline all day (Windows booted); everything here ran on the laptop's det3 calib cache and the
+  run_145 stage-3 tables.
 
 ## July two-source calibration (srccal): run 224591 stale — updated 2026-10-21 (dylan-MS-7C84)
 
@@ -234,7 +247,7 @@ Limit is 5 pages, excluding authors/affiliations, acknowledgements and reference
 ## Detector model basics: dead strips, gap, v(E), saturation, X asymmetry — updated 2026-10-19 pm (dylan-MS-7C84)
 
 **Resume:** FINDINGS §35–42 + slide note <https://dylan-neff.web.cern.ch/notes/mx17-basics-oct19.html>
-(`cloud_basics/make_basics_deck.py`). Kernel freeze still ON HOLD. Next: Dylan's read of the note; then the
+(`cloud_basics/make_basics_deck.py`). Kernel freeze hold LIFTED 2026-10-23 (r06 frozen, XASYM_CONTINGENCY.md). Next: Dylan's read of the note; then the
 amplitude-dependent template (saturation charge) and the D_rc-vs-delay test of the X asymmetry mechanism.
 
 **Done 2026-10-19 (pm):**
@@ -1024,7 +1037,7 @@ outputs `/home/dylan/x17/cosmic_bench/cloud_basics/` (arms/, bench/); RC payload
 
 ## Per-view sharing kernel (PAPER_PLAN C2) — updated 2026-10-09 05:00 (overnight, dylan-MS-7C84)
 
-**Resume:** ON HOLD (Dylan 10-09) — likely superseded by the physical RC kernel (see Detector model basics). Per-view Y ratio validated (gate: Y −0.04…−0.08°, head-on −0.10…−0.13°, det2/3/7); re-pass staged in `condor_campaign_pvy95/`, NOT submitted — needs Dylan's go.
+**Resume:** CLOSED 2026-10-23: r06 frozen per XASYM_CONTINGENCY.md, pvy95 not adopted (quoted as a known Y improvement). Was ON HOLD (Dylan 10-09) — likely superseded by the physical RC kernel (see Detector model basics). Per-view Y ratio validated (gate: Y −0.04…−0.08°, head-on −0.10…−0.13°, det2/3/7); re-pass staged in `condor_campaign_pvy95/`, NOT submitted — needs Dylan's go.
 
 **Done:**
 - C1: r06 reproduces FLEET_DIGEST exactly (waveform-fit cells, five keys).
