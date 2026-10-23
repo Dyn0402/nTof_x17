@@ -54,10 +54,26 @@ def setup_paths() -> None:
             sys.path.insert(0, p)
 
 
+#: Path layer for running away from the desktop/laptop bench tree (rerun W10, 2026-10-23).  The registry below names
+#: every run by its place in that tree (``/home/dylan/x17/cosmic_bench/<area>/``).  X17_BENCH_ROOT replaces that root
+#: (a condor job stages its inputs from EOS into ``$X17_BENCH_ROOT/<area>/<run>/<subrun>/`` under the canonical
+#: directory names, see rerun/inputs.py), and X17_ANALYSIS_ROOT, if set, replaces the Analysis/ output root.  Both
+#: unset = the paths exactly as before.
+DESKTOP_BENCH_ROOT = '/home/dylan/x17/cosmic_bench'
+
+
+def _rebase(path):
+    root = os.environ.get('X17_BENCH_ROOT')
+    if root and path.startswith(DESKTOP_BENCH_ROOT):
+        return root.rstrip('/') + path[len(DESKTOP_BENCH_ROOT):]
+    return path
+
+
 class _Config:
     def __init__(self, key, run, sub_run, feus, det_z,
                  base_path='/home/dylan/x17/cosmic_bench/det_3/',
                  det_name='mx17_1', zero_suppressed=False):
+        base_path = _rebase(base_path)
         self.KEY = key
         self.BASE_PATH = base_path
         self.RUN = run
@@ -74,7 +90,8 @@ class _Config:
         # cosmic_bench root = parent of base_path (e.g. .../cosmic_bench/det1_det2/ ->
         # .../cosmic_bench).
         cosmic_bench_root = os.path.dirname(base_path.rstrip('/'))
-        self.OUT_BASE = os.path.join(cosmic_bench_root, 'Analysis', run, sub_run, det_name)
+        analysis_root = os.environ.get('X17_ANALYSIS_ROOT') or os.path.join(cosmic_bench_root, 'Analysis')
+        self.OUT_BASE = os.path.join(analysis_root, run, sub_run, det_name)
 
     @property
     def run_config_path(self):

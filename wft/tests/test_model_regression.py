@@ -22,10 +22,16 @@ sys.path.insert(0, RND)
 
 from wft.calib import CalibrationBundle              # noqa: E402
 from wft import model as wm                          # noqa: E402
-import forward_model2 as fm2                         # noqa: E402
-import forward_model3 as fm3                         # noqa: E402
 
-WF_DIR = fm2.BASE
+# The R&D modules load their reference data at import.  It lives on the desktop/laptop bench tree, or wherever
+# WFT_RND_DIR points (EOS copy for lxplus: /eos/user/d/dneff/x17rerun/regression/wft_model_sat_det3).
+_DEFAULT = ('/home/dylan/x17/cosmic_bench/Analysis/mx17_det3_saturday_scan_6-27-26/'
+            'long_run_resist_490V_drift_1000V/mx17_3/waveform_first')
+WF_DIR = os.environ.get('WFT_RND_DIR', _DEFAULT)
+HAVE_DATA = os.path.exists(os.path.join(WF_DIR, 'wfcache.pkl'))
+if HAVE_DATA:
+    import forward_model2 as fm2                     # noqa: E402
+    import forward_model3 as fm3                     # noqa: E402
 
 
 def main(n_events=25):
@@ -82,6 +88,13 @@ def main(n_events=25):
           worst['w'] < 1e-12 and worst['t0'] < 1e-9)
     print('REGRESSION', 'PASS' if ok else 'FAIL')
     return 0 if ok else 1
+
+
+def test_model_regression():
+    import pytest
+    if not HAVE_DATA:
+        pytest.skip(f'reference data not found in {WF_DIR} (set WFT_RND_DIR)')
+    assert main(25) == 0
 
 
 if __name__ == '__main__':

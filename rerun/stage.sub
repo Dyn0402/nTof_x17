@@ -1,0 +1,13 @@
+# condor_submit stage.sub code=<code dir> jobfile=<file of "key|stage_job args"> [mem=8000] [cpus=1]
+# Each line of jobfile: <arguments for stage_job.py after the key, '|'-free>; see stage_job.py.
+executable     = $ENV(HOME)/x17rerun/stage_job.sh
+arguments      = $(code) $(args)
+output         = log/$(Cluster).$(ProcId).out
+error          = log/$(Cluster).$(ProcId).err
+log            = log/stage.log
+request_cpus   = $(cpus:1)
+request_memory = $(mem:8000)
++JobFlavour    = "$(flavour:workday)"
+should_transfer_files = NO
+max_materialize = 100
+queue args from $(jobfile)
