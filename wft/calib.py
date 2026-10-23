@@ -304,6 +304,13 @@ class CalibrationBundle:
 
     def summary(self) -> str:
         h = self.hyper
+        if 'rc_D_y' in h:
+            # the physical RC kernel (wft.model.build_matrix_rc): the delayed-copy constants are not used
+            return (f"{self.detector or '?'} / {self.run_key or '?'} [RC]: v={self.v_drift:.2f} um/ns, "
+                    f"sigma_p0_x={h.get('sigma_p0_x', h['sigma_p0']):.3f} mm, "
+                    f"sigma_p0_y={h.get('sigma_p0_y', h['sigma_p0']):.3f} mm, rc_D_y={h['rc_D_y']:.3g} mm2/ns, "
+                    f"rc_D_x={h.get('rc_D_x', 0.0):.3g}, Dp={h['Dp']:.4f}, K={self.n_depth_bins}  "
+                    f"[{self.provenance.get('code_commit', '?')}]")
         # c2 may be SLAVED: when the bundle carries c2_over_c1, build_matrix
         # ignores the stored c2 (which is 0.0) and uses ratio * c1. Printing
         # the stored field there says "no +-2 copy" about a model that draws
