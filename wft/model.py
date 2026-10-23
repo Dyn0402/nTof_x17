@@ -116,6 +116,12 @@ MODEL_FRAC = float(os.environ.get('WFT_MODEL_FRAC', 0.0))
 #: With SAT_SOLVE the solve is repeated with every clipped sample the model falls below added as an observation
 #: AT the clip level (the active set of a one-sided bound, as in a Tobit fit) until none is below.
 SAT_SOLVE = bool(int(os.environ.get('WFT_SAT_SOLVE', 0)))
+#: Unobservable depth columns (opt-in, 2026-10-23; sept26_prelim_analysis/qsum_runaway.py, OCTOBER O10).  A depth bin
+#: whose response lies past the end of the window (time-censored) or off the strip window (space-censored) has a
+#: column of ~1e-6..1e-17 in the weighted design matrix, and the unregularised NNLS can put unbounded charge on it
+#: (q_sum > 1e6 ADC on 30 % of beam tracks).  With COL_GUARD > 0 every solve offers only the columns whose weighted
+#: norm is at least COL_GUARD x the largest; the others get q = 0.  0 (default) = the production solve, bit-identical.
+COL_GUARD = float(os.environ.get('WFT_COL_GUARD', 0.0))
 
 _smear_cache: dict = {}
 _lp_cache: dict = {}
@@ -524,8 +530,18 @@ def _solve_nnls(M, W, noise, sat, censor=True):
                             (MODEL_FRAC * np.maximum(W, 0.0)) ** 2)).reshape(-1)
         A = (M * Wt[:, None])[ok]
         y = (W.reshape(-1) * Wt)[ok]
+    live = None
+    if COL_GUARD > 0:
+        cn = np.sqrt((A ** 2).sum(0))
+        live = cn >= COL_GUARD * cn.max()
+        if live.all():
+            live = None
     try:
-        q, rn = nnls(A, y, maxiter=50 * M.shape[1])
+        if live is None:
+            q, rn = nnls(A, y, maxiter=50 * M.shape[1])
+        else:
+            q = np.zeros(M.shape[1])
+            q[live], rn = nnls(A[:, live], y, maxiter=50 * M.shape[1])
     except Exception:
         return np.inf, None
     chi = rn * rn
@@ -543,7 +559,11 @@ def _solve_nnls(M, W, noise, sat, censor=True):
             act |= below
             use = ok | act
             try:
-                q, rn = nnls(Af[use], yf[use], maxiter=50 * M.shape[1])
+                if live is None:
+                    q, rn = nnls(Af[use], yf[use], maxiter=50 * M.shape[1])
+                else:
+                    q = np.zeros(M.shape[1])
+                    q[live], rn = nnls(Af[use][:, live], yf[use], maxiter=50 * M.shape[1])
             except Exception:
                 return np.inf, None
         # chi2 over the unclipped samples only; the bound's residual enters through the penalty below
