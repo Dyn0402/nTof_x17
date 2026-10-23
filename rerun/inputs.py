@@ -62,7 +62,16 @@ def rows():
 
 
 def row_for(key):
+    """Manifest row for a manifest key, or for a run registered in qa_config.RUNS (e.g. g_det3_wknd, whose manifest
+    key is synthesized), matched on run, subrun and detector.  The returned row carries that key."""
     hit = [r for r in rows() if r['key'] == key]
+    if not hit:
+        sys.path[:0] = [os.path.join(REPO, 'mx_june_cosmic_qa')]
+        import qa_config
+        if key in qa_config.RUNS:
+            c = qa_config.RUNS[key]
+            hit = [dict(r, key=key) for r in rows()
+                   if (r['run'], r['subrun'], r['det']) == (c.RUN, c.SUB_RUN, c.DET_NAME)]
     if len(hit) != 1:
         raise KeyError(f'{key!r}: {len(hit)} manifest rows')
     return hit[0]

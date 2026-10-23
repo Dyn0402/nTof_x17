@@ -4,6 +4,8 @@
     stage_job.py <key> [--gen rr1] [--parts run_config,m3,decoded,hits] [--work DIR] [--no-sync]
                  (--module wft.calibrate | --script mx_june_wft/01_alignment.py) [-- stage args...]
 
+The stage gets [key, *args], or args alone with '{key}' substituted when they contain it (wft.cli reco {key}).
+
 1. stage the row's inputs from EOS into <work>/bench (rerun/inputs.py, canonical directory names, INPUTS.json);
 2. pull the row's Analysis subtree <EOS_ANALYSIS_ROOT>/<run>/<subrun>/<det>/ into <work>/Analysis (earlier stages'
    outputs: alignment, caches, bundles, tables);
@@ -76,9 +78,12 @@ def main():
     g.add_argument('--script')
     a = ap.parse_args(argv)
 
-    row = inputs.row_for(a.key)
     bench = os.path.join(a.work, 'bench')
     ana = os.path.join(a.work, 'Analysis')
+    # before anything imports qa_config: its registry is rebased when the module loads
+    os.environ['X17_BENCH_ROOT'] = bench
+    os.environ['X17_ANALYSIS_ROOT'] = ana
+    row = inputs.row_for(a.key)
     t0 = time.time()
     rec = inputs.stage(row, bench, a.gen, tuple(p for p in a.parts.split(',') if p))
     print(f'[stage] staged {a.key} ({a.gen}): '
@@ -87,8 +92,6 @@ def main():
     n_in = sync(os.path.join(a.eos_analysis, rel), os.path.join(ana, rel))
     print(f'[stage] pulled {n_in} Analysis files for {rel}', flush=True)
 
-    os.environ['X17_BENCH_ROOT'] = bench
-    os.environ['X17_ANALYSIS_ROOT'] = ana
     sys.path[:0] = [os.path.join(REPO, 'mx_june_cosmic_qa'), os.path.join(REPO, 'cosmic_bench_analysis')]
     import qa_config
     qa_config.setup_paths()
@@ -101,6 +104,9 @@ def main():
     for path in (cfg.BASE_PATH, cfg.OUT_BASE):
         if not (path.startswith(bench) or path.startswith(ana)):
             sys.exit(f'FATAL: {a.key} resolves outside the staged tree: {path}')
+    staged = os.path.join(bench, row['tree'], row['run'], row['subrun'])
+    if os.path.normpath(os.path.join(cfg.BASE_PATH, cfg.RUN, cfg.SUB_RUN)) != os.path.normpath(staged):
+        sys.exit(f'FATAL: {a.key} reads {cfg.BASE_PATH}{cfg.RUN}/{cfg.SUB_RUN}, inputs were staged at {staged}')
 
     commit = subprocess.run(['git', '-C', REPO, 'rev-parse', '--short', 'HEAD'], capture_output=True,
                             text=True).stdout.strip() or os.environ.get('RERUN_CODE_COMMIT', '?')
@@ -109,12 +115,14 @@ def main():
     t1 = time.time()
     rc = 0
     try:
+        # the row key goes first, unless the arguments place it themselves ('{key}', e.g. wft.cli reco {key})
+        margs = [x.replace('{key}', a.key) for x in rest] if any('{key}' in x for x in rest) else [a.key, *rest]
         if a.module:
-            r = importlib.import_module(a.module).main([a.key, *rest])
+            r = importlib.import_module(a.module).main(margs)
             rc = int(r or 0)
         else:
             script = os.path.join(REPO, a.script)
-            sys.argv = [script, a.key, *rest]
+            sys.argv = [script, *margs]
             sys.path.insert(0, os.path.dirname(script))
             runpy.run_path(script, run_name='__main__')
     except SystemExit as e:
