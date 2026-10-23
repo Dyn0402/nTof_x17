@@ -54,7 +54,7 @@ property of det6 (wetter, or a weaker effective field), not of the kernel. It ge
 | W6 | **Angle constants w0/kw**: measured on the calibration run, applied to the others | in reco | ≈ 0 / 1 under W1; a large kw is a calibration failure, not a constant |
 | W7 | **Per-condition protocol**: what each row inherits and what it fits — HV scans: gain only; det3 drift scan: v and Dp per field, K per field, most columns overrun the window; SPS: beam gas (O₂, water), det4's beam D_rc 2.2e-4, attachment absorbed by the free charge profile | to write | a committed table |
 | W8 | **Run-quality registry** (§5) | draft | committed table read by every stage |
-| W9 | **Inputs**: every June row re-decoded with fa80c06 into `decoded_root_fa80c06/` and audited against an independent decoder (C11: 1278/1278 identical; M3 rays consistent, no re-tracking); hits regenerated from them (`*_rr1_cm0`, `*_rr1_cm5`, condor 4543158); still to do: decode SPS FEU 03; matched lists on lxplus with the lock venv; incomplete events (audit npz) out of every efficiency denominator | decode done; re-hit running | every row has inputs with one decoder provenance |
+| W9 | **Inputs**: every June row re-decoded with fa80c06 into `decoded_root_fa80c06/` and audited against an independent decoder (C11: 1278/1278 identical; M3 rays consistent, no re-tracking); hits regenerated from them (`*_rr1_cm0`, `*_rr1_cm5`, C12: every difference from production explained); still to do: decode SPS FEU 03; matched lists on lxplus with the lock venv; incomplete events (audit npz) out of every efficiency denominator | decode + re-hit done | every row has inputs with one decoder provenance |
 | W10 | **Software**: a path layer (`qa_config` hard-codes `/home/dylan/x17/cosmic_bench/<area>/`; EOS has `june_tests/<run>/`, the manifest's `eos_run_dir` maps them); every stage a condor wrapper in the repo; code-freeze commit; the model-regression test made portable | venv + tests pass on lxplus | a dry run of every stage on one row |
 
 ## 4 · Stages of the pass
@@ -112,4 +112,7 @@ dry-gas bench run, Stephan's unanswered geometry questions, det6's window-limite
 ## 9 · Open after the evening of 2026-10-23
 
 - **Hits common mode** (decision for Dylan): plain median (production, `rr1_cm0`) or masked ±5 (`rr1_cm5`, +18–24 %
-  hits, mostly cluster edges). Hits are seeding, efficiency and QA only; compare efficiency on the golden rows first.
+  hits, mostly cluster edges; 11–20 % on every night). Hits are seeding, efficiency and QA only; compare
+  efficiency on the golden rows first.
+- **Run registry (W8)**: exclude det3 6-27's 01H29 false start (still in EOS `raw_daq_data/`; new products moved to
+  `_false_start_01H29/`).

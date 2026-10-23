@@ -20,16 +20,17 @@ an error bar); det6 fully analysed, quoting decided at writing.
   plain median biases ±5 neighbours −1…−25 %, masked ±5 ≤ 1 % (injection into real noise, all 5 chambers).
 - `wft.io.FeuReader` now skips events with a missing packet or fused (length ≠ n_sample·512), lists them in `.incomplete`.
 - mm_strip_reconstruction 36eb894 (main): `analyze_waveforms --cns-mask M` (0 = bit-identical, verified).
-- W9 re-hit: `rerun/rehit/` (make_jobs.py, job.sh); `hits_root_rr1_cm{0,5}`, `combined_hits_root_rr1_cm{0,5}` per
+- W9 re-hit DONE (condor 4543158, C12): `rerun/rehit/` (make_jobs.py, job.sh, compare_hits.py); `hits_root_rr1_cm{0,5}`, `combined_hits_root_rr1_cm{0,5}` per
   subrun; cm0 chain bit-identical to production on det6/det7 file 000.
 
 **Next steps:**
-1. Check condor 4543158 (181 jobs) complete; compare rr1_cm0 with the old hits on the five re-decoded nights
-   (event counts), and cm0 vs cm5 (hits, efficiency on golden rows) for Dylan's hits-CM decision.
+1. Re-hit DONE (C12): rr1_cm0 = production wherever the decode is unchanged; every difference explained. For Dylan's
+   hits-CM decision: efficiency on the golden rows with cm0 vs cm5 (needs W10 first).
 2. W10 path layer (qa_config → EOS, `decoded_root_fa80c06`, `combined_hits_root_rr1_*`).
 3. W11 gate: rebuild golden calibration caches with `WFT_CM_MASK=5` on the new decodes.
 4. W1/W12: calibrate with p0 profiled, align on waveforms, rebuild ref_mesh, iterate until v stable.
-5. Open: det7 X chip 0 carries almost no CM (strips unconnected?) — check against dead-strip masks.
+5. W8 registry: exclude det3 6-27's 01H29 false start (on EOS; new products in `_false_start_01H29/`).
+6. Open: det7 X chip 0 carries almost no CM (strips unconnected?) — check against dead-strip masks.
 
 **Gotchas:**
 - EOS fuse under ~300 concurrent jobs: transient EIO loading the venv, and racy `mkdir -p` (copies then fail silently).

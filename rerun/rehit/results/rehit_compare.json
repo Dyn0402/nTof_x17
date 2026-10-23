@@ -1,0 +1,3009 @@
+{
+ "acq": {
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det1_det2_overnight_6-17-26/longer_run/260617_23H22_000": {
+   "old": {
+    "hits": 589285,
+    "events": 18057
+   },
+   "cm0": {
+    "hits": 589340,
+    "events": 18058
+   },
+   "cm5": {
+    "hits": 686783,
+    "events": 18083
+   },
+   "cm0_equals_old": false,
+   "events_only_old": 0,
+   "events_only_cm0": 1
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det1_det2_overnight_6-17-26/longer_run/260617_23H22_001": {
+   "old": {
+    "hits": 477226,
+    "events": 12882
+   },
+   "cm0": {
+    "hits": 477226,
+    "events": 12882
+   },
+   "cm5": {
+    "hits": 553049,
+    "events": 12882
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det1_det2_overnight_6-17-26/quick_run/260617_23H04_000": {
+   "old": {
+    "hits": 63422,
+    "events": 2898
+   },
+   "cm0": {
+    "hits": 63422,
+    "events": 2898
+   },
+   "cm5": {
+    "hits": 75758,
+    "events": 2903
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det1_det2_overnight_6-17-26/resist_450V_drift_1000V/260618_05H10_000": {
+   "old": {
+    "hits": 173389,
+    "events": 6565
+   },
+   "cm0": {
+    "hits": 173279,
+    "events": 6561
+   },
+   "cm5": {
+    "hits": 199462,
+    "events": 6572
+   },
+   "cm0_equals_old": false,
+   "events_only_old": 6,
+   "events_only_cm0": 2
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det1_det2_overnight_6-17-26/resist_460V_drift_1000V/260618_04H38_000": {
+   "old": {
+    "hits": 122045,
+    "events": 5423
+   },
+   "cm0": {
+    "hits": 122062,
+    "events": 5428
+   },
+   "cm5": {
+    "hits": 141242,
+    "events": 5447
+   },
+   "cm0_equals_old": false,
+   "events_only_old": 0,
+   "events_only_cm0": 5
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det1_det2_overnight_6-17-26/resist_470V_drift_1000V/260618_04H05_000": {
+   "old": {
+    "hits": 118804,
+    "events": 5523
+   },
+   "cm0": {
+    "hits": 114201,
+    "events": 5503
+   },
+   "cm5": {
+    "hits": 135740,
+    "events": 5519
+   },
+   "cm0_equals_old": false,
+   "events_only_old": 32,
+   "events_only_cm0": 12
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det1_det2_overnight_6-17-26/resist_480V_drift_1000V/260618_03H33_000": {
+   "old": {
+    "hits": 229706,
+    "events": 6384
+   },
+   "cm0": {
+    "hits": 229757,
+    "events": 6386
+   },
+   "cm5": {
+    "hits": 264572,
+    "events": 6399
+   },
+   "cm0_equals_old": false,
+   "events_only_old": 0,
+   "events_only_cm0": 2
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det1_det2_overnight_6-17-26/resist_490V_drift_1000V/260618_03H00_000": {
+   "old": {
+    "hits": 243769,
+    "events": 6698
+   },
+   "cm0": {
+    "hits": 243647,
+    "events": 6698
+   },
+   "cm5": {
+    "hits": 291623,
+    "events": 6709
+   },
+   "cm0_equals_old": false,
+   "events_only_old": 0,
+   "events_only_cm0": 0
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det1_det2_overnight_6-17-26/resist_500V_drift_1000V/260618_02H28_000": {
+   "old": {
+    "hits": 282903,
+    "events": 7162
+   },
+   "cm0": {
+    "hits": 282160,
+    "events": 7163
+   },
+   "cm5": {
+    "hits": 335953,
+    "events": 7170
+   },
+   "cm0_equals_old": false,
+   "events_only_old": 1,
+   "events_only_cm0": 2
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det1_det2_overnight_6-17-26/resist_510V_drift_1000V/260618_01H56_000": {
+   "old": {
+    "hits": 503605,
+    "events": 9463
+   },
+   "cm0": {
+    "hits": 501987,
+    "events": 9463
+   },
+   "cm5": {
+    "hits": 601088,
+    "events": 9463
+   },
+   "cm0_equals_old": false,
+   "events_only_old": 0,
+   "events_only_cm0": 0
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det1_det2_overnight_6-17-26/resist_520V_drift_1000V/260618_01H23_000": {
+   "old": {
+    "hits": 605035,
+    "events": 7241
+   },
+   "cm0": {
+    "hits": 604948,
+    "events": 7241
+   },
+   "cm5": {
+    "hits": 771986,
+    "events": 7252
+   },
+   "cm0_equals_old": false,
+   "events_only_old": 0,
+   "events_only_cm0": 0
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det2_det3_overnight_6-22-26/long_run/260623_06H58_000": {
+   "old": {
+    "hits": 667077,
+    "events": 9905
+   },
+   "cm0": {
+    "hits": 667063,
+    "events": 9905
+   },
+   "cm5": {
+    "hits": 755616,
+    "events": 9905
+   },
+   "cm0_equals_old": false,
+   "events_only_old": 0,
+   "events_only_cm0": 0
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det2_det3_overnight_6-22-26/long_run/260623_06H58_001": {
+   "old": {
+    "hits": 652839,
+    "events": 9902
+   },
+   "cm0": {
+    "hits": 652831,
+    "events": 9902
+   },
+   "cm5": {
+    "hits": 734044,
+    "events": 9903
+   },
+   "cm0_equals_old": false,
+   "events_only_old": 0,
+   "events_only_cm0": 0
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det2_det3_overnight_6-22-26/long_run/260623_06H58_002": {
+   "old": {
+    "hits": 655805,
+    "events": 9920
+   },
+   "cm0": {
+    "hits": 655799,
+    "events": 9920
+   },
+   "cm5": {
+    "hits": 739135,
+    "events": 9920
+   },
+   "cm0_equals_old": false,
+   "events_only_old": 0,
+   "events_only_cm0": 0
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det2_det3_overnight_6-22-26/long_run/260623_06H58_003": {
+   "old": {
+    "hits": 666382,
+    "events": 9954
+   },
+   "cm0": {
+    "hits": 666371,
+    "events": 9954
+   },
+   "cm5": {
+    "hits": 752912,
+    "events": 9954
+   },
+   "cm0_equals_old": false,
+   "events_only_old": 0,
+   "events_only_cm0": 0
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det2_det3_overnight_6-22-26/long_run/260623_06H58_004": {
+   "old": {
+    "hits": 665713,
+    "events": 9948
+   },
+   "cm0": {
+    "hits": 665706,
+    "events": 9948
+   },
+   "cm5": {
+    "hits": 748849,
+    "events": 9948
+   },
+   "cm0_equals_old": false,
+   "events_only_old": 0,
+   "events_only_cm0": 0
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det2_det3_overnight_6-22-26/long_run/260623_06H58_005": {
+   "old": {
+    "hits": 658409,
+    "events": 9932
+   },
+   "cm0": {
+    "hits": 658404,
+    "events": 9932
+   },
+   "cm5": {
+    "hits": 742737,
+    "events": 9932
+   },
+   "cm0_equals_old": false,
+   "events_only_old": 0,
+   "events_only_cm0": 0
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det2_det3_overnight_6-22-26/long_run/260623_06H58_006": {
+   "old": {
+    "hits": 657876,
+    "events": 9934
+   },
+   "cm0": {
+    "hits": 657861,
+    "events": 9934
+   },
+   "cm5": {
+    "hits": 741241,
+    "events": 9934
+   },
+   "cm0_equals_old": false,
+   "events_only_old": 0,
+   "events_only_cm0": 0
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det2_det3_overnight_6-22-26/long_run/260623_06H58_007": {
+   "old": {
+    "hits": 666166,
+    "events": 9942
+   },
+   "cm0": {
+    "hits": 666157,
+    "events": 9942
+   },
+   "cm5": {
+    "hits": 750488,
+    "events": 9943
+   },
+   "cm0_equals_old": false,
+   "events_only_old": 0,
+   "events_only_cm0": 0
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det2_det3_overnight_6-22-26/long_run/260623_06H58_008": {
+   "old": {
+    "hits": 671146,
+    "events": 10196
+   },
+   "cm0": {
+    "hits": 671141,
+    "events": 10196
+   },
+   "cm5": {
+    "hits": 756611,
+    "events": 10196
+   },
+   "cm0_equals_old": false,
+   "events_only_old": 0,
+   "events_only_cm0": 0
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det2_det3_overnight_6-22-26/long_run/260623_06H58_009": {
+   "old": {
+    "hits": 665467,
+    "events": 9950
+   },
+   "cm0": {
+    "hits": 665455,
+    "events": 9950
+   },
+   "cm5": {
+    "hits": 747549,
+    "events": 9951
+   },
+   "cm0_equals_old": false,
+   "events_only_old": 0,
+   "events_only_cm0": 0
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det2_det3_overnight_6-22-26/long_run/260623_06H58_010": {
+   "old": {
+    "hits": 667609,
+    "events": 9931
+   },
+   "cm0": {
+    "hits": 667610,
+    "events": 9931
+   },
+   "cm5": {
+    "hits": 750325,
+    "events": 9931
+   },
+   "cm0_equals_old": false,
+   "events_only_old": 0,
+   "events_only_cm0": 0
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det2_det3_overnight_6-22-26/long_run/260623_06H58_011": {
+   "old": {
+    "hits": 628463,
+    "events": 9861
+   },
+   "cm0": {
+    "hits": 628453,
+    "events": 9861
+   },
+   "cm5": {
+    "hits": 704409,
+    "events": 9862
+   },
+   "cm0_equals_old": false,
+   "events_only_old": 0,
+   "events_only_cm0": 0
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det2_det3_overnight_6-22-26/long_run/260623_06H58_012": {
+   "old": {
+    "hits": 649454,
+    "events": 9783
+   },
+   "cm0": {
+    "hits": 649442,
+    "events": 9783
+   },
+   "cm5": {
+    "hits": 727420,
+    "events": 9783
+   },
+   "cm0_equals_old": false,
+   "events_only_old": 0,
+   "events_only_cm0": 0
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det2_det3_overnight_6-22-26/long_run/260623_06H58_013": {
+   "old": {
+    "hits": 632572,
+    "events": 9806
+   },
+   "cm0": {
+    "hits": 632568,
+    "events": 9806
+   },
+   "cm5": {
+    "hits": 709330,
+    "events": 9806
+   },
+   "cm0_equals_old": false,
+   "events_only_old": 0,
+   "events_only_cm0": 0
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det2_det3_overnight_6-22-26/long_run/260623_06H58_014": {
+   "old": {
+    "hits": 624762,
+    "events": 9808
+   },
+   "cm0": {
+    "hits": 624749,
+    "events": 9808
+   },
+   "cm5": {
+    "hits": 699964,
+    "events": 9808
+   },
+   "cm0_equals_old": false,
+   "events_only_old": 0,
+   "events_only_cm0": 0
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det2_det3_overnight_6-22-26/long_run/260623_06H58_015": {
+   "old": {
+    "hits": 262182,
+    "events": 3892
+   },
+   "cm0": {
+    "hits": 262178,
+    "events": 3892
+   },
+   "cm5": {
+    "hits": 292828,
+    "events": 3892
+   },
+   "cm0_equals_old": false,
+   "events_only_old": 0,
+   "events_only_cm0": 0
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det2_det3_overnight_6-22-26/longer_run/260622_20H20_000": {
+   "old": {
+    "hits": 566847,
+    "events": 9099
+   },
+   "cm0": {
+    "hits": 933028,
+    "events": 10223
+   },
+   "cm5": {
+    "hits": 1030225,
+    "events": 10232
+   },
+   "cm0_equals_old": false,
+   "events_only_old": 0,
+   "events_only_cm0": 1124
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det2_det3_overnight_6-22-26/longer_run/260622_20H20_001": {
+   "old": {
+    "hits": 566694,
+    "events": 9188
+   },
+   "cm0": {
+    "hits": 949009,
+    "events": 10295
+   },
+   "cm5": {
+    "hits": 1053339,
+    "events": 10303
+   },
+   "cm0_equals_old": false,
+   "events_only_old": 0,
+   "events_only_cm0": 1107
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det2_det3_overnight_6-22-26/longer_run/260622_20H20_002": {
+   "old": {
+    "hits": 569818,
+    "events": 9079
+   },
+   "cm0": {
+    "hits": 949104,
+    "events": 10188
+   },
+   "cm5": {
+    "hits": 1052417,
+    "events": 10199
+   },
+   "cm0_equals_old": false,
+   "events_only_old": 0,
+   "events_only_cm0": 1109
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det2_det3_overnight_6-22-26/longer_run/260622_20H20_003": {
+   "old": {
+    "hits": 43208,
+    "events": 848
+   },
+   "cm0": {
+    "hits": 73154,
+    "events": 957
+   },
+   "cm5": {
+    "hits": 80494,
+    "events": 959
+   },
+   "cm0_equals_old": false,
+   "events_only_old": 0,
+   "events_only_cm0": 109
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det2_det3_overnight_6-22-26/resist_450V_drift_1000V/260623_06H26_000": {
+   "old": {
+    "hits": 484720,
+    "events": 7808
+   },
+   "cm0": {
+    "hits": 484720,
+    "events": 7808
+   },
+   "cm5": {
+    "hits": 512929,
+    "events": 7817
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det2_det3_overnight_6-22-26/resist_455V_drift_1000V/260623_05H54_000": {
+   "old": {
+    "hits": 501084,
+    "events": 7940
+   },
+   "cm0": {
+    "hits": 501084,
+    "events": 7940
+   },
+   "cm5": {
+    "hits": 531436,
+    "events": 7945
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det2_det3_overnight_6-22-26/resist_460V_drift_1000V/260623_05H22_000": {
+   "old": {
+    "hits": 483036,
+    "events": 7814
+   },
+   "cm0": {
+    "hits": 483036,
+    "events": 7814
+   },
+   "cm5": {
+    "hits": 511407,
+    "events": 7823
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det2_det3_overnight_6-22-26/resist_465V_drift_1000V/260623_04H50_000": {
+   "old": {
+    "hits": 510116,
+    "events": 7917
+   },
+   "cm0": {
+    "hits": 510116,
+    "events": 7917
+   },
+   "cm5": {
+    "hits": 539373,
+    "events": 7927
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det2_det3_overnight_6-22-26/resist_470V_drift_1000V/260623_04H18_000": {
+   "old": {
+    "hits": 544948,
+    "events": 7761
+   },
+   "cm0": {
+    "hits": 544948,
+    "events": 7761
+   },
+   "cm5": {
+    "hits": 578730,
+    "events": 7768
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det2_det3_overnight_6-22-26/resist_475V_drift_1000V/260623_03H46_000": {
+   "old": {
+    "hits": 439210,
+    "events": 7811
+   },
+   "cm0": {
+    "hits": 439210,
+    "events": 7811
+   },
+   "cm5": {
+    "hits": 475667,
+    "events": 7812
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det2_det3_overnight_6-22-26/resist_480V_drift_1000V/260623_03H14_000": {
+   "old": {
+    "hits": 344549,
+    "events": 7704
+   },
+   "cm0": {
+    "hits": 344549,
+    "events": 7704
+   },
+   "cm5": {
+    "hits": 372366,
+    "events": 7704
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det2_det3_overnight_6-22-26/resist_485V_drift_1000V/260623_02H42_000": {
+   "old": {
+    "hits": 702774,
+    "events": 7899
+   },
+   "cm0": {
+    "hits": 702774,
+    "events": 7899
+   },
+   "cm5": {
+    "hits": 762902,
+    "events": 7905
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det2_det3_overnight_6-22-26/resist_490V_drift_1000V/260623_02H10_000": {
+   "old": {
+    "hits": 661625,
+    "events": 8091
+   },
+   "cm0": {
+    "hits": 661625,
+    "events": 8091
+   },
+   "cm5": {
+    "hits": 726637,
+    "events": 8098
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det2_det3_overnight_6-22-26/resist_495V_drift_1000V/260623_01H37_000": {
+   "old": {
+    "hits": 555501,
+    "events": 7963
+   },
+   "cm0": {
+    "hits": 555349,
+    "events": 7963
+   },
+   "cm5": {
+    "hits": 623605,
+    "events": 7971
+   },
+   "cm0_equals_old": false,
+   "events_only_old": 0,
+   "events_only_cm0": 0
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det2_det3_overnight_6-22-26/resist_500V_drift_1000V/260623_01H05_000": {
+   "old": {
+    "hits": 755266,
+    "events": 8199
+   },
+   "cm0": {
+    "hits": 755257,
+    "events": 8199
+   },
+   "cm5": {
+    "hits": 856673,
+    "events": 8203
+   },
+   "cm0_equals_old": false,
+   "events_only_old": 0,
+   "events_only_cm0": 0
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det2_det3_overnight_6-22-26/resist_505V_drift_1000V/260623_00H33_000": {
+   "old": {
+    "hits": 1093466,
+    "events": 8715
+   },
+   "cm0": {
+    "hits": 1093466,
+    "events": 8715
+   },
+   "cm5": {
+    "hits": 1255859,
+    "events": 8724
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det2_det3_overnight_6-22-26/resist_510V_drift_1000V/260623_00H00_000": {
+   "old": {
+    "hits": 1218713,
+    "events": 8597
+   },
+   "cm0": {
+    "hits": 1218861,
+    "events": 8601
+   },
+   "cm5": {
+    "hits": 1458633,
+    "events": 8605
+   },
+   "cm0_equals_old": false,
+   "events_only_old": 0,
+   "events_only_cm0": 4
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det2_det3_overnight_6-22-26/resist_515V_drift_1000V/260622_23H28_000": {
+   "old": {
+    "hits": 1669698,
+    "events": 7949
+   },
+   "cm0": {
+    "hits": 1668429,
+    "events": 7964
+   },
+   "cm5": {
+    "hits": 2016156,
+    "events": 7968
+   },
+   "cm0_equals_old": false,
+   "events_only_old": 0,
+   "events_only_cm0": 15
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det2_det3_overnight_6-22-26/resist_520V_drift_1000V/260622_22H54_000": {
+   "old": {
+    "hits": 1505157,
+    "events": 7042
+   },
+   "cm0": {
+    "hits": 1504095,
+    "events": 7056
+   },
+   "cm5": {
+    "hits": 1890686,
+    "events": 7057
+   },
+   "cm0_equals_old": false,
+   "events_only_old": 1,
+   "events_only_cm0": 15
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det2_det3_overnight_6-22-26/resist_525V_drift_1000V/260622_22H22_000": {
+   "old": {
+    "hits": 1088203,
+    "events": 8169
+   },
+   "cm0": {
+    "hits": 1088255,
+    "events": 8172
+   },
+   "cm5": {
+    "hits": 1602587,
+    "events": 8172
+   },
+   "cm0_equals_old": false,
+   "events_only_old": 0,
+   "events_only_cm0": 3
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det2_det3_overnight_6-22-26/short_run/260622_19H18_000": {
+   "old": {
+    "hits": 835379,
+    "events": 10113
+   },
+   "cm0": {
+    "hits": 835379,
+    "events": 10113
+   },
+   "cm5": {
+    "hits": 925804,
+    "events": 10116
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det2_det3_overnight_6-22-26/short_run/260622_19H18_001": {
+   "old": {
+    "hits": 456886,
+    "events": 5968
+   },
+   "cm0": {
+    "hits": 456886,
+    "events": 5968
+   },
+   "cm5": {
+    "hits": 504994,
+    "events": 5971
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_day_6-25-26/long_run/260625_11H40_000": {
+   "old": {
+    "hits": 894174,
+    "events": 8440
+   },
+   "cm0": {
+    "hits": 894174,
+    "events": 8440
+   },
+   "cm5": {
+    "hits": 1031210,
+    "events": 8440
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_day_6-25-26/long_run/260625_11H40_001": {
+   "old": {
+    "hits": 790932,
+    "events": 8518
+   },
+   "cm0": {
+    "hits": 790932,
+    "events": 8518
+   },
+   "cm5": {
+    "hits": 910947,
+    "events": 8518
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_day_6-25-26/long_run/260625_11H40_002": {
+   "old": {
+    "hits": 788499,
+    "events": 8479
+   },
+   "cm0": {
+    "hits": 788499,
+    "events": 8479
+   },
+   "cm5": {
+    "hits": 911092,
+    "events": 8479
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_day_6-25-26/long_run/260625_11H40_003": {
+   "old": {
+    "hits": 806495,
+    "events": 8568
+   },
+   "cm0": {
+    "hits": 806495,
+    "events": 8568
+   },
+   "cm5": {
+    "hits": 937724,
+    "events": 8568
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_day_6-25-26/long_run/260625_11H40_004": {
+   "old": {
+    "hits": 832863,
+    "events": 8705
+   },
+   "cm0": {
+    "hits": 832863,
+    "events": 8705
+   },
+   "cm5": {
+    "hits": 967955,
+    "events": 8705
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_day_6-25-26/long_run/260625_11H40_005": {
+   "old": {
+    "hits": 64486,
+    "events": 695
+   },
+   "cm0": {
+    "hits": 64486,
+    "events": 695
+   },
+   "cm5": {
+    "hits": 74827,
+    "events": 695
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_det4_overnight_6-23-26/long_run/260624_03H16_000": {
+   "old": {
+    "hits": 608112,
+    "events": 11945
+   },
+   "cm0": {
+    "hits": 608207,
+    "events": 11951
+   },
+   "cm5": {
+    "hits": 685794,
+    "events": 11951
+   },
+   "cm0_equals_old": false,
+   "events_only_old": 0,
+   "events_only_cm0": 6
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_det4_overnight_6-23-26/long_run/260624_03H16_001": {
+   "old": {
+    "hits": 373807,
+    "events": 11719
+   },
+   "cm0": {
+    "hits": 635187,
+    "events": 11966
+   },
+   "cm5": {
+    "hits": 714567,
+    "events": 11966
+   },
+   "cm0_equals_old": false,
+   "events_only_old": 0,
+   "events_only_cm0": 247
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_det4_overnight_6-23-26/long_run/260624_03H16_002": {
+   "old": {
+    "hits": 653933,
+    "events": 11909
+   },
+   "cm0": {
+    "hits": 654715,
+    "events": 11913
+   },
+   "cm5": {
+    "hits": 737621,
+    "events": 11913
+   },
+   "cm0_equals_old": false,
+   "events_only_old": 0,
+   "events_only_cm0": 4
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_det4_overnight_6-23-26/long_run/260624_03H16_003": {
+   "old": {
+    "hits": 655471,
+    "events": 11855
+   },
+   "cm0": {
+    "hits": 655471,
+    "events": 11855
+   },
+   "cm5": {
+    "hits": 740671,
+    "events": 11855
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_det4_overnight_6-23-26/long_run/260624_03H16_004": {
+   "old": {
+    "hits": 691499,
+    "events": 11813
+   },
+   "cm0": {
+    "hits": 691499,
+    "events": 11813
+   },
+   "cm5": {
+    "hits": 780589,
+    "events": 11813
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_det4_overnight_6-23-26/long_run/260624_03H16_005": {
+   "old": {
+    "hits": 680833,
+    "events": 11922
+   },
+   "cm0": {
+    "hits": 680833,
+    "events": 11922
+   },
+   "cm5": {
+    "hits": 770555,
+    "events": 11922
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_det4_overnight_6-23-26/long_run/260624_03H16_006": {
+   "old": {
+    "hits": 713321,
+    "events": 11858
+   },
+   "cm0": {
+    "hits": 713321,
+    "events": 11858
+   },
+   "cm5": {
+    "hits": 809073,
+    "events": 11858
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_det4_overnight_6-23-26/long_run/260624_03H16_007": {
+   "old": {
+    "hits": 706016,
+    "events": 11817
+   },
+   "cm0": {
+    "hits": 706016,
+    "events": 11817
+   },
+   "cm5": {
+    "hits": 798101,
+    "events": 11817
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_det4_overnight_6-23-26/long_run/260624_03H16_008": {
+   "old": {
+    "hits": 716950,
+    "events": 11818
+   },
+   "cm0": {
+    "hits": 716950,
+    "events": 11818
+   },
+   "cm5": {
+    "hits": 812845,
+    "events": 11818
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_det4_overnight_6-23-26/long_run/260624_03H16_009": {
+   "old": {
+    "hits": 722599,
+    "events": 11798
+   },
+   "cm0": {
+    "hits": 722599,
+    "events": 11798
+   },
+   "cm5": {
+    "hits": 821366,
+    "events": 11798
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_det4_overnight_6-23-26/long_run/260624_03H16_010": {
+   "old": {
+    "hits": 684079,
+    "events": 11832
+   },
+   "cm0": {
+    "hits": 684079,
+    "events": 11832
+   },
+   "cm5": {
+    "hits": 777218,
+    "events": 11832
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_det4_overnight_6-23-26/long_run/260624_03H16_011": {
+   "old": {
+    "hits": 711186,
+    "events": 11768
+   },
+   "cm0": {
+    "hits": 711186,
+    "events": 11768
+   },
+   "cm5": {
+    "hits": 808756,
+    "events": 11768
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_det4_overnight_6-23-26/long_run/260624_03H16_012": {
+   "old": {
+    "hits": 21149,
+    "events": 359
+   },
+   "cm0": {
+    "hits": 21149,
+    "events": 359
+   },
+   "cm5": {
+    "hits": 23911,
+    "events": 359
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_det4_overnight_6-23-26/longer_run/260623_20H29_000": {
+   "old": {
+    "hits": 327493,
+    "events": 6727
+   },
+   "cm0": {
+    "hits": 327493,
+    "events": 6727
+   },
+   "cm5": {
+    "hits": 363601,
+    "events": 6758
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_det4_overnight_6-23-26/longer_run/260623_20H29_001": {
+   "old": {
+    "hits": 328672,
+    "events": 7481
+   },
+   "cm0": {
+    "hits": 328672,
+    "events": 7481
+   },
+   "cm5": {
+    "hits": 366781,
+    "events": 7501
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_det4_overnight_6-23-26/longer_run/260623_20H29_002": {
+   "old": {
+    "hits": 385316,
+    "events": 8087
+   },
+   "cm0": {
+    "hits": 385316,
+    "events": 8087
+   },
+   "cm5": {
+    "hits": 433563,
+    "events": 8110
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_det4_overnight_6-23-26/longer_run/260623_20H29_003": {
+   "old": {
+    "hits": 51194,
+    "events": 1130
+   },
+   "cm0": {
+    "hits": 51194,
+    "events": 1130
+   },
+   "cm5": {
+    "hits": 57282,
+    "events": 1135
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_det4_overnight_6-23-26/resist_465V_drift_600V/260624_02H51_000": {
+   "old": {
+    "hits": 132823,
+    "events": 4113
+   },
+   "cm0": {
+    "hits": 133432,
+    "events": 4126
+   },
+   "cm5": {
+    "hits": 145182,
+    "events": 4126
+   },
+   "cm0_equals_old": false,
+   "events_only_old": 0,
+   "events_only_cm0": 13
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_det4_overnight_6-23-26/resist_470V_drift_600V/260624_02H29_000": {
+   "old": {
+    "hits": 157659,
+    "events": 4735
+   },
+   "cm0": {
+    "hits": 157673,
+    "events": 4741
+   },
+   "cm5": {
+    "hits": 171743,
+    "events": 4742
+   },
+   "cm0_equals_old": false,
+   "events_only_old": 0,
+   "events_only_cm0": 6
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_det4_overnight_6-23-26/resist_475V_drift_600V/260624_02H06_000": {
+   "old": {
+    "hits": 157671,
+    "events": 4781
+   },
+   "cm0": {
+    "hits": 157841,
+    "events": 4786
+   },
+   "cm5": {
+    "hits": 173598,
+    "events": 4786
+   },
+   "cm0_equals_old": false,
+   "events_only_old": 0,
+   "events_only_cm0": 5
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_det4_overnight_6-23-26/resist_480V_drift_600V/260624_01H45_000": {
+   "old": {
+    "hits": 180037,
+    "events": 4693
+   },
+   "cm0": {
+    "hits": 180323,
+    "events": 4699
+   },
+   "cm5": {
+    "hits": 200990,
+    "events": 4699
+   },
+   "cm0_equals_old": false,
+   "events_only_old": 0,
+   "events_only_cm0": 6
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_det4_overnight_6-23-26/resist_485V_drift_600V/260624_01H23_000": {
+   "old": {
+    "hits": 221449,
+    "events": 5406
+   },
+   "cm0": {
+    "hits": 221529,
+    "events": 5408
+   },
+   "cm5": {
+    "hits": 247374,
+    "events": 5408
+   },
+   "cm0_equals_old": false,
+   "events_only_old": 0,
+   "events_only_cm0": 2
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_det4_overnight_6-23-26/resist_490V_drift_600V/260624_01H02_000": {
+   "old": {
+    "hits": 201161,
+    "events": 4575
+   },
+   "cm0": {
+    "hits": 201185,
+    "events": 4583
+   },
+   "cm5": {
+    "hits": 225811,
+    "events": 4583
+   },
+   "cm0_equals_old": false,
+   "events_only_old": 0,
+   "events_only_cm0": 8
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_det4_overnight_6-23-26/resist_495V_drift_600V/260624_00H39_000": {
+   "old": {
+    "hits": 211974,
+    "events": 5046
+   },
+   "cm0": {
+    "hits": 212083,
+    "events": 5051
+   },
+   "cm5": {
+    "hits": 237849,
+    "events": 5051
+   },
+   "cm0_equals_old": false,
+   "events_only_old": 0,
+   "events_only_cm0": 5
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_det4_overnight_6-23-26/resist_500V_drift_600V/260624_00H17_000": {
+   "old": {
+    "hits": 250717,
+    "events": 5377
+   },
+   "cm0": {
+    "hits": 250735,
+    "events": 5382
+   },
+   "cm5": {
+    "hits": 280026,
+    "events": 5382
+   },
+   "cm0_equals_old": false,
+   "events_only_old": 0,
+   "events_only_cm0": 5
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_det4_overnight_6-23-26/resist_505V_drift_600V/260623_23H56_000": {
+   "old": {
+    "hits": 250103,
+    "events": 5146
+   },
+   "cm0": {
+    "hits": 250317,
+    "events": 5152
+   },
+   "cm5": {
+    "hits": 283541,
+    "events": 5152
+   },
+   "cm0_equals_old": false,
+   "events_only_old": 0,
+   "events_only_cm0": 6
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_det4_overnight_6-23-26/resist_510V_drift_600V/260623_23H36_000": {
+   "old": {
+    "hits": 266009,
+    "events": 5130
+   },
+   "cm0": {
+    "hits": 266114,
+    "events": 5137
+   },
+   "cm5": {
+    "hits": 304153,
+    "events": 5137
+   },
+   "cm0_equals_old": false,
+   "events_only_old": 0,
+   "events_only_cm0": 7
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_det4_overnight_6-23-26/resist_515V_drift_600V/260623_23H14_000": {
+   "old": {
+    "hits": 198425,
+    "events": 3671
+   },
+   "cm0": {
+    "hits": 198910,
+    "events": 3684
+   },
+   "cm5": {
+    "hits": 227531,
+    "events": 3684
+   },
+   "cm0_equals_old": false,
+   "events_only_old": 0,
+   "events_only_cm0": 13
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_det4_overnight_6-23-26/resist_520V_drift_600V/260623_22H52_000": {
+   "old": {
+    "hits": 209954,
+    "events": 3069
+   },
+   "cm0": {
+    "hits": 210084,
+    "events": 3078
+   },
+   "cm5": {
+    "hits": 241253,
+    "events": 3086
+   },
+   "cm0_equals_old": false,
+   "events_only_old": 0,
+   "events_only_cm0": 9
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_det4_overnight_6-23-26/resist_525V_drift_600V/260623_22H30_000": {
+   "old": {
+    "hits": 310270,
+    "events": 3766
+   },
+   "cm0": {
+    "hits": 310955,
+    "events": 3774
+   },
+   "cm5": {
+    "hits": 360187,
+    "events": 3777
+   },
+   "cm0_equals_old": false,
+   "events_only_old": 0,
+   "events_only_cm0": 8
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_det4_overnight_6-23-26/short_run/260623_19H29_000": {
+   "old": {
+    "hits": 268515,
+    "events": 4572
+   },
+   "cm0": {
+    "hits": 268515,
+    "events": 4572
+   },
+   "cm5": {
+    "hits": 300231,
+    "events": 4609
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_det4_overnight_6-23-26/short_run/260623_19H29_001": {
+   "old": {
+    "hits": 163165,
+    "events": 3688
+   },
+   "cm0": {
+    "hits": 163165,
+    "events": 3688
+   },
+   "cm5": {
+    "hits": 182845,
+    "events": 3705
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_p2_det1_overnight_6-27-26/long_run_p2_det1_sanity_check/260628_01H29_000": {
+   "old": null,
+   "cm0": {
+    "hits": 3454,
+    "events": 740
+   },
+   "cm5": {
+    "hits": 3809,
+    "events": 740
+   }
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_p2_det1_overnight_6-27-26/long_run_p2_det1_sanity_check/260628_01H34_000": {
+   "old": {
+    "hits": 518893,
+    "events": 10466
+   },
+   "cm0": {
+    "hits": 518840,
+    "events": 10466
+   },
+   "cm5": {
+    "hits": 573991,
+    "events": 10466
+   },
+   "cm0_equals_old": false,
+   "events_only_old": 0,
+   "events_only_cm0": 0
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_p2_det1_overnight_6-27-26/long_run_p2_det1_sanity_check/260628_01H34_001": {
+   "old": {
+    "hits": 468772,
+    "events": 10287
+   },
+   "cm0": {
+    "hits": 468731,
+    "events": 10287
+   },
+   "cm5": {
+    "hits": 517419,
+    "events": 10287
+   },
+   "cm0_equals_old": false,
+   "events_only_old": 0,
+   "events_only_cm0": 0
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_p2_det1_overnight_6-27-26/long_run_p2_det1_sanity_check/260628_01H34_002": {
+   "old": {
+    "hits": 590349,
+    "events": 10906
+   },
+   "cm0": {
+    "hits": 590285,
+    "events": 10907
+   },
+   "cm5": {
+    "hits": 659102,
+    "events": 10907
+   },
+   "cm0_equals_old": false,
+   "events_only_old": 0,
+   "events_only_cm0": 1
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_p2_det1_overnight_6-27-26/long_run_p2_det1_sanity_check/260628_01H34_003": {
+   "old": {
+    "hits": 584324,
+    "events": 10693
+   },
+   "cm0": {
+    "hits": 584371,
+    "events": 10696
+   },
+   "cm5": {
+    "hits": 655222,
+    "events": 10696
+   },
+   "cm0_equals_old": false,
+   "events_only_old": 0,
+   "events_only_cm0": 3
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_p2_det1_overnight_6-27-26/long_run_p2_det1_sanity_check/260628_01H34_004": {
+   "old": {
+    "hits": 485606,
+    "events": 9226
+   },
+   "cm0": {
+    "hits": 486011,
+    "events": 9233
+   },
+   "cm5": {
+    "hits": 539220,
+    "events": 9233
+   },
+   "cm0_equals_old": false,
+   "events_only_old": 0,
+   "events_only_cm0": 7
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_p2_det1_overnight_6-27-26/long_run_p2_det1_sanity_check/260628_01H34_005": {
+   "old": {
+    "hits": 441375,
+    "events": 8923
+   },
+   "cm0": {
+    "hits": 442057,
+    "events": 8930
+   },
+   "cm5": {
+    "hits": 492829,
+    "events": 8930
+   },
+   "cm0_equals_old": false,
+   "events_only_old": 0,
+   "events_only_cm0": 7
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_p2_det1_overnight_6-27-26/long_run_p2_det1_sanity_check/260628_01H34_006": {
+   "old": {
+    "hits": 443909,
+    "events": 9045
+   },
+   "cm0": {
+    "hits": 444278,
+    "events": 9050
+   },
+   "cm5": {
+    "hits": 492655,
+    "events": 9050
+   },
+   "cm0_equals_old": false,
+   "events_only_old": 0,
+   "events_only_cm0": 5
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_p2_det1_overnight_6-27-26/long_run_p2_det1_sanity_check/260628_01H34_007": {
+   "old": {
+    "hits": 446734,
+    "events": 8906
+   },
+   "cm0": {
+    "hits": 446688,
+    "events": 8906
+   },
+   "cm5": {
+    "hits": 495807,
+    "events": 8906
+   },
+   "cm0_equals_old": false,
+   "events_only_old": 0,
+   "events_only_cm0": 0
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_p2_det1_overnight_6-27-26/long_run_p2_det1_sanity_check/260628_01H34_008": {
+   "old": {
+    "hits": 447763,
+    "events": 8986
+   },
+   "cm0": {
+    "hits": 447733,
+    "events": 8986
+   },
+   "cm5": {
+    "hits": 496823,
+    "events": 8986
+   },
+   "cm0_equals_old": false,
+   "events_only_old": 0,
+   "events_only_cm0": 0
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_p2_det1_overnight_6-27-26/long_run_p2_det1_sanity_check/260628_01H34_009": {
+   "old": {
+    "hits": 460976,
+    "events": 8931
+   },
+   "cm0": {
+    "hits": 460930,
+    "events": 8931
+   },
+   "cm5": {
+    "hits": 512309,
+    "events": 8931
+   },
+   "cm0_equals_old": false,
+   "events_only_old": 0,
+   "events_only_cm0": 0
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_p2_det1_overnight_6-27-26/long_run_p2_det1_sanity_check/260628_01H34_010": {
+   "old": {
+    "hits": 472386,
+    "events": 9023
+   },
+   "cm0": {
+    "hits": 472332,
+    "events": 9023
+   },
+   "cm5": {
+    "hits": 526175,
+    "events": 9023
+   },
+   "cm0_equals_old": false,
+   "events_only_old": 0,
+   "events_only_cm0": 0
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_p2_det1_overnight_6-27-26/long_run_p2_det1_sanity_check/260628_01H34_011": {
+   "old": {
+    "hits": 288470,
+    "events": 5874
+   },
+   "cm0": {
+    "hits": 288447,
+    "events": 5874
+   },
+   "cm5": {
+    "hits": 321052,
+    "events": 5874
+   },
+   "cm0_equals_old": false,
+   "events_only_old": 0,
+   "events_only_cm0": 0
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_quick_6-26-26/resist_530V_drift_1200V/260626_19H48_000": {
+   "old": {
+    "hits": 24,
+    "events": 7
+   },
+   "cm0": {
+    "hits": 24,
+    "events": 7
+   },
+   "cm5": {
+    "hits": 24,
+    "events": 7
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_quick_6-26-26/resist_530V_drift_1200V/260626_19H48_001": {
+   "old": {
+    "hits": 299,
+    "events": 197
+   },
+   "cm0": {
+    "hits": 299,
+    "events": 197
+   },
+   "cm5": {
+    "hits": 301,
+    "events": 197
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_quick_6-26-26/resist_530V_drift_1200V/260626_19H48_002": {
+   "old": {
+    "hits": 3065,
+    "events": 2561
+   },
+   "cm0": {
+    "hits": 3065,
+    "events": 2561
+   },
+   "cm5": {
+    "hits": 3068,
+    "events": 2561
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_quick_6-26-26/resist_530V_drift_1200V/260626_19H48_003": {
+   "old": {
+    "hits": 3932,
+    "events": 1426
+   },
+   "cm0": {
+    "hits": 3932,
+    "events": 1426
+   },
+   "cm5": {
+    "hits": 4269,
+    "events": 1426
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_quick_6-26-26/resist_530V_drift_1200V/260626_19H48_004": {
+   "old": {
+    "hits": 1059,
+    "events": 927
+   },
+   "cm0": {
+    "hits": 1059,
+    "events": 927
+   },
+   "cm5": {
+    "hits": 1059,
+    "events": 927
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_quick_6-26-26/resist_530V_drift_1200V/260626_19H48_005": {
+   "old": {
+    "hits": 44196,
+    "events": 2849
+   },
+   "cm0": {
+    "hits": 44196,
+    "events": 2849
+   },
+   "cm5": {
+    "hits": 49626,
+    "events": 2849
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_quick_6-26-26/resist_530V_drift_1200V/260626_19H48_006": {
+   "old": {
+    "hits": 1886,
+    "events": 1626
+   },
+   "cm0": {
+    "hits": 1886,
+    "events": 1626
+   },
+   "cm5": {
+    "hits": 1886,
+    "events": 1626
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_saturday_scan_6-27-26/drift_scan_resist_490V_drift_100V/260627_22H33_000": {
+   "old": {
+    "hits": 89474,
+    "events": 3420
+   },
+   "cm0": {
+    "hits": 89474,
+    "events": 3420
+   },
+   "cm5": {
+    "hits": 102268,
+    "events": 3420
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_saturday_scan_6-27-26/drift_scan_resist_490V_drift_1100V/260627_21H16_000": {
+   "old": {
+    "hits": 176536,
+    "events": 3468
+   },
+   "cm0": {
+    "hits": 176536,
+    "events": 3468
+   },
+   "cm5": {
+    "hits": 193254,
+    "events": 3468
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_saturday_scan_6-27-26/drift_scan_resist_490V_drift_300V/260627_22H17_000": {
+   "old": {
+    "hits": 103879,
+    "events": 3434
+   },
+   "cm0": {
+    "hits": 103879,
+    "events": 3434
+   },
+   "cm5": {
+    "hits": 115792,
+    "events": 3434
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_saturday_scan_6-27-26/drift_scan_resist_490V_drift_500V/260627_22H02_000": {
+   "old": {
+    "hits": 152013,
+    "events": 3489
+   },
+   "cm0": {
+    "hits": 152013,
+    "events": 3489
+   },
+   "cm5": {
+    "hits": 167144,
+    "events": 3489
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_saturday_scan_6-27-26/drift_scan_resist_490V_drift_700V/260627_21H46_000": {
+   "old": {
+    "hits": 162331,
+    "events": 3534
+   },
+   "cm0": {
+    "hits": 162331,
+    "events": 3534
+   },
+   "cm5": {
+    "hits": 178968,
+    "events": 3534
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_saturday_scan_6-27-26/drift_scan_resist_490V_drift_900V/260627_21H31_000": {
+   "old": {
+    "hits": 175332,
+    "events": 3465
+   },
+   "cm0": {
+    "hits": 175332,
+    "events": 3465
+   },
+   "cm5": {
+    "hits": 192953,
+    "events": 3465
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_saturday_scan_6-27-26/hv_scan2_resist_460V_drift_1000V/260627_21H00_000": {
+   "old": {
+    "hits": 85397,
+    "events": 3318
+   },
+   "cm0": {
+    "hits": 85397,
+    "events": 3318
+   },
+   "cm5": {
+    "hits": 88261,
+    "events": 3318
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_saturday_scan_6-27-26/hv_scan2_resist_470V_drift_1000V/260627_20H45_000": {
+   "old": {
+    "hits": 93583,
+    "events": 3376
+   },
+   "cm0": {
+    "hits": 93583,
+    "events": 3376
+   },
+   "cm5": {
+    "hits": 97381,
+    "events": 3376
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_saturday_scan_6-27-26/hv_scan2_resist_480V_drift_1000V/260627_20H29_000": {
+   "old": {
+    "hits": 131767,
+    "events": 3489
+   },
+   "cm0": {
+    "hits": 131767,
+    "events": 3489
+   },
+   "cm5": {
+    "hits": 141781,
+    "events": 3489
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_saturday_scan_6-27-26/hv_scan2_resist_490V_drift_1000V/260627_20H14_000": {
+   "old": {
+    "hits": 165498,
+    "events": 3565
+   },
+   "cm0": {
+    "hits": 165498,
+    "events": 3565
+   },
+   "cm5": {
+    "hits": 180584,
+    "events": 3565
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_saturday_scan_6-27-26/hv_scan2_resist_500V_drift_1000V/260627_19H58_000": {
+   "old": {
+    "hits": 243111,
+    "events": 3520
+   },
+   "cm0": {
+    "hits": 243111,
+    "events": 3520
+   },
+   "cm5": {
+    "hits": 273695,
+    "events": 3520
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_saturday_scan_6-27-26/hv_scan2_resist_510V_drift_1000V/260627_19H43_000": {
+   "old": {
+    "hits": 395661,
+    "events": 3770
+   },
+   "cm0": {
+    "hits": 395661,
+    "events": 3770
+   },
+   "cm5": {
+    "hits": 458692,
+    "events": 3770
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_saturday_scan_6-27-26/hv_scan2_resist_520V_drift_1000V/260627_19H27_000": {
+   "old": {
+    "hits": 1076188,
+    "events": 4016
+   },
+   "cm0": {
+    "hits": 1076188,
+    "events": 4016
+   },
+   "cm5": {
+    "hits": 1228067,
+    "events": 4016
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_saturday_scan_6-27-26/hv_scan_resist_425V_drift_1000V/260627_19H12_000": {
+   "old": {
+    "hits": 53438,
+    "events": 3340
+   },
+   "cm0": {
+    "hits": 53438,
+    "events": 3340
+   },
+   "cm5": {
+    "hits": 54942,
+    "events": 3340
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_saturday_scan_6-27-26/hv_scan_resist_435V_drift_1000V/260627_18H56_000": {
+   "old": {
+    "hits": 63306,
+    "events": 3464
+   },
+   "cm0": {
+    "hits": 63306,
+    "events": 3464
+   },
+   "cm5": {
+    "hits": 64896,
+    "events": 3464
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_saturday_scan_6-27-26/hv_scan_resist_445V_drift_1000V/260627_18H41_000": {
+   "old": {
+    "hits": 66683,
+    "events": 3318
+   },
+   "cm0": {
+    "hits": 66683,
+    "events": 3318
+   },
+   "cm5": {
+    "hits": 68182,
+    "events": 3318
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_saturday_scan_6-27-26/hv_scan_resist_455V_drift_1000V/260627_18H25_000": {
+   "old": {
+    "hits": 74775,
+    "events": 3423
+   },
+   "cm0": {
+    "hits": 74775,
+    "events": 3423
+   },
+   "cm5": {
+    "hits": 76117,
+    "events": 3423
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_saturday_scan_6-27-26/hv_scan_resist_465V_drift_1000V/260627_18H10_000": {
+   "old": {
+    "hits": 87261,
+    "events": 3403
+   },
+   "cm0": {
+    "hits": 87261,
+    "events": 3403
+   },
+   "cm5": {
+    "hits": 90157,
+    "events": 3403
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_saturday_scan_6-27-26/hv_scan_resist_475V_drift_1000V/260627_17H54_000": {
+   "old": {
+    "hits": 110878,
+    "events": 3456
+   },
+   "cm0": {
+    "hits": 110878,
+    "events": 3456
+   },
+   "cm5": {
+    "hits": 116577,
+    "events": 3456
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_saturday_scan_6-27-26/hv_scan_resist_485V_drift_1000V/260627_17H39_000": {
+   "old": {
+    "hits": 134857,
+    "events": 3370
+   },
+   "cm0": {
+    "hits": 134857,
+    "events": 3370
+   },
+   "cm5": {
+    "hits": 144477,
+    "events": 3370
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_saturday_scan_6-27-26/hv_scan_resist_495V_drift_1000V/260627_17H23_000": {
+   "old": {
+    "hits": 205677,
+    "events": 3528
+   },
+   "cm0": {
+    "hits": 205677,
+    "events": 3528
+   },
+   "cm5": {
+    "hits": 227060,
+    "events": 3528
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_saturday_scan_6-27-26/hv_scan_resist_505V_drift_1000V/260627_17H08_000": {
+   "old": {
+    "hits": 302277,
+    "events": 3652
+   },
+   "cm0": {
+    "hits": 302277,
+    "events": 3652
+   },
+   "cm5": {
+    "hits": 346764,
+    "events": 3652
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_saturday_scan_6-27-26/hv_scan_resist_515V_drift_1000V/260627_16H52_000": {
+   "old": {
+    "hits": 565057,
+    "events": 3777
+   },
+   "cm0": {
+    "hits": 565057,
+    "events": 3777
+   },
+   "cm5": {
+    "hits": 649568,
+    "events": 3777
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_saturday_scan_6-27-26/hv_scan_resist_525V_drift_1000V/260627_16H37_000": {
+   "old": {
+    "hits": 1383810,
+    "events": 4154
+   },
+   "cm0": {
+    "hits": 1383810,
+    "events": 4154
+   },
+   "cm5": {
+    "hits": 1572377,
+    "events": 4155
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_saturday_scan_6-27-26/long_run_resist_490V_drift_1000V/260627_22H49_000": {
+   "old": {
+    "hits": 446808,
+    "events": 9001
+   },
+   "cm0": {
+    "hits": 446808,
+    "events": 9001
+   },
+   "cm5": {
+    "hits": 491112,
+    "events": 9001
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_saturday_scan_6-27-26/long_run_resist_490V_drift_1000V/260627_22H49_001": {
+   "old": {
+    "hits": 463968,
+    "events": 8964
+   },
+   "cm0": {
+    "hits": 463968,
+    "events": 8964
+   },
+   "cm5": {
+    "hits": 512020,
+    "events": 8964
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_saturday_scan_6-27-26/long_run_resist_490V_drift_1000V/260627_22H49_002": {
+   "old": {
+    "hits": 437556,
+    "events": 8953
+   },
+   "cm0": {
+    "hits": 437556,
+    "events": 8953
+   },
+   "cm5": {
+    "hits": 482206,
+    "events": 8953
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_saturday_scan_6-27-26/long_run_resist_490V_drift_1000V/260627_22H49_003": {
+   "old": {
+    "hits": 284098,
+    "events": 5875
+   },
+   "cm0": {
+    "hits": 284098,
+    "events": 5875
+   },
+   "cm5": {
+    "hits": 313801,
+    "events": 5875
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_test_6-22-26/short_run/260622_15H51_000": {
+   "old": {
+    "hits": 18727,
+    "events": 177
+   },
+   "cm0": {
+    "hits": 10036,
+    "events": 180
+   },
+   "cm5": {
+    "hits": 11849,
+    "events": 180
+   },
+   "cm0_equals_old": false,
+   "events_only_old": 0,
+   "events_only_cm0": 3
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_test_6-22-26/short_run/260622_15H55_000": {
+   "old": {
+    "hits": 538399,
+    "events": 8634
+   },
+   "cm0": {
+    "hits": 538399,
+    "events": 8634
+   },
+   "cm5": {
+    "hits": 626247,
+    "events": 8634
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det3_test_6-22-26/short_run/260622_15H55_001": {
+   "old": {
+    "hits": 269686,
+    "events": 5006
+   },
+   "cm0": {
+    "hits": 269686,
+    "events": 5006
+   },
+   "cm5": {
+    "hits": 309425,
+    "events": 5006
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det4_day_6-24-26/long_run/260624_12H22_000": {
+   "old": {
+    "hits": 694988,
+    "events": 12163
+   },
+   "cm0": {
+    "hits": 696141,
+    "events": 12196
+   },
+   "cm5": {
+    "hits": 774405,
+    "events": 12197
+   },
+   "cm0_equals_old": false,
+   "events_only_old": 0,
+   "events_only_cm0": 33
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det4_day_6-24-26/long_run/260624_12H22_001": {
+   "old": {
+    "hits": 687895,
+    "events": 12149
+   },
+   "cm0": {
+    "hits": 689096,
+    "events": 12182
+   },
+   "cm5": {
+    "hits": 766381,
+    "events": 12184
+   },
+   "cm0_equals_old": false,
+   "events_only_old": 0,
+   "events_only_cm0": 33
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det4_day_6-24-26/long_run/260624_12H22_002": {
+   "old": {
+    "hits": 682920,
+    "events": 12101
+   },
+   "cm0": {
+    "hits": 683011,
+    "events": 12115
+   },
+   "cm5": {
+    "hits": 759668,
+    "events": 12115
+   },
+   "cm0_equals_old": false,
+   "events_only_old": 0,
+   "events_only_cm0": 14
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det4_day_6-24-26/long_run/260624_12H22_003": {
+   "old": {
+    "hits": 662279,
+    "events": 11944
+   },
+   "cm0": {
+    "hits": 662658,
+    "events": 11961
+   },
+   "cm5": {
+    "hits": 739030,
+    "events": 11964
+   },
+   "cm0_equals_old": false,
+   "events_only_old": 0,
+   "events_only_cm0": 17
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det4_day_6-24-26/long_run/260624_12H22_004": {
+   "old": {
+    "hits": 650019,
+    "events": 12049
+   },
+   "cm0": {
+    "hits": 650668,
+    "events": 12070
+   },
+   "cm5": {
+    "hits": 725840,
+    "events": 12068
+   },
+   "cm0_equals_old": false,
+   "events_only_old": 0,
+   "events_only_cm0": 21
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det4_day_6-24-26/long_run/260624_12H22_005": {
+   "old": {
+    "hits": 623836,
+    "events": 12071
+   },
+   "cm0": {
+    "hits": 623870,
+    "events": 12081
+   },
+   "cm5": {
+    "hits": 692037,
+    "events": 12082
+   },
+   "cm0_equals_old": false,
+   "events_only_old": 0,
+   "events_only_cm0": 10
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det4_day_6-24-26/long_run/260624_12H22_006": {
+   "old": {
+    "hits": 632586,
+    "events": 11969
+   },
+   "cm0": {
+    "hits": 632626,
+    "events": 11980
+   },
+   "cm5": {
+    "hits": 703800,
+    "events": 11982
+   },
+   "cm0_equals_old": false,
+   "events_only_old": 0,
+   "events_only_cm0": 11
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det4_day_6-24-26/long_run/260624_12H22_007": {
+   "old": {
+    "hits": 612986,
+    "events": 11357
+   },
+   "cm0": {
+    "hits": 613113,
+    "events": 11365
+   },
+   "cm5": {
+    "hits": 683862,
+    "events": 11371
+   },
+   "cm0_equals_old": false,
+   "events_only_old": 0,
+   "events_only_cm0": 8
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det6_det7_hv_scan_6-26-26/resist_det6_400V_det7_400V_drift_700V/260626_11H52_000": {
+   "old": {
+    "hits": 142610,
+    "events": 2641
+   },
+   "cm0": {
+    "hits": 142626,
+    "events": 2642
+   },
+   "cm5": {
+    "hits": 167714,
+    "events": 2642
+   },
+   "cm0_equals_old": false,
+   "events_only_old": 0,
+   "events_only_cm0": 1
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det6_det7_hv_scan_6-26-26/resist_det6_405V_det7_405V_drift_700V/260626_14H51_000": {
+   "old": {
+    "hits": 316743,
+    "events": 6884
+   },
+   "cm0": {
+    "hits": 316743,
+    "events": 6884
+   },
+   "cm5": {
+    "hits": 366007,
+    "events": 6884
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det6_det7_hv_scan_6-26-26/resist_det6_410V_det7_410V_drift_700V/260626_11H41_000": {
+   "old": {
+    "hits": 147620,
+    "events": 2606
+   },
+   "cm0": {
+    "hits": 147632,
+    "events": 2607
+   },
+   "cm5": {
+    "hits": 171744,
+    "events": 2608
+   },
+   "cm0_equals_old": false,
+   "events_only_old": 0,
+   "events_only_cm0": 1
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det6_det7_hv_scan_6-26-26/resist_det6_415V_det7_415V_drift_700V/260626_14H31_000": {
+   "old": {
+    "hits": 376529,
+    "events": 6837
+   },
+   "cm0": {
+    "hits": 376529,
+    "events": 6837
+   },
+   "cm5": {
+    "hits": 437889,
+    "events": 6837
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det6_det7_hv_scan_6-26-26/resist_det6_420V_det7_420V_drift_700V/260626_11H30_000": {
+   "old": {
+    "hits": 186660,
+    "events": 2514
+   },
+   "cm0": {
+    "hits": 186663,
+    "events": 2516
+   },
+   "cm5": {
+    "hits": 218373,
+    "events": 2518
+   },
+   "cm0_equals_old": false,
+   "events_only_old": 0,
+   "events_only_cm0": 2
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det6_det7_hv_scan_6-26-26/resist_det6_425V_det7_425V_drift_700V/260626_14H10_000": {
+   "old": {
+    "hits": 432409,
+    "events": 6225
+   },
+   "cm0": {
+    "hits": 432409,
+    "events": 6225
+   },
+   "cm5": {
+    "hits": 500638,
+    "events": 6225
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det6_det7_hv_scan_6-26-26/resist_det6_430V_det7_430V_drift_700V/260626_11H18_000": {
+   "old": {
+    "hits": 221643,
+    "events": 2668
+   },
+   "cm0": {
+    "hits": 221643,
+    "events": 2668
+   },
+   "cm5": {
+    "hits": 253926,
+    "events": 2668
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det6_det7_hv_scan_6-26-26/resist_det6_435V_det7_435V_drift_700V/260626_13H49_000": {
+   "old": {
+    "hits": 528306,
+    "events": 5345
+   },
+   "cm0": {
+    "hits": 528306,
+    "events": 5345
+   },
+   "cm5": {
+    "hits": 610913,
+    "events": 5346
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det6_det7_hv_scan_6-26-26/resist_det6_440V_det7_440V_drift_700V/260626_11H06_000": {
+   "old": {
+    "hits": 235087,
+    "events": 2013
+   },
+   "cm0": {
+    "hits": 235121,
+    "events": 2018
+   },
+   "cm5": {
+    "hits": 275909,
+    "events": 2018
+   },
+   "cm0_equals_old": false,
+   "events_only_old": 0,
+   "events_only_cm0": 5
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det6_det7_hv_scan_6-26-26/resist_det6_445V_det7_445V_drift_700V/260626_13H28_000": {
+   "old": {
+    "hits": 659485,
+    "events": 5485
+   },
+   "cm0": {
+    "hits": 659485,
+    "events": 5485
+   },
+   "cm5": {
+    "hits": 771049,
+    "events": 5485
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det6_det7_hv_scan_6-26-26/resist_det6_450V_det7_450V_drift_700V/260626_10H54_000": {
+   "old": {
+    "hits": 284452,
+    "events": 1948
+   },
+   "cm0": {
+    "hits": 284720,
+    "events": 1951
+   },
+   "cm5": {
+    "hits": 334735,
+    "events": 1953
+   },
+   "cm0_equals_old": false,
+   "events_only_old": 0,
+   "events_only_cm0": 3
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det6_det7_hv_scan_6-26-26/resist_det6_465V_det7_465V_drift_700V/260626_13H07_000": {
+   "old": {
+    "hits": 1038254,
+    "events": 5782
+   },
+   "cm0": {
+    "hits": 1038254,
+    "events": 5782
+   },
+   "cm5": {
+    "hits": 1227880,
+    "events": 5782
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det6_det7_hv_scan_6-26-26/resist_det6_480V_det7_480V_drift_700V/260626_10H38_000": {
+   "old": {
+    "hits": 688686,
+    "events": 3077
+   },
+   "cm0": {
+    "hits": 688698,
+    "events": 3083
+   },
+   "cm5": {
+    "hits": 824179,
+    "events": 3084
+   },
+   "cm0_equals_old": false,
+   "events_only_old": 0,
+   "events_only_cm0": 6
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det6_det7_hv_scan_6-26-26/resist_det6_485V_det7_485V_drift_700V/260626_12H45_000": {
+   "old": {
+    "hits": 1790128,
+    "events": 6507
+   },
+   "cm0": {
+    "hits": 1790128,
+    "events": 6507
+   },
+   "cm5": {
+    "hits": 2147200,
+    "events": 6507
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det6_det7_hv_scan_6-26-26/resist_det6_495V_det7_495V_drift_700V/260626_12H25_000": {
+   "old": {
+    "hits": 3071468,
+    "events": 6782
+   },
+   "cm0": {
+    "hits": 3071468,
+    "events": 6782
+   },
+   "cm5": {
+    "hits": 3662882,
+    "events": 6783
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det6_det7_hv_scan_6-26-26/resist_det6_500V_det7_500V_drift_700V/260626_10H26_000": {
+   "old": {
+    "hits": 1762496,
+    "events": 3366
+   },
+   "cm0": {
+    "hits": 1762498,
+    "events": 3367
+   },
+   "cm5": {
+    "hits": 2090438,
+    "events": 3367
+   },
+   "cm0_equals_old": false,
+   "events_only_old": 0,
+   "events_only_cm0": 1
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det6_det7_overnight_6-26-26/long_run/260626_06H03_000": {
+   "old": {
+    "hits": 4418766,
+    "events": 12628
+   },
+   "cm0": {
+    "hits": 4418766,
+    "events": 12628
+   },
+   "cm5": {
+    "hits": 5284452,
+    "events": 12629
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det6_det7_overnight_6-26-26/long_run/260626_06H03_001": {
+   "old": {
+    "hits": 4534895,
+    "events": 12577
+   },
+   "cm0": {
+    "hits": 4534895,
+    "events": 12577
+   },
+   "cm5": {
+    "hits": 5419453,
+    "events": 12578
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det6_det7_overnight_6-26-26/long_run/260626_06H03_002": {
+   "old": {
+    "hits": 4746126,
+    "events": 12670
+   },
+   "cm0": {
+    "hits": 4746126,
+    "events": 12670
+   },
+   "cm5": {
+    "hits": 5678345,
+    "events": 12672
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det6_det7_overnight_6-26-26/long_run/260626_06H03_003": {
+   "old": {
+    "hits": 4856295,
+    "events": 12650
+   },
+   "cm0": {
+    "hits": 4856295,
+    "events": 12650
+   },
+   "cm5": {
+    "hits": 5801197,
+    "events": 12653
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det6_det7_overnight_6-26-26/long_run/260626_06H03_004": {
+   "old": {
+    "hits": 4965502,
+    "events": 12707
+   },
+   "cm0": {
+    "hits": 4965502,
+    "events": 12707
+   },
+   "cm5": {
+    "hits": 5933231,
+    "events": 12707
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det6_det7_overnight_6-26-26/long_run/260626_06H03_005": {
+   "old": {
+    "hits": 5047061,
+    "events": 12765
+   },
+   "cm0": {
+    "hits": 5047061,
+    "events": 12765
+   },
+   "cm5": {
+    "hits": 6033841,
+    "events": 12765
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det6_det7_overnight_6-26-26/long_run/260626_06H03_006": {
+   "old": {
+    "hits": 3848232,
+    "events": 9268
+   },
+   "cm0": {
+    "hits": 3848232,
+    "events": 9268
+   },
+   "cm5": {
+    "hits": 4594980,
+    "events": 9269
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det6_det7_overnight_6-26-26/longer_run/260626_01H58_000": {
+   "old": {
+    "hits": 3517488,
+    "events": 11895
+   },
+   "cm0": {
+    "hits": 3517488,
+    "events": 11895
+   },
+   "cm5": {
+    "hits": 4197891,
+    "events": 11902
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det6_det7_overnight_6-26-26/longer_run/260626_01H58_001": {
+   "old": {
+    "hits": 3727816,
+    "events": 11917
+   },
+   "cm0": {
+    "hits": 3727816,
+    "events": 11917
+   },
+   "cm5": {
+    "hits": 4435899,
+    "events": 11922
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det6_det7_overnight_6-26-26/longer_run/260626_01H58_002": {
+   "old": {
+    "hits": 4152422,
+    "events": 11875
+   },
+   "cm0": {
+    "hits": 4152422,
+    "events": 11875
+   },
+   "cm5": {
+    "hits": 4949290,
+    "events": 11878
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det6_det7_overnight_6-26-26/longer_run/260626_01H58_003": {
+   "old": {
+    "hits": 604097,
+    "events": 1650
+   },
+   "cm0": {
+    "hits": 604097,
+    "events": 1650
+   },
+   "cm5": {
+    "hits": 716443,
+    "events": 1650
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det6_det7_overnight_6-26-26/resist_det6_505V_det7_480V_drift_700V/260626_05H43_000": {
+   "old": {
+    "hits": 2515042,
+    "events": 6771
+   },
+   "cm0": {
+    "hits": 2515042,
+    "events": 6771
+   },
+   "cm5": {
+    "hits": 2999155,
+    "events": 6772
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det6_det7_overnight_6-26-26/resist_det6_510V_det7_485V_drift_700V/260626_05H22_000": {
+   "old": {
+    "hits": 2922647,
+    "events": 6812
+   },
+   "cm0": {
+    "hits": 2922647,
+    "events": 6812
+   },
+   "cm5": {
+    "hits": 3493340,
+    "events": 6812
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det6_det7_overnight_6-26-26/resist_det6_515V_det7_490V_drift_700V/260626_05H01_000": {
+   "old": {
+    "hits": 3354229,
+    "events": 6669
+   },
+   "cm0": {
+    "hits": 3354229,
+    "events": 6669
+   },
+   "cm5": {
+    "hits": 4018987,
+    "events": 6669
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det6_det7_overnight_6-26-26/resist_det6_520V_det7_495V_drift_700V/260626_04H40_000": {
+   "old": {
+    "hits": 3842877,
+    "events": 6795
+   },
+   "cm0": {
+    "hits": 3842877,
+    "events": 6795
+   },
+   "cm5": {
+    "hits": 4618140,
+    "events": 6795
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det6_det7_overnight_6-26-26/resist_det6_525V_det7_500V_drift_700V/260626_04H19_000": {
+   "old": {
+    "hits": 4454803,
+    "events": 6935
+   },
+   "cm0": {
+    "hits": 4454803,
+    "events": 6935
+   },
+   "cm5": {
+    "hits": 5327583,
+    "events": 6935
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det6_det7_overnight_6-26-26/resist_det6_530V_det7_505V_drift_700V/260626_03H59_000": {
+   "old": {
+    "hits": 5222295,
+    "events": 6817
+   },
+   "cm0": {
+    "hits": 5222295,
+    "events": 6817
+   },
+   "cm5": {
+    "hits": 6241089,
+    "events": 6817
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det6_det7_overnight_6-26-26/short_run/260626_00H58_000": {
+   "old": {
+    "hits": 3088164,
+    "events": 11749
+   },
+   "cm0": {
+    "hits": 3088164,
+    "events": 11749
+   },
+   "cm5": {
+    "hits": 3699327,
+    "events": 11755
+   },
+   "cm0_equals_old": true
+  },
+  "/eos/experiment/ntof/data/x17/cosmic_bench/june_tests/mx17_det6_det7_overnight_6-26-26/short_run/260626_00H58_001": {
+   "old": {
+    "hits": 1579635,
+    "events": 6770
+   },
+   "cm0": {
+    "hits": 1871502,
+    "events": 6800
+   },
+   "cm5": {
+    "hits": 2235787,
+    "events": 6801
+   },
+   "cm0_equals_old": false,
+   "events_only_old": 0,
+   "events_only_cm0": 30
+  }
+ },
+ "run": {
+  "mx17_det1_det2_overnight_6-17-26": {
+   "acq": 11,
+   "old_hits": 3409189,
+   "old_events": 88296,
+   "cm0_hits": 3402029,
+   "cm0_events": 88281,
+   "cm5_hits": 4057256,
+   "cm5_events": 88399,
+   "cm0_equals_old": 2,
+   "events_only_old": 39,
+   "events_only_cm0": 24
+  },
+  "mx17_det2_det3_overnight_6-22-26": {
+   "acq": 38,
+   "old_hits": 25688820,
+   "old_events": 324338,
+   "cm0_hits": 26844122,
+   "cm0_events": 327823,
+   "cm5_hits": 30716377,
+   "cm5_events": 327947,
+   "cm0_equals_old": 12,
+   "events_only_old": 1,
+   "events_only_cm0": 3486
+  },
+  "mx17_det3_day_6-25-26": {
+   "acq": 6,
+   "old_hits": 4177449,
+   "old_events": 43405,
+   "cm0_hits": 4177449,
+   "cm0_events": 43405,
+   "cm5_hits": 4833755,
+   "cm5_events": 43405,
+   "cm0_equals_old": 6,
+   "events_only_old": 0,
+   "events_only_cm0": 0
+  },
+  "mx17_det3_det4_overnight_6-23-26": {
+   "acq": 32,
+   "old_hits": 12211562,
+   "old_events": 233606,
+   "cm0_hits": 12476748,
+   "cm0_events": 233956,
+   "cm5_hits": 14084608,
+   "cm5_events": 234101,
+   "cm0_equals_old": 16,
+   "events_only_old": 0,
+   "events_only_cm0": 350
+  },
+  "mx17_det3_p2_det1_overnight_6-27-26": {
+   "acq": 13,
+   "cm0_hits": 5654157,
+   "cm0_events": 112029,
+   "cm5_hits": 6286413,
+   "cm5_events": 112029,
+   "cm0_equals_old": 0,
+   "events_only_old": 0,
+   "events_only_cm0": 23,
+   "old_hits": 5649557,
+   "old_events": 111266
+  },
+  "mx17_det3_quick_6-26-26": {
+   "acq": 7,
+   "old_hits": 54461,
+   "old_events": 9593,
+   "cm0_hits": 54461,
+   "cm0_events": 9593,
+   "cm5_hits": 60233,
+   "cm5_events": 9593,
+   "cm0_equals_old": 7,
+   "events_only_old": 0,
+   "events_only_cm0": 0
+  },
+  "mx17_det3_saturday_scan_6-27-26": {
+   "acq": 28,
+   "old_hits": 7731219,
+   "old_events": 117542,
+   "cm0_hits": 7731219,
+   "cm0_events": 117542,
+   "cm5_hits": 8629096,
+   "cm5_events": 117543,
+   "cm0_equals_old": 28,
+   "events_only_old": 0,
+   "events_only_cm0": 0
+  },
+  "mx17_det3_test_6-22-26": {
+   "acq": 3,
+   "old_hits": 826812,
+   "old_events": 13817,
+   "cm0_hits": 818121,
+   "cm0_events": 13820,
+   "cm5_hits": 947521,
+   "cm5_events": 13820,
+   "cm0_equals_old": 2,
+   "events_only_old": 0,
+   "events_only_cm0": 3
+  },
+  "mx17_det4_day_6-24-26": {
+   "acq": 8,
+   "old_hits": 5247509,
+   "old_events": 95803,
+   "cm0_hits": 5251183,
+   "cm0_events": 95950,
+   "cm5_hits": 5845023,
+   "cm5_events": 95963,
+   "cm0_equals_old": 0,
+   "events_only_old": 0,
+   "events_only_cm0": 147
+  },
+  "mx17_det6_det7_hv_scan_6-26-26": {
+   "acq": 16,
+   "old_hits": 11882576,
+   "old_events": 70680,
+   "cm0_hits": 11882923,
+   "cm0_events": 70699,
+   "cm5_hits": 14061476,
+   "cm5_events": 70707,
+   "cm0_equals_old": 9,
+   "events_only_old": 0,
+   "events_only_cm0": 19
+  },
+  "mx17_det6_det7_overnight_6-26-26": {
+   "acq": 19,
+   "old_hits": 71398392,
+   "old_events": 181920,
+   "cm0_hits": 71690259,
+   "cm0_events": 181950,
+   "cm5_hits": 85678430,
+   "cm5_events": 181981,
+   "cm0_equals_old": 18,
+   "events_only_old": 0,
+   "events_only_cm0": 30
+  }
+ }
+}
