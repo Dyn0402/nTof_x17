@@ -47,11 +47,19 @@ def main():
     cal = CalibrationBundle.load(a.src)
     old = dict(cal.hyper)
     cal.hyper = dict(h)
+    # an arm fitted with v free carries its own drift velocity; the bundle must use it (the t0 table below is
+    # measured with it too).  Arms with v fixed record the seed bundle's v, so this is a no-op for them.
+    v_old = float(cal.v_drift)
+    if rec.get('v') is not None:
+        cal.v_drift = float(rec['v'])
     with open(a.cache, 'rb') as f:
         events = pickle.load(f)
     train = {e: events[e] for e in sorted(events)[:a.n_train]}
     tmp = a.out + '_provisional'
     cal.save(tmp, note='hypers set, t0_abs not yet re-measured')
+    if rec.get('depth_bins'):
+        from wft import model as wm
+        wm.set_depth_bins(int(rec['depth_bins']))      # the t0 table under the arm's own depth grid
     t0abs, t0sig = wc.measure_t0_abs(train, tmp, h, float(cal.v_drift))
     cal.t0_abs = t0abs
     prov = dict(cal.provenance)
@@ -68,6 +76,7 @@ def main():
         w0_kw_note='w0/kw copied from the source bundle; re-measure from the '
                    'first reco pass under this bundle (bench/set_w0.py)',
         superseded_hyper={k: float(v) for k, v in old.items()},
+        v_drift=float(cal.v_drift), superseded_v_drift=v_old, depth_bins=rec.get('depth_bins'),
         evidence='sps_beam_test_26/analysis/plane_ratio (per-view head-on '
                  'closure; bench + H4 run_71)')
     cal.provenance = prov
