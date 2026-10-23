@@ -6,6 +6,8 @@ set +u; source /cvmfs/sft.cern.ch/lcg/views/LCG_110/x86_64-el9-gcc14-opt/setup.s
 export RERUN_CODE_COMMIT=$(basename $CODE | sed 's/^code_//')
 export WFT_RND_DIR=/eos/user/d/dneff/x17rerun/regression/wft_model_sat_det3
 export MPLBACKEND=Agg
+# pass-wide reconstruction settings (recorded in every STAGES/*.json); RERUN_PLAN W2: NNLS column guard on
+export WFT_COL_GUARD=${WFT_COL_GUARD:-0.01}
 W=${_CONDOR_SCRATCH_DIR:-/tmp/$USER/stage_$$}; mkdir -p $W
 env -u PYTHONPATH -u PYTHONHOME /eos/user/d/dneff/venvs/ntof-lock-cvmfs/bin/python $CODE/rerun/stage_job.py --work $W "$@"
 rc=$?

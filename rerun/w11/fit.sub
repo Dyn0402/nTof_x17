@@ -1,0 +1,11 @@
+executable     = $ENV(HOME)/x17rerun/w11/run_fit.sh
+arguments      = $(code) $(args)
+output         = log/$(Cluster).$(ProcId).out
+error          = log/$(Cluster).$(ProcId).err
+log            = log/fit.log
+request_cpus   = 8
+request_memory = 12000
+environment    = "OMP_NUM_THREADS=8"
++JobFlavour    = "$(flavour:tomorrow)"
+should_transfer_files = NO
+queue args from $(jobfile)

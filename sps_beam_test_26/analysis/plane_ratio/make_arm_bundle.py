@@ -59,7 +59,8 @@ def main():
     cal.save(tmp, note='hypers set, t0_abs not yet re-measured')
     if rec.get('depth_bins'):
         from wft import model as wm
-        wm.set_depth_bins(int(rec['depth_bins']))      # the t0 table under the arm's own depth grid
+        cal.n_depth_bins = int(rec['depth_bins'])      # the bundle reconstructs on the grid it was fitted on
+        wm.set_depth_bins(int(rec['depth_bins']))      # and the t0 table is measured on it
     t0abs, t0sig = wc.measure_t0_abs(train, tmp, h, float(cal.v_drift))
     cal.t0_abs = t0abs
     prov = dict(cal.provenance)

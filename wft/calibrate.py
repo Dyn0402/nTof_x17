@@ -51,8 +51,13 @@ FIT_NAMES = list(HYPER_NAMES) + ['v']
 # --------------------------------------------------------------------- cache
 def build_cache(cfg, n_events: int, pad_mm: float = 5.0, z_lo: float = -3.0,
                 z_hi: float = 33.0, out_path: str | None = None,
-                res_cut_mm: float = 10.0, veto: int = 50):
-    """Waveform windows along the M3 reference corridor, for calibration only."""
+                res_cut_mm: float = 10.0, veto: int = 50, align_path: str | None = None):
+    """Waveform windows along the M3 reference corridor, for calibration only.
+
+    align_path: the alignment that places the M3 reference at the detector (``ref_mesh``).  Default: the hits chain's
+    ``alignment_tpc_veto<veto>``, whose plane is biased by the compressed hit times and pushes the fitted v 3-15 %
+    high (rerun C8).  The re-run passes the waveform alignment (mx_june_wft/01_alignment.py) instead (W12).  The
+    event list and the hits residual cut still come from the hits event cache."""
     import uproot
     from . import io as wio
     from qa_config import M3_CHI2_CUT, M3_MIN_NCLUS
@@ -60,7 +65,7 @@ def build_cache(cfg, n_events: int, pad_mm: float = 5.0, z_lo: float = -3.0,
     from M3RefTracking import M3RefTracking, get_xy_angles
 
     cache = os.path.join(cfg.out_dir('cache'), f'event_results_veto{veto}.pkl')
-    align = os.path.join(cfg.OUT_BASE, f'alignment_tpc_veto{veto}', 'alignment.json')
+    align = align_path or os.path.join(cfg.OUT_BASE, f'alignment_tpc_veto{veto}', 'alignment.json')
     if not (os.path.exists(cache) and os.path.exists(align)):
         raise SystemExit(f'need the hits-chain alignment + event cache for the '
                          f'reference geometry:\n  {cache}\n  {align}\n'

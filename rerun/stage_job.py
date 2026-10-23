@@ -4,7 +4,8 @@
     stage_job.py <key> [--gen rr1] [--parts run_config,m3,decoded,hits] [--work DIR] [--no-sync]
                  (--module wft.calibrate | --script mx_june_wft/01_alignment.py) [-- stage args...]
 
-The stage gets [key, *args], or args alone with '{key}' substituted when they contain it (wft.cli reco {key}).
+The stage gets [key, *args], or args alone with '{key}' substituted when they contain it (wft.cli reco {key});
+'{out}' in an argument becomes the row's Analysis dir (cfg.OUT_BASE) inside the job.
 
 1. stage the row's inputs from EOS into <work>/bench (rerun/inputs.py, canonical directory names, INPUTS.json);
 2. pull the row's Analysis subtree <EOS_ANALYSIS_ROOT>/<run>/<subrun>/<det>/ into <work>/Analysis (earlier stages'
@@ -132,6 +133,8 @@ def main():
     rc = 0
     try:
         # the row key goes first, unless the arguments place it themselves ('{key}', e.g. wft.cli reco {key})
+        # '{out}' = the row's Analysis dir in this job (cfg.OUT_BASE), for paths to earlier stages' products
+        rest = [x.replace('{out}', cfg.OUT_BASE) for x in rest]
         margs = [x.replace('{key}', a.key) for x in rest] if any('{key}' in x for x in rest) else [a.key, *rest]
         if a.module:
             r = importlib.import_module(a.module).main(margs)
@@ -155,6 +158,7 @@ def main():
     written = sorted(k for k, v in after.items() if before.get(k) != v)
     json.dump(dict(when=now.isoformat(timespec='seconds'), stage=what, args=rest, rc=rc, seconds=round(dt),
                    code=commit, generation=a.gen, inputs=os.path.join(row['eos_run_dir'], row['subrun']),
+                   env={k: v for k, v in os.environ.items() if k.startswith('WFT_')},
                    wrote=written), open(os.path.join(logd, tag + '.json'), 'w'), indent=1)
     if not a.no_sync:
         changed = {k for k, v in snapshot(os.path.join(ana, rel)).items() if before.get(k) != v}
