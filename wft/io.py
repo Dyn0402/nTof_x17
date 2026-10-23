@@ -110,6 +110,7 @@ class FeuReader:
         sub -= np.repeat(cms, CNS_BLOCK, axis=2)
         self.noise = (1.4826 * np.median(np.abs(sub), axis=(0, 1))).astype(np.float32)
         self.event_ids = self.tree.arrays(['eventId'], library='np')['eventId']
+        self.incomplete: Dict[int, int] = {}     # eventId -> samples present, for events iter_events skipped
 
     def iter_events(self, wanted: Optional[set] = None) -> Iterator[tuple]:
         """Yield (eventId, ftst, W[512, n_sample]) for the wanted events."""
@@ -124,10 +125,16 @@ class FeuReader:
             base = int(block[0])
             for i in block:
                 j = i - base
-                wfm = arr['amplitude'][j].reshape(-1, 512).astype(np.float32) - self.ped
-                # the window length is per EVENT, not per file: det4's 6-24 run
-                # mixes 32- and 37-sample events, so taking it from the pedestal
-                # events crashes the common-mode reshape partway through a file
+                a = arr['amplitude'][j]
+                # An event is usable only if every sample of the file's window is there.  The nt entry carries
+                # no sample index in this reshape, so an event missing a 5-sample packet (FEU bandwidth loss,
+                # 0.1-0.3 % of bench events) would come out with its later samples shifted early; an event longer
+                # than the window is two triggers fused by the pre-fa80c06 decoder (det4 6-24's "37-sample"
+                # events).  Both are skipped and listed in self.incomplete (rerun/decoder_audit, 2026-10-23).
+                if len(a) != self.n_sample * 512:
+                    self.incomplete[int(arr['eventId'][j])] = len(a) // 512
+                    continue
+                wfm = a.reshape(-1, 512).astype(np.float32) - self.ped
                 ns = wfm.shape[0]
                 if CM_MASK > 0:
                     wfm = masked_block_median(wfm, self.noise)

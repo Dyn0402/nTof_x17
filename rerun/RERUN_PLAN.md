@@ -95,11 +95,14 @@ The detectors are gone. Anything not answerable from the existing data, simulati
 as a limitation: the asymmetry mechanism, the resistive-strip mask, the τ and c2 tails beyond the SPS window, a
 dry-gas bench run, Stephan's unanswered geometry questions, det6's window-limited deep charge.
 
-## 8 · Open decisions for Dylan
+## 8 · Decisions on the open questions (Dylan, 2026-10-23 evening)
 
-1. Re-decode **every** June row (one decoder provenance; recommended) or only the five nights that differ?
-2. Quoted golden runs: det3 g_det3_wknd and det2 g_det2 (largest), or the 8-12 keys sat_det3 / o22_long_det2?
-3. Diffusion in the RC kernel: per-chamber measured Dp (recommended; Magboltz is the comparison) or Magboltz at each
-   run's fitted water (no free parameter, but det3's excess then sits in the residuals)?
-4. det6: quote it with its own slow v and window-limited column as a stated limitation, or drop it from the
-   resolution headline?
+1. **Re-decode every June row** with one decoder, after an audit that the decoder is now correct; audit the M3
+   decoding/tracking chain the same way.
+2. **Analysis first.** Quote from the largest-statistics runs if they show no problem; fall back to other runs if they do.
+3. **Diffusion: per-chamber measured Dp** (Magboltz as the comparison), but its consistency across chambers and runs
+   is a result to be checked; if the measurements disagree, write it up as a limit of our understanding with an
+   error bar, not hide it.
+4. **det6: full analysis**, every number produced; what to quote is decided at writing time (det6 is known poor).
+5. C8: redo the calibration fully with the reference position from the waveforms. C9: investigate the common mode
+   thoroughly and build the correction into the analysis.
