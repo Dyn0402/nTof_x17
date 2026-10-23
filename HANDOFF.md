@@ -18,7 +18,7 @@ status table at its end).
 - n_TOF chamber A (`sept26_prelim_analysis/xasym_pointing.py`, run_145): capsule crossing moves ≤ 0.09 mm, ≤ 0.003 mm
   after re-alignment (crossing error ±0.31). C: flat ±0.1 mm → ±0.05 mm on the A+C capsule X.
 - C2 decided per the plan (PAPER_PLAN C2 = ready; X1 added; tripwire row added); paper1 §8 has the asymmetry
-  subsection outline, paper2 §4/§5 the mismatch + toy cost; pushed to Overleaf (paper1).
+  subsection outline, paper2 §4/§5 the mismatch + toy cost; paper1 pushed to Overleaf (4bb41fc; dash recursion workaround in papers/README.md).
 - Deck republished with a toy slide: https://dylan-neff.web.cern.ch/notes/mx17-xasym-plan.html.
 
 **Next steps:**

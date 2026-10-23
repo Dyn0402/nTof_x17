@@ -76,6 +76,15 @@ Each paper is its own Overleaf project, kept in step with `papers/<paper>/` by `
 
 It never forces. If Overleaf moved on, a push is refused: pull first. Then push to `origin main` as usual.
 
+**"Maximum function recursion depth (1000) reached"** (seen on the laptop, 2026-10-23): git runs `git-subtree`
+under dash, which caps recursion, and this repo's history is deep enough to hit it. Run the split under bash, then
+push the split commit (still a plain fast-forward, never forced):
+
+    D=$(mktemp -d); for f in /usr/lib/git-core/*; do ln -s "$f" $D/; done
+    rm $D/git-subtree; sed '1s|.*|#!/bin/bash|' /usr/lib/git-core/git-subtree > $D/git-subtree; chmod +x $D/git-subtree
+    split=$(GIT_EXEC_PATH=$D git subtree split -q --prefix=papers/paper1)
+    git fetch overleaf-paper1 && git merge-base --is-ancestor overleaf-paper1/main $split && git push overleaf-paper1 $split:main
+
 **Tracked changes are an Overleaf-only feature.** The git bridge carries the plain text, not the review
 markup. So:
 - Accept or reject Stephan's tracked changes in Overleaf before you pull.
