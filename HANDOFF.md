@@ -33,7 +33,7 @@ status table at its end).
 **Gotchas:**
 - At |tan| > 0.15 the mesh p0 is not a usable position metric in toys: half the fits move t0 by one 60 ns bin and p0
   slides by w × 60 ns even in closure. Compare positions at the charge-centroid time.
-- The laptop TeX lacks authblk/cleveref: the papers compile on Overleaf (or the desktop), not here.
+- The laptop now compiles the papers locally (user-local TeX Live 2026, see the MPGD2026 section).
 - The desktop was offline all day (Windows booted); everything here ran on the laptop's det3 calib cache and the
   run_145 stage-3 tables.
 
@@ -175,7 +175,7 @@ Limit is 5 pages, excluding authors/affiliations, acknowledgements and reference
 5. Before submission: remove all `\askDylan`/`% TODO Dylan`, then submit.
 
 **Gotchas / decisions:**
-- The laptop's TeX Live 2023 can't load the current newtx. For a local preview, copy the folder and swap the newtx lines in
+- The laptop now has a user-local TeX Live 2026 (`~/texlive/2026`, on PATH via ~/.bashrc), so it compiles all three papers as Overleaf does.
   jinstpub.sty for `\RequirePackage{mathptmx}` (same Times metrics). Never commit that swap; Overleaf compiles the real one.
 - `\askDylan{}` inside `\emailAdd`/`\affiliation` overflows TeX's input stack (mailto link), so those placeholders are plain text.
 - The capsule offset quoted (~9 mm) is the September per-run imaging (−9.3 ± 0.3 mm), which matches the talk's "~1 cm".

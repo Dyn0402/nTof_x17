@@ -1,4 +1,12 @@
 draft_preview.pdf
 *.aux
+*.bbl
+*.blg
 *.log
 *.out
+*.toc
+*.tdo
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+main.pdf
