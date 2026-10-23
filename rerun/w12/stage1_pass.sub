@@ -1,0 +1,10 @@
+executable     = $ENV(HOME)/x17rerun/stage_job.sh
+arguments      = $(code) $(args)
+output         = log/$(node).out
+error          = log/$(node).err
+log            = log/pass.log
+request_cpus   = $(cpus)
+request_memory = $(mem)
++JobFlavour    = "workday"
+should_transfer_files = NO
+queue

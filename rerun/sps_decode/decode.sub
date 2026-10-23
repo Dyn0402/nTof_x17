@@ -1,0 +1,11 @@
+executable   = job.sh
+arguments    = $(fdf)
+output       = log/$(ProcId).out
+error        = log/$(ProcId).err
+log          = log/decode.log
+request_cpus = 1
+request_memory = 6000
++JobFlavour  = "workday"
+should_transfer_files = NO
+max_materialize = 60
+queue fdf from fdfs.txt

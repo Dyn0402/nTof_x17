@@ -153,10 +153,25 @@ def main():
     ax0, ax1 = np.percentile(recpos[:, 0], [0.5, 99.5])
     ay0, ay1 = np.percentile(recpos[:, 1], [0.5, 99.5])
 
+    # Events the decoder audit found incomplete on this detector's FEUs (FEU packet loss, <= 0.23 % of events) were
+    # not measured: they leave the denominator rather than count as misses (rerun C11).  The re-run's stager writes
+    # the list next to the staged data; without it (desktop runs) nothing is removed.
+    inc_path = os.path.join(os.path.dirname(cfg.combined_hits_dir.rstrip('/')), 'incomplete_events.json')
+    not_measured = set()
+    if os.path.exists(inc_path):
+        with open(inc_path) as f:
+            for per_feu in json.load(f).values():
+                for feu, ids in per_feu.items():
+                    if int(feu) in cfg.MX17_FEUS:
+                        not_measured.update(int(i) for i in ids)
+    n_not_measured = 0
     cat = {k: 0 for k in ('no_hit', 'hit_no_reco', 'spark', 'reco_far', 'reco_near')}
     rlist = []
     for e, x, y in zip(evn, px, py):
         if e < det_lo or e > det_hi:
+            continue
+        if e in not_measured:
+            n_not_measured += 1
             continue
         if not (np.isfinite(x) and np.isfinite(y) and ax0 <= x <= ax1
                 and ay0 <= y <= ay1):
@@ -195,7 +210,8 @@ def main():
     summary = dict(run_key=args.run_key, source=args.source,
                    max_dropped=(None if args.source == 'hits' or args.max_dropped < 0
                                 else args.max_dropped),
-                   n_rays=n, R_mm=R,
+                   n_rays=n, R_mm=R, n_rays_not_measured=n_not_measured,
+                   incomplete_events_file=inc_path if os.path.exists(inc_path) else None,
                    within_R=pct['reco_near'], reco_at_all=reco_all,
                    reco_far=pct['reco_far'], hit_no_reco=pct['hit_no_reco'],
                    no_hit=pct['no_hit'], spark_cat=pct['spark'],
