@@ -35,6 +35,12 @@ CHUNK = 400
 CM_MASK = int(os.environ.get('WFT_CM_MASK', 0))
 CM_MIN_KEEP = 16
 CM_SIGMA = 5.0
+#: Coherent-event guard: the masked median is only valid if the channels it is taken from are quiet.  In a spark or
+#: whole-chip saturation (det7 6-26: chip median ~3700 ADC) the plain median cancels the coherent shift, while the
+#: median of the unmasked channels leaves +-900 ADC on every strip.  If the unmasked channels' spread around the
+#: masked median (1.4826 x MAD over samples and channels) exceeds CM_GUARD x the chip's median noise, the plain median
+#: is kept for that chip.  Found 2026-10-23 (rerun/m3_audit judge: masked CM lost 9 % of det7 track matches).
+CM_GUARD = 3.0
 
 
 def masked_block_median(wfm: np.ndarray, noise: np.ndarray, mask_half: int = None) -> np.ndarray:
@@ -61,7 +67,11 @@ def masked_block_median(wfm: np.ndarray, noise: np.ndarray, mask_half: int = Non
     for b in range(nblk):
         if keep[b].all() or keep[b].sum() < CM_MIN_KEEP:
             continue
-        cms[:, b] = np.median(blk[:, b, keep[b]], axis=1)
+        m = np.median(blk[:, b, keep[b]], axis=1)
+        spread = 1.4826 * np.median(np.abs(blk[:, b, keep[b]] - m[:, None]))
+        if spread > CM_GUARD * max(np.median(noise[b * CNS_BLOCK:(b + 1) * CNS_BLOCK]), 1.0):
+            continue
+        cms[:, b] = m
     return wfm - np.repeat(cms, CNS_BLOCK, axis=1)
 
 

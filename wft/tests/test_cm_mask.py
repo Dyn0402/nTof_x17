@@ -26,3 +26,15 @@ def test_wide_cluster_does_not_bias_the_baseline():
     bias_plain = abs(np.median(plain[12, quiet]))
     assert bias_plain > 10                                      # the plain median is pulled up by the track
     assert abs(np.median(masked[12, quiet])) < bias_plain / 4   # the masked one is not
+
+
+def test_coherent_event_falls_back_to_plain():
+    # a spark-like, non-uniform coherent shift over a whole chip: the unmasked channels are not quiet, so the
+    # masked median would be wrong; the guard keeps the plain median for that chip (rerun/m3_audit, det7 6-26)
+    rng = np.random.default_rng(3)
+    w = rng.normal(0, 8, (32, 512)).astype(np.float32)
+    w[10:, 64:128] += np.linspace(0, 3000, 64)[None, :]
+    noise = np.full(512, 8.0)
+    plain = wio.masked_block_median(w.copy(), noise, 0)
+    masked = wio.masked_block_median(w.copy(), noise, 5)
+    assert np.allclose(masked[:, 64:128], plain[:, 64:128])
