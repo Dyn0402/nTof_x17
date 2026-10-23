@@ -4,9 +4,11 @@
 protocol with its traps: per detector and per run condition; kernel ordering enforced
 (\texttt{check\_kernel\_ordering}); $v$ from the kernel hyperfit, never from a Magboltz prior; cut units that move with $v$.}
 \analysis{R9}{collect the protocol and the traps from WFT \S15, RETIRE\_C2GTC1, the in-situ findings}
-\tbw{Frozen calibration (C2, 2026-10-23): r06, delay kernel, $c_2=0.6\,c_1$, symmetric in X, per-event
-$\sigma_{0,x}=0.25$\,mm (the physical prompt footprint: strip integration 0.225\,mm alone; the head-on stacks'
-0.35--0.43 also carry the asymmetric neighbour copy).}
+\tbw{Frozen calibration (C2, 2026-10-23): the physical RC kernel --- prompt footprint $\sigma_0$ per view
+($\sigma_{0,x}\approx0.25$\,mm, the physical value: strip integration 0.225\,mm alone; the head-on stacks' 0.35--0.43
+also carry the asymmetric neighbour copy), RC spread $D_\mathrm{rc}$ along the resistive strips, drift diffusion; no
+fitted copy amplitudes. $v$ fitted with the reference position profiled (a reference taken from a hit-time alignment
+biases $v$ by 3--15\,\%). The delay kernel (r06) is the comparison.}
 \tbw{Main known mismatch: the model is symmetric in X, the June boards are not~\cite{paperI}. It shows as the X
 $\chi^2$ structure and the $\sigma_{0,x}$ tension between per-event fits and stacks. Cost (toy, \S\ref{sec:floor}):
 $-0.05$\textdegree{} overall, $\mp0.19$\textdegree{} head-on, $+0.007$\textdegree{} on the resolution. Not modelled: no

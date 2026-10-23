@@ -80,8 +80,8 @@ The mechanism simulations (strip width, funnelling, ρ_s, anisotropy) and the st
 |---|---|
 | Mechanism | closed unexplained 2026-10-23 |
 | The toy check | done, §43 |
-| Freeze r06 (C2) | decided 2026-10-23 per this plan; PAPER_PLAN C2 updated; pvy95 (per-view Y ratio) not adopted |
-| σ0_x 0.25 per event | adopted as nominal on paper; **not yet applied**: needs the D1 requote pass (bench products on the desktop) with `sigma_p0_x = 0.25` added to the r06 bundles, and FLEET_DIGEST rebuilt |
+| Freeze (C2) | superseded the same day: Dylan chose the physical RC kernel for the from-scratch re-run (rerun/RERUN_PLAN.md) |
+| σ0_x 0.25 per event | part of the RC kernel calibration in the re-run (W1) |
 | wft.xasym as ± systematic | available (`wft.xasym.correct_x`) |
 | n_TOF chamber A pointing | done on run_145 (`sept26_prelim_analysis/xasym_pointing.py`): ≤ 0.09 mm before, ≤ 0.003 mm after re-alignment; the raw-ADC session scale is still unmeasured, the bench range 0.44–1.57 is used |
 | n_TOF chamber C | flat ±0.1 mm X (±0.05 mm on the A+C capsule X) |
