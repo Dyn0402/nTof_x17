@@ -26,7 +26,8 @@ needed: calibrate with v from timing (arm D, recommended) or another protocol. T
 - **v fixed at the timing v (arm D)** gives the same or lower training χ² and the best held-out resolution on every
   chamber. Recommended protocol: v from timing (vdrift_consistency, per chamber/condition), kernel σ0_x, σ0_y,
   D_rc,y from the waveform fit with p0 profiled ±2 mm, w0/kw measured under the final bundle.
-- Stability of D under one more reference rebuild: `w12/itD1.dag` (see C17 addendum when it lands).
+- Stability of D under one more reference rebuild (C17 addendum): resolution and bias stable to 0.03°, σ0 ~5 %,
+  D_rc ±4 % (det2/3/6) but ±17–19 % (det4/7, flat direction). Final arm-D bundles: `<golden rel>/wft/w12/it1/timeD/bundle`.
 - Caveat: timing v has 2–4 % errors and det7 has two inconsistent values (36.8 long run vs 32.8 longer run).
 
 **To start the pass once the protocol is chosen (all on lxplus, ~/x17rerun/pass):**
