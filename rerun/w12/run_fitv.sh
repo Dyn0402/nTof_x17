@@ -9,7 +9,7 @@ PY="env -u PYTHONPATH -u PYTHONHOME /eos/user/d/dneff/venvs/ntof-lock-cvmfs/bin/
 export WFT_COL_GUARD=${WFT_COL_GUARD:-0.01}
 A=/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_rr1/$REL/wft
 O=$A/$SUBD; mkdir -p $O
-W=${_CONDOR_SCRATCH_DIR:-/tmp/$USER/fv_$$}; mkdir -p $W; cd $W
+W=${_CONDOR_SCRATCH_DIR:-/tmp/$USER}/fv_$$; mkdir -p $W; cd $W
 cp $A/vrefit/cache.pkl cache.pkl
 cp -r $SRC src_bundle
 $PY - <<P

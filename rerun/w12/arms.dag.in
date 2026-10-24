@@ -1,0 +1,30 @@
+JOB profA_det2 arm1.sub
+VARS profA_det2 code="CODE" args="det2 mx17_det2_det3_overnight_6-22-26/longer_run/mx17_2 it0 w12/it0/fit_pinned/arm.json profA sigma_p0_x,sigma_p0_y,rc_D_y,v --p0-profile --p0-window 1.0 --p0-step 0.1" cpus="8" mem="12000" node="profA_det2"
+JOB profB_det2 arm1.sub
+VARS profB_det2 code="CODE" args="det2 mx17_det2_det3_overnight_6-22-26/longer_run/mx17_2 it0 w12/it0/fit_pinned/arm.json profB sigma_p0_x,sigma_p0_y,rc_D_y,v --p0-profile --p0-window 2.0 --p0-step 0.2" cpus="8" mem="12000" node="profB_det2"
+JOB pinDZ_det2 arm1.sub
+VARS pinDZ_det2 code="CODE" args="det2 mx17_det2_det3_overnight_6-22-26/longer_run/mx17_2 it0 w12/it0/fit_pinned/arm.json pinDZ sigma_p0_x,sigma_p0_y,rc_D_y,v,dz_x,dz_y " cpus="8" mem="12000" node="pinDZ_det2"
+JOB profA_det3 arm1.sub
+VARS profA_det3 code="CODE" args="det3 mx17_det3_saturday_scan_6-27-26/long_run_resist_490V_drift_1000V/mx17_3 it0 w12/it0/fit_pinned/arm.json profA sigma_p0_x,sigma_p0_y,rc_D_y,v --p0-profile --p0-window 1.0 --p0-step 0.1" cpus="8" mem="12000" node="profA_det3"
+JOB profB_det3 arm1.sub
+VARS profB_det3 code="CODE" args="det3 mx17_det3_saturday_scan_6-27-26/long_run_resist_490V_drift_1000V/mx17_3 it0 w12/it0/fit_pinned/arm.json profB sigma_p0_x,sigma_p0_y,rc_D_y,v --p0-profile --p0-window 2.0 --p0-step 0.2" cpus="8" mem="12000" node="profB_det3"
+JOB pinDZ_det3 arm1.sub
+VARS pinDZ_det3 code="CODE" args="det3 mx17_det3_saturday_scan_6-27-26/long_run_resist_490V_drift_1000V/mx17_3 it0 w12/it0/fit_pinned/arm.json pinDZ sigma_p0_x,sigma_p0_y,rc_D_y,v,dz_x,dz_y " cpus="8" mem="12000" node="pinDZ_det3"
+JOB profA_det4 arm1.sub
+VARS profA_det4 code="CODE" args="det4 mx17_det4_day_6-24-26/long_run/mx17_4 it0 w12/it0/fit_pinned/arm.json profA sigma_p0_x,sigma_p0_y,rc_D_y,v --p0-profile --p0-window 1.0 --p0-step 0.1" cpus="8" mem="12000" node="profA_det4"
+JOB profB_det4 arm1.sub
+VARS profB_det4 code="CODE" args="det4 mx17_det4_day_6-24-26/long_run/mx17_4 it0 w12/it0/fit_pinned/arm.json profB sigma_p0_x,sigma_p0_y,rc_D_y,v --p0-profile --p0-window 2.0 --p0-step 0.2" cpus="8" mem="12000" node="profB_det4"
+JOB pinDZ_det4 arm1.sub
+VARS pinDZ_det4 code="CODE" args="det4 mx17_det4_day_6-24-26/long_run/mx17_4 it0 w12/it0/fit_pinned/arm.json pinDZ sigma_p0_x,sigma_p0_y,rc_D_y,v,dz_x,dz_y " cpus="8" mem="12000" node="pinDZ_det4"
+JOB profA_det6 arm1.sub
+VARS profA_det6 code="CODE" args="det6 mx17_det6_det7_overnight_6-26-26/long_run/mx17_6 it0 w12/it0/fit_pinned/arm.json profA sigma_p0_x,sigma_p0_y,rc_D_y,v --p0-profile --p0-window 1.0 --p0-step 0.1" cpus="8" mem="12000" node="profA_det6"
+JOB profB_det6 arm1.sub
+VARS profB_det6 code="CODE" args="det6 mx17_det6_det7_overnight_6-26-26/long_run/mx17_6 it0 w12/it0/fit_pinned/arm.json profB sigma_p0_x,sigma_p0_y,rc_D_y,v --p0-profile --p0-window 2.0 --p0-step 0.2" cpus="8" mem="12000" node="profB_det6"
+JOB pinDZ_det6 arm1.sub
+VARS pinDZ_det6 code="CODE" args="det6 mx17_det6_det7_overnight_6-26-26/long_run/mx17_6 it0 w12/it0/fit_pinned/arm.json pinDZ sigma_p0_x,sigma_p0_y,rc_D_y,v,dz_x,dz_y " cpus="8" mem="12000" node="pinDZ_det6"
+JOB profA_det7 arm1.sub
+VARS profA_det7 code="CODE" args="det7 mx17_det6_det7_overnight_6-26-26/long_run/mx17_7 it0 w12/it0/fit_pinned/arm.json profA sigma_p0_x,sigma_p0_y,rc_D_y,v --p0-profile --p0-window 1.0 --p0-step 0.1" cpus="8" mem="12000" node="profA_det7"
+JOB profB_det7 arm1.sub
+VARS profB_det7 code="CODE" args="det7 mx17_det6_det7_overnight_6-26-26/long_run/mx17_7 it0 w12/it0/fit_pinned/arm.json profB sigma_p0_x,sigma_p0_y,rc_D_y,v --p0-profile --p0-window 2.0 --p0-step 0.2" cpus="8" mem="12000" node="profB_det7"
+JOB pinDZ_det7 arm1.sub
+VARS pinDZ_det7 code="CODE" args="det7 mx17_det6_det7_overnight_6-26-26/long_run/mx17_7 it0 w12/it0/fit_pinned/arm.json pinDZ sigma_p0_x,sigma_p0_y,rc_D_y,v,dz_x,dz_y " cpus="8" mem="12000" node="pinDZ_det7"

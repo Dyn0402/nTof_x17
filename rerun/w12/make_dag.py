@@ -16,6 +16,8 @@ ROWS = {'det2': ('o22_long_det2', 'mx17_det2_det3_overnight_6-22-26/longer_run/m
         'det7': ('g_det7_long', 'mx17_det6_det7_overnight_6-26-26/long_run/mx17_7')}
 CM = os.environ.get('W12_CM', '0')
 SRC = os.environ.get('W12_SRC', 'w11q_cm0')
+#: matched events reconstructed per iteration (the alignment needs a few thousand; RC reco is ~2-3x the old cost)
+LIMIT = os.environ.get('W12_LIMIT', '4000')
 
 
 def main():
@@ -30,7 +32,7 @@ def main():
         jobs = [
             ('RECO', 'stage1.sub', 16, 24000,
              f'{key} --module wft.cli -- reco {{key}} --bundle {bundle} --out {{out}}/wft/w12/{it}/events.parquet '
-             f'--matched-only --limit 8000 --jobs 16'),
+             f'--matched-only --limit {LIMIT} --jobs 16'),
             ('ALIGN', 'stage1.sub', 1, 8000,
              f'{key} --parts run_config,m3,hits --script mx_june_wft/01_alignment.py -- '
              f'--table {{out}}/wft/w12/{it}/events.parquet --out {{out}}/wft/w12/{it}/alignment'),

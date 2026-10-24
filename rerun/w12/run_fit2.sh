@@ -10,7 +10,7 @@ PY="env -u PYTHONPATH -u PYTHONHOME /eos/user/d/dneff/venvs/ntof-lock-cvmfs/bin/
 export WFT_COL_GUARD=${WFT_COL_GUARD:-0.01}
 A=/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_rr1/$REL/wft
 O=$A/w12/$IT/fit_$MODE; mkdir -p $O
-W=${_CONDOR_SCRATCH_DIR:-/tmp/$USER/w12_$$}; mkdir -p $W; cd $W
+W=${_CONDOR_SCRATCH_DIR:-/tmp/$USER}/w12_$$; mkdir -p $W; cd $W
 cp $A/w12/$IT/cache.pkl cache.pkl
 cp /eos/user/d/dneff/plane_ratio/inputs/$DET/bundle.tgz . && mkdir -p src && tar xzf bundle.tgz -C src
 B=$(ls -d $W/src/*/)

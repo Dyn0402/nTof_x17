@@ -34,23 +34,30 @@ BASE = ('c1', 'kY', 'tau_s', 'sigma_s', 'sigma_p0', 'Dp')
 STEP = dict(c1=0.03, kY=0.30, tau_s=20.0, sigma_s=10.0, sigma_p0=0.05, Dp=0.003,
             c2_over_c1=0.1, c2_over_c1_x=0.1, c2_over_c1_y=0.1, cX=0.3,
             c1_asym_x=0.2, sigma_p0_x=0.05, sigma_p0_y=0.05, tau_y_fac=0.3,
-            rc_D_y=1e-4, rc_D_x=1e-4, v=1.0)
+            rc_D_y=1e-4, rc_D_x=1e-4, v=1.0, dz_x=0.5, dz_y=0.5)
 # sigma_p0 floor 0.03 (19_ratio_recal used 0.10, but det6's production
 # bundle sits at 0.039 -- a seed outside the box rejects every step)
 LO = dict(c1=0.05, kY=0.3, tau_s=30.0, sigma_s=1.0, sigma_p0=0.03, Dp=0.001,
           c2_over_c1=0.0, c2_over_c1_x=0.0, c2_over_c1_y=0.0, cX=0.3,
           c1_asym_x=-0.95, sigma_p0_x=0.03, sigma_p0_y=0.03, tau_y_fac=0.3,
-          rc_D_y=0.0, rc_D_x=0.0, v=10.0)
+          rc_D_y=0.0, rc_D_x=0.0, v=10.0, dz_x=-10.0, dz_y=-10.0)
 HI = dict(c1=0.60, kY=6.0, tau_s=400.0, sigma_s=400.0, sigma_p0=1.50, Dp=0.100,
           c2_over_c1=0.95, c2_over_c1_x=0.95, c2_over_c1_y=0.95, cX=6.0,
           c1_asym_x=0.95, sigma_p0_x=1.50, sigma_p0_y=1.50, tau_y_fac=4.0,
-          rc_D_y=0.005, rc_D_x=0.005, v=80.0)
+          rc_D_y=0.005, rc_D_x=0.005, v=80.0, dz_x=10.0, dz_y=10.0)
 # ``v`` (um/ns) may be listed in --free: the drift velocity is then fitted with the kernel instead of held at the
 # seed bundle's value (a bundle calibrated under another kernel carries that kernel's v).  The ref-pinned
 # objective constrains it through the line's transverse speed w = tan_ref * v.
 # rc_D_y: the physical RC-diffusion kernel (wft.model.build_matrix_rc,
 # cloud_basics/FINDINGS.md).  Its arms are run with --seed-json <rc arm> and
 # --free, e.g. --free sigma_p0_x,sigma_p0_y,rc_D_y (Dp pinned from the seed).
+
+# ``dz_x`` / ``dz_y`` (mm) may be listed in --free: a global offset of the reference plane along the beam, per view
+# (ref_mesh -> ref_mesh + tan_ref * dz).  The alignment places the plane on a 1 mm z grid from positions alone, and a
+# plane error of a few mm on a 30 mm drift gap is absorbed as a 5-20 % change of v when the reference is pinned
+# (rerun W12, 2026-10-24).  The waveform measures the position at the mesh and the slope separately, so dz and v are
+# separable.  They are geometry, not kernel: written to the output as ref_dz and kept out of the bundle's hypers.
+GEOM = ('dz_x', 'dz_y')
 
 #: arm -> (free hypers, fixed extras, seed overrides, upper-bound overrides)
 ARMS = {
@@ -79,10 +86,10 @@ ARMS = {
 }
 
 
-_OPT = dict(t0_grid=np.arange(120.0, 961.0, 20.0), p0_profile=False)
+_OPT = dict(t0_grid=np.arange(120.0, 961.0, 20.0), p0_profile=False, p0_window=1.0, p0_step=0.1)
 
 
-def _init_worker(cache, bundle, k_bins, t0_lo, t0_hi, p0_profile):
+def _init_worker(cache, bundle, k_bins, t0_lo, t0_hi, p0_profile, p0_window=1.0, p0_step=0.1):
     """Worker setup: load cache + bundle, and set everything the objective
     reads explicitly (not via inherited module state)."""
     from wft import calibrate as wc
@@ -93,6 +100,8 @@ def _init_worker(cache, bundle, k_bins, t0_lo, t0_hi, p0_profile):
         wm.set_depth_bins(k_bins)
     _OPT['t0_grid'] = np.arange(t0_lo, t0_hi + 1.0, 20.0)
     _OPT['p0_profile'] = bool(p0_profile)
+    _OPT['p0_window'] = float(p0_window)
+    _OPT['p0_step'] = float(p0_step)
 
 
 def _plane_chi2(wm, plane, W, noise, pos, sat, p0, wline, hyper, grid):
@@ -135,12 +144,13 @@ def _event_chi2_cold(payload):
         if np.asarray(P['W']).shape[1] != wm.NSAMP:
             wm.set_nsamp(np.asarray(P['W']).shape[1])
         wline = ev[f'tan_{plane}'] * v * 1e-3
-        p0r = ev[f'ref_mesh_{plane}']
+        p0r = ev[f'ref_mesh_{plane}'] + ev[f'tan_{plane}'] * hyper.get(f'dz_{plane}', 0.0)
         W, noise, pos, sat = wm.prep_plane(P, plane)
         best, t0b = _plane_chi2(wm, plane, W, noise, pos, sat, p0r, wline,
                                 hyper, grid)
         if _OPT['p0_profile'] and np.isfinite(best):
-            for dp in np.arange(-1.0, 1.01, 0.1):
+            wnd, stp = _OPT['p0_window'], _OPT['p0_step']
+            for dp in np.arange(-wnd, wnd + 1e-6, stp):
                 if abs(dp) < 1e-9:
                     continue
                 for t in (t0b - 20.0, t0b, t0b + 20.0):
@@ -171,6 +181,8 @@ def main():
     ap.add_argument('--model-frac', type=float, default=0.0,
                     help='fractional model-error term in the chi2 weights '
                          '(wft.model.MODEL_FRAC); 0 = production weighting')
+    ap.add_argument('--p0-window', type=float, default=1.0, help='p0 profile half-width [mm]')
+    ap.add_argument('--p0-step', type=float, default=0.1, help='p0 profile step [mm]')
     ap.add_argument('--p0-profile', action='store_true',
                     help='profile p0 per event instead of pinning it to the '
                          'reference (cold objective only)')
@@ -208,6 +220,9 @@ def main():
     start = dict(base)
     if 'v' in free:
         start['v'] = v
+    for g in GEOM:
+        if g in free:
+            start.setdefault(g, 0.0)
     start.pop('c2_over_c1', None)
     start.update(fixed)
     start.update(seed_over)
@@ -242,7 +257,7 @@ def main():
     log = []
     with ProcessPoolExecutor(a.jobs, initializer=_init_worker,
                              initargs=(a.cache, a.bundle, a.depth_bins, a.t0_lo,
-                                       a.t0_hi, a.p0_profile)) as pool:
+                                       a.t0_hi, a.p0_profile, a.p0_window, a.p0_step)) as pool:
         def chi(h):
             h = dict(h)
             vv = h.pop('v', v)
@@ -282,7 +297,9 @@ def main():
                                     fatol=c0 * 1e-5, maxiter=a.maxiter))
     h = expand(res.x)
     v = h.pop('v', v)
-    out = dict(arm=a.arm, objective=a.objective, p0_profile=a.p0_profile,
+    ref_dz = {g: h.pop(g) for g in GEOM if g in h}
+    out = dict(arm=a.arm, objective=a.objective, p0_profile=a.p0_profile, ref_dz=ref_dz,
+               p0_window=a.p0_window if a.p0_profile else None, p0_step=a.p0_step if a.p0_profile else None,
                model_frac=a.model_frac,
                depth_bins=a.depth_bins, hyper=h, v=v, chi2=float(res.fun), chi2_seed=float(c0),
                n_train=len(train), n_eval=n[0], converged=bool(res.success),
@@ -293,7 +310,7 @@ def main():
     print(f'[recal {a.arm}] chi2 {c0:.6e} -> {res.fun:.6e} '
           f'({100 * (res.fun / c0 - 1):+.2f} %) after {n[0]} evals, '
           f'converged={res.success}')
-    print('  ' + ' '.join(f'{k}={(v if k == "v" else h[k]):.4g}' for k in free))
+    print('  ' + ' '.join(f'{k}={(v if k == "v" else ref_dz[k] if k in ref_dz else h[k]):.4g}' for k in free))
 
 
 if __name__ == '__main__':

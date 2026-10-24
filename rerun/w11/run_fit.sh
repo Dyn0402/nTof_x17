@@ -9,7 +9,7 @@ set +u; source /cvmfs/sft.cern.ch/lcg/views/LCG_110/x86_64-el9-gcc14-opt/setup.s
 PY="env -u PYTHONPATH -u PYTHONHOME /eos/user/d/dneff/venvs/ntof-lock-cvmfs/bin/python"
 A=/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_rr1/$REL/wft/w11
 O=$A/${TAG}_$CM; mkdir -p $O
-W=${_CONDOR_SCRATCH_DIR:-/tmp/$USER/w11_$$}; mkdir -p $W; cd $W
+W=${_CONDOR_SCRATCH_DIR:-/tmp/$USER}/w11_$$; mkdir -p $W; cd $W
 cp $A/cache_$CM.pkl cache.pkl
 cp /eos/user/d/dneff/plane_ratio/inputs/$DET/bundle.tgz . && mkdir -p src && tar xzf bundle.tgz -C src
 B=$(ls -d $W/src/*/)
