@@ -93,9 +93,11 @@ def main():
                  f'--matched-only --limit 8000 --jobs 16', 16, 24000, a.code)
             node(L, f'ALIGN_{n}', 'stage1.sub', f'{k} --parts run_config,m3,hits --script mx_june_wft/01_alignment.py '
                  f'-- --table {t1} --out {{out}}/wft/vrefit/alignment0', 1, 8000, a.code, [f'RECO_{n}'])
+            node(L, f'HITS_{n}', 'stage1.sub', f'{k} --parts run_config,m3,hits --require cache/event_results_veto50.pkl '
+                 f'--script mx_june_cosmic_qa/03_alignment_and_tpc.py', 4, 12000, a.code)
             node(L, f'CACHE_{n}', 'stage1.sub', f'{k} --script rerun/w12/build_cache_wft.py -- '
                  f'--align {{out}}/wft/vrefit/alignment0/alignment.json --out {{out}}/wft/vrefit/cache.pkl --cm 0',
-                 2, 16000, a.code, [f'ALIGN_{n}'])
+                 2, 16000, a.code, [f'ALIGN_{n}', f'HITS_{n}'])
             node(L, f'FITV_{n}', 'fitv1.sub', f'{rel(r)} {g} {r["K"]} vrefit/fit {A}', 8, 12000, a.code, [f'CACHE_{n}'])
             node(L, f'RECO2_{n}', 'stage1.sub', f'{k} --module wft.cli -- reco {{key}} --bundle {{out}}/wft/vrefit/fit/bundle '
                  f'--out {t2} --matched-only --limit 8000 --jobs 16', 16, 24000, a.code, [f'FITV_{n}'])

@@ -89,6 +89,10 @@ def main():
     ap.add_argument('--work', default=os.environ.get('_CONDOR_SCRATCH_DIR', os.getcwd()))
     ap.add_argument('--no-sync', action='store_true', help='do not push outputs back to EOS')
     ap.add_argument('--eos-analysis', default=inputs.EOS_ANALYSIS_ROOT)
+    ap.add_argument('--require', default=None,
+                    help="product (relative to the row's Analysis dir) that defines success: the stage counts as "
+                         "done if it exists, whatever its exit code (e.g. the hits event cache of a short scan "
+                         "subrun whose hits alignment fails)")
     g = ap.add_mutually_exclusive_group(required=True)
     g.add_argument('--module')
     g.add_argument('--script')
@@ -149,6 +153,10 @@ def main():
         if isinstance(e.code, str):
             print(e.code, file=sys.stderr)
     dt = time.time() - t1
+    if a.require:
+        have = os.path.exists(os.path.join(cfg.OUT_BASE, a.require))
+        print(f'[stage] required product {a.require}: {"present" if have else "MISSING"} (stage rc {rc})', flush=True)
+        rc = 0 if have else (rc or 1)
     # one record per stage run (a shared appended log loses lines when stages of one row run in parallel)
     now = datetime.datetime.now()
     logd = os.path.join(ana, rel, 'STAGES')
