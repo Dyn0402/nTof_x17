@@ -1,10 +1,29 @@
 # Handoff
 
-## From-scratch re-run of bench + SPS on lxplus: pass machinery ready, calibration protocol needs Dylan's call — updated 2026-10-24 morning (dylan-Yoga)
+## From-scratch re-run of bench + SPS on lxplus: pass machinery ready, calibration protocol needs Dylan's call — updated 2026-10-24 (dylan-Yoga)
 
-**Resume:** everything for the pass is built and tested on condor except the golden calibration, which did NOT
-converge under the planned protocol (C16) — the waveform fit cannot determine v (χ² flat along v, C17). Decision
-needed: calibrate with v from timing (arm D, recommended) or another protocol. Then: finalize → vrefit → pass.
+**Resume:** v question understood (C18/C19); Dylan to decide: PIVOT_START on, arm-D protocol, det4/7 kernel gate, det7 X mask. Then finalize → vrefit → pass.
+
+**Done 10-24 day (C18, C19 in rerun/CHECKS_2026-10-23.md; note https://dylan-neff.web.cern.ch/notes/mx17-vdrift-consistency.html):**
+- Three different v's: timing (gap/T, kernel-free); reco ladder (fitted w vs M3 tan — the per-event fit never uses v);
+  calibration fit with v free (flat χ², not a measurement — the whole C17 arm scatter). Ladder is arm-independent and
+  t0-prior-independent.
+- **det3 consistent:** pivot ladder 36.01 ± 0.13 (X) / 35.75 ± 0.15 (Y) on 1300 events vs timing 35.8 ± 0.6.
+- Starting angle: χ² single-welled along w at the right p0; p0 = mesh end, ~5 mm from the charge → diagonal valley.
+  `heldout_eval.py` used a BARE start (X ladders 1–4 % low; C17 arm ranking + C18 numbers made with it); production
+  `wft.reco._global_start` was mostly fine. New `wft.reco.PIVOT_START` (`WFT_PIVOT_START=1`, opt-in, tests pass):
+  w scan through the model-free charge centroid; same cost, fewest wrong-basin fits. `heldout_eval --start reco|pivot|bare`
+  (default reco now). RC-kernel t0 is a 5 ns staircase; the ±5 ns t0 prior is swamped by χ² ~1e5.
+- det2/4/6/7 don't close for 4 measured reasons: no dead masks/gains in ANY bench bundle (small effect;
+  `seedfit/strip_health.py`, `mask_bundle.py`); det7 X connectors 0/1/3 channel order scrambled (angles lost there);
+  v(x,y) non-uniform on det4/6/7 (ladder maps + stacked-T maps anti-correlate); RC kernel fits det4/det7 ~2× worse χ²
+  than the old lp/delay kernel, whose ladder matches timing. det6: ladder × T → gap ≈ 27.5–28 mm, v ≈ 24 (timing 25.9 assumed 30 mm).
+
+**Decisions waiting for Dylan:** (1) PIVOT_START on for the pass (recommended); (2) arm D for det3/det2; for det4/det7 gate
+the RC calibration against the old kernel's χ² first; (3) mask det7 X connectors 0/1/3 for angles (scramble not mappable
+with ~150 ev/connector); (4) carry dead masks as a bundle feature or not; (5) per-region v if det4/6/7 depths are used.
+Code snapshots on lxplus (`~/x17rerun/code_*`) predate PIVOT_START — make a new one before using it on condor.
+Local study data: `~/x17/cosmic_bench/vladder/` (laptop; caches copied from the it0 EOS rows, results JSON, report/).
 
 **Done overnight (10-23/24), records rerun/CHECKS_2026-10-23.md C10–C17:**
 - C11–C14: June re-decode + audit (1278/1278), re-hit (rr1_cm0), M3 re-audit (production rays stand), W10 path layer.
