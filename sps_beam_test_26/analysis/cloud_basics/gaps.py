@@ -12,12 +12,13 @@ dead/weak lists plus the inclined-track hole test (strip_gain_audit.bad_set); th
 as gap x (1 + scale error) and is not included.
 
 det6 cannot be measured this way: its deep charge runs past the 32-sample window (last sample 40-86 % of
-the deep strips' peak), so its column is a lower limit; it keeps the mechanical 30 mm with a +-2 mm
-systematic.  Mechanical design: 30 mm, with a couple of mm of build tolerance (Dylan, 2026-10-19).
+the deep strips' peak), so its column is a lower limit (26.3).  Adopted 28.0 +- 1.0 (Dylan, 2026-10-24) from
+the two estimates that are not window-limited: the 7-30 GAP_STUDY map median 27.85 and the reco-ladder v x
+stacked drift time 27.5-28 (rerun C19).  Mechanical design: 30 mm, with a couple of mm of build tolerance.
 """
 
-GAP_GEOM = {'det2': 31.12, 'det3': 28.08, 'det4': 30.48, 'det7': 29.44}
-GAP_GEOM_ERR = {'det2': 0.42, 'det3': 0.19, 'det4': 0.44, 'det7': 1.12, 'det6': 2.0}
+GAP_GEOM = {'det2': 31.12, 'det3': 28.08, 'det4': 30.48, 'det7': 29.44, 'det6': 28.0}
+GAP_GEOM_ERR = {'det2': 0.42, 'det3': 0.19, 'det4': 0.44, 'det7': 1.12, 'det6': 1.0}
 GAP_NOMINAL = 30.0
 
 

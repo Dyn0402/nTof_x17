@@ -1,0 +1,11010 @@
+{
+ "run_key": "g_det7_long",
+ "detector": "det7 (mx17_7, D)",
+ "view": "x",
+ "feu": 6,
+ "basis": "amplitude correlation > 0.9 between pogo-grid neighbours (rerun/det7_pogo/corr_feu6.npz); pogo grid from the M1 gerbers (m1_trace.py); strips named by the FEU channel of the linear map (mx17_m1_map.csv)",
+ "forward_model_note": "a net of n shorted channels: each channel reads (1/n) x the sum of the net's strip signals (n low-impedance inputs tied together share the charge); treat the net as ONE virtual channel with a comb of strips and a free gain, and drop the n-1 duplicates from the likelihood",
+ "nets": [
+  [
+   3,
+   5,
+   8,
+   9,
+   10,
+   13,
+   14,
+   15,
+   18,
+   19,
+   20,
+   23,
+   24,
+   25,
+   28,
+   29,
+   30
+  ],
+  [
+   33,
+   34,
+   35,
+   38,
+   39,
+   40,
+   43,
+   44,
+   45
+  ],
+  [
+   88,
+   93,
+   98,
+   103,
+   108,
+   113,
+   118,
+   123
+  ],
+  [
+   230,
+   235,
+   240,
+   245,
+   250
+  ],
+  [
+   231,
+   236,
+   241,
+   246
+  ],
+  [
+   47,
+   48,
+   49,
+   51
+  ],
+  [
+   52,
+   53,
+   57,
+   58
+  ],
+  [
+   2,
+   7,
+   12,
+   17
+  ],
+  [
+   68,
+   73,
+   186,
+   191
+  ],
+  [
+   115,
+   120,
+   125
+  ],
+  [
+   101,
+   106,
+   111
+  ],
+  [
+   237,
+   242,
+   247
+  ],
+  [
+   114,
+   119,
+   124
+  ],
+  [
+   6,
+   11,
+   16
+  ],
+  [
+   116,
+   121,
+   126
+  ],
+  [
+   160,
+   165
+  ],
+  [
+   176,
+   181
+  ],
+  [
+   61,
+   62
+  ],
+  [
+   233,
+   238
+  ]
+ ],
+ "n_shorted_channels": 85,
+ "channels": [
+  {
+   "feu_channel": 0,
+   "connector": 1,
+   "local": 0,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 0,
+    "row": 0
+   },
+   "net": [
+    0
+   ],
+   "strips": [
+    0
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 1,
+   "connector": 1,
+   "local": 1,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 5,
+    "row": 0
+   },
+   "net": [
+    1
+   ],
+   "strips": [
+    1
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 2,
+   "connector": 1,
+   "local": 2,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 6,
+    "row": 0
+   },
+   "net": [
+    2,
+    7,
+    12,
+    17
+   ],
+   "strips": [
+    2,
+    7,
+    12,
+    17
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 4
+  },
+  {
+   "feu_channel": 3,
+   "connector": 1,
+   "local": 3,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 7,
+    "row": 0
+   },
+   "net": [
+    3,
+    5,
+    8,
+    9,
+    10,
+    13,
+    14,
+    15,
+    18,
+    19,
+    20,
+    23,
+    24,
+    25,
+    28,
+    29,
+    30
+   ],
+   "strips": [
+    3,
+    5,
+    8,
+    9,
+    10,
+    13,
+    14,
+    15,
+    18,
+    19,
+    20,
+    23,
+    24,
+    25,
+    28,
+    29,
+    30
+   ],
+   "possible_net_0p7": [
+    3,
+    4,
+    5,
+    8,
+    9,
+    10,
+    13,
+    14,
+    15,
+    18,
+    19,
+    20,
+    23,
+    24,
+    25,
+    28,
+    29,
+    30
+   ],
+   "n_strips": 17
+  },
+  {
+   "feu_channel": 4,
+   "connector": 1,
+   "local": 4,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 8,
+    "row": 0
+   },
+   "net": [
+    4
+   ],
+   "strips": [
+    4
+   ],
+   "possible_net_0p7": [
+    3,
+    4,
+    5,
+    8,
+    9,
+    10,
+    13,
+    14,
+    15,
+    18,
+    19,
+    20,
+    23,
+    24,
+    25,
+    28,
+    29,
+    30
+   ],
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 5,
+   "connector": 1,
+   "local": 5,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 9,
+    "row": 0
+   },
+   "net": [
+    3,
+    5,
+    8,
+    9,
+    10,
+    13,
+    14,
+    15,
+    18,
+    19,
+    20,
+    23,
+    24,
+    25,
+    28,
+    29,
+    30
+   ],
+   "strips": [
+    3,
+    5,
+    8,
+    9,
+    10,
+    13,
+    14,
+    15,
+    18,
+    19,
+    20,
+    23,
+    24,
+    25,
+    28,
+    29,
+    30
+   ],
+   "possible_net_0p7": [
+    3,
+    4,
+    5,
+    8,
+    9,
+    10,
+    13,
+    14,
+    15,
+    18,
+    19,
+    20,
+    23,
+    24,
+    25,
+    28,
+    29,
+    30
+   ],
+   "n_strips": 17
+  },
+  {
+   "feu_channel": 6,
+   "connector": 1,
+   "local": 6,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 5,
+    "row": 1
+   },
+   "net": [
+    6,
+    11,
+    16
+   ],
+   "strips": [
+    6,
+    11,
+    16
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 3
+  },
+  {
+   "feu_channel": 7,
+   "connector": 1,
+   "local": 7,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 6,
+    "row": 1
+   },
+   "net": [
+    2,
+    7,
+    12,
+    17
+   ],
+   "strips": [
+    2,
+    7,
+    12,
+    17
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 4
+  },
+  {
+   "feu_channel": 8,
+   "connector": 1,
+   "local": 8,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 7,
+    "row": 1
+   },
+   "net": [
+    3,
+    5,
+    8,
+    9,
+    10,
+    13,
+    14,
+    15,
+    18,
+    19,
+    20,
+    23,
+    24,
+    25,
+    28,
+    29,
+    30
+   ],
+   "strips": [
+    3,
+    5,
+    8,
+    9,
+    10,
+    13,
+    14,
+    15,
+    18,
+    19,
+    20,
+    23,
+    24,
+    25,
+    28,
+    29,
+    30
+   ],
+   "possible_net_0p7": [
+    3,
+    4,
+    5,
+    8,
+    9,
+    10,
+    13,
+    14,
+    15,
+    18,
+    19,
+    20,
+    23,
+    24,
+    25,
+    28,
+    29,
+    30
+   ],
+   "n_strips": 17
+  },
+  {
+   "feu_channel": 9,
+   "connector": 1,
+   "local": 9,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 8,
+    "row": 1
+   },
+   "net": [
+    3,
+    5,
+    8,
+    9,
+    10,
+    13,
+    14,
+    15,
+    18,
+    19,
+    20,
+    23,
+    24,
+    25,
+    28,
+    29,
+    30
+   ],
+   "strips": [
+    3,
+    5,
+    8,
+    9,
+    10,
+    13,
+    14,
+    15,
+    18,
+    19,
+    20,
+    23,
+    24,
+    25,
+    28,
+    29,
+    30
+   ],
+   "possible_net_0p7": [
+    3,
+    4,
+    5,
+    8,
+    9,
+    10,
+    13,
+    14,
+    15,
+    18,
+    19,
+    20,
+    23,
+    24,
+    25,
+    28,
+    29,
+    30
+   ],
+   "n_strips": 17
+  },
+  {
+   "feu_channel": 10,
+   "connector": 1,
+   "local": 10,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 9,
+    "row": 1
+   },
+   "net": [
+    3,
+    5,
+    8,
+    9,
+    10,
+    13,
+    14,
+    15,
+    18,
+    19,
+    20,
+    23,
+    24,
+    25,
+    28,
+    29,
+    30
+   ],
+   "strips": [
+    3,
+    5,
+    8,
+    9,
+    10,
+    13,
+    14,
+    15,
+    18,
+    19,
+    20,
+    23,
+    24,
+    25,
+    28,
+    29,
+    30
+   ],
+   "possible_net_0p7": [
+    3,
+    4,
+    5,
+    8,
+    9,
+    10,
+    13,
+    14,
+    15,
+    18,
+    19,
+    20,
+    23,
+    24,
+    25,
+    28,
+    29,
+    30
+   ],
+   "n_strips": 17
+  },
+  {
+   "feu_channel": 11,
+   "connector": 1,
+   "local": 11,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 5,
+    "row": 2
+   },
+   "net": [
+    6,
+    11,
+    16
+   ],
+   "strips": [
+    6,
+    11,
+    16
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 3
+  },
+  {
+   "feu_channel": 12,
+   "connector": 1,
+   "local": 12,
+   "noisy": true,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 6,
+    "row": 2
+   },
+   "net": [
+    2,
+    7,
+    12,
+    17
+   ],
+   "strips": [
+    2,
+    7,
+    12,
+    17
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 4
+  },
+  {
+   "feu_channel": 13,
+   "connector": 1,
+   "local": 13,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 7,
+    "row": 2
+   },
+   "net": [
+    3,
+    5,
+    8,
+    9,
+    10,
+    13,
+    14,
+    15,
+    18,
+    19,
+    20,
+    23,
+    24,
+    25,
+    28,
+    29,
+    30
+   ],
+   "strips": [
+    3,
+    5,
+    8,
+    9,
+    10,
+    13,
+    14,
+    15,
+    18,
+    19,
+    20,
+    23,
+    24,
+    25,
+    28,
+    29,
+    30
+   ],
+   "possible_net_0p7": [
+    3,
+    4,
+    5,
+    8,
+    9,
+    10,
+    13,
+    14,
+    15,
+    18,
+    19,
+    20,
+    23,
+    24,
+    25,
+    28,
+    29,
+    30
+   ],
+   "n_strips": 17
+  },
+  {
+   "feu_channel": 14,
+   "connector": 1,
+   "local": 14,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 8,
+    "row": 2
+   },
+   "net": [
+    3,
+    5,
+    8,
+    9,
+    10,
+    13,
+    14,
+    15,
+    18,
+    19,
+    20,
+    23,
+    24,
+    25,
+    28,
+    29,
+    30
+   ],
+   "strips": [
+    3,
+    5,
+    8,
+    9,
+    10,
+    13,
+    14,
+    15,
+    18,
+    19,
+    20,
+    23,
+    24,
+    25,
+    28,
+    29,
+    30
+   ],
+   "possible_net_0p7": [
+    3,
+    4,
+    5,
+    8,
+    9,
+    10,
+    13,
+    14,
+    15,
+    18,
+    19,
+    20,
+    23,
+    24,
+    25,
+    28,
+    29,
+    30
+   ],
+   "n_strips": 17
+  },
+  {
+   "feu_channel": 15,
+   "connector": 1,
+   "local": 15,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 9,
+    "row": 2
+   },
+   "net": [
+    3,
+    5,
+    8,
+    9,
+    10,
+    13,
+    14,
+    15,
+    18,
+    19,
+    20,
+    23,
+    24,
+    25,
+    28,
+    29,
+    30
+   ],
+   "strips": [
+    3,
+    5,
+    8,
+    9,
+    10,
+    13,
+    14,
+    15,
+    18,
+    19,
+    20,
+    23,
+    24,
+    25,
+    28,
+    29,
+    30
+   ],
+   "possible_net_0p7": [
+    3,
+    4,
+    5,
+    8,
+    9,
+    10,
+    13,
+    14,
+    15,
+    18,
+    19,
+    20,
+    23,
+    24,
+    25,
+    28,
+    29,
+    30
+   ],
+   "n_strips": 17
+  },
+  {
+   "feu_channel": 16,
+   "connector": 1,
+   "local": 16,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 5,
+    "row": 3
+   },
+   "net": [
+    6,
+    11,
+    16
+   ],
+   "strips": [
+    6,
+    11,
+    16
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 3
+  },
+  {
+   "feu_channel": 17,
+   "connector": 1,
+   "local": 17,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 6,
+    "row": 3
+   },
+   "net": [
+    2,
+    7,
+    12,
+    17
+   ],
+   "strips": [
+    2,
+    7,
+    12,
+    17
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 4
+  },
+  {
+   "feu_channel": 18,
+   "connector": 1,
+   "local": 18,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 7,
+    "row": 3
+   },
+   "net": [
+    3,
+    5,
+    8,
+    9,
+    10,
+    13,
+    14,
+    15,
+    18,
+    19,
+    20,
+    23,
+    24,
+    25,
+    28,
+    29,
+    30
+   ],
+   "strips": [
+    3,
+    5,
+    8,
+    9,
+    10,
+    13,
+    14,
+    15,
+    18,
+    19,
+    20,
+    23,
+    24,
+    25,
+    28,
+    29,
+    30
+   ],
+   "possible_net_0p7": [
+    3,
+    4,
+    5,
+    8,
+    9,
+    10,
+    13,
+    14,
+    15,
+    18,
+    19,
+    20,
+    23,
+    24,
+    25,
+    28,
+    29,
+    30
+   ],
+   "n_strips": 17
+  },
+  {
+   "feu_channel": 19,
+   "connector": 1,
+   "local": 19,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 8,
+    "row": 3
+   },
+   "net": [
+    3,
+    5,
+    8,
+    9,
+    10,
+    13,
+    14,
+    15,
+    18,
+    19,
+    20,
+    23,
+    24,
+    25,
+    28,
+    29,
+    30
+   ],
+   "strips": [
+    3,
+    5,
+    8,
+    9,
+    10,
+    13,
+    14,
+    15,
+    18,
+    19,
+    20,
+    23,
+    24,
+    25,
+    28,
+    29,
+    30
+   ],
+   "possible_net_0p7": [
+    3,
+    4,
+    5,
+    8,
+    9,
+    10,
+    13,
+    14,
+    15,
+    18,
+    19,
+    20,
+    23,
+    24,
+    25,
+    28,
+    29,
+    30
+   ],
+   "n_strips": 17
+  },
+  {
+   "feu_channel": 20,
+   "connector": 1,
+   "local": 20,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 9,
+    "row": 3
+   },
+   "net": [
+    3,
+    5,
+    8,
+    9,
+    10,
+    13,
+    14,
+    15,
+    18,
+    19,
+    20,
+    23,
+    24,
+    25,
+    28,
+    29,
+    30
+   ],
+   "strips": [
+    3,
+    5,
+    8,
+    9,
+    10,
+    13,
+    14,
+    15,
+    18,
+    19,
+    20,
+    23,
+    24,
+    25,
+    28,
+    29,
+    30
+   ],
+   "possible_net_0p7": [
+    3,
+    4,
+    5,
+    8,
+    9,
+    10,
+    13,
+    14,
+    15,
+    18,
+    19,
+    20,
+    23,
+    24,
+    25,
+    28,
+    29,
+    30
+   ],
+   "n_strips": 17
+  },
+  {
+   "feu_channel": 21,
+   "connector": 1,
+   "local": 21,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 5,
+    "row": 4
+   },
+   "net": [
+    21
+   ],
+   "strips": [
+    21
+   ],
+   "possible_net_0p7": [
+    21,
+    22
+   ],
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 22,
+   "connector": 1,
+   "local": 22,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 6,
+    "row": 4
+   },
+   "net": [
+    22
+   ],
+   "strips": [
+    22
+   ],
+   "possible_net_0p7": [
+    21,
+    22
+   ],
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 23,
+   "connector": 1,
+   "local": 23,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 7,
+    "row": 4
+   },
+   "net": [
+    3,
+    5,
+    8,
+    9,
+    10,
+    13,
+    14,
+    15,
+    18,
+    19,
+    20,
+    23,
+    24,
+    25,
+    28,
+    29,
+    30
+   ],
+   "strips": [
+    3,
+    5,
+    8,
+    9,
+    10,
+    13,
+    14,
+    15,
+    18,
+    19,
+    20,
+    23,
+    24,
+    25,
+    28,
+    29,
+    30
+   ],
+   "possible_net_0p7": [
+    3,
+    4,
+    5,
+    8,
+    9,
+    10,
+    13,
+    14,
+    15,
+    18,
+    19,
+    20,
+    23,
+    24,
+    25,
+    28,
+    29,
+    30
+   ],
+   "n_strips": 17
+  },
+  {
+   "feu_channel": 24,
+   "connector": 1,
+   "local": 24,
+   "noisy": true,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 8,
+    "row": 4
+   },
+   "net": [
+    3,
+    5,
+    8,
+    9,
+    10,
+    13,
+    14,
+    15,
+    18,
+    19,
+    20,
+    23,
+    24,
+    25,
+    28,
+    29,
+    30
+   ],
+   "strips": [
+    3,
+    5,
+    8,
+    9,
+    10,
+    13,
+    14,
+    15,
+    18,
+    19,
+    20,
+    23,
+    24,
+    25,
+    28,
+    29,
+    30
+   ],
+   "possible_net_0p7": [
+    3,
+    4,
+    5,
+    8,
+    9,
+    10,
+    13,
+    14,
+    15,
+    18,
+    19,
+    20,
+    23,
+    24,
+    25,
+    28,
+    29,
+    30
+   ],
+   "n_strips": 17
+  },
+  {
+   "feu_channel": 25,
+   "connector": 1,
+   "local": 25,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 9,
+    "row": 4
+   },
+   "net": [
+    3,
+    5,
+    8,
+    9,
+    10,
+    13,
+    14,
+    15,
+    18,
+    19,
+    20,
+    23,
+    24,
+    25,
+    28,
+    29,
+    30
+   ],
+   "strips": [
+    3,
+    5,
+    8,
+    9,
+    10,
+    13,
+    14,
+    15,
+    18,
+    19,
+    20,
+    23,
+    24,
+    25,
+    28,
+    29,
+    30
+   ],
+   "possible_net_0p7": [
+    3,
+    4,
+    5,
+    8,
+    9,
+    10,
+    13,
+    14,
+    15,
+    18,
+    19,
+    20,
+    23,
+    24,
+    25,
+    28,
+    29,
+    30
+   ],
+   "n_strips": 17
+  },
+  {
+   "feu_channel": 26,
+   "connector": 1,
+   "local": 26,
+   "noisy": false,
+   "dead": false,
+   "weak": true,
+   "pogo": {
+    "col": 5,
+    "row": 5
+   },
+   "net": [
+    26
+   ],
+   "strips": [
+    26
+   ],
+   "possible_net_0p7": [
+    26,
+    31
+   ],
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 27,
+   "connector": 1,
+   "local": 27,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 6,
+    "row": 5
+   },
+   "net": [
+    27
+   ],
+   "strips": [
+    27
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 28,
+   "connector": 1,
+   "local": 28,
+   "noisy": false,
+   "dead": false,
+   "weak": true,
+   "pogo": {
+    "col": 7,
+    "row": 5
+   },
+   "net": [
+    3,
+    5,
+    8,
+    9,
+    10,
+    13,
+    14,
+    15,
+    18,
+    19,
+    20,
+    23,
+    24,
+    25,
+    28,
+    29,
+    30
+   ],
+   "strips": [
+    3,
+    5,
+    8,
+    9,
+    10,
+    13,
+    14,
+    15,
+    18,
+    19,
+    20,
+    23,
+    24,
+    25,
+    28,
+    29,
+    30
+   ],
+   "possible_net_0p7": [
+    3,
+    4,
+    5,
+    8,
+    9,
+    10,
+    13,
+    14,
+    15,
+    18,
+    19,
+    20,
+    23,
+    24,
+    25,
+    28,
+    29,
+    30
+   ],
+   "n_strips": 17
+  },
+  {
+   "feu_channel": 29,
+   "connector": 1,
+   "local": 29,
+   "noisy": true,
+   "dead": false,
+   "weak": true,
+   "pogo": {
+    "col": 8,
+    "row": 5
+   },
+   "net": [
+    3,
+    5,
+    8,
+    9,
+    10,
+    13,
+    14,
+    15,
+    18,
+    19,
+    20,
+    23,
+    24,
+    25,
+    28,
+    29,
+    30
+   ],
+   "strips": [
+    3,
+    5,
+    8,
+    9,
+    10,
+    13,
+    14,
+    15,
+    18,
+    19,
+    20,
+    23,
+    24,
+    25,
+    28,
+    29,
+    30
+   ],
+   "possible_net_0p7": [
+    3,
+    4,
+    5,
+    8,
+    9,
+    10,
+    13,
+    14,
+    15,
+    18,
+    19,
+    20,
+    23,
+    24,
+    25,
+    28,
+    29,
+    30
+   ],
+   "n_strips": 17
+  },
+  {
+   "feu_channel": 30,
+   "connector": 1,
+   "local": 30,
+   "noisy": true,
+   "dead": false,
+   "weak": true,
+   "pogo": {
+    "col": 9,
+    "row": 5
+   },
+   "net": [
+    3,
+    5,
+    8,
+    9,
+    10,
+    13,
+    14,
+    15,
+    18,
+    19,
+    20,
+    23,
+    24,
+    25,
+    28,
+    29,
+    30
+   ],
+   "strips": [
+    3,
+    5,
+    8,
+    9,
+    10,
+    13,
+    14,
+    15,
+    18,
+    19,
+    20,
+    23,
+    24,
+    25,
+    28,
+    29,
+    30
+   ],
+   "possible_net_0p7": [
+    3,
+    4,
+    5,
+    8,
+    9,
+    10,
+    13,
+    14,
+    15,
+    18,
+    19,
+    20,
+    23,
+    24,
+    25,
+    28,
+    29,
+    30
+   ],
+   "n_strips": 17
+  },
+  {
+   "feu_channel": 31,
+   "connector": 1,
+   "local": 31,
+   "noisy": true,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 5,
+    "row": 6
+   },
+   "net": [
+    31
+   ],
+   "strips": [
+    31
+   ],
+   "possible_net_0p7": [
+    26,
+    31
+   ],
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 32,
+   "connector": 1,
+   "local": 32,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 6,
+    "row": 6
+   },
+   "net": [
+    32
+   ],
+   "strips": [
+    32
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 33,
+   "connector": 1,
+   "local": 33,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 7,
+    "row": 6
+   },
+   "net": [
+    33,
+    34,
+    35,
+    38,
+    39,
+    40,
+    43,
+    44,
+    45
+   ],
+   "strips": [
+    33,
+    34,
+    35,
+    38,
+    39,
+    40,
+    43,
+    44,
+    45
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 9
+  },
+  {
+   "feu_channel": 34,
+   "connector": 1,
+   "local": 34,
+   "noisy": true,
+   "dead": true,
+   "weak": false,
+   "pogo": {
+    "col": 8,
+    "row": 6
+   },
+   "net": [
+    33,
+    34,
+    35,
+    38,
+    39,
+    40,
+    43,
+    44,
+    45
+   ],
+   "strips": [
+    33,
+    34,
+    35,
+    38,
+    39,
+    40,
+    43,
+    44,
+    45
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 9
+  },
+  {
+   "feu_channel": 35,
+   "connector": 1,
+   "local": 35,
+   "noisy": true,
+   "dead": false,
+   "weak": true,
+   "pogo": {
+    "col": 9,
+    "row": 6
+   },
+   "net": [
+    33,
+    34,
+    35,
+    38,
+    39,
+    40,
+    43,
+    44,
+    45
+   ],
+   "strips": [
+    33,
+    34,
+    35,
+    38,
+    39,
+    40,
+    43,
+    44,
+    45
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 9
+  },
+  {
+   "feu_channel": 36,
+   "connector": 1,
+   "local": 36,
+   "noisy": true,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 5,
+    "row": 7
+   },
+   "net": [
+    36
+   ],
+   "strips": [
+    36
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 37,
+   "connector": 1,
+   "local": 37,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 6,
+    "row": 7
+   },
+   "net": [
+    37
+   ],
+   "strips": [
+    37
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 38,
+   "connector": 1,
+   "local": 38,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 7,
+    "row": 7
+   },
+   "net": [
+    33,
+    34,
+    35,
+    38,
+    39,
+    40,
+    43,
+    44,
+    45
+   ],
+   "strips": [
+    33,
+    34,
+    35,
+    38,
+    39,
+    40,
+    43,
+    44,
+    45
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 9
+  },
+  {
+   "feu_channel": 39,
+   "connector": 1,
+   "local": 39,
+   "noisy": true,
+   "dead": false,
+   "weak": true,
+   "pogo": {
+    "col": 8,
+    "row": 7
+   },
+   "net": [
+    33,
+    34,
+    35,
+    38,
+    39,
+    40,
+    43,
+    44,
+    45
+   ],
+   "strips": [
+    33,
+    34,
+    35,
+    38,
+    39,
+    40,
+    43,
+    44,
+    45
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 9
+  },
+  {
+   "feu_channel": 40,
+   "connector": 1,
+   "local": 40,
+   "noisy": true,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 9,
+    "row": 7
+   },
+   "net": [
+    33,
+    34,
+    35,
+    38,
+    39,
+    40,
+    43,
+    44,
+    45
+   ],
+   "strips": [
+    33,
+    34,
+    35,
+    38,
+    39,
+    40,
+    43,
+    44,
+    45
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 9
+  },
+  {
+   "feu_channel": 41,
+   "connector": 1,
+   "local": 41,
+   "noisy": true,
+   "dead": false,
+   "weak": true,
+   "pogo": {
+    "col": 5,
+    "row": 8
+   },
+   "net": [
+    41
+   ],
+   "strips": [
+    41
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 42,
+   "connector": 1,
+   "local": 42,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 6,
+    "row": 8
+   },
+   "net": [
+    42
+   ],
+   "strips": [
+    42
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 43,
+   "connector": 1,
+   "local": 43,
+   "noisy": false,
+   "dead": false,
+   "weak": true,
+   "pogo": {
+    "col": 7,
+    "row": 8
+   },
+   "net": [
+    33,
+    34,
+    35,
+    38,
+    39,
+    40,
+    43,
+    44,
+    45
+   ],
+   "strips": [
+    33,
+    34,
+    35,
+    38,
+    39,
+    40,
+    43,
+    44,
+    45
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 9
+  },
+  {
+   "feu_channel": 44,
+   "connector": 1,
+   "local": 44,
+   "noisy": true,
+   "dead": false,
+   "weak": true,
+   "pogo": {
+    "col": 8,
+    "row": 8
+   },
+   "net": [
+    33,
+    34,
+    35,
+    38,
+    39,
+    40,
+    43,
+    44,
+    45
+   ],
+   "strips": [
+    33,
+    34,
+    35,
+    38,
+    39,
+    40,
+    43,
+    44,
+    45
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 9
+  },
+  {
+   "feu_channel": 45,
+   "connector": 1,
+   "local": 45,
+   "noisy": true,
+   "dead": false,
+   "weak": true,
+   "pogo": {
+    "col": 9,
+    "row": 8
+   },
+   "net": [
+    33,
+    34,
+    35,
+    38,
+    39,
+    40,
+    43,
+    44,
+    45
+   ],
+   "strips": [
+    33,
+    34,
+    35,
+    38,
+    39,
+    40,
+    43,
+    44,
+    45
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 9
+  },
+  {
+   "feu_channel": 46,
+   "connector": 1,
+   "local": 46,
+   "noisy": true,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 6,
+    "row": 11
+   },
+   "net": [
+    46
+   ],
+   "strips": [
+    46
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 47,
+   "connector": 1,
+   "local": 47,
+   "noisy": false,
+   "dead": false,
+   "weak": true,
+   "pogo": {
+    "col": 7,
+    "row": 11
+   },
+   "net": [
+    47,
+    48,
+    49,
+    51
+   ],
+   "strips": [
+    47,
+    48,
+    49,
+    51
+   ],
+   "possible_net_0p7": [
+    47,
+    48,
+    49,
+    51,
+    52,
+    53,
+    56,
+    57,
+    58,
+    61,
+    62,
+    63
+   ],
+   "n_strips": 4
+  },
+  {
+   "feu_channel": 48,
+   "connector": 1,
+   "local": 48,
+   "noisy": true,
+   "dead": false,
+   "weak": true,
+   "pogo": {
+    "col": 8,
+    "row": 11
+   },
+   "net": [
+    47,
+    48,
+    49,
+    51
+   ],
+   "strips": [
+    47,
+    48,
+    49,
+    51
+   ],
+   "possible_net_0p7": [
+    47,
+    48,
+    49,
+    51,
+    52,
+    53,
+    56,
+    57,
+    58,
+    61,
+    62,
+    63
+   ],
+   "n_strips": 4
+  },
+  {
+   "feu_channel": 49,
+   "connector": 1,
+   "local": 49,
+   "noisy": true,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 9,
+    "row": 11
+   },
+   "net": [
+    47,
+    48,
+    49,
+    51
+   ],
+   "strips": [
+    47,
+    48,
+    49,
+    51
+   ],
+   "possible_net_0p7": [
+    47,
+    48,
+    49,
+    51,
+    52,
+    53,
+    56,
+    57,
+    58,
+    61,
+    62,
+    63
+   ],
+   "n_strips": 4
+  },
+  {
+   "feu_channel": 50,
+   "connector": 1,
+   "local": 50,
+   "noisy": true,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 6,
+    "row": 12
+   },
+   "net": [
+    50
+   ],
+   "strips": [
+    50
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 51,
+   "connector": 1,
+   "local": 51,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 7,
+    "row": 12
+   },
+   "net": [
+    47,
+    48,
+    49,
+    51
+   ],
+   "strips": [
+    47,
+    48,
+    49,
+    51
+   ],
+   "possible_net_0p7": [
+    47,
+    48,
+    49,
+    51,
+    52,
+    53,
+    56,
+    57,
+    58,
+    61,
+    62,
+    63
+   ],
+   "n_strips": 4
+  },
+  {
+   "feu_channel": 52,
+   "connector": 1,
+   "local": 52,
+   "noisy": true,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 8,
+    "row": 12
+   },
+   "net": [
+    52,
+    53,
+    57,
+    58
+   ],
+   "strips": [
+    52,
+    53,
+    57,
+    58
+   ],
+   "possible_net_0p7": [
+    47,
+    48,
+    49,
+    51,
+    52,
+    53,
+    56,
+    57,
+    58,
+    61,
+    62,
+    63
+   ],
+   "n_strips": 4
+  },
+  {
+   "feu_channel": 53,
+   "connector": 1,
+   "local": 53,
+   "noisy": true,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 9,
+    "row": 12
+   },
+   "net": [
+    52,
+    53,
+    57,
+    58
+   ],
+   "strips": [
+    52,
+    53,
+    57,
+    58
+   ],
+   "possible_net_0p7": [
+    47,
+    48,
+    49,
+    51,
+    52,
+    53,
+    56,
+    57,
+    58,
+    61,
+    62,
+    63
+   ],
+   "n_strips": 4
+  },
+  {
+   "feu_channel": 54,
+   "connector": 1,
+   "local": 54,
+   "noisy": true,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 5,
+    "row": 13
+   },
+   "net": [
+    54
+   ],
+   "strips": [
+    54
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 55,
+   "connector": 1,
+   "local": 55,
+   "noisy": true,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 6,
+    "row": 13
+   },
+   "net": [
+    55
+   ],
+   "strips": [
+    55
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 56,
+   "connector": 1,
+   "local": 56,
+   "noisy": true,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 7,
+    "row": 13
+   },
+   "net": [
+    56
+   ],
+   "strips": [
+    56
+   ],
+   "possible_net_0p7": [
+    47,
+    48,
+    49,
+    51,
+    52,
+    53,
+    56,
+    57,
+    58,
+    61,
+    62,
+    63
+   ],
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 57,
+   "connector": 1,
+   "local": 57,
+   "noisy": true,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 8,
+    "row": 13
+   },
+   "net": [
+    52,
+    53,
+    57,
+    58
+   ],
+   "strips": [
+    52,
+    53,
+    57,
+    58
+   ],
+   "possible_net_0p7": [
+    47,
+    48,
+    49,
+    51,
+    52,
+    53,
+    56,
+    57,
+    58,
+    61,
+    62,
+    63
+   ],
+   "n_strips": 4
+  },
+  {
+   "feu_channel": 58,
+   "connector": 1,
+   "local": 58,
+   "noisy": true,
+   "dead": false,
+   "weak": true,
+   "pogo": {
+    "col": 9,
+    "row": 13
+   },
+   "net": [
+    52,
+    53,
+    57,
+    58
+   ],
+   "strips": [
+    52,
+    53,
+    57,
+    58
+   ],
+   "possible_net_0p7": [
+    47,
+    48,
+    49,
+    51,
+    52,
+    53,
+    56,
+    57,
+    58,
+    61,
+    62,
+    63
+   ],
+   "n_strips": 4
+  },
+  {
+   "feu_channel": 59,
+   "connector": 1,
+   "local": 59,
+   "noisy": true,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 5,
+    "row": 14
+   },
+   "net": [
+    59
+   ],
+   "strips": [
+    59
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 60,
+   "connector": 1,
+   "local": 60,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 6,
+    "row": 14
+   },
+   "net": [
+    60
+   ],
+   "strips": [
+    60
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 61,
+   "connector": 1,
+   "local": 61,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 7,
+    "row": 14
+   },
+   "net": [
+    61,
+    62
+   ],
+   "strips": [
+    61,
+    62
+   ],
+   "possible_net_0p7": [
+    47,
+    48,
+    49,
+    51,
+    52,
+    53,
+    56,
+    57,
+    58,
+    61,
+    62,
+    63
+   ],
+   "n_strips": 2
+  },
+  {
+   "feu_channel": 62,
+   "connector": 1,
+   "local": 62,
+   "noisy": true,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 8,
+    "row": 14
+   },
+   "net": [
+    61,
+    62
+   ],
+   "strips": [
+    61,
+    62
+   ],
+   "possible_net_0p7": [
+    47,
+    48,
+    49,
+    51,
+    52,
+    53,
+    56,
+    57,
+    58,
+    61,
+    62,
+    63
+   ],
+   "n_strips": 2
+  },
+  {
+   "feu_channel": 63,
+   "connector": 1,
+   "local": 63,
+   "noisy": true,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 9,
+    "row": 14
+   },
+   "net": [
+    63
+   ],
+   "strips": [
+    63
+   ],
+   "possible_net_0p7": [
+    47,
+    48,
+    49,
+    51,
+    52,
+    53,
+    56,
+    57,
+    58,
+    61,
+    62,
+    63
+   ],
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 64,
+   "connector": 2,
+   "local": 0,
+   "noisy": true,
+   "dead": false,
+   "weak": true,
+   "pogo": {
+    "col": 4,
+    "row": 14
+   },
+   "net": [
+    64
+   ],
+   "strips": [
+    64
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 65,
+   "connector": 2,
+   "local": 1,
+   "noisy": false,
+   "dead": false,
+   "weak": true,
+   "pogo": {
+    "col": 3,
+    "row": 14
+   },
+   "net": [
+    65
+   ],
+   "strips": [
+    65
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 66,
+   "connector": 2,
+   "local": 2,
+   "noisy": true,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 2,
+    "row": 14
+   },
+   "net": [
+    66
+   ],
+   "strips": [
+    66
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 67,
+   "connector": 2,
+   "local": 3,
+   "noisy": false,
+   "dead": false,
+   "weak": true,
+   "pogo": {
+    "col": 1,
+    "row": 14
+   },
+   "net": [
+    67
+   ],
+   "strips": [
+    67
+   ],
+   "possible_net_0p7": [
+    67,
+    72,
+    77,
+    78
+   ],
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 68,
+   "connector": 2,
+   "local": 4,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 0,
+    "row": 14
+   },
+   "net": [
+    68,
+    73,
+    186,
+    191
+   ],
+   "strips": [
+    68,
+    73,
+    186,
+    191
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 4
+  },
+  {
+   "feu_channel": 69,
+   "connector": 2,
+   "local": 5,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 4,
+    "row": 13
+   },
+   "net": [
+    69
+   ],
+   "strips": [
+    69
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 70,
+   "connector": 2,
+   "local": 6,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 3,
+    "row": 13
+   },
+   "net": [
+    70
+   ],
+   "strips": [
+    70
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 71,
+   "connector": 2,
+   "local": 7,
+   "noisy": true,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 2,
+    "row": 13
+   },
+   "net": [
+    71
+   ],
+   "strips": [
+    71
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 72,
+   "connector": 2,
+   "local": 8,
+   "noisy": false,
+   "dead": false,
+   "weak": true,
+   "pogo": {
+    "col": 1,
+    "row": 13
+   },
+   "net": [
+    72
+   ],
+   "strips": [
+    72
+   ],
+   "possible_net_0p7": [
+    67,
+    72,
+    77,
+    78
+   ],
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 73,
+   "connector": 2,
+   "local": 9,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 0,
+    "row": 13
+   },
+   "net": [
+    68,
+    73,
+    186,
+    191
+   ],
+   "strips": [
+    68,
+    73,
+    186,
+    191
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 4
+  },
+  {
+   "feu_channel": 74,
+   "connector": 2,
+   "local": 10,
+   "noisy": true,
+   "dead": false,
+   "weak": true,
+   "pogo": {
+    "col": 4,
+    "row": 12
+   },
+   "net": [
+    74
+   ],
+   "strips": [
+    74
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 75,
+   "connector": 2,
+   "local": 11,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 3,
+    "row": 12
+   },
+   "net": [
+    75
+   ],
+   "strips": [
+    75
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 76,
+   "connector": 2,
+   "local": 12,
+   "noisy": true,
+   "dead": false,
+   "weak": true,
+   "pogo": {
+    "col": 2,
+    "row": 12
+   },
+   "net": [
+    76
+   ],
+   "strips": [
+    76
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 77,
+   "connector": 2,
+   "local": 13,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 1,
+    "row": 12
+   },
+   "net": [
+    77
+   ],
+   "strips": [
+    77
+   ],
+   "possible_net_0p7": [
+    67,
+    72,
+    77,
+    78
+   ],
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 78,
+   "connector": 2,
+   "local": 14,
+   "noisy": false,
+   "dead": false,
+   "weak": true,
+   "pogo": {
+    "col": 0,
+    "row": 12
+   },
+   "net": [
+    78
+   ],
+   "strips": [
+    78
+   ],
+   "possible_net_0p7": [
+    67,
+    72,
+    77,
+    78
+   ],
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 79,
+   "connector": 2,
+   "local": 15,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 4,
+    "row": 11
+   },
+   "net": [
+    79
+   ],
+   "strips": [
+    79
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 80,
+   "connector": 2,
+   "local": 16,
+   "noisy": false,
+   "dead": false,
+   "weak": true,
+   "pogo": {
+    "col": 3,
+    "row": 11
+   },
+   "net": [
+    80
+   ],
+   "strips": [
+    80
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 81,
+   "connector": 2,
+   "local": 17,
+   "noisy": true,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 2,
+    "row": 11
+   },
+   "net": [
+    81
+   ],
+   "strips": [
+    81
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 82,
+   "connector": 2,
+   "local": 18,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 1,
+    "row": 11
+   },
+   "net": [
+    82
+   ],
+   "strips": [
+    82
+   ],
+   "possible_net_0p7": [
+    82,
+    83
+   ],
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 83,
+   "connector": 2,
+   "local": 19,
+   "noisy": false,
+   "dead": false,
+   "weak": true,
+   "pogo": {
+    "col": 0,
+    "row": 11
+   },
+   "net": [
+    83
+   ],
+   "strips": [
+    83
+   ],
+   "possible_net_0p7": [
+    82,
+    83
+   ],
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 84,
+   "connector": 2,
+   "local": 20,
+   "noisy": true,
+   "dead": true,
+   "weak": false,
+   "pogo": {
+    "col": 4,
+    "row": 8
+   },
+   "net": [
+    84
+   ],
+   "strips": [
+    84
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 85,
+   "connector": 2,
+   "local": 21,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 3,
+    "row": 8
+   },
+   "net": [
+    85
+   ],
+   "strips": [
+    85
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 86,
+   "connector": 2,
+   "local": 22,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 2,
+    "row": 8
+   },
+   "net": [
+    86
+   ],
+   "strips": [
+    86
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 87,
+   "connector": 2,
+   "local": 23,
+   "noisy": false,
+   "dead": false,
+   "weak": true,
+   "pogo": {
+    "col": 1,
+    "row": 8
+   },
+   "net": [
+    87
+   ],
+   "strips": [
+    87
+   ],
+   "possible_net_0p7": [
+    87,
+    92
+   ],
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 88,
+   "connector": 2,
+   "local": 24,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 0,
+    "row": 8
+   },
+   "net": [
+    88,
+    93,
+    98,
+    103,
+    108,
+    113,
+    118,
+    123
+   ],
+   "strips": [
+    88,
+    93,
+    98,
+    103,
+    108,
+    113,
+    118,
+    123
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 8
+  },
+  {
+   "feu_channel": 89,
+   "connector": 2,
+   "local": 25,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 4,
+    "row": 7
+   },
+   "net": [
+    89
+   ],
+   "strips": [
+    89
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 90,
+   "connector": 2,
+   "local": 26,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 3,
+    "row": 7
+   },
+   "net": [
+    90
+   ],
+   "strips": [
+    90
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 91,
+   "connector": 2,
+   "local": 27,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 2,
+    "row": 7
+   },
+   "net": [
+    91
+   ],
+   "strips": [
+    91
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 92,
+   "connector": 2,
+   "local": 28,
+   "noisy": false,
+   "dead": false,
+   "weak": true,
+   "pogo": {
+    "col": 1,
+    "row": 7
+   },
+   "net": [
+    92
+   ],
+   "strips": [
+    92
+   ],
+   "possible_net_0p7": [
+    87,
+    92
+   ],
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 93,
+   "connector": 2,
+   "local": 29,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 0,
+    "row": 7
+   },
+   "net": [
+    88,
+    93,
+    98,
+    103,
+    108,
+    113,
+    118,
+    123
+   ],
+   "strips": [
+    88,
+    93,
+    98,
+    103,
+    108,
+    113,
+    118,
+    123
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 8
+  },
+  {
+   "feu_channel": 94,
+   "connector": 2,
+   "local": 30,
+   "noisy": false,
+   "dead": true,
+   "weak": false,
+   "pogo": {
+    "col": 4,
+    "row": 6
+   },
+   "net": [
+    94
+   ],
+   "strips": [
+    94
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 95,
+   "connector": 2,
+   "local": 31,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 3,
+    "row": 6
+   },
+   "net": [
+    95
+   ],
+   "strips": [
+    95
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 96,
+   "connector": 2,
+   "local": 32,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 2,
+    "row": 6
+   },
+   "net": [
+    96
+   ],
+   "strips": [
+    96
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 97,
+   "connector": 2,
+   "local": 33,
+   "noisy": false,
+   "dead": false,
+   "weak": true,
+   "pogo": {
+    "col": 1,
+    "row": 6
+   },
+   "net": [
+    97
+   ],
+   "strips": [
+    97
+   ],
+   "possible_net_0p7": [
+    97,
+    102,
+    107,
+    112,
+    117,
+    122
+   ],
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 98,
+   "connector": 2,
+   "local": 34,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 0,
+    "row": 6
+   },
+   "net": [
+    88,
+    93,
+    98,
+    103,
+    108,
+    113,
+    118,
+    123
+   ],
+   "strips": [
+    88,
+    93,
+    98,
+    103,
+    108,
+    113,
+    118,
+    123
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 8
+  },
+  {
+   "feu_channel": 99,
+   "connector": 2,
+   "local": 35,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 4,
+    "row": 5
+   },
+   "net": [
+    99
+   ],
+   "strips": [
+    99
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 100,
+   "connector": 2,
+   "local": 36,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 3,
+    "row": 5
+   },
+   "net": [
+    100
+   ],
+   "strips": [
+    100
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 101,
+   "connector": 2,
+   "local": 37,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 2,
+    "row": 5
+   },
+   "net": [
+    101,
+    106,
+    111
+   ],
+   "strips": [
+    101,
+    106,
+    111
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 3
+  },
+  {
+   "feu_channel": 102,
+   "connector": 2,
+   "local": 38,
+   "noisy": false,
+   "dead": false,
+   "weak": true,
+   "pogo": {
+    "col": 1,
+    "row": 5
+   },
+   "net": [
+    102
+   ],
+   "strips": [
+    102
+   ],
+   "possible_net_0p7": [
+    97,
+    102,
+    107,
+    112,
+    117,
+    122
+   ],
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 103,
+   "connector": 2,
+   "local": 39,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 0,
+    "row": 5
+   },
+   "net": [
+    88,
+    93,
+    98,
+    103,
+    108,
+    113,
+    118,
+    123
+   ],
+   "strips": [
+    88,
+    93,
+    98,
+    103,
+    108,
+    113,
+    118,
+    123
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 8
+  },
+  {
+   "feu_channel": 104,
+   "connector": 2,
+   "local": 40,
+   "noisy": false,
+   "dead": false,
+   "weak": true,
+   "pogo": {
+    "col": 4,
+    "row": 4
+   },
+   "net": [
+    104
+   ],
+   "strips": [
+    104
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 105,
+   "connector": 2,
+   "local": 41,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 3,
+    "row": 4
+   },
+   "net": [
+    105
+   ],
+   "strips": [
+    105
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 106,
+   "connector": 2,
+   "local": 42,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 2,
+    "row": 4
+   },
+   "net": [
+    101,
+    106,
+    111
+   ],
+   "strips": [
+    101,
+    106,
+    111
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 3
+  },
+  {
+   "feu_channel": 107,
+   "connector": 2,
+   "local": 43,
+   "noisy": false,
+   "dead": false,
+   "weak": true,
+   "pogo": {
+    "col": 1,
+    "row": 4
+   },
+   "net": [
+    107
+   ],
+   "strips": [
+    107
+   ],
+   "possible_net_0p7": [
+    97,
+    102,
+    107,
+    112,
+    117,
+    122
+   ],
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 108,
+   "connector": 2,
+   "local": 44,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 0,
+    "row": 4
+   },
+   "net": [
+    88,
+    93,
+    98,
+    103,
+    108,
+    113,
+    118,
+    123
+   ],
+   "strips": [
+    88,
+    93,
+    98,
+    103,
+    108,
+    113,
+    118,
+    123
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 8
+  },
+  {
+   "feu_channel": 109,
+   "connector": 2,
+   "local": 45,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 4,
+    "row": 3
+   },
+   "net": [
+    109
+   ],
+   "strips": [
+    109
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 110,
+   "connector": 2,
+   "local": 46,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 3,
+    "row": 3
+   },
+   "net": [
+    110
+   ],
+   "strips": [
+    110
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 111,
+   "connector": 2,
+   "local": 47,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 2,
+    "row": 3
+   },
+   "net": [
+    101,
+    106,
+    111
+   ],
+   "strips": [
+    101,
+    106,
+    111
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 3
+  },
+  {
+   "feu_channel": 112,
+   "connector": 2,
+   "local": 48,
+   "noisy": false,
+   "dead": false,
+   "weak": true,
+   "pogo": {
+    "col": 1,
+    "row": 3
+   },
+   "net": [
+    112
+   ],
+   "strips": [
+    112
+   ],
+   "possible_net_0p7": [
+    97,
+    102,
+    107,
+    112,
+    117,
+    122
+   ],
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 113,
+   "connector": 2,
+   "local": 49,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 0,
+    "row": 3
+   },
+   "net": [
+    88,
+    93,
+    98,
+    103,
+    108,
+    113,
+    118,
+    123
+   ],
+   "strips": [
+    88,
+    93,
+    98,
+    103,
+    108,
+    113,
+    118,
+    123
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 8
+  },
+  {
+   "feu_channel": 114,
+   "connector": 2,
+   "local": 50,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 4,
+    "row": 2
+   },
+   "net": [
+    114,
+    119,
+    124
+   ],
+   "strips": [
+    114,
+    119,
+    124
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 3
+  },
+  {
+   "feu_channel": 115,
+   "connector": 2,
+   "local": 51,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 3,
+    "row": 2
+   },
+   "net": [
+    115,
+    120,
+    125
+   ],
+   "strips": [
+    115,
+    120,
+    125
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 3
+  },
+  {
+   "feu_channel": 116,
+   "connector": 2,
+   "local": 52,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 2,
+    "row": 2
+   },
+   "net": [
+    116,
+    121,
+    126
+   ],
+   "strips": [
+    116,
+    121,
+    126
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 3
+  },
+  {
+   "feu_channel": 117,
+   "connector": 2,
+   "local": 53,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 1,
+    "row": 2
+   },
+   "net": [
+    117
+   ],
+   "strips": [
+    117
+   ],
+   "possible_net_0p7": [
+    97,
+    102,
+    107,
+    112,
+    117,
+    122
+   ],
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 118,
+   "connector": 2,
+   "local": 54,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 0,
+    "row": 2
+   },
+   "net": [
+    88,
+    93,
+    98,
+    103,
+    108,
+    113,
+    118,
+    123
+   ],
+   "strips": [
+    88,
+    93,
+    98,
+    103,
+    108,
+    113,
+    118,
+    123
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 8
+  },
+  {
+   "feu_channel": 119,
+   "connector": 2,
+   "local": 55,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 4,
+    "row": 1
+   },
+   "net": [
+    114,
+    119,
+    124
+   ],
+   "strips": [
+    114,
+    119,
+    124
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 3
+  },
+  {
+   "feu_channel": 120,
+   "connector": 2,
+   "local": 56,
+   "noisy": true,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 3,
+    "row": 1
+   },
+   "net": [
+    115,
+    120,
+    125
+   ],
+   "strips": [
+    115,
+    120,
+    125
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 3
+  },
+  {
+   "feu_channel": 121,
+   "connector": 2,
+   "local": 57,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 2,
+    "row": 1
+   },
+   "net": [
+    116,
+    121,
+    126
+   ],
+   "strips": [
+    116,
+    121,
+    126
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 3
+  },
+  {
+   "feu_channel": 122,
+   "connector": 2,
+   "local": 58,
+   "noisy": true,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 1,
+    "row": 1
+   },
+   "net": [
+    122
+   ],
+   "strips": [
+    122
+   ],
+   "possible_net_0p7": [
+    97,
+    102,
+    107,
+    112,
+    117,
+    122
+   ],
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 123,
+   "connector": 2,
+   "local": 59,
+   "noisy": true,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 0,
+    "row": 1
+   },
+   "net": [
+    88,
+    93,
+    98,
+    103,
+    108,
+    113,
+    118,
+    123
+   ],
+   "strips": [
+    88,
+    93,
+    98,
+    103,
+    108,
+    113,
+    118,
+    123
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 8
+  },
+  {
+   "feu_channel": 124,
+   "connector": 2,
+   "local": 60,
+   "noisy": true,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 4,
+    "row": 0
+   },
+   "net": [
+    114,
+    119,
+    124
+   ],
+   "strips": [
+    114,
+    119,
+    124
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 3
+  },
+  {
+   "feu_channel": 125,
+   "connector": 2,
+   "local": 61,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 3,
+    "row": 0
+   },
+   "net": [
+    115,
+    120,
+    125
+   ],
+   "strips": [
+    115,
+    120,
+    125
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 3
+  },
+  {
+   "feu_channel": 126,
+   "connector": 2,
+   "local": 62,
+   "noisy": true,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 2,
+    "row": 0
+   },
+   "net": [
+    116,
+    121,
+    126
+   ],
+   "strips": [
+    116,
+    121,
+    126
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 3
+  },
+  {
+   "feu_channel": 127,
+   "connector": 2,
+   "local": 63,
+   "noisy": true,
+   "dead": false,
+   "weak": true,
+   "pogo": {
+    "col": 1,
+    "row": 0
+   },
+   "net": [
+    127
+   ],
+   "strips": [
+    127
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 128,
+   "connector": 3,
+   "local": 0,
+   "noisy": true,
+   "dead": false,
+   "weak": true,
+   "pogo": {
+    "col": 3,
+    "row": 29
+   },
+   "net": [
+    128
+   ],
+   "strips": [
+    128
+   ],
+   "possible_net_0p7": [
+    128,
+    132
+   ],
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 129,
+   "connector": 3,
+   "local": 1,
+   "noisy": true,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 2,
+    "row": 29
+   },
+   "net": [
+    129
+   ],
+   "strips": [
+    129
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 130,
+   "connector": 3,
+   "local": 2,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 1,
+    "row": 29
+   },
+   "net": [
+    130
+   ],
+   "strips": [
+    130
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 131,
+   "connector": 3,
+   "local": 3,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 0,
+    "row": 29
+   },
+   "net": [
+    131
+   ],
+   "strips": [
+    131
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 132,
+   "connector": 3,
+   "local": 4,
+   "noisy": false,
+   "dead": false,
+   "weak": true,
+   "pogo": {
+    "col": 4,
+    "row": 28
+   },
+   "net": [
+    132
+   ],
+   "strips": [
+    132
+   ],
+   "possible_net_0p7": [
+    128,
+    132
+   ],
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 133,
+   "connector": 3,
+   "local": 5,
+   "noisy": true,
+   "dead": false,
+   "weak": true,
+   "pogo": {
+    "col": 3,
+    "row": 28
+   },
+   "net": [
+    133
+   ],
+   "strips": [
+    133
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 134,
+   "connector": 3,
+   "local": 6,
+   "noisy": false,
+   "dead": true,
+   "weak": false,
+   "pogo": {
+    "col": 2,
+    "row": 28
+   },
+   "net": [
+    134
+   ],
+   "strips": [
+    134
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 135,
+   "connector": 3,
+   "local": 7,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 1,
+    "row": 28
+   },
+   "net": [
+    135
+   ],
+   "strips": [
+    135
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 136,
+   "connector": 3,
+   "local": 8,
+   "noisy": false,
+   "dead": false,
+   "weak": true,
+   "pogo": {
+    "col": 0,
+    "row": 28
+   },
+   "net": [
+    136
+   ],
+   "strips": [
+    136
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 137,
+   "connector": 3,
+   "local": 9,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 4,
+    "row": 27
+   },
+   "net": [
+    137
+   ],
+   "strips": [
+    137
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 138,
+   "connector": 3,
+   "local": 10,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 3,
+    "row": 27
+   },
+   "net": [
+    138
+   ],
+   "strips": [
+    138
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 139,
+   "connector": 3,
+   "local": 11,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 2,
+    "row": 27
+   },
+   "net": [
+    139
+   ],
+   "strips": [
+    139
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 140,
+   "connector": 3,
+   "local": 12,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 1,
+    "row": 27
+   },
+   "net": [
+    140
+   ],
+   "strips": [
+    140
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 141,
+   "connector": 3,
+   "local": 13,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 0,
+    "row": 27
+   },
+   "net": [
+    141
+   ],
+   "strips": [
+    141
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 142,
+   "connector": 3,
+   "local": 14,
+   "noisy": true,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 4,
+    "row": 26
+   },
+   "net": [
+    142
+   ],
+   "strips": [
+    142
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 143,
+   "connector": 3,
+   "local": 15,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 3,
+    "row": 26
+   },
+   "net": [
+    143
+   ],
+   "strips": [
+    143
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 144,
+   "connector": 3,
+   "local": 16,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 2,
+    "row": 26
+   },
+   "net": [
+    144
+   ],
+   "strips": [
+    144
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 145,
+   "connector": 3,
+   "local": 17,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 1,
+    "row": 26
+   },
+   "net": [
+    145
+   ],
+   "strips": [
+    145
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 146,
+   "connector": 3,
+   "local": 18,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 0,
+    "row": 26
+   },
+   "net": [
+    146
+   ],
+   "strips": [
+    146
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 147,
+   "connector": 3,
+   "local": 19,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 4,
+    "row": 25
+   },
+   "net": [
+    147
+   ],
+   "strips": [
+    147
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 148,
+   "connector": 3,
+   "local": 20,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 3,
+    "row": 25
+   },
+   "net": [
+    148
+   ],
+   "strips": [
+    148
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 149,
+   "connector": 3,
+   "local": 21,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 2,
+    "row": 25
+   },
+   "net": [
+    149
+   ],
+   "strips": [
+    149
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 150,
+   "connector": 3,
+   "local": 22,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 1,
+    "row": 25
+   },
+   "net": [
+    150
+   ],
+   "strips": [
+    150
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 151,
+   "connector": 3,
+   "local": 23,
+   "noisy": true,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 0,
+    "row": 25
+   },
+   "net": [
+    151
+   ],
+   "strips": [
+    151
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 152,
+   "connector": 3,
+   "local": 24,
+   "noisy": true,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 4,
+    "row": 24
+   },
+   "net": [
+    152
+   ],
+   "strips": [
+    152
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 153,
+   "connector": 3,
+   "local": 25,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 3,
+    "row": 24
+   },
+   "net": [
+    153
+   ],
+   "strips": [
+    153
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 154,
+   "connector": 3,
+   "local": 26,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 2,
+    "row": 24
+   },
+   "net": [
+    154
+   ],
+   "strips": [
+    154
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 155,
+   "connector": 3,
+   "local": 27,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 1,
+    "row": 24
+   },
+   "net": [
+    155
+   ],
+   "strips": [
+    155
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 156,
+   "connector": 3,
+   "local": 28,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 0,
+    "row": 24
+   },
+   "net": [
+    156
+   ],
+   "strips": [
+    156
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 157,
+   "connector": 3,
+   "local": 29,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 4,
+    "row": 23
+   },
+   "net": [
+    157
+   ],
+   "strips": [
+    157
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 158,
+   "connector": 3,
+   "local": 30,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 3,
+    "row": 23
+   },
+   "net": [
+    158
+   ],
+   "strips": [
+    158
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 159,
+   "connector": 3,
+   "local": 31,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 2,
+    "row": 23
+   },
+   "net": [
+    159
+   ],
+   "strips": [
+    159
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 160,
+   "connector": 3,
+   "local": 32,
+   "noisy": true,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 1,
+    "row": 23
+   },
+   "net": [
+    160,
+    165
+   ],
+   "strips": [
+    160,
+    165
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 2
+  },
+  {
+   "feu_channel": 161,
+   "connector": 3,
+   "local": 33,
+   "noisy": true,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 0,
+    "row": 23
+   },
+   "net": [
+    161
+   ],
+   "strips": [
+    161
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 162,
+   "connector": 3,
+   "local": 34,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 4,
+    "row": 22
+   },
+   "net": [
+    162
+   ],
+   "strips": [
+    162
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 163,
+   "connector": 3,
+   "local": 35,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 3,
+    "row": 22
+   },
+   "net": [
+    163
+   ],
+   "strips": [
+    163
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 164,
+   "connector": 3,
+   "local": 36,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 2,
+    "row": 22
+   },
+   "net": [
+    164
+   ],
+   "strips": [
+    164
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 165,
+   "connector": 3,
+   "local": 37,
+   "noisy": true,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 1,
+    "row": 22
+   },
+   "net": [
+    160,
+    165
+   ],
+   "strips": [
+    160,
+    165
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 2
+  },
+  {
+   "feu_channel": 166,
+   "connector": 3,
+   "local": 38,
+   "noisy": true,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 0,
+    "row": 22
+   },
+   "net": [
+    166
+   ],
+   "strips": [
+    166
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 167,
+   "connector": 3,
+   "local": 39,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 4,
+    "row": 21
+   },
+   "net": [
+    167
+   ],
+   "strips": [
+    167
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 168,
+   "connector": 3,
+   "local": 40,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 3,
+    "row": 21
+   },
+   "net": [
+    168
+   ],
+   "strips": [
+    168
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 169,
+   "connector": 3,
+   "local": 41,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 2,
+    "row": 21
+   },
+   "net": [
+    169
+   ],
+   "strips": [
+    169
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 170,
+   "connector": 3,
+   "local": 42,
+   "noisy": true,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 1,
+    "row": 21
+   },
+   "net": [
+    170
+   ],
+   "strips": [
+    170
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 171,
+   "connector": 3,
+   "local": 43,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 0,
+    "row": 21
+   },
+   "net": [
+    171
+   ],
+   "strips": [
+    171
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 172,
+   "connector": 3,
+   "local": 44,
+   "noisy": true,
+   "dead": false,
+   "weak": true,
+   "pogo": {
+    "col": 4,
+    "row": 18
+   },
+   "net": [
+    172
+   ],
+   "strips": [
+    172
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 173,
+   "connector": 3,
+   "local": 45,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 3,
+    "row": 18
+   },
+   "net": [
+    173
+   ],
+   "strips": [
+    173
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 174,
+   "connector": 3,
+   "local": 46,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 2,
+    "row": 18
+   },
+   "net": [
+    174
+   ],
+   "strips": [
+    174
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 175,
+   "connector": 3,
+   "local": 47,
+   "noisy": false,
+   "dead": false,
+   "weak": true,
+   "pogo": {
+    "col": 1,
+    "row": 18
+   },
+   "net": [
+    175
+   ],
+   "strips": [
+    175
+   ],
+   "possible_net_0p7": [
+    175,
+    180,
+    185,
+    190
+   ],
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 176,
+   "connector": 3,
+   "local": 48,
+   "noisy": true,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 0,
+    "row": 18
+   },
+   "net": [
+    176,
+    181
+   ],
+   "strips": [
+    176,
+    181
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 2
+  },
+  {
+   "feu_channel": 177,
+   "connector": 3,
+   "local": 49,
+   "noisy": true,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 4,
+    "row": 17
+   },
+   "net": [
+    177
+   ],
+   "strips": [
+    177
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 178,
+   "connector": 3,
+   "local": 50,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 3,
+    "row": 17
+   },
+   "net": [
+    178
+   ],
+   "strips": [
+    178
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 179,
+   "connector": 3,
+   "local": 51,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 2,
+    "row": 17
+   },
+   "net": [
+    179
+   ],
+   "strips": [
+    179
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 180,
+   "connector": 3,
+   "local": 52,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 1,
+    "row": 17
+   },
+   "net": [
+    180
+   ],
+   "strips": [
+    180
+   ],
+   "possible_net_0p7": [
+    175,
+    180,
+    185,
+    190
+   ],
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 181,
+   "connector": 3,
+   "local": 53,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 0,
+    "row": 17
+   },
+   "net": [
+    176,
+    181
+   ],
+   "strips": [
+    176,
+    181
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 2
+  },
+  {
+   "feu_channel": 182,
+   "connector": 3,
+   "local": 54,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 4,
+    "row": 16
+   },
+   "net": [
+    182
+   ],
+   "strips": [
+    182
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 183,
+   "connector": 3,
+   "local": 55,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 3,
+    "row": 16
+   },
+   "net": [
+    183
+   ],
+   "strips": [
+    183
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 184,
+   "connector": 3,
+   "local": 56,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 2,
+    "row": 16
+   },
+   "net": [
+    184
+   ],
+   "strips": [
+    184
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 185,
+   "connector": 3,
+   "local": 57,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 1,
+    "row": 16
+   },
+   "net": [
+    185
+   ],
+   "strips": [
+    185
+   ],
+   "possible_net_0p7": [
+    175,
+    180,
+    185,
+    190
+   ],
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 186,
+   "connector": 3,
+   "local": 58,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 0,
+    "row": 16
+   },
+   "net": [
+    68,
+    73,
+    186,
+    191
+   ],
+   "strips": [
+    68,
+    73,
+    186,
+    191
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 4
+  },
+  {
+   "feu_channel": 187,
+   "connector": 3,
+   "local": 59,
+   "noisy": true,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 4,
+    "row": 15
+   },
+   "net": [
+    187
+   ],
+   "strips": [
+    187
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 188,
+   "connector": 3,
+   "local": 60,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 3,
+    "row": 15
+   },
+   "net": [
+    188
+   ],
+   "strips": [
+    188
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 189,
+   "connector": 3,
+   "local": 61,
+   "noisy": true,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 2,
+    "row": 15
+   },
+   "net": [
+    189
+   ],
+   "strips": [
+    189
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 190,
+   "connector": 3,
+   "local": 62,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 1,
+    "row": 15
+   },
+   "net": [
+    190
+   ],
+   "strips": [
+    190
+   ],
+   "possible_net_0p7": [
+    175,
+    180,
+    185,
+    190
+   ],
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 191,
+   "connector": 3,
+   "local": 63,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 0,
+    "row": 15
+   },
+   "net": [
+    68,
+    73,
+    186,
+    191
+   ],
+   "strips": [
+    68,
+    73,
+    186,
+    191
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 4
+  },
+  {
+   "feu_channel": 192,
+   "connector": 4,
+   "local": 0,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 9,
+    "row": 15
+   },
+   "net": [
+    192
+   ],
+   "strips": [
+    192
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 193,
+   "connector": 4,
+   "local": 1,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 8,
+    "row": 15
+   },
+   "net": [
+    193
+   ],
+   "strips": [
+    193
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 194,
+   "connector": 4,
+   "local": 2,
+   "noisy": true,
+   "dead": true,
+   "weak": false,
+   "pogo": {
+    "col": 7,
+    "row": 15
+   },
+   "net": [
+    194
+   ],
+   "strips": [
+    194
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 195,
+   "connector": 4,
+   "local": 3,
+   "noisy": true,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 6,
+    "row": 15
+   },
+   "net": [
+    195
+   ],
+   "strips": [
+    195
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 196,
+   "connector": 4,
+   "local": 4,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 5,
+    "row": 15
+   },
+   "net": [
+    196
+   ],
+   "strips": [
+    196
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 197,
+   "connector": 4,
+   "local": 5,
+   "noisy": true,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 9,
+    "row": 16
+   },
+   "net": [
+    197
+   ],
+   "strips": [
+    197
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 198,
+   "connector": 4,
+   "local": 6,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 8,
+    "row": 16
+   },
+   "net": [
+    198
+   ],
+   "strips": [
+    198
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 199,
+   "connector": 4,
+   "local": 7,
+   "noisy": false,
+   "dead": false,
+   "weak": true,
+   "pogo": {
+    "col": 7,
+    "row": 16
+   },
+   "net": [
+    199
+   ],
+   "strips": [
+    199
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 200,
+   "connector": 4,
+   "local": 8,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 6,
+    "row": 16
+   },
+   "net": [
+    200
+   ],
+   "strips": [
+    200
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 201,
+   "connector": 4,
+   "local": 9,
+   "noisy": false,
+   "dead": false,
+   "weak": true,
+   "pogo": {
+    "col": 5,
+    "row": 16
+   },
+   "net": [
+    201
+   ],
+   "strips": [
+    201
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 202,
+   "connector": 4,
+   "local": 10,
+   "noisy": true,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 9,
+    "row": 17
+   },
+   "net": [
+    202
+   ],
+   "strips": [
+    202
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 203,
+   "connector": 4,
+   "local": 11,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 8,
+    "row": 17
+   },
+   "net": [
+    203
+   ],
+   "strips": [
+    203
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 204,
+   "connector": 4,
+   "local": 12,
+   "noisy": true,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 7,
+    "row": 17
+   },
+   "net": [
+    204
+   ],
+   "strips": [
+    204
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 205,
+   "connector": 4,
+   "local": 13,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 6,
+    "row": 17
+   },
+   "net": [
+    205
+   ],
+   "strips": [
+    205
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 206,
+   "connector": 4,
+   "local": 14,
+   "noisy": true,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 9,
+    "row": 18
+   },
+   "net": [
+    206
+   ],
+   "strips": [
+    206
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 207,
+   "connector": 4,
+   "local": 15,
+   "noisy": true,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 8,
+    "row": 18
+   },
+   "net": [
+    207
+   ],
+   "strips": [
+    207
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 208,
+   "connector": 4,
+   "local": 16,
+   "noisy": true,
+   "dead": true,
+   "weak": false,
+   "pogo": {
+    "col": 7,
+    "row": 18
+   },
+   "net": [
+    208
+   ],
+   "strips": [
+    208
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 209,
+   "connector": 4,
+   "local": 17,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 6,
+    "row": 18
+   },
+   "net": [
+    209
+   ],
+   "strips": [
+    209
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 210,
+   "connector": 4,
+   "local": 18,
+   "noisy": true,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 9,
+    "row": 21
+   },
+   "net": [
+    210
+   ],
+   "strips": [
+    210
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 211,
+   "connector": 4,
+   "local": 19,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 8,
+    "row": 21
+   },
+   "net": [
+    211
+   ],
+   "strips": [
+    211
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 212,
+   "connector": 4,
+   "local": 20,
+   "noisy": true,
+   "dead": false,
+   "weak": true,
+   "pogo": {
+    "col": 7,
+    "row": 21
+   },
+   "net": [
+    212
+   ],
+   "strips": [
+    212
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 213,
+   "connector": 4,
+   "local": 21,
+   "noisy": true,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 6,
+    "row": 21
+   },
+   "net": [
+    213
+   ],
+   "strips": [
+    213
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 214,
+   "connector": 4,
+   "local": 22,
+   "noisy": true,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 5,
+    "row": 21
+   },
+   "net": [
+    214
+   ],
+   "strips": [
+    214
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 215,
+   "connector": 4,
+   "local": 23,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 9,
+    "row": 22
+   },
+   "net": [
+    215
+   ],
+   "strips": [
+    215
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 216,
+   "connector": 4,
+   "local": 24,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 8,
+    "row": 22
+   },
+   "net": [
+    216
+   ],
+   "strips": [
+    216
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 217,
+   "connector": 4,
+   "local": 25,
+   "noisy": true,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 7,
+    "row": 22
+   },
+   "net": [
+    217
+   ],
+   "strips": [
+    217
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 218,
+   "connector": 4,
+   "local": 26,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 6,
+    "row": 22
+   },
+   "net": [
+    218
+   ],
+   "strips": [
+    218
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 219,
+   "connector": 4,
+   "local": 27,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 5,
+    "row": 22
+   },
+   "net": [
+    219
+   ],
+   "strips": [
+    219
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 220,
+   "connector": 4,
+   "local": 28,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 9,
+    "row": 23
+   },
+   "net": [
+    220
+   ],
+   "strips": [
+    220
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 221,
+   "connector": 4,
+   "local": 29,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 8,
+    "row": 23
+   },
+   "net": [
+    221
+   ],
+   "strips": [
+    221
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 222,
+   "connector": 4,
+   "local": 30,
+   "noisy": true,
+   "dead": false,
+   "weak": true,
+   "pogo": {
+    "col": 7,
+    "row": 23
+   },
+   "net": [
+    222
+   ],
+   "strips": [
+    222
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 223,
+   "connector": 4,
+   "local": 31,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 6,
+    "row": 23
+   },
+   "net": [
+    223
+   ],
+   "strips": [
+    223
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 224,
+   "connector": 4,
+   "local": 32,
+   "noisy": true,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 5,
+    "row": 23
+   },
+   "net": [
+    224
+   ],
+   "strips": [
+    224
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 225,
+   "connector": 4,
+   "local": 33,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 9,
+    "row": 24
+   },
+   "net": [
+    225
+   ],
+   "strips": [
+    225
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 226,
+   "connector": 4,
+   "local": 34,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 8,
+    "row": 24
+   },
+   "net": [
+    226
+   ],
+   "strips": [
+    226
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 227,
+   "connector": 4,
+   "local": 35,
+   "noisy": true,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 7,
+    "row": 24
+   },
+   "net": [
+    227
+   ],
+   "strips": [
+    227
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 228,
+   "connector": 4,
+   "local": 36,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 6,
+    "row": 24
+   },
+   "net": [
+    228
+   ],
+   "strips": [
+    228
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 229,
+   "connector": 4,
+   "local": 37,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 5,
+    "row": 24
+   },
+   "net": [
+    229
+   ],
+   "strips": [
+    229
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 230,
+   "connector": 4,
+   "local": 38,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 9,
+    "row": 25
+   },
+   "net": [
+    230,
+    235,
+    240,
+    245,
+    250
+   ],
+   "strips": [
+    230,
+    235,
+    240,
+    245,
+    250
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 5
+  },
+  {
+   "feu_channel": 231,
+   "connector": 4,
+   "local": 39,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 8,
+    "row": 25
+   },
+   "net": [
+    231,
+    236,
+    241,
+    246
+   ],
+   "strips": [
+    231,
+    236,
+    241,
+    246
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 4
+  },
+  {
+   "feu_channel": 232,
+   "connector": 4,
+   "local": 40,
+   "noisy": true,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 7,
+    "row": 25
+   },
+   "net": [
+    232
+   ],
+   "strips": [
+    232
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 233,
+   "connector": 4,
+   "local": 41,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 6,
+    "row": 25
+   },
+   "net": [
+    233,
+    238
+   ],
+   "strips": [
+    233,
+    238
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 2
+  },
+  {
+   "feu_channel": 234,
+   "connector": 4,
+   "local": 42,
+   "noisy": true,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 5,
+    "row": 25
+   },
+   "net": [
+    234
+   ],
+   "strips": [
+    234
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 235,
+   "connector": 4,
+   "local": 43,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 9,
+    "row": 26
+   },
+   "net": [
+    230,
+    235,
+    240,
+    245,
+    250
+   ],
+   "strips": [
+    230,
+    235,
+    240,
+    245,
+    250
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 5
+  },
+  {
+   "feu_channel": 236,
+   "connector": 4,
+   "local": 44,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 8,
+    "row": 26
+   },
+   "net": [
+    231,
+    236,
+    241,
+    246
+   ],
+   "strips": [
+    231,
+    236,
+    241,
+    246
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 4
+  },
+  {
+   "feu_channel": 237,
+   "connector": 4,
+   "local": 45,
+   "noisy": true,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 7,
+    "row": 26
+   },
+   "net": [
+    237,
+    242,
+    247
+   ],
+   "strips": [
+    237,
+    242,
+    247
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 3
+  },
+  {
+   "feu_channel": 238,
+   "connector": 4,
+   "local": 46,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 6,
+    "row": 26
+   },
+   "net": [
+    233,
+    238
+   ],
+   "strips": [
+    233,
+    238
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 2
+  },
+  {
+   "feu_channel": 239,
+   "connector": 4,
+   "local": 47,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 5,
+    "row": 26
+   },
+   "net": [
+    239
+   ],
+   "strips": [
+    239
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 240,
+   "connector": 4,
+   "local": 48,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 9,
+    "row": 27
+   },
+   "net": [
+    230,
+    235,
+    240,
+    245,
+    250
+   ],
+   "strips": [
+    230,
+    235,
+    240,
+    245,
+    250
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 5
+  },
+  {
+   "feu_channel": 241,
+   "connector": 4,
+   "local": 49,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 8,
+    "row": 27
+   },
+   "net": [
+    231,
+    236,
+    241,
+    246
+   ],
+   "strips": [
+    231,
+    236,
+    241,
+    246
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 4
+  },
+  {
+   "feu_channel": 242,
+   "connector": 4,
+   "local": 50,
+   "noisy": true,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 7,
+    "row": 27
+   },
+   "net": [
+    237,
+    242,
+    247
+   ],
+   "strips": [
+    237,
+    242,
+    247
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 3
+  },
+  {
+   "feu_channel": 243,
+   "connector": 4,
+   "local": 51,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 6,
+    "row": 27
+   },
+   "net": [
+    243
+   ],
+   "strips": [
+    243
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 244,
+   "connector": 4,
+   "local": 52,
+   "noisy": false,
+   "dead": false,
+   "weak": true,
+   "pogo": {
+    "col": 5,
+    "row": 27
+   },
+   "net": [
+    244
+   ],
+   "strips": [
+    244
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 245,
+   "connector": 4,
+   "local": 53,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 9,
+    "row": 28
+   },
+   "net": [
+    230,
+    235,
+    240,
+    245,
+    250
+   ],
+   "strips": [
+    230,
+    235,
+    240,
+    245,
+    250
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 5
+  },
+  {
+   "feu_channel": 246,
+   "connector": 4,
+   "local": 54,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 8,
+    "row": 28
+   },
+   "net": [
+    231,
+    236,
+    241,
+    246
+   ],
+   "strips": [
+    231,
+    236,
+    241,
+    246
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 4
+  },
+  {
+   "feu_channel": 247,
+   "connector": 4,
+   "local": 55,
+   "noisy": true,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 7,
+    "row": 28
+   },
+   "net": [
+    237,
+    242,
+    247
+   ],
+   "strips": [
+    237,
+    242,
+    247
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 3
+  },
+  {
+   "feu_channel": 248,
+   "connector": 4,
+   "local": 56,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 6,
+    "row": 28
+   },
+   "net": [
+    248
+   ],
+   "strips": [
+    248
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 249,
+   "connector": 4,
+   "local": 57,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 5,
+    "row": 28
+   },
+   "net": [
+    249
+   ],
+   "strips": [
+    249
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 250,
+   "connector": 4,
+   "local": 58,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 9,
+    "row": 29
+   },
+   "net": [
+    230,
+    235,
+    240,
+    245,
+    250
+   ],
+   "strips": [
+    230,
+    235,
+    240,
+    245,
+    250
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 5
+  },
+  {
+   "feu_channel": 251,
+   "connector": 4,
+   "local": 59,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 8,
+    "row": 29
+   },
+   "net": [
+    251
+   ],
+   "strips": [
+    251
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 252,
+   "connector": 4,
+   "local": 60,
+   "noisy": true,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 7,
+    "row": 29
+   },
+   "net": [
+    252
+   ],
+   "strips": [
+    252
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 253,
+   "connector": 4,
+   "local": 61,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 6,
+    "row": 29
+   },
+   "net": [
+    253
+   ],
+   "strips": [
+    253
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 254,
+   "connector": 4,
+   "local": 62,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 5,
+    "row": 29
+   },
+   "net": [
+    254
+   ],
+   "strips": [
+    254
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 255,
+   "connector": 4,
+   "local": 63,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "pogo": {
+    "col": 4,
+    "row": 29
+   },
+   "net": [
+    255
+   ],
+   "strips": [
+    255
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 256,
+   "connector": 5,
+   "local": 0,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    256
+   ],
+   "strips": [
+    256
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 257,
+   "connector": 5,
+   "local": 1,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    257
+   ],
+   "strips": [
+    257
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 258,
+   "connector": 5,
+   "local": 2,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    258
+   ],
+   "strips": [
+    258
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 259,
+   "connector": 5,
+   "local": 3,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    259
+   ],
+   "strips": [
+    259
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 260,
+   "connector": 5,
+   "local": 4,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    260
+   ],
+   "strips": [
+    260
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 261,
+   "connector": 5,
+   "local": 5,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    261
+   ],
+   "strips": [
+    261
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 262,
+   "connector": 5,
+   "local": 6,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    262
+   ],
+   "strips": [
+    262
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 263,
+   "connector": 5,
+   "local": 7,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    263
+   ],
+   "strips": [
+    263
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 264,
+   "connector": 5,
+   "local": 8,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    264
+   ],
+   "strips": [
+    264
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 265,
+   "connector": 5,
+   "local": 9,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    265
+   ],
+   "strips": [
+    265
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 266,
+   "connector": 5,
+   "local": 10,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    266
+   ],
+   "strips": [
+    266
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 267,
+   "connector": 5,
+   "local": 11,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    267
+   ],
+   "strips": [
+    267
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 268,
+   "connector": 5,
+   "local": 12,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    268
+   ],
+   "strips": [
+    268
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 269,
+   "connector": 5,
+   "local": 13,
+   "noisy": false,
+   "dead": false,
+   "weak": true,
+   "net": [
+    269
+   ],
+   "strips": [
+    269
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 270,
+   "connector": 5,
+   "local": 14,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    270
+   ],
+   "strips": [
+    270
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 271,
+   "connector": 5,
+   "local": 15,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    271
+   ],
+   "strips": [
+    271
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 272,
+   "connector": 5,
+   "local": 16,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    272
+   ],
+   "strips": [
+    272
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 273,
+   "connector": 5,
+   "local": 17,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    273
+   ],
+   "strips": [
+    273
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 274,
+   "connector": 5,
+   "local": 18,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    274
+   ],
+   "strips": [
+    274
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 275,
+   "connector": 5,
+   "local": 19,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    275
+   ],
+   "strips": [
+    275
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 276,
+   "connector": 5,
+   "local": 20,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    276
+   ],
+   "strips": [
+    276
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 277,
+   "connector": 5,
+   "local": 21,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    277
+   ],
+   "strips": [
+    277
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 278,
+   "connector": 5,
+   "local": 22,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    278
+   ],
+   "strips": [
+    278
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 279,
+   "connector": 5,
+   "local": 23,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    279
+   ],
+   "strips": [
+    279
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 280,
+   "connector": 5,
+   "local": 24,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    280
+   ],
+   "strips": [
+    280
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 281,
+   "connector": 5,
+   "local": 25,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    281
+   ],
+   "strips": [
+    281
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 282,
+   "connector": 5,
+   "local": 26,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    282
+   ],
+   "strips": [
+    282
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 283,
+   "connector": 5,
+   "local": 27,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    283
+   ],
+   "strips": [
+    283
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 284,
+   "connector": 5,
+   "local": 28,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    284
+   ],
+   "strips": [
+    284
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 285,
+   "connector": 5,
+   "local": 29,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    285
+   ],
+   "strips": [
+    285
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 286,
+   "connector": 5,
+   "local": 30,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    286
+   ],
+   "strips": [
+    286
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 287,
+   "connector": 5,
+   "local": 31,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    287
+   ],
+   "strips": [
+    287
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 288,
+   "connector": 5,
+   "local": 32,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    288
+   ],
+   "strips": [
+    288
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 289,
+   "connector": 5,
+   "local": 33,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    289
+   ],
+   "strips": [
+    289
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 290,
+   "connector": 5,
+   "local": 34,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    290
+   ],
+   "strips": [
+    290
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 291,
+   "connector": 5,
+   "local": 35,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    291
+   ],
+   "strips": [
+    291
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 292,
+   "connector": 5,
+   "local": 36,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    292
+   ],
+   "strips": [
+    292
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 293,
+   "connector": 5,
+   "local": 37,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    293
+   ],
+   "strips": [
+    293
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 294,
+   "connector": 5,
+   "local": 38,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    294
+   ],
+   "strips": [
+    294
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 295,
+   "connector": 5,
+   "local": 39,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    295
+   ],
+   "strips": [
+    295
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 296,
+   "connector": 5,
+   "local": 40,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    296
+   ],
+   "strips": [
+    296
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 297,
+   "connector": 5,
+   "local": 41,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    297
+   ],
+   "strips": [
+    297
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 298,
+   "connector": 5,
+   "local": 42,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    298
+   ],
+   "strips": [
+    298
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 299,
+   "connector": 5,
+   "local": 43,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    299
+   ],
+   "strips": [
+    299
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 300,
+   "connector": 5,
+   "local": 44,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    300
+   ],
+   "strips": [
+    300
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 301,
+   "connector": 5,
+   "local": 45,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    301
+   ],
+   "strips": [
+    301
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 302,
+   "connector": 5,
+   "local": 46,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    302
+   ],
+   "strips": [
+    302
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 303,
+   "connector": 5,
+   "local": 47,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    303
+   ],
+   "strips": [
+    303
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 304,
+   "connector": 5,
+   "local": 48,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    304
+   ],
+   "strips": [
+    304
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 305,
+   "connector": 5,
+   "local": 49,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    305
+   ],
+   "strips": [
+    305
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 306,
+   "connector": 5,
+   "local": 50,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    306
+   ],
+   "strips": [
+    306
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 307,
+   "connector": 5,
+   "local": 51,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    307
+   ],
+   "strips": [
+    307
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 308,
+   "connector": 5,
+   "local": 52,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    308
+   ],
+   "strips": [
+    308
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 309,
+   "connector": 5,
+   "local": 53,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    309
+   ],
+   "strips": [
+    309
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 310,
+   "connector": 5,
+   "local": 54,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    310
+   ],
+   "strips": [
+    310
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 311,
+   "connector": 5,
+   "local": 55,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    311
+   ],
+   "strips": [
+    311
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 312,
+   "connector": 5,
+   "local": 56,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    312
+   ],
+   "strips": [
+    312
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 313,
+   "connector": 5,
+   "local": 57,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    313
+   ],
+   "strips": [
+    313
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 314,
+   "connector": 5,
+   "local": 58,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    314
+   ],
+   "strips": [
+    314
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 315,
+   "connector": 5,
+   "local": 59,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    315
+   ],
+   "strips": [
+    315
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 316,
+   "connector": 5,
+   "local": 60,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    316
+   ],
+   "strips": [
+    316
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 317,
+   "connector": 5,
+   "local": 61,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    317
+   ],
+   "strips": [
+    317
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 318,
+   "connector": 5,
+   "local": 62,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    318
+   ],
+   "strips": [
+    318
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 319,
+   "connector": 5,
+   "local": 63,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    319
+   ],
+   "strips": [
+    319
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 320,
+   "connector": 6,
+   "local": 0,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    320
+   ],
+   "strips": [
+    320
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 321,
+   "connector": 6,
+   "local": 1,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    321
+   ],
+   "strips": [
+    321
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 322,
+   "connector": 6,
+   "local": 2,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    322
+   ],
+   "strips": [
+    322
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 323,
+   "connector": 6,
+   "local": 3,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    323
+   ],
+   "strips": [
+    323
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 324,
+   "connector": 6,
+   "local": 4,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    324
+   ],
+   "strips": [
+    324
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 325,
+   "connector": 6,
+   "local": 5,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    325
+   ],
+   "strips": [
+    325
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 326,
+   "connector": 6,
+   "local": 6,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    326
+   ],
+   "strips": [
+    326
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 327,
+   "connector": 6,
+   "local": 7,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    327
+   ],
+   "strips": [
+    327
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 328,
+   "connector": 6,
+   "local": 8,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    328
+   ],
+   "strips": [
+    328
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 329,
+   "connector": 6,
+   "local": 9,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    329
+   ],
+   "strips": [
+    329
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 330,
+   "connector": 6,
+   "local": 10,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    330
+   ],
+   "strips": [
+    330
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 331,
+   "connector": 6,
+   "local": 11,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    331
+   ],
+   "strips": [
+    331
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 332,
+   "connector": 6,
+   "local": 12,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    332
+   ],
+   "strips": [
+    332
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 333,
+   "connector": 6,
+   "local": 13,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    333
+   ],
+   "strips": [
+    333
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 334,
+   "connector": 6,
+   "local": 14,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    334
+   ],
+   "strips": [
+    334
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 335,
+   "connector": 6,
+   "local": 15,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    335
+   ],
+   "strips": [
+    335
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 336,
+   "connector": 6,
+   "local": 16,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    336
+   ],
+   "strips": [
+    336
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 337,
+   "connector": 6,
+   "local": 17,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    337
+   ],
+   "strips": [
+    337
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 338,
+   "connector": 6,
+   "local": 18,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    338
+   ],
+   "strips": [
+    338
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 339,
+   "connector": 6,
+   "local": 19,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    339
+   ],
+   "strips": [
+    339
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 340,
+   "connector": 6,
+   "local": 20,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    340
+   ],
+   "strips": [
+    340
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 341,
+   "connector": 6,
+   "local": 21,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    341
+   ],
+   "strips": [
+    341
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 342,
+   "connector": 6,
+   "local": 22,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    342
+   ],
+   "strips": [
+    342
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 343,
+   "connector": 6,
+   "local": 23,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    343
+   ],
+   "strips": [
+    343
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 344,
+   "connector": 6,
+   "local": 24,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    344
+   ],
+   "strips": [
+    344
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 345,
+   "connector": 6,
+   "local": 25,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    345
+   ],
+   "strips": [
+    345
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 346,
+   "connector": 6,
+   "local": 26,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    346
+   ],
+   "strips": [
+    346
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 347,
+   "connector": 6,
+   "local": 27,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    347
+   ],
+   "strips": [
+    347
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 348,
+   "connector": 6,
+   "local": 28,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    348
+   ],
+   "strips": [
+    348
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 349,
+   "connector": 6,
+   "local": 29,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    349
+   ],
+   "strips": [
+    349
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 350,
+   "connector": 6,
+   "local": 30,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    350
+   ],
+   "strips": [
+    350
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 351,
+   "connector": 6,
+   "local": 31,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    351
+   ],
+   "strips": [
+    351
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 352,
+   "connector": 6,
+   "local": 32,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    352
+   ],
+   "strips": [
+    352
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 353,
+   "connector": 6,
+   "local": 33,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    353
+   ],
+   "strips": [
+    353
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 354,
+   "connector": 6,
+   "local": 34,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    354
+   ],
+   "strips": [
+    354
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 355,
+   "connector": 6,
+   "local": 35,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    355
+   ],
+   "strips": [
+    355
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 356,
+   "connector": 6,
+   "local": 36,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    356
+   ],
+   "strips": [
+    356
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 357,
+   "connector": 6,
+   "local": 37,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    357
+   ],
+   "strips": [
+    357
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 358,
+   "connector": 6,
+   "local": 38,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    358
+   ],
+   "strips": [
+    358
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 359,
+   "connector": 6,
+   "local": 39,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    359
+   ],
+   "strips": [
+    359
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 360,
+   "connector": 6,
+   "local": 40,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    360
+   ],
+   "strips": [
+    360
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 361,
+   "connector": 6,
+   "local": 41,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    361
+   ],
+   "strips": [
+    361
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 362,
+   "connector": 6,
+   "local": 42,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    362
+   ],
+   "strips": [
+    362
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 363,
+   "connector": 6,
+   "local": 43,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    363
+   ],
+   "strips": [
+    363
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 364,
+   "connector": 6,
+   "local": 44,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    364
+   ],
+   "strips": [
+    364
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 365,
+   "connector": 6,
+   "local": 45,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    365
+   ],
+   "strips": [
+    365
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 366,
+   "connector": 6,
+   "local": 46,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    366
+   ],
+   "strips": [
+    366
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 367,
+   "connector": 6,
+   "local": 47,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    367
+   ],
+   "strips": [
+    367
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 368,
+   "connector": 6,
+   "local": 48,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    368
+   ],
+   "strips": [
+    368
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 369,
+   "connector": 6,
+   "local": 49,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    369
+   ],
+   "strips": [
+    369
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 370,
+   "connector": 6,
+   "local": 50,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    370
+   ],
+   "strips": [
+    370
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 371,
+   "connector": 6,
+   "local": 51,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    371
+   ],
+   "strips": [
+    371
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 372,
+   "connector": 6,
+   "local": 52,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    372
+   ],
+   "strips": [
+    372
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 373,
+   "connector": 6,
+   "local": 53,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    373
+   ],
+   "strips": [
+    373
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 374,
+   "connector": 6,
+   "local": 54,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    374
+   ],
+   "strips": [
+    374
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 375,
+   "connector": 6,
+   "local": 55,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    375
+   ],
+   "strips": [
+    375
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 376,
+   "connector": 6,
+   "local": 56,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    376
+   ],
+   "strips": [
+    376
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 377,
+   "connector": 6,
+   "local": 57,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    377
+   ],
+   "strips": [
+    377
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 378,
+   "connector": 6,
+   "local": 58,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    378
+   ],
+   "strips": [
+    378
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 379,
+   "connector": 6,
+   "local": 59,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    379
+   ],
+   "strips": [
+    379
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 380,
+   "connector": 6,
+   "local": 60,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    380
+   ],
+   "strips": [
+    380
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 381,
+   "connector": 6,
+   "local": 61,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    381
+   ],
+   "strips": [
+    381
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 382,
+   "connector": 6,
+   "local": 62,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    382
+   ],
+   "strips": [
+    382
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 383,
+   "connector": 6,
+   "local": 63,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    383
+   ],
+   "strips": [
+    383
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 384,
+   "connector": 7,
+   "local": 0,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    384
+   ],
+   "strips": [
+    384
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 385,
+   "connector": 7,
+   "local": 1,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    385
+   ],
+   "strips": [
+    385
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 386,
+   "connector": 7,
+   "local": 2,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    386
+   ],
+   "strips": [
+    386
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 387,
+   "connector": 7,
+   "local": 3,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    387
+   ],
+   "strips": [
+    387
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 388,
+   "connector": 7,
+   "local": 4,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    388
+   ],
+   "strips": [
+    388
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 389,
+   "connector": 7,
+   "local": 5,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    389
+   ],
+   "strips": [
+    389
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 390,
+   "connector": 7,
+   "local": 6,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    390
+   ],
+   "strips": [
+    390
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 391,
+   "connector": 7,
+   "local": 7,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    391
+   ],
+   "strips": [
+    391
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 392,
+   "connector": 7,
+   "local": 8,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    392
+   ],
+   "strips": [
+    392
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 393,
+   "connector": 7,
+   "local": 9,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    393
+   ],
+   "strips": [
+    393
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 394,
+   "connector": 7,
+   "local": 10,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    394
+   ],
+   "strips": [
+    394
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 395,
+   "connector": 7,
+   "local": 11,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    395
+   ],
+   "strips": [
+    395
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 396,
+   "connector": 7,
+   "local": 12,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    396
+   ],
+   "strips": [
+    396
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 397,
+   "connector": 7,
+   "local": 13,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    397
+   ],
+   "strips": [
+    397
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 398,
+   "connector": 7,
+   "local": 14,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    398
+   ],
+   "strips": [
+    398
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 399,
+   "connector": 7,
+   "local": 15,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    399
+   ],
+   "strips": [
+    399
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 400,
+   "connector": 7,
+   "local": 16,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    400
+   ],
+   "strips": [
+    400
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 401,
+   "connector": 7,
+   "local": 17,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    401
+   ],
+   "strips": [
+    401
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 402,
+   "connector": 7,
+   "local": 18,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    402
+   ],
+   "strips": [
+    402
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 403,
+   "connector": 7,
+   "local": 19,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    403
+   ],
+   "strips": [
+    403
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 404,
+   "connector": 7,
+   "local": 20,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    404
+   ],
+   "strips": [
+    404
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 405,
+   "connector": 7,
+   "local": 21,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    405
+   ],
+   "strips": [
+    405
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 406,
+   "connector": 7,
+   "local": 22,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    406
+   ],
+   "strips": [
+    406
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 407,
+   "connector": 7,
+   "local": 23,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    407
+   ],
+   "strips": [
+    407
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 408,
+   "connector": 7,
+   "local": 24,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    408
+   ],
+   "strips": [
+    408
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 409,
+   "connector": 7,
+   "local": 25,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    409
+   ],
+   "strips": [
+    409
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 410,
+   "connector": 7,
+   "local": 26,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    410
+   ],
+   "strips": [
+    410
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 411,
+   "connector": 7,
+   "local": 27,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    411
+   ],
+   "strips": [
+    411
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 412,
+   "connector": 7,
+   "local": 28,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    412
+   ],
+   "strips": [
+    412
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 413,
+   "connector": 7,
+   "local": 29,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    413
+   ],
+   "strips": [
+    413
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 414,
+   "connector": 7,
+   "local": 30,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    414
+   ],
+   "strips": [
+    414
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 415,
+   "connector": 7,
+   "local": 31,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    415
+   ],
+   "strips": [
+    415
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 416,
+   "connector": 7,
+   "local": 32,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    416
+   ],
+   "strips": [
+    416
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 417,
+   "connector": 7,
+   "local": 33,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    417
+   ],
+   "strips": [
+    417
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 418,
+   "connector": 7,
+   "local": 34,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    418
+   ],
+   "strips": [
+    418
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 419,
+   "connector": 7,
+   "local": 35,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    419
+   ],
+   "strips": [
+    419
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 420,
+   "connector": 7,
+   "local": 36,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    420
+   ],
+   "strips": [
+    420
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 421,
+   "connector": 7,
+   "local": 37,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    421
+   ],
+   "strips": [
+    421
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 422,
+   "connector": 7,
+   "local": 38,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    422
+   ],
+   "strips": [
+    422
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 423,
+   "connector": 7,
+   "local": 39,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    423
+   ],
+   "strips": [
+    423
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 424,
+   "connector": 7,
+   "local": 40,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    424
+   ],
+   "strips": [
+    424
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 425,
+   "connector": 7,
+   "local": 41,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    425
+   ],
+   "strips": [
+    425
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 426,
+   "connector": 7,
+   "local": 42,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    426
+   ],
+   "strips": [
+    426
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 427,
+   "connector": 7,
+   "local": 43,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    427
+   ],
+   "strips": [
+    427
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 428,
+   "connector": 7,
+   "local": 44,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    428
+   ],
+   "strips": [
+    428
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 429,
+   "connector": 7,
+   "local": 45,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    429
+   ],
+   "strips": [
+    429
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 430,
+   "connector": 7,
+   "local": 46,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    430
+   ],
+   "strips": [
+    430
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 431,
+   "connector": 7,
+   "local": 47,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    431
+   ],
+   "strips": [
+    431
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 432,
+   "connector": 7,
+   "local": 48,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    432
+   ],
+   "strips": [
+    432
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 433,
+   "connector": 7,
+   "local": 49,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    433
+   ],
+   "strips": [
+    433
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 434,
+   "connector": 7,
+   "local": 50,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    434
+   ],
+   "strips": [
+    434
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 435,
+   "connector": 7,
+   "local": 51,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    435
+   ],
+   "strips": [
+    435
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 436,
+   "connector": 7,
+   "local": 52,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    436
+   ],
+   "strips": [
+    436
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 437,
+   "connector": 7,
+   "local": 53,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    437
+   ],
+   "strips": [
+    437
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 438,
+   "connector": 7,
+   "local": 54,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    438
+   ],
+   "strips": [
+    438
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 439,
+   "connector": 7,
+   "local": 55,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    439
+   ],
+   "strips": [
+    439
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 440,
+   "connector": 7,
+   "local": 56,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    440
+   ],
+   "strips": [
+    440
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 441,
+   "connector": 7,
+   "local": 57,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    441
+   ],
+   "strips": [
+    441
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 442,
+   "connector": 7,
+   "local": 58,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    442
+   ],
+   "strips": [
+    442
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 443,
+   "connector": 7,
+   "local": 59,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    443
+   ],
+   "strips": [
+    443
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 444,
+   "connector": 7,
+   "local": 60,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    444
+   ],
+   "strips": [
+    444
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 445,
+   "connector": 7,
+   "local": 61,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    445
+   ],
+   "strips": [
+    445
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 446,
+   "connector": 7,
+   "local": 62,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    446
+   ],
+   "strips": [
+    446
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 447,
+   "connector": 7,
+   "local": 63,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    447
+   ],
+   "strips": [
+    447
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 448,
+   "connector": 8,
+   "local": 0,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    448
+   ],
+   "strips": [
+    448
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 449,
+   "connector": 8,
+   "local": 1,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    449
+   ],
+   "strips": [
+    449
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 450,
+   "connector": 8,
+   "local": 2,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    450
+   ],
+   "strips": [
+    450
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 451,
+   "connector": 8,
+   "local": 3,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    451
+   ],
+   "strips": [
+    451
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 452,
+   "connector": 8,
+   "local": 4,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    452
+   ],
+   "strips": [
+    452
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 453,
+   "connector": 8,
+   "local": 5,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    453
+   ],
+   "strips": [
+    453
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 454,
+   "connector": 8,
+   "local": 6,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    454
+   ],
+   "strips": [
+    454
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 455,
+   "connector": 8,
+   "local": 7,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    455
+   ],
+   "strips": [
+    455
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 456,
+   "connector": 8,
+   "local": 8,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    456
+   ],
+   "strips": [
+    456
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 457,
+   "connector": 8,
+   "local": 9,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    457
+   ],
+   "strips": [
+    457
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 458,
+   "connector": 8,
+   "local": 10,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    458
+   ],
+   "strips": [
+    458
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 459,
+   "connector": 8,
+   "local": 11,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    459
+   ],
+   "strips": [
+    459
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 460,
+   "connector": 8,
+   "local": 12,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    460
+   ],
+   "strips": [
+    460
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 461,
+   "connector": 8,
+   "local": 13,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    461
+   ],
+   "strips": [
+    461
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 462,
+   "connector": 8,
+   "local": 14,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    462
+   ],
+   "strips": [
+    462
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 463,
+   "connector": 8,
+   "local": 15,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    463
+   ],
+   "strips": [
+    463
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 464,
+   "connector": 8,
+   "local": 16,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    464
+   ],
+   "strips": [
+    464
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 465,
+   "connector": 8,
+   "local": 17,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    465
+   ],
+   "strips": [
+    465
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 466,
+   "connector": 8,
+   "local": 18,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    466
+   ],
+   "strips": [
+    466
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 467,
+   "connector": 8,
+   "local": 19,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    467
+   ],
+   "strips": [
+    467
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 468,
+   "connector": 8,
+   "local": 20,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    468
+   ],
+   "strips": [
+    468
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 469,
+   "connector": 8,
+   "local": 21,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    469
+   ],
+   "strips": [
+    469
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 470,
+   "connector": 8,
+   "local": 22,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    470
+   ],
+   "strips": [
+    470
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 471,
+   "connector": 8,
+   "local": 23,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    471
+   ],
+   "strips": [
+    471
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 472,
+   "connector": 8,
+   "local": 24,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    472
+   ],
+   "strips": [
+    472
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 473,
+   "connector": 8,
+   "local": 25,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    473
+   ],
+   "strips": [
+    473
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 474,
+   "connector": 8,
+   "local": 26,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    474
+   ],
+   "strips": [
+    474
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 475,
+   "connector": 8,
+   "local": 27,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    475
+   ],
+   "strips": [
+    475
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 476,
+   "connector": 8,
+   "local": 28,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    476
+   ],
+   "strips": [
+    476
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 477,
+   "connector": 8,
+   "local": 29,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    477
+   ],
+   "strips": [
+    477
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 478,
+   "connector": 8,
+   "local": 30,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    478
+   ],
+   "strips": [
+    478
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 479,
+   "connector": 8,
+   "local": 31,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    479
+   ],
+   "strips": [
+    479
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 480,
+   "connector": 8,
+   "local": 32,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    480
+   ],
+   "strips": [
+    480
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 481,
+   "connector": 8,
+   "local": 33,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    481
+   ],
+   "strips": [
+    481
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 482,
+   "connector": 8,
+   "local": 34,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    482
+   ],
+   "strips": [
+    482
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 483,
+   "connector": 8,
+   "local": 35,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    483
+   ],
+   "strips": [
+    483
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 484,
+   "connector": 8,
+   "local": 36,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    484
+   ],
+   "strips": [
+    484
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 485,
+   "connector": 8,
+   "local": 37,
+   "noisy": false,
+   "dead": false,
+   "weak": true,
+   "net": [
+    485
+   ],
+   "strips": [
+    485
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 486,
+   "connector": 8,
+   "local": 38,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    486
+   ],
+   "strips": [
+    486
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 487,
+   "connector": 8,
+   "local": 39,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    487
+   ],
+   "strips": [
+    487
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 488,
+   "connector": 8,
+   "local": 40,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    488
+   ],
+   "strips": [
+    488
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 489,
+   "connector": 8,
+   "local": 41,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    489
+   ],
+   "strips": [
+    489
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 490,
+   "connector": 8,
+   "local": 42,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    490
+   ],
+   "strips": [
+    490
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 491,
+   "connector": 8,
+   "local": 43,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    491
+   ],
+   "strips": [
+    491
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 492,
+   "connector": 8,
+   "local": 44,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    492
+   ],
+   "strips": [
+    492
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 493,
+   "connector": 8,
+   "local": 45,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    493
+   ],
+   "strips": [
+    493
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 494,
+   "connector": 8,
+   "local": 46,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    494
+   ],
+   "strips": [
+    494
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 495,
+   "connector": 8,
+   "local": 47,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    495
+   ],
+   "strips": [
+    495
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 496,
+   "connector": 8,
+   "local": 48,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    496
+   ],
+   "strips": [
+    496
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 497,
+   "connector": 8,
+   "local": 49,
+   "noisy": false,
+   "dead": false,
+   "weak": true,
+   "net": [
+    497
+   ],
+   "strips": [
+    497
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 498,
+   "connector": 8,
+   "local": 50,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    498
+   ],
+   "strips": [
+    498
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 499,
+   "connector": 8,
+   "local": 51,
+   "noisy": true,
+   "dead": false,
+   "weak": false,
+   "net": [
+    499
+   ],
+   "strips": [
+    499
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 500,
+   "connector": 8,
+   "local": 52,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    500
+   ],
+   "strips": [
+    500
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 501,
+   "connector": 8,
+   "local": 53,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    501
+   ],
+   "strips": [
+    501
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 502,
+   "connector": 8,
+   "local": 54,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    502
+   ],
+   "strips": [
+    502
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 503,
+   "connector": 8,
+   "local": 55,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    503
+   ],
+   "strips": [
+    503
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 504,
+   "connector": 8,
+   "local": 56,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    504
+   ],
+   "strips": [
+    504
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 505,
+   "connector": 8,
+   "local": 57,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    505
+   ],
+   "strips": [
+    505
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 506,
+   "connector": 8,
+   "local": 58,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    506
+   ],
+   "strips": [
+    506
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 507,
+   "connector": 8,
+   "local": 59,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    507
+   ],
+   "strips": [
+    507
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 508,
+   "connector": 8,
+   "local": 60,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    508
+   ],
+   "strips": [
+    508
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 509,
+   "connector": 8,
+   "local": 61,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    509
+   ],
+   "strips": [
+    509
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 510,
+   "connector": 8,
+   "local": 62,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    510
+   ],
+   "strips": [
+    510
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  },
+  {
+   "feu_channel": 511,
+   "connector": 8,
+   "local": 63,
+   "noisy": false,
+   "dead": false,
+   "weak": false,
+   "net": [
+    511
+   ],
+   "strips": [
+    511
+   ],
+   "possible_net_0p7": null,
+   "n_strips": 1
+  }
+ ]
+}
