@@ -25,7 +25,15 @@ def rel(r):
     return f"{r['run']}/{r['subrun']}/{r['det']}"
 
 
+EXTRA = {'eos': '', 'limit': ''}
+
+
 def node(L, name, sub, args, cpus, mem, code, parents=()):
+    if sub == 'stage1.sub':
+        k, rest = args.split(' ', 1)
+        args = f"{k}{EXTRA['eos']} {rest}"
+        if ' reco ' in rest and EXTRA['limit'] and '--limit' not in rest:
+            args += EXTRA['limit']
     L.append(f'JOB {name} {sub}')
     L.append(f'VARS {name} code="{code}" args="{args}" cpus="{cpus}" mem="{mem}" node="{name}"')
     L.append(f'RETRY {name} 1')
@@ -40,7 +48,16 @@ def main():
     ap.add_argument('--golden', nargs='*', default=[], help='det=itN (finalize)')
     ap.add_argument('--registry', default=os.path.join(HERE, 'pass_registry.csv'))
     ap.add_argument('--only', default=None, help='comma list of keys (tests)')
+    ap.add_argument('--analysis-root', default=None, help='tests: another Analysis tree (e.g. the dry-run one)')
+    ap.add_argument('--limit', type=int, default=None, help='tests: events per reco')
     a = ap.parse_args()
+    global A
+    if a.analysis_root:
+        A = a.analysis_root
+    if a.analysis_root:
+        EXTRA['eos'] = f' --eos-analysis {a.analysis_root}'
+    if a.limit:
+        EXTRA['limit'] = f' --limit {a.limit}'
     rows = list(csv.DictReader(open(a.registry)))
     by_key = {r['key']: r for r in rows}
     only = set(a.only.split(',')) if a.only else None
