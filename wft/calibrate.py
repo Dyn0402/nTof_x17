@@ -35,7 +35,7 @@ from concurrent.futures import ProcessPoolExecutor
 import numpy as np
 from scipy.optimize import minimize
 
-from .calib import CalibrationBundle, HYPER_NAMES
+from .calib import CalibrationBundle, HYPER_NAMES, _hyper_value
 from . import model as wm
 
 SAT_FRAC = 0.98
@@ -450,7 +450,7 @@ def calibrate(cfg, run_key, n_events=400, n_train=180, jobs=12, out=None,
     # so a refit that loses it writes a bundle whose stored c2 is 0.0 and whose
     # model draws NO +-2 copy, while every printed number looks fine. That is
     # what a v-refit seeded from calib_bundle_r06 did until 2026-08-21.
-    extra = {k: float(v) for k, v in (seed.hyper if seed else {}).items()
+    extra = {k: _hyper_value(v) for k, v in (seed.hyper if seed else {}).items()
              if k not in HYPER_NAMES}
     if extra:
         print(f'[calib] carrying unfitted seed hypers: {extra}', flush=True)

@@ -324,15 +324,21 @@ def fit_plane(P, plane: str, cal: CalibrationBundle, hyper: Optional[dict] = Non
     W = np.asarray(P['W'])
     if W.shape[1] != wm.NSAMP:
         wm.set_nsamp(W.shape[1])
-    p0_seed, _w0, t0_seed = wm.init_guess(P, plane)
-    r = _pivot_fit(P, plane, hyper, t0_seed, t0_prior=t0_prior) if PIVOT_START else None
-    if r is None:
-        p0_seed, w_seed, t0_seed = _global_start(P, plane, p0_seed, t0_seed, hyper,
-                                                 t0_prior=t0_prior)
-        r = wm.fit_plane_raw(P, plane, p0_seed, w_seed, t0_seed, hyper=hyper,
-                             t0_prior=t0_prior)
+    r = _fit_once(P, plane, hyper, t0_prior)
     if r is None or not np.isfinite(r['chi2']):
         return None
+    # Per-event prompt-footprint profile (rerun/det4, 2026-10-25), opt-in through the bundle: the prompt
+    # footprint grows with avalanche size (det4/det7 model-free core width, FINDINGS §34), so a bright
+    # cluster fitted with the faint events' sigma_p0 tilts the track to make up the width.  Each value in
+    # ``sigma_p0_prof_<plane>`` is a full refit with that sigma_p0; the lowest chi2 wins (same samples, same
+    # dof).  Absent key = the single fit above, unchanged.
+    sig_used = float(hyper.get(f'sigma_p0_{plane}', hyper.get('sigma_p0', np.nan)))
+    for s in hyper.get(f'sigma_p0_prof_{plane}') or ():
+        h2 = dict(hyper)
+        h2[f'sigma_p0_{plane}'] = float(s)
+        r2 = _fit_once(P, plane, h2, t0_prior)
+        if r2 is not None and np.isfinite(r2['chi2']) and r2['chi2'] < r['chi2']:
+            r, hyper, sig_used = r2, h2, float(s)
     if TWO_SIDED:
         r = _two_sided(P, plane, r, cal, hyper, t0_prior=t0_prior)
     # Per-plane angle mapping (9dd7d6e; reverted by f9e18d2, restored 8-13).
@@ -361,7 +367,20 @@ def fit_plane(P, plane: str, cal: CalibrationBundle, hyper: Optional[dict] = Non
         quality_ok=bool(r['chi2'] / max(r['dof'], 1) < CHI2DOF_BAD),
         n_flagged_strips=n_flagged)
     f._q = np.asarray(r['q'], float)     # the depth profile, for x/y pairing
+    f._sigma_p0 = sig_used               # the prompt footprint the fit used (profile choice)
     return f
+
+
+def _fit_once(P, plane, hyper, t0_prior):
+    """One start + fit_plane_raw at fixed hypers (the pivot scan when PIVOT_START, else _global_start)."""
+    p0_seed, _w0, t0_seed = wm.init_guess(P, plane)
+    r = _pivot_fit(P, plane, hyper, t0_seed, t0_prior=t0_prior) if PIVOT_START else None
+    if r is None:
+        p0_seed, w_seed, t0_seed = _global_start(P, plane, p0_seed, t0_seed, hyper,
+                                                 t0_prior=t0_prior)
+        r = wm.fit_plane_raw(P, plane, p0_seed, w_seed, t0_seed, hyper=hyper,
+                             t0_prior=t0_prior)
+    return r
 
 
 # --- candidate-cluster selection -------------------------------------------

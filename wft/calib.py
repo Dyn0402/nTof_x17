@@ -28,6 +28,11 @@ import numpy as np
 HYPER_NAMES = ('c1', 'c2', 'kY', 'tau_s', 'sigma_s', 'sigma_p0', 'Dp')
 
 
+def _hyper_value(v):
+    """A hyper as stored: a float, or a list of floats (e.g. ``sigma_p0_prof_<plane>``)."""
+    return [float(x) for x in v] if isinstance(v, (list, tuple, np.ndarray)) else float(v)
+
+
 def _git_commit(path: str) -> str:
     try:
         return subprocess.run(['git', 'rev-parse', '--short', 'HEAD'],
@@ -193,7 +198,7 @@ class CalibrationBundle:
         self.provenance = prov
         check_kernel_ordering(self.hyper, where=path)
         check_xy_pairing(self.xy_pairing, where=path)
-        meta = dict(hyper={k: float(v) for k, v in self.hyper.items()},
+        meta = dict(hyper={k: _hyper_value(v) for k, v in self.hyper.items()},
                     v_drift=float(self.v_drift),
                     dt_xy={str(k): float(v) for k, v in self.dt_xy.items()},
                     t0_abs={p: {str(k): float(v) for k, v in d.items()}
