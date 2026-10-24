@@ -30,8 +30,8 @@ needed: calibrate with v from timing (arm D, recommended) or another protocol. T
 - Caveat: timing v has 2–4 % errors and det7 has two inconsistent values (36.8 long run vs 32.8 longer run).
 
 **To start the pass once the protocol is chosen (all on lxplus, ~/x17rerun/pass):**
-1. golden: `make_pass_dag.py finalize <code> --golden det2=<it> ...` with the chosen bundles (for arm D:
-   w12/it1/timeD) — needs a 2-line change: finalize currently reads w12/<it>/fit_pinned/bundle.
+1. golden: `make_pass_dag.py finalize <code> --golden det2=it1 det3=it1 det4=it1 det6=it1 det7=it1
+   --bundle-sub timeD/bundle` (arm D), then `condor_submit_dag finalize.dag`.
 2. vrefit: under arm D the v-refit groups need their own timing v (port headon_cache + unsat_width to stage_job;
    14 groups) instead of the v fit in `run_fitv.sh`.
 3. `make_pass_dag.py pass <code>`: 655 nodes, RC reco ~1 h per 4 k events on 16 cores.

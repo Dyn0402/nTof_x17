@@ -46,6 +46,8 @@ def main():
     ap.add_argument('phase', choices=['finalize', 'vrefit', 'pass'])
     ap.add_argument('code')
     ap.add_argument('--golden', nargs='*', default=[], help='det=itN (finalize)')
+    ap.add_argument('--bundle-sub', default='fit_pinned/bundle',
+                    help='finalize: bundle path under w12/<it>/ (arm D: timeD/bundle)')
     ap.add_argument('--registry', default=os.path.join(HERE, 'pass_registry.csv'))
     ap.add_argument('--only', default=None, help='comma list of keys (tests)')
     ap.add_argument('--analysis-root', default=None, help='tests: another Analysis tree (e.g. the dry-run one)')
@@ -69,7 +71,7 @@ def main():
             if r['refit'] != 'golden' or d not in its or (only and r['key'] not in only):
                 continue
             k, it = r['key'], its[d]
-            b = f'{{out}}/wft/w12/{it}/fit_pinned/bundle'
+            b = f'{{out}}/wft/w12/{it}/{a.bundle_sub}'
             t = '{out}/wft/final/events.parquet'
             node(L, f'RECO_{d}', 'stage1.sub', f'{k} --module wft.cli -- reco {{key}} --bundle {b} --out {t} '
                  f'--matched-only --limit 8000 --jobs 16', 16, 24000, a.code)
