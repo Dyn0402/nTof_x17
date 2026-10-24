@@ -48,6 +48,8 @@ def main():
     ap.add_argument('--golden', nargs='*', default=[], help='det=itN (finalize)')
     ap.add_argument('--bundle-sub', default='fit_pinned/bundle',
                     help='finalize: bundle path under w12/<it>/ (arm D: timeD/bundle)')
+    ap.add_argument('--out-tag', default='',
+                    help='finalize: write wft/final_<tag>/ and wft/calib_bundle_<tag> (an arm next to the canonical one)')
     ap.add_argument('--registry', default=os.path.join(HERE, 'pass_registry.csv'))
     ap.add_argument('--only', default=None, help='comma list of keys (tests)')
     ap.add_argument('--analysis-root', default=None, help='tests: another Analysis tree (e.g. the dry-run one)')
@@ -72,16 +74,18 @@ def main():
                 continue
             k, it = r['key'], its[d]
             b = f'{{out}}/wft/w12/{it}/{a.bundle_sub}'
-            t = '{out}/wft/final/events.parquet'
+            sfx = f'_{a.out_tag}' if a.out_tag else ''
+            fin = f'{{out}}/wft/final{sfx}'
+            t = f'{fin}/events.parquet'
             node(L, f'RECO_{d}', 'stage1.sub', f'{k} --module wft.cli -- reco {{key}} --bundle {b} --out {t} '
                  f'--matched-only --limit 8000 --jobs 16', 16, 24000, a.code)
             node(L, f'ALIGN_{d}', 'stage1.sub', f'{k} --parts run_config,m3,hits --script mx_june_wft/01_alignment.py '
-                 f'-- --table {t} --out {{out}}/wft/final/alignment', 1, 8000, a.code, [f'RECO_{d}'])
+                 f'-- --table {t} --out {fin}/alignment', 1, 8000, a.code, [f'RECO_{d}'])
             node(L, f'ANG_{d}', 'stage1.sub', f'{k} --parts run_config,m3,hits --script mx_june_wft/03_angles.py -- '
-                 f'--table {t} --alignment {{out}}/wft/final/alignment/alignment.json --out {{out}}/wft/final/angles',
+                 f'--table {t} --alignment {fin}/alignment/alignment.json --out {fin}/angles',
                  1, 8000, a.code, [f'ALIGN_{d}'])
             node(L, f'W0KW_{d}', 'stage1.sub', f'{k} --parts run_config --script rerun/w12/set_w0kw.py -- '
-                 f'--bundle {b} --angles {{out}}/wft/final/angles --out {{out}}/wft/calib_bundle', 1, 4000, a.code,
+                 f'--bundle {b} --angles {fin}/angles --out {{out}}/wft/calib_bundle{sfx}', 1, 4000, a.code,
                  [f'ANG_{d}'])
     elif a.phase == 'vrefit':
         gold = {r['det']: r for r in rows if r['refit'] == 'golden'}
