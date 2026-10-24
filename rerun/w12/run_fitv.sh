@@ -1,13 +1,13 @@
 #!/bin/bash
-# run_fitv.sh <code_dir> <rel> <src bundle (absolute EOS path)> <K> <out subdir under <rel>/wft>
+# run_fitv.sh <code_dir> <rel> <src bundle (absolute EOS path)> <K> <out subdir under <rel>/wft> [<Analysis root>]
 #   S1b v refit (RERUN_PLAN W7): fit v only (recal.py, cold objective, reference pinned to THIS row's waveform
 #   alignment, kernel pinned = the chamber's golden bundle), on <rel>/wft/vrefit/cache.pkl; bundle + held-out eval.
 set -eu
-CODE=$1; REL=$2; SRC=$3; K=$4; SUBD=$5
+CODE=$1; REL=$2; SRC=$3; K=$4; SUBD=$5; AROOT=${6:-/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_rr1}
 set +u; source /cvmfs/sft.cern.ch/lcg/views/LCG_110/x86_64-el9-gcc14-opt/setup.sh >/dev/null 2>&1; set -u
 PY="env -u PYTHONPATH -u PYTHONHOME /eos/user/d/dneff/venvs/ntof-lock-cvmfs/bin/python"
 export WFT_COL_GUARD=${WFT_COL_GUARD:-0.01}
-A=/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_rr1/$REL/wft
+A=$AROOT/$REL/wft
 O=$A/$SUBD; mkdir -p $O
 W=${_CONDOR_SCRATCH_DIR:-/tmp/$USER}/fv_$$; mkdir -p $W; cd $W
 cp $A/vrefit/cache.pkl cache.pkl
