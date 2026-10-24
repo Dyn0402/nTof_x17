@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """heldout_eval.py -- score a (cache, bundle) pair on the cache's held-out events against the M3 reference.
 
-Production fit (blind start from init_guess, t0 prior sigma 5 ns from the bundle's t0 table) with the NNLS column
+Fit (t0 prior sigma 5 ns from the bundle's t0 table) started as --start says: reco (default since 2026-10-24) =
+wft.reco's production start (_global_start, what the pass runs); pivot = wft.reco PIVOT_START; bare = init_guess at
+tan 0 straight into fit_plane_raw (what this tool did before; its X ladders read 1-4 % low, CHECKS C19) with the NNLS column
 guard on (W2) and the bundle's depth grid.  Per plane: angle residual (s68, median), position residual (s68 around
 its median: the reference is pinned to the hits alignment, so only the spread is meaningful), chi2/dof, far
 fraction (|dtheta| > 10 deg), runaway fraction (q_sum > 1e6 ADC).  Events = cache ids from 180 on (the first 180 are
@@ -21,11 +23,13 @@ import numpy as np
 REPO = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 sys.path.insert(0, REPO)
 _EV = None
+_START = 'reco'
 T0_SIGMA = 5.0
 
 
-def _init(cache, bundle, k, guard):
-    global _EV
+def _init(cache, bundle, k, guard, start='reco'):
+    global _EV, _START
+    _START = start
     from wft.calib import CalibrationBundle
     from wft import model as wm
     with open(cache, 'rb') as f:
@@ -51,14 +55,24 @@ def one(eid):
         t0p = (cal.t0_abs or {}).get(plane, {}).get(str(ft), (cal.t0_abs or {}).get(plane, {}).get(ft))
         p0i, wi, t0g = wm.init_guess(P, plane, 0.0, None, cal.v_drift)
         prior = (float(t0p), T0_SIGMA) if t0p is not None else None
+        t0s = float(t0p) if t0p is not None else t0g
         try:
-            r = wm.fit_plane_raw(P, plane, p0i, wi, float(t0p) if t0p is not None else t0g, t0_prior=prior)
+            r = None
+            if _START == 'pivot':
+                from wft import reco as wr
+                r = wr._pivot_fit(P, plane, wm.HYPER, t0s, t0_prior=prior)
+            if r is None and _START in ('reco', 'pivot'):
+                from wft import reco as wr
+                p0s, ws, t0b = wr._global_start(P, plane, p0i, t0s, wm.HYPER, t0_prior=prior)
+                r = wm.fit_plane_raw(P, plane, p0s, ws, t0b, t0_prior=prior)
+            elif r is None:
+                r = wm.fit_plane_raw(P, plane, p0i, wi, t0s, t0_prior=prior)
         except Exception:
             r = None
         if r is None or not np.isfinite(r['chi2']):
             continue
         tan = (r['w'] * 1e3 - cal.w0.get(plane, 0.0)) / (cal.kw.get(plane, 1.0) * cal.v_drift)
-        out[plane] = dict(tan=float(tan), tr=float(ev[f'tan_{plane}']), p0=float(r['p0']),
+        out[plane] = dict(tan=float(tan), w=float(r['w'] * 1e3), tr=float(ev[f'tan_{plane}']), p0=float(r['p0']),
                           p0r=float(ev[f'ref_mesh_{plane}']), q=float(np.sum(r['q'])),
                           chi2=float(r['chi2'] / max(r['dof'], 1)))
     return eid, out
@@ -94,14 +108,16 @@ def main():
     ap.add_argument('--out', required=True)
     ap.add_argument('--max', type=int, default=1300)
     ap.add_argument('--jobs', type=int, default=8)
+    ap.add_argument('--start', choices=('reco', 'pivot', 'bare'), default='reco')
     a = ap.parse_args()
     ids = sorted(pickle.load(open(a.cache, 'rb')))[180:180 + a.max]
-    with ProcessPoolExecutor(a.jobs, initializer=_init, initargs=(a.cache, a.bundle, a.depth_bins, a.guard)) as pool:
+    with ProcessPoolExecutor(a.jobs, initializer=_init, initargs=(a.cache, a.bundle, a.depth_bins, a.guard, a.start)) as pool:
         res = dict(pool.map(one, ids, chunksize=8))
     S = summarise(res)
     for p, s in S.items():
         print(p, json.dumps(s))
-    json.dump(dict(cache=a.cache, bundle=a.bundle, depth_bins=a.depth_bins, guard=a.guard, summary=S, events=res),
+    json.dump(dict(cache=a.cache, bundle=a.bundle, depth_bins=a.depth_bins, guard=a.guard, start=a.start, summary=S,
+                   events=res),
               open(a.out, 'w'), default=float)
 
 

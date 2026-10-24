@@ -596,6 +596,7 @@ def _write_meta(df, out_path, cal, cfg, bundle_path, feu_x, feu_y, tags_done,
                                  xy_pairing=(cal.xy_pairing or {}).get('features'),
                                  tan_max_raw=wreco.TAN_MAX,
                                  two_sided=wreco.TWO_SIDED,
+                                 pivot_start=wreco.PIVOT_START,
                                  two_track_fit=wreco.TWO_TRACK,
                                  two_track=dict(
                                      f=wreco.TWO_TRACK_F,

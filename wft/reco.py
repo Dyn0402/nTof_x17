@@ -67,6 +67,62 @@ TS_TAN_LO, TS_TAN_HI, TS_TAN_STEP = 0.05, 1.6, 0.05
 TS_P0_HALF, TS_P0_STEP = 6.0, 0.5      # mm around the window's charge centroid
 TS_T0_HALF, TS_T0_STEP = 240.0, 40.0   # ns around the one-sided fit's t0
 
+# Pivot start (rerun/seedfit, CHECKS C19, 2026-10-24). The chi2 surface along w is single-welled only at the right
+# p0; p0 is the mesh END of the track, up to w * (half the column) ~ 5 mm from the charge, so any (p0, w) box around
+# the centroid is a diagonal valley. A straight track passes through its own charge centroid (x_c, t_c) whatever its
+# slope, and both are model-free: x_c is the charge-weighted strip position, t_c the charge-weighted sample time minus
+# the electronics template's own time centroid (convolution adds means). So scan w with the line forced through
+# (x_c, t_c) -- p0(w) = x_c - w (t_c - t0) -- and refine the best PIVOT_NREF wells with fit_plane_raw. Same cost as
+# _global_start (33 + 2 refinements), fewer wrong-basin fits on every chamber. Off by default (WFT_PIVOT_START=1).
+PIVOT_START = os.environ.get('WFT_PIVOT_START', '0') == '1'
+PIVOT_W_HALF = 0.032       # mm/ns: |tan| ~ 0.9 at v = 36 um/ns
+PIVOT_W_STEP = 0.002       # the true well is 3-5 um/ns wide (seedfit landscapes)
+PIVOT_NREF = 2
+PIVOT_NSIG = 4.0           # strips entering the centroid: peak above this x noise
+
+
+def charge_centroid(W, noise, pos, plane, hyper):
+    """(x_c [mm], t_c [ns]) of one plane's charge: the charge-weighted position of the strips peaking above
+    PIVOT_NSIG x noise, and their charge-weighted sample time minus the impulse response's time centroid -- i.e.
+    the mean arrival time of the charge, without deconvolving. None if no strip qualifies."""
+    rc = 'rc_D_y' in hyper or 'rc_D_x' in hyper
+    tp = 'x' if (rc and hyper.get('rc_tmpl', 'x') in ('x', 1, 1.0)) else plane
+    tm = wm.TMPL[tp]
+    area = float(np.sum(tm))
+    rows = W.max(axis=1) > PIVOT_NSIG * noise
+    if not rows.any() or area <= 0:
+        return None
+    Wr = W[rows]
+    q = Wr.sum(axis=1)
+    Q = float(q.sum())
+    if Q <= 0:
+        return None
+    ts = np.arange(W.shape[1]) * wm.SNS
+    t_tmpl = float(np.sum(wm.TGRID * tm) / area)
+    return float((q * pos[rows]).sum() / Q), float((Wr * ts[None, :]).sum() / Q) - t_tmpl
+
+
+def _pivot_fit(P, plane, hyper, t0_seed, t0_prior=None):
+    """fit_plane_raw from the PIVOT_START scan; None if the plane has no charge to pivot on."""
+    W, noise, pos, sat = wm.prep_plane(P, plane)
+    c = charge_centroid(W, noise, pos, plane, hyper)
+    if c is None:
+        return None
+    xc, tc = c
+    t0 = float(t0_prior[0]) if t0_prior is not None else float(t0_seed)
+    ws = np.arange(-PIVOT_W_HALF, PIVOT_W_HALF + 1e-12, PIVOT_W_STEP)
+    chis = np.array([wm.chi2_plane(plane, W, noise, pos, sat, xc - w * (tc - t0), w, t0, hyper,
+                                   t0_prior=t0_prior)[0] for w in ws])
+    n = len(ws)
+    wells = [i for i in range(n) if (i == 0 or chis[i] <= chis[i - 1]) and (i == n - 1 or chis[i] <= chis[i + 1])]
+    best = None
+    for i in sorted(wells, key=lambda i: chis[i])[:PIVOT_NREF]:
+        r = wm.fit_plane_raw(P, plane, xc - ws[i] * (tc - t0), float(ws[i]), t0, hyper=hyper, t0_prior=t0_prior)
+        if r is not None and np.isfinite(r['chi2']) and (best is None or r['chi2'] < best['chi2']):
+            best = r
+    return best
+
+
 RECO_COLUMNS = [
     'event_id', 'n_hits', 'spark',
     # per plane p in (x, y): p0, w, t0, tan, errors, chi2, dof, profile, flags
@@ -269,10 +325,12 @@ def fit_plane(P, plane: str, cal: CalibrationBundle, hyper: Optional[dict] = Non
     if W.shape[1] != wm.NSAMP:
         wm.set_nsamp(W.shape[1])
     p0_seed, _w0, t0_seed = wm.init_guess(P, plane)
-    p0_seed, w_seed, t0_seed = _global_start(P, plane, p0_seed, t0_seed, hyper,
-                                             t0_prior=t0_prior)
-    r = wm.fit_plane_raw(P, plane, p0_seed, w_seed, t0_seed, hyper=hyper,
-                         t0_prior=t0_prior)
+    r = _pivot_fit(P, plane, hyper, t0_seed, t0_prior=t0_prior) if PIVOT_START else None
+    if r is None:
+        p0_seed, w_seed, t0_seed = _global_start(P, plane, p0_seed, t0_seed, hyper,
+                                                 t0_prior=t0_prior)
+        r = wm.fit_plane_raw(P, plane, p0_seed, w_seed, t0_seed, hyper=hyper,
+                             t0_prior=t0_prior)
     if r is None or not np.isfinite(r['chi2']):
         return None
     if TWO_SIDED:
@@ -1358,7 +1416,7 @@ def row_from_fits(event_id: int, fits: Dict[str, Optional[PlaneFit]],
 WORKER_OPTS = ('TWO_TRACK', 'TWO_TRACK_F', 'TWO_TRACK_F_CORROB', 'TWO_TRACK_T0',
                'TWO_TRACK_RESID_Z', 'TWO_TRACK_WIDTH_MARGIN', 'TWO_TRACK_MAX_TRY',
                'TWO_TRACK_SELECTED_ONLY', 'TWO_TRACK_SCALE', 'TWO_TRACK_SEARCH',
-               'TWO_TRACK_F_LADDER')
+               'TWO_TRACK_F_LADDER', 'PIVOT_START')
 
 
 def _worker_init(bundle_path, pairing_path=None, opts=None):
