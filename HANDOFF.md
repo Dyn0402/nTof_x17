@@ -1,46 +1,46 @@
 # Handoff
 
-## From-scratch re-run of bench + SPS on lxplus: inputs done, CM investigated — updated 2026-10-23 evening (dylan-Yoga)
+## From-scratch re-run of bench + SPS on lxplus: pass machinery ready, calibration protocol needs Dylan's call — updated 2026-10-24 morning (dylan-Yoga)
 
-**Resume:** Dylan answered the plan's four decisions (RERUN_PLAN §8). Done tonight: decoder audit + full June re-decode
-(C11), common-mode investigation (C10), hits regenerated (C12), M3 chain re-audited and hits CM decided on data (C13:
-production M3 rays stand; hits = plain CM `rr1_cm0`; wft masked CM has a spark guard). W10 path layer DONE (C14, rerun/RUNBOOK.md: any
-stage, any row, on condor, from EOS). Next: W11 gate → W1/W12 calibration with the reference from the waveforms.
+**Resume:** everything for the pass is built and tested on condor except the golden calibration, which did NOT
+converge under the planned protocol (C16) — the waveform fit cannot determine v (χ² flat along v, C17). Decision
+needed: calibrate with v from timing (arm D, recommended) or another protocol. Then: finalize → vrefit → pass.
 
-**Decided 10-23 evening (§8):** re-decode every June row (+ audit decoder and M3) — done; redo the calibration fully
-with the reference position from the waveforms (W1/W12); work the CM correction into the analysis; quote from the
-largest runs unless they show problems; per-chamber Dp with a consistency check (inconsistent → stated limitation with
-an error bar); det6 fully analysed, quoting decided at writing.
+**Done overnight (10-23/24), records rerun/CHECKS_2026-10-23.md C10–C17:**
+- C11–C14: June re-decode + audit (1278/1278), re-hit (rr1_cm0), M3 re-audit (production rays stand), W10 path layer.
+- C15 W11: masked CM not adopted (plain median everywhere); masked−plain constant shifts = CM systematic.
+- W9 SPS: FEU 03 of all 38 SPS sub-runs decoded into `decoded_root_fa80c06/` (280/281; one 0-byte file); 98 RAW
+  files audited, all identical. (SPS analysis path layer not done.)
+- W7/W8: `rerun/pass_registry.csv` (make_registry.py): 170 rows, 20 condition groups, 5 golden + 14 v-refit groups.
+- Pass DAGs: `rerun/make_pass_dag.py` phases finalize / vrefit / pass; tested end-to-end in the dry-run tree
+  (vrefit on det3 700 V: hits cache → reco → alignment → cache → v fit → reco → angles → w0/kw; pass on sat_det3 +
+  an HV-scan row: reco → alignment → efficiency/angles/maps with the group alignment). All rc 0.
+- W6: `rerun/w12/set_w0kw.py` (w0/kw under the final bundle; the r06-inherited ones were up to 0.8° / 9 % off).
+- 02_efficiency drops decoder-incomplete events from the denominator (incomplete_events.json from the stager).
+- C16/C17 calibration: see below.
 
-**Done tonight:**
-- C11: `rerun/decoder_audit/` — independent numpy decoder vs C++ fa80c06 on all 1278 June files: identical. ≤ 0.23 %
-  incomplete events; no M3 ray lacks its detector event; M3 reader cannot fuse → no re-tracking. New decodes in
-  `<subrun>/decoded_root_fa80c06/`, audit in `/eos/user/d/dneff/x17rerun/decode_audit/` (summary.json, per-file npz
-  with a `complete` flag).
-- C10: `rerun/cm_study/` — CM software-only on all June rows; FEU-wide + 9–20 ADC per chip; X/Y anti-correlated;
-  plain median biases ±5 neighbours −1…−25 %, masked ±5 ≤ 1 % (injection into real noise, all 5 chambers).
-- `wft.io.FeuReader` now skips events with a missing packet or fused (length ≠ n_sample·512), lists them in `.incomplete`.
-- mm_strip_reconstruction 36eb894 (main): `analyze_waveforms --cns-mask M` (0 = bit-identical, verified).
-- W9 re-hit DONE (condor 4543158, C12): `rerun/rehit/` (make_jobs.py, job.sh, compare_hits.py); `hits_root_rr1_cm{0,5}`, `combined_hits_root_rr1_cm{0,5}` per
-  subrun; cm0 chain bit-identical to production on det6/det7 file 000.
+**Calibration, the state of play (C16, C17):**
+- Pinning the reference to the waveform alignment does not work: the alignment places the plane only to 1–3 mm in z,
+  which a pinned fit turns into 5–20 % of v. Iterating cannot fix it.
+- With v free, methods scatter 15–25 % (det4 A vs B 27 %). A global plane offset (dz) falls into a v–dz valley.
+- **v fixed at the timing v (arm D)** gives the same or lower training χ² and the best held-out resolution on every
+  chamber. Recommended protocol: v from timing (vdrift_consistency, per chamber/condition), kernel σ0_x, σ0_y,
+  D_rc,y from the waveform fit with p0 profiled ±2 mm, w0/kw measured under the final bundle.
+- Stability of D under one more reference rebuild: `w12/itD1.dag` (see C17 addendum when it lands).
+- Caveat: timing v has 2–4 % errors and det7 has two inconsistent values (36.8 long run vs 32.8 longer run).
 
-**Next steps:**
-1. DONE (C12/C13): hits = `rr1_cm0`; M3 production rays stand (judge: `rerun/m3_audit/judge.py`, reusable for any
-   reference or hits variant). `rr1_cm5` deleted 10-23.
-2. W10 DONE: `rerun/inputs.py` + `rerun/stage_job.py` + `rerun/RUNBOOK.md`; code on lxplus is a git archive at
-   `~/x17rerun/code_<commit>`; dry-run outputs in `/eos/user/d/dneff/x17rerun/Analysis_dryrun/`.
-3. W11 gate: rebuild golden calibration caches with `WFT_CM_MASK=5` on the new decodes.
-4. W1/W12: calibrate with p0 profiled, align on waveforms, rebuild ref_mesh, iterate until v stable.
-5. W8 registry: exclude det3 6-27's 01H29 false start (on EOS; new products in `_false_start_01H29/`).
-6. Open: det7 X chip 0 carries almost no CM (strips unconnected?) — check against dead-strip masks.
+**To start the pass once the protocol is chosen (all on lxplus, ~/x17rerun/pass):**
+1. golden: `make_pass_dag.py finalize <code> --golden det2=<it> ...` with the chosen bundles (for arm D:
+   w12/it1/timeD) — needs a 2-line change: finalize currently reads w12/<it>/fit_pinned/bundle.
+2. vrefit: under arm D the v-refit groups need their own timing v (port headon_cache + unsat_width to stage_job;
+   14 groups) instead of the v fit in `run_fitv.sh`.
+3. `make_pass_dag.py pass <code>`: 655 nodes, RC reco ~1 h per 4 k events on 16 cores.
 
-**Gotchas:**
-- EOS fuse under ~300 concurrent jobs: transient EIO loading the venv, and racy `mkdir -p` (copies then fail silently).
-  Job scripts now retry mkdir and fail if outputs are missing; resubmit failures with max_materialize ~40.
-- The LCG setup script overwrites a shell variable named `BASE`.
-- Subruns can hold several acquisitions sharing a file number (det3_test 6-22): key on date_time_fnum, match the
-  pedestal by stamp. Per-subrun pedestals named `<run>_pedthr_<stamp>` share the data file's tag.
-- lxplus condor: `-name bigbird101.cern.ch`. Work dirs: `~/x17rerun/{decoder_audit,rehit,mmsr_36eb894(build),mm_strip_reconstruction(fa80c06)}`.
+**Gotchas (new):**
+- DAGMan reads the .dag at submit: edit-and-resubmit, never edit a running DAG.
+- Fit jobs must not `rm -rf $_CONDOR_SCRATCH_DIR` itself (exit 1, logs lost) — fixed in run_fit*.sh/run_arm.sh.
+- RC reco is 2–3× slower than the delay kernel.
+- The bundle summary now prints [RC] constants; older logs show the unused delayed-copy ones.
 
 ## X asymmetry contingency: IN FORCE — updated 2026-10-23 (dylan-Yoga)
 
