@@ -1,5 +1,25 @@
 # Handoff
 
+## One physical waveform model for the fleet; det4 fixed under it — updated 2026-10-25 night (dylan-Yoga)
+
+**Resume:** C21 in `rerun/CHECKS_2026-10-23.md`. Dylan to decide: adopt `phys` as the golden bundles (promote
+`wft/calib_bundle_phys` → `wft/calib_bundle`), det7 X cost, PIVOT_START on. Then vrefit (needs timing v per group) → pass.
+
+**Done overnight:**
+- det4 works under the RC model with physics-set inputs: σ0 0.238/0.343 (det3 per-event), Dp from Magboltz / unsat
+  stack, beam D_rc 2.2e-4. Ladders back on timing v (X 29.8 → 31.6, Y 29.6 → 32.8 vs 33.0), χ² halved, X s68 −0.065°.
+  det3 unchanged (±0.005°). Same recipe on det2/det6 neutral-to-better; det7 X +0.05° (asymmetry, see C21).
+- wft: opt-in per-event footprint profile, bundle key `sigma_p0_prof_<plane>` (absent = unchanged; tests pass, 78/78).
+- lxplus: `~/x17rerun/pass_phys/` (own stage1.sub with WFT_PIVOT_START=1), code_40a8b47, both arms finalized side
+  by side on the 5 golden rows: `<row>/wft/final_{phys,timeD}/`, `<row>/wft/calib_bundle_{phys,timeD}` (40/40 rc 0).
+  The canonical `wft/final/` and `wft/calib_bundle` were NOT written.
+- det7 pogo study (`rerun/det7_pogo/`), det6 gap 28.0 ± 1.0 committed.
+
+**Next:** (1) promote phys (a copy per golden row) or keep timeD; (2) vrefit groups need their own timing v under arm D
+(port headon_cache + unsat_width to stage_job) — and their Dp from the same stack; (3) pass with WFT_PIVOT_START=1.
+Open: det4/det7 head-on far tail (+1.4–3.6 pp), det7 X asymmetry, det6 X wants narrower σ0.
+Key tools: `rerun/det4/{resid_map,compare,profile_arms,finalize_compare}.py`; laptop data `~/x17/cosmic_bench/det4dig/`.
+
 ## From-scratch re-run of bench + SPS on lxplus: pass machinery ready, calibration protocol needs Dylan's call — updated 2026-10-24 (dylan-Yoga)
 
 **Resume:** v question understood (C18/C19); Dylan to decide: PIVOT_START on, arm-D protocol, det4/7 kernel gate, det7 X mask. Then finalize → vrefit → pass.
