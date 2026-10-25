@@ -19,6 +19,9 @@ Run order (laptop, `../../.venv/bin/python`, data in `~/x17/cosmic_bench/outlier
 | two chambers at once (6-26) | `sixpt.py` | `sixpt.parquet` |
 | edge zone | `edge_response.py` | `an/edge_response.{png,json}` |
 | det4 at H4 vs bench, same fitter | `../../sps_beam_test_26/analysis/plane_ratio/sps_cache.py`, `sps_headon.py` | `sps/*.json` |
+| edges by distance band, every category | `fiducial.py` | `report/fiducial.{csv,json,txt}` |
+| competing-cluster events: nearest candidate to the reference | `nearest.py` | `report/nearest.json` |
+| two-track refit of the outliers (arms off / on / onF30; env as finalize + `WFT_TWO_TRACK_*`) | `reco_subset.py`, `twotrack.py det3 --arms off on onF30` | `reco2/`, `report/twotrack_det3.json` |
 | numbers, figures, report | `summary.py`, `make_figures.py --examples`, `make_report.py` | `report/` |
 
 Displays: `display.py <det> <eid>...`, `montage.py <det> <class> --n 4` (`OL_ZOOM=10` to zoom).

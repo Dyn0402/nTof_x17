@@ -92,12 +92,31 @@ def sps(plt):
     fig.tight_layout(); fig.savefig(os.path.join(OUT, 'sps.png'), dpi=80); plt.close(fig)
 
 
+def edgechar(plt):
+    F = json.load(open(os.path.join(BASE, 'report', 'fiducial.json')))
+    bands = ['edge 0-5', 'edge 5-10', 'edge 10-15', 'edge 15-20', 'edge 20-30', 'interior']
+    xl = ['0-5', '5-10', '10-15', '15-20', '20-30', '≥30']
+    fig, axs = plt.subplots(3, 2, figsize=(13, 11), sharex=True)
+    for j, v in enumerate('xy'):
+        for det in DETS:
+            g = lambda b, k: F.get(f'{det}|{v}|accepted|{b}', {}).get(k, np.nan)
+            for i, (k, yl) in enumerate((('far', 'far share [%]'), ('k_all', 'k = fitted tan / M3 tan'),
+                                         ('tilt_in_headon', 'head-on tilt, + = inward [tan]'))):
+                axs[i, j].plot(range(len(bands)), [g(b, k) for b in bands], 'o-', label=det)
+                axs[i, j].set_ylabel(yl); axs[i, j].grid(alpha=.3)
+        axs[0, j].set_title(f'{v} view (distance to the nearest {v} active edge)'); axs[0, j].set_yscale('log')
+        axs[1, j].set_ylim(0, 1.8); axs[1, j].axhline(1, color='k', lw=.6); axs[2, j].axhline(0, color='k', lw=.6)
+        axs[2, j].set_xticks(range(len(bands))); axs[2, j].set_xticklabels(xl); axs[2, j].set_xlabel('footprint distance to edge [mm]')
+        axs[0, j].legend(fontsize=8)
+    fig.tight_layout(); fig.savefig(os.path.join(OUT, 'edgechar.png'), dpi=80); plt.close(fig)
+
+
 def main():
     import matplotlib; matplotlib.use('Agg'); import matplotlib.pyplot as plt
     ap = argparse.ArgumentParser(); ap.add_argument('--examples', action='store_true'); a = ap.parse_args()
     os.makedirs(OUT, exist_ok=True)
     R = json.load(open(os.path.join(BASE, 'report', 'results.json')))
-    classes(R, plt); farmap(plt); bent(plt); sps(plt)
+    classes(R, plt); farmap(plt); bent(plt); sps(plt); edgechar(plt)
     subprocess.run([sys.executable, os.path.join(HERE, 'edge_response.py'), '--out', os.path.join(OUT, 'edge_response.png')], check=True,
                    stdout=subprocess.DEVNULL)
     if a.examples:

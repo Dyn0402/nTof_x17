@@ -12,7 +12,7 @@ _c21 = importlib.util.module_from_spec(_spec); _spec.loader.exec_module(_c21)
 CSS = _c21.CSS + "img{max-width:100%;height:auto;border:1px solid var(--grid)} details{margin:8px 0}"
 
 LABEL = {'REJECTED_OK': 'fit agrees, rejected by the competing-cluster cut',
-         'OUTSIDE': 'M3 track outside the active area', 'EDGE': 'within 20 mm of an edge (field distortion / truncation)',
+         'OUTSIDE': 'M3 track outside the active area', 'EDGE': 'within 30 mm of an edge (field distortion / truncation)',
          'HW_KNOWN': 'known hardware (det4 dead bands, det7 X card 1)', 'MX17_DEAD': 'no charge anywhere in the view',
          'M3_ELSEWHERE': 'MX17 particle not where M3 points', 'POS_TAIL_BENT': 'bent track: M3 straight line misses',
          'POS_TAIL_MX17': 'position tail on a clean track (MX17)', 'MULTI': 'second particle; fit took the other',
@@ -139,6 +139,50 @@ def main():
     o.append(fig('edge_response.png', 'Angle response k and far share against the footprint\'s distance to the edge of its own '
                  'coordinate. k &lt; 1: tracks read too vertical.'))
 
+    # follow-ups (Dylan 10-25): edges per band, the competing-cluster events, the two-track refit
+    o.append('<h2>Follow-ups: edges by band, the competing-cluster events, the two-track refit</h2>')
+    o.append(fig('edgechar.png', 'Per chamber and view, by distance band of the M3 footprint to the edge of its own '
+                 'coordinate (fiducial.py): far share, angle response k and the head-on inward tilt. On X, det3/det6/det7 '
+                 'tilt inward over 0–15 mm, det2 is broken outward out to 30 mm, det4 shows no tilt but a rising far share '
+                 'at the edge. On Y every chamber except det2 stays within a few hundredths.'))
+    N = json.load(open(os.path.join(BASE, 'report', 'nearest.json')))
+    o.append('<p><b>Competing-cluster events kept.</b> Taking the plausible candidate nearest the reference (within 10 mm, '
+             'wide against the 0.5 mm resolution) instead of the rank-0 winner with the n_dropped cut, interior region. '
+             'Events whose production track has no candidate in the window count as far.</p>'
+             '<div class="scroll"><table><tr><th>chamber, view</th><th>n prod.</th><th>far prod. %</th><th>n nearest</th>'
+             '<th>far nearest % (incl. no-match)</th><th>s68 prod. / nearest [°]</th></tr>')
+    for k in sorted({k.rsplit('|', 1)[0] for k in N}):
+        pr, ne = N.get(k + '|production', {}), N.get(k + '|nearest', {})
+        if not pr or not ne:
+            continue
+        o.append(f"<tr><td>{escape(k.replace('|', ' '))}</td><td>{pr['n']}</td><td>{pr['far']:.2f}</td><td>{ne['n']}</td>"
+                 f"<td>{ne.get('far_incl_nomatch', ne['far']):.2f}</td><td>{pr['s68']:.3f} / {ne['s68']:.3f}</td></tr>")
+    o.append('</table></div><p>The far rate moves by at most 0.4 pp (det4 slightly up) and the core does not change; what the nearest choice buys is the competing-'
+             'cluster events back into the sample. It uses the reference, so it is a bench convention, not a reconstruction.</p>')
+    tp = os.path.join(BASE, 'report', 'twotrack_det3.json')
+    if os.path.exists(tp):
+        T = json.load(open(tp)); arms = [a for a in ('off', 'on', 'onF30') if a in T]
+        cls = [r['cls'] for r in T['off'] if r['cls'] in ('MULTI', 'DELTA', 'FIT', 'FIT_SAT', 'EDGE', 'REJECTED_OK', 'CONTROL')]
+        get = lambda a, c, k: next((r[k] for r in T[a] if r['cls'] == c), None)
+        f = lambda x: '—' if x is None else f'{x:.1f}'
+        o.append('<p><b>Two-track refit (det3).</b> reco_subset.py on the outliers + 300 controls in the finalize '
+                 'environment; the off arm reproduces finalize_phys bit for bit on all 1 135 events. '
+                 '<i>on</i> = WFT_TWO_TRACK_FIT=1 at the default thresholds (F 300, corroborated 120); <i>onF30</i> = '
+                 'F 30 / 15, on the MULTI/DELTA/FIT subset and the controls. % of event-views agreeing with M3 '
+                 '(|dθ| &lt; 5°, |res| &lt; 3 mm); "any" = some candidate agrees (the ceiling a reference-free choice could reach).</p>'
+                 '<div class="scroll"><table><tr><th>class</th><th>n</th>' +
+                 ''.join(f'<th>winner {a}</th>' for a in arms) + ''.join(f'<th>any {a}</th>' for a in arms) +
+                 f'<th>split % {arms[-1]}</th><th>lowest χ²/dof (on)</th></tr>')
+        for c in cls:
+            o.append(f"<tr><td>{c}</td><td>{get('off', c, 'n')}</td>" + ''.join(f'<td>{f(get(a, c, "winner"))}</td>' for a in arms)
+                     + ''.join(f'<td>{f(get(a, c, "any"))}</td>' for a in arms)
+                     + f"<td>{f(get(arms[-1], c, 'split%'))}</td><td>{f(get('on', c, 'rule_chi2dof'))}</td></tr>")
+        o.append('</table></div><p>The two-track fit splits 8 % of the MULTI views and raises their agreement with M3 '
+                 'from 22 to 25 %; dropping the split threshold ten-fold (F 30) changes nothing further. The right '
+                 'track is usually already among the candidates (MULTI "any" ≈ 70 %): the limit is the choice, not the '
+                 'splitting. No reference-free rule takes it without cost: lowest χ²/dof reaches ~50 % on MULTI but moves '
+                 '~27 % of the correct competing-cluster fits off M3. Controls are untouched in every arm.</p>')
+
     # M3
     kv = R['kinkvtx']
     o.append('<h2>When is M3 wrong? Bent tracks, and nothing else of size</h2>')
@@ -219,7 +263,7 @@ def main():
              'kinks away from the DUT.</li>'
              '<li>Classes are assigned in a fixed order; an event with two causes counts once (e.g. a second particle near an '
              'edge is EDGE). HW_KNOWN on det7 is event-level: a Y-view outlier in an event whose X sits on card 1 counts there.</li>'
-             '<li>The edge zone is defined at 20 mm from the measured k(distance); the edge-zone sign difference on det2 '
+             '<li>The edge zone is defined at 30 mm from the measured k(distance) (bands 0–5 … 20–30 mm, see the follow-ups); the edge-zone sign difference on det2 '
              '(degrador removed) is one chamber.</li>'
              '<li>SPS: the head-on question is open for det4 (no beam-calibrated bundle; the attempt here fails on the model). '
              'det4\'s beam spot sits on a live band, so a future SPS number tests det4\'s live area only. det7 was never at SPS.</li>'

@@ -16,7 +16,7 @@ Event class, first match wins (verified by eye on random displays of every class
   REJECTED_OK  rejected only by the competing-cluster cut (n_dropped > 2) while the fit itself agrees with M3
              (|dθ| <= 5 deg, |res| <= 3 mm): not a failure; the cut is conservative
   OUTSIDE    the M3 track misses the active area: not a detector or reference failure (acceptance)
-  EDGE       an outlier view's footprint is within 20 mm of the active edge of its own coordinate (drift-field
+  EDGE       an outlier view's footprint is within 30 mm of the active edge of its own coordinate (drift-field
              distortion zone, edge_response.py) or within 8 mm of the other coordinate's edge (truncated cluster)
   HW_KNOWN   known hardware: det7 X card 1 (asterisk), det4 dead / low-gain amplification bands
   MX17_DEAD  no charge on the footprint and nothing anywhere in an outlier view: MX17 did not see the track
@@ -44,7 +44,7 @@ from olib import BASE, load  # noqa: E402
 from common.mx17_active_area import TRUE_ACTIVE_BY_DET  # noqa: E402
 
 DETNAME = {'det2': 'mx17_2', 'det3': 'mx17_3', 'det4': 'mx17_4', 'det6': 'mx17_6', 'det7': 'mx17_7'}
-EDGE, EDGE_OWN, WIDE, MATCH, SNR_ON, BAND = 8.0, 20.0, 8.0, 3.0, 10.0, 2.5
+EDGE, EDGE_OWN, WIDE, MATCH, SNR_ON, BAND = 8.0, 30.0, 8.0, 3.0, 10.0, 2.5
 ORDER = ['REJECTED_OK', 'OUTSIDE', 'EDGE', 'HW_KNOWN', 'MX17_DEAD', 'M3_ELSEWHERE', 'POS_TAIL', 'MULTI', 'DELTA', 'ONE_VIEW_ELSEWHERE',
          'FIT_SAT', 'FIT']
 
@@ -73,7 +73,7 @@ def table(det):
         x[f'outside_{v}'] = (lo < act[v][0] - 1) | (hi > act[v][1] + 1)
         x[f'edge_{v}'] = (lo < act[v][0] + EDGE) | (hi > act[v][1] - EDGE)
         # the view's OWN coordinate: the drift-field distortion zone near the cage walls (edge_response.py: the
-        # angle response is off within ~20 mm of an edge on every chamber that has no passivation there)
+        # angle response is off within ~15-30 mm of an edge on every chamber that has no passivation there)
         x[f'edgeown_{v}'] = (lo < act[v][0] + EDGE_OWN) | (hi > act[v][1] - EDGE_OWN)
         x[f'noch_{v}'] = x[f'w{v}_snr_ref'] < SNR_ON
         x[f'extra_{v}'] = ~x[f'noch_{v}'] & (x[f'w{v}_ncl_far'] >= 1)
@@ -129,7 +129,7 @@ def classify_row(r):
     if r['outside_any']:
         return 'OUTSIDE', ''
     if any(r[f'edge_{v}'] or r[f'edgeown_{v}'] for v in ov):
-        return 'EDGE', ('own coordinate < 20 mm' if any(r[f'edgeown_{v}'] for v in ov) else 'other coordinate < 8 mm')
+        return 'EDGE', ('own coordinate < 30 mm' if any(r[f'edgeown_{v}'] for v in ov) else 'other coordinate < 8 mm')
     if any(r[f'hw_{v}'] for v in ov):
         return 'HW_KNOWN', ''
     if any(r[f'noch_{v}'] and r[f'w{v}_ncl'] == 0 for v in ov):
