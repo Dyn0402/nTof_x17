@@ -50,6 +50,8 @@ def main():
                     help='finalize: bundle path under w12/<it>/ (arm D: timeD/bundle)')
     ap.add_argument('--out-tag', default='',
                     help='finalize: write wft/final_<tag>/ and wft/calib_bundle_<tag> (an arm next to the canonical one)')
+    ap.add_argument('--keep-v', action='store_true',
+                    help='vrefit: no waveform v fit (phys policy); the golden bundle + this group\'s own w0/kw')
     ap.add_argument('--registry', default=os.path.join(HERE, 'pass_registry.csv'))
     ap.add_argument('--only', default=None, help='comma list of keys (tests)')
     ap.add_argument('--analysis-root', default=None, help='tests: another Analysis tree (e.g. the dry-run one)')
@@ -99,6 +101,17 @@ def main():
                  f'--matched-only --limit 8000 --jobs 16', 16, 24000, a.code)
             node(L, f'ALIGN_{n}', 'stage1.sub', f'{k} --parts run_config,m3,hits --script mx_june_wft/01_alignment.py '
                  f'-- --table {t1} --out {{out}}/wft/vrefit/alignment0', 1, 8000, a.code, [f'RECO_{n}'])
+            if a.keep_v:
+                # phys policy (RERUN_PLAN §10/§11): the waveform fit does not determine v (C17) and the fit uses v only
+                # for its seed and the final tan = (w - w0) / (kw v), so the group keeps the golden bundle (v, kernel,
+                # mask) and gets its own w0/kw under it; the group's depth v is the timing v, measured downstream (S4)
+                node(L, f'ANG_{n}', 'stage1.sub', f'{k} --parts run_config,m3,hits --script mx_june_wft/03_angles.py -- '
+                     f'--table {t1} --alignment {{out}}/wft/vrefit/alignment0/alignment.json --out {{out}}/wft/vrefit/angles',
+                     1, 8000, a.code, [f'ALIGN_{n}'])
+                node(L, f'W0KW_{n}', 'stage1.sub', f'{k} --parts run_config --script rerun/w12/set_w0kw.py -- '
+                     f'--bundle {g} --angles {{out}}/wft/vrefit/angles --out {{out}}/wft/calib_bundle', 1, 4000, a.code,
+                     [f'ANG_{n}'])
+                continue
             node(L, f'HITS_{n}', 'stage1.sub', f'{k} --parts run_config,m3,hits --require cache/event_results_veto50.pkl '
                  f'--script mx_june_cosmic_qa/03_alignment_and_tpc.py', 4, 12000, a.code)
             node(L, f'CACHE_{n}', 'stage1.sub', f'{k} --script rerun/w12/build_cache_wft.py -- '

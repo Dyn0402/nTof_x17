@@ -8,6 +8,8 @@ export WFT_RND_DIR=/eos/user/d/dneff/x17rerun/regression/wft_model_sat_det3
 export MPLBACKEND=Agg
 # pass-wide reconstruction settings (recorded in every STAGES/*.json); RERUN_PLAN W2: NNLS column guard on
 export WFT_COL_GUARD=${WFT_COL_GUARD:-0.01}
+# C19/C21: the pivot start (blind-start convergence fix) is part of the validated phys reconstruction
+export WFT_PIVOT_START=${WFT_PIVOT_START:-1}
 W=${_CONDOR_SCRATCH_DIR:-/tmp/$USER/stage_$$}; mkdir -p $W
 env -u PYTHONPATH -u PYTHONHOME /eos/user/d/dneff/venvs/ntof-lock-cvmfs/bin/python $CODE/rerun/stage_job.py --work $W "$@"
 rc=$?
