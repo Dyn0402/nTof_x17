@@ -68,6 +68,7 @@ Steps 1–6 do not need it, so they run on beam data too.
 - **Another data set:** feed `accumulate.PairStats.add(channels, amplitudes)` one event at a time for one FEU, with
   the strip index from that run's strip map (`strip_index_from_positions`), and save. `pogo_check.py` only needs the
   npz.
+- **SPS det4:** `run_sps.py` (see "Checked" below).
 - **n_TOF beam:** needs a reader for the beam hit cache. The track-proof tests still hold, but beam events are busier.
   Lower `MAX_HITS` or require a single cluster per plane before trusting the jump test there.
 
@@ -80,5 +81,6 @@ Steps 1–6 do not need it, so they run on beam data too.
   they are shorted. Their membership is under-reported unless the per-group common mode is removed first.
 - **Contiguous nets** with no strong excess correlation (C < 0.8) are invisible to every test here.
 - **The data cannot tell what caused a pogo-shaped net:** leaning pins, debris or a bowed card.
-- **Only bench runs have been checked** (one golden night per chamber). Other nights can differ (det7's X1 was
-  reseated and glued on 06-30).
+- **Checked:** one golden bench night per chamber, and det4 at H4 (run_71 RAW, `run_sps.py`: FEU 03 renumbered to M1
+  channels, connectors 3–6, both cards; CLEAN, 0 cross-card links, but only the beam-lit channels are testable: 98/256
+  X, 201/256 Y). Other nights can differ (det7's X1 was reseated and glued on 06-30).

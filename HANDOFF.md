@@ -1,5 +1,37 @@
 # Handoff
 
+## Outliers vs M3, det4/det7 head-on, edge zone (C22) — updated 2026-10-25 (dylan-Yoga)
+
+**Resume:** C22 in `rerun/CHECKS_2026-10-23.md`; report `~/x17/cosmic_bench/outliers/report/report.html`
+(published notes/mx17-outliers-vs-m3.html). Dylan to decide what the evaluation cuts become (below), then back to the
+C21 decisions (promote phys, PIVOT_START, vrefit).
+
+**Done:**
+- Per-event join of the 5 golden finalize_phys tables with M3 (as 03_angles), every M3 ray, hits (QA) and full-plane
+  waveforms of every outlier (`rerun/outliers/`); M3 cluster trees rebuilt from raw (condor 4546889, `m3clus/`,
+  EOS `/eos/user/d/dneff/x17rerun/m3clus/`, local copy `~/x17/cosmic_bench/outliers/m3clus/`).
+- det3: 11.8 % of matched events disagree with M3. M3 at fault ~0.8 % (bent tracks: kink between the doublets the
+  4-layer χ² < 1 cannot see; bent share of the position tail 0.65 ± 0.07). Showers/second particles are NOT M3
+  failures (M3 on one particle; fit takes the other) 2.1 %, delta rays 1.0 %, geometry 3.8 % (outside active area,
+  edge zone), MX17 reco on clean tracks 1.9 %, correct fits cut by n_dropped > 2: 1.8 %.
+- det4/det7 head-on tail = known hardware (det4 dead bands, det7 X card 1) + edge + outside; after those both are
+  det3-like. The phys increment on det4 = faint dead-band columns tilted by the narrow footprint.
+- Edge zone (PAPER_PLAN D4 closed on wft): det3 X k = 0.6 within 15 mm of the X edges, head-on fake tilt 0.10–0.15
+  inward; Y protected by the passivation; det2 (no degrador) opposite sign.
+- Pogo check on SPS run_71 det4: CLEAN (beam-lit channels only). `rerun/pogo_check/run_sps.py`.
+- SPS head-on: NOT answered — bench bundle on run_71 gives 17 / 15 % far, a model mismatch (lumpy column, one-sided X
+  copy), not det4. Needs a beam bundle (re-run plan S4).
+
+**Decisions for Dylan:**
+1. Cut the reference to the active area minus the 20 mm X-edge zone before quoting resolution / far rates?
+2. Treat REJECTED_OK (fit fine, n_dropped > 2) as accepted? 1.8 % (det3) – 4.9 % (det7) of events.
+3. Refit MULTI events with the multi-track fit instead of the largest-cluster seed?
+
+**Gotchas:** a 4-layer M3 χ² < 1 does NOT protect against kinks at the DUT (12 mrad → 3.5 mm at χ² 0.5). The six-point
+"MX17 is the odd point" test cannot decide bent vs MX17 for a chamber mid-telescope. `rerun/outliers/common.py` would
+shadow the repo `common` package — the module is `olib.py`. SPS wft fits need K ≥ T/60 + 2 (K = 40 at 14 µm/ns).
+Laptop data drive has ~6 GB free.
+
 ## M1 pogo-field short check (det7 asterisk) — updated 2026-10-25 (dylan-Yoga)
 
 **Resume:** the general pogo check is built and run on the bench fleet. Optional next: a beam reader, and the Y cross-card correlation.

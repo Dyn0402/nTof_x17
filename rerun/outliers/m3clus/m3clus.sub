@@ -1,0 +1,9 @@
+executable = job.sh
+arguments = $(sub) $(cos) $(ped) $(num)
+output = log/$(ProcId).out
+error = log/$(ProcId).err
+log = log/m3clus.log
+request_memory = 4000
++JobFlavour = "longlunch"
+should_transfer_files = NO
+queue sub, cos, ped, num from jobs.txt
