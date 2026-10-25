@@ -1,0 +1,303 @@
+{
+ "run_key": "m_mx17_det2_det3_overnight_6-22-26__mx17_2",
+ "detector": "mx17_2",
+ "plane": "x",
+ "feu": 6,
+ "nev": 132639,
+ "cuts": {
+  "N_MIN": 10,
+  "D_MIN": 3,
+  "E_MIN": 0.1,
+  "RHO_MIN": 0.5,
+  "SD_TWIN": 0.3,
+  "DM_TWIN": 0.2,
+  "SD_ADJ": 0.25,
+  "K_ADJ": 30,
+  "ENRICH_MIN": 10.0,
+  "F_MIN": 30,
+  "FIRE_ADC": 50.0,
+  "GAP_MIN": 2,
+  "MAX_HITS": 40,
+  "SIG_MIN": 5.0
+ },
+ "null": {
+  "cross_pairs_tested": 65277,
+  "cross_links": 2,
+  "false_link_rate": 3.063866292874979e-05,
+  "channels_with_cross_links": [
+   174,
+   430,
+   431
+  ]
+ },
+ "cards": [
+  {
+   "card": 1,
+   "connectors": [
+    1,
+    4
+   ],
+   "verdict": "OTHER",
+   "links": 1,
+   "coupled_links": 2,
+   "pogo_adjacent": {
+    "tested": 649,
+    "linked": 0,
+    "rate": 0.0
+   },
+   "far_nonadjacent": {
+    "tested": 29578,
+    "linked": 1,
+    "rate": 3.38089120292109e-05
+   },
+   "enrichment": 0.0,
+   "pogo_channels": [],
+   "other_channels": [
+    54,
+    123
+   ],
+   "nets": [
+    {
+     "channels": [
+      54,
+      123
+     ],
+     "n": 2,
+     "pogo_shaped": false,
+     "spanned_by_pogo_links": false,
+     "cross_card_members": [],
+     "noisy": 0
+    }
+   ],
+   "adjacent_twins": [],
+   "d_spectrum": {
+    "59": 1
+   }
+  },
+  {
+   "card": 2,
+   "connectors": [
+    5,
+    8
+   ],
+   "verdict": "OTHER",
+   "links": 3,
+   "coupled_links": 3,
+   "pogo_adjacent": {
+    "tested": 643,
+    "linked": 0,
+    "rate": 0.0
+   },
+   "far_nonadjacent": {
+    "tested": 29347,
+    "linked": 3,
+    "rate": 0.00010222509966947218
+   },
+   "enrichment": 0.0,
+   "pogo_channels": [],
+   "other_channels": [
+    310,
+    311,
+    500,
+    502
+   ],
+   "nets": [
+    {
+     "channels": [
+      310,
+      311,
+      500,
+      502
+     ],
+     "n": 4,
+     "pogo_shaped": false,
+     "spanned_by_pogo_links": false,
+     "cross_card_members": [],
+     "noisy": 0
+    }
+   ],
+   "adjacent_twins": [
+    [
+     310,
+     311
+    ],
+    [
+     500,
+     502
+    ]
+   ],
+   "d_spectrum": {
+    "193": 1,
+    "194": 1,
+    "195": 1
+   }
+  }
+ ],
+ "links": [
+  {
+   "a": 16,
+   "b": 80,
+   "d": 64,
+   "adj": 0,
+   "e": 0.101,
+   "rho": 0.656,
+   "sd": 0.274,
+   "J": 251,
+   "C": 0.005,
+   "Z": 2.0,
+   "twin": false,
+   "excess": false,
+   "cross": false
+  },
+  {
+   "a": 47,
+   "b": 147,
+   "d": 156,
+   "adj": 0,
+   "e": 0.102,
+   "rho": 0.568,
+   "sd": 0.362,
+   "J": 282,
+   "C": 0.001,
+   "Z": 0.3,
+   "twin": false,
+   "excess": false,
+   "cross": false
+  },
+  {
+   "a": 54,
+   "b": 123,
+   "d": 59,
+   "adj": 0,
+   "e": 0.688,
+   "rho": 0.887,
+   "sd": 0.22,
+   "J": 33,
+   "C": 0.788,
+   "Z": 383.4,
+   "twin": true,
+   "excess": false,
+   "cross": false
+  },
+  {
+   "a": 174,
+   "b": 430,
+   "d": 256,
+   "adj": 0,
+   "e": 0.107,
+   "rho": 0.563,
+   "sd": 0.275,
+   "J": 315,
+   "C": 0.002,
+   "Z": 1.3,
+   "twin": true,
+   "excess": false,
+   "cross": true
+  },
+  {
+   "a": 174,
+   "b": 431,
+   "d": 255,
+   "adj": 0,
+   "e": 0.111,
+   "rho": 0.507,
+   "sd": 0.266,
+   "J": 326,
+   "C": 0.002,
+   "Z": 1.2,
+   "twin": true,
+   "excess": false,
+   "cross": true
+  },
+  {
+   "a": 295,
+   "b": 303,
+   "d": 8,
+   "adj": 0,
+   "e": 0.121,
+   "rho": 0.572,
+   "sd": 0.672,
+   "J": 353,
+   "C": 0.13,
+   "Z": 1.4,
+   "twin": false,
+   "excess": false,
+   "cross": false
+  },
+  {
+   "a": 295,
+   "b": 307,
+   "d": 12,
+   "adj": 0,
+   "e": 0.101,
+   "rho": 0.668,
+   "sd": 0.486,
+   "J": 306,
+   "C": 0.039,
+   "Z": 1.8,
+   "twin": false,
+   "excess": false,
+   "cross": false
+  },
+  {
+   "a": 303,
+   "b": 307,
+   "d": 4,
+   "adj": 2,
+   "e": 0.128,
+   "rho": 0.718,
+   "sd": 0.463,
+   "J": 387,
+   "C": 0.378,
+   "Z": 1.4,
+   "twin": false,
+   "excess": false,
+   "cross": false
+  },
+  {
+   "a": 310,
+   "b": 500,
+   "d": 194,
+   "adj": 0,
+   "e": 0.599,
+   "rho": 0.803,
+   "sd": 0.182,
+   "J": 411,
+   "C": 0.757,
+   "Z": 408.9,
+   "twin": true,
+   "excess": false,
+   "cross": false
+  },
+  {
+   "a": 311,
+   "b": 500,
+   "d": 195,
+   "adj": 0,
+   "e": 0.628,
+   "rho": 0.716,
+   "sd": 0.217,
+   "J": 408,
+   "C": 0.348,
+   "Z": 187.7,
+   "twin": true,
+   "excess": false,
+   "cross": false
+  },
+  {
+   "a": 311,
+   "b": 502,
+   "d": 193,
+   "adj": 0,
+   "e": 0.245,
+   "rho": 0.598,
+   "sd": 0.254,
+   "J": 377,
+   "C": 0.265,
+   "Z": 142.9,
+   "twin": true,
+   "excess": false,
+   "cross": false
+  }
+ ]
+}

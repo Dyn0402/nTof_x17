@@ -1,0 +1,269 @@
+{
+ "run_key": "m_mx17_det3_det4_overnight_6-23-26__mx17_3",
+ "detector": "mx17_3",
+ "plane": "x",
+ "feu": 3,
+ "nev": 82054,
+ "cuts": {
+  "N_MIN": 10,
+  "D_MIN": 3,
+  "E_MIN": 0.1,
+  "RHO_MIN": 0.5,
+  "SD_TWIN": 0.3,
+  "DM_TWIN": 0.2,
+  "SD_ADJ": 0.25,
+  "K_ADJ": 30,
+  "ENRICH_MIN": 10.0,
+  "F_MIN": 30,
+  "FIRE_ADC": 50.0,
+  "GAP_MIN": 2,
+  "MAX_HITS": 40,
+  "SIG_MIN": 5.0
+ },
+ "null": {
+  "cross_pairs_tested": 65533,
+  "cross_links": 2,
+  "false_link_rate": 3.05189751728137e-05,
+  "channels_with_cross_links": [
+   127,
+   193,
+   448
+  ]
+ },
+ "cards": [
+  {
+   "card": 1,
+   "connectors": [
+    1,
+    4
+   ],
+   "verdict": "CLEAN",
+   "links": 0,
+   "coupled_links": 6,
+   "pogo_adjacent": {
+    "tested": 649,
+    "linked": 0,
+    "rate": 0.0
+   },
+   "far_nonadjacent": {
+    "tested": 29578,
+    "linked": 0,
+    "rate": 0.0
+   },
+   "enrichment": null,
+   "pogo_channels": [],
+   "other_channels": [],
+   "nets": [],
+   "adjacent_twins": [],
+   "d_spectrum": {}
+  },
+  {
+   "card": 2,
+   "connectors": [
+    5,
+    8
+   ],
+   "verdict": "CLEAN",
+   "links": 0,
+   "coupled_links": 0,
+   "pogo_adjacent": {
+    "tested": 649,
+    "linked": 0,
+    "rate": 0.0
+   },
+   "far_nonadjacent": {
+    "tested": 29578,
+    "linked": 0,
+    "rate": 0.0
+   },
+   "enrichment": null,
+   "pogo_channels": [],
+   "other_channels": [],
+   "nets": [],
+   "adjacent_twins": [],
+   "d_spectrum": {}
+  }
+ ],
+ "links": [
+  {
+   "a": 37,
+   "b": 62,
+   "d": 25,
+   "adj": 0,
+   "e": 0.117,
+   "rho": 0.875,
+   "sd": 0.548,
+   "J": 138,
+   "C": 0.134,
+   "Z": 107.2,
+   "twin": false,
+   "excess": false,
+   "cross": false
+  },
+  {
+   "a": 38,
+   "b": 62,
+   "d": 24,
+   "adj": 0,
+   "e": 0.104,
+   "rho": 0.884,
+   "sd": 0.563,
+   "J": 146,
+   "C": 0.176,
+   "Z": 135.2,
+   "twin": false,
+   "excess": false,
+   "cross": false
+  },
+  {
+   "a": 40,
+   "b": 62,
+   "d": 22,
+   "adj": 0,
+   "e": 0.128,
+   "rho": 0.852,
+   "sd": 0.563,
+   "J": 188,
+   "C": 0.201,
+   "Z": 143.3,
+   "twin": false,
+   "excess": false,
+   "cross": false
+  },
+  {
+   "a": 46,
+   "b": 62,
+   "d": 16,
+   "adj": 0,
+   "e": 0.111,
+   "rho": 0.818,
+   "sd": 0.644,
+   "J": 241,
+   "C": 0.292,
+   "Z": 188.6,
+   "twin": false,
+   "excess": false,
+   "cross": false
+  },
+  {
+   "a": 79,
+   "b": 192,
+   "d": 143,
+   "adj": 0,
+   "e": 0.111,
+   "rho": 0.729,
+   "sd": 0.277,
+   "J": 175,
+   "C": 0.073,
+   "Z": 73.0,
+   "twin": false,
+   "excess": false,
+   "cross": false
+  },
+  {
+   "a": 127,
+   "b": 192,
+   "d": 191,
+   "adj": 0,
+   "e": 0.2,
+   "rho": 0.748,
+   "sd": 0.194,
+   "J": 101,
+   "C": 0.012,
+   "Z": 12.0,
+   "twin": false,
+   "excess": false,
+   "cross": false
+  },
+  {
+   "a": 127,
+   "b": 448,
+   "d": 447,
+   "adj": 0,
+   "e": 0.186,
+   "rho": 0.658,
+   "sd": 0.204,
+   "J": 97,
+   "C": 0.006,
+   "Z": 5.2,
+   "twin": true,
+   "excess": false,
+   "cross": true
+  },
+  {
+   "a": 192,
+   "b": 448,
+   "d": 256,
+   "adj": 0,
+   "e": 0.225,
+   "rho": 0.814,
+   "sd": 0.17,
+   "J": 119,
+   "C": 0.008,
+   "Z": 8.5,
+   "twin": false,
+   "excess": false,
+   "cross": true
+  },
+  {
+   "a": 192,
+   "b": 449,
+   "d": 255,
+   "adj": 0,
+   "e": 0.123,
+   "rho": 0.589,
+   "sd": 0.234,
+   "J": 74,
+   "C": 0.004,
+   "Z": 4.3,
+   "twin": false,
+   "excess": false,
+   "cross": true
+  },
+  {
+   "a": 193,
+   "b": 448,
+   "d": 257,
+   "adj": 0,
+   "e": 0.217,
+   "rho": 0.804,
+   "sd": 0.173,
+   "J": 115,
+   "C": 0.007,
+   "Z": 6.7,
+   "twin": true,
+   "excess": false,
+   "cross": true
+  },
+  {
+   "a": 193,
+   "b": 449,
+   "d": 256,
+   "adj": 0,
+   "e": 0.116,
+   "rho": 0.672,
+   "sd": 0.2,
+   "J": 70,
+   "C": 0.003,
+   "Z": 3.3,
+   "twin": false,
+   "excess": false,
+   "cross": true
+  },
+  {
+   "a": 193,
+   "b": 450,
+   "d": 255,
+   "adj": 0,
+   "e": 0.115,
+   "rho": 0.642,
+   "sd": 0.191,
+   "J": 77,
+   "C": 0.004,
+   "Z": 3.6,
+   "twin": false,
+   "excess": false,
+   "cross": true
+  }
+ ]
+}

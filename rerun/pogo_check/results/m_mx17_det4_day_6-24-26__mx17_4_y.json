@@ -1,0 +1,457 @@
+{
+ "run_key": "m_mx17_det4_day_6-24-26__mx17_4",
+ "detector": "mx17_4",
+ "plane": "y",
+ "feu": 8,
+ "nev": 48449,
+ "cuts": {
+  "N_MIN": 10,
+  "D_MIN": 3,
+  "E_MIN": 0.1,
+  "RHO_MIN": 0.5,
+  "SD_TWIN": 0.3,
+  "DM_TWIN": 0.2,
+  "SD_ADJ": 0.25,
+  "K_ADJ": 30,
+  "ENRICH_MIN": 10.0,
+  "F_MIN": 30,
+  "FIRE_ADC": 50.0,
+  "GAP_MIN": 2,
+  "MAX_HITS": 40,
+  "SIG_MIN": 5.0
+ },
+ "null": {
+  "cross_pairs_tested": 57561,
+  "cross_links": 0,
+  "false_link_rate": 0.0,
+  "channels_with_cross_links": []
+ },
+ "cards": [
+  {
+   "card": 1,
+   "connectors": [
+    1,
+    4
+   ],
+   "verdict": "CLEAN",
+   "links": 0,
+   "coupled_links": 0,
+   "pogo_adjacent": {
+    "tested": 580,
+    "linked": 0,
+    "rate": 0.0
+   },
+   "far_nonadjacent": {
+    "tested": 24527,
+    "linked": 0,
+    "rate": 0.0
+   },
+   "enrichment": null,
+   "pogo_channels": [],
+   "other_channels": [],
+   "nets": [],
+   "adjacent_twins": [
+    [
+     56,
+     58
+    ]
+   ],
+   "d_spectrum": {}
+  },
+  {
+   "card": 2,
+   "connectors": [
+    5,
+    8
+   ],
+   "verdict": "POGO? (one pair / weak) + OTHER",
+   "links": 6,
+   "coupled_links": 7,
+   "pogo_adjacent": {
+    "tested": 613,
+    "linked": 1,
+    "rate": 0.0016313213703099511
+   },
+   "far_nonadjacent": {
+    "tested": 27290,
+    "linked": 3,
+    "rate": 0.00010993037742762916
+   },
+   "enrichment": 14.839586731919523,
+   "pogo_channels": [
+    453,
+    459
+   ],
+   "other_channels": [
+    407,
+    426,
+    428,
+    450,
+    460,
+    461,
+    462,
+    466,
+    467,
+    473
+   ],
+   "nets": [
+    {
+     "channels": [
+      407,
+      428
+     ],
+     "n": 2,
+     "pogo_shaped": false,
+     "spanned_by_pogo_links": false,
+     "cross_card_members": [],
+     "noisy": 0
+    },
+    {
+     "channels": [
+      426,
+      450
+     ],
+     "n": 2,
+     "pogo_shaped": false,
+     "spanned_by_pogo_links": false,
+     "cross_card_members": [],
+     "noisy": 0
+    },
+    {
+     "channels": [
+      453,
+      459
+     ],
+     "n": 2,
+     "pogo_shaped": true,
+     "spanned_by_pogo_links": true,
+     "cross_card_members": [],
+     "noisy": 0
+    },
+    {
+     "channels": [
+      460,
+      473
+     ],
+     "n": 2,
+     "pogo_shaped": false,
+     "spanned_by_pogo_links": false,
+     "cross_card_members": [],
+     "noisy": 0
+    },
+    {
+     "channels": [
+      461,
+      467
+     ],
+     "n": 2,
+     "pogo_shaped": false,
+     "spanned_by_pogo_links": false,
+     "cross_card_members": [],
+     "noisy": 0
+    },
+    {
+     "channels": [
+      462,
+      466
+     ],
+     "n": 2,
+     "pogo_shaped": false,
+     "spanned_by_pogo_links": false,
+     "cross_card_members": [],
+     "noisy": 0
+    }
+   ],
+   "adjacent_twins": [
+    [
+     448,
+     449
+    ],
+    [
+     448,
+     450
+    ],
+    [
+     449,
+     450
+    ],
+    [
+     449,
+     451
+    ],
+    [
+     450,
+     451
+    ],
+    [
+     450,
+     452
+    ],
+    [
+     451,
+     452
+    ],
+    [
+     451,
+     453
+    ],
+    [
+     452,
+     453
+    ],
+    [
+     452,
+     454
+    ],
+    [
+     453,
+     454
+    ],
+    [
+     453,
+     455
+    ],
+    [
+     454,
+     456
+    ],
+    [
+     455,
+     456
+    ],
+    [
+     455,
+     457
+    ],
+    [
+     456,
+     457
+    ],
+    [
+     456,
+     458
+    ],
+    [
+     457,
+     458
+    ],
+    [
+     457,
+     459
+    ],
+    [
+     458,
+     459
+    ],
+    [
+     459,
+     461
+    ]
+   ],
+   "d_spectrum": {
+    "4": 1,
+    "6": 2,
+    "13": 1,
+    "21": 1,
+    "104": 1
+   }
+  }
+ ],
+ "links": [
+  {
+   "a": 407,
+   "b": 428,
+   "d": 21,
+   "adj": 0,
+   "e": 0.436,
+   "rho": 0.558,
+   "sd": 0.185,
+   "J": 641,
+   "C": 0.032,
+   "Z": 7.9,
+   "twin": true,
+   "excess": false,
+   "cross": false
+  },
+  {
+   "a": 409,
+   "b": 428,
+   "d": 19,
+   "adj": 0,
+   "e": 0.234,
+   "rho": 0.741,
+   "sd": 0.201,
+   "J": 257,
+   "C": 0.016,
+   "Z": 3.1,
+   "twin": false,
+   "excess": false,
+   "cross": false
+  },
+  {
+   "a": 426,
+   "b": 450,
+   "d": 104,
+   "adj": 0,
+   "e": 0.14,
+   "rho": 0.636,
+   "sd": 0.14,
+   "J": 111,
+   "C": 0.079,
+   "Z": 57.3,
+   "twin": true,
+   "excess": false,
+   "cross": false
+  },
+  {
+   "a": 426,
+   "b": 459,
+   "d": 95,
+   "adj": 0,
+   "e": 0.115,
+   "rho": 0.628,
+   "sd": 0.145,
+   "J": 91,
+   "C": 0.072,
+   "Z": 54.5,
+   "twin": false,
+   "excess": false,
+   "cross": false
+  },
+  {
+   "a": 448,
+   "b": 457,
+   "d": 9,
+   "adj": 0,
+   "e": 0.136,
+   "rho": 0.541,
+   "sd": 0.129,
+   "J": 31,
+   "C": 0.37,
+   "Z": 19.5,
+   "twin": false,
+   "excess": false,
+   "cross": false
+  },
+  {
+   "a": 450,
+   "b": 459,
+   "d": 9,
+   "adj": 0,
+   "e": 0.138,
+   "rho": 0.674,
+   "sd": 0.103,
+   "J": 25,
+   "C": 0.501,
+   "Z": 27.2,
+   "twin": false,
+   "excess": false,
+   "cross": false
+  },
+  {
+   "a": 453,
+   "b": 459,
+   "d": 6,
+   "adj": 3,
+   "e": 0.139,
+   "rho": 0.798,
+   "sd": 0.078,
+   "J": 20,
+   "C": 0.544,
+   "Z": 10.7,
+   "twin": true,
+   "excess": false,
+   "cross": false
+  },
+  {
+   "a": 453,
+   "b": 467,
+   "d": 14,
+   "adj": 0,
+   "e": 0.13,
+   "rho": 0.691,
+   "sd": 0.167,
+   "J": 17,
+   "C": 0.214,
+   "Z": 31.2,
+   "twin": false,
+   "excess": false,
+   "cross": false
+  },
+  {
+   "a": 455,
+   "b": 467,
+   "d": 12,
+   "adj": 0,
+   "e": 0.14,
+   "rho": 0.731,
+   "sd": 0.18,
+   "J": 14,
+   "C": 0.215,
+   "Z": 22.9,
+   "twin": false,
+   "excess": false,
+   "cross": false
+  },
+  {
+   "a": 459,
+   "b": 467,
+   "d": 8,
+   "adj": 0,
+   "e": 0.144,
+   "rho": 0.774,
+   "sd": 0.137,
+   "J": 21,
+   "C": 0.286,
+   "Z": 10.5,
+   "twin": false,
+   "excess": false,
+   "cross": false
+  },
+  {
+   "a": 460,
+   "b": 473,
+   "d": 13,
+   "adj": 0,
+   "e": 0.235,
+   "rho": 0.756,
+   "sd": 0.209,
+   "J": 12,
+   "C": 0.207,
+   "Z": 25.2,
+   "twin": true,
+   "excess": false,
+   "cross": false
+  },
+  {
+   "a": 461,
+   "b": 467,
+   "d": 6,
+   "adj": 0,
+   "e": 0.229,
+   "rho": 0.756,
+   "sd": 0.146,
+   "J": 15,
+   "C": 0.299,
+   "Z": 4.7,
+   "twin": true,
+   "excess": false,
+   "cross": false
+  },
+  {
+   "a": 462,
+   "b": 466,
+   "d": 4,
+   "adj": 0,
+   "e": 0.143,
+   "rho": 0.703,
+   "sd": 0.088,
+   "J": 12,
+   "C": 0.283,
+   "Z": 1.1,
+   "twin": true,
+   "excess": false,
+   "cross": false
+  }
+ ]
+}

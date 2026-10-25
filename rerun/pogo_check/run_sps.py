@@ -26,6 +26,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--npz', default='/media/dylan/data/x17/sps_run53_det4_check/staging/run_71/wf_run71_raw_det4only.npz')
     ap.add_argument('--out-dir', required=True)
+    ap.add_argument('--tag', default='sps_run71', help='output name, e.g. sps_run56 for another epoch')
     a = ap.parse_args(); os.makedirs(a.out_dir, exist_ok=True)
     Z = np.load(a.npz, allow_pickle=True)
     ev, ch, amp = Z['ev'], Z['ch'].astype(int), Z['amp']
@@ -50,10 +51,10 @@ def main():
             k = g & (VIEW[c] == p)
             planes[p][0].add(bench[c[k]], A_[k])
     for p, (ps, pos) in planes.items():
-        out = os.path.join(a.out_dir, f'sps_run71_det4_{p}.npz')
-        ps.save(out, rms=np.full(512, NOISE), pos=pos, run_key='sps_run71', detector='mx17_4', plane=p, feu=3,
+        out = os.path.join(a.out_dir, f'{a.tag}_det4_{p}.npz')
+        ps.save(out, rms=np.full(512, NOISE), pos=pos, run_key=a.tag, detector='mx17_4', plane=p, feu=3,
                 subs=np.array(['cfg_gain4.5_peaktime50']))
-        print('sps_run71', p, 'events', ps.nev, '->', out)
+        print(a.tag, p, 'events', ps.nev, '->', out)
 
 
 if __name__ == '__main__':

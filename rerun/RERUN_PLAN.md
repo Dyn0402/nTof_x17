@@ -118,3 +118,15 @@ dry-gas bench run, Stephan's unanswered geometry questions, det6's window-limite
   detectors and rejected / not needed.
 - **Run registry (W8)**: exclude det3 6-27's 01H29 false start (still in EOS `raw_daq_data/`; new products moved to
   `_false_start_01H29/`).
+
+## 10 · Decisions (Dylan, 2026-10-25 late evening)
+
+1. **Kernel for the pass: `phys`** (C21 recipe, profiled σ0) on all five chambers. timeD is retired as a pass option.
+2. **Efficiency loss budget**: where every M3-crossing muon goes, on the waveform reco of the golden rows, per view and
+   X+Y, at the 5 mm match circle (MPGD26 comparability) and at 3 mm.
+3. **Channel masks (W3) go into the pass bundles** after an overnight gate (masked vs unmasked phys, held out: s68,
+   far, χ²); adopted per chamber only where they do not hurt.
+4. **Fiducial**: headline numbers on the interior (≥ 30 mm from the own-coordinate edge where unpassivated); the edge
+   bands are a separate characterization (C22 follow-ups). Downstream, does not block the pass.
+5. Edge bending is expected (parallel-plate fringe field); most cosmic runs had no degrador rings.
+6. Two-track refit: off for production (C22 follow-ups).
