@@ -1,5 +1,17 @@
 # det7 X shorts and the M1 / JZ pogo field (June bench, g_det7_long)
 
+> **\* Asterisk on this run (decided 2026-10-25).** The M1 cards on det7 were not seated well for the 06-26
+> overnight run (g_det7_long, and g_det7_longer from the same night). Results near the bridged pads are not
+> representative of the chamber. Report det7 X from the clean card only, i.e. DREAM connectors 5–8, FEU 6
+> ch 256–511. det7 is not a main focus of the paper, so this is acceptable. State the cut wherever det7 X appears.
+>
+> **Correction from the general check (`rerun/pogo_check/`, 2026-10-25).** The track-confirmed shorts are the
+> vertical chains (88…123, 101/106/111, 114–126, 230–250, 233/238, 2/7/12/17 + 6/11/16). The "dense 2-D block"
+> below (cols 7–9, rows 0–14, ch 3–58) is **not** confirmed by tracks. Those channels fired in 5 of ~35 k clean
+> events, against ~1600 for their neighbours. They co-move only in saturated big events (median ~430 hits). So their
+> census correlation is pickup in those events, not a pad short. Treat them as not reading tracks. That fits
+> lifted pins at that corner (open contacts) at least as well as bridging, but this has not been tested.
+
 ## Verdict
 
 **The fault is in the pogo field, but a rigidly shifted or rotated connector does not explain it.**

@@ -1,0 +1,84 @@
+{
+ "run_key": "sat_det3",
+ "detector": "mx17_3",
+ "plane": "y",
+ "feu": 8,
+ "nev": 18537,
+ "cuts": {
+  "N_MIN": 10,
+  "D_MIN": 3,
+  "E_MIN": 0.1,
+  "RHO_MIN": 0.5,
+  "SD_TWIN": 0.3,
+  "DM_TWIN": 0.2,
+  "SD_ADJ": 0.25,
+  "K_ADJ": 30,
+  "ENRICH_MIN": 10.0,
+  "F_MIN": 30,
+  "FIRE_ADC": 50.0,
+  "GAP_MIN": 2,
+  "MAX_HITS": 40,
+  "SIG_MIN": 5.0
+ },
+ "null": {
+  "cross_pairs_tested": 54285,
+  "cross_links": 0,
+  "false_link_rate": 0.0,
+  "channels_with_cross_links": []
+ },
+ "cards": [
+  {
+   "card": 1,
+   "connectors": [
+    1,
+    4
+   ],
+   "verdict": "CLEAN",
+   "links": 0,
+   "coupled_links": 0,
+   "pogo_adjacent": {
+    "tested": 581,
+    "linked": 0,
+    "rate": 0.0
+   },
+   "far_nonadjacent": {
+    "tested": 24493,
+    "linked": 0,
+    "rate": 0.0
+   },
+   "enrichment": null,
+   "pogo_channels": [],
+   "other_channels": [],
+   "nets": [],
+   "adjacent_twins": [],
+   "d_spectrum": {}
+  },
+  {
+   "card": 2,
+   "connectors": [
+    5,
+    8
+   ],
+   "verdict": "CLEAN",
+   "links": 0,
+   "coupled_links": 0,
+   "pogo_adjacent": {
+    "tested": 579,
+    "linked": 0,
+    "rate": 0.0
+   },
+   "far_nonadjacent": {
+    "tested": 24043,
+    "linked": 0,
+    "rate": 0.0
+   },
+   "enrichment": null,
+   "pogo_channels": [],
+   "other_channels": [],
+   "nets": [],
+   "adjacent_twins": [],
+   "d_spectrum": {}
+  }
+ ],
+ "links": []
+}

@@ -1,0 +1,177 @@
+{
+ "run_key": "g_det4",
+ "detector": "mx17_4",
+ "plane": "x",
+ "feu": 6,
+ "nev": 48919,
+ "cuts": {
+  "N_MIN": 10,
+  "D_MIN": 3,
+  "E_MIN": 0.1,
+  "RHO_MIN": 0.5,
+  "SD_TWIN": 0.3,
+  "DM_TWIN": 0.2,
+  "SD_ADJ": 0.25,
+  "K_ADJ": 30,
+  "ENRICH_MIN": 10.0,
+  "F_MIN": 30,
+  "FIRE_ADC": 50.0,
+  "GAP_MIN": 2,
+  "MAX_HITS": 40,
+  "SIG_MIN": 5.0
+ },
+ "null": {
+  "cross_pairs_tested": 26985,
+  "cross_links": 0,
+  "false_link_rate": 0.0,
+  "channels_with_cross_links": []
+ },
+ "cards": [
+  {
+   "card": 1,
+   "connectors": [
+    1,
+    4
+   ],
+   "verdict": "OTHER",
+   "links": 1,
+   "coupled_links": 0,
+   "pogo_adjacent": {
+    "tested": 303,
+    "linked": 0,
+    "rate": 0.0
+   },
+   "far_nonadjacent": {
+    "tested": 10664,
+    "linked": 1,
+    "rate": 9.377344336084021e-05
+   },
+   "enrichment": 0.0,
+   "pogo_channels": [],
+   "other_channels": [
+    161,
+    225
+   ],
+   "nets": [
+    {
+     "channels": [
+      161,
+      225
+     ],
+     "n": 2,
+     "pogo_shaped": false,
+     "spanned_by_pogo_links": false,
+     "cross_card_members": [],
+     "noisy": 0
+    }
+   ],
+   "adjacent_twins": [],
+   "d_spectrum": {
+    "64": 1
+   }
+  },
+  {
+   "card": 2,
+   "connectors": [
+    5,
+    8
+   ],
+   "verdict": "OTHER",
+   "links": 2,
+   "coupled_links": 0,
+   "pogo_adjacent": {
+    "tested": 366,
+    "linked": 0,
+    "rate": 0.0
+   },
+   "far_nonadjacent": {
+    "tested": 13228,
+    "linked": 2,
+    "rate": 0.00015119443604475356
+   },
+   "enrichment": 0.0,
+   "pogo_channels": [],
+   "other_channels": [
+    403,
+    433,
+    467,
+    497
+   ],
+   "nets": [
+    {
+     "channels": [
+      403,
+      467
+     ],
+     "n": 2,
+     "pogo_shaped": false,
+     "spanned_by_pogo_links": false,
+     "cross_card_members": [],
+     "noisy": 0
+    },
+    {
+     "channels": [
+      433,
+      497
+     ],
+     "n": 2,
+     "pogo_shaped": false,
+     "spanned_by_pogo_links": false,
+     "cross_card_members": [],
+     "noisy": 0
+    }
+   ],
+   "adjacent_twins": [],
+   "d_spectrum": {
+    "64": 2
+   }
+  }
+ ],
+ "links": [
+  {
+   "a": 161,
+   "b": 225,
+   "d": 64,
+   "adj": 0,
+   "e": 0.162,
+   "rho": 0.608,
+   "sd": 0.21,
+   "J": 11,
+   "C": 0.303,
+   "Z": 78.3,
+   "twin": true,
+   "excess": false,
+   "cross": false
+  },
+  {
+   "a": 403,
+   "b": 467,
+   "d": 64,
+   "adj": 0,
+   "e": 0.117,
+   "rho": 0.752,
+   "sd": 0.212,
+   "J": 25,
+   "C": 0.046,
+   "Z": 11.3,
+   "twin": true,
+   "excess": false,
+   "cross": false
+  },
+  {
+   "a": 433,
+   "b": 497,
+   "d": 64,
+   "adj": 0,
+   "e": 0.163,
+   "rho": 0.628,
+   "sd": 0.228,
+   "J": 20,
+   "C": 0.103,
+   "Z": 26.2,
+   "twin": true,
+   "excess": false,
+   "cross": false
+  }
+ ]
+}

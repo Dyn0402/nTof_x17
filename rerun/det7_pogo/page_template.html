@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>det7 X pogo-field shorts</title>
+<meta name="description" content="Interactive map of the det7 X M1 pogo pad field (June bench, g_det7_long): which readout pads are shorted together, which strips each short joins, and why a rigid connector offset does not explain it.">
+<style>
+:root{--bg:#fbfbfa;--fg:#1d1f22;--mut:#666b73;--line:#d9dcdf;--card:#fff;--pad:#e3e8ee;--padE:#a9b2bc;--gnd:#7d828a;
+--c1:#e9f0fb;--c2:#fbf0e3;--c3:#eaf6ec;--c4:#f6eaf5;--link:#1f5fbf;--pred:#e8890c;--ok:#2a9d4a;--noisy:#d0263a;--hl:#ffd400}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15171a;--fg:#e4e6e9;--mut:#9aa0a8;--line:#30343a;--card:#1c1f23;--pad:#2c3239;--padE:#56606b;--gnd:#8a9099;
+--c1:#1d2a3d;--c2:#3a2c1c;--c3:#1d3323;--c4:#352035;--link:#6aa5ff;--pred:#f3a33a;--ok:#4cc46f;--noisy:#ff5a6c;--hl:#ffd400}}
+:root[data-theme="dark"]{--bg:#15171a;--fg:#e4e6e9;--mut:#9aa0a8;--line:#30343a;--card:#1c1f23;--pad:#2c3239;--padE:#56606b;--gnd:#8a9099;
+--c1:#1d2a3d;--c2:#3a2c1c;--c3:#1d3323;--c4:#352035;--link:#6aa5ff;--pred:#f3a33a;--ok:#4cc46f;--noisy:#ff5a6c;--hl:#ffd400}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:1180px;margin:0 auto;padding:20px 16px 60px}
+h1{font-size:1.5rem;margin:.2em 0 .1em}h2{font-size:1.12rem;margin:1.8em 0 .4em}
+.sub{color:var(--mut);margin:0 0 1em}
+.verdict{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--link);border-radius:8px;padding:12px 16px}
+.verdict ul{margin:.3em 0;padding-left:1.2em}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:12px;margin:10px 0}
+.controls{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;font-size:.9rem;margin-bottom:6px}
+.controls label{display:flex;gap:6px;align-items:center;cursor:pointer}
+svg{display:block;width:100%;height:auto;touch-action:manipulation}
+svg text{font-family:ui-monospace,Menlo,Consolas,monospace}
+svg text.sans{font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:.82rem;color:var(--mut);margin-top:6px}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.sw{display:inline-block;width:18px;height:10px;border-radius:2px}
+#info{font-size:.88rem;min-height:3.2em;padding:8px 10px;border-radius:6px;background:var(--bg);border:1px dashed var(--line);font-family:ui-monospace,Menlo,Consolas,monospace;white-space:pre-wrap}
+table{border-collapse:collapse;font-size:.88rem;margin:6px 0}td,th{padding:3px 10px;border-bottom:1px solid var(--line);text-align:left}
+.cap{font-size:.86rem;color:var(--mut);margin:6px 2px 0}
+.pad{cursor:pointer}
+.dim{opacity:.18}
+small{color:var(--mut)}
+</style>
+</head>
+<body>
+<main>
+<h1>det7 X: shorted pads on the M1 pogo field</h1>
+<p class="sub">June cosmic bench, run <code>g_det7_long</code> (06-26), FEU 6. Source: <code>rerun/det7_pogo/</code> (commit b399f42) and C20 <code>channel_census</code>. Generated 2026-10-25.</p>
+
+<div class="verdict" style="border-left-color:#d0263a;margin-bottom:12px"><b>* Asterisk on this run (2026-10-25).</b> det7's M1 cards were not seated well on the 06-26 night (g_det7_long, g_det7_longer), so results near the bridged pads are not representative. Quote det7 X from card 2 only (connectors 5–8, ch 256–511).<br>
+<b>Correction:</b> a later, general check (<code>rerun/pogo_check/</code>) confirms the <i>vertical chains</i> with tracks. The links in the dense corner (cols 7–9, rows 0–14, ch 3–58) are <b>not</b> confirmed. Those channels fired in 5 of ~35 k clean single-track events, against ~1600 for their neighbours. They move together only in saturated events of ~430 hits, so read them as not seeing tracks (perhaps lifted pins) rather than as bridged.</div>
+<div class="verdict">
+<b>What you are looking at.</b> Each M1 card connects 256 DREAM channels to the readout board through a 10 × 30 field of pads on a 1 mm grid, pressed together by a JZ pogo-pin carrier. On det7's first X card (connectors 1–4), 85 channels fall into 19 groups that read identical amplitudes. Drawn on the pad field, every group is a chain of <b>touching neighbour pads</b>, mostly along the board edge (= ±5 channels). The second card is clean.
+<ul>
+<li>The strip map is right (C20, checked against M3). This is a contact fault, not a wiring permutation.</li>
+<li>The pads are joined at strip level: a shorted channel fires when M3 crosses its partner strip 5 strips away.</li>
+<li>A rigid shift or rotation of the pin array does <b>not</b> reproduce it: the best fit gets 78 of the 108 links right but invents 137 (orange in the overlay). The bridges are pin by pin.</li>
+</ul>
+</div>
+
+<h2>1 · The pad field, both cards</h2>
+<div class="panel">
+<div class="controls">
+<label>link threshold: corr &gt; <input type="range" id="thr" min="0.5" max="0.99" step="0.01" value="0.9"><b id="thrv">0.90</b></label>
+<label><input type="checkbox" id="fit"> overlay best rigid fit</label>
+<label><input type="checkbox" id="nums" checked> channel numbers</label>
+<label><input type="checkbox" id="diag" checked> diagonal links</label>
+</div>
+<svg id="field"></svg>
+<div class="legend">
+<span><i class="sw" style="background:var(--c1)"></i>conn 1</span><span><i class="sw" style="background:var(--c2)"></i>conn 2</span>
+<span><i class="sw" style="background:var(--c3)"></i>conn 3</span><span><i class="sw" style="background:var(--c4)"></i>conn 4 (card 2: 5–8)</span>
+<span><i class="sw" style="background:var(--gnd)"></i>GND pad</span><span><i class="sw" style="border:1px dashed var(--padE)"></i>no trace (NC)</span>
+<span><i class="sw" style="background:var(--link)"></i>measured short (width ∝ corr)</span>
+<span id="lgfit" style="display:none"><i class="sw" style="background:var(--ok)"></i>fit reproduces <i class="sw" style="background:var(--pred)"></i>fit predicts, not seen</span>
+<span><b style="color:var(--noisy)">red number</b> noisy (rms ≳ 60)</span><span>✕ dead</span>
+</div>
+<div id="info">Hover or tap a pad to see its channel, its flags and the strips it is joined to.</div>
+<p class="cap">Rows (along the board edge, the direction the card slides when tightened) run left to right here, so the README's “vertical” chains appear as horizontal links. Columns run radially. Both pitches are 1 mm. Pads are 0.6 × 0.8 mm rounded rectangles at 45°; the gap to a vertical or horizontal neighbour is 0.23 mm, to a diagonal one 0.61 mm. A pad's vertical neighbour is ±5 DREAM channels, its horizontal neighbour ±1. Card 2 is drawn with the same layout (channel = card-1 channel + 256); its strongest neighbour correlation is <b id="c2max"></b>.</p>
+</div>
+
+<h2>2 · Which strips each short joins</h2>
+<div class="panel">
+<svg id="strips"></svg>
+<p class="cap">The 256 strips of card 1 in their nominal order (strip named by the FEU channel that should read it, ~0.78 mm pitch, so 5 strips ≈ 3.9 mm). Each arc joins two strips that are read as one channel. A net of <i>n</i> channels reads (1/<i>n</i>) × the sum of its strips: the charge of a track crossing any of them appears on all of them, which is what wrecks the angle fit on connectors 1–4 while positions survive. Hover a net to light it up in both views.</p>
+</div>
+
+<h2>3 · The numbers</h2>
+<div class="panel">
+<table>
+<tr><th></th><th>value</th></tr>
+<tr><td>measured neighbour short pairs (corr &gt; 0.9), card 1</td><td>108 of 854 neighbour pairs (58 of 226 vertical)</td></tr>
+<tr><td>shorted channels / nets</td><td>85 / 19</td></tr>
+<tr><td>strongest neighbour correlation, card 2</td><td id="c2max2"></td></tr>
+<tr><td>best rigid fit (carrier mode)</td><td id="bestfit"></td></tr>
+<tr><td>reproduced / invented / missed</td><td id="bestcounts"></td></tr>
+<tr><td>same fit on relocated copies of the pattern</td><td>F1 0.35–0.44 vs 0.42 for the real one (coarse grid): no power</td></tr>
+<tr><td>firing when M3 crosses the partner strip (±5)</td><td>shorted 0.446, unshorted 0.226</td></tr>
+<tr><td>dead channels</td><td>34, 84, 94, 134, 194, 208 (none predicted by any fit)</td></tr>
+</table>
+</div>
+
+<h2>What this does not tell us</h2>
+<div class="panel">
+<ul>
+<li><b>Which non-rigid fault it is.</b> Leaning pins, conductive debris across the 0.23 mm gaps, or a card bowed at one corner all join pads pin by pin. The data cannot separate them. The corner block (cols 7–9, rows 0–14) does not respond to tracks at all (see the correction above).</li>
+<li><b>The state after 06-30.</b> The logbook has the X1 JZ connector reseated and glued on 06-30 ("recovered most strips, ~10 still expected out"). This run is from 06-26 and says nothing about the chamber afterwards.</li>
+<li><b>The noisy channels.</b> They are ~31 % of both shorted and unshorted channels, with an rms level set per connector. That looks like M1/cable pickup, not pad contact, and is not explained here.</li>
+<li><b>The readout-side strip order.</b> The fan-out on the readout board was not traced; each pad's strip is taken from the M3-verified linear map.</li>
+</ul>
+</div>
+</main>
+<script>
+const D = __DATA__;
+const NS='http://www.w3.org/2000/svg';
+const el=(t,a,p)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e};
+const S=24, M0=34, GAP=58; // px per mm, margins
+const W=M0+30*S+20, H1=M0+10*S;
+const field=document.getElementById('field');
+field.setAttribute('viewBox',`0 0 ${W} ${2*H1+GAP}`);
+const noisy=new Set(D.noisy), dead=new Set(D.dead);
+const netOf={}; D.nets.forEach((n,i)=>n.forEach(c=>netOf[c]=i));
+const NETC=['#1f77b4','#d62728','#2ca02c','#9467bd','#8c564b','#e377c2','#17becf','#bcbd22','#ff7f0e','#3b5bdb','#c2255c','#2b8a3e','#7048e8','#a0522d','#0b7285','#e67700','#5c940d','#862e9c','#495057'];
+const connVar=['--c1','--c2','--c3','--c4'];
+const pos={}; D.pads.forEach(p=>{if(p.ch!=null)pos[p.ch]=[p.c,p.r]});
+const X=r=>M0+r*S+S/2;
+const padEls={}, linkEls=[], fitEls=[];
+let c2max=0; D.pairs.forEach(p=>c2max=Math.max(c2max,p.c2));
+document.getElementById('c2max').textContent=c2max.toFixed(2);
+document.getElementById('c2max2').textContent=c2max.toFixed(2)+' (no pair reaches 0.7)';
+const b=D.best;
+document.getElementById('bestfit').textContent=`dx ${b.dx.toFixed(2)}, dy ${b.dy>0?'+':''}${b.dy.toFixed(2)} mm, θ ${b.th>0?'+':''}${b.th.toFixed(1)}°, pin radius ${b.rp.toFixed(3)} mm`;
+document.getElementById('bestcounts').textContent=`${b.tp} / ${b.fp} / ${b.fn}  (F1 ${b.f1.toFixed(2)})`;
+
+for(let card=0;card<2;card++){
+  const g=el('g',{},field), oy=card*(H1+GAP);
+  el('text',{x:M0,y:oy+18,'font-size':15,'font-weight':'bold',fill:'var(--fg)',class:'sans'},g).textContent=
+    card?'Card 2 — DREAM connectors 5–8 (ch 256–511): clean':'Card 1 — DREAM connectors 1–4 (ch 0–255): 19 shorted nets';
+  for(let r=0;r<30;r+=5) el('text',{x:X(r),y:oy+M0+10*S+14,'font-size':10,fill:'var(--mut)','text-anchor':'middle'},g).textContent='row '+r;
+  for(let c=0;c<10;c+=3) el('text',{x:M0-6,y:oy+M0+c*S+S/2+4,'font-size':10,fill:'var(--mut)','text-anchor':'end'},g).textContent='c'+c;
+  const lg=el('g',{},g), fg=el('g',{},g), pg=el('g',{},g);
+  D.pairs.forEach(p=>{
+    const [ca,ra]=pos[p.a],[cb,rb]=pos[p.b];
+    const a={x1:X(ra),y1:oy+M0+ca*S+S/2,x2:X(rb),y2:oy+M0+cb*S+S/2};
+    const corr=card?p.c2:p.c1;
+    const l=el('line',Object.assign({stroke:'var(--link)','stroke-linecap':'round'},a),lg);
+    linkEls.push({l,corr,k:p.k,a:p.a+256*card,b:p.b+256*card});
+    if(card===0){const f=el('line',Object.assign({'stroke-linecap':'round','stroke-width':3,display:'none'},a),fg);fitEls.push({f,p})}
+  });
+  D.pads.forEach(p=>{
+    const cx=X(p.r), cy=oy+M0+p.c*S+S/2;
+    const grp=el('g',{class:'pad',transform:`translate(${cx},${cy}) rotate(-45)`},pg);
+    const ch=p.ch==null?null:p.ch+256*card;
+    let fill='var(--pad)', st='var(--padE)', dash='';
+    if(p.role==='G'){fill='var(--gnd)'} else if(p.role==='N'){fill='none';dash='2 2'}
+    else fill=`var(${connVar[Math.floor(p.ch/64)]})`;
+    const rect=el('rect',{x:-7.2,y:-9.6,width:14.4,height:19.2,rx:6,fill,stroke:st,'stroke-width':.8,'stroke-dasharray':dash},grp);
+    if(ch!=null){
+      const t=el('text',{x:0,y:3,'font-size':8.5,'text-anchor':'middle',transform:'rotate(45)',fill:noisy.has(ch)?'var(--noisy)':'var(--fg)','font-weight':noisy.has(ch)?'bold':'normal',class:'num'},grp);
+      t.textContent=ch;
+      if(dead.has(ch)){el('path',{d:'M-6,-6L6,6M-6,6L6,-6',stroke:'var(--fg)','stroke-width':1.4,transform:'rotate(45)'},grp)}
+      padEls[ch]={grp,rect};
+      grp.addEventListener('mouseenter',()=>focus(ch));grp.addEventListener('click',e=>{e.stopPropagation();focus(ch)});
+    } else {
+      grp.addEventListener('mouseenter',()=>{info.textContent=`${p.role==='G'?'GND pad':'NC pad (no trace on the M1 card)'} at col ${p.c}, row ${p.r}`});
+    }
+  });
+}
+// connector region labels on card 1
+const info=document.getElementById('info');
+function draw(){
+  const t=+thr.value; document.getElementById('thrv').textContent=t.toFixed(2);
+  const showD=diag.checked, fit=fitC.checked;
+  linkEls.forEach(o=>{const on=o.corr>t&&(showD||o.k!=='d');o.l.style.display=on&&!(fit&&o.a<256)?'':'none';
+    o.l.setAttribute('stroke-width',1.5+6*Math.max(0,(o.corr-t)/(1-t)));o.l.setAttribute('opacity',.85)});
+  fitEls.forEach(({f,p})=>{const m=p.c1>0.9;
+    if(!fit||!(p.p||m)){f.style.display='none';return}
+    f.style.display='';f.setAttribute('stroke',p.p&&m?'var(--ok)':p.p?'var(--pred)':'var(--link)');f.setAttribute('stroke-width',p.p&&m?4:p.p?2.2:3.2)});
+  document.getElementById('lgfit').style.display=fit?'':'none';
+  document.querySelectorAll('.num').forEach(n=>n.style.display=nums.checked?'':'none');
+}
+const thr=document.getElementById('thr'), fitC=document.getElementById('fit'), nums=document.getElementById('nums'), diag=document.getElementById('diag');
+[thr,fitC,nums,diag].forEach(i=>i.addEventListener('input',draw));
+draw();
+
+// strips panel
+const sv=document.getElementById('strips'), SP=4.2, SW=M0+256*SP+30, SH=230, base=170;
+sv.setAttribute('viewBox',`0 0 ${SW} ${SH}`);
+for(let k=0;k<4;k++){
+  el('rect',{x:M0+k*64*SP,y:base,width:64*SP,height:22,fill:`var(${connVar[k]})`},sv);
+  el('text',{x:M0+(k+.5)*64*SP,y:base+15,'font-size':11,'text-anchor':'middle',fill:'var(--mut)',class:'sans'},sv).textContent=`connector ${k+1} · strips ${64*k}–${64*k+63}`;
+}
+const stripEls={};
+for(let s=0;s<256;s++){
+  const x=M0+s*SP+SP/2;
+  stripEls[s]=el('line',{x1:x,x2:x,y1:base-10,y2:base,stroke:noisy.has(s)?'var(--noisy)':'var(--padE)','stroke-width':1.3},sv);
+}
+for(let s=0;s<=256;s+=32) el('text',{x:M0+s*SP,y:base+36,'font-size':10,'text-anchor':'middle',fill:'var(--mut)'},sv).textContent=s;
+const arcEls=[];
+D.nets.forEach((n,i)=>{
+  const s=[...n].sort((a,b)=>a-b), g=el('g',{class:'pad'},sv);
+  for(let j=1;j<s.length;j++){
+    const x1=M0+s[j-1]*SP+SP/2,x2=M0+s[j]*SP+SP/2,h=Math.min(150,10+(x2-x1)*.55);
+    el('path',{d:`M${x1},${base-10} C${x1},${base-10-h} ${x2},${base-10-h} ${x2},${base-10}`,fill:'none',stroke:NETC[i%NETC.length],'stroke-width':2.2},g);
+  }
+  arcEls.push({g,i});
+  g.addEventListener('mouseenter',()=>focus(n[0]));g.addEventListener('click',e=>{e.stopPropagation();focus(n[0])});
+});
+el('text',{x:M0,y:14,'font-size':11,fill:'var(--mut)',class:'sans'},sv).textContent='arcs = strips read as one channel (one colour per net); red ticks = noisy channels';
+
+function focus(ch){
+  const ni=netOf[ch], card=ch>=256?1:0, bch=ch%256;
+  const members=ni!=null&&!card?new Set(D.nets[ni]):new Set([ch]);
+  Object.entries(padEls).forEach(([c,o])=>{const on=members.has(+c);o.rect.setAttribute('stroke',on?'var(--hl)':'var(--padE)');o.rect.setAttribute('stroke-width',on?3:.8)});
+  arcEls.forEach(a=>a.g.classList.toggle('dim',ni!=null&&!card&&a.i!==ni));
+  Object.entries(stripEls).forEach(([s,l])=>{const on=members.has(+s)&&!card;l.setAttribute('stroke',on?'var(--hl)':(noisy.has(+s)?'var(--noisy)':'var(--padE)'));l.setAttribute('stroke-width',on?3:1.3);l.setAttribute('y1',on?base-24:base-10)});
+  const [c,r]=pos[bch];
+  const fl=[noisy.has(ch)?'NOISY':null,dead.has(ch)?'DEAD':null,D.weak.includes(ch)?'weak':null].filter(Boolean).join(', ')||'—';
+  let s=`ch ${ch} · DREAM connector ${Math.floor(ch/64)+1} · pogo col ${c}, row ${r}\nrms ${D.rms[ch]} ADC · fires when crossed ${D.fire[ch]} · flags: ${fl}`;
+  if(ni!=null&&!card) s+=`\nnet ${ni+1} (${D.nets[ni].length} channels) joins strips ${D.nets[ni].join(', ')}`;
+  else if(D.possible[ch]) s+=`\nnot shorted at 0.9; possible net at 0.7: ${D.possible[ch].join(', ')}`;
+  else s+=`\nnot shorted: reads its own strip only`;
+  info.textContent=s;
+}
+document.addEventListener('click',()=>{arcEls.forEach(a=>a.g.classList.remove('dim'))});
+</script>
+</body>
+</html>

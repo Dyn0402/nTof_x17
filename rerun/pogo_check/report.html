@@ -1,0 +1,111 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Pogo-field short check</title>
+<meta name="description" content="A general check for M1 pogo-field pad shorts that is not fooled by charge sharing between neighbouring strips; applied to the June bench fleet.">
+<style>body{font:15px/1.5 system-ui,sans-serif;max-width:1100px;margin:0 auto;padding:16px;color:#1d1f22;background:#fbfbfa}
+table{border-collapse:collapse;font-size:.85rem}td,th{border-bottom:1px solid #ddd;padding:3px 8px;text-align:left}
+img{max-width:100%}.box{border-left:4px solid #1f5fbf;background:#fff;padding:8px 14px;border:1px solid #ddd}
+pre{white-space:pre-wrap;font-size:.8rem;background:#fff;border:1px solid #ddd;padding:10px}</style></head><body>
+<h1>Pogo-field short check</h1>
+<div class="box"><b>Verdict.</b> Of the 10 bench planes (20 M1 cards) only <b>det7 X card 1</b> (g_det7_long, connectors 1–4)
+shows a pogo-field fault: 10 nets of 34 channels, each a chain of pogo-grid neighbours whose strips fire together across quiet
+strips with identical amplitudes. No link crosses between cards in that plane. det7 Y and det6 Y have many strongly correlated pairs
+<i>between</i> the two cards (261 and 361 links). No pad short can do that, so something else is acting on their edge connectors.
+That is reported as OTHER, not as pogo. det3 is clean.<br>
+<b>Correction to the det7 study.</b> The census "dense 2-D block" (cols 7–9, rows 0–14: channels 3–58) is not confirmed by tracks.
+Those channels fired (a hit &gt; 50 ADC) in 5 of ~35 k clean events, where their neighbours fired ~1600 times. They co-move only in
+saturated big events (median ~430 hits). Treat them as not reading tracks, not as shorted nets.<br>
+<b>Not resolved:</b> on det7 X connector 4 (ch 192–232) a lattice of <i>diagonal</i> pogo neighbours reads the same charge. Half of
+those channels are noisy, and the diagonal pad gap is the widest (0.61 mm), so pin bridging is the less likely cause. It is left as OTHER.
+<br><b>Consequence:</b> g_det7_long carries an asterisk. Quote det7 X results from card 2 (connectors 5–8) only.</div>
+<h2>Figures</h2>
+<p><img src="figures/corr_vs_distance.png"><br>The distance-matched null for plain correlation: every plane's median C at each strip distance.</p>
+<p><img src="figures/jump_test.png"><br>The track-proof test. Grey pairs sit on different cards, so they can never be a pad short. Links are the pairs in the top-left box.</p>
+<p><img src="figures/det7x_pad_field.png"></p>
+<h2>Per card</h2>
+<table><tr><th>detector</th><th>run</th><th>plane</th><th>card</th><th>verdict</th><th>links</th><th>pogo-net ch</th><th>other ch</th><th>enrichment</th><th>adjacent twins</th><th>cross-card links / tested</th></tr>
+<tr><td>mx17_4</td><td>g_det4</td><td>X</td><td>1 (conn 1–4)</td><td><b>OTHER</b></td><td>1</td><td>0</td><td>2</td><td>0.0</td><td>0</td><td>0 / 26985</td></tr><tr><td>mx17_4</td><td>g_det4</td><td>X</td><td>2 (conn 5–8)</td><td><b>OTHER</b></td><td>2</td><td>0</td><td>4</td><td>0.0</td><td>0</td><td>0 / 26985</td></tr><tr><td>mx17_4</td><td>g_det4</td><td>Y</td><td>1 (conn 1–4)</td><td><b>CLEAN</b></td><td>0</td><td>0</td><td>0</td><td>—</td><td>1</td><td>0 / 57561</td></tr><tr><td>mx17_4</td><td>g_det4</td><td>Y</td><td>2 (conn 5–8)</td><td><b>POGO? (one pair / weak) + OTHER</b></td><td>6</td><td>2</td><td>10</td><td>14.8</td><td>21</td><td>0 / 57561</td></tr><tr><td>mx17_6</td><td>g_det6_long</td><td>X</td><td>1 (conn 1–4)</td><td><b>OTHER</b></td><td>17</td><td>0</td><td>20</td><td>7.5</td><td>0</td><td>28 / 54855</td></tr><tr><td>mx17_6</td><td>g_det6_long</td><td>X</td><td>2 (conn 5–8)</td><td><b>OTHER</b></td><td>7</td><td>0</td><td>8</td><td>44.7</td><td>0</td><td>28 / 54855</td></tr><tr><td>mx17_6</td><td>g_det6_long</td><td>Y</td><td>1 (conn 1–4)</td><td><b>OTHER</b></td><td>163</td><td>0</td><td>24</td><td>6.9</td><td>47</td><td>361 / 63751</td></tr><tr><td>mx17_6</td><td>g_det6_long</td><td>Y</td><td>2 (conn 5–8)</td><td><b>OTHER</b></td><td>168</td><td>0</td><td>53</td><td>9.2</td><td>43</td><td>361 / 63751</td></tr><tr><td>mx17_7</td><td>g_det7_long</td><td>X</td><td>1 (conn 1–4)</td><td><b>POGO + OTHER</b></td><td>440</td><td>34</td><td>48</td><td>11.5</td><td>29</td><td>0 / 43347</td></tr><tr><td>mx17_7</td><td>g_det7_long</td><td>X</td><td>2 (conn 5–8)</td><td><b>OTHER</b></td><td>1</td><td>0</td><td>2</td><td>—</td><td>0</td><td>0 / 43347</td></tr><tr><td>mx17_7</td><td>g_det7_long</td><td>Y</td><td>1 (conn 1–4)</td><td><b>OTHER</b></td><td>169</td><td>0</td><td>30</td><td>19.2</td><td>29</td><td>261 / 63237</td></tr><tr><td>mx17_7</td><td>g_det7_long</td><td>Y</td><td>2 (conn 5–8)</td><td><b>OTHER</b></td><td>128</td><td>0</td><td>29</td><td>5.9</td><td>46</td><td>261 / 63237</td></tr><tr><td>mx17_2</td><td>o22_long_det2</td><td>X</td><td>1 (conn 1–4)</td><td><b>CLEAN</b></td><td>0</td><td>0</td><td>0</td><td>—</td><td>0</td><td>2 / 64767</td></tr><tr><td>mx17_2</td><td>o22_long_det2</td><td>X</td><td>2 (conn 5–8)</td><td><b>OTHER</b></td><td>4</td><td>0</td><td>6</td><td>0.0</td><td>2</td><td>2 / 64767</td></tr><tr><td>mx17_2</td><td>o22_long_det2</td><td>Y</td><td>1 (conn 1–4)</td><td><b>POGO? (one pair / weak) + OTHER</b></td><td>102</td><td>2</td><td>23</td><td>20.5</td><td>26</td><td>0 / 59157</td></tr><tr><td>mx17_2</td><td>o22_long_det2</td><td>Y</td><td>2 (conn 5–8)</td><td><b>CLEAN</b></td><td>0</td><td>0</td><td>0</td><td>—</td><td>0</td><td>0 / 59157</td></tr><tr><td>mx17_3</td><td>sat_det3</td><td>X</td><td>1 (conn 1–4)</td><td><b>OTHER</b></td><td>4</td><td>0</td><td>6</td><td>0.0</td><td>0</td><td>0 / 65021</td></tr><tr><td>mx17_3</td><td>sat_det3</td><td>X</td><td>2 (conn 5–8)</td><td><b>CLEAN</b></td><td>0</td><td>0</td><td>0</td><td>—</td><td>1</td><td>0 / 65021</td></tr><tr><td>mx17_3</td><td>sat_det3</td><td>Y</td><td>1 (conn 1–4)</td><td><b>CLEAN</b></td><td>0</td><td>0</td><td>0</td><td>—</td><td>0</td><td>0 / 54285</td></tr><tr><td>mx17_3</td><td>sat_det3</td><td>Y</td><td>2 (conn 5–8)</td><td><b>CLEAN</b></td><td>0</td><td>0</td><td>0</td><td>—</td><td>0</td><td>0 / 54285</td></tr></table>
+<h2>Method</h2><pre># Pogo-field short check: method
+
+**Question.** Each MX17 readout plane is two M1 cards. Each card reaches the readout board through a 10 × 30 field
+of pads on a 1 mm pitch, pressed together by a JZ pogo-pin carrier. If a card is seated badly, pins can bridge
+neighbouring pads, so two strips end up on one DREAM input. These cards are hard to align (det7 X1/Y1 &quot;gave trouble
+while tightening&quot;, logbook 06-29). This check asks, for any data set, whether a plane shows that fault.
+
+**The trap.** The obvious test is &quot;channels that are pogo neighbours are correlated&quot;. Within a Mec8 block, a pad&#x27;s
+grid neighbours are ±1 (radial), ±5 (along the edge) and ±4/±6 (diagonal) channels. With the linear strip map those
+are also strips 1, 4, 5 and 6 apart on the detector, and every pair of strips 5 apart on the same connector *is* a
+vertical pogo pair. Neighbouring strips share charge. Plain amplitude correlation falls from 0.6–0.8 at 1 strip to
+0.14–0.23 at 5 strips on every bench plane (`figures/corr_vs_distance.png`). An inclined track also covers 5 strips
+easily. So &quot;pogo neighbours correlate&quot; will fire on a healthy chamber. Comparing pogo neighbours with non-neighbours
+at the same distance is impossible inside a connector, because at d = 5 there are no non-neighbours.
+
+## The tests
+
+Hits are used for QA only: which channels fire together and how big they are. No position, angle or depth is
+reconstructed from hit times. Events with any saturated hit and events with &gt; 40 hits are dropped. A channel
+&quot;fires&quot; at amplitude &gt; 50 ADC.
+
+1. **Jump test (track-proof).** A cluster is a run of hit strips in strip order, broken by ≥ 2 quiet strips.
+   J(a, b) counts the events in which a and b both fire **in different clusters**. Charge sharing and a track&#x27;s own
+   extent only ever make contiguous runs, so a firing across quiet strips is something the detector cannot do by
+   itself. The exceptions are accidentals, a second track, a delta ray, and one inclined track split by
+   under-threshold strips.
+   - Rate: r(a→b) = J / F(a).
+   - Background: the median of r over the *other card&#x27;s* channels, i.e. b&#x27;s own accidental and pickup level.
+   - Excess: e = r − background, symmetrised as e_sym = min of the two directions. A link needs e_sym ≥ 0.10 and
+     J ≥ 10.
+2. **Same charge.** Over the jump events, ln A_a must follow ln A_b (ρ ≥ 0.5). The ratio must also be identical
+   event by event: sd ln(A_a/A_b) &lt; 0.30 and |mean| &lt; 0.20. A shared node reads one charge (det7 X nets: sd ≈ 0.1).
+   The two halves of a split track do not (det3 X: 42 such pairs, sd 0.3–0.7). A plain &quot;|ln ratio| &lt; tol&quot; count is
+   fooled by hits just above threshold, which all look alike. The regression is not.
+3. **Excess correlation at the same distance.** C (cosine of amplitude products) is compared with the **same
+   plane&#x27;s** distribution at the **same strip distance**: Z = (C − median_d) / (1.4826 MAD_d). A link also needs
+   C ≥ 0.8, Z ≥ 8 and d ≥ 3. This is the distance-matched null for the naive correlation. It catches nets whose
+   strips are contiguous, where no quiet gap ever forms and test 1 is blind.
+4. **Null that cannot be a pad short.** Pairs on *different* cards sit on two separate pogo fields. Anything that
+   links them is pickup, crosstalk, accidentals or an edge effect. Their link rate is the plane&#x27;s false-link rate,
+   and channels with cross-card links are kept out of pogo claims.
+5. **Layout.** Nets are the connected components of the within-card links.
+   - **Pogo-shaped net:** its members are connected through links between pogo-grid neighbours alone, and none of
+     them has a cross-card link.
+   - **Enrichment:** the link rate on pogo-neighbour pairs divided by the link rate on non-neighbour pairs more than
+     12 strips apart (beyond two pogo steps).
+   - **Card verdicts:**
+     - **POGO:** a pogo-shaped net of ≥ 3 channels, or two of any size, and enrichment ≥ 10.
+     - **POGO?:** a single pogo-shaped pair.
+     - **OTHER:** links the layout does not explain.
+     - **CLEAN:** no links.
+6. **Adjacent twins (d ≤ 2).** These cannot jump. Pairs whose ratio spread is &lt; 0.25 over ≥ 30 co-fires are listed.
+   On the M1 they are either pogo-horizontal or Mec8/cable neighbours, and the data cannot tell which.
+
+**Optional confirmation, bench only.** With M3 tracks, a shorted channel must fire when the track crosses its
+partner&#x27;s strip (`rerun/det7_pogo/fire_offset.py`; det7 X: 0.446 vs 0.226). This is the strongest single test.
+Steps 1–6 do not need it, so they run on beam data too.
+
+## Running it
+
+```
+# bench: accumulate both planes of a chamber (~10 s per run), then judge, then the report
+../../.venv/bin/python run_bench.py g_det7_long --feu-x 6 --feu-y 8 --subs long_run longer_run --out-dir out
+../../.venv/bin/python pogo_check.py out/*.npz --out-dir results
+../../.venv/bin/python make_report.py
+```
+
+- **Another data set:** feed `accumulate.PairStats.add(channels, amplitudes)` one event at a time for one FEU, with
+  the strip index from that run&#x27;s strip map (`strip_index_from_positions`), and save. `pogo_check.py` only needs the
+  npz.
+- **n_TOF beam:** needs a reader for the beam hit cache. The track-proof tests still hold, but beam events are busier.
+  Lower `MAX_HITS` or require a single cluster per plane before trusting the jump test there.
+
+## Assumptions and limits
+
+- **Layout.** The pad → Mec8 wiring comes from the M1 gerbers. The Mec8 → DREAM convention was chosen by the det7 X
+  data (`rerun/det7_pogo/conventions.py`). Both are assumed identical for every card and every chamber, since the
+  M1 is one design. A card wired differently would look like OTHER.
+- **Noisy channels** (rms ≳ 60, global pickup) spread the amplitude ratio and can fail the same-charge test even when
+  they are shorted. Their membership is under-reported unless the per-group common mode is removed first.
+- **Contiguous nets** with no strong excess correlation (C &lt; 0.8) are invisible to every test here.
+- **The data cannot tell what caused a pogo-shaped net:** leaning pins, debris or a bowed card.
+- **Only bench runs have been checked** (one golden night per chamber). Other nights can differ (det7&#x27;s X1 was
+  reseated and glued on 06-30).
+</pre></body></html>

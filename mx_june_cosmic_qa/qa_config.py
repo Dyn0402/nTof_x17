@@ -282,6 +282,8 @@ RUNS = {
     'g_det7_longer': _Config('g_det7_longer', 'mx17_det6_det7_overnight_6-26-26', 'longer_run',
                           feus=[6, 8], det_z=702.0, det_name='mx17_7', zero_suppressed=False,
                           base_path='/home/dylan/x17/cosmic_bench/det6_det7/'),
+    # * ASTERISK (2026-10-25): det7's M1 cards were badly seated this night (pogo-field pad shorts, X card 1 =
+    #   FEU 6 ch 0-255). Quote det7 X from ch 256-511 only. rerun/det7_pogo/README.md, rerun/pogo_check/.
     'g_det6_long': _Config('g_det6_long', 'mx17_det6_det7_overnight_6-26-26', 'long_run',
                           feus=[3, 4], det_z=232.0, det_name='mx17_6', zero_suppressed=False,
                           base_path='/home/dylan/x17/cosmic_bench/det6_det7/'),

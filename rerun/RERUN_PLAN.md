@@ -81,6 +81,7 @@ S4–S6 about a week.
 | golden, quoted | det3 g_det3_wknd (22 k rays) · det2 g_det2 (19 k) · det4/6/7: as above, held out by event | the largest clean runs, a different run from the calibration where one exists |
 | consistency | HV scans, short/longer runs, det3 drift scan, det7 longer run (4σ different v from its long run) | trend-grade |
 | skeptical | det2 6-17 overnight (half-dead X; fused events in its decode), det3 6-23 (degraded bottom-slot night; fused events), det3 6-22 Monday (unusable micro-TPC angle) | known problems; re-judge 6-17 and 6-23 after the re-decode |
+| asterisk | det7 g_det7_long / g_det7_longer (6-26 night): M1 cards badly seated, pogo-field shorts on X card 1 (2026-10-25) | quote det7 X from ch 256–511 (connectors 5–8) only; `rerun/det7_pogo/README.md`, `rerun/pogo_check/` |
 | excluded | det1 (no calibration), pre-June, ArIso, stale duplicate trees, telescope-off rows 90/91 | 8-12 manifest reasons |
 
 ## 6 · Downstream questions (do not block the pass; worked in S4)
