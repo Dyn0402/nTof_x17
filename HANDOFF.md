@@ -2,20 +2,34 @@
 
 ## det3 loss categories + saturated-strip treatment (satstudy) — updated 2026-10-26 (dylan-Yoga)
 
-**Resume:** the unified reco rewrite (the multi-particle accounting slides are done).
+**Resume:** all five det3-loss loose ends worked (10-26 night, 5 parallel sessions); next = unified reco rewrite, or fix the pairing sim.
+
+**Status 10-26 night (all pushed; details in the dated subsections below):**
+- Multi-particle accounting slides — DONE (notes/mx17-det3-loss-categories slides 7–8). Total 94.7 % needs singles
+  any-candidate credit (97.1 %); with band-veto 96.9 % it is 94.5 %.
+- Noise bands (follow-up 1) — `rerun/bands/`, notes/mx17-noise-bands. det3/det7 fixed-patch family = untriggered,
+  ~1 ms, gain-driven (×1.9 / 10 V resist) disturbance; corruption, pickup, triggered-discharge tails excluded; mechanism
+  at the spot unidentifiable from existing data (stated limitation). det2/4/6 whole-plane family unexplained.
+- Multi-particle physics (follow-up 2) — `rerun/multiparticle/`, notes/mx17-det3-multiparticle. Second particles =
+  knock-ons from material above det3 (prompt, steep). Trigger-track rule 80 % held-out vs production 54 % (cosmic-only
+  lever: vertical muons). Two-track benchmark: both found 100 % ≥ 24 mm, 0.73 mm / 1.47°.
+- x↔y charge pairing sim (follow-up 3) — `rerun/pairing_sim/` + MX17_Geant scratchpad/2026-10-26/pairing_sim,
+  notes/mx17-xy-pairing-sim. Data gates for all 5 chambers done. **Sim FAILS the σ ln(qx/qy) gate (0.101 vs 0.055)**:
+  (1) point-like avalanche in Stage B (displaced feedback fixes it, not adopted), (2) waveform/fit excess, open. S2 is a
+  lower bound; S3–S5 not run. MX17_Geant `--primaries-table` added, not yet built on lxplus.
+- Saturated δ blobs + Paper I A1 — `rerun/satstudy/satblob*`, notes/mx17-det3-satblob. Track + compact blob does NOT
+  help (71.1 → 73.7 %, multi-start alone 74.0 %); ΔBIC adds blobs to 89 % of controls (bench χ²/dof ~35). Keep: per-channel
+  + bottom rails, multi-start. A1: 14 displays + table on Overleaf (pre-pass final_phys fractions; LaTeX not compiled
+  locally — check the Overleaf build).
 
 **Next steps (in order):**
-1. **DONE 10-26 late (see below).** Dylan: the M3 double-track accounting on the cern-site slides (notes/mx17-det3-loss-categories) needs a clearer
-   explanation.** Make it explicit, on the slide not only in Details: the denominator (6 451 INTERIOR M3-triggered
-   tracks — one clean recipe ray through det3 — not all triggers); how an event becomes "multi-particle" (det3 alone
-   sees >= 2 particle-like clusters, signal <= 24 samples, in a view; band clusters excluded); the 187 = 69 + 81 + 37
-   split and what each means for detection (production 0 % by the n_dropped cut; any-candidate credit 80 %); the
-   topology (114 two-track-in-both-views vs 1x2 / 2x1); how the 2.9 % relates to the old "found, cut" 2.1 % (half of
-   it) and the old far:MULTI 1.9 %; and how single-particle 96.9 % + multi-particle credit add up to the 94.7 % total.
-   A flow / Sankey-style diagram from 6 451 down to each class would do it. Code: rerun/satstudy/make_deck.py
-   (s_multi, s_budget, cover), numbers in summary.json (multitrack, multi_sub, recat); republish with add-note.py.
-2. The unified reconstruction rewrite (Dylan's direction below), folding in today's validated prototypes.
-3. Follow-ups 1–3 below (bands, multi-particle physics, pairing sim plan rerun/pairing_sim/PLAN.md).
+1. Dylan's call: the unified reconstruction rewrite. Spec = band veto, head-on rule, charge pairing, joint two-track fit,
+   per-channel/bottom rails + multi-start, (cosmic-only) trigger-track rule — measured behaviour in the subsections below.
+2. Pairing sim: adopt displaced feedback (re-check the other v4c observables), find the waveform/fit excess, rerun S1/S2,
+   then S3 (ipc_born pairs via --primaries-table, build on lxplus), S4 (needs beam-gas attachment table), S5.
+3. Appendix A1: re-derive fractions once the RERUN_PLAN §11 pass exists; confirm the Overleaf build.
+4. Not reviewed beyond running: rerun/bands, rerun/multiparticle, rerun/pairing_sim, rerun/satstudy/satblob*. Some
+   overlay arms ran with WFT_DEAD_SEED=0 (to match the 10-26 numbers).
 
 **10-26 late — next step 1 DONE: multi-particle accounting slides** (notes/mx17-det3-loss-categories, slides 7–8
 "two particles: count / totals"; numbers from `summarize.multi_flow()`, recomputed from multitrack_det3 / multi_sub
