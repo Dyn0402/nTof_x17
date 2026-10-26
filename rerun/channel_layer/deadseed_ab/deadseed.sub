@@ -1,0 +1,12 @@
+# condor_submit deadseed.sub code=<code dir> ds=<0|1> args=<stage_job args> cpus= mem=
+executable     = $ENV(HOME)/x17rerun/stage_job.sh
+arguments      = $(code) $(args)
+environment    = "WFT_DEAD_SEED=$(ds)"
+output         = log/$(nodename).out
+error          = log/$(nodename).err
+log            = log/stage.log
+request_cpus   = $(cpus:1)
+request_memory = $(mem:8000)
++JobFlavour    = "workday"
+should_transfer_files = NO
+queue

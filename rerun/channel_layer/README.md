@@ -45,5 +45,22 @@ noise 1e9 so the saturation penalty cannot pull either). The review, scripts in 
   3-strip pad lands on censored strips: on the M3 windows already 9 % (det7 X) / 6 % (det4 X) have one side's outer 3
   strips all masked. Dead runs reach 19 strips (det7 X) and 12 (det4 X), longer than the 12 mm seed gap.
   `WFT_DEAD_SEED=1` (opt-in, default off = bit-identical; `wft/tests/test_dead_seed.py`): the seed gap does not count
-  dead strips and the window pad counts live strips. **Not yet measured on data**: the det7 A/B (`wft.cli reco
-  g_det7_long --limit 4000`, masked phys bundle, flag 0 vs 1, scored with effbudget) was killed for memory.
+  dead strips and the window pad counts live strips.
+- **The production-path A/B is null; the flag stays off.** lxplus DAG `~/x17rerun/deadseed_ab/` (code
+  `/eos/user/d/dneff/x17rerun/code_3f6db25`, outputs `/eos/user/d/dneff/x17rerun/Analysis_deadseed/<row>/wft/ds{0,1}/`):
+  `wft.cli reco --matched-only --limit 8000` on the golden rows with the masked bundle (det7 promoted physmask; det4
+  promoted phys + census mask), flag 0 vs 1, effbudget on the production alignment, compared ray by ray
+  (`deadseed_ab/pair.py`). The flag acts (det7 X windows changed 2 105/8 000, fits moved > 1 mm 245; det4 X 2 078 and
+  137) but the outcome does not move:
+
+  | active, X+Y, 5 mm | detected | far | rays changing category |
+  |---|---|---|---|
+  | det7 off → on | 51.08 → 51.06 % | 1.35 → 1.33 % | 79 / 12 214, all but 6 into/out of hw_known (card 1) |
+  | det4 off → on | 37.65 → 37.64 % | 1.62 → 1.63 % | 10 / 14 786, mostly into/out of hw_known (dead bands) |
+
+  The windows that change are the ones on known-bad hardware, which the budget excludes anyway; elsewhere a track
+  next to a dead run is already found and fitted without the bridge.
+
+**Recommendation: one treatment everywhere** = census dead + shorts as the bundle `dead` (censored) on all five
+chambers, seeding/windows as they are. Masking det4/det6 too means a finalize arm under the mask for those two (w0/kw
+measured under it, as det2/3/7), then `promote_phys.py --mask det2,det3,det4,det6,det7`.

@@ -1,0 +1,20 @@
+JOB RECO_det7_s0 deadseed.sub
+VARS RECO_det7_s0 nodename="RECO_det7_s0" code="/eos/user/d/dneff/x17rerun/code_3f6db25" ds="0" cpus="16" mem="24000" args="g_det7_long --eos-analysis /eos/user/d/dneff/x17rerun/Analysis_deadseed --module wft.cli -- reco {key} --bundle {out}/wft/calib_bundle --out {out}/wft/ds0/events.parquet --matched-only --limit 8000 --jobs 16"
+JOB BUD_det7_s0 deadseed.sub
+VARS BUD_det7_s0 nodename="BUD_det7_s0" code="/eos/user/d/dneff/x17rerun/code_3f6db25" ds="0" cpus="1" mem="8000" args="g_det7_long --eos-analysis /eos/user/d/dneff/x17rerun/Analysis_deadseed --parts run_config,m3,hits --script rerun/effbudget/budget.py -- det7 --table {out}/wft/ds0/events.parquet --alignment {out}/wft/prod_alignment/alignment.json --out {out}/wft/ds0/budget"
+PARENT RECO_det7_s0 CHILD BUD_det7_s0
+JOB RECO_det7_s1 deadseed.sub
+VARS RECO_det7_s1 nodename="RECO_det7_s1" code="/eos/user/d/dneff/x17rerun/code_3f6db25" ds="1" cpus="16" mem="24000" args="g_det7_long --eos-analysis /eos/user/d/dneff/x17rerun/Analysis_deadseed --module wft.cli -- reco {key} --bundle {out}/wft/calib_bundle --out {out}/wft/ds1/events.parquet --matched-only --limit 8000 --jobs 16"
+JOB BUD_det7_s1 deadseed.sub
+VARS BUD_det7_s1 nodename="BUD_det7_s1" code="/eos/user/d/dneff/x17rerun/code_3f6db25" ds="1" cpus="1" mem="8000" args="g_det7_long --eos-analysis /eos/user/d/dneff/x17rerun/Analysis_deadseed --parts run_config,m3,hits --script rerun/effbudget/budget.py -- det7 --table {out}/wft/ds1/events.parquet --alignment {out}/wft/prod_alignment/alignment.json --out {out}/wft/ds1/budget"
+PARENT RECO_det7_s1 CHILD BUD_det7_s1
+JOB RECO_det4_s0 deadseed.sub
+VARS RECO_det4_s0 nodename="RECO_det4_s0" code="/eos/user/d/dneff/x17rerun/code_3f6db25" ds="0" cpus="16" mem="24000" args="g_det4 --eos-analysis /eos/user/d/dneff/x17rerun/Analysis_deadseed --module wft.cli -- reco {key} --bundle {out}/wft/calib_bundle --out {out}/wft/ds0/events.parquet --matched-only --limit 8000 --jobs 16"
+JOB BUD_det4_s0 deadseed.sub
+VARS BUD_det4_s0 nodename="BUD_det4_s0" code="/eos/user/d/dneff/x17rerun/code_3f6db25" ds="0" cpus="1" mem="8000" args="g_det4 --eos-analysis /eos/user/d/dneff/x17rerun/Analysis_deadseed --parts run_config,m3,hits --script rerun/effbudget/budget.py -- det4 --table {out}/wft/ds0/events.parquet --alignment {out}/wft/prod_alignment/alignment.json --out {out}/wft/ds0/budget"
+PARENT RECO_det4_s0 CHILD BUD_det4_s0
+JOB RECO_det4_s1 deadseed.sub
+VARS RECO_det4_s1 nodename="RECO_det4_s1" code="/eos/user/d/dneff/x17rerun/code_3f6db25" ds="1" cpus="16" mem="24000" args="g_det4 --eos-analysis /eos/user/d/dneff/x17rerun/Analysis_deadseed --module wft.cli -- reco {key} --bundle {out}/wft/calib_bundle --out {out}/wft/ds1/events.parquet --matched-only --limit 8000 --jobs 16"
+JOB BUD_det4_s1 deadseed.sub
+VARS BUD_det4_s1 nodename="BUD_det4_s1" code="/eos/user/d/dneff/x17rerun/code_3f6db25" ds="1" cpus="1" mem="8000" args="g_det4 --eos-analysis /eos/user/d/dneff/x17rerun/Analysis_deadseed --parts run_config,m3,hits --script rerun/effbudget/budget.py -- det4 --table {out}/wft/ds1/events.parquet --alignment {out}/wft/prod_alignment/alignment.json --out {out}/wft/ds1/budget"
+PARENT RECO_det4_s1 CHILD BUD_det4_s1
