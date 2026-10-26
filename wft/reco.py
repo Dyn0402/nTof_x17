@@ -1435,7 +1435,7 @@ def row_from_fits(event_id: int, fits: Dict[str, Optional[PlaneFit]],
 WORKER_OPTS = ('TWO_TRACK', 'TWO_TRACK_F', 'TWO_TRACK_F_CORROB', 'TWO_TRACK_T0',
                'TWO_TRACK_RESID_Z', 'TWO_TRACK_WIDTH_MARGIN', 'TWO_TRACK_MAX_TRY',
                'TWO_TRACK_SELECTED_ONLY', 'TWO_TRACK_SCALE', 'TWO_TRACK_SEARCH',
-               'TWO_TRACK_F_LADDER', 'PIVOT_START')
+               'TWO_TRACK_F_LADDER', 'PIVOT_START', 'HEADON_RESCUE', 'HEADON_RESCUE_Z')
 
 
 def _worker_init(bundle_path, pairing_path=None, opts=None):
@@ -1457,6 +1457,48 @@ MAX_TRACKS = 3
 _PAIRING: Optional[dict] = None
 
 
+#: Cross-view head-on rescue (opt-in, rerun/satstudy 2026-10-26). When one plane has a fitted track and the other
+#: has no seed at all, look in that plane's full waveform for a drift column starting at the fitted track's t0
+#: (wft.seed.column_rescue, Z >= HEADON_RESCUE_Z), fit it as any candidate, and keep it only if its charge matches the
+#: other view's: |ln(q_x / q_y) - median| <= HEADON_RESCUE_QTOL x rsig. One particle leaves the same charge in both
+#: views (robust sigma 0.054 on det3 bench singles), which is what keeps 1-strip / low-SNR seeds from turning noise
+#: into tracks. The tolerance widens with the rescued cluster's own charge noise, rsig -> hypot(rsig, sigma_Q / Q) over
+#: the column window, and Q > 3 sigma_Q is required (headon2.py '+qa': x, noise x2, gain x0.05: 79 -> 84 % found). median / rsig: the bundle's xy_pairing 'lq' if present, else the det3 bench values below.
+#: Off (default) = the historical reconstruction.
+HEADON_RESCUE = os.environ.get('WFT_HEADON_RESCUE', '0') == '1'
+HEADON_RESCUE_Z = float(os.environ.get('WFT_HEADON_RESCUE_Z', '10.0'))
+HEADON_RESCUE_QTOL = 3.0
+HEADON_RESCUE_LQ = (-0.059, 0.054)
+
+
+def _headon_rescue(R, plane, other):
+    """R: {'W', 'noise', 'pos'} of a plane without seeds; other: the other plane's best fit. -> a PlaneFit or None."""
+    from . import io as wio, seed as wseed
+    ch = wseed.column_rescue(R['W'], R['noise'], R['pos'], float(other.t0), z_min=HEADON_RESCUE_Z)
+    if ch is None:
+        return None
+    win = wio.extract_window(R['W'], R['noise'], R['pos'], ch, 3)
+    if win is None:
+        return None
+    P = dict(W=win.W, pos=win.pos, noise=win.noise, ch=win.ch)
+    f = fit_plane_candidates([P], plane, _CAL)
+    if f is None or not np.isfinite(f.q_sum) or f.q_sum <= 0 or not other.q_sum > 0:
+        return None
+    lq = np.log(f.q_sum / other.q_sum) if plane == 'x' else np.log(other.q_sum / f.q_sum)
+    med, rs = ((_PAIRING or {}).get('median', {}).get('lq'), (_PAIRING or {}).get('rsig', {}).get('lq'))
+    med, rs = (med, rs) if med is not None and rs else HEADON_RESCUE_LQ
+    # the cluster's own charge noise widens the tolerance (low gain / high noise): sigma_Q / Q over the column window
+    W, nz = R['W'][ch], np.asarray(R['noise'], float)[ch]
+    t = np.arange(W.shape[1]) * 60.0
+    w = (t >= other.t0 - 120.0) & (t <= other.t0 + 1020.0)
+    q = float((W[:, w] - np.median(W[:, ~w], axis=1)[:, None]).sum()) if (~w).sum() >= 4 else 0.0
+    sq = float(np.sqrt((nz ** 2).sum() * w.sum()))
+    if q <= 3 * sq or abs(lq - med) > HEADON_RESCUE_QTOL * np.hypot(rs, sq / q):
+        return None
+    f._rescued = True
+    return f, P
+
+
 def _worker_fit(payload):
     eid, wins, seeds, n_hits, spark, ftst = payload
     # older beam drivers passed a scalar ftst_diff here; treat anything that
@@ -1475,6 +1517,18 @@ def _worker_fit(payload):
             fits[plane], all_fits[plane] = best, ranked
         except Exception:
             fits[plane], all_fits[plane] = None, []
+    if HEADON_RESCUE:
+        for plane, other in (('x', 'y'), ('y', 'x')):
+            R = wins.get(f'_rescue_{plane}')
+            if R is None or fits[plane] is not None or fits[other] is None:
+                continue
+            try:
+                r = _headon_rescue(R, plane, fits[other])
+            except Exception:
+                r = None
+            if r is not None:
+                fits[plane], all_fits[plane] = r[0], [r[0]]
+                wins[plane] = [r[1]]
     ftst_diff = (ftst['x'] - ftst['y']
                  if ftst.get('x') is not None and ftst.get('y') is not None
                  else None)
@@ -1627,6 +1681,8 @@ def reconstruct_run(cfg, cal: CalibrationBundle, out_path: str,
                                spark_veto=wseed.SPARK_VETO_HITS,
                                pad_strips=pad_strips,
                                dead_seed={p: len(c) for p, c in dead.items()},
+                               headon_sig=wseed.HEADON_SIG, drop_flat_hits=DROP_FLAT_HITS,
+                               headon_rescue=dict(on=HEADON_RESCUE, z=HEADON_RESCUE_Z, qtol=HEADON_RESCUE_QTOL),
                                event_filter=bool(event_filter)),
                 multi_track=dict(emit_candidates=EMIT_CANDIDATES,
                                  xy_pairing=(cal.xy_pairing or {}).get('features'),
@@ -1650,17 +1706,34 @@ def reconstruct_run(cfg, cal: CalibrationBundle, out_path: str,
     return df
 
 
+#: Drop every hit that is above threshold for the whole window (trunc_left AND trunc_right) before seeding (opt-in,
+#: rerun/satstudy/bands.py 2026-10-26). A particle's signal lasts at most a drift column (~20 samples); a strip above
+#: threshold from the first sample to the last is a baseline offset -- the "noise bands", a chamber effect present in
+#: 3-19 % of bench triggers -- and otherwise forms competing clusters (n_dropped) and trips the spark veto. 84 % of the
+#: hits on band strips, 0.7 % of all others. 'left': drop every hit already above threshold at the FIRST sample
+#: (trunc_left), whatever it does later -- 92 % of band hits, 2.4 % of others; the triggering particle's charge
+#: cannot be there before its own t0. Off (default) = the historical hit list.
+_DF = os.environ.get('WFT_DROP_FLAT_HITS', '0')
+DROP_FLAT_HITS = {'1': 'both', 'left': 'left'}.get(_DF)
+
+
 def _load_hits(cfg):
     """Combined hits for the run — used ONLY for seeding (see wft.seed)."""
     import uproot
     import pandas as pd
     files = [f for f in os.listdir(cfg.combined_hits_dir)
              if f.endswith('.root') and '_datrun_' in f]
+    cols = ['eventId', 'feu', 'channel', 'amplitude', 'significance']
     df = uproot.concatenate(
         [f'{cfg.combined_hits_dir}{f}:hits' for f in files],
-        expressions=['eventId', 'feu', 'channel', 'amplitude', 'significance'],
+        expressions=cols + (['trunc_left', 'trunc_right'] if DROP_FLAT_HITS else []),
         library='pd')
-    return df[df['feu'].isin(cfg.MX17_FEUS)]
+    df = df[df['feu'].isin(cfg.MX17_FEUS)]
+    if DROP_FLAT_HITS == 'both':
+        df = df[~(df['trunc_left'] & df['trunc_right'])][cols]
+    elif DROP_FLAT_HITS == 'left':
+        df = df[~df['trunc_left']][cols]
+    return df
 
 
 def _stream_windows(cfg, pos_maps, seeds, wanted, pad_strips, verbose=True, dead=None):
@@ -1690,6 +1763,10 @@ def _stream_windows(cfg, pos_maps, seeds, wanted, pad_strips, verbose=True, dead
             for eid, ftst, wfm in rdr.iter_events(want):
                 cl = seeds[eid][plane]
                 if not cl:
+                    if HEADON_RESCUE and not seeds[eid]['spark']:
+                        rec = buf.setdefault(eid, {'w': {}, 's': {}})
+                        rec['w'][f'_rescue_{plane}'] = dict(W=wfm, noise=rdr.noise, pos=pos_maps[feu])
+                        rec['ftst_' + plane] = ftst
                     continue
                 cl = cl if isinstance(cl, list) else [cl]
                 wins, used = [], []

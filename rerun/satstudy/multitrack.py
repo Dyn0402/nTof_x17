@@ -5,6 +5,7 @@ M3"; quote single-track first, then add the multi-track events).
 
     ../../.venv/bin/python multitrack.py feat     # one waveform pass: time extent of every production candidate
     ../../.venv/bin/python multitrack.py count    # the accounting -> multitrack.json
+    ../../.venv/bin/python multitrack.py sub      # multi-particle events: sub-classes, fit quality -> multi_sub.json
 
 Every production candidate (events.candidates.parquet: one forward fit per spatial cluster, up to 3 per view) is tagged
 from its own waveforms (strips within max(4, |15 tan| + 3) mm of the cluster's mid-gap position):
@@ -111,6 +112,55 @@ def count():
     print(json.dumps(out, indent=1, default=float))
 
 
+def sub():
+    """Sub-classes of the M (>= 2 particle clusters in a view) events and the quality of the M3 particle's fit there
+    against single-particle events: per view the particle candidate nearest M3 within R_MM, its residual and
+    ladder-scaled angle difference (summarize.view_agree)."""
+    import summarize as Z
+    R = rays(); L = Z.lad()
+    D = pd.read_parquet(os.path.join(S.OUT, 'multitrack_det3.parquet'))
+    C = pd.read_parquet(CAND); C = C[C['rank'] >= 0].merge(pd.read_parquet(FEAT), on=['event_id', 'plane', 'rank'])
+    C = C[C.event_id.isin(R.index) & (C.ext <= EXT_MAX)]
+    parts = []
+    for v in 'xy':
+        c = C[C.plane == v].copy()
+        mesh = R[f'mesh_{v}'].reindex(c.event_id).to_numpy(); tan = R[f'tan_{v}'].reindex(c.event_id).to_numpy()
+        ag, dl, _ = Z.view_agree(c.p0, c.w, mesh, tan, L[v])
+        c['res'] = c.p0 - mesh; c['dl'] = dl; c['agree'] = ag; parts.append(c)
+    C = pd.concat(parts)
+    B = C.loc[C.res.abs().groupby([C.event_id, C.plane]).idxmin()]
+    rs = lambda x: float(1.4826 * np.median(np.abs(x - np.median(x))))
+    out = dict(quality={})
+    for nm, idx in (('S', D.index[D.cls == 'S']), ('M', D.index[D.cls == 'M'])):
+        b = B[B.event_id.isin(idx) & (B.res.abs() <= R_MM)]
+        out['quality'][nm] = {v: dict(n=int((b.plane == v).sum()), res_sigma=rs(b[b.plane == v].res),
+                                      dtheta_sigma=rs(b[b.plane == v].dl), agree=float(b[b.plane == v].agree.mean()))
+                              for v in 'xy'}
+    rows = []
+    for e in D.index[D.cls == 'M']:
+        g = C[C.event_id == e]; r = dict(event_id=int(e), cat=D.loc[e, 'cat'], any=bool(D.loc[e, 'any']))
+        for v in 'xy':
+            gv = g[g.plane == v]; near = gv[gv.res.abs() <= R_MM]
+            r[f'n{v}'] = len(gv); r[f'found{v}'] = len(near) > 0
+            if len(near) and len(gv) > 1:
+                o = gv.drop(near.index)
+                r[f'sep{v}'] = float((o.p0 - near.p0.iloc[0]).abs().min())
+                r[f'qr{v}'] = float(o.q_sum.max() / near.q_sum.iloc[0])
+        rows.append(r)
+    T = pd.DataFrame(rows).set_index('event_id')
+    T['topo'] = T.nx.astype(str) + 'x' + T.ny.astype(str)
+    T['sub'] = np.where(T.cat == 'rejected_cut', 'm3_picked', np.where(T['any'], 'other_picked', 'm3_not_found'))
+    T['sep'] = T[[c for c in ('sepx', 'sepy') if c in T]].min(axis=1)
+    T.to_parquet(os.path.join(S.OUT, 'multi_sub.parquet'))
+    out['n'] = int(len(T)); out['n_interior'] = int(len(D))
+    out['sub'] = {k: dict(n=int(len(g)), topo=g.topo.value_counts().to_dict(),
+                          sep_q={q: float(g.sep.quantile(q / 100)) for q in (10, 50, 90)},
+                          qratio_med=float(np.nanmedian(g[['qrx', 'qry']].to_numpy())))
+                  for k, g in T.groupby('sub')}
+    json.dump(out, open(os.path.join(S.OUT, 'multi_sub.json'), 'w'), indent=1, default=float)
+    print(json.dumps(out, indent=1, default=float))
+
+
 FEATS = dict(q=['lq'], t0=['t0'], q_t0=['lq', 't0'], all=['lq', 't0', 'u50', 'u90'])
 
 
@@ -144,4 +194,4 @@ def pairing(C, D, R):
 
 
 if __name__ == '__main__':
-    {'feat': feat, 'count': count}[sys.argv[1]]()
+    {'feat': feat, 'count': count, 'sub': sub}[sys.argv[1]]()

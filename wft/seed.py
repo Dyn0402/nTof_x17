@@ -48,6 +48,13 @@ HOT_BRIDGE = os.environ.get('WFT_HOT_BRIDGE', '0') == '1'
 #: a cluster that ends at a dead run is not handed to the fit with a pad that is
 #: all censored. Off (default) = the historical seeding and windows, bit-identical.
 DEAD_SEED = os.environ.get('WFT_DEAD_SEED', '0') == '1'
+#: Head-on rescue (opt-in, rerun/satstudy 2026-10-26): a plane with NO production seed may be seeded by a 2-strip
+#: cluster whose weaker strip has hit significance >= this. A near-normal track puts its whole drift column on 1-2
+#: strips; on det3 x its +-1 neighbours sit at 7-9 % of the brightest strip, 15-50 sigma but under the 10 % relative
+#: floor, so the cluster is one strip short of MIN_STRIPS. Head-ons have the 2nd strip at 55-320 sigma, the clusters
+#: this adds on empty-chamber triggers at <= 9 sigma (headon.py). Rescue-only: a plane production seeds is untouched,
+#: and the seed is flagged ``rescued``. 0 = off (default) = the historical seeding.
+HEADON_SIG = float(os.environ.get('WFT_HEADON_SIG', 0.0))
 
 
 @dataclass
@@ -326,6 +333,54 @@ def seed_candidates(pos: np.ndarray, channels: np.ndarray, amps: np.ndarray,
     return out
 
 
+def headon_seeds(pos: np.ndarray, channels: np.ndarray, sig: np.ndarray, min_sig: float,
+                 gap_mm: float = GAP_THRESHOLD_MM, dead_pos=None, n_raw: int = 0) -> list:
+    """2-strip clusters whose weaker strip has significance >= ``min_sig`` (``HEADON_SIG``), brightest first, as
+    ``rescued`` seeds; for a plane that ``seed_candidates`` left empty."""
+    good = np.isfinite(pos)
+    pos, channels, sig = pos[good], channels[good], sig[good]
+    if len(pos) < 2 or not min_sig:
+        return []
+    o = np.argsort(pos)
+    pos, channels, sig = pos[o], channels[o], sig[o]
+    lab = _cluster_labels(pos, gap_mm, dead_pos)
+    out = []
+    for c in range(int(lab.max()) + 1):
+        m = lab == c
+        if m.sum() == 2 and sig[m].min() >= min_sig:
+            out.append((float(sig[m].min()), Seed(channels=channels[m].astype(np.int64), n_strips=2, n_dropped=int((~m).sum()),
+                                                  amp_sum=float(sig[m].sum()), n_raw=int(n_raw or len(pos)), rescued=True)))
+    return [s for _, s in sorted(out, key=lambda t: -t[0])]
+
+
+def column_rescue(W: np.ndarray, noise: np.ndarray, pos: np.ndarray, t0: float, z_min: float = 10.0,
+                  t_drift: float = 840.0, pre: float = 120.0, post: float = 180.0, min_dur: int = 6,
+                  sample_ns: float = 60.0) -> Optional[np.ndarray]:
+    """Head-on rescue from the waveforms (``wft.reco.HEADON_RESCUE``): the strips of a drift column that starts at
+    the OTHER view's t0, in a plane the hits left without a seed. Per strip the baseline is the median of the samples
+    outside [t0 - pre, t0 + t_drift + post] (so a drifting pedestal is removed, not integrated), and
+    Z = sum over that window of (W - baseline) / (noise sqrt(n)). The best strip qualifies if Z >= z_min, its samples
+    before the window are flat (|.| <= 5 sigma: a band or an earlier pulse is not this track's column) and its charge
+    lasts >= min_dur samples above 30 % of its peak (a column, not a blip). Returned: it and its neighbours within
+    1.6 mm with Z >= z_min / 3, or None. Measured by injection into real empty-chamber noise (rerun/satstudy/headon2.py).
+    """
+    ns = W.shape[1]; t = np.arange(ns) * sample_ns
+    win = (t >= t0 - pre) & (t <= t0 + t_drift + post); before = t < t0 - pre
+    if before.sum() < 2 or win.sum() < 4 or (~win).sum() < 6:
+        return None
+    sig = np.maximum(np.asarray(noise, float), 1e-3)
+    base = np.median(W[:, ~win], axis=1)
+    X = W - base[:, None]
+    Z = np.where(np.isfinite(pos), X[:, win].sum(1) / (sig * np.sqrt(win.sum())), -np.inf)
+    best = int(np.argmax(Z))
+    if Z[best] < z_min or np.abs(X[best, before]).max() / sig[best] > 5:
+        return None
+    pr = X[best, win]
+    if int((pr > 0.3 * pr.max()).sum()) < min_dur:
+        return None
+    return np.flatnonzero(np.isfinite(pos) & (np.abs(pos - pos[best]) <= 1.6) & (Z >= z_min / 3)).astype(np.int64)
+
+
 def seed_plane(pos: np.ndarray, channels: np.ndarray, amps: np.ndarray,
                gap_mm: float = GAP_THRESHOLD_MM,
                min_strips: int = MIN_STRIPS, hot=None) -> Optional[Seed]:
@@ -392,5 +447,9 @@ def seeds_from_hits(df_hits: pd.DataFrame, pos_maps: Dict[int, np.ndarray],
                                              n_candidates=n_candidates,
                                              hot=hot.get(plane),
                                              dead_pos=dead_pos[plane])
+                if not rec[plane] and HEADON_SIG and 'significance' in gp:
+                    rec[plane] = headon_seeds(pos_maps[feu][ch], ch, gp['significance'].to_numpy(),
+                                              HEADON_SIG, dead_pos=dead_pos[plane],
+                                              n_raw=len(gp))[:max(1, n_candidates)]
         out[int(eid)] = rec
     return out

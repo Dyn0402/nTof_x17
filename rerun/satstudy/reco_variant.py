@@ -6,6 +6,9 @@ golden-row events with one seeding rule changed, to test whether a budget catego
 reference:
   --no-spark-veto   no 50-hit event veto (seeds_from_hits spark_veto=None): the candidate fit decides
   --min-strips N    a cluster needs N strips after the 10 % significance floor instead of 3
+  --drop-flat       drop every hit that is above threshold for the whole window (trunc_left AND trunc_right) before
+                    seeding: a particle's signal lasts at most a drift column, so such a strip is a baseline offset
+                    (the "noise bands", bands.py), not charge. It then neither clusters nor counts for the spark veto
   --headon-sig T    adaptive head-on rule: MIN_STRIPS stays 3, but a 2-strip cluster is also admitted when its weaker
                     strip has hit significance >= T. A head-on track puts its whole drift column on 1-2 strips, so its
                     third strip falls under the plane-relative 10 % floor although it is far above noise
@@ -39,11 +42,27 @@ def headon(wseed, thr):
     wseed.seed_candidates, wseed.seeds_from_hits = sc, sfh
 
 
+def drop_flat():
+    import uproot
+    from wft import reco as wr
+
+    def load(cfg):
+        files = [f for f in os.listdir(cfg.combined_hits_dir) if f.endswith('.root') and '_datrun_' in f]
+        df = uproot.concatenate([f'{cfg.combined_hits_dir}{f}:hits' for f in files],
+                                expressions=['eventId', 'feu', 'channel', 'amplitude', 'significance',
+                                             'trunc_left', 'trunc_right'], library='pd')
+        df = df[df['feu'].isin(cfg.MX17_FEUS)]
+        df = df[~(df.trunc_left & df.trunc_right)]
+        return df[['eventId', 'feu', 'channel', 'amplitude', 'significance']]
+    wr._load_hits = load
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--events', required=True); ap.add_argument('--out', required=True)
     ap.add_argument('--no-spark-veto', action='store_true'); ap.add_argument('--min-strips', type=int)
     ap.add_argument('--headon-sig', type=float)
+    ap.add_argument('--drop-flat', action='store_true')
     ap.add_argument('--jobs', type=int, default=2)
     a = ap.parse_args()
     from qa_config import get_config, setup_paths
@@ -57,6 +76,8 @@ def main():
         wseed.seed_candidates = functools.partial(wseed.seed_candidates, min_strips=a.min_strips)
     if a.headon_sig:
         headon(wseed, a.headon_sig)
+    if a.drop_flat:
+        drop_flat()
     cfg = get_config('sat_det3')
     ids = set(pd.read_csv(a.events).event_id.astype(int))
     os.makedirs(os.path.dirname(a.out), exist_ok=True)

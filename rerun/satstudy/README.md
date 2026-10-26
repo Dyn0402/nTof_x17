@@ -18,7 +18,17 @@ Golden row `sat_det3` (6-27 Saturday scan long run, 490 V), production `final_ph
 | production reco with the spark veto off / MIN_STRIPS = 2 (env below) | `reco_variant.py` | `reco_nospark/`, `reco_min2/`, `reco_min3/` |
 | time extent of every production candidate (particle vs noise band); multi-track accounting + x↔y pairing | `multitrack.py feat`, `multitrack.py count` | `cand_feat_det3.parquet`, `multitrack.json` |
 | head-on rule (`reco_variant.py --headon-sig 20`) on the failures + 400 controls, and on 742 empty-chamber triggers (M3 > 20 mm outside det3) for MIN_STRIPS 2 / 3 / head-on | `reco_variant.py`, `headon.py` | `reco_ho20/`, `reco_out_{min2,min3,ho20}/`, `headon.json` |
-| numbers, then the note | `summarize.py`, `make_deck.py` | `summary.json`, `deck/` |
+| **noise bands**: per-trigger baselines of every channel (golden row, all triggers; other chambers, 3 000 / file), then rates, x–y coincidence, null tests, in-window decay, cost | `bands.py scan [KEY [MAX]]`, `bands.py report` | `bands_scan[_KEY].npz`, `bands.json` |
+| band veto in wft (`WFT_DROP_FLAT_HITS=1`) on all 252 interior band events + 400 controls | `reco_variant.py` (env) | `reco_band_flat/` |
+| multi-particle sub-classes + fit quality vs singles | `multitrack.py sub` | `multi_sub.parquet`, `multi_sub.json` |
+| x↔y pairing: data-driven toy from real singles; the bench overlay with truth on both tracks | `pairing.py toy`, `overlay.py build/score` | `pairing_toy.json`, `overlay/`, `overlay.json` |
+| head-on at low gain / doubled noise: injection into real empty-chamber noise, prototype rules (2-strip, 1-strip, column finder, charge check) | `headon2.py extract/scan` | `headon2_wf.pkl`, `headon2.json` |
+| head-on rules in wft (`WFT_HEADON_SIG=20 WFT_HEADON_RESCUE=1`): real failures + controls + empty triggers; end-to-end injection | `reco_variant.py` (env), `headon3.py extract/run/score` | `reco_ho_wft/`, `reco_out_ho_wft/`, `headon3.json` |
+| joint two-track fit on the multi-particle events (`WFT_TWO_TRACK_FIT=1`) | `reco_variant.py` (env) | `reco_tt/` |
+| numbers (incl. the re-categorised budget, summarize.recat), then the note | `summarize.py`, `make_deck.py` | `summary.json`, `recat_det3.parquet`, `deck/` |
+
+Memory: one reconstruction at a time (`--jobs 2`); a reco job peaks at ~3 GB. Never wait on a job with `pgrep -f` /
+`pkill -f` on a pattern your own shell contains (it matches itself) — wait on the output file.
 
 `reco_variant.py` needs the finalize environment:
 `WFT_PIVOT_START=1 WFT_COL_GUARD=0.01 X17_BENCH_ROOT=~/x17/cosmic_bench/outliers/stage`.
@@ -44,3 +54,21 @@ Findings (numbers in `summary.json`):
 - Head-ons: fit_failed is |tan θx| < 0.03 (82 %). Plain MIN_STRIPS = 2 adds 12 fake view-fits on 742 empty-chamber
   triggers; the head-on rule (2-strip cluster admitted if both strips ≥ 20σ) recovers 17/17, 0/400 controls move, 0
   fakes (bit-identical to production there). Head-ons sit at 55–320σ on the 2nd strip, fakes ≤ 9σ.
+
+10-26 pm round (Dylan: bands, MULTI, pairing for the paper, head-ons):
+- **Noise bands** = whole-window baseline offsets (±50–3000 ADC, both signs, flat to τ ≫ 100 µs) on a contiguous patch
+  of strips, in x and y together (77–95 %), 2–19 % of triggers depending on the chamber. They follow the CHAMBER: det3
+  shows the same chips (x 0, y 5–7 = the corner x < 50, y > 250 mm) on FEUs 7/8 and 3/4, five days apart. Null: time in
+  run, previous trigger / discharge, SCA cell, any 10–32 ms period, HV currents (|r| ≤ 0.19), common-mode coupling.
+  Mechanism not identified (stated limitation). Cost on det3: detection 92.6 → 57 % in the 3.9 % of events with a band.
+  `WFT_DROP_FLAT_HITS=1` (hits truncated both sides: 84 % of band hits, 0.7 % of others): 145 → 196 of 252, controls
+  400/400 (1 view moved).
+- **Multi-particle** (≥ 2 particle clusters in a view, 187 = 2.9 %): M3 one fitted 69, other fitted but M3 found 81,
+  M3 not found 37 (30 are projection overlaps: two tracks within the 12 mm seed gap in one view). The M3 particle's fit
+  matches single-track resolution (σ 0.61/0.56 mm vs 0.59/0.54; angle 1.06/1.29° vs 1.02/1.00°).
+- **Pairing** by charge: toy from 5 882 real singles 95.8 % (q) / 97.6 % (q + depth profile); real 110 events 96.4 /
+  98.2 %. Failures only when the two charges agree within ~2σ(lq) = 10 %.
+- **Head-on** in wft (opt-in): `WFT_HEADON_SIG=20` (2-strip seeds, rescue-only) + `WFT_HEADON_RESCUE=1` (cross-view
+  column finder at the other view's t0, fitted, kept only if ln(q_x/q_y) matches clean tracks within 3 × hypot(0.054,
+  σ_Q/Q)). Real data: 17/17, controls 400/400 unmoved, 0 fits added on 742 empty triggers. Injection (headon2): x, noise
+  ×2, gain ×0.05: production 44 % → 84 % found, fires ≤ 0.1 % of empty planes; without the charge check 92 % but 2 %.
