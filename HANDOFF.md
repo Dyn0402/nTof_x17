@@ -26,10 +26,39 @@ section of the reconstruction paper.
   Injection (headon2, 845 x donors): x noise ×2 gain ×0.05: 44 → 84 %, fakes ≤ 0.2 % of empty planes; end to end in
   wft (headon3, 60 donors): 43 → 67 % (k .05), 77 → 90 % (k .1), fakes 0/720.
 
-**Decisions for Dylan:**
-1. Turn on WFT_DROP_FLAT_HITS=1, WFT_HEADON_SIG=20, WFT_HEADON_RESCUE=1 (and TWO_TRACK_FIT?) in the re-processing pass?
-2. Port the head-on rescue + band veto to the beam seeder (ntof_tracking.wft_beam) for n_TOF; needs an n_TOF fake test.
-3. Paper: single-particle efficiency first, multi-particle with any-track credit after; pairing as its own figure.
+**Dylan's direction (10-26 evening):** all of these upgrades go into the full analysis, but as ONE reconstruction
+algorithm for every detector / data set (cosmics at least), REWRITTEN, not as a pile of WFT_* options. The switches
+added today (WFT_DROP_FLAT_HITS, WFT_HEADON_SIG, WFT_HEADON_RESCUE, with WFT_TWO_TRACK_FIT and the charge pairing) are
+the validated prototypes to fold in; their measured behaviour (above) is the spec. Write all of this up carefully.
+
+**Follow-ups (Dylan 10-26):**
+1. **Noise bands — understand them; they characterise the detector.** Not settled: corruption / packet loss, and
+   post-discharge tails, are argued against but not excluded. Evidence so far: offsets are in the pedestal-subtracted
+   raw ADC (before CM); events with missing samples are already dropped by FeuReader, and a dropped packet gives
+   missing/shifted samples, not a flat per-strip offset; x and y are separate FEU streams yet coincide 77–95 %; det3's
+   patch is on the same strips with FEUs 7/8 (6-27) and 3/4 (6-22). Note "follows the chamber" includes everything
+   that travels with it (on-detector connectors / protection boards / grounding), not only the gas volume. Post-spark:
+   discharges 1–2 triggers before/after don't raise the rate, in-window discharges are spread over all chips, no decay
+   inside 1.9 µs (τ ≫ 100 µs) — but an untriggered discharge in the ~140 ms between triggers is not excluded. To do:
+   (a) re-decode the raw .fdf of a few band events with the reference decoder and compare word by word (corruption);
+   (b) map each chamber's band patch in (x, y) and compare with the drawings (HV feed, resistive-layer ground, mesh
+   connection, connector positions); (c) per-chamber band rate vs spark rate and vs HV (det7 19 %: is it the sparkiest?);
+   (d) band amplitude vs time since the last discharge on the SAME patch (needs every trigger, incl. spark-vetoed);
+   (e) the n_TOF data: bands there, same patches per chamber?; (f) the June HV scans: band rate vs resist / drift HV
+   (a field-dependent rate points at the chamber, a flat one at pickup).
+2. **Multi-particle events — status.** 2.9 % = 187 of the 6 451 INTERIOR M3-triggered tracks (one clean recipe ray
+   through det3) in which det3 itself sees ≥ 2 particle-like clusters (signal lasting ≤ a drift column) in a view —
+   not 2.9 % of all triggers, and "particle-like" is not yet "through-going track". 114 of them are 2×2 (a second
+   track in both views); the rest are 1×2 / 2×1 (overlap in one projection, or a deposit seen in one view only). What
+   works on the subset: the M3 particle is found in 80 % (fit at single-track resolution), x↔y pairing 96–98 %, the
+   joint two-track fit splits 8/37 merged ones with 0/150 false splits. Open: what the second particles are (opening
+   angle and closest approach to the M3 track: shower partners / knock-ons / independent?), a reference-free rule to
+   choose the triggering track (none beats production: C22 twotrack.py), and using the 2×2 sample as the real-data
+   two-track benchmark for the X17 pair reconstruction (separation, opening-angle resolution, vertex).
+3. **x↔y pairing — full paper section with a simulation study.** Plan written: `rerun/pairing_sim/PLAN.md` (samples
+   S1–S5 in the MX17_Geant response sim, a two-primary gun for e+e− pairs, n_TOF conditions, N = 3; the cosmic
+   validation gates: σ(ln qx/qy) = 0.054, Landau width, u50/u90 spreads, the toy-vs-ratio curve and the overlay vs
+   separation). First steps: the data side on det2/4/6/7, then S1 at det3 conditions.
 
 **Gotchas:** the fit worker swallows exceptions — a NameError in _headon_rescue was silent until
 test_headon.test_rescue_wiring (now in). Memory: one reco job at a time, `--jobs 2` (~3 GB); the laptop OOM-killed the
