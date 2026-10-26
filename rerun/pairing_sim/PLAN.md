@@ -4,8 +4,9 @@ Dylan 2026-10-26: "The x-y pairing looks very good, something I was worried we'd
 should be a full section of the reconstruction paper and should have a dedicated simulation study to go with it,
 please get that prepared and then also prepare to validate the sim study with cosmic data."
 
-Status: **plan, nothing run yet.** Data side done (rerun/satstudy, note notes/mx17-det3-loss-categories, slide
-"x↔y pairing").
+Status (2026-10-26 night): **data gates done on all five chambers; S1 run and FAILS the σ(lq) and u50/u90 gates;
+S2 run as a pessimistic bound; S3–S5 not run (gun ready).** Report: `make_report.py` →
+`~/x17/cosmic_bench/satstudy/pairing_sim/report/report.html` (notes/mx17-xy-pairing-sim). See §7.
 
 ## 1 · The question
 
@@ -108,3 +109,31 @@ validation is not one chamber's.
 3. S2 overlay through overlay.py → §4 overlay checks.
 4. Gun change (k primaries) → S3, S4, S5.
 5. Paper figures via papers/<paper>/figures.toml.
+
+## 7 · Results so far (2026-10-26, dylan-Yoga)
+
+Scripts here: `gates_data.py` (data gates, five chambers), `mfratio.py` (model-free x/y ratio, data and sim),
+`sim_gates.py` (S1 vs gates; truth split; the xysplit diagnostic), `sim_overlay.py` (S2), `make_report.py`
+(+ `report_template.html`). Outputs: `~/x17/cosmic_bench/satstudy/pairing_sim/`. Sim reco on condor:
+`/eos/user/d/dneff/pairing_sim/` (code tarball, bundles, `s1/` tables; job script and .sub in MX17_Geant
+`scratchpad/2026-10-26/pairing_sim/`).
+
+**Data gates** (clean singles = detected interior M3 rays, one candidate per view within 5 mm; det3 = the satstudy
+class-S set exactly): σ ln(qx/qy) det2 0.068, det3 0.055, det4 0.099, det6 0.179, det7 0.135 (flat in angle; a 50 mm
+position map is 5–10 % of it); σ u50 91/93/90/166/157 ns; toy right (q / q+u) det2 95.7/97.5, det3 95.8/97.6,
+det4 96.8/98.0, det6 87.1/90.3, det7 90.4/93.0 %. det4's broad Landau (σ ln Q 1.5, stripes) helps it.
+
+**S1** (v4c, 12 gun angles × 3 000, production wft with det3's phys bundle, t0 prior dropped, COL_GUARD/PIVOT on):
+σ(lq) 0.086–0.101 vs data 0.047–0.056 at the same inclination (×1.8); σ u50 86–186 vs 69–105 ns; Landau σ ln Q 0.35
+vs data 0.38 after a 25 mm gain map (passes). Toy from sim singles: 91.2 % (q), the profile adds nothing (u50 too wide).
+The sim-calibrated bundle gives the same σ(lq) (0.100): not the bundle.
+Decomposition (th00 / data < 5°): truth induced split 0.059 = 0.85/√N (per-avalanche: Stage B lands each avalanche
+and its feedback secondaries at one point) → model-free waveform ratio 0.071–0.087 (data 0.031–0.039) → wft fit 0.101
+(data 0.054). Diagnostic Stage B with the feedback secondaries displaced (`--feedback-spread-um` 150 / 400; prediction
+registered in `stageBC_xysplit.sub`): truth 0.035 / 0.034 as predicted, model-free 0.051–0.061, but the fit stays at
+0.108 — the sim's waveforms are fitted worse than data by the det3 bundle (cf. RECO_TRUTH's unexplained wft
+nonlinearity on sim). Two sim defects, not one.
+
+**Remaining:** fix the sim's x/y split (MX17_Geant: displaced feedback or an avalanche cloud, then re-check the v4c
+pre-registered observables) and the waveform-level excess; then rerun S1/S2; then S3 (pair table from ipc_born.py +
+n_TOF chamber geometry → `mm_sim --primaries-table`), S4 (beam gas needs an attachment table), S5.

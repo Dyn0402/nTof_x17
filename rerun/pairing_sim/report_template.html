@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>x↔y pairing: simulation study</title>
+<meta name="description" content="MX17 x↔y pairing of two tracks by charge: validation gates on five bench chambers, the response simulation (MX17_Geant v4c) against them, and the simulated overlay at bench and n_TOF noise.">
+<style>
+:root{--bg:#fff;--fg:#1d1d1f;--mut:#5c5c66;--line:#dcdce2;--box:#f4f6fa;--pass:#1d7a3a;--fail:#b3261e;--acc:#2a6fb0}
+@media (prefers-color-scheme:dark){:root{--bg:#16171a;--fg:#e8e8ec;--mut:#a0a0aa;--line:#33343a;--box:#1f2126;--pass:#5fc27e;--fail:#ff8a80;--acc:#7fb0e6}}
+body{background:var(--bg);color:var(--fg);font:15px/1.55 -apple-system,Segoe UI,Helvetica,Arial,sans-serif;margin:0}
+main{max-width:1000px;margin:0 auto;padding:16px}
+h1{font-size:1.6em;margin:.4em 0}h2{font-size:1.2em;margin-top:1.8em;border-bottom:1px solid var(--line);padding-bottom:.2em}
+.verdict{background:var(--box);border-left:4px solid var(--acc);padding:10px 14px;margin:12px 0}
+table{border-collapse:collapse;margin:8px 0;font-size:.9em;display:block;overflow-x:auto}
+td,th{border:1px solid var(--line);padding:4px 7px;text-align:right}th{background:var(--box)}td:first-child,th:first-child{text-align:left}
+.pass{color:var(--pass);font-weight:600}.fail{color:var(--fail);font-weight:600}
+figure{margin:10px 0}img{max-width:100%;background:#fff;border-radius:4px}
+.mut{color:var(--mut);font-size:.9em}code{font-size:.9em}
+</style></head><body><main>
+<h1>x↔y pairing of two tracks by charge: the simulation study</h1>
+<p class="mut">MX17 reconstruction paper, section "x↔y pairing" (nTof_x17 <code>rerun/pairing_sim/PLAN.md</code>). 2026-10-26.
+Data: the five bench chambers' golden rows, production <code>final_phys</code> tables. Simulation: MX17_Geant response chain, v4c
+(det3 conditions: wet gas, σ0 420 µm, bG 0.48, 26.5 mm column), reconstructed by the production wft with det3's golden-row phys bundle.</p>
+
+<div class="verdict">
+<p><b>Verdict.</b> The data side holds on every chamber: pairing by charge is 87–97 % right with charge alone and 90–98 % with the
+depth profile, and it gets worse where a chamber's x/y charge identity is looser (det6 σ = 0.18, det7 0.14 against det3 0.055).
+<b>The response simulation fails the gate that matters</b>: its single-track σ ln(q_x/q_y) is {{sim_lq}} against det3's
+{{d3_lq}} (×{{ratio_lq}}), and its σ(u50_x − u50_y) is {{sim_u50}} ns against {{d3_u50}} ns (×{{ratio_u50}}).
+Two causes, both in the simulation. (1) Stage B lands each avalanche, and all its feedback secondaries, at one point, so
+the x/y split samples the sub-pad split function once per primary electron: already at the induced-charge level (no electronics)
+the sim's split is {{truth_lq}} = {{truth_a}}/√N; displacing the feedback secondaries (a registered diagnostic) brings it to 0.035,
+as predicted. (2) The sim's waveforms carry more x/y scatter than the data's (model-free, same strips: {{mf_sim_pos}}–{{mf_sim_sum}}
+against {{mf_data_pos}}–{{mf_data_sum}}), and production wft fits them worse than it fits data (fit {{sim0_lq}} against {{ref0_lq}};
+it stays at 0.095–0.108 when (1) is removed). Per PLAN §4 the sim goes back to MX17_Geant before S3–S5 numbers enter the paper.
+What the sim does give: the same mechanism (pairing fails only for near-equal charges), a both-found vs separation curve close to the data's, and a <i>pessimistic</i> bound — with twice the data's x/y spread the simulated overlay still pairs
+{{nom_ge24_q}} right (charge) and {{nom_ge24_qu}} (charge + profile) at ≥ 24 mm, and {{n2_ge24_q}} / {{n2_ge24_qu}} with the
+n_TOF noise floor (×2).</p></div>
+
+<h2>1 · The data gates, per chamber</h2>
+<p>Clean single tracks: interior M3 rays that production detects, with exactly one candidate in each view within 5 mm of the ray
+(det7 x: connectors 5–8 only). On det3 this is the same 5 882 tracks as the satstudy class-S selection.
+Toy: odd event ids calibrate the rule (median and robust σ of each x−y feature), even ids are paired at random (200 k pairs).</p>
+<table><tr><th>chamber</th><th>golden row</th><th>singles</th><th>median ln q_x/q_y</th><th>σ ln q_x/q_y</th><th>σ u50 [ns]</th>
+<th>σ u90 [ns]</th><th>σ ln Q</th><th>toy right, charge</th><th>toy, + profile</th><th>pairs with |ln Q1/Q2| &lt; 0.1</th></tr>
+{{chamber_rows}}</table>
+{{fig_ch}}
+<p class="mut">σ ln(q_x/q_y) is flat in track angle on every chamber and only 5–10 % of it is a position map (50 mm cells), so it is a
+per-track property. det4's broad Landau (σ ln Q 1.5) is its fixed amplification stripes; it helps pairing (fewer near-equal pairs).
+det6/det7 lose 6–9 points against det3 through their looser x/y identity; the mechanism of that (det6 and det7 share the
+6-26 overnight, both have Y cross-card shorts) is not established here.</p>
+
+<h2>2 · S1 against the gates (det3 conditions)</h2>
+<table><tr><th>quantity</th><th>data det3</th><th>sim v4c (0–15°, pooled)</th><th>test</th><th></th></tr>{{gate_rows}}</table>
+{{fig_ang}}
+<p class="mut">Sim points are fixed gun angles (3 000 muons each over a 31 mm spot); data at the same inclination of one view with the
+other view within 5°. The sim reconstructed with its own sim-calibrated bundle (RECO_TRUTH) gives the same σ ln(q_x/q_y) (0.100 vs 0.101),
+so the choice of bundle is not the cause.</p>
+
+<h2>3 · Where the sim's x/y spread comes from</h2>
+{{fig_mech}}
+<p>Left: the truth-level split (charge induced on all X vs all Y channels, before shaping and noise) narrows exactly as 1/√N with the
+number of electrons N reaching the mesh: each avalanche lands its whole charge (and, at H = 0, its feedback secondaries) at one point,
+so it contributes one random draw of the split. Right: the same strips (production footprint ± 3 mm), summed the same way, on data
+and sim: the data are 2× tighter at every level. The table follows the split through the chain: induced → waveform (model-free) →
+wft fit. Removing the per-avalanche coin (displaced secondaries) fixes the first step and part of the second, not the third: the
+fit adds ~0.08 in quadrature on the sim's waveforms against ~0.04 on the data's, the same direction as RECO_TRUTH's unexplained
+wft nonlinearity on simulated waveforms.</p>
+{{xysplit}}
+<p class="mut">Diagnostic Stage B runs (MX17_Geant <code>scratchpad/2026-10-26/pairing_sim/stageBC_xysplit.sub</code>, prediction registered
+in the file): the feedback secondaries displaced by H (the existing <code>--feedback-spread-um</code>). Diagnostic only; not a candidate
+adopted here, since it moves other v4c observables that were not re-checked.</p>
+
+<h2>4 · Pairing right vs the two tracks' charge ratio</h2>
+{{fig_toy}}
+<p>Data det3: {{d3_toy_q}} (charge), {{d3_toy_qu}} (+ profile). Sim, pooled 0–15° points: {{sim_toy_q}}, {{sim_toy_qu}}.
+In both, pairing fails only when |ln Q1/Q2| is below ~2σ(lq); the sim's curve is shifted to larger ratios by its wider σ, as
+expected, so the mechanism is reproduced and the number is not.</p>
+
+<h2>5 · S2: the overlay in the simulation, at bench and n_TOF noise</h2>
+<p>Two simulated single muons summed in the waveforms (b moved by whole strips to the drawn separation, added on its footprint
+± 5 mm), seeded from 5σ hits of the sum and reconstructed by production wft; truth = each donor's own fit. n2: three more noise
+realisations on every strip (noise amplitude ×2, the post-23-July floor), seeding threshold and fit noise doubled. Pairing rule
+calibrated on the sim's own singles.</p>
+<table><tr><th rowspan=2>sep [mm]</th><th colspan=2>data det3 overlay</th><th colspan=3>sim, bench noise</th><th colspan=3>sim, noise ×2</th></tr>
+<tr><th>both found</th><th>right (q)</th><th>both found</th><th>right (q)</th><th>right (q+u)</th><th>both found</th><th>right (q)</th><th>right (q+u)</th></tr>
+{{overlay_rows}}</table>
+{{fig_ov}}
+<p>≥ 24 mm, both found: data {{data_ge24_q}} / {{data_ge24_qu}}; sim {{nom_ge24_q}} / {{nom_ge24_qu}} (n = {{nom_ge24_n}});
+sim noise ×2 {{n2_ge24_q}} / {{n2_ge24_qu}} (n = {{n2_ge24_n}}). Doubling the noise does not move pairing (the
+two sim conditions agree within their ±4-point statistics): a MIP's charge is far above the noise in both views, so the charge
+ratio, not the noise, decides. Production's own beam-tuned pairing (track_id) is 28–34 % right here (50 % in the data overlay): its gate is beam-tuned.</p>
+<table><tr><th>opening angle (sim, bench noise)</th><th>n</th><th>right (q)</th><th>right (q+u)</th></tr>{{nom_open_rows}}</table>
+<table><tr><th>opening angle (sim, noise ×2)</th><th>n</th><th>right (q)</th><th>right (q+u)</th></tr>{{n2_open_rows}}</table>
+<p class="mut">Opening angles here are only what the fixed-angle S1 points can make (0–14°); the X17/IPC kinematics need S3.</p>
+
+<h2>6 · What this does not rule out, and what is left</h2>
+<ul>
+<li><b>The sim is not validated for pairing.</b> Its x/y split is ~1.9× too wide and its u50/u90 spread ~1.5× too wide, so its pairing
+numbers are a lower bound, not a prediction. The Landau width passes once the data's own gain map is taken out (the sim muons cross one 31 mm spot).</li>
+<li>n_TOF conditions are emulated by noise only: the beam gas (1.5 % H2O, ~160 ppm O2 attachment) needs a Stage B gas table with
+attachment that does not exist yet; attachment removes late charge from both views alike, so it should change the profile
+features more than the charge.</li>
+<li>S3 (X17 / IPC e+e− pairs from a common vertex) and S5 (three tracks) are not run. The Stage A gun is ready
+(<code>mm_sim --primaries-table</code>, MX17_Geant), smoke-tested with 2- and 3-primary events; what is missing is a fixed sim
+(above) and the pair table from <code>ipc_born.py</code> with the n_TOF chamber geometry.</li>
+<li>The data toy is at infinite separation; the overlay is the only measurement with merging and shared strips, and it is det3 only.</li>
+<li>det6 / det7's wider x/y spread is measured, not explained.</li>
+</ul>
+<p class="mut">Built by <code>rerun/pairing_sim/make_report.py</code> from gates_data.json, gates_sim.json, mf_*.parquet,
+sim_overlay_*.json and the satstudy overlay.json.</p>
+</main></body></html>

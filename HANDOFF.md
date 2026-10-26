@@ -129,6 +129,20 @@ the validated prototypes to fold in; their measured behaviour (above) is the spe
    validation gates: σ(ln qx/qy) = 0.054, Landau width, u50/u90 spreads, the toy-vs-ratio curve and the overlay vs
    separation). First steps: the data side on det2/4/6/7, then S1 at det3 conditions.
 
+**x↔y pairing simulation study (follow-up 3) — 2026-10-26 night (dylan-Yoga).** Report: notes/mx17-xy-pairing-sim
+(https://dylan-neff.web.cern.ch/notes/mx17-xy-pairing-sim.html), built by `rerun/pairing_sim/make_report.py`; results and
+remaining steps in `rerun/pairing_sim/PLAN.md` §7.
+- **Data gates, all five chambers** (`gates_data.py`): σ ln(qx/qy) det2 0.068 / det3 0.055 / det4 0.099 / det6 0.179 /
+  det7 0.135; σ u50 91/93/90/166/157 ns; toy right (q / q+u) 95.7/97.5, 95.8/97.6, 96.8/98.0, 87.1/90.3, 90.4/93.0 %.
+- **S1 fails** (MX17_Geant v4c, 12 angles × 3 000, production wft + det3 phys bundle without t0 prior, on condor):
+  σ(lq) 0.101 (×1.9), σ u50 137 ns (×1.5); Landau passes after the data's gain map (0.35 vs 0.38). Two sim causes:
+  per-avalanche point landing (truth split 0.059 = 0.84/√N; displaced feedback secondaries → 0.035, as pre-registered)
+  and a waveform/fit excess (model-free 0.07–0.09 vs data 0.04; fit 0.10 vs 0.055, unchanged by the fix).
+- **S2 (sim overlay, `sim_overlay.py`)**, a pessimistic bound: both found 0/0/28/95/92/98 % (data 0/0/22/98/100/100);
+  right ≥ 24 mm 84/91 % (q / q+u), with noise ×2 91/91 % (data 96.7/100). S3–S5 not run; the gun is ready in
+  MX17_Geant (`mm_sim --primaries-table`).
+- Gotcha: a numpy bool_ in a pandas object column averages to 1/n (bool_ + bool_ = OR); cast to float before .mean().
+
 **Gotchas:** all runs here were made BEFORE the dead-strip session turned WFT_DEAD_SEED on by default (f0cd2a6); the
 switches' validation is with dead-seed off. The fit worker swallows exceptions — a NameError in _headon_rescue was silent until
 test_headon.test_rescue_wiring (now in). Memory: one reco job at a time, `--jobs 2` (~3 GB); the laptop OOM-killed the

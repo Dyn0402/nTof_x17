@@ -84,3 +84,6 @@ arm. ΔBIC > 0 adds a blob to 89 % of controls (model error) and no threshold se
 worse in 93 % of failures (×3.6 vs ×1.7 on agreeing views): the deposit is a short δ track (5–10 strips, several
 hundred ns), not a point. Raw clip is exactly 4095; 1 176 rail samples < 3550 (CM-pulled plateau) are fitted as data
 by production, 521 samples ≥ 3550 are below their rail; bottom rail in 282/350 windows (5 792 samples).
+Follow-up (2026-10-26 night): the x↔y pairing simulation study lives in `rerun/pairing_sim/` (PLAN.md §7, report
+notes/mx17-xy-pairing-sim): data gates on all five chambers, the MX17_Geant response sim against them (fails σ ln(qx/qy)),
+the simulated overlay.
