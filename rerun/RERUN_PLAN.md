@@ -145,9 +145,9 @@ On `code_469cbb1`, vrefit --keep-v on the 500 V drift-scan row wrote K = 30 and 
 ```bash
 # on lxplus, from a clone of main at the pass commit (promote_phys.py reads only EOS + its own file)
 C=/afs/cern.ch/user/d/dneff/x17rerun/code_469cbb1
-# 1. S1 close: promote the golden bundles (masked chambers from their physmask finalize arm)
-python3 $C/rerun/promote_phys.py --mask det2,det3,det7            # dry run: read the five lines
-python3 $C/rerun/promote_phys.py --mask det2,det3,det7 --apply
+# 1. S1 close: promote the golden bundles -- DONE 2026-10-26 ~02:30 (PROMOTED.json in each calib_bundle):
+#    det2/det3/det7 <- calib_bundle_physmask (finalize arm under the mask; det7 X kw 1.034 -> 1.005), det4/det6 <- calib_bundle_phys
+#    python3 $C/rerun/promote_phys.py --mask det2,det3,det7 --apply
 # 2. S1b: the 14 v groups (56 nodes, ~1 h)
 mkdir -p ~/x17rerun/pass_main/log && cd ~/x17rerun/pass_main && cp ../pass/stage1.sub .
 python3 $C/rerun/make_pass_dag.py vrefit $C --keep-v && condor_submit_dag vrefit.dag
