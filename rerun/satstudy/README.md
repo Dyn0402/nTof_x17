@@ -26,6 +26,8 @@ Golden row `sat_det3` (6-27 Saturday scan long run, 490 V), production `final_ph
 | head-on at low gain / doubled noise: injection into real empty-chamber noise, prototype rules (2-strip, 1-strip, column finder, charge check) | `headon2.py extract/scan` | `headon2_wf.pkl`, `headon2.json` |
 | head-on rules in wft (`WFT_HEADON_SIG=20 WFT_HEADON_RESCUE=1`): real failures + controls + empty triggers; end-to-end injection | `reco_variant.py` (env), `headon3.py extract/run/score` | `reco_ho_wft/`, `reco_out_ho_wft/`, `headon3.json` |
 | joint two-track fit on the multi-particle events (`WFT_TWO_TRACK_FIT=1`) | `reco_variant.py` (env) | `reco_tt/` |
+| **saturated blobs** (10-26 late): per-channel rails from the pedestals + block CM; production fit under per-channel top rail / bottom rail censored / both; own optimiser track-only and track + one compact deposit (ΔBIC); the same with the track pinned to M3. Fits on lxplus condor (`~/x17rerun/satblob_code`, EOS `/eos/user/d/dneff/satblob`) | `satblob.py rails / pack / pack_pinned / merge / score`, `satblob_core.py`, `make_satblob_report.py` | `rails_det3.pkl`, `satblob_{track,blob,pinned}.parquet`, `satblob.json`, `satblob_report/` (notes/mx17-det3-satblob) |
+| Paper I appendix A1: one display per recat class (PDF) + the class table | `appendix_figs.py` (after `summarize.py`) | `appendix/loss_*.pdf`, `appendix/loss_table.json` → `papers/paper1/figures.toml` |
 | numbers (incl. the re-categorised budget, summarize.recat, and the multi-particle flow, summarize.multi_flow), then the note | `summarize.py`, `make_deck.py` | `summary.json`, `recat_det3.parquet`, `deck/` |
 
 Memory: one reconstruction at a time (`--jobs 2`); a reco job peaks at ~3 GB. Never wait on a job with `pgrep -f` /
@@ -73,3 +75,11 @@ Findings (numbers in `summary.json`):
   column finder at the other view's t0, fitted, kept only if ln(q_x/q_y) matches clean tracks within 3 × hypot(0.054,
   σ_Q/Q)). Real data: 17/17, controls 400/400 unmoved, 0 fits added on 742 empty triggers. Injection (headon2): x, noise
   ×2, gain ×0.05: production 44 % → 84 % found, fires ≤ 0.1 % of empty planes; without the charge check 92 % but 2 %.
+
+10-26 late (satblob.py, report notes/mx17-det3-satblob): on the 350 saturated views + 150 controls, agreement with M3
+71.1 % (prod) → rail 71.7 (+5/−3 views), bottom rail censored 70.9 (+2/−3), both 72.3 (+6/−2); multi-start track-only
+73.4 (+8/−0); track + compact blob 73.4 / 73.7 (both rails, +15/−6); + 5 % model error 70.0. Controls 96 % in every
+arm. ΔBIC > 0 adds a blob to 89 % of controls (model error) and no threshold separates. Pinned to M3 the blob model fits
+worse in 93 % of failures (×3.6 vs ×1.7 on agreeing views): the deposit is a short δ track (5–10 strips, several
+hundred ns), not a point. Raw clip is exactly 4095; 1 176 rail samples < 3550 (CM-pulled plateau) are fitted as data
+by production, 521 samples ≥ 3550 are below their rail; bottom rail in 282/350 windows (5 792 samples).

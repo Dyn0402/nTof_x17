@@ -114,6 +114,17 @@ switches' validation is with dead-seed off. The fit worker swallows exceptions �
 test_headon.test_rescue_wiring (now in). Memory: one reco job at a time, `--jobs 2` (~3 GB); the laptop OOM-killed the
 session with 3 in parallel. headon3 "other view found" column is a scoring artefact (p0 vs mid-gap truth) — ignore.
 
+**10-26 late: saturated blobs + appendix A1 (satblob session):**
+- Track + compact-blob model (`rerun/satstudy/satblob.py`, `satblob_core.py`; condor on lxplus) does NOT recover the
+  saturated failures: 350 saturated views 71.1 % → 73.7 % agree (blob, both rails); most of it is the multi-start alone
+  (73.4 %). Rails alone: per-channel top rail +5/−3 views, bottom rail +2/−3, both 72.3 %. Controls 96 % unchanged
+  everywhere. ΔBIC > 0 adds a blob to 89 % of controls (model error); no threshold works. Pinned to M3 the model fits
+  worse in 93 % of failures: the deposit is a short δ TRACK (5–10 strips), not a point. Report notes/mx17-det3-satblob.
+  For the rewrite: take the rails (cheap, small gain, no control cost) and the multi-start; a blob needs an extended
+  (track-segment) second component — the two-track fit is the natural candidate, untested on these views.
+- Paper I A1: 14 displays (`appendix_figs.py`, figures.toml ids loss_*), table filled from summarize.recat. Fractions
+  are PRE-PASS (final_phys): the pass (RERUN_PLAN §11) has not run (no pass_main / Analysis_pass on lxplus 10-26).
+
 **Earlier (10-26 pm):**
 **Done:**
 - `rerun/satstudy/` (README = run order). Golden row sat_det3, pre-pass final_phys table: 91.2 % detected of 6 451.
