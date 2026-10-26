@@ -23,7 +23,7 @@ reconstruction recovers it (tested by re-running the reconstruction, not argued)
     ``spark'': muon + unrelated deposit (\ref{fig:loss_spark_muonother}) & \requote{0.40} & partly: veto off + competing-cluster cut relaxed \\
     ``spark'': shower at the crossing (\ref{fig:loss_spark_shower}) & \requote{0.67} & no \\
     $\delta$-ray on the track (\ref{fig:loss_delta}) & \requote{0.93} & not with a straight-line model \\
-    saturated $\delta$ blob, fit pulled off (\ref{fig:loss_satblob}) & \requote{0.81} & not by censoring ($\le$2\,pts of the saturated views) \\
+    saturated $\delta$ blob, fit pulled off (\ref{fig:loss_satblob}) & \requote{0.81} & no: neither censoring nor a track\,+\,compact-deposit fit (\requote{71}\,$\to$\,\requote{74}\,\% of saturated views agree) \\
     fit off, no other flag (\ref{fig:loss_fit}) & \requote{0.34} & no \\
     head-on: 2-strip cluster, never seeded (\ref{fig:loss_headon}) & \requote{0.26} & yes: head-on rule, 17/17, 0 fakes on 742 empty triggers \\
     position tail, mostly bent M3 tracks (\ref{fig:loss_postail}) & \requote{0.22} & no (reference) \\
@@ -50,7 +50,7 @@ loss-category note where it has one, otherwise picked by eye from six random eve
 \lossfig{loss_spark_muonother}{``Spark'': a clean muon on M3 plus an unrelated deposit elsewhere in the plane.}
 \lossfig{loss_spark_shower}{``Spark'': a shower developing at the crossing.}
 \lossfig{loss_delta}{$\delta$-ray: a sideways deposit from the track pulls the straight-line fit.}
-\lossfig{loss_satblob}{Saturated $\delta$ blob: a faint MIP line and one compact deposit on the ADC rail (outlined: samples $\ge$\,3550, censored; blue: samples on the bottom rail after the clip, fitted as data). The fit tilts towards the blob.}
+\lossfig{loss_satblob}{Saturated $\delta$ blob: a faint MIP line and a saturated deposit on the ADC rail (outlined: samples $\ge$\,3550, censored; blue: samples on the bottom rail after the clip, fitted as data). The fit tilts towards the deposit. Censoring at each channel's own rail ($4095-$pedestal$-$CM) and the bottom rail, or adding one point-like deposit to the forward model, moves agreement with M3 on 350 saturated views from \requote{71.1} to at most \requote{73.7}\,\% (most of it from a multi-start fit alone); with the track pinned to M3 the same model fits worse in \requote{93}\,\% of the failures: the deposit is a short $\delta$ track over 5--10 strips, not a point (\texttt{rerun/satstudy/satblob.py}).}
 \lossfig{loss_fit}{Fit off with no second particle-like cluster or saturation flagged (outlier class FIT).}
 \lossfig{loss_headon}{Head-on track: a two-strip x cluster whose third strip is below the 10\,\% relative floor, never seeded.}
 \lossfig{loss_postail}{Position tail: the fit agrees with the charge, M3 does not (about two thirds are tracks bent between the M3 doublets).}
