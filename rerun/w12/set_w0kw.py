@@ -31,6 +31,11 @@ def main():
     ap.add_argument('--out', required=True)
     ap.add_argument('--n-depth-bins', type=int, default=None,
                     help="write the bundle with this depth grid K (vrefit --keep-v: the group's registry K, W2)")
+    ap.add_argument('--table', default=None,
+                    help='the reconstruction table (events.parquet) made with --bundle: also re-measure dt_xy (median '
+                         't0x - t0y per ftst class on clean single tracks) and the xy_pairing block (lq, u50, u90, t0 '
+                         'medians and robust widths).  Model audit 2026-10-27: the dt_xy inherited from the old-kernel '
+                         'calibration is stale by ~50-60 ns on det2/det3 under the phys kernel.')
     ap.add_argument('--fold-kw', action='store_true',
                     help='vrefit --keep-v: fold the mean kw into v_drift (v := v * kw_mean, kw := kw / kw_mean), so the '
                          'bundle carries this row\'s ladder v instead of the golden row\'s; tan is unchanged')
@@ -64,6 +69,25 @@ def main():
             rep[p]['kw_folded'] = kw[p]
         print(f'folded kw: v {prov_fold["v_was"]:.2f} -> {cal.v_drift:.2f} um/ns, kw x {kw["x"]:.4f} y {kw["y"]:.4f}')
     cal.w0, cal.kw = w0, kw
+    if a.table:
+        import pandas as pd
+        df = pd.read_parquet(a.table)
+        both = df[df.x_ok & df.y_ok & (df.x_n_dropped <= 2) & (df.y_n_dropped <= 2)]
+        fd = (both.x_ftst - both.y_ftst).astype(int).to_numpy(); d = (both.x_t0 - both.y_t0).to_numpy()
+        rs = lambda x: float(1.4826 * np.median(np.abs(x - np.median(x))))
+        dt_new = {int(k): float(np.median(d[fd == k])) for k in np.unique(fd) if (fd == k).sum() >= 30}
+        pred = np.array([dt_new.get(int(k), np.nan) for k in fd]); t0r = d - pred; okr = np.isfinite(t0r)
+        feats = dict(lq=np.log(both.x_q_sum / both.y_q_sum).to_numpy(), u50=(both.x_q_u50 - both.y_q_u50).to_numpy(),
+                     u90=(both.x_q_u90 - both.y_q_u90).to_numpy(), t0=t0r[okr])
+        pairing = dict(features=['lq', 'u50', 'u90', 't0'], median={k: float(np.median(v)) for k, v in feats.items()},
+                       rsig={k: rs(v) for k, v in feats.items()}, n=int(len(both)), source=a.table)
+        rep['dt_xy'] = dict(old={str(k): float(v) for k, v in cal.dt_xy.items()}, new={str(k): v for k, v in dt_new.items()},
+                            n={str(k): int((fd == k).sum()) for k in dt_new})
+        rep['xy_pairing'] = pairing
+        print(f'dt_xy: {rep["dt_xy"]["old"]} -> { {k: round(v, 1) for k, v in dt_new.items()} }  (n {rep["dt_xy"]["n"]})')
+        print(f'xy_pairing rsig: { {k: round(v, 3) for k, v in pairing["rsig"].items()} }')
+        cal.dt_xy = dt_new
+        cal.xy_pairing = pairing
     prov = dict(cal.provenance)
     prov.update(w0_kw_stale=False, w0_kw_note=f'w0/kw measured by rerun/w12/set_w0kw.py from {a.angles} '
                 f'(a reconstruction with this bundle, {a.run_key})', w0_kw_measurement=rep)

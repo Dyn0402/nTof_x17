@@ -390,6 +390,25 @@ def _fit_once(P, plane, hyper, t0_prior):
 # explains best (chi2 improvement over "no signal").
 U_MIN_NS = 250.0
 U_MAX_NS = 1100.0
+#: The constants above are the column-duration window at v = 36.6 um/ns (30 mm gap: T = 820 ns; 0.30 T .. 1.35 T).
+#: On a slow chamber or a low-field row the real column is longer (det6 24 um/ns: T = 1240 ns; the 500 V drift rows
+#: ~1900 ns), so the fixed window called 42-60 % of det6/det7 Y tracks "implausible" (model audit 2026-10-27: the
+#: ranking key and the multi-track gate then prefer a noise candidate whose q_uend happens to fall inside).  The
+#: window now scales with the bundle's v; WFT_U_FIXED=1 restores the constants.
+#: Window as fractions of the column T = 30 mm / v.  0.30 T reproduces U_MIN_NS at 36.6 um/ns.  The legacy upper
+#: bound (1100 ns = 1.34 T) flagged 7-17 % of M3-confirmed det2/det3 single tracks (profile leakage into late bins when
+#: t0 sits a bin early) and 23-60 % on det4/det6/det7; 1.6 T keeps the spike / double-column rejection and admits them.
+U_MIN_FRAC, U_MAX_FRAC = 0.30, 1.60
+U_FIXED = os.environ.get('WFT_U_FIXED', '0') == '1'
+
+
+def u_window(cal=None) -> tuple:
+    """(u_min, u_max) [ns] of a plausible column end for this calibration's drift velocity."""
+    v = float(getattr(cal, 'v_drift', 0.0) or 0.0) if cal is not None else float(getattr(wm.CAL, 'v_drift', 0.0) or 0.0)
+    if U_FIXED or not v > 0:
+        return U_MIN_NS, U_MAX_NS
+    T = 30000.0 / v                     # the 30 mm column at this v [ns]
+    return U_MIN_FRAC * T, U_MAX_FRAC * T
 # In the bundle's RAW tan (true = raw x k), so its true-angle reach moves with
 # the bundle's v.  WFT_TAN_MAX overrides it (read at import, like
 # WFT_BEAM_MIN_STRIPS): a versioned re-pass sets it wide and applies the
@@ -402,7 +421,8 @@ def _candidate_score(P, plane, fit: PlaneFit) -> tuple:
     W, noise, pos, sat = wm.prep_plane(P, plane)
     chi_null = float(((W / noise[:, None]) ** 2)[~sat].sum())
     u = fit.q_uend
-    plausible = (np.isfinite(u) and U_MIN_NS <= u <= U_MAX_NS
+    u_lo, u_hi = u_window()
+    plausible = (np.isfinite(u) and u_lo <= u <= u_hi
                  and abs(fit.tan_theta) < TAN_MAX)
     return bool(plausible), float(chi_null - fit.chi2)
 
@@ -916,7 +936,8 @@ def fit_plane_two(P, plane: str, cal: CalibrationBundle, parent: PlaneFit,
     fb = _child_fit(P, plane, cal, r, 'b', hyper, alone[1])
     qtot = fa.q_sum + fb.q_sum
     qfrac = min(fa.q_sum, fb.q_sum) / qtot if qtot > 0 else 0.0
-    plaus = [bool(np.isfinite(f.q_uend) and U_MIN_NS <= f.q_uend <= U_MAX_NS
+    u_lo, u_hi = u_window(cal)
+    plaus = [bool(np.isfinite(f.q_uend) and u_lo <= f.q_uend <= u_hi
                   and abs(f.tan_theta) < TAN_MAX) for f in (fa, fb)]
     thr = TWO_TRACK_F if f_thresh is None else f_thresh
     guards = dict(distinguishable=bool(r['dist'] >= 1.0),
@@ -1342,7 +1363,7 @@ def candidate_rows(event_id: int, all_fits: Dict[str, list],
             tid, gated = track_of.get((plane, rank), (-1, False))
             row['track_id'], row['track_gated'] = int(tid), bool(gated)
             row['isochronous'] = bool(np.isfinite(f.q_uend)
-                                      and f.q_uend < U_MIN_NS)
+                                      and f.q_uend < u_window()[0])
             row['ftst'] = int(f_ftst) if f_ftst is not None else -1
             rows.append(row)
     return rows
@@ -1424,7 +1445,7 @@ def row_from_fits(event_id: int, fits: Dict[str, Optional[PlaneFit]],
             # TIME). Computed for candidate ranking since day one but never
             # written out — this makes it cuttable downstream.
             row[f'{plane}_isochronous'] = bool(
-                np.isfinite(f.q_uend) and f.q_uend < U_MIN_NS)
+                np.isfinite(f.q_uend) and f.q_uend < u_window()[0])
     return row
 
 
@@ -1675,7 +1696,7 @@ def reconstruct_run(cfg, cal: CalibrationBundle, out_path: str,
                 run=dict(key=getattr(cfg, 'KEY', ''), run=cfg.RUN,
                          sub_run=cfg.SUB_RUN, detector=cfg.DET_NAME,
                          feu_x=feu_x, feu_y=feu_y),
-                selection=dict(sig_rel_floor=wseed.SIG_REL_FLOOR,
+                selection=dict(u_window_ns=list(u_window(cal)), sig_rel_floor=wseed.SIG_REL_FLOOR,
                                gap_mm=wseed.GAP_THRESHOLD_MM,
                                sig_floor_local_mm=wseed.SIG_FLOOR_LOCAL_MM,
                                spark_veto=wseed.SPARK_VETO_HITS,

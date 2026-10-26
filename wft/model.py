@@ -122,6 +122,16 @@ SAT_SOLVE = bool(int(os.environ.get('WFT_SAT_SOLVE', 0)))
 #: (q_sum > 1e6 ADC on 30 % of beam tracks).  With COL_GUARD > 0 every solve offers only the columns whose weighted
 #: norm is at least COL_GUARD x the largest; the others get q = 0.  0 (default) = the production solve, bit-identical.
 COL_GUARD = float(os.environ.get('WFT_COL_GUARD', 0.0))
+#: t0 continuity of the RC kernel (opt-in, model audit 2026-10-27).  ``build_matrix_rc`` snaps t0 to the 5 ns tensor
+#: grid, so chi2 is a staircase in t0 and Nelder-Mead cannot refine t0 (C19); the delay kernel interpolates.  With
+#: RC_T0_INTERP the design matrix is interpolated linearly between the two neighbouring grid tensors.  0 (default) =
+#: the production kernel, bit-identical.
+RC_T0_INTERP = bool(int(os.environ.get('WFT_RC_T0_INTERP', 0)))
+#: Zero-suppressed data (opt-in, model audit 2026-10-27; every SPS det4 run except run_71 is ZS): a sample that reads
+#: exactly 0 ADC was never recorded, not measured as zero, so it is censored like a saturated one (no information in
+#: either direction).  0 (default) = bit-identical on the RAW bench data, where an exact 0 after pedestal + CM
+#: subtraction is a measurement.
+ZS_CENSOR = bool(int(os.environ.get('WFT_ZS_CENSOR', 0)))
 
 _smear_cache: dict = {}
 _lp_cache: dict = {}
@@ -319,6 +329,24 @@ def _rc_tensors(plane: str, t0q: float, tmpl_plane: str):
     return Hs
 
 
+def t0q_of(t0: float) -> float:
+    return round(t0 / T0_STEP) * T0_STEP
+
+
+def _rc_shift_tensor(plane: str, t0q: float, tmpl_plane: str, shift_ns: float):
+    """(NSAMP, K) impulse response delayed by one arbitrary shift (the asymmetric copy), cached like _rc_tensors."""
+    key = ('shift', plane, tmpl_plane, t0q, NSAMP, K, float(UK[0]), round(float(shift_ns), 1))
+    hit = _rc_cache.get(key)
+    if hit is not None:
+        return hit
+    base = TS[:, None] - (t0q + UK[None, :])
+    H = np.interp(base - shift_ns, TGRID, TMPL[tmpl_plane], left=0, right=0)
+    if len(_rc_cache) > 2048:
+        _rc_cache.clear()
+    _rc_cache[key] = H
+    return H
+
+
 def _fractions_sig(pos, pc, sig):
     """strip_fractions with an explicit width per depth bin (sig: (K,))."""
     z = 1.0 / (np.sqrt(2) * sig)[None, :]
@@ -348,9 +376,18 @@ def build_matrix_rc(plane, pos, p0, w, t0, hyper):
     as a Lorentzian of half-width gamma instead of the Gaussian (pseudo-Voigt footprint tails, measured
     on X, cloud_basics FINDINGS §23); absent or 0 = bit-identical.  Resolution-neutral on the bench.
     """
-    t0q = round(t0 / T0_STEP) * T0_STEP
     tp = 'x' if hyper.get('rc_tmpl', 'x') in ('x', 1, 1.0) else plane
-    Hs = _rc_tensors(plane, t0q, tp)                              # (ns, NSAMP, K)
+    if RC_T0_INTERP:
+        # linear interpolation between the two neighbouring 5 ns tensors: chi2 becomes continuous in t0, so the
+        # Nelder-Mead refinement can move along t0 (and the p0-t0 degeneracy) instead of stalling on a staircase.
+        # The impulse response is smooth over 5 ns, so this is the convolution evaluated at t0 to first order.
+        t0a = np.floor(t0 / T0_STEP) * T0_STEP
+        f = (t0 - t0a) / T0_STEP
+        Ha = _rc_tensors(plane, t0a, tp)
+        Hs = Ha if f < 1e-9 else (1.0 - f) * Ha + f * _rc_tensors(plane, t0a + T0_STEP, tp)
+    else:
+        t0q = round(t0 / T0_STEP) * T0_STEP
+        Hs = _rc_tensors(plane, t0q, tp)                          # (ns, NSAMP, K)
     ua = np.arange(K) * DT
     pa, pb = p0 + w * ua, p0 + w * (ua + DT)
     pc = 0.5 * (pa + pb)
@@ -369,6 +406,19 @@ def build_matrix_rc(plane, pos, p0, w, t0, hyper):
         F0 = (1.0 - eta) * F0 + eta * (a_hi - a_lo) / np.pi
     n = len(pos)
     M = np.einsum('ik,tk->itk', F0, Hs[0])
+    asym = float(hyper.get(f'rc_asym_{plane}', 0.0))
+    if asym != 0.0:
+        # one-sided delayed neighbour copy (cloud_basics FINDINGS 42: the -1 minus +1 stacked pulse on X is ~0.13 x the
+        # centre, delayed ~110 ns, a board property): a fraction |asym| of each prompt landing moves to the neighbour
+        # at LOWER position (asym > 0) or higher (asym < 0) after rc_asym_tau_<plane> ns; the centre loses it then.
+        tau_a = float(hyper.get(f'rc_asym_tau_{plane}', 110.0))
+        Ha = _rc_shift_tensor(plane, t0q_of(t0), tp, tau_a)
+        Fa = np.zeros_like(F0)
+        if asym > 0:
+            Fa[:-1] = F0[1:]          # strip i receives what landed on the strip above it in position
+        else:
+            Fa[1:] = F0[:-1]
+        M += abs(asym) * np.einsum('ik,tk->itk', Fa - F0, Ha)
     if D > 0:
         drain = float(hyper.get('rc_drain', 0.0))
         Fprev = F0
@@ -467,6 +517,8 @@ def prep_plane(P, plane):
     W /= g[:, None]
     noise = np.maximum(np.asarray(P['noise'], dtype=np.float64), 3.0) / g
     sat = np.asarray(P['W'], dtype=np.float64) >= SAT
+    if ZS_CENSOR:
+        sat |= np.asarray(P['W'], dtype=np.float64) == 0.0
     d = DEAD.get(plane)
     if d is not None and len(d):
         rows = np.isin(ch, d)

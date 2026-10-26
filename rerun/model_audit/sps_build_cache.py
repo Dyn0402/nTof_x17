@@ -1,0 +1,112 @@
+#!/usr/bin/env python3
+"""sps_build_cache.py <run> <subrun> --dataset run63_rot25 --out DIR [--per-plateau 1000] [--half-win 16] [--tan 0.4800]
+
+det4 H4 events from the decoded FEU 03 files on EOS (<runs>/<run>/<subrun>/decoded_root_fa80c06/*_03.root, ZS: sparse
+sample/channel/amplitude, pedestal-subtracted on the FEU) in the bench calibration-cache format, one pickle per drift
+plateau of the dataset.  Self-seeded (no uRWELL): per view, the brightest strip's +-half_win strips; both views
+required, peak >= 300 ADC.  Plateau by wall clock: the 'timestamp' counter is calibrated to seconds from the sub-run's
+span (dream_daq.log start of this and the next sub-run), events within 20 s of a plateau edge are dropped.
+tan_x = tan_y = |tan(mount)| (magnitude; the inclined view and the sign are read off the data); ref_mesh = the own
+charge centroid.  Run the fit with WFT_ZS_CENSOR=1.
+"""
+import argparse, glob, os, pickle, re, sys
+import numpy as np
+
+REPO = os.environ.get('WFT_REPO') or os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..'))
+sys.path[:0] = [os.path.join(REPO, 'sps_beam_test_26', 'analysis'), os.path.join(REPO, 'sps_beam_test_26', 'det4_sps_assessment')]
+import datasets                                              # noqa: E402
+from det4_sps_map import POSITION_MM, VIEW, PITCH_MM         # noqa: E402
+
+RUNS = '/eos/experiment/ntof/data/x17/p2_sps_july/runs'
+NOISE_ADC = 10.0
+
+
+def subrun_span(run, subrun):
+    """(t_start, t_end) seconds since midnight of the run's first day, from dream_daq.log."""
+    t0 = None; lines = open(os.path.join(RUNS, run, 'dream_daq.log')).read().splitlines()
+    day0 = None; out = [None, None]
+    for ln in lines:
+        m = re.match(r'(\d{4}-\d\d-\d\d) (\d\d):(\d\d):(\d\d),\d+ INFO: Subrun (started|finished): (\S+)', ln)
+        if not m:
+            continue
+        d, h, mi, s, what, name = m.groups()
+        if day0 is None:
+            day0 = d
+        import datetime
+        dd = (datetime.date.fromisoformat(d) - datetime.date.fromisoformat(day0)).days
+        t = dd * 86400 + int(h) * 3600 + int(mi) * 60 + int(s)
+        if name == subrun and what == 'started':
+            out[0] = t
+        if name == subrun and what == 'finished':
+            out[1] = t
+    return out
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument('run'); ap.add_argument('subrun'); ap.add_argument('--dataset', default='run63_rot25')
+    ap.add_argument('--out', required=True); ap.add_argument('--per-plateau', type=int, default=1000)
+    ap.add_argument('--half-win', type=int, default=16); ap.add_argument('--tan', type=float, default=float(np.tan(np.radians(25.64))))
+    ap.add_argument('--edge-s', type=float, default=20.0); ap.add_argument('--qmin', type=float, default=300.0)
+    a = ap.parse_args(); os.makedirs(a.out, exist_ok=True)
+    import uproot
+    D = datasets.get(a.dataset); nsmp = int(D['n_samples'])
+    files = sorted(glob.glob(os.path.join(RUNS, a.run, a.subrun, 'decoded_root_fa80c06', '*_datrun_*_03.root')))
+    t_lo, t_hi = subrun_span(a.run, a.subrun)
+    print(f'{len(files)} files; sub-run {a.subrun} {t_lo}..{t_hi} s', flush=True)
+    # timestamp calibration: first of the first file, last of the last file -> the sub-run span
+    ts0 = uproot.open(files[0])['nt'].arrays(['timestamp'], entry_stop=1, library='np')['timestamp'][0]
+    tl = uproot.open(files[-1])['nt']; ts1 = tl.arrays(['timestamp'], entry_start=tl.num_entries - 1, library='np')['timestamp'][0]
+    scale = (t_hi - t_lo) / float(ts1 - ts0)
+    print(f'timestamp unit {scale * 1e9:.1f} ns  (span {ts1 - ts0} counts over {t_hi - t_lo} s)', flush=True)
+    plateaus = [(n, lo + a.edge_s, hi - a.edge_s) for n, lo, hi, dv, rv in D['plateaus']]
+    out = {}
+    for f in files:
+        t = uproot.open(f)['nt']
+        for lo in range(0, t.num_entries, 20000):
+            arr = t.arrays(['eventId', 'timestamp', 'ftst', 'sample', 'channel', 'amplitude'], entry_start=lo,
+                           entry_stop=min(lo + 20000, t.num_entries), library='np')
+            tw = t_lo + (arr['timestamp'].astype(float) - ts0) * scale
+            for j in range(len(tw)):
+                L = next((n for n, l0, l1 in plateaus if l0 <= tw[j] < l1), None)
+                if L is None or len(out.get(L, {})) >= a.per_plateau:
+                    continue
+                ch = arr['channel'][j].astype(int); sm = arr['sample'][j].astype(int); am = arr['amplitude'][j].astype(np.float32)
+                rec = dict(eid=int(arr['eventId'][j]), tan_x=a.tan, tan_y=a.tan, t_wall=float(tw[j]), file=os.path.basename(f))
+                ok = True
+                for view in ('x', 'y'):
+                    k = VIEW[ch] == view
+                    if not k.any():
+                        ok = False; break
+                    # brightest strip of the view, then +-half_win strips in position
+                    pk = np.zeros(512); np.maximum.at(pk, ch[k], am[k])
+                    c0 = int(np.argmax(pk))
+                    if pk[c0] < a.qmin:
+                        ok = False; break
+                    p0 = POSITION_MM[c0]
+                    sel = k & (np.abs(POSITION_MM[ch] - p0) <= a.half_win * PITCH_MM)
+                    cc, ss, aa = ch[sel], sm[sel], am[sel]
+                    chs = np.unique(cc)
+                    if len(chs) < 4:
+                        ok = False; break
+                    W = np.zeros((len(chs), nsmp), np.float32); ci = np.searchsorted(chs, cc); m = (ss >= 0) & (ss < nsmp)
+                    W[ci[m], ss[m]] = aa[m]
+                    o = np.argsort(POSITION_MM[chs])
+                    q = np.clip(W, 0, None).sum(1)
+                    rec[view] = dict(ch=chs[o].astype(np.int16), pos=POSITION_MM[chs[o]].astype(np.float32), W=W[o],
+                                     noise=np.full(len(chs), NOISE_ADC, np.float32))
+                    rec[f'ref_mesh_{view}'] = float((q * POSITION_MM[chs]).sum() / max(q.sum(), 1e-9))
+                    rec[f'ftst_{view}'] = int(arr['ftst'][j])
+                if ok:
+                    out.setdefault(L, {})[rec['eid'] + 10_000_000 * files.index(f)] = rec
+        print(f'  {os.path.basename(f)}: ' + ', '.join(f'{k} {len(v)}' for k, v in sorted(out.items())), flush=True)
+        if all(len(out.get(n, {})) >= a.per_plateau for n, _, _ in plateaus):
+            break
+    dv = {x[0]: x[3] for x in D['plateaus']}
+    for L, evs in out.items():
+        p = os.path.join(a.out, f'{a.dataset}_{a.subrun}_{L}.pkl'); pickle.dump(evs, open(p, 'wb'), protocol=4)
+        print(f'{L}: {len(evs)} events, drift {dv[L]} V -> {p}')
+
+
+if __name__ == '__main__':
+    main()
