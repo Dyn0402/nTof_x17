@@ -19,6 +19,7 @@ Golden row `sat_det3` (6-27 Saturday scan long run, 490 V), production `final_ph
 | time extent of every production candidate (particle vs noise band); multi-track accounting + x↔y pairing | `multitrack.py feat`, `multitrack.py count` | `cand_feat_det3.parquet`, `multitrack.json` |
 | head-on rule (`reco_variant.py --headon-sig 20`) on the failures + 400 controls, and on 742 empty-chamber triggers (M3 > 20 mm outside det3) for MIN_STRIPS 2 / 3 / head-on | `reco_variant.py`, `headon.py` | `reco_ho20/`, `reco_out_{min2,min3,ho20}/`, `headon.json` |
 | **noise bands**: per-trigger baselines of every channel (golden row, all triggers; other chambers, 3 000 / file), then rates, x–y coincidence, null tests, in-window decay, cost | `bands.py scan [KEY [MAX]]`, `bands.py report` | `bands_scan[_KEY].npz`, `bands.json` |
+| noise bands, follow-up (corruption test on the raw .fdf, where, lifetime, vs discharges, HV scans, n_TOF) | `../bands/` (README there) | `~/x17/cosmic_bench/satstudy/bands/`, `../bands/report.html` |
 | band veto in wft (`WFT_DROP_FLAT_HITS=1`) on all 252 interior band events + 400 controls | `reco_variant.py` (env) | `reco_band_flat/` |
 | multi-particle sub-classes + fit quality vs singles | `multitrack.py sub` | `multi_sub.parquet`, `multi_sub.json` |
 | x↔y pairing: data-driven toy from real singles; the bench overlay with truth on both tracks | `pairing.py toy`, `overlay.py build/score` | `pairing_toy.json`, `overlay/`, `overlay.json` |

@@ -48,13 +48,40 @@ the cut ones carry a band and are counted as band (first match wins).
   Injection (headon2, 845 x donors): x noise ×2 gain ×0.05: 44 → 84 %, fakes ≤ 0.2 % of empty planes; end to end in
   wft (headon3, 60 donors): 43 → 67 % (k .05), 77 → 90 % (k .1), fakes 0/720.
 
+**Noise bands, follow-up 1 — 2026-10-26 night (dylan-Yoga, `rerun/bands/`, notes/mx17-noise-bands):**
+
+There are two families.
+
+- **Fixed-patch bands (det3 corner, det7 x 275–375 / y 25–250 mm)** come from the chamber's amplification stage.
+  - Untriggered disturbances, lasting about 1 ms.
+  - Field: ×1.9 per 10 V of resist HV on det3 (0 at ≤ 455 V, 18.6 % at 525 V) and ×1.8 on det7 (gain^1.4–1.6). Flat in
+    drift HV 100–1100 V, while the spark rate changes ×3.
+  - Lifetime: a trigger < 1 ms later on the same chip is banded again in 44 % of cases (det3, 28/64, against a 3 % base);
+    after 3 ms only the base rate. The sign is NOT kept (43 %).
+  - Excluded:
+    - corruption: 3.93 M raw words against decoded_root, 0 mismatches;
+    - pickup: chambers read in the same triggers band independently (det2+det3: 136 vs 134 expected);
+    - tails of triggered discharges: the time since the last discharge on the chip is the same for band and quiet chips;
+    - ionisation from the triggering track: the rate is flat in the drift field.
+  - n_TOF:
+    - A shows 0 of 77 k beam-off triggers, which is what its gain-equivalent 437–459 V predicts.
+    - D shows 0.14–0.23 % on the same connectors as on the bench.
+    - The 2× noise threshold alone would keep ~80 % of the bench rate.
+- **Whole-plane bands (det2/det4/det6)** are scattered strips with mixed signs.
+  - Flat in HV (det6 3 %).
+  - On det2/det4 they ride on spark triggers (35–38 %).
+  - Not characterised.
+- **Open (stated limitation):** the process at the weak spot (micro-discharge, Malter, field emission?). It cannot be seen
+  between 1.9 µs windows. No drawing gives the HV-feed or mesh-connection position. det7's board log notes bubbles with
+  uncapped pillars, at unrecorded positions.
+
 **Dylan's direction (10-26 evening):** all of these upgrades go into the full analysis, but as ONE reconstruction
 algorithm for every detector / data set (cosmics at least), REWRITTEN, not as a pile of WFT_* options. The switches
 added today (WFT_DROP_FLAT_HITS, WFT_HEADON_SIG, WFT_HEADON_RESCUE, with WFT_TWO_TRACK_FIT and the charge pairing) are
 the validated prototypes to fold in; their measured behaviour (above) is the spec. Write all of this up carefully.
 
 **Follow-ups (Dylan 10-26):**
-1. **Noise bands — understand them; they characterise the detector.** Not settled: corruption / packet loss, and
+1. **Noise bands — understand them; they characterise the detector.** [Worked through 10-26 night: rerun/bands/, verdict above.] Not settled: corruption / packet loss, and
    post-discharge tails, are argued against but not excluded. Evidence so far: offsets are in the pedestal-subtracted
    raw ADC (before CM); events with missing samples are already dropped by FeuReader, and a dropped packet gives
    missing/shifted samples, not a flat per-strip offset; x and y are separate FEU streams yet coincide 77–95 %; det3's

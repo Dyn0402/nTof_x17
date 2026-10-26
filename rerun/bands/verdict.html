@@ -1,0 +1,36 @@
+<div class="box">
+<p><b>Verdict.</b> There are two kinds of "band". The ones that cost det3 its 1.4 points are the <b>fixed-patch bands</b>, seen on
+det3 (corner x &lt; 50 mm, y &gt; 250 mm) and det7 (x 275–375 mm, y 25–250 mm). They come from <b>the chamber's amplification
+stage</b>. The baseline under a patch of strips wanders for <b>about 1 ms</b>, with no trigger, at a rate that rises steeply with the
+mesh field.</p>
+<ul>
+<li><b>Field:</b> the rate is ×1.9 per 10 V of resist HV on det3 (0.3 % at 465 V to 18.6 % at 525 V; none at or below 455 V).
+On det7 it is ×1.8 per 10 V (0.1–0.3 % at 400–430 V to 22 % at 485 V). Both go as gain<sup>1.4–1.6</sup>.
+The rate is flat-to-slightly-falling in the drift field (4.6 → 3.3–3.7 % from 100 to 1100 V), while the spark rate changes by ×3 over the same range.</li>
+<li><b>Lifetime:</b> in a trigger that comes &lt; 1 ms after a banded one, the same chip is banded again in 44 % of cases on det3
+(three runs pooled, 28 of 64; golden row 67 %; base 3 %), and beyond 3 ms at the base rate. The sign survives in only 43 % of those pairs.
+det7's bands are shorter-lived (10 % against a 5 % base at &lt; 1 ms).</li>
+<li><b>Untriggered:</b> band chips are no closer in time to a triggered discharge than quiet chips are. Only 14 % of discharges are
+followed by a band in a trigger within 3 ms.</li>
+<li><b>Same chips at n_TOF:</b> at n_TOF they almost vanish, because the gain there is lower. Chamber A at 540 V in 90/10 gas is
+equivalent to 437–459 V on the bench, and it shows 0 bands in 61 k cosmic triggers. Chamber D (det7) shows 0.1–0.2 %, on the
+chips where it banded on the bench.</li>
+</ul>
+<p><b>Excluded, and by what:</b></p>
+<ul>
+<li><b>Data corruption / packet loss:</b> 3.9 M raw words of band and quiet events matched decoded_root with 0 mismatches. The block
+layout is normal, and the FEU's own trailer word follows the shifted baseline.</li>
+<li><b>Pickup on the bench:</b> two chambers read in the same triggers band independently. det2+det3 banded together in 136
+triggers, against 134 expected by chance. The patch also stays on the chamber when it is moved to other FEUs.</li>
+<li><b>Tails of triggered discharges:</b> the time since the last discharge on the same chip is distributed the same for band chips
+and quiet chips (medians 19.7 s and 22.0 s). The band amplitude does not fall with that time.</li>
+<li><b>Ionisation from the triggering track:</b> the rate is flat in the drift field.</li>
+</ul>
+<p><b>Not identified:</b> what happens at the weak spot. Candidates are micro-discharges, Malter-type emission from charged insulator
+(det7's board log notes bubbles with uncapped pillars), or field emission. Whatever it is, it disturbs the strips under it for about a
+millisecond (a slow drain of charge on the resistive strips is the obvious candidate, but the sign changes within that time, so it is
+not one clean exponential).</p>
+<p>The <b>whole-plane bands</b> on det2, det4 and det6 are a different thing. They are scattered single strips with mixed signs. Their
+rate is flat in HV (det6: 3 %, ×1.06 per 10 V, up to the spark onset), and on det2/det4 they ride on spark triggers (35–38 % of
+spark triggers carry one). Their mechanism is not characterised here.</p>
+</div>
