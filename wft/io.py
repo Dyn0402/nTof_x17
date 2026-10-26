@@ -172,10 +172,15 @@ def strip_position_map(cfg) -> Dict[int, np.ndarray]:
 
 def extract_window(wfm_all: np.ndarray, noise_all: np.ndarray,
                    pos_map: np.ndarray, seed_channels: Sequence[int],
-                   pad_strips: int = 3) -> Optional[PlaneWindow]:
+                   pad_strips: int = 3, dead=None) -> Optional[PlaneWindow]:
     """Cut the fit window: the seed cluster's strips plus `pad_strips` on each
     side in *position* order (the sharing kernel reaches +-2 strips, so the pad
     must be at least 2 for the model to see where the shared charge went).
+
+    ``dead`` (channel numbers, ``wft.seed.DEAD_SEED``): the pad counts LIVE
+    strips only and takes the dead ones it crosses along, so a cluster that
+    stops at a dead run (dead strips never fire) still has `pad_strips` strips
+    of data beyond it. None = the historical pad.
 
     Note what does NOT happen here: no reference track, no hit times. Only
     'which strips' comes from the seed.
@@ -190,6 +195,16 @@ def extract_window(wfm_all: np.ndarray, noise_all: np.ndarray,
         return None
     lo = max(0, min(ranks) - pad_strips)
     hi = min(len(order) - 1, max(ranks) + pad_strips)
+    if dead is not None and len(dead):
+        isd = np.isin(order, np.asarray(dead, dtype=int))
+        lo, n = min(ranks), 0
+        while lo > 0 and n < pad_strips:
+            lo -= 1
+            n += not isd[lo]
+        hi, n = max(ranks), 0
+        while hi < len(order) - 1 and n < pad_strips:
+            hi += 1
+            n += not isd[hi]
     ch = order[lo:hi + 1]
     return PlaneWindow(ch=ch.astype(np.int16), pos=pos_map[ch].astype(np.float32),
                        W=wfm_all[ch].astype(np.float32),

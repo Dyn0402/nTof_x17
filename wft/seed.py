@@ -40,6 +40,14 @@ PITCH_MM = 398.58 / 512    # 0.7784 — strip pitch, for the hot-run bridge belo
 #: to three decimals), so this is a correctness choice, not a tuned one.
 #: Scanned with ``WFT_HOT_BRIDGE=1``.
 HOT_BRIDGE = os.environ.get('WFT_HOT_BRIDGE', '0') == '1'
+#: Dead strips (bundle ``dead``, census-verified: they read ~0 of the charge the
+#: fit predicts for them) cannot fire, so the silence of a dead strip between
+#: two fired strips says nothing about the gap. With ``WFT_DEAD_SEED=1`` the
+#: clustering gap does not count the dead strips it crosses
+#: (``_effective_gaps``), and ``wft.io.extract_window`` pads by LIVE strips, so
+#: a cluster that ends at a dead run is not handed to the fit with a pad that is
+#: all censored. Off (default) = the historical seeding and windows, bit-identical.
+DEAD_SEED = os.environ.get('WFT_DEAD_SEED', '0') == '1'
 
 
 @dataclass
@@ -163,15 +171,27 @@ def strip_positions(df: pd.DataFrame, pos_maps: Dict[int, np.ndarray]) -> np.nda
     return p
 
 
-def _cluster_labels(pos: np.ndarray, gap_mm: float) -> np.ndarray:
+def _effective_gaps(pos: np.ndarray, dead_pos=None) -> np.ndarray:
+    """Gaps between consecutive sorted positions, less one pitch per dead strip
+    strictly between them (a dead strip cannot fire, so it is not evidence of a gap)."""
+    d = np.diff(pos)
+    if dead_pos is not None and len(dead_pos) and len(d):
+        n_between = (np.searchsorted(dead_pos, pos[1:], 'left')
+                     - np.searchsorted(dead_pos, pos[:-1], 'right'))
+        d = d - n_between * PITCH_MM
+    return d
+
+
+def _cluster_labels(pos: np.ndarray, gap_mm: float, dead_pos=None) -> np.ndarray:
     """Spatial cluster label per strip, from sorted positions."""
     if len(pos) == 0:
         return np.zeros(0, dtype=int)
-    return np.concatenate([[0], np.cumsum(np.diff(pos) > gap_mm)])
+    return np.concatenate([[0], np.cumsum(_effective_gaps(pos, dead_pos) > gap_mm)])
 
 
 def _clean_cluster_labels(pos: np.ndarray, hot_mask: np.ndarray,
-                          gap_mm: float, bridge: bool = HOT_BRIDGE) -> np.ndarray:
+                          gap_mm: float, bridge: bool = HOT_BRIDGE,
+                          dead_pos=None) -> np.ndarray:
     """Cluster the CLEAN strips only, with the ordinary ``gap_mm``.
 
     Deleting the hot strips and re-applying the production gap threshold is
@@ -193,7 +213,7 @@ def _clean_cluster_labels(pos: np.ndarray, hot_mask: np.ndarray,
     cp = pos[~hot_mask]
     if len(cp) == 0:
         return np.zeros(0, dtype=int)
-    d = np.diff(cp)
+    d = _effective_gaps(cp, dead_pos)
     if bridge and len(d):
         hp = pos[hot_mask]
         if len(hp):
@@ -206,7 +226,7 @@ def _clean_cluster_labels(pos: np.ndarray, hot_mask: np.ndarray,
 def seed_candidates(pos: np.ndarray, channels: np.ndarray, amps: np.ndarray,
                     gap_mm: float = GAP_THRESHOLD_MM,
                     min_strips: int = MIN_STRIPS,
-                    n_candidates: int = 1, hot=None) -> list:
+                    n_candidates: int = 1, hot=None, dead_pos=None) -> list:
     """Spatial clusters of one plane, ranked by CLEAN (non-``hot``) strip
     count.
 
@@ -246,6 +266,10 @@ def seed_candidates(pos: np.ndarray, channels: np.ndarray, amps: np.ndarray,
     With ``hot`` empty or None this is exactly the historical behaviour:
     clusters over all strips, ranked and admitted on raw count.
 
+    ``dead_pos``: sorted positions [mm] of the plane's dead strips; the gaps
+    they sit in shrink by one pitch each (``_effective_gaps``, ``DEAD_SEED``).
+    None = the historical gaps.
+
     **Read this before turning it on in production.** Measured on D/run_145
     over 3 600 triggers, this rule and the count-after-clustering rule it
     replaces come out the same on every fit metric. It is the better-defined
@@ -269,7 +293,7 @@ def seed_candidates(pos: np.ndarray, channels: np.ndarray, amps: np.ndarray,
                else np.zeros(len(channels), bool))
 
     if hot_mask.any():
-        lab = _clean_cluster_labels(pos, hot_mask, gap_mm)
+        lab = _clean_cluster_labels(pos, hot_mask, gap_mm, dead_pos=dead_pos)
         cpos = pos[~hot_mask]
         counts = np.bincount(lab, minlength=int(lab.max()) + 1 if len(lab) else 0)
         order = np.argsort(counts)[::-1][:max(1, n_candidates)]
@@ -287,7 +311,7 @@ def seed_candidates(pos: np.ndarray, channels: np.ndarray, amps: np.ndarray,
                             n_raw=int(len(pos))))
         return out
 
-    lab = _cluster_labels(pos, gap_mm)
+    lab = _cluster_labels(pos, gap_mm, dead_pos)
     n_labels = int(lab.max()) + 1 if len(lab) else 0
     counts = np.bincount(lab, minlength=n_labels)
     order = np.argsort(counts)[::-1][:max(1, n_candidates)]
@@ -316,12 +340,16 @@ def seeds_from_hits(df_hits: pd.DataFrame, pos_maps: Dict[int, np.ndarray],
                     spark_veto: Optional[int] = SPARK_VETO_HITS,
                     n_candidates: int = N_CANDIDATES,
                     hot: Optional[Dict[str, object]] = None,
-                    local_mm: Optional[float] = None) -> Dict[int, dict]:
+                    local_mm: Optional[float] = None,
+                    dead: Optional[Dict[str, object]] = None) -> Dict[int, dict]:
     """Build per-event seeds for both planes from a combined hits DataFrame.
 
     ``hot``: optional ``{'x': [...], 'y': [...]}`` channel numbers, passed to
     ``seed_candidates`` (see there — "never seed on a flagged channel").
     Typically ``cal.hot`` off the calibration bundle in use.
+
+    ``dead``: optional ``{'x': [...], 'y': [...]}`` channel numbers (``cal.dead``)
+    whose strips do not count toward a clustering gap (``DEAD_SEED``).
 
     Returns {eventId: {'x': [Seed], 'y': [Seed], 'n_hits': int,
                        'spark': bool}} — a list per plane, ranked by (clean)
@@ -342,6 +370,12 @@ def seeds_from_hits(df_hits: pd.DataFrame, pos_maps: Dict[int, np.ndarray],
     if len(df) == 0:
         return out
     hot = hot or {}
+    dead_pos = {}
+    for plane, feu in (('x', feu_x), ('y', feu_y)):
+        ch = np.asarray(sorted((dead or {}).get(plane, ())), dtype=int)
+        p = pos_maps[feu][ch] if len(ch) else np.zeros(0)
+        p = np.sort(p[np.isfinite(p)])
+        dead_pos[plane] = p if len(p) else None
     counts = df.groupby('eventId').size()
     for eid, g in df.groupby('eventId'):
         n_hits = int(counts.loc[eid])
@@ -356,6 +390,7 @@ def seeds_from_hits(df_hits: pd.DataFrame, pos_maps: Dict[int, np.ndarray],
                 rec[plane] = seed_candidates(pos_maps[feu][ch], ch,
                                              gp['amplitude'].to_numpy(),
                                              n_candidates=n_candidates,
-                                             hot=hot.get(plane))
+                                             hot=hot.get(plane),
+                                             dead_pos=dead_pos[plane])
         out[int(eid)] = rec
     return out

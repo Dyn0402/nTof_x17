@@ -1562,7 +1562,8 @@ def reconstruct_run(cfg, cal: CalibrationBundle, out_path: str,
         print(f'[wft] {cal.summary()}')
         print(f'[wft] hits -> seeds ...', flush=True)
     hits = _load_hits(cfg)
-    seeds = wseed.seeds_from_hits(hits, pos_maps, feu_x, feu_y, hot=cal.hot)
+    dead = (getattr(cal, 'dead', None) or {}) if wseed.DEAD_SEED else {}
+    seeds = wseed.seeds_from_hits(hits, pos_maps, feu_x, feu_y, hot=cal.hot, dead=dead)
     del hits
     wanted = set(seeds)
     if event_filter is not None:
@@ -1579,7 +1580,7 @@ def reconstruct_run(cfg, cal: CalibrationBundle, out_path: str,
     with ProcessPoolExecutor(max_workers=jobs, initializer=_worker_init,
                              initargs=(bundle_path,)) as pool:
         for payloads in _stream_windows(cfg, pos_maps, seeds, wanted, pad_strips,
-                                        verbose=verbose):
+                                        verbose=verbose, dead=dead):
             if not payloads:
                 continue
             for r in pool.map(_worker_fit, payloads, chunksize=8):
@@ -1625,6 +1626,7 @@ def reconstruct_run(cfg, cal: CalibrationBundle, out_path: str,
                                sig_floor_local_mm=wseed.SIG_FLOOR_LOCAL_MM,
                                spark_veto=wseed.SPARK_VETO_HITS,
                                pad_strips=pad_strips,
+                               dead_seed={p: len(c) for p, c in dead.items()},
                                event_filter=bool(event_filter)),
                 multi_track=dict(emit_candidates=EMIT_CANDIDATES,
                                  xy_pairing=(cal.xy_pairing or {}).get('features'),
@@ -1661,8 +1663,9 @@ def _load_hits(cfg):
     return df[df['feu'].isin(cfg.MX17_FEUS)]
 
 
-def _stream_windows(cfg, pos_maps, seeds, wanted, pad_strips, verbose=True):
-    """Yield lists of (eid, windows, seedinfo, n_hits, spark) per file pair."""
+def _stream_windows(cfg, pos_maps, seeds, wanted, pad_strips, verbose=True, dead=None):
+    """Yield lists of (eid, windows, seedinfo, n_hits, spark) per file pair.
+    ``dead``: {plane: channels} padded across (``wft.seed.DEAD_SEED``); empty = historical."""
     from . import io as wio
     fx = wio.subrun_files(cfg.BASE_PATH, cfg.RUN, cfg.SUB_RUN, cfg.MX17_FEU_X)
     fy = wio.subrun_files(cfg.BASE_PATH, cfg.RUN, cfg.SUB_RUN, cfg.MX17_FEU_Y)
@@ -1692,7 +1695,8 @@ def _stream_windows(cfg, pos_maps, seeds, wanted, pad_strips, verbose=True):
                 wins, used = [], []
                 for s in cl:
                     win = wio.extract_window(wfm, rdr.noise, pos_maps[feu],
-                                             s.channels, pad_strips)
+                                             s.channels, pad_strips,
+                                             dead=(dead or {}).get(plane))
                     if win is None:
                         continue
                     wins.append(dict(W=win.W, pos=win.pos, noise=win.noise,
