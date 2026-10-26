@@ -28,6 +28,26 @@ Slide 8: old → new Sankey (found,cut 136 = 69 M + 67 band-only singles; far:MU
 any-candidate credit too (97.1 %); with singles at 96.9 % it is 94.5 %. The budget bar shows 183 multi, not 187: 4 of
 the cut ones carry a band and are counted as band (first match wins).
 
+**10-26 night, follow-up 2 (multi-particle events) — `rerun/multiparticle/`, note notes/mx17-det3-multiparticle:**
+- **What the second particles are:** muon knock-on electrons (δ / small showers) made in the material ABOVE det3, mostly
+  in or just under the upper M3 doublet. On the 114 2×2 events: Δt0 to the muon median −11 ns, robust σ 69 ns, 91 %
+  within ±150 ns (flat for an unrelated particle: ~11 %); 39 % pass within 20 mm of the M3 ray (unrelated muons 10 %),
+  and 25 of those 44 meet it at Z 1050–1302 mm (unrelated 12 %); steep (median |tan| 0.39 vs muon 0.17); charge
+  MIP-like (median 1.16× single) with a 2-MIP bump (27 % > 2×, singles 9 %). M3 does not see them along their line
+  (per-plane matches = nulls; 0 on all four upper planes; 1 event with an M3 alternative on it) → no real sample with
+  truth on both tracks. Accidental muon: 0.43 events expected; gas δ (~0.7 % > 50 keV, estimate) stay attached = δ-blob class.
+- **Trigger-track rule:** production picks the M3 particle in 54 % of the 296 ambiguous views; "most vertical" 70 %;
+  5-feature conditional logit (|tan|, prompt t0, extent, χ², telescope acceptance), 2-fold held-out 80 % (77 % det3-only
+  features); events right 69 → 104 of 187 (+0.54 pt interior). The lever is the cosmic trigger's verticality — does
+  not transfer to beam. C22's rules confirmed no better than production.
+- **Two-track benchmark (overlay, M3 truth on both):** production seeder both-found 0/0/22/98/100 % (0–6/6–12/12–18/
+  18–24/≥24 mm); `WFT_TWO_TRACK_FIT=1` 28/43/50/98/100 %, 0/30 singles split. ≥ 24 mm: σ sep 0.73 mm/view, σ opening
+  1.47°, σ DCA 8.9 mm, σ Z_v 47 mm (opening > 10°, ≈ 14 mm / tan θ); the second track moves the first < 0.01 mm at
+  ≥ 18 mm. Real: M3 leg at single-track resolution beyond 30 mm (0.70 mm / 1.28° below). Overlay arm `off` reproduces
+  the 10-26 overlay exactly.
+- Not done: Geant4 of the bench stack (would turn the δ-from-material estimate into a prediction); the upper M3
+  doublet's material is undocumented here.
+
 **10-26 evening (Dylan: characterise the bands, re-categorise MULTI, pairing for the paper, head-ons to the extreme):**
 - **Noise bands** (bands.py): whole-window baseline offsets ±50–3000 ADC on a contiguous patch of strips, x and y
   together (77–95 %), 2–19 % of triggers per chamber. They follow the CHAMBER (det3 same chips on FEUs 7/8 and 3/4,

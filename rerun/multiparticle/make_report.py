@@ -284,8 +284,10 @@ conversion pair, or two knock-ons) would give. It cannot be split further from t
 {pct(E.m3_ncl_x1.ge(2).mean())} vs 15 %), but not on the second particle's line beyond the nulls. Two readings, not
 separable here: the secondaries are made below the upper doublet's planes, or above and scattered out of the 20 mm
 window (an MeV electron scatters ~15° in 0.5 m of air plus det3's window). M3 never reconstructs them as a 4-layer
-track ({int(((E.m3_nalt_x + E.m3_nalt_y) > 0).sum())} events with any alternative χ² &lt; 1 combination, none on the
-second particle).</p>''')
+track: {int(((E.m3_nalt_x + E.m3_nalt_y) > 0).sum())} of the {len(E)} events have an alternative χ² &lt; 1 combination
+in some view, and an alternative χ² &lt; 5 combination lies on the second particle (≤ 5 mm, Δtan &lt; 0.1) in one view of
+{int(((F.alt_d_x < 5) | (F.alt_d_y < 5)).sum())} event and in both views of {int(((F.alt_d_x < 5) & (F.alt_d_y < 5)).sum())}.
+So there is no real-data sample with telescope truth on both tracks.</p>''')
     # Q2
     rows = []
     for k, v in pr.items():
@@ -356,8 +358,10 @@ resolutions is each donor's M3 ray.</p>''')
 <li><b>T1 (two-track separation)</b> measured on n_TOF run_145 with the beam seeder: physical limit ~1 strip pitch,
 real-track limit 2–3 mm with the fixed chain + joint fit; coincident overlay pairs below 12 mm found 19 → 58 % (A),
 36 → 49 % (C). The det3 bench with the production (bench) seeder is cut at its 12 mm seed gap: 0 % below 12 mm,
-~22 % at 12–18, then fully efficient. The bench is therefore not limited by physics but by the seeder; the joint fit
-arm above shows what it recovers here. The re-pass on n_TOF lost pairs below ~20 mm in either view — the same scale.</li>
+~22 % at 12–18, then fully efficient. The bench is therefore limited by the seeder, not by physics: with the joint
+two-track fit (production settings, F = 300) both are found in {", ".join(f'{100 * b["both_found"]:.0f} %' for b in tt["bins"][:3]) if tt else "–"}
+of the 0–6 / 6–12 / 12–18 mm pairs with 0 of {tt["n_single"] if tt else "–"} clean singles split, and the recovered pairs keep
+~1 mm separation resolution. That is the same scale as T1's beam overlay (A &lt; 12 mm 58 %, C 49 % with its tuned F). The re-pass on n_TOF lost pairs below ~20 mm in either view — the same scale.</li>
 <li><b>T2 (single-track angle truth)</b>: at ≥ 18 mm the second track does not perturb the first (fits identical to
 the singles to &lt; 0.01 mm, 0.05°), so pair angles inherit T2's single-track angle scale and resolution directly; the
 pair opening-angle resolution is √2 × the single-track angle (≈ 1.4–1.5° on det3).</li>
