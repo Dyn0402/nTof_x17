@@ -6,11 +6,15 @@ golden-row events with one seeding rule changed, to test whether a budget catego
 reference:
   --no-spark-veto   no 50-hit event veto (seeds_from_hits spark_veto=None): the candidate fit decides
   --min-strips N    a cluster needs N strips after the 10 % significance floor instead of 3
+  --headon-sig T    adaptive head-on rule: MIN_STRIPS stays 3, but a 2-strip cluster is also admitted when its weaker
+                    strip has hit significance >= T. A head-on track puts its whole drift column on 1-2 strips, so its
+                    third strip falls under the plane-relative 10 % floor although it is far above noise
 Both are default arguments bound at import in wft.seed, so they are passed by wrapping the functions, not by setting
 the module constants. Run with the finalize environment (WFT_PIVOT_START=1 WFT_COL_GUARD=0.01) and
 X17_BENCH_ROOT=~/x17/cosmic_bench/outliers/stage (rr1_cm0 hits, decoded_root, M3 v2 of the golden row).
 """
 import argparse, functools, os, sys
+import numpy as np
 import pandas as pd
 
 HERE = os.path.dirname(os.path.abspath(__file__)); REPO = os.path.abspath(os.path.join(HERE, '..', '..'))
@@ -18,10 +22,28 @@ sys.path[:0] = [REPO, os.path.join(REPO, 'mx_june_cosmic_qa'), os.path.join(REPO
 BUNDLE = os.path.expanduser('~/x17/cosmic_bench/satstudy/bundle_det3_phys')
 
 
+def headon(wseed, thr):
+    """Seed on significance instead of ADC amplitude (Seed.amp_sum is not used downstream) and admit a 2-strip
+    cluster only when both strips have significance >= thr."""
+    orig_sc, orig_sfh = wseed.seed_candidates, wseed.seeds_from_hits
+
+    def sc(pos, channels, amps, *args, **kw):
+        kw['min_strips'] = 2
+        sig = dict(zip(np.asarray(channels, int).tolist(), np.asarray(amps, float).tolist()))
+        return [s for s in orig_sc(pos, channels, amps, *args, **kw)
+                if s.n_strips >= wseed.MIN_STRIPS or min(sig.get(int(c), 0.0) for c in s.channels) >= thr]
+
+    def sfh(df, *args, **kw):
+        df = df.assign(amplitude=df['significance'])
+        return orig_sfh(df, *args, **kw)
+    wseed.seed_candidates, wseed.seeds_from_hits = sc, sfh
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--events', required=True); ap.add_argument('--out', required=True)
     ap.add_argument('--no-spark-veto', action='store_true'); ap.add_argument('--min-strips', type=int)
+    ap.add_argument('--headon-sig', type=float)
     ap.add_argument('--jobs', type=int, default=2)
     a = ap.parse_args()
     from qa_config import get_config, setup_paths
@@ -33,6 +55,8 @@ def main():
         wseed.seeds_from_hits = functools.partial(wseed.seeds_from_hits, spark_veto=None)
     if a.min_strips:
         wseed.seed_candidates = functools.partial(wseed.seed_candidates, min_strips=a.min_strips)
+    if a.headon_sig:
+        headon(wseed, a.headon_sig)
     cfg = get_config('sat_det3')
     ids = set(pd.read_csv(a.events).event_id.astype(int))
     os.makedirs(os.path.dirname(a.out), exist_ok=True)

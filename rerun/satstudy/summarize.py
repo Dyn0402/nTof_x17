@@ -191,6 +191,9 @@ def delta():
 def main():
     S_ = dict(budget=budget(), sat=sat_dependence(), rail=json.load(open(os.path.join(S.OUT, 'railstats.json'))),
               arms=arms(), sparks=sparks(), fit_failed=fit_failed(), multi=multi(), delta=delta())
+    for k in ('multitrack', 'headon'):     # multitrack.py count, headon.py
+        p = os.path.join(S.OUT, f'{k}.json')
+        S_[k] = json.load(open(p)) if os.path.exists(p) else None
     json.dump(S_, open(os.path.join(S.OUT, 'summary.json'), 'w'), indent=1, default=float)
     for k in ('arms', 'sparks', 'fit_failed'):
         print(k, json.dumps(S_[k], default=float)[:1500])

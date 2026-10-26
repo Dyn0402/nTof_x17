@@ -273,15 +273,20 @@ def s_cover(D, Sm):
 def recoverable(Sm):
     """Points (of interior rays) shown to be recoverable by a reference-free change, from the runs that finished."""
     b = Sm['budget']['interior']; n = b['n']; parts, sure = [], 0.0
-    sure += b['rejected_cut']; parts.append(f'competing-cluster cut {b["rejected_cut"]:.1f}')
+    mt = Sm.get('multitrack')
+    if mt:
+        bd = 100 * mt['rejected_cut']['band_only'] / mt['n']
+        sure += bd; parts.append(f'noise-band veto {bd:.1f}')
+    else:
+        sure += b['rejected_cut']; parts.append(f'competing-cluster cut {b["rejected_cut"]:.1f}')
     sp = Sm['sparks'].get('nospark')
     if sp:
         # the veto off AND the competing-cluster cut relaxed (the chosen fit agrees with M3 in both views)
         k = sum(g['win_both'] for c, g in sp.items() if c != 'discharge')
         sure += 100 * k / n; parts.append(f'spark veto (with the cut relaxed) {100 * k / n:.1f}')
-    ff = Sm['fit_failed'].get('min2')
+    ff = (Sm.get('headon') or {}).get('ho20') or Sm['fit_failed'].get('min2')
     if ff:
-        sure += 100 * ff['detected'] / n; parts.append(f'2-strip seeds {100 * ff["detected"] / n:.2f}')
+        sure += 100 * ff['detected'] / n; parts.append(f'head-on rule {100 * ff["detected"] / n:.2f}')
     return dict(sure=sure, sure_parts=parts)
 
 
@@ -704,6 +709,97 @@ def s_sat_arms(D, Sm):
     D.slide('sat-arms', body, notes, short='saturation: rules')
 
 
+def s_cut(D, Sm):
+    mt = Sm.get('multitrack'); b = Sm['budget']['interior']
+    if not mt:
+        return
+    rc = mt['rejected_cut']; n = mt['n']
+    sp_pc, bd_pc = 100 * rc['second_particle'] / n, 100 * rc['band_only'] / n
+    H = mt['pairing']['ext_hist']; e = np.arange(0, 34, 2)
+    pl = sd.Plot(560, 470, x=(0, 32), y=(1, 2e4, 'log'), xlabel='time extent of a candidate [60 ns samples]',
+                 ylabel='candidate clusters', title='every production candidate, golden row', margin=(10, 18, 84, 100))
+    pl.xticks([(t, str(t)) for t in (0, 8, 16, 24, 32)]).yticks([(1, '1'), (10, '10'), (100, '100'), (1000, '10³'), (10000, '10⁴')])
+    for k, h in enumerate(H):
+        if h:
+            c = PURPLE if e[k] >= mt['ext_max'] else BLUE
+            pl.vbar(e[k] + 1, h, 22, c, base=1, tip=f'{e[k]}–{e[k] + 2} samples: {h} candidates')
+    pl.vline(mt['ext_max'] + 1, RED, label='max drift',
+             tip='30 mm / 36 µm/ns = 840 ns = 14 samples, plus the ~6-sample pulse: ≤ 24 samples is a particle')
+    d1 = evd(_ex['cut_two'], 'y', w=560, h=470, zoom=70, cen=_ex['cut_two_cen'], title='second particle (y view)',
+             margin=(10, 18, 84, 96))
+    d2 = evd(_ex['cut_band'], 'y', w=560, h=470, zoom=150, cen=240, title='edge noise band (y view)', margin=(10, 18, 84, 96))
+    body = (sd.title(f'“Found, cut” ({b["rejected_cut"]:.1f} %) is half a real second particle, half a noise band at '
+                     f'the plane edge', f'the fit is on M3 in both views; another cluster with > 2 strips gets the event '
+                     f'rejected · {rc["second_particle"]} second particle ({sp_pc:.2f} %), {rc["band_only"]} band only '
+                     f'({bd_pc:.2f} %)') +
+            sd.row(sd.col(d1, sd.p('a second MIP, in time, a few cm away: correct pick, event thrown away', 22, MUT), w=560),
+                   sd.col(d2, sd.p('a faint band that lasts the whole window on the last y connector', 22, MUT), w=560),
+                   sd.col(pl.svg('extent'), w=560), gap=30) + evd_legend())
+    notes = (f'<p>All {rc["n"]} interior rays in this category, each competing cluster tagged from its own waveforms '
+             f'(multitrack.py): a particle’s signal on its strips lasts at most a drift column, ≤ {mt["ext_max"]} '
+             f'samples above 20 % of its peak; the noise bands last the whole 32-sample window. The candidate '
+             f'distribution (right) has nothing between 24 and 30 samples apart from a handful, so the cut is not '
+             f'tuned.</p><p><b>Second particle</b> ({rc["second_particle"]} events): a separate MIP-like track, '
+             f'median ~90 mm away, in both views in two thirds of them: the same physics as MULTI, but here production '
+             f'picked the M3 particle. These belong to the multi-track accounting (next slide).</p>'
+             f'<p><b>Band only</b> ({rc["band_only"]} events): low-amplitude (peak ~200 ADC), coherent bands on the '
+             f'first x strips (x &lt; 6 mm) and the last y connector (y &gt; 355 mm), spread evenly through the run. '
+             f'They are not particles. Counting n_dropped without them recovers all {rc["recovered_noband"]}: a '
+             f'reference-free fix (a time-extent veto on candidates) worth {bd_pc:.2f} points.</p>'
+             f'<p>A random second cosmic in the window is ~10⁻⁴ per trigger, so the second particles are correlated '
+             f'with the muon (shower companions, secondaries from the material above).</p>')
+    D.slide('cut', body, notes, short='found, cut')
+
+
+def s_multitrack(D, Sm):
+    mt = Sm.get('multitrack')
+    if not mt:
+        return
+    c = mt['classes']; pr = mt['pairing']
+    S_, M_, V_ = c['S'], c['M'], c['V']
+    rows = [('single particle', pc(100 * S_['frac'], 1), pc(100 * S_['prod'], 1), pc(100 * S_['noband'], 1), pc(100 * S_['any'], 1)),
+            ('two or more particles', pc(100 * M_['frac'], 1), pc(100 * M_['prod'], 1), '—', pc(100 * M_['any'], 1)),
+            ('spark-vetoed (no fit)', pc(100 * V_['frac'], 1), '0', '0', '0'),
+            ('<b>all interior</b>', '100 %', pc(100 * mt['total']['prod'], 1), pc(100 * mt['total']['noband'], 1),
+             pc(100 * mt['total']['any'], 1))]
+    tips = None
+    body = (sd.title(f'Counted per particle, det3 finds the M3 track in {100 * mt["total"]["any"]:.1f} % of interior '
+                     f'events; {100 * S_["noband"]:.1f} % on single-particle events',
+                     f'{mt["n"]:,} interior M3 tracks split by what det3 itself sees (reference-free): one particle '
+                     f'cluster per view, or more') +
+            sd.row(sd.col(sd.table(['event class', 'share', 'production', 'band-blind cut', 'any candidate on M3'], rows, size=24),
+                          sd.p('“any candidate”: some x and some y cluster fit within 5 mm of M3 (no n_dropped cut). '
+                               'Production has 0 % on multi-particle events by construction: the cut rejects them.', 22, MUT),
+                          w=1100),
+                   sd.col(sd.bignum(f'{100 * pr["right"]["q"]:.0f} %', 'x↔y paired right by charge alone', DGREEN,
+                                    f'{pr["n"]} two-track events with M3 on one track; {100 * pr["right"]["all"]:.0f} % '
+                                    f'with the depth profile added, {100 * pr["right"]["t0"]:.0f} % on t0 alone', dark=False, size=64),
+                          sd.bignum(f'{M_["n"]}', 'multi-particle events', DBLUE,
+                                    f'{pr["topology"].get("2x2", 0)} with 2 tracks in both views', dark=False, size=64), w=520),
+                   gap=48))
+    notes = (f'<p>multitrack.py. Classes from det3’s own candidates (particle = time extent ≤ {mt["ext_max"]} samples, '
+             f'previous slide); the spark-vetoed events have no candidates and are kept apart (they are the spark '
+             f'slide’s problem). Single-particle events are {100 * S_["frac"]:.1f} % of the interior; there production '
+             f'gets {100 * S_["prod"]:.1f} %, {100 * S_["noband"]:.1f} % once the noise bands no longer count as competing '
+             f'clusters. The remaining single-particle losses are the far classes (δ-rays, saturated blobs, edge, M3 '
+             f'kinks) and the head-ons.</p>'
+             f'<p>Multi-particle events ({M_["n"]}, {100 * M_["frac"]:.1f} %): det3 reconstructs the M3 track in both views '
+             f'in {100 * M_["any"]:.0f} % of them. Of the rest, the M3 particle’s cluster was merged with the other one '
+             f'or not among the top 3 per view. Topology (particle clusters x × y): {pr["topology"]}: when two tracks '
+             f'line up in one projection (1×2, 2×1) one view sees one cluster.</p>'
+             f'<p><b>x↔y pairing.</b> In a two-track event each view has two clusters, so the 3D tracks are ambiguous. '
+             f'Charge settles it: the same particle leaves the same charge in x and y (log ratio spread '
+             f'{pr["cal"]["lq"][1]:.3f} on clean singles), so choosing the assignment with the smaller summed z² '
+             f'pairs the M3 track’s x and y right in {100 * pr["right"]["q"]:.0f} % of {pr["n"]} events '
+             f'(+ t0, q_u50, q_u90: {100 * pr["right"]["all"]:.0f} %; t0 alone {100 * pr["right"]["t0"]:.0f} %). '
+             f'The production gate (select_tracks: |Δt0 − offset| ≤ 120 ns, beam-tuned plausibility) is not used here: '
+             f'on the bench it pairs only {100 * S_["paired"]:.0f} % of clean singles, because the bench x−y t0 offset '
+             f'is broad (σ ≈ {pr["cal"]["t0"][1]:.0f} ns).</p>'
+             f'<p>For the paper: quote the single-particle efficiency first, then add the multi-particle class with this '
+             f'credit; the multi-particle sample itself shows that det3 separates and pairs two tracks in one event.</p>')
+    D.slide('multitrack', body, notes, short='multi-track')
+
+
 def s_fit(D, Sm):
     b = Sm['budget']['interior']['far_by_cls']
     disp = [sd.col(evd(e, v, w=440, h=470, zoom=16, title=f'event {e}, {v}', margin=(10, 18, 84, 96)), w=440) for e, v in _ex['fit']]
@@ -722,53 +818,66 @@ def s_fit(D, Sm):
 
 
 def s_failed(D, Sm):
-    F = Sm['fit_failed']; ex = _ex['failed']
-    r = row(ex); W = wf(ex)['x'].astype(np.float32); n = np.maximum(wf(ex)['noise_x'].astype(np.float32), 3)
-    pos = posmap('x'); m = W.max(1); ok = np.isfinite(pos)
-    cen = r['ref_mesh_x']; sel = ok & (np.abs(pos - cen) < 4)
-    o = np.argsort(pos[sel]); P = pos[sel][o]; M = m[sel][o]
-    pl = sd.Plot(760, 520, x=(cen - 4, cen + 4), y=(10, 5000, 'log'), xlabel='x strip position [mm]', ylabel='strip max [ADC]',
-                 title=f'event {ex}, x view: the strips', margin=(10, 24, 84, 100))
-    pl.xticks([(t, f'{t:.0f}') for t in np.arange(np.ceil(cen - 4), cen + 4, 2)]).yticks([(10, '10'), (100, '100'), (1000, '1000')])
-    fl = 0.1 * M.max()
-    for pp, mm in zip(P, M):
-        col = GREEN if mm >= fl else (GOLD if mm >= 6 * 15 else GREY)
-        pl.vbar(pp, mm, 30, col, tip=f'{pp:.2f} mm: {mm:.0f} ADC, {mm / M.max():.1%} of the brightest',
-                base=10)
-    pl.hline(fl, RED, label='10 % of the brightest strip', tip=G['floor'])
-    pl.vline(cen + 15 * r['ref_tan_x'], M3C, label='M3 (mid-gap)')
-    st = (f'{F["min2"]["detected"]} of {F["min2"]["n"]} detected with MIN_STRIPS = 2' if F.get('min2') else 'MIN_STRIPS = 2 re-run pending')
-    ctl = F.get('controls')
-    ctxt = (f'controls: {ctl["det_min2"]}/{ctl["n"]} vs {ctl["det_min3"]}/{ctl["n"]} detected, {ctl["views_moved"]} views moved'
-            if ctl else '')
-    body = (sd.title('“Fit failed” is never a fit: a 2-strip x cluster never reaches the fitter',
-                     f'all {F["n"]} interior rays: y fitted and on M3, x has no candidate at all') +
-            sd.row(sd.col(pl.svg('strips'), sd.legend([('above the floor (seeds)', GREEN, 'box'),
-                                                       ('real signal, under the 10 % floor', GOLD, 'box'),
-                                                       ('noise', GREY, 'box')], 22), w=760),
-                   sd.col(evd(ex, 'x', w=460, h=520, zoom=8, title='its x waveforms', margin=(10, 18, 84, 96)), w=460),
-                   sd.col(sd.callout(f'<b>{F["n"]}/{F["n"]}</b> have x charge on M3 at SNR 100–500 on 2 strips; the 3rd '
-                                     f'strip is at 7–9 % of the brightest', BLUE, 24),
-                          sd.callout(st, GREEN, 24), sd.p(ctxt, 22, MUT), w=380), gap=32))
-    notes = (f'<p>All {F["n"]} interior "fit failed" rays have the same signature: the y view is fitted and agrees with '
-             f'M3; the x view has no row at all in the candidate table and x_ftst = −1 (the plane was never windowed). '
-             f'The x hits are on the M3 footprint (2 strips at hundreds of σ), but a near-vertical x track in det3 '
-             f'shares little charge (the x kernel c1 = 0.05), so its ±1 neighbours sit at 7–9 % of the brightest strip — '
-             f'30σ signals, but under the {term("10 % relative floor", G["floor"])}, which leaves 2 strips, one short of '
-             f'MIN_STRIPS = 3. Over the whole golden row, 34 x planes and 7 y planes end up with &lt; 3 strips after the '
-             f'floor.</p><p>Recoverable: yes. Re-running the production reconstruction with MIN_STRIPS = 2 '
-             f'(reco_variant.py --min-strips 2): {st}. {ctxt}. Alternatives that keep MIN_STRIPS: an absolute SNR '
-             f'floor next to the relative one (a strip at 30σ is not noise), or the local floor already in the beam '
-             f'seeder.</p>')
-    D.slide('failed', body, notes, short='fit failed')
+    F = Sm['fit_failed']; Ho = Sm.get('headon') or {}; ex = _ex['failed']
+    hf = Ho.get('headon_feats', []); ff = (Ho.get('outside') or {}).get('fake_feats', [])
+    pl = sd.Plot(640, 500, x=(1, 1000, 'log'), y=(1, 1000, 'log'), xlabel='brightest strip SNR', ylabel='2nd strip SNR',
+                 title='2-strip clusters: head-ons vs added fakes', margin=(10, 24, 84, 100))
+    pl.xticks([(1, '1'), (10, '10'), (100, '100'), (1000, '1000')]).yticks([(1, '1'), (10, '10'), (100, '100'), (1000, '1000')])
+    if hf:
+        pl.points([f['snr1'] for f in hf], [f['snr2'] for f in hf], GREEN, r=8,
+                  tips=[f'event {f["event_id"]} x: head-on on M3, SNR {f["snr1"]:.0f} / {f["snr2"]:.0f} / {f["snr3"]:.0f}, '
+                        f'{f["n10"]} strips > 10σ' for f in hf])
+    if ff:
+        pl.points([f['snr1'] for f in ff], [max(f['snr2'], 1.1) for f in ff], RED, r=8, marker='diamond',
+                  tips=[f'event {f["event_id"]} {f["plane"]} at {f["p0"]:.0f} mm, M3 outside det3: SNR {f["snr1"]:.1f} / '
+                        f'{f["snr2"]:.1f}, extent {f["ext"]} samples' for f in ff])
+    pl.hline(20, BLUE, label='head-on rule: 2nd strip ≥ 20σ')
+    ho = Ho.get('ho20'); m2 = Ho.get('min2'); out = Ho.get('outside')
+    bt = Ho.get('by_tanx', [])
+    tb = sd.table(['|tan θx|', 'rays', 'fit failed'], [(f'{r["lo"]:.2f}–{r["hi"]:.2f}', f'{r["n"]}', pc(100 * r['fit_failed'], 1))
+                                                      for r in bt], size=22) if bt else ''
+    st = (f'<b>{ho["detected"]}/{ho["n"]}</b> recovered; {ho["controls"]["views_moved"]} of {ho["controls"]["n"]} controls moved'
+          if ho else 'head-on re-run pending')
+    fk = (f'empty chamber ({out["n"]} events, M3 outside det3): MIN_STRIPS = 2 adds {out["min2"]["added_views"]} fits, '
+          f'the head-on rule {out["ho20"]["added_views"]}' if out else '')
+    body = (sd.title('“Fit failed” is a head-on x track; a head-on seeding rule recovers all of them, with no fakes',
+                     f'all {F["n"]} interior rays: y fitted and on M3, x has no candidate · '
+                     f'{100 * Ho.get("frac_tanx_lt_003", {}).get("failed", float("nan")):.0f} % have |tan θx| < 0.03 '
+                     f'(detected: {100 * Ho.get("frac_tanx_lt_003", {}).get("detected", float("nan")):.0f} %)') +
+            sd.row(sd.col(evd(ex, 'x', w=420, h=500, zoom=8, title=f'event {ex}, x', margin=(10, 18, 84, 96)), w=420),
+                   sd.col(pl.svg('snr'), sd.legend([('head-on on M3 (fit failed)', GREEN, 'dot'),
+                                                    ('fit only MIN_STRIPS = 2 adds, empty chamber', RED, 'box')], 22), w=640),
+                   sd.col(tb, sd.callout(st, GREEN, 24), sd.callout(fk, BLUE, 22), w=500), gap=32))
+    notes = (f'<p>The y view is fitted and on M3; x has no candidate (x_ftst = −1). A near-vertical x track puts its '
+             f'whole drift column on 1–2 strips, and det3 x shares little charge (kernel c1 = 0.05), so the ±1 '
+             f'neighbours sit at 7–9 % of the brightest strip. They are 15–50σ signals, but under the '
+             f'{term("10 % relative floor", G["floor"])}, which leaves 2 strips, one short of MIN_STRIPS = 3. The rate is '
+             f'{100 * bt[0]["fit_failed"]:.0f} % of rays at |tan θx| &lt; 0.01 and zero above 0.08.</p>' if bt else '') + (
+             f'<p><b>Plain MIN_STRIPS = 2</b> recovers {m2["detected"]}/{m2["n"]}, but on {out["n"]} triggers whose M3 '
+             f'track misses det3 it adds {out["min2"]["added_views"]} single-view fits ({out["min2"]["events"] - out["min3"]["events"]} '
+             f'events): the edge noise bands and faint blips (red), 2nd-strip SNR ≤ '
+             f'{max(f["snr2"] for f in ff):.0f}.</p>' if m2 and out and ff else '') + (
+             f'<p><b>Head-on rule</b> (reco_variant.py --headon-sig 20): MIN_STRIPS stays 3, and a 2-strip cluster is '
+             f'admitted only when its weaker strip is ≥ 20σ (hit significance). Head-ons have it at '
+             f'{min(f["snr2"] for f in hf):.0f}–{max(f["snr2"] for f in hf):.0f}σ, the fakes at ≤ {max(f["snr2"] for f in ff):.0f}σ: '
+             f'a factor 6 of margin either side of 20. Result: {ho["detected"]}/{ho["n"]} detected, '
+             f'{ho["controls"]["det"]}/{ho["controls"]["n"]} controls detected (production {ho["controls"]["det_base"]}), '
+             f'{ho["controls"]["views_moved"]} control views moved; on the empty-chamber set it adds '
+             f'{out["ho20"]["added_views"]} fits (bit-identical to production).</p>' if ho and out and hf and ff else '') + (
+             '<p><b>For n_TOF</b>, where tracks from the target are close to normal incidence, the same rule applies '
+             'unchanged in the beam seeder. What it does not cover: a head-on track whose 2nd strip is under 20σ '
+             '(low gain, the noisy post-23-July configuration) or that fires a single strip; those need the 1-strip '
+             'case and a beam-noise fake test.</p>')
+    D.slide('failed', body, notes, short='head-on')
 
 
 def s_rest(D, Sm):
     b = Sm['budget']['interior']; fb = b['far_by_cls']
     cards = [
         sd.card(sd.p(f'<b>Found, cut: {b["rejected_cut"]:.1f} %</b>', 26) +
-                sd.p(f'The fit is on M3, but another cluster in the view has > 2 strips ({term("n_dropped", G["ndrop"])}). '
-                     'Recoverable by choosing the cut: decision 2 of the C22 handoff.', 22, MUT), w=520),
+                sd.p(f'The fit is on M3, but another cluster in the view has > 2 strips ({term("n_dropped", G["ndrop"])}): '
+                     'half a second particle (multi-track credit), half an edge noise band (a time-extent veto). '
+                     'Slide “found, cut”.', 22, MUT), w=520),
         sd.card(sd.p(f'<b>Position tail: {fb.get("POS_TAIL", 0):.2f} %</b>', 26) +
                 sd.p('Right angle, one clean cluster, > 3 mm from M3. About ⅔ are muons that scattered between the M3 '
                      'doublets (a kink a 4-layer χ² < 1 cannot see). The reference is wrong; nothing to recover.', 22, MUT), w=520),
@@ -783,12 +892,18 @@ def s_rest(D, Sm):
 
 def s_close(D, Sm):
     b = Sm['budget']['interior']; rec = recoverable(Sm)
-    rows = [('competing-cluster cut', pc(b['rejected_cut'], 1), 'choose the cut (decision 2)'),
+    mt = Sm.get('multitrack') or {}
+    rcut = mt.get('rejected_cut', {}); nn = mt.get('n', 1)
+    rows = [('competing cluster = noise band', pc(100 * rcut.get('band_only', float('nan')) / nn, 2),
+             'veto candidates longer than a drift column (≤ 24 samples)'),
+            ('competing cluster = second particle', pc(100 * rcut.get('second_particle', float('nan')) / nn, 2),
+             'multi-track credit (efficiency definition)'),
             ('spark veto → discharge veto', pc(rec_part(Sm, 'spark'), 2), 'a discharge veto + the n_dropped cut relaxed'),
-            ('2-strip seeds', pc(rec_part(Sm, 'failed'), 2), 'MIN_STRIPS = 2, or an absolute SNR floor'),
+            ('head-on x tracks', pc(rec_part(Sm, 'failed'), 2), 'head-on rule: a 2-strip cluster with both strips ≥ 20σ'),
             ('saturated blobs', pc(Sm['budget']['interior']['far_by_cls'].get('FIT_SAT', 0), 2) + ' (class)',
              'a track + blob model; a censoring rule buys ≤ 2 % of these'),
-            ('second particle', pc(Sm['budget']['interior']['far_by_cls'].get('MULTI', 0), 2), 'efficiency definition, not the detector')]
+            ('second particle, other one chosen', pc(Sm['budget']['interior']['far_by_cls'].get('MULTI', 0), 2),
+             'multi-track credit: any candidate on M3' + (f' (M class: {100 * mt["classes"]["M"]["any"]:.0f} % found)' if mt else ''))]
     body = (sd.kicker('summary') + sd.title('What a better reconstruction could buy, and what it cannot') +
             sd.table(['category', '% of interior', 'what it takes'], rows, size=26) +
             sd.p('<b>Not recoverable:</b> discharges, showers and δ-rays that dominate the crossing, and M3’s own kinks. '
@@ -803,7 +918,7 @@ def rec_part(Sm, k):
     if k == 'spark':
         sp = Sm['sparks'].get('nospark')
         return 100 * sum(g['win_both'] for c, g in sp.items() if c != 'discharge') / n if sp else float('nan')
-    ff = Sm['fit_failed'].get('min2')
+    ff = (Sm.get('headon') or {}).get('ho20') or Sm['fit_failed'].get('min2')
     return 100 * ff['detected'] / n if ff else float('nan')
 
 
@@ -823,6 +938,8 @@ def pick_examples(Sm):
     _ex['satblob'] = [(41373, 'x'), (46277, 'y'), (44721, 'y')]
     _ex['fit'] = [(4490, 'x'), (19676, 'y'), (3072, 'x')]
     _ex['failed'] = 43536
+    _ex['cut_two'], _ex['cut_two_cen'] = 21259, 268.0
+    _ex['cut_band'] = 17466
     W = wf(330)['x'].astype(np.float32)
     _ex['satstrip'] = (330, 'x', int(np.argmax((W.max(1) >= S_SAT) * (W.min(1) < -200) * W.max(1)) if ((W.max(1) >= S_SAT) & (W.min(1) < -200)).any() else np.argmax(W.max(1))))
 
@@ -835,8 +952,8 @@ def main():
     pick_examples(Sm)
     D = sd.Deck('det3 loss categories', 'What each det3 efficiency-loss category looks like, and whether a better '
                                          'reconstruction could recover it')
-    for f in (s_cover, s_setup, s_budget, s_spark, s_multi, s_delta, s_sat_now, s_sat_rail, s_sat_blob, s_sat_arms,
-              s_fit, s_failed, s_rest, s_close):
+    for f in (s_cover, s_setup, s_budget, s_cut, s_multi, s_multitrack, s_spark, s_delta, s_sat_now, s_sat_rail,
+              s_sat_blob, s_sat_arms, s_fit, s_failed, s_rest, s_close):
         f(D, Sm)
     import datetime as dt
     D.write(a.out, note_meta=dict(title='det3: where the lost tracks go, and what a better reconstruction could recover',

@@ -1,8 +1,20 @@
 # Handoff
 
-## det3 loss categories + saturated-strip treatment (satstudy) — updated 2026-10-26 (dylan-Yoga)
+## det3 loss categories + saturated-strip treatment (satstudy) — updated 2026-10-26 pm (dylan-Yoga)
 
-**Resume:** det3 loss-category note done (Dylan: "exactly what I want"); next = paper I appendix A1 + recovery fixes.
+**Resume:** 10-26 pm follow-up done and in the note (slides "found, cut", "multi-track", "head-on"). Next = Dylan's call
+on promoting the head-on rule + band veto into wft/ (and the beam seeder), then paper I appendix A1.
+
+**10-26 pm (Dylan: two-track credit, head-ons, "what's the 2.1 %"):**
+- 2.1 % "found, cut" = 69 second particle (1.07 %, correct pick, separate MIP) + 67 edge noise bands (1.04 %: clusters
+  lasting the whole 32-sample window, x < 6 mm / y > 355 mm). Particle = time extent ≤ 24 samples (multitrack.py).
+- Multi-track credit: single-particle 95.1 % of interior, 96.9 % detected with a band-blind cut; multi-particle 2.9 %,
+  M3 track found in 80 %; total 91.2 → 94.7 %. x↔y pairing by charge 96 % (110 two-track events). Production's
+  select_tracks gate is beam-tuned and pairs only 62 % of bench singles — not used.
+- Head-on rule (reco_variant.py --headon-sig 20, prototype outside wft/): 17/17 recovered, 0/400 controls moved, 0
+  fakes on 742 empty-chamber triggers (plain MIN_STRIPS=2: 12 fakes). NOT yet in wft/seed.py: that file carries another
+  session's uncommitted DEAD_SEED work (wft/io.py, reco.py, seed.py, tests/test_dead_seed.py, vrefit.dag — left alone).
+- Open: head-ons with a 2nd strip < 20σ or 1 strip (n_TOF post-23-July noise); beam-noise fake test for the rule.
 
 **Goal:** for every det3 interior M3 track that is not detected: what it looks like in the waveforms, why, and whether a
 reference-free reco change recovers it (tested, not argued). Note: notes/mx17-det3-loss-categories.html.
