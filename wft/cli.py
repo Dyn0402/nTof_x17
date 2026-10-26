@@ -61,10 +61,16 @@ def cmd_reco(args):
     cfg = _cfg(args.run_key)
     bundle_path = args.bundle or wft_dir(cfg, 'calib_bundle')
     cal = CalibrationBundle.load(bundle_path)
+    out = args.out or os.path.join(wft_dir(cfg), 'events.parquet')
+    if args.n_depth_bins and args.n_depth_bins != cal.n_depth_bins:
+        # depth grid override (rerun vrefit --keep-v, W2): the workers load the bundle from a path, so the
+        # modified copy is saved next to the output table, never over the source bundle
+        cal.n_depth_bins = int(args.n_depth_bins)
+        bundle_path = os.path.join(os.path.dirname(os.path.abspath(out)), f'calib_bundle_K{args.n_depth_bins}')
+        cal.save(bundle_path, note=f'depth grid K = {args.n_depth_bins} (wft.cli reco --n-depth-bins)')
     filt = matched_event_ids(cfg) if args.matched_only else None
     if filt is not None:
         print(f'[wft] {len(filt):,} events have an M3 ray passing the recipe')
-    out = args.out or os.path.join(wft_dir(cfg), 'events.parquet')
     reconstruct_run(cfg, cal, out, event_filter=filt, jobs=args.jobs,
                     limit=args.limit, bundle_path=bundle_path)
 
@@ -102,6 +108,8 @@ def main(argv=None):
     r.add_argument('--limit', type=int, default=None)
     r.add_argument('--matched-only', action='store_true',
                    help='only events with an M3 reference ray')
+    r.add_argument('--n-depth-bins', type=int, default=None,
+                   help='depth grid K for this run (the bundle copy is saved next to --out)')
     r.set_defaults(func=cmd_reco)
 
     i = sub.add_parser('info', help='summarise a reco table')

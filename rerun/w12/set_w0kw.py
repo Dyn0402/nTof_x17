@@ -29,6 +29,8 @@ def main():
     ap.add_argument('--bundle', required=True)
     ap.add_argument('--angles', required=True)
     ap.add_argument('--out', required=True)
+    ap.add_argument('--n-depth-bins', type=int, default=None,
+                    help="write the bundle with this depth grid K (vrefit --keep-v: the group's registry K, W2)")
     a = ap.parse_args()
     from wft.calib import CalibrationBundle
     cal = CalibrationBundle.load(a.bundle)
@@ -52,6 +54,9 @@ def main():
     prov = dict(cal.provenance)
     prov.update(w0_kw_stale=False, w0_kw_note=f'w0/kw measured by rerun/w12/set_w0kw.py from {a.angles} '
                 f'(a reconstruction with this bundle, {a.run_key})', w0_kw_measurement=rep)
+    if a.n_depth_bins and a.n_depth_bins != cal.n_depth_bins:
+        prov['n_depth_bins_was'] = int(cal.n_depth_bins)
+        cal.n_depth_bins = int(a.n_depth_bins)
     cal.provenance = prov
     if os.path.exists(a.out):
         shutil.rmtree(a.out)

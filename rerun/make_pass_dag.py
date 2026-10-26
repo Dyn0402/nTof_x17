@@ -97,8 +97,9 @@ def main():
             k, n = r['key'], r['key'].replace('.', '_')
             g = f"{A}/{rel(gold[r['det']])}/wft/calib_bundle"
             t1, t2 = '{out}/wft/vrefit/events0.parquet', '{out}/wft/vrefit/events1.parquet'
+            kk = f' --n-depth-bins {r["K"]}' if a.keep_v else ''
             node(L, f'RECO_{n}', 'stage1.sub', f'{k} --module wft.cli -- reco {{key}} --bundle {g} --out {t1} '
-                 f'--matched-only --limit 8000 --jobs 16', 16, 24000, a.code)
+                 f'--matched-only --limit 8000 --jobs 16{kk}', 16, 24000, a.code)
             node(L, f'ALIGN_{n}', 'stage1.sub', f'{k} --parts run_config,m3,hits --script mx_june_wft/01_alignment.py '
                  f'-- --table {t1} --out {{out}}/wft/vrefit/alignment0', 1, 8000, a.code, [f'RECO_{n}'])
             if a.keep_v:
@@ -109,7 +110,8 @@ def main():
                      f'--table {t1} --alignment {{out}}/wft/vrefit/alignment0/alignment.json --out {{out}}/wft/vrefit/angles',
                      1, 8000, a.code, [f'ALIGN_{n}'])
                 node(L, f'W0KW_{n}', 'stage1.sub', f'{k} --parts run_config --script rerun/w12/set_w0kw.py -- '
-                     f'--bundle {g} --angles {{out}}/wft/vrefit/angles --out {{out}}/wft/calib_bundle', 1, 4000, a.code,
+                     f'--bundle {g} --angles {{out}}/wft/vrefit/angles --out {{out}}/wft/calib_bundle --n-depth-bins {r["K"]}',
+                     1, 4000, a.code,
                      [f'ANG_{n}'])
                 continue
             node(L, f'HITS_{n}', 'stage1.sub', f'{k} --parts run_config,m3,hits --require cache/event_results_veto50.pkl '
