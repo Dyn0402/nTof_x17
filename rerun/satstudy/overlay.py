@@ -174,7 +174,7 @@ def score():
     T = pd.DataFrame(rows); T.to_parquet(os.path.join(OD, 'scored.parquet'))
     sg = T[T['mode'] == 'single']; ov = T[T['mode'] == 'overlay']
     out = dict(n_single=int(len(sg)), single_ok=float(sg.ok.mean()), n_overlay=int(len(ov)), sep_bins=SEP_BINS, bins=[])
-    for k, g in ov.groupby('sbin'):
+    for k, g in ov.groupby(ov.sbin.astype(int)):
         f = g[g.both_found.astype(bool)]
         out['bins'].append(dict(lo=SEP_BINS[k], hi=SEP_BINS[k + 1], n=int(len(g)), both_found=float(g.both_found.mean()),
                                 **{c: float(f[c].mean()) if len(f) else None

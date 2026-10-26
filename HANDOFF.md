@@ -1,24 +1,41 @@
 # Handoff
 
-## det3 loss categories + saturated-strip treatment (satstudy) — updated 2026-10-26 pm (dylan-Yoga)
+## det3 loss categories + saturated-strip treatment (satstudy) — updated 2026-10-26 evening (dylan-Yoga)
 
-**Resume:** 10-26 pm follow-up done and in the note (slides "found, cut", "multi-track", "head-on"). Next = Dylan's call
-on promoting the head-on rule + band veto into wft/ (and the beam seeder), then paper I appendix A1.
+**Resume:** second follow-up round done, note re-worked and republished (notes/mx17-det3-loss-categories). Three
+opt-in wft switches validated and pushed (85e0e6d). Next = Dylan's calls below, then paper I appendix A1 + the pairing
+section of the reconstruction paper.
 
-**10-26 pm (Dylan: two-track credit, head-ons, "what's the 2.1 %"):**
-- 2.1 % "found, cut" = 69 second particle (1.07 %, correct pick, separate MIP) + 67 edge noise bands (1.04 %: clusters
-  lasting the whole 32-sample window, x < 6 mm / y > 355 mm). Particle = time extent ≤ 24 samples (multitrack.py).
-- Multi-track credit: single-particle 95.1 % of interior, 96.9 % detected with a band-blind cut; multi-particle 2.9 %,
-  M3 track found in 80 %; total 91.2 → 94.7 %. x↔y pairing by charge 96 % (110 two-track events). Production's
-  select_tracks gate is beam-tuned and pairs only 62 % of bench singles — not used.
-- Head-on rule (reco_variant.py --headon-sig 20, prototype outside wft/): 17/17 recovered, 0/400 controls moved, 0
-  fakes on 742 empty-chamber triggers (plain MIN_STRIPS=2: 12 fakes). NOT yet in wft/seed.py: that file carries another
-  session's uncommitted DEAD_SEED work (wft/io.py, reco.py, seed.py, tests/test_dead_seed.py, vrefit.dag — left alone).
-- Open: head-ons with a 2nd strip < 20σ or 1 strip (n_TOF post-23-July noise); beam-noise fake test for the rule.
+**10-26 evening (Dylan: characterise the bands, re-categorise MULTI, pairing for the paper, head-ons to the extreme):**
+- **Noise bands** (bands.py): whole-window baseline offsets ±50–3000 ADC on a contiguous patch of strips, x and y
+  together (77–95 %), 2–19 % of triggers per chamber. They follow the CHAMBER (det3 same chips on FEUs 7/8 and 3/4,
+  five days apart). Null: time in run, discharges before/after, trigger spacing, SCA cell, 10–32 ms periods, HV
+  (|r| ≤ 0.19), CM coupling; no decay in the window (τ ≫ 100 µs). Mechanism NOT identified (stated limitation).
+  Cost det3: 92.6 → 57 % detection in the 3.9 % of events with a band = 1.4 pts. `WFT_DROP_FLAT_HITS=1`
+  (hits truncated both ends) 145 → 196/252, controls 400/400 (1 view moved); `=left` is worse (192, loses a control).
+- **Re-categorised budget** (summarize.recat): band 1.43, second particle 2.84 (other fitted 1.26 / M3 fitted+cut
+  1.01 / merged 0.57), δ 0.93, sat blob 0.81, spark shower 0.67 / discharge 0.50 / muon+other 0.40, clean fit 0.34,
+  head-on 0.26, M3 kink 0.22, edge 0.19.
+- **Multi-particle** (multitrack.py sub): M3 particle fitted to single-track resolution (σ 0.61/0.56 mm, 1.06/1.29°).
+  Merged class = projection overlap within the 12 mm seed gap; `WFT_TWO_TRACK_FIT=1` recovers 8/37, 0/150 controls
+  split.
+- **Pairing by charge** (pairing.py, overlay.py): toy 95.8 / 97.6 % (q / q + profile), real 96.4 / 98.2 %, bench
+  overlay ≥ 24 mm 96.7 / 100 % (production's pairing 50 %). Both tracks found: 0 % < 12 mm, 22 % 12–18, ≥ 98 % above.
+- **Head-on in wft**: `WFT_HEADON_SIG=20` + `WFT_HEADON_RESCUE=1` (column at the other view's t0, fitted, kept if
+  ln(qx/qy) matches within 3·hypot(0.054, σQ/Q)). Real: 17/17, controls unmoved, 0 fits added on 742 empty triggers.
+  Injection (headon2, 845 x donors): x noise ×2 gain ×0.05: 44 → 84 %, fakes ≤ 0.2 % of empty planes; end to end in
+  wft (headon3, 60 donors): 43 → 67 % (k .05), 77 → 90 % (k .1), fakes 0/720.
 
-**Goal:** for every det3 interior M3 track that is not detected: what it looks like in the waveforms, why, and whether a
-reference-free reco change recovers it (tested, not argued). Note: notes/mx17-det3-loss-categories.html.
+**Decisions for Dylan:**
+1. Turn on WFT_DROP_FLAT_HITS=1, WFT_HEADON_SIG=20, WFT_HEADON_RESCUE=1 (and TWO_TRACK_FIT?) in the re-processing pass?
+2. Port the head-on rescue + band veto to the beam seeder (ntof_tracking.wft_beam) for n_TOF; needs an n_TOF fake test.
+3. Paper: single-particle efficiency first, multi-particle with any-track credit after; pairing as its own figure.
 
+**Gotchas:** the fit worker swallows exceptions — a NameError in _headon_rescue was silent until
+test_headon.test_rescue_wiring (now in). Memory: one reco job at a time, `--jobs 2` (~3 GB); the laptop OOM-killed the
+session with 3 in parallel. headon3 "other view found" column is a scoring artefact (p0 vs mid-gap truth) — ignore.
+
+**Earlier (10-26 pm):**
 **Done:**
 - `rerun/satstudy/` (README = run order). Golden row sat_det3, pre-pass final_phys table: 91.2 % detected of 6 451.
 - fit_failed (0.26 %) = x never seeded (2-strip cluster, 3rd strip 7–9 % < 10 % floor). MIN_STRIPS=2: 17/17 detected,

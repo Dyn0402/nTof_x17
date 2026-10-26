@@ -188,10 +188,136 @@ def delta():
     return dict(width_delta=w(o).tolist(), width_ctrl=w(c).tolist(), twotrack_any=row['any'], finalize=row['finalize'])
 
 
+def _pair_runs(a, b, ids_csv, n_sig):
+    """Production (a; None = the production table itself) vs a variant (b) on ids_csv: the first n_sig ids are the
+    signal set, the rest controls (which must come back unchanged for the comparison to hold)."""
+    pa = EV_PROD if a is None else os.path.join(S.OUT, a, 'events.parquet')
+    pb = os.path.join(S.OUT, b, 'events.parquet')
+    if not (os.path.exists(pa) and os.path.exists(pb)):
+        return None
+    R = rays(); ids = pd.read_csv(os.path.join(S.OUT, ids_csv)).event_id.astype(int).tolist()
+    sig, ctl = ids[:n_sig], ids[n_sig:]
+    A, B = pd.read_parquet(pa), pd.read_parquet(pb)
+    DA, DB = detected(A, R), detected(B, R)
+    out = dict(n=len(sig), det_prod=int(DA.reindex(sig).detected.fillna(False).sum()),
+               det_var=int(DB.reindex(sig).detected.fillna(False).sum()),
+               near_var=int(DB.reindex(sig).near.fillna(False).sum()))
+    c = sorted(set(ctl) & set(DA.index) & set(DB.index))
+    a = A.drop_duplicates('event_id').set_index('event_id').loc[c]; b_ = B.drop_duplicates('event_id').set_index('event_id').loc[c]
+    out['controls'] = dict(n=len(c), det_prod=int(DA.loc[c].detected.sum()), det_var=int(DB.loc[c].detected.sum()),
+                           views_moved=sum(int(((a[f'{v}_p0'] - b_[f'{v}_p0']).abs() > 0.05).sum()) for v in 'xy'))
+    return out
+
+
+def band_fix():
+    """WFT_DROP_FLAT_HITS=1 (wft.reco) on every interior band event (bands.py) + 400 controls, against production."""
+    n = len(pd.read_csv(os.path.join(S.OUT, 'ids_band.csv'))) - 400
+    r = _pair_runs(None, 'reco_band_flat', 'ids_band.csv', n)
+    if r:
+        R = rays(); ids = pd.read_csv(os.path.join(S.OUT, 'ids_band.csv')).event_id.astype(int).tolist()[:n]
+        r['prod_cats'] = R.reindex(ids).cat_xy_5.value_counts().to_dict()
+        B = detected(pd.read_parquet(os.path.join(S.OUT, 'reco_band_flat', 'events.parquet')), R)
+        r['recovered_by_cat'] = {c: int(B.reindex(g.index).detected.fillna(False).sum())
+                                 for c, g in R.reindex(ids).groupby('cat_xy_5')}
+    return r
+
+
+def headon_wft():
+    """WFT_HEADON_SIG=20 + WFT_HEADON_RESCUE=1 (wft) on the head-on failures + 400 controls and on the 742 triggers whose
+    M3 track misses det3 (fakes), against production."""
+    r = _pair_runs(None, 'reco_ho_wft', 'ids_minstrips.csv', 17)
+    p, q = (os.path.join(S.OUT, x, 'events.parquet') for x in ('reco_out_min3', 'reco_out_ho_wft'))
+    if r and os.path.exists(q):
+        A, B = pd.read_parquet(p), pd.read_parquet(q)
+        r['outside'] = dict(n=len(pd.read_csv(os.path.join(S.OUT, 'ids_outside.csv'))),
+                            views_prod=int(A.x_ok.sum() + A.y_ok.sum()), views_new=int(B.x_ok.sum() + B.y_ok.sum()),
+                            both_prod=int((A.x_ok & A.y_ok).sum()), both_new=int((B.x_ok & B.y_ok).sum()))
+    return r
+
+
+def two_track():
+    """The joint two-track fit (WFT_TWO_TRACK_FIT=1; reco_tt default, reco_ttg scale=two + grid + all candidates) on the
+    multi-particle events (multi_sub.parquet) + 400 controls: any candidate on M3 in both views (multitrack's 'any')."""
+    T = pd.read_parquet(os.path.join(S.OUT, 'multi_sub.parquet')); R = rays(); out = {}
+    ids = pd.read_csv(os.path.join(S.OUT, 'ids_multi_s.csv')).event_id.astype(int).tolist(); ctl = ids[len(T):]
+    for arm in ('reco_tt', 'reco_ttg'):
+        p = os.path.join(S.OUT, arm, 'events.candidates.parquet')
+        if not os.path.exists(p):
+            continue
+        C = pd.read_parquet(p); C = C[C['rank'] >= 0]
+        C['mesh'] = np.where(C.plane == 'x', R.mesh_x.reindex(C.event_id).to_numpy(), R.mesh_y.reindex(C.event_id).to_numpy())
+        near = C[(C.p0 - C.mesh).abs() <= 5]
+        anyb = near.groupby('event_id').plane.nunique() == 2
+        r = {k: dict(n=int(len(g)), any_prod=int(g['any'].sum()), any_tt=int(anyb.reindex(g.index).fillna(False).sum()))
+             for k, g in T.groupby('sub')}
+        E = pd.read_parquet(p.replace('.candidates', ''))
+        P0 = pd.read_parquet(EV_PROD).drop_duplicates('event_id').set_index('event_id')
+        e = E.drop_duplicates('event_id').set_index('event_id').reindex(ctl).dropna(subset=['x_p0'])
+        r['controls'] = dict(n=int(len(e)), split=int((e.get('n_splits', pd.Series(0, index=e.index)).fillna(0) > 0).sum()),
+                             views_moved=sum(int(((e[f'{v}_p0'] - P0.reindex(e.index)[f'{v}_p0']).abs() > 0.05).sum()) for v in 'xy'))
+        out[arm] = r
+    return out
+
+
+def recat():
+    """The budget re-categorised (Dylan 10-26): every interior ray in one class, first match wins:
+      detected      production
+      band          an event with a noise band (bands.py) lost to the n_dropped cut or the spark veto, not a discharge
+      multi:*       det3 sees >= 2 particle clusters in a view (multitrack.py class M): m3_picked (the old 'found, cut'
+                    second particle) / other_picked / m3_not_found
+      spark:*       the rest of the spark veto, by sparks.py class
+      far:*         the C22 far classes of single-particle events (DELTA, FIT_SAT, FIT, EDGE, POS_TAIL, MULTI = a
+                    second deposit C22 sees that is not particle-like)
+      head_on       the old 'fit failed' (a 2-strip x cluster)
+      other         charge elsewhere etc."""
+    R = rays(); D = pd.read_parquet(os.path.join(S.OUT, 'multitrack_det3.parquet'))
+    T = pd.read_parquet(os.path.join(S.OUT, 'multi_sub.parquet'))
+    Sp = pd.read_parquet(os.path.join(S.OUT, 'sparks_det3.parquet')).set_index('event_id').cls
+    Zb = np.load(os.path.join(S.OUT, 'bands_scan.npz'))
+    import bands as Bd
+    band = set()
+    for v in 'xy':
+        band |= set(Zb[f'eid_{v}'][Bd.band_events(Zb, v).any(1)].tolist())
+    cat = []
+    for e, r in R.iterrows():
+        c = r.cat_xy_5
+        if c == 'detected':
+            k = 'detected'
+        elif e in band and c in ('rejected_cut', 'spark') and Sp.get(e, '') != 'discharge':
+            k = 'band'
+        elif e in T.index:
+            k = 'multi:' + T.loc[e, 'sub']
+        elif c == 'spark':
+            k = 'spark:' + str(Sp.get(e, 'unclassified'))
+        elif c == 'far':
+            k = 'far:' + str(r.cls)
+        elif c == 'fit_failed':
+            k = 'head_on'
+        elif c == 'rejected_cut':
+            k = 'cut:other'
+        else:
+            k = 'other'
+        cat.append(k)
+    R['recat'] = cat
+    R[['recat']].to_parquet(os.path.join(S.OUT, 'recat_det3.parquet'))
+    n = len(R)
+    return dict(n=n, pct={k: 100 * v / n for k, v in R.recat.value_counts().items()},
+                counts=R.recat.value_counts().to_dict())
+
+
+EV_PROD = os.path.expanduser('~/x17/cosmic_bench/outliers/final/mx17_det3_saturday_scan_6-27-26/'
+                             'long_run_resist_490V_drift_1000V/mx17_3/wft/final_phys/events.parquet')
+
+
 def main():
     S_ = dict(budget=budget(), sat=sat_dependence(), rail=json.load(open(os.path.join(S.OUT, 'railstats.json'))),
               arms=arms(), sparks=sparks(), fit_failed=fit_failed(), multi=multi(), delta=delta())
-    for k in ('multitrack', 'headon'):     # multitrack.py count, headon.py
+    S_['band_fix'] = band_fix()
+    nb = len(pd.read_csv(os.path.join(S.OUT, 'ids_band.csv'))) - 400
+    S_['band_fix_left'] = _pair_runs(None, 'reco_band_left', 'ids_band.csv', nb)   # WFT_DROP_FLAT_HITS=left
+    S_['two_track'] = two_track(); S_['recat'] = recat(); S_['headon_wft'] = headon_wft()
+    for k in ('multitrack', 'headon', 'bands', 'multi_sub', 'pairing_toy', 'overlay', 'headon2', 'headon3'):
+        # multitrack.py count / sub, headon.py, bands.py report, pairing.py toy, overlay.py score, headon2/3.py
         p = os.path.join(S.OUT, f'{k}.json')
         S_[k] = json.load(open(p)) if os.path.exists(p) else None
     json.dump(S_, open(os.path.join(S.OUT, 'summary.json'), 'w'), indent=1, default=float)
