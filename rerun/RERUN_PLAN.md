@@ -130,3 +130,29 @@ dry-gas bench run, Stephan's unanswered geometry questions, det6's window-limite
    bands are a separate characterization (C22 follow-ups). Downstream, does not block the pass.
 5. Edge bending is expected (parallel-plate fringe field); most cosmic runs had no degrador rings.
 6. Two-track refit: off for production (C22 follow-ups).
+
+## 11 · Ready to run (2026-10-26 night): the morning procedure
+
+State: kernel `phys` (§10.1); channel masks adopted on det2/det3/det7 (W3 gate, `channel_layer/README.md`), not on
+det4/det6; t0 prior off (W5); v groups by `vrefit --keep-v` (W7: golden bundle, the group's own K, w0/kw measured and
+the mean kw folded into v = the row's ladder v); `stage_job.sh` sets `WFT_COL_GUARD=0.01` and `WFT_PIVOT_START=1`;
+inputs rr1 (W9, SPS FEU 03 decoded). Code: **`code_469cbb1`** on lxplus (or a later archive of main).
+Dry runs (`/eos/user/d/dneff/x17rerun/Analysis_dryrun`, `~/x17rerun/dryrun_1026{,b}`): vrefit --keep-v on det3 6-25
+(500 V) and the pass on sat_det3 + that row + an inheriting row, --limit 300: every node rc 0, every stage wrote.
+
+```bash
+# on lxplus, from a clone of main at the pass commit (promote_phys.py reads only EOS + its own file)
+C=/afs/cern.ch/user/d/dneff/x17rerun/code_469cbb1
+# 1. S1 close: promote the golden bundles (masked chambers from their physmask finalize arm)
+python3 $C/rerun/promote_phys.py --mask det2,det3,det7            # dry run: read the five lines
+python3 $C/rerun/promote_phys.py --mask det2,det3,det7 --apply
+# 2. S1b: the 14 v groups (56 nodes, ~1 h)
+mkdir -p ~/x17rerun/pass_main/log && cd ~/x17rerun/pass_main && cp ../pass/stage1.sub .
+python3 $C/rerun/make_pass_dag.py vrefit $C --keep-v && condor_submit_dag vrefit.dag
+# 3. S2+S3, after vrefit exits 0: every non-excluded row (159 rows, 655 nodes)
+python3 $C/rerun/make_pass_dag.py pass $C && condor_submit_dag pass.dag
+```
+
+Then the downstream (§4 S3–S6, iterate freely): `rerun/effbudget/budget.py` on the pass tables (the budget of
+2026-10-26 is on the 8000-event finalize tables), the timing v per v group (S4, `cloud_basics/unsat_width.py` per row),
+det7 X quoted from ch 256–511.
