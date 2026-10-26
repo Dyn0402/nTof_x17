@@ -1,10 +1,21 @@
 # Handoff
 
-## det3 loss categories + saturated-strip treatment (satstudy) — updated 2026-10-26 evening (dylan-Yoga)
+## det3 loss categories + saturated-strip treatment (satstudy) — updated 2026-10-26 (dylan-Yoga)
 
-**Resume:** second follow-up round done, note re-worked and republished (notes/mx17-det3-loss-categories). Three
-opt-in wft switches validated and pushed (85e0e6d). Next = Dylan's calls below, then paper I appendix A1 + the pairing
-section of the reconstruction paper.
+**Resume:** rework the multi-particle (M3 double-track) accounting slide so it is clear, then the unified reco rewrite.
+
+**Next steps (in order):**
+1. **Dylan: the M3 double-track accounting on the cern-site slides (notes/mx17-det3-loss-categories) needs a clearer
+   explanation.** Make it explicit, on the slide not only in Details: the denominator (6 451 INTERIOR M3-triggered
+   tracks — one clean recipe ray through det3 — not all triggers); how an event becomes "multi-particle" (det3 alone
+   sees >= 2 particle-like clusters, signal <= 24 samples, in a view; band clusters excluded); the 187 = 69 + 81 + 37
+   split and what each means for detection (production 0 % by the n_dropped cut; any-candidate credit 80 %); the
+   topology (114 two-track-in-both-views vs 1x2 / 2x1); how the 2.9 % relates to the old "found, cut" 2.1 % (half of
+   it) and the old far:MULTI 1.9 %; and how single-particle 96.9 % + multi-particle credit add up to the 94.7 % total.
+   A flow / Sankey-style diagram from 6 451 down to each class would do it. Code: rerun/satstudy/make_deck.py
+   (s_multi, s_budget, cover), numbers in summary.json (multitrack, multi_sub, recat); republish with add-note.py.
+2. The unified reconstruction rewrite (Dylan's direction below), folding in today's validated prototypes.
+3. Follow-ups 1–3 below (bands, multi-particle physics, pairing sim plan rerun/pairing_sim/PLAN.md).
 
 **10-26 evening (Dylan: characterise the bands, re-categorise MULTI, pairing for the paper, head-ons to the extreme):**
 - **Noise bands** (bands.py): whole-window baseline offsets ±50–3000 ADC on a contiguous patch of strips, x and y
@@ -60,7 +71,8 @@ the validated prototypes to fold in; their measured behaviour (above) is the spe
    validation gates: σ(ln qx/qy) = 0.054, Landau width, u50/u90 spreads, the toy-vs-ratio curve and the overlay vs
    separation). First steps: the data side on det2/4/6/7, then S1 at det3 conditions.
 
-**Gotchas:** the fit worker swallows exceptions — a NameError in _headon_rescue was silent until
+**Gotchas:** all runs here were made BEFORE the dead-strip session turned WFT_DEAD_SEED on by default (f0cd2a6); the
+switches' validation is with dead-seed off. The fit worker swallows exceptions — a NameError in _headon_rescue was silent until
 test_headon.test_rescue_wiring (now in). Memory: one reco job at a time, `--jobs 2` (~3 GB); the laptop OOM-killed the
 session with 3 in parallel. headon3 "other view found" column is a scoring artefact (p0 vs mid-gap truth) — ignore.
 
