@@ -110,7 +110,7 @@ def main():
                      f'--table {t1} --alignment {{out}}/wft/vrefit/alignment0/alignment.json --out {{out}}/wft/vrefit/angles',
                      1, 8000, a.code, [f'ALIGN_{n}'])
                 node(L, f'W0KW_{n}', 'stage1.sub', f'{k} --parts run_config --script rerun/w12/set_w0kw.py -- '
-                     f'--bundle {g} --angles {{out}}/wft/vrefit/angles --out {{out}}/wft/calib_bundle --n-depth-bins {r["K"]}',
+                     f'--bundle {g} --angles {{out}}/wft/vrefit/angles --out {{out}}/wft/calib_bundle --n-depth-bins {r["K"]} --fold-kw',
                      1, 4000, a.code,
                      [f'ANG_{n}'])
                 continue

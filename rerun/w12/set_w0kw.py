@@ -31,6 +31,9 @@ def main():
     ap.add_argument('--out', required=True)
     ap.add_argument('--n-depth-bins', type=int, default=None,
                     help="write the bundle with this depth grid K (vrefit --keep-v: the group's registry K, W2)")
+    ap.add_argument('--fold-kw', action='store_true',
+                    help='vrefit --keep-v: fold the mean kw into v_drift (v := v * kw_mean, kw := kw / kw_mean), so the '
+                         'bundle carries this row\'s ladder v instead of the golden row\'s; tan is unchanged')
     a = ap.parse_args()
     from wft.calib import CalibrationBundle
     cal = CalibrationBundle.load(a.bundle)
@@ -50,6 +53,16 @@ def main():
                       old_w0=float(cal.w0.get(p, 0.0)), old_kw=float(cal.kw.get(p, 1.0)))
         print(f'{p}: w0 {w0[p]:+.3f} um/ns ({np.degrees(w0[p] / v):+.2f} deg), kw {kw[p]:.4f}  '
               f'[was w0 {rep[p]["old_w0"]:+.3f}, kw {rep[p]["old_kw"]:.4f}]  n={int(s.sum())}/{int(s1.sum())}')
+    if a.fold_kw:
+        # tan = (w - w0) / (kw v) is invariant; v becomes the reconstruction (ladder) v of this row (C18), which is
+        # what z = v t should use rather than the golden row's v (a 500 V row has kw ~ 0.6 against a 1000 V golden v)
+        km = float(np.mean([kw['x'], kw['y']]))
+        prov_fold = dict(v_was=float(cal.v_drift), kw_mean=km)
+        cal.v_drift = float(cal.v_drift) * km
+        kw = {p: kw[p] / km for p in kw}
+        for p in rep:
+            rep[p]['kw_folded'] = kw[p]
+        print(f'folded kw: v {prov_fold["v_was"]:.2f} -> {cal.v_drift:.2f} um/ns, kw x {kw["x"]:.4f} y {kw["y"]:.4f}')
     cal.w0, cal.kw = w0, kw
     prov = dict(cal.provenance)
     prov.update(w0_kw_stale=False, w0_kw_note=f'w0/kw measured by rerun/w12/set_w0kw.py from {a.angles} '
@@ -57,6 +70,8 @@ def main():
     if a.n_depth_bins and a.n_depth_bins != cal.n_depth_bins:
         prov['n_depth_bins_was'] = int(cal.n_depth_bins)
         cal.n_depth_bins = int(a.n_depth_bins)
+    if a.fold_kw:
+        prov['kw_folded_into_v'] = prov_fold
     cal.provenance = prov
     if os.path.exists(a.out):
         shutil.rmtree(a.out)
