@@ -61,6 +61,15 @@ noise 1e9 so the saturation penalty cannot pull either). The review, scripts in 
   The windows that change are the ones on known-bad hardware, which the budget excludes anyway; elsewhere a track
   next to a dead run is already found and fitted without the bridge.
 
-**Recommendation: one treatment everywhere** = census dead + shorts as the bundle `dead` (censored) on all five
-chambers, seeding/windows as they are. Masking det4/det6 too means a finalize arm under the mask for those two (w0/kw
-measured under it, as det2/3/7), then `promote_phys.py --mask det2,det3,det4,det6,det7`.
+## Decision — CLOSED 2026-10-26 (Dylan): one treatment everywhere
+
+- **Census dead + shorts are censored (`dead`) in the bundle of all five chambers.** det4/det6 got the finalize arm under
+  the mask (`~/x17rerun/finalize_physmask_det4det6`, code `code_d93c687`; w0/kw moved ≤ 0.005, v unchanged), and
+  `promote_phys.py --mask det2,det3,det4,det6,det7 --apply --force` (17:48) put `calib_bundle_physmask` in every
+  golden row's `calib_bundle`. Mask sizes X/Y: det2 7/11, det3 3/0, det4 77/12, det6 24/24, det7 114/11.
+- **`WFT_DEAD_SEED` is on by default** (d93c687) in `wft.reco` and the beam seeder `ntof_tracking.wft_beam`: dead strips
+  do not count toward the seed gap and the window pad counts live strips. A bundle without a `dead` list is unaffected;
+  `WFT_DEAD_SEED=0` restores the old seeding. Tables record it in `meta.selection.dead_seed`. The det2/3/7 physmask
+  w0/kw were measured before the default changed; the A/B above shows that does not move the result.
+- Research scripts that call `seed_candidates` / `extract_window` directly (sept26_prelim_analysis, event displays) get
+  the old behaviour unless they pass `dead_pos` / `dead`.

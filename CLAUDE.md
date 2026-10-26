@@ -153,6 +153,10 @@ from the control-room browser with no file-system access.
   `sept26_prelim_analysis/HANDOFF_CAPSULE_Y.md`.
 - Anything calibrated (kernel, template, v, gap map) is per detector **and** per
   run condition. A bundle used outside its conditions is a silent error.
+- **Dead channels: one treatment everywhere** (closed 2026-10-26). A bundle's `dead` list (census dead + shorts,
+  `rerun/channel_layer/`) is censored in the fit (unknown charge, not zero), and the seeder bridges dead strips and pads
+  windows by live strips (`WFT_DEAD_SEED`, default on, bench and beam). All five bench chambers carry their mask. Don't
+  re-gate a mask on χ²/dof: censoring lowers the dof more than the χ². Evidence: `rerun/channel_layer/README.md`.
 - **The sharing kernel must have c2 < c1**, always: the ±2 strip is reached only
   through the ±1. Every bundle shipped before 2026-08-21 had it backwards (det3
   1.14, det2 1.53, det7 1.75, det4 2.12) because the ref-pinned cosmic χ² is

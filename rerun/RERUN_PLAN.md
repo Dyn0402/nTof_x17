@@ -48,7 +48,7 @@ property of det6 (wetter, or a weaker effective field), not of the kernel. It ge
 | W12 | **Reference geometry**: waveform alignment built (01_alignment on RC reco); differs from the hits alignment by 1–3 mm in z only; cannot pin the plane finely enough for a pinned v (C16) | done (finding) | — |
 | W2 | **Depth grid and solver**: K = 24 (30 on drift ≤ 500 V) in the registry and bundles; column guard on in every pass job (WFT_COL_GUARD=0.01) | done | — |
 | W11 | **Signal-masked common mode**: investigated (C10), gated on the fit (C15): **not adopted** — no resolution gain, χ² not better; plain median in the fit and the hits; masked−plain constant shifts (D_rc ≤ 19 %, v ≤ 6 %) carried as a systematic | **done (off)** | — |
-| W3 | **Channel layer**: final gain, dead and hot masks per chamber (`strip_gain_audit.bad_set`, incl. 10-19's inclined-track holes). C20: no bench bundle ever carried a mask or gain; `seedfit/channel_census.py` tables in `rerun/channel_layer/` (noisy, shorts, dead, weak, map check); det7 X shorts censored recover ~40 % of its lost angles | tables done; **mask gate on condor 2026-10-26** (census dead + shorts, `rerun/channel_layer/mask_gate.sh`, condor 4547063); adoption per chamber in §11 | one committed table per chamber, carried by every bundle |
+| W3 | **Channel layer**: final gain, dead and hot masks per chamber (`strip_gain_audit.bad_set`, incl. 10-19's inclined-track holes). C20: no bench bundle ever carried a mask or gain; `seedfit/channel_census.py` tables in `rerun/channel_layer/` (noisy, shorts, dead, weak, map check); det7 X shorts censored recover ~40 % of its lost angles | **done, CLOSED 2026-10-26**: census dead + shorts censored in the bundle of all five chambers (Dylan: one treatment everywhere; review in `channel_layer/README.md`: masks verified on waveforms, the det4/det6 gate shifts were noise); `WFT_DEAD_SEED` on by default in wft and the beam seeder (production A/B null) | — |
 | W4 | **Template**: one X-derived electronics template for both views (`rc_tmpl='x'`); saturated samples censored | decided | charge results use unsaturated events (the template reads saturated charge 5–12 % low, §41) |
 | W5 | **t0 prior**: one policy for all chambers under the RC kernel | **closed (2026-10-26): no prior.** C18: the trigger t0 prior has no effect on w (paired Δ 0.00 removed or moved 20 ns); the phys bundles carry `t0_prior.sigma = 0` | gate on the golden keys |
 | W6 | **Angle constants w0/kw**: `rerun/w12/set_w0kw.py` measures them under the final bundle (finalize/vrefit DAG nodes) | done (tooling, tested) | — |
@@ -124,7 +124,7 @@ dry-gas bench run, Stephan's unanswered geometry questions, det6's window-limite
 1. **Kernel for the pass: `phys`** (C21 recipe, profiled σ0) on all five chambers. timeD is retired as a pass option.
 2. **Efficiency loss budget**: where every M3-crossing muon goes, on the waveform reco of the golden rows, per view and
    X+Y, at the 5 mm match circle (MPGD26 comparability) and at 3 mm.
-3. **Channel masks (W3) go into the pass bundles** after an overnight gate (masked vs unmasked phys, held out: s68,
+3. **Channel masks (W3) go into the pass bundles** (all five, decided 2026-10-26 after the review) after an overnight gate (masked vs unmasked phys, held out: s68,
    far, χ²); adopted per chamber only where they do not hurt.
 4. **Fiducial**: headline numbers on the interior (≥ 30 mm from the own-coordinate edge where unpassivated); the edge
    bands are a separate characterization (C22 follow-ups). Downstream, does not block the pass.
@@ -133,10 +133,11 @@ dry-gas bench run, Stephan's unanswered geometry questions, det6's window-limite
 
 ## 11 · Ready to run (2026-10-26 night): the morning procedure
 
-State: kernel `phys` (§10.1); channel masks adopted on det2/det3/det7 (W3 gate, `channel_layer/README.md`), not on
-det4/det6; t0 prior off (W5); v groups by `vrefit --keep-v` (W7: golden bundle, the group's own K, w0/kw measured and
+State: kernel `phys` (§10.1); channel masks on **all five chambers** (W3 closed 2026-10-26, `channel_layer/README.md`;
+the seeder bridges dead strips, `WFT_DEAD_SEED` default on); t0 prior off (W5); v groups by `vrefit --keep-v` (W7: golden bundle, the group's own K, w0/kw measured and
 the mean kw folded into v = the row's ladder v); `stage_job.sh` sets `WFT_COL_GUARD=0.01` and `WFT_PIVOT_START=1`;
-inputs rr1 (W9, SPS FEU 03 decoded). Code: **`code_469cbb1`** on lxplus (or a later archive of main).
+inputs rr1 (W9, SPS FEU 03 decoded). Code: **`/eos/user/d/dneff/x17rerun/code_d93c687`** (or a later archive of main; it must
+include d93c687 for the dead-strip seeding default).
 Dry runs (`/eos/user/d/dneff/x17rerun/Analysis_dryrun`, `~/x17rerun/dryrun_1026{,b}`): vrefit --keep-v on det3 6-25
 (500 V) and the pass on sat_det3 + that row + an inheriting row, --limit 300: every node rc 0, every stage wrote.
 On `code_469cbb1`, vrefit --keep-v on the 500 V drift-scan row wrote K = 30 and folded v 35.8 → 15.8 µm/ns (kw 1.00 /
@@ -148,6 +149,9 @@ C=/afs/cern.ch/user/d/dneff/x17rerun/code_469cbb1
 # 1. S1 close: promote the golden bundles -- DONE 2026-10-26 ~02:30 (PROMOTED.json in each calib_bundle):
 #    det2/det3/det7 <- calib_bundle_physmask (finalize arm under the mask; det7 X kw 1.034 -> 1.005), det4/det6 <- calib_bundle_phys
 #    python3 $C/rerun/promote_phys.py --mask det2,det3,det7 --apply
+#    RE-PROMOTED 2026-10-26 17:48: all five <- calib_bundle_physmask (det4/det6 finalized under the mask on code_d93c687,
+#    ~/x17rerun/finalize_physmask_det4det6; w0/kw moved <= 0.005)
+#    python3 $C/rerun/promote_phys.py --mask det2,det3,det4,det6,det7 --apply --force
 # 2. S1b: the 14 v groups (56 nodes, ~1 h)
 mkdir -p ~/x17rerun/pass_main/log && cd ~/x17rerun/pass_main && cp ../pass/stage1.sub .
 python3 $C/rerun/make_pass_dag.py vrefit $C --keep-v && condor_submit_dag vrefit.dag
