@@ -1,5 +1,45 @@
 # Handoff
 
+## det3 loss categories + saturated-strip treatment (satstudy) — updated 2026-10-26 (dylan-Yoga)
+
+**Resume:** det3 loss-category note done (Dylan: "exactly what I want"); next = paper I appendix A1 + recovery fixes.
+
+**Goal:** for every det3 interior M3 track that is not detected: what it looks like in the waveforms, why, and whether a
+reference-free reco change recovers it (tested, not argued). Note: notes/mx17-det3-loss-categories.html.
+
+**Done:**
+- `rerun/satstudy/` (README = run order). Golden row sat_det3, pre-pass final_phys table: 91.2 % detected of 6 451.
+- fit_failed (0.26 %) = x never seeded (2-strip cluster, 3rd strip 7–9 % < 10 % floor). MIN_STRIPS=2: 17/17 detected,
+  400 controls unchanged (reco_variant.py --min-strips 2).
+- spark (1.95 %) = 32 discharge / 49 muon+other / 45 shower of 126. Veto off: M3 candidate in 34/49 muon+other but
+  n_dropped 24–86 → recoverable only with the n_dropped cut relaxed too.
+- MULTI (1.89 %): M3 particle is a candidate in 64 % of wrong views; production picks a brighter separate track.
+- Saturation: rail 3650–3900 not SAT=3550; 58 % of clipped strips hit the bottom rail (fitted as data). BUT 5 censor
+  rules on 350 saturated views move agreement 71.1 → ≤ 73.1 % (drop-strips 71.4 %): failures are δ-electron blobs whose
+  unsaturated edges tilt the line. Lever = track + compact-blob model, not the mask.
+- Paper I: appendix stub `papers/paper1/sections/A1_loss_categories.tex` (table of classes, fractions as \requote),
+  \appendix in main.tex, PAPER_PLAN row A. Dylan wants one real display per class + lost fraction.
+
+**Next steps:**
+1. Appendix A1 figures: one display per class as PDF via figures.toml (reuse make_deck.py `evd()`); re-derive the
+   fractions on the re-processing pass tables; decide on other chambers' columns.
+2. Recovery fixes to try in the pass: MIN_STRIPS=2 (or an absolute SNR floor beside the 10 % relative one), a discharge
+   veto (chip-wide simultaneous bands / negative swing) instead of the 50-hit count, n_dropped decision (C22 #2).
+3. Track + compact-blob forward model for saturated δ blobs (the 0.8 % FIT_SAT + part of DELTA).
+4. Untested: MIN_STRIPS=2 fake rate on empty events; per-channel rail from pedestals (charge, §41).
+
+**Gotchas / decisions:**
+- satfit.py reproduces the table only with WFT_PIVOT_START=1; saturated fits are ~8 s/arm → sample views (350 used).
+- reco_variant.py needs WFT_PIVOT_START=1 WFT_COL_GUARD=0.01 X17_BENCH_ROOT=~/x17/cosmic_bench/outliers/stage; seed
+  defaults are bound at import, so it wraps the functions with functools.partial. 3 runs in parallel ≈ 7.5 GB RAM.
+- Classes are heuristic (by-eye checks on random examples). δ ranges approximate (argon assumed).
+- /media/dylan/data ~5 GB free. paper1 does not compile locally (authblk.sty missing) — Overleaf builds it.
+
+**Key files & commands:**
+- `rerun/satstudy/{satfit,examples,sparks,railstats,reco_variant,summarize,make_deck}.py`; outputs ~/x17/cosmic_bench/satstudy/
+- `../../.venv/bin/python summarize.py && ../../.venv/bin/python make_deck.py` then
+  `python3 ~/PycharmProjects/dylan-cern-site/scripts/add-note.py <html> --slug mx17-det3-loss-categories --force --deploy`
+
 ## Outliers vs M3, det4/det7 head-on, edge zone (C22) — updated 2026-10-25 (dylan-Yoga)
 
 **Resume:** C22 in `rerun/CHECKS_2026-10-23.md`; report `~/x17/cosmic_bench/outliers/report/report.html`

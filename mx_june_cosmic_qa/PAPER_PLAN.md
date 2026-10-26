@@ -50,6 +50,7 @@ Section and item states: `ready` (analysis done, write it), `requote`
 | 7 | Tracking performance on cosmics (with II's reco) | requote | FLEET_DIGEST r06: σ_θ 1.15–2.51°, within-5 mm 93/92/42/75/57 %; needs C1 |
 | 8 | Intrinsic resolution: det4 at SPS, and the bench decomposed | ready | spatial_resolution: 176 ± 10 µm = 0.30 × pitch; bench = M3 ⊕ scattering (arithmetic, D6 optional) |
 | 9 | det4: the non-amplifying stripes | ready | det4_sps_assessment: 62 % of the area does not amplify |
+| A | Appendix: loss categories, one real display + lost fraction per class (Dylan 10-26) | partial | rerun/satstudy + effbudget + outliers; notes/mx17-det3-loss-categories; stub `sections/A1_loss_categories.tex`; numbers on the pre-pass table → re-derive on the pass (A1) |
 
 ## Paper II — outline
 
