@@ -670,6 +670,7 @@ def s_budget(D, Sm):
     rows = [(lab, pct.get(k, 0.0), KIND[kind], f'{tip}\n{pct.get(k, 0):.2f} % = {cnt.get(k, 0)} of {rc["n"]:,} interior rays')
             for k, lab, kind, tip in RECAT]
     rest = 100 - b['detected'] - sum(r[1] for r in rows)
+    nmr = sum(v for k, v in cnt.items() if k.startswith('multi:')); nm = (Sm.get('multi_flow') or {}).get('M', {}).get('n', nmr)
     body = (sd.title(f'{100 - b["detected"]:.1f} % of interior tracks are lost: where each one went, re-categorised',
                      f'det3 interior, {b["n"]:,} M3 tracks, R = 5 mm · noise bands and second particles are now their own '
                      f'classes') +
@@ -680,7 +681,10 @@ def s_budget(D, Sm):
                                      ('detector (discharge)', KIND['hw'], 'box'),
                                      ('reference / geometry', KIND['ref'], 'box')], size=23),
                           sd.callout(f'Detected: <b>{b["detected"]:.1f} %</b>', GREEN, 30),
-                          sd.p(f'not shown: {rest:.2f} % (charge elsewhere, other cuts)', 20, MUT), w=480), gap=36))
+                          sd.p(f'not shown: {rest:.2f} % (charge elsewhere, other cuts)', 20, MUT),
+                          sd.p(f'second particle: {nmr} of the {nm} multi-particle tracks ({nm - nmr} also carry a band '
+                               f'and are counted there; first match wins). How they are counted: the “two particles” '
+                               f'slides.', 20, MUT), w=480), gap=36))
     notes = ('<p>summarize.recat(): first match wins, in the order detected, band, multi-particle, spark, the C22 far '
              'classes, head-on. <b>band</b>: the event carries a noise band (bands.py: ≥ 8 strips of a chip offset by '
              '&gt; 5σ and flat) and production lost it to the n_dropped cut or the 50-hit spark veto, and sparks.py '
@@ -833,6 +837,259 @@ def s_bands_fix(D, Sm):
 # --------------------------------------------------------------------------- #
 # multi-particle events
 # --------------------------------------------------------------------------- #
+def fmt(n):
+    return f'{n:,}'.replace(',', ' ')
+
+
+def _rect(x, y, w, h, fill, tip=None, stroke=None, rx=3):
+    s = f' stroke="{stroke}" stroke-width="1.5"' if stroke else ''
+    return (f'<rect x="{x:.1f}" y="{y:.1f}" width="{max(w, 0):.1f}" height="{h:.1f}" rx="{rx}" fill="{fill}"{s}'
+            f'{sd.tipattr(tip)}/>')
+
+
+def _band(x1, a1, b1, x2, a2, b2, fill, tip=None, op=0.45):
+    """A Sankey ribbon from [a1, b1] at x1 to [a2, b2] at x2."""
+    m = (x1 + x2) / 2
+    d = (f'M{x1:.1f},{a1:.1f} C{m:.1f},{a1:.1f} {m:.1f},{a2:.1f} {x2:.1f},{a2:.1f} L{x2:.1f},{b2:.1f} '
+         f'C{m:.1f},{b2:.1f} {m:.1f},{b1:.1f} {x1:.1f},{b1:.1f} Z')
+    return f'<path d="{d}" fill="{fill}" fill-opacity="{op}"{sd.tipattr(tip)}/>'
+
+
+MSUB = (('m3_picked', 'M3 particle fitted, then cut', PURPLE),
+        ('other_picked', 'other particle picked, M3 one also fitted', '#a184d4'),
+        ('m3_not_found', 'merged in one view', ORANGE))
+TOPO = (('2x2', '2×2: two tracks in both views', '#3d4556'), ('1x2/2x1', '1×2 / 2×1: two in one view only', '#9aa2b0'),
+        ('with 3', 'a view with 3', '#d4d8de'))
+
+
+def s_multi_flow(D, Sm):
+    """The M3 double-track accounting as a zoom: 6 451 interior rays -> S/M/V -> the three M sub-classes -> topology ->
+    what production and any-candidate credit count (Dylan 10-26: make it explicit on the slide)."""
+    F = Sm.get('multi_flow')
+    if not F:
+        return
+    n, S_, M, V = F['n'], F['S'], F['M'], F['V']; sub = F['sub']
+    W, H = 1664, 590
+    X0, W0, YB, HB = 0, 1330, 52, 48              # level 0 bar
+    ws = W0 * S_['n'] / n; wm = W0 * M['n'] / n; wv = W0 * V['n'] / n
+    o = [T(0, 30, f'<tspan font-weight="700" fill="{INK}">{fmt(n)} interior M3-triggered tracks</tspan> — one clean '
+              'M3 recipe ray (χ² &lt; 1, 4 clusters) through det3’s interior per event: the denominator, not all triggers',
+           23, MUT, 'start', tip=G['ray'] + f'\n{fmt(n)} rays (rerun/effbudget rays_det3.parquet, interior, measured).')]
+    o.append(_rect(X0, YB, ws - 1, HB, GREEN, f'single particle (class S): ≤ 1 particle-like cluster in each view\n'
+                                             f'{S_["n"]} of {n} = {100 * S_["n"] / n:.1f} %'))
+    o.append(T(14, YB + 32, f'single particle: ≤ 1 particle-like cluster in each view · {fmt(S_["n"])} '
+                            f'({100 * S_["n"] / n:.1f} %)', 24, '#ffffff', 'start', 600))
+    o.append(_rect(ws + 1, YB, wm - 2, HB, PURPLE, f'multi-particle (class M): {M["n"]} of {n} = '
+                                                   f'{100 * M["n"] / n:.2f} %'))
+    o.append(_rect(ws + wm + 1, YB, wv - 1, HB, GREY, f'spark-vetoed (class V): > 50 strips above the floor, the event '
+                                                      f'is dropped before any fit, so det3’s particle count is not '
+                                                      f'known; never counted.\n{V["n"]} of {n} = {100 * V["n"] / n:.2f} %'))
+    o.append(T(W0 + 16, YB + 20, f'<tspan font-weight="700" fill="{PURPLE}">{M["n"]}</tspan> multi-particle '
+                                 f'({100 * M["n"] / n:.1f} %)', 21, INK, 'start'))
+    o.append(T(W0 + 16, YB + 46, f'<tspan font-weight="700" fill="{GREY}">{V["n"]}</tspan> spark-vetoed ({100 * V["n"] / n:.1f} %)',
+               21, INK, 'start', tip='no fit at all: not classed, counted as lost'))
+    # zoom into the M segment
+    ZX, ZW, ZY = 560, W - 560, 290                # zoomed bar of the 187
+    o.append(poly([ws + 1, ws + wm - 1, ZX + ZW, ZX], [YB + HB, YB + HB, ZY, ZY], PURPLE, fill='#7a52b81f'))
+    o.append(line(ws + 1, YB + HB, ZX, ZY, PURPLE, 1.2, '4 4') + line(ws + wm - 1, YB + HB, ZX + ZW, ZY, PURPLE, 1.2, '4 4'))
+    # definition box (left)
+    dl = [('<tspan font-weight="700" fill="#5b3a94">Multi-particle</tspan> = det3 alone sees ≥ 2', INK),
+          ('particle-like clusters in one view (x or y).', INK),
+          ('<tspan font-weight="700">Particle-like</tspan>: summed signal above 20 % of', INK),
+          ('its peak for ≤ 24 samples (1.4 µs; a full 30 mm', INK),
+          ('drift column lasts ~20). Longer = noise band,', INK),
+          ('excluded from the count.', INK),
+          ('Particle-like is not yet “through-going track”.', RED)]
+    o.append(_rect(0, 116, 530, 30 * len(dl) + 22, '#fffdf9', stroke=RULE, rx=8,
+                   tip='multitrack.py: every production candidate (one forward fit per spatial cluster, ≤ 3 per view) '
+                       'tagged from its own waveforms; EXT_MAX = 24 samples of 60 ns. M = ≥ 2 particle clusters in '
+                       'either view; S = ≤ 1 in each; V = spark-vetoed (no fit).'))
+    for i, (s, c) in enumerate(dl):
+        o.append(T(18, 146 + 30 * i, s, 20, c, 'start'))
+    # sub-class bar
+    xs, x = {}, ZX
+    for k, lab, c in MSUB:
+        w = ZW * sub[k]['n'] / M['n']; xs[k] = (x, w)
+        oldtxt = ', '.join(f'{v} {kk}' for kk, v in sub[k]['old'].items())
+        o.append(_rect(x + 1, ZY, w - 2, 64, c, f'{lab}: {sub[k]["n"]} of {M["n"]} multi-particle events\n'
+                                                f'old budget label: {oldtxt}'))
+        o.append(T(x + w / 2, ZY + 27, lab if w > 300 else lab.replace('merged in one view', 'merged in one view'),
+                   20 if w > 300 else 19, '#ffffff', 'middle', 600))
+        o.append(T(x + w / 2, ZY + 54, f'{sub[k]["n"]}', 24, '#ffffff', 'middle', 700))
+        x += w
+    o.append(T(ZX - 14, ZY + 40, f'{M["n"]} =', 26, PURPLE, 'end', 700,
+               tip=' + '.join(str(sub[k]['n']) for k, _, _ in MSUB) + f' = {M["n"]}'))
+    # topology strip
+    TY = ZY + 82
+    o.append(T(ZX - 14, TY + 22, 'x × y topology', 21, INK, 'end', 600,
+               tip='number of particle-like clusters in x × in y'))
+    for k, _, _ in MSUB:
+        x, w = xs[k]; tp = sub[k]['topo']; full = sub[k]['topo_full']
+        for tk, tlab, tc in TOPO:
+            m = tp.get(tk, 0); tw = w * m / sub[k]['n']
+            if not m:
+                continue
+            o.append(_rect(x + 1, TY, tw - 2, 32, tc, f'{tlab}: {m} of {sub[k]["n"]}\nall: {full}', rx=2))
+            if tw > 54:
+                o.append(T(x + tw / 2, TY + 23, f'{tk.replace("x", "×")} {m}' if tw > 120 else f'{m}', 19,
+                           '#ffffff' if tk == '2x2' else INK, 'middle', 600))
+            x += tw
+    n22 = sum(sub[k]['topo'].get('2x2', 0) for k in sub); n12 = sum(sub[k]['topo'].get('1x2/2x1', 0) for k in sub)
+    n3 = M['n'] - n22 - n12
+    # outcome rows
+    rows = [('production', 'winner within 5 mm and n_dropped ≤ 2 in both views', M['prod'],
+             {'m3_picked': (False, 'found, but n_dropped > 2 → event cut'),
+              'other_picked': (False, 'kept the brighter one → “far”'),
+              'm3_not_found': (False, 'merged → “far”')}),
+            ('any-candidate credit', 'some x and some y candidate within 5 mm of M3', M['any'],
+             {'m3_picked': (True, f'counted {sub["m3_picked"]["any"]}'),
+              'other_picked': (True, f'counted {sub["other_picked"]["any"]}'),
+              'm3_not_found': (False, f'lost {sub["m3_not_found"]["n"] - sub["m3_not_found"]["any"]}')})]
+    ry = TY + 62
+    for nm, rule, cnt, cells in rows:
+        o.append(T(ZX - 14, ry + 26, f'{nm}: <tspan fill="{GREEN if cnt else RED}" font-weight="700">{cnt} / {M["n"]} '
+                                     f'({100 * cnt / M["n"]:.0f} %)</tspan>', 22, INK, 'end', 600, tip=rule))
+        o.append(T(ZX - 14, ry + 52, rule, 18, MUT, 'end'))
+        for k, _, _ in MSUB:
+            x, w = xs[k]; ok, s = cells[k]
+            o.append(_rect(x + 3, ry, w - 6, 62, '#e3f1e8' if ok else '#f7e1e4', f'{nm}: {s}', stroke=GREEN if ok else RED,
+                           rx=6))
+            o.append(T(x + w / 2, ry + 38, ('✓ ' if ok else '✗ ') + s, 20 if w > 300 else 18, GREEN if ok else RED,
+                       'middle', 600))
+        ry += 84
+    fig = sd.svg(W, H, ''.join(o), 'flow from all interior tracks to the multi-particle sub-classes')
+    tn = {'2x2': n22, '1x2/2x1': n12, 'with 3': n3}
+    tl = {'1x2/2x1': '1×2 / 2×1: a second cluster in one view only (overlap in the other projection, or seen by one view)'}
+    leg = sd.legend([(f'{tl.get(k, lab)}: {tn[k]}', c, 'box') for k, lab, c in TOPO], size=20)
+    body = (sd.title(f'{M["n"]} of {fmt(n)} interior M3 tracks have a second particle in det3: production counts 0, '
+                     f'any-candidate credit {M["any"]} ({100 * M["any"] / M["n"]:.0f} %)',
+                     'how a track becomes “multi-particle”, what det3 fitted, and what each rule counts · det3 golden '
+                     'row, 6-27 long run, 490 V') + fig + leg)
+    sb = sub
+    notes = (f'<p><b>Denominator.</b> {fmt(n)} = every event whose M3 reference (χ² &lt; 1, 4 clusters, one ray per '
+             f'event) crosses det3’s interior. It is not the number of triggers ({fmt(Sm["budget"]["n_rays"])} recipe rays '
+             f'in all, interior or not; far more triggers fail the recipe). Each class is a share of these {fmt(n)}.</p>'
+             f'<p><b>Classes</b> (multitrack.py count): S = ≤ 1 particle-like cluster in each view ({S_["n"]}); M = ≥ 2 in '
+             f'either view ({M["n"]}); V = spark-vetoed ({V["n"]}): production drops the event before fitting, so there '
+             f'are no candidates to count — it is lost under every rule. Particle-like = the cluster’s summed signal '
+             f'(strips within max(4, |15 tan θ| + 3) mm of its mid-gap position) stays above 20 % of its peak for '
+             f'≤ 24 samples × 60 ns; a 30 mm column at 36 µm/ns is 14 samples plus the ~6-sample pulse. Longer clusters '
+             f'are the noise bands (slides “bands”) and are excluded. A particle-like cluster is not yet a verified '
+             f'through-going track: a compact δ blob or a short stub also qualifies; what the second particles are '
+             f'(shower partner, knock-on, independent muon) is open.</p>'
+             f'<p><b>Sub-classes</b> (multitrack.py sub, by production’s outcome): <b>M3 particle fitted, then cut</b> '
+             f'({sb["m3_picked"]["n"]}) — production’s winner was the M3 track but n_dropped &gt; 2 rejected the view: '
+             f'the old “found, cut” second particle. <b>Other particle picked</b> ({sb["other_picked"]["n"]}) — the '
+             f'brighter other track won the largest-cluster ranking (charge ratio median 1.7), the M3 one is among the '
+             f'candidates: old “far”. <b>Merged in one view</b> ({sb["m3_not_found"]["n"]}) — no candidate near M3 in '
+             f'one view; {sb["m3_not_found"]["topo"].get("1x2/2x1", 0)} of them are 1×2 / 2×1, the two tracks overlap in '
+             f'one projection within the 12 mm seed gap; the joint two-track fit (WFT_TWO_TRACK_FIT) recovers 8 of '
+             f'them (next slide but one).</p>'
+             f'<p><b>Rules.</b> Production = the efficiency budget’s “detected”: the winning fit within 5 mm of M3 at the '
+             f'mesh (raw strip frame) in both views and n_dropped ≤ 2 — so 0 multi-particle events by construction '
+             f'(a particle-like second cluster has ≥ 3 strips). Any-candidate credit = some x and some y candidate '
+             f'within 5 mm, no pairing, no n_dropped cut (Dylan: “if there are two tracks and we reconstruct both, we '
+             f'should get credit if one matches M3”).</p>'
+             f'<p>Recomputed from rows: summarize.multi_flow() over multitrack_det3.parquet and multi_sub.parquet '
+             f'(summary.json key multi_flow).</p>')
+    D.slide('multi-flow', body, notes, short='two particles: count')
+
+
+def s_multi_sum(D, Sm):
+    """Old budget labels -> new classes, and the arithmetic that closes the 94.7 % total."""
+    F = Sm.get('multi_flow')
+    if not F:
+        return
+    n, S_, M, V = F['n'], F['S'], F['M'], F['V']; fc, fm, fe = F['old_found_cut'], F['old_far_multi'], F['old_far_edge']
+    sub = F['sub']; m_cut = sub['m3_picked']['n']
+    m_fm = sum(sub[k]['old'].get('far:MULTI', 0) for k in sub); m_fe = sum(sub[k]['old'].get('far:EDGE', 0) for k in sub)
+    assert m_cut == fc['M'] and m_fm == fm['M'] and m_fe == fe['M'] and m_cut + m_fm + m_fe == M['n']
+    W, H = 830, 610; k = 490 / (fc['n'] + fm['n'] + fe['n']); g = 34; XL, XR, NW = 250, 490, 22
+    # left nodes (old), right nodes (new)
+    left = [('cut', f'“found, cut”', fc['n'], RED), ('fm', 'far: MULTI', fm['n'], ORANGE), ('fe', 'far: EDGE', fe['n'], GREY)]
+    right = [('band', 'single + noise band', fc['S'], BLUE, 'recovered by the band veto (all 67)'),
+             ('M', 'multi-particle', M['n'], PURPLE, f'{M["n"]} = {m_cut} + {m_fm} + {m_fe}'),
+             ('sfm', 'single, other deposit', fm['S'], ORANGE, 'not particle-like: stays far:MULTI'),
+             ('sfe', 'single, edge', fe['S'], GREY, 'stays far:EDGE')]
+    flows = [('cut', 'band', fc['S']), ('cut', 'M', fc['M']), ('fm', 'M', fm['M']), ('fm', 'sfm', fm['S']),
+             ('fe', 'M', fe['M']), ('fe', 'sfe', fe['S'])]
+    oldtip = dict(cut=f'rejected_cut: production found the M3 track but n_dropped > 2 in a view\n{fc["n"]} = '
+                      f'{100 * fc["n"] / n:.2f} % of {n}',
+                  fm=f'C22 far class MULTI: another deposit beside the track\n{fm["n"]} = {100 * fm["n"] / n:.2f} %',
+                  fe=f'C22 far class EDGE\n{fe["n"]} = {100 * fe["n"] / n:.2f} %')
+    o, yl, yr, y = [], {}, {}, 40
+    for key, lab, v, c in left:
+        yl[key] = [y, y]; h = v * k
+        o.append(_rect(XL - NW, y, NW, h, c, oldtip[key], rx=2))
+        o.append(T(XL - NW - 12, y + h / 2 + 4, lab, 22, INK, 'end', 700, tip=oldtip[key]))
+        o.append(T(XL - NW - 12, y + h / 2 + 30, f'{v} = {100 * v / n:.1f} %', 20, MUT, 'end'))
+        y += h + g
+    y = 22
+    for key, lab, v, c, tip in right:
+        yr[key] = [y, y]; h = v * k
+        o.append(_rect(XR, y, NW, h, c, f'{lab}: {v}\n{tip}', rx=2))
+        o.append(T(XR + NW + 12, y + h / 2 + 4 - (10 if h > 40 else 0), f'{lab}  <tspan font-weight="700">{v}</tspan>',
+                   21, INK, 'start', 600))
+        o.append(T(XR + NW + 12, y + h / 2 + (22 if h > 40 else 26), tip, 18, MUT, 'start'))
+        y += h + (g if v > 20 else 44)
+    for a, b, v in flows:
+        h = v * k; c = dict((r[0], r[3]) for r in right)[b]
+        o.append(_band(XL, yl[a][1], yl[a][1] + h, XR, yr[b][1], yr[b][1] + h, c, f'{v} events: old {a} → {b}'))
+        o.append(T((XL + XR) / 2, (yl[a][1] + yr[b][1]) / 2 + h / 2 + 7, str(v), 19, INK, 'middle', 700) if v >= 20 else
+                 T(XR - 8, yr[b][1] + h / 2 + 6, str(v), 17, INK, 'end', 700))
+        yl[a][1] += h; yr[b][1] += h
+    o.append(T(XL - NW, 22, 'old budget label', 20, MUT, 'start', 600))
+    o.append(T(XR, 10, 'new class', 20, MUT, 'start', 600))
+    fig = sd.svg(W, H, ''.join(o), 'old budget labels to new classes')
+    # the arithmetic
+    pct = lambda a, b: f'{100 * a / b:.1f}\u00a0%'
+    sn, mn, vn = S_['n'], M['n'], V['n']
+    tab = sd.table(['events', 'tracks', 'counted', 'eff.'], [
+        ('single particle, production', fmt(sn), fmt(S_['prod']), pct(S_['prod'], sn)),
+        ('  + band veto (n_dropped without band strips)', '', f'+{S_["noband"] - S_["prod"]}&nbsp;→&nbsp;{fmt(S_["noband"])}',
+         pct(S_['noband'], sn)),
+        ('  + any-candidate credit', '', f'+{S_["any"] - S_["noband"]}&nbsp;→&nbsp;{fmt(S_["any"])}', pct(S_['any'], sn)),
+        ('multi-particle, any-candidate credit', fmt(mn), fmt(M['any']), pct(M['any'], mn)),
+        ('spark-vetoed (no fit)', fmt(vn), '0', '0 %'),
+        ('<b>all interior</b>', f'<b>{fmt(n)}</b>', f'<b>{fmt(F["total"]["any"])}</b>', f'<b>{pct(F["total"]["any"], n)}</b>')],
+        size=21, widths=[380, 90, 170, 100])
+    eq = (f'{pct(sn, n)} × {pct(S_["any"], sn)} + {pct(mn, n)} × {pct(M["any"], mn)} + {pct(vn, n)} × 0'
+          f'<br>= {100 * S_["any"] / n:.1f} + {100 * M["any"] / n:.1f} + 0 = <b>{pct(F["total"]["any"], n)}</b>')
+    alt = S_['noband'] + M['any']
+    body = (sd.title(f'Old “found, cut” {pct(fc["n"], n)}: half second particles; old far:MULTI {pct(fm["n"], n)}: '
+                     f'nearly all. Total: {pct(F["total"]["any"], n)}',
+                     f'left: where the multi-particle events sat in the old budget · right: the efficiency, of {fmt(n)} '
+                     f'interior tracks') +
+            sd.row(fig, sd.col(tab, sd.p(eq, 23, INK),
+                               sd.p(f'Quoting singles at {pct(S_["noband"], sn)} (band veto, no any-candidate credit) '
+                                    f'gives {fmt(alt)} / {fmt(n)} = {pct(alt, n)}; the {pct(F["total"]["any"], n)} gives '
+                                    f'singles the same credit (+{S_["any"] - S_["noband"]}).', 20, MUT), w=790, gap=22),
+                   gap=48))
+    rc = Sm['recat']['counts']; nrec = sum(v for kk, v in rc.items() if kk.startswith('multi:'))
+    notes = (f'<p><b>Old → new.</b> The old budget’s “found, cut” ({fc["n"]}, {pct(fc["n"], n)}: production found '
+             f'the M3 track, n_dropped &gt; 2 rejected it) splits into {fc["M"]} with a second particle-like cluster (the '
+             f'“M3 particle fitted, then cut” sub-class) and {fc["S"]} whose extra strips were a noise band only — all '
+             f'{fc["S_noband"]} pass when the band strips are not counted. The C22 far class MULTI ({fm["n"]}, '
+             f'{pct(fm["n"], n)}) splits into {fm["M"]} multi-particle ({sub["other_picked"]["old"].get("far:MULTI", 0)} '
+             f'other picked + {sub["m3_not_found"]["old"].get("far:MULTI", 0)} merged) and {fm["S"]} single-particle '
+             f'events whose second deposit is not particle-like. {fe["M"]} of the {fe["n"]} far:EDGE are multi-particle '
+             f'too. {mn} = {m_cut} + {m_fm} + {m_fe}.</p>'
+             f'<p><b>Budget bar vs this count.</b> The re-categorised budget (slide “budget”) shows {nrec} multi-particle '
+             f'events ({100 * nrec / n:.2f} %), not {mn}: it takes the first matching class, and '
+             f'{mn - nrec} of the “M3 particle fitted, then cut” events also carry a noise band, so they sit in “band”.</p>'
+             f'<p><b>The arithmetic.</b> Production counts {fmt(F["total"]["prod"])} / {fmt(n)} = '
+             f'{pct(F["total"]["prod"], n)}. Single-particle efficiency: production {pct(S_["prod"], sn)}; the band veto '
+             f'(n_dropped without the band clusters’ strips) adds {S_["noband"] - S_["prod"]} → {pct(S_["noband"], sn)}, '
+             f'the number to quote first; any-candidate credit adds {S_["any"] - S_["noband"]} more single-particle '
+             f'events (a candidate within 5 mm in both views that production did not pick) → {pct(S_["any"], sn)}. '
+             f'Total with any-candidate credit everywhere: ({fmt(S_["any"])} + {M["any"]} + 0) / {fmt(n)} = '
+             f'{pct(F["total"]["any"], n)} (multitrack.json total.any). With singles at the band-veto number instead: '
+             f'{pct(alt, n)}. The spark-vetoed {vn} ({pct(vn, n)}) are lost under every rule: production never fits them '
+             f'(slides “spark”).</p>'
+             f'<p>Counts: summarize.multi_flow() (summary.json key multi_flow), recomputed from the parquet rows.</p>')
+    D.slide('multi-sum', body, notes, short='two particles: totals')
+
+
 def s_multi(D, Sm):
     ms = Sm.get('multi_sub'); mt = Sm['multitrack']; tt = Sm.get('two_track') or {}
     if not ms:
@@ -848,9 +1105,11 @@ def s_multi(D, Sm):
              for k, nm in (('S', 'single particle'), ('M', 'multi-particle'))]
     ex = _ex['merged']
     disp = evd(ex[0], ex[1], w=520, h=430, zoom=22, title=f'M3 not found: event {ex[0]}, {ex[1]}', margin=(10, 18, 84, 96))
-    body = (sd.title(f'{ms["n"]} events ({100 * ms["n"] / n:.1f} %) hold two particles; the M3 one is reconstructed as well '
-                     f'as a single track in {100 * (sub["m3_picked"]["n"] + sub["other_picked"]["n"]) / ms["n"]:.0f} % of them',
-                     'multi-particle = ≥ 2 particle clusters in a view, from det3 alone') +
+    body = (sd.title(f'In the {ms["n"]} multi-particle tracks ({100 * ms["n"] / n:.1f} % of {fmt(n)} interior), the M3 '
+                     f'particle is fitted as well as a single track, in '
+                     f'{100 * (sub["m3_picked"]["n"] + sub["other_picked"]["n"]) / ms["n"]:.0f} % of them',
+                     'multi-particle = det3 alone sees ≥ 2 particle-like clusters in a view (accounting: previous two '
+                     'slides)') +
             sd.row(sd.col(sd.hbars(rows, 1.4, width=360, h=36, label_w=440, fmt=lambda v: f'{v:.2f} %', size=22),
                           sd.table(['events', 'σ position x / y [mm]', 'σ angle x / y [°]', 'agrees x / y'], qrows, size=22),
                           w=900),
@@ -1135,7 +1394,7 @@ def main():
     pick_examples(Sm)
     D = sd.Deck('det3 loss categories', 'What each det3 efficiency-loss category looks like, and whether a better '
                                          'reconstruction could recover it')
-    for f in (s_cover, s_setup, s_budget, s_bands_what, s_bands_not, s_bands_fix, s_multi, s_pairing, s_failed,
+    for f in (s_cover, s_setup, s_budget, s_bands_what, s_bands_not, s_bands_fix, s_multi_flow, s_multi_sum, s_multi, s_pairing, s_failed,
               s_headon_inj, s_spark, s_delta, s_sat_now, s_sat_rail, s_sat_blob, s_sat_arms, s_fit, s_rest, s_close):
         f(D, Sm)
     import datetime as dt

@@ -25,7 +25,7 @@ Golden row `sat_det3` (6-27 Saturday scan long run, 490 V), production `final_ph
 | head-on at low gain / doubled noise: injection into real empty-chamber noise, prototype rules (2-strip, 1-strip, column finder, charge check) | `headon2.py extract/scan` | `headon2_wf.pkl`, `headon2.json` |
 | head-on rules in wft (`WFT_HEADON_SIG=20 WFT_HEADON_RESCUE=1`): real failures + controls + empty triggers; end-to-end injection | `reco_variant.py` (env), `headon3.py extract/run/score` | `reco_ho_wft/`, `reco_out_ho_wft/`, `headon3.json` |
 | joint two-track fit on the multi-particle events (`WFT_TWO_TRACK_FIT=1`) | `reco_variant.py` (env) | `reco_tt/` |
-| numbers (incl. the re-categorised budget, summarize.recat), then the note | `summarize.py`, `make_deck.py` | `summary.json`, `recat_det3.parquet`, `deck/` |
+| numbers (incl. the re-categorised budget, summarize.recat, and the multi-particle flow, summarize.multi_flow), then the note | `summarize.py`, `make_deck.py` | `summary.json`, `recat_det3.parquet`, `deck/` |
 
 Memory: one reconstruction at a time (`--jobs 2`); a reco job peaks at ~3 GB. Never wait on a job with `pgrep -f` /
 `pkill -f` on a pattern your own shell contains (it matches itself) — wait on the output file.

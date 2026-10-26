@@ -2,10 +2,10 @@
 
 ## det3 loss categories + saturated-strip treatment (satstudy) — updated 2026-10-26 (dylan-Yoga)
 
-**Resume:** rework the multi-particle (M3 double-track) accounting slide so it is clear, then the unified reco rewrite.
+**Resume:** the unified reco rewrite (the multi-particle accounting slides are done).
 
 **Next steps (in order):**
-1. **Dylan: the M3 double-track accounting on the cern-site slides (notes/mx17-det3-loss-categories) needs a clearer
+1. **DONE 10-26 late (see below).** Dylan: the M3 double-track accounting on the cern-site slides (notes/mx17-det3-loss-categories) needs a clearer
    explanation.** Make it explicit, on the slide not only in Details: the denominator (6 451 INTERIOR M3-triggered
    tracks — one clean recipe ray through det3 — not all triggers); how an event becomes "multi-particle" (det3 alone
    sees >= 2 particle-like clusters, signal <= 24 samples, in a view; band clusters excluded); the 187 = 69 + 81 + 37
@@ -16,6 +16,17 @@
    (s_multi, s_budget, cover), numbers in summary.json (multitrack, multi_sub, recat); republish with add-note.py.
 2. The unified reconstruction rewrite (Dylan's direction below), folding in today's validated prototypes.
 3. Follow-ups 1–3 below (bands, multi-particle physics, pairing sim plan rerun/pairing_sim/PLAN.md).
+
+**10-26 late — next step 1 DONE: multi-particle accounting slides** (notes/mx17-det3-loss-categories, slides 7–8
+"two particles: count / totals"; numbers from `summarize.multi_flow()`, recomputed from multitrack_det3 / multi_sub
+parquet rows, summary.json key `multi_flow`). Slide 7: zoom flow 6 451 interior → S 6 138 / M 187 / V 126 (spark-vetoed,
+no fit, never classed) → M = 69 fitted-then-cut + 81 other picked + 37 merged → x×y topology (2×2 114, 1×2/2×1 66, a
+view with 3: 7) → production 0/187, any-candidate 150/187 (80 %), with the particle-like definition on the slide.
+Slide 8: old → new Sankey (found,cut 136 = 69 M + 67 band-only singles; far:MULTI 122 = 111 M + 11 singles; far:EDGE
+7 M) and the closing table: singles 95.8 → 96.9 (band veto, +67) → 97.1 % (any candidate, +9); total
+(5 958 + 150 + 0)/6 451 = 94.7 %. **Correction:** 96.9 % + multi credit does NOT give 94.7 % — that total gives singles
+any-candidate credit too (97.1 %); with singles at 96.9 % it is 94.5 %. The budget bar shows 183 multi, not 187: 4 of
+the cut ones carry a band and are counted as band (first match wins).
 
 **10-26 evening (Dylan: characterise the bands, re-categorise MULTI, pairing for the paper, head-ons to the extreme):**
 - **Noise bands** (bands.py): whole-window baseline offsets ±50–3000 ADC on a contiguous patch of strips, x and y

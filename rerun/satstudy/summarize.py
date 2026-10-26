@@ -305,6 +305,38 @@ def recat():
                 counts=R.recat.value_counts().to_dict())
 
 
+def multi_flow():
+    """The multi-particle accounting as one closed flow (Dylan 10-26: make the M3 double-track accounting explicit),
+    recomputed from multitrack_det3.parquet (class S/M/V, prod/noband/any per interior ray), multi_sub.parquet (the M
+    sub-classes and x x y topology) and the budget's own categories on the rays (cat_xy_5, C22 cls), so every number
+    on the flow slides is a count of rows, not a copy of another summary."""
+    R = rays(); D = pd.read_parquet(os.path.join(S.OUT, 'multitrack_det3.parquet'))
+    T = pd.read_parquet(os.path.join(S.OUT, 'multi_sub.parquet'))
+    assert len(D) == len(R) and (D.index == R.index).all()
+    c22 = R.cls.astype(str)
+    out = dict(n=len(D))
+    for k in 'SMV':
+        g = D[D.cls == k]
+        out[k] = dict(n=int(len(g)), prod=int(g['prod'].sum()), noband=int(g.noband.sum()), any=int(g['any'].sum()),
+                      noband_or_any=int((g.noband | g['any']).sum()), cat=g.cat.value_counts().to_dict())
+    big = lambda t: ('2x2' if t == '2x2' else ('1x2/2x1' if t in ('1x2', '2x1') else 'with 3'))
+    out['sub'] = {}
+    for k, g in T.groupby('sub'):
+        old = [(c if c != 'far' else 'far:' + c22[e]) for e, c in g['cat'].items()]
+        out['sub'][k] = dict(n=int(len(g)), any=int(g['any'].sum()), topo=g.topo.map(big).value_counts().to_dict(),
+                             topo_full=g.topo.value_counts().to_dict(), old=pd.Series(old).value_counts().to_dict())
+    rc = D[D.cat == 'rejected_cut']
+    out['old_found_cut'] = dict(n=int(len(rc)), M=int((rc.cls == 'M').sum()), S=int((rc.cls == 'S').sum()),
+                                S_noband=int(rc[rc.cls == 'S'].noband.sum()))
+    fm = D[(D.cat == 'far') & (c22 == 'MULTI')]
+    out['old_far_multi'] = dict(n=int(len(fm)), M=int((fm.cls == 'M').sum()), S=int((fm.cls == 'S').sum()))
+    fe = D[(D.cat == 'far') & (c22 == 'EDGE')]
+    out['old_far_edge'] = dict(n=int(len(fe)), M=int((fe.cls == 'M').sum()), S=int((fe.cls == 'S').sum()))
+    out['total'] = dict(prod=int(D['prod'].sum()), any=int(D['any'].sum()), noband=int(D.noband.sum()),
+                        noband_or_any=int((D.noband | D['any']).sum()))
+    return out
+
+
 EV_PROD = os.path.expanduser('~/x17/cosmic_bench/outliers/final/mx17_det3_saturday_scan_6-27-26/'
                              'long_run_resist_490V_drift_1000V/mx17_3/wft/final_phys/events.parquet')
 
@@ -316,6 +348,7 @@ def main():
     nb = len(pd.read_csv(os.path.join(S.OUT, 'ids_band.csv'))) - 400
     S_['band_fix_left'] = _pair_runs(None, 'reco_band_left', 'ids_band.csv', nb)   # WFT_DROP_FLAT_HITS=left
     S_['two_track'] = two_track(); S_['recat'] = recat(); S_['headon_wft'] = headon_wft()
+    S_['multi_flow'] = multi_flow()
     for k in ('multitrack', 'headon', 'bands', 'multi_sub', 'pairing_toy', 'overlay', 'headon2', 'headon3'):
         # multitrack.py count / sub, headon.py, bands.py report, pairing.py toy, overlay.py score, headon2/3.py
         p = os.path.join(S.OUT, f'{k}.json')
