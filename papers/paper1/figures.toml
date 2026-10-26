@@ -131,3 +131,104 @@ state = "placeholder"
 section_state = "ready"
 producer = "cd sps_beam_test_26/det4_sps_assessment && ../../.venv/bin/python 14_board_map.py"
 note = "Board map from det4_sps_assessment. Stephan: production cause?"
+
+# --- Appendix A1 Loss categories (det3 interior, one real event per class) ----------------
+# Source outside the repo (satstudy outputs live in ~/x17); figures/<id>.pdf is committed, so other machines keep it.
+
+[fig.loss_band]
+title = "det3 loss class band: noise band (baseline offset on a strip patch) (event 29808)"
+state = "current"
+source = "/home/dylan/x17/cosmic_bench/satstudy/appendix/loss_band.pdf"
+producer = "cd rerun/satstudy && ../../.venv/bin/python summarize.py && ../../.venv/bin/python appendix_figs.py"
+note = "Waveform display (strip position x drift time), production wft fit + M3: allowed (geometry from waveforms)."
+
+[fig.loss_multi_m3picked]
+title = "det3 loss class multi:m3_picked: second particle: M3 one fitted, view cut (event 30375)"
+state = "current"
+source = "/home/dylan/x17/cosmic_bench/satstudy/appendix/loss_multi_m3picked.pdf"
+producer = "cd rerun/satstudy && ../../.venv/bin/python summarize.py && ../../.venv/bin/python appendix_figs.py"
+note = "Waveform display (strip position x drift time), production wft fit + M3: allowed (geometry from waveforms)."
+
+[fig.loss_multi_otherpicked]
+title = "det3 loss class multi:other_picked: second particle: the other one fitted (event 28078)"
+state = "current"
+source = "/home/dylan/x17/cosmic_bench/satstudy/appendix/loss_multi_otherpicked.pdf"
+producer = "cd rerun/satstudy && ../../.venv/bin/python summarize.py && ../../.venv/bin/python appendix_figs.py"
+note = "Waveform display (strip position x drift time), production wft fit + M3: allowed (geometry from waveforms)."
+
+[fig.loss_multi_merged]
+title = "det3 loss class multi:m3_not_found: second particle: merged in projection (event 46350)"
+state = "current"
+source = "/home/dylan/x17/cosmic_bench/satstudy/appendix/loss_multi_merged.pdf"
+producer = "cd rerun/satstudy && ../../.venv/bin/python summarize.py && ../../.venv/bin/python appendix_figs.py"
+note = "Waveform display (strip position x drift time), production wft fit + M3: allowed (geometry from waveforms)."
+
+[fig.loss_spark_discharge]
+title = "det3 loss class spark:discharge: spark: discharge (event 18645)"
+state = "current"
+source = "/home/dylan/x17/cosmic_bench/satstudy/appendix/loss_spark_discharge.pdf"
+producer = "cd rerun/satstudy && ../../.venv/bin/python summarize.py && ../../.venv/bin/python appendix_figs.py"
+note = "Waveform display (strip position x drift time), production wft fit + M3: allowed (geometry from waveforms)."
+
+[fig.loss_spark_muonother]
+title = "det3 loss class spark:muon+other: spark: muon + unrelated deposit (event 36694)"
+state = "current"
+source = "/home/dylan/x17/cosmic_bench/satstudy/appendix/loss_spark_muonother.pdf"
+producer = "cd rerun/satstudy && ../../.venv/bin/python summarize.py && ../../.venv/bin/python appendix_figs.py"
+note = "Waveform display (strip position x drift time), production wft fit + M3: allowed (geometry from waveforms)."
+
+[fig.loss_spark_shower]
+title = "det3 loss class spark:shower: spark: shower at the crossing (event 41538)"
+state = "current"
+source = "/home/dylan/x17/cosmic_bench/satstudy/appendix/loss_spark_shower.pdf"
+producer = "cd rerun/satstudy && ../../.venv/bin/python summarize.py && ../../.venv/bin/python appendix_figs.py"
+note = "Waveform display (strip position x drift time), production wft fit + M3: allowed (geometry from waveforms)."
+
+[fig.loss_delta]
+title = "det3 loss class far:DELTA: delta-ray on the track (event 28537)"
+state = "current"
+source = "/home/dylan/x17/cosmic_bench/satstudy/appendix/loss_delta.pdf"
+producer = "cd rerun/satstudy && ../../.venv/bin/python summarize.py && ../../.venv/bin/python appendix_figs.py"
+note = "Waveform display (strip position x drift time), production wft fit + M3: allowed (geometry from waveforms)."
+
+[fig.loss_satblob]
+title = "det3 loss class far:FIT_SAT: saturated delta blob, fit pulled off (event 41373)"
+state = "current"
+source = "/home/dylan/x17/cosmic_bench/satstudy/appendix/loss_satblob.pdf"
+producer = "cd rerun/satstudy && ../../.venv/bin/python summarize.py && ../../.venv/bin/python appendix_figs.py"
+note = "Waveform display (strip position x drift time), production wft fit + M3: allowed (geometry from waveforms)."
+
+[fig.loss_fit]
+title = "det3 loss class far:FIT: clean track, fit off (event 4490)"
+state = "current"
+source = "/home/dylan/x17/cosmic_bench/satstudy/appendix/loss_fit.pdf"
+producer = "cd rerun/satstudy && ../../.venv/bin/python summarize.py && ../../.venv/bin/python appendix_figs.py"
+note = "Waveform display (strip position x drift time), production wft fit + M3: allowed (geometry from waveforms)."
+
+[fig.loss_headon]
+title = "det3 loss class head_on: head-on: 2-strip cluster, never seeded (event 43536)"
+state = "current"
+source = "/home/dylan/x17/cosmic_bench/satstudy/appendix/loss_headon.pdf"
+producer = "cd rerun/satstudy && ../../.venv/bin/python summarize.py && ../../.venv/bin/python appendix_figs.py"
+note = "Waveform display (strip position x drift time), production wft fit + M3: allowed (geometry from waveforms)."
+
+[fig.loss_edge]
+title = "det3 loss class far:EDGE: edge of the other coordinate (event 38701)"
+state = "current"
+source = "/home/dylan/x17/cosmic_bench/satstudy/appendix/loss_edge.pdf"
+producer = "cd rerun/satstudy && ../../.venv/bin/python summarize.py && ../../.venv/bin/python appendix_figs.py"
+note = "Waveform display (strip position x drift time), production wft fit + M3: allowed (geometry from waveforms)."
+
+[fig.loss_postail]
+title = "det3 loss class far:POS_TAIL: position tail (mostly bent M3 tracks) (event 35773)"
+state = "current"
+source = "/home/dylan/x17/cosmic_bench/satstudy/appendix/loss_postail.pdf"
+producer = "cd rerun/satstudy && ../../.venv/bin/python summarize.py && ../../.venv/bin/python appendix_figs.py"
+note = "Waveform display (strip position x drift time), production wft fit + M3: allowed (geometry from waveforms)."
+
+[fig.loss_multi_deposit]
+title = "det3 loss class far:MULTI: second deposit (not particle-like) (event 14080)"
+state = "current"
+source = "/home/dylan/x17/cosmic_bench/satstudy/appendix/loss_multi_deposit.pdf"
+producer = "cd rerun/satstudy && ../../.venv/bin/python summarize.py && ../../.venv/bin/python appendix_figs.py"
+note = "Waveform display (strip position x drift time), production wft fit + M3: allowed (geometry from waveforms)."
