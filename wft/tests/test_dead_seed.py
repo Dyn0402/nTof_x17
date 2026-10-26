@@ -64,7 +64,7 @@ def test_window_pad():
 
 
 def test_dead_positions():
-    print('dead_positions: the bundle's dead list as seed positions')
+    print("dead_positions: the bundle's dead list as seed positions")
     pm = {6: np.arange(512) * P, 8: np.arange(512) * P}
     on = ws.dead_positions({'x': [30, 10], 'y': []}, pm, 6, 8)
     check('on by default', ws.DEAD_SEED)
