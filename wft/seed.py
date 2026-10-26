@@ -42,12 +42,15 @@ PITCH_MM = 398.58 / 512    # 0.7784 — strip pitch, for the hot-run bridge belo
 HOT_BRIDGE = os.environ.get('WFT_HOT_BRIDGE', '0') == '1'
 #: Dead strips (bundle ``dead``, census-verified: they read ~0 of the charge the
 #: fit predicts for them) cannot fire, so the silence of a dead strip between
-#: two fired strips says nothing about the gap. With ``WFT_DEAD_SEED=1`` the
+#: two fired strips says nothing about the gap. With DEAD_SEED on the
 #: clustering gap does not count the dead strips it crosses
 #: (``_effective_gaps``), and ``wft.io.extract_window`` pads by LIVE strips, so
 #: a cluster that ends at a dead run is not handed to the fit with a pad that is
-#: all censored. Off (default) = the historical seeding and windows, bit-identical.
-DEAD_SEED = os.environ.get('WFT_DEAD_SEED', '0') == '1'
+#: all censored. **On by default since 2026-10-26** (Dylan: one dead-channel
+#: treatment for every analysis and detector; production A/B on det7/det4 null,
+#: rerun/channel_layer/README.md). A bundle with no ``dead`` list is unaffected.
+#: ``WFT_DEAD_SEED=0`` restores the historical seeding and windows.
+DEAD_SEED = os.environ.get('WFT_DEAD_SEED', '1') == '1'
 #: Head-on rescue (opt-in, rerun/satstudy 2026-10-26): a plane with NO production seed may be seeded by a 2-strip
 #: cluster whose weaker strip has hit significance >= this. A near-normal track puts its whole drift column on 1-2
 #: strips; on det3 x its +-1 neighbours sit at 7-9 % of the brightest strip, 15-50 sigma but under the 10 % relative
@@ -187,6 +190,18 @@ def _effective_gaps(pos: np.ndarray, dead_pos=None) -> np.ndarray:
                      - np.searchsorted(dead_pos, pos[:-1], 'right'))
         d = d - n_between * PITCH_MM
     return d
+
+
+def dead_positions(dead, pos_maps, feu_x, feu_y) -> dict:
+    """{plane: sorted positions [mm] of its dead channels, or None} for ``seed_candidates``;
+    all None when DEAD_SEED is off or ``dead`` (``cal.dead``) is empty."""
+    out = {}
+    for plane, feu in (('x', feu_x), ('y', feu_y)):
+        ch = np.asarray(sorted((dead or {}).get(plane, ())) if DEAD_SEED else [], dtype=int)
+        p = pos_maps[feu][ch] if len(ch) else np.zeros(0)
+        p = np.sort(p[np.isfinite(p)])
+        out[plane] = p if len(p) else None
+    return out
 
 
 def _cluster_labels(pos: np.ndarray, gap_mm: float, dead_pos=None) -> np.ndarray:
@@ -404,7 +419,7 @@ def seeds_from_hits(df_hits: pd.DataFrame, pos_maps: Dict[int, np.ndarray],
     Typically ``cal.hot`` off the calibration bundle in use.
 
     ``dead``: optional ``{'x': [...], 'y': [...]}`` channel numbers (``cal.dead``)
-    whose strips do not count toward a clustering gap (``DEAD_SEED``).
+    whose strips do not count toward a clustering gap (when ``DEAD_SEED``, the default).
 
     Returns {eventId: {'x': [Seed], 'y': [Seed], 'n_hits': int,
                        'spark': bool}} — a list per plane, ranked by (clean)
@@ -425,12 +440,7 @@ def seeds_from_hits(df_hits: pd.DataFrame, pos_maps: Dict[int, np.ndarray],
     if len(df) == 0:
         return out
     hot = hot or {}
-    dead_pos = {}
-    for plane, feu in (('x', feu_x), ('y', feu_y)):
-        ch = np.asarray(sorted((dead or {}).get(plane, ())), dtype=int)
-        p = pos_maps[feu][ch] if len(ch) else np.zeros(0)
-        p = np.sort(p[np.isfinite(p)])
-        dead_pos[plane] = p if len(p) else None
+    dead_pos = dead_positions(dead, pos_maps, feu_x, feu_y)
     counts = df.groupby('eventId').size()
     for eid, g in df.groupby('eventId'):
         n_hits = int(counts.loc[eid])

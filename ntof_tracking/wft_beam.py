@@ -341,7 +341,8 @@ def seeds_from_hits_beam(df, pos_maps, feu_x, feu_y,
                          hot: Optional[Dict[str, object]] = None,
                          local_mm: Optional[float] = None,
                          local_mode: Optional[str] = None,
-                         split_gap_mm: Optional[float] = None) -> Dict[int, dict]:
+                         split_gap_mm: Optional[float] = None,
+                         dead: Optional[Dict[str, object]] = None) -> Dict[int, dict]:
     """Beam seeds: {eventId: {'x': [Seed], 'y': [Seed], 'n_hits', 'spark'}}.
 
     Same contract and the same clustering as `wft.seed.seeds_from_hits` -- only
@@ -360,6 +361,8 @@ def seeds_from_hits_beam(df, pos_maps, feu_x, feu_y,
     ``hot``: optional ``{'x': [...], 'y': [...]}`` channel numbers -- typically
     ``cal.hot`` -- passed through to ``seed_candidates`` (HANDOFF_D_NOISY_
     CHANNELS.md's wildcard spec, item 1: never seed on a flagged channel).
+    ``dead``: ``cal.dead`` -- its strips do not count toward a clustering gap
+    (``wft.seed.DEAD_SEED``, on by default), as in ``wft.seed.seeds_from_hits``.
     """
     from wft import seed as wseed
     lm = wseed.SIG_FLOOR_LOCAL_MM if local_mm is None else local_mm
@@ -378,6 +381,7 @@ def seeds_from_hits_beam(df, pos_maps, feu_x, feu_y,
         return out
     hot = hot or {}
     feu_of = {'x': feu_x, 'y': feu_y}
+    dead_pos = wseed.dead_positions(dead, pos_maps, feu_x, feu_y)
 
     def plane_seeds(gp, plane):
         """(every cluster, the ones that survive the isochronous veto)."""
@@ -386,7 +390,8 @@ def seeds_from_hits_beam(df, pos_maps, feu_x, feu_y,
                                       gp['amplitude'].to_numpy(),
                                       min_strips=min_strips,
                                       n_candidates=n_candidates,
-                                      hot=hot.get(plane))
+                                      hot=hot.get(plane),
+                                      dead_pos=dead_pos[plane])
         if sg:
             cands = wseed.split_seeds(cands, pos_maps[feu_of[plane]], sg, min_strips)
         smp = dict(zip(ch, gp['max_sample'].to_numpy()))
@@ -508,7 +513,7 @@ def reconstruct_subrun(cfg: BeamConfig, bundle_path: str, out_path: str,
                 continue
             hits = read_hits_tag(hp, (feu_x, feu_y))
             seeds = seeds_from_hits_beam(hits, pos_maps, feu_x, feu_y, hot=cal.hot,
-                                         min_strips=MIN_STRIPS_BEAM)
+                                         min_strips=MIN_STRIPS_BEAM, dead=cal.dead)
             del hits
             wanted = set(seeds)
             if allow_events is not None:
@@ -532,7 +537,7 @@ def reconstruct_subrun(cfg: BeamConfig, bundle_path: str, out_path: str,
                 print(f'[wft-beam]   {tag}: {len(wanted):,} seeded events',
                       flush=True)
             payloads = _windows_for_tag(cfg, tag, pos_maps, seeds, wanted,
-                                        pad_strips)
+                                        pad_strips, dead=cal.dead)
             if not payloads:
                 continue
             for r in pool.map(wreco._worker_fit, payloads, chunksize=8):
@@ -580,6 +585,8 @@ def _write_meta(df, out_path, cal, cfg, bundle_path, feu_x, feu_y, tags_done,
                          detector=cfg.DET_NAME, feu_x=feu_x, feu_y=feu_y,
                          file_tags=list(cfg.file_tags or [])),
                 selection=dict(seeder='ntof_tracking.wft_beam',
+                               dead_seed={p: len(c) for p, c in (cal.dead or {}).items()}
+                               if wseed.DEAD_SEED else {},
                                busy_plane_hits=BUSY_PLANE_HITS,
                                min_strips=MIN_STRIPS_BEAM,
                                n_candidates=N_CANDIDATES_BEAM,
@@ -629,9 +636,12 @@ def _write_meta(df, out_path, cal, cfg, bundle_path, feu_x, feu_y, tags_done,
         json.dump(meta, f, indent=1, default=str)
 
 
-def _windows_for_tag(cfg, tag, pos_maps, seeds, wanted, pad_strips):
-    """Waveform windows for one file tag -> the fit worker's payloads."""
+def _windows_for_tag(cfg, tag, pos_maps, seeds, wanted, pad_strips, dead=None):
+    """Waveform windows for one file tag -> the fit worker's payloads.
+    ``dead``: ``cal.dead``, padded across when ``wft.seed.DEAD_SEED`` (the default)."""
     from wft import io as wio
+    from wft import seed as wseed
+    dead = (dead or {}) if wseed.DEAD_SEED else {}
     fx = [f for f in wio.subrun_files(cfg.BASE_PATH, cfg.RUN, cfg.SUB_RUN,
                                       cfg.MX17_FEU_X) if wio.file_tag(f) == tag]
     fy = [f for f in wio.subrun_files(cfg.BASE_PATH, cfg.RUN, cfg.SUB_RUN,
@@ -650,7 +660,8 @@ def _windows_for_tag(cfg, tag, pos_maps, seeds, wanted, pad_strips):
             wins, used = [], []
             for s in cl:
                 win = wio.extract_window(wfm, rdr.noise, pos_maps[feu],
-                                         s.channels, pad_strips)
+                                         s.channels, pad_strips,
+                                         dead=dead.get(plane))
                 if win is None:
                     continue
                 wins.append(dict(W=win.W, pos=win.pos, noise=win.noise,

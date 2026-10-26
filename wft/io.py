@@ -177,7 +177,7 @@ def extract_window(wfm_all: np.ndarray, noise_all: np.ndarray,
     side in *position* order (the sharing kernel reaches +-2 strips, so the pad
     must be at least 2 for the model to see where the shared charge went).
 
-    ``dead`` (channel numbers, ``wft.seed.DEAD_SEED``): the pad counts LIVE
+    ``dead`` (channel numbers; callers pass ``cal.dead`` when ``wft.seed.DEAD_SEED``, the default): the pad counts LIVE
     strips only and takes the dead ones it crosses along, so a cluster that
     stops at a dead run (dead strips never fire) still has `pad_strips` strips
     of data beyond it. None = the historical pad.

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Dead strips in seeding and windowing (``WFT_DEAD_SEED``, opt-in): a dead
+"""Dead strips in seeding and windowing (``WFT_DEAD_SEED``, on by default): a dead
 strip cannot fire, so (1) the clustering gap does not count the dead strips it
 crosses, and (2) the window pad counts live strips, taking the dead ones it
 crosses along. Without a dead list both are the historical behaviour.
@@ -63,7 +63,23 @@ def test_window_pad():
     check('stops at the plane edge', list(edge.ch) == list(range(33, 40)), f'{list(edge.ch)}')
 
 
+def test_dead_positions():
+    print('dead_positions: the bundle's dead list as seed positions')
+    pm = {6: np.arange(512) * P, 8: np.arange(512) * P}
+    on = ws.dead_positions({'x': [30, 10], 'y': []}, pm, 6, 8)
+    check('on by default', ws.DEAD_SEED)
+    check('x positions sorted', on['x'] is not None and np.allclose(on['x'], [10 * P, 30 * P]))
+    check('empty plane -> None', on['y'] is None)
+    ws.DEAD_SEED = False
+    try:
+        off = ws.dead_positions({'x': [30, 10]}, pm, 6, 8)
+        check('WFT_DEAD_SEED=0 -> no positions', off['x'] is None and off['y'] is None)
+    finally:
+        ws.DEAD_SEED = True
+
+
 if __name__ == '__main__':
+    test_dead_positions()
     test_gap_bridge()
     test_window_pad()
     print('\nALL PASS' if not FAILS else f'\nFAILED: {FAILS}')
