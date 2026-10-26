@@ -139,6 +139,8 @@ the mean kw folded into v = the row's ladder v); `stage_job.sh` sets `WFT_COL_GU
 inputs rr1 (W9, SPS FEU 03 decoded). Code: **`code_469cbb1`** on lxplus (or a later archive of main).
 Dry runs (`/eos/user/d/dneff/x17rerun/Analysis_dryrun`, `~/x17rerun/dryrun_1026{,b}`): vrefit --keep-v on det3 6-25
 (500 V) and the pass on sat_det3 + that row + an inheriting row, --limit 300: every node rc 0, every stage wrote.
+On `code_469cbb1`, vrefit --keep-v on the 500 V drift-scan row wrote K = 30 and folded v 35.8 → 15.8 µm/ns (kw 1.00 /
+1.00); the timing v there is 12.5–14.5 (unsat_width), so the folded (ladder) v is the angle scale only: depth takes the timing v.
 
 ```bash
 # on lxplus, from a clone of main at the pass commit (promote_phys.py reads only EOS + its own file)
