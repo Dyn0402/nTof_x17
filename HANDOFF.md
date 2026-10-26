@@ -1,5 +1,27 @@
 # Handoff
 
+## Full-pass readiness (bench + SPS re-run) — updated 2026-10-27 (dylan-Yoga)
+
+**Resume:** pass ON HOLD; blockers in rerun/RERUN_PLAN.md §12 (B1 unified reco, B2 fleet gate, B3 SPS wiring, B4 audit).
+
+**Goal:** run the RERUN_PLAN pass once, so settle everything upstream before submitting it.
+
+**Done:**
+- 10-27 status review → RERUN_PLAN §12 (blockers, Dylan's open decisions, non-blocking items, order). §11 has an
+  on-hold banner. Confirmed on lxplus: nothing has been submitted (no `~/x17rerun/pass_main`, condor_q empty).
+- Found that SPS det4 is in the §0 scope but not in `pass_registry.csv` (170 bench rows only), and that nothing in `rerun/` stages SPS.
+
+**Next steps:**
+1. Dylan finishes the det3 misses (satstudy section below).
+2. B4: a separate session audits the whole detector/reco model (night of 10-27). Its findings feed B1/B2.
+3. B1: rewrite the unified reco (spec = satstudy section). Dylan decides whether the trigger-track rule goes in the
+   reco or downstream, and whether PIVOT_START is built in.
+4. B2: run the fleet gate on all five golden rows. Do B3 (SPS registry rows and stager) while it runs.
+5. New code archive → re-finalize and promote if w0/kw moved → §11 (vrefit --keep-v, then pass).
+
+**Gotchas:**
+- Untracked `vrefit.dag` in the repo root is a stale 10-24 dry-run file (`code="/x"`). It is safe to delete and was left uncommitted.
+
 ## det3 loss categories + saturated-strip treatment (satstudy) — updated 2026-10-26 (dylan-Yoga)
 
 **Resume:** all five det3-loss loose ends worked (10-26 night, 5 parallel sessions); next = unified reco rewrite, or fix the pairing sim.

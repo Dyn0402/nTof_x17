@@ -133,6 +133,9 @@ dry-gas bench run, Stephan's unanswered geometry questions, det6's window-limite
 
 ## 11 · Ready to run (2026-10-26 night): the morning procedure
 
+> **On hold (2026-10-27, §12):** this procedure runs today's `wft`. Dylan's 10-26 call (one rewritten reconstruction)
+> changes seeding and reconstruction settings, which §1 says force a re-run. Do not submit it until §12 steps 1–5 close.
+
 State: kernel `phys` (§10.1); channel masks on **all five chambers** (W3 closed 2026-10-26, `channel_layer/README.md`;
 the seeder bridges dead strips, `WFT_DEAD_SEED` default on); t0 prior off (W5); v groups by `vrefit --keep-v` (W7: golden bundle, the group's own K, w0/kw measured and
 the mean kw folded into v = the row's ladder v); `stage_job.sh` sets `WFT_COL_GUARD=0.01` and `WFT_PIVOT_START=1`;
@@ -162,3 +165,42 @@ python3 $C/rerun/make_pass_dag.py pass $C && condor_submit_dag pass.dag
 Then the downstream (§4 S3–S6, iterate freely): `rerun/effbudget/budget.py` on the pass tables (the budget of
 2026-10-26 is on the 8000-event finalize tables), the timing v per v group (S4, `cloud_basics/unsat_width.py` per row),
 det7 X quoted from ch 256–511.
+
+## 12 · Before the pass: what still blocks it (status review, 2026-10-27)
+
+**Not submitted.** As of 10-27 there is no `~/x17rerun/pass_main` on lxplus and no condor jobs. The §11 machinery is
+ready and dry-run tested. Running it now would mean running it twice, because two upstream items are still open (§1).
+
+### Blockers (upstream: each would force the pass to re-run)
+
+| id | item | closes when |
+|---|---|---|
+| B1 | **One rewritten reconstruction** (Dylan, 10-26). Fold in the validated prototypes as one algorithm for every detector, not as `WFT_*` switches: the band veto (`DROP_FLAT_HITS`), the head-on rule and rescue (`HEADON_SIG`/`HEADON_RESCUE`), x↔y charge pairing, the joint two-track fit (`TWO_TRACK_FIT`), per-channel and bottom rails with multi-start (satblob), and `PIVOT_START` as built-in behaviour rather than a `stage_job.sh` setting. The spec is the measured behaviour in HANDOFF (satstudy section). | the code is on main, the tests pass, and the switches are retired |
+| B2 | **Fleet gate on the rewrite.** Every prototype was measured on det3 only (plus injection for head-ons). Gate it on all five golden rows the way W3 was gated: s68, far fraction, χ², efficiency, held out. If w0/kw move, re-run the finalize and promote steps (`promote_phys.py`). | a gate table on all five chambers; no chamber gets worse, or the cost is accepted in writing |
+| B3 | **SPS det4 in the pass.** The §0 scope includes every SPS det4 run, but `pass_registry.csv` has 170 bench rows and no SPS rows. Nothing in `rerun/` stages SPS (only the W9 FEU 03 decode is done). Needed: registry rows, a stager (uRWELL reference; run_61 m100V and run_70 lack uRWELL hits), and the bundle policy for SPS. | SPS rows dry-run through `stage_job` like sat_det3 did |
+| B4 | **Model audit** (a separate session, night of 10-27): an audit of the whole detector/reco model before the freeze. Its findings feed B1/B2. | the audit's findings are triaged: each one either fixed before the freeze or recorded as a systematic or limitation |
+
+### Decisions for Dylan (part of B1)
+
+- **The trigger-track rule** (80 % held out vs production's 54 %, cosmic-only: it relies on vertical muons) — put it in
+  the reco, or keep it as a downstream selection? If downstream, it does not block the pass.
+- **`PIVOT_START`**: built in (recommended), or kept as a setting.
+
+### Not blocking (downstream of the pass, or limitations)
+
+- Pairing sim: it fails the σ ln(qx/qy) gate (0.101 vs 0.055). That is simulation for the X17 pairs, not the bench pass.
+- Paper I A1 fractions and `effbudget/budget.py` are re-derived from the pass tables. The Overleaf build of A1 is not yet confirmed.
+- The §6 questions; timing v per v group (S4); det7 X quoted from ch 256–511.
+- The noise-band mechanism and the det2/4/6 whole-plane bands are stated limitations (§7). The det6/det7 Y-card
+  correlation and a pogo beam reader are optional.
+- **Unreviewed risk:** `rerun/bands`, `multiparticle`, `pairing_sim` and `satstudy/satblob*` were run but never
+  reviewed, and some overlay arms ran with `WFT_DEAD_SEED=0`. They are B1's spec, so read them before porting them.
+
+### Order
+
+1. Finish the det3 misses (Dylan, 10-27).
+2. B4: the model audit, tonight in a separate session.
+3. B1: write the unified reco, folding in the audit's findings.
+4. B2: run the fleet gate. Do B3 (SPS wiring) while it runs.
+5. Archive the code (`code_<hash>`). Re-finalize and promote if w0/kw moved. Then run §11: vrefit --keep-v, then pass,
+   now with the SPS rows included.
