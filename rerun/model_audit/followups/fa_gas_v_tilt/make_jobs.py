@@ -50,6 +50,10 @@ ROWS = {   # item 3 (+ item 2 HV rows): key -> bundle name, limit
              (f'{C}mx17_det6_det7_hv_scan_6-26-26__resist_det6_495V_det7_495V_drift_700V__mx17_7', 'det7_base', 0)],
 }
 ARM_DETS = ['det3', 'det4', 'det6']
+#: model-free column duration on det3's drift scan (v(E) with no M3 and no angle: the field coupling of item 1).
+#: 100 and 300 V are left out: their column (> 3 us) overruns the 1.92 us window.
+COLSUM_EXTRA = [(f'{C}mx17_det3_saturday_scan_6-27-26__drift_scan_resist_490V_drift_{v}V__mx17_3', 'det3_base')
+                for v in (500, 700, 900, 1100)]
 
 
 def edit(src, dst, fn, note):
@@ -84,6 +88,8 @@ def jobs(code):
     L = []
     for det, key in GOLD.items():
         L.append(f'{code} colsum {key} {EOSB}/{det}_base')
+    for key, b in COLSUM_EXTRA:
+        L.append(f'{code} colsum {key} {EOSB}/{b}')
     for det in ARM_DETS:
         for arm in ('base', 's0c', 'pin', 'pins0c'):
             L.append(f'{code} arm:{arm} {GOLD[det]} {EOSB}/{det}_{arm}')

@@ -1,0 +1,12 @@
+# condor_submit -name bigbird101.cern.ch fa_row.sub jobfile=fa_jobs.txt   (each line: <code> <mode> <key> <bundle> [limit])
+executable     = $ENV(HOME)/x17rerun/fa/fa_row.sh
+arguments      = $(args)
+output         = log/$(Cluster).$(ProcId).out
+error          = log/$(Cluster).$(ProcId).err
+log            = log/fa.log
+request_cpus   = 8
+request_memory = 16000
++JobFlavour    = "workday"
+should_transfer_files = NO
+max_materialize = 100
+queue args from $(jobfile)
