@@ -90,3 +90,9 @@ diffusion and RC spread).  A column ending on the last bin is either truncated o
 det2 0.504 / 0.508, det3 0.522 / 0.582, det4 0.560 / 0.734, det6 0.513 / 0.508, det7 0.643 / 0.762 mm (X / Y).  det3's
 Y and det4/det7's Y are 10–30 % worse than X; det6 the best in Y despite the worst angles (position at the mesh is a
 different quantity from the slope).  No pointing-estimator problem found here.
+
+## F15 · x–y charge balance is chamber-specific: ln(qx/qy) rσ det3 0.058, det2 0.073, det4 0.11, det6 0.19, det7 0.28 — SYST
+The pairing-by-charge rule (satstudy: 96–100 % on det3) rests on det3's 0.054–0.058 width.  On det7 (X card 1 shorts +
+pickup) and det6 the width is 3–5× larger: charge pairing is weak there, and any beam chamber must have its own width
+measured (now written to the bundle's `xy_pairing` by `set_w0kw.py --table`).  det7's median ln(qx/qy) is −0.10 (X
+reads 10 % less charge than Y).

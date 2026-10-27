@@ -31,16 +31,17 @@ ARMS = {
     't0i_mf03': ('WFT_RC_T0_INTERP=1 WFT_MODEL_FRAC=0.03', ''),
 }
 SH = '''#!/bin/bash
-# run_heldout.sh <code_dir> <heldout_arm.py args...>
-CODE=$1; shift
+# run_heldout.sh <code_dir> <envspec> <heldout_arm.py args...>   envspec: comma-separated K=V list, or '-'
+# (condor's `environment = "$(env)"` macro silently dropped the variables on 2026-10-27; the wrapper exports them)
+CODE=$1; ENVSPEC=$2; shift 2
+if [ "$ENVSPEC" != "-" ]; then for kv in ${ENVSPEC//,/ }; do export "$kv"; done; fi
 set +u; source /cvmfs/sft.cern.ch/lcg/views/LCG_110/x86_64-el9-gcc14-opt/setup.sh >/dev/null 2>&1
 export WFT_REPO=$CODE MPLBACKEND=Agg
 export WFT_COL_GUARD=${WFT_COL_GUARD:-0.01}
 env -u PYTHONPATH -u PYTHONHOME /eos/user/d/dneff/venvs/ntof-lock-cvmfs/bin/python $CODE/rerun/model_audit/heldout_arm.py "$@"
 '''
 SUB = '''executable     = $ENV(HOME)/x17rerun/audit/run_heldout.sh
-arguments      = $(code) $(args)
-environment    = "$(env)"
+arguments      = $(code) $(env) $(args)
 output         = log/$(nodename).out
 error          = log/$(nodename).err
 log            = log/heldout.log
@@ -55,20 +56,24 @@ queue
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument('code')
     ap.add_argument('--arms', nargs='*', default=list(ARMS)); ap.add_argument('--dets', nargs='*', default=list(ROWS))
-    ap.add_argument('--n', type=int, default=1320)
+    ap.add_argument('--n', type=int, default=1320); ap.add_argument('--skip', nargs='*', default=[], help='det_arm names already done')
+    ap.add_argument('--out-dir', default=OUT); ap.add_argument('--tag', default='heldout')
     a = ap.parse_args(); L = []
     for det in a.dets:
         row = ROWS[det]
         for arm in a.arms:
+            if f'{det}_{arm}' in a.skip:
+                continue
             env, extra = ARMS[arm]
+            env = env.replace(' ', ',') or '-'
             name = f'HO_{det}_{arm}'
             k = '' if '--k' in extra else ' --k 24'
-            args = (f'--cache {A}/{row}/wft/w12/it1/cache.pkl --bundle {A}/{row}/wft/calib_bundle --out {OUT}/{det}_{arm}.npz '
+            args = (f'--cache {A}/{row}/wft/w12/it1/cache.pkl --bundle {A}/{row}/wft/calib_bundle --out {a.out_dir}/{det}_{arm}.npz '
                     f'--start 180 --n {a.n} --jobs 8{k} {extra}')
             L += [f'JOB {name} heldout.sub', f'VARS {name} nodename="{name}" code="{a.code}" env="{env}" args="{args}"', f'RETRY {name} 1']
-    open('heldout.dag', 'w').write('\n'.join(L) + '\n'); open('heldout.sub', 'w').write(SUB); open('run_heldout.sh', 'w').write(SH)
+    open(f'{a.tag}.dag', 'w').write('\n'.join(L) + '\n'); open('heldout.sub', 'w').write(SUB); open('run_heldout.sh', 'w').write(SH)
     os.chmod('run_heldout.sh', 0o755)
-    print(f'wrote heldout.dag: {sum(1 for l in L if l.startswith("JOB"))} nodes')
+    print(f'wrote {a.tag}.dag: {sum(1 for l in L if l.startswith("JOB"))} nodes')
 
 
 if __name__ == '__main__':

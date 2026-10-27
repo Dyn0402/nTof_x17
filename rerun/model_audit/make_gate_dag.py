@@ -15,10 +15,15 @@ ARMS = {
     'twotrack': 'WFT_TWO_TRACK_FIT=1',
     'all': 'WFT_DROP_FLAT_HITS=1 WFT_HEADON_SIG=20 WFT_HEADON_RESCUE=1 WFT_TWO_TRACK_FIT=1',
 }
+SH = '''#!/bin/bash
+# run_gate.sh <code_dir> <envspec> <stage_job.py args...>   envspec: comma-separated K=V list, or '-'
+CODE=$1; ENVSPEC=$2; shift 2
+if [ "$ENVSPEC" != "-" ]; then for kv in ${ENVSPEC//,/ }; do export "$kv"; done; fi
+exec $HOME/x17rerun/stage_job.sh $CODE "$@"
+'''
 SUB = '''# written by rerun/model_audit/make_gate_dag.py
-executable     = $ENV(HOME)/x17rerun/stage_job.sh
-arguments      = $(code) $(args)
-environment    = "$(env)"
+executable     = $ENV(HOME)/x17rerun/audit/run_gate.sh
+arguments      = $(code) $(env) $(args)
 output         = log/$(nodename).out
 error          = log/$(nodename).err
 log            = log/gate.log
@@ -35,7 +40,8 @@ def main():
     ap.add_argument('code'); ap.add_argument('root')
     ap.add_argument('--arms', nargs='*', default=list(ARMS))
     ap.add_argument('--dets', nargs='*', default=[d for d, _ in GOLDEN])
-    ap.add_argument('--limit', type=int, default=8000)
+    ap.add_argument('--limit', type=int, default=8000); ap.add_argument('--skip', nargs='*', default=[], help='det_arm already done')
+    ap.add_argument('--tag', default='gate')
     a = ap.parse_args()
     L = []
 
@@ -50,7 +56,9 @@ def main():
         if det not in a.dets:
             continue
         for arm in a.arms:
-            env = ARMS[arm]
+            if f'{det}_{arm}' in a.skip:
+                continue
+            env = ARMS[arm].replace(' ', ',') or '-'
             t = f'{{out}}/wft/{arm}/events.parquet'
             al = '{out}/wft/prod_alignment/alignment.json'
             pre = f'{key} --eos-analysis {a.root}'
@@ -60,9 +68,9 @@ def main():
                  f'--table {t} --alignment {al} --out {{out}}/wft/{arm}/budget', 1, 8000, [f'RECO_{det}_{arm}'])
             node(f'ANG_{det}_{arm}', env, f'{pre} --parts run_config,m3,hits --script mx_june_wft/03_angles.py -- '
                  f'--table {t} --alignment {al} --out {{out}}/wft/{arm}/angles', 1, 8000, [f'RECO_{det}_{arm}'])
-    open('gate.dag', 'w').write('\n'.join(L) + '\n')
-    open('gate.sub', 'w').write(SUB)
-    print(f'wrote gate.dag: {sum(1 for l in L if l.startswith("JOB"))} nodes')
+    open(f'{a.tag}.dag', 'w').write('\n'.join(L) + '\n')
+    open('gate.sub', 'w').write(SUB); open('run_gate.sh', 'w').write(SH); import os; os.chmod('run_gate.sh', 0o755)
+    print(f'wrote {a.tag}.dag: {sum(1 for l in L if l.startswith("JOB"))} nodes')
 
 
 if __name__ == '__main__':

@@ -22,6 +22,7 @@ def main():
     ap.add_argument('--subrun', default='operating_00'); ap.add_argument('--dataset', default='run63_rot25')
     ap.add_argument('--plateaus', nargs='*', default=['d675', 'd625', 'd575', 'd525', 'd475'])
     ap.add_argument('--arms', nargs='*', default=list(ARMS)); ap.add_argument('--n', type=int, default=1000)
+    ap.add_argument('--out-dir', default=S); ap.add_argument('--tag', default='sps')
     a = ap.parse_args(); L = []
     for pl in a.plateaus:
         dv, E, v = PLATEAUS[pl]
@@ -29,11 +30,12 @@ def main():
         cache = f'{S}/{a.dataset}_{a.subrun}_{pl}.pkl'
         for arm in a.arms:
             env, extra = ARMS[arm]; name = f'SPS_{pl}_{arm}'
-            args = (f'--cache {cache} --bundle {A} --out {S}/{a.dataset}_{a.subrun}_{pl}_{arm}.npz --start 0 --n {a.n} --jobs 8 '
+            env = env.replace(' ', ',') or '-'
+            args = (f'--cache {cache} --bundle {A} --out {a.out_dir}/{a.dataset}_{a.subrun}_{pl}_{arm}.npz --start 0 --n {a.n} --jobs 8 '
                     f'--k {k} --nsamp 64 --v {v} --no-dead {extra}')
             L += [f'JOB {name} heldout.sub', f'VARS {name} nodename="{name}" code="{a.code}" env="{env}" args="{args}"', f'RETRY {name} 1']
-    open('sps.dag', 'w').write('\n'.join(L) + '\n')
-    print(f'wrote sps.dag: {sum(1 for l in L if l.startswith("JOB"))} nodes')
+    open(f'{a.tag}.dag', 'w').write('\n'.join(L) + '\n')
+    print(f'wrote {a.tag}.dag: {sum(1 for l in L if l.startswith("JOB"))} nodes')
 
 
 if __name__ == '__main__':
