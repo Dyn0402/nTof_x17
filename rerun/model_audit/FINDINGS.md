@@ -129,3 +129,14 @@ head-on far tail on det4 (−3.9 pp) and for saturated events; the trade is meas
 five; SPS `sps3`).  B1 should choose σ0 from a measured quantity (saturation, charge) rather than by χ², or fit the
 width at fixed tilt.  `steep_probe.py`: at the M3 angle the model's χ² is higher than at the fit in 94–95 % of det3's
 steep tracks (Δχ²/dof +2.5…+3.1), so the compression is the model's preference, not an optimiser miss (5–6 %).
+
+## F19 · Held-out fleet verdicts of the environment arms (1320 events × 5 chambers, event-paired; `heldout_compare_env.md`)
+- `t0i` (RC t0 interpolation): s68 within ±0.02° everywhere (det3 X −0.023 ± 0.013), far ±0.4 pp, ladder ≤ 0.5 %, χ²/dof
+  −1…−4 %, t0_err defined: adopt as a correctness change (continuous t0), not an angle lever.
+- `mf03` / `mf05` (fractional model error): χ²/dof falls to a quarter but far rises +1…+12 pp and s68 worsens by
+  0.1–0.25° on det6/det7: reject (the bright-sample weighting is what pins the track).
+- `sat` (saturated samples re-solved at the clip): s68 ±0.015°, far −0.1…−0.4 pp on det3/det4/det7, χ² −2…−10 %:
+  harmless small gain, optional.
+- `ts` (two-sided start): det4 X far −1.2 ± 0.4 pp, otherwise null; steep-bin biases unchanged — the optimiser is not
+  the compression (F4), consistent with `steep_probe.py`.
+- `k30`, `t0fix`: F13, F6.
