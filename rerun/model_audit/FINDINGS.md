@@ -116,3 +116,16 @@ more (the span v there is an upper bound; ZS truncation of the faint deep charge
 det3 held-out, t0 interpolation + MODEL_FRAC 0.03: χ²/dof 41 → 10 (X), 58 → 14 (Y) — the term absorbs the bright-sample
 template mismatch as designed — but s68 unchanged within ±0.03°, far +1.2 / +2.0 pp, x–y t0 width unchanged (91 → 99 ns).
 The production weighting (noise only) stays.  Other chambers in `heldout2` (mf03, mf05) for the record.
+
+## F18 · The per-event σ0 profile trades footprint width for tilt: fits that chose the wide σ0 read 6–12 % shallower — OPEN (B1 input), ARM (noprof)
+Held-out base fits (`heldout/<det>_base.npz`, column sigma_used), |tan_ref| 0.10–0.25, median tan_fit/tan_ref for the
+fits that kept the narrow footprint vs those whose lowest χ² was the wide one (0.42 / 0.50 mm): det3 X 1.008 vs 0.974
+(13 % wide), Y 1.007 vs 0.882 (5 %); det4 X 1.017 vs 0.938 (23 %), Y 1.000 vs 0.990 (14 %); det6 X 1.028 vs 0.927 (13 %),
+Y 1.024 vs 0.917 (18 %); det7 X 1.038 vs 0.876 (26 %), Y 1.033 vs 0.896 (36 %).  A wider prompt footprint explains part
+of an inclined track's lateral extent without tilt, and the lowest-χ² choice takes it.  The single kw then averages
+two populations (narrow 1.01–1.04, wide 0.88–0.94): the mixture is part of the compression of F4, and the profile's
+wide fraction grows with charge, so bright/steep tracks are the most compressed.  C21 adopted the profile for the
+head-on far tail on det4 (−3.9 pp) and for saturated events; the trade is measured by the `noprof` arm (held-out, all
+five; SPS `sps3`).  B1 should choose σ0 from a measured quantity (saturation, charge) rather than by χ², or fit the
+width at fixed tilt.  `steep_probe.py`: at the M3 angle the model's χ² is higher than at the fit in 94–95 % of det3's
+steep tracks (Δχ²/dof +2.5…+3.1), so the compression is the model's preference, not an optimiser miss (5–6 %).
