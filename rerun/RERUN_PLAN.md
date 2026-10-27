@@ -180,6 +180,29 @@ ready and dry-run tested. Running it now would mean running it twice, because tw
 | B3 | **SPS det4 in the pass.** The §0 scope includes every SPS det4 run, but `pass_registry.csv` has 170 bench rows and no SPS rows. Nothing in `rerun/` stages SPS (only the W9 FEU 03 decode is done). Needed: registry rows, a stager (uRWELL reference; run_61 m100V and run_70 lack uRWELL hits), and the bundle policy for SPS. | SPS rows dry-run through `stage_job` like sat_det3 did |
 | B4 | **Model audit** (a separate session, night of 10-27): an audit of the whole detector/reco model before the freeze. Its findings feed B1/B2. | the audit's findings are triaged: each one either fixed before the freeze or recorded as a systematic or limitation |
 
+
+### B4 · Model audit, night of 2026-10-27 — triage (details and numbers: `rerun/model_audit/FINDINGS.md`, report `~/x17/cosmic_bench/model_audit/report.html`)
+
+Audited: the phys kernel and the pass's fitter on the five golden rows (finalize tables + 1320 held-out events per chamber
+through the pass's own fitter, event-paired arms on condor) and SPS det4 (run_63 25.64° drift ladder, self-seeded, bench
+det4 bundle).  Verdict: the fleet tells one consistent story (ladder on timing v within 2–5 %, resolution 1.0–1.9°,
+positions 0.50–0.76 mm, efficiency budget reproduced), with **one meaningful improvement left in the model — the angle
+response compresses with angle** — and a set of bookkeeping defects, now fixed or written down.
+
+| # | finding | status |
+|---|---|---|
+| F4/F16/F18 | **Angle response nonlinear**: implied v falls 4–15 % from \|tan\| 0.1 to 0.4 on every chamber; steep tracks read 0.25–1.5° shallow; SPS det4 at 25.64° reads 23.4° (10 % in tan, no reference involved). Mechanism: the per-event σ0 profile trades footprint width for tilt (wide-footprint fits read 6–12 % shallower, 13–36 % of fits); the model, not the optimiser, prefers the shallow angle (94–95 %). | **B1 input** (choose σ0 from a measured quantity, not by χ²; re-check the steep bins + the SPS 25.6° test as the gate) |
+| F7 | Column plausibility window hard-coded for v = 36.6: 23–60 % of det4/6/7 Y tracks "implausible" | **fixed** on main: `u_window(cal)` = (0.30, 1.60) × 30 mm / v |
+| F5/F11 | dt_xy stale by one 60 ns bin (det4 empty), x–y gate fails on 15–44 % of single tracks, n_tracks = 0 on 40–80 % | **fixed (tooling)**: `set_w0kw.py --table` re-measures dt_xy + `xy_pairing`; add to the finalize/vrefit W0KW nodes (`--table {out}/wft/.../events.parquet`) and widen the gate to the measured width |
+| F2 | RC kernel is a 5 ns staircase in t0; t0_err NaN on 27–31 % of det6/det7 fits | **fixed (opt-in)** `WFT_RC_T0_INTERP=1`; arm `t0i` |
+| F1/F6 | t0 prior on for det2/3/4, off for det6/7; inert as written; stored `t0_abs` is another kernel's (pinning moves the ladder +2–5 %) | **policy**: sigma 0 everywhere, or re-measure `t0_abs` under phys and scale the prior by χ²/dof |
+| F3 | per-event `tan_err`/`p0_err` are constant floors (1°, 0.33 mm) | **systematic**: downstream weights use per-chamber resolution |
+| F8/F9 | X–Y ladder split (det3 2.2 %), w0_y −0.16…−0.40 µm/ns everywhere, field-dependent | **systematic** where kw/w0 cannot be measured (beam) |
+| F12 | SPS: bench dead list is in bench channel numbers; ZS zero samples are not measurements | **fixed (tooling)**: `sps_reco.py` drops the list; `WFT_ZS_CENSOR=1` |
+| F13/F17 | K = 30, MODEL_FRAC 0.03/0.05, SAT_SOLVE | **null** (closed) |
+| F15 | ln(qx/qy) width 0.058 (det3) … 0.28 (det7): charge pairing is chamber-specific | **systematic** |
+| B3 | SPS rows: `rerun/sps_registry.csv` (71 plateaus, 13 datasets, from datasets.py), stage `rerun/model_audit/sps_reco.py` + `sps_stage.sh` (dry run on condor) | **done** (wiring); bundle policy = bench det4 bundle + v(E) per plateau + K; the 10 % angle-scale deficit (F16) is the open physics |
+
 ### Decisions for Dylan (part of B1)
 
 - **The trigger-track rule** (80 % held out vs production's 54 %, cosmic-only: it relies on vertical muons) — put it in
