@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""The per-event prompt-footprint profile (bundle hyper ``sigma_p0_prof_<plane>``, rerun/det4 2026-10-25).
+"""The per-event prompt-footprint profile (bundle hyper ``sigma_p0_prof_<plane>``, rerun/det4 2026-10-25) -- RETIRED 2026-10-27 (FE).
 
 What must hold:
   1. absent key: fit_plane is the single fit, bit-identical to calling it with the key empty,
-  2. a cluster made with a wide footprint is refitted with the wide value when it is offered, at lower chi2,
+  2. a bundle that still carries a profile is fitted with its base sigma_p0 only (the choice is retired),
   3. list-valued hypers survive CalibrationBundle save / load.
 
     ../../.venv/bin/python -m pytest wft/tests/test_sigma_profile.py -q
@@ -55,13 +55,14 @@ def test_absent_key_is_single_fit(cal):
     assert a._sigma_p0 == 0.25
 
 
-def test_wide_cluster_takes_wide_footprint(cal):
+def test_profile_is_retired(cal):
+    """FE item 12 (2026-10-27): the per-event footprint choice is gone; a bundle that still carries a profile is fitted
+    with its base sigma_p0 only, bit-identical to no profile."""
     P = _plane(0.55, seed=2)
     one = wr.fit_plane(P, 'x', cal, hyper=dict(HYPER))
     prof = wr.fit_plane(P, 'x', cal, hyper=dict(HYPER, sigma_p0_prof_x=[0.40, 0.55]))
-    assert prof._sigma_p0 == 0.55
-    assert prof.chi2 < one.chi2
-    assert abs(prof.w) < 1e-3                     # head-on recovered (|tan| < ~0.03)
+    assert (one.p0, one.w, one.t0, one.chi2) == (prof.p0, prof.w, prof.t0, prof.chi2)
+    assert prof._sigma_p0 == HYPER.get('sigma_p0_x', HYPER.get('sigma_p0'))
 
 
 def test_list_hyper_round_trip(cal, tmp_path):

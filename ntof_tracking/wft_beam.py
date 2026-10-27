@@ -325,10 +325,18 @@ def read_hits_tag(path: str, feus) -> 'pd.DataFrame':
     """
     import pandas as pd
     import uproot
-    df = uproot.open(path)['hits'].arrays(
-        ['eventId', 'feu', 'channel', 'amplitude', 'significance', 'max_sample'],
-        library='pd')
+    from wft import reco as wreco
+    t = uproot.open(path)['hits']
+    cols = ['eventId', 'feu', 'channel', 'amplitude', 'significance', 'max_sample']
+    # noise bands (FE item 13): the same seeding rule as the bench driver (wft.reco.DROP_FLAT_HITS) -- a hit above
+    # threshold from the first sample to the last is a baseline offset, not charge; the fit censors such strips itself
+    # (wft.model.BAND_NSIG).  Hits files without the truncation flags are seeded as before.
+    flat = bool(wreco.DROP_FLAT_HITS) and {'trunc_left', 'trunc_right'} <= set(t.keys())
+    df = t.arrays(cols + (['trunc_left', 'trunc_right'] if flat else []), library='pd')
     df = df[df['feu'].isin(list(feus))]
+    if flat:
+        drop = df['trunc_left'] & df['trunc_right'] if wreco.DROP_FLAT_HITS == 'both' else df['trunc_left']
+        df = df[~drop][cols]
     df = df.sort_values('amplitude').drop_duplicates(
         ['eventId', 'feu', 'channel'], keep='last')
     return df
@@ -451,6 +459,11 @@ def reconstruct_subrun(cfg: BeamConfig, bundle_path: str, out_path: str,
     from wft.calib import CalibrationBundle
 
     cal = CalibrationBundle.load(bundle_path)
+    # never pin t0 at n_TOF (FE item 7, ws_t0): the trigger is n_TOF's, not the particle's, so a bench latency pin is a
+    # wrong answer stated to 0.05 ns.  make_bundle drops it; refuse a bundle that carries an active one anyway.
+    if cal.t0_abs and float(cal.t0_prior_sigma or 0.0) > 0 and not cal.provenance.get('kept_t0_prior'):
+        raise ValueError(f'{bundle_path}: carries an active t0 pin/prior (t0_prior_sigma {cal.t0_prior_sigma}); a beam '
+                         f'run is not triggered by the particle -- rebuild it with make_bundle (drops t0_abs)')
     bad = cal.check_conditions(cfg.conditions)
     if bad and verbose:
         print('[wft-beam] bundle/run condition mismatches: ' + '; '.join(bad))

@@ -94,7 +94,7 @@ def check_kernel_ordering(hyper: dict, where: str = '') -> None:
 #: 'lqc' is 'lq' over the depth bins the DAQ window constrains only; 'lq' uses
 #: the full q_sum, which NNLS inflates to 1e6-1e26 on 12-33 % of run_145 tracks
 #: (bins arriving after the last sample; wft.model.constrained_bins)
-XY_FEATURES = ('lq', 'lqc', 'u50', 'u90', 't0')
+XY_FEATURES = ('lq', 'lqc', 'u50', 'u90', 't0', 'tc')
 
 
 def check_xy_pairing(p: dict, where: str = '') -> None:
@@ -185,6 +185,10 @@ class CalibrationBundle:
     pitch_mm: float = 0.78
     sample_ns: float = 60.0
     n_depth_bins: int = 18                  # K: 60 ns charge bins in the fit basis
+    # --- charge-grid subdivision (FE item 12 / ws_floor F4, 2026-10-27): each sample-period depth bin is split into
+    # depth_subdiv bins of sample_ns / depth_subdiv (3 -> the 20 ns grid).  K stays counted in sample periods, so a
+    # driver that sizes K for its window (sps_reco, wft_beam, cli --n-depth-bins) needs no change. 1 = the 60 ns grid.
+    depth_subdiv: int = 1
     sat_adc: float = 3550.0
 
     # --- sharing-kernel form: 'delay' (legacy) | 'lp' (RC-dispersed copy,
@@ -228,7 +232,7 @@ class CalibrationBundle:
                     tan_floor={k: float(v) for k, v in self.tan_floor.items()},
                     xy_pairing=self.xy_pairing,
                     pitch_mm=self.pitch_mm, sample_ns=self.sample_ns,
-                    n_depth_bins=self.n_depth_bins, sat_adc=self.sat_adc,
+                    n_depth_bins=self.n_depth_bins, depth_subdiv=int(self.depth_subdiv), sat_adc=self.sat_adc,
                     share_mode=self.share_mode,
                     detector=self.detector, run_key=self.run_key,
                     conditions=self.conditions, provenance=prov)
@@ -262,6 +266,7 @@ class CalibrationBundle:
                    pitch_mm=m.get('pitch_mm', 0.78),
                    sample_ns=m.get('sample_ns', 60.0),
                    n_depth_bins=m.get('n_depth_bins', 18),
+                   depth_subdiv=int(m.get('depth_subdiv', 1) or 1),
                    sat_adc=m.get('sat_adc', 3550.0),
                    share_mode=m.get('share_mode', 'delay'),
                    detector=m.get('detector', ''), run_key=m.get('run_key', ''),

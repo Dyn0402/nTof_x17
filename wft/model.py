@@ -75,7 +75,8 @@ DT_XY: dict = {}
 PITCH = 0.78
 SNS = 60.0
 SAT = 3550.0
-DT = 60.0                 # width of one charge/depth bin [ns]
+DT = 60.0                 # width of one charge/depth bin [ns] = sample_ns / SUBDIV
+SUBDIV = 1                # depth bins per sample period (bundle ``depth_subdiv``; 3 = the 20 ns grid)
 NSAMP = 32
 K = 18
 TS = np.arange(NSAMP) * SNS
@@ -143,6 +144,38 @@ ZS_CENSOR = False
 #: (SPS registry zs_sigma).  A PROTOTYPE, not gated (ws_unify): 0, study override only (WFT_ZS_BOUND via wft.diag).
 ZS_BOUND = 0.0
 
+#: Noise bands (model audit follow-up FE, item 13, 2026-10-27).  A band is a whole-window baseline offset of a strip
+#: (+-50..3000 ADC, both signs, rerun/satstudy/bands.py + rerun/bands/): untriggered, it carries no charge of the
+#: triggering particle, and fitted as data it pulls the track or makes a competing cluster.  A strip whose FIRST and LAST
+#: BAND_EDGE samples all sit beyond BAND_NSIG x its noise on the same side is a band strip in that event: the waveform
+#: equivalent of the hit flags trunc_left AND trunc_right (reco.DROP_FLAT_HITS, which removes such hits from the seeding),
+#: but read from the window itself, so it acts in every driver (bench, SPS, n_TOF) and catches negative bands, which never
+#: make a hit.  The particle cannot be there in the first samples (its charge arrives at t0 >= ~230 ns on the bench), so a
+#: track strip is never flagged by its own pulse.  Band strips are censored exactly like dead strips (unknown charge, not
+#: zero; noise inflated so no penalty pulls either way); the event is reconstructed, not dropped.  Counted per fit as
+#: ``n_band_strips``.  BAND_NSIG = 0 turns it off (study override, wft.diag).
+BAND_NSIG = 5.0
+BAND_EDGE = 2
+
+
+def band_rows(W, noise, miss=None) -> np.ndarray:
+    """Boolean (n_strip,): rows of a (n_strip, n_sample) window that are noise bands in this event (see BAND_NSIG).
+    ``miss``: samples never read out (not used as evidence either way)."""
+    W = np.asarray(W, dtype=np.float64)
+    if BAND_NSIG <= 0 or W.ndim != 2 or W.shape[1] < 2 * BAND_EDGE + 1:
+        return np.zeros(W.shape[0] if W.ndim == 2 else 0, dtype=bool)
+    thr = BAND_NSIG * np.maximum(np.asarray(noise, dtype=np.float64), 3.0)[:, None]
+    e = np.concatenate([W[:, :BAND_EDGE], W[:, -BAND_EDGE:]], axis=1)
+    if miss is not None:
+        m = np.asarray(miss, dtype=bool)
+        m = np.concatenate([m[:, :BAND_EDGE], m[:, -BAND_EDGE:]], axis=1)
+        up = np.where(m, True, e > thr).all(axis=1) & ~m.all(axis=1)
+        dn = np.where(m, True, e < -thr).all(axis=1) & ~m.all(axis=1)
+    else:
+        up, dn = (e > thr).all(axis=1), (e < -thr).all(axis=1)
+    return up | dn
+
+
 _smear_cache: dict = {}
 _lp_cache: dict = {}
 _tt_cache: dict = {}
@@ -152,7 +185,7 @@ T0_STEP = 5.0             # t0 quantisation for the cached time tensors
 def use_calibration(cal: CalibrationBundle) -> None:
     """Install a calibration bundle as the model's calibration."""
     global CAL, TGRID, TMPL, GAIN, DT_XY, PITCH, SNS, SAT, DT, K, UK, HYPER, \
-        SHARE_MODE, DEAD, HOT
+        SHARE_MODE, DEAD, HOT, SUBDIV
     check_kernel_ordering(cal.hyper, where=f'bundle {cal.detector}/{cal.run_key}')
     CAL = cal
     DEAD = {p: np.asarray(sorted(ch), dtype=int)
@@ -166,8 +199,9 @@ def use_calibration(cal: CalibrationBundle) -> None:
     PITCH = float(cal.pitch_mm)
     SNS = float(cal.sample_ns)
     SAT = float(cal.sat_adc)
-    DT = float(cal.sample_ns)
-    K = int(cal.n_depth_bins)
+    SUBDIV = max(int(getattr(cal, 'depth_subdiv', 1) or 1), 1)
+    DT = float(cal.sample_ns) / SUBDIV
+    K = int(cal.n_depth_bins) * SUBDIV
     UK = (np.arange(K) + 0.5) * DT
     HYPER = dict(cal.hyper)
     HYPER.setdefault('kY', 1.0)
@@ -203,7 +237,7 @@ def set_depth_bins(k: int) -> None:
     """Extend/shrink the charge basis (K=26 is used at low drift field, where
     the column takes longer than the nominal window to arrive)."""
     global K, UK
-    K = int(k)
+    K = int(k) * SUBDIV          # k counted in sample periods (the bundle's n_depth_bins convention)
     UK = (np.arange(K) + 0.5) * DT
     _tt_cache.clear()
     _rc_cache.clear()
@@ -541,6 +575,11 @@ def prep_plane(P, plane):
         if rows.any():
             sat[rows] = True
             noise[rows] = 1e9
+    b = band_rows(P['W'], P['noise'], miss)
+    if b.any():
+        # noise bands: censored like dead strips (BAND_NSIG); unknown charge, the event is kept
+        sat[b] = True
+        noise[b] = 1e9
     h = HOT.get(plane)
     if h is not None and len(h):
         rows = np.isin(ch, h)

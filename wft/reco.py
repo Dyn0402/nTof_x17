@@ -157,6 +157,22 @@ class PlaneFit:
     n_candidates: int = 1        # candidate clusters fitted for this plane
     n_flagged_strips: int = 0    # of n_strips, how many are dead/hot wildcards
                                   # (HANDOFF_D_NOISY_CHANNELS.md item 4)
+    n_band_strips: int = 0       # of n_strips, how many are noise bands in this event (censored, wft.model.BAND_NSIG)
+    n_sat_strips: int = 0        # of n_strips, how many reach the ADC rail (sat_adc) in this event
+
+
+def window_flags(P, plane: str) -> tuple:
+    """(n_flagged, n_band, n_sat) strips of one fit window: dead/hot wildcards of the bundle, per-event noise bands,
+    strips with a sample at the ADC rail.  They define the event class of the x-y charge pairing (pairing_class)."""
+    W = np.asarray(P['W'])
+    ch = np.asarray(P['ch'], dtype=int)
+    flagged = np.concatenate([wm.DEAD.get(plane, np.array([], dtype=int)),
+                              wm.HOT.get(plane, np.array([], dtype=int))])
+    n_flag = int(np.isin(ch, flagged).sum()) if len(flagged) else 0
+    miss = P.get('missing') if isinstance(P, dict) else None
+    n_band = int(wm.band_rows(W, P['noise'], miss).sum())
+    n_sat = int((W >= wm.SAT).any(axis=1).sum()) if W.ndim == 2 else 0
+    return n_flag, n_band, n_sat
 
 
 def _profile_summary(q: np.ndarray) -> tuple:
@@ -356,18 +372,11 @@ def fit_plane(P, plane: str, cal: CalibrationBundle, hyper: Optional[dict] = Non
     r = _fit_once(P, plane, hyper, t0_prior)
     if r is None or not np.isfinite(r['chi2']):
         return None
-    # Per-event prompt-footprint profile (rerun/det4, 2026-10-25), opt-in through the bundle: the prompt
-    # footprint grows with avalanche size (det4/det7 model-free core width, FINDINGS §34), so a bright
-    # cluster fitted with the faint events' sigma_p0 tilts the track to make up the width.  Each value in
-    # ``sigma_p0_prof_<plane>`` is a full refit with that sigma_p0; the lowest chi2 wins (same samples, same
-    # dof).  Absent key = the single fit above, unchanged.
+    # The per-event prompt-footprint choice (``sigma_p0_prof_<plane>``, rerun/det4 2026-10-25) is RETIRED (FE item 12,
+    # 2026-10-27): on SPS head-on RAW the footprint is flat with amplitude (+-0.03 mm in thirds, every field) and the
+    # per-event pick follows the noise (8-14 % choose >= 0.42 by scatter; ws_sps F18).  One footprint per view, the
+    # bundle's sigma_p0_<plane>; a bundle that still carries a profile is fitted with its base value only.
     sig_used = float(hyper.get(f'sigma_p0_{plane}', hyper.get('sigma_p0', np.nan)))
-    for s in hyper.get(f'sigma_p0_prof_{plane}') or ():
-        h2 = dict(hyper)
-        h2[f'sigma_p0_{plane}'] = float(s)
-        r2 = _fit_once(P, plane, h2, t0_prior)
-        if r2 is not None and np.isfinite(r2['chi2']) and r2['chi2'] < r['chi2']:
-            r, hyper, sig_used = r2, h2, float(s)
     if TWO_SIDED:
         r = _two_sided(P, plane, r, cal, hyper, t0_prior=t0_prior)
     # Per-plane angle mapping (9dd7d6e; reverted by f9e18d2, restored 8-13).
@@ -376,10 +385,7 @@ def fit_plane(P, plane: str, cal: CalibrationBundle, hyper: Optional[dict] = Non
     tan = tan_of(cal, plane, r['w'], r['p0'])
     ep, ew, et = _errors(P, plane, r, hyper, t0_prior=t0_prior)
     q_sum, q_u50, q_u90, q_uend = _profile_summary(r['q'])
-    ch = np.asarray(P['ch'], dtype=int)
-    flagged = np.concatenate([wm.DEAD.get(plane, np.array([], dtype=int)),
-                              wm.HOT.get(plane, np.array([], dtype=int))])
-    n_flagged = int(np.isin(ch, flagged).sum()) if len(flagged) else 0
+    n_flagged, n_band, n_sat = window_flags(P, plane)
     f = PlaneFit(
         p0=float(r['p0']), w=float(r['w']), t0=float(r['t0']),
         tan_theta=float(tan), theta_deg=float(np.degrees(np.arctan(tan))),
@@ -393,7 +399,7 @@ def fit_plane(P, plane: str, cal: CalibrationBundle, hyper: Optional[dict] = Non
         n_strips=int(W.shape[0]), n_seed=int(n_seed), n_dropped=int(n_dropped),
         slope_reliable=bool(abs(tan) >= TAN_MIN_SLOPE),
         quality_ok=bool(r['chi2'] / max(r['dof'], 1) < CHI2DOF_BAD),
-        n_flagged_strips=n_flagged)
+        n_flagged_strips=n_flagged, n_band_strips=n_band, n_sat_strips=n_sat)
     f._q = np.asarray(r['q'], float)     # the depth profile, for x/y pairing
     f._sigma_p0 = sig_used               # the prompt footprint the fit used (profile choice)
     return f
@@ -876,9 +882,7 @@ def _child_fit(P, plane, cal, r, which: str, hyper, chi_alone: float) -> PlaneFi
     ep, ew, et = r['err_a'] if which == 'a' else r['err_b']
     tan = tan_of(cal, plane, w, p0)
     q_sum, q_u50, q_u90, q_uend = _profile_summary(q)
-    ch = np.asarray(P['ch'], dtype=int)
-    flagged = np.concatenate([wm.DEAD.get(plane, np.array([], dtype=int)),
-                              wm.HOT.get(plane, np.array([], dtype=int))])
+    n_flagged, n_band, n_sat = window_flags(P, plane)
     f = PlaneFit(
         p0=float(p0), w=float(w), t0=float(t0), tan_theta=float(tan),
         theta_deg=float(np.degrees(np.arctan(tan))),
@@ -892,7 +896,7 @@ def _child_fit(P, plane, cal, r, which: str, hyper, chi_alone: float) -> PlaneFi
         n_strips=int(np.asarray(P['W']).shape[0]), n_seed=0, n_dropped=0,
         slope_reliable=bool(abs(tan) >= TAN_MIN_SLOPE),
         quality_ok=bool(r['chi2'] / max(r['dof'], 1) < CHI2DOF_BAD),
-        n_flagged_strips=int(np.isin(ch, flagged).sum()) if len(flagged) else 0)
+        n_flagged_strips=n_flagged, n_band_strips=n_band, n_sat_strips=n_sat)
     f._chi_alone = float(chi_alone)
     f._q = np.asarray(q, float)
     return f
@@ -1026,7 +1030,7 @@ def _cross_plane_mismatch(this: list, other: list) -> bool:
           and bool(getattr(f, '_plausible', True))]
     if len(ok) < 2 or _n_plausible(this) >= len(ok):
         return False
-    return any(abs(ok[i].t0 - ok[j].t0) <= DT_XY_TOL_NS
+    return any(abs(col_dt(ok[i], ok[j])) <= TC_TOL_NS
                for i in range(len(ok)) for j in range(i + 1, len(ok)))
 
 
@@ -1066,9 +1070,10 @@ def resolve_two_tracks(all_fits: Dict[str, list], windows: Dict[str, list],
         corrob = _cross_plane_mismatch(all_fits.get(plane), all_fits.get(other))
         hints = []
         if corrob:
-            dt = cal.dt_xy.get(int(ftst_diff), -18.8) if ftst_diff is not None else -18.8
+            # the other plane's t0 in this plane's clock: same latency, ftst phase difference (ws_t0 F1)
+            sh = -FTST_NS * float(ftst_diff) if ftst_diff is not None else 0.0
             s = 1.0 if plane == 'x' else -1.0
-            hints = [f.t0 + s * dt for f in (all_fits.get(other) or [])[:2]
+            hints = [f.t0 + s * sh for f in (all_fits.get(other) or [])[:2]
                      if f is not None]
         thr = TWO_TRACK_F_CORROB if corrob else TWO_TRACK_F
         tried = 0
@@ -1179,20 +1184,87 @@ def two_track_ladder(kept: Dict[str, list], attempts: list, ftst_diff,
     return out_rows
 
 
-#: How far t0x - t0y may sit from the measured offset (bundle ``dt_xy``).  120 ns until 2026-10-27; it is now
-#: XY_TOL_NSIG x the bundle's measured width of that same residual on clean single tracks (``xy_pairing`` rsig 't0',
-#: written by rerun/w12/set_w0kw.py --table), because the per-plane t0 is uncertain by 50 ns (det2/det3) to
-#: ~140 ns (det6/det7) and a fixed 120 ns failed 15-44 % of genuine single tracks (model audit F5).  120 ns stays only
-#: for a bundle that has not measured it.  Set per worker by :func:`_worker_init`.
-DT_XY_TOL_NS = 120.0
-DT_XY_TOL_DEFAULT_NS = 120.0
+#: x-y coincidence on the COLUMN TIME (model audit follow-up FE, item 7 / F5, 2026-10-27).  Both views read the same
+#: drifting electrons, so the median arrival of the fitted charge, t0 + u50, phase-corrected by the trigger's ftst
+#: (+ FTST_NS x ftst per view, the DREAM clock phase; ws_t0 F1), is the same time in x and y up to a fixed FEU offset that
+#: measures -2..+6 ns on every bench chamber: the comparison is made at ZERO offset, with no ftst table.  It replaces the
+#: t0x - t0y gate against the bundle's ``dt_xy``: a free t0 slides by whole 60 ns depth bins along the t0 <-> p0
+#: degeneracy (F6), so that gate needed a 50-140 ns width and an offset table that was itself biased by the tooth; with t0
+#: pinned at the trigger latency (bench bundles) a t0 gate would check nothing at all.  u50 is invariant under the tooth.
+#: Tolerance: the bundle's ``xy_pairing['tc_tol']`` (p98 of |dtc| on clean single tracks of that chamber and condition,
+#: written by rerun/w12/set_w0kw.py --table), else TC_TOL_DEFAULT_NS.  Set per worker by :func:`_worker_init`.
+FTST_NS = 10.0
+TC_TOL_DEFAULT_NS = 200.0
+TC_TOL_NS = TC_TOL_DEFAULT_NS
+#: legacy names (the t0 gate is retired); kept so old study scripts that read them still import
+DT_XY_TOL_NS = TC_TOL_DEFAULT_NS
+DT_XY_TOL_DEFAULT_NS = TC_TOL_DEFAULT_NS
 XY_TOL_NSIG = 2.5
 
 
-def dt_xy_tol(pairing: Optional[dict]) -> float:
-    """The x-y t0 coincidence tolerance [ns] a bundle's ``xy_pairing`` implies."""
-    rs = ((pairing or {}).get('rsig') or {}).get('t0')
-    return float(XY_TOL_NSIG * rs) if rs and np.isfinite(rs) and rs > 0 else DT_XY_TOL_DEFAULT_NS
+def tc_tol(pairing: Optional[dict]) -> float:
+    """The x-y column-time tolerance [ns] a bundle's ``xy_pairing`` implies."""
+    v = (pairing or {}).get('tc_tol')
+    return float(v) if v is not None and np.isfinite(v) and v > 0 else TC_TOL_DEFAULT_NS
+
+
+dt_xy_tol = tc_tol      # legacy name
+
+
+def _u50(f) -> float:
+    u = getattr(f, 'q_u50', np.nan)
+    return float(u) if u is not None and np.isfinite(u) else np.nan
+
+
+def col_time(f) -> float:
+    """t0 + u50 of one fit [ns, window clock] (u50 dropped when the profile is empty)."""
+    u = _u50(f)
+    return float(f.t0 + (u if np.isfinite(u) else 0.0))
+
+
+def col_dt(fx, fy, ftst_diff=None) -> float:
+    """Phase-corrected column-time difference x - y [ns]; ~0 for one particle.  ``ftst_diff`` = ftst_x - ftst_y.
+    Without a profile in one view (u50 undefined) the t0s are compared."""
+    if np.isfinite(_u50(fx)) and np.isfinite(_u50(fy)):
+        d = col_time(fx) - col_time(fy)
+    else:
+        d = float(fx.t0 - fy.t0)
+    return d + (FTST_NS * float(ftst_diff) if ftst_diff is not None else 0.0)
+
+
+def _coincident(fx, fy, ftst_diff) -> bool:
+    return bool(abs(col_dt(fx, fy, ftst_diff)) <= TC_TOL_NS)
+
+
+#: x-y charge balance per EVENT CLASS (FE item 11, ws_dead_charge F15).  One width per chamber mixed three populations:
+#: clean tracks (rsigma ln(qx/qy) 0.05-0.07), windows with a censored strip (dead or band: 1.3-3x wider) and saturated
+#: tracks (clipped charge in one view; up to 0.10-0.20 on det6/det7).  The bundle's ``xy_pairing['lq_class']`` carries
+#: {class: {median, rsig, n}}; a pair's class is the worst of its two views (sat > cens > clean).  Absent = the bundle's
+#: one 'lq' width.
+PAIR_CLASSES = ('clean', 'cens', 'sat')
+
+
+def view_class(f) -> str:
+    if getattr(f, 'n_sat_strips', 0):
+        return 'sat'
+    if getattr(f, 'n_flagged_strips', 0) or getattr(f, 'n_band_strips', 0):
+        return 'cens'
+    return 'clean'
+
+
+def pairing_class(fx, fy) -> str:
+    return max(view_class(fx), view_class(fy), key=PAIR_CLASSES.index)
+
+
+def lq_balance(pairing: Optional[dict], cls: str):
+    """(median, rsig) of ln(qx/qy) for this event class, or (None, None)."""
+    p = pairing or {}
+    c = (p.get('lq_class') or {}).get(cls) or {}
+    if c.get('rsig'):
+        return float(c['median']), float(c['rsig'])
+    if 'lq' in (p.get('rsig') or {}):
+        return float(p['median']['lq']), float(p['rsig']['lq'])
+    return None, None
 
 
 def select_tracks(cand_fits: Dict[str, list], ftst_diff: Optional[int],
@@ -1235,7 +1307,7 @@ def select_tracks(cand_fits: Dict[str, list], ftst_diff: Optional[int],
         for j, fy in enumerate(cand_fits.get('y') or []):
             if fx is None or fy is None:
                 continue
-            coincident = int(abs((fx.t0 - fy.t0) - dt) <= DT_XY_TOL_NS)
+            coincident = int(_coincident(fx, fy, ftst_diff))
             plaus = (int(getattr(fx, '_plausible', True))
                      + int(getattr(fy, '_plausible', True)))
             dchi2 = (getattr(fx, '_dchi2', 0.0) or 0.0) + \
@@ -1260,29 +1332,35 @@ def select_tracks(cand_fits: Dict[str, list], ftst_diff: Optional[int],
         if len(out) >= max_tracks:
             break
     if pairing and sum(1 for *_ij, g in out if g) >= 2:
-        out = _repair_pairs(out, cand_fits, pairing, dt)
+        out = _repair_pairs(out, cand_fits, pairing, dt, ftst_diff)
     return out
 
 
-def _gate(fx, fy, dt: float) -> bool:
-    return (abs((fx.t0 - fy.t0) - dt) <= DT_XY_TOL_NS
+def _gate(fx, fy, ftst_diff) -> bool:
+    return (_coincident(fx, fy, ftst_diff)
             and bool(getattr(fx, '_plausible', True))
             and bool(getattr(fy, '_plausible', True)))
 
 
-def xy_pair_cost(fx, fy, pairing: dict, dt: float) -> float:
+def xy_pair_cost(fx, fy, pairing: dict, dt: float, ftst_diff=None) -> float:
     """How unlike an x and a y candidate are, in units of the spread of the
-    same x-minus-y quantity on clean single tracks."""
+    same x-minus-y quantity on clean single tracks.  The charge balance (lq, lqc) is
+    judged against its own event class's width (pairing_class, ``lq_class``); 'tc' is the
+    column-time difference (zero offset), 't0' the retired t0 residual against ``dt``."""
     f = dict(lq=np.log(max(fx.q_sum, 1.0) / max(fy.q_sum, 1.0)),
              u50=fx.q_u50 - fy.q_u50, u90=fx.q_u90 - fy.q_u90,
-             t0=(fx.t0 - fy.t0) - dt)
+             t0=(fx.t0 - fy.t0) - dt, tc=col_dt(fx, fy, ftst_diff))
+    med_lq, rs_lq = lq_balance(pairing, pairing_class(fx, fy)) if pairing.get('lq_class') else (None, None)
     if 'lqc' in pairing['features']:
         cx, cy = constrained_charge(fx), constrained_charge(fy)
         f['lqc'] = (np.log(max(cx, 1.0) / max(cy, 1.0))
                     if np.isfinite(cx) and np.isfinite(cy) else np.nan)
     cost = 0.0
     for k in pairing['features']:
-        z = (f[k] - pairing['median'][k]) / pairing['rsig'][k]
+        if k in ('lq', 'lqc') and rs_lq:
+            z = (f[k] - med_lq) / rs_lq
+        else:
+            z = (f[k] - pairing['median'][k]) / pairing['rsig'][k]
         cost += min(z * z, 25.0) if np.isfinite(z) else 25.0
     pr = pairing.get('prof')
     if pr:
@@ -1342,7 +1420,7 @@ def profile_distance(fx, fy, dt: float, sigma_bins: float = 1.0) -> float:
     return float(np.sum((px - py) ** 2 / (px + py + 0.01)))
 
 
-def _repair_pairs(out: list, cand_fits: Dict[str, list], pairing: dict, dt: float) -> list:
+def _repair_pairs(out: list, cand_fits: Dict[str, list], pairing: dict, dt: float, ftst_diff=None) -> list:
     """Swap the y partners of two gated tracks when both swapped combinations
     also pass the gate and cost less."""
     xs, ys = cand_fits['x'], cand_fits['y']
@@ -1353,10 +1431,11 @@ def _repair_pairs(out: list, cand_fits: Dict[str, list], pairing: dict, dt: floa
             for b in range(a + 1, len(out)):
                 ia, ja, ga = out[a]
                 ib, jb, gb = out[b]
-                if not (ga and gb and _gate(xs[ia], ys[jb], dt) and _gate(xs[ib], ys[ja], dt)):
+                if not (ga and gb and _gate(xs[ia], ys[jb], ftst_diff) and _gate(xs[ib], ys[ja], ftst_diff)):
                     continue
-                keep = xy_pair_cost(xs[ia], ys[ja], pairing, dt) + xy_pair_cost(xs[ib], ys[jb], pairing, dt)
-                swap = xy_pair_cost(xs[ia], ys[jb], pairing, dt) + xy_pair_cost(xs[ib], ys[ja], pairing, dt)
+                c = lambda a, b: xy_pair_cost(a, b, pairing, dt, ftst_diff)
+                keep = c(xs[ia], ys[ja]) + c(xs[ib], ys[jb])
+                swap = c(xs[ia], ys[jb]) + c(xs[ib], ys[ja])
                 if swap < keep:
                     out[a], out[b] = (ia, jb, True), (ib, ja, True)
                     changed = True
@@ -1437,7 +1516,7 @@ def select_pair(cand_fits: Dict[str, list], ftst_diff: Optional[int],
         for fy in cand_fits.get('y', []) or [None]:
             if fx is None or fy is None:
                 continue
-            coincident = abs((fx.t0 - fy.t0) - dt) <= DT_XY_TOL_NS
+            coincident = _coincident(fx, fy, ftst_diff)
             plaus = int(getattr(fx, '_plausible', True)) + int(getattr(fy, '_plausible', True))
             key = (int(coincident), plaus,
                    getattr(fx, '_dchi2', 0.0) + getattr(fy, '_dchi2', 0.0))
@@ -1475,7 +1554,7 @@ def row_from_fits(event_id: int, fits: Dict[str, Optional[PlaneFit]],
                       'q_u90', 'q_uend'):
                 row[f'{plane}_{k}'] = np.nan
             for k in ('dof', 'n_strips', 'n_seed', 'n_dropped', 'n_candidates',
-                     'n_flagged_strips'):
+                     'n_flagged_strips', 'n_band_strips', 'n_sat_strips'):
                 row[f'{plane}_{k}'] = 0
             row[f'{plane}_slope_reliable'] = False
             row[f'{plane}_quality_ok'] = False
@@ -1506,11 +1585,11 @@ WORKER_OPTS = ('TWO_TRACK', 'TWO_TRACK_F', 'TWO_TRACK_F_CORROB', 'TWO_TRACK_T0',
 def _worker_init(bundle_path, pairing_path=None, opts=None):
     """``pairing_path`` overrides the bundle's ``xy_pairing`` (for A/B runs);
     ``opts`` overrides the :data:`WORKER_OPTS` module globals (likewise)."""
-    global _CAL, _PAIRING, DT_XY_TOL_NS
+    global _CAL, _PAIRING, TC_TOL_NS
     _CAL = CalibrationBundle.load(bundle_path)
     wm.use_calibration(_CAL)
     _PAIRING = load_pairing(pairing_path) if pairing_path else (_CAL.xy_pairing or None)
-    DT_XY_TOL_NS = dt_xy_tol(_CAL.xy_pairing)
+    TC_TOL_NS = tc_tol(_CAL.xy_pairing)
     for k, v in (opts or {}).items():
         if k not in WORKER_OPTS:
             raise KeyError(f'not a worker option: {k!r}; known: {WORKER_OPTS}')
@@ -1542,7 +1621,12 @@ HEADON_RESCUE_LQ = (-0.059, 0.054)
 def _headon_rescue(R, plane, other):
     """R: {'W', 'noise', 'pos'} of a plane without seeds; other: the other plane's best fit. -> a PlaneFit or None."""
     from . import io as wio, seed as wseed
-    ch = wseed.column_rescue(R['W'], R['noise'], R['pos'], float(other.t0), z_min=HEADON_RESCUE_Z)
+    Wr = np.asarray(R['W'])
+    band = wm.band_rows(Wr, R['noise'])
+    if band.any():                       # a noise band is not a drift column (wft.model.BAND_NSIG)
+        Wr = Wr.copy()
+        Wr[band] = 0.0
+    ch = wseed.column_rescue(Wr, R['noise'], R['pos'], float(other.t0), z_min=HEADON_RESCUE_Z)
     if ch is None:
         return None
     win = wio.extract_window(R['W'], R['noise'], R['pos'], ch, 3)
@@ -1553,7 +1637,8 @@ def _headon_rescue(R, plane, other):
     if f is None or not np.isfinite(f.q_sum) or f.q_sum <= 0 or not other.q_sum > 0:
         return None
     lq = np.log(f.q_sum / other.q_sum) if plane == 'x' else np.log(other.q_sum / f.q_sum)
-    med, rs = ((_PAIRING or {}).get('median', {}).get('lq'), (_PAIRING or {}).get('rsig', {}).get('lq'))
+    fx, fy = (f, other) if plane == 'x' else (other, f)
+    med, rs = lq_balance(_PAIRING, pairing_class(fx, fy))
     med, rs = (med, rs) if med is not None and rs else HEADON_RESCUE_LQ
     # the cluster's own charge noise widens the tolerance (low gain / high noise): sigma_Q / Q over the column window
     W, nz = R['W'][ch], np.asarray(R['noise'], float)[ch]
@@ -1731,7 +1816,10 @@ def reconstruct_run(cfg, cal: CalibrationBundle, out_path: str,
                 algorithm=dict(pivot_start=PIVOT_START, two_sided=TWO_SIDED, col_guard=wm.COL_GUARD,
                                sat_solve=wm.SAT_SOLVE, rc_t0_interp=wm.RC_T0_INTERP, model_frac=wm.MODEL_FRAC,
                                two_track_min_sep_mm=wm.TWO_MIN_SEP_MM,
-                               dt_xy_tol_ns=dt_xy_tol(cal.xy_pairing)),
+                               xy_gate='column time t0+u50, zero offset',
+                               tc_tol_ns=tc_tol(cal.xy_pairing),
+                               band_nsig=wm.BAND_NSIG,
+                               sigma_p0_profile=False),
                 bundle=dict(detector=cal.detector, run_key=cal.run_key,
                             v_drift=cal.v_drift, hyper=cal.hyper,
                             conditions=cal.conditions,
