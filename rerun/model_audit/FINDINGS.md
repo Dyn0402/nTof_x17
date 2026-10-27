@@ -108,8 +108,12 @@ inclined view is Y (X carries the known tilt, −1.9° at v 14).  |w_y| / tan 25
 235 V/cm 12.62 vs 14.0 (0.90); 165 V/cm 8.53 vs 11.6 (0.74); 148 V/cm 7.59 vs 11.6 (0.65) — θ(v_span) = −23.4°,
 −19.4°, −17.4°; per-event rσ 1.4–1.7°, 11–16 % beyond 35°; χ²/dof 30–65.  At the operating field the angle scale
 is 10 % low with no reference involved (mount angle and the column duration are both in the data), at the low fields
-more (the span v there is an upper bound; ZS truncation of the faint deep charge is suspected — ZS-censored arms in
-`sps2`).  The bench kw_y (0.977) does not transfer: on the beam the steep-track compression of F4 (5–20 % at |tan|
+more.  With the ZS samples censored (`sps2`, the right treatment: χ²/dof 31 → 135 shows how cheap the zeros were) the
+ratio is unchanged — 0.892 / 0.868 / 0.840 / 0.798 / 0.727 / 0.646 at 235 / 217 / 200 / 182 / 165 / 148 V/cm — so ZS
+truncation is not the cause; the deficit grows smoothly with the drift time (2.1 → 2.5 µs), i.e. the lateral motion
+per unit drift time is under-estimated the longer the column.  The low-field span v is an upper bound (truncated
+span), so part of the low-field deficit may be the reference; the 235 V/cm point is anchored on run_71's end lobe.
+t0 interpolation changes nothing here either.  The bench kw_y (0.977) does not transfer: on the beam the steep-track compression of F4 (5–20 % at |tan|
 0.3–0.45) continues to 10 % at tan 0.48.  This is the one meaningful improvement left in the angle response.
 
 ## F17 · A fractional model-error term (WFT_MODEL_FRAC 0.03) does not buy resolution — CLOSED (null / slightly worse)
@@ -140,3 +144,12 @@ steep tracks (Δχ²/dof +2.5…+3.1), so the compression is the model's prefere
 - `ts` (two-sided start): det4 X far −1.2 ± 0.4 pp, otherwise null; steep-bin biases unchanged — the optimiser is not
   the compression (F4), consistent with `steep_probe.py`.
 - `k30`, `t0fix`: F13, F6.
+
+## F20 · B3 dry run: `sps_reco.py` runs end to end on condor; ZS data are a poor input for the waveform fit — DONE / LIMIT
+`run63_flat__flat700` (flat mount, 243 V/cm, ZS 4σ, 64 samples, 1500 events, 25 min incl. the EOS read): both views
+fit on 100 % of events; Y head-on median +0.01° (rσ 1.15°), X −1.25° (the known det4 X tilt), position vs own centroid
+rσ 0.6 mm.  But: far > 5° 25 % (X) / 35 % (Y), χ²/dof 100–120, x–y t0 width 312 ns, ln(qx/qy) median −0.33 (det4's X
+gain stripes) with rσ 0.45, and only 5–6 strips per window carry samples — the zero suppression removes the faint
+neighbour and tail samples the fit needs for the angle and t0 of a head-on column.  So on SPS the ZS runs give the
+median angle scale (F16) and little else; the RAW run_71 (flat, 700/450/275 V) is the clean head-on set.  The pass
+registry's K gets a +10-bin margin (uend sat on the grid end at K = 40).  `run63_rot25__d675` still running.
