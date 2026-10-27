@@ -48,12 +48,24 @@ def main():
     ap.add_argument('--fold-kw', action='store_true',
                     help='vrefit --keep-v: fold the mean kw into v_drift (v := v * kw_mean, kw := kw / kw_mean), so the '
                          'bundle carries this row\'s ladder v instead of the golden row\'s; tan is unchanged')
+    ap.add_argument('--sigma0', default=None,
+                    help='X,Y: one prompt footprint per view [mm] (hyper sigma_p0_x / sigma_p0_y) and the per-event '
+                         'footprint profile (sigma_p0_prof_*) removed -- FE item 12 (fleet sigma0, no per-event choice)')
+    ap.add_argument('--dead-json', default=None,
+                    help='a dead list built under the one rule (followups/fe_unify2/build_masks.py: chamber-side by '
+                         'position + this dataset\'s own faults); replaces the bundle\'s dead lists')
+    ap.add_argument('--depth-subdiv', type=int, default=None,
+                    help='charge-grid subdivision per sample period (3 = the 20 ns grid; needs a pinned t0)')
     ap.add_argument('--pairing-only', action='store_true',
                     help='with --table: re-measure dt_xy and xy_pairing only, keep the bundle\'s w0/kw (a gate arm that '
                          'must not move the angle mapping)')
+    ap.add_argument('--keep-w0kw', action='store_true',
+                    help='edit the bundle (--sigma0, --dead-json, --latency-cache, --depth-subdiv, --table) without '
+                         're-measuring w0/kw: the first step of a re-finalisation, before a reconstruction exists')
     a = ap.parse_args()
     if a.pairing_only and not a.table:
         ap.error('--pairing-only needs --table')
+    a.pairing_only = a.pairing_only or a.keep_w0kw
     if not a.pairing_only and not a.angles:
         ap.error('--angles is required')
     from wft.calib import CalibrationBundle
@@ -93,15 +105,36 @@ def main():
     if a.table:
         import pandas as pd
         df = pd.read_parquet(a.table)
-        both = df[df.x_ok & df.y_ok & (df.x_n_dropped <= 2) & (df.y_n_dropped <= 2)]
+        sel = df.x_ok & df.y_ok & (df.x_n_dropped <= 2) & (df.y_n_dropped <= 2)
+        if 'n_tracks' in df:
+            sel &= df.n_tracks <= 1           # single tracks: a second particle is a wrong x-y pair, not a width
+        both = df[sel & (df.x_ftst >= 0) & (df.y_ftst >= 0)]
         fd = (both.x_ftst - both.y_ftst).astype(int).to_numpy(); d = (both.x_t0 - both.y_t0).to_numpy()
-        rs = lambda x: float(1.4826 * np.median(np.abs(x - np.median(x))))
+        rs = lambda x: float(1.4826 * np.median(np.abs(x - np.median(x)))) if len(x) else float('nan')
+        fin = lambda x: np.asarray(x, float)[np.isfinite(np.asarray(x, float))]
         dt_new = {int(k): float(np.median(d[fd == k])) for k in np.unique(fd) if (fd == k).sum() >= 30}
-        pred = np.array([dt_new.get(int(k), np.nan) for k in fd]); t0r = d - pred; okr = np.isfinite(t0r)
-        feats = dict(lq=np.log(both.x_q_sum / both.y_q_sum).to_numpy(), u50=(both.x_q_u50 - both.y_q_u50).to_numpy(),
-                     u90=(both.x_q_u90 - both.y_q_u90).to_numpy(), t0=t0r[okr])
-        pairing = dict(features=['lq', 'u50', 'u90', 't0'], median={k: float(np.median(v)) for k, v in feats.items()},
-                       rsig={k: rs(v) for k, v in feats.items()}, n=int(len(both)), source=a.table)
+        # the x-y gate is the phase-corrected column time t0 + u50 at zero offset (wft.reco.col_dt, FE item 7); its
+        # tolerance is p98 of |dtc| on these single tracks, its median is recorded (expected -2..+6 ns, not applied)
+        tc = fin((both.x_t0 + both.x_q_u50 - both.y_t0 - both.y_q_u50).to_numpy() + 10.0 * fd)
+        lq = np.log(both.x_q_sum / both.y_q_sum).to_numpy()
+        feats = dict(lq=fin(lq), u50=fin((both.x_q_u50 - both.y_q_u50).to_numpy()),
+                     u90=fin((both.x_q_u90 - both.y_q_u90).to_numpy()), tc=tc)
+        pairing = dict(features=['lq', 'u50', 'u90', 'tc'], median={k: float(np.median(v)) for k, v in feats.items()},
+                       rsig={k: rs(v) for k, v in feats.items()}, n=int(len(both)), source=a.table,
+                       tc_tol=float(np.percentile(np.abs(tc), 98)), tc_q95=float(np.percentile(np.abs(tc), 95)))
+        # charge balance per event class (FE item 11): clean / censored (dead or band strip in a window) / saturated
+        if {'x_n_sat_strips', 'y_n_sat_strips', 'x_n_band_strips'} <= set(both.columns):
+            sat = (both.x_n_sat_strips > 0) | (both.y_n_sat_strips > 0)
+            cen = ((both.x_n_flagged_strips + both.y_n_flagged_strips + both.x_n_band_strips + both.y_n_band_strips) > 0)
+            cls = np.where(sat, 'sat', np.where(cen, 'cens', 'clean'))
+            pairing['lq_class'] = {}
+            for c in ('clean', 'cens', 'sat'):
+                v = fin(lq[cls == c])
+                if len(v) >= 30:
+                    pairing['lq_class'][c] = dict(median=float(np.median(v)), rsig=rs(v), n=int(len(v)))
+            print('lq per class: ' + ', '.join(f'{c} {r["rsig"]:.3f} (n={r["n"]})' for c, r in pairing['lq_class'].items()))
+        print(f'column time: median {pairing["median"]["tc"]:+.1f} ns, rsig {pairing["rsig"]["tc"]:.1f}, '
+              f'tolerance p98 {pairing["tc_tol"]:.0f} ns (p95 {pairing["tc_q95"]:.0f})')
         rep['dt_xy'] = dict(old={str(k): float(v) for k, v in cal.dt_xy.items()}, new={str(k): v for k, v in dt_new.items()},
                             n={str(k): int((fd == k).sum()) for k in dt_new})
         rep['xy_pairing'] = pairing
@@ -123,10 +156,24 @@ def main():
             print(f't0_abs <- latency C x {lat["x"]["C"]:.1f} / y {lat["y"]["C"]:.1f} ns; t0_prior_sigma {cal.t0_prior_sigma}')
         else:
             print(f'latency: too few planes measured ({sorted(lat)}); t0_abs left unchanged')
+    if a.sigma0:
+        sx, sy = (float(v) for v in a.sigma0.split(','))
+        rep['sigma0'] = dict(old={k: v for k, v in cal.hyper.items() if k.startswith('sigma_p0')}, x=sx, y=sy)
+        cal.hyper = {k: v for k, v in cal.hyper.items() if not k.startswith('sigma_p0_prof')}
+        cal.hyper['sigma_p0_x'], cal.hyper['sigma_p0_y'] = sx, sy
+        print(f'sigma0 x {sx} y {sy} mm (per-event profile removed; was {rep["sigma0"]["old"]})')
+    if a.dead_json:
+        dj = json.load(open(a.dead_json))
+        rep['dead'] = dict(source=a.dead_json, old={p: len(v) for p, v in cal.dead.items()},
+                           new={p: len(dj['planes'][p]['dead']) for p in ('x', 'y')})
+        cal.dead = {p: [int(c) for c in dj['planes'][p]['dead']] for p in ('x', 'y')}
+        print(f'dead lists <- {a.dead_json}: {rep["dead"]["old"]} -> {rep["dead"]["new"]}')
+    if a.depth_subdiv:
+        rep['depth_subdiv'] = dict(old=int(cal.depth_subdiv), new=int(a.depth_subdiv))
+        cal.depth_subdiv = int(a.depth_subdiv)
     prov = dict(cal.provenance)
     if a.pairing_only:
-        prov.update(xy_pairing_note=f'dt_xy + xy_pairing measured by rerun/w12/set_w0kw.py --pairing-only from {a.table}',
-                    xy_pairing_measurement=rep)
+        prov.update(edit_note=f'rerun/w12/set_w0kw.py --keep-w0kw/--pairing-only (table {a.table})', edit_measurement=rep)
     else:
         prov.update(w0_kw_stale=False, w0_kw_note=f'w0/kw measured by rerun/w12/set_w0kw.py from {a.angles} '
                     f'(a reconstruction with this bundle, {a.run_key})', w0_kw_measurement=rep)
@@ -138,7 +185,7 @@ def main():
     cal.provenance = prov
     if os.path.exists(a.out):
         shutil.rmtree(a.out)
-    cal.save(a.out, note=f'{"dt_xy/xy_pairing" if a.pairing_only else "w0/kw"} measured ({a.run_key})')
+    cal.save(a.out, note=f'{"edited (w0/kw kept)" if a.pairing_only else "w0/kw measured"} ({a.run_key})')
     json.dump(rep, open(os.path.join(a.out, 'w0kw.json'), 'w'), indent=1)
     print(f'wrote {a.out}')
 

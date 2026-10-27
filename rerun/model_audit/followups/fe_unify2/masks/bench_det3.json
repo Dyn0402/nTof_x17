@@ -1,0 +1,33 @@
+{
+ "det": "det3",
+ "run_key": "sat_det3",
+ "rule": "Rule: a dataset's dead list = the chamber's CHAMBER-SIDE faults, carried by strip position (flagged in >= 2 datasets\nread through different electronics: f12_table.json class 'detector'), + that dataset's OWN faults measured on its own\nhits (census dead / shorts of the M3 crossing census, flank-dead, silent), minus census-dead channels that the flank test\non the same hits finds firing normally beside bright neighbours (the census over-call at ~20-30 crossings per channel,\nws_dead_charge: 35 of det4 X's 54).  Electronics faults of OTHER datasets are not carried (they follow the FEU channel).",
+ "planes": {
+  "x": {
+   "dead": [
+    307,
+    398,
+    400
+   ],
+   "n_old": 3,
+   "n_new": 3,
+   "added": [],
+   "removed": [],
+   "chamber_side": [],
+   "census_flank_healthy": [],
+   "added_mm": [],
+   "removed_mm": []
+  },
+  "y": {
+   "dead": [],
+   "n_old": 0,
+   "n_new": 0,
+   "added": [],
+   "removed": [],
+   "chamber_side": [],
+   "census_flank_healthy": [],
+   "added_mm": [],
+   "removed_mm": []
+  }
+ }
+}
