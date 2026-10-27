@@ -48,8 +48,8 @@ def score():
     res = {}
     for name, p in tabs.items():
         if p is None:
-            D = pd.DataFrame(dict(detected=R.reindex(band + ctl).cat_xy_5.eq('detected')))
-            D.index = band + ctl
+            u = list(dict.fromkeys(band + ctl))
+            D = pd.DataFrame(dict(detected=R.reindex(u).cat_xy_5.eq('detected').to_numpy()), index=u)
         else:
             if not os.path.exists(p):
                 continue
@@ -87,7 +87,7 @@ def score():
 
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument('cmd', choices=('reco', 'score'))
-    ap.add_argument('--arm', choices=('cens', 'nocens')); ap.add_argument('--jobs', type=int, default=2)
+    ap.add_argument('--arm', choices=('cens', 'nocens', 'reseed')); ap.add_argument('--jobs', type=int, default=2)
     a = ap.parse_args()
     reco(a.arm, a.jobs) if a.cmd == 'reco' else score()
 

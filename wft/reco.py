@@ -1791,14 +1791,24 @@ def reconstruct_run(cfg, cal: CalibrationBundle, out_path: str,
     hits = _load_hits(cfg)
     dead = (getattr(cal, 'dead', None) or {}) if wseed.DEAD_SEED else {}
     seeds = wseed.seeds_from_hits(hits, pos_maps, feu_x, feu_y, hot=cal.hot, dead=dead)
-    del hits
     wanted = set(seeds)
     if event_filter is not None:
         wanted &= set(int(e) for e in event_filter)
+    sparks = {e for e in wanted if seeds[e]['spark']}
     wanted = {e for e in wanted
               if not seeds[e]['spark'] and (seeds[e]['x'] or seeds[e]['y'])}
     if limit:
         wanted = set(sorted(wanted)[:limit])
+        sparks = {e for e in sparks if wanted and e <= max(wanted)}
+    # noise bands (FE item 13): spark-vetoed events are read too and fitted if, without the hits on their band
+    # strips, they are not sparks (band_reseed); the selection of ordinary events (and --limit) is unchanged
+    n_spark_checked = len(sparks) if wm.BAND_NSIG > 0 else 0
+    if wm.BAND_NSIG > 0:
+        wanted |= sparks
+        hits = hits.set_index('eventId')
+        hits = hits[hits.index.isin(wanted)]
+    else:
+        hits = None
     if verbose:
         print(f'[wft] {len(seeds):,} seeded events, {len(wanted):,} to reconstruct',
               flush=True)
@@ -1807,7 +1817,7 @@ def reconstruct_run(cfg, cal: CalibrationBundle, out_path: str,
     with ProcessPoolExecutor(max_workers=jobs, initializer=_worker_init,
                              initargs=(bundle_path,)) as pool:
         for payloads in _stream_windows(cfg, pos_maps, seeds, wanted, pad_strips,
-                                        verbose=verbose, dead=dead):
+                                        verbose=verbose, dead=dead, hits=hits, hot=cal.hot):
             if not payloads:
                 continue
             for r in pool.map(_worker_fit, payloads, chunksize=8):
@@ -1866,6 +1876,8 @@ def reconstruct_run(cfg, cal: CalibrationBundle, out_path: str,
                                pad_strips=pad_strips,
                                dead_seed={p: len(c) for p, c in dead.items()},
                                headon_sig=wseed.HEADON_SIG, drop_flat_hits=DROP_FLAT_HITS,
+                               band=dict(nsig=wm.BAND_NSIG, edge=wm.BAND_EDGE, spark_events_checked=n_spark_checked,
+                                         n_reseeded=int(sum(1 for r in seeds.values() if r.get('band_reseeded')))),
                                headon_rescue=dict(on=HEADON_RESCUE, z=HEADON_RESCUE_Z, qtol=HEADON_RESCUE_QTOL),
                                event_filter=bool(event_filter)),
                 multi_track=dict(emit_candidates=EMIT_CANDIDATES,
@@ -1920,12 +1932,40 @@ def _load_hits(cfg):
     return df
 
 
-def _stream_windows(cfg, pos_maps, seeds, wanted, pad_strips, verbose=True, dead=None):
+def band_reseed(eid, hits_ev, band_ch: dict, pos_maps, feu_x, feu_y, hot, dead, seeder=None):
+    """Seeds of one event with the hits on its noise-band strips removed (FE item 13).
+
+    ``band_ch``: {feu: set of channels whose waveform is a band in this event} (wft.model.band_rows on the full event).
+    A band strip that kept a hit (not above threshold from first to last sample, so DROP_FLAT_HITS let it through) still
+    forms a competing cluster (n_dropped > 2, the event is cut) or pushes the event over the spark veto (no fit at all);
+    without it the event is seeded on its particle.  Returns the new seed record, or None if no hit sat on a band strip."""
+    from . import seed as wseed
+    if hits_ev is None or not len(hits_ev):
+        return None
+    on_band = np.zeros(len(hits_ev), dtype=bool)
+    for feu, chs in band_ch.items():
+        if chs:
+            on_band |= (hits_ev['feu'].to_numpy() == feu) & np.isin(hits_ev['channel'].to_numpy(), list(chs))
+    if not on_band.any():
+        return None
+    seeder = seeder or wseed.seeds_from_hits
+    r = seeder(hits_ev[~on_band], pos_maps, feu_x, feu_y, hot=hot, dead=dead)
+    rec = r.get(int(eid)) or {'x': [], 'y': [], 'n_hits': 0, 'spark': False}
+    rec = dict(rec)
+    rec['band_reseeded'] = int(on_band.sum())
+    return rec
+
+
+def _stream_windows(cfg, pos_maps, seeds, wanted, pad_strips, verbose=True, dead=None, hits=None, hot=None):
     """Yield lists of (eid, windows, seedinfo, n_hits, spark) per file pair.
-    ``dead``: {plane: channels} padded across (``wft.seed.DEAD_SEED``); empty = historical."""
+    ``dead``: {plane: channels} padded across (``wft.seed.DEAD_SEED``); empty = historical.
+    ``hits`` (the seeding hits, indexed by eventId): when given, every wanted event is checked for noise bands on its
+    full waveforms and re-seeded without them (band_reseed); spark-vetoed events in ``wanted`` are fitted only if the
+    re-seed clears the veto."""
     from . import io as wio
     fx = wio.subrun_files(cfg.BASE_PATH, cfg.RUN, cfg.SUB_RUN, cfg.MX17_FEU_X)
     fy = wio.subrun_files(cfg.BASE_PATH, cfg.RUN, cfg.SUB_RUN, cfg.MX17_FEU_Y)
+    feu_of = {'x': cfg.MX17_FEU_X, 'y': cfg.MX17_FEU_Y}
     by_tag = {}
     for f in fx:
         by_tag.setdefault(wio.file_tag(f), {})['x'] = f
@@ -1942,40 +1982,63 @@ def _stream_windows(cfg, pos_maps, seeds, wanted, pad_strips, verbose=True, dead
         want = wanted & (set(rx.event_ids.tolist()) | set(ry.event_ids.tolist()))
         if not want:
             continue
-        buf = {}
-        for plane, rdr, feu in (('x', rx, cfg.MX17_FEU_X), ('y', ry, cfg.MX17_FEU_Y)):
+        raw = {}
+        noise = {'x': rx.noise, 'y': ry.noise}
+        for plane, rdr in (('x', rx), ('y', ry)):
             for eid, ftst, wfm in rdr.iter_events(want):
-                cl = seeds[eid][plane]
+                raw.setdefault(eid, {})[plane] = (ftst, wfm)
+        buf, n_reseed = {}, 0
+        for eid, pl in raw.items():
+            sd = seeds[eid]
+            if hits is not None and wm.BAND_NSIG > 0:
+                band = {feu_of[p]: set(np.flatnonzero(wm.band_rows(w, noise[p])).tolist())
+                        for p, (_f, w) in pl.items()}
+                try:
+                    hev = hits.loc[[eid]] if eid in hits.index else None
+                except KeyError:
+                    hev = None
+                r = band_reseed(eid, hev.reset_index() if hev is not None else None, band, pos_maps,
+                                feu_of['x'], feu_of['y'], hot, dead)
+                if r is not None:
+                    sd, n_reseed = r, n_reseed + 1
+                    seeds[eid] = sd
+            if sd['spark'] or not (sd['x'] or sd['y']):
+                continue
+            for plane, (ftst, wfm) in pl.items():
+                feu = feu_of[plane]
+                cl = sd[plane]
                 if not cl:
-                    if HEADON_RESCUE and not seeds[eid]['spark']:
+                    if HEADON_RESCUE:
                         rec = buf.setdefault(eid, {'w': {}, 's': {}})
-                        rec['w'][f'_rescue_{plane}'] = dict(W=wfm, noise=rdr.noise, pos=pos_maps[feu])
+                        rec['w'][f'_rescue_{plane}'] = dict(W=wfm, noise=noise[plane], pos=pos_maps[feu])
                         rec['ftst_' + plane] = ftst
                     continue
                 cl = cl if isinstance(cl, list) else [cl]
                 wins, used = [], []
-                for s in cl:
-                    win = wio.extract_window(wfm, rdr.noise, pos_maps[feu],
-                                             s.channels, pad_strips,
+                for s_ in cl:
+                    win = wio.extract_window(wfm, noise[plane], pos_maps[feu], s_.channels, pad_strips,
                                              dead=(dead or {}).get(plane))
                     if win is None:
                         continue
-                    wins.append(dict(W=win.W, pos=win.pos, noise=win.noise,
-                                     ch=win.ch))
-                    used.append(s)
+                    wins.append(dict(W=win.W, pos=win.pos, noise=win.noise, ch=win.ch))
+                    used.append(s_)
                 if not wins:
                     continue
                 rec = buf.setdefault(eid, {'w': {}, 's': {}})
                 rec['w'][plane] = wins
                 rec['s'][plane] = used
                 rec['ftst_' + plane] = ftst
+        del raw
         payloads = []
         for eid, rec in buf.items():
+            if not any(k in rec['w'] for k in ('x', 'y')):
+                continue
             ftst = {p: rec.get('ftst_' + p) for p in ('x', 'y')}
             payloads.append((eid, rec['w'], rec['s'], seeds[eid]['n_hits'],
                              seeds[eid]['spark'], ftst))
         if verbose:
-            print(f'[wft]   {tag}: {len(payloads):,} events windowed', flush=True)
+            print(f'[wft]   {tag}: {len(payloads):,} events windowed ({n_reseed} re-seeded without band strips)',
+                  flush=True)
         yield payloads
 
 

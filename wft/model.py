@@ -156,13 +156,20 @@ ZS_BOUND = 0.0
 #: ``n_band_strips``.  BAND_NSIG = 0 turns it off (study override, wft.diag).
 BAND_NSIG = 5.0
 BAND_EDGE = 2
+#: The rule needs a window LONGER than a particle's signal (the bench: 32 x 60 ns = 1920 ns against <= 24 samples per
+#: particle, satstudy; SPS: 64 samples), so that a strip high at both ends cannot be one particle.  The n_TOF window is
+#: 20 x 60 ns = 1200 ns with a trigger asynchronous to the particle: a track can be above threshold from the first
+#: sample to the last (1.2 % of run_145 hits are, 18 % start truncated), and bands are absent there (rerun/bands), so on
+#: a window shorter than this nothing is flagged.  Measured, not tuned: the bench and SPS windows clear it, n_TOF does not.
+BAND_MIN_WINDOW_NS = 1800.0
 
 
 def band_rows(W, noise, miss=None) -> np.ndarray:
     """Boolean (n_strip,): rows of a (n_strip, n_sample) window that are noise bands in this event (see BAND_NSIG).
     ``miss``: samples never read out (not used as evidence either way)."""
     W = np.asarray(W, dtype=np.float64)
-    if BAND_NSIG <= 0 or W.ndim != 2 or W.shape[1] < 2 * BAND_EDGE + 1:
+    if (BAND_NSIG <= 0 or W.ndim != 2 or W.shape[1] < 2 * BAND_EDGE + 1
+            or W.shape[1] * SNS < BAND_MIN_WINDOW_NS):
         return np.zeros(W.shape[0] if W.ndim == 2 else 0, dtype=bool)
     thr = BAND_NSIG * np.maximum(np.asarray(noise, dtype=np.float64), 3.0)[:, None]
     e = np.concatenate([W[:, :BAND_EDGE], W[:, -BAND_EDGE:]], axis=1)

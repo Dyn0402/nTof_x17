@@ -1,0 +1,40 @@
+{
+ "prod (final_phys)": {
+  "band_detected": 145,
+  "n_band": 252,
+  "band_eff": 0.5753968253968254,
+  "ctl_detected": 400,
+  "n_ctl": 400,
+  "ctl_eff": 1.0
+ },
+ "flat-hit drop 10-26 (reco_band_flat)": {
+  "band_detected": 196,
+  "n_band": 252,
+  "band_eff": 0.7777777777777778,
+  "ctl_detected": 400,
+  "n_ctl": 400,
+  "ctl_eff": 1.0
+ },
+ "unified, no censoring": {
+  "band_detected": 198,
+  "n_band": 252,
+  "band_eff": 0.7857142857142857,
+  "ctl_detected": 400,
+  "n_ctl": 400,
+  "ctl_eff": 1.0,
+  "band_events_with_censored_strip_in_window": 0,
+  "ctl_events_with_censored_strip_in_window": 0
+ },
+ "unified + band censoring": {
+  "band_detected": 197,
+  "n_band": 252,
+  "band_eff": 0.7817460317460317,
+  "ctl_detected": 400,
+  "n_ctl": 400,
+  "ctl_eff": 1.0,
+  "band_events_with_censored_strip_in_window": 37,
+  "ctl_events_with_censored_strip_in_window": 1
+ },
+ "controls_views_moved": 1,
+ "band_views_moved": 29
+}
