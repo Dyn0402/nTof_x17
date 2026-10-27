@@ -1,5 +1,27 @@
 # Handoff
 
+## INFN–IN2P3 detector R&D conference abstract (Frascati, 2–4 Dec) — updated 2026-10-27 (dylan-Yoga)
+
+**Resume:** draft abstract in `papers/infn_in2p3_2026_abstract/abstract.md`; Dylan to review, then contact organisers.
+
+**Goal:** a detector-focused abstract (no physics results) for the 2nd INFN–IN2P3 detector R&D conference,
+adapted from the MPGD2026 abstract. The call closed on 19 Oct, so this would be a late submission.
+
+**Done:**
+- Checked the conference: detector R&D/technology only, gas-detectors session, posters on 3 Dec, no word limit posted.
+- Drafted a ~270-word abstract; the file records every change from MPGD and the reason for it.
+
+**Next steps:**
+1. Dylan reviews the wording (Dylan had reservations, "Hmm ok", and paused here).
+2. Re-quote the 1.15–2.51° and the 93 % under the unified reconstruction before sending.
+3. Eligibility: CEA Saclay is not IN2P3. Ask the organisers, with the late-submission request, or add an
+   INFN/IN2P3 n_TOF co-author.
+
+**Gotchas / decisions:**
+- The MPGD claim "angular resolution close to the ~1° physical limit" is withdrawn (model audit F3: the floor is
+  0.30–0.35°). Don't reuse it here or in the MPGD proceedings text (`mpgd26_proceedings/main.tex` §3 and the
+  summary still say it).
+
 ## Model audit (B4) + follow-ups — updated 2026-10-27 (dylan-Yoga)
 
 **Resume:** audit done; five follow-up workstreams FA–FE running — read `rerun/model_audit/FOLLOWUPS.md`, collect their reports.
