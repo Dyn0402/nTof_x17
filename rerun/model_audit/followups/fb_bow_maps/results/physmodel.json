@@ -1,0 +1,23 @@
+{
+ "D_Nm": 8.998168498168496,
+ "span_m": 0.402,
+ "q_gravity_Pa": 33.40305000000001,
+ "gravity_simply_supported_mm": 0.39360648765214584,
+ "dp_for_2mm_simply_supported_mbar": 1.6972814751732614,
+ "mm_per_mbar_simply_supported": 1.1783549336127863,
+ "gravity_clamped_mm": 0.1221537375472177,
+ "dp_for_2mm_clamped_mbar": 5.469018086669397,
+ "mm_per_mbar_clamped": 0.3656963587074164,
+ "mesh_5Ncm_kappa_per_km": 36.332179930795846,
+ "mesh_5Ncm_depth_rim150_mm": 0.40873702422145325,
+ "mesh_10Ncm_kappa_per_km": 72.66435986159169,
+ "mesh_10Ncm_depth_rim150_mm": 0.8174740484429065,
+ "mesh_15Ncm_kappa_per_km": 108.99653979238755,
+ "mesh_15Ncm_depth_rim150_mm": 1.2262110726643598,
+ "dip150_factor_ss": 0.6119081473277503,
+ "dip150_factor_cl": 0.8493847138894208,
+ "gravity_simply_supported_dip150_mm": 0.24085101663540762,
+ "dip150_per_mbar_simply_supported": 0.7210449843215143,
+ "gravity_clamped_dip150_mm": 0.10375551741706691,
+ "dip150_per_mbar_clamped": 0.3106168970111019
+}

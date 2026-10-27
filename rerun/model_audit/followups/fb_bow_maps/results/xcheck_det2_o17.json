@@ -1,0 +1,1188 @@
+{
+ "name": "det2_o17",
+ "det": "det2",
+ "slot": "top",
+ "note": "6-17 night (remounted since)",
+ "v": 39.3,
+ "n_events": 729,
+ "pos_x": {
+  "n": 101,
+  "a": 0.23224613607227398,
+  "bu": 0.15084768112074215,
+  "bw": 0.4137148053919329,
+  "h0": -1.471834341194706,
+  "gu": -4.833272224366618,
+  "gw": 0.2716328343491564,
+  "kuu": -6.373557400185731,
+  "kww": 1.2482556648758176,
+  "kuw": 0.11829047871963783,
+  "a_err": 0.1325944015121408,
+  "bu_err": 0.14883753398868832,
+  "bw_err": 0.06521742643224561,
+  "h0_err": 1.7180405760333028,
+  "gu_err": 6.458989121202033,
+  "gw_err": 1.1296875730556308,
+  "kuu_err": 7.633938027292213,
+  "kww_err": 1.2738986550924587,
+  "kuw_err": 2.386881522715477
+ },
+ "pospin_x": {
+  "n": 101,
+  "a": 0.10636422150529695,
+  "bu": -0.0013420635693628816,
+  "bw": 0.3606396580022999,
+  "h0": -2.1922569497820814,
+  "gu": -9.220974568523378,
+  "gw": 1.2225269401545489,
+  "kuu": -11.29339552848826,
+  "kww": 0.6968176085050625,
+  "kuw": 2.1046058377717767,
+  "a_err": 0.13322608750516113,
+  "bu_err": 0.13904383711669152,
+  "bw_err": 0.06221257732976986,
+  "h0_err": 1.6528244770007694,
+  "gu_err": 6.1770163130635085,
+  "gw_err": 0.9181697634650834,
+  "kuu_err": 6.937362644778185,
+  "kww_err": 1.3132983395552646,
+  "kuw_err": 1.8253079747879826
+ },
+ "ang_x": {
+  "n": 58,
+  "c0": 0.555179550705419,
+  "cu": 0.4477599626667194,
+  "cw": -0.2946231747622798,
+  "auu": 0.6495621642078245,
+  "aww": -0.45437332883869286,
+  "auw": -0.2603273382157754,
+  "B": 8.196957000892173,
+  "Bu": -1.9574695027689841,
+  "Bw": -1.6564314299883542,
+  "c0_err": 1.3560735510035888,
+  "cu_err": 2.8006714125584744,
+  "cw_err": 0.656948730067567,
+  "auu_err": 2.587693044018979,
+  "aww_err": 0.6187064886290647,
+  "auw_err": 0.5357371189352959,
+  "B_err": 7.551456976919657,
+  "Bu_err": 6.389198755044875,
+  "Bw_err": 3.3801354292760672
+ },
+ "cells_x": {
+  "h": [
+   [
+    NaN,
+    NaN,
+    NaN,
+    NaN,
+    NaN
+   ],
+   [
+    NaN,
+    NaN,
+    NaN,
+    NaN,
+    NaN
+   ],
+   [
+    NaN,
+    NaN,
+    NaN,
+    NaN,
+    NaN
+   ],
+   [
+    NaN,
+    NaN,
+    NaN,
+    NaN,
+    NaN
+   ],
+   [
+    NaN,
+    NaN,
+    NaN,
+    NaN,
+    NaN
+   ]
+  ],
+  "h_err": [
+   [
+    NaN,
+    NaN,
+    NaN,
+    NaN,
+    NaN
+   ],
+   [
+    NaN,
+    NaN,
+    NaN,
+    NaN,
+    NaN
+   ],
+   [
+    NaN,
+    NaN,
+    NaN,
+    NaN,
+    NaN
+   ],
+   [
+    NaN,
+    NaN,
+    NaN,
+    NaN,
+    NaN
+   ],
+   [
+    NaN,
+    NaN,
+    NaN,
+    NaN,
+    NaN
+   ]
+  ],
+  "w0": [
+   [
+    NaN,
+    NaN,
+    NaN,
+    NaN,
+    NaN
+   ],
+   [
+    NaN,
+    NaN,
+    NaN,
+    NaN,
+    NaN
+   ],
+   [
+    NaN,
+    NaN,
+    NaN,
+    NaN,
+    NaN
+   ],
+   [
+    NaN,
+    NaN,
+    NaN,
+    NaN,
+    NaN
+   ],
+   [
+    NaN,
+    NaN,
+    NaN,
+    NaN,
+    NaN
+   ]
+  ],
+  "w0_err": [
+   [
+    NaN,
+    NaN,
+    NaN,
+    NaN,
+    NaN
+   ],
+   [
+    NaN,
+    NaN,
+    NaN,
+    NaN,
+    NaN
+   ],
+   [
+    NaN,
+    NaN,
+    NaN,
+    NaN,
+    NaN
+   ],
+   [
+    NaN,
+    NaN,
+    NaN,
+    NaN,
+    NaN
+   ],
+   [
+    NaN,
+    NaN,
+    NaN,
+    NaN,
+    NaN
+   ]
+  ],
+  "b": [
+   [
+    NaN,
+    NaN,
+    NaN,
+    NaN,
+    NaN
+   ],
+   [
+    NaN,
+    NaN,
+    NaN,
+    NaN,
+    NaN
+   ],
+   [
+    NaN,
+    NaN,
+    NaN,
+    NaN,
+    NaN
+   ],
+   [
+    NaN,
+    NaN,
+    NaN,
+    NaN,
+    NaN
+   ],
+   [
+    NaN,
+    NaN,
+    NaN,
+    NaN,
+    NaN
+   ]
+  ],
+  "b_err": [
+   [
+    NaN,
+    NaN,
+    NaN,
+    NaN,
+    NaN
+   ],
+   [
+    NaN,
+    NaN,
+    NaN,
+    NaN,
+    NaN
+   ],
+   [
+    NaN,
+    NaN,
+    NaN,
+    NaN,
+    NaN
+   ],
+   [
+    NaN,
+    NaN,
+    NaN,
+    NaN,
+    NaN
+   ],
+   [
+    NaN,
+    NaN,
+    NaN,
+    NaN,
+    NaN
+   ]
+  ],
+  "n": [
+   [
+    2,
+    0,
+    2,
+    2,
+    4
+   ],
+   [
+    3,
+    5,
+    4,
+    5,
+    12
+   ],
+   [
+    5,
+    7,
+    2,
+    2,
+    3
+   ],
+   [
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   [
+    0,
+    0,
+    0,
+    0,
+    0
+   ]
+  ]
+ },
+ "width_x": [
+  [
+   66.66666666666667,
+   NaN,
+   NaN,
+   1
+  ],
+  [
+   120.00000000000001,
+   NaN,
+   NaN,
+   7
+  ],
+  [
+   173.33333333333334,
+   NaN,
+   NaN,
+   13
+  ],
+  [
+   226.66666666666669,
+   NaN,
+   NaN,
+   0
+  ],
+  [
+   280.0,
+   NaN,
+   NaN,
+   0
+  ],
+  [
+   333.33333333333337,
+   NaN,
+   NaN,
+   0
+  ]
+ ],
+ "pos_y": {
+  "n": 396,
+  "a": -0.7241857018521526,
+  "bu": -0.43604812364689155,
+  "bw": 0.026986067255039978,
+  "h0": -0.492474553808466,
+  "gu": -0.4147290336170957,
+  "gw": -0.06279105287795575,
+  "kuu": 1.2698087509871754,
+  "kww": 1.3286785972000814,
+  "kuw": -0.23884891525825988,
+  "a_err": 0.03650543119681552,
+  "bu_err": 0.021160764811942158,
+  "bw_err": 0.03308038752676822,
+  "h0_err": 0.6911580289599981,
+  "gu_err": 0.226004024362854,
+  "gw_err": 0.29911471159157815,
+  "kuu_err": 0.4020326132013277,
+  "kww_err": 0.7332919754221157,
+  "kuw_err": 0.1611435077076675
+ },
+ "pospin_y": {
+  "n": 396,
+  "a": -0.719016152865059,
+  "bu": -0.43071030364894053,
+  "bw": 0.03230655535630528,
+  "h0": -0.5485984889511645,
+  "gu": -0.3715399482507734,
+  "gw": -0.004028265571823696,
+  "kuu": 1.3924675445534318,
+  "kww": 1.3226114299218565,
+  "kuw": -0.2464316017666087,
+  "a_err": 0.03500400691908716,
+  "bu_err": 0.022509625613035548,
+  "bw_err": 0.03353977157731876,
+  "h0_err": 0.731112901109504,
+  "gu_err": 0.23649473139847496,
+  "gw_err": 0.2759223756624913,
+  "kuu_err": 0.412899857025402,
+  "kww_err": 0.7345681634111915,
+  "kuw_err": 0.15414605143862714
+ },
+ "ang_y": {
+  "n": 337,
+  "c0": -0.06473802642950058,
+  "cu": -0.051632863692325746,
+  "cw": -0.2276202219922816,
+  "auu": -0.046492761086191464,
+  "aww": 0.08149229122118432,
+  "auw": -0.05635417396917248,
+  "B": 7.268298479096767,
+  "Bu": 0.29905043623988226,
+  "Bw": -0.45338667190375065,
+  "c0_err": 0.12325143987102975,
+  "cu_err": 0.03238656101170248,
+  "cw_err": 0.05810209745846513,
+  "auu_err": 0.06931539224510644,
+  "aww_err": 0.09910299697051672,
+  "auw_err": 0.03142403415481099,
+  "B_err": 0.9182816616314285,
+  "Bu_err": 0.7260463429025069,
+  "Bw_err": 0.7966136223105589
+ },
+ "cells_y": {
+  "h": [
+   [
+    NaN,
+    NaN,
+    NaN,
+    NaN,
+    NaN
+   ],
+   [
+    NaN,
+    NaN,
+    NaN,
+    NaN,
+    NaN
+   ],
+   [
+    NaN,
+    NaN,
+    NaN,
+    NaN,
+    NaN
+   ],
+   [
+    NaN,
+    NaN,
+    NaN,
+    NaN,
+    NaN
+   ],
+   [
+    NaN,
+    NaN,
+    NaN,
+    NaN,
+    NaN
+   ]
+  ],
+  "h_err": [
+   [
+    NaN,
+    NaN,
+    NaN,
+    NaN,
+    NaN
+   ],
+   [
+    NaN,
+    NaN,
+    NaN,
+    NaN,
+    NaN
+   ],
+   [
+    NaN,
+    NaN,
+    NaN,
+    NaN,
+    NaN
+   ],
+   [
+    NaN,
+    NaN,
+    NaN,
+    NaN,
+    NaN
+   ],
+   [
+    NaN,
+    NaN,
+    NaN,
+    NaN,
+    NaN
+   ]
+  ],
+  "w0": [
+   [
+    NaN,
+    NaN,
+    NaN,
+    NaN,
+    NaN
+   ],
+   [
+    NaN,
+    NaN,
+    NaN,
+    NaN,
+    NaN
+   ],
+   [
+    NaN,
+    NaN,
+    NaN,
+    NaN,
+    NaN
+   ],
+   [
+    NaN,
+    NaN,
+    NaN,
+    NaN,
+    NaN
+   ],
+   [
+    NaN,
+    NaN,
+    NaN,
+    NaN,
+    NaN
+   ]
+  ],
+  "w0_err": [
+   [
+    NaN,
+    NaN,
+    NaN,
+    NaN,
+    NaN
+   ],
+   [
+    NaN,
+    NaN,
+    NaN,
+    NaN,
+    NaN
+   ],
+   [
+    NaN,
+    NaN,
+    NaN,
+    NaN,
+    NaN
+   ],
+   [
+    NaN,
+    NaN,
+    NaN,
+    NaN,
+    NaN
+   ],
+   [
+    NaN,
+    NaN,
+    NaN,
+    NaN,
+    NaN
+   ]
+  ],
+  "b": [
+   [
+    NaN,
+    NaN,
+    NaN,
+    NaN,
+    NaN
+   ],
+   [
+    NaN,
+    NaN,
+    NaN,
+    NaN,
+    NaN
+   ],
+   [
+    NaN,
+    NaN,
+    NaN,
+    NaN,
+    NaN
+   ],
+   [
+    NaN,
+    NaN,
+    NaN,
+    NaN,
+    NaN
+   ],
+   [
+    NaN,
+    NaN,
+    NaN,
+    NaN,
+    NaN
+   ]
+  ],
+  "b_err": [
+   [
+    NaN,
+    NaN,
+    NaN,
+    NaN,
+    NaN
+   ],
+   [
+    NaN,
+    NaN,
+    NaN,
+    NaN,
+    NaN
+   ],
+   [
+    NaN,
+    NaN,
+    NaN,
+    NaN,
+    NaN
+   ],
+   [
+    NaN,
+    NaN,
+    NaN,
+    NaN,
+    NaN
+   ],
+   [
+    NaN,
+    NaN,
+    NaN,
+    NaN,
+    NaN
+   ]
+  ],
+  "n": [
+   [
+    3,
+    2,
+    2,
+    3,
+    8
+   ],
+   [
+    4,
+    6,
+    5,
+    6,
+    12
+   ],
+   [
+    13,
+    7,
+    10,
+    9,
+    6
+   ],
+   [
+    5,
+    2,
+    11,
+    6,
+    12
+   ],
+   [
+    10,
+    5,
+    4,
+    5,
+    13
+   ]
+  ]
+ },
+ "width_y": [
+  [
+   66.66666666666667,
+   NaN,
+   NaN,
+   33
+  ],
+  [
+   120.00000000000001,
+   NaN,
+   NaN,
+   39
+  ],
+  [
+   173.33333333333334,
+   NaN,
+   NaN,
+   36
+  ],
+  [
+   226.66666666666669,
+   NaN,
+   NaN,
+   43
+  ],
+  [
+   280.0,
+   NaN,
+   NaN,
+   26
+  ],
+  [
+   333.33333333333337,
+   NaN,
+   NaN,
+   41
+  ]
+ ],
+ "column": {
+  "x": {
+   "u90m50": [
+    [
+     NaN,
+     NaN,
+     NaN,
+     NaN,
+     NaN
+    ],
+    [
+     NaN,
+     NaN,
+     NaN,
+     NaN,
+     NaN
+    ],
+    [
+     NaN,
+     NaN,
+     NaN,
+     NaN,
+     NaN
+    ],
+    [
+     NaN,
+     NaN,
+     NaN,
+     NaN,
+     NaN
+    ],
+    [
+     NaN,
+     NaN,
+     NaN,
+     NaN,
+     NaN
+    ]
+   ],
+   "u90m50_err": [
+    [
+     NaN,
+     NaN,
+     NaN,
+     NaN,
+     NaN
+    ],
+    [
+     NaN,
+     NaN,
+     NaN,
+     NaN,
+     NaN
+    ],
+    [
+     NaN,
+     NaN,
+     NaN,
+     NaN,
+     NaN
+    ],
+    [
+     NaN,
+     NaN,
+     NaN,
+     NaN,
+     NaN
+    ],
+    [
+     NaN,
+     NaN,
+     NaN,
+     NaN,
+     NaN
+    ]
+   ],
+   "uend": [
+    [
+     NaN,
+     NaN,
+     NaN,
+     NaN,
+     NaN
+    ],
+    [
+     NaN,
+     NaN,
+     NaN,
+     NaN,
+     NaN
+    ],
+    [
+     NaN,
+     NaN,
+     NaN,
+     NaN,
+     NaN
+    ],
+    [
+     NaN,
+     NaN,
+     NaN,
+     NaN,
+     NaN
+    ],
+    [
+     NaN,
+     NaN,
+     NaN,
+     NaN,
+     NaN
+    ]
+   ],
+   "uend_err": [
+    [
+     NaN,
+     NaN,
+     NaN,
+     NaN,
+     NaN
+    ],
+    [
+     NaN,
+     NaN,
+     NaN,
+     NaN,
+     NaN
+    ],
+    [
+     NaN,
+     NaN,
+     NaN,
+     NaN,
+     NaN
+    ],
+    [
+     NaN,
+     NaN,
+     NaN,
+     NaN,
+     NaN
+    ],
+    [
+     NaN,
+     NaN,
+     NaN,
+     NaN,
+     NaN
+    ]
+   ],
+   "u90": [
+    [
+     NaN,
+     NaN,
+     NaN,
+     NaN,
+     NaN
+    ],
+    [
+     NaN,
+     NaN,
+     NaN,
+     NaN,
+     NaN
+    ],
+    [
+     NaN,
+     NaN,
+     NaN,
+     NaN,
+     NaN
+    ],
+    [
+     NaN,
+     NaN,
+     NaN,
+     NaN,
+     NaN
+    ],
+    [
+     NaN,
+     NaN,
+     NaN,
+     NaN,
+     NaN
+    ]
+   ],
+   "u90_err": [
+    [
+     NaN,
+     NaN,
+     NaN,
+     NaN,
+     NaN
+    ],
+    [
+     NaN,
+     NaN,
+     NaN,
+     NaN,
+     NaN
+    ],
+    [
+     NaN,
+     NaN,
+     NaN,
+     NaN,
+     NaN
+    ],
+    [
+     NaN,
+     NaN,
+     NaN,
+     NaN,
+     NaN
+    ],
+    [
+     NaN,
+     NaN,
+     NaN,
+     NaN,
+     NaN
+    ]
+   ]
+  },
+  "y": {
+   "u90m50": [
+    [
+     NaN,
+     NaN,
+     NaN,
+     NaN,
+     NaN
+    ],
+    [
+     NaN,
+     NaN,
+     NaN,
+     NaN,
+     NaN
+    ],
+    [
+     NaN,
+     NaN,
+     NaN,
+     NaN,
+     NaN
+    ],
+    [
+     NaN,
+     NaN,
+     NaN,
+     NaN,
+     NaN
+    ],
+    [
+     NaN,
+     NaN,
+     NaN,
+     NaN,
+     NaN
+    ]
+   ],
+   "u90m50_err": [
+    [
+     NaN,
+     NaN,
+     NaN,
+     NaN,
+     NaN
+    ],
+    [
+     NaN,
+     NaN,
+     NaN,
+     NaN,
+     NaN
+    ],
+    [
+     NaN,
+     NaN,
+     NaN,
+     NaN,
+     NaN
+    ],
+    [
+     NaN,
+     NaN,
+     NaN,
+     NaN,
+     NaN
+    ],
+    [
+     NaN,
+     NaN,
+     NaN,
+     NaN,
+     NaN
+    ]
+   ],
+   "uend": [
+    [
+     NaN,
+     NaN,
+     NaN,
+     NaN,
+     NaN
+    ],
+    [
+     NaN,
+     NaN,
+     NaN,
+     NaN,
+     NaN
+    ],
+    [
+     NaN,
+     NaN,
+     NaN,
+     NaN,
+     NaN
+    ],
+    [
+     NaN,
+     NaN,
+     NaN,
+     NaN,
+     NaN
+    ],
+    [
+     NaN,
+     NaN,
+     NaN,
+     NaN,
+     NaN
+    ]
+   ],
+   "uend_err": [
+    [
+     NaN,
+     NaN,
+     NaN,
+     NaN,
+     NaN
+    ],
+    [
+     NaN,
+     NaN,
+     NaN,
+     NaN,
+     NaN
+    ],
+    [
+     NaN,
+     NaN,
+     NaN,
+     NaN,
+     NaN
+    ],
+    [
+     NaN,
+     NaN,
+     NaN,
+     NaN,
+     NaN
+    ],
+    [
+     NaN,
+     NaN,
+     NaN,
+     NaN,
+     NaN
+    ]
+   ],
+   "u90": [
+    [
+     NaN,
+     NaN,
+     NaN,
+     NaN,
+     NaN
+    ],
+    [
+     NaN,
+     NaN,
+     NaN,
+     NaN,
+     NaN
+    ],
+    [
+     NaN,
+     NaN,
+     NaN,
+     NaN,
+     NaN
+    ],
+    [
+     NaN,
+     NaN,
+     NaN,
+     NaN,
+     NaN
+    ],
+    [
+     NaN,
+     NaN,
+     NaN,
+     NaN,
+     NaN
+    ]
+   ],
+   "u90_err": [
+    [
+     NaN,
+     NaN,
+     NaN,
+     NaN,
+     NaN
+    ],
+    [
+     NaN,
+     NaN,
+     NaN,
+     NaN,
+     NaN
+    ],
+    [
+     NaN,
+     NaN,
+     NaN,
+     NaN,
+     NaN
+    ],
+    [
+     NaN,
+     NaN,
+     NaN,
+     NaN,
+     NaN
+    ],
+    [
+     NaN,
+     NaN,
+     NaN,
+     NaN,
+     NaN
+    ]
+   ]
+  }
+ },
+ "r_f": {
+  "X: dw0/du vs kuu(X)": -0.17876018930386214,
+  "Y: dw0/dw vs kww(Y)": -0.43591152647638465,
+  "X: dw0/dw vs kuw(X)": -6.3375962088062225,
+  "Y: dw0/du vs kuw(Y)": 0.5500604112369054
+ }
+}
