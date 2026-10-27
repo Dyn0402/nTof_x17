@@ -98,6 +98,7 @@ def fig_ladder(root, ft):
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument('--root', default=os.path.expanduser('~/x17/cosmic_bench/model_audit'))
     ap.add_argument('--findings', default=os.path.join(os.path.dirname(os.path.abspath(__file__)), 'FINDINGS.md'))
+    ap.add_argument('--inline', default=None, help='also write a self-contained copy (figures as data URIs) to this path')
     a = ap.parse_args(); root = a.root; os.makedirs(os.path.join(root, 'figures'), exist_ok=True)
     ft, ar, dt = load(root, 'fleet_tables.json'), load(root, 'angle_response.json'), load(root, 'dt_xy_recal.json')
     gate, ho, sps = load(root, 'gate_compare.json'), load(root, 'heldout_compare.json'), load(root, 'sps_summary.json')
@@ -149,6 +150,14 @@ def main():
     doc = f'<!doctype html><html><head><meta charset="utf-8"><title>Model audit B4 — 2026-10-27</title><style>{css}</style></head><body>' + '\n'.join(S) + '</body></html>'
     open(os.path.join(root, 'report.html'), 'w').write(doc)
     print('wrote', os.path.join(root, 'report.html'))
+    if a.inline:
+        import base64
+        def emb(m):
+            b = base64.b64encode(open(os.path.join(root, m.group(1)), 'rb').read()).decode()
+            return f'<img src="data:image/png;base64,{b}"'
+        doc2 = re.sub(r'<img src="(figures/[^"]+)"', emb, doc)
+        doc2 = doc2.replace('<head>', '<head><meta name="description" content="Independent audit of the physical RC waveform reconstruction on the June bench and SPS det4 (B4, 2026-10-27): fleet consistency, held-out model arms, prototype gate, SPS known-angle test; findings F1-F21 with status.">', 1)
+        open(a.inline, 'w').write(doc2); print('wrote', a.inline)
 
 
 if __name__ == '__main__':
