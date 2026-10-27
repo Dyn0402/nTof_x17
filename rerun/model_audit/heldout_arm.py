@@ -105,12 +105,20 @@ def main():
     ap.add_argument('--k', type=int, default=24); ap.add_argument('--jobs', type=int, default=8)
     ap.add_argument('--hyper', default=None, help='JSON dict of hyper overrides')
     ap.add_argument('--hyper-scale', default=None, help='JSON dict of multiplicative factors on bundle hypers (e.g. {"Dp": 0.7})')
+    ap.add_argument('--set', default=None, help='quote-free hyper overrides k=v[,k=v]; an empty value means [] (condor cannot pass quotes)')
+    ap.add_argument('--scale', default=None, help='quote-free multiplicative factors k=f[,k=f]')
     ap.add_argument('--v', type=float, default=None); ap.add_argument('--nsamp', type=int, default=None)
     ap.add_argument('--two-sided', action='store_true'); ap.add_argument('--t0-fix', action='store_true')
     ap.add_argument('--no-dead', action='store_true', help='drop the bundle dead/hot lists (channel numbering of another cabling)')
     ap.add_argument('--ids', default=None, help='JSON list of event ids (overrides --start/--n)')
     a = ap.parse_args()
     hy = json.loads(a.hyper) if a.hyper else {}; hs = json.loads(a.hyper_scale) if a.hyper_scale else {}
+    for kv in (a.set or '').split(','):
+        if kv:
+            k_, v_ = kv.split('='); hy[k_] = [] if v_ == '' else float(v_)
+    for kv in (a.scale or '').split(','):
+        if kv:
+            k_, v_ = kv.split('='); hs[k_] = float(v_)
     C = pickle.load(open(a.cache, 'rb'))
     ids = json.load(open(a.ids)) if a.ids else sorted(C)[a.start:a.start + a.n]
     del C

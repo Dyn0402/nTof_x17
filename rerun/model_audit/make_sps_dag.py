@@ -13,9 +13,11 @@ S = '/eos/user/d/dneff/x17rerun/model_audit/sps'
 PLATEAUS = {'d675': (675.5, 235, 14.0), 'd625': (625.3, 217, 13.2), 'd575': (575.3, 200, 12.4), 'd525': (525.2, 182, 11.8),
             'd475': (475.3, 165, 11.6), 'd425': (425.2, 148, 11.6), 'd325': (325.1, 113, 11.5)}
 ARMS = {'base': ('WFT_ZS_CENSOR=1', ''), 't0i': ('WFT_ZS_CENSOR=1 WFT_RC_T0_INTERP=1', ''),
-        'asymp': ('WFT_ZS_CENSOR=1', '--hyper {\\"rc_asym_x\\":0.13}'), 'asymn': ('WFT_ZS_CENSOR=1', '--hyper {\\"rc_asym_x\\":-0.13}'),
-        'noprof': ('WFT_ZS_CENSOR=1', '--hyper {\\"sigma_p0_prof_x\\":[],\\"sigma_p0_prof_y\\":[]}'),
-        'dp_lo': ('WFT_ZS_CENSOR=1', '--hyper-scale {\\"Dp\\":0.7}'), 'dp_hi': ('WFT_ZS_CENSOR=1', '--hyper-scale {\\"Dp\\":1.3}'),
+        'asymp': ('WFT_ZS_CENSOR=1', '--set rc_asym_x=0.13'), 'asymn': ('WFT_ZS_CENSOR=1', '--set rc_asym_x=-0.13'),
+        'asymy': ('WFT_ZS_CENSOR=1', '--set rc_asym_y=0.13'),
+        'noprof': ('WFT_ZS_CENSOR=1', '--set sigma_p0_prof_x=,sigma_p0_prof_y='),
+        'dp_lo': ('WFT_ZS_CENSOR=1', '--scale Dp=0.7'), 'dp_hi': ('WFT_ZS_CENSOR=1', '--scale Dp=1.3'),
+        'rcd_hi': ('WFT_ZS_CENSOR=1', '--scale rc_D_y=1.5'), 'rcd_lo': ('WFT_ZS_CENSOR=1', '--scale rc_D_y=0.6'),
         'nozs': ('', '')}
 
 
