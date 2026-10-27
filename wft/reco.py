@@ -25,7 +25,7 @@ from . import model as wm
 
 # ---------------------------------------------------------------- quality
 TAN_MIN_SLOPE = 0.08       # below this the timing carries no slope information
-FLOOR_TAN = 0.018          # ~1.0 deg: the measured per-event physics floor
+FLOOR_TAN = 0.018          # ~1.0 deg: det3's measured per-event model floor; a bundle's tan_floor overrides
 FLOOR_P0_MM = 0.33         # measured charge-centroid jitter per 60 ns bin
 CHI2DOF_BAD = 300.0        # showers / multi-track / spark
 
@@ -337,6 +337,13 @@ def tan_of(cal: CalibrationBundle, plane: str, w: float, p0: float) -> float:
     return float(tan)
 
 
+def tan_floor(cal: CalibrationBundle, plane: str) -> float:
+    """Per-event angle error floor [tan] for this chamber and view: the bundle's measured ``tan_floor`` (ws_floor),
+    else FLOOR_TAN."""
+    v = (getattr(cal, 'tan_floor', None) or {}).get(plane)
+    return float(v) if v and v > 0 else FLOOR_TAN
+
+
 def fit_plane(P, plane: str, cal: CalibrationBundle, hyper: Optional[dict] = None,
               n_seed: int = 0, n_dropped: int = 0,
               t0_prior: Optional[tuple] = None) -> Optional[PlaneFit]:
@@ -379,8 +386,8 @@ def fit_plane(P, plane: str, cal: CalibrationBundle, hyper: Optional[dict] = Non
         chi2=float(r['chi2']), dof=int(r['dof']),
         p0_err=float(np.hypot(ep, FLOOR_P0_MM)) if np.isfinite(ep) else FLOOR_P0_MM,
         w_err=float(ew) if np.isfinite(ew) else np.nan,
-        tan_err=float(np.hypot(ew * 1e3 / cal.v_drift, FLOOR_TAN))
-        if np.isfinite(ew) else FLOOR_TAN,
+        tan_err=float(np.hypot(ew * 1e3 / cal.v_drift, tan_floor(cal, plane)))
+        if np.isfinite(ew) else tan_floor(cal, plane),
         t0_err=float(et) if np.isfinite(et) else np.nan,
         q_sum=q_sum, q_u50=q_u50, q_u90=q_u90, q_uend=q_uend,
         n_strips=int(W.shape[0]), n_seed=int(n_seed), n_dropped=int(n_dropped),
@@ -878,8 +885,8 @@ def _child_fit(P, plane, cal, r, which: str, hyper, chi_alone: float) -> PlaneFi
         chi2=float(r['chi2']), dof=int(r['dof']),
         p0_err=float(np.hypot(ep, FLOOR_P0_MM)) if np.isfinite(ep) else FLOOR_P0_MM,
         w_err=float(ew) if np.isfinite(ew) else np.nan,
-        tan_err=float(np.hypot(ew * 1e3 / cal.v_drift, FLOOR_TAN))
-        if np.isfinite(ew) else FLOOR_TAN,
+        tan_err=float(np.hypot(ew * 1e3 / cal.v_drift, tan_floor(cal, plane)))
+        if np.isfinite(ew) else tan_floor(cal, plane),
         t0_err=float(et) if np.isfinite(et) else np.nan,
         q_sum=q_sum, q_u50=q_u50, q_u90=q_u90, q_uend=q_uend,
         n_strips=int(np.asarray(P['W']).shape[0]), n_seed=0, n_dropped=0,

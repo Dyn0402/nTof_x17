@@ -170,6 +170,11 @@ class CalibrationBundle:
     # and clamped at the ends:  tan = (w*1e3 - w0(p)) / (s(p) * kw[p] * v).  Absent = the constant mapping.
     angle_map: Dict[str, dict] = field(default_factory=dict)
 
+    # --- per-event angle error floor (model audit F3, ws_floor 2026-10-27): the measured core angular resolution of
+    # this chamber and view, in tan, written at finalize ({'x': 0.018, 'y': ...}).  It is the "model floor" -- what the
+    # fit achieves on real tracks -- not the physics floor (0.006).  Absent = wft.reco.FLOOR_TAN (det3's 0.018).
+    tan_floor: Dict[str, float] = field(default_factory=dict)
+
     # --- x/y pairing of time-degenerate tracks (2026-09-14): median and robust
     # width of each x-minus-y feature (``XY_FEATURES``) on clean single tracks
     # of this detector and condition, and which features to use. Empty = pair
@@ -220,6 +225,7 @@ class CalibrationBundle:
                     w0={p: float(v) for p, v in self.w0.items()},
                     kw={p: float(v) for p, v in self.kw.items()},
                     angle_map=self.angle_map,
+                    tan_floor={k: float(v) for k, v in self.tan_floor.items()},
                     xy_pairing=self.xy_pairing,
                     pitch_mm=self.pitch_mm, sample_ns=self.sample_ns,
                     n_depth_bins=self.n_depth_bins, sat_adc=self.sat_adc,
@@ -251,6 +257,7 @@ class CalibrationBundle:
                    w0={p: float(v) for p, v in (m.get('w0') or {}).items()},
                    kw={p: float(v) for p, v in (m.get('kw') or {}).items()},
                    angle_map=m.get('angle_map') or {},
+                   tan_floor={k: float(v) for k, v in (m.get('tan_floor') or {}).items()},
                    xy_pairing=m.get('xy_pairing') or {},
                    pitch_mm=m.get('pitch_mm', 0.78),
                    sample_ns=m.get('sample_ns', 60.0),

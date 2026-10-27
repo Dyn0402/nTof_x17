@@ -72,6 +72,11 @@ def main():
         rep[p] = dict(w0=w0[p], kw=kw[p], n_w0=int(s.sum()), n_kw=int(s1.sum()),
                       angle_bias_if_uncorrected_deg=float(np.degrees(w0[p] / v)),
                       old_w0=float(cal.w0.get(p, 0.0)), old_kw=float(cal.kw.get(p, 1.0)))
+        # the per-event angle error floor (ws_floor, F3): this view's measured core resolution in tan, robust width of
+        # tan_fit - tan_ref over the same |tan_ref| < 0.30 sample, M3 included (the "model floor", reference-limited)
+        tf = (w[s] - w0[p]) / (kw[p] * v) - t[s]
+        cal.tan_floor[p] = float(1.4826 * np.median(np.abs(tf - np.median(tf))))
+        rep[p]['tan_floor'] = cal.tan_floor[p]
         print(f'{p}: w0 {w0[p]:+.3f} um/ns ({np.degrees(w0[p] / v):+.2f} deg), kw {kw[p]:.4f}  '
               f'[was w0 {rep[p]["old_w0"]:+.3f}, kw {rep[p]["old_kw"]:.4f}]  n={int(s.sum())}/{int(s1.sum())}')
     if a.fold_kw:
