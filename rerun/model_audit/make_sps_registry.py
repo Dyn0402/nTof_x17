@@ -30,7 +30,7 @@ def main():
                 field = dv / (GAP_MM / 10.0)
                 vs = min(V_SPAN.items(), key=lambda kv: abs(kv[0] - field)) if 'CF4' in D['gas'] and 'TRANSITION' not in D['gas'] else None
                 v = vs[1] if vs and abs(vs[0] - field) < 12 else ''
-                k = int(np.ceil(GAP_MM * 1e3 / (v if v else 10.0) / 60.0)) + 10 if v else ''
+                k = int(np.ceil(GAP_MM * 1e3 / (v if v else 10.0) / 60.0)) + 15 if v else ''
                 rows.append(dict(key=f'{name}__{lab}', dataset=name, run=run, subruns=subs,
                                  plateau=lab, t_lo_s=round(lo, 1), t_hi_s=round(hi, 1), mount=D['mount'], gas=D['gas'], drift_V=dv,
                                  resist_V=rv, field_Vcm=round(field, 1), n_samples=D['n_samples'], raw=int(bool(D.get('raw'))),

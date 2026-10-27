@@ -101,7 +101,7 @@ pickup) and det6 the width is 3–5× larger: charge pairing is weak there, and 
 measured (now written to the bundle's `xy_pairing` by `set_w0kw.py --table`).  det7's median ln(qx/qy) is −0.10 (X
 reads 10 % less charge than Y).
 
-## F16 · SPS known-angle test: the fit reads 23.4° for the 25.64° mount at the operating field — OPEN (the same effect as F4)
+## F16 · SPS known-angle test: the fitted slope agrees with the fit's own column duration to 4 % at 235 V/cm; the 10 % deficit against the span-route v is a reference problem, and below 200 V/cm the column overruns the depth grid — REFRAMED (see addendum)
 run_63 operating_00, 25.64° mount, Ar/CF4/iso, 64 samples, self-seeded, bench det4 bundle (dead list dropped, v = span
 v(E), K covering the column), no uRWELL (`sps_build_cache.py`, `heldout_arm.py`, 1000 events per plateau).  The
 inclined view is Y (X carries the known tilt, −1.9° at v 14).  |w_y| / tan 25.64° against the span-route v:
@@ -159,3 +159,41 @@ angle): the model prefers the fitted angle in 93–96 % (det3), 83–90 % (det4)
 optimiser-miss rate is 5–7 % on det3 but 10–17 % on det4/det7, which is what the two-sided start recovers (det4 X far
 −1.2 pp).  Median w_fit/w_ref on these samples: det3 0.982 / 0.988, det4 1.037 / 1.057 (against the bench kw of 0.953 /
 0.977: the held-out sample scatters ±0.15 in 26–31 % of events), det7 0.982 / 0.943 (X / Y).
+
+F16 addendum (ZS-censored `sps2` base, all plateaus): |w_y|/tan against the fit's OWN column, v_col = 28.8 mm / uend:
+235 V/cm 12.48 vs 12.00 (**1.04**), 217 11.45 vs 11.43 (1.00), 200 10.42 vs 10.67 (0.98); below that uend sits on the
+grid end (2880 ns = K·60 at K = 48) so the column is truncated and the ratio (0.92 → 0.75) is an artefact of the
+depth grid, not physics — the registry K margin is raised to +15 bins (K ≈ 58 at 148 V/cm, inside the 3.84 µs window).
+The external span-route v is 14 % above v_col at EVERY plateau (v_col / v_span 0.857–0.866): a constant factor, i.e.
+the run_71 end-lobe anchor (14.0 µm/ns at 233 V/cm) or the 28.8 mm gap, not the model.  None of the model terms
+moves the ratio (dp ×0.7 / ×1.3: 0.901 / 0.882; noprof 0.895; rcd ±0.003; asym 0; t0i 0.890).  Conclusion: at 25.6°
+the model is self-consistent to +4 % (the same size as det4's bench steep-bin effect); the open question for the beam
+is the absolute v (anchor / gap), which this audit cannot settle from the SPS data alone (LIMIT: the span route and
+the column both need an independent gap).
+
+## F21 · Held-out model-term arms (1320 events × 5 chambers; `heldout_compare_cli.md`) — the width–tilt trade
+- `noprof` (σ0 profile off): ladder +0.4…+1.2 % on every chamber (the wide-footprint fits were compressing), s68
+  unchanged (±0.03°), far +0.5…+2.4 pp (det4 +2.3/+2.4, the head-on / saturated rescue C21 adopted it for); the steep
+  biases do not move beyond ±0.2°.  The profile is ~1 % of scale, not the 5–20 % steep-bin compression.
+- `dp_lo` / `dp_hi` (Dp × 0.7 / × 1.3): ladder +1.1…+2.2 % / −1.2…−2.7 %; far +0.2…+2.3 / −0.2…−1.8 pp; s68 ±0.07.
+  `rcd_hi` (rc_D_y × 1.5): Y ladder −1.0…−2.6 %, s68 incl +0.07…+0.10 (det3, det6), χ² up.  Every extra unit of modelled
+  lateral width (footprint, diffusion, RC) lowers the fitted slope: the width–tilt degeneracy is the lever behind F4,
+  and the data prefer LESS width at depth than the model carries on the steep tracks.  A term that narrows the deep
+  footprint for inclined tracks (or a per-event Dp) is the B1 candidate; not tested tonight.
+- `asymp` / `asymn` / `asymp07` (X one-sided copy ±0.13 / +0.07): det7 X s68 −0.065 ± 0.036 (+0.13) / −0.039 ± 0.037
+  (+0.07), det4 X far −1.7 ± 0.5 pp (+0.13; −0.8 with +0.07), det6 X s68 −0.03…−0.06 (either sign, χ² up), det2/det3
+  null or worse; steep biases move ±0.4–0.8° in opposite directions for the two signs.  A per-chamber amplitude
+  (aQ: det3 +0.17, det7 +0.19, det2/det4 +0.08, det6 −0.02) is required before this is a gain; at most 0.05° on det7.
+- `s0x20` (σ0_x 0.20): null everywhere (±0.03°).
+
+## F22 · Fleet gate of the prototype switches (8000 M3-matched events per golden row, interior X+Y at 5 mm; `gate_compare.md`) — B2
+| arm | Δ detected (det2 / det3 / det4 / det6 / det7) [pt] | Δ far [pp] | Δ s68 x / y [°] | note |
+|---|---|---|---|---|
+| band veto (`DROP_FLAT_HITS=1`) | +0.71 / +0.82 / +0.02 / +0.35 / +1.07 | −0.03 / −0.08 / −0.11 / +0.18 / −0.03 | ≤ 0.005 except det7 X +0.09 | rejected_cut falls 0.3–0.7 pt; det7 X s68 rises from the added card-1 tracks |
+| head-on rescue (`HEADON_SIG=20`, `HEADON_RESCUE=1`) | +0.38 / +0.26 / **+3.15** / +1.44 / **+3.67** | ±0.05, det6 +0.27 | det4 +0.08 / +0.21, det7 X +0.09 | fit_failed → 0; the rescued tracks have poorer angles (low SNR), not a degradation of the others |
+| two-track fit (`TWO_TRACK_FIT=1`) | 0.00 / +0.03 / +0.02 / −0.04 / +0.01 | −0.03 / −0.12 / −0.12 / **+0.26** / −0.01 | ≤ 0.01, det6 Y +0.026 | splits 47 / 76 / 155 / **417** / 100 — det6 accepts 5 % splits (noisy chamber): the false-split bound must be re-measured on det6 before production |
+| all three | +1.12 / +1.15 / +3.20 / +1.77 / (det7 running) | −0.09 / −0.15 / −0.07 / +0.25 / — | det4 +0.09 / +0.22 | additive |
+Resolution of the pre-existing tracks is untouched by the band veto and the two-track fit; the head-on rescue adds
+1.4–3.7 pt of detection on the weak chambers at the price of a poorer-angle population.  det3's +1.15 pt reproduces the
+satstudy numbers (band 96.9 %, head-on 17/17).  Verdict for B2: band veto + head-on rescue pass the fleet gate; the
+two-track fit needs det6's split rate understood (417 splits) before it is on by default.
