@@ -17,7 +17,7 @@ REPO = os.environ.get('WFT_REPO') or os.path.abspath(os.path.join(HERE, '..', '.
 _EV = None; _OPT = None
 
 
-def _init(cache, bundle, k, hyper_over, v, nsamp, two_sided, t0fix, no_dead=False):
+def _init(cache, bundle, k, hyper_over, v, nsamp, two_sided, t0fix, no_dead=False, hyper_scale=None):
     global _EV, _OPT
     sys.path.insert(0, REPO)
     from wft.calib import CalibrationBundle
@@ -26,6 +26,8 @@ def _init(cache, bundle, k, hyper_over, v, nsamp, two_sided, t0fix, no_dead=Fals
     cal = CalibrationBundle.load(bundle)
     if v:
         cal.v_drift = float(v)
+    for k_, f_ in (hyper_scale or {}).items():
+        cal.hyper[k_] = cal.hyper[k_] * float(f_)
     cal.hyper.update(hyper_over or {})
     if no_dead:
         cal.dead, cal.hot = {}, {}       # bench channel numbering does not apply off the bench (SPS FEU 03)
@@ -102,21 +104,22 @@ def main():
     ap.add_argument('--n', type=int, default=1320); ap.add_argument('--start', type=int, default=180)
     ap.add_argument('--k', type=int, default=24); ap.add_argument('--jobs', type=int, default=8)
     ap.add_argument('--hyper', default=None, help='JSON dict of hyper overrides')
+    ap.add_argument('--hyper-scale', default=None, help='JSON dict of multiplicative factors on bundle hypers (e.g. {"Dp": 0.7})')
     ap.add_argument('--v', type=float, default=None); ap.add_argument('--nsamp', type=int, default=None)
     ap.add_argument('--two-sided', action='store_true'); ap.add_argument('--t0-fix', action='store_true')
     ap.add_argument('--no-dead', action='store_true', help='drop the bundle dead/hot lists (channel numbering of another cabling)')
     ap.add_argument('--ids', default=None, help='JSON list of event ids (overrides --start/--n)')
     a = ap.parse_args()
-    hy = json.loads(a.hyper) if a.hyper else {}
+    hy = json.loads(a.hyper) if a.hyper else {}; hs = json.loads(a.hyper_scale) if a.hyper_scale else {}
     C = pickle.load(open(a.cache, 'rb'))
     ids = json.load(open(a.ids)) if a.ids else sorted(C)[a.start:a.start + a.n]
     del C
-    with ProcessPoolExecutor(a.jobs, initializer=_init, initargs=(a.cache, a.bundle, a.k, hy, a.v, a.nsamp, a.two_sided, a.t0_fix, a.no_dead)) as pool:
+    with ProcessPoolExecutor(a.jobs, initializer=_init, initargs=(a.cache, a.bundle, a.k, hy, a.v, a.nsamp, a.two_sided, a.t0_fix, a.no_dead, hs)) as pool:
         rows = [r for rs in pool.map(one, ids, chunksize=2) for r in rs]
     per = np.array(rows, float)
     env = {k: v for k, v in os.environ.items() if k.startswith('WFT_')}
     summ = summarize(per)
-    np.savez(a.out, per=per, bundle=a.bundle, hyper=json.dumps(hy), env=json.dumps(env), args=json.dumps(vars(a)))
+    np.savez(a.out, per=per, bundle=a.bundle, hyper=json.dumps(hy), hyper_scale=json.dumps(hs), env=json.dumps(env), args=json.dumps(vars(a)))
     json.dump(dict(args=vars(a), env=env, summary=summ), open(a.out.replace('.npz', '.json'), 'w'), indent=1)
     print(a.out, json.dumps({v: {k: summ[v][k] for k in ('n', 'ladder', 'far_pct', 'chi2dof_p50')} for v in summ if v in ('x', 'y')}),
           json.dumps({v: {c: round(summ[v][c]['s68'], 3) for c in ('all', 'headon', 'inclined', 'steep')} for v in summ if v in ('x', 'y')}),

@@ -48,10 +48,13 @@ corroboration all key on it; the beam seeder inherits it.  Fix: `set_w0kw.py --t
 dt_xy and writes the `xy_pairing` block (lq, u50, u90, t0 medians + robust widths); the gate tolerance should follow
 the measured width (2.5 rσ keeps 92–97 %).  t0 + u50 is tighter on det2/det3 (rσ 44–48 ns) but not on det4/6/7.
 
-## F6 · The t0 prior as written cannot act — SYST (design)
+## F6 · The t0 prior as written cannot act; pinning t0 at the stored trigger prediction moves the ladder — SYST (design)
 An unscaled ((t0 − t0p)/σ)² against χ² with χ²/dof 60–700 is a 1e−3 perturbation.  Either scale the prior by the
-fit's χ²/dof (equivalently use `WFT_MODEL_FRAC` so χ²/dof ~ 1) or pin t0 (arm `t0fix`: t0 fixed at the trigger
-prediction; tests whether depth/coincidence improve at no angle cost).
+fit's χ²/dof (equivalently use `WFT_MODEL_FRAC` so χ²/dof ~ 1) or pin t0.  Arm `t0fix` (t0 pinned at the bundle's
+`t0_abs` per ftst class): the x–y t0 width collapses (134 → 14 ns det7, 91 → 35 det3) but the ladder moves +2…+5 %
+(det2 38.7→39.4, det4 33.1→34.6, det7 36.5→37.6/38.5) and χ²/dof rises 10–30 %: the stored `t0_abs` is another
+kernel's t0 definition (stale like dt_xy, F5).  Resolution unchanged within errors except det4 X (+0.09 ± 0.05).
+A phys-kernel `t0_abs` (re-measured by the finalize step) would be the depth/coincidence lever; not an angle lever.
 
 ## F7 · Column-duration plausibility window hard-coded for v = 36.6 — FIXED
 `U_MIN/U_MAX = 250/1100 ns` flagged 7 / 14 % (det3 X/Y), 17 % (det2 Y), 21–23 % (det4), 24–42 % (det7), 38–60 %
@@ -80,11 +83,12 @@ FEU 03 at H4 has a different cabling (inverted connectors); a bundle `dead` list
 (`prep_plane`), so the bench mask would censor the wrong strips.  SPS bundles need the mask remapped by position (or
 dropped: `heldout_arm.py --no-dead`).  ZS data need exactly-zero samples censored: `WFT_ZS_CENSOR=1` (new, opt-in).
 
-## F13 · The K = 24 depth grid truncates ~10 % of det6/det7 columns — ARM (k30)
+## F13 · The K = 24 depth grid and the det6/det7 columns ending on the last bin — CLOSED (null)
 `q_uend` p90 = 1440 ns = K × 60 on det6 (both views) and det7 (both views); det6 Y p50 1200.  C5 set K = 24 for
 1000 V rows and 30 for ≤ 500 V, but det6/det7 ran at 700 V (243 V/cm) and det6 drifts at 24 µm/ns (T ≈ 1240 ns before
 diffusion and RC spread).  A column ending on the last bin is either truncated or the NNLS parking charge there
-(COL_GUARD keeps columns with weighted norm ≥ 1 % of the largest).  Held-out arm `k30` measures the angle effect.
+(COL_GUARD keeps columns with weighted norm ≥ 1 % of the largest).  Held-out arm `k30` (K = 30) on all five chambers:
+ladder, s68, far and χ² unchanged to ±0.01° — the grid is not a lever; a column ending on the last bin is NNLS parking.
 
 ## F14 · Position resolution of the finalize alignment (M3 residual, |r| < 10 mm; reference-limited at ~0.40 mm) — record
 det2 0.504 / 0.508, det3 0.522 / 0.582, det4 0.560 / 0.734, det6 0.513 / 0.508, det7 0.643 / 0.762 mm (X / Y).  det3's
@@ -96,3 +100,14 @@ The pairing-by-charge rule (satstudy: 96–100 % on det3) rests on det3's 0.054�
 pickup) and det6 the width is 3–5× larger: charge pairing is weak there, and any beam chamber must have its own width
 measured (now written to the bundle's `xy_pairing` by `set_w0kw.py --table`).  det7's median ln(qx/qy) is −0.10 (X
 reads 10 % less charge than Y).
+
+## F16 · SPS known-angle test: the fit reads 23.4° for the 25.64° mount at the operating field — OPEN (the same effect as F4)
+run_63 operating_00, 25.64° mount, Ar/CF4/iso, 64 samples, self-seeded, bench det4 bundle (dead list dropped, v = span
+v(E), K covering the column), no uRWELL (`sps_build_cache.py`, `heldout_arm.py`, 1000 events per plateau).  The
+inclined view is Y (X carries the known tilt, −1.9° at v 14).  |w_y| / tan 25.64° against the span-route v:
+235 V/cm 12.62 vs 14.0 (0.90); 165 V/cm 8.53 vs 11.6 (0.74); 148 V/cm 7.59 vs 11.6 (0.65) — θ(v_span) = −23.4°,
+−19.4°, −17.4°; per-event rσ 1.4–1.7°, 11–16 % beyond 35°; χ²/dof 30–65.  At the operating field the angle scale
+is 10 % low with no reference involved (mount angle and the column duration are both in the data), at the low fields
+more (the span v there is an upper bound; ZS truncation of the faint deep charge is suspected — ZS-censored arms in
+`sps2`).  The bench kw_y (0.977) does not transfer: on the beam the steep-track compression of F4 (5–20 % at |tan|
+0.3–0.45) continues to 10 % at tan 0.48.  This is the one meaningful improvement left in the angle response.

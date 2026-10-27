@@ -29,6 +29,10 @@ ARMS = {
     's0x20': ('', '--hyper {\\"sigma_p0_x\\":0.20}'),
     'k30': ('', '--k 30'),
     't0i_mf03': ('WFT_RC_T0_INTERP=1 WFT_MODEL_FRAC=0.03', ''),
+    'noprof': ('', '--hyper {\\"sigma_p0_prof_x\\":[],\\"sigma_p0_prof_y\\":[]}'),
+    'dp_lo': ('', '--hyper-scale {\\"Dp\\":0.7}'),
+    'dp_hi': ('', '--hyper-scale {\\"Dp\\":1.3}'),
+    'rcd_hi': ('', '--hyper-scale {\\"rc_D_y\\":1.5}'),
 }
 SH = '''#!/bin/bash
 # run_heldout.sh <code_dir> <envspec> <heldout_arm.py args...>   envspec: comma-separated K=V list, or '-'
