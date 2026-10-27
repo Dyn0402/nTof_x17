@@ -254,6 +254,11 @@ def make_bundle(arm: str, out: Optional[str] = None, v_drift: Optional[float] = 
         # the bench bow block is a property of the bench mounting (FB): never transferred to n_TOF
         cal.provenance = dict(cal.provenance, dropped_bow=cal.bow.get('source_row', 'bench'))
         cal.bow = {}
+    # FA/F9: the bench v map and the bench rigid tilt w0 (per mounting, M3-referenced) never transfer to n_TOF either;
+    # kw stays (the in-situ recipe re-measures it, ntof_cosmics insitu_calib)
+    if getattr(cal, 'v_map', None) or any(abs(v) > 0 for v in (cal.w0 or {}).values()):
+        cal.provenance = dict(cal.provenance, dropped_v_map=bool(cal.v_map), dropped_w0=dict(cal.w0))
+        cal.v_map, cal.w0 = {}, {}
     if not keep_t0_prior and (getattr(cal, 't0_abs', None)
                               or getattr(cal, 't0_prior_sigma', 0)):
         dropped_t0 = dict(t0_prior_sigma=cal.t0_prior_sigma,
@@ -464,8 +469,9 @@ def reconstruct_subrun(cfg: BeamConfig, bundle_path: str, out_path: str,
     if cal.t0_abs and float(cal.t0_prior_sigma or 0.0) > 0 and not cal.provenance.get('kept_t0_prior'):
         raise ValueError(f'{bundle_path}: carries an active t0 pin/prior (t0_prior_sigma {cal.t0_prior_sigma}); a beam '
                          f'run is not triggered by the particle -- rebuild it with make_bundle (drops t0_abs)')
-    if getattr(cal, 'bow', None):
-        raise ValueError(f'{bundle_path}: carries the bench bow block; it never transfers to n_TOF (rebuild with make_bundle)')
+    if getattr(cal, 'bow', None) or getattr(cal, 'v_map', None):
+        raise ValueError(f'{bundle_path}: carries the bench bow block / v map; they never transfer to n_TOF '
+                         f'(rebuild with make_bundle)')
     bad = cal.check_conditions(cfg.conditions)
     if bad and verbose:
         print('[wft-beam] bundle/run condition mismatches: ' + '; '.join(bad))

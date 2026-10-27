@@ -63,6 +63,9 @@ def main():
                     help='install the chamber bow block (FB: followups/fb_bow_maps/results/bow_block_<det>.json, static per '
                          'chamber, bench only); w0/kw are then measured after subtracting the bow shape (needs --table '
                          'for the track positions)')
+    ap.add_argument('--vmap-json', default=None,
+                    help="FA's v(x, y) map (followups/fa_gas_v_tilt/results/vgas_<det>.json: vmap.e, vmap.vXY), common to "
+                         "both views; replaces the bow block's linear scale term; w0/kw are measured after it")
     ap.add_argument('--keep-w0kw', action='store_true',
                     help='edit the bundle (--sigma0, --dead-json, --latency-cache, --depth-subdiv, --table) without '
                          're-measuring w0/kw: the first step of a re-finalisation, before a reconstruction exists')
@@ -83,8 +86,13 @@ def main():
         print(f'bow block <- {a.bow_json} ({cal.bow.get("source_row")})')
     # with a bow block, w0/kw are the per-run rigid tilt and scale AFTER the static bow shape (FB spec): each event's
     # (U, W) from the table's mesh positions and constant-mapping tangents (current w0/kw; first order)
+    if a.vmap_json:
+        vm = json.load(open(a.vmap_json))['vmap']
+        cal.v_map = dict(cal.v_map, xy=dict(e=vm['e'], v_rel=vm['vXY'], err=vm.get('err'), source=a.vmap_json))
+        rep['v_map'] = dict(source=a.vmap_json)
+        print(f'v(x, y) map <- {a.vmap_json}')
     UW = {}
-    if cal.bow and not a.pairing_only:
+    if (cal.bow or (cal.v_map or {}).get('xy')) and not a.pairing_only:
         if not a.table:
             ap.error('a bundle with a bow block needs --table to measure w0/kw')
         import pandas as pd
@@ -95,9 +103,13 @@ def main():
         for p_ in ('x', 'y'):
             e = z[f'{p_}_eid'].astype(int)
             U = ux.reindex(e).fillna(0.0).to_numpy(); W = wy.reindex(e).fillna(0.0).to_numpy()
-            A = np.array([wr._bow_poly(cal.bow.get(f'A_{p_}') or {}, u_, w_) for u_, w_ in zip(U, W)])
-            sc = cal.bow.get(f's_{p_}') or {}
-            UW[p_] = (A, 1.0 + sc.get('su', 0.0) * U + sc.get('sw', 0.0) * W)
+            A = np.array([wr._bow_poly((cal.bow or {}).get(f'A_{p_}') or {}, u_, w_) for u_, w_ in zip(U, W)])
+            if (cal.v_map or {}).get('xy'):
+                S = np.array([wr.v_rel_xy(cal, 100 * u_ + 200, 100 * w_ + 200) for u_, w_ in zip(U, W)])
+            else:
+                sc = (cal.bow or {}).get(f's_{p_}') or {}
+                S = 1.0 + sc.get('su', 0.0) * U + sc.get('sw', 0.0) * W
+            UW[p_] = (A, S)
     for p in (() if a.pairing_only else ('x', 'y')):
         w, t = z[f'{p}_w'] * 1e3, z[f'{p}_tan_ref']
         if p in UW:                       # bow shape out: w - A(U, W), and the local scale folded into tan_ref

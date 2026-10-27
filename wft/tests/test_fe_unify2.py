@@ -153,14 +153,24 @@ def test_depth_subdiv_grid(cal, tmp_path):
 # ------------------------------------------------------------ v map slot
 def test_v_map_slot(cal, tmp_path):
     from wft.calib import CalibrationBundle
-    cal.v_map = {'t': {'var': 'event_id', 'edges': [0, 100, 200], 'scale': [1.0, 1.1]},
-                 'xy': {'x_edges': [0, 200, 400], 'y_edges': [0, 400], 'scale': [[0.95], [1.05]]}}
+    cal.v_map = {'t': {'clock': 'dream_ts_10ns', 't_h': [0.0, 1.0, 2.0], 'v_rel': [1.0, 1.1, 1.2]},
+                 'xy': {'e': [0, 100, 200, 300, 400], 'v_rel': [[0.9, 0.9, 0.9, 0.9], [1.0, 1.0, 1.0, 1.0],
+                                                           [1.1, 1.1, 1.1, 1.1], [float('nan')] * 4]}}
     cal.save(str(tmp_path / 'b'))
     back = CalibrationBundle.load(str(tmp_path / 'b'))
-    assert back.v_map == cal.v_map
+    assert back.v_map['xy']['e'] == cal.v_map['xy']['e']
     assert wr.v_scale(back) == 1.0
-    assert wr.v_scale(back, 300.0, 10.0, 150) == pytest.approx(1.05 * 1.1)
-    assert wr.v_scale(back, 50.0, 10.0, 1e9) == pytest.approx(0.95 * 1.1)    # clamped at the last block
+    assert wr.v_rel_xy(back, 150.0, 200.0) == pytest.approx(1.0)              # a cell centre
+    assert wr.v_rel_xy(back, 200.0, 50.0) == pytest.approx(1.05)              # bilinear between centres
+    assert wr.v_rel_xy(back, -50.0, 50.0) == pytest.approx(0.9)               # clamped
+    assert wr.v_rel_xy(back, 350.0, 50.0) == pytest.approx(1.0)               # empty cells -> the median
+    assert wr.v_rel_t(back, 1.5) == pytest.approx(1.15)
+    # the v map replaces the bow's linear scale term in the angle conversion
+    back.bow = {'A_x': dict(cu=0.1), 's_x': dict(su=0.5, sw=0.0)}
+    t_map = wr.tan_bow(back, 'x', 0.01, -1.5, -0.5)                           # S = v_rel(50, 150) = 0.9
+    back.v_map = {}
+    t_lin = wr.tan_bow(back, 'x', 0.01, -1.5, -0.5)                           # S = 1 + 0.5 * (-1.5) = 0.25
+    assert t_map == pytest.approx(t_lin * 0.25 / 0.9, rel=1e-9)
     cal.v_map = {}
 
 

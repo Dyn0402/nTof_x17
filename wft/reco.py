@@ -358,10 +358,15 @@ def tan_const(cal: CalibrationBundle, plane: str, w: float) -> float:
 
 
 def tan_bow(cal: CalibrationBundle, plane: str, w: float, U: float, W: float) -> float:
-    b = cal.bow
+    """tan = (w - w0 - A_bow(U, W)) / (kw v S): S = FA's v_rel(x, y) at (100 U + 200, 100 W + 200) when the bundle has a
+    v_map, else FB's linear scale 1 + su U + sw W (never both: the v map IS the scale variation, FA spec)."""
+    b = getattr(cal, 'bow', None) or {}
     A, s = b.get(f'A_{plane}') or {}, b.get(f's_{plane}') or {}
-    return float((w * 1e3 - cal.w0.get(plane, 0.0) - _bow_poly(A, U, W))
-                 / (cal.kw.get(plane, 1.0) * cal.v_drift * (1.0 + s.get('su', 0.0) * U + s.get('sw', 0.0) * W)))
+    if (getattr(cal, 'v_map', None) or {}).get('xy'):
+        S = v_rel_xy(cal, 100.0 * U + 200.0, 100.0 * W + 200.0)
+    else:
+        S = 1.0 + s.get('su', 0.0) * U + s.get('sw', 0.0) * W
+    return float((w * 1e3 - cal.w0.get(plane, 0.0) - _bow_poly(A, U, W)) / (cal.kw.get(plane, 1.0) * cal.v_drift * S))
 
 
 def bow_UW(cal: CalibrationBundle, fx=None, fy=None) -> tuple:
@@ -375,7 +380,7 @@ def apply_bow(cal: CalibrationBundle, fx=None, fy=None) -> None:
     """Re-map both views' tangents through the bundle's bow block with BOTH views' coordinates (one iteration, from the
     constant mapping; idempotent: computed from w, not from the stored tangent).  Stores the mesh height on each fit
     (``_bow_h``: the track point at the nominal plane is p0 - tan * h).  No-op without a block."""
-    if not (getattr(cal, 'bow', None) or {}):
+    if not (getattr(cal, 'bow', None) or (getattr(cal, 'v_map', None) or {}).get('xy')):
         return
     U, W = bow_UW(cal, fx, fy)
     h = bow_h(cal, U, W)
@@ -396,7 +401,7 @@ def tan_of(cal: CalibrationBundle, plane: str, w: float, p0: float) -> float:
     constant-mapping tangent; the map varies over ~100 mm, so the first-order p is exact enough)."""
     kv = cal.kw.get(plane, 1.0) * cal.v_drift
     tan = (w * 1e3 - cal.w0.get(plane, 0.0)) / kv
-    if getattr(cal, 'bow', None):
+    if getattr(cal, 'bow', None) or (getattr(cal, 'v_map', None) or {}).get('xy'):
         # one view alone: its own coordinate, the other 0 (apply_bow redoes it with both views once paired)
         c = (p0 + BOW_MID_MM * tan - 200.0) / 100.0 if np.isfinite(p0) and np.isfinite(tan) else 0.0
         return tan_bow(cal, plane, w, c if plane == 'x' else 0.0, c if plane == 'y' else 0.0)
@@ -407,24 +412,36 @@ def tan_of(cal: CalibrationBundle, plane: str, w: float, p0: float) -> float:
     return float(tan)
 
 
+def v_rel_xy(cal: CalibrationBundle, x: float, y: float) -> float:
+    """FA's v(x, y): v relative to v_drift at the track's mid-gap (x, y) [mm], common to both views; bilinear between
+    the cell centres of ``v_map['xy'] = {'e': edges [mm], 'v_rel': (nx, ny)}`` (4 x 4 cells of 100 mm), clamped at the
+    outer centres, empty cells = the median.  1.0 without a map or position."""
+    m = (getattr(cal, 'v_map', None) or {}).get('xy')
+    if not m or not (np.isfinite(x) and np.isfinite(y)):
+        return 1.0
+    e = np.asarray(m['e'], float); c = 0.5 * (e[1:] + e[:-1])
+    V = np.asarray(m['v_rel'], float)
+    V = np.where(np.isfinite(V) & (V > 0), V, np.nanmedian(V[np.isfinite(V) & (V > 0)]))
+    fx = np.clip(np.interp(x, c, np.arange(len(c))), 0, len(c) - 1)
+    fy = np.clip(np.interp(y, c, np.arange(len(c))), 0, len(c) - 1)
+    i0, j0 = int(min(np.floor(fx), len(c) - 2)), int(min(np.floor(fy), len(c) - 2))
+    dx, dy = fx - i0, fy - j0
+    return float(V[i0, j0] * (1 - dx) * (1 - dy) + V[i0 + 1, j0] * dx * (1 - dy)
+                 + V[i0, j0 + 1] * (1 - dx) * dy + V[i0 + 1, j0 + 1] * dx * dy)
+
+
+def v_rel_t(cal: CalibrationBundle, t: float) -> float:
+    """FA's v(t): ``v_map['t'] = {'clock', 't_h': [...], 'v_rel': [...]}``, piecewise linear in the run's time, clamped.
+    NOT applied in the reconstruction yet: the event record carries no DREAM timestamp (only ftst) -- FE pending."""
+    m = (getattr(cal, 'v_map', None) or {}).get('t')
+    if not m or not np.isfinite(t):
+        return 1.0
+    return float(np.interp(t, np.asarray(m['t_h'], float), np.asarray(m['v_rel'], float)))
+
+
 def v_scale(cal: CalibrationBundle, x: float = np.nan, y: float = np.nan, t: float = np.nan) -> float:
-    """Local drift velocity relative to the bundle's v_drift from its ``v_map`` (1.0 where the map is absent or the
-    coordinate unknown): s_t(t) * s_xy(x, y), piecewise constant in time blocks / surface cells, clamped at the edges.
-    A track's tangents are divided by it (tan = w / (kw v s)), per track after x-y pairing."""
-    m = getattr(cal, 'v_map', None) or {}
-    f = 1.0
-    mt = m.get('t')
-    if mt and np.isfinite(t):
-        e = np.asarray(mt['edges'], float)
-        f *= float(np.asarray(mt['scale'], float)[int(np.clip(np.searchsorted(e, t, side='right') - 1, 0, len(e) - 2))])
-    mx = m.get('xy')
-    if mx and np.isfinite(x) and np.isfinite(y):
-        ex, ey = np.asarray(mx['x_edges'], float), np.asarray(mx['y_edges'], float)
-        i = int(np.clip(np.searchsorted(ex, x, side='right') - 1, 0, len(ex) - 2))
-        j = int(np.clip(np.searchsorted(ey, y, side='right') - 1, 0, len(ey) - 2))
-        sc = float(np.asarray(mx['scale'], float)[i, j])
-        f *= sc if np.isfinite(sc) and sc > 0 else 1.0
-    return f
+    """v_rel(t) * v_rel(x, y): the local drift velocity relative to the bundle's v_drift."""
+    return v_rel_t(cal, t) * v_rel_xy(cal, x, y)
 
 
 def tan_floor(cal: CalibrationBundle, plane: str) -> float:
@@ -1803,7 +1820,7 @@ def _worker_fit(payload):
     except Exception:
         pairs = []
     # the bow block maps each track's tangents with both views' coordinates (pairs first, then the event's winners)
-    if getattr(_CAL, 'bow', None):
+    if getattr(_CAL, 'bow', None) or (getattr(_CAL, 'v_map', None) or {}).get('xy'):
         for ix, iy, _g in pairs:
             try:
                 apply_bow(_CAL, all_fits['x'][ix], all_fits['y'][iy])

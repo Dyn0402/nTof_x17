@@ -170,11 +170,12 @@ class CalibrationBundle:
     # and clamped at the ends:  tan = (w*1e3 - w0(p)) / (s(p) * kw[p] * v).  Absent = the constant mapping.
     angle_map: Dict[str, dict] = field(default_factory=dict)
 
-    # --- drift-velocity maps (FE item 12, slot for FA's v(t) / v(x, y), 2026-10-27), optional.  Relative to v_drift:
-    #   't':  {'var': 'event_id' | 'time_s', 'edges': [...] (n+1), 'scale': [...] (n)}  -- the gas changing during a run
-    #   'xy': {'x_edges': [...], 'y_edges': [...], 'scale': [[...]] (nx, ny)}            -- v over the surface (cells)
-    # The local v of a track is v_drift * s_t * s_xy; the angle scales as 1 / that (wft.reco.v_scale).  A 2-D map needs
-    # both views' positions, so it is applied per TRACK (after x-y pairing), not inside the per-plane fit.  Absent = one v.
+    # --- drift-velocity maps (FA spec, rerun/model_audit/followups/fa_gas_v_tilt), optional, relative to v_drift:
+    #   'xy': {'e': edges [mm], 'v_rel': (nx, ny), 'err'}   per chamber x run condition, common to both views (4 x 4 cells
+    #         of 100 mm, bilinear between centres; wft.reco.v_rel_xy).  It REPLACES the bow block's linear scale term.
+    #   't':  {'clock', 't_h': [...], 'v_rel': [...]}       per run, from the column duration (FA colsum.py); not applied
+    #         in the reconstruction yet (the event record has no DREAM timestamp).
+    # Applied per TRACK after x-y pairing (both views' positions).  Never transferred to n_TOF.  Absent = one v.
     v_map: Dict[str, dict] = field(default_factory=dict)
 
     # --- the chamber bow (FB, rerun/model_audit/followups/fb_bow_maps, 2026-10-27), optional, STATIC per chamber (golden
