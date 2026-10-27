@@ -1,0 +1,6 @@
+fc_sigma0_profiles.png: SPS det4 head-on RAW: σ0 profile of the summed χ² (other parameters minimised) per view and field.
+fc_sigma0_xy.png: σ0 X vs Y on head-on tracks: SPS det4 RAW (3 fields) and five bench chambers; dashed = one common σ0; arrows show what modelling the X across-strip RC does.
+fc_trade_arms.png: Compression, brightness dependence and angle s68 as the corrections are added one by one (same 1320 held-out events per chamber).
+fc_trade_response.png: Symmetric angle response vs |tan| (normalised to 0.08–0.20), held-out bench events: production vs all corrections (pinned t0, σ0 0.31 fixed, cross-validated bow map) and with the 20 ns grid.
+fc_trade_sigma.png: The width–tilt trade with everything else on: global angle scale, steep-track compression and bright-track reading vs the fixed σ0, five chambers × two views.
+stackup_mechanisms.png: Left: static induction through the 70 µm insulator is 0.07 mm and identical for both views (same pad plane). Right: RC spreading in the resistive sheet — same D, but across the strips (X) it stops at w²/12 within 20–60 ns.
