@@ -224,3 +224,4 @@ ntof_processing/flash_timing/data/
 # Office lock files (created while a .pptx/.docx/.xlsx is open)
 ~$*
 pre_yfix
+rerun/model_audit/deck/

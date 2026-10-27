@@ -1,55 +1,44 @@
 # Handoff
 
-## Model audit (B4) — night of 2026-10-27 (dylan-Yoga + lxplus condor)
+## Model audit (B4) + follow-ups — updated 2026-10-27 (dylan-Yoga)
 
-**Resume:** read `rerun/model_audit/FINDINGS.md` (F1–F19, each with a status) and the report
-`~/x17/cosmic_bench/model_audit/report.html` (published: notes/mx17-model-audit); the B4 triage table is in
-`rerun/RERUN_PLAN.md` §12.  Everything below is on main.
+**Resume:** audit done; five follow-up workstreams FA–FE running — read `rerun/model_audit/FOLLOWUPS.md`, collect their reports.
 
-**Verdict in one paragraph.** The five chambers tell one consistent story under the phys kernel: reco ladder on the
-timing v within 2–5 %, s68 1.03–1.9°, positions 0.50–0.76 mm, det3 interior detection 91.2 % reproduced, the dead-strip
-seeding and the σ0 profile behave as documented.  **One meaningful improvement is left in the model: the angle response
-compresses with angle** — implied v falls 4–15 % from |tan| 0.1 to 0.4 on every chamber and view, steep tracks read
-0.25–1.5° shallow (det3 2–5 %, det4/det6 10–20 % at |tan| 0.3–0.45).  The mechanism is in the model, not the optimiser
-(at the M3 angle the χ² is higher in 93–96 % of det3's steep tracks, 83–91 % on det4/det7; the two-sided start only
-recovers det4 X far −1.2 pp): it is the width–tilt trade — every unit of modelled lateral width lowers the fitted slope
-(σ0 profile ~1 %, Dp ±30 % → ∓1.5 %, rc_D_y ×1.5 → −1…−2.6 %), and on steep tracks the data want less width at depth
-than the model carries.  SPS det4 at 25.64° is self-consistent: fitted slope = the fit's own column duration to +4 % at
-235 V/cm; the apparent 10 % deficit is the external span-route v (14 % above the column v at every field) and, below
-200 V/cm, the column overrunning the depth grid.  The rest is bookkeeping: the column plausibility window was fixed at v = 36.6 (23–60 % of det4/6/7 Y tracks
-"implausible"; **fixed**), dt_xy is stale by one 60 ns bin and det4's is empty so the x–y gate fails on 15–44 % of single
-tracks and n_tracks = 0 on 40–80 % (**tooling fixed**, bundles not yet updated), the RC kernel is a 5 ns staircase in t0
-(t0_err NaN on ~30 % of det6/det7 fits; **opt-in interpolation fixed**), the t0 prior is on for det2/3/4 and off for
-det6/7 and inert either way, per-event angle errors are a 1° floor.
+**Goal:** answer Dylan's audit questions (F1–F22) with the existing data, end with ONE reconstruction algorithm, then
+chase his 13 follow-up questions (FOLLOWUPS.md).
 
-**Fixes on main (all tests pass, 84):** `wft.reco.u_window(cal)` (v-scaled plausibility, default; `WFT_U_FIXED=1`
-legacy); `WFT_RC_T0_INTERP=1`; `WFT_ZS_CENSOR=1`; RC-kernel keys `rc_asym_<plane>` / `rc_asym_tau_<plane>` (opt-in,
-one-sided delayed copy); `rerun/w12/set_w0kw.py --table <events.parquet>` re-measures dt_xy and writes the `xy_pairing`
-block; `rerun/sps_registry.csv` (71 plateaus) + `rerun/model_audit/sps_reco.py` / `sps_stage.sh` (B3 stage; dry run
-`sps_dry.sub` on condor).  Not changed: any bundle on EOS, any production default except the plausibility window.
+**Done (10-27):**
+- Eight independent workstreams finished and merged; each has `rerun/model_audit/ws_*/REPORT.md`
+  (ws_t0, ws_v_w0, ws_widthtilt, ws_sps, ws_spsv, ws_floor, ws_dead_charge, ws_unify).
+- Outcomes table at the top of `rerun/model_audit/FINDINGS.md` (supersedes the night entries where they disagree).
+- Slide note https://dylan-neff.web.cern.ch/notes/mx17-model-audit.html (23 slides), generator
+  `rerun/model_audit/make_audit_deck.py` (reads ws_* JSONs + figures; figures are gitignored, live in the main checkout).
+  slidedoc gained `img()` (dylan-cern-site c5a08e3 / ce3547b).
+- Headlines: t0 = one bench latency (300–340 ns); w0 = chamber tilt; F4 fall = selection cut + chamber bow; physics
+  floor 0.30–0.35°; SPS σ0_Y 0.32, σ0_X ≤ 0.29; F16 "14 %" = depth-grid artefact, v(243 V/cm) = 14.1 µm/ns, −8 % slope
+  residual = local gap or fit (LIMIT); single reconstruction on main (`wft/diag.py` is the only override path).
+- Dylan's 13 follow-ups documented with first answers in `rerun/model_audit/FOLLOWUPS.md`.
 
-**Tooling (rerun/model_audit/):** `fleet_tables.py` (the fleet table from finalize tables), `heldout_arm.py` +
-`make_heldout_dag.py` + `heldout_compare.py` (event-paired held-out arms, ~10 min/arm on condor), `make_gate_dag.py` +
-`gate_compare.py` (prototype gate on 8000 events per golden row), `sps_build_cache.py` / `make_sps_dag.py` /
-`sps_summary.py` (SPS known-angle test), `steep_probe.py` (model vs optimiser on steep tracks), `make_report.py`.
-Outputs on EOS `/eos/user/d/dneff/x17rerun/model_audit/{heldout,heldout2,sps,sps2,sps_pass}` and
-`/eos/user/d/dneff/x17rerun/Analysis_audit/` (gate arms); local mirror `~/x17/cosmic_bench/model_audit/`.
+**In progress:** follow-up workstreams FA (gas v(t)/v(x,y), det3 X–Y v, per-run tilt), FB (bow cross-checks + map
+gallery + paper section), FC (σ0 X vs Y, width–tilt with all corrections), FD (realistic floor toy), FE (unified reco:
+implement decided items, band awareness, re-finalise). Spawned as background agents from session c1e60882 on
+dylan-Yoga; each writes `rerun/model_audit/followups/<id>/` and lands on main.
 
-**Next steps (for B1/B2):**
-1. The angle response (F4/F18/F21): a narrower deep footprint for inclined tracks (or a per-event Dp), and σ0 chosen
-   from a measured quantity (saturation / charge) rather than by χ²; gate on the steep bins (`heldout_compare`
-   bias_steep±, implied-v flatness) and keep the SPS 25.64° self-consistency (`sps_summary`: |w_y|/tan vs 28.8/uend).
-   The beam's absolute v (span anchor vs column, 14 %) is a limitation to state, not a model fix.
-2. Add `--table {out}/wft/.../events.parquet` to the finalize / vrefit W0KW nodes so dt_xy and xy_pairing are
-   re-measured under the phys kernel, then re-promote (F5); set `t0_prior_sigma` 0 everywhere or re-measure t0_abs (F1/F6).
-3. Decide the gate tolerance from the measured t0 width (2.5 rσ keeps 92–97 %) and widen `DT_XY_TOL_NS` accordingly.
-4. B2: `gate_compare` on all five rows is the gate table (prototype arms: see the report; det2 band +0.7 pt, head-on +0.4
-   pt detected at no resolution cost).  B3: `sps_reco.py` dry run → check `/eos/user/d/dneff/x17rerun/model_audit/sps_pass/`.
+**Next steps:**
+1. Collect FA–FE results; fold into FOLLOWUPS.md; extend the slide note (or a second note) figure-first.
+2. Deferred until after reprocessing: SPS gas fit (H₂O + O₂ with Magboltz, item 9); noise-band hotspot census (item 13).
 
-**Gotchas:** condor's `environment = "$(env)"` macro silently dropped the WFT_* variables (all first-round env arms
-were copies of the base) — pass them through the shell wrapper; condor refuses an executable on EOS (wrappers on AFS,
-code on EOS) and refuses quoted JSON in `arguments` (use `--set k=v`); `git archive | tar` onto EOS takes ~10 min.
+**Gotchas / decisions:**
+- Sub-agents could not write REPORT.md files (harness refusal) — coordinator writes them from the final message.
+- Before removing a worktree, copy its gitignored files (PNGs are ignored): `git status --short --ignored | grep '^!!'`.
+- Agents waiting on condor stall (no notification arrives) — check EOS outputs and nudge them.
+- Old SPS caches were 256 ADC high (fixed 7505338); EOS `model_audit/ws_spsv/q_*.npz` + `cache/` top level are INVALID.
+- Bench w0, bow and tilt maps are mounting/geometry: never transfer to n_TOF. Gain maps in all promoted bench bundles are 1.0.
 
+**Key files & commands:**
+- `rerun/model_audit/FINDINGS.md`, `FOLLOWUPS.md`, `ws_*/REPORT.md`
+- `.venv/bin/python rerun/model_audit/make_audit_deck.py` then
+  `python3 ~/PycharmProjects/dylan-cern-site/scripts/add-note.py rerun/model_audit/deck/mx17-model-audit.html --slug mx17-model-audit --force --deploy`
 
 ## Full-pass readiness (bench + SPS re-run) — updated 2026-10-27 (dylan-Yoga)
 
