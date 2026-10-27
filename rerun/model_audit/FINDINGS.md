@@ -111,3 +111,8 @@ is 10 % low with no reference involved (mount angle and the column duration are 
 more (the span v there is an upper bound; ZS truncation of the faint deep charge is suspected — ZS-censored arms in
 `sps2`).  The bench kw_y (0.977) does not transfer: on the beam the steep-track compression of F4 (5–20 % at |tan|
 0.3–0.45) continues to 10 % at tan 0.48.  This is the one meaningful improvement left in the angle response.
+
+## F17 · A fractional model-error term (WFT_MODEL_FRAC 0.03) does not buy resolution — CLOSED (null / slightly worse)
+det3 held-out, t0 interpolation + MODEL_FRAC 0.03: χ²/dof 41 → 10 (X), 58 → 14 (Y) — the term absorbs the bright-sample
+template mismatch as designed — but s68 unchanged within ±0.03°, far +1.2 / +2.0 pp, x–y t0 width unchanged (91 → 99 ns).
+The production weighting (noise only) stays.  Other chambers in `heldout2` (mf03, mf05) for the record.
