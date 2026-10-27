@@ -1541,7 +1541,7 @@ def _headon_rescue(R, plane, other):
     win = wio.extract_window(R['W'], R['noise'], R['pos'], ch, 3)
     if win is None:
         return None
-    P = dict(W=win.W, pos=win.pos, noise=win.noise, ch=win.ch, zs=bool(R.get('zs', False)))
+    P = dict(W=win.W, pos=win.pos, noise=win.noise, ch=win.ch)
     f = fit_plane_candidates([P], plane, _CAL)
     if f is None or not np.isfinite(f.q_sum) or f.q_sum <= 0 or not other.q_sum > 0:
         return None
@@ -1723,7 +1723,6 @@ def reconstruct_run(cfg, cal: CalibrationBundle, out_path: str,
                 diagnostic_overrides=dict(wdiag.ACTIVE),
                 algorithm=dict(pivot_start=PIVOT_START, two_sided=TWO_SIDED, col_guard=wm.COL_GUARD,
                                sat_solve=wm.SAT_SOLVE, rc_t0_interp=wm.RC_T0_INTERP, model_frac=wm.MODEL_FRAC,
-                               zero_suppressed=bool(getattr(cfg, 'ZERO_SUPPRESSED', False)),
                                two_track_min_sep_mm=wm.TWO_MIN_SEP_MM,
                                dt_xy_tol_ns=dt_xy_tol(cal.xy_pairing)),
                 bundle=dict(detector=cal.detector, run_key=cal.run_key,
@@ -1810,8 +1809,6 @@ def _stream_windows(cfg, pos_maps, seeds, wanted, pad_strips, verbose=True, dead
     """Yield lists of (eid, windows, seedinfo, n_hits, spark) per file pair.
     ``dead``: {plane: channels} padded across (``wft.seed.DEAD_SEED``); empty = historical."""
     from . import io as wio
-    # zero suppression is a property of the run (qa_config ZERO_SUPPRESSED): its exact-zero samples are censored
-    zs = bool(getattr(cfg, 'ZERO_SUPPRESSED', False))
     fx = wio.subrun_files(cfg.BASE_PATH, cfg.RUN, cfg.SUB_RUN, cfg.MX17_FEU_X)
     fy = wio.subrun_files(cfg.BASE_PATH, cfg.RUN, cfg.SUB_RUN, cfg.MX17_FEU_Y)
     by_tag = {}
@@ -1837,7 +1834,7 @@ def _stream_windows(cfg, pos_maps, seeds, wanted, pad_strips, verbose=True, dead
                 if not cl:
                     if HEADON_RESCUE and not seeds[eid]['spark']:
                         rec = buf.setdefault(eid, {'w': {}, 's': {}})
-                        rec['w'][f'_rescue_{plane}'] = dict(W=wfm, noise=rdr.noise, pos=pos_maps[feu], zs=zs)
+                        rec['w'][f'_rescue_{plane}'] = dict(W=wfm, noise=rdr.noise, pos=pos_maps[feu])
                         rec['ftst_' + plane] = ftst
                     continue
                 cl = cl if isinstance(cl, list) else [cl]
@@ -1849,7 +1846,7 @@ def _stream_windows(cfg, pos_maps, seeds, wanted, pad_strips, verbose=True, dead
                     if win is None:
                         continue
                     wins.append(dict(W=win.W, pos=win.pos, noise=win.noise,
-                                     ch=win.ch, zs=zs))
+                                     ch=win.ch))
                     used.append(s)
                 if not wins:
                     continue

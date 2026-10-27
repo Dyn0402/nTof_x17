@@ -58,7 +58,6 @@ penalised for the crossing.
 """
 from __future__ import annotations
 
-import os
 
 import numpy as np
 from scipy.optimize import nnls, minimize
@@ -131,12 +130,12 @@ COL_GUARD = 0.01
 #: algorithm since 2026-10-27 as a correctness change (F19 `t0i`: angles unchanged within +-0.02 deg, chi2/dof -1..-4 %,
 #: t0 continuous so t0_err is defined on every fit; ws_t0: +1.5-5 % wall time).
 RC_T0_INTERP = True
-#: Zero-suppressed data (model audit 2026-10-27): a sample that reads exactly 0 ADC was never recorded, not measured as
-#: zero, so it is censored like a saturated one (no information in either direction).  This is a property of the DATA,
-#: not a choice: the reader marks such a window ``P['zs'] = True`` (rerun/model_audit/sps_reco.py: every SPS FEU 03
-#: row -- ZS rows, and run_71's RAW packet-loss zeros) and prep_plane censors its zeros.  On the RAW bench data an exact
-#: 0 after pedestal + CM subtraction is a measurement and is kept (qa_config ZERO_SUPPRESSED False).  ZS_CENSOR forces
-#: it on every window -- a study override only (wft.diag).
+#: Zero-suppressed samples are fitted as MEASURED ZEROS (the FEU saw less than its threshold there): on RAW run_71 with
+#: ZS emulated on the same events this is the closest to the RAW answer (t0 <= 27 ns, position 15-27 um, slope
+#: 0.03-0.07 um/ns), censoring them is the worst (44-66 ns, 45-86 um, 0.14-0.31 um/ns), the ZS_BOUND form in between
+#: (ws_sps REPORT, 2026-10-27).  Samples that were never read out at all (RAW front-end packet loss) are a different
+#: thing: the reader marks them ``P['missing']`` and prep_plane censors them.  ZS_CENSOR (censor every exact 0) is a
+#: study override only (wft.diag).
 ZS_CENSOR = False
 #: Zero-suppressed data, the informative form (ws_sps 2026-10-27): a suppressed sample is known to lie BELOW the FEU
 #: threshold.  With ZS_BOUND = k > 0 the exactly-zero samples are censored as above AND penalised one-sidedly when the
@@ -528,7 +527,7 @@ def prep_plane(P, plane):
     W /= g[:, None]
     noise = np.maximum(np.asarray(P['noise'], dtype=np.float64), 3.0) / g
     sat = np.asarray(P['W'], dtype=np.float64) >= SAT
-    if ZS_CENSOR or ZS_BOUND > 0 or P.get('zs', False):
+    if ZS_CENSOR or ZS_BOUND > 0:
         sat |= np.asarray(P['W'], dtype=np.float64) == 0.0
     miss = P.get('missing') if isinstance(P, dict) else None
     if miss is not None:

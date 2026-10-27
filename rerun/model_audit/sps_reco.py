@@ -7,8 +7,8 @@ the wft table layout (event_id, x_*/y_* PlaneFit columns, n_tracks) + events.met
 on EOS.  The bench det4 bundle is adapted to the row: v = the row's v_span (CF4 ladder) or the bundle v, K = the row's
 K, 64/32 samples from the dataset, the channel layer measured at H4 in place of the bench one (sps_mask.py: the bench
 lists are bench channel numbers, a different strip at H4; --mask bench carries them by position, none drops them),
-exactly-zero samples censored on every row (each window is marked ``zs``: unrecorded on ZS rows, the FEU packet loss on
-RAW rows; wft.model.prep_plane), the wft algorithm otherwise as is (pivot start, column guard, ... are part of it since
+exact-zero samples fitted as measured zeros on ZS rows (suppressed = below threshold) and censored as ``missing`` on
+RAW rows (the FEU's dropped sample groups; ws_sps 2026-10-27), the wft algorithm otherwise as is (pivot start, column guard, ... are part of it since
 2026-10-27).  Seeds are the chamber's own brightest cluster per view (no
 uRWELL); the reference columns ref_x/ref_y carry the own charge centroid and tan_mount the mount angle.
 """
@@ -21,14 +21,16 @@ REPO = os.environ.get('WFT_REPO') or os.path.abspath(os.path.join(HERE, '..', '.
 sys.path[:0] = [REPO, HERE]
 BUNDLE = '/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_rr1/mx17_det4_day_6-24-26/long_run/mx17_4/wft/calib_bundle'
 _EV = None
+_RAW = False
 
 
-def _init(cache, bundle, k, v, nsamp, mask='h4'):
-    global _EV
+def _init(cache, bundle, k, v, nsamp, mask='h4', raw=False):
+    global _EV, _RAW
     from wft.calib import CalibrationBundle
     from wft import model as wm
     import sps_mask
     _EV = pickle.load(open(cache, 'rb'))
+    _RAW = bool(raw)
     cal = CalibrationBundle.load(bundle)
     sps_mask.apply(cal, mask)
     if v:
@@ -44,7 +46,8 @@ def one(eid):
         P = ev.get(plane)
         if P is None:
             fits[plane] = None; continue
-        P = dict(P, zs=True)         # SPS FEU 03: an exact 0 is an unrecorded sample on every row (see main)
+        if _RAW:                     # an exact 0 on a RAW row is a sample the FEU dropped, not a measurement (see main)
+            P = dict(P, missing=np.asarray(P['W']) == 0.0)
         try:
             fits[plane] = wr.fit_plane(P, plane, wm.CAL)
         except Exception:
@@ -69,10 +72,11 @@ def main():
     sys.path.insert(0, os.path.join(REPO, 'sps_beam_test_26', 'analysis')); import datasets
     D = datasets.get(row['dataset']); nsamp = int(D['n_samples'])
     tan = 0.0 if row['mount'] == 'flat' else float(np.tan(np.radians(25.64)))
-    # exact-zero samples are censored on EVERY SPS row: on ZS rows they were never recorded, and on the RAW rows (run_71)
-    # they are the FEU's dropped sample groups (~23 % of all samples, ws_sps 2026-10-27) -- a post-CNS RAW sample is never
-    # exactly 0, so fitting those zeros as measurements (the behaviour before) pulled every RAW fit toward no charge.
-    # That is a property of this data, so it travels with each window (P['zs'], set in one()), not as a switch.
+    # an exact 0 in the cache means 'not read out' (sps_build_cache._baseline moves real zeros off 0).  On ZS rows that is
+    # a suppressed sample, below threshold: fitted as a measured zero (ws_sps: closest to the RAW answer).  On the RAW
+    # rows (run_71) it is the FEU's dropped sample groups (~23 % of samples): censored as missing.  A property of the data,
+    # carried by each window (one()), not a switch.
+    raw = bool(int(row['raw']))
     evs = {}
     for sub in row['subruns'].split():
         got = sbc.build_cache(row['run'], sub, row['dataset'], per_plateau=a.per_plateau - len(evs), half_win=a.half_win, tan=tan,
@@ -85,11 +89,11 @@ def main():
     cache = os.path.join(a.work, f'sps_cache_{a.key}.pkl'); pickle.dump(evs, open(cache, 'wb'), protocol=4)
     v = float(row['v_span_um_ns']) if row['v_span_um_ns'] else None
     k = int(row['K']) if row['K'] else int(np.ceil(28800.0 / (v or 12.0) / 60.0)) + 5
-    with ProcessPoolExecutor(a.jobs, initializer=_init, initargs=(cache, a.bundle, k, v, nsamp, a.mask)) as pool:
+    with ProcessPoolExecutor(a.jobs, initializer=_init, initargs=(cache, a.bundle, k, v, nsamp, a.mask, raw)) as pool:
         rows = list(pool.map(one, sorted(evs), chunksize=4))
     df = pd.DataFrame(rows).sort_values('event_id').reset_index(drop=True)
     df.to_parquet(os.path.join(a.out, 'events.parquet'), index=False)
-    meta = dict(n_events=len(df), registry_row=row, bundle=a.bundle, v_drift=v, n_depth_bins=k, n_samples=nsamp, zs_censor=True,
+    meta = dict(n_events=len(df), registry_row=row, bundle=a.bundle, v_drift=v, n_depth_bins=k, n_samples=nsamp, zeros='missing (RAW)' if raw else 'measured (ZS)',
                 channel_layer=a.mask, seeding='own brightest strip +- half_win', half_win=a.half_win,
                 env={k_: v_ for k_, v_ in os.environ.items() if k_.startswith('WFT_')},
                 diagnostic_overrides={k_: str(v_) for k_, v_ in __import__('wft.diag').diag.ACTIVE.items()},
