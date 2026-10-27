@@ -338,6 +338,56 @@ def t0_prior_for(cal: CalibrationBundle, plane: str, ftst) -> Optional[tuple]:
 ANGLE_MAP_MID_MM = 15.0
 
 
+BOW_MID_MM = 15.0
+
+
+def _bow_poly(c: dict, U: float, W: float, lin=('cu', 'cw'), quad=('auu', 'aww', 'auw')) -> float:
+    return (c.get(lin[0], 0.0) * U + c.get(lin[1], 0.0) * W + c.get(quad[0], 0.0) * U * U / 2
+            + c.get(quad[1], 0.0) * W * W / 2 + c.get(quad[2], 0.0) * U * W)
+
+
+def bow_h(cal: CalibrationBundle, U: float, W: float) -> float:
+    """Mesh height [mm, M3 z up] of the bow block at (U, W); 0 without a block."""
+    h = (getattr(cal, 'bow', None) or {}).get('h')
+    return float(_bow_poly(h, U, W, ('gu', 'gw'), ('kuu', 'kww', 'kuw'))) if h else 0.0
+
+
+def tan_const(cal: CalibrationBundle, plane: str, w: float) -> float:
+    """The constant mapping (w*1e3 - w0) / (kw v)."""
+    return float((w * 1e3 - cal.w0.get(plane, 0.0)) / (cal.kw.get(plane, 1.0) * cal.v_drift))
+
+
+def tan_bow(cal: CalibrationBundle, plane: str, w: float, U: float, W: float) -> float:
+    b = cal.bow
+    A, s = b.get(f'A_{plane}') or {}, b.get(f's_{plane}') or {}
+    return float((w * 1e3 - cal.w0.get(plane, 0.0) - _bow_poly(A, U, W))
+                 / (cal.kw.get(plane, 1.0) * cal.v_drift * (1.0 + s.get('su', 0.0) * U + s.get('sw', 0.0) * W)))
+
+
+def bow_UW(cal: CalibrationBundle, fx=None, fy=None) -> tuple:
+    """(U, W) of a track from its views' mesh positions and constant-mapping tangents; a missing view gives 0."""
+    U = ((fx.p0 + BOW_MID_MM * tan_const(cal, 'x', fx.w)) - 200.0) / 100.0 if fx is not None else 0.0
+    W = ((fy.p0 + BOW_MID_MM * tan_const(cal, 'y', fy.w)) - 200.0) / 100.0 if fy is not None else 0.0
+    return (U if np.isfinite(U) else 0.0), (W if np.isfinite(W) else 0.0)
+
+
+def apply_bow(cal: CalibrationBundle, fx=None, fy=None) -> None:
+    """Re-map both views' tangents through the bundle's bow block with BOTH views' coordinates (one iteration, from the
+    constant mapping; idempotent: computed from w, not from the stored tangent).  Stores the mesh height on each fit
+    (``_bow_h``: the track point at the nominal plane is p0 - tan * h).  No-op without a block."""
+    if not (getattr(cal, 'bow', None) or {}):
+        return
+    U, W = bow_UW(cal, fx, fy)
+    h = bow_h(cal, U, W)
+    for p, f in (('x', fx), ('y', fy)):
+        if f is None:
+            continue
+        t = tan_bow(cal, p, f.w, U, W)
+        f.tan_theta, f.theta_deg = float(t), float(np.degrees(np.arctan(t)))
+        f.slope_reliable = bool(abs(t) >= TAN_MIN_SLOPE)
+        f._bow_h = float(h)
+
+
 def tan_of(cal: CalibrationBundle, plane: str, w: float, p0: float) -> float:
     """Track tangent from the fitted transverse speed w [mm/ns] and mesh position p0 [mm].
 
@@ -346,6 +396,10 @@ def tan_of(cal: CalibrationBundle, plane: str, w: float, p0: float) -> float:
     constant-mapping tangent; the map varies over ~100 mm, so the first-order p is exact enough)."""
     kv = cal.kw.get(plane, 1.0) * cal.v_drift
     tan = (w * 1e3 - cal.w0.get(plane, 0.0)) / kv
+    if getattr(cal, 'bow', None):
+        # one view alone: its own coordinate, the other 0 (apply_bow redoes it with both views once paired)
+        c = (p0 + BOW_MID_MM * tan - 200.0) / 100.0 if np.isfinite(p0) and np.isfinite(tan) else 0.0
+        return tan_bow(cal, plane, w, c if plane == 'x' else 0.0, c if plane == 'y' else 0.0)
     m = (getattr(cal, 'angle_map', None) or {}).get(plane)
     if m and np.isfinite(tan) and np.isfinite(p0):
         p = p0 + ANGLE_MAP_MID_MM * tan
@@ -1748,8 +1802,19 @@ def _worker_fit(payload):
                               pairing=_PAIRING)
     except Exception:
         pairs = []
+    # the bow block maps each track's tangents with both views' coordinates (pairs first, then the event's winners)
+    if getattr(_CAL, 'bow', None):
+        for ix, iy, _g in pairs:
+            try:
+                apply_bow(_CAL, all_fits['x'][ix], all_fits['y'][iy])
+            except Exception:
+                pass
+        if fits.get('x') is not None or fits.get('y') is not None:
+            apply_bow(_CAL, fits.get('x'), fits.get('y'))
     row = row_from_fits(eid, fits, n_hits, spark)
     row['n_tracks'] = int(sum(1 for _i, _j, g in pairs if g))
+    hb = [getattr(fits.get(p), '_bow_h', None) for p in ('x', 'y')]
+    row['bow_h'] = float(next((h for h in hb if h is not None), np.nan))
     for plane in ('x', 'y'):
         f = ftst.get(plane)
         row[f'{plane}_ftst'] = int(f) if f is not None else -1
@@ -1859,6 +1924,8 @@ def reconstruct_run(cfg, cal: CalibrationBundle, out_path: str,
                 # and nothing downstream could tell -- that is how the fleet
                 # bias survived a whole campaign. applied=False here means the
                 # angles need the post-hoc w0/kw pass before they are quoted.
+                bow=dict(applied=bool(getattr(cal, 'bow', None)),
+                         source=(getattr(cal, 'bow', None) or {}).get('source_row')),
                 angle_constants=dict(applied=bool(cal.w0 or cal.kw),
                                      w0=dict(cal.w0), kw=dict(cal.kw),
                                      angle_map=sorted((getattr(cal, 'angle_map', None) or {}).keys())),

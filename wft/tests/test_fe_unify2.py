@@ -162,3 +162,33 @@ def test_v_map_slot(cal, tmp_path):
     assert wr.v_scale(back, 300.0, 10.0, 150) == pytest.approx(1.05 * 1.1)
     assert wr.v_scale(back, 50.0, 10.0, 1e9) == pytest.approx(0.95 * 1.1)    # clamped at the last block
     cal.v_map = {}
+
+
+# ------------------------------------------------------------ the bow block (FB spec)
+BOW = {'A_x': dict(cu=0.2, cw=-0.02, auu=2.0, aww=2.0, auw=0.08), 's_x': dict(su=-0.02, sw=0.013),
+       'A_y': dict(cu=-0.01, cw=0.3, auu=2.0, aww=2.0, auw=-0.02), 's_y': dict(su=-0.005, sw=0.015),
+       'h': dict(gu=0.03, gw=-0.3, kuu=2.0, kww=2.0, kuw=-0.16), 'source_row': 'synthetic dish'}
+
+
+def test_bow_dish_reproduces_tan(cal, tmp_path):
+    from types import SimpleNamespace
+    from wft.calib import CalibrationBundle
+    cal.bow, cal.w0, cal.kw, cal.v_drift = BOW, {'x': 0.3, 'y': -0.2}, {'x': 1.02, 'y': 0.97}, 36.0
+    cal.save(str(tmp_path / 'b'))
+    back = CalibrationBundle.load(str(tmp_path / 'b'))
+    assert back.bow == BOW
+    rng = np.random.default_rng(3)
+    for _ in range(50):
+        tx, ty = rng.uniform(-0.5, 0.5, 2)
+        fx = SimpleNamespace(p0=rng.uniform(20, 380), w=0.0, tan_theta=0.0, theta_deg=0.0, slope_reliable=False)
+        fy = SimpleNamespace(p0=rng.uniform(20, 380), w=0.0, tan_theta=0.0, theta_deg=0.0, slope_reliable=False)
+        for _it in range(60):                           # w consistent with U, W read from its own constant-mapping tan
+            U, W = wr.bow_UW(back, fx, fy)
+            for p, f, t in (('x', fx, tx), ('y', fy, ty)):
+                A, s = BOW[f'A_{p}'], BOW[f's_{p}']
+                f.w = (back.w0[p] + wr._bow_poly(A, U, W)
+                       + back.kw[p] * back.v_drift * t * (1 + s['su'] * U + s['sw'] * W)) / 1e3
+        wr.apply_bow(back, fx, fy)
+        assert fx.tan_theta == pytest.approx(tx, abs=1e-9) and fy.tan_theta == pytest.approx(ty, abs=1e-9)
+        assert np.isfinite(fx._bow_h)
+    cal.bow = {}

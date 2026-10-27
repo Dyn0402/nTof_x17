@@ -177,6 +177,14 @@ class CalibrationBundle:
     # both views' positions, so it is applied per TRACK (after x-y pairing), not inside the per-plane fit.  Absent = one v.
     v_map: Dict[str, dict] = field(default_factory=dict)
 
+    # --- the chamber bow (FB, rerun/model_audit/followups/fb_bow_maps, 2026-10-27), optional, STATIC per chamber (golden
+    # row), bench only -- dropped on any transfer to n_TOF.  U = (u - 200)/100, W = (w - 200)/100 with u, w = each view's
+    # p0 + 15 mm * tan (strip frame).  Per view p: drift-tilt surface A_p (cu, cw, auu, aww, auw; um/ns, constant removed)
+    # and scale gradient s_p (su, sw); mesh-height surface h (gu, gw, kuu, kww, kuw; mm).  With it
+    #     tan_p = (w*1e3 - w0[p] - A_p(U, W)) / (kw[p] * v * (1 + su U + sw W))        (wft.reco.apply_bow)
+    # and the per-run w0/kw are measured after subtracting the bow shape (set_w0kw.py).  Takes precedence over angle_map.
+    bow: Dict[str, object] = field(default_factory=dict)
+
     # --- per-event angle error floor (model audit F3, ws_floor 2026-10-27): the measured core angular resolution of
     # this chamber and view, in tan, written at finalize ({'x': 0.018, 'y': ...}).  It is the "model floor" -- what the
     # fit achieves on real tracks -- not the physics floor (0.006).  Absent = wft.reco.FLOOR_TAN (det3's 0.018).
@@ -235,7 +243,7 @@ class CalibrationBundle:
                         for p, ch in self.hot.items()},
                     w0={p: float(v) for p, v in self.w0.items()},
                     kw={p: float(v) for p, v in self.kw.items()},
-                    angle_map=self.angle_map, v_map=self.v_map,
+                    angle_map=self.angle_map, v_map=self.v_map, bow=self.bow,
                     tan_floor={k: float(v) for k, v in self.tan_floor.items()},
                     xy_pairing=self.xy_pairing,
                     pitch_mm=self.pitch_mm, sample_ns=self.sample_ns,
@@ -267,7 +275,7 @@ class CalibrationBundle:
                        for p, ch in m.get('hot', {}).items()},
                    w0={p: float(v) for p, v in (m.get('w0') or {}).items()},
                    kw={p: float(v) for p, v in (m.get('kw') or {}).items()},
-                   angle_map=m.get('angle_map') or {}, v_map=m.get('v_map') or {},
+                   angle_map=m.get('angle_map') or {}, v_map=m.get('v_map') or {}, bow=m.get('bow') or {},
                    tan_floor={k: float(v) for k, v in (m.get('tan_floor') or {}).items()},
                    xy_pairing=m.get('xy_pairing') or {},
                    pitch_mm=m.get('pitch_mm', 0.78),
