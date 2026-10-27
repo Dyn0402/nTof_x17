@@ -5,7 +5,8 @@ det4 H4 INCLINED events (25.64 deg mount) in the bench calibration-cache format,
 known-angle test of the waveform fit (RERUN_PLAN S4 R7): the fitted w must equal tan(25.64 deg) x v(E) in the
 inclined view and ~0 in the other.  Events are re-labelled by wall clock against datasets.py's plateau windows (the
 local wf npz predates the current labels).  tan_x = tan_y = tan(mount) is stored as the magnitude; the sign and the
-inclined view are read off the data.  ref_mesh = the uRWELL prediction (the charge centroid, mid-sweep).  ZS data:
+inclined view are read off the data.  ref_mesh = ev_pX/ev_pY of the wf npz, which is det4's OWN leading strip (extract_det4_only.py), not the uRWELL
+prediction (corrected 2026-10-27, ws_sps; the uRWELL clusters are in the pair npz: ws_sps/resolution_cache.py).  ZS data:
 exactly-zero samples are not measurements (run with WFT_ZS_CENSOR=1).
 """
 import argparse, os, pickle, sys

@@ -1,0 +1,31 @@
+# condor_submit ws_sps3.sub  (from ~/x17rerun/ws_sps on lxplus; output on EOS /eos/user/d/dneff/x17rerun/ws_sps/out)
+# ZS zeros fitted as measured (--censor 2)
+executable     = $ENV(HOME)/x17rerun/ws_sps/run_ws_sps2.sh
+output         = log/$(ClusterId).$(ProcId).out
+error          = log/$(ClusterId).$(ProcId).err
+log            = log/ws_sps.log
+request_cpus   = 4
+request_memory = 4000
++JobFlavour    = "longlunch"
+should_transfer_files = NO
+arguments      = /eos/user/d/dneff/x17rerun/ws_sps code4 headon_sigma.py --plateau $(plateau) --zs $(zs) --censor $(cens) --chunk $(chunk) 6 --nev 1200 --jobs 4
+queue plateau zs cens chunk from (
+raw700 4 2 0
+raw700 4 2 1
+raw700 4 2 2
+raw700 4 2 3
+raw700 4 2 4
+raw700 4 2 5
+raw700 5 2 0
+raw700 5 2 1
+raw700 5 2 2
+raw700 5 2 3
+raw700 5 2 4
+raw700 5 2 5
+raw275 4 2 0
+raw275 4 2 1
+raw275 4 2 2
+raw275 4 2 3
+raw275 4 2 4
+raw275 4 2 5
+)

@@ -18,7 +18,9 @@ ARMS = {'base': ('WFT_ZS_CENSOR=1', ''), 't0i': ('WFT_ZS_CENSOR=1 WFT_RC_T0_INTE
         'noprof': ('WFT_ZS_CENSOR=1', '--set sigma_p0_prof_x=,sigma_p0_prof_y='),
         'dp_lo': ('WFT_ZS_CENSOR=1', '--scale Dp=0.7'), 'dp_hi': ('WFT_ZS_CENSOR=1', '--scale Dp=1.3'),
         'rcd_hi': ('WFT_ZS_CENSOR=1', '--scale rc_D_y=1.5'), 'rcd_lo': ('WFT_ZS_CENSOR=1', '--scale rc_D_y=0.6'),
-        'nozs': ('', '')}
+        'nozs': ('', ''),
+        # ZS samples as upper bounds (ws_sps 2026-10-27): censored and model <= 4 sigma (run_63's FEU threshold)
+        'zsb4': ('WFT_ZS_BOUND=4', '')}
 
 
 def main():

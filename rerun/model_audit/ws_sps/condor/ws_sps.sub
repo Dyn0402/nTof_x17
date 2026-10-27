@@ -1,0 +1,60 @@
+# condor_submit ws_sps.sub  (from ~/x17rerun/ws_sps on lxplus; output on EOS /eos/user/d/dneff/x17rerun/ws_sps/out)
+executable     = $ENV(HOME)/x17rerun/ws_sps/run_ws_sps2.sh
+arguments      = /eos/user/d/dneff/x17rerun/ws_sps code headon_sigma.py --plateau $(plateau) --zs $(zs) --censor $(cens) --chunk $(chunk) 6 --nev 1200 --jobs 4
+output         = log/$(ClusterId).$(ProcId).out
+error          = log/$(ClusterId).$(ProcId).err
+log            = log/ws_sps.log
+request_cpus   = 4
+request_memory = 4000
++JobFlavour    = "longlunch"
+should_transfer_files = NO
+queue plateau zs cens chunk from (
+raw700 0 1 0
+raw700 0 1 1
+raw700 0 1 2
+raw700 0 1 3
+raw700 0 1 4
+raw700 0 1 5
+raw450 0 1 0
+raw450 0 1 1
+raw450 0 1 2
+raw450 0 1 3
+raw450 0 1 4
+raw450 0 1 5
+raw275 0 1 0
+raw275 0 1 1
+raw275 0 1 2
+raw275 0 1 3
+raw275 0 1 4
+raw275 0 1 5
+raw700 4 1 0
+raw700 4 1 1
+raw700 4 1 2
+raw700 4 1 3
+raw700 4 1 4
+raw700 4 1 5
+raw700 5 1 0
+raw700 5 1 1
+raw700 5 1 2
+raw700 5 1 3
+raw700 5 1 4
+raw700 5 1 5
+raw450 4 1 0
+raw450 4 1 1
+raw450 4 1 2
+raw450 4 1 3
+raw450 4 1 4
+raw450 4 1 5
+raw275 4 1 0
+raw275 4 1 1
+raw275 4 1 2
+raw275 4 1 3
+raw275 4 1 4
+raw275 4 1 5
+raw700 0 0 0
+raw700 0 0 1
+raw700 0 0 2
+raw700 0 0 3
+raw700 0 0 4
+raw700 0 0 5
+)

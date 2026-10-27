@@ -7,7 +7,8 @@ the wft table layout (event_id, x_*/y_* PlaneFit columns, n_tracks) + events.met
 on EOS.  The bench det4 bundle is adapted to the row: v = the row's v_span (CF4 ladder) or the bundle v, K = the row's
 K, 64/32 samples from the dataset, the channel layer measured at H4 in place of the bench one (sps_mask.py: the bench
 lists are bench channel numbers, a different strip at H4; --mask bench carries them by position, none drops them),
-exactly-zero samples censored on ZS rows (WFT_ZS_CENSOR), pivot start, column guard.  Seeds are the chamber's own brightest cluster per view (no
+exactly-zero samples censored on every row (WFT_ZS_CENSOR: unrecorded on ZS rows, the FEU packet loss on RAW rows),
+pivot start, column guard.  Seeds are the chamber's own brightest cluster per view (no
 uRWELL); the reference columns ref_x/ref_y carry the own charge centroid and tan_mount the mount angle.
 """
 import argparse, csv, json, os, pickle, sys
@@ -69,10 +70,12 @@ def main():
     sys.path.insert(0, os.path.join(REPO, 'sps_beam_test_26', 'analysis')); import datasets
     D = datasets.get(row['dataset']); nsamp = int(D['n_samples'])
     tan = 0.0 if row['mount'] == 'flat' else float(np.tan(np.radians(25.64)))
-    if not int(row['raw']):
-        os.environ['WFT_ZS_CENSOR'] = '1'
+    # exact-zero samples are censored on EVERY SPS row: on ZS rows they were never recorded, and on the RAW rows (run_71)
+    # they are the FEU's dropped sample groups (~23 % of all samples, ws_sps 2026-10-27) -- a post-CNS RAW sample is never
+    # exactly 0, so fitting those zeros as measurements (the behaviour before) pulled every RAW fit toward no charge.
+    os.environ['WFT_ZS_CENSOR'] = '1'
     from wft import model as wm
-    wm.ZS_CENSOR = not int(row['raw'])
+    wm.ZS_CENSOR = True
     evs = {}
     for sub in row['subruns'].split():
         got = sbc.build_cache(row['run'], sub, row['dataset'], per_plateau=a.per_plateau - len(evs), half_win=a.half_win, tan=tan,
@@ -89,7 +92,7 @@ def main():
         rows = list(pool.map(one, sorted(evs), chunksize=4))
     df = pd.DataFrame(rows).sort_values('event_id').reset_index(drop=True)
     df.to_parquet(os.path.join(a.out, 'events.parquet'), index=False)
-    meta = dict(n_events=len(df), registry_row=row, bundle=a.bundle, v_drift=v, n_depth_bins=k, n_samples=nsamp, zs_censor=not int(row['raw']),
+    meta = dict(n_events=len(df), registry_row=row, bundle=a.bundle, v_drift=v, n_depth_bins=k, n_samples=nsamp, zs_censor=True,
                 channel_layer=a.mask, seeding='own brightest strip +- half_win', half_win=a.half_win,
                 env={k_: v_ for k_, v_ in os.environ.items() if k_.startswith('WFT_')}, code=os.environ.get('RERUN_CODE_COMMIT', '?'))
     json.dump(meta, open(os.path.join(a.out, 'events.meta.json'), 'w'), indent=1, default=str)

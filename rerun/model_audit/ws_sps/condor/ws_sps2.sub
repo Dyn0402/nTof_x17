@@ -1,0 +1,58 @@
+# condor_submit ws_sps2.sub  (from ~/x17rerun/ws_sps on lxplus; output on EOS /eos/user/d/dneff/x17rerun/ws_sps/out)
+# part 1: headon_sigma.py nodes of ws_sps.sub that read a stale script; part 2: zs_treatment.py
+executable     = $ENV(HOME)/x17rerun/ws_sps/run_ws_sps2.sh
+output         = log/$(ClusterId).$(ProcId).out
+error          = log/$(ClusterId).$(ProcId).err
+log            = log/ws_sps.log
+request_cpus   = 4
+request_memory = 4000
++JobFlavour    = "longlunch"
+should_transfer_files = NO
+arguments      = /eos/user/d/dneff/x17rerun/ws_sps code2 headon_sigma.py --plateau $(plateau) --zs $(zs) --censor $(cens) --chunk $(chunk) 6 --nev 1200 --jobs 4
+queue plateau zs cens chunk from (
+raw450 0 1 2
+raw450 0 1 4
+raw450 0 1 5
+raw275 0 1 0
+raw275 0 1 1
+raw275 0 1 2
+raw275 0 1 4
+raw700 4 1 0
+raw700 4 1 2
+raw700 4 1 4
+raw700 4 1 5
+raw450 4 1 4
+raw450 4 1 5
+raw275 4 1 0
+raw275 4 1 4
+raw700 0 0 4
+raw700 0 0 5
+)
+request_cpus   = 8
+arguments      = /eos/user/d/dneff/x17rerun/ws_sps code2 zs_treatment.py --plateau $(plateau) --zs $(zs) --chunk $(chunk) 8 --nev 600 --jobs 8
+queue plateau zs chunk from (
+raw700 4 0
+raw700 4 1
+raw700 4 2
+raw700 4 3
+raw700 4 4
+raw700 4 5
+raw700 4 6
+raw700 4 7
+raw700 5 0
+raw700 5 1
+raw700 5 2
+raw700 5 3
+raw700 5 4
+raw700 5 5
+raw700 5 6
+raw700 5 7
+raw275 4 0
+raw275 4 1
+raw275 4 2
+raw275 4 3
+raw275 4 4
+raw275 4 5
+raw275 4 6
+raw275 4 7
+)

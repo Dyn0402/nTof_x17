@@ -1,0 +1,21 @@
+{
+  "what": "det4 prompt footprint sigma0, drift diffusion Dp and Y RC spread D_rc from SPS run_71 RAW head-on tracks, per-event forward fits (headon_sigma.py + analyse_headon.py, ws_sps 2026-10-27)",
+  "model": "production RC kernel (wft.model.build_matrix_rc), det4 promoted bench bundle, K 60, 64 samples, dead list dropped, RAW drops censored; per event free (p0,w,t0), then chi2 on a (sigma0, Dp[, D_rc]) grid at fixed (p0,w), t0 +-5 ns; summed over 1200 clean events per view per field",
+  "selection": "leading strip within +-1 of the window centre, 9 strips, window max 250-3200 ADC, no flagged channel (results/health.json) within +-3",
+  "fields_Vcm": [243, 156, 96],
+  "sigma0_x_mm": [0.306, 0.287, 0.285],
+  "sigma0_x_err_mm": [0.007, 0.006, 0.008],
+  "sigma0_y_mm": [0.297, 0.332, 0.324],
+  "sigma0_y_err_mm": [0.020, 0.012, 0.014],
+  "D_rc_y_mm2_per_ns": [2.74e-4, 2.77e-4, 2.97e-4],
+  "Dp_x_mm_per_sqrt_ns": [0.0109, 0.0100, 0.0100],
+  "Dp_y_mm_per_sqrt_ns": [0.0086, 0.0035, 0.0046],
+  "Dp_magboltz_beam_gas": [0.0057, 0.0052, 0.0050],
+  "chi2_per_dof": [9.9, 9.9, 10.1],
+  "amplitude_dependence": "none: sigma0 in amplitude terciles flat to +-0.03 mm at every field (X falls slightly with charge); per-event best sigma0 p16-p84 0.19-0.41 mm, 8-14 % of events pick >= 0.42 by scatter alone",
+  "production_values": {"sigma0_x": 0.238, "sigma0_y": 0.343, "profile_wide": [0.42, 0.50]},
+  "verdict": "sigma0_Y ~0.32-0.34 supported fleet-wide (det4 SPS 0.32 vs det3 per-event 0.343). sigma0_X 0.29 is an UPPER BOUND (X width grows 2x Magboltz with drift time on det4 X only: the unmodelled one-sided X copy / bench X width excess); defensible X range 0.24-0.29. No physical basis for the per-event wide footprint on unsaturated pulses. Saturation untested (the beam never saturates).",
+  "zs_effect": "ZS emulated 4-5 sigma with zeros CENSORED: sigma0_Y +0.09..+0.14, sigma0_X -0.09..+0.04, D_rc to the grid floor; ZS-censored data cannot measure the footprint",
+  "dropped_samples_as_zero": "fitting the RAW drops as measured zeros (every earlier wft fit on these caches): sigma0 +0.01, chi2/dof +30 %",
+  "transfer": "sigma0 = readout (strip box + induction): board property, transfers; Dp is a beam-gas number (wet Ar/CF4/iso + O2) and does NOT transfer to the bench (Ar/iso 95/5); D_rc is a per-chamber construction constant (det4 only)"
+}

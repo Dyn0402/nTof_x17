@@ -132,6 +132,12 @@ RC_T0_INTERP = bool(int(os.environ.get('WFT_RC_T0_INTERP', 0)))
 #: either direction).  0 (default) = bit-identical on the RAW bench data, where an exact 0 after pedestal + CM
 #: subtraction is a measurement.
 ZS_CENSOR = bool(int(os.environ.get('WFT_ZS_CENSOR', 0)))
+#: Zero-suppressed data, the informative form (opt-in, ws_sps 2026-10-27): a suppressed sample is not unknown, it is
+#: known to lie BELOW the FEU threshold.  With ZS_BOUND = k > 0 the exactly-zero samples are censored as above AND
+#: penalised one-sidedly when the model rises above k x the strip noise (the mirror of the saturation penalty), so the
+#: fit cannot put charge where the FEU saw none.  k = the run's ZS threshold in sigma (SPS registry zs_sigma).
+#: Implies ZS_CENSOR.  0 (default) = off, bit-identical.
+ZS_BOUND = float(os.environ.get('WFT_ZS_BOUND', 0.0))
 
 _smear_cache: dict = {}
 _lp_cache: dict = {}
@@ -517,8 +523,14 @@ def prep_plane(P, plane):
     W /= g[:, None]
     noise = np.maximum(np.asarray(P['noise'], dtype=np.float64), 3.0) / g
     sat = np.asarray(P['W'], dtype=np.float64) >= SAT
-    if ZS_CENSOR:
+    if ZS_CENSOR or ZS_BOUND > 0:
         sat |= np.asarray(P['W'], dtype=np.float64) == 0.0
+    miss = P.get('missing') if isinstance(P, dict) else None
+    if miss is not None:
+        # samples never read out (RAW packet loss): censored, and moved off exact 0 so ZS_BOUND does not bound them
+        miss = np.asarray(miss, dtype=bool)
+        sat |= miss
+        W[miss] = -1e-12
     d = DEAD.get(plane)
     if d is not None and len(d):
         rows = np.isin(ch, d)
@@ -626,6 +638,13 @@ def _solve_nnls(M, W, noise, sat, censor=True):
         pen = np.maximum(0.0, W[sat] - model[sat]) / np.repeat(
             noise, NSAMP).reshape(W.shape)[sat]
         chi += float((pen ** 2).sum())
+        if ZS_BOUND > 0:
+            # suppressed samples (exact 0, censored above) are upper bounds: model <= k * noise
+            zs = sat & (W == 0.0)
+            if zs.any():
+                nz = np.broadcast_to(noise[:, None], W.shape)[zs]
+                pen = np.maximum(0.0, model[zs] - ZS_BOUND * nz) / nz
+                chi += float((pen ** 2).sum())
     return chi, q
 
 

@@ -4,8 +4,13 @@
 run_71 RAW (Ar/CF4/iso 88/10/2, flat mount, no zero suppression): both views
 at normal incidence, so the drift ladder is absent (w = 0) and the neighbour
 pattern is the kernel plus the lateral spread, independent of v.  Each event
-gets both views' waveform windows (+-HALF_WIN strips around the uRWELL
-prediction), tan = 0, ref_mesh = the uRWELL prediction, and a constant ftst
+gets both views' waveform windows (+-HALF_WIN strips around ev_pX/ev_pY),
+tan = 0, ref_mesh = ev_pX/ev_pY, and a constant ftst
+(CORRECTED 2026-10-27, ws_sps: in wf_run71_raw_det4only.npz ev_pX/ev_pY are
+det4's OWN leading-strip positions -- extract_det4_only.py writes lead[x/y] --
+not the uRWELL prediction; ref_mesh is self-referenced, not a resolution
+reference.  The RAW dropped sample groups are stored as 0: fit with
+WFT_ZS_CENSOR=1.)
 class (the beam trigger is asynchronous to the DREAM clock in the same way
 for every event; the 5 ns t0 prior is not used here).
 
