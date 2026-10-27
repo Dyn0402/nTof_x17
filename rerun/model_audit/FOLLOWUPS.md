@@ -11,6 +11,26 @@ combined_hits times; anything calibrated is per detector **and** per run conditi
 (switches only as `wft/diag.py` study overrides); CERN write-ups are figure-first slide notes (`slide-note` skill), not
 prose; lxplus only via `ssh lxplus`, condor outputs to EOS.
 
+## Outcomes of FA–FE (2026-10-27/28) — reports in `followups/*/REPORT.md`
+| item | outcome |
+|---|---|
+| 1 | v(t) from the model-free column duration on every trigger (no M3; works at n_TOF); block size from the Allan minimum (8.5–49 min). v(x,y) separated from the bow via dln v/dln T (bow alone −0.46): det2/3/7 bow-only, det4/det6 gas still flushing (v rms 6–9 %). Gate: det6 cell spread 8.5→2.6 %, s68 −0.6°; v(t) slightly worsens X on stable det2/det3. In the reco: v(x,y) map slot (replaces the bow scale term); v(t) slot NOT applied — event record lacks the DREAM timestamp. (FA) |
+| 2 | det3 X/Y +1.7 % is a per-view angle scale of the fit, not v (per-view column duration differs −0.6 %); one σ0 halves it (+0.8 %); follows the chamber across mountings; det4's −3.5 % has a different cause. (FA) |
+| 3 | rigid tilt constant within a mounting, changes on remount; bench slot sets Y tilt (bottom −0.5…−0.8°, top −0.2…−0.36°). (FA) |
+| 4 | **bow real**: mesh centre 1.5–2.3 mm lower than the rim (further from the cathode) on all five chambers, three independent routes, sign from external facts, static per chamber (15/19 runs within 2σ; shape transfers across runs with 94 % of own-map gain). Absolute depth 0.5–1.3× (M3 planes could bow too). Correction = `bow` bundle block: angle s68 −0.07…−0.56°. Notes mx17-chamber-bow; paper `papers/paper1/sections/08b_bow.tex`. Never to n_TOF. (FB, FE) |
+| 5 | **one σ0 = 0.30 ± 0.02 mm for both views**: the X/Y difference was σ0_X trading with Dp_X; physics: both views read the same pads, the 0.3 mm is mostly resistive-sheet spread inside the first 60 ns sample; the only view-dependent part is bounded and would make X wider. (FC) |
+| 6 | trade survives at −1.2 ± 0.5 % common compression (det4 Y, det7 Y ~−4 %); bright-track effect mostly removed by dropping the per-event σ0 (−4 % left on det6/det7, the saturating chambers). (FC) |
+| 7 | t0 pinned at the latency in bench bundles; x–y gate on column time; χ²/dof +3…+37 % under the pin (model error); never at n_TOF (enforced). (FE) |
+| 8 | map gallery note mx17-chamber-maps (USED / PARTLY / NOT USED badges). (FB) |
+| 10 | 60 ns jump scales with the single-electron footprint (onset L = 1.55 σ_eff), clustering doubles it; 20 ns flat to 45°. Realism ladder reaches 0.41–0.76° vs measured 1.06–1.76°; + 2D tilt 0.43–1.09°; 0.72–1.38° unexplained and χ²-blind (points to fine-scale geometry, not the waveform model). Note mx17-angle-floor. (FD) |
+| 11 | pairing per class 84–99 %; on det6/det7 the limit is saturation, not tolerance. (FE) |
+| 12 | `fe` arm recommended as the single reconstruction (s68 better on every view, detection +0.15…+3.3 pt except det4 −0.12); 20 ns not adopted on the bench; promotion prepared (`promote_fe.sh`), **not applied**. (FE) |
+| 13 | band strips censored + re-seed: det3 band sample 145 → 221/252 found, controls 400/400. Hotspot census deferred. (FE) |
+
+Pending: `fefa` det4/det6/det7 + `fe_nobow` det7 gate rows (lxplus auth expired 10-27 night); v(t) needs the DREAM
+timestamp in the event record; measured strip gain map (slot, all 1.0); promotion decision (Dylan); per-chamber
+`CHI2DOF_BAD`; item 9 (gas fit) and the hotspot census after reprocessing.
+
 ---
 
 ## 1. v changes over the run (gas flush) and over the surface → make it standard procedure

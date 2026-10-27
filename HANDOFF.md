@@ -22,45 +22,41 @@ adapted from the MPGD2026 abstract. The call closed on 19 Oct, so this would be 
   0.30–0.35°). Don't reuse it here or in the MPGD proceedings text (`mpgd26_proceedings/main.tex` §3 and the
   summary still say it).
 
-## Model audit (B4) + follow-ups — updated 2026-10-27 (dylan-Yoga)
+## Model audit (B4) + follow-ups — updated 2026-10-28 (dylan-Yoga)
 
-**Resume:** audit done; five follow-up workstreams FA–FE running — read `rerun/model_audit/FOLLOWUPS.md`, collect their reports.
+**Resume:** all follow-ups FA–FE done (FOLLOWUPS.md outcomes table); next = Dylan's promotion call on the `fe` bundles + pending gate rows.
 
-**Goal:** answer Dylan's audit questions (F1–F22) with the existing data, end with ONE reconstruction algorithm, then
-chase his 13 follow-up questions (FOLLOWUPS.md).
+**Goal:** answer Dylan's audit questions with existing data and end with ONE reconstruction algorithm.
 
-**Done (10-27):**
-- Eight independent workstreams finished and merged; each has `rerun/model_audit/ws_*/REPORT.md`
-  (ws_t0, ws_v_w0, ws_widthtilt, ws_sps, ws_spsv, ws_floor, ws_dead_charge, ws_unify).
-- Outcomes table at the top of `rerun/model_audit/FINDINGS.md` (supersedes the night entries where they disagree).
-- Slide note https://dylan-neff.web.cern.ch/notes/mx17-model-audit.html (23 slides), generator
-  `rerun/model_audit/make_audit_deck.py` (reads ws_* JSONs + figures; figures are gitignored, live in the main checkout).
-  slidedoc gained `img()` (dylan-cern-site c5a08e3 / ce3547b).
-- Headlines: t0 = one bench latency (300–340 ns); w0 = chamber tilt; F4 fall = selection cut + chamber bow; physics
-  floor 0.30–0.35°; SPS σ0_Y 0.32, σ0_X ≤ 0.29; F16 "14 %" = depth-grid artefact, v(243 V/cm) = 14.1 µm/ns, −8 % slope
-  residual = local gap or fit (LIMIT); single reconstruction on main (`wft/diag.py` is the only override path).
-- Dylan's 13 follow-ups documented with first answers in `rerun/model_audit/FOLLOWUPS.md`.
+**Done:**
+- Audit F1–F22: `rerun/model_audit/FINDINGS.md` (outcomes table on top), `ws_*/REPORT.md`, note notes/mx17-model-audit.
+- Follow-ups 1–13 (`rerun/model_audit/FOLLOWUPS.md`, outcomes table on top; reports `followups/{fa,fb,fc,fd,fe}_*/REPORT.md`).
+  Notes: mx17-chamber-bow, mx17-chamber-maps, mx17-angle-floor; paper section `papers/paper1/sections/08b_bow.tex`.
+- wft on main (79bb78d): pinned t0 (bench), column-time x–y gate, per-class pairing, one σ0 0.30, bow block, v(x,y)
+  map, v(t)/gain/depth_subdiv slots, one-rule dead lists, band censoring + re-seed, n_TOF transfer guards. Tests 104/104.
 
-**In progress:** follow-up workstreams FA (gas v(t)/v(x,y), det3 X–Y v, per-run tilt), FB (bow cross-checks + map
-gallery + paper section), FC (σ0 X vs Y, width–tilt with all corrections), FD (realistic floor toy), FE (unified reco:
-implement decided items, band awareness, re-finalise). Spawned as background agents from session c1e60882 on
-dylan-Yoga; each writes `rerun/model_audit/followups/<id>/` and lands on main.
+**In progress / where it stopped:** `fefa` det4/6/7 and `fe_nobow` det7 condor rows were running when the lxplus 2FA
+connection expired (10-27 ~midnight); outputs land in `/eos/user/d/dneff/x17rerun/followups/fe/Analysis_fe/`.
 
 **Next steps:**
-1. Collect FA–FE results; fold into FOLLOWUPS.md; extend the slide note (or a second note) figure-first.
-2. Deferred until after reprocessing: SPS gas fit (H₂O + O₂ with Magboltz, item 9); noise-band hotspot census (item 13).
+1. `ssh lxplus` (2FA), then `rerun/model_audit/followups/fe_unify2/pull_fe.sh fefa fe_nobow` and rerun `gate_compare.py`;
+   decide fe vs fefa.
+2. Dylan's call: promote (`promote_fe.sh --apply`, then `promote_phys.py --fill-conditions --apply`, vrefit +
+   `set_w0kw.py --table` for non-golden rows). Not applied.
+3. Add the DREAM timestamp + acquisition tag to the event record so v(t) can be applied (FA; only where drift > Allan floor).
+4. Per-chamber `CHI2DOF_BAD`; measured strip gain map (FD: det4 −0.55°).
+5. After reprocessing: SPS gas fit (H₂O + O₂, item 9); noise-band hotspot census (item 13).
 
 **Gotchas / decisions:**
-- Sub-agents could not write REPORT.md files (harness refusal) — coordinator writes them from the final message.
-- Before removing a worktree, copy its gitignored files (PNGs are ignored): `git status --short --ignored | grep '^!!'`.
-- Agents waiting on condor stall (no notification arrives) — check EOS outputs and nudge them.
-- Old SPS caches were 256 ADC high (fixed 7505338); EOS `model_audit/ws_spsv/q_*.npz` + `cache/` top level are INVALID.
-- Bench w0, bow and tilt maps are mounting/geometry: never transfer to n_TOF. Gain maps in all promoted bench bundles are 1.0.
+- Sub-agents cannot write REPORT.md (harness) — coordinator writes them from the final message.
+- Copy gitignored files (PNGs) out of a worktree before removing it.
+- Agents waiting on condor stall; check EOS outputs and nudge. lxplus 2FA expires overnight → jobs can't be pulled.
+- Bench bow / tilt / v map / w0 never go to n_TOF (now enforced in make_bundle + wft_beam).
+- 20 ns grid not adopted on the bench (cost 3×, no gain); revisit for n_TOF steep pairs.
 
 **Key files & commands:**
-- `rerun/model_audit/FINDINGS.md`, `FOLLOWUPS.md`, `ws_*/REPORT.md`
-- `.venv/bin/python rerun/model_audit/make_audit_deck.py` then
-  `python3 ~/PycharmProjects/dylan-cern-site/scripts/add-note.py rerun/model_audit/deck/mx17-model-audit.html --slug mx17-model-audit --force --deploy`
+- `rerun/model_audit/{FINDINGS,FOLLOWUPS}.md`, `ws_*/`, `followups/*/`
+- `.venv/bin/python rerun/model_audit/make_audit_deck.py` + add-note (slug mx17-model-audit) for the audit note
 
 ## Full-pass readiness (bench + SPS re-run) — updated 2026-10-27 (dylan-Yoga)
 
