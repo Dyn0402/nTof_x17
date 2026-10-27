@@ -19,7 +19,7 @@ from make_gate_dag import GOLDEN, SUB, SH  # noqa: E402
 
 ARMS = {'fe1': ('', 'calib_bundle_fe1'), 'fe1g': ('', 'calib_bundle_fe1g'), 'fe': ('', 'calib_bundle_fe'),
         'feg': ('', 'calib_bundle_feg'), 'fe_nb': ('WFT_DIAG=model.BAND_NSIG=0', 'calib_bundle_fe'),
-        'fe_nobow': ('', 'calib_bundle_fe_nobow')}
+        'fe_nobow': ('', 'calib_bundle_fe_nobow'), 'fefa': ('', 'calib_bundle_fefa')}
 
 
 def main():

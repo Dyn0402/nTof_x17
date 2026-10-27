@@ -17,7 +17,8 @@ declare -A ROW=( [det2]=mx17_det2_det3_overnight_6-22-26/longer_run/mx17_2 [det3
                  [det7]=mx17_det6_det7_overnight_6-26-26/long_run/mx17_7 )
 for d in det2 det3 det4 det6 det7; do
   W=$T/${ROW[$d]}/wft
-  BOW=""; [ "$MODE" = "bow" ] && BOW="--bow-json $REPO/rerun/model_audit/followups/fb_bow_maps/results/bow_block_$d.json"
+  BOW=""; [ "$MODE" != "nobow" ] && BOW="--bow-json $REPO/rerun/model_audit/followups/fb_bow_maps/results/bow_block_$d.json"
+  [ "$MODE" = "vmap" ] && BOW="$BOW --vmap-json $REPO/rerun/model_audit/followups/fa_gas_v_tilt/results/vgas_$d.json"
   echo "== $d"
   "$PY" "$REPO/rerun/w12/set_w0kw.py" "$d" --bundle "$W/calib_bundle_$SRC" --angles "$W/$SRC/angles" \
       --table "$W/$SRC/events.parquet" --sigma0 "$SIGMA0" $BOW --out "$OUT/$d/calib_bundle_$DST"
