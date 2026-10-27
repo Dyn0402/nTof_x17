@@ -79,3 +79,14 @@ nodes.  Fine for the pass; a stated systematic wherever w0 cannot be measured.
 FEU 03 at H4 has a different cabling (inverted connectors); a bundle `dead` list is applied by channel number
 (`prep_plane`), so the bench mask would censor the wrong strips.  SPS bundles need the mask remapped by position (or
 dropped: `heldout_arm.py --no-dead`).  ZS data need exactly-zero samples censored: `WFT_ZS_CENSOR=1` (new, opt-in).
+
+## F13 · The K = 24 depth grid truncates ~10 % of det6/det7 columns — ARM (k30)
+`q_uend` p90 = 1440 ns = K × 60 on det6 (both views) and det7 (both views); det6 Y p50 1200.  C5 set K = 24 for
+1000 V rows and 30 for ≤ 500 V, but det6/det7 ran at 700 V (243 V/cm) and det6 drifts at 24 µm/ns (T ≈ 1240 ns before
+diffusion and RC spread).  A column ending on the last bin is either truncated or the NNLS parking charge there
+(COL_GUARD keeps columns with weighted norm ≥ 1 % of the largest).  Held-out arm `k30` measures the angle effect.
+
+## F14 · Position resolution of the finalize alignment (M3 residual, |r| < 10 mm; reference-limited at ~0.40 mm) — record
+det2 0.504 / 0.508, det3 0.522 / 0.582, det4 0.560 / 0.734, det6 0.513 / 0.508, det7 0.643 / 0.762 mm (X / Y).  det3's
+Y and det4/det7's Y are 10–30 % worse than X; det6 the best in Y despite the worst angles (position at the mesh is a
+different quantity from the slope).  No pointing-estimator problem found here.
