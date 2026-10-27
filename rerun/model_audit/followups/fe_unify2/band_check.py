@@ -44,7 +44,8 @@ def score():
     band, ctl = ids[:N_BAND], ids[N_BAND:]
     tabs = {'prod (final_phys)': None, 'flat-hit drop 10-26 (reco_band_flat)': os.path.join(S, 'reco_band_flat', 'events.parquet'),
             'unified, no censoring': os.path.join(OUT, 'nocens', 'events.parquet'),
-            'unified + band censoring': os.path.join(OUT, 'cens', 'events.parquet')}
+            'unified + band censoring': os.path.join(OUT, 'cens', 'events.parquet'),
+            'unified + censoring + band re-seed': os.path.join(OUT, 'reseed', 'events.parquet')}
     res = {}
     for name, p in tabs.items():
         if p is None:
