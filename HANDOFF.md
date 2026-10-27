@@ -1,5 +1,53 @@
 # Handoff
 
+## Model audit (B4) — night of 2026-10-27 (dylan-Yoga + lxplus condor)
+
+**Resume:** read `rerun/model_audit/FINDINGS.md` (F1–F19, each with a status) and the report
+`~/x17/cosmic_bench/model_audit/report.html` (published: notes/mx17-model-audit); the B4 triage table is in
+`rerun/RERUN_PLAN.md` §12.  Everything below is on main.
+
+**Verdict in one paragraph.** The five chambers tell one consistent story under the phys kernel: reco ladder on the
+timing v within 2–5 %, s68 1.03–1.9°, positions 0.50–0.76 mm, det3 interior detection 91.2 % reproduced, the dead-strip
+seeding and the σ0 profile behave as documented.  **One meaningful improvement is left in the model: the angle response
+compresses with angle** — implied v falls 4–15 % from |tan| 0.1 to 0.4 on every chamber and view, steep tracks read
+0.25–1.5° shallow, and SPS det4 at the 25.64° mount reads 23.2° (|w_y|/tan = 0.89 × the timing v at 235 V/cm, growing
+to 0.65 at 148 V/cm), with no reference involved.  The mechanism is in the model, not the optimiser (at the M3 angle
+the χ² is higher in 94–95 % of steep tracks; two-sided start changes nothing): the per-event σ0 profile trades
+footprint width for tilt (wide-footprint fits read 6–12 % shallower, 13–36 % of fits), and a residual depends on the
+drift time.  The rest is bookkeeping: the column plausibility window was fixed at v = 36.6 (23–60 % of det4/6/7 Y tracks
+"implausible"; **fixed**), dt_xy is stale by one 60 ns bin and det4's is empty so the x–y gate fails on 15–44 % of single
+tracks and n_tracks = 0 on 40–80 % (**tooling fixed**, bundles not yet updated), the RC kernel is a 5 ns staircase in t0
+(t0_err NaN on ~30 % of det6/det7 fits; **opt-in interpolation fixed**), the t0 prior is on for det2/3/4 and off for
+det6/7 and inert either way, per-event angle errors are a 1° floor.
+
+**Fixes on main (all tests pass, 84):** `wft.reco.u_window(cal)` (v-scaled plausibility, default; `WFT_U_FIXED=1`
+legacy); `WFT_RC_T0_INTERP=1`; `WFT_ZS_CENSOR=1`; RC-kernel keys `rc_asym_<plane>` / `rc_asym_tau_<plane>` (opt-in,
+one-sided delayed copy); `rerun/w12/set_w0kw.py --table <events.parquet>` re-measures dt_xy and writes the `xy_pairing`
+block; `rerun/sps_registry.csv` (71 plateaus) + `rerun/model_audit/sps_reco.py` / `sps_stage.sh` (B3 stage; dry run
+`sps_dry.sub` on condor).  Not changed: any bundle on EOS, any production default except the plausibility window.
+
+**Tooling (rerun/model_audit/):** `fleet_tables.py` (the fleet table from finalize tables), `heldout_arm.py` +
+`make_heldout_dag.py` + `heldout_compare.py` (event-paired held-out arms, ~10 min/arm on condor), `make_gate_dag.py` +
+`gate_compare.py` (prototype gate on 8000 events per golden row), `sps_build_cache.py` / `make_sps_dag.py` /
+`sps_summary.py` (SPS known-angle test), `steep_probe.py` (model vs optimiser on steep tracks), `make_report.py`.
+Outputs on EOS `/eos/user/d/dneff/x17rerun/model_audit/{heldout,heldout2,sps,sps2,sps_pass}` and
+`/eos/user/d/dneff/x17rerun/Analysis_audit/` (gate arms); local mirror `~/x17/cosmic_bench/model_audit/`.
+
+**Next steps (for B1/B2):**
+1. Choose σ0 per event from a measured quantity (saturation / charge), not by χ², or fit the width at fixed tilt; gate
+   the change on the steep bins (`heldout_compare` bias_steep±) and on the SPS 25.64° test (`sps_summary`: |w_y|/tan
+   at 235 V/cm must reach ~1.0).  The remaining drift-time-dependent part needs a model term (candidates in F16).
+2. Add `--table {out}/wft/.../events.parquet` to the finalize / vrefit W0KW nodes so dt_xy and xy_pairing are
+   re-measured under the phys kernel, then re-promote (F5); set `t0_prior_sigma` 0 everywhere or re-measure t0_abs (F1/F6).
+3. Decide the gate tolerance from the measured t0 width (2.5 rσ keeps 92–97 %) and widen `DT_XY_TOL_NS` accordingly.
+4. B2: `gate_compare` on all five rows is the gate table (prototype arms: see the report; det2 band +0.7 pt, head-on +0.4
+   pt detected at no resolution cost).  B3: `sps_reco.py` dry run → check `/eos/user/d/dneff/x17rerun/model_audit/sps_pass/`.
+
+**Gotchas:** condor's `environment = "$(env)"` macro silently dropped the WFT_* variables (all first-round env arms
+were copies of the base) — pass them through the shell wrapper; condor refuses an executable on EOS (wrappers on AFS,
+code on EOS) and refuses quoted JSON in `arguments` (use `--set k=v`); `git archive | tar` onto EOS takes ~10 min.
+
+
 ## Full-pass readiness (bench + SPS re-run) — updated 2026-10-27 (dylan-Yoga)
 
 **Resume:** pass ON HOLD; blockers in rerun/RERUN_PLAN.md §12 (B1 unified reco, B2 fleet gate, B3 SPS wiring, B4 audit).
