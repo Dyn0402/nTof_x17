@@ -17,7 +17,7 @@ REPO = os.environ.get('WFT_REPO') or os.path.abspath(os.path.join(HERE, '..', '.
 _EV = None; _OPT = None
 
 
-def _init(cache, bundle, k, hyper_over, v, nsamp, two_sided, t0fix, no_dead=False, hyper_scale=None):
+def _init(cache, bundle, k, hyper_over, v, nsamp, two_sided, t0fix, no_dead=False, hyper_scale=None, sps_mask_mode=None):
     global _EV, _OPT
     sys.path.insert(0, REPO)
     from wft.calib import CalibrationBundle
@@ -31,6 +31,10 @@ def _init(cache, bundle, k, hyper_over, v, nsamp, two_sided, t0fix, no_dead=Fals
     cal.hyper.update(hyper_over or {})
     if no_dead:
         cal.dead, cal.hot = {}, {}       # bench channel numbering does not apply off the bench (SPS FEU 03)
+    if sps_mask_mode:                    # the H4 channel layer (sps_mask.py), FEU 03 numbering
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        import sps_mask
+        sps_mask.apply(cal, sps_mask_mode)
     wm.use_calibration(cal); wm.set_depth_bins(k)
     if wm.COL_GUARD <= 0:
         wm.COL_GUARD = 0.01
@@ -110,6 +114,7 @@ def main():
     ap.add_argument('--v', type=float, default=None); ap.add_argument('--nsamp', type=int, default=None)
     ap.add_argument('--two-sided', action='store_true'); ap.add_argument('--t0-fix', action='store_true')
     ap.add_argument('--no-dead', action='store_true', help='drop the bundle dead/hot lists (channel numbering of another cabling)')
+    ap.add_argument('--sps-mask', default=None, choices=('h4', 'h4_stripes', 'bench', 'none'), help='SPS det4 caches: the H4 channel layer (sps_mask.py)')
     ap.add_argument('--ids', default=None, help='JSON list of event ids (overrides --start/--n)')
     a = ap.parse_args()
     hy = json.loads(a.hyper) if a.hyper else {}; hs = json.loads(a.hyper_scale) if a.hyper_scale else {}
@@ -122,7 +127,7 @@ def main():
     C = pickle.load(open(a.cache, 'rb'))
     ids = json.load(open(a.ids)) if a.ids else sorted(C)[a.start:a.start + a.n]
     del C
-    with ProcessPoolExecutor(a.jobs, initializer=_init, initargs=(a.cache, a.bundle, a.k, hy, a.v, a.nsamp, a.two_sided, a.t0_fix, a.no_dead, hs)) as pool:
+    with ProcessPoolExecutor(a.jobs, initializer=_init, initargs=(a.cache, a.bundle, a.k, hy, a.v, a.nsamp, a.two_sided, a.t0_fix, a.no_dead, hs, a.sps_mask)) as pool:
         rows = [r for rs in pool.map(one, ids, chunksize=2) for r in rs]
     per = np.array(rows, float)
     env = {k: v for k, v in os.environ.items() if k.startswith('WFT_')}

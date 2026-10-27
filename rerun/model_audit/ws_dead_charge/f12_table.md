@@ -1,0 +1,12 @@
+| chamber view | datasets (judged ch / flagged) | detector | electronics | one-off | other |
+|---|---|---|---|---|---|
+| det2_x | bench ovn_det2 (FEU 7): 122/284; bench o22_det2 (FEU 6): 510/5; bench g_det2 (FEU 6): 510/9; bench o22_long_det2 (FEU 6): 510/7; n_TOF B run_55 (FEU 5): 13/7; n_TOF B run_79 (FEU 5): 139/3; n_TOF B run_145 (FEU 5): 9/2 | 5 | 3 | 280 | 2 |
+| det2_y | bench ovn_det2 (FEU 8): 244/39; bench o22_det2 (FEU 8): 509/1; bench g_det2 (FEU 8): 510/11; bench o22_long_det2 (FEU 8): 510/11; n_TOF B run_55 (FEU 6): 322/9; n_TOF B run_79 (FEU 6): 254/11; n_TOF B run_145 (FEU 6): 4/3 | 3 | 6 | 39 | 12 |
+| det3_x | bench g_det3 (FEU 3): 510/1; bench o22_det3 (FEU 3): 510/1; bench o23_long_det3 (FEU 3): 51/24; bench g_det3_wknd (FEU 7): 510/5; bench sat_det3 (FEU 7): 510/3; n_TOF A run_55 (FEU 3): 0/7; n_TOF A run_79 (FEU 3): 389/65; n_TOF A run_145 (FEU 3): 0/0 | 0 | 6 | 65 | 0 |
+| det3_y | bench g_det3 (FEU 4): 510/25; bench o22_det3 (FEU 4): 490/18; bench o23_long_det3 (FEU 4): 173/47; bench g_det3_wknd (FEU 8): 510/11; bench sat_det3 (FEU 8): 510/0; n_TOF A run_55 (FEU 4): 5/23; n_TOF A run_79 (FEU 4): 508/6; n_TOF A run_145 (FEU 4): 45/4 | 11 | 6 | 34 | 15 |
+| det4_x | bench o23_long_det4 (FEU 6): 85/133; bench g_det4 (FEU 6): 432/79; SPS run56_m10V (FEU 03): 192/59; SPS run63_flat (FEU 03): 197/57; SPS run71_raw (FEU 03): 161/41 | 16 | 3 | 66 | 42 |
+| det4_y | bench o23_long_det4 (FEU 8): 229/8; bench g_det4 (FEU 8): 510/12; SPS run56_m10V (FEU 03): 254/3; SPS run63_flat (FEU 03): 254/6; SPS run71_raw (FEU 03): 248/5 | 0 | 2 | 20 | 5 |
+| det6_x | bench g_det6 (FEU 3): 370/50; bench g_det6_longer (FEU 3): 491/42; bench g_det6_long (FEU 3): 493/38; n_TOF C run_55 (FEU 7): 43/41; n_TOF C run_79 (FEU 7): 319/39; n_TOF C run_145 (FEU 7): 0/33 | 36 | 1 | 13 | 5 |
+| det6_y | bench g_det6 (FEU 4): 201/9; bench g_det6_longer (FEU 4): 510/16; bench g_det6_long (FEU 4): 510/25; n_TOF C run_55 (FEU 8): 58/4; n_TOF C run_79 (FEU 8): 493/7; n_TOF C run_145 (FEU 8): 10/4 | 5 | 9 | 8 | 7 |
+| det7_x | bench g_det7 (FEU 6): 510/14; bench g_det7_longer (FEU 6): 510/130; bench g_det7_long (FEU 6): 510/123; n_TOF D run_55 (FEU 1): 131/87; n_TOF D run_79 (FEU 1): 369/78; n_TOF D run_145 (FEU 1): 17/66 | 65 | 16 | 62 | 68 |
+| det7_y | bench g_det7 (FEU 8): 510/6; bench g_det7_longer (FEU 8): 510/8; bench g_det7_long (FEU 8): 510/14; n_TOF D run_55 (FEU 2): 200/45; n_TOF D run_79 (FEU 2): 445/58; n_TOF D run_145 (FEU 2): 59/26 | 8 | 1 | 63 | 18 |

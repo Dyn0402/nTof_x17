@@ -307,6 +307,49 @@ class CalibrationBundle:
                              + '; '.join(bad))
         return bad
 
+    def remap_channels(self, src_pos: Dict[str, np.ndarray], dst_pos: Dict[str, np.ndarray],
+                       target: str = '', tol_mm: float = 0.3) -> dict:
+        """Carry the channel-indexed fields (``dead``, ``hot``, ``gain``) to another cabling BY STRIP POSITION.
+
+        ``dead``/``hot``/``gain`` are FEU channel numbers of the dataset the bundle was made on.  A different cabling
+        of the same chamber (SPS H4: FEU 03, connectors 3-6 only, every plug inverted; n_TOF: inverted plugs, other
+        FEUs) puts a different strip behind the same channel number, so applying the list by number censors the
+        wrong strips (model audit F12, 2026-10-27).  ``src_pos`` / ``dst_pos``: {plane: (512,) strip position [mm],
+        nan = not cabled} of the source and target datasets, in the chamber's own strip-map frame (the frame every
+        bench, SPS and n_TOF map shares).  A source channel whose strip is not cabled in the target is dropped
+        (counted).  Gains of target channels with no source strip are 1.  Modifies the bundle in place, records
+        ``provenance['channel_remap']`` and returns that record."""
+        rec = dict(target=target, tol_mm=tol_mm, planes={})
+        for p in ('x', 'y'):
+            sp = np.asarray(src_pos[p], float); dp = np.asarray(dst_pos[p], float)
+            ok = np.flatnonzero(np.isfinite(dp)); o = ok[np.argsort(dp[ok])]; ds = dp[o]
+
+            def to_dst(c):
+                x = sp[int(c)]
+                if not np.isfinite(x) or not len(ds):
+                    return None
+                j = int(np.clip(np.searchsorted(ds, x), 1, len(ds) - 1))
+                j = j - 1 if abs(ds[j - 1] - x) <= abs(ds[j] - x) else j
+                return int(o[j]) if abs(ds[j] - x) <= tol_mm else None
+
+            r = {}
+            for name in ('dead', 'hot'):
+                lst = getattr(self, name).get(p, [])
+                m = [to_dst(c) for c in lst]
+                getattr(self, name)[p] = sorted({c for c in m if c is not None})
+                r[name] = dict(n_src=len(lst), n_dst=len(getattr(self, name)[p]), dropped=sum(c is None for c in m))
+            g_src = np.asarray(self.gain[p], float); g = np.ones(512)
+            for c in range(512):
+                d = to_dst(c)
+                if d is not None:
+                    g[d] = g_src[c]
+            self.gain[p] = g
+            r['gain_not_unit'] = int(np.sum(np.abs(g - 1) > 1e-9))
+            rec['planes'][p] = r
+        self.provenance = dict(self.provenance)
+        self.provenance['channel_remap'] = rec
+        return rec
+
     def summary(self) -> str:
         h = self.hyper
         if 'rc_D_y' in h:

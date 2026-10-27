@@ -3,7 +3,7 @@
 
 One node per (plateau cache, arm): heldout_arm.py on the inclined run_63 operating_00 caches (sps_build_cache.py) with
 the promoted bench det4 bundle, v = the span-route CF4 v(E) of the plateau, K covering the column at 64 samples, ZS
-censoring, bench dead list dropped (other cabling).  Output /eos/user/d/dneff/x17rerun/model_audit/sps/<cache>_<arm>.npz.
+censoring, the H4 channel layer (sps_mask.py; bench lists are other channel numbers).  Output /eos/user/d/dneff/x17rerun/model_audit/sps/<cache>_<arm>.npz.
 """
 import argparse
 
@@ -36,7 +36,7 @@ def main():
             env, extra = ARMS[arm]; name = f'SPS_{pl}_{arm}'
             env = env.replace(' ', ',') or '-'
             args = (f'--cache {cache} --bundle {A} --out {a.out_dir}/{a.dataset}_{a.subrun}_{pl}_{arm}.npz --start 0 --n {a.n} --jobs 8 '
-                    f'--k {k} --nsamp 64 --v {v} --no-dead {extra}')
+                    f'--k {k} --nsamp 64 --v {v} --sps-mask h4 {extra}')
             L += [f'JOB {name} heldout.sub', f'VARS {name} nodename="{name}" code="{a.code}" env="{env}" args="{args}"', f'RETRY {name} 1']
     open(f'{a.tag}.dag', 'w').write('\n'.join(L) + '\n')
     print(f'wrote {a.tag}.dag: {sum(1 for l in L if l.startswith("JOB"))} nodes')

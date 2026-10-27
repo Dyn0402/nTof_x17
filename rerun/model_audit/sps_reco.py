@@ -5,8 +5,9 @@
 The SPS det4 reconstruction stage (RERUN_PLAN §12 B3): one registry row (dataset + plateau) -> <out>/events.parquet in
 the wft table layout (event_id, x_*/y_* PlaneFit columns, n_tracks) + events.meta.json, from the decoded FEU 03 files
 on EOS.  The bench det4 bundle is adapted to the row: v = the row's v_span (CF4 ladder) or the bundle v, K = the row's
-K, 64/32 samples from the dataset, dead/hot lists dropped (bench channel numbering), exactly-zero samples censored on
-ZS rows (WFT_ZS_CENSOR), pivot start, column guard.  Seeds are the chamber's own brightest cluster per view (no
+K, 64/32 samples from the dataset, the channel layer measured at H4 in place of the bench one (sps_mask.py: the bench
+lists are bench channel numbers, a different strip at H4; --mask bench carries them by position, none drops them),
+exactly-zero samples censored on ZS rows (WFT_ZS_CENSOR), pivot start, column guard.  Seeds are the chamber's own brightest cluster per view (no
 uRWELL); the reference columns ref_x/ref_y carry the own charge centroid and tan_mount the mount angle.
 """
 import argparse, csv, json, os, pickle, sys
@@ -20,13 +21,14 @@ BUNDLE = '/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_rr1/mx17_det4_day_
 _EV = None
 
 
-def _init(cache, bundle, k, v, nsamp):
+def _init(cache, bundle, k, v, nsamp, mask='h4'):
     global _EV
     from wft.calib import CalibrationBundle
     from wft import model as wm, reco as wr
+    import sps_mask
     _EV = pickle.load(open(cache, 'rb'))
     cal = CalibrationBundle.load(bundle)
-    cal.dead, cal.hot = {}, {}
+    sps_mask.apply(cal, mask)
     if v:
         cal.v_drift = float(v)
     cal.t0_abs, cal.t0_prior_sigma = {}, 0.0        # the beam trigger is asynchronous to the DREAM clock
@@ -58,6 +60,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('key'); ap.add_argument('--out', required=True); ap.add_argument('--registry', default=os.path.join(REPO, 'rerun', 'sps_registry.csv'))
     ap.add_argument('--bundle', default=BUNDLE); ap.add_argument('--per-plateau', type=int, default=3000); ap.add_argument('--jobs', type=int, default=8)
+    ap.add_argument('--mask', default='h4', choices=('h4', 'h4_stripes', 'bench', 'none'), help='channel layer at H4 (sps_mask.py)')
     ap.add_argument('--half-win', type=int, default=16); ap.add_argument('--work', default=os.environ.get('_CONDOR_SCRATCH_DIR', '/tmp'))
     a = ap.parse_args()
     row = {r['key']: r for r in csv.DictReader(open(a.registry))}[a.key]
@@ -82,12 +85,12 @@ def main():
     cache = os.path.join(a.work, f'sps_cache_{a.key}.pkl'); pickle.dump(evs, open(cache, 'wb'), protocol=4)
     v = float(row['v_span_um_ns']) if row['v_span_um_ns'] else None
     k = int(row['K']) if row['K'] else int(np.ceil(28800.0 / (v or 12.0) / 60.0)) + 5
-    with ProcessPoolExecutor(a.jobs, initializer=_init, initargs=(cache, a.bundle, k, v, nsamp)) as pool:
+    with ProcessPoolExecutor(a.jobs, initializer=_init, initargs=(cache, a.bundle, k, v, nsamp, a.mask)) as pool:
         rows = list(pool.map(one, sorted(evs), chunksize=4))
     df = pd.DataFrame(rows).sort_values('event_id').reset_index(drop=True)
     df.to_parquet(os.path.join(a.out, 'events.parquet'), index=False)
     meta = dict(n_events=len(df), registry_row=row, bundle=a.bundle, v_drift=v, n_depth_bins=k, n_samples=nsamp, zs_censor=not int(row['raw']),
-                dead_dropped=True, seeding='own brightest strip +- half_win', half_win=a.half_win,
+                channel_layer=a.mask, seeding='own brightest strip +- half_win', half_win=a.half_win,
                 env={k_: v_ for k_, v_ in os.environ.items() if k_.startswith('WFT_')}, code=os.environ.get('RERUN_CODE_COMMIT', '?'))
     json.dump(meta, open(os.path.join(a.out, 'events.meta.json'), 'w'), indent=1, default=str)
     os.remove(cache)
