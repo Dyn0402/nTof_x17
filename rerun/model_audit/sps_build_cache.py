@@ -19,6 +19,27 @@ from det4_sps_map import POSITION_MM, VIEW, PITCH_MM         # noqa: E402
 
 RUNS = '/eos/experiment/ntof/data/x17/p2_sps_july/runs'
 NOISE_ADC = 10.0
+#: ZS FEU data are decoded as 256 + (ADC - pedestal) on every kept sample (the flat ZS baseline; extract_det4_only.py,
+#: flat_align_eff.py subtract it).  Before 2026-10-27 (ws_sps) this builder did not, so every kept sample of the ZS caches
+#: (the model-audit F16/F20 SPS rows) sat 256 ADC above the suppressed zeros.
+ZS_BASELINE = 256.0
+#: RAW FEU data are decoded on the raw per-channel pedestals (~300-700 ADC): per event and channel the median of the
+#: present samples among the first RAW_PRE (pre-signal; the head-on column starts at ~800 ns) is subtracted.  No
+#: common-mode correction here (extract_det4_only.py does the full pedestal + CNS); the FEU's dropped samples stay 0.
+RAW_PRE = 8
+
+
+def _baseline(ch, sm, am, raw):
+    """Pedestal-corrected amplitudes of one event's samples (see ZS_BASELINE / RAW_PRE)."""
+    if not raw:
+        out = am - ZS_BASELINE
+    else:
+        out = am.copy()
+        for c in np.unique(ch):
+            k = ch == c; pre = am[k & (sm < RAW_PRE)]
+            out[k] = am[k] - (np.median(pre) if len(pre) else np.median(am[k]))
+    out[out == 0.0] = 1e-3       # an exact 0 means 'not read out' downstream (suppressed / dropped)
+    return out
 
 
 def subrun_span(run, subrun):
@@ -69,6 +90,7 @@ def build_cache(run, subrun, dataset, per_plateau=1000, half_win=16, tan=None, e
                 if L is None or len(out.get(L, {})) >= a.per_plateau:
                     continue
                 ch = arr['channel'][j].astype(int); sm = arr['sample'][j].astype(int); am = arr['amplitude'][j].astype(np.float32)
+                am = _baseline(ch, sm, am, bool(D.get('raw', False)))
                 rec = dict(eid=int(arr['eventId'][j]), tan_x=a.tan, tan_y=a.tan, t_wall=float(tw[j]), file=os.path.basename(f))
                 ok = True
                 for view in ('x', 'y'):

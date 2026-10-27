@@ -125,7 +125,8 @@ def main():
     ap.add_argument('--cache-dir', default='/media/dylan/data/x17/cosmic_bench/outliers/sps')
     a = ap.parse_args(); os.makedirs(FIG, exist_ok=True)
     summ = {}; keep = {}
-    for tag in ('raw700', 'raw450', 'raw275', 'raw700_zs4', 'raw700_zs5', 'raw450_zs4', 'raw275_zs4', 'raw700_nocens'):
+    for tag in ('raw700', 'raw450', 'raw275', 'raw700_zs4', 'raw700_zs5', 'raw450_zs4', 'raw275_zs4', 'raw700_nocens',
+                'raw700_zs4_zero', 'raw700_zs5_zero', 'raw275_zs4_zero'):
         D = load(a.dir, tag)
         if D is None:
             continue
@@ -143,7 +144,7 @@ def main():
         summ[tag]['t0'] = t0_pos(D)
         print(f'        x-y t0: median {summ[tag]["t0"]["dt_med"]:+.1f} ns, rsig {summ[tag]["t0"]["dt_rsig"]:.1f} ns (n {summ[tag]["t0"]["n_xy"]})')
     # paired shifts of the per-event best sigma0 (same events) for the ZS / no-censor arms
-    for tag in ('raw700_zs4', 'raw700_zs5', 'raw450_zs4', 'raw275_zs4', 'raw700_nocens'):
+    for tag in ('raw700_zs4', 'raw700_zs5', 'raw450_zs4', 'raw275_zs4', 'raw700_nocens', 'raw700_zs4_zero', 'raw700_zs5_zero', 'raw275_zs4_zero'):
         base = tag.split('_')[0]
         for v in 'xy':
             if (tag, v) in keep and (base, v) in keep:

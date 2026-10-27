@@ -54,7 +54,7 @@ def _init(plateau, zs, censor=1):
     # 2 (with --zs): the suppressed samples are fitted as measured zeros, the RAW drops censored (P['missing'])
     wm.ZS_CENSOR = censor == 1
     _CENSOR = censor
-    _EV = pickle.load(open(CACHE.format(plateau), 'rb'))
+    _EV = pickle.load(open(plateau if plateau.endswith('.pkl') else CACHE.format(plateau), 'rb'))
     cal = CalibrationBundle.load(BUNDLE)
     cal.dead, cal.hot = {}, {}                       # bench channel numbering; SPS FEU 03 is cabled differently (F12)
     for k in [k for k in cal.hyper if k.startswith('sigma_p0_prof')]:
@@ -166,6 +166,8 @@ def main():
     ap.add_argument('--chunk', type=int, nargs=2, default=None, metavar=('I', 'N'))
     ap.add_argument('--plateau', default='raw700'); ap.add_argument('--zs', type=float, default=0.0)
     ap.add_argument('--nev', type=int, default=500); ap.add_argument('--jobs', type=int, default=3)
+    ap.add_argument('--cache', default=None, help='any head-on cache pickle (9-strip windows) instead of the run_71 one')
+    ap.add_argument('--tag', default=None, help='output tag (with --cache)'); ap.add_argument('--views', default='xy')
     ap.add_argument('--out', default=OUT)
     ap.add_argument('--censor', type=int, default=1, choices=[0, 1, 2],
                     help='1: censor exact zeros; 0: fit the RAW drops as zeros (bias of earlier run_71 fits); 2: ZS zeros measured')
@@ -183,11 +185,14 @@ def main():
             pickle.dump(dict(S0=S0, DP=DP, DRC=DRC, ref=REF, K=K_BINS, rows=R), f, protocol=4)
         report(R, a.out, tag); return
     H = json.load(open(hp))
-    E = pickle.load(open(CACHE.format(a.plateau), 'rb'))
+    src = a.cache or CACHE.format(a.plateau)
+    if a.cache:
+        tag = a.tag or os.path.basename(a.cache)[:-4]
+    E = pickle.load(open(src, 'rb'))
     tasks = []
     nx = ny = 0
     for eid in sorted(E):
-        views = [v for v in 'xy' if clean(E[eid], v, H[v]['flagged'])]
+        views = [v for v in a.views if clean(E[eid], v, H[v]['flagged'])]
         if 'x' in views and nx >= a.nev:
             views.remove('x')
         if 'y' in views and ny >= a.nev:
@@ -199,7 +204,7 @@ def main():
         tasks = tasks[a.chunk[0]::a.chunk[1]]
         tag += f'_c{a.chunk[0]:02d}'
     print(f'{a.plateau} zs={a.zs}: clean views x {nx}, y {ny}', flush=True)
-    with ProcessPoolExecutor(a.jobs, initializer=_init, initargs=(a.plateau, a.zs, a.censor)) as pool:
+    with ProcessPoolExecutor(a.jobs, initializer=_init, initargs=(src, a.zs, a.censor)) as pool:
         R = list(pool.map(one, tasks, chunksize=4))
     with open(os.path.join(a.out, f'headon_{tag}.pkl'), 'wb') as f:
         pickle.dump(dict(S0=S0, DP=DP, DRC=DRC, ref=REF, K=K_BINS, rows=R), f, protocol=4)

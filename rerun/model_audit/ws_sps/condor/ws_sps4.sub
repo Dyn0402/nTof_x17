@@ -1,0 +1,34 @@
+# condor_submit ws_sps4.sub -- real ZS flat rows, X footprint grid with zeros as measured (zs_scan_job.py)
+executable     = $ENV(HOME)/x17rerun/ws_sps/run_ws_sps3.sh
+arguments      = /eos/user/d/dneff/x17rerun/ws_sps code6 zs_scan_job.py $(key) --out /eos/user/d/dneff/x17rerun/ws_sps/out --views x --jobs 4
+output         = log/$(ClusterId).$(ProcId).out
+error          = log/$(ClusterId).$(ProcId).err
+log            = log/ws_sps.log
+request_cpus   = 4
+request_memory = 8000
++JobFlavour    = "workday"
+should_transfer_files = NO
+queue key from (
+run55_flatdrift__d700
+run55_flatdrift__d600
+run55_flatdrift__d500
+run55_flatdrift__d400
+run63_flat__flat700
+run66_flat_resist__r780
+run66_flat_resist__r755
+run66_flat_resist__r730
+run66_flat_resist__r705
+run66_flat_resist__r680
+run66_flat_resist__r655
+run66_flat_resist__r630
+run66_flat_resist__r605
+run66_flat_resist__r580
+run70_flat_drift__d700
+run70_flat_drift__d600
+run70_flat_drift__d500
+run70_flat_drift__d400
+run70_flat_drift__d300
+run70_flat_drift__d200
+run70_flat_drift__d100
+run70_flat_drift__d700b
+)
