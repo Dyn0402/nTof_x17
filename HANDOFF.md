@@ -10,11 +10,13 @@
 timing v within 2–5 %, s68 1.03–1.9°, positions 0.50–0.76 mm, det3 interior detection 91.2 % reproduced, the dead-strip
 seeding and the σ0 profile behave as documented.  **One meaningful improvement is left in the model: the angle response
 compresses with angle** — implied v falls 4–15 % from |tan| 0.1 to 0.4 on every chamber and view, steep tracks read
-0.25–1.5° shallow, and SPS det4 at the 25.64° mount reads 23.2° (|w_y|/tan = 0.89 × the timing v at 235 V/cm, growing
-to 0.65 at 148 V/cm), with no reference involved.  The mechanism is in the model, not the optimiser (at the M3 angle
-the χ² is higher in 94–95 % of steep tracks; two-sided start changes nothing): the per-event σ0 profile trades
-footprint width for tilt (wide-footprint fits read 6–12 % shallower, 13–36 % of fits), and a residual depends on the
-drift time.  The rest is bookkeeping: the column plausibility window was fixed at v = 36.6 (23–60 % of det4/6/7 Y tracks
+0.25–1.5° shallow (det3 2–5 %, det4/det6 10–20 % at |tan| 0.3–0.45).  The mechanism is in the model, not the optimiser
+(at the M3 angle the χ² is higher in 93–96 % of det3's steep tracks, 83–91 % on det4/det7; the two-sided start only
+recovers det4 X far −1.2 pp): it is the width–tilt trade — every unit of modelled lateral width lowers the fitted slope
+(σ0 profile ~1 %, Dp ±30 % → ∓1.5 %, rc_D_y ×1.5 → −1…−2.6 %), and on steep tracks the data want less width at depth
+than the model carries.  SPS det4 at 25.64° is self-consistent: fitted slope = the fit's own column duration to +4 % at
+235 V/cm; the apparent 10 % deficit is the external span-route v (14 % above the column v at every field) and, below
+200 V/cm, the column overrunning the depth grid.  The rest is bookkeeping: the column plausibility window was fixed at v = 36.6 (23–60 % of det4/6/7 Y tracks
 "implausible"; **fixed**), dt_xy is stale by one 60 ns bin and det4's is empty so the x–y gate fails on 15–44 % of single
 tracks and n_tracks = 0 on 40–80 % (**tooling fixed**, bundles not yet updated), the RC kernel is a 5 ns staircase in t0
 (t0_err NaN on ~30 % of det6/det7 fits; **opt-in interpolation fixed**), the t0 prior is on for det2/3/4 and off for
@@ -34,9 +36,10 @@ Outputs on EOS `/eos/user/d/dneff/x17rerun/model_audit/{heldout,heldout2,sps,sps
 `/eos/user/d/dneff/x17rerun/Analysis_audit/` (gate arms); local mirror `~/x17/cosmic_bench/model_audit/`.
 
 **Next steps (for B1/B2):**
-1. Choose σ0 per event from a measured quantity (saturation / charge), not by χ², or fit the width at fixed tilt; gate
-   the change on the steep bins (`heldout_compare` bias_steep±) and on the SPS 25.64° test (`sps_summary`: |w_y|/tan
-   at 235 V/cm must reach ~1.0).  The remaining drift-time-dependent part needs a model term (candidates in F16).
+1. The angle response (F4/F18/F21): a narrower deep footprint for inclined tracks (or a per-event Dp), and σ0 chosen
+   from a measured quantity (saturation / charge) rather than by χ²; gate on the steep bins (`heldout_compare`
+   bias_steep±, implied-v flatness) and keep the SPS 25.64° self-consistency (`sps_summary`: |w_y|/tan vs 28.8/uend).
+   The beam's absolute v (span anchor vs column, 14 %) is a limitation to state, not a model fix.
 2. Add `--table {out}/wft/.../events.parquet` to the finalize / vrefit W0KW nodes so dt_xy and xy_pairing are
    re-measured under the phys kernel, then re-promote (F5); set `t0_prior_sigma` 0 everywhere or re-measure t0_abs (F1/F6).
 3. Decide the gate tolerance from the measured t0 width (2.5 rσ keeps 92–97 %) and widen `DT_XY_TOL_NS` accordingly.
