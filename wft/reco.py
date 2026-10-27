@@ -315,6 +315,25 @@ def t0_prior_for(cal: CalibrationBundle, plane: str, ftst) -> Optional[tuple]:
     return float(pred), float(sig)
 
 
+#: Depth at which the position-dependent angle map is evaluated [mm]: the middle of the 30 mm drift gap.
+ANGLE_MAP_MID_MM = 15.0
+
+
+def tan_of(cal: CalibrationBundle, plane: str, w: float, p0: float) -> float:
+    """Track tangent from the fitted transverse speed w [mm/ns] and mesh position p0 [mm].
+
+    Constant mapping tan = (w*1e3 - w0) / (kw*v), or, when the bundle carries an ``angle_map`` for the plane,
+    the position-dependent one tan = (w*1e3 - w0(p)) / (s(p)*kw*v) at the track's mid-gap position p (from the
+    constant-mapping tangent; the map varies over ~100 mm, so the first-order p is exact enough)."""
+    kv = cal.kw.get(plane, 1.0) * cal.v_drift
+    tan = (w * 1e3 - cal.w0.get(plane, 0.0)) / kv
+    m = (getattr(cal, 'angle_map', None) or {}).get(plane)
+    if m and np.isfinite(tan) and np.isfinite(p0):
+        p = p0 + ANGLE_MAP_MID_MM * tan
+        tan = (w * 1e3 - float(np.interp(p, m['p'], m['w0']))) / (float(np.interp(p, m['p'], m['s'])) * kv)
+    return float(tan)
+
+
 def fit_plane(P, plane: str, cal: CalibrationBundle, hyper: Optional[dict] = None,
               n_seed: int = 0, n_dropped: int = 0,
               t0_prior: Optional[tuple] = None) -> Optional[PlaneFit]:
@@ -344,8 +363,7 @@ def fit_plane(P, plane: str, cal: CalibrationBundle, hyper: Optional[dict] = Non
     # Per-plane angle mapping (9dd7d6e; reverted by f9e18d2, restored 8-13).
     # w0/kw are measured from free fits of reference tracks; dropping the w0
     # term is the fleet angle bias, arctan(w0_plane/v) detector by detector.
-    tan = ((r['w'] * 1e3 - cal.w0.get(plane, 0.0))
-           / (cal.kw.get(plane, 1.0) * cal.v_drift))
+    tan = tan_of(cal, plane, r['w'], r['p0'])
     ep, ew, et = _errors(P, plane, r, hyper, t0_prior=t0_prior)
     q_sum, q_u50, q_u90, q_uend = _profile_summary(r['q'])
     ch = np.asarray(P['ch'], dtype=int)
@@ -843,7 +861,7 @@ def _child_fit(P, plane, cal, r, which: str, hyper, chi_alone: float) -> PlaneFi
     p0, w, t0 = r['pa'] if which == 'a' else r['pb']
     q = r['qa'] if which == 'a' else r['qb']
     ep, ew, et = r['err_a'] if which == 'a' else r['err_b']
-    tan = (w * 1e3 - cal.w0.get(plane, 0.0)) / (cal.kw.get(plane, 1.0) * cal.v_drift)
+    tan = tan_of(cal, plane, w, p0)
     q_sum, q_u50, q_u90, q_uend = _profile_summary(q)
     ch = np.asarray(P['ch'], dtype=int)
     flagged = np.concatenate([wm.DEAD.get(plane, np.array([], dtype=int)),
@@ -1688,7 +1706,8 @@ def reconstruct_run(cfg, cal: CalibrationBundle, out_path: str,
                 # bias survived a whole campaign. applied=False here means the
                 # angles need the post-hoc w0/kw pass before they are quoted.
                 angle_constants=dict(applied=bool(cal.w0 or cal.kw),
-                                     w0=dict(cal.w0), kw=dict(cal.kw)),
+                                     w0=dict(cal.w0), kw=dict(cal.kw),
+                                     angle_map=sorted((getattr(cal, 'angle_map', None) or {}).keys())),
                 t0_prior=dict(sigma=T0_PRIOR_SIGMA if T0_PRIOR_SIGMA is not None
                               else cal.t0_prior_sigma,
                               t0_abs_planes=sorted((T0_ABS or cal.t0_abs

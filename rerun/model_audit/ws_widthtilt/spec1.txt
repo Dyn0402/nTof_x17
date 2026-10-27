@@ -1,0 +1,33 @@
+WP_det2 width_probe.py --det det2 --cache {CACHE:det2} --bundle {BUNDLE:det2} --out {OUT} --tan-min 0.08 --n 300 --steep-first --jobs 8
+TOY_det2_base toy_closure.py --det det2 --cache {CACHE:det2} --bundle {BUNDLE:det2} --out {OUT} --tan-min 0.10 --n 800 --jobs 8 --tag base
+TOY_det2_landau toy_closure.py --det det2 --cache {CACHE:det2} --bundle {BUNDLE:det2} --out {OUT} --tan-min 0.10 --n 800 --jobs 8 --tag landau --inject landau=1
+WP_det3 width_probe.py --det det3 --cache {CACHE:det3} --bundle {BUNDLE:det3} --out {OUT} --tan-min 0.08 --n 300 --steep-first --jobs 8
+TOY_det3_base toy_closure.py --det det3 --cache {CACHE:det3} --bundle {BUNDLE:det3} --out {OUT} --tan-min 0.10 --n 800 --jobs 8 --tag base
+TOY_det3_landau toy_closure.py --det det3 --cache {CACHE:det3} --bundle {BUNDLE:det3} --out {OUT} --tan-min 0.10 --n 800 --jobs 8 --tag landau --inject landau=1
+WP_det4 width_probe.py --det det4 --cache {CACHE:det4} --bundle {BUNDLE:det4} --out {OUT} --tan-min 0.08 --n 300 --steep-first --jobs 8
+TOY_det4_base toy_closure.py --det det4 --cache {CACHE:det4} --bundle {BUNDLE:det4} --out {OUT} --tan-min 0.10 --n 800 --jobs 8 --tag base
+TOY_det4_landau toy_closure.py --det det4 --cache {CACHE:det4} --bundle {BUNDLE:det4} --out {OUT} --tan-min 0.10 --n 800 --jobs 8 --tag landau --inject landau=1
+WP_det6 width_probe.py --det det6 --cache {CACHE:det6} --bundle {BUNDLE:det6} --out {OUT} --tan-min 0.08 --n 300 --steep-first --jobs 8
+TOY_det6_base toy_closure.py --det det6 --cache {CACHE:det6} --bundle {BUNDLE:det6} --out {OUT} --tan-min 0.10 --n 800 --jobs 8 --tag base
+TOY_det6_landau toy_closure.py --det det6 --cache {CACHE:det6} --bundle {BUNDLE:det6} --out {OUT} --tan-min 0.10 --n 800 --jobs 8 --tag landau --inject landau=1
+WP_det7 width_probe.py --det det7 --cache {CACHE:det7} --bundle {BUNDLE:det7} --out {OUT} --tan-min 0.08 --n 300 --steep-first --jobs 8
+TOY_det7_base toy_closure.py --det det7 --cache {CACHE:det7} --bundle {BUNDLE:det7} --out {OUT} --tan-min 0.10 --n 800 --jobs 8 --tag base
+TOY_det7_landau toy_closure.py --det det7 --cache {CACHE:det7} --bundle {BUNDLE:det7} --out {OUT} --tan-min 0.10 --n 800 --jobs 8 --tag landau --inject landau=1
+TOY_det3_nar08 toy_closure.py --det det3 --cache {CACHE:det3} --bundle {BUNDLE:det3} --out {OUT} --tan-min 0.10 --n 800 --jobs 8 --tag nar08 --inject gen_sigma_scale=0.8
+TOY_det3_wid12 toy_closure.py --det det3 --cache {CACHE:det3} --bundle {BUNDLE:det3} --out {OUT} --tan-min 0.10 --n 800 --jobs 8 --tag wid12 --inject gen_sigma_scale=1.2
+TOY_det3_dp050 toy_closure.py --det det3 --cache {CACHE:det3} --bundle {BUNDLE:det3} --out {OUT} --tan-min 0.10 --n 800 --jobs 8 --tag dp050 --inject gen_dp=0.012
+TOY_det3_s0w toy_closure.py --det det3 --cache {CACHE:det3} --bundle {BUNDLE:det3} --out {OUT} --tan-min 0.10 --n 800 --jobs 8 --tag s0w --inject gen_s0=0.42
+TOY_det3_asym13 toy_closure.py --det det3 --cache {CACHE:det3} --bundle {BUNDLE:det3} --out {OUT} --tan-min 0.10 --n 800 --jobs 8 --tag asym13 --inject gen_asym=0.13
+WPT_det3 width_probe.py --det det3 --cache {CACHE:det3} --bundle {BUNDLE:det3} --out {OUT} --tan-min 0.08 --n 300 --steep-first --jobs 8 --toy base --tag toy
+TOY_det4_nar08 toy_closure.py --det det4 --cache {CACHE:det4} --bundle {BUNDLE:det4} --out {OUT} --tan-min 0.10 --n 800 --jobs 8 --tag nar08 --inject gen_sigma_scale=0.8
+TOY_det4_wid12 toy_closure.py --det det4 --cache {CACHE:det4} --bundle {BUNDLE:det4} --out {OUT} --tan-min 0.10 --n 800 --jobs 8 --tag wid12 --inject gen_sigma_scale=1.2
+TOY_det4_dp050 toy_closure.py --det det4 --cache {CACHE:det4} --bundle {BUNDLE:det4} --out {OUT} --tan-min 0.10 --n 800 --jobs 8 --tag dp050 --inject gen_dp=0.012
+TOY_det4_s0w toy_closure.py --det det4 --cache {CACHE:det4} --bundle {BUNDLE:det4} --out {OUT} --tan-min 0.10 --n 800 --jobs 8 --tag s0w --inject gen_s0=0.42
+TOY_det4_asym13 toy_closure.py --det det4 --cache {CACHE:det4} --bundle {BUNDLE:det4} --out {OUT} --tan-min 0.10 --n 800 --jobs 8 --tag asym13 --inject gen_asym=0.13
+WPT_det4 width_probe.py --det det4 --cache {CACHE:det4} --bundle {BUNDLE:det4} --out {OUT} --tan-min 0.08 --n 300 --steep-first --jobs 8 --toy base --tag toy
+TOY_det6_nar08 toy_closure.py --det det6 --cache {CACHE:det6} --bundle {BUNDLE:det6} --out {OUT} --tan-min 0.10 --n 800 --jobs 8 --tag nar08 --inject gen_sigma_scale=0.8
+TOY_det6_wid12 toy_closure.py --det det6 --cache {CACHE:det6} --bundle {BUNDLE:det6} --out {OUT} --tan-min 0.10 --n 800 --jobs 8 --tag wid12 --inject gen_sigma_scale=1.2
+TOY_det6_dp050 toy_closure.py --det det6 --cache {CACHE:det6} --bundle {BUNDLE:det6} --out {OUT} --tan-min 0.10 --n 800 --jobs 8 --tag dp050 --inject gen_dp=0.012
+TOY_det6_s0w toy_closure.py --det det6 --cache {CACHE:det6} --bundle {BUNDLE:det6} --out {OUT} --tan-min 0.10 --n 800 --jobs 8 --tag s0w --inject gen_s0=0.42
+TOY_det6_asym13 toy_closure.py --det det6 --cache {CACHE:det6} --bundle {BUNDLE:det6} --out {OUT} --tan-min 0.10 --n 800 --jobs 8 --tag asym13 --inject gen_asym=0.13
+WPT_det6 width_probe.py --det det6 --cache {CACHE:det6} --bundle {BUNDLE:det6} --out {OUT} --tan-min 0.08 --n 300 --steep-first --jobs 8 --toy base --tag toy

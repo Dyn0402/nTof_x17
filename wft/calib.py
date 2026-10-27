@@ -161,6 +161,15 @@ class CalibrationBundle:
     w0: Dict[str, float] = field(default_factory=dict)
     kw: Dict[str, float] = field(default_factory=dict)
 
+    # --- position-dependent angle mapping (ws_widthtilt, 2026-10-27), optional.
+    # Every bench chamber adds a lateral drift speed that ramps across the chamber along the view's own axis
+    # (about -0.6 -> +0.6 um/ns over 300 mm, both views, all five chambers) and a local scale that varies by
+    # +-5-10 %; a constant w0/kw cannot absorb either, and through the telescope acceptance (position and angle
+    # are correlated) they read as an angle nonlinearity.  Per plane: {'p': knots [mm, track position at
+    # mid-gap], 'w0': [um/ns] (absolute, replaces w0[p]), 's': [scale relative to kw*v]}, linearly interpolated
+    # and clamped at the ends:  tan = (w*1e3 - w0(p)) / (s(p) * kw[p] * v).  Absent = the constant mapping.
+    angle_map: Dict[str, dict] = field(default_factory=dict)
+
     # --- x/y pairing of time-degenerate tracks (2026-09-14): median and robust
     # width of each x-minus-y feature (``XY_FEATURES``) on clean single tracks
     # of this detector and condition, and which features to use. Empty = pair
@@ -210,6 +219,7 @@ class CalibrationBundle:
                         for p, ch in self.hot.items()},
                     w0={p: float(v) for p, v in self.w0.items()},
                     kw={p: float(v) for p, v in self.kw.items()},
+                    angle_map=self.angle_map,
                     xy_pairing=self.xy_pairing,
                     pitch_mm=self.pitch_mm, sample_ns=self.sample_ns,
                     n_depth_bins=self.n_depth_bins, sat_adc=self.sat_adc,
@@ -240,6 +250,7 @@ class CalibrationBundle:
                        for p, ch in m.get('hot', {}).items()},
                    w0={p: float(v) for p, v in (m.get('w0') or {}).items()},
                    kw={p: float(v) for p, v in (m.get('kw') or {}).items()},
+                   angle_map=m.get('angle_map') or {},
                    xy_pairing=m.get('xy_pairing') or {},
                    pitch_mm=m.get('pitch_mm', 0.78),
                    sample_ns=m.get('sample_ns', 60.0),

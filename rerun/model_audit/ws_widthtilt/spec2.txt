@@ -1,0 +1,3 @@
+WPT_det3 width_probe.py --det det3 --cache {CACHE:det3} --bundle {BUNDLE:det3} --out {OUT} --tan-min 0.08 --n 300 --steep-first --jobs 8 --toy base --tag toy
+WPT_det4 width_probe.py --det det4 --cache {CACHE:det4} --bundle {BUNDLE:det4} --out {OUT} --tan-min 0.08 --n 300 --steep-first --jobs 8 --toy base --tag toy
+WPT_det6 width_probe.py --det det6 --cache {CACHE:det6} --bundle {BUNDLE:det6} --out {OUT} --tan-min 0.08 --n 300 --steep-first --jobs 8 --toy base --tag toy
