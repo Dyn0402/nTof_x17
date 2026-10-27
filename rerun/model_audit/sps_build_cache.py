@@ -42,13 +42,10 @@ def subrun_span(run, subrun):
     return out
 
 
-def main():
-    ap = argparse.ArgumentParser()
-    ap.add_argument('run'); ap.add_argument('subrun'); ap.add_argument('--dataset', default='run63_rot25')
-    ap.add_argument('--out', required=True); ap.add_argument('--per-plateau', type=int, default=1000)
-    ap.add_argument('--half-win', type=int, default=16); ap.add_argument('--tan', type=float, default=float(np.tan(np.radians(25.64))))
-    ap.add_argument('--edge-s', type=float, default=20.0); ap.add_argument('--qmin', type=float, default=300.0)
-    a = ap.parse_args(); os.makedirs(a.out, exist_ok=True)
+def build_cache(run, subrun, dataset, per_plateau=1000, half_win=16, tan=None, edge_s=20.0, qmin=300.0, only=None, verbose=True):
+    """{plateau: {eid: event}} for the decoded FEU 03 files of one sub-run (``only``: restrict to these plateaus)."""
+    a = argparse.Namespace(run=run, subrun=subrun, dataset=dataset, per_plateau=per_plateau, half_win=half_win,
+                           tan=float(np.tan(np.radians(25.64))) if tan is None else tan, edge_s=edge_s, qmin=qmin)
     import uproot
     D = datasets.get(a.dataset); nsmp = int(D['n_samples'])
     files = sorted(glob.glob(os.path.join(RUNS, a.run, a.subrun, 'decoded_root_fa80c06', '*_datrun_*_03.root')))
@@ -59,7 +56,7 @@ def main():
     tl = uproot.open(files[-1])['nt']; ts1 = tl.arrays(['timestamp'], entry_start=tl.num_entries - 1, library='np')['timestamp'][0]
     scale = (t_hi - t_lo) / float(ts1 - ts0)
     print(f'timestamp unit {scale * 1e9:.1f} ns  (span {ts1 - ts0} counts over {t_hi - t_lo} s)', flush=True)
-    plateaus = [(n, lo + a.edge_s, hi - a.edge_s) for n, lo, hi, dv, rv in D['plateaus']]
+    plateaus = [(n, lo + a.edge_s, hi - a.edge_s) for n, lo, hi, dv, rv in D['plateaus'] if only is None or n in only]
     out = {}
     for f in files:
         t = uproot.open(f)['nt']
@@ -99,10 +96,22 @@ def main():
                     rec[f'ftst_{view}'] = int(arr['ftst'][j])
                 if ok:
                     out.setdefault(L, {})[rec['eid'] + 10_000_000 * files.index(f)] = rec
-        print(f'  {os.path.basename(f)}: ' + ', '.join(f'{k} {len(v)}' for k, v in sorted(out.items())), flush=True)
+        if verbose:
+            print(f'  {os.path.basename(f)}: ' + ', '.join(f'{k} {len(v)}' for k, v in sorted(out.items())), flush=True)
         if all(len(out.get(n, {})) >= a.per_plateau for n, _, _ in plateaus):
             break
-    dv = {x[0]: x[3] for x in D['plateaus']}
+    return out
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument('run'); ap.add_argument('subrun'); ap.add_argument('--dataset', default='run63_rot25')
+    ap.add_argument('--out', required=True); ap.add_argument('--per-plateau', type=int, default=1000)
+    ap.add_argument('--half-win', type=int, default=16); ap.add_argument('--tan', type=float, default=float(np.tan(np.radians(25.64))))
+    ap.add_argument('--edge-s', type=float, default=20.0); ap.add_argument('--qmin', type=float, default=300.0)
+    a = ap.parse_args(); os.makedirs(a.out, exist_ok=True)
+    out = build_cache(a.run, a.subrun, a.dataset, a.per_plateau, a.half_win, a.tan, a.edge_s, a.qmin)
+    dv = {x[0]: x[3] for x in datasets.get(a.dataset)['plateaus']}
     for L, evs in out.items():
         p = os.path.join(a.out, f'{a.dataset}_{a.subrun}_{L}.pkl'); pickle.dump(evs, open(p, 'wb'), protocol=4)
         print(f'{L}: {len(evs)} events, drift {dv[L]} V -> {p}')
