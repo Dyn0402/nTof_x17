@@ -7,8 +7,9 @@ the wft table layout (event_id, x_*/y_* PlaneFit columns, n_tracks) + events.met
 on EOS.  The bench det4 bundle is adapted to the row: v = the row's v_span (CF4 ladder) or the bundle v, K = the row's
 K, 64/32 samples from the dataset, the channel layer measured at H4 in place of the bench one (sps_mask.py: the bench
 lists are bench channel numbers, a different strip at H4; --mask bench carries them by position, none drops them),
-exactly-zero samples censored on every row (WFT_ZS_CENSOR: unrecorded on ZS rows, the FEU packet loss on RAW rows),
-pivot start, column guard.  Seeds are the chamber's own brightest cluster per view (no
+exactly-zero samples censored on every row (each window is marked ``zs``: unrecorded on ZS rows, the FEU packet loss on
+RAW rows; wft.model.prep_plane), the wft algorithm otherwise as is (pivot start, column guard, ... are part of it since
+2026-10-27).  Seeds are the chamber's own brightest cluster per view (no
 uRWELL); the reference columns ref_x/ref_y carry the own charge centroid and tan_mount the mount angle.
 """
 import argparse, csv, json, os, pickle, sys
@@ -25,7 +26,7 @@ _EV = None
 def _init(cache, bundle, k, v, nsamp, mask='h4'):
     global _EV
     from wft.calib import CalibrationBundle
-    from wft import model as wm, reco as wr
+    from wft import model as wm
     import sps_mask
     _EV = pickle.load(open(cache, 'rb'))
     cal = CalibrationBundle.load(bundle)
@@ -34,9 +35,6 @@ def _init(cache, bundle, k, v, nsamp, mask='h4'):
         cal.v_drift = float(v)
     cal.t0_abs, cal.t0_prior_sigma = {}, 0.0        # the beam trigger is asynchronous to the DREAM clock
     wm.use_calibration(cal); wm.set_depth_bins(k); wm.set_nsamp(nsamp)
-    if wm.COL_GUARD <= 0:
-        wm.COL_GUARD = 0.01
-    wr.PIVOT_START = True
 
 
 def one(eid):
@@ -46,6 +44,7 @@ def one(eid):
         P = ev.get(plane)
         if P is None:
             fits[plane] = None; continue
+        P = dict(P, zs=True)         # SPS FEU 03: an exact 0 is an unrecorded sample on every row (see main)
         try:
             fits[plane] = wr.fit_plane(P, plane, wm.CAL)
         except Exception:
@@ -73,9 +72,7 @@ def main():
     # exact-zero samples are censored on EVERY SPS row: on ZS rows they were never recorded, and on the RAW rows (run_71)
     # they are the FEU's dropped sample groups (~23 % of all samples, ws_sps 2026-10-27) -- a post-CNS RAW sample is never
     # exactly 0, so fitting those zeros as measurements (the behaviour before) pulled every RAW fit toward no charge.
-    os.environ['WFT_ZS_CENSOR'] = '1'
-    from wft import model as wm
-    wm.ZS_CENSOR = True
+    # That is a property of this data, so it travels with each window (P['zs'], set in one()), not as a switch.
     evs = {}
     for sub in row['subruns'].split():
         got = sbc.build_cache(row['run'], sub, row['dataset'], per_plateau=a.per_plateau - len(evs), half_win=a.half_win, tan=tan,
@@ -94,7 +91,9 @@ def main():
     df.to_parquet(os.path.join(a.out, 'events.parquet'), index=False)
     meta = dict(n_events=len(df), registry_row=row, bundle=a.bundle, v_drift=v, n_depth_bins=k, n_samples=nsamp, zs_censor=True,
                 channel_layer=a.mask, seeding='own brightest strip +- half_win', half_win=a.half_win,
-                env={k_: v_ for k_, v_ in os.environ.items() if k_.startswith('WFT_')}, code=os.environ.get('RERUN_CODE_COMMIT', '?'))
+                env={k_: v_ for k_, v_ in os.environ.items() if k_.startswith('WFT_')},
+                diagnostic_overrides={k_: str(v_) for k_, v_ in __import__('wft.diag').diag.ACTIVE.items()},
+                code=os.environ.get('RERUN_CODE_COMMIT', '?'))
     json.dump(meta, open(os.path.join(a.out, 'events.meta.json'), 'w'), indent=1, default=str)
     os.remove(cache)
     print(f'[sps] wrote {a.out}/events.parquet ({len(df)} events)')

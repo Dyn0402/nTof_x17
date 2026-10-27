@@ -32,7 +32,8 @@ CHUNK = 400
 #: CM_MASK = M > 0 the median is computed twice: once plain, then again without every channel that sits within M of
 #: a contiguous cluster (>= 2 adjacent channels above 5 sigma in 2 consecutive samples).  A block left with fewer than
 #: CM_MIN_KEEP channels keeps its plain median.  0 (default) = the plain median, bit-identical.
-CM_MASK = int(os.environ.get('WFT_CM_MASK', 0))
+#: Not adopted (RERUN_PLAN W11: no resolution gain, chi2 not better; masked-plain shifts carried as a systematic): 0.
+CM_MASK = 0
 CM_MIN_KEEP = 16
 CM_SIGMA = 5.0
 #: Coherent-event guard: the masked median is only valid if the channels it is taken from are quiet.  In a spark or
@@ -209,3 +210,8 @@ def extract_window(wfm_all: np.ndarray, noise_all: np.ndarray,
     return PlaneWindow(ch=ch.astype(np.int16), pos=pos_map[ch].astype(np.float32),
                        W=wfm_all[ch].astype(np.float32),
                        noise=np.maximum(noise_all[ch], 3.0).astype(np.float32))
+
+
+# the one place a study may move a constant of this module (wft.diag); production runs none
+from . import diag as _diag  # noqa: E402
+_diag.apply('io', globals())

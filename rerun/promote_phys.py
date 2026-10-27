@@ -8,6 +8,9 @@ row of the chamber reads in the pass (directly, or through vrefit --keep-v):
                        the mask moves det7's X ladder by 0.7 %, so the unmasked w0/kw would be stale)
   the others           <row>/wft/calib_bundle_phys
 Dry run unless --apply; refuses an existing calib_bundle unless --force. Writes <row>/wft/calib_bundle/PROMOTED.json.
+An empty ``conditions`` (run / sub_run) is filled from the golden row, so CalibrationBundle.check_conditions can check
+the bundle (model audit F10: det7's promoted bundle had run = sub_run = '').  --fill-conditions does only that, in
+place, on the bundles already promoted.
 """
 import argparse, json, os, shutil, sys, time
 
@@ -20,12 +23,36 @@ GOLD = {'det2': ('o22_long_det2', 'mx17_det2_det3_overnight_6-22-26/longer_run/m
         'det7': ('g_det7_long', 'mx17_det6_det7_overnight_6-26-26/long_run/mx17_7')}
 
 
+def fill_conditions(b: dict, rel: str) -> bool:
+    """Fill an empty run / sub_run in bundle dict ``b`` from the golden row's path; True if anything changed."""
+    run, sub = rel.split('/')[:2]
+    c = b.setdefault('conditions', {})
+    changed = False
+    for k, v in (('run', run), ('sub_run', sub)):
+        if not c.get(k):
+            c[k] = v
+            changed = True
+    return changed
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--mask', default='', help='comma list of chambers that take the channel mask')
     ap.add_argument('--apply', action='store_true'); ap.add_argument('--force', action='store_true')
     ap.add_argument('--root', default=A)
+    ap.add_argument('--fill-conditions', action='store_true', help='only fill empty conditions of the promoted bundles')
     a = ap.parse_args()
+    if a.fill_conditions:
+        for det, (key, rel) in GOLD.items():
+            path = f'{a.root}/{rel}/wft/calib_bundle/bundle.json'
+            b = json.load(open(path))
+            if fill_conditions(b, rel):
+                print(f'{det}: conditions -> {b["conditions"]}' + ('' if a.apply else '  (dry run)'))
+                if a.apply:
+                    json.dump(b, open(path, 'w'), indent=1)
+            else:
+                print(f'{det}: conditions {b.get("conditions")} (kept)')
+        return
     masked = {m for m in a.mask.split(',') if m}
     bad = masked - set(GOLD)
     if bad:
@@ -50,6 +77,8 @@ def main():
                 sys.exit(f'{det}: {dst} exists (use --force)')
             shutil.rmtree(dst)
         shutil.copytree(src, dst)
+        if fill_conditions(b, rel):
+            json.dump(b, open(f'{dst}/bundle.json', 'w'), indent=1)
         json.dump(dict(source=src, mask=dead, time=time.strftime('%Y-%m-%d %H:%M:%S'), tool='rerun/promote_phys.py'),
                   open(f'{dst}/PROMOTED.json', 'w'), indent=1)
     if not a.apply:

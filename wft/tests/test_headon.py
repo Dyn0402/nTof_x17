@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Head-on seeding (``WFT_HEADON_SIG``) and the cross-view column rescue (``wft.seed.column_rescue``, used by
-``WFT_HEADON_RESCUE``), both opt-in: with them off the seeding is the historical one; a 2-strip cluster is admitted
+``reco.HEADON_RESCUE``), both part of the algorithm since 2026-10-27: a 2-strip cluster is admitted
 only above the significance cut and only in a plane production left empty; the column finder takes a drift column
 that starts at the other view's t0, and not a flat band, a short blip or a column at another time.
 
@@ -28,7 +28,8 @@ def check(name, cond, detail=''):
 
 def test_headon_seeds():
     print('head-on 2-strip seeds')
-    check('off by default', ws.HEADON_SIG == 0.0 or os.environ.get('WFT_HEADON_SIG'), f'{ws.HEADON_SIG}')
+    check('part of the algorithm (20 sigma)', ws.HEADON_SIG == 20.0 or 'seed.HEADON_SIG' in __import__('wft.diag').diag.ACTIVE,
+          f'{ws.HEADON_SIG}')
     idx = np.array([100, 101])
     pos, ch = idx * P, idx
     hi = ws.headon_seeds(pos, ch, np.array([300.0, 60.0]), 20.0)

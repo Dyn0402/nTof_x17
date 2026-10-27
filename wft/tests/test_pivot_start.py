@@ -65,6 +65,7 @@ def test_pivot_recovers_inclined_slope(w):
     assert abs(r['p0'] - p0) < abs(w) * wm.DT + 0.2
 
 
-def test_off_by_default():
-    assert wr.PIVOT_START is (os.environ.get('WFT_PIVOT_START', '0') == '1')
+def test_on_by_default():
+    # built in since 2026-10-27; only a wft.diag study override turns it off
+    assert wr.PIVOT_START is True or 'reco.PIVOT_START' in __import__('wft.diag').diag.ACTIVE
     assert 'PIVOT_START' in wr.WORKER_OPTS

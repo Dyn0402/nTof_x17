@@ -27,7 +27,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('run_key')
     ap.add_argument('--bundle', required=True)
-    ap.add_argument('--angles', required=True)
+    ap.add_argument('--angles', default=None, help='03_angles output dir (required unless --pairing-only)')
     ap.add_argument('--out', required=True)
     ap.add_argument('--n-depth-bins', type=int, default=None,
                     help="write the bundle with this depth grid K (vrefit --keep-v: the group's registry K, W2)")
@@ -48,13 +48,20 @@ def main():
     ap.add_argument('--fold-kw', action='store_true',
                     help='vrefit --keep-v: fold the mean kw into v_drift (v := v * kw_mean, kw := kw / kw_mean), so the '
                          'bundle carries this row\'s ladder v instead of the golden row\'s; tan is unchanged')
+    ap.add_argument('--pairing-only', action='store_true',
+                    help='with --table: re-measure dt_xy and xy_pairing only, keep the bundle\'s w0/kw (a gate arm that '
+                         'must not move the angle mapping)')
     a = ap.parse_args()
+    if a.pairing_only and not a.table:
+        ap.error('--pairing-only needs --table')
+    if not a.pairing_only and not a.angles:
+        ap.error('--angles is required')
     from wft.calib import CalibrationBundle
     cal = CalibrationBundle.load(a.bundle)
     v = float(cal.v_drift)
-    z = np.load(os.path.join(a.angles, 'per_event.npz'))
-    w0, kw, rep = {}, {}, {}
-    for p in ('x', 'y'):
+    w0, kw, rep = dict(cal.w0), dict(cal.kw), {}
+    z = None if a.pairing_only else np.load(os.path.join(a.angles, 'per_event.npz'))
+    for p in (() if a.pairing_only else ('x', 'y')):
         w, t = z[f'{p}_w'] * 1e3, z[f'{p}_tan_ref']
         ok = np.isfinite(w) & np.isfinite(t)
         s = ok & (np.abs(t) < 0.30)
@@ -112,8 +119,12 @@ def main():
         else:
             print(f'latency: too few planes measured ({sorted(lat)}); t0_abs left unchanged')
     prov = dict(cal.provenance)
-    prov.update(w0_kw_stale=False, w0_kw_note=f'w0/kw measured by rerun/w12/set_w0kw.py from {a.angles} '
-                f'(a reconstruction with this bundle, {a.run_key})', w0_kw_measurement=rep)
+    if a.pairing_only:
+        prov.update(xy_pairing_note=f'dt_xy + xy_pairing measured by rerun/w12/set_w0kw.py --pairing-only from {a.table}',
+                    xy_pairing_measurement=rep)
+    else:
+        prov.update(w0_kw_stale=False, w0_kw_note=f'w0/kw measured by rerun/w12/set_w0kw.py from {a.angles} '
+                    f'(a reconstruction with this bundle, {a.run_key})', w0_kw_measurement=rep)
     if a.n_depth_bins and a.n_depth_bins != cal.n_depth_bins:
         prov['n_depth_bins_was'] = int(cal.n_depth_bins)
         cal.n_depth_bins = int(a.n_depth_bins)
@@ -122,7 +133,7 @@ def main():
     cal.provenance = prov
     if os.path.exists(a.out):
         shutil.rmtree(a.out)
-    cal.save(a.out, note=f'w0/kw measured ({a.run_key})')
+    cal.save(a.out, note=f'{"dt_xy/xy_pairing" if a.pairing_only else "w0/kw"} measured ({a.run_key})')
     json.dump(rep, open(os.path.join(a.out, 'w0kw.json'), 'w'), indent=1)
     print(f'wrote {a.out}')
 

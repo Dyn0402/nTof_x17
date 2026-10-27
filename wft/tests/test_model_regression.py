@@ -39,6 +39,16 @@ def main(n_events=25):
                                         run_key='sat_det3')
     wm.use_calibration(cal)
     hyper = dict(cal.hyper)
+    # the R&D numerics had no column guard and no censored charge solve: compare the packaging, not the algorithm
+    saved = wm.COL_GUARD, wm.SAT_SOLVE
+    wm.COL_GUARD, wm.SAT_SOLVE = 0.0, False
+    try:
+        return _compare(cal, hyper, n_events)
+    finally:
+        wm.COL_GUARD, wm.SAT_SOLVE = saved
+
+
+def _compare(cal, hyper, n_events):
 
     d = pickle.load(open(os.path.join(WF_DIR, 'wfcache.pkl'), 'rb'))
     events = d['events']

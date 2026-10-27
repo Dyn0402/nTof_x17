@@ -93,10 +93,17 @@ def main():
                     help="product (relative to the row's Analysis dir) that defines success: the stage counts as "
                          "done if it exists, whatever its exit code (e.g. the hits event cache of a short scan "
                          "subrun whose hits alignment fails)")
+    ap.add_argument('--diag', action='store_true',
+                    help='allow wft diagnostic overrides (WFT_DIAG or a retired WFT_* switch set to a non-default '
+                         'value): a study arm, not production.  Without it the stage refuses to run with any.')
     g = ap.add_mutually_exclusive_group(required=True)
     g.add_argument('--module')
     g.add_argument('--script')
     a = ap.parse_args(argv)
+    # one reconstruction: a production stage runs wft's own algorithm, never a variant of it (RERUN_PLAN B1)
+    import wft.model, wft.seed, wft.io, wft.reco, wft.diag  # noqa: E401,F401
+    if wft.diag.ACTIVE and not a.diag:
+        sys.exit(f'FATAL: wft diagnostic overrides {wft.diag.ACTIVE} in a production stage; unset them or pass --diag')
 
     bench = os.path.join(a.work, 'bench')
     ana = os.path.join(a.work, 'Analysis')
@@ -167,6 +174,7 @@ def main():
     json.dump(dict(when=now.isoformat(timespec='seconds'), stage=what, args=rest, rc=rc, seconds=round(dt),
                    code=commit, generation=a.gen, inputs=os.path.join(row['eos_run_dir'], row['subrun']),
                    env={k: v for k, v in os.environ.items() if k.startswith('WFT_')},
+                   diagnostic_overrides={k: str(v) for k, v in wft.diag.ACTIVE.items()},
                    wrote=written), open(os.path.join(logd, tag + '.json'), 'w'), indent=1)
     if not a.no_sync:
         changed = {k for k, v in snapshot(os.path.join(ana, rel)).items() if before.get(k) != v}

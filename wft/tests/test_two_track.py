@@ -184,15 +184,23 @@ class _Cal:
     w0, kw, v_drift = CAL.w0, CAL.kw, CAL.v_drift
 
 
+def test_default_is_on():
+    """The joint fit is part of the algorithm since 2026-10-27 (rerun/model_audit/ws_unify)."""
+    assert wr.TWO_TRACK is True and abs(wm.TWO_MIN_SEP_MM - 4 * 398.58 / 512) < 1e-9
+
+
 def test_switch_off_is_identical():
-    """With WFT_TWO_TRACK_FIT off, resolve_two_tracks returns its input."""
-    assert wr.TWO_TRACK is False, 'the default must be off'
+    """With the joint fit switched off (a study override), resolve_two_tracks returns its input."""
+    wr.TWO_TRACK = False
     P = make_window([(150.0, 0.004, -40.0, 1400.0),
                      (162.0, -0.003, -40.0, 1400.0)], seed=5)
     f = wr.fit_plane(P, 'x', CAL)
     f._plausible, f._dchi2, f._win = True, 1000.0, 0
     fits = {'x': [f], 'y': []}
-    out, splits, replaced = wr.resolve_two_tracks(fits, {'x': [P], 'y': []}, CAL)
+    try:
+        out, splits, replaced = wr.resolve_two_tracks(fits, {'x': [P], 'y': []}, CAL)
+    finally:
+        wr.TWO_TRACK = True
     assert out is fits and splits == [] and replaced == {'x': [], 'y': []}
 
 
@@ -207,7 +215,7 @@ def test_accepted_split_replaces_its_parent():
         out, splits, replaced = wr.resolve_two_tracks(
             fits, {'x': [P], 'y': []}, CAL, selected={'x': {0}, 'y': set()})
     finally:
-        wr.TWO_TRACK = False
+        wr.TWO_TRACK = True
     assert len(splits) == 1 and splits[0]['accepted'], splits
     assert len(out['x']) == 2, 'the parent should be replaced by two children'
     assert f not in out['x'] and replaced['x'] == [f]
@@ -233,7 +241,7 @@ def test_only_selected_candidates_are_reconsidered():
         out, splits, replaced = wr.resolve_two_tracks(
             fits, {'x': [P], 'y': []}, CAL, selected={'x': set(), 'y': set()})
     finally:
-        wr.TWO_TRACK = False
+        wr.TWO_TRACK = True
     assert out['x'] == [f] and splits == [] and replaced['x'] == []
 
 
@@ -268,7 +276,7 @@ def test_refused_split_leaves_the_candidate_alone():
         out, splits, replaced = wr.resolve_two_tracks(
             fits, {'x': [P], 'y': []}, CAL, selected={'x': {0}, 'y': set()})
     finally:
-        wr.TWO_TRACK = False
+        wr.TWO_TRACK = True
     assert out['x'] == [f], 'a refused split must leave the parent in place'
     assert replaced['x'] == []
     assert all(not s['accepted'] for s in splits)

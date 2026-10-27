@@ -26,7 +26,7 @@ SIG_REL_FLOOR = 0.10       # per-plane, relative to that plane's strongest strip
 #: the whole plane; 0 = whole plane. A plane-wide floor lets a brighter track
 #: anywhere in the plane push a fainter one under MIN_STRIPS
 #: (sept26_prelim_analysis/intra_bench.py, floor study).
-SIG_FLOOR_LOCAL_MM = float(os.environ.get('WFT_SIG_FLOOR_LOCAL_MM', 0.0))
+SIG_FLOOR_LOCAL_MM = 0.0
 GAP_THRESHOLD_MM = 12.0    # production spatial clustering gap
 MIN_STRIPS = 3
 SPARK_VETO_HITS = 50       # full-detector discharge: drop the event
@@ -38,8 +38,8 @@ PITCH_MM = 398.58 / 512    # 0.7784 — strip pitch, for the hot-run bridge belo
 #: exists to separate. On D/run_145 the two settings are also indistinguishable
 #: in practice (2 658 vs 2 650 of 3 600 triggers seeded, every fit metric equal
 #: to three decimals), so this is a correctness choice, not a tuned one.
-#: Scanned with ``WFT_HOT_BRIDGE=1``.
-HOT_BRIDGE = os.environ.get('WFT_HOT_BRIDGE', '0') == '1'
+#: Scanned with ``WFT_DIAG=seed.HOT_BRIDGE=1``.
+HOT_BRIDGE = False
 #: Dead strips (bundle ``dead``, census-verified: they read ~0 of the charge the
 #: fit predicts for them) cannot fire, so the silence of a dead strip between
 #: two fired strips says nothing about the gap. With DEAD_SEED on the
@@ -49,15 +49,16 @@ HOT_BRIDGE = os.environ.get('WFT_HOT_BRIDGE', '0') == '1'
 #: all censored. **On by default since 2026-10-26** (Dylan: one dead-channel
 #: treatment for every analysis and detector; production A/B on det7/det4 null,
 #: rerun/channel_layer/README.md). A bundle with no ``dead`` list is unaffected.
-#: ``WFT_DEAD_SEED=0`` restores the historical seeding and windows.
-DEAD_SEED = os.environ.get('WFT_DEAD_SEED', '1') == '1'
+DEAD_SEED = True
 #: Head-on rescue (opt-in, rerun/satstudy 2026-10-26): a plane with NO production seed may be seeded by a 2-strip
 #: cluster whose weaker strip has hit significance >= this. A near-normal track puts its whole drift column on 1-2
 #: strips; on det3 x its +-1 neighbours sit at 7-9 % of the brightest strip, 15-50 sigma but under the 10 % relative
 #: floor, so the cluster is one strip short of MIN_STRIPS. Head-ons have the 2nd strip at 55-320 sigma, the clusters
 #: this adds on empty-chamber triggers at <= 9 sigma (headon.py). Rescue-only: a plane production seeds is untouched,
-#: and the seed is flagged ``rescued``. 0 = off (default) = the historical seeding.
-HEADON_SIG = float(os.environ.get('WFT_HEADON_SIG', 0.0))
+#: and the seed is flagged ``rescued``.  Part of the algorithm since 2026-10-27 (fleet gate: +0.3..+3.2 pt detected,
+#: det4/det7 the most, no cost to the existing tracks); the cut is a significance, i.e. in units of each strip's own
+#: noise, so it means the same on every chamber.
+HEADON_SIG = 20.0
 
 
 @dataclass
@@ -113,7 +114,7 @@ def apply_significance_floor(df: pd.DataFrame, rel: float = SIG_REL_FLOOR,
 #: seed can widen or move. 'replace': the local floor replaces the plane-wide
 #: one; it widens real single-track clusters and loses 1.4-7.3 % of production
 #: tracks on run_145 (wft/MULTITRACK_2026-09-14.md), so it is kept for study only.
-SIG_FLOOR_LOCAL_MODE = os.environ.get('WFT_SIG_FLOOR_LOCAL_MODE', 'rescue')
+SIG_FLOOR_LOCAL_MODE = 'rescue'
 
 
 def local_floor_rescues(local_mm: Optional[float], mode: Optional[str] = None) -> bool:
@@ -144,7 +145,7 @@ def rescue_candidates(keep: list, blockers: list, extra: list, pos_map: np.ndarr
 #: STUDY ONLY -- do not enable in production. It separates tracks 12-24 mm apart
 #: on the overlay bench, but on real run_145 triggers it replaces 11-27 % of
 #: production tracks (wft/MULTITRACK_2026-09-14.md): real clusters have holes.
-SPLIT_GAP_MM = float(os.environ.get('WFT_SPLIT_GAP_MM', 0.0))
+SPLIT_GAP_MM = 0.0
 
 
 def split_seeds(seeds: list, pos_map: np.ndarray, gap_mm: float,
@@ -463,3 +464,8 @@ def seeds_from_hits(df_hits: pd.DataFrame, pos_maps: Dict[int, np.ndarray],
                                               n_raw=len(gp))[:max(1, n_candidates)]
         out[int(eid)] = rec
     return out
+
+
+# the one place a study may move a constant of this module (wft.diag); production runs none
+from . import diag as _diag  # noqa: E402
+_diag.apply('seed', globals())

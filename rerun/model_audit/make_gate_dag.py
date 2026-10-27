@@ -8,7 +8,16 @@ production alignment (<row>/wft/prod_alignment/alignment.json, copied from final
 import argparse
 
 GOLDEN = [('det3', 'sat_det3'), ('det2', 'o22_long_det2'), ('det4', 'g_det4'), ('det6', 'g_det6_long'), ('det7', 'g_det7_long')]
+#: arm -> environment, or (environment, bundle dir name under <row>/wft).  Since 2026-10-27 the switches are part of
+#: wft (wft/diag.py): 'unified' is the algorithm as it now stands, on bundles carrying the measured dt_xy / xy_pairing
+#: (calib_bundle_xyp, ws_unify/make_xyp_bundles.sh); 'legacy' turns every new piece off through the retired switch
+#: names and must reproduce the 2026-10-27 gate's 'prod' arm (a check of the refactor itself).  The older arms are the
+#: 2026-10-27 night's; under the new code they would read as studies on top of the unified algorithm.
+LEGACY = ('WFT_SAT_SOLVE=0 WFT_RC_T0_INTERP=0 WFT_TWO_TRACK_FIT=0 WFT_HEADON_SIG=0 WFT_HEADON_RESCUE=0 '
+          'WFT_DROP_FLAT_HITS=0')
 ARMS = {
+    'unified': ('', 'calib_bundle_xyp'),
+    'legacy': (LEGACY, 'calib_bundle'),
     'prod': '',
     'band': 'WFT_DROP_FLAT_HITS=1',
     'headon': 'WFT_HEADON_SIG=20 WFT_HEADON_RESCUE=1',
@@ -16,10 +25,12 @@ ARMS = {
     'all': 'WFT_DROP_FLAT_HITS=1 WFT_HEADON_SIG=20 WFT_HEADON_RESCUE=1 WFT_TWO_TRACK_FIT=1',
 }
 SH = '''#!/bin/bash
-# run_gate.sh <code_dir> <envspec> <stage_job.py args...>   envspec: comma-separated K=V list, or '-'
-CODE=$1; ENVSPEC=$2; shift 2
-if [ "$ENVSPEC" != "-" ]; then for kv in ${ENVSPEC//,/ }; do export "$kv"; done; fi
-exec $HOME/x17rerun/stage_job.sh $CODE "$@"
+# run_gate.sh <code_dir> <envspec> <key> <stage_job.py args...>   envspec: comma-separated K=V list, or '-'
+# a non-empty envspec is a study arm: stage_job.py refuses wft overrides without --diag
+CODE=$1; ENVSPEC=$2; KEY=$3; shift 3
+DIAG=""
+if [ "$ENVSPEC" != "-" ]; then for kv in ${ENVSPEC//,/ }; do export "$kv"; done; DIAG=--diag; fi
+exec $HOME/x17rerun/stage_job.sh $CODE $KEY $DIAG "$@"
 '''
 SUB = '''# written by rerun/model_audit/make_gate_dag.py
 executable     = $ENV(HOME)/x17rerun/audit/run_gate.sh
@@ -58,11 +69,13 @@ def main():
         for arm in a.arms:
             if f'{det}_{arm}' in a.skip:
                 continue
-            env = ARMS[arm].replace(' ', ',') or '-'
+            spec = ARMS[arm]
+            env, bname = spec if isinstance(spec, tuple) else (spec, 'calib_bundle')
+            env = env.replace(' ', ',') or '-'
             t = f'{{out}}/wft/{arm}/events.parquet'
             al = '{out}/wft/prod_alignment/alignment.json'
             pre = f'{key} --eos-analysis {a.root}'
-            node(f'RECO_{det}_{arm}', env, f'{pre} --module wft.cli -- reco {{key}} --bundle {{out}}/wft/calib_bundle '
+            node(f'RECO_{det}_{arm}', env, f'{pre} --module wft.cli -- reco {{key}} --bundle {{out}}/wft/{bname} '
                  f'--out {t} --matched-only --limit {a.limit} --jobs 16', 16, 24000)
             node(f'BUD_{det}_{arm}', env, f'{pre} --parts run_config,m3,hits --script rerun/effbudget/budget.py -- {det} '
                  f'--table {t} --alignment {al} --out {{out}}/wft/{arm}/budget', 1, 8000, [f'RECO_{det}_{arm}'])

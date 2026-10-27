@@ -102,42 +102,47 @@ HOT: dict = {}            # per-plane hot-channel arrays; see prep_plane
 #: fits identically with it (chi2/dof 39.45 -> 38.54, median |dp0| 0.00 mm):
 #: everything the wildcard does, it does through seeding, not weighting.
 #: 10 is kept because nothing argues for anything else.
-#: ``WFT_HOT_NOISE_INFLATION`` overrides it, which is how that scan is run.
-HOT_NOISE_INFLATION = float(os.environ.get('WFT_HOT_NOISE_INFLATION', 10.0))
-#: Fractional model-error term in the chi2 weights, sigma^2 = noise^2 +
-#: (MODEL_FRAC * W)^2.  0 (default) = the production weighting, bit-identical.
-#: Settable via ``WFT_MODEL_FRAC`` so calibration workers and reco agree.  The
-#: archived RC-ladder model ran production at 0.03; 0.05 was the bench's best
-#: (RECO_BENCH_2026-07-29 §3: Y sigma_theta 1.12 -> 1.05, implied-v 2.8 -> 1.0).
-MODEL_FRAC = float(os.environ.get('WFT_MODEL_FRAC', 0.0))
-#: Censored samples in the charge solve itself (cloud_basics FINDINGS §41, opt-in).  Default: saturated samples are
-#: left out of the NNLS and only penalised afterwards, so the template fitted to the unclipped samples fills the
-#: peak -- angle and position come out as well as unclipped, but the charge of clipped strips reads 6-12 % low.
-#: With SAT_SOLVE the solve is repeated with every clipped sample the model falls below added as an observation
-#: AT the clip level (the active set of a one-sided bound, as in a Tobit fit) until none is below.
-SAT_SOLVE = bool(int(os.environ.get('WFT_SAT_SOLVE', 0)))
+#: The scan is re-run with ``WFT_DIAG=model.HOT_NOISE_INFLATION=<x>`` (wft.diag).
+HOT_NOISE_INFLATION = 10.0
+#: Fractional model-error term in the chi2 weights, sigma^2 = noise^2 + (MODEL_FRAC * W)^2.  0: the chi2 is weighted
+#: by the noise alone.  The archived RC-ladder model ran production at 0.03 (RECO_BENCH_2026-07-29 §3); on the phys
+#: kernel it was REJECTED by the model audit (2026-10-27 F17/F19: chi2/dof falls to a quarter but the far fraction
+#: rises +1..+12 pp and s68 worsens 0.1-0.25 deg on det6/det7 -- the bright-sample weighting is what pins the track).
+#: Study value only, through wft.diag.
+MODEL_FRAC = 0.0
+#: Censored samples in the charge solve itself (cloud_basics FINDINGS §41).  Without it saturated samples are left
+#: out of the NNLS and only penalised afterwards, so the template fitted to the unclipped samples fills the peak --
+#: angle and position come out as well as unclipped, but the charge of clipped strips reads 6-12 % low.  The solve is
+#: repeated with every clipped sample the model falls below added as an observation AT the clip level (the active set
+#: of a one-sided bound, as in a Tobit fit) until none is below.  Part of the algorithm since 2026-10-27 (model audit
+#: F19 `sat` arm: s68 +-0.015 deg, far -0.1..-0.4 pp, chi2 -2..-10 %, and the charge of clipped strips is right, which
+#: the x-y charge pairing and the head-on rescue's charge match rely on).
+SAT_SOLVE = True
 #: Unobservable depth columns (opt-in, 2026-10-23; sept26_prelim_analysis/qsum_runaway.py, OCTOBER O10).  A depth bin
 #: whose response lies past the end of the window (time-censored) or off the strip window (space-censored) has a
 #: column of ~1e-6..1e-17 in the weighted design matrix, and the unregularised NNLS can put unbounded charge on it
 #: (q_sum > 1e6 ADC on 30 % of beam tracks).  With COL_GUARD > 0 every solve offers only the columns whose weighted
-#: norm is at least COL_GUARD x the largest; the others get q = 0.  0 (default) = the production solve, bit-identical.
-COL_GUARD = float(os.environ.get('WFT_COL_GUARD', 0.0))
+#: norm is at least COL_GUARD x the largest; the others get q = 0.  0.01 has been the pass setting since W2 (it was
+#: exported by rerun/stage_job.sh); part of the algorithm since 2026-10-27.
+COL_GUARD = 0.01
 #: t0 continuity of the RC kernel (opt-in, model audit 2026-10-27).  ``build_matrix_rc`` snaps t0 to the 5 ns tensor
 #: grid, so chi2 is a staircase in t0 and Nelder-Mead cannot refine t0 (C19); the delay kernel interpolates.  With
-#: RC_T0_INTERP the design matrix is interpolated linearly between the two neighbouring grid tensors.  0 (default) =
-#: the production kernel, bit-identical.
-RC_T0_INTERP = bool(int(os.environ.get('WFT_RC_T0_INTERP', 0)))
-#: Zero-suppressed data (opt-in, model audit 2026-10-27; every SPS det4 run except run_71 is ZS): a sample that reads
-#: exactly 0 ADC was never recorded, not measured as zero, so it is censored like a saturated one (no information in
-#: either direction).  0 (default) = bit-identical on the RAW bench data, where an exact 0 after pedestal + CM
-#: subtraction is a measurement.
-ZS_CENSOR = bool(int(os.environ.get('WFT_ZS_CENSOR', 0)))
-#: Zero-suppressed data, the informative form (opt-in, ws_sps 2026-10-27): a suppressed sample is not unknown, it is
-#: known to lie BELOW the FEU threshold.  With ZS_BOUND = k > 0 the exactly-zero samples are censored as above AND
-#: penalised one-sidedly when the model rises above k x the strip noise (the mirror of the saturation penalty), so the
-#: fit cannot put charge where the FEU saw none.  k = the run's ZS threshold in sigma (SPS registry zs_sigma).
-#: Implies ZS_CENSOR.  0 (default) = off, bit-identical.
-ZS_BOUND = float(os.environ.get('WFT_ZS_BOUND', 0.0))
+#: RC_T0_INTERP the design matrix is interpolated linearly between the two neighbouring grid tensors.  Part of the
+#: algorithm since 2026-10-27 as a correctness change (F19 `t0i`: angles unchanged within +-0.02 deg, chi2/dof -1..-4 %,
+#: t0 continuous so t0_err is defined on every fit; ws_t0: +1.5-5 % wall time).
+RC_T0_INTERP = True
+#: Zero-suppressed data (model audit 2026-10-27): a sample that reads exactly 0 ADC was never recorded, not measured as
+#: zero, so it is censored like a saturated one (no information in either direction).  This is a property of the DATA,
+#: not a choice: the reader marks such a window ``P['zs'] = True`` (rerun/model_audit/sps_reco.py: every SPS FEU 03
+#: row -- ZS rows, and run_71's RAW packet-loss zeros) and prep_plane censors its zeros.  On the RAW bench data an exact
+#: 0 after pedestal + CM subtraction is a measurement and is kept (qa_config ZERO_SUPPRESSED False).  ZS_CENSOR forces
+#: it on every window -- a study override only (wft.diag).
+ZS_CENSOR = False
+#: Zero-suppressed data, the informative form (ws_sps 2026-10-27): a suppressed sample is known to lie BELOW the FEU
+#: threshold.  With ZS_BOUND = k > 0 the exactly-zero samples are censored as above AND penalised one-sidedly when the
+#: model rises above k x the strip noise (the mirror of the saturation penalty).  k = the run's ZS threshold in sigma
+#: (SPS registry zs_sigma).  A PROTOTYPE, not gated (ws_unify): 0, study override only (WFT_ZS_BOUND via wft.diag).
+ZS_BOUND = 0.0
 
 _smear_cache: dict = {}
 _lp_cache: dict = {}
@@ -523,7 +528,7 @@ def prep_plane(P, plane):
     W /= g[:, None]
     noise = np.maximum(np.asarray(P['noise'], dtype=np.float64), 3.0) / g
     sat = np.asarray(P['W'], dtype=np.float64) >= SAT
-    if ZS_CENSOR or ZS_BOUND > 0:
+    if ZS_CENSOR or ZS_BOUND > 0 or P.get('zs', False):
         sat |= np.asarray(P['W'], dtype=np.float64) == 0.0
     miss = P.get('missing') if isinstance(P, dict) else None
     if miss is not None:
@@ -668,7 +673,15 @@ def model_waveforms(plane, pos, p0, w, t0, q, hyper):
 #: this plane still count as separated (a mid-column distance would call them
 #: degenerate at the crossing). Temporal: one depth bin, since two tracks at
 #: the same place but a bin apart in time are resolved by the profile alone.
-TWO_MIN_SEP_MM = 1.2          # ~1.5 strip pitches
+#:
+#: The transverse floor is the reach of the resistive sharing kernel, not a tuned number: a track puts charge on its
+#: own strip and on +-1 and +-2 (c2 < c1; +-2 strips hold 98 % of it), so two tracks less than 4 pitches apart share
+#: kernel cores and the split of the charge between them is the model's choice, not the data's.  It was 1.2 mm
+#: (~1.5 pitches) until 2026-10-27; the fleet gate showed what lives below 4 pitches on clean bench single muons --
+#: the brightest, worst-chi2 tracks (94-99th percentile) explained as two parallel tracks 2 mm apart sharing the
+#: charge 40/60: 4.1 % of det6 Y singles, 0.9 % det4, 1.1 % det7 X (rerun/model_audit/ws_unify/REPORT.md).  Same
+#: readout pitch and kernel structure on every chamber, so one floor for all of them.
+TWO_MIN_SEP_MM = 4 * 398.58 / 512    # 3.11 mm: four strip pitches
 TWO_MIN_DT_NS = 60.0          # one depth bin
 #: Backstop only. The end-to-end failure -- two straight lines fitting ONE
 #: track's column by taking half of it each in depth -- is handled by measuring
@@ -1005,3 +1018,8 @@ def init_guess(P, plane, tan_seed=0.0, p0_seed=None, v_drift=None):
     t0g = min(leads) if leads else 400.0
     v = v_drift if v_drift is not None else (CAL.v_drift if CAL else 36.6)
     return float(p0_seed), float(tan_seed * v * 1e-3), float(t0g)
+
+
+# the one place a study may move a constant of this module (wft.diag); production runs none
+from . import diag as _diag  # noqa: E402
+_diag.apply('model', globals())

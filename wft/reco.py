@@ -60,8 +60,10 @@ P0_SHEAR = False
 # (p0, w) over that sign's half at the best t0, then the same Nelder-Mead --
 # and keeps the lowest chi2. Steep synthetic muons: wrong sign 13-29 % -> 0-3 %
 # at |tan| 0.3-0.6, nothing changes below 0.3. ~3,500 extra chi2 evaluations
-# per candidate. Read at import, recorded in the stage-2 sidecar.
-TWO_SIDED = os.environ.get('WFT_TWO_SIDED', '0') == '1'
+# per candidate. NOT part of the algorithm: on the phys kernel with the pivot
+# start it is null on det2/det3/det6/det7 and recovers det4 X far -1.2 pp
+# (model audit F19 `ts`); a study override (wft.diag).
+TWO_SIDED = False
 TS_PROBE_TAN = (0.15, 0.4, 0.8)        # raw |tan| of the (p0, t0) stage
 TS_TAN_LO, TS_TAN_HI, TS_TAN_STEP = 0.05, 1.6, 0.05
 TS_P0_HALF, TS_P0_STEP = 6.0, 0.5      # mm around the window's charge centroid
@@ -73,8 +75,9 @@ TS_T0_HALF, TS_T0_STEP = 240.0, 40.0   # ns around the one-sided fit's t0
 # slope, and both are model-free: x_c is the charge-weighted strip position, t_c the charge-weighted sample time minus
 # the electronics template's own time centroid (convolution adds means). So scan w with the line forced through
 # (x_c, t_c) -- p0(w) = x_c - w (t_c - t0) -- and refine the best PIVOT_NREF wells with fit_plane_raw. Same cost as
-# _global_start (33 + 2 refinements), fewer wrong-basin fits on every chamber. Off by default (WFT_PIVOT_START=1).
-PIVOT_START = os.environ.get('WFT_PIVOT_START', '0') == '1'
+# _global_start (33 + 2 refinements), fewer wrong-basin fits on every chamber. The pass's start since C19/C21 (it was
+# exported by rerun/stage_job.sh); built in since 2026-10-27.  False = the old _global_start (study only, wft.diag).
+PIVOT_START = True
 PIVOT_W_HALF = 0.032       # mm/ns: |tan| ~ 0.9 at v = 36 um/ns
 PIVOT_W_STEP = 0.002       # the true well is 3-5 um/ns wide (seedfit landscapes)
 PIVOT_NREF = 2
@@ -412,26 +415,25 @@ U_MAX_NS = 1100.0
 #: On a slow chamber or a low-field row the real column is longer (det6 24 um/ns: T = 1240 ns; the 500 V drift rows
 #: ~1900 ns), so the fixed window called 42-60 % of det6/det7 Y tracks "implausible" (model audit 2026-10-27: the
 #: ranking key and the multi-track gate then prefer a noise candidate whose q_uend happens to fall inside).  The
-#: window now scales with the bundle's v; WFT_U_FIXED=1 restores the constants.
+#: window scales with the bundle's v; the constants are used only when no v is known.
 #: Window as fractions of the column T = 30 mm / v.  0.30 T reproduces U_MIN_NS at 36.6 um/ns.  The legacy upper
 #: bound (1100 ns = 1.34 T) flagged 7-17 % of M3-confirmed det2/det3 single tracks (profile leakage into late bins when
 #: t0 sits a bin early) and 23-60 % on det4/det6/det7; 1.6 T keeps the spike / double-column rejection and admits them.
 U_MIN_FRAC, U_MAX_FRAC = 0.30, 1.60
-U_FIXED = os.environ.get('WFT_U_FIXED', '0') == '1'
 
 
 def u_window(cal=None) -> tuple:
     """(u_min, u_max) [ns] of a plausible column end for this calibration's drift velocity."""
     v = float(getattr(cal, 'v_drift', 0.0) or 0.0) if cal is not None else float(getattr(wm.CAL, 'v_drift', 0.0) or 0.0)
-    if U_FIXED or not v > 0:
+    if not v > 0:
         return U_MIN_NS, U_MAX_NS
     T = 30000.0 / v                     # the 30 mm column at this v [ns]
     return U_MIN_FRAC * T, U_MAX_FRAC * T
 # In the bundle's RAW tan (true = raw x k), so its true-angle reach moves with
-# the bundle's v.  WFT_TAN_MAX overrides it (read at import, like
-# WFT_BEAM_MIN_STRIPS): a versioned re-pass sets it wide and applies the
-# angular acceptance as a true-angle cut at stage 3 (build_tracks --tan-max-true).
-TAN_MAX = float(os.environ.get('WFT_TAN_MAX', 0.6))
+# the bundle's v.  A versioned beam re-pass sets it wide (WFT_TAN_MAX, now a
+# wft.diag override) and applies the angular acceptance as a true-angle cut at
+# stage 3 (build_tracks --tan-max-true).
+TAN_MAX = 0.6
 
 
 def _candidate_score(P, plane, fit: PlaneFit) -> tuple:
@@ -511,15 +513,19 @@ def fit_plane_candidates(windows: list, plane: str, cal: CalibrationBundle,
 # CONTRACT. A split REPLACES its parent -- it cannot be additive the way the
 # rescue floor is, because the two children occupy the parent's strips and
 # counting both would count the charge twice. So:
-#   * with WFT_TWO_TRACK_FIT off (the default) the output is bit-identical;
-#   * a candidate whose split is not accepted comes out bit-identical;
+#   * a candidate whose split is not accepted comes out bit-identical to the
+#     one-track reconstruction (reco.TWO_TRACK=False, a study override);
 #   * the parent is kept in the candidates side table flagged ``split_replaced``
 #     so downstream can undo any split;
 #   * the false-split rate on clean single tracks is measured and bounded.
 # ======================================================================== #
 
-#: Master switch. Off = production, candidate for candidate.
-TWO_TRACK = os.environ.get('WFT_TWO_TRACK_FIT', '0') == '1'
+#: Part of the algorithm since 2026-10-27, with the separation floor at the
+#: sharing kernel's reach (wft.model.TWO_MIN_SEP_MM, 4 pitches): the fleet gate
+#: (rerun/model_audit/ws_unify/REPORT.md) bounds the split rate on clean bench
+#: single muons on all five chambers.  False = the one-track reconstruction,
+#: candidate for candidate (study override).
+TWO_TRACK = True
 #: Accept the split when the statistic (``fit_plane_two``'s ``fstat``: the
 #: SMALLER of the two children's marginal chi2 improvements, in units of the
 #: one-track fit's own chi2/dof) exceeds this. NOT a Wilks number: chi2/dof is
@@ -527,20 +533,20 @@ TWO_TRACK = os.environ.get('WFT_TWO_TRACK_FIT', '0') == '1'
 #: threshold from the asymptotic distribution would split almost everything.
 #: Chosen from the efficiency-vs-false-split curve of
 #: sept26_prelim_analysis/two_track_synth.py and `intra_bench split-probe`.
-TWO_TRACK_F = float(os.environ.get('WFT_TWO_TRACK_F', '300.0'))
+TWO_TRACK_F = 300.0
 #: The same threshold when the other plane resolves two time-coincident
 #: plausible candidates where THIS plane resolves fewer (see
 #: :func:`_cross_plane_mismatch`). Two tracks must show in both views, so a
 #: count mismatch is real external evidence that this plane has merged them and
 #: the bar can be lower. Without the mismatch half of that condition the
 #: discount fires on the easy case and destroys correct tracks.
-TWO_TRACK_F_CORROB = float(os.environ.get('WFT_TWO_TRACK_F_CORROB', '120.0'))
+TWO_TRACK_F_CORROB = 120.0
 #: Candidates per plane the fit is attempted on, best-ranked first.
 TWO_TRACK_MAX_TRY = 2
 #: Trigger: the window's charge is wider than one track of the fitted |tan| and
 #: column duration can cover, by more than this margin [mm]. Measured on clean
 #: single tracks -- `intra_bench split-probe`.
-TWO_TRACK_WIDTH_MARGIN = float(os.environ.get('WFT_TWO_TRACK_WIDTH_MM', '6.0'))
+TWO_TRACK_WIDTH_MARGIN = 6.0
 #: Strip significance that counts as carrying charge, for the width trigger.
 TWO_TRACK_SIG = 5.0
 #: Do the two tracks share a t0?
@@ -558,7 +564,7 @@ TWO_TRACK_SIG = 5.0
 #:       tracks are degenerate at any offset (the profile absorbs it), and on a
 #:       time-offset pair with opposite slopes the TIED fit scores higher
 #:       (test_two_track.test_free_t0_mode_reaches_a_time_offset_pair).
-TWO_TRACK_T0 = os.environ.get('WFT_TWO_TRACK_T0', 'tied')
+TWO_TRACK_T0 = 'tied'
 #: t0 offsets, relative to the parent's, at which the residual is scanned for a
 #: second track [ns]. One depth bin apart; wider only when t0 is free.
 T0_RESID_SCAN = np.arange(-60.0, 60.1, 60.0)
@@ -566,7 +572,7 @@ T0_RESID_SCAN_FREE = np.arange(-180.0, 180.1, 60.0)
 #: Trigger: the largest per-strip coherent positive residual the one-track fit
 #: leaves, in sigma after de-scaling by the fit's own chi2/dof. Calibrated on
 #: clean single tracks -- `intra_bench split-probe`.
-TWO_TRACK_RESID_Z = float(os.environ.get('WFT_TWO_TRACK_RESID_Z', '8.0'))
+TWO_TRACK_RESID_Z = 8.0
 #: Only reconsider candidates the selector actually chose (members of a pair
 #: from :func:`select_tracks`). Measured on 13 071 real run_145 candidates:
 #: this is 25 % of them and holds 42 % of the splits, the rest being extra
@@ -574,8 +580,8 @@ TWO_TRACK_RESID_Z = float(os.environ.get('WFT_TWO_TRACK_RESID_Z', '8.0'))
 #: chi2/dof 13. The default was set to save compute, which is no longer a
 #: constraint (2026-09-16): whether those other splits are real pairs is
 #: unmeasured, and this is on the to-do (wft/TWO_TRACK_FIT_2026-09-16.md §8).
-#: Set WFT_TWO_TRACK_ALL_CANDIDATES=1 to reconsider every candidate.
-TWO_TRACK_SELECTED_ONLY = os.environ.get('WFT_TWO_TRACK_ALL_CANDIDATES', '0') != '1'
+#: A study reconsiders every candidate with WFT_DIAG=reco.TWO_TRACK_SELECTED_ONLY=0.
+TWO_TRACK_SELECTED_ONLY = True
 #: Where the split statistic's chi2/dof scale comes from. 'one' (production):
 #: the parent one-track fit's -- which on a real pair already holds the second
 #: track's unexplained charge, so fstat ~ dchi2 / (1 + dchi2/dof) can never
@@ -583,7 +589,7 @@ TWO_TRACK_SELECTED_ONLY = os.environ.get('WFT_TWO_TRACK_ALL_CANDIDATES', '0') !=
 #: samples) cannot reach TWO_TRACK_F = 300 however clear the pair is
 #: (two_track_limit.py, 2026-09-29). 'two': the two-track fit's, which equals
 #: the parent's on a true single and is not inflated by the thing being tested.
-TWO_TRACK_SCALE = os.environ.get('WFT_TWO_TRACK_SCALE', 'one')
+TWO_TRACK_SCALE = 'one'
 #: How the joint fit is started. 'starts' (production): alternating pursuit from
 #: the one-track parent plus three symmetric splits, best two refined. On close
 #: pairs the parent is a slanted compromise line and the refinement falls into
@@ -592,7 +598,7 @@ TWO_TRACK_SCALE = os.environ.get('WFT_TWO_TRACK_SCALE', 'one')
 #: every pair of parallel lines on a strip-step grid (common slope, tied t0),
 #: profiles by NNLS, and refine the best TWO_TRACK_GRID_KEEP of them with a
 #: long Nelder-Mead. Costs 2-10 k chi2 evaluations per attempt.
-TWO_TRACK_SEARCH = os.environ.get('WFT_TWO_TRACK_SEARCH', 'starts')
+TWO_TRACK_SEARCH = 'starts'
 TWO_TRACK_GRID_TANS = np.round(np.arange(-0.4, 0.401, 0.1), 3)
 TWO_TRACK_GRID_DT = (-60.0, 0.0, 60.0)
 TWO_TRACK_GRID_MAX_MM = 14.0
@@ -1166,7 +1172,20 @@ def two_track_ladder(kept: Dict[str, list], attempts: list, ftst_diff,
     return out_rows
 
 
-DT_XY_TOL_NS = 120.0     # how far t0x - t0y may sit from the measured offset
+#: How far t0x - t0y may sit from the measured offset (bundle ``dt_xy``).  120 ns until 2026-10-27; it is now
+#: XY_TOL_NSIG x the bundle's measured width of that same residual on clean single tracks (``xy_pairing`` rsig 't0',
+#: written by rerun/w12/set_w0kw.py --table), because the per-plane t0 is uncertain by 50 ns (det2/det3) to
+#: ~140 ns (det6/det7) and a fixed 120 ns failed 15-44 % of genuine single tracks (model audit F5).  120 ns stays only
+#: for a bundle that has not measured it.  Set per worker by :func:`_worker_init`.
+DT_XY_TOL_NS = 120.0
+DT_XY_TOL_DEFAULT_NS = 120.0
+XY_TOL_NSIG = 2.5
+
+
+def dt_xy_tol(pairing: Optional[dict]) -> float:
+    """The x-y t0 coincidence tolerance [ns] a bundle's ``xy_pairing`` implies."""
+    rs = ((pairing or {}).get('rsig') or {}).get('t0')
+    return float(XY_TOL_NSIG * rs) if rs and np.isfinite(rs) and rs > 0 else DT_XY_TOL_DEFAULT_NS
 
 
 def select_tracks(cand_fits: Dict[str, list], ftst_diff: Optional[int],
@@ -1480,17 +1499,18 @@ WORKER_OPTS = ('TWO_TRACK', 'TWO_TRACK_F', 'TWO_TRACK_F_CORROB', 'TWO_TRACK_T0',
 def _worker_init(bundle_path, pairing_path=None, opts=None):
     """``pairing_path`` overrides the bundle's ``xy_pairing`` (for A/B runs);
     ``opts`` overrides the :data:`WORKER_OPTS` module globals (likewise)."""
-    global _CAL, _PAIRING
+    global _CAL, _PAIRING, DT_XY_TOL_NS
     _CAL = CalibrationBundle.load(bundle_path)
     wm.use_calibration(_CAL)
     _PAIRING = load_pairing(pairing_path) if pairing_path else (_CAL.xy_pairing or None)
+    DT_XY_TOL_NS = dt_xy_tol(_CAL.xy_pairing)
     for k, v in (opts or {}).items():
         if k not in WORKER_OPTS:
             raise KeyError(f'not a worker option: {k!r}; known: {WORKER_OPTS}')
         globals()[k] = v
 
 
-PAIR_SELECT = os.environ.get('WFT_PAIR_SELECT', '0') == '1'
+PAIR_SELECT = False       # legacy single-pair selector (beam displays); select_tracks decides
 EMIT_CANDIDATES = os.environ.get('WFT_EMIT_CANDIDATES', '1') == '1'
 MAX_TRACKS = 3
 _PAIRING: Optional[dict] = None
@@ -1503,9 +1523,11 @@ _PAIRING: Optional[dict] = None
 #: views (robust sigma 0.054 on det3 bench singles), which is what keeps 1-strip / low-SNR seeds from turning noise
 #: into tracks. The tolerance widens with the rescued cluster's own charge noise, rsig -> hypot(rsig, sigma_Q / Q) over
 #: the column window, and Q > 3 sigma_Q is required (headon2.py '+qa': x, noise x2, gain x0.05: 79 -> 84 % found). median / rsig: the bundle's xy_pairing 'lq' if present, else the det3 bench values below.
-#: Off (default) = the historical reconstruction.
-HEADON_RESCUE = os.environ.get('WFT_HEADON_RESCUE', '0') == '1'
-HEADON_RESCUE_Z = float(os.environ.get('WFT_HEADON_RESCUE_Z', '10.0'))
+#: Part of the algorithm since 2026-10-27 (fleet gate, with seed.HEADON_SIG: +0.3..+3.7 pt detected, det4/det7 the
+#: most, no cost to the existing tracks).  Every number is in units of a measured width (noise, the bundle's charge
+#: balance), so the rule is the same on every chamber; a bundle without xy_pairing falls back to det3's balance.
+HEADON_RESCUE = True
+HEADON_RESCUE_Z = 10.0
 HEADON_RESCUE_QTOL = 3.0
 HEADON_RESCUE_LQ = (-0.059, 0.054)
 
@@ -1519,7 +1541,7 @@ def _headon_rescue(R, plane, other):
     win = wio.extract_window(R['W'], R['noise'], R['pos'], ch, 3)
     if win is None:
         return None
-    P = dict(W=win.W, pos=win.pos, noise=win.noise, ch=win.ch)
+    P = dict(W=win.W, pos=win.pos, noise=win.noise, ch=win.ch, zs=bool(R.get('zs', False)))
     f = fit_plane_candidates([P], plane, _CAL)
     if f is None or not np.isfinite(f.q_sum) or f.q_sum <= 0 or not other.q_sum > 0:
         return None
@@ -1695,7 +1717,15 @@ def reconstruct_run(cfg, cal: CalibrationBundle, out_path: str,
         pd.DataFrame(cand_rows).sort_values(
             ['event_id', 'plane', 'rank']).reset_index(drop=True).to_parquet(
             cand_path, index=False)
+    from . import diag as wdiag
     meta = dict(n_events=len(df), calibration=bundle_path,
+                # the algorithm is the code; anything else is a study and says so here
+                diagnostic_overrides=dict(wdiag.ACTIVE),
+                algorithm=dict(pivot_start=PIVOT_START, two_sided=TWO_SIDED, col_guard=wm.COL_GUARD,
+                               sat_solve=wm.SAT_SOLVE, rc_t0_interp=wm.RC_T0_INTERP, model_frac=wm.MODEL_FRAC,
+                               zero_suppressed=bool(getattr(cfg, 'ZERO_SUPPRESSED', False)),
+                               two_track_min_sep_mm=wm.TWO_MIN_SEP_MM,
+                               dt_xy_tol_ns=dt_xy_tol(cal.xy_pairing)),
                 bundle=dict(detector=cal.detector, run_key=cal.run_key,
                             v_drift=cal.v_drift, hyper=cal.hyper,
                             conditions=cal.conditions,
@@ -1752,9 +1782,9 @@ def reconstruct_run(cfg, cal: CalibrationBundle, out_path: str,
 #: 3-19 % of bench triggers -- and otherwise forms competing clusters (n_dropped) and trips the spark veto. 84 % of the
 #: hits on band strips, 0.7 % of all others. 'left': drop every hit already above threshold at the FIRST sample
 #: (trunc_left), whatever it does later -- 92 % of band hits, 2.4 % of others; the triggering particle's charge
-#: cannot be there before its own t0. Off (default) = the historical hit list.
-_DF = os.environ.get('WFT_DROP_FLAT_HITS', '0')
-DROP_FLAT_HITS = {'1': 'both', 'left': 'left'}.get(_DF)
+#: cannot be there before its own t0.  'both' is part of the algorithm since 2026-10-27 (fleet gate: +0.0..+1.1 pt
+#: detected, rejected_cut -0.3..-0.7 pt, resolution of the existing tracks unchanged); None = the historical hit list.
+DROP_FLAT_HITS = 'both'
 
 
 def _load_hits(cfg):
@@ -1780,6 +1810,8 @@ def _stream_windows(cfg, pos_maps, seeds, wanted, pad_strips, verbose=True, dead
     """Yield lists of (eid, windows, seedinfo, n_hits, spark) per file pair.
     ``dead``: {plane: channels} padded across (``wft.seed.DEAD_SEED``); empty = historical."""
     from . import io as wio
+    # zero suppression is a property of the run (qa_config ZERO_SUPPRESSED): its exact-zero samples are censored
+    zs = bool(getattr(cfg, 'ZERO_SUPPRESSED', False))
     fx = wio.subrun_files(cfg.BASE_PATH, cfg.RUN, cfg.SUB_RUN, cfg.MX17_FEU_X)
     fy = wio.subrun_files(cfg.BASE_PATH, cfg.RUN, cfg.SUB_RUN, cfg.MX17_FEU_Y)
     by_tag = {}
@@ -1805,7 +1837,7 @@ def _stream_windows(cfg, pos_maps, seeds, wanted, pad_strips, verbose=True, dead
                 if not cl:
                     if HEADON_RESCUE and not seeds[eid]['spark']:
                         rec = buf.setdefault(eid, {'w': {}, 's': {}})
-                        rec['w'][f'_rescue_{plane}'] = dict(W=wfm, noise=rdr.noise, pos=pos_maps[feu])
+                        rec['w'][f'_rescue_{plane}'] = dict(W=wfm, noise=rdr.noise, pos=pos_maps[feu], zs=zs)
                         rec['ftst_' + plane] = ftst
                     continue
                 cl = cl if isinstance(cl, list) else [cl]
@@ -1817,7 +1849,7 @@ def _stream_windows(cfg, pos_maps, seeds, wanted, pad_strips, verbose=True, dead
                     if win is None:
                         continue
                     wins.append(dict(W=win.W, pos=win.pos, noise=win.noise,
-                                     ch=win.ch))
+                                     ch=win.ch, zs=zs))
                     used.append(s)
                 if not wins:
                     continue
@@ -1833,3 +1865,8 @@ def _stream_windows(cfg, pos_maps, seeds, wanted, pad_strips, verbose=True, dead
         if verbose:
             print(f'[wft]   {tag}: {len(payloads):,} events windowed', flush=True)
         yield payloads
+
+
+# the one place a study may move a constant of this module (wft.diag); production runs none
+from . import diag as _diag  # noqa: E402
+_diag.apply('reco', globals())
