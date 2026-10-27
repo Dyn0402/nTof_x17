@@ -197,3 +197,9 @@ Resolution of the pre-existing tracks is untouched by the band veto and the two-
 1.4–3.7 pt of detection on the weak chambers at the price of a poorer-angle population.  det3's +1.15 pt reproduces the
 satstudy numbers (band 96.9 %, head-on 17/17).  Verdict for B2: band veto + head-on rescue pass the fleet gate; the
 two-track fit needs det6's split rate understood (417 splits) before it is on by default.
+
+F20 addendum: `run63_rot25__d675` through the B3 stage (1500 events, K 40, 64 samples, ZS censored): Y |w|/tan 12.50 vs
+28.8/uend 12.00 (+4 %, θ = −26.6° at the column v), X −1.8° (the tilt), far > 10° 25 % (Y) / 18 % (X), χ²/dof 105–135 —
+the same numbers as the audit harness, so the stage and the harness agree.  Both SPS rows of the dry run are at
+`/eos/user/d/dneff/x17rerun/model_audit/sps_pass/`.  AFS quota at the end of the night: 88 % (the ten `~/x17rerun/code_*`
+archives, 5.6 GB, are the bulk; `lxstore offload` them before the pass).
