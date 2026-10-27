@@ -123,6 +123,20 @@ source = "sps_beam_test_26/analysis/spatial_resolution/figures/decomposition.png
 producer = "cd sps_beam_test_26/analysis/spatial_resolution && ../../../.venv/bin/python make_figures.py"
 note = "make_figures.py needs residuals.npz (not on the desktop)."
 
+# --- 8b The chamber bow (draft, FB 2026-10-27) ---------------------------------
+
+[fig.bow_profiles]
+title = "Mesh height across the chamber from position residuals vs M3 slope, X and Y strips, five chambers"
+state = "current"
+source = "rerun/model_audit/followups/fb_bow_maps/figures/bow_profiles.pdf"
+producer = "cd rerun/model_audit/followups/fb_bow_maps && ../../../../.venv/bin/python xcheck.py && ../../../../.venv/bin/python profiles.py && ../../../../.venv/bin/python paper_figs.py"
+
+[fig.bow_closure]
+title = "Measured drift-tilt gradient vs the one predicted by the position-route curvature"
+state = "current"
+source = "rerun/model_audit/followups/fb_bow_maps/figures/bow_closure.pdf"
+producer = "cd rerun/model_audit/followups/fb_bow_maps && ../../../../.venv/bin/python paper_figs.py"
+
 # --- 9 det4 stripes -----------------------------------------------------------
 
 [fig.det4_stripes]
