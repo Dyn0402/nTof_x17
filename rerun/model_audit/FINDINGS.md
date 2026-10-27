@@ -153,3 +153,9 @@ gain stripes) with rσ 0.45, and only 5–6 strips per window carry samples — 
 neighbour and tail samples the fit needs for the angle and t0 of a head-on column.  So on SPS the ZS runs give the
 median angle scale (F16) and little else; the RAW run_71 (flat, 700/450/275 V) is the clean head-on set.  The pass
 registry's K gets a +10-bin margin (uend sat on the grid end at K = 40).  `run63_rot25__d675` still running.
+
+F18 addendum (`steep_probe.py` base, held-out |tan_ref| ≥ 0.25, 100–120 events per chamber, p0 re-scanned at the M3
+angle): the model prefers the fitted angle in 93–96 % (det3), 83–90 % (det4), 90–91 % (det7) of steep tracks — the
+optimiser-miss rate is 5–7 % on det3 but 10–17 % on det4/det7, which is what the two-sided start recovers (det4 X far
+−1.2 pp).  Median w_fit/w_ref on these samples: det3 0.982 / 0.988, det4 1.037 / 1.057 (against the bench kw of 0.953 /
+0.977: the held-out sample scatters ±0.15 in 26–31 % of events), det7 0.982 / 0.943 (X / Y).
