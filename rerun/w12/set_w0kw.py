@@ -36,6 +36,15 @@ def main():
                          't0x - t0y per ftst class on clean single tracks) and the xy_pairing block (lq, u50, u90, t0 '
                          'medians and robust widths).  Model audit 2026-10-27: the dt_xy inherited from the old-kernel '
                          'calibration is stale by ~50-60 ns on det2/det3 under the phys kernel.')
+    ap.add_argument('--latency-cache', default=None,
+                    help='a waveform cache of this row (w12 it1 cache.pkl): measure the trigger latency per plane from '
+                         'the raw leading edge (wft.calibrate.measure_latency, model-free) and write t0_abs = C - 10 ns x '
+                         'ftst.  Model audit 2026-10-27 (ws_t0): the t0_abs the bundles carried were free-fit medians of '
+                         'another kernel, toothed by the 60 ns depth bin.')
+    ap.add_argument('--pin-t0', action='store_true',
+                    help='with --latency-cache: also set t0_prior_sigma = T0_PIN_SIGMA (t0 pinned at the trigger latency '
+                         'instead of fitted).  Bench / scintillator-triggered data only: on n_TOF the trigger is not the '
+                         'particle.')
     ap.add_argument('--fold-kw', action='store_true',
                     help='vrefit --keep-v: fold the mean kw into v_drift (v := v * kw_mean, kw := kw / kw_mean), so the '
                          'bundle carries this row\'s ladder v instead of the golden row\'s; tan is unchanged')
@@ -88,6 +97,20 @@ def main():
         print(f'xy_pairing rsig: { {k: round(v, 3) for k, v in pairing["rsig"].items()} }')
         cal.dt_xy = dt_new
         cal.xy_pairing = pairing
+    if a.latency_cache:
+        import pickle
+        from wft.calibrate import measure_latency, t0_abs_from_latency, T0_PIN_SIGMA
+        lat = measure_latency(pickle.load(open(a.latency_cache, 'rb')))
+        if set(lat) == {'x', 'y'}:
+            rep['latency'] = dict(lat, source=a.latency_cache, t0_abs_old={p: {str(k): float(v) for k, v in d.items()}
+                                                                          for p, d in cal.t0_abs.items()})
+            cal.t0_abs = t0_abs_from_latency(lat)
+            if a.pin_t0:
+                rep['latency']['t0_prior_sigma_old'] = float(cal.t0_prior_sigma)
+                cal.t0_prior_sigma = T0_PIN_SIGMA
+            print(f't0_abs <- latency C x {lat["x"]["C"]:.1f} / y {lat["y"]["C"]:.1f} ns; t0_prior_sigma {cal.t0_prior_sigma}')
+        else:
+            print(f'latency: too few planes measured ({sorted(lat)}); t0_abs left unchanged')
     prov = dict(cal.provenance)
     prov.update(w0_kw_stale=False, w0_kw_note=f'w0/kw measured by rerun/w12/set_w0kw.py from {a.angles} '
                 f'(a reconstruction with this bundle, {a.run_key})', w0_kw_measurement=rep)

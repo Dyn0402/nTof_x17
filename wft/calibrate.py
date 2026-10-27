@@ -356,6 +356,66 @@ def measure_t0_abs(events, bundle_path, hyper, v, sample=None):
     return pred, spread
 
 
+#: Pinned-t0 width [ns] written by the finalize step's --pin-t0: t0 is then the trigger latency, not a fit parameter.
+#: The scintillator trigger fixes the mesh-charge arrival to ~4 ns (pair figure 5 ns); any sigma of that size is
+#: invisible next to chi2 ~ 1e4 (unscaled penalty, model audit F6), so the prior is used as a pin.
+T0_PIN_SIGMA = 0.05
+
+
+def _cf_lead(w, frac=0.3, sns=60.0):
+    """First crossing of frac x peak, linearly interpolated [ns]; nan if the pulse is already up in sample 0."""
+    pk = int(np.argmax(w)); thr = frac * w[pk]
+    above = np.where(w[:pk + 1] >= thr)[0]
+    if not len(above) or above[0] == 0:
+        return np.nan
+    i = above[0]
+    return sns * (i - 1 + (thr - w[i - 1]) / max(w[i] - w[i - 1], 1e-9))
+
+
+def measure_latency(events, nsig=8.0, tan_max=0.3, min_strips=3, sns=60.0):
+    """Trigger latency per plane from the raw waveforms -- no template, no kernel, no v (model audit 2026-10-27, ws_t0).
+
+    Per plane and event: the EARLIEST 30 % constant-fraction crossing among strips peaking above ``nsig`` x noise (the
+    charge ionised next to the mesh arrives first whatever v is), phase-corrected t + 10 ns * ftst.  The median over
+    near-vertical M3 tracks (|tan| < tan_max, >= min_strips strips) is the latency C; the fit's mesh time is then
+    t0 = C - 10 ns * ftst.  On the June bench C is 304-336 ns on all five chambers and both views (one DREAM config,
+    one trigger), and the fit's chi2 and the M3 position both prefer a pinned t0 within ~20 ns of it.
+    Returns {plane: dict(C, rsig, n, ftst_slope)}."""
+    vals = {'x': [], 'y': []}
+    for ev in events.values():
+        for plane in ('x', 'y'):
+            ft = ev.get(f'ftst_{plane}')
+            if plane not in ev or ft is None or int(ft) < 0 or abs(float(ev.get(f'tan_{plane}', 0.0))) >= tan_max:
+                continue
+            W = np.asarray(ev[plane]['W'], float); nz = np.asarray(ev[plane]['noise'], float)
+            good = W.max(axis=1) > nsig * np.maximum(nz, 1.0)
+            if good.sum() < min_strips:
+                continue
+            tl = np.array([_cf_lead(W[i], sns=sns) for i in np.where(good)[0]])
+            tl = tl[np.isfinite(tl)]
+            if len(tl):
+                vals[plane].append((float(tl.min()) + 10.0 * int(ft), int(ft)))
+    out = {}
+    for plane, rows in vals.items():
+        if len(rows) < 30:
+            continue
+        a = np.asarray(rows, float)
+        med = float(np.median(a[:, 0]))
+        cls = sorted(set(a[:, 1].astype(int)))
+        raw = [np.median(a[a[:, 1] == c, 0] - 10.0 * c) for c in cls]
+        slope = float(np.polyfit(cls, raw, 1)[0]) if len(cls) > 2 else float('nan')
+        q = np.percentile(a[:, 0], [16, 84])
+        out[plane] = dict(C=med, rsig=float(0.5 * (q[1] - q[0])), n=int(len(a)), ftst_slope=slope)
+        print(f'[calib] latency {plane}: C {med:.1f} ns (rsig {out[plane]["rsig"]:.1f}, n={len(a)}, '
+              f'raw ftst slope {slope:+.1f} ns/class, expect -10)')
+    return out
+
+
+def t0_abs_from_latency(lat: dict, n_ftst: int = 8) -> dict:
+    """{plane: {ftst: C - 10 ns * ftst}} for every 3-bit ftst class, from measure_latency's output."""
+    return {p: {f: float(d['C'] - 10.0 * f) for f in range(n_ftst)} for p, d in lat.items()}
+
+
 def measure_dt_xy(events, bundle_path, hyper, v, sample=200):
     """t0(x) - t0(y) by ftst difference, for the joint two-plane fit."""
     wm.use_calibration(CalibrationBundle.load(bundle_path))
