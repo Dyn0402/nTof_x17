@@ -1,0 +1,12 @@
+executable            = fd_job.sh
+arguments             = $(args)
+transfer_input_files  = fd_code.tgz
+should_transfer_files = YES
+when_to_transfer_output = ON_EXIT
+output                = logs/$(Cluster).$(Process).out
+error                 = logs/$(Cluster).$(Process).err
+log                   = logs/fd.log
+request_cpus          = 1
+request_memory        = 2000
++JobFlavour           = "longlunch"
+queue args from jobs.txt
