@@ -54,7 +54,7 @@ def main():
             node(f'ANG_{det}_{arm}', env, f'{pre} --parts run_config,m3,hits --script mx_june_wft/03_angles.py -- '
                  f'--table {t} --alignment {al} --out {{out}}/wft/{arm}/angles', 1, 8000, [f'RECO_{det}_{arm}'])
     open(f'{a.tag}.dag', 'w').write('\n'.join(L) + '\n')
-    open('gate.sub', 'w').write(SUB.replace('$ENV(HOME)/x17rerun/audit/run_gate.sh', os.path.abspath('run_gate.sh'))
+    open('gate.sub', 'w').write(SUB.replace('/x17rerun/audit/run_gate.sh', '/x17rerun/fe/run_gate.sh')
                                 .replace('log/gate.log', f'log/{a.tag}.log'))
     open('run_gate.sh', 'w').write(SH)
     os.chmod('run_gate.sh', 0o755)

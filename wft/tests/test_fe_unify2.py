@@ -148,3 +148,17 @@ def test_depth_subdiv_grid(cal, tmp_path):
     finally:
         cal.depth_subdiv = 1
         wm.use_calibration(cal); wm.set_depth_bins(18)
+
+
+# ------------------------------------------------------------ v map slot
+def test_v_map_slot(cal, tmp_path):
+    from wft.calib import CalibrationBundle
+    cal.v_map = {'t': {'var': 'event_id', 'edges': [0, 100, 200], 'scale': [1.0, 1.1]},
+                 'xy': {'x_edges': [0, 200, 400], 'y_edges': [0, 400], 'scale': [[0.95], [1.05]]}}
+    cal.save(str(tmp_path / 'b'))
+    back = CalibrationBundle.load(str(tmp_path / 'b'))
+    assert back.v_map == cal.v_map
+    assert wr.v_scale(back) == 1.0
+    assert wr.v_scale(back, 300.0, 10.0, 150) == pytest.approx(1.05 * 1.1)
+    assert wr.v_scale(back, 50.0, 10.0, 1e9) == pytest.approx(0.95 * 1.1)    # clamped at the last block
+    cal.v_map = {}

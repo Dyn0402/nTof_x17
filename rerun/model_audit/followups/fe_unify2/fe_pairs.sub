@@ -1,0 +1,13 @@
+executable     = $ENV(HOME)/x17rerun/fe/run_pairs.sh
+arguments      = /eos/user/d/dneff/x17rerun/followups/fe/code_4760526 $(var) $(extra)
+output         = log/pairs_$(var).out
+error          = log/pairs_$(var).err
+log            = log/pairs.log
+request_cpus   = 16
+request_memory = 32000
++JobFlavour    = "workday"
+should_transfer_files = NO
+queue var, extra from (
+  fe_unified -
+  fe_onetrack TWO_TRACK=false
+)

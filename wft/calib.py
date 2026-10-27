@@ -170,6 +170,13 @@ class CalibrationBundle:
     # and clamped at the ends:  tan = (w*1e3 - w0(p)) / (s(p) * kw[p] * v).  Absent = the constant mapping.
     angle_map: Dict[str, dict] = field(default_factory=dict)
 
+    # --- drift-velocity maps (FE item 12, slot for FA's v(t) / v(x, y), 2026-10-27), optional.  Relative to v_drift:
+    #   't':  {'var': 'event_id' | 'time_s', 'edges': [...] (n+1), 'scale': [...] (n)}  -- the gas changing during a run
+    #   'xy': {'x_edges': [...], 'y_edges': [...], 'scale': [[...]] (nx, ny)}            -- v over the surface (cells)
+    # The local v of a track is v_drift * s_t * s_xy; the angle scales as 1 / that (wft.reco.v_scale).  A 2-D map needs
+    # both views' positions, so it is applied per TRACK (after x-y pairing), not inside the per-plane fit.  Absent = one v.
+    v_map: Dict[str, dict] = field(default_factory=dict)
+
     # --- per-event angle error floor (model audit F3, ws_floor 2026-10-27): the measured core angular resolution of
     # this chamber and view, in tan, written at finalize ({'x': 0.018, 'y': ...}).  It is the "model floor" -- what the
     # fit achieves on real tracks -- not the physics floor (0.006).  Absent = wft.reco.FLOOR_TAN (det3's 0.018).
@@ -228,7 +235,7 @@ class CalibrationBundle:
                         for p, ch in self.hot.items()},
                     w0={p: float(v) for p, v in self.w0.items()},
                     kw={p: float(v) for p, v in self.kw.items()},
-                    angle_map=self.angle_map,
+                    angle_map=self.angle_map, v_map=self.v_map,
                     tan_floor={k: float(v) for k, v in self.tan_floor.items()},
                     xy_pairing=self.xy_pairing,
                     pitch_mm=self.pitch_mm, sample_ns=self.sample_ns,
@@ -260,7 +267,7 @@ class CalibrationBundle:
                        for p, ch in m.get('hot', {}).items()},
                    w0={p: float(v) for p, v in (m.get('w0') or {}).items()},
                    kw={p: float(v) for p, v in (m.get('kw') or {}).items()},
-                   angle_map=m.get('angle_map') or {},
+                   angle_map=m.get('angle_map') or {}, v_map=m.get('v_map') or {},
                    tan_floor={k: float(v) for k, v in (m.get('tan_floor') or {}).items()},
                    xy_pairing=m.get('xy_pairing') or {},
                    pitch_mm=m.get('pitch_mm', 0.78),

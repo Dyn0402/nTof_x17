@@ -353,6 +353,26 @@ def tan_of(cal: CalibrationBundle, plane: str, w: float, p0: float) -> float:
     return float(tan)
 
 
+def v_scale(cal: CalibrationBundle, x: float = np.nan, y: float = np.nan, t: float = np.nan) -> float:
+    """Local drift velocity relative to the bundle's v_drift from its ``v_map`` (1.0 where the map is absent or the
+    coordinate unknown): s_t(t) * s_xy(x, y), piecewise constant in time blocks / surface cells, clamped at the edges.
+    A track's tangents are divided by it (tan = w / (kw v s)), per track after x-y pairing."""
+    m = getattr(cal, 'v_map', None) or {}
+    f = 1.0
+    mt = m.get('t')
+    if mt and np.isfinite(t):
+        e = np.asarray(mt['edges'], float)
+        f *= float(np.asarray(mt['scale'], float)[int(np.clip(np.searchsorted(e, t, side='right') - 1, 0, len(e) - 2))])
+    mx = m.get('xy')
+    if mx and np.isfinite(x) and np.isfinite(y):
+        ex, ey = np.asarray(mx['x_edges'], float), np.asarray(mx['y_edges'], float)
+        i = int(np.clip(np.searchsorted(ex, x, side='right') - 1, 0, len(ex) - 2))
+        j = int(np.clip(np.searchsorted(ey, y, side='right') - 1, 0, len(ey) - 2))
+        sc = float(np.asarray(mx['scale'], float)[i, j])
+        f *= sc if np.isfinite(sc) and sc > 0 else 1.0
+    return f
+
+
 def tan_floor(cal: CalibrationBundle, plane: str) -> float:
     """Per-event angle error floor [tan] for this chamber and view: the bundle's measured ``tan_floor`` (ws_floor),
     else FLOOR_TAN."""
