@@ -62,7 +62,7 @@ def s_cover(D):
             'The angle problems the audit found were mostly calibration, not the physics model, '
             'and they now go through one reconstruction</h1>' +
             sd.row(sd.bignum('22', 'audit findings', DBLUE, 'F1–F22, rerun/model_audit/FINDINGS.md'),
-                   sd.bignum('8', 'independent workstreams', DGREEN, 'one per question; seven done, SPS drift velocity running'),
+                   sd.bignum('8', 'independent workstreams', DGREEN, 'one per question, all eight done'),
                    sd.bignum('5 + 1', 'chambers', DGREY, 'det2/3/4/6/7 on the bench, det4 at SPS H4'),
                    sd.bignum('8000', 'muons per chamber in the final gate', DRED, 'unified reconstruction vs production'),
                    gap=56))
@@ -81,6 +81,8 @@ the resolution. A ~2 % residual is unexplained.</li>
 <li><b>Physics floor (F3)</b>: a toy says 0.30–0.35°, set by diffusion; we measure 3–6× that.</li>
 <li><b>Dead strips and x–y charge balance (F12, F15)</b>: two kinds of fault (chamber vs electronics); the charge balance
 is not a gain problem.</li>
+<li><b>SPS drift velocity (F16)</b>: the old 14 % was the fit's depth grid; v(243 V/cm) = 14.1 µm/ns from the
+column duration; an 8 % slope deficit remains (local gap or fit, not separable).</li>
 <li><b>One reconstruction (F22, F7, F10, F11, F13)</b>: no per-dataset switches; finds 1–5 % more tracks.</li>
 </ol>
 <p>Ledger: <code>rerun/model_audit/FINDINGS.md</code>; each workstream's report: <code>rerun/model_audit/ws_*/REPORT.md</code>.</p>"""
@@ -411,7 +413,7 @@ def s_sps_zs(D):
                            'used (worst). Blue: zero-or-below-threshold bound.'),
                    sd.col(sd.callout('Measured zeros: t0 within 27 ns, position within 15–27 µm of RAW', GREEN),
                           sd.callout('Censored (old F16/F20 fits): 2–3× worse', RED),
-                          sd.callout('Separately: every old SPS cache sat 256 ADC too high, so F16 and F20 are being redone', GOLD),
+                          sd.callout('Separately: every old SPS cache sat 256 ADC too high; F16 is redone (next slides)', GOLD),
                           gap=28, w=520), gap=40, align='center'))
     notes = """<b>F20.</b> Run_71 RAW gives truth; zero suppression is emulated on the same events. Treating suppressed
 samples as measured zeros (they are: the DAQ measured them below threshold): t0 ≤ 27 ns, position 15–27 µm, slope
@@ -421,7 +423,7 @@ default in the single reconstruction.
 
 <b>Cache bug</b>: the EOS-built ZS caches never subtracted the ZS baseline, so kept samples sat 256 ADC above the
 suppressed zeros, and RAW rows sat on raw pedestals of 300–700 ADC. Fixed in 7505338. F16 and F20 numbers came from those
-caches and are void; the F16 refit is the pending workstream.
+caches and are void; F16 is redone on the fixed caches (next slides), the 25.64° angle numbers of F20 are not yet.
 
 Also fixed: front-end-dropped RAW samples (23 %) had been fitted as zeros (χ² +30 %); they are now marked missing."""
     D.slide('sps-zs', body, notes, foot=foot_ws('ws_sps'), short='SPS: zero suppression')
@@ -437,7 +439,7 @@ def s_sps_what(D):
             ('position at 0°', '176 µm (det4)', 'technology bound', 'M3 deconvolution', Y_),
             ('position at 25.6°', '+0.6 mm (inclined view)', 'det4 only', 'none', Y_),
             ('drift diffusion Dp', 'X 2× Magboltz', 'no (different gas)', "don't force Magboltz on X", R),
-            ('drift velocity, gap', 'pending refit', 'no (different gas)', 'none', R),
+            ('drift velocity', '14.1 µm/ns at 243 V/cm', 'no (different gas)', 'none', R),
             ('gain', '×20 swings in bands', 'no', 'none', R)]
     tb = sd.table(['quantity', 'SPS gives', 'transfers to bench?', 'constraint on bench'],
                   [[f'<span style="color:{c};font-weight:600">●</span> {a}', b, t, k] for a, b, t, k, c in rows],
@@ -462,28 +464,81 @@ caches."""
     D.slide('sps-what', body, notes, foot=foot_ws('ws_sps'), short='SPS: what transfers')
 
 
-def s_sps_v(D):
-    rep = HERE / 'ws_spsv' / 'REPORT.md'
-    if rep.exists():
-        txt = rep.read_text()
-        body = (sd.title('SPS absolute drift velocity (F16)', 'Workstream C') +
-                sd.p('Result in <code>rerun/model_audit/ws_spsv/REPORT.md</code>; slide to be drawn from its figures.', 26))
-        notes = txt[:4000].replace('<', '&lt;')
-    else:
-        body = (sd.title('Pending: does the SPS drift velocity agree? (F16)',
-                         'Workstream C is refitting on the corrected caches; its 22 fits finished on lxplus at 11:03') +
-                sd.row(sd.col(sd.callout('What F16 saw: the drift span gives a v 14 % off the CF₄ ladders, which agree '
-                                         'with each other to 0.6 %', GOLD),
-                              sd.callout('Those fits used the caches 256 ADC too high and censored zeros: void', RED),
-                              sd.callout('Now: 22 fits on fixed caches, zeros measured, in analysis', BLUE),
-                              gap=28, w=900),
-                       fig('ws_sps/figures/dp_vs_field.png', w=700,
-                           tip='dp_vs_field.png: diffusion from head-on SPS tracks vs Magboltz; X is 2× Magboltz, Y close.'),
-                       gap=48, align='center'))
-        notes = """F16 asked why the absolute drift velocity at SPS (from the time span of the charge across the gap)
-disagrees with the ladder v (from the angle scan). The workstream found the ZS cache offset bug first, so every number
-F16 quoted is being redone on the corrected caches. This slide updates when <code>ws_spsv/REPORT.md</code> lands."""
-    D.slide('sps-v', body, notes, foot='Workstream C, rerun/model_audit/ws_spsv/', short='SPS: drift velocity')
+def s_sps_v_how(D):
+    body = (sd.title('SPS drift velocity, two ways: column duration and ladder',
+                     'det4 at H4, 25.64° mount. Left: one track. Middle: the summed strip signal lasts T = gap / v. '
+                     'Right: the sideways speed w grows as v·tan θ') +
+            fig('ws_spsv/figures/f16_concepts.png', w=1664,
+                tip='f16_concepts.png. Multiplying the two, w·T = gap·tan θ: the sideways width of the column, with no '
+                    'velocity in it.'))
+    notes = """<b>F16.</b> The particle ionises the whole gap at once: electrons next to the mesh arrive first, those
+from the cathode last. Summed over all strips the signal is a box of length T = gap / v, smeared by the electronics, and
+the angle terms cancel, so T is measured without the track model.
+
+In the tilted view the landing point slides sideways at w = v·tan θ; with a known mount angle, w / tan θ is the
+"ladder" velocity. The product w·T = gap·tan θ contains no velocity: it checks the gap (or the fit) directly.
+
+The old <i>span route</i> (spread of single-strip hit times anchored to one velocity from run_71) is retired: it was built
+on combined_hits times, and its anchor carried a field label computed with 30 mm instead of the registry's 28.8 mm."""
+    D.slide('sps-v-how', body, notes, foot=foot_ws('ws_spsv'), short='SPS v: how')
+
+
+def s_sps_v_grid(D):
+    r = J('ws_spsv/results/results.json') if (HERE / 'ws_spsv/results/results.json').exists() else {}
+    body = (sd.title('The old "14 %" was the depth grid; T = 2.05 µs',
+                     'Left: the old fits\' column end sat on their depth-grid end, fixing the ratio. Right: strip-sum '
+                     'waveforms at 243 V/cm with box fits') +
+            sd.row(sd.col(fig('ws_spsv/figures/f16_grid_artefact.png', w=480, crop=(0, 0, 0.5, 1),
+                              tip='f16_grid_artefact.png: the grid length came from the span velocity, and q_uend = grid '
+                                  'end at every plateau (2400–2880 ns).'),
+                          fig('ws_spsv/figures/f16_grid_artefact.png', w=480, crop=(0.5, 0, 1, 1),
+                              tip='so v_span / v_col = 1.155–1.167 by construction: the "14 %".'), gap=16, w=480),
+                   fig('ws_spsv/figures/f16_column_243.png', w=1140,
+                       tip='f16_column_243.png: head-on RAW 1970 ns, head-on ZS 2060 ns, 25.64° ZS 2040 ns (Y), 2130 ns '
+                           '(X). T = 2.05 ± 0.07 µs.'),
+                   gap=44, align='center'))
+    notes = """The old F16 fits sized their depth grid (K bins × 60 ns) from the span-route velocity. The fitted column
+end q_uend sat exactly on the grid end at every plateau (2400, 2520, 2700, 2820, 2880, 2880 ns), so v_span divided by
+28.8 mm / q_uend is 1.155–1.167 from arithmetic alone: the "14 %". The "+4 % self-consistency" compared the slope with the
+grid end, so it measured nothing either. On top, those fits used the caches that sat 256 ADC high.
+
+Model-free column duration at 243 V/cm: head-on RAW (run_71) 1970 ns, head-on ZS (run_63) 2050, 25.64° ZS (run_62)
+2040 (Y) / 2130 (X): <b>T = 2.05 ± 0.07 µs</b>. A flat box reads 2–5 % shorter than a box with a charge gradient; the
+charge falls ~50 % along the column (late charge lost, consistent with O₂ attachment).
+
+Caveats: the box estimator assumes the bench det4 X template holds at H4 (same DREAM registers, not checked further);
+~11 % of inclined events are cut by the ±16-strip window (not corrected); run_71 RAW caches use a per-strip pre-window
+baseline without common-mode correction."""
+    D.slide('sps-v-grid', body, notes, short='SPS v: the 14 %')
+
+
+def s_sps_v_result(D):
+    body = (sd.title('What remains: the slope is 8 % short of gap / T at every field',
+                     'Left: v(E) from 28.8 mm / T (model-free) and from the fitted slope. Right: the gap implied by '
+                     'slope × duration, which contains no velocity') +
+            sd.row(fig('ws_spsv/figures/f16_v_of_E.png', w=900,
+                       tip='f16_v_of_E.png: v(243 V/cm) = 14.1 +0.6 −1.1 µm/ns (28.8 mm / T); ~1.4–1.6 % water against '
+                           'Magboltz for the SPS gas. Below ~170 V/cm the column overruns the 3.84 µs window (bounds only).'),
+                   fig('ws_spsv/figures/f16_gap_eff.png', w=720,
+                       tip='f16_gap_eff.png: |w|·T / tan = 26.2–27.0 mm (25.0–26.4 flat box). Measured SPS diffusion moves '
+                           'it ≤ 0.7 %, zero treatment ≤ 0.4 %: not the model widths.'),
+                   gap=44))
+    notes = """<b>Absolute drift velocity, det4 at SPS (gap / T)</b>, µm/ns with 28.8 mm (30 mm): 243 V/cm 14.1 (14.7);
+235: 13.5 (14.1); 217: 12.7 (13.3); 200: 11.2 (11.6); 174–182: 9.6–10.4 (10.0–10.8). Defensible:
+<b>v(243 V/cm) = 14.1 +0.6 −1.1 µm/ns</b> (box estimator, gap 26.5–30 mm, run-to-run). Fields are HV / 28.8 mm; whether
+the mesh voltage adds to the drift field is not in any record.
+
+<b>Residual</b>: the fitted slope |w|/tan is ~8 % below 28.8 mm / T at every field 174–243 V/cm (8 plateaus, 2 runs,
+both ZS treatments). Equivalently the implied gap is 26.2–27.0 mm. Two explanations, and the existing data cannot split
+them:
+<ul><li>the <b>local gap</b> really is ~26.5 mm at the beam spot: det4's bench gap map is unusable (25.5 mm overall,
+charge quartiles 24.4–33.5 mm), and its ±3 mm bow allows it;</li>
+<li>the <b>fit compresses tilted tracks</b>: in run_61 at the same field the slope reads 11.38 at 15.465° but 12.67 at
+25.64°, which a gap error cannot do (or a ~1.5° error in the 15° mount, or 32-sample truncation).</li></ul>
+Consequence: with v = 28.8 mm / T, angles at 25.64° read 8 % low in tan (23.8°). The old +4 % is not the truth; the
+truth is <b>−8 % ± 3 %</b>, owed to the local gap or angle-dependent compression. Stated limitation. Not a model-width
+effect: setting Dp and σ0 to the measured SPS values moves the slope ≤ 0.7 % (χ²/dof 7.3 → 5.9)."""
+    D.slide('sps-v', body, notes, foot=foot_ws('ws_spsv'), short='SPS v: the 8 %')
 
 
 def s_floor(D):
@@ -678,7 +733,7 @@ def s_close(D):
         'Bright tracks reading 5–10 % shallow on det6/det7: a model mismatch',
         'Measured angles are 3–6× the physics floor: the response model is the limit',
         'Bow and tilt maps are bench mounting; n_TOF needs its own (which w0 stage 3 used is unchecked)',
-        'SPS absolute drift velocity: pending (workstream C)']) + '</ul>')
+        'SPS: the fitted slope is 8 % short of gap / T, either the local gap or the fit compressing tilted tracks']) + '</ul>')
     right = ('<ul style="padding-left:28px">' + ''.join(li(t) for t in [
         'Fix σ0 fleet-wide (Y 0.33, X 0.24–0.29) and drop the per-event choice: needs its gate',
         'Pin t0 on bench bundles; switch the x–y check to column time',
@@ -689,7 +744,7 @@ def s_close(D):
             sd.row(sd.col(sd.p('Not explained yet', 34, '#e07a86', 600), left, gap=12),
                    sd.col(sd.p('Decided, not yet in production', 34, '#6cc79a', 600), right, gap=12), gap=64))
     notes = """Condor probes still out: width probes on det2/det3/det7 and toy-mode probes (widthtilt), the X footprint grid
-on 22 ZS flat rows (ws_sps), the F16 refit (ws_spsv). The SPS changes did not go through the before/after gate.
+on 22 ZS flat rows (ws_sps). The SPS changes did not go through the before/after gate.
 det7's promoted bundle has empty run conditions (F10; <code>promote_phys.py --fill-conditions</code> fixes it at the next
 promotion)."""
     D.slide('close', body, notes, dark=True, short='open')
@@ -698,7 +753,7 @@ promotion)."""
 def main():
     D = sd.Deck('MX17 model audit: results', 'What the eight model-audit workstreams found, 27 Oct 2026')
     for f in (s_cover, s_setup, s_t0_float, s_t0_latency, s_v, s_w0, s_f4_cut, s_f4_bow, s_f4_fix, s_width,
-              s_sps_sigma0, s_sps_zs, s_sps_what, s_sps_v, s_floor, s_dead, s_charge, s_unify, s_split, s_close):
+              s_sps_sigma0, s_sps_zs, s_sps_what, s_sps_v_how, s_sps_v_grid, s_sps_v_result, s_floor, s_dead, s_charge, s_unify, s_split, s_close):
         f(D)
     OUT.parent.mkdir(exist_ok=True)
     D.write(OUT, note_meta=dict(

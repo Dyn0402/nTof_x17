@@ -10,6 +10,36 @@ promoted `calib_bundle`s, pulled to `~/x17/cosmic_bench/model_audit/<det>/`.  `f
 Status key: **FIXED** (on main), **ARM** (held-out / gate arm running), **SYST** (write down as systematic),
 **LIMIT** (cannot be answered from the data), **OPEN**.
 
+## Outcomes of the 10-27 workstreams (supersede the entries below where they disagree)
+
+Eight independent workstreams took Dylan's questions on this ledger (day of 2026-10-27). Each has a `REPORT.md`
+under `ws_*/`; the human-readable version is the slide note https://dylan-neff.web.cern.ch/notes/mx17-model-audit.html
+(generator `make_audit_deck.py`).
+
+| F | outcome | where |
+|---|---|---|
+| F1 | t0 = one bench DAQ latency C ≈ 300–340 ns, t0 = C − 10 ns·ftst, same on every chamber/view (fit-free). | ws_t0 |
+| F2 | continuous t0 adopted (always on in the single reco). | ws_t0, ws_unify |
+| F3 | physics floor 0.30–0.35° (diffusion-limited) at 0–45°, all chambers; measured is 3–6×. Old "~1° floor" withdrawn; per-chamber `tan_floor` in the bundle. 60 ns grid biases steep tracks (−0.5° at 40°), 20 ns fixes it (untested on data). | ws_floor |
+| F4 | mostly NOT model inadequacy: a selection cut (|tan_fit| < 0.08 inflates the shallow bin 3–13 %) + a chamber bow (w0 ramps ±0.6 µm/ns, M3 curvature confirms 10/10 views). Position `angle_map` improves s68 1–27 %. Residual ~2 % (det4 Y 7 %) **OPEN**. | ws_widthtilt |
+| F5 | free-t0 coincidence is meaningless; compare column mid-times (t0 + u50), centred at 0. **Not implemented.** | ws_t0 |
+| F6 | yes, t0 was a floating degree of freedom (t0/p0 slide together). Pinning at the latency: position −4…−31 %, angle unchanged, χ²/dof +4–20 %; explains the +2…+5 % ladder shift (stored t0 too late). Bench only, never n_TOF. No bundle pins yet. | ws_t0 |
+| F7 | window = (0.30–1.60) × 30 mm / v_bundle; `WFT_U_FIXED` deleted. | ws_unify |
+| F8 | ±0.07 was statistics only. Run-mean error ±0.16–0.27 µm/ns (det2/3), ±0.4–1.2 (det4/6/7); local spread 2 % / 5–8 % (gas changed during runs). det3 X−Y +2.1 ± 0.4 % real, sign varies by chamber → angle-scale SYST. | ws_v_w0 |
+| F9 | w0 = mechanical tilt of the chamber against M3 (r = 0.81 vs position-route tilt, 16 views); sign from M3 z up. det3 field dependence was a `set_w0kw.py` artefact. **Bench w0 must not reach n_TOF** (which w0 stage 3 used: unchecked). | ws_v_w0 |
+| F10, F11 | `promote_phys.py --fill-conditions`; `set_w0kw.py --table / --pairing-only`. det7 bundle not yet re-promoted. | ws_unify |
+| F12 | two fault classes (chamber-side by position, electronics-side by FEU channel). det6/det7 masks miss 15–18 chamber strips, det4 over-masks, n_TOF bundles have no dead list. SPS remap fixed (`remap_channels`, H4 mask); SPS gate with it **not run**, golden mask fixes **not gated**. | ws_dead_charge |
+| F13 | closed, no fix needed. | — |
+| F14 | SPS 0°: 391/311 µm (upper bounds, ~250 µm reference); 176 µm earlier 3-pitch method stands; inclined view adds ~0.6 mm at 25.6°. Bench 0.5 mm = M3 pointing + angle + bow (±0.45 mm). | ws_sps, ws_widthtilt |
+| F15 | not dead strips, not gain (X/Y gains equal ±2 %): mispairing, saturation, censored windows. Pairing needs a width per event class (**not implemented**). | ws_dead_charge |
+| F16 | the "14 %" was the old fits' depth-grid end (arithmetic); old caches 256 ADC high. Model-free column T = 2.05 ± 0.07 µs at 243 V/cm → v = 14.1 +0.6 −1.1 µm/ns (28.8 mm); span route retired. Residual: fitted slope 8 % below 28.8 mm / T at every field (implied gap 26.2–27.0 mm) — local gap or angle-dependent fit compression, **LIMIT** (15.5° vs 25.6° slopes disagree). | ws_spsv |
+| F17 | closed (null). | — |
+| F18 | SPS head-on RAW: σ0_Y = 0.32 ± 0.02 mm, σ0_X ≤ 0.29 (0.24–0.29), flat with amplitude → per-event σ0 choice has no physical basis. Fix fleet σ0 + drop the choice: decided, **not done / not gated**. | ws_sps, ws_widthtilt |
+| F19 | superseded by ws_unify gate3. | ws_unify |
+| F20 | 256-ADC cache offset fixed (7505338); ZS samples = measured zeros (now default). What transfers SPS → bench: readout (σ0, sharing, pulse shape), not gas (v, Dp, gain). 25.64° angle scale/resolution not yet redone on fixed caches. | ws_sps |
+| F21 | width–tilt trade real but percent-level (σ0 0.24 → 0.54: slope −1…−3 % steep); bright tracks read 5–10 % shallow on det6/det7 (**OPEN**). | ws_widthtilt |
+| F22 | one reconstruction: no `WFT_*` switches, overrides only via `wft/diag.py`; gate3 detected +1.1…+5.5 pt, existing tracks better on every view; det6 splits fixed by 4-pitch minimum. Bundles must be re-finalised and promoted under it; n_TOF pair efficiency not re-measured. | ws_unify |
+
 ## F1 · The t0 prior is on for det2/det3/det4 and off for det6/det7 — SYST (inert)
 Bundles carry `t0_prior_sigma` 5.0 (det2/3/4) / 0.0 (det6/7); the finalize tables confirm (meta `t0_prior.sigma`).
 RERUN_PLAN W5 says "no prior, the phys bundles carry sigma = 0".  C18/C19: the penalty ((Δt0)/5)² is invisible next
