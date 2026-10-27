@@ -192,7 +192,7 @@ the column both need an independent gap).
 | band veto (`DROP_FLAT_HITS=1`) | +0.71 / +0.82 / +0.02 / +0.35 / +1.07 | −0.03 / −0.08 / −0.11 / +0.18 / −0.03 | ≤ 0.005 except det7 X +0.09 | rejected_cut falls 0.3–0.7 pt; det7 X s68 rises from the added card-1 tracks |
 | head-on rescue (`HEADON_SIG=20`, `HEADON_RESCUE=1`) | +0.38 / +0.26 / **+3.15** / +1.44 / **+3.67** | ±0.05, det6 +0.27 | det4 +0.08 / +0.21, det7 X +0.09 | fit_failed → 0; the rescued tracks have poorer angles (low SNR), not a degradation of the others |
 | two-track fit (`TWO_TRACK_FIT=1`) | 0.00 / +0.03 / +0.02 / −0.04 / +0.01 | −0.03 / −0.12 / −0.12 / **+0.26** / −0.01 | ≤ 0.01, det6 Y +0.026 | splits 47 / 76 / 155 / **417** / 100 — det6 accepts 5 % splits (noisy chamber): the false-split bound must be re-measured on det6 before production |
-| all three | +1.12 / +1.15 / +3.20 / +1.77 / +4.6 | −0.09 / −0.15 / −0.07 / +0.25 / −0.02 | det4 +0.09 / +0.22, det7 X +0.09 | additive |
+| all three | +1.12 / +1.15 / +3.20 / +1.77 / (det7: gate2 node RECO_det7_all still running at 03:50; the row in gate_compare.md is the old env-less copy = prod) | −0.09 / −0.15 / −0.07 / +0.25 / — | det4 +0.09 / +0.22 | additive on det2–det6 |
 Resolution of the pre-existing tracks is untouched by the band veto and the two-track fit; the head-on rescue adds
 1.4–3.7 pt of detection on the weak chambers at the price of a poorer-angle population.  det3's +1.15 pt reproduces the
 satstudy numbers (band 96.9 %, head-on 17/17).  Verdict for B2: band veto + head-on rescue pass the fleet gate; the
