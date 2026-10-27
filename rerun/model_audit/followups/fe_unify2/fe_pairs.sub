@@ -1,5 +1,5 @@
 executable     = $ENV(HOME)/x17rerun/fe/run_pairs.sh
-arguments      = /eos/user/d/dneff/x17rerun/followups/fe/code_4760526 $(var) $(extra)
+arguments      = /eos/user/d/dneff/x17rerun/followups/fe/code_1f8defd $(var) $(extra)
 output         = log/pairs_$(var).out
 error          = log/pairs_$(var).err
 log            = log/pairs.log

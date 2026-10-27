@@ -39,13 +39,14 @@ def fits(df, v):
 
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument('--arm', default='fe'); ap.add_argument('--seed', type=int, default=11)
+    ap.add_argument('--bundle-arm', default=None, help='bundle whose xy_pairing to use (default: the arm\'s own)')
     a = ap.parse_args()
     rng = np.random.default_rng(a.seed); out = {}; L = []
     L += [f'| chamber | pair class | n | correct, per-class widths | one width | charge only | lq rsig used (class / one) |',
           '|---|---|---|---|---|---|---|']
     for det, row in ROWS.items():
         w = os.path.join(T, row, 'wft')
-        tp = os.path.join(w, a.arm, 'events.parquet'); bp = os.path.join(w, f'calib_bundle_{a.arm}', 'bundle.json')
+        tp = os.path.join(w, a.arm, 'events.parquet'); bp = os.path.join(os.path.expanduser('~/x17/cosmic_bench/model_audit/fe_unify2/bundles'), det, f'calib_bundle_{a.bundle_arm or a.arm}', 'bundle.json')
         if not (os.path.exists(tp) and os.path.exists(bp)):
             continue
         P = json.load(open(bp))['xy_pairing']
