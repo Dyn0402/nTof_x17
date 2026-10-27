@@ -51,13 +51,13 @@ def one(eid):
             hyper[f'sigma_p0_{plane}'] = float(f._sigma_p0)      # the footprint the production fit chose
         w_ref = (tr * _CAL.kw.get(plane, 1.0) * _CAL.v_drift + _CAL.w0.get(plane, 0.0)) * 1e-3
         best = (np.inf, np.nan)
-        for dp in np.arange(-1.5, 1.51, 0.15):
+        for dp in np.arange(-1.5, 1.51, 0.3):
             r = wm.fit_plane_raw(P, plane, ref + dp, w_ref, f.t0, hyper=hyper, fix_p0w=(ref + dp, w_ref))
             if r['chi2'] < best[0]:
                 best = (r['chi2'], ref + dp)
         # and the same scan at the FITTED w (so the p0-scan granularity cancels)
         bestf = (np.inf, np.nan)
-        for dp in np.arange(-1.5, 1.51, 0.15):
+        for dp in np.arange(-1.5, 1.51, 0.3):
             r = wm.fit_plane_raw(P, plane, f.p0 + dp, f.w, f.t0, hyper=hyper, fix_p0w=(f.p0 + dp, f.w))
             if r['chi2'] < bestf[0]:
                 bestf = (r['chi2'], f.p0 + dp)

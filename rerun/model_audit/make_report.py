@@ -124,12 +124,24 @@ def main():
             S.append(f"<tr><td>{det}</td><td>{ {k: round(v, 1) for k, v in r['dt_xy_old'].items()} }</td><td>{new}</td>"
                      f"<td>{rs['lq']:.3f} / {rs['u50']:.0f} / {rs['u90']:.0f} / {rs['t0']:.0f}</td></tr>")
         S.append('</table>')
-    for name, title in (('gate_compare.md', 'Fleet gate of the prototype switches (8000 M3-matched events per golden row; interior, X+Y)'),
-                        ('heldout_compare.md', 'Held-out model arms (1320 events per chamber, event-paired, arm − base)'),
-                        ('sps_summary.md', 'SPS det4 known-angle test (run_63 25.64° drift ladder, bench det4 bundle)')):
+    for name, title in (('gate_compare.md', 'Fleet gate of the prototype switches (8000 M3-matched events per golden row; interior, X+Y, 5 mm / 3 mm)'),
+                        ('heldout_compare_env.md', 'Held-out arms, environment switches (1320 events per chamber, event-paired, arm − base): t0 interpolation, model fraction, saturated solve'),
+                        ('heldout_compare_ts.md', 'Held-out arm: two-sided start'),
+                        ('heldout_compare_cli.md', 'Held-out arms, model terms: X asymmetric copy, narrow σ0_x, no σ0 profile, diffusion ×0.7 / ×1.3, RC diffusion ×1.5, K = 30, t0 pinned'),
+                        ('sps_summary.md', 'SPS det4 known-angle test (run_63 25.64° drift ladder, bench det4 bundle, self-seeded; sps_res = no ZS censoring, sps2 = ZS censored)')):
         p = os.path.join(root, name)
         if os.path.exists(p):
             S.append(f'<h2>{title}</h2>' + md_to_html(open(p).read()))
+    lg = os.path.join(root, 'steep_probe.log')
+    if os.path.exists(lg):
+        S.append('<h2>Steep tracks: model or optimiser? (steep_probe.py, held-out |tan| ≥ 0.25)</h2>'
+                 '<p>χ² at the M3 angle (p0 re-scanned, t0 and profile fitted) minus χ² at the fit: positive = the model prefers the fitted '
+                 '(shallower) angle; the fraction with negative values is the optimiser-miss rate.</p><pre>' + html.escape(open(lg).read()) + '</pre>')
+    S.append('<h2>What this audit does not settle</h2><ul>'
+             '<li>The drift-time-dependent part of the angle compression (SPS 0.89 → 0.65 from 235 to 148 V/cm): which model term carries it is not identified; the low-field span v is itself an upper bound.</li>'
+             '<li>Position resolution is reference-limited (M3 ≈ 0.40 mm); no pointing-estimator defect was looked for beyond the alignment residuals.</li>'
+             '<li>SPS: no uRWELL-referenced position test tonight (angle test only); the run_61 32-sample inclined set truncates the column and was not used.</li>'
+             '<li>The noise-band mechanism, the X asymmetry mechanism and det6 are stated limitations of the plan (§7); nothing here changes that.</li></ul>')
     css = ('body{font-family:system-ui,sans-serif;max-width:1500px;margin:1em auto;padding:0 1em;line-height:1.4}'
            'table{border-collapse:collapse;font-size:12px;margin:.6em 0}td,th{border:1px solid #bbb;padding:2px 6px;text-align:right}'
            'th{background:#eee}td:first-child,th:first-child{text-align:left}img{max-width:100%}code{background:#f3f3f3;padding:0 3px}'
