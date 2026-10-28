@@ -1,0 +1,49 @@
+{
+ "arm": "z_heff_-60",
+ "objective": "cold",
+ "t0_pin": true,
+ "unsat_only": true,
+ "p0_profile": true,
+ "ref_dz": {},
+ "p0_window": 2.0,
+ "p0_step": 0.2,
+ "model_frac": 0.0,
+ "depth_bins": 24,
+ "hyper": {
+  "c1": 0.05044881793305232,
+  "kY": 2.882516478692792,
+  "tau_s": 166.2856757836003,
+  "sigma_s": 9.14846258994074,
+  "sigma_p0": 0.4103844485267755,
+  "Dp": 0.023,
+  "c2": 0.0,
+  "share_lp": 1.0,
+  "rc_D_y": 0.00037,
+  "rc_D_x": 0.0,
+  "rc_tmpl": 1.0,
+  "sigma_p0_y": 0.3,
+  "sigma_p0_x": 0.3
+ },
+ "v": 35.8,
+ "chi2": 57546822.610437974,
+ "chi2_seed": 57546822.610437974,
+ "n_train": 920,
+ "n_eval": 2,
+ "converged": false,
+ "message": "Maximum number of iterations has been exceeded.",
+ "free": [
+  "rc_D_y"
+ ],
+ "bundle": "/home/dylan/.claude/jobs/f754a42b/tmp/t7/heff_s-60",
+ "cache": "/home/dylan/x17/cosmic_bench/model_audit/ws_t0/caches/det3.pkl",
+ "trace": [
+  [
+   57546822.610437974,
+   0.00037
+  ],
+  [
+   59026142.78589703,
+   0.00047
+  ]
+ ]
+}

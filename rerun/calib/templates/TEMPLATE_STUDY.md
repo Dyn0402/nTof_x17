@@ -162,6 +162,67 @@ disjoint from any evaluation sample. The same rule applies to any other χ²-sum
 **Template, at its own calibrated D_rc,y (~3.6e-4):** h_eff vs cur is X −0.056 ± 0.03°, Y +0.05 ± 0.025°: no net
 gain. The h_eff decision moves to the fleet comparison (T8) and is not urgent: the effect is ≤ 0.06° either way.
 
+## T7 · The template zero vs the latency: δ ≈ −40 ns on det3 (2026-10-29)
+
+The pinned, unsaturated-only objective (T6) over events 580–1499, at D_rc,y 3.7e-4, as a function of a template
+shift (`results/t7/z_<tmpl>_<shift>.json`, χ² in units of 10⁶):
+
+| shift [ns] | −80 | −60 | −40 | −20 | 0 | +20 | +40 | parabola minimum |
+|---|---|---|---|---|---|---|---|---|
+| cur | 58.64 | 57.29 | 56.66 | 57.09 | 58.65 | 62.86 | 69.12 | **−39.6 ns** (−3.4 % vs 0) |
+| h_eff | 58.77 | 57.55 | 56.72 | 57.06 | 58.52 | 62.62 | 68.90 | **−37.9 ns** (−3.0 %) |
+
+- Both templates want their t50 placed ~40 ns *before* the pinned t0. A negative shift is equivalent to a pinned t0
+  later by 40 ns relative to the template. The latency C (`measure_latency`) is the 30 % crossing of the earliest
+  strip on near-vertical tracks. That strip integrates the whole column, so C comes after the mesh charge first
+  arrives. t0 = C − 10·ftst therefore leaves out an offset δ that depends on how the pulse builds up.
+  (I first guessed "30 % vs 50 % crossing". It has the wrong sign and is withdrawn.)
+- Held-out reconstruction (T5, NM) agrees on direction but is less decisive. s68 is flat over −40…0. The ladder
+  reads 36.1/36.3 at 0, 35.4/35.9 at −20 and 35.0/35.5 at −40 against a timing v of 35.8, so the angle scale is
+  nearest the timing v around −20. kw absorbs the rest.
+- **For the pass:** keep the template at t50 = 0 and calibrate one offset δ per chamber and view in t0_abs (the
+  minimum of the pinned, unsaturated objective over a global t0 shift). Record δ in the bundle and its convergence
+  (±5 ns) in CAL1/CAL2. det3: δ = −40 ± 10 ns (the ±10 covers the held-out ladder's −20).
+
+## T9 · The "bright under-fill" is a constant fractional shape mismatch, lateral + temporal (2026-10-29)
+
+`t9_peak_residual.py`: held-out unsaturated planes (det3, cache events ≥ 180), fitted from the reference start with t0
+pinned (main's LM). The residual (data − model) / model peak is taken on the brightest strip, its ±1 and ±2
+neighbours, at sample offsets k from the peak, and stacked by amplitude. Medians are in `results/t9/`.
+
+| σ0 [mm] | view | centre k = −1 / 0 / +1 / +2 | ±1 at k=0 | ±2 at k=0 | χ²/dof (800–1500 / 2500–3549 ADC) |
+|---|---|---|---|---|---|
+| 0.30 | X | +0.04 / +0.05 / +0.02 / −0.00 (k=+3 −0.02) | −0.03 | +0.01 | 14.7 / 57.4 |
+| 0.30 | Y | +0.05 / +0.06 / +0.04 / +0.03 | −0.06 | +0.01 | 14.9 / 61.7 |
+| 0.24 | X | +0.035 / +0.04 / +0.015 / −0.01 | −0.02 | +0.02 | 14.9 / 55.5 |
+| 0.24 | Y | +0.04 / +0.045 / +0.03 / +0.02 | −0.04 | +0.02 | 14.8 / 58.6 |
+| 0.20 | X | +0.03 / +0.03 / +0.01 / −0.01 | −0.015 | +0.02 | 14.9 / 56.0 |
+| 0.20 | Y | +0.04 / +0.04 / +0.025 / +0.015 | −0.03 | +0.02 | 14.1 / 57.8 |
+
+(The rows are the same within ±0.01 in every amplitude bin; the table shows their typical values.)
+
+- **It does not depend on amplitude.** The centre-strip excess is the same fraction of the peak (+0.05–0.06 at
+  σ0 0.30) at 800–1500 and at 2500–3550 ADC, in both views. χ²/dof grows with amplitude (15 → 60) only because a
+  fixed fractional residual scales as amplitude². This is what cloud_basics §37/§41 called "the template
+  under-filling bright pulses", and what MODEL_FRAC and the per-event σ0 profile were patching. Combined with T1 (the
+  template shape does not depend on amplitude), **the bright-pulse χ² excess is a shape error that every event
+  carries; only the brightest show it.**
+- **The lateral part:** the centre strip is above the model and the ±1 neighbours below it, so the model spreads the
+  charge too widely. Narrowing σ0 from 0.30 to 0.20 removes about half of it. That matches FC's unexplained "bench σ0
+  0.19–0.27 below SPS 0.30", and FC's own physics: σ0 is mostly resistive spreading within the first sample, set by
+  *each chamber's* D, so it need not be one fleet number.
+- **The temporal part:** in X the centre is above the model at the peak and below it on the late side (k = +2…+3),
+  at every σ0. The data pulse is narrower in time than the model, which is the signature of the too-wide template
+  (T1).
+- Held-out with σ0 0.24 (cur template): χ²/dof −5 % (X), −3 % (Y); s68 −0.011 ± 0.028 / −0.006 ± 0.019 (neutral);
+  far +0.5 pt in X (n.s.); ladder +1.3 % (kw absorbs, as FC found).
+
+- **h_eff combined with σ0** (det3, D_rc,y 3.6e-4; held-out Δs68 vs cur/σ0 0.30): X −0.056 / −0.040 / −0.019 at σ0
+  0.30 / 0.24 / 0.20; Y +0.047 / +0.041 / +0.047. In X, h_eff removes part of the late-side negative residual (k=+3:
+  −0.02 → −0.01). In Y it adds a positive late tail (+0.02 at k=+3). Y wants more temporal spread than X template ⊗
+  RC kernel provides, and the old, wider template happened to supply it. The Y penalty is the same at every σ0, so
+  it is a real Y-view model deficit, not noise.
+
 ## Verdict so far (2026-10-28 evening)
 
 1. The production template is not pure response: it is 4–7 % too wide because it carries the strip's drift segment,

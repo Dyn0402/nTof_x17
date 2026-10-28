@@ -34,17 +34,17 @@ BASE = ('c1', 'kY', 'tau_s', 'sigma_s', 'sigma_p0', 'Dp')
 STEP = dict(c1=0.03, kY=0.30, tau_s=20.0, sigma_s=10.0, sigma_p0=0.05, Dp=0.003,
             c2_over_c1=0.1, c2_over_c1_x=0.1, c2_over_c1_y=0.1, cX=0.3,
             c1_asym_x=0.2, sigma_p0_x=0.05, sigma_p0_y=0.05, tau_y_fac=0.3,
-            rc_D_y=1e-4, rc_D_x=1e-4, v=1.0, dz_x=0.5, dz_y=0.5)
+            rc_D_y=1e-4, rc_D_x=1e-4, v=1.0, dz_x=0.5, dz_y=0.5, t0_shift_x=10.0, t0_shift_y=10.0)
 # sigma_p0 floor 0.03 (19_ratio_recal used 0.10, but det6's production
 # bundle sits at 0.039 -- a seed outside the box rejects every step)
 LO = dict(c1=0.05, kY=0.3, tau_s=30.0, sigma_s=1.0, sigma_p0=0.03, Dp=0.001,
           c2_over_c1=0.0, c2_over_c1_x=0.0, c2_over_c1_y=0.0, cX=0.3,
           c1_asym_x=-0.95, sigma_p0_x=0.03, sigma_p0_y=0.03, tau_y_fac=0.3,
-          rc_D_y=0.0, rc_D_x=0.0, v=10.0, dz_x=-10.0, dz_y=-10.0)
+          rc_D_y=0.0, rc_D_x=0.0, v=10.0, dz_x=-10.0, dz_y=-10.0, t0_shift_x=-150.0, t0_shift_y=-150.0)
 HI = dict(c1=0.60, kY=6.0, tau_s=400.0, sigma_s=400.0, sigma_p0=1.50, Dp=0.100,
           c2_over_c1=0.95, c2_over_c1_x=0.95, c2_over_c1_y=0.95, cX=6.0,
           c1_asym_x=0.95, sigma_p0_x=1.50, sigma_p0_y=1.50, tau_y_fac=4.0,
-          rc_D_y=0.005, rc_D_x=0.005, v=80.0, dz_x=10.0, dz_y=10.0)
+          rc_D_y=0.005, rc_D_x=0.005, v=80.0, dz_x=10.0, dz_y=10.0, t0_shift_x=150.0, t0_shift_y=150.0)
 # ``v`` (um/ns) may be listed in --free: the drift velocity is then fitted with the kernel instead of held at the
 # seed bundle's value (a bundle calibrated under another kernel carries that kernel's v).  The ref-pinned
 # objective constrains it through the line's transverse speed w = tan_ref * v.
@@ -58,6 +58,8 @@ HI = dict(c1=0.60, kY=6.0, tau_s=400.0, sigma_s=400.0, sigma_p0=1.50, Dp=0.100,
 # (rerun W12, 2026-10-24).  The waveform measures the position at the mesh and the slope separately, so dz and v are
 # separable.  They are geometry, not kernel: written to the output as ref_dz and kept out of the bundle's hypers.
 GEOM = ('dz_x', 'dz_y')
+#: per-view offset [ns] on the pinned t0 (--t0-pin only): the latency-to-mesh-time offset delta (templates T7)
+TSHIFT = ('t0_shift_x', 't0_shift_y')
 
 #: arm -> (free hypers, fixed extras, seed overrides, upper-bound overrides)
 ARMS = {
@@ -164,6 +166,8 @@ def _event_chi2_cold(payload):
         W, noise, pos, sat = wm.prep_plane(P, plane)
         pin = _t0_pinned(wm, ev, plane) if _OPT['t0_pin'] else None
         if pin is not None:
+            pin += float(hyper.get(f't0_shift_{plane}', 0.0))
+        if pin is not None:
             best, t0b = wm.chi2_plane(plane, W, noise, pos, sat, p0r, wline, pin, hyper)[0], pin
         else:
             best, t0b = _plane_chi2(wm, plane, W, noise, pos, sat, p0r, wline,
@@ -248,7 +252,7 @@ def main():
     start = dict(base)
     if 'v' in free:
         start['v'] = v
-    for g in GEOM:
+    for g in GEOM + TSHIFT:
         if g in free:
             start.setdefault(g, 0.0)
     start.pop('c2_over_c1', None)
@@ -326,7 +330,8 @@ def main():
     h = expand(res.x)
     v = h.pop('v', v)
     ref_dz = {g: h.pop(g) for g in GEOM if g in h}
-    out = dict(arm=a.arm, objective=a.objective, t0_pin=a.t0_pin, unsat_only=a.unsat_only, p0_profile=a.p0_profile, ref_dz=ref_dz,
+    t0_shift = {g[-1]: h.pop(g) for g in TSHIFT if g in h}
+    out = dict(arm=a.arm, objective=a.objective, t0_pin=a.t0_pin, t0_shift=t0_shift, unsat_only=a.unsat_only, p0_profile=a.p0_profile, ref_dz=ref_dz,
                p0_window=a.p0_window if a.p0_profile else None, p0_step=a.p0_step if a.p0_profile else None,
                model_frac=a.model_frac,
                depth_bins=a.depth_bins, hyper=h, v=v, chi2=float(res.fun), chi2_seed=float(c0),

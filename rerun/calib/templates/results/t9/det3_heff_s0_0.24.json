@@ -1,0 +1,118 @@
+{
+ "args": {
+  "cache": "/home/dylan/x17/cosmic_bench/model_audit/ws_t0/caches/det3.pkl",
+  "bundle": "/home/dylan/.claude/jobs/f754a42b/tmp/t9/heff_s0_0.24",
+  "out": "/home/dylan/.claude/jobs/f754a42b/tmp/t9/det3_heff_s0_0.24.npz",
+  "n": 400,
+  "start": 180,
+  "k": 24,
+  "jobs": 7,
+  "hyper": null,
+  "hyper_scale": null,
+  "set": null,
+  "scale": null,
+  "v": null,
+  "nsamp": null,
+  "two_sided": false,
+  "t0_fix": true,
+  "no_dead": false,
+  "sps_mask": null,
+  "ids": null
+ },
+ "env": {
+  "WFT_COL_GUARD": "0.01"
+ },
+ "summary": {
+  "x": {
+   "n": 400,
+   "ladder": 35.93921936424546,
+   "offset": 0.41928458113858386,
+   "far_pct": 3.25,
+   "chi2dof_p50": 47.70610130920015,
+   "all": {
+    "n": 400,
+    "s68": 1.0694117752371768,
+    "bias": -0.663000628037189,
+    "far_pct": 3.25
+   },
+   "headon": {
+    "n": 194,
+    "s68": 1.0426391493205955,
+    "bias": -0.6512019518584732,
+    "far_pct": 4.123711340206185
+   },
+   "inclined": {
+    "n": 206,
+    "s68": 1.0868487763963572,
+    "bias": -0.6764493912265654,
+    "far_pct": 2.4271844660194173
+   },
+   "steep": {
+    "n": 17,
+    "s68": 1.5264779782743292,
+    "bias": -0.5620922497266634,
+    "far_pct": 5.88235294117647
+   },
+   "steep_pos": {
+    "n": 7,
+    "s68": NaN,
+    "bias": 0.17265212336368968,
+    "far_pct": 0.0
+   },
+   "steep_neg": {
+    "n": 10,
+    "s68": NaN,
+    "bias": -1.0475194932759344,
+    "far_pct": 10.0
+   }
+  },
+  "y": {
+   "n": 400,
+   "ladder": 35.950223029654,
+   "offset": -0.02235946611570712,
+   "far_pct": 2.75,
+   "chi2dof_p50": 54.25589767843448,
+   "all": {
+    "n": 400,
+    "s68": 0.9302790899031443,
+    "bias": -0.2647423327616873,
+    "far_pct": 2.75
+   },
+   "headon": {
+    "n": 226,
+    "s68": 0.9489578223998335,
+    "bias": -0.30440788311322536,
+    "far_pct": 3.0973451327433628
+   },
+   "inclined": {
+    "n": 174,
+    "s68": 0.9230495229607621,
+    "bias": -0.17970903965364093,
+    "far_pct": 2.2988505747126435
+   },
+   "steep": {
+    "n": 11,
+    "s68": NaN,
+    "bias": -0.16888916058028686,
+    "far_pct": 9.090909090909092
+   },
+   "steep_pos": {
+    "n": 7,
+    "s68": NaN,
+    "bias": -0.07137032893528311,
+    "far_pct": 0.0
+   },
+   "steep_neg": {
+    "n": 4,
+    "s68": NaN,
+    "bias": NaN,
+    "far_pct": 25.0
+   }
+  },
+  "xy": {
+   "n": 400,
+   "dt0_median": -17.940841307956447,
+   "dt0_rsig": 0.3581000375866302
+  }
+ }
+}
