@@ -35,7 +35,7 @@ def main():
                                  plateau=lab, t_lo_s=round(lo, 1), t_hi_s=round(hi, 1), mount=D['mount'], gas=D['gas'], drift_V=dv,
                                  resist_V=rv, field_Vcm=round(field, 1), n_samples=D['n_samples'], raw=int(bool(D.get('raw'))),
                                  zs_sigma=D['zs_sigma'], v_span_um_ns=v, K=k, cls=CLASS.get(name, 'consistency'),
-                                 bundle='bench det4 calib_bundle, H4 channel layer (sps_mask.py), v = v_span, WFT_ZS_CENSOR unless raw'))
+                                 bundle='bench det4 calib_bundle, H4 channel layer (sps_mask.py), v = v_span, ZS zeros measured / RAW zeros missing, bench bow/v_map/w0 dropped'))
     with open(a.out, 'w', newline='') as f:
         w = csv.DictWriter(f, fieldnames=list(rows[0])); w.writeheader(); w.writerows(rows)
     print(f'wrote {a.out}: {len(rows)} rows, {len({r["dataset"] for r in rows})} datasets')

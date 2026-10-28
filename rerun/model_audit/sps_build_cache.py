@@ -7,7 +7,7 @@ plateau of the dataset.  Self-seeded (no uRWELL): per view, the brightest strip'
 required, peak >= 300 ADC.  Plateau by wall clock: the 'timestamp' counter is calibrated to seconds from the sub-run's
 span (dream_daq.log start of this and the next sub-run), events within 20 s of a plateau edge are dropped.
 tan_x = tan_y = |tan(mount)| (magnitude; the inclined view and the sign are read off the data); ref_mesh = the own
-charge centroid.  Run the fit with WFT_ZS_CENSOR=1.
+charge centroid.  (ZS zeros are fitted as measured zeros; only RAW zeros are censored, sps_reco.py).
 """
 import argparse, glob, os, pickle, re, sys
 import numpy as np

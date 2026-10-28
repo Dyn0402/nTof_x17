@@ -19,6 +19,12 @@ Status key: [x] done · [ ] open · [~] partly / in progress
 - [x] Gain map: not used (slot 1.0; GA). M3 reference term 0.05° (GB): bench angles quoted as the chamber's own.
 
 ## B. Before the pass (blocking)
+
+> **2026-10-28 evening:** the run sheet is `PASS_PLAN_2026-10-28.md`. Dylan's decisions: the calibration is rebuilt
+> in the DAG templates included (new `calib` phase, E1–E3); bow on all five chambers, refit by the same recipe; LM
+> merged only if its gate passes; trigger-track rule downstream. Items found by the history review (F7–F12, E1–E5,
+> `history/LESSONS.md` "found today") are listed there. Done this session: SPS bench bow/v_map/w0 dropped, SPS 15°
+> mount tangent, stale ZS_CENSOR texts, CLAUDE.md / RECONSTRUCTION_BASIS / RERUN_PLAN §11 wording.
 1. [ ] **GD det4 row**: lxplus job 4583837 (started 10-28 09:18). When done: `model_audit/followups/gd_sparks/pull.sh det4`,
        `gd_score.py`; confirm det4 does not change the verdict.
 2. [ ] **Double-check the 14 GA bad channels** (`model_audit/followups/fe_unify2/masks/bench_det{3,4}.json`, key

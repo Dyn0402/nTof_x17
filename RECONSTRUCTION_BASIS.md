@@ -61,8 +61,9 @@ measured per-plane impulse response and the sharing kernel, generates the whole
 (strip × sample) picture, and that whole picture is fitted per event. The
 neighbours' delayed copies become part of the model instead of contamination.
 
-Validated: per-event angle σ ≈ 1.0–1.1° — at the measured diffusion/charge-
-granularity **physics floor**, not a fit limitation (toy closure, §12) — against
+Validated: per-event angle σ ≈ 1.0–1.1° (the July claim that this is the
+diffusion/charge-granularity physics floor was **withdrawn 2026-10-27**, model
+audit F3: the floor is 0.30–0.35°, `rerun/model_audit/FINDINGS.md`) — against
 1.58/1.53° for the SOTA hybrid and 4.97/5.74° for the raw ladder on the same
 events; mesh σ ≈ 0.58 mm; ~70 % of medium-angle events thread < 1 mm over the
 full gap. Portable: det2 and det4 both calibrate and reconstruct with their own
