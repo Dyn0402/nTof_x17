@@ -20,14 +20,16 @@ REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.a
 sys.path.insert(0, REPO)
 VL = '/media/dylan/data/x17/cosmic_bench/vladder'
 BUNDLE = {'det3': 'bundle_phys_mask'}           # others: bundle_phys
+#: --fe: the FE follow-up's recommended bundles (t0 pinned at the trigger latency, sigma 0.05 ns; bow, v map)
+FE = '/media/dylan/data/x17/cosmic_bench/model_audit/fe_unify2/bundles/{det}/calib_bundle_fe'
 
 _ST = {}
 
 
-def _init(det, free, grid_only=False):
+def _init(det, free, grid_only=False, fe=False):
     from wft.calib import CalibrationBundle
     from wft import model as wm
-    cal = CalibrationBundle.load(os.path.join(VL, det, BUNDLE.get(det, 'bundle_phys')))
+    cal = CalibrationBundle.load(FE.format(det=det) if fe else os.path.join(VL, det, BUNDLE.get(det, 'bundle_phys')))
     wm.use_calibration(cal)
     _ST.update(cal=cal, ev=pickle.load(open(os.path.join(VL, det, 'cache.pkl'), 'rb')), free=free, det=det, grid_only=grid_only)
     orig = wm._solve_nnls
@@ -89,6 +91,7 @@ def main():
     ap.add_argument('--n', type=int, default=300)
     ap.add_argument('--jobs', type=int, default=4)
     ap.add_argument('--free', action='store_true')
+    ap.add_argument('--fe', action='store_true', help='FE bundles (pinned t0) instead of the vladder ones')
     ap.add_argument('--grid', action='store_true', help='arms nm and lm_grid only (LM_START=grid, no hops)')
     ap.add_argument('--out', default='/media/dylan/data/x17/cosmic_bench/model_audit/lm_ab')
     a = ap.parse_args()
@@ -98,9 +101,9 @@ def main():
         eids = sorted(C)[:a.n]
         del C
         t = time.time()
-        with Pool(a.jobs, initializer=_init, initargs=(det, a.free, a.grid)) as pool:
+        with Pool(a.jobs, initializer=_init, initargs=(det, a.free, a.grid, a.fe)) as pool:
             rows = [r for rr in pool.imap_unordered(one, eids, chunksize=2) for r in rr]
-        tag = ('_free' if a.free else '') + ('_grid' if a.grid else '')
+        tag = ('_fe' if a.fe else '') + ('_free' if a.free else '') + ('_grid' if a.grid else '')
         fn = os.path.join(a.out, f'lm_ab_rows_{det}{tag}.pkl')
         pickle.dump(rows, open(fn, 'wb'))
         print(f'{det}: {len(rows)} plane rows from {len(eids)} events in {time.time() - t:.0f} s -> {fn}', flush=True)

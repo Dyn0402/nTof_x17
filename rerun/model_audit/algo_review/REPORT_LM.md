@@ -1,10 +1,54 @@
-# LM variable-projection fitter: implemented and A/B-tested, not promoted (2026-10-28, branch `lm-varpro`)
+# LM variable-projection fitter: implemented and A/B-tested (2026-10-28, branch `lm-varpro`)
+
+## Update, same day: with t0 pinned (the FE bench bundles) LM is a drop-in, at 0.45x the cost
+
+The first pass below used the vladder bundles, which carry the old σ = 5 ns prior and a stale `t0_abs`, so t0 was
+effectively free. The bench production configuration is the FE one (FOLLOWUPS item 7): `set_w0kw --pin-t0` sets
+`t0_abs` from the raw-waveform trigger latency and σ = 0.05 ns, so the prior is a pin. Rerun on the FE bundles
+(`fe_unify2/bundles/<det>/calib_bundle_fe`, same runs as the vladder caches, 200 events per chamber):
+
+| chamber·view | same w (nohop) | s68 nm → lm_nohop (°) | far5 nm → nohop (%) | position s68 vs M3 nm → nohop (mm) | t0 moved | solves / time vs nm |
+|---|---|---|---|---|---|---|
+| det2 X | 98.5 % | 1.255 → 1.260 | 6.0 → 5.5 | 0.586 → 0.583 | 0 % | 0.44 / 0.44 |
+| det2 Y | 99.5 % | 1.082 → 1.074 | 2.5 → 2.5 | 0.535 → 0.538 | 0 % | 0.45 / 0.45 |
+| det3 X | 99.5 % | 1.075 → 1.082 | 4.0 → 4.0 | 0.631 → 0.631 | 0 % | 0.43 / 0.41 |
+| det3 Y | 98.5 % | 0.898 → 0.898 | 5.5 → 5.5 | 0.540 → 0.540 | 0 % | 0.47 / 0.44 |
+| det4 X | 99.0 % | 2.460 → 2.513 | 16.0 → 14.5 | 0.768 → 0.768 | 0 % | 0.45 / 0.47 |
+| det4 Y | 96.5 % | 2.297 → 2.290 | 13.0 → 13.0 | 0.672 → 0.672 | 0 % | 0.45 / 0.50 |
+| det6 X | 97.5 % | 1.437 → 1.462 | 8.0 → 7.0 | 0.528 → 0.531 | 0 % | 0.43 / 0.46 |
+| det6 Y | 98.5 % | 1.568 → 1.563 | 4.5 → 4.0 | 0.492 → 0.492 | 0 % | 0.43 / 0.45 |
+| det7 X | 94.0 % | 1.847 → 1.834 | 14.6 → 14.6 | 0.916 → 0.918 | 0 % | 0.44 / 0.44 |
+| det7 Y | 97.0 % | 1.396 → 1.379 | 8.0 → 7.5 | 0.754 → 0.763 | 0 % | 0.44 / 0.46 |
+
+- **No t0 relabelling on any plane, and positions are unchanged** (≤ 0.01 mm in s68; p0 differs by > 0.3 mm on 1–10
+  of 200 planes). Angle s68 is within ±2.2 % on every row, and the far fraction within ±1.5 pp. The median |dθ| is
+  ≤ 0.001°.
+- **Cost: 0.43–0.47× the NNLS solves and 0.41–0.50× the wall time**, i.e. a ~2.2× faster bench reco.
+- **Use `LM_HOPS = 0` with the pin.** Hops find nothing once t0 is pinned, cost 20 %, and on det7 X they read worse
+  (s68 1.847 → 1.893, far 14.6 → 16.1 %).
+- The planes where the two fitters end in different wells (dθ > 1°: 1–3.5 %, det7 6–7 %) cancel in s68 and far.
+  det7 X is the chamber with the known readout faults.
+- Errors: the covariance gives w_err ×2.1–2.7. t0_err is unchanged (the pin sets it), and tan_err/p0_err are unchanged.
+
+**Revised recommendation.** On the bench with pinned-t0 bundles, `FITTER = 'lm'`, `LM_HOPS = 0` reproduces the
+current reconstruction within statistics and is ~2.2× faster. It is a candidate for the pass once the fleet gate
+(`make_gate_dag.py`, golden rows, promoted bundles) confirms it. **n_TOF is different**: t0 is never pinned there, and
+the free-t0 result below still holds. Any outer solver, LM or NM, picks the 60 ns basin by its search path on 13–33 %
+of det3 planes, with the same angle but p0 moved by 60·w. A single algorithm for both would make the beam t0/p0 labels
+differ from today's NM on that fraction, without either being shown to be better. Whether that matters depends on what
+the beam analysis takes from t0/p0 (the x–y pairing and the column-time gate use them). It is Dylan's call; LM
+everywhere is defensible, since nothing at n_TOF has been quoted yet.
+
+The sections below are the first (free / inert-prior t0) pass and stand as the n_TOF-like result.
+
+---
+
 
 The algo_review recommendations (REPORT.md §"Recommendations" 2–3; HANDOFF "Fitter: LM variable-projection") were
 built and tested on all five bench chambers. Everything is **opt-in**. With the defaults the reconstruction is
 bit-identical: all 104 existing `wft/tests` pass unchanged.
 
-## Verdict
+## Verdict (first pass: vladder bundles, t0 effectively free)
 
 - **Angles: a safe drop-in.** On every chamber and view, w agrees within 1 µm/ns on 93–100 % of planes. s68 against M3
   moves by ≤ 3.5 % (inside the 3–5 % statistical error of 200–300 events), and the far fraction is unchanged within
@@ -27,7 +71,7 @@ bit-identical: all 104 existing `wft/tests` pass unchanged.
   on 60–73 % of planes, on these vladder bundles. This is the real lever, and it belongs to the model, not the
   optimiser.
 
-**Recommendation:** keep `FITTER = 'nm'` for the B1 pass. The LM code stays on the branch as a study option.
+**Recommendation (first pass, superseded on the bench by the update above):** keep `FITTER = 'nm'` for the B1 pass. The LM code stays on the branch as a study option.
 Adopting it would cost re-validating positions for a ~40 % speed-up. The 60 ns basin choice is what actually limits
 t0/p0, and it needs a t0 constraint that carries weight (e.g. the prior scaled by χ²/dof, or the bench t0 pinned
 outright). That is a model decision for Dylan, out of scope here. **`COV_ERRORS`** (below) is the one piece that
@@ -50,8 +94,8 @@ untouched.
 
 ## Measurements (vladder bench caches with M3 reference; det3 `bundle_phys_mask`, others `bundle_phys`; t0 prior from each bundle where it has `t0_abs`, i.e. det2/3/4; det6/7 free)
 
-Full tables: `results/lm_ab_tables.md` (nm / lm / lm_nohop; det3 also with free t0) and
-`results/lm_ab_tables_grid.md` (nm / lm_grid).
+Full tables: `results/lm_ab_tables.md` (nm / lm / lm_nohop; det3 also with free t0),
+`results/lm_ab_tables_grid.md` (nm / lm_grid) and `results/lm_ab_tables_fe.md` (pinned-t0 FE bundles, the update).
 
 | chamber·view | same w (lm / grid) | s68 nm → lm → grid (°) | t0 relabelled > 30 ns (lm / grid) | solves lm / grid vs nm | position s68 vs M3 nm → lm → grid (mm) |
 |---|---|---|---|---|---|
@@ -84,7 +128,7 @@ fitted with free t0.
 
 ## Files and commands
 
-- `lm_ab.py` — the A/B driver: `--free` adds the no-prior arms, `--grid` runs nm vs lm_grid only. Row pickles are in
+- `lm_ab.py` — the A/B driver: `--fe` uses the pinned-t0 FE bundles, `--free` adds the no-prior arms, `--grid` runs nm vs lm_grid only. Row pickles are in
   `/media/dylan/data/x17/cosmic_bench/model_audit/lm_ab/`.
 - `lm_ab_summary.py <rows.pkl>...` → `results/lm_ab_summary.json` + markdown tables.
 - `wft/tests/test_lm_fitter.py` — Jacobian vs FD, residual = χ², COV_ERRORS leaves the fit unchanged, LM vs NM.

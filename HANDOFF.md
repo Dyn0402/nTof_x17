@@ -2,6 +2,11 @@
 
 ## Fitter: LM variable-projection outer solver + covariance errors (B1 item) — updated 2026-10-28 (dylan-MS-7C84)
 
+**Update (same day): on the pinned-t0 FE bench bundles, `FITTER=lm, LM_HOPS=0` is a drop-in** (t0 unchanged on every
+plane, positions unchanged, s68 within ±2.2 %, far within ±1.5 pp) at 0.45x the cost. Next: the fleet gate on the
+golden rows with `WFT_DIAG=model.FITTER=lm,model.LM_HOPS=0`, then decide n_TOF (free t0: basin labels differ from NM
+on 13–33 % of planes, same angle). The paragraph below is the first pass on stale vladder bundles (t0 effectively free).
+
 **Outcome (2026-10-28, laptop, branch `lm-varpro`, NOT merged):** implemented as opt-in `WFT_DIAG=model.FITTER=lm`
 (analytic Kaufman Jacobian, lattice hops, polish, covariance) and A/B-tested on all five bench chambers:
 `rerun/model_audit/algo_review/REPORT_LM.md`. Angles: drop-in (s68 ±3.5 %, same w 93–100 %); cost ~0.6×. But any change

@@ -171,7 +171,8 @@ BAND_MIN_WINDOW_NS = 1800.0
 #: analytic on the RC kernel, a short Nelder-Mead polish, and the full 3x3 covariance for the errors.  A PROTOTYPE on
 #: branch lm-varpro, not gated: 'nm' stays the algorithm; ``WFT_DIAG=model.FITTER=lm`` (wft.diag) selects it.
 #: A/B on the five bench chambers (rerun/model_audit/algo_review/REPORT_LM.md): same angles, ~0.6x the cost, but t0/p0
-#: land one 60 ns lattice basin over on 6-48 % of planes and the deeper basin is not closer to the trigger or M3.
+#: land one 60 ns lattice basin over on 6-48 % of planes when t0 is free.  With the bench t0 pin (FE bundles) and
+#: LM_HOPS = 0: t0 and positions unchanged, s68 within +-2.2 %, 0.45x the cost.
 FITTER = 'nm'
 #: 'lm' only: walk the depth-bin lattice.  The chi2 surface has a basin at every (p0 + DT w, w, t0 + DT): the lattice
 #: shift is not a symmetry of the kernel, and which basin a local search ends in is set by its start -- the grid +
