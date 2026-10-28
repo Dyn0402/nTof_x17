@@ -1,0 +1,42 @@
+% Abstract for the 2nd INFN-IN2P3 bi-national conference on detector R&D (LNF Frascati, 2-4 Dec 2026).
+% Text kept in sync with abstract.md (Draft v2) and abstract.txt (plain text for email).
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{siunitx}
+\usepackage{microtype}
+\pagestyle{empty}
+
+\begin{document}
+
+\begin{center}
+  {\Large\bfseries A resistive-strip Micromegas TPC for the X17 search at n\_TOF:\\[2pt]
+  design, track reconstruction and performance\par}
+  \vspace{10pt}
+  % TODO: co-authors and affiliations
+  {\large D.~Neff\par}
+  {\small CEA Saclay, Irfu\par}
+  \vspace{4pt}
+  {\small Session: Gas detectors\par}
+\end{center}
+
+\vspace{6pt}
+
+The X17 search at the CERN n\_TOF neutron facility requires tracking $e^+e^-$ pairs from neutron capture on
+$^3$He. To test the anomaly, their opening angle must be measured with as little material as possible. We
+developed a resistive-strip bulk Micromegas that works as a compact TPC: one \SI{30}{mm} drift gap gives a
+three-dimensional track segment. Its $40\times\SI{40}{cm^2}$ area is read out through a pad matrix with a
+\SI{0.78}{mm} pitch, capacitively coupled to two orthogonal strip views.
+
+A resistive anode is still uncommon in a TPC, and it brings its own challenge. Charge spreads to the
+neighbouring strips with an RC delay, and this distorts the arrival time measured on each strip: angles taken
+from those times read about \ang{4} too steep. Our forward model fits all the waveforms in a cluster at once,
+using the measured sharing kernel, and removes the bias.
+
+The chamber reaches an angular resolution of \ang{1.2}, \SI{93}{\percent} efficiency and a spatial resolution
+of \SI{180}{\micro m}. At n\_TOF, the reconstructed tracks image the $^3$He target capsule, demonstrating the
+detector's efficacy as a TPC tracker.
+
+\end{document}
