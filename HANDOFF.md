@@ -136,45 +136,53 @@ adapted from the MPGD2026 abstract. The call closed on 19 Oct, so this would be 
 
 ## Model audit (B4) + follow-ups — updated 2026-10-28 (dylan-Yoga)
 
-**Resume:** round 3 (10-28, FOLLOWUPS.md "Round 3 outcomes"): GA–GF done and in the code (90a768d); GD sparks: keep the
-veto, det4 row pending (lxplus 4583837: `gd_sparks/pull.sh det4` + `gd_score.py`). Before the reprocessing: double-check the GA bad channels (FOLLOWUPS), then rebuild every bundle from
-scratch on the `fe` recipe (Dylan: no shortcuts, so `promote_fe.sh` is not needed).
+**Resume:** audit rounds 1–3 closed; next session = broad review + preparations from `rerun/REPROCESSING_TODO.md` §B.
 
-**Goal:** answer Dylan's audit questions with existing data and end with ONE reconstruction algorithm.
+**Goal:** answer Dylan's audit questions with existing data and end with ONE reconstruction algorithm, then reprocess
+from scratch.
 
 **Done:**
-- Audit F1–F22: `rerun/model_audit/FINDINGS.md` (outcomes table on top), `ws_*/REPORT.md`, note notes/mx17-model-audit.
-- Follow-ups 1–13 (`rerun/model_audit/FOLLOWUPS.md`, outcomes table on top; reports `followups/{fa,fb,fc,fd,fe}_*/REPORT.md`).
-  Notes: mx17-chamber-bow, mx17-chamber-maps, mx17-angle-floor; paper section `papers/paper1/sections/08b_bow.tex`.
-- wft on main (79bb78d): pinned t0 (bench), column-time x–y gate, per-class pairing, one σ0 0.30, bow block, v(x,y)
-  map, v(t)/gain/depth_subdiv slots, one-rule dead lists, band censoring + re-seed, n_TOF transfer guards. Tests 104/104.
+- Audit F1–F22 (`rerun/model_audit/FINDINGS.md`), follow-ups FA–FE (`FOLLOWUPS.md`, notes mx17-chamber-bow,
+  mx17-chamber-maps, mx17-angle-floor, paper section `papers/paper1/sections/08b_bow.tex`).
+- Round 3 (10-28, `FOLLOWUPS.md` "Round 3 outcomes", reports `followups/g{a,b,c,d,e}_*/REPORT.md`, GF in
+  `fe_unify2/REPORT.md`):
+  - **GA** gain map not needed (FD's 0.55° withdrawn).
+  - **GB** M3 + MS = 0.05° (≤ 0.11°); the det6/det7 shared term is the bow.
+  - **GC** gas drift is post-correctable. Timestamp and `acq_tag` are in the event record; own v per registry row.
+  - **GD** keep the > 50-hit spark veto; seed overrides fixed.
+  - **GE** χ²/dof flag = 5 × the table median.
+  - **GF** all rows pulled; `fe` is the recipe (not `fefa`).
+- Code on main (90a768d, 41496cb): `quality_flags`, timestamp/acq_tag, `make_registry.py` own-v rule, GA channels in
+  the det3/det4 masks, `set_w0kw.py --dead-json` installs `hot`. Tests 110/110.
+- **Decided:** one σ0 for X and Y; reprocessing from scratch with no shortcuts, so `promote_fe.sh` is not needed (the
+  pass rebuilds bundles with the fe recipe).
 
-**In progress / where it stopped:** `fefa` det4/6/7 and `fe_nobow` det7 condor rows were running when the lxplus 2FA
-connection expired (10-27 ~midnight); outputs land in `/eos/user/d/dneff/x17rerun/followups/fe/Analysis_fe/`.
+**In progress / where it stopped:**
+- GD det4 row: lxplus condor job 4583837 (DAG `~/x17rerun/gd/`), running since 10-28 09:18. Outputs go to
+  `/eos/user/d/dneff/x17rerun/followups/fe/Analysis_fe/<row>/wft/gd_sparks/`.
 
-**Next steps:**
-1. `ssh lxplus` (2FA), then `rerun/model_audit/followups/fe_unify2/pull_fe.sh fefa fe_nobow` and rerun `gate_compare.py`;
-   decide fe vs fefa.
-2. Dylan's call: promote (`promote_fe.sh --apply`, then `promote_phys.py --fill-conditions --apply`, vrefit +
-   `set_w0kw.py --table` for non-golden rows). Not applied.
-3. Add the DREAM timestamp + acquisition tag to the event record so v(t) can be applied (FA; only where drift > Allan floor).
-4. Per-chamber `CHI2DOF_BAD`; measured strip gain map (FD: det4 −0.55°).
-5. After reprocessing: SPS gas fit (H₂O + O₂, item 9); noise-band hotspot census (item 13).
+**Next steps:** the checklist is `rerun/REPROCESSING_TODO.md` (§B blocking, §C after the pass).
+1. GD det4: `gd_sparks/pull.sh det4` + `gd_score.py`.
+2. Double-check the 14 GA bad channels (flank test + waveform displays).
+3. Fold in the bow skeptical review and the LM-varpro fitter (other sessions' HANDOFF sections), then the fleet gate,
+   the pass DAG dry run (vrefit now ~117 rows), code archive, pass.
 
 **Gotchas / decisions:**
-- Sub-agents cannot write REPORT.md (harness) — coordinator writes them from the final message.
-- Copy gitignored files (PNGs) out of a worktree before removing it.
-- Agents waiting on condor stall; check EOS outputs and nudge. lxplus 2FA expires overnight → jobs can't be pulled.
-- Bench bow / tilt / v map / w0 never go to n_TOF (now enforced in make_bundle + wft_beam).
-- 20 ns grid not adopted on the bench (cost 3×, no gain); revisit for n_TOF steep pairs.
+- Sub-agents cannot write REPORT.md (harness): the coordinator writes them from the agent's final message.
+- The column duration T is gain-confounded (+18 % across a det3 mesh scan): use the M3 ladder for v on the bench.
+- `make_registry.py` reads row times and clean counts from `followups/gc_gas_time/results/bench_rows.json` (committed).
+- Bench bow / tilt / v map / w0 never go to n_TOF (enforced in make_bundle + wft_beam).
+- Small leftover: `~/ga_condor` on lxplus (staging, deletable). The local GA/GC/GD pulls under
+  `~/x17/cosmic_bench/model_audit/` (~0.5 GB, `/media/dylan/data`) are copies of EOS products.
 
 **Key files & commands:**
-- `rerun/model_audit/{FINDINGS,FOLLOWUPS}.md`, `ws_*/`, `followups/*/`
-- `.venv/bin/python rerun/model_audit/make_audit_deck.py` + add-note (slug mx17-model-audit) for the audit note
+- `rerun/REPROCESSING_TODO.md` — the checklist
+- `rerun/model_audit/{FINDINGS,FOLLOWUPS}.md`, `followups/*/REPORT.md`
+- `python rerun/make_registry.py` → `rerun/pass_registry.csv`
 
 ## Full-pass readiness (bench + SPS re-run) — updated 2026-10-27 (dylan-Yoga)
 
-**Resume:** pass ON HOLD; blockers in rerun/RERUN_PLAN.md §12 (B1 unified reco, B2 fleet gate, B3 SPS wiring, B4 audit).
+**Resume:** pass ON HOLD; the checklist is now rerun/REPROCESSING_TODO.md (B4 audit closed 10-28; B1/B2/B3 open).
 
 **Goal:** run the RERUN_PLAN pass once, so settle everything upstream before submitting it.
 

@@ -168,6 +168,9 @@ det7 X quoted from ch 256–511.
 
 ## 12 · Before the pass: what still blocks it (status review, 2026-10-27)
 
+> **2026-10-28: the live checklist is `REPROCESSING_TODO.md`.** B4 (model audit) is closed: FA–FE and round 3 (GA–GF)
+> in `model_audit/FOLLOWUPS.md`. The `fe` recipe is the reconstruction, and every calibration is redone from scratch.
+
 **Not submitted.** As of 10-27 there is no `~/x17rerun/pass_main` on lxplus and no condor jobs. The §11 machinery is
 ready and dry-run tested. Running it now would mean running it twice, because two upstream items are still open (§1).
 
