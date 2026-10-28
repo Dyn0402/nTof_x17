@@ -34,10 +34,13 @@ Status key: [x] done · [ ] open · [~] partly / in progress
 3. [x] **Chamber bow** — decided (Dylan 10-28): bow block on all five chambers, refit inside the new `calib` phase by
        the same FB recipe (det6 included, det7 X unmasked). Paper wording follows the skeptic review (1.2–1.9 ± 0.4 mm):
        REPORT.md / `08b_bow.tex` / slide note still to edit (downstream, not blocking).
-4. [~] **B1 remainder**: switches already retired into `wft/diag.py` (10-27; stage_job refuses overrides);
-       PIVOT_START is built in (reco.py:86); trigger-track rule = **downstream selection** (Dylan 10-28). Left: the LM
-       fitter — merge `lm-varpro` only if its fleet gate passes (condor 4591065–74, DAG `lm_r1`, started 15:09; 6/10
-       done at 16:20; `lm_gate_pairs.py` in the worktree), then `FITTER='lm'`, `LM_HOPS=0` as code defaults (PASS_PLAN E5).
+4. [x] **B1 remainder**: switches already retired into `wft/diag.py` (10-27; stage_job refuses overrides);
+       PIVOT_START is built in (reco.py:86); trigger-track rule = **downstream selection** (Dylan 10-28). **LM fitter
+       DONE 10-28**: fleet gate `lm_r1` passed (`fe_nm` vs `fe_lm`, five golden rows × 8000, pinned FE bundles:
+       detection ±0.16 pt, far ±0.09 pt, s68 ±0.009°, t0 moved ≤ 0.6 %, reco wall 0.77×). Merged into main at `dc354cd`
+       with `FITTER='lm'`, `LM_HOPS=0` as the code defaults (`WFT_DIAG=model.FITTER=nm` = the old grid + Nelder–Mead).
+       Report: `model_audit/algo_review/REPORT_LM.md`. Three post-gate fixes (NaN-step guard, t0 window ±180 ns,
+       tighter polish) were checked locally on 5 × 100 events, not on condor: **G1 (item 12) is their gate**.
 5. [ ] **E1 bundle from nothing**: `rerun/calib/make_bundle.py` + `rerun/calib/physics_inputs.json` (σ0 0.30, Dp,
        det4 D_rc,y 2.2e-4, gaps, timing v; provenance) — PASS_PLAN §2.
 6. [ ] **E2 bow node**: `rerun/calib/bow_node.py` (FB `set_bow` reading EOS tables + M3 + alignment, not the laptop mirror).
@@ -56,12 +59,19 @@ Status key: [x] done · [ ] open · [~] partly / in progress
        clean fraction (skeptical if < ~40 %); g_det4 seeding on FEU 6 conn 7–8; optional S0b: decode + M3 + hits of
        the never-decoded det6/det7 6-26 points 455/460/470/475/490 V (raw in EOS `june_tests/`).
 10. [ ] **Dry run**: `calib` on det3 `--limit 300` + one vrefit and one pass row on its output; pytest wft/tests.
-11. [ ] **Code archive** (`code_<hash>` on EOS) of the final main; `lxstore status` (AFS 88 % on 10-28: offload old
+11. [ ] **Code archive** (`code_<hash>` on EOS) of the final main (≥ `dc354cd`, so it carries the LM fitter; check
+       `grep "^FITTER = 'lm'" wft/model.py` in the archive); `lxstore status` (AFS 88 % on 10-28: offload old
        `code_*` first); regenerate `pass_registry.csv` (`python rerun/make_registry.py`).
 12. [ ] **Submit**: `calib` (S1) → gate G1 (convergence + held-out vs the audit fe numbers, `gate_compare.py`) →
        `vrefit --keep-v` (117 rows) → `pass` (159) + `sps` (71). Order and gates: PASS_PLAN §3.
 
 ## C. After the pass (table-level, no refit)
+- [ ] **LM follow-ups** (REPORT_LM.md): (a) n_TOF has free t0, so t0/p0 labels differ from the old NM on ~13–33 % of
+      planes (same angle, p0 moved by 60·w). Check the x–y pairing rate and column-time gate on one beam run
+      (run_145) against an NM replay (`WFT_DIAG=model.FITTER=nm`). (b) If any consumer uses w_err/t0_err, turn on
+      `reco.COV_ERRORS` (full covariance, ×1.8–2.3 the curvature errors; the fit is bit-identical). (c) The two-track
+      fit still runs Nelder–Mead; LM there is optional (speed only, gate separately). (d) Paper 2 §4: one sentence
+      naming the fit as variable projection (Golub & Pereyra 1973; Kaufman 1975; check Sima & Van Huffel 2007).
 - [ ] v(t) within a row: per-time-block kw from the M3 ladder (bench; not the column duration, which is gain-confounded),
       column end on n_TOF arms A/C; join on (run, subrun, acq_tag, event_id). Largest: det6 golden ~11 %, det4 ~7 %,
       det4 6-23 short_run (inherits longer_run, ~9 % apart). n_TOF B/D: no within-run route (limitation). GC.
