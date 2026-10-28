@@ -53,6 +53,12 @@ note still carry the old numbers (1.5–2.3 ± 0.2, "three routes with no shared
 
 ## Fitter: LM variable-projection outer solver + covariance errors (B1 item) — updated 2026-10-28 (dylan-MS-7C84)
 
+**DONE (2026-10-28 evening): fleet gate `lm_r1` PASSED and LM is merged into main as the default fitter**
+(`FITTER='lm'`, `LM_HOPS=0`; `WFT_DIAG=model.FITTER=nm` for the old one). Detection ±0.16 pt, far ±0.09 pt, s68 ±0.009°
+on all five golden rows; reco wall 0.77×. Three post-gate fixes (NaN-step guard, t0 window ±180 ns, tighter polish)
+were checked locally, not re-gated. Report: `rerun/model_audit/algo_review/REPORT_LM.md`. Not done: the paper §4
+variable-projection sentence; n_TOF free-t0 labels differ from NM on 13–33 % of planes (same angle).
+
 **Update (same day): on the pinned-t0 FE bench bundles, `FITTER=lm, LM_HOPS=0` is a drop-in** (t0 unchanged on every
 plane, positions unchanged, s68 within ±2.2 %, far within ±1.5 pp) at 0.45x the cost. Next: the fleet gate on the
 golden rows with `WFT_DIAG=model.FITTER=lm,model.LM_HOPS=0`, then decide n_TOF (free t0: basin labels differ from NM

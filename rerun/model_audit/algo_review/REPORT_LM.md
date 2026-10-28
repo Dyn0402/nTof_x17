@@ -1,4 +1,46 @@
-# LM variable-projection fitter: implemented and A/B-tested (2026-10-28, branch `lm-varpro`)
+# LM variable-projection fitter: gated and adopted (2026-10-28)
+
+## Fleet gate `lm_r1` (lxplus, 15:09–17:29): PASS -> `FITTER = 'lm'`, `LM_HOPS = 0` is the algorithm
+
+`fe_nm` (current main, grid + Nelder–Mead) vs `fe_lm` (`WFT_DIAG=model.FITTER=lm`), the same pinned-t0
+`calib_bundle_fe` on the five golden rows, 8000 matched events each, code `code_5d4f5e4` on EOS, DAG
+`~/x17rerun/fe/lm_r1.dag` (30/30 nodes, exit 0). Tables: `results/lm_gate.md` (gate_compare) and
+`results/lm_gate_pairs.md` (per event, `lm_gate_pairs.py`).
+
+| chamber | Δ detected 5 mm (pt) | Δ far 5 mm (pt) | s68 X / Y nm → lm (°) | same w X / Y | t0 moved > 30 ns | reco wall lm / nm |
+|---|---|---|---|---|---|---|
+| det2 | −0.09 | +0.09 | 1.161 / 1.214 → 1.161 / 1.217 | 98.7 / 98.5 % | ≤ 0.1 % | 0.70 |
+| det3 | −0.06 | +0.06 | 1.082 / 0.966 → 1.084 / 0.967 | 98.8 / 98.3 % | ≤ 0.1 % | 0.42 |
+| det4 | +0.13 | −0.04 | 2.509 / 2.601 → 2.509 / 2.593 | 93.1 / 93.6 % | ≤ 0.6 % | 0.86 |
+| det6 | −0.05 | 0.00 | 1.469 / 1.619 → 1.471 / 1.625 | 97.2 / 97.3 % | ≤ 0.3 % | 0.88 |
+| det7 | +0.16 | +0.01 | 2.499 / 1.580 → 2.508 / 1.588 | 91.1 / 95.3 % | ≤ 0.4 % | 0.81 |
+
+- **Every aggregate is unchanged within noise.** Detection moves by ≤ 0.16 pt, far by ≤ 0.09 pt, s68 by ≤ 0.009°,
+  and the bias by ≤ 0.009°. The median χ² ratio is 1.0000 on every view.
+- **Per event**, 1.4–1.7 % of det2/det3 planes end in a different well (dθ > 1°). The figure is 3–5 % on det6 and
+  det7 Y, and 7–11 % on det4 and det7 X, the chambers with the known missing-charge faults (det4 dead stripes, det7 X
+  M1 seating), where the χ² surface has several near-equal wells. These differences are symmetric: they move neither
+  s68 nor far. For scale, switching band censoring off (`fe` vs `fe_nb`) moves 0.2–0.9 %.
+- **Cost on condor: 0.77× the reconstruction wall time** summed over the five rows (4 h 15 min vs 5 h 31 min). That is
+  less than the fitter-only 0.45×, because seeding, I/O, candidate selection and the two-track fit are unchanged.
+- The covariance w_err is ×1.8–2.3; tan_err is ×1.001–1.004 (the floors dominate).
+
+**Changes after the gate** (in the merged code, found by the full test suite with LM as the default; the gate ran
+the version before them):
+1. A non-finite LM step or Jacobian is rejected. This was a NaN t0 reaching `build_matrix` on the delay kernel in
+   the two-track tests.
+2. t0 stays within ±`LM_T0_RANGE` = 180 ns of the start. With free t0, an unbounded LM followed the
+   profile-absorbs-a-time-offset valley 250 ns out on a synthetic pair.
+3. The polish is tighter (xatol 1e-4, fatol 0.02, ≤ 80 iterations instead of 5e-4 / 0.15 / 40). LM then lands on
+   NM's minimum to the printed digit on that pair, and the two-track children are identical.
+
+All three move LM toward NM, and (2) is inactive under the bench pin. They were checked locally on the pinned FE
+bundles, all five chambers × 100 events (`/media/dylan/data/x17/cosmic_bench/model_audit/lm_ab/polish2/`): same w on
+96–100 % of planes, s68 and far within noise, and 0.59–0.68× the solves. They were **not** re-gated on condor.
+
+---
+
+## Earlier: implemented and A/B-tested (2026-10-28, branch `lm-varpro`)
 
 ## Update, same day: with t0 pinned (the FE bench bundles) LM is a drop-in, at 0.45x the cost
 
