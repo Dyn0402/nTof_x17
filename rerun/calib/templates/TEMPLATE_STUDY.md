@@ -101,7 +101,51 @@ Full scan (`results/t5_det3.json`, per-arm summaries in `results/t5_heldout/`). 
 - **χ²/dof ≈ 50 is not the template.** A 4–7 % width change and ±20 ns shifts move it by only a few percent. The
   dominant model error is elsewhere, and the template is not the lever for it.
 
-RESULTS_DRC
+**D_rc,y refit (the PASS_PLAN DRC step as specified).** `recal.py --free rc_D_y --objective cold --p0-profile
+--p0-window 2`, σ0/Dp/v fixed, 180 training events (held-out events start at 180). Outputs:
+`results/t5_drc_{cur,heff}.json`.
+
+| | D_rc,y | training χ² | held-out X s68 (Δ vs cur_d+0) · χ²/dof | held-out Y s68 (Δ) · χ²/dof |
+|---|---|---|---|---|
+| fe bundle as is | 3.44e-4 | 1.0330e8 | 1.104 · 48.9 | 0.894 · 56.6 |
+| cur, refitted | 4.91e-4 | 1.0224e8 (−1.0 %) | 1.109 (+0.006 ± 0.016) · 49.1 | **0.964 (+0.070 ± 0.028) · 65.2** |
+| h_eff, refitted | 4.78e-4 | 1.0327e8 | 1.054 (−0.050 ± 0.029) · 48.8 | 0.988 (+0.095 ± 0.035) · 62.5 |
+
+- **The refit lowers the training χ² and raises the held-out χ² (Y 56.6 → 65.2), costing 0.07° in Y.** The two
+  objectives treat t0 differently. `recal.py`'s cold objective profiles t0 freely on a 20 ns grid, while the pass
+  reconstructs with t0 pinned to the latency (σ 0.05). D_rc,y and the mesh time trade against each other (a slower
+  Y spread vs a later start), so a D_rc,y fitted with t0 free is wrong for a pinned-t0 reconstruction.
+  **Consequence for E3: every CAL fit (DRC, and anything else fitted by recal.py) must use the reconstruction's own
+  t0 treatment (pinned to the latency), or the calibration and the pass optimise different models.** Not yet
+  checked: whether the 10-26 phys/fe bundles' D_rc,y (3.44e-4) was itself fitted with t0 free; the held-out
+  numbers say it is closer to right for pinned t0 than the refit.
+- h_eff vs the current template, both on refitted D_rc,y: X −0.055°, Y +0.024°. The same pattern as without the
+  refit. The template comparison cannot be closed until the DRC fit has a pinned-t0 objective.
+
+## Verdict so far (2026-10-28 evening)
+
+1. The production template is not pure response: it is 4–7 % too wide because it carries the strip's drift segment,
+   and the forward model counts that segment twice. Measured on all five chambers, both views.
+2. A segment-free template (h_eff) helps X by ~0.05° (consistent over every arm, ~2σ each) and costs Y
+   0.02–0.08°. It changes neither χ² nor the far fraction. **Not ready to adopt.** Decide it after the pinned-t0 DRC
+   fit, on all five chambers, with 1320 events.
+3. The template zero must be set explicitly against the latency (χ² minimum 20–40 ns earlier than t50 = 0). It moves
+   the angle scale by ~2 % per 20 ns.
+4. No amplitude-dependent template: the shape does not change from 500 to 3500 ADC.
+5. **The recal.py objective (t0 free) and the pass (t0 pinned) disagree on D_rc,y.** That is a blocker for E3's DRC
+   step as written in PASS_PLAN §2.
+6. The template is the strip self-response. Its physical decomposition (peaking time, β, ion fraction) is not
+   identifiable from templates (sim closure). Don't quote shaper parameters from it.
+
+## Next steps
+
+1. Give `recal.py` a pinned-t0 objective (t0 = the bundle's t0_abs per ftst, as `heldout_arm --t0-fix`). Redo the
+   D_rc,y refit for cur and h_eff on det3, and check that the refit then improves the held-out Y.
+2. Add the template zero as a scanned/fitted quantity in TMPL (χ² vs shift at pinned t0) and as a convergence item.
+3. If (1) leaves h_eff ahead or level: run cur vs h_eff (each with its own pinned-t0 D_rc,y) on all five chambers,
+   1320 events, on condor. Adopt by the fleet result.
+4. For TMPL in the pass: build h_eff from the angle bins (t4's fit, shape only) as a candidate output beside the
+   plain median, so the decision does not need another cache pass.
 
 ## Not ruled out / open
 

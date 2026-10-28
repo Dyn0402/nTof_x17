@@ -44,6 +44,11 @@ Status key: [x] done · [ ] open · [~] partly / in progress
 7. [ ] **E3 `make_pass_dag.py calib` phase** CAL0–CAL4 per golden chamber into `Analysis_pass1`, convergence
        criteria → `CALIB_CONVERGENCE.json`; **`--table` on every W0KW node** (finalize/vrefit/pass, make_pass_dag.py:89,
        112, 130 — without it they abort on a bow bundle, set_w0kw.py:95–97); vrefit keeps the golden bow.
+       **Template study (10-28, `rerun/calib/templates/TEMPLATE_STUDY.md`) found a blocker for DRC as written:**
+       recal.py's cold objective profiles t0 freely, but the pass pins t0. A D_rc,y refit with it lowers the
+       training χ² and raises the det3 held-out Y χ² 56.6 → 65.2 (s68 +0.07°). The CAL fits need a pinned-t0
+       objective. TMPL also needs the template zero fitted against the latency, and a segment-free template
+       candidate (the measured one is 4–7 % too wide and carries the strip's drift segment).
 8. [ ] **E4 SPS phase** (was B3): one node per `sps_registry.csv` row with the new det4 bundle (bench bow/v_map/w0/t0
        dropped — done 10-28 in sps_reco), `quality_flags`/timestamp in `sps_reco`, K fallback +5 → +15.
 9. [ ] **Pre-flight checks** (PASS_PLAN F7–F12): the 14 GA channels (item 2); H4 ch 372 oscillation → `det4_sps_h4.json`;
