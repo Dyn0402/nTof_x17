@@ -1,5 +1,66 @@
 # Handoff
 
+## Fitter: LM variable-projection outer solver + covariance errors (B1 item) — updated 2026-10-28 (dylan-MS-7C84)
+
+**Resume:** implement LM on the NNLS-profiled residual in `wft/model.py:fit_plane_raw` (analytic Jacobian, polish, t0±60 starts), gate on golden rows.
+
+**Goal:** Dylan's pre-publication ask: "is voxels + sliding the line the best way or is there something more elegant?"
+Answer (`rerun/model_audit/algo_review/REPORT.md`): the structure is right and is textbook **variable projection**
+(Golub & Pereyra 1973; Kaufman 1975; bound-constrained Sima & Van Huffel 2007) — the K charges are linear and
+non-negative, eliminated by NNLS; the outer problem is (p0, w, t0). The *search* is not what limits the resolution,
+so the change is for speed and honest errors, done inside B1 because the pass is rerun from scratch anyway.
+
+**Done (this session, review only, no production code changed):**
+- Measured on 800 det3 bench events (phys hypers `rerun/precheck_rcv/out/arm_det3_rcvk24.json` on the r06 det3
+  templates, v 36.6, K 24, PIVOT_START, no prior): a Levenberg–Marquardt refinement from the same pivot start gives
+  the same w in 99.1 % of planes, s68 identical (1.08/1.00° vs 1.09/1.01° X/Y), 59 NNLS solves per plane instead
+  of 316, 0.12 s instead of 0.62 s.
+- 1-D curvature errors (`wft/reco.py:_errors`) are ×2 optimistic, not 20 %: full 3×3 covariance gives p0 0.017 mm
+  (curvature 0.008), t0 3.8 ns (1.9), w 0.053 µm/ns (0.026); |ρ(p0,t0)| p90 = 0.75.
+- t0 basins: production misses a deeper basin one bin LATER in t0 on 10 % of planes (X 13 %, Y 7 %), same angle
+  (|Δw| 0.07 µm/ns), deeper by a median 25 χ²/dof units. Taking it moves the x–y t0 width only 67 → 63 ns rσ, so F5
+  is the model's t0 definition, not the optimiser.
+- Dead ends (don't retry): depth grid cut to the gap (K 13 vs 24) — null on every metric; joint x–y fit with one
+  shared profile (`wft.model.fit_joint`) — s68 −2 % (inside error), AUC 0.95 as a pairing statistic (weaker than
+  charge balance on det3), +18 % χ² on genuine pairs, 2.5 s/pair.
+- Four stale worktrees removed (bench-pin-rc, capsule-scale-kernel, is2v2-compare, sps-attachment-transfer; all
+  clean and merged).
+
+**Next steps (another session implements and tests):**
+1. In `wft/model.py:fit_plane_raw`, replace the 105-point grid + Nelder–Mead refinement with LM on the
+   variable-projection residual: at θ=(p0,w,t0) solve q by the production `_solve_nnls` (keeps censoring, SAT_SOLVE,
+   COL_GUARD), residual r = Wt·(Mq − W) on live rows plus the active one-sided penalty rows, Jacobian J = P⊥·(∂M/∂θ)q
+   with P⊥ the projector off the free (q>0) weighted columns (Kaufman). Analytic ∂M/∂θ: ∂/∂p0 and ∂/∂w of the erf
+   strip fractions are Gaussian differences (×u_k for w); ∂/∂t0 is the template derivative through the same interp
+   (RC kernel: differentiate the 5 ns tensor interpolation). Prototype with finite differences: `rerun/model_audit/
+   algo_review/algo_review.py: lm_refine / _resid_jac`.
+2. Keep the pivot scan and the 7-point coarse t0 ladder as the global start; **add t0 ± 60 ns** (same line, p0 shifted
+   by ∓60·w) to the refined starts (2 extra LM runs). Finish with a short Nelder–Mead polish (xatol 5e-4, fatol 0.15,
+   ~40 iters): the surface is piecewise smooth (active-set changes, 5 ns tensor interpolation) and the FD prototype
+   stopped > 1 χ² unit above production on 42 % of planes without one.
+3. Errors from (JᵀJ)⁻¹ × max(χ²/dof, 1) (full covariance, store ρ(p0,t0) if a column is cheap); keep the
+   per-chamber `tan_floor` / `FLOOR_P0_MM` hypot as now. Replace `_errors`.
+4. Tests: `wft/tests/test_model_regression.py` pins fit_plane_raw numerics — update it to compare the NEW fitter's
+   minimum against the old one on the det3 R&D cache (same w within 1 µm/ns, χ² ≤ old + 1), not bit-identity.
+5. Gate: fleet gate on the five golden rows (`rerun/model_audit/make_gate_dag.py` / `gate_compare.py`), acceptance =
+   angles agree with the current fitter within the gate tolerances, solves/plane ~5× fewer. Then it rides the B1 pass.
+6. Paper 2 §4: one sentence naming the fit as variable projection (citations above; verify Sima & Van Huffel).
+
+**Gotchas / decisions:**
+- Dylan (10-28): do this BEFORE the pass, inside B1, since everything is rerun from scratch; the earlier "not before
+  the paper" advice in the REPORT is superseded (REPORT updated).
+- Gain is cost (~5×) and errors, NOT resolution: every alternative lands on 1.0° because the model sets it
+  (det3 χ²/dof 70 vs 4–40 for a perfect model; floor 0.30–0.35°). If B1 is crowded, this is the item to drop.
+- The LM arm used no dead list and no prior; two-track (`fit_plane_two_raw`) still uses Nelder–Mead on 5–6 params —
+  the same LM applies there (two column blocks), but gate it separately.
+- Row pickles of the study were in the job scratch dir and are gone; rerun `algo_review.py --n 800` (2 min, 14 cores,
+  needs `/media/dylan/data/x17/cosmic_bench/condor_plane_ratio/inputs/det3/big_cache.pkl`).
+
+**Key files & commands:**
+- `rerun/model_audit/algo_review/REPORT.md` — the review and all numbers; `results/*.json` the summaries.
+- `rerun/model_audit/algo_review/algo_review.py` (prod/lm/shift/kgap arms), `algo_summary.py`, `joint_review.py`, `joint_summary.py`.
+- `.venv/bin/python rerun/model_audit/algo_review/algo_review.py --n 800 --jobs 14 && .venv/bin/python rerun/model_audit/algo_review/algo_summary.py rerun/model_audit/algo_review/algo_review_rows.pkl`
+
 ## INFN–IN2P3 detector R&D conference abstract (Frascati, 2–4 Dec) — updated 2026-10-27 (dylan-Yoga)
 
 **Resume:** draft abstract in `papers/infn_in2p3_2026_abstract/abstract.md`; Dylan to review, then contact organisers.

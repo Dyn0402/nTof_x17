@@ -22,8 +22,11 @@ the cost, and the resolution against M3 is identical to 0.01°. A joint x–y fi
 structurally different formulation, `wft.model.fit_joint`, unused in production) changes s68 by 2 %, within the
 statistical error. Cutting the depth grid to the drift gap changes nothing. Every alternative lands on the same 1.0°,
 because 1.0° is set by the model (det3 χ²/dof 70 against 4–40 for a perfect model in the ws_floor toy; floor
-0.30–0.35°). **Do not rewrite the fitter for the paper.** The elegance gains below are for the write-up, for n_TOF
-throughput, and for the per-event errors; none of them moves the headline numbers.
+0.30–0.35°). The elegance gains below are for the write-up, for throughput, and for the per-event errors; none of
+them moves the headline numbers. **Decision (Dylan, 10-28): implement the LM solver and the covariance errors inside
+B1, before the pass**, since everything is rerun from scratch anyway; spec in HANDOFF.md ("Fitter: LM
+variable-projection outer solver"). The "not before the paper" caution in an earlier draft of this report is
+withdrawn: it only applied to numbers already quoted, and none are.
 
 ## What was measured (det3, 800 events, both views, phys kernel hypers of `rerun/precheck_rcv/out/arm_det3_rcvk24.json` on the r06 det3 bundle's templates, v 36.6, K 24, PIVOT_START, no t0 prior)
 
@@ -109,9 +112,8 @@ wrong model.
 1. **Paper 2, §4:** present the fit as variable projection. One sentence: "The charge profile enters linearly and is
    eliminated at each step by non-negative least squares (variable projection, Golub and Pereyra 1973); the outer
    problem is three-dimensional." Cite Kaufman 1975 for the Jacobian form if a derivative solver is adopted, and the
-   T2K ERAM analysis as the simultaneous-waveform-fit precedent (already in REFERENCES.md). Do not change the fitter
-   before the numbers are quoted.
-2. **Unified reco / n_TOF throughput:** replace `fit_plane_raw`'s grid + Nelder–Mead with LM on the
+   T2K ERAM analysis as the simultaneous-waveform-fit precedent (already in REFERENCES.md).
+2. **B1, before the pass:** replace `fit_plane_raw`'s grid + Nelder–Mead with LM on the
    variable-projection residual with analytic derivatives plus a short polish; keep the pivot scan and the coarse t0
    ladder as the global start; add t0 ± 60 ns to the start set. ~5× fewer solves per plane, continuous t0, full
    covariance. Gate it the way every change is gated (fleet gate on the golden rows); expect bit-identical angles.
