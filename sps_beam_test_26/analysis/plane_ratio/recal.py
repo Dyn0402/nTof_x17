@@ -86,10 +86,10 @@ ARMS = {
 }
 
 
-_OPT = dict(t0_grid=np.arange(120.0, 961.0, 20.0), p0_profile=False, p0_window=1.0, p0_step=0.1)
+_OPT = dict(t0_grid=np.arange(120.0, 961.0, 20.0), p0_profile=False, p0_window=1.0, p0_step=0.1, t0_pin=False, unsat_only=False)
 
 
-def _init_worker(cache, bundle, k_bins, t0_lo, t0_hi, p0_profile, p0_window=1.0, p0_step=0.1):
+def _init_worker(cache, bundle, k_bins, t0_lo, t0_hi, p0_profile, p0_window=1.0, p0_step=0.1, t0_pin=False, unsat_only=False):
     """Worker setup: load cache + bundle, and set everything the objective
     reads explicitly (not via inherited module state)."""
     from wft import calibrate as wc
@@ -102,6 +102,8 @@ def _init_worker(cache, bundle, k_bins, t0_lo, t0_hi, p0_profile, p0_window=1.0,
     _OPT['p0_profile'] = bool(p0_profile)
     _OPT['p0_window'] = float(p0_window)
     _OPT['p0_step'] = float(p0_step)
+    _OPT['t0_pin'] = bool(t0_pin)
+    _OPT['unsat_only'] = bool(unsat_only)
 
 
 def _plane_chi2(wm, plane, W, noise, pos, sat, p0, wline, hyper, grid):
@@ -116,6 +118,18 @@ def _plane_chi2(wm, plane, W, noise, pos, sat, p0, wline, hyper, grid):
             if c < best:
                 best, t0b = c, t
     return best, t0b
+
+
+def _t0_pinned(wm, ev, plane):
+    """The reconstruction's own t0 for this plane: the bundle's t0_abs (latency - 10 ns * ftst), as the pass
+    pins it (heldout_arm --t0-fix, T0_PIN_SIGMA 0.05).  None when the event has no ftst or the bundle no t0_abs,
+    and then the plane falls back to the cold t0 profile."""
+    ft = ev.get(f'ftst_{plane}')
+    t0a = (getattr(wm.CAL, 't0_abs', None) or {}).get(plane, {})
+    if ft is None or int(ft) < 0:
+        return None
+    t = t0a.get(int(ft), t0a.get(str(int(ft))))
+    return None if t is None else float(t)
 
 
 def _event_chi2_cold(payload):
@@ -145,15 +159,21 @@ def _event_chi2_cold(payload):
             wm.set_nsamp(np.asarray(P['W']).shape[1])
         wline = ev[f'tan_{plane}'] * v * 1e-3
         p0r = ev[f'ref_mesh_{plane}'] + ev[f'tan_{plane}'] * hyper.get(f'dz_{plane}', 0.0)
+        if _OPT['unsat_only'] and float(np.max(P['W'])) >= wm.SAT:
+            continue
         W, noise, pos, sat = wm.prep_plane(P, plane)
-        best, t0b = _plane_chi2(wm, plane, W, noise, pos, sat, p0r, wline,
-                                hyper, grid)
+        pin = _t0_pinned(wm, ev, plane) if _OPT['t0_pin'] else None
+        if pin is not None:
+            best, t0b = wm.chi2_plane(plane, W, noise, pos, sat, p0r, wline, pin, hyper)[0], pin
+        else:
+            best, t0b = _plane_chi2(wm, plane, W, noise, pos, sat, p0r, wline,
+                                    hyper, grid)
         if _OPT['p0_profile'] and np.isfinite(best):
             wnd, stp = _OPT['p0_window'], _OPT['p0_step']
             for dp in np.arange(-wnd, wnd + 1e-6, stp):
                 if abs(dp) < 1e-9:
                     continue
-                for t in (t0b - 20.0, t0b, t0b + 20.0):
+                for t in ((t0b,) if pin is not None else (t0b - 20.0, t0b, t0b + 20.0)):
                     c = wm.chi2_plane(plane, W, noise, pos, sat, p0r + dp,
                                       wline, float(t), hyper)[0]
                     if c < best:
@@ -186,10 +206,18 @@ def main():
     ap.add_argument('--p0-profile', action='store_true',
                     help='profile p0 per event instead of pinning it to the '
                          'reference (cold objective only)')
+    ap.add_argument('--t0-pin', action='store_true',
+                    help='pin t0 per plane to the bundle t0_abs[ftst] (the pass reconstructs with t0 pinned to the '
+                         'latency; a t0-free objective calibrates a different model, rerun/calib/templates T5)')
+    ap.add_argument('--unsat-only', action='store_true',
+                    help='objective over unsaturated planes only: saturated planes carry ~90 %% of the raw chi2 and the '
+                         'template under-fills their peaks, which drags the kernel (rerun/calib/templates T6)')
     ap.add_argument('--out', required=True)
     ap.add_argument('--jobs', type=int, default=8)
     ap.add_argument('--maxiter', type=int, default=600)
     ap.add_argument('--n-train', type=int, default=180)
+    ap.add_argument('--train-start', type=int, default=0,
+                    help='first cache event (sorted id) of the training set; heldout_arm uses 180+ by default')
     ap.add_argument('--objective', default='cold', choices=('cold', 'warm'),
                     help='cold = deterministic global t0 profile (default); '
                          'warm = wft.calibrate._event_chi2, path-dependent')
@@ -215,7 +243,7 @@ def main():
         if a.free:                       # keep the arm's own c2 handling
             fixed = {k: base[k] for k in ('c2_over_c1',) if k in base}
     with open(a.cache, 'rb') as f:
-        train = sorted(pickle.load(f).keys())[:a.n_train]
+        train = sorted(pickle.load(f).keys())[a.train_start:a.train_start + a.n_train]
 
     start = dict(base)
     if 'v' in free:
@@ -257,7 +285,7 @@ def main():
     log = []
     with ProcessPoolExecutor(a.jobs, initializer=_init_worker,
                              initargs=(a.cache, a.bundle, a.depth_bins, a.t0_lo,
-                                       a.t0_hi, a.p0_profile, a.p0_window, a.p0_step)) as pool:
+                                       a.t0_hi, a.p0_profile, a.p0_window, a.p0_step, a.t0_pin, a.unsat_only)) as pool:
         def chi(h):
             h = dict(h)
             vv = h.pop('v', v)
@@ -298,7 +326,7 @@ def main():
     h = expand(res.x)
     v = h.pop('v', v)
     ref_dz = {g: h.pop(g) for g in GEOM if g in h}
-    out = dict(arm=a.arm, objective=a.objective, p0_profile=a.p0_profile, ref_dz=ref_dz,
+    out = dict(arm=a.arm, objective=a.objective, t0_pin=a.t0_pin, unsat_only=a.unsat_only, p0_profile=a.p0_profile, ref_dz=ref_dz,
                p0_window=a.p0_window if a.p0_profile else None, p0_step=a.p0_step if a.p0_profile else None,
                model_frac=a.model_frac,
                depth_bins=a.depth_bins, hyper=h, v=v, chi2=float(res.fun), chi2_seed=float(c0),

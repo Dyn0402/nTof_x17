@@ -122,6 +122,46 @@ Full scan (`results/t5_det3.json`, per-arm summaries in `results/t5_heldout/`). 
 - h_eff vs the current template, both on refitted D_rc,y: X −0.055°, Y +0.024°. The same pattern as without the
   refit. The template comparison cannot be closed until the DRC fit has a pinned-t0 objective.
 
+> Fitter note: every T5 arm ran with the NM fitter (the LM merge reached this checkout afterwards). They are
+> consistent with each other. From T6 on, every arm runs on main's LM fitter. LM reproduces the NM baseline
+> (det3 X s68 1.109 vs 1.104, χ²/dof 49.1 vs 48.9).
+
+## T6 · Why the D_rc,y refit went wrong: saturated planes steer the raw-χ² objective (2026-10-29)
+
+`recal.py` has two new options. `--t0-pin` takes t0 per plane from the bundle's `t0_abs[ftst]`, as the pass does.
+`--unsat-only` builds the objective from unsaturated planes only. `--train-start` picks the training sample.
+Results are in `results/t6/`.
+
+**1. Pinning t0 alone does not fix it.** With t0 pinned, the refit wants an even larger D_rc,y: 5.43e-4 (cur) and
+5.23e-4 (h_eff) on events 0–179. On the held-out events (180–579) the same objective wants 4.30e-4, so the raw
+objective also depends on the sample.
+
+**2. What the reconstruction itself prefers** (held-out scan, LM, pinned t0, det3 Y; s68 Δ vs cur at 3.44e-4):
+
+| D_rc,y | cur: s68 (Δ) · χ²/dof · ladder | h_eff: s68 (Δ) · χ²/dof |
+|---|---|---|
+| 1.50e-4 | 1.008 (+0.119 ± 0.044) · 79.9 · 36.96 | — |
+| 2.50e-4 | 0.903 (+0.014 ± 0.029) · 60.7 · 36.50 | 0.903 (+0.014 ± 0.025) · 59.4 |
+| **3.44e-4** | **0.889 · 56.7 · 36.41** | 0.939 (+0.050 ± 0.024) · 56.7 |
+| 4.30e-4 | 0.930 (+0.041 ± 0.021) · 59.2 · 35.90 | 0.974 (+0.085 ± 0.030) · 58.8 |
+| 5.40e-4 | 0.976 (+0.087 ± 0.033) · 69.2 · 35.74 | 1.022 (+0.133 ± 0.042) · 69.2 |
+
+X does not depend on D_rc,y (identical rows), as expected with rc_D_x = 0. The reconstruction's optimum is 2.5–3.4e-4.
+The ladder moves 1.2 µm/ns (3 %) over the scan, so D_rc,y is also an angle-scale lever in Y.
+
+**3. The mechanism.** Split the held-out Y χ² by event class. **Saturated planes carry 88 % of the χ² sum** (64 of
+72 M). The unsaturated sum has a clear minimum at 3.44e-4 (8.74 / 8.28 / 8.58 M at 2.5 / 3.44 / 4.3); the saturated
+sum is flat or leans to 4.3. A raw-χ² calibration objective is therefore steered by saturated pulses and drags
+D_rc,y up.
+
+**4. The fix.** Pinned t0 + unsaturated planes only: D_rc,y = **3.57e-4** (events 0–179) and **3.82e-4**
+(events 580–1499). That is stable across samples and sits at the reconstruction's optimum. h_eff: 3.60e-4.
+
+**Consequences for the pass (E3, DRC node):** run `recal.py --free rc_D_y --t0-pin --unsat-only` on a training sample
+disjoint from any evaluation sample. The same rule applies to any other χ²-sum calibration fit.
+**Template, at its own calibrated D_rc,y (~3.6e-4):** h_eff vs cur is X −0.056 ± 0.03°, Y +0.05 ± 0.025°: no net
+gain. The h_eff decision moves to the fleet comparison (T8) and is not urgent: the effect is ≤ 0.06° either way.
+
 ## Verdict so far (2026-10-28 evening)
 
 1. The production template is not pure response: it is 4–7 % too wide because it carries the strip's drift segment,
@@ -132,15 +172,15 @@ Full scan (`results/t5_det3.json`, per-arm summaries in `results/t5_heldout/`). 
 3. The template zero must be set explicitly against the latency (χ² minimum 20–40 ns earlier than t50 = 0). It moves
    the angle scale by ~2 % per 20 ns.
 4. No amplitude-dependent template: the shape does not change from 500 to 3500 ADC.
-5. **The recal.py objective (t0 free) and the pass (t0 pinned) disagree on D_rc,y.** That is a blocker for E3's DRC
-   step as written in PASS_PLAN §2.
+5. ~~The recal.py objective (t0 free) and the pass (t0 pinned) disagree on D_rc,y.~~ **Corrected by T6:** the main
+   cause is that saturated planes dominate the raw χ² sum (88 %). The fix is pinned t0 + unsaturated planes, which
+   gives 3.6–3.8e-4 on both samples, at the reconstruction's optimum.
 6. The template is the strip self-response. Its physical decomposition (peaking time, β, ion fraction) is not
    identifiable from templates (sim closure). Don't quote shaper parameters from it.
 
 ## Next steps
 
-1. Give `recal.py` a pinned-t0 objective (t0 = the bundle's t0_abs per ftst, as `heldout_arm --t0-fix`). Redo the
-   D_rc,y refit for cur and h_eff on det3, and check that the refit then improves the held-out Y.
+1. ~~Give `recal.py` a pinned-t0 objective~~: done in T6 (`--t0-pin --unsat-only`).
 2. Add the template zero as a scanned/fitted quantity in TMPL (χ² vs shift at pinned t0) and as a convergence item.
 3. If (1) leaves h_eff ahead or level: run cur vs h_eff (each with its own pinned-t0 D_rc,y) on all five chambers,
    1320 events, on condor. Adopt by the fleet result.
