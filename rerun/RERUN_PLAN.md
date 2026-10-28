@@ -128,10 +128,15 @@ dry-gas bench run, Stephan's unanswered geometry questions, det6's window-limite
    far, χ²); adopted per chamber only where they do not hurt.
 4. **Fiducial**: headline numbers on the interior (≥ 30 mm from the own-coordinate edge where unpassivated); the edge
    bands are a separate characterization (C22 follow-ups). Downstream, does not block the pass.
-5. Edge bending is expected (parallel-plate fringe field); most cosmic runs had no degrador rings.
+5. Edge bending is expected (parallel-plate fringe field). Degrador rings: only det B's removal before n_TOF is documented; the bench ring state per run was never audited (memory drift-cage-degrador-rings) — a stated limitation, not a fact to argue from.
 6. Two-track refit: off for production (C22 follow-ups).
 
 ## 11 · Ready to run (2026-10-26 night): the morning procedure
+
+> **Superseded (2026-10-28): the procedure for the pass is `PASS_PLAN_2026-10-28.md`.** What below is stale: the kernel
+> is the `fe` recipe rebuilt from scratch (not `phys` + `promote_phys.py`); `stage_job.sh` sets no `WFT_*` (every
+> setting is built into wft); vrefit is ~117 own-v rows (468 nodes), the pass ~758 nodes; the code archive is a new
+> `code_<hash>`; two-track is on (reco.TWO_TRACK, 10-27). Kept as the record of the 10-26 machinery.
 
 > **On hold (2026-10-27, §12):** this procedure runs today's `wft`. Dylan's 10-26 call (one rewritten reconstruction)
 > changes seeding and reconstruction settings, which §1 says force a re-run. Do not submit it until §12 steps 1–5 close.
@@ -167,6 +172,9 @@ Then the downstream (§4 S3–S6, iterate freely): `rerun/effbudget/budget.py` o
 det7 X quoted from ch 256–511.
 
 ## 12 · Before the pass: what still blocks it (status review, 2026-10-27)
+
+> **2026-10-28: the live checklist is `REPROCESSING_TODO.md`.** B4 (model audit) is closed: FA–FE and round 3 (GA–GF)
+> in `model_audit/FOLLOWUPS.md`. The `fe` recipe is the reconstruction, and every calibration is redone from scratch.
 
 **Not submitted.** As of 10-27 there is no `~/x17rerun/pass_main` on lxplus and no condor jobs. The §11 machinery is
 ready and dry-run tested. Running it now would mean running it twice, because two upstream items are still open (§1).

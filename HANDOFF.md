@@ -1,5 +1,64 @@
 # Handoff
 
+## From-scratch pass: history, plan, calibration phase to build — updated 2026-10-28 (dylan-Yoga)
+
+**Resume:** build the `calib` DAG phase (PASS_PLAN_2026-10-28 E1–E4), dry-run on det3, then submit; checklist = REPROCESSING_TODO §B.
+
+**Goal:** run the bench + SPS reprocessing once, from scratch, with every lesson of the year in the chain.
+
+**Done (10-28):**
+- **History compiled.** 112 dated lessons (Nov 2025 → 10-28), each with how the chain carries it (file:line), plus 22
+  withdrawn claims and 15 left-behind items.
+  - Source: `rerun/history/timeline_data.py`.
+  - Generated from it: `LESSONS.md` (`make_timeline_deck.py`), the slide note notes/mx17-analysis-timeline, and the
+    interactive explorer notes/mx17-analysis-timeline-explorer (`make_timeline_page.py`).
+- **Run sheet `rerun/PASS_PLAN_2026-10-28.md`.** It supersedes RERUN_PLAN §11. REPROCESSING_TODO §B is rewritten to
+  match it (items 5–12 = E1–E4, pre-flight, dry run, archive, submit).
+- **Dylan's decisions (10-28):**
+  - Every calibration product is rebuilt in a new DAG phase, templates included. No fe/phys/r06 bundles, no audit caches.
+  - Bow block on all five chambers, refit by the same FB recipe.
+  - LM merged only if its gate passes.
+  - Trigger-track rule = a downstream selection.
+- **Fixed:**
+  - `sps_reco` drops the bench bow/v_map/w0. The fe det4 bundle has a bow block, which would have been applied at H4.
+  - The SPS tan_mount comes from the registry mount; the run_61 15.465° rows had been given tan 25.64°.
+  - Stale WFT_ZS_CENSOR text (SPS registry regenerated; only the text column changed).
+  - CLAUDE.md "use r06"; the RECONSTRUCTION_BASIS "~1° floor"; RERUN_PLAN §11 banner and §10.5 degrador wording.
+
+**In progress / where it stopped:**
+- Nothing half-edited. No calibration-phase code written yet (E1–E4 are specs in PASS_PLAN §2).
+- Running on lxplus:
+  - LM gate DAG `lm_r1` (fe_nm vs fe_lm, condor 4591065–74; 6/10 done at 16:20). Owned by the LM session; worktree
+    `.claude/worktrees/lm-varpro`, HANDOFF section "Fitter: LM".
+  - GD det4 (condor 4583837, DAG `~/x17rerun/gd/`, 7 h at 16:20, 9.8 GB). When done: `gd_sparks/pull.sh det4 && gd_score.py`.
+
+**Next steps:**
+1. LM: read the gate (`lm_gate_pairs.py`). If it passes, merge lm-varpro and set `FITTER='lm'`, `LM_HOPS=0` as code
+   defaults (stage_job refuses overrides).
+2. E1 `rerun/calib/make_bundle.py` + `physics_inputs.json`.
+3. E2 `rerun/calib/bow_node.py`.
+4. E3 `make_pass_dag.py calib` phase (CAL0–CAL4, new root `Analysis_pass1`), and `--table` on every W0KW node.
+5. E4 SPS phase (+ quality_flags, K +15).
+6. Pre-flight F7–F12 (14 GA channels, ch 372, 10 rows without gas times, det4 6-23 M3, g_det4 conn 7–8, optional S0b
+   for the five never-decoded 6-26 HV points).
+7. Dry run on det3 `--limit 300`, then tests, `lxstore status`, code archive, registry.
+8. Submit calib → G1 → vrefit → pass + sps.
+
+**Gotchas / decisions:**
+- **make_pass_dag builds NO calibration.** finalize needs `w12/<it>` and the golden `calib_bundle` already on EOS.
+  - The fe bundles were made by `fe_unify2/make_fe_bundles.sh` + `finalize_fe.sh` (laptop paths) on top of physmask.
+  - The W0KW nodes lack `--table`, so on a bow bundle they abort at set_w0kw.py:95–97.
+- `make_phys_bundle.py` still writes σ0 0.238/0.343 plus a profile. Don't reuse it: σ0 is 0.30/0.30 (FC).
+- Physics inputs (σ0, Dp, det4 D_rc,y, gaps, timing v) are stated inputs, re-checked downstream (S4), not refit.
+- Two-track is ON in code (reco.TWO_TRACK, 10-27). RERUN_PLAN §10.6 "off" is stale.
+- Edit `rerun/history/timeline_data.py` and rerun both generators to update the ledger and both notes. Publish with
+  `add-note.py <out html> --slug <slug> --force --deploy`.
+
+**Key files & commands:**
+- `rerun/PASS_PLAN_2026-10-28.md` — the run sheet; `rerun/REPROCESSING_TODO.md` — the checklist
+- `rerun/history/{timeline_data.py,make_timeline_deck.py,make_timeline_page.py,LESSONS.md}`
+- `.venv/bin/python rerun/history/make_timeline_deck.py && .venv/bin/python rerun/history/make_timeline_page.py`
+
 ## Chamber bow (FB): skeptical review — updated 2026-10-28 (dylan-Yoga)
 
 **Resume:** review done and pushed (`rerun/model_audit/followups/fb_bow_maps/SKEPTIC_REVIEW_2026-10-28.md`); next is applying its wording to REPORT.md / `08b_bow.tex` / the slide note, if Dylan agrees.
@@ -156,63 +215,49 @@ adapted from the MPGD2026 abstract. The call closed on 19 Oct, so this would be 
 
 ## Model audit (B4) + follow-ups — updated 2026-10-28 (dylan-Yoga)
 
-**Resume:** round 3 (10-28, FOLLOWUPS.md "Round 3 outcomes"): GA–GF done and in the code (90a768d); GD sparks: keep the
-veto, det4 row pending (lxplus 4583837: `gd_sparks/pull.sh det4` + `gd_score.py`). Before the reprocessing: double-check the GA bad channels (FOLLOWUPS), then rebuild every bundle from
-scratch on the `fe` recipe (Dylan: no shortcuts, so `promote_fe.sh` is not needed).
+**Resume:** audit rounds 1–3 closed; next session = broad review + preparations from `rerun/REPROCESSING_TODO.md` §B.
 
-**Goal:** answer Dylan's audit questions with existing data and end with ONE reconstruction algorithm.
+**Goal:** answer Dylan's audit questions with existing data and end with ONE reconstruction algorithm, then reprocess
+from scratch.
 
 **Done:**
-- Audit F1–F22: `rerun/model_audit/FINDINGS.md` (outcomes table on top), `ws_*/REPORT.md`, note notes/mx17-model-audit.
-- Follow-ups 1–13 (`rerun/model_audit/FOLLOWUPS.md`, outcomes table on top; reports `followups/{fa,fb,fc,fd,fe}_*/REPORT.md`).
-  Notes: mx17-chamber-bow, mx17-chamber-maps, mx17-angle-floor; paper section `papers/paper1/sections/08b_bow.tex`.
-- wft on main (79bb78d): pinned t0 (bench), column-time x–y gate, per-class pairing, one σ0 0.30, bow block, v(x,y)
-  map, v(t)/gain/depth_subdiv slots, one-rule dead lists, band censoring + re-seed, n_TOF transfer guards. Tests 104/104.
+- Audit F1–F22 (`rerun/model_audit/FINDINGS.md`), follow-ups FA–FE (`FOLLOWUPS.md`, notes mx17-chamber-bow,
+  mx17-chamber-maps, mx17-angle-floor, paper section `papers/paper1/sections/08b_bow.tex`).
+- Round 3 (10-28, `FOLLOWUPS.md` "Round 3 outcomes", reports `followups/g{a,b,c,d,e}_*/REPORT.md`, GF in
+  `fe_unify2/REPORT.md`):
+  - **GA** gain map not needed (FD's 0.55° withdrawn).
+  - **GB** M3 + MS = 0.05° (≤ 0.11°); the det6/det7 shared term is the bow.
+  - **GC** gas drift is post-correctable. Timestamp and `acq_tag` are in the event record; own v per registry row.
+  - **GD** keep the > 50-hit spark veto; seed overrides fixed.
+  - **GE** χ²/dof flag = 5 × the table median.
+  - **GF** all rows pulled; `fe` is the recipe (not `fefa`).
+- Code on main (90a768d, 41496cb): `quality_flags`, timestamp/acq_tag, `make_registry.py` own-v rule, GA channels in
+  the det3/det4 masks, `set_w0kw.py --dead-json` installs `hot`. Tests 110/110.
+- **Decided:** one σ0 for X and Y; reprocessing from scratch with no shortcuts, so `promote_fe.sh` is not needed (the
+  pass rebuilds bundles with the fe recipe).
 
-**In progress / where it stopped:** `fefa` det4/6/7 and `fe_nobow` det7 condor rows were running when the lxplus 2FA
-connection expired (10-27 ~midnight); outputs land in `/eos/user/d/dneff/x17rerun/followups/fe/Analysis_fe/`.
+**In progress / where it stopped:**
+- GD det4 row: lxplus condor job 4583837 (DAG `~/x17rerun/gd/`), running since 10-28 09:18. Outputs go to
+  `/eos/user/d/dneff/x17rerun/followups/fe/Analysis_fe/<row>/wft/gd_sparks/`.
 
-**Next steps:**
-1. `ssh lxplus` (2FA), then `rerun/model_audit/followups/fe_unify2/pull_fe.sh fefa fe_nobow` and rerun `gate_compare.py`;
-   decide fe vs fefa.
-2. Dylan's call: promote (`promote_fe.sh --apply`, then `promote_phys.py --fill-conditions --apply`, vrefit +
-   `set_w0kw.py --table` for non-golden rows). Not applied.
-3. Add the DREAM timestamp + acquisition tag to the event record so v(t) can be applied (FA; only where drift > Allan floor).
-4. Per-chamber `CHI2DOF_BAD`; measured strip gain map (FD: det4 −0.55°).
-5. After reprocessing: SPS gas fit (H₂O + O₂, item 9); noise-band hotspot census (item 13).
+**Next steps:** the checklist is `rerun/REPROCESSING_TODO.md` (§B blocking, §C after the pass).
+1. GD det4: `gd_sparks/pull.sh det4` + `gd_score.py`.
+2. Double-check the 14 GA bad channels (flank test + waveform displays).
+3. Fold in the bow skeptical review and the LM-varpro fitter (other sessions' HANDOFF sections), then the fleet gate,
+   the pass DAG dry run (vrefit now ~117 rows), code archive, pass.
 
 **Gotchas / decisions:**
-- Sub-agents cannot write REPORT.md (harness) — coordinator writes them from the final message.
-- Copy gitignored files (PNGs) out of a worktree before removing it.
-- Agents waiting on condor stall; check EOS outputs and nudge. lxplus 2FA expires overnight → jobs can't be pulled.
-- Bench bow / tilt / v map / w0 never go to n_TOF (now enforced in make_bundle + wft_beam).
-- 20 ns grid not adopted on the bench (cost 3×, no gain); revisit for n_TOF steep pairs.
+- Sub-agents cannot write REPORT.md (harness): the coordinator writes them from the agent's final message.
+- The column duration T is gain-confounded (+18 % across a det3 mesh scan): use the M3 ladder for v on the bench.
+- `make_registry.py` reads row times and clean counts from `followups/gc_gas_time/results/bench_rows.json` (committed).
+- Bench bow / tilt / v map / w0 never go to n_TOF (enforced in make_bundle + wft_beam).
+- Small leftover: `~/ga_condor` on lxplus (staging, deletable). The local GA/GC/GD pulls under
+  `~/x17/cosmic_bench/model_audit/` (~0.5 GB, `/media/dylan/data`) are copies of EOS products.
 
 **Key files & commands:**
-- `rerun/model_audit/{FINDINGS,FOLLOWUPS}.md`, `ws_*/`, `followups/*/`
-- `.venv/bin/python rerun/model_audit/make_audit_deck.py` + add-note (slug mx17-model-audit) for the audit note
-
-## Full-pass readiness (bench + SPS re-run) — updated 2026-10-27 (dylan-Yoga)
-
-**Resume:** pass ON HOLD; blockers in rerun/RERUN_PLAN.md §12 (B1 unified reco, B2 fleet gate, B3 SPS wiring, B4 audit).
-
-**Goal:** run the RERUN_PLAN pass once, so settle everything upstream before submitting it.
-
-**Done:**
-- 10-27 status review → RERUN_PLAN §12 (blockers, Dylan's open decisions, non-blocking items, order). §11 has an
-  on-hold banner. Confirmed on lxplus: nothing has been submitted (no `~/x17rerun/pass_main`, condor_q empty).
-- Found that SPS det4 is in the §0 scope but not in `pass_registry.csv` (170 bench rows only), and that nothing in `rerun/` stages SPS.
-
-**Next steps:**
-1. Dylan finishes the det3 misses (satstudy section below).
-2. B4: a separate session audits the whole detector/reco model (night of 10-27). Its findings feed B1/B2.
-3. B1: rewrite the unified reco (spec = satstudy section). Dylan decides whether the trigger-track rule goes in the
-   reco or downstream, and whether PIVOT_START is built in.
-4. B2: run the fleet gate on all five golden rows. Do B3 (SPS registry rows and stager) while it runs.
-5. New code archive → re-finalize and promote if w0/kw moved → §11 (vrefit --keep-v, then pass).
-
-**Gotchas:**
-- Untracked `vrefit.dag` in the repo root is a stale 10-24 dry-run file (`code="/x"`). It is safe to delete and was left uncommitted.
+- `rerun/REPROCESSING_TODO.md` — the checklist
+- `rerun/model_audit/{FINDINGS,FOLLOWUPS}.md`, `followups/*/REPORT.md`
+- `python rerun/make_registry.py` → `rerun/pass_registry.csv`
 
 ## det3 loss categories + saturated-strip treatment (satstudy) — updated 2026-10-26 (dylan-Yoga)
 

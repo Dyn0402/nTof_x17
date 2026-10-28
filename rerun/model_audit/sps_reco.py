@@ -36,6 +36,11 @@ def _init(cache, bundle, k, v, nsamp, mask='h4', raw=False):
     if v:
         cal.v_drift = float(v)
     cal.t0_abs, cal.t0_prior_sigma = {}, 0.0        # the beam trigger is asynchronous to the DREAM clock
+    # the bench bow block, v map and rigid tilt w0 are properties of the bench mounting (FB/FA/F9): never at H4, the
+    # same rule as ntof_tracking/wft_beam.py (kw stays)
+    cal.provenance = dict(cal.provenance or {}, dropped_bow=bool(getattr(cal, 'bow', None)),
+                          dropped_v_map=bool(getattr(cal, 'v_map', None)), dropped_w0=dict(cal.w0 or {}))
+    cal.bow, cal.v_map, cal.w0 = {}, {}, {}
     wm.use_calibration(cal); wm.set_depth_bins(k); wm.set_nsamp(nsamp)
 
 
@@ -71,7 +76,8 @@ def main():
     import sps_build_cache as sbc
     sys.path.insert(0, os.path.join(REPO, 'sps_beam_test_26', 'analysis')); import datasets
     D = datasets.get(row['dataset']); nsamp = int(D['n_samples'])
-    tan = 0.0 if row['mount'] == 'flat' else float(np.tan(np.radians(25.64)))
+    # mount column: 'flat', '25.64 deg' or '15.465 deg' (run_61 rot15 ladder); was tan(25.64) for every rotated row
+    tan = 0.0 if row['mount'] == 'flat' else float(np.tan(np.radians(float(row['mount'].split()[0]))))
     # an exact 0 in the cache means 'not read out' (sps_build_cache._baseline moves real zeros off 0).  On ZS rows that is
     # a suppressed sample, below threshold: fitted as a measured zero (ws_sps: closest to the RAW answer).  On the RAW
     # rows (run_71) it is the FEU's dropped sample groups (~23 % of samples): censored as missing.  A property of the data,
