@@ -120,7 +120,8 @@ def _pivot_fit(P, plane, hyper, t0_seed, t0_prior=None):
     wells = [i for i in range(n) if (i == 0 or chis[i] <= chis[i - 1]) and (i == n - 1 or chis[i] <= chis[i + 1])]
     best = None
     for i in sorted(wells, key=lambda i: chis[i])[:PIVOT_NREF]:
-        r = wm.fit_plane_raw(P, plane, xc - ws[i] * (tc - t0), float(ws[i]), t0, hyper=hyper, t0_prior=t0_prior)
+        r = wm.fit_plane_raw(P, plane, xc - ws[i] * (tc - t0), float(ws[i]), t0, hyper=hyper, t0_prior=t0_prior,
+                             pivot=(xc, tc))
         if r is not None and np.isfinite(r['chi2']) and (best is None or r['chi2'] < best['chi2']):
             best = r
     return best
@@ -199,7 +200,13 @@ def _errors(P, plane, r, hyper, dp=0.05, dw=2e-4, dt=2.0,
 
     Each error is a 1-D curvature at the minimum: the p0-t0 correlation (the
     slide-along-the-track degeneracy, doc §20) is not propagated, so p0_err is
-    ~20 % optimistic (measured pull widths 1.19/1.13)."""
+    ~20 % optimistic (measured pull widths 1.19/1.13); the full covariance says x2 (algo_review 2026-10-28).  A fit
+    that carries ``cov`` (wft.model.FITTER = 'lm') gets its errors from it instead, scaled the same way."""
+    cov = r.get('cov') if isinstance(r, dict) else None
+    if cov is not None:
+        scale = max(r['chi2'] / max(r['dof'], 1), 1.0)
+        d = np.diag(cov) * scale
+        return tuple(float(np.sqrt(x)) if x > 0 else np.nan for x in d)
     W, noise, pos, sat = wm.prep_plane(P, plane)
 
     def chi(p0v, wv, t0v):

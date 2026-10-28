@@ -163,6 +163,23 @@ BAND_EDGE = 2
 #: a window shorter than this nothing is flagged.  Measured, not tuned: the bench and SPS windows clear it, n_TOF does not.
 BAND_MIN_WINDOW_NS = 1800.0
 
+#: Outer solver of :func:`fit_plane_raw` (algo_review 2026-10-28, HANDOFF "Fitter: LM variable-projection").  The fit
+#: is a separable least-squares problem: the K depth charges are linear and non-negative, eliminated by the NNLS at
+#: every (p0, w, t0) -- variable projection (Golub & Pereyra 1973) -- so the outer problem is three-dimensional.
+#: 'nm' = the 105-point (p0, w, t0) grid + Nelder-Mead and 1-D curvature errors (the algorithm through 2026-10-28);
+#: 'lm' = a 7-point t0 ladder + Levenberg-Marquardt on the projected residual with the Kaufman (1975) Jacobian,
+#: analytic on the RC kernel, a short Nelder-Mead polish, and the full 3x3 covariance for the errors.  A PROTOTYPE on
+#: branch lm-varpro, not gated: 'nm' stays the algorithm; ``WFT_DIAG=model.FITTER=lm`` (wft.diag) selects it.
+FITTER = 'nm'
+#: 'lm' only: walk the depth-bin lattice.  The chi2 surface has a basin at every (p0 + DT w, w, t0 + DT): the lattice
+#: shift is not a symmetry of the kernel, and which basin a local search ends in is set by its start -- the grid +
+#: Nelder-Mead misses a deeper one on ~10 % of free-t0 planes (algo_review §2), and the bench t0 prior (sigma 5 ns,
+#: 144 chi2 units per bin against data chi2 ~ 1e4-1e5) does not pin it either (lm-varpro, 2026-10-28).  After the
+#: first LM the fit is re-started one bin over in each direction and keeps hopping while chi2 falls, up to LM_HOPS
+#: bins each way.  0 = no hops (the local minimum of the best ladder start).
+LM_HOPS = 3
+LM_MAXIT = 30
+
 
 def band_rows(W, noise, miss=None) -> np.ndarray:
     """Boolean (n_strip,): rows of a (n_strip, n_sample) window that are noise bands in this event (see BAND_NSIG).
@@ -935,17 +952,264 @@ def fit_plane_two_raw(W, noise, pos, sat, plane, starts, hyper=None,
                 dist=two_track_distinguishability(pa, pb, common))
 
 
+# ------------------------------------------------- variable projection (FITTER = 'lm')
+def _frac_derivs(pos, pc, var):
+    """Gaussian strip fractions (as :func:`_fractions_sig`) and their derivatives d/d(centre), d/d(variance)."""
+    s = np.sqrt(var)[None, :]
+    a = pos[:, None] + PITCH / 2 - pc[None, :]
+    b = pos[:, None] - PITCH / 2 - pc[None, :]
+    z = 1.0 / (np.sqrt(2) * s)
+    G = 0.5 * (erf(a * z) - erf(b * z))
+    pa = np.exp(-(a * z) ** 2) / (np.sqrt(2 * np.pi) * s)
+    pb = np.exp(-(b * z) ** 2) / (np.sqrt(2 * np.pi) * s)
+    return G, pb - pa, -(a * pa - b * pb) / (2.0 * s ** 2)
+
+
+def _rc_dmq(plane, pos, p0, w, t0, hyper, q):
+    """(n_strip * NSAMP, 3): d(M q)/d(p0, w, t0) of :func:`build_matrix_rc` at fixed q, analytic.  p0 and w enter
+    only through each bin's centre p0 + w UK and its width (half^2 / 3 = w^2 DT^2 / 12); t0 through the linear
+    interpolation between the 5 ns tensors (the derivative of the function that is actually evaluated).  None for t0
+    when RC_T0_INTERP is off (chi2 is a staircase in t0 there; the caller differences it)."""
+    tp = 'x' if hyper.get('rc_tmpl', 'x') in ('x', 1, 1.0) else plane
+    if RC_T0_INTERP:
+        t0a = np.floor(t0 / T0_STEP) * T0_STEP
+        f = (t0 - t0a) / T0_STEP
+        Ha, Hb = _rc_tensors(plane, t0a, tp), _rc_tensors(plane, t0a + T0_STEP, tp)
+        Hs = Ha if f < 1e-9 else (1.0 - f) * Ha + f * Hb
+        dHs = (Hb - Ha) / T0_STEP
+    else:
+        Hs, dHs = _rc_tensors(plane, round(t0 / T0_STEP) * T0_STEP, tp), None
+    Hq = Hs * q[None, None, :]
+    dHq = dHs * q[None, None, :] if dHs is not None else None
+    pc = p0 + w * UK
+    s0 = float(hyper.get(f'sigma_p0_{plane}', hyper['sigma_p0']))
+    var0 = s0 ** 2 + hyper['Dp'] ** 2 * UK + (w * DT) ** 2 / 12.0
+    dvar_dw = w * DT ** 2 / 6.0
+    G, gc, gv = _frac_derivs(pos, pc, var0)
+    eta = float(hyper.get(f'lor_frac_{plane}', 0.0))
+    F0, Fc, Fv = G, gc, gv
+    if eta > 0:
+        gam = float(hyper[f'lor_gamma_{plane}'])
+        ah = pos[:, None] + PITCH / 2 - pc[None, :]
+        al = pos[:, None] - PITCH / 2 - pc[None, :]
+        L = (np.arctan(ah / gam) - np.arctan(al / gam)) / np.pi
+        Lc = -(gam / (gam ** 2 + ah ** 2) - gam / (gam ** 2 + al ** 2)) / np.pi
+        F0, Fc, Fv = (1 - eta) * G + eta * L, (1 - eta) * gc + eta * Lc, (1 - eta) * gv
+    n = len(pos)
+    out = np.zeros((n, NSAMP, 3))
+
+    def add(F, dFp, dFw, H, dH):
+        out[:, :, 0] += dFp @ H.T
+        out[:, :, 1] += dFw @ H.T
+        if dH is not None:
+            out[:, :, 2] += F @ dH.T
+
+    dF0p, dF0w = Fc, Fc * UK[None, :] + Fv * dvar_dw
+    add(F0, dF0p, dF0w, Hq[0], dHq[0] if dHq is not None else None)
+    asym = float(hyper.get(f'rc_asym_{plane}', 0.0))
+    if asym != 0.0:
+        Hs_a = _rc_shift_tensor(plane, t0q_of(t0), tp, float(hyper.get(f'rc_asym_tau_{plane}', 110.0))) * q[None, :]
+
+        def shifted(A):
+            B = np.zeros_like(A)
+            if asym > 0:
+                B[:-1] = A[1:]
+            else:
+                B[1:] = A[:-1]
+            return abs(asym) * (B - A)
+        add(shifted(F0), shifted(dF0p), shifted(dF0w), Hs_a, None)   # snapped t0: no t0 derivative
+    D = float(hyper.get(f'rc_D_{plane}', 0.0))
+    if D > 0:
+        drain = float(hyper.get('rc_drain', 0.0))
+        Fp, Fpp, Fpw = F0, dF0p, dF0w
+        for j, s in enumerate(RC_EDGES[1:]):
+            Gj, gcj, gvj = _frac_derivs(pos, pc, var0 + 2.0 * D * s)
+            e = np.exp(-s / drain) if drain > 0 else 1.0
+            Fj, Fjp, Fjw = e * Gj, e * gcj, e * (gcj * UK[None, :] + gvj * dvar_dw)
+            add(Fj - Fp, Fjp - Fpp, Fjw - Fpw, Hq[j + 1], dHq[j + 1] if dHq is not None else None)
+            Fp, Fpp, Fpw = Fj, Fjp, Fjw
+    J = out.reshape(n * NSAMP, 3)
+    if dHs is None:
+        J[:, 2] = np.nan
+    return J
+
+
+def _dmq(plane, pos, th, hyper, q):
+    """d(M q)/d(p0, w, t0): analytic on the RC kernel, central differences otherwise (and for t0 without interp)."""
+    J = _rc_dmq(plane, pos, th[0], th[1], th[2], hyper, q) if 'rc_D_y' in hyper else None
+    hs = (0.02, 1e-4, T0_STEP if 'rc_D_y' in hyper else 1.0)
+    for j in range(3):
+        if J is not None and not np.isnan(J[0, j]):
+            continue
+        tp, tm = np.array(th, float), np.array(th, float)
+        tp[j] += hs[j]
+        tm[j] -= hs[j]
+        col = (build_matrix(plane, pos, *tp, hyper) @ q - build_matrix(plane, pos, *tm, hyper) @ q) / (2 * hs[j])
+        if J is None:
+            J = np.empty((len(col), 3))
+        J[:, j] = col
+    return J
+
+
+def _vp_eval(plane, W, noise, pos, sat, th, hyper, censor, t0_prior):
+    """chi2_plane at an unsnapped t0, also returning the design matrix."""
+    M = build_matrix(plane, pos, th[0], th[1], th[2], hyper)
+    chi, q = _solve_nnls(M, W, noise, sat, censor)
+    if q is None:
+        return np.inf, None, M
+    if t0_prior is not None:
+        chi += ((th[2] - t0_prior[0]) / t0_prior[1]) ** 2
+    return chi, q, M
+
+
+def _vp_resid_jac(plane, W, noise, pos, sat, th, q, M, hyper, censor, t0_prior):
+    """(r, J) with r @ r = chi2 of :func:`_solve_nnls` (+ prior) at theta, and J the variable-projection Jacobian in
+    Kaufman's form: d(M q)/d(theta) at fixed q, projected off the span of the free (q > 0) weighted columns over the
+    rows that determine q (the live samples and the clipped samples the model falls below)."""
+    if MODEL_FRAC <= 0:
+        Wt = np.repeat(1.0 / noise, NSAMP)
+    else:
+        Wt = (1.0 / np.sqrt(noise[:, None] ** 2 + (MODEL_FRAC * np.maximum(W, 0.0)) ** 2)).reshape(-1)
+    y = W.reshape(-1)
+    m = M @ q
+    ok = ~sat.reshape(-1)
+    dmq = _dmq(plane, pos, th, hyper, q)
+    rows_r, rows_J = [((m - y) * Wt)[ok]], [(dmq * Wt[:, None])[ok]]
+    A = [(M * Wt[:, None])[ok]]
+    if censor and sat.any():
+        s1 = sat.reshape(-1)
+        nz = np.repeat(noise, NSAMP)
+        pen = s1 & (m < y)                       # the one-sided bound is active (= the SAT_SOLVE active set)
+        if pen.any():
+            rows_r.append((m - y)[pen] / nz[pen])
+            rows_J.append(dmq[pen] / nz[pen][:, None])
+            if SAT_SOLVE:
+                A.append(M[pen] / nz[pen][:, None])
+        if ZS_BOUND > 0:
+            zs = s1 & (y == 0.0)
+            act = zs & (m > ZS_BOUND * nz)
+            if act.any():
+                rows_r.append((m[act] - ZS_BOUND * nz[act]) / nz[act])
+                rows_J.append(dmq[act] / nz[act][:, None])
+    nA = sum(len(a) for a in A)
+    J = np.vstack(rows_J)
+    F = q > 0
+    if F.any():
+        Qf, _ = np.linalg.qr(np.vstack(A)[:, F])
+        J[:nA] -= Qf @ (Qf.T @ J[:nA])
+    r = np.concatenate(rows_r)
+    if t0_prior is not None:
+        r = np.r_[r, (th[2] - t0_prior[0]) / t0_prior[1]]
+        J = np.vstack([J, [0.0, 0.0, 1.0 / t0_prior[1]]])
+    return r, J
+
+
+def _lm_refine(plane, W, noise, pos, sat, th0, hyper, censor=True, t0_prior=None, maxit=None):
+    """Levenberg-Marquardt (Marquardt diagonal scaling) on the NNLS-profiled residual.  Every trial point is judged
+    by the exact chi2, so the Jacobian only has to point downhill.  Returns (chi2, theta, q, nfev, njac)."""
+    maxit = LM_MAXIT if maxit is None else maxit
+    th = np.array(th0, float)
+    chi, q, M = _vp_eval(plane, W, noise, pos, sat, th, hyper, censor, t0_prior)
+    nfev, njac = 1, 0
+    if not np.isfinite(chi):
+        return np.inf, th, None, nfev, njac
+    lam = 1e-3
+    for _ in range(maxit):
+        r, J = _vp_resid_jac(plane, W, noise, pos, sat, th, q, M, hyper, censor, t0_prior)
+        njac += 1
+        g, H = J.T @ r, J.T @ J
+        D = np.maximum(np.diag(H), 1e-12)
+        accepted = False
+        for _ in range(8):
+            try:
+                step = -np.linalg.solve(H + lam * np.diag(D), g)
+            except np.linalg.LinAlgError:
+                lam *= 10
+                continue
+            c2, q2, M2 = _vp_eval(plane, W, noise, pos, sat, th + step, hyper, censor, t0_prior)
+            nfev += 1
+            if np.isfinite(c2) and c2 < chi:
+                dchi = chi - c2
+                th, chi, q, M = th + step, c2, q2, M2
+                lam = max(lam / 5, 1e-7)
+                accepted = True
+                break
+            lam *= 10
+        if not accepted:
+            break
+        if dchi < 0.05 or (abs(step[0]) < 1e-4 and abs(step[1]) < 1e-6 and abs(step[2]) < 0.05):
+            break
+    return float(chi), th, q, nfev, njac
+
+
+def _fit_plane_lm(W, noise, pos, sat, plane, p0_init, w_init, t0_init, hyper, t0_prior, pivot):
+    """FITTER = 'lm' body of :func:`fit_plane_raw` (same starts in t0 as the grid, see FITTER)."""
+    nfev = njac = 0
+    # global start in t0: the grid's 7-point, 40 ns ladder, along the pivot line when the start came from it
+    # (and at the fixed p0 of the grid: the two families end in different lattice basins on ~1/3 of planes)
+    best = (np.inf, None)
+    for t0 in np.arange(t0_init - 120, t0_init + 121, 40.0):
+        p0s = {p0_init} if pivot is None else {p0_init, pivot[0] - w_init * (pivot[1] - t0)}
+        for p0 in p0s:
+            c, _q, _M = _vp_eval(plane, W, noise, pos, sat, (p0, w_init, t0), hyper, True, t0_prior)
+            nfev += 1
+            if c < best[0]:
+                best = (c, (p0, w_init, t0))
+    if best[1] is None:
+        return dict(chi2=np.inf, p0=float(p0_init), w=float(w_init), t0=float(t0_init), q=None, nfev=nfev)
+    chi, th, q, nf, nj = _lm_refine(plane, W, noise, pos, sat, best[1], hyper, t0_prior=t0_prior)
+    nfev, njac = nfev + nf, njac + nj
+    if LM_HOPS > 0 and np.isfinite(chi):
+        th_c = th
+        for s in (-1.0, 1.0):
+            th_h = th_c
+            for _ in range(LM_HOPS):
+                c_s, th2, q2, nf, nj = _lm_refine(plane, W, noise, pos, sat,
+                                                  th_h + s * np.array([DT * th_h[1], 0.0, DT]), hyper,
+                                                  t0_prior=t0_prior)
+                nfev, njac = nfev + nf, njac + nj
+                if not c_s < chi:
+                    break
+                chi, th, q, th_h = c_s, th2, q2, th2
+    # short polish: the surface is only piecewise smooth (NNLS active-set changes, the 5 ns tensor interpolation)
+
+    def obj(v):
+        return _vp_eval(plane, W, noise, pos, sat, v, hyper, True, t0_prior)[0]
+    r = minimize(obj, th, method='Nelder-Mead',
+                 options=dict(xatol=5e-4, fatol=0.15, maxiter=40,
+                              initial_simplex=th + np.array([[0, 0, 0], [0.1, 0, 0], [0, 4e-4, 0], [0, 0, 5.0]])))
+    nfev += r.nfev
+    if r.fun < chi:
+        th = np.asarray(r.x, float)
+    chi, q, M = _vp_eval(plane, W, noise, pos, sat, th, hyper, True, t0_prior)
+    cov = None
+    if q is not None:
+        _r, J = _vp_resid_jac(plane, W, noise, pos, sat, th, q, M, hyper, True, t0_prior)
+        njac += 1
+        try:
+            cov = np.linalg.inv(J.T @ J)
+        except np.linalg.LinAlgError:
+            cov = None
+    return dict(chi2=chi, p0=float(th[0]), w=float(th[1]), t0=float(th[2]), q=q, nfev=nfev, njac=njac, cov=cov)
+
+
 # --------------------------------------------------------------------- fits
 def fit_plane_raw(P, plane, p0_init, w_init, t0_init, hyper=None, fix_p0w=None,
-                  t0_prior=None):
+                  t0_prior=None, pivot=None):
     """Two-stage fit: coarse (p0, w, t0) grid, then Nelder-Mead. With
     ``fix_p0w=(p0, w)`` only t0 and the charge profile are fitted — that is the
     'ref-pinned' configuration used for calibration and for the chi2(v) scan.
-    ``t0_prior=(t0_pred, sigma)`` is passed through to :func:`chi2_plane`."""
+    ``t0_prior=(t0_pred, sigma)`` is passed through to :func:`chi2_plane`.
+    ``pivot=(x_c, t_c)``: the start lies on the pivot line (wft.reco.PIVOT_START); FITTER = 'lm' then moves p0 with
+    t0 along it.  With FITTER = 'lm' the result also carries ``cov``, the 3x3 (p0, w, t0) covariance (unscaled)."""
     _require_cal()
     hyper = hyper or HYPER
     W, noise, pos, sat = prep_plane(P, plane)
     dof = int((~sat).sum())
+    if FITTER == 'lm' and fix_p0w is None:
+        r = _fit_plane_lm(W, noise, pos, sat, plane, p0_init, w_init, t0_init, hyper, t0_prior, pivot)
+        r['dof'] = dof
+        return r
 
     if fix_p0w is not None:
         p0f, wf = fix_p0w
