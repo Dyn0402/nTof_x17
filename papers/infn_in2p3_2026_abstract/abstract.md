@@ -28,29 +28,28 @@ numbers in `../paper1` and `rerun/model_audit/FINDINGS.md`. **Not submitted.**
 - Unchanged: 176 µm at SPS H4 (0.30 × pitch; F14 says the 3-pitch method stands); no dead time after a spark;
   the 20–30 % ladder compression / ~4° too steep from hit times; flash recovery 2 µs (chamber) and 5 ms (DREAM).
 
-## Draft (~270 words)
+## Draft v2 (2026-10-28, ~140 words)
 
-**Title:** Large-area resistive Micromegas as compact TPCs: waveform reconstruction, performance, and operation
-in the n_TOF γ flash
+**Title:** A resistive-strip Micromegas TPC for the X17 search at n_TOF: design, track reconstruction and
+performance
 
-**Session:** Gas detectors (alternative: electronics, with the flash result first)
+**Session:** Gas detectors
 
-Four 40 × 40 cm² resistive-strip bulk Micromegas, built at CEA Saclay, were operated as compact TPCs. Each one
-reconstructs a three-dimensional track segment from a single 30 mm drift gap. They were built for an e⁺e⁻ pair
-measurement at the CERN n_TOF EAR2 neutron facility, which ended in August 2026. A capacitively coupled pad
-matrix gives two orthogonal views of 512 strips each, and DREAM front ends sample every strip every 20 ns.
+The X17 search at the CERN n_TOF neutron facility requires tracking e⁺e⁻ pairs from neutron capture on ³He. To
+test the anomaly, their opening angle must be measured with as little material as possible. We developed a
+resistive-strip bulk Micromegas that works as a compact TPC: one 30 mm drift gap gives a three-dimensional track
+segment. Its 40 × 40 cm² area is read out through a pad matrix with a 0.78 mm pitch, capacitively coupled to two
+orthogonal strip views.
 
-On a resistive anode, part of the charge reaches the neighbouring strips through the resistive layer, delayed
-and spread out by its RC time constant. We show that this biases any per-strip time estimate: threshold,
-constant-fraction and matched-filter timing all compress the drift-time ladder by 20–30 %, and angles read
-about 4° too steep. Instead, a forward model fits the waveforms of all strips in a cluster at once, using the
-measured neighbour-sharing kernel and the single-strip impulse response, and the bias disappears.
+A resistive anode is still uncommon in a TPC, and it brings its own challenge. Charge spreads to the neighbouring
+strips with an RC delay, and this distorts the arrival time measured on each strip: angles taken from those times
+read about 4° too steep. Our forward model fits all the waveforms in a cluster at once, using the measured sharing
+kernel, and removes the bias.
 
-On a cosmic bench with four reference Micromegas, the chambers reach an angular resolution of 1.15–2.51° per
-view and up to 93 % efficiency. In the SPS H4 beam the spatial resolution is 176 µm (0.3 × the strip pitch),
-with no dead time after discharges. Diffusion alone would allow about 0.3°; most of the difference comes from a
-mechanical bow of the chambers, a constraint on flatness for large-area compact TPCs. In the n_TOF γ flash the
-chambers recover within 2 µs, but the charge-sensitive front end stays saturated for 5 ms. This defines what a
-flash-tolerant readout must achieve.
+The chamber reaches an angular resolution of 1.2°, 93 % efficiency and a spatial resolution of 180 µm. At
+n_TOF, the reconstructed tracks image the ³He target capsule, demonstrating the detector's efficacy as a TPC
+tracker.
 
-If it must be shorter, cut the readout/DREAM sentence first.
+Sources: det3 `fe` gate (`rerun/model_audit/followups/fe_unify2/results/gate_fe.md`: s68 1.08° X / 0.97° Y vs
+M3, 92.7 % detected within 5 mm, interior); 180 µm = det4 at SPS H4 (176 µm, 0.30 × pitch; det3 was not at SPS);
+capsule imaging = band crossing at −31 / −35 mm (chambers A / C) vs −28 mm Geant4 (`COORDINATES.md`).
