@@ -1,0 +1,59 @@
+{
+ "n_right": 400,
+ "n_wrong": 400,
+ "time_median_s": 2.4700019250001333,
+ "dchi2_over_scale": {
+  "right_median": 200.05155531322515,
+  "right_p90": 478.1671695811444,
+  "right_p95": 627.0301762162841,
+  "wrong_median": 1852.1188014302827,
+  "wrong_p10": 463.1990924126714,
+  "wrong_above_right_p95_pct": 83.25,
+  "wrong_above_right_p90_pct": 89.5,
+  "right_negative_pct": 1.0,
+  "auc": 0.95015625
+ },
+ "rel_cost": {
+  "right_median_pct": 17.631027258000167,
+  "wrong_median_pct": 166.9692182795309
+ },
+ "alpha": {
+  "right_median": 1.0304439855857528,
+  "right_rsig": 0.04795919299833201,
+  "wrong_rsig": 0.4520736909378063
+ },
+ "angles_x": {
+  "joint": {
+   "v_ladder": 35.68124507363487,
+   "s68_deg": 0.9978981077612257,
+   "far5_pct": 3.25,
+   "s68_nearnormal_deg": 1.0078353540341567,
+   "n_nearnormal": 151
+  },
+  "prod": {
+   "v_ladder": 35.71477303270703,
+   "s68_deg": 1.0198652138829736,
+   "far5_pct": 3.25,
+   "s68_nearnormal_deg": 1.0268491673326126,
+   "n_nearnormal": 151
+  },
+  "same_w_1umns_pct": 98.25
+ },
+ "angles_y": {
+  "joint": {
+   "v_ladder": 35.76974447373332,
+   "s68_deg": 0.9671599989096927,
+   "far5_pct": 3.25,
+   "s68_nearnormal_deg": 0.9810789636531252,
+   "n_nearnormal": 210
+  },
+  "prod": {
+   "v_ladder": 35.66266214574407,
+   "s68_deg": 0.9815627755125733,
+   "far5_pct": 2.75,
+   "s68_nearnormal_deg": 1.0044646291443018,
+   "n_nearnormal": 210
+  },
+  "same_w_1umns_pct": 97.75
+ }
+}
