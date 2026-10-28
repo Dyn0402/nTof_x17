@@ -6,6 +6,12 @@ Commit dc22ae3; site master 2533ce7.)
 Notes: https://dylan-neff.web.cern.ch/notes/mx17-chamber-bow.html · https://dylan-neff.web.cern.ch/notes/mx17-chamber-maps.html
 Paper: `papers/paper1/sections/08b_bow.tex` (after 08_tracking; figures bow_profiles, bow_closure in figures.toml).
 
+> **Reviewed 2026-10-28** (`SKEPTIC_REVIEW_2026-10-28.md`): the drift tilt stands; the position-route depth is
+> 1.2–1.9 mm ± 0.4 systematic (not ± 0.2), det6's map is mostly a slope-scale reconstruction bias, det7 X is unmasked;
+> the M3 common dish is bounded at 0.0–0.6 mm; the column duration puts the sag on the mesh (det2/det7), cathode
+> < 0.5 mm; the det3 x–y difference is not established and the Y-view w0 gradient excess is a fit effect. Numbers
+> below are the original ones.
+
 ## Verdict: the bow is real
 On all five chambers the mesh centre sits 1.5–2.3 mm lower than its rim (further from the cathode); the drift direction
 tilts with it. Static per chamber to ~20 %. Three routes with no shared systematics see it; the fourth (column duration)
