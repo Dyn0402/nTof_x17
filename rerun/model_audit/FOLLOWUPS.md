@@ -22,7 +22,7 @@ prose; lxplus only via `ssh lxplus`, condor outputs to EOS.
 | 6 | trade survives at −1.2 ± 0.5 % common compression (det4 Y, det7 Y ~−4 %); bright-track effect mostly removed by dropping the per-event σ0 (−4 % left on det6/det7, the saturating chambers). (FC) |
 | 7 | t0 pinned at the latency in bench bundles; x–y gate on column time; χ²/dof +3…+37 % under the pin (model error); never at n_TOF (enforced). (FE) |
 | 8 | map gallery note mx17-chamber-maps (USED / PARTLY / NOT USED badges). (FB) |
-| 10 | 60 ns jump scales with the single-electron footprint (onset L = 1.55 σ_eff), clustering doubles it; 20 ns flat to 45°. Realism ladder reaches 0.41–0.76° vs measured 1.06–1.76°; + 2D tilt 0.43–1.09°; 0.72–1.38° unexplained and χ²-blind (points to fine-scale geometry, not the waveform model). Note mx17-angle-floor. (FD) |
+| 10 | [10-28: gain-map rank withdrawn (GA); M3 term 0.05° (GB)] 60 ns jump scales with the single-electron footprint (onset L = 1.55 σ_eff), clustering doubles it; 20 ns flat to 45°. Realism ladder reaches 0.41–0.76° vs measured 1.06–1.76°; + 2D tilt 0.43–1.09°; 0.72–1.38° unexplained and χ²-blind (points to fine-scale geometry, not the waveform model). Note mx17-angle-floor. (FD) |
 | 11 | pairing per class 84–99 %; on det6/det7 the limit is saturation, not tolerance. (FE) |
 | 12 | `fe` arm recommended as the single reconstruction (s68 better on every view, detection +0.15…+3.3 pt except det4 −0.12); 20 ns not adopted on the bench; promotion prepared (`promote_fe.sh`), **not applied**. (FE) |
 | 13 | band strips censored + re-seed: det3 band sample 145 → 221/252 found, controls 400/400. Hotspot census deferred. (FE) |
@@ -190,3 +190,17 @@ det3 band sample that tracks under a band are recovered. **Hotspot census: defer
 | FD | 10 | 60 ns jump confirmed; realistic toy ladder to the measured resolution | `followups/fd_floor_realism/` |
 | FE | 7, 11, 12, 13 | single reconstruction: implement + gate decided items, band awareness | `followups/fe_unify2/`, `wft/` |
 Deferred (after reprocessing): 9 (gas fit), 13 hotspot census.
+
+---
+
+## Round 3 — Dylan's questions (2026-10-28)
+1. Gain map: is it unimportant? it has the largest variation → **GA** (`followups/ga_gainmap/`)
+2. Is M3 (+ multiple scattering) limiting the angle resolution? what does SPS show? → **GB** (`followups/gb_m3_angle/`)
+3. Gas change vs time for every dataset; consequence for reco; can it wait until after reprocessing? → **GC** (`followups/gc_gas_time/`)
+4. Bow: Dylan has another session cross-check it; results look reasonable.
+5. **Decided:** one σ0 for X and Y (FC) is the physical choice.
+6. lxplus back → pending `fefa` / `fe_nobow` gate rows → **GF** (fe_unify2)
+7. Spark detection re-checked after the FE changes; make it optimal → **GD** (`followups/gd_sparks/`)
+8. Has the fixed χ²/dof cut been useful? hard to trust on this model; keep only if useful → **GE** (`followups/ge_chi2cut/`)
+9. **Decided:** before the full reprocessing, every calibration is redone from scratch — no shortcuts, no reuse of
+   intermediate products from this audit.

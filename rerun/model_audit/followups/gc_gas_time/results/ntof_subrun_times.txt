@@ -1,0 +1,1213 @@
+run_79 2026-07-26 18:07:19,774 INFO: Subrun started: stat090_0000  run_time=60.0min
+run_79 2026-07-26 19:07:29,932 INFO: Subrun finished: stat090_0000
+run_79 2026-07-26 19:07:43,304 INFO: Subrun started: stat090_0001  run_time=60.0min
+run_79 2026-07-26 20:07:53,868 INFO: Subrun finished: stat090_0001
+run_79 2026-07-26 20:08:07,607 INFO: Subrun started: stat090_0002  run_time=60.0min
+run_79 2026-07-26 21:08:19,149 INFO: Subrun finished: stat090_0002
+run_79 2026-07-26 21:08:32,865 INFO: Subrun started: stat090_0003  run_time=60.0min
+run_79 2026-07-26 22:08:47,948 INFO: Subrun finished: stat090_0003
+run_79 2026-07-26 22:09:01,705 INFO: Subrun started: stat090_0004  run_time=60.0min
+run_79 2026-07-26 23:09:14,319 INFO: Subrun finished: stat090_0004
+run_79 2026-07-26 23:09:27,578 INFO: Subrun started: stat090_0005  run_time=60.0min
+run_79 2026-07-27 00:09:40,364 INFO: Subrun finished: stat090_0005
+run_79 2026-07-27 00:09:53,314 INFO: Subrun started: stat090_0006  run_time=60.0min
+run_79 2026-07-27 01:10:05,964 INFO: Subrun finished: stat090_0006
+run_79 2026-07-27 01:10:19,224 INFO: Subrun started: stat090_0007  run_time=60.0min
+run_79 2026-07-27 02:10:34,764 INFO: Subrun finished: stat090_0007
+run_79 2026-07-27 02:10:47,912 INFO: Subrun started: stat090_0008  run_time=60.0min
+run_79 2026-07-27 03:11:03,564 INFO: Subrun finished: stat090_0008
+run_79 2026-07-27 03:11:16,634 INFO: Subrun started: stat090_0009  run_time=60.0min
+run_79 2026-07-27 04:11:32,364 INFO: Subrun finished: stat090_0009
+run_79 2026-07-27 04:11:45,235 INFO: Subrun started: stat090_0010  run_time=60.0min
+run_79 2026-07-27 05:12:01,164 INFO: Subrun finished: stat090_0010
+run_79 2026-07-27 05:12:14,160 INFO: Subrun started: stat090_0011  run_time=60.0min
+run_79 2026-07-27 06:12:29,964 INFO: Subrun finished: stat090_0011
+run_79 2026-07-27 06:12:43,600 INFO: Subrun started: stat090_0012  run_time=60.0min
+run_79 2026-07-27 07:12:58,764 INFO: Subrun finished: stat090_0012
+run_79 2026-07-27 07:13:12,281 INFO: Subrun started: stat090_0013  run_time=60.0min
+run_79 2026-07-27 08:13:25,644 INFO: Subrun finished: stat090_0013
+run_79 2026-07-27 08:13:38,774 INFO: Subrun started: stat090_0014  run_time=60.0min
+run_79 2026-07-27 09:13:54,447 INFO: Subrun finished: stat090_0014
+run_79 2026-07-27 09:14:07,357 INFO: Subrun started: stat090_0015  run_time=60.0min
+run_79 2026-07-27 10:00:01,995 INFO: Subrun finished: stat090_0015
+run_80 2026-07-27 10:08:37,903 INFO: Subrun started: cosbounce_cos_0000  run_time=15.0min
+run_80 2026-07-27 10:23:48,493 INFO: Subrun finished: cosbounce_cos_0000
+run_80 2026-07-27 10:24:00,251 INFO: Subrun started: cosbounce_cos_0001  run_time=15.0min
+run_80 2026-07-27 10:39:10,732 INFO: Subrun finished: cosbounce_cos_0001
+run_80 2026-07-27 10:39:21,737 INFO: Subrun started: cosbounce_cos_0002  run_time=15.0min
+run_80 2026-07-27 10:54:32,140 INFO: Subrun finished: cosbounce_cos_0002
+run_80 2026-07-27 10:54:43,330 INFO: Subrun started: cosbounce_cos_0003  run_time=15.0min
+run_80 2026-07-27 11:09:53,868 INFO: Subrun finished: cosbounce_cos_0003
+run_80 2026-07-27 11:10:05,304 INFO: Subrun started: cosbounce_cos_0004  run_time=15.0min
+run_80 2026-07-27 11:21:22,636 INFO: Subrun finished: cosbounce_cos_0004
+run_81 2026-07-27 11:28:45,996 INFO: Subrun started: stat090_0000  run_time=60.0min
+run_81 2026-07-27 12:28:56,332 INFO: Subrun finished: stat090_0000
+run_81 2026-07-27 12:29:09,522 INFO: Subrun started: stat090_0001  run_time=60.0min
+run_81 2026-07-27 13:17:51,692 INFO: Subrun finished: stat090_0001
+run_82 2026-07-27 13:19:16,964 INFO: Subrun started: stat090_h2i5_0000  run_time=4.4min
+run_82 2026-07-27 13:23:54,253 INFO: Subrun finished: stat090_h2i5_0000
+run_82 2026-07-27 13:24:08,050 INFO: Subrun started: stat090_h1i2_0001  run_time=4.4min
+run_82 2026-07-27 13:28:41,613 INFO: Subrun finished: stat090_h1i2_0001
+run_82 2026-07-27 13:28:55,013 INFO: Subrun started: stat090_h2i2_0002  run_time=4.4min
+run_82 2026-07-27 13:33:42,924 INFO: Subrun finished: stat090_h2i2_0002
+run_82 2026-07-27 13:33:56,004 INFO: Subrun started: stat090_h1i5_0003  run_time=4.4min
+run_82 2026-07-27 13:38:32,332 INFO: Subrun finished: stat090_h1i5_0003
+run_82 2026-07-27 13:38:46,100 INFO: Subrun started: stat090_h1i5_0004  run_time=4.4min
+run_82 2026-07-27 13:43:35,564 INFO: Subrun finished: stat090_h1i5_0004
+run_82 2026-07-27 13:43:49,213 INFO: Subrun started: stat090_h2i2_0005  run_time=4.4min
+run_82 2026-07-27 13:48:26,316 INFO: Subrun finished: stat090_h2i2_0005
+run_82 2026-07-27 13:48:39,998 INFO: Subrun started: stat090_h1i2_0006  run_time=4.4min
+run_82 2026-07-27 13:53:14,320 INFO: Subrun finished: stat090_h1i2_0006
+run_82 2026-07-27 13:53:27,692 INFO: Subrun started: stat090_h2i5_0007  run_time=4.4min
+run_82 2026-07-27 13:58:08,076 INFO: Subrun finished: stat090_h2i5_0007
+run_83 2026-07-27 14:23:27,275 INFO: Subrun started: cosbounce_cos_0000  run_time=15.0min
+run_83 2026-07-27 14:37:13,996 INFO: Subrun finished: cosbounce_cos_0000
+run_84 2026-07-27 14:38:09,251 INFO: Subrun started: stat090_0000  run_time=60.0min
+run_84 2026-07-27 15:13:44,459 INFO: Subrun finished: stat090_0000
+run_85 2026-07-27 15:14:39,564 INFO: Subrun started: cosbounce_cos_0000  run_time=15.0min
+run_85 2026-07-27 15:29:48,684 INFO: Subrun finished: cosbounce_cos_0000
+run_85 2026-07-27 15:29:59,929 INFO: Subrun started: cosbounce_cos_0001  run_time=15.0min
+run_85 2026-07-27 15:35:00,042 INFO: Subrun finished: cosbounce_cos_0001
+run_86 2026-07-27 15:35:55,271 INFO: Subrun started: stat090_0000  run_time=60.0min
+run_86 2026-07-27 16:36:04,749 INFO: Subrun finished: stat090_0000
+run_86 2026-07-27 16:36:17,514 INFO: Subrun started: stat090_0001  run_time=60.0min
+run_86 2026-07-27 17:36:44,556 INFO: Subrun finished: stat090_0001
+run_86 2026-07-27 17:36:57,400 INFO: Subrun started: stat090_0002  run_time=60.0min
+run_86 2026-07-27 18:37:06,764 INFO: Subrun finished: stat090_0002
+run_86 2026-07-27 18:37:19,806 INFO: Subrun started: stat090_0003  run_time=60.0min
+run_86 2026-07-27 19:37:29,228 INFO: Subrun finished: stat090_0003
+run_86 2026-07-27 19:37:42,573 INFO: Subrun started: stat090_0004  run_time=60.0min
+run_86 2026-07-27 20:37:53,932 INFO: Subrun finished: stat090_0004
+run_86 2026-07-27 20:38:06,929 INFO: Subrun started: stat090_0005  run_time=60.0min
+run_86 2026-07-27 21:38:16,716 INFO: Subrun finished: stat090_0005
+run_86 2026-07-27 21:38:30,319 INFO: Subrun started: stat090_0006  run_time=60.0min
+run_86 2026-07-27 22:38:40,716 INFO: Subrun finished: stat090_0006
+run_86 2026-07-27 22:38:54,447 INFO: Subrun started: stat090_0007  run_time=60.0min
+run_86 2026-07-27 23:39:04,013 INFO: Subrun finished: stat090_0007
+run_86 2026-07-27 23:39:17,421 INFO: Subrun started: stat090_0008  run_time=60.0min
+run_86 2026-07-28 00:39:13,611 INFO: Subrun finished: stat090_0008
+run_87 2026-07-28 00:40:08,908 INFO: Subrun started: cosbounce_cos_0000  run_time=15.0min
+run_87 2026-07-28 00:42:46,796 INFO: Subrun finished: cosbounce_cos_0000
+run_88 2026-07-28 00:43:43,199 INFO: Subrun started: stat090_0000  run_time=60.0min
+run_88 2026-07-28 01:43:53,932 INFO: Subrun finished: stat090_0000
+run_88 2026-07-28 01:44:07,233 INFO: Subrun started: stat090_0001  run_time=60.0min
+run_88 2026-07-28 02:44:16,716 INFO: Subrun finished: stat090_0001
+run_88 2026-07-28 02:44:30,433 INFO: Subrun started: stat090_0002  run_time=60.0min
+run_88 2026-07-28 03:44:40,716 INFO: Subrun finished: stat090_0002
+run_88 2026-07-28 03:44:54,257 INFO: Subrun started: stat090_0003  run_time=60.0min
+run_88 2026-07-28 04:45:04,012 INFO: Subrun finished: stat090_0003
+run_88 2026-07-28 04:45:16,880 INFO: Subrun started: stat090_0004  run_time=60.0min
+run_88 2026-07-28 05:36:37,259 INFO: Subrun finished: stat090_0004
+run_89 2026-07-28 05:37:29,897 INFO: Subrun started: cosbounce_cos_0000  run_time=15.0min
+run_89 2026-07-28 05:52:38,796 INFO: Subrun finished: cosbounce_cos_0000
+run_89 2026-07-28 05:52:50,499 INFO: Subrun started: cosbounce_cos_0001  run_time=15.0min
+run_89 2026-07-28 06:07:58,927 INFO: Subrun finished: cosbounce_cos_0001
+run_89 2026-07-28 06:08:10,801 INFO: Subrun started: cosbounce_cos_0002  run_time=15.0min
+run_89 2026-07-28 06:23:19,251 INFO: Subrun finished: cosbounce_cos_0002
+run_89 2026-07-28 06:23:30,618 INFO: Subrun started: cosbounce_cos_0003  run_time=15.0min
+run_89 2026-07-28 06:38:39,180 INFO: Subrun finished: cosbounce_cos_0003
+run_89 2026-07-28 06:38:51,033 INFO: Subrun started: cosbounce_cos_0004  run_time=15.0min
+run_89 2026-07-28 06:53:59,436 INFO: Subrun finished: cosbounce_cos_0004
+run_89 2026-07-28 06:54:11,326 INFO: Subrun started: cosbounce_cos_0005  run_time=15.0min
+run_89 2026-07-28 07:09:19,756 INFO: Subrun finished: cosbounce_cos_0005
+run_89 2026-07-28 07:09:30,725 INFO: Subrun started: cosbounce_cos_0006  run_time=15.0min
+run_89 2026-07-28 07:24:39,180 INFO: Subrun finished: cosbounce_cos_0006
+run_89 2026-07-28 07:24:50,748 INFO: Subrun started: cosbounce_cos_0007  run_time=15.0min
+run_89 2026-07-28 07:39:59,180 INFO: Subrun finished: cosbounce_cos_0007
+run_89 2026-07-28 07:40:20,164 INFO: Subrun started: cosbounce_cos_0008  run_time=15.0min
+run_89 2026-07-28 07:55:28,588 INFO: Subrun finished: cosbounce_cos_0008
+run_89 2026-07-28 07:55:40,508 INFO: Subrun started: cosbounce_cos_0009  run_time=15.0min
+run_89 2026-07-28 08:10:48,909 INFO: Subrun finished: cosbounce_cos_0009
+run_89 2026-07-28 08:11:00,725 INFO: Subrun started: cosbounce_cos_0010  run_time=15.0min
+run_89 2026-07-28 08:26:09,100 INFO: Subrun finished: cosbounce_cos_0010
+run_89 2026-07-28 08:26:20,369 INFO: Subrun started: cosbounce_cos_0011  run_time=15.0min
+run_89 2026-07-28 08:41:28,780 INFO: Subrun finished: cosbounce_cos_0011
+run_89 2026-07-28 08:41:40,566 INFO: Subrun started: cosbounce_cos_0012  run_time=15.0min
+run_89 2026-07-28 08:56:48,972 INFO: Subrun finished: cosbounce_cos_0012
+run_89 2026-07-28 08:57:00,769 INFO: Subrun started: cosbounce_cos_0013  run_time=15.0min
+run_89 2026-07-28 09:12:09,229 INFO: Subrun finished: cosbounce_cos_0013
+run_89 2026-07-28 09:12:20,320 INFO: Subrun started: cosbounce_cos_0014  run_time=15.0min
+run_89 2026-07-28 09:27:28,716 INFO: Subrun finished: cosbounce_cos_0014
+run_89 2026-07-28 09:27:40,501 INFO: Subrun started: cosbounce_cos_0015  run_time=15.0min
+run_89 2026-07-28 09:42:48,908 INFO: Subrun finished: cosbounce_cos_0015
+run_89 2026-07-28 09:43:00,803 INFO: Subrun started: cosbounce_cos_0016  run_time=15.0min
+run_89 2026-07-28 09:58:09,163 INFO: Subrun finished: cosbounce_cos_0016
+run_89 2026-07-28 09:58:20,249 INFO: Subrun started: cosbounce_cos_0017  run_time=15.0min
+run_89 2026-07-28 10:13:28,524 INFO: Subrun finished: cosbounce_cos_0017
+run_89 2026-07-28 10:13:40,098 INFO: Subrun started: cosbounce_cos_0018  run_time=15.0min
+run_89 2026-07-28 10:28:50,124 INFO: Subrun finished: cosbounce_cos_0018
+run_89 2026-07-28 10:29:01,959 INFO: Subrun started: cosbounce_cos_0019  run_time=15.0min
+run_89 2026-07-28 10:44:10,956 INFO: Subrun finished: cosbounce_cos_0019
+run_89 2026-07-28 10:44:22,250 INFO: Subrun started: cosbounce_cos_0020  run_time=15.0min
+run_89 2026-07-28 10:59:32,364 INFO: Subrun finished: cosbounce_cos_0020
+run_89 2026-07-28 10:59:43,517 INFO: Subrun started: cosbounce_cos_0021  run_time=15.0min
+run_89 2026-07-28 11:14:07,372 INFO: Subrun finished: cosbounce_cos_0021
+run_90 2026-07-28 11:20:48,082 INFO: Subrun started: pulsipd_i5_0000  run_time=0.2min
+run_90 2026-07-28 11:20:57,035 INFO: Subrun finished: pulsipd_i5_0000
+run_90 2026-07-28 11:21:07,184 INFO: Subrun started: pulsipd_i4_0001  run_time=0.2min
+run_90 2026-07-28 11:21:16,108 INFO: Subrun finished: pulsipd_i4_0001
+run_90 2026-07-28 11:21:26,283 INFO: Subrun started: pulsipd_i3_0002  run_time=0.2min
+run_90 2026-07-28 11:21:35,628 INFO: Subrun finished: pulsipd_i3_0002
+run_90 2026-07-28 11:21:46,394 INFO: Subrun started: pulsipd_i2_0003  run_time=0.2min
+run_90 2026-07-28 11:21:55,340 INFO: Subrun finished: pulsipd_i2_0003
+run_90 2026-07-28 11:22:05,493 INFO: Subrun started: pulsipd_i1_0004  run_time=0.2min
+run_90 2026-07-28 11:22:14,606 INFO: Subrun finished: pulsipd_i1_0004
+run_90 2026-07-28 11:22:25,648 INFO: Subrun started: pulsipd_i1_0005  run_time=0.2min
+run_90 2026-07-28 11:22:35,661 INFO: Subrun finished: pulsipd_i1_0005
+run_90 2026-07-28 11:22:45,764 INFO: Subrun started: pulsipd_i2_0006  run_time=0.2min
+run_90 2026-07-28 11:22:56,332 INFO: Subrun finished: pulsipd_i2_0006
+run_90 2026-07-28 11:23:07,274 INFO: Subrun started: pulsipd_i3_0007  run_time=0.2min
+run_90 2026-07-28 11:23:17,712 INFO: Subrun finished: pulsipd_i3_0007
+run_90 2026-07-28 11:23:28,406 INFO: Subrun started: pulsipd_i4_0008  run_time=0.2min
+run_90 2026-07-28 11:23:38,188 INFO: Subrun finished: pulsipd_i4_0008
+run_90 2026-07-28 11:23:48,595 INFO: Subrun started: pulsipd_i5_0009  run_time=0.2min
+run_90 2026-07-28 11:24:00,460 INFO: Subrun finished: pulsipd_i5_0009
+run_90 2026-07-28 11:24:10,729 INFO: Subrun started: pulsipd_h2i5_0010  run_time=0.2min
+run_90 2026-07-28 11:24:21,324 INFO: Subrun finished: pulsipd_h2i5_0010
+run_90 2026-07-28 11:24:31,850 INFO: Subrun started: pulsipd_h2l0i5_0011  run_time=0.2min
+run_90 2026-07-28 11:24:42,382 INFO: Subrun finished: pulsipd_h2l0i5_0011
+run_90 2026-07-28 11:24:53,350 INFO: Subrun started: pulsipd_lt0i5_0012  run_time=0.2min
+run_90 2026-07-28 11:25:20,268 INFO: Subrun finished: pulsipd_lt0i5_0012
+run_91 2026-07-28 11:28:10,352 INFO: Subrun started: cosbounce_cos_0000  run_time=15.0min
+run_91 2026-07-28 11:43:18,864 INFO: Subrun finished: cosbounce_cos_0000
+run_91 2026-07-28 11:43:30,253 INFO: Subrun started: cosbounce_cos_0001  run_time=15.0min
+run_91 2026-07-28 11:45:38,636 INFO: Subrun finished: cosbounce_cos_0001
+run_92 2026-07-28 11:48:02,540 INFO: Subrun started: clamp_base_n20f8_0000  run_time=0.2min
+run_92 2026-07-28 11:48:11,468 INFO: Subrun finished: clamp_base_n20f8_0000
+run_92 2026-07-28 11:48:21,642 INFO: Subrun started: clamp_n10f8_0001  run_time=0.2min
+run_92 2026-07-28 11:48:30,859 INFO: Subrun finished: clamp_n10f8_0001
+run_92 2026-07-28 11:48:41,759 INFO: Subrun started: clamp_n40f8_0002  run_time=0.2min
+run_92 2026-07-28 11:48:51,725 INFO: Subrun finished: clamp_n40f8_0002
+run_92 2026-07-28 11:49:01,863 INFO: Subrun started: clamp_n20f4_0003  run_time=0.2min
+run_92 2026-07-28 11:49:08,429 INFO: Subrun finished: clamp_n20f4_0003
+run_92 2026-07-28 11:49:18,943 INFO: Subrun started: clamp_n20f2_0004  run_time=0.2min
+run_92 2026-07-28 11:49:24,428 INFO: Subrun finished: clamp_n20f2_0004
+run_92 2026-07-28 11:49:35,017 INFO: Subrun started: clamp_n20f1_0005  run_time=0.2min
+run_92 2026-07-28 11:49:42,411 INFO: Subrun finished: clamp_n20f1_0005
+run_92 2026-07-28 11:49:53,113 INFO: Subrun started: clamp_n20f8_lt0_0006  run_time=0.2min
+run_92 2026-07-28 11:50:15,312 INFO: Subrun finished: clamp_n20f8_lt0_0006
+run_92 2026-07-28 11:50:25,459 INFO: Subrun started: clamp_close_n20f8_0007  run_time=0.2min
+run_92 2026-07-28 11:50:38,348 INFO: Subrun finished: clamp_close_n20f8_0007
+run_93 2026-07-28 11:51:43,638 INFO: Subrun started: cosbounce_cos_0000  run_time=15.0min
+run_93 2026-07-28 11:54:00,974 INFO: Subrun finished: cosbounce_cos_0000
+run_94 2026-07-28 12:07:21,385 INFO: Subrun started: mpack_mp4888_base_0000  run_time=0.2min
+run_94 2026-07-28 12:07:30,317 INFO: Subrun finished: mpack_mp4888_base_0000
+run_94 2026-07-28 12:07:40,484 INFO: Subrun started: mpack_mp2888_0001  run_time=0.2min
+run_94 2026-07-28 12:07:49,388 INFO: Subrun finished: mpack_mp2888_0001
+run_94 2026-07-28 12:07:59,586 INFO: Subrun started: mpack_mp5912_0002  run_time=0.2min
+run_94 2026-07-28 12:08:08,524 INFO: Subrun finished: mpack_mp5912_0002
+run_94 2026-07-28 12:08:18,686 INFO: Subrun started: mpack_mp6720_0003  run_time=0.2min
+run_94 2026-07-28 12:08:27,660 INFO: Subrun finished: mpack_mp6720_0003
+run_94 2026-07-28 12:08:37,788 INFO: Subrun started: mpack_mpoff_0004  run_time=0.2min
+run_94 2026-07-28 12:08:47,884 INFO: Subrun finished: mpack_mpoff_0004
+run_94 2026-07-28 12:08:58,906 INFO: Subrun started: mpack_mp4888_close_0005  run_time=0.2min
+run_94 2026-07-28 12:09:10,351 INFO: Subrun finished: mpack_mp4888_close_0005
+run_95 2026-07-28 13:09:25,735 INFO: Subrun started: cosbounce_cos_0000  run_time=15.0min
+run_95 2026-07-28 13:10:12,494 INFO: Subrun finished: cosbounce_cos_0000
+run_96 2026-07-28 13:37:18,057 INFO: Subrun started: stat090_0000  run_time=60.0min
+run_96 2026-07-28 14:37:26,348 INFO: Subrun finished: stat090_0000
+run_96 2026-07-28 14:37:39,878 INFO: Subrun started: stat090_0001  run_time=60.0min
+run_96 2026-07-28 15:37:53,868 INFO: Subrun finished: stat090_0001
+run_96 2026-07-28 15:38:07,472 INFO: Subrun started: stat090_0002  run_time=60.0min
+run_96 2026-07-28 16:38:17,231 INFO: Subrun finished: stat090_0002
+run_96 2026-07-28 16:38:30,531 INFO: Subrun started: stat090_0003  run_time=60.0min
+run_96 2026-07-28 17:38:45,517 INFO: Subrun finished: stat090_0003
+run_96 2026-07-28 17:38:58,733 INFO: Subrun started: stat090_0004  run_time=60.0min
+run_96 2026-07-28 17:51:12,331 INFO: Subrun finished: stat090_0004
+run_97 2026-07-28 17:52:05,624 INFO: Subrun started: cosbounce_cos_0000  run_time=15.0min
+run_97 2026-07-28 17:53:13,099 INFO: Subrun finished: cosbounce_cos_0000
+run_98 2026-07-28 17:54:09,805 INFO: Subrun started: stat090_0000  run_time=60.0min
+run_98 2026-07-28 18:54:34,380 INFO: Subrun finished: stat090_0000
+run_98 2026-07-28 18:54:47,441 INFO: Subrun started: stat090_0001  run_time=60.0min
+run_98 2026-07-28 19:16:34,507 INFO: Subrun finished: stat090_0001
+run_99 2026-07-28 19:17:29,384 INFO: Subrun started: cosbounce_cos_0000  run_time=15.0min
+run_99 2026-07-28 19:27:47,916 INFO: Subrun finished: cosbounce_cos_0000
+run_100 2026-07-28 19:28:44,485 INFO: Subrun started: stat090_0000  run_time=60.0min
+run_100 2026-07-28 20:28:57,484 INFO: Subrun finished: stat090_0000
+run_100 2026-07-28 20:29:10,688 INFO: Subrun started: stat090_0001  run_time=60.0min
+run_100 2026-07-28 21:29:26,348 INFO: Subrun finished: stat090_0001
+run_100 2026-07-28 21:29:40,129 INFO: Subrun started: stat090_0002  run_time=60.0min
+run_100 2026-07-28 22:29:49,068 INFO: Subrun finished: stat090_0002
+run_100 2026-07-28 22:30:02,866 INFO: Subrun started: stat090_0003  run_time=60.0min
+run_100 2026-07-28 23:30:17,933 INFO: Subrun finished: stat090_0003
+run_100 2026-07-28 23:30:31,041 INFO: Subrun started: stat090_0004  run_time=60.0min
+run_100 2026-07-29 00:30:44,364 INFO: Subrun finished: stat090_0004
+run_100 2026-07-29 00:30:57,718 INFO: Subrun started: stat090_0005  run_time=60.0min
+run_100 2026-07-29 01:31:08,815 INFO: Subrun finished: stat090_0005
+run_100 2026-07-29 01:31:22,520 INFO: Subrun started: stat090_0006  run_time=60.0min
+run_100 2026-07-29 02:31:33,516 INFO: Subrun finished: stat090_0006
+run_100 2026-07-29 02:31:46,364 INFO: Subrun started: stat090_0007  run_time=60.0min
+run_100 2026-07-29 03:31:58,732 INFO: Subrun finished: stat090_0007
+run_100 2026-07-29 03:32:12,492 INFO: Subrun started: stat090_0008  run_time=60.0min
+run_100 2026-07-29 04:32:21,516 INFO: Subrun finished: stat090_0008
+run_100 2026-07-29 04:32:34,483 INFO: Subrun started: stat090_0009  run_time=60.0min
+run_100 2026-07-29 05:32:45,516 INFO: Subrun finished: stat090_0009
+run_100 2026-07-29 05:32:59,301 INFO: Subrun started: stat090_0010  run_time=60.0min
+run_100 2026-07-29 06:33:10,732 INFO: Subrun finished: stat090_0010
+run_100 2026-07-29 06:33:24,225 INFO: Subrun started: stat090_0011  run_time=60.0min
+run_100 2026-07-29 07:33:33,516 INFO: Subrun finished: stat090_0011
+run_100 2026-07-29 07:33:46,681 INFO: Subrun started: stat090_0012  run_time=60.0min
+run_100 2026-07-29 08:33:57,516 INFO: Subrun finished: stat090_0012
+run_100 2026-07-29 08:34:10,497 INFO: Subrun started: stat090_0013  run_time=60.0min
+run_100 2026-07-29 09:34:22,028 INFO: Subrun finished: stat090_0013
+run_100 2026-07-29 09:34:35,426 INFO: Subrun started: stat090_0014  run_time=60.0min
+run_100 2026-07-29 10:16:02,444 INFO: Subrun finished: stat090_0014
+run_101 2026-07-29 10:16:55,000 INFO: Subrun started: cosbounce_cos_0000  run_time=15.0min
+run_101 2026-07-29 10:29:28,908 INFO: Subrun finished: cosbounce_cos_0000
+run_102 2026-07-29 10:30:25,407 INFO: Subrun started: stat090_0000  run_time=60.0min
+run_102 2026-07-29 11:30:35,596 INFO: Subrun finished: stat090_0000
+run_102 2026-07-29 11:30:48,905 INFO: Subrun started: stat090_0001  run_time=60.0min
+run_102 2026-07-29 12:31:04,396 INFO: Subrun finished: stat090_0001
+run_102 2026-07-29 12:31:18,052 INFO: Subrun started: stat090_0002  run_time=60.0min
+run_102 2026-07-29 13:31:37,164 INFO: Subrun finished: stat090_0002
+run_102 2026-07-29 13:31:50,349 INFO: Subrun started: stat090_0003  run_time=60.0min
+run_102 2026-07-29 14:08:08,971 INFO: Subrun finished: stat090_0003
+run_103 2026-07-29 14:25:01,901 INFO: Subrun started: cosbounce_cos_0000  run_time=15.0min
+run_103 2026-07-29 14:40:11,340 INFO: Subrun finished: cosbounce_cos_0000
+run_103 2026-07-29 14:40:22,524 INFO: Subrun started: cosbounce_cos_0001  run_time=15.0min
+run_103 2026-07-29 14:55:31,788 INFO: Subrun finished: cosbounce_cos_0001
+run_103 2026-07-29 14:55:43,686 INFO: Subrun started: cosbounce_cos_0002  run_time=15.0min
+run_103 2026-07-29 15:10:53,068 INFO: Subrun finished: cosbounce_cos_0002
+run_103 2026-07-29 15:11:04,016 INFO: Subrun started: cosbounce_cos_0003  run_time=15.0min
+run_103 2026-07-29 15:26:21,708 INFO: Subrun finished: cosbounce_cos_0003
+run_103 2026-07-29 15:26:33,760 INFO: Subrun started: cosbounce_cos_0004  run_time=15.0min
+run_103 2026-07-29 15:41:48,172 INFO: Subrun finished: cosbounce_cos_0004
+run_103 2026-07-29 15:42:00,131 INFO: Subrun started: cosbounce_cos_0005  run_time=15.0min
+run_103 2026-07-29 15:57:16,044 INFO: Subrun finished: cosbounce_cos_0005
+run_103 2026-07-29 15:57:27,978 INFO: Subrun started: cosbounce_cos_0006  run_time=15.0min
+run_103 2026-07-29 16:12:43,788 INFO: Subrun finished: cosbounce_cos_0006
+run_103 2026-07-29 16:12:54,958 INFO: Subrun started: cosbounce_cos_0007  run_time=15.0min
+run_103 2026-07-29 16:28:11,790 INFO: Subrun finished: cosbounce_cos_0007
+run_103 2026-07-29 16:28:23,792 INFO: Subrun started: cosbounce_cos_0008  run_time=15.0min
+run_103 2026-07-29 16:43:39,596 INFO: Subrun finished: cosbounce_cos_0008
+run_103 2026-07-29 16:43:50,642 INFO: Subrun started: cosbounce_cos_0009  run_time=15.0min
+run_103 2026-07-29 16:59:06,060 INFO: Subrun finished: cosbounce_cos_0009
+run_103 2026-07-29 16:59:17,407 INFO: Subrun started: cosbounce_cos_0010  run_time=15.0min
+run_103 2026-07-29 17:14:32,652 INFO: Subrun finished: cosbounce_cos_0010
+run_103 2026-07-29 17:14:44,837 INFO: Subrun started: cosbounce_cos_0011  run_time=15.0min
+run_103 2026-07-29 17:30:01,102 INFO: Subrun finished: cosbounce_cos_0011
+run_103 2026-07-29 17:30:12,687 INFO: Subrun started: cosbounce_cos_0012  run_time=15.0min
+run_103 2026-07-29 17:45:27,503 INFO: Subrun finished: cosbounce_cos_0012
+run_103 2026-07-29 17:45:38,857 INFO: Subrun started: cosbounce_cos_0013  run_time=15.0min
+run_103 2026-07-29 18:01:08,876 INFO: Subrun finished: cosbounce_cos_0013
+run_103 2026-07-29 18:01:20,269 INFO: Subrun started: cosbounce_cos_0014  run_time=15.0min
+run_103 2026-07-29 18:16:40,459 INFO: Subrun finished: cosbounce_cos_0014
+run_103 2026-07-29 18:16:51,919 INFO: Subrun started: cosbounce_cos_0015  run_time=15.0min
+run_103 2026-07-29 18:32:09,292 INFO: Subrun finished: cosbounce_cos_0015
+run_103 2026-07-29 18:32:20,351 INFO: Subrun started: cosbounce_cos_0016  run_time=15.0min
+run_103 2026-07-29 18:47:29,547 INFO: Subrun finished: cosbounce_cos_0016
+run_103 2026-07-29 18:47:41,476 INFO: Subrun started: cosbounce_cos_0017  run_time=15.0min
+run_103 2026-07-29 19:02:50,700 INFO: Subrun finished: cosbounce_cos_0017
+run_103 2026-07-29 19:03:02,543 INFO: Subrun started: cosbounce_cos_0018  run_time=15.0min
+run_103 2026-07-29 19:18:11,724 INFO: Subrun finished: cosbounce_cos_0018
+run_103 2026-07-29 19:18:22,860 INFO: Subrun started: cosbounce_cos_0019  run_time=15.0min
+run_103 2026-07-29 19:21:51,948 INFO: Subrun finished: cosbounce_cos_0019
+run_104 2026-07-29 19:22:48,417 INFO: Subrun started: stat090_0000  run_time=60.0min
+run_104 2026-07-29 20:23:00,812 INFO: Subrun finished: stat090_0000
+run_104 2026-07-29 20:23:14,412 INFO: Subrun started: stat090_0001  run_time=60.0min
+run_104 2026-07-29 21:23:27,564 INFO: Subrun finished: stat090_0001
+run_104 2026-07-29 21:23:41,223 INFO: Subrun started: stat090_0002  run_time=60.0min
+run_104 2026-07-29 22:23:53,932 INFO: Subrun finished: stat090_0002
+run_104 2026-07-29 22:24:07,612 INFO: Subrun started: stat090_0003  run_time=60.0min
+run_104 2026-07-29 23:24:21,196 INFO: Subrun finished: stat090_0003
+run_104 2026-07-29 23:24:34,259 INFO: Subrun started: stat090_0004  run_time=60.0min
+run_104 2026-07-30 00:24:43,660 INFO: Subrun finished: stat090_0004
+run_104 2026-07-30 00:24:57,099 INFO: Subrun started: stat090_0005  run_time=60.0min
+run_104 2026-07-30 01:25:05,932 INFO: Subrun finished: stat090_0005
+run_104 2026-07-30 01:25:19,255 INFO: Subrun started: stat090_0006  run_time=60.0min
+run_104 2026-07-30 02:25:29,612 INFO: Subrun finished: stat090_0006
+run_104 2026-07-30 02:25:42,565 INFO: Subrun started: stat090_0007  run_time=60.0min
+run_104 2026-07-30 03:25:55,660 INFO: Subrun finished: stat090_0007
+run_104 2026-07-30 03:26:09,505 INFO: Subrun started: stat090_0008  run_time=60.0min
+run_104 2026-07-30 04:26:20,364 INFO: Subrun finished: stat090_0008
+run_104 2026-07-30 04:26:33,864 INFO: Subrun started: stat090_0009  run_time=60.0min
+run_104 2026-07-30 05:26:46,732 INFO: Subrun finished: stat090_0009
+run_104 2026-07-30 05:26:59,798 INFO: Subrun started: stat090_0010  run_time=60.0min
+run_104 2026-07-30 06:27:15,532 INFO: Subrun finished: stat090_0010
+run_104 2026-07-30 06:27:28,931 INFO: Subrun started: stat090_0011  run_time=60.0min
+run_104 2026-07-30 07:27:44,332 INFO: Subrun finished: stat090_0011
+run_104 2026-07-30 07:27:57,655 INFO: Subrun started: stat090_0012  run_time=60.0min
+run_104 2026-07-30 08:28:15,565 INFO: Subrun finished: stat090_0012
+run_104 2026-07-30 08:28:29,267 INFO: Subrun started: stat090_0013  run_time=60.0min
+run_104 2026-07-30 09:28:41,612 INFO: Subrun finished: stat090_0013
+run_104 2026-07-30 09:28:55,004 INFO: Subrun started: stat090_0014  run_time=60.0min
+run_104 2026-07-30 10:29:04,717 INFO: Subrun finished: stat090_0014
+run_104 2026-07-30 10:29:18,212 INFO: Subrun started: stat090_0015  run_time=60.0min
+run_104 2026-07-30 11:29:33,708 INFO: Subrun finished: stat090_0015
+run_104 2026-07-30 11:29:47,296 INFO: Subrun started: stat090_0016  run_time=60.0min
+run_104 2026-07-30 11:36:30,411 INFO: Subrun finished: stat090_0016
+run_105 2026-07-30 11:49:28,834 INFO: Subrun started: cosbounce_cos_0000  run_time=15.0min
+run_105 2026-07-30 12:04:37,556 INFO: Subrun finished: cosbounce_cos_0000
+run_105 2026-07-30 12:04:49,482 INFO: Subrun started: cosbounce_cos_0001  run_time=15.0min
+run_105 2026-07-30 12:19:58,708 INFO: Subrun finished: cosbounce_cos_0001
+run_105 2026-07-30 12:20:10,537 INFO: Subrun started: cosbounce_cos_0002  run_time=15.0min
+run_105 2026-07-30 12:35:19,861 INFO: Subrun finished: cosbounce_cos_0002
+run_105 2026-07-30 12:35:31,084 INFO: Subrun started: cosbounce_cos_0003  run_time=15.0min
+run_105 2026-07-30 12:39:08,212 INFO: Subrun finished: cosbounce_cos_0003
+run_106 2026-07-30 12:40:03,572 INFO: Subrun started: stat090_0000  run_time=60.0min
+run_106 2026-07-30 13:40:15,540 INFO: Subrun finished: stat090_0000
+run_106 2026-07-30 13:40:28,445 INFO: Subrun started: stat090_0001  run_time=60.0min
+run_106 2026-07-30 14:40:37,429 INFO: Subrun finished: stat090_0001
+run_106 2026-07-30 14:40:50,372 INFO: Subrun started: stat090_0002  run_time=60.0min
+run_106 2026-07-30 15:41:02,836 INFO: Subrun finished: stat090_0002
+run_106 2026-07-30 15:41:16,530 INFO: Subrun started: stat090_0003  run_time=60.0min
+run_106 2026-07-30 16:41:26,261 INFO: Subrun finished: stat090_0003
+run_106 2026-07-30 16:41:39,495 INFO: Subrun started: stat090_0004  run_time=60.0min
+run_106 2026-07-30 17:41:51,540 INFO: Subrun finished: stat090_0004
+run_106 2026-07-30 17:42:05,160 INFO: Subrun started: stat090_0005  run_time=60.0min
+run_106 2026-07-30 18:42:16,374 INFO: Subrun finished: stat090_0005
+run_106 2026-07-30 18:42:29,739 INFO: Subrun started: stat090_0006  run_time=60.0min
+run_106 2026-07-30 19:42:54,708 INFO: Subrun finished: stat090_0006
+run_106 2026-07-30 19:43:08,104 INFO: Subrun started: stat090_0007  run_time=60.0min
+run_106 2026-07-30 20:43:18,773 INFO: Subrun finished: stat090_0007
+run_106 2026-07-30 20:43:31,779 INFO: Subrun started: stat090_0008  run_time=60.0min
+run_106 2026-07-30 21:43:40,725 INFO: Subrun finished: stat090_0008
+run_106 2026-07-30 21:43:53,544 INFO: Subrun started: stat090_0009  run_time=60.0min
+run_106 2026-07-30 22:44:04,407 INFO: Subrun finished: stat090_0009
+run_106 2026-07-30 22:44:17,285 INFO: Subrun started: stat090_0010  run_time=60.0min
+run_106 2026-07-30 23:41:53,588 INFO: Subrun finished: stat090_0010
+run_107 2026-07-30 23:42:45,342 INFO: Subrun started: cosbounce_cos_0000  run_time=15.0min
+run_107 2026-07-30 23:57:55,255 INFO: Subrun finished: cosbounce_cos_0000
+run_107 2026-07-30 23:58:06,980 INFO: Subrun started: cosbounce_cos_0001  run_time=15.0min
+run_107 2026-07-31 00:02:09,653 INFO: Subrun finished: cosbounce_cos_0001
+run_108 2026-07-31 00:03:05,735 INFO: Subrun started: stat090_0000  run_time=60.0min
+run_108 2026-07-31 01:03:22,037 INFO: Subrun finished: stat090_0000
+run_108 2026-07-31 01:03:35,617 INFO: Subrun started: stat090_0001  run_time=60.0min
+run_108 2026-07-31 02:03:46,740 INFO: Subrun finished: stat090_0001
+run_108 2026-07-31 02:04:00,367 INFO: Subrun started: stat090_0002  run_time=60.0min
+run_108 2026-07-31 03:04:09,524 INFO: Subrun finished: stat090_0002
+run_108 2026-07-31 03:04:22,583 INFO: Subrun started: stat090_0003  run_time=60.0min
+run_108 2026-07-31 04:04:33,524 INFO: Subrun finished: stat090_0003
+run_108 2026-07-31 04:04:46,909 INFO: Subrun started: stat090_0004  run_time=60.0min
+run_108 2026-07-31 05:05:04,372 INFO: Subrun finished: stat090_0004
+run_108 2026-07-31 05:05:17,604 INFO: Subrun started: stat090_0005  run_time=60.0min
+run_108 2026-07-31 05:57:58,324 INFO: Subrun finished: stat090_0005
+run_109 2026-07-31 05:58:50,456 INFO: Subrun started: cosbounce_cos_0000  run_time=15.0min
+run_109 2026-07-31 06:00:28,275 INFO: Subrun finished: cosbounce_cos_0000
+run_110 2026-07-31 06:01:23,761 INFO: Subrun started: stat090_0000  run_time=60.0min
+run_110 2026-07-31 07:01:37,142 INFO: Subrun finished: stat090_0000
+run_110 2026-07-31 07:01:50,072 INFO: Subrun started: stat090_0001  run_time=60.0min
+run_110 2026-07-31 08:02:04,404 INFO: Subrun finished: stat090_0001
+run_110 2026-07-31 08:02:17,451 INFO: Subrun started: stat090_0002  run_time=60.0min
+run_110 2026-07-31 09:02:33,204 INFO: Subrun finished: stat090_0002
+run_110 2026-07-31 09:02:46,647 INFO: Subrun started: stat090_0003  run_time=60.0min
+run_110 2026-07-31 09:08:32,118 INFO: Subrun finished: stat090_0003
+run_111 2026-07-31 09:09:24,700 INFO: Subrun started: cosbounce_cos_0000  run_time=15.0min
+run_111 2026-07-31 09:24:33,909 INFO: Subrun finished: cosbounce_cos_0000
+run_111 2026-07-31 09:24:45,229 INFO: Subrun started: cosbounce_cos_0001  run_time=15.0min
+run_111 2026-07-31 09:39:54,485 INFO: Subrun finished: cosbounce_cos_0001
+run_111 2026-07-31 09:40:05,446 INFO: Subrun started: cosbounce_cos_0002  run_time=15.0min
+run_111 2026-07-31 09:50:20,533 INFO: Subrun finished: cosbounce_cos_0002
+run_112 2026-07-31 09:51:16,951 INFO: Subrun started: stat090_0000  run_time=60.0min
+run_112 2026-07-31 10:51:28,372 INFO: Subrun finished: stat090_0000
+run_112 2026-07-31 10:51:41,383 INFO: Subrun started: stat090_0001  run_time=60.0min
+run_112 2026-07-31 11:51:54,420 INFO: Subrun finished: stat090_0001
+run_112 2026-07-31 11:52:07,759 INFO: Subrun started: stat090_0002  run_time=60.0min
+run_112 2026-07-31 12:51:15,316 INFO: Subrun finished: stat090_0002
+run_113 2026-07-31 12:52:07,279 INFO: Subrun started: cosbounce_cos_0000  run_time=15.0min
+run_113 2026-07-31 12:59:45,716 INFO: Subrun finished: cosbounce_cos_0000
+run_114 2026-07-31 13:00:42,037 INFO: Subrun started: stat090_0000  run_time=60.0min
+run_114 2026-07-31 14:00:53,556 INFO: Subrun finished: stat090_0000
+run_114 2026-07-31 14:01:07,020 INFO: Subrun started: stat090_0001  run_time=60.0min
+run_114 2026-07-31 15:01:28,373 INFO: Subrun finished: stat090_0001
+run_114 2026-07-31 15:01:41,741 INFO: Subrun started: stat090_0002  run_time=60.0min
+run_114 2026-07-31 16:01:51,543 INFO: Subrun finished: stat090_0002
+run_114 2026-07-31 16:02:04,835 INFO: Subrun started: stat090_0003  run_time=60.0min
+run_114 2026-07-31 16:56:58,996 INFO: Subrun finished: stat090_0003
+run_115 2026-07-31 16:57:53,802 INFO: Subrun started: cosbounce_cos_0000  run_time=15.0min
+run_115 2026-07-31 17:06:17,013 INFO: Subrun finished: cosbounce_cos_0000
+run_116 2026-07-31 17:07:13,589 INFO: Subrun started: stat090_0000  run_time=60.0min
+run_116 2026-07-31 18:07:22,740 INFO: Subrun finished: stat090_0000
+run_116 2026-07-31 18:07:35,835 INFO: Subrun started: stat090_0001  run_time=60.0min
+run_116 2026-07-31 19:07:47,572 INFO: Subrun finished: stat090_0001
+run_116 2026-07-31 19:08:00,435 INFO: Subrun started: stat090_0002  run_time=60.0min
+run_116 2026-07-31 20:08:11,956 INFO: Subrun finished: stat090_0002
+run_116 2026-07-31 20:08:25,030 INFO: Subrun started: stat090_0003  run_time=60.0min
+run_116 2026-07-31 21:08:40,756 INFO: Subrun finished: stat090_0003
+run_116 2026-07-31 21:08:54,248 INFO: Subrun started: stat090_0004  run_time=60.0min
+run_116 2026-07-31 22:09:09,556 INFO: Subrun finished: stat090_0004
+run_116 2026-07-31 22:09:22,432 INFO: Subrun started: stat090_0005  run_time=60.0min
+run_116 2026-07-31 23:09:32,341 INFO: Subrun finished: stat090_0005
+run_116 2026-07-31 23:09:45,679 INFO: Subrun started: stat090_0006  run_time=60.0min
+run_116 2026-08-01 00:10:01,140 INFO: Subrun finished: stat090_0006
+run_116 2026-08-01 00:10:14,517 INFO: Subrun started: stat090_0007  run_time=60.0min
+run_116 2026-08-01 01:10:25,654 INFO: Subrun finished: stat090_0007
+run_116 2026-08-01 01:10:38,600 INFO: Subrun started: stat090_0008  run_time=60.0min
+run_116 2026-08-01 02:10:55,604 INFO: Subrun finished: stat090_0008
+run_116 2026-08-01 02:11:09,187 INFO: Subrun started: stat090_0009  run_time=60.0min
+run_116 2026-08-01 03:11:19,157 INFO: Subrun finished: stat090_0009
+run_116 2026-08-01 03:11:32,277 INFO: Subrun started: stat090_0010  run_time=60.0min
+run_116 2026-08-01 04:11:47,957 INFO: Subrun finished: stat090_0010
+run_116 2026-08-01 04:12:01,246 INFO: Subrun started: stat090_0011  run_time=60.0min
+run_116 2026-08-01 05:12:16,756 INFO: Subrun finished: stat090_0011
+run_116 2026-08-01 05:12:30,515 INFO: Subrun started: stat090_0012  run_time=60.0min
+run_116 2026-08-01 06:12:45,557 INFO: Subrun finished: stat090_0012
+run_116 2026-08-01 06:12:58,381 INFO: Subrun started: stat090_0013  run_time=60.0min
+run_116 2026-08-01 07:13:08,276 INFO: Subrun finished: stat090_0013
+run_116 2026-08-01 07:13:21,987 INFO: Subrun started: stat090_0014  run_time=60.0min
+run_116 2026-08-01 08:13:33,173 INFO: Subrun finished: stat090_0014
+run_116 2026-08-01 08:13:46,217 INFO: Subrun started: stat090_0015  run_time=60.0min
+run_116 2026-08-01 09:13:57,684 INFO: Subrun finished: stat090_0015
+run_116 2026-08-01 09:14:11,119 INFO: Subrun started: stat090_0016  run_time=60.0min
+run_116 2026-08-01 10:14:24,437 INFO: Subrun finished: stat090_0016
+run_116 2026-08-01 10:14:38,166 INFO: Subrun started: stat090_0017  run_time=60.0min
+run_116 2026-08-01 11:14:49,140 INFO: Subrun finished: stat090_0017
+run_116 2026-08-01 11:15:02,846 INFO: Subrun started: stat090_0018  run_time=60.0min
+run_116 2026-08-01 12:15:15,508 INFO: Subrun finished: stat090_0018
+run_116 2026-08-01 12:15:28,771 INFO: Subrun started: stat090_0019  run_time=60.0min
+run_116 2026-08-01 13:15:44,308 INFO: Subrun finished: stat090_0019
+run_116 2026-08-01 13:15:57,720 INFO: Subrun started: stat090_0020  run_time=60.0min
+run_116 2026-08-01 14:16:13,109 INFO: Subrun finished: stat090_0020
+run_116 2026-08-01 14:16:26,477 INFO: Subrun started: stat090_0021  run_time=60.0min
+run_116 2026-08-01 15:16:37,111 INFO: Subrun finished: stat090_0021
+run_116 2026-08-01 15:16:51,045 INFO: Subrun started: stat090_0022  run_time=60.0min
+run_116 2026-08-01 16:17:02,004 INFO: Subrun finished: stat090_0022
+run_116 2026-08-01 16:17:15,581 INFO: Subrun started: stat090_0023  run_time=60.0min
+run_116 2026-08-01 17:17:25,112 INFO: Subrun finished: stat090_0023
+run_116 2026-08-01 17:17:38,858 INFO: Subrun started: stat090_0024  run_time=60.0min
+run_116 2026-08-01 18:17:48,788 INFO: Subrun finished: stat090_0024
+run_116 2026-08-01 18:18:02,429 INFO: Subrun started: stat090_0025  run_time=60.0min
+run_116 2026-08-01 19:18:13,111 INFO: Subrun finished: stat090_0025
+run_116 2026-08-01 19:18:26,820 INFO: Subrun started: stat090_0026  run_time=60.0min
+run_116 2026-08-01 20:18:39,543 INFO: Subrun finished: stat090_0026
+run_116 2026-08-01 20:18:52,426 INFO: Subrun started: stat090_0027  run_time=60.0min
+run_116 2026-08-01 21:19:04,759 INFO: Subrun finished: stat090_0027
+run_116 2026-08-01 21:19:18,296 INFO: Subrun started: stat090_0028  run_time=60.0min
+run_116 2026-08-01 22:16:36,723 INFO: Subrun finished: stat090_0028
+run_117 2026-08-01 22:17:32,251 INFO: Subrun started: cosbounce_cos_0000  run_time=15.0min
+run_117 2026-08-01 22:28:05,685 INFO: Subrun finished: cosbounce_cos_0000
+run_118 2026-08-01 22:29:02,112 INFO: Subrun started: stat090_0000  run_time=60.0min
+run_118 2026-08-01 23:29:15,189 INFO: Subrun finished: stat090_0000
+run_118 2026-08-01 23:29:27,999 INFO: Subrun started: stat090_0001  run_time=60.0min
+run_118 2026-08-02 00:29:38,804 INFO: Subrun finished: stat090_0001
+run_118 2026-08-02 00:29:52,353 INFO: Subrun started: stat090_0002  run_time=60.0min
+run_118 2026-08-02 01:30:01,973 INFO: Subrun finished: stat090_0002
+run_118 2026-08-02 01:30:15,214 INFO: Subrun started: stat090_0003  run_time=60.0min
+run_118 2026-08-02 02:30:30,772 INFO: Subrun finished: stat090_0003
+run_118 2026-08-02 02:30:44,317 INFO: Subrun started: stat090_0004  run_time=60.0min
+run_118 2026-08-02 03:31:01,172 INFO: Subrun finished: stat090_0004
+run_118 2026-08-02 03:31:14,886 INFO: Subrun started: stat090_0005  run_time=60.0min
+run_118 2026-08-02 04:31:25,172 INFO: Subrun finished: stat090_0005
+run_118 2026-08-02 04:31:38,985 INFO: Subrun started: stat090_0006  run_time=60.0min
+run_118 2026-08-02 05:31:53,908 INFO: Subrun finished: stat090_0006
+run_118 2026-08-02 05:32:06,916 INFO: Subrun started: stat090_0007  run_time=60.0min
+run_118 2026-08-02 06:32:22,772 INFO: Subrun finished: stat090_0007
+run_118 2026-08-02 06:32:36,289 INFO: Subrun started: stat090_0008  run_time=60.0min
+run_118 2026-08-02 07:32:56,308 INFO: Subrun finished: stat090_0008
+run_118 2026-08-02 07:33:09,520 INFO: Subrun started: stat090_0009  run_time=60.0min
+run_118 2026-08-02 08:33:20,309 INFO: Subrun finished: stat090_0009
+run_118 2026-08-02 08:33:33,479 INFO: Subrun started: stat090_0010  run_time=60.0min
+run_118 2026-08-02 09:33:46,359 INFO: Subrun finished: stat090_0010
+run_118 2026-08-02 09:33:59,398 INFO: Subrun started: stat090_0011  run_time=60.0min
+run_118 2026-08-02 10:34:26,357 INFO: Subrun finished: stat090_0011
+run_118 2026-08-02 10:34:40,151 INFO: Subrun started: stat090_0012  run_time=60.0min
+run_118 2026-08-02 11:34:55,162 INFO: Subrun finished: stat090_0012
+run_118 2026-08-02 11:35:08,722 INFO: Subrun started: stat090_0013  run_time=60.0min
+run_118 2026-08-02 12:35:18,772 INFO: Subrun finished: stat090_0013
+run_118 2026-08-02 12:35:32,162 INFO: Subrun started: stat090_0014  run_time=60.0min
+run_118 2026-08-02 13:35:44,372 INFO: Subrun finished: stat090_0014
+run_118 2026-08-02 13:35:57,213 INFO: Subrun started: stat090_0015  run_time=60.0min
+run_118 2026-08-02 14:36:07,157 INFO: Subrun finished: stat090_0015
+run_118 2026-08-02 14:36:20,896 INFO: Subrun started: stat090_0016  run_time=60.0min
+run_118 2026-08-02 15:36:35,956 INFO: Subrun finished: stat090_0016
+run_118 2026-08-02 15:36:49,741 INFO: Subrun started: stat090_0017  run_time=60.0min
+run_118 2026-08-02 16:37:01,111 INFO: Subrun finished: stat090_0017
+run_118 2026-08-02 16:37:14,825 INFO: Subrun started: stat090_0018  run_time=60.0min
+run_118 2026-08-02 17:37:25,182 INFO: Subrun finished: stat090_0018
+run_118 2026-08-02 17:37:38,578 INFO: Subrun started: stat090_0019  run_time=60.0min
+run_118 2026-08-02 18:37:47,892 INFO: Subrun finished: stat090_0019
+run_118 2026-08-02 18:38:01,587 INFO: Subrun started: stat090_0020  run_time=60.0min
+run_118 2026-08-02 18:58:24,372 INFO: Subrun finished: stat090_0020
+run_119 2026-08-02 18:59:18,496 INFO: Subrun started: cosbounce_cos_0000  run_time=15.0min
+run_119 2026-08-02 19:14:27,445 INFO: Subrun finished: cosbounce_cos_0000
+run_119 2026-08-02 19:14:39,047 INFO: Subrun started: cosbounce_cos_0001  run_time=15.0min
+run_119 2026-08-02 19:29:48,212 INFO: Subrun finished: cosbounce_cos_0001
+run_119 2026-08-02 19:29:59,429 INFO: Subrun started: cosbounce_cos_0002  run_time=15.0min
+run_119 2026-08-02 19:45:09,813 INFO: Subrun finished: cosbounce_cos_0002
+run_119 2026-08-02 19:45:20,998 INFO: Subrun started: cosbounce_cos_0003  run_time=15.0min
+run_119 2026-08-02 20:00:30,132 INFO: Subrun finished: cosbounce_cos_0003
+run_119 2026-08-02 20:00:41,967 INFO: Subrun started: cosbounce_cos_0004  run_time=15.0min
+run_119 2026-08-02 20:15:51,861 INFO: Subrun finished: cosbounce_cos_0004
+run_119 2026-08-02 20:16:02,988 INFO: Subrun started: cosbounce_cos_0005  run_time=15.0min
+run_119 2026-08-02 20:31:18,580 INFO: Subrun finished: cosbounce_cos_0005
+run_119 2026-08-02 20:31:30,178 INFO: Subrun started: cosbounce_cos_0006  run_time=15.0min
+run_119 2026-08-02 20:46:46,196 INFO: Subrun finished: cosbounce_cos_0006
+run_119 2026-08-02 20:46:58,111 INFO: Subrun started: cosbounce_cos_0007  run_time=15.0min
+run_119 2026-08-02 21:02:08,180 INFO: Subrun finished: cosbounce_cos_0007
+run_119 2026-08-02 21:02:19,264 INFO: Subrun started: cosbounce_cos_0008  run_time=15.0min
+run_119 2026-08-02 21:07:48,916 INFO: Subrun finished: cosbounce_cos_0008
+run_120 2026-08-02 21:08:45,584 INFO: Subrun started: stat090_0000  run_time=60.0min
+run_120 2026-08-02 21:27:35,731 INFO: Subrun finished: stat090_0000
+run_121 2026-08-02 21:28:31,011 INFO: Subrun started: cosbounce_cos_0000  run_time=15.0min
+run_121 2026-08-02 21:36:24,500 INFO: Subrun finished: cosbounce_cos_0000
+run_122 2026-08-02 21:37:19,751 INFO: Subrun started: stat090_0000  run_time=60.0min
+run_122 2026-08-02 22:36:48,435 INFO: Subrun finished: stat090_0000
+run_123 2026-08-02 22:37:41,196 INFO: Subrun started: cosbounce_cos_0000  run_time=15.0min
+run_123 2026-08-02 22:51:50,133 INFO: Subrun finished: cosbounce_cos_0000
+run_124 2026-08-02 22:52:46,820 INFO: Subrun started: stat090_0000  run_time=60.0min
+run_124 2026-08-02 23:52:59,956 INFO: Subrun finished: stat090_0000
+run_124 2026-08-02 23:53:13,316 INFO: Subrun started: stat090_0001  run_time=60.0min
+run_124 2026-08-03 00:53:24,404 INFO: Subrun finished: stat090_0001
+run_124 2026-08-03 00:53:37,434 INFO: Subrun started: stat090_0002  run_time=60.0min
+run_124 2026-08-03 01:53:46,740 INFO: Subrun finished: stat090_0002
+run_124 2026-08-03 01:54:00,323 INFO: Subrun started: stat090_0003  run_time=60.0min
+run_124 2026-08-03 02:54:09,525 INFO: Subrun finished: stat090_0003
+run_124 2026-08-03 02:54:22,593 INFO: Subrun started: stat090_0004  run_time=60.0min
+run_124 2026-08-03 03:54:35,957 INFO: Subrun finished: stat090_0004
+run_124 2026-08-03 03:54:49,378 INFO: Subrun started: stat090_0005  run_time=60.0min
+run_124 2026-08-03 04:54:58,740 INFO: Subrun finished: stat090_0005
+run_124 2026-08-03 04:55:12,293 INFO: Subrun started: stat090_0006  run_time=60.0min
+run_124 2026-08-03 05:55:22,740 INFO: Subrun finished: stat090_0006
+run_124 2026-08-03 05:55:35,770 INFO: Subrun started: stat090_0007  run_time=60.0min
+run_124 2026-08-03 06:55:44,373 INFO: Subrun finished: stat090_0007
+run_124 2026-08-03 06:55:57,298 INFO: Subrun started: stat090_0008  run_time=60.0min
+run_124 2026-08-03 07:56:09,204 INFO: Subrun finished: stat090_0008
+run_124 2026-08-03 07:56:22,787 INFO: Subrun started: stat090_0009  run_time=60.0min
+run_124 2026-08-03 08:56:34,740 INFO: Subrun finished: stat090_0009
+run_124 2026-08-03 08:56:48,300 INFO: Subrun started: stat090_0010  run_time=60.0min
+run_124 2026-08-03 09:56:58,740 INFO: Subrun finished: stat090_0010
+run_124 2026-08-03 09:57:11,988 INFO: Subrun started: stat090_0011  run_time=60.0min
+run_124 2026-08-03 10:57:26,324 INFO: Subrun finished: stat090_0011
+run_124 2026-08-03 10:57:39,885 INFO: Subrun started: stat090_0012  run_time=60.0min
+run_124 2026-08-03 11:57:49,108 INFO: Subrun finished: stat090_0012
+run_124 2026-08-03 11:58:02,300 INFO: Subrun started: stat090_0013  run_time=60.0min
+run_124 2026-08-03 12:58:14,260 INFO: Subrun finished: stat090_0013
+run_124 2026-08-03 12:58:27,305 INFO: Subrun started: stat090_0014  run_time=60.0min
+run_124 2026-08-03 13:58:39,157 INFO: Subrun finished: stat090_0014
+run_124 2026-08-03 13:58:51,973 INFO: Subrun started: stat090_0015  run_time=60.0min
+run_124 2026-08-03 14:59:02,008 INFO: Subrun finished: stat090_0015
+run_124 2026-08-03 14:59:15,129 INFO: Subrun started: stat090_0016  run_time=60.0min
+run_124 2026-08-03 15:59:26,453 INFO: Subrun finished: stat090_0016
+run_124 2026-08-03 15:59:39,489 INFO: Subrun started: stat090_0017  run_time=60.0min
+run_124 2026-08-03 16:24:15,155 INFO: Subrun finished: stat090_0017
+run_125 2026-08-03 16:25:08,181 INFO: Subrun started: cosbounce_cos_0000  run_time=15.0min
+run_125 2026-08-03 16:34:06,644 INFO: Subrun finished: cosbounce_cos_0000
+run_126 2026-08-03 16:35:02,963 INFO: Subrun started: stat090_0000  run_time=60.0min
+run_126 2026-08-03 16:51:46,868 INFO: Subrun finished: stat090_0000
+run_127 2026-08-03 16:52:41,381 INFO: Subrun started: cosbounce_cos_0000  run_time=15.0min
+run_127 2026-08-03 17:07:50,388 INFO: Subrun finished: cosbounce_cos_0000
+run_127 2026-08-03 17:08:01,578 INFO: Subrun started: cosbounce_cos_0001  run_time=15.0min
+run_127 2026-08-03 17:23:10,324 INFO: Subrun finished: cosbounce_cos_0001
+run_127 2026-08-03 17:23:22,251 INFO: Subrun started: cosbounce_cos_0002  run_time=15.0min
+run_127 2026-08-03 17:26:17,140 INFO: Subrun finished: cosbounce_cos_0002
+run_128 2026-08-03 17:27:13,574 INFO: Subrun started: stat090_0000  run_time=60.0min
+run_128 2026-08-03 17:58:38,388 INFO: Subrun finished: stat090_0000
+run_129 2026-08-03 17:59:33,235 INFO: Subrun started: cosbounce_cos_0000  run_time=15.0min
+run_129 2026-08-03 18:07:36,628 INFO: Subrun finished: cosbounce_cos_0000
+run_130 2026-08-03 18:08:32,950 INFO: Subrun started: stat090_0000  run_time=60.0min
+run_130 2026-08-03 19:08:50,356 INFO: Subrun finished: stat090_0000
+run_130 2026-08-03 19:09:04,093 INFO: Subrun started: stat090_0001  run_time=60.0min
+run_130 2026-08-03 20:09:21,525 INFO: Subrun finished: stat090_0001
+run_130 2026-08-03 20:09:35,333 INFO: Subrun started: stat090_0002  run_time=60.0min
+run_130 2026-08-03 21:09:50,324 INFO: Subrun finished: stat090_0002
+run_130 2026-08-03 21:10:03,816 INFO: Subrun started: stat090_0003  run_time=60.0min
+run_130 2026-08-03 22:10:19,124 INFO: Subrun finished: stat090_0003
+run_130 2026-08-03 22:10:32,022 INFO: Subrun started: stat090_0004  run_time=60.0min
+run_130 2026-08-03 22:31:33,939 INFO: Subrun finished: stat090_0004
+run_131 2026-08-03 22:32:26,872 INFO: Subrun started: cosbounce_cos_0000  run_time=15.0min
+run_131 2026-08-03 22:32:39,731 INFO: Subrun finished: cosbounce_cos_0000
+run_132 2026-08-03 22:33:35,208 INFO: Subrun started: stat090_0000  run_time=60.0min
+run_132 2026-08-03 23:33:52,052 INFO: Subrun finished: stat090_0000
+run_132 2026-08-03 23:34:05,062 INFO: Subrun started: stat090_0001  run_time=60.0min
+run_132 2026-08-04 00:34:15,797 INFO: Subrun finished: stat090_0001
+run_132 2026-08-04 00:34:28,865 INFO: Subrun started: stat090_0002  run_time=60.0min
+run_132 2026-08-04 01:34:43,956 INFO: Subrun finished: stat090_0002
+run_132 2026-08-04 01:34:57,183 INFO: Subrun started: stat090_0003  run_time=60.0min
+run_132 2026-08-04 02:35:06,933 INFO: Subrun finished: stat090_0003
+run_132 2026-08-04 02:35:20,691 INFO: Subrun started: stat090_0004  run_time=60.0min
+run_132 2026-08-04 03:35:29,909 INFO: Subrun finished: stat090_0004
+run_132 2026-08-04 03:35:43,497 INFO: Subrun started: stat090_0005  run_time=60.0min
+run_132 2026-08-04 04:35:57,556 INFO: Subrun finished: stat090_0005
+run_132 2026-08-04 04:36:10,422 INFO: Subrun started: stat090_0006  run_time=60.0min
+run_132 2026-08-04 05:36:19,636 INFO: Subrun finished: stat090_0006
+run_132 2026-08-04 05:36:32,892 INFO: Subrun started: stat090_0007  run_time=60.0min
+run_132 2026-08-04 06:36:44,340 INFO: Subrun finished: stat090_0007
+run_132 2026-08-04 06:36:57,386 INFO: Subrun started: stat090_0008  run_time=60.0min
+run_132 2026-08-04 07:37:11,925 INFO: Subrun finished: stat090_0008
+run_132 2026-08-04 07:37:25,623 INFO: Subrun started: stat090_0009  run_time=60.0min
+run_132 2026-08-04 08:37:37,268 INFO: Subrun finished: stat090_0009
+run_132 2026-08-04 08:37:50,685 INFO: Subrun started: stat090_0010  run_time=60.0min
+run_132 2026-08-04 08:44:42,744 INFO: Subrun finished: stat090_0010
+run_133 2026-08-04 09:24:02,400 INFO: Subrun started: cosbounce_cos_0000  run_time=15.0min
+run_133 2026-08-04 09:39:11,284 INFO: Subrun finished: cosbounce_cos_0000
+run_133 2026-08-04 09:39:23,050 INFO: Subrun started: cosbounce_cos_0001  run_time=15.0min
+run_133 2026-08-04 09:54:31,989 INFO: Subrun finished: cosbounce_cos_0001
+run_133 2026-08-04 09:54:43,706 INFO: Subrun started: cosbounce_cos_0002  run_time=15.0min
+run_133 2026-08-04 10:09:52,565 INFO: Subrun finished: cosbounce_cos_0002
+run_133 2026-08-04 10:10:04,490 INFO: Subrun started: cosbounce_cos_0003  run_time=15.0min
+run_133 2026-08-04 10:25:13,460 INFO: Subrun finished: cosbounce_cos_0003
+run_133 2026-08-04 10:25:25,346 INFO: Subrun started: cosbounce_cos_0004  run_time=15.0min
+run_133 2026-08-04 10:40:35,636 INFO: Subrun finished: cosbounce_cos_0004
+run_133 2026-08-04 10:40:46,759 INFO: Subrun started: cosbounce_cos_0005  run_time=15.0min
+run_133 2026-08-04 10:55:57,108 INFO: Subrun finished: cosbounce_cos_0005
+run_133 2026-08-04 10:56:08,873 INFO: Subrun started: cosbounce_cos_0006  run_time=15.0min
+run_133 2026-08-04 11:11:19,413 INFO: Subrun finished: cosbounce_cos_0006
+run_133 2026-08-04 11:11:31,338 INFO: Subrun started: cosbounce_cos_0007  run_time=15.0min
+run_133 2026-08-04 11:26:41,332 INFO: Subrun finished: cosbounce_cos_0007
+run_133 2026-08-04 11:26:52,973 INFO: Subrun started: cosbounce_cos_0008  run_time=15.0min
+run_133 2026-08-04 11:42:04,660 INFO: Subrun finished: cosbounce_cos_0008
+run_133 2026-08-04 11:42:16,365 INFO: Subrun started: cosbounce_cos_0009  run_time=15.0min
+run_133 2026-08-04 11:57:26,389 INFO: Subrun finished: cosbounce_cos_0009
+run_133 2026-08-04 11:57:37,788 INFO: Subrun started: cosbounce_cos_0010  run_time=15.0min
+run_133 2026-08-04 12:12:46,837 INFO: Subrun finished: cosbounce_cos_0010
+run_133 2026-08-04 12:12:58,187 INFO: Subrun started: cosbounce_cos_0011  run_time=15.0min
+run_133 2026-08-04 12:28:07,220 INFO: Subrun finished: cosbounce_cos_0011
+run_133 2026-08-04 12:28:19,038 INFO: Subrun started: cosbounce_cos_0012  run_time=15.0min
+run_133 2026-08-04 12:43:27,924 INFO: Subrun finished: cosbounce_cos_0012
+run_133 2026-08-04 12:43:39,515 INFO: Subrun started: cosbounce_cos_0013  run_time=15.0min
+run_133 2026-08-04 12:58:48,564 INFO: Subrun finished: cosbounce_cos_0013
+run_133 2026-08-04 12:59:00,454 INFO: Subrun started: cosbounce_cos_0014  run_time=15.0min
+run_133 2026-08-04 13:14:09,397 INFO: Subrun finished: cosbounce_cos_0014
+run_133 2026-08-04 13:14:20,770 INFO: Subrun started: cosbounce_cos_0015  run_time=15.0min
+run_133 2026-08-04 13:29:29,588 INFO: Subrun finished: cosbounce_cos_0015
+run_133 2026-08-04 13:29:41,034 INFO: Subrun started: cosbounce_cos_0016  run_time=15.0min
+run_133 2026-08-04 13:44:50,164 INFO: Subrun finished: cosbounce_cos_0016
+run_133 2026-08-04 13:45:01,308 INFO: Subrun started: cosbounce_cos_0017  run_time=15.0min
+run_133 2026-08-04 14:00:11,764 INFO: Subrun finished: cosbounce_cos_0017
+run_133 2026-08-04 14:00:23,645 INFO: Subrun started: cosbounce_cos_0018  run_time=15.0min
+run_133 2026-08-04 14:15:32,597 INFO: Subrun finished: cosbounce_cos_0018
+run_133 2026-08-04 14:15:44,017 INFO: Subrun started: cosbounce_cos_0019  run_time=15.0min
+run_133 2026-08-04 14:30:55,989 INFO: Subrun finished: cosbounce_cos_0019
+run_133 2026-08-04 14:31:07,588 INFO: Subrun started: cosbounce_cos_0020  run_time=15.0min
+run_133 2026-08-04 14:46:18,868 INFO: Subrun finished: cosbounce_cos_0020
+run_133 2026-08-04 14:46:29,968 INFO: Subrun started: cosbounce_cos_0021  run_time=15.0min
+run_133 2026-08-04 15:01:39,124 INFO: Subrun finished: cosbounce_cos_0021
+run_133 2026-08-04 15:01:50,471 INFO: Subrun started: cosbounce_cos_0022  run_time=15.0min
+run_133 2026-08-04 15:16:59,956 INFO: Subrun finished: cosbounce_cos_0022
+run_133 2026-08-04 15:17:11,226 INFO: Subrun started: cosbounce_cos_0023  run_time=15.0min
+run_133 2026-08-04 15:32:20,153 INFO: Subrun finished: cosbounce_cos_0023
+run_134 2026-08-04 16:50:32,803 INFO: Subrun started: cosbounce_cos_0000  run_time=15.0min
+run_134 2026-08-04 17:05:41,876 INFO: Subrun finished: cosbounce_cos_0000
+run_134 2026-08-04 17:05:53,785 INFO: Subrun started: cosbounce_cos_0001  run_time=15.0min
+run_134 2026-08-04 17:21:02,581 INFO: Subrun finished: cosbounce_cos_0001
+run_134 2026-08-04 17:21:14,316 INFO: Subrun started: cosbounce_cos_0002  run_time=15.0min
+run_134 2026-08-04 17:36:23,348 INFO: Subrun finished: cosbounce_cos_0002
+run_134 2026-08-04 17:36:34,411 INFO: Subrun started: cosbounce_cos_0003  run_time=15.0min
+run_134 2026-08-04 17:51:43,412 INFO: Subrun finished: cosbounce_cos_0003
+run_134 2026-08-04 17:51:54,438 INFO: Subrun started: cosbounce_cos_0004  run_time=15.0min
+run_134 2026-08-04 18:07:03,284 INFO: Subrun finished: cosbounce_cos_0004
+run_134 2026-08-04 18:07:14,688 INFO: Subrun started: cosbounce_cos_0005  run_time=15.0min
+run_134 2026-08-04 18:22:23,860 INFO: Subrun finished: cosbounce_cos_0005
+run_134 2026-08-04 18:22:35,479 INFO: Subrun started: cosbounce_cos_0006  run_time=15.0min
+run_134 2026-08-04 18:37:44,628 INFO: Subrun finished: cosbounce_cos_0006
+run_134 2026-08-04 18:37:56,297 INFO: Subrun started: cosbounce_cos_0007  run_time=15.0min
+run_134 2026-08-04 18:53:05,332 INFO: Subrun finished: cosbounce_cos_0007
+run_134 2026-08-04 18:53:16,921 INFO: Subrun started: cosbounce_cos_0008  run_time=15.0min
+run_134 2026-08-04 19:08:25,973 INFO: Subrun finished: cosbounce_cos_0008
+run_134 2026-08-04 19:08:37,441 INFO: Subrun started: cosbounce_cos_0009  run_time=15.0min
+run_134 2026-08-04 19:23:46,228 INFO: Subrun finished: cosbounce_cos_0009
+run_134 2026-08-04 19:23:57,637 INFO: Subrun started: cosbounce_cos_0010  run_time=15.0min
+run_134 2026-08-04 19:38:56,884 INFO: Subrun finished: cosbounce_cos_0010
+run_135 2026-08-04 19:39:53,332 INFO: Subrun started: stat090_0000  run_time=60.0min
+run_135 2026-08-04 20:30:00,691 INFO: Subrun finished: stat090_0000
+run_136 2026-08-04 20:30:53,267 INFO: Subrun started: cosbounce_cos_0000  run_time=15.0min
+run_136 2026-08-04 20:34:51,572 INFO: Subrun finished: cosbounce_cos_0000
+run_137 2026-08-04 20:35:47,031 INFO: Subrun started: stat090_0000  run_time=60.0min
+run_137 2026-08-04 20:40:54,455 INFO: Subrun finished: stat090_0000
+run_138 2026-08-04 20:41:49,348 INFO: Subrun started: cosbounce_cos_0000  run_time=15.0min
+run_138 2026-08-04 20:56:58,549 INFO: Subrun finished: cosbounce_cos_0000
+run_138 2026-08-04 20:57:10,226 INFO: Subrun started: cosbounce_cos_0001  run_time=15.0min
+run_138 2026-08-04 21:12:22,389 INFO: Subrun finished: cosbounce_cos_0001
+run_138 2026-08-04 21:12:34,245 INFO: Subrun started: cosbounce_cos_0002  run_time=15.0min
+run_138 2026-08-04 21:27:45,653 INFO: Subrun finished: cosbounce_cos_0002
+run_138 2026-08-04 21:27:57,606 INFO: Subrun started: cosbounce_cos_0003  run_time=15.0min
+run_138 2026-08-04 21:43:08,596 INFO: Subrun finished: cosbounce_cos_0003
+run_138 2026-08-04 21:43:20,170 INFO: Subrun started: cosbounce_cos_0004  run_time=15.0min
+run_138 2026-08-04 21:58:29,108 INFO: Subrun finished: cosbounce_cos_0004
+run_138 2026-08-04 21:58:40,597 INFO: Subrun started: cosbounce_cos_0005  run_time=15.0min
+run_138 2026-08-04 22:00:24,564 INFO: Subrun finished: cosbounce_cos_0005
+run_139 2026-08-04 22:01:20,096 INFO: Subrun started: stat090_0000  run_time=60.0min
+run_139 2026-08-04 23:01:44,308 INFO: Subrun finished: stat090_0000
+run_139 2026-08-04 23:01:57,508 INFO: Subrun started: stat090_0001  run_time=60.0min
+run_139 2026-08-05 00:02:11,956 INFO: Subrun finished: stat090_0001
+run_139 2026-08-05 00:02:24,887 INFO: Subrun started: stat090_0002  run_time=60.0min
+run_139 2026-08-05 01:02:40,308 INFO: Subrun finished: stat090_0002
+run_139 2026-08-05 01:02:53,332 INFO: Subrun started: stat090_0003  run_time=60.0min
+run_139 2026-08-05 02:03:11,348 INFO: Subrun finished: stat090_0003
+run_139 2026-08-05 02:03:24,966 INFO: Subrun started: stat090_0004  run_time=60.0min
+run_139 2026-08-05 03:03:41,237 INFO: Subrun finished: stat090_0004
+run_139 2026-08-05 03:03:54,179 INFO: Subrun started: stat090_0005  run_time=60.0min
+run_139 2026-08-05 04:04:04,853 INFO: Subrun finished: stat090_0005
+run_139 2026-08-05 04:04:18,479 INFO: Subrun started: stat090_0006  run_time=60.0min
+run_139 2026-08-05 05:04:39,156 INFO: Subrun finished: stat090_0006
+run_139 2026-08-05 05:04:52,825 INFO: Subrun started: stat090_0007  run_time=60.0min
+run_139 2026-08-05 06:05:03,668 INFO: Subrun finished: stat090_0007
+run_139 2026-08-05 06:05:16,899 INFO: Subrun started: stat090_0008  run_time=60.0min
+run_139 2026-08-05 07:05:26,324 INFO: Subrun finished: stat090_0008
+run_139 2026-08-05 07:05:39,349 INFO: Subrun started: stat090_0009  run_time=60.0min
+run_139 2026-08-05 08:05:53,588 INFO: Subrun finished: stat090_0009
+run_139 2026-08-05 08:06:07,079 INFO: Subrun started: stat090_0010  run_time=60.0min
+run_139 2026-08-05 08:57:30,804 INFO: Subrun finished: stat090_0010
+run_140 2026-08-05 08:58:25,350 INFO: Subrun started: cosbounce_cos_0000  run_time=15.0min
+run_140 2026-08-05 09:13:36,052 INFO: Subrun finished: cosbounce_cos_0000
+run_140 2026-08-05 09:13:47,730 INFO: Subrun started: cosbounce_cos_0001  run_time=15.0min
+run_140 2026-08-05 09:28:58,999 INFO: Subrun finished: cosbounce_cos_0001
+run_140 2026-08-05 09:29:10,591 INFO: Subrun started: cosbounce_cos_0002  run_time=15.0min
+run_140 2026-08-05 09:42:22,067 INFO: Subrun finished: cosbounce_cos_0002
+run_141 2026-08-05 09:43:17,472 INFO: Subrun started: stat090_0000  run_time=60.0min
+run_141 2026-08-05 10:37:11,219 INFO: Subrun finished: stat090_0000
+run_142 2026-08-05 10:38:06,705 INFO: Subrun started: cosbounce_cos_0000  run_time=15.0min
+run_142 2026-08-05 10:53:28,372 INFO: Subrun finished: cosbounce_cos_0000
+run_142 2026-08-05 10:53:40,306 INFO: Subrun started: cosbounce_cos_0001  run_time=15.0min
+run_142 2026-08-05 11:08:55,540 INFO: Subrun finished: cosbounce_cos_0001
+run_142 2026-08-05 11:09:07,416 INFO: Subrun started: cosbounce_cos_0002  run_time=15.0min
+run_142 2026-08-05 11:24:25,140 INFO: Subrun finished: cosbounce_cos_0002
+run_142 2026-08-05 11:24:36,379 INFO: Subrun started: cosbounce_cos_0003  run_time=15.0min
+run_142 2026-08-05 11:39:51,093 INFO: Subrun finished: cosbounce_cos_0003
+run_142 2026-08-05 11:40:02,140 INFO: Subrun started: cosbounce_cos_0004  run_time=15.0min
+run_142 2026-08-05 11:55:21,012 INFO: Subrun finished: cosbounce_cos_0004
+run_142 2026-08-05 11:55:32,153 INFO: Subrun started: cosbounce_cos_0005  run_time=15.0min
+run_142 2026-08-05 12:10:53,812 INFO: Subrun finished: cosbounce_cos_0005
+run_142 2026-08-05 12:11:05,404 INFO: Subrun started: cosbounce_cos_0006  run_time=15.0min
+run_142 2026-08-05 12:24:05,046 INFO: Subrun finished: cosbounce_cos_0006
+run_143 2026-08-05 12:25:01,710 INFO: Subrun started: stat090_0000  run_time=60.0min
+run_143 2026-08-05 13:25:28,756 INFO: Subrun finished: stat090_0000
+run_143 2026-08-05 13:25:41,986 INFO: Subrun started: stat090_0001  run_time=60.0min
+run_143 2026-08-05 13:47:41,749 INFO: Subrun finished: stat090_0001
+run_144 2026-08-05 13:48:35,653 INFO: Subrun started: cosbounce_cos_0000  run_time=15.0min
+run_144 2026-08-05 14:03:55,831 INFO: Subrun finished: cosbounce_cos_0000
+run_144 2026-08-05 14:04:06,926 INFO: Subrun started: cosbounce_cos_0001  run_time=15.0min
+run_144 2026-08-05 14:05:25,175 INFO: Subrun finished: cosbounce_cos_0001
+run_145 2026-08-05 14:06:21,969 INFO: Subrun started: stat090_0000  run_time=60.0min
+run_145 2026-08-05 15:06:45,556 INFO: Subrun finished: stat090_0000
+run_145 2026-08-05 15:06:59,090 INFO: Subrun started: stat090_0001  run_time=60.0min
+run_145 2026-08-05 16:07:14,356 INFO: Subrun finished: stat090_0001
+run_145 2026-08-05 16:07:27,442 INFO: Subrun started: stat090_0002  run_time=60.0min
+run_145 2026-08-05 17:07:42,710 INFO: Subrun finished: stat090_0002
+run_145 2026-08-05 17:07:55,703 INFO: Subrun started: stat090_0003  run_time=60.0min
+run_145 2026-08-05 17:11:45,396 INFO: Subrun finished: stat090_0003
+run_146 2026-08-05 17:12:40,709 INFO: Subrun started: cosbounce_cos_0000  run_time=15.0min
+run_146 2026-08-05 17:27:52,116 INFO: Subrun finished: cosbounce_cos_0000
+run_146 2026-08-05 17:28:03,567 INFO: Subrun started: cosbounce_cos_0001  run_time=15.0min
+run_146 2026-08-05 17:34:15,223 INFO: Subrun finished: cosbounce_cos_0001
+run_147 2026-08-05 17:35:10,642 INFO: Subrun started: stat090_0000  run_time=60.0min
+run_147 2026-08-05 18:35:35,604 INFO: Subrun finished: stat090_0000
+run_147 2026-08-05 18:35:49,255 INFO: Subrun started: stat090_0001  run_time=60.0min
+run_147 2026-08-05 19:36:02,356 INFO: Subrun finished: stat090_0001
+run_147 2026-08-05 19:36:16,159 INFO: Subrun started: stat090_0002  run_time=60.0min
+run_147 2026-08-05 20:36:31,412 INFO: Subrun finished: stat090_0002
+run_147 2026-08-05 20:36:44,446 INFO: Subrun started: stat090_0003  run_time=60.0min
+run_147 2026-08-05 21:37:03,156 INFO: Subrun finished: stat090_0003
+run_147 2026-08-05 21:37:16,215 INFO: Subrun started: stat090_0004  run_time=60.0min
+run_147 2026-08-05 22:37:38,358 INFO: Subrun finished: stat090_0004
+run_147 2026-08-05 22:37:51,331 INFO: Subrun started: stat090_0005  run_time=60.0min
+run_147 2026-08-05 23:38:07,157 INFO: Subrun finished: stat090_0005
+run_147 2026-08-05 23:38:20,482 INFO: Subrun started: stat090_0006  run_time=60.0min
+run_147 2026-08-06 00:38:55,156 INFO: Subrun finished: stat090_0006
+run_147 2026-08-06 00:39:08,876 INFO: Subrun started: stat090_0007  run_time=60.0min
+run_147 2026-08-06 01:39:25,108 INFO: Subrun finished: stat090_0007
+run_147 2026-08-06 01:39:38,765 INFO: Subrun started: stat090_0008  run_time=60.0min
+run_147 2026-08-06 02:39:56,340 INFO: Subrun finished: stat090_0008
+run_147 2026-08-06 02:40:09,833 INFO: Subrun started: stat090_0009  run_time=60.0min
+run_147 2026-08-06 03:40:25,972 INFO: Subrun finished: stat090_0009
+run_147 2026-08-06 03:40:38,943 INFO: Subrun started: stat090_0010  run_time=60.0min
+run_147 2026-08-06 04:40:53,940 INFO: Subrun finished: stat090_0010
+run_147 2026-08-06 04:41:07,430 INFO: Subrun started: stat090_0011  run_time=60.0min
+run_147 2026-08-06 05:41:22,164 INFO: Subrun finished: stat090_0011
+run_147 2026-08-06 05:41:35,839 INFO: Subrun started: stat090_0012  run_time=60.0min
+run_147 2026-08-06 06:41:51,156 INFO: Subrun finished: stat090_0012
+run_147 2026-08-06 06:42:04,508 INFO: Subrun started: stat090_0013  run_time=60.0min
+run_147 2026-08-06 07:42:16,564 INFO: Subrun finished: stat090_0013
+run_147 2026-08-06 07:42:30,322 INFO: Subrun started: stat090_0014  run_time=60.0min
+run_147 2026-08-06 08:42:51,572 INFO: Subrun finished: stat090_0014
+run_147 2026-08-06 08:43:05,129 INFO: Subrun started: stat090_0015  run_time=60.0min
+run_147 2026-08-06 09:43:15,700 INFO: Subrun finished: stat090_0015
+run_147 2026-08-06 09:43:29,259 INFO: Subrun started: stat090_0016  run_time=60.0min
+run_147 2026-08-06 10:43:47,956 INFO: Subrun finished: stat090_0016
+run_147 2026-08-06 10:44:01,512 INFO: Subrun started: stat090_0017  run_time=60.0min
+run_147 2026-08-06 11:44:14,132 INFO: Subrun finished: stat090_0017
+run_147 2026-08-06 11:44:27,158 INFO: Subrun started: stat090_0018  run_time=60.0min
+run_147 2026-08-06 12:44:46,708 INFO: Subrun finished: stat090_0018
+run_147 2026-08-06 12:44:59,711 INFO: Subrun started: stat090_0019  run_time=60.0min
+run_147 2026-08-06 13:45:09,172 INFO: Subrun finished: stat090_0019
+run_147 2026-08-06 13:45:22,753 INFO: Subrun started: stat090_0020  run_time=60.0min
+run_147 2026-08-06 14:28:17,460 INFO: Subrun finished: stat090_0020
+run_148 2026-08-06 14:40:20,743 INFO: Subrun started: cosbounce_cos_0000  run_time=15.0min
+run_149 2026-08-06 14:51:16,331 INFO: Subrun started: cosbounce_cos_0000  run_time=15.0min
+run_149 2026-08-06 15:06:25,332 INFO: Subrun finished: cosbounce_cos_0000
+run_149 2026-08-06 15:06:37,165 INFO: Subrun started: cosbounce_cos_0001  run_time=15.0min
+run_149 2026-08-06 15:21:45,972 INFO: Subrun finished: cosbounce_cos_0001
+run_149 2026-08-06 15:21:57,436 INFO: Subrun started: cosbounce_cos_0002  run_time=15.0min
+run_149 2026-08-06 15:37:07,892 INFO: Subrun finished: cosbounce_cos_0002
+run_149 2026-08-06 15:37:18,989 INFO: Subrun started: cosbounce_cos_0003  run_time=15.0min
+run_149 2026-08-06 15:52:28,084 INFO: Subrun finished: cosbounce_cos_0003
+run_149 2026-08-06 15:52:39,216 INFO: Subrun started: cosbounce_cos_0004  run_time=15.0min
+run_149 2026-08-06 16:07:49,556 INFO: Subrun finished: cosbounce_cos_0004
+run_149 2026-08-06 16:08:00,574 INFO: Subrun started: cosbounce_cos_0005  run_time=15.0min
+run_149 2026-08-06 16:23:11,860 INFO: Subrun finished: cosbounce_cos_0005
+run_149 2026-08-06 16:23:23,100 INFO: Subrun started: cosbounce_cos_0006  run_time=15.0min
+run_149 2026-08-06 16:38:33,652 INFO: Subrun finished: cosbounce_cos_0006
+run_149 2026-08-06 16:38:44,924 INFO: Subrun started: cosbounce_cos_0007  run_time=15.0min
+run_149 2026-08-06 16:53:55,444 INFO: Subrun finished: cosbounce_cos_0007
+run_149 2026-08-06 16:54:06,414 INFO: Subrun started: cosbounce_cos_0008  run_time=15.0min
+run_149 2026-08-06 17:09:15,508 INFO: Subrun finished: cosbounce_cos_0008
+run_149 2026-08-06 17:09:26,714 INFO: Subrun started: cosbounce_cos_0009  run_time=15.0min
+run_149 2026-08-06 17:24:35,700 INFO: Subrun finished: cosbounce_cos_0009
+run_149 2026-08-06 17:24:47,087 INFO: Subrun started: cosbounce_cos_0010  run_time=15.0min
+run_149 2026-08-06 17:39:56,084 INFO: Subrun finished: cosbounce_cos_0010
+run_149 2026-08-06 17:40:07,252 INFO: Subrun started: cosbounce_cos_0011  run_time=15.0min
+run_149 2026-08-06 17:55:16,213 INFO: Subrun finished: cosbounce_cos_0011
+run_149 2026-08-06 17:55:27,885 INFO: Subrun started: cosbounce_cos_0012  run_time=15.0min
+run_149 2026-08-06 18:10:36,916 INFO: Subrun finished: cosbounce_cos_0012
+run_149 2026-08-06 18:10:48,187 INFO: Subrun started: cosbounce_cos_0013  run_time=15.0min
+run_149 2026-08-06 18:25:57,108 INFO: Subrun finished: cosbounce_cos_0013
+run_149 2026-08-06 18:26:08,780 INFO: Subrun started: cosbounce_cos_0014  run_time=15.0min
+run_149 2026-08-06 18:41:17,620 INFO: Subrun finished: cosbounce_cos_0014
+run_149 2026-08-06 18:41:29,439 INFO: Subrun started: cosbounce_cos_0015  run_time=15.0min
+run_149 2026-08-06 18:56:38,453 INFO: Subrun finished: cosbounce_cos_0015
+run_149 2026-08-06 18:56:49,878 INFO: Subrun started: cosbounce_cos_0016  run_time=15.0min
+run_149 2026-08-06 19:11:58,644 INFO: Subrun finished: cosbounce_cos_0016
+run_149 2026-08-06 19:12:10,358 INFO: Subrun started: cosbounce_cos_0017  run_time=15.0min
+run_149 2026-08-06 19:27:19,348 INFO: Subrun finished: cosbounce_cos_0017
+run_149 2026-08-06 19:27:31,007 INFO: Subrun started: cosbounce_cos_0018  run_time=15.0min
+run_149 2026-08-06 19:42:39,924 INFO: Subrun finished: cosbounce_cos_0018
+run_149 2026-08-06 19:42:51,697 INFO: Subrun started: cosbounce_cos_0019  run_time=15.0min
+run_149 2026-08-06 19:58:00,693 INFO: Subrun finished: cosbounce_cos_0019
+run_149 2026-08-06 19:58:12,322 INFO: Subrun started: cosbounce_cos_0020  run_time=15.0min
+run_149 2026-08-06 20:13:21,332 INFO: Subrun finished: cosbounce_cos_0020
+run_149 2026-08-06 20:13:32,514 INFO: Subrun started: cosbounce_cos_0021  run_time=15.0min
+run_149 2026-08-06 20:28:41,525 INFO: Subrun finished: cosbounce_cos_0021
+run_149 2026-08-06 20:28:53,159 INFO: Subrun started: cosbounce_cos_0022  run_time=15.0min
+run_149 2026-08-06 20:44:02,100 INFO: Subrun finished: cosbounce_cos_0022
+run_149 2026-08-06 20:44:14,011 INFO: Subrun started: cosbounce_cos_0023  run_time=15.0min
+run_149 2026-08-06 20:59:22,932 INFO: Subrun finished: cosbounce_cos_0023
+run_149 2026-08-06 20:59:34,632 INFO: Subrun started: cosbounce_cos_0024  run_time=15.0min
+run_149 2026-08-06 21:14:43,572 INFO: Subrun finished: cosbounce_cos_0024
+run_149 2026-08-06 21:14:55,061 INFO: Subrun started: cosbounce_cos_0025  run_time=15.0min
+run_149 2026-08-06 21:30:04,084 INFO: Subrun finished: cosbounce_cos_0025
+run_149 2026-08-06 21:30:15,252 INFO: Subrun started: cosbounce_cos_0026  run_time=15.0min
+run_149 2026-08-06 21:45:24,276 INFO: Subrun finished: cosbounce_cos_0026
+run_149 2026-08-06 21:45:35,825 INFO: Subrun started: cosbounce_cos_0027  run_time=15.0min
+run_149 2026-08-06 22:00:44,852 INFO: Subrun finished: cosbounce_cos_0027
+run_149 2026-08-06 22:00:55,797 INFO: Subrun started: cosbounce_cos_0028  run_time=15.0min
+run_149 2026-08-06 22:16:04,725 INFO: Subrun finished: cosbounce_cos_0028
+run_149 2026-08-06 22:16:16,337 INFO: Subrun started: cosbounce_cos_0029  run_time=15.0min
+run_149 2026-08-06 22:31:25,428 INFO: Subrun finished: cosbounce_cos_0029
+run_149 2026-08-06 22:31:36,413 INFO: Subrun started: cosbounce_cos_0030  run_time=15.0min
+run_149 2026-08-06 22:46:46,645 INFO: Subrun finished: cosbounce_cos_0030
+run_149 2026-08-06 22:46:57,874 INFO: Subrun started: cosbounce_cos_0031  run_time=15.0min
+run_149 2026-08-06 23:02:06,772 INFO: Subrun finished: cosbounce_cos_0031
+run_149 2026-08-06 23:02:18,396 INFO: Subrun started: cosbounce_cos_0032  run_time=15.0min
+run_149 2026-08-06 23:17:28,053 INFO: Subrun finished: cosbounce_cos_0032
+run_149 2026-08-06 23:17:39,628 INFO: Subrun started: cosbounce_cos_0033  run_time=15.0min
+run_149 2026-08-06 23:32:49,716 INFO: Subrun finished: cosbounce_cos_0033
+run_149 2026-08-06 23:33:00,775 INFO: Subrun started: cosbounce_cos_0034  run_time=15.0min
+run_149 2026-08-06 23:48:09,975 INFO: Subrun finished: cosbounce_cos_0034
+run_149 2026-08-06 23:48:21,420 INFO: Subrun started: cosbounce_cos_0035  run_time=15.0min
+run_149 2026-08-07 00:03:31,126 INFO: Subrun finished: cosbounce_cos_0035
+run_149 2026-08-07 00:03:42,309 INFO: Subrun started: cosbounce_cos_0036  run_time=15.0min
+run_149 2026-08-07 00:18:53,428 INFO: Subrun finished: cosbounce_cos_0036
+run_149 2026-08-07 00:19:04,768 INFO: Subrun started: cosbounce_cos_0037  run_time=15.0min
+run_149 2026-08-07 00:34:14,964 INFO: Subrun finished: cosbounce_cos_0037
+run_149 2026-08-07 00:34:26,015 INFO: Subrun started: cosbounce_cos_0038  run_time=15.0min
+run_149 2026-08-07 00:49:37,204 INFO: Subrun finished: cosbounce_cos_0038
+run_149 2026-08-07 00:49:48,529 INFO: Subrun started: cosbounce_cos_0039  run_time=15.0min
+run_149 2026-08-07 01:04:57,588 INFO: Subrun finished: cosbounce_cos_0039
+run_149 2026-08-07 01:05:09,473 INFO: Subrun started: cosbounce_cos_0040  run_time=15.0min
+run_149 2026-08-07 01:20:18,868 INFO: Subrun finished: cosbounce_cos_0040
+run_149 2026-08-07 01:20:30,215 INFO: Subrun started: cosbounce_cos_0041  run_time=15.0min
+run_149 2026-08-07 01:35:39,444 INFO: Subrun finished: cosbounce_cos_0041
+run_149 2026-08-07 01:35:51,055 INFO: Subrun started: cosbounce_cos_0042  run_time=15.0min
+run_149 2026-08-07 01:51:00,532 INFO: Subrun finished: cosbounce_cos_0042
+run_149 2026-08-07 01:51:12,475 INFO: Subrun started: cosbounce_cos_0043  run_time=15.0min
+run_149 2026-08-07 02:06:22,583 INFO: Subrun finished: cosbounce_cos_0043
+run_149 2026-08-07 02:06:34,465 INFO: Subrun started: cosbounce_cos_0044  run_time=15.0min
+run_149 2026-08-07 02:21:44,181 INFO: Subrun finished: cosbounce_cos_0044
+run_149 2026-08-07 02:21:55,931 INFO: Subrun started: cosbounce_cos_0045  run_time=15.0min
+run_149 2026-08-07 02:37:05,588 INFO: Subrun finished: cosbounce_cos_0045
+run_149 2026-08-07 02:37:16,571 INFO: Subrun started: cosbounce_cos_0046  run_time=15.0min
+run_149 2026-08-07 02:52:25,588 INFO: Subrun finished: cosbounce_cos_0046
+run_149 2026-08-07 02:52:36,745 INFO: Subrun started: cosbounce_cos_0047  run_time=15.0min
+run_149 2026-08-07 03:07:45,716 INFO: Subrun finished: cosbounce_cos_0047
+run_149 2026-08-07 03:07:57,002 INFO: Subrun started: cosbounce_cos_0048  run_time=15.0min
+run_149 2026-08-07 03:23:06,037 INFO: Subrun finished: cosbounce_cos_0048
+run_149 2026-08-07 03:23:17,484 INFO: Subrun started: cosbounce_cos_0049  run_time=15.0min
+run_149 2026-08-07 03:38:26,548 INFO: Subrun finished: cosbounce_cos_0049
+run_149 2026-08-07 03:38:37,989 INFO: Subrun started: cosbounce_cos_0050  run_time=15.0min
+run_149 2026-08-07 03:53:47,764 INFO: Subrun finished: cosbounce_cos_0050
+run_149 2026-08-07 03:53:59,292 INFO: Subrun started: cosbounce_cos_0051  run_time=15.0min
+run_149 2026-08-07 04:09:09,172 INFO: Subrun finished: cosbounce_cos_0051
+run_149 2026-08-07 04:09:20,345 INFO: Subrun started: cosbounce_cos_0052  run_time=15.0min
+run_149 2026-08-07 04:24:29,365 INFO: Subrun finished: cosbounce_cos_0052
+run_149 2026-08-07 04:24:40,426 INFO: Subrun started: cosbounce_cos_0053  run_time=15.0min
+run_149 2026-08-07 04:39:49,684 INFO: Subrun finished: cosbounce_cos_0053
+run_149 2026-08-07 04:40:00,913 INFO: Subrun started: cosbounce_cos_0054  run_time=15.0min
+run_149 2026-08-07 04:55:10,516 INFO: Subrun finished: cosbounce_cos_0054
+run_149 2026-08-07 04:55:21,477 INFO: Subrun started: cosbounce_cos_0055  run_time=15.0min
+run_149 2026-08-07 05:10:30,452 INFO: Subrun finished: cosbounce_cos_0055
+run_149 2026-08-07 05:10:41,539 INFO: Subrun started: cosbounce_cos_0056  run_time=15.0min
+run_149 2026-08-07 05:25:50,452 INFO: Subrun finished: cosbounce_cos_0056
+run_149 2026-08-07 05:26:02,012 INFO: Subrun started: cosbounce_cos_0057  run_time=15.0min
+run_149 2026-08-07 05:41:10,965 INFO: Subrun finished: cosbounce_cos_0057
+run_149 2026-08-07 05:41:22,653 INFO: Subrun started: cosbounce_cos_0058  run_time=15.0min
+run_149 2026-08-07 05:56:31,669 INFO: Subrun finished: cosbounce_cos_0058
+run_149 2026-08-07 05:56:42,615 INFO: Subrun started: cosbounce_cos_0059  run_time=15.0min
+run_149 2026-08-07 06:11:51,412 INFO: Subrun finished: cosbounce_cos_0059
+run_149 2026-08-07 06:12:03,297 INFO: Subrun started: cosbounce_cos_0060  run_time=15.0min
+run_149 2026-08-07 06:27:12,180 INFO: Subrun finished: cosbounce_cos_0060
+run_149 2026-08-07 06:27:23,182 INFO: Subrun started: cosbounce_cos_0061  run_time=15.0min
+run_149 2026-08-07 06:42:32,244 INFO: Subrun finished: cosbounce_cos_0061
+run_149 2026-08-07 06:42:43,674 INFO: Subrun started: cosbounce_cos_0062  run_time=15.0min
+run_149 2026-08-07 06:57:52,181 INFO: Subrun finished: cosbounce_cos_0062
+run_149 2026-08-07 06:58:03,390 INFO: Subrun started: cosbounce_cos_0063  run_time=15.0min
+run_149 2026-08-07 07:13:12,308 INFO: Subrun finished: cosbounce_cos_0063
+run_149 2026-08-07 07:13:23,563 INFO: Subrun started: cosbounce_cos_0064  run_time=15.0min
+run_149 2026-08-07 07:28:32,437 INFO: Subrun finished: cosbounce_cos_0064
+run_149 2026-08-07 07:28:43,878 INFO: Subrun started: cosbounce_cos_0065  run_time=15.0min
+run_149 2026-08-07 07:43:52,948 INFO: Subrun finished: cosbounce_cos_0065
+run_149 2026-08-07 07:44:04,596 INFO: Subrun started: cosbounce_cos_0066  run_time=15.0min
+run_149 2026-08-07 07:59:13,652 INFO: Subrun finished: cosbounce_cos_0066
+run_149 2026-08-07 07:59:24,830 INFO: Subrun started: cosbounce_cos_0067  run_time=15.0min
+run_149 2026-08-07 08:14:33,716 INFO: Subrun finished: cosbounce_cos_0067
+run_149 2026-08-07 08:14:45,459 INFO: Subrun started: cosbounce_cos_0068  run_time=15.0min
+run_149 2026-08-07 08:29:54,420 INFO: Subrun finished: cosbounce_cos_0068
+run_149 2026-08-07 08:30:06,236 INFO: Subrun started: cosbounce_cos_0069  run_time=15.0min
+run_149 2026-08-07 08:45:16,532 INFO: Subrun finished: cosbounce_cos_0069
+run_149 2026-08-07 08:45:28,174 INFO: Subrun started: cosbounce_cos_0070  run_time=15.0min
+run_149 2026-08-07 09:00:37,812 INFO: Subrun finished: cosbounce_cos_0070
+run_149 2026-08-07 09:00:49,420 INFO: Subrun started: cosbounce_cos_0071  run_time=15.0min
+run_149 2026-08-07 09:15:58,516 INFO: Subrun finished: cosbounce_cos_0071
+run_149 2026-08-07 09:16:10,124 INFO: Subrun started: cosbounce_cos_0072  run_time=15.0min
+run_149 2026-08-07 09:31:20,500 INFO: Subrun finished: cosbounce_cos_0072
+run_149 2026-08-07 09:31:31,863 INFO: Subrun started: cosbounce_cos_0073  run_time=15.0min
+run_149 2026-08-07 09:46:42,036 INFO: Subrun finished: cosbounce_cos_0073
+run_149 2026-08-07 09:46:53,665 INFO: Subrun started: cosbounce_cos_0074  run_time=15.0min
+run_149 2026-08-07 10:02:03,508 INFO: Subrun finished: cosbounce_cos_0074
+run_149 2026-08-07 10:02:14,642 INFO: Subrun started: cosbounce_cos_0075  run_time=15.0min
+run_149 2026-08-07 10:17:24,981 INFO: Subrun finished: cosbounce_cos_0075
+run_149 2026-08-07 10:17:36,761 INFO: Subrun started: cosbounce_cos_0076  run_time=15.0min
+run_149 2026-08-07 10:32:48,501 INFO: Subrun finished: cosbounce_cos_0076
+run_149 2026-08-07 10:32:59,455 INFO: Subrun started: cosbounce_cos_0077  run_time=15.0min
+run_149 2026-08-07 10:48:08,500 INFO: Subrun finished: cosbounce_cos_0077
+run_149 2026-08-07 10:48:19,693 INFO: Subrun started: cosbounce_cos_0078  run_time=15.0min
+run_149 2026-08-07 11:03:28,821 INFO: Subrun finished: cosbounce_cos_0078
+run_149 2026-08-07 11:03:40,442 INFO: Subrun started: cosbounce_cos_0079  run_time=15.0min
+run_149 2026-08-07 11:18:49,524 INFO: Subrun finished: cosbounce_cos_0079
+run_149 2026-08-07 11:19:01,235 INFO: Subrun started: cosbounce_cos_0080  run_time=15.0min
+run_149 2026-08-07 11:34:10,165 INFO: Subrun finished: cosbounce_cos_0080
+run_149 2026-08-07 11:34:21,612 INFO: Subrun started: cosbounce_cos_0081  run_time=15.0min
+run_149 2026-08-07 11:49:30,740 INFO: Subrun finished: cosbounce_cos_0081
+run_149 2026-08-07 11:49:42,077 INFO: Subrun started: cosbounce_cos_0082  run_time=15.0min
+run_149 2026-08-07 12:04:51,124 INFO: Subrun finished: cosbounce_cos_0082
+run_149 2026-08-07 12:05:02,493 INFO: Subrun started: cosbounce_cos_0083  run_time=15.0min
+run_149 2026-08-07 12:20:11,572 INFO: Subrun finished: cosbounce_cos_0083
+run_149 2026-08-07 12:20:22,787 INFO: Subrun started: cosbounce_cos_0084  run_time=15.0min
+run_149 2026-08-07 12:35:31,637 INFO: Subrun finished: cosbounce_cos_0084
+run_149 2026-08-07 12:35:43,457 INFO: Subrun started: cosbounce_cos_0085  run_time=15.0min
+run_149 2026-08-07 12:50:52,404 INFO: Subrun finished: cosbounce_cos_0085
+run_149 2026-08-07 12:51:03,954 INFO: Subrun started: cosbounce_cos_0086  run_time=15.0min
+run_149 2026-08-07 12:57:13,332 INFO: Subrun finished: cosbounce_cos_0086
+run_150 2026-08-07 12:58:09,890 INFO: Subrun started: stat090_0000  run_time=60.0min
+run_150 2026-08-07 13:58:18,806 INFO: Subrun finished: stat090_0000
+run_150 2026-08-07 13:58:31,758 INFO: Subrun started: stat090_0001  run_time=60.0min
+run_150 2026-08-07 14:58:45,556 INFO: Subrun finished: stat090_0001
+run_150 2026-08-07 14:58:58,498 INFO: Subrun started: stat090_0002  run_time=60.0min
+run_150 2026-08-07 15:59:15,188 INFO: Subrun finished: stat090_0002
+run_150 2026-08-07 15:59:28,803 INFO: Subrun started: stat090_0003  run_time=60.0min
+run_150 2026-08-07 16:41:56,531 INFO: Subrun finished: stat090_0003
+run_151 2026-08-07 16:42:52,292 INFO: Subrun started: cosbounce_cos_0000  run_time=15.0min
+run_151 2026-08-07 16:58:02,229 INFO: Subrun finished: cosbounce_cos_0000
+run_151 2026-08-07 16:58:13,618 INFO: Subrun started: cosbounce_cos_0001  run_time=15.0min
+run_151 2026-08-07 17:13:22,613 INFO: Subrun finished: cosbounce_cos_0001
+run_151 2026-08-07 17:13:34,137 INFO: Subrun started: cosbounce_cos_0002  run_time=15.0min
+run_151 2026-08-07 17:28:43,060 INFO: Subrun finished: cosbounce_cos_0002
+run_151 2026-08-07 17:28:54,547 INFO: Subrun started: cosbounce_cos_0003  run_time=15.0min
+run_151 2026-08-07 17:44:03,573 INFO: Subrun finished: cosbounce_cos_0003
+run_151 2026-08-07 17:44:15,061 INFO: Subrun started: cosbounce_cos_0004  run_time=15.0min
+run_151 2026-08-07 17:59:24,276 INFO: Subrun finished: cosbounce_cos_0004
+run_151 2026-08-07 17:59:35,521 INFO: Subrun started: cosbounce_cos_0005  run_time=15.0min
+run_151 2026-08-07 18:14:44,468 INFO: Subrun finished: cosbounce_cos_0005
+run_151 2026-08-07 18:14:55,734 INFO: Subrun started: cosbounce_cos_0006  run_time=15.0min
+run_151 2026-08-07 18:18:07,543 INFO: Subrun finished: cosbounce_cos_0006
+run_152 2026-08-07 18:19:04,019 INFO: Subrun started: stat090_0000  run_time=60.0min
+run_152 2026-08-07 19:19:20,949 INFO: Subrun finished: stat090_0000
+run_152 2026-08-07 19:19:34,478 INFO: Subrun started: stat090_0001  run_time=60.0min
+run_152 2026-08-07 20:19:51,796 INFO: Subrun finished: stat090_0001
+run_152 2026-08-07 20:20:05,533 INFO: Subrun started: stat090_0002  run_time=60.0min
+run_152 2026-08-07 21:20:18,613 INFO: Subrun finished: stat090_0002
+run_152 2026-08-07 21:20:31,987 INFO: Subrun started: stat090_0003  run_time=60.0min
+run_152 2026-08-07 22:20:47,348 INFO: Subrun finished: stat090_0003
+run_152 2026-08-07 22:21:00,264 INFO: Subrun started: stat090_0004  run_time=60.0min
+run_152 2026-08-07 23:21:16,148 INFO: Subrun finished: stat090_0004
+run_152 2026-08-07 23:21:29,892 INFO: Subrun started: stat090_0005  run_time=60.0min
+run_152 2026-08-08 00:05:45,141 INFO: Subrun finished: stat090_0005
+run_153 2026-08-08 00:06:39,858 INFO: Subrun started: cosbounce_cos_0000  run_time=15.0min
+run_153 2026-08-08 00:21:49,813 INFO: Subrun finished: cosbounce_cos_0000
+run_153 2026-08-08 00:22:01,195 INFO: Subrun started: cosbounce_cos_0001  run_time=15.0min
+run_153 2026-08-08 00:37:10,068 INFO: Subrun finished: cosbounce_cos_0001
+run_153 2026-08-08 00:37:22,012 INFO: Subrun started: cosbounce_cos_0002  run_time=15.0min
+run_153 2026-08-08 00:39:29,781 INFO: Subrun finished: cosbounce_cos_0002
+run_154 2026-08-08 00:40:26,486 INFO: Subrun started: stat090_0000  run_time=60.0min
+run_154 2026-08-08 01:40:36,085 INFO: Subrun finished: stat090_0000
+run_154 2026-08-08 01:40:49,099 INFO: Subrun started: stat090_0001  run_time=60.0min
+run_154 2026-08-08 02:41:04,885 INFO: Subrun finished: stat090_0001
+run_154 2026-08-08 02:41:18,264 INFO: Subrun started: stat090_0002  run_time=60.0min
+run_154 2026-08-08 03:41:29,589 INFO: Subrun finished: stat090_0002
+run_154 2026-08-08 03:41:42,419 INFO: Subrun started: stat090_0003  run_time=60.0min
+run_154 2026-08-08 04:41:55,125 INFO: Subrun finished: stat090_0003
+run_154 2026-08-08 04:42:08,827 INFO: Subrun started: stat090_0004  run_time=60.0min
+run_154 2026-08-08 05:42:23,925 INFO: Subrun finished: stat090_0004
+run_154 2026-08-08 05:42:37,302 INFO: Subrun started: stat090_0005  run_time=60.0min
+run_154 2026-08-08 06:42:52,661 INFO: Subrun finished: stat090_0005
+run_154 2026-08-08 06:43:06,102 INFO: Subrun started: stat090_0006  run_time=60.0min
+run_154 2026-08-08 07:43:21,524 INFO: Subrun finished: stat090_0006
+run_154 2026-08-08 07:43:35,067 INFO: Subrun started: stat090_0007  run_time=60.0min
+run_154 2026-08-08 08:07:35,605 INFO: Subrun finished: stat090_0007
+run_155 2026-08-08 08:08:30,307 INFO: Subrun started: cosbounce_cos_0000  run_time=15.0min
+run_155 2026-08-08 08:23:39,381 INFO: Subrun finished: cosbounce_cos_0000
+run_155 2026-08-08 08:23:50,676 INFO: Subrun started: cosbounce_cos_0001  run_time=15.0min
+run_155 2026-08-08 08:25:18,963 INFO: Subrun finished: cosbounce_cos_0001
+run_156 2026-08-08 08:26:14,676 INFO: Subrun started: stat090_0000  run_time=60.0min
+run_156 2026-08-08 09:26:33,524 INFO: Subrun finished: stat090_0000
+run_156 2026-08-08 09:26:46,343 INFO: Subrun started: stat090_0001  run_time=60.0min
+run_156 2026-08-08 10:27:02,327 INFO: Subrun finished: stat090_0001
+run_156 2026-08-08 10:27:16,670 INFO: Subrun started: stat090_0002  run_time=60.0min
+run_156 2026-08-08 11:27:31,060 INFO: Subrun finished: stat090_0002
+run_156 2026-08-08 11:27:44,018 INFO: Subrun started: stat090_0003  run_time=60.0min
+run_156 2026-08-08 12:27:59,925 INFO: Subrun finished: stat090_0003
+run_156 2026-08-08 12:28:13,699 INFO: Subrun started: stat090_0004  run_time=60.0min
+run_156 2026-08-08 13:28:28,724 INFO: Subrun finished: stat090_0004
+run_156 2026-08-08 13:28:41,564 INFO: Subrun started: stat090_0005  run_time=60.0min
+run_156 2026-08-08 14:28:57,525 INFO: Subrun finished: stat090_0005
+run_156 2026-08-08 14:29:10,407 INFO: Subrun started: stat090_0006  run_time=60.0min
+run_156 2026-08-08 15:29:26,324 INFO: Subrun finished: stat090_0006
+run_156 2026-08-08 15:29:39,704 INFO: Subrun started: stat090_0007  run_time=60.0min
+run_156 2026-08-08 16:29:55,124 INFO: Subrun finished: stat090_0007
+run_156 2026-08-08 16:30:08,829 INFO: Subrun started: stat090_0008  run_time=60.0min
+run_156 2026-08-08 17:30:23,925 INFO: Subrun finished: stat090_0008
+run_156 2026-08-08 17:30:37,570 INFO: Subrun started: stat090_0009  run_time=60.0min
+run_156 2026-08-08 18:30:55,989 INFO: Subrun finished: stat090_0009
+run_156 2026-08-08 18:31:09,598 INFO: Subrun started: stat090_0010  run_time=60.0min
+run_156 2026-08-08 19:31:24,788 INFO: Subrun finished: stat090_0010
+run_156 2026-08-08 19:31:38,120 INFO: Subrun started: stat090_0011  run_time=60.0min
+run_156 2026-08-08 20:31:53,588 INFO: Subrun finished: stat090_0011
+run_156 2026-08-08 20:32:06,899 INFO: Subrun started: stat090_0012  run_time=60.0min
+run_156 2026-08-08 21:32:22,388 INFO: Subrun finished: stat090_0012
+run_156 2026-08-08 21:32:35,555 INFO: Subrun started: stat090_0013  run_time=60.0min
+run_156 2026-08-08 22:32:51,188 INFO: Subrun finished: stat090_0013
+run_156 2026-08-08 22:33:04,641 INFO: Subrun started: stat090_0014  run_time=60.0min
+run_156 2026-08-08 23:33:19,989 INFO: Subrun finished: stat090_0014
+run_156 2026-08-08 23:33:33,433 INFO: Subrun started: stat090_0015  run_time=60.0min
+run_156 2026-08-09 00:33:48,788 INFO: Subrun finished: stat090_0015
+run_156 2026-08-09 00:34:02,586 INFO: Subrun started: stat090_0016  run_time=60.0min
+run_156 2026-08-09 01:34:14,325 INFO: Subrun finished: stat090_0016
+run_156 2026-08-09 01:34:27,168 INFO: Subrun started: stat090_0017  run_time=60.0min
+run_156 2026-08-09 02:34:43,125 INFO: Subrun finished: stat090_0017
+run_156 2026-08-09 02:34:56,656 INFO: Subrun started: stat090_0018  run_time=60.0min
+run_156 2026-08-09 03:35:11,925 INFO: Subrun finished: stat090_0018
+run_156 2026-08-09 03:35:24,953 INFO: Subrun started: stat090_0019  run_time=60.0min
+run_156 2026-08-09 04:35:40,724 INFO: Subrun finished: stat090_0019
+run_156 2026-08-09 04:35:53,710 INFO: Subrun started: stat090_0020  run_time=60.0min
+run_156 2026-08-09 05:36:09,525 INFO: Subrun finished: stat090_0020
+run_156 2026-08-09 05:36:22,889 INFO: Subrun started: stat090_0021  run_time=60.0min
+run_156 2026-08-09 06:36:38,324 INFO: Subrun finished: stat090_0021
+run_156 2026-08-09 06:36:51,335 INFO: Subrun started: stat090_0022  run_time=60.0min
+run_156 2026-08-09 07:37:07,124 INFO: Subrun finished: stat090_0022
+run_156 2026-08-09 07:37:20,045 INFO: Subrun started: stat090_0023  run_time=60.0min
+run_156 2026-08-09 08:01:45,139 INFO: Subrun finished: stat090_0023
+run_157 2026-08-09 08:02:40,752 INFO: Subrun started: cosbounce_cos_0000  run_time=15.0min
+run_157 2026-08-09 08:10:03,700 INFO: Subrun finished: cosbounce_cos_0000
+run_158 2026-08-09 08:11:00,379 INFO: Subrun started: stat090_0000  run_time=60.0min
+run_158 2026-08-09 09:11:11,924 INFO: Subrun finished: stat090_0000
+run_158 2026-08-09 09:11:25,634 INFO: Subrun started: stat090_0001  run_time=60.0min
+run_158 2026-08-09 10:11:40,725 INFO: Subrun finished: stat090_0001
+run_158 2026-08-09 10:11:54,070 INFO: Subrun started: stat090_0002  run_time=60.0min
+run_158 2026-08-09 11:12:09,524 INFO: Subrun finished: stat090_0002
+run_158 2026-08-09 11:12:22,678 INFO: Subrun started: stat090_0003  run_time=60.0min
+run_158 2026-08-09 12:12:38,324 INFO: Subrun finished: stat090_0003
+run_158 2026-08-09 12:12:52,096 INFO: Subrun started: stat090_0004  run_time=60.0min
+run_158 2026-08-09 13:13:07,125 INFO: Subrun finished: stat090_0004
+run_158 2026-08-09 13:13:20,531 INFO: Subrun started: stat090_0005  run_time=60.0min
+run_158 2026-08-09 13:57:57,043 INFO: Subrun finished: stat090_0005
+run_159 2026-08-09 13:58:50,120 INFO: Subrun started: cosbounce_cos_0000  run_time=15.0min
+run_159 2026-08-09 14:14:00,884 INFO: Subrun finished: cosbounce_cos_0000
+run_159 2026-08-09 14:14:12,585 INFO: Subrun started: cosbounce_cos_0001  run_time=15.0min
+run_159 2026-08-09 14:29:26,260 INFO: Subrun finished: cosbounce_cos_0001
+run_159 2026-08-09 14:29:37,935 INFO: Subrun started: cosbounce_cos_0002  run_time=15.0min
+run_159 2026-08-09 14:44:47,607 INFO: Subrun finished: cosbounce_cos_0002
+run_159 2026-08-09 14:44:59,112 INFO: Subrun started: cosbounce_cos_0003  run_time=15.0min
+run_159 2026-08-09 15:00:10,740 INFO: Subrun finished: cosbounce_cos_0003
+run_159 2026-08-09 15:00:22,028 INFO: Subrun started: cosbounce_cos_0004  run_time=15.0min
+run_159 2026-08-09 15:15:34,132 INFO: Subrun finished: cosbounce_cos_0004
+run_159 2026-08-09 15:15:45,079 INFO: Subrun started: cosbounce_cos_0005  run_time=15.0min
+run_159 2026-08-09 15:30:34,869 INFO: Subrun finished: cosbounce_cos_0005
+run_160 2026-08-09 15:31:30,523 INFO: Subrun started: stat090_0000  run_time=60.0min
+run_160 2026-08-09 16:10:12,532 INFO: Subrun finished: stat090_0000
+run_161 2026-08-09 17:13:13,913 INFO: Subrun started: stat090_dA700rA565_001  run_time=5.0min
+run_161 2026-08-09 17:18:24,244 INFO: Subrun finished: stat090_dA700rA565_001
+run_161 2026-08-09 17:18:47,374 INFO: Subrun started: stat090_dA700rA560_002  run_time=5.0min
+run_161 2026-08-09 17:23:56,340 INFO: Subrun finished: stat090_dA700rA560_002
+run_161 2026-08-09 17:24:20,133 INFO: Subrun started: stat090_dA700rA555_003  run_time=5.0min
+run_161 2026-08-09 17:29:38,356 INFO: Subrun finished: stat090_dA700rA555_003
+run_161 2026-08-09 17:30:01,685 INFO: Subrun started: stat090_dA700rA550_004  run_time=5.0min
+run_161 2026-08-09 17:35:23,956 INFO: Subrun finished: stat090_dA700rA550_004
+run_161 2026-08-09 17:35:47,039 INFO: Subrun started: stat090_dA700rA545_005  run_time=5.0min
+run_161 2026-08-09 17:41:09,556 INFO: Subrun finished: stat090_dA700rA545_005
+run_161 2026-08-09 17:41:32,637 INFO: Subrun started: stat090_dA700rA540_006  run_time=5.0min
+run_161 2026-08-09 17:46:55,157 INFO: Subrun finished: stat090_dA700rA540_006
+run_161 2026-08-09 17:47:18,957 INFO: Subrun started: stat090_dA700rA535_007  run_time=5.0min
+run_161 2026-08-09 17:52:40,756 INFO: Subrun finished: stat090_dA700rA535_007
+run_161 2026-08-09 17:53:03,912 INFO: Subrun started: stat090_dA700rA530_008  run_time=5.0min
+run_161 2026-08-09 17:58:26,370 INFO: Subrun finished: stat090_dA700rA530_008
+run_161 2026-08-09 17:58:50,120 INFO: Subrun started: stat090_dA700rA525_009  run_time=5.0min
+run_161 2026-08-09 18:04:11,956 INFO: Subrun finished: stat090_dA700rA525_009
+run_161 2026-08-09 18:04:35,698 INFO: Subrun started: stat090_dA700rA520_010  run_time=5.0min
+run_161 2026-08-09 18:09:57,557 INFO: Subrun finished: stat090_dA700rA520_010
+run_161 2026-08-09 18:10:20,580 INFO: Subrun started: stat090_dA700rA515_011  run_time=5.0min
+run_161 2026-08-09 18:15:30,228 INFO: Subrun finished: stat090_dA700rA515_011
+run_161 2026-08-09 18:15:53,466 INFO: Subrun started: stat090_dA700rA510_012  run_time=5.0min
+run_161 2026-08-09 18:21:03,540 INFO: Subrun finished: stat090_dA700rA510_012
+run_161 2026-08-09 18:21:26,438 INFO: Subrun started: stat090_dA700rA505_013  run_time=5.0min
+run_161 2026-08-09 18:26:45,559 INFO: Subrun finished: stat090_dA700rA505_013
+run_161 2026-08-09 18:27:08,489 INFO: Subrun started: stat090_dA700rA500_014  run_time=5.0min
+run_161 2026-08-09 18:32:19,444 INFO: Subrun finished: stat090_dA700rA500_014
+run_161 2026-08-09 18:32:53,115 INFO: Subrun started: stat090_dA600rA570_015  run_time=5.0min
+run_161 2026-08-09 18:38:02,997 INFO: Subrun finished: stat090_dA600rA570_015
+run_161 2026-08-09 18:38:25,938 INFO: Subrun started: stat090_dA600rA560_016  run_time=5.0min
+run_161 2026-08-09 18:43:35,604 INFO: Subrun finished: stat090_dA600rA560_016
+run_161 2026-08-09 18:43:58,928 INFO: Subrun started: stat090_dA600rA550_017  run_time=5.0min
+run_161 2026-08-09 18:49:19,156 INFO: Subrun finished: stat090_dA600rA550_017
+run_161 2026-08-09 18:49:43,005 INFO: Subrun started: stat090_dA600rA540_018  run_time=5.0min
+run_161 2026-08-09 18:55:04,757 INFO: Subrun finished: stat090_dA600rA540_018
+run_161 2026-08-09 18:55:27,949 INFO: Subrun started: stat090_dA600rA530_019  run_time=5.0min
+run_161 2026-08-09 19:00:50,356 INFO: Subrun finished: stat090_dA600rA530_019
+run_161 2026-08-09 19:01:13,311 INFO: Subrun started: stat090_dA500rA570_020  run_time=5.0min
+run_161 2026-08-09 19:06:35,956 INFO: Subrun finished: stat090_dA500rA570_020
+run_161 2026-08-09 19:06:59,566 INFO: Subrun started: stat090_dA500rA560_021  run_time=5.0min
+run_161 2026-08-09 19:12:21,559 INFO: Subrun finished: stat090_dA500rA560_021
+run_161 2026-08-09 19:12:44,408 INFO: Subrun started: stat090_dA500rA550_022  run_time=5.0min
+run_161 2026-08-09 19:18:07,092 INFO: Subrun finished: stat090_dA500rA550_022
+run_161 2026-08-09 19:18:30,619 INFO: Subrun started: stat090_dA500rA540_023  run_time=5.0min
+run_161 2026-08-09 19:23:52,759 INFO: Subrun finished: stat090_dA500rA540_023
+run_161 2026-08-09 19:24:15,691 INFO: Subrun started: stat090_dA500rA530_024  run_time=5.0min
+run_161 2026-08-09 19:29:25,428 INFO: Subrun finished: stat090_dA500rA530_024
+run_161 2026-08-09 19:31:50,721 INFO: Subrun started: stat090_dA700rA570_000  run_time=5.0min
+run_161 2026-08-09 19:37:00,084 INFO: Subrun finished: stat090_dA700rA570_000
+run_162 2026-08-09 19:55:03,231 INFO: Subrun started: stat090_0000  run_time=60.0min
+run_162 2026-08-09 20:55:21,527 INFO: Subrun finished: stat090_0000
+run_162 2026-08-09 20:55:34,977 INFO: Subrun started: stat090_0001  run_time=60.0min
+run_162 2026-08-09 21:55:50,324 INFO: Subrun finished: stat090_0001
+run_162 2026-08-09 21:56:03,307 INFO: Subrun started: stat090_0002  run_time=60.0min
+run_162 2026-08-09 22:56:19,125 INFO: Subrun finished: stat090_0002
+run_162 2026-08-09 22:56:32,791 INFO: Subrun started: stat090_0003  run_time=60.0min
+run_162 2026-08-09 23:56:47,924 INFO: Subrun finished: stat090_0003
+run_162 2026-08-09 23:57:01,658 INFO: Subrun started: stat090_0004  run_time=60.0min
+run_162 2026-08-10 00:57:16,724 INFO: Subrun finished: stat090_0004
+run_162 2026-08-10 00:57:30,469 INFO: Subrun started: stat090_0005  run_time=60.0min
+run_162 2026-08-10 01:57:45,525 INFO: Subrun finished: stat090_0005
+run_162 2026-08-10 01:57:58,546 INFO: Subrun started: stat090_0006  run_time=60.0min
+run_162 2026-08-10 02:58:14,324 INFO: Subrun finished: stat090_0006
+run_162 2026-08-10 02:58:27,553 INFO: Subrun started: stat090_0007  run_time=60.0min
+run_162 2026-08-10 03:58:43,125 INFO: Subrun finished: stat090_0007
+run_162 2026-08-10 03:58:56,829 INFO: Subrun started: stat090_0008  run_time=60.0min
+run_162 2026-08-10 04:59:11,924 INFO: Subrun finished: stat090_0008
+run_162 2026-08-10 04:59:25,484 INFO: Subrun started: stat090_0009  run_time=60.0min
+run_162 2026-08-10 05:59:40,725 INFO: Subrun finished: stat090_0009
+run_162 2026-08-10 06:02:24,155 INFO: Subrun started: stat090_0010  run_time=60.0min
+run_162 2026-08-10 07:03:19,990 INFO: Subrun finished: stat090_0010
+run_162 2026-08-10 07:03:32,872 INFO: Subrun started: stat090_0011  run_time=60.0min
+run_162 2026-08-10 08:03:41,946 INFO: Subrun finished: stat090_0011
+run_162 2026-08-10 08:03:55,553 INFO: Subrun started: stat090_0012  run_time=60.0min
+run_162 2026-08-10 09:04:05,494 INFO: Subrun finished: stat090_0012
+run_162 2026-08-10 09:04:18,840 INFO: Subrun started: stat090_0013  run_time=60.0min
+run_162 2026-08-10 09:10:44,599 INFO: Subrun finished: stat090_0013

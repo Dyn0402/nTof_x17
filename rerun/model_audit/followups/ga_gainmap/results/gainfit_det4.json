@@ -1,0 +1,30 @@
+{
+ "args": {
+  "det": "det4",
+  "cache": null,
+  "bundle": null,
+  "iters": 2,
+  "jobs": 8,
+  "n": 1500,
+  "tag": ""
+ },
+ "cache": "/home/dylan/x17/cosmic_bench/model_audit/ws_t0/caches/det4.pkl",
+ "bundle": "/home/dylan/x17/cosmic_bench/model_audit/det4/calib_bundle",
+ "log": [
+  {
+   "it": 1,
+   "half": "A",
+   "x": 0.1693053338628569,
+   "y": 0.0634284422379915
+  },
+  {
+   "it": 1,
+   "half": "B",
+   "x": 0.13651622882029463,
+   "y": 0.1252137795546656
+  }
+ ],
+ "seconds": 8822.021931648254,
+ "smooth_mm": 4.0,
+ "min_info": 50.0
+}

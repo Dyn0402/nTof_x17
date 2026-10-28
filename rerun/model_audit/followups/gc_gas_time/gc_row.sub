@@ -1,0 +1,12 @@
+# condor_submit -name bigbird101.cern.ch gc_row.sub jobfile=gc_jobs.txt   (each line: <code> <key> <bundle>)
+executable     = $ENV(HOME)/x17rerun/gc/gc_row.sh
+arguments      = $(args)
+output         = log/$(Cluster).$(ProcId).out
+error          = log/$(Cluster).$(ProcId).err
+log            = log/gc.log
+request_cpus   = 8
+request_memory = 16000
++JobFlavour    = "workday"
+should_transfer_files = NO
+max_materialize = 100
+queue args from $(jobfile)
