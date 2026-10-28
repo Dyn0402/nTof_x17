@@ -108,3 +108,44 @@ Files: `skeptic/refits.py` (A: extra terms, inner region, tan subsets, cell maps
 `skeptic/pivot_test.py`, `skeptic/mimic_reg.py`, `skeptic/other_axis.py`, `skeptic/m3_sag_test.py`,
 `skeptic/m3_robust.py`. Inputs: `~/x17/cosmic_bench/model_audit/ws_v_w0/det*.parquet`,
 `mx_june_cosmic_qa/m3_self_resolution/sat_perplane_0to3.root`.
+
+## Addendum (same day): can the cathode be told from the mesh? Yes, by the column duration
+
+Dylan's follow-up. A mesh sagging away from the cathode makes the gap **longer** at the centre; a cathode sagging
+toward the mesh makes it **shorter**. The column duration T sees the gap directly (T = gap/v; a field-driven v change
+adds to the contrast in the same direction, v rising with E). Regressing ln T and ln b (ladder slope) on the
+position-route height h over the 5×5 cells, with linear tilt terms removed (`skeptic/gap_sign.py`):
+
+| chamber | view | dlnT/dh [/mm] | rim − centre: h | T | b | reading |
+|---|---|---|---|---|---|---|
+| det2 | X | −0.029 ± 0.014 | +1.34 mm | −5.8 % | +2.4 % | gap longer at centre: **mesh away**; matches T ∝ gap for the measured h (−4.5 %) |
+| det2 | Y | −0.026 ± 0.009 | +1.87 | −6.4 % | +1.0 % | same (−6.2 % predicted) |
+| det7 | X | −0.033 ± 0.017 | +1.86 | −5.6 % | −3.5 % | same (−6.2 % predicted) |
+| det7 | Y | −0.059 ± 0.010 | +1.21 | −3.9 % | +0.8 % | same (−4.0 % predicted) |
+| det3 | X, Y | +0.002, +0.006 (± 0.01–0.02) | +1.3–1.7 | −0.5 %, +1.6 % | +1.5, +1.1 % | no gap contrast: inconclusive (mesh and cathode sagging alike, or a column structure of its own; July found an asymmetric y tilt on det3) |
+| det4, det6 | | +0.01 to +0.06 | | +4 to +14 % | −1 to −8 % | T longer where h is high: the reconstruction term (h follows 1/b), not geometry |
+
+A cathode sagging toward the mesh predicts T **longer** at the rim on every chamber; det2 and det7 show the opposite,
+with a magnitude equal to the position-route dish under a flat cathode (T ∝ gap, b nearly flat: at 333 V/cm the
+ladder slope rises only ~0.25× as fast as E, so the v(E) term is small). Any cathode sag on det2/det7 is below
+~0.5 mm (the ±1–2 % precision of the contrast, ÷30 mm). FB's own gap route (gap ∝ T·b, `results/gap_*.json`) has the
+same signs: det2 and det7 all negative (gap shorter at the rim), det3 mixed, det6 positive (contaminated). The July
+X-plane maps (det2 longer at the centre with rim droop, det3 longest at the centre) agree in sign.
+
+Physical side: the cathode foil has gas on both sides, so it carries no overpressure load, only gravity and its own
+tension; the board carries the overpressure through the Rohacell. The X-view closure values r_f = 0.42–0.62 (det2, 3,
+4, 7) sit at the flat-cathode value 0.5; the Y-view values (0.58–0.86) are the ones that would suggest a cathode
+contribution, and they are the suspect ones (next paragraph).
+
+**Y > X anisotropy.** Only the fit-based tilt route shows it consistently (Y-view w0 gradient 1.5–1.9× the X-view's on
+det2, det3, det4, det7); the amplitude-only route shows it on det2 and det4 (3×, 2.6×) but not det3, det7; the position
+route, which is immune to the Y response, shows **no** anisotropy: y-curvature from the X strips 1.33, 1.07, 1.60, 1.20,
+2.23 vs x-curvature from the Y strips 1.54, 1.00, 1.19, 1.65, 1.15. So the anisotropy is most likely a Y-view response
+effect in the tilt routes, not the board, and the Y-view r_f values should not be used to argue for a cathode sag.
+Mechanically: the resistive strips (µm of paste on 1.7 mm FR4) cannot change the plate stiffness, and stiffening along y
+would *reduce* the y curvature, the wrong way. The one isotropic-material effect in the right direction is the aperture
+itself, 399 × 362 mm active: a plate sags with more curvature along the shorter span, ratio ~1.2–1.4, and the cathode
+frame shares the same aperture, so it does not discriminate the electrodes.
+
+Not done: the same test on the 19-run rows (the column columns exist in the FB tables); a Y-view response explanation
+for the w0 ramp excess was not identified.
