@@ -215,7 +215,7 @@ closed on 19 Oct, so this is a late submission.
   "large-area", no γ flash, no chamber count.
 - Numbers: det3 only, rounded as Dylan chose: 1.2° (gate_fe s68 1.08 X / 0.97 Y), 93 % (92.7 % within 5 mm),
   180 µm (= det4's 176 µm at SPS; det3 was never at SPS, Dylan accepted that). Capsule imaging kept qualitative.
-- "unique challenges for TPC operation" is Dylan's wording (he noted T2K also uses resistive anodes; "unique" OK).
+- "unique challenges for TPC operation" is Dylan's wording (Dylan noted T2K also uses resistive anodes; "unique" OK).
 - The MPGD claim "angular resolution close to the ~1° physical limit" stays withdrawn (floor 0.30–0.35°).
 
 ## Model audit (B4) + follow-ups — updated 2026-10-28 (dylan-Yoga)
