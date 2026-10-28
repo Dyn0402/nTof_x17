@@ -170,6 +170,8 @@ BAND_MIN_WINDOW_NS = 1800.0
 #: 'lm' = a 7-point t0 ladder + Levenberg-Marquardt on the projected residual with the Kaufman (1975) Jacobian,
 #: analytic on the RC kernel, a short Nelder-Mead polish, and the full 3x3 covariance for the errors.  A PROTOTYPE on
 #: branch lm-varpro, not gated: 'nm' stays the algorithm; ``WFT_DIAG=model.FITTER=lm`` (wft.diag) selects it.
+#: A/B on the five bench chambers (rerun/model_audit/algo_review/REPORT_LM.md): same angles, ~0.6x the cost, but t0/p0
+#: land one 60 ns lattice basin over on 6-48 % of planes and the deeper basin is not closer to the trigger or M3.
 FITTER = 'nm'
 #: 'lm' only: walk the depth-bin lattice.  The chi2 surface has a basin at every (p0 + DT w, w, t0 + DT): the lattice
 #: shift is not a symmetry of the kernel, and which basin a local search ends in is set by its start -- the grid +
@@ -178,6 +180,10 @@ FITTER = 'nm'
 #: first LM the fit is re-started one bin over in each direction and keeps hopping while chi2 falls, up to LM_HOPS
 #: bins each way.  0 = no hops (the local minimum of the best ladder start).
 LM_HOPS = 3
+#: 'lm' only: the global start.  'ladder' = the 7-point t0 ladder (at the start's p0 and along the pivot line, 13
+#: solves); 'grid' = the 'nm' fitter's own 105-point (p0, w, t0) grid, so the basin is chosen exactly as 'nm' chooses
+#: it and LM replaces only the Nelder-Mead refinement (the minimal-change form; use with LM_HOPS = 0).
+LM_START = 'ladder'
 LM_MAXIT = 30
 
 
@@ -1148,13 +1154,21 @@ def _fit_plane_lm(W, noise, pos, sat, plane, p0_init, w_init, t0_init, hyper, t0
     # global start in t0: the grid's 7-point, 40 ns ladder, along the pivot line when the start came from it
     # (and at the fixed p0 of the grid: the two families end in different lattice basins on ~1/3 of planes)
     best = (np.inf, None)
-    for t0 in np.arange(t0_init - 120, t0_init + 121, 40.0):
-        p0s = {p0_init} if pivot is None else {p0_init, pivot[0] - w_init * (pivot[1] - t0)}
-        for p0 in p0s:
-            c, _q, _M = _vp_eval(plane, W, noise, pos, sat, (p0, w_init, t0), hyper, True, t0_prior)
-            nfev += 1
-            if c < best[0]:
-                best = (c, (p0, w_init, t0))
+    if LM_START == 'grid':
+        # the 'nm' grid, point for point (t0 snapped to the tensor grid as chi2_plane does there)
+        starts = [(p0_init + dp, w_init + dw, round(t0 / T0_STEP) * T0_STEP)
+                  for t0 in np.arange(t0_init - 120, t0_init + 121, 40.0) for dp in (-0.8, 0.0, 0.8)
+                  for dw in (-2.4e-3, -0.8e-3, 0.0, 0.8e-3, 2.4e-3)]
+    else:
+        starts = []
+        for t0 in np.arange(t0_init - 120, t0_init + 121, 40.0):
+            starts += [(p0, w_init, t0) for p0 in
+                       ({p0_init} if pivot is None else {p0_init, pivot[0] - w_init * (pivot[1] - t0)})]
+    for st in starts:
+        c, _q, _M = _vp_eval(plane, W, noise, pos, sat, st, hyper, True, t0_prior)
+        nfev += 1
+        if c < best[0]:
+            best = (c, st)
     if best[1] is None:
         return dict(chi2=np.inf, p0=float(p0_init), w=float(w_init), t0=float(t0_init), q=None, nfev=nfev)
     chi, th, q, nf, nj = _lm_refine(plane, W, noise, pos, sat, best[1], hyper, t0_prior=t0_prior)
@@ -1191,6 +1205,22 @@ def _fit_plane_lm(W, noise, pos, sat, plane, p0_init, w_init, t0_init, hyper, t0
         except np.linalg.LinAlgError:
             cov = None
     return dict(chi2=chi, p0=float(th[0]), w=float(th[1]), t0=float(th[2]), q=q, nfev=nfev, njac=njac, cov=cov)
+
+
+def vp_covariance(P, plane, r, hyper=None, t0_prior=None):
+    """Unscaled 3x3 (p0, w, t0) covariance (J^T J)^-1 of a fit result ``r`` (any FITTER), from the variable-projection
+    Jacobian at its minimum; None if singular."""
+    hyper = hyper or HYPER
+    W, noise, pos, sat = prep_plane(P, plane)
+    th = np.array([r['p0'], r['w'], r['t0']], float)
+    chi, q, M = _vp_eval(plane, W, noise, pos, sat, th, hyper, True, t0_prior)
+    if q is None:
+        return None
+    _r, J = _vp_resid_jac(plane, W, noise, pos, sat, th, q, M, hyper, True, t0_prior)
+    try:
+        return np.linalg.inv(J.T @ J)
+    except np.linalg.LinAlgError:
+        return None
 
 
 # --------------------------------------------------------------------- fits

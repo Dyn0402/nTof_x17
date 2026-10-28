@@ -5,7 +5,7 @@ Writes results/lm_ab_summary.json and prints a markdown table."""
 import os, sys, json, pickle
 import numpy as np
 
-PAIRS = [('nm', 'lm'), ('nm', 'lm_nohop'), ('nm_free', 'lm_free'), ('nm_free', 'lm_free_nohop')]
+PAIRS = [('nm', 'lm'), ('nm', 'lm_nohop'), ('nm_free', 'lm_free'), ('nm_free', 'lm_free_nohop'), ('nm', 'lm_grid')]
 
 
 def s68(x):
@@ -61,6 +61,10 @@ def pair_stats(R, a, b):
     hop = (np.abs(g(f'{b}_p0') - g(f'{a}_p0')) > 0.3) & np.isfinite(rm)
     tp = g('t0_pred') if all('t0_pred' in r for r in R) else np.full(len(R), np.nan)
     hop_t = (np.abs(g(f'{b}_t0') - g(f'{a}_t0')) > 30) & np.isfinite(tp)
+    if np.isfinite(tp).any():
+        # the bundle's t0 prediction and the fit's t0 differ by a constant (the model's t0 definition, F5): referee
+        # each arm against the prediction plus arm A's median offset
+        tp = tp + np.nanmedian(g(f'{a}_t0') - tp)
     return dict(n_hop_p0=int(hop.sum()),
                 b_closer_m3=float(np.mean(np.abs(rb[hop]) < np.abs(ra[hop]))) if hop.any() else np.nan,
                 pos_s68_a=s68(ra), pos_s68_b=s68(rb),

@@ -28,6 +28,11 @@ TAN_MIN_SLOPE = 0.08       # below this the timing carries no slope information
 FLOOR_TAN = 0.018          # ~1.0 deg: det3's measured per-event model floor; a bundle's tan_floor overrides
 FLOOR_P0_MM = 0.33         # measured charge-centroid jitter per 60 ns bin
 CHI2DOF_BAD = 300.0        # showers / multi-track / spark
+#: Per-event (p0, w, t0) errors from the full variable-projection covariance (J^T J)^-1 at the fit's minimum, whatever
+#: the outer solver, instead of three 1-D curvatures (branch lm-varpro, 2026-10-28).  The fit itself is untouched; the
+#: 1-D curvatures ignore the p0-t0 correlation and read w_err and t0_err 1.9-2.9x small on the bench fleet.  tan_err and
+#: p0_err barely move (the per-chamber floors dominate).  A PROTOTYPE, not gated: study override (wft.diag).
+COV_ERRORS = False
 
 # slope search: +-0.021 mm/ns covers |tan| ~ 0.57 at v = 36.6 um/ns
 W_SCAN_HALF = 0.021        # covers |tan| ~ 0.57 at v = 36.6 um/ns
@@ -203,6 +208,8 @@ def _errors(P, plane, r, hyper, dp=0.05, dw=2e-4, dt=2.0,
     ~20 % optimistic (measured pull widths 1.19/1.13); the full covariance says x2 (algo_review 2026-10-28).  A fit
     that carries ``cov`` (wft.model.FITTER = 'lm') gets its errors from it instead, scaled the same way."""
     cov = r.get('cov') if isinstance(r, dict) else None
+    if cov is None and COV_ERRORS and r.get('q') is not None:
+        cov = wm.vp_covariance(P, plane, r, hyper, t0_prior=t0_prior)
     if cov is not None:
         scale = max(r['chi2'] / max(r['dof'], 1), 1.0)
         d = np.diag(cov) * scale

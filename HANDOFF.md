@@ -2,7 +2,16 @@
 
 ## Fitter: LM variable-projection outer solver + covariance errors (B1 item) — updated 2026-10-28 (dylan-MS-7C84)
 
-**Resume:** implement LM on the NNLS-profiled residual in `wft/model.py:fit_plane_raw` (analytic Jacobian, polish, t0±60 starts), gate on golden rows.
+**Outcome (2026-10-28, laptop, branch `lm-varpro`, NOT merged):** implemented as opt-in `WFT_DIAG=model.FITTER=lm`
+(analytic Kaufman Jacobian, lattice hops, polish, covariance) and A/B-tested on all five bench chambers:
+`rerun/model_audit/algo_review/REPORT_LM.md`. Angles: drop-in (s68 ±3.5 %, same w 93–100 %); cost ~0.6×. But any change
+of outer solver relabels t0 by one 60 ns bin (and p0 by 60·w) on 6–48 % of planes, and the deeper-χ² basin is NOT
+closer to the trigger t0 or to M3. **Recommendation: keep `nm` for the B1 pass**; the lever is a t0 constraint with real
+weight (σ 5 ns prior = 144 χ² units vs data χ² 1e4–4e5), a model decision. `reco.COV_ERRORS` (covariance errors at
+the NM minimum, fit bit-identical) is ready if any consumer needs w_err/t0_err. Steps 1–4 below are done on the
+branch; step 5 (fleet gate) was not run.
+
+**Resume (original):** implement LM on the NNLS-profiled residual in `wft/model.py:fit_plane_raw` (analytic Jacobian, polish, t0±60 starts), gate on golden rows.
 
 **Goal:** Dylan's pre-publication ask: "is voxels + sliding the line the best way or is there something more elegant?"
 Answer (`rerun/model_audit/algo_review/REPORT.md`): the structure is right and is textbook **variable projection**

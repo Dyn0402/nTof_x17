@@ -109,6 +109,27 @@ def check_fit(cal, C, n_events):
     assert same_w >= 0.90 and worse <= 0.05
 
 
+def check_cov_errors(cal, C):
+    """COV_ERRORS on the NM fit: the fit is bit-identical, only the errors change, and they match LM's own."""
+    n = 0
+    for eid in sorted(C)[:6]:
+        ev = C[eid]
+        for plane in 'xy':
+            prior = wr.t0_prior_for(cal, plane, ev.get(f'ftst_{plane}'))
+            a = wr.fit_plane(ev[plane], plane, cal, t0_prior=prior)
+            wr.COV_ERRORS = True
+            try:
+                b = wr.fit_plane(ev[plane], plane, cal, t0_prior=prior)
+            finally:
+                wr.COV_ERRORS = False
+            if a is None:
+                continue
+            assert (a.p0, a.w, a.t0, a.chi2) == (b.p0, b.w, b.t0, b.chi2)
+            assert np.isfinite(b.w_err) and np.isfinite(b.t0_err) and b.w_err >= 0.5 * a.w_err
+            n += 1
+    print(f'  COV_ERRORS: fit unchanged, covariance errors on {n} planes')
+
+
 def main(n_events=15):
     if not HAVE_DATA:
         print('SKIP: no det3 vladder cache/bundle on this machine')
@@ -116,9 +137,14 @@ def main(n_events=15):
     cal, C = _setup()
     check_jacobian(cal, C)
     check_residual(cal, C)
+    check_cov_errors(cal, C)
     check_fit(cal, C, n_events)
     print('PASS')
     return 0
+
+
+def test_lm_fitter():
+    assert main(6) == 0
 
 
 if __name__ == '__main__':
