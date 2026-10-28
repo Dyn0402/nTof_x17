@@ -136,8 +136,8 @@ adapted from the MPGD2026 abstract. The call closed on 19 Oct, so this would be 
 
 ## Model audit (B4) + follow-ups — updated 2026-10-28 (dylan-Yoga)
 
-**Resume:** round 3 (10-28, FOLLOWUPS.md "Round 3 outcomes"): GA/GB/GC/GE/GF done and in the code (90a768d); GD (sparks)
-still running. Before the reprocessing: double-check the GA bad channels (FOLLOWUPS), then rebuild every bundle from
+**Resume:** round 3 (10-28, FOLLOWUPS.md "Round 3 outcomes"): GA–GF done and in the code (90a768d); GD sparks: keep the
+veto, det4 row pending (lxplus 4583837: `gd_sparks/pull.sh det4` + `gd_score.py`). Before the reprocessing: double-check the GA bad channels (FOLLOWUPS), then rebuild every bundle from
 scratch on the `fe` recipe (Dylan: no shortcuts, so `promote_fe.sh` is not needed).
 
 **Goal:** answer Dylan's audit questions with existing data and end with ONE reconstruction algorithm.

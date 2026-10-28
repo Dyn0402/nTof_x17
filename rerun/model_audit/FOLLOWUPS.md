@@ -212,7 +212,7 @@ Deferred (after reprocessing): 9 (gas fit), 13 hotspot census.
 | 2 | **GB: M3 + MS = 0.05° (≤ 0.11–0.14° measured)** — not limiting; the det6/det7 shared 0.5–0.9° term is the bow. SPS det4 head-on (beam reference 0.03°) agrees with the bench. FD budget M3 row → 0.05°. |
 | 3 | **GC: post-correctable** (v enters only seeding, u_window and tan). Before the pass: DREAM timestamp + acquisition tag in the event record (**done**: `timestamp`, `acq_tag` columns); own v for every row with ≥ 500 clean triggers (**done**: `make_registry.py` rule; 117 own-v rows, 37 inherit the nearest-in-time calibrated row of their group). After: per-time-block kw from the M3 ladder (bench), column end (n_TOF A/C); n_TOF B/D within-run v not measurable (stated). |
 | 6 | **GF: all rows in; promote `fe`, not `fefa`** (v(x,y) map gains ≤ 0.05° on det6, in-sample, loses on det7 X; revisit with v(t)). |
-| 7 | GD running. |
+| 7 | **GD: keep the spark veto (> 50 seeding hits)** — best curve on det2/3/6/7 vs every waveform signature; above 50 only 0–25 % of fits are right; 40 is the purity-side option. Band re-seed validated. Bug fixed: seed overrides were recorded but not applied. det4 pending (lxplus 4583837). |
 | 8 | **GE: fixed χ²/dof 300 replaced by 5 × the table median per view** (**done**: `wft.reco.CHI2DOF_REL`, `quality_flags`, sidecar `quality_rule`; old tables re-flagged on load; n_TOF stage 3 per sub-run × arm). Validated on the fe gate tables: det2/det3 remove 9–16 % with 81–91 % of bad views; det6 gives back 60–70 pt of efficiency; blind on det4 / det7 X (missing-charge faults, hardware). |
 
 **To double-check before the reprocessing (Dylan 10-28): the GA bad channels** now in
