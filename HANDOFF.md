@@ -191,27 +191,32 @@ so the change is for speed and honest errors, done inside B1 because the pass is
 - `rerun/model_audit/algo_review/algo_review.py` (prod/lm/shift/kgap arms), `algo_summary.py`, `joint_review.py`, `joint_summary.py`.
 - `.venv/bin/python rerun/model_audit/algo_review/algo_review.py --n 800 --jobs 14 && .venv/bin/python rerun/model_audit/algo_review/algo_summary.py rerun/model_audit/algo_review/algo_review_rows.pkl`
 
-## INFN–IN2P3 detector R&D conference abstract (Frascati, 2–4 Dec) — updated 2026-10-27 (dylan-Yoga)
+## INFN–IN2P3 detector R&D conference abstract (Frascati, 2–4 Dec) — updated 2026-10-28 (dylan-MS-7C84)
 
-**Resume:** draft abstract in `papers/infn_in2p3_2026_abstract/abstract.md`; Dylan to review, then contact organisers.
+**Resume:** abstract v2 final wording agreed; add co-authors to abstract.tex, recompile, email organisers (late + eligibility).
 
-**Goal:** a detector-focused abstract (no physics results) for the 2nd INFN–IN2P3 detector R&D conference,
-adapted from the MPGD2026 abstract. The call closed on 19 Oct, so this would be a late submission.
+**Goal:** a detector-focused abstract for the 2nd INFN–IN2P3 detector R&D conference (gas-detectors session). The call
+closed on 19 Oct, so this is a late submission.
 
 **Done:**
-- Checked the conference: detector R&D/technology only, gas-detectors session, posters on 3 Dec, no word limit posted.
-- Drafted a ~270-word abstract; the file records every change from MPGD and the reason for it.
+- 10-28: rewrote with Dylan, line by line (~150 words): X17 requirement (opening angle, low material) → the detector →
+  the resistive-layer timing bias and the waveform reconstruction → results + n_TOF capsule imaging.
+- Files in `papers/infn_in2p3_2026_abstract/`: `abstract.md` (draft + sources), `abstract.tex` → `abstract.pdf`
+  (compiled), `abstract.txt` (plain Unicode text to paste into the email). All three carry the same text.
 
 **Next steps:**
-1. Dylan reviews the wording (Dylan had reservations, "Hmm ok", and paused here).
-2. Re-quote the 1.15–2.51° and the 93 % under the unified reconstruction before sending.
-3. Eligibility: CEA Saclay is not IN2P3. Ask the organisers, with the late-submission request, or add an
-   INFN/IN2P3 n_TOF co-author.
+1. Add co-authors/affiliations to `abstract.tex` (header has a TODO; currently "D. Neff, CEA Saclay, Irfu"), recompile
+   (`pdflatex abstract.tex`, then delete .aux/.log).
+2. Eligibility: CEA Saclay is not IN2P3. Either an INFN/IN2P3 n_TOF co-author, or ask the organisers together with the
+   late-submission request.
 
-**Gotchas / decisions:**
-- The MPGD claim "angular resolution close to the ~1° physical limit" is withdrawn (model audit F3: the floor is
-  0.30–0.35°). Don't reuse it here or in the MPGD proceedings text (`mpgd26_proceedings/main.tex` §3 and the
-  summary still say it).
+**Gotchas / decisions (Dylan's, 10-28):**
+- Title says what it's for: "…for the X17 search at n_TOF: design, track reconstruction and performance". No
+  "large-area", no γ flash, no chamber count.
+- Numbers: det3 only, rounded as Dylan chose: 1.2° (gate_fe s68 1.08 X / 0.97 Y), 93 % (92.7 % within 5 mm),
+  180 µm (= det4's 176 µm at SPS; det3 was never at SPS, Dylan accepted that). Capsule imaging kept qualitative.
+- "unique challenges for TPC operation" is Dylan's wording (he noted T2K also uses resistive anodes; "unique" OK).
+- The MPGD claim "angular resolution close to the ~1° physical limit" stays withdrawn (floor 0.30–0.35°).
 
 ## Model audit (B4) + follow-ups — updated 2026-10-28 (dylan-Yoga)
 

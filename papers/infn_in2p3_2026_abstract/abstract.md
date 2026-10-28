@@ -15,18 +15,11 @@ numbers in `../paper1` and `rerun/model_audit/FINDINGS.md`. **Not submitted.**
 - **Eligibility:** CEA Saclay (Irfu) is not IN2P3. Either an INFN/IN2P3 co-author (n_TOF) or a word with the
   organisers, done together with asking about a late submission.
 
-## Changes from the MPGD abstract, and why
+## History
 
-- "µTPC mode" → "compact TPCs" (Dylan's request).
-- Physics framing cut to one line of motivation: the measurement has ended, but physics results are not ready.
-- **Withdrawn:** "close to the ~1° physical limit". Model audit F3 puts the diffusion floor at 0.30–0.35°, and the
-  measured resolution is 3–6× above it. F4 says most of the gap is a mechanical bow of the chambers (M3 curvature
-  confirms it on 10/10 views), and that is now stated as a detector lesson.
-- Angular resolution is now 1.15–2.51° per view over five chambers (paper 1). It is still `\requote` there:
-  re-derive it under the unified reconstruction (ws_unify, F22) before submitting.
-- The 93 % efficiency predates the unified reconstruction (gate3 moved detection +1.1…+5.5 pt): re-check.
-- Unchanged: 176 µm at SPS H4 (0.30 × pitch; F14 says the 3-pitch method stands); no dead time after a spark;
-  the 20–30 % ladder compression / ~4° too steep from hit times; flash recovery 2 µs (chamber) and 5 ms (DREAM).
+- v1 (10-27) was adapted from the MPGD2026 abstract (four chambers, 1.15–2.51° per view, the n_TOF γ flash); in git.
+- v2 (10-28) rewritten with Dylan: detector design first, det3 numbers from the `fe` reconstruction, capsule imaging
+  instead of the flash. `abstract.tex`/`abstract.pdf` and `abstract.txt` (for email) carry the same text.
 
 ## Draft v2 (2026-10-28, ~140 words)
 
