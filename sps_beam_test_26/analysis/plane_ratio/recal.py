@@ -343,7 +343,8 @@ def main():
     print(f'[recal {a.arm}] chi2 {c0:.6e} -> {res.fun:.6e} '
           f'({100 * (res.fun / c0 - 1):+.2f} %) after {n[0]} evals, '
           f'converged={res.success}')
-    print('  ' + ' '.join(f'{k}={(v if k == "v" else ref_dz[k] if k in ref_dz else h[k]):.4g}' for k in free))
+    print('  ' + ' '.join(f'{k}={(v if k == "v" else ref_dz[k] if k in ref_dz else t0_shift[k[-1]] if k in TSHIFT else h[k]):.4g}'
+                         for k in free))
 
 
 if __name__ == '__main__':

@@ -223,6 +223,38 @@ neighbours, at sample offsets k from the peak, and stacked by amplitude. Medians
   RC kernel provides, and the old, wider template happened to supply it. The Y penalty is the same at every σ0, so
   it is a real Y-view model deficit, not noise.
 
+## σ0: physical constant, not a per-chamber calibration (2026-10-29, Dylan's question)
+
+**Question (Dylan):** the same detector build at the same HV should have the same σ0. Does the recalibration change
+FC's SPS σ0, and did that measurement depend on the old calibration?
+
+**Did the SPS measurement depend on the old calibration?** FC's `fc_headon_grid.py` (det4 run_71 head-on RAW,
+three fields) uses only unsaturated events (lead strip 250–3200 ADC) and leaves t0 free per event (no latency
+pin). It profiles D_rc,y and a bounded D_x per event jointly with σ0 and Dp. So it is immune to T6 (saturation),
+T7 (δ) and the stale D_rc,y. Its one inherited input is the det4 bench template. T10 (`t10_sps_sigma0.py`) re-runs
+FC's grid with h_eff to measure that dependence (result below).
+
+**Why bench fits cannot measure σ0:**
+- Free σ0 in the joint bench fit (det2, pinned + unsaturated objective, `results/t8/DIAG_det2_free_sigma0.json`)
+  runs to **σ0_x 0.058 mm, σ0_y 0.20 mm**, not converged after 126 evaluations. 0.058 mm is below the static
+  induction floor (~0.07 mm, FC stack-up), so the fit is using σ0 to absorb other errors.
+- The model's lateral width is σ0 ⊕ Dp·√u, with u the drift time in ns. On the bench, Dp ≈ 0.023 mm/√ns gives
+  ~0.65 mm at full depth. In the SPS gas, Dp 0.005–0.01 leaves σ0 dominant. σ0 and Dp trade (FC: σ0_X ↔ Dp_X), and
+  the bench X width excess (cloud_basics §29–32) and the template's temporal error (T1, T9) feed into the same
+  freedom.
+- T12 (`t12_neighbour_time.py`, model-free, head-on unsaturated): the ±1 / centre amplitude ratio is 0.35–0.42 (X)
+  at the leading edge and the peak, and grows to ~1 by k = +8 (deep charge lands wider). Y shows the RC signature:
+  centre undershoot −0.10…−0.13, ±2 rising until k ≈ 6–8. In the T9 residuals at σ0 0.30, the model's ±1 is above
+  the data at every k (X −0.008…−0.037, Y −0.013…−0.060). The model over-spreads at all times, which σ0 alone
+  cannot fix without breaking ±2 (T9).
+- T11 (`t11_footprint.py`, time-integrated R1/R2) is **invalid as a σ0 test** (kept for the record). Integrated
+  charge includes the deep, wide-landing charge, and its toy used Dp in mm/√mm instead of mm/√ns.
+
+**Decision basis:** σ0 = 0.30 mm stays a physical constant from SPS, where Dp is small and σ0 is cleanly
+separated (pending T10's template check). Bench preferences for a smaller σ0 are compensation for the other
+width terms (Dp / the X width excess, the template width, the footprint shape). Those terms are where the
+remaining model error lives.
+
 ## Verdict so far (2026-10-28 evening)
 
 1. The production template is not pure response: it is 4–7 % too wide because it carries the strip's drift segment,

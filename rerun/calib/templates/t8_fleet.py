@@ -2,9 +2,12 @@
 
 Per chamber, from the fe_nobow bundle:
   A  'plan'   : production template, sigma0 0.30/0.30, the bundle's D_rc,y, no t0 offset    (the pass as planned)
-  B  'recal'  : production template; sigma_p0_x, sigma_p0_y, rc_D_y (not det4: 2.2e-4 from H4), t0_shift_x/y fitted
+  B  'recal'  : production template, sigma0 fixed at 0.30 (a physical input, Dylan 10-29: same build -> same sigma0);
+                rc_D_y (not det4: 2.2e-4 from H4) and t0_shift_x/y fitted
                 jointly by recal.py --t0-pin --unsat-only on cache events 580-1079 (<= 80 NM evaluations)
   C  'heff'   : as B with the segment-free template h_eff (t4_closure.json, X view; rc_tmpl='x')
+(A first version also freed sigma_p0_x/y: on det2 it ran to sigma0_x 0.058 mm, below the static-induction floor,
+not converged after 126 evaluations -- sigma0 absorbs a footprint SHAPE error; results/t8/DIAG_det2_free_sigma0.json.)
 Held-out events 180-579 (disjoint from the fit) through heldout_arm.py --t0-fix; t0 offsets are folded into t0_abs.
 Usage: python -I t8_fleet.py fit|bundles|heldout|compare [det ...]   (work dir $T8_WORK, default the job tmp)"""
 import json, os, shutil, subprocess, sys
@@ -38,7 +41,7 @@ def fit(det):
     from t5_make_arms import heff_on_grid
     g = np.load(f'{SRC.format(det)}/arrays.npz')['grid']
     seeds = {'recal': base_copy(det, 'seed_recal'), 'heff': base_copy(det, 'seed_heff', heff_on_grid(det, g))}
-    free = 'sigma_p0_x,sigma_p0_y,t0_shift_x,t0_shift_y' + ('' if det == 'det4' else ',rc_D_y')
+    free = 't0_shift_x,t0_shift_y' + ('' if det == 'det4' else ',rc_D_y')
     for name, b in seeds.items():
         out = f'{WORK}/{det}/fit_{name}.json'
         if os.path.exists(out):
