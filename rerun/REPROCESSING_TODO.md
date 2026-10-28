@@ -31,23 +31,30 @@ Status key: [x] done · [ ] open · [~] partly / in progress
        `ga_added`): det4 X weak 94 125 196 376 400 435 439 455 472 498 → dead, det4 X 274 hot (beside the chamber-side
        dead run 271–273: short partner?), det3 X 62 hot, det3 Y 41 / 510 → dead. Flank test on the hits + a waveform
        display each; drop any that fail.
-3. [ ] **Chamber bow**: the separate skeptical review (HANDOFF "Chamber bow (FB): skeptical review") — its verdict on
-       det6 (reco bias) and det7 X (unmasked) decides the bow block content per chamber.
-4. [ ] **B1 remainder** (`RERUN_PLAN.md` §12): the LM variable-projection outer solver (HANDOFF "Fitter: LM ...",
-       worktree `lm-varpro`), gated on the golden rows; retire the remaining `WFT_*` switches into one algorithm;
-       Dylan's calls: the trigger-track rule (reco or downstream) and `PIVOT_START` built in.
-5. [ ] **B2 fleet gate** on the final code, all five golden rows (s68, far, χ², efficiency, held out); no chamber worse
-       or the cost written down.
-6. [ ] **B3 SPS** in the pass: `rerun/sps_registry.csv` + `model_audit/sps_reco.py` / `sps_stage.sh` (wiring done);
-       the SPS stage must also write the timestamp and `quality_rule` (check `sps_reco.py` uses `wft.reco` writers).
-7. [ ] **Pass DAG check**: `make_pass_dag.py vrefit` now gets ~117 own-v rows (was 14 groups): dry-run, size the condor
-       load (one reco of ≤ 8000 events + align + angles + W0KW each), check rows with < 8000 events and the
-       `--keep-v --fold-kw` path; the `pass` phase's own-alignment branch for every own-v row.
-8. [ ] **Code archive** (`code_<hash>` on EOS) of the final main; regenerate `pass_registry.csv`
-       (`python rerun/make_registry.py`; reads `model_audit/followups/gc_gas_time/results/bench_rows.json` for row
-       times and clean-trigger counts).
-9. [ ] **From scratch**: golden finalize (S1) → vrefit (S1b, every own-v row) → pass (S2+S3), `RERUN_PLAN.md` §11
-       order. `lxstore status` on lxplus before and after.
+3. [x] **Chamber bow** — decided (Dylan 10-28): bow block on all five chambers, refit inside the new `calib` phase by
+       the same FB recipe (det6 included, det7 X unmasked). Paper wording follows the skeptic review (1.2–1.9 ± 0.4 mm):
+       REPORT.md / `08b_bow.tex` / slide note still to edit (downstream, not blocking).
+4. [~] **B1 remainder**: switches already retired into `wft/diag.py` (10-27; stage_job refuses overrides);
+       PIVOT_START is built in (reco.py:86); trigger-track rule = **downstream selection** (Dylan 10-28). Left: the LM
+       fitter — merge `lm-varpro` only if its fleet gate passes (condor 4591065–74, DAG `lm_r1`, started 15:09; 6/10
+       done at 16:20; `lm_gate_pairs.py` in the worktree), then `FITTER='lm'`, `LM_HOPS=0` as code defaults (PASS_PLAN E5).
+5. [ ] **E1 bundle from nothing**: `rerun/calib/make_bundle.py` + `rerun/calib/physics_inputs.json` (σ0 0.30, Dp,
+       det4 D_rc,y 2.2e-4, gaps, timing v; provenance) — PASS_PLAN §2.
+6. [ ] **E2 bow node**: `rerun/calib/bow_node.py` (FB `set_bow` reading EOS tables + M3 + alignment, not the laptop mirror).
+7. [ ] **E3 `make_pass_dag.py calib` phase** CAL0–CAL4 per golden chamber into `Analysis_pass1`, convergence
+       criteria → `CALIB_CONVERGENCE.json`; **`--table` on every W0KW node** (finalize/vrefit/pass, make_pass_dag.py:89,
+       112, 130 — without it they abort on a bow bundle, set_w0kw.py:95–97); vrefit keeps the golden bow.
+8. [ ] **E4 SPS phase** (was B3): one node per `sps_registry.csv` row with the new det4 bundle (bench bow/v_map/w0/t0
+       dropped — done 10-28 in sps_reco), `quality_flags`/timestamp in `sps_reco`, K fallback +5 → +15.
+9. [ ] **Pre-flight checks** (PASS_PLAN F7–F12): the 14 GA channels (item 2); H4 ch 372 oscillation → `det4_sps_h4.json`;
+       the 10 rows without gas-time entries (det2 6-17 ×8, det3 6-23 short, det3 6-26 quick); det4 6-23 rows' M3
+       clean fraction (skeptical if < ~40 %); g_det4 seeding on FEU 6 conn 7–8; optional S0b: decode + M3 + hits of
+       the never-decoded det6/det7 6-26 points 455/460/470/475/490 V (raw in EOS `june_tests/`).
+10. [ ] **Dry run**: `calib` on det3 `--limit 300` + one vrefit and one pass row on its output; pytest wft/tests.
+11. [ ] **Code archive** (`code_<hash>` on EOS) of the final main; `lxstore status` (AFS 88 % on 10-28: offload old
+       `code_*` first); regenerate `pass_registry.csv` (`python rerun/make_registry.py`).
+12. [ ] **Submit**: `calib` (S1) → gate G1 (convergence + held-out vs the audit fe numbers, `gate_compare.py`) →
+       `vrefit --keep-v` (117 rows) → `pass` (159) + `sps` (71). Order and gates: PASS_PLAN §3.
 
 ## C. After the pass (table-level, no refit)
 - [ ] v(t) within a row: per-time-block kw from the M3 ladder (bench; not the column duration, which is gain-confounded),
