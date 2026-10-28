@@ -149,3 +149,53 @@ frame shares the same aperture, so it does not discriminate the electrodes.
 
 Not done: the same test on the 19-run rows (the column columns exist in the FB tables); a Y-view response explanation
 for the w0 ramp excess was not identified.
+
+## Addendum 2 (Dylan, same day): electrode question closed; is det3's x–y bow difference significant?
+
+**Correction.** The aperture argument above ("399 × 362 mm active, shorter span along y") is withdrawn. The board is
+mechanically x–y symmetric; the smaller y active area is edge passivation only. Nothing mechanical distinguishes x from
+y (Dylan). Any real x–y difference in the bow therefore needs an asymmetric load or support, and none is known.
+
+**Item 1 (mesh vs cathode): closed** as "mesh sags away; cathode < 0.5 mm on det2/det7; det3 inconclusive" (Dylan: good
+enough).
+
+**det3, curvature along y minus curvature along x**, mm per (100 mm)² (×1.125 = extra depth at 150 mm):
+
+| route | row | y − x | note |
+|---|---|---|---|
+| positions, other-axis terms of the two views (X-view kww vs Y-view kuu) | golden | +0.07 ± 0.23 | |
+| | p2 (6-28 night, 12k) | +0.46 ± 0.18 | |
+| | day625 (bottom slot) | +0.50 ± 0.18 | |
+| positions, own-axis terms (X-view kuu vs Y-view kww) | golden / p2 / day625 | +0.44 ± 0.29 / +0.21 ± 0.18 / +0.26 ± 0.20 | a Y-view-wide excess enters the two pairings with opposite sign; their mean cancels it: **+0.33 ± 0.08** over the three rows |
+| positions, same view, own axis restricted to the central 220 mm (`skeptic/det3_aniso.py`) | golden / p2 / day625 | +0.28 ± 0.34 / +0.15 ± 0.31 / +0.80 ± 0.29 | **+0.44 ± 0.18** combined |
+| narrowest cluster (amplitude only), slope of the vertex per m | golden / p2 | X −0.118 ± 0.013, Y −0.133 ± 0.020 / X −0.098 ± 0.008, Y −0.107 ± 0.015 | ratio y/x **1.10 ± 0.14** combined; 1.5 excluded at ~3σ, 1.3 not |
+| fitted w0 gradient / ladder slope (geometry predicts a field-independent number) | golden / p2 / day625 | X 0.0058 ± 0.0004, Y 0.0087 ± 0.0002 / 0.0061, 0.0089 / 0.0063, 0.0134 | ratio 1.5–2.1, 7σ; but drift scan 700 V: X 0.0025 ± 0.0012, Y 0.0091 ± 0.0008; 500 V: X 0.0008 ± 0.0016, Y 0.0065 ± 0.0012 — the X-view value falls with field, which a tilt cannot do (small rows, bundle v mismatch; treat with care) |
+
+Reading: the only strongly significant x–y difference on det3 is in the fitted w0 gradient, and that one (i) has the same
+ratio 1.5–1.9 on all five chambers, and (ii) is field-dependent in the X view on det3's drift scan, so it is a property
+of the fit's Y view, not of the board. The position route gives det3 **y deeper than x by 0.3–0.45 mm per (100 mm)²,
+i.e. ≈ 0.4 mm more dish at 150 mm along y (ratio ≈ 1.3), at 2.4–4σ statistical** depending on the pairing; the
+route's estimator and view systematics measured earlier in this review are ±0.3–0.4 on exactly these terms, and the
+three det3 rows scatter from +0.07 to +0.80. The amplitude route sits at 1.1 ± 0.14. Fleet-wide the position route has
+no common sign (same-view, central-window: det2 +0.28 ± 0.48, det4 −0.47 ± 0.35, det6 +0.58 ± 0.34; det7 +1.74 ± 0.45
+with its faulty X half in).
+
+**Verdict for det3:** not established. A 2–3σ hint of a y-deeper dish, of the same size as the position route's
+systematic, with no mechanical reason and no support from the amplitude route. The 7σ number is a Y-view fit effect and
+must not be read as bow anisotropy. Paper and slide note should say the dish is round within ~30 %.
+
+Open: why the fitted Y-view w0 gradient reads 1.5–1.9× the X-view's on every chamber (a Y-response effect of the kind
+the July gap study saw as a common Y tilt), and why det3's X-view gradient falls with drift field. Both bear on the
+Y-view r_f values; the X-view r_f (0.42–0.62) are the ones to quote.
+
+**Can a square detector bow asymmetrically at all?** (Dylan.) Not as a square, isotropic plate under symmetric load
+and support: the square's symmetry forces equal central curvature along x and y and no cross term. An x–y difference
+needs a symmetry-breaking cause, none of which is in the Kirchhoff-plate estimate: (i) as-manufactured bow/twist of
+the PCB (ordinary tolerance 0.75 % of the span ≈ 3 mm over 400 mm, set by the copper imbalance between layers; the
+X-strip and Y-strip layers sit at different depths, so the laminate is not x–y symmetric), static and independent of
+pressure and orientation; (ii) anisotropic mesh tension (warp ≠ weft on the stretched mesh) cupping the board toward
+the mesh side, the sign seen on all five chambers; (iii) asymmetric edge loads or supports (connector cards and cables
+on one pair of edges, glue shrinkage of the Rohacell sandwich, where the frame actually carries the board). Since the
+data show no significant asymmetry on det3, nothing needs explaining; but if (i) or (ii) dominate, the dish is a
+per-board fabrication shape rather than a load, the "needs a few mbar" plausibility paragraph should say "within
+ordinary board warp", and the shape would survive vertical mounting at n_TOF.

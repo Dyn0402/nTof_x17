@@ -1,5 +1,56 @@
 # Handoff
 
+## Chamber bow (FB): skeptical review — updated 2026-10-28 (dylan-Yoga)
+
+**Resume:** review done and pushed (`rerun/model_audit/followups/fb_bow_maps/SKEPTIC_REVIEW_2026-10-28.md`); next is applying its wording to REPORT.md / `08b_bow.tex` / the slide note, if Dylan agrees.
+
+**Goal:** Dylan asked for an objective, skeptical check of the 10-27 conclusion "mesh dished 1.5–2.3 mm on all five
+chambers, drift tilts with it" before it goes into paper 1.
+
+**Done:**
+- Drift tilt confirmed as the solid part (two routes, one amplitude-only, M3-free, magnitudes agree; 0.5–1.7° outward
+  at 150 mm). Alternatives excluded: acceptance leak, M3 plane scale, edge truncation (wrong sign), fringe, gain
+  gradient, strip registration.
+- Position route (the only route naming the mesh) has a reconstruction bias (v − b)·τ̄·tan that follows the local
+  ladder slope: unit slope, r² 0.6–0.7 on det6; a quarter on det4; negligible on det2/det3. X and Y disagree on the
+  same curvature term by 1.2–1.8×; pinned t0 moves terms ±40 %. Depth re-quoted **1.2–1.9 mm ± 0.4 systematic**
+  (pivot estimator 1.86/1.41/1.53/1.15/1.54 vs report 1.77/1.48/1.85/1.79/2.31). det7 X includes its faulty half.
+- M3 common dish bounded 0.0–0.6 mm at 150 mm from the per-station rays (tan³ pattern); relative plane bows ≤ 0.5 mm.
+- Electrode separated by the column duration: det2/det7 column 4–6 % shorter at the rim = gap longer at centre =
+  **mesh sags away, cathode < 0.5 mm**; det3 inconclusive; det4/det6 contaminated. Dylan: closed.
+- det3 x–y bow difference: **not established** (positions +0.3–0.45 ± 0.1–0.2 mm/(100 mm)², amplitude ratio 1.1 ± 0.14;
+  the 7σ fitted-w0 ratio 1.5 is on all chambers and field-dependent in the X view → Y-view fit effect). Board is
+  mechanically x–y symmetric (y passivation only) — my active-area-aspect argument was wrong and is withdrawn in the
+  ledger. A square symmetric plate cannot bow asymmetrically; only fabrication warp / mesh-tension anisotropy / edge
+  loads could.
+
+**In progress / where it stopped:** nothing half-done. REPORT.md, `papers/paper1/sections/08b_bow.tex` and the slide
+note still carry the old numbers (1.5–2.3 ± 0.2, "three routes with no shared systematics", "cathode mostly flat").
+
+**Next steps:**
+1. If Dylan agrees with the ledger's "What I would change" list: edit REPORT.md, `08b_bow.tex`, regenerate the slide
+   note (`make_bow_deck.py`) with 1.2–1.9 ± 0.4, the M3 bound, the column-duration electrode test, "round within ~30 %",
+   plausibility "within ordinary board warp" as an alternative to the mbar estimate; quote X-view r_f only.
+2. Redo det7 with X masked to x ≥ 200 mm (ch 256–511) before quoting it.
+3. Column-duration electrode test on the 19 consistency rows (`skeptic/gap_sign.py` on FB tables) to see if det3's
+   null is stable.
+4. Open: why the fitted Y-view w0 gradient reads 1.5–1.9× the X-view's on every chamber; why det3's X-view gradient
+   falls with drift field on the (small, 1000 V-bundle) drift-scan rows.
+
+**Gotchas / decisions:**
+- Never argue bow anisotropy from the active area: the board is square and symmetric; only passivation differs.
+- The FB column route and FA's v(x,y) are circular with the bow at the magnitude level; the *sign* of the gap contrast
+  (T vs h over cells, tilt removed) is what separates the electrodes.
+- `q_u50/u90/uend` are ns after the event's fitted t0; τ̄ ≈ q_u50.
+- M3 per-station file: `mx_june_cosmic_qa/m3_self_resolution/sat_perplane_0to3.root` (det3 weekend only). Its tan³
+  residuals carry a (+,−,+,−) mirror-mounted-doublet response pattern, orthogonal to the dish pattern (+,−,−,+).
+
+**Key files & commands:**
+- `rerun/model_audit/followups/fb_bow_maps/SKEPTIC_REVIEW_2026-10-28.md` — the ledger (verdict, tables, two addenda)
+- `.../fb_bow_maps/skeptic/{refits,pivot_test,mimic_reg,other_axis,gap_sign,det3_aniso,m3_sag_test,m3_robust}.py`
+  — run with `./.venv/bin/python -I <script>` from the repo root; inputs `~/x17/cosmic_bench/model_audit/ws_v_w0/det*.parquet`
+- memory: `chamber-bow-skeptic-review.md`
+
 ## Fitter: LM variable-projection outer solver + covariance errors (B1 item) — updated 2026-10-28 (dylan-MS-7C84)
 
 **Update (same day): on the pinned-t0 FE bench bundles, `FITTER=lm, LM_HOPS=0` is a drop-in** (t0 unchanged on every
@@ -99,7 +150,9 @@ adapted from the MPGD2026 abstract. The call closed on 19 Oct, so this would be 
 
 ## Model audit (B4) + follow-ups — updated 2026-10-28 (dylan-Yoga)
 
-**Resume:** all follow-ups FA–FE done (FOLLOWUPS.md outcomes table); next = Dylan's promotion call on the `fe` bundles + pending gate rows.
+**Resume:** round 3 (10-28, FOLLOWUPS.md "Round 3 outcomes"): GA–GF done and in the code (90a768d); GD sparks: keep the
+veto, det4 row pending (lxplus 4583837: `gd_sparks/pull.sh det4` + `gd_score.py`). Before the reprocessing: double-check the GA bad channels (FOLLOWUPS), then rebuild every bundle from
+scratch on the `fe` recipe (Dylan: no shortcuts, so `promote_fe.sh` is not needed).
 
 **Goal:** answer Dylan's audit questions with existing data and end with ONE reconstruction algorithm.
 

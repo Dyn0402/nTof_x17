@@ -1,0 +1,30 @@
+{
+ "args": {
+  "det": "det3",
+  "cache": "ws_t0/caches/det3.pkl",
+  "bundle": "det3/calib_bundle",
+  "iters": 2,
+  "jobs": 8,
+  "n": 1500,
+  "tag": "_condor"
+ },
+ "cache": "ws_t0/caches/det3.pkl",
+ "bundle": "det3/calib_bundle",
+ "log": [
+  {
+   "it": 1,
+   "half": "A",
+   "x": 0.05609692267466246,
+   "y": 0.11266115640344666
+  },
+  {
+   "it": 1,
+   "half": "B",
+   "x": 0.03649580558655784,
+   "y": 0.11510755262635809
+  }
+ ],
+ "seconds": 2462.8207206726074,
+ "smooth_mm": 4.0,
+ "min_info": 50.0
+}

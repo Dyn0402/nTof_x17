@@ -501,12 +501,15 @@ def reconstruct_subrun(cfg: BeamConfig, bundle_path: str, out_path: str,
 
     def _write(rows, path, tags_done=()):
         d = pd.DataFrame(rows)
+        q_med = {}
         if len(d):
             d = d.sort_values('event_id').reset_index(drop=True)
+            # per sub-run file here; stage 3 (build_tracks) re-flags per run x arm over all sub-runs (GE 2026-10-28)
+            d, q_med = wreco.quality_flags(d)
         os.makedirs(os.path.dirname(path), exist_ok=True)
         d.to_parquet(path, index=False)
         if cand_rows:
-            pd.DataFrame(cand_rows).sort_values(
+            wreco.quality_flags(pd.DataFrame(cand_rows), q_med or None)[0].sort_values(
                 ['event_id', 'plane', 'rank']).reset_index(drop=True).to_parquet(
                 path.replace('.parquet', '.candidates.parquet'), index=False)
         # one row per joint two-track ATTEMPT (wft/TWO_TRACK_FIT_2026-09-16.md),
@@ -625,7 +628,7 @@ def _write_meta(df, out_path, cal, cfg, bundle_path, feu_x, feu_y, tags_done,
                                  rc_t0_interp=__import__('wft.model').model.RC_T0_INTERP,
                                  two_track_min_sep_mm=__import__('wft.model').model.TWO_MIN_SEP_MM,
                                  pair_select=wreco.PAIR_SELECT,
-                                 chi2dof_bad=wreco.CHI2DOF_BAD,
+                                 chi2dof_rel=wreco.CHI2DOF_REL,
                                  diagnostic_overrides={k: str(v) for k, v in __import__('wft.diag').diag.ACTIVE.items()},
                                  xy_pairing=(cal.xy_pairing or {}).get('features'),
                                  tan_max_raw=wreco.TAN_MAX,
@@ -647,6 +650,8 @@ def _write_meta(df, out_path, cal, cfg, bundle_path, feu_x, feu_y, tags_done,
     # beam seeder produced no cluster for. They are a real stage-1 -> stage-2
     # inefficiency, they are invisible in the output table (the rows simply are
     # not there), and every efficiency downstream needs them.
+    if len(df):
+        meta['quality_rule'] = wreco.quality_rule(wreco.quality_flags(df)[1])
     if allow_acct is not None:
         tot = {k: int(sum(a[k] for a in allow_acct))
                for k in ('n_allowed', 'n_seeded', 'n_missing')} if allow_acct else \

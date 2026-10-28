@@ -1,0 +1,11 @@
+# condor_submit -name bigbird101.cern.ch ntof_row.sub   (each line of ntof_jobs.txt: <run> <subrun>)
+executable     = $ENV(HOME)/x17rerun/gc/ntof_row.sh
+arguments      = $(args)
+output         = log/ntof.$(Cluster).$(ProcId).out
+error          = log/ntof.$(Cluster).$(ProcId).err
+log            = log/ntof.log
+request_cpus   = 4
+request_memory = 12000
++JobFlavour    = "workday"
+should_transfer_files = NO
+queue args from ntof_jobs.txt

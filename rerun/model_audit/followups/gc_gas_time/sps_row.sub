@@ -1,0 +1,11 @@
+# condor_submit -name bigbird101.cern.ch sps_row.sub   (each line of sps_jobs.txt: <run> <subrun> <dataset>)
+executable     = $ENV(HOME)/x17rerun/gc/sps_row.sh
+arguments      = $(args)
+output         = log/sps.$(Cluster).$(ProcId).out
+error          = log/sps.$(Cluster).$(ProcId).err
+log            = log/sps.log
+request_cpus   = 1
+request_memory = 4000
++JobFlavour    = "workday"
+should_transfer_files = NO
+queue args from sps_jobs.txt

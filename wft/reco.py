@@ -33,6 +33,13 @@ CHI2DOF_BAD = 300.0        # showers / multi-track / spark
 #: 1-D curvatures ignore the p0-t0 correlation and read w_err and t0_err 1.9-2.9x small on the bench fleet.  tan_err and
 #: p0_err barely move (the per-chamber floors dominate).  A PROTOTYPE, not gated: study override (wft.diag).
 COV_ERRORS = False
+#: quality flag (GE 2026-10-28): a view is flagged when its chi2/dof exceeds CHI2DOF_REL x the median chi2/dof of the
+#: same view over the same table (one chamber, one run condition).  The model error grows with the signal, so the
+#: typical chi2/dof runs from ~4 (n_TOF A) to ~740 (det6 Y) and no fixed number means the same on two chambers; ranked
+#: against its own table, chi2/dof separates the bad reconstructions (second deposits, showers) from the good with AUC
+#: 0.78-0.96 where they add charge, and 5x is the knee (det3: reproduces the old fixed 300).  Blind where the bad views
+#: MISS charge (det4 dead stripes, det7 X M1): a hardware limit, not a cut.  Set at table level by quality_flags().
+CHI2DOF_REL = 5.0
 
 # slope search: +-0.021 mm/ns covers |tan| ~ 0.57 at v = 36.6 um/ns
 W_SCAN_HALF = 0.021        # covers |tan| ~ 0.57 at v = 36.6 um/ns
@@ -165,6 +172,45 @@ class PlaneFit:
                                   # (HANDOFF_D_NOISY_CHANNELS.md item 4)
     n_band_strips: int = 0       # of n_strips, how many are noise bands in this event (censored, wft.model.BAND_NSIG)
     n_sat_strips: int = 0        # of n_strips, how many reach the ADC rail (sat_adc) in this event
+
+
+def quality_flags(df, medians: Optional[dict] = None) -> tuple:
+    """Set ``quality_ok`` relative to the table (CHI2DOF_REL x the median chi2/dof per view).  Returns (df, medians).
+
+    ``df`` is an events table (``x_chi2``, ``x_dof``, ``x_ok`` ...) or a candidates table (``plane``, ``chi2``, ``dof``,
+    ``rank``).  The median runs over the fitted views (events) or the live winners, ``rank == 0`` (candidates).
+    ``medians`` = {'x': m, 'y': m} reuses another table's medians (candidates take the events table's; n_TOF takes one
+    run x arm over all its sub-runs)."""
+    df = df.copy()
+    wide = 'plane' not in df.columns
+    med = dict(medians or {})
+    for p in ('x', 'y'):
+        if wide:
+            if f'{p}_chi2' not in df:
+                continue
+            r = df[f'{p}_chi2'] / df[f'{p}_dof'].clip(lower=1)
+            ok = df[f'{p}_ok'].astype(bool) & np.isfinite(r)
+            if p not in med:
+                med[p] = float(np.median(r[ok])) if ok.any() else np.nan
+            df[f'{p}_quality_ok'] = (ok & (r <= CHI2DOF_REL * med[p])).to_numpy() if np.isfinite(med[p]) else ok.to_numpy()
+        else:
+            sel = (df['plane'] == p).to_numpy()
+            if not sel.any():
+                continue
+            r = (df['chi2'] / df['dof'].clip(lower=1)).to_numpy()
+            if p not in med:
+                w = sel & (df['rank'].to_numpy() == 0) & np.isfinite(r)
+                med[p] = float(np.median(r[w])) if w.any() else np.nan
+            q = df['quality_ok'].to_numpy(bool).copy() if 'quality_ok' in df else np.ones(len(df), bool)
+            q[sel] = np.isfinite(r[sel]) & ((r[sel] <= CHI2DOF_REL * med[p]) if np.isfinite(med[p]) else True)
+            df['quality_ok'] = q
+    return df, med
+
+
+def quality_rule(medians: dict) -> dict:
+    """The sidecar's record of the flag: a table carrying it is not re-flagged on load (wft.compat.load_table)."""
+    return dict(rule='chi2/dof <= CHI2DOF_REL x median(chi2/dof) of the view over this table', rel=CHI2DOF_REL,
+                chi2dof_median={p: (None if v is None or not np.isfinite(v) else float(v)) for p, v in medians.items()})
 
 
 def window_flags(P, plane: str) -> tuple:
@@ -503,7 +549,7 @@ def fit_plane(P, plane: str, cal: CalibrationBundle, hyper: Optional[dict] = Non
         q_sum=q_sum, q_u50=q_u50, q_u90=q_u90, q_uend=q_uend,
         n_strips=int(W.shape[0]), n_seed=int(n_seed), n_dropped=int(n_dropped),
         slope_reliable=bool(abs(tan) >= TAN_MIN_SLOPE),
-        quality_ok=bool(r['chi2'] / max(r['dof'], 1) < CHI2DOF_BAD),
+        quality_ok=True,             # set relative to the table by quality_flags()
         n_flagged_strips=n_flagged, n_band_strips=n_band, n_sat_strips=n_sat)
     f._q = np.asarray(r['q'], float)     # the depth profile, for x/y pairing
     f._sigma_p0 = sig_used               # the prompt footprint the fit used (profile choice)
@@ -1000,7 +1046,7 @@ def _child_fit(P, plane, cal, r, which: str, hyper, chi_alone: float) -> PlaneFi
         q_sum=q_sum, q_u50=q_u50, q_u90=q_u90, q_uend=q_uend,
         n_strips=int(np.asarray(P['W']).shape[0]), n_seed=0, n_dropped=0,
         slope_reliable=bool(abs(tan) >= TAN_MIN_SLOPE),
-        quality_ok=bool(r['chi2'] / max(r['dof'], 1) < CHI2DOF_BAD),
+        quality_ok=True,             # set relative to the table by quality_flags()
         n_flagged_strips=n_flagged, n_band_strips=n_band, n_sat_strips=n_sat)
     f._chi_alone = float(chi_alone)
     f._q = np.asarray(q, float)
@@ -1912,18 +1958,26 @@ def reconstruct_run(cfg, cal: CalibrationBundle, out_path: str,
     rows, cand_rows, split_rows = [], [], []
     with ProcessPoolExecutor(max_workers=jobs, initializer=_worker_init,
                              initargs=(bundle_path,)) as pool:
+        evtime = {}
         for payloads in _stream_windows(cfg, pos_maps, seeds, wanted, pad_strips,
-                                        verbose=verbose, dead=dead, hits=hits, hot=cal.hot):
+                                        verbose=verbose, dead=dead, hits=hits, hot=cal.hot, evtime=evtime):
             if not payloads:
                 continue
             for r in pool.map(_worker_fit, payloads, chunksize=8):
+                # when the event was taken (GC 2026-10-28): its acquisition (file tag; eventId restarts between the
+                # acquisitions of one subrun) and DREAM timestamp; v(t) is applied to the tables from these afterwards
+                ts, tag = evtime.get(int(r['event_id']), (-1, ''))
+                for c in r.get('_cand', []):
+                    c['acq_tag'] = tag
                 cand_rows.extend(r.pop('_cand', []))
                 split_rows.extend(r.pop('_splits', []))
+                r['timestamp'], r['acq_tag'] = ts, tag
                 rows.append(r)
             if verbose:
                 print(f'[wft]   {len(rows):,} events reconstructed', flush=True)
 
     df = pd.DataFrame(rows).sort_values('event_id').reset_index(drop=True)
+    df, q_med = quality_flags(df)
     os.makedirs(os.path.dirname(out_path), exist_ok=True)
     df.to_parquet(out_path, index=False)
     if split_rows:
@@ -1932,11 +1986,11 @@ def reconstruct_run(cfg, cal: CalibrationBundle, out_path: str,
                                   index=False)
     cand_path = out_path.replace('.parquet', '.candidates.parquet')
     if cand_rows:
-        pd.DataFrame(cand_rows).sort_values(
+        quality_flags(pd.DataFrame(cand_rows), q_med)[0].sort_values(
             ['event_id', 'plane', 'rank']).reset_index(drop=True).to_parquet(
             cand_path, index=False)
     from . import diag as wdiag
-    meta = dict(n_events=len(df), calibration=bundle_path,
+    meta = dict(n_events=len(df), calibration=bundle_path, quality_rule=quality_rule(q_med),
                 # the algorithm is the code; anything else is a study and says so here
                 diagnostic_overrides=dict(wdiag.ACTIVE),
                 algorithm=dict(pivot_start=PIVOT_START, two_sided=TWO_SIDED, col_guard=wm.COL_GUARD,
@@ -2054,8 +2108,11 @@ def band_reseed(eid, hits_ev, band_ch: dict, pos_maps, feu_x, feu_y, hot, dead, 
     return rec
 
 
-def _stream_windows(cfg, pos_maps, seeds, wanted, pad_strips, verbose=True, dead=None, hits=None, hot=None):
+def _stream_windows(cfg, pos_maps, seeds, wanted, pad_strips, verbose=True, dead=None, hits=None, hot=None,
+                    evtime=None):
     """Yield lists of (eid, windows, seedinfo, n_hits, spark) per file pair.
+    ``evtime``: filled with eventId -> (DREAM timestamp, acquisition tag) for every event read (timestamp -1 when the
+    file has no timestamp branch).
     ``dead``: {plane: channels} padded across (``wft.seed.DEAD_SEED``); empty = historical.
     ``hits`` (the seeding hits, indexed by eventId): when given, every wanted event is checked for noise bands on its
     full waveforms and re-seeded without them (band_reseed); spark-vetoed events in ``wanted`` are fitted only if the
@@ -2080,6 +2137,13 @@ def _stream_windows(cfg, pos_maps, seeds, wanted, pad_strips, verbose=True, dead
         want = wanted & (set(rx.event_ids.tolist()) | set(ry.event_ids.tolist()))
         if not want:
             continue
+        if evtime is not None:
+            evtime.clear()                         # this file pair only: eventId can repeat in the next acquisition
+            for rdr in (ry, rx):                  # x wins where both have the event (one DREAM clock)
+                ts = rdr.timestamps if rdr.timestamps is not None else np.full(len(rdr.event_ids), -1)
+                for e, t in zip(rdr.event_ids.tolist(), ts.tolist()):
+                    if e in want:
+                        evtime[int(e)] = (int(t), tag)
         raw = {}
         noise = {'x': rx.noise, 'y': ry.noise}
         for plane, rdr in (('x', rx), ('y', ry)):

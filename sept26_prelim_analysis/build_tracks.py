@@ -9,7 +9,7 @@ re-running anything, so the rules are strict:
 
 * **Every X/Y pairing the reco made is a row**, gated or not.  `wft` pairs
   candidates into tracks (`track_id >= 0`) and then gates them on
-  `quality_ok & plausible` in both planes; the events table's `n_tracks` counts
+  coincidence & `plausible` in both planes; the events table's `n_tracks` counts
   only the survivors.  On run_145 tag 000 / arm A that is 69 of 128 pairings.
   Writing only the 69 would make the gate's efficiency unmeasurable from the
   product, and the 33 that are `quality_ok` but not `plausible` are exactly the
@@ -406,6 +406,10 @@ def build_arm(reco_dir: Path, arm: str, tr: G.DetTransform,
               k: float | None = None,
               tan_max_true: float | None = None) -> tuple[pd.DataFrame, dict]:
     cand, metas = load_reco(reco_dir, arm)
+    # quality_ok relative to this sub-run x arm over all its tags (wft.reco.CHI2DOF_REL x the median chi2/dof of the
+    # live winners; GE 2026-10-28), so every tag of the sub-run is judged by one number
+    from wft.reco import quality_flags
+    cand = quality_flags(cand)[0]
     df = pair_rows(cand)
     df['run'], df['subrun'], df['arm'] = run, subrun, arm
 

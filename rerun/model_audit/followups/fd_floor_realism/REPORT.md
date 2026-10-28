@@ -26,7 +26,7 @@ promoted bundle; 150 tracks at 3/9/16°, five chambers, X view)
 | + every measured imperfection | 0.41 | 0.41 | 0.76 | 0.55 | 0.64 |
 | χ²/dof toy / data | 21 / 118 | 11 / 62 | 3 / 18 | 40 / 444 | 25 / 117 |
 | position-dependent tilt (2D, 40 mm cells, cross-validated) | 0.66 | 0.64 | 0.46 | 1.09 | 0.43 |
-| M3 reference (bound) | 0.15 | 0.15 | 0.15 | 0.15 | 0.15 |
+| M3 reference (bound; GB 10-28: 0.05, ≤ 0.11 measured) | 0.15 | 0.15 | 0.15 | 0.15 | 0.15 |
 | **unexplained** | **0.77** | **0.72** | **1.38** | **1.26** | **1.36** |
 | measured | 1.10 | 1.06 | 1.65 | 1.76 | 1.57 |
 
@@ -34,10 +34,10 @@ Ladder reaches 31–46 % of the measured resolution; data χ²/dof is 5–11× t
 
 Ranked (each alone on top of the production fit, quadrature): 1. unexplained 0.72–1.38° (47–75 % of the variance);
 2. 2D tilt 0.43–1.09° (the 1D own-axis angle_map captures ⅓–½ of it; det6/det7, same triggers, share part of their errors:
-r 0.15 X, 0.31 Y); 3. strip gain spread 0.55° det4, ≤ 0.19° elsewhere; 4. v drift over the run 0.41° det4, 0.40° det6,
+r 0.15 X, 0.31 Y); 3. strip gain spread 0.55° det4, ≤ 0.19° elsewhere [**withdrawn 10-28 by GA**: the σ 0.31 input was the stripe structure, measured strip-to-strip gain is 0.02–0.04 and a measured map changes s68 by 0 ± 0.03°; see `followups/ga_gainmap/REPORT.md`]; 4. v drift over the run 0.41° det4, 0.40° det6,
 0.19° det3; 5. unmasked dead strips + CM 0.42° det7, 0.21° det6; 6. footprint shape (0.25 core + measured tails) 0.34°
 det7, ≤ 0.06° elsewhere; 7. production fit itself (blind start, per-event σ0) 0.29° det7, 0.25° det4; 8. one-sided X copy
-0.11–0.22°; 9. pulse-shape mismatch ≤ 0.21° (upper estimate); 10. M3 ≤ 0.15°, det3 extra diffusion 0.08°.
+0.11–0.22°; 9. pulse-shape mismatch ≤ 0.21° (upper estimate); 10. M3 ≤ 0.15° (GB 10-28: 0.05°, ≤ 0.11° measured), det3 extra diffusion 0.08°.
 
 **The unexplained part is not a waveform misfit:** in data the resolution is flat across the bottom four χ²/dof
 quintiles (det3 X 0.99–1.06°) and flat in charge. Four unmeasured waveform candidates at generous sizes on det3 give
@@ -51,7 +51,7 @@ FC's one-σ0 change is resolution-neutral in the toy.
    geometry — never to n_TOF without an in-situ check). (= FB's bow block, finer cells worth testing.)
 2. 20 ns or interpolated depth grid: removes the steep-track jump (det3 +1.6° at 45° with 60 ns) and shallow bias; main
    term for n_TOF pairs at 30–45°.
-3. Bundle content: strip gain map (det4 −0.55°), v(t) (det4, det6 −0.4°), complete dead masks (det7 −0.4°).
+3. Bundle content: ~~strip gain map (det4 −0.55°)~~ (withdrawn, GA), v(t) (det4, det6 −0.4°), complete dead masks (det7 −0.4°).
 4. Drop the per-event σ0 choice (decided): −0.25…−0.29° det4/det7.
 
 ## Limits / risks

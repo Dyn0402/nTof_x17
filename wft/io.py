@@ -121,6 +121,10 @@ class FeuReader:
         sub -= np.repeat(cms, CNS_BLOCK, axis=2)
         self.noise = (1.4826 * np.median(np.abs(sub), axis=(0, 1))).astype(np.float32)
         self.event_ids = self.tree.arrays(['eventId'], library='np')['eventId']
+        # DREAM timestamp per trigger (10 ns ticks from the acquisition start): the event's time in the run, for v(t)
+        # (GC 2026-10-28). Simulated files carry no such branch -> None.
+        self.timestamps = (self.tree.arrays(['timestamp'], library='np')['timestamp'].astype(np.int64)
+                           if 'timestamp' in self.tree.keys() else None)
         self.incomplete: Dict[int, int] = {}     # eventId -> samples present, for events iter_events skipped
 
     def iter_events(self, wanted: Optional[set] = None) -> Iterator[tuple]:

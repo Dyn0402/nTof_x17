@@ -22,7 +22,7 @@ prose; lxplus only via `ssh lxplus`, condor outputs to EOS.
 | 6 | trade survives at −1.2 ± 0.5 % common compression (det4 Y, det7 Y ~−4 %); bright-track effect mostly removed by dropping the per-event σ0 (−4 % left on det6/det7, the saturating chambers). (FC) |
 | 7 | t0 pinned at the latency in bench bundles; x–y gate on column time; χ²/dof +3…+37 % under the pin (model error); never at n_TOF (enforced). (FE) |
 | 8 | map gallery note mx17-chamber-maps (USED / PARTLY / NOT USED badges). (FB) |
-| 10 | 60 ns jump scales with the single-electron footprint (onset L = 1.55 σ_eff), clustering doubles it; 20 ns flat to 45°. Realism ladder reaches 0.41–0.76° vs measured 1.06–1.76°; + 2D tilt 0.43–1.09°; 0.72–1.38° unexplained and χ²-blind (points to fine-scale geometry, not the waveform model). Note mx17-angle-floor. (FD) |
+| 10 | [10-28: gain-map rank withdrawn (GA); M3 term 0.05° (GB)] 60 ns jump scales with the single-electron footprint (onset L = 1.55 σ_eff), clustering doubles it; 20 ns flat to 45°. Realism ladder reaches 0.41–0.76° vs measured 1.06–1.76°; + 2D tilt 0.43–1.09°; 0.72–1.38° unexplained and χ²-blind (points to fine-scale geometry, not the waveform model). Note mx17-angle-floor. (FD) |
 | 11 | pairing per class 84–99 %; on det6/det7 the limit is saturation, not tolerance. (FE) |
 | 12 | `fe` arm recommended as the single reconstruction (s68 better on every view, detection +0.15…+3.3 pt except det4 −0.12); 20 ns not adopted on the bench; promotion prepared (`promote_fe.sh`), **not applied**. (FE) |
 | 13 | band strips censored + re-seed: det3 band sample 145 → 221/252 found, controls 400/400. Hotspot census deferred. (FE) |
@@ -190,3 +190,34 @@ det3 band sample that tracks under a band are recovered. **Hotspot census: defer
 | FD | 10 | 60 ns jump confirmed; realistic toy ladder to the measured resolution | `followups/fd_floor_realism/` |
 | FE | 7, 11, 12, 13 | single reconstruction: implement + gate decided items, band awareness | `followups/fe_unify2/`, `wft/` |
 Deferred (after reprocessing): 9 (gas fit), 13 hotspot census.
+
+---
+
+## Round 3 — Dylan's questions (2026-10-28)
+1. Gain map: is it unimportant? it has the largest variation → **GA** (`followups/ga_gainmap/`)
+2. Is M3 (+ multiple scattering) limiting the angle resolution? what does SPS show? → **GB** (`followups/gb_m3_angle/`)
+3. Gas change vs time for every dataset; consequence for reco; can it wait until after reprocessing? → **GC** (`followups/gc_gas_time/`)
+4. Bow: Dylan has another session cross-check it; results look reasonable.
+5. **Decided:** one σ0 for X and Y (FC) is the physical choice.
+6. lxplus back → pending `fefa` / `fe_nobow` gate rows → **GF** (fe_unify2)
+7. Spark detection re-checked after the FE changes; make it optimal → **GD** (`followups/gd_sparks/`)
+8. Has the fixed χ²/dof cut been useful? hard to trust on this model; keep only if useful → **GE** (`followups/ge_chi2cut/`)
+9. **Decided:** before the full reprocessing, every calibration is redone from scratch — no shortcuts, no reuse of
+   intermediate products from this audit.
+
+### Round 3 outcomes (2026-10-28) — reports in `followups/g*/REPORT.md`, `fe_unify2/REPORT.md`
+| item | outcome |
+|---|---|
+| 1 | **GA: gain map not needed** (any chamber). Large-scale variation (±20–40 %, det4 X ×34) only rescales the free charge profile; strip-to-strip gain 0.02–0.04 (noise-limited); cross-validated maps change s68 by 0 ± 0.03°. FD's "gain 0.55° det4" withdrawn. Gain slot stays 1.0. By-product: 14 reproducible weak/hot channels → masks (below). |
+| 2 | **GB: M3 + MS = 0.05° (≤ 0.11–0.14° measured)** — not limiting; the det6/det7 shared 0.5–0.9° term is the bow. SPS det4 head-on (beam reference 0.03°) agrees with the bench. FD budget M3 row → 0.05°. |
+| 3 | **GC: post-correctable** (v enters only seeding, u_window and tan). Before the pass: DREAM timestamp + acquisition tag in the event record (**done**: `timestamp`, `acq_tag` columns); own v for every row with ≥ 500 clean triggers (**done**: `make_registry.py` rule; 117 own-v rows, 37 inherit the nearest-in-time calibrated row of their group). After: per-time-block kw from the M3 ladder (bench), column end (n_TOF A/C); n_TOF B/D within-run v not measurable (stated). |
+| 6 | **GF: all rows in; promote `fe`, not `fefa`** (v(x,y) map gains ≤ 0.05° on det6, in-sample, loses on det7 X; revisit with v(t)). |
+| 7 | **GD: keep the spark veto (> 50 seeding hits)** — best curve on det2/3/6/7 vs every waveform signature; above 50 only 0–25 % of fits are right; 40 is the purity-side option. Band re-seed validated. Bug fixed: seed overrides were recorded but not applied. det4 pending (lxplus 4583837). |
+| 8 | **GE: fixed χ²/dof 300 replaced by 5 × the table median per view** (**done**: `wft.reco.CHI2DOF_REL`, `quality_flags`, sidecar `quality_rule`; old tables re-flagged on load; n_TOF stage 3 per sub-run × arm). Validated on the fe gate tables: det2/det3 remove 9–16 % with 81–91 % of bad views; det6 gives back 60–70 pt of efficiency; blind on det4 / det7 X (missing-charge faults, hardware). |
+
+**To double-check before the reprocessing (Dylan 10-28): the GA bad channels** now in
+`followups/fe_unify2/masks/bench_det{3,4}.json` (`ga_added`): det4 X weak 94, 125, 196, 376, 400, 435, 439, 455, 472, 498
+→ dead; det4 X 274 hot; det3 X 62 hot; det3 Y 41 weak, 510 dead-like → dead. They come from the in-fit gain map
+(|ln g| > 0.5 in both event halves), not from the census/flank test the other masks passed. Check each with the flank test
+on the hits and on a waveform display; det4 X 274 sits beside the chamber-side dead run 271–273 (a short partner?).
+`set_w0kw.py --dead-json` now also installs the mask's `hot` list.

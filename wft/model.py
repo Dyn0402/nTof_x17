@@ -179,8 +179,9 @@ FITTER = 'nm'
 #: Nelder-Mead misses a deeper one on ~10 % of free-t0 planes (algo_review §2), and the bench t0 prior (sigma 5 ns,
 #: 144 chi2 units per bin against data chi2 ~ 1e4-1e5) does not pin it either (lm-varpro, 2026-10-28).  After the
 #: first LM the fit is re-started one bin over in each direction and keeps hopping while chi2 falls, up to LM_HOPS
-#: bins each way.  0 = no hops (the local minimum of the best ladder start).
-LM_HOPS = 3
+#: bins each way.  0 = no hops (the local minimum of the best ladder start).  Default 0: with the bench t0 pin hops
+#: find nothing and cost 20 %, and with free t0 the deeper basin is not closer to the trigger or M3 (REPORT_LM.md).
+LM_HOPS = 0
 #: 'lm' only: the global start.  'ladder' = the 7-point t0 ladder (at the start's p0 and along the pivot line, 13
 #: solves); 'grid' = the 'nm' fitter's own 105-point (p0, w, t0) grid, so the basin is chosen exactly as 'nm' chooses
 #: it and LM replaces only the Nelder-Mead refinement (the minimal-change form; use with LM_HOPS = 0).

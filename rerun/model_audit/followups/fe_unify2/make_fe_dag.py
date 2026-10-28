@@ -19,7 +19,9 @@ from make_gate_dag import GOLDEN, SUB, SH  # noqa: E402
 
 ARMS = {'fe1': ('', 'calib_bundle_fe1'), 'fe1g': ('', 'calib_bundle_fe1g'), 'fe': ('', 'calib_bundle_fe'),
         'feg': ('', 'calib_bundle_feg'), 'fe_nb': ('WFT_DIAG=model.BAND_NSIG=0', 'calib_bundle_fe'),
-        'fe_nobow': ('', 'calib_bundle_fe_nobow'), 'fefa': ('', 'calib_bundle_fefa')}
+        'fe_nobow': ('', 'calib_bundle_fe_nobow'), 'fefa': ('', 'calib_bundle_fefa'),
+        # LM gate (branch lm-varpro, 2026-10-28): the same fe bundle, current code, NM (as is) vs the LM outer solver
+        'fe_nm': ('', 'calib_bundle_fe'), 'fe_lm': ('WFT_DIAG=model.FITTER=lm', 'calib_bundle_fe')}
 
 
 def main():

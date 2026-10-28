@@ -207,6 +207,12 @@ def main():
                            new={p: len(dj['planes'][p]['dead']) for p in ('x', 'y')})
         cal.dead = {p: [int(c) for c in dj['planes'][p]['dead']] for p in ('x', 'y')}
         print(f'dead lists <- {a.dead_json}: {rep["dead"]["old"]} -> {rep["dead"]["new"]}')
+        # hot channels named by the mask (GA 2026-10-28) join the bundle's own hot list (down-weighted, never seed)
+        for p in ('x', 'y'):
+            h = [int(c) for c in dj['planes'][p].get('hot', [])]
+            if h:
+                cal.hot[p] = sorted(set(cal.hot.get(p, [])) | set(h))
+                rep.setdefault('hot_added', {})[p] = h
     if a.depth_subdiv:
         rep['depth_subdiv'] = dict(old=int(cal.depth_subdiv), new=int(a.depth_subdiv))
         cal.depth_subdiv = int(a.depth_subdiv)

@@ -59,6 +59,8 @@ DEAD_SEED = True
 #: det4/det7 the most, no cost to the existing tracks); the cut is a significance, i.e. in units of each strip's own
 #: noise, so it means the same on every chamber.
 HEADON_SIG = 20.0
+#: sentinel: 'use the module constant as it stands when called' (see seeds_from_hits)
+_MODULE_DEFAULT = object()
 
 
 @dataclass
@@ -407,9 +409,9 @@ def seed_plane(pos: np.ndarray, channels: np.ndarray, amps: np.ndarray,
 
 
 def seeds_from_hits(df_hits: pd.DataFrame, pos_maps: Dict[int, np.ndarray],
-                    feu_x: int, feu_y: int, rel_floor: float = SIG_REL_FLOOR,
-                    spark_veto: Optional[int] = SPARK_VETO_HITS,
-                    n_candidates: int = N_CANDIDATES,
+                    feu_x: int, feu_y: int, rel_floor=_MODULE_DEFAULT,
+                    spark_veto=_MODULE_DEFAULT,
+                    n_candidates=_MODULE_DEFAULT,
                     hot: Optional[Dict[str, object]] = None,
                     local_mm: Optional[float] = None,
                     dead: Optional[Dict[str, object]] = None) -> Dict[int, dict]:
@@ -427,6 +429,12 @@ def seeds_from_hits(df_hits: pd.DataFrame, pos_maps: Dict[int, np.ndarray],
     strip count, for the waveform fit to choose between (see
     wft.reco.fit_plane_candidates).
     """
+    # the module constants are read at CALL time, so a wft.diag override (applied after the module is defined) is the
+    # value used -- bound as defaults at import, WFT_DIAG=seed.SPARK_VETO_HITS=... was recorded in a table's meta but
+    # never applied (found 2026-10-28, gd_sparks).  An explicit argument (spark_veto=None: no veto) still wins.
+    rel_floor = SIG_REL_FLOOR if rel_floor is _MODULE_DEFAULT else rel_floor
+    spark_veto = SPARK_VETO_HITS if spark_veto is _MODULE_DEFAULT else spark_veto
+    n_candidates = N_CANDIDATES if n_candidates is _MODULE_DEFAULT else n_candidates
     df = df_hits[df_hits['feu'].isin((feu_x, feu_y))]
     lm = SIG_FLOOR_LOCAL_MM if local_mm is None else local_mm
     if SPLIT_GAP_MM:

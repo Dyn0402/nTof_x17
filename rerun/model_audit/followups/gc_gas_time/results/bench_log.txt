@@ -1,0 +1,150 @@
+c26__mx17_det1_det2_overnight_6-17-26__resist_510V_drift_1000V__mx17_2                     n=   120 dur= 0.49h blk=  10m rng=  nan% rmsI=0.00% q  nan% slope=   nan%/h eps_grp=   nan%
+c26__mx17_det1_det2_overnight_6-17-26__resist_520V_drift_1000V__mx17_2                     n=   210 dur= 0.49h blk=  64m rng= 0.00% rmsI=0.00% q  nan% slope=   nan%/h eps_grp=   nan%
+c26__mx17_det2_det3_overnight_6-22-26__long_run__mx17_2                                    n=107323 dur= 9.77h blk=  10m rng= 4.61% rmsI=1.25% q    9% slope=  0.39%/h eps_grp=  0.17%
+o22_long_det2                                                                              n= 22032 dur= 2.00h blk=  10m rng= 1.85% rmsI=0.27% q    5% slope= -0.87%/h eps_grp=  0.00%
+c26__mx17_det2_det3_overnight_6-22-26__resist_450V_drift_1000V__mx17_2                     n=  4267 dur= 0.50h blk=  10m rng= 0.16% rmsI=0.00% q    2% slope= -0.48%/h eps_grp=  2.04%
+c26__mx17_det2_det3_overnight_6-22-26__resist_455V_drift_1000V__mx17_2                     n=  4562 dur= 0.50h blk=  10m rng= 1.79% rmsI=0.38% q    1% slope= -3.69%/h eps_grp=  3.77%
+c26__mx17_det2_det3_overnight_6-22-26__resist_460V_drift_1000V__mx17_2                     n=  4585 dur= 0.50h blk=  10m rng= 1.10% rmsI=0.00% q    2% slope=  1.22%/h eps_grp=  3.41%
+c26__mx17_det2_det3_overnight_6-22-26__resist_465V_drift_1000V__mx17_2                     n=  4923 dur= 0.50h blk=  10m rng= 1.60% rmsI=0.23% q    2% slope= -2.25%/h eps_grp=  4.93%
+c26__mx17_det2_det3_overnight_6-22-26__resist_470V_drift_1000V__mx17_2                     n=  5017 dur= 0.50h blk=  10m rng= 0.92% rmsI=0.00% q    3% slope=  2.76%/h eps_grp=  5.28%
+c26__mx17_det2_det3_overnight_6-22-26__resist_475V_drift_1000V__mx17_2                     n=  5260 dur= 0.50h blk=  10m rng= 0.86% rmsI=0.00% q    1% slope=  2.60%/h eps_grp=  4.12%
+c26__mx17_det2_det3_overnight_6-22-26__resist_480V_drift_1000V__mx17_2                     n=  5322 dur= 0.50h blk=  10m rng= 0.70% rmsI=0.00% q    1% slope=  2.11%/h eps_grp=  2.59%
+c26__mx17_det2_det3_overnight_6-22-26__resist_485V_drift_1000V__mx17_2                     n=  5403 dur= 0.50h blk=  10m rng= 0.56% rmsI=0.00% q    1% slope= -1.71%/h eps_grp=  1.36%
+c26__mx17_det2_det3_overnight_6-22-26__resist_490V_drift_1000V__mx17_2                     n=  5510 dur= 0.50h blk=  10m rng= 0.61% rmsI=0.00% q    3% slope= -0.13%/h eps_grp=  0.18%
+c26__mx17_det2_det3_overnight_6-22-26__resist_495V_drift_1000V__mx17_2                     n=  5595 dur= 0.50h blk=  10m rng= 0.56% rmsI=0.00% q    1% slope= -0.20%/h eps_grp= -0.47%
+c26__mx17_det2_det3_overnight_6-22-26__resist_500V_drift_1000V__mx17_2                     n=  5473 dur= 0.50h blk=  10m rng= 1.21% rmsI=0.00% q    3% slope=  1.87%/h eps_grp= -1.51%
+c26__mx17_det2_det3_overnight_6-22-26__resist_505V_drift_1000V__mx17_2                     n=  5370 dur= 0.50h blk=  10m rng= 0.42% rmsI=0.00% q    4% slope=  0.45%/h eps_grp= -3.02%
+c26__mx17_det2_det3_overnight_6-22-26__resist_510V_drift_1000V__mx17_2                     n=  4980 dur= 0.50h blk=  10m rng= 1.40% rmsI=0.24% q    4% slope=  1.50%/h eps_grp= -4.72%
+c26__mx17_det2_det3_overnight_6-22-26__resist_515V_drift_1000V__mx17_2                     n=  4019 dur= 0.50h blk=  10m rng= 0.95% rmsI=0.00% q  nan% slope= -2.66%/h eps_grp= -7.43%
+c26__mx17_det2_det3_overnight_6-22-26__resist_520V_drift_1000V__mx17_2                     n=  2988 dur= 0.50h blk=  10m rng= 1.04% rmsI=0.00% q  nan% slope=  3.13%/h eps_grp=-10.98%
+c26__mx17_det2_det3_overnight_6-22-26__resist_525V_drift_1000V__mx17_2                     n=  2314 dur= 0.50h blk=  10m rng= 1.57% rmsI=0.00% q  nan% slope=  4.68%/h eps_grp=-14.17%
+c26__mx17_det2_det3_overnight_6-22-26__short_run__mx17_2                                   n= 11014 dur= 1.00h blk=  10m rng= 1.64% rmsI=0.00% q    2% slope= -1.06%/h eps_grp=  1.33%
+c26__mx17_det2_det3_overnight_6-22-26__long_run__mx17_3                                    n=100910 dur= 9.77h blk=  10m rng=14.12% rmsI=2.57% q   43% slope=  0.13%/h eps_grp=  0.00%
+c26__mx17_det2_det3_overnight_6-22-26__resist_450V_drift_1000V__mx17_3                     n=  3371 dur= 0.50h blk=  10m rng= 4.40% rmsI=0.00% q    7% slope= 14.00%/h eps_grp= 28.82%
+c26__mx17_det2_det3_overnight_6-22-26__resist_455V_drift_1000V__mx17_3                     n=  3295 dur= 0.50h blk=  10m rng= 4.05% rmsI=0.00% q    5% slope=-10.93%/h eps_grp= 34.12%
+c26__mx17_det2_det3_overnight_6-22-26__resist_460V_drift_1000V__mx17_3                     n=  3346 dur= 0.50h blk=  10m rng= 0.76% rmsI=0.00% q   17% slope=  0.35%/h eps_grp= 35.34%
+c26__mx17_det2_det3_overnight_6-22-26__resist_465V_drift_1000V__mx17_3                     n=  3090 dur= 0.50h blk=  10m rng= 4.56% rmsI=0.64% q    9% slope=-13.27%/h eps_grp= 34.20%
+c26__mx17_det2_det3_overnight_6-22-26__resist_470V_drift_1000V__mx17_3                     n=  3539 dur= 0.50h blk=  10m rng= 1.89% rmsI=0.00% q    3% slope=  5.96%/h eps_grp= 30.11%
+c26__mx17_det2_det3_overnight_6-22-26__resist_475V_drift_1000V__mx17_3                     n=  4254 dur= 0.50h blk=  10m rng= 7.34% rmsI=2.75% q   17% slope=-19.76%/h eps_grp= 25.69%
+c26__mx17_det2_det3_overnight_6-22-26__resist_480V_drift_1000V__mx17_3                     n=  4328 dur= 0.50h blk=  10m rng= 1.12% rmsI=0.00% q    6% slope=  3.29%/h eps_grp= 19.87%
+c26__mx17_det2_det3_overnight_6-22-26__resist_485V_drift_1000V__mx17_3                     n=  4431 dur= 0.50h blk=  10m rng= 2.24% rmsI=0.00% q   27% slope=  0.69%/h eps_grp= 16.36%
+c26__mx17_det2_det3_overnight_6-22-26__resist_490V_drift_1000V__mx17_3                     n=  4945 dur= 0.50h blk=  10m rng= 8.38% rmsI=3.28% q   24% slope=-13.77%/h eps_grp=  8.26%
+c26__mx17_det2_det3_overnight_6-22-26__resist_495V_drift_1000V__mx17_3                     n=  4937 dur= 0.50h blk=  10m rng= 3.90% rmsI=1.29% q   10% slope= 10.66%/h eps_grp=  1.82%
+c26__mx17_det2_det3_overnight_6-22-26__resist_500V_drift_1000V__mx17_3                     n=  5198 dur= 0.50h blk=  10m rng= 2.60% rmsI=0.52% q    5% slope=  6.70%/h eps_grp= -2.40%
+c26__mx17_det2_det3_overnight_6-22-26__resist_505V_drift_1000V__mx17_3                     n=  5161 dur= 0.50h blk=  10m rng= 4.73% rmsI=1.96% q   11% slope=  0.76%/h eps_grp= -6.95%
+c26__mx17_det2_det3_overnight_6-22-26__resist_510V_drift_1000V__mx17_3                     n=  4595 dur= 0.50h blk=  10m rng= 0.92% rmsI=0.00% q   17% slope=  2.79%/h eps_grp= -7.85%
+c26__mx17_det2_det3_overnight_6-22-26__resist_515V_drift_1000V__mx17_3                     n=  3595 dur= 0.50h blk=  10m rng= 1.08% rmsI=0.00% q  nan% slope=  3.16%/h eps_grp=-11.52%
+c26__mx17_det2_det3_overnight_6-22-26__resist_520V_drift_1000V__mx17_3                     n=  2863 dur= 0.50h blk=  10m rng= 5.27% rmsI=2.22% q  nan% slope= -2.48%/h eps_grp=-13.11%
+c26__mx17_det2_det3_overnight_6-22-26__resist_525V_drift_1000V__mx17_3                     n=  2887 dur= 0.50h blk=  10m rng= 3.77% rmsI=0.90% q  nan% slope= 11.20%/h eps_grp=-10.43%
+c26__mx17_det2_det3_overnight_6-22-26__short_run__mx17_3                                   n= 10457 dur= 1.00h blk=  10m rng= 6.97% rmsI=1.97% q   11% slope= -2.41%/h eps_grp=  1.57%
+c26__mx17_det3_day_6-25-26__long_run__mx17_3                                               n= 31697 dur= 3.12h blk=  10m rng= 1.74% rmsI=0.00% q    9% slope=  0.31%/h eps_grp=  0.00%
+c26__mx17_det3_det4_overnight_6-23-26__long_run__mx17_3                                    n= 16468 dur= 7.77h blk=  11m rng=15.70% rmsI=0.00% q   25% slope= -0.52%/h eps_grp=  0.00%
+c26__mx17_det3_det4_overnight_6-23-26__longer_run__mx17_3                                  n=  1174 dur= 1.99h blk=  41m rng=12.11% rmsI=1.01% q   56% slope= -8.88%/h eps_grp= 44.49%
+c26__mx17_det3_det4_overnight_6-23-26__resist_465V_drift_600V__mx17_3                      n=   229 dur= 0.33h blk=  42m rng= 0.00% rmsI=0.00% q  nan% slope=   nan%/h eps_grp= 19.27%
+c26__mx17_det3_det4_overnight_6-23-26__resist_470V_drift_600V__mx17_3                      n=   273 dur= 0.33h blk=  40m rng= 0.00% rmsI=0.00% q  nan% slope=   nan%/h eps_grp= 13.99%
+c26__mx17_det3_det4_overnight_6-23-26__resist_475V_drift_600V__mx17_3                      n=   324 dur= 0.33h blk=  35m rng= 0.00% rmsI=0.00% q  nan% slope=   nan%/h eps_grp= 18.31%
+c26__mx17_det3_det4_overnight_6-23-26__resist_480V_drift_600V__mx17_3                      n=   339 dur= 0.33h blk=  24m rng= 0.00% rmsI=0.00% q  nan% slope=   nan%/h eps_grp= 20.25%
+c26__mx17_det3_det4_overnight_6-23-26__resist_485V_drift_600V__mx17_3                      n=   379 dur= 0.33h blk=  21m rng= 0.00% rmsI=0.00% q  nan% slope=   nan%/h eps_grp= 18.99%
+c26__mx17_det3_det4_overnight_6-23-26__resist_490V_drift_600V__mx17_3                      n=   310 dur= 0.33h blk=  26m rng= 0.00% rmsI=0.00% q  nan% slope=   nan%/h eps_grp= 16.42%
+c26__mx17_det3_det4_overnight_6-23-26__resist_495V_drift_600V__mx17_3                      n=   385 dur= 0.33h blk=  21m rng= 0.00% rmsI=0.00% q  nan% slope=   nan%/h eps_grp= 14.92%
+c26__mx17_det3_det4_overnight_6-23-26__resist_500V_drift_600V__mx17_3                      n=   440 dur= 0.33h blk=  18m rng= 0.00% rmsI=0.00% q  nan% slope=   nan%/h eps_grp= 20.69%
+c26__mx17_det3_det4_overnight_6-23-26__resist_505V_drift_600V__mx17_3                      n=   458 dur= 0.33h blk=  17m rng= 0.00% rmsI=0.00% q  nan% slope=   nan%/h eps_grp= 10.91%
+c26__mx17_det3_det4_overnight_6-23-26__resist_510V_drift_600V__mx17_3                      n=   495 dur= 0.33h blk=  16m rng=10.84% rmsI=0.00% q  nan% slope=   nan%/h eps_grp= 19.12%
+c26__mx17_det3_det4_overnight_6-23-26__resist_515V_drift_600V__mx17_3                      n=   363 dur= 0.32h blk=  21m rng= 0.00% rmsI=0.00% q  nan% slope=   nan%/h eps_grp= 20.22%
+c26__mx17_det3_det4_overnight_6-23-26__resist_520V_drift_600V__mx17_3                      n=   413 dur= 0.33h blk=  19m rng= 0.00% rmsI=0.00% q  nan% slope=   nan%/h eps_grp= 20.46%
+c26__mx17_det3_det4_overnight_6-23-26__resist_525V_drift_600V__mx17_3                      n=   487 dur= 0.33h blk=  16m rng= 4.48% rmsI=0.00% q  nan% slope=   nan%/h eps_grp= 16.79%
+c26__mx17_det3_p2_det1_overnight_6-27-26__long_run_p2_det1_sanity_check__mx17_3            n= 84723 dur= 7.55h blk=  10m rng= 2.61% rmsI=0.33% q    6% slope=  0.21%/h eps_grp=  0.00%
+c26__mx17_det3_saturday_scan_6-27-26__drift_scan_resist_490V_drift_100V__mx17_3            n=   475 dur= 0.25h blk=  13m rng= 0.00% rmsI=0.00% q  nan% slope=   nan%/h eps_grp=  0.00%
+c26__mx17_det3_saturday_scan_6-27-26__hv_scan2_resist_460V_drift_1000V__mx17_3             n=  2493 dur= 0.25h blk=  10m rng= 0.84% rmsI=0.00% q    0% slope=   nan%/h eps_grp=  4.69%
+c26__mx17_det3_saturday_scan_6-27-26__hv_scan2_resist_470V_drift_1000V__mx17_3             n=  2723 dur= 0.25h blk=  10m rng= 0.32% rmsI=0.00% q    0% slope=   nan%/h eps_grp=  4.39%
+c26__mx17_det3_saturday_scan_6-27-26__hv_scan2_resist_480V_drift_1000V__mx17_3             n=  2890 dur= 0.25h blk=  10m rng= 0.05% rmsI=0.00% q    1% slope=   nan%/h eps_grp=  2.96%
+c26__mx17_det3_saturday_scan_6-27-26__hv_scan2_resist_490V_drift_1000V__mx17_3             n=  2931 dur= 0.25h blk=  10m rng= 0.92% rmsI=0.00% q    1% slope=   nan%/h eps_grp=  0.22%
+c26__mx17_det3_saturday_scan_6-27-26__hv_scan2_resist_500V_drift_1000V__mx17_3             n=  2787 dur= 0.25h blk=  10m rng= 1.54% rmsI=0.39% q    5% slope=   nan%/h eps_grp= -2.21%
+c26__mx17_det3_saturday_scan_6-27-26__hv_scan2_resist_510V_drift_1000V__mx17_3             n=  2692 dur= 0.25h blk=  10m rng= 0.18% rmsI=0.00% q  nan% slope=   nan%/h eps_grp= -7.35%
+c26__mx17_det3_saturday_scan_6-27-26__hv_scan2_resist_520V_drift_1000V__mx17_3             n=  1794 dur= 0.25h blk=  10m rng= 0.40% rmsI=0.00% q  nan% slope=   nan%/h eps_grp=-12.97%
+c26__mx17_det3_saturday_scan_6-27-26__hv_scan_resist_425V_drift_1000V__mx17_3              n=  1354 dur= 0.25h blk=  10m rng= 2.73% rmsI=0.00% q    4% slope=   nan%/h eps_grp=  4.54%
+c26__mx17_det3_saturday_scan_6-27-26__hv_scan_resist_435V_drift_1000V__mx17_3              n=  1826 dur= 0.25h blk=  10m rng= 1.58% rmsI=0.00% q    0% slope=   nan%/h eps_grp=  2.42%
+c26__mx17_det3_saturday_scan_6-27-26__hv_scan_resist_445V_drift_1000V__mx17_3              n=  2139 dur= 0.25h blk=  10m rng= 0.37% rmsI=0.00% q    3% slope=   nan%/h eps_grp=  2.23%
+c26__mx17_det3_saturday_scan_6-27-26__hv_scan_resist_455V_drift_1000V__mx17_3              n=  2537 dur= 0.25h blk=  10m rng= 1.84% rmsI=0.48% q    1% slope=   nan%/h eps_grp=  1.71%
+c26__mx17_det3_saturday_scan_6-27-26__hv_scan_resist_465V_drift_1000V__mx17_3              n=  2672 dur= 0.25h blk=  10m rng= 1.22% rmsI=0.00% q    1% slope=   nan%/h eps_grp=  4.93%
+c26__mx17_det3_saturday_scan_6-27-26__hv_scan_resist_475V_drift_1000V__mx17_3              n=  2846 dur= 0.25h blk=  10m rng= 1.09% rmsI=0.00% q    0% slope=   nan%/h eps_grp=  3.66%
+c26__mx17_det3_saturday_scan_6-27-26__hv_scan_resist_485V_drift_1000V__mx17_3              n=  2808 dur= 0.25h blk=  10m rng= 0.37% rmsI=0.00% q    2% slope=   nan%/h eps_grp=  1.50%
+c26__mx17_det3_saturday_scan_6-27-26__hv_scan_resist_495V_drift_1000V__mx17_3              n=  2852 dur= 0.25h blk=  10m rng= 1.19% rmsI=0.00% q    3% slope=   nan%/h eps_grp= -0.83%
+c26__mx17_det3_saturday_scan_6-27-26__hv_scan_resist_505V_drift_1000V__mx17_3              n=  2793 dur= 0.25h blk=  10m rng= 2.13% rmsI=0.82% q    4% slope=   nan%/h eps_grp= -3.40%
+c26__mx17_det3_saturday_scan_6-27-26__hv_scan_resist_515V_drift_1000V__mx17_3              n=  2397 dur= 0.25h blk=  10m rng= 0.57% rmsI=0.00% q  nan% slope=   nan%/h eps_grp=-10.30%
+c26__mx17_det3_saturday_scan_6-27-26__hv_scan_resist_525V_drift_1000V__mx17_3              n=  1438 dur= 0.25h blk=  10m rng= 0.36% rmsI=0.00% q  nan% slope=   nan%/h eps_grp=-13.73%
+sat_det3                                                                                   n= 26761 dur= 2.35h blk=  10m rng= 2.28% rmsI=0.18% q    4% slope=  0.74%/h eps_grp=  0.00%
+c26__mx17_det3_saturday_scan_6-27-26__drift_scan_resist_490V_drift_1100V__mx17_3           n=  2822 dur= 0.25h blk=  10m rng= 1.42% rmsI=0.25% q    2% slope=   nan%/h eps_grp=  0.00%
+c26__mx17_det3_saturday_scan_6-27-26__drift_scan_resist_490V_drift_300V__mx17_3            n=  1962 dur= 0.25h blk=  10m rng= 2.09% rmsI=0.00% q    4% slope=   nan%/h eps_grp=  0.00%
+c26__mx17_det3_saturday_scan_6-27-26__drift_scan_resist_490V_drift_500V__mx17_3            n=  2708 dur= 0.25h blk=  10m rng= 1.54% rmsI=0.00% q    3% slope=   nan%/h eps_grp=  0.00%
+c26__mx17_det3_saturday_scan_6-27-26__drift_scan_resist_490V_drift_700V__mx17_3            n=  2889 dur= 0.25h blk=  10m rng= 0.27% rmsI=0.00% q    2% slope=   nan%/h eps_grp=  0.00%
+c26__mx17_det3_saturday_scan_6-27-26__drift_scan_resist_490V_drift_900V__mx17_3            n=  2809 dur= 0.25h blk=  10m rng= 0.94% rmsI=0.00% q    2% slope=   nan%/h eps_grp=  0.00%
+c26__mx17_det3_test_6-22-26__short_run__mx17_3                                             n= 10417 dur= 1.07h blk=  10m rng=19.43% rmsI=5.34% q   35% slope=  3.51%/h eps_grp=  0.00%
+c26__mx17_det3_det4_overnight_6-23-26__long_run__mx17_4                                    n= 20367 dur= 7.77h blk=  10m rng=12.68% rmsI=0.00% q   24% slope=  0.68%/h eps_grp=  0.00%
+c26__mx17_det3_det4_overnight_6-23-26__longer_run__mx17_4                                  n=  1556 dur= 2.00h blk=  31m rng= 7.71% rmsI=0.00% q   56% slope=  3.34%/h eps_grp=-15.05%
+c26__mx17_det3_det4_overnight_6-23-26__resist_465V_drift_600V__mx17_4                      n=   355 dur= 0.33h blk=  25m rng= 0.00% rmsI=0.00% q  nan% slope=   nan%/h eps_grp=-11.44%
+c26__mx17_det3_det4_overnight_6-23-26__resist_470V_drift_600V__mx17_4                      n=   419 dur= 0.33h blk=  23m rng= 0.00% rmsI=0.00% q  nan% slope=   nan%/h eps_grp= -7.82%
+c26__mx17_det3_det4_overnight_6-23-26__resist_475V_drift_600V__mx17_4                      n=   411 dur= 0.33h blk=  24m rng= 0.00% rmsI=0.00% q  nan% slope=   nan%/h eps_grp=-11.88%
+c26__mx17_det3_det4_overnight_6-23-26__resist_480V_drift_600V__mx17_4                      n=   438 dur= 0.33h blk=  23m rng= 0.00% rmsI=0.00% q  nan% slope=   nan%/h eps_grp=-10.92%
+c26__mx17_det3_det4_overnight_6-23-26__resist_485V_drift_600V__mx17_4                      n=   530 dur= 0.33h blk=  15m rng= 4.68% rmsI=0.00% q   10% slope=   nan%/h eps_grp= -7.67%
+c26__mx17_det3_det4_overnight_6-23-26__resist_490V_drift_600V__mx17_4                      n=   426 dur= 0.33h blk=  19m rng= 0.00% rmsI=0.00% q  nan% slope=   nan%/h eps_grp= -7.23%
+c26__mx17_det3_det4_overnight_6-23-26__resist_495V_drift_600V__mx17_4                      n=   453 dur= 0.33h blk=  18m rng= 0.00% rmsI=0.00% q  nan% slope=   nan%/h eps_grp= -3.91%
+c26__mx17_det3_det4_overnight_6-23-26__resist_500V_drift_600V__mx17_4                      n=   522 dur= 0.33h blk=  15m rng= 0.36% rmsI=0.00% q  nan% slope=   nan%/h eps_grp= -4.64%
+c26__mx17_det3_det4_overnight_6-23-26__resist_505V_drift_600V__mx17_4                      n=   474 dur= 0.33h blk=  17m rng= 0.00% rmsI=0.00% q  nan% slope=   nan%/h eps_grp= -4.88%
+c26__mx17_det3_det4_overnight_6-23-26__resist_510V_drift_600V__mx17_4                      n=   472 dur= 0.33h blk=  17m rng= 7.78% rmsI=0.00% q  nan% slope=   nan%/h eps_grp=-10.14%
+c26__mx17_det3_det4_overnight_6-23-26__resist_515V_drift_600V__mx17_4                      n=   353 dur= 0.33h blk=  22m rng= 0.00% rmsI=0.00% q  nan% slope=   nan%/h eps_grp= -7.76%
+c26__mx17_det3_det4_overnight_6-23-26__resist_520V_drift_600V__mx17_4                      n=   319 dur= 0.33h blk=  25m rng= 0.00% rmsI=0.00% q  nan% slope=   nan%/h eps_grp= -7.21%
+c26__mx17_det3_det4_overnight_6-23-26__resist_525V_drift_600V__mx17_4                      n=   323 dur= 0.33h blk=  25m rng= 0.00% rmsI=0.00% q  nan% slope=   nan%/h eps_grp= -8.66%
+c26__mx17_det3_det4_overnight_6-23-26__short_run__mx17_4                                   n=   189 dur= 1.00h blk= 153m rng= 0.00% rmsI=0.00% q  nan% slope=   nan%/h eps_grp= -8.79%
+g_det4                                                                                     n= 22079 dur= 5.97h blk=  10m rng=12.11% rmsI=1.74% q   24% slope= -1.19%/h eps_grp=  0.00%
+c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_400V_det7_400V_drift_700V__mx17_6         n=   170 dur= 0.16h blk=  23m rng= 0.00% rmsI=0.00% q  nan% slope=   nan%/h eps_grp= 59.77%
+c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_405V_det7_405V_drift_700V__mx17_6         n=   629 dur= 0.33h blk=  13m rng= 0.95% rmsI=0.00% q    2% slope=   nan%/h eps_grp= 45.90%
+c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_410V_det7_410V_drift_700V__mx17_6         n=   378 dur= 0.17h blk=  11m rng= 0.00% rmsI=0.00% q  nan% slope=   nan%/h eps_grp= 37.27%
+c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_415V_det7_415V_drift_700V__mx17_6         n=  1071 dur= 0.33h blk=  10m rng= 2.56% rmsI=0.00% q    3% slope=   nan%/h eps_grp= 38.05%
+c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_420V_det7_420V_drift_700V__mx17_6         n=   525 dur= 0.17h blk=  10m rng= 0.00% rmsI=0.00% q  nan% slope=   nan%/h eps_grp= 34.59%
+c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_425V_det7_425V_drift_700V__mx17_6         n=  1253 dur= 0.33h blk=  10m rng= 0.43% rmsI=0.00% q    3% slope=   nan%/h eps_grp= 34.02%
+c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_430V_det7_430V_drift_700V__mx17_6         n=   759 dur= 0.17h blk=  10m rng= 0.00% rmsI=0.00% q  nan% slope=   nan%/h eps_grp= 30.59%
+c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_435V_det7_435V_drift_700V__mx17_6         n=  1710 dur= 0.33h blk=  10m rng= 2.71% rmsI=0.00% q    4% slope=   nan%/h eps_grp= 32.97%
+c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_440V_det7_440V_drift_700V__mx17_6         n=   668 dur= 0.17h blk=  10m rng= 0.00% rmsI=0.00% q  nan% slope=   nan%/h eps_grp= 30.28%
+c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_445V_det7_445V_drift_700V__mx17_6         n=  2039 dur= 0.33h blk=  10m rng= 2.53% rmsI=0.53% q    1% slope=   nan%/h eps_grp= 31.09%
+c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_450V_det7_450V_drift_700V__mx17_6         n=   663 dur= 0.16h blk=  10m rng= 0.00% rmsI=0.00% q  nan% slope=   nan%/h eps_grp= 25.58%
+c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_465V_det7_465V_drift_700V__mx17_6         n=  2435 dur= 0.33h blk=  10m rng= 0.69% rmsI=0.00% q    2% slope=   nan%/h eps_grp= 34.24%
+c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_480V_det7_480V_drift_700V__mx17_6         n=  1228 dur= 0.17h blk=  10m rng= 0.00% rmsI=0.00% q  nan% slope=   nan%/h eps_grp= 20.77%
+c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_485V_det7_485V_drift_700V__mx17_6         n=  2589 dur= 0.33h blk=  10m rng= 0.11% rmsI=0.00% q    9% slope=   nan%/h eps_grp= 19.30%
+c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_495V_det7_495V_drift_700V__mx17_6         n=  1955 dur= 0.33h blk=  10m rng= 0.30% rmsI=0.00% q  nan% slope=   nan%/h eps_grp= 10.78%
+c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_500V_det7_500V_drift_700V__mx17_6         n=   776 dur= 0.17h blk=  10m rng= 0.00% rmsI=0.00% q  nan% slope=   nan%/h eps_grp=  4.14%
+g_det6_long                                                                                n= 28186 dur= 4.29h blk=  10m rng=11.18% rmsI=3.00% q    9% slope=  2.37%/h eps_grp=  0.00%
+c26__mx17_det6_det7_overnight_6-26-26__longer_run__mx17_6                                  n= 11275 dur= 2.00h blk=  10m rng=33.26% rmsI=9.55% q  178% slope=-12.29%/h eps_grp= -2.61%
+c26__mx17_det6_det7_overnight_6-26-26__resist_det6_505V_det7_480V_drift_700V__mx17_6       n=  2110 dur= 0.33h blk=  10m rng= 1.31% rmsI=0.00% q  nan% slope=   nan%/h eps_grp= -9.15%
+c26__mx17_det6_det7_overnight_6-26-26__resist_det6_510V_det7_485V_drift_700V__mx17_6       n=  1829 dur= 0.33h blk=  10m rng= 0.38% rmsI=0.00% q  nan% slope=   nan%/h eps_grp=-11.03%
+c26__mx17_det6_det7_overnight_6-26-26__resist_det6_515V_det7_490V_drift_700V__mx17_6       n=  1528 dur= 0.33h blk=  10m rng= 0.74% rmsI=0.00% q  nan% slope=   nan%/h eps_grp=-13.73%
+c26__mx17_det6_det7_overnight_6-26-26__resist_det6_520V_det7_495V_drift_700V__mx17_6       n=  1304 dur= 0.33h blk=  10m rng= 1.49% rmsI=0.00% q  nan% slope=   nan%/h eps_grp=-15.86%
+c26__mx17_det6_det7_overnight_6-26-26__resist_det6_525V_det7_500V_drift_700V__mx17_6       n=  1008 dur= 0.33h blk=  10m rng= 2.87% rmsI=0.44% q  nan% slope=   nan%/h eps_grp=-17.44%
+c26__mx17_det6_det7_overnight_6-26-26__resist_det6_530V_det7_505V_drift_700V__mx17_6       n=   710 dur= 0.33h blk=  12m rng= 3.86% rmsI=0.45% q  nan% slope=   nan%/h eps_grp=-19.96%
+c26__mx17_det6_det7_overnight_6-26-26__short_run__mx17_6                                   n=  1926 dur= 1.00h blk=  12m rng=54.15% rmsI=15.01% q   41% slope=-60.27%/h eps_grp= 47.43%
+c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_400V_det7_400V_drift_700V__mx17_7         n=   521 dur= 0.17h blk=  10m rng= 0.00% rmsI=0.00% q  nan% slope=   nan%/h eps_grp= 19.94%
+c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_405V_det7_405V_drift_700V__mx17_7         n=  1274 dur= 0.33h blk=  10m rng= 0.33% rmsI=0.00% q    3% slope=   nan%/h eps_grp= 20.25%
+c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_410V_det7_410V_drift_700V__mx17_7         n=   678 dur= 0.17h blk=  10m rng= 0.00% rmsI=0.00% q  nan% slope=   nan%/h eps_grp= 18.13%
+c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_415V_det7_415V_drift_700V__mx17_7         n=  1580 dur= 0.33h blk=  10m rng= 2.16% rmsI=0.00% q    8% slope=   nan%/h eps_grp= 17.95%
+c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_420V_det7_420V_drift_700V__mx17_7         n=   761 dur= 0.17h blk=  10m rng= 0.00% rmsI=0.00% q  nan% slope=   nan%/h eps_grp= 15.07%
+c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_425V_det7_425V_drift_700V__mx17_7         n=  1737 dur= 0.33h blk=  10m rng= 0.79% rmsI=0.00% q    4% slope=   nan%/h eps_grp= 19.06%
+c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_430V_det7_430V_drift_700V__mx17_7         n=   922 dur= 0.17h blk=  10m rng= 0.00% rmsI=0.00% q  nan% slope=   nan%/h eps_grp= 17.84%
+c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_435V_det7_435V_drift_700V__mx17_7         n=  1931 dur= 0.33h blk=  10m rng= 0.59% rmsI=0.00% q    7% slope=   nan%/h eps_grp= 17.57%
+c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_440V_det7_440V_drift_700V__mx17_7         n=   757 dur= 0.17h blk=  10m rng= 0.00% rmsI=0.00% q  nan% slope=   nan%/h eps_grp= 16.10%
+c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_445V_det7_445V_drift_700V__mx17_7         n=  1917 dur= 0.33h blk=  10m rng= 1.74% rmsI=0.00% q    6% slope=   nan%/h eps_grp= 16.74%
+c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_450V_det7_450V_drift_700V__mx17_7         n=   692 dur= 0.16h blk=  10m rng= 0.00% rmsI=0.00% q  nan% slope=   nan%/h eps_grp= 14.72%
+c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_465V_det7_465V_drift_700V__mx17_7         n=  1784 dur= 0.33h blk=  10m rng= 2.18% rmsI=0.55% q    7% slope=   nan%/h eps_grp= 13.11%
+c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_480V_det7_480V_drift_700V__mx17_7         n=   832 dur= 0.17h blk=  10m rng= 0.00% rmsI=0.00% q  nan% slope=   nan%/h eps_grp=  8.84%
+c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_485V_det7_485V_drift_700V__mx17_7         n=  1655 dur= 0.33h blk=  10m rng= 1.70% rmsI=0.00% q    3% slope=   nan%/h eps_grp=  7.13%
+c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_495V_det7_495V_drift_700V__mx17_7         n=  1307 dur= 0.33h blk=  10m rng= 0.57% rmsI=0.00% q    4% slope=   nan%/h eps_grp=  2.86%
+c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_500V_det7_500V_drift_700V__mx17_7         n=   588 dur= 0.16h blk=  10m rng= 0.00% rmsI=0.00% q  nan% slope=   nan%/h eps_grp=  3.11%
+g_det7_long                                                                                n= 17850 dur= 4.29h blk=  10m rng= 4.36% rmsI=0.32% q   24% slope=  0.62%/h eps_grp=  0.00%
+c26__mx17_det6_det7_overnight_6-26-26__longer_run__mx17_7                                  n=  8589 dur= 2.00h blk=  10m rng= 2.34% rmsI=0.00% q   16% slope=  0.75%/h eps_grp= -4.95%
+c26__mx17_det6_det7_overnight_6-26-26__resist_det6_505V_det7_480V_drift_700V__mx17_7       n=  1397 dur= 0.33h blk=  10m rng= 0.36% rmsI=0.00% q    8% slope=   nan%/h eps_grp=  2.39%
+c26__mx17_det6_det7_overnight_6-26-26__resist_det6_510V_det7_485V_drift_700V__mx17_7       n=  1357 dur= 0.33h blk=  10m rng= 1.08% rmsI=0.00% q    2% slope=   nan%/h eps_grp= -1.12%
+c26__mx17_det6_det7_overnight_6-26-26__resist_det6_515V_det7_490V_drift_700V__mx17_7       n=  1211 dur= 0.33h blk=  10m rng= 2.65% rmsI=0.55% q    6% slope=   nan%/h eps_grp= -2.10%
+c26__mx17_det6_det7_overnight_6-26-26__resist_det6_520V_det7_495V_drift_700V__mx17_7       n=  1124 dur= 0.33h blk=  10m rng= 1.71% rmsI=0.00% q  nan% slope=   nan%/h eps_grp= -3.24%
+c26__mx17_det6_det7_overnight_6-26-26__resist_det6_525V_det7_500V_drift_700V__mx17_7       n=   995 dur= 0.33h blk=  10m rng= 0.70% rmsI=0.00% q  nan% slope=   nan%/h eps_grp= -6.01%
+c26__mx17_det6_det7_overnight_6-26-26__resist_det6_530V_det7_505V_drift_700V__mx17_7       n=   806 dur= 0.33h blk=  10m rng= 1.92% rmsI=0.00% q  nan% slope=   nan%/h eps_grp= -9.99%
+c26__mx17_det6_det7_overnight_6-26-26__short_run__mx17_7                                   n=  4356 dur= 1.00h blk=  10m rng= 5.26% rmsI=1.56% q    9% slope=  5.65%/h eps_grp= -8.21%
+149 rows, 10 missing

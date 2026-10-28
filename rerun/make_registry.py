@@ -10,9 +10,16 @@ One row per (subrun, detector) of the campaign manifest on EOS.  Columns:
   calib_key  the row whose calibration serves the group: the golden calibration row of the chamber for its own
              group; otherwise the group's reference row (nominal resist HV, most decoded data) for a v refit
   refit      golden = full W1 calibration (kernel + v, reference from the waveform alignment)
-             v      = v (+ t0 table) refitted on calib_key with the chamber's golden kernel pinned
-             none   = inherits calib_key's bundle (HV-scan points: resist HV changes the gain, absorbed by the fit's
-                      free charge profile)
+             v      = the row's own angle scale: w0/kw (v) refitted on the row itself against M3, with the chamber's
+                      golden kernel pinned
+             none   = inherits calib_key's bundle
+             Rule (GC 2026-10-28): every row with at least N_OWN_V clean triggers gets its own v.  The gas was still
+             exchanging during several nights (det4 6-23, det6/det7 6-26: v 17.8 -> 31.0 um/ns on det6 over 12 h), so
+             a row that inherits another row's v reads its angles 9-32 % off; and the resist HV moves the angle
+             scale too (det3: -3 % at 520-525 V, saturation).  A row too small to fit its own kw to 0.5 %
+             (< N_OWN_V) inherits the row of its group, with its own calibration, nearest to it in time.
+             Row times and clean-trigger counts: GC's column-duration pass (ROW_INFO); rows missing there keep the
+             group reference.
   K          depth bins of 60 ns: 24 (1440 ns) by default; 30 on drift fields <= 500 V, where the column overruns the
              32-sample window (stated limitation)
   note
@@ -47,6 +54,11 @@ SKEPTICAL = {
 #: runs that share their night, gas and chambers with another run (grouped together for the calibration):
 #: the 6-26 det6/det7 HV scan (11H06 on) followed the overnight run (06H03) the same day, same drift field
 SAME_NIGHT = {'mx17_det6_det7_hv_scan_6-26-26': 'mx17_det6_det7_overnight_6-26-26'}
+#: clean single-cluster triggers in the chamber (GC colsum) needed for a row to fit its own w0/kw against M3: ~250
+#: M3-matched tracks give sigma(kw)/kw ~ 0.026 / (0.3 sqrt 250) ~ 0.5 %, below the 0.8 % (0.2 deg at 30 deg) that matters
+N_OWN_V = 500
+#: per row: first/last trigger time (acquisition stem + DREAM timestamp) and clean-trigger count (GC 2026-10-28)
+ROW_INFO = os.path.join(HERE, 'model_audit', 'followups', 'gc_gas_time', 'results', 'bench_rows.json')
 EXCLUDED = {
     'mx17_1': 'det1: no calibration (8-12 manifest)',
 }
@@ -55,6 +67,26 @@ EXCLUDED = {
 def nominal_resist(rows):
     """The group's most common resist HV among its biggest subruns."""
     return max(rows, key=lambda r: (r['resist_V'] in ('490.0', '495.0'), int(r['n_dec_files'] or 0)))
+
+
+def own_v(out):
+    """The v rule (module docstring): own w0/kw for every row big enough, else the nearest-in-time calibrated row."""
+    import json
+    info = {x['key']: x for x in json.load(open(ROW_INFO)) if not x.get('missing')}
+    mid = lambda k: 0.5 * (info[k]['t_start'] + info[k]['t_end'])
+    for o in out:
+        if o['cls'] != 'excluded' and o['refit'] != 'golden' and o['key'] in info \
+                and info[o['key']]['n_clean'] >= N_OWN_V:
+            o['refit'], o['calib_key'] = 'v', o['key']
+    by_group = defaultdict(list)
+    for o in out:
+        by_group[o['group']].append(o)
+    for rs in by_group.values():
+        cal = [o for o in rs if o['refit'] in ('golden', 'v') and o['key'] in info]
+        for o in rs:
+            if o['cls'] == 'excluded' or o['refit'] != 'none' or o['key'] not in info or not cal:
+                continue
+            o['calib_key'] = min(cal, key=lambda c: abs(mid(c['key']) - mid(o['key'])))['key']
 
 
 def main():
@@ -86,6 +118,7 @@ def main():
             out.append(dict(key=r['key'], det=det, run=r['run'], subrun=r['subrun'], resist_V=r['resist_V'],
                             drift_V=drift, cls=cls, group=f'{det}|{run}|{drift}', calib_key=ref['key'],
                             refit=refit, K=K, note=note))
+    own_v(out)
     p = os.path.join(HERE, 'pass_registry.csv')
     with open(p, 'w', newline='') as f:
         w = csv.DictWriter(f, fieldnames=list(out[0]))
