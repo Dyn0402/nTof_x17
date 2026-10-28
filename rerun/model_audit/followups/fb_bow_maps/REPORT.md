@@ -80,3 +80,21 @@ tables used promoted bundles (old σ0 handling); add-note also changed hub/index
 
 Files: scripts in this dir (xcheck.py, profiles.py, gap_route.py, physmodel.py, gate_bow.py, set_bow.py, make_bow_deck.py,
 make_maps_deck.py, paper_figs.py, …), results/, deck/, figures/. EOS `/eos/user/d/dneff/x17rerun/followups/fb/`.
+
+## Addendum 2026-10-28: mechanical model of the board bow (MX17_Geant `mechanics/pcb_bow/`)
+
+Replaces the "Plausibility" paragraph above, and `physmodel.py`'s linear estimate, which over-predicts by 2–3× at a few
+mbar and compares the true dip, not this report's fitted depth. Model: large-deflection two-layer plate (PCB +
+Rohacell/mylar, interface bond map) over the 402 mm support-plate aperture, with the edge stiffness of the real mounting
+(STEP: O-ring seal at 208.4 mm, frame face pinching the board just outside the aperture, edge 96–97 % of a clamp).
+
+- Bench-equivalent depth (this report's 0.5·k̄·1.5²) for a 1.6 mm PCB: 0.25–0.44 mm at 3 mbar, 0.38–0.59 mm at 5 mbar
+  (Rohacell bonded – loose). Nothing in PCB 1.2–2.4 mm × bond × edge × mesh tension reaches 1.2 mm below ~16 mbar; the
+  measured ~1.7 mm needs ~40–80 mbar (window sag ~20–24 mm).
+- **Pressure is ~⅓ of the measured dish at most.** The w0 profile shape (steepening toward the rim) is also not a
+  pressure shape.
+- Rohacell glued full face with its back mylar: −35 %; loose: −3 %. Coverage near the rim matters, grip does not.
+- Mesh tension at 5–10 N/m: < 1 µm; at 10 N/cm, 0.02–0.04 mm.
+- Window sag ∝ Δp^⅓ is a usable pressure gauge: 8.5 mm at 3 mbar, 12.7 mm at 10.
+
+Note: https://dylan-neff.web.cern.ch/notes/mx17-board-mechanics.html; report `MX17_Geant/mechanics/pcb_bow/REPORT.md`.
