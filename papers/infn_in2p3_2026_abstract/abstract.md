@@ -41,7 +41,7 @@ resistive-strip bulk Micromegas that works as a compact TPC: one 30 mm drift gap
 segment. Its 40 × 40 cm² area is read out through a pad matrix with a 0.78 mm pitch, capacitively coupled to two
 orthogonal strip views.
 
-A resistive anode is still uncommon in a TPC, and it brings its own challenge. Charge spreads to the neighbouring
+The resistive layer presents unique challenges for TPC operation. Charge spreads to the neighbouring
 strips with an RC delay, and this distorts the arrival time measured on each strip: angles taken from those times
 read about 4° too steep. Our forward model fits all the waveforms in a cluster at once, using the measured sharing
 kernel, and removes the bias.
