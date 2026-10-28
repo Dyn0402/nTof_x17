@@ -187,3 +187,15 @@ must not be read as bow anisotropy. Paper and slide note should say the dish is 
 Open: why the fitted Y-view w0 gradient reads 1.5–1.9× the X-view's on every chamber (a Y-response effect of the kind
 the July gap study saw as a common Y tilt), and why det3's X-view gradient falls with drift field. Both bear on the
 Y-view r_f values; the X-view r_f (0.42–0.62) are the ones to quote.
+
+**Can a square detector bow asymmetrically at all?** (Dylan.) Not as a square, isotropic plate under symmetric load
+and support: the square's symmetry forces equal central curvature along x and y and no cross term. An x–y difference
+needs a symmetry-breaking cause, none of which is in the Kirchhoff-plate estimate: (i) as-manufactured bow/twist of
+the PCB (ordinary tolerance 0.75 % of the span ≈ 3 mm over 400 mm, set by the copper imbalance between layers; the
+X-strip and Y-strip layers sit at different depths, so the laminate is not x–y symmetric), static and independent of
+pressure and orientation; (ii) anisotropic mesh tension (warp ≠ weft on the stretched mesh) cupping the board toward
+the mesh side, the sign seen on all five chambers; (iii) asymmetric edge loads or supports (connector cards and cables
+on one pair of edges, glue shrinkage of the Rohacell sandwich, where the frame actually carries the board). Since the
+data show no significant asymmetry on det3, nothing needs explaining; but if (i) or (ii) dominate, the dish is a
+per-board fabrication shape rather than a load, the "needs a few mbar" plausibility paragraph should say "within
+ordinary board warp", and the shape would survive vertical mounting at n_TOF.
