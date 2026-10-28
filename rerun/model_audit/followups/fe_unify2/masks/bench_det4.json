@@ -23,6 +23,8 @@
     84,
     91,
     93,
+    94,
+    125,
     135,
     139,
     143,
@@ -30,6 +32,7 @@
     155,
     158,
     168,
+    196,
     226,
     231,
     232,
@@ -47,15 +50,22 @@
     331,
     332,
     366,
+    376,
     381,
     384,
     394,
+    400,
     403,
     411,
     412,
     429,
     433,
-    434
+    434,
+    435,
+    439,
+    455,
+    472,
+    498
    ],
    "n_old": 77,
    "n_new": 51,
@@ -181,7 +191,29 @@
     258.18,
     347.1,
     353.34
-   ]
+   ],
+   "hot": [
+    274
+   ],
+   "ga_added": {
+    "dead": [
+     94,
+     125,
+     196,
+     376,
+     400,
+     435,
+     439,
+     455,
+     472,
+     498
+    ],
+    "hot": [
+     274
+    ],
+    "source": "GA 2026-10-28 in-fit gain map (followups/ga_gainmap): weak g 0.27-0.52 / dead-like -> dead (censored); hot g > 2.5 -> hot (down-weighted, never seeds)",
+    "verify": "TO DOUBLE-CHECK before the reprocessing (Dylan 10-28): flank test on the hits like the other masks; det4 X 274 sits beside the chamber-side dead run 271-273 (a short partner?)"
+   }
   },
   "y": {
    "dead": [

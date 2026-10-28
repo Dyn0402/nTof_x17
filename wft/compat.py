@@ -111,11 +111,16 @@ def load_table(path: str, quality_only: bool = False,
     ``quality_only`` is OFF by default and should stay off for anything the
     hits chain is compared against: the hits chain applies no equivalent cut,
     and chi2/dof here is large by construction (every sample counts, and the
-    model is imperfect at the percent level -- the median is ~110 on X and
-    ~180 on Y for det3). CHI2DOF_BAD is a flag for finding showers and
-    multi-track events, not a reconstruction filter.
+    model is imperfect at the percent level, and grows with the signal).
+    ``quality_ok`` is relative to the table (wft.reco.CHI2DOF_REL x the median
+    chi2/dof of the view): a flag for second deposits and showers, not a
+    reconstruction filter. A table written before the rule (no
+    ``quality_rule`` in its sidecar) is re-flagged from its stored chi2 here.
     """
     df = pd.read_parquet(path)
+    if 'quality_rule' not in table_meta(path):
+        from .reco import quality_flags
+        df = quality_flags(df)[0]
     df = apply_cluster_quality(df, max_dropped)
     if quality_only:
         for p in ('x', 'y'):

@@ -204,3 +204,20 @@ Deferred (after reprocessing): 9 (gas fit), 13 hotspot census.
 8. Has the fixed χ²/dof cut been useful? hard to trust on this model; keep only if useful → **GE** (`followups/ge_chi2cut/`)
 9. **Decided:** before the full reprocessing, every calibration is redone from scratch — no shortcuts, no reuse of
    intermediate products from this audit.
+
+### Round 3 outcomes (2026-10-28) — reports in `followups/g*/REPORT.md`, `fe_unify2/REPORT.md`
+| item | outcome |
+|---|---|
+| 1 | **GA: gain map not needed** (any chamber). Large-scale variation (±20–40 %, det4 X ×34) only rescales the free charge profile; strip-to-strip gain 0.02–0.04 (noise-limited); cross-validated maps change s68 by 0 ± 0.03°. FD's "gain 0.55° det4" withdrawn. Gain slot stays 1.0. By-product: 14 reproducible weak/hot channels → masks (below). |
+| 2 | **GB: M3 + MS = 0.05° (≤ 0.11–0.14° measured)** — not limiting; the det6/det7 shared 0.5–0.9° term is the bow. SPS det4 head-on (beam reference 0.03°) agrees with the bench. FD budget M3 row → 0.05°. |
+| 3 | **GC: post-correctable** (v enters only seeding, u_window and tan). Before the pass: DREAM timestamp + acquisition tag in the event record (**done**: `timestamp`, `acq_tag` columns); own v for every row with ≥ 500 clean triggers (**done**: `make_registry.py` rule; 117 own-v rows, 37 inherit the nearest-in-time calibrated row of their group). After: per-time-block kw from the M3 ladder (bench), column end (n_TOF A/C); n_TOF B/D within-run v not measurable (stated). |
+| 6 | **GF: all rows in; promote `fe`, not `fefa`** (v(x,y) map gains ≤ 0.05° on det6, in-sample, loses on det7 X; revisit with v(t)). |
+| 7 | GD running. |
+| 8 | **GE: fixed χ²/dof 300 replaced by 5 × the table median per view** (**done**: `wft.reco.CHI2DOF_REL`, `quality_flags`, sidecar `quality_rule`; old tables re-flagged on load; n_TOF stage 3 per sub-run × arm). Validated on the fe gate tables: det2/det3 remove 9–16 % with 81–91 % of bad views; det6 gives back 60–70 pt of efficiency; blind on det4 / det7 X (missing-charge faults, hardware). |
+
+**To double-check before the reprocessing (Dylan 10-28): the GA bad channels** now in
+`followups/fe_unify2/masks/bench_det{3,4}.json` (`ga_added`): det4 X weak 94, 125, 196, 376, 400, 435, 439, 455, 472, 498
+→ dead; det4 X 274 hot; det3 X 62 hot; det3 Y 41 weak, 510 dead-like → dead. They come from the in-fit gain map
+(|ln g| > 0.5 in both event halves), not from the census/flank test the other masks passed. Check each with the flank test
+on the hits and on a waveform display; det4 X 274 sits beside the chamber-side dead run 271–273 (a short partner?).
+`set_w0kw.py --dead-json` now also installs the mask's `hot` list.
