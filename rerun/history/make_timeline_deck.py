@@ -191,7 +191,8 @@ def build(out_dir):
     Dk.slide('cover', body, 'Sources: git log; memory/*.md; HANDOFF.md; rerun/RERUN_PLAN.md, CHECKS_2026-10-23.md, '
              'model_audit/FINDINGS.md, FOLLOWUPS.md and followups/*/REPORT.md; mx_june_wft/*.md; '
              'sps_beam_test_26/analysis; the CERN notes. Every status was checked against main at 4427b39 '
-             '(file:line in rerun/history/LESSONS.md).', dark=True, short='cover')
+             '(file:line in rerun/history/LESSONS.md). Interactive version (zoom, filter, search): '
+             '<a href="mx17-analysis-timeline-explorer.html">mx17-analysis-timeline-explorer</a>.', dark=True, short='cover')
 
     # 2 how to read: the chain -------------------------------------------
     steps = [dict(label='Decode', sub='fa80c06, every June row; RAW drops = missing', color=sd.BLUE),
