@@ -168,12 +168,12 @@ BAND_MIN_WINDOW_NS = 1800.0
 #: every (p0, w, t0) -- variable projection (Golub & Pereyra 1973) -- so the outer problem is three-dimensional.
 #: 'nm' = the 105-point (p0, w, t0) grid + Nelder-Mead and 1-D curvature errors (the algorithm through 2026-10-28);
 #: 'lm' = a 7-point t0 ladder + Levenberg-Marquardt on the projected residual with the Kaufman (1975) Jacobian,
-#: analytic on the RC kernel, a short Nelder-Mead polish, and the full 3x3 covariance for the errors.  A PROTOTYPE on
-#: branch lm-varpro, not gated: 'nm' stays the algorithm; ``WFT_DIAG=model.FITTER=lm`` (wft.diag) selects it.
-#: A/B on the five bench chambers (rerun/model_audit/algo_review/REPORT_LM.md): same angles, ~0.6x the cost, but t0/p0
-#: land one 60 ns lattice basin over on 6-48 % of planes when t0 is free.  With the bench t0 pin (FE bundles) and
-#: LM_HOPS = 0: t0 and positions unchanged, s68 within +-2.2 %, 0.45x the cost.
-FITTER = 'nm'
+#: analytic on the RC kernel, a short Nelder-Mead polish, and the full 3x3 covariance for the errors.  'lm' is the
+#: algorithm since the 2026-10-28 fleet gate (lm_r1: fe_nm vs fe_lm on the five golden rows, pinned-t0 FE bundles;
+#: rerun/model_audit/algo_review/REPORT_LM.md); 'nm' stays as a study override (``WFT_DIAG=model.FITTER=nm``).
+#: With free t0 (n_TOF) any outer solver picks the 60 ns lattice basin by its search path, so t0/p0 labels differ from
+#: 'nm' on 13-33 % of planes at the same angle; with the bench pin they do not.
+FITTER = 'lm'
 #: 'lm' only: walk the depth-bin lattice.  The chi2 surface has a basin at every (p0 + DT w, w, t0 + DT): the lattice
 #: shift is not a symmetry of the kernel, and which basin a local search ends in is set by its start -- the grid +
 #: Nelder-Mead misses a deeper one on ~10 % of free-t0 planes (algo_review §2), and the bench t0 prior (sigma 5 ns,
@@ -186,6 +186,11 @@ LM_HOPS = 0
 #: solves); 'grid' = the 'nm' fitter's own 105-point (p0, w, t0) grid, so the basin is chosen exactly as 'nm' chooses
 #: it and LM replaces only the Nelder-Mead refinement (the minimal-change form; use with LM_HOPS = 0).
 LM_START = 'ladder'
+#: 'lm' only: t0 stays within +-LM_T0_RANGE ns of the start (the ladder's +-120 ns plus one bin).  With free t0 a long
+#: profile absorbs a time offset (tests/test_two_track.py), and an unbounded LM follows that valley hundreds of ns to a
+#: marginally lower chi2 that the grid + Nelder-Mead never reached (a synthetic pair: t0 -267 ns from a start at -17,
+#: and the column-time plausibility of its two-track children then fails).  Inactive under the bench t0 pin.
+LM_T0_RANGE = 180.0
 LM_MAXIT = 30
 
 
@@ -1112,7 +1117,7 @@ def _vp_resid_jac(plane, W, noise, pos, sat, th, q, M, hyper, censor, t0_prior):
     return r, J
 
 
-def _lm_refine(plane, W, noise, pos, sat, th0, hyper, censor=True, t0_prior=None, maxit=None):
+def _lm_refine(plane, W, noise, pos, sat, th0, hyper, censor=True, t0_prior=None, maxit=None, t0_win=None):
     """Levenberg-Marquardt (Marquardt diagonal scaling) on the NNLS-profiled residual.  Every trial point is judged
     by the exact chi2, so the Jacobian only has to point downhill.  Returns (chi2, theta, q, nfev, njac)."""
     maxit = LM_MAXIT if maxit is None else maxit
@@ -1125,6 +1130,8 @@ def _lm_refine(plane, W, noise, pos, sat, th0, hyper, censor=True, t0_prior=None
     for _ in range(maxit):
         r, J = _vp_resid_jac(plane, W, noise, pos, sat, th, q, M, hyper, censor, t0_prior)
         njac += 1
+        if not (np.isfinite(r).all() and np.isfinite(J).all()):
+            break                                  # no usable direction here: stop at the current (finite) point
         g, H = J.T @ r, J.T @ J
         D = np.maximum(np.diag(H), 1e-12)
         accepted = False
@@ -1132,6 +1139,9 @@ def _lm_refine(plane, W, noise, pos, sat, th0, hyper, censor=True, t0_prior=None
             try:
                 step = -np.linalg.solve(H + lam * np.diag(D), g)
             except np.linalg.LinAlgError:
+                lam *= 10
+                continue
+            if not np.isfinite(step).all() or (t0_win is not None and not t0_win[0] <= th[2] + step[2] <= t0_win[1]):
                 lam *= 10
                 continue
             c2, q2, M2 = _vp_eval(plane, W, noise, pos, sat, th + step, hyper, censor, t0_prior)
@@ -1173,7 +1183,8 @@ def _fit_plane_lm(W, noise, pos, sat, plane, p0_init, w_init, t0_init, hyper, t0
             best = (c, st)
     if best[1] is None:
         return dict(chi2=np.inf, p0=float(p0_init), w=float(w_init), t0=float(t0_init), q=None, nfev=nfev)
-    chi, th, q, nf, nj = _lm_refine(plane, W, noise, pos, sat, best[1], hyper, t0_prior=t0_prior)
+    win = (t0_init - LM_T0_RANGE, t0_init + LM_T0_RANGE)
+    chi, th, q, nf, nj = _lm_refine(plane, W, noise, pos, sat, best[1], hyper, t0_prior=t0_prior, t0_win=win)
     nfev, njac = nfev + nf, njac + nj
     if LM_HOPS > 0 and np.isfinite(chi):
         th_c = th
@@ -1182,7 +1193,7 @@ def _fit_plane_lm(W, noise, pos, sat, plane, p0_init, w_init, t0_init, hyper, t0
             for _ in range(LM_HOPS):
                 c_s, th2, q2, nf, nj = _lm_refine(plane, W, noise, pos, sat,
                                                   th_h + s * np.array([DT * th_h[1], 0.0, DT]), hyper,
-                                                  t0_prior=t0_prior)
+                                                  t0_prior=t0_prior, t0_win=win)
                 nfev, njac = nfev + nf, njac + nj
                 if not c_s < chi:
                     break
@@ -1190,9 +1201,11 @@ def _fit_plane_lm(W, noise, pos, sat, plane, p0_init, w_init, t0_init, hyper, t0
     # short polish: the surface is only piecewise smooth (NNLS active-set changes, the 5 ns tensor interpolation)
 
     def obj(v):
+        if not win[0] <= v[2] <= win[1]:
+            return np.inf
         return _vp_eval(plane, W, noise, pos, sat, v, hyper, True, t0_prior)[0]
     r = minimize(obj, th, method='Nelder-Mead',
-                 options=dict(xatol=5e-4, fatol=0.15, maxiter=40,
+                 options=dict(xatol=1e-4, fatol=0.02, maxiter=80,
                               initial_simplex=th + np.array([[0, 0, 0], [0.1, 0, 0], [0, 4e-4, 0], [0, 0, 5.0]])))
     nfev += r.nfev
     if r.fun < chi:

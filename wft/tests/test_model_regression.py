@@ -39,13 +39,14 @@ def main(n_events=25):
                                         run_key='sat_det3')
     wm.use_calibration(cal)
     hyper = dict(cal.hyper)
-    # the R&D numerics had no column guard and no censored charge solve: compare the packaging, not the algorithm
-    saved = wm.COL_GUARD, wm.SAT_SOLVE
-    wm.COL_GUARD, wm.SAT_SOLVE = 0.0, False
+    # the R&D numerics had no column guard, no censored charge solve and the grid + Nelder-Mead outer solver: compare the
+    # packaging, not the algorithm (the LM solver against NM: tests/test_lm_fitter.py)
+    saved = wm.COL_GUARD, wm.SAT_SOLVE, wm.FITTER
+    wm.COL_GUARD, wm.SAT_SOLVE, wm.FITTER = 0.0, False, 'nm'
     try:
         return _compare(cal, hyper, n_events)
     finally:
-        wm.COL_GUARD, wm.SAT_SOLVE = saved
+        wm.COL_GUARD, wm.SAT_SOLVE, wm.FITTER = saved
 
 
 def _compare(cal, hyper, n_events):

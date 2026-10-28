@@ -23,6 +23,8 @@ VL = '/media/dylan/data/x17/cosmic_bench/vladder/det3'
 BUNDLE = os.path.join(VL, 'bundle_phys_mask')
 CACHE = os.path.join(VL, 'cache.pkl')
 HAVE_DATA = os.path.exists(os.path.join(BUNDLE, 'bundle.json')) and os.path.exists(CACHE)
+#: the production bench configuration (t0 pinned at the trigger latency, sigma 0.05 ns; FE follow-up) for the LM-vs-NM check
+FE_BUNDLE = '/media/dylan/data/x17/cosmic_bench/model_audit/fe_unify2/bundles/det3/calib_bundle_fe'
 
 
 def _setup():
@@ -86,17 +88,20 @@ def check_residual(cal, C):
 
 
 def check_fit(cal, C, n_events):
-    """LM vs NM through the production entry point (wr.fit_plane: pivot start, prior, errors)."""
+    """LM vs NM through the production entry point (wr.fit_plane: pivot start, t0 pin, errors), default LM settings."""
     rows = []
     for eid in sorted(C)[:n_events]:
         ev = C[eid]
         for plane in 'xy':
             prior = wr.t0_prior_for(cal, plane, ev.get(f'ftst_{plane}'))
-            wm.FITTER = 'nm'
-            a = wr.fit_plane(ev[plane], plane, cal, t0_prior=prior)
-            wm.FITTER = 'lm'
-            b = wr.fit_plane(ev[plane], plane, cal, t0_prior=prior)
-            wm.FITTER = 'nm'
+            saved = wm.FITTER
+            try:
+                wm.FITTER = 'nm'
+                a = wr.fit_plane(ev[plane], plane, cal, t0_prior=prior)
+                wm.FITTER = 'lm'
+                b = wr.fit_plane(ev[plane], plane, cal, t0_prior=prior)
+            finally:
+                wm.FITTER = saved
             if a is None or b is None:
                 continue
             rows.append((abs(a.w - b.w) * 1e3, (b.chi2 - a.chi2) / max(a.chi2, 1.0), abs(a.t0 - b.t0)))
@@ -116,12 +121,14 @@ def check_cov_errors(cal, C):
         ev = C[eid]
         for plane in 'xy':
             prior = wr.t0_prior_for(cal, plane, ev.get(f'ftst_{plane}'))
-            a = wr.fit_plane(ev[plane], plane, cal, t0_prior=prior)
-            wr.COV_ERRORS = True
+            saved = wm.FITTER
+            wm.FITTER = 'nm'
             try:
+                a = wr.fit_plane(ev[plane], plane, cal, t0_prior=prior)
+                wr.COV_ERRORS = True
                 b = wr.fit_plane(ev[plane], plane, cal, t0_prior=prior)
             finally:
-                wr.COV_ERRORS = False
+                wr.COV_ERRORS, wm.FITTER = False, saved
             if a is None:
                 continue
             assert (a.p0, a.w, a.t0, a.chi2) == (b.p0, b.w, b.t0, b.chi2)
@@ -138,13 +145,19 @@ def main(n_events=15):
     check_jacobian(cal, C)
     check_residual(cal, C)
     check_cov_errors(cal, C)
-    check_fit(cal, C, n_events)
+    if os.path.exists(os.path.join(FE_BUNDLE, 'bundle.json')):
+        # LM vs NM on the pinned bundle (the vladder one's sigma-5 ns prior leaves the 60 ns t0 basin free)
+        fe = CalibrationBundle.load(FE_BUNDLE)
+        wm.use_calibration(fe)
+        check_fit(fe, C, n_events)
+    else:
+        print('  (no FE bundle here: LM-vs-NM check skipped)')
     print('PASS')
     return 0
 
 
 def test_lm_fitter():
-    assert main(6) == 0
+    assert main(15) == 0
 
 
 if __name__ == '__main__':

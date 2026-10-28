@@ -43,6 +43,7 @@ def _init(det, free, grid_only=False, fe=False):
 
 def _arm(P, plane, cal, fitter, prior, hops=3, start='ladder'):
     from wft import model as wm, reco as wr
+    saved = wm.FITTER, wm.LM_HOPS, wm.LM_START
     wm.FITTER, wm.LM_HOPS, wm.LM_START = fitter, hops, start
     _ST['n'] = 0
     t = time.perf_counter()
@@ -52,7 +53,7 @@ def _arm(P, plane, cal, fitter, prior, hops=3, start='ladder'):
         f = None
         print('fail', plane, fitter, repr(e), flush=True)
     dt, n = time.perf_counter() - t, _ST['n']
-    wm.FITTER, wm.LM_HOPS, wm.LM_START = 'nm', 0, 'ladder'
+    wm.FITTER, wm.LM_HOPS, wm.LM_START = saved
     if f is None:
         return None
     return dict(p0=f.p0, w=f.w, t0=f.t0, tan=f.tan_theta, chi2=f.chi2, dof=f.dof, p0_err=f.p0_err, w_err=f.w_err,
