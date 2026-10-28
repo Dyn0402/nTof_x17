@@ -1,0 +1,7 @@
+A resistive-strip Micromegas TPC for the X17 search at n_TOF: design, track reconstruction and performance
+
+The X17 search at the CERN n_TOF neutron facility requires tracking e+e- pairs from neutron capture on 3He. To test the anomaly, their opening angle must be measured with as little material as possible. We developed a resistive-strip bulk Micromegas that works as a compact TPC: one 30 mm drift gap gives a three-dimensional track segment. Its 40 × 40 cm² area is read out through a pad matrix with a 0.78 mm pitch, capacitively coupled to two orthogonal strip views.
+
+A resistive anode is still uncommon in a TPC, and it brings its own challenge. Charge spreads to the neighbouring strips with an RC delay, and this distorts the arrival time measured on each strip: angles taken from those times read about 4° too steep. Our forward model fits all the waveforms in a cluster at once, using the measured sharing kernel, and removes the bias.
+
+The chamber reaches an angular resolution of 1.2°, 93% efficiency and a spatial resolution of 180 µm. At n_TOF, the reconstructed tracks image the ³He target capsule, demonstrating the detector's efficacy as a TPC tracker.
