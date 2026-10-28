@@ -43,7 +43,7 @@ orthogonal strip views.
 
 The resistive layer presents unique challenges for TPC operation. Charge spreads to the neighbouring
 strips with an RC delay, and this distorts the arrival time measured on each strip: angles taken from those times
-read about 4° too steep. We developed a novel reconstruction that works at the waveform level: it fits the full signal of every strip in a cluster at once, with a model of the charge sharing, and recovers the true track.
+read about 4° too steep. We solve this with a novel reconstruction that fits the strip waveforms directly.
 
 The chamber reaches an angular resolution of 1.2°, 93 % efficiency and a spatial resolution of 180 µm. At
 n_TOF, the reconstructed tracks image the ³He target capsule, demonstrating the detector's efficacy as a TPC
