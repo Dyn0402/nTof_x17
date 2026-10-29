@@ -15,7 +15,10 @@ events each) tested one extra parameter per chamber and view, and separate X/Y t
   events and measuring on the other (−0.09/−0.10 ± 0.05). Not det4's RC constant (scanned). Neutral elsewhere; a
   χ²-fitted stretch risks det4 X (+0.09 ± 0.07 in one half).
 - **Open for Dylan:** adopt the stretch as a CAL-phase constant gated on held-out angles (recommended), det4 Y only, or not at all.
-Details: section T15 below.
+- **T16 (det3):** a lateral DOF does remove a third to a half of the mean centre/±1 pattern, but that pattern is
+  only 9–17 % of the peak χ² and is left-right symmetric about the track, so the slice centroids (the angle) do not
+  move. det3's remaining error sits in the chamber bow (in the plan), saturated/bright planes and δ-ray planes.
+Details: sections T16 and T15 below.
 
 ## Morning summary (2026-10-29)
 
@@ -388,6 +391,51 @@ Plan bundles (T8 A: fe_nobow, σ0 0.30), `t9_peak_residual.py` → `results/t9/<
   angles (and can cost them). It shows mainly in χ² and charge. For the pass it is a stated model limitation (the
   χ² quality flag is relative, 5 × median, so it adapts), unless a footprint/RC shape change is made and validated
   on held-out angles.
+
+## T16 · Why a better-shaped model does not buy angle (det3 focus, 2026-10-29, condor)
+
+Dylan: "odd that adding a degree of freedom can't help, given the systematic centre under-fill / ±1 over-fill"; a
+parameter is only worth adding if it wins on det3 and is reasonable elsewhere. On det3, nothing in T15 beats ~1.7σ
+(best: stretch 0.84 X −0.04 ± 0.02, Dp × 1.15 X −0.02 ± 0.02; Y nothing beyond −0.01).
+
+`t16_residual_budget.py` (9 condor nodes; outputs `/eos/user/d/dneff/x17rerun/t16/out/`, summaries `results/t16/`).
+Held-out unsaturated planes ≥ 800 ADC, fitted as in T9, residuals oriented by the track's lean (+1 = the strip the
+charge reaches with depth). Window = brightest strip ±2, samples −4…+8 around its peak (59–66 % of the plane's χ²).
+
+| det3 | mean-shape share of window χ² | centre k=0 (plane scatter) | −1 / +1 (scatter) | antisym. ±1 (max over k) | corr(antisym., angle err) |
+|---|---|---|---|---|---|
+| X base | **8.8 %** | +0.050 (0.063) | −0.037 / −0.021 (0.062) | +0.008 (0.015) | +0.01 |
+| X core f 0.4 | 5.9 % | +0.037 (0.057) | −0.025 / −0.008 | +0.009 | +0.01 |
+| X Dp × 0.85 | 5.8 % | +0.029 (0.056) | −0.026 / −0.008 | +0.009 | −0.01 |
+| Y base | **16.7 %** | +0.057 (0.058) | −0.063 / −0.053 (0.069) | +0.005 (0.018) | +0.06 |
+| Y core f 0.4 | 9.8 % | +0.041 (0.053) | −0.045 / −0.034 | +0.006 | +0.05 |
+
+det2 / det4 base agree (mean-shape share 9–19 %, antisymmetry ≤ 0.009). det6/det7 X budgets are not usable (a few
+strips with near-zero noise make the ratio blow up); their patterns match the T9 table.
+
+- **The extra degree of freedom does help the fit, as expected.** Core f 0.4 or Dp × 0.85 removes a third to a
+  half of the mean pattern on det3 (X mean-shape share 8.8 → 5.9 %, Y 16.7 → 9.8 %). It just does not move the angle.
+- **Why:** (1) the mean shape error is a small part of the misfit. Plane-to-plane scatter carries 85–92 % of the χ²
+  near the peak; the per-plane scatter of the residual (0.06 of the peak) is larger than the mean pattern itself.
+  (2) The mean pattern is **left-right symmetric about the track** (antisymmetric part ≤ 0.009 of the peak, against
+  0.04–0.06 symmetric). A symmetric footprint error changes how charge is shared between the centre and both
+  neighbours but leaves the centroid of every depth slice where it is, and the angle is the slope of those
+  centroids against drift time. (3) Per plane, the antisymmetric residual does not correlate with the angle error
+  (|r| ≤ 0.1). So fixing the mean shape fixes χ² and charge, not angles. That is what T13/T15 found, now explained.
+- **That does not mean the model is good enough.** The electron-by-electron toy (`rerun/model_audit/ws_floor`)
+  gets 0.30–0.35° with a perfect model, so ~2/3 of det3's ~1.0° is still reconstruction. It sits in parts that vary
+  event to event or across the chamber, which a static shape parameter cannot reach. On the T15 base (det3,
+  1320 held-out events, no bow block):
+  - **position (chamber bow):** the bias runs −0.5 → +0.25° (X) and −0.6 → +0.75° (Y) across the chamber.
+    Removing the median bias in 8 position bins × sign(tan) takes s68 1.09 → 1.01 (X) and 1.01 → 0.85 (Y)
+    (optimistic: the medians come from the same events). This is the bow block, already in the plan (E2); every
+    T5–T15 arm ran without it (fe_nobow).
+  - **bright / saturated planes:** s68 rises with amplitude (Y 0.84 → 1.18° from the lowest to the highest quartile)
+    and planes with any saturated sample are worst (1.17 / 1.23° against 0.9–1.0). More charge should mean better
+    resolution, so these planes are model-limited: the ADC-ceiling (censored) treatment is the candidate.
+  - **high-χ² planes** (top quartile, χ²/dof > 110–140): 1.27 / 1.28° (δ-rays, second particles).
+- **Where a new parameter could pay on det3:** the saturated/bright class and the δ-ray class, judged on held-out
+  angles with the bow block on. Not the static footprint or template shape.
 
 ## T15 · One extra parameter per chamber and view: what fixes the model? (2026-10-29 morning, lxplus condor)
 
