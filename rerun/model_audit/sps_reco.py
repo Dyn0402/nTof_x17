@@ -19,7 +19,8 @@ import numpy as np
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.environ.get('WFT_REPO') or os.path.abspath(os.path.join(HERE, '..', '..'))
 sys.path[:0] = [REPO, HERE]
-BUNDLE = '/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_rr1/mx17_det4_day_6-24-26/long_run/mx17_4/wft/calib_bundle'
+#: the pass's det4 bundle (calib phase CAL4, Analysis_pass1; PASS_PLAN E4)
+BUNDLE = '/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_pass1/mx17_det4_day_6-24-26/long_run/mx17_4/wft/calib_bundle'
 _EV = None
 _RAW = False
 
@@ -60,6 +61,8 @@ def one(eid):
     row = wr.row_from_fits(int(eid), fits, n_hits=0, spark=False)
     row['ref_x'], row['ref_y'] = ev.get('ref_mesh_x', np.nan), ev.get('ref_mesh_y', np.nan)
     row['tan_mount'], row['t_wall'] = ev.get('tan_x', np.nan), ev.get('t_wall', np.nan)
+    # the DREAM trigger counter and the acquisition file (TODO B6/GC: join key with the run, subrun, event id)
+    row['timestamp'], row['acq_tag'] = int(ev.get('timestamp', -1)), str(ev.get('file', ''))
     row['n_tracks'] = int(fits['x'] is not None and fits['y'] is not None)
     return row
 
@@ -94,12 +97,15 @@ def main():
     os.makedirs(a.out, exist_ok=True)
     cache = os.path.join(a.work, f'sps_cache_{a.key}.pkl'); pickle.dump(evs, open(cache, 'wb'), protocol=4)
     v = float(row['v_span_um_ns']) if row['v_span_um_ns'] else None
-    k = int(row['K']) if row['K'] else int(np.ceil(28800.0 / (v or 12.0) / 60.0)) + 5
+    # K fallback for rows without v_span: the column at v (or 12 um/ns) plus the registry's +15 margin (PASS_PLAN E4)
+    k = int(row['K']) if row['K'] else int(np.ceil(28800.0 / (v or 12.0) / 60.0)) + 15
     with ProcessPoolExecutor(a.jobs, initializer=_init, initargs=(cache, a.bundle, k, v, nsamp, a.mask, raw)) as pool:
         rows = list(pool.map(one, sorted(evs), chunksize=4))
+    from wft import reco as wr
     df = pd.DataFrame(rows).sort_values('event_id').reset_index(drop=True)
+    df, q_med = wr.quality_flags(df)          # chi2/dof flag, CHI2DOF_REL x the table median per view (GE)
     df.to_parquet(os.path.join(a.out, 'events.parquet'), index=False)
-    meta = dict(n_events=len(df), registry_row=row, bundle=a.bundle, v_drift=v, n_depth_bins=k, n_samples=nsamp, zeros='missing (RAW)' if raw else 'measured (ZS)',
+    meta = dict(n_events=len(df), registry_row=row, quality_rule=wr.quality_rule(q_med), bundle=a.bundle, v_drift=v, n_depth_bins=k, n_samples=nsamp, zeros='missing (RAW)' if raw else 'measured (ZS)',
                 channel_layer=a.mask, seeding='own brightest strip +- half_win', half_win=a.half_win,
                 env={k_: v_ for k_, v_ in os.environ.items() if k_.startswith('WFT_')},
                 diagnostic_overrides={k_: str(v_) for k_, v_ in __import__('wft.diag').diag.ACTIVE.items()},

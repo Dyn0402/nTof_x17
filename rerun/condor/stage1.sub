@@ -1,0 +1,12 @@
+# one stage of the from-scratch pass (rerun/stage_job.py) -- the entry script is the frozen code archive's own
+# (rerun/stage_job.sh in $(code)), never a separately deployed copy (10-29: ~/x17rerun/stage_job.sh was stale)
+executable     = $(code)/rerun/stage_job.sh
+arguments      = $(code) $(args)
+output         = log/$(node).out
+error          = log/$(node).err
+log            = log/pass1.log
+request_cpus   = $(cpus)
+request_memory = $(mem)
++JobFlavour    = "workday"
+should_transfer_files = NO
+queue

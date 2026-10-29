@@ -14,6 +14,9 @@ calib     the from-scratch calibration of the five golden rows (PASS_PLAN_2026-1
                 (bow_node: c2/bow_block.json) -> W0KW2b (--bow-json --table: c2/bundle)
           CAL4  RECO3 (with the bow) -> ALIGN3 -> ANG3 -> W0KW3 (--table: <row>/wft/calib_bundle, the bow kept) -> BOW3
                 (r3/bow_block.json, a check only) -> CONV (convergence.py: wft/calib/CALIB_CONVERGENCE.json)
+sps       every sps_registry.csv row (S3, PASS_PLAN E4): sps_stage.sh -> Analysis_pass1/sps/<key>/events.parquet with
+          the pass's det4 calib_bundle (CAL4; the bench bow / v map / w0 / t0 are dropped in sps_reco).  Submit after
+          the calib DAG's CONV_det4 (a separate DAG: no cross-DAG parent).
 finalize  golden rows (S1 close).  Bundle = the converged W12 fit (w12/<it>/fit_pinned/bundle, --golden det=itN).
           RECO (8000 matched events with it) -> ALIGN (01) -> ANGLES (03) -> W0KW (W6: w0/kw measured under this
           bundle) -> <row>/wft/calib_bundle, the bundle every row of the chamber uses.
@@ -27,6 +30,7 @@ pass      every non-excluded row (S2 + S3).  RECO (all M3-matched events, the ro
 import argparse
 import csv
 import os
+import re
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 #: the pass's own Analysis tree (PASS_PLAN E3: a new root, so no old product can be picked up)
@@ -50,8 +54,9 @@ def node(L, name, sub, args, cpus, mem, code, parents=()):
     if sub == 'stage1.sub':
         k, rest = args.split(' ', 1)
         args = f"{k}{EXTRA['eos']} {rest}"
-        if ' reco ' in rest and EXTRA['limit'] and '--limit' not in rest:
-            args += EXTRA['limit']
+        if ' reco ' in rest and EXTRA['limit']:
+            # a test limit replaces the stage's own event count (the calib phase's --limit 8000)
+            args = re.sub(r' --limit \d+', '', args) + EXTRA['limit']
     L.append(f'JOB {name} {sub}')
     L.append(f'VARS {name} code="{code}" args="{args}" cpus="{cpus}" mem="{mem}" node="{name}"')
     L.append(f'RETRY {name} 1')
@@ -66,6 +71,10 @@ def calib_phase(L, rows, a, only):
             continue
         k, d, K = r['key'], GOLD_DET[r['det']], r['K']
         c = '{out}/wft/calib'
+        # a dry run (--limit) keeps every node but shrinks the expensive ones: cache 700 events, DRC 60 events x 4 evals
+        n_cache = 700 if a.limit else 1500
+        drc = (DRC_ARGS.replace('--n-train 500', '--n-train 60').replace('--maxiter 80', '--maxiter 4') if a.limit
+               else DRC_ARGS)
         S = lambda name, args, cpus, mem, parents=(): node(L, f'{name}_{d}', 'stage1.sub', f'{k} {args}', cpus, mem,
                                                            a.code, [f'{p}_{d}' for p in parents])
         bundle = lambda it, rc: (f'--parts run_config --script rerun/calib/make_bundle.py -- {d} --run-key {{key}} '
@@ -79,7 +88,7 @@ def calib_phase(L, rows, a, only):
         S('HITS', '--parts run_config,m3,hits --require cache/event_results_veto50.pkl '
                   '--script mx_june_cosmic_qa/03_alignment_and_tpc.py', 4, 12000)
         S('CACHE0', f'--script rerun/w12/build_cache_wft.py -- --align {{out}}/alignment_tpc_veto50/alignment.json '
-                    f'--out {c}/c0/cache.pkl --n 1500 --cm 0', 2, 16000, ['HITS'])
+                    f'--out {c}/c0/cache.pkl --n {n_cache} --cm 0', 2, 16000, ['HITS'])
         prev = 'CACHE0'
         for it in (0, 1):
             if it == 1:
@@ -87,7 +96,7 @@ def calib_phase(L, rows, a, only):
                 S('RECO1', reco(f'{c}/c0/bundle', t), 16, 24000, [f'MAKE0'])
                 S('ALIGN1', align(t, f'{c}/r1/alignment'), 1, 8000, ['RECO1'])
                 S('CACHE1', f'--script rerun/w12/build_cache_wft.py -- --align {c}/r1/alignment/alignment.json '
-                            f'--out {c}/c1/cache.pkl --n 1500 --cm 0', 2, 16000, ['ALIGN1'])
+                            f'--out {c}/c1/cache.pkl --n {n_cache} --cm 0', 2, 16000, ['ALIGN1'])
                 prev = 'CACHE1'
             if d in DRC_FIXED:
                 S(f'MAKE{it}', bundle(it, ''), 1, 6000, [prev])
@@ -95,7 +104,7 @@ def calib_phase(L, rows, a, only):
             S(f'SEED{it}', bundle(it, None), 1, 6000, [prev])
             S(f'DRC{it}', f'--parts run_config --script sps_beam_test_26/analysis/plane_ratio/recal.py -- '
                           f'--arm drc{it}_{{key}} --cache {c}/c{it}/cache.pkl --bundle {c}/c{it}/seed '
-                          f'--depth-bins {K} {DRC_ARGS} --out {c}/c{it}/drc.json', 8, 12000, [f'SEED{it}'])
+                          f'--depth-bins {K} {drc} --out {c}/c{it}/drc.json', 8, 12000, [f'SEED{it}'])
             S(f'MAKE{it}', bundle(it, '') + f' --rc-json {c}/c{it}/drc.json', 1, 6000, [f'DRC{it}'])
         # CAL3
         t2 = f'{c}/r2/events.parquet'
@@ -126,7 +135,7 @@ def calib_phase(L, rows, a, only):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument('phase', choices=['calib', 'finalize', 'vrefit', 'pass'])
+    ap.add_argument('phase', choices=['calib', 'finalize', 'vrefit', 'pass', 'sps'])
     ap.add_argument('code')
     ap.add_argument('--golden', nargs='*', default=[], help='det=itN (finalize)')
     ap.add_argument('--bundle-sub', default='fit_pinned/bundle',
@@ -153,6 +162,14 @@ def main():
     L = []
     if a.phase == 'calib':
         calib_phase(L, rows, a, only)
+    elif a.phase == 'sps':
+        det4 = next(r for r in rows if r['refit'] == 'golden' and r['det'] == 'mx17_4')
+        b = f'{A}/{rel(det4)}/wft/calib_bundle'
+        for r in csv.DictReader(open(os.path.join(HERE, 'sps_registry.csv'))):
+            if only and r['key'] not in only:
+                continue
+            lim = f" --per-plateau {a.limit}" if a.limit else ''
+            node(L, f"SPS_{r['key']}", 'sps.sub', f"{r['key']} {A}/sps/{r['key']} --bundle {b}{lim}", 8, 16000, a.code)
     elif a.phase == 'finalize':
         its = dict(g.split('=') for g in a.golden)            # det2=it1 ...
         for r in rows:

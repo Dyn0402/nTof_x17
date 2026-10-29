@@ -91,7 +91,8 @@ def build_cache(run, subrun, dataset, per_plateau=1000, half_win=16, tan=None, e
                     continue
                 ch = arr['channel'][j].astype(int); sm = arr['sample'][j].astype(int); am = arr['amplitude'][j].astype(np.float32)
                 am = _baseline(ch, sm, am, bool(D.get('raw', False)))
-                rec = dict(eid=int(arr['eventId'][j]), tan_x=a.tan, tan_y=a.tan, t_wall=float(tw[j]), file=os.path.basename(f))
+                rec = dict(eid=int(arr['eventId'][j]), tan_x=a.tan, tan_y=a.tan, t_wall=float(tw[j]), file=os.path.basename(f),
+                           timestamp=int(arr['timestamp'][j]))
                 ok = True
                 for view in ('x', 'y'):
                     k = VIEW[ch] == view
