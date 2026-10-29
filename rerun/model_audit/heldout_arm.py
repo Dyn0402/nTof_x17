@@ -10,6 +10,9 @@ Environment arms: WFT_RC_T0_INTERP, WFT_MODEL_FRAC, WFT_SAT_SOLVE, WFT_ZS_CENSOR
 ``--rails R.pkl`` (rerun/calib/saturation/rails.py): each window also carries its per-sample ADC rails, P['rail_hi'] =
 W + 4095 - raw and P['rail_lo'] = W - raw (for the wft.model SAT_RAIL / SAT_FLOOR study switches), and two columns are
 appended to ``per``: the plane's raw-clipped samples (raw 4095) and its floor samples (raw 0).  Without it: unchanged.
+``--emulate-rail R`` (with --rails and WFT_DIAG model.SAT_RAIL=true): every window is clipped at W = R as well (a lower,
+emulated ADC rail), so planes that never saturated are fitted as if they had; a third column counts the emulated-clip
+samples (rerun/calib/saturation: does the clip itself cost resolution?).
 """
 import argparse, json, os, pickle, sys
 from concurrent.futures import ProcessPoolExecutor
@@ -17,17 +20,18 @@ import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.environ.get('WFT_REPO') or os.path.abspath(os.path.join(HERE, '..', '..'))
-_EV = None; _OPT = None; _RAILS = None
+_EV = None; _OPT = None; _RAILS = None; _EMU = None
 
 
 def _init(cache, bundle, k, hyper_over, v, nsamp, two_sided, t0fix, no_dead=False, hyper_scale=None, sps_mask_mode=None,
-          rails=None):
-    global _EV, _OPT, _RAILS
+          rails=None, emu=None):
+    global _EV, _OPT, _RAILS, _EMU
     sys.path.insert(0, REPO)
     from wft.calib import CalibrationBundle
     from wft import model as wm, reco as wr
     _EV = pickle.load(open(cache, 'rb'))
     _RAILS = pickle.load(open(rails, 'rb')) if rails else None
+    _EMU = emu
     cal = CalibrationBundle.load(bundle)
     if v:
         cal.v_drift = float(v)
@@ -63,8 +67,13 @@ def one(eid):
             rr = _RAILS.get(int(eid), {}).get(plane)
             if rr is not None and rr['raw'].shape == W.shape:
                 raw = rr['raw'].astype(np.float64)
-                P = dict(P, rail_hi=W + (4095.0 - raw), rail_lo=W - raw)
+                hi = W + (4095.0 - raw)
+                P = dict(P, rail_hi=hi, rail_lo=W - raw)
                 extra = (int((raw >= 4095).sum()), int((raw <= 0).sum()))
+                if _EMU:
+                    hi2 = np.minimum(hi, float(_EMU))
+                    P = dict(P, W=np.minimum(W, hi2), rail_hi=hi2)
+                    extra = extra + (int((W >= float(_EMU)).sum()),)
             else:
                 extra = (-1, -1)
         if W.shape[1] != wm.NSAMP:
@@ -131,6 +140,7 @@ def main():
     ap.add_argument('--sps-mask', default=None, choices=('h4', 'h4_stripes', 'bench', 'none'), help='SPS det4 caches: the H4 channel layer (sps_mask.py)')
     ap.add_argument('--ids', default=None, help='JSON list of event ids (overrides --start/--n)')
     ap.add_argument('--rails', default=None, help='rails sidecar (rerun/calib/saturation/rails.py): per-sample ADC rails on every window')
+    ap.add_argument('--emulate-rail', type=float, default=None, help='also clip every window at this W (needs --rails, SAT_RAIL)')
     a = ap.parse_args()
     hy = json.loads(a.hyper) if a.hyper else {}; hs = json.loads(a.hyper_scale) if a.hyper_scale else {}
     for kv in (a.set or '').split(','):
@@ -142,7 +152,7 @@ def main():
     C = pickle.load(open(a.cache, 'rb'))
     ids = json.load(open(a.ids)) if a.ids else sorted(C)[a.start:a.start + a.n]
     del C
-    with ProcessPoolExecutor(a.jobs, initializer=_init, initargs=(a.cache, a.bundle, a.k, hy, a.v, a.nsamp, a.two_sided, a.t0_fix, a.no_dead, hs, a.sps_mask, a.rails)) as pool:
+    with ProcessPoolExecutor(a.jobs, initializer=_init, initargs=(a.cache, a.bundle, a.k, hy, a.v, a.nsamp, a.two_sided, a.t0_fix, a.no_dead, hs, a.sps_mask, a.rails, a.emulate_rail)) as pool:
         rows = [r for rs in pool.map(one, ids, chunksize=2) for r in rs]
     per = np.array(rows, float)
     env = {k: v for k, v in os.environ.items() if k.startswith('WFT_')}

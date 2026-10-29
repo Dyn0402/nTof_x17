@@ -8,7 +8,8 @@ set of wft.model switches passed as WFT_DIAG (all opt-in; base = none).
     sat_arms.py build OUT CODE [ROUND]   DAG + submit files into OUT (copy OUT to ~/x17rerun/satur/ on lxplus);
                                          CODE = git archive on EOS (/eos/user/d/dneff/x17rerun/code/code_<hash>)
     sat_arms.py compare DIR              DIR holds <det>_<arm>.npz -> results/arms/arms_<det>.json (t5_compare)
-    sat_arms.py table [DIR]              markdown tables (all planes; saturated planes only) from DIR
+    sat_arms.py table                    markdown tables (all planes; saturated planes only)
+    sat_arms.py summary [ARM ...]        one line per arm and chamber (X all | X sat | Y all | Y sat)
 """
 import json, os, sys
 import numpy as np
@@ -43,9 +44,13 @@ ARMS = {
     'rob25': 'model.ROBUST_C=25',
     'rob50': 'model.ROBUST_C=50',
     'railub_rob25': f'{R},model.SAT_FLOOR=1,model.ROBUST_C=25',
+    # r4: the diagnostic -- clip planes that never saturated at an emulated rail (heldout_arm --emulate-rail), with the
+    # rail treatment; compare against 'rail' on the planes with no real clip and an emulated one
+    'emu1500': R, 'emu2500': R,
 }
+EXTRA = {'emu1500': ' --emulate-rail 1500', 'emu2500': ' --emulate-rail 2500'}
 ROUNDS = {'r1': [a for a in ARMS if not a.startswith(('clipfree', 'rob', 'railub_rob'))], 'r2': ['clipfree', 'clipfree_ub'],
-          'r3': ['rob10', 'rob25', 'rob50', 'railub_rob25']}
+          'r3': ['rob10', 'rob25', 'rob50', 'railub_rob25'], 'r4': ['emu1500', 'emu2500']}
 SH = '''#!/bin/bash
 # run_sat.sh <code_dir> <WFT_DIAG or none> <heldout_arm.py args...>
 CODE=$1; shift; DIAG=$1; shift
@@ -81,7 +86,7 @@ def build(out, code, rnd='r1', arms=None, dets=None):
             n = f'SAT_{det}_{arm}'
             args = (f'--cache {EOS}/t15/caches/{det}.pkl --bundle {EOS}/t15/bundles/{det}/base '
                     f'--rails {EOS}/satur/rails/rails_{det}.pkl --out {EOS}/satur/{rnd}/{det}_{arm}.npz '
-                    f'--start 180 --n 1320 --jobs 8 --k 24 --t0-fix')
+                    f'--start 180 --n 1320 --jobs 8 --k 24 --t0-fix' + EXTRA.get(arm, ''))
             L += [f'JOB {n} sat.sub', f'VARS {n} nodename="{n}" code="{code}" diag="{diag_of(arm, det)}" args="{args}"',
                   f'RETRY {n} 1']
     open(f'{out}/sat_{rnd}.dag', 'w').write('\n'.join(L) + '\n')
@@ -126,6 +131,8 @@ SELS = {'all': None,
         'sat': lambda R: R[:, 16] > 0,                 # planes with a raw-clipped sample (the base row's own count)
         'unsat': lambda R: R[:, 16] == 0,
         'sat_heavy': lambda R: R[:, 16] >= 8}
+#: emulated-clip diagnostic: planes with no real clip that the emulated rail does clip (the arm's own column 18)
+EMU_SEL = lambda RB, RA: (RB[:, 16] == 0) & (RA[:, 18] > 0)
 
 
 def compare(d, dets=None):
@@ -171,12 +178,33 @@ def table(arms=None, sels=('all', 'sat')):
             print(f'| {a} | ' + ' | '.join(cells) + ' |')
 
 
+def summary(arms=None):
+    for det in DETS:
+        p = f'{HERE}/results/arms/arms_{det}.json'
+        if not os.path.exists(p):
+            continue
+        R = json.load(open(p)); b = lambda v, s_: R[f'{v}_{s_}_base']
+        print(f"\n{det} base: X all {b('x','all')['s68']:.3f} sat {b('x','sat')['s68']:.3f} (n {b('x','sat')['n']}, far {b('x','sat')['far']:.1f}) | "
+              f"Y all {b('y','all')['s68']:.3f} sat {b('y','sat')['s68']:.3f} (n {b('y','sat')['n']}, far {b('y','sat')['far']:.1f})")
+        have = sorted({k.split('_', 2)[2] for k in R})
+        for a in [a for a in (arms or ARMS) if a in have and a != 'base']:
+            c = []
+            for v in 'xy':
+                for s_ in ('all', 'sat'):
+                    q = R[f'{v}_{s_}_{a}']; c.append(f"{q['ds68']:+.3f}±{q['ds68_err']:.3f} f{q['far'] - q['far_base']:+.1f}")
+            q, qy = R[f'x_sat_{a}'], R[f'y_sat_{a}']
+            print(f'  {a:12s} ' + ' | '.join(c) + f"  | chi2 sat {q['chi2']:.0f}/{q['chi2_base']:.0f} {qy['chi2']:.0f}/{qy['chi2_base']:.0f}"
+                  f" q {q['q_ratio']:.3f}/{qy['q_ratio']:.3f}")
+
+
 if __name__ == '__main__':
     cmd = sys.argv[1]
     if cmd == 'build':
         rnd = (sys.argv[4:5] or ['r1'])[0]
-        build(sys.argv[2], sys.argv[3], rnd, arms=ROUNDS.get(rnd))
+        build(sys.argv[2], sys.argv[3], rnd, arms=ROUNDS.get(rnd), dets=sys.argv[5].split(',') if len(sys.argv) > 5 else None)
     elif cmd == 'compare':
         compare(sys.argv[2])
+    elif cmd == 'summary':
+        summary(sys.argv[2:] or None)
     else:
         table()
