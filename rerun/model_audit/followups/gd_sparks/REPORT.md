@@ -1,6 +1,9 @@
 # GD — Spark detection after the FE unification (round 3, item 7, 2026-10-28)
 
-## Verdict: keep the veto as it is (event dropped at > 50 seeding hits); det4 pending
+## Verdict: keep the veto as it is (event dropped at > 50 seeding hits) — det4 confirms (2026-10-29)
+
+**det4 (scored 10-29, 11372 interior rays, detection 40.8 %):** no veto +0.40 pt detected but +1.67 pt wrong fits;
+> 100 hits +0.40 / +1.46; > 40 −0.17 / −0.36. Same shape as det2/3/6/7: 50 is on the best curve, the verdict stands.
 **The criterion.** `SPARK_VETO_HITS = 50` counts floored seeding hits over x + y, after the relative floor, the flat-hit
 drop and the band re-seed.
 
@@ -97,7 +100,7 @@ Production is bit-identical: same defaults, and no call site passes them. Tests:
   - **not established:** whether the multi-particle-like planes hold fittable tracks (not refitted).
 
 ## Limitations
-- **det4 is still running** (lxplus job 4583837). When done: `pull.sh det4`, then `gd_score.py`.
+- **det4**: done 10-29 (see the verdict).
 - **Good/wrong is judged against M3**, which is itself degraded in sparky events (cross-talk).
 - **Waveform criteria** are scored on the candidates plus 400 random controls.
 - **n_TOF:** one file tag, no refit. **SPS:** one run.

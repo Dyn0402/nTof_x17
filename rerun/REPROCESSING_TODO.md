@@ -25,8 +25,7 @@ Status key: [x] done · [ ] open · [~] partly / in progress
 > merged only if its gate passes; trigger-track rule downstream. Items found by the history review (F7–F12, E1–E5,
 > `history/LESSONS.md` "found today") are listed there. Done this session: SPS bench bow/v_map/w0 dropped, SPS 15°
 > mount tangent, stale ZS_CENSOR texts, CLAUDE.md / RECONSTRUCTION_BASIS / RERUN_PLAN §11 wording.
-1. [ ] **GD det4 row**: lxplus job 4583837 (started 10-28 09:18). When done: `model_audit/followups/gd_sparks/pull.sh det4`,
-       `gd_score.py`; confirm det4 does not change the verdict.
+1. [x] **GD det4 row**: scored 10-29 — verdict unchanged (no veto: +0.40 pt detected, +1.67 pt wrong fits; 50 stays).
 2. [ ] **Double-check the 14 GA bad channels** (`model_audit/followups/fe_unify2/masks/bench_det{3,4}.json`, key
        `ga_added`): det4 X weak 94 125 196 376 400 435 439 455 472 498 → dead, det4 X 274 hot (beside the chamber-side
        dead run 271–273: short partner?), det3 X 62 hot, det3 Y 41 / 510 → dead. Flank test on the hits + a waveform

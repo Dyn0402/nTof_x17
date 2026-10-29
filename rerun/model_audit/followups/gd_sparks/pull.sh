@@ -8,7 +8,7 @@ declare -A ROW=( [det2]=mx17_det2_det3_overnight_6-22-26/longer_run/mx17_2 [det3
                  [det7]=mx17_det6_det7_overnight_6-26-26/long_run/mx17_7 )
 for d in ${@:-det2 det3 det4 det6 det7}; do
   mkdir -p $L/$d
-  ssh lxplus "test -d $ROOT/${ROW[$d]}/wft/gd_sparks && tar -C $ROOT/${ROW[$d]}/wft/gd_sparks -czf /tmp/gd_$d.tgz ." && \
+  ssh lxplus "aklog; test -d $ROOT/${ROW[$d]}/wft/gd_sparks && tar -C $ROOT/${ROW[$d]}/wft/gd_sparks -czf /tmp/gd_$d.tgz ." && \
     scp -q lxplus:/tmp/gd_$d.tgz /tmp/gd_$d.tgz && tar -C $L/$d -xzf /tmp/gd_$d.tgz && rm /tmp/gd_$d.tgz && echo "pulled $d" || echo "no $d yet"
 done
 du -sh $L
