@@ -232,7 +232,13 @@ FC's SPS σ0, and did that measurement depend on the old calibration?
 three fields) uses only unsaturated events (lead strip 250–3200 ADC) and leaves t0 free per event (no latency
 pin). It profiles D_rc,y and a bounded D_x per event jointly with σ0 and Dp. So it is immune to T6 (saturation),
 T7 (δ) and the stale D_rc,y. Its one inherited input is the det4 bench template. T10 (`t10_sps_sigma0.py`) re-runs
-FC's grid with h_eff to measure that dependence (result below).
+FC's grid with h_eff to measure that dependence.
+
+**T10 result (raw700, 243 V/cm, 300 views per view, reduced grid: σ0 0.14–0.46, Dp 0.005–0.010, D 1.0–3.5e-4,
+summed χ² profiled):** current det4 template X **0.278 ± 0.016**, Y **0.323 ± 0.024** mm. Segment-free h_eff X
+**0.282 ± 0.016**, Y **0.324 ± 0.023** mm. **The SPS σ0 does not depend on the template.** The current-template
+run reproduces FC's full-grid 0.31 ± 0.01 within errors. So FC's σ0 = 0.30 depends on none of the calibration
+issues found here and stands as a physical input. Outputs: `results/t10/`.
 
 **Why bench fits cannot measure σ0:**
 - Free σ0 in the joint bench fit (det2, pinned + unsaturated objective, `results/t8/DIAG_det2_free_sigma0.json`)
@@ -254,6 +260,35 @@ FC's grid with h_eff to measure that dependence (result below).
 separated (pending T10's template check). Bench preferences for a smaller σ0 are compensation for the other
 width terms (Dp / the X width excess, the template width, the footprint shape). Those terms are where the
 remaining model error lives.
+
+## T8 · Fleet test of the recalibration: resolution-neutral on all five chambers (2026-10-29 night)
+
+`t8_fleet.py` (`T8_ARMS=recal`), `t8_summary.py` → `results/t8/summary.json`. Per chamber:
+- **A** = the pass as planned: fe_nobow bundle, σ0 0.30, the bundle's D_rc,y, no t0 offset.
+- **B** = σ0 0.30 fixed (a physical input). D_rc,y (det4 kept at 2.2e-4) and δ_x, δ_y are fitted jointly by
+  `recal.py --t0-pin --unsat-only` on cache events 580–1079.
+
+Held-out events 180–579, LM, `--t0-fix`, event-paired:
+
+| chamber | δ_x [ns] | δ_y [ns] | D_rc,y fe → B | X Δs68 (χ²/dof A→B; ladder A→B) | Y Δs68 (χ²/dof; ladder) | timing v |
+|---|---|---|---|---|---|---|
+| det2 | −12.4 | −46.2 | 4.67 → 4.78e-4 | +0.011 ± 0.025 (103.5→102.0; 38.44→38.25) | +0.006 ± 0.041 (100.3→104.9; 39.98→38.77) | 39.3 |
+| det3 | −48.2 | −50.2 | 3.44 → 3.54e-4 | −0.031 ± 0.035 (49.1→49.1; 36.20→34.82) | +0.030 ± 0.033 (56.6→55.6; 36.40→35.19) | 35.8 |
+| det4 | −76.3 | −43.4 | 2.2e-4 (fixed) | −0.056 ± 0.074 (18.0→15.6; 33.76→32.46) | +0.039 ± 0.054 (13.1→12.0; 36.09→34.63) | 33.0 |
+| det6 | −43.3 | −27.8 | 5.90 → 4.89e-4 | +0.022 ± 0.042 (237.4→240.2; 24.01→23.83) | −0.010 ± 0.050 (409.6→400.0; 23.45→23.45) | 24.2 |
+| det7 | −28.3 | −9.5 | 6.26 → 6.75e-4 | +0.058 ± 0.067 (135.9→126.7; 36.71→35.85) | −0.019 ± 0.042 (292.0→283.1; 37.48→37.31) | 36.8 |
+
+- **Resolution:** every Δs68 is inside its error and the fleet means are ≈ 0 (X +0.001, Y +0.009). The recalibrated
+  pieces are not a resolution lever. What matters is *not* using the raw objective, which cost 0.07° in det3 Y (T6).
+- **D_rc,y:** the corrected objective moves the fe values by +2…+8 % on det2/3/7 and −17 % on det6.
+- **δ:** negative on every chamber and view, but spread from −9 to −76 ns, with X and Y differing by up to 37 ns
+  (det2, det4). A single latency-definition offset would be common to all, so δ also absorbs chamber timing
+  (e.g. how well C was measured, gain). Its held-out effect is the angle scale: ladders fall 0.2–1.5 µm/ns, toward
+  the timing v on det2 Y / det4 Y / det7 X and past it on det3 X/Y and det4 X. kw absorbs it either way.
+- **Recommendation for E1/E3:** (i) DRC with `--t0-pin --unsat-only`, a must, since it is the correct objective.
+  (ii) δ: do *not* adopt it as a calibrated quantity. It buys no resolution, its scatter is unexplained, and its
+  only effect is an angle scale that kw already measures. Keep t0 = C − 10·ftst and quote δ's ladder shift as part
+  of the angle-scale systematic. (Dylan's call; the data allow either.)
 
 ## Verdict so far (2026-10-28 evening)
 

@@ -19,6 +19,8 @@ WORK = os.environ.get('T8_WORK', '/home/dylan/.claude/jobs/f754a42b/tmp/t8')
 SRC = os.path.expanduser('~/x17/cosmic_bench/model_audit/fe_unify2/bundles/{}/calib_bundle_fe_nobow')
 CACHE = os.path.expanduser('~/x17/cosmic_bench/model_audit/ws_t0/caches/{}.pkl')
 DETS = ['det2', 'det3', 'det4', 'det6', 'det7']
+#: which fitted arms to run (env T8_ARMS, comma list of recal,heff; default both)
+ARMS = os.environ.get('T8_ARMS', 'recal,heff').split(',')
 ENV = dict(os.environ, WFT_COL_GUARD='0.01')
 sys.path.insert(0, HERE)
 
@@ -43,6 +45,8 @@ def fit(det):
     seeds = {'recal': base_copy(det, 'seed_recal'), 'heff': base_copy(det, 'seed_heff', heff_on_grid(det, g))}
     free = 't0_shift_x,t0_shift_y' + ('' if det == 'det4' else ',rc_D_y')
     for name, b in seeds.items():
+        if name not in ARMS:
+            continue
         out = f'{WORK}/{det}/fit_{name}.json'
         if os.path.exists(out):
             continue
@@ -62,6 +66,8 @@ def bundles(det):
     os.makedirs(f'{WORK}/{det}', exist_ok=True)
     base_copy(det, 'A_plan')
     for name in ('recal', 'heff'):
+        if name not in ARMS:
+            continue
         r = json.load(open(f'{WORK}/{det}/fit_{name}.json'))
         d = f'{WORK}/{det}/{"B_recal" if name == "recal" else "C_heff"}'
         shutil.copytree(f'{WORK}/{det}/seed_{name}', d, dirs_exist_ok=True)
@@ -76,7 +82,7 @@ def bundles(det):
 
 
 def heldout(det):
-    for arm in ('A_plan', 'B_recal', 'C_heff'):
+    for arm in ['A_plan'] + [a for n, a in (('recal', 'B_recal'), ('heff', 'C_heff')) if n in ARMS]:
         out = f'{WORK}/{det}_{arm}.npz'
         if os.path.exists(out):
             continue
