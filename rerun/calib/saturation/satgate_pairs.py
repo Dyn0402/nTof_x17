@@ -124,7 +124,32 @@ def main():
                 out[f'{det}|{arm}|{v}'] = pr
                 T2.append(f"| {det} {arm} | {v.upper()} | {pr['same_w']:.1%} | {pr['dth_gt1']:.1%} | {pr['qflag']:.1%} | "
                           f"{pr['q_ratio']:.4f} | {pr['chi2_ratio']:.3f} | {nt:.1%} | {st:.1%} ({len(ev2)}) |")
-    md = '\n'.join(T1) + '\n\n' + '\n'.join(T2) + '\n'
+    # efficiency-budget transitions per M3 ray (interior, xy, 5 mm): which class each ray moves to under the arm
+    T3 = ['| chamber arm | interior rays | moved | detected -> far | detected -> rejected | far -> detected | '
+          'rejected -> detected | rejected -> far | far -> rejected | other moves |', '|' + '---|' * 10]
+    for det, row in ROWS.items():
+        pa = os.path.join(a.root, row, 'wft', a.a, 'budget', f'rays_{det}.parquet')
+        if not os.path.exists(pa):
+            continue
+        RA = pd.read_parquet(pa)
+        for arm in a.b:
+            pb = os.path.join(a.root, row, 'wft', arm, 'budget', f'rays_{det}.parquet')
+            if not os.path.exists(pb):
+                continue
+            RB = pd.read_parquet(pb)
+            m = RA.merge(RB[['event_id', 'cat_xy_5']], on='event_id', suffixes=('_a', '_b'))
+            m = m[m['region'] == 'interior']
+            ca, cb = m['cat_xy_5_a'].astype(str), m['cat_xy_5_b'].astype(str)
+            mv = ca != cb
+            t = lambda x, y: int(((ca == x) & (cb == y)).sum())
+            named = {('detected', 'far'), ('detected', 'rejected_cut'), ('far', 'detected'), ('rejected_cut', 'detected'),
+                     ('rejected_cut', 'far'), ('far', 'rejected_cut')}
+            other = int(mv.sum()) - sum(t(x, y) for x, y in named)
+            out[f'{det}|{arm}|moves'] = {f'{x}->{y}': t(x, y) for x, y in named} | dict(n=int(len(m)), moved=int(mv.sum()))
+            T3.append(f"| {det} {arm} | {len(m)} | {int(mv.sum())} | {t('detected', 'far')} | {t('detected', 'rejected_cut')} | "
+                      f"{t('far', 'detected')} | {t('rejected_cut', 'detected')} | {t('rejected_cut', 'far')} | "
+                      f"{t('far', 'rejected_cut')} | {other} |")
+    md = '\n'.join(T1) + '\n\n' + '\n'.join(T2) + '\n\n' + '\n'.join(T3) + '\n'
     print(md)
     os.makedirs(os.path.join(HERE, 'results'), exist_ok=True)
     json.dump(out, open(os.path.join(HERE, 'results', f'{a.tag}.json'), 'w'), indent=1)

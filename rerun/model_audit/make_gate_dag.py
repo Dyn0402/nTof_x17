@@ -29,6 +29,10 @@ ARMS = {
     'sat_base': ('', 'calib_bundle_fe'),
     'sat_cand': ('WFT_DIAG=model.SAT_CAP=1200,model.STRIP_TAU=0.05,model.QSOLVE_PLAIN=true', 'calib_bundle_fe'),
     'sat_cap': ('WFT_DIAG=model.SAT_CAP=1200,model.QSOLVE_PLAIN=true', 'calib_bundle_fe'),
+    # with the per-sample rails carried by wft.io (code >= bacf7fe): the recipe + SAT_RAIL, and SAT_RAIL alone
+    'sat_candr': ('WFT_DIAG=model.SAT_RAIL=true,model.SAT_CAP=1200,model.STRIP_TAU=0.05,model.QSOLVE_PLAIN=true',
+                  'calib_bundle_fe'),
+    'sat_rail': ('WFT_DIAG=model.SAT_RAIL=true', 'calib_bundle_fe'),
 }
 SH = '''#!/bin/bash
 # run_gate.sh <code_dir> <envspec> <key> <stage_job.py args...>   envspec: comma-separated K=V list, or '-'

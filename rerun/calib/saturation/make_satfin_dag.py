@@ -21,7 +21,9 @@ E = '/eos/user/d/dneff/x17rerun'
 OUT = f'{E}/satfin'
 FB = f'{E}/followups/fb/Analysis'
 DRY = f'{E}/Analysis_dryrun'
-DIAG = {'base': 'none', 'cand': 'model.SAT_CAP=1200,model.STRIP_TAU=0.05,model.QSOLVE_PLAIN=true'}
+DIAG = {'base': 'none', 'cand': 'model.SAT_CAP=1200,model.STRIP_TAU=0.05,model.QSOLVE_PLAIN=true',
+        # the pieces (diagnostic arms, --arms): the cap alone and the strip nuisance alone, each with the plain re-solve
+        'caponly': 'model.SAT_CAP=1200,model.QSOLVE_PLAIN=true', 'striponly': 'model.STRIP_TAU=0.05,model.QSOLVE_PLAIN=true'}
 # name -> (registry key, chamber, K, alignment.json of the row's own waveform reco, cache events)
 ROWS = {
     'det3_p2': ('c26__mx17_det3_p2_det1_overnight_6-27-26__long_run_p2_det1_sanity_check__mx17_3', 'det3', 24,
@@ -68,6 +70,9 @@ queue
 
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument('code'); ap.add_argument('--only', nargs='*', default=None)
+    ap.add_argument('--arms', nargs='*', default=['base', 'cand'])
+    ap.add_argument('--no-build', action='store_true', help='the caches exist: held-out nodes only')
+    ap.add_argument('--tag', default='satfin')
     a = ap.parse_args(); L = []
 
     def job(name, sub, parents=(), **v):
@@ -80,7 +85,8 @@ def main():
         i = 0
         for s in range(start, start + n, CHUNK):
             m = min(CHUNK, start + n - s)
-            for arm, dg in DIAG.items():
+            for arm in a.arms:
+                dg = DIAG[arm]
                 job(f'HO_{name}_{arm}_c{i}', 'ho.sub', parents, diag=dg,
                     args=f'--cache {cache} --bundle {E}/t15/bundles/{det}/base --out {OUT}/ho/{name}_{arm}_c{i}.npz '
                          f'--start {s} --n {m} --jobs 8 --k {k} --t0-fix')
@@ -95,18 +101,21 @@ def main():
     for name, (key, det, K, al, n) in ROWS.items():
         if not sel(name):
             continue
+        cache = f'{OUT}/caches/{name}.pkl'
+        if a.no_build:
+            ho(name, det, cache, 0, n, K)
+            continue
         pre = f'{key} --eos-analysis {OUT}/Analysis'
         job(f'HITS_{name}', 'stage.sub', cpus=4, mem=12000,
             args=f'{pre} --parts run_config,m3,hits --require cache/event_results_veto50.pkl '
                  f'--script mx_june_cosmic_qa/03_alignment_and_tpc.py')
-        cache = f'{OUT}/caches/{name}.pkl'
         job(f'CACHE_{name}', 'stage.sub', [f'HITS_{name}'], cpus=2, mem=16000,
             args=f'{pre} --script rerun/w12/build_cache_wft.py -- --align {al} --out {cache} --n {n} --cm 0')
         # the cache's event count is known only after CACHE: chunks past its end are empty and harmless
         ho(name, det, cache, 0, n, K, [f'CACHE_{name}'])
-    open('satfin.dag', 'w').write('\n'.join(L) + '\n')
+    open(f'{a.tag}.dag', 'w').write('\n'.join(L) + '\n')
     open('ho.sub', 'w').write(HO_SUB); open('stage.sub', 'w').write(ST_SUB)
-    print('wrote satfin.dag:', sum(1 for l in L if l.startswith('JOB')), 'nodes')
+    print(f'wrote {a.tag}.dag:', sum(1 for l in L if l.startswith('JOB')), 'nodes')
 
 
 if __name__ == '__main__':
