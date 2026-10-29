@@ -164,6 +164,22 @@ SIG_VAR_K = 0.0
 #: IRLS-scaled rows.  The returned "chi2" is the Huber loss.  0 = off (least squares).
 ROBUST_C = 0.0
 ROBUST_ITERS = 3
+#: Error model (opt-in, 2026-10-29, rerun/calib/saturation/ERROR_MODEL.md).  The production weights are electronics noise
+#: alone, but a bright pulse scatters around any mean model by ~6 % of its peak (T16) and the clean-track check found the
+#: angle IMPROVES when the amplitude above 300 ADC is hidden: the bright samples are over-trusted.  Two honest fixes, both
+#: applied as extra passes of fit_plane_raw (fit, derive, refit from the solution; ERR_PASSES fits in total):
+#:   ERR_K, ERR_F   per-sample variance from the PREDICTION m of the previous pass (Pearson form, not the data):
+#:                  sigma^2 = noise^2 + ERR_K * m + (ERR_F * m)^2   [ADC; K = electron statistics x gain fluctuation]
+#:   STRIP_TAU      a per-strip amplitude nuisance: data_i(t) = s_i m_i(t) with a prior s_i ~ N(1, STRIP_TAU), solved in
+#:                  closed form per strip from the previous pass and divided out of that strip (data and noise) for the
+#:                  next: every strip's shape and timing are used fully, its absolute size only within STRIP_TAU.
+#: All 0 = bit-identical.
+ERR_K = 0.0
+ERR_F = 0.0
+STRIP_TAU = 0.0
+ERR_PASSES = 2
+_SIG = None          # per-sample sigma of the current pass (set by fit_plane_raw only)
+_SSCALE = None       # per-strip amplitude scale of the current pass (set by fit_plane_raw only)
 #: Unobservable depth columns (opt-in, 2026-10-23; sept26_prelim_analysis/qsum_runaway.py, OCTOBER O10).  A depth bin
 #: whose response lies past the end of the window (time-censored) or off the strip window (space-censored) has a
 #: column of ~1e-6..1e-17 in the weighted design matrix, and the unregularised NNLS can put unbounded charge on it
@@ -699,8 +715,15 @@ def _sat_mask(P, sat0):
 def _weights(W, noise):
     """1/sigma per sample (flat), for MODEL_FRAC / SIG_VAR_K > 0 (the noise-only production path is written out
     where it is used, expression for expression)."""
+    if _SIG is not None and _SIG.shape == W.shape:
+        return (1.0 / _SIG).reshape(-1)
     Wp = np.maximum(W, 0.0)
     return (1.0 / np.sqrt(noise[:, None] ** 2 + (MODEL_FRAC * Wp) ** 2 + SIG_VAR_K * Wp)).reshape(-1)
+
+
+def _noise_only():
+    """True on the production weighting (per-strip noise only)."""
+    return MODEL_FRAC <= 0 and SIG_VAR_K <= 0 and _SIG is None
 
 
 def prep_plane(P, plane):
@@ -761,6 +784,9 @@ def prep_plane(P, plane):
                 for a in ('ub', 'free'):
                     if getattr(sat, a, None) is not None:
                         getattr(sat, a)[cap] = False
+    if _SSCALE is not None and len(_SSCALE) == W.shape[0]:
+        W = W / _SSCALE[:, None]
+        noise = noise / _SSCALE
     return W, noise, np.asarray(P['pos'], dtype=np.float64), sat
 
 
@@ -822,7 +848,7 @@ def _solve_nnls(M, W, noise, sat, censor=True):
     ok = ~sat.reshape(-1)
     if not ok.any():
         return np.inf, None
-    if MODEL_FRAC <= 0 and SIG_VAR_K <= 0:
+    if _noise_only():
         # production path, expression-for-expression unchanged
         Wt = np.repeat(1.0 / noise, NSAMP)
         A = (M * Wt[:, None])[ok]
@@ -853,7 +879,7 @@ def _solve_nnls(M, W, noise, sat, censor=True):
     chi = rn * rn
     if censor and SAT_SOLVE and sat.any():
         # active set of the one-sided bound model >= clip on the censored samples
-        Wall = (np.repeat(1.0 / noise, NSAMP) if (MODEL_FRAC <= 0 and SIG_VAR_K <= 0) else _weights(W, noise))
+        Wall = (np.repeat(1.0 / noise, NSAMP) if _noise_only() else _weights(W, noise))
         Af, yf = M * Wall[:, None], W.reshape(-1) * Wall
         lb1, ub1 = _bounds(sat)
         act = np.zeros_like(lb1)
@@ -1267,7 +1293,7 @@ def _vp_resid_jac(plane, W, noise, pos, sat, th, q, M, hyper, censor, t0_prior):
     """(r, J) with r @ r = chi2 of :func:`_solve_nnls` (+ prior) at theta, and J the variable-projection Jacobian in
     Kaufman's form: d(M q)/d(theta) at fixed q, projected off the span of the free (q > 0) weighted columns over the
     rows that determine q (the live samples and the clipped samples the model falls below)."""
-    if MODEL_FRAC <= 0 and SIG_VAR_K <= 0:
+    if _noise_only():
         Wt = np.repeat(1.0 / noise, NSAMP)
     else:
         Wt = _weights(W, noise)
@@ -1439,6 +1465,45 @@ def vp_covariance(P, plane, r, hyper=None, t0_prior=None):
 # --------------------------------------------------------------------- fits
 def fit_plane_raw(P, plane, p0_init, w_init, t0_init, hyper=None, fix_p0w=None,
                   t0_prior=None, pivot=None):
+    """:func:`_fit_plane_raw1`, plus the error-model passes (ERR_K / ERR_F / STRIP_TAU) when switched on."""
+    global _SIG, _SSCALE
+    r = _fit_plane_raw1(P, plane, p0_init, w_init, t0_init, hyper, fix_p0w, t0_prior, pivot)
+    if not (ERR_K > 0 or ERR_F > 0 or STRIP_TAU > 0) or _SIG is not None or _SSCALE is not None:
+        return r
+    hyper = hyper or HYPER
+    s_prev = None
+    try:
+        for _ in range(max(ERR_PASSES - 1, 0)):
+            if r is None or r.get('q') is None or not np.isfinite(r.get('chi2', np.inf)):
+                break
+            _SIG, _SSCALE = None, None
+            W0, n0, pos, sat = prep_plane(P, plane)
+            m = model_waveforms(plane, pos, r['p0'], r['w'], r['t0'], r['q'], hyper)     # fits W0 / s_prev
+            if s_prev is not None:
+                m = m * s_prev[:, None]                                                 # prediction in data units
+            sig2 = n0[:, None] ** 2 + ERR_K * np.maximum(m, 0.0) + (ERR_F * m) ** 2
+            s = np.ones(W0.shape[0])
+            if STRIP_TAU > 0:
+                live = ~np.asarray(sat, bool)
+                a = np.where(live, W0 * m / sig2, 0.0).sum(1)
+                b = np.where(live, m * m / sig2, 0.0).sum(1)
+                pr = 1.0 / STRIP_TAU ** 2
+                s = np.clip((a + pr) / (b + pr), 0.2, 5.0)
+            _SSCALE = s if STRIP_TAU > 0 else None
+            _SIG = (np.sqrt(sig2) / s[:, None]) if (ERR_K > 0 or ERR_F > 0) else None
+            r2 = _fit_plane_raw1(P, plane, r['p0'], r['w'], r['t0'], hyper, fix_p0w, t0_prior, None)
+            if r2 is None or not np.isfinite(r2.get('chi2', np.inf)):
+                break
+            r, s_prev = r2, s
+        if s_prev is not None and STRIP_TAU > 0:
+            r['strip_scale'] = s_prev
+    finally:
+        _SIG, _SSCALE = None, None
+    return r
+
+
+def _fit_plane_raw1(P, plane, p0_init, w_init, t0_init, hyper=None, fix_p0w=None,
+                    t0_prior=None, pivot=None):
     """Two-stage fit: coarse (p0, w, t0) grid, then Nelder-Mead. With
     ``fix_p0w=(p0, w)`` only t0 and the charge profile are fitted — that is the
     'ref-pinned' configuration used for calibration and for the chi2(v) scan.
