@@ -299,6 +299,12 @@ LESSONS = [
     ('2026-10-29', 'model', 'Clipping all samples >= ~1200 ADC (SAT_CAP) helps the ANGLE (det3 X -0.06 on clean tracks) '
      'but costs the CHARGE (x-y charge sigma 0.054 -> 0.072, pairing power down): bright samples are mis-modelled, not '
      'uninformative.', 'candidate: capped geometry + uncapped charge re-solve; cross-dataset det3 check open', 'open'),
+    ('2026-10-29', 'model', 'The held-out plane-fit harness cannot pass a likelihood change alone: the bright-sample cap '
+     'wins there on all 14 datasets, but in the full reconstruction it loses det6 0.8 pt and det7 1.6 pt of efficiency '
+     '(clipped near-vertical columns refit as steep lines in seeded windows). And a fix can flip sign with the drift '
+     'field: the per-strip amplitude nuisance is neutral at 1000 V, +0.20 deg at det3 500 V.',
+     'recipe not adopted (ERROR_MODEL.md "Decision"); every model change now goes through held-out on det3 500/700 V + '
+     '6-25 + 6-28 (make_satfin_dag.py) AND the full-reco gate (make_gate_dag.py) before adoption', 'doc'),
     ('2026-10-28', 'process', 'Every calibration from scratch, templates included; no audit intermediates.',
      'new calibration phase in the pass DAG (PASS_PLAN §2)', 'open'),
 ]

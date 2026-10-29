@@ -51,13 +51,16 @@ FIT_NAMES = list(HYPER_NAMES) + ['v']
 # --------------------------------------------------------------------- cache
 def build_cache(cfg, n_events: int, pad_mm: float = 5.0, z_lo: float = -3.0,
                 z_hi: float = 33.0, out_path: str | None = None,
-                res_cut_mm: float = 10.0, veto: int = 50, align_path: str | None = None):
+                res_cut_mm: float = 10.0, veto: int = 50, align_path: str | None = None, rails: bool = False):
     """Waveform windows along the M3 reference corridor, for calibration only.
 
     align_path: the alignment that places the M3 reference at the detector (``ref_mesh``).  Default: the hits chain's
     ``alignment_tpc_veto<veto>``, whose plane is biased by the compressed hit times and pushes the fitted v 3-15 %
     high (rerun C8).  The re-run passes the waveform alignment (mx_june_wft/01_alignment.py) instead (W12).  The
-    event list and the hits residual cut still come from the hits event cache."""
+    event list and the hits residual cut still come from the hits event cache.
+
+    rails: also store each window's per-sample ADC rails (``rail_hi`` / ``rail_lo``, wft.io.rail_arrays), for the
+    wft.model SAT_RAIL / SAT_FLOOR switches; off = the cache is unchanged."""
     import uproot
     from . import io as wio
     from qa_config import M3_CHI2_CUT, M3_MIN_NCLUS
@@ -103,7 +106,8 @@ def build_cache(cfg, n_events: int, pad_mm: float = 5.0, z_lo: float = -3.0,
             want = set(events) & set(rdr.event_ids.tolist())
             if not want:
                 continue
-            for eid, ftst, wfm in rdr.iter_events(want):
+            for item in rdr.iter_events(want, with_raw=rails):
+                eid, ftst, wfm = item[:3]
                 ev = events[eid]
                 p0 = ev[f'ref_mesh_{plane}']
                 tn = ev[f'tan_{plane}']
@@ -116,6 +120,8 @@ def build_cache(cfg, n_events: int, pad_mm: float = 5.0, z_lo: float = -3.0,
                 ev[plane] = dict(ch=ch.astype(np.int16), pos=pm[ch].astype(np.float32),
                                  W=wfm[ch].astype(np.float32),
                                  noise=np.maximum(rdr.noise[ch], 3.0).astype(np.float32))
+                if rails:
+                    ev[plane]['rail_hi'], ev[plane]['rail_lo'] = wio.rail_arrays(ev[plane]['W'], item[3][ch])
                 ev[f'ftst_{plane}'] = ftst
             if sum(1 for e in events.values() if plane in e) >= n_events:
                 break

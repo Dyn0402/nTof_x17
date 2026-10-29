@@ -20,6 +20,7 @@ def main():
     ap.add_argument('--out', required=True)
     ap.add_argument('--n', type=int, default=1500)
     ap.add_argument('--cm', type=int, default=0)
+    ap.add_argument('--rails', action='store_true', help='store the per-sample ADC rails in every window (wft.io)')
     a = ap.parse_args()
     from qa_config import get_config, setup_paths
     setup_paths()
@@ -27,7 +28,7 @@ def main():
     from wft.calibrate import build_cache
     wio.CM_MASK = a.cm
     os.makedirs(os.path.dirname(a.out), exist_ok=True)
-    ev = build_cache(get_config(a.run_key), a.n, out_path=a.out, align_path=a.align)
+    ev = build_cache(get_config(a.run_key), a.n, out_path=a.out, align_path=a.align, rails=a.rails)
     print(f'[w12] {len(ev)} events, reference from {a.align} -> {a.out}')
 
 

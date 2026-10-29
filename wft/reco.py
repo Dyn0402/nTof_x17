@@ -1790,10 +1790,12 @@ def _headon_rescue(R, plane, other):
     ch = wseed.column_rescue(Wr, R['noise'], R['pos'], float(other.t0), z_min=HEADON_RESCUE_Z)
     if ch is None:
         return None
-    win = wio.extract_window(R['W'], R['noise'], R['pos'], ch, 3)
+    win = wio.extract_window(R['W'], R['noise'], R['pos'], ch, 3, raw_all=R.get('raw'))
     if win is None:
         return None
     P = dict(W=win.W, pos=win.pos, noise=win.noise, ch=win.ch)
+    if win.rail_hi is not None:
+        P.update(rail_hi=win.rail_hi, rail_lo=win.rail_lo)
     f = fit_plane_candidates([P], plane, _CAL)
     if f is None or not np.isfinite(f.q_sum) or f.q_sum <= 0 or not other.q_sum > 0:
         return None
@@ -2157,10 +2159,15 @@ def _stream_windows(cfg, pos_maps, seeds, wanted, pad_strips, verbose=True, dead
                     if e in want:
                         evtime[int(e)] = (int(t), tag)
         raw = {}
+        adc = {}                                   # undecoded samples, only when the windows carry rails (wft.io)
+        carry = wio.rails_wanted()
         noise = {'x': rx.noise, 'y': ry.noise}
         for plane, rdr in (('x', rx), ('y', ry)):
-            for eid, ftst, wfm in rdr.iter_events(want):
+            for item in rdr.iter_events(want, with_raw=carry):
+                eid, ftst, wfm = item[:3]
                 raw.setdefault(eid, {})[plane] = (ftst, wfm)
+                if carry:
+                    adc.setdefault(eid, {})[plane] = item[3]
         buf, n_reseed = {}, 0
         for eid, pl in raw.items():
             sd = seeds[eid]
@@ -2181,20 +2188,26 @@ def _stream_windows(cfg, pos_maps, seeds, wanted, pad_strips, verbose=True, dead
             for plane, (ftst, wfm) in pl.items():
                 feu = feu_of[plane]
                 cl = sd[plane]
+                ra = adc.get(eid, {}).get(plane)
                 if not cl:
                     if HEADON_RESCUE:
                         rec = buf.setdefault(eid, {'w': {}, 's': {}})
                         rec['w'][f'_rescue_{plane}'] = dict(W=wfm, noise=noise[plane], pos=pos_maps[feu])
+                        if ra is not None:
+                            rec['w'][f'_rescue_{plane}']['raw'] = ra
                         rec['ftst_' + plane] = ftst
                     continue
                 cl = cl if isinstance(cl, list) else [cl]
                 wins, used = [], []
                 for s_ in cl:
                     win = wio.extract_window(wfm, noise[plane], pos_maps[feu], s_.channels, pad_strips,
-                                             dead=(dead or {}).get(plane))
+                                             dead=(dead or {}).get(plane), raw_all=ra)
                     if win is None:
                         continue
-                    wins.append(dict(W=win.W, pos=win.pos, noise=win.noise, ch=win.ch))
+                    wd = dict(W=win.W, pos=win.pos, noise=win.noise, ch=win.ch)
+                    if win.rail_hi is not None:
+                        wd.update(rail_hi=win.rail_hi, rail_lo=win.rail_lo)
+                    wins.append(wd)
                     used.append(s_)
                 if not wins:
                     continue
@@ -2202,7 +2215,7 @@ def _stream_windows(cfg, pos_maps, seeds, wanted, pad_strips, verbose=True, dead
                 rec['w'][plane] = wins
                 rec['s'][plane] = used
                 rec['ftst_' + plane] = ftst
-        del raw
+        del raw, adc
         payloads = []
         for eid, rec in buf.items():
             if not any(k in rec['w'] for k in ('x', 'y')):
