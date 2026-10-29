@@ -148,6 +148,11 @@ SAT_TAIL_SKIP = 0
 SAT_TAIL_MINLEN = 1
 SAT_STRIP = False
 SAT_CLIP_FREE = False
+#: Censor the bright samples (opt-in study switch, 2026-10-29): every sample at or above SAT_CAP [ADC, before the gain
+#: correction] is censored as a lower bound at SAT_CAP (model >= SAT_CAP there), as if the ADC clipped at SAT_CAP.
+#: The samples where the template is most wrong (the pulse peak, T9) then only say "at least this much".  The
+#: production form of heldout_arm --emulate-rail (rerun/calib/saturation, r4/r5).  0 = off.
+SAT_CAP = 0.0
 #: Signal variance in the chi2 weights (opt-in study switch, 2026-10-29): sigma^2 = noise^2 + SIG_VAR_K * max(W, 0)
 #: [ADC, after the gain correction] -- the electron-counting + avalanche variance of the signal itself, linear in the
 #: amplitude (ws_floor "Estimator notes": the right form on the toy, K = 0.19 x ADC per electron = 11.5 ADC on det3;
@@ -747,6 +752,15 @@ def prep_plane(P, plane):
         rows = np.isin(ch, h)
         if rows.any():
             noise[rows] *= HOT_NOISE_INFLATION
+    if SAT_CAP > 0:
+        cap = np.asarray(P['W'], dtype=np.float64) >= SAT_CAP
+        if cap.any():
+            W[cap] = (SAT_CAP / g[:, None] * np.ones_like(W))[cap]
+            sat |= cap
+            if isinstance(sat, Censor):
+                for a in ('ub', 'free'):
+                    if getattr(sat, a, None) is not None:
+                        getattr(sat, a)[cap] = False
     return W, noise, np.asarray(P['pos'], dtype=np.float64), sat
 
 

@@ -9,6 +9,7 @@ set of wft.model switches passed as WFT_DIAG (all opt-in; base = none).
                                          CODE = git archive on EOS (/eos/user/d/dneff/x17rerun/code/code_<hash>)
     sat_arms.py compare DIR              DIR holds <det>_<arm>.npz -> results/arms/arms_<det>.json (t5_compare)
     sat_arms.py table                    markdown tables (all planes; saturated planes only)
+    sat_arms.py emu DIR                  the emulated-rail diagnostic (emu<R> vs rail)
     sat_arms.py summary [ARM ...]        one line per arm and chamber (X all | X sat | Y all | Y sat)
 """
 import json, os, sys
@@ -47,10 +48,16 @@ ARMS = {
     # r4: the diagnostic -- clip planes that never saturated at an emulated rail (heldout_arm --emulate-rail), with the
     # rail treatment; compare against 'rail' on the planes with no real clip and an emulated one
     'emu1500': R, 'emu2500': R,
+    # r5: the emulated rail as a TREATMENT -- every sample above C censored as a lower bound (cap scan), rails kept
+    'cap800': R, 'cap1000': R, 'cap1200': R, 'cap1500': R, 'cap2000': R,
+    'cap1200ub': f'{R},model.SAT_FLOOR=1',
 }
-EXTRA = {'emu1500': ' --emulate-rail 1500', 'emu2500': ' --emulate-rail 2500'}
+EXTRA = {'emu1500': ' --emulate-rail 1500', 'emu2500': ' --emulate-rail 2500', 'cap800': ' --emulate-rail 800',
+         'cap1000': ' --emulate-rail 1000', 'cap1200': ' --emulate-rail 1200', 'cap1500': ' --emulate-rail 1500',
+         'cap2000': ' --emulate-rail 2000', 'cap1200ub': ' --emulate-rail 1200'}
 ROUNDS = {'r1': [a for a in ARMS if not a.startswith(('clipfree', 'rob', 'railub_rob'))], 'r2': ['clipfree', 'clipfree_ub'],
-          'r3': ['rob10', 'rob25', 'rob50', 'railub_rob25'], 'r4': ['emu1500', 'emu2500']}
+          'r3': ['rob10', 'rob25', 'rob50', 'railub_rob25'], 'r4': ['emu1500', 'emu2500'],
+          'r5': ['cap800', 'cap1000', 'cap1200', 'cap1500', 'cap2000', 'cap1200ub']}
 SH = '''#!/bin/bash
 # run_sat.sh <code_dir> <WFT_DIAG or none> <heldout_arm.py args...>
 CODE=$1; shift; DIAG=$1; shift
@@ -178,6 +185,36 @@ def table(arms=None, sels=('all', 'sat')):
             print(f'| {a} | ' + ' | '.join(cells) + ' |')
 
 
+def emu(d, dets=('det3', 'det2', 'det7')):
+    """The clip diagnostic: emu<R> against 'rail' (the same censor rule) on planes that never clipped but are clipped
+    by the emulated rail; also those planes' s68 against the planes that really clipped."""
+    out = {}
+    for det in dets:
+        fr = f'{d}/{det}_rail.npz'
+        if not os.path.exists(fr):
+            continue
+        rail = np.load(fr)['per']
+        for arm in ('emu1500', 'emu2500'):
+            f = f'{d}/{det}_{arm}.npz'
+            if not os.path.exists(f):
+                continue
+            per = np.load(f)['per']
+            for vi, v in enumerate('xy'):
+                A = {int(r[0]): r for r in per[per[:, 1] == vi]}
+                hit = {e for e, r in A.items() if r[16] == 0 and r[18] > 0}
+                sel = lambda R, hit=hit: np.array([int(r[0]) in hit for r in R])
+                q = compare_one(rail, per, vi, sel)
+                qs = compare_one(rail, rail, vi, SELS['sat'])
+                out[f'{det}_{v}_{arm}'] = dict(q, real_sat_s68=qs['s68'], real_sat_far=qs['far'],
+                                               frac_planes=len(hit) / max(len(A), 1))
+                print(f"{det} {v} {arm}: {len(hit)} planes ({100 * len(hit) / max(len(A), 1):.0f} %) clipped only by the "
+                      f"emulated rail: s68 {q['s68_base']:.3f} -> {q['s68']:.3f} ({q['ds68']:+.3f} ± {q['ds68_err']:.3f}), "
+                      f"far {q['far_base']:.1f} -> {q['far']:.1f} %, chi2/dof {q['chi2_base']:.0f} -> {q['chi2']:.0f} | "
+                      f"really clipped planes: s68 {qs['s68']:.3f}, far {qs['far']:.1f} %")
+    os.makedirs(f'{HERE}/results/arms', exist_ok=True)
+    json.dump(out, open(f'{HERE}/results/arms/emu.json', 'w'), indent=1)
+
+
 def summary(arms=None):
     for det in DETS:
         p = f'{HERE}/results/arms/arms_{det}.json'
@@ -204,6 +241,8 @@ if __name__ == '__main__':
         build(sys.argv[2], sys.argv[3], rnd, arms=ROUNDS.get(rnd), dets=sys.argv[5].split(',') if len(sys.argv) > 5 else None)
     elif cmd == 'compare':
         compare(sys.argv[2])
+    elif cmd == 'emu':
+        emu(sys.argv[2])
     elif cmd == 'summary':
         summary(sys.argv[2:] or None)
     else:

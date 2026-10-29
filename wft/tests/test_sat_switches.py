@@ -8,7 +8,7 @@ from scipy.optimize import nnls
 from wft import model as wm
 
 NAMES = ('SAT_RAIL', 'SAT_MARGIN', 'SAT_FLOOR', 'SAT_TAIL', 'SAT_TAIL_SKIP', 'SAT_TAIL_MINLEN', 'SAT_STRIP', 'SAT_CLIP_FREE',
-         'SIG_VAR_K', 'ROBUST_C', 'MODEL_FRAC', 'GAIN', 'DEAD', 'HOT', 'NSAMP', 'SAT', 'BAND_NSIG', 'SAT_SOLVE', 'COL_GUARD')
+         'SIG_VAR_K', 'ROBUST_C', 'SAT_CAP', 'MODEL_FRAC', 'GAIN', 'DEAD', 'HOT', 'NSAMP', 'SAT', 'BAND_NSIG', 'SAT_SOLVE', 'COL_GUARD')
 
 
 @contextlib.contextmanager
@@ -168,3 +168,15 @@ def test_robust_huber():
     with switches(NSAMP=ns, COL_GUARD=0.0, ROBUST_C=0.0):
         c2, q2 = wm._solve_nnls(M, W, noise, sat)
     assert c2 == c0 and np.array_equal(q2, q0)
+
+
+def test_cap():
+    P, raw = window()
+    with switches(NSAMP=10, SAT_CAP=1000.0):
+        W, _, _, sat = wm.prep_plane(P, 'x')
+    cap = P['W'] >= 1000.0
+    assert np.array_equal(sat, cap | (P['W'] >= 3550.0))
+    assert np.all(W[cap] == 1000.0) and np.array_equal(W[~cap], P['W'][~cap])
+    with switches(NSAMP=10, SAT_CAP=0.0):
+        W0, _, _, sat0 = wm.prep_plane(P, 'x')
+    assert np.array_equal(W0, P['W']) and np.array_equal(sat0, P['W'] >= 3550.0)
