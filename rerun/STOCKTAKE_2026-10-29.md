@@ -68,6 +68,6 @@ post-gate fixes) → S1b `vrefit --keep-v` (117 rows, ~2 h) → S2+S3 `pass` + `
 
 ## 7 · Decisions for Dylan
 1. ~~Rails / cap refinement~~ **decided 10-29 evening: neither; simple model locked (§2).**
-2. S0b: decode the five never-decoded det6/det7 HV points before the pass, or list them as excluded. **Open.**
+2. ~~S0b~~ **closed 10-29: the five points have 0-byte raw files (DAQ FEU config failure), nothing to decode.**
 3. ~~Bright-sample mean model before or after~~ **decided: not before the pass; a second pass only with a physical
    mechanism (DECISION_2026-10-29.md, last section).**

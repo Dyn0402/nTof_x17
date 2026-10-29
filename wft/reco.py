@@ -1945,6 +1945,9 @@ def reconstruct_run(cfg, cal: CalibrationBundle, out_path: str,
         print(f'[wft] {cal.summary()}')
         print(f'[wft] hits -> seeds ...', flush=True)
     hits = _load_hits(cfg)
+    hits, ped_guard = pedestal_guard(hits, cfg)
+    if verbose and ped_guard['corrected']:
+        print(f"[wft] pedestal guard: {ped_guard['corrected']}", flush=True)
     dead = (getattr(cal, 'dead', None) or {}) if wseed.DEAD_SEED else {}
     seeds = wseed.seeds_from_hits(hits, pos_maps, feu_x, feu_y, hot=cal.hot, dead=dead)
     wanted = set(seeds)
@@ -2042,6 +2045,7 @@ def reconstruct_run(cfg, cal: CalibrationBundle, out_path: str,
                                pad_strips=pad_strips,
                                dead_seed={p: len(c) for p, c in dead.items()},
                                headon_sig=wseed.HEADON_SIG, drop_flat_hits=DROP_FLAT_HITS,
+                               pedestal_guard=ped_guard,
                                band=dict(nsig=wm.BAND_NSIG, edge=wm.BAND_EDGE, spark_events_checked=n_spark_checked,
                                          n_reseeded=int(sum(1 for r in seeds.values() if r.get('band_reseeded')))),
                                headon_rescue=dict(on=HEADON_RESCUE, z=HEADON_RESCUE_Z, qtol=HEADON_RESCUE_QTOL),
@@ -2077,6 +2081,68 @@ def reconstruct_run(cfg, cal: CalibrationBundle, out_path: str,
 #: cannot be there before its own t0.  'both' is part of the algorithm since 2026-10-27 (fleet gate: +0.0..+1.1 pt
 #: detected, rejected_cut -0.3..-0.7 pt, resolution of the existing tracks unchanged); None = the historical hit list.
 DROP_FLAT_HITS = 'both'
+
+
+#: Pedestal mismatch guard for the seeding hits (F11, rerun/precheck_ga/README.md, 2026-10-29).  OFF (0): opt-in study
+#: switch, bit-identical when off.  The analyzer's significance is amplitude / the pedestal run's noise.  Per FEU connector
+#: (64 channels): r = median over channels of median(amplitude / significance) / the noise of the run's own waveforms
+#: (wft.io.FeuReader, first data file); a connector with r < PED_MISMATCH_REL gets its significance scaled by r and the
+#: analyzer's floor HIT_SIG re-applied.  Not adopted: g_det4's FEU 6 connectors 7-8 (6-23 pedestal, unplugged) read
+#: r = 0.5, but so do the golden det7 row and the high-HV det3/det6 rows (fleet: 5 % of connectors < 0.74, 70 < 0.7;
+#: the data run's noise with HV on is above the pedestal run's), so the guard would change seeding fleet-wide; it would
+#: need the full-reco gate first.  Stated limitation: sub-threshold noise hits seed weak events there.
+PED_MISMATCH_REL = 0
+HIT_SIG = 5.0
+
+
+def pedestal_guard(hits, cfg, files_by_feu=None):
+    """(hits, report): the seeding hits with the PED_MISMATCH_REL correction applied (see above).
+    report = {feu: {connector: r}} for every corrected connector, plus the ratios of all connectors under 'ratios'."""
+    from . import io as wio
+    report = {'rel': PED_MISMATCH_REL, 'hit_sig': HIT_SIG, 'corrected': {}, 'ratios': {}}
+    if not PED_MISMATCH_REL or hits is None or not len(hits):
+        return hits, report
+    if files_by_feu is None:
+        files_by_feu = {feu: wio.subrun_files(cfg.BASE_PATH, cfg.RUN, cfg.SUB_RUN, feu)
+                        for feu in (cfg.MX17_FEU_X, cfg.MX17_FEU_Y)}
+    keep = np.ones(len(hits), dtype=bool)
+    sig = hits['significance'].to_numpy(dtype=float).copy()
+    feu_a, ch_a = hits['feu'].to_numpy(), hits['channel'].to_numpy().astype(int)
+    amp = hits['amplitude'].to_numpy(dtype=float)
+    for feu, files in files_by_feu.items():
+        if not files:
+            continue
+        noise = wio.FeuReader(sorted(files)[0]).noise
+        on = (feu_a == feu) & (sig > 0) & (amp > 0)
+        if not on.any():
+            continue
+        ch, q = ch_a[on], amp[on] / sig[on]
+        ped_noise = np.full(512, np.nan)
+        cnt = np.bincount(ch, minlength=512)
+        order = np.argsort(ch, kind='stable')
+        starts = np.r_[0, np.cumsum(cnt)[:-1]]
+        qs = q[order]
+        for c in np.flatnonzero(cnt >= 20):
+            ped_noise[c] = np.median(qs[starts[c]:starts[c] + cnt[c]])
+        rat = {}
+        for k in range(8):
+            cs = np.arange(64 * k, 64 * k + 64)
+            v = ped_noise[cs] / np.where(noise[cs] > 0, noise[cs], np.nan)
+            v = v[np.isfinite(v)]
+            if len(v) >= 16:
+                rat[k + 1] = float(np.median(v))
+        report['ratios'][int(feu)] = {k: round(r, 3) for k, r in rat.items()}
+        for k, r in rat.items():
+            if r < PED_MISMATCH_REL:
+                m = (feu_a == feu) & (ch_a >= 64 * (k - 1)) & (ch_a < 64 * k)
+                sig[m] *= r
+                keep &= ~(m & (sig < HIT_SIG))
+                report['corrected'].setdefault(int(feu), {})[k] = dict(r=round(r, 3), n_removed=int((m & (sig < HIT_SIG)).sum()))
+    if not report['corrected']:
+        return hits, report
+    out = hits.copy()
+    out['significance'] = sig
+    return out[keep], report
 
 
 def _load_hits(cfg):

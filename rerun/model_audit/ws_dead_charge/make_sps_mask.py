@@ -44,4 +44,10 @@ for p in 'xy':
     print(p, 'SPS mask', len(sset), 'bench remapped', len(bset), f'(in beam {len(bset & jd)})', 'agree', len(bset & sset),
           'sps-only', sorted(round(float(POSITION_MM[x]), 2) for x in sset - bset),
           'bench-only in beam', sorted(round(float(POSITION_MM[x]), 2) for x in (bset & jd) - sset))
+# oscillating channels (not charge: censored like dead), measured separately -- F8 2026-10-29, see 'oscillating' in the json
+OSCILLATING = {'y': [372]}
+for p, chs in OSCILLATING.items():
+    for k in ('dead', 'dead_stripes'):
+        out[p][k] = sorted(set(out[p][k]) | set(chs))
+    out[p]['oscillating'] = dict(channels=chs, source='F8 2026-10-29: run_71 per-event rms 4x the Y-view median; RAW_RUN71_REANALYSIS_2026-08-04.md')
 json.dump(out, open(os.path.join(REPO, 'rerun', 'channel_layer', 'det4_sps_h4.json'), 'w'), indent=1)

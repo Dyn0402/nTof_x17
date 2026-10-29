@@ -247,12 +247,14 @@
  },
  "y": {
   "dead": [
+   372,
    510
   ],
   "dead_pos_mm": [
    250.38
   ],
   "dead_stripes": [
+   372,
    510
   ],
   "judged_any": [
@@ -412,7 +414,13 @@
   "bench_remapped_in_beam": [
    445
   ],
-  "agree": []
+  "agree": [],
+  "oscillating": {
+   "channels": [
+    372
+   ],
+   "source": "F8 2026-10-29: run_71 fa80c06 decode, two acquisitions: median per-event rms 1311-1372 ADC vs Y-view median 312-332 (4x); the 08-04 reanalysis (sps_beam_test_26/analysis/RAW_RUN71_REANALYSIS_2026-08-04.md) saw +-400-900 ADC quasi-periodic swings with quiet neighbours. Censored like 510 (not charge)."
+  }
  },
  "bench_remapped": {
   "dead": {

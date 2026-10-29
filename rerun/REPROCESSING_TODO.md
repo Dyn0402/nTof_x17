@@ -30,7 +30,7 @@ Status key: [x] done · [ ] open · [~] partly / in progress
 > `history/LESSONS.md` "found today") are listed there. Done this session: SPS bench bow/v_map/w0 dropped, SPS 15°
 > mount tangent, stale ZS_CENSOR texts, CLAUDE.md / RECONSTRUCTION_BASIS / RERUN_PLAN §11 wording.
 1. [x] **GD det4 row**: scored 10-29 — verdict unchanged (no veto: +0.40 pt detected, +1.67 pt wrong fits; 50 stays).
-2. [ ] **Double-check the 14 GA bad channels** (`model_audit/followups/fe_unify2/masks/bench_det{3,4}.json`, key
+2. [x] **Double-check the 14 GA bad channels** (10-29: 8 dropped, 6 kept, `precheck_ga/README.md`) (`model_audit/followups/fe_unify2/masks/bench_det{3,4}.json`, key
        `ga_added`): det4 X weak 94 125 196 376 400 435 439 455 472 498 → dead, det4 X 274 hot (beside the chamber-side
        dead run 271–273: short partner?), det3 X 62 hot, det3 Y 41 / 510 → dead. Flank test on the hits + a waveform
        display each; drop any that fail.
@@ -76,7 +76,7 @@ Status key: [x] done · [ ] open · [~] partly / in progress
        (E2), saturated/bright planes and δ-ray planes. **10-29 evening: closed, simple model locked (§A, §D).**
 8. [ ] **E4 SPS phase** (was B3): one node per `sps_registry.csv` row with the new det4 bundle (bench bow/v_map/w0/t0
        dropped — done 10-28 in sps_reco), `quality_flags`/timestamp in `sps_reco`, K fallback +5 → +15.
-9. [ ] **Pre-flight checks** (PASS_PLAN F7–F12): the 14 GA channels (item 2); H4 ch 372 oscillation → `det4_sps_h4.json`;
+9. [x] **Pre-flight checks** (PASS_PLAN F7–F12; all closed 10-29, `precheck_ga/README.md`: F8 ch 372 masked, F9 two groups → golden bundle/skeptical, F10 ok, F11 limitation + guard off, S0b no data): the 14 GA channels (item 2); H4 ch 372 oscillation → `det4_sps_h4.json`;
        the 10 rows without gas-time entries (det2 6-17 ×8, det3 6-23 short, det3 6-26 quick); det4 6-23 rows' M3
        clean fraction (skeptical if < ~40 %); g_det4 seeding on FEU 6 conn 7–8; optional S0b: decode + M3 + hits of
        the never-decoded det6/det7 6-26 points 455/460/470/475/490 V (raw in EOS `june_tests/`).
