@@ -38,8 +38,14 @@ ARMS = {
     # r2: the clipped samples carry no bound (a clipped delta blob no longer forces charge onto the track model)
     'clipfree': f'{R},model.SAT_CLIP_FREE=true',
     'clipfree_ub': f'{R},model.SAT_CLIP_FREE=true,model.SAT_FLOOR=1',
+    # r3: Huber loss on the live samples, C in noise sigma (a blob / mis-modelled bright sample pulls linearly)
+    'rob10': 'model.ROBUST_C=10',
+    'rob25': 'model.ROBUST_C=25',
+    'rob50': 'model.ROBUST_C=50',
+    'railub_rob25': f'{R},model.SAT_FLOOR=1,model.ROBUST_C=25',
 }
-ROUNDS = {'r1': [a for a in ARMS if not a.startswith('clipfree')], 'r2': ['clipfree', 'clipfree_ub']}
+ROUNDS = {'r1': [a for a in ARMS if not a.startswith(('clipfree', 'rob', 'railub_rob'))], 'r2': ['clipfree', 'clipfree_ub'],
+          'r3': ['rob10', 'rob25', 'rob50', 'railub_rob25']}
 SH = '''#!/bin/bash
 # run_sat.sh <code_dir> <WFT_DIAG or none> <heldout_arm.py args...>
 CODE=$1; shift; DIAG=$1; shift

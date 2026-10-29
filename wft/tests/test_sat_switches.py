@@ -8,7 +8,7 @@ from scipy.optimize import nnls
 from wft import model as wm
 
 NAMES = ('SAT_RAIL', 'SAT_MARGIN', 'SAT_FLOOR', 'SAT_TAIL', 'SAT_TAIL_SKIP', 'SAT_TAIL_MINLEN', 'SAT_STRIP', 'SAT_CLIP_FREE',
-         'SIG_VAR_K', 'MODEL_FRAC', 'GAIN', 'DEAD', 'HOT', 'NSAMP', 'SAT', 'BAND_NSIG', 'SAT_SOLVE', 'COL_GUARD')
+         'SIG_VAR_K', 'ROBUST_C', 'MODEL_FRAC', 'GAIN', 'DEAD', 'HOT', 'NSAMP', 'SAT', 'BAND_NSIG', 'SAT_SOLVE', 'COL_GUARD')
 
 
 @contextlib.contextmanager
@@ -149,3 +149,22 @@ def test_clip_free():
     with switches(NSAMP=10, SAT_RAIL=True, SAT_CLIP_FREE=True, SAT_FLOOR=1):
         sat = wm.prep_plane(P, 'x')[3]
     assert np.array_equal(sat.free, raw >= 4095) and np.array_equal(sat.ub, raw <= 0)
+
+
+def test_robust_huber():
+    rng = np.random.default_rng(11)
+    n, ns, k = 4, 8, 2
+    M = rng.uniform(0.5, 1.0, (n * ns, k))
+    qt = np.array([300.0, 100.0])
+    W = (M @ qt).reshape(n, ns) + rng.normal(0, 1, (n, ns))
+    W[2, 3] += 500.0                                             # one outlier ("delta blob" sample)
+    noise = np.ones(n); sat = np.zeros(W.shape, bool)
+    with switches(NSAMP=ns, COL_GUARD=0.0):
+        c0, q0 = wm._solve_nnls(M, W, noise, sat)
+    with switches(NSAMP=ns, COL_GUARD=0.0, ROBUST_C=3.0):
+        c1, q1 = wm._solve_nnls(M, W, noise, sat)
+    assert np.abs(q1 - qt).sum() < np.abs(q0 - qt).sum()          # the outlier pulls the Huber fit less
+    assert c1 < c0
+    with switches(NSAMP=ns, COL_GUARD=0.0, ROBUST_C=0.0):
+        c2, q2 = wm._solve_nnls(M, W, noise, sat)
+    assert c2 == c0 and np.array_equal(q2, q0)

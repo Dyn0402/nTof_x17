@@ -153,6 +153,12 @@ SAT_CLIP_FREE = False
 #: amplitude (ws_floor "Estimator notes": the right form on the toy, K = 0.19 x ADC per electron = 11.5 ADC on det3;
 #: MODEL_FRAC's variance ~ W^2 was the wrong form).  The data stand in for the prediction (one pass).  0 = off.
 SIG_VAR_K = 0.0
+#: Huber loss on the live samples (opt-in study switch, 2026-10-29): residuals beyond ROBUST_C sigma count linearly,
+#: not quadratically -- a delta blob or a mis-modelled bright sample can no longer pull the track by the square of
+#: its residual.  IRLS (ROBUST_ITERS re-weighted NNLS passes) inside the charge solve; the LM Jacobian uses the
+#: IRLS-scaled rows.  The returned "chi2" is the Huber loss.  0 = off (least squares).
+ROBUST_C = 0.0
+ROBUST_ITERS = 3
 #: Unobservable depth columns (opt-in, 2026-10-23; sept26_prelim_analysis/qsum_runaway.py, OCTOBER O10).  A depth bin
 #: whose response lies past the end of the window (time-censored) or off the strip window (space-censored) has a
 #: column of ~1e-6..1e-17 in the weighted design matrix, and the unregularised NNLS can put unbounded charge on it
@@ -767,6 +773,30 @@ def chi2_plane(plane, W, noise, pos, sat, p0, w, t0, hyper, censor=True,
     return chi, q
 
 
+def _huber_mult(r):
+    """IRLS row multipliers of the Huber loss at ROBUST_C (residuals in units of their sigma)."""
+    a = np.abs(r)
+    return np.where(a > ROBUST_C, np.sqrt(ROBUST_C / np.maximum(a, 1e-300)), 1.0)
+
+
+def _robust_solve(Ar, yr, rob, q, live, k):
+    """ROBUST_ITERS IRLS passes of the Huber loss on the rows ``rob`` (the bound rows of the SAT_SOLVE active set stay
+    quadratic); returns (q, sum of the Huber loss over the ``rob`` rows)."""
+    for _ in range(ROBUST_ITERS):
+        mlt = np.ones(len(yr))
+        mlt[rob] = _huber_mult((Ar @ q - yr)[rob])
+        try:
+            if live is None:
+                q, _rn = nnls(Ar * mlt[:, None], yr * mlt, maxiter=50 * k)
+            else:
+                q = np.zeros(k)
+                q[live], _rn = nnls((Ar * mlt[:, None])[:, live], yr * mlt, maxiter=50 * k)
+        except Exception:
+            return None, np.inf
+    a = np.abs((Ar @ q - yr)[rob])
+    return q, float(np.where(a <= ROBUST_C, a * a, 2.0 * ROBUST_C * a - ROBUST_C ** 2).sum())
+
+
 def _solve_nnls(M, W, noise, sat, censor=True):
     """(chi2, q) for a design matrix of any width: the charge profile solved by
     NNLS with the per-strip noise weighting, saturated samples censored.
@@ -833,6 +863,15 @@ def _solve_nnls(M, W, noise, sat, censor=True):
         # chi2 over the unclipped samples only; the bound's residual enters through the penalty below
         r = Af[ok] @ q - yf[ok]
         chi = float(r @ r)
+        if ROBUST_C > 0:
+            use = ok | act
+            q, chi = _robust_solve(Af[use], yf[use], ok[use], q, live, M.shape[1])
+            if q is None:
+                return np.inf, None
+    elif ROBUST_C > 0:
+        q, chi = _robust_solve(A, y, np.ones(len(y), bool), q, live, M.shape[1])
+        if q is None:
+            return np.inf, None
     if censor and sat.any():
         model = (M @ q).reshape(W.shape)
         lb1, ub1 = _bounds(sat)
@@ -1224,6 +1263,13 @@ def _vp_resid_jac(plane, W, noise, pos, sat, th, q, M, hyper, censor, t0_prior):
     dmq = _dmq(plane, pos, th, hyper, q)
     rows_r, rows_J = [((m - y) * Wt)[ok]], [(dmq * Wt[:, None])[ok]]
     A = [(M * Wt[:, None])[ok]]
+    if ROBUST_C > 0:
+        # IRLS form of the Huber loss: rows scaled by sqrt(w) at the current residual (direction only; LM judges
+        # every trial point by the exact loss of _solve_nnls)
+        mlt = _huber_mult(rows_r[0])
+        rows_r[0] = rows_r[0] * mlt
+        rows_J[0] = rows_J[0] * mlt[:, None]
+        A[0] = A[0] * mlt[:, None]
     if censor and sat.any():
         s1 = sat.reshape(-1)
         nz = np.repeat(noise, NSAMP)
