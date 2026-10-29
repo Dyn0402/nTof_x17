@@ -1,5 +1,18 @@
 # Handoff
 
+## Session 2026-10-29 (laptop): calibration basis, bow, saturation, error model — read first
+
+**Record:** `rerun/calib/SESSION_2026-10-29.md` (decisions table + per-topic summary). Detail:
+`rerun/calib/templates/TEMPLATE_STUDY.md` (T15/T16), `rerun/calib/bow/BOW_TRANSFER.md`,
+`rerun/calib/saturation/{SATURATION_STUDY,ERROR_MODEL}.md`. Stock-take for the pass: `rerun/STOCKTAKE_2026-10-29.md`.
+
+**Resume:** (1) the error-model recipe (`SAT_CAP=1200, STRIP_TAU=0.05, QSOLVE_PLAIN`) is being gated by a separate
+session (full-reco gate on the five golden rows + det3's other datasets); merge its branch after review. (2) Then the
+pass build per the stock-take: E1, E3 (with BOW2 + the bow transfer gate + the reco recipe), E4, pre-flight, dry run.
+
+**Gotchas:** AFS token can expire mid-session: `ssh lxplus 'aklog; …'`. Score class subsets with the all-events angle
+scale (`clean_check.py`). Remote brace globs in `scp 'lxplus:…/{a,b}'` do not expand: loop.
+
 ## Calibration basis study (templates, D_rc,y, σ0, model shape) — updated 2026-10-29 late morning (dylan-Yoga)
 
 **Resume:** read "Update 2026-10-29 late morning (T15)" at the top of `rerun/calib/templates/TEMPLATE_STUDY.md`; no new
