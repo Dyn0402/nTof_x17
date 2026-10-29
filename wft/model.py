@@ -48,6 +48,22 @@ regression-tested against the R&D code (``tests/test_model_regression.py``).
 Calibration is module-global state, set once per process by
 ``use_calibration()``; worker processes set it in their initializer.
 
+KNOWN SIMPLIFICATIONS OF THE LOCKED MODEL (Dylan, 2026-10-29;
+``rerun/calib/saturation/DECISION_2026-10-29.md`` has the numbers). The pass
+runs with: noise-only chi2 weights although a bright pulse scatters ~6 % of
+its peak around any mean model (the brightest samples are over-trusted; s68
+rises with amplitude; absolute chi2 is not a cut, the quality flag is
+relative); one static Gaussian footprint that under-fills the centre strip
+5-11 % and over-fills +-1 (symmetric about the track, so chi2 and charge,
+not the angle); clipped samples by the fixed 3550 rule, not the per-sample
+ADC rail; the post-clip floor fitted as data; saturated planes 0.2-0.3 deg
+worse with a ten-fold far fraction; the width-tilt trade (steep tracks
+read shallow, kw absorbs the linear part). The ``SAT_*``, ``SIG_VAR_K``,
+``ROBUST_C``, ``ERR_*``, ``STRIP_TAU``, ``QSOLVE_*`` switches below are the
+study record of the alternatives; all off = bit-identical, none is part of
+the algorithm, and the cap family was refused by the full-reconstruction
+gate (det6/det7 efficiency).
+
 Two channel wildcards ride the same bundle (``prep_plane``): ``DEAD``
 channels are censored samples (no signal in either direction, dropped from
 the chi2 like a saturated one); ``HOT`` channels DO carry signal (coherent or
@@ -148,6 +164,8 @@ SAT_TAIL_SKIP = 0
 SAT_TAIL_MINLEN = 1
 SAT_STRIP = False
 SAT_CLIP_FREE = False
+#: DECIDED AGAINST (Dylan, 2026-10-29, DECISION_2026-10-29.md): SAT_CAP and the ERR_* / STRIP_TAU / QSOLVE_* family
+#: below are study switches only; the pass runs with all of them off.
 #: Censor the bright samples (opt-in study switch, 2026-10-29): every sample at or above SAT_CAP [ADC, before the gain
 #: correction] is censored as a lower bound at SAT_CAP (model >= SAT_CAP there), as if the ADC clipped at SAT_CAP.
 #: The samples where the template is most wrong (the pulse peak, T9) then only say "at least this much".  The

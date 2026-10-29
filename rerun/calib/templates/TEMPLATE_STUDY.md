@@ -6,6 +6,10 @@ should use. Scripts, results and figures are in this directory. Run them with `.
 
 ## Update 2026-10-29 late morning (T15) — read this first
 
+> **Footprint/shape closed (Dylan, 2026-10-29 evening):** no shape term, no per-event width, no cap; the centre-strip
+> under-fill (T9) and the saturated-plane excess are carried as known simplifications of the locked model:
+> `../saturation/DECISION_2026-10-29.md` (K1, K2, K8, K9).
+
 Dylan's calls: **δ dropped** (t0 = C − 10·ftst); det6 Y kept under watch. T15 (lxplus condor, 76 nodes, 1320 held-out
 events each) tested one extra parameter per chamber and view, and separate X/Y templates:
 - **Separate Y template: worse on all five chambers** at every D_rc,y (+0.01…+0.35°). The measured Y pulse already

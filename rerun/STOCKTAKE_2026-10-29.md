@@ -13,7 +13,11 @@ The pass = recalibrate every chamber from nothing in a DAG (`PASS_PLAN_2026-10-2
   positions through `wft.compat.mesh_position` (p0 − tan·h_view). Validated on every dataset of every chamber.
 - **Selection/QA:** χ²/dof flag 5 × median; x–y pairing by charge + column time per event class; no gain map.
 
-## 2 · The error-model recipe: gated and NOT adopted (2026-10-30)
+## 2 · The error-model recipe: gated and NOT adopted; the simple model LOCKED (Dylan, 2026-10-29 evening)
+**Decision:** no cap, no per-event width, no shape term, no variance model, no rails. Cost ≤ 0.05° on det3, nothing
+in charge or efficiency; nine known simplifications carried as stated limitations:
+`calib/saturation/DECISION_2026-10-29.md`. §7 items 1 and 3 are closed by it (rails off; mean model after the pass,
+if ever, with a physical mechanism). The gate record that led to it:
 The full-reconstruction gate (8000 events × five golden rows) and det3's other datasets failed it
 (`calib/saturation/ERROR_MODEL.md`, Decision):
 - **The cap costs efficiency on det6 (−0.7…−0.8 pt) and det7 (−1.4…−1.6 pt).** With every bright sample only a lower
@@ -63,7 +67,7 @@ post-gate fixes) → S1b `vrefit --keep-v` (117 rows, ~2 h) → S2+S3 `pass` + `
 - Downstream after the pass: v(t) per time block, SPS gas fit, loss budget, re-quoted resolutions, figures.
 
 ## 7 · Decisions for Dylan
-1. Per-sample rails (`SAT_RAIL`) as a correctness fix in the pass (neutral on det3, helps det6 charge pairing)?
-   And whether to try the "uncapped solution, capped refinement" form of the cap before the pass.
-2. S0b: decode the five never-decoded det6/det7 HV points before the pass, or list them as excluded.
-3. Whether to attack the bright-sample mean model before the pass (delays it) or after (a second pass later).
+1. ~~Rails / cap refinement~~ **decided 10-29 evening: neither; simple model locked (§2).**
+2. S0b: decode the five never-decoded det6/det7 HV points before the pass, or list them as excluded. **Open.**
+3. ~~Bright-sample mean model before or after~~ **decided: not before the pass; a second pass only with a physical
+   mechanism (DECISION_2026-10-29.md, last section).**

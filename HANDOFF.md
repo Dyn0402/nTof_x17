@@ -2,7 +2,8 @@
 
 ## Calibration basis, bow, saturation and error model (pre-pass studies) — updated 2026-10-29 (dylan-Yoga)
 
-**Resume:** studies closed; get Dylan's 4 calls (STOCKTAKE §7), then build the pass (E1, E3, E4, F7–F11, dry run).
+**Resume:** studies closed and **the simple model locked (Dylan, 10-29 evening; `rerun/calib/saturation/DECISION_2026-10-29.md`)**;
+only S0b (STOCKTAKE §7 item 2) is still Dylan's call; build the pass (E1, E3, E4, F7–F11, dry run).
 
 **Goal:** settle every piece of the reconstruction and calibration before the from-scratch bench + SPS pass.
 
@@ -27,9 +28,10 @@
 **In progress / where it stopped:** nothing half-done; no jobs running (condor queue empty).
 
 **Next steps:**
-1. Dylan's calls (`rerun/STOCKTAKE_2026-10-29.md` §7): rails as a correctness fix; try "uncapped solution, capped
-   refinement" before the pass or not; decode the 6-26 det6/det7 HV points (S0b) or exclude; bright-sample mean
-   model before or after the pass.
+1. ~~Rails / cap refinement / mean model~~ **decided 10-29 evening: the simple model is locked** (no cap, no per-event
+   width, no shape term, no rails; cost ≤ 0.05° on det3; nine known simplifications K1–K9 carried as stated
+   limitations in `rerun/calib/saturation/DECISION_2026-10-29.md`, REPROCESSING_TODO §D, PASS_PLAN §0). Still open:
+   S0b (decode the 6-26 det6/det7 HV points or exclude).
 2. Then the pass build: see the "From-scratch pass" section below.
 
 **Gotchas / decisions:**
@@ -48,7 +50,7 @@
 
 **Resume:** algorithm settled (STOCKTAKE_2026-10-29.md); build E1 make_bundle, E3 calib DAG (+BOW2, bow gate), E4, then dry run.
 
-**10-29 additions:** no δ; DRC `--t0-pin --unsat-only`; BOW2 = `rerun/calib/bow_node.py` (done) + W0KW `--bow-json`,
+**10-29 additions:** simple model locked (no cap/width/shape/rails: `calib/saturation/DECISION_2026-10-29.md`); no δ; DRC `--t0-pin --unsat-only`; BOW2 = `rerun/calib/bow_node.py` (done) + W0KW `--bow-json`,
 positions through `wft.compat.mesh_position`, bow transfer gate after the pass reco; error-model recipe not adopted;
 GD det4 done (item 1 closed). Pre-flight F7 (14 GA channels) still blocks E1.
 

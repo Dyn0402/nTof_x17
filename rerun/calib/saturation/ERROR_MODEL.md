@@ -1,5 +1,9 @@
 # Using all the information: the error model of the waveform fit (2026-10-29 night)
 
+> **CLOSED (Dylan, 2026-10-29): the simple model is locked.** No cap, no per-event width, no variance model, no strip
+> nuisance, no rails in the pass; the "Next" list below is not pursued. The decision, the measured cost (~0.05° on
+> det3) and the list of known simplifications carried into the pass: `DECISION_2026-10-29.md`.
+
 ## Decision (2026-10-29 late): NOT adopted -- the recipe fails two gates, and so does the cap alone
 
 `wft/model.py` defaults are unchanged. Two independent failures:

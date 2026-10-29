@@ -17,6 +17,10 @@ Status key: [x] done · [ ] open · [~] partly / in progress
       calibrated row of their group (`make_registry.py`, `pass_registry.csv`: 117 own-v, 37 inherit; GC).
 - [x] Spark veto stays > 50 seeding hits (GD; 40 is the purity-side option); seed constants read at call time.
 - [x] Gain map: not used (slot 1.0; GA). M3 reference term 0.05° (GB): bench angles quoted as the chamber's own.
+- [x] **Bright samples / saturation / footprint: the simple model is locked (Dylan 10-29 evening).** Noise-only weights,
+      3550 clip rule, one static footprint; no cap, no per-event width, no shape term, no variance model, no rails.
+      Cost ≤ 0.05° on det3, nothing in charge/efficiency. Known simplifications K1–K9 → §D and
+      `calib/saturation/DECISION_2026-10-29.md`. All study switches off in the code (bit-identical).
 
 ## B. Before the pass (blocking)
 
@@ -69,7 +73,7 @@ Status key: [x] done · [ ] open · [~] partly / in progress
        never improve angles. Template time stretch helps det4 Y only (−0.12 ± 0.04° at s 0.84, χ² agrees). **Decided
        (Dylan):** a parameter goes in only if it wins on det3; none does, so none is added (det4 Y stretch recorded,
        not adopted). T16: the mean shape error is symmetric, so it cannot move angles; det3's remaining error is bow
-       (E2), saturated/bright planes and δ-ray planes.
+       (E2), saturated/bright planes and δ-ray planes. **10-29 evening: closed, simple model locked (§A, §D).**
 8. [ ] **E4 SPS phase** (was B3): one node per `sps_registry.csv` row with the new det4 bundle (bench bow/v_map/w0/t0
        dropped — done 10-28 in sps_reco), `quality_flags`/timestamp in `sps_reco`, K fallback +5 → +15.
 9. [ ] **Pre-flight checks** (PASS_PLAN F7–F12): the 14 GA channels (item 2); H4 ch 372 oscillation → `det4_sps_h4.json`;
@@ -101,6 +105,13 @@ Status key: [x] done · [ ] open · [~] partly / in progress
       inter-chamber pointing before an analysis cuts on it. Busy-plane multi-particle-like planes not refitted (GD).
 
 ## D. Stated limitations (no new data)
+- Known simplifications of the locked model (`calib/saturation/DECISION_2026-10-29.md`, K1–K9): bright samples
+  over-trusted by the noise-only weights (s68 rises with amplitude; absolute χ² is not a cut); the static footprint
+  under-fills the centre strip 5–11 % (det6 Y 24 %; χ²/charge, not angle); saturated planes 0.2–0.3° worse with a
+  ten-fold far fraction (charge results from unsaturated events only); the 3550 clip rule misses 5–46 % of clipped
+  samples on det4/6/7 (det7 X +0.08°, det6 pairing 0.82 vs 0.87); post-clip floor fitted as data; F4 compression
+  (steep tracks read shallow, kw absorbs the linear part); coherent chip events (det6/7 7–8 % of planes) not censored;
+  template 4–7 % too wide in time, Y on the X template; Y RC branch without footprint tails.
 - det4 dead stripes and det7 X (M1) tails: χ² blind, gain map cannot recover (GA, GE).
 - SPS within-plateau v not measured (GC); n_TOF B/D within-run v not measured.
 - det4 has no partner chamber: its M3 term rests on simulation (GB).

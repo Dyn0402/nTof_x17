@@ -5,6 +5,9 @@ are none. Held-out angle s68 vs M3, event-paired against the planned-pass base, 
 
 ## Verdict
 
+> **CLOSED (Dylan, 2026-10-29): the simple model is locked** (`DECISION_2026-10-29.md`): the 3550 rule, lower-bound
+> censoring, noise-only weights, no cap. The findings below stand as known simplifications K1, K3–K5, K7 of that file.
+
 > **Latest (2026-10-29 night): `ERROR_MODEL.md`** — the recipe that keeps both the angle gain and the charge, on
 > five chambers, and the toy result on why hiding amplitude helps. Then the clean-track check below.
 >
