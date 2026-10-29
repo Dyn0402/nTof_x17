@@ -12,7 +12,11 @@ What is carried over, and what it means now:
 
     mesh_position_mm  -> p0, the fitted track position at the mesh (was: the
                          earliest-hit strip, quantised to the pitch and pulled
-                         by shared charge)
+                         by shared charge).  On a bundle with a bow block the
+                         table carries the view's mesh height ``<plane>_bow_h``
+                         and the position is taken at the nominal plane,
+                         p0 - tan * h (rerun/calib/bow/BOW_TRANSFER.md: positions
+                         improve on 33/34 view-datasets); absent or NaN = p0
     slope_ns_per_mm   -> 1 / w, from the fitted transverse speed (was: the
                          amplitude-weighted strip-time ladder, compressed
                          20-30 %)
@@ -39,6 +43,16 @@ if _CBA not in sys.path:
 import cosmic_micro_tpc_analysis as cm       # noqa: E402
 
 
+def mesh_position(row, plane):
+    """The track position at the nominal mesh plane: p0, or p0 - tan * h with the chamber bow's mesh height h of this
+    view when the row carries one (``<plane>_bow_h``, wft.reco.apply_bow)."""
+    p0 = float(row[f'{plane}_p0'])
+    h, t = row.get(f'{plane}_bow_h'), row.get(f'{plane}_tan_theta')
+    if h is not None and t is not None and np.isfinite(h) and np.isfinite(t):
+        return p0 - float(t) * float(h)
+    return p0
+
+
 def _strip_fit(row, plane, require_slope=False):
     if not row[f'{plane}_ok']:
         return None
@@ -46,11 +60,12 @@ def _strip_fit(row, plane, require_slope=False):
     if require_slope and not row[f'{plane}_slope_reliable']:
         return None
     slope = 1.0 / w if np.isfinite(w) and abs(w) > 1e-9 else np.nan
+    p0 = mesh_position(row, plane)
     dur = row[f'{plane}_q_uend']
     t0 = row[f'{plane}_t0']
     return cm.StripFitResult(
         slope_ns_per_mm=float(slope),
-        mesh_position_mm=float(row[f'{plane}_p0']),
+        mesh_position_mm=float(p0),
         earliest_time_ns=float(t0),
         latest_time_ns=float(t0 + (dur if np.isfinite(dur) else 0.0)),
         n_strips=int(row[f'{plane}_n_strips']),

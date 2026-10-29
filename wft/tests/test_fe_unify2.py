@@ -223,3 +223,12 @@ def test_bow_tan_form_transfers_across_v(cal):
         wr.apply_bow(cal, fx, fy)
         assert fx.tan_theta == pytest.approx(tx, abs=1e-9) and fy.tan_theta == pytest.approx(ty, abs=1e-9)
     cal.bow = {}
+
+
+def test_compat_position_at_nominal_plane():
+    """compat takes the position at the nominal plane, p0 - tan * h_view, when the row carries the bow height."""
+    from wft import compat
+    row = dict(x_p0=100.0, x_tan_theta=0.3, x_bow_h=-1.5, y_p0=50.0, y_tan_theta=-0.2, y_bow_h=np.nan)
+    assert compat.mesh_position(row, 'x') == pytest.approx(100.45)
+    assert compat.mesh_position(row, 'y') == 50.0                      # NaN height: p0
+    assert compat.mesh_position(dict(x_p0=7.0, x_tan_theta=0.1), 'x') == 7.0   # old tables: p0
