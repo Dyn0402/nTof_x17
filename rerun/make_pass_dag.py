@@ -60,7 +60,7 @@ def node(L, name, sub, args, cpus, mem, code, parents=()):
             args = re.sub(r' --limit \d+', '', args) + EXTRA['limit']
     L.append(f'JOB {name} {sub}')
     L.append(f'VARS {name} code="{code}" args="{args}" cpus="{cpus}" mem="{mem}" node="{name}"')
-    L.append(f'RETRY {name} 1')
+    L.append(f'RETRY {name} 3')            # transient EOS FUSE timeouts on workers (dry run 10-29: status 126)
     for p in parents:
         L.append(f'PARENT {p} CHILD {name}')
 
