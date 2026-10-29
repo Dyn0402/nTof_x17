@@ -13,13 +13,20 @@ The pass = recalibrate every chamber from nothing in a DAG (`PASS_PLAN_2026-10-2
   positions through `wft.compat.mesh_position` (p0 − tan·h_view). Validated on every dataset of every chamber.
 - **Selection/QA:** χ²/dof flag 5 × median; x–y pairing by charge + column time per event class; no gain map.
 
-## 2 · The algorithm: one change pending its gate
-**Error model / saturation recipe** (`SAT_CAP=1200, STRIP_TAU=0.05, QSOLVE_PLAIN`, + `SAT_RAIL` if the rails can be
-carried): improves or is neutral on all five chambers in the plane-fit harness, charge preserved
-(`calib/saturation/ERROR_MODEL.md`). A separate session is running the full-reconstruction gate on the five golden
-rows and det3's other datasets, and will prepare the "make it default" commit only if both pass. **This is the last
-algorithm decision before the pass.** If it passes, it goes in before the code archive; the calibration (D_rc,y, w0/kw)
-must then be made with it, which the from-scratch DAG does anyway.
+## 2 · The error-model recipe: gated and NOT adopted (2026-10-30)
+The full-reconstruction gate (8000 events × five golden rows) and det3's other datasets failed it
+(`calib/saturation/ERROR_MODEL.md`, Decision):
+- **The cap costs efficiency on det6 (−0.7…−0.8 pt) and det7 (−1.4…−1.6 pt).** With every bright sample only a lower
+  bound, a heavily clipped near-vertical column fits as well as a steep line, and the fit runs away (det6: 85 planes
+  from |tan| < 0.6 to > 1). The held-out harness could not see it (windows follow M3, t0 pinned). Two-track splits
+  fall, far +0.1…+0.5 pt everywhere (the relative χ² flag then passes them).
+- **The strip nuisance changes sign with drift field on det3** (500 V: +0.20° alone, recipe +0.08°).
+- The cap alone wins on all 14 held-out datasets, so the angle gain is real; the next form to try keeps the uncapped
+  fit's solution and lets the cap only refine it (cannot run away). Not tested.
+- **Per-sample rails** are now carried by `wft.io` (opt-in, bit-identical when off). In full reco they are efficiency-
+  and angle-neutral and tighten det6 x-y charge pairing (power 0.816 → 0.865). Neutral on det3 → a correctness fix,
+  Dylan's call.
+So the pass runs with the current treatment unless one of these is decided before the archive.
 
 ## 3 · Engineering still to build (blocking, ~4–5 h + dry run)
 | # | item | state |
@@ -56,6 +63,7 @@ post-gate fixes) → S1b `vrefit --keep-v` (117 rows, ~2 h) → S2+S3 `pass` + `
 - Downstream after the pass: v(t) per time block, SPS gas fit, loss budget, re-quoted resolutions, figures.
 
 ## 7 · Decisions for Dylan
-1. The error-model recipe: adopt if the gate passes (the session prepares it as one separate commit).
+1. Per-sample rails (`SAT_RAIL`) as a correctness fix in the pass (neutral on det3, helps det6 charge pairing)?
+   And whether to try the "uncapped solution, capped refinement" form of the cap before the pass.
 2. S0b: decode the five never-decoded det6/det7 HV points before the pass, or list them as excluded.
 3. Whether to attack the bright-sample mean model before the pass (delays it) or after (a second pass later).

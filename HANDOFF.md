@@ -6,9 +6,9 @@
 `rerun/calib/templates/TEMPLATE_STUDY.md` (T15/T16), `rerun/calib/bow/BOW_TRANSFER.md`,
 `rerun/calib/saturation/{SATURATION_STUDY,ERROR_MODEL}.md`. Stock-take for the pass: `rerun/STOCKTAKE_2026-10-29.md`.
 
-**Resume:** (1) the error-model recipe (`SAT_CAP=1200, STRIP_TAU=0.05, QSOLVE_PLAIN`) is being gated by a separate
-session (full-reco gate on the five golden rows + det3's other datasets); merge its branch after review. (2) Then the
-pass build per the stock-take: E1, E3 (with BOW2 + the bow transfer gate + the reco recipe), E4, pre-flight, dry run.
+**Resume:** the error-model recipe was gated and NOT adopted (merged `80f7db86`; `ERROR_MODEL.md` Decision). Open
+calls for Dylan: per-sample rails as a correctness fix; try the "uncapped solution, capped refinement" cap. Then the
+pass build per `rerun/STOCKTAKE_2026-10-29.md`: E1, E3 (BOW2 + bow transfer gate), E4, pre-flight F7–F11, dry run.
 
 **Gotchas:** AFS token can expire mid-session: `ssh lxplus 'aklog; …'`. Score class subsets with the all-events angle
 scale (`clean_check.py`). Remote brace globs in `scp 'lxplus:…/{a,b}'` do not expand: loop.
