@@ -182,6 +182,9 @@ ERR_PASSES = 2
 #: charge profile q at the fitted geometry with the plain treatment (no cap, noise-only weights, no strip scale), so the
 #: geometry comes from the robust fit and the charge (x-y pairing, dE/dx) from every sample.  chi2 stays the fit's.
 QSOLVE_PLAIN = False
+#: ... and with a fractional model-error term in that charge solve, sigma^2 = noise^2 + (QSOLVE_F * m)^2 (m = the fit's
+#: prediction): 0.02 tightens the x-y charge agreement by ~27 % on det3 (ERROR_MODEL.md).  0 = noise only.
+QSOLVE_F = 0.0
 _SIG = None          # per-sample sigma of the current pass (set by fit_plane_raw only)
 _SSCALE = None       # per-strip amplitude scale of the current pass (set by fit_plane_raw only)
 #: Unobservable depth columns (opt-in, 2026-10-23; sept26_prelim_analysis/qsum_runaway.py, OCTOBER O10).  A depth bin
@@ -1508,17 +1511,22 @@ def fit_plane_raw(P, plane, p0_init, w_init, t0_init, hyper=None, fix_p0w=None,
 
 def _plain_charge(r, P, plane, hyper, t0_prior):
     """QSOLVE_PLAIN: q re-solved at r's geometry with the plain (production) treatment; r unchanged otherwise."""
-    global SAT_CAP
+    global SAT_CAP, _SIG
     if not QSOLVE_PLAIN or r is None or r.get('q') is None or not (SAT_CAP > 0 or ERR_K > 0 or ERR_F > 0 or STRIP_TAU > 0):
         return r
     cap = SAT_CAP
     try:
         SAT_CAP = 0.0
         W, noise, pos, sat = prep_plane(P, plane)
+        if QSOLVE_F > 0:
+            m = model_waveforms(plane, pos, r['p0'], r['w'], r['t0'], r['q'], hyper or HYPER)
+            if r.get('strip_scale') is not None:
+                m = m * np.asarray(r['strip_scale'])[:, None]
+            _SIG = np.sqrt(noise[:, None] ** 2 + (QSOLVE_F * m) ** 2)
         _c, q = chi2_plane(plane, W, noise, pos, sat, r['p0'], r['w'], r['t0'], hyper or HYPER, snap_t0=False,
                            t0_prior=t0_prior)
     finally:
-        SAT_CAP = cap
+        SAT_CAP, _SIG = cap, None
     if q is not None:
         r = dict(r, q=q, q_fit=r['q'])
     return r
