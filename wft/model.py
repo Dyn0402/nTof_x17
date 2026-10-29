@@ -126,17 +126,21 @@ SAT_SOLVE = True
 #:                W >= SAT.  The 3550 rule misses 5-46 % of clipped samples (the CM pulls them under 3550; fitted as data
 #:                at a value below the truth) and censors real samples in [3550, rail).
 #:   SAT_MARGIN   ADC below the rail that also counts as clipped (lower bound): soft compression before the hard clip.
-#:   SAT_FLOOR    samples at the ADC floor (W <= rail_lo + 0.5) are censored.  A long clip ends in a fast fall to raw 0
-#:                that holds for the rest of the window (CSA saturation / baseline recovery), far below anything the
-#:                linear template (undershoot ~2 % of the peak) can make: relative to the LINEAR model the true value
-#:                is at least the observed one, so the lower-bound semantics of ``sat`` is the right one.
+#:   SAT_FLOOR    samples at the ADC floor (W <= rail_lo + 0.5, raw 0).  The fit's own model undershoots there by more
+#:                than the floor allows (det3 base fit: model ~-450, floor ~-290 ADC, median over clipped strips): the
+#:                floor is the ADC clipping a real undershoot, so the true value is AT MOST the observed one.
+#:                1 = upper bound (model <= W: censored, penalised one-sidedly when the model rises above it, and in the
+#:                SAT_SOLVE active set); 2 = free (censored, no bound).  0 = off (fitted as data).
 #:   SAT_TAIL     on a strip with a clipped sample, every sample later than SAT_TAIL_SKIP samples after its last clipped
-#:                sample is censored (the non-linear recovery), for plateaus of at least SAT_TAIL_MINLEN samples.
-#:   SAT_STRIP    every sample of a strip with a clipped sample is censored (its rising edge too).
-#: (These ride the same ``sat`` mask: censored, out of the NNLS, one-sided bound model >= W.)
+#:                sample is censored with no bound (the recovery after the clip), for plateaus of at least
+#:                SAT_TAIL_MINLEN samples.  Floor samples in the tail keep the SAT_FLOOR bound.
+#:   SAT_STRIP    every sample of a strip with a clipped sample is censored: the clipped ones as lower bounds, the rest free.
+#: Clipped samples are lower bounds (model >= W) as before.  Upper-bound and free samples ride the ``sat`` mask as the
+#: attributes ``ub`` / ``free`` of a :class:`Censor` (a bool ndarray); a plain bool mask = every censored sample a lower
+#: bound, so nothing changes unless one of these switches makes a Censor.
 SAT_RAIL = False
 SAT_MARGIN = 0.0
-SAT_FLOOR = False
+SAT_FLOOR = 0
 SAT_TAIL = False
 SAT_TAIL_SKIP = 0
 SAT_TAIL_MINLEN = 1
@@ -623,6 +627,28 @@ def _get(P, key):
     return None if v is None else np.asarray(v, dtype=np.float64)
 
 
+class Censor(np.ndarray):
+    """The censor mask (bool, like any ``sat``) with two optional same-shape subsets: ``ub`` = censored samples that are
+    UPPER bounds (model <= W), ``free`` = censored samples with no bound.  The rest of the censored samples are lower
+    bounds (model >= W), the historical meaning.  Only :func:`_bounds` reads the subsets, from the 2-D mask itself."""
+
+    def __array_finalize__(self, obj):
+        self.ub = getattr(obj, 'ub', None)
+        self.free = getattr(obj, 'free', None)
+
+
+def _bounds(sat):
+    """(lower, upper) bound masks of a censor mask, flat; upper is None when there is none."""
+    s1 = sat.reshape(-1)
+    ub, fr = getattr(sat, 'ub', None), getattr(sat, 'free', None)
+    if ub is None and fr is None:
+        return np.asarray(s1, bool), None
+    ub = np.zeros(s1.shape, bool) if ub is None or ub.shape != sat.shape else np.asarray(ub, bool).reshape(-1)
+    fr = np.zeros(s1.shape, bool) if fr is None or fr.shape != sat.shape else np.asarray(fr, bool).reshape(-1)
+    s1 = np.asarray(s1, bool)
+    return s1 & ~ub & ~fr, (s1 & ub & ~fr) if ub.any() else None
+
+
 def _sat_mask(P, sat0):
     """The censor mask of the saturation study switches (SAT_RAIL ... SAT_STRIP), before dead/band/missing rows.
     ``sat0`` = the W >= SAT mask (used as the clip mask when the window carries no rails)."""
@@ -633,17 +659,24 @@ def _sat_mask(P, sat0):
         clip = W >= hi - 0.5 - SAT_MARGIN
     elif SAT_MARGIN > 0 and hi is None:
         clip = W >= SAT - SAT_MARGIN
-    sat = clip.copy()
-    if SAT_FLOOR and lo is not None and lo.shape == W.shape:
-        sat |= W <= lo + 0.5
+    free = np.zeros(W.shape, bool)
     rows = clip.any(axis=1)
     if (SAT_TAIL or SAT_STRIP) and rows.any():
         for i in np.flatnonzero(rows):
             k = np.flatnonzero(clip[i])
             if SAT_STRIP:
-                sat[i] = True
+                free[i] = True
             elif k[-1] - k[0] + 1 >= SAT_TAIL_MINLEN:
-                sat[i, k[-1] + 1 + SAT_TAIL_SKIP:] = True
+                free[i, k[-1] + 1 + SAT_TAIL_SKIP:] = True
+    free &= ~clip
+    floor = (W <= lo + 0.5) if (SAT_FLOOR and lo is not None and lo.shape == W.shape) else np.zeros(W.shape, bool)
+    floor &= ~clip
+    ub = floor if SAT_FLOOR == 1 else np.zeros(W.shape, bool)
+    if SAT_FLOOR == 2:
+        free |= floor
+    free &= ~ub
+    sat = (clip | free | ub).view(Censor)
+    sat.ub, sat.free = ub, free
     return sat
 
 
@@ -773,10 +806,13 @@ def _solve_nnls(M, W, noise, sat, censor=True):
         # active set of the one-sided bound model >= clip on the censored samples
         Wall = (np.repeat(1.0 / noise, NSAMP) if (MODEL_FRAC <= 0 and SIG_VAR_K <= 0) else _weights(W, noise))
         Af, yf = M * Wall[:, None], W.reshape(-1) * Wall
-        sat1 = sat.reshape(-1)
-        act = np.zeros_like(sat1)
+        lb1, ub1 = _bounds(sat)
+        act = np.zeros_like(lb1)
         for _ in range(6):
-            below = sat1 & ((M @ q) < W.reshape(-1)) & ~act
+            mq = M @ q
+            below = lb1 & (mq < W.reshape(-1)) & ~act
+            if ub1 is not None:
+                below |= ub1 & (mq > W.reshape(-1)) & ~act
             if not below.any():
                 break
             act |= below
@@ -794,9 +830,15 @@ def _solve_nnls(M, W, noise, sat, censor=True):
         chi = float(r @ r)
     if censor and sat.any():
         model = (M @ q).reshape(W.shape)
-        pen = np.maximum(0.0, W[sat] - model[sat]) / np.repeat(
-            noise, NSAMP).reshape(W.shape)[sat]
+        lb1, ub1 = _bounds(sat)
+        lbm = lb1.reshape(W.shape)
+        pen = np.maximum(0.0, W[lbm] - model[lbm]) / np.repeat(
+            noise, NSAMP).reshape(W.shape)[lbm]
         chi += float((pen ** 2).sum())
+        if ub1 is not None:
+            ubm = ub1.reshape(W.shape)
+            pen = np.maximum(0.0, model[ubm] - W[ubm]) / np.repeat(noise, NSAMP).reshape(W.shape)[ubm]
+            chi += float((pen ** 2).sum())
         if ZS_BOUND > 0:
             # suppressed samples (exact 0, censored above) are upper bounds: model <= k * noise
             zs = sat & (W == 0.0)
@@ -1180,7 +1222,10 @@ def _vp_resid_jac(plane, W, noise, pos, sat, th, q, M, hyper, censor, t0_prior):
     if censor and sat.any():
         s1 = sat.reshape(-1)
         nz = np.repeat(noise, NSAMP)
-        pen = s1 & (m < y)                       # the one-sided bound is active (= the SAT_SOLVE active set)
+        lb1, ub1 = _bounds(sat)
+        pen = lb1 & (m < y)                      # the one-sided bound is active (= the SAT_SOLVE active set)
+        if ub1 is not None:
+            pen = pen | (ub1 & (m > y))
         if pen.any():
             rows_r.append((m - y)[pen] / nz[pen])
             rows_J.append(dmq[pen] / nz[pen][:, None])

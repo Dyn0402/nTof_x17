@@ -23,20 +23,18 @@ KSIG = {d: round(11.5 * q / Q50['det3'], 1) for d, q in Q50.items()}
 R = 'model.SAT_RAIL=true'
 ARMS = {
     'base': '',
-    'rail': R,
-    'floor': 'model.SAT_FLOOR=true',
-    'railfloor': f'{R},model.SAT_FLOOR=true',
-    'tail': f'{R},model.SAT_TAIL=true',
-    'tail1': f'{R},model.SAT_TAIL=true,model.SAT_TAIL_SKIP=1',
-    'tail2': f'{R},model.SAT_TAIL=true,model.SAT_TAIL_SKIP=2',
-    'tailL3': f'{R},model.SAT_TAIL=true,model.SAT_TAIL_MINLEN=3',
-    'tailfloor': f'{R},model.SAT_TAIL=true,model.SAT_FLOOR=true',
-    'strip': f'{R},model.SAT_STRIP=true',
-    'm150': f'{R},model.SAT_MARGIN=150',
-    'm400': f'{R},model.SAT_MARGIN=400',
-    'sv': 'model.SIG_VAR_K={K}',
+    'rail': R,                                                              # clip mask = raw 4095 (per-sample rail)
+    'floorub0': 'model.SAT_FLOOR=1',                                        # floor = upper bound, 3550 clip rule
+    'railub': f'{R},model.SAT_FLOOR=1',                                     # rail + floor upper bound
+    'railfree': f'{R},model.SAT_FLOOR=2',                                   # rail + floor censored, no bound
+    'tail': f'{R},model.SAT_TAIL=true',                                     # rail + post-clip tail free
+    'tailub': f'{R},model.SAT_TAIL=true,model.SAT_FLOOR=1',
+    'tailL4ub': f'{R},model.SAT_TAIL=true,model.SAT_TAIL_MINLEN=4,model.SAT_FLOOR=1',
+    'strip': f'{R},model.SAT_STRIP=true',                                   # whole clipped strip censored
+    'm150': f'{R},model.SAT_MARGIN=150',                                    # soft compression below the rail
+    'sv': 'model.SIG_VAR_K={K}',                                            # signal variance in the weights
     'sv_half': 'model.SIG_VAR_K={Kh}',
-    'tailfloor_sv': f'{R},model.SAT_TAIL=true,model.SAT_FLOOR=true,model.SIG_VAR_K={{K}}',
+    'railub_sv': f'{R},model.SAT_FLOOR=1,model.SIG_VAR_K={{K}}',
 }
 SH = '''#!/bin/bash
 # run_sat.sh <code_dir> <WFT_DIAG or none> <heldout_arm.py args...>
