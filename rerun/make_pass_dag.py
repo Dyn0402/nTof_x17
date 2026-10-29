@@ -244,13 +244,15 @@ def main():
                 continue
             k, n = r['key'], r['key'].replace('.', '_')
             ck = by_key[r['calib_key']]
+            ak = r.get('align_key') or r['calib_key']          # the geometry: its own night (make_registry align_key)
             own = r['key'] == r['calib_key']
+            own_al = r['key'] == ak
             b = '{out}/wft/calib_bundle' if own else f'{A}/{rel(ck)}/wft/calib_bundle'
-            al = '{out}/wft/alignment/alignment.json' if own else f'{A}/{rel(ck)}/wft/alignment/alignment.json'
+            al = '{out}/wft/alignment/alignment.json' if own_al else f'{A}/{rel(by_key[ak])}/wft/alignment/alignment.json'
             node(L, f'RECO_{n}', 'stage1.sub', f'{k} --module wft.cli -- reco {{key}} --bundle {b} --matched-only '
                  f'--jobs 16', 16, 24000, a.code)
             after = [f'RECO_{n}']
-            if own:
+            if own_al:
                 node(L, f'ALIGN_{n}', 'stage1.sub', f'{k} --parts run_config,m3,hits --script mx_june_wft/01_alignment.py',
                      1, 8000, a.code, after)
                 after = [f'ALIGN_{n}']
@@ -259,12 +261,12 @@ def main():
                      f'--alignment {al}', 1, 8000, a.code, after)
         # a group's other rows read the group's alignment: they wait for it
         for r in rows:
-            if r['cls'] == 'excluded' or (only and r['key'] not in only) or r['key'] == r['calib_key']:
+            ak = r.get('align_key') or r['calib_key']
+            if r['cls'] == 'excluded' or (only and r['key'] not in only) or r['key'] == ak:
                 continue
-            ck = by_key[r['calib_key']]
-            if only and ck['key'] not in only:
+            if only and ak not in only:
                 continue
-            n, cn = r['key'].replace('.', '_'), ck['key'].replace('.', '_')
+            n, cn = r['key'].replace('.', '_'), ak.replace('.', '_')
             for s in ('EFF', 'ANG', 'MAPS'):
                 L.append(f'PARENT ALIGN_{cn} CHILD {s}_{n}')
     open(f'{a.phase}.dag', 'w').write('\n'.join(L) + '\n')

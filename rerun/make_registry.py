@@ -22,6 +22,8 @@ One row per (subrun, detector) of the campaign manifest on EOS.  Columns:
              group reference.  A group with no golden row whose reference row has < N_MIN_V clean triggers cannot
              calibrate v at all: its rows take the chamber's golden bundle and become skeptical, angle scale not
              calibrated (F9 2026-10-29: det2 6-17, det3 6-26 quick).
+  align_key  the row whose waveform alignment the row uses: its calib_key, except for rows that take another
+             night's (golden) bundle, which keep their own group's reference row (that row aligns itself)
   K          depth bins of 60 ns: 24 (1440 ns) by default; 30 on drift fields <= 500 V, where the column overruns the
              32-sample window (stated limitation)
   note
@@ -101,6 +103,8 @@ def own_v(out):
             if o['refit'] == 'v' and n_clean.get(o['key'], 0) < N_MIN_V:
                 for p in rs:
                     if p['cls'] != 'excluded' and p['calib_key'] == o['key']:
+                        # the bundle comes from the golden row, the geometry does not: another night's mounting
+                        p['align_key'] = o['key']
                         p['calib_key'], p['refit'], p['cls'] = gold[p['det']], 'none', 'skeptical'
                         p['note'] = '; '.join(x for x in (p['note'], NO_V_NOTE) if x)
     for rs in by_group.values():
@@ -140,7 +144,11 @@ def main():
             out.append(dict(key=r['key'], det=det, run=r['run'], subrun=r['subrun'], resist_V=r['resist_V'],
                             drift_V=drift, cls=cls, group=f'{det}|{run}|{drift}', calib_key=ref['key'],
                             refit=refit, K=K, note=note))
+    for o in out:
+        o.setdefault('align_key', '')
     own_v(out)
+    for o in out:
+        o['align_key'] = o['align_key'] or o['calib_key']
     p = os.path.join(HERE, 'pass_registry.csv')
     with open(p, 'w', newline='') as f:
         w = csv.DictWriter(f, fieldnames=list(out[0]))
