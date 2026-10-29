@@ -135,6 +135,8 @@ SAT_SOLVE = True
 #:                sample is censored with no bound (the recovery after the clip), for plateaus of at least
 #:                SAT_TAIL_MINLEN samples.  Floor samples in the tail keep the SAT_FLOOR bound.
 #:   SAT_STRIP    every sample of a strip with a clipped sample is censored: the clipped ones as lower bounds, the rest free.
+#:   SAT_CLIP_FREE  the clipped samples themselves carry no bound (censored, free): a clipped delta blob no longer
+#:                forces the track model to deposit at least the clip level where it sits.
 #: Clipped samples are lower bounds (model >= W) as before.  Upper-bound and free samples ride the ``sat`` mask as the
 #: attributes ``ub`` / ``free`` of a :class:`Censor` (a bool ndarray); a plain bool mask = every censored sample a lower
 #: bound, so nothing changes unless one of these switches makes a Censor.
@@ -145,6 +147,7 @@ SAT_TAIL = False
 SAT_TAIL_SKIP = 0
 SAT_TAIL_MINLEN = 1
 SAT_STRIP = False
+SAT_CLIP_FREE = False
 #: Signal variance in the chi2 weights (opt-in study switch, 2026-10-29): sigma^2 = noise^2 + SIG_VAR_K * max(W, 0)
 #: [ADC, after the gain correction] -- the electron-counting + avalanche variance of the signal itself, linear in the
 #: amplitude (ws_floor "Estimator notes": the right form on the toy, K = 0.19 x ADC per electron = 11.5 ADC on det3;
@@ -669,6 +672,8 @@ def _sat_mask(P, sat0):
             elif k[-1] - k[0] + 1 >= SAT_TAIL_MINLEN:
                 free[i, k[-1] + 1 + SAT_TAIL_SKIP:] = True
     free &= ~clip
+    if SAT_CLIP_FREE:
+        free |= clip
     floor = (W <= lo + 0.5) if (SAT_FLOOR and lo is not None and lo.shape == W.shape) else np.zeros(W.shape, bool)
     floor &= ~clip
     ub = floor if SAT_FLOOR == 1 else np.zeros(W.shape, bool)
@@ -710,7 +715,7 @@ def prep_plane(P, plane):
     W /= g[:, None]
     noise = np.maximum(np.asarray(P['noise'], dtype=np.float64), 3.0) / g
     sat = np.asarray(P['W'], dtype=np.float64) >= SAT
-    if SAT_RAIL or SAT_FLOOR or SAT_TAIL or SAT_STRIP:
+    if SAT_RAIL or SAT_FLOOR or SAT_TAIL or SAT_STRIP or SAT_CLIP_FREE:
         sat = _sat_mask(P, sat)
     if ZS_CENSOR or ZS_BOUND > 0:
         sat |= np.asarray(P['W'], dtype=np.float64) == 0.0

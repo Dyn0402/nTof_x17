@@ -35,7 +35,11 @@ ARMS = {
     'sv': 'model.SIG_VAR_K={K}',                                            # signal variance in the weights
     'sv_half': 'model.SIG_VAR_K={Kh}',
     'railub_sv': f'{R},model.SAT_FLOOR=1,model.SIG_VAR_K={{K}}',
+    # r2: the clipped samples carry no bound (a clipped delta blob no longer forces charge onto the track model)
+    'clipfree': f'{R},model.SAT_CLIP_FREE=true',
+    'clipfree_ub': f'{R},model.SAT_CLIP_FREE=true,model.SAT_FLOOR=1',
 }
+ROUNDS = {'r1': [a for a in ARMS if not a.startswith('clipfree')], 'r2': ['clipfree', 'clipfree_ub']}
 SH = '''#!/bin/bash
 # run_sat.sh <code_dir> <WFT_DIAG or none> <heldout_arm.py args...>
 CODE=$1; shift; DIAG=$1; shift
@@ -164,7 +168,8 @@ def table(arms=None, sels=('all', 'sat')):
 if __name__ == '__main__':
     cmd = sys.argv[1]
     if cmd == 'build':
-        build(sys.argv[2], sys.argv[3], *(sys.argv[4:5] or ['r1']))
+        rnd = (sys.argv[4:5] or ['r1'])[0]
+        build(sys.argv[2], sys.argv[3], rnd, arms=ROUNDS.get(rnd))
     elif cmd == 'compare':
         compare(sys.argv[2])
     else:

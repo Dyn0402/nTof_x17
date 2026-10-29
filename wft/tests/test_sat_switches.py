@@ -7,7 +7,7 @@ from scipy.optimize import nnls
 
 from wft import model as wm
 
-NAMES = ('SAT_RAIL', 'SAT_MARGIN', 'SAT_FLOOR', 'SAT_TAIL', 'SAT_TAIL_SKIP', 'SAT_TAIL_MINLEN', 'SAT_STRIP',
+NAMES = ('SAT_RAIL', 'SAT_MARGIN', 'SAT_FLOOR', 'SAT_TAIL', 'SAT_TAIL_SKIP', 'SAT_TAIL_MINLEN', 'SAT_STRIP', 'SAT_CLIP_FREE',
          'SIG_VAR_K', 'MODEL_FRAC', 'GAIN', 'DEAD', 'HOT', 'NSAMP', 'SAT', 'BAND_NSIG', 'SAT_SOLVE', 'COL_GUARD')
 
 
@@ -142,3 +142,10 @@ def test_sig_var_weights():
     wt = 1.0 / np.sqrt(noise[:, None] ** 2 + K * np.maximum(W, 0.0)).reshape(-1)
     q_ref, rn = nnls(M * wt[:, None], W.reshape(-1) * wt)
     assert np.allclose(q2, q_ref) and np.isclose(c2, rn * rn)
+
+
+def test_clip_free():
+    P, raw = window()
+    with switches(NSAMP=10, SAT_RAIL=True, SAT_CLIP_FREE=True, SAT_FLOOR=1):
+        sat = wm.prep_plane(P, 'x')[3]
+    assert np.array_equal(sat.free, raw >= 4095) and np.array_equal(sat.ub, raw <= 0)
