@@ -47,11 +47,21 @@ Status key: [x] done · [ ] open · [~] partly / in progress
 7. [ ] **E3 `make_pass_dag.py calib` phase** CAL0–CAL4 per golden chamber into `Analysis_pass1`, convergence
        criteria → `CALIB_CONVERGENCE.json`; **`--table` on every W0KW node** (finalize/vrefit/pass, make_pass_dag.py:89,
        112, 130 — without it they abort on a bow bundle, set_w0kw.py:95–97); vrefit keeps the golden bow.
-       **Template study (10-28, `rerun/calib/templates/TEMPLATE_STUDY.md`) found a blocker for DRC as written:**
-       recal.py's cold objective profiles t0 freely, but the pass pins t0. A D_rc,y refit with it lowers the
-       training χ² and raises the det3 held-out Y χ² 56.6 → 65.2 (s68 +0.07°). The CAL fits need a pinned-t0
-       objective. TMPL also needs the template zero fitted against the latency, and a segment-free template
-       candidate (the measured one is 4–7 % too wide and carries the strip's drift segment).
+       **Template study (10-28/29, `rerun/calib/templates/TEMPLATE_STUDY.md`), consequences for E1/E3:**
+       (a) DRC must use `recal.py --free rc_D_y --t0-pin --unsat-only` on a training sample disjoint from any
+       evaluation sample. The raw objective is steered by saturated planes (88 % of χ²) and picks 4.3–5.4e-4 on det3,
+       which costs 0.07° in held-out Y. The corrected objective gives 3.5–3.8e-4, at the held-out optimum (T6).
+       (b) σ0 = 0.30 stays a physical input: SPS-measured, independent of the template (T10). Free bench σ0 is not a
+       measurement (runs to 0.058 mm).
+       (c) Fleet test: the corrected D_rc,y + per-view t0 offset δ is resolution-neutral on all five chambers
+       (T8). δ (−9…−76 ns, unexplained scatter) only shifts the angle scale (kw absorbs). Recommendation: don't
+       adopt δ.
+       (d) Template: keep `measure_templates` (X template for both views). It carries the strip's drift segment
+       (4–7 % too wide, T1), but the segment-free h_eff is X −0.05° / Y +0.05° (no net gain), and Y's own template
+       is worse (+0.10°, T14).
+       (e) Known model-shape error, fleet-wide (centre strip under-filled 5–11 %, det6 Y 24 %; T9/T13). Width or
+       shape changes trade χ² against angles. A stated limitation unless a footprint/RC change is validated on
+       held-out angles. The Y RC branch cannot carry footprint tails (code limitation).
 8. [ ] **E4 SPS phase** (was B3): one node per `sps_registry.csv` row with the new det4 bundle (bench bow/v_map/w0/t0
        dropped — done 10-28 in sps_reco), `quality_flags`/timestamp in `sps_reco`, K fallback +5 → +15.
 9. [ ] **Pre-flight checks** (PASS_PLAN F7–F12): the 14 GA channels (item 2); H4 ch 372 oscillation → `det4_sps_h4.json`;

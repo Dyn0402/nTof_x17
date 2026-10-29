@@ -4,6 +4,31 @@ Part of the calibration rebuild (`rerun/PASS_PLAN_2026-10-28.md` §2, E1 / CAL1 
 template that `wft.calibrate.measure_templates` produces is the right object for the forward model, and what the pass
 should use. Scripts, results and figures are in this directory. Run them with `../../../.venv/bin/python -I <script>`.
 
+## Morning summary (2026-10-29) — read this first
+
+**Answer for the pass:** the calibration basis holds. Rebuild it as planned with **one change to the DRC step** and
+no change to the templates or σ0. Nothing found overnight moves angle resolution by more than ~0.06° (1–2σ), but one
+planned step (the D_rc,y fit on the raw objective) would have cost 0.07° in Y.
+
+| piece | finding | for E1/E3 |
+|---|---|---|
+| templates | carry the strip's drift segment, 4–7 % too wide (T1). Segment-free h_eff: X −0.05°, Y +0.05° (T5/T6). Y on its own template: +0.10° worse (T14) | keep `measure_templates`, X template for both views |
+| template zero / t0 | χ² wants δ = −9…−76 ns per chamber and view (T7/T8); resolution-neutral, shifts the angle scale | don't adopt δ; keep t0 = C − 10·ftst; ladder shift goes into the angle-scale systematic |
+| D_rc,y | raw objective steered by saturated planes (88 % of χ²) → 4.3–5.4e-4 on det3, −0.07° Y (T6). Pinned + unsaturated → 3.5–3.8e-4 = held-out optimum | **DRC: `recal.py --t0-pin --unsat-only`**, disjoint training sample |
+| σ0 | SPS 0.30 independent of the template (T10: 0.278/0.282 X, 0.323/0.324 Y) and of every other issue; free bench σ0 runs to 0.058 mm (not a measurement) | keep 0.30 as a physical input (Dylan: same build, same σ0) |
+| fleet | recalibrated D_rc,y + δ vs plan: resolution-neutral on all five chambers (T8) | — |
+| model shape | centre strip under-filled 5–11 % on every chamber (det6 Y 24 %), ±1 over-filled (T9 fleet). Any Gaussian width change trades centre/±1 vs ±2; better-shaped models improve χ² but not angles (T13) | stated limitation; the χ² flag is relative (5 × median). Y RC branch cannot carry footprint tails (code) |
+
+**Open questions for Dylan:**
+1. δ: adopt or not? (Recommended: not. It is resolution-neutral and unexplained, and kw covers the angle scale.)
+2. Model shape: worth a footprint/RC-form change before the pass (e.g. Voigt tails that survive the Y RC growth, a
+   two-component RC), or carry it as a limitation? Overnight evidence: the angles don't care; χ² and charge do.
+3. det6 Y: the plan's D_rc,y (5.9e-4) was furthest off (corrected 4.9e-4), and its residual mismatch is the largest.
+   It deserves a look at its RC model before its numbers go into papers.
+
+**Caveats:** 1500-event rr1 caches (400 held-out events per comparison, s68 errors ±0.02–0.07°). Fitter: LM from T6
+on (T5 ran NM, internally consistent). D_rc,y fits used 500–920 training events; the pass's CAL nodes see ~8000.
+
 ## The calibration pieces the pass rebuilds (for reference)
 
 | # | piece | where it comes from | status in this study |
@@ -319,8 +344,39 @@ prompt footprint (η 0.2 γ 0.6 mm; η 0.3 γ 0.8 mm). Residuals use `t9_peak_re
   (convolve the RC growth with the Voigt instead of rebuilding a Gaussian). Not done: Dylan's call.
 - Fitted charge moves with the footprint (Voigt 0.3/0.8: +11 %; Dp × 0.8: −2 %), so footprint choices are also a
   charge-scale systematic.
+- **Narrower core + tails (X only; queue 3):** Dp × 0.8 + Voigt η 0.2 γ 0.6 gives the best X residual shape of any
+  arm (centre +0.031, ±1 −0.021, ±2 +0.002) and the best χ² (44.6, −9 %), but s68 +0.027 ± 0.030. η 0.3 γ 0.8: s68
+  +0.001, χ² 48.3, charge +9 %. **The best waveform model is not the best angle model.**
+- **T14, Y on its own measured template (`rc_tmpl` 0):** Y s68 **+0.100 ± 0.033°**, χ² 56.7 → 76.5. Confirms W4 (X
+  template drives both views). Y's missing late spread is in the RC model's form, not the template.
 
-## Verdict so far (2026-10-28 evening)
+## T9 on all five chambers: the residual pattern is universal (2026-10-29 night)
+
+Plan bundles (T8 A: fe_nobow, σ0 0.30), `t9_peak_residual.py` → `results/t9/<det>_plan.json`, `t13_table.py`
+(amplitude-weighted medians, unsaturated planes ≥ 800 ADC):
+
+| | X: centre k=−1/0/+1/+2/+3 | X ±1 k=0 / ±2 k=0 | Y: centre k=−1/0/+1/+2/+3 | Y ±1 / ±2 |
+|---|---|---|---|---|
+| det2 | +.048 +.057 +.044 +.024 +.007 | −.056 / +.003 | +.076 +.090 +.072 +.046 +.017 | −.080 / +.007 |
+| det3 | +.042 +.050 +.025 −.002 −.021 | −.032 / +.010 | +.054 +.057 +.043 +.028 +.010 | −.058 / +.010 |
+| det4 | +.055 +.083 +.044 −.005 −.039 | −.013 / +.014 | +.051 +.074 +.041 +.003 −.030 | −.019 / +.015 |
+| det6 | +.068 +.114 +.086 +.033 +.002 | −.105 / −.000 | +.191 +.239 +.188 +.123 +.058 | −.147 / −.002 |
+| det7 | +.036 +.051 +.026 −.003 −.021 | −.018 / −.001 | +.062 +.076 +.050 +.018 −.007 | −.045 / +.009 |
+
+- **The model under-fills the centre strip on every chamber and view** (+0.05…+0.11, det6 Y +0.24), with ±1
+  below the model. It is a fleet-wide model-shape error, not a det3 or calibration quirk.
+- **det4 (and det3/det7 X) are mostly temporal.** Centre high at the peak, low late (k = +3: −0.02…−0.04) and a
+  small ±1 deficit: the data pulse is narrower in time than the model. That is the template-width signature (T1).
+- **det2/det6 are mostly lateral.** ±1 deficit about as large as the centre excess and no late sign change. det6,
+  the slow-gas chamber (v 24 µm/ns, so the longest drift times and the largest Dp·√u and 2Ds widths), is extreme in
+  Y. Its plan D_rc,y 5.9e-4 is the value the corrected objective moved most (→ 4.9e-4, T8). The Y deficit there is
+  the RC growth more than σ0.
+- Read together with T13: the shape error is real and universal, but changing widths to fix it does not improve
+  angles (and can cost them). It shows mainly in χ² and charge. For the pass it is a stated model limitation (the
+  χ² quality flag is relative, 5 × median, so it adapts), unless a footprint/RC shape change is made and validated
+  on held-out angles.
+
+## Interim verdict (2026-10-28 evening) — SUPERSEDED by the morning summary at the top
 
 1. The production template is not pure response: it is 4–7 % too wide because it carries the strip's drift segment,
    and the forward model counts that segment twice. Measured on all five chambers, both views.
@@ -336,14 +392,16 @@ prompt footprint (η 0.2 γ 0.6 mm; η 0.3 γ 0.8 mm). Residuals use `t9_peak_re
 6. The template is the strip self-response. Its physical decomposition (peaking time, β, ion fraction) is not
    identifiable from templates (sim closure). Don't quote shaper parameters from it.
 
-## Next steps
+## Next steps (2026-10-29 morning)
 
-1. ~~Give `recal.py` a pinned-t0 objective~~: done in T6 (`--t0-pin --unsat-only`).
-2. Add the template zero as a scanned/fitted quantity in TMPL (χ² vs shift at pinned t0) and as a convergence item.
-3. If (1) leaves h_eff ahead or level: run cur vs h_eff (each with its own pinned-t0 D_rc,y) on all five chambers,
-   1320 events, on condor. Adopt by the fleet result.
-4. For TMPL in the pass: build h_eff from the angle bins (t4's fit, shape only) as a candidate output beside the
-   plain median, so the decision does not need another cache pass.
+1. Dylan's calls: δ (recommended not to adopt), model-shape change vs stated limitation, det6 Y RC look.
+2. E1/E3 code: the DRC node calls `recal.py --free rc_D_y --t0-pin --unsat-only --train-start <disjoint>`. Add the
+   D_rc,y convergence criterion (±5 %) on that objective. TMPL unchanged.
+3. If a shape change is wanted: fix `build_matrix_rc` so the Y RC growth convolves the prompt footprint instead
+   of rebuilding a Gaussian (Voigt tails survive in Y). Then judge on held-out angles and charge across the fleet,
+   not on χ².
+4. Optional, decides nothing for the pass: the h_eff fleet arm (C), sim-side follow-up on the resistive self-term
+   (sim X undershoot −0.10 vs data −0.02).
 
 ## Not ruled out / open
 

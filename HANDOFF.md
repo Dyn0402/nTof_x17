@@ -1,5 +1,23 @@
 # Handoff
 
+## Calibration basis study (templates, D_rc,y, σ0, model shape) — updated 2026-10-29 night (dylan-Yoga)
+
+**Resume:** read the "Morning summary" at the top of `rerun/calib/templates/TEMPLATE_STUDY.md`; get Dylan's calls on δ / model shape / det6 Y, then build E1/E3 with the corrected DRC objective.
+
+**Done:** T1–T14 on the rr1 caches (laptop). Templates keep `measure_templates`. The raw D_rc,y objective is steered
+by saturated planes; the fix is `recal.py --t0-pin --unsat-only` (new options, plus `--train-start` and free
+`t0_shift_x/y`). σ0 0.30 confirmed template-independent at SPS. Fleet recalibration is resolution-neutral. A
+universal centre-strip under-fill is found and characterised (it changes χ² and charge, not angles). The Y RC
+branch drops footprint tails (code limitation). REPROCESSING_TODO item 7 lists the consequences (a)–(e).
+
+**Gotchas:** judge model choices on held-out angles, never χ² or residual shape (T13). `pkill -f`/`pgrep -f`
+self-match killed a run again, and `pgrep` does not support `\|` alternation: kill by PID. In the queue scripts,
+`grep -v | ... || echo FAILED` reports a false failure when a step prints nothing.
+
+**Key files:** `rerun/calib/templates/` (t1…t14 scripts, `results/`, `TEMPLATE_STUDY.md`);
+`sps_beam_test_26/analysis/plane_ratio/recal.py` (new options). Scratch arms/bundles are in the job tmp (not
+needed; every number is in `results/`).
+
 ## From-scratch pass: history, plan, calibration phase to build — updated 2026-10-28 (dylan-Yoga)
 
 **Resume:** build the `calib` DAG phase (PASS_PLAN_2026-10-28 E1–E4), dry-run on det3, then submit; checklist = REPROCESSING_TODO §B.
