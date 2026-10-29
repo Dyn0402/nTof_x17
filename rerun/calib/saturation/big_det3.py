@@ -16,13 +16,14 @@ HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, HERE)
 from sat_arms import ARMS, EXTRA, SH, SUB, compare_one, SELS  # noqa: E402
 
 EOS = '/eos/user/d/dneff/x17rerun'
-BIG_ARMS = ['base', 'rail', 'railub', 'cap2000', 'cap1500', 'cap1200', 'cap1200ub']
+BIG_ARMS = ['base', 'rail', 'railub', 'cap2000', 'cap1500', 'cap1200', 'cap1200ub', 'cap1000', 'cap800']
+BIG2 = ['cap1000', 'cap800']
 CHUNKS = [(1500, 1205), (2705, 1205), (3910, 1205), (5115, 1203)]
 
 
-def build(out, code):
+def build(out, code, arms=None):
     os.makedirs(f'{out}/log', exist_ok=True); L = []
-    for arm in BIG_ARMS:
+    for arm in arms or BIG_ARMS:
         for k, (s, n) in enumerate(CHUNKS):
             nm = f'SATBIG_{arm}_c{k}'
             args = (f'--cache {EOS}/satur/big/det3_8000.pkl --bundle {EOS}/t15/bundles/det3/base '
@@ -63,4 +64,4 @@ def compare(d):
 
 
 if __name__ == '__main__':
-    {'build': lambda: build(sys.argv[2], sys.argv[3]), 'compare': lambda: compare(sys.argv[2])}[sys.argv[1]]()
+    {'build': lambda: build(sys.argv[2], sys.argv[3], BIG2 if sys.argv[4:5] == ['big2'] else None), 'compare': lambda: compare(sys.argv[2])}[sys.argv[1]]()
