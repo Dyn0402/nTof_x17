@@ -103,8 +103,9 @@ def main(argv=None):
     ap.add_argument('--physics', default=PHYS)
     ap.add_argument('--masks', default=None, help='default: fe_unify2/masks/bench_<det>.json')
     ap.add_argument('--note', default='')
+    ap.add_argument('--force', action='store_true', help='overwrite an existing bundle (a DAG node retried)')
     a = ap.parse_args(argv)
-    if os.path.exists(os.path.join(a.out, 'bundle.json')):
+    if os.path.exists(os.path.join(a.out, 'bundle.json')) and not a.force:
         raise SystemExit(f'{a.out} exists: not overwriting')
     phys = json.load(open(a.physics))
     mp = a.masks or os.path.join(MASKS, f'bench_{a.det}.json')

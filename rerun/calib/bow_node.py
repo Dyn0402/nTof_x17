@@ -24,10 +24,15 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('key'); ap.add_argument('det')
     ap.add_argument('--events', required=True); ap.add_argument('--alignment', required=True)
-    ap.add_argument('--m3dir', required=True); ap.add_argument('--bundle', required=True)
+    ap.add_argument('--m3dir', default=None, help="default: the row's staged v2 M3 rays (qa_config cfg.m3_tracking_dir)")
+    ap.add_argument('--bundle', required=True)
     ap.add_argument('--out', required=True)
     ap.add_argument('--table-out', default=None, help='keep the joined per-event table here (default: a temp file)')
     a = ap.parse_args()
+    if a.m3dir is None:
+        sys.path[:0] = [os.path.join(REPO, 'mx_june_cosmic_qa'), os.path.join(REPO, 'cosmic_bench_analysis')]
+        from qa_config import get_config
+        a.m3dir = get_config(a.key).m3_tracking_dir
     from build_table import build
     from fbcommon import load_path
     from set_bow import block_from_table

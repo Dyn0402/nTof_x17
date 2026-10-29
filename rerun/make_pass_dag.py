@@ -3,6 +3,17 @@
 
 Phases (each writes <phase>.dag in the current dir; submit with condor_submit_dag from ~/x17rerun/pass):
 
+calib     the from-scratch calibration of the five golden rows (PASS_PLAN_2026-10-28 E3), into Analysis_pass1, every
+          product under <row>/wft/calib/:
+          CAL0  HITS (03_alignment_and_tpc: the hits-chain corridor only) -> CACHE0 (c0/cache.pkl, 1500 events)
+          CAL1  SEED0 (make_bundle: templates + latency + stated inputs) -> DRC0 (recal --free rc_D_y --t0-pin
+                --unsat-only, training events 580-1079; det4: none, H4 value) -> MAKE0 (c0/bundle)
+          CAL2  RECO1 (8000 matched) -> ALIGN1 (waveform) -> CACHE1 (build_cache_wft --align) -> SEED1 -> DRC1 -> MAKE1
+                (c1/bundle)
+          CAL3  RECO2 -> ALIGN2 -> ANG2 -> W0KW2 (--table --angles --sigma0 0.30,0.30: c2/bundle_nobow) -> BOW2
+                (bow_node: c2/bow_block.json) -> W0KW2b (--bow-json --table: c2/bundle)
+          CAL4  RECO3 (with the bow) -> ALIGN3 -> ANG3 -> W0KW3 (--table: <row>/wft/calib_bundle, the bow kept) -> BOW3
+                (r3/bow_block.json, a check only) -> CONV (convergence.py: wft/calib/CALIB_CONVERGENCE.json)
 finalize  golden rows (S1 close).  Bundle = the converged W12 fit (w12/<it>/fit_pinned/bundle, --golden det=itN).
           RECO (8000 matched events with it) -> ALIGN (01) -> ANGLES (03) -> W0KW (W6: w0/kw measured under this
           bundle) -> <row>/wft/calib_bundle, the bundle every row of the chamber uses.
@@ -18,7 +29,14 @@ import csv
 import os
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-A = '/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_rr1'
+#: the pass's own Analysis tree (PASS_PLAN E3: a new root, so no old product can be picked up)
+A = '/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_pass1'
+#: DRC (TEMPLATE_STUDY T6/T8): pinned t0, unsaturated planes, p0 profiled +-2 mm, training events 580-1079 of the cache
+DRC_ARGS = ('--free rc_D_y --objective cold --t0-pin --unsat-only --p0-profile --p0-window 2.0 --p0-step 0.2 '
+            '--train-start 580 --n-train 500 --jobs 8 --maxiter 80')
+GOLD_DET = {'mx17_2': 'det2', 'mx17_3': 'det3', 'mx17_4': 'det4', 'mx17_6': 'det6', 'mx17_7': 'det7'}
+#: chambers whose D_rc,y is a stated input (physics_inputs.json): no DRC node
+DRC_FIXED = {'det4'}
 
 
 def rel(r):
@@ -41,9 +59,74 @@ def node(L, name, sub, args, cpus, mem, code, parents=()):
         L.append(f'PARENT {p} CHILD {name}')
 
 
+def calib_phase(L, rows, a, only):
+    """E3: CAL0-CAL4 per golden row (module docstring)."""
+    for r in rows:
+        if r['refit'] != 'golden' or (only and r['key'] not in only):
+            continue
+        k, d, K = r['key'], GOLD_DET[r['det']], r['K']
+        c = '{out}/wft/calib'
+        S = lambda name, args, cpus, mem, parents=(): node(L, f'{name}_{d}', 'stage1.sub', f'{k} {args}', cpus, mem,
+                                                           a.code, [f'{p}_{d}' for p in parents])
+        bundle = lambda it, rc: (f'--parts run_config --script rerun/calib/make_bundle.py -- {d} --run-key {{key}} '
+                                 f'--cache {c}/c{it}/cache.pkl --K {K} --force --out {c}/c{it}/'
+                                 + ('seed' if rc is None else f'bundle{rc}'))
+        reco = lambda b, t: f'--module wft.cli -- reco {{key}} --bundle {b} --out {t} --matched-only --limit 8000 --jobs 16'
+        align = lambda t, o: f'--parts run_config,m3,hits --script mx_june_wft/01_alignment.py -- --table {t} --out {o}'
+        ang = lambda t, al, o: (f'--parts run_config,m3,hits --script mx_june_wft/03_angles.py -- --table {t} '
+                                f'--alignment {al} --out {o}')
+        # CAL0
+        S('HITS', '--parts run_config,m3,hits --require cache/event_results_veto50.pkl '
+                  '--script mx_june_cosmic_qa/03_alignment_and_tpc.py', 4, 12000)
+        S('CACHE0', f'--script rerun/w12/build_cache_wft.py -- --align {{out}}/alignment_tpc_veto50/alignment.json '
+                    f'--out {c}/c0/cache.pkl --n 1500 --cm 0', 2, 16000, ['HITS'])
+        prev = 'CACHE0'
+        for it in (0, 1):
+            if it == 1:
+                t = f'{c}/r1/events.parquet'
+                S('RECO1', reco(f'{c}/c0/bundle', t), 16, 24000, [f'MAKE0'])
+                S('ALIGN1', align(t, f'{c}/r1/alignment'), 1, 8000, ['RECO1'])
+                S('CACHE1', f'--script rerun/w12/build_cache_wft.py -- --align {c}/r1/alignment/alignment.json '
+                            f'--out {c}/c1/cache.pkl --n 1500 --cm 0', 2, 16000, ['ALIGN1'])
+                prev = 'CACHE1'
+            if d in DRC_FIXED:
+                S(f'MAKE{it}', bundle(it, ''), 1, 6000, [prev])
+                continue
+            S(f'SEED{it}', bundle(it, None), 1, 6000, [prev])
+            S(f'DRC{it}', f'--parts run_config --script sps_beam_test_26/analysis/plane_ratio/recal.py -- '
+                          f'--arm drc{it}_{{key}} --cache {c}/c{it}/cache.pkl --bundle {c}/c{it}/seed '
+                          f'--depth-bins {K} {DRC_ARGS} --out {c}/c{it}/drc.json', 8, 12000, [f'SEED{it}'])
+            S(f'MAKE{it}', bundle(it, '') + f' --rc-json {c}/c{it}/drc.json', 1, 6000, [f'DRC{it}'])
+        # CAL3
+        t2 = f'{c}/r2/events.parquet'
+        S('RECO2', reco(f'{c}/c1/bundle', t2), 16, 24000, ['MAKE1'])
+        S('ALIGN2', align(t2, f'{c}/r2/alignment'), 1, 8000, ['RECO2'])
+        S('ANG2', ang(t2, f'{c}/r2/alignment/alignment.json', f'{c}/r2/angles'), 1, 8000, ['ALIGN2'])
+        S('W0KW2', f'--parts run_config --script rerun/w12/set_w0kw.py -- --bundle {c}/c1/bundle --angles {c}/r2/angles '
+                   f'--table {t2} --sigma0 0.30,0.30 --out {c}/c2/bundle_nobow', 1, 4000, ['ANG2'])
+        S('BOW2', f'--parts run_config,m3 --script rerun/calib/bow_node.py -- {d} --events {t2} '
+                  f'--alignment {c}/r2/alignment/alignment.json --bundle {c}/c1/bundle --out {c}/c2/bow_block.json',
+          1, 8000, ['ALIGN2'])
+        S('W0KW2b', f'--parts run_config --script rerun/w12/set_w0kw.py -- --bundle {c}/c2/bundle_nobow '
+                    f'--angles {c}/r2/angles --table {t2} --bow-json {c}/c2/bow_block.json --out {c}/c2/bundle',
+          1, 4000, ['W0KW2', 'BOW2'])
+        # CAL4
+        t3 = f'{c}/r3/events.parquet'
+        S('RECO3', reco(f'{c}/c2/bundle', t3), 16, 24000, ['W0KW2b'])
+        S('ALIGN3', align(t3, f'{c}/r3/alignment'), 1, 8000, ['RECO3'])
+        S('ANG3', ang(t3, f'{c}/r3/alignment/alignment.json', f'{c}/r3/angles'), 1, 8000, ['ALIGN3'])
+        S('W0KW3', f'--parts run_config --script rerun/w12/set_w0kw.py -- --bundle {c}/c2/bundle --angles {c}/r3/angles '
+                   f'--table {t3} --out {{out}}/wft/calib_bundle', 1, 4000, ['ANG3'])
+        S('BOW3', f'--parts run_config,m3 --script rerun/calib/bow_node.py -- {d} --events {t3} '
+                  f'--alignment {c}/r3/alignment/alignment.json --bundle {c}/c2/bundle --out {c}/r3/bow_block.json',
+          1, 8000, ['ALIGN3'])
+        S('CONV', f'--parts run_config --script rerun/calib/convergence.py -- --calib {c} --final {{out}}/wft/calib_bundle '
+                  f'--out {c}/CALIB_CONVERGENCE.json', 1, 4000, ['W0KW3', 'BOW3'])
+
+
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument('phase', choices=['finalize', 'vrefit', 'pass'])
+    ap.add_argument('phase', choices=['calib', 'finalize', 'vrefit', 'pass'])
     ap.add_argument('code')
     ap.add_argument('--golden', nargs='*', default=[], help='det=itN (finalize)')
     ap.add_argument('--bundle-sub', default='fit_pinned/bundle',
@@ -68,7 +151,9 @@ def main():
     by_key = {r['key']: r for r in rows}
     only = set(a.only.split(',')) if a.only else None
     L = []
-    if a.phase == 'finalize':
+    if a.phase == 'calib':
+        calib_phase(L, rows, a, only)
+    elif a.phase == 'finalize':
         its = dict(g.split('=') for g in a.golden)            # det2=it1 ...
         for r in rows:
             d = r['det'].replace('mx17_', 'det')
@@ -87,7 +172,7 @@ def main():
                  f'--table {t} --alignment {fin}/alignment/alignment.json --out {fin}/angles',
                  1, 8000, a.code, [f'ALIGN_{d}'])
             node(L, f'W0KW_{d}', 'stage1.sub', f'{k} --parts run_config --script rerun/w12/set_w0kw.py -- '
-                 f'--bundle {b} --angles {fin}/angles --out {{out}}/wft/calib_bundle{sfx}', 1, 4000, a.code,
+                 f'--bundle {b} --angles {fin}/angles --table {t} --out {{out}}/wft/calib_bundle{sfx}', 1, 4000, a.code,
                  [f'ANG_{d}'])
     elif a.phase == 'vrefit':
         gold = {r['det']: r for r in rows if r['refit'] == 'golden'}
@@ -110,7 +195,7 @@ def main():
                      f'--table {t1} --alignment {{out}}/wft/vrefit/alignment0/alignment.json --out {{out}}/wft/vrefit/angles',
                      1, 8000, a.code, [f'ALIGN_{n}'])
                 node(L, f'W0KW_{n}', 'stage1.sub', f'{k} --parts run_config --script rerun/w12/set_w0kw.py -- '
-                     f'--bundle {g} --angles {{out}}/wft/vrefit/angles --out {{out}}/wft/calib_bundle --n-depth-bins {r["K"]} --fold-kw',
+                     f'--bundle {g} --angles {{out}}/wft/vrefit/angles --table {t1} --out {{out}}/wft/calib_bundle --n-depth-bins {r["K"]} --fold-kw',
                      1, 4000, a.code,
                      [f'ANG_{n}'])
                 continue
@@ -128,7 +213,7 @@ def main():
                  f'--table {t2} --alignment {{out}}/wft/vrefit/alignment1/alignment.json --out {{out}}/wft/vrefit/angles',
                  1, 8000, a.code, [f'ALIGN2_{n}'])
             node(L, f'W0KW_{n}', 'stage1.sub', f'{k} --parts run_config --script rerun/w12/set_w0kw.py -- '
-                 f'--bundle {{out}}/wft/vrefit/fit/bundle --angles {{out}}/wft/vrefit/angles --out {{out}}/wft/calib_bundle',
+                 f'--bundle {{out}}/wft/vrefit/fit/bundle --angles {{out}}/wft/vrefit/angles --table {t2} --out {{out}}/wft/calib_bundle',
                  1, 4000, a.code, [f'ANG_{n}'])
     else:
         for r in rows:
