@@ -154,6 +154,8 @@ def main():
     ap.add_argument('--only', default=None, help='comma list of keys (tests)')
     ap.add_argument('--analysis-root', default=None, help='tests: another Analysis tree (e.g. the dry-run one)')
     ap.add_argument('--limit', type=int, default=None, help='tests: events per reco')
+    ap.add_argument('--skip-dets', default='', help='comma list (det2,det4): chambers held after G1 (Dylan 10-29: a chamber '
+                                                    'that fails G1 is held, the others go on); sps is det4')
     a = ap.parse_args()
     global A
     if a.analysis_root:
@@ -164,6 +166,12 @@ def main():
         EXTRA['limit'] = f' --limit {a.limit}'
     rows = list(csv.DictReader(open(a.registry)))
     by_key = {r['key']: r for r in rows}
+    skip = {f"mx17_{d.strip()[3:]}" for d in a.skip_dets.split(',') if d.strip()}
+    if skip:
+        rows = [r for r in rows if r['det'] not in skip]
+        if a.phase == 'sps' and 'mx17_4' in skip:
+            raise SystemExit('det4 is held: no sps DAG')
+        print(f'held chambers (not in this DAG): {sorted(skip)}')
     only = set(a.only.split(',')) if a.only else None
     L = []
     if a.phase == 'calib':
