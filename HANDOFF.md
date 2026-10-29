@@ -20,7 +20,7 @@ needed; every number is in `results/`).
 
 ## From-scratch pass: history, plan, calibration phase to build — updated 2026-10-28 (dylan-Yoga)
 
-**Resume:** build the `calib` DAG phase (PASS_PLAN_2026-10-28 E1–E4), dry-run on det3, then submit; checklist = REPROCESSING_TODO §B.
+**Resume:** get Dylan's 3 calls from the calib-basis study (section above), then build `calib` phase E1–E4 with DRC `--t0-pin --unsat-only`.
 
 **Goal:** run the bench + SPS reprocessing once, from scratch, with every lesson of the year in the chain.
 
