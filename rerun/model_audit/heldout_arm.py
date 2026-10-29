@@ -7,6 +7,9 @@ profile, column guard), one arm = one bundle (+ hyper overrides, + WFT_* environ
 Writes an npz whose ``per`` rows are compare.py-compatible: (eid, view, tan_ref, w[um/ns], chi2, dof, wmax, nsat)
 followed by (t0, p0, ref_mesh, sigma_p0_used, tan_fit_bundle, tan_err, q_uend, q_sum), and a JSON summary beside it.
 Environment arms: WFT_RC_T0_INTERP, WFT_MODEL_FRAC, WFT_SAT_SOLVE, WFT_ZS_CENSOR (set in the calling environment).
+``--rails R.pkl`` (rerun/calib/saturation/rails.py): each window also carries its per-sample ADC rails, P['rail_hi'] =
+W + 4095 - raw and P['rail_lo'] = W - raw (for the wft.model SAT_RAIL / SAT_FLOOR study switches), and two columns are
+appended to ``per``: the plane's raw-clipped samples (raw 4095) and its floor samples (raw 0).  Without it: unchanged.
 """
 import argparse, json, os, pickle, sys
 from concurrent.futures import ProcessPoolExecutor
@@ -14,15 +17,17 @@ import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.environ.get('WFT_REPO') or os.path.abspath(os.path.join(HERE, '..', '..'))
-_EV = None; _OPT = None
+_EV = None; _OPT = None; _RAILS = None
 
 
-def _init(cache, bundle, k, hyper_over, v, nsamp, two_sided, t0fix, no_dead=False, hyper_scale=None, sps_mask_mode=None):
-    global _EV, _OPT
+def _init(cache, bundle, k, hyper_over, v, nsamp, two_sided, t0fix, no_dead=False, hyper_scale=None, sps_mask_mode=None,
+          rails=None):
+    global _EV, _OPT, _RAILS
     sys.path.insert(0, REPO)
     from wft.calib import CalibrationBundle
     from wft import model as wm, reco as wr
     _EV = pickle.load(open(cache, 'rb'))
+    _RAILS = pickle.load(open(rails, 'rb')) if rails else None
     cal = CalibrationBundle.load(bundle)
     if v:
         cal.v_drift = float(v)
@@ -53,6 +58,15 @@ def one(eid):
             continue
         P = ev[plane]
         W = np.asarray(P['W'])
+        extra = ()
+        if _RAILS is not None:
+            rr = _RAILS.get(int(eid), {}).get(plane)
+            if rr is not None and rr['raw'].shape == W.shape:
+                raw = rr['raw'].astype(np.float64)
+                P = dict(P, rail_hi=W + (4095.0 - raw), rail_lo=W - raw)
+                extra = (int((raw >= 4095).sum()), int((raw <= 0).sum()))
+            else:
+                extra = (-1, -1)
         if W.shape[1] != wm.NSAMP:
             wm.set_nsamp(W.shape[1])
         tr = float(ev[f'tan_{plane}']); ref = float(ev.get(f'ref_mesh_{plane}', np.nan))
@@ -71,7 +85,7 @@ def one(eid):
             continue
         nsat = int((W >= wm.SAT).sum())
         rows.append((int(eid), vi, tr, f.w * 1e3, f.chi2, f.dof, float(W.max()), nsat,
-                     f.t0, f.p0, ref, float(getattr(f, '_sigma_p0', np.nan)), f.tan_theta, f.tan_err, f.q_uend, f.q_sum))
+                     f.t0, f.p0, ref, float(getattr(f, '_sigma_p0', np.nan)), f.tan_theta, f.tan_err, f.q_uend, f.q_sum) + extra)
     return rows
 
 
@@ -116,6 +130,7 @@ def main():
     ap.add_argument('--no-dead', action='store_true', help='drop the bundle dead/hot lists (channel numbering of another cabling)')
     ap.add_argument('--sps-mask', default=None, choices=('h4', 'h4_stripes', 'bench', 'none'), help='SPS det4 caches: the H4 channel layer (sps_mask.py)')
     ap.add_argument('--ids', default=None, help='JSON list of event ids (overrides --start/--n)')
+    ap.add_argument('--rails', default=None, help='rails sidecar (rerun/calib/saturation/rails.py): per-sample ADC rails on every window')
     a = ap.parse_args()
     hy = json.loads(a.hyper) if a.hyper else {}; hs = json.loads(a.hyper_scale) if a.hyper_scale else {}
     for kv in (a.set or '').split(','):
@@ -127,7 +142,7 @@ def main():
     C = pickle.load(open(a.cache, 'rb'))
     ids = json.load(open(a.ids)) if a.ids else sorted(C)[a.start:a.start + a.n]
     del C
-    with ProcessPoolExecutor(a.jobs, initializer=_init, initargs=(a.cache, a.bundle, a.k, hy, a.v, a.nsamp, a.two_sided, a.t0_fix, a.no_dead, hs, a.sps_mask)) as pool:
+    with ProcessPoolExecutor(a.jobs, initializer=_init, initargs=(a.cache, a.bundle, a.k, hy, a.v, a.nsamp, a.two_sided, a.t0_fix, a.no_dead, hs, a.sps_mask, a.rails)) as pool:
         rows = [r for rs in pool.map(one, ids, chunksize=2) for r in rs]
     per = np.array(rows, float)
     env = {k: v for k, v in os.environ.items() if k.startswith('WFT_')}

@@ -118,6 +118,34 @@ MODEL_FRAC = 0.0
 #: F19 `sat` arm: s68 +-0.015 deg, far -0.1..-0.4 pp, chi2 -2..-10 %, and the charge of clipped strips is right, which
 #: the x-y charge pairing and the head-on rescue's charge match rely on).
 SAT_SOLVE = True
+#: Saturation treatment, study switches (opt-in, 2026-10-29, rerun/calib/saturation/SATURATION_STUDY.md).  All off =
+#: bit-identical.  The DREAM ADC is 12 bit: a sample's top rail is 4095 - ped - CM and its floor 0 - ped - CM, per
+#: channel and per sample (the CM moves both).  A window may carry them as ``P['rail_hi']`` / ``P['rail_lo']`` (same
+#: units and shape as P['W'], before the gain correction); without them the switches that need them do nothing.
+#:   SAT_RAIL     a sample is clipped when it sits at its own top rail (W >= rail_hi - 0.5 - SAT_MARGIN) instead of
+#:                W >= SAT.  The 3550 rule misses 5-46 % of clipped samples (the CM pulls them under 3550; fitted as data
+#:                at a value below the truth) and censors real samples in [3550, rail).
+#:   SAT_MARGIN   ADC below the rail that also counts as clipped (lower bound): soft compression before the hard clip.
+#:   SAT_FLOOR    samples at the ADC floor (W <= rail_lo + 0.5) are censored.  A long clip ends in a fast fall to raw 0
+#:                that holds for the rest of the window (CSA saturation / baseline recovery), far below anything the
+#:                linear template (undershoot ~2 % of the peak) can make: relative to the LINEAR model the true value
+#:                is at least the observed one, so the lower-bound semantics of ``sat`` is the right one.
+#:   SAT_TAIL     on a strip with a clipped sample, every sample later than SAT_TAIL_SKIP samples after its last clipped
+#:                sample is censored (the non-linear recovery), for plateaus of at least SAT_TAIL_MINLEN samples.
+#:   SAT_STRIP    every sample of a strip with a clipped sample is censored (its rising edge too).
+#: (These ride the same ``sat`` mask: censored, out of the NNLS, one-sided bound model >= W.)
+SAT_RAIL = False
+SAT_MARGIN = 0.0
+SAT_FLOOR = False
+SAT_TAIL = False
+SAT_TAIL_SKIP = 0
+SAT_TAIL_MINLEN = 1
+SAT_STRIP = False
+#: Signal variance in the chi2 weights (opt-in study switch, 2026-10-29): sigma^2 = noise^2 + SIG_VAR_K * max(W, 0)
+#: [ADC, after the gain correction] -- the electron-counting + avalanche variance of the signal itself, linear in the
+#: amplitude (ws_floor "Estimator notes": the right form on the toy, K = 0.19 x ADC per electron = 11.5 ADC on det3;
+#: MODEL_FRAC's variance ~ W^2 was the wrong form).  The data stand in for the prediction (one pass).  0 = off.
+SIG_VAR_K = 0.0
 #: Unobservable depth columns (opt-in, 2026-10-23; sept26_prelim_analysis/qsum_runaway.py, OCTOBER O10).  A depth bin
 #: whose response lies past the end of the window (time-censored) or off the strip window (space-censored) has a
 #: column of ~1e-6..1e-17 in the weighted design matrix, and the unregularised NNLS can put unbounded charge on it
@@ -587,6 +615,45 @@ def build_matrix(plane, pos, p0, w, t0, hyper):
     return M.reshape(n * NSAMP, K)
 
 
+def _get(P, key):
+    try:
+        v = P.get(key) if isinstance(P, dict) else getattr(P, key, None)
+    except Exception:
+        v = None
+    return None if v is None else np.asarray(v, dtype=np.float64)
+
+
+def _sat_mask(P, sat0):
+    """The censor mask of the saturation study switches (SAT_RAIL ... SAT_STRIP), before dead/band/missing rows.
+    ``sat0`` = the W >= SAT mask (used as the clip mask when the window carries no rails)."""
+    W = np.asarray(P['W'], dtype=np.float64)
+    hi, lo = _get(P, 'rail_hi'), _get(P, 'rail_lo')
+    clip = sat0
+    if SAT_RAIL and hi is not None and hi.shape == W.shape:
+        clip = W >= hi - 0.5 - SAT_MARGIN
+    elif SAT_MARGIN > 0 and hi is None:
+        clip = W >= SAT - SAT_MARGIN
+    sat = clip.copy()
+    if SAT_FLOOR and lo is not None and lo.shape == W.shape:
+        sat |= W <= lo + 0.5
+    rows = clip.any(axis=1)
+    if (SAT_TAIL or SAT_STRIP) and rows.any():
+        for i in np.flatnonzero(rows):
+            k = np.flatnonzero(clip[i])
+            if SAT_STRIP:
+                sat[i] = True
+            elif k[-1] - k[0] + 1 >= SAT_TAIL_MINLEN:
+                sat[i, k[-1] + 1 + SAT_TAIL_SKIP:] = True
+    return sat
+
+
+def _weights(W, noise):
+    """1/sigma per sample (flat), for MODEL_FRAC / SIG_VAR_K > 0 (the noise-only production path is written out
+    where it is used, expression for expression)."""
+    Wp = np.maximum(W, 0.0)
+    return (1.0 / np.sqrt(noise[:, None] ** 2 + (MODEL_FRAC * Wp) ** 2 + SIG_VAR_K * Wp)).reshape(-1)
+
+
 def prep_plane(P, plane):
     """Gain-correct one plane's waveform window. P: dict with W (nstrip, nsamp),
     pos [mm], noise per strip, ch (channel numbers).
@@ -610,6 +677,8 @@ def prep_plane(P, plane):
     W /= g[:, None]
     noise = np.maximum(np.asarray(P['noise'], dtype=np.float64), 3.0) / g
     sat = np.asarray(P['W'], dtype=np.float64) >= SAT
+    if SAT_RAIL or SAT_FLOOR or SAT_TAIL or SAT_STRIP:
+        sat = _sat_mask(P, sat)
     if ZS_CENSOR or ZS_BOUND > 0:
         sat |= np.asarray(P['W'], dtype=np.float64) == 0.0
     miss = P.get('missing') if isinstance(P, dict) else None
@@ -671,7 +740,7 @@ def _solve_nnls(M, W, noise, sat, censor=True):
     ok = ~sat.reshape(-1)
     if not ok.any():
         return np.inf, None
-    if MODEL_FRAC <= 0:
+    if MODEL_FRAC <= 0 and SIG_VAR_K <= 0:
         # production path, expression-for-expression unchanged
         Wt = np.repeat(1.0 / noise, NSAMP)
         A = (M * Wt[:, None])[ok]
@@ -682,8 +751,7 @@ def _solve_nnls(M, W, noise, sat, censor=True):
         # bright samples otherwise dominates the chi2 (bench chi2/dof ~800),
         # and a kernel fitted on it patches the template instead of
         # describing the sharing.
-        Wt = (1.0 / np.sqrt(noise[:, None] ** 2 +
-                            (MODEL_FRAC * np.maximum(W, 0.0)) ** 2)).reshape(-1)
+        Wt = _weights(W, noise)
         A = (M * Wt[:, None])[ok]
         y = (W.reshape(-1) * Wt)[ok]
     live = None
@@ -703,8 +771,7 @@ def _solve_nnls(M, W, noise, sat, censor=True):
     chi = rn * rn
     if censor and SAT_SOLVE and sat.any():
         # active set of the one-sided bound model >= clip on the censored samples
-        Wall = (np.repeat(1.0 / noise, NSAMP) if MODEL_FRAC <= 0 else
-                (1.0 / np.sqrt(noise[:, None] ** 2 + (MODEL_FRAC * np.maximum(W, 0.0)) ** 2)).reshape(-1))
+        Wall = (np.repeat(1.0 / noise, NSAMP) if (MODEL_FRAC <= 0 and SIG_VAR_K <= 0) else _weights(W, noise))
         Af, yf = M * Wall[:, None], W.reshape(-1) * Wall
         sat1 = sat.reshape(-1)
         act = np.zeros_like(sat1)
@@ -1100,10 +1167,10 @@ def _vp_resid_jac(plane, W, noise, pos, sat, th, q, M, hyper, censor, t0_prior):
     """(r, J) with r @ r = chi2 of :func:`_solve_nnls` (+ prior) at theta, and J the variable-projection Jacobian in
     Kaufman's form: d(M q)/d(theta) at fixed q, projected off the span of the free (q > 0) weighted columns over the
     rows that determine q (the live samples and the clipped samples the model falls below)."""
-    if MODEL_FRAC <= 0:
+    if MODEL_FRAC <= 0 and SIG_VAR_K <= 0:
         Wt = np.repeat(1.0 / noise, NSAMP)
     else:
-        Wt = (1.0 / np.sqrt(noise[:, None] ** 2 + (MODEL_FRAC * np.maximum(W, 0.0)) ** 2)).reshape(-1)
+        Wt = _weights(W, noise)
     y = W.reshape(-1)
     m = M @ q
     ok = ~sat.reshape(-1)
