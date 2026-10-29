@@ -1,5 +1,55 @@
 # Handoff
 
+## From-scratch pass: pre-flight closed, calib DAG built, dry run in progress — updated 2026-10-29 night (dylan-Yoga)
+
+**Resume:** re-open lxplus (`! ssh lxplus true`, 2FA). Then archive HEAD, rerun the det3 calib dry run, and if it ends clean, submit S1.
+
+**Dylan's calls (10-29 evening):** start from the audited rr1 inputs (not raw); include S0b; run through every gate by its
+written criteria, report at the end; code on main, heavy work on condor into `Analysis_pass1`.
+
+**Done (all on main, 138 tests pass):**
+- Pre-flight S0b, F7–F11 closed: `rerun/precheck_ga/README.md`.
+  - S0b: 0-byte raw files, no data.
+  - F7: 8 of the 14 GA channels dropped, 6 kept.
+  - F8: H4 ch 372 masked.
+  - F9: det2 6-17 and det3 quick have no v-capable row → golden bundle, skeptical. New `N_MIN_V`, and `align_key` so they keep
+    their own night's alignment.
+  - F10: ok.
+  - F11: the pedestal/data noise gap is fleet-wide; `wft.reco.pedestal_guard` written and OFF.
+- E1 `rerun/calib/make_bundle.py` + `physics_inputs.json`; E3 `make_pass_dag.py calib` (116 nodes, `convergence.py`);
+  E4 `make_pass_dag.py sps` + sps_reco changes; G1 `rerun/calib/g1_gate.py`. Record: PASS_PLAN §1b.
+- Condor: `rerun/condor/*.sub` run the archive's own scripts through bash, with `PYTHONDONTWRITEBYTECODE=1` and `RETRY 3`.
+  The deployed `~/x17rerun/stage_job.sh` is stale (it exports retired WFT_* switches): don't use it.
+
+**Dry run 1** (`code_e9a1d88`, det3 `--limit 300`, `~/x17rerun/pass1_dry`):
+- CAL0–CAL2 and RECO2/ALIGN2/ANG2/W0KW2 passed.
+- BOW2 failed: a from-scratch c1 bundle has no w0/kw. Fixed: BOW2 now reads W0KW2's `c2/bundle_nobow`.
+- CAL3b/CAL4 (W0KW2b, RECO3, ALIGN3, ANG3, W0KW3, BOW3, BUDGET, CONV) have **not run yet**.
+- DRC runs at ~1 s/eval on 60 events.
+
+**Dry run 2 attempt:** an archive made by `cp -a` + rename on EOS gave status 126 (worker read timeouts) on every try.
+Only fresh `git archive` extracts work. The clean re-upload then lost the ssh connection (2FA expired).
+Partial dirs `code_1380e8a`/`code_b83692c` may sit in `/eos/user/d/dneff/offload/x17rerun_code/`: delete them.
+
+**Next steps:**
+1. `! ssh lxplus true` (2FA).
+2. Archive (the tgz route survives drops):
+   `H=$(git rev-parse --short=7 HEAD); git archive --format=tar.gz -o /tmp/code_$H.tgz HEAD; scp /tmp/code_$H.tgz lxplus:/eos/user/d/dneff/offload/x17rerun_code/`
+   then on lxplus: `nohup` extract into `.../code_$H`, `ln -sfn` to `~/x17rerun/code_$H`, check the file count = `git ls-files | wc -l`.
+3. Dry run: in `~/x17rerun/pass1_dry`: `cp $C/rerun/condor/*.sub .; python3 $C/rerun/make_pass_dag.py calib $C --only sat_det3
+   --limit 300 --analysis-root /eos/user/d/dneff/x17rerun/pass1_dry/Analysis3; condor_submit_dag calib.dag`. All 24 nodes must
+   exit 0. Then one vrefit row and one pass row on its output (`--only <key> --limit 300`, same analysis root).
+4. S1: `~/x17rerun/pass1/`, `make_pass_dag.py calib $C` (116 nodes, default root Analysis_pass1). G1: `rerun/calib/g1_gate.py`
+   on lxplus. Then `vrefit --keep-v` (460) → `pass` (758) + `sps` (71, after CONV_det4).
+5. `lxstore status` before and after (AFS 39 % on 10-29).
+
+**Gotchas:**
+- Stages get `{key}` substituted only when their args contain `{key}`; otherwise the key is passed first (recal and
+  make_bundle carry `{key}` on purpose).
+- `/media/dylan/data` on this laptop is 100 % full (1.9 GB free).
+- The DRC training events (cache 580–1079) overlap the 8000-event RECO tables by ≤ 6 %; G1 accepts this.
+
+
 ## Calibration basis, bow, saturation and error model (pre-pass studies) — updated 2026-10-29 (dylan-Yoga)
 
 **Resume:** studies closed and **the simple model locked (Dylan, 10-29 evening; `rerun/calib/saturation/DECISION_2026-10-29.md`)**;
