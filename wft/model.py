@@ -391,6 +391,8 @@ def strip_fractions(pos, p0, w, sigma_p0, Dp):
 RC_EDGES = np.array([0.0, 30, 60, 100, 150, 220, 300, 400, 550, 750, 1000,
                      1400, 2000, 3000])
 _rc_cache: dict = {}
+#: prompt width [mm] of the narrow footprint component (``core_frac_<plane>``): the static induction floor (FC stack-up)
+CORE_SIGMA = 0.07
 
 
 def _rc_tensors(plane: str, t0q: float, tmpl_plane: str):
@@ -456,6 +458,10 @@ def build_matrix_rc(plane, pos, p0, w, t0, hyper):
     ``lor_frac_<plane>`` / ``lor_gamma_<plane>`` (optional, mm): a fraction of each prompt landing spread
     as a Lorentzian of half-width gamma instead of the Gaussian (pseudo-Voigt footprint tails, measured
     on X, cloud_basics FINDINGS §23); absent or 0 = bit-identical.  Resolution-neutral on the bench.
+    ``core_frac_<plane>`` (optional): a fraction of each prompt landing with the prompt width ``core_sigma``
+    (default 0.07 mm, the static induction floor) instead of sigma_p0, drift diffusion and RC growth kept -- a
+    two-Gaussian footprint, narrower core with the same tails (template study T15, 2026-10-29).  Each component
+    grows under RC exactly, so it survives on Y.  Absent or 0 = bit-identical.
     """
     tp = 'x' if hyper.get('rc_tmpl', 'x') in ('x', 1, 1.0) else plane
     if RC_T0_INTERP:
@@ -476,7 +482,13 @@ def build_matrix_rc(plane, pos, p0, w, t0, hyper):
     s0 = float(hyper.get(f'sigma_p0_{plane}', hyper['sigma_p0']))
     var0 = s0 ** 2 + hyper['Dp'] ** 2 * UK + half ** 2 / 3.0       # (K,)
     D = float(hyper.get(f'rc_D_{plane}', 0.0))
-    F0 = _fractions_sig(pos, pc, np.sqrt(var0))                   # prompt landing
+    cf = float(hyper.get(f'core_frac_{plane}', 0.0))
+    dvc = float(hyper.get('core_sigma', CORE_SIGMA)) ** 2 - s0 ** 2
+
+    def frac(v):
+        G = _fractions_sig(pos, pc, np.sqrt(v))
+        return G if cf <= 0 else (1.0 - cf) * G + cf * _fractions_sig(pos, pc, np.sqrt(v + dvc))
+    F0 = frac(var0)                                               # prompt landing
     eta = float(hyper.get(f'lor_frac_{plane}', 0.0))
     if eta > 0:
         # induced-footprint tails (cloud_basics FINDINGS §23): a fraction eta of each landing
@@ -504,7 +516,7 @@ def build_matrix_rc(plane, pos, p0, w, t0, hyper):
         drain = float(hyper.get('rc_drain', 0.0))
         Fprev = F0
         for j, s in enumerate(RC_EDGES[1:]):
-            Fj = _fractions_sig(pos, pc, np.sqrt(var0 + 2.0 * D * s))
+            Fj = frac(var0 + 2.0 * D * s)
             if drain > 0:
                 Fj = Fj * np.exp(-s / drain)
             M += np.einsum('ik,tk->itk', Fj - Fprev, Hs[j + 1])
@@ -998,7 +1010,16 @@ def _rc_dmq(plane, pos, p0, w, t0, hyper, q):
     s0 = float(hyper.get(f'sigma_p0_{plane}', hyper['sigma_p0']))
     var0 = s0 ** 2 + hyper['Dp'] ** 2 * UK + (w * DT) ** 2 / 12.0
     dvar_dw = w * DT ** 2 / 6.0
-    G, gc, gv = _frac_derivs(pos, pc, var0)
+    cf = float(hyper.get(f'core_frac_{plane}', 0.0))
+    dvc = float(hyper.get('core_sigma', CORE_SIGMA)) ** 2 - s0 ** 2
+
+    def fderiv(v):
+        G, gc, gv = _frac_derivs(pos, pc, v)
+        if cf <= 0:
+            return G, gc, gv
+        Gc, gcc, gvc = _frac_derivs(pos, pc, v + dvc)
+        return (1 - cf) * G + cf * Gc, (1 - cf) * gc + cf * gcc, (1 - cf) * gv + cf * gvc
+    G, gc, gv = fderiv(var0)
     eta = float(hyper.get(f'lor_frac_{plane}', 0.0))
     F0, Fc, Fv = G, gc, gv
     if eta > 0:
@@ -1036,7 +1057,7 @@ def _rc_dmq(plane, pos, p0, w, t0, hyper, q):
         drain = float(hyper.get('rc_drain', 0.0))
         Fp, Fpp, Fpw = F0, dF0p, dF0w
         for j, s in enumerate(RC_EDGES[1:]):
-            Gj, gcj, gvj = _frac_derivs(pos, pc, var0 + 2.0 * D * s)
+            Gj, gcj, gvj = fderiv(var0 + 2.0 * D * s)
             e = np.exp(-s / drain) if drain > 0 else 1.0
             Fj, Fjp, Fjw = e * Gj, e * gcj, e * (gcj * UK[None, :] + gvj * dvar_dw)
             add(Fj - Fp, Fjp - Fpp, Fjw - Fpw, Hq[j + 1], dHq[j + 1] if dHq is not None else None)

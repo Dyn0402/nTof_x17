@@ -108,3 +108,31 @@ def test_lor_conserves_charge_and_widens_tails():
     ya = wm.build_matrix('y', POS, 0.1, 0.02, 200.0, h)
     yb = wm.build_matrix('y', POS, 0.1, 0.02, 200.0, dict(h, lor_frac_x=0.2, lor_gamma_x=0.8))
     assert np.array_equal(ya, yb)
+
+
+# ---- two-Gaussian footprint: narrow prompt core (template study T15)
+def test_core_absent_or_zero_is_bit_identical():
+    h = dict(BASE, rc_D_y=5e-4)
+    for plane in ('x', 'y'):
+        a = wm.build_matrix(plane, POS, 0.1, 0.02, 200.0, h)
+        b = wm.build_matrix(plane, POS, 0.1, 0.02, 200.0, dict(h, core_frac_x=0.0, core_frac_y=0.0))
+        assert np.array_equal(a, b)
+
+
+def test_core_conserves_charge_and_narrows_centre_on_both_views():
+    h = dict(BASE, rc_D_y=5e-4, Dp=0.005)
+    q = np.zeros(wm.K); q[2] = 1.0
+    for plane in ('x', 'y'):
+        a = wm.build_matrix(plane, WIDE, 0.0, 0.0, 200.0, h).reshape(len(WIDE), wm.NSAMP, wm.K)
+        b = wm.build_matrix(plane, WIDE, 0.0, 0.0, 200.0,
+                            dict(h, **{f'core_frac_{plane}': 0.4})).reshape(len(WIDE), wm.NSAMP, wm.K)
+        assert np.allclose(a.sum(0), b.sum(0), atol=1e-6)
+        Wa, Wb = a @ q, b @ q
+        c = 40
+        # more charge on the centre strip at its peak, relative to the +-1 peak (on Y the core survives the RC step;
+        # it does spread out faster afterwards, which is the physics: a narrower landing has more to diffuse)
+        assert Wb[c].max() > 1.05 * Wa[c].max()
+        assert Wb[c].max() / Wb[c + 1].max() > 1.05 * Wa[c].max() / Wa[c + 1].max()
+        other = 'y' if plane == 'x' else 'x'
+        assert np.array_equal(wm.build_matrix(other, POS, 0.1, 0.02, 200.0, h),
+                              wm.build_matrix(other, POS, 0.1, 0.02, 200.0, dict(h, **{f'core_frac_{plane}': 0.4})))

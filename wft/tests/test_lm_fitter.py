@@ -49,7 +49,8 @@ def check_jacobian(cal, C):
     ev = C[sorted(C)[5]]
     worst = 0.0
     variants = [{}, {'lor_frac_x': 0.2, 'lor_gamma_x': 0.3, 'lor_frac_y': 0.2, 'lor_gamma_y': 0.3},
-                {'rc_asym_x': 0.13, 'rc_asym_y': -0.1}, {'rc_drain': 400.0}, {'rc_D_x': 2e-4}]
+                {'rc_asym_x': 0.13, 'rc_asym_y': -0.1}, {'rc_drain': 400.0}, {'rc_D_x': 2e-4},
+                {'core_frac_x': 0.3, 'core_frac_y': 0.3}]
     for extra in variants:
         hyper = dict(cal.hyper, **extra)
         for plane in 'xy':
