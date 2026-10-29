@@ -5,6 +5,11 @@ are none. Held-out angle s68 vs M3, event-paired against the planned-pass base, 
 
 ## Verdict
 
+> **Read the clean-track check (below) first (2026-10-29 evening).** The cap result holds on clean single tracks (not
+> a δ artefact), but it is a symptom: the fit's noise-only error model over-trusts bright samples. Amplitude carries
+> real information (the charge, the x-y matching, and the toy's 0.34°); the fix to try is the error model, not a cap.
+
+
 **There is room, and it is not in the censoring rule.** Changing how the clipped samples themselves are treated does
 nothing on det3: the per-sample rail and the floor bound are null to ±0.002–0.005° (all planes) on a second sample of
 4818 events, and every other censor variant is null or worse on the first 1320. The fit's present treatment of the
@@ -28,6 +33,62 @@ clips and a compression margin are all null or worse.
 Saturated planes stay worse than unsaturated ones after the best treatment (det3 sat 1.06 vs all 1.02 X at cap 1200,
 far 10 % on the 1320-event sample): that remainder is the deposits themselves (≥ 5 clipped strips: far 38–50 %),
 which no censoring rule reaches.
+
+## Clean-track check (2026-10-29 evening, Dylan: "clipping at 1500 costs nothing can't be right")
+
+Dylan's two objections: is "clipping costs nothing" an artefact of saturation correlating with δ blobs / non-track
+events, and doesn't the charge matter (x-y matching)? `clean_check.py`, det3, the 4818-event held-out sample, every
+window clipped at C ADC (`--emulate-rail C` = `SAT_CAP`), event-paired against the true-clips-only fit. Event classes
+from the RAW waveforms and M3 only (no fit): **clean** = one cluster, width ≤ expected + 3 strips, charge ≤ 2 × the
+median at that angle, in both views (1312 events, far fraction 0.5 %); **blob** = a second cluster > 20 % of
+the main charge, width > expected + 6 or charge > 3 × median, in either view (775 events, far 12 / 6 %); other
+2731.
+
+**Clean tracks:**
+
+| clip level (every window) | angle Δs68 X | angle Δs68 Y | far X / Y % | charge ratio X / Y | x-y log-charge σ | x-y pairing power |
+|---|---|---|---|---|---|---|
+| none (true clips only) | +0.000 ± 0.000 | +0.000 ± 0.000 | 0.5 / 0.5 | 1.000 / 1.000 | 0.054 | 0.900 |
+| 300 ADC | -0.085 ± 0.025 | -0.052 ± 0.023 | 0.4 / 0.4 | 0.907 / 0.916 | 0.173 | 0.786 |
+| 600 ADC | -0.071 ± 0.021 | -0.039 ± 0.023 | 0.5 / 0.4 | 0.941 / 0.932 | 0.094 | 0.855 |
+| 800 ADC | -0.066 ± 0.020 | -0.019 ± 0.020 | 0.5 / 0.4 | 0.956 / 0.944 | 0.072 | 0.878 |
+| 1000 ADC | -0.061 ± 0.018 | -0.013 ± 0.016 | 0.5 / 0.4 | 0.971 / 0.957 | 0.062 | 0.889 |
+| 1200 ADC | -0.057 ± 0.018 | -0.007 ± 0.016 | 0.5 / 0.4 | 0.982 / 0.971 | 0.056 | 0.891 |
+| 1500 ADC | -0.030 ± 0.013 | -0.010 ± 0.013 | 0.4 / 0.5 | 0.995 / 0.988 | 0.055 | 0.896 |
+| 2000 ADC | -0.025 ± 0.011 | +0.000 ± 0.011 | 0.4 / 0.5 | 1.000 / 1.000 | 0.053 | 0.899 |
+| 2500 ADC | -0.012 ± 0.008 | -0.001 ± 0.009 | 0.4 / 0.5 | 1.000 / 1.000 | 0.053 | 0.898 |
+
+**Blobs:**
+
+| clip level (every window) | angle Δs68 X | angle Δs68 Y | far X / Y % | charge ratio X / Y | x-y log-charge σ | x-y pairing power |
+|---|---|---|---|---|---|---|
+| none (true clips only) | +0.000 ± 0.000 | +0.000 ± 0.000 | 12.4 / 6.3 | 1.000 / 1.000 | 0.093 | 0.899 |
+| 300 ADC | +0.070 ± 0.053 | +0.440 ± 0.064 | 11.5 / 10.1 | 0.874 / 0.738 | 0.464 | 0.721 |
+| 600 ADC | -0.020 ± 0.042 | +0.092 ± 0.047 | 11.1 / 7.0 | 0.909 / 0.828 | 0.284 | 0.778 |
+| 800 ADC | -0.039 ± 0.041 | -0.026 ± 0.044 | 11.0 / 6.1 | 0.926 / 0.850 | 0.240 | 0.808 |
+| 1000 ADC | -0.079 ± 0.042 | -0.039 ± 0.043 | 11.6 / 6.2 | 0.934 / 0.874 | 0.193 | 0.832 |
+| 1200 ADC | -0.086 ± 0.037 | -0.077 ± 0.037 | 11.6 / 6.2 | 0.948 / 0.893 | 0.165 | 0.838 |
+| 1500 ADC | -0.040 ± 0.035 | -0.070 ± 0.033 | 11.9 / 6.1 | 0.955 / 0.915 | 0.141 | 0.859 |
+| 2000 ADC | -0.018 ± 0.033 | -0.053 ± 0.033 | 11.9 / 6.3 | 0.976 / 0.946 | 0.115 | 0.878 |
+| 2500 ADC | -0.015 ± 0.022 | -0.025 ± 0.029 | 12.0 / 6.2 | 0.988 / 0.964 | 0.100 | 0.888 |
+
+- **Not a blob artefact.** On clean single tracks the angle gets *better* the more of the amplitude is hidden, down to
+  a 300 ADC clip (X −0.085 ± 0.025°, Y −0.052 ± 0.023°), where the fit sees little more than where and when the
+  strips are above 300. Blobs are where the amplitude is needed (Y +0.44° at 300).
+- **The charge does carry information, and the clip destroys it**: x-y log-charge σ 0.054 → 0.173 and pairing power
+  0.90 → 0.79 on clean tracks at 300 ADC; the cap at 1200 already costs 0.054 → 0.056 (clean) and 0.093 → 0.165
+  (blobs). Any cap must keep an uncapped charge solve.
+- **What it means.** Amplitudes are physically informative: the electron-by-electron toy with an exact model reaches
+  0.34° *using* them (`rerun/model_audit/ws_floor`). That hiding them helps here says the fit's **error model** is wrong
+  for bright samples: it weights every sample by electronics noise alone (σ ~ 10 ADC), while the real sample-to-sample
+  scatter of a bright pulse around any mean model is ~6 % of the peak (T16: 0.06 of the peak, plane to plane), i.e.
+  50–200 ADC, and it is correlated within a strip (one cluster's charge shapes all its samples). So the brightest
+  samples are trusted 10–20× too much and their fluctuations pull the line; the cap is a crude way of not trusting them.
+- **Not yet tested, and the likely real fix:** (1) a model-based signal variance, σ² = noise² + k·M (Pearson form,
+  iterated with the prediction M). The study's `SIG_VAR_K` used the DATA in place of the prediction (Neyman form), which
+  is known to bias towards low-fluctuating samples; that may be why it came out much worse. (2) A per-strip amplitude
+  nuisance (each strip's scale free within a prior ~ the cluster fluctuation), so the shape and timing of every strip
+  are used but its absolute amplitude only loosely, with the total charge from the uncapped solve.
 
 ## Headline numbers (det3, 1320 held-out events, s68 [°] vs M3; far = |err| > 5°)
 
