@@ -44,8 +44,8 @@ Status key: [x] done · [ ] open · [~] partly / in progress
 5. [ ] **E1 bundle from nothing**: `rerun/calib/make_bundle.py` + `rerun/calib/physics_inputs.json` (σ0 0.30, Dp,
        det4 D_rc,y 2.2e-4, gaps, timing v; provenance) — PASS_PLAN §2.
 6. [ ] **E2 bow node**: `rerun/calib/bow_node.py` (FB `set_bow` reading EOS tables + M3 + alignment, not the laptop mirror).
-       10-29: tan form (`a_x/a_y`, done in wft/set_w0kw/set_bow), one block per chamber per mount (add a `mount`
-       column to `pass_registry.csv`), and the cross-dataset transfer gate (`rerun/calib/bow/bow_transfer.py` on the
+       10-29: tan form (`a_x/a_y`, done in wft/set_w0kw/set_bow), one block per chamber (per mount only if a second
+       usable row of that mount validates it), and the cross-dataset transfer gate (`rerun/calib/bow/bow_transfer.py` on the
        pass tables). Evidence: `rerun/calib/bow/BOW_TRANSFER.md`.
 7. [ ] **E3 `make_pass_dag.py calib` phase** CAL0–CAL4 per golden chamber into `Analysis_pass1`, convergence
        criteria → `CALIB_CONVERGENCE.json`; **`--table` on every W0KW node** (finalize/vrefit/pass, make_pass_dag.py:89,

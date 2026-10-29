@@ -12,10 +12,13 @@ detector's datasets, not fitted to one run. det3 first.
   −0.12); in tan form the same golden shape gives −0.10 ± 0.04 and the pooled other-dataset shape −0.14 ± 0.04.
   Implemented: bow block keys `a_x`, `a_y` (`wft.reco.tan_bow`, `set_w0kw.py`, `set_bow.py`); blocks without them
   are bit-identical.
-- **The mount matters.** On det3's bottom-slot run (6-25) the top-slot shape gives 70–80 % of the run's own map
-  (X −0.14 vs −0.17, Y −0.22 vs −0.32). det3 has 35 bottom-slot rows in the pass (6-22, 6-23 overnights, 6-25), so
-  the pass needs **one bow shape per chamber per mount**. A per-run amplitude instead does not work: it closes part
-  of that gap (Y −0.28) but overfits small rows (500 V X −0.09 → −0.03).
+- **The mount may matter, but it cannot be validated.** On det3's bottom-slot run (6-25) the top-slot shape gives
+  70–80 % of the run's own map (X −0.14 vs −0.17, Y −0.22 vs −0.32). Every other det3 bottom-slot row is already
+  classed skeptical in the registry (6-22: micro-TPC angle unusable, r ≈ 0.62; 6-23: degraded night), so a bottom-slot
+  shape could only ever be fitted on 6-25 itself and never checked on a second dataset. **Rule: one bow shape per
+  chamber (its golden mount); a separate shape for another mount only if a second usable row of that mount confirms
+  it.** For det3 6-25 that means the chamber shape (a validated 70–80 % of the gain). A per-run amplitude does not
+  rescue it: it closes part of the gap (Y −0.28) but overfits small rows (500 V X −0.09 → −0.03).
 - Other chambers: the shape transfers between same-mount datasets of det2, det6 and det7 (pooled ≈ golden ≈ 85–100 %
   of own on Y). Two exceptions: **det4 X** (no transferable shape: pooled +0.02/−0.00 vs own −0.13/−0.09; FB also found
   det4 X gains nothing), and **det6 X** (pooled −0.39 vs own −0.55; det6's map is partly a slope-scale reco bias, skeptic
@@ -68,13 +71,14 @@ target's slope relative to the golden row (the drift-field change).
 | det7_hv505 — mesh 505 V | Y | 457 | 0.93 | 1.703 | -0.241 ± 0.080 | -0.266 ± 0.067 | -0.247 ± 0.071 | -0.243 ± 0.066 | -0.200 ± 0.071 |
 
 ## For the pass (PASS_PLAN E2)
-1. BOW node writes the **tan form** (`a_x`, `a_y`), measured on the chamber's golden row, **one block per mount**
-   (slot × mounting epoch; det2 remounted after 6-17). Rows inherit the block of their own mount.
+1. BOW node writes the **tan form** (`a_x`, `a_y`), measured on the chamber's golden row, **one block per chamber**;
+   every row of the chamber inherits it (vrefit `--keep-v`). A per-mount block only with a second usable row of
+   that mount to validate it (none exists today: all usable rows except det3 6-25 are on their chamber's golden mount).
 2. **Transfer gate** (new, table level, cheap): after the pass reco, run `bow_transfer.py` on every row of each
    chamber with the pass tables. A mount's shape is accepted if, on every other row of that mount with ≥ 2000 events,
    loo_tan reaches ≥ 70 % of the row's own map and never worsens s68. Report det4 X / det6 X separately.
-3. The bottom-slot det3 shape can only be checked across datasets once the pass tables of 6-22/6-23 exist (today the
-   only usable bottom-slot table is 6-25). That is the first thing the gate must show.
+3. If the re-decode rescues det3 6-22/6-23 (registry: "re-judge on the re-decode"), the gate can test a bottom-slot
+   shape across those nights and 6-25; until then 6-25 takes the chamber shape.
 
 ## Not ruled out / limits
 - Tables are finalize-era (old σ0 handling, promoted bundles), not the planned pass chain; the gate re-does this on
