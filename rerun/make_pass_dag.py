@@ -13,7 +13,8 @@ calib     the from-scratch calibration of the five golden rows (PASS_PLAN_2026-1
           CAL3  RECO2 -> ALIGN2 -> ANG2 -> W0KW2 (--table --angles --sigma0 0.30,0.30: c2/bundle_nobow) -> BOW2
                 (bow_node: c2/bow_block.json) -> W0KW2b (--bow-json --table: c2/bundle)
           CAL4  RECO3 (with the bow) -> ALIGN3 -> ANG3 -> W0KW3 (--table: <row>/wft/calib_bundle, the bow kept) -> BOW3
-                (r3/bow_block.json, a check only) -> CONV (convergence.py: wft/calib/CALIB_CONVERGENCE.json)
+                (r3/bow_block.json, a check only) -> CONV (convergence.py: wft/calib/CALIB_CONVERGENCE.json);
+                BUDGET (effbudget on the RECO3 table, for G1)
 sps       every sps_registry.csv row (S3, PASS_PLAN E4): sps_stage.sh -> Analysis_pass1/sps/<key>/events.parquet with
           the pass's det4 calib_bundle (CAL4; the bench bow / v map / w0 / t0 are dropped in sps_reco).  Submit after
           the calib DAG's CONV_det4 (a separate DAG: no cross-DAG parent).
@@ -129,6 +130,9 @@ def calib_phase(L, rows, a, only):
         S('BOW3', f'--parts run_config,m3 --script rerun/calib/bow_node.py -- {d} --events {t3} '
                   f'--alignment {c}/r3/alignment/alignment.json --bundle {c}/c2/bundle --out {c}/r3/bow_block.json',
           1, 8000, ['ALIGN3'])
+        # G1 needs the loss budget of the final calibration reconstruction (gate_compare layout: <arm>/budget/)
+        S('BUDGET', f'--parts run_config,m3,hits --script rerun/effbudget/budget.py -- {d} --table {t3} '
+                    f'--alignment {c}/r3/alignment/alignment.json --out {c}/r3/budget', 1, 8000, ['ALIGN3'])
         S('CONV', f'--parts run_config --script rerun/calib/convergence.py -- --calib {c} --final {{out}}/wft/calib_bundle '
                   f'--out {c}/CALIB_CONVERGENCE.json', 1, 4000, ['W0KW3', 'BOW3'])
 
