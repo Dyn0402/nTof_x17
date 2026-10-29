@@ -14,7 +14,8 @@ events each) tested one extra parameter per chamber and view, and separate X/Y t
 - **Template time stretch: det4 Y only, −0.12 ± 0.04° at s 0.84**, χ² agrees, confirmed by choosing s on half the
   events and measuring on the other (−0.09/−0.10 ± 0.05). Not det4's RC constant (scanned). Neutral elsewhere; a
   χ²-fitted stretch risks det4 X (+0.09 ± 0.07 in one half).
-- **Open for Dylan:** adopt the stretch as a CAL-phase constant gated on held-out angles (recommended), det4 Y only, or not at all.
+- **Decided (Dylan, 10-29): a parameter is added only if it wins on det3 and is reasonable elsewhere.** No T15
+  parameter wins on det3, so none is added; the det4 Y stretch is recorded as a det4 observation, not adopted.
 - **T16 (det3):** a lateral DOF does remove a third to a half of the mean centre/±1 pattern, but that pattern is
   only 9–17 % of the peak χ² and is left-right symmetric about the track, so the slice centroids (the angle) do not
   move. det3's remaining error sits in the chamber bow (in the plan), saturated/bright planes and δ-ray planes.

@@ -2,9 +2,9 @@
 
 ## Calibration basis study (templates, D_rc,y, σ0, model shape) — updated 2026-10-29 late morning (dylan-Yoga)
 
-**Resume:** read "Update 2026-10-29 late morning (T15)" at the top of `rerun/calib/templates/TEMPLATE_STUDY.md`; get
-Dylan's call on the template stretch (CAL-phase constant gated on held-out angles / det4 Y only / none), then build
-E1/E3 with the corrected DRC objective and no δ.
+**Resume:** read "Update 2026-10-29 late morning (T15)" at the top of `rerun/calib/templates/TEMPLATE_STUDY.md`; no new
+model parameter (Dylan: only if it wins on det3; none does, T15/T16). Build E1/E3 with the corrected DRC objective
+and no δ. Candidate det3 levers if wanted first: saturated/bright-plane treatment and δ-ray planes (T16).
 
 **10-29 morning (T15, lxplus condor):** δ dropped (Dylan). Separate Y template is worse on all five chambers at any
 D_rc,y, so the X template keeps driving both views. Dp and the new `core_frac_<view>` (two-Gaussian narrow core in
@@ -30,7 +30,7 @@ needed; every number is in `results/`).
 
 ## From-scratch pass: history, plan, calibration phase to build — updated 2026-10-28 (dylan-Yoga)
 
-**Resume:** δ is dropped and det6 Y is under watch (Dylan 10-29). Get the template-stretch call (section above), then build `calib` phase E1–E4 with DRC `--t0-pin --unsat-only`.
+**Resume:** δ is dropped and det6 Y is under watch (Dylan 10-29). Build `calib` phase E1–E4 with DRC `--t0-pin --unsat-only`.
 
 **Goal:** run the bench + SPS reprocessing once, from scratch, with every lesson of the year in the chain.
 

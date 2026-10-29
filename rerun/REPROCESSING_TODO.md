@@ -64,9 +64,10 @@ Status key: [x] done · [ ] open · [~] partly / in progress
        held-out angles. The Y RC branch cannot carry footprint tails (code limitation).
        (f) T15 (10-29, condor, 1320 held-out events per arm): δ dropped (Dylan). Separate Y template worse on all five
        chambers at any D_rc,y, so X template for both views stays. Dp / narrow-core (`core_frac_<view>`) lower χ²,
-       never improve angles. Template time stretch helps det4 Y only (−0.12 ± 0.04° at s 0.84, χ² agrees). **Pending
-       Dylan:** CAL-phase stretch `s_<view>` fitted by χ² in [0.84, 1.04] and kept only if the held-out angle gate
-       does not worsen (recommended), or det4 Y only, or none. If adopted, redo T10 (SPS σ0) with it.
+       never improve angles. Template time stretch helps det4 Y only (−0.12 ± 0.04° at s 0.84, χ² agrees). **Decided
+       (Dylan):** a parameter goes in only if it wins on det3; none does, so none is added (det4 Y stretch recorded,
+       not adopted). T16: the mean shape error is symmetric, so it cannot move angles; det3's remaining error is bow
+       (E2), saturated/bright planes and δ-ray planes.
 8. [ ] **E4 SPS phase** (was B3): one node per `sps_registry.csv` row with the new det4 bundle (bench bow/v_map/w0/t0
        dropped — done 10-28 in sps_reco), `quality_flags`/timestamp in `sps_reco`, K fallback +5 → +15.
 9. [ ] **Pre-flight checks** (PASS_PLAN F7–F12): the 14 GA channels (item 2); H4 ch 372 oscillation → `det4_sps_h4.json`;
