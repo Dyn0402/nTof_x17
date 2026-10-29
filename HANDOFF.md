@@ -1,60 +1,56 @@
 # Handoff
 
-## Session 2026-10-29 (laptop): calibration basis, bow, saturation, error model — read first
+## Calibration basis, bow, saturation and error model (pre-pass studies) — updated 2026-10-29 (dylan-Yoga)
 
-**Record:** `rerun/calib/SESSION_2026-10-29.md` (decisions table + per-topic summary). Detail:
-`rerun/calib/templates/TEMPLATE_STUDY.md` (T15/T16), `rerun/calib/bow/BOW_TRANSFER.md`,
-`rerun/calib/saturation/{SATURATION_STUDY,ERROR_MODEL}.md`. Stock-take for the pass: `rerun/STOCKTAKE_2026-10-29.md`.
+**Resume:** studies closed; get Dylan's 4 calls (STOCKTAKE §7), then build the pass (E1, E3, E4, F7–F11, dry run).
 
-**Resume:** the error-model recipe was gated and NOT adopted (merged `80f7db86`; `ERROR_MODEL.md` Decision). Open
-calls for Dylan: per-sample rails as a correctness fix; try the "uncapped solution, capped refinement" cap. Then the
-pass build per `rerun/STOCKTAKE_2026-10-29.md`: E1, E3 (BOW2 + bow transfer gate), E4, pre-flight F7–F11, dry run.
+**Goal:** settle every piece of the reconstruction and calibration before the from-scratch bench + SPS pass.
 
-**Gotchas:** AFS token can expire mid-session: `ssh lxplus 'aklog; …'`. Score class subsets with the all-events angle
-scale (`clean_check.py`). Remote brace globs in `scp 'lxplus:…/{a,b}'` do not expand: loop.
+**Done (10-29, all on main, `wft/tests` 135 pass; full record `rerun/calib/SESSION_2026-10-29.md`):**
+- **Decisions (Dylan):** no δ t0 offset; a new parameter only if it wins on det3 and is reasonable elsewhere; one bow
+  set per detector from its golden row, no slot/run-dependent bow; every correction must hold across a detector's
+  datasets; anything > ~30 min runs on condor.
+- **Templates/model shape** (`rerun/calib/templates/TEMPLATE_STUDY.md` T15/T16): X template for both views (Y own
+  template worse on all five, fairly tested); no extra shape parameter wins on det3; the mean centre/±1 error is
+  symmetric about the track, so it cannot move angles. det4 Y template stretch −0.12° recorded, not adopted.
+- **Bow** (`rerun/calib/bow/BOW_TRANSFER.md`): tan-form block, golden-row shape improves all 24 non-golden
+  view-datasets through the production code; per-view mesh height in the reco (`x/y_bow_h`), positions via
+  `wft.compat.mesh_position`; E2 node `rerun/calib/bow_node.py`; transfer gate `rerun/calib/bow/bow_finalize.py`.
+- **Saturation / error model** (`rerun/calib/saturation/SATURATION_STUDY.md`, `ERROR_MODEL.md`): clipping is not the
+  lever; the angle info is where/when charge arrives (exact-model toy loses nothing clipped at 300 ADC); Poisson
+  variance hurts in data (bright-sample mean-model error). Recipe (cap 1200 + strip nuisance + plain charge) won in
+  the plane-fit harness but was **NOT adopted** after the full-reco gate: the cap lets clipped near-vertical columns
+  run away to steep lines (det6 −0.7, det7 −1.4 pt efficiency); the strip nuisance flips sign with drift field.
+  Per-sample rails now carried by `wft.io` (opt-in): neutral, det6 pairing 0.816 → 0.865.
+- GD spark veto: det4 scored, 50 seeding hits stays.
 
-## Calibration basis study (templates, D_rc,y, σ0, model shape) — updated 2026-10-29 late morning (dylan-Yoga)
+**In progress / where it stopped:** nothing half-done; no jobs running (condor queue empty).
 
-**Resume:** read "Update 2026-10-29 late morning (T15)" at the top of `rerun/calib/templates/TEMPLATE_STUDY.md`; no new
-model parameter (Dylan: only if it wins on det3; none does, T15/T16). Build E1/E3 with the corrected DRC objective
-and no δ. Candidate det3 levers if wanted first: saturated/bright-plane treatment and δ-ray planes (T16).
+**Next steps:**
+1. Dylan's calls (`rerun/STOCKTAKE_2026-10-29.md` §7): rails as a correctness fix; try "uncapped solution, capped
+   refinement" before the pass or not; decode the 6-26 det6/det7 HV points (S0b) or exclude; bright-sample mean
+   model before or after the pass.
+2. Then the pass build: see the "From-scratch pass" section below.
 
-**10-29 morning (T15, lxplus condor):** δ dropped (Dylan). Separate Y template is worse on all five chambers at any
-D_rc,y, so the X template keeps driving both views. Dp and the new `core_frac_<view>` (two-Gaussian narrow core in
-`wft.model`, bit-identical when absent) lower χ² but never help angles. The template time stretch helps det4 Y only
-(−0.12 ± 0.04° at s 0.84; χ² agrees; split-half confirmed; not det4's D_rc,y). Runs: `t15_one_param.py`
-(build/compare/table), `t15_select.py`; inputs and outputs on `/eos/user/d/dneff/x17rerun/t15/`, DAGs in
-`~/x17rerun/t15/`, code `/eos/user/d/dneff/x17rerun/code/code_45da833`. Rule from Dylan: anything over ~30 min goes
-to condor.
+**Gotchas / decisions:**
+- A plane-fit (held-out harness) win must pass the full-reco gate: windows follow M3 and t0 is pinned there, so
+  run-away fits and pairing losses are invisible (`make_gate_dag.py` sat arms, `satgate_pairs.py`).
+- Score class subsets with the all-events angle scale (`clean_check.py`); a per-subset refit faked a +0.15° loss.
+- `ssh lxplus 'aklog; …'` when AFS says permission denied; remote brace globs in scp don't expand.
+- Toy per-event dumps `rerun/model_audit/ws_floor/results/det3_full_sat*.npy` left untracked (data, like the rest).
 
-**Done:** T1–T14 on the rr1 caches (laptop). Templates keep `measure_templates`. The raw D_rc,y objective is steered
-by saturated planes; the fix is `recal.py --t0-pin --unsat-only` (new options, plus `--train-start` and free
-`t0_shift_x/y`). σ0 0.30 confirmed template-independent at SPS. Fleet recalibration is resolution-neutral. A
-universal centre-strip under-fill is found and characterised (it changes χ² and charge, not angles). The Y RC
-branch drops footprint tails (code limitation). REPROCESSING_TODO item 7 lists the consequences (a)–(e).
+**Key files & commands:**
+- `rerun/calib/SESSION_2026-10-29.md` — the day's record; `rerun/STOCKTAKE_2026-10-29.md` — where the pass stands
+- `rerun/calib/saturation/clean_check.py CACHE DIR arms… --tag T` — angle/position/charge per raw-waveform class
+- condor products: `/eos/user/d/dneff/x17rerun/{t15,t16,satur}/`, DAGs in `~/x17rerun/{t15,t16,satur}/`
 
-**Gotchas:** judge model choices on held-out angles, never χ² or residual shape (T13). `pkill -f`/`pgrep -f`
-self-match killed a run again, and `pgrep` does not support `\|` alternation: kill by PID. In the queue scripts,
-`grep -v | ... || echo FAILED` reports a false failure when a step prints nothing.
+## From-scratch pass: history, plan, calibration phase to build — updated 2026-10-29 (dylan-Yoga)
 
-**Key files:** `rerun/calib/templates/` (t1…t14 scripts, `results/`, `TEMPLATE_STUDY.md`);
-`sps_beam_test_26/analysis/plane_ratio/recal.py` (new options). Scratch arms/bundles are in the job tmp (not
-needed; every number is in `results/`).
+**Resume:** algorithm settled (STOCKTAKE_2026-10-29.md); build E1 make_bundle, E3 calib DAG (+BOW2, bow gate), E4, then dry run.
 
-## Bow correction across datasets — 2026-10-29 afternoon (dylan-Yoga)
-
-Done: tan-form bow block (`a_x/a_y`, wft.reco.tan_bow / set_w0kw / set_bow; old blocks bit-identical) and a
-leave-one-dataset-out transfer test (`rerun/calib/bow/bow_transfer.py`, `BOW_TRANSFER.md`). det3's shape holds on every
-top-slot det3 dataset incl. 500/700 V drift (µm/ns form fails at 500 V); the one usable bottom-slot row (6-25) gets
-70–80 %. **Finalized (evening):** one block per chamber from the golden row, no bow feedback; through the production
-code path every dataset of every chamber improves in angle (det3 −0.07…−0.21°) and position (per-view height, now in
-the reco). E2 node `rerun/calib/bow_node.py` done; gate = `bow_finalize.py --manifest`. Next: wire BOW2 + the gate into
-the E3 calib phase. A saturation study is running in a separate worktree session
-(`rerun/calib/saturation/`, branch not merged yet).
-
-## From-scratch pass: history, plan, calibration phase to build — updated 2026-10-28 (dylan-Yoga)
-
-**Resume:** δ is dropped and det6 Y is under watch (Dylan 10-29). Build `calib` phase E1–E4 with DRC `--t0-pin --unsat-only`.
+**10-29 additions:** no δ; DRC `--t0-pin --unsat-only`; BOW2 = `rerun/calib/bow_node.py` (done) + W0KW `--bow-json`,
+positions through `wft.compat.mesh_position`, bow transfer gate after the pass reco; error-model recipe not adopted;
+GD det4 done (item 1 closed). Pre-flight F7 (14 GA channels) still blocks E1.
 
 **Goal:** run the bench + SPS reprocessing once, from scratch, with every lesson of the year in the chain.
 
