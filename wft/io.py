@@ -83,6 +83,32 @@ class PlaneWindow:
     pos: np.ndarray         # strip positions [mm], sorted ascending
     W: np.ndarray           # (n_strip, n_sample) pedestal+CNS subtracted ADC
     noise: np.ndarray       # per-strip sigma [ADC]
+    rail_hi: Optional[np.ndarray] = None    # per-sample ADC top rail in W units (4095 - ped - CM), when carried
+    rail_lo: Optional[np.ndarray] = None    # per-sample ADC floor in W units (0 - ped - CM), when carried
+
+
+#: The 12-bit DREAM ADC: a sample's top rail is 4095 - ped - CM and its floor 0 - ped - CM, per channel and per sample
+#: (the CM moves both; the fixed 3550 rule misses 5-46 % of truly clipped samples, rerun/calib/saturation).  Windows
+#: carry them (``rail_hi`` / ``rail_lo``, relative to W: W + 4095 - raw and W - raw) only when a consumer is switched
+#: on -- wft.model SAT_RAIL / SAT_FLOOR -- or CARRY_RAILS is set; otherwise nothing is read or stored beyond W
+#: (bit-identical).  Opt-in, 2026-10-29 (ERROR_MODEL.md "Rails").
+ADC_MAX = 4095.0
+CARRY_RAILS = False
+
+
+def rails_wanted() -> bool:
+    """True when the windows must carry the per-sample rails (CARRY_RAILS, or wft.model SAT_RAIL / SAT_FLOOR on)."""
+    if CARRY_RAILS:
+        return True
+    from . import model as _wm
+    return bool(_wm.SAT_RAIL or _wm.SAT_FLOOR)
+
+
+def rail_arrays(W: np.ndarray, raw: np.ndarray) -> tuple:
+    """(top, bottom) rail of every sample of a window, in the units of W (pedestal + CM subtracted)."""
+    W = np.asarray(W, np.float32)
+    raw = np.asarray(raw, np.float32)
+    return W + (np.float32(ADC_MAX) - raw), W - raw
 
 
 def subrun_files(base_path: str, run: str, sub_run: str, feu: int) -> list:
@@ -127,8 +153,9 @@ class FeuReader:
                            if 'timestamp' in self.tree.keys() else None)
         self.incomplete: Dict[int, int] = {}     # eventId -> samples present, for events iter_events skipped
 
-    def iter_events(self, wanted: Optional[set] = None) -> Iterator[tuple]:
-        """Yield (eventId, ftst, W[512, n_sample]) for the wanted events."""
+    def iter_events(self, wanted: Optional[set] = None, with_raw: bool = False) -> Iterator[tuple]:
+        """Yield (eventId, ftst, W[512, n_sample]) for the wanted events; with_raw: (eventId, ftst, W, raw[512,
+        n_sample] int16), the undecoded ADC samples the rails are taken from (:func:`rail_arrays`)."""
         idx = (np.where(np.isin(self.event_ids, np.fromiter(wanted, dtype=np.int64)))[0]
                if wanted is not None else np.arange(self.n_entries))
         nblk = 512 // CNS_BLOCK
@@ -156,7 +183,11 @@ class FeuReader:
                 else:
                     cms = np.median(wfm.reshape(ns, nblk, CNS_BLOCK), axis=2)
                     wfm -= np.repeat(cms, CNS_BLOCK, axis=1)
-                yield int(arr['eventId'][j]), int(arr['ftst'][j]), wfm.T
+                if with_raw:
+                    yield (int(arr['eventId'][j]), int(arr['ftst'][j]), wfm.T,
+                           np.asarray(a, dtype=np.int16).reshape(-1, 512).T)
+                else:
+                    yield int(arr['eventId'][j]), int(arr['ftst'][j]), wfm.T
 
 
 def strip_position_map(cfg) -> Dict[int, np.ndarray]:
@@ -177,7 +208,7 @@ def strip_position_map(cfg) -> Dict[int, np.ndarray]:
 
 def extract_window(wfm_all: np.ndarray, noise_all: np.ndarray,
                    pos_map: np.ndarray, seed_channels: Sequence[int],
-                   pad_strips: int = 3, dead=None) -> Optional[PlaneWindow]:
+                   pad_strips: int = 3, dead=None, raw_all: Optional[np.ndarray] = None) -> Optional[PlaneWindow]:
     """Cut the fit window: the seed cluster's strips plus `pad_strips` on each
     side in *position* order (the sharing kernel reaches +-2 strips, so the pad
     must be at least 2 for the model to see where the shared charge went).
@@ -211,9 +242,12 @@ def extract_window(wfm_all: np.ndarray, noise_all: np.ndarray,
             hi += 1
             n += not isd[hi]
     ch = order[lo:hi + 1]
-    return PlaneWindow(ch=ch.astype(np.int16), pos=pos_map[ch].astype(np.float32),
-                       W=wfm_all[ch].astype(np.float32),
-                       noise=np.maximum(noise_all[ch], 3.0).astype(np.float32))
+    W = wfm_all[ch].astype(np.float32)
+    hi_r = lo_r = None
+    if raw_all is not None:                  # ``raw_all``: the event's raw samples (iter_events with_raw), same shape
+        hi_r, lo_r = rail_arrays(W, raw_all[ch])
+    return PlaneWindow(ch=ch.astype(np.int16), pos=pos_map[ch].astype(np.float32), W=W,
+                       noise=np.maximum(noise_all[ch], 3.0).astype(np.float32), rail_hi=hi_r, rail_lo=lo_r)
 
 
 # the one place a study may move a constant of this module (wft.diag); production runs none

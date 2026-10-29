@@ -31,8 +31,11 @@ def stage(pairs):
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument('ho'); ap.add_argument('--fleet', default=None)
     ap.add_argument('--big', default=None); ap.add_argument('--only', nargs='*', default=None)
+    ap.add_argument('--cache-dir', default=None, help='local copies: <dir>/<name>.pkl in place of the EOS caches')
     a = ap.parse_args()
     for name, cache in CACHE.items():
+        if a.cache_dir:
+            cache = os.path.join(a.cache_dir, f'{name}.pkl')
         if a.only and name not in a.only:
             continue
         base = glob.glob(f'{a.ho}/{name}_base_c*.npz'); cand = glob.glob(f'{a.ho}/{name}_cand_c*.npz')
@@ -41,7 +44,7 @@ def main():
         print(f'\n## {name}: cand vs base (no rails)')
         clean_check.main(cache, stage({'rail': base, 'cand': cand}), 'cand', tag=f'satfin_{name}')
         ref = (sorted(glob.glob(f'{a.fleet}/{name}_capt.npz')) if a.fleet and name != 'det3big' else
-               sorted(glob.glob(f'{a.big}/det3big_capt_c*.npz')) if a.big and name == 'det3big' else [])
+               sorted(glob.glob(f'{a.big}/det3big_cap1200t05q_c*.npz')) if a.big and name == 'det3big' else [])
         if ref:
             print(f'\n## {name}: cand (no rails) vs capt (rails), what SAT_RAIL adds to the recipe')
             clean_check.main(cache, stage({'rail': ref, 'cand': cand}), 'cand', tag=f'satfin_rails_{name}')
