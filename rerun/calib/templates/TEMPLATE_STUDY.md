@@ -290,6 +290,36 @@ Held-out events 180–579, LM, `--t0-fix`, event-paired:
   only effect is an angle scale that kw already measures. Keep t0 = C − 10·ftst and quote δ's ladder shift as part
   of the angle-scale systematic. (Dylan's call; the data allow either.)
 
+## T13 · Drift-diffusion width vs footprint shape (det3, 2026-10-29 night)
+
+`t13_width_shape.py`. Base = fe det3 at D_rc,y 3.44e-4, σ0 0.30, main's LM. Arms: Dp × 0.8 / 1.2; pseudo-Voigt
+prompt footprint (η 0.2 γ 0.6 mm; η 0.3 γ 0.8 mm). Residuals use `t9_peak_residual.py` → `results/t13/`
+(table: `t13_table.py`, amplitude-weighted medians ≥ 800 ADC). Held-out as T5.
+
+| arm | X residual: centre k=0 / ±1 k=0 / ±2 k=0 | Y residual: centre / ±1 / ±2 | X Δs68 · χ²/dof (base 49.1) | Y Δs68 · χ²/dof (base 56.7) |
+|---|---|---|---|---|
+| base | +0.050 / −0.032 / +0.010 | +0.057 / −0.058 / +0.010 | — | — |
+| Dp × 0.8 | +0.024 / −0.012 / +0.020 | +0.033 / −0.038 / +0.022 | +0.033 ± 0.035 · 45.8 | +0.001 ± 0.028 · 54.3 |
+| Dp × 1.2 | +0.081 / −0.052 / −0.005 | +0.086 / −0.080 / −0.006 | **−0.049 ± 0.032** · 63.2 | +0.060 ± 0.025 · 69.8 |
+| Voigt .2/.6 | +0.054 / −0.037 / −0.006 | = base | −0.001 ± 0.025 · 49.8 | +0.001 ± 0.013 · 57.2 |
+| Voigt .3/.8 | +0.067 / −0.046 / −0.023 | = base | **−0.061 ± 0.030** · 58.2 | +0.013 ± 0.017 · 57.9 |
+
+- **Dp is a stronger lever on the shape than σ0, but it is the same trade.** Narrowing either Gaussian width cuts
+  the centre/±1 mismatch and raises ±2. A single Gaussian cannot represent the lateral profile: the data have a
+  narrower core and wider tails. Tails alone (Voigt) fix ±2 but add width to the core.
+- **Held-out angles disagree with χ² and the residuals.** In X, the wider or tailier arms (Dp × 1.2, Voigt 0.3/0.8)
+  improve s68 by 0.05–0.06° (1.5–2σ) while χ² rises 18–29 %. The narrower one (Dp × 0.8) has better χ² and
+  residuals but s68 +0.03 and far +1 pt. This is FINDINGS F18 again: a wider footprint makes the fit tolerant of
+  δ-rays and noisy strips. **Shape and width choices must be judged on held-out angles (and charge), not on χ² or
+  residual pattern.** Every effect here is ≤ 0.06°.
+- **Model limitation found:** in Y's RC branch (`build_matrix_rc`, D > 0) the first RC step replaces the prompt
+  footprint F0 by a pure Gaussian of variance σ0² + Dp²u + 2Ds. The increments telescope, so Voigt tails only move
+  charge between the first two time tensors and vanish from the first RC edge on. Y can never carry footprint tails
+  (Y rows identical to base). Harmless in production (tails off), but a Y-tail test needs a model change
+  (convolve the RC growth with the Voigt instead of rebuilding a Gaussian). Not done: Dylan's call.
+- Fitted charge moves with the footprint (Voigt 0.3/0.8: +11 %; Dp × 0.8: −2 %), so footprint choices are also a
+  charge-scale systematic.
+
 ## Verdict so far (2026-10-28 evening)
 
 1. The production template is not pure response: it is 4–7 % too wide because it carries the strip's drift segment,
