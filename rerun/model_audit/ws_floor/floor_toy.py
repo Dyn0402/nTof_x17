@@ -314,10 +314,12 @@ def summarise(rows):
 
 
 def run(a):
-    global DT_BIN, NSUB
+    global DT_BIN, NSUB, SAT
     os.makedirs(OUT, exist_ok=True)
     if a.dtbin:
         DT_BIN, NSUB = float(a.dtbin), max(int(round(a.dtbin / 10.0)), 2)   # workers fork after this
+    if a.sat:
+        SAT = float(a.sat)              # ADC ceiling (clip + censor), same seeds -> event-paired across ceilings
     jobs = []
     chunk = 25
     for k, ang in enumerate(ANGLES):
@@ -332,7 +334,7 @@ def run(a):
                mean_cluster=MEAN_CL, n_max=N_MAX, n_delta=N_DELTA, seconds=time.time() - t,
                by_angle=summarise(rows))
     path = os.path.join(OUT, f'{a.det}_{a.config}' + ('_poisson' if a.est == 'poisson' else '')
-                        + (f'_bin{int(a.dtbin)}' if a.dtbin else '') + '.json')
+                        + (f'_bin{int(a.dtbin)}' if a.dtbin else '') + (f'_sat{int(a.sat)}' if a.sat else '') + '.json')
     json.dump(res, open(path, 'w'), indent=1)
     np.save(path.replace('.json', '.npy'), np.array(rows))
     print(path, f'{time.time() - t:.0f} s')
@@ -387,6 +389,8 @@ def main():
     ap.add_argument('--dtbin', type=float, default=0.0, help='depth-bin width of the fitted charge profile [ns] '
                     '(default 60, as wft)')
     ap.add_argument('--angles', default='', help='comma list, default all')
+    ap.add_argument('--sat', type=float, default=0.0, help='ADC ceiling (default 3550): the clip-information test '
+                    '(rerun/calib/saturation/ERROR_MODEL.md)')
     ap.add_argument('--est', default='noise', choices=('noise', 'poisson'),
                     help='noise: chi2 weighted by the electronic noise (production); poisson: + the signal variance')
     a = ap.parse_args()

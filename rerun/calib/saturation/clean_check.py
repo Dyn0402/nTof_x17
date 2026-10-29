@@ -71,6 +71,21 @@ def classify(C, ids):
     return cls
 
 
+def ladder(R):
+    """the arm's angle scale and zero from ALL its events of a view (as kw/w0 are measured per row on all events):
+    scoring a class subset with a scale re-fitted on that subset alone is noisy (det3 clean Y, 338 events: its zero
+    sat +1.5 deg off and turned a -0.09 deg gain into a +0.15 loss)."""
+    tr, w = R[:, 2], R[:, 3]
+    m = (np.abs(tr) > 0.1) & (np.abs(tr) < 0.45)
+    c = np.median(w[np.abs(tr) < 0.05])
+    return c, np.median((w[m] - c) / tr[m])
+
+
+def err_with(R, cs):
+    c, sc = cs
+    return np.degrees(np.arctan((R[:, 3] - c) / sc) - np.arctan(R[:, 2]))
+
+
 def load_arm(d, arm):
     fs = sorted(glob.glob(f'{d}/det3big_{arm}_c*.npz'))
     return np.concatenate([np.load(f)['per'][:, :16] for f in fs]) if fs else None
@@ -95,6 +110,7 @@ def main(cache, d, *arms_in, tag='clean_check'):
                                                'cap2000', 'emu2500')) if load_arm(d, a) is not None]
     rng = np.random.default_rng(1); out = {'counts': {c: sum(1 for v in cls.values() if v == c) for c in ('clean', 'blob', 'other')}}
     R = {a: load_arm(d, a) for a in arms}
+    LAD = {(a, vi): ladder(R[a][R[a][:, 1] == vi]) for a in arms for vi in (0, 1)}
     for c in ('clean', 'blob', 'all'):
         out[c] = {}
         for a in arms:
@@ -103,7 +119,7 @@ def main(cache, d, *arms_in, tag='clean_check'):
                 A = {int(r[0]): r for r in R[a][R[a][:, 1] == vi]}; B = {int(r[0]): r for r in ref[ref[:, 1] == vi]}
                 ev = sorted(e for e in set(A) & set(B) if c == 'all' or cls.get(e) == c)
                 RA = np.array([A[e] for e in ev]); RB = np.array([B[e] for e in ev])
-                dA, _ = angerr(RA); dB, _ = angerr(RB)
+                dA = err_with(RA, LAD[(a, vi)]); dB = err_with(RB, LAD[('rail', vi)])
                 bs = [s68(dA[j]) - s68(dB[j]) for j in (rng.integers(0, len(ev), len(ev)) for _ in range(300))]
                 qr = RA[:, 15] / np.where(RB[:, 15] > 0, RB[:, 15], np.nan)
                 def pres(R):                     # position residual at the mesh, offset + tan * dz removed per arm

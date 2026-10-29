@@ -5,7 +5,10 @@ are none. Held-out angle s68 vs M3, event-paired against the planned-pass base, 
 
 ## Verdict
 
-> **Read the clean-track check (below) first (2026-10-29 evening).** The cap result holds on clean single tracks (not
+> **Latest (2026-10-29 night): `ERROR_MODEL.md`** — the recipe that keeps both the angle gain and the charge, on
+> five chambers, and the toy result on why hiding amplitude helps. Then the clean-track check below.
+>
+> **Clean-track check (2026-10-29 evening).** The cap result holds on clean single tracks (not
 > a δ artefact), but it is a symptom: the fit's noise-only error model over-trusts bright samples. Amplitude carries
 > real information (the charge, the x-y matching, and the toy's 0.34°); the fix to try is the error model, not a cap.
 
