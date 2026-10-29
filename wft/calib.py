@@ -34,12 +34,14 @@ def _hyper_value(v):
 
 
 def _git_commit(path: str) -> str:
+    """The code commit: git, else the frozen archive's RERUN_CODE_COMMIT (stage_job.sh: a git archive has no .git)."""
     try:
-        return subprocess.run(['git', 'rev-parse', '--short', 'HEAD'],
-                              cwd=path, capture_output=True, text=True,
-                              timeout=10).stdout.strip() or 'unknown'
+        c = subprocess.run(['git', 'rev-parse', '--short', 'HEAD'],
+                           cwd=path, capture_output=True, text=True,
+                           timeout=10).stdout.strip()
     except Exception:
-        return 'unknown'
+        c = ''
+    return c or os.environ.get('RERUN_CODE_COMMIT') or 'unknown'
 
 
 # ---------------------------------------------------------------- the c2 gate

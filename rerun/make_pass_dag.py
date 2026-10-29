@@ -11,7 +11,7 @@ calib     the from-scratch calibration of the five golden rows (PASS_PLAN_2026-1
           CAL2  RECO1 (8000 matched) -> ALIGN1 (waveform) -> CACHE1 (build_cache_wft --align) -> SEED1 -> DRC1 -> MAKE1
                 (c1/bundle)
           CAL3  RECO2 -> ALIGN2 -> ANG2 -> W0KW2 (--table --angles --sigma0 0.30,0.30: c2/bundle_nobow) -> BOW2
-                (bow_node: c2/bow_block.json) -> W0KW2b (--bow-json --table: c2/bundle)
+                (bow_node on bundle_nobow's w0/kw: c2/bow_block.json) -> W0KW2b (--bow-json --table: c2/bundle)
           CAL4  RECO3 (with the bow) -> ALIGN3 -> ANG3 -> W0KW3 (--table: <row>/wft/calib_bundle, the bow kept) -> BOW3
                 (r3/bow_block.json, a check only) -> CONV (convergence.py: wft/calib/CALIB_CONVERGENCE.json);
                 BUDGET (effbudget on the RECO3 table, for G1)
@@ -114,9 +114,11 @@ def calib_phase(L, rows, a, only):
         S('ANG2', ang(t2, f'{c}/r2/alignment/alignment.json', f'{c}/r2/angles'), 1, 8000, ['ALIGN2'])
         S('W0KW2', f'--parts run_config --script rerun/w12/set_w0kw.py -- --bundle {c}/c1/bundle --angles {c}/r2/angles '
                    f'--table {t2} --sigma0 0.30,0.30 --out {c}/c2/bundle_nobow', 1, 4000, ['ANG2'])
+        # the bow fit maps w to tan through the bundle's w0/kw: a from-scratch c1 has none, so it takes W0KW2's
+        # (measured on this same RECO2 table; dry run 10-29: KeyError 'x' with c1)
         S('BOW2', f'--parts run_config,m3 --script rerun/calib/bow_node.py -- {d} --events {t2} '
-                  f'--alignment {c}/r2/alignment/alignment.json --bundle {c}/c1/bundle --out {c}/c2/bow_block.json',
-          1, 8000, ['ALIGN2'])
+                  f'--alignment {c}/r2/alignment/alignment.json --bundle {c}/c2/bundle_nobow --out {c}/c2/bow_block.json',
+          1, 8000, ['ALIGN2', 'W0KW2'])
         S('W0KW2b', f'--parts run_config --script rerun/w12/set_w0kw.py -- --bundle {c}/c2/bundle_nobow '
                     f'--angles {c}/r2/angles --table {t2} --bow-json {c}/c2/bow_block.json --out {c}/c2/bundle',
           1, 4000, ['W0KW2', 'BOW2'])
