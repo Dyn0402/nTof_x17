@@ -28,6 +28,15 @@ self-match killed a run again, and `pgrep` does not support `\|` alternation: ki
 `sps_beam_test_26/analysis/plane_ratio/recal.py` (new options). Scratch arms/bundles are in the job tmp (not
 needed; every number is in `results/`).
 
+## Bow correction across datasets — 2026-10-29 afternoon (dylan-Yoga)
+
+Done: tan-form bow block (`a_x/a_y`, wft.reco.tan_bow / set_w0kw / set_bow; old blocks bit-identical) and a
+leave-one-dataset-out transfer test (`rerun/calib/bow/bow_transfer.py`, `BOW_TRANSFER.md`). det3's shape holds on every
+top-slot det3 dataset incl. 500/700 V drift (µm/ns form fails at 500 V); the one usable bottom-slot row (6-25) gets
+70–80 %. Rule: one block per chamber; transfer gate after the pass reco. Next: E2 `bow_node.py` writing the tan form
+from EOS tables, and the gate wired into the DAG. A saturation study is running in a separate worktree session
+(`rerun/calib/saturation/`, branch not merged yet).
+
 ## From-scratch pass: history, plan, calibration phase to build — updated 2026-10-28 (dylan-Yoga)
 
 **Resume:** δ is dropped and det6 Y is under watch (Dylan 10-29). Build `calib` phase E1–E4 with DRC `--t0-pin --unsat-only`.
