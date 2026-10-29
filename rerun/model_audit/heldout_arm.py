@@ -75,7 +75,7 @@ def one(eid):
                     P = dict(P, W=np.minimum(W, hi2), rail_hi=hi2)
                     extra = extra + (int((W >= float(_EMU)).sum()),)
             else:
-                extra = (-1, -1)
+                extra = (-1, -1, -1) if _EMU else (-1, -1)
         if W.shape[1] != wm.NSAMP:
             wm.set_nsamp(W.shape[1])
         tr = float(ev[f'tan_{plane}']); ref = float(ev.get(f'ref_mesh_{plane}', np.nan))
