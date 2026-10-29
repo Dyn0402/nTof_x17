@@ -1,5 +1,69 @@
 # Chamber bow: one correction per chamber that holds across its datasets (2026-10-29)
 
+## FINAL (2026-10-29 evening) — read this first
+
+**Rule (Dylan):** one bow parameter set per detector, extracted on its golden row and applied to every other dataset of
+that detector with no feedback into the bow. No slot- or run-dependent bow (the bench slot is not a physical change).
+
+**Result: it works on every dataset of every chamber, through the production code.** `bow_finalize.py` builds each
+chamber's block from its golden table, installs it with the pass's own W0KW step (`rerun/w12/set_w0kw.py --bow-json`)
+and maps every target event with `wft.reco.bow_UW` / `tan_bow` (what `apply_bow` does in the reconstruction). On the
+target only the rigid tilt w0 and the angle scale kw are re-measured (2 numbers per view, which every row gets with or
+without a bow); the bow shape never sees the target.
+- **Angles:** better on all 29 non-golden view-datasets, no view worse beyond its error. det3: X −0.07…−0.17°,
+  Y −0.07…−0.21° (6-28 night −0.09/−0.14, 500 V −0.13/−0.07, 700 V −0.07/−0.19, 6-25 −0.17/−0.21). The far
+  fraction does not rise. det4 X, which the table-level test said does not transfer, gains −0.10 on 6-23 here.
+- **Positions:** the golden per-view mesh height (p0 − tan·h_view, alignment terms refit per row as the row's own
+  waveform alignment does) improves 33/34 view-datasets: det2/det3 2–5 %, det6 8–13 %, det7 3–5 %
+  (exception det3 500 V Y +0.007 mm on 679 events). The reconstruction stored the cross-view MEAN height, which made
+  positions worse; it now stores each view's own (`x_bow_h`, `y_bow_h`; `wft.reco.bow_h(..., plane)`).
+- **Why w0/kw must stay per row (the "strict" column):** with the golden w0/kw unchanged, rows at another drift field
+  are off by +1…+3.6° (kw carries v, which changes with the field: 500 V row v ≈ 0.44× golden), and det4 6-23 / det6
+  "longer" X by +0.4 (a rigid-tilt change between runs). That is the angle scale, not the bow.
+- **Stability:** a bootstrap of each golden row moves the predicted tan offset by 0.03–0.07° rms, against a 1.7–4.4°
+  span across the chamber; the shape is measured to ~2 % of itself.
+
+| chamber | dataset | n X / Y | no bow s68 X / Y [°] | golden bow, row w0/kw: Δ X / Y [°] | golden bow + golden w0/kw (strict): Δ X / Y | position s68 X / Y [mm]: no h → golden h |
+|---|---|---|---|---|---|---|
+| det2 | det2 (golden, in-sample) — 6-22 longer, 495 V mesh, 1000 V drift | 3325 / 3432 | 1.13 / 1.41 | **-0.083 ± 0.018 / -0.315 ± 0.030** | -0.08 / -0.32 | 0.541 → 0.527 / 0.536 → 0.524 |
+| det2 | det2_o22long — 6-22 long (same night, other subrun) | 10808 / 11186 | 1.11 / 1.36 | **-0.093 ± 0.013 / -0.269 ± 0.016** | -0.10 / -0.27 | 0.583 → 0.568 / 0.568 → 0.548 |
+| det3 | det3 (golden, in-sample) — 6-27 sat long, 490 / 1000 V | 6615 / 6646 | 1.07 / 1.02 | **-0.101 ± 0.010 / -0.135 ± 0.011** | -0.10 / -0.13 | 0.598 → 0.580 / 0.569 → 0.562 |
+| det3 | det3_day625 — 6-25 day, BOTTOM slot, 495 / 500 V | 7458 / 7485 | 1.16 / 1.35 | **-0.166 ± 0.010 / -0.210 ± 0.012** | +2.08 / +1.38 | 0.489 → 0.464 / 0.459 → 0.455 |
+| det3 | det3_d700 — 6-27 drift scan 700 V (small) | 727 / 732 | 1.09 / 1.08 | **-0.069 ± 0.032 / -0.186 ± 0.042** | +1.91 / +1.06 | 0.575 → 0.556 / 0.548 → 0.523 |
+| det3 | det3_d500 — 6-27 drift scan 500 V (small) | 650 / 679 | 1.16 / 1.11 | **-0.129 ± 0.034 / -0.073 ± 0.035** | +3.64 / +2.69 | 0.609 → 0.585 / 0.546 → 0.553 |
+| det3 | det3_p2 — 6-28 night (same mount) | 11080 / 11195 | 1.07 / 1.04 | **-0.091 ± 0.006 / -0.135 ± 0.009** | -0.08 / -0.12 | 0.606 → 0.588 / 0.560 → 0.552 |
+| det4 | det4 (golden, in-sample) — 6-24 day long, 495 / 600 V | 5042 / 5150 | 1.71 / 1.74 | **-0.119 ± 0.022 / -0.378 ± 0.029** | -0.12 / -0.38 | 0.742 → 0.718 / 0.610 → 0.599 |
+| det4 | det4_o23 — 6-23 night | 3534 / 3682 | 1.82 / 1.93 | **-0.096 ± 0.027 / -0.487 ± 0.034** | +0.45 / +0.09 | 0.730 → 0.716 / 0.598 → 0.575 |
+| det6 | det6 (golden, in-sample) — 6-26 night long, 495 / 700 V | 6667 / 6855 | 1.83 / 1.94 | **-0.551 ± 0.019 / -0.537 ± 0.021** | -0.55 / -0.54 | 0.538 → 0.491 / 0.527 → 0.499 |
+| det6 | det6_longer — 6-26 longer (same night) | 3753 / 3832 | 1.83 / 2.15 | **-0.385 ± 0.028 / -0.479 ± 0.029** | +0.38 / -0.14 | 0.529 → 0.475 / 0.530 → 0.512 |
+| det6 | det6_hv505 — mesh 505 V | 556 / 587 | 1.92 / 1.84 | **-0.507 ± 0.069 / -0.463 ± 0.072** | -0.42 / -0.52 | 0.552 → 0.481 / 0.593 → 0.536 |
+| det6 | det6_hv530 — mesh 530 V | 204 / 231 | 2.05 / 2.30 | **-0.558 ± 0.135 / -0.450 ± 0.176** | -0.22 / -0.33 | 0.613 → 0.566 / 0.634 → 0.586 |
+| det7 | det7 (golden, in-sample) — 6-26 night long, 495 / 700 V | 5315 / 6000 | 1.63 / 1.59 | **-0.084 ± 0.017 / -0.306 ± 0.017** | -0.08 / -0.31 | 0.788 → 0.760 / 0.690 → 0.663 |
+| det7 | det7_longer — 6-26 longer (same night) | 2893 / 3301 | 1.61 / 1.57 | **-0.084 ± 0.026 / -0.317 ± 0.026** | -0.01 / -0.29 | 0.804 → 0.775 / 0.700 → 0.670 |
+| det7 | det7_hv480 — mesh 480 V | 480 / 528 | 1.59 / 1.44 | **-0.138 ± 0.063 / -0.352 ± 0.060** | -0.15 / -0.35 | 0.794 → 0.771 / 0.698 → 0.674 |
+| det7 | det7_hv505 — mesh 505 V | 417 / 457 | 1.75 / 1.63 | **-0.072 ± 0.078 / -0.288 ± 0.064** | -0.09 / -0.25 | 0.843 → 0.804 / 0.740 → 0.722 |
+
+Golden-shape stability (30 bootstrap resamples of the golden row): the tan offset it predicts across ±160 mm spans det2 X 2.54° (rms 0.060°), Y 3.98° (0.061°); det3 X 1.71° (rms 0.038°), Y 1.94° (0.034°); det4 X 1.69° (rms 0.058°), Y 4.00° (0.056°); det6 X 3.82° (rms 0.045°), Y 4.41° (0.039°); det7 X 2.07° (rms 0.074°), Y 2.80° (0.049°).
+
+
+**For the pass (wired as specified; E3 still to write):** `rerun/calib/bow_node.py` (the BOW node) builds the block
+from the golden row's CAL3 table, alignment, M3 rays and bundle on EOS; verified to reproduce the study block exactly
+on det3. Every row inherits it; vrefit's W0KW re-measures w0/kw with `--bow-json`. After the pass reco,
+`bow_finalize.py --manifest <pass datasets>` is the **transfer gate**: the chamber block must not worsen any row's
+angle or position s68 beyond its error, rows ≥ 2000 events. No per-mount block.
+
+**Changes on main:** tan-form drift tilt `a_x/a_y` (`wft.reco.tan_bow`, `set_w0kw.py`, `set_bow.py`); per-view mesh
+height in the reconstruction; `set_bow.block_from_table`, `fbcommon.load_path`; `rerun/calib/bow_node.py`;
+`rerun/calib/bow/bow_finalize.py`. Old bundles (no `a_`, no `h_<view>`) are bit-identical in angle.
+
+**Limits:** FB's tables are finalize-era (older σ0 handling, promoted bundles); the gate re-runs on the pass tables.
+Golden numbers are in-sample (2-fold values in the table below: det3 −0.08/−0.13). Small rows (200–700 events) carry
+±0.03–0.18°. det7 X still includes the faulty half (x < 200 mm) in these tables.
+
+---
+
+## Earlier today (transfer study, superseded where it disagrees)
+
 **Question (Dylan):** the bow correction was planned; make sure it is fixed per detector and carries between that
 detector's datasets, not fitted to one run. det3 first.
 

@@ -68,7 +68,11 @@ def bundle(det):
 def load(name):
     """Per-event table with the bow observables of both views (u, w at mid-gap from M3)."""
     det, path, slot, note = DATASETS[name]
-    b = bundle(det)
+    return load_path(path, bundle(det), det, slot, note, name)
+
+
+def load_path(path, b, det, slot='', note='', name=''):
+    """load() for any joined table (ws_v_w0/build_table layout) and bundle dict b (its v_drift, kw, w0)."""
     d = pd.read_parquet(path)
     if 'event_id' in d.columns:
         d = d.set_index('event_id')

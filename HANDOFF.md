@@ -33,8 +33,10 @@ needed; every number is in `results/`).
 Done: tan-form bow block (`a_x/a_y`, wft.reco.tan_bow / set_w0kw / set_bow; old blocks bit-identical) and a
 leave-one-dataset-out transfer test (`rerun/calib/bow/bow_transfer.py`, `BOW_TRANSFER.md`). det3's shape holds on every
 top-slot det3 dataset incl. 500/700 V drift (µm/ns form fails at 500 V); the one usable bottom-slot row (6-25) gets
-70–80 %. Rule: one block per chamber; transfer gate after the pass reco. Next: E2 `bow_node.py` writing the tan form
-from EOS tables, and the gate wired into the DAG. A saturation study is running in a separate worktree session
+70–80 %. **Finalized (evening):** one block per chamber from the golden row, no bow feedback; through the production
+code path every dataset of every chamber improves in angle (det3 −0.07…−0.21°) and position (per-view height, now in
+the reco). E2 node `rerun/calib/bow_node.py` done; gate = `bow_finalize.py --manifest`. Next: wire BOW2 + the gate into
+the E3 calib phase. A saturation study is running in a separate worktree session
 (`rerun/calib/saturation/`, branch not merged yet).
 
 ## From-scratch pass: history, plan, calibration phase to build — updated 2026-10-28 (dylan-Yoga)

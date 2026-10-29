@@ -21,8 +21,14 @@ from gate_bow import prep, fit_bow2d, fit_h
 
 
 def block(det):
-    T = load(det)
-    out = dict(chamber=det, source_row=DATASETS[det][2] + ' slot, ' + DATASETS[det][3], frame=dict(
+    out = block_from_table(load(det), det, DATASETS[det][2] + ' slot, ' + DATASETS[det][3])
+    json.dump(out, open(f'{RES}/bow_block_{det}.json', 'w'), indent=1)
+    print(det, 'h', {k: round(v, 2) for k, v in out['h'].items()})
+
+
+def block_from_table(T, det, source_row):
+    """The bow block from one per-event table (fbcommon.load layout: attrs v, kw, w0 of the bundle it was made with)."""
+    out = dict(chamber=det, source_row=source_row, frame=dict(
         coords='strip frame of each view; U = (u - 200 mm)/100 mm, W = (w - 200 mm)/100 mm, u/w = fitted p0 + 15 mm * tan',
         z='M3 z up; h = mesh height along z_up (negative = lower = further from the cathode)'),
         valid='bench only (cosmic bench mounting); never transfer to n_TOF without an in-situ measurement')
@@ -41,8 +47,8 @@ def block(det):
         out[f'h_{p}'] = dict(zip(['gu', 'gw', 'kuu', 'kww', 'kuw'], map(float, hb[4:9])))
         hs.append(hb[4:9])
     out['h'] = dict(zip(['gu', 'gw', 'kuu', 'kww', 'kuw'], map(float, np.mean(hs, axis=0))))
-    json.dump(out, open(f'{RES}/bow_block_{det}.json', 'w'), indent=1)
-    print(det, 'h', {k: round(v, 2) for k, v in out['h'].items()})
+    out['n_events'] = {p: int(prep(T, p)['m'].sum()) for p in 'xy'}
+    return out
 
 
 if __name__ == '__main__':

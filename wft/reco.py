@@ -406,9 +406,12 @@ def _bow_poly(c: dict, U: float, W: float, lin=('cu', 'cw'), quad=('auu', 'aww',
             + c.get(quad[1], 0.0) * W * W / 2 + c.get(quad[2], 0.0) * U * W)
 
 
-def bow_h(cal: CalibrationBundle, U: float, W: float) -> float:
-    """Mesh height [mm, M3 z up] of the bow block at (U, W); 0 without a block."""
-    h = (getattr(cal, 'bow', None) or {}).get('h')
+def bow_h(cal: CalibrationBundle, U: float, W: float, plane: str = None) -> float:
+    """Mesh height [mm, M3 z up] of the bow block at (U, W); 0 without a block.  With ``plane``, that view's own surface
+    ``h_<plane>`` when the block has it: the cross-view mean ``h`` makes the positions worse, the view's own one improves
+    them 2-3 % (det2/det3) to 10 % (det6) on other datasets of the chamber (rerun/calib/bow/BOW_TRANSFER.md, 10-29)."""
+    b = getattr(cal, 'bow', None) or {}
+    h = (b.get(f'h_{plane}') if plane else None) or b.get('h')
     return float(_bow_poly(h, U, W, ('gu', 'gw'), ('kuu', 'kww', 'kuw'))) if h else 0.0
 
 
@@ -451,14 +454,13 @@ def apply_bow(cal: CalibrationBundle, fx=None, fy=None) -> None:
     if not (getattr(cal, 'bow', None) or (getattr(cal, 'v_map', None) or {}).get('xy')):
         return
     U, W = bow_UW(cal, fx, fy)
-    h = bow_h(cal, U, W)
     for p, f in (('x', fx), ('y', fy)):
         if f is None:
             continue
         t = tan_bow(cal, p, f.w, U, W)
         f.tan_theta, f.theta_deg = float(t), float(np.degrees(np.arctan(t)))
         f.slope_reliable = bool(abs(t) >= TAN_MIN_SLOPE)
-        f._bow_h = float(h)
+        f._bow_h = float(bow_h(cal, U, W, p))
 
 
 def tan_of(cal: CalibrationBundle, plane: str, w: float, p0: float) -> float:
@@ -1900,6 +1902,8 @@ def _worker_fit(payload):
     row['n_tracks'] = int(sum(1 for _i, _j, g in pairs if g))
     hb = [getattr(fits.get(p), '_bow_h', None) for p in ('x', 'y')]
     row['bow_h'] = float(next((h for h in hb if h is not None), np.nan))
+    for p, h in zip('xy', hb):            # each view's own mesh height: the position at the plane is p0 - tan * h
+        row[f'{p}_bow_h'] = float(h) if h is not None else np.nan
     for plane in ('x', 'y'):
         f = ftst.get(plane)
         row[f'{plane}_ftst'] = int(f) if f is not None else -1
