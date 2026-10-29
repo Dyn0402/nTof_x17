@@ -74,6 +74,8 @@ def check_kernel_ordering(hyper: dict, where: str = '') -> None:
     bundle deliberately -- the only legitimate use is a report *about* the
     defect, and it must say so."""
     c1 = float(hyper.get('c1', 0.0))
+    if c1 <= 0:                 # no copy kernel (an RC bundle made from nothing, rerun/calib/make_bundle.py)
+        return
     # judged per view: a per-view ratio can be inverted on one plane only
     c2 = max(effective_c2(hyper, p) for p in ('x', 'y'))
     if c1 <= 0 or c2 <= c1:

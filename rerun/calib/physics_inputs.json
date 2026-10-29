@@ -1,0 +1,28 @@
+{
+ "about": "Physics inputs of the from-scratch pass (PASS_PLAN_2026-10-28 §0/E1): measured OUTSIDE the reconstruction, carried as stated inputs, re-measured on the pass tables in S4. If one moves by more than its error there, the chamber's calibration phase is re-run and the cost written down. Read by rerun/calib/make_bundle.py.",
+ "common": {
+  "sigma_p0_mm": {"x": 0.30, "y": 0.30,
+                  "source": "FC (model_audit/followups/fc_sigma0_trade): one sigma0 for both views, SPS-measured and independent of the template (TEMPLATE_STUDY T10); free bench sigma0 is not a measurement (runs to 0.058 mm)"},
+  "rc_D_x": {"value": 0.0, "source": "RC diffusion runs along the resistive strips (Y); across them (X) it is 0 (wft.model.build_matrix_rc)"},
+  "rc_tmpl": {"value": "x", "source": "X-derived template drives both views (TEMPLATE_STUDY T14/T15: Y's own template is worse on all five chambers)"},
+  "t0_prior_sigma": {"value": 0.05, "source": "pinned t0 on the bench: t0 = C - 10 ns * ftst from the measured latency, no delta (Dylan 10-29)"},
+  "sat_adc": {"value": 3550.0, "source": "3550 clip rule (locked simple model, calib/saturation/DECISION_2026-10-29.md)"},
+  "gain": {"value": 1.0, "source": "no gain map (GA, REPROCESSING_TODO §A)"}
+ },
+ "det2": {"Dp": 0.025, "gap_mm": 31.12, "gap_err_mm": 0.42, "v_timing_um_ns": 39.3,
+          "rc_D_y": {"seed": 4.0e-4, "free": true}},
+ "det3": {"Dp": 0.023, "gap_mm": 28.08, "gap_err_mm": 0.19, "v_timing_um_ns": 35.8,
+          "rc_D_y": {"seed": 3.6e-4, "free": true}},
+ "det4": {"Dp": 0.020, "gap_mm": 30.48, "gap_err_mm": 0.44, "v_timing_um_ns": 33.0,
+          "rc_D_y": {"value": 2.2e-4, "free": false, "source": "H4 beam (decided 2026-10-12); det4 has no partner chamber on the bench"}},
+ "det6": {"Dp": 0.018, "gap_mm": 28.0, "gap_err_mm": null, "v_timing_um_ns": 24.17,
+          "rc_D_y": {"seed": 5.0e-4, "free": true}},
+ "det7": {"Dp": 0.0225, "gap_mm": 29.44, "gap_err_mm": 1.12, "v_timing_um_ns": 36.8,
+          "rc_D_y": {"seed": 5.0e-4, "free": true}},
+ "provenance": {
+  "Dp": "unsaturated head-on stack (cloud_basics unsat_width, sqrt(2 Dd)), agrees with Magboltz on det3/det4; det6 keeps 0.018 (its own stack 0.014 +- 0.004 is window-limited). As set by rerun/w12/make_phys_bundle.py (2026-10-25).",
+  "gap_mm": "timing-free gaps, gaps.py mean of the two selections (HANDOFF 2026-10-19, cloud_basics FINDINGS §39); det6 the adopted 28 mm.",
+  "v_timing_um_ns": "the timing v of each golden row: gap / column duration (w12 timeD bundles; det6 rescaled x 28/30 to its adopted gap, make_phys_bundle.py). It seeds the fit and scales tan = (w - w0) / (kw v); w0/kw are measured per row against M3, so the angle scale does not rest on it.",
+  "rc_D_y_seed": "DRC starting points only (recal.py --free rc_D_y --t0-pin --unsat-only refits them); the corrected objective's T6 optimum on det3 is 3.5-3.8e-4 (TEMPLATE_STUDY T6)."
+ }
+}
