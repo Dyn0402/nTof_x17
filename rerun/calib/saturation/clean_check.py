@@ -14,7 +14,7 @@ Metrics per class and arm, event-paired against `rail`:
   charge (a) median q_sum ratio arm / rail per view; (b) x-y charge consistency: robust sigma of log(qx / qy) on events
          with both views; (c) x-y PAIRING power: P(|log qx_i/qy_i| < |log qx_i/qy_j|) for a random other event j of the
          same class (0.5 = charge useless for matching, 1 = perfect)
-Usage: python -I clean_check.py CACHE OUTDIR  -> results/clean_check.json + tables on stdout
+Usage: python -I clean_check.py CACHE OUTDIR [arms ...] [--tag NAME]  -> results/<NAME>.json + tables on stdout
 """
 import glob, json, os, pickle, sys
 import numpy as np
@@ -86,13 +86,13 @@ def pairing_power(lq_pairs, qx, qy, rng):
     return float(np.mean(right < wrong))
 
 
-def main(cache, d):
+def main(cache, d, *arms_in, tag='clean_check'):
     C = pickle.load(open(cache, 'rb'))
     ref = load_arm(d, 'rail')
     ids = sorted(set(ref[:, 0].astype(int)))
     cls = classify(C, ids)
-    arms = ['rail'] + [a for a in ('emu300', 'emu600', 'cap800', 'cap1000', 'cap1200', 'cap1500', 'emu1500', 'cap2000',
-                                   'emu2500') if load_arm(d, a) is not None]
+    arms = ['rail'] + [a for a in (arms_in or ('emu300', 'emu600', 'cap800', 'cap1000', 'cap1200', 'cap1500', 'emu1500',
+                                               'cap2000', 'emu2500')) if load_arm(d, a) is not None]
     rng = np.random.default_rng(1); out = {'counts': {c: sum(1 for v in cls.values() if v == c) for c in ('clean', 'blob', 'other')}}
     R = {a: load_arm(d, a) for a in arms}
     for c in ('clean', 'blob', 'all'):
@@ -106,8 +106,16 @@ def main(cache, d):
                 dA, _ = angerr(RA); dB, _ = angerr(RB)
                 bs = [s68(dA[j]) - s68(dB[j]) for j in (rng.integers(0, len(ev), len(ev)) for _ in range(300))]
                 qr = RA[:, 15] / np.where(RB[:, 15] > 0, RB[:, 15], np.nan)
+                def pres(R):                     # position residual at the mesh, offset + tan * dz removed per arm
+                    r = R[:, 9] - R[:, 10]; t = R[:, 2]; k = np.isfinite(r) & (np.abs(r - np.nanmedian(r)) < 5)
+                    X = np.c_[np.ones(k.sum()), t[k]]; b = np.linalg.lstsq(X, r[k], rcond=None)[0]
+                    return r - (b[0] + b[1] * t)
+                pa, pb = pres(RA), pres(RB)
+                okp = np.isfinite(pa) & np.isfinite(pb) & (np.abs(pb) < 5)
+                pbs = [s68(pa[okp][j]) - s68(pb[okp][j]) for j in (rng.integers(0, okp.sum(), okp.sum()) for _ in range(200))]
                 row[v] = dict(n=len(ev), s68=float(s68(dA)), ds68=float(s68(dA) - s68(dB)), err=float(np.std(bs)),
-                              far=float(100 * np.mean(np.abs(dA) > 5)), q_ratio=float(np.nanmedian(qr)))
+                              far=float(100 * np.mean(np.abs(dA) > 5)), q_ratio=float(np.nanmedian(qr)),
+                              pos_s68=float(s68(pa[okp])), dpos=float(s68(pa[okp]) - s68(pb[okp])), dpos_err=float(np.std(pbs)))
             # x-y charge consistency and pairing power on events with both views
             X = {int(r[0]): r[15] for r in R[a][R[a][:, 1] == 0]}; Y = {int(r[0]): r[15] for r in R[a][R[a][:, 1] == 1]}
             ev = sorted(e for e in set(X) & set(Y) if (c == 'all' or cls.get(e) == c) and X[e] > 0 and Y[e] > 0)
@@ -115,16 +123,21 @@ def main(cache, d):
             row['xy'] = dict(n=len(ev), lq_rsig=float(1.4826 * np.median(np.abs(lq - np.median(lq)))),
                              pairing=float(np.mean([pairing_power(None, qx, qy, rng) for _ in range(20)])))
             out[c][a] = row
-    json.dump(out, open(f'{HERE}/results/clean_check.json', 'w'), indent=1)
+    json.dump(out, open(f'{HERE}/results/{tag}.json', 'w'), indent=1)
     print('classes (events):', out['counts'])
     for c in ('clean', 'blob', 'all'):
-        print(f'\n**{c}**\n\n| arm | n X | angle Δs68 X | angle Δs68 Y | far X / Y % | q ratio X / Y | x-y log-charge σ | x-y pairing power |')
-        print('|---|---|---|---|---|---|---|---|')
+        print(f'\n**{c}**\n\n| arm | n X | angle Δs68 X | angle Δs68 Y | far X / Y % | position Δs68 X / Y [mm] | q ratio X / Y | x-y log-charge σ | x-y pairing power |')
+        print('|---|---|---|---|---|---|---|---|---|')
         for a, r in out[c].items():
             x, y, xy = r['x'], r['y'], r['xy']
             print(f"| {a} | {x['n']} | {x['ds68']:+.3f} ± {x['err']:.3f} (s68 {x['s68']:.3f}) | {y['ds68']:+.3f} ± {y['err']:.3f} (s68 {y['s68']:.3f}) | "
-                  f"{x['far']:.1f} / {y['far']:.1f} | {x['q_ratio']:.3f} / {y['q_ratio']:.3f} | {xy['lq_rsig']:.3f} | {xy['pairing']:.3f} |")
+                  f"{x['far']:.1f} / {y['far']:.1f} | {x['dpos']:+.3f} ± {x['dpos_err']:.3f} / {y['dpos']:+.3f} ± {y['dpos_err']:.3f} (s68 {x['pos_s68']:.2f} / {y['pos_s68']:.2f}) | "
+                  f"{x['q_ratio']:.3f} / {y['q_ratio']:.3f} | {xy['lq_rsig']:.3f} | {xy['pairing']:.3f} |")
 
 
 if __name__ == '__main__':
-    main(*sys.argv[1:])
+    a = sys.argv[1:]
+    tag = 'clean_check'
+    if '--tag' in a:
+        i = a.index('--tag'); tag = a[i + 1]; a = a[:i] + a[i + 2:]
+    main(*a, tag=tag)

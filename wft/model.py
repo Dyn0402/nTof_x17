@@ -178,6 +178,10 @@ ERR_K = 0.0
 ERR_F = 0.0
 STRIP_TAU = 0.0
 ERR_PASSES = 2
+#: Charge from all the information (opt-in): after a fit made with SAT_CAP and/or the error-model passes, re-solve the
+#: charge profile q at the fitted geometry with the plain treatment (no cap, noise-only weights, no strip scale), so the
+#: geometry comes from the robust fit and the charge (x-y pairing, dE/dx) from every sample.  chi2 stays the fit's.
+QSOLVE_PLAIN = False
 _SIG = None          # per-sample sigma of the current pass (set by fit_plane_raw only)
 _SSCALE = None       # per-strip amplitude scale of the current pass (set by fit_plane_raw only)
 #: Unobservable depth columns (opt-in, 2026-10-23; sept26_prelim_analysis/qsum_runaway.py, OCTOBER O10).  A depth bin
@@ -1469,7 +1473,7 @@ def fit_plane_raw(P, plane, p0_init, w_init, t0_init, hyper=None, fix_p0w=None,
     global _SIG, _SSCALE
     r = _fit_plane_raw1(P, plane, p0_init, w_init, t0_init, hyper, fix_p0w, t0_prior, pivot)
     if not (ERR_K > 0 or ERR_F > 0 or STRIP_TAU > 0) or _SIG is not None or _SSCALE is not None:
-        return r
+        return _plain_charge(r, P, plane, hyper, t0_prior)
     hyper = hyper or HYPER
     s_prev = None
     try:
@@ -1499,6 +1503,24 @@ def fit_plane_raw(P, plane, p0_init, w_init, t0_init, hyper=None, fix_p0w=None,
             r['strip_scale'] = s_prev
     finally:
         _SIG, _SSCALE = None, None
+    return _plain_charge(r, P, plane, hyper, t0_prior)
+
+
+def _plain_charge(r, P, plane, hyper, t0_prior):
+    """QSOLVE_PLAIN: q re-solved at r's geometry with the plain (production) treatment; r unchanged otherwise."""
+    global SAT_CAP
+    if not QSOLVE_PLAIN or r is None or r.get('q') is None or not (SAT_CAP > 0 or ERR_K > 0 or ERR_F > 0 or STRIP_TAU > 0):
+        return r
+    cap = SAT_CAP
+    try:
+        SAT_CAP = 0.0
+        W, noise, pos, sat = prep_plane(P, plane)
+        _c, q = chi2_plane(plane, W, noise, pos, sat, r['p0'], r['w'], r['t0'], hyper or HYPER, snap_t0=False,
+                           t0_prior=t0_prior)
+    finally:
+        SAT_CAP = cap
+    if q is not None:
+        r = dict(r, q=q, q_fit=r['q'])
     return r
 
 

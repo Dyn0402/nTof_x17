@@ -70,3 +70,20 @@ def test_tiny_tau_keeps_unit_scales(data):
     wm.STRIP_TAU = 1e-4
     r = wm.fit_plane_raw(P, p, *wm.init_guess(P, p))
     assert np.allclose(r['strip_scale'], 1.0, atol=1e-3)
+
+
+def test_plain_charge_resolve(data):
+    """QSOLVE_PLAIN: same geometry as the capped fit, charge from the uncapped solve (larger on bright planes)."""
+    cal, C = data
+    P, p = max(_planes(C, 12), key=lambda t: float(np.max(t[0]['W'])))
+    g = wm.init_guess(P, p)
+    try:
+        wm.SAT_CAP = 600.0
+        a = wm.fit_plane_raw(P, p, *g)
+        wm.QSOLVE_PLAIN = True
+        b = wm.fit_plane_raw(P, p, *g)
+    finally:
+        wm.SAT_CAP, wm.QSOLVE_PLAIN = 0.0, False
+    assert b['p0'] == a['p0'] and b['w'] == a['w'] and b['t0'] == a['t0']
+    assert np.allclose(b['q_fit'], a['q'])
+    assert b['q'].sum() > a['q'].sum()
