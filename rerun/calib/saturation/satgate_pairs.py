@@ -89,7 +89,8 @@ def main():
     T1 = ['| chamber arm | events | both ok | quality_ok X / Y | paired (n_tracks ≥ 1) | n_tracks ≥ 2 | splits | rescued | '
           'x-y log-charge σ (n) | pairing power |', '|' + '---|' * 10]
     T2 = ['| chamber arm vs base | view | same w | dθ > 1° | quality flag agrees | q_sum B/A p50 | χ² B/A p50 | '
-          'same n_tracks | same track list (≥ 2 tracks) |', '|' + '---|' * 9]
+          'same n_tracks | same track list (≥ 2 tracks) | steep runaway (|tan| < 0.6 → > 1; ≥ 3 clipped strips) |',
+          '|' + '---|' * 10]
     for det, row in ROWS.items():
         A, CA = load(a.root, row, a.a)
         if A is None:
@@ -120,10 +121,15 @@ def main():
                           qflag=float(np.mean(s2[f'{v}_quality_ok_a'].to_numpy() == s2[f'{v}_quality_ok_b'].to_numpy())),
                           q_ratio=float(np.nanmedian(g('q_sum', 'b') / g('q_sum', 'a'))),
                           chi2_ratio=float(np.nanmedian(g('chi2', 'b') / g('chi2', 'a'))),
+                          # the capped fit's failure mode: a near-vertical, heavily clipped column read as a steep line
+                          runaway=int(((np.abs(g('tan_theta', 'a')) < 0.6) & (np.abs(g('tan_theta', 'b')) > 1.0)).sum()),
+                          runaway_sat3=int(((np.abs(g('tan_theta', 'a')) < 0.6) & (np.abs(g('tan_theta', 'b')) > 1.0)
+                                            & (s2[f'{v}_n_sat_strips_a'].to_numpy() >= 3)).sum()),
                           same_ntracks=nt, same_tracklist=st, n_multi_both=len(ev2))
                 out[f'{det}|{arm}|{v}'] = pr
                 T2.append(f"| {det} {arm} | {v.upper()} | {pr['same_w']:.1%} | {pr['dth_gt1']:.1%} | {pr['qflag']:.1%} | "
-                          f"{pr['q_ratio']:.4f} | {pr['chi2_ratio']:.3f} | {nt:.1%} | {st:.1%} ({len(ev2)}) |")
+                          f"{pr['q_ratio']:.4f} | {pr['chi2_ratio']:.3f} | {nt:.1%} | {st:.1%} ({len(ev2)}) | "
+                          f"{pr['runaway']} ({pr['runaway_sat3']}) |")
     # efficiency-budget transitions per M3 ray (interior, xy, 5 mm): which class each ray moves to under the arm
     T3 = ['| chamber arm | interior rays | moved | detected -> far | detected -> rejected | far -> detected | '
           'rejected -> detected | rejected -> far | far -> rejected | other moves |', '|' + '---|' * 10]
