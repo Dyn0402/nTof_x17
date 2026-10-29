@@ -1,6 +1,6 @@
 # one SPS det4 row of the pass (rerun/model_audit/sps_stage.sh from the frozen code archive): args = <key> <out dir>
-executable     = $(code)/rerun/model_audit/sps_stage.sh
-arguments      = $(code) $(args)
+executable     = /bin/bash
+arguments      = $(code)/rerun/model_audit/sps_stage.sh $(code) $(args)
 output         = log/$(node).out
 error          = log/$(node).err
 log            = log/pass1.log

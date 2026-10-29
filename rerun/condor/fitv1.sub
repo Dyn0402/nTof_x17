@@ -1,5 +1,5 @@
-executable     = $(code)/rerun/w12/run_fitv.sh
-arguments      = $(code) $(args)
+executable     = /bin/bash
+arguments      = $(code)/rerun/w12/run_fitv.sh $(code) $(args)
 output         = log/$(node).out
 error          = log/$(node).err
 log            = log/pass1.log
