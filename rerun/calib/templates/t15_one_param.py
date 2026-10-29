@@ -16,7 +16,8 @@ Held-out: heldout_arm.py --t0-fix on cache events 180-1500 (all 1320; no trainin
 WFT_COL_GUARD 0.01, on lxplus condor (one node per chamber x arm).  Compare: t5_compare (event-paired vs base).
 
 Usage:
-  python -I t15_one_param.py build OUT        local: bundles + caches + DAG into OUT (then rsync OUT to EOS)
+  python -I t15_one_param.py build OUT CODE   local: bundles + caches + DAG into OUT (then copy OUT to EOS);
+                                             CODE = the git archive on EOS (/eos/user/d/dneff/x17rerun/code/code_<hash>)
   python -I t15_one_param.py compare DIR      DIR holds <det>_<arm>.npz -> results/t15/t15_<det>.json
   python -I t15_one_param.py table            markdown tables from results/t15/
 """
@@ -28,9 +29,14 @@ CACHE = os.path.expanduser('~/x17/cosmic_bench/model_audit/ws_t0/caches/{}.pkl')
 DETS = ['det2', 'det3', 'det4', 'det6', 'det7']
 EOS = '/eos/user/d/dneff/x17rerun/t15'
 ARMS = {'base': {},
-        'st092': dict(stretch=0.92), 'st096': dict(stretch=0.96), 'st104': dict(stretch=1.04),
+        'st084': dict(stretch=0.84), 'st088': dict(stretch=0.88), 'st092': dict(stretch=0.92), 'st096': dict(stretch=0.96), 'st104': dict(stretch=1.04),
         'dp085': dict(scale={'Dp': 0.85}), 'dp115': dict(scale={'Dp': 1.15}),
         'cf20': dict(set={'core_frac_x': 0.2, 'core_frac_y': 0.2}), 'cf40': dict(set={'core_frac_x': 0.4, 'core_frac_y': 0.4}),
+        # det4 follow-up (its D_rc,y is the H4 value, not a bench fit): is det4 Y's preference for a narrower template
+        # really the template, or a wrong RC constant?  Submitted for det4 only.
+        'st076': dict(stretch=0.76), 'st080': dict(stretch=0.80),
+        'D050': dict(set={'rc_D_y': 0.5e-4}), 'D100': dict(set={'rc_D_y': 1.0e-4}), 'D150': dict(set={'rc_D_y': 1.5e-4}),
+        'D300': dict(set={'rc_D_y': 3.0e-4}),
         'yown_D0': dict(yown=0.0), 'yown_D1': dict(yown=1e-4), 'yown_D2': dict(yown=2e-4), 'yown_Dplan': dict(yown=None)}
 SH = '''#!/bin/bash
 # run_t15.sh <code_dir> <heldout_arm.py args...>
@@ -56,7 +62,7 @@ def stretched(grid, t, s):
     return np.interp(grid / s, grid, t, left=0.0, right=0.0)
 
 
-def build(out):
+def build(out, code):
     for det in DETS:
         os.makedirs(f'{out}/caches', exist_ok=True)
         shutil.copy(CACHE.format(det), f'{out}/caches/{det}.pkl')
@@ -85,7 +91,7 @@ def build(out):
             n = f'T15_{det}_{arm}'
             args = (f'--cache {EOS}/caches/{det}.pkl --bundle {EOS}/bundles/{det}/{arm} --out {EOS}/out/{det}_{arm}.npz '
                     f'--start 180 --n 1320 --jobs 8 --k 24 --t0-fix')
-            L += [f'JOB {n} t15.sub', f'VARS {n} nodename="{n}" code="$(CODE)" args="{args}"', f'RETRY {n} 1']
+            L += [f'JOB {n} t15.sub', f'VARS {n} nodename="{n}" code="{code}" args="{args}"', f'RETRY {n} 1']
     open(f'{out}/t15.dag', 'w').write('\n'.join(L) + '\n')
     open(f'{out}/t15.sub', 'w').write(SUB); open(f'{out}/run_t15.sh', 'w').write(SH); os.chmod(f'{out}/run_t15.sh', 0o755)
     print(f'{out}: {len(DETS) * len(ARMS)} nodes')
@@ -101,7 +107,7 @@ def compare(d):
 
 
 def table():
-    fam = [('st', 'template stretch s', ['st092', 'st096', 'st104']), ('dp', 'Dp x k', ['dp085', 'dp115']),
+    fam = [('st', 'template stretch s', ['st084', 'st088', 'st092', 'st096', 'st104']), ('dp', 'Dp x k', ['dp085', 'dp115']),
            ('cf', 'core fraction f (0.07 mm)', ['cf20', 'cf40']),
            ('yown', 'Y own template, D_rc,y', ['yown_D0', 'yown_D1', 'yown_D2', 'yown_Dplan'])]
     R = {det: json.load(open(f'{HERE}/results/t15/t15_{det}.json')) for det in DETS
@@ -119,4 +125,4 @@ def table():
 
 
 if __name__ == '__main__':
-    {'build': lambda: build(sys.argv[2]), 'compare': lambda: compare(sys.argv[2]), 'table': table}[sys.argv[1]]()
+    {'build': lambda: build(sys.argv[2], sys.argv[3]), 'compare': lambda: compare(sys.argv[2]), 'table': table}[sys.argv[1]]()

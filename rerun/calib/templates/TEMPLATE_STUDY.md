@@ -4,7 +4,20 @@ Part of the calibration rebuild (`rerun/PASS_PLAN_2026-10-28.md` §2, E1 / CAL1 
 template that `wft.calibrate.measure_templates` produces is the right object for the forward model, and what the pass
 should use. Scripts, results and figures are in this directory. Run them with `../../../.venv/bin/python -I <script>`.
 
-## Morning summary (2026-10-29) — read this first
+## Update 2026-10-29 late morning (T15) — read this first
+
+Dylan's calls: **δ dropped** (t0 = C − 10·ftst); det6 Y kept under watch. T15 (lxplus condor, 76 nodes, 1320 held-out
+events each) tested one extra parameter per chamber and view, and separate X/Y templates:
+- **Separate Y template: worse on all five chambers** at every D_rc,y (+0.01…+0.35°). The measured Y pulse already
+  holds the RC loss but cannot give the charge to the neighbours. Keep the X template for both views.
+- **Lateral shape (Dp, the new narrow-core fraction): lower χ² (up to −11 %), never better angles.** Limitation stands.
+- **Template time stretch: det4 Y only, −0.12 ± 0.04° at s 0.84**, χ² agrees, confirmed by choosing s on half the
+  events and measuring on the other (−0.09/−0.10 ± 0.05). Not det4's RC constant (scanned). Neutral elsewhere; a
+  χ²-fitted stretch risks det4 X (+0.09 ± 0.07 in one half).
+- **Open for Dylan:** adopt the stretch as a CAL-phase constant gated on held-out angles (recommended), det4 Y only, or not at all.
+Details: section T15 below.
+
+## Morning summary (2026-10-29)
 
 **Answer for the pass:** the calibration basis holds. Rebuild it as planned with **one change to the DRC step** and
 no change to the templates or σ0. Nothing found overnight moves angle resolution by more than ~0.06° (1–2σ), but one
@@ -375,6 +388,76 @@ Plan bundles (T8 A: fe_nobow, σ0 0.30), `t9_peak_residual.py` → `results/t9/<
   angles (and can cost them). It shows mainly in χ² and charge. For the pass it is a stated model limitation (the
   χ² quality flag is relative, 5 × median, so it adapts), unless a footprint/RC shape change is made and validated
   on held-out angles.
+
+## T15 · One extra parameter per chamber and view: what fixes the model? (2026-10-29 morning, lxplus condor)
+
+Dylan's calls (10-29): drop δ; try to fix the model with a single extra parameter (per chamber, per view); check whether
+X and Y should have separate templates. `t15_one_param.py` (arms, DAG, compare, tables) and `t15_select.py`.
+Base = the plan (T8 A): fe_nobow, σ0 0.30/0.30, the bundle's D_rc,y, t0 = C − 10·ftst (no δ). Held-out = all 1320
+events 180–1500 of each rr1 cache, LM, `--t0-fix`, event-paired against base. 76 nodes on condor (code `45da833` on
+EOS, ~15 min wall for 60 nodes); outputs `/eos/user/d/dneff/x17rerun/t15/out/`, tables `results/t15/`.
+
+Families (each arm sets X and Y alike; a view's fit sees only its own keys, so each view is read on its own):
+- **Y own template** (`rc_tmpl` own, measured tmpl_y), D_rc,y = 0 / 1e-4 / 2e-4 / plan. This is the fair T14: T14
+  kept the plan D, so it counted the RC spreading twice (in the template's undershoot and in the kernel).
+- **Template time stretch** s: both views driven by the X template stretched about its t50, h(t/s), s 0.84–1.04.
+- **Dp × 0.85 / 1.15** (one gas parameter).
+- **Narrow prompt core** (new, `wft.model` `core_frac_<plane>`): a fraction f = 0.2 / 0.4 of each landing at 0.07 mm
+  instead of σ0. A two-Gaussian footprint that survives the Y RC growth exactly (unlike T13's Voigt tails).
+
+Δs68 [°] ± paired bootstrap (n = 1320 per view):
+
+| family | det2 X / Y | det3 X / Y | det4 X / Y | det6 X / Y | det7 X / Y |
+|---|---|---|---|---|---|
+| Y own, D 0 | — / +0.23 ± 0.04 | — / +0.30 ± 0.03 | — / +0.22 ± 0.05 | — / +0.24 ± 0.06 | — / +0.35 ± 0.06 |
+| Y own, D 2e-4 | — / +0.04 ± 0.03 | — / +0.02 ± 0.01 | — / −0.01 ± 0.03 | — / +0.14 ± 0.04 | — / +0.13 ± 0.04 |
+| Y own, D plan | — / +0.03 ± 0.03 | — / +0.03 ± 0.02 | — / +0.01 ± 0.03 | — / +0.01 ± 0.03 | — / +0.11 ± 0.04 |
+| stretch 0.84 | +0.04 ± 0.02 / −0.00 ± 0.02 | −0.04 ± 0.02 / +0.02 ± 0.02 | +0.08 ± 0.05 / **−0.12 ± 0.04** | +0.02 ± 0.02 / −0.01 ± 0.02 | −0.05 ± 0.04 / −0.02 ± 0.03 |
+| stretch 0.92 | −0.00 ± 0.02 / −0.01 ± 0.02 | +0.00 ± 0.02 / +0.01 ± 0.02 | −0.01 ± 0.04 / −0.05 ± 0.03 | −0.01 ± 0.02 / −0.00 ± 0.02 | −0.06 ± 0.03 / −0.02 ± 0.02 |
+| stretch 1.04 | −0.01 ± 0.01 / +0.01 ± 0.02 | −0.01 ± 0.01 / −0.01 ± 0.01 | −0.01 ± 0.03 / +0.02 ± 0.02 | +0.01 ± 0.02 / +0.02 ± 0.02 | −0.01 ± 0.03 / +0.00 ± 0.02 |
+| Dp × 0.85 | −0.01 ± 0.02 / +0.01 ± 0.02 | +0.00 ± 0.02 / −0.00 ± 0.01 | +0.04 ± 0.03 / +0.03 ± 0.02 | +0.02 ± 0.02 / +0.03 ± 0.02 | +0.07 ± 0.03 / +0.03 ± 0.02 |
+| Dp × 1.15 | +0.02 ± 0.02 / +0.01 ± 0.02 | −0.02 ± 0.02 / +0.01 ± 0.01 | −0.00 ± 0.03 / −0.04 ± 0.03 | −0.01 ± 0.02 / +0.01 ± 0.02 | −0.05 ± 0.04 / −0.02 ± 0.02 |
+| core f 0.2 | −0.00 ± 0.01 / +0.00 ± 0.01 | +0.00 ± 0.01 / −0.01 ± 0.01 | +0.03 ± 0.03 / +0.02 ± 0.02 | +0.02 ± 0.02 / +0.02 ± 0.01 | +0.03 ± 0.02 / −0.01 ± 0.02 |
+| core f 0.4 | +0.01 ± 0.02 / +0.02 ± 0.02 | +0.01 ± 0.02 / −0.00 ± 0.01 | **+0.09 ± 0.04** / +0.05 ± 0.03 | −0.00 ± 0.02 / +0.02 ± 0.02 | +0.05 ± 0.03 / −0.00 ± 0.02 |
+
+(Full tables with χ²/dof and charge ratios: `results/t15/t15_<det>.json`, `t15_one_param.py table`.)
+
+- **Separate X/Y templates: no, on every chamber.** Y on its own measured template is worse at every D_rc,y
+  (best case det4 at 2e-4, −0.01 ± 0.03; det6/det7 +0.11…+0.35), and χ²/dof rises 7–200 %. The two views share the
+  same electronics (same DREAM chips), so the measured Y pulse differs from X only by what the resistive layer does
+  to the strip: charge leaving the struck strip over time. The kernel already models that, together with where the
+  charge goes (the ±1/±2 strips). The measured Y template has the loss built in but cannot hand the charge to the
+  neighbours, and with D > 0 the loss is counted twice. So the extra freedom is a fixed measured shape that is
+  inconsistent with the rest of the model, not a fitted degree of freedom. X template ⊗ RC stays.
+- **Lateral parameters (Dp, core fraction): χ² yes, angles no.** The core fraction lowers χ² where the lateral
+  mismatch is largest (det2 X 97.5 → 85.7, det6 X 258.7 → 229.5, −11 %) but never helps an angle, and costs det4 X
+  +0.09 ± 0.04 at f 0.4. Dp has no consistent sign across chambers (det7 X wants wider, det2 X narrower).
+  This is T13 again, now fleet-wide: the lateral shape error is real but does not move the angles.
+- **Template stretch: one real effect, on det4 Y.** Narrowing the pulse in time improves det4 Y monotonically
+  (s 0.96 / 0.92 / 0.88 / 0.84 / 0.80 / 0.76: −0.03 / −0.05 / −0.09 / **−0.12 ± 0.04** / −0.11 / −0.09), far
+  fraction 10.5 → 7.6 %, χ²/dof 16.9 → 13.5, so χ² and angles agree. det4 X does not want it (+0.04 at 0.88,
+  +0.08 at 0.84). Every other chamber and view is flat within errors (det7 X −0.06 ± 0.03 at 0.92 is not monotonic:
+  +0.01 at 0.96). Charge scales as 1/s (unit-peak template, area ∝ s), a definition, not physics; the ladder moves
+  −5 % at 0.84 (kw absorbs).
+- **det4 Y is the template, not its RC constant.** det4's D_rc,y is the H4 value (2.2e-4), not a bench fit, so the
+  first suspect was a wrong D. Scanning it on the bench with the plan template: 0.5 / 1.0 / 1.5 / 3.0e-4 →
+  +0.23 / +0.10 / +0.06 / −0.02 ± 0.03, so a smaller D (less temporal spread) makes it worse, and 3e-4 is neutral.
+  The narrower response is wanted by det4's Y electronics response itself. Why det4 Y is ~16 % faster than det4 X is
+  not established (det4 is the gain-limited, striped chamber; its Y may have a different strip capacitance).
+- **Can a calibration node fit it?** (`t15_select.py`) Choose s by median χ²/dof alone on one half of the events,
+  measure Δs68 on the other half: det4 Y picks 0.80 / 0.84 → **−0.09 ± 0.05 / −0.10 ± 0.05** (both halves).
+  Elsewhere the χ²-picked s is neutral (−0.03…+0.03), except **det4 X, where χ² is shallow and picks 0.80 in one
+  half: +0.09 ± 0.07** (0.92 in the other, +0.02). A free χ²-fitted stretch therefore buys det4 Y ~0.1° and risks
+  det4 X by about as much (n.s.).
+- **Look-elsewhere:** ~100 Δs68 cells here; the only one beyond 3σ, monotonic in its parameter and agreeing with χ²
+  is det4 Y stretch. det7 X / det3 X at ~1.5–2σ are what noise gives at this count.
+
+**For the pass:** keep the X template for both views (now tested fairly). No lateral shape parameter (stated
+limitation stands). Template stretch: give every chamber and view a stretch `s_<view>` measured in the CAL phase
+by χ² within [0.84, 1.04], **kept only if the held-out angle gate does not worsen** (the standing rule: judge on
+angles), which in this sample keeps det4 Y ≈ 0.84 and returns ≈ 1 elsewhere. The simpler option is det4 Y only.
+Dylan's call. If adopted, re-run T10 (SPS σ0) with the det4 Y stretch: the SPS fit used this template, and its Y σ0
+(0.323) sits above X (0.278).
 
 ## Interim verdict (2026-10-28 evening) — SUPERSEDED by the morning summary at the top
 

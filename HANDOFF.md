@@ -1,8 +1,18 @@
 # Handoff
 
-## Calibration basis study (templates, D_rc,y, σ0, model shape) — updated 2026-10-29 night (dylan-Yoga)
+## Calibration basis study (templates, D_rc,y, σ0, model shape) — updated 2026-10-29 late morning (dylan-Yoga)
 
-**Resume:** read the "Morning summary" at the top of `rerun/calib/templates/TEMPLATE_STUDY.md`; get Dylan's calls on δ / model shape / det6 Y, then build E1/E3 with the corrected DRC objective.
+**Resume:** read "Update 2026-10-29 late morning (T15)" at the top of `rerun/calib/templates/TEMPLATE_STUDY.md`; get
+Dylan's call on the template stretch (CAL-phase constant gated on held-out angles / det4 Y only / none), then build
+E1/E3 with the corrected DRC objective and no δ.
+
+**10-29 morning (T15, lxplus condor):** δ dropped (Dylan). Separate Y template is worse on all five chambers at any
+D_rc,y, so the X template keeps driving both views. Dp and the new `core_frac_<view>` (two-Gaussian narrow core in
+`wft.model`, bit-identical when absent) lower χ² but never help angles. The template time stretch helps det4 Y only
+(−0.12 ± 0.04° at s 0.84; χ² agrees; split-half confirmed; not det4's D_rc,y). Runs: `t15_one_param.py`
+(build/compare/table), `t15_select.py`; inputs and outputs on `/eos/user/d/dneff/x17rerun/t15/`, DAGs in
+`~/x17rerun/t15/`, code `/eos/user/d/dneff/x17rerun/code/code_45da833`. Rule from Dylan: anything over ~30 min goes
+to condor.
 
 **Done:** T1–T14 on the rr1 caches (laptop). Templates keep `measure_templates`. The raw D_rc,y objective is steered
 by saturated planes; the fix is `recal.py --t0-pin --unsat-only` (new options, plus `--train-start` and free
@@ -20,7 +30,7 @@ needed; every number is in `results/`).
 
 ## From-scratch pass: history, plan, calibration phase to build — updated 2026-10-28 (dylan-Yoga)
 
-**Resume:** get Dylan's 3 calls from the calib-basis study (section above), then build `calib` phase E1–E4 with DRC `--t0-pin --unsat-only`.
+**Resume:** δ is dropped and det6 Y is under watch (Dylan 10-29). Get the template-stretch call (section above), then build `calib` phase E1–E4 with DRC `--t0-pin --unsat-only`.
 
 **Goal:** run the bench + SPS reprocessing once, from scratch, with every lesson of the year in the chain.
 
