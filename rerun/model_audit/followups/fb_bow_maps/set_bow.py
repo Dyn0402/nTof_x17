@@ -31,6 +31,9 @@ def block(det):
         D = prep(T, p)
         b = fit_bow2d(D, D['m'])
         out[f'A_{p}'] = dict(zip(['cu', 'cw', 'auu', 'aww', 'auw'], map(float, b[1:6])))
+        # tan form (2026-10-29, rerun/calib/bow/BOW_TRANSFER.md): the tilt as a geometric tan offset, A / B; wft uses it
+        # in preference to A, so the shape transfers to rows of the same chamber at another drift field
+        out[f'a_{p}'] = dict(zip(['cu', 'cw', 'auu', 'aww', 'auw'], map(float, b[1:6] / b[6])))
         out[f'w0_const_{p}'] = float(b[0])
         out[f'B_{p}'] = float(b[6])
         out[f's_{p}'] = dict(su=float(b[7] / b[6]), sw=float(b[8] / b[6]))

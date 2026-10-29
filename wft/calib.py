@@ -184,6 +184,9 @@ class CalibrationBundle:
     # and scale gradient s_p (su, sw); mesh-height surface h (gu, gw, kuu, kww, kuw; mm).  With it
     #     tan_p = (w*1e3 - w0[p] - A_p(U, W)) / (kw[p] * v * (1 + su U + sw W))        (wft.reco.apply_bow)
     # and the per-run w0/kw are measured after subtracting the bow shape (set_w0kw.py).  Takes precedence over angle_map.
+    # Tan form (2026-10-29): a block with a_p (cu, cw, auu, aww, auw in tan, = A_p / (kw v) of its source row) gives
+    #     tan_p = (w*1e3 - w0[p]) / (kw[p] * v * S) - a_p(U, W)
+    # which transfers across drift fields; it takes precedence over A_p (rerun/calib/bow/BOW_TRANSFER.md).
     bow: Dict[str, object] = field(default_factory=dict)
 
     # --- per-event angle error floor (model audit F3, ws_floor 2026-10-27): the measured core angular resolution of

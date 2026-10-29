@@ -104,15 +104,19 @@ def main():
             e = z[f'{p_}_eid'].astype(int)
             U = ux.reindex(e).fillna(0.0).to_numpy(); W = wy.reindex(e).fillna(0.0).to_numpy()
             A = np.array([wr._bow_poly((cal.bow or {}).get(f'A_{p_}') or {}, u_, w_) for u_, w_ in zip(U, W)])
+            at = (cal.bow or {}).get(f'a_{p_}')
+            a_t = np.array([wr._bow_poly(at, u_, w_) for u_, w_ in zip(U, W)]) if at else None
             if (cal.v_map or {}).get('xy'):
                 S = np.array([wr.v_rel_xy(cal, 100 * u_ + 200, 100 * w_ + 200) for u_, w_ in zip(U, W)])
             else:
                 sc = (cal.bow or {}).get(f's_{p_}') or {}
                 S = 1.0 + sc.get('su', 0.0) * U + sc.get('sw', 0.0) * W
-            UW[p_] = (A, S)
+            UW[p_] = (A, S, a_t)
     for p in (() if a.pairing_only else ('x', 'y')):
         w, t = z[f'{p}_w'] * 1e3, z[f'{p}_tan_ref']
-        if p in UW:                       # bow shape out: w - A(U, W), and the local scale folded into tan_ref
+        if p in UW and UW[p][2] is not None:   # tan-form bow: w = w0 + kw v S (tan + a)
+            t = (t + UW[p][2]) * UW[p][1]
+        elif p in UW:                     # bow shape out: w - A(U, W), and the local scale folded into tan_ref
             w = w - UW[p][0]; t = t * UW[p][1]
         ok = np.isfinite(w) & np.isfinite(t)
         s = ok & (np.abs(t) < 0.30)

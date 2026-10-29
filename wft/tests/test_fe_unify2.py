@@ -202,3 +202,24 @@ def test_bow_dish_reproduces_tan(cal, tmp_path):
         assert fx.tan_theta == pytest.approx(tx, abs=1e-9) and fy.tan_theta == pytest.approx(ty, abs=1e-9)
         assert np.isfinite(fx._bow_h)
     cal.bow = {}
+
+
+def test_bow_tan_form_transfers_across_v(cal):
+    """Tan-form block (a_p): the same geometric tilt reproduces tan at any v; the um/ns form (A_p) does not."""
+    from types import SimpleNamespace
+    a = {'x': dict(cu=0.006, cw=-0.001, auu=0.05, aww=0.05, auw=0.002), 'y': dict(cu=0.0, cw=0.008, auu=0.05, aww=0.05, auw=0.0)}
+    base = dict(BOW, a_x=a['x'], a_y=a['y'])
+    cal.w0, cal.kw = {'x': 0.3, 'y': -0.2}, {'x': 1.02, 'y': 0.97}
+    for v in (36.0, 18.0):                               # the same chamber at two drift fields
+        cal.v_drift, cal.bow = v, base
+        tx, ty = 0.21, -0.13
+        fx = SimpleNamespace(p0=95.0, w=0.0, tan_theta=0.0, theta_deg=0.0, slope_reliable=False)
+        fy = SimpleNamespace(p0=310.0, w=0.0, tan_theta=0.0, theta_deg=0.0, slope_reliable=False)
+        for _it in range(60):
+            U, W = wr.bow_UW(cal, fx, fy)
+            for p, f, t in (('x', fx, tx), ('y', fy, ty)):
+                s = BOW[f's_{p}']
+                f.w = (cal.w0[p] + cal.kw[p] * v * (1 + s['su'] * U + s['sw'] * W) * (t + wr._bow_poly(a[p], U, W))) / 1e3
+        wr.apply_bow(cal, fx, fy)
+        assert fx.tan_theta == pytest.approx(tx, abs=1e-9) and fy.tan_theta == pytest.approx(ty, abs=1e-9)
+    cal.bow = {}

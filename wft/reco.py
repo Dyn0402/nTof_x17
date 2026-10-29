@@ -419,13 +419,21 @@ def tan_const(cal: CalibrationBundle, plane: str, w: float) -> float:
 
 def tan_bow(cal: CalibrationBundle, plane: str, w: float, U: float, W: float) -> float:
     """tan = (w - w0 - A_bow(U, W)) / (kw v S): S = FA's v_rel(x, y) at (100 U + 200, 100 W + 200) when the bundle has a
-    v_map, else FB's linear scale 1 + su U + sw W (never both: the v map IS the scale variation, FA spec)."""
+    v_map, else FB's linear scale 1 + su U + sw W (never both: the v map IS the scale variation, FA spec).
+
+    A block with ``a_<plane>`` (the tilt as a geometric tan offset, a = A / (kw v) of the row it was measured on) uses
+    tan = (w - w0) / (kw v S) - a(U, W) instead.  The tilt is v r_f dh/du, so in tan it does not change with the drift
+    field: a det3 shape measured at 1000 V transfers to its 500 V row in this form, not in um/ns
+    (rerun/calib/bow/BOW_TRANSFER.md, 2026-10-29).  Blocks without it are unchanged."""
     b = getattr(cal, 'bow', None) or {}
     A, s = b.get(f'A_{plane}') or {}, b.get(f's_{plane}') or {}
     if (getattr(cal, 'v_map', None) or {}).get('xy'):
         S = v_rel_xy(cal, 100.0 * U + 200.0, 100.0 * W + 200.0)
     else:
         S = 1.0 + s.get('su', 0.0) * U + s.get('sw', 0.0) * W
+    a = b.get(f'a_{plane}')
+    if a:
+        return float((w * 1e3 - cal.w0.get(plane, 0.0)) / (cal.kw.get(plane, 1.0) * cal.v_drift * S) - _bow_poly(a, U, W))
     return float((w * 1e3 - cal.w0.get(plane, 0.0) - _bow_poly(A, U, W)) / (cal.kw.get(plane, 1.0) * cal.v_drift * S))
 
 
