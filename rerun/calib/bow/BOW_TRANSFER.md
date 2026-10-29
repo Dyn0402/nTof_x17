@@ -10,7 +10,7 @@ chamber's block from its golden table, installs it with the pass's own W0KW step
 and maps every target event with `wft.reco.bow_UW` / `tan_bow` (what `apply_bow` does in the reconstruction). On the
 target only the rigid tilt w0 and the angle scale kw are re-measured (2 numbers per view, which every row gets with or
 without a bow); the bow shape never sees the target.
-- **Angles:** better on all 29 non-golden view-datasets, no view worse beyond its error. det3: X −0.07…−0.17°,
+- **Angles:** better on all 24 non-golden view-datasets (12 datasets × 2 views), none worse. det3: X −0.07…−0.17°,
   Y −0.07…−0.21° (6-28 night −0.09/−0.14, 500 V −0.13/−0.07, 700 V −0.07/−0.19, 6-25 −0.17/−0.21). The far
   fraction does not rise. det4 X, which the table-level test said does not transfer, gains −0.10 on 6-23 here.
 - **Positions:** the golden per-view mesh height (p0 − tan·h_view, alignment terms refit per row as the row's own
