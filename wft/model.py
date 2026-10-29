@@ -118,6 +118,52 @@ MODEL_FRAC = 0.0
 #: F19 `sat` arm: s68 +-0.015 deg, far -0.1..-0.4 pp, chi2 -2..-10 %, and the charge of clipped strips is right, which
 #: the x-y charge pairing and the head-on rescue's charge match rely on).
 SAT_SOLVE = True
+#: Saturation treatment, study switches (opt-in, 2026-10-29, rerun/calib/saturation/SATURATION_STUDY.md).  All off =
+#: bit-identical.  The DREAM ADC is 12 bit: a sample's top rail is 4095 - ped - CM and its floor 0 - ped - CM, per
+#: channel and per sample (the CM moves both).  A window may carry them as ``P['rail_hi']`` / ``P['rail_lo']`` (same
+#: units and shape as P['W'], before the gain correction); without them the switches that need them do nothing.
+#:   SAT_RAIL     a sample is clipped when it sits at its own top rail (W >= rail_hi - 0.5 - SAT_MARGIN) instead of
+#:                W >= SAT.  The 3550 rule misses 5-46 % of clipped samples (the CM pulls them under 3550; fitted as data
+#:                at a value below the truth) and censors real samples in [3550, rail).
+#:   SAT_MARGIN   ADC below the rail that also counts as clipped (lower bound): soft compression before the hard clip.
+#:   SAT_FLOOR    samples at the ADC floor (W <= rail_lo + 0.5, raw 0).  The fit's own model undershoots there by more
+#:                than the floor allows (det3 base fit: model ~-450, floor ~-290 ADC, median over clipped strips): the
+#:                floor is the ADC clipping a real undershoot, so the true value is AT MOST the observed one.
+#:                1 = upper bound (model <= W: censored, penalised one-sidedly when the model rises above it, and in the
+#:                SAT_SOLVE active set); 2 = free (censored, no bound).  0 = off (fitted as data).
+#:   SAT_TAIL     on a strip with a clipped sample, every sample later than SAT_TAIL_SKIP samples after its last clipped
+#:                sample is censored with no bound (the recovery after the clip), for plateaus of at least
+#:                SAT_TAIL_MINLEN samples.  Floor samples in the tail keep the SAT_FLOOR bound.
+#:   SAT_STRIP    every sample of a strip with a clipped sample is censored: the clipped ones as lower bounds, the rest free.
+#:   SAT_CLIP_FREE  the clipped samples themselves carry no bound (censored, free): a clipped delta blob no longer
+#:                forces the track model to deposit at least the clip level where it sits.
+#: Clipped samples are lower bounds (model >= W) as before.  Upper-bound and free samples ride the ``sat`` mask as the
+#: attributes ``ub`` / ``free`` of a :class:`Censor` (a bool ndarray); a plain bool mask = every censored sample a lower
+#: bound, so nothing changes unless one of these switches makes a Censor.
+SAT_RAIL = False
+SAT_MARGIN = 0.0
+SAT_FLOOR = 0
+SAT_TAIL = False
+SAT_TAIL_SKIP = 0
+SAT_TAIL_MINLEN = 1
+SAT_STRIP = False
+SAT_CLIP_FREE = False
+#: Censor the bright samples (opt-in study switch, 2026-10-29): every sample at or above SAT_CAP [ADC, before the gain
+#: correction] is censored as a lower bound at SAT_CAP (model >= SAT_CAP there), as if the ADC clipped at SAT_CAP.
+#: The samples where the template is most wrong (the pulse peak, T9) then only say "at least this much".  The
+#: production form of heldout_arm --emulate-rail (rerun/calib/saturation, r4/r5).  0 = off.
+SAT_CAP = 0.0
+#: Signal variance in the chi2 weights (opt-in study switch, 2026-10-29): sigma^2 = noise^2 + SIG_VAR_K * max(W, 0)
+#: [ADC, after the gain correction] -- the electron-counting + avalanche variance of the signal itself, linear in the
+#: amplitude (ws_floor "Estimator notes": the right form on the toy, K = 0.19 x ADC per electron = 11.5 ADC on det3;
+#: MODEL_FRAC's variance ~ W^2 was the wrong form).  The data stand in for the prediction (one pass).  0 = off.
+SIG_VAR_K = 0.0
+#: Huber loss on the live samples (opt-in study switch, 2026-10-29): residuals beyond ROBUST_C sigma count linearly,
+#: not quadratically -- a delta blob or a mis-modelled bright sample can no longer pull the track by the square of
+#: its residual.  IRLS (ROBUST_ITERS re-weighted NNLS passes) inside the charge solve; the LM Jacobian uses the
+#: IRLS-scaled rows.  The returned "chi2" is the Huber loss.  0 = off (least squares).
+ROBUST_C = 0.0
+ROBUST_ITERS = 3
 #: Unobservable depth columns (opt-in, 2026-10-23; sept26_prelim_analysis/qsum_runaway.py, OCTOBER O10).  A depth bin
 #: whose response lies past the end of the window (time-censored) or off the strip window (space-censored) has a
 #: column of ~1e-6..1e-17 in the weighted design matrix, and the unregularised NNLS can put unbounded charge on it
@@ -587,6 +633,76 @@ def build_matrix(plane, pos, p0, w, t0, hyper):
     return M.reshape(n * NSAMP, K)
 
 
+def _get(P, key):
+    try:
+        v = P.get(key) if isinstance(P, dict) else getattr(P, key, None)
+    except Exception:
+        v = None
+    return None if v is None else np.asarray(v, dtype=np.float64)
+
+
+class Censor(np.ndarray):
+    """The censor mask (bool, like any ``sat``) with two optional same-shape subsets: ``ub`` = censored samples that are
+    UPPER bounds (model <= W), ``free`` = censored samples with no bound.  The rest of the censored samples are lower
+    bounds (model >= W), the historical meaning.  Only :func:`_bounds` reads the subsets, from the 2-D mask itself."""
+
+    def __array_finalize__(self, obj):
+        self.ub = getattr(obj, 'ub', None)
+        self.free = getattr(obj, 'free', None)
+
+
+def _bounds(sat):
+    """(lower, upper) bound masks of a censor mask, flat; upper is None when there is none."""
+    s1 = sat.reshape(-1)
+    ub, fr = getattr(sat, 'ub', None), getattr(sat, 'free', None)
+    if ub is None and fr is None:
+        return np.asarray(s1, bool), None
+    ub = np.zeros(s1.shape, bool) if ub is None or ub.shape != sat.shape else np.asarray(ub, bool).reshape(-1)
+    fr = np.zeros(s1.shape, bool) if fr is None or fr.shape != sat.shape else np.asarray(fr, bool).reshape(-1)
+    s1 = np.asarray(s1, bool)
+    return s1 & ~ub & ~fr, (s1 & ub & ~fr) if ub.any() else None
+
+
+def _sat_mask(P, sat0):
+    """The censor mask of the saturation study switches (SAT_RAIL ... SAT_STRIP), before dead/band/missing rows.
+    ``sat0`` = the W >= SAT mask (used as the clip mask when the window carries no rails)."""
+    W = np.asarray(P['W'], dtype=np.float64)
+    hi, lo = _get(P, 'rail_hi'), _get(P, 'rail_lo')
+    clip = sat0
+    if SAT_RAIL and hi is not None and hi.shape == W.shape:
+        clip = W >= hi - 0.5 - SAT_MARGIN
+    elif SAT_MARGIN > 0 and hi is None:
+        clip = W >= SAT - SAT_MARGIN
+    free = np.zeros(W.shape, bool)
+    rows = clip.any(axis=1)
+    if (SAT_TAIL or SAT_STRIP) and rows.any():
+        for i in np.flatnonzero(rows):
+            k = np.flatnonzero(clip[i])
+            if SAT_STRIP:
+                free[i] = True
+            elif k[-1] - k[0] + 1 >= SAT_TAIL_MINLEN:
+                free[i, k[-1] + 1 + SAT_TAIL_SKIP:] = True
+    free &= ~clip
+    if SAT_CLIP_FREE:
+        free |= clip
+    floor = (W <= lo + 0.5) if (SAT_FLOOR and lo is not None and lo.shape == W.shape) else np.zeros(W.shape, bool)
+    floor &= ~clip
+    ub = floor if SAT_FLOOR == 1 else np.zeros(W.shape, bool)
+    if SAT_FLOOR == 2:
+        free |= floor
+    free &= ~ub
+    sat = (clip | free | ub).view(Censor)
+    sat.ub, sat.free = ub, free
+    return sat
+
+
+def _weights(W, noise):
+    """1/sigma per sample (flat), for MODEL_FRAC / SIG_VAR_K > 0 (the noise-only production path is written out
+    where it is used, expression for expression)."""
+    Wp = np.maximum(W, 0.0)
+    return (1.0 / np.sqrt(noise[:, None] ** 2 + (MODEL_FRAC * Wp) ** 2 + SIG_VAR_K * Wp)).reshape(-1)
+
+
 def prep_plane(P, plane):
     """Gain-correct one plane's waveform window. P: dict with W (nstrip, nsamp),
     pos [mm], noise per strip, ch (channel numbers).
@@ -610,6 +726,8 @@ def prep_plane(P, plane):
     W /= g[:, None]
     noise = np.maximum(np.asarray(P['noise'], dtype=np.float64), 3.0) / g
     sat = np.asarray(P['W'], dtype=np.float64) >= SAT
+    if SAT_RAIL or SAT_FLOOR or SAT_TAIL or SAT_STRIP or SAT_CLIP_FREE:
+        sat = _sat_mask(P, sat)
     if ZS_CENSOR or ZS_BOUND > 0:
         sat |= np.asarray(P['W'], dtype=np.float64) == 0.0
     miss = P.get('missing') if isinstance(P, dict) else None
@@ -634,6 +752,15 @@ def prep_plane(P, plane):
         rows = np.isin(ch, h)
         if rows.any():
             noise[rows] *= HOT_NOISE_INFLATION
+    if SAT_CAP > 0:
+        cap = np.asarray(P['W'], dtype=np.float64) >= SAT_CAP
+        if cap.any():
+            W[cap] = (SAT_CAP / g[:, None] * np.ones_like(W))[cap]
+            sat |= cap
+            if isinstance(sat, Censor):
+                for a in ('ub', 'free'):
+                    if getattr(sat, a, None) is not None:
+                        getattr(sat, a)[cap] = False
     return W, noise, np.asarray(P['pos'], dtype=np.float64), sat
 
 
@@ -660,6 +787,30 @@ def chi2_plane(plane, W, noise, pos, sat, p0, w, t0, hyper, censor=True,
     return chi, q
 
 
+def _huber_mult(r):
+    """IRLS row multipliers of the Huber loss at ROBUST_C (residuals in units of their sigma)."""
+    a = np.abs(r)
+    return np.where(a > ROBUST_C, np.sqrt(ROBUST_C / np.maximum(a, 1e-300)), 1.0)
+
+
+def _robust_solve(Ar, yr, rob, q, live, k):
+    """ROBUST_ITERS IRLS passes of the Huber loss on the rows ``rob`` (the bound rows of the SAT_SOLVE active set stay
+    quadratic); returns (q, sum of the Huber loss over the ``rob`` rows)."""
+    for _ in range(ROBUST_ITERS):
+        mlt = np.ones(len(yr))
+        mlt[rob] = _huber_mult((Ar @ q - yr)[rob])
+        try:
+            if live is None:
+                q, _rn = nnls(Ar * mlt[:, None], yr * mlt, maxiter=50 * k)
+            else:
+                q = np.zeros(k)
+                q[live], _rn = nnls((Ar * mlt[:, None])[:, live], yr * mlt, maxiter=50 * k)
+        except Exception:
+            return None, np.inf
+    a = np.abs((Ar @ q - yr)[rob])
+    return q, float(np.where(a <= ROBUST_C, a * a, 2.0 * ROBUST_C * a - ROBUST_C ** 2).sum())
+
+
 def _solve_nnls(M, W, noise, sat, censor=True):
     """(chi2, q) for a design matrix of any width: the charge profile solved by
     NNLS with the per-strip noise weighting, saturated samples censored.
@@ -671,7 +822,7 @@ def _solve_nnls(M, W, noise, sat, censor=True):
     ok = ~sat.reshape(-1)
     if not ok.any():
         return np.inf, None
-    if MODEL_FRAC <= 0:
+    if MODEL_FRAC <= 0 and SIG_VAR_K <= 0:
         # production path, expression-for-expression unchanged
         Wt = np.repeat(1.0 / noise, NSAMP)
         A = (M * Wt[:, None])[ok]
@@ -682,8 +833,7 @@ def _solve_nnls(M, W, noise, sat, censor=True):
         # bright samples otherwise dominates the chi2 (bench chi2/dof ~800),
         # and a kernel fitted on it patches the template instead of
         # describing the sharing.
-        Wt = (1.0 / np.sqrt(noise[:, None] ** 2 +
-                            (MODEL_FRAC * np.maximum(W, 0.0)) ** 2)).reshape(-1)
+        Wt = _weights(W, noise)
         A = (M * Wt[:, None])[ok]
         y = (W.reshape(-1) * Wt)[ok]
     live = None
@@ -703,13 +853,15 @@ def _solve_nnls(M, W, noise, sat, censor=True):
     chi = rn * rn
     if censor and SAT_SOLVE and sat.any():
         # active set of the one-sided bound model >= clip on the censored samples
-        Wall = (np.repeat(1.0 / noise, NSAMP) if MODEL_FRAC <= 0 else
-                (1.0 / np.sqrt(noise[:, None] ** 2 + (MODEL_FRAC * np.maximum(W, 0.0)) ** 2)).reshape(-1))
+        Wall = (np.repeat(1.0 / noise, NSAMP) if (MODEL_FRAC <= 0 and SIG_VAR_K <= 0) else _weights(W, noise))
         Af, yf = M * Wall[:, None], W.reshape(-1) * Wall
-        sat1 = sat.reshape(-1)
-        act = np.zeros_like(sat1)
+        lb1, ub1 = _bounds(sat)
+        act = np.zeros_like(lb1)
         for _ in range(6):
-            below = sat1 & ((M @ q) < W.reshape(-1)) & ~act
+            mq = M @ q
+            below = lb1 & (mq < W.reshape(-1)) & ~act
+            if ub1 is not None:
+                below |= ub1 & (mq > W.reshape(-1)) & ~act
             if not below.any():
                 break
             act |= below
@@ -725,11 +877,26 @@ def _solve_nnls(M, W, noise, sat, censor=True):
         # chi2 over the unclipped samples only; the bound's residual enters through the penalty below
         r = Af[ok] @ q - yf[ok]
         chi = float(r @ r)
+        if ROBUST_C > 0:
+            use = ok | act
+            q, chi = _robust_solve(Af[use], yf[use], ok[use], q, live, M.shape[1])
+            if q is None:
+                return np.inf, None
+    elif ROBUST_C > 0:
+        q, chi = _robust_solve(A, y, np.ones(len(y), bool), q, live, M.shape[1])
+        if q is None:
+            return np.inf, None
     if censor and sat.any():
         model = (M @ q).reshape(W.shape)
-        pen = np.maximum(0.0, W[sat] - model[sat]) / np.repeat(
-            noise, NSAMP).reshape(W.shape)[sat]
+        lb1, ub1 = _bounds(sat)
+        lbm = lb1.reshape(W.shape)
+        pen = np.maximum(0.0, W[lbm] - model[lbm]) / np.repeat(
+            noise, NSAMP).reshape(W.shape)[lbm]
         chi += float((pen ** 2).sum())
+        if ub1 is not None:
+            ubm = ub1.reshape(W.shape)
+            pen = np.maximum(0.0, model[ubm] - W[ubm]) / np.repeat(noise, NSAMP).reshape(W.shape)[ubm]
+            chi += float((pen ** 2).sum())
         if ZS_BOUND > 0:
             # suppressed samples (exact 0, censored above) are upper bounds: model <= k * noise
             zs = sat & (W == 0.0)
@@ -1100,20 +1267,30 @@ def _vp_resid_jac(plane, W, noise, pos, sat, th, q, M, hyper, censor, t0_prior):
     """(r, J) with r @ r = chi2 of :func:`_solve_nnls` (+ prior) at theta, and J the variable-projection Jacobian in
     Kaufman's form: d(M q)/d(theta) at fixed q, projected off the span of the free (q > 0) weighted columns over the
     rows that determine q (the live samples and the clipped samples the model falls below)."""
-    if MODEL_FRAC <= 0:
+    if MODEL_FRAC <= 0 and SIG_VAR_K <= 0:
         Wt = np.repeat(1.0 / noise, NSAMP)
     else:
-        Wt = (1.0 / np.sqrt(noise[:, None] ** 2 + (MODEL_FRAC * np.maximum(W, 0.0)) ** 2)).reshape(-1)
+        Wt = _weights(W, noise)
     y = W.reshape(-1)
     m = M @ q
     ok = ~sat.reshape(-1)
     dmq = _dmq(plane, pos, th, hyper, q)
     rows_r, rows_J = [((m - y) * Wt)[ok]], [(dmq * Wt[:, None])[ok]]
     A = [(M * Wt[:, None])[ok]]
+    if ROBUST_C > 0:
+        # IRLS form of the Huber loss: rows scaled by sqrt(w) at the current residual (direction only; LM judges
+        # every trial point by the exact loss of _solve_nnls)
+        mlt = _huber_mult(rows_r[0])
+        rows_r[0] = rows_r[0] * mlt
+        rows_J[0] = rows_J[0] * mlt[:, None]
+        A[0] = A[0] * mlt[:, None]
     if censor and sat.any():
         s1 = sat.reshape(-1)
         nz = np.repeat(noise, NSAMP)
-        pen = s1 & (m < y)                       # the one-sided bound is active (= the SAT_SOLVE active set)
+        lb1, ub1 = _bounds(sat)
+        pen = lb1 & (m < y)                      # the one-sided bound is active (= the SAT_SOLVE active set)
+        if ub1 is not None:
+            pen = pen | (ub1 & (m > y))
         if pen.any():
             rows_r.append((m - y)[pen] / nz[pen])
             rows_J.append(dmq[pen] / nz[pen][:, None])
