@@ -5,7 +5,7 @@ error          = log/$(node).err
 log            = log/pass1.log
 request_cpus   = $(cpus)
 request_memory = $(mem)
-environment    = "OMP_NUM_THREADS=8"
+environment    = "OMP_NUM_THREADS=8 PYTHONDONTWRITEBYTECODE=1"
 +JobFlavour    = "tomorrow"
 should_transfer_files = NO
 queue

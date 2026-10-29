@@ -6,6 +6,8 @@ error          = log/$(node).err
 log            = log/pass1.log
 request_cpus   = $(cpus)
 request_memory = $(mem)
+# the archive is frozen and shared by every job: no bytecode written into it
+environment    = "PYTHONDONTWRITEBYTECODE=1"
 +JobFlavour    = "workday"
 should_transfer_files = NO
 queue
