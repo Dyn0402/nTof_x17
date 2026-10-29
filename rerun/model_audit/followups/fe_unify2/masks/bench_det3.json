@@ -17,21 +17,24 @@
    "census_flank_healthy": [],
    "added_mm": [],
    "removed_mm": [],
-   "hot": [
-    62
-   ],
+   "hot": [],
    "ga_added": {
     "dead": [],
     "hot": [
      62
     ],
     "source": "GA 2026-10-28 in-fit gain map (followups/ga_gainmap): weak g 0.27-0.52 / dead-like -> dead (censored); hot g > 2.5 -> hot (down-weighted, never seeds)",
-    "verify": "TO DOUBLE-CHECK before the reprocessing (Dylan 10-28): flank test on the hits like the other masks; det4 X 274 sits beside the chamber-side dead run 271-273 (a short partner?)"
+    "verify": "F7 2026-10-29 (rerun/precheck_ga/README.md): flank fired fraction + amplitude ratio (two-sided and mirror) on rr1_cm0 hits and fa80c06 waveforms of the golden row, waveform display each. Healthy -> dropped; confirmed weak or inconclusive -> kept censored (a censored healthy strip costs little, a weak strip fitted as live biases).",
+    "f7_dropped": {
+     "hot": [
+      62
+     ]
+    },
+    "f7_kept": {}
    }
   },
   "y": {
    "dead": [
-    41,
     510
    ],
    "n_old": 0,
@@ -50,7 +53,17 @@
     ],
     "hot": [],
     "source": "GA 2026-10-28 in-fit gain map (followups/ga_gainmap): weak g 0.27-0.52 / dead-like -> dead (censored); hot g > 2.5 -> hot (down-weighted, never seeds)",
-    "verify": "TO DOUBLE-CHECK before the reprocessing (Dylan 10-28): flank test on the hits like the other masks; det4 X 274 sits beside the chamber-side dead run 271-273 (a short partner?)"
+    "verify": "F7 2026-10-29 (rerun/precheck_ga/README.md): flank fired fraction + amplitude ratio (two-sided and mirror) on rr1_cm0 hits and fa80c06 waveforms of the golden row, waveform display each. Healthy -> dropped; confirmed weak or inconclusive -> kept censored (a censored healthy strip costs little, a weak strip fitted as live biases).",
+    "f7_dropped": {
+     "dead": [
+      41
+     ]
+    },
+    "f7_kept": {
+     "dead": [
+      510
+     ]
+    }
    }
   }
  }
