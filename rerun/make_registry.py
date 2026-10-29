@@ -19,7 +19,9 @@ One row per (subrun, detector) of the campaign manifest on EOS.  Columns:
              scale too (det3: -3 % at 520-525 V, saturation).  A row too small to fit its own kw to 0.5 %
              (< N_OWN_V) inherits the row of its group, with its own calibration, nearest to it in time.
              Row times and clean-trigger counts: GC's column-duration pass (ROW_INFO); rows missing there keep the
-             group reference.
+             group reference.  A group with no golden row whose reference row has < N_MIN_V clean triggers cannot
+             calibrate v at all: its rows take the chamber's golden bundle and become skeptical, angle scale not
+             calibrated (F9 2026-10-29: det2 6-17, det3 6-26 quick).
   K          depth bins of 60 ns: 24 (1440 ns) by default; 30 on drift fields <= 500 V, where the column overruns the
              32-sample window (stated limitation)
   note
@@ -57,8 +59,13 @@ SAME_NIGHT = {'mx17_det6_det7_hv_scan_6-26-26': 'mx17_det6_det7_overnight_6-26-2
 #: clean single-cluster triggers in the chamber (GC colsum) needed for a row to fit its own w0/kw against M3: ~250
 #: M3-matched tracks give sigma(kw)/kw ~ 0.026 / (0.3 sqrt 250) ~ 0.5 %, below the 0.8 % (0.2 deg at 30 deg) that matters
 N_OWN_V = 500
+#: a group's reference row below this many clean triggers cannot fit v at all (GC's own 'missing' floor); between
+#: N_MIN_V and N_OWN_V a reference row with no calibrated row in its group still fits its own v (the det3 100 V drift
+#: point, 475: the golden 1000 V v would be far worse there)
+N_MIN_V = 100
 #: per row: first/last trigger time (acquisition stem + DREAM timestamp) and clean-trigger count (GC 2026-10-28)
 ROW_INFO = os.path.join(HERE, 'model_audit', 'followups', 'gc_gas_time', 'results', 'bench_rows.json')
+NO_V_NOTE = 'group reference row < N_MIN_V clean triggers: golden bundle, angle scale NOT calibrated (positions/efficiency only)'
 EXCLUDED = {
     'mx17_1': 'det1: no calibration (8-12 manifest)',
 }
@@ -72,7 +79,9 @@ def nominal_resist(rows):
 def own_v(out):
     """The v rule (module docstring): own w0/kw for every row big enough, else the nearest-in-time calibrated row."""
     import json
-    info = {x['key']: x for x in json.load(open(ROW_INFO)) if not x.get('missing')}
+    rows_info = json.load(open(ROW_INFO))
+    info = {x['key']: x for x in rows_info if not x.get('missing')}
+    n_clean = {x['key']: x.get('n_clean', 0) for x in rows_info}
     mid = lambda k: 0.5 * (info[k]['t_start'] + info[k]['t_end'])
     for o in out:
         if o['cls'] != 'excluded' and o['refit'] != 'golden' and o['key'] in info \
@@ -81,6 +90,19 @@ def own_v(out):
     by_group = defaultdict(list)
     for o in out:
         by_group[o['group']].append(o)
+    # A group whose reference row is too small to fit any v (F9, 2026-10-29: det2 6-17, half-dead X, <= 210 clean
+    # triggers in any row; det3 6-26 quick 530 V / 1200 V, resist drawing 1.3-2.7 uA and hits in a few % of triggers,
+    # 0 clean) has no row that can calibrate v: it takes the chamber's golden bundle, angle scale not calibrated.
+    gold = {o['det']: o['key'] for o in out if o['refit'] == 'golden'}
+    for rs in by_group.values():
+        if any(o['refit'] == 'golden' for o in rs):
+            continue
+        for o in rs:
+            if o['refit'] == 'v' and n_clean.get(o['key'], 0) < N_MIN_V:
+                for p in rs:
+                    if p['cls'] != 'excluded' and p['calib_key'] == o['key']:
+                        p['calib_key'], p['refit'], p['cls'] = gold[p['det']], 'none', 'skeptical'
+                        p['note'] = '; '.join(x for x in (p['note'], NO_V_NOTE) if x)
     for rs in by_group.values():
         cal = [o for o in rs if o['refit'] in ('golden', 'v') and o['key'] in info]
         for o in rs:
