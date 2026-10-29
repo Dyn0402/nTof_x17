@@ -152,6 +152,9 @@ def main():
     C = pickle.load(open(a.cache, 'rb'))
     ids = json.load(open(a.ids)) if a.ids else sorted(C)[a.start:a.start + a.n]
     del C
+    if not ids:                          # a chunk past the end of a cache (DAGs written before the cache exists)
+        print(f'{a.out}: no events in [{a.start}, {a.start + a.n}) -- nothing written')
+        return
     with ProcessPoolExecutor(a.jobs, initializer=_init, initargs=(a.cache, a.bundle, a.k, hy, a.v, a.nsamp, a.two_sided, a.t0_fix, a.no_dead, hs, a.sps_mask, a.rails, a.emulate_rail)) as pool:
         rows = [r for rs in pool.map(one, ids, chunksize=2) for r in rs]
     per = np.array(rows, float)

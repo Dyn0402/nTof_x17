@@ -23,17 +23,24 @@ ARMS = {
     'headon': 'WFT_HEADON_SIG=20 WFT_HEADON_RESCUE=1',
     'twotrack': 'WFT_TWO_TRACK_FIT=1',
     'all': 'WFT_DROP_FLAT_HITS=1 WFT_HEADON_SIG=20 WFT_HEADON_RESCUE=1 WFT_TWO_TRACK_FIT=1',
+    # 2026-10-29 saturation / error-model gate (rerun/calib/saturation/ERROR_MODEL.md), on the pinned FE bundles of the
+    # LM gate: the current algorithm, the recipe (cap 1200 + per-strip amplitude nuisance + plain charge re-solve), and
+    # the cap alone with the plain re-solve.  A WFT_DIAG=... spec is exported whole (its overrides are comma-separated).
+    'sat_base': ('', 'calib_bundle_fe'),
+    'sat_cand': ('WFT_DIAG=model.SAT_CAP=1200,model.STRIP_TAU=0.05,model.QSOLVE_PLAIN=true', 'calib_bundle_fe'),
+    'sat_cap': ('WFT_DIAG=model.SAT_CAP=1200,model.QSOLVE_PLAIN=true', 'calib_bundle_fe'),
 }
 SH = '''#!/bin/bash
 # run_gate.sh <code_dir> <envspec> <key> <stage_job.py args...>   envspec: comma-separated K=V list, or '-'
 # a non-empty envspec is a study arm: stage_job.py refuses wft overrides without --diag
 CODE=$1; ENVSPEC=$2; KEY=$3; shift 3
 DIAG=""
-if [ "$ENVSPEC" != "-" ]; then for kv in ${ENVSPEC//,/ }; do export "$kv"; done; DIAG=--diag; fi
+if [[ "$ENVSPEC" == WFT_DIAG=* ]]; then export "$ENVSPEC"; DIAG=--diag
+elif [ "$ENVSPEC" != "-" ]; then for kv in ${ENVSPEC//,/ }; do export "$kv"; done; DIAG=--diag; fi
 exec $HOME/x17rerun/stage_job.sh $CODE $KEY $DIAG "$@"
 '''
 SUB = '''# written by rerun/model_audit/make_gate_dag.py
-executable     = $ENV(HOME)/x17rerun/audit/run_gate.sh
+executable     = {exe}
 arguments      = $(code) $(env) $(args)
 output         = log/$(nodename).out
 error          = log/$(nodename).err
@@ -53,6 +60,7 @@ def main():
     ap.add_argument('--dets', nargs='*', default=[d for d, _ in GOLDEN])
     ap.add_argument('--limit', type=int, default=8000); ap.add_argument('--skip', nargs='*', default=[], help='det_arm already done')
     ap.add_argument('--tag', default='gate')
+    ap.add_argument('--exe', default='$ENV(HOME)/x17rerun/audit/run_gate.sh', help='run_gate.sh the jobs execute (written next to the dag)')
     a = ap.parse_args()
     L = []
 
@@ -71,7 +79,7 @@ def main():
                 continue
             spec = ARMS[arm]
             env, bname = spec if isinstance(spec, tuple) else (spec, 'calib_bundle')
-            env = env.replace(' ', ',') or '-'
+            env = (env if env.startswith('WFT_DIAG=') else env.replace(' ', ',')) or '-'
             t = f'{{out}}/wft/{arm}/events.parquet'
             al = '{out}/wft/prod_alignment/alignment.json'
             pre = f'{key} --eos-analysis {a.root}'
@@ -82,7 +90,7 @@ def main():
             node(f'ANG_{det}_{arm}', env, f'{pre} --parts run_config,m3,hits --script mx_june_wft/03_angles.py -- '
                  f'--table {t} --alignment {al} --out {{out}}/wft/{arm}/angles', 1, 8000, [f'RECO_{det}_{arm}'])
     open(f'{a.tag}.dag', 'w').write('\n'.join(L) + '\n')
-    open('gate.sub', 'w').write(SUB); open('run_gate.sh', 'w').write(SH); import os; os.chmod('run_gate.sh', 0o755)
+    open('gate.sub', 'w').write(SUB.format(exe=a.exe)); open('run_gate.sh', 'w').write(SH); import os; os.chmod('run_gate.sh', 0o755)
     print(f'wrote {a.tag}.dag: {sum(1 for l in L if l.startswith("JOB"))} nodes')
 
 
