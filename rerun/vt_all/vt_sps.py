@@ -17,6 +17,7 @@ sys.path[:0] = [REPO, os.path.join(REPO, 'rerun', 'model_audit'), os.path.join(R
 BUNDLE = '/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_pass1/mx17_det4_day_6-24-26/long_run/mx17_4/wft/calib_bundle'
 GAP_MM = 28.8
 EDGE_S = 20.0          # sps_build_cache's plateau-edge guard, applied to the row's outer edges only
+RAW_CHUNK = 1000       # entries per read on RAW rows (sps_build_cache.CHUNK)
 
 
 def defined(q):
@@ -40,6 +41,8 @@ def main():
     get0 = datasets.get
     for key in a.keys:
         row = reg[key]
+        # RAW entries carry every channel x sample: read 1000 at a time (~1 GB) instead of the builder's 20000 (~17 GB)
+        sbc.CHUNK = RAW_CHUNK if int(row['raw']) else 20000
         D = get0(row['dataset'])
         n, lo, hi, dv, rv = next(p for p in D['plateaus'] if p[0] == row['plateau'])
         lo, hi = max(lo + EDGE_S, tmin.get(key, -1e18)), hi - EDGE_S

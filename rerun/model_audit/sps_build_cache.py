@@ -65,6 +65,9 @@ def hot_channels(seed_counts, n):
             nb = np.r_[o[max(0, i - 4):i], o[i + 1:i + 5]]
             out[c] = cnt[c] > HOT_FRAC * n and cnt[c] > HOT_RATIO * max(np.median(cnt[nb]), 1.0)
     return out
+#: entries read per uproot call.  A RAW entry carries every channel x sample (~32 k values), so 20000 of them take
+#: ~17 GB (vt_all run71, held 2026-10-30); callers reading RAW lower it (rerun/vt_all/vt_sps.py).
+CHUNK = 20000
 
 
 def _baseline(ch, sm, am, raw):
@@ -243,9 +246,9 @@ def _fill(out, files, a, D, plateaus, t_lo, ts0, scale, nsmp, verbose, base):
     import uproot
     for f in files:
         t = uproot.open(f)['nt']
-        for lo in range(0, t.num_entries, 20000):
+        for lo in range(0, t.num_entries, CHUNK):
             arr = t.arrays(['eventId', 'timestamp', 'ftst', 'sample', 'channel', 'amplitude'], entry_start=lo,
-                           entry_stop=min(lo + 20000, t.num_entries), library='np')
+                           entry_stop=min(lo + CHUNK, t.num_entries), library='np')
             tw = t_lo + (arr['timestamp'].astype(float) - ts0) * scale
             for j in range(len(tw)):
                 L = next((n for n, l0, l1 in plateaus if l0 <= tw[j] < l1), None)

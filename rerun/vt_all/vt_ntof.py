@@ -90,9 +90,14 @@ def measure(run, d):
                        median_err_sub=float(np.median(sub.v_rel_err)),
                        dv_total=float(c[1] * (sub.t.max() - sub.t.min())))
         # within-sub-run: the two halves' difference against its error
-        H = R[R.half.notna()].pivot_table(index='subrun', columns='half', values=['v_rel', 'v_rel_err'])
-        dh = (H['v_rel'][1] - H['v_rel'][0]) if len(H) else pd.Series(dtype=float)
-        eh = np.hypot(H['v_rel_err'][1], H['v_rel_err'][0]) if len(H) else pd.Series(dtype=float)
+        # (a sub-run whose later half has no measured k, or a run of one-file sub-runs, has no pair)
+        H = R[R.half.notna() & np.isfinite(R.v_rel)].pivot_table(index='subrun', columns='half',
+                                                                 values=['v_rel', 'v_rel_err'])
+        if len(H) and {0, 1} <= set(H['v_rel'].columns):
+            dh = H['v_rel'][1] - H['v_rel'][0]
+            eh = np.hypot(H['v_rel_err'][1], H['v_rel_err'][0])
+        else:
+            dh = eh = pd.Series(dtype=float)
         out['arms'][arm] = dict(k_run=k_run, k_run_err=e_run, n_run=n_run, v_prior=float(A.v_drift_prior_um_ns.median()),
                                 v_insitu=float(A.v_drift_prior_um_ns.median()) / k_run, fit=fit,
                                 half_diff=dict(mean=float(dh.mean()), rms=float(dh.std()), med_err=float(eh.median()),
@@ -112,8 +117,10 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('runs', nargs='+'); ap.add_argument('--stage3', required=True); ap.add_argument('--out', required=True)
     a = ap.parse_args()
-    res = [measure(r, a.stage3) for r in a.runs]
-    json.dump(res, open(a.out, 'w'), indent=1, default=float)
+    res = []
+    for r in a.runs:            # one run at a time, written after each: memory stays one run's columns
+        res.append(measure(r, a.stage3))
+        json.dump(res, open(a.out, 'w'), indent=1, default=float)
 
 
 if __name__ == '__main__':
