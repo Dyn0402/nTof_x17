@@ -29,6 +29,9 @@ vrefit    one per condition group with refit=v (S1b, W7).  RECO with the chamber
 pass      every non-excluded row (S2 + S3).  RECO (all M3-matched events, the row's bundle: its own calib_bundle if
           it is a calibration row, else its group's) -> [calibration rows] ALIGN -> EFF (02), ANGLES (03), MAPS (04)
           with the group's waveform alignment.
+bowgate   the bow transfer gate's inputs (PASS_PLAN E2), rows in --only: bow_node.py on the row's pass table, alignment and
+          staged M3 rays -> <row>/wft/bow_gate/table.parquet (the joined ws_v_w0 table) + the row's own block (a check);
+          rerun/calib/bow/bow_finalize.py --manifest then scores the golden block on them.
 post      the pass without RECO: ALIGN (alignment rows) -> EFF, ANGLES, MAPS on the existing tables (2026-10-30: the fit
           sanity cut and the z-scan MAD fallback, rerun/pass1_review/REVIEW_2026-10-30.md P1).
 """
@@ -145,7 +148,7 @@ def calib_phase(L, rows, a, only):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument('phase', choices=['calib', 'calib_iter', 'finalize', 'vrefit', 'pass', 'post', 'sps'])
+    ap.add_argument('phase', choices=['calib', 'calib_iter', 'finalize', 'vrefit', 'pass', 'post', 'bowgate', 'sps'])
     ap.add_argument('code')
     ap.add_argument('--golden', nargs='*', default=[], help='det=itN (finalize)')
     ap.add_argument('--bundle-sub', default='fit_pinned/bundle',
@@ -204,6 +207,20 @@ def main():
                 continue
             lim = f" --per-plateau {a.limit}" if a.limit else ''
             node(L, f"SPS_{r['key']}", 'sps.sub', f"{r['key']} {A}/sps/{r['key']} --bundle {b}{lim}", 8, 16000, a.code)
+    elif a.phase == 'bowgate':
+        if not only:
+            raise SystemExit('bowgate needs --only (the gate rows)')
+        for r in rows:
+            if r['key'] not in only:
+                continue
+            k, n = r['key'], r['key'].replace('.', '_')
+            ak = r.get('align_key') or r['calib_key']
+            al = '{out}/wft/alignment/alignment.json' if k == ak else f'{A}/{rel(by_key[ak])}/wft/alignment/alignment.json'
+            b = '{out}/wft/calib_bundle' if k == r['calib_key'] else f"{A}/{rel(by_key[r['calib_key']])}/wft/calib_bundle"
+            node(L, f'BOWT_{n}', 'stage1.sub', f"{k} --parts run_config,m3 --script rerun/calib/bow_node.py -- "
+                 f"det{r['det'][-1]} --events {{out}}/wft/events.parquet --alignment {al} --bundle {b} "
+                 f"--out {{out}}/wft/bow_gate/bow_block_row.json --table-out {{out}}/wft/bow_gate/table.parquet",
+                 1, 8000, a.code)
     elif a.phase == 'finalize':
         its = dict(g.split('=') for g in a.golden)            # det2=it1 ...
         for r in rows:
