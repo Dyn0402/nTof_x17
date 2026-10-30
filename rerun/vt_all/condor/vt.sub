@@ -1,0 +1,12 @@
+# one v(t) node (rerun/vt_all/make_vt_dag.py); outputs go to EOS from inside the job, nothing large left in scratch
+executable     = /bin/bash
+arguments      = $(code)/rerun/vt_all/condor/vt_job.sh $(code) $(args)
+output         = log/$(node).out
+error          = log/$(node).err
+log            = log/vt.log
+request_cpus   = 1
+request_memory = $(mem)
++JobFlavour    = "workday"
+should_transfer_files = NO
+requirements   = (Machine != "b9g42p2031.cern.ch")
+queue
