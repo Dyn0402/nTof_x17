@@ -1,5 +1,7 @@
 # Where the reconstruction stands before the from-scratch pass (stock-take, 2026-10-29 night)
 
+> **Superseded 2026-10-30:** the pass ran. Results, findings and exclusions: `PASS1_STATUS_2026-10-30.md`, ledger `PASS1_LEDGER.md`.
+
 The pass = recalibrate every chamber from nothing in a DAG (`PASS_PLAN_2026-10-28.md`), then reprocess all bench rows
 (159) and SPS rows (71). The checklist is `REPROCESSING_TODO.md`; today's record is `calib/SESSION_2026-10-29.md`.
 

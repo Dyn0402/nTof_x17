@@ -1,6 +1,6 @@
 # Handoff
 
-## From-scratch pass 1: DONE overnight 10-29/30 — updated 2026-10-30 morning (dylan-Yoga)
+## From-scratch pass 1 (bench + SPS): done, downstream analysis next — updated 2026-10-30 (dylan-Yoga)
 
 **Resume:** read `rerun/PASS1_STATUS_2026-10-30.md` (G1 table, findings) and the ledger (`~/x17rerun/pass1/tools/rerun/
 pass1_ledger.py` on lxplus). Then go downstream (PASS_PLAN §4), starting with the bow transfer gate and the det4 Y ablation.
@@ -30,115 +30,20 @@ pass1_ledger.py` on lxplus). Then go downstream (PASS_PLAN §4), starting with t
 - Code archives go only through `git archive` → tgz → scp → extract on lxplus. A `cp -a` copy on EOS was unreadable from workers.
 - Stale EOS directory views: a node can miss a file its parent just pushed. RETRY 3 plus a rescue DAG covers it.
 - The local `/media/dylan/data/x17/cosmic_bench` was cleared by another session (Dylan approved; raw is on EOS). Local runs of
-  qa_config keys like det3/, det4_day/ need regenerated inputs.
-
-## Calibration basis, bow, saturation and error model (pre-pass studies) — updated 2026-10-29 (dylan-Yoga)
-
-**Resume:** studies closed and **the simple model locked (Dylan, 10-29 evening; `rerun/calib/saturation/DECISION_2026-10-29.md`)**;
-only S0b (STOCKTAKE §7 item 2) is still Dylan's call; build the pass (E1, E3, E4, F7–F11, dry run).
-
-**Goal:** settle every piece of the reconstruction and calibration before the from-scratch bench + SPS pass.
-
-**Done (10-29, all on main, `wft/tests` 135 pass; full record `rerun/calib/SESSION_2026-10-29.md`):**
-- **Decisions (Dylan):** no δ t0 offset; a new parameter only if it wins on det3 and is reasonable elsewhere; one bow
-  set per detector from its golden row, no slot/run-dependent bow; every correction must hold across a detector's
-  datasets; anything > ~30 min runs on condor.
-- **Templates/model shape** (`rerun/calib/templates/TEMPLATE_STUDY.md` T15/T16): X template for both views (Y own
-  template worse on all five, fairly tested); no extra shape parameter wins on det3; the mean centre/±1 error is
-  symmetric about the track, so it cannot move angles. det4 Y template stretch −0.12° recorded, not adopted.
-- **Bow** (`rerun/calib/bow/BOW_TRANSFER.md`): tan-form block, golden-row shape improves all 24 non-golden
-  view-datasets through the production code; per-view mesh height in the reco (`x/y_bow_h`), positions via
-  `wft.compat.mesh_position`; E2 node `rerun/calib/bow_node.py`; transfer gate `rerun/calib/bow/bow_finalize.py`.
-- **Saturation / error model** (`rerun/calib/saturation/SATURATION_STUDY.md`, `ERROR_MODEL.md`): clipping is not the
-  lever; the angle info is where/when charge arrives (exact-model toy loses nothing clipped at 300 ADC); Poisson
-  variance hurts in data (bright-sample mean-model error). Recipe (cap 1200 + strip nuisance + plain charge) won in
-  the plane-fit harness but was **NOT adopted** after the full-reco gate: the cap lets clipped near-vertical columns
-  run away to steep lines (det6 −0.7, det7 −1.4 pt efficiency); the strip nuisance flips sign with drift field.
-  Per-sample rails now carried by `wft.io` (opt-in): neutral, det6 pairing 0.816 → 0.865.
-- GD spark veto: det4 scored, 50 seeding hits stays.
-
-**In progress / where it stopped:** nothing half-done; no jobs running (condor queue empty).
-
-**Next steps:**
-1. ~~Rails / cap refinement / mean model~~ **decided 10-29 evening: the simple model is locked** (no cap, no per-event
-   width, no shape term, no rails; cost ≤ 0.05° on det3; nine known simplifications K1–K9 carried as stated
-   limitations in `rerun/calib/saturation/DECISION_2026-10-29.md`, REPROCESSING_TODO §D, PASS_PLAN §0). Still open:
-   S0b (decode the 6-26 det6/det7 HV points or exclude).
-2. Then the pass build: see the "From-scratch pass" section below.
-
-**Gotchas / decisions:**
-- A plane-fit (held-out harness) win must pass the full-reco gate: windows follow M3 and t0 is pinned there, so
-  run-away fits and pairing losses are invisible (`make_gate_dag.py` sat arms, `satgate_pairs.py`).
-- Score class subsets with the all-events angle scale (`clean_check.py`); a per-subset refit faked a +0.15° loss.
-- `ssh lxplus 'aklog; …'` when AFS says permission denied; remote brace globs in scp don't expand.
-- Toy per-event dumps `rerun/model_audit/ws_floor/results/det3_full_sat*.npy` left untracked (data, like the rest).
+  qa_config keys like det3/, det4_day/ need regenerated inputs. Analysis should read the pass products on EOS.
 
 **Key files & commands:**
-- `rerun/calib/SESSION_2026-10-29.md` — the day's record; `rerun/STOCKTAKE_2026-10-29.md` — where the pass stands
-- `rerun/calib/saturation/clean_check.py CACHE DIR arms… --tag T` — angle/position/charge per raw-waveform class
-- condor products: `/eos/user/d/dneff/x17rerun/{t15,t16,satur}/`, DAGs in `~/x17rerun/{t15,t16,satur}/`
-
-## From-scratch pass: history, plan, calibration phase to build — updated 2026-10-29 (dylan-Yoga)
-
-**Resume:** algorithm settled (STOCKTAKE_2026-10-29.md); build E1 make_bundle, E3 calib DAG (+BOW2, bow gate), E4, then dry run.
-
-**10-29 additions:** simple model locked (no cap/width/shape/rails: `calib/saturation/DECISION_2026-10-29.md`); no δ; DRC `--t0-pin --unsat-only`; BOW2 = `rerun/calib/bow_node.py` (done) + W0KW `--bow-json`,
-positions through `wft.compat.mesh_position`, bow transfer gate after the pass reco; error-model recipe not adopted;
-GD det4 done (item 1 closed). Pre-flight F7 (14 GA channels) still blocks E1.
-
-**Goal:** run the bench + SPS reprocessing once, from scratch, with every lesson of the year in the chain.
-
-**Done (10-28):**
-- **History compiled.** 112 dated lessons (Nov 2025 → 10-28), each with how the chain carries it (file:line), plus 22
-  withdrawn claims and 15 left-behind items.
-  - Source: `rerun/history/timeline_data.py`.
-  - Generated from it: `LESSONS.md` (`make_timeline_deck.py`), the slide note notes/mx17-analysis-timeline, and the
-    interactive explorer notes/mx17-analysis-timeline-explorer (`make_timeline_page.py`).
-- **Run sheet `rerun/PASS_PLAN_2026-10-28.md`.** It supersedes RERUN_PLAN §11. REPROCESSING_TODO §B is rewritten to
-  match it (items 5–12 = E1–E4, pre-flight, dry run, archive, submit).
-- **Dylan's decisions (10-28):**
-  - Every calibration product is rebuilt in a new DAG phase, templates included. No fe/phys/r06 bundles, no audit caches.
-  - Bow block on all five chambers, refit by the same FB recipe.
-  - LM merged only if its gate passes.
-  - Trigger-track rule = a downstream selection.
-- **Fixed:**
-  - `sps_reco` drops the bench bow/v_map/w0. The fe det4 bundle has a bow block, which would have been applied at H4.
-  - The SPS tan_mount comes from the registry mount; the run_61 15.465° rows had been given tan 25.64°.
-  - Stale WFT_ZS_CENSOR text (SPS registry regenerated; only the text column changed).
-  - CLAUDE.md "use r06"; the RECONSTRUCTION_BASIS "~1° floor"; RERUN_PLAN §11 banner and §10.5 degrador wording.
-
-**In progress / where it stopped:**
-- Nothing half-edited. No calibration-phase code written yet (E1–E4 are specs in PASS_PLAN §2).
-- Running on lxplus:
-  - (LM gate `lm_r1`: finished 17:29, PASSED, merged at `dc354cd` — see Next step 1.)
-  - GD det4 (condor 4583837, DAG `~/x17rerun/gd/`, 7 h at 16:20, 9.8 GB). When done: `gd_sparks/pull.sh det4 && gd_score.py`.
-
-**Next steps:**
-1. ~~LM~~ **done 10-28**: gate passed, `FITTER='lm'`, `LM_HOPS=0` are the code defaults on main (`dc354cd`);
-   `model_audit/algo_review/REPORT_LM.md`. The archive for the pass must be ≥ `dc354cd`. Follow-ups: REPROCESSING_TODO §C.
-2. E1 `rerun/calib/make_bundle.py` + `physics_inputs.json`.
-3. E2 `rerun/calib/bow_node.py`.
-4. E3 `make_pass_dag.py calib` phase (CAL0–CAL4, new root `Analysis_pass1`), and `--table` on every W0KW node.
-5. E4 SPS phase (+ quality_flags, K +15).
-6. Pre-flight F7–F12 (14 GA channels, ch 372, 10 rows without gas times, det4 6-23 M3, g_det4 conn 7–8, optional S0b
-   for the five never-decoded 6-26 HV points).
-7. Dry run on det3 `--limit 300`, then tests, `lxstore status`, code archive, registry.
-8. Submit calib → G1 → vrefit → pass + sps.
-
-**Gotchas / decisions:**
-- **make_pass_dag builds NO calibration.** finalize needs `w12/<it>` and the golden `calib_bundle` already on EOS.
-  - The fe bundles were made by `fe_unify2/make_fe_bundles.sh` + `finalize_fe.sh` (laptop paths) on top of physmask.
-  - The W0KW nodes lack `--table`, so on a bow bundle they abort at set_w0kw.py:95–97.
-- `make_phys_bundle.py` still writes σ0 0.238/0.343 plus a profile. Don't reuse it: σ0 is 0.30/0.30 (FC).
-- Physics inputs (σ0, Dp, det4 D_rc,y, gaps, timing v) are stated inputs, re-checked downstream (S4), not refit.
-- Two-track is ON in code (reco.TWO_TRACK, 10-27). RERUN_PLAN §10.6 "off" is stale.
-- Edit `rerun/history/timeline_data.py` and rerun both generators to update the ledger and both notes. Publish with
-  `add-note.py <out html> --slug <slug> --force --deploy`.
-
-**Key files & commands:**
-- `rerun/PASS_PLAN_2026-10-28.md` — the run sheet; `rerun/REPROCESSING_TODO.md` — the checklist
-- `rerun/history/{timeline_data.py,make_timeline_deck.py,make_timeline_page.py,LESSONS.md}`
-- `.venv/bin/python rerun/history/make_timeline_deck.py && .venv/bin/python rerun/history/make_timeline_page.py`
+- Products: `/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_pass1/<run>/<subrun>/<det>/wft/` (events.parquet + meta,
+  efficiency/, angles/, maps/, calib_bundle; golden rows also calib/ with CALIB_CONVERGENCE*.json); SPS in `Analysis_pass1/sps/<key>/`.
+- Record: `rerun/PASS1_STATUS_2026-10-30.md` (what happened, findings), `rerun/PASS1_LEDGER.md` (+ .json, per-row table),
+  `rerun/calib/G1_RESULT_2026-10-30.md`, `rerun/PASS_PLAN_2026-10-28.md` §1b (decisions), `rerun/precheck_ga/README.md` (pre-flight).
+- Registry: `rerun/pass_registry.csv` (`make_registry.py`; `align_key`, `N_MIN_V`, `EXCLUDED_ROWS`), `rerun/sps_registry.csv`.
+- Calibration: `rerun/calib/{make_bundle.py,physics_inputs.json,convergence.py,conv_iter.py,g1_gate.py,bow_node.py}`.
+- DAGs: `python3 rerun/make_pass_dag.py {calib,calib_iter,vrefit --keep-v,pass,sps} <code dir> [--only k1,k2] [--skip-dets det7]
+  [--limit N --analysis-root R]`; submit files `rerun/condor/*.sub`. Condor dir on lxplus `~/x17rerun/pass1/` (logs, rescue DAGs).
+- Checks on lxplus: `~/x17rerun/pass1/tools/` (repo copies + `wft` from the archive): `python3 rerun/pass1_ledger.py`,
+  `python3 pass1_vcheck.py mx17_2,mx17_3`, and `g1_gate.py` with the lock venv
+  `/eos/user/d/dneff/venvs/ntof-lock-cvmfs/bin/python`.
 
 ## Chamber bow (FB): skeptical review — updated 2026-10-28 (dylan-Yoga)
 
@@ -564,68 +469,6 @@ neighbouring strips cannot fool. Plus Dylan's decision on det7.
 (port headon_cache + unsat_width to stage_job) — and their Dp from the same stack; (3) pass with WFT_PIVOT_START=1.
 Open: det4/det7 head-on far tail (+1.4–3.6 pp), det7 X asymmetry, det6 X wants narrower σ0.
 Key tools: `rerun/det4/{resid_map,compare,profile_arms,finalize_compare}.py`; laptop data `~/x17/cosmic_bench/det4dig/`.
-
-## From-scratch re-run of bench + SPS on lxplus: pass machinery ready, calibration protocol needs Dylan's call — updated 2026-10-24 (dylan-Yoga)
-
-**Resume:** v question understood (C18/C19); Dylan to decide: PIVOT_START on, arm-D protocol, det4/7 kernel gate, det7 X mask. Then finalize → vrefit → pass.
-
-**Done 10-24 day (C18, C19 in rerun/CHECKS_2026-10-23.md; note https://dylan-neff.web.cern.ch/notes/mx17-vdrift-consistency.html):**
-- Three different v's: timing (gap/T, kernel-free); reco ladder (fitted w vs M3 tan — the per-event fit never uses v);
-  calibration fit with v free (flat χ², not a measurement — the whole C17 arm scatter). Ladder is arm-independent and
-  t0-prior-independent.
-- **det3 consistent:** pivot ladder 36.01 ± 0.13 (X) / 35.75 ± 0.15 (Y) on 1300 events vs timing 35.8 ± 0.6.
-- Starting angle: χ² single-welled along w at the right p0; p0 = mesh end, ~5 mm from the charge → diagonal valley.
-  `heldout_eval.py` used a BARE start (X ladders 1–4 % low; C17 arm ranking + C18 numbers made with it); production
-  `wft.reco._global_start` was mostly fine. New `wft.reco.PIVOT_START` (`WFT_PIVOT_START=1`, opt-in, tests pass):
-  w scan through the model-free charge centroid; same cost, fewest wrong-basin fits. `heldout_eval --start reco|pivot|bare`
-  (default reco now). RC-kernel t0 is a 5 ns staircase; the ±5 ns t0 prior is swamped by χ² ~1e5.
-- det2/4/6/7 don't close for 4 measured reasons: no dead masks/gains in ANY bench bundle (small effect;
-  `seedfit/strip_health.py`, `mask_bundle.py`); det7 X connectors 0/1/3 channel order scrambled (angles lost there);
-  v(x,y) non-uniform on det4/6/7 (ladder maps + stacked-T maps anti-correlate); RC kernel fits det4/det7 ~2× worse χ²
-  than the old lp/delay kernel, whose ladder matches timing. det6: ladder × T → gap ≈ 27.5–28 mm, v ≈ 24 (timing 25.9 assumed 30 mm).
-
-**Decisions waiting for Dylan:** (1) PIVOT_START on for the pass (recommended); (2) arm D for det3/det2; for det4/det7 gate
-the RC calibration against the old kernel's χ² first; (3) mask det7 X connectors 0/1/3 for angles (scramble not mappable
-with ~150 ev/connector); (4) carry dead masks as a bundle feature or not; (5) per-region v if det4/6/7 depths are used.
-Code snapshots on lxplus (`~/x17rerun/code_*`) predate PIVOT_START — make a new one before using it on condor.
-Local study data: `~/x17/cosmic_bench/vladder/` (laptop; caches copied from the it0 EOS rows, results JSON, report/).
-
-**Done overnight (10-23/24), records rerun/CHECKS_2026-10-23.md C10–C17:**
-- C11–C14: June re-decode + audit (1278/1278), re-hit (rr1_cm0), M3 re-audit (production rays stand), W10 path layer.
-- C15 W11: masked CM not adopted (plain median everywhere); masked−plain constant shifts = CM systematic.
-- W9 SPS: FEU 03 of all 38 SPS sub-runs decoded into `decoded_root_fa80c06/` (280/281; one 0-byte file); 98 RAW
-  files audited, all identical. (SPS analysis path layer not done.)
-- W7/W8: `rerun/pass_registry.csv` (make_registry.py): 170 rows, 20 condition groups, 5 golden + 14 v-refit groups.
-- Pass DAGs: `rerun/make_pass_dag.py` phases finalize / vrefit / pass; tested end-to-end in the dry-run tree
-  (vrefit on det3 700 V: hits cache → reco → alignment → cache → v fit → reco → angles → w0/kw; pass on sat_det3 +
-  an HV-scan row: reco → alignment → efficiency/angles/maps with the group alignment). All rc 0.
-- W6: `rerun/w12/set_w0kw.py` (w0/kw under the final bundle; the r06-inherited ones were up to 0.8° / 9 % off).
-- 02_efficiency drops decoder-incomplete events from the denominator (incomplete_events.json from the stager).
-- C16/C17 calibration: see below.
-
-**Calibration, the state of play (C16, C17):**
-- Pinning the reference to the waveform alignment does not work: the alignment places the plane only to 1–3 mm in z,
-  which a pinned fit turns into 5–20 % of v. Iterating cannot fix it.
-- With v free, methods scatter 15–25 % (det4 A vs B 27 %). A global plane offset (dz) falls into a v–dz valley.
-- **v fixed at the timing v (arm D)** gives the same or lower training χ² and the best held-out resolution on every
-  chamber. Recommended protocol: v from timing (vdrift_consistency, per chamber/condition), kernel σ0_x, σ0_y,
-  D_rc,y from the waveform fit with p0 profiled ±2 mm, w0/kw measured under the final bundle.
-- Stability of D under one more reference rebuild (C17 addendum): resolution and bias stable to 0.03°, σ0 ~5 %,
-  D_rc ±4 % (det2/3/6) but ±17–19 % (det4/7, flat direction). Final arm-D bundles: `<golden rel>/wft/w12/it1/timeD/bundle`.
-- Caveat: timing v has 2–4 % errors and det7 has two inconsistent values (36.8 long run vs 32.8 longer run).
-
-**To start the pass once the protocol is chosen (all on lxplus, ~/x17rerun/pass):**
-1. golden: `make_pass_dag.py finalize <code> --golden det2=it1 det3=it1 det4=it1 det6=it1 det7=it1
-   --bundle-sub timeD/bundle` (arm D), then `condor_submit_dag finalize.dag`.
-2. vrefit: under arm D the v-refit groups need their own timing v (port headon_cache + unsat_width to stage_job;
-   14 groups) instead of the v fit in `run_fitv.sh`.
-3. `make_pass_dag.py pass <code>`: 655 nodes, RC reco ~1 h per 4 k events on 16 cores.
-
-**Gotchas (new):**
-- DAGMan reads the .dag at submit: edit-and-resubmit, never edit a running DAG.
-- Fit jobs must not `rm -rf $_CONDOR_SCRATCH_DIR` itself (exit 1, logs lost) — fixed in run_fit*.sh/run_arm.sh.
-- RC reco is 2–3× slower than the delay kernel.
-- The bundle summary now prints [RC] constants; older logs show the unused delayed-copy ones.
 
 ## X asymmetry contingency: IN FORCE — updated 2026-10-23 (dylan-Yoga)
 

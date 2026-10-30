@@ -170,5 +170,7 @@ from the control-room browser with no file-system access.
   `c2_over_c1`: read it with `wft.calib.effective_c2`, never `hyper['c2']`.
 - **History of the analysis and what each lesson requires of the chain**:
   `rerun/history/LESSONS.md` (generated from `rerun/history/timeline_data.py`).
-  Check it before re-deciding anything; tonight's pass plan is
-  `rerun/PASS_PLAN_2026-10-28.md`.
+  Check it before re-deciding anything. The pass plan is `rerun/PASS_PLAN_2026-10-28.md`.
+- **The from-scratch pass is done (2026-10-30).** All bench and SPS products are in EOS `Analysis_pass1` (code `6a0bb1f`),
+  calibrated from nothing; all five chambers pass G1 against the audit. Analysis reads those tables, not Analysis_rr1 or the
+  audit bundles. Status, findings and exclusions: `rerun/PASS1_STATUS_2026-10-30.md`; per-row ledger `rerun/PASS1_LEDGER.md`.
