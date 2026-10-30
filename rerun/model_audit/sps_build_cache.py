@@ -208,9 +208,10 @@ def build_cache(run, subrun, dataset, per_plateau=1000, half_win=16, tan=None, e
     return out
 
 
-def event_record(ch, sm, am, raw, nsmp, half_win=16, qmin=300.0, tan=0.0, seed_bad=None):
+def event_record(ch, sm, am, raw, nsmp, half_win=16, qmin=300.0, tan=0.0, seed_bad=None, min_strips=4):
     """One event's cache record ({'x': window, 'y': window, ref_mesh_x/y, seed_ch_x/y, tan_x/y}) from its decoded
-    samples, or None when a view is empty, its peak is below qmin or its window has < 4 strips.  Per view the brightest
+    samples, or None when a view is empty, its peak is below qmin or its window has < min_strips strips with samples
+    (the pass: 300 ADC, 4; the resolution sample of rerun/sps_audit drops both).  Per view the brightest
     strip that is not in ``seed_bad`` (default SEED_BAD) seeds a +-half_win-strip window in POSITION (the plugs are
     inverted: det4_sps_map).  The window keeps every strip, bad ones included; the own-centroid ref leaves the bad
     (oscillating) ones out."""
@@ -231,7 +232,7 @@ def event_record(ch, sm, am, raw, nsmp, half_win=16, qmin=300.0, tan=0.0, seed_b
         sel = k & (np.abs(POSITION_MM[ch] - p0) <= half_win * PITCH_MM)
         cc, ss, aa = ch[sel], sm[sel], am[sel]
         chs = np.unique(cc)
-        if len(chs) < 4:
+        if len(chs) < min_strips:
             return None
         W = np.zeros((len(chs), nsmp), np.float32); ci = np.searchsorted(chs, cc); m = (ss >= 0) & (ss < nsmp)
         W[ci[m], ss[m]] = aa[m]

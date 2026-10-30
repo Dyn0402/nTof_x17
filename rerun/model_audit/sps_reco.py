@@ -23,6 +23,9 @@ sys.path[:0] = [REPO, HERE]
 BUNDLE = '/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_pass1/mx17_det4_day_6-24-26/long_run/mx17_4/wft/calib_bundle'
 _EV = None
 _RAW = False
+#: depth [mm] below the mesh at which x_p_mid / y_p_mid read the fitted track: where the p0-angle correlation of a head-on
+#: fit vanishes, chosen on run63 flat700 by the telescope (rerun/sps_audit/README.md)
+H_MID = 7.5
 
 
 def _init(cache, bundle, k, v, nsamp, mask='h4', raw=False, extra_dead=None):
@@ -67,6 +70,18 @@ def one(eid):
     # the DREAM trigger counter and the acquisition file (TODO B6/GC: join key with the run, subrun, event id)
     row['timestamp'], row['acq_tag'] = int(ev.get('timestamp', -1)), str(ev.get('file', ''))
     row['n_tracks'] = int(fits['x'] is not None and fits['y'] is not None)
+    row['ftst'] = int(ev.get('ftst_x', -1))
+    # the head-on position estimators side by side (rerun/sps_audit): the fit's p0 (at the mesh), p0 read H_MID mm into
+    # the gap (p_mid: the angle noise of a head-on fit leaks into p0), and the charge centroid of the cluster (sps_cluster)
+    # with its footprint; the cluster bridges the censored strips (the fit's dead list)
+    import sps_cluster
+    for plane in 'xy':
+        row[f'{plane}_p_mid'] = row.get(f'{plane}_p0', np.nan) + H_MID * row.get(f'{plane}_tan_theta', np.nan) \
+            if row.get(f'{plane}_ok') else np.nan
+        P = ev.get(plane)
+        c = sps_cluster.cluster(P, bad=wm.DEAD.get(plane, ())) if P is not None else None
+        for k in ('pos', 'n_strips', 'q_sum', 'q_lead', 'lead_frac', 'nb_lo', 'nb_hi', 't_peak_ns'):
+            row[f'{plane}_c_{k}'] = c[k] if c else np.nan
     return row
 
 
