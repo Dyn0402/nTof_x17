@@ -1,0 +1,58 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>v(t) within the det6/det7 6-26 rows</title>
+<style>body{font-family:system-ui,sans-serif;max-width:1100px;margin:2em auto;color:#222;line-height:1.45}
+table{border-collapse:collapse;margin:.6em 0 1.4em;font-size:.88em}td,th{border-bottom:1px solid #ddd;padding:3px 9px;text-align:left}
+th{background:#f4f4f1}.verdict{background:#f7f5ee;border-left:4px solid #eda100;padding:.7em 1em}img{max-width:100%}
+figcaption{font-size:.85em;color:#555;margin-bottom:1.6em}</style></head><body>
+<h1>Drift velocity within a row: det6 / det7, 6-26 night</h1>
+<p class="verdict">Within-row v(t) is real and post-correctable. det6&#x27;s ladder v rises 17.3 → 31.5 µm/ns (+82 %) from 01:00 to the 10:30 knee on 6-26, +20 % inside the golden long_run; det7 rises with the same time-shape, 31.5 → 39.1 µm/ns (+24 %), and both stop at the same clock time. det6&#x27;s deficit is 2.80 ± 0.07 × det7&#x27;s at every time (r = 0.95): one cause common to both chambers, the gas. The correction, one smooth curve per chamber applied as v → v·r(t) in the angle mapping, wins the held-out test (block χ² 24 against 322 for one v per row, ~40 blocks) and moves det6 angles by up to 2.2° at 30°.</p>
+<h2>Headline numbers</h2>
+<table><tr><th>chamber</th><th>first block</th><th>plateau v (≥ 12.4 h)</th><th>rise</th><th>gain independence (plateau rows)</th><th>one-exponential night fit</th></tr><tr><td>det6</td><td>17.3 at 1.3 h</td><td>31.5</td><td>+82 %</td><td>8 rows, charge ×55: rms 1.0 %, slope +0.9 %/decade</td><td>τ 15.8 ± 1.7 h, χ² 82/38</td></tr><tr><td>det7</td><td>31.5 at 1.1 h</td><td>39.1</td><td>+24 %</td><td>8 rows, charge ×20: rms 0.9 %, slope -1.2 %/decade</td><td>τ 6.2 ± 0.8 h, χ² 26/39</td></tr></table>
+<p>Deficit test: 1 − v/v_plateau of det6 against det7's at the same clock time, 26 det6 blocks before 10.4 h:
+det6 = 2.80 ± 0.07 × det7, χ² 32/25 (1 % block floor), r = 0.95.</p>
+<h2>What it does to the overnight rows (applied model: night, built on all events)</h2>
+<table><tr><th>det</th><th>row</th><th>clock [h]</th><th>row v [µm/ns]</th><th>first → last block v</th><th>r(t) range</th><th>max Δθ at 30° [°]</th><th>max Δz at cathode [mm]</th><th>mid-gap shift p95 [mm]</th><th>angle s68 x / y [°] before→after</th></tr><tr><td>det6</td><td>short_run</td><td>0.97–1.97</td><td>17.87</td><td>17.3 → 18.3 (+5.8 %)</td><td>0.948–1.042</td><td>1.28</td><td>1.5</td><td>0.14</td><td>2.024→1.975 / 2.879→2.886</td></tr><tr><td>det6</td><td>longer_run</td><td>1.97–3.97</td><td>19.92</td><td>18.5 → 21.2 (+14.9 %)</td><td>0.923–1.075</td><td>1.87</td><td>2.2</td><td>0.23</td><td>1.682→1.631 / 1.976→1.953</td></tr><tr><td>det6</td><td>long_run</td><td>6.05–10.34</td><td>24.17</td><td>24.2 → 29.0 (+19.7 %)</td><td>0.910–1.086</td><td>2.18</td><td>2.5</td><td>0.25</td><td>1.504→1.462 / 1.680→1.649</td></tr><tr><td>det7</td><td>short_run</td><td>0.97–1.97</td><td>31.79</td><td>31.5 → 32.3 (+2.5 %)</td><td>0.979–1.020</td><td>0.52</td><td>0.6</td><td>0.07</td><td>2.210→2.188 / 1.411→1.417</td></tr><tr><td>det7</td><td>longer_run</td><td>1.97–3.97</td><td>33.94</td><td>33.2 → 35.1 (+5.9 %)</td><td>0.968–1.029</td><td>0.78</td><td>0.9</td><td>0.12</td><td>2.456→2.442 / 1.540→1.528</td></tr><tr><td>det7</td><td>long_run</td><td>6.05–10.34</td><td>36.80</td><td>36.5 → 38.1 (+4.4 %)</td><td>0.971–1.023</td><td>0.71</td><td>0.8</td><td>0.10</td><td>2.502→2.486 / 1.548→1.539</td></tr></table>
+<h2>Held-out test (models from even event_id, scored on odd)</h2>
+<table><tr><th>det</th><th>row</th><th>const rms % x/y</th><th>linear</th><th>blocks</th><th>night</th><th>s68 const x/y [°]</th><th>s68 night</th></tr><tr><td>det6</td><td>short_run</td><td>0.0 / 0.0</td><td>0.0 / 0.0</td><td>0.0 / 0.0</td><td>0.0 / 0.0</td><td>2.114 / 2.895</td><td>2.030 / 2.905</td></tr><tr><td>det6</td><td>longer_run</td><td>4.3 / 2.9</td><td>0.2 / 2.0</td><td>0.8 / 1.7</td><td>0.6 / 1.8</td><td>1.722 / 1.967</td><td>1.631 / 1.938</td></tr><tr><td>det6</td><td>long_run</td><td>5.6 / 5.8</td><td>1.1 / 1.5</td><td>1.5 / 1.3</td><td>0.9 / 1.4</td><td>1.498 / 1.697</td><td>1.454 / 1.646</td></tr><tr><td>det7</td><td>short_run</td><td>0.0 / 0.0</td><td>0.0 / 0.0</td><td>0.0 / 0.0</td><td>0.0 / 0.0</td><td>2.205 / 1.410</td><td>2.204 / 1.435</td></tr><tr><td>det7</td><td>longer_run</td><td>1.9 / 1.7</td><td>1.1 / 0.6</td><td>1.2 / 0.7</td><td>1.2 / 0.7</td><td>2.463 / 1.525</td><td>2.420 / 1.515</td></tr><tr><td>det7</td><td>long_run</td><td>1.7 / 1.1</td><td>0.9 / 0.9</td><td>1.2 / 0.8</td><td>0.9 / 1.0</td><td>2.467 / 1.535</td><td>2.426 / 1.534</td></tr></table>
+<p>Summed block χ² over the overnight rows (both views, ~40 blocks):
+const 322.3, linear 26.6, blocks 33.4, night 24.3. linear, blocks and night are equivalent; one v per row is not.</p>
+<h2>Figures</h2>
+<figure><img src="figures/vt_night.png"><figcaption><b>Left:</b> the M3-ladder drift velocity (v_drift × kw, mean of the two views)
+in blocks of ~300 tracks, over every det6/det7 row of 6-26 (shaded: the row groups). Thin curves: the one-exponential night fit
+per chamber; dotted: the plateau. The 530→505 V and HV-scan rows change the mesh HV by up to 130 V and the gain by ~60×
+without leaving the time curve. <b>Right:</b> det6's fractional deficit against det7's at the same time, before the scan.</figcaption></figure>
+<figure><img src="figures/vt_within_rows.png"><figcaption>Within each overnight row: block v relative to the row v, per view
+(filled x, open y), and the applied correction r(t) − 1. short_run has one block per half, so its held-out score is empty (0.0). The row ends sit up to ±9 % (det6) and ±3 % (det7) off the row's single v.</figcaption></figure>
+<figure><img src="figures/vt_gas.png"><figcaption>The gas signature at fixed HV. det6's gain rises ×25 and its charge-arrival
+shape u50/u_end recovers from 0.23 to 0.49 by ~4 h (an electronegative contaminant clearing: early, charge from the cathode side
+is lost); det7 shows neither, yet its v rises 24 %. v keeps rising in both until ~10.5 h, long after det6's attachment and gain have settled (4–10 h: u50/u_end flat, v +20 %), so the v rise is not the attachment.</figcaption></figure>
+<h2>Method</h2>
+<ul><li>Clock: acq_tag stem (minute) + DREAM timestamp × 10 ns, from the pass-1 event tables (Analysis_pass1, code 6a0bb1f, read-only).</li>
+<li>Estimator: the one that gives every row its kw (<code>rerun/w12/set_w0kw.py</code>) on the row's own 03_angles per-event table,
+after the tan-form bow (t′ = (tan_ref + a)·S): w0 = median(w − v t′) over |t′| &lt; 0.30, kw = median((w − w0)/(v t′)) over 0.10 &lt; |t′| &lt; 0.40.
+Run on the whole row it reproduces the applied kw to ≤ 1 σ on all 48 rows (golden rows: their unfolded 1.08). Per time block it gives v_lad(t) = v_drift × kw(t).</li>
+<li>Correction: tan = (w − w0)/(kw · v · r(t) · S) − a, i.e. <code>wft.reco.v_rel_t</code>'s v_map['t'] (t_h, v_rel) per row; w is
+independent of v (GC), so nothing is refitted. Mid-gap position p0 + 15 mm·tan and depth z = v r(t) u move with it.</li>
+<li>Models: one v per row (pass 1), a line per row, a piecewise-linear through the row's blocks, one exponential per chamber over the night.
+Held-out: built on even event_id, scored on odd by the residual scale of the odd half's own blocks.</li></ul>
+<h2>What this does not rule out / limitations</h2>
+<ul><li><b>The cause inside "the gas" is not identified.</b> The common time-shape and simultaneous knee point to the gas supply, not to
+the chambers; that det6's deficit is ×2.8 det7's fits a larger dose of the same contaminant in det6 (e.g. its place in the gas chain
+or its own outgassing), but the bench gas order and flow on 6-26 are not recorded, and the bench gas composition is known only as
+a fit (beam-gas-attachment study: bench 0.95 % H₂O, no O₂). Water drying out would raise v in both; det6's early attachment and
+gain loss (clearing by ~4 h) is an additional electronegative component that det7 did not see. No new data can be taken.</li>
+<li><b>The two plateaus differ</b> (det6 31.5, det7 39.1 µm/ns at the same 700 V drift): a chamber-side difference
+(field, gap, method scale), not addressed here.</li>
+<li><b>The column-end depth does not confirm the ladder.</b> z_end = v·u_end in det6's long_run falls slightly with time under one v and
+rises after the correction: the column duration is gain- and attachment-confounded (GC found the ladder moving 1.68× faster than 1/T
+on det6). The ladder is gain-independent on the plateau rows (table above), so it is the measure of v here; the absolute depth scale
+carries this disagreement.</li>
+<li>One exponential does not describe det6's knee at ~10.5 h (χ² 82/38); inside each row it is as good as a line
+(held-out). It is a smooth interpolator, not a gas model; its τ is not a gas time constant.</li>
+<li>The angle resolution improves modestly (det6 long_run x 1.50 → 1.46°); most of the gain is in the angle <i>scale</i> at the row
+ends (up to ~2° at 30° on det6), which the s68 around the median only partly shows.</li>
+<li>Rows shorter than ~2 blocks (HV-scan rows, 20 min) get the night curve; their within-row change is ≤ 1–2 %.</li>
+<li>Only det6/det7 6-26. det4's golden (6-24) and its 6-23 rows, and det2 6-23, are the other GC candidates; not done here.</li></ul>
+<p>Products: corrected tables (event_id, acq_tag, t_h, v_rel, x/y_tan_vt, x/y_theta_deg_vt, x/y_mid_vt, z_end_vt) and vt_map.json per row in
+<code>/eos/user/d/dneff/x17rerun/vt_correction/&lt;run&gt;/&lt;subrun&gt;/&lt;det&gt;/</code>. Join on event_id (unique within each of these rows).
+Scripts: <code>rerun/vt_within_rows/</code>.</p>
+</body></html>

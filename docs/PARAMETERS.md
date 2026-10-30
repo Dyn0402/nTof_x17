@@ -115,14 +115,16 @@ kw is the ratio to the golden v (det3 drift scan 0.06–1.09 against field; det6
 provenance keeps both (`kw_folded_into_v`: v_was, kw_mean), and `w0kw.json` lists the unfolded `kw` next to `kw_folded`.
 
 **What remains:**
-- v drifting *within* a row: one v per row; det6 lost ~35 % over the 6-26 night (v(t), post-correctable from `timestamp`).
+- v drifting *within* a row: one v per row in the tables. On the 6-26 night v **rises** with clock time in both det6 (17.3 → 31.5 µm/ns, +20 % inside the
+  golden long_run) and det7 (+24 %, +4 % inside long_run), the same time-shape (the gas). Post-correction `r(t) = v_rel` per event, applied as v → v·r(t)
+  in the angle mapping: `rerun/vt_within_rows/` (det6/det7 6-26 only; corrected tables in `/eos/user/d/dneff/x17rerun/vt_correction/`).
 - The low-field rows, whose column overruns the 32-sample window whatever v is (100 V, stated limitation).
 - `refit = none` rows, which inherit their `calib_key`'s folded v.
 
 | also | meaning |
 |---|---|
 | `tan_floor` | per-view model floor of the per-event angle error (det3 0.0185 X / 0.0163 Y in tan, ≈ 1°); enters `tan_err` |
-| `angle_map`, `v_map` | position- and time-dependent mappings: present in the bundle class, **empty in pass 1** (FA's v(x,y) not adopted; v(t) is post-correctable from `timestamp`) |
+| `angle_map`, `v_map` | position- and time-dependent mappings: present in the bundle class, **empty in pass 1** (FA's v(x,y) not adopted). v(t) is applied to the tables afterwards, not in the bundle: per row `vt_map.json` = the `v_map['t']` block (`t_h` = hours since 2026-06-26 00:00 from acq_tag stem + DREAM timestamp × 10 ns, `v_rel`), `rerun/vt_within_rows/` |
 
 ### 3.2 Where w0/kw come from
 `rerun/w12/set_w0kw.py` fits w = w0 + kw · v · tan_ref over the row's M3-matched events (03_angles `per_event.npz`). With a bow block it fits

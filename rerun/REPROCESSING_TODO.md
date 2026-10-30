@@ -94,7 +94,7 @@ Status key: [x] done · [ ] open · [~] partly / in progress
       `reco.COV_ERRORS` (full covariance, ×1.8–2.3 the curvature errors; the fit is bit-identical). (c) The two-track
       fit still runs Nelder–Mead; LM there is optional (speed only, gate separately). (d) Paper 2 §4: one sentence
       naming the fit as variable projection (Golub & Pereyra 1973; Kaufman 1975; check Sima & Van Huffel 2007).
-- [ ] v(t) within a row: per-time-block kw from the M3 ladder (bench; not the column duration, which is gain-confounded),
+- [ ] v(t) within a row (**det6/det7 6-26 done 10-30: `vt_within_rows/`**; det4 6-23/6-24, det2 6-23 open): per-time-block kw from the M3 ladder (bench; not the column duration, which is gain-confounded),
       column end on n_TOF arms A/C; join on (run, subrun, acq_tag, event_id). Largest: det6 golden ~11 %, det4 ~7 %,
       det4 6-23 short_run (inherits longer_run, ~9 % apart). n_TOF B/D: no within-run route (limitation). GC.
 - [ ] SPS gas fit (H₂O + O₂) with Magboltz (FOLLOWUPS item 9).
