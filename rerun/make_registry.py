@@ -71,6 +71,13 @@ NO_V_NOTE = 'group reference row < N_MIN_V clean triggers: golden bundle, angle 
 EXCLUDED = {
     'mx17_1': 'det1: no calibration (8-12 manifest)',
 }
+#: single rows with no usable data (key -> reason)
+EXCLUDED_ROWS = {
+    # F9 + pass1 10-30: resist 1.3-2.7 uA decaying, hits in a few % of triggers, X one-cluster in 1 %, 0 clean triggers;
+    # the waveform alignment finds no X track (01_alignment z scan all-NaN, 4 tries)
+    'c26__mx17_det3_quick_6-26-26__resist_530V_drift_1200V__mx17_3':
+        'no usable data: chamber charging up, not amplifying (0 clean triggers; alignment finds no X track)',
+}
 
 
 def nominal_resist(rows):
@@ -141,6 +148,8 @@ def main():
                 refit = ('none' if golden_here else 'v') if r is ref else 'none'
             if r['tier'] == 'C' and r['reason'].startswith('no decoded'):
                 cls, refit, note = 'excluded', '-', r['reason']
+            if r['key'] in EXCLUDED_ROWS:
+                cls, refit, note = 'excluded', '-', EXCLUDED_ROWS[r['key']]
             out.append(dict(key=r['key'], det=det, run=r['run'], subrun=r['subrun'], resist_V=r['resist_V'],
                             drift_V=drift, cls=cls, group=f'{det}|{run}|{drift}', calib_key=ref['key'],
                             refit=refit, K=K, note=note))
