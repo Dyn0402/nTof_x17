@@ -1,0 +1,15 @@
+# the n_TOF v(t) test on every run of the is2_v2 stage-3 tables (rerun/vt_all/vt_ntof.py; reads ~14 GB of parquet columns)
+# condor_submit vt_ntof.sub code=<code dir>   (run from ~/x17rerun/vt_all/ntof with a log/ dir)
+executable     = /bin/bash
+S3             = /eos/experiment/ntof/data/x17/desktop_scratch/x17_local/stage3_is2_v2_cf
+RUNS           = run_79 run_81 run_84 run_86 run_88 run_96 run_98 run_100 run_102 run_104 run_106 run_108 run_110 run_112 run_114 run_116 run_118 run_122 run_124 run_126 run_128 run_130 run_132 run_135 run_139 run_141 run_143 run_145 run_147 run_150 run_152 run_154 run_156 run_158 run_160 run_162
+arguments      = $(code)/rerun/vt_all/condor/vt_job.sh $(code) vt_ntof.py $(RUNS) --stage3 $(S3) --out /eos/user/d/dneff/x17rerun/vt_all/ntof/vt_ntof_campaign.json
+output         = log/ntof.out
+error          = log/ntof.err
+log            = log/ntof.log
+request_cpus   = 1
+request_memory = 16000
++JobFlavour    = "workday"
+should_transfer_files = NO
+requirements   = (Machine != "b9g42p2031.cern.ch")
+queue
