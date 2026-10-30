@@ -119,8 +119,29 @@ def apply_cluster_quality(df: pd.DataFrame, max_dropped: int = MAX_DROPPED
     return df
 
 
+#: a fit outside these is not a track: |tan| > 3 is 72 deg, beyond any M3 or beam acceptance (golden rows: 0.03-0.2 %
+#: of fits, tan up to 6e8), and p0 off the 400 mm plate by more than the fit window
+TAN_SANE = 3.0
+P0_SANE_MM = (-20.0, 420.0)
+
+
+def apply_fit_sanity(df: pd.DataFrame) -> pd.DataFrame:
+    """Reject plane-fits that are not tracks: non-finite or |tan| > TAN_SANE, or p0 outside P0_SANE_MM.
+
+    Such fits carry ``ok`` (some also ``quality_ok``) and, on a bow bundle, a mesh height evaluated far outside the
+    plate (h up to 1e11 mm), so ``mesh_position`` returns absurd numbers.  One of them made the alignment z scan flat
+    and rail to its window edge on four pass-1 rows (rerun/pass1_review/REVIEW_2026-10-30.md P1).  Counted like
+    ``apply_cluster_quality``: hit, no reco."""
+    for p in ('x', 'y'):
+        tan, p0 = df[f'{p}_tan_theta'], df[f'{p}_p0']
+        bad = df[f'{p}_ok'] & ~(np.isfinite(tan) & (tan.abs() <= TAN_SANE)
+                                & np.isfinite(p0) & p0.between(*P0_SANE_MM))
+        df.loc[bad, f'{p}_ok'] = False
+    return df
+
+
 def load_table(path: str, quality_only: bool = False,
-               max_dropped: int | None = MAX_DROPPED) -> pd.DataFrame:
+               max_dropped: int | None = MAX_DROPPED, sanity: bool = True) -> pd.DataFrame:
     """Load a reco table.
 
     ``quality_only`` is OFF by default and should stay off for anything the
@@ -131,12 +152,15 @@ def load_table(path: str, quality_only: bool = False,
     chi2/dof of the view): a flag for second deposits and showers, not a
     reconstruction filter. A table written before the rule (no
     ``quality_rule`` in its sidecar) is re-flagged from its stored chi2 here.
+    ``sanity`` (on by default) drops fits that are not tracks (``apply_fit_sanity``).
     """
     df = pd.read_parquet(path)
     if 'quality_rule' not in table_meta(path):
         from .reco import quality_flags
         df = quality_flags(df)[0]
     df = apply_cluster_quality(df, max_dropped)
+    if sanity:
+        df = apply_fit_sanity(df)
     if quality_only:
         for p in ('x', 'y'):
             bad = df[f'{p}_ok'] & ~df[f'{p}_quality_ok']

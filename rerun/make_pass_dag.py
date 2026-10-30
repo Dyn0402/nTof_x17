@@ -29,6 +29,8 @@ vrefit    one per condition group with refit=v (S1b, W7).  RECO with the chamber
 pass      every non-excluded row (S2 + S3).  RECO (all M3-matched events, the row's bundle: its own calib_bundle if
           it is a calibration row, else its group's) -> [calibration rows] ALIGN -> EFF (02), ANGLES (03), MAPS (04)
           with the group's waveform alignment.
+post      the pass without RECO: ALIGN (alignment rows) -> EFF, ANGLES, MAPS on the existing tables (2026-10-30: the fit
+          sanity cut and the z-scan MAD fallback, rerun/pass1_review/REVIEW_2026-10-30.md P1).
 """
 import argparse
 import csv
@@ -143,7 +145,7 @@ def calib_phase(L, rows, a, only):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument('phase', choices=['calib', 'calib_iter', 'finalize', 'vrefit', 'pass', 'sps'])
+    ap.add_argument('phase', choices=['calib', 'calib_iter', 'finalize', 'vrefit', 'pass', 'post', 'sps'])
     ap.add_argument('code')
     ap.add_argument('--golden', nargs='*', default=[], help='det=itN (finalize)')
     ap.add_argument('--bundle-sub', default='fit_pinned/bundle',
@@ -275,9 +277,11 @@ def main():
             own_al = r['key'] == ak
             b = '{out}/wft/calib_bundle' if own else f'{A}/{rel(ck)}/wft/calib_bundle'
             al = '{out}/wft/alignment/alignment.json' if own_al else f'{A}/{rel(by_key[ak])}/wft/alignment/alignment.json'
-            node(L, f'RECO_{n}', 'stage1.sub', f'{k} --module wft.cli -- reco {{key}} --bundle {b} --matched-only '
-                 f'--jobs 16', 16, 24000, a.code)
-            after = [f'RECO_{n}']
+            after = []
+            if a.phase == 'pass':
+                node(L, f'RECO_{n}', 'stage1.sub', f'{k} --module wft.cli -- reco {{key}} --bundle {b} --matched-only '
+                     f'--jobs 16', 16, 24000, a.code)
+                after = [f'RECO_{n}']
             if own_al:
                 node(L, f'ALIGN_{n}', 'stage1.sub', f'{k} --parts run_config,m3,hits --script mx_june_wft/01_alignment.py',
                      1, 8000, a.code, after)

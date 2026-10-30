@@ -772,13 +772,21 @@ def analyse_event(
 # ---------------------------------------------------------------------------
 
 def _robust_sigma(vals: list) -> float:
-    """Return robust Gaussian σ of a residual list, falling back to RMS."""
-    if len(vals) < 50:
-        return float(np.std(vals)) if vals else np.nan
-    fit = fit_residual_peak(np.array(vals))
-    if fit is not None and fit.converged:
-        return fit.sigma
-    return float(np.var(vals) ** 0.5)
+    """Return robust Gaussian σ of a residual list, falling back to 1.4826 × MAD.
+
+    Not the RMS: one absurd residual makes the RMS flat in z, and the z scan then rails to its window edge
+    (pass 1, 2026-10-30: four rows at z = 642/760 mm, rerun/pass1_review/REVIEW_2026-10-30.md)."""
+    if not vals:
+        return np.nan
+    a = np.asarray(vals, float)
+    a = a[np.isfinite(a)]
+    if len(a) < 5:
+        return float(np.std(a)) if len(a) else np.nan
+    if len(a) >= 50:
+        fit = fit_residual_peak(a)
+        if fit is not None and fit.converged:
+            return fit.sigma
+    return float(1.4826 * np.median(np.abs(a - np.median(a))))
 
 
 def _rotate_det_positions(
