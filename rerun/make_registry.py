@@ -78,6 +78,10 @@ EXCLUDED_ROWS = {
     'c26__mx17_det3_quick_6-26-26__resist_530V_drift_1200V__mx17_3':
         'no usable data: chamber charging up, not amplifying (0 clean triggers; alignment finds no X track)',
 }
+# pass1 10-30: the subrun's v2 M3 ray file is empty (6.6 kB, 0 entries): no reference, nothing to match or calibrate
+for _d in ('6', '7'):
+    EXCLUDED_ROWS[f'c26__mx17_det6_det7_hv_scan_6-26-26__resist_det6_450V_det7_450V_drift_700V__mx17_{_d}'] = \
+        'no M3 reference: the v2 ray file of this subrun is empty (0 rays)'
 
 
 def nominal_resist(rows):
