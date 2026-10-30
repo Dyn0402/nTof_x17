@@ -23,10 +23,17 @@ NOISE_ADC = 10.0
 #: flat_align_eff.py subtract it).  Before 2026-10-27 (ws_sps) this builder did not, so every kept sample of the ZS caches
 #: (the model-audit F16/F20 SPS rows) sat 256 ADC above the suppressed zeros.
 ZS_BASELINE = 256.0
-#: RAW FEU data are decoded on the raw per-channel pedestals (~300-700 ADC): per event and channel the median of the
-#: present samples among the first RAW_PRE (pre-signal; the head-on column starts at ~800 ns) is subtracted.  No
-#: common-mode correction here (extract_det4_only.py does the full pedestal + CNS); the FEU's dropped samples stay 0.
+#: RAW FEU data are decoded on the raw per-channel pedestals (~300-700 ADC), with the FEU's common-mode subtraction off.
+#: Per event: (1) per channel the median of the present samples among the first RAW_PRE (pre-signal; the head-on column
+#: starts at ~800 ns) is subtracted; (2) common mode: per sample, the median of each 64-channel connector block,
+#: excluding the strips within RAW_CM_MASK of either view's leading strip and the oscillating channels RAW_CM_BAD
+#: (extract_det4_only.py --cm masked); (3) step (1) again for the per-channel offset step (2) leaves.  The FEU's dropped
+#: samples stay 0.  Without (2) (pass 1, 2026-10-30) a chip's 64 channels move together by ~260 ADC within the window
+#: against 11 ADC noise, every strip reads as signal and the fit takes the common mode for charge
+#: (rerun/pass1_review/REVIEW_2026-10-30.md P2).
 RAW_PRE = 8
+RAW_CM_MASK = 10
+RAW_CM_BAD = (510, 372)
 
 
 def _baseline(ch, sm, am, raw):
@@ -34,12 +41,48 @@ def _baseline(ch, sm, am, raw):
     if not raw:
         out = am - ZS_BASELINE
     else:
-        out = am.copy()
-        for c in np.unique(ch):
-            k = ch == c; pre = am[k & (sm < RAW_PRE)]
-            out[k] = am[k] - (np.median(pre) if len(pre) else np.median(am[k]))
+        out = _pre_baseline(ch, sm, am)
+        out = _pre_baseline(ch, sm, out - _common_mode(ch, sm, out))
     out[out == 0.0] = 1e-3       # an exact 0 means 'not read out' downstream (suppressed / dropped)
     return out
+
+
+def _pre_baseline(ch, sm, am):
+    """Per channel, subtract the median of its present samples among the first RAW_PRE (all of them if none)."""
+    out = am.copy()
+    for c in np.unique(ch):
+        k = ch == c; pre = am[k & (sm < RAW_PRE)]
+        out[k] = am[k] - (np.median(pre) if len(pre) else np.median(am[k]))
+    return out
+
+
+def _block_median(ch, sm, am, use):
+    """Per sample and 64-channel connector block, the median of am over the channels in ``use`` (bool[512]), returned
+    per sample of the input; 0 where the block has no such channel at that sample."""
+    import warnings
+    ns = int(sm.max()) + 1
+    grid = np.full((512, ns), np.nan, np.float32)
+    k = use[ch]
+    grid[ch[k], sm[k]] = am[k]
+    with warnings.catch_warnings():
+        warnings.simplefilter('ignore', RuntimeWarning)
+        med = np.nan_to_num(np.nanmedian(grid.reshape(8, 64, ns), axis=1))   # (block, sample)
+    return med[ch // 64, sm]
+
+
+def _common_mode(ch, sm, am):
+    """The RAW common mode per sample of the input: the block median over the quiet channels, i.e. not RAW_CM_BAD and
+    not within RAW_CM_MASK strips of either view's leading strip.  The leading strips are found after a first, unmasked
+    block median (the common mode differs between blocks by ~100s of ADC, so the raw maximum can sit in the wrong one)."""
+    use = np.ones(512, bool); use[list(RAW_CM_BAD)] = False
+    first = am - _block_median(ch, sm, am, use)
+    pk = np.full(512, -np.inf); np.maximum.at(pk, ch, first)
+    pk[list(RAW_CM_BAD)] = -np.inf
+    for view in ('x', 'y'):
+        v = VIEW == view
+        lead = np.flatnonzero(v)[np.argmax(pk[v])]
+        use[v & (np.abs(POSITION_MM - POSITION_MM[lead]) <= RAW_CM_MASK * PITCH_MM)] = False
+    return _block_median(ch, sm, am, use)
 
 
 def subrun_spans(run, subrun):
