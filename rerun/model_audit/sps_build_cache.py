@@ -42,10 +42,12 @@ def _baseline(ch, sm, am, raw):
     return out
 
 
-def subrun_span(run, subrun):
-    """(t_start, t_end) seconds since midnight of the run's first day, from dream_daq.log."""
-    t0 = None; lines = open(os.path.join(RUNS, run, 'dream_daq.log')).read().splitlines()
-    day0 = None; out = [None, None]
+def subrun_spans(run, subrun):
+    """[(t_start, t_end), ...] seconds since midnight of the run's first day, from dream_daq.log: one per time the sub-run
+    was started (run_61 meshscan_m30V was taken twice, 13:46 and 16:08; pass1 10-30)."""
+    import datetime
+    lines = open(os.path.join(RUNS, run, 'dream_daq.log')).read().splitlines()
+    day0 = None; out = []
     for ln in lines:
         m = re.match(r'(\d{4}-\d\d-\d\d) (\d\d):(\d\d):(\d\d),\d+ INFO: Subrun (started|finished): (\S+)', ln)
         if not m:
@@ -53,13 +55,38 @@ def subrun_span(run, subrun):
         d, h, mi, s, what, name = m.groups()
         if day0 is None:
             day0 = d
-        import datetime
         dd = (datetime.date.fromisoformat(d) - datetime.date.fromisoformat(day0)).days
         t = dd * 86400 + int(h) * 3600 + int(mi) * 60 + int(s)
         if name == subrun and what == 'started':
-            out[0] = t
-        if name == subrun and what == 'finished':
-            out[1] = t
+            out.append([t, None])
+        if name == subrun and what == 'finished' and out and out[-1][1] is None:
+            out[-1][1] = t
+    return [tuple(x) for x in out]
+
+
+def subrun_span(run, subrun):
+    """(t_start, t_end) of the sub-run's LAST start (the historical behaviour; build_cache uses subrun_spans)."""
+    sp = subrun_spans(run, subrun)
+    return list(sp[-1]) if sp else [None, None]
+
+
+STEM_HM = re.compile(r'_datrun_\d{6}_(\d\d)H(\d\d)_\d{3}_\d\d\.root$')
+
+
+def acquisitions(files, spans):
+    """[(span, files)]: the decoded files grouped by acquisition (file-stem HHhMM), each paired with the sub-run start in
+    dream_daq.log closest to its stem time (same day; the stem is the acquisition start to the minute)."""
+    groups = {}
+    for f in files:
+        m = STEM_HM.search(os.path.basename(f))
+        groups.setdefault((int(m.group(1)), int(m.group(2))) if m else None, []).append(f)
+    if len(groups) == 1 or not spans:
+        return [(spans[-1] if spans else (None, None), sorted(files))]
+    out = []
+    for hm, fs in sorted(groups.items()):
+        t = hm[0] * 3600 + hm[1] * 60
+        sp = min(spans, key=lambda x: min(abs((x[0] % 86400) - t), 86400 - abs((x[0] % 86400) - t)))
+        out.append((sp, sorted(fs)))
     return out
 
 
@@ -70,15 +97,26 @@ def build_cache(run, subrun, dataset, per_plateau=1000, half_win=16, tan=None, e
     import uproot
     D = datasets.get(a.dataset); nsmp = int(D['n_samples'])
     files = sorted(glob.glob(os.path.join(RUNS, a.run, a.subrun, 'decoded_root_fa80c06', '*_datrun_*_03.root')))
-    t_lo, t_hi = subrun_span(a.run, a.subrun)
-    print(f'{len(files)} files; sub-run {a.subrun} {t_lo}..{t_hi} s', flush=True)
-    # timestamp calibration: first of the first file, last of the last file -> the sub-run span
-    ts0 = uproot.open(files[0])['nt'].arrays(['timestamp'], entry_stop=1, library='np')['timestamp'][0]
-    tl = uproot.open(files[-1])['nt']; ts1 = tl.arrays(['timestamp'], entry_start=tl.num_entries - 1, library='np')['timestamp'][0]
-    scale = (t_hi - t_lo) / float(ts1 - ts0)
-    print(f'timestamp unit {scale * 1e9:.1f} ns  (span {ts1 - ts0} counts over {t_hi - t_lo} s)', flush=True)
     plateaus = [(n, lo + a.edge_s, hi - a.edge_s) for n, lo, hi, dv, rv in D['plateaus'] if only is None or n in only]
     out = {}
+    # timestamp calibration per acquisition (the DREAM counter restarts with each one): first event of its first file,
+    # last event of its last file -> its own start/finish in dream_daq.log
+    for (t_lo, t_hi), afiles in acquisitions(files, subrun_spans(a.run, a.subrun)):
+        print(f'{len(afiles)} files; sub-run {a.subrun} {t_lo}..{t_hi} s', flush=True)
+        ts0 = uproot.open(afiles[0])['nt'].arrays(['timestamp'], entry_stop=1, library='np')['timestamp'][0]
+        tl = uproot.open(afiles[-1])['nt']; ts1 = tl.arrays(['timestamp'], entry_start=tl.num_entries - 1, library='np')['timestamp'][0]
+        scale = (t_hi - t_lo) / float(ts1 - ts0)
+        print(f'timestamp unit {scale * 1e9:.1f} ns  (span {ts1 - ts0} counts over {t_hi - t_lo} s)', flush=True)
+        _fill(out, afiles, a, D, plateaus, t_lo, ts0, scale, nsmp, verbose, files.index(afiles[0]))
+        if all(len(out.get(n, {})) >= a.per_plateau for n, _, _ in plateaus):
+            break
+    return out
+
+
+def _fill(out, files, a, D, plateaus, t_lo, ts0, scale, nsmp, verbose, base):
+    """Add one acquisition's events to out ({plateau: {eid: event}}); base = index of its first file in the sub-run's
+    sorted file list (event keys eid + 1e7 * file index, as before the per-acquisition split)."""
+    import uproot
     for f in files:
         t = uproot.open(f)['nt']
         for lo in range(0, t.num_entries, 20000):
@@ -118,7 +156,7 @@ def build_cache(run, subrun, dataset, per_plateau=1000, half_win=16, tan=None, e
                     rec[f'ref_mesh_{view}'] = float((q * POSITION_MM[chs]).sum() / max(q.sum(), 1e-9))
                     rec[f'ftst_{view}'] = int(arr['ftst'][j])
                 if ok:
-                    out.setdefault(L, {})[rec['eid'] + 10_000_000 * files.index(f)] = rec
+                    out.setdefault(L, {})[rec['eid'] + 10_000_000 * (base + files.index(f))] = rec
         if verbose:
             print(f'  {os.path.basename(f)}: ' + ', '.join(f'{k} {len(v)}' for k, v in sorted(out.items())), flush=True)
         if all(len(out.get(n, {})) >= a.per_plateau for n, _, _ in plateaus):
