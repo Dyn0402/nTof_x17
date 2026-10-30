@@ -286,3 +286,129 @@ g_det4 agree to 0.05° and 1 mm, and both chains' hits selections are the same e
   - the fit inputs and results are in `/eos/user/d/dneff/x17rerun/s4_followup/fits/`.
 - Code: `code_16587ac6`. Condor 4599810, lxplus `~/x17rerun/s4_followup/`. The fits ran locally (seconds each).
 - Analysis_pass1, the audit trees and `physics_inputs.json` were not modified.
+
+## Re-check (2026-10-30 night): det2, det3, det6 with masks — and what the "low-amplitude" T really was
+
+Dylan asked for det2, det3 and det6 to be re-measured the way the follow-up said the estimator must be used: masked, and
+at an amplitude floor.
+
+### Verdict
+
+**All three inputs hold, and so does det4's.** Nothing needs re-calibrating, and `physics_inputs.json` is unchanged.
+
+**The amplitude floor was the wrong fix.** The longer T of the low-amplitude events is not amplitude, and not the
+estimator on weak signals. It is two things the low-amplitude sample over-represents:
+- **unmasked dead strips:** det4 has 77 dead X channels;
+- **the outer 30 mm of the active area:** the stack's T differs there by −90 to +60 ns depending on the chamber, and det6's
+  edge fits do not constrain T at all.
+
+With the mask applied and the reference ≥ 30 mm inside the active area, T is flat in amplitude:
+- det4: 917 ± 34 ns below 1000 ADC, 926 ± 18 above;
+- det4 over the whole area, masked: 935 ± 13 against 947 ± 14.
+
+**An injection test rules out the estimator itself.** The same 2000–3500 ADC events, scaled to ~800 ADC with their own
+noise added back, change T by −5 ns (det3) and −8 ns (det4), not +60–90 ns.
+
+**The estimator to reuse is therefore: the bundle's dead list plus strip_gain_audit's flags masked, the M3 reference
+≥ 30 mm inside the active area, the pass template, every unsaturated amplitude.** That is the "interior ≥ 30 mm" region
+Paper I quotes anyway (PASS_PLAN §4). The ≥ 1000 ADC floor is only a cross-check. On top of the mask and the interior
+cut it moves T by 1 ns (det2, det3), 3 ns (det6) and 6 ns (det4).
+
+### Per chamber (golden rows; masked, interior ≥ 30 mm, pass template)
+
+| chamber | input | input ± err | S4 as run | re-check (n) | pull |
+|---|---|---|---|---|---|
+| det2 | v (µm/ns) | 39.3 ± 1.2 | 38.72 | **38.25 ± 0.60** (158) | −0.9 |
+| | Dp (mm/√ns) | 0.025 ± 0.0027 | 0.0253 | **0.0241 ± 0.0011** | −0.3 |
+| | gap (mm) | 31.12 ± 0.42 | 31.36 | **31.55 ± 0.30** (210) | +1.0 |
+| det3 | v | 35.8 ± 0.6 | 35.75 | **36.03 ± 0.34** (519) | +0.4 |
+| | Dp | 0.023 ± 0.0007 | 0.0230 | **0.0228 ± 0.0006** | −0.3 |
+| | gap | 28.08 ± 0.19 | 28.46 (+2.0σ) | **28.19 ± 0.19** (848) | **+0.6** |
+| det6 | v | 24.17 ± 0.75 | 23.25 (−1.2σ) | **24.78 ± 0.78** (131) | +0.8 |
+| | Dp | 0.018 | 0.0085 | 0.0109 ± 0.0026 | still window-limited, not a measurement |
+| | gap | 28.0 ± 1.0 | 32.7 | 24.8–38.2 depending on the selection | still not a measurement |
+| det4 (for reference) | v | 33.0 ± 0.7 | 31.34 (−2.4σ) | **32.70 ± 0.45** (1293) | −0.4 |
+| | Dp | 0.020 ± 0.0011 | 0.0195 | 0.0215 ± 0.0012 | +1.4 |
+
+- v = gap_input / T. The pull is against the input's stated error, the PASS_PLAN test.
+- **det3's gap:** its +2.0σ in S4 was the edge. Interior only, the ± tan halves give 28.44 / 27.89.
+- **det2's gap:** the ± tan halves still split 30.35 / 32.86. That is unchanged by the mask and was already there in S4.
+- **det6's Dp:** it reads 0.0094–0.0134 across arms, and the low-amplitude fits collapse to Dp = 0. Its gap swings by
+  13 mm with the selection: audit flags 32.7, + bundle dead 38.2, interior 24.8. **Neither is quoted.** 0.018 and
+  28.0 ± 1.0 stand on the estimates they already rested on.
+
+### Stack T (ns), step by step
+
+| | det2 | det3 | det6 | det4 |
+|---|---|---|---|---|
+| S4 as run (all events, no mask) | 803.8 | 785.4 | 1204.4 | 972.6 |
+| + mask, all area | 800.3 | 784.8 | 1153.2 | — |
+| no mask, interior ≥ 30 mm | 816.7 | 781.1 | 1161.0 | 950.3 |
+| **mask, interior ≥ 30 mm (quoted)** | **813.5 ± 12.8** | **779.4 ± 7.3** | **1130.1 ± 35.6** | **932.1 ± 12.9** |
+| same, interior ≥ 20 / ≥ 40 mm | 806.2 / 824.4 | 781.1 / 777.8 | 1148.6 / 1118.7 | 939.9 / 936.2 |
+| same, pre-pass template | 816.6 | 777.8 | 1120.7 | 923.7 |
+| mask, edge zone (< 30 mm) | 727.6 ± 32.7 | 819.3 ± 18.7 | not constrained | 991.6 ± 63.2 |
+
+- **Template (pre-pass → pass), interior:** −3.0 / +1.6 / +9.4 / +8.5 ns. That is ≤ 0.8 % for every chamber.
+  - det4's +20–23 ns in the follow-up shrinks to +8.5 once the mask and the interior cut are applied.
+  - So the template's effect on the stack was mostly through the dead-strip events.
+- **Mask:** small on det2/det3 (≤ 3.5 ns; 7 and 8 channels masked), large on det6 (−31 to −51 ns; 40 channels, including
+  every other strip over ch 36–62 and a block at 208–224) and on det4 (−18 ns interior, −67 ns at < 1000 ADC).
+- **Edge zone:** it is chamber-specific in sign: det2 −86 ns, det3 +40, det4 +60. det6's edge-zone fits stay at their
+  starting value (T0 = 1241.2 ns), so T is not constrained there.
+  - That fits drift-field distortion near the cage, but this re-check does not identify the cause.
+  - The interior value is stable from 20 to 40 mm on det3 and det4 (within 4 ns). On det2 it rises by 18 ns across that
+    range (1.1σ), and on det6 it falls by 30 ns.
+
+### T against amplitude (X window maximum)
+
+| | det3 | det4 | det6 |
+|---|---|---|---|
+| no mask, all area: < 1000 / 1000–3500 ADC | 870 ± 38 (80) / 784 ± 7 | **1002 ± 17 / 942 ± 15** (the follow-up's split) | not constrained / 1180 ± 34 |
+| mask, all area | 872 ± 72 / 784 ± 7 | **935 ± 13 / 947 ± 14** | not constrained / 1160 ± 34 |
+| mask, interior | 12 events / 779 ± 7 | **917 ± 34 / 926 ± 18** | 22 events / 1128 ± 28 |
+| share of the < 1000 ADC events in the edge zone | 68 / 80 | 424 / 1533 | 124 / 146 |
+| injection: 2000–3500 ADC events at ×1 / ×0.5 / ×0.3 | 782.3 / 778.2 / 777.1 | 953.0 / 945.8 / 944.9 | — |
+
+- det2 has only 48 head-on events below 1000 ADC, too few to fit.
+- **det4's +60 ns at low amplitude is the dead strips.** Masked, it is −12 ± 19 ns over the whole area and −9 ± 38 in
+  the interior.
+- **det3's and det6's +85 ns at low amplitude is the edge zone.** Their low-amplitude events are 85 % edge, and too few
+  of them are left in the interior to fit.
+- **The injection** keeps each event's drift and scales only the signal. Its T moves down by 5–8 ns (3 noise seeds each,
+  paired, so far below the quoted ±7–27 errors). So the estimator does not lengthen T on weak signals. This corrects the
+  follow-up's inference above ("most likely the stack estimator on weak signals").
+- **det4's Dp still depends on amplitude in the interior** (0.0163 below 1000 ADC against 0.0235 above), with σ0 trading
+  against it. T does not. The quoted det4 Dp (0.0215 ± 0.0012, all amplitudes) is +1.4σ. This was not pursued further:
+  det4 was not part of this request.
+
+### What this does not rule out
+
+- **What makes the edge zone different is not identified.** The candidates are the drift-field fringe at the cage, the
+  reference near the M3 acceptance edge, or the chamber edge itself. The quoted numbers avoid the zone rather than
+  explain it.
+- **The input sample was not rebuilt for these three chambers.** That is the hits-chain events, `s4f_build.py --gen`, a
+  condor job. So there is no closure against the inputs' own T here. The S4-as-run arm reproduces S4 exactly (det2 803.8).
+- **det6's interior v rests on 131 events.** The readout window that limits det6's Dp and gap (S4, `gaps.py`) may also
+  touch its T. The interior fits converge (1119–1149 ns, away from the 1241 ns start), but a window effect on T is not
+  excluded.
+- **The ≥ 30 mm cut is a choice.** The 20/40 mm variants are listed above; det2 and det6 move by 1σ across them.
+- **det7 was not re-checked with the interior cut.** Its quoted region is still X ch 256–511 (the follow-up above).
+- **Errors are bootstrap only** (20 resamples).
+
+### Files
+
+- Tools in `rerun/calib/s4/`:
+  - `s4f_fit.py` gained `mask_x` / `guard` (censor or exclude the masked strips) and `edge` (distance of the M3 reference
+    to the active-area box);
+  - `s4r_specs.py`: every arm grid of this section;
+  - `s4r_gap.py`: the gap with the masks and the interior cut;
+  - `s4r_inject.py`: the amplitude injection;
+  - `s4r_table.py`: the tables, written to `results/s4r/summary.json`.
+- Results: `rerun/calib/s4/results/s4r/` (`r_*`, `where_*`, `gap_r`, `inj_*`, `mask_*`, `summary.json`).
+- Inputs (copies) and results: `/eos/user/d/dneff/x17rerun/s4_recheck/fits/`.
+  - S4's head-on caches (the inclined ones are read from `s4_inputs/Analysis/<row>/s4/incl.pkl`);
+  - the pass bundles;
+  - the pre-pass bundles, which came from the laptop mirror `~/x17/cosmic_bench/Analysis/<row>/wft/calib_bundle_{r06,lp}`.
+- Everything ran locally (seconds per fit), with no condor. Analysis_pass1, the audit trees and `physics_inputs.json` were
+  only read.
