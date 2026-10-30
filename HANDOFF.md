@@ -18,6 +18,13 @@ pass1_ledger.py` on lxplus). Then go downstream (PASS_PLAN §4), starting with t
 - **SPS fixes**: decoded run_56 m70V and run_61 m30V 16H08 (never decoded with fa80c06); the clock is now calibrated per
   acquisition (`sps_build_cache.py`).
 
+**Review + fix (10-30 afternoon):** an independent review of the products (`rerun/pass1_review/REVIEW_2026-10-30.md`)
+found four rows with railed alignment z: a few ok fits with |tan| up to 6e8 gave absurd mesh positions, and the z scan's RMS
+fallback went flat. This is fixed in `b5a29af` (`wft.compat.apply_fit_sanity`, MAD fallback). 01–04 were re-run on all bench rows
+(`make_pass_dag.py post`). The ledger now also checks the alignment z against its night and far ≤ 15 %, and it is clean. The pre-fix outputs are in
+`/eos/user/d/dneff/x17rerun/pass1_backup_1030/`. Still open from the review: SPS run71 RAW rows are unusable; 34 SPS rows have no v
+(positions only); `Analysis_pass1` still holds the excluded det3 6-26 quick row (read rows through the registry).
+
 **Next steps:**
 1. Bow transfer gate on the pass tables: `rerun/calib/bow/bow_finalize.py --manifest` (PASS_PLAN E2). No row's angle or
    position s68 may worsen beyond its error.

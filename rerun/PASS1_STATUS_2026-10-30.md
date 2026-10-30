@@ -1,6 +1,7 @@
 # Pass 1 (from scratch): overnight status, 2026-10-30
 
-**Complete 11:08.** Ledger (`PASS1_LEDGER.md`): 156/156 non-excluded bench rows and 71/71 SPS rows; no row missing, no
+**Complete 11:08; 01–04 re-run 13:22 on `b5a29af` (fit sanity cut + z-scan MAD fallback), after the independent review
+found four rows whose alignment z had railed to the scan edge (`pass1_review/REVIEW_2026-10-30.md`).** Ledger (`PASS1_LEDGER.md`): 156/156 non-excluded bench rows and 71/71 SPS rows; no row missing, no
 overrides, code = the archive. 215,797 bench and 212,725 SPS events reconstructed. All five chambers pass G1.
 
 Code: `code_6a0bb1f` (git archive on EOS, `~/x17rerun/code_6a0bb1f`), LM fitter. Outputs: `/eos/experiment/ntof/data/x17/cosmic_bench/Analysis_pass1/`.
