@@ -26,12 +26,13 @@ fallback went flat. This is fixed in `b5a29af` (`wft.compat.apply_fit_sanity`, M
 s68 is 1.4–3.8°, against 8.5–23° on ZS, and χ²/dof is 2.2. SPS `ref_x/ref_y` is det4's own window centroid, not a reference. Still open: 34 SPS rows have no v
 (positions only); `Analysis_pass1` still holds the excluded det3 6-26 quick row (read rows through the registry).
 
+**Bow transfer gate: PASS** (`rerun/calib/bow/results_pass1/GATE_RESULT_2026-10-30.md`): every row improves in angle
+(−0.06…−0.53°, ≥ 2.3σ) and position; det3 6-25 (bottom slot) too. `wft.reco.bow_UW` now ignores an off-plate view.
+
 **Next steps:**
-1. Bow transfer gate on the pass tables: `rerun/calib/bow/bow_finalize.py --manifest` (PASS_PLAN E2). No row's angle or
-   position s68 may worsen beyond its error.
-2. det4 Y −0.25° ablation before it is quoted: the fe bundle + the new template, then + the bow.
-3. S4: re-measure the physics inputs on the pass tables (σ0, Dp, gaps, timing v); re-run a chamber's calibration if one moves.
-4. Downstream list, PASS_PLAN §4 (v(t), SPS gas fit, loss budget, resolutions, figures).
+1. det4 Y −0.25° ablation before it is quoted: the fe bundle + the new template, then + the bow.
+2. S4: re-measure the physics inputs on the pass tables (σ0, Dp, gaps, timing v); re-run a chamber's calibration if one moves.
+3. Downstream list, PASS_PLAN §4 (v(t), SPS gas fit, loss budget, resolutions, figures).
 
 **Gotchas:**
 - Worker `b9g42p2031.cern.ch` has a broken EOS mount (status 126). It is excluded in `rerun/condor/*.sub`.

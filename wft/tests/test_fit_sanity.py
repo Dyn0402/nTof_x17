@@ -26,3 +26,13 @@ def test_robust_sigma_ignores_one_absurd_residual():
         v = list(rng.normal(0.0, 0.5, n)) + [6e16]
         assert 0.3 < cm._robust_sigma(v) < 0.8
     assert np.isnan(cm._robust_sigma([]))
+
+
+def test_bow_uw_ignores_an_off_plate_view():
+    from types import SimpleNamespace as S
+    from wft import reco as wr
+    cal = S(w0={'x': 0.0, 'y': 0.0}, kw={'x': 1.0, 'y': 1.0}, v_drift=35.0, angle_map=None)
+    U, W = wr.bow_UW(cal, S(p0=1.3e6, w=0.0), S(p0=250.0, w=0.0))
+    assert U == 0.0 and abs(W - 0.5) < 1e-9          # the absurd X point does not set the Y view's bow
+    U, W = wr.bow_UW(cal, S(p0=150.0, w=0.0), S(p0=250.0, w=0.0))
+    assert abs(U + 0.5) < 1e-9 and abs(W - 0.5) < 1e-9

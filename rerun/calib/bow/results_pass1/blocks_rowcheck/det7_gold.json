@@ -1,0 +1,82 @@
+{
+ "chamber": "det7",
+ "source_row": "g_det7_long",
+ "frame": {
+  "coords": "strip frame of each view; U = (u - 200 mm)/100 mm, W = (w - 200 mm)/100 mm, u/w = fitted p0 + 15 mm * tan",
+  "z": "M3 z up; h = mesh height along z_up (negative = lower = further from the cathode)"
+ },
+ "valid": "bench only (cosmic bench mounting); never transfer to n_TOF without an in-situ measurement",
+ "A_x": {
+  "cu": 0.2676228057166523,
+  "cw": 0.021667436219918443,
+  "auu": -0.1402031434733032,
+  "aww": -0.07511769224828613,
+  "auw": 0.08415121742425355
+ },
+ "a_x": {
+  "cu": 0.007174767485928648,
+  "cw": 0.0005808877777729332,
+  "auu": -0.003758741533717706,
+  "aww": -0.0020138492103382896,
+  "auw": 0.002256031271550482
+ },
+ "w0_const_x": 0.0029979780965726775,
+ "B_x": 37.30055451156034,
+ "s_x": {
+  "su": 0.00481274756204583,
+  "sw": 0.01897958035628905
+ },
+ "h_x": {
+  "gu": -0.08898020624446644,
+  "gw": -0.6438000128105155,
+  "kuu": 1.2594814026394536,
+  "kww": 1.9543429322837644,
+  "kuw": 0.09371734578545689
+ },
+ "A_y": {
+  "cu": 0.02344829006050745,
+  "cw": 0.46887785590689923,
+  "auu": 0.002809346895449453,
+  "aww": -0.15840720900490993,
+  "auw": -0.05430280565327501
+ },
+ "a_y": {
+  "cu": 0.0006307354295199264,
+  "cw": 0.012612342950154553,
+  "auu": 7.556860718625191e-05,
+  "aww": -0.00426099467180518,
+  "auw": -0.001460690880208016
+ },
+ "w0_const_y": -0.10398369583146354,
+ "B_y": 37.1761105577258,
+ "s_y": {
+  "su": 0.01876850520473822,
+  "sw": 0.031882194363632696
+ },
+ "h_y": {
+  "gu": -0.22808401863631517,
+  "gw": -0.9093447592137943,
+  "kuu": 0.004697430461616084,
+  "kww": 1.7179977743418953,
+  "kuw": -0.04335026985322468
+ },
+ "h": {
+  "gu": -0.1585321124403908,
+  "gw": -0.776572386012155,
+  "kuu": 0.6320894165505349,
+  "kww": 1.8361703533128297,
+  "kuw": 0.025183537966116103
+ },
+ "n_events": {
+  "x": 6040,
+  "y": 6828
+ },
+ "provenance": {
+  "node": "rerun/calib/bow_node.py",
+  "key": "g_det7_long",
+  "events": "/pool/condor/dir_3657361/Analysis/mx17_det6_det7_overnight_6-26-26/long_run/mx17_7/wft/events.parquet",
+  "alignment": "/pool/condor/dir_3657361/Analysis/mx17_det6_det7_overnight_6-26-26/long_run/mx17_7/wft/alignment/alignment.json",
+  "m3dir": "/pool/condor/dir_3657361/bench/det6_det7/mx17_det6_det7_overnight_6-26-26/long_run/m3_tracking_root_v2/",
+  "bundle": "/pool/condor/dir_3657361/Analysis/mx17_det6_det7_overnight_6-26-26/long_run/mx17_7/wft/calib_bundle"
+ }
+}

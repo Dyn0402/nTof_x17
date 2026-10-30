@@ -45,6 +45,7 @@ def prep(T, p):
     ty = (T.y_wv - T.attrs['w0']['y']).to_numpy() / (T.attrs['kw']['y'] * v)
     u = T.x_p0.to_numpy() + 15 * tx; w = T.y_p0.to_numpy() + 15 * ty
     m &= np.isfinite(u) & np.isfinite(w)
+    m &= (np.abs(u - 200) <= 220) & (np.abs(w - 200) <= 220)     # both views' points on the plate (pass-1 review 10-30)
     eid = np.asarray(T.index)
     return dict(m=m, t=t, wv=wv, u=u, w=w, U=(u - 200) / 100, W=(w - 200) / 100, r=T[f'{p}_r'].to_numpy(),
                 eid=eid, v=v, own=(u if p == 'x' else w))

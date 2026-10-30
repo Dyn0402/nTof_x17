@@ -440,11 +440,18 @@ def tan_bow(cal: CalibrationBundle, plane: str, w: float, U: float, W: float) ->
     return float((w * 1e3 - cal.w0.get(plane, 0.0) - _bow_poly(A, U, W)) / (cal.kw.get(plane, 1.0) * cal.v_drift * S))
 
 
+#: the bow block is fitted on the plate (U, W in 100 mm from its centre: -2...+2); beyond 2.2 a view is not trusted
+BOW_UW_MAX = 2.2
+
+
 def bow_UW(cal: CalibrationBundle, fx=None, fy=None) -> tuple:
-    """(U, W) of a track from its views' mesh positions and constant-mapping tangents; a missing view gives 0."""
+    """(U, W) of a track from its views' mesh positions and constant-mapping tangents; a missing view gives 0, and so
+    does a view whose point is off the plate (|U|, |W| > BOW_UW_MAX: an absurd fit of that view would otherwise set the
+    other view's bow tangent and mesh height, pass-1 review 2026-10-30: <= 0.2 % of events)."""
     U = ((fx.p0 + BOW_MID_MM * tan_const(cal, 'x', fx.w)) - 200.0) / 100.0 if fx is not None else 0.0
     W = ((fy.p0 + BOW_MID_MM * tan_const(cal, 'y', fy.w)) - 200.0) / 100.0 if fy is not None else 0.0
-    return (U if np.isfinite(U) else 0.0), (W if np.isfinite(W) else 0.0)
+    ok = lambda c: bool(np.isfinite(c) and abs(c) <= BOW_UW_MAX)
+    return (U if ok(U) else 0.0), (W if ok(W) else 0.0)
 
 
 def apply_bow(cal: CalibrationBundle, fx=None, fy=None) -> None:
