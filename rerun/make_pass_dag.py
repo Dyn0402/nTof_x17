@@ -3,6 +3,8 @@
 
 Phases (each writes <phase>.dag in the current dir; submit with condor_submit_dag from ~/x17rerun/pass):
 
+calib_iter  the extra CAL4 iteration (Dylan 10-29) for the rows in --only: RECO4 (with the final calib_bundle) -> ALIGN4
+          -> ANG4 -> W0KW4 (c4/bundle, a check); rerun/calib/conv_iter.py judges r3 vs r4 like for like (both bow)
 calib     the from-scratch calibration of the five golden rows (PASS_PLAN_2026-10-28 E3), into Analysis_pass1, every
           product under <row>/wft/calib/:
           CAL0  HITS (03_alignment_and_tpc: the hits-chain corridor only) -> CACHE0 (c0/cache.pkl, 1500 events)
@@ -141,7 +143,7 @@ def calib_phase(L, rows, a, only):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument('phase', choices=['calib', 'finalize', 'vrefit', 'pass', 'sps'])
+    ap.add_argument('phase', choices=['calib', 'calib_iter', 'finalize', 'vrefit', 'pass', 'sps'])
     ap.add_argument('code')
     ap.add_argument('--golden', nargs='*', default=[], help='det=itN (finalize)')
     ap.add_argument('--bundle-sub', default='fit_pinned/bundle',
@@ -176,6 +178,22 @@ def main():
     L = []
     if a.phase == 'calib':
         calib_phase(L, rows, a, only)
+    elif a.phase == 'calib_iter':
+        for r in rows:
+            if r['refit'] != 'golden' or (only and r['key'] not in only):
+                continue
+            k, d, c = r['key'], GOLD_DET[r['det']], '{out}/wft/calib'
+            t = f'{c}/r4/events.parquet'
+            node(L, f'RECO4_{d}', 'stage1.sub', f'{k} --module wft.cli -- reco {{key}} --bundle {{out}}/wft/calib_bundle '
+                 f'--out {t} --matched-only --limit 8000 --jobs 16', 16, 24000, a.code)
+            node(L, f'ALIGN4_{d}', 'stage1.sub', f'{k} --parts run_config,m3,hits --script mx_june_wft/01_alignment.py -- '
+                 f'--table {t} --out {c}/r4/alignment', 1, 8000, a.code, [f'RECO4_{d}'])
+            node(L, f'ANG4_{d}', 'stage1.sub', f'{k} --parts run_config,m3,hits --script mx_june_wft/03_angles.py -- '
+                 f'--table {t} --alignment {c}/r4/alignment/alignment.json --out {c}/r4/angles', 1, 8000, a.code,
+                 [f'ALIGN4_{d}'])
+            node(L, f'W0KW4_{d}', 'stage1.sub', f'{k} --parts run_config --script rerun/w12/set_w0kw.py -- '
+                 f'--bundle {{out}}/wft/calib_bundle --angles {c}/r4/angles --table {t} --out {c}/c4/bundle',
+                 1, 4000, a.code, [f'ANG4_{d}'])
     elif a.phase == 'sps':
         det4 = next(r for r in rows if r['refit'] == 'golden' and r['det'] == 'mx17_4')
         b = f'{A}/{rel(det4)}/wft/calib_bundle'
