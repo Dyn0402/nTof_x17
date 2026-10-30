@@ -22,7 +22,7 @@ LEVER = (30.0, 130.0)                   # k_arm.LEVER_WINDOW_MM
 N_MIN = 200                             # k_arm's own minimum for track_k
 T_REF = dt.datetime(2026, 6, 1)
 COLS = ['subrun', 'tag', 'arm', 'gated', 'coinc_this_arm', 'x_local', 'tan_raw_x', 'drift_railed', 'x_q_u90',
-        'x_quality_ok']
+        'x_quality_ok', 'v_drift_prior_um_ns']
 
 
 def stem(tag):
@@ -93,7 +93,8 @@ def measure(run, d):
         H = R[R.half.notna()].pivot_table(index='subrun', columns='half', values=['v_rel', 'v_rel_err'])
         dh = (H['v_rel'][1] - H['v_rel'][0]) if len(H) else pd.Series(dtype=float)
         eh = np.hypot(H['v_rel_err'][1], H['v_rel_err'][0]) if len(H) else pd.Series(dtype=float)
-        out['arms'][arm] = dict(k_run=k_run, k_run_err=e_run, n_run=n_run, k_applied=None, fit=fit,
+        out['arms'][arm] = dict(k_run=k_run, k_run_err=e_run, n_run=n_run, v_prior=float(A.v_drift_prior_um_ns.median()),
+                                v_insitu=float(A.v_drift_prior_um_ns.median()) / k_run, fit=fit,
                                 half_diff=dict(mean=float(dh.mean()), rms=float(dh.std()), med_err=float(eh.median()),
                                                chi2=float(np.nansum((dh / eh) ** 2)), n=int(dh.notna().sum())),
                                 blocks=R.replace({np.nan: None}).to_dict('records'))

@@ -1,0 +1,27 @@
+{
+ "gate": {
+  "bench_dv": 0.02,
+  "bench_z": 3.0,
+  "sps_dv": 0.02
+ },
+ "bench": {
+  "n_rows": 2,
+  "n_measured": 2,
+  "n_correct": 2,
+  "n_significant_small": 0,
+  "n_too_few": 0,
+  "correct": [
+   "c26__mx17_det3_det4_overnight_6-23-26__long_run__mx17_4",
+   "g_det6_long"
+  ]
+ },
+ "ntof": {
+  "n_runs": 3,
+  "arms": [
+   "A",
+   "C"
+  ],
+  "median_err_sub_pct": 0.7005636054653682,
+  "median_half_err_pct": 1.4030100354218058
+ }
+}
